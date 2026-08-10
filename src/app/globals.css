@@ -1,0 +1,400 @@
+@import "tailwindcss";
+
+:root {
+  --background: #050510;
+  --foreground: #eef0fb;
+  --muted: #9298b8;
+  --card: rgba(255, 255, 255, 0.05);
+  --card-border: rgba(255, 255, 255, 0.1);
+  --accent: #7c6cff;
+  --accent-2: #38bdf8;
+  --danger: #f87171;
+  --success: #4ade80;
+  --gold: #fbbf24;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --color-accent-2: var(--accent-2);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+/* Hard dark theme — the app has one look regardless of OS preference. */
+html {
+  color-scheme: dark;
+  scroll-behavior: smooth;
+  background: var(--background);
+}
+
+::selection {
+  background: rgba(124, 108, 255, 0.45);
+  color: #fff;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.18) transparent;
+}
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+*::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.14);
+  border-radius: 8px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+input,
+textarea,
+select {
+  color-scheme: dark;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans), system-ui, sans-serif;
+  min-height: 100dvh;
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}
+
+/* ------------------------------------------------------------------ */
+/* Aurora backdrop: three drifting blobs + a faint dot grid            */
+/* ------------------------------------------------------------------ */
+.aurora {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+  background-image: radial-gradient(
+    rgba(255, 255, 255, 0.028) 1px,
+    transparent 1px
+  );
+  background-size: 28px 28px;
+}
+.aurora::before,
+.aurora::after,
+.aurora .blob {
+  content: "";
+  position: absolute;
+  width: 62vmax;
+  height: 62vmax;
+  border-radius: 50%;
+  filter: blur(90px);
+  opacity: 0.38;
+  will-change: transform;
+}
+.aurora::before {
+  background: radial-gradient(circle, #4f39d8 0%, transparent 62%);
+  top: -22vmax;
+  left: -14vmax;
+  animation: aurora-drift-a 26s ease-in-out infinite alternate;
+}
+.aurora::after {
+  background: radial-gradient(circle, #0b7f96 0%, transparent 62%);
+  bottom: -26vmax;
+  right: -16vmax;
+  animation: aurora-drift-b 32s ease-in-out infinite alternate;
+}
+.aurora .blob {
+  background: radial-gradient(circle, #a2317e 0%, transparent 65%);
+  top: 30%;
+  left: 42%;
+  width: 42vmax;
+  height: 42vmax;
+  opacity: 0.2;
+  animation: aurora-drift-c 40s ease-in-out infinite alternate;
+}
+
+@keyframes aurora-drift-a {
+  from { transform: translate3d(0, 0, 0) scale(1); }
+  to   { transform: translate3d(10vmax, 8vmax, 0) scale(1.18); }
+}
+@keyframes aurora-drift-b {
+  from { transform: translate3d(0, 0, 0) scale(1.1); }
+  to   { transform: translate3d(-9vmax, -11vmax, 0) scale(0.92); }
+}
+@keyframes aurora-drift-c {
+  from { transform: translate3d(-6vmax, 4vmax, 0); }
+  to   { transform: translate3d(7vmax, -6vmax, 0); }
+}
+
+/* ------------------------------------------------------------------ */
+/* Surfaces                                                            */
+/* ------------------------------------------------------------------ */
+.glass {
+  background: linear-gradient(
+    160deg,
+    rgba(255, 255, 255, 0.07),
+    rgba(255, 255, 255, 0.03)
+  );
+  border: 1px solid var(--card-border);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 8px 32px rgba(0, 0, 0, 0.35);
+}
+
+.glow-ring {
+  box-shadow:
+    0 0 0 1px rgba(124, 108, 255, 0.4),
+    0 0 24px rgba(124, 108, 255, 0.25);
+}
+
+.text-gradient {
+  background: linear-gradient(90deg, #a5b4fc, #7dd3fc 45%, #6ee7b7);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Image treatments */
+/* Anime-style shadow: solid dark navy, like the TV segment */
+.silhouette img {
+  filter: brightness(0) invert(0.22) sepia(1) saturate(6) hue-rotate(185deg)
+    brightness(0.9);
+  transition: filter 0.6s ease;
+}
+.pixelated img {
+  image-rendering: pixelated;
+}
+
+/* "Who's That Pokémon?" burst frame: red rays + cyan glow behind the shadow */
+.anime-burst-rays {
+  position: absolute;
+  inset: -55%;
+  background: repeating-conic-gradient(
+    from 0deg,
+    #dc2626 0deg 10deg,
+    #ef4444 10deg 15deg,
+    #fca5a5 15deg 18deg,
+    #ef4444 18deg 24deg
+  );
+  animation: burst-spin 46s linear infinite;
+}
+.anime-burst-glow {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    circle at 50% 52%,
+    rgba(236, 254, 255, 0.98) 0%,
+    rgba(165, 243, 252, 0.9) 20%,
+    rgba(103, 232, 249, 0.55) 38%,
+    rgba(34, 211, 238, 0.18) 52%,
+    transparent 64%
+  );
+}
+@keyframes burst-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* The big wobbling question mark */
+@keyframes qmark-wobble {
+  0%, 100% { transform: rotate(-8deg) scale(1); }
+  50% { transform: rotate(6deg) scale(1.08); }
+}
+.anime-qmark {
+  animation: qmark-wobble 1.8s ease-in-out infinite;
+  color: #facc15;
+  text-shadow:
+    -2px -2px 0 #1e3a8a,
+    2px -2px 0 #1e3a8a,
+    -2px 2px 0 #1e3a8a,
+    2px 2px 0 #1e3a8a,
+    0 4px 10px rgba(0, 0, 0, 0.4);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .anime-burst-rays,
+  .anime-qmark {
+    animation: none;
+  }
+}
+
+/* Wrong-answer shake */
+@keyframes shake-x {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-6px); }
+  40% { transform: translateX(6px); }
+  60% { transform: translateX(-4px); }
+  80% { transform: translateX(4px); }
+}
+.animate-shake {
+  animation: shake-x 0.4s ease-in-out;
+}
+
+/* Correct-answer pulse */
+@keyframes pulse-glow {
+  0% { box-shadow: 0 0 0 0 rgba(74, 222, 128, 0.5); }
+  100% { box-shadow: 0 0 0 14px rgba(74, 222, 128, 0); }
+}
+.animate-correct {
+  animation: pulse-glow 0.7s ease-out;
+}
+
+/* Master Ball loading spinner */
+.pokeball-spinner {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at center, #2e1065 17%, #fce7f3 18% 25%, transparent 26%),
+    linear-gradient(to bottom, #c084fc 0 46%, #2e1065 46% 54%, #f8fafc 54% 100%);
+  border: 3px solid #2e1065;
+  animation: pokeball-wobble 1.1s ease-in-out infinite;
+}
+@keyframes pokeball-wobble {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(-22deg) translateY(-2px); }
+  75% { transform: rotate(22deg) translateY(-2px); }
+}
+
+/* Expanding psychic sonar rings — used behind the Master Ball spinner and Alakazam mascot */
+.psychic-rings {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+.psychic-rings::before,
+.psychic-rings::after {
+  content: "";
+  position: absolute;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(192, 132, 252, 0.55);
+  animation: psychic-ping 2.4s cubic-bezier(0.2, 0.6, 0.4, 1) infinite;
+}
+.psychic-rings::after {
+  animation-delay: 1.2s;
+  border-color: rgba(244, 114, 182, 0.4);
+}
+@keyframes psychic-ping {
+  0% { transform: scale(1); opacity: 0.9; }
+  100% { transform: scale(2.6); opacity: 0; }
+}
+
+/* Alakazam's spoons — bend and spin in loading/empty states */
+.spoon-bend {
+  display: inline-block;
+  animation: spoon-wiggle 2.2s ease-in-out infinite;
+  transform-origin: 50% 85%;
+}
+.spoon-bend.spoon-bend-delay {
+  animation-delay: 0.5s;
+}
+@keyframes spoon-wiggle {
+  0%, 100% { transform: rotate(-14deg) scaleY(1); }
+  50% { transform: rotate(14deg) scaleY(0.92); }
+}
+
+/* Module-card entrance: staggered fade + rise, driven by --delay per card */
+@keyframes card-rise {
+  from { opacity: 0; transform: translateY(18px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.card-enter {
+  animation: card-rise 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: var(--delay, 0ms);
+}
+
+/* Psychic shimmer sweep on hover — a light band crossing the card */
+.shimmer-hover {
+  position: relative;
+  overflow: hidden;
+}
+.shimmer-hover::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    115deg,
+    transparent 40%,
+    rgba(192, 132, 252, 0.14) 50%,
+    transparent 60%
+  );
+  background-size: 220% 220%;
+  background-position: 120% 0%;
+  transition: background-position 0.7s ease;
+  pointer-events: none;
+}
+.shimmer-hover:hover::before {
+  background-position: -20% 0%;
+}
+
+/* Page transition (route change fade + rise) */
+@keyframes page-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.page-transition {
+  animation: page-in 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Hot-streak aura on the quiz card (streak ≥ 5) */
+@keyframes aura-pulse {
+  0%, 100% {
+    box-shadow:
+      0 0 0 1px rgba(251, 191, 36, 0.45),
+      0 0 28px rgba(251, 146, 60, 0.28);
+  }
+  50% {
+    box-shadow:
+      0 0 0 1px rgba(251, 191, 36, 0.7),
+      0 0 44px rgba(251, 146, 60, 0.45);
+  }
+}
+.streak-aura {
+  animation: aura-pulse 1.6s ease-in-out infinite;
+}
+
+/* Floating hero sprites */
+@keyframes float-y {
+  0%, 100% { transform: translateY(0) rotate(var(--tilt, 0deg)); }
+  50% { transform: translateY(-14px) rotate(var(--tilt, 0deg)); }
+}
+.float-sprite {
+  animation: float-y var(--float-duration, 5s) ease-in-out infinite;
+  filter: drop-shadow(0 12px 24px rgba(0, 0, 0, 0.45));
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent-2);
+  outline-offset: 2px;
+  border-radius: 8px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .aurora::before,
+  .aurora::after,
+  .aurora .blob,
+  .pokeball-spinner {
+    animation: none;
+  }
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
