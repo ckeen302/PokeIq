@@ -1,0 +1,44 @@
+/**
+ * PokéIQ mark: a Poké Ball whose upper shell is a brain (two hemispheres,
+ * folded gyri), with a glowing psychic core as the button. One source of
+ * truth for the header logo, favicons, PWA icons and Open Graph images.
+ */
+export const LOGO_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <defs>
+    <linearGradient id="pk-brain" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ff8ab4"/>
+      <stop offset="1" stop-color="#e2306f"/>
+    </linearGradient>
+    <linearGradient id="pk-shell" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#d9d4f5"/>
+    </linearGradient>
+    <radialGradient id="pk-core" cx="0.5" cy="0.45" r="0.6">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="0.45" stop-color="#d6c8ff"/>
+      <stop offset="1" stop-color="#8b5cf6"/>
+    </radialGradient>
+  </defs>
+  <path d="M5 50a45 45 0 0 1 90 0z" fill="url(#pk-brain)"/>
+  <path d="M5 50a45 45 0 0 0 90 0z" fill="url(#pk-shell)"/>
+  <g fill="none" stroke="#7a0d3a" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round" opacity="0.75">
+    <path d="M50 8c-4 6 4 11 0 17s3 9 0 15"/>
+    <path d="M42 11c-6 1-7 7-12 8s-9 6-6 11"/>
+    <path d="M17 41c3-5 9-3 12-7s9-3 12 0"/>
+    <path d="M30 26c4 2 8 0 10 4"/>
+    <path d="M58 11c6 1 7 7 12 8s9 6 6 11"/>
+    <path d="M83 41c-3-5-9-3-12-7s-9-3-12 0"/>
+    <path d="M70 26c-4 2-8 0-10 4"/>
+    <path d="M25 33c2-2 5-2 6 0"/>
+    <path d="M75 33c-2-2-5-2-6 0"/>
+    <path d="M37 41c1-3 4-4 6-2"/>
+    <path d="M63 41c-1-3-4-4-6-2"/>
+  </g>
+  <path d="M20 22c6-8 15-12 24-13" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity="0.45"/>
+  <rect x="5" y="45.5" width="90" height="9" fill="#120f24"/>
+  <circle cx="50" cy="50" r="15" fill="#120f24"/>
+  <circle cx="50" cy="50" r="10" fill="url(#pk-core)"/>
+  <circle cx="50" cy="50" r="10" fill="none" stroke="#a78bfa" stroke-width="1.5"/>
+  <circle cx="50" cy="50" r="45" fill="none" stroke="#120f24" stroke-width="6"/>
+  <circle cx="50" cy="50" r="48.3" fill="none" stroke="#c4b5fd" stroke-width="1.4" opacity="0.35"/>
+</svg>`;

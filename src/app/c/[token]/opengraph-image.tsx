@@ -1,4 +1,8 @@
+/* eslint-disable jsx-a11y/alt-text -- Satori renders plain <img> */
 import { ImageResponse } from "next/og";
+import { LOGO_SVG } from "@/lib/brand/logo-svg";
+
+const LOGO_DATA_URI = `data:image/svg+xml;base64,${Buffer.from(LOGO_SVG).toString("base64")}`;
 import { readShareCard } from "@/lib/server/share-card";
 import { MODULE_INFO } from "@/lib/modes";
 import { dailyNumber } from "@/lib/daily";
@@ -26,14 +30,15 @@ export default async function Image({ params }: { params: Promise<{ token: strin
           flexDirection: "column",
           justifyContent: "space-between",
           padding: 64,
-          background: "linear-gradient(135deg, #0b1120 0%, #111a33 55%, #3b2a06 100%)",
+          background: "linear-gradient(135deg, #08071a 0%, #1a1240 60%, #4a1238 100%)",
           color: "#f8fafc",
           fontFamily: "sans-serif",
         }}
       >
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <div style={{ display: "flex", fontSize: 44, fontWeight: 800 }}>
-            Poké<span style={{ color: "#fbbf24" }}>IQ</span>
+          <div style={{ display: "flex", alignItems: "center", fontSize: 44, fontWeight: 800 }}>
+            <img src={LOGO_DATA_URI} width={110} height={110} style={{ marginRight: 28 }} />
+          Poké<span style={{ color: "#f0457f" }}>IQ</span>
           </div>
           <div style={{ display: "flex", fontSize: 30, color: "#94a3b8" }}>{title}</div>
         </div>
@@ -42,7 +47,7 @@ export default async function Image({ params }: { params: Promise<{ token: strin
           <div style={{ display: "flex", alignItems: "flex-end", gap: 64 }}>
             <div style={{ display: "flex", flexDirection: "column" }}>
               <div style={{ display: "flex", fontSize: 30, color: "#94a3b8" }}>PokéIQ</div>
-              <div style={{ display: "flex", fontSize: 180, fontWeight: 900, color: "#fbbf24", lineHeight: 1 }}>{String(card.q)}</div>
+              <div style={{ display: "flex", fontSize: 180, fontWeight: 900, color: "#b49cff", lineHeight: 1 }}>{String(card.q)}</div>
               <div style={{ display: "flex", fontSize: 32, color: "#cbd5e1" }}>{iqTitle(card.q)}</div>
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: 16, paddingBottom: 12 }}>
@@ -64,7 +69,7 @@ export default async function Image({ params }: { params: Promise<{ token: strin
           <div style={{ display: "flex", fontSize: 72, fontWeight: 800 }}>The ultimate Pokémon quiz</div>
         )}
 
-        <div style={{ display: "flex", fontSize: 32, color: "#fbbf24", fontWeight: 700 }}>Can you beat it? →</div>
+        <div style={{ display: "flex", fontSize: 32, color: "#f0457f", fontWeight: 700 }}>Can you beat it? →</div>
       </div>
     ),
     size

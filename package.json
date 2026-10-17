@@ -13,7 +13,8 @@
     "test:watch": "vitest",
     "ingest": "tsx scripts/ingest-pokedex.ts && tsx scripts/ingest-details.ts",
     "verify:e2e": "node scripts/e2e-smoke.mjs",
-    "lookalikes": "tsx scripts/silhouette-lookalikes.ts"
+    "lookalikes": "tsx scripts/silhouette-lookalikes.ts",
+    "icons": "tsx scripts/generate-icons.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.45.0",

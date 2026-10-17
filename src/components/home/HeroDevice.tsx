@@ -1,5 +1,6 @@
 "use client";
 
+/* eslint-disable @next/next/no-img-element -- pre-sized art */
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { artUrl } from "@/lib/pokemon/art";
@@ -37,12 +38,10 @@ export function HeroDevice() {
   return (
     <div className="relative mx-auto w-full max-w-[360px] select-none" aria-hidden>
       {/* Casing */}
-      <div className="rounded-[22px] border-2 border-black/60 bg-gradient-to-b from-[hsl(6_80%_50%)] to-[hsl(6_78%_38%)] p-4 shadow-[0_20px_50px_-15px_hsl(6_80%_40%/0.6),inset_0_2px_0_hsl(6_100%_70%/0.5)]">
+      <div className="rounded-[22px] border-2 border-black/60 bg-gradient-to-b from-[hsl(256_52%_34%)] via-[hsl(258_50%_25%)] to-[hsl(260_52%_17%)] p-4 shadow-[0_24px_60px_-18px_hsl(var(--screen)/0.55),inset_0_2px_0_hsl(258_80%_75%/0.35)]">
         <div className="mb-3 flex items-center gap-3">
-          <span className="relative h-10 w-10 rounded-full border-[3px] border-white/90 bg-[radial-gradient(circle_at_35%_35%,hsl(186_95%_85%),hsl(var(--screen))_45%,hsl(200_90%_25%))] shadow-[0_0_16px_hsl(var(--screen)/0.8)]">
-            <span className="absolute left-2 top-2 h-2 w-2 rounded-full bg-white/90" />
-          </span>
-          <span className="led text-primary brightness-150" />
+          <img src="/logo.svg" alt="" width={44} height={44} className="h-11 w-11 drop-shadow-[0_0_14px_hsl(var(--primary)/0.6)]" />
+          <span className="led text-primary" />
           <span className="led text-warning" />
           <span className="led text-success" />
           <span className="ml-auto font-pixel text-[9px] text-white/70">DEX-IQ</span>

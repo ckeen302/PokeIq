@@ -20,7 +20,7 @@ export const MODULE_INFO: Record<ModuleId, ModuleInfo> = {
     tagline: "Name the silhouette",
     description: "Identify Pokémon from their silhouettes — hard mode zooms in on a single detail.",
     emoji: "👤",
-    accent: "43 96% 56%",
+    accent: "42 98% 60%",
     defaultFormat: "classic",
   },
   cry: {
@@ -29,7 +29,7 @@ export const MODULE_INFO: Record<ModuleId, ModuleInfo> = {
     tagline: "Name that sound",
     description: "Listen to a Pokémon's cry and pick who made it. Headphones recommended.",
     emoji: "🔊",
-    accent: "280 80% 65%",
+    accent: "258 94% 74%",
     defaultFormat: "classic",
   },
   dex: {
@@ -38,7 +38,7 @@ export const MODULE_INFO: Record<ModuleId, ModuleInfo> = {
     tagline: "Pokédex entries, genus & abilities",
     description: "Identify Pokémon from censored Pokédex entries, their category, and their abilities.",
     emoji: "📖",
-    accent: "199 89% 55%",
+    accent: "199 89% 62%",
     defaultFormat: "classic",
   },
   types: {
@@ -47,7 +47,7 @@ export const MODULE_INFO: Record<ModuleId, ModuleInfo> = {
     tagline: "Matchups & weaknesses",
     description: "Typings, 4× weaknesses, immunities and damage multipliers — straight from the type chart.",
     emoji: "⚔️",
-    accent: "0 84% 62%",
+    accent: "340 86% 60%",
     defaultFormat: "classic",
   },
   "higher-lower": {
@@ -56,7 +56,7 @@ export const MODULE_INFO: Record<ModuleId, ModuleInfo> = {
     tagline: "Stats, height & weight",
     description: "Two Pokémon, one stat. Who's faster, heavier, bulkier? Keep the streak alive.",
     emoji: "📊",
-    accent: "142 71% 45%",
+    accent: "154 68% 46%",
     defaultFormat: "survival",
   },
   mixed: {
@@ -65,7 +65,7 @@ export const MODULE_INFO: Record<ModuleId, ModuleInfo> = {
     tagline: "A bit of everything",
     description: "Silhouettes, Pokédex entries, type matchups and stat battles in one run.",
     emoji: "🎲",
-    accent: "217 91% 60%",
+    accent: "228 90% 70%",
     defaultFormat: "classic",
   },
 };

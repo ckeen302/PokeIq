@@ -1,5 +1,7 @@
 "use client";
 
+/* eslint-disable @next/next/no-img-element -- animated GIFs and pre-sized art */
+
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 import { Sparkles, Volume2 } from "lucide-react";
@@ -44,9 +46,9 @@ export function Hero({ data, form, onFormChange, types, abilities }: HeroProps) 
   return (
     <section id="overview" className="hud relative overflow-hidden rounded-lg border bg-card">
       {/* Device strip */}
-      <div className="flex items-center gap-3 bg-gradient-to-b from-[hsl(6_80%_48%)] to-[hsl(6_78%_40%)] px-4 py-2.5 shadow-[inset_0_-2px_0_rgb(0_0_0/0.25)] sm:px-6">
-        <span className="h-5 w-5 rounded-full border-2 border-white/90 bg-[radial-gradient(circle_at_35%_35%,hsl(186_95%_85%),hsl(var(--screen))_45%,hsl(200_90%_25%))] shadow-[0_0_10px_hsl(var(--screen)/0.8)]" aria-hidden />
-        <span className="led h-1.5 w-1.5 text-white/80" aria-hidden />
+      <div className="flex items-center gap-3 bg-gradient-to-b from-[hsl(338_80%_50%)] to-[hsl(272_68%_48%)] bg-gradient-to-r px-4 py-2.5 shadow-[inset_0_-2px_0_rgb(0_0_0/0.25)] sm:px-6">
+        <img src="/logo.svg" alt="" width={22} height={22} className="h-[22px] w-[22px]" aria-hidden />
+        <span className="led h-1.5 w-1.5 text-white/90" aria-hidden />
         <span className="led h-1.5 w-1.5 text-warning" aria-hidden />
         <span className="led h-1.5 w-1.5 text-success" aria-hidden />
         <span className="font-pixel text-[10px] uppercase tracking-widest text-white/90">

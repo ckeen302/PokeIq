@@ -25,7 +25,7 @@ export function DailyCards() {
         description="10 mixed questions. Same quiz for every trainer today."
         status={daily ? `Cleared · ${daily.correct}/${daily.total} · IQ ${daily.pokeiq}` : null}
         streak={progress?.daily.streak ?? 0}
-        accent="6 84% 53%"
+        accent="340 86% 60%"
       />
       <DailyCard
         href="/pokedle"
@@ -35,7 +35,7 @@ export function DailyCards() {
         description="Deduce the mystery Pokémon in 8 guesses from type, generation, size and color."
         status={dle?.over ? (dle.solved ? `Solved in ${dle.guesses.length}` : "Missed today") : dle?.guesses.length ? `In progress · ${dle.guesses.length}/8` : null}
         streak={progress?.dle.streak ?? 0}
-        accent="186 88% 56%"
+        accent="258 94% 74%"
       />
     </div>
   );

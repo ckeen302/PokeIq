@@ -5,6 +5,10 @@
 Every question is generated on demand from a snapshot of all 1,025 Pokémon. No question is hand-written, answers are graded on the server, and every result doubles as a challenge link your friends can replay.
 
 <p align="center">
+  <img src="public/logo.svg" alt="PokéIQ logo" width="96">
+</p>
+
+<p align="center">
   <img src="docs/screenshots/home.webp" alt="PokéIQ home page" width="900">
 </p>
 
@@ -144,6 +148,7 @@ Refresh the data when a new generation ships:
 ```bash
 npm run ingest         # Pokédex + study data (~10 s)
 npm run lookalikes     # DINOv2 silhouette index (~3 min on CPU; dev-only dependency)
+npm run icons          # regenerate favicon / PWA icons from src/lib/brand/logo-svg.ts
 ```
 
 ## Project layout
