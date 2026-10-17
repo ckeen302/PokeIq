@@ -1,413 +1,322 @@
 "use client";
 
-import { animate, motion, useReducedMotion } from "framer-motion";
-import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import type { LeaderboardCategory, QuizCategory } from "@/engines/types";
-import { CATEGORY_META } from "@/engines/types";
-import { Badge } from "@/components/ui/Badge";
-import { Button } from "@/components/ui/Button";
-import { Card } from "@/components/ui/Card";
-import { evaluateBadges, type BadgeDef } from "@/lib/achievements";
-import { recordGame } from "@/lib/stats";
+import Link from "next/link";
+import confetti from "canvas-confetti";
+import { animate, motion, useMotionValue, useTransform } from "framer-motion";
+import { track } from "@vercel/analytics";
+import { Check, Link2, Loader2, RotateCcw, Share2, Swords, Trophy } from "lucide-react";
+import type { RunResult, ShareCard } from "@/lib/session-types";
+import { iqInterval, iqTitle } from "@/lib/rating";
+import { levelInfo, recordRun, setTrainerName, useProgress, type RunReward } from "@/lib/progress";
+import { challengeUrl, resultShareText, shareOrCopy } from "@/lib/share";
+import { Button, buttonVariants } from "@/components/ui/button";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { ResultGrid } from "./ResultGrid";
+import { coachInsights } from "@/lib/coach";
+import { play } from "@/lib/sound";
+import { IqConvergence } from "./IqConvergence";
+import { NextDailyCountdown } from "@/components/NextDailyCountdown";
 import { cn } from "@/lib/utils";
-import { BadgeToasts } from "./BadgeToasts";
-import { Confetti } from "./Confetti";
 
-export interface QuizSummary {
-  score: number;
-  maxPossible: number;
-  correctCount: number;
-  totalQuestions: number;
-  bestStreak: number;
-  difficulty: string;
-  mode: "classic" | "survival" | "daily";
-  dayNumber?: number;
+interface QuizResultsProps {
+  result: RunResult;
+  resultToken: string;
+  shareToken: string;
+  challenger?: ShareCard;
+  onRestart: () => void;
 }
 
-export interface AnswerRecord {
-  question: string;
-  selected: string;
-  correctAnswer: string;
-  correct: boolean;
-  difficulty: string;
+type SaveState = "idle" | "saving" | "saved" | "failed" | "disabled";
+
+/** Runs already credited this page-life (guards against re-mounts double-counting XP). */
+const recorded = new Map<string, RunReward>();
+
+function gradeFor(accuracy: number) {
+  if (accuracy >= 90) return { grade: "S", color: "text-primary", message: "Champion material!" };
+  if (accuracy >= 75) return { grade: "A", color: "text-success", message: "Elite Four level." };
+  if (accuracy >= 60) return { grade: "B", color: "text-success", message: "Gym Leader worthy." };
+  if (accuracy >= 40) return { grade: "C", color: "text-muted-foreground", message: "Keep training!" };
+  return { grade: "D", color: "text-muted-foreground", message: "Back to Pallet Town…" };
 }
 
-type Grade = "S" | "A" | "B" | "C" | "D";
+export function QuizResults({ result, resultToken, shareToken, challenger, onRestart }: QuizResultsProps) {
+  const progress = useProgress();
+  const [reward, setReward] = useState<RunReward | null>(null);
+  const [playerName, setPlayerName] = useState("");
+  const [saveState, setSaveState] = useState<SaveState>("idle");
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const [shareState, setShareState] = useState<"idle" | "copied" | "shared">("idle");
+  const [linkState, setLinkState] = useState<"idle" | "copied">("idle");
+  const firedRef = useRef(false);
 
-function gradeFor(score: number, maxPossible: number): Grade {
-  const ratio = maxPossible > 0 ? score / maxPossible : 0;
-  if (ratio >= 0.9) return "S";
-  if (ratio >= 0.75) return "A";
-  if (ratio >= 0.6) return "B";
-  if (ratio >= 0.4) return "C";
-  return "D";
-}
+  const accuracy = result.total ? Math.round((result.correct / result.total) * 100) : 0;
+  const { grade, color, message } = gradeFor(accuracy);
+  const isDaily = Boolean(result.spec.daily);
+  const isAdaptive = result.spec.format === "adaptive";
+  const interval = isAdaptive && result.se !== undefined ? iqInterval(result.rating, result.se) : null;
 
-const GRADE_STYLES: Record<Grade, { color: string; label: string }> = {
-  S: { color: "text-amber-300", label: "Legendary!" },
-  A: { color: "text-emerald-300", label: "Elite Four material" },
-  B: { color: "text-sky-300", label: "Gym Leader tier" },
-  C: { color: "text-indigo-300", label: "Solid trainer" },
-  D: { color: "text-slate-400", label: "Back to Pallet Town" },
-};
-
-/** Animated 0 → score counter (skipped under reduced motion). */
-function CountUpScore({ value }: { value: number }) {
-  const reduceMotion = useReducedMotion();
-  const ref = useRef<HTMLSpanElement>(null);
+  // Credit XP / streaks / badges exactly once per run.
   useEffect(() => {
-    if (reduceMotion || !ref.current) return;
-    const controls = animate(0, value, {
-      duration: 1.1,
-      ease: "easeOut",
-      onUpdate: (v) => {
-        if (ref.current) ref.current.textContent = String(Math.round(v));
-      },
-    });
-    return () => controls.stop();
-  }, [value, reduceMotion]);
-  return <span ref={ref}>{reduceMotion ? value : 0}</span>;
-}
+    const existing = recorded.get(result.sid);
+    if (existing) return setReward(existing);
+    const r = recordRun(result, shareToken);
+    recorded.set(result.sid, r);
+    setReward(r);
+  }, [result, shareToken]);
 
-function buildShareText(
-  category: LeaderboardCategory,
-  summary: QuizSummary,
-  history: AnswerRecord[],
-  grade: Grade,
-): string {
-  const emojiGrid = history.map((h) => (h.correct ? "🟩" : "🟥")).join("");
-  let headline: string;
-  if (summary.mode === "daily") {
-    headline = `PokéIQ Daily #${summary.dayNumber ?? "?"} — Grade ${grade} · ${summary.score} pts 🔥${summary.bestStreak}`;
-  } else if (summary.mode === "survival") {
-    const meta = CATEGORY_META[category as QuizCategory];
-    headline = `PokéIQ Survival — ${meta.name}: survived ${summary.correctCount} 🔥${summary.bestStreak}`;
-  } else {
-    const meta = CATEGORY_META[category as QuizCategory];
-    headline = `PokéIQ — ${meta.name} (${summary.difficulty}): Grade ${grade} · ${summary.score} pts 🔥${summary.bestStreak}`;
-  }
-  return `${headline}\n${emojiGrid}\nEvery question computed live — no question banks.`;
-}
-
-export function QuizResults({
-  category,
-  summary,
-  history,
-  onPlayAgain,
-}: {
-  category: LeaderboardCategory;
-  summary: QuizSummary;
-  history: AnswerRecord[];
-  onPlayAgain: () => void;
-}) {
-  const [name, setName] = useState("");
-  const [account, setAccount] = useState<string | null>(null);
-  const [xpBanked, setXpBanked] = useState<{
-    rank: number;
-    of: number;
-  } | null>(null);
-  const [submitState, setSubmitState] = useState<
-    "idle" | "sending" | "done" | "error"
-  >("idle");
-  const [persistent, setPersistent] = useState(true);
-  const [shared, setShared] = useState(false);
-  const [newBadges, setNewBadges] = useState<BadgeDef[]>([]);
-  const recordedRef = useRef(false);
-
-  // Persist trainer profile + evaluate badges exactly once per finished run.
   useEffect(() => {
-    if (recordedRef.current) return;
-    recordedRef.current = true;
-    const runSummary = {
-      category,
-      mode: summary.mode,
-      score: summary.score,
-      correctCount: summary.correctCount,
-      totalQuestions: summary.totalQuestions,
-      bestStreak: summary.bestStreak,
-    };
-    recordGame(runSummary);
-    // Sync to the signed-in account too (server 401s harmlessly for guests).
-    fetch("/api/stats", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify(runSummary),
-    })
-      .then((res) => (res.ok ? res.json() : null))
-      .then((data: { rank?: { rank: number; of: number } | null } | null) => {
-        if (data?.rank) setXpBanked(data.rank);
-      })
-      .catch(() => null);
-    setNewBadges(
-      evaluateBadges({
-        mode: summary.mode,
-        difficulty: summary.difficulty,
-        score: summary.score,
-        maxPossible: summary.maxPossible,
-        correctCount: summary.correctCount,
-        totalQuestions: summary.totalQuestions,
-        bestStreak: summary.bestStreak,
-      }),
-    );
-  }, [category, summary]);
+    if (progress?.name && !playerName) setPlayerName(progress.name);
+  }, [progress?.name, playerName]);
 
-  // Signed-in players post scores under their trainer name automatically.
+  // Animated count-ups.
+  const iqValue = useMotionValue(70);
+  const iqDisplay = useTransform(iqValue, (v) => Math.round(v));
+  const scoreValue = useMotionValue(0);
+  const scoreDisplay = useTransform(scoreValue, (v) => Math.round(v).toLocaleString());
   useEffect(() => {
-    let cancelled = false;
-    fetch("/api/auth/me")
-      .then((res) => (res.ok ? res.json() : null))
-      .then((data: { user: { username: string } | null } | null) => {
-        if (!cancelled && data?.user) {
-          setAccount(data.user.username);
-          setName(data.user.username);
-        }
-      })
-      .catch(() => null);
+    const a = animate(iqValue, result.pokeiq, { duration: 1.4, ease: "easeOut" });
+    const b = animate(scoreValue, result.score, { duration: 1.1, ease: "easeOut" });
     return () => {
-      cancelled = true;
+      a.stop();
+      b.stop();
     };
-  }, []);
+  }, [result.pokeiq, result.score, iqValue, scoreValue]);
 
-  const grade = gradeFor(summary.score, summary.maxPossible);
-  const gradeStyle = GRADE_STYLES[grade];
-  const accuracy =
-    summary.totalQuestions > 0
-      ? Math.round((100 * summary.correctCount) / summary.totalQuestions)
-      : 0;
-  const isSurvival = summary.mode === "survival";
+  useEffect(() => {
+    if (firedRef.current || accuracy < 60) return;
+    firedRef.current = true;
+    play("fanfare");
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const colors = ["#fbbf24", "#f59e0b", "#22c55e", "#3b82f6"];
+    confetti({ particleCount: 90, spread: 75, origin: { y: 0.3 }, colors, disableForReducedMotion: true });
+    if (accuracy >= 90) {
+      setTimeout(() => {
+        confetti({ particleCount: 60, angle: 60, spread: 60, origin: { x: 0, y: 0.5 }, colors });
+        confetti({ particleCount: 60, angle: 120, spread: 60, origin: { x: 1, y: 0.5 }, colors });
+      }, 350);
+    }
+  }, [accuracy]);
 
-  async function submit(event: React.FormEvent) {
-    event.preventDefault();
-    if (!name.trim() || submitState === "sending") return;
-    setSubmitState("sending");
+  async function share() {
+    const outcome = await shareOrCopy(resultShareText(result), challengeUrl(shareToken));
+    if (outcome !== "failed") {
+      setShareState(outcome);
+      track("share", { kind: isDaily ? "daily" : "run", via: outcome });
+      setTimeout(() => setShareState("idle"), 2500);
+    }
+  }
+
+  async function copyChallenge() {
+    const outcome = await shareOrCopy(
+      `Think you know Pokémon? I scored ${result.correct}/${result.total} (PokéIQ ${result.pokeiq}). Beat me:`,
+      challengeUrl(shareToken)
+    );
+    if (outcome !== "failed") {
+      setLinkState("copied");
+      track("challenge_create");
+      setTimeout(() => setLinkState("idle"), 2500);
+    }
+  }
+
+  async function submitScore() {
+    const name = playerName.trim();
+    if (!name || saveState === "saving" || saveState === "saved") return;
+    setSaveState("saving");
+    setSaveError(null);
+    setTrainerName(name);
     try {
       const res = await fetch("/api/leaderboard", {
         method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({
-          name: name.trim(),
-          category,
-          score: summary.score,
-          streak: summary.bestStreak,
-          difficulty: summary.difficulty,
-        }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ playerName: name, resultToken }),
       });
-      if (!res.ok) throw new Error(`submit failed: ${res.status}`);
-      const data = (await res.json()) as { persistent: boolean };
-      setPersistent(data.persistent);
-      setSubmitState("done");
-    } catch {
-      setSubmitState("error");
+      const body = await res.json();
+      if (!res.ok) throw new Error(body.error ?? "Save failed");
+      setSaveState(body.saved ? "saved" : "disabled");
+    } catch (err) {
+      setSaveError(err instanceof Error ? err.message : "Could not save");
+      setSaveState("failed");
     }
   }
 
-  async function share() {
-    const text = buildShareText(category, summary, history, grade);
-    try {
-      if (navigator.share) {
-        await navigator.share({ text });
-      } else {
-        await navigator.clipboard.writeText(text);
-      }
-      setShared(true);
-      setTimeout(() => setShared(false), 2200);
-    } catch {
-      // user dismissed the share sheet — nothing to do
-    }
-  }
+  const beatChallenger =
+    challenger && (result.score > challenger.sc ? "win" : result.score === challenger.sc ? "tie" : "loss");
 
   return (
-    <div className="mx-auto w-full max-w-xl">
-      {(grade === "S" || grade === "A") && <Confetti />}
-      <BadgeToasts badges={newBadges} />
-
-      <Card className="text-center sm:p-8">
-        {isSurvival ? (
-          <motion.div
-            initial={{ scale: 2, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ type: "spring", stiffness: 200, damping: 15, delay: 0.2 }}
-          >
-            <div className="text-6xl" aria-hidden>
-              🔥
-            </div>
-            <p className="mt-3 text-2xl font-black">
-              Survived {summary.correctCount}{" "}
-              {summary.correctCount === 1 ? "question" : "questions"}
-            </p>
-          </motion.div>
-        ) : (
-          <>
-            <motion.div
-              initial={{ scale: 2.4, opacity: 0, rotate: -14 }}
-              animate={{ scale: 1, opacity: 1, rotate: -6 }}
-              transition={{
-                type: "spring",
-                stiffness: 200,
-                damping: 15,
-                delay: 0.2,
-              }}
-              className={cn(
-                "mx-auto inline-block rounded-2xl border-4 border-current px-6 py-2 text-7xl font-black",
-                gradeStyle.color,
-              )}
-              aria-label={`Grade ${grade}`}
+    <motion.div initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.35 }}>
+      <Card className="mx-auto w-full max-w-2xl overflow-hidden">
+        <CardHeader className="items-center space-y-3 text-center">
+          {isAdaptive ? (
+            <p className="text-xs font-semibold uppercase tracking-widest text-primary">PokéIQ Test complete</p>
+          ) : (
+            <motion.span
+              className={cn("block text-6xl font-black", color)}
+              initial={{ scale: 0, rotate: -20 }}
+              animate={{ scale: 1, rotate: 0 }}
+              transition={{ type: "spring", stiffness: 260, damping: 16, delay: 0.15 }}
             >
               {grade}
-            </motion.div>
-            <p className={cn("mt-3 text-sm font-semibold", gradeStyle.color)}>
-              {gradeStyle.label}
-            </p>
-          </>
-        )}
-
-        <p className="mt-4 font-mono text-5xl font-black tabular-nums">
-          <CountUpScore value={summary.score} />
-          <span className="text-lg font-normal text-muted"> pts</span>
-        </p>
-
-        <div className="mx-auto mt-6 grid max-w-sm grid-cols-3 gap-3">
-          {[
-            { value: `${accuracy}%`, label: "Accuracy" },
-            {
-              value: `${summary.correctCount}/${summary.totalQuestions}`,
-              label: "Correct",
-            },
-            { value: `${summary.bestStreak}🔥`, label: "Best streak" },
-          ].map((stat) => (
-            <div key={stat.label} className="rounded-xl bg-white/5 p-3">
-              <div className="font-mono text-lg font-bold">{stat.value}</div>
-              <div className="text-[11px] uppercase tracking-wider text-muted">
-                {stat.label}
+            </motion.span>
+          )}
+          <h2 className="text-2xl font-bold">{isAdaptive ? `You're a${/^[AEIOU]/.test(iqTitle(result.pokeiq)) ? "n" : ""} ${iqTitle(result.pokeiq)}` : message}</h2>
+          <div className="flex items-end justify-center gap-6">
+            <div>
+              <div className="text-xs uppercase tracking-wider text-muted-foreground">PokéIQ</div>
+              <motion.div className="text-shimmer text-5xl font-black tabular-nums">{iqDisplay}</motion.div>
+              <div className="text-xs font-medium text-muted-foreground">
+                {interval ? `90% range ${interval[0]}–${interval[1]}` : iqTitle(result.pokeiq)}
               </div>
             </div>
-          ))}
-        </div>
+            <div>
+              <div className="text-xs uppercase tracking-wider text-muted-foreground">Score</div>
+              <motion.div className="text-3xl font-bold tabular-nums">{scoreDisplay}</motion.div>
+              <div className="text-xs text-muted-foreground">
+                {result.correct}/{result.total} correct
+              </div>
+            </div>
+          </div>
+        </CardHeader>
 
-        <div className="mt-3">
-          <Badge className="capitalize">
-            {summary.mode === "daily"
-              ? `Daily Gauntlet #${summary.dayNumber ?? ""}`
-              : isSurvival
-                ? "Survival mode"
-                : `Difficulty: ${summary.difficulty}`}
-          </Badge>
-        </div>
+        <CardContent className="space-y-6">
+          {result.trajectory && <IqConvergence trajectory={result.trajectory} grid={result.grid} />}
+          <ResultGrid grid={result.grid} />
 
-        {xpBanked && (
-          <motion.p
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mx-auto mt-4 inline-flex items-center gap-2 rounded-full border border-indigo-400/30 bg-indigo-500/10 px-4 py-1.5 text-sm font-semibold text-indigo-200"
-          >
-            <span aria-hidden>⚡</span>+{summary.score} XP banked · Global rank
-            #{xpBanked.rank} of {xpBanked.of}
-          </motion.p>
-        )}
-
-        {submitState !== "done" ? (
-          <form onSubmit={submit} className="mt-7 flex gap-2">
-            {account ? (
-              <span className="glass flex h-11 flex-1 items-center rounded-xl px-4 text-sm font-semibold text-indigo-200">
-                {account}
-              </span>
-            ) : (
-              <input
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                maxLength={20}
-                placeholder="Your trainer name"
-                aria-label="Trainer name for leaderboard"
-                className="glass h-11 flex-1 rounded-xl px-4 text-sm placeholder:text-muted focus:outline-none"
-              />
-            )}
-            <Button
-              type="submit"
-              disabled={!name.trim() || submitState === "sending"}
+          {challenger && (
+            <div
+              className={cn(
+                "rounded-lg border p-4 text-center",
+                beatChallenger === "win" ? "border-success/50 bg-success/10" : "border-white/10 bg-muted/40"
+              )}
             >
-              {submitState === "sending" ? "Saving…" : "Save score"}
-            </Button>
-          </form>
-        ) : (
-          <p className="mt-7 text-sm text-emerald-300">
-            Score saved{persistent ? "" : " (session-only — no database configured)"}!
-          </p>
-        )}
-        {submitState === "error" && (
-          <p className="mt-2 text-sm text-red-300">
-            Could not save your score. Try again in a moment.
-          </p>
-        )}
-
-        <div className="mt-6 flex flex-wrap justify-center gap-3">
-          <Button onClick={onPlayAgain} size="lg">
-            Play again
-          </Button>
-          <Button variant="outline" size="lg" onClick={() => void share()}>
-            {shared ? "Copied! ✓" : "Share result"}
-          </Button>
-          <Link href="/leaderboard">
-            <Button variant="ghost" size="lg">
-              Leaderboard
-            </Button>
-          </Link>
-        </div>
-      </Card>
-
-      {history.length > 0 && (
-        <Card className="mt-5">
-          <h3 className="font-bold">Run review</h3>
-          <ol className="mt-4 space-y-2">
-            {history.map((record, i) => (
-              <li
-                key={i}
-                className="flex items-start gap-3 rounded-xl bg-white/[0.03] p-3 text-sm"
-              >
-                <span
-                  aria-hidden
-                  className={cn(
-                    "mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[11px] font-bold",
-                    record.correct
-                      ? "bg-emerald-500/20 text-emerald-300"
-                      : "bg-red-500/20 text-red-300",
-                  )}
-                >
-                  {record.correct ? "✓" : "✗"}
-                </span>
-                <div className="min-w-0 flex-1">
-                  <p className="text-foreground/90">{record.question}</p>
-                  <p className="mt-1 text-xs text-muted">
-                    {record.correct ? (
-                      <>
-                        Answered:{" "}
-                        <span className="text-emerald-300">{record.selected}</span>
-                      </>
-                    ) : (
-                      <>
-                        {record.selected ? (
-                          <>
-                            You picked{" "}
-                            <span className="text-red-300">{record.selected}</span>{" "}
-                            ·{" "}
-                          </>
-                        ) : (
-                          <>Timed out · </>
-                        )}
-                        Correct:{" "}
-                        <span className="text-emerald-300">
-                          {record.correctAnswer}
-                        </span>
-                      </>
-                    )}
-                  </p>
+              <div className="flex items-center justify-center gap-2 text-sm font-semibold">
+                <Swords className="h-4 w-4" aria-hidden />
+                {beatChallenger === "win" ? "You won the challenge!" : beatChallenger === "tie" ? "It's a tie!" : "Challenge lost — rematch?"}
+              </div>
+              <div className="mt-3 grid grid-cols-2 gap-3 text-sm">
+                <div>
+                  <div className="font-semibold">You</div>
+                  <div className="tabular-nums text-muted-foreground">
+                    {result.score.toLocaleString()} pts · {result.correct}/{result.total} · IQ {result.pokeiq}
+                  </div>
                 </div>
-                <Badge className="shrink-0 capitalize">{record.difficulty}</Badge>
-              </li>
-            ))}
-          </ol>
-        </Card>
-      )}
-    </div>
+                <div>
+                  <div className="font-semibold">{challenger.n || "Challenger"}</div>
+                  <div className="tabular-nums text-muted-foreground">
+                    {challenger.sc.toLocaleString()} pts · {challenger.c}/{challenger.t} · IQ {challenger.q}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {reward && (
+            <motion.div
+              className="flex flex-wrap items-center justify-center gap-2"
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.6 }}
+            >
+              <Badge variant="secondary">+{reward.xp} XP</Badge>
+              {reward.levelAfter > reward.levelBefore && <Badge>Level up! Lv {reward.levelAfter}</Badge>}
+              {reward.dailyStreak !== undefined && <Badge variant="success">🔥 {reward.dailyStreak}-day streak</Badge>}
+              {reward.newBadges.map((b) => (
+                <Badge key={b.id} variant="outline" className="border-primary/50">
+                  {b.emoji} {b.name} unlocked
+                </Badge>
+              ))}
+            </motion.div>
+          )}
+          {progress && (() => {
+            const focus = coachInsights(progress.skills ?? {}).weak[0];
+            return focus ? (
+              <Link
+                href={focus.href}
+                className="flex items-center justify-between gap-3 rounded-lg border border-primary/30 bg-primary/5 px-4 py-3 text-sm transition hover:bg-primary/10"
+              >
+                <span>
+                  <span className="text-muted-foreground">Coach tip: your weakest area is </span>
+                  <b>{focus.label}</b> <span className="text-muted-foreground">(~{Math.round(focus.accuracy * 100)}%)</span>
+                </span>
+                <span className="shrink-0 font-semibold text-primary">{focus.cta} →</span>
+              </Link>
+            ) : null;
+          })()}
+          {progress && (
+            <div className="space-y-1">
+              <div className="flex justify-between text-xs text-muted-foreground">
+                <span>Trainer level {levelInfo(progress.xp).level}</span>
+                <span>{levelInfo(progress.xp).toNext} XP to next</span>
+              </div>
+              <div className="h-1.5 overflow-hidden rounded-full bg-secondary">
+                <motion.div
+                  className="h-full bg-primary"
+                  initial={{ width: 0 }}
+                  animate={{ width: `${levelInfo(progress.xp).progress * 100}%` }}
+                  transition={{ duration: 0.8, delay: 0.4 }}
+                />
+              </div>
+            </div>
+          )}
+
+          <div className="grid gap-2 sm:grid-cols-2">
+            <Button size="lg" onClick={share}>
+              {shareState === "idle" ? <Share2 className="h-4 w-4" /> : <Check className="h-4 w-4" />}
+              {shareState === "copied" ? "Copied to clipboard!" : shareState === "shared" ? "Shared!" : "Share result"}
+            </Button>
+            <Button size="lg" variant="outline" onClick={copyChallenge}>
+              {linkState === "copied" ? <Check className="h-4 w-4" /> : <Link2 className="h-4 w-4" />}
+              {linkState === "copied" ? "Challenge link copied!" : "Challenge a friend"}
+            </Button>
+          </div>
+
+          {isDaily && <NextDailyCountdown label="Next Daily Challenge in" />}
+
+          <div className="space-y-2">
+            <label htmlFor="player-name" className="text-sm font-medium">
+              {isDaily ? "Post to today's daily leaderboard" : "Save to leaderboard"}
+            </label>
+            <div className="flex gap-2">
+              <input
+                id="player-name"
+                value={playerName}
+                onChange={(e) => setPlayerName(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && submitScore()}
+                maxLength={24}
+                placeholder="Trainer name"
+                disabled={saveState === "saved" || saveState === "disabled"}
+                className="h-10 min-w-0 flex-1 rounded-md border border-input bg-background px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50"
+              />
+              <Button
+                onClick={submitScore}
+                disabled={!playerName.trim() || saveState === "saving" || saveState === "saved" || saveState === "disabled"}
+              >
+                {saveState === "saving" && <Loader2 className="h-4 w-4 animate-spin" aria-hidden />}
+                {saveState === "saved" ? "Saved!" : "Submit"}
+              </Button>
+            </div>
+            {saveState === "failed" && <p className="text-xs text-destructive">{saveError}</p>}
+            {saveState === "disabled" && (
+              <p className="text-xs text-muted-foreground">Leaderboards aren&apos;t enabled on this deployment.</p>
+            )}
+          </div>
+
+          <div className="flex flex-col gap-2 sm:flex-row">
+            {!isDaily && (
+              <Button className="flex-1" size="lg" variant="secondary" onClick={onRestart}>
+                <RotateCcw className="h-4 w-4" aria-hidden /> Play again
+              </Button>
+            )}
+            <Link
+              href={isDaily ? `/leaderboard?board=daily&date=${result.spec.daily}` : `/leaderboard?board=${result.spec.module}&format=${result.spec.format}`}
+              className={cn(buttonVariants({ variant: "outline", size: "lg" }), "flex-1")}
+            >
+              <Trophy className="h-4 w-4" aria-hidden /> Leaderboard
+            </Link>
+          </div>
+        </CardContent>
+      </Card>
+    </motion.div>
   );
 }

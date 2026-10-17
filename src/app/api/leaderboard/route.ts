@@ -1,65 +1,88 @@
-/**
- * Leaderboard API (Zod-validated).
- * GET  /api/leaderboard?category=whos-that → top 10
- * POST /api/leaderboard { name, category, score, streak, difficulty }
- */
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import {
-  QUIZ_CATEGORIES,
-  type LeaderboardCategory,
-} from "@/engines/types";
-import { getTopScores, submitScore } from "@/lib/leaderboard-store";
+import { getServiceSupabase } from "@/lib/supabase";
+import { verifyToken } from "@/lib/server/crypto";
+import { clientIp, rateLimit } from "@/lib/server/rate-limit";
+import { fetchBoard } from "@/lib/server/leaderboard";
+import type { RunResult } from "@/lib/session-types";
 
-const LEADERBOARD_CATEGORIES = [...QUIZ_CATEGORIES, "daily"] as const;
+/**
+ * GET  /api/leaderboard?daily=YYYY-MM-DD | ?module=whos-that&format=classic
+ * POST /api/leaderboard { resultToken, playerName }
+ *
+ * The POST body carries no score at all — only the server-signed result
+ * token minted when the run finished. Scores can't be typed in, edited, or
+ * submitted twice.
+ */
 
-export const runtime = "nodejs";
-export const dynamic = "force-dynamic";
-
-export async function GET(request: NextRequest) {
-  const category = request.nextUrl.searchParams.get("category") ?? "";
-  if (!(LEADERBOARD_CATEGORIES as readonly string[]).includes(category)) {
-    return NextResponse.json({ error: "Unknown category" }, { status: 400 });
-  }
-  const { entries, persistent } = await getTopScores(
-    category as LeaderboardCategory,
-  );
-  return NextResponse.json({ entries, persistent });
-}
-
-const submitSchema = z.object({
-  name: z
+const submissionSchema = z.object({
+  resultToken: z.string().min(10).max(8192),
+  playerName: z
     .string()
     .trim()
     .min(1)
-    .max(20)
-    // visible characters only; no control chars
-    .regex(/^[\p{L}\p{N}\p{P}\p{Zs}\p{Emoji}]+$/u, "Invalid characters in name"),
-  category: z.enum(
-    LEADERBOARD_CATEGORIES as unknown as [
-      LeaderboardCategory,
-      ...LeaderboardCategory[],
-    ],
-  ),
-  score: z.number().int().min(0).max(10_000),
-  streak: z.number().int().min(0).max(100),
-  difficulty: z.enum(["easy", "medium", "hard", "mixed", "survival"]),
+    .max(24)
+    .regex(/^[\p{L}\p{N} _.\-']+$/u, "Use letters, numbers, spaces, _ . - ' only"),
 });
 
+const RESULT_MAX_AGE_MS = 6 * 60 * 60 * 1000;
+
+export async function GET(request: NextRequest) {
+  const params = request.nextUrl.searchParams;
+  const daily = params.get("daily");
+  const entries = daily
+    ? await fetchBoard({ kind: "daily", date: daily })
+    : await fetchBoard({
+        kind: "module",
+        module: params.get("module") ?? "whos-that",
+        format: params.get("format") ?? undefined,
+      });
+  return NextResponse.json({ entries: entries ?? [], persistenceEnabled: entries !== null });
+}
+
 export async function POST(request: NextRequest) {
-  let body: unknown;
-  try {
-    body = await request.json();
-  } catch {
-    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+  if (!rateLimit(`lb:${clientIp(request)}`, 10, 0.1)) {
+    return NextResponse.json({ error: "Too many submissions." }, { status: 429 });
   }
-  const parsed = submitSchema.safeParse(body);
+  const supabase = getServiceSupabase();
+  if (!supabase) return NextResponse.json({ saved: false, reason: "Persistence not configured" });
+
+  const parsed = submissionSchema.safeParse(await request.json().catch(() => ({})));
   if (!parsed.success) {
-    return NextResponse.json(
-      { error: "Invalid submission", issues: parsed.error.flatten() },
-      { status: 400 },
-    );
+    return NextResponse.json({ error: parsed.error.issues[0].message }, { status: 400 });
   }
-  const { ok, persistent } = await submitScore(parsed.data);
-  return NextResponse.json({ ok, persistent }, { status: ok ? 201 : 500 });
+
+  const result = verifyToken<RunResult>("result", parsed.data.resultToken);
+  if (!result) return NextResponse.json({ error: "Invalid result token." }, { status: 400 });
+  if (Date.now() - result.finishedAt > RESULT_MAX_AGE_MS) {
+    return NextResponse.json({ error: "This result is too old to submit." }, { status: 410 });
+  }
+  const { error } = await supabase.from("runs").insert({
+    session_id: result.sid,
+    player_name: parsed.data.playerName,
+    module: result.spec.module,
+    format: result.spec.format,
+    difficulty: result.spec.difficulty,
+    gens: result.spec.gens ?? null,
+    daily_date: result.spec.daily ?? null,
+    score: result.score,
+    correct: result.correct,
+    total: result.total,
+    best_streak: result.bestStreak,
+    pokeiq: result.pokeiq,
+    duration_ms: result.durationMs,
+  });
+
+  if (error) {
+    // Unique constraints enforce one submission per run and one daily entry per name.
+    if (error.code === "23505") {
+      const message = error.message.includes("runs_session_id_key")
+        ? "This run was already submitted."
+        : "That name already has a score on this daily board.";
+      return NextResponse.json({ error: message }, { status: 409 });
+    }
+    console.error("[api/leaderboard] insert failed:", error.message);
+    return NextResponse.json({ error: "Could not save score" }, { status: 503 });
+  }
+  return NextResponse.json({ saved: true }, { status: 201 });
 }

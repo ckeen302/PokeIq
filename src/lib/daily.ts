@@ -1,106 +1,35 @@
 /**
- * The Daily Gauntlet — one seeded 10-question run per UTC day, identical for
- * every player. Determinism comes from three layers:
- *
- *  1. the seed is a hash of the UTC date,
- *  2. all engine randomness flows through the AsyncLocalStorage RNG scope
- *     (see lib/random), and
- *  3. questions are generated **sequentially**, so the RNG sequence is
- *     consumed in a fixed order.
- *
- * The result is cached per day (globalThis, so all bundles share it) and the
- * generation itself is coalesced behind an in-flight promise.
+ * Daily puzzle calendar. Days are keyed by the player's *local* date
+ * (like Wordle), so the server accepts any date within ±1 day of UTC.
  */
-import { generateOne } from "@/engines";
-import type { Difficulty, QuizCategory, QuizQuestion } from "@/engines/types";
-import { QUIZ_CATEGORIES } from "@/engines/types";
-import { hashSeed, pick, withSeededRng } from "./random";
 
-/** Day 1 = the day PokéIQ shipped. */
-const EPOCH_UTC = Date.UTC(2026, 6, 13); // 2026-07-13
+export const LAUNCH_DATE = "2026-10-17";
+const DAY_MS = 86_400_000;
 
-const BASE_PLAN: Array<[QuizCategory, Difficulty]> = [
-  ["whos-that", "easy"],
-  ["type-detective", "easy"],
-  ["move-master", "easy"],
-  ["stat-showdown", "easy"],
-  ["whos-that", "medium"],
-  ["type-detective", "medium"],
-  ["move-master", "medium"],
-  ["stat-showdown", "medium"],
-];
-
-export interface DailyChallenge {
-  dateKey: string;
-  dayNumber: number;
-  endsAt: string;
-  questions: QuizQuestion[];
+export function localDateString(d = new Date()): string {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
 }
 
-export function todayKey(now = new Date()): string {
-  return now.toISOString().slice(0, 10);
+function utcMidnight(date: string): number {
+  return Date.parse(`${date}T00:00:00Z`);
 }
 
-export function dayNumberOf(dateKey: string): number {
-  const ms = Date.parse(`${dateKey}T00:00:00Z`) - EPOCH_UTC;
-  return Math.max(1, Math.floor(ms / 86_400_000) + 1);
+export function isValidDailyDate(date: unknown, now = Date.now()): date is string {
+  if (typeof date !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(date)) return false;
+  const t = utcMidnight(date);
+  if (Number.isNaN(t) || t < utcMidnight(LAUNCH_DATE)) return false;
+  const today = utcMidnight(new Date(now).toISOString().slice(0, 10));
+  return Math.abs(t - today) <= DAY_MS;
 }
 
-function endOfDayIso(dateKey: string): string {
-  return new Date(Date.parse(`${dateKey}T00:00:00Z`) + 86_400_000).toISOString();
+/** #1 on launch day. */
+export function dailyNumber(date: string): number {
+  return Math.round((utcMidnight(date) - utcMidnight(LAUNCH_DATE)) / DAY_MS) + 1;
 }
 
-async function generateDaily(dateKey: string): Promise<DailyChallenge> {
-  const seed = hashSeed(`pokeiq-daily-${dateKey}`);
-  const questions = await withSeededRng(seed, async () => {
-    // Two extra hard slots, categories chosen by the seeded RNG.
-    const plan: Array<[QuizCategory, Difficulty]> = [
-      ...BASE_PLAN,
-      [pick(QUIZ_CATEGORIES), "hard"],
-      [pick(QUIZ_CATEGORIES), "hard"],
-    ];
-    const generated: QuizQuestion[] = [];
-    const seen = new Set<string>();
-    // Sequential on purpose — parallel generation would consume the seeded
-    // RNG in a nondeterministic interleaving.
-    for (const [category, difficulty] of plan) {
-      const question = await generateOne(category, difficulty);
-      if (!question) continue;
-      const key = `${question.question}|${question.correctAnswer}`;
-      if (seen.has(key)) continue;
-      seen.add(key);
-      generated.push(question);
-    }
-    return generated;
-  });
-  if (questions.length < 6) {
-    throw new Error(`daily generation produced only ${questions.length} questions`);
-  }
-  return {
-    dateKey,
-    dayNumber: dayNumberOf(dateKey),
-    endsAt: endOfDayIso(dateKey),
-    questions,
-  };
-}
-
-// Cache on globalThis so API-route and page bundles share one challenge.
-const globalCache = globalThis as unknown as {
-  __pokeiqDaily?: { dateKey: string; promise: Promise<DailyChallenge> };
-};
-
-export function getDailyChallenge(): Promise<DailyChallenge> {
-  const dateKey = todayKey();
-  const cached = globalCache.__pokeiqDaily;
-  if (cached && cached.dateKey === dateKey) return cached.promise;
-
-  const promise = generateDaily(dateKey).catch((error) => {
-    // Never cache a failure — the next request retries.
-    if (globalCache.__pokeiqDaily?.dateKey === dateKey) {
-      delete globalCache.__pokeiqDaily;
-    }
-    throw error;
-  });
-  globalCache.__pokeiqDaily = { dateKey, promise };
-  return promise;
+export function previousDate(date: string): string {
+  return new Date(utcMidnight(date) - DAY_MS).toISOString().slice(0, 10);
 }

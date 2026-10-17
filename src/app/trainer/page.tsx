@@ -1,20 +1,8 @@
 import type { Metadata } from "next";
-import { TrainerProfile } from "@/components/TrainerProfile";
+import { TrainerCard } from "@/components/trainer/TrainerCard";
 
-export const metadata: Metadata = {
-  title: "Trainer Profile",
-  description: "Your stats, global rank, badge collection and account security.",
-};
+export const metadata: Metadata = { title: "Trainer Card", robots: { index: false } };
 
 export default function TrainerPage() {
-  return (
-    <div>
-      <header className="mb-8 text-center">
-        <h1 className="text-3xl font-black tracking-tight">
-          Trainer <span className="text-gradient">Profile</span>
-        </h1>
-      </header>
-      <TrainerProfile />
-    </div>
-  );
+  return <TrainerCard />;
 }

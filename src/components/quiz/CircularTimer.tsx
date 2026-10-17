@@ -1,56 +1,62 @@
 "use client";
 
-/** SVG countdown ring. Turns red in the final 4 seconds. */
+import { cn } from "@/lib/utils";
 
-const SIZE = 64;
-const STROKE = 5;
-const RADIUS = (SIZE - STROKE) / 2;
-const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
-
-export function CircularTimer({
-  secondsLeft,
-  totalSeconds,
-}: {
+/**
+ * SVG countdown ring. Driven purely by props (no internal timer) so the
+ * controller stays the single source of truth for time.
+ */
+interface CircularTimerProps {
+  /** 0..1 fraction of time remaining. */
+  progress: number;
   secondsLeft: number;
-  totalSeconds: number;
-}) {
-  const fraction = Math.max(0, Math.min(1, secondsLeft / totalSeconds));
-  const urgent = secondsLeft <= 4;
+  size?: number;
+}
+
+export function CircularTimer({ progress, secondsLeft, size = 52 }: CircularTimerProps) {
+  const stroke = 4;
+  const radius = (size - stroke) / 2;
+  const circumference = 2 * Math.PI * radius;
+  const urgent = progress < 0.25;
+
   return (
     <div
-      className="relative h-16 w-16 shrink-0"
+      className="relative"
+      style={{ width: size, height: size }}
       role="timer"
-      aria-live="off"
-      aria-label={`${Math.ceil(secondsLeft)} seconds remaining`}
+      aria-label={`${secondsLeft} seconds remaining`}
     >
-      <svg width={SIZE} height={SIZE} className="-rotate-90">
+      <svg width={size} height={size} className="-rotate-90">
         <circle
-          cx={SIZE / 2}
-          cy={SIZE / 2}
-          r={RADIUS}
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
           fill="none"
-          stroke="rgba(255,255,255,0.1)"
-          strokeWidth={STROKE}
+          strokeWidth={stroke}
+          className="stroke-secondary"
         />
         <circle
-          cx={SIZE / 2}
-          cy={SIZE / 2}
-          r={RADIUS}
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
           fill="none"
-          stroke={urgent ? "var(--danger)" : "var(--accent-2)"}
-          strokeWidth={STROKE}
+          strokeWidth={stroke}
           strokeLinecap="round"
-          strokeDasharray={CIRCUMFERENCE}
-          strokeDashoffset={CIRCUMFERENCE * (1 - fraction)}
-          style={{ transition: "stroke-dashoffset 0.2s linear, stroke 0.3s" }}
+          strokeDasharray={circumference}
+          strokeDashoffset={circumference * (1 - progress)}
+          className={cn(
+            "transition-[stroke-dashoffset,stroke] duration-150 ease-linear",
+            urgent ? "stroke-destructive" : "stroke-primary"
+          )}
         />
       </svg>
       <span
-        className={`absolute inset-0 flex items-center justify-center font-mono text-lg font-bold tabular-nums ${
-          urgent ? "text-red-400" : "text-foreground"
-        }`}
+        className={cn(
+          "absolute inset-0 flex items-center justify-center text-sm font-bold tabular-nums",
+          urgent && "animate-pulse text-destructive"
+        )}
       >
-        {Math.max(0, Math.ceil(secondsLeft))}
+        {secondsLeft}
       </span>
     </div>
   );

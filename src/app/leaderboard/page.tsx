@@ -1,320 +1,145 @@
-import type { Metadata } from "next";
-import { cookies } from "next/headers";
 import Link from "next/link";
-import { CATEGORY_META, QUIZ_CATEGORIES } from "@/engines/types";
-import { SESSION_COOKIE, hashSessionToken } from "@/lib/auth";
-import { getSessionUser, getTopTrainers } from "@/lib/auth-store";
-import { getTopScores } from "@/lib/leaderboard-store";
-import { AlakazamMascot } from "@/components/AlakazamMascot";
-import { Badge } from "@/components/ui/Badge";
-import { Card } from "@/components/ui/Card";
+import type { Metadata } from "next";
+import { Medal } from "lucide-react";
+import { fetchBoard } from "@/lib/server/leaderboard";
+import { dailyNumber, isValidDailyDate } from "@/lib/daily";
+import { FORMAT_INFO, MODULE_INFO, PLAY_MODULES, PLAYABLE_FORMATS } from "@/lib/modes";
+import type { ModuleId, QuizFormat } from "@/engines/types";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 
+export const metadata: Metadata = { title: "Leaderboard" };
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = {
-  title: "Leaderboard",
-  description: "Top 10 trainers per quiz module.",
-};
-
-const MEDALS = ["🥇", "🥈", "🥉"];
-
-function relativeTime(iso: string): string {
-  const ms = Date.now() - Date.parse(iso);
-  if (!Number.isFinite(ms) || ms < 0) return "";
-  const minutes = Math.floor(ms / 60_000);
-  if (minutes < 1) return "just now";
-  if (minutes < 60) return `${minutes}m ago`;
-  const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours}h ago`;
-  return `${Math.floor(hours / 24)}d ago`;
+interface PageProps {
+  searchParams: Promise<{ board?: string; format?: string; date?: string }>;
 }
 
-export default async function LeaderboardPage() {
-  const sessionToken = (await cookies()).get(SESSION_COOKIE)?.value;
-  const [viewer, trainers, daily, ...boards] = await Promise.all([
-    sessionToken
-      ? getSessionUser(hashSessionToken(sessionToken))
-      : Promise.resolve(null),
-    getTopTrainers(10),
-    getTopScores("daily"),
-    ...QUIZ_CATEGORIES.map(async (category) => ({
-      category,
-      ...(await getTopScores(category)),
-    })),
-  ]);
-  const persistent = daily.persistent || boards.some((b) => b.persistent);
-  const isViewer = (name: string) => viewer?.username === name;
-  const podium = trainers.slice(0, 3);
-  const runnersUp = trainers.slice(3);
-  // Visual order: silver left, gold center, bronze right.
-  const podiumOrder = [podium[1], podium[0], podium[2]].filter(Boolean);
-  const PODIUM_STYLES = [
-    { medal: "🥈", height: "h-20", ring: "border-slate-300/25" },
-    { medal: "🥇", height: "h-28", ring: "border-amber-400/40" },
-    { medal: "🥉", height: "h-16", ring: "border-orange-400/25" },
-  ];
+export default async function LeaderboardPage({ searchParams }: PageProps) {
+  const params = await searchParams;
+  const board =
+    params.board === "daily" || params.board === "iq" || PLAY_MODULES.includes(params.board as ModuleId) ? params.board! : "daily";
+  const format: QuizFormat = (PLAYABLE_FORMATS as readonly string[]).includes(params.format ?? "") ? (params.format as QuizFormat) : "classic";
+  const today = new Date().toISOString().slice(0, 10);
+  const date = params.date && isValidDailyDate(params.date) ? params.date : today;
+
+  const entries =
+    board === "daily"
+      ? await fetchBoard({ kind: "daily", date })
+      : board === "iq"
+        ? await fetchBoard({ kind: "iq" })
+        : await fetchBoard({ kind: "module", module: board, format });
+
+  const tabs = [{ id: "daily", label: "Daily" }, { id: "iq", label: "PokéIQ Test" }, ...PLAY_MODULES.map((m) => ({ id: m, label: MODULE_INFO[m].title }))];
 
   return (
-    <div>
-      <header className="mb-10 text-center">
-        <h1 className="text-4xl font-black tracking-tight">
-          🏆 Hall of <span className="text-gradient">Fame</span>
-        </h1>
-        <p className="mt-2 text-sm text-muted">
-          Top 10 trainers per module
-          {!persistent && " · session-only (connect Supabase to persist)"}
-        </p>
-      </header>
-
-      <div className="glass relative mb-5 overflow-hidden rounded-2xl p-6">
-        <div
-          aria-hidden
-          className="absolute -right-8 -top-8 h-28 w-28 rounded-full bg-gradient-to-br from-indigo-400 to-purple-500 opacity-10 blur-2xl"
-        />
-        <h2 className="flex items-center gap-2.5 font-bold">
-          <span
-            className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-400 to-purple-500 text-base shadow"
-            aria-hidden
-          >
-            🏅
-          </span>
-          Top Trainers
-          <span className="text-xs font-normal text-muted">
-            ranked by lifetime XP
-          </span>
-        </h2>
-        {trainers.length === 0 ? (
-          <div className="mt-5 rounded-xl border border-dashed border-white/10 py-6 text-center text-sm text-muted">
-            No trainers ranked yet —{" "}
-            <Link href="/login" className="underline decoration-dotted hover:text-foreground">
-              create an account
-            </Link>{" "}
-            and every run you finish earns XP.
-          </div>
+    <div className="mx-auto max-w-3xl space-y-6">
+      <div className="space-y-4 text-center">
+        <h1 className="text-3xl font-bold">Leaderboard</h1>
+        <div className="flex flex-wrap justify-center gap-2">
+          {tabs.map((t) => (
+            <Link key={t.id} href={`/leaderboard?board=${t.id}`}>
+              <Badge variant={t.id === board ? "default" : "outline"} className="px-3 py-1 hover:bg-accent">
+                {t.label}
+              </Badge>
+            </Link>
+          ))}
+        </div>
+        {board === "daily" ? (
+          <p className="text-sm text-muted-foreground">Daily Challenge #{dailyNumber(date)} · {date} (UTC)</p>
+        ) : board === "iq" ? (
+          <p className="text-sm text-muted-foreground">Ranked by measured PokéIQ from the adaptive test</p>
         ) : (
-          <>
-            {/* Olympic podium for the top 3 */}
-            <div className="mt-6 flex items-end justify-center gap-3">
-              {podiumOrder.map((trainer) => {
-                const place = podium.indexOf(trainer);
-                const style = PODIUM_STYLES[podiumOrder.indexOf(trainer)];
-                const you = isViewer(trainer.username);
+          <div className="flex justify-center gap-2">
+            {PLAYABLE_FORMATS.map((f) => (
+              <Link key={f} href={`/leaderboard?board=${board}&format=${f}`}>
+                <Badge variant={f === format ? "secondary" : "outline"} className="hover:bg-accent">
+                  {FORMAT_INFO[f].title}
+                </Badge>
+              </Link>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {entries === null ? (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Leaderboards aren&apos;t enabled here</CardTitle>
+            <CardDescription>
+              Set <code>SUPABASE_URL</code> and <code>SUPABASE_SERVICE_ROLE_KEY</code> and run the migration in{" "}
+              <code>supabase/migrations/</code>. Everything else works without it.
+            </CardDescription>
+          </CardHeader>
+        </Card>
+      ) : entries.length === 0 ? (
+        <Card>
+          <CardContent className="py-10 text-center text-muted-foreground">No scores yet — be the first on the board!</CardContent>
+        </Card>
+      ) : (
+        <>
+          {entries.length >= 3 && (
+            <div className="grid grid-cols-3 items-end gap-3">
+              {[entries[1], entries[0], entries[2]].map((row, i) => {
+                const place = i === 1 ? 1 : i === 0 ? 2 : 3;
                 return (
                   <div
-                    key={trainer.username}
-                    className="flex w-24 flex-col items-center sm:w-32"
+                    key={row.id}
+                    className={cn("rounded-lg border bg-card p-4 text-center", place === 1 && "border-primary/40 bg-primary/5 pb-8 pt-6")}
                   >
-                    <span className="text-2xl" aria-hidden>
-                      {style.medal}
-                    </span>
-                    <span
+                    <Medal
                       className={cn(
-                        "mt-1 w-full truncate text-center text-sm font-bold",
-                        you && "text-indigo-300",
+                        "mx-auto h-6 w-6",
+                        place === 1 && "text-yellow-400",
+                        place === 2 && "text-slate-300",
+                        place === 3 && "text-amber-600"
                       )}
-                      title={trainer.username}
-                    >
-                      {trainer.username}
-                      {you && " (you)"}
-                    </span>
-                    <span className="font-mono text-xs text-indigo-200">
-                      {trainer.stats.totalScore.toLocaleString()} XP
-                    </span>
-                    <div
-                      className={cn(
-                        "mt-2 w-full rounded-t-xl border border-b-0 bg-gradient-to-b from-white/10 to-white/[0.02]",
-                        style.height,
-                        style.ring,
-                        you && "border-indigo-400/50",
-                      )}
-                      aria-hidden
-                    >
-                      <div className="pt-2 text-center font-mono text-lg font-black text-white/30">
-                        {place + 1}
-                      </div>
-                    </div>
+                      aria-label={`Rank ${place}`}
+                    />
+                    <div className="mt-2 truncate font-semibold">{row.player_name}</div>
+                    <div className="font-mono text-sm tabular-nums text-muted-foreground">{row.score.toLocaleString()} pts</div>
+                    <Badge variant="secondary" className="mt-2">IQ {row.pokeiq}</Badge>
                   </div>
                 );
               })}
             </div>
-            {runnersUp.length > 0 && (
-              <ol className="mt-4 space-y-1.5">
-                {runnersUp.map((trainer, i) => {
-                  const accuracy =
-                    trainer.stats.totalAnswered > 0
-                      ? Math.round(
-                          (100 * trainer.stats.totalCorrect) /
-                            trainer.stats.totalAnswered,
-                        )
-                      : 0;
-                  const you = isViewer(trainer.username);
-                  return (
-                    <li
-                      key={trainer.username}
-                      className={cn(
-                        "flex items-center gap-3 rounded-xl px-3 py-2 text-sm",
-                        you
-                          ? "border border-indigo-400/40 bg-indigo-400/10"
-                          : "bg-white/[0.03]",
-                      )}
-                    >
-                      <span className="w-7 text-center font-mono text-xs text-muted">
-                        {i + 4}
-                      </span>
-                      <span className="min-w-0 flex-1 truncate font-semibold">
-                        {trainer.username}
-                        {you && (
-                          <span className="ml-1.5 text-xs text-indigo-300">
-                            (you)
-                          </span>
-                        )}
-                      </span>
-                      <span className="hidden text-[11px] text-muted sm:inline">
-                        {trainer.stats.gamesPlayed} runs · {accuracy}% ·{" "}
-                        {trainer.stats.bestStreak}🔥
-                      </span>
-                      <span className="w-16 text-right font-mono font-bold tabular-nums text-indigo-200">
-                        {trainer.stats.totalScore.toLocaleString()}
-                      </span>
-                    </li>
-                  );
-                })}
-              </ol>
-            )}
-          </>
-        )}
-      </div>
-
-      <div className="glass relative mb-5 overflow-hidden rounded-2xl p-6">
-        <div
-          aria-hidden
-          className="absolute -right-8 -top-8 h-28 w-28 rounded-full bg-gradient-to-br from-amber-400 to-rose-500 opacity-10 blur-2xl"
-        />
-        <h2 className="flex items-center gap-2.5 font-bold">
-          <span
-            className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-amber-400 to-rose-500 text-base shadow"
-            aria-hidden
-          >
-            🗓️
-          </span>
-          Daily Gauntlet
-        </h2>
-        {daily.entries.length === 0 ? (
-          <div className="mt-5 flex flex-col items-center gap-3 rounded-xl border border-dashed border-white/10 py-6 text-center text-sm text-muted">
-            <AlakazamMascot size={56} showSpoons={false} />
-            Nobody has conquered today&apos;s gauntlet yet — be the first!
-          </div>
-        ) : (
-          <ol className="mt-4 grid gap-1.5 sm:grid-cols-2">
-            {daily.entries.map((entry, i) => (
-              <li
-                key={`${entry.name}-${entry.created_at}-${i}`}
-                className={cn(
-                  "flex items-center gap-3 rounded-xl px-3 py-2 text-sm",
-                  isViewer(entry.name)
-                    ? "border border-indigo-400/40 bg-indigo-400/10"
-                    : i === 0
-                      ? "border border-amber-400/20 bg-amber-400/[0.07]"
-                      : "bg-white/[0.03]",
-                )}
-              >
-                <span className="w-7 text-center" aria-hidden>
-                  {MEDALS[i] ?? (
-                    <span className="font-mono text-xs text-muted">{i + 1}</span>
-                  )}
-                </span>
-                <span className="min-w-0 flex-1 truncate font-semibold">
-                  {entry.name}
-                  {isViewer(entry.name) && (
-                    <span className="ml-1.5 text-xs text-indigo-300">(you)</span>
-                  )}
-                </span>
-                <span className="hidden text-[11px] text-muted sm:inline">
-                  {relativeTime(entry.created_at)}
-                </span>
-                <span className="w-12 text-right font-mono font-bold tabular-nums">
-                  {entry.score}
-                </span>
-              </li>
-            ))}
-          </ol>
-        )}
-      </div>
-
-      <div className="grid gap-5 sm:grid-cols-2">
-        {boards.map(({ category, entries }, i) => {
-          const meta = CATEGORY_META[category];
-          return (
-            <Card
-              key={category}
-              style={{ "--delay": `${i * 80}ms` } as React.CSSProperties}
-              className="card-enter relative overflow-hidden"
-            >
-              <div
-                aria-hidden
-                className={`absolute -right-8 -top-8 h-28 w-28 rounded-full bg-gradient-to-br ${meta.accent} opacity-10 blur-2xl`}
-              />
-              <h2 className="flex items-center gap-2.5 font-bold">
-                <span
-                  className={`flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br ${meta.accent} text-base shadow`}
-                  aria-hidden
-                >
-                  {meta.emoji}
-                </span>
-                {meta.name}
-              </h2>
-              {entries.length === 0 ? (
-                <div className="mt-6 rounded-xl border border-dashed border-white/10 py-8 text-center text-sm text-muted">
-                  <span aria-hidden className="spoon-bend mr-1.5 inline-block">
-                    🥄
-                  </span>
-                  No scores yet — claim the throne!
-                </div>
-              ) : (
-                <ol className="mt-4 space-y-1.5">
-                  {entries.map((entry, i) => (
-                    <li
-                      key={`${entry.name}-${entry.created_at}-${i}`}
-                      className={cn(
-                        "flex items-center gap-3 rounded-xl px-3 py-2 text-sm",
-                        isViewer(entry.name)
-                          ? "border border-indigo-400/40 bg-indigo-400/10"
-                          : i === 0
-                            ? "border border-amber-400/20 bg-amber-400/[0.07]"
-                            : "bg-white/[0.03]",
-                      )}
-                    >
-                      <span className="w-7 text-center" aria-hidden>
-                        {MEDALS[i] ?? (
-                          <span className="font-mono text-xs text-muted">
-                            {i + 1}
-                          </span>
-                        )}
-                      </span>
-                      <span className="min-w-0 flex-1 truncate font-semibold">
-                        {entry.name}
-                        {isViewer(entry.name) && (
-                          <span className="ml-1.5 text-xs text-indigo-300">
-                            (you)
-                          </span>
-                        )}
-                      </span>
-                      <span className="hidden text-[11px] text-muted sm:inline">
-                        {relativeTime(entry.created_at)}
-                      </span>
-                      <Badge className="capitalize">{entry.difficulty}</Badge>
-                      <span className="w-12 text-right font-mono font-bold tabular-nums">
-                        {entry.score}
-                      </span>
-                    </li>
+          )}
+          <Card>
+            <CardContent className="p-0">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b text-left text-xs uppercase text-muted-foreground">
+                    <th className="p-3">#</th>
+                    <th className="p-3">Trainer</th>
+                    <th className="p-3 text-right">Score</th>
+                    <th className="p-3 text-right">PokéIQ</th>
+                    <th className="hidden p-3 text-right sm:table-cell">Correct</th>
+                    <th className="hidden p-3 text-right sm:table-cell">Time</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {entries.map((row, i) => (
+                    <tr key={row.id} className="border-b last:border-0">
+                      <td className="p-3 font-mono">{i + 1}</td>
+                      <td className="p-3 font-medium">{row.player_name}</td>
+                      <td className="p-3 text-right font-mono tabular-nums">{row.score.toLocaleString()}</td>
+                      <td className="p-3 text-right tabular-nums">{row.pokeiq}</td>
+                      <td className="hidden p-3 text-right tabular-nums sm:table-cell">
+                        {row.correct}/{row.total}
+                      </td>
+                      <td className="hidden p-3 text-right tabular-nums sm:table-cell">{Math.round(row.duration_ms / 1000)}s</td>
+                    </tr>
                   ))}
-                </ol>
-              )}
-            </Card>
-          );
-        })}
-      </div>
+                </tbody>
+              </table>
+            </CardContent>
+          </Card>
+        </>
+      )}
+      <p className="text-center text-xs text-muted-foreground">
+        Every score here was graded on the server — submissions carry a signed result, never a raw number.
+      </p>
     </div>
   );
 }

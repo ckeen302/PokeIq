@@ -1,92 +1,79 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 import Link from "next/link";
-import { BrainLogo } from "@/components/BrainLogo";
-import { NavLinks } from "@/components/NavLinks";
-import { PageTransition } from "@/components/PageTransition";
-import { UserMenu } from "@/components/UserMenu";
+import { Analytics } from "@vercel/analytics/next";
+import { Brain } from "lucide-react";
+import { DesktopNav, MobileTabBar } from "@/components/layout/SiteNav";
+import { SITE_NAME, SITE_URL } from "@/lib/site";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
-
 export const metadata: Metadata = {
-  metadataBase: new URL(
-    process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000",
-  ),
+  metadataBase: new URL(SITE_URL),
   title: {
-    default: "PokéIQ — The Ultimate Pokémon Knowledge Engine",
+    default: "PokéIQ — The Ultimate Pokémon Quiz",
     template: "%s · PokéIQ",
   },
   description:
-    "Four live-computed quiz modules testing visual recognition, type mastery, move expertise and competitive stat knowledge. No hardcoded questions.",
-  applicationName: "PokéIQ",
-  appleWebApp: {
-    capable: true,
-    title: "PokéIQ",
-    statusBarStyle: "black-translucent",
-  },
+    "Test your Pokémon knowledge: daily challenges, Who's That Pokémon silhouettes, cry quizzes, Pokédex entries, type matchups and Pokédle. Get your PokéIQ.",
+  applicationName: SITE_NAME,
+  manifest: "/manifest.webmanifest",
+  openGraph: { siteName: SITE_NAME, type: "website" },
+  twitter: { card: "summary_large_image" },
+  appleWebApp: { capable: true, statusBarStyle: "black-translucent", title: SITE_NAME },
 };
 
 export const viewport: Viewport = {
-  themeColor: "#050510",
+  themeColor: "#0a0f1e",
+  width: "device-width",
+  initialScale: 1,
   viewportFit: "cover",
-  colorScheme: "dark",
 };
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+const websiteJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  name: SITE_NAME,
+  url: SITE_URL,
+  description: "Daily Pokémon quizzes and puzzles that measure your PokéIQ.",
+};
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        <div className="aurora" aria-hidden>
-          <div className="blob" />
-        </div>
-        <header className="sticky top-0 z-40 border-b border-white/5 bg-background/50 backdrop-blur-xl">
-          <nav className="mx-auto flex h-16 max-w-5xl items-center justify-between px-4">
-            <Link
-              href="/"
-              className="group flex items-center gap-2.5 text-xl font-black tracking-tight"
-            >
-              <BrainLogo
-                size={30}
-                className="transition-transform duration-500 group-hover:rotate-[360deg] drop-shadow-[0_0_10px_rgba(192,132,252,0.35)]"
-              />
-              Poké<span className="text-gradient">IQ</span>
+    <html lang="en" className="dark">
+      <body className="flex min-h-screen flex-col">
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }} />
+        <header className="glass sticky top-0 z-50">
+          <div className="container flex h-14 items-center justify-between">
+            <Link href="/" className="flex items-center gap-2 text-lg font-bold tracking-tight" aria-label="PokéIQ home">
+              <Brain className="h-5 w-5 text-primary" aria-hidden />
+              <span>
+                Poké<span className="text-primary">IQ</span>
+              </span>
             </Link>
-            <div className="flex items-center gap-2 sm:gap-3">
-              <NavLinks />
-              <UserMenu />
-            </div>
-          </nav>
+            <DesktopNav />
+          </div>
         </header>
-        <main className="mx-auto min-h-[calc(100dvh-9rem)] w-full max-w-5xl px-4 py-8 pb-[max(2rem,env(safe-area-inset-bottom))]">
-          <PageTransition>{children}</PageTransition>
-        </main>
-        <footer className="border-t border-white/5 py-5 text-center text-xs text-muted">
-          Every question computed live from{" "}
-          <a
-            href="https://pokeapi.co"
-            className="underline decoration-dotted hover:text-foreground"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            PokéAPI
-          </a>
-          . Pokémon © Nintendo/Game Freak — fan project, not affiliated.
+        <main className="container flex-1 pb-28 pt-8 md:pb-12">{children}</main>
+        <footer className="mb-[calc(4rem+env(safe-area-inset-bottom))] border-t border-white/5 py-6 text-center text-xs text-muted-foreground md:mb-0">
+          <div className="container space-y-2">
+            <nav className="flex flex-wrap justify-center gap-x-4 gap-y-1">
+              <Link href="/play" className="hover:text-foreground">Game modes</Link>
+              <Link href="/pokedex" className="hover:text-foreground">Pokédex</Link>
+              <Link href="/pokedex/study" className="hover:text-foreground">Study mode</Link>
+              <Link href="/leaderboard" className="hover:text-foreground">Leaderboard</Link>
+              <Link href="/quiz/gen-1-pokemon-quiz" className="hover:text-foreground">Gen 1 quiz</Link>
+              <Link href="/quiz/pokemon-type-quiz" className="hover:text-foreground">Type chart quiz</Link>
+              <Link href="/trainer" className="hover:text-foreground">Trainer card</Link>
+            </nav>
+            <p>
+              PokéIQ is a free, non-commercial fan project and is not affiliated with, endorsed or sponsored by
+              Nintendo, Game Freak, Creatures or The Pokémon Company. Pokémon and all related names are trademarks
+              of their respective owners. Data from PokéAPI.
+            </p>
+          </div>
         </footer>
+        <MobileTabBar />
+        {/* The analytics endpoint only exists on Vercel deployments. */}
+        {process.env.VERCEL && <Analytics />}
       </body>
     </html>
   );

@@ -1,0 +1,43 @@
+import type { Metadata } from "next";
+import { POKEDEX } from "@/lib/pokemon/pokedex";
+import { PokedexExplorer, type DexListItem } from "@/components/pokedex/PokedexExplorer";
+
+export const metadata: Metadata = {
+  title: "Pokédex — All 1,025 Pokémon",
+  description:
+    "Browse and search every Pokémon from Kanto to Paldea. Filter by type and generation, sort by stats, and study evolutions, moves, abilities and weaknesses.",
+  alternates: { canonical: "/pokedex" },
+};
+
+export default function PokedexPage() {
+  const items: DexListItem[] = POKEDEX.map((p) => ({
+    id: p.id,
+    slug: p.slug,
+    name: p.name,
+    genus: p.genus,
+    types: p.types,
+    gen: p.gen,
+    stats: p.stats,
+    bst: p.bst,
+    height: p.height,
+    weight: p.weight,
+    legendary: p.legendary,
+    mythical: p.mythical,
+    fullyEvolved: p.fullyEvolved,
+  }));
+
+  return (
+    <div className="mx-auto max-w-7xl space-y-4">
+      <div className="space-y-2 text-center">
+        <h1 className="text-4xl font-extrabold tracking-tight sm:text-5xl">
+          The <span className="text-shimmer">Pokédex</span>
+        </h1>
+        <p className="mx-auto max-w-2xl text-muted-foreground">
+          All {items.length.toLocaleString()} Pokémon — stats, evolutions, moves, abilities, matchups and every Pokédex
+          entry. Study up, then test yourself.
+        </p>
+      </div>
+      <PokedexExplorer items={items} />
+    </div>
+  );
+}

@@ -1,110 +1,52 @@
-/**
- * Engine registry + batch generation with the self-verification gate.
- */
-import { moveMasterEngine } from "./move-master/engine";
-import { statShowdownEngine } from "./stat-showdown/engine";
-import { typeDetectiveEngine } from "./type-detective/engine";
-import { validateQuestion } from "./validate";
-import { whosThatEngine } from "./whos-that/engine";
-import type {
-  Difficulty,
-  QuizCategory,
-  QuizEngine,
-  QuizQuestion,
-} from "./types";
-import { pick } from "@/lib/random";
+import type { Rng } from "@/lib/rng";
+import type { GenerateOptions, ModuleId, Question, QuestionBuilder } from "./types";
+import { isValidQuestion } from "./validate";
+import { whosThat } from "./modules/whos-that";
+import { cry } from "./modules/cry";
+import { dex } from "./modules/dex";
+import { types } from "./modules/types";
+import { higherLower } from "./modules/higher-lower";
 
-export const engines: Record<QuizCategory, QuizEngine> = {
-  "whos-that": whosThatEngine,
-  "type-detective": typeDetectiveEngine,
-  "move-master": moveMasterEngine,
-  "stat-showdown": statShowdownEngine,
+/** Module registry — adding a game mode is one builder file plus one line here. */
+const BUILDERS: Record<Exclude<ModuleId, "mixed">, QuestionBuilder> = {
+  "whos-that": whosThat,
+  cry,
+  dex,
+  types,
+  "higher-lower": higherLower,
 };
 
-export type RequestedDifficulty = Difficulty | "mixed";
+/** Mixed (Daily Challenge) rotation. Cry is excluded: people play the daily in public. */
+const MIXED_WEIGHTS: [Exclude<ModuleId, "mixed">, number][] = [
+  ["whos-that", 0.32],
+  ["dex", 0.2],
+  ["types", 0.24],
+  ["higher-lower", 0.24],
+];
 
-const DIFFICULTIES: readonly Difficulty[] = ["easy", "medium", "hard"];
-
-const MAX_ATTEMPTS_PER_QUESTION = 3;
-
-/**
- * Generate one validated question, retrying on engine failure or a failed
- * Zod gate. Invalid questions are dropped and logged — never served.
- */
-async function generateValidated(
-  engine: QuizEngine,
-  difficulty: Difficulty,
-): Promise<QuizQuestion | null> {
-  for (let attempt = 0; attempt < MAX_ATTEMPTS_PER_QUESTION; attempt++) {
-    try {
-      const candidate = await engine.generate(difficulty);
-      const result = validateQuestion(candidate);
-      if (result.ok && result.question) return result.question;
-      console.warn(
-        `[engines] dropped invalid ${engine.category}/${difficulty} question:`,
-        result.issues?.join("; "),
-      );
-    } catch (error) {
-      console.warn(
-        `[engines] ${engine.category}/${difficulty} generation failed (attempt ${attempt + 1}):`,
-        error instanceof Error ? error.message : error,
-      );
-    }
+function pickMixed(rng: Rng): Exclude<ModuleId, "mixed"> {
+  let roll = rng.next();
+  for (const [id, weight] of MIXED_WEIGHTS) {
+    if ((roll -= weight) < 0) return id;
   }
-  return null;
+  return MIXED_WEIGHTS[0][0];
 }
 
 /**
- * Generate a batch concurrently. Deduplicates identical prompts within the
- * batch and reports how many slots could not be filled.
+ * Build one valid question. Deterministic given the Rng state: builders
+ * that decline (ambiguity, starved pools) and gate failures are retried
+ * from the same stream, so the server re-derives the identical sequence.
  */
-/** Generate one validated question for a given slot (used by the daily plan). */
-export function generateOne(
-  category: QuizCategory,
-  difficulty: Difficulty,
-): Promise<QuizQuestion | null> {
-  return generateValidated(engines[category], difficulty);
+export function buildQuestion(module: ModuleId, rng: Rng, opts: GenerateOptions): Question {
+  for (let attempt = 0; attempt < 50; attempt++) {
+    // A long endless run on a small pool (one generation) can exhaust it:
+    // recycle species rather than fail. Still deterministic.
+    if (attempt === 20) opts.used.clear();
+    const id = module === "mixed" ? pickMixed(rng) : module;
+    const q = BUILDERS[id](rng, opts);
+    if (q && isValidQuestion(q)) return q;
+  }
+  throw new Error(`Module "${module}" could not produce a valid question`);
 }
 
-const MAX_BATCH_ROUNDS = 3;
-
-export async function generateBatch(
-  category: QuizCategory,
-  count: number,
-  difficulty: RequestedDifficulty,
-): Promise<QuizQuestion[]> {
-  const engine = engines[category];
-  const seenPrompts = new Set<string>();
-  const questions: QuizQuestion[] = [];
-
-  // Fill concurrently; if slots fail (flaky upstream, unlucky sampling) or
-  // dedupe collides, run top-up rounds until the batch is full.
-  for (
-    let round = 0;
-    round < MAX_BATCH_ROUNDS && questions.length < count;
-    round++
-  ) {
-    const missing = count - questions.length;
-    const targets: Difficulty[] = Array.from({ length: missing }, () =>
-      difficulty === "mixed" ? pick(DIFFICULTIES) : difficulty,
-    );
-    const settled = await Promise.allSettled(
-      targets.map((d) => generateValidated(engine, d)),
-    );
-    for (const result of settled) {
-      if (result.status !== "fulfilled" || !result.value) continue;
-      const question = result.value;
-      const dedupeKey = `${question.question}|${question.correctAnswer}`;
-      if (seenPrompts.has(dedupeKey)) continue;
-      seenPrompts.add(dedupeKey);
-      questions.push(question);
-    }
-  }
-
-  if (questions.length < count) {
-    console.warn(
-      `[engines] ${category}: served ${questions.length}/${count} questions`,
-    );
-  }
-  return questions;
-}
+export * from "./types";

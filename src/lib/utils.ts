@@ -1,14 +1,6 @@
-/** Tiny className combiner (clsx-style, no dependency). */
-export function cn(
-  ...values: Array<string | false | null | undefined>
-): string {
-  return values.filter(Boolean).join(" ");
-}
+import { clsx, type ClassValue } from "clsx";
+import { twMerge } from "tailwind-merge";
 
-/** "mr-mime" → "Mr Mime", "special-attack" → "Special Attack". */
-export function titleCase(slug: string): string {
-  return slug
-    .split("-")
-    .map((part) => (part ? part[0].toUpperCase() + part.slice(1) : part))
-    .join(" ");
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs));
 }

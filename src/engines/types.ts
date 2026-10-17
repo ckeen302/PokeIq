@@ -1,124 +1,61 @@
-/** Unified contract every quiz engine must satisfy. */
-
-export type Difficulty = "easy" | "medium" | "hard";
-
-export type QuizCategory =
-  | "whos-that"
-  | "type-detective"
-  | "move-master"
-  | "stat-showdown";
-
-export const QUIZ_CATEGORIES: readonly QuizCategory[] = [
-  "whos-that",
-  "type-detective",
-  "move-master",
-  "stat-showdown",
-];
-
-/** Leaderboards exist per module plus one for the Daily Gauntlet. */
-export type LeaderboardCategory = QuizCategory | "daily";
-
-/** How the client should render the question image. Never encodes the answer. */
-export type ImageHint = "normal" | "silhouette" | "pixelated";
-
-export interface QuizQuestion {
-  question: string;
-  /** 2–4 mutually distinct choices, exactly one correct */
-  options: string[];
-  correctAnswer: string;
-  explanation: string;
-  imageUrl?: string;
-  imageHint?: ImageHint;
-  /** Optional sprite per option (key must be one of `options`) — enables VS duels. */
-  optionImages?: Record<string, string>;
-  difficulty: Difficulty;
-}
+import type { Rng } from "@/lib/rng";
 
 /**
- * What actually crosses the wire to the browser: the answer + explanation are
- * sealed into an opaque token and stripped from the payload.
+ * The unified question contract.
+ *
+ * Every module compiles Pokédex data down to `Question`, the only shape the
+ * session layer and UI understand. Questions are pure functions of an Rng,
+ * so the server never stores them — it re-derives question N from the
+ * session seed when grading (see src/lib/server/session.ts).
  */
-export interface ClientQuestion {
-  id: string;
-  question: string;
+
+export const MODULES = ["whos-that", "cry", "dex", "types", "higher-lower", "mixed"] as const;
+export type ModuleId = (typeof MODULES)[number];
+
+export const FORMATS = ["classic", "survival", "blitz", "adaptive"] as const;
+export type QuizFormat = (typeof FORMATS)[number];
+
+export const DIFFICULTIES = ["easy", "medium", "hard"] as const;
+export type Difficulty = (typeof DIFFICULTIES)[number];
+
+/** Media the client may only reach through an opaque, encrypted token. */
+export type MediaKind = "silhouette" | "silhouette-zoom" | "artwork" | "cry";
+
+export interface MediaRef {
+  kind: MediaKind;
+  pokemonId: number;
+}
+
+/** A side-by-side card (Higher or Lower). Names are public, so art is too. */
+export interface QuestionCard {
+  pokemonId: number;
+  label: string;
+}
+
+export interface Question {
+  /** Stable item key used for difficulty calibration, e.g. "whos-that:25:zoom". */
+  itemKey: string;
+  module: Exclude<ModuleId, "mixed">;
+  prompt: string;
+  /** Supporting text shown under the prompt (e.g. a censored Pokédex entry). */
+  detail?: string;
+  media?: MediaRef;
+  cards?: QuestionCard[];
   options: string[];
-  imageUrl?: string;
-  imageHint?: ImageHint;
-  optionImages?: Record<string, string>;
+  answer: string;
+  explanation?: string;
+  /** Shown after answering (e.g. the full-colour artwork). */
+  revealMedia?: MediaRef;
+  /** Prior item difficulty on the PokéIQ rating scale (≈ Elo). */
+  rating: number;
+}
+
+export interface GenerateOptions {
   difficulty: Difficulty;
-  token: string;
+  gens?: number[];
+  /** Pokémon ids already used this session — engines avoid repeats. */
+  used: Set<number>;
 }
 
-export interface QuizEngine {
-  category: QuizCategory;
-  name: string;
-  /** Compute one question live from PokéAPI. May throw; callers retry. */
-  generate(difficulty: Difficulty): Promise<QuizQuestion>;
-}
-
-export interface CategoryMeta {
-  category: QuizCategory;
-  name: string;
-  tagline: string;
-  emoji: string;
-  accent: string;
-}
-
-export const CATEGORY_META: Record<QuizCategory, CategoryMeta> = {
-  "whos-that": {
-    category: "whos-that",
-    name: "Who's That Pokémon?",
-    tagline: "The anime classic — name the shadow, then watch the reveal.",
-    emoji: "👁️",
-    accent: "from-amber-400 to-orange-500",
-  },
-  "type-detective": {
-    category: "type-detective",
-    name: "Type Detective",
-    tagline: "Deduce types from weaknesses, resistances and immunities.",
-    emoji: "🔍",
-    accent: "from-emerald-400 to-teal-500",
-  },
-  "move-master": {
-    category: "move-master",
-    name: "Move Master",
-    tagline: "Effects, learnsets and base power — know every move.",
-    emoji: "⚡",
-    accent: "from-sky-400 to-blue-500",
-  },
-  "stat-showdown": {
-    category: "stat-showdown",
-    name: "Stat Showdown",
-    tagline: "Speed tiers and stat spreads — competitive knowledge wins.",
-    emoji: "📊",
-    accent: "from-fuchsia-400 to-purple-500",
-  },
-};
-
-export function isQuizCategory(value: string): value is QuizCategory {
-  return (QUIZ_CATEGORIES as readonly string[]).includes(value);
-}
-
-/** Per-question timer, tuned by difficulty. */
-export function timerSeconds(difficulty: Difficulty): number {
-  switch (difficulty) {
-    case "easy":
-      return 18;
-    case "medium":
-      return 15;
-    case "hard":
-      return 12;
-  }
-}
-
-/** Score multiplier by difficulty. */
-export function difficultyMultiplier(difficulty: Difficulty): number {
-  switch (difficulty) {
-    case "easy":
-      return 1;
-    case "medium":
-      return 1.5;
-    case "hard":
-      return 2;
-  }
-}
+/** A module builder returns null when it can't produce an unambiguous question. */
+export type QuestionBuilder = (rng: Rng, opts: GenerateOptions) => Question | null;
