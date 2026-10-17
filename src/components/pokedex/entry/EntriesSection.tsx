@@ -42,7 +42,11 @@ export function EntriesSection({ entries }: { entries: { text: string; games: st
                   <span
                     key={g}
                     className="rounded-sm px-1.5 py-1 font-pixel text-[9px] uppercase leading-none tracking-wider"
-                    style={{ background: `${gameColor(g)}26`, color: gameColor(g), border: `1px solid ${gameColor(g)}55` }}
+                    style={{
+                      background: `${gameColor(g)}26`,
+                      color: `color-mix(in srgb, ${gameColor(g)}, hsl(var(--foreground)) var(--tint-ink))`,
+                      border: `1px solid ${gameColor(g)}55`,
+                    }}
                   >
                     {g}
                   </span>

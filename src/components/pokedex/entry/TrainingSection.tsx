@@ -18,7 +18,7 @@ export function TrainingSection({ data }: { data: DexEntryData }) {
           label="Catch rate"
           value={
             data.captureRate !== null
-              ? `${data.captureRate} (${(catchChance(data.captureRate) * 100).toFixed(1)}% with a Poké Ball at full HP)`
+              ? `${data.captureRate} (${(catchChance(data.captureRate) * 100).toFixed(1)}% per Poké Ball at full HP, Gen 5+)`
               : "—"
           }
         />
@@ -60,7 +60,7 @@ export function TrainingSection({ data }: { data: DexEntryData }) {
         <Card title="Regional Pokédex numbers" className="md:col-span-2 xl:col-span-3">
           <div className="flex flex-wrap gap-2 pt-1">
             {data.dexNumbers.map((d) => (
-              <span key={d.dex} className="rounded-lg border border-white/10 bg-background/50 px-2.5 py-1 text-xs">
+              <span key={d.dex} className="rounded-lg border border-foreground/10 bg-background/50 px-2.5 py-1 text-xs">
                 <span className="text-muted-foreground">{d.dex}</span> <b className="font-mono">#{d.number}</b>
               </span>
             ))}
@@ -75,7 +75,7 @@ function Card({ title, children, className }: { title: string; children: React.R
   return (
     <div className={`hud rounded-lg border bg-card p-4 ${className ?? ""}`}>
       <h3 className="mb-2 text-sm font-bold uppercase tracking-wider text-muted-foreground">{title}</h3>
-      <div className="divide-y divide-white/5">{children}</div>
+      <div className="divide-y divide-foreground/5">{children}</div>
     </div>
   );
 }

@@ -7,6 +7,7 @@ import { BookOpen, CalendarDays, Gamepad2, Home, Search, User } from "lucide-rea
 import { levelInfo, useProgress } from "@/lib/progress";
 import { cn } from "@/lib/utils";
 import { MuteToggle } from "./MuteToggle";
+import { ThemeToggle } from "./ThemeToggle";
 
 const DESKTOP_LINKS = [
   { href: "/daily", label: "Daily" },
@@ -59,6 +60,7 @@ export function DesktopNav() {
           );
         })}
       </div>
+      <ThemeToggle />
       <MuteToggle />
       <Link
         href="/trainer"

@@ -10,9 +10,13 @@
  */
 
 @layer base {
-  :root {
-    /* Psychic palette: deep indigo shell, Psychic-type pink for actions,
-       electric violet for displays and data. */
+  /* Psychic palette: deep indigo shell, Psychic-type pink for actions,
+     electric violet for displays and data. Dark is the default theme;
+     device displays (.screen, .dark-scope) stay dark in either theme. */
+  :root,
+  .screen,
+  .dark-scope {
+    color-scheme: dark;
     --background: 246 42% 5%;
     --foreground: 248 40% 97%;
     --card: 247 34% 9%;
@@ -22,6 +26,7 @@
     --primary-shadow: 338 72% 32%;
     --secondary: 248 28% 15%;
     --secondary-foreground: 248 40% 97%;
+    --secondary-shadow: 248 28% 9%;
     --muted: 248 28% 12%;
     --muted-foreground: 248 16% 68%;
     --accent: 248 28% 16%;
@@ -35,7 +40,45 @@
     --border: 248 26% 19%;
     --input: 248 26% 23%;
     --ring: 258 94% 74%;
+    /* Recessed wells, tracks and drop shadows. */
+    --shade: 0 0% 0%;
+    /* How far coloured text is pulled toward the foreground for contrast. */
+    --tint-ink: 0%;
     --radius: 0.5rem;
+  }
+  .screen,
+  .dark-scope {
+    color: hsl(var(--foreground));
+  }
+
+  /* Light theme: a clean lavender field with the same Psychic accents. */
+  :root.light {
+    color-scheme: light;
+    --background: 250 40% 97%;
+    --foreground: 248 42% 11%;
+    --card: 0 0% 100%;
+    --card-foreground: 248 42% 11%;
+    --primary: 340 80% 52%;
+    --primary-foreground: 0 0% 100%;
+    --primary-shadow: 338 70% 36%;
+    --secondary: 248 32% 91%;
+    --secondary-foreground: 248 42% 11%;
+    --secondary-shadow: 248 24% 76%;
+    --muted: 248 32% 93%;
+    --muted-foreground: 248 14% 40%;
+    --accent: 248 32% 91%;
+    --accent-foreground: 248 42% 11%;
+    --destructive: 0 74% 50%;
+    --destructive-foreground: 0 0% 100%;
+    --success: 154 70% 38%;
+    --success-foreground: 0 0% 100%;
+    --warning: 34 94% 44%;
+    --screen: 262 72% 54%;
+    --border: 248 26% 86%;
+    --input: 248 26% 80%;
+    --ring: 262 72% 54%;
+    --shade: 248 32% 78%;
+    --tint-ink: 45%;
   }
 }
 
@@ -79,10 +122,10 @@
 @layer components {
   /* Translucent device chrome (header / tab bar). */
   .glass {
-    @apply border-b border-white/[0.06] bg-background/80 backdrop-blur-xl;
+    @apply border-b border-foreground/[0.06] bg-background/80 backdrop-blur-xl;
   }
   .glass-top {
-    @apply border-t border-white/[0.08] bg-background/90 backdrop-blur-xl;
+    @apply border-t border-foreground/[0.08] bg-background/90 backdrop-blur-xl;
   }
 
   /* Small all-caps HUD label, e.g. "Q 03/10", "No.0025". */
@@ -126,11 +169,11 @@
 
   /* Game text box: double border, blinking ▼ when [data-done]. */
   .dialog-box {
-    @apply relative rounded-lg border-2 border-foreground/85 bg-[hsl(248_36%_8%)] px-5 py-4;
+    @apply relative rounded-lg border-2 border-foreground/85 bg-card px-5 py-4;
     box-shadow:
-      inset 0 0 0 3px hsl(248 36% 8%),
+      inset 0 0 0 3px hsl(var(--card)),
       inset 0 0 0 4px hsl(var(--foreground) / 0.22),
-      0 6px 0 hsl(0 0% 0% / 0.35);
+      0 6px 0 hsl(var(--shade) / 0.35);
   }
   .dialog-box[data-done="true"]::after {
     content: "▼";
@@ -165,7 +208,7 @@
 
   /* HP-bar style meter track with segment ticks. */
   .meter {
-    @apply relative h-2.5 overflow-hidden rounded-sm bg-black/50;
+    @apply relative h-2.5 overflow-hidden rounded-sm bg-shade/50;
     box-shadow: inset 0 0 0 1px hsl(var(--foreground) / 0.12);
   }
   .meter::after {

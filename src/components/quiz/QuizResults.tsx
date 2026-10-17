@@ -6,10 +6,10 @@ import confetti from "canvas-confetti";
 import { animate, motion, useMotionValue, useTransform } from "framer-motion";
 import { track } from "@vercel/analytics";
 import { Check, Link2, Loader2, RotateCcw, Share2, Swords, Trophy } from "lucide-react";
-import type { RunResult, ShareCard } from "@/lib/session-types";
+import type { PracticeReason, RunResult, ShareCard } from "@/lib/session-types";
 import { iqInterval, iqTitle } from "@/lib/rating";
 import { levelInfo, recordRun, setTrainerName, useProgress, type RunReward } from "@/lib/progress";
-import { challengeUrl, resultShareText, shareOrCopy } from "@/lib/share";
+import { challengeUrl, resultShareText, shareOrCopy, shareText } from "@/lib/share";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -18,6 +18,7 @@ import { coachInsights } from "@/lib/coach";
 import { BadgeMedal } from "@/components/game/BadgeMedal";
 import { play } from "@/lib/sound";
 import { IqConvergence } from "./IqConvergence";
+import { CopyFallback } from "./CopyFallback";
 import { NextDailyCountdown } from "@/components/NextDailyCountdown";
 import { cn } from "@/lib/utils";
 
@@ -30,6 +31,12 @@ interface QuizResultsProps {
 }
 
 type SaveState = "idle" | "saving" | "saved" | "failed" | "disabled";
+
+const PRACTICE_NOTES: Record<PracticeReason, string> = {
+  challenge: "Practice run — challenge replays don't go on the leaderboard.",
+  "repeat-daily": "Practice run — only your first Daily Challenge of the day goes on the leaderboard.",
+  filtered: "Practice run — generation-filtered runs aren't ranked; boards compare all-generation runs.",
+};
 
 /** Runs already credited this page-life (guards against re-mounts double-counting XP). */
 const recorded = new Map<string, RunReward>();
@@ -50,12 +57,14 @@ export function QuizResults({ result, resultToken, shareToken, challenger, onRes
   const [saveError, setSaveError] = useState<string | null>(null);
   const [shareState, setShareState] = useState<"idle" | "copied" | "shared">("idle");
   const [linkState, setLinkState] = useState<"idle" | "copied">("idle");
+  const [copyFallback, setCopyFallback] = useState<string | null>(null);
   const firedRef = useRef(false);
 
   const accuracy = result.total ? Math.round((result.correct / result.total) * 100) : 0;
   const { grade, color, message } = gradeFor(accuracy);
   const isDaily = Boolean(result.spec.daily);
   const isAdaptive = result.spec.format === "adaptive";
+  const practice = result.practice ?? result.spec.practice;
   const interval = isAdaptive && result.se !== undefined ? iqInterval(result.rating, result.se) : null;
 
   // Credit XP / streaks / badges exactly once per run.
@@ -101,8 +110,12 @@ export function QuizResults({ result, resultToken, shareToken, challenger, onRes
   }, [accuracy]);
 
   async function share() {
-    const outcome = await shareOrCopy(resultShareText(result), challengeUrl(shareToken));
-    if (outcome !== "failed") {
+    const text = resultShareText(result);
+    const url = challengeUrl(shareToken);
+    const outcome = await shareOrCopy(text, url);
+    if (outcome === "failed") return setCopyFallback(shareText(text, url));
+    if (outcome !== "cancelled") {
+      setCopyFallback(null);
       setShareState(outcome);
       track("share", { kind: isDaily ? "daily" : "run", via: outcome });
       setTimeout(() => setShareState("idle"), 2500);
@@ -110,11 +123,12 @@ export function QuizResults({ result, resultToken, shareToken, challenger, onRes
   }
 
   async function copyChallenge() {
-    const outcome = await shareOrCopy(
-      `Think you know Pokémon? I scored ${result.correct}/${result.total} (PokéIQ ${result.pokeiq}). Beat me:`,
-      challengeUrl(shareToken)
-    );
-    if (outcome !== "failed") {
+    const text = `Think you know Pokémon? I scored ${result.correct}/${result.total} (PokéIQ ${result.pokeiq}). Beat me:`;
+    const url = challengeUrl(shareToken);
+    const outcome = await shareOrCopy(text, url);
+    if (outcome === "failed") return setCopyFallback(shareText(text, url));
+    if (outcome !== "cancelled") {
+      setCopyFallback(null);
       setLinkState("copied");
       track("challenge_create");
       setTimeout(() => setLinkState("idle"), 2500);
@@ -123,7 +137,7 @@ export function QuizResults({ result, resultToken, shareToken, challenger, onRes
 
   async function submitScore() {
     const name = playerName.trim();
-    if (!name || saveState === "saving" || saveState === "saved") return;
+    if (!name || practice || saveState === "saving" || saveState === "saved") return;
     setSaveState("saving");
     setSaveError(null);
     setTrainerName(name);
@@ -148,7 +162,7 @@ export function QuizResults({ result, resultToken, shareToken, challenger, onRes
   return (
     <motion.div initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.35 }}>
       <Card className="mx-auto w-full max-w-2xl overflow-hidden">
-        <div className="flex items-center justify-between border-b border-white/[0.07] bg-black/30 px-6 py-3">
+        <div className="flex items-center justify-between border-b border-foreground/[0.07] bg-shade/30 px-6 py-3">
           <span className="hud-label flex items-center gap-2 text-screen">
             <span className="led h-1.5 w-1.5 text-screen" /> {isAdaptive ? "PokéIQ Test complete" : "Run complete"}
           </span>
@@ -199,7 +213,7 @@ export function QuizResults({ result, resultToken, shareToken, challenger, onRes
             <div
               className={cn(
                 "rounded-lg border p-4 text-center",
-                beatChallenger === "win" ? "border-success/50 bg-success/10" : "border-white/10 bg-muted/40"
+                beatChallenger === "win" ? "border-success/50 bg-success/10" : "border-foreground/10 bg-muted/40"
               )}
             >
               <div className="flex items-center justify-center gap-2 text-sm font-semibold">
@@ -283,36 +297,42 @@ export function QuizResults({ result, resultToken, shareToken, challenger, onRes
             </Button>
           </div>
 
+          {copyFallback && <CopyFallback text={copyFallback} />}
+
           {isDaily && <NextDailyCountdown label="Next Daily Challenge in" />}
 
-          <div className="space-y-2">
-            <label htmlFor="player-name" className="hud-label">
-              {isDaily ? "Post to today's daily leaderboard" : "Save to leaderboard"}
-            </label>
-            <div className="flex gap-2">
-              <input
-                id="player-name"
-                value={playerName}
-                onChange={(e) => setPlayerName(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && submitScore()}
-                maxLength={24}
-                placeholder="Trainer name"
-                disabled={saveState === "saved" || saveState === "disabled"}
-                className="h-10 min-w-0 flex-1 rounded-md border border-input bg-background px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50"
-              />
-              <Button
-                onClick={submitScore}
-                disabled={!playerName.trim() || saveState === "saving" || saveState === "saved" || saveState === "disabled"}
-              >
-                {saveState === "saving" && <Loader2 className="h-4 w-4 animate-spin" aria-hidden />}
-                {saveState === "saved" ? "Saved!" : "Submit"}
-              </Button>
+          {practice ? (
+            <p className="rounded-md border border-dashed px-4 py-3 text-center text-xs text-muted-foreground">{PRACTICE_NOTES[practice]}</p>
+          ) : (
+            <div className="space-y-2">
+              <label htmlFor="player-name" className="hud-label">
+                {isDaily ? "Post to today's daily leaderboard" : "Save to leaderboard"}
+              </label>
+              <div className="flex gap-2">
+                <input
+                  id="player-name"
+                  value={playerName}
+                  onChange={(e) => setPlayerName(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && submitScore()}
+                  maxLength={24}
+                  placeholder="Trainer name"
+                  disabled={saveState === "saved" || saveState === "disabled"}
+                  className="h-10 min-w-0 flex-1 rounded-md border border-input bg-background px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50"
+                />
+                <Button
+                  onClick={submitScore}
+                  disabled={!playerName.trim() || saveState === "saving" || saveState === "saved" || saveState === "disabled"}
+                >
+                  {saveState === "saving" && <Loader2 className="h-4 w-4 animate-spin" aria-hidden />}
+                  {saveState === "saved" ? "Saved!" : "Submit"}
+                </Button>
+              </div>
+              {saveState === "failed" && <p className="text-xs text-destructive">{saveError}</p>}
+              {saveState === "disabled" && (
+                <p className="text-xs text-muted-foreground">Leaderboards aren&apos;t enabled on this deployment.</p>
+              )}
             </div>
-            {saveState === "failed" && <p className="text-xs text-destructive">{saveError}</p>}
-            {saveState === "disabled" && (
-              <p className="text-xs text-muted-foreground">Leaderboards aren&apos;t enabled on this deployment.</p>
-            )}
-          </div>
+          )}
 
           <div className="flex flex-col gap-2 sm:flex-row">
             {!isDaily && (
@@ -321,7 +341,13 @@ export function QuizResults({ result, resultToken, shareToken, challenger, onRes
               </Button>
             )}
             <Link
-              href={isDaily ? `/leaderboard?board=daily&date=${result.spec.daily}` : `/leaderboard?board=${result.spec.module}&format=${result.spec.format}`}
+              href={
+                isDaily
+                  ? `/leaderboard?board=daily&date=${result.spec.daily}`
+                  : result.spec.format === "adaptive"
+                    ? "/leaderboard?board=iq"
+                    : `/leaderboard?board=${result.spec.module}&format=${result.spec.format}&difficulty=${result.spec.difficulty}`
+              }
               className={cn(buttonVariants({ variant: "outline", size: "lg" }), "flex-1")}
             >
               <Trophy className="h-4 w-4" aria-hidden /> Leaderboard

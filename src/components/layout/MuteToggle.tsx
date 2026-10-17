@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Volume2, VolumeX } from "lucide-react";
-import { isMuted, play, setMuted } from "@/lib/sound";
+import { isMuted, play, setMuted, unlockAudio } from "@/lib/sound";
 
 /** Sound on/off. `M` toggles from anywhere outside a text field. */
 export function MuteToggle() {
@@ -15,8 +15,20 @@ export function MuteToggle() {
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
       toggle();
     };
+    // iOS starts audio only inside a gesture: warm the context on the first one.
+    const unlock = () => {
+      unlockAudio();
+      window.removeEventListener("pointerdown", unlock, true);
+      window.removeEventListener("keydown", unlock, true);
+    };
+    window.addEventListener("pointerdown", unlock, true);
+    window.addEventListener("keydown", unlock, true);
     window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      window.removeEventListener("pointerdown", unlock, true);
+      window.removeEventListener("keydown", unlock, true);
+    };
   }, []);
 
   function toggle() {

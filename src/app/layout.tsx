@@ -5,6 +5,7 @@ import { Analytics } from "@vercel/analytics/next";
 import { DesktopNav, MobileTabBar } from "@/components/layout/SiteNav";
 import { Logo } from "@/components/layout/Logo";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
+import { THEME_INIT_SCRIPT } from "@/lib/theme";
 import "./globals.css";
 
 const display = Chakra_Petch({ subsets: ["latin"], weight: ["500", "600", "700"], variable: "--font-display", display: "swap" });
@@ -43,7 +44,10 @@ const websiteJsonLd = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`dark ${display.variable} ${body.variable} ${pixel.variable}`}>
+    <html lang="en" className={`${display.variable} ${body.variable} ${pixel.variable}`} suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
+      </head>
       <body className="flex min-h-screen flex-col">
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }} />
         <header className="glass sticky top-0 z-50">
@@ -55,7 +59,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           </div>
         </header>
         <main className="container flex-1 pb-28 pt-8 md:pb-12">{children}</main>
-        <footer className="mb-[calc(4rem+env(safe-area-inset-bottom))] border-t border-white/[0.06] py-8 text-center text-xs text-muted-foreground md:mb-0">
+        <footer className="mb-[calc(4rem+env(safe-area-inset-bottom))] border-t border-foreground/[0.06] py-8 text-center text-xs text-muted-foreground md:mb-0">
           <div className="container space-y-2">
             <nav className="flex flex-wrap justify-center gap-x-5 gap-y-2 font-pixel text-[10px] uppercase tracking-wider">
               <Link href="/play" className="hover:text-foreground">Game modes</Link>

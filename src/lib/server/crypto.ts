@@ -17,11 +17,17 @@ import { createCipheriv, createDecipheriv, createHash, createHmac, randomBytes, 
 const DEV_SECRET = "pokeiq-dev-secret-do-not-use-in-production";
 let warned = false;
 
+/** False when running on the public dev secret (POKEIQ_SECRET unset or < 16 chars). */
+export function secretIsSecure(): boolean {
+  const value = process.env.POKEIQ_SECRET;
+  return Boolean(value && value.length >= 16);
+}
+
 function secret(): string {
   const value = process.env.POKEIQ_SECRET;
-  if (value && value.length >= 16) return value;
+  if (value && secretIsSecure()) return value;
   if (!warned && process.env.NODE_ENV === "production") {
-    console.warn("[pokeiq] POKEIQ_SECRET is unset or too short — using the public dev secret. Set it in production!");
+    console.warn("[pokeiq] POKEIQ_SECRET is unset or too short — using the public dev secret. Set it in production! Leaderboard submissions are disabled until you do.");
   }
   warned = true;
   return DEV_SECRET;

@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { ChevronDown, CircleDot, Search, Sparkle, Swords } from "lucide-react";
 import type { DexMove } from "@/lib/pokemon/dex-types";
@@ -28,6 +28,10 @@ export function MovesSection({ moves, game }: { moves: DexMove[]; game: string }
   const [tab, setTab] = useState<DexMove["method"]>(TABS.find((t) => counts[t.method] > 0)?.method ?? "L");
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState<number | null>(null);
+  // Rows in the prerendered HTML stay visible; only later tab / filter
+  // changes animate rows in.
+  const [hydrated, setHydrated] = useState(false);
+  useEffect(() => setHydrated(true), []);
 
   const rows = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -42,7 +46,7 @@ export function MovesSection({ moves, game }: { moves: DexMove[]; game: string }
   return (
     <div className="space-y-3 hud rounded-lg border bg-card p-4">
       <div className="flex flex-wrap items-center gap-2">
-        <div className="flex flex-wrap rounded-md border border-white/10 bg-black/30 p-1">
+        <div className="flex flex-wrap rounded-md border border-foreground/10 bg-shade/30 p-1">
           {TABS.filter((t) => counts[t.method] > 0).map((t) => (
             <button
               key={t.method}
@@ -72,7 +76,7 @@ export function MovesSection({ moves, game }: { moves: DexMove[]; game: string }
         </div>
       </div>
 
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto" data-hscroll>
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b text-left text-[11px] uppercase tracking-wider text-muted-foreground">
@@ -95,16 +99,26 @@ export function MovesSection({ moves, game }: { moves: DexMove[]; game: string }
               return (
                 <Fragment key={`${m.id}-${m.level}`}>
                   <motion.tr
-                    initial={{ opacity: 0, x: -8 }}
+                    initial={hydrated ? { opacity: 0, x: -8 } : false}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: Math.min(i, 20) * 0.015 }}
                     onClick={() => setOpen(isOpen ? null : key)}
-                    className={cn("cursor-pointer border-b border-white/5 transition-colors hover:bg-white/[0.03]", isOpen && "bg-white/[0.04]")}
+                    className={cn("cursor-pointer border-b border-foreground/5 transition-colors hover:bg-foreground/[0.03]", isOpen && "bg-foreground/[0.04]")}
                   >
                     <td className="p-2 font-mono text-xs text-muted-foreground">
                       {tab === "L" ? (m.level === 0 ? "Evo" : m.level) : tab === "M" ? m.tm ?? "—" : ""}
                     </td>
-                    <td className="p-2 font-semibold">{m.name}</td>
+                    <td className="p-2 font-semibold">
+                      {/* The row handles the click; the button makes it reachable by keyboard. */}
+                      <button
+                        type="button"
+                        aria-expanded={isOpen}
+                        aria-controls={isOpen ? `move-${key}` : undefined}
+                        className="text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm"
+                      >
+                        {m.name}
+                      </button>
+                    </td>
                     <td className="p-2">
                       <TypeBadge type={m.type} size="sm" />
                     </td>
@@ -115,15 +129,15 @@ export function MovesSection({ moves, game }: { moves: DexMove[]; game: string }
                     <td className="hidden p-2 text-right font-mono tabular-nums sm:table-cell">{m.accuracy ?? "—"}</td>
                     <td className="hidden p-2 text-right font-mono tabular-nums sm:table-cell">{m.pp ?? "—"}</td>
                     <td className="p-2">
-                      <ChevronDown className={cn("h-4 w-4 text-muted-foreground transition-transform", isOpen && "rotate-180")} />
+                      <ChevronDown className={cn("h-4 w-4 text-muted-foreground transition-transform", isOpen && "rotate-180")} aria-hidden />
                     </td>
                   </motion.tr>
                   <AnimatePresence initial={false}>
                     {isOpen && (
-                      <tr>
+                      <tr id={`move-${key}`}>
                         <td colSpan={8} className="p-0">
                           <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
-                            <div className="flex flex-wrap gap-x-4 gap-y-1 bg-white/[0.02] px-4 py-3 text-xs text-muted-foreground">
+                            <div className="flex flex-wrap gap-x-4 gap-y-1 bg-foreground/[0.02] px-4 py-3 text-xs text-muted-foreground">
                               <span className="w-full text-sm text-foreground/90">{m.effect || "No additional effect."}</span>
                               <span>{meta.label}</span>
                               <span className="sm:hidden">Acc {m.accuracy ?? "—"} · PP {m.pp ?? "—"}</span>

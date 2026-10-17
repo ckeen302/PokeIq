@@ -4,16 +4,17 @@ import { Medal } from "lucide-react";
 import { fetchBoard } from "@/lib/server/leaderboard";
 import { dailyNumber, isValidDailyDate } from "@/lib/daily";
 import { FORMAT_INFO, MODULE_INFO, PLAY_MODULES, PLAYABLE_FORMATS } from "@/lib/modes";
-import type { ModuleId, QuizFormat } from "@/engines/types";
+import { DIFFICULTIES, type Difficulty, type ModuleId, type QuizFormat } from "@/engines/types";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import { LocalDateRedirect } from "./local-date-redirect";
 
 export const metadata: Metadata = { title: "Leaderboard" };
 export const dynamic = "force-dynamic";
 
 interface PageProps {
-  searchParams: Promise<{ board?: string; format?: string; date?: string }>;
+  searchParams: Promise<{ board?: string; format?: string; difficulty?: string; date?: string }>;
 }
 
 export default async function LeaderboardPage({ searchParams }: PageProps) {
@@ -21,6 +22,9 @@ export default async function LeaderboardPage({ searchParams }: PageProps) {
   const board =
     params.board === "daily" || params.board === "iq" || PLAY_MODULES.includes(params.board as ModuleId) ? params.board! : "daily";
   const format: QuizFormat = (PLAYABLE_FORMATS as readonly string[]).includes(params.format ?? "") ? (params.format as QuizFormat) : "classic";
+  const difficulty: Difficulty = (DIFFICULTIES as readonly string[]).includes(params.difficulty ?? "")
+    ? (params.difficulty as Difficulty)
+    : "medium";
   const today = new Date().toISOString().slice(0, 10);
   const date = params.date && isValidDailyDate(params.date) ? params.date : today;
 
@@ -29,12 +33,13 @@ export default async function LeaderboardPage({ searchParams }: PageProps) {
       ? await fetchBoard({ kind: "daily", date })
       : board === "iq"
         ? await fetchBoard({ kind: "iq" })
-        : await fetchBoard({ kind: "module", module: board, format });
+        : await fetchBoard({ kind: "module", module: board, format, difficulty });
 
   const tabs = [{ id: "daily", label: "Daily" }, { id: "iq", label: "PokéIQ Test" }, ...PLAY_MODULES.map((m) => ({ id: m, label: MODULE_INFO[m].title }))];
 
   return (
     <div className="mx-auto max-w-3xl space-y-6">
+      {board === "daily" && !params.date && <LocalDateRedirect serverDate={date} />}
       <div className="space-y-4 text-center">
         <h1 className="font-display text-4xl font-bold uppercase tracking-tight sm:text-5xl">Leaderboard</h1>
         <div className="flex flex-wrap justify-center gap-2">
@@ -47,18 +52,30 @@ export default async function LeaderboardPage({ searchParams }: PageProps) {
           ))}
         </div>
         {board === "daily" ? (
-          <p className="text-sm text-muted-foreground">Daily Challenge #{dailyNumber(date)} · {date} (UTC)</p>
+          <p className="text-sm text-muted-foreground">Daily Challenge #{dailyNumber(date)} · {date}</p>
         ) : board === "iq" ? (
           <p className="text-sm text-muted-foreground">Ranked by measured PokéIQ from the adaptive test</p>
         ) : (
-          <div className="flex justify-center gap-2">
-            {PLAYABLE_FORMATS.map((f) => (
-              <Link key={f} href={`/leaderboard?board=${board}&format=${f}`}>
-                <Badge variant={f === format ? "secondary" : "outline"} className="hover:bg-accent">
-                  {FORMAT_INFO[f].title}
-                </Badge>
-              </Link>
-            ))}
+          <div className="space-y-2">
+            <div className="flex justify-center gap-2">
+              {PLAYABLE_FORMATS.map((f) => (
+                <Link key={f} href={`/leaderboard?board=${board}&format=${f}&difficulty=${difficulty}`}>
+                  <Badge variant={f === format ? "secondary" : "outline"} className="hover:bg-accent">
+                    {FORMAT_INFO[f].title}
+                  </Badge>
+                </Link>
+              ))}
+            </div>
+            <div className="flex justify-center gap-2">
+              {DIFFICULTIES.map((d) => (
+                <Link key={d} href={`/leaderboard?board=${board}&format=${format}&difficulty=${d}`}>
+                  <Badge variant={d === difficulty ? "secondary" : "outline"} className="capitalize hover:bg-accent">
+                    {d}
+                  </Badge>
+                </Link>
+              ))}
+            </div>
+            <p className="text-xs text-muted-foreground">All-generation runs only</p>
           </div>
         )}
       </div>

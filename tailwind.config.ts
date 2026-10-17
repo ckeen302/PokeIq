@@ -40,6 +40,7 @@ const config: Config = {
         },
         warning: "hsl(var(--warning))",
         screen: "hsl(var(--screen))",
+        shade: "hsl(var(--shade) / <alpha-value>)",
         muted: {
           DEFAULT: "hsl(var(--muted))",
           foreground: "hsl(var(--muted-foreground))",

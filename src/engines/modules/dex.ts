@@ -20,34 +20,134 @@ import {
 
 const REDACTED = "▇▇▇";
 
-function escapeRegExp(s: string): string {
-  return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+/** Lower-case, accent- and apostrophe-folded copy of a single character. */
+function foldChar(ch: string): string {
+  return ch
+    .normalize("NFD")
+    .replace(/\p{M}/gu, "")
+    .replace(/[’‘`]/g, "'")
+    .toLowerCase();
+}
+
+/** Fold text for comparison: accents stripped, apostrophes and whitespace unified. */
+export function foldText(text: string): string {
+  return text
+    .normalize("NFD")
+    .replace(/\p{M}/gu, "")
+    .replace(/[’‘`]/g, "'")
+    .toLowerCase()
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+/**
+ * A pattern matching a name however an entry spells it: case- and
+ * accent-insensitive, any short punctuation between its parts
+ * ("Mr. Mime", "Farfetch’d", "Ho-Oh"), and gender symbols ignored
+ * ("Nidoran♀" also matches a bare "Nidoran"). Boundaries are Unicode-aware,
+ * so a trailing "é" or "." never defeats them.
+ */
+function namePattern(name: string): string | null {
+  const parts = foldText(name).match(/[\p{L}\p{N}]+/gu) ?? [];
+  if (parts.join("").length < 3) return null;
+  const body = parts.map((part) => part.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("[^\\p{L}\\p{N}]{0,2}");
+  return `(?<![\\p{L}\\p{N}])${body}(?![\\p{L}\\p{N}])`;
+}
+
+const regexCache = new Map<string, RegExp | null>();
+
+function namesRegex(pokemon: readonly Pokemon[]): RegExp | null {
+  const key = pokemon.map((p) => p.id).join(",");
+  if (!regexCache.has(key)) regexCache.set(key, compileNames(pokemon));
+  return regexCache.get(key)!;
+}
+
+function compileNames(pokemon: readonly Pokemon[]): RegExp | null {
+  const patterns = [...new Set(pokemon.flatMap((p) => [namePattern(p.name), namePattern(p.slug)]))]
+    .filter((x): x is string => x !== null)
+    .sort((a, b) => b.length - a.length);
+  // Patterns and haystacks are both pre-folded to lower case, so no `i` flag
+  // (case-insensitive Unicode regexes are far slower to compile).
+  return patterns.length ? new RegExp(patterns.join("|"), "gu") : null;
 }
 
 /**
  * Redact the target's name — and its whole evolution family, since entries
- * like "it evolves into Raichu" would give the answer away.
+ * like "it evolves into Raichu" would give the answer away. Matching runs on
+ * a folded copy whose characters line up one-to-one with the original.
  */
 export function censorEntry(text: string, target: Pokemon): string {
-  const names = [...new Set(evolutionFamily(target).flatMap((p) => [p.name, p.slug]))]
-    .filter((n) => n.length >= 3)
-    .sort((a, b) => b.length - a.length);
-  let out = text;
-  for (const name of names) {
-    out = out.replace(new RegExp(`\\b${escapeRegExp(name)}\\b`, "gi"), REDACTED);
+  const re = namesRegex(evolutionFamily(target));
+  if (!re) return text;
+  const chars = [...text];
+  const folded = chars.map((ch) => {
+    const f = ch < "\x80" ? ch.toLowerCase() : foldChar(ch);
+    return f.length === 1 ? f : ch;
+  });
+  const haystack = folded.join("");
+  // Map UTF-16 offsets in the folded copy back to code-point indices.
+  const indexAt: number[] = [];
+  folded.forEach((ch, i) => {
+    for (let k = 0; k < ch.length; k++) indexAt.push(i);
+  });
+  indexAt.push(chars.length);
+
+  let out = "";
+  let cursor = 0;
+  for (const m of haystack.matchAll(re)) {
+    const start = indexAt[m.index];
+    const end = indexAt[m.index + m[0].length];
+    out += chars.slice(cursor, start).join("") + REDACTED;
+    cursor = end;
   }
-  return out;
+  return out + chars.slice(cursor).join("");
+}
+
+/** True when any spelling of the target's name survives in the text. */
+export function leaksName(text: string, target: Pokemon): boolean {
+  const re = namesRegex([target]);
+  return re !== null && foldText(text).search(re) !== -1;
+}
+
+/**
+ * Entry texts shared by several species (the six Ultra Beasts share one)
+ * can't identify a single answer, so they are never served.
+ */
+const FOLDED_FLAVOR = new Map(POKEDEX.map((p) => [p.id, p.flavor.map(foldText)]));
+
+const SERVABLE_ENTRIES: ReadonlyMap<number, string[]> = (() => {
+  const owners = new Map<string, Set<number>>();
+  for (const [id, folded] of FOLDED_FLAVOR) {
+    for (const key of folded) owners.set(key, (owners.get(key) ?? new Set()).add(id));
+  }
+  return new Map(
+    POKEDEX.map((p) => [p.id, p.flavor.filter((_, i) => owners.get(FOLDED_FLAVOR.get(p.id)![i])!.size === 1)])
+  );
+})();
+
+function servableEntries(p: Pokemon): string[] {
+  return SERVABLE_ENTRIES.get(p.id) ?? [];
 }
 
 function entryQuestion(rng: Rng, opts: GenerateOptions): Question | null {
   const pool = difficultyPool(opts);
-  const target = pickTarget(rng, pool, opts.used, (p) => p.flavor.length > 0);
+  const target = pickTarget(rng, pool, opts.used, (p) => servableEntries(p).length > 0);
   if (!target) return null;
 
-  const entry = censorEntry(rng.pick(target.flavor), target);
-  if (entry.length < 40 || entry.toLowerCase().includes(target.name.toLowerCase())) return null;
+  const original = rng.pick(servableEntries(target));
+  const entry = censorEntry(original, target);
+  if (entry.length < 40 || leaksName(entry, target)) return null;
 
-  const distractors = pickDistractors(rng, target, pool, 3, SIMILARITY_BY_DIFFICULTY[opts.difficulty]);
+  // A distractor whose own entries contain this text would also be correct.
+  const shown = foldText(original);
+  const distractors = pickDistractors(
+    rng,
+    target,
+    pool,
+    3,
+    SIMILARITY_BY_DIFFICULTY[opts.difficulty],
+    (p) => !(FOLDED_FLAVOR.get(p.id) ?? []).some((f) => f.includes(shown))
+  );
   if (distractors.length < 3) return null;
 
   return {

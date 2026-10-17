@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { getServiceSupabase } from "@/lib/supabase";
-import { verifyToken } from "@/lib/server/crypto";
+import { secretIsSecure, verifyToken } from "@/lib/server/crypto";
 import { clientIp, rateLimit } from "@/lib/server/rate-limit";
-import { fetchBoard } from "@/lib/server/leaderboard";
+import { fetchBoard, practiceMessage } from "@/lib/server/leaderboard";
 import type { RunResult } from "@/lib/session-types";
 
 /**
- * GET  /api/leaderboard?daily=YYYY-MM-DD | ?module=whos-that&format=classic
+ * GET  /api/leaderboard?daily=YYYY-MM-DD | ?iq=1 | ?module=whos-that&format=classic&difficulty=medium
  * POST /api/leaderboard { resultToken, playerName }
  *
  * The POST body carries no score at all — only the server-signed result
@@ -27,16 +27,20 @@ const submissionSchema = z.object({
 
 const RESULT_MAX_AGE_MS = 6 * 60 * 60 * 1000;
 
+
 export async function GET(request: NextRequest) {
   const params = request.nextUrl.searchParams;
   const daily = params.get("daily");
   const entries = daily
     ? await fetchBoard({ kind: "daily", date: daily })
-    : await fetchBoard({
-        kind: "module",
-        module: params.get("module") ?? "whos-that",
-        format: params.get("format") ?? undefined,
-      });
+    : params.get("iq")
+      ? await fetchBoard({ kind: "iq" })
+      : await fetchBoard({
+          kind: "module",
+          module: params.get("module") ?? "whos-that",
+          format: params.get("format") ?? undefined,
+          difficulty: params.get("difficulty") ?? undefined,
+        });
   return NextResponse.json({ entries: entries ?? [], persistenceEnabled: entries !== null });
 }
 
@@ -46,6 +50,10 @@ export async function POST(request: NextRequest) {
   }
   const supabase = getServiceSupabase();
   if (!supabase) return NextResponse.json({ saved: false, reason: "Persistence not configured" });
+  // With the public dev secret anyone could mint a result token.
+  if (process.env.NODE_ENV === "production" && !secretIsSecure()) {
+    return NextResponse.json({ error: "Leaderboard disabled until the server secret is configured." }, { status: 503 });
+  }
 
   const parsed = submissionSchema.safeParse(await request.json().catch(() => ({})));
   if (!parsed.success) {
@@ -57,6 +65,8 @@ export async function POST(request: NextRequest) {
   if (Date.now() - result.finishedAt > RESULT_MAX_AGE_MS) {
     return NextResponse.json({ error: "This result is too old to submit." }, { status: 410 });
   }
+  const practice = practiceMessage(result);
+  if (practice) return NextResponse.json({ error: practice }, { status: 403 });
   const { error } = await supabase.from("runs").insert({
     session_id: result.sid,
     player_name: parsed.data.playerName,

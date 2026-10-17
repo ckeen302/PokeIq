@@ -5,9 +5,10 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { track } from "@vercel/analytics";
 import { ArrowDown, ArrowUp, Check, Lightbulb, RefreshCw, Share2 } from "lucide-react";
-import { dailyNumber, localDateString } from "@/lib/daily";
-import { getProgress, saveDle, useProgress } from "@/lib/progress";
-import { shareOrCopy } from "@/lib/share";
+import { dailyNumber } from "@/lib/daily";
+import { currentStreak, getProgress, saveDle, useProgress } from "@/lib/progress";
+import { shareOrCopy, shareText } from "@/lib/share";
+import { useToday } from "@/lib/use-today";
 import { play } from "@/lib/sound";
 import {
   DLE_COLUMNS,
@@ -20,6 +21,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { NextDailyCountdown } from "@/components/NextDailyCountdown";
+import { CopyFallback } from "@/components/quiz/CopyFallback";
 import { cn } from "@/lib/utils";
 
 type NameEntry = [id: number, name: string, gen: number];
@@ -33,17 +35,23 @@ const normalize = (s: string) =>
 const CELL_STYLES: Record<CellStatus, string> = {
   match: "bg-success/90 text-success-foreground border-success",
   partial: "bg-yellow-500/85 text-yellow-950 border-yellow-400",
-  higher: "bg-secondary text-foreground border-white/10",
-  lower: "bg-secondary text-foreground border-white/10",
-  miss: "bg-muted/60 text-muted-foreground border-white/5",
+  higher: "bg-secondary text-foreground border-foreground/10",
+  lower: "bg-secondary text-foreground border-foreground/10",
+  miss: "bg-muted/60 text-muted-foreground border-foreground/5",
 };
+
+type Target = { kind: "daily"; date: string } | { kind: "practice"; seed: string };
 
 const SHARE_EMOJI: Record<CellStatus, string> = { match: "🟩", partial: "🟨", higher: "🔼", lower: "🔽", miss: "⬛" };
 
 export function Pokedle({ names }: { names: NameEntry[] }) {
   const progress = useProgress();
   const [mode, setMode] = useState<"daily" | "practice">("daily");
-  const [date] = useState(() => localDateString());
+  // Local date, known only after mount (the page is prerendered). `date` is
+  // the daily puzzle on screen; it follows `today` across midnight unless a
+  // puzzle is mid-solve.
+  const today = useToday();
+  const [date, setDate] = useState<string | null>(null);
   const [practiceSeed, setPracticeSeed] = useState(() => Math.random().toString(36).slice(2, 10));
   const [guesses, setGuesses] = useState<number[]>([]);
   const [state, setState] = useState<DleResponse | null>(null);
@@ -52,48 +60,59 @@ export function Pokedle({ names }: { names: NameEntry[] }) {
   const [query, setQuery] = useState("");
   const [highlight, setHighlight] = useState(0);
   const [copied, setCopied] = useState(false);
-  const loadedRef = useRef(false);
+  const [copyFallback, setCopyFallback] = useState<string | null>(null);
+  /** Latest request id: responses to superseded requests (mode switches) are ignored. */
+  const reqRef = useRef(0);
+  const seenTodayRef = useRef<string | null>(null);
   /** Only a guess the player just made should make a sound (not restores). */
   const guessedRef = useRef(false);
   const inputRef = useRef<HTMLInputElement | null>(null);
 
-  const evaluate = useCallback(
-    async (list: number[], forMode: "daily" | "practice" = mode) => {
-      setLoading(true);
-      setError(null);
-      try {
-        const res = await fetch("/api/pokedle", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(forMode === "daily" ? { date, guesses: list } : { practiceSeed, guesses: list }),
-        });
-        const body = await res.json();
-        if (!res.ok) throw new Error(body.error ?? "Request failed");
-        const result = body as DleResponse;
-        setState(result);
-        if (guessedRef.current) play(result.solved ? "fanfare" : result.over ? "wrong" : "click");
-        guessedRef.current = false;
-        if (forMode === "daily") {
-          saveDle(date, { guesses: list, solved: result.solved, over: result.over });
-          if (result.over) track("pokedle_complete", { solved: result.solved, guesses: list.length });
-        }
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Something went wrong");
-      } finally {
-        setLoading(false);
+  const evaluate = useCallback(async (list: number[], target: Target) => {
+    const id = ++reqRef.current;
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/pokedle", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(
+          target.kind === "daily" ? { date: target.date, guesses: list } : { practiceSeed: target.seed, guesses: list }
+        ),
+      });
+      const body = await res.json();
+      if (!res.ok) throw new Error(body.error ?? "Request failed");
+      const result = body as DleResponse;
+      // A daily guess is saved even if the player has since switched modes.
+      if (target.kind === "daily") {
+        saveDle(target.date, { guesses: list, solved: result.solved, over: result.over });
+        if (result.over) track("pokedle_complete", { solved: result.solved, guesses: list.length });
       }
-    },
-    [mode, date, practiceSeed]
-  );
+      if (id !== reqRef.current) return;
+      setState(result);
+      if (guessedRef.current) play(result.solved ? "fanfare" : result.over ? "wrong" : "click");
+      guessedRef.current = false;
+    } catch (err) {
+      if (id === reqRef.current) setError(err instanceof Error ? err.message : "Something went wrong");
+    } finally {
+      if (id === reqRef.current) setLoading(false);
+    }
+  }, []);
 
-  // Restore today's daily progress once local storage is available.
-  useEffect(() => {
-    if (loadedRef.current || mode !== "daily" || !progress) return;
-    loadedRef.current = true;
-    const saved = getProgress().dle.results[date]?.guesses ?? [];
-    setGuesses(saved);
-    if (saved.length) void evaluate(saved);
-  }, [progress, mode, date, evaluate]);
+  const loadDaily = useCallback(
+    (d: string) => {
+      reqRef.current++;
+      setMode("daily");
+      setDate(d);
+      setState(null);
+      setLoading(false);
+      setCopyFallback(null);
+      const saved = getProgress().dle.results[d]?.guesses ?? [];
+      setGuesses(saved);
+      if (saved.length) void evaluate(saved, { kind: "daily", date: d });
+    },
+    [evaluate]
+  );
 
   const guessedIds = useMemo(() => new Set(guesses), [guesses]);
   const suggestions = useMemo(() => {
@@ -112,39 +131,55 @@ export function Pokedle({ names }: { names: NameEntry[] }) {
 
   const over = state?.over ?? false;
 
+  // Restore the daily once local storage is available, and roll over to the
+  // new puzzle at local midnight (unless one is mid-solve).
+  useEffect(() => {
+    if (!today || !progress) return;
+    const prev = seenTodayRef.current;
+    if (prev === today) return;
+    seenTodayRef.current = today;
+    if (prev === null || (mode === "daily" && (guesses.length === 0 || over))) loadDaily(today);
+  }, [today, progress, mode, guesses.length, over, loadDaily]);
+
   function submitGuess(entry: NameEntry | undefined) {
     if (!entry || over || loading) return;
+    if (mode === "daily" && !date) return;
     guessedRef.current = true;
     const next = [...guesses, entry[0]];
     setGuesses(next);
     setQuery("");
     setHighlight(0);
-    void evaluate(next);
+    void evaluate(next, mode === "daily" ? { kind: "daily", date: date! } : { kind: "practice", seed: practiceSeed });
   }
 
   function newPractice() {
+    reqRef.current++; // drop any in-flight daily response
     setMode("practice");
     setPracticeSeed(Math.random().toString(36).slice(2, 10));
     setGuesses([]);
     setState(null);
+    setLoading(false);
     setQuery("");
+    setCopyFallback(null);
     setTimeout(() => inputRef.current?.focus(), 50);
   }
 
   function backToDaily() {
-    setMode("daily");
-    setState(null);
-    const saved = getProgress().dle.results[date]?.guesses ?? [];
-    setGuesses(saved);
-    if (saved.length) void evaluate(saved, "daily");
+    const d = today ?? date;
+    if (d) loadDaily(d);
   }
 
   async function share() {
-    if (!state) return;
+    if (!state || !date) return;
     const rows = state.rows.map((r) => DLE_COLUMNS.map((c) => SHARE_EMOJI[r.cells[c.key].status]).join(""));
     const header = `PokéIQ Pokédle #${dailyNumber(date)} ${state.solved ? state.rows.length : "X"}/${DLE_MAX_GUESSES}`;
-    const outcome = await shareOrCopy([header, ...rows].join("\n"), `${window.location.origin}/pokedle`);
-    if (outcome !== "failed") {
+    const text = [header, ...rows].join("\n");
+    const url = `${window.location.origin}/pokedle`;
+    const outcome = await shareOrCopy(text, url);
+    if (outcome === "failed") {
+      setCopyFallback(shareText(text, url));
+    } else if (outcome !== "cancelled") {
+      setCopyFallback(null);
       setCopied(true);
       track("share", { kind: "pokedle", via: outcome });
       setTimeout(() => setCopied(false), 2500);
@@ -157,7 +192,7 @@ export function Pokedle({ names }: { names: NameEntry[] }) {
     <div className="mx-auto max-w-3xl space-y-6">
       <div className="space-y-2 text-center">
         <p className="hud-label text-screen">
-          {mode === "daily" ? `Pokédle #${dailyNumber(date)}` : "Pokédle · Practice"}
+          {mode === "practice" ? "Pokédle · Practice" : date ? `Pokédle #${dailyNumber(date)}` : "Pokédle"}
         </p>
         <h1 className="font-display text-4xl font-bold uppercase tracking-tight sm:text-5xl">Guess the mystery Pokémon</h1>
         <p className="text-sm text-muted-foreground">
@@ -188,8 +223,9 @@ export function Pokedle({ names }: { names: NameEntry[] }) {
             placeholder={`Guess ${guesses.length + 1} of ${DLE_MAX_GUESSES} — type a Pokémon…`}
             autoComplete="off"
             spellCheck={false}
+            disabled={mode === "daily" && !date}
             aria-label="Guess a Pokémon"
-            className="h-12 w-full rounded-md border-2 border-white/15 bg-black/40 px-4 font-display text-base tracking-wide focus-visible:border-screen/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
+            className="h-12 w-full rounded-md border-2 border-foreground/15 bg-shade/40 px-4 font-display text-base tracking-wide focus-visible:border-screen/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
           />
           <AnimatePresence>
             {suggestions.length > 0 && (
@@ -197,7 +233,7 @@ export function Pokedle({ names }: { names: NameEntry[] }) {
                 initial={{ opacity: 0, y: -4 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0 }}
-                className="absolute inset-x-0 top-14 z-20 overflow-hidden rounded-md border-2 border-white/15 bg-card shadow-2xl"
+                className="absolute inset-x-0 top-14 z-20 overflow-hidden rounded-md border-2 border-foreground/15 bg-card shadow-2xl"
                 role="listbox"
               >
                 {suggestions.map((entry, i) => (
@@ -267,9 +303,17 @@ export function Pokedle({ names }: { names: NameEntry[] }) {
                   <RefreshCw className="h-4 w-4" /> {mode === "daily" ? "Practice mode" : "New puzzle"}
                 </Button>
               </div>
+              {mode === "daily" && today && date !== today && (
+                <Button className="w-full" onClick={backToDaily}>
+                  Play today&apos;s Pokédle
+                </Button>
+              )}
+              {copyFallback && <CopyFallback text={copyFallback} />}
               {mode === "daily" && <NextDailyCountdown label="Next Pokédle in" />}
-              {mode === "daily" && progress && progress.dle.streak > 0 && (
-                <p className="text-sm font-semibold text-orange-400">🔥 {progress.dle.streak}-day solve streak</p>
+              {mode === "daily" && progress && today && currentStreak(progress.dle.last, progress.dle.streak, today) > 0 && (
+                <p className="text-sm font-semibold text-orange-400">
+                  🔥 {currentStreak(progress.dle.last, progress.dle.streak, today)}-day solve streak
+                </p>
               )}
             </CardContent>
           </Card>

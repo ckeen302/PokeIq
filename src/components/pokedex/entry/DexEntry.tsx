@@ -59,10 +59,12 @@ export function DexEntry({ data }: { data: DexEntryData }) {
   const active = useScrollSpy(sections.map((s) => s.id));
   const sectionIndex = (id: string) => sections.findIndex((s) => s.id === id) + 1;
 
-  // ← / → to flip through the Pokédex.
+  // ← / → to flip through the Pokédex. Arrow keys keep their native meaning
+  // in form fields and in horizontally scrolling rows ([data-hscroll]).
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.target instanceof HTMLInputElement || e.metaKey || e.ctrlKey || e.altKey) return;
+      if (e.defaultPrevented || e.metaKey || e.ctrlKey || e.altKey || e.shiftKey) return;
+      if (e.target instanceof HTMLElement && e.target.closest("input, select, textarea, [contenteditable], [data-hscroll]")) return;
       if (e.key === "ArrowLeft" && data.prev) router.push(`/pokemon/${data.prev.slug}`);
       if (e.key === "ArrowRight" && data.next) router.push(`/pokemon/${data.next.slug}`);
     };
@@ -95,8 +97,8 @@ export function DexEntry({ data }: { data: DexEntryData }) {
       <Hero data={data} form={form} onFormChange={setForm} types={types} abilities={abilities} />
 
       {/* Sticky section nav with scroll-spy */}
-      <div className="sticky top-14 z-30 -mx-4 border-b border-white/5 bg-background/80 px-4 py-2 backdrop-blur-xl sm:-mx-8 sm:px-8">
-        <div className="flex gap-1 overflow-x-auto [scrollbar-width:none]">
+      <div className="sticky top-14 z-30 -mx-4 border-b border-foreground/5 bg-background/80 px-4 py-2 backdrop-blur-xl sm:-mx-8 sm:px-8">
+        <div className="flex gap-1 overflow-x-auto [scrollbar-width:none]" data-hscroll>
           {sections.map((s) => (
             <a
               key={s.id}
@@ -154,7 +156,7 @@ export function DexEntry({ data }: { data: DexEntryData }) {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
       >
-        <img src={artUrl(p.id, 256)} alt="" aria-hidden className="pointer-events-none absolute -bottom-8 -right-6 h-48 w-48 opacity-20 [filter:brightness(0)_invert(1)]" />
+        <img src={artUrl(p.id, 256)} alt="" aria-hidden className="pointer-events-none absolute -bottom-8 -right-6 h-48 w-48 opacity-20 [filter:brightness(0)_invert(1)] [.light_&]:opacity-10 [.light_&]:[filter:brightness(0)]" />
         <h2 className="font-display text-2xl font-bold uppercase">Think you&apos;ve got {p.name} down?</h2>
         <p className="mt-1 max-w-lg text-muted-foreground">Lock it in with flashcards, then prove it in a quiz.</p>
         <div className="mt-5 flex flex-wrap gap-2">
@@ -190,15 +192,24 @@ export function DexEntry({ data }: { data: DexEntryData }) {
   );
 }
 
+/**
+ * Highlights the first section (in page order) inside the reading band. The
+ * observer only reports sections whose state changed, so every section's
+ * latest state is kept: a tall section that stays in the band the whole time
+ * (Moves) must still win once the section below it scrolls out.
+ */
 function useScrollSpy(ids: string[]): string {
   const [active, setActive] = useState(ids[0]);
   const key = ids.join(",");
   useEffect(() => {
-    const els = key.split(",").map((id) => document.getElementById(id)).filter(Boolean) as HTMLElement[];
+    const order = key.split(",");
+    const els = order.map((id) => document.getElementById(id)).filter(Boolean) as HTMLElement[];
+    const inBand = new Map<string, boolean>();
     const io = new IntersectionObserver(
       (entries) => {
-        const visible = entries.filter((e) => e.isIntersecting).sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
-        if (visible[0]) setActive(visible[0].target.id);
+        for (const e of entries) inBand.set(e.target.id, e.isIntersecting);
+        const first = order.find((id) => inBand.get(id));
+        if (first) setActive(first);
       },
       { rootMargin: "-120px 0px -55% 0px" }
     );

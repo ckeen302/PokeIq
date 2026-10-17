@@ -1,11 +1,11 @@
 "use client";
 
 /* eslint-disable @next/next/no-img-element -- thumbnails come pre-sized from /api/art */
-import { useEffect, useMemo, useRef, useState } from "react";
+import { memo, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { AnimatePresence, motion } from "framer-motion";
-import { ArrowDownWideNarrow, ArrowUpNarrowWide, BookOpenCheck, Search, Shuffle, X } from "lucide-react";
+import { motion } from "framer-motion";
+import { ArrowDownWideNarrow, ArrowUpNarrowWide, BookOpenCheck, Search, Shuffle, SlidersHorizontal, X } from "lucide-react";
 import { TYPES, capitalize } from "@/lib/pokemon/type-matrix";
 import { typeColor } from "@/lib/pokemon/type-colors";
 import { artUrl } from "@/lib/pokemon/art";
@@ -75,6 +75,12 @@ export function PokedexExplorer({ items }: { items: DexListItem[] }) {
   const [finalOnly, setFinalOnly] = useState(false);
   const [sort, setSort] = useState<SortKey>("id");
   const [desc, setDesc] = useState(false);
+  // Phones show the filter rows on demand so the sticky bar stays one row tall.
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  // Cards in the prerendered HTML must be visible before hydration; only
+  // cards added afterwards (scrolling, filtering) animate in.
+  const [animateCards, setAnimateCards] = useState(false);
+  useEffect(() => setAnimateCards(true), []);
 
   // Deep links from the coach / Pokédex pages (?type=fire&gen=3&sort=spe).
   // Read after mount so the default grid stays in the static HTML for SEO.
@@ -146,13 +152,14 @@ export function PokedexExplorer({ items }: { items: DexListItem[] }) {
     list.includes(value) ? list.filter((v) => v !== value) : [...list, value].slice(-max);
 
   const hasFilters = query || types.length || gens.length || legendsOnly || finalOnly;
+  const activeFilters = types.length + gens.length + Number(legendsOnly) + Number(finalOnly);
 
   return (
     <div className="space-y-6">
       {/* Controls */}
-      <div className="sticky top-14 z-30 -mx-4 space-y-3 border-b border-white/5 bg-background/80 px-4 py-3 backdrop-blur-xl sm:-mx-8 sm:px-8">
+      <div className="sticky top-14 z-30 -mx-4 space-y-3 border-b border-foreground/5 bg-background/80 px-4 py-3 backdrop-blur-xl sm:-mx-8 sm:px-8">
         <div className="flex flex-wrap gap-2">
-          <div className="relative min-w-[200px] flex-1">
+          <div className="relative min-w-[180px] flex-1">
             <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <input
               ref={searchRef}
@@ -160,7 +167,7 @@ export function PokedexExplorer({ items }: { items: DexListItem[] }) {
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search name, number or category…  ( / )"
               aria-label="Search Pokémon"
-              className="h-11 w-full rounded-md border border-input bg-black/40 pl-9 pr-9 font-display text-sm tracking-wide focus-visible:border-screen/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
+              className="h-11 w-full rounded-md border border-input bg-shade/40 pl-9 pr-9 font-display text-sm tracking-wide focus-visible:border-screen/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
             />
             {query && (
               <button type="button" onClick={() => setQuery("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground" aria-label="Clear search">
@@ -168,91 +175,114 @@ export function PokedexExplorer({ items }: { items: DexListItem[] }) {
               </button>
             )}
           </div>
-          <select
-            value={sort}
-            onChange={(e) => setSort(e.target.value as SortKey)}
-            aria-label="Sort by"
-            className="h-11 rounded-md border border-input bg-black/40 px-3 font-display text-sm"
-          >
-            {SORTS.map((s) => (
-              <option key={s.key} value={s.key}>{s.label}</option>
-            ))}
-          </select>
           <button
             type="button"
-            onClick={() => setDesc((d) => !d)}
-            className="flex h-11 w-11 items-center justify-center rounded-md border border-input bg-black/40 hover:border-screen/60"
-            aria-label={desc ? "Sort ascending" : "Sort descending"}
+            onClick={() => setFiltersOpen((o) => !o)}
+            aria-expanded={filtersOpen}
+            aria-controls="dex-filters"
+            className={cn(
+              "relative flex h-11 w-11 items-center justify-center rounded-md border border-input bg-shade/40 hover:border-screen/60 md:hidden",
+              filtersOpen && "border-screen/60 text-screen"
+            )}
+            aria-label={filtersOpen ? "Hide filters" : "Show filters"}
           >
-            {desc ? <ArrowDownWideNarrow className="h-4 w-4" /> : <ArrowUpNarrowWide className="h-4 w-4" />}
+            <SlidersHorizontal className="h-4 w-4" />
+            {activeFilters > 0 && (
+              <span className="absolute -right-1.5 -top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 font-pixel text-[9px] text-primary-foreground">
+                {activeFilters}
+              </span>
+            )}
           </button>
+          <div className={cn("order-last gap-2 md:order-none", filtersOpen ? "flex" : "hidden md:flex")}>
+            <select
+              value={sort}
+              onChange={(e) => setSort(e.target.value as SortKey)}
+              aria-label="Sort by"
+              className="h-11 rounded-md border border-input bg-shade/40 px-3 font-display text-sm"
+            >
+              {SORTS.map((s) => (
+                <option key={s.key} value={s.key}>{s.label}</option>
+              ))}
+            </select>
+            <button
+              type="button"
+              onClick={() => setDesc((d) => !d)}
+              className="flex h-11 w-11 items-center justify-center rounded-md border border-input bg-shade/40 hover:border-screen/60"
+              aria-label={desc ? "Sort ascending" : "Sort descending"}
+            >
+              {desc ? <ArrowDownWideNarrow className="h-4 w-4" /> : <ArrowUpNarrowWide className="h-4 w-4" />}
+            </button>
+          </div>
           <button
             type="button"
             onClick={() => router.push(`/pokemon/${items[Math.floor(Math.random() * items.length)].slug}`)}
-            className="flex h-11 items-center gap-2 rounded-md border border-input bg-black/40 px-3 font-display text-sm font-semibold uppercase tracking-wider hover:border-screen/60"
+            className="flex h-11 items-center gap-2 rounded-md border border-input bg-shade/40 px-3 font-display text-sm font-semibold uppercase tracking-wider hover:border-screen/60"
+            aria-label="Surprise me: open a random Pokémon"
           >
             <Shuffle className="h-4 w-4" /> <span className="hidden sm:inline">Surprise me</span>
           </button>
         </div>
 
-        <div className="-mx-1 flex gap-1.5 overflow-x-auto px-1 pb-1 [scrollbar-width:none]">
-          {TYPES.map((t) => {
-            const active = types.includes(t);
-            return (
-              <button
-                key={t}
-                type="button"
-                onClick={() => setTypes((cur) => toggle(cur, t, 2))}
-                aria-pressed={active}
-                className={cn(
-                  "shrink-0 rounded-[4px] border px-2.5 py-1 font-display text-[11px] font-bold uppercase tracking-wider transition-all",
-                  active ? "border-transparent text-white" : "border-white/10 bg-black/20 text-muted-foreground hover:text-foreground"
-                )}
-                style={active ? { background: typeColor(t), boxShadow: "inset 0 1px 0 rgb(255 255 255 / 0.35), inset 0 -2px 0 rgb(0 0 0 / 0.25)" } : { borderColor: `${typeColor(t)}66` }}
-              >
-                {capitalize(t)}
-              </button>
-            );
-          })}
-        </div>
+        <div id="dex-filters" className={cn("space-y-3", !filtersOpen && "hidden md:block")}>
+          <div className="-mx-1 flex gap-1.5 overflow-x-auto px-1 pb-1 [scrollbar-width:none]">
+            {TYPES.map((t) => {
+              const active = types.includes(t);
+              return (
+                <button
+                  key={t}
+                  type="button"
+                  onClick={() => setTypes((cur) => toggle(cur, t, 2))}
+                  aria-pressed={active}
+                  className={cn(
+                    "shrink-0 rounded-[4px] border px-2.5 py-1 font-display text-[11px] font-bold uppercase tracking-wider transition-all",
+                    active ? "border-transparent text-white" : "border-foreground/10 bg-shade/20 text-muted-foreground hover:text-foreground"
+                  )}
+                  style={active ? { background: typeColor(t), boxShadow: "inset 0 1px 0 rgb(255 255 255 / 0.35), inset 0 -2px 0 rgb(0 0 0 / 0.25)" } : { borderColor: `${typeColor(t)}66` }}
+                >
+                  {capitalize(t)}
+                </button>
+              );
+            })}
+          </div>
 
-        <div className="flex flex-wrap items-center gap-1.5">
-          {REGIONS.map((region, i) => (
-            <button
-              key={region}
-              type="button"
-              onClick={() => setGens((cur) => toggle(cur, i + 1))}
-              aria-pressed={gens.includes(i + 1)}
-              className={cn(
-                "rounded-sm border px-2.5 py-1.5 font-pixel text-[10px] uppercase tracking-wider transition-colors",
-                gens.includes(i + 1) ? "border-primary bg-primary text-primary-foreground" : "border-white/10 bg-black/20 text-muted-foreground hover:text-foreground"
-              )}
-              title={region}
-            >
-              Gen {i + 1}
-            </button>
-          ))}
-          <span className="mx-1 h-4 w-px bg-white/10" aria-hidden />
-          <Toggle active={legendsOnly} onClick={() => setLegendsOnly((v) => !v)}>Legendary + Mythical</Toggle>
-          <Toggle active={finalOnly} onClick={() => setFinalOnly((v) => !v)}>Fully evolved</Toggle>
-          {hasFilters ? (
-            <button
-              type="button"
-              onClick={() => {
-                setQuery("");
-                setTypes([]);
-                setGens([]);
-                setLegendsOnly(false);
-                setFinalOnly(false);
-              }}
-              className="text-xs text-muted-foreground underline-offset-2 hover:text-foreground hover:underline"
-            >
-              Reset
-            </button>
-          ) : null}
-          <span className="hud-label ml-auto tabular-nums text-screen">
-            {filtered.length.toLocaleString()} Pokémon
-          </span>
+          <div className="flex flex-wrap items-center gap-1.5">
+            {REGIONS.map((region, i) => (
+              <button
+                key={region}
+                type="button"
+                onClick={() => setGens((cur) => toggle(cur, i + 1))}
+                aria-pressed={gens.includes(i + 1)}
+                className={cn(
+                  "rounded-sm border px-2.5 py-1.5 font-pixel text-[10px] uppercase tracking-wider transition-colors",
+                  gens.includes(i + 1) ? "border-primary bg-primary text-primary-foreground" : "border-foreground/10 bg-shade/20 text-muted-foreground hover:text-foreground"
+                )}
+                title={region}
+              >
+                Gen {i + 1}
+              </button>
+            ))}
+            <span className="mx-1 h-4 w-px bg-foreground/10" aria-hidden />
+            <Toggle active={legendsOnly} onClick={() => setLegendsOnly((v) => !v)}>Legendary + Mythical</Toggle>
+            <Toggle active={finalOnly} onClick={() => setFinalOnly((v) => !v)}>Fully evolved</Toggle>
+            {hasFilters ? (
+              <button
+                type="button"
+                onClick={() => {
+                  setQuery("");
+                  setTypes([]);
+                  setGens([]);
+                  setLegendsOnly(false);
+                  setFinalOnly(false);
+                }}
+                className="text-xs text-muted-foreground underline-offset-2 hover:text-foreground hover:underline"
+              >
+                Reset
+              </button>
+            ) : null}
+            <span className="hud-label ml-auto tabular-nums text-screen">
+              {filtered.length.toLocaleString("en-US")} Pokémon
+            </span>
+          </div>
         </div>
       </div>
 
@@ -260,13 +290,13 @@ export function PokedexExplorer({ items }: { items: DexListItem[] }) {
       {filtered.length === 0 ? (
         <div className="py-20 text-center text-muted-foreground">No Pokémon match those filters.</div>
       ) : (
-        <motion.div layout className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
-          <AnimatePresence mode="popLayout" initial={false}>
-            {filtered.slice(0, visible).map((p, i) => (
-              <DexCard key={p.id} p={p} index={i % PAGE} badge={sortLabel(p, sort)} />
-            ))}
-          </AnimatePresence>
-        </motion.div>
+        // No layout animations here: measuring up to 1,025 cards on every
+        // keystroke is far too slow. Cards are memoised and fade in on mount.
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
+          {filtered.slice(0, visible).map((p, i) => (
+            <DexCard key={p.id} p={p} index={i % PAGE} badge={sortLabel(p, sort)} animate={animateCards} />
+          ))}
+        </div>
       )}
       <div ref={sentinelRef} aria-hidden className="h-4" />
 
@@ -288,7 +318,7 @@ function Toggle({ active, onClick, children }: { active: boolean; onClick: () =>
       aria-pressed={active}
       className={cn(
         "rounded-sm border px-2.5 py-1.5 font-pixel text-[10px] uppercase tracking-wider transition-colors",
-        active ? "border-screen/70 bg-screen/10 text-foreground" : "border-white/10 bg-black/20 text-muted-foreground hover:text-foreground"
+        active ? "border-screen/70 bg-screen/10 text-foreground" : "border-foreground/10 bg-shade/20 text-muted-foreground hover:text-foreground"
       )}
     >
       {children}
@@ -296,15 +326,23 @@ function Toggle({ active, onClick, children }: { active: boolean; onClick: () =>
   );
 }
 
-function DexCard({ p, index, badge }: { p: DexListItem; index: number; badge: string | null }) {
+const DexCard = memo(function DexCard({
+  p,
+  index,
+  badge,
+  animate,
+}: {
+  p: DexListItem;
+  index: number;
+  badge: string | null;
+  animate: boolean;
+}) {
   const c1 = typeColor(p.types[0]);
   const c2 = typeColor(p.types[1] ?? p.types[0]);
   return (
     <motion.div
-      layout
-      initial={{ opacity: 0, y: 18, scale: 0.96 }}
+      initial={animate ? { opacity: 0, y: 18, scale: 0.96 } : false}
       animate={{ opacity: 1, y: 0, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.9 }}
       transition={{ duration: 0.3, delay: Math.min(index, 24) * 0.02 }}
     >
       <Link
@@ -349,4 +387,4 @@ function DexCard({ p, index, badge }: { p: DexListItem; index: number; badge: st
       </Link>
     </motion.div>
   );
-}
+});

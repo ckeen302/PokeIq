@@ -5,6 +5,7 @@ import { POKEDEX, evolutionFamily, getPokemon, type Pokemon, type StatKey } from
 import { TYPES, defensiveProfile, effectiveness, type PokemonType } from "./type-matrix";
 import type { DexEntryData, DexMove, EvolutionNode } from "./dex-types";
 import { lookalikesOf } from "./lookalikes";
+import { fixEvolutionConditions } from "./evolution-fixes";
 
 /**
  * Assembles everything the study Pokédex shows for one species into a single
@@ -71,7 +72,7 @@ function buildEvolutionTree(p: Pokemon): EvolutionNode | null {
     slug: s.slug,
     name: s.name,
     types: s.types,
-    conditions: DETAILS[s.id]?.evolution ?? [],
+    conditions: fixEvolutionConditions(s.id, DETAILS[s.id]?.evolution ?? []),
     children: family
       .filter((c) => c.evolvesFrom === s.id)
       .sort((a, b) => a.id - b.id)

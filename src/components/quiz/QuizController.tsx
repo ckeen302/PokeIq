@@ -6,10 +6,10 @@ import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
 import { track } from "@vercel/analytics";
 import { CheckCircle2, Flame, Heart, RotateCcw, XCircle } from "lucide-react";
-import type { AnswerResponse, PublicQuestion, ShareCard, StartResponse } from "@/lib/session-types";
+import type { AnswerResponse, NextResponse, PublicQuestion, ShareCard, StartResponse } from "@/lib/session-types";
 import type { Difficulty, ModuleId, QuizFormat } from "@/engines/types";
 import { getProgress, recordAnswer } from "@/lib/progress";
-import { play, vibrate } from "@/lib/sound";
+import { play, unlockAudio, vibrate } from "@/lib/sound";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -33,7 +33,8 @@ export type StartRequest =
   | { daily: string }
   | { challenge: string };
 
-type Phase = "loading" | "error" | "active" | "submitting" | "revealed" | "complete";
+/** "expired": a Blitz run whose clock ran out before the server could close it. */
+type Phase = "loading" | "error" | "active" | "submitting" | "revealed" | "complete" | "expired";
 
 interface QuizControllerProps {
   request: StartRequest;
@@ -43,6 +44,18 @@ interface QuizControllerProps {
 }
 
 const BLITZ_FLASH_MS = 450;
+
+/**
+ * Global shortcuts must not hijack other controls: skip keys aimed at text
+ * fields, links and buttons (answer tiles excepted — number keys still pick).
+ */
+function isOtherControl(target: EventTarget | null): boolean {
+  if (!(target instanceof HTMLElement)) return false;
+  if (target.isContentEditable) return true;
+  if (target.closest("input, textarea, select, a, [contenteditable='true']")) return true;
+  const button = target.closest("button");
+  return button !== null && !button.hasAttribute("data-answer-tile");
+}
 
 export function QuizController({ request, challenger, onRestart }: QuizControllerProps) {
   const [phase, setPhase] = useState<Phase>("loading");
@@ -57,6 +70,7 @@ export function QuizController({ request, challenger, onRestart }: QuizControlle
   const [answered, setAnswered] = useState(0);
   const [now, setNow] = useState(() => Date.now());
   const [attempt, setAttempt] = useState(0);
+  const [advancing, setAdvancing] = useState(false);
 
   const tokenRef = useRef("");
   const pendingNextRef = useRef<PublicQuestion | null>(null);
@@ -64,6 +78,7 @@ export function QuizController({ request, challenger, onRestart }: QuizControlle
   const runStartRef = useRef(0);
   const cardRef = useRef<HTMLDivElement | null>(null);
   const submittingRef = useRef(false);
+  const advancingRef = useRef(false);
 
   const isBlitz = rules?.runMs != null;
   const requestKey = JSON.stringify(request);
@@ -95,6 +110,7 @@ export function QuizController({ request, challenger, onRestart }: QuizControlle
         setGraded(null);
         setSelected(null);
         runStartRef.current = questionStartRef.current = Date.now();
+        setNow(Date.now());
         setPhase("active");
         track("quiz_start", { kind: "daily" in req ? "daily" : "challenge" in req ? "challenge" : req.module });
       } catch (err) {
@@ -116,69 +132,113 @@ export function QuizController({ request, challenger, onRestart }: QuizControlle
       submittingRef.current = true;
       setSelected(choice);
       setPhase("submitting");
+      let result: AnswerResponse;
       try {
         const res = await fetch("/api/session/answer", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            token: tokenRef.current,
-            choice,
-            playerRating: getProgress().rating ?? undefined,
-          }),
+          body: JSON.stringify({ token: tokenRef.current, choice }),
         });
-        const body = await res.json();
-        if (!res.ok) throw new Error(body.error ?? `Request failed (${res.status})`);
-        const result = body as AnswerResponse;
-        tokenRef.current = result.token;
-        pendingNextRef.current = result.next ?? null;
-        setGraded(result);
-        recordAnswer(result.tags ?? [], result.correct);
+        const body = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          // Blitz clock already over server-side (e.g. the tab was backgrounded):
+          // end the run instead of showing an error.
+          if (res.status === 409 && isBlitz) {
+            setPhase("expired");
+            return;
+          }
+          throw new Error(body.error ?? `Request failed (${res.status})`);
+        }
+        result = body as AnswerResponse;
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Couldn't grade that answer.");
+        setPhase("error");
+        return;
+      } finally {
+        submittingRef.current = false;
+      }
+
+      tokenRef.current = result.token;
+      pendingNextRef.current = result.next ?? null;
+      setGraded(result);
+      // A Blitz "time's up" ping is not an answer: keep it out of skill stats.
+      if (result.counted ?? choice !== null) recordAnswer(result.tags ?? [], result.correct);
+      setScore(result.score);
+      setStreak(result.streak);
+      setLives(result.lives);
+      setAnswered(result.answered);
+      // Warm the browser cache for the next question's media.
+      if (result.next?.media?.type === "image") new window.Image().src = result.next.media.url;
+
+      setPhase("revealed");
+      if (result.done) {
+        track("quiz_complete", { correct: result.result?.correct ?? 0, total: result.result?.total ?? 0 });
+        if (isBlitz) setTimeout(() => setPhase("complete"), 300);
+      }
+      if (choice !== null || !isBlitz) {
         if (result.correct) play(result.streak > 0 && result.streak % 5 === 0 ? "streak" : "correct");
         else {
           play("wrong");
           vibrate(60);
         }
-        setScore(result.score);
-        setStreak(result.streak);
-        setLives(result.lives);
-        setAnswered(result.answered);
-        // Warm the browser cache for the next question's media.
-        if (result.next?.media?.type === "image") new window.Image().src = result.next.media.url;
-
-        setPhase("revealed");
-        if (result.done) {
-          track("quiz_complete", { correct: result.result?.correct ?? 0, total: result.result?.total ?? 0 });
-          if (isBlitz) setTimeout(() => setPhase("complete"), 300);
-        }
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Couldn't grade that answer.");
-        setPhase("error");
-      } finally {
-        submittingRef.current = false;
       }
     },
     [isBlitz]
   );
 
-  const advance = useCallback(() => {
-    const next = pendingNextRef.current;
-    if (!next) {
+  const showQuestion = useCallback(
+    (next: PublicQuestion) => {
+      setQuestion(next);
+      setSelected(null);
+      setGraded(null);
+      questionStartRef.current = Date.now();
+      setNow(Date.now());
+      setPhase("active");
+      if (!isBlitz) cardRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    },
+    [isBlitz]
+  );
+
+  const advance = useCallback(async () => {
+    if (advancingRef.current) return;
+    const queued = pendingNextRef.current;
+    if (queued) {
+      pendingNextRef.current = null;
+      showQuestion(queued);
+      return;
+    }
+    if (!graded || graded.done || !graded.awaitNext) {
       setPhase((p) => (p === "revealed" ? "complete" : p));
       return;
     }
-    pendingNextRef.current = null;
-    setQuestion(next);
-    setSelected(null);
-    setGraded(null);
-    questionStartRef.current = Date.now();
-    setPhase("active");
-    if (!isBlitz) cardRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
-  }, [isBlitz]);
+    // Timed formats: the server starts the next question's clock only now,
+    // so time spent reading the explanation is never charged.
+    advancingRef.current = true;
+    setAdvancing(true);
+    try {
+      const res = await fetch("/api/session/next", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token: tokenRef.current }),
+      });
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(body.error ?? `Request failed (${res.status})`);
+      const next = body as NextResponse;
+      tokenRef.current = next.token;
+      showQuestion(next.question);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Couldn't load the next question.");
+      setPhase("error");
+    } finally {
+      advancingRef.current = false;
+      setAdvancing(false);
+    }
+  }, [graded, showQuestion]);
 
   // Blitz never pauses on a reveal: flash the result, move on.
   useEffect(() => {
     if (phase !== "revealed" || !isBlitz || graded?.done) return;
-    const id = setTimeout(advance, BLITZ_FLASH_MS);
+    const id = setTimeout(() => void advance(), BLITZ_FLASH_MS);
     return () => clearTimeout(id);
   }, [phase, isBlitz, graded, advance]);
 
@@ -186,7 +246,16 @@ export function QuizController({ request, challenger, onRestart }: QuizControlle
   useEffect(() => {
     if (phase !== "active" && !(isBlitz && phase === "revealed")) return;
     const id = setInterval(() => setNow(Date.now()), 100);
-    return () => clearInterval(id);
+    // Backgrounded tabs throttle timers: re-check the clock the moment the
+    // player returns so an expired run closes immediately.
+    const onVisible = () => {
+      if (document.visibilityState === "visible") setNow(Date.now());
+    };
+    document.addEventListener("visibilitychange", onVisible);
+    return () => {
+      clearInterval(id);
+      document.removeEventListener("visibilitychange", onVisible);
+    };
   }, [phase, isBlitz]);
 
   const questionMsLeft =
@@ -203,18 +272,23 @@ export function QuizController({ request, challenger, onRestart }: QuizControlle
   // ---- keyboard -----------------------------------------------------------
   useEffect(() => {
     function onKeyDown(e: KeyboardEvent) {
-      if (e.target instanceof HTMLInputElement || e.metaKey || e.ctrlKey) return;
+      if (e.metaKey || e.ctrlKey || e.altKey || isOtherControl(e.target)) return;
       if (phase === "active" && question) {
-        const n = e.key === "ArrowLeft" ? 1 : e.key === "ArrowRight" ? 2 : Number(e.key);
-        if (n >= 1 && n <= question.options.length) void submit(question.options[n - 1]);
-      } else if (phase === "revealed" && (e.key === "Enter" || e.key === " ")) {
+        const twoCards = Boolean(question.cards?.length) && question.options.length === 2;
+        const n =
+          twoCards && e.key === "ArrowLeft" ? 1 : twoCards && e.key === "ArrowRight" ? 2 : /^[1-9]$/.test(e.key) ? Number(e.key) : 0;
+        if (n >= 1 && n <= question.options.length) {
+          unlockAudio();
+          void submit(question.options[n - 1]);
+        }
+      } else if (phase === "revealed" && !isBlitz && (e.key === "Enter" || e.key === " ")) {
         e.preventDefault();
-        advance();
+        void advance();
       }
     }
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [phase, question, graded, submit, advance]);
+  }, [phase, question, isBlitz, submit, advance]);
 
   // ---- render -------------------------------------------------------------
   if (phase === "loading") return <LoadingCard />;
@@ -229,6 +303,25 @@ export function QuizController({ request, challenger, onRestart }: QuizControlle
           <p className="text-sm text-muted-foreground">{error}</p>
           <Button onClick={() => setAttempt((a) => a + 1)}>
             <RotateCcw className="h-4 w-4" aria-hidden /> Start a new run
+          </Button>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (phase === "expired") {
+    return (
+      <Card className="mx-auto w-full max-w-2xl">
+        <CardHeader>
+          <CardTitle className="font-display text-2xl uppercase">Time&apos;s up!</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <p className="text-muted-foreground">
+            The run clock ran out while you were away. You scored{" "}
+            <b className="text-foreground">{score.toLocaleString("en-US")}</b> pts with {answered} answered.
+          </p>
+          <Button onClick={onRestart ?? (() => setAttempt((a) => a + 1))}>
+            <RotateCcw className="h-4 w-4" aria-hidden /> Play again
           </Button>
         </CardContent>
       </Card>
@@ -267,8 +360,12 @@ export function QuizController({ request, challenger, onRestart }: QuizControlle
 
   return (
     <Card ref={cardRef} className="mx-auto w-full max-w-2xl scroll-mt-24 overflow-hidden">
+      {/* Announces each verdict (the visible text box is decorative typing). */}
+      <p className="sr-only" aria-live="polite" role="status">
+        {revealed ? verdict : ""}
+      </p>
       {/* HUD */}
-      <div className="flex items-center justify-between gap-3 border-b border-white/[0.07] bg-black/30 px-4 py-3 sm:px-6">
+      <div className="flex items-center justify-between gap-3 border-b border-foreground/[0.07] bg-shade/30 px-4 py-3 sm:px-6">
         <div className="flex items-center gap-4">
           <span className="font-pixel text-xs tracking-wider text-muted-foreground">
             {rules.total ? (
@@ -418,8 +515,8 @@ export function QuizController({ request, challenger, onRestart }: QuizControlle
                     </p>
                   )}
                 </DialogBox>
-                <Button className="w-full" size="lg" onClick={advance}>
-                  {graded.done ? "See results" : "Next question"} ▶
+                <Button className="w-full" size="lg" onClick={() => void advance()} disabled={advancing}>
+                  {graded.done ? "See results" : advancing ? "Loading…" : "Next question"} ▶
                 </Button>
               </motion.div>
             )}
@@ -452,13 +549,18 @@ function AnswerTile({ index, option, phase, selected, graded, onPick, card, chil
     <motion.button
       type="button"
       disabled={locked}
-      onClick={() => onPick(option)}
+      data-answer-tile
+      onPointerDown={unlockAudio}
+      onClick={() => {
+        unlockAudio();
+        onPick(option);
+      }}
       data-selected={phase === "submitting" && isPicked}
       initial={{ opacity: 0, y: 10 }}
       animate={wrongPick ? { opacity: 1, y: 0, x: [0, -6, 6, -4, 4, 0] } : { opacity: 1, y: 0 }}
       transition={{ delay: graded ? 0 : 0.05 + index * 0.04, duration: wrongPick ? 0.4 : 0.24 }}
       className={cn(
-        "menu-item flex w-full flex-col items-stretch justify-center gap-2 rounded-md border-2 border-white/10 bg-black/30 px-4 text-left font-display text-[15px] font-semibold tracking-wide",
+        "menu-item flex w-full flex-col items-stretch justify-center gap-2 rounded-md border-2 border-foreground/10 bg-shade/30 px-4 text-left font-display text-[15px] font-semibold tracking-wide",
         card ? "py-3" : "min-h-[52px] py-2.5",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
         !locked && "hover:border-screen/60 hover:bg-screen/[0.06]",
@@ -487,7 +589,7 @@ function AnswerTile({ index, option, phase, selected, graded, onPick, card, chil
 function LoadingCard() {
   return (
     <Card className="mx-auto w-full max-w-2xl overflow-hidden">
-      <div className="flex items-center gap-3 border-b border-white/[0.07] bg-black/30 px-6 py-3">
+      <div className="flex items-center gap-3 border-b border-foreground/[0.07] bg-shade/30 px-6 py-3">
         <span className="led animate-blink text-screen" />
         <span className="hud-label text-screen">Accessing Pokédex…</span>
       </div>

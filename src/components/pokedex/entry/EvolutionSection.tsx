@@ -12,7 +12,7 @@ import { cn } from "@/lib/utils";
 
 export function EvolutionSection({ tree, currentId }: { tree: EvolutionNode; currentId: number }) {
   return (
-    <div className="overflow-x-auto hud rounded-lg border bg-card p-5">
+    <div className="overflow-x-auto hud rounded-lg border bg-card p-5" data-hscroll>
       <div className="flex justify-center">
         <Branch node={tree} currentId={currentId} depth={0} />
       </div>
@@ -52,7 +52,7 @@ function EvoCard({ node, current, delay }: { node: EvolutionNode; current: boole
         <div
           className={cn(
             "relative flex h-28 w-28 items-center justify-center rounded-full border-2 transition-transform duration-300 group-hover:scale-105",
-            current ? "border-primary" : "border-white/10"
+            current ? "border-primary" : "border-foreground/10"
           )}
           style={{ background: `radial-gradient(circle, ${c}40, ${c}10 70%)`, boxShadow: current ? `0 0 28px -4px ${c}` : undefined }}
         >
@@ -79,7 +79,7 @@ function Condition({ conditions, vertical, delay }: { conditions: string[]; vert
       viewport={{ once: true }}
       transition={{ delay }}
     >
-      <span className="rounded-lg border border-white/10 bg-background/60 px-2 py-1 leading-tight">
+      <span className="rounded-lg border border-foreground/10 bg-background/60 px-2 py-1 leading-tight">
         {conditions.length ? conditions.join(" or ") : "Special"}
       </span>
       {vertical ? (

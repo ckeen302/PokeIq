@@ -12,7 +12,14 @@ import type { SessionSpec, ShareCard } from "@/lib/session-types";
  *   { module, format, difficulty, gens? }   regular run (fresh random seed)
  *   { daily: "YYYY-MM-DD" }                 today's Daily Challenge (shared seed)
  *   { challenge: "<share token>" }          replay a friend's exact quiz
+ *
+ * Challenge replays, repeat starts of a daily and generation-filtered runs
+ * are marked `practice` in the signed spec: they play normally but can't be
+ * submitted to the leaderboard (a replay can be learned by heart).
  */
+
+/** Daily dates this browser has started, so a restart can't farm the board. */
+const DAILY_COOKIE = "piq_daily";
 
 const bodySchema = z.object({
   module: z.enum(MODULES).default("whos-that"),
@@ -41,22 +48,42 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "That daily puzzle isn't available." }, { status: 400 });
     }
     spec = { module: "mixed", format: "classic", difficulty: "medium", seed: `daily:${body.daily}`, daily: body.daily };
+    if (startedDailies(request).includes(body.daily)) spec.practice = "repeat-daily";
   } else if (body.challenge) {
     const card = verifyToken<ShareCard>("share", body.challenge);
     if (!card) return NextResponse.json({ error: "Invalid challenge link." }, { status: 400 });
     // Same seed => identical questions. Not a daily entry, even if it replays one.
-    spec = { module: card.m, format: card.f, difficulty: card.d, gens: card.g, seed: card.s };
+    spec = { module: card.m, format: card.f, difficulty: card.d, gens: card.g, seed: card.s, practice: "challenge" };
   } else {
-    const gens = body.gens?.length ? [...new Set(body.gens)].sort() : undefined;
+    // All nine generations is the same as no filter.
+    const unique = [...new Set(body.gens ?? [])].sort((a, b) => a - b);
+    const gens = unique.length > 0 && unique.length < 9 ? unique : undefined;
     spec = { module: body.module, format: body.format, difficulty: body.difficulty, gens, seed: randomId() };
+    if (gens) spec.practice = "filtered";
   }
 
   try {
-    return NextResponse.json(startSession(spec, body.name), {
+    const response = NextResponse.json(startSession(spec, body.name), {
       headers: { "Cache-Control": "no-store" },
     });
+    if (spec.daily && !spec.practice) {
+      // Keep the last few dates (players span time zones, so ±1 day is live).
+      const dates = [spec.daily, ...startedDailies(request)].slice(0, 4).join(",");
+      response.cookies.set(DAILY_COOKIE, dates, {
+        httpOnly: true,
+        sameSite: "lax",
+        secure: process.env.NODE_ENV === "production",
+        path: "/api/session",
+        maxAge: 3 * 24 * 60 * 60,
+      });
+    }
+    return response;
   } catch (err) {
     console.error("[api/session]", err);
     return NextResponse.json({ error: "Could not build this quiz." }, { status: 500 });
   }
+}
+
+function startedDailies(request: NextRequest): string[] {
+  return (request.cookies.get(DAILY_COOKIE)?.value ?? "").split(",").filter(Boolean);
 }

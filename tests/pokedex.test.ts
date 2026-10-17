@@ -45,8 +45,29 @@ describe("stat formulas", () => {
     expect(statRange("atk", 100, 50)).toEqual([94, 167]);
   });
 
-  it("computes Poké Ball catch chance at full HP", () => {
-    expect(catchChance(255)).toBeCloseTo(1 / 3, 3);
-    expect(catchChance(3)).toBeCloseTo(0.0039, 3);
+  it("computes Gen 5+ Poké Ball catch chance at full HP", () => {
+    // (rate / 765)^(3/4): a = rate / 3 at full HP, then the shake checks.
+    expect(catchChance(255)).toBeCloseTo(0.4387, 3);
+    expect(catchChance(45)).toBeCloseTo(0.1194, 3); // starters, pseudo-legendaries
+    expect(catchChance(3)).toBeCloseTo(0.0157, 3); // box legendaries
+    expect(catchChance(765)).toBe(1);
+  });
+
+  it("gives every evolution a readable condition", () => {
+    const conditionsOf = (slug: string) => {
+      const p = getPokemonBySlug(slug)!;
+      const tree = getDexEntry(p).evolutionTree!;
+      return flatten(tree).find((n) => n.id === p.id)!.conditions;
+    };
+    for (const p of POKEDEX) {
+      const tree = getDexEntry(p).evolutionTree;
+      const node = tree && flatten(tree).find((n) => n.id === p.id);
+      if (!node || p.evolvesFrom === null) continue;
+      expect(node.conditions.length, `${p.name} has no evolution condition`).toBeGreaterThan(0);
+      expect(node.conditions).not.toContain("Other");
+    }
+    expect(conditionsOf("politoed")).toEqual(["Trade holding King's Rock"]);
+    expect(conditionsOf("magnezone")).not.toContain("Level up");
+    expect(conditionsOf("kingambit")[0]).toMatch(/Leader's Crest/);
   });
 });

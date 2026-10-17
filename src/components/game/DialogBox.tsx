@@ -52,7 +52,9 @@ export function DialogBox({
 
   return (
     <div className={cn("dialog-box", className)} data-done={done} onClick={() => setShown(text.length)}>
-      <Tag className="font-display text-lg font-semibold leading-snug tracking-normal sm:text-xl" aria-label={text}>
+      <Tag className="font-display text-lg font-semibold leading-snug tracking-normal sm:text-xl">
+        {/* Screen readers get the whole line at once, not the typewriter. */}
+        <span className="sr-only">{text}</span>
         <span aria-hidden>{text.slice(0, shown)}</span>
         {/* Reserve the full height so the box never jumps while typing. */}
         <span className="invisible" aria-hidden>

@@ -40,7 +40,7 @@ export function StatsSection({ stats, percentiles, accent, isShedinja, showPerce
           <span className="text-right">Base</span>
           <span />
           <div className="flex justify-end">
-            <div className="flex rounded-sm border border-white/10 bg-black/30 p-0.5">
+            <div className="flex rounded-sm border border-foreground/10 bg-shade/30 p-0.5">
               {([50, 100] as const).map((l) => (
                 <button
                   key={l}
@@ -76,7 +76,7 @@ export function StatsSection({ stats, percentiles, accent, isShedinja, showPerce
             </div>
           );
         })}
-        <div className="grid grid-cols-[72px_40px_minmax(0,1fr)_90px] items-center gap-x-3 border-t border-white/5 pt-3 text-sm">
+        <div className="grid grid-cols-[72px_40px_minmax(0,1fr)_90px] items-center gap-x-3 border-t border-foreground/5 pt-3 text-sm">
           <span className="font-semibold">Total</span>
           <span className="text-right font-mono font-black tabular-nums" style={{ color: accent }}>
             {bst}
@@ -124,11 +124,11 @@ function Radar({ stats, accent }: { stats: Record<StatKey, number>; accent: stri
   return (
     <svg viewBox={`0 0 ${size} ${size}`} className="mx-auto w-full max-w-[260px]" role="img" aria-label="Base stat radar chart">
       {[0.25, 0.5, 0.75, 1].map((s) => (
-        <path key={s} d={path(Array(6).fill(s))} fill="none" stroke="currentColor" className="text-white/10" />
+        <path key={s} d={path(Array(6).fill(s))} fill="none" stroke="currentColor" className="text-foreground/10" />
       ))}
       {RADAR.map((_, i) => {
         const [x, y] = point(i, 1);
-        return <line key={i} x1={c} y1={c} x2={x} y2={y} stroke="currentColor" className="text-white/10" />;
+        return <line key={i} x1={c} y1={c} x2={x} y2={y} stroke="currentColor" className="text-foreground/10" />;
       })}
       <motion.path
         d={path(target)}

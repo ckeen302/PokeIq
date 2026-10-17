@@ -40,7 +40,10 @@ export function QuizSetup({ module, initialFormat, initialDifficulty = "medium",
   useEffect(() => {
     if (request) return;
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Enter" && !(e.target instanceof HTMLButtonElement)) start();
+      if (e.key !== "Enter" || e.defaultPrevented) return;
+      // Enter on a focused link, button or field belongs to that control.
+      if (e.target instanceof HTMLElement && e.target.closest("a, button, input, select, textarea, [contenteditable='true']")) return;
+      start();
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
@@ -135,7 +138,7 @@ function Choice({ active, onClick, children }: { active: boolean; onClick: () =>
         "flex flex-col items-center gap-1 rounded-md border-2 px-2 py-3 text-center text-sm transition-colors",
         active
           ? "border-screen bg-screen/10 text-foreground shadow-[0_0_16px_-6px_hsl(var(--screen))]"
-          : "border-white/10 bg-black/20 text-muted-foreground hover:border-screen/40 hover:text-foreground"
+          : "border-foreground/10 bg-shade/20 text-muted-foreground hover:border-screen/40 hover:text-foreground"
       )}
     >
       {children}
@@ -152,7 +155,7 @@ function Chip({ active, onClick, children, title }: { active: boolean; onClick: 
       aria-pressed={active}
       className={cn(
         "rounded-sm border px-2.5 py-1.5 font-pixel text-[10px] uppercase tracking-wider transition-colors",
-        active ? "border-primary bg-primary text-primary-foreground" : "border-white/10 bg-black/20 text-muted-foreground hover:border-primary/50 hover:text-foreground"
+        active ? "border-primary bg-primary text-primary-foreground" : "border-foreground/10 bg-shade/20 text-muted-foreground hover:border-primary/50 hover:text-foreground"
       )}
     >
       {children}

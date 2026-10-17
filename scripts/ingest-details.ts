@@ -12,6 +12,7 @@
  */
 import fs from "node:fs";
 import path from "node:path";
+import { fixEvolutionConditions } from "../src/lib/pokemon/evolution-fixes";
 
 const ENDPOINT = "https://beta.pokeapi.co/graphql/v1beta";
 const DATA_DIR = path.join(process.cwd(), "src/data");
@@ -370,7 +371,7 @@ async function main() {
         baseExp: base.base_experience,
         evYield,
         abilities: abilitiesOf(base),
-        evolution: mergeLocations(sp.evo),
+        evolution: fixEvolutionConditions(sp.id, mergeLocations(sp.evo)),
         entries,
         dexNumbers: sp.dex
           .filter((d) => d.d.is_main_series && d.d.name !== "national")

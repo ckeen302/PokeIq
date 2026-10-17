@@ -29,12 +29,12 @@ export default function PokedexPage() {
   return (
     <div className="mx-auto max-w-7xl space-y-4">
       <div className="space-y-2 text-center">
-        <p className="hud-label text-screen">National database · {items.length.toLocaleString()} entries</p>
+        <p className="hud-label text-screen">National database · {items.length.toLocaleString("en-US")} entries</p>
         <h1 className="font-display text-4xl font-bold uppercase tracking-tight sm:text-5xl">
           Poké<span className="text-primary">dex</span>
         </h1>
         <p className="mx-auto max-w-2xl text-muted-foreground">
-          All {items.length.toLocaleString()} Pokémon — stats, evolutions, moves, abilities, matchups and every Pokédex
+          All {items.length.toLocaleString("en-US")} Pokémon — stats, evolutions, moves, abilities, matchups and every Pokédex
           entry. Study up, then test yourself.
         </p>
       </div>

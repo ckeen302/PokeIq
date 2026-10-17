@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { gradeAnswer, questionAt, readSession, startSession } from "@/lib/server/session";
+import { gradeAnswer, nextQuestion, questionAt, readSession, startSession } from "@/lib/server/session";
 import type { SessionSpec } from "@/lib/session-types";
 import { Rng } from "@/lib/rng";
 import { pCorrect } from "@/lib/rating";
@@ -21,8 +21,14 @@ function simulate(trueRating: number, seed: string) {
     const outcome = gradeAnswer(state, right ? q.answer : "__wrong__");
     if (!outcome.ok) throw new Error(outcome.error);
     last = outcome.response;
-    if (!last.done) expect(last.next!.prompt).toBe(questionAt(s, i + 1, readSession(last.token)!.log).prompt);
     state = readSession(last.token)!;
+    if (!last.done) {
+      // The served next question is the one that will be graded.
+      const served = nextQuestion(state);
+      if (!served.ok) throw new Error(served.error);
+      expect(served.response.question.prompt).toBe(questionAt(s, i + 1, state.log).prompt);
+      state = readSession(served.response.token)!;
+    }
   }
   return { served, result: last!.result! };
 }

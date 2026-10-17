@@ -36,7 +36,7 @@ export function HeroDevice() {
   const [id, name] = ROSTER[i];
 
   return (
-    <div className="relative mx-auto w-full max-w-[360px] select-none" aria-hidden>
+    <div className="dark-scope relative mx-auto w-full max-w-[360px] select-none" aria-hidden>
       {/* Casing */}
       <div className="rounded-[22px] border-2 border-black/60 bg-gradient-to-b from-[hsl(256_52%_34%)] via-[hsl(258_50%_25%)] to-[hsl(260_52%_17%)] p-4 shadow-[0_24px_60px_-18px_hsl(var(--screen)/0.55),inset_0_2px_0_hsl(258_80%_75%/0.35)]">
         <div className="mb-3 flex items-center gap-3">

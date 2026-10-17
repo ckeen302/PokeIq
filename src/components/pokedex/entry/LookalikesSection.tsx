@@ -48,7 +48,7 @@ export function LookalikesSection({ self, lookalikes }: { self: { id: number; na
                 type="button"
                 onClick={() => toggle(l.id)}
                 onMouseEnter={() => setRevealed((cur) => new Set(cur).add(l.id))}
-                className="group relative flex aspect-square w-full items-center justify-center overflow-hidden rounded-md border border-white/10 transition-colors"
+                className="group relative flex aspect-square w-full items-center justify-center overflow-hidden rounded-md border border-foreground/10 transition-colors"
                 style={{ background: shown ? `radial-gradient(circle, ${typeColor(l.types[0])}40, transparent 70%)` : undefined }}
                 aria-label={shown ? l.name : "Reveal lookalike"}
               >

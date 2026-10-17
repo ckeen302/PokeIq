@@ -1,10 +1,9 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import type { Metadata } from "next";
-import { QuizSetup } from "@/components/quiz/QuizSetup";
 import { ModeIcon } from "@/components/game/ModeIcon";
-import { DIFFICULTIES, type Difficulty, type QuizFormat } from "@/engines/types";
-import { MODULE_INFO, PLAYABLE_FORMATS, QUIZ_PRESETS, presetFor } from "@/lib/modes";
+import { MODULE_INFO, QUIZ_PRESETS, presetFor } from "@/lib/modes";
+import { QuizSetupFromQuery } from "./QuizSetupFromQuery";
 
 /**
  * One route, every quiz landing page. Each preset (mode × optional
@@ -14,7 +13,6 @@ import { MODULE_INFO, PLAYABLE_FORMATS, QUIZ_PRESETS, presetFor } from "@/lib/mo
 
 interface PageProps {
   params: Promise<{ slug: string }>;
-  searchParams: Promise<{ format?: string; difficulty?: string; gen?: string }>;
 }
 
 export function generateStaticParams() {
@@ -32,19 +30,12 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   };
 }
 
-export default async function QuizPage({ params, searchParams }: PageProps) {
+export const dynamicParams = false;
+
+export default async function QuizPage({ params }: PageProps) {
   const preset = presetFor((await params).slug);
   if (!preset) notFound();
-  const query = await searchParams;
   const info = MODULE_INFO[preset.module];
-
-  const format = (PLAYABLE_FORMATS as readonly string[]).includes(query.format ?? "") ? (query.format as QuizFormat) : preset.format;
-  const difficulty = DIFFICULTIES.includes(query.difficulty as Difficulty) ? (query.difficulty as Difficulty) : preset.difficulty;
-  const queryGens = query.gen
-    ?.split(",")
-    .map(Number)
-    .filter((g) => g >= 1 && g <= 9);
-  const gens = queryGens?.length ? queryGens : preset.gens;
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -68,12 +59,12 @@ export default async function QuizPage({ params, searchParams }: PageProps) {
         <p className="text-muted-foreground">{preset.description}</p>
       </div>
 
-      <QuizSetup
-        key={preset.slug}
+      <QuizSetupFromQuery
+        slug={preset.slug}
         module={preset.module}
-        initialFormat={format}
-        initialDifficulty={difficulty}
-        initialGens={gens}
+        format={preset.format}
+        difficulty={preset.difficulty}
+        gens={preset.gens}
       />
 
       <section className="mx-auto max-w-2xl space-y-3 text-sm text-muted-foreground">

@@ -40,7 +40,7 @@ export function IqConvergence({ trajectory, grid }: { trajectory: [number, numbe
       <svg viewBox={`0 0 ${W} ${H}`} className="w-full" role="img" aria-label={`PokéIQ estimate converged to ${final.iq}`}>
         {[80, 100, 120, 140].filter((v) => v > minY && v < maxY).map((v) => (
           <g key={v}>
-            <line x1={pad.l} x2={W - pad.r} y1={y(v)} y2={y(v)} stroke="currentColor" className="text-white/10" strokeDasharray="3 4" />
+            <line x1={pad.l} x2={W - pad.r} y1={y(v)} y2={y(v)} stroke="currentColor" className="text-foreground/10" strokeDasharray="3 4" />
             <text x={pad.l - 6} y={y(v)} textAnchor="end" dominantBaseline="middle" className="fill-muted-foreground text-[10px]">
               {v}
             </text>

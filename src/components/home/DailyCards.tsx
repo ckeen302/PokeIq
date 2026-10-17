@@ -3,15 +3,17 @@
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { CalendarDays, ChevronRight, Flame, Search } from "lucide-react";
-import { dailyNumber, localDateString } from "@/lib/daily";
-import { useProgress } from "@/lib/progress";
+import { dailyNumber } from "@/lib/daily";
+import { currentStreak, useProgress } from "@/lib/progress";
+import { useToday } from "@/lib/use-today";
 import { NextDailyCountdown } from "@/components/NextDailyCountdown";
 import { cn } from "@/lib/utils";
 
 /** The two daily hooks, with today's status pulled from local progress. */
 export function DailyCards() {
   const progress = useProgress();
-  const today = progress ? localDateString() : null;
+  const date = useToday();
+  const today = progress ? date : null;
   const daily = today ? progress?.daily.results[today] : undefined;
   const dle = today ? progress?.dle.results[today] : undefined;
 
@@ -24,7 +26,8 @@ export function DailyCards() {
         number={today ? dailyNumber(today) : null}
         description="10 mixed questions. Same quiz for every trainer today."
         status={daily ? `Cleared · ${daily.correct}/${daily.total} · IQ ${daily.pokeiq}` : null}
-        streak={progress?.daily.streak ?? 0}
+        cleared={!!daily}
+        streak={progress && today ? currentStreak(progress.daily.last, progress.daily.streak, today) : 0}
         accent="340 86% 60%"
       />
       <DailyCard
@@ -34,7 +37,8 @@ export function DailyCards() {
         number={today ? dailyNumber(today) : null}
         description="Deduce the mystery Pokémon in 8 guesses from type, generation, size and color."
         status={dle?.over ? (dle.solved ? `Solved in ${dle.guesses.length}` : "Missed today") : dle?.guesses.length ? `In progress · ${dle.guesses.length}/8` : null}
-        streak={progress?.dle.streak ?? 0}
+        cleared={!!dle?.over}
+        streak={progress && today ? currentStreak(progress.dle.last, progress.dle.streak, today) : 0}
         accent="258 94% 74%"
       />
     </div>
@@ -48,11 +52,13 @@ interface DailyCardProps {
   number: number | null;
   description: string;
   status: string | null;
+  /** Today's puzzle is finished (an in-progress status is not "cleared"). */
+  cleared: boolean;
   streak: number;
   accent: string;
 }
 
-function DailyCard({ href, icon, title, number, description, status, streak, accent }: DailyCardProps) {
+function DailyCard({ href, icon, title, number, description, status, cleared, streak, accent }: DailyCardProps) {
   return (
     <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
       <Link href={href} className="group block h-full">
@@ -69,9 +75,9 @@ function DailyCard({ href, icon, title, number, description, status, streak, acc
               </div>
             </div>
             <div className="flex flex-col items-end gap-1.5">
-              <span className={cn("hud-label flex items-center gap-1.5", status ? "text-success" : "text-primary")}>
-                <span className={cn("led h-1.5 w-1.5", status ? "text-success" : "animate-blink text-primary")} />
-                {status ? "Cleared" : "New"}
+              <span className={cn("hud-label flex items-center gap-1.5", cleared ? "text-success" : status ? "text-warning" : "text-primary")}>
+                <span className={cn("led h-1.5 w-1.5", cleared ? "text-success" : status ? "text-warning" : "animate-blink text-primary")} />
+                {cleared ? "Cleared" : status ? "In progress" : "New"}
               </span>
               {streak > 0 && (
                 <span className="flex items-center gap-1 font-pixel text-[10px] text-warning">
@@ -83,7 +89,7 @@ function DailyCard({ href, icon, title, number, description, status, streak, acc
           <p className="mt-4 text-sm text-muted-foreground">{description}</p>
           <div className="mt-5 flex items-center justify-between">
             {status ? (
-              <span className="text-sm font-medium text-success">{status}</span>
+              <span className={cn("text-sm font-medium", cleared ? "text-success" : "text-warning")}>{status}</span>
             ) : (
               <span className="flex items-center gap-1 font-display text-sm font-bold uppercase tracking-wider" style={{ color: `hsl(${accent})` }}>
                 ▶ Play today&apos;s
@@ -91,8 +97,8 @@ function DailyCard({ href, icon, title, number, description, status, streak, acc
             )}
             <ChevronRight className="h-5 w-5 text-muted-foreground transition-transform group-hover:translate-x-1" />
           </div>
-          {status && (
-            <div className="mt-3 border-t border-white/[0.06] pt-3">
+          {cleared && (
+            <div className="mt-3 border-t border-foreground/[0.06] pt-3">
               <NextDailyCountdown />
             </div>
           )}

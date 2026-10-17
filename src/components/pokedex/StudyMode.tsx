@@ -1,9 +1,8 @@
 "use client";
 
 /* eslint-disable @next/next/no-img-element -- pre-sized art */
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
 import { AnimatePresence, motion, useMotionValue, useTransform, type PanInfo } from "framer-motion";
 import { Check, GraduationCap, RotateCcw, Shuffle, X } from "lucide-react";
 import { artUrl } from "@/lib/pokemon/art";
@@ -39,6 +38,12 @@ const PROMPTS: { id: Prompt; label: string; hint: string }[] = [
 
 const REGIONS = ["Kanto", "Johto", "Hoenn", "Sinnoh", "Unova", "Kalos", "Alola", "Galar", "Paldea"];
 const MASTERY_KEY = "pokeiq:mastery:v1";
+const DECK_SIZES = [10, 20, 50, Infinity];
+
+/** Keys pressed on these keep their native behaviour instead of driving the deck. */
+function isInteractive(target: EventTarget | null): boolean {
+  return target instanceof HTMLElement && target.closest("a, button, input, select, textarea, [contenteditable]") !== null;
+}
 
 function loadMastery(): Set<number> {
   try {
@@ -66,9 +71,7 @@ function shuffle<T>(arr: T[]): T[] {
 }
 
 export function StudyMode({ cards }: { cards: StudyCard[] }) {
-  const params = useSearchParams();
-  const initialGen = Number(params.get("gen"));
-  const [gens, setGens] = useState<number[]>(initialGen >= 1 && initialGen <= 9 ? [initialGen] : [1]);
+  const [gens, setGens] = useState<number[]>([1]);
   const [prompt, setPrompt] = useState<Prompt>("silhouette");
   const [deckSize, setDeckSize] = useState<number>(20);
   const [skipMastered, setSkipMastered] = useState(true);
@@ -80,14 +83,19 @@ export function StudyMode({ cards }: { cards: StudyCard[] }) {
   const [knownFirstTry, setKnownFirstTry] = useState(0);
   const [exitDir, setExitDir] = useState<1 | -1>(1);
 
-  useEffect(() => setMastery(loadMastery()), []);
+  useEffect(() => {
+    setMastery(loadMastery());
+    // Read ?gen= after mount so the page itself can be prerendered.
+    const gen = Number(new URLSearchParams(window.location.search).get("gen"));
+    if (Number.isInteger(gen) && gen >= 1 && gen <= 9) setGens([gen]);
+  }, []);
 
   const pool = useMemo(() => cards.filter((c) => gens.includes(c.gen) && (prompt !== "entry" || c.entry)), [cards, gens, prompt]);
   const masteredInPool = pool.filter((c) => mastery.has(c.id)).length;
 
   function start(only?: StudyCard[]) {
     const source = only ?? (skipMastered && masteredInPool < pool.length ? pool.filter((c) => !mastery.has(c.id)) : pool);
-    const deck = shuffle(source).slice(0, only ? source.length : deckSize);
+    const deck = only ? shuffle(source) : shuffle(source).slice(0, deckSize);
     setQueue(deck);
     setTotal(deck.length);
     setFlipped(false);
@@ -102,6 +110,16 @@ export function StudyMode({ cards }: { cards: StudyCard[] }) {
       if (!queue || !current) return;
       setExitDir(knew ? 1 : -1);
       const rest = queue.slice(1);
+      if (!knew) {
+        // A miss means it isn't mastered any more, even if it was before.
+        setMastery((m) => {
+          if (!m.has(current.id)) return m;
+          const next = new Set(m);
+          next.delete(current.id);
+          saveMastery(next);
+          return next;
+        });
+      }
       if (knew) {
         if (!missed.has(current.id)) {
           setKnownFirstTry((k) => k + 1);
@@ -122,10 +140,18 @@ export function StudyMode({ cards }: { cards: StudyCard[] }) {
     [queue, current, missed]
   );
 
-  // Keyboard: space flips, ←/1 = missed, →/2 = knew it.
+  // Keyboard: space flips, ←/1 = missed, →/2 = knew it, Esc exits. Focused
+  // links and buttons keep their own Enter / Space behaviour.
   useEffect(() => {
     if (!current) return;
     const onKey = (e: KeyboardEvent) => {
+      if (e.defaultPrevented || e.metaKey || e.ctrlKey || e.altKey) return;
+      if (e.key === "Escape") {
+        setQueue(null);
+        return;
+      }
+      const onCard = e.target instanceof HTMLElement && e.target.dataset.flashcard !== undefined;
+      if (isInteractive(e.target) && !onCard) return;
       if (e.key === " " || e.key === "Enter") {
         e.preventDefault();
         setFlipped((f) => !f);
@@ -192,14 +218,14 @@ export function StudyMode({ cards }: { cards: StudyCard[] }) {
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <span className="hud-label">Deck size</span>
-            {[10, 20, 50, 1000].map((n) => (
+            {DECK_SIZES.map((n) => (
               <button
                 key={n}
                 type="button"
                 onClick={() => setDeckSize(n)}
                 className={cn("rounded-sm border px-3 py-1.5 font-pixel text-[10px] uppercase", deckSize === n ? "border-primary bg-primary text-primary-foreground" : "text-muted-foreground")}
               >
-                {n === 1000 ? "All" : n}
+                {n === Infinity ? "All" : n}
               </button>
             ))}
             <label className="ml-auto flex items-center gap-2 text-xs text-muted-foreground">
@@ -222,7 +248,7 @@ export function StudyMode({ cards }: { cards: StudyCard[] }) {
             Start studying
           </Button>
         </div>
-        <p className="text-center text-xs text-muted-foreground">Space to flip · → knew it · ← study again · or swipe the card</p>
+        <p className="text-center text-xs text-muted-foreground">Space to flip · → knew it · ← study again · Esc to exit · or swipe the card</p>
       </div>
     );
   }
@@ -311,11 +337,19 @@ function FlashCard({ card, prompt, flipped, onFlip, onGrade }: FlashCardProps) {
   const againOpacity = useTransform(x, [-120, -20], [1, 0]);
   const c1 = typeColor(card.types[0]);
   const c2 = typeColor(card.types[1] ?? card.types[0]);
+  // A mouse drag still fires a click on release; it must not flip the card.
+  const draggedRef = useRef(false);
 
   function onDragEnd(_: unknown, info: PanInfo) {
+    // The click (if any) is dispatched before this timeout runs.
+    setTimeout(() => (draggedRef.current = false), 0);
     if (!flipped) return;
     if (info.offset.x > 110) onGrade(true);
     else if (info.offset.x < -110) onGrade(false);
+  }
+
+  function onClick() {
+    if (!draggedRef.current) onFlip();
   }
 
   return (
@@ -325,12 +359,23 @@ function FlashCard({ card, prompt, flipped, onFlip, onGrade }: FlashCardProps) {
       drag={flipped ? "x" : false}
       dragConstraints={{ left: 0, right: 0 }}
       dragElastic={0.9}
+      onDragStart={() => (draggedRef.current = true)}
       onDragEnd={onDragEnd}
       initial={{ opacity: 0, y: 40, scale: 0.92 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       variants={{ exit: (dir: 1 | -1) => ({ opacity: 0, x: dir * 280, rotate: dir * 18, transition: { duration: 0.25 } }) }}
       exit="exit"
-      onClick={onFlip}
+      onClick={onClick}
+      onKeyDown={(e) => {
+        if (e.target === e.currentTarget && (e.key === "Enter" || e.key === " ")) {
+          e.preventDefault();
+          e.stopPropagation();
+          onFlip();
+        }
+      }}
+      role="button"
+      tabIndex={0}
+      data-flashcard=""
     >
       <motion.div
         className="relative h-full w-full [transform-style:preserve-3d]"

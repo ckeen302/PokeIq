@@ -1,4 +1,5 @@
 import "server-only";
+import { createHash } from "node:crypto";
 import { getServiceSupabase } from "@/lib/supabase";
 
 /**
@@ -37,4 +38,37 @@ export async function claimOnce(key: string): Promise<boolean> {
   if (error.code === "23505") return false; // unique_violation: already claimed elsewhere
   console.error("[replay-guard] claim failed, allowing:", error.message);
   return true;
+}
+
+// ---------------------------------------------------------------------------
+// Idempotent retries
+// ---------------------------------------------------------------------------
+
+/*
+ * A claim is spent before the response reaches the player, so a request
+ * whose response was lost would otherwise 409 on retry and strand the run.
+ * The graded response is kept briefly (per instance) and replayed for an
+ * identical request — same token, same choice — but never for a different one.
+ */
+
+const responses = new Map<string, { fingerprint: string; body: unknown; expires: number }>();
+const RESPONSE_TTL_MS = 10 * 60 * 1000;
+const MAX_RESPONSES = 5_000;
+
+export function requestFingerprint(...parts: (string | null)[]): string {
+  return createHash("sha256")
+    .update(parts.map((p) => (p === null ? "\u0000null" : p)).join("\u0000"))
+    .digest("base64url");
+}
+
+export function rememberResponse(key: string, fingerprint: string, body: unknown): void {
+  responses.delete(key);
+  responses.set(key, { fingerprint, body, expires: Date.now() + RESPONSE_TTL_MS });
+  if (responses.size > MAX_RESPONSES) responses.delete(responses.keys().next().value!);
+}
+
+export function recallResponse<T>(key: string, fingerprint: string): T | null {
+  const hit = responses.get(key);
+  if (!hit || hit.fingerprint !== fingerprint || hit.expires < Date.now()) return null;
+  return hit.body as T;
 }

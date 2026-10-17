@@ -21,6 +21,35 @@ function typingKey(types: readonly string[]): string {
   return [...types].sort().join("/");
 }
 
+/**
+ * Abilities that make a Pokémon immune to an attacking type. A prompt names
+ * the Pokémon, so its in-game answer can differ from the chart's: those
+ * species are skipped whenever the ability would change the answer.
+ */
+const ABILITY_IMMUNITIES: Record<string, PokemonType> = {
+  levitate: "ground",
+  "earth-eater": "ground",
+  "water-absorb": "water",
+  "storm-drain": "water",
+  "dry-skin": "water",
+  "volt-absorb": "electric",
+  "lightning-rod": "electric",
+  "motor-drive": "electric",
+  "flash-fire": "fire",
+  "well-baked-body": "fire",
+  "sap-sipper": "grass",
+};
+
+/** Types this Pokémon may be immune to through one of its abilities. */
+export function abilityImmunities(p: Pokemon): Set<PokemonType> {
+  return new Set(p.abilities.flatMap((a) => (ABILITY_IMMUNITIES[a.name] ? [ABILITY_IMMUNITIES[a.name]] : [])));
+}
+
+/** Wonder Guard blocks everything that isn't super effective. */
+function hasWonderGuard(p: Pokemon): boolean {
+  return p.abilities.some((a) => a.name === "wonder-guard");
+}
+
 function defenderLabel(p: Pokemon, opts: GenerateOptions): string {
   return opts.difficulty === "hard" ? p.name : `${p.name} (${typeLabel(p)})`;
 }
@@ -59,12 +88,18 @@ function typingQuestion(rng: Rng, opts: GenerateOptions): Question | null {
 const MULTIPLIERS = [0, 0.25, 0.5, 1, 2, 4];
 
 function effectivenessQuestion(rng: Rng, opts: GenerateOptions): Question | null {
-  const target = pickTarget(rng, difficultyPool(opts), opts.used, (p) =>
-    opts.difficulty === "easy" ? true : p.types.length === 2
+  const attacker = rng.pick(TYPES);
+  const target = pickTarget(
+    rng,
+    difficultyPool(opts),
+    opts.used,
+    (p) =>
+      (opts.difficulty === "easy" || p.types.length === 2) &&
+      !hasWonderGuard(p) &&
+      !abilityImmunities(p).has(attacker)
   );
   if (!target) return null;
 
-  const attacker = rng.pick(TYPES);
   const multiplier = effectiveness(attacker, target.types);
   // Neutral hits are dull — keep only a few of them.
   if (multiplier === 1 && rng.chance(0.75)) return null;
@@ -89,13 +124,17 @@ function effectivenessQuestion(rng: Rng, opts: GenerateOptions): Question | null
 }
 
 function weaknessQuestion(rng: Rng, opts: GenerateOptions): Question | null {
-  const target = pickTarget(rng, difficultyPool(opts), opts.used, (p) =>
-    [...defensiveProfile(p.types).values()].includes(4)
-  );
+  // A 4× weakness an ability cancels (a Levitate user's Ground weakness) doesn't count.
+  const fourXOf = (p: Pokemon) => {
+    const profile = defensiveProfile(p.types);
+    const immune = abilityImmunities(p);
+    return TYPES.filter((t) => profile.get(t) === 4 && !immune.has(t));
+  };
+  const target = pickTarget(rng, difficultyPool(opts), opts.used, (p) => !hasWonderGuard(p) && fourXOf(p).length > 0);
   if (!target) return null;
 
   const profile = defensiveProfile(target.types);
-  const fourX = TYPES.filter((t) => profile.get(t) === 4);
+  const fourX = fourXOf(target);
   const answer = rng.pick(fourX);
   // Hard: tempt with plain 2× weaknesses. Otherwise anything below 4×.
   const tempting = TYPES.filter((t) => profile.get(t) === 2);
@@ -117,16 +156,23 @@ function weaknessQuestion(rng: Rng, opts: GenerateOptions): Question | null {
 }
 
 function immunityQuestion(rng: Rng, opts: GenerateOptions): Question | null {
-  const target = pickTarget(rng, difficultyPool(opts), opts.used, (p) =>
-    [...defensiveProfile(p.types).values()].includes(0)
+  const target = pickTarget(
+    rng,
+    difficultyPool(opts),
+    opts.used,
+    (p) => !hasWonderGuard(p) && [...defensiveProfile(p.types).values()].includes(0)
   );
   if (!target) return null;
 
   const profile = defensiveProfile(target.types);
   const immune = TYPES.filter((t) => profile.get(t) === 0);
   const answer = rng.pick(immune);
-  const resisted = TYPES.filter((t) => (profile.get(t) ?? 1) === 0.5 || (profile.get(t) ?? 1) === 0.25);
-  const notImmune = TYPES.filter((t) => profile.get(t) !== 0);
+  // Types an ability makes it immune to would also be correct: never offer them.
+  const abilityImmune = abilityImmunities(target);
+  const resisted = TYPES.filter(
+    (t) => ((profile.get(t) ?? 1) === 0.5 || (profile.get(t) ?? 1) === 0.25) && !abilityImmune.has(t)
+  );
+  const notImmune = TYPES.filter((t) => profile.get(t) !== 0 && !abilityImmune.has(t));
   const pool = opts.difficulty !== "easy" && resisted.length >= 3 ? resisted : notImmune;
   const distractors = rng.sample(pool, 3);
   if (distractors.length < 3) return null;

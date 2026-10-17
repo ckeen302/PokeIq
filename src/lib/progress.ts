@@ -176,6 +176,16 @@ export interface RunReward {
   ratingAfter: number;
 }
 
+/**
+ * The streak as of `today`: it is still alive if the last completion was
+ * today or yesterday, and broken (0) otherwise. Stored streaks only update
+ * when the next puzzle is finished, so every display must go through this.
+ */
+export function currentStreak(last: string | null, streak: number, today: string): number {
+  if (!last) return 0;
+  return last === today || last === previousDate(today) ? streak : 0;
+}
+
 function streakAfter(last: string | null, streak: number, date: string): number {
   if (last === date) return streak;
   return last === previousDate(date) ? streak + 1 : 1;
@@ -199,7 +209,9 @@ export function recordRun(result: RunResult, shareToken?: string): RunReward {
   const now = Date.now();
   const { spec } = result;
 
-  const xp = result.correct * 10 + Math.round(result.score / 50) + (spec.daily ? 50 : 0);
+  // The daily bonus is paid once per date, even if the daily is replayed in another tab.
+  const firstDaily = !!spec.daily && !p.daily.results[spec.daily];
+  const xp = result.correct * 10 + Math.round(result.score / 50) + (firstDaily ? 50 : 0);
   p.xp += xp;
   p.runs += 1;
   p.answered += result.total;
@@ -211,7 +223,7 @@ export function recordRun(result: RunResult, shareToken?: string): RunReward {
   // The adaptive test is the most precise measurement we have: weight it more.
   p.rating = updatePlayerRating(before.rating, result.rating, spec.format === "adaptive" ? result.total * 1.5 : result.total);
 
-  if (spec.daily && !p.daily.results[spec.daily]) {
+  if (spec.daily && firstDaily) {
     p.daily.streak = streakAfter(p.daily.last, p.daily.streak, spec.daily);
     p.daily.best = Math.max(p.daily.best, p.daily.streak);
     p.daily.last = spec.daily;

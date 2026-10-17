@@ -4,7 +4,8 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { Pencil } from "lucide-react";
-import { BADGES, levelInfo, setTrainerName, useProgress } from "@/lib/progress";
+import { BADGES, currentStreak, levelInfo, setTrainerName, useProgress } from "@/lib/progress";
+import { localDateString } from "@/lib/daily";
 import { iqTitle, ratingToIQ } from "@/lib/rating";
 import { MODULE_INFO, PLAY_MODULES, PLAYABLE_FORMATS as FORMATS } from "@/lib/modes";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -26,6 +27,8 @@ export function TrainerCard() {
 
   if (!progress) return <Skeleton className="mx-auto h-96 max-w-3xl" />;
 
+  // Safe here: progress (and so this branch) only exists after mount.
+  const today = localDateString();
   const lvl = levelInfo(progress.xp);
   const iq = progress.rating !== null ? ratingToIQ(progress.rating) : null;
   const accuracy = progress.answered ? Math.round((progress.correct / progress.answered) * 100) : 0;
@@ -89,11 +92,11 @@ export function TrainerCard() {
             <Stat label="Runs" value={progress.runs} />
             <Stat label="Accuracy" value={`${accuracy}%`} />
             <Stat label="Best streak" value={progress.bestStreak} />
-            <Stat label="Daily streak" value={progress.daily.streak} />
+            <Stat label="Daily streak" value={currentStreak(progress.daily.last, progress.daily.streak, today)} />
             <Stat label="Dailies played" value={dailyDays} />
             <Stat label="Best daily streak" value={progress.daily.best} />
             <Stat label="Pokédles solved" value={dleSolved} />
-            <Stat label="Pokédle streak" value={progress.dle.streak} />
+            <Stat label="Pokédle streak" value={currentStreak(progress.dle.last, progress.dle.streak, today)} />
           </CardContent>
         </Card>
       </motion.div>
@@ -112,7 +115,7 @@ export function TrainerCard() {
             return (
               <div
                 key={b.id}
-                className={cn("flex items-center gap-3 rounded-md border p-3", unlocked ? "border-warning/40 bg-warning/[0.06]" : "border-white/[0.06] opacity-60")}
+                className={cn("flex items-center gap-3 rounded-md border p-3", unlocked ? "border-warning/40 bg-warning/[0.06]" : "border-foreground/[0.06] opacity-60")}
                 title={b.description}
               >
                 <BadgeMedal id={b.id} unlocked={unlocked} />
@@ -168,7 +171,7 @@ export function TrainerCard() {
 
 function Stat({ label, value }: { label: string; value: React.ReactNode }) {
   return (
-    <div className="rounded-lg border border-white/5 bg-muted/40 p-3 text-center">
+    <div className="rounded-lg border border-foreground/5 bg-muted/40 p-3 text-center">
       <div className="text-xl font-bold tabular-nums">{value}</div>
       <div className="text-[11px] text-muted-foreground">{label}</div>
     </div>

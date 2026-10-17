@@ -15,7 +15,7 @@ const buttonVariants = cva(
         outline:
           "border border-border bg-card text-foreground shadow-[0_3px_0_hsl(var(--border))] hover:border-screen/60 hover:text-foreground active:shadow-[0_1px_0_hsl(var(--border))]",
         secondary:
-          "bg-secondary text-secondary-foreground shadow-[0_3px_0_hsl(248_28%_9%)] hover:brightness-125 active:shadow-[0_1px_0_hsl(248_28%_9%)]",
+          "bg-secondary text-secondary-foreground shadow-[0_3px_0_hsl(var(--secondary-shadow))] hover:brightness-125 active:shadow-[0_1px_0_hsl(var(--secondary-shadow))]",
         ghost: "text-muted-foreground hover:bg-accent hover:text-foreground active:translate-y-0",
         success:
           "bg-success text-success-foreground shadow-[0_4px_0_hsl(154_60%_24%)] hover:brightness-110 active:shadow-[0_2px_0_hsl(154_60%_24%)]",

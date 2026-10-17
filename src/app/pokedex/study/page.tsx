@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { Suspense } from "react";
 import { POKEDEX } from "@/lib/pokemon/pokedex";
 import { censorEntry } from "@/engines/modules/dex";
 import { StudyMode, type StudyCard } from "@/components/pokedex/StudyMode";
@@ -20,9 +19,5 @@ export default function StudyPage() {
     gen: p.gen,
     entry: p.flavor[0] ? censorEntry(p.flavor[0], p) : "",
   }));
-  return (
-    <Suspense>
-      <StudyMode cards={cards} />
-    </Suspense>
-  );
+  return <StudyMode cards={cards} />;
 }

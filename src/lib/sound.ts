@@ -24,14 +24,40 @@ function context(): AudioContext | null {
   return ctx;
 }
 
+// Storage can throw (Safari "Block all cookies", sandboxed iframes): fall back to memory.
+let mutedFallback = false;
+
 export function isMuted(): boolean {
   if (typeof window === "undefined") return true;
-  return window.localStorage.getItem(MUTE_KEY) === "1";
+  try {
+    return window.localStorage.getItem(MUTE_KEY) === "1";
+  } catch {
+    return mutedFallback;
+  }
 }
 
 export function setMuted(muted: boolean): void {
   if (typeof window === "undefined") return;
-  window.localStorage.setItem(MUTE_KEY, muted ? "1" : "0");
+  mutedFallback = muted;
+  try {
+    window.localStorage.setItem(MUTE_KEY, muted ? "1" : "0");
+  } catch {
+    // keep the in-memory value
+  }
+}
+
+/**
+ * iOS only lets an AudioContext start inside a user gesture, and grading
+ * plays its sound after an `await fetch`. Call this synchronously from a
+ * tap or key handler so the context is already running by then.
+ */
+export function unlockAudio(): void {
+  if (isMuted()) return;
+  try {
+    context();
+  } catch {
+    // audio unavailable — ignore
+  }
 }
 
 function tone(
@@ -55,6 +81,14 @@ function tone(
 }
 
 export function play(kind: SoundKind): void {
+  try {
+    playUnsafe(kind);
+  } catch {
+    // Sound is decoration: never let it break the game.
+  }
+}
+
+function playUnsafe(kind: SoundKind): void {
   if (isMuted()) return;
   const audio = context();
   if (!audio) return;

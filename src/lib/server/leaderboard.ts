@@ -1,10 +1,11 @@
 import "server-only";
 import { getServiceSupabase, type LeaderboardRow } from "@/lib/supabase";
+import type { PracticeReason, RunResult } from "@/lib/session-types";
 
 export type BoardFilter =
   | { kind: "daily"; date: string }
   | { kind: "iq" }
-  | { kind: "module"; module: string; format?: string };
+  | { kind: "module"; module: string; format?: string; difficulty?: string };
 
 /** Top runs for a board, or null when persistence isn't configured. */
 export async function fetchBoard(filter: BoardFilter, limit = 25): Promise<LeaderboardRow[] | null> {
@@ -23,8 +24,10 @@ export async function fetchBoard(filter: BoardFilter, limit = 25): Promise<Leade
   } else if (filter.kind === "daily") {
     query = query.eq("daily_date", filter.date);
   } else {
-    query = query.eq("module", filter.module).is("daily_date", null);
+    // Like-for-like only: all-generation runs at one difficulty.
+    query = query.eq("module", filter.module).is("daily_date", null).is("gens", null);
     if (filter.format) query = query.eq("format", filter.format);
+    if (filter.difficulty) query = query.eq("difficulty", filter.difficulty);
   }
 
   const { data, error } = await query;
@@ -33,4 +36,16 @@ export async function fetchBoard(filter: BoardFilter, limit = 25): Promise<Leade
     return [];
   }
   return data as LeaderboardRow[];
+}
+
+const PRACTICE_MESSAGES: Record<PracticeReason, string> = {
+  challenge: "Challenge replays aren't ranked — start a fresh run to get on the board.",
+  "repeat-daily": "Only your first Daily Challenge run of the day can be ranked.",
+  filtered: "Leaderboards rank all-generation runs — clear the generation filter to compete.",
+};
+
+/** Leaderboard eligibility of a verified result: null when it can be ranked. */
+export function practiceMessage(result: Pick<RunResult, "spec" | "practice">): string | null {
+  const reason = result.practice ?? result.spec.practice;
+  return reason ? (PRACTICE_MESSAGES[reason] ?? "This run isn't ranked.") : null;
 }

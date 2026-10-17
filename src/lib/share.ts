@@ -28,17 +28,20 @@ export function resultShareText(result: RunResult): string {
   ].join("\n");
 }
 
-export type ShareOutcome = "shared" | "copied" | "failed";
+export type ShareOutcome = "shared" | "copied" | "cancelled" | "failed";
 
-/** Native share sheet on mobile, clipboard elsewhere. */
+/**
+ * Native share sheet on mobile, clipboard elsewhere. "failed" means nothing
+ * reached the player's clipboard: show the text for manual copying.
+ */
 export async function shareOrCopy(text: string, url?: string): Promise<ShareOutcome> {
-  const full = url ? `${text}\n${url}` : text;
+  const full = shareText(text, url);
   if (typeof navigator.share === "function" && window.matchMedia("(pointer: coarse)").matches) {
     try {
       await navigator.share({ text: full });
       return "shared";
     } catch (err) {
-      if ((err as Error).name === "AbortError") return "failed";
+      if ((err as Error).name === "AbortError") return "cancelled";
     }
   }
   try {
@@ -47,4 +50,9 @@ export async function shareOrCopy(text: string, url?: string): Promise<ShareOutc
   } catch {
     return "failed";
   }
+}
+
+/** The exact text shareOrCopy shares, for the manual-copy fallback. */
+export function shareText(text: string, url?: string): string {
+  return url ? `${text}\n${url}` : text;
 }

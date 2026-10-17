@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Pause, Play, Volume2 } from "lucide-react";
+import { ImageOff, Pause, Play, RotateCcw, Volume2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 /**
@@ -21,18 +21,39 @@ interface ImageMediaProps {
 
 export function ImageMedia({ src, revealSrc, silhouette, revealed, label }: ImageMediaProps) {
   const [loaded, setLoaded] = useState(false);
+  const [failed, setFailed] = useState(false);
+  const [retry, setRetry] = useState(0);
   const [revealLoaded, setRevealLoaded] = useState(false);
+  const imgSrc = retry ? `${src}${src.includes("?") ? "&" : "?"}r=${retry}` : src;
   const showReveal = revealed && revealSrc && revealLoaded;
 
   return (
     <div className="mx-auto w-full max-w-[220px] rounded-lg border-[3px] border-black/70 bg-black/80 p-1.5 shadow-[0_10px_30px_-10px_rgb(0_0_0/0.8)] sm:max-w-[300px]">
       <div className={cn("screen relative aspect-square rounded-sm", silhouette && "spotlight")}>
-        {!loaded && <div className="absolute inset-0 animate-pulse bg-white/5" aria-hidden />}
+        {!loaded && !failed && <div className="absolute inset-0 animate-pulse bg-white/5" aria-hidden />}
+        {failed && (
+          <div className="absolute inset-0 z-[3] flex flex-col items-center justify-center gap-2 bg-black/60 text-center text-white">
+            <ImageOff className="h-6 w-6" aria-hidden />
+            <span className="font-pixel text-[10px] tracking-wider">Image didn&apos;t load</span>
+            <button
+              type="button"
+              onClick={() => {
+                setFailed(false);
+                setRetry((n) => n + 1);
+              }}
+              className="flex items-center gap-1 rounded-sm border border-white/30 px-2 py-1 font-pixel text-[10px] hover:bg-white/10"
+            >
+              <RotateCcw className="h-3 w-3" aria-hidden /> Retry
+            </button>
+          </div>
+        )}
         <motion.img
-          src={src}
+          key={imgSrc}
+          src={imgSrc}
           alt={silhouette ? "Mystery Pokémon silhouette" : label ?? "Pokémon artwork"}
           draggable={false}
           onLoad={() => setLoaded(true)}
+          onError={() => setFailed(true)}
           className="absolute inset-0 z-[1] h-full w-full select-none object-contain p-4 drop-shadow-[0_6px_12px_rgba(0,0,0,0.35)]"
           animate={{ opacity: loaded && !showReveal ? 1 : 0, scale: showReveal ? 0.9 : 1 }}
           transition={{ duration: 0.25 }}

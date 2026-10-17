@@ -15,6 +15,7 @@ import { deriveSeed, encryptJson, randomId, signToken, verifyToken } from "./cry
 import { itemRating } from "./calibration";
 import type {
   AnswerResponse,
+  NextResponse,
   PublicQuestion,
   RunResult,
   SessionSpec,
@@ -27,8 +28,10 @@ import type {
  * The client never holds an answer it hasn't already committed to:
  *   1. POST /api/session         -> question #0 (no answer) + signed state token
  *   2. POST /api/session/answer  -> grades against the server-derived question,
- *                                   returns the solution, question #N+1 and a
- *                                   new token
+ *                                   returns the solution and a new token
+ *   3. POST /api/session/next    -> question #N+1; its clock starts now, so
+ *                                   time spent reading a solution is free
+ *                                   (Blitz skips this: #N+1 comes with step 2)
  * Questions are re-derived from HMAC(secret, seed) on every request instead of
  * being stored, timing is measured with server clocks, and each (session,
  * index) can be graded only once (see replay-guard.ts).
@@ -41,6 +44,7 @@ export const specSchema = z.object({
   gens: z.array(z.number().int().min(1).max(9)).max(9).optional(),
   seed: z.string().min(4).max(64),
   daily: z.string().optional(),
+  practice: z.enum(["challenge", "repeat-daily", "filtered"]).optional(),
 });
 
 export interface FormatRules {
@@ -63,6 +67,9 @@ export const FORMAT_RULES: Record<SessionSpec["format"], FormatRules> = {
 /** Network latency allowance on top of the visible timer. */
 const GRACE_MS = 2_500;
 const MAX_QUESTIONS = 250;
+/** Per-instance caches: enough for hundreds of concurrent runs, bounded in memory. */
+const MAX_STREAMS = 200;
+const MAX_ADAPTIVE_STEPS = 3000;
 const SESSION_TTL_MS = 2 * 60 * 60 * 1000;
 const MEDIA_TTL_MS = 30 * 60 * 1000;
 
@@ -73,7 +80,7 @@ const STREAK_BONUS = 10;
 /** Compact answer log entry: [correct 0|1, elapsedMs, itemRating, optionCount]. */
 type LogEntry = [0 | 1, number, number, number];
 
-interface SessionState {
+export interface SessionState {
   v: 1;
   sid: string;
   spec: SessionSpec;
@@ -85,6 +92,8 @@ interface SessionState {
   streak: number;
   best: number;
   lives: number | null;
+  /** Timed formats: the next question hasn't been served yet (see nextQuestion). */
+  paused?: true;
 }
 
 // ---------------------------------------------------------------------------
@@ -111,7 +120,7 @@ export function questionAt(spec: SessionSpec, index: number, log: readonly LogEn
   if (spec.format === "adaptive") return adaptiveQuestionAt(spec, index, log);
   const key = streamKey(spec);
   let stream = streams.get(key);
-  if (!stream || stream.questions.length > index + 400) {
+  if (!stream) {
     stream = { rng: new Rng(deriveSeed("quiz", key)), used: new Set(), questions: [] };
   }
   while (stream.questions.length <= index) {
@@ -125,7 +134,7 @@ export function questionAt(spec: SessionSpec, index: number, log: readonly LogEn
   }
   streams.delete(key); // LRU refresh
   streams.set(key, stream);
-  if (streams.size > 500) streams.delete(streams.keys().next().value!);
+  if (streams.size > MAX_STREAMS) streams.delete(streams.keys().next().value!);
   return stream.questions[index];
 }
 
@@ -185,7 +194,7 @@ function adaptiveQuestionAt(spec: SessionSpec, index: number, log: readonly LogE
     pick.ids.forEach((id) => used.add(id));
     chosen = pick.q;
     adaptiveCache.set(cacheKey, { used: [...used], q: chosen });
-    if (adaptiveCache.size > 5000) adaptiveCache.delete(adaptiveCache.keys().next().value!);
+    if (adaptiveCache.size > MAX_ADAPTIVE_STEPS) adaptiveCache.delete(adaptiveCache.keys().next().value!);
   }
   return chosen!;
 }
@@ -258,6 +267,7 @@ function buildResult(state: SessionState, now: number): RunResult {
     rating,
     pokeiq: ratingToIQ(rating),
     finishedAt: now,
+    ...(state.spec.practice && { practice: state.spec.practice }),
     ...(adaptive && {
       se: ratingStandardError(rating, items),
       trajectory: items.map((_, i) => {
@@ -299,8 +309,24 @@ export function startSession(spec: SessionSpec, name?: string) {
 }
 
 export type AnswerOutcome =
-  | { ok: true; response: AnswerResponse; claimKey: string; itemKey: string; correct: boolean; rating: number }
+  | {
+      ok: true;
+      response: AnswerResponse;
+      claimKey: string;
+      itemKey: string;
+      correct: boolean;
+      rating: number;
+      /** False when nothing was logged (expired Blitz clock): skip calibration. */
+      record: boolean;
+      /** Server-side estimate of the player's rating before this answer, for calibration. */
+      playerRating: number;
+    }
   | { ok: false; status: number; error: string };
+
+/** Replay-guard key for grading the session's current question. */
+export function answerClaimKey(state: SessionState): string {
+  return `ans:${state.sid}:${state.log.length}`;
+}
 
 export function readSession(token: unknown): SessionState | null {
   const state = verifyToken<SessionState>("session", token);
@@ -313,19 +339,24 @@ export function readSession(token: unknown): SessionState | null {
 export function gradeAnswer(state: SessionState, choice: string | null): AnswerOutcome {
   const rules = FORMAT_RULES[state.spec.format];
   const now = Date.now();
-  if (isDone(state, rules, now - GRACE_MS)) {
+  // Blitz: answers within the latency grace still count; the client's
+  // "time's up" ping (choice === null) — or any request after the clock ran
+  // out, e.g. from a backgrounded tab — closes the run with its result.
+  const runElapsed = now - state.startedAt;
+  const runExpired =
+    rules.runMs !== null &&
+    (runElapsed > rules.runMs + GRACE_MS || (choice === null && runElapsed >= rules.runMs - 500));
+  // The run clock is handled by runExpired, so only count / lives end it here.
+  if (isDone(state, { ...rules, runMs: null }, now)) {
     return { ok: false, status: 409, error: "This run is already over." };
+  }
+  if (state.paused && !runExpired) {
+    return { ok: false, status: 409, error: "That question hasn't started yet." };
   }
 
   const index = state.log.length;
   const q = questionAt(state.spec, index, state.log);
   const elapsed = now - state.servedAt;
-  // Blitz: answers within the latency grace still count; the client's
-  // "time's up" ping (choice === null) just closes the run without a penalty.
-  const runElapsed = now - state.startedAt;
-  const runExpired =
-    rules.runMs !== null &&
-    (runElapsed > rules.runMs + GRACE_MS || (choice === null && runElapsed >= rules.runMs - 500));
   const timedOut = rules.questionMs !== null && elapsed > rules.questionMs + GRACE_MS;
   const correct = !timedOut && !runExpired && choice !== null && choice === q.answer;
   const rating = itemRating(q.itemKey, q.rating);
@@ -340,6 +371,7 @@ export function gradeAnswer(state: SessionState, choice: string | null): AnswerO
 
   const next: SessionState = {
     ...state,
+    paused: undefined,
     servedAt: now,
     log: runExpired ? state.log : [...state.log, [correct ? 1 : 0, elapsed, rating, q.options.length]],
     score: state.score + gained,
@@ -349,6 +381,9 @@ export function gradeAnswer(state: SessionState, choice: string | null): AnswerO
   };
 
   const done = runExpired || isDone(next, rules, now);
+  // Timed formats hold the next question until the player asks for it.
+  const awaitNext = !done && rules.questionMs !== null;
+  if (awaitNext) next.paused = true;
   const response: AnswerResponse = {
     correct,
     timedOut,
@@ -356,7 +391,7 @@ export function gradeAnswer(state: SessionState, choice: string | null): AnswerO
     explanation: q.explanation,
     revealUrl: q.revealMedia ? mediaUrl(q.revealMedia) : undefined,
     learnHref: learnHref(q),
-    tags: skillTags(q),
+    tags: runExpired ? [] : skillTags(q),
     gained,
     score: next.score,
     streak: next.streak,
@@ -364,6 +399,8 @@ export function gradeAnswer(state: SessionState, choice: string | null): AnswerO
     answered: next.log.length,
     token: signToken("session", next),
     done,
+    counted: !runExpired,
+    awaitNext,
   };
 
   if (done) {
@@ -371,17 +408,43 @@ export function gradeAnswer(state: SessionState, choice: string | null): AnswerO
     response.result = result;
     response.resultToken = signToken("result", result);
     response.shareToken = signToken("share", toShareCard(result, next.name));
-  } else {
+  } else if (!awaitNext) {
     response.next = toPublic(questionAt(next.spec, next.log.length, next.log), next.log.length, rules);
   }
 
   return {
     ok: true,
     response,
-    claimKey: `ans:${state.sid}:${index}`,
+    claimKey: answerClaimKey(state),
     itemKey: q.itemKey,
     correct,
     rating,
+    record: !runExpired,
+    playerRating: performanceRating(toItems(state.log)),
+  };
+}
+
+export type NextOutcome =
+  | { ok: true; response: NextResponse; claimKey: string }
+  | { ok: false; status: number; error: string };
+
+/**
+ * Serve the paused next question of a timed run and start its clock. Each
+ * question can be served once (the route claims `claimKey`), so the timer
+ * can't be restarted by replaying the paused token.
+ */
+export function nextQuestion(state: SessionState): NextOutcome {
+  const rules = FORMAT_RULES[state.spec.format];
+  if (!state.paused) return { ok: false, status: 409, error: "That question is already in play." };
+  const now = Date.now();
+  if (isDone(state, rules, now)) return { ok: false, status: 409, error: "This run is already over." };
+  const index = state.log.length;
+  const question = toPublic(questionAt(state.spec, index, state.log), index, rules);
+  const resumed: SessionState = { ...state, paused: undefined, servedAt: now };
+  return {
+    ok: true,
+    response: { token: signToken("session", resumed), question },
+    claimKey: `next:${state.sid}:${index}`,
   };
 }
 

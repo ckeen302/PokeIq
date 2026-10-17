@@ -7,7 +7,11 @@ import { cn } from "@/lib/utils";
 export function ResultGrid({ grid, className }: { grid: string; className?: string }) {
   if (!grid) return null;
   return (
-    <div className={cn("flex flex-wrap justify-center gap-1.5", className)} aria-label={`Answers: ${grid.replace(/1/g, "✓").replace(/0/g, "✗")}`}>
+    <div
+      className={cn("flex flex-wrap justify-center gap-1.5", className)}
+      role="img"
+      aria-label={`${[...grid].filter((c) => c === "1").length} of ${grid.length} correct: ${[...grid].map((c) => (c === "1" ? "right" : "wrong")).join(", ")}`}
+    >
       {[...grid].map((c, i) => (
         <motion.span
           key={i}

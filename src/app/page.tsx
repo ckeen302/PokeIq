@@ -30,7 +30,7 @@ export default function HomePage() {
       </section>
 
       <section className="space-y-5" aria-labelledby="daily-heading">
-        <HudHeading index={1} title="Today's puzzles" aside="Resets at local midnight" />
+        <HudHeading id="daily-heading" index={1} title="Today's puzzles" aside="Resets at local midnight" />
         <DailyCards />
       </section>
 

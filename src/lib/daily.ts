@@ -20,7 +20,9 @@ function utcMidnight(date: string): number {
 export function isValidDailyDate(date: unknown, now = Date.now()): date is string {
   if (typeof date !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(date)) return false;
   const t = utcMidnight(date);
-  if (Number.isNaN(t) || t < utcMidnight(LAUNCH_DATE)) return false;
+  // Date.parse rolls impossible dates over ("2026-09-31" -> Oct 1): require a round trip.
+  if (Number.isNaN(t) || new Date(t).toISOString().slice(0, 10) !== date) return false;
+  if (t < utcMidnight(LAUNCH_DATE)) return false;
   const today = utcMidnight(new Date(now).toISOString().slice(0, 10));
   return Math.abs(t - today) <= DAY_MS;
 }
