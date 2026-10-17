@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { HudHeading } from "@/components/game/HudHeading";
 
 /** Fades/slides content in as it scrolls into view (once). */
 export function Reveal({ children, delay = 0, className }: { children: React.ReactNode; delay?: number; className?: string }) {
@@ -19,11 +20,13 @@ export function Reveal({ children, delay = 0, className }: { children: React.Rea
 
 export function Section({
   id,
+  index,
   title,
   subtitle,
   children,
 }: {
   id: string;
+  index?: number;
   title: string;
   subtitle?: React.ReactNode;
   children: React.ReactNode;
@@ -31,12 +34,10 @@ export function Section({
   return (
     <section id={id} className="scroll-mt-32 space-y-4" aria-labelledby={`${id}-title`}>
       <Reveal>
-        <div className="flex flex-wrap items-end justify-between gap-2">
-          <h2 id={`${id}-title`} className="text-2xl font-bold tracking-tight">
-            {title}
-          </h2>
-          {subtitle && <div className="text-sm text-muted-foreground">{subtitle}</div>}
-        </div>
+        <HudHeading index={index} title={title} aside={subtitle} />
+        <span id={`${id}-title`} className="sr-only">
+          {title}
+        </span>
       </Reveal>
       <Reveal delay={0.05}>{children}</Reveal>
     </section>

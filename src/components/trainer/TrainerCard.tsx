@@ -10,6 +10,8 @@ import { MODULE_INFO, PLAY_MODULES, PLAYABLE_FORMATS as FORMATS } from "@/lib/mo
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { CoachPanel } from "./CoachPanel";
+import { BadgeMedal } from "@/components/game/BadgeMedal";
+import { ModeIcon } from "@/components/game/ModeIcon";
 import { cn } from "@/lib/utils";
 
 /** Local-first trainer profile: level, PokéIQ, streaks, bests and badges. */
@@ -42,7 +44,7 @@ export function TrainerCard() {
           <div className="bg-gradient-to-br from-primary/25 via-primary/5 to-transparent p-6">
             <div className="flex flex-wrap items-center justify-between gap-4">
               <div className="space-y-1">
-                <p className="text-xs font-semibold uppercase tracking-widest text-primary">Trainer card</p>
+                <p className="hud-label text-screen">Trainer card</p>
                 {editing ? (
                   <form
                     className="flex gap-2"
@@ -65,7 +67,7 @@ export function TrainerCard() {
                   </form>
                 ) : (
                   <button type="button" onClick={() => setEditing(true)} className="group flex items-center gap-2 text-left">
-                    <h1 className="text-3xl font-bold">{progress.name || "Unnamed Trainer"}</h1>
+                    <h1 className="font-display text-3xl font-bold uppercase tracking-wide">{progress.name || "Unnamed Trainer"}</h1>
                     <Pencil className="h-4 w-4 text-muted-foreground group-hover:text-foreground" aria-label="Edit name" />
                   </button>
                 )}
@@ -74,12 +76,12 @@ export function TrainerCard() {
                 </p>
               </div>
               <div className="text-right">
-                <div className="text-xs uppercase tracking-wider text-muted-foreground">PokéIQ</div>
-                <div className="text-shimmer text-5xl font-black tabular-nums">{iq ?? "—"}</div>
+                <div className="hud-label">PokéIQ</div>
+                <div className="font-display text-5xl font-bold tabular-nums text-screen [text-shadow:0_0_18px_hsl(var(--screen)/0.5)]">{iq ?? "--"}</div>
                 <div className="text-xs text-muted-foreground">{iq !== null ? iqTitle(iq) : "Play a run to get rated"}</div>
               </div>
             </div>
-            <div className="mt-4 h-2 overflow-hidden rounded-full bg-secondary">
+            <div className="mt-4 meter">
               <motion.div className="h-full bg-primary" initial={{ width: 0 }} animate={{ width: `${lvl.progress * 100}%` }} transition={{ duration: 0.8 }} />
             </div>
           </div>
@@ -87,7 +89,7 @@ export function TrainerCard() {
             <Stat label="Runs" value={progress.runs} />
             <Stat label="Accuracy" value={`${accuracy}%`} />
             <Stat label="Best streak" value={progress.bestStreak} />
-            <Stat label="Daily streak" value={`🔥 ${progress.daily.streak}`} />
+            <Stat label="Daily streak" value={progress.daily.streak} />
             <Stat label="Dailies played" value={dailyDays} />
             <Stat label="Best daily streak" value={progress.daily.best} />
             <Stat label="Pokédles solved" value={dleSolved} />
@@ -110,10 +112,10 @@ export function TrainerCard() {
             return (
               <div
                 key={b.id}
-                className={cn("flex items-center gap-3 rounded-lg border p-3", unlocked ? "border-primary/40 bg-primary/5" : "opacity-45 grayscale")}
+                className={cn("flex items-center gap-3 rounded-md border p-3", unlocked ? "border-warning/40 bg-warning/[0.06]" : "border-white/[0.06] opacity-60")}
                 title={b.description}
               >
-                <span className="text-2xl" aria-hidden>{b.emoji}</span>
+                <BadgeMedal id={b.id} unlocked={unlocked} />
                 <div className="min-w-0">
                   <div className="truncate text-sm font-semibold">{b.name}</div>
                   <div className="text-[11px] leading-tight text-muted-foreground">{b.description}</div>
@@ -142,7 +144,7 @@ export function TrainerCard() {
               {PLAY_MODULES.map((m) => (
                 <tr key={m} className="border-b last:border-0">
                   <td className="p-3">
-                    <span className="mr-2" aria-hidden>{MODULE_INFO[m].emoji}</span>
+                    <ModeIcon module={m} className="mr-2 inline h-4 w-4 text-muted-foreground" />
                     {MODULE_INFO[m].title}
                   </td>
                   {FORMATS.map((f) => (

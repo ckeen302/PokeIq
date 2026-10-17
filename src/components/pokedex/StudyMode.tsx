@@ -142,12 +142,12 @@ export function StudyMode({ cards }: { cards: StudyCard[] }) {
       <div className="mx-auto max-w-2xl space-y-6">
         <div className="space-y-2 text-center">
           <GraduationCap className="mx-auto h-10 w-10 text-primary" />
-          <h1 className="text-4xl font-extrabold tracking-tight">Study mode</h1>
+          <h1 className="font-display text-4xl font-bold uppercase tracking-tight sm:text-5xl">Study mode</h1>
           <p className="text-muted-foreground">Flip, recall, repeat. Cards you miss come back until you nail them.</p>
         </div>
-        <div className="space-y-5 rounded-2xl border bg-card/60 p-6">
+        <div className="space-y-5 hud rounded-lg border bg-card p-6">
           <div className="space-y-2">
-            <div className="text-sm font-medium">Generations</div>
+            <div className="hud-label">Generations</div>
             <div className="flex flex-wrap gap-1.5">
               {REGIONS.map((r, i) => {
                 const g = i + 1;
@@ -160,7 +160,7 @@ export function StudyMode({ cards }: { cards: StudyCard[] }) {
                     onClick={() => setGens((cur) => (cur.includes(g) ? (cur.length > 1 ? cur.filter((x) => x !== g) : cur) : [...cur, g]))}
                     aria-pressed={gens.includes(g)}
                     className={cn(
-                      "relative overflow-hidden rounded-xl border px-3 py-2 text-left text-xs transition-colors",
+                      "relative overflow-hidden rounded-md border px-3 py-2 text-left text-xs transition-colors",
                       gens.includes(g) ? "border-primary bg-primary/10" : "text-muted-foreground hover:text-foreground"
                     )}
                   >
@@ -175,7 +175,7 @@ export function StudyMode({ cards }: { cards: StudyCard[] }) {
             </div>
           </div>
           <div className="space-y-2">
-            <div className="text-sm font-medium">Card front</div>
+            <div className="hud-label">Card front</div>
             <div className="grid grid-cols-3 gap-2">
               {PROMPTS.map((p) => (
                 <button
@@ -191,13 +191,13 @@ export function StudyMode({ cards }: { cards: StudyCard[] }) {
             </div>
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            <span className="text-sm font-medium">Deck size</span>
+            <span className="hud-label">Deck size</span>
             {[10, 20, 50, 1000].map((n) => (
               <button
                 key={n}
                 type="button"
                 onClick={() => setDeckSize(n)}
-                className={cn("rounded-full border px-3 py-1 text-xs", deckSize === n ? "border-primary bg-primary text-primary-foreground" : "text-muted-foreground")}
+                className={cn("rounded-sm border px-3 py-1.5 font-pixel text-[10px] uppercase", deckSize === n ? "border-primary bg-primary text-primary-foreground" : "text-muted-foreground")}
               >
                 {n === 1000 ? "All" : n}
               </button>
@@ -214,7 +214,7 @@ export function StudyMode({ cards }: { cards: StudyCard[] }) {
                 {masteredInPool}/{pool.length}
               </span>
             </div>
-            <div className="h-2 overflow-hidden rounded-full bg-secondary">
+            <div className="meter">
               <motion.div className="h-full bg-success" animate={{ width: `${pool.length ? (masteredInPool / pool.length) * 100 : 0}%` }} />
             </div>
           </div>
@@ -233,14 +233,14 @@ export function StudyMode({ cards }: { cards: StudyCard[] }) {
     return (
       <motion.div className="mx-auto max-w-xl space-y-6 text-center" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}>
         <div className="text-6xl">🎓</div>
-        <h1 className="text-3xl font-bold">Deck complete!</h1>
+        <h1 className="font-display text-4xl font-bold uppercase tracking-tight sm:text-5xl">Deck complete!</h1>
         <p className="text-muted-foreground">
           {knownFirstTry}/{total} on the first try · {missed.size} needed review
         </p>
         {missedCards.length > 0 && (
           <div className="flex flex-wrap justify-center gap-2">
             {missedCards.map((c) => (
-              <Link key={c.id} href={`/pokemon/${c.slug}`} className="flex items-center gap-1 rounded-full border bg-card/60 py-1 pl-1 pr-3 text-xs hover:border-primary/50">
+              <Link key={c.id} href={`/pokemon/${c.slug}`} className="flex items-center gap-1 rounded-full border bg-card py-1 pl-1 pr-3 text-xs hover:border-primary/50">
                 <img src={artUrl(c.id, 96)} alt="" className="h-7 w-7" /> {c.name}
               </Link>
             ))}
@@ -271,7 +271,7 @@ export function StudyMode({ cards }: { cards: StudyCard[] }) {
         <button type="button" onClick={() => setQueue(null)} className="text-muted-foreground hover:text-foreground" aria-label="Exit study session">
           <X className="h-5 w-5" />
         </button>
-        <div className="h-2 flex-1 overflow-hidden rounded-full bg-secondary">
+        <div className="flex-1 meter">
           <motion.div className="h-full bg-primary" animate={{ width: `${(done / total) * 100}%` }} transition={{ type: "spring", stiffness: 120, damping: 20 }} />
         </div>
         <span className="text-xs tabular-nums text-muted-foreground">
@@ -338,10 +338,10 @@ function FlashCard({ card, prompt, flipped, onFlip, onGrade }: FlashCardProps) {
         transition={{ type: "spring", stiffness: 260, damping: 24 }}
       >
         {/* Front */}
-        <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 rounded-3xl border bg-card p-6 text-center shadow-2xl [backface-visibility:hidden]">
+        <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 rounded-lg border bg-card p-6 text-center shadow-2xl [backface-visibility:hidden]">
           <span className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{PROMPTS.find((p) => p.id === prompt)!.hint}</span>
           {prompt === "silhouette" && (
-            <div className="spotlight flex aspect-square w-full items-center justify-center rounded-2xl">
+            <div className="spotlight flex aspect-square w-full items-center justify-center rounded-lg">
               <img src={artUrl(card.id, 256)} alt="Mystery silhouette" draggable={false} className="h-[85%] w-[85%] object-contain [filter:brightness(0)]" />
             </div>
           )}
@@ -357,7 +357,7 @@ function FlashCard({ card, prompt, flipped, onFlip, onGrade }: FlashCardProps) {
 
         {/* Back */}
         <div
-          className="absolute inset-0 flex flex-col items-center justify-center gap-3 overflow-hidden rounded-3xl border p-6 text-center shadow-2xl [backface-visibility:hidden] [transform:rotateY(180deg)]"
+          className="absolute inset-0 flex flex-col items-center justify-center gap-3 overflow-hidden rounded-lg border p-6 text-center shadow-2xl [backface-visibility:hidden] [transform:rotateY(180deg)]"
           style={{ background: `radial-gradient(100% 80% at 50% 10%, ${c1}55, transparent 70%), linear-gradient(160deg, ${c2}33, hsl(var(--card)) 70%)` }}
         >
           <img src={artUrl(card.id, 256)} alt={card.name} draggable={false} className="h-44 w-44 object-contain drop-shadow-[0_12px_20px_rgba(0,0,0,0.5)]" />

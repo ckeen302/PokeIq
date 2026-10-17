@@ -160,7 +160,7 @@ export function PokedexExplorer({ items }: { items: DexListItem[] }) {
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search name, number or category…  ( / )"
               aria-label="Search Pokémon"
-              className="h-11 w-full rounded-xl border border-input bg-card pl-9 pr-9 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="h-11 w-full rounded-md border border-input bg-black/40 pl-9 pr-9 font-display text-sm tracking-wide focus-visible:border-screen/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
             />
             {query && (
               <button type="button" onClick={() => setQuery("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground" aria-label="Clear search">
@@ -172,7 +172,7 @@ export function PokedexExplorer({ items }: { items: DexListItem[] }) {
             value={sort}
             onChange={(e) => setSort(e.target.value as SortKey)}
             aria-label="Sort by"
-            className="h-11 rounded-xl border border-input bg-card px-3 text-sm"
+            className="h-11 rounded-md border border-input bg-black/40 px-3 font-display text-sm"
           >
             {SORTS.map((s) => (
               <option key={s.key} value={s.key}>{s.label}</option>
@@ -181,7 +181,7 @@ export function PokedexExplorer({ items }: { items: DexListItem[] }) {
           <button
             type="button"
             onClick={() => setDesc((d) => !d)}
-            className="flex h-11 w-11 items-center justify-center rounded-xl border border-input bg-card hover:bg-accent"
+            className="flex h-11 w-11 items-center justify-center rounded-md border border-input bg-black/40 hover:border-screen/60"
             aria-label={desc ? "Sort ascending" : "Sort descending"}
           >
             {desc ? <ArrowDownWideNarrow className="h-4 w-4" /> : <ArrowUpNarrowWide className="h-4 w-4" />}
@@ -189,7 +189,7 @@ export function PokedexExplorer({ items }: { items: DexListItem[] }) {
           <button
             type="button"
             onClick={() => router.push(`/pokemon/${items[Math.floor(Math.random() * items.length)].slug}`)}
-            className="flex h-11 items-center gap-2 rounded-xl border border-input bg-card px-3 text-sm hover:bg-accent"
+            className="flex h-11 items-center gap-2 rounded-md border border-input bg-black/40 px-3 font-display text-sm font-semibold uppercase tracking-wider hover:border-screen/60"
           >
             <Shuffle className="h-4 w-4" /> <span className="hidden sm:inline">Surprise me</span>
           </button>
@@ -205,10 +205,10 @@ export function PokedexExplorer({ items }: { items: DexListItem[] }) {
                 onClick={() => setTypes((cur) => toggle(cur, t, 2))}
                 aria-pressed={active}
                 className={cn(
-                  "shrink-0 rounded-full border px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide transition-all",
-                  active ? "scale-105 border-transparent text-white shadow-lg" : "border-white/10 text-muted-foreground hover:text-foreground"
+                  "shrink-0 rounded-[4px] border px-2.5 py-1 font-display text-[11px] font-bold uppercase tracking-wider transition-all",
+                  active ? "border-transparent text-white" : "border-white/10 bg-black/20 text-muted-foreground hover:text-foreground"
                 )}
-                style={active ? { background: typeColor(t), boxShadow: `0 0 14px -2px ${typeColor(t)}` } : { borderColor: `${typeColor(t)}55` }}
+                style={active ? { background: typeColor(t), boxShadow: "inset 0 1px 0 rgb(255 255 255 / 0.35), inset 0 -2px 0 rgb(0 0 0 / 0.25)" } : { borderColor: `${typeColor(t)}66` }}
               >
                 {capitalize(t)}
               </button>
@@ -224,8 +224,8 @@ export function PokedexExplorer({ items }: { items: DexListItem[] }) {
               onClick={() => setGens((cur) => toggle(cur, i + 1))}
               aria-pressed={gens.includes(i + 1)}
               className={cn(
-                "rounded-full border px-2.5 py-1 text-xs transition-colors",
-                gens.includes(i + 1) ? "border-primary bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
+                "rounded-sm border px-2.5 py-1.5 font-pixel text-[10px] uppercase tracking-wider transition-colors",
+                gens.includes(i + 1) ? "border-primary bg-primary text-primary-foreground" : "border-white/10 bg-black/20 text-muted-foreground hover:text-foreground"
               )}
               title={region}
             >
@@ -233,7 +233,7 @@ export function PokedexExplorer({ items }: { items: DexListItem[] }) {
             </button>
           ))}
           <span className="mx-1 h-4 w-px bg-white/10" aria-hidden />
-          <Toggle active={legendsOnly} onClick={() => setLegendsOnly((v) => !v)}>Legendary & Mythical</Toggle>
+          <Toggle active={legendsOnly} onClick={() => setLegendsOnly((v) => !v)}>Legendary + Mythical</Toggle>
           <Toggle active={finalOnly} onClick={() => setFinalOnly((v) => !v)}>Fully evolved</Toggle>
           {hasFilters ? (
             <button
@@ -250,7 +250,7 @@ export function PokedexExplorer({ items }: { items: DexListItem[] }) {
               Reset
             </button>
           ) : null}
-          <span className="ml-auto text-xs text-muted-foreground tabular-nums">
+          <span className="hud-label ml-auto tabular-nums text-screen">
             {filtered.length.toLocaleString()} Pokémon
           </span>
         </div>
@@ -272,7 +272,7 @@ export function PokedexExplorer({ items }: { items: DexListItem[] }) {
 
       <Link
         href="/pokedex/study"
-        className="fixed bottom-24 right-4 z-40 flex items-center gap-2 rounded-full bg-primary px-4 py-3 text-sm font-bold text-primary-foreground shadow-xl shadow-primary/30 transition hover:scale-105 md:bottom-8"
+        className="fixed bottom-24 right-4 z-40 flex items-center gap-2 rounded-md bg-primary px-4 py-3 font-display text-sm font-bold uppercase tracking-wider text-primary-foreground shadow-[0_4px_0_hsl(var(--primary-shadow)),0_10px_30px_-8px_hsl(var(--primary)/0.6)] transition active:translate-y-[2px] md:bottom-8"
       >
         <BookOpenCheck className="h-5 w-5" /> Study mode
       </Link>
@@ -287,8 +287,8 @@ function Toggle({ active, onClick, children }: { active: boolean; onClick: () =>
       onClick={onClick}
       aria-pressed={active}
       className={cn(
-        "rounded-full border px-2.5 py-1 text-xs transition-colors",
-        active ? "border-primary/60 bg-primary/15 text-foreground" : "text-muted-foreground hover:text-foreground"
+        "rounded-sm border px-2.5 py-1.5 font-pixel text-[10px] uppercase tracking-wider transition-colors",
+        active ? "border-screen/70 bg-screen/10 text-foreground" : "border-white/10 bg-black/20 text-muted-foreground hover:text-foreground"
       )}
     >
       {children}
@@ -309,23 +309,23 @@ function DexCard({ p, index, badge }: { p: DexListItem; index: number; badge: st
     >
       <Link
         href={`/pokemon/${p.slug}`}
-        className="group relative block overflow-hidden rounded-2xl border border-white/10 p-3 transition-all duration-300 hover:-translate-y-1 hover:border-white/25"
-        style={{
-          background: `radial-gradient(120% 90% at 50% 0%, ${c1}38 0%, transparent 60%), linear-gradient(160deg, ${c1}1f, ${c2}14 60%, hsl(var(--card)) 100%)`,
-        }}
+        className="group relative block overflow-hidden rounded-lg border bg-card transition-colors duration-200 hover:border-screen/60"
       >
-        <span
-          className="pointer-events-none absolute -right-1 -top-2 select-none text-5xl font-black tabular-nums text-white/[0.06] transition-colors group-hover:text-white/10"
-          aria-hidden
-        >
-          {String(p.id).padStart(4, "0")}
-        </span>
-        <div
-          className="pointer-events-none absolute inset-x-6 top-6 aspect-square rounded-full opacity-0 blur-2xl transition-opacity duration-500 group-hover:opacity-60"
-          style={{ background: c1 }}
-          aria-hidden
-        />
-        <div className="relative mx-auto aspect-square w-full max-w-[140px]">
+        {/* Type stripe */}
+        <div className="flex h-[3px]" aria-hidden>
+          <span className="flex-1" style={{ background: c1 }} />
+          <span className="flex-1" style={{ background: c2 }} />
+        </div>
+        <div className="flex items-center justify-between px-3 pt-2">
+          <span className="font-pixel text-[10px] tracking-wider text-muted-foreground">No.{String(p.id).padStart(4, "0")}</span>
+          {badge && <span className="font-pixel text-[10px] tabular-nums text-screen">{badge}</span>}
+        </div>
+        <div className="screen mx-3 mt-2 aspect-square rounded-md">
+          <div
+            className="absolute inset-0 opacity-30 transition-opacity duration-300 group-hover:opacity-60"
+            style={{ background: `radial-gradient(circle at 50% 60%, ${c1}, transparent 65%)` }}
+            aria-hidden
+          />
           <img
             src={artUrl(p.id, 160)}
             alt={p.name}
@@ -333,21 +333,17 @@ function DexCard({ p, index, badge }: { p: DexListItem; index: number; badge: st
             decoding="async"
             width={160}
             height={160}
-            className="h-full w-full object-contain drop-shadow-[0_8px_14px_rgba(0,0,0,0.45)] transition-transform duration-500 ease-out group-hover:-translate-y-1 group-hover:scale-110 group-hover:-rotate-3"
+            className="relative z-[1] h-full w-full object-contain p-2 drop-shadow-[0_8px_14px_rgba(0,0,0,0.5)] transition-transform duration-300 ease-out group-hover:scale-110"
           />
         </div>
-        <div className="relative mt-2 space-y-1.5">
-          <div className="flex items-baseline justify-between gap-1">
-            <span className="truncate font-bold">{p.name}</span>
-            <span className="shrink-0 font-mono text-[10px] text-muted-foreground">#{String(p.id).padStart(4, "0")}</span>
+        <div className="space-y-2 p-3">
+          <div className="truncate font-display text-[15px] font-bold uppercase tracking-wide transition-colors group-hover:text-screen">
+            {p.name}
           </div>
-          <div className="flex items-center justify-between gap-1">
-            <div className="flex gap-1">
-              {p.types.map((t) => (
-                <TypeBadge key={t} type={t} size="sm" />
-              ))}
-            </div>
-            {badge && <span className="rounded-md bg-black/30 px-1.5 py-0.5 font-mono text-[11px] font-semibold tabular-nums">{badge}</span>}
+          <div className="flex gap-1">
+            {p.types.map((t) => (
+              <TypeBadge key={t} type={t} size="sm" />
+            ))}
           </div>
         </div>
       </Link>

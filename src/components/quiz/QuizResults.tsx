@@ -15,6 +15,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ResultGrid } from "./ResultGrid";
 import { coachInsights } from "@/lib/coach";
+import { BadgeMedal } from "@/components/game/BadgeMedal";
 import { play } from "@/lib/sound";
 import { IqConvergence } from "./IqConvergence";
 import { NextDailyCountdown } from "@/components/NextDailyCountdown";
@@ -147,34 +148,45 @@ export function QuizResults({ result, resultToken, shareToken, challenger, onRes
   return (
     <motion.div initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.35 }}>
       <Card className="mx-auto w-full max-w-2xl overflow-hidden">
-        <CardHeader className="items-center space-y-3 text-center">
-          {isAdaptive ? (
-            <p className="text-xs font-semibold uppercase tracking-widest text-primary">PokéIQ Test complete</p>
-          ) : (
-            <motion.span
-              className={cn("block text-6xl font-black", color)}
-              initial={{ scale: 0, rotate: -20 }}
-              animate={{ scale: 1, rotate: 0 }}
-              transition={{ type: "spring", stiffness: 260, damping: 16, delay: 0.15 }}
-            >
-              {grade}
-            </motion.span>
-          )}
-          <h2 className="text-2xl font-bold">{isAdaptive ? `You're a${/^[AEIOU]/.test(iqTitle(result.pokeiq)) ? "n" : ""} ${iqTitle(result.pokeiq)}` : message}</h2>
-          <div className="flex items-end justify-center gap-6">
-            <div>
-              <div className="text-xs uppercase tracking-wider text-muted-foreground">PokéIQ</div>
-              <motion.div className="text-shimmer text-5xl font-black tabular-nums">{iqDisplay}</motion.div>
-              <div className="text-xs font-medium text-muted-foreground">
+        <div className="flex items-center justify-between border-b border-white/[0.07] bg-black/30 px-6 py-3">
+          <span className="hud-label flex items-center gap-2 text-screen">
+            <span className="led h-1.5 w-1.5 text-screen" /> {isAdaptive ? "PokéIQ Test complete" : "Run complete"}
+          </span>
+          <span className="hud-label">
+            {result.correct}/{result.total} correct
+          </span>
+        </div>
+        <CardHeader className="items-center space-y-5 text-center">
+          <h2 className="font-display text-3xl font-bold uppercase tracking-tight">
+            {isAdaptive ? `You're a${/^[AEIOU]/.test(iqTitle(result.pokeiq)) ? "n" : ""} ${iqTitle(result.pokeiq)}` : message}
+          </h2>
+          <div className="grid w-full max-w-md grid-cols-[auto_1fr_1fr] gap-3">
+            {!isAdaptive && (
+              <div className="screen flex w-20 flex-col items-center justify-center rounded-md">
+                <span className="hud-label relative z-[3]">Rank</span>
+                <motion.span
+                  className={cn("relative z-[3] font-display text-5xl font-bold", color)}
+                  initial={{ scale: 0, rotate: -20 }}
+                  animate={{ scale: 1, rotate: 0 }}
+                  transition={{ type: "spring", stiffness: 260, damping: 16, delay: 0.15 }}
+                >
+                  {grade}
+                </motion.span>
+              </div>
+            )}
+            <div className={cn("screen rounded-md px-4 py-3 text-left", isAdaptive && "col-span-2")}>
+              <div className="hud-label relative z-[3]">PokéIQ</div>
+              <motion.div className="relative z-[3] font-display text-5xl font-bold tabular-nums text-screen [text-shadow:0_0_18px_hsl(var(--screen)/0.6)]">
+                {iqDisplay}
+              </motion.div>
+              <div className="relative z-[3] text-[11px] text-muted-foreground">
                 {interval ? `90% range ${interval[0]}–${interval[1]}` : iqTitle(result.pokeiq)}
               </div>
             </div>
-            <div>
-              <div className="text-xs uppercase tracking-wider text-muted-foreground">Score</div>
-              <motion.div className="text-3xl font-bold tabular-nums">{scoreDisplay}</motion.div>
-              <div className="text-xs text-muted-foreground">
-                {result.correct}/{result.total} correct
-              </div>
+            <div className="screen rounded-md px-4 py-3 text-left">
+              <div className="hud-label relative z-[3]">Score</div>
+              <motion.div className="relative z-[3] font-pixel text-2xl tabular-nums leading-[3rem] text-foreground">{scoreDisplay}</motion.div>
+              <div className="relative z-[3] text-[11px] text-muted-foreground">Best streak {result.bestStreak}</div>
             </div>
           </div>
         </CardHeader>
@@ -222,8 +234,8 @@ export function QuizResults({ result, resultToken, shareToken, challenger, onRes
               {reward.levelAfter > reward.levelBefore && <Badge>Level up! Lv {reward.levelAfter}</Badge>}
               {reward.dailyStreak !== undefined && <Badge variant="success">🔥 {reward.dailyStreak}-day streak</Badge>}
               {reward.newBadges.map((b) => (
-                <Badge key={b.id} variant="outline" className="border-primary/50">
-                  {b.emoji} {b.name} unlocked
+                <Badge key={b.id} variant="outline" className="border-warning/60 text-warning">
+                  <BadgeMedal id={b.id} size="sm" /> {b.name} unlocked
                 </Badge>
               ))}
             </motion.div>
@@ -233,25 +245,25 @@ export function QuizResults({ result, resultToken, shareToken, challenger, onRes
             return focus ? (
               <Link
                 href={focus.href}
-                className="flex items-center justify-between gap-3 rounded-lg border border-primary/30 bg-primary/5 px-4 py-3 text-sm transition hover:bg-primary/10"
+                className="flex items-center justify-between gap-3 rounded-md border border-screen/30 bg-screen/[0.05] px-4 py-3 text-sm transition hover:bg-screen/10"
               >
                 <span>
                   <span className="text-muted-foreground">Coach tip: your weakest area is </span>
                   <b>{focus.label}</b> <span className="text-muted-foreground">(~{Math.round(focus.accuracy * 100)}%)</span>
                 </span>
-                <span className="shrink-0 font-semibold text-primary">{focus.cta} →</span>
+                <span className="shrink-0 font-semibold text-screen">{focus.cta} →</span>
               </Link>
             ) : null;
           })()}
           {progress && (
             <div className="space-y-1">
-              <div className="flex justify-between text-xs text-muted-foreground">
+              <div className="hud-label flex justify-between">
                 <span>Trainer level {levelInfo(progress.xp).level}</span>
                 <span>{levelInfo(progress.xp).toNext} XP to next</span>
               </div>
-              <div className="h-1.5 overflow-hidden rounded-full bg-secondary">
+              <div className="meter">
                 <motion.div
-                  className="h-full bg-primary"
+                  className="h-full bg-screen shadow-[0_0_8px_hsl(var(--screen))]"
                   initial={{ width: 0 }}
                   animate={{ width: `${levelInfo(progress.xp).progress * 100}%` }}
                   transition={{ duration: 0.8, delay: 0.4 }}
@@ -274,7 +286,7 @@ export function QuizResults({ result, resultToken, shareToken, challenger, onRes
           {isDaily && <NextDailyCountdown label="Next Daily Challenge in" />}
 
           <div className="space-y-2">
-            <label htmlFor="player-name" className="text-sm font-medium">
+            <label htmlFor="player-name" className="hud-label">
               {isDaily ? "Post to today's daily leaderboard" : "Save to leaderboard"}
             </label>
             <div className="flex gap-2">

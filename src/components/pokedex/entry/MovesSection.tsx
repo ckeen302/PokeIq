@@ -40,9 +40,9 @@ export function MovesSection({ moves, game }: { moves: DexMove[]; game: string }
   }, [moves, tab, query]);
 
   return (
-    <div className="space-y-3 rounded-2xl border bg-card/60 p-4">
+    <div className="space-y-3 hud rounded-lg border bg-card p-4">
       <div className="flex flex-wrap items-center gap-2">
-        <div className="flex flex-wrap rounded-full border border-white/10 p-1">
+        <div className="flex flex-wrap rounded-md border border-white/10 bg-black/30 p-1">
           {TABS.filter((t) => counts[t.method] > 0).map((t) => (
             <button
               key={t.method}
@@ -51,9 +51,9 @@ export function MovesSection({ moves, game }: { moves: DexMove[]; game: string }
                 setTab(t.method);
                 setOpen(null);
               }}
-              className={cn("relative rounded-full px-3 py-1.5 text-xs font-semibold transition-colors", tab === t.method ? "text-primary-foreground" : "text-muted-foreground hover:text-foreground")}
+              className={cn("relative rounded-sm px-3 py-1.5 font-pixel text-[10px] uppercase tracking-wider transition-colors", tab === t.method ? "text-primary-foreground" : "text-muted-foreground hover:text-foreground")}
             >
-              {tab === t.method && <motion.span layoutId="moves-tab" className="absolute inset-0 rounded-full bg-primary" transition={{ type: "spring", stiffness: 400, damping: 30 }} />}
+              {tab === t.method && <motion.span layoutId="moves-tab" className="absolute inset-0 rounded-sm bg-primary" transition={{ type: "spring", stiffness: 400, damping: 30 }} />}
               <span className="relative">
                 {t.label} <span className="opacity-70">{counts[t.method]}</span>
               </span>

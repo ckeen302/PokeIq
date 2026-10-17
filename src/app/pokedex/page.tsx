@@ -29,8 +29,9 @@ export default function PokedexPage() {
   return (
     <div className="mx-auto max-w-7xl space-y-4">
       <div className="space-y-2 text-center">
-        <h1 className="text-4xl font-extrabold tracking-tight sm:text-5xl">
-          The <span className="text-shimmer">Pokédex</span>
+        <p className="hud-label text-screen">National database · {items.length.toLocaleString()} entries</p>
+        <h1 className="font-display text-4xl font-bold uppercase tracking-tight sm:text-5xl">
+          Poké<span className="text-primary">dex</span>
         </h1>
         <p className="mx-auto max-w-2xl text-muted-foreground">
           All {items.length.toLocaleString()} Pokémon — stats, evolutions, moves, abilities, matchups and every Pokédex

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { motion } from "framer-motion";
 import { BookOpen, CalendarDays, Gamepad2, Home, Search, User } from "lucide-react";
 import { levelInfo, useProgress } from "@/lib/progress";
 import { cn } from "@/lib/utils";
@@ -32,33 +33,44 @@ export function DesktopNav() {
   const pathname = usePathname();
   const progress = useProgress();
   return (
-    <nav className="flex items-center gap-1 text-sm">
-      <div className="hidden items-center gap-1 md:flex">
-        {DESKTOP_LINKS.map(({ href, label }) => (
-          <Link
-            key={href}
-            href={href}
-            className={cn(
-              "rounded-full px-3 py-1.5 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground",
-              isActive(pathname, href) && "bg-accent text-foreground"
-            )}
-          >
-            {label}
-          </Link>
-        ))}
+    <nav className="flex items-center gap-1">
+      <div className="hidden items-center md:flex">
+        {DESKTOP_LINKS.map(({ href, label }) => {
+          const active = isActive(pathname, href);
+          return (
+            <Link
+              key={href}
+              href={href}
+              className={cn(
+                "relative px-3 py-2 font-display text-[13px] font-semibold uppercase tracking-[0.12em] text-muted-foreground transition-colors hover:text-foreground",
+                active && "text-foreground"
+              )}
+              aria-current={active ? "page" : undefined}
+            >
+              {label}
+              {active && (
+                <motion.span
+                  layoutId="nav-active"
+                  className="absolute inset-x-3 -bottom-[9px] h-[3px] bg-primary shadow-[0_0_10px_hsl(var(--primary))]"
+                  transition={{ type: "spring", stiffness: 500, damping: 38 }}
+                />
+              )}
+            </Link>
+          );
+        })}
       </div>
       <MuteToggle />
       <Link
         href="/trainer"
         className={cn(
-          "ml-1 flex items-center gap-2 rounded-full border px-3 py-1.5 text-muted-foreground transition-colors hover:border-primary/50 hover:text-foreground",
-          isActive(pathname, "/trainer") && "border-primary/50 text-foreground"
+          "ml-1 flex items-center gap-2 rounded-md border bg-card px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:border-screen/60 hover:text-foreground",
+          isActive(pathname, "/trainer") && "border-screen/60 text-foreground"
         )}
       >
         <User className="h-4 w-4" aria-hidden />
-        <span className="max-w-[9rem] truncate">{progress?.name || "Trainer"}</span>
+        <span className="max-w-[9rem] truncate font-display font-semibold">{progress?.name || "Trainer"}</span>
         {progress && progress.xp > 0 && (
-          <span className="rounded-full bg-primary/15 px-1.5 text-xs font-bold text-primary">Lv {levelInfo(progress.xp).level}</span>
+          <span className="font-pixel text-[10px] text-screen">Lv{levelInfo(progress.xp).level}</span>
         )}
       </Link>
     </nav>
@@ -79,12 +91,13 @@ export function MobileTabBar() {
             key={href}
             href={href}
             className={cn(
-              "flex flex-col items-center gap-0.5 py-2 text-[11px] font-medium text-muted-foreground transition-colors",
-              active && "text-primary"
+              "relative flex flex-col items-center gap-1 py-2.5 font-pixel text-[9px] uppercase tracking-wider text-muted-foreground transition-colors",
+              active && "text-foreground"
             )}
             aria-current={active ? "page" : undefined}
           >
-            <Icon className="h-5 w-5" aria-hidden />
+            {active && <span className="absolute inset-x-5 top-0 h-[3px] bg-primary shadow-[0_0_10px_hsl(var(--primary))]" aria-hidden />}
+            <Icon className={cn("h-5 w-5", active && "text-primary")} aria-hidden />
             {label}
           </Link>
         );

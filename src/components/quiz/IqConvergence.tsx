@@ -32,7 +32,7 @@ export function IqConvergence({ trajectory, grid }: { trajectory: [number, numbe
   const final = points[points.length - 1];
 
   return (
-    <div className="rounded-xl border bg-muted/30 p-3">
+    <div className="rounded-md border bg-muted/30 p-3">
       <div className="mb-1 flex items-baseline justify-between text-xs text-muted-foreground">
         <span className="font-semibold text-foreground">How your PokéIQ was measured</span>
         <span>Each question was picked to be as informative as possible for you</span>

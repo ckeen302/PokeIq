@@ -25,10 +25,10 @@ export function LookalikesSection({ self, lookalikes }: { self: { id: number; na
     });
 
   return (
-    <div className="space-y-3 rounded-2xl border bg-card/60 p-4">
+    <div className="space-y-3 hud rounded-lg border bg-card p-4">
       <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 lg:grid-cols-7">
         <div className="flex flex-col items-center gap-1.5">
-          <div className="spotlight flex aspect-square w-full items-center justify-center rounded-xl ring-2 ring-primary">
+          <div className="spotlight flex aspect-square w-full items-center justify-center rounded-md ring-2 ring-primary">
             <img src={artUrl(self.id, 160)} alt={`${self.name} silhouette`} className="h-[85%] w-[85%] object-contain [filter:brightness(0)]" />
           </div>
           <span className="text-xs font-bold text-primary">{self.name}</span>
@@ -48,7 +48,7 @@ export function LookalikesSection({ self, lookalikes }: { self: { id: number; na
                 type="button"
                 onClick={() => toggle(l.id)}
                 onMouseEnter={() => setRevealed((cur) => new Set(cur).add(l.id))}
-                className="group relative flex aspect-square w-full items-center justify-center overflow-hidden rounded-xl border border-white/10 transition-colors"
+                className="group relative flex aspect-square w-full items-center justify-center overflow-hidden rounded-md border border-white/10 transition-colors"
                 style={{ background: shown ? `radial-gradient(circle, ${typeColor(l.types[0])}40, transparent 70%)` : undefined }}
                 aria-label={shown ? l.name : "Reveal lookalike"}
               >

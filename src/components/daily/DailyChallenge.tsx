@@ -8,6 +8,7 @@ import { dailyNumber, localDateString } from "@/lib/daily";
 import { useProgress } from "@/lib/progress";
 import { emojiGrid, shareOrCopy } from "@/lib/share";
 import { QuizController } from "@/components/quiz/QuizController";
+import { ModeIcon } from "@/components/game/ModeIcon";
 import { ResultGrid } from "@/components/quiz/ResultGrid";
 import { NextDailyCountdown } from "@/components/NextDailyCountdown";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -25,8 +26,8 @@ export function DailyChallenge() {
 
   const header = (
     <div className="mx-auto max-w-2xl space-y-2 text-center">
-      <p className="text-sm font-semibold uppercase tracking-widest text-primary">Daily Challenge #{number}</p>
-      <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">Today&apos;s PokéIQ test</h1>
+      <p className="hud-label text-screen">Daily Challenge #{number}</p>
+      <h1 className="font-display text-4xl font-bold uppercase tracking-tight sm:text-5xl">Today&apos;s PokéIQ test</h1>
       <p className="text-muted-foreground">10 mixed questions, the same for every trainer. One attempt — make it count.</p>
     </div>
   );
@@ -105,14 +106,19 @@ export function DailyChallenge() {
       <Card className="mx-auto max-w-2xl">
         <CardContent className="space-y-6 p-6">
           <ul className="grid gap-3 text-sm sm:grid-cols-2">
-            {[
-              ["👤", "Silhouettes"],
-              ["📖", "Pokédex entries"],
-              ["⚔️", "Type matchups"],
-              ["📊", "Stat battles"],
-            ].map(([emoji, label]) => (
-              <li key={label} className="flex items-center gap-3 rounded-lg border bg-muted/30 p-3">
-                <span className="text-xl" aria-hidden>{emoji}</span> {label}
+            {(
+              [
+                ["whos-that", "Silhouettes"],
+                ["dex", "Pokédex entries"],
+                ["types", "Type matchups"],
+                ["higher-lower", "Stat battles"],
+              ] as const
+            ).map(([mod, label]) => (
+              <li key={label} className="flex items-center gap-3 rounded-md border bg-black/20 p-3 font-display font-semibold uppercase tracking-wide">
+                <span className="screen flex h-9 w-9 items-center justify-center rounded-sm text-screen">
+                  <ModeIcon module={mod} className="relative z-[3] h-4 w-4" />
+                </span>
+                {label}
               </li>
             ))}
           </ul>

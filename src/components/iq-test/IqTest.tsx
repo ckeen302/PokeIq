@@ -24,9 +24,9 @@ export function IqTest() {
   return (
     <div className="space-y-8">
       <div className="mx-auto max-w-2xl space-y-3 text-center">
-        <p className="text-sm font-semibold uppercase tracking-widest text-primary">The PokéIQ Test</p>
-        <h1 className="text-4xl font-extrabold tracking-tight sm:text-5xl">
-          How much do you <span className="text-shimmer">really</span> know?
+        <p className="hud-label text-screen">The PokéIQ Test</p>
+        <h1 className="font-display text-4xl font-bold uppercase tracking-tight sm:text-5xl">
+          How much do you <span className="text-primary">really</span> know?
         </h1>
         <p className="text-muted-foreground">
           An adaptive test — the same technique the GRE and GMAT use — that homes in on your level in 20 questions.
@@ -47,7 +47,7 @@ export function IqTest() {
                 {STEPS.map(({ icon: Icon, title, text }, i) => (
                   <motion.div
                     key={title}
-                    className="space-y-2 rounded-xl border bg-muted/30 p-4"
+                    className="space-y-2 rounded-md border bg-muted/30 p-4"
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.1 + i * 0.08 }}

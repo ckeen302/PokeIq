@@ -20,6 +20,7 @@ import { EntriesSection } from "./EntriesSection";
 import { TrainingSection } from "./TrainingSection";
 import { LookalikesSection } from "./LookalikesSection";
 import { cn } from "@/lib/utils";
+import { buttonVariants } from "@/components/ui/button";
 
 /**
  * One Pokémon's full study page. Selecting a form (Mega, regional,
@@ -53,9 +54,10 @@ export function DexEntry({ data }: { data: DexEntryData }) {
     data.lookalikes.length > 0 && { id: "lookalikes", label: "Lookalikes" },
     data.learnset && { id: "moves", label: "Moves" },
     { id: "pokedex", label: "Pokédex" },
-    { id: "breeding", label: "Training & breeding" },
+    { id: "breeding", label: "Training + breeding" },
   ].filter(Boolean) as { id: string; label: string }[];
   const active = useScrollSpy(sections.map((s) => s.id));
+  const sectionIndex = (id: string) => sections.findIndex((s) => s.id === id) + 1;
 
   // ← / → to flip through the Pokédex.
   useEffect(() => {
@@ -99,10 +101,10 @@ export function DexEntry({ data }: { data: DexEntryData }) {
             <a
               key={s.id}
               href={`#${s.id}`}
-              className={cn("relative shrink-0 rounded-full px-3 py-1.5 text-xs font-semibold transition-colors", active === s.id ? "text-primary-foreground" : "text-muted-foreground hover:text-foreground")}
+              className={cn("relative shrink-0 rounded-sm px-3 py-1.5 font-pixel text-[10px] uppercase tracking-wider transition-colors", active === s.id ? "text-primary-foreground" : "text-muted-foreground hover:text-foreground")}
             >
               {active === s.id && (
-                <motion.span layoutId="dex-section-pill" className="absolute inset-0 rounded-full" style={{ background: accent }} transition={{ type: "spring", stiffness: 400, damping: 32 }} />
+                <motion.span layoutId="dex-section-pill" className="absolute inset-0 rounded-sm bg-primary" transition={{ type: "spring", stiffness: 400, damping: 32 }} />
               )}
               <span className="relative">{s.label}</span>
             </a>
@@ -110,56 +112,56 @@ export function DexEntry({ data }: { data: DexEntryData }) {
         </div>
       </div>
 
-      <Section id="stats" title="Base stats" subtitle={form ? form.name : undefined}>
+      <Section id="stats" index={sectionIndex("stats")} title="Base stats" subtitle={form ? form.name : undefined}>
         <StatsSection stats={stats} percentiles={data.percentiles} accent={accent} isShedinja={p.slug === "shedinja"} showPercentiles={!form} />
       </Section>
 
-      <Section id="matchups" title="Type matchups" subtitle="Defensive multipliers">
+      <Section id="matchups" index={sectionIndex("matchups")} title="Type matchups" subtitle="Defensive multipliers">
         <MatchupSection defenses={defenses} stab={stab} />
       </Section>
 
       {data.evolutionTree && (
-        <Section id="evolution" title="Evolution">
+        <Section id="evolution" index={sectionIndex("evolution")} title="Evolution">
           <EvolutionSection tree={data.evolutionTree} currentId={p.id} />
         </Section>
       )}
 
       {data.lookalikes.length > 0 && (
-        <Section id="lookalikes" title="Easily confused with" subtitle="Most similar silhouettes">
+        <Section id="lookalikes" index={sectionIndex("lookalikes")} title="Easily confused with" subtitle="Most similar silhouettes">
           <LookalikesSection self={{ id: p.id, name: p.name }} lookalikes={data.lookalikes} />
         </Section>
       )}
 
       {data.learnset && (
-        <Section id="moves" title="Moves" subtitle={`${data.learnset.moves.length} moves`}>
+        <Section id="moves" index={sectionIndex("moves")} title="Moves" subtitle={`${data.learnset.moves.length} moves`}>
           <MovesSection moves={data.learnset.moves} game={data.learnset.game} />
         </Section>
       )}
 
-      <Section id="pokedex" title="Pokédex entries" subtitle={`${data.entries.length} unique entries`}>
+      <Section id="pokedex" index={sectionIndex("pokedex")} title="Pokédex entries" subtitle={`${data.entries.length} unique entries`}>
         <EntriesSection entries={data.entries} />
       </Section>
 
-      <Section id="breeding" title="Training & breeding">
+      <Section id="breeding" index={sectionIndex("breeding")} title="Training & breeding">
         <TrainingSection data={data} />
       </Section>
 
       {/* Study CTA */}
       <motion.div
-        className="relative overflow-hidden rounded-3xl border p-6 sm:p-8"
+        className="hud relative overflow-hidden rounded-lg border p-6 sm:p-8"
         style={{ background: `linear-gradient(135deg, ${accent}30, hsl(var(--card)) 70%)` }}
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
       >
         <img src={artUrl(p.id, 256)} alt="" aria-hidden className="pointer-events-none absolute -bottom-8 -right-6 h-48 w-48 opacity-20 [filter:brightness(0)_invert(1)]" />
-        <h2 className="text-2xl font-bold">Think you&apos;ve got {p.name} down?</h2>
+        <h2 className="font-display text-2xl font-bold uppercase">Think you&apos;ve got {p.name} down?</h2>
         <p className="mt-1 max-w-lg text-muted-foreground">Lock it in with flashcards, then prove it in a quiz.</p>
         <div className="mt-5 flex flex-wrap gap-2">
-          <Link href={`/pokedex/study?gen=${p.gen}`} className="flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-bold text-primary-foreground hover:bg-primary/90">
+          <Link href={`/pokedex/study?gen=${p.gen}`} className={buttonVariants()}>
             <BookOpenCheck className="h-4 w-4" /> Study Gen {p.gen} flashcards
           </Link>
-          <Link href={`/quiz/gen-${p.gen}-pokemon-quiz`} className="flex items-center gap-2 rounded-full border px-5 py-2.5 text-sm font-bold hover:bg-accent">
+          <Link href={`/quiz/gen-${p.gen}-pokemon-quiz`} className={buttonVariants({ variant: "outline" })}>
             <Gamepad2 className="h-4 w-4" /> Gen {p.gen} quiz
           </Link>
         </div>
@@ -171,12 +173,12 @@ export function DexEntry({ data }: { data: DexEntryData }) {
             <Link
               key={n.id}
               href={`/pokemon/${n.slug}`}
-              className={cn("group flex items-center gap-3 rounded-2xl border bg-card/60 p-3 transition hover:border-primary/40", i === 1 && "flex-row-reverse text-right")}
+              className={cn("group flex items-center gap-3 hud rounded-lg border bg-card p-3 transition hover:border-primary/40", i === 1 && "flex-row-reverse text-right")}
             >
               <img src={artUrl(n.id, 96)} alt="" width={64} height={64} className="h-16 w-16 transition-transform group-hover:scale-110" />
               <div>
-                <div className="font-mono text-xs text-muted-foreground">#{String(n.id).padStart(4, "0")}</div>
-                <div className="font-bold">{n.name}</div>
+                <div className="hud-label">No.{String(n.id).padStart(4, "0")}</div>
+                <div className="font-display font-bold uppercase tracking-wide">{n.name}</div>
               </div>
             </Link>
           ) : (

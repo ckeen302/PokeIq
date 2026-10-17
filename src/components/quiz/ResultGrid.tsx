@@ -11,7 +11,10 @@ export function ResultGrid({ grid, className }: { grid: string; className?: stri
       {[...grid].map((c, i) => (
         <motion.span
           key={i}
-          className={cn("h-6 w-6 rounded-md", c === "1" ? "bg-success" : "bg-destructive/80")}
+          className={cn(
+            "h-6 w-6 rounded-[3px] shadow-[inset_0_-3px_0_rgb(0_0_0/0.3)]",
+            c === "1" ? "bg-success shadow-[0_0_8px_-2px_hsl(var(--success)),inset_0_-3px_0_rgb(0_0_0/0.3)]" : "bg-destructive/80"
+          )}
           initial={{ scale: 0, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ delay: 0.2 + Math.min(i, 30) * 0.04, type: "spring", stiffness: 400, damping: 20 }}

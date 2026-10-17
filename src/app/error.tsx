@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import Link from "next/link";
 import { RotateCcw } from "lucide-react";
+import { buttonVariants } from "@/components/ui/button";
 
 export default function ErrorPage({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
   useEffect(() => {
@@ -11,23 +12,19 @@ export default function ErrorPage({ error, reset }: { error: Error & { digest?: 
 
   return (
     <div className="flex min-h-[60vh] flex-col items-center justify-center gap-5 text-center">
-      <div className="text-6xl" aria-hidden>
-        💫
-      </div>
+      <p className="hud-label flex items-center gap-2 text-destructive">
+        <span className="led h-1.5 w-1.5 animate-blink text-destructive" /> System error
+      </p>
       <div className="space-y-2">
-        <h1 className="text-3xl font-black tracking-tight">It&apos;s super effective… against us.</h1>
+        <h1 className="font-display text-3xl font-bold uppercase tracking-tight">It&apos;s super effective… against us.</h1>
         <p className="mx-auto max-w-sm text-muted-foreground">Something broke on our side. Give it another try.</p>
         {error.digest && <p className="font-mono text-xs text-muted-foreground">Ref: {error.digest}</p>}
       </div>
       <div className="flex gap-2">
-        <button
-          type="button"
-          onClick={reset}
-          className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-bold text-primary-foreground hover:bg-primary/90"
-        >
+        <button type="button" onClick={reset} className={buttonVariants()}>
           <RotateCcw className="h-4 w-4" /> Try again
         </button>
-        <Link href="/" className="rounded-full border px-5 py-2.5 text-sm font-bold hover:bg-accent">
+        <Link href="/" className={buttonVariants({ variant: "outline" })}>
           Home
         </Link>
       </div>

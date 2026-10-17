@@ -36,7 +36,7 @@ export default async function LeaderboardPage({ searchParams }: PageProps) {
   return (
     <div className="mx-auto max-w-3xl space-y-6">
       <div className="space-y-4 text-center">
-        <h1 className="text-3xl font-bold">Leaderboard</h1>
+        <h1 className="font-display text-4xl font-bold uppercase tracking-tight sm:text-5xl">Leaderboard</h1>
         <div className="flex flex-wrap justify-center gap-2">
           {tabs.map((t) => (
             <Link key={t.id} href={`/leaderboard?board=${t.id}`}>

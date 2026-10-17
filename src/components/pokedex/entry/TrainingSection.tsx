@@ -38,7 +38,7 @@ export function TrainingSection({ data }: { data: DexEntryData }) {
             </span>
           </div>
           {femalePct !== null && (
-            <div className="flex h-2.5 overflow-hidden rounded-full bg-secondary">
+            <div className="flex meter">
               <motion.div className="h-full bg-sky-400" initial={{ width: 0 }} whileInView={{ width: `${100 - femalePct}%` }} viewport={{ once: true }} transition={{ duration: 0.8 }} />
               <motion.div className="h-full bg-pink-400" initial={{ width: 0 }} whileInView={{ width: `${femalePct}%` }} viewport={{ once: true }} transition={{ duration: 0.8, delay: 0.2 }} />
             </div>
@@ -73,7 +73,7 @@ export function TrainingSection({ data }: { data: DexEntryData }) {
 
 function Card({ title, children, className }: { title: string; children: React.ReactNode; className?: string }) {
   return (
-    <div className={`rounded-2xl border bg-card/60 p-4 ${className ?? ""}`}>
+    <div className={`hud rounded-lg border bg-card p-4 ${className ?? ""}`}>
       <h3 className="mb-2 text-sm font-bold uppercase tracking-wider text-muted-foreground">{title}</h3>
       <div className="divide-y divide-white/5">{children}</div>
     </div>

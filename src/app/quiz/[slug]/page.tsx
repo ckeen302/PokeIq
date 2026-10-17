@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { QuizSetup } from "@/components/quiz/QuizSetup";
+import { ModeIcon } from "@/components/game/ModeIcon";
 import { DIFFICULTIES, type Difficulty, type QuizFormat } from "@/engines/types";
 import { MODULE_INFO, PLAYABLE_FORMATS, QUIZ_PRESETS, presetFor } from "@/lib/modes";
 
@@ -58,9 +59,12 @@ export default async function QuizPage({ params, searchParams }: PageProps) {
   return (
     <div className="space-y-8">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
-      <div className="mx-auto max-w-2xl space-y-3 text-center">
-        <div className="text-4xl" aria-hidden>{info.emoji}</div>
-        <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">{preset.h1}</h1>
+      <div className="mx-auto flex max-w-2xl flex-col items-center gap-3 text-center">
+        <span className="screen flex h-14 w-14 items-center justify-center rounded-md" style={{ color: `hsl(${info.accent})` }}>
+          <ModeIcon module={preset.module} className="relative z-[3] h-7 w-7" />
+        </span>
+        <p className="hud-label text-screen">Mode select</p>
+        <h1 className="font-display text-4xl font-bold uppercase tracking-tight sm:text-5xl">{preset.h1}</h1>
         <p className="text-muted-foreground">{preset.description}</p>
       </div>
 
@@ -73,7 +77,7 @@ export default async function QuizPage({ params, searchParams }: PageProps) {
       />
 
       <section className="mx-auto max-w-2xl space-y-3 text-sm text-muted-foreground">
-        <h2 className="text-base font-semibold text-foreground">How it works</h2>
+        <h2 className="font-display text-base font-bold uppercase tracking-wider text-foreground">How it works</h2>
         <p>
           Every question is generated on the fly from the complete Pokédex — there are thousands of possible
           questions, so no two runs are the same. Answers are checked on our server and your PokéIQ is calculated

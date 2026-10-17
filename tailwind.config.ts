@@ -11,6 +11,11 @@ const config: Config = {
       screens: { "2xl": "1200px" },
     },
     extend: {
+      fontFamily: {
+        sans: ["var(--font-body)", "system-ui", "sans-serif"],
+        display: ["var(--font-display)", "var(--font-body)", "sans-serif"],
+        pixel: ["var(--font-pixel)", "ui-monospace", "monospace"],
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
@@ -33,6 +38,8 @@ const config: Config = {
           DEFAULT: "hsl(var(--success))",
           foreground: "hsl(var(--success-foreground))",
         },
+        warning: "hsl(var(--warning))",
+        screen: "hsl(var(--screen))",
         muted: {
           DEFAULT: "hsl(var(--muted))",
           foreground: "hsl(var(--muted-foreground))",
@@ -48,14 +55,20 @@ const config: Config = {
       },
       borderRadius: {
         lg: "var(--radius)",
-        md: "calc(var(--radius) - 2px)",
-        sm: "calc(var(--radius) - 4px)",
+        md: "calc(var(--radius) - 1px)",
+        sm: "calc(var(--radius) - 3px)",
       },
       keyframes: {
-        "pulse-once": {
-          "0%, 100%": { opacity: "1" },
-          "50%": { opacity: "0.5" },
-        },
+        blink: { "0%, 49%": { opacity: "1" }, "50%, 100%": { opacity: "0" } },
+        nudge: { "0%, 100%": { transform: "translateX(0)" }, "50%": { transform: "translateX(3px)" } },
+        scan: { "0%": { transform: "translateY(-100%)" }, "100%": { transform: "translateY(100%)" } },
+        flicker: { "0%, 100%": { opacity: "1" }, "92%": { opacity: "1" }, "93%": { opacity: "0.7" }, "94%": { opacity: "1" } },
+      },
+      animation: {
+        blink: "blink 1s steps(1) infinite",
+        nudge: "nudge 0.8s ease-in-out infinite",
+        scan: "scan 6s linear infinite",
+        flicker: "flicker 6s linear infinite",
       },
     },
   },

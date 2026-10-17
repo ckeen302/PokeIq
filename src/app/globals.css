@@ -2,28 +2,38 @@
 @tailwind components;
 @tailwind utilities;
 
+/*
+ * PokéIQ design system — "field device" UI.
+ * A dark handheld-device shell (Pokédex red, cyan display glow) with
+ * game-menu conventions: HUD panels, scanline screens, text boxes with a
+ * blinking ▼, and a ▶ selection cursor on interactive menu items.
+ */
+
 @layer base {
   :root {
-    --background: 224 50% 5%;
-    --foreground: 210 40% 98%;
-    --card: 223 45% 8%;
-    --card-foreground: 210 40% 98%;
-    --primary: 43 96% 56%;
-    --primary-foreground: 26 83% 14%;
-    --secondary: 219 35% 16%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 220 35% 13%;
-    --muted-foreground: 216 20% 68%;
-    --accent: 219 35% 19%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 72% 55%;
-    --destructive-foreground: 210 40% 98%;
-    --success: 142 71% 45%;
-    --success-foreground: 144 61% 10%;
-    --border: 220 34% 16%;
-    --input: 220 34% 22%;
-    --ring: 43 96% 56%;
-    --radius: 0.75rem;
+    --background: 230 33% 5%;
+    --foreground: 210 33% 96%;
+    --card: 229 28% 9%;
+    --card-foreground: 210 33% 96%;
+    --primary: 6 84% 53%;
+    --primary-foreground: 0 0% 100%;
+    --primary-shadow: 6 78% 30%;
+    --secondary: 229 24% 15%;
+    --secondary-foreground: 210 33% 96%;
+    --muted: 229 24% 12%;
+    --muted-foreground: 222 14% 64%;
+    --accent: 229 24% 16%;
+    --accent-foreground: 210 33% 96%;
+    --destructive: 0 82% 58%;
+    --destructive-foreground: 0 0% 100%;
+    --success: 140 64% 46%;
+    --success-foreground: 140 70% 8%;
+    --warning: 44 96% 56%;
+    --screen: 186 88% 56%;
+    --border: 227 22% 19%;
+    --input: 227 22% 23%;
+    --ring: 186 88% 56%;
+    --radius: 0.5rem;
   }
 }
 
@@ -35,81 +45,147 @@
     scrollbar-gutter: stable;
   }
   body {
-    @apply bg-background text-foreground antialiased;
-    /* Ambient aurora backdrop — fixed so it never causes scroll jank. */
+    @apply bg-background font-sans text-foreground antialiased;
+    /* Faint tactical grid + a lit top edge, fixed so it never jitters on scroll. */
     background-image:
-      radial-gradient(60rem 40rem at 85% -10%, hsl(43 96% 56% / 0.07), transparent 60%),
-      radial-gradient(50rem 35rem at -10% 25%, hsl(217 91% 60% / 0.09), transparent 60%),
-      radial-gradient(45rem 45rem at 65% 110%, hsl(0 84% 60% / 0.06), transparent 60%);
+      radial-gradient(120% 60% at 50% -10%, hsl(var(--screen) / 0.07), transparent 60%),
+      linear-gradient(hsl(var(--foreground) / 0.028) 1px, transparent 1px),
+      linear-gradient(90deg, hsl(var(--foreground) / 0.028) 1px, transparent 1px);
+    background-size: 100% 100%, 36px 36px, 36px 36px;
     background-attachment: fixed;
-    /* iOS: respect notch / home-indicator safe areas. */
     padding-left: env(safe-area-inset-left);
     padding-right: env(safe-area-inset-right);
   }
-  /* Subtle custom scrollbar (WebKit) */
+  h1,
+  h2,
+  h3 {
+    @apply font-display tracking-tight;
+  }
+  ::selection {
+    background: hsl(var(--screen) / 0.35);
+  }
   ::-webkit-scrollbar {
     width: 10px;
   }
   ::-webkit-scrollbar-thumb {
-    @apply rounded-full bg-secondary;
+    @apply rounded-sm bg-secondary;
     border: 2px solid hsl(var(--background));
   }
 }
 
 @layer components {
-  /* Frosted-glass surface used for the header and floating chrome. */
+  /* Translucent device chrome (header / tab bar). */
   .glass {
-    @apply border-b border-white/5 bg-background/70 backdrop-blur-xl;
+    @apply border-b border-white/[0.06] bg-background/80 backdrop-blur-xl;
   }
   .glass-top {
-    @apply border-t border-white/10 bg-background/85 backdrop-blur-xl;
+    @apply border-t border-white/[0.08] bg-background/90 backdrop-blur-xl;
   }
+
+  /* Small all-caps HUD label, e.g. "Q 03/10", "No.0025". */
+  .hud-label {
+    @apply font-pixel text-[10px] uppercase leading-none tracking-[0.12em] text-muted-foreground;
+  }
+
+  /* Panel with targeting-bracket corners. */
+  .hud {
+    background-image:
+      linear-gradient(hsl(var(--screen) / 0.7) 0 0), linear-gradient(hsl(var(--screen) / 0.7) 0 0),
+      linear-gradient(hsl(var(--screen) / 0.7) 0 0), linear-gradient(hsl(var(--screen) / 0.7) 0 0),
+      linear-gradient(hsl(var(--screen) / 0.7) 0 0), linear-gradient(hsl(var(--screen) / 0.7) 0 0),
+      linear-gradient(hsl(var(--screen) / 0.7) 0 0), linear-gradient(hsl(var(--screen) / 0.7) 0 0);
+    background-repeat: no-repeat;
+    background-size: 12px 2px, 2px 12px, 12px 2px, 2px 12px, 12px 2px, 2px 12px, 12px 2px, 2px 12px;
+    background-position: 0 0, 0 0, 100% 0, 100% 0, 0 100%, 0 100%, 100% 100%, 100% 100%;
+  }
+
+  /* A device display: dark teal glass with scanlines and an inner glow. */
+  .screen {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    background:
+      radial-gradient(120% 90% at 50% 0%, hsl(var(--screen) / 0.1), transparent 70%),
+      hsl(222 40% 6%);
+    box-shadow:
+      inset 0 0 0 1px hsl(var(--screen) / 0.18),
+      inset 0 0 40px hsl(var(--screen) / 0.06);
+  }
+  .screen::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 2;
+    background: repeating-linear-gradient(to bottom, transparent 0 2px, rgb(0 0 0 / 0.22) 2px 3px);
+    mix-blend-mode: multiply;
+  }
+
+  /* Game text box: double border, blinking ▼ when [data-done]. */
+  .dialog-box {
+    @apply relative rounded-lg border-2 border-foreground/85 bg-[hsl(228_32%_8%)] px-5 py-4;
+    box-shadow:
+      inset 0 0 0 3px hsl(228 32% 8%),
+      inset 0 0 0 4px hsl(var(--foreground) / 0.22),
+      0 6px 0 hsl(0 0% 0% / 0.35);
+  }
+  .dialog-box[data-done="true"]::after {
+    content: "▼";
+    @apply absolute bottom-1.5 right-3 animate-blink text-[10px] text-screen;
+  }
+
+  /* Game-menu item: ▶ cursor slides in on hover / focus / selection. */
+  .menu-item {
+    @apply relative transition-[padding,border-color,background-color] duration-150;
+  }
+  .menu-item::before {
+    content: "▶";
+    @apply pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-[10px] text-primary opacity-0 transition-opacity;
+  }
+  .menu-item:not(:disabled):hover,
+  .menu-item:not(:disabled):focus-visible,
+  .menu-item[data-selected="true"] {
+    @apply pl-7;
+  }
+  .menu-item:not(:disabled):hover::before,
+  .menu-item:not(:disabled):focus-visible::before,
+  .menu-item[data-selected="true"]::before {
+    @apply animate-nudge opacity-100;
+  }
+
   /* Classic "Who's That Pokémon?" sunburst behind silhouettes. */
   .spotlight {
     background:
       radial-gradient(circle at 50% 50%, hsl(48 100% 92%) 0%, hsl(48 100% 80% / 0.9) 22%, transparent 60%),
       repeating-conic-gradient(from 0deg at 50% 50%, hsl(199 95% 58%) 0deg 9deg, hsl(205 90% 48%) 9deg 18deg);
   }
-  /* Shimmering gradient headline text. */
-  .text-shimmer {
-    background: linear-gradient(
-      110deg,
-      hsl(var(--primary)) 20%,
-      hsl(35 100% 72%) 40%,
-      hsl(var(--primary)) 60%
-    );
-    background-size: 200% auto;
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-    animation: shimmer 6s linear infinite;
-  }
-  /* Card hover glow keyed to a per-module accent via --glow. */
-  .glow-card {
-    transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
-  }
-  .glow-card:hover {
-    transform: translateY(-4px);
-    border-color: hsl(var(--glow) / 0.6);
-    box-shadow:
-      0 0 0 1px hsl(var(--glow) / 0.25),
-      0 12px 40px -12px hsl(var(--glow) / 0.45);
-  }
-}
 
-@keyframes shimmer {
-  to {
-    background-position: -200% center;
+  /* HP-bar style meter track with segment ticks. */
+  .meter {
+    @apply relative h-2.5 overflow-hidden rounded-sm bg-black/50;
+    box-shadow: inset 0 0 0 1px hsl(var(--foreground) / 0.12);
+  }
+  .meter::after {
+    content: "";
+    @apply pointer-events-none absolute inset-0;
+    background: repeating-linear-gradient(90deg, transparent 0 9px, rgb(0 0 0 / 0.45) 9px 10px);
+  }
+
+  /* Status LED. */
+  .led {
+    @apply inline-block h-2 w-2 rounded-full;
+    box-shadow: 0 0 6px currentColor, inset 0 -1px 1px rgb(0 0 0 / 0.4);
+    background: currentColor;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .text-shimmer {
+  .menu-item::before,
+  .dialog-box[data-done="true"]::after {
     animation: none;
   }
-  .glow-card,
-  .glow-card:hover {
-    transform: none;
-    transition: none;
+  .animate-flicker,
+  .animate-scan {
+    animation: none;
   }
 }

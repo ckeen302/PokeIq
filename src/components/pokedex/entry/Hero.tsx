@@ -42,30 +42,27 @@ export function Hero({ data, form, onFormChange, types, abilities }: HeroProps) 
   const fallback = artUrl(artId, 400, shiny);
 
   return (
-    <section
-      id="overview"
-      className="relative -mx-4 overflow-hidden px-4 pb-10 pt-6 sm:-mx-8 sm:rounded-3xl sm:px-8"
-      style={{
-        background: `radial-gradient(80% 70% at 30% 20%, ${c1}40, transparent 70%), radial-gradient(60% 60% at 90% 80%, ${c2}30, transparent 70%)`,
-      }}
-    >
-      {/* Ghost dex number */}
-      <motion.div
-        className="pointer-events-none absolute -right-4 top-0 select-none font-black leading-none text-white/[0.04] sm:text-[14rem]"
-        style={{ fontSize: "clamp(7rem, 22vw, 16rem)" }}
-        initial={{ opacity: 0, x: 40 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ duration: 0.8 }}
-        aria-hidden
-      >
-        #{String(p.id).padStart(4, "0")}
-      </motion.div>
+    <section id="overview" className="hud relative overflow-hidden rounded-lg border bg-card">
+      {/* Device strip */}
+      <div className="flex items-center gap-3 bg-gradient-to-b from-[hsl(6_80%_48%)] to-[hsl(6_78%_40%)] px-4 py-2.5 shadow-[inset_0_-2px_0_rgb(0_0_0/0.25)] sm:px-6">
+        <span className="h-5 w-5 rounded-full border-2 border-white/90 bg-[radial-gradient(circle_at_35%_35%,hsl(186_95%_85%),hsl(var(--screen))_45%,hsl(200_90%_25%))] shadow-[0_0_10px_hsl(var(--screen)/0.8)]" aria-hidden />
+        <span className="led h-1.5 w-1.5 text-white/80" aria-hidden />
+        <span className="led h-1.5 w-1.5 text-warning" aria-hidden />
+        <span className="led h-1.5 w-1.5 text-success" aria-hidden />
+        <span className="font-pixel text-[10px] uppercase tracking-widest text-white/90">
+          Pokédex No.{String(p.id).padStart(4, "0")}
+        </span>
+        <span className="ml-auto hidden font-pixel text-[10px] uppercase tracking-widest text-white/70 sm:inline">
+          Gen {p.gen} · {GENERATION_REGIONS[p.gen]}
+        </span>
+      </div>
 
-      <div className="relative grid items-center gap-8 md:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)]">
+      <div className="relative p-4 sm:p-6">
+      <div className="relative grid items-start gap-6 md:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)] md:gap-8">
         {/* Artwork stage */}
         <div className="flex flex-col items-center gap-4">
           <div
-            className="relative aspect-square w-full max-w-[380px] [perspective:900px]"
+            className="screen relative aspect-square w-full max-w-[400px] rounded-md [perspective:900px]"
             onPointerMove={(e) => {
               const r = e.currentTarget.getBoundingClientRect();
               mx.set((e.clientX - r.left) / r.width - 0.5);
@@ -76,16 +73,16 @@ export function Hero({ data, form, onFormChange, types, abilities }: HeroProps) 
               my.set(0);
             }}
           >
-            {/* Rotating aura + pokéball watermark */}
-            <motion.div
-              className="absolute inset-[8%] rounded-full opacity-70 blur-2xl"
-              style={{ background: `conic-gradient(from 0deg, ${c1}, ${c2}, ${c1})` }}
-              animate={{ rotate: 360 }}
-              transition={{ repeat: Infinity, duration: 18, ease: "linear" }}
+            {/* Type-coloured backlight + targeting reticle */}
+            <div
+              className="absolute inset-0"
+              style={{ background: `radial-gradient(circle at 50% 58%, ${c1}55, ${c2}22 45%, transparent 70%)` }}
               aria-hidden
             />
             <PokeballWatermark />
-            <motion.div className="relative h-full w-full" style={{ rotateX, rotateY, transformStyle: "preserve-3d" }}>
+            <span className="hud-label absolute left-3 top-3 z-[3] text-screen">{view === "3d" ? "3D model" : view === "animated" ? "Live sprite" : "Visual data"}</span>
+            {shiny && <span className="hud-label absolute right-3 top-3 z-[3] text-warning">Shiny</span>}
+            <motion.div className="relative z-[1] h-full w-full" style={{ rotateX, rotateY, transformStyle: "preserve-3d" }}>
               <AnimatePresence mode="wait">
                 <motion.img
                   key={srcKey}
@@ -115,16 +112,16 @@ export function Hero({ data, form, onFormChange, types, abilities }: HeroProps) 
           </div>
 
           <div className="flex flex-wrap items-center justify-center gap-2">
-            <div className="flex rounded-full border border-white/10 bg-background/60 p-1 backdrop-blur" role="group" aria-label="Artwork style">
+            <div className="flex rounded-md border border-white/10 bg-black/30 p-1" role="group" aria-label="Artwork style">
               {(["art", "animated", "3d"] as View[]).map((v) => (
                 <button
                   key={v}
                   type="button"
                   onClick={() => setView(v)}
-                  className={cn("relative rounded-full px-3 py-1 text-xs font-semibold transition-colors", view === v ? "text-primary-foreground" : "text-muted-foreground hover:text-foreground")}
+                  className={cn("relative rounded-sm px-3 py-1.5 font-pixel text-[10px] uppercase tracking-wider transition-colors", view === v ? "text-primary-foreground" : "text-muted-foreground hover:text-foreground")}
                   aria-pressed={view === v}
                 >
-                  {view === v && <motion.span layoutId="hero-view-pill" className="absolute inset-0 rounded-full bg-primary" transition={{ type: "spring", stiffness: 400, damping: 30 }} />}
+                  {view === v && <motion.span layoutId="hero-view-pill" className="absolute inset-0 rounded-sm bg-primary" transition={{ type: "spring", stiffness: 400, damping: 30 }} />}
                   <span className="relative">{v === "art" ? "Artwork" : v === "animated" ? "Animated" : "3D"}</span>
                 </button>
               ))}
@@ -137,8 +134,8 @@ export function Hero({ data, form, onFormChange, types, abilities }: HeroProps) 
               }}
               aria-pressed={shiny}
               className={cn(
-                "flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold transition-all",
-                shiny ? "border-yellow-400/70 bg-yellow-400/15 text-yellow-300 shadow-[0_0_18px_-4px_rgba(250,204,21,0.8)]" : "border-white/10 text-muted-foreground hover:text-foreground"
+                "flex items-center gap-1.5 rounded-md border px-3 py-2 font-pixel text-[10px] uppercase tracking-wider transition-all",
+                shiny ? "border-warning/70 bg-warning/15 text-warning" : "border-white/10 bg-black/30 text-muted-foreground hover:text-foreground"
               )}
             >
               <Sparkles className="h-3.5 w-3.5" /> Shiny
@@ -150,14 +147,11 @@ export function Hero({ data, form, onFormChange, types, abilities }: HeroProps) 
         {/* Identity */}
         <div className="space-y-5">
           <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-            <p className="font-mono text-sm text-muted-foreground">
-              #{String(p.id).padStart(4, "0")} · Gen {p.gen} · {GENERATION_REGIONS[p.gen]}
+            <p className="hud-label text-screen">
+              No.{String(p.id).padStart(4, "0")} · {p.genus}
             </p>
-            <h1 className="text-5xl font-black tracking-tight sm:text-6xl">{form?.name ?? p.name}</h1>
-            <p className="mt-1 text-lg text-muted-foreground">
-              The {p.genus}
-              {p.names.ja && <span className="ml-2 text-base opacity-70">{p.names.ja}</span>}
-            </p>
+            <h1 className="font-display text-5xl font-bold uppercase tracking-tight sm:text-6xl">{form?.name ?? p.name}</h1>
+            {p.names.ja && <p className="mt-1 text-base text-muted-foreground">{p.names.ja}</p>}
           </motion.div>
 
           <motion.div className="flex flex-wrap gap-2" initial="hidden" animate="show" variants={{ show: { transition: { staggerChildren: 0.08, delayChildren: 0.2 } } }}>
@@ -173,7 +167,7 @@ export function Hero({ data, form, onFormChange, types, abilities }: HeroProps) 
 
           {data.forms.length > 0 && (
             <div className="space-y-2">
-              <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Forms</div>
+              <div className="hud-label">Forms</div>
               <div className="flex flex-wrap gap-1.5">
                 <FormChip active={!form} onClick={() => onFormChange(null)}>
                   {p.name}
@@ -195,7 +189,7 @@ export function Hero({ data, form, onFormChange, types, abilities }: HeroProps) 
           </div>
 
           <div className="space-y-2">
-            <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Abilities</div>
+            <div className="hud-label">Abilities</div>
             <div className="grid gap-2">
               {abilities.map((a, i) => (
                 <motion.div
@@ -203,11 +197,11 @@ export function Hero({ data, form, onFormChange, types, abilities }: HeroProps) 
                   initial={{ opacity: 0, x: -12 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.25 + i * 0.07 }}
-                  className="rounded-xl border border-white/10 bg-background/50 p-3 backdrop-blur"
+                  className="rounded-md border border-white/10 bg-black/25 p-3"
                 >
-                  <div className="flex items-center gap-2 text-sm font-semibold">
+                  <div className="flex items-center gap-2 font-display text-[15px] font-bold uppercase tracking-wide">
                     {a.name}
-                    {a.hidden && <span className="rounded-full bg-primary/15 px-2 py-0.5 text-[10px] font-bold uppercase text-primary">Hidden</span>}
+                    {a.hidden && <span className="rounded-sm border border-primary/50 px-1.5 py-1 font-pixel text-[9px] uppercase leading-none text-primary">Hidden</span>}
                   </div>
                   {a.effect && <p className="mt-0.5 text-xs text-muted-foreground">{a.effect}</p>}
                 </motion.div>
@@ -216,19 +210,20 @@ export function Hero({ data, form, onFormChange, types, abilities }: HeroProps) 
           </div>
         </div>
       </div>
+      </div>
     </section>
   );
 }
 
 function Tag({ children }: { children: React.ReactNode }) {
-  return <span className="rounded-full border border-yellow-400/40 bg-yellow-400/10 px-3 py-1 text-xs font-bold uppercase tracking-wide text-yellow-300">{children}</span>;
+  return <span className="inline-flex items-center rounded-[4px] border border-warning/60 bg-warning/10 px-3 py-1.5 font-pixel text-[10px] uppercase leading-none tracking-wider text-warning">{children}</span>;
 }
 
 function Fact({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-xl border border-white/10 bg-background/50 p-2.5 backdrop-blur">
-      <div className="text-[10px] uppercase tracking-wider text-muted-foreground">{label}</div>
-      <div className="font-semibold">{value}</div>
+    <div className="rounded-md border border-white/10 bg-black/25 p-2.5">
+      <div className="hud-label">{label}</div>
+      <div className="mt-1 font-display text-base font-bold tracking-wide">{value}</div>
     </div>
   );
 }
@@ -240,8 +235,8 @@ function FormChip({ active, onClick, children }: { active: boolean; onClick: () 
       onClick={onClick}
       aria-pressed={active}
       className={cn(
-        "rounded-full border px-3 py-1 text-xs font-semibold transition-all",
-        active ? "border-primary bg-primary text-primary-foreground shadow-lg shadow-primary/20" : "border-white/10 bg-background/50 text-muted-foreground hover:text-foreground"
+        "rounded-sm border px-3 py-1.5 font-display text-xs font-bold uppercase tracking-wider transition-colors",
+        active ? "border-primary bg-primary text-primary-foreground" : "border-white/10 bg-black/25 text-muted-foreground hover:border-screen/50 hover:text-foreground"
       )}
     >
       {children}
@@ -282,7 +277,7 @@ function CryButton({ id }: { id: number }) {
         a.currentTime = 0;
         void a.play().then(() => setPlaying(true));
       }}
-      className="flex items-center gap-1.5 rounded-full border border-white/10 px-3 py-1.5 text-xs font-semibold text-muted-foreground transition-colors hover:text-foreground"
+      className="flex items-center gap-1.5 rounded-md border border-white/10 bg-black/30 px-3 py-2 font-pixel text-[10px] uppercase tracking-wider text-muted-foreground transition-colors hover:text-foreground"
       aria-label="Play cry"
     >
       <Volume2 className="h-3.5 w-3.5" />

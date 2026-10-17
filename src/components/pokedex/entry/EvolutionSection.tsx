@@ -12,7 +12,7 @@ import { cn } from "@/lib/utils";
 
 export function EvolutionSection({ tree, currentId }: { tree: EvolutionNode; currentId: number }) {
   return (
-    <div className="overflow-x-auto rounded-2xl border bg-card/60 p-5">
+    <div className="overflow-x-auto hud rounded-lg border bg-card p-5">
       <div className="flex justify-center">
         <Branch node={tree} currentId={currentId} depth={0} />
       </div>

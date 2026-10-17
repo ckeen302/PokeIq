@@ -72,7 +72,7 @@ export function QuizSetup({ module, initialFormat, initialDifficulty = "medium",
                 <div className="grid grid-cols-3 gap-2">
                   {PLAYABLE_FORMATS.map((f) => (
                     <Choice key={f} active={format === f} onClick={() => setFormat(f)}>
-                      <span className="font-semibold">{FORMAT_INFO[f].title}</span>
+                      <span className="font-display font-bold uppercase tracking-wider">{FORMAT_INFO[f].title}</span>
                       <span className="text-[11px] text-muted-foreground">{FORMAT_INFO[f].description}</span>
                     </Choice>
                   ))}
@@ -83,7 +83,7 @@ export function QuizSetup({ module, initialFormat, initialDifficulty = "medium",
                 <div className="grid grid-cols-3 gap-2">
                   {DIFFICULTIES.map((d) => (
                     <Choice key={d} active={difficulty === d} onClick={() => setDifficulty(d)}>
-                      <span className="font-semibold capitalize">{d}</span>
+                      <span className="font-display font-bold uppercase tracking-wider">{d}</span>
                     </Choice>
                   ))}
                 </div>
@@ -105,8 +105,8 @@ export function QuizSetup({ module, initialFormat, initialDifficulty = "medium",
                 )}
               </Field>
 
-              <Button size="lg" className="w-full text-base" onClick={start}>
-                <Play className="h-5 w-5" /> Start {info.title}
+              <Button size="lg" className="w-full" onClick={start}>
+                <Play className="h-4 w-4 fill-current" /> Start {info.title}
               </Button>
             </CardContent>
           </Card>
@@ -119,7 +119,7 @@ export function QuizSetup({ module, initialFormat, initialDifficulty = "medium",
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="space-y-2">
-      <div className="text-sm font-medium">{label}</div>
+      <div className="hud-label">{label}</div>
       {children}
     </div>
   );
@@ -132,8 +132,10 @@ function Choice({ active, onClick, children }: { active: boolean; onClick: () =>
       onClick={onClick}
       aria-pressed={active}
       className={cn(
-        "flex flex-col items-center gap-0.5 rounded-lg border px-2 py-2.5 text-center text-sm transition-colors",
-        active ? "border-primary bg-primary/10 text-foreground" : "text-muted-foreground hover:border-primary/40 hover:text-foreground"
+        "flex flex-col items-center gap-1 rounded-md border-2 px-2 py-3 text-center text-sm transition-colors",
+        active
+          ? "border-screen bg-screen/10 text-foreground shadow-[0_0_16px_-6px_hsl(var(--screen))]"
+          : "border-white/10 bg-black/20 text-muted-foreground hover:border-screen/40 hover:text-foreground"
       )}
     >
       {children}
@@ -149,8 +151,8 @@ function Chip({ active, onClick, children, title }: { active: boolean; onClick: 
       title={title}
       aria-pressed={active}
       className={cn(
-        "rounded-full border px-3 py-1 text-xs font-medium transition-colors",
-        active ? "border-primary bg-primary text-primary-foreground" : "text-muted-foreground hover:border-primary/40 hover:text-foreground"
+        "rounded-sm border px-2.5 py-1.5 font-pixel text-[10px] uppercase tracking-wider transition-colors",
+        active ? "border-primary bg-primary text-primary-foreground" : "border-white/10 bg-black/20 text-muted-foreground hover:border-primary/50 hover:text-foreground"
       )}
     >
       {children}

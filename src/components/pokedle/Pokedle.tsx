@@ -156,10 +156,10 @@ export function Pokedle({ names }: { names: NameEntry[] }) {
   return (
     <div className="mx-auto max-w-3xl space-y-6">
       <div className="space-y-2 text-center">
-        <p className="text-sm font-semibold uppercase tracking-widest text-primary">
+        <p className="hud-label text-screen">
           {mode === "daily" ? `Pokédle #${dailyNumber(date)}` : "Pokédle · Practice"}
         </p>
-        <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">Guess the mystery Pokémon</h1>
+        <h1 className="font-display text-4xl font-bold uppercase tracking-tight sm:text-5xl">Guess the mystery Pokémon</h1>
         <p className="text-sm text-muted-foreground">
           {DLE_MAX_GUESSES} guesses. 🟩 match · 🟨 right type, wrong slot · ▲▼ the answer is higher / lower.
         </p>
@@ -189,7 +189,7 @@ export function Pokedle({ names }: { names: NameEntry[] }) {
             autoComplete="off"
             spellCheck={false}
             aria-label="Guess a Pokémon"
-            className="h-12 w-full rounded-xl border border-input bg-card px-4 text-base shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="h-12 w-full rounded-md border-2 border-white/15 bg-black/40 px-4 font-display text-base tracking-wide focus-visible:border-screen/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
           />
           <AnimatePresence>
             {suggestions.length > 0 && (
@@ -197,7 +197,7 @@ export function Pokedle({ names }: { names: NameEntry[] }) {
                 initial={{ opacity: 0, y: -4 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0 }}
-                className="absolute inset-x-0 top-14 z-20 overflow-hidden rounded-xl border bg-card shadow-2xl"
+                className="absolute inset-x-0 top-14 z-20 overflow-hidden rounded-md border-2 border-white/15 bg-card shadow-2xl"
                 role="listbox"
               >
                 {suggestions.map((entry, i) => (
@@ -207,7 +207,7 @@ export function Pokedle({ names }: { names: NameEntry[] }) {
                       onMouseDown={(e) => e.preventDefault()}
                       onClick={() => submitGuess(entry)}
                       onMouseEnter={() => setHighlight(i)}
-                      className={cn("flex w-full items-center gap-3 px-3 py-1.5 text-left text-sm", i === highlight && "bg-accent")}
+                      className={cn("menu-item flex w-full items-center gap-3 px-3 py-1.5 text-left font-display text-sm font-semibold", i === highlight && "bg-screen/10")}
                       role="option"
                       aria-selected={i === highlight}
                     >
@@ -226,7 +226,7 @@ export function Pokedle({ names }: { names: NameEntry[] }) {
       {error && <p className="text-center text-sm text-destructive">{error}</p>}
 
       {!over && (state?.hints.silhouetteUrl || state?.hints.genus || guesses.length > 0) && (
-        <div className="mx-auto flex max-w-md items-center gap-4 rounded-xl border bg-card/60 p-3 text-sm">
+        <div className="mx-auto flex max-w-md items-center gap-4 rounded-md border bg-card p-3 text-sm">
           <Lightbulb className="h-5 w-5 shrink-0 text-primary" aria-hidden />
           {state?.hints.silhouetteUrl ? (
             <img src={state.hints.silhouetteUrl} alt="Silhouette hint" className="spotlight h-20 w-20 rounded-lg object-contain p-1" />
@@ -294,7 +294,7 @@ function Board({ rows }: { rows: DleResponse["rows"] }) {
   return (
     <div className="-mx-4 overflow-x-auto px-4 pb-2">
       <div className="mx-auto min-w-[560px] max-w-3xl space-y-2">
-        <div className="grid grid-cols-[minmax(92px,1.3fr)_repeat(7,minmax(56px,1fr))] gap-1.5 text-center text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+        <div className="hud-label grid grid-cols-[minmax(92px,1.3fr)_repeat(7,minmax(56px,1fr))] gap-1.5 text-center">
           <div className="text-left">Pokémon</div>
           {DLE_COLUMNS.map((c) => (
             <div key={c.key}>{c.label}</div>

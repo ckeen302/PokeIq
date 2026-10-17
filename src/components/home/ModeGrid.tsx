@@ -2,54 +2,50 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { ArrowRight } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import { MODULE_INFO, PLAY_MODULES, moduleHref } from "@/lib/modes";
 import { useProgress } from "@/lib/progress";
+import { ModeIcon } from "@/components/game/ModeIcon";
 
-const container = { hidden: {}, show: { transition: { staggerChildren: 0.07, delayChildren: 0.1 } } };
+const container = { hidden: {}, show: { transition: { staggerChildren: 0.05, delayChildren: 0.05 } } };
 const item = {
-  hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.45, ease: [0.21, 0.47, 0.32, 0.98] as const } },
+  hidden: { opacity: 0, x: -12 },
+  show: { opacity: 1, x: 0, transition: { duration: 0.35, ease: [0.21, 0.47, 0.32, 0.98] as const } },
 };
 
+/** Game-menu list of modes: ▶ cursor on hover, accent stripe per mode. */
 export function ModeGrid() {
   const progress = useProgress();
   return (
-    <motion.div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3" variants={container} initial="hidden" animate="show">
-      {PLAY_MODULES.map((id) => {
+    <motion.div className="grid gap-3 md:grid-cols-2" variants={container} initial="hidden" animate="show">
+      {PLAY_MODULES.map((id, i) => {
         const info = MODULE_INFO[id];
         const best = progress?.best[`${id}:${info.defaultFormat}`];
         return (
           <motion.div key={id} variants={item}>
-            <Link href={moduleHref(id)} className="group block h-full" aria-label={`Play ${info.title}`}>
-              <div
-                className="glow-card flex h-full flex-col rounded-xl border bg-card p-5"
-                style={{ "--glow": info.accent } as React.CSSProperties}
+            <Link
+              href={moduleHref(id)}
+              className="menu-item group flex h-full items-center gap-4 overflow-hidden rounded-lg border bg-card p-4 hover:border-screen/50 hover:bg-accent/40"
+              aria-label={`Play ${info.title}`}
+            >
+              <span className="absolute inset-y-0 left-0 w-1" style={{ background: `hsl(${info.accent})` }} aria-hidden />
+              <span
+                className="screen flex h-14 w-14 shrink-0 items-center justify-center rounded-md"
+                style={{ color: `hsl(${info.accent})` }}
               >
-                <div className="flex items-start justify-between">
-                  <div
-                    className="flex h-12 w-12 items-center justify-center rounded-xl text-2xl"
-                    style={{ background: `hsl(${info.accent} / 0.14)` }}
-                    aria-hidden
-                  >
-                    {info.emoji}
-                  </div>
-                  {best ? (
-                    <span className="rounded-full bg-secondary px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
-                      Best {best.toLocaleString()}
-                    </span>
-                  ) : null}
-                </div>
-                <h3 className="mt-4 text-lg font-semibold">{info.title}</h3>
-                <p className="text-xs font-medium" style={{ color: `hsl(${info.accent})` }}>
-                  {info.tagline}
-                </p>
-                <p className="mt-2 flex-1 text-sm text-muted-foreground">{info.description}</p>
-                <span className="mt-4 inline-flex items-center gap-1 text-sm font-medium" style={{ color: `hsl(${info.accent})` }}>
-                  Play
-                  <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" aria-hidden />
+                <ModeIcon module={id} className="relative z-[3] h-6 w-6" />
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="flex items-center gap-2">
+                  <span className="hud-label">{String(i + 1).padStart(2, "0")}</span>
+                  <span className="truncate font-display text-lg font-bold uppercase tracking-wide">{info.title}</span>
                 </span>
-              </div>
+                <span className="mt-0.5 block text-sm text-muted-foreground">{info.description}</span>
+              </span>
+              <span className="flex shrink-0 flex-col items-end gap-1">
+                {best ? <span className="hud-label text-screen">Best {best.toLocaleString()}</span> : null}
+                <ChevronRight className="h-5 w-5 text-muted-foreground transition-transform group-hover:translate-x-1 group-hover:text-foreground" />
+              </span>
             </Link>
           </motion.div>
         );

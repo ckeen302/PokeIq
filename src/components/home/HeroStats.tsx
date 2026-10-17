@@ -1,35 +1,45 @@
 "use client";
 
 import Link from "next/link";
+import { Play } from "lucide-react";
 import { ratingToIQ, iqTitle } from "@/lib/rating";
 import { levelInfo, useProgress } from "@/lib/progress";
+import { buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
-/** Returning players see their numbers; new players get a call to action. */
+/** Title-screen actions, plus a trainer readout for returning players. */
 export function HeroStats() {
   const progress = useProgress();
-  if (!progress || progress.runs === 0) {
-    return (
-      <div className="flex flex-wrap justify-center gap-3">
-        <Link href="/daily" className="rounded-full bg-primary px-6 py-3 font-semibold text-primary-foreground shadow-lg shadow-primary/20 transition hover:bg-primary/90">
-          Play the Daily Challenge
+  const returning = progress && progress.runs > 0;
+  const iq = progress?.rating != null ? ratingToIQ(progress.rating) : null;
+
+  return (
+    <div className="space-y-5">
+      <div className="flex flex-wrap gap-3">
+        <Link href="/daily" className={cn(buttonVariants({ size: "lg" }))}>
+          <Play className="h-4 w-4 fill-current" /> Daily Challenge
         </Link>
-        <Link href="/iq-test" className="rounded-full border px-6 py-3 font-semibold transition hover:bg-accent">
+        <Link href="/iq-test" className={cn(buttonVariants({ size: "lg", variant: "outline" }))}>
           Take the PokéIQ Test
         </Link>
       </div>
-    );
-  }
-  const iq = progress.rating !== null ? ratingToIQ(progress.rating) : null;
-  return (
-    <Link href="/trainer" className="mx-auto flex w-fit flex-wrap items-center justify-center gap-x-6 gap-y-2 rounded-2xl border bg-card/70 px-6 py-3 text-sm transition hover:border-primary/40">
-      {iq !== null && (
-        <span>
-          <span className="font-bold text-primary">PokéIQ {iq}</span> <span className="text-muted-foreground">· {iqTitle(iq)}</span>
-        </span>
+      {returning && (
+        <Link href="/trainer" className="grid w-fit grid-cols-3 divide-x divide-white/10 rounded-md border bg-card/80 text-center transition-colors hover:border-screen/50">
+          <Readout label="PokéIQ" value={iq !== null ? String(iq) : "—"} sub={iq !== null ? iqTitle(iq) : "Unrated"} />
+          <Readout label="Level" value={String(levelInfo(progress.xp).level)} sub={`${progress.xp} XP`} />
+          <Readout label="Streak" value={String(progress.daily.streak)} sub="days" />
+        </Link>
       )}
-      <span className="text-muted-foreground">Level <b className="text-foreground">{levelInfo(progress.xp).level}</b></span>
-      <span className="text-muted-foreground">🔥 Daily streak <b className="text-foreground">{progress.daily.streak}</b></span>
-      <span className="text-muted-foreground">Accuracy <b className="text-foreground">{progress.answered ? Math.round((progress.correct / progress.answered) * 100) : 0}%</b></span>
-    </Link>
+    </div>
+  );
+}
+
+function Readout({ label, value, sub }: { label: string; value: string; sub: string }) {
+  return (
+    <div className="px-5 py-2.5">
+      <div className="hud-label">{label}</div>
+      <div className="font-display text-2xl font-bold tabular-nums text-screen">{value}</div>
+      <div className="text-[11px] text-muted-foreground">{sub}</div>
+    </div>
   );
 }

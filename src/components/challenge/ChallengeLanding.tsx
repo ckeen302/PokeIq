@@ -36,8 +36,8 @@ export function ChallengeLanding({ card, token, runLabel }: { card: ShareCard; t
       <Card className="mx-auto max-w-xl overflow-hidden">
         <div className="bg-gradient-to-br from-primary/20 via-transparent to-transparent p-6 text-center">
           <Swords className="mx-auto h-10 w-10 text-primary" aria-hidden />
-          <p className="mt-3 text-sm font-semibold uppercase tracking-widest text-primary">You&apos;ve been challenged</p>
-          <h1 className="mt-2 text-2xl font-bold sm:text-3xl">
+          <p className="mt-3 hud-label text-screen">You&apos;ve been challenged</p>
+          <h1 className="mt-2 font-display text-3xl font-bold uppercase tracking-tight">
             {who} scored {card.c}/{card.t}
           </h1>
           <p className="text-muted-foreground">

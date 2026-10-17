@@ -30,7 +30,7 @@ export function MatchupSection({ defenses, stab }: { defenses: { type: string; m
           const list = defenses.filter((d) => g.values.includes(d.multiplier));
           if (!list.length) return null;
           return (
-            <div key={g.label} className="rounded-2xl border bg-card/60 p-4">
+            <div key={g.label} className="hud rounded-lg border bg-card p-4">
               <div className={cn("mb-2 text-sm font-semibold", g.tone)}>{g.label}</div>
               <div className="flex flex-wrap gap-1.5">
                 {list.map((d, i) => (
@@ -44,7 +44,7 @@ export function MatchupSection({ defenses, stab }: { defenses: { type: string; m
         })}
       </div>
 
-      <div className="rounded-2xl border bg-card/60 p-4">
+      <div className="hud rounded-lg border bg-card p-4">
         <div className="mb-3 text-sm font-semibold">Damage taken from every type</div>
         <div className="grid grid-cols-3 gap-1.5 sm:grid-cols-6 lg:grid-cols-9">
           {defenses.map((d, i) => (
@@ -66,7 +66,7 @@ export function MatchupSection({ defenses, stab }: { defenses: { type: string; m
       </div>
 
       {stab.length > 0 && (
-        <div className="rounded-2xl border bg-card/60 p-4">
+        <div className="hud rounded-lg border bg-card p-4">
           <div className="mb-2 text-sm font-semibold">Its own types hit these super-effectively (STAB)</div>
           <div className="flex flex-wrap gap-1.5">
             {stab.map((t) => (

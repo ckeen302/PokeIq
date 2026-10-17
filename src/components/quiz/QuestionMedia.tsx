@@ -25,46 +25,43 @@ export function ImageMedia({ src, revealSrc, silhouette, revealed, label }: Imag
   const showReveal = revealed && revealSrc && revealLoaded;
 
   return (
-    <div
-      className={cn(
-        "relative mx-auto aspect-square w-full max-w-[200px] overflow-hidden rounded-2xl border sm:max-w-[280px]",
-        silhouette ? "spotlight" : "bg-muted/40"
-      )}
-    >
-      {!loaded && <div className="absolute inset-0 animate-pulse bg-white/5" aria-hidden />}
-      <motion.img
-        src={src}
-        alt={silhouette ? "Mystery Pokémon silhouette" : label ?? "Pokémon artwork"}
-        draggable={false}
-        onLoad={() => setLoaded(true)}
-        className="absolute inset-0 h-full w-full select-none object-contain p-4 drop-shadow-[0_6px_12px_rgba(0,0,0,0.35)]"
-        animate={{ opacity: loaded && !showReveal ? 1 : 0, scale: showReveal ? 0.9 : 1 }}
-        transition={{ duration: 0.25 }}
-      />
-      {revealSrc && revealed && (
+    <div className="mx-auto w-full max-w-[220px] rounded-lg border-[3px] border-black/70 bg-black/80 p-1.5 shadow-[0_10px_30px_-10px_rgb(0_0_0/0.8)] sm:max-w-[300px]">
+      <div className={cn("screen relative aspect-square rounded-sm", silhouette && "spotlight")}>
+        {!loaded && <div className="absolute inset-0 animate-pulse bg-white/5" aria-hidden />}
         <motion.img
-          src={revealSrc}
-          alt={label ?? "Revealed Pokémon"}
+          src={src}
+          alt={silhouette ? "Mystery Pokémon silhouette" : label ?? "Pokémon artwork"}
           draggable={false}
-          onLoad={() => setRevealLoaded(true)}
-          className="absolute inset-0 h-full w-full select-none object-contain p-4"
-          initial={{ opacity: 0, scale: 0.6, rotate: -6 }}
-          animate={revealLoaded ? { opacity: 1, scale: 1, rotate: 0 } : {}}
-          transition={{ type: "spring", stiffness: 260, damping: 18 }}
+          onLoad={() => setLoaded(true)}
+          className="absolute inset-0 z-[1] h-full w-full select-none object-contain p-4 drop-shadow-[0_6px_12px_rgba(0,0,0,0.35)]"
+          animate={{ opacity: loaded && !showReveal ? 1 : 0, scale: showReveal ? 0.9 : 1 }}
+          transition={{ duration: 0.25 }}
         />
-      )}
-      <AnimatePresence>
-        {showReveal && label && (
-          <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0 }}
-            className="absolute inset-x-0 bottom-3 mx-auto w-fit rounded-full bg-background/85 px-3 py-1 text-sm font-bold backdrop-blur"
-          >
-            It&apos;s {label}!
-          </motion.div>
+        {revealSrc && revealed && (
+          <motion.img
+            src={revealSrc}
+            alt={label ?? "Revealed Pokémon"}
+            draggable={false}
+            onLoad={() => setRevealLoaded(true)}
+            className="absolute inset-0 z-[1] h-full w-full select-none object-contain p-4"
+            initial={{ opacity: 0, scale: 1.25, filter: "brightness(3)" }}
+            animate={revealLoaded ? { opacity: 1, scale: 1, filter: "brightness(1)" } : {}}
+            transition={{ duration: 0.45, ease: "easeOut" }}
+          />
         )}
-      </AnimatePresence>
+        <AnimatePresence>
+          {showReveal && label && (
+            <motion.div
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-x-0 bottom-0 z-[3] bg-black/75 py-1.5 text-center font-pixel text-[11px] tracking-wider text-white"
+            >
+              It&apos;s {label}!
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
     </div>
   );
 }
@@ -125,25 +122,32 @@ export function CryPlayer({ src }: { src: string }) {
   }
 
   return (
-    <div className="flex flex-col items-center gap-3 py-2">
+    <div className="screen mx-auto flex w-full max-w-sm items-center gap-4 rounded-lg p-4">
       <button
         type="button"
         onClick={toggle}
-        className="group relative flex h-28 w-28 items-center justify-center rounded-full border-2 border-primary/50 bg-primary/10 transition hover:bg-primary/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        className="relative z-[3] flex h-16 w-16 shrink-0 items-center justify-center rounded-md bg-primary text-primary-foreground shadow-[0_4px_0_hsl(var(--primary-shadow))] transition active:translate-y-[2px] active:shadow-[0_2px_0_hsl(var(--primary-shadow))] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         aria-label={playing ? "Stop cry" : "Play cry"}
       >
-        {playing && (
-          <>
-            <span className="absolute inset-0 animate-ping rounded-full bg-primary/20" aria-hidden />
-            <span className="absolute -inset-3 animate-pulse rounded-full border border-primary/30" aria-hidden />
-          </>
-        )}
-        {playing ? <Pause className="h-10 w-10 text-primary" /> : <Play className="ml-1 h-10 w-10 text-primary" />}
+        {playing ? <Pause className="h-7 w-7" /> : <Play className="ml-0.5 h-7 w-7 fill-current" />}
       </button>
-      <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
-        <Volume2 className="h-3.5 w-3.5" aria-hidden />
-        {plays === 0 ? "Tap to play the cry" : `Played ${plays}× · tap to replay`}
-      </span>
+      <div className="relative z-[3] min-w-0 flex-1 space-y-2">
+        <div className="flex h-10 items-end gap-[3px]" aria-hidden>
+          {Array.from({ length: 18 }).map((_, i) => (
+            <motion.span
+              key={i}
+              className="w-full rounded-[1px] bg-screen"
+              style={{ boxShadow: "0 0 6px hsl(var(--screen))" }}
+              animate={playing ? { height: ["15%", `${30 + ((i * 37) % 70)}%`, "25%", `${20 + ((i * 53) % 80)}%`, "15%"] } : { height: "12%" }}
+              transition={playing ? { repeat: Infinity, duration: 0.7, delay: (i % 6) * 0.06 } : { duration: 0.2 }}
+            />
+          ))}
+        </div>
+        <div className="flex items-center gap-1.5 font-pixel text-[10px] uppercase tracking-wider text-screen/80">
+          <Volume2 className="h-3 w-3" aria-hidden />
+          {plays === 0 ? "Tap to play cry" : `Played ${plays}x · tap to replay`}
+        </div>
+      </div>
     </div>
   );
 }

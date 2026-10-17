@@ -14,7 +14,7 @@ export function CoachPanel({ progress }: { progress: Progress }) {
 
   if (weak.length === 0 && strong.length === 0) {
     return (
-      <div className="rounded-2xl border bg-card/60 p-5 text-sm text-muted-foreground">
+      <div className="hud rounded-lg border bg-card p-5 text-sm text-muted-foreground">
         <div className="mb-1 flex items-center gap-2 font-semibold text-foreground">
           <Target className="h-4 w-4 text-primary" /> Your coach
         </div>
@@ -34,7 +34,7 @@ export function CoachPanel({ progress }: { progress: Progress }) {
 
 function InsightList({ title, icon, items, overall, tone }: { title: string; icon: React.ReactNode; items: Insight[]; overall: number; tone: "weak" | "strong" }) {
   return (
-    <div className="space-y-3 rounded-2xl border bg-card/60 p-5">
+    <div className="space-y-3 hud rounded-lg border bg-card p-5">
       <div className="flex items-center justify-between">
         <h3 className="flex items-center gap-2 font-semibold">
           {icon} {title}
@@ -50,7 +50,7 @@ function InsightList({ title, icon, items, overall, tone }: { title: string; ico
               ~{Math.round(it.accuracy * 100)}% <span className="text-[10px]">({it.answered} answered)</span>
             </span>
           </div>
-          <div className="relative h-1.5 overflow-hidden rounded-full bg-secondary">
+          <div className="meter">
             <motion.div
               className={tone === "weak" ? "h-full bg-destructive/80" : "h-full bg-success"}
               initial={{ width: 0 }}

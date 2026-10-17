@@ -28,7 +28,7 @@ export function EntriesSection({ entries }: { entries: { text: string; games: st
         {shown.map((e, i) => (
           <motion.figure
             key={e.text}
-            className="break-inside-avoid rounded-2xl border bg-card/60 p-4"
+            className="break-inside-avoid hud rounded-lg border bg-card p-4"
             initial={{ opacity: 0, y: 14 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
@@ -41,7 +41,7 @@ export function EntriesSection({ entries }: { entries: { text: string; games: st
                 {e.games.map((g) => (
                   <span
                     key={g}
-                    className="rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide"
+                    className="rounded-sm px-1.5 py-1 font-pixel text-[9px] uppercase leading-none tracking-wider"
                     style={{ background: `${gameColor(g)}26`, color: gameColor(g), border: `1px solid ${gameColor(g)}55` }}
                   >
                     {g}

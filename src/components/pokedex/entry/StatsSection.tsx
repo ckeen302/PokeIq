@@ -34,19 +34,19 @@ export function StatsSection({ stats, percentiles, accent, isShedinja, showPerce
 
   return (
     <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
-      <div className="space-y-3 rounded-2xl border bg-card/60 p-5">
+      <div className="space-y-3 hud rounded-lg border bg-card p-5">
         <div className="grid grid-cols-[72px_40px_minmax(0,1fr)_90px] items-center gap-x-3 text-[11px] uppercase tracking-wider text-muted-foreground">
           <span>Stat</span>
           <span className="text-right">Base</span>
           <span />
           <div className="flex justify-end">
-            <div className="flex rounded-full border border-white/10 p-0.5">
+            <div className="flex rounded-sm border border-white/10 bg-black/30 p-0.5">
               {([50, 100] as const).map((l) => (
                 <button
                   key={l}
                   type="button"
                   onClick={() => setLevel(l)}
-                  className={cn("rounded-full px-2 py-0.5 text-[10px] font-bold", level === l ? "bg-primary text-primary-foreground" : "text-muted-foreground")}
+                  className={cn("rounded-sm px-2 py-1 font-pixel text-[9px] leading-none", level === l ? "bg-primary text-primary-foreground" : "text-muted-foreground")}
                 >
                   Lv{l}
                 </button>
@@ -60,7 +60,7 @@ export function StatsSection({ stats, percentiles, accent, isShedinja, showPerce
             <div key={k} className="grid grid-cols-[72px_40px_minmax(0,1fr)_90px] items-center gap-x-3 text-sm">
               <span className="text-muted-foreground">{STAT_LABELS[k]}</span>
               <span className="text-right font-mono font-bold tabular-nums">{stats[k]}</span>
-              <div className="relative h-3 overflow-hidden rounded-full bg-secondary">
+              <div className="meter">
                 <motion.div
                   className="h-full rounded-full"
                   style={{ background: `linear-gradient(90deg, ${barColor(stats[k])}aa, ${barColor(stats[k])})`, boxShadow: `0 0 12px ${barColor(stats[k])}66` }}
@@ -91,7 +91,7 @@ export function StatsSection({ stats, percentiles, accent, isShedinja, showPerce
         </p>
       </div>
 
-      <div className="space-y-3 rounded-2xl border bg-card/60 p-5">
+      <div className="space-y-3 hud rounded-lg border bg-card p-5">
         <Radar stats={stats} accent={accent} />
         {showPercentiles && (
           <ul className="grid grid-cols-2 gap-1.5 text-xs">
