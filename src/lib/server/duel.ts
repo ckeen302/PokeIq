@@ -20,7 +20,7 @@ import {
   type DuelStatus,
   type DuelView,
 } from "@/lib/duel-types";
-import { GEO_STYLES, type GeoSpec } from "@/lib/geo-types";
+import type { GeoSpec } from "@/lib/geo-types";
 
 /**
  * PokéGuessr duels: two trainers on the same rounds, GeoGuessr Duels style.
@@ -88,20 +88,16 @@ export const duelNameSchema = z
   .max(24)
   .regex(DUEL_NAME_RE, "Use letters, numbers, spaces, _ . - ' only");
 
+/** A duel's map as the single-player engine sees it, for scoring pins and naming places. */
+const geoSpec = (region: string): GeoSpec => ({ region, kind: "game" });
+
 /**
- * The single-player engine's spec for a duel's map. A duel plays a streak's
- * rounds (every place once, in a seeded order) and takes as many as it needs.
+ * A duel's places: the first `count` of a streak's rounds from the duel's seed
+ * (a five-round game's plan stops at five). Every town, route and landmark is
+ * equally likely and no two rounds share a town; one seed, so both trainers
+ * get the same places.
  */
-const specs = new Map<string, GeoSpec>();
-function geoSpec(region: string): GeoSpec {
-  const known = specs.get(region);
-  if (known) return known;
-  const style = GEO_STYLES.find((s) => isGeoSpec({ region, style: s, kind: "streak" }));
-  if (!style) return { region, style: GEO_STYLES[0], kind: "streak" };
-  const spec: GeoSpec = { region, style, kind: "streak" };
-  specs.set(region, spec);
-  return spec;
-}
+const planDuel = (region: string, seed: string, count: number) => planRounds({ region, kind: "streak" }, seed, count);
 
 /** Whether a map can host a duel. */
 export const isDuelMap = (region: string) => isGeoSpec(geoSpec(region));
@@ -136,7 +132,7 @@ export function readDuelToken(token: unknown, code: string): string | null {
 // ---------------------------------------------------------------------------
 
 function blankDuel(region: string, code: string, players: DuelPlayer[], now: number, seed = randomId()): Duel {
-  const maxRounds = Math.min(DUEL_MAX_ROUNDS, planRounds(geoSpec(region), seed).length);
+  const maxRounds = planDuel(region, seed, DUEL_MAX_ROUNDS).length;
   return { v: 1, code, region, seed, createdAt: now, status: "lobby", players, maxRounds, hp: [DUEL_HP, DUEL_HP], rounds: [] };
 }
 
@@ -243,7 +239,7 @@ function step(d: Duel, now: number): boolean {
 }
 
 function newRound(d: Duel, startsAt: number): DuelRound {
-  const plan = planRounds(geoSpec(d.region), d.seed)[d.rounds.length];
+  const plan = planDuel(d.region, d.seed, d.rounds.length + 1)[d.rounds.length];
   return { plan, startsAt, guesses: d.players.map(() => null), skip: d.players.map(() => false) };
 }
 
