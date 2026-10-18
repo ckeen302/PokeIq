@@ -70,7 +70,7 @@ for (let i = 0; i < 10; i++) {
   }
   await next.click();
 }
-await page.getByText("PokéIQ").first().waitFor();
+await page.locator("main").getByText("PokéIQ").first().waitFor();
 await page.waitForTimeout(1600);
 await page.screenshot({ path: `${OUT}/results.png`, fullPage: true });
 if (!shareToken) errors.push("No shareToken returned at the end of a run");
