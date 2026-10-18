@@ -3,7 +3,7 @@ import { z } from "zod";
 import { isValidDailyDate } from "@/lib/daily";
 import { clientIp, rateLimit } from "@/lib/server/rate-limit";
 import { isGeoSpec, readGeoChallenge, startGeo } from "@/lib/server/geo";
-import { GEO_KINDS, GEO_STYLES, type GeoSpec } from "@/lib/geo-types";
+import { GEO_KINDS, GEO_STYLES, WORLD_REGION, geoDailyRegion, type GeoSpec } from "@/lib/geo-types";
 
 /**
  * POST /api/geo — start a PokéGuessr game.
@@ -14,10 +14,9 @@ import { GEO_KINDS, GEO_STYLES, type GeoSpec } from "@/lib/geo-types";
  */
 
 const DAILY_COOKIE = "piq_geo_daily";
-const DAILY_REGION = "kanto";
 
 const bodySchema = z.object({
-  region: z.string().max(20).default(DAILY_REGION),
+  region: z.string().max(20).default(WORLD_REGION),
   style: z.enum(GEO_STYLES).default("classic"),
   kind: z.enum(GEO_KINDS).default("game"),
   daily: z.string().optional(),
@@ -40,7 +39,8 @@ export async function POST(request: NextRequest) {
     if (!isValidDailyDate(body.daily)) {
       return NextResponse.json({ error: "That daily game isn't available." }, { status: 400 });
     }
-    spec = { region: DAILY_REGION, style: "classic", kind: "game", daily: body.daily };
+    const region = geoDailyRegion(body.daily, isGeoSpec({ region: WORLD_REGION, style: "classic", kind: "game" }));
+    spec = { region, style: "classic", kind: "game", daily: body.daily };
     if (started.includes(body.daily)) spec.practice = "repeat-daily";
   } else if (body.challenge) {
     const challenge = readGeoChallenge(body.challenge);
@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
   if (!isGeoSpec(spec)) return NextResponse.json({ error: "Unknown region." }, { status: 400 });
 
   const game = startGeo(spec, { seed, name: body.name });
-  const response = NextResponse.json({ ...game, practice: spec.practice }, { headers: { "Cache-Control": "no-store" } });
+  const response = NextResponse.json({ ...game, region: spec.region, practice: spec.practice }, { headers: { "Cache-Control": "no-store" } });
   if (spec.daily && !spec.practice) {
     response.cookies.set(DAILY_COOKIE, [spec.daily, ...started].slice(0, 4).join(","), {
       httpOnly: true,

@@ -15,6 +15,7 @@ const DESKTOP_LINKS = [
   { href: "/iq-test", label: "IQ Test" },
   { href: "/pokedle", label: "Pokédle" },
   { href: "/guessr", label: "Guessr" },
+  { href: "/atlas", label: "Atlas" },
   { href: "/play", label: "Modes" },
   { href: "/pokedex", label: "Pokédex" },
   { href: "/leaderboard", label: "Leaderboard" },

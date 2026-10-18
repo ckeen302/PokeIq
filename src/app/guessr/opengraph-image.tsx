@@ -31,7 +31,7 @@ export default function Image() {
           Poké<span style={{ color: "#22c55e" }}>Guessr</span>
         </div>
         <div style={{ display: "flex", flexDirection: "column" }}>
-          <div style={{ display: "flex", fontSize: 104, fontWeight: 900, lineHeight: 1 }}>Where in Kanto</div>
+          <div style={{ display: "flex", fontSize: 104, fontWeight: 900, lineHeight: 1 }}>Where in the world</div>
           <div style={{ display: "flex", fontSize: 104, fontWeight: 900, lineHeight: 1.05, color: "#4ade80" }}>is this?</div>
         </div>
         <div style={{ display: "flex", fontSize: 34, color: "#cbd5e1" }}>

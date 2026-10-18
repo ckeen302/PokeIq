@@ -13,6 +13,7 @@
     "test:watch": "vitest",
     "ingest": "tsx scripts/ingest-pokedex.ts && tsx scripts/ingest-details.ts",
     "ingest:geo": "tsx scripts/ingest-geo.ts",
+    "ingest:world": "tsx scripts/ingest-world.ts",
     "verify:e2e": "node scripts/e2e-smoke.mjs",
     "lookalikes": "tsx scripts/silhouette-lookalikes.ts",
     "icons": "tsx scripts/generate-icons.ts"

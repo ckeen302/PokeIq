@@ -1,6 +1,13 @@
 import { describe, expect, it } from "vitest";
 import { answerFor, geoRegions, gradeGeo, isGeoSpec, measureGuess, planRounds, readGeo, readGeoChallenge, startGeo } from "@/lib/server/geo";
-import { GEO_MAX_ROUND_SCORE, GEO_ROUNDS, type GeoSpec } from "@/lib/geo-types";
+import {
+  GEO_MAX_ROUND_SCORE,
+  GEO_ROUNDS,
+  WORLD_DAILY_FROM,
+  WORLD_REGION,
+  geoDailyRegion,
+  type GeoSpec,
+} from "@/lib/geo-types";
 
 const classic: GeoSpec = { region: "kanto", style: "classic", kind: "game" };
 const retro: GeoSpec = { region: "kanto", style: "retro", kind: "game" };
@@ -29,7 +36,13 @@ describe("PokéGuessr", () => {
     expect(kanto.locations.classic).toBeGreaterThanOrEqual(40);
     expect(kanto.locations.retro).toBeGreaterThanOrEqual(35);
     expect(isGeoSpec(classic)).toBe(true);
-    expect(isGeoSpec({ ...classic, region: "galar" })).toBe(false);
+    expect(isGeoSpec({ ...classic, region: "orre" })).toBe(false);
+  });
+
+  it("moves the daily game to the world map", () => {
+    expect(geoDailyRegion("2026-10-01", true)).toBe("kanto");
+    expect(geoDailyRegion(WORLD_DAILY_FROM, true)).toBe(WORLD_REGION);
+    expect(geoDailyRegion(WORLD_DAILY_FROM, false)).toBe("kanto");
   });
 
   it("plans five rounds in five different areas, deterministically, in the chosen style", () => {

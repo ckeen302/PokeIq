@@ -70,6 +70,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <Link href="/play" className="hover:text-foreground">Game modes</Link>
               <Link href="/pokedex" className="hover:text-foreground">Pokédex</Link>
               <Link href="/pokedex/study" className="hover:text-foreground">Study mode</Link>
+              <Link href="/atlas" className="hover:text-foreground">World atlas</Link>
               <Link href="/leaderboard" className="hover:text-foreground">Leaderboard</Link>
               <Link href="/quiz/gen-1-pokemon-quiz" className="hover:text-foreground">Gen 1 quiz</Link>
               <Link href="/quiz/pokemon-type-quiz" className="hover:text-foreground">Type chart quiz</Link>

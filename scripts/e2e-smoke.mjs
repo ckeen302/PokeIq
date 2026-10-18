@@ -136,6 +136,8 @@ async function playGeoRounds(rounds) {
     });
     const map = page.locator("[role=application]");
     await map.hover();
+    // Zoom in on the first round, like a player hunting for a spot.
+    if (i === 0) await page.mouse.wheel(0, -240);
     const box = await map.boundingBox();
     await map.click({ position: { x: box.width * 0.5, y: box.height * 0.5 } });
     await page.getByRole("button", { name: /^Guess$/ }).click();
@@ -177,6 +179,17 @@ await page.goto(`${BASE}/guessr`, { waitUntil: "networkidle" });
 await page.getByRole("button", { name: /Streak/ }).click();
 await playGeoRounds(60);
 await page.getByText("Streak over").first().waitFor();
+
+step("world atlas: search, place card, link into PokéGuessr");
+await page.goto(`${BASE}/atlas`, { waitUntil: "networkidle" });
+await page.getByLabel("Search the map").fill("Saffron City");
+await page.getByRole("button", { name: "Go" }).click();
+await page.getByRole("heading", { name: "Saffron City" }).waitFor();
+await page.waitForTimeout(700);
+await page.screenshot({ path: `${OUT}/atlas.png` });
+await page.getByRole("link", { name: /Play PokéGuessr Kanto/ }).click();
+await page.waitForURL(/\/guessr\?region=kanto/);
+await page.getByText("Field survey · Kanto").waitFor();
 
 step("pokédex explorer");
 await page.goto(`${BASE}/pokedex`, { waitUntil: "networkidle" });

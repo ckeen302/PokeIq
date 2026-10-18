@@ -1,11 +1,13 @@
 import Link from "next/link";
 import { ArrowRight, Compass, Flame, Swords } from "lucide-react";
 import { geoRegions } from "@/lib/server/geo";
+import { WORLD_REGION } from "@/lib/geo-types";
 
 /** Home-page spotlight for PokéGuessr: a real in-game view behind the pitch. */
 export function GuessrFeature() {
-  const [kanto] = geoRegions();
-  const preview = kanto?.previews.classic;
+  const regions = geoRegions();
+  const world = regions.find((r) => r.id === WORLD_REGION && r.locations.classic >= 5);
+  const preview = (world ?? regions[0])?.previews.classic;
   return (
     <Link
       href="/guessr"
@@ -26,12 +28,12 @@ export function GuessrFeature() {
             <span className="led h-1.5 w-1.5 animate-blink text-success" /> New · PokéGuessr
           </p>
           <h2 className="font-display text-4xl font-bold uppercase leading-[0.95] tracking-tight sm:text-5xl">
-            Where in Kanto
+            {world ? "Where in the world" : "Where in Kanto"}
             <br />
             <span className="text-success [text-shadow:0_0_28px_hsl(var(--success)/0.45)]">is this?</span>
           </h2>
           <p className="max-w-md text-muted-foreground">
-            GeoGuessr for Pokémon. Real in-game views, a pin on the town map, up to 25,000 points. New daily game every day.
+            GeoGuessr for Pokémon. Real in-game views, a pin on the map, up to 25,000 points. New daily game every day.
           </p>
           <span className="inline-flex items-center gap-2 rounded-md bg-success px-5 py-3 font-display text-sm font-bold uppercase tracking-wider text-success-foreground shadow-[0_4px_0_hsl(154_60%_24%)] transition-transform group-hover:-translate-y-0.5">
             <Compass className="h-4 w-4" aria-hidden /> Play PokéGuessr
@@ -40,7 +42,10 @@ export function GuessrFeature() {
         </div>
         <ul className="flex flex-col justify-end gap-2 text-sm">
           {[
-            { icon: Compass, text: `${kanto?.locations.classic ?? 40}+ places across Kanto` },
+            {
+              icon: Compass,
+              text: world ? "Every region from Kanto to Paldea, on one world map" : `${regions[0]?.locations.classic ?? 40}+ places across Kanto`,
+            },
             { icon: Swords, text: "Challenge friends to the same five places" },
             { icon: Flame, text: "Streak mode: one miss and it's over" },
           ].map(({ icon: Icon, text }) => (

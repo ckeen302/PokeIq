@@ -47,7 +47,7 @@ export function DailyCards() {
         icon={<Compass className="h-5 w-5" />}
         title="PokéGuessr"
         number={today ? dailyNumber(today) : null}
-        description="GeoGuessr for Pokémon: 5 places in Kanto. Look around, drop a pin on the map."
+        description="GeoGuessr for Pokémon: 5 places a day. Look around, drop a pin on the map."
         status={geo !== undefined ? `Cleared · ${geo.toLocaleString("en-US")} / 25,000` : null}
         cleared={geo !== undefined}
         streak={progress && today ? geoDailyStreak(progress, today) : 0}

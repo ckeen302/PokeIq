@@ -9,6 +9,7 @@ import {
   Expand,
   Flame,
   Gamepad2,
+  Globe2,
   Link2,
   Loader2,
   MapPin as MapPinIcon,
@@ -22,7 +23,11 @@ import {
 import {
   GEO_MAX_ROUND_SCORE,
   GEO_ROUNDS,
+  GEO_STYLES,
+  WORLD_REGION,
   geoBoardKey,
+  geoDailyRegion,
+  geoMapRank,
   type GeoChallenge,
   type GeoGuessResponse,
   type GeoKind,
@@ -46,6 +51,8 @@ import { cn } from "@/lib/utils";
 type Phase = "setup" | "loading" | "guessing" | "submitting" | "revealed" | "results" | "error";
 
 interface Game {
+  /** The map being played (a daily or a challenge picks its own). */
+  region: GeoRegionInfo;
   style: GeoStyle;
   kind: GeoKind;
   daily?: string;
@@ -86,21 +93,32 @@ function verdict(score: number): string {
 const STYLE_INFO: Record<GeoStyle, { title: string; blurb: string; icon: React.ReactNode }> = {
   classic: {
     title: "Classic",
-    blurb: "3D street-level views from Let's Go, Pikachu! and Eevee!",
+    blurb: "3D views from the newer games and remakes.",
     icon: <Mountain className="h-5 w-5" aria-hidden />,
   },
   retro: {
     title: "Retro",
-    blurb: "Red/Blue, Gold/Silver and FireRed/LeafGreen. For Game Boy veterans.",
+    blurb: "Top-down screenshots from the Game Boy, GBA and DS games. For veterans.",
     icon: <Gamepad2 className="h-5 w-5" aria-hidden />,
   },
 };
 
-/** "Saffron City" or "Silph Co. · Saffron City", without the "Kanto " prefix routes carry. */
-function placeName(answer: { name: string; parent?: string }): string {
-  const clean = (s: string) => s.replace(/^Kanto /, "");
-  return answer.parent ? `${clean(answer.name)} · ${clean(answer.parent)}` : clean(answer.name);
+const playable = (region: GeoRegionInfo | undefined, style: GeoStyle) => (region?.locations[style] ?? 0) >= GEO_ROUNDS;
+const where = (region: GeoRegionInfo) => (region.id === WORLD_REGION ? "the Pokémon world" : region.name);
+
+/**
+ * "Saffron City" or "Silph Co. · Saffron City", without the "Kanto " prefix
+ * routes carry, plus the region when the map doesn't make it obvious.
+ */
+const clean = (s: string) => s.replace(/^(Kanto|Johto|Hoenn|Sinnoh|Unova|Kalos|Alola|Galar|Paldea) (?=Route)/, "");
+function placeName(answer: { name: string; parent?: string; region?: string }, map?: GeoRegionInfo): string {
+  const name = answer.parent ? `${clean(answer.name)} · ${clean(answer.parent)}` : clean(answer.name);
+  return answer.region && map && answer.region !== map.name ? `${name}, ${answer.region}` : name;
 }
+
+/** The answer on the world atlas (Kanto's own map predates the world data, so its places carry no region). */
+const atlasHref = (answer: { name: string; parent?: string; region?: string }) =>
+  `/atlas?q=${encodeURIComponent(`${clean(answer.parent ?? answer.name)} · ${answer.region ?? "Kanto"}`)}`;
 
 function distanceText(squares: number): string {
   if (squares === 0) return "Right on it!";
@@ -136,16 +154,20 @@ function useCountUp(value: number, ms = 700): number {
 }
 
 export interface GeoGameProps {
-  region: GeoRegionInfo;
+  /** Every map: the world and each region. */
+  regions: GeoRegionInfo[];
   /** Set on /guessr/c/<token>: a friend's game to replay. */
-  challenge?: GeoChallenge & { token: string };
+  challenge?: GeoChallenge & { token: string; region: string };
 }
 
-export function GeoGame({ region, challenge }: GeoGameProps) {
+export function GeoGame({ regions: allRegions, challenge }: GeoGameProps) {
   const today = useToday();
   const progress = useProgress();
+  const regions = [...allRegions].filter((r) => GEO_STYLES.some((s) => playable(r, s))).sort((a, b) => geoMapRank(a.id) - geoMapRank(b.id));
+  const byId = (id: string) => regions.find((r) => r.id === id);
   const [phase, setPhase] = useState<Phase>("setup");
   const [error, setError] = useState<string | null>(null);
+  const [regionId, setRegionId] = useState(challenge?.region ?? regions[0]?.id ?? WORLD_REGION);
   const [style, setStyle] = useState<GeoStyle>("classic");
   const [game, setGame] = useState<Game | null>(null);
   const [pick, setPick] = useState<MapPin | null>(null);
@@ -154,6 +176,24 @@ export function GeoGame({ region, challenge }: GeoGameProps) {
   const [zoomed, setZoomed] = useState(false);
   const [reward, setReward] = useState<Reward | null>(null);
   const [isChallenge, setIsChallenge] = useState(false);
+
+  const region = byId(regionId) ?? regions[0];
+  // Some regions only have one style (no 3D Johto, no Game Boy Galar).
+  const activeStyle = playable(region, style) ? style : (GEO_STYLES.find((s) => playable(region, s)) ?? style);
+
+  // /guessr?region=johto opens on that map (the atlas links here).
+  useEffect(() => {
+    const id = new URLSearchParams(window.location.search).get("region");
+    if (id && !challenge && regions.some((r) => r.id === id)) setRegionId(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- read the URL once
+  }, []);
+
+  function chooseRegion(id: string) {
+    setRegionId(id);
+    const url = new URL(window.location.href);
+    url.searchParams.set("region", id);
+    window.history.replaceState(null, "", url);
+  }
 
   const current = phase === "revealed" ? played[played.length - 1] : null;
   const total = played.reduce((s, p) => s + p.graded.score, 0);
@@ -170,7 +210,9 @@ export function GeoGame({ region, challenge }: GeoGameProps) {
           ? { daily: opts.daily, name: progress?.name || undefined }
           : { region: region.id, style: opts.style, kind: opts.kind, name: progress?.name || undefined };
       const res = await post<GeoStartResponse>("/api/geo", body);
-      setGame({ style: opts.style, kind: opts.kind, daily: opts.daily, practice: res.practice, token: res.token, round: res.round });
+      const map = byId(res.region) ?? allRegions.find((r) => r.id === res.region);
+      if (!map) throw new Error("That map isn't available right now.");
+      setGame({ region: map, style: opts.style, kind: opts.kind, daily: opts.daily, practice: res.practice, token: res.token, round: res.round });
       setIsChallenge(!!opts.challenge);
       setPick(null);
       setPlayed([]);
@@ -197,7 +239,7 @@ export function GeoGame({ region, challenge }: GeoGameProps) {
       if (graded.next) new window.Image().src = graded.next.shot;
       if (graded.done && graded.result) {
         setReward(
-          recordGeoGame(geoBoardKey({ region: region.id, style: game.style, kind: game.kind }), {
+          recordGeoGame(geoBoardKey({ region: game.region.id, style: game.style, kind: game.kind }), {
             kind: game.kind,
             score: graded.result.score,
             rounds: nextPlayed.map((p) => p.graded.score),
@@ -252,9 +294,12 @@ export function GeoGame({ region, challenge }: GeoGameProps) {
   // ---- setup -----------------------------------------------------------------
   if (phase === "setup" || phase === "loading" || (phase === "error" && !game)) {
     const dailyDone = today ? progress?.best[`geo-daily:${today}`] : undefined;
-    const bestGame = progress?.best[`geo:${geoBoardKey({ region: region.id, style, kind: "game" })}`];
-    const bestStreak = progress?.best[`geo:${geoBoardKey({ region: region.id, style, kind: "streak" })}`];
+    const dailyMap = today ? byId(geoDailyRegion(today, playable(byId(WORLD_REGION), "classic"))) : undefined;
+    const bestGame = progress?.best[`geo:${geoBoardKey({ region: region.id, style: activeStyle, kind: "game" })}`];
+    const bestStreak = progress?.best[`geo:${geoBoardKey({ region: region.id, style: activeStyle, kind: "streak" })}`];
+    const challengeMap = challenge ? byId(challenge.region) : undefined;
     const loading = phase === "loading";
+    const isWorld = region.id === WORLD_REGION;
     return (
       <div className="mx-auto max-w-4xl space-y-8">
         <div className="space-y-3 text-center">
@@ -263,7 +308,7 @@ export function GeoGame({ region, challenge }: GeoGameProps) {
             Poké<span className="text-primary">Guessr</span>
           </h1>
           <p className="mx-auto max-w-xl text-muted-foreground">
-            GeoGuessr for Pokémon. You&apos;re dropped somewhere in {region.name}: look around, then drop a pin on the town map.
+            GeoGuessr for Pokémon. You&apos;re dropped somewhere in {where(region)}: look around, then drop a pin on the map.
             Scored like GeoGuessr: up to {fmt(GEO_MAX_ROUND_SCORE)} points a round, falling off the further your pin lands.
           </p>
         </div>
@@ -285,7 +330,8 @@ export function GeoGame({ region, challenge }: GeoGameProps) {
                   {challenge.name || "A trainer"} scored {fmt(challenge.score)}
                 </p>
                 <p className="text-sm text-muted-foreground">
-                  Same five places in {STYLE_INFO[challenge.style].title} mode. {challenge.rounds.map(emoji).join("")}
+                  Same five places{challengeMap ? ` in ${where(challengeMap)}` : ""}, {STYLE_INFO[challenge.style].title} views.{" "}
+                  {challenge.rounds.map(emoji).join("")}
                 </p>
               </CardContent>
               <div className="flex items-center p-6 pt-0 md:pt-6">
@@ -307,12 +353,15 @@ export function GeoGame({ region, challenge }: GeoGameProps) {
         <Card className="overflow-hidden">
           <div className="grid md:grid-cols-[1fr_auto]">
             <CardContent className="space-y-2 p-6">
-              <p className="hud-label text-warning">Daily game {today ? `#${dailyNumber(today)}` : ""}</p>
+              <p className="hud-label text-warning">
+                Daily game {today ? `#${dailyNumber(today)}` : ""}
+                {dailyMap ? ` · ${dailyMap.name}` : ""}
+              </p>
               <p className="font-display text-2xl font-bold uppercase">5 places · same for everyone</p>
               <p className="text-sm text-muted-foreground">
                 {dailyDone !== undefined
                   ? `You scored ${fmt(dailyDone)} today. Replays don't count for the leaderboard.`
-                  : "Classic views. Your first game today goes on the daily leaderboard."}
+                  : `Classic views from ${dailyMap ? where(dailyMap) : "the Pokémon world"}. Your first game today goes on the daily leaderboard.`}
               </p>
             </CardContent>
             <div className="flex items-center p-6 pt-0 md:pt-6">
@@ -333,16 +382,18 @@ export function GeoGame({ region, challenge }: GeoGameProps) {
           <div className="flex flex-wrap items-center justify-between gap-3">
             <h2 className="font-display text-xl font-bold uppercase">Free play</h2>
             <div className="flex rounded-md border bg-shade/20 p-1" role="radiogroup" aria-label="Screenshot style">
-              {(["classic", "retro"] as const).map((s) => (
+              {GEO_STYLES.map((s) => (
                 <button
                   key={s}
                   type="button"
                   role="radio"
-                  aria-checked={style === s}
+                  aria-checked={activeStyle === s}
+                  disabled={!playable(region, s)}
+                  title={playable(region, s) ? undefined : `No ${STYLE_INFO[s].title.toLowerCase()} views of ${region.name} yet`}
                   onClick={() => setStyle(s)}
                   className={cn(
-                    "flex items-center gap-1.5 rounded-sm px-3 py-1.5 font-display text-xs font-semibold uppercase tracking-wider transition-colors",
-                    style === s ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
+                    "flex items-center gap-1.5 rounded-sm px-3 py-1.5 font-display text-xs font-semibold uppercase tracking-wider transition-colors disabled:cursor-not-allowed disabled:opacity-35",
+                    activeStyle === s ? "bg-primary text-primary-foreground" : "text-muted-foreground enabled:hover:text-foreground"
                   )}
                 >
                   {STYLE_INFO[s].icon}
@@ -351,30 +402,61 @@ export function GeoGame({ region, challenge }: GeoGameProps) {
               ))}
             </div>
           </div>
+
+          {regions.length > 1 && (
+            <div className="flex flex-wrap gap-1.5" role="radiogroup" aria-label="Map">
+              {regions.map((r) => (
+                <button
+                  key={r.id}
+                  type="button"
+                  role="radio"
+                  aria-checked={r.id === region.id}
+                  onClick={() => chooseRegion(r.id)}
+                  className={cn(
+                    "flex items-center gap-1.5 rounded-md border px-3 py-1.5 font-display text-xs font-semibold uppercase tracking-wider transition-colors",
+                    r.id === region.id ? "border-screen bg-screen/15 text-foreground" : "bg-card text-muted-foreground hover:border-screen/50 hover:text-foreground"
+                  )}
+                >
+                  {r.id === WORLD_REGION && <Globe2 className="h-3.5 w-3.5" aria-hidden />}
+                  {r.name}
+                </button>
+              ))}
+            </div>
+          )}
+
           <p className="text-sm text-muted-foreground">
-            {STYLE_INFO[style].blurb} {region.locations[style]} places.
+            {STYLE_INFO[activeStyle].blurb} {fmt(region.locations[activeStyle])} places
+            {region.games[activeStyle].length ? ` from ${region.games[activeStyle].join(" · ")}` : ""}.
           </p>
 
           <div className="grid gap-4 sm:grid-cols-2">
             <ModeCard
-              preview={region.previews[style] ?? region.map.src}
-              pixelated={style === "retro"}
+              preview={region.previews[activeStyle] ?? region.map.src}
+              pixelated={activeStyle === "retro"}
               icon={<MapPinIcon className="h-5 w-5" aria-hidden />}
               title="5-round game"
-              blurb={`Five places, up to ${fmt(MAX_TOTAL)} points. Then challenge a friend to beat you.`}
+              blurb={
+                isWorld
+                  ? `Five places in five different regions, up to ${fmt(MAX_TOTAL)} points. Then challenge a friend to beat you.`
+                  : `Five places, up to ${fmt(MAX_TOTAL)} points. Then challenge a friend to beat you.`
+              }
               stat={bestGame ? `Best ${fmt(bestGame)}` : null}
               disabled={loading}
-              onClick={() => void start({ style, kind: "game" })}
+              onClick={() => void start({ style: activeStyle, kind: "game" })}
             />
             <ModeCard
               preview={region.map.src}
-              pixelated
+              pixelated={region.map.pixelArt}
               icon={<Flame className="h-5 w-5" aria-hidden />}
               title="Streak"
-              blurb="Pin the exact place, again and again. One miss and it's over."
+              blurb={
+                isWorld
+                  ? "Pin the right region, again and again. One miss and it's over."
+                  : "Pin the exact place, again and again. One miss and it's over."
+              }
               stat={bestStreak ? `Best ${bestStreak} in a row` : null}
               disabled={loading}
-              onClick={() => void start({ style, kind: "streak" })}
+              onClick={() => void start({ style: activeStyle, kind: "streak" })}
             />
           </div>
         </div>
@@ -384,7 +466,11 @@ export function GeoGame({ region, challenge }: GeoGameProps) {
           <a href="https://bulbapedia.bulbagarden.net" className="underline underline-offset-2" target="_blank" rel="noreferrer">
             Bulbapedia
           </a>
-          . Pokémon game imagery © Nintendo / Game Freak / The Pokémon Company.
+          . Pokémon game imagery © Nintendo / Game Freak / The Pokémon Company.{" "}
+          <Link href="/atlas" className="underline underline-offset-2">
+            Explore the world atlas
+          </Link>
+          .
         </p>
       </div>
     );
@@ -406,7 +492,6 @@ export function GeoGame({ region, challenge }: GeoGameProps) {
     const last = played[played.length - 1]?.graded;
     return (
       <GeoSummary
-        region={region}
         game={game}
         played={played}
         resultToken={last?.resultToken}
@@ -425,7 +510,7 @@ export function GeoGame({ region, challenge }: GeoGameProps) {
       <div className="min-w-0">
         <div className="hud-label">Map</div>
         <div className="truncate font-display font-bold uppercase">
-          {region.name} · {STYLE_INFO[game.style].title}
+          {game.region.name} · {STYLE_INFO[game.style].title}
           {game.daily ? ` · Daily #${dailyNumber(game.daily)}` : isStreak ? " · Streak" : ""}
         </div>
       </div>
@@ -458,7 +543,7 @@ export function GeoGame({ region, challenge }: GeoGameProps) {
 
   // ---- round result ------------------------------------------------------------
   if (phase === "revealed" && current) {
-    return <RoundReveal region={region} game={game} current={current} streak={streak} hud={hud} onNext={next} />;
+    return <RoundReveal game={game} current={current} streak={streak} hud={hud} onNext={next} />;
   }
 
   // ---- guessing ------------------------------------------------------------------
@@ -493,11 +578,18 @@ export function GeoGame({ region, challenge }: GeoGameProps) {
           </button>
         </div>
 
-        {/* GeoGuessr-style mini-map: docked bottom-right on desktop, grows on hover. */}
-        <div className="group mt-3 space-y-2 lg:absolute lg:bottom-4 lg:right-4 lg:z-10 lg:mt-0 lg:w-[19rem] lg:transition-[width] lg:duration-200 lg:focus-within:w-[34rem] lg:hover:w-[34rem]">
+        {/* GeoGuessr-style mini-map: docked bottom-right on desktop, grows on hover (the big zoomable maps grow further). */}
+        <div
+          className={cn(
+            "group mt-3 space-y-2 lg:absolute lg:bottom-4 lg:right-4 lg:z-10 lg:mt-0 lg:transition-[width] lg:duration-200",
+            game.region.map.pixelArt
+              ? "lg:w-[19rem] lg:focus-within:w-[34rem] lg:hover:w-[34rem]"
+              : "lg:w-[22rem] lg:focus-within:w-[44rem] lg:hover:w-[44rem]"
+          )}
+        >
           <div className="rounded-md lg:opacity-80 lg:shadow-2xl lg:transition-opacity lg:group-hover:opacity-100">
             <GeoMap
-              region={region}
+              region={game.region}
               pick={pick}
               onPick={(p) => {
                 setPick(p);
@@ -588,14 +680,12 @@ function ModeCard({
 }
 
 function RoundReveal({
-  region,
   game,
   current,
   streak,
   hud,
   onNext,
 }: {
-  region: GeoRegionInfo;
   game: Game;
   current: Played;
   streak: number;
@@ -605,15 +695,16 @@ function RoundReveal({
   const { graded, guess: g } = current;
   const shown = useCountUp(graded.score);
   const isStreak = game.kind === "streak";
+  const isWorld = game.region.id === WORLD_REGION;
   return (
     <div className="mx-auto max-w-4xl space-y-4">
       {hud}
-      <GeoMap region={region} revealed={[{ guess: g, answer: graded.answer }]} />
+      <GeoMap region={game.region} revealed={[{ guess: g, answer: graded.answer }]} />
       <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="space-y-4 text-center">
         {isStreak ? (
           <div>
             <p className={cn("hud-label", graded.hit ? "text-success" : "text-destructive")}>
-              {graded.hit ? "Correct!" : "Streak over"}
+              {graded.hit ? (isWorld ? "Right region!" : "Correct!") : isWorld ? "Wrong region. Streak over" : "Streak over"}
             </p>
             <p className="flex items-center justify-center gap-2 font-display text-4xl font-bold">
               {graded.hit ? <Check className="h-8 w-8 text-success" aria-hidden /> : <X className="h-8 w-8 text-destructive" aria-hidden />}
@@ -637,10 +728,16 @@ function RoundReveal({
           </>
         )}
         <p className="text-muted-foreground">
-          It was <span className="font-semibold text-foreground">{placeName(graded.answer)}</span>
+          It was <span className="font-semibold text-foreground">{placeName(graded.answer, game.region)}</span>
           <span className="text-sm"> · Pokémon {graded.answer.game}</span>
           <br />
           <span className="text-sm">{distanceText(graded.answer.squares)}</span>
+          <span className="text-sm">
+            {" · "}
+            <Link href={atlasHref(graded.answer)} target="_blank" className="underline underline-offset-2 hover:text-foreground">
+              See it on the atlas
+            </Link>
+          </span>
         </p>
         <Button size="lg" className="w-full max-w-xs" onClick={onNext}>
           {graded.done ? (isStreak ? "See results" : "View summary") : "Next round"} ▶
@@ -651,7 +748,6 @@ function RoundReveal({
 }
 
 function GeoSummary({
-  region,
   game,
   played,
   resultToken,
@@ -660,7 +756,6 @@ function GeoSummary({
   reward,
   onRestart,
 }: {
-  region: GeoRegionInfo;
   game: Game;
   played: Played[];
   resultToken?: string;
@@ -670,6 +765,7 @@ function GeoSummary({
   onRestart: () => void;
 }) {
   const progress = useProgress();
+  const { region } = game;
   const isStreak = game.kind === "streak";
   const total = played.reduce((s, p) => s + p.graded.score, 0);
   const streak = played.filter((p) => p.graded.hit).length;
@@ -796,7 +892,7 @@ function GeoSummary({
                 <span className="font-pixel text-xs text-muted-foreground">{i + 1}</span>
                 <span aria-hidden>{isStreak ? (p.graded.hit ? "✅" : "❌") : emoji(p.graded.score)}</span>
                 <span className="min-w-0 flex-1 truncate text-sm">
-                  <span className="font-semibold">{placeName(p.graded.answer)}</span>
+                  <span className="font-semibold">{placeName(p.graded.answer, region)}</span>
                   <span className="text-muted-foreground"> · {p.graded.answer.game}</span>
                 </span>
                 {!isStreak && <span className="font-pixel text-xs tabular-nums">{fmt(p.graded.score)}</span>}

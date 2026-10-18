@@ -3,8 +3,8 @@ import type { Metadata } from "next";
 import { Medal } from "lucide-react";
 import { fetchBoard } from "@/lib/server/leaderboard";
 import { fetchGeoBoard } from "@/lib/server/geo-leaderboard";
-import { geoRegions } from "@/lib/server/geo";
-import { GEO_KINDS, GEO_STYLES, geoBoardKey } from "@/lib/geo-types";
+import { geoRegions, isGeoSpec } from "@/lib/server/geo";
+import { GEO_KINDS, GEO_STYLES, geoBoardKey, geoMapRank } from "@/lib/geo-types";
 import { dailyNumber, isValidDailyDate } from "@/lib/daily";
 import { FORMAT_INFO, MODULE_INFO, PLAY_MODULES, PLAYABLE_FORMATS } from "@/lib/modes";
 import { DIFFICULTIES, type Difficulty, type ModuleId, type QuizFormat } from "@/engines/types";
@@ -52,15 +52,20 @@ export default async function LeaderboardPage({ searchParams }: PageProps) {
   );
 
   if (board === "geo") {
-    const geoBoards = geoRegions().flatMap((r) =>
-      GEO_KINDS.flatMap((kind) =>
-        GEO_STYLES.map((style) => ({
-          id: geoBoardKey({ region: r.id, style, kind }),
-          name: `${r.name} ${style === "classic" ? "Classic" : "Retro"}${kind === "streak" ? " Streak" : ""}`,
-        }))
-      )
-    );
-    const mode = geoBoards.find((b) => b.id === params.format)?.id ?? null;
+    const maps = geoRegions()
+      .map((r) => ({
+        ...r,
+        boards: GEO_STYLES.flatMap((style) =>
+          GEO_KINDS.filter((kind) => isGeoSpec({ region: r.id, style, kind })).map((kind) => ({
+            id: geoBoardKey({ region: r.id, style, kind }),
+            name: `${style === "classic" ? "Classic" : "Retro"}${kind === "streak" ? " Streak" : ""}`,
+          }))
+        ),
+      }))
+      .filter((r) => r.boards.length)
+      .sort((a, b) => geoMapRank(a.id) - geoMapRank(b.id));
+    const map = maps.find((r) => r.boards.some((b) => b.id === params.format));
+    const mode = map ? params.format! : null;
     const geoEntries = mode ? await fetchGeoBoard({ mode }) : await fetchGeoBoard({ daily: date });
     return (
       <div className="mx-auto max-w-3xl space-y-6">
@@ -74,14 +79,25 @@ export default async function LeaderboardPage({ searchParams }: PageProps) {
                 Daily #{dailyNumber(date)}
               </Badge>
             </Link>
-            {geoBoards.map((r) => (
-              <Link key={r.id} href={`/leaderboard?board=geo&format=${r.id}`}>
-                <Badge variant={mode === r.id ? "secondary" : "outline"} className="hover:bg-accent">
+            {maps.map((r) => (
+              <Link key={r.id} href={`/leaderboard?board=geo&format=${r.boards[0].id}`}>
+                <Badge variant={map?.id === r.id ? "secondary" : "outline"} className="hover:bg-accent">
                   {r.name}
                 </Badge>
               </Link>
             ))}
           </div>
+          {map && (
+            <div className="flex flex-wrap justify-center gap-2">
+              {map.boards.map((b) => (
+                <Link key={b.id} href={`/leaderboard?board=geo&format=${b.id}`}>
+                  <Badge variant={mode === b.id ? "secondary" : "outline"} className="hover:bg-accent">
+                    {map.name} {b.name}
+                  </Badge>
+                </Link>
+              ))}
+            </div>
+          )}
         </div>
         {geoEntries === null ? (
           <Card>

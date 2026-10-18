@@ -1,7 +1,8 @@
 /* eslint-disable jsx-a11y/alt-text -- Satori renders plain <img> */
 import { ImageResponse } from "next/og";
 import { LOGO_SVG } from "@/lib/brand/logo-svg";
-import { readGeoChallenge } from "@/lib/server/geo";
+import { geoRegions, readGeoChallenge } from "@/lib/server/geo";
+import { WORLD_REGION } from "@/lib/geo-types";
 
 /** Preview card for PokéGuessr challenge links on Discord / X / iMessage. */
 
@@ -26,6 +27,8 @@ export default async function Image({ params }: { params: Promise<{ token: strin
   } catch {
     challenge = null;
   }
+  const map = challenge ? geoRegions().find((r) => r.id === challenge.region) : undefined;
+  const mapName = !map || map.id === WORLD_REGION ? "World" : map.name;
 
   return new ImageResponse(
     (
@@ -47,7 +50,7 @@ export default async function Image({ params }: { params: Promise<{ token: strin
             <img src={LOGO_DATA_URI} width={96} height={96} style={{ marginRight: 24 }} />
             Poké<span style={{ color: "#22c55e" }}>Guessr</span>
           </div>
-          <div style={{ display: "flex", fontSize: 30, color: "#94a3b8" }}>GeoGuessr for Pokémon · Kanto</div>
+          <div style={{ display: "flex", fontSize: 30, color: "#94a3b8" }}>{`GeoGuessr for Pokémon · ${mapName}`}</div>
         </div>
 
         {challenge ? (
@@ -66,7 +69,7 @@ export default async function Image({ params }: { params: Promise<{ token: strin
             </div>
           </div>
         ) : (
-          <div style={{ display: "flex", fontSize: 72, fontWeight: 800 }}>Where in Kanto is this?</div>
+          <div style={{ display: "flex", fontSize: 72, fontWeight: 800 }}>Where in the world is this?</div>
         )}
 
         <div style={{ display: "flex", fontSize: 34, color: "#4ade80", fontWeight: 700 }}>Same five places. Can you beat it? →</div>
