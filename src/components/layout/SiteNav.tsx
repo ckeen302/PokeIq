@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
-import { BookOpen, CalendarDays, Gamepad2, Home, Search, User } from "lucide-react";
+import { BookOpen, CalendarDays, Compass, Gamepad2, Home, Search, User } from "lucide-react";
 import { levelInfo, useProgress } from "@/lib/progress";
 import { useAccount } from "@/lib/account";
 import { cn } from "@/lib/utils";
@@ -14,6 +14,7 @@ const DESKTOP_LINKS = [
   { href: "/daily", label: "Daily" },
   { href: "/iq-test", label: "IQ Test" },
   { href: "/pokedle", label: "Pokédle" },
+  { href: "/guessr", label: "Guessr" },
   { href: "/play", label: "Modes" },
   { href: "/pokedex", label: "Pokédex" },
   { href: "/leaderboard", label: "Leaderboard" },
@@ -23,6 +24,7 @@ const MOBILE_TABS = [
   { href: "/", label: "Home", icon: Home },
   { href: "/daily", label: "Daily", icon: CalendarDays },
   { href: "/pokedle", label: "Pokédle", icon: Search },
+  { href: "/guessr", label: "Guessr", icon: Compass },
   { href: "/pokedex", label: "Pokédex", icon: BookOpen },
   { href: "/play", label: "Modes", icon: Gamepad2 },
 ];
@@ -93,7 +95,7 @@ export function MobileTabBar() {
   const pathname = usePathname();
   return (
     <nav
-      className="glass-top fixed inset-x-0 bottom-0 z-50 grid grid-cols-5 pb-[env(safe-area-inset-bottom)] lg:hidden"
+      className="glass-top fixed inset-x-0 bottom-0 z-50 grid grid-cols-6 pb-[env(safe-area-inset-bottom)] lg:hidden"
       aria-label="Primary"
     >
       {MOBILE_TABS.map(({ href, label, icon: Icon }) => {

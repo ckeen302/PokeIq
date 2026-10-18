@@ -2,23 +2,24 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { CalendarDays, ChevronRight, Flame, Search } from "lucide-react";
+import { CalendarDays, ChevronRight, Compass, Flame, Search } from "lucide-react";
 import { dailyNumber } from "@/lib/daily";
 import { currentStreak, useProgress } from "@/lib/progress";
 import { useToday } from "@/lib/use-today";
 import { NextDailyCountdown } from "@/components/NextDailyCountdown";
 import { cn } from "@/lib/utils";
 
-/** The two daily hooks, with today's status pulled from local progress. */
+/** The daily hooks, with today's status pulled from local progress. */
 export function DailyCards() {
   const progress = useProgress();
   const date = useToday();
   const today = progress ? date : null;
   const daily = today ? progress?.daily.results[today] : undefined;
   const dle = today ? progress?.dle.results[today] : undefined;
+  const geo = today ? progress?.best[`geo-daily:${today}`] : undefined;
 
   return (
-    <div className="grid gap-4 md:grid-cols-2">
+    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
       <DailyCard
         href="/daily"
         icon={<CalendarDays className="h-5 w-5" />}
@@ -40,6 +41,17 @@ export function DailyCards() {
         cleared={!!dle?.over}
         streak={progress && today ? currentStreak(progress.dle.last, progress.dle.streak, today) : 0}
         accent="258 94% 74%"
+      />
+      <DailyCard
+        href="/guessr"
+        icon={<Compass className="h-5 w-5" />}
+        title="PokéGuessr"
+        number={today ? dailyNumber(today) : null}
+        description="GeoGuessr for Pokémon: 5 places in Kanto. Look around, drop a pin on the map."
+        status={geo !== undefined ? `Cleared · ${geo.toLocaleString("en-US")} / 25,000` : null}
+        cleared={geo !== undefined}
+        streak={0}
+        accent="154 68% 46%"
       />
     </div>
   );

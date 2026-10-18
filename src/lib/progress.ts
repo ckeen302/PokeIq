@@ -282,6 +282,21 @@ export function recordRun(result: RunResult, shareToken?: string): RunReward {
   };
 }
 
+/** A finished PokéGuessr game: XP scales with the score (max 100), and the best per mode is kept. */
+export function recordGeoGame(mode: string, score: number, daily?: string): { xp: number; best: boolean } {
+  const p: Progress = structuredClone(read());
+  const key = daily ? "geo:daily" : `geo:${mode}`;
+  const dailyKey = daily ? `geo-daily:${daily}` : null;
+  // Like the other dailies, only the first game of the day earns XP.
+  const xp = dailyKey && p.best[dailyKey] !== undefined ? 0 : Math.round(score / 250);
+  const best = score > (p.best[key] ?? 0);
+  p.xp += xp;
+  p.best[key] = Math.max(p.best[key] ?? 0, score);
+  if (dailyKey && p.best[dailyKey] === undefined) p.best[dailyKey] = score;
+  write(p);
+  return { xp, best };
+}
+
 /** Tally one graded answer against its skill tags (gen, type, mode, stat). */
 export function recordAnswer(tags: readonly string[], correct: boolean) {
   if (!tags.length) return;

@@ -128,6 +128,27 @@ await page.getByText("How your PokéIQ was measured").waitFor();
 await page.waitForTimeout(1800);
 await page.screenshot({ path: `${OUT}/iq-test-results.png`, fullPage: true });
 
+step("pokéguessr: full game");
+await page.goto(`${BASE}/guessr`, { waitUntil: "networkidle" });
+await page.getByRole("button", { name: /Classic/ }).click();
+for (let i = 0; i < 5; i++) {
+  await page.waitForFunction(() => {
+    const img = document.querySelector("img[alt='Where is this?']");
+    return img?.complete && img.naturalWidth > 0;
+  });
+  const map = page.locator("[role=application]");
+  await map.hover();
+  const box = await map.boundingBox();
+  await map.click({ position: { x: box.width * 0.5, y: box.height * 0.5 } });
+  await page.getByRole("button", { name: /^Guess$/ }).click();
+  const next = page.getByRole("button", { name: /Next round|View summary/ });
+  await next.waitFor();
+  if (i === 0) await page.screenshot({ path: `${OUT}/guessr-reveal.png` });
+  await next.click();
+}
+await page.getByText("Survey complete").waitFor();
+await page.screenshot({ path: `${OUT}/guessr-summary.png`, fullPage: true });
+
 step("pokédex explorer");
 await page.goto(`${BASE}/pokedex`, { waitUntil: "networkidle" });
 await page.getByLabel("Search Pokémon").fill("char");

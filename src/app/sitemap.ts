@@ -10,6 +10,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${SITE_URL}/daily`, lastModified: now, changeFrequency: "daily", priority: 0.9 },
     { url: `${SITE_URL}/iq-test`, changeFrequency: "monthly", priority: 0.9 },
     { url: `${SITE_URL}/pokedle`, lastModified: now, changeFrequency: "daily", priority: 0.9 },
+    { url: `${SITE_URL}/guessr`, lastModified: now, changeFrequency: "daily", priority: 0.9 },
     { url: `${SITE_URL}/play`, changeFrequency: "weekly", priority: 0.8 },
     { url: `${SITE_URL}/pokedex`, changeFrequency: "monthly", priority: 0.8 },
     { url: `${SITE_URL}/pokedex/study`, changeFrequency: "monthly", priority: 0.7 },

@@ -29,14 +29,15 @@ Every question is generated on demand from a snapshot of all 1,025 Pokémon. No 
 | **PokéIQ Test** | A computerized adaptive test (the technique behind the GRE and GMAT): 20 questions, each picked for maximum Fisher information at your current estimate, scored as a PokéIQ with a 90% confidence range and a convergence chart |
 | **Daily Challenge** | 10 mixed questions, identical for every player that day (date-seeded), with a spoiler-free 🟩🟥 share grid and a daily leaderboard |
 | **Pokédle** | Daily Squirdle-style deduction: 8 guesses, with feedback on generation, types, height, weight, color and evolution stage. Unlocks hints (silhouette, then category). Unlimited practice mode |
-| **Who's That Pokémon?** | Silhouettes rendered on the server, with a "zoomed-in" hard mode |
+| **PokéGuessr** | GeoGuessr for Pokémon: dropped somewhere in Kanto, you get an in-game view and drop a pin on the town map, scoring up to 5,000 points a round by distance. Classic mode uses 3D views from Let's Go; Retro uses the Game Boy / GBA layouts. Daily game with its own leaderboard, and an end-of-game map of all five guesses |
+| **Who's That Pokémon?** | Silhouettes rendered on the server, with a "zoomed-in" hard mode that always frames recognisable outline |
 | **Cry Quiz** | Identify Pokémon by their in-game cry |
 | **Dex Detective** | Censored Pokédex entries, categories ("the Seed Pokémon") and abilities |
 | **Type Master** | Typings, damage multipliers, 4× weaknesses and immunities, computed from the 18×18 type matrix |
 | **Higher or Lower** | Two Pokémon, one stat (Speed, BST, weight…) |
 | **Formats** | Classic (10 × 15s), Survival (3 lives, endless) and Blitz (60s), with per-generation filters ("Gen 1 purist") |
 | **Challenge links** | `/c/<token>` replays the exact same questions and shows a head-to-head result; dynamic Open Graph cards for Discord, X and iMessage |
-| **Progression** | XP, levels, daily streaks, 14 badges and a trainer card, stored in the browser with no signup needed |
+| **Progression** | XP, levels, daily streaks, 15 badges and a trainer card. Local-first with no signup needed; optional accounts sync it across devices |
 | **Pokédex** | Searchable explorer (type and generation filters, sort by any stat, infinite scroll) and a page for every species: animated / 3D / shiny art with tilt, cries, Mega / regional / Gigantamax forms, stat bars with radar chart, Lv 50/100 ranges and percentiles, full type matchups, branching evolution trees with methods, complete learnsets (level-up / TM / egg / tutor), every Pokédex entry by game, breeding, training, regional dex numbers and names in 7 languages |
 | **Lookalikes** | A DINOv2 vision model embeds every silhouette offline. Its nearest neighbours drive hard-mode Who's That distractors and each Pokédex page's "easily confused with" panel |
 | **Coach** | Per-generation, per-type and per-mode accuracy with empirical-Bayes smoothing. It surfaces your focus areas and strengths and links each one to the right study tool |
@@ -109,6 +110,10 @@ Items start with heuristic priors (generation, zoom, distractor similarity, stat
 
 **Simulation results.** 175 simulated players span true ratings 700–1900, and their answers are drawn from the same response model. After 20 questions the adaptive test's estimate is off by **88 rating points on average (≈ 6.6 IQ points)**. A fixed 20-question quiz is off by **123 points (≈ 9.2 IQ points)**, so adaptive selection cuts the error by about 28%, with the biggest gains for very strong and very weak players. These numbers assume the item difficulties are correct; real-world accuracy depends on calibration data. Tests in `tests/adaptive.test.ts` check that the adaptive test serves harder questions to stronger players and ranks them above weaker ones.
 
+### PokéGuessr data pipeline
+
+`scripts/ingest-geo.ts` builds the game from Bulbapedia with no hand-tagging. For a region, the Bulbagarden Archives hold one town-map image per location with that location highlighted. The per-pixel median across all of a region's maps reconstructs the clean map, and each image's difference from it is that location's highlight: its pin, and for routes the whole path (a guess anywhere on the path scores full marks). The location's wiki infobox then supplies screenshots from every game it appears in, which are re-encoded under random ids and uploaded to Supabase Storage, so image URLs reveal nothing. The id-to-location mapping is server-only, rounds are seeded from the server secret, and every guess is graded on the server. Kanto ships first because its data is complete and consistent (44 locations, 156 screenshots from five games, every pin checked by eye); the other regions' maps need per-region handling before they can be added.
+
 ## Getting started
 
 ```bash
@@ -160,6 +165,7 @@ Refresh the data when a new generation ships:
 npm run ingest         # Pokédex + study data (~10 s)
 npm run lookalikes     # DINOv2 silhouette index (~3 min on CPU; dev-only dependency)
 npm run icons          # regenerate favicon / PWA icons from src/lib/brand/logo-svg.ts
+npm run ingest:geo     # PokéGuessr map, pins and screenshots (needs Supabase env vars)
 ```
 
 ## Project layout
@@ -187,7 +193,7 @@ src/
 │   └── c/[token]                 # challenge links + dynamic OG image
 └── components/                   # QuizController (one runtime for every mode)
 scripts/ingest-pokedex.ts · ingest-details.ts · silhouette-lookalikes.ts · e2e-smoke.mjs
-supabase/migrations/          # 0001 schema · 0002 adaptive test · 0003 hardening · 0004 accounts
+supabase/migrations/          # 0001 schema · 0002 adaptive test · 0003 hardening · 0004 accounts · 0005 PokéGuessr
 tests/
 ```
 
