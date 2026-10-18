@@ -31,6 +31,7 @@ Every question is generated on demand from a snapshot of all 1,025 Pokémon. No 
 | **Pokédle** | Daily Squirdle-style deduction: 8 guesses, with feedback on generation, types, height, weight, color and evolution stage. Unlocks hints (silhouette, then category). Unlimited practice mode |
 | **PokéGuessr** | GeoGuessr for Pokémon: dropped somewhere in the Pokémon world, you get an in-game view and drop a pin on the world atlas (the whole world, or one region's part of it), scoring up to 5,000 points a round on GeoGuessr's curve. Classic mode uses 3D views (Let's Go to Scarlet / Violet); Retro uses the Game Boy to DS games. Daily game, streaks, challenge links and leaderboards per map |
 | **World atlas** | Every mainline region on one zoomable map, laid out like the real places they're based on, with every town, route and landmark labelled from the games' own maps |
+| **PokéGuessr Duels** | Head-to-head PvP, GeoGuessr Duels style: pick a map, send a friend the link, both press Ready and you get the same places. Once one of you guesses, the other has 15 seconds. 6,000 HP each: every round the lower score loses the difference, times a multiplier that climbs from ×1.5 (round 4) to ×3. First to 0 HP loses, more HP wins after 10 rounds, leaving forfeits, and a rematch is one click |
 | **Who's That Pokémon?** | Silhouettes rendered on the server, with a "zoomed-in" hard mode that always frames recognisable outline |
 | **Cry Quiz** | Identify Pokémon by their in-game cry |
 | **Dex Detective** | Censored Pokédex entries, categories ("the Seed Pokémon") and abilities |
@@ -115,6 +116,10 @@ Items start with heuristic priors (generation, zoom, distractor similarity, stat
 
 Every PokéGuessr map is the world atlas: the whole world, or one region's part of it. `scripts/geo/world-places.json` holds every place on the atlas (its name, region and area in world-map pixels, traced from each game's own town map) and each region's box. `scripts/ingest-world.ts` finds each place's Bulbapedia page and collects in-game screenshots from its infobox, its gallery and the Bulbagarden Archives (including X/Y's Photo Spots and Ultra Sun / Ultra Moon's Photo Club backdrops), then tops up the 3D games from the place's pages on the Pokémon Wiki (Fandom), Poképédia and PokéWiki (found through PokéAPI's names and Bulbapedia's language links), since Bulbapedia has only guidebook maps for most X/Y, Sun/Moon and Sword/Shield routes. It keeps only real views: a 3D game's file has to be screen-shaped (5:3 on the 3DS, 16:9 or 2:1 on the Switch), which drops guidebook maps, scans and renders; Town Map previews, item-pickup shots (their text boxes) and files naming another place are dropped, near-copies (a route's four seasons, the same view on two wikis) are found by image hash and kept once, and shots that name the place or show the wrong one are denylisted after reviewing contact sheets of every screenshot. Screenshots are re-encoded under random ids and uploaded to Supabase Storage, so image URLs reveal nothing. Buildings and landmarks get their own rounds and share their town's area, stored as a point every 8 px so a guess anywhere in it scores full marks. The id-to-location mapping is server-only, rounds are seeded from the server secret, and every guess is graded on the server: 5,000 · e^(−10 · d / D), with D the map's diagonal.
 
+### PokéGuessr duels
+
+A duel is one row on the server (`geo_duels`, RLS-locked to the service role), and `src/lib/server/duel.ts` applies every rule as a pure function of the duel and the time. Nothing runs on a timer: each poll or action catches the duel up on whatever is due (a round closing 15 s after the first guess or 90 s after it started, the next round starting, a trainer who hasn't been heard from in 30 s forfeiting), dated by the rules rather than by when the request arrived, so both players see the same duel. Writes are a compare-and-swap on the row's version, so two players acting at once never overwrite each other. Each player holds a signed token for their seat, and views are cut per player: a round's answer and the opponent's pin only leave the server in the reveal. Clients poll every second in play. Without Supabase (or with `POKEIQ_LOCAL_ACCOUNTS=1`) duels live in memory, which is right for one server process; production needs Supabase for them.
+
 ## Getting started
 
 ```bash
@@ -155,7 +160,8 @@ npm test               # Vitest: RNG, type matrix, all engines × difficulties �
                        # signed/encrypted tokens, session grading, Survival, Pokédle, rating
 npm run build
 npm start & npm run verify:e2e   # Playwright: full run → challenge link → OG image,
-                                 # every mode, Blitz, Pokédle, accounts, mobile viewport
+                                 # every mode, Blitz, Pokédle, a two-browser duel,
+                                 # accounts, mobile viewport
 ```
 
 CI (`.github/workflows/ci.yml`) runs all of these on every push and PR, and uploads E2E screenshots as artifacts.
@@ -194,7 +200,7 @@ src/
 │   └── c/[token]                 # challenge links + dynamic OG image
 └── components/                   # QuizController (one runtime for every mode)
 scripts/ingest-pokedex.ts · ingest-details.ts · silhouette-lookalikes.ts · e2e-smoke.mjs
-supabase/migrations/          # 0001 schema · 0002 adaptive test · 0003 hardening · 0004 accounts · 0005 PokéGuessr · 0006 PokéGuessr maps
+supabase/migrations/          # 0001 schema · 0002 adaptive test · 0003 hardening · 0004 accounts · 0005 PokéGuessr · 0006 PokéGuessr maps · 0007 PokéGuessr duels
 tests/
 ```
 
