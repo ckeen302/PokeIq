@@ -3,6 +3,7 @@ import sharp from "sharp";
 import { decryptJson } from "@/lib/server/crypto";
 import { artworkUrl, cryUrl, getPokemon } from "@/lib/pokemon/pokedex";
 import { hashString } from "@/lib/rng";
+import { ZOOM_PADDING, pickZoomWindow } from "@/lib/server/zoom";
 import type { MediaKind } from "@/engines/types";
 
 /**
@@ -59,15 +60,17 @@ async function render(kind: MediaKind, id: number): Promise<Rendered> {
 
   let img = await silhouette(art);
   if (kind === "silhouette-zoom") {
-    // Crop a deterministic 45% window from the trimmed sprite.
+    // Zoom onto the most outline-rich part of the trimmed silhouette, so the
+    // crop always shows recognisable shape (never a solid black square).
     const trimmed = await img.trim().png().toBuffer({ resolveWithObject: true });
-    const { width, height } = trimmed.info;
-    const w = Math.max(40, Math.round(width * 0.45));
-    const h = Math.max(40, Math.round(height * 0.45));
-    const seed = hashString(`zoom:${id}`);
-    const left = Math.round(((seed % 1000) / 1000) * (width - w));
-    const top = Math.round((((seed >>> 10) % 1000) / 1000) * (height - h));
-    img = sharp(trimmed.data).extract({ left, top, width: w, height: h });
+    const pad = Math.round(Math.max(trimmed.info.width, trimmed.info.height) * ZOOM_PADDING);
+    const padded = await sharp(trimmed.data)
+      .extend({ top: pad, bottom: pad, left: pad, right: pad, background: { r: 0, g: 0, b: 0, alpha: 0 } })
+      .png()
+      .toBuffer({ resolveWithObject: true });
+    const alpha = await sharp(padded.data).extractChannel(3).raw().toBuffer();
+    const crop = pickZoomWindow(new Uint8Array(alpha), padded.info.width, padded.info.height, hashString(`zoom:${id}`));
+    img = sharp(padded.data).extract(crop);
   }
   return { body: await img.resize(400, 400, { fit: "contain", background: { r: 0, g: 0, b: 0, alpha: 0 } }).webp({ quality: 85 }).toBuffer(), type: "image/webp" };
 }
