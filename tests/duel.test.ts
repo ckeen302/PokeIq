@@ -245,7 +245,7 @@ describe("duel clock", () => {
   });
 
   it("forfeits a trainer who stops responding, and the opponent sees it", () => {
-    const { duel, red, blue, start } = started();
+    const { duel, red, start } = started();
     let d = duel;
     // Blue's tab is closed: only Red keeps polling.
     for (let at = start; at < start + DUEL_AWAY_MS + 10 * SECOND; at += 5 * SECOND) d = touchDuel(d, red, at);
@@ -273,7 +273,7 @@ describe("duel clock", () => {
   });
 
   it("forfeits at once for a trainer who leaves mid-duel", () => {
-    const { duel, red, blue, start } = started();
+    const { duel, blue, start } = started();
     const d = must(leaveDuel(duel, blue, start + SECOND));
     expect(d.end).toMatchObject({ reason: "left", winner: 0 });
   });

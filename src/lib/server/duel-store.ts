@@ -1,6 +1,7 @@
 import "server-only";
 import { randomInt } from "node:crypto";
 import { getServiceSupabase } from "@/lib/supabase";
+import { DUEL_CODE_RE } from "@/lib/duel-types";
 import type { Duel, DuelFailure } from "./duel";
 
 /**
@@ -71,6 +72,17 @@ export async function loadDuel(code: string): Promise<StoredDuel | null> {
   const row = memory().get(code);
   if (!row || row.expires <= Date.now()) return null;
   return { duel: JSON.parse(row.json) as Duel, version: row.version };
+}
+
+/** A duel for its page and preview card: null if there's no such duel, undefined if the store couldn't say. */
+export async function peekDuel(code: string): Promise<Duel | null | undefined> {
+  if (!DUEL_CODE_RE.test(code)) return null;
+  try {
+    return (await loadDuel(code))?.duel ?? null;
+  } catch (err) {
+    console.error("[geo-duel] read failed:", err);
+    return undefined;
+  }
 }
 
 /** False if the code is taken. */
