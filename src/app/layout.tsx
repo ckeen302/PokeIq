@@ -4,6 +4,7 @@ import { Chakra_Petch, Inter, Silkscreen } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import { DesktopNav, MobileTabBar } from "@/components/layout/SiteNav";
 import { Logo } from "@/components/layout/Logo";
+import { AccountSync } from "@/components/account/AccountSync";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
 import { THEME_INIT_SCRIPT } from "@/lib/theme";
 import "./globals.css";
@@ -58,8 +59,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <DesktopNav />
           </div>
         </header>
-        <main className="container flex-1 pb-28 pt-8 md:pb-12">{children}</main>
-        <footer className="mb-[calc(4rem+env(safe-area-inset-bottom))] border-t border-foreground/[0.06] py-8 text-center text-xs text-muted-foreground md:mb-0">
+        <main className="container flex-1 pb-28 pt-8 lg:pb-12">{children}</main>
+        <footer className="mb-[calc(4rem+env(safe-area-inset-bottom))] border-t border-foreground/[0.06] py-8 text-center text-xs text-muted-foreground lg:mb-0">
           <div className="container space-y-2">
             <nav className="flex flex-wrap justify-center gap-x-5 gap-y-2 font-pixel text-[10px] uppercase tracking-wider">
               <Link href="/play" className="hover:text-foreground">Game modes</Link>
@@ -78,6 +79,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           </div>
         </footer>
         <MobileTabBar />
+        <AccountSync />
         {/* The analytics endpoint only exists on Vercel deployments. */}
         {process.env.VERCEL && <Analytics />}
       </body>

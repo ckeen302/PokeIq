@@ -302,7 +302,7 @@ export function PokedexExplorer({ items }: { items: DexListItem[] }) {
 
       <Link
         href="/pokedex/study"
-        className="fixed bottom-24 right-4 z-40 flex items-center gap-2 rounded-md bg-primary px-4 py-3 font-display text-sm font-bold uppercase tracking-wider text-primary-foreground shadow-[0_4px_0_hsl(var(--primary-shadow)),0_10px_30px_-8px_hsl(var(--primary)/0.6)] transition active:translate-y-[2px] md:bottom-8"
+        className="fixed bottom-24 right-4 z-40 flex items-center gap-2 rounded-md bg-primary px-4 py-3 font-display text-sm font-bold uppercase tracking-wider text-primary-foreground shadow-[0_4px_0_hsl(var(--primary-shadow)),0_10px_30px_-8px_hsl(var(--primary)/0.6)] transition active:translate-y-[2px] lg:bottom-8"
       >
         <BookOpenCheck className="h-5 w-5" /> Study mode
       </Link>

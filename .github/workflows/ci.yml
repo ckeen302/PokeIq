@@ -21,6 +21,7 @@ jobs:
       - run: npm run build
         env:
           POKEIQ_SECRET: ci-only-secret-not-used-anywhere-else
+          POKEIQ_LOCAL_ACCOUNTS: "1"
       - name: Browser E2E
         run: |
           npx playwright install --with-deps chromium
@@ -29,6 +30,7 @@ jobs:
           npm run verify:e2e
         env:
           POKEIQ_SECRET: ci-only-secret-not-used-anywhere-else
+          POKEIQ_LOCAL_ACCOUNTS: "1"
       - uses: actions/upload-artifact@v4
         if: always()
         with:

@@ -11,6 +11,7 @@ import { MODULE_INFO, PLAY_MODULES, PLAYABLE_FORMATS as FORMATS } from "@/lib/mo
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { CoachPanel } from "./CoachPanel";
+import { AccountPanel } from "@/components/account/AccountPanel";
 import { BadgeMedal } from "@/components/game/BadgeMedal";
 import { ModeIcon } from "@/components/game/ModeIcon";
 import { cn } from "@/lib/utils";
@@ -100,6 +101,8 @@ export function TrainerCard() {
           </CardContent>
         </Card>
       </motion.div>
+
+      <AccountPanel />
 
       <CoachPanel progress={progress} />
 

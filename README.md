@@ -121,11 +121,22 @@ It works with zero configuration. For production:
 | Variable | Required | Purpose |
 |---|---|---|
 | `POKEIQ_SECRET` | **yes** | Signs tokens and derives seeds. Use any long random string (`openssl rand -base64 32`) |
-| `SUPABASE_URL` | no | Enables leaderboards, cross-instance replay protection and difficulty calibration |
+| `SUPABASE_URL` | no | Enables trainer accounts, leaderboards, cross-instance replay protection and difficulty calibration |
 | `SUPABASE_SERVICE_ROLE_KEY` | no | Server-only. Never prefix it with `NEXT_PUBLIC_` |
 | `NEXT_PUBLIC_SITE_URL` | no | Canonical URL for the sitemap and OG tags (defaults to the Vercel production URL) |
 
 To set up Supabase, create a free project and run the files in `supabase/migrations/` (in order) in its SQL editor.
+
+### Trainer accounts
+
+Progress is local-first, so anyone can play without signing up. Creating an account (trainer name + password, no email) syncs XP, badges, streaks and PokéIQ across devices:
+
+- Passwords are hashed with scrypt and a per-user salt and compared in constant time; unknown names take the same time to reject.
+- Sessions are 256-bit random tokens in an HTTP-only, SameSite cookie, and only their SHA-256 is stored.
+- A one-time recovery code replaces email resets; using it rotates the code and signs out every other device.
+- Auth routes are rate-limited and reject cross-site requests. Account tables are RLS-locked to the service role.
+
+Accounts need Supabase in production. Locally they use a JSON file in `.data/` (set `POKEIQ_LOCAL_ACCOUNTS=1` to use it with `npm start`).
 
 **To deploy:** import the repo into Vercel, set the variables above, and deploy. Vercel Analytics is already wired in, with custom events for quiz start and complete, shares, challenges and Pokédle.
 
@@ -138,7 +149,7 @@ npm test               # Vitest: RNG, type matrix, all engines × difficulties �
                        # signed/encrypted tokens, session grading, Survival, Pokédle, rating
 npm run build
 npm start & npm run verify:e2e   # Playwright: full run → challenge link → OG image,
-                                 # every mode, Blitz, Pokédle, mobile viewport
+                                 # every mode, Blitz, Pokédle, accounts, mobile viewport
 ```
 
 CI (`.github/workflows/ci.yml`) runs all of these on every push and PR, and uploads E2E screenshots as artifacts.
@@ -162,12 +173,12 @@ src/
 │   └── modules/                  # whos-that · cry · dex · types · higher-lower
 ├── lib/
 │   ├── server/                   # session, crypto, replay guard, rate limit,
-│   │                             # calibration, pokedle, leaderboard
+│   │                             # calibration, pokedle, leaderboard, auth + accounts
 │   ├── rating.ts                 # IRT/Elo PokéIQ model
 │   ├── progress.ts               # local XP / streaks / badges store
 │   └── pokemon/                  # Pokédex access + 18×18 type matrix
 ├── app/
-│   ├── api/                      # session · answer · media · pokedle · leaderboard
+│   ├── api/                      # session · answer · media · pokedle · leaderboard · auth · progress
 │   ├── daily · pokedle · play · trainer · leaderboard
 │   ├── quiz/[slug]               # 15 SEO landing pages, one route
 │   ├── pokedex · pokedex/study   # explorer + flashcards
@@ -176,13 +187,13 @@ src/
 │   └── c/[token]                 # challenge links + dynamic OG image
 └── components/                   # QuizController (one runtime for every mode)
 scripts/ingest-pokedex.ts · ingest-details.ts · silhouette-lookalikes.ts · e2e-smoke.mjs
-supabase/migrations/          # 0001 schema · 0002 adaptive test
+supabase/migrations/          # 0001 schema · 0002 adaptive test · 0003 hardening · 0004 accounts
 tests/
 ```
 
 ## Roadmap
 
-- Optional Discord or Google login (Supabase Auth) that migrates local progress
+- Optional Discord or Google sign-in alongside trainer-name accounts
 - Localized Pokémon names (already in the snapshot: es, fr, de, it, ja, ko)
 - Name-All Blitz (typed recall) and a PokéGrid daily puzzle
 - Discord bot with `/daily`

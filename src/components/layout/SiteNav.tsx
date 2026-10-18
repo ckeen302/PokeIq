@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
 import { BookOpen, CalendarDays, Gamepad2, Home, Search, User } from "lucide-react";
 import { levelInfo, useProgress } from "@/lib/progress";
+import { useAccount } from "@/lib/account";
 import { cn } from "@/lib/utils";
 import { MuteToggle } from "./MuteToggle";
 import { ThemeToggle } from "./ThemeToggle";
@@ -33,9 +34,10 @@ function isActive(pathname: string, href: string) {
 export function DesktopNav() {
   const pathname = usePathname();
   const progress = useProgress();
+  const account = useAccount();
   return (
     <nav className="flex items-center gap-1">
-      <div className="hidden items-center md:flex">
+      <div className="hidden items-center lg:flex">
         {DESKTOP_LINKS.map(({ href, label }) => {
           const active = isActive(pathname, href);
           return (
@@ -62,6 +64,14 @@ export function DesktopNav() {
       </div>
       <ThemeToggle />
       <MuteToggle />
+      {account.status === "ready" && account.enabled && !account.user && (
+        <Link
+          href="/login"
+          className="hidden px-2 font-display text-[13px] font-semibold uppercase tracking-[0.12em] text-muted-foreground transition-colors hover:text-foreground sm:block"
+        >
+          Sign in
+        </Link>
+      )}
       <Link
         href="/trainer"
         className={cn(
@@ -70,7 +80,7 @@ export function DesktopNav() {
         )}
       >
         <User className="h-4 w-4" aria-hidden />
-        <span className="max-w-[9rem] truncate font-display font-semibold">{progress?.name || "Trainer"}</span>
+        <span className="max-w-[9rem] truncate font-display font-semibold">{account.user?.username ?? (progress?.name || "Trainer")}</span>
         {progress && progress.xp > 0 && (
           <span className="font-pixel text-[10px] text-screen">Lv{levelInfo(progress.xp).level}</span>
         )}
@@ -83,7 +93,7 @@ export function MobileTabBar() {
   const pathname = usePathname();
   return (
     <nav
-      className="glass-top fixed inset-x-0 bottom-0 z-50 grid grid-cols-5 pb-[env(safe-area-inset-bottom)] md:hidden"
+      className="glass-top fixed inset-x-0 bottom-0 z-50 grid grid-cols-5 pb-[env(safe-area-inset-bottom)] lg:hidden"
       aria-label="Primary"
     >
       {MOBILE_TABS.map(({ href, label, icon: Icon }) => {

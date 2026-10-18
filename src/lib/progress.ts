@@ -137,6 +137,23 @@ function subscribe(listener: () => void) {
   };
 }
 
+/** Replaces the whole record — used when syncing with a trainer account. */
+export function replaceProgress(next: Progress) {
+  write(next);
+}
+
+/** Wipes this device's copy (on sign-out the account keeps the progress). */
+export function resetProgress() {
+  write(EMPTY);
+}
+
+/** Notifies on every local change, for pushing progress to the account. */
+export function onProgressChange(listener: (p: Progress) => void): () => void {
+  const wrapped = () => listener(read());
+  listeners.add(wrapped);
+  return () => listeners.delete(wrapped);
+}
+
 /** Returns null during SSR / before hydration so pages render deterministically. */
 export function useProgress(): Progress | null {
   return useSyncExternalStore(subscribe, read, () => null);

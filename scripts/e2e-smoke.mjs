@@ -157,6 +157,59 @@ for (const path of ["/trainer", "/leaderboard?board=iq", "/pokemon/eevee", "/pok
   await page.screenshot({ path: `${OUT}/${path.replace(/\//g, "_").slice(1)}.png` });
 }
 
+// Accounts are only on when the server has a store (Supabase, or
+// POKEIQ_LOCAL_ACCOUNTS=1 for a local production build).
+const me = await (await page.request.get(`${BASE}/api/auth/me`)).json();
+if (me.enabled) {
+  step("accounts: register, sync, sign out, sign in, recover");
+  const username = `e2e_${Date.now().toString(36)}`;
+  await page.goto(`${BASE}/login`, { waitUntil: "networkidle" });
+  await page.getByRole("tab", { name: "Create account" }).click();
+  await page.getByLabel("Trainer name").fill(username);
+  await page.getByLabel("Password").fill("correct horse battery");
+  await page.getByRole("button", { name: "Create account" }).click();
+  const recoveryCode = (await page.getByRole("status", { name: "Recovery code" }).innerText()).trim();
+  if (!/^[A-Z0-9]{4}(-[A-Z0-9]{4}){3}$/.test(recoveryCode)) throw new Error(`bad recovery code: ${recoveryCode}`);
+  await page.screenshot({ path: `${OUT}/account-recovery-code.png` });
+  await page.getByLabel("I saved my recovery code somewhere safe").check();
+  await page.getByRole("button", { name: "Continue" }).click();
+  await page.waitForURL(/\/trainer/);
+  await page.getByText(`Signed in as`).waitFor();
+  // The XP earned earlier in this run was merged into the account.
+  const synced = await (await page.request.get(`${BASE}/api/auth/me`)).json();
+  if (!synced.user || synced.user.username !== username) throw new Error("not signed in after register");
+  if (!synced.progress || synced.progress.xp <= 0) throw new Error("progress didn't sync to the account");
+  await page.screenshot({ path: `${OUT}/account-trainer.png` });
+
+  await page.getByRole("button", { name: "Sign out" }).click();
+  await page.getByRole("link", { name: "Sign in" }).first().waitFor();
+  const cleared = await page.evaluate(() => JSON.parse(localStorage.getItem("pokeiq:progress:v1") ?? "{}").xp ?? 0);
+  if (cleared !== 0) throw new Error("sign-out left progress on the device");
+
+  await page.goto(`${BASE}/login`, { waitUntil: "networkidle" });
+  await page.getByLabel("Trainer name").fill(username);
+  await page.getByLabel("Password").fill("wrong password!!");
+  await page.getByRole("button", { name: "Sign in" }).last().click();
+  await page.getByRole("alert").waitFor();
+  await page.getByLabel("Password").fill("correct horse battery");
+  await page.getByRole("button", { name: "Sign in" }).last().click();
+  await page.waitForURL(/\/trainer/);
+  await page.waitForFunction(() => (JSON.parse(localStorage.getItem("pokeiq:progress:v1") ?? "{}").xp ?? 0) > 0);
+
+  await page.getByRole("button", { name: "Sign out" }).click();
+  await page.goto(`${BASE}/login`, { waitUntil: "networkidle" });
+  await page.getByRole("tab", { name: "Forgot password" }).click();
+  await page.getByLabel("Trainer name").fill(username);
+  await page.getByLabel("Recovery code").fill(recoveryCode.toLowerCase());
+  await page.getByLabel("New password").fill("a brand new password");
+  await page.getByRole("button", { name: "Reset password" }).click();
+  const rotated = (await page.getByRole("status", { name: "Recovery code" }).innerText()).trim();
+  if (rotated === recoveryCode) throw new Error("recovery code wasn't rotated");
+  await page.getByLabel("I saved my recovery code somewhere safe").check();
+  await page.getByRole("button", { name: "Continue" }).click();
+  await page.getByText(`Signed in as`).waitFor();
+}
+
 step("mobile: home + daily");
 const mobile = await newPage({ width: 393, height: 852 });
 await mobile.goto(BASE, { waitUntil: "networkidle" });
