@@ -152,6 +152,12 @@ export function GeoDuel({ code, regions }: GeoDuelProps) {
     setError(null);
   }, [roundIndex]);
 
+  // Each new screen (lobby, a round, a reveal, the result) starts at the top.
+  const screen = !view ? "" : view.status === "lobby" ? "lobby" : view.round ? `round ${view.round.index}` : `reveal ${view.revealed.length} ${summary}`;
+  useEffect(() => {
+    if (screen) window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [screen]);
+
   // Sounds: the opponent locking in, and each reveal (did you win the round?).
   useEffect(() => {
     if (!view || view.you === null) return;
@@ -468,12 +474,11 @@ export function GeoDuel({ code, regions }: GeoDuelProps) {
             </div>
           }
         />
-        <DuelReveal view={view} map={map} result={last} />
-        <div className="flex justify-center">
-          <Button size="lg" className="w-full max-w-xs" disabled={!final && (pressed || busy)} onClick={() => (final ? showResults() : void nextRound())}>
+        <DuelReveal view={view} map={map} result={last}>
+          <Button size="lg" className="w-full" disabled={!final && (pressed || busy)} onClick={() => (final ? showResults() : void nextRound())}>
             {final ? "See results ▶" : pressed ? `Waiting for ${them}… (${nextIn})` : `Next round (${nextIn}) ▶`}
           </Button>
-        </div>
+        </DuelReveal>
         {!final && leaveButton}
       </div>
     );
@@ -528,8 +533,8 @@ function Fighter({ view, seat, damage, right }: { view: DuelView; seat: number; 
   );
 }
 
-/** A revealed round: the place and both pins on the map, the scores and the damage. */
-function DuelReveal({ view, map, result }: { view: DuelView; map: GeoRegionInfo; result: DuelRoundResult }) {
+/** A revealed round: both scores and the damage (with the button to go on), then the place and both pins on the map. */
+function DuelReveal({ view, map, result, children }: { view: DuelView; map: GeoRegionInfo; result: DuelRoundResult; children: React.ReactNode }) {
   const me = view.you;
   const name = (seat: number) => (seat === me ? "You" : (view.players[seat]?.name ?? "They"));
   const revealed: RevealedRound[] = result.guesses.map((g, seat) => ({
@@ -538,32 +543,38 @@ function DuelReveal({ view, map, result }: { view: DuelView; map: GeoRegionInfo;
     label: view.players[seat]?.name,
     color: SEAT_COLORS[seat],
   }));
+  const score = (seat: number) => {
+    const g = result.guesses[seat];
+    return (
+      <div className={cn("rounded-md border bg-shade/20 p-3 text-center", result.hurt !== null && result.hurt !== seat && "border-success/50")}>
+        <p className="hud-label flex items-center justify-center gap-1.5">
+          <SeatDot seat={seat} /> {view.players[seat]?.name}
+        </p>
+        <p className="font-display text-3xl font-bold tabular-nums">{g ? fmt(g.score) : "No guess"}</p>
+        <p className="text-xs text-muted-foreground">{g ? distanceText(g.squares) : "Out of time: 0 points"}</p>
+      </div>
+    );
+  };
   return (
     <>
-      <GeoMap region={map} revealed={revealed} />
-      <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="space-y-4 text-center">
-        <div className="grid grid-cols-2 gap-3">
-          {result.guesses.map((g, seat) => (
-            <div key={seat} className={cn("rounded-md border bg-shade/20 p-3", result.hurt !== null && result.hurt !== seat && "border-success/50")}>
-              <p className="hud-label flex items-center justify-center gap-1.5">
-                <SeatDot seat={seat} /> {view.players[seat]?.name}
-              </p>
-              <p className="font-display text-3xl font-bold tabular-nums">{g ? fmt(g.score) : "No guess"}</p>
-              <p className="text-xs text-muted-foreground">{g ? distanceText(g.squares) : "Out of time: 0 points"}</p>
-            </div>
-          ))}
+      <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="grid grid-cols-[1fr_minmax(0,18rem)_1fr] items-center gap-3">
+        {score(0)}
+        <div className="space-y-2 text-center">
+          <p className="font-display text-lg font-bold uppercase leading-tight">
+            {result.hurt === null
+              ? "Even round: no damage"
+              : `${name(result.hurt)} ${result.hurt === me ? "take" : "takes"} ${fmt(result.damage)} damage`}
+            {result.hurt !== null && result.multiplier > 1 && <span className="text-warning"> (×{result.multiplier})</span>}
+          </p>
+          {children}
         </div>
-        <p className="font-display text-xl font-bold uppercase">
-          {result.hurt === null
-            ? "Even round: no damage"
-            : `${name(result.hurt)} ${result.hurt === me ? "take" : "takes"} ${fmt(result.damage)} damage`}
-          {result.hurt !== null && result.multiplier > 1 && <span className="text-warning"> (×{result.multiplier})</span>}
-        </p>
-        <p className="text-muted-foreground">
-          It was <span className="font-semibold text-foreground">{placeName(result.answer, map)}</span>
-          <span className="text-sm"> · Pokémon {result.answer.game}</span>
-        </p>
+        {score(1)}
       </motion.div>
+      <GeoMap region={map} revealed={revealed} />
+      <p className="text-center text-muted-foreground">
+        It was <span className="font-semibold text-foreground">{placeName(result.answer, map)}</span>
+        <span className="text-sm"> · Pokémon {result.answer.game}</span>
+      </p>
     </>
   );
 }
