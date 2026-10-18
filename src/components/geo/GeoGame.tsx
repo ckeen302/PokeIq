@@ -264,7 +264,7 @@ export function GeoGame({ region, challenge }: GeoGameProps) {
           </h1>
           <p className="mx-auto max-w-xl text-muted-foreground">
             GeoGuessr for Pokémon. You&apos;re dropped somewhere in {region.name}: look around, then drop a pin on the town map.
-            The closer you are, the more points you score.
+            Scored like GeoGuessr: up to {fmt(GEO_MAX_ROUND_SCORE)} points a round, falling off the further your pin lands.
           </p>
         </div>
 

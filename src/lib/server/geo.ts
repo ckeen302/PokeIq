@@ -48,8 +48,8 @@ const STORAGE_BASE =
   DATA.storageBase ?? `${process.env.SUPABASE_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/geo`;
 const SHOT_IDS = new Set(DATA.regions.flatMap((r) => r.locations.flatMap((l) => l.shots.map((s) => s.id))));
 const STATE_TTL_MS = 3 * 60 * 60 * 1000;
-/** Points fall off exponentially with distance as a share of the map diagonal. */
-const FALLOFF = 8;
+/** GeoGuessr's curve: 5000 · e^(−10 · d / D), with D the map diagonal. */
+const FALLOFF = 10;
 /** Inside (or within a whisker of) the highlighted area counts as perfect. */
 const PERFECT_RADIUS = 0.012;
 /** Streak mode: a pin this close to the place keeps the streak alive. */
