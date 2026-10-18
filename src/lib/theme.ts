@@ -11,6 +11,9 @@ const THEME_COLORS: Record<Theme, string> = { dark: "#08071a", light: "#f6f5fc" 
 /** Inline <head> script: runs before paint so a light-mode user never sees a dark flash. */
 export const THEME_INIT_SCRIPT = `try{if(localStorage.getItem("${THEME_KEY}")==="light"){document.documentElement.classList.add("light");document.querySelector('meta[name="theme-color"]')?.setAttribute("content","${THEME_COLORS.light}")}}catch(e){}`;
 
+/** Inline <head> script: show the boot splash only on the first page load of a session. */
+export const SPLASH_INIT_SCRIPT = `try{if(sessionStorage.getItem("pokeiq-splash")){document.documentElement.classList.add("no-splash")}else{sessionStorage.setItem("pokeiq-splash","1")}}catch(e){document.documentElement.classList.add("no-splash")}`;
+
 export function getTheme(): Theme {
   if (typeof document === "undefined") return "dark";
   return document.documentElement.classList.contains("light") ? "light" : "dark";

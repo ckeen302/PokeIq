@@ -6,7 +6,8 @@ import { DesktopNav, MobileTabBar } from "@/components/layout/SiteNav";
 import { Logo } from "@/components/layout/Logo";
 import { AccountSync } from "@/components/account/AccountSync";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
-import { THEME_INIT_SCRIPT } from "@/lib/theme";
+import { SPLASH_INIT_SCRIPT, THEME_INIT_SCRIPT } from "@/lib/theme";
+import { BootLoader } from "@/components/layout/BootLoader";
 import "./globals.css";
 
 const display = Chakra_Petch({ subsets: ["latin"], weight: ["500", "600", "700"], variable: "--font-display", display: "swap" });
@@ -47,9 +48,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className={`${display.variable} ${body.variable} ${pixel.variable}`} suppressHydrationWarning>
       <head>
-        <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
+        <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT + SPLASH_INIT_SCRIPT }} />
       </head>
       <body className="flex min-h-screen flex-col">
+        <div className="boot-splash" aria-hidden>
+          <BootLoader idPrefix="splash" />
+        </div>
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }} />
         <header className="glass sticky top-0 z-50">
           <div className="container flex h-14 items-center justify-between">

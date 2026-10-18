@@ -225,13 +225,109 @@
   }
 }
 
+/* ---------- Loading screen (BootLoader) ---------- */
+
+/* Poké Ball catch wobble: three shakes, then a beat of stillness. */
+.boot-ball {
+  transform-origin: 50% 88%;
+  animation: boot-wobble 1.6s ease-in-out infinite;
+  filter: drop-shadow(0 0 18px hsl(var(--primary) / 0.45));
+}
+@keyframes boot-wobble {
+  0%, 55%, 100% { transform: rotate(0deg); }
+  10% { transform: rotate(-16deg); }
+  22% { transform: rotate(13deg); }
+  34% { transform: rotate(-8deg); }
+  44% { transform: rotate(4deg); }
+}
+
+/* The brain's folds trace themselves in, hold, then fade for the next loop. */
+.boot-gyri path {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: boot-trace 1.6s ease-out infinite;
+}
+@keyframes boot-trace {
+  0% { stroke-dashoffset: 1; opacity: 0; }
+  15% { opacity: 1; }
+  55%, 85% { stroke-dashoffset: 0; opacity: 1; }
+  100% { stroke-dashoffset: 0; opacity: 0.2; }
+}
+
+/* Psychic core pulse + ripples spreading from the ball. */
+.boot-core {
+  transform-origin: 50px 50px;
+  animation: boot-core 1.6s ease-in-out infinite;
+}
+@keyframes boot-core {
+  0%, 100% { transform: scale(1); filter: brightness(1); }
+  50% { transform: scale(1.18); filter: brightness(1.35); }
+}
+.boot-ripple {
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  border: 2px solid hsl(var(--screen) / 0.6);
+  animation: boot-ripple 1.8s ease-out infinite;
+}
+@keyframes boot-ripple {
+  from { transform: scale(0.85); opacity: 0.9; }
+  to { transform: scale(1.7); opacity: 0; }
+}
+
+.boot-dots::after {
+  content: "";
+  display: inline-block;
+  width: 1.5em;
+  text-align: left;
+  animation: boot-dots 1.2s steps(4) infinite;
+}
+@keyframes boot-dots {
+  0% { content: ""; }
+  25% { content: "."; }
+  50% { content: ".."; }
+  75%, 100% { content: "..."; }
+}
+
+/* First-visit splash: covers the page for a moment, then fades by itself
+   (CSS only, so it can never get stuck). Skipped on later page loads in the
+   same session and for reduced-motion users. */
+.boot-splash {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  background: hsl(var(--background));
+  animation: boot-out 0.4s ease 0.9s forwards;
+}
+@keyframes boot-out {
+  to { opacity: 0; visibility: hidden; }
+}
+html.no-splash .boot-splash {
+  display: none;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .menu-item::before,
   .dialog-box[data-done="true"]::after {
     animation: none;
   }
   .animate-flicker,
-  .animate-scan {
+  .animate-scan,
+  .boot-ball,
+  .boot-gyri path,
+  .boot-core,
+  .boot-ripple {
     animation: none;
+  }
+  .boot-gyri path {
+    stroke-dashoffset: 0;
+  }
+  .boot-ripple {
+    display: none;
+  }
+  .boot-splash {
+    display: none;
   }
 }

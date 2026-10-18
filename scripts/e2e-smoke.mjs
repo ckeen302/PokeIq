@@ -22,6 +22,8 @@ const browser = await chromium.launch(
 
 async function newPage(viewport) {
   const context = await browser.newContext({ viewport });
+  // Skip the first-visit splash so screenshots show the page itself.
+  await context.addInitScript(() => sessionStorage.setItem("pokeiq-splash", "1"));
   const page = await context.newPage();
   page.on("console", (msg) => {
     // Remote sprite hiccups aren't app bugs.
