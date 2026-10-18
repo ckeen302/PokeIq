@@ -4,7 +4,7 @@ import { Medal } from "lucide-react";
 import { fetchBoard } from "@/lib/server/leaderboard";
 import { fetchGeoBoard } from "@/lib/server/geo-leaderboard";
 import { geoRegions, isGeoSpec } from "@/lib/server/geo";
-import { GEO_KINDS, GEO_STYLES, geoBoardKey, geoMapRank } from "@/lib/geo-types";
+import { GEO_KINDS, geoBoardKey, geoMapRank } from "@/lib/geo-types";
 import { dailyNumber, isValidDailyDate } from "@/lib/daily";
 import { FORMAT_INFO, MODULE_INFO, PLAY_MODULES, PLAYABLE_FORMATS } from "@/lib/modes";
 import { DIFFICULTIES, type Difficulty, type ModuleId, type QuizFormat } from "@/engines/types";
@@ -55,12 +55,10 @@ export default async function LeaderboardPage({ searchParams }: PageProps) {
     const maps = geoRegions()
       .map((r) => ({
         ...r,
-        boards: GEO_STYLES.flatMap((style) =>
-          GEO_KINDS.filter((kind) => isGeoSpec({ region: r.id, style, kind })).map((kind) => ({
-            id: geoBoardKey({ region: r.id, style, kind }),
-            name: `${style === "classic" ? "Classic" : "Retro"}${kind === "streak" ? " Streak" : ""}`,
-          }))
-        ),
+        boards: GEO_KINDS.filter((kind) => isGeoSpec({ region: r.id, kind })).map((kind) => ({
+          id: geoBoardKey({ region: r.id, kind }),
+          name: kind === "streak" ? "Streak" : "5 rounds",
+        })),
       }))
       .filter((r) => r.boards.length)
       .sort((a, b) => geoMapRank(a.id) - geoMapRank(b.id));

@@ -6,7 +6,6 @@ import {
   GEO_KINDS,
   GEO_MAX_ROUND_SCORE,
   GEO_ROUNDS,
-  GEO_STYLES,
   type GeoAnswer,
   type GeoChallenge,
   type GeoGuessResponse,
@@ -14,7 +13,6 @@ import {
   type GeoResult,
   type GeoRoundPublic,
   type GeoSpec,
-  type GeoStyle,
   WORLD_REGION,
 } from "@/lib/geo-types";
 
@@ -71,9 +69,9 @@ const FALLOFF = 10;
 const STREAK_RADIUS = 0.035;
 /** Within half a town-map square of the place is spot on. */
 const PERFECT_SQUARES = 0.5;
-/** Regions that count as one for world streaks (DLC areas belong to their region). */
-const STREAK_GROUP: Record<string, string> = { "Isle of Armor": "Galar", "Crown Tundra": "Galar", "Blueberry Academy": "Unova" };
-const groupOf = (region?: string) => (region ? (STREAK_GROUP[region] ?? region) : "");
+/** Parts of a region that count as it in world games and streaks: DLC areas, and the Sevii Islands (Kanto's). */
+const REGION_GROUP: Record<string, string> = { "Isle of Armor": "Galar", "Crown Tundra": "Galar", "Blueberry Academy": "Unova", "Sevii Islands": "Kanto" };
+const groupOf = (region?: string) => (region ? (REGION_GROUP[region] ?? region) : "");
 /** A starting town per region, for the setup screen's preview picture. */
 const HOME: Record<string, string> = {
   kanto: "Pallet Town",
@@ -87,21 +85,28 @@ const HOME: Record<string, string> = {
   galar: "Postwick",
   paldea: "Cabo Poco",
 };
-/** 3D games: "classic" views. Everything else (Game Boy to DS sprites) is "retro". */
-const CLASSIC_GAMES = new Set([
-  "Let's Go, Pikachu! / Eevee!",
-  "X / Y",
-  "Omega Ruby / Alpha Sapphire",
-  "Omega Ruby",
-  "Alpha Sapphire",
-  "Sun / Moon",
-  "Ultra Sun / Ultra Moon",
-  "Sun / Moon / Ultra Sun / Ultra Moon",
-  "Sword / Shield",
-  "Brilliant Diamond / Shining Pearl",
-  "Scarlet / Violet",
-  "Legends: Z-A",
-]);
+/**
+ * Versions that share their graphics are one look of a place: a round picks
+ * one of the place's looks (Red / Blue, FireRed, HeartGold, Let's Go…), then
+ * a screenshot of it, so Emerald's and Ruby's shots don't crowd out the remakes.
+ */
+const LOOK: Record<string, string> = {
+  "Red / Green / Blue / Yellow": "Red / Blue / Yellow",
+  "Gold / Silver": "Gold / Silver / Crystal",
+  Crystal: "Gold / Silver / Crystal",
+  "Ruby / Sapphire": "Ruby / Sapphire / Emerald",
+  "Sapphire / Emerald": "Ruby / Sapphire / Emerald",
+  Emerald: "Ruby / Sapphire / Emerald",
+  "Diamond / Pearl": "Diamond / Pearl / Platinum",
+  Platinum: "Diamond / Pearl / Platinum",
+  "Black / White": "Black / White / Black 2 / White 2",
+  "Black 2 / White 2": "Black / White / Black 2 / White 2",
+  "Omega Ruby": "Omega Ruby / Alpha Sapphire",
+  "Alpha Sapphire": "Omega Ruby / Alpha Sapphire",
+  "Sun / Moon": "Sun / Moon / Ultra Sun / Ultra Moon",
+  "Ultra Sun / Ultra Moon": "Sun / Moon / Ultra Sun / Ultra Moon",
+};
+const lookOf = (game: string) => LOOK[game] ?? game;
 
 /** The world map, with buildings placed in (and sharing the area of) their parent place. */
 function worldRegion(world: WorldData): Region {
@@ -140,15 +145,35 @@ const REGIONS: Region[] = (() => {
 })();
 const SHOT_IDS = new Set(REGIONS.flatMap((r) => r.locations.flatMap((l) => l.shots.map((s) => s.id))));
 
-const isClassic = (shot: Shot) => CLASSIC_GAMES.has(shot.game);
 const shotUrl = (id: string) => `/api/geo/shot/${id}`;
-const shotsFor = (location: Location, style: GeoStyle) => location.shots.filter((s) => (style === "classic") === isClassic(s));
 const regionOf = (id: string) => REGIONS.find((r) => r.id === id);
-const poolFor = (spec: Pick<GeoSpec, "region" | "style">) =>
-  (regionOf(spec.region)?.locations ?? []).filter((l) => shotsFor(l, spec.style).length);
 /** A town or route with its buildings: one pin, so at most one round. */
-const areaOf = (location: Location) => `${location.region}|${location.parent ?? location.name}`;
-const areaCount = (spec: Pick<GeoSpec, "region" | "style">) => new Set(poolFor(spec).map(areaOf)).size;
+const areaOf = (location: Pick<Location, "region" | "name" | "parent">) => `${location.region}|${location.parent ?? location.name}`;
+
+/** A town or route and the buildings and landmarks in it, with screenshots. */
+interface Area {
+  key: string;
+  group: string;
+  place?: Location;
+  buildings: Location[];
+}
+
+/** Each map's areas, in data order. */
+const AREAS = new Map(
+  REGIONS.map((r) => {
+    const areas = new Map<string, Area>();
+    for (const l of r.locations) {
+      if (!l.shots.length) continue;
+      const key = areaOf(l);
+      const area = areas.get(key) ?? { key, group: groupOf(l.region), buildings: [] };
+      if (l.parent) area.buildings.push(l);
+      else area.place = l;
+      areas.set(key, area);
+    }
+    return [r.id, [...areas.values()]];
+  })
+);
+const areasOf = (region: string) => AREAS.get(region) ?? [];
 
 /** Drops combined labels the others already cover ("Sun / Moon / Ultra Sun / Ultra Moon" next to "Sun / Moon" and "Ultra Sun / Ultra Moon"). */
 function gameList(games: string[]): string[] {
@@ -158,27 +183,56 @@ function gameList(games: string[]): string[] {
   return games.filter((game) => !covered(game));
 }
 
+/** Games in release order (the order of their first screenshot in the data is arbitrary). */
+const RELEASE_ORDER = [
+  "Red",
+  "Gold",
+  "Crystal",
+  "Ruby",
+  "Sapphire",
+  "Emerald",
+  "FireRed",
+  "Diamond",
+  "Platinum",
+  "HeartGold",
+  "Black / White",
+  "Black / White /",
+  "Black 2",
+  "X / Y",
+  "Omega Ruby",
+  "Sun",
+  "Ultra Sun",
+  "Let's Go",
+  "Sword",
+  "Brilliant Diamond",
+  "Scarlet",
+  "Legends: Z-A",
+];
+const releaseRank = (game: string) => {
+  const i = RELEASE_ORDER.findLastIndex((g) => game.startsWith(g));
+  return i < 0 ? RELEASE_ORDER.length : i;
+};
+
 export function geoRegions(): GeoRegionInfo[] {
-  return REGIONS.map((r) => ({
-    id: r.id,
-    name: r.name,
-    map: { src: r.map.src, box: r.map.box },
-    locations: Object.fromEntries(GEO_STYLES.map((style) => [style, areaCount({ region: r.id, style })])) as Record<GeoStyle, number>,
-    games: Object.fromEntries(
-      GEO_STYLES.map((style) => [style, gameList([...new Set(poolFor({ region: r.id, style }).flatMap((l) => shotsFor(l, style).map((s) => s.game)))])])
-    ) as Record<GeoStyle, string[]>,
-    previews: Object.fromEntries(
-      GEO_STYLES.map((style) => {
-        const home = r.locations.find((l) => l.name === HOME[r.id] && shotsFor(l, style).length) ?? poolFor({ region: r.id, style })[0];
-        const shot = home ? shotsFor(home, style).at(-1) : undefined;
-        return [style, shot ? shotUrl(shot.id) : null];
-      })
-    ) as Record<GeoStyle, string | null>,
-  }));
+  return REGIONS.map((r) => {
+    const areas = areasOf(r.id);
+    const home = areas.find((a) => a.place?.name === HOME[r.id])?.place ?? areas[0]?.place;
+    // The newest game's view of it.
+    const shot = home?.shots.reduce((a, b) => (releaseRank(b.game) > releaseRank(a.game) ? b : a));
+    const games = [...new Set(areas.flatMap((a) => [a.place, ...a.buildings].flatMap((l) => l?.shots.map((s) => s.game) ?? [])))];
+    return {
+      id: r.id,
+      name: r.name,
+      map: { src: r.map.src, box: r.map.box },
+      locations: areas.length,
+      games: gameList(games).sort((a, b) => releaseRank(a) - releaseRank(b)),
+      preview: shot ? shotUrl(shot.id) : null,
+    };
+  });
 }
 
-export function isGeoSpec(spec: Pick<GeoSpec, "region" | "style" | "kind">): boolean {
-  return GEO_STYLES.includes(spec.style) && GEO_KINDS.includes(spec.kind) && areaCount(spec) >= GEO_ROUNDS;
+export function isGeoSpec(spec: Pick<GeoSpec, "region" | "kind">): boolean {
+  return GEO_KINDS.includes(spec.kind) && areasOf(spec.region).length >= GEO_ROUNDS;
 }
 
 export function shotSource(id: string): string | null {
@@ -193,30 +247,46 @@ interface PlannedRound {
 }
 
 /**
- * The game's rounds: five for a standard game, every place for a streak.
- * One screenshot each in the chosen style, and no two rounds in the same
- * town (a building and its town would be the same pin). A five-round world
- * game visits five different regions, each equally likely.
+ * A round in an area: the town or route itself half the time (when it has
+ * screenshots), else one of its buildings; then one of the place's looks, and
+ * a screenshot of that look.
  */
-export function planRounds(spec: GeoSpec, seed: string): PlannedRound[] {
+function pickRound(rng: Rng, area: Area): PlannedRound {
+  const location = area.place && (!area.buildings.length || rng.chance(0.5)) ? area.place : rng.pick(area.buildings);
+  const look = rng.pick([...new Set(location.shots.map((s) => lookOf(s.game)))]);
+  const shot = rng.pick(location.shots.filter((s) => lookOf(s.game) === look));
+  return { location: location.name, region: location.region, shot: shot.id };
+}
+
+/**
+ * The game's rounds: five for a standard game, every place for a streak.
+ * Every town, route and landmark is equally likely, from every game it's in,
+ * and no two rounds share a town (a building and its town are the same pin).
+ * A five-round world game visits five different regions. `limit` stops early
+ * (the first rounds don't depend on it).
+ */
+export function planRounds(spec: Pick<GeoSpec, "region" | "kind">, seed: string, limit = Infinity): PlannedRound[] {
   const rng = new Rng(deriveSeed("geo", seed));
-  const pool = rng.shuffle(poolFor(spec));
-  const pick = (location: Location): PlannedRound => ({ location: location.name, region: location.region, shot: rng.pick(shotsFor(location, spec.style)).id });
-  if (spec.region === WORLD_REGION && spec.kind === "game") {
-    const groups = rng.shuffle([...new Set(pool.map((l) => groupOf(l.region)))]);
-    if (groups.length >= GEO_ROUNDS) return groups.slice(0, GEO_ROUNDS).map((g) => pick(pool.find((l) => groupOf(l.region) === g)!));
-  }
-  const areas = new Set<string>();
+  const areas = rng.shuffle(areasOf(spec.region));
+  const max = Math.min(limit, spec.kind === "game" ? GEO_ROUNDS : Infinity);
+  const oneEach = spec.region === WORLD_REGION && spec.kind === "game" && new Set(areas.map((a) => a.group)).size >= GEO_ROUNDS;
+  const groups = new Set<string>();
   const rounds: PlannedRound[] = [];
-  for (const location of pool) {
-    const area = areaOf(location);
-    if (areas.has(area)) continue;
-    areas.add(area);
-    rounds.push(pick(location));
-    if (spec.kind === "game" && rounds.length === GEO_ROUNDS) break;
+  for (const area of areas) {
+    if (rounds.length >= max) break;
+    if (oneEach && groups.has(area.group)) continue;
+    groups.add(area.group);
+    rounds.push(pickRound(rng, area));
   }
   return rounds;
 }
+
+/** How much a game's first rounds repeat the player's recent places (weighted: the latest count most). */
+function staleness(spec: GeoSpec, rounds: PlannedRound[], recent: Map<string, number>): number {
+  return rounds.reduce((sum, r) => sum + (recent.get(areaOf(lookup(spec, r).location)) ?? 0), 0);
+}
+/** Seeds tried for a free-play game, keeping the one that repeats the player's recent places least. */
+const SEED_TRIES = 64;
 
 function lookup(spec: GeoSpec, round: PlannedRound) {
   const region = regionOf(spec.region)!;
@@ -270,7 +340,7 @@ export function answerFor(spec: GeoSpec, round: PlannedRound, squares = 0): GeoA
 // ---------------------------------------------------------------------------
 
 export interface GeoState {
-  v: 3;
+  v: 4;
   sid: string;
   spec: GeoSpec;
   seed: string;
@@ -285,7 +355,8 @@ export interface GeoState {
 interface ChallengeCard {
   s: string;
   r: string;
-  y: GeoStyle;
+  /** Links from before every game's screenshots were one pool carry a style; their seeds now plan other places. */
+  y?: string;
   n: string;
   t: number;
   p: number[];
@@ -293,20 +364,35 @@ interface ChallengeCard {
 
 export function readGeoChallenge(token: unknown): (GeoChallenge & { seed: string; region: string }) | null {
   const card = verifyToken<ChallengeCard>("geo-challenge", token);
-  if (!card || !GEO_STYLES.includes(card.y) || !regionOf(card.r)) return null;
-  return { seed: card.s, region: card.r, style: card.y, name: card.n, score: card.t, rounds: card.p };
+  if (!card || card.y !== undefined || !regionOf(card.r)) return null;
+  return { seed: card.s, region: card.r, name: card.n, score: card.t, rounds: card.p };
 }
 
-export function startGeo(spec: GeoSpec, opts: { seed?: string; name?: string } = {}): { token: string; round: GeoRoundPublic } {
-  const seed = opts.seed ?? (spec.daily ? `geo-daily:${spec.daily}` : randomId());
-  const state: GeoState = { v: 3, sid: randomId(), spec, seed, startedAt: Date.now(), name: opts.name, log: [] };
+/**
+ * Starts a game. Free play takes the player's recently seen areas (most
+ * recent first) and, of a few seeds, plays the one that repeats them least.
+ */
+export function startGeo(spec: GeoSpec, opts: { seed?: string; name?: string; recent?: string[] } = {}): { token: string; round: GeoRoundPublic } {
+  let seed = opts.seed ?? (spec.daily ? `geo-daily:${spec.daily}` : randomId());
+  if (!opts.seed && !spec.daily && opts.recent?.length) {
+    // Never more than half the map's areas, so a fresh game is always possible.
+    const recent = opts.recent.slice(0, Math.floor(areasOf(spec.region).length / 2));
+    const weights = new Map(recent.map((key, i) => [key, recent.length - i] as const));
+    let best = staleness(spec, planRounds(spec, seed, GEO_ROUNDS), weights);
+    for (let i = 1; i < SEED_TRIES && best > 0; i++) {
+      const next = randomId();
+      const stale = staleness(spec, planRounds(spec, next, GEO_ROUNDS), weights);
+      if (stale < best) [seed, best] = [next, stale];
+    }
+  }
+  const state: GeoState = { v: 4, sid: randomId(), spec, seed, startedAt: Date.now(), name: opts.name, log: [] };
   const [first] = planRounds(spec, seed);
   return { token: signToken("geo", state), round: { index: 0, shot: shotUrl(first.shot) } };
 }
 
 export function readGeo(token: unknown): GeoState | null {
   const state = verifyToken<GeoState>("geo", token);
-  if (!state || state.v !== 3 || Date.now() - state.startedAt > STATE_TTL_MS) return null;
+  if (!state || state.v !== 4 || Date.now() - state.startedAt > STATE_TTL_MS) return null;
   return isGeoSpec(state.spec) ? state : null;
 }
 
@@ -341,7 +427,7 @@ export function gradeGeo(state: GeoState, guess: { x: number; y: number }): GeoG
       finishedAt: now,
     };
     if (!streak) {
-      const card: ChallengeCard = { s: state.seed, r: spec.region, y: spec.style, n: state.name ?? "", t: total, p: next.log };
+      const card: ChallengeCard = { s: state.seed, r: spec.region, n: state.name ?? "", t: total, p: next.log };
       challengeToken = signToken("geo-challenge", card);
     }
   }

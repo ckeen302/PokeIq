@@ -5,7 +5,7 @@ import { WORLD_REGION } from "@/lib/geo-types";
 
 /** Home-page spotlight for PokéGuessr: a real in-game view behind the pitch. */
 export function GuessrFeature() {
-  const preview = geoRegions().find((r) => r.id === WORLD_REGION)?.previews.classic;
+  const preview = geoRegions().find((r) => r.id === WORLD_REGION)?.preview;
   return (
     <Link
       href="/guessr"

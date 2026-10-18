@@ -3,13 +3,6 @@
 export const GEO_ROUNDS = 5;
 export const GEO_MAX_ROUND_SCORE = 5000;
 
-/**
- * classic: 3D views from the newer games and remakes (Let's Go, X/Y, Sun/Moon, Sword/Shield…).
- * retro:   top-down layouts and screenshots from the Game Boy / GBA / DS games.
- */
-export const GEO_STYLES = ["classic", "retro"] as const;
-export type GeoStyle = (typeof GEO_STYLES)[number];
-
 /** game: five rounds scored by distance. streak: keep naming places until a pin misses. */
 export const GEO_KINDS = ["game", "streak"] as const;
 export type GeoKind = (typeof GEO_KINDS)[number];
@@ -33,26 +26,24 @@ export interface GeoRegionInfo {
    * `src` is a picture of it for previews.
    */
   map: { src: string; box: [number, number, number, number] };
-  /** Playable places per style (a town and its buildings count once). */
-  locations: Record<GeoStyle, number>;
-  /** Games the screenshots come from, per style. */
-  games: Record<GeoStyle, string[]>;
-  /** A preview screenshot per style (a starting town, so it gives nothing away). */
-  previews: Record<GeoStyle, string | null>;
+  /** Playable places (a town and its buildings count once). */
+  locations: number;
+  /** Games the screenshots come from, from Red / Blue to the latest remakes. */
+  games: string[];
+  /** A preview screenshot (a starting town, so it gives nothing away). */
+  preview: string | null;
 }
 
 export interface GeoSpec {
   region: string;
-  style: GeoStyle;
   kind: GeoKind;
   daily?: string;
   /** Not ranked: a repeat start of a daily, or a friend's challenge (the places are known). */
   practice?: "repeat-daily" | "challenge";
 }
 
-/** Leaderboard key for free play, e.g. "kanto:classic" or "kanto:classic:streak". */
-export const geoBoardKey = (spec: Pick<GeoSpec, "region" | "style" | "kind">) =>
-  `${spec.region}:${spec.style}${spec.kind === "streak" ? ":streak" : ""}`;
+/** Leaderboard key for free play, e.g. "kanto" or "kanto:streak". */
+export const geoBoardKey = (spec: Pick<GeoSpec, "region" | "kind">) => `${spec.region}${spec.kind === "streak" ? ":streak" : ""}`;
 
 export interface GeoRoundPublic {
   index: number;
@@ -77,7 +68,6 @@ export interface GeoChallenge {
   name: string;
   score: number;
   rounds: number[];
-  style: GeoStyle;
 }
 
 export interface GeoResult {

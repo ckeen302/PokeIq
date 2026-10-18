@@ -116,12 +116,9 @@ export function TrainerCard() {
           </CardHeader>
           <CardContent className="grid grid-cols-2 gap-3 sm:grid-cols-4">
             <Stat label="Games played" value={progress.best["geo:games"] ?? 0} />
-            <Stat label="Best Classic game" value={(progress.best["geo:kanto:classic"] ?? 0).toLocaleString("en-US")} />
-            <Stat label="Best Retro game" value={(progress.best["geo:kanto:retro"] ?? 0).toLocaleString("en-US")} />
-            <Stat
-              label="Best streak"
-              value={Math.max(progress.best["geo:kanto:classic:streak"] ?? 0, progress.best["geo:kanto:retro:streak"] ?? 0)}
-            />
+            <Stat label="Best game" value={geoBest(progress.best, false).toLocaleString("en-US")} />
+            <Stat label="Best streak" value={geoBest(progress.best, true)} />
+            <Stat label="Best daily" value={(progress.best["geo:daily"] ?? 0).toLocaleString("en-US")} />
           </CardContent>
         </Card>
       )}
@@ -190,6 +187,12 @@ export function TrainerCard() {
       </p>
     </div>
   );
+}
+
+/** Best PokéGuessr game or streak on any map (board keys are "geo:<map>" and "geo:<map>:streak"; older ones carry a style). */
+function geoBest(best: Record<string, number>, streak: boolean): number {
+  const boards = Object.entries(best).filter(([k]) => /^geo:[a-z]+(:classic|:retro)?(:streak)?$/.test(k) && !/^geo:(games|daily)$/.test(k));
+  return Math.max(0, ...boards.filter(([k]) => k.endsWith(":streak") === streak).map(([, v]) => v));
 }
 
 function Stat({ label, value }: { label: string; value: React.ReactNode }) {

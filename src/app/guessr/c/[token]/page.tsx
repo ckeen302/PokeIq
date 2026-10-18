@@ -46,7 +46,6 @@ export default async function GeoChallengePage({ params }: PageProps) {
         name: challenge.name,
         score: challenge.score,
         rounds: challenge.rounds,
-        style: challenge.style,
       }}
     />
   );

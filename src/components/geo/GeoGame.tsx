@@ -8,12 +8,10 @@ import {
   Compass,
   Expand,
   Flame,
-  Gamepad2,
   Globe2,
   Link2,
   Loader2,
   MapPin as MapPinIcon,
-  Mountain,
   RotateCcw,
   Share2,
   Swords,
@@ -23,7 +21,6 @@ import {
 import {
   GEO_MAX_ROUND_SCORE,
   GEO_ROUNDS,
-  GEO_STYLES,
   WORLD_REGION,
   geoBoardKey,
   geoDailyRegion,
@@ -34,7 +31,6 @@ import {
   type GeoRegionInfo,
   type GeoRoundPublic,
   type GeoStartResponse,
-  type GeoStyle,
 } from "@/lib/geo-types";
 import { dailyNumber } from "@/lib/daily";
 import { useToday } from "@/lib/use-today";
@@ -53,7 +49,6 @@ type Phase = "setup" | "loading" | "guessing" | "submitting" | "revealed" | "res
 interface Game {
   /** The map being played (a daily or a challenge picks its own). */
   region: GeoRegionInfo;
-  style: GeoStyle;
   kind: GeoKind;
   daily?: string;
   practice?: string;
@@ -90,20 +85,7 @@ function verdict(score: number): string {
   return "Way off…";
 }
 
-const STYLE_INFO: Record<GeoStyle, { title: string; blurb: string; icon: React.ReactNode }> = {
-  classic: {
-    title: "Classic",
-    blurb: "3D views from the newer games and remakes.",
-    icon: <Mountain className="h-5 w-5" aria-hidden />,
-  },
-  retro: {
-    title: "Retro",
-    blurb: "Top-down screenshots from the Game Boy, GBA and DS games. For veterans.",
-    icon: <Gamepad2 className="h-5 w-5" aria-hidden />,
-  },
-};
-
-const playable = (region: GeoRegionInfo | undefined, style: GeoStyle) => (region?.locations[style] ?? 0) >= GEO_ROUNDS;
+const playable = (region: GeoRegionInfo | undefined) => (region?.locations ?? 0) >= GEO_ROUNDS;
 const where = (region: GeoRegionInfo) => (region.id === WORLD_REGION ? "the Pokémon world" : region.name);
 
 /**
@@ -114,6 +96,42 @@ const clean = (s: string) => s.replace(/^(Kanto|Johto|Hoenn|Sinnoh|Unova|Kalos|A
 function placeName(answer: { name: string; parent?: string; region?: string }, map?: GeoRegionInfo): string {
   const name = answer.parent ? `${clean(answer.name)} · ${clean(answer.parent)}` : clean(answer.name);
   return answer.region && map && answer.region !== map.name ? `${name}, ${answer.region}` : name;
+}
+
+/** "Every game from Red / Blue / Yellow to Scarlet / Violet". */
+function gamesText(games: string[]): string {
+  if (games.length <= 1) return games[0] ? `Pokémon ${games[0]}` : "the games";
+  return `${games.length} games, from ${games[0]} to ${games.at(-1)}`;
+}
+
+/** Areas the player saw lately, most recent first, so a new game doesn't bring them straight back. */
+const RECENT_KEY = "pokeiq:geo-recent";
+const RECENT_MAX = 200;
+function readRecent(): string[] {
+  try {
+    const list: unknown = JSON.parse(localStorage.getItem(RECENT_KEY) ?? "[]");
+    return Array.isArray(list) ? list.filter((k): k is string => typeof k === "string").slice(0, RECENT_MAX) : [];
+  } catch {
+    return [];
+  }
+}
+function rememberArea(answer: { name: string; parent?: string; region?: string }) {
+  const key = `${answer.region}|${answer.parent ?? answer.name}`;
+  try {
+    localStorage.setItem(RECENT_KEY, JSON.stringify([key, ...readRecent().filter((k) => k !== key)].slice(0, RECENT_MAX)));
+  } catch {
+    // Private mode: games just aren't steered away from recent places.
+  }
+}
+
+/**
+ * How a screenshot fills the frame: wide 3D captures fill it (just past the
+ * light frame on Let's Go's), anything else fits inside; small pixel art is
+ * scaled up without blurring.
+ */
+function shotFit(img: HTMLImageElement): { className: string; pixelated: boolean } {
+  const ratio = img.naturalWidth / Math.max(1, img.naturalHeight);
+  return { className: ratio >= 1.6 && ratio <= 1.85 ? "scale-[1.07] object-cover" : "object-contain", pixelated: img.naturalWidth <= 512 };
 }
 
 /** The answer on the world atlas (Kanto's own map predates the world data, so its places carry no region). */
@@ -163,23 +181,21 @@ export interface GeoGameProps {
 export function GeoGame({ regions: allRegions, challenge }: GeoGameProps) {
   const today = useToday();
   const progress = useProgress();
-  const regions = [...allRegions].filter((r) => GEO_STYLES.some((s) => playable(r, s))).sort((a, b) => geoMapRank(a.id) - geoMapRank(b.id));
+  const regions = [...allRegions].filter((r) => playable(r)).sort((a, b) => geoMapRank(a.id) - geoMapRank(b.id));
   const byId = (id: string) => regions.find((r) => r.id === id);
   const [phase, setPhase] = useState<Phase>("setup");
   const [error, setError] = useState<string | null>(null);
   const [regionId, setRegionId] = useState(challenge?.region ?? regions[0]?.id ?? WORLD_REGION);
-  const [style, setStyle] = useState<GeoStyle>("classic");
   const [game, setGame] = useState<Game | null>(null);
   const [pick, setPick] = useState<MapPin | null>(null);
   const [played, setPlayed] = useState<Played[]>([]);
   const [shotLoaded, setShotLoaded] = useState(false);
+  const [fit, setFit] = useState<ReturnType<typeof shotFit> | null>(null);
   const [zoomed, setZoomed] = useState(false);
   const [reward, setReward] = useState<Reward | null>(null);
   const [isChallenge, setIsChallenge] = useState(false);
 
   const region = byId(regionId) ?? regions[0];
-  // Some regions only have one style (no 3D Johto, no Game Boy Galar).
-  const activeStyle = playable(region, style) ? style : (GEO_STYLES.find((s) => playable(region, s)) ?? style);
 
   // /guessr?region=johto opens on that map (the atlas links here).
   useEffect(() => {
@@ -199,7 +215,7 @@ export function GeoGame({ regions: allRegions, challenge }: GeoGameProps) {
   const total = played.reduce((s, p) => s + p.graded.score, 0);
   const streak = played.filter((p) => p.graded.hit).length;
 
-  async function start(opts: { style: GeoStyle; kind: GeoKind; daily?: string; challenge?: string }) {
+  async function start(opts: { kind: GeoKind; daily?: string; challenge?: string }) {
     unlockAudio();
     setPhase("loading");
     setError(null);
@@ -208,16 +224,17 @@ export function GeoGame({ regions: allRegions, challenge }: GeoGameProps) {
         ? { challenge: opts.challenge, name: progress?.name || undefined }
         : opts.daily
           ? { daily: opts.daily, name: progress?.name || undefined }
-          : { region: region.id, style: opts.style, kind: opts.kind, name: progress?.name || undefined };
+          : { region: region.id, kind: opts.kind, name: progress?.name || undefined, recent: readRecent() };
       const res = await post<GeoStartResponse>("/api/geo", body);
       const map = byId(res.region) ?? allRegions.find((r) => r.id === res.region);
       if (!map) throw new Error("That map isn't available right now.");
-      setGame({ region: map, style: opts.style, kind: opts.kind, daily: opts.daily, practice: res.practice, token: res.token, round: res.round });
+      setGame({ region: map, kind: opts.kind, daily: opts.daily, practice: res.practice, token: res.token, round: res.round });
       setIsChallenge(!!opts.challenge);
       setPick(null);
       setPlayed([]);
       setReward(null);
       setShotLoaded(false);
+      setFit(null);
       setPhase("guessing");
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (err) {
@@ -234,12 +251,13 @@ export function GeoGame({ regions: allRegions, challenge }: GeoGameProps) {
       const nextPlayed = [...played, { guess: pick, graded }];
       setPlayed(nextPlayed);
       setGame({ ...game, token: graded.token });
+      rememberArea(graded.answer);
       const good = game.kind === "streak" ? graded.hit : graded.score >= 2500;
       play(good ? (game.kind === "streak" && graded.hit && nextPlayed.length % 5 === 0 ? "streak" : "correct") : "wrong");
       if (graded.next) new window.Image().src = graded.next.shot;
       if (graded.done && graded.result) {
         setReward(
-          recordGeoGame(geoBoardKey({ region: game.region.id, style: game.style, kind: game.kind }), {
+          recordGeoGame(geoBoardKey({ region: game.region.id, kind: game.kind }), {
             kind: game.kind,
             score: graded.result.score,
             rounds: nextPlayed.map((p) => p.graded.score),
@@ -266,6 +284,7 @@ export function GeoGame({ regions: allRegions, challenge }: GeoGameProps) {
     setGame({ ...game, round: graded.next });
     setPick(null);
     setShotLoaded(false);
+    setFit(null);
     setPhase("guessing");
   }
 
@@ -294,9 +313,9 @@ export function GeoGame({ regions: allRegions, challenge }: GeoGameProps) {
   // ---- setup -----------------------------------------------------------------
   if (phase === "setup" || phase === "loading" || (phase === "error" && !game)) {
     const dailyDone = today ? progress?.best[`geo-daily:${today}`] : undefined;
-    const dailyMap = today ? byId(geoDailyRegion(today, playable(byId(WORLD_REGION), "classic"))) : undefined;
-    const bestGame = progress?.best[`geo:${geoBoardKey({ region: region.id, style: activeStyle, kind: "game" })}`];
-    const bestStreak = progress?.best[`geo:${geoBoardKey({ region: region.id, style: activeStyle, kind: "streak" })}`];
+    const dailyMap = today ? byId(geoDailyRegion(today, playable(byId(WORLD_REGION)))) : undefined;
+    const bestGame = progress?.best[`geo:${geoBoardKey({ region: region.id, kind: "game" })}`];
+    const bestStreak = progress?.best[`geo:${geoBoardKey({ region: region.id, kind: "streak" })}`];
     const challengeMap = challenge ? byId(challenge.region) : undefined;
     const loading = phase === "loading";
     const isWorld = region.id === WORLD_REGION;
@@ -330,7 +349,7 @@ export function GeoGame({ regions: allRegions, challenge }: GeoGameProps) {
                   {challenge.name || "A trainer"} scored {fmt(challenge.score)}
                 </p>
                 <p className="text-sm text-muted-foreground">
-                  Same five places{challengeMap ? ` in ${where(challengeMap)}` : ""}, {STYLE_INFO[challenge.style].title} views.{" "}
+                  Same five places{challengeMap ? ` in ${where(challengeMap)}` : ""}, same screenshots.{" "}
                   {challenge.rounds.map(emoji).join("")}
                 </p>
               </CardContent>
@@ -340,7 +359,7 @@ export function GeoGame({ regions: allRegions, challenge }: GeoGameProps) {
                   variant="success"
                   className="w-full md:w-auto"
                   disabled={loading}
-                  onClick={() => void start({ style: challenge.style, kind: "game", challenge: challenge.token })}
+                  onClick={() => void start({ kind: "game", challenge: challenge.token })}
                 >
                   {loading ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : <Swords className="h-4 w-4" aria-hidden />}
                   Accept challenge
@@ -361,7 +380,7 @@ export function GeoGame({ regions: allRegions, challenge }: GeoGameProps) {
               <p className="text-sm text-muted-foreground">
                 {dailyDone !== undefined
                   ? `You scored ${fmt(dailyDone)} today. Replays don't count for the leaderboard.`
-                  : `Classic views from ${dailyMap ? where(dailyMap) : "the Pokémon world"}. Your first game today goes on the daily leaderboard.`}
+                  : `Five places in ${dailyMap ? where(dailyMap) : "the Pokémon world"}, from any game. Your first game today goes on the daily leaderboard.`}
               </p>
             </CardContent>
             <div className="flex items-center p-6 pt-0 md:pt-6">
@@ -369,7 +388,7 @@ export function GeoGame({ regions: allRegions, challenge }: GeoGameProps) {
                 size="lg"
                 className="w-full md:w-auto"
                 disabled={!today || loading}
-                onClick={() => today && void start({ style: "classic", kind: "game", daily: today })}
+                onClick={() => today && void start({ kind: "game", daily: today })}
               >
                 {loading ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : <Compass className="h-4 w-4" aria-hidden />}
                 {dailyDone !== undefined ? "Play again" : "Play today's"}
@@ -379,29 +398,7 @@ export function GeoGame({ regions: allRegions, challenge }: GeoGameProps) {
         </Card>
 
         <div className="space-y-4">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <h2 className="font-display text-xl font-bold uppercase">Free play</h2>
-            <div className="flex rounded-md border bg-shade/20 p-1" role="radiogroup" aria-label="Screenshot style">
-              {GEO_STYLES.map((s) => (
-                <button
-                  key={s}
-                  type="button"
-                  role="radio"
-                  aria-checked={activeStyle === s}
-                  disabled={!playable(region, s)}
-                  title={playable(region, s) ? undefined : `No ${STYLE_INFO[s].title.toLowerCase()} views of ${region.name} yet`}
-                  onClick={() => setStyle(s)}
-                  className={cn(
-                    "flex items-center gap-1.5 rounded-sm px-3 py-1.5 font-display text-xs font-semibold uppercase tracking-wider transition-colors disabled:cursor-not-allowed disabled:opacity-35",
-                    activeStyle === s ? "bg-primary text-primary-foreground" : "text-muted-foreground enabled:hover:text-foreground"
-                  )}
-                >
-                  {STYLE_INFO[s].icon}
-                  {STYLE_INFO[s].title}
-                </button>
-              ))}
-            </div>
-          </div>
+          <h2 className="font-display text-xl font-bold uppercase">Free play</h2>
 
           {regions.length > 1 && (
             <div className="flex flex-wrap gap-1.5" role="radiogroup" aria-label="Map">
@@ -425,14 +422,12 @@ export function GeoGame({ regions: allRegions, challenge }: GeoGameProps) {
           )}
 
           <p className="text-sm text-muted-foreground">
-            {STYLE_INFO[activeStyle].blurb} {fmt(region.locations[activeStyle])} places
-            {region.games[activeStyle].length ? ` from ${region.games[activeStyle].join(" · ")}` : ""}.
+            {fmt(region.locations)} places, each shown in every game it appears in: {gamesText(region.games)}.
           </p>
 
           <div className="grid gap-4 sm:grid-cols-2">
             <ModeCard
-              preview={region.previews[activeStyle] ?? region.map.src}
-              pixelated={activeStyle === "retro"}
+              preview={region.preview ?? region.map.src}
               icon={<MapPinIcon className="h-5 w-5" aria-hidden />}
               title="5-round game"
               blurb={
@@ -442,11 +437,10 @@ export function GeoGame({ regions: allRegions, challenge }: GeoGameProps) {
               }
               stat={bestGame ? `Best ${fmt(bestGame)}` : null}
               disabled={loading}
-              onClick={() => void start({ style: activeStyle, kind: "game" })}
+              onClick={() => void start({ kind: "game" })}
             />
             <ModeCard
               preview={region.map.src}
-              pixelated={false}
               icon={<Flame className="h-5 w-5" aria-hidden />}
               title="Streak"
               blurb={
@@ -456,7 +450,7 @@ export function GeoGame({ regions: allRegions, challenge }: GeoGameProps) {
               }
               stat={bestStreak ? `Best ${bestStreak} in a row` : null}
               disabled={loading}
-              onClick={() => void start({ style: activeStyle, kind: "streak" })}
+              onClick={() => void start({ kind: "streak" })}
             />
           </div>
         </div>
@@ -522,7 +516,7 @@ export function GeoGame({ regions: allRegions, challenge }: GeoGameProps) {
       <div className="min-w-0">
         <div className="hud-label">Map</div>
         <div className="truncate font-display font-bold uppercase">
-          {game.region.name} · {STYLE_INFO[game.style].title}
+          {game.region.name}
           {game.daily ? ` · Daily #${dailyNumber(game.daily)}` : isStreak ? " · Streak" : ""}
         </div>
       </div>
@@ -570,14 +564,16 @@ export function GeoGame({ regions: allRegions, challenge }: GeoGameProps) {
             key={game.round.shot}
             src={game.round.shot}
             alt="Where is this?"
-            onLoad={() => setShotLoaded(true)}
+            onLoad={(e) => {
+              setFit(shotFit(e.currentTarget));
+              setShotLoaded(true);
+            }}
             className={cn(
               "absolute inset-0 h-full w-full transition-opacity duration-300",
-              // Let's Go location cards have a light frame: zoom just past it.
-              game.style === "classic" ? "scale-[1.07] object-cover" : "object-contain",
+              fit?.className ?? "object-contain",
               shotLoaded ? "opacity-100" : "opacity-0"
             )}
-            style={{ imageRendering: game.style === "retro" ? "pixelated" : "auto" }}
+            style={{ imageRendering: fit?.pixelated ? "pixelated" : "auto" }}
           />
           <button
             type="button"
@@ -625,7 +621,7 @@ export function GeoGame({ regions: allRegions, challenge }: GeoGameProps) {
               src={game.round.shot}
               alt="Where is this?"
               className="max-h-full max-w-full rounded-md object-contain"
-              style={{ imageRendering: game.style === "retro" ? "pixelated" : "auto" }}
+              style={{ imageRendering: fit?.pixelated ? "pixelated" : "auto" }}
             />
             <button
               type="button"
@@ -643,7 +639,6 @@ export function GeoGame({ regions: allRegions, challenge }: GeoGameProps) {
 
 function ModeCard({
   preview,
-  pixelated,
   icon,
   title,
   blurb,
@@ -652,7 +647,6 @@ function ModeCard({
   onClick,
 }: {
   preview: string;
-  pixelated: boolean;
   icon: React.ReactNode;
   title: string;
   blurb: string;
@@ -672,7 +666,6 @@ function ModeCard({
         src={preview}
         alt=""
         className="aspect-[16/10] w-full rounded-sm bg-shade/30 object-cover opacity-85 transition-opacity group-hover:opacity-100"
-        style={{ imageRendering: pixelated ? "pixelated" : "auto" }}
       />
       <span className="flex items-center gap-2 text-screen">
         {icon}
@@ -787,7 +780,7 @@ function GeoSummary({
   const origin = typeof window !== "undefined" ? window.location.origin : "";
   const title = game.daily
     ? `PokéGuessr Daily #${dailyNumber(game.daily)}`
-    : `PokéGuessr ${region.name} ${STYLE_INFO[game.style].title}${isStreak ? " Streak" : ""}`;
+    : `PokéGuessr ${region.name}${isStreak ? " Streak" : ""}`;
   const text = isStreak
     ? `${title}: ${streak} place${streak === 1 ? "" : "s"} in a row 🔥`
     : `${title}: ${fmt(total)} / ${fmt(MAX_TOTAL)}\n${played.map((p) => emoji(p.graded.score)).join("")}`;
@@ -959,7 +952,7 @@ function GeoSummary({
             href={
               game.daily
                 ? `/leaderboard?board=geo&date=${game.daily}`
-                : `/leaderboard?board=geo&format=${geoBoardKey({ region: region.id, style: game.style, kind: game.kind })}`
+                : `/leaderboard?board=geo&format=${geoBoardKey({ region: region.id, kind: game.kind })}`
             }
             className={cn(buttonVariants({ variant: "outline", size: "lg" }), "w-full")}
           >
