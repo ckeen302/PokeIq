@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { Compass, Loader2, Maximize2, Minus, Plus, Search, X } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { createAtlas, type AtlasData, type AtlasEngine, type AtlasPlace, type AtlasRegion } from "./atlas-engine";
+import { createAtlas, loadAtlas, type AtlasData, type AtlasEngine, type AtlasPlace, type AtlasRegion } from "./atlas-engine";
 
 type Card = { place: AtlasPlace } | { region: AtlasRegion } | { miss: string } | null;
 
@@ -27,8 +27,7 @@ export function WorldAtlas({ src }: { src: string }) {
   const [zoom, setZoom] = useState("World");
 
   useEffect(() => {
-    fetch("/atlas/atlas.json")
-      .then((r) => (r.ok ? r.json() : Promise.reject(new Error(String(r.status)))))
+    loadAtlas()
       .then(setAtlas)
       .catch(() => setFailed(true));
   }, []);

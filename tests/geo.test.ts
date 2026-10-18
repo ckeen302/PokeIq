@@ -38,27 +38,27 @@ function playOut(spec: GeoSpec, at: "pin" | { x: number; y: number }, opts?: Par
 
 describe("PokéGuessr", () => {
   it("has Kanto with enough places in both styles", () => {
-    const [kanto] = geoRegions();
-    expect(kanto.id).toBe("kanto");
+    const kanto = geoRegions().find((r) => r.id === "kanto")!;
     expect(kanto.locations.classic).toBeGreaterThanOrEqual(40);
     expect(kanto.locations.retro).toBeGreaterThanOrEqual(35);
     expect(isGeoSpec(classic)).toBe(true);
     expect(isGeoSpec({ ...classic, region: "orre" })).toBe(false);
   });
 
-  it("has the world map and a map for every mainline region", () => {
+  it("plays every map on the world atlas: the whole world and each mainline region's part of it", () => {
     const regions = geoRegions();
     const ids = regions.map((r) => r.id);
+    const w = regions.find((r) => r.id === WORLD_REGION)!;
+    const [, , worldW, worldH] = w.map.box;
+    expect(w.map.box.slice(0, 2)).toEqual([0, 0]);
     for (const id of [WORLD_REGION, "kanto", "johto", "hoenn", "sinnoh", "unova", "kalos", "alola", "galar", "paldea"]) {
       expect(ids).toContain(id);
-      const region = regions.find((r) => r.id === id)!;
+      const [x0, y0, x1, y1] = regions.find((r) => r.id === id)!.map.box;
       expect(GEO_STYLES.some((style) => isGeoSpec({ region: id, style, kind: "game" })), id).toBe(true);
-      expect(region.map.pixelArt).toBe(id === "kanto");
+      expect(x0 >= 0 && y0 >= 0 && x1 <= worldW && y1 <= worldH && x0 < x1 && y0 < y1, id).toBe(true);
     }
-    const w = regions.find((r) => r.id === WORLD_REGION)!;
     expect(w.locations.classic).toBeGreaterThanOrEqual(150);
     expect(w.locations.retro).toBeGreaterThanOrEqual(150);
-    expect(w.map.markers!.length).toBeGreaterThan(100);
     // Every board key fits the leaderboard's mode column.
     for (const r of regions) for (const style of GEO_STYLES) for (const kind of GEO_KINDS) expect(geoBoardKey({ region: r.id, style, kind }).length).toBeLessThanOrEqual(40);
   });
@@ -125,10 +125,13 @@ describe("PokéGuessr", () => {
 
   it("scores the true pin perfectly and falls off with distance", () => {
     const [round] = planRounds(classic, "score-test");
-    const { pin } = answerFor(classic, round);
+    const { pin, mask } = answerFor(classic, round);
     const exact = measureGuess(classic, round, pin[0], pin[1]);
     expect(exact).toEqual({ score: GEO_MAX_ROUND_SCORE, hit: true, squares: 0 });
-    const near = measureGuess(classic, round, Math.min(1, pin[0] + 0.08), pin[1]);
+    // A little way past the edge of the place's area.
+    const right = Math.max(...mask.map(([x]) => x));
+    const left = Math.min(...mask.map(([x]) => x));
+    const near = measureGuess(classic, round, right < 0.9 ? right + 0.06 : left - 0.06, pin[1]);
     const far = measureGuess(classic, round, pin[0] > 0.5 ? 0 : 1, pin[1] > 0.5 ? 0 : 1);
     expect(near.score).toBeLessThan(GEO_MAX_ROUND_SCORE);
     expect(far.score).toBeLessThan(near.score);

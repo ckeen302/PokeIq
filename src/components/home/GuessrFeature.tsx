@@ -5,9 +5,7 @@ import { WORLD_REGION } from "@/lib/geo-types";
 
 /** Home-page spotlight for PokéGuessr: a real in-game view behind the pitch. */
 export function GuessrFeature() {
-  const regions = geoRegions();
-  const world = regions.find((r) => r.id === WORLD_REGION && r.locations.classic >= 5);
-  const preview = (world ?? regions[0])?.previews.classic;
+  const preview = geoRegions().find((r) => r.id === WORLD_REGION)?.previews.classic;
   return (
     <Link
       href="/guessr"
@@ -28,7 +26,7 @@ export function GuessrFeature() {
             <span className="led h-1.5 w-1.5 animate-blink text-success" /> New · PokéGuessr
           </p>
           <h2 className="font-display text-4xl font-bold uppercase leading-[0.95] tracking-tight sm:text-5xl">
-            {world ? "Where in the world" : "Where in Kanto"}
+            Where in the world
             <br />
             <span className="text-success [text-shadow:0_0_28px_hsl(var(--success)/0.45)]">is this?</span>
           </h2>
@@ -42,10 +40,7 @@ export function GuessrFeature() {
         </div>
         <ul className="flex flex-col justify-end gap-2 text-sm">
           {[
-            {
-              icon: Compass,
-              text: world ? "Every region from Kanto to Paldea, on one world map" : `${regions[0]?.locations.classic ?? 40}+ places across Kanto`,
-            },
+            { icon: Compass, text: "Every region from Kanto to Paldea, on one world map" },
             { icon: Swords, text: "Challenge friends to the same five places" },
             { icon: Flame, text: "Streak mode: one miss and it's over" },
           ].map(({ icon: Icon, text }) => (

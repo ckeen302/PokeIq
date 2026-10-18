@@ -39,16 +39,17 @@ interface Location {
   mask: [number, number][];
   shots: Shot[];
 }
-/** A town or city square drawn over the map: centre x, y and size, normalised, and 1 for a city. */
-type Marker = [number, number, number, number, 0 | 1];
+/** World-map pixels: left, top, right, bottom. */
+type Box = [number, number, number, number];
 interface Region {
   id: string;
   name: string;
-  map: { src: string; width: number; height: number; markers?: Marker[] };
+  /** A picture of the map (for previews), its size, and where it sits on the world map (the atlas). */
+  map: { src: string; width: number; height: number; box: Box };
   /** Map pixels per town-map square (distances are reported in squares). */
   squarePx: number;
-  /** Map pixels within which a pin counts as spot on. Unset: a share of the map. */
-  perfectPx?: number;
+  /** Map pixels within which a pin counts as spot on. */
+  perfectPx: number;
   locations: Location[];
 }
 
@@ -56,26 +57,20 @@ type StoredLocation = Omit<Location, "pin" | "mask"> & Partial<Pick<Location, "p
 interface WorldData {
   map: { src: string; width: number; height: number; squarePx: number };
   /** Region maps cut from the world map: their box in world pixels and the atlas regions they play. */
-  crops: Record<string, { name: string; regions: string[]; box: [number, number, number, number]; src: string }>;
-  /** Town and city squares, in world pixels. */
-  markers?: Marker[];
+  crops: Record<string, { name: string; regions: string[]; box: Box; src: string }>;
   locations: StoredLocation[];
 }
 
-const DATA = data as unknown as { storageBase?: string; regions: Region[]; world?: WorldData };
+const DATA = data as unknown as { storageBase?: string; world: WorldData };
 const STORAGE_BASE =
   DATA.storageBase ?? `${process.env.SUPABASE_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/geo`;
 const STATE_TTL_MS = 3 * 60 * 60 * 1000;
 /** GeoGuessr's curve: 5000 · e^(−10 · d / D), with D the map diagonal. */
 const FALLOFF = 10;
-/** Town maps: inside (or within a whisker of) the highlighted area counts as perfect. */
-const PERFECT_RADIUS = 0.012;
 /** Streak mode on a region's map: a pin this close to the place keeps the streak alive. */
 const STREAK_RADIUS = 0.035;
-/** The town maps are drawn on an 8-pixel grid. */
-const TOWN_MAP_SQUARE_PX = 8;
-/** World and regional maps: within half a town-map square is spot on. */
-const WORLD_PERFECT_SQUARES = 0.5;
+/** Within half a town-map square of the place is spot on. */
+const PERFECT_SQUARES = 0.5;
 /** Regions that count as one for world streaks (DLC areas belong to their region). */
 const STREAK_GROUP: Record<string, string> = { "Isle of Armor": "Galar", "Crown Tundra": "Galar", "Blueberry Academy": "Unova" };
 const groupOf = (region?: string) => (region ? (STREAK_GROUP[region] ?? region) : "");
@@ -114,8 +109,14 @@ function worldRegion(world: WorldData): Region {
     return home?.pin && home.mask ? [{ ...l, pin: home.pin, mask: home.mask }] : [];
   });
   const { squarePx, ...map } = world.map;
-  const markers = (world.markers ?? []).map(([x, y, w, h, city]): Marker => [x / map.width, y / map.height, w / map.width, h / map.height, city]);
-  return { id: WORLD_REGION, name: "World", map: { ...map, markers }, squarePx, perfectPx: squarePx * WORLD_PERFECT_SQUARES, locations };
+  return {
+    id: WORLD_REGION,
+    name: "World",
+    map: { ...map, box: [0, 0, map.width, map.height] },
+    squarePx,
+    perfectPx: squarePx * PERFECT_SQUARES,
+    locations,
+  };
 }
 
 /** A region's own map: a crop of the world map, with its places re-normalised to the crop. */
@@ -127,19 +128,13 @@ function cropRegion(world: Region, id: string, crop: WorldData["crops"][string])
   const locations = world.locations
     .filter((l) => l.region && crop.regions.includes(l.region))
     .map((l) => ({ ...l, pin: [fx(l.pin[0]), fy(l.pin[1])] as [number, number], mask: l.mask.map(([x, y]) => [fx(x), fy(y)] as [number, number]) }));
-  const markers = (world.map.markers ?? [])
-    .map(([x, y, w, h, city]): Marker => [fx(x), fy(y), (w * W) / (x1 - x0), (h * H) / (y1 - y0), city])
-    .filter(([x, y]) => x >= 0 && x <= 1 && y >= 0 && y <= 1);
-  return { ...world, id, name: crop.name, map: { src: crop.src, width: x1 - x0, height: y1 - y0, markers }, locations };
+  return { ...world, id, name: crop.name, map: { src: crop.src, width: x1 - x0, height: y1 - y0, box: crop.box }, locations };
 }
 
+/** The world, then each region on its part of the world map. */
 const REGIONS: Region[] = (() => {
-  const out = DATA.regions.map((r) => ({ ...r, squarePx: TOWN_MAP_SQUARE_PX }));
-  if (DATA.world) {
-    const world = worldRegion(DATA.world);
-    out.push(world, ...Object.entries(DATA.world.crops).map(([id, crop]) => cropRegion(world, id, crop)));
-  }
-  return out;
+  const world = worldRegion(DATA.world);
+  return [world, ...Object.entries(DATA.world.crops).map(([id, crop]) => cropRegion(world, id, crop))];
 })();
 const SHOT_IDS = new Set(REGIONS.flatMap((r) => r.locations.flatMap((l) => l.shots.map((s) => s.id))));
 
@@ -165,7 +160,7 @@ export function geoRegions(): GeoRegionInfo[] {
   return REGIONS.map((r) => ({
     id: r.id,
     name: r.name,
-    map: { ...r.map, pixelArt: r.squarePx === TOWN_MAP_SQUARE_PX },
+    map: { src: r.map.src, box: r.map.box },
     locations: Object.fromEntries(GEO_STYLES.map((style) => [style, areaCount({ region: r.id, style })])) as Record<GeoStyle, number>,
     games: Object.fromEntries(
       GEO_STYLES.map((style) => [style, gameList([...new Set(poolFor({ region: r.id, style }).flatMap((l) => shotsFor(l, style).map((s) => s.game)))])])
@@ -257,7 +252,7 @@ export function measureGuess(spec: GeoSpec, round: PlannedRound, x: number, y: n
   const { width, height } = region.map;
   const diagonal = Math.hypot(width, height);
   const px = nearestPx(region, location, x, y);
-  const perfect = px <= (region.perfectPx ?? PERFECT_RADIUS * diagonal);
+  const perfect = px <= region.perfectPx;
   const score = perfect ? GEO_MAX_ROUND_SCORE : Math.round(GEO_MAX_ROUND_SCORE * Math.exp((-FALLOFF * px) / diagonal));
   const hit = region.id === WORLD_REGION ? regionAt(region, x, y) === groupOf(location.region) : px / diagonal <= STREAK_RADIUS;
   return { score, hit, squares: perfect ? 0 : Math.round((px / region.squarePx) * 10) / 10 };

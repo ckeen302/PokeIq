@@ -446,7 +446,7 @@ export function GeoGame({ regions: allRegions, challenge }: GeoGameProps) {
             />
             <ModeCard
               preview={region.map.src}
-              pixelated={region.map.pixelArt}
+              pixelated={false}
               icon={<Flame className="h-5 w-5" aria-hidden />}
               title="Streak"
               blurb={
@@ -578,15 +578,8 @@ export function GeoGame({ regions: allRegions, challenge }: GeoGameProps) {
           </button>
         </div>
 
-        {/* GeoGuessr-style mini-map: docked bottom-right on desktop, grows on hover (the big zoomable maps grow further). */}
-        <div
-          className={cn(
-            "group mt-3 space-y-2 lg:absolute lg:bottom-4 lg:right-4 lg:z-10 lg:mt-0 lg:transition-[width] lg:duration-200",
-            game.region.map.pixelArt
-              ? "lg:w-[19rem] lg:focus-within:w-[34rem] lg:hover:w-[34rem]"
-              : "lg:w-[22rem] lg:focus-within:w-[44rem] lg:hover:w-[44rem]"
-          )}
-        >
+        {/* GeoGuessr-style mini-map (the atlas): docked bottom-right on desktop, grows on hover. */}
+        <div className="group mt-3 space-y-2 lg:absolute lg:bottom-4 lg:right-4 lg:z-10 lg:mt-0 lg:w-[24rem] lg:transition-[width] lg:duration-200 lg:focus-within:w-[46rem] lg:hover:w-[46rem]">
           <div className="rounded-md lg:opacity-80 lg:shadow-2xl lg:transition-opacity lg:group-hover:opacity-100">
             <GeoMap
               region={game.region}

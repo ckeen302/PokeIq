@@ -20,22 +20,19 @@ export const WORLD_REGION = "world";
 export const GEO_MAP_ORDER = [WORLD_REGION, "kanto", "johto", "hoenn", "sinnoh", "unova", "kalos", "alola", "galar", "paldea"];
 export const geoMapRank = (id: string) => (GEO_MAP_ORDER.includes(id) ? GEO_MAP_ORDER.indexOf(id) : GEO_MAP_ORDER.length);
 /** The daily game is played on the world map from this date (Kanto before it). */
-export const WORLD_DAILY_FROM = "2026-10-19";
+export const WORLD_DAILY_FROM = "2026-10-18";
 /** The region a day's daily game is played in. */
 export const geoDailyRegion = (date: string, worldPlayable: boolean) => (worldPlayable && date >= WORLD_DAILY_FROM ? WORLD_REGION : "kanto");
 
 export interface GeoRegionInfo {
   id: string;
   name: string;
-  /** Town maps are small pixel art; the world map and its regional crops are big and zoomable. */
-  map: {
-    src: string;
-    width: number;
-    height: number;
-    pixelArt: boolean;
-    /** Unlabelled town and city squares to draw over the map: centre x, y and size (normalised), 1 for a city. */
-    markers?: [number, number, number, number, 0 | 1][];
-  };
+  /**
+   * Every map is the world atlas: the whole of it, or one region's part of it.
+   * `box` is that part in world-map pixels (pins and guesses are normalised to it);
+   * `src` is a picture of it for previews.
+   */
+  map: { src: string; box: [number, number, number, number] };
   /** Playable places per style (a town and its buildings count once). */
   locations: Record<GeoStyle, number>;
   /** Games the screenshots come from, per style. */

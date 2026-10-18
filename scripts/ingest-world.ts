@@ -4,9 +4,9 @@
  * scripts/geo/world-places.json holds every place on the world atlas: its
  * name, region and area in world-map pixels, traced from each game's own town
  * map. For each place this finds its Bulbapedia page and uploads its in-game
- * screenshots, the same way ingest-geo.ts does for Kanto; buildings and
- * landmarks inside a place get their own rounds and share its area. Uploads
- * are cached, so Kanto's screenshots are reused rather than uploaded again.
+ * screenshots (re-encoded under random ids, so URLs reveal nothing); buildings
+ * and landmarks inside a place get their own rounds and share its area.
+ * Uploads are cached by file name, so a re-run only uploads what's new.
  *
  * Writes the `world` section of src/data/geo.json, and the world map plus one
  * crop per region to public/geo/maps.
@@ -80,8 +80,9 @@ const SOURCES: Source[] = [
   { regions: ["Sevii Islands"], wiki: "Sevii Islands", games: ["FRLG"] },
 ];
 
-/** Region maps cut from the world map, and the atlas regions each one plays. Kanto keeps its own town map. */
+/** Region maps cut from the world map, and the atlas regions each one plays. */
 const CROPS: Record<string, { name: string; regions: string[] }> = {
+  kanto: { name: "Kanto", regions: ["Kanto"] },
   johto: { name: "Johto", regions: ["Johto"] },
   hoenn: { name: "Hoenn", regions: ["Hoenn"] },
   sinnoh: { name: "Sinnoh", regions: ["Sinnoh"] },
@@ -380,11 +381,7 @@ async function main() {
   const old: WorldLocation[] = data.world?.locations ?? [];
   const store: ShotStore = {
     cache: existsSync(SHOT_CACHE) ? JSON.parse(readFileSync(SHOT_CACHE, "utf8")) : {},
-    live: new Set(
-      [...data.regions.flatMap((r: { locations: { shots: GeoShot[] }[] }) => r.locations), ...old].flatMap((l: { shots: GeoShot[] }) =>
-        l.shots.map((s) => s.id)
-      )
-    ),
+    live: new Set(old.flatMap((l) => l.shots.map((s) => s.id))),
   };
 
   let locations = old;
@@ -399,16 +396,13 @@ async function main() {
   }
 
   const crops = await writeMaps(world);
-  data.storageBase = storage.baseUrl;
-  data.world = {
-    map: { src: "/geo/maps/world.webp", width: world.W, height: world.H, squarePx: world.squarePx },
-    crops,
-    markers: world.markers,
-    locations,
+  const out = {
+    storageBase: storage.baseUrl,
+    world: { map: { src: "/geo/maps/world.webp", width: world.W, height: world.H, squarePx: world.squarePx }, crops, locations },
   };
-  writeFileSync(OUT_DATA, JSON.stringify(data));
-  // Screenshots the world data no longer uses (and no region uses) are deleted.
-  const kept = new Set([...data.regions.flatMap((r: { locations: { shots: GeoShot[] }[] }) => r.locations), ...data.world.locations].flatMap((l: { shots: GeoShot[] }) => l.shots.map((s) => s.id)));
+  writeFileSync(OUT_DATA, JSON.stringify(out));
+  // Screenshots the data no longer uses are deleted.
+  const kept = new Set(locations.flatMap((l) => l.shots.map((s) => s.id)));
   await storage.remove(old.flatMap((l) => l.shots.map((s) => s.id)).filter((id) => !kept.has(id)));
 }
 
