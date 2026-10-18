@@ -180,6 +180,13 @@ await page.getByRole("button", { name: /Streak/ }).click();
 await playGeoRounds(60);
 await page.getByText("Streak over").first().waitFor();
 
+step("pokéguessr: a region's own map");
+await page.goto(`${BASE}/guessr?region=johto`, { waitUntil: "networkidle" });
+await page.getByRole("radio", { name: "Johto", checked: true }).waitFor();
+await page.getByRole("button", { name: /5-round game/ }).click();
+await playGeoRounds(5);
+await page.getByText("Survey complete").waitFor();
+
 step("world atlas: search, place card, link into PokéGuessr");
 await page.goto(`${BASE}/atlas`, { waitUntil: "networkidle" });
 await page.getByLabel("Search the map").fill("Saffron City");

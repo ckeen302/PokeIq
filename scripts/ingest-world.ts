@@ -25,6 +25,8 @@ import {
   categoryPages,
   codeOf,
   collectShots,
+  fileInfo,
+  type ShotFallback,
   firstLocationRef,
   galleryImages,
   geoStorage,
@@ -58,16 +60,19 @@ interface Source {
   wiki: string;
   /** File-name game codes set in this region; screenshots from other games are dropped. */
   games: string[];
+  /** Files without a game code are kept when they're a console's native screen size, which says which game they're from. */
+  screens?: Record<string, string>;
 }
 
 const SOURCES: Source[] = [
-  { regions: ["Kanto"], wiki: "Kanto", games: ["RB", "RBY", "RGBY", "Y", "GSC", "FRLG", "HGSS", "PE", "LGPE"] },
-  { regions: ["Johto"], wiki: "Johto", games: ["GS", "GSC", "C", "HGSS"] },
-  { regions: ["Hoenn"], wiki: "Hoenn", games: ["RS", "RSE", "E", "ORAS"] },
-  { regions: ["Sinnoh"], wiki: "Sinnoh", games: ["DP", "Pt", "DPPt", "BDSP"] },
-  { regions: ["Unova"], wiki: "Unova", games: ["BW", "B2W2", "BWB2W2"] },
-  { regions: ["Kalos"], wiki: "Kalos", games: ["XY"] },
-  { regions: ["Alola"], wiki: "Alola", games: ["SM", "USUM", "SMUSUM"] },
+  { regions: ["Kanto"], wiki: "Kanto", games: ["RB", "RBY", "RGBY", "Y", "GSC", "FRLG", "HGSS", "PE", "LGPE"], screens: { "240x160": "FRLG", "256x192": "HGSS" } },
+  { regions: ["Johto"], wiki: "Johto", games: ["GS", "GSC", "C", "HGSS"], screens: { "160x144": "GSC", "256x192": "HGSS" } },
+  { regions: ["Hoenn"], wiki: "Hoenn", games: ["RS", "RSE", "E", "ORAS"], screens: { "240x160": "RSE", "400x240": "ORAS" } },
+  { regions: ["Sinnoh"], wiki: "Sinnoh", games: ["DP", "Pt", "DPPt", "BDSP"], screens: { "256x192": "DPPt" } },
+  { regions: ["Unova"], wiki: "Unova", games: ["BW", "B", "W", "B2W2", "B2", "W2", "BWB2W2"], screens: { "256x192": "BWB2W2" } },
+  // Legends: Z-A is set in Lumiose City; X/Y's own location images are mostly guidebook maps.
+  { regions: ["Kalos"], wiki: "Kalos", games: ["XY", "ZA"], screens: { "400x240": "XY" } },
+  { regions: ["Alola"], wiki: "Alola", games: ["SM", "USUM", "SMUSUM"], screens: { "400x240": "SMUSUM" } },
   { regions: ["Galar", "Isle of Armor", "Crown Tundra"], wiki: "Galar", games: ["SwSh"] },
   { regions: ["Paldea"], wiki: "Paldea", games: ["SV"] },
   { regions: ["Kitakami"], wiki: "Kitakami", games: ["SV"] },
@@ -100,8 +105,14 @@ const TITLES: Record<string, string> = {
 };
 /** Places that share a page with another version of themselves: keep only their own game's screenshots. */
 const ONLY_GAMES: Record<string, string[]> = {
-  "Unova|Victory Road (BW)": ["BW"],
-  "Unova|Victory Road (B2W2)": ["B2W2"],
+  "Unova|Victory Road (BW)": ["BW", "B", "W"],
+  "Unova|Victory Road (B2W2)": ["B2W2", "B2", "W2"],
+};
+/** Archive file-name prefixes for places whose files aren't named after their map label. */
+const ARCHIVE_PREFIXES: Record<string, string[]> = {
+  "Unova|Victory Road (BW)": ["Victory_Road_"],
+  "Unova|Victory Road (B2W2)": ["Victory_Road_"],
+  "Unova|Black City / White Forest": ["Black_City_", "White_Forest_"],
 };
 
 /**
@@ -114,7 +125,34 @@ const DENYLIST = new Set<string>([
   "Route_22_Rival_battle_RBY.png",
   "Vermilion_City_port_HGSS.png",
   "Cerulean_City_Slowbro_SonicBoom_FRLG.png",
+  // X/Y Gyms, shown with the Gym's name across the bottom.
+  "Anistar_Gym_XY.png",
+  "Coumarine_Gym_XY.png",
+  "Cyllage_Gym_XY.png",
+  "Laverre_Gym_XY.png",
+  "Shalour_Gym_XY.png",
+  "Snowbelle_Gym_XY.png",
+  "Friend_Safari_inside_XY.png",
+  // A tournament broadcast, with the players' names on screen.
+  "Mesagoza_Championships_SV.png",
+  // Dialogue naming the place.
+  "Southern_Island_ORAS.png",
+  // Key art, not a view.
+  "Amity_Square_BDSP.png",
+  // Close-ups of museum exhibits.
+  "Lumiose_Museum_Survey_Corps_Satchel_ZA.png",
+  "Lumiose_Museum_Crafting_Bench_ZA.png",
+  "Lumiose_Museum_Hairstyles_ZA.png",
+  "Lumiose_Museum_Venerated_Portraits_ZA.png",
+  // Guidebook maps that happen to be screen-shaped.
+  "Postwick_SwSh.png",
+  "Rose_Tower_SwSh.png",
 ]);
+
+/** Screenshots taken as the game's place-name banner pops up: the bottom of the frame is cut off. */
+const TRIM_BOTTOM: Record<string, number> = Object.fromEntries(
+  ["Canalave", "Eterna", "Hearthome", "Jubilife", "Oreburgh", "Pastoria", "Snowpoint", "Sunyshore", "Veilstone"].map((city) => [`${city}_City_BDSP.png`, 0.21])
+);
 
 interface PlaceIn {
   name: string;
@@ -149,26 +187,63 @@ const storage = geoStorage();
 const norm = (v: number, size: number) => Math.round((v / size) * 100000) / 100000;
 
 /** Words in file names that mean "not a view of the place". */
-const NOT_A_VIEW = /(^|_)(map|icon|concept|art|artwork|anime|tcg|manga|sign|battle|battlefield|environment|referee|layout|sprite|dialogue|menu|logo|pre-release|prerelease)(_|\.|$)/i;
+const NOT_A_VIEW =
+  /(^|_)(map|icon|concept|art|artwork|anime|tcg|manga|adventures|sign|battle|battlefield|environment|referee|layout|sprite|dialogue|menu|logo|pre-release|prerelease|trailer|exhibit|painting)(_|\.|$)/i;
 
-function usable(file: string, games: string[], singleGame: boolean): boolean {
+/**
+ * 3D games' screenshots are screen-shaped: 5:3 on the 3DS (400 × 240), 16:9
+ * on the Switch, or the 2:1 crops some pages use, and no bigger than a 1080p
+ * capture. Their guidebook maps, scans and renders aren't.
+ */
+const THREE_DS = new Set(["XY", "ORAS", "SM", "USUM", "SMUSUM"]);
+const SWITCH = new Set(["PE", "LGPE", "SwSh", "BDSP", "SV", "ZA"]);
+function screenShaped(code: string, width: number, height: number): boolean {
+  const ratio = width / height;
+  if (Math.max(width, height) > 1920) return false;
+  if (THREE_DS.has(code)) return Math.abs(ratio - 5 / 3) < 0.02;
+  return Math.abs(ratio - 16 / 9) < 0.06 || (ratio >= 1.95 && ratio <= 2.15);
+}
+
+function usable(file: string, games: string[], codeless: boolean): boolean {
   const f = file.replace(/ /g, "_");
   if (DENYLIST.has(f) || NOT_A_VIEW.test(f)) return false;
   const code = codeOf(f);
   // Single-game regions (X/Y, Sword/Shield, Scarlet/Violet…) often leave the game off the file name.
-  return code ? games.includes(code) : singleGame;
+  return code ? games.includes(code) : codeless;
 }
 
-/** Infobox shots first (one per game), then archive files named after the place, then gallery shots. */
-function rankShots(lists: string[][], games: string[]): string[] {
-  const single = games.length === 1;
-  return [...new Set(lists.flat().map((f) => f.replace(/ /g, "_")))].filter((f) => usable(f, games, single));
+/** The game for files without a code: the region's only game, or the game its screen size belongs to. */
+function fallbackFor(source: Source, games: string[]): ShotFallback | undefined {
+  if (games.length === 1) return GAME_CODES[games[0]];
+  const screens = source.screens;
+  if (!screens) return undefined;
+  return (width, height) => {
+    const code = screens[`${width}x${height}`];
+    return code && games.includes(code) ? GAME_CODES[code] : undefined;
+  };
+}
+
+/**
+ * Infobox shots first (one per game), then archive files named after the
+ * place, then gallery shots; 3D games' files only when they're screen-shaped.
+ */
+async function rankShots(lists: string[][], games: string[], source: Source): Promise<string[]> {
+  const codeless = games.length === 1 || !!source.screens;
+  const files = [...new Set(lists.flat().map((f) => f.replace(/ /g, "_")))].filter((f) => usable(f, games, codeless));
+  const info = await fileInfo(files);
+  return files.filter((f) => {
+    const size = info.get(f);
+    const code = codeOf(f) ?? (games.length === 1 ? games[0] : undefined);
+    return size && (!code || !(THREE_DS.has(code) || SWITCH.has(code)) || screenShaped(code, size.width, size.height));
+  });
 }
 
 /** Archive screenshots named "<Place>_<GAME>.png" (or "<Region>_Route_N_<GAME>.png"), for places whose page has few. */
 async function archiveShots(place: PlaceIn, source: Source): Promise<string[]> {
   const name = (TITLES[`${place.region}|${place.name}`] ?? place.name).replace(/ /g, "_");
-  const prefixes = /^Route_\d+$/.test(name) ? [`${source.wiki.replace(/ /g, "_")}_${name}_`] : [`${name}_`];
+  const prefixes =
+    ARCHIVE_PREFIXES[`${place.region}|${place.name}`] ??
+    (/^Route_\d+$/.test(name) ? [`${source.wiki.replace(/ /g, "_")}_${name}_`] : [`${name}_`]);
   const out: string[] = [];
   for (const prefix of prefixes) {
     for (const f of await archiveFiles(prefix)) {
@@ -227,8 +302,10 @@ async function ingestSource(source: Source, world: WorldPlaces, store: ShotStore
     const infobox = page ? await infoboxImages(page.wikitext) : [];
     const archive = await archiveShots(place, source);
     const gallery = page ? await galleryImages(page.title, [page.title, place.name, ...infobox.map(imageStem)]) : [];
-    const fallback = games.length === 1 ? GAME_CODES[games[0]] : undefined;
-    const shots = await collectShots(rankShots([infobox, archive, gallery], games), MAX_SHOTS, store, storage, fallback);
+    const shots = await collectShots(await rankShots([infobox, archive, gallery], games, source), MAX_SHOTS, store, storage, {
+      fallback: fallbackFor(source, games),
+      trimBottom: TRIM_BOTTOM,
+    });
     if (page) {
       byTitle.set(squash(page.title), place);
       pageTitles.push(page.title);
@@ -264,8 +341,13 @@ async function ingestSource(source: Source, world: WorldPlaces, store: ShotStore
     if (!parent) continue;
     const infobox = await infoboxImages(page.wikitext);
     const gallery = await galleryImages(page.title, [page.title, ...infobox.map(imageStem)]);
-    const fallback = source.games.length === 1 ? GAME_CODES[source.games[0]] : undefined;
-    const shots = await collectShots(rankShots([infobox, gallery], source.games), MAX_BUILDING_SHOTS, store, storage, fallback);
+    const shots = await collectShots(
+      await rankShots([infobox, gallery], source.games, source),
+      MAX_BUILDING_SHOTS,
+      store,
+      storage,
+      { fallback: fallbackFor(source, source.games), trimBottom: TRIM_BOTTOM }
+    );
     if (!shots.length) continue;
     taken.add(squash(page.title));
     out.push({ name: page.title, region: parent.region, parent: parent.name, shots });

@@ -188,8 +188,8 @@ export function GeoMap({ region, pick, revealed = [], onPick, className }: Props
       {fit > 0 && (
         <svg width={size.w} height={size.h} className="pointer-events-none absolute inset-0" aria-hidden>
           {region.map.markers?.map(([x, y, w, h, city], i) => {
-            // Small squares from afar, full-size buildings up close.
-            const min = (city ? 5 : 4) * Math.min(2, Math.sqrt(v.k));
+            // Specks from afar, full-size buildings up close.
+            const min = Math.min(city ? 7 : 6, (city ? 3 : 2.2) * Math.sqrt(v.k));
             const mw = Math.max(w * W * s, min);
             const mh = Math.max(h * H * s, min);
             const [sx, sy] = toScreen(x, y);
@@ -203,7 +203,7 @@ export function GeoMap({ region, pick, revealed = [], onPick, className }: Props
                 rx={Math.min(3, mw / 4)}
                 fill={city ? "#e2475b" : "#4d7ee8"}
                 stroke={city ? "#6e1626" : "#1d3878"}
-                strokeWidth={2}
+                strokeWidth={Math.min(2, mw / 4)}
               />
             );
           })}

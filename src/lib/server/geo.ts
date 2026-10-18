@@ -103,6 +103,7 @@ const CLASSIC_GAMES = new Set([
   "Sword / Shield",
   "Brilliant Diamond / Shining Pearl",
   "Scarlet / Violet",
+  "Legends: Z-A",
 ]);
 
 /** The world map, with buildings placed in (and sharing the area of) their parent place. */
@@ -148,15 +149,26 @@ const shotsFor = (location: Location, style: GeoStyle) => location.shots.filter(
 const regionOf = (id: string) => REGIONS.find((r) => r.id === id);
 const poolFor = (spec: Pick<GeoSpec, "region" | "style">) =>
   (regionOf(spec.region)?.locations ?? []).filter((l) => shotsFor(l, spec.style).length);
+/** A town or route with its buildings: one pin, so at most one round. */
+const areaOf = (location: Location) => `${location.region}|${location.parent ?? location.name}`;
+const areaCount = (spec: Pick<GeoSpec, "region" | "style">) => new Set(poolFor(spec).map(areaOf)).size;
+
+/** Drops combined labels the others already cover ("Sun / Moon / Ultra Sun / Ultra Moon" next to "Sun / Moon" and "Ultra Sun / Ultra Moon"). */
+function gameList(games: string[]): string[] {
+  const parts = (game: string) => game.split(" / ");
+  const covered = (game: string) =>
+    parts(game).every((p) => games.some((other) => parts(other).length < parts(game).length && parts(other).includes(p)));
+  return games.filter((game) => !covered(game));
+}
 
 export function geoRegions(): GeoRegionInfo[] {
   return REGIONS.map((r) => ({
     id: r.id,
     name: r.name,
     map: { ...r.map, pixelArt: r.squarePx === TOWN_MAP_SQUARE_PX },
-    locations: Object.fromEntries(GEO_STYLES.map((style) => [style, poolFor({ region: r.id, style }).length])) as Record<GeoStyle, number>,
+    locations: Object.fromEntries(GEO_STYLES.map((style) => [style, areaCount({ region: r.id, style })])) as Record<GeoStyle, number>,
     games: Object.fromEntries(
-      GEO_STYLES.map((style) => [style, [...new Set(poolFor({ region: r.id, style }).flatMap((l) => shotsFor(l, style).map((s) => s.game)))]])
+      GEO_STYLES.map((style) => [style, gameList([...new Set(poolFor({ region: r.id, style }).flatMap((l) => shotsFor(l, style).map((s) => s.game)))])])
     ) as Record<GeoStyle, string[]>,
     previews: Object.fromEntries(
       GEO_STYLES.map((style) => {
@@ -169,7 +181,7 @@ export function geoRegions(): GeoRegionInfo[] {
 }
 
 export function isGeoSpec(spec: Pick<GeoSpec, "region" | "style" | "kind">): boolean {
-  return GEO_STYLES.includes(spec.style) && GEO_KINDS.includes(spec.kind) && poolFor(spec).length >= GEO_ROUNDS;
+  return GEO_STYLES.includes(spec.style) && GEO_KINDS.includes(spec.kind) && areaCount(spec) >= GEO_ROUNDS;
 }
 
 export function shotSource(id: string): string | null {
@@ -200,7 +212,7 @@ export function planRounds(spec: GeoSpec, seed: string): PlannedRound[] {
   const areas = new Set<string>();
   const rounds: PlannedRound[] = [];
   for (const location of pool) {
-    const area = `${location.region}|${location.parent ?? location.name}`;
+    const area = areaOf(location);
     if (areas.has(area)) continue;
     areas.add(area);
     rounds.push(pick(location));

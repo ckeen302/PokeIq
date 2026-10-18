@@ -103,22 +103,26 @@ export async function download(url: string): Promise<Buffer> {
 }
 
 /** Resolves File: names to their upload URLs, 50 at a time. */
-export async function fileUrls(files: string[]): Promise<Map<string, string>> {
-  const out = new Map<string, string>();
+export async function fileInfo(files: string[]): Promise<Map<string, { url: string; width: number; height: number }>> {
+  const out = new Map<string, { url: string; width: number; height: number }>();
   for (let i = 0; i < files.length; i += 50) {
     const batch = files.slice(i, i + 50);
     const r = await api<{
-      query: { normalized?: { from: string; to: string }[]; pages: { title: string; imageinfo?: { url: string }[] }[] };
-    }>(ARCHIVES, { action: "query", titles: batch.map((f) => `File:${f}`).join("|"), prop: "imageinfo", iiprop: "url" });
+      query: { normalized?: { from: string; to: string }[]; pages: { title: string; imageinfo?: { url: string; width: number; height: number }[] }[] };
+    }>(ARCHIVES, { action: "query", titles: batch.map((f) => `File:${f}`).join("|"), prop: "imageinfo", iiprop: "url|size" });
     const back = new Map((r.query.normalized ?? []).map((n) => [n.to, n.from]));
     for (const p of r.query.pages) {
-      const url = p.imageinfo?.[0]?.url;
-      if (!url) continue;
+      const info = p.imageinfo?.[0];
+      if (!info) continue;
       const original = (back.get(p.title) ?? p.title).replace(/^File:/, "");
-      out.set(original.replace(/ /g, "_"), url);
+      out.set(original.replace(/ /g, "_"), { url: info.url, width: info.width, height: info.height });
     }
   }
   return out;
+}
+
+export async function fileUrls(files: string[]): Promise<Map<string, string>> {
+  return new Map([...(await fileInfo(files))].map(([file, info]) => [file, info.url]));
 }
 
 // ---------------------------------------------------------------------------
@@ -142,7 +146,11 @@ export const GAME_CODES: Record<string, string> = {
   Pt: "Platinum",
   HGSS: "HeartGold / SoulSilver",
   BW: "Black / White",
+  B: "Black / White",
+  W: "Black / White",
   B2W2: "Black 2 / White 2",
+  B2: "Black 2 / White 2",
+  W2: "Black 2 / White 2",
   BWB2W2: "Black / White / Black 2 / White 2",
   XY: "X / Y",
   ORAS: "Omega Ruby / Alpha Sapphire",
@@ -154,6 +162,7 @@ export const GAME_CODES: Record<string, string> = {
   SwSh: "Sword / Shield",
   BDSP: "Brilliant Diamond / Shining Pearl",
   LA: "Legends: Arceus",
+  ZA: "Legends: Z-A",
   SV: "Scarlet / Violet",
 };
 
@@ -394,19 +403,36 @@ export interface ShotStore {
  * Downloads, re-encodes and uploads up to `max` of `files`, reusing earlier
  * uploads. Files without a game code in their name get `fallbackGame`, if set.
  */
-export async function collectShots(files: string[], max: number, store: ShotStore, storage: GeoStorage, fallbackGame?: string): Promise<GeoShot[]> {
+/**
+ * The game for files without a code in their name: one game for a
+ * single-game region, or one picked by the image's size (a 400×240 file is a
+ * 3DS screen); undefined drops the file.
+ */
+export type ShotFallback = string | ((width: number, height: number) => string | undefined);
+
+export interface ShotOptions {
+  fallback?: ShotFallback;
+  /** Share of the height to cut off the bottom of a file (the game's place-name banner sits there). */
+  trimBottom?: Record<string, number>;
+}
+
+export async function collectShots(files: string[], max: number, store: ShotStore, storage: GeoStorage, opts: ShotOptions = {}): Promise<GeoShot[]> {
+  const { fallback } = opts;
   const urls = await fileUrls(files);
   const shots: GeoShot[] = [];
   for (const file of files) {
     if (shots.length >= max) break;
-    const game = gameOf(file) ?? fallbackGame;
-    const cached = store.cache[file];
-    if (game && cached && store.live.has(cached)) {
-      shots.push({ id: cached, game });
+    const known = gameOf(file) ?? (typeof fallback === "string" ? fallback : undefined);
+    const trim = opts.trimBottom?.[file] ?? 0;
+    // A trimmed file is a different image from the untrimmed one, so it's cached under its own key.
+    const key = trim ? `${file}#bottom${trim}` : file;
+    const cached = store.cache[key];
+    if (known && cached && store.live.has(cached)) {
+      shots.push({ id: cached, game: known });
       continue;
     }
     const url = urls.get(file);
-    if (!url || !game) continue;
+    if (!url || (!known && typeof fallback !== "function")) continue;
     try {
       const source = await download(url);
       const { width = 0, height = 0 } = await sharp(source).metadata();
@@ -414,14 +440,20 @@ export async function collectShots(files: string[], max: number, store: ShotStor
         console.log(`  ! ${file}: too small to be a screenshot (${width}×${height})`);
         continue;
       }
+      const game = known ?? (typeof fallback === "function" ? fallback(width, height) : undefined);
+      if (!game) continue;
+      if (cached && store.live.has(cached)) {
+        shots.push({ id: cached, game });
+        continue;
+      }
       const id = randomBytes(9).toString("base64url");
       const webp = await sharp(source)
-        .extract(viewCrop(width, height))
+        .extract(viewCrop(width, Math.round(height * (1 - trim))))
         .resize({ width: SHOT_WIDTH, withoutEnlargement: true })
         .webp({ quality: 66, effort: 6 })
         .toBuffer();
       await storage.upload(id, webp);
-      store.cache[file] = id;
+      store.cache[key] = id;
       store.live.add(id);
       shots.push({ id, game });
     } catch (err) {

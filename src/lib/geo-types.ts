@@ -36,7 +36,7 @@ export interface GeoRegionInfo {
     /** Unlabelled town and city squares to draw over the map: centre x, y and size (normalised), 1 for a city. */
     markers?: [number, number, number, number, 0 | 1][];
   };
-  /** Playable locations per style. */
+  /** Playable places per style (a town and its buildings count once). */
   locations: Record<GeoStyle, number>;
   /** Games the screenshots come from, per style. */
   games: Record<GeoStyle, string[]>;
