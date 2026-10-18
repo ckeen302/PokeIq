@@ -400,10 +400,6 @@ export interface ShotStore {
 }
 
 /**
- * Downloads, re-encodes and uploads up to `max` of `files`, reusing earlier
- * uploads. Files without a game code in their name get `fallbackGame`, if set.
- */
-/**
  * The game for files without a code in their name: one game for a
  * single-game region, or one picked by the image's size (a 400×240 file is a
  * 3DS screen); undefined drops the file.
@@ -414,18 +410,22 @@ export interface ShotOptions {
   fallback?: ShotFallback;
   /** Share of the height to cut off the bottom of a file (the game's place-name banner sits there). */
   trimBottom?: Record<string, number>;
+  /** Files from another wiki: their URLs, and a cache-key prefix (their names can clash with the Archives'). */
+  urls?: Map<string, string>;
+  keyPrefix?: string;
 }
 
+/** Downloads, re-encodes and uploads up to `max` of `files`, reusing earlier uploads. */
 export async function collectShots(files: string[], max: number, store: ShotStore, storage: GeoStorage, opts: ShotOptions = {}): Promise<GeoShot[]> {
   const { fallback } = opts;
-  const urls = await fileUrls(files);
+  const urls = opts.urls ?? (await fileUrls(files));
   const shots: GeoShot[] = [];
   for (const file of files) {
     if (shots.length >= max) break;
     const known = gameOf(file) ?? (typeof fallback === "string" ? fallback : undefined);
     const trim = opts.trimBottom?.[file] ?? 0;
     // A trimmed file is a different image from the untrimmed one, so it's cached under its own key.
-    const key = trim ? `${file}#bottom${trim}` : file;
+    const key = (opts.keyPrefix ?? "") + (trim ? `${file}#bottom${trim}` : file);
     const cached = store.cache[key];
     if (known && cached && store.live.has(cached)) {
       shots.push({ id: cached, game: known });

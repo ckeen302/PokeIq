@@ -13,6 +13,7 @@
  *
  *   SUPABASE_URL=… SUPABASE_SERVICE_ROLE_KEY=… npm run ingest:world               # every region
  *   SUPABASE_URL=… SUPABASE_SERVICE_ROLE_KEY=… npm run ingest:world -- Hoenn Kalos # selected regions
+ *   … npm run ingest:world -- --fandom-only Alola   # only top up existing places from Fandom
  */
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
@@ -36,10 +37,12 @@ import {
   pageLinks,
   redirectTarget,
   squash,
+  words,
   withBuildingInfobox,
   type GeoShot,
   type ShotStore,
 } from "./geo/bulbapedia";
+import { fandomImages, fandomPage } from "./geo/fandom";
 
 const PLACES = path.join(process.cwd(), "scripts/geo/world-places.json");
 const WORLD_MAP = path.join(process.cwd(), "public/geo/maps/world.webp");
@@ -47,6 +50,8 @@ const OUT_DATA = path.join(process.cwd(), "src/data/geo.json");
 const SHOT_CACHE = path.join(process.cwd(), ".data", "geo-shot-cache.json");
 
 const MAX_SHOTS = 6;
+/** 3D screenshots a place gets from Fandom, counting the ones Bulbapedia already gave it. */
+const FANDOM_SHOTS = 3;
 const MAX_BUILDING_SHOTS = 4;
 /** Area points kept per place (scoring measures the distance to the nearest). */
 const MAX_MASK_POINTS = 60;
@@ -126,13 +131,6 @@ const DENYLIST = new Set<string>([
   "Route_22_Rival_battle_RBY.png",
   "Vermilion_City_port_HGSS.png",
   "Cerulean_City_Slowbro_SonicBoom_FRLG.png",
-  // X/Y Gyms, shown with the Gym's name across the bottom.
-  "Anistar_Gym_XY.png",
-  "Coumarine_Gym_XY.png",
-  "Cyllage_Gym_XY.png",
-  "Laverre_Gym_XY.png",
-  "Shalour_Gym_XY.png",
-  "Snowbelle_Gym_XY.png",
   "Friend_Safari_inside_XY.png",
   // A tournament broadcast, with the players' names on screen.
   "Mesagoza_Championships_SV.png",
@@ -150,10 +148,27 @@ const DENYLIST = new Set<string>([
   "Rose_Tower_SwSh.png",
 ]);
 
-/** Screenshots taken as the game's place-name banner pops up: the bottom of the frame is cut off. */
-const TRIM_BOTTOM: Record<string, number> = Object.fromEntries(
-  ["Canalave", "Eterna", "Hearthome", "Jubilife", "Oreburgh", "Pastoria", "Snowpoint", "Sunyshore", "Veilstone"].map((city) => [`${city}_City_BDSP.png`, 0.21])
-);
+/** Screenshots with the place's name along the bottom (BDSP's banner, X/Y's Gym caption bar): it's cut off. */
+const TRIM_BOTTOM: Record<string, number> = Object.fromEntries([
+  ...["Canalave", "Eterna", "Hearthome", "Jubilife", "Oreburgh", "Pastoria", "Snowpoint", "Sunyshore", "Veilstone"].map((city) => [`${city}_City_BDSP.png`, 0.21]),
+  ...["Anistar", "Coumarine", "Cyllage", "Laverre", "Shalour", "Snowbelle"].map((city) => [`${city}_Gym_XY.png`, 0.2]),
+]);
+
+/** In-game backdrops named after places: Ultra Sun / Ultra Moon's Alola Photo Club ("APC bg Iki Town"). */
+const BACKDROPS: Record<string, { prefix: string; code: string }> = {
+  Alola: { prefix: "APC_bg_", code: "USUM" },
+};
+
+/** Fandom shots that name the place (a banner, a caption, a text box) or aren't a view. */
+const FANDOM_DENYLIST = new Set<string>([
+  "Petalburg_City.png",
+  "Glittering_Cave.png",
+  "Snowbelle_City.png",
+  "Ruins_of_Abundance.png",
+  "Paniola_Ranch.png",
+  "Poké_Pelago5.png",
+  "Galar_Route_5.png",
+]);
 
 interface PlaceIn {
   name: string;
@@ -185,11 +200,14 @@ export interface WorldLocation {
 }
 
 const storage = geoStorage();
+/** How many regions have a place of each name ("Victory Road" is in five). */
+const PLACE_COUNTS = new Map<string, number>();
+const PLACES_BY_REGION = new Map<string, PlaceIn[]>();
 const norm = (v: number, size: number) => Math.round((v / size) * 100000) / 100000;
 
 /** Words in file names that mean "not a view of the place". */
 const NOT_A_VIEW =
-  /(^|_)(map|icon|concept|art|artwork|anime|tcg|manga|adventures|sign|battle|battlefield|environment|referee|layout|sprite|dialogue|menu|logo|pre-release|prerelease|trailer|exhibit|painting)(_|\.|$)/i;
+  /(^|_)(map\d*|icon|concept|art|artwork|anime|tcg|manga|adventures|sign|battle|battlefield|environment|referee|layout|sprite|dialogue|menu|logo|pre-release|prerelease|trailer|exhibit|painting|evolutions|generations|origins|hz|pg|dsd)(_|\.|$)/i;
 
 /**
  * 3D games' screenshots are screen-shaped: 5:3 on the 3DS (400 × 240), 16:9
@@ -198,6 +216,8 @@ const NOT_A_VIEW =
  */
 const THREE_DS = new Set(["XY", "ORAS", "SM", "USUM", "SMUSUM"]);
 const SWITCH = new Set(["PE", "LGPE", "SwSh", "BDSP", "SV", "ZA"]);
+const THREE_D_GAMES = new Set([...THREE_DS, ...SWITCH].map((c) => GAME_CODES[c]));
+const count3d = (shots: GeoShot[]) => shots.filter((s) => THREE_D_GAMES.has(s.game)).length;
 function screenShaped(code: string, width: number, height: number): boolean {
   const ratio = width / height;
   if (Math.max(width, height) > 1920) return false;
@@ -245,15 +265,107 @@ async function archiveShots(place: PlaceIn, source: Source): Promise<string[]> {
   const prefixes =
     ARCHIVE_PREFIXES[`${place.region}|${place.name}`] ??
     (/^Route_\d+$/.test(name) ? [`${source.wiki.replace(/ /g, "_")}_${name}_`] : [`${name}_`]);
+  // X/Y's Photo Spots: a view of the place from where the photographer stands.
+  const photoSpot = `Photo_Spot_${name}`;
+  const codeless = source.games.length === 1 || !!source.screens;
   const out: string[] = [];
-  for (const prefix of prefixes) {
+  for (const prefix of [...prefixes, photoSpot]) {
     for (const f of await archiveFiles(prefix)) {
-      // The rest of the name is a game code, optionally after a season / view word or two.
-      const rest = f.name.slice(prefix.length).replace(/\.(png|jpe?g)$/i, "").split("_");
-      if (rest.length <= 3 && GAME_CODES[rest.at(-1) ?? ""] && Math.max(f.width, f.height) >= 200) out.push(f.name);
+      if (Math.max(f.width, f.height) < 200) continue;
+      // The rest of the name is a game code, optionally after a season / view word or two;
+      // regions that allow code-less files (sized up later) take a word or two without one.
+      const rest = f.name.slice(prefix.length).replace(/\.(png|jpe?g)$/i, "").split("_").filter(Boolean);
+      if (rest.length <= 3 && GAME_CODES[rest.at(-1) ?? ""]) out.push(f.name);
+      else if (codeless && rest.length <= 2 && (prefix === photoSpot || rest.length > 0)) out.push(f.name);
     }
   }
   return out;
+}
+
+/** A file's name as words, without its extension or a trailing variant letter ("Aether ParadiseA", "route1b"). */
+const fileWords = (file: string) => words(file.replace(/\.[a-z0-9]+$/i, "").replace(/(?<=[a-z\d])[A-D]$|(?<=\d)[a-d]$/, ""));
+/** A place's name as words, without "Town", "City" or "Village". */
+const placeWords = (place: PlaceIn) => words((TITLES[`${place.region}|${place.name}`] ?? place.name).replace(/\s+(Town|City|Village)$/i, ""));
+
+/** Some run of the file's words spells the place's name ("Route14" and "Kalos_Route_4" spell Route 4; "Route_40" doesn't). */
+function spells(file: string[], place: string[]): boolean {
+  const target = place.join("");
+  for (let i = 0; i < file.length; i++) {
+    let run = "";
+    for (let j = i; j < file.length && run.length < target.length; j++) {
+      run += file[j];
+      if (run === target) return true;
+    }
+  }
+  return false;
+}
+
+/**
+ * A file named after the place, not one that just sits on its page. When it
+ * spells several of the region's places, it belongs to the longest name
+ * ("Hau'oli Cemetery", not "Hau'oli City").
+ */
+function namesPlace(file: string, place: PlaceIn): boolean {
+  const f = fileWords(file);
+  let owner: PlaceIn | null = null;
+  let longest = 0;
+  for (const p of PLACES_BY_REGION.get(place.region) ?? [place]) {
+    const w = placeWords(p);
+    const n = w.join("").length;
+    if (n > longest && spells(f, w)) [owner, longest] = [p, n];
+  }
+  return owner === place;
+}
+
+const backdropFiles = new Map<string, Promise<{ name: string; width: number; height: number }[]>>();
+/** The region's in-game backdrops of the place, if it has any. */
+async function backdropShots(place: PlaceIn, store: ShotStore, max: number): Promise<GeoShot[]> {
+  const backdrop = BACKDROPS[place.region];
+  if (!backdrop || max <= 0) return [];
+  if (!backdropFiles.has(backdrop.prefix)) backdropFiles.set(backdrop.prefix, archiveFiles(backdrop.prefix));
+  const files = (await backdropFiles.get(backdrop.prefix)!).filter((f) => f.width === 400 && f.height === 240 && namesPlace(f.name, place));
+  return collectShots(
+    files.map((f) => f.name),
+    max,
+    store,
+    storage,
+    { fallback: GAME_CODES[backdrop.code] }
+  );
+}
+
+/**
+ * The place's page on the Pokémon Wiki (Fandom): screen-shaped in-game shots of
+ * the 3D games, named after the place. Bulbapedia has guidebook maps for most
+ * X/Y, Sun/Moon and Sword/Shield routes; Fandom has the views.
+ */
+async function fandomShots(place: PlaceIn, source: Source, games: string[], store: ShotStore, max: number): Promise<GeoShot[]> {
+  if (max <= 0 || !games.some((g) => THREE_DS.has(g) || SWITCH.has(g))) return [];
+  const name = TITLES[`${place.region}|${place.name}`] ?? place.name;
+  const unique = PLACE_COUNTS.get(place.name) === 1;
+  const title = await fandomPage([`${name} (${source.wiki})`, `${source.wiki} ${name}`, ...(unique ? [name] : [])]);
+  if (!title) return [];
+  // Fandom's 3DS shots are often a little cropped or scaled: 5:3-ish and small (guidebook scans are big).
+  const ds = source.screens?.["400x240"];
+  const codeFor = (width: number, height: number) =>
+    games.length === 1 ? games[0] : ds && width / height >= 1.6 && width / height <= 1.8 && width <= 800 ? ds : undefined;
+  const files = (await fandomImages(title)).filter((f) => {
+    if (FANDOM_DENYLIST.has(f.file) || !usable(f.file, games, true) || !namesPlace(f.file, place) || Math.min(f.width, f.height) < 200) return false;
+    const named = codeOf(f.file);
+    const code = named ?? codeFor(f.width, f.height);
+    if (!code || !(THREE_DS.has(code) || SWITCH.has(code))) return false;
+    return named || SWITCH.has(code) ? screenShaped(code, f.width, f.height) : f.width / f.height >= 1.6 && f.width / f.height <= 1.8 && f.width <= 800;
+  });
+  const fallback = (width: number, height: number) => {
+    const code = codeFor(width, height);
+    return code ? GAME_CODES[code] : undefined;
+  };
+  return collectShots(
+    files.map((f) => f.file),
+    max,
+    store,
+    storage,
+    { fallback, urls: new Map(files.map((f) => [f.file, f.url])), keyPrefix: "fandom:" }
+  );
 }
 
 /** The infobox `region` field allows this source (absent counts as yes). */
@@ -307,6 +419,8 @@ async function ingestSource(source: Source, world: WorldPlaces, store: ShotStore
       fallback: fallbackFor(source, games),
       trimBottom: TRIM_BOTTOM,
     });
+    shots.push(...(await fandomShots(place, source, games, store, FANDOM_SHOTS - count3d(shots))));
+    shots.push(...(await backdropShots(place, store, FANDOM_SHOTS - count3d(shots))));
     if (page) {
       byTitle.set(squash(page.title), place);
       pageTitles.push(page.title);
@@ -373,9 +487,32 @@ async function writeMaps(world: WorldPlaces) {
   return crops;
 }
 
+/** Tops up a region's existing places from Fandom and backdrops, without asking Bulbapedia again. */
+async function topUp(source: Source, world: WorldPlaces, store: ShotStore, old: WorldLocation[]): Promise<WorldLocation[]> {
+  console.log(`\n== ${source.regions.join(" + ")}: Fandom`);
+  const out = old.filter((l) => source.regions.includes(l.region)).map((l) => ({ ...l, shots: [...l.shots] }));
+  for (const place of world.places.filter((p) => source.regions.includes(p.region))) {
+    const location = out.find((l) => !l.parent && l.region === place.region && l.name === place.name);
+    if (!location) continue;
+    const games = ONLY_GAMES[`${place.region}|${place.name}`] ?? source.games;
+    const fandom = await fandomShots(place, source, games, store, FANDOM_SHOTS - count3d(location.shots));
+    const backdrops = await backdropShots(place, store, FANDOM_SHOTS - count3d([...location.shots, ...fandom]));
+    const added = [...fandom, ...backdrops].filter((s) => !location.shots.some((t) => t.id === s.id));
+    location.shots.push(...added);
+    if (added.length) console.log(`  + ${place.name} (${added.length})`);
+  }
+  return out;
+}
+
 async function main() {
-  const wanted = process.argv.slice(2).map((s) => s.toLowerCase());
+  const args = process.argv.slice(2);
+  const fandomOnly = args.includes("--fandom-only");
+  const wanted = args.filter((a) => !a.startsWith("--")).map((s) => s.toLowerCase());
   const world: WorldPlaces = JSON.parse(readFileSync(PLACES, "utf8"));
+  for (const name of new Set(world.places.map((p) => p.name))) {
+    PLACE_COUNTS.set(name, new Set(world.places.filter((p) => p.name === name).map((p) => p.region)).size);
+  }
+  for (const place of world.places) PLACES_BY_REGION.set(place.region, [...(PLACES_BY_REGION.get(place.region) ?? []), place]);
   const data = JSON.parse(readFileSync(OUT_DATA, "utf8"));
   await storage.ensureBucket();
   const old: WorldLocation[] = data.world?.locations ?? [];
@@ -387,7 +524,7 @@ async function main() {
   let locations = old;
   for (const source of SOURCES) {
     if (wanted.length && !source.regions.some((r) => wanted.includes(r.toLowerCase()))) continue;
-    const built = await ingestSource(source, world, store);
+    const built = fandomOnly ? await topUp(source, world, store, old) : await ingestSource(source, world, store);
     locations = [...locations.filter((l) => !source.regions.includes(l.region)), ...built];
     mkdirSync(path.dirname(SHOT_CACHE), { recursive: true });
     writeFileSync(SHOT_CACHE, JSON.stringify(store.cache));
