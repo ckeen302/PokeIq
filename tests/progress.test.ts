@@ -64,3 +64,20 @@ describe("recordRun daily bonus", () => {
     expect(getProgress().daily.streak).toBe(1);
   });
 });
+
+describe("PokéGuessr daily streak", () => {
+  it("counts consecutive daily games and resets after a missed day", async () => {
+    const { recordGeoGame, geoDailyStreak, getProgress } = await import("@/lib/progress");
+    const play = (daily: string) => recordGeoGame("kanto:classic", { kind: "game", score: 12000, rounds: [5000, 3000, 2000, 1000, 1000], daily });
+    play("2026-11-01");
+    play("2026-11-02");
+    expect(geoDailyStreak(getProgress(), "2026-11-02")).toBe(2);
+    expect(geoDailyStreak(getProgress(), "2026-11-03")).toBe(2);
+    expect(geoDailyStreak(getProgress(), "2026-11-04")).toBe(0);
+    play("2026-11-02");
+    expect(getProgress().best["geo:dailyStreak"]).toBe(2);
+    const first = play("2026-11-03");
+    expect(geoDailyStreak(getProgress(), "2026-11-03")).toBe(3);
+    expect(first.newBadges.map((b) => b.id)).not.toContain("geo-first");
+  });
+});

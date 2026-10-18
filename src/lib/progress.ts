@@ -286,6 +286,18 @@ export function recordRun(result: RunResult, shareToken?: string): RunReward {
   };
 }
 
+function geoDailyLast(p: Progress): string | null {
+  const n = p.best["geo:dailyLast"];
+  if (!n) return null;
+  const s = String(n);
+  return `${s.slice(0, 4)}-${s.slice(4, 6)}-${s.slice(6, 8)}`;
+}
+
+/** PokéGuessr daily streak as of `today` (0 once a day is missed). */
+export function geoDailyStreak(p: Progress, today: string): number {
+  return currentStreak(geoDailyLast(p), p.best["geo:dailyStreak"] ?? 0, today);
+}
+
 /** A finished PokéGuessr game or streak: XP, per-mode best, daily record and badges. */
 export function recordGeoGame(
   board: string,
@@ -300,7 +312,15 @@ export function recordGeoGame(
   p.xp += xp;
   p.best[key] = Math.max(p.best[key] ?? 0, game.score);
   p.best["geo:games"] = (p.best["geo:games"] ?? 0) + 1;
-  if (dailyKey && p.best[dailyKey] === undefined) p.best[dailyKey] = game.score;
+  if (dailyKey && game.daily && p.best[dailyKey] === undefined) {
+    p.best[dailyKey] = game.score;
+    // Daily streak, kept in the numeric `best` map: the last date as YYYYMMDD.
+    const last = geoDailyLast(p);
+    const streak = streakAfter(last, p.best["geo:dailyStreak"] ?? 0, game.daily);
+    p.best["geo:dailyStreak"] = streak;
+    p.best["geo:dailyBest"] = Math.max(p.best["geo:dailyBest"] ?? 0, streak);
+    p.best["geo:dailyLast"] = Number(game.daily.replaceAll("-", ""));
+  }
   if (!p.modulesPlayed.includes("geo")) p.modulesPlayed.push("geo");
 
   const earned = ["geo-first"];

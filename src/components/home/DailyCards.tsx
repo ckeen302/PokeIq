@@ -4,7 +4,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { CalendarDays, ChevronRight, Compass, Flame, Search } from "lucide-react";
 import { dailyNumber } from "@/lib/daily";
-import { currentStreak, useProgress } from "@/lib/progress";
+import { currentStreak, geoDailyStreak, useProgress } from "@/lib/progress";
 import { useToday } from "@/lib/use-today";
 import { NextDailyCountdown } from "@/components/NextDailyCountdown";
 import { cn } from "@/lib/utils";
@@ -50,7 +50,7 @@ export function DailyCards() {
         description="GeoGuessr for Pokémon: 5 places in Kanto. Look around, drop a pin on the map."
         status={geo !== undefined ? `Cleared · ${geo.toLocaleString("en-US")} / 25,000` : null}
         cleared={geo !== undefined}
-        streak={0}
+        streak={progress && today ? geoDailyStreak(progress, today) : 0}
         accent="154 68% 46%"
       />
     </div>
