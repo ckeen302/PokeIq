@@ -8,6 +8,7 @@ import { Crown, Expand, Link2, Loader2, LogOut, MapPin as MapPinIcon, RotateCcw,
 import {
   DUEL_COUNTDOWN_MS,
   DUEL_HP,
+  DUEL_IDLE_ROUNDS,
   DUEL_ROUND_MS,
   duelMultiplier,
   type DuelRoundResult,
@@ -800,7 +801,11 @@ function DuelSummary({ view, map, busy, onRematch }: { view: DuelView; map: GeoR
     hp: won ? `${them} ran out of HP.` : "You ran out of HP.",
     rounds: `After ${rounds} rounds, ${draw ? "you're level on HP" : won ? "you have more HP" : `${them} has more HP`}.`,
     left: won ? `${them} left the duel.` : "You left the duel.",
-    idle: draw ? "Neither of you guessed for three rounds." : won ? `${them} stopped guessing.` : "You didn't guess for three rounds.",
+    idle: draw
+      ? `Neither of you guessed for ${DUEL_IDLE_ROUNDS} rounds.`
+      : won
+        ? `${them} stopped guessing.`
+        : `You didn't guess for ${DUEL_IDLE_ROUNDS} rounds.`,
   }[end.reason];
   const allRounds: RevealedRound[] = view.revealed.flatMap((r) =>
     r.guesses.map((g, seat) => ({ guess: g && { x: g.x, y: g.y }, answer: r.answer, label: String(r.index + 1), color: SEAT_COLORS[seat] }))

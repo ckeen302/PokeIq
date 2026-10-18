@@ -360,6 +360,8 @@ describe("duel security", () => {
     }
     expect(failure(guessDuel(over, red, 0, { x: 0.5, y: 0.5 }, t + 1))?.error).toMatch(/over/);
     expect(advanceDuel(over, t + 10 * DUEL_ROUND_MS)).toEqual(over);
+    // Polls after the end (waiting for a rematch) change nothing, so they never write.
+    expect(touchDuel(over, red, t + 60 * SECOND)).toEqual(over);
   });
 });
 

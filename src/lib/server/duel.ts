@@ -186,7 +186,8 @@ export function linkRematch(duel: Duel, code: string): DuelOutcome {
 export function touchDuel(duel: Duel, playerId: string | null, now: number): Duel {
   const d = structuredClone(duel);
   const player = d.players.find((p) => p.id === playerId);
-  if (player && now - player.seenAt >= SEEN_STEP_MS) player.seenAt = now;
+  // After the end nobody can time out, so polls there (waiting for a rematch) write nothing.
+  if (player && d.status !== "finished" && now - player.seenAt >= SEEN_STEP_MS) player.seenAt = now;
   return advanceDuel(d, now);
 }
 
