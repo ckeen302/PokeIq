@@ -226,7 +226,7 @@ await page.screenshot({ path: `${OUT}/study.png` });
 step("trainer, leaderboard, pokémon page");
 for (const path of ["/trainer", "/leaderboard?board=iq", "/pokemon/eevee", "/pokedex?type=ghost&sort=spe"]) {
   await page.goto(`${BASE}${path}`, { waitUntil: "networkidle" });
-  await page.screenshot({ path: `${OUT}/${path.replace(/\//g, "_").slice(1)}.png` });
+  await page.screenshot({ path: `${OUT}/${path.slice(1).replace(/[^a-z0-9]+/gi, "_")}.png` });
 }
 
 // Accounts are only on when the server has a store (Supabase, or
