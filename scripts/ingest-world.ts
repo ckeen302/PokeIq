@@ -24,10 +24,12 @@ import {
   WIKI,
   api,
   archiveFiles,
+  categoryFiles,
   categoryPages,
   codeOf,
   collectShots,
   fileInfo,
+  type CategoryFile,
   type ShotFallback,
   firstLocationRef,
   galleryImages,
@@ -54,10 +56,10 @@ const SHOT_HASHES = path.join(process.cwd(), ".data", "geo-shot-hashes.json");
 /** Held while the data and caches are read and rewritten, so regions can be imported side by side. */
 const LOCK = path.join(process.cwd(), ".data", "ingest-world.lock");
 
-const MAX_SHOTS = 6;
+const MAX_SHOTS = 14;
 /** 3D screenshots a place gets from other wikis, counting the ones Bulbapedia already gave it. */
-const WIKI_SHOTS = 3;
-const MAX_BUILDING_SHOTS = 4;
+const WIKI_SHOTS = 6;
+const MAX_BUILDING_SHOTS = 10;
 /** Space around each region's crop, as a share of its size. */
 const CROP_MARGIN = 0.04;
 
@@ -87,6 +89,34 @@ const SOURCES: Source[] = [
   { regions: ["Blueberry Academy"], wiki: "Unova", games: ["SV"] },
   { regions: ["Sevii Islands"], wiki: "Sevii Islands", games: ["FRLG"] },
 ];
+
+/**
+ * Each game's category of location screenshots on the Archives, by game code:
+ * files named after a place whose game isn't in the name, or that no page
+ * shows, are still found and filed under the right game.
+ */
+const GAME_CATEGORIES: Record<string, string> = {
+  RBY: "Red, Green, Blue, and Yellow maps",
+  GSC: "Gold, Silver, and Crystal maps",
+  RSE: "Ruby, Sapphire, and Emerald maps",
+  FRLG: "FireRed and LeafGreen maps",
+  DPPt: "Diamond, Pearl, and Platinum maps",
+  HGSS: "HeartGold and SoulSilver maps",
+  BWB2W2: "Black, White, Black 2, and White 2 maps",
+  XY: "X and Y maps",
+  ORAS: "Omega Ruby and Alpha Sapphire maps",
+  SMUSUM: "Sun, Moon, Ultra Sun, and Ultra Moon maps",
+  LGPE: "Let's Go, Pikachu! and Let's Go, Eevee! maps",
+  SwSh: "Sword and Shield maps",
+  BDSP: "Brilliant Diamond and Shining Pearl maps",
+  SV: "Scarlet and Violet maps",
+  ZA: "Legends: Z-A maps",
+};
+/** Archives categories of files that aren't a plain view: guide and Town Map maps, models, sprites, art, look-alike Pokémon Center interiors. */
+const NOT_A_VIEW_CATEGORY =
+  /^(Area highlighted maps|Town maps|Sign maps|Annotated .+|Game sprites.*|Game models.*|Animated .+|Location preview|Location artwork|Unsatisfactory images|Unused images|Early .+ images|Fair use game guide scan images|Pokémon Centers|Poké Marts|Ultra Space maps|Hyperspace maps|Animation .+)$/;
+/** The Archives' map category for an atlas region, when it isn't "<Region> maps". */
+const REGION_CATEGORIES: Record<string, string[]> = { Kalos: ["Kalos maps", "Lumiose City maps"] };
 
 /** Region maps cut from the world map, and the atlas regions each one plays. */
 const CROPS: Record<string, { name: string; regions: string[] }> = {
@@ -426,23 +456,72 @@ function variantKey(file: string): string {
  * way ("Hammerlocke Station.png"). Of a view in several seasons or in two
  * versions of one game, the first is kept.
  */
-async function rankShots(lists: string[][], games: string[], source: Source, trusted: Set<string>): Promise<string[]> {
+async function rankShots(lists: string[][], games: string[], source: Source, trusted: Set<string>, codes = new Map<string, string>()): Promise<string[]> {
   const codeless = games.length === 1 || !!source.screens;
   const files = [...new Set(lists.flat().map((f) => f.replace(/ /g, "_")))].filter((f) => usable(f, games, codeless));
   const info = await fileInfo(files);
+  const codeFor = (f: string) => codeOf(f) ?? codes.get(f) ?? (games.length === 1 ? games[0] : undefined);
+  // A Switch game's small copies (Let's Go's 396 px location cards) only when there's no full-size capture of the place.
+  const hd = new Set(files.filter((f) => SWITCH.has(codeFor(f) ?? "") && (info.get(f)?.width ?? 0) >= 1280).map((f) => GAME_CODES[codeFor(f)!]));
   const seen = new Set<string>();
   return files.filter((f) => {
     const size = info.get(f);
     // Thumbnails and slivers (a lighthouse wall 75 px wide) are too small to place.
     if (!size || Math.min(size.width, size.height) < 120) return false;
     if (!codeOf(f) && !trusted.has(f) && !FILE_GAMES[f] && !source.screens?.[`${size.width}x${size.height}`]) return false;
-    const code = codeOf(f) ?? (games.length === 1 ? games[0] : undefined);
+    const code = codeFor(f);
     if (code && (THREE_DS.has(code) || SWITCH.has(code)) && !screenShaped(code, size.width, size.height) && !MODEL_RENDERS.has(f)) return false;
+    if (code && SWITCH.has(code) && size.width < 960 && hd.has(GAME_CODES[code])) return false;
     const key = variantKey(f);
     if (seen.has(key)) return false;
     seen.add(key);
     return true;
   });
+}
+
+/** The Archives category family of a game code (Black / White's and Black 2 / White 2's share one). */
+const GAME_FAMILY: Record<string, string> = {
+  ...Object.fromEntries(["RB", "RBY", "RGBY", "Y"].map((c) => [c, "RBY"])),
+  ...Object.fromEntries(["GS", "GSC", "C"].map((c) => [c, "GSC"])),
+  ...Object.fromEntries(["RS", "RSE", "SE", "E"].map((c) => [c, "RSE"])),
+  ...Object.fromEntries(["DP", "Pt", "DPPt"].map((c) => [c, "DPPt"])),
+  ...Object.fromEntries(["BW", "B", "W", "B2W2", "B2", "W2", "BWB2W2"].map((c) => [c, "BWB2W2"])),
+  ...Object.fromEntries(["OR", "AS", "ORAS"].map((c) => [c, "ORAS"])),
+  ...Object.fromEntries(["SM", "USUM", "SMUSUM"].map((c) => [c, "SMUSUM"])),
+  ...Object.fromEntries(["PE", "LGPE"].map((c) => [c, "LGPE"])),
+};
+const familyOf = (code: string) => GAME_FAMILY[code] ?? code;
+
+const gameCategoryFiles = new Map<string, Promise<CategoryFile[]>>();
+/**
+ * The region's files in its games' Archives categories (each fetched once),
+ * with the game each is from: the code in its name, else its category's.
+ */
+async function categoryShots(source: Source, games: string[]): Promise<Map<string, string>> {
+  const regionCats = new Set([source.wiki, ...source.regions].flatMap((r) => REGION_CATEGORIES[r] ?? [`${r} maps`]));
+  const families = new Map<string, Set<string>>();
+  for (const [family, category] of Object.entries(GAME_CATEGORIES)) {
+    if (!games.some((g) => familyOf(g) === family)) continue;
+    if (!gameCategoryFiles.has(category)) gameCategoryFiles.set(category, categoryFiles(category));
+    for (const file of await gameCategoryFiles.get(category)!) {
+      if (!file.categories.some((c) => regionCats.has(c)) || file.categories.some((c) => NOT_A_VIEW_CATEGORY.test(c))) continue;
+      families.set(file.name, (families.get(file.name) ?? new Set()).add(family));
+    }
+  }
+  const out = new Map<string, string>();
+  for (const [file, fams] of families) {
+    const named = codeOf(file);
+    if (named) {
+      if (games.includes(named)) out.set(file, named);
+      continue;
+    }
+    // In two games' categories with no game in its name: can't tell which.
+    if (fams.size !== 1) continue;
+    const [family] = fams;
+    const code = games.includes(family) ? family : games.find((g) => familyOf(g) === family);
+    if (code) out.set(file, code);
+  }
+  return out;
 }
 
 /** Archive screenshots named "<Place>_<GAME>.png" (or "<Region>_Route_N_<GAME>.png"), for places whose page has few. */
@@ -689,16 +768,23 @@ async function ingestSource(source: Source, world: WorldPlaces, store: ShotStore
   /** Page title → the place it is, for matching buildings to their parent. */
   const byTitle = new Map<string, PlaceIn>();
   const pageTitles: string[] = [];
+  const catCodes = await categoryShots(source, source.games);
+  const catGames = new Map([...Object.entries(FILE_GAMES), ...[...catCodes].map(([f, code]) => [f, GAME_CODES[code]] as const)]);
   for (const place of places) {
     const games = ONLY_GAMES[`${place.region}|${place.name}`] ?? source.games;
     const page = await placePage(place, source);
     const infobox = page ? await infoboxImages(page.wikitext) : [];
     const archive = await archiveShots(place, source);
     const gallery = page ? await galleryImages(page.title, [page.title, place.name, ...infobox.map(imageStem)]) : [];
-    const trusted = new Set([...infobox, ...(ARCHIVE_FILES[`${place.region}|${place.name}`] ?? []), ...archive.filter((f) => f.startsWith("Photo_Spot_"))].map((f) => f.replace(/ /g, "_")));
-    const ranked = (await rankShots([infobox, archive, gallery], games, source, trusted)).filter((f) => !namesOtherPlace(f, place));
+    const fromCategories = [...catCodes.keys()].filter((f) => games.includes(catCodes.get(f)!) && namesPlace(f, place));
+    const trusted = new Set(
+      [...infobox, ...(ARCHIVE_FILES[`${place.region}|${place.name}`] ?? []), ...archive.filter((f) => f.startsWith("Photo_Spot_")), ...fromCategories].map((f) =>
+        f.replace(/ /g, "_")
+      )
+    );
+    const ranked = (await rankShots([infobox, archive, gallery, fromCategories], games, source, trusted, catCodes)).filter((f) => !namesOtherPlace(f, place));
     const shots = await collectShots(ranked, MAX_SHOTS, store, storage, {
-      games: new Map(Object.entries(FILE_GAMES)),
+      games: catGames,
       fallback: fallbackFor(source, games),
       trimBottom: TRIM_BOTTOM,
     });
@@ -731,12 +817,16 @@ async function ingestSource(source: Source, world: WorldPlaces, store: ShotStore
     if (!parent) continue;
     const infobox = await infoboxImages(page.wikitext);
     const gallery = await galleryImages(page.title, [page.title, ...infobox.map(imageStem)]);
+    // Archives files named after the building ("Silph Co. 5F LGPE.png").
+    const titleWords = words(page.title.replace(/\s*\(.*\)$/, ""));
+    const fromCategories = titleWords.join("").length >= 6 ? [...catCodes.keys()].filter((f) => spells(fileWords(f), titleWords)) : [];
+    const trusted = new Set([...infobox, ...fromCategories].map((f) => f.replace(/ /g, "_")));
     const shots = await collectShots(
-      (await rankShots([infobox, gallery], source.games, source, new Set(infobox.map((f) => f.replace(/ /g, "_"))))).filter((f) => !namesOtherPlace(f, parent, page.title)),
+      (await rankShots([infobox, gallery, fromCategories], source.games, source, trusted, catCodes)).filter((f) => !namesOtherPlace(f, parent, page.title)),
       MAX_BUILDING_SHOTS,
       store,
       storage,
-      { fallback: fallbackFor(source, source.games), trimBottom: TRIM_BOTTOM }
+      { games: catGames, fallback: fallbackFor(source, source.games), trimBottom: TRIM_BOTTOM }
     );
     if (!shots.length) continue;
     taken.add(squash(page.title));

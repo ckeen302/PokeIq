@@ -12,7 +12,17 @@ export const ARCHIVES = "https://archives.bulbagarden.net/w/api.php";
 export const WIKI = "https://bulbapedia.bulbagarden.net/w/api.php";
 export const BUCKET = "geo";
 
-const SHOT_WIDTH = 640;
+/** Part of every upload's cache key: bumping it re-encodes and re-uploads every screenshot. */
+const ENCODING = "v2";
+/** 3D captures are kept up to this width (a 1080p capture is scaled down a little). */
+const PHOTO_WIDTH = 1600;
+/** Sprite graphics are scaled up by a whole number until the longer side is at least this, every pixel kept sharp. */
+const PIXEL_SIDE = 1200;
+const MAX_PIXEL_SIDE = 2400;
+/** The Game Boy, Game Boy Advance and DS games: sprite graphics. */
+const PIXEL_GAME = /^(Red|Yellow|Gold|Silver|Crystal|Ruby|Sapphire|Emerald|FireRed|Diamond|Pearl|Platinum|HeartGold|Black)\b/;
+/** Let's Go's location cards: 396 × 228 with a white frame and a glow, which are cut off. */
+const CARD_INSET = 14;
 /** Smaller sources are sprites or icons, never a view of a place (a Game Boy screen is 160×144). */
 const MIN_SOURCE_SIDE = 120;
 /** Long strips (a whole route, a lift shaft) are cut to their middle: a view of the place, not a sliver. */
@@ -305,6 +315,44 @@ export function imageStem(file: string): string {
     .join(" ");
 }
 
+export interface CategoryFile {
+  name: string;
+  width: number;
+  height: number;
+  categories: string[];
+}
+
+/** Every file in an Archives category, with its size and its other categories. */
+export async function categoryFiles(category: string): Promise<CategoryFile[]> {
+  const out = new Map<string, CategoryFile>();
+  let cont: Record<string, string> = {};
+  for (;;) {
+    const r = await api<{
+      query?: { pages: { title: string; imageinfo?: { width: number; height: number }[]; categories?: { title: string }[] }[] };
+      continue?: Record<string, string>;
+    }>(ARCHIVES, {
+      action: "query",
+      generator: "categorymembers",
+      gcmtitle: `Category:${category}`,
+      gcmtype: "file",
+      gcmlimit: "200",
+      prop: "categories|imageinfo",
+      iiprop: "size",
+      cllimit: "max",
+      ...cont,
+    });
+    for (const p of r.query?.pages ?? []) {
+      const name = p.title.replace(/^File:/, "").replace(/ /g, "_");
+      const file = out.get(name) ?? { name, width: 0, height: 0, categories: [] };
+      if (p.imageinfo?.[0]) [file.width, file.height] = [p.imageinfo[0].width, p.imageinfo[0].height];
+      for (const c of p.categories ?? []) file.categories.push(c.title.replace(/^Category:/, ""));
+      out.set(name, file);
+    }
+    if (!r.continue) return [...out.values()];
+    cont = r.continue;
+  }
+}
+
 /** Page titles in the given category (main namespace only). */
 export async function categoryPages(category: string): Promise<string[]> {
   const out: string[] = [];
@@ -395,6 +443,46 @@ export function firstLocationRef(wikitext: string): string | null {
 // Screenshots → Storage
 // ---------------------------------------------------------------------------
 
+/** How big a sprite screenshot's pixels are: 2 when every 2 × 2 block is one colour (a doubled capture), and so on. */
+async function pixelScale(source: Buffer): Promise<number> {
+  const { data, info } = await sharp(source).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+  const at = (x: number, y: number) => data.readUInt32LE((y * info.width + x) * 4);
+  for (const k of [4, 3, 2]) {
+    if (info.width % k || info.height % k) continue;
+    let uniform = true;
+    for (let y = 0; y < info.height && uniform; y += k) {
+      for (let x = 0; x < info.width && uniform; x += k) {
+        const first = at(x, y);
+        for (let i = 1; i < k * k && uniform; i++) uniform = at(x + (i % k), y + Math.floor(i / k)) === first;
+      }
+    }
+    if (uniform) return k;
+  }
+  return 1;
+}
+
+/**
+ * Re-encodes a screenshot as sharp as its source allows. Sprite games' shots
+ * go back to their true pixels, then up by a whole number (nearest
+ * neighbour, lossless), so they stay crisp at any size. 3D captures keep up to
+ * 1600 px; smaller ones (the 3DS's 400 px screen) are doubled smoothly.
+ */
+async function encodeShot(source: Buffer, game: string, crop: { left: number; top: number; width: number; height: number }): Promise<Buffer> {
+  if (PIXEL_GAME.test(game)) {
+    const k = await pixelScale(source);
+    const snap = (v: number) => Math.floor(v / k) * k;
+    const box = { left: snap(crop.left), top: snap(crop.top), width: snap(crop.width), height: snap(crop.height) };
+    const [w, h] = [box.width / k, box.height / k];
+    const side = Math.max(w, h);
+    const f = Math.max(1, Math.min(Math.ceil(PIXEL_SIDE / side), Math.floor(MAX_PIXEL_SIDE / side)));
+    const native = await sharp(source).extract(box).resize(w, h, { kernel: "nearest" }).toBuffer();
+    return sharp(native).resize(w * f, h * f, { kernel: "nearest" }).webp({ lossless: true, effort: 6 }).toBuffer();
+  }
+  const img = sharp(source).extract(crop).flatten({ background: "#000" });
+  if (crop.width < 800) return img.resize({ width: Math.min(crop.width * 2, PHOTO_WIDTH), kernel: "lanczos3" }).webp({ quality: 90, effort: 6 }).toBuffer();
+  return img.resize({ width: PHOTO_WIDTH, withoutEnlargement: true }).webp({ quality: 86, effort: 6 }).toBuffer();
+}
+
 export interface ShotStore {
   /** Source file → uploaded id, from earlier runs. */
   cache: Record<string, string>;
@@ -432,7 +520,7 @@ export async function collectShots(files: string[], max: number, store: ShotStor
     const trim = opts.trimBottom?.[file] ?? 0;
     const top = opts.trimTop?.[file] ?? 0;
     // A trimmed file is a different image from the untrimmed one, so it's cached under its own key.
-    const key = (opts.keyPrefix ?? "") + file + (top ? `#top${top}` : "") + (trim ? `#bottom${trim}` : "");
+    const key = (opts.keyPrefix ?? "") + file + (top ? `#top${top}` : "") + (trim ? `#bottom${trim}` : "") + `@${ENCODING}`;
     const cached = store.cache[key];
     if (known && cached && store.live.has(cached)) {
       shots.push({ id: cached, game: known });
@@ -454,12 +542,9 @@ export async function collectShots(files: string[], max: number, store: ShotStor
         continue;
       }
       const id = randomBytes(9).toString("base64url");
-      const crop = viewCrop(width, Math.round(height * (1 - trim - top)));
-      const webp = await sharp(source)
-        .extract({ ...crop, top: crop.top + Math.round(height * top) })
-        .resize({ width: SHOT_WIDTH, withoutEnlargement: true })
-        .webp({ quality: 66, effort: 6 })
-        .toBuffer();
+      const card = game.startsWith("Let's Go") && width < 500 ? CARD_INSET : 0;
+      const crop = viewCrop(width - 2 * card, Math.round(height * (1 - trim - top)) - 2 * card);
+      const webp = await encodeShot(source, game, { ...crop, left: crop.left + card, top: crop.top + card + Math.round(height * top) });
       await storage.upload(id, webp);
       store.cache[key] = id;
       store.live.add(id);
