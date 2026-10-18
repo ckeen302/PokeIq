@@ -332,10 +332,12 @@ export function leaveDuel(duel: Duel, playerId: string, now: number): DuelOutcom
 // Views
 // ---------------------------------------------------------------------------
 
+/** A round's true place. Server-side only: it goes to the browser in the reveal and never before. */
+export const roundAnswer = (duel: Duel, index: number) => answerFor(geoSpec(duel.region), duel.rounds[index].plan);
+
 /** What one trainer (or a visitor: null) may see of the duel right now. */
 export function duelView(duel: Duel, playerId: string | null, now: number, rev: number): DuelView {
   const seat = seatOf(duel, playerId);
-  const spec = geoSpec(duel.region);
   const revealed = duel.rounds.flatMap((r, index): DuelRoundResult[] => {
     if (!r.result) return [];
     const { scores, squares, damage, hurt, hp } = r.result;
@@ -344,7 +346,7 @@ export function duelView(duel: Duel, playerId: string | null, now: number, rev: 
         index,
         multiplier: duelMultiplier(index),
         shot: shotUrl(r.plan),
-        answer: answerFor(spec, r.plan),
+        answer: roundAnswer(duel, index),
         guesses: r.guesses.map((g, k) => (g ? { x: g.x, y: g.y, score: scores[k], squares: squares[k] } : null)),
         damage,
         hurt,
