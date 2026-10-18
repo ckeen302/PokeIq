@@ -125,7 +125,7 @@ It works with zero configuration. For production:
 | `SUPABASE_SERVICE_ROLE_KEY` | no | Server-only. Never prefix it with `NEXT_PUBLIC_` |
 | `NEXT_PUBLIC_SITE_URL` | no | Canonical URL for the sitemap and OG tags (defaults to the Vercel production URL) |
 
-To set up Supabase, create a free project and run the files in `supabase/migrations/` (in order) in its SQL editor.
+To set up Supabase, create a free project and run `supabase/setup.sql` (all migrations in one file) in its SQL editor.
 
 ### Trainer accounts
 
