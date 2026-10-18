@@ -16,6 +16,8 @@ export interface RevealedRound {
   answer: { pin: [number, number]; mask: [number, number][] };
   /** Round number shown on the markers in the end-of-game summary. */
   label?: string;
+  /** Duels: the trainer's colour for their ball and line. */
+  color?: string;
 }
 
 interface Props {
@@ -126,9 +128,11 @@ export function GeoMap({ region, pick, revealed = [], onPick, className }: Props
           {revealed.map((r, i) => {
             const [ax, ay] = toScreen(r.answer.pin[0], r.answer.pin[1]);
             const g = r.guess ? toScreen(r.guess.x, r.guess.y) : null;
+            // Duels reveal each trainer's guess as its own round on one shared answer: draw its area once.
+            const again = i > 0 && revealed[i - 1].answer === r.answer;
             return (
               <g key={i}>
-                <g className="geo-area">
+                <g className="geo-area" display={again ? "none" : undefined}>
                   {/* Faded as one layer, so overlapping dots read as one even patch. */}
                   <g opacity={0.5}>
                     {r.answer.mask.map(([x, y], k) => {
@@ -137,9 +141,9 @@ export function GeoMap({ region, pick, revealed = [], onPick, className }: Props
                     })}
                   </g>
                 </g>
-                {g && <line className="geo-line" pathLength={1} x1={g[0]} y1={g[1]} x2={ax} y2={ay} strokeWidth={2.5} strokeLinecap="round" stroke="#120f24" />}
+                {g && <line className="geo-line" pathLength={1} x1={g[0]} y1={g[1]} x2={ax} y2={ay} strokeWidth={2.5} strokeLinecap="round" stroke={r.color ?? "#120f24"} />}
                 <Flag x={ax} y={ay} />
-                {g && <Ball x={g[0]} y={g[1]} label={r.label} />}
+                {g && <Ball x={g[0]} y={g[1]} label={r.label} color={r.color} />}
               </g>
             );
           })}
@@ -170,13 +174,13 @@ export function GeoMap({ region, pick, revealed = [], onPick, className }: Props
 }
 
 /** The guess marker: a tiny Poké Ball that drops in. */
-function Ball({ x, y, label }: { x: number; y: number; label?: string }) {
+function Ball({ x, y, label, color = "#e2306f" }: { x: number; y: number; label?: string; color?: string }) {
   const r = 8;
   return (
     <g transform={`translate(${x} ${y})`}>
       <g className="geo-drop">
         <circle r={r} fill="#fff" stroke="#120f24" strokeWidth={2} />
-        <path d={`M${-r} 0a${r} ${r} 0 0 1 ${2 * r} 0z`} fill="#e2306f" stroke="#120f24" strokeWidth={2} />
+        <path d={`M${-r} 0a${r} ${r} 0 0 1 ${2 * r} 0z`} fill={color} stroke="#120f24" strokeWidth={2} />
         <circle r={2.6} fill="#fff" stroke="#120f24" strokeWidth={1.4} />
         {label && (
           <text y={-r - 4} textAnchor="middle" fontSize={13} fontWeight={700} fill="#fff" stroke="#120f24" strokeWidth={3} paintOrder="stroke">

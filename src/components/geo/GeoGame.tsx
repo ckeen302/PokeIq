@@ -42,6 +42,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { BadgeMedal } from "@/components/game/BadgeMedal";
 import { CopyFallback } from "@/components/quiz/CopyFallback";
 import { GeoMap, type MapPin } from "./GeoMap";
+import { DuelCard } from "./DuelCard";
 import { cn } from "@/lib/utils";
 
 type Phase = "setup" | "loading" | "guessing" | "submitting" | "revealed" | "results" | "error";
@@ -454,6 +455,8 @@ export function GeoGame({ regions: allRegions, challenge }: GeoGameProps) {
             />
           </div>
         </div>
+
+        <DuelCard region={region} />
 
         <p className="text-center text-xs text-muted-foreground">
           Screenshots from{" "}
