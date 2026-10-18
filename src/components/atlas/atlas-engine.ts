@@ -288,26 +288,40 @@ export function createAtlas(canvas: HTMLCanvasElement, stage: HTMLElement, atlas
       boxes.push({ x, y, w, h });
       return true;
     };
-    const label = (text: string, wx: number, wy: number, font: string, size: number, dy: number, color: string, track = 0) => {
-      const x = wx * s + tx;
+    // A label of one or more lines ("\n"), centred on its point; skipped if it would overlap one already drawn.
+    const label = (text: string, wx: number, wy: number, font: string, size: number, dy: number, color: string, track = 0, dx = 0): boolean => {
+      const x = wx * s + tx + dx;
       const y = wy * s + ty + dy;
       ctx.font = font.replace("SIZE", `${size}px`);
       ctx.letterSpacing = `${track}px`;
-      const key = `${text}|${ctx.font}|${track}`;
-      let w = widths.get(key);
-      if (w === undefined) {
-        w = ctx.measureText(text).width;
-        widths.set(key, w);
+      const lines = text.split("\n");
+      const lineH = size + 2;
+      let w = 0;
+      for (const line of lines) {
+        const key = `${line}|${ctx.font}|${track}`;
+        let lw = widths.get(key);
+        if (lw === undefined) {
+          lw = ctx.measureText(line).width;
+          widths.set(key, lw);
+        }
+        w = Math.max(w, lw);
       }
-      if (!fits(x - w / 2 - 3, y - size, w + 6, size + 6)) return;
+      if (!fits(x - w / 2 - 3, y - size, w + 6, size + 6 + (lines.length - 1) * lineH)) return false;
       ctx.lineWidth = Math.max(3, size / 4);
       ctx.strokeStyle = "rgba(8,18,32,.88)";
       ctx.lineJoin = "round";
       ctx.textAlign = "center";
-      ctx.strokeText(text, x, y);
       ctx.fillStyle = color;
-      ctx.fillText(text, x, y);
+      lines.forEach((line, i) => {
+        ctx.strokeText(line, x, y + i * lineH);
+        ctx.fillText(line, x, y + i * lineH);
+      });
+      return true;
     };
+    /** Where a route's name may go when a town already sits on its point: just below, above, or to either side. */
+    const ROUTE_SPOTS: [number, number][] = [[0, 4], [0, 22], [0, -14], [34, 4], [-34, 4]];
+    // Paldea's areas are routes with long names: "South Province (Area Three)" goes on two lines.
+    const routeText = (name: string) => name.replace(/^(.+?) \((Area .+)\)$/, "$1\n$2");
     const { display, sans, pixel } = fonts;
 
     if (selected) label(selected.name, selected.x, selected.y, `700 SIZE ${sans}, system-ui`, 15, -20, "#ffe08a");
@@ -329,8 +343,14 @@ export function createAtlas(canvas: HTMLCanvasElement, stage: HTMLElement, atlas
       }
     }
     if (f >= 2.2) for (const p of atlas.places) if (p.kind === "town") label(p.name, p.x, p.y, `600 SIZE ${sans}, system-ui`, f > 4 ? 13 : 11, -12, "#ffffff");
+    // Routes before landmarks: where both can't fit, the route keeps its name.
+    if (f >= 3.6) {
+      for (const p of atlas.places) {
+        if (p.kind !== "route") continue;
+        ROUTE_SPOTS.some(([dx, dy]) => label(routeText(p.name), p.x, p.y, `SIZE ${pixel}, monospace`, 10, dy, "#ffe2b5", 0, dx));
+      }
+    }
     if (f >= 3.6) for (const p of atlas.places) if (p.kind === "landmark") label(p.name, p.x, p.y, `600 SIZE ${sans}, system-ui`, 11, -10, "#cfe0ff");
-    if (f >= 3.6) for (const p of atlas.places) if (p.kind === "route") label(p.name, p.x, p.y, `SIZE ${pixel}, monospace`, 10, 4, "#ffe2b5");
     if (f >= 6)
       for (const p of atlas.places)
         p.inside?.forEach((b, i) => label(b, p.x, p.y, `500 SIZE ${sans}, system-ui`, 11, 18 + i * 14, "#c9f2dc"));
