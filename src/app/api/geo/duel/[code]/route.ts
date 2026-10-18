@@ -100,7 +100,7 @@ export async function POST(request: NextRequest, context: Context) {
 
     const playerId = readDuelToken(body.token, code);
     if (!playerId) return NextResponse.json({ error: "That isn't your seat in this duel." }, { status: 403 });
-    if (body.action === "rematch") return rematch(code, playerId);
+    if (body.action === "rematch") return await rematch(code, playerId);
 
     const out = await updateDuel(code, (duel, now) => {
       switch (body.action) {
