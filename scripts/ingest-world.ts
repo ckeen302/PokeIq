@@ -254,6 +254,16 @@ const DENYLIST = new Set<string>([
   "SS_Anne_2F_RBY.png",
   "SS_Anne_3F_RBY.png",
   "SS_Anne_2F_FRLG.png",
+  // Floors and chambers that look the same as one already kept (Dotted Hole B1F, Tanoby's Monean Chamber).
+  "Dotted_Hole_B2F.png",
+  "Dotted_Hole_B3F.png",
+  "Tanoby_Ruins_Dilford_Chamber.png",
+  "Tanoby_Ruins_Liptoo_Chamber.png",
+  "Tanoby_Ruins_Scufib_Chamber.png",
+  "Tanoby_Ruins_Viapois_Chamber.png",
+  "Tanoby_Ruins_Weepth_Chamber.png",
+  // A labelled guide map.
+  "Alola_Route_13.png",
 ]);
 /** Archive files for places whose town map is named after the place alone ("One_Island.png"). */
 const ARCHIVE_FILES: Record<string, string[]> = {
