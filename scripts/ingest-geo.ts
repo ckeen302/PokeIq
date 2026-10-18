@@ -12,6 +12,10 @@
  * nothing) and uploaded to the public "geo" bucket in Supabase Storage. The
  * id → location mapping lives in src/data/geo.json, which only the server reads.
  *
+ * Buildings, Gyms and landmarks (Silph Co., Pewter Gym, S.S. Anne…) have no
+ * highlight of their own, but their infobox names the town or route they sit
+ * in; they become extra locations that share that parent's pin and area.
+ *
  *   SUPABASE_URL=… SUPABASE_SERVICE_ROLE_KEY=… npm run ingest:geo                 # all regions
  *   SUPABASE_URL=… SUPABASE_SERVICE_ROLE_KEY=… npm run ingest:geo -- kanto johto  # selected regions
  */
@@ -32,6 +36,12 @@ interface RegionConfig {
   name: string;
   /** Longest side the map is stored at (big HD maps are downscaled). */
   maxSide: number;
+  /**
+   * Game codes set in this region. Pages also show other regions' namesakes
+   * (Sinnoh's Pal Park, Alola's Route 1), so screenshots from any other game
+   * are dropped.
+   */
+  games: string[];
 }
 
 /*
@@ -42,10 +52,33 @@ interface RegionConfig {
  * island, Galar's and Paldea's are crops at varying offsets), so they aren't
  * listed until their data has been verified the same way.
  */
-const REGIONS: RegionConfig[] = [{ id: "kanto", name: "Kanto", maxSide: 400 }];
+const REGIONS: RegionConfig[] = [
+  { id: "kanto", name: "Kanto", maxSide: 400, games: ["RB", "RBY", "RGBY", "Y", "GSC", "FRLG", "HGSS", "PE", "LGPE"] },
+];
 
-const MAX_SHOTS = 4;
+/** Screenshots kept per pinned location / per building. */
+const MAX_SHOTS = 6;
+const MAX_BUILDING_SHOTS = 4;
 const SHOT_WIDTH = 640;
+/** Smaller sources are sprites or icons, never a view of a place (a Game Boy screen is 160×144). */
+const MIN_SOURCE_SIDE = 120;
+/** Where to look for buildings, besides the pages each pinned location links to. */
+const BUILDING_CATEGORIES = (region: string) => [`Category:${region} locations`, `Category:${region} Gyms`];
+/** Infoboxes used by building / landmark pages (towns and routes have their own). */
+const BUILDING_TEMPLATES = ["Template:Infobox location", "Template:GymInfobox"];
+/** Source -> uploaded id, so re-runs reuse uploads instead of re-encoding everything. */
+const SHOT_CACHE = path.join(process.cwd(), ".data", "geo-shot-cache.json");
+/**
+ * Files that look like screenshots by name but aren't usable in-game views
+ * of the place (found by reviewing contact sheets of every new shot).
+ */
+const DENYLIST = new Set<string>([
+  "Celadon_Game_Corner_7_GSC.png", // a slot-machine reel, not the building
+  "Celadon_Game_Corner_7_Y.png", // same reel symbol
+  "Route_22_Rival_battle_RBY.png", // mostly a dialogue box
+  "Vermilion_City_port_HGSS.png", // mostly a (Japanese) dialogue box
+  "Cerulean_City_Slowbro_SonicBoom_FRLG.png", // mostly a dialogue box
+]);
 const BUCKET = "geo";
 
 const supabaseUrl = process.env.SUPABASE_URL;
@@ -78,6 +111,8 @@ export interface GeoShot {
 
 export interface GeoLocation {
   name: string;
+  /** For buildings and landmarks: the pinned location they sit in (pin and mask are copied from it). */
+  parent?: string;
   /** Normalised [x, y] centre of the highlight. */
   pin: [number, number];
   /** Normalised points covering the highlight (scoring = distance to the nearest). */
@@ -226,6 +261,7 @@ const GAME_CODES: Record<string, string> = {
   RB: "Red / Blue",
   RBY: "Red / Blue / Yellow",
   RGBY: "Red / Green / Blue / Yellow",
+  Y: "Yellow",
   GSC: "Gold / Silver / Crystal",
   RSE: "Ruby / Sapphire / Emerald",
   RS: "Ruby / Sapphire",
@@ -249,10 +285,42 @@ const GAME_CODES: Record<string, string> = {
   SV: "Scarlet / Violet",
 };
 
-function gameOf(file: string): string {
-  const code = file.replace(/\.(png|jpg|jpeg|gif)$/i, "").split(/[ _]/).pop() ?? "";
-  return GAME_CODES[code] ?? code;
+/**
+ * The game code in a screenshot's file name: usually last ("Pewter Gym
+ * Exterior LGPE.png"), sometimes first ("FL Safari Zone.png"). Null for
+ * anything without a known code (anime stills, artwork, manga panels, maps).
+ */
+function codeOf(file: string): string | null {
+  const tokens = file.replace(/\.(png|jpe?g|gif)$/i, "").split(/[ _]/).filter(Boolean);
+  return [tokens.at(-1), tokens[0]].find((t): t is string => !!t && !!GAME_CODES[t]) ?? null;
 }
+
+function gameOf(file: string): string | null {
+  const code = codeOf(file);
+  return code ? GAME_CODES[code] : null;
+}
+
+const isLetsGo = (file: string) => gameOf(file)?.startsWith("Let's Go") ?? false;
+
+/** Lower-case words (accents and punctuation dropped), for loose name matching. */
+const words = (s: string) =>
+  s
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/['’.]/g, "")
+    .split(/[^a-z0-9]+/)
+    .filter(Boolean);
+
+/** Whole-word prefix match, so "Route 1" never matches "Route 10 PE.png". */
+function startsWithWords(file: string, prefix: string): boolean {
+  const f = words(file);
+  const p = words(prefix);
+  return p.length > 0 && p.join("").length >= 4 && p.every((w, i) => f[i] === w);
+}
+
+/** Exact-name lookup key. */
+const squash = (s: string) => words(s).join("");
 
 /** Raw infobox image fields (image, imageI, imageII, …) from a page's lead section. */
 function infoboxImageValues(wikitext: string): string[] {
@@ -321,7 +389,82 @@ async function locationPage(name: string, region: string): Promise<{ title: stri
 
 // ---------------------------------------------------------------------------
 
-async function buildLocations(region: RegionConfig, names: string[], highlights: (Highlight | null)[]): Promise<GeoLocation[]> {
+/**
+ * Gallery screenshots on a page that follow the "<Place> … <GAME>.png" naming
+ * (e.g. "Pewter Gym interior FRLG.png"). Only files whose name starts with one
+ * of `prefixes` and carries a known game code are kept, which rules out
+ * sprites, artwork and anime stills.
+ */
+async function galleryImages(title: string, prefixes: string[]): Promise<string[]> {
+  const r = await api<{ parse?: { images: string[] } }>(WIKI, { action: "parse", page: title, prop: "images", redirects: "1" });
+  return (r.parse?.images ?? []).filter((f) => /\.(png|jpe?g)$/i.test(f) && gameOf(f) && prefixes.some((p) => startsWithWords(f, p)));
+}
+
+/** The place name an infobox image is of: "Lavender Tower Exterior LGPE.png" → "Lavender Tower". */
+function imageStem(file: string): string {
+  return file
+    .replace(/\.(png|jpe?g)$/i, "")
+    .split(/[ _]/)
+    .filter((t) => !GAME_CODES[t] && !/^(exterior|interior|entrance|inside|outside|\d+f|b\d+f)$/i.test(t))
+    .join(" ");
+}
+
+/** Infobox shots first, then gallery shots; Let's Go first within each (if `letsGoFirst`). */
+function rankShots(region: RegionConfig, infobox: string[], gallery: string[], letsGoFirst: boolean): string[] {
+  const usable = (f: string) => region.games.includes(codeOf(f) ?? "") && !DENYLIST.has(f.replace(/ /g, "_"));
+  const ordered = [...new Set([...infobox, ...gallery].map((f) => f.replace(/ /g, "_")))].filter(usable);
+  if (!letsGoFirst) return ordered;
+  return [...ordered.filter(isLetsGo), ...ordered.filter((f) => !isLetsGo(f))];
+}
+
+interface ShotStore {
+  /** Source file → uploaded id, from earlier runs. */
+  cache: Record<string, string>;
+  /** Ids referenced by the current data (safe to reuse). */
+  live: Set<string>;
+}
+
+async function collectShots(files: string[], max: number, store: ShotStore): Promise<GeoShot[]> {
+  const urls = await fileUrls(files);
+  const shots: GeoShot[] = [];
+  for (const file of files) {
+    if (shots.length >= max) break;
+    const game = gameOf(file);
+    const cached = store.cache[file];
+    if (game && cached && store.live.has(cached)) {
+      shots.push({ id: cached, game });
+      continue;
+    }
+    const url = urls.get(file);
+    if (!url || !game) continue;
+    try {
+      const source = await download(url);
+      const { width = 0, height = 0 } = await sharp(source).metadata();
+      if (Math.max(width, height) < MIN_SOURCE_SIDE) {
+        console.log(`  ! ${file}: too small to be a screenshot (${width}×${height})`);
+        continue;
+      }
+      const id = randomBytes(9).toString("base64url");
+      const webp = await sharp(source)
+        .resize({ width: SHOT_WIDTH, withoutEnlargement: true })
+        .webp({ quality: 66, effort: 6 })
+        .toBuffer();
+      await upload(id, webp);
+      store.cache[file] = id;
+      shots.push({ id, game });
+    } catch (err) {
+      console.log(`  ! ${file}: ${(err as Error).message}`);
+    }
+  }
+  return shots;
+}
+
+async function buildLocations(
+  region: RegionConfig,
+  names: string[],
+  highlights: (Highlight | null)[],
+  store: ShotStore
+): Promise<GeoLocation[]> {
   const locations: GeoLocation[] = [];
   for (let i = 0; i < names.length; i++) {
     const hl = highlights[i];
@@ -330,34 +473,130 @@ async function buildLocations(region: RegionConfig, names: string[], highlights:
       continue;
     }
     const page = await locationPage(names[i], region.name);
-    const images = page ? await infoboxImages(page.wikitext) : [];
-    if (!page || !images.length) {
+    const infobox = page ? await infoboxImages(page.wikitext) : [];
+    if (!page || !infobox.length) {
       console.log(`  skip ${names[i]}: no screenshots`);
       continue;
     }
-    const chosen = images.slice(0, MAX_SHOTS);
-    const shotUrls = await fileUrls(chosen);
-    const shots: GeoShot[] = [];
-    for (const file of chosen) {
-      const url = shotUrls.get(file);
-      if (!url) continue;
-      try {
-        const id = randomBytes(9).toString("base64url");
-        const webp = await sharp(await download(url))
-          .resize({ width: SHOT_WIDTH, withoutEnlargement: true })
-          .webp({ quality: 66, effort: 6 })
-          .toBuffer();
-        await upload(id, webp);
-        shots.push({ id, game: gameOf(file) });
-      } catch (err) {
-        console.log(`  ! ${file}: ${(err as Error).message}`);
-      }
-    }
+    const gallery = await galleryImages(page.title, [page.title, names[i], ...infobox.map(imageStem)]);
+    // Infobox order is one per game; extra gallery views fill up to the cap.
+    const shots = await collectShots(rankShots(region, infobox, gallery, false), MAX_SHOTS, store);
     if (!shots.length) continue;
     locations.push({ name: page.title, pin: hl.pin, mask: hl.mask, shots });
     console.log(`  ✓ ${page.title} (${shots.length} shots)`);
   }
   return locations;
+}
+
+/** Page titles in the given categories (main namespace only). */
+async function categoryPages(category: string): Promise<string[]> {
+  const out: string[] = [];
+  let cont: Record<string, string> = {};
+  for (;;) {
+    const r = await api<{ query: { categorymembers: { title: string; ns: number }[] }; continue?: { cmcontinue: string } }>(WIKI, {
+      action: "query",
+      list: "categorymembers",
+      cmtitle: category,
+      cmlimit: "500",
+      ...cont,
+    });
+    out.push(...r.query.categorymembers.filter((m) => m.ns === 0).map((m) => m.title));
+    if (!r.continue) return out;
+    cont = { cmcontinue: r.continue.cmcontinue };
+  }
+}
+
+/** Keeps only pages that use a building / landmark infobox (50 titles per request). */
+async function withBuildingInfobox(titles: string[]): Promise<string[]> {
+  const out: string[] = [];
+  for (let i = 0; i < titles.length; i += 50) {
+    const r = await api<{ query: { pages: { title: string; missing?: boolean; templates?: { title: string }[] }[] } }>(WIKI, {
+      action: "query",
+      titles: titles.slice(i, i + 50).join("|"),
+      prop: "templates",
+      tltemplates: BUILDING_TEMPLATES.join("|"),
+      tllimit: "500",
+    });
+    out.push(...r.query.pages.filter((p) => !p.missing && p.templates?.length).map((p) => p.title));
+  }
+  return out;
+}
+
+/**
+ * The first place an infobox `location` field refers to, as a page title:
+ * "[[Saffron City]]" → "Saffron City", "{{rt|10|Kanto}}" → "Kanto Route 10",
+ * plain "Pewter City" → "Pewter City". A place "on" something wins over one
+ * it's only near.
+ */
+function firstLocationRef(wikitext: string): string | null {
+  const field = wikitext.match(/^\|\s*location\s*=\s*(.+)$/m)?.[1]?.replace(/<!--[\s\S]*?-->/g, "").trim();
+  if (!field) return null;
+  const refs: { at: number; title: string }[] = [];
+  for (const m of field.matchAll(/\[\[([^\]|#]+)(?:[|#][^\]]*)?\]\]/g)) refs.push({ at: m.index ?? 0, title: m[1].trim() });
+  for (const m of field.matchAll(/\{\{rt\|(\d+)\|([^}|]+)[^}]*\}\}/gi)) refs.push({ at: m.index ?? 0, title: `${m[2].trim()} Route ${m[1]}` });
+  // "Northeast of [[Cerulean City]] on {{rt|25|Kanto}}": the place is on the second one.
+  const on = refs.find((r) => /\bon\s*$/i.test(field.slice(0, r.at)));
+  if (on) return on.title;
+  if (refs.length) return refs.sort((a, b) => a.at - b.at)[0].title;
+  // A bare place name with no markup at all.
+  return /^[\p{L}\p{N} .'-]+$/u.test(field) ? field : null;
+}
+
+/**
+ * Buildings, Gyms and landmarks inside pinned locations. Candidates come from
+ * the region's location categories and every page the pinned locations link
+ * to; a candidate counts when its infobox `location` points (first) at a
+ * pinned location and it has game screenshots.
+ */
+async function buildBuildings(region: RegionConfig, pinned: GeoLocation[], store: ShotStore): Promise<GeoLocation[]> {
+  console.log(`  -- buildings and landmarks`);
+  const candidates = new Set<string>();
+  for (const cat of BUILDING_CATEGORIES(region.name)) for (const t of await categoryPages(cat)) candidates.add(t);
+  for (const loc of pinned) {
+    const r = await api<{ parse?: { links: { title: string; ns: number; exists?: boolean }[] } }>(WIKI, {
+      action: "parse",
+      page: loc.name,
+      prop: "links",
+      redirects: "1",
+    });
+    for (const l of r.parse?.links ?? []) if (l.ns === 0 && l.exists) candidates.add(l.title);
+  }
+  const pinnedNames = new Set(pinned.map((l) => l.name));
+  const titles = (await withBuildingInfobox([...candidates].filter((t) => !pinnedNames.has(t)))).sort();
+  console.log(`  ${candidates.size} candidate pages, ${titles.length} with a building infobox`);
+
+  // Resolve location references (and their redirects) to pinned locations.
+  const byKey = new Map(pinned.map((l) => [squash(l.name), l]));
+  const findPinned = (ref: string) => byKey.get(squash(ref)) ?? byKey.get(squash(`${region.name} ${ref}`));
+
+  const out: GeoLocation[] = [];
+  for (const title of titles) {
+    const parsed = await api<{ parse?: { title: string; wikitext: string } }>(WIKI, {
+      action: "parse",
+      page: title,
+      prop: "wikitext",
+      section: "0",
+      redirects: "1",
+    });
+    if (!parsed.parse || pinnedNames.has(parsed.parse.title)) continue;
+    const ref = firstLocationRef(parsed.parse.wikitext);
+    let parent = ref ? findPinned(ref) : undefined;
+    if (ref && !parent) {
+      const r = await api<{ query: { redirects?: { to: string }[] } }>(WIKI, { action: "query", titles: ref, redirects: "1" });
+      const to = r.query.redirects?.[0]?.to;
+      parent = to ? findPinned(to) : undefined;
+    }
+    if (!parent) continue;
+    const infobox = await infoboxImages(parsed.parse.wikitext);
+    const gallery = await galleryImages(parsed.parse.title, [parsed.parse.title, ...infobox.map(imageStem)]);
+    const files = rankShots(region, infobox, gallery, true);
+    if (!files.length) continue;
+    const shots = await collectShots(files, MAX_BUILDING_SHOTS, store);
+    if (!shots.length) continue;
+    out.push({ name: parsed.parse.title, parent: parent.name, pin: parent.pin, mask: parent.mask, shots });
+    console.log(`  ✓ ${parsed.parse.title} → ${parent.name} (${shots.length} shots)`);
+  }
+  return out;
 }
 
 async function saveMap(id: string, base: Buffer, width: number, height: number) {
@@ -366,7 +605,7 @@ async function saveMap(id: string, base: Buffer, width: number, height: number) 
   return { src: `/geo/maps/${id}.png`, width, height };
 }
 
-async function ingestRegion(region: RegionConfig): Promise<GeoRegion> {
+async function ingestRegion(region: RegionConfig, store: ShotStore): Promise<GeoRegion> {
   console.log(`\n== ${region.name}`);
   const all = await listMapFiles(region.name);
   const size = dominantSize(all);
@@ -396,7 +635,9 @@ async function ingestRegion(region: RegionConfig): Promise<GeoRegion> {
 
   const { base, highlights } = analyse(raws, width, height);
   const map = await saveMap(region.id, base, width, height);
-  return { id: region.id, name: region.name, map, locations: await buildLocations(region, names, highlights) };
+  const pinned = await buildLocations(region, names, highlights, store);
+  const buildings = await buildBuildings(region, pinned, store);
+  return { id: region.id, name: region.name, map, locations: [...pinned, ...buildings] };
 }
 
 async function main() {
@@ -407,17 +648,25 @@ async function main() {
     : { storageBase: "", regions: [] };
   existing.storageBase = `${supabaseUrl}/storage/v1/object/public/${BUCKET}`;
   await ensureBucket();
+  const store: ShotStore = {
+    cache: existsSync(SHOT_CACHE) ? JSON.parse(readFileSync(SHOT_CACHE, "utf8")) : {},
+    live: new Set(existing.regions.flatMap((r) => r.locations.flatMap((l) => l.shots.map((s) => s.id)))),
+  };
 
   for (const region of regions) {
     const old = existing.regions.find((r) => r.id === region.id);
-    const built = await ingestRegion(region);
-    // Re-ingesting a region replaces its old screenshots.
-    const stale = (old?.locations ?? []).flatMap((l) => l.shots.map((s) => `${s.id}.webp`));
+    const built = await ingestRegion(region, store);
+    mkdirSync(path.dirname(SHOT_CACHE), { recursive: true });
+    writeFileSync(SHOT_CACHE, JSON.stringify(store.cache));
+    // Screenshots the new data no longer uses are deleted; reused ones stay.
+    const kept = new Set(built.locations.flatMap((l) => l.shots.map((s) => s.id)));
+    const stale = (old?.locations ?? []).flatMap((l) => l.shots.map((s) => s.id)).filter((id) => !kept.has(id)).map((id) => `${id}.webp`);
     for (let i = 0; i < stale.length; i += 100) await storage.from(BUCKET).remove(stale.slice(i, i + 100));
     existing.regions = [...existing.regions.filter((r) => r.id !== region.id), built];
     existing.regions.sort((a, b) => REGIONS.findIndex((r) => r.id === a.id) - REGIONS.findIndex((r) => r.id === b.id));
     writeFileSync(OUT_DATA, JSON.stringify(existing));
-    console.log(`  → ${built.locations.length} locations`);
+    const buildings = built.locations.filter((l) => l.parent).length;
+    console.log(`  → ${built.locations.length - buildings} pinned locations + ${buildings} buildings and landmarks`);
   }
 }
 
