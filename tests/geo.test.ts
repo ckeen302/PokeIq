@@ -164,6 +164,14 @@ describe("PokéGuessr", () => {
     expect(readGeoChallenge("forged.token")).toBeNull();
   });
 
+  it("never counts a corner of the map as part of a place", () => {
+    for (const spec of [streak, worldStreak]) {
+      for (const round of planRounds(spec, "corners")) {
+        for (const [x, y] of answerFor(spec, round).mask) expect(Math.min(x, 1 - x) < 0.01 && Math.min(y, 1 - y) < 0.01).toBe(false);
+      }
+    }
+  });
+
   it("streaks continue on every hit and end on the first miss", () => {
     const perfect = playOut(streak, "pin");
     expect(perfect.bodies.every((b) => b.hit)).toBe(true);

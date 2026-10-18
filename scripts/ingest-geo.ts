@@ -161,9 +161,13 @@ function analyse(images: Buffer[], width: number, height: number): { base: Buffe
   const highlights = images.map((img) => {
     const points: [number, number][] = [];
     for (let p = 0; p < px; p++) {
+      const x = p % width;
+      const y = Math.floor(p / width);
+      // Some highlight images differ from the plain map in their corners; that's never a place.
+      if ((x < 2 || x >= width - 2) && (y < 2 || y >= height - 2)) continue;
       const d =
         Math.abs(img[p * 3] - base[p * 3]) + Math.abs(img[p * 3 + 1] - base[p * 3 + 1]) + Math.abs(img[p * 3 + 2] - base[p * 3 + 2]);
-      if (d > 60) points.push([p % width, Math.floor(p / width)]);
+      if (d > 60) points.push([x, y]);
     }
     // Nothing highlighted, or a different map edition (most pixels differ): unusable.
     if (points.length < 3 || points.length > px * 0.12) return null;
