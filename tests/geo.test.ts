@@ -167,6 +167,18 @@ describe("PokéGuessr", () => {
     expect(readGeoChallenge("forged.token")).toBeNull();
   });
 
+  it("scores a guess on any place's flag perfectly", () => {
+    // A world streak visits every place on the map.
+    for (const spec of [worldStreak, { ...worldStreak, style: "retro" as const }]) {
+      const rounds = planRounds(spec, "every-flag");
+      expect(rounds.length).toBeGreaterThan(150);
+      for (const round of rounds) {
+        const { pin, name } = answerFor(spec, round);
+        expect(measureGuess(spec, round, pin[0], pin[1]).score, name).toBe(GEO_MAX_ROUND_SCORE);
+      }
+    }
+  });
+
   it("never counts a corner of the map as part of a place", () => {
     for (const spec of [streak, worldStreak]) {
       for (const round of planRounds(spec, "corners")) {

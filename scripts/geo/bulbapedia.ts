@@ -140,6 +140,7 @@ export const GAME_CODES: Record<string, string> = {
   RSE: "Ruby / Sapphire / Emerald",
   RS: "Ruby / Sapphire",
   E: "Emerald",
+  SE: "Sapphire / Emerald",
   FRLG: "FireRed / LeafGreen",
   DPPt: "Diamond / Pearl / Platinum",
   DP: "Diamond / Pearl",
@@ -154,6 +155,8 @@ export const GAME_CODES: Record<string, string> = {
   BWB2W2: "Black / White / Black 2 / White 2",
   XY: "X / Y",
   ORAS: "Omega Ruby / Alpha Sapphire",
+  OR: "Omega Ruby",
+  AS: "Alpha Sapphire",
   SM: "Sun / Moon",
   USUM: "Ultra Sun / Ultra Moon",
   SMUSUM: "Sun / Moon / Ultra Sun / Ultra Moon",
@@ -408,10 +411,13 @@ export type ShotFallback = string | ((width: number, height: number) => string |
 
 export interface ShotOptions {
   fallback?: ShotFallback;
-  /** Share of the height to cut off the bottom of a file (the game's place-name banner sits there). */
+  /** Share of the height to cut off the bottom of a file (the game's place-name banner or a text box sits there). */
   trimBottom?: Record<string, number>;
-  /** Files from another wiki: their URLs, and a cache-key prefix (their names can clash with the Archives'). */
+  /** Share of the height to cut off the top of a file (the place-name banner on arriving). */
+  trimTop?: Record<string, number>;
+  /** Files from another wiki: their URLs, games (their names use the wiki's abbreviations) and a cache-key prefix (names can clash with the Archives'). */
   urls?: Map<string, string>;
+  games?: Map<string, string>;
   keyPrefix?: string;
 }
 
@@ -422,10 +428,11 @@ export async function collectShots(files: string[], max: number, store: ShotStor
   const shots: GeoShot[] = [];
   for (const file of files) {
     if (shots.length >= max) break;
-    const known = gameOf(file) ?? (typeof fallback === "string" ? fallback : undefined);
+    const known = opts.games?.get(file) ?? gameOf(file) ?? (typeof fallback === "string" ? fallback : undefined);
     const trim = opts.trimBottom?.[file] ?? 0;
+    const top = opts.trimTop?.[file] ?? 0;
     // A trimmed file is a different image from the untrimmed one, so it's cached under its own key.
-    const key = (opts.keyPrefix ?? "") + (trim ? `${file}#bottom${trim}` : file);
+    const key = (opts.keyPrefix ?? "") + file + (top ? `#top${top}` : "") + (trim ? `#bottom${trim}` : "");
     const cached = store.cache[key];
     if (known && cached && store.live.has(cached)) {
       shots.push({ id: cached, game: known });
@@ -447,8 +454,9 @@ export async function collectShots(files: string[], max: number, store: ShotStor
         continue;
       }
       const id = randomBytes(9).toString("base64url");
+      const crop = viewCrop(width, Math.round(height * (1 - trim - top)));
       const webp = await sharp(source)
-        .extract(viewCrop(width, Math.round(height * (1 - trim))))
+        .extract({ ...crop, top: crop.top + Math.round(height * top) })
         .resize({ width: SHOT_WIDTH, withoutEnlargement: true })
         .webp({ quality: 66, effort: 6 })
         .toBuffer();

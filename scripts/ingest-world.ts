@@ -13,9 +13,10 @@
  *
  *   SUPABASE_URL=… SUPABASE_SERVICE_ROLE_KEY=… npm run ingest:world               # every region
  *   SUPABASE_URL=… SUPABASE_SERVICE_ROLE_KEY=… npm run ingest:world -- Hoenn Kalos # selected regions
- *   … npm run ingest:world -- --fandom-only Alola   # only top up existing places from Fandom
+ *   … npm run ingest:world -- --top-up Alola   # only top up existing places from other wikis
+ *   … npm run ingest:world -- --prune Alola    # also delete uploads the data no longer uses (once the site that used them is redeployed)
  */
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, rmdirSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import sharp from "sharp";
 import {
@@ -36,25 +37,27 @@ import {
   leadSection,
   pageLinks,
   redirectTarget,
+  sleep,
   squash,
   words,
   withBuildingInfobox,
   type GeoShot,
   type ShotStore,
 } from "./geo/bulbapedia";
-import { fandomImages, fandomPage } from "./geo/fandom";
+import { WIKIS, localNames, wikiCode, wikiImages, wikiPage, type Wiki } from "./geo/wikis";
 
 const PLACES = path.join(process.cwd(), "scripts/geo/world-places.json");
 const WORLD_MAP = path.join(process.cwd(), "public/geo/maps/world.webp");
 const OUT_DATA = path.join(process.cwd(), "src/data/geo.json");
 const SHOT_CACHE = path.join(process.cwd(), ".data", "geo-shot-cache.json");
+const SHOT_HASHES = path.join(process.cwd(), ".data", "geo-shot-hashes.json");
+/** Held while the data and caches are read and rewritten, so regions can be imported side by side. */
+const LOCK = path.join(process.cwd(), ".data", "ingest-world.lock");
 
 const MAX_SHOTS = 6;
-/** 3D screenshots a place gets from Fandom, counting the ones Bulbapedia already gave it. */
-const FANDOM_SHOTS = 3;
+/** 3D screenshots a place gets from other wikis, counting the ones Bulbapedia already gave it. */
+const WIKI_SHOTS = 3;
 const MAX_BUILDING_SHOTS = 4;
-/** Area points kept per place (scoring measures the distance to the nearest). */
-const MAX_MASK_POINTS = 60;
 /** Space around each region's crop, as a share of its size. */
 const CROP_MARGIN = 0.04;
 
@@ -72,7 +75,7 @@ interface Source {
 const SOURCES: Source[] = [
   { regions: ["Kanto"], wiki: "Kanto", games: ["RB", "RBY", "RGBY", "Y", "GSC", "FRLG", "HGSS", "PE", "LGPE"], screens: { "240x160": "FRLG", "256x192": "HGSS" } },
   { regions: ["Johto"], wiki: "Johto", games: ["GS", "GSC", "C", "HGSS"], screens: { "160x144": "GSC", "256x192": "HGSS" } },
-  { regions: ["Hoenn"], wiki: "Hoenn", games: ["RS", "RSE", "E", "ORAS"], screens: { "240x160": "RSE", "400x240": "ORAS" } },
+  { regions: ["Hoenn"], wiki: "Hoenn", games: ["RS", "RSE", "SE", "E", "ORAS", "OR", "AS"], screens: { "240x160": "RSE", "400x240": "ORAS" } },
   { regions: ["Sinnoh"], wiki: "Sinnoh", games: ["DP", "Pt", "DPPt", "BDSP"], screens: { "256x192": "DPPt" } },
   { regions: ["Unova"], wiki: "Unova", games: ["BW", "B", "W", "B2W2", "B2", "W2", "BWB2W2"], screens: { "256x192": "BWB2W2" } },
   // Legends: Z-A is set in Lumiose City; X/Y's own location images are mostly guidebook maps.
@@ -100,7 +103,7 @@ const CROPS: Record<string, { name: string; regions: string[] }> = {
 
 /** Map labels that aren't page titles. */
 const TITLES: Record<string, string> = {
-  "Kanto|Safari Zone / Pal Park": "Pal Park",
+  "Kanto|Safari Zone / Pal Park": "Kanto Safari Zone",
   "Alola|Lake of the Sunne / Moone": "Lake of the Sunne",
   "Alola|Altar of the Sunne / Moone": "Altar of the Sunne",
   "Unova|Black City / White Forest": "Black City",
@@ -108,6 +111,7 @@ const TITLES: Record<string, string> = {
   "Unova|Victory Road (B2W2)": "Victory Road (Unova)",
   "Paldea|Naranja and Uva Academy": "Naranja Academy",
   "Hoenn|Battle Frontier": "Battle Frontier (Generation III)",
+  "Alola|Thrifty Megamart Abandoned Site": "Thrifty Megamart (Abandoned Site)",
 };
 /** Places that share a page with another version of themselves: keep only their own game's screenshots. */
 const ONLY_GAMES: Record<string, string[]> = {
@@ -119,6 +123,11 @@ const ARCHIVE_PREFIXES: Record<string, string[]> = {
   "Unova|Victory Road (BW)": ["Victory_Road_"],
   "Unova|Victory Road (B2W2)": ["Victory_Road_"],
   "Unova|Black City / White Forest": ["Black_City_", "White_Forest_"],
+  // The Safari Zone until Generation III and in Let's Go; HeartGold / SoulSilver's Pal Park on the same spot.
+  "Kanto|Safari Zone / Pal Park": ["Kanto_Safari_Zone_", "Safari_Zone_", "Pal_Park_"],
+  "Hoenn|Battle Frontier": ["Battle_Frontier_"],
+  "Hoenn|Team Aqua Hideout": ["Team_Aqua_Hideout_", "Aqua_Hideout_"],
+  "Unova|Challenger's Cave": ["Challengers_Cave_"],
 };
 
 /**
@@ -143,10 +152,123 @@ const DENYLIST = new Set<string>([
   "Lumiose_Museum_Crafting_Bench_ZA.png",
   "Lumiose_Museum_Hairstyles_ZA.png",
   "Lumiose_Museum_Venerated_Portraits_ZA.png",
+  "Lumiose_Museum_Ancient_Sinnoh_Hieroglyphs_ZA.png",
   // Guidebook maps that happen to be screen-shaped.
   "Postwick_SwSh.png",
   "Rose_Tower_SwSh.png",
+  // A whole Sevii island stitched together, filler and all: more than its town.
+  "Knot_Island_FRLG.png",
+  "Kin_Island.png",
+  "Boon_Island_FRLG.png",
+  "Chrono_Island.png",
+  "Quest_Island.png",
+  "Fortune_Island.png",
+  // A building cut out of the map, on a blank background.
+  "Power_Plant_exterior_HGSS.png",
+  // Several small ladder rooms in a strip.
+  "Navel_Rock_Ladder_Down_FRLG.png",
+  // Separate rooms or screens stacked into one image.
+  "Abandoned_Ship_1F_and_rooms_RSE.png",
+  "Abandoned_Ship_B1F_and_rooms_RSE.png",
+  "Abandoned_Ship_HF_and_rooms_RSE.png",
+  "Turnback_Cave_Two_Pillar_Random_Rooms_DPPt.png",
+  "Black_City_Water_Dungeon_B2.png",
+  "White_Forest_Lava_Dungeon_W2.png",
+  // Guidebook maps (labels, numbered markers) and model renders that happen to be screen-shaped.
+  "Lilycove_City_ORAS.png",
+  "Hoenn_Route_125_ORAS.png",
+  "Shady_House_SMUSUM.png",
+  "Mauville_Food_Court_interior_ORAS.png",
+  "Skyarrow_Bridge_BW.png",
+  "Tubeline_Bridge_BW.png",
+  // Text boxes and banners over the view.
+  "Battle_Tower_BDSP.png",
+  "Lilycove_Museum_Landscape_ORAS.png",
+  "Lilycove_Museum_Landscape_RSE.png",
+  "Lilycove_Museum_Sculpture_RSE.png",
+  "Sea_Mauville_Scanner_location.png",
+  "Sealed_Chamber_Visual_Braille_ORAS.png",
+  "Slateport_City_Battle_Tent_E.png",
+  "Jubilife_City_join_group_Pt.png",
+  // Too small, too empty or too close up to place.
+  "Desert_Underpass_E.png",
+  "Mauville_City_Game_Corner_RS.png",
+  "Hoenn_Route_123_E.png",
+  "Hoenn_Safari_Zone_Entrance_E.png",
+  "Trick_House_exit_E.png",
+  "Miracle_Cycle_Cerulean_exterior_HGSS.png",
+  "Kanto_Route_27_HGSS.png",
+  "SS_Anne_1F_FRLG.png",
+  "SS_Anne_Basement_Rooms_FRLG.png",
+  "Maniac_Tunnel_10-25_DP.png",
+  "Maniac_Tunnel_26-28_DP.png",
+  "Maniac_Tunnel_26-28_Pt.png",
+  "Resort_Area_Villa_interior_empty_Pt.png",
+  "Celestial_Tower_Summer_BWB2W2.png",
+  "Cold_Storage_back_room_BW.png",
+  "Entralink_Forest_BW.png",
+  "Malie_City_Face_Board_USUM.png",
+  "Ns_Castle_Rising_BW.png",
+  // Open sea where the island appears only on some days: indistinguishable from the route.
+  "Mirage_Island_location_RSE.png",
+  // A glitched sky.
+  "Valley_Windworks_dragon_event.png",
 ]);
+/** Archive files for places whose town map is named after the place alone ("One_Island.png"). */
+const ARCHIVE_FILES: Record<string, string[]> = {
+  "Sevii Islands|One Island": ["One_Island.png"],
+  "Sevii Islands|Two Island": ["Two_Island.png"],
+  "Sevii Islands|Three Island": ["Three_Island.png"],
+  "Sevii Islands|Six Island": ["Six_Island.png"],
+  "Sevii Islands|Seven Island": ["Seven_Island.png"],
+  // The islands on the 3DS's lower screen.
+  "Alola|Poké Pelago": ["Isle_Abeens.png", "Isle_Aphun.png", "Isle_Aplenny.png", "Isle_Avue.png", "Isle_Evelup.png"],
+  "Alola|Plains Grotto": ["Plains_Grotto_USUM.png"],
+};
+/** The game of archive files whose name and size don't say. */
+const FILE_GAMES: Record<string, string> = Object.fromEntries([
+  ...["Isle_Abeens.png", "Isle_Aphun.png", "Isle_Aplenny.png", "Isle_Avue.png", "Isle_Evelup.png"].map((f) => [f, GAME_CODES.SMUSUM]),
+  // Only in Black 2 / White 2 (Clay Tunnel, the barricaded Route 10, Opelucid frozen), though the name gives no game.
+  ...["Clay_Tunnel_boulders.png", "Unova_Route_10_B2W2_closed.png", "Opelucid_City_B2_Frozen.png"].map((f) => [f, GAME_CODES.B2W2]),
+]);
+/** Renders of a place's in-game model, for places with no screenshot anywhere (kept though not screen-shaped). */
+const MODEL_RENDERS = new Set(["Plains_Grotto_USUM.png"]);
+/** The Town Map's and Pokégear's painted previews of a place (FireRed / LeafGreen, HeartGold / SoulSilver): not a view. */
+const MAP_PREVIEW = /^(FL_|HGSS_.+-(Morning|Day|Evening|Night)\.)/;
+
+/** Pages that aren't a building of one place: another page for a place on the map, or a ship or train between two. */
+const NOT_BUILDINGS = new Set(
+  [
+    "Victory Road (Black and White)",
+    "Victory Road (Black 2 and White 2)",
+    "Mirage Island (Generation III)",
+    "Kanto Safari Zone",
+    "Team Magma Hideout",
+    "Magnet Train",
+    "S.S. Aqua",
+    "S.S. Tidal",
+    "S.S. Sinnoh",
+    "Seagallop",
+    // The academy is its own place on the map (Naranja Academy's page); Uva Academy is the same building in Violet.
+    "Uva Academy",
+    // Omega Ruby / Alpha Sapphire's soaring-only islands: off the map, placed only roughly ("north of Route 133"), and Emerald's caves that appear on a random route.
+    "Crescent Isle",
+    "Fabled Cave",
+    "Gnarled Den",
+    "Nameless Cavern",
+    "Pathless Plain",
+    "Trackless Forest",
+    "Marine Cave",
+    "Terra Cave",
+  ].map(squash)
+);
+/** The Mirage spots Omega Ruby / Alpha Sapphire scatter around Hoenn's seas ("Mirage Island (west of Route 104)"). */
+const MIRAGE_SPOT = /^Mirage (Island|Cave|Mountain|Forest) \(/;
+/** A screenshot both pages use, kept where it was taken (Gold / Silver put Blaine's Gym in the Seafoam Islands). */
+const KEEP_IN: Record<string, string> = {
+  "Cinnabar_Gym_GSC.png": "Seafoam Islands",
+  "Lilycove_Hideout_RSE.png": "Team Aqua Hideout",
+};
 
 /** Screenshots with the place's name along the bottom (BDSP's banner, X/Y's Gym caption bar): it's cut off. */
 const TRIM_BOTTOM: Record<string, number> = Object.fromEntries([
@@ -159,8 +281,8 @@ const BACKDROPS: Record<string, { prefix: string; code: string }> = {
   Alola: { prefix: "APC_bg_", code: "USUM" },
 };
 
-/** Fandom shots that name the place (a banner, a caption, a text box) or aren't a view. */
-const FANDOM_DENYLIST = new Set<string>([
+/** Other wikis' shots that name the place (a banner, a caption, a text box) or aren't a view. */
+const WIKI_DENYLIST = new Set<string>([
   "Petalburg_City.png",
   "Glittering_Cave.png",
   "Snowbelle_City.png",
@@ -168,6 +290,12 @@ const FANDOM_DENYLIST = new Set<string>([
   "Paniola_Ranch.png",
   "Poké_Pelago5.png",
   "Galar_Route_5.png",
+  // X / Y's sleeping Snorlax is on Route 7, not in the Pokémon Village.
+  "Snorlax_Kalos_Pokemon_Village.jpeg",
+  // Battle screens, and a photo of a 3DS screen.
+  "Battle_Tree_1.png",
+  "Battle_Tree_2.png",
+  "Seaward_Cave.png",
 ]);
 
 interface PlaceIn {
@@ -204,17 +332,26 @@ const storage = geoStorage();
 const PLACE_COUNTS = new Map<string, number>();
 const PLACES_BY_REGION = new Map<string, PlaceIn[]>();
 const norm = (v: number, size: number) => Math.round((v / size) * 100000) / 100000;
+/**
+ * A place's pin and area, normalised to the world map. The area is a point
+ * every 8 px (one per 8 × 8 cell), so any spot in it is within half a map
+ * square of a point: scoring measures the distance to the nearest.
+ */
+const placeArea = (place: PlaceIn, world: WorldPlaces) => ({
+  pin: [norm(place.x, world.W), norm(place.y, world.H)] as [number, number],
+  mask: place.mask.map(([x, y]) => [norm(x, world.W), norm(y, world.H)] as [number, number]),
+});
 
-/** Words in file names that mean "not a view of the place". */
+/** Words in file names that mean "not a view of the place" ("battle", but not "Battle Frontier"). */
 const NOT_A_VIEW =
-  /(^|_)(map\d*|icon|concept|art|artwork|anime|tcg|manga|adventures|sign|battle|battlefield|environment|referee|layout|sprite|dialogue|menu|logo|pre-release|prerelease|trailer|exhibit|painting|evolutions|generations|origins|hz|pg|dsd)(_|\.|$)/i;
+  /(^|_)(map\d*|icon|concept|art|artwork|anime|tcg|manga|adventures|sign|battle(?!_(frontier|tower|tree|maison|subway|hall|factory|arcade|castle|pike|palace|dome|pyramid|resort|zone|park|royal|institute|court|tent|company))|battlefield|environment|referee|layout|sprite|dialogue|menu|logo|pre-release|prerelease|trailer|exhibit|painting|evolutions|generations|origins|hz|pg|dsd|unused|beta|jp|numbered|comparison|puzzle\d*|storyboard|postcomp|cutscene|event|prelease|psmd|pmd|tw|berries)(_|\.|$)/i;
 
 /**
  * 3D games' screenshots are screen-shaped: 5:3 on the 3DS (400 × 240), 16:9
  * on the Switch, or the 2:1 crops some pages use, and no bigger than a 1080p
  * capture. Their guidebook maps, scans and renders aren't.
  */
-const THREE_DS = new Set(["XY", "ORAS", "SM", "USUM", "SMUSUM"]);
+const THREE_DS = new Set(["XY", "ORAS", "OR", "AS", "SM", "USUM", "SMUSUM"]);
 const SWITCH = new Set(["PE", "LGPE", "SwSh", "BDSP", "SV", "ZA"]);
 const THREE_D_GAMES = new Set([...THREE_DS, ...SWITCH].map((c) => GAME_CODES[c]));
 const count3d = (shots: GeoShot[]) => shots.filter((s) => THREE_D_GAMES.has(s.game)).length;
@@ -227,7 +364,7 @@ function screenShaped(code: string, width: number, height: number): boolean {
 
 function usable(file: string, games: string[], codeless: boolean): boolean {
   const f = file.replace(/ /g, "_");
-  if (DENYLIST.has(f) || NOT_A_VIEW.test(f)) return false;
+  if (DENYLIST.has(f) || NOT_A_VIEW.test(f) || MAP_PREVIEW.test(f)) return false;
   const code = codeOf(f);
   // Single-game regions (X/Y, Sword/Shield, Scarlet/Violet…) often leave the game off the file name.
   return code ? games.includes(code) : codeless;
@@ -244,18 +381,50 @@ function fallbackFor(source: Source, games: string[]): ShotFallback | undefined 
   };
 }
 
+/** Games whose versions share their maps: one screenshot of a place per family (Ruby / Sapphire's or Emerald's, not both). */
+const FAMILIES: Record<string, string> = {
+  ...Object.fromEntries(["RB", "RBY", "RGBY", "Y"].map((c) => [c, "gen1"])),
+  ...Object.fromEntries(["GS", "GSC", "C"].map((c) => [c, "gen2"])),
+  ...Object.fromEntries(["RS", "RSE", "SE", "E"].map((c) => [c, "gen3"])),
+  ...Object.fromEntries(["DP", "Pt", "DPPt"].map((c) => [c, "gen4"])),
+  ...Object.fromEntries(["BW", "B", "W", "B2W2", "B2", "W2", "BWB2W2"].map((c) => [c, "gen5"])),
+};
+/** A file's name without its game, season or variant: "Unova_Route_9_Spring_BW" and "…_Summer_B2W2" are one view. */
+function variantKey(file: string): string {
+  const code = codeOf(file);
+  const stem = file
+    .replace(/\.[a-z0-9]+$/i, "")
+    .split("_")
+    .filter((t, i, all) => !(code && t === code && (i === 0 || i === all.length - 1)) && !/^(spring|summer|autumn|winter)$/i.test(t))
+    .join("_")
+    .toLowerCase();
+  return `${stem}|${code ? (FAMILIES[code] ?? code) : ""}`;
+}
+
 /**
  * Infobox shots first (one per game), then archive files named after the
  * place, then gallery shots; 3D games' files only when they're screen-shaped.
+ * A file naming no game is trusted only from the infobox or a list here, or
+ * at a console's native screen size: galleries file anime frames the same
+ * way ("Hammerlocke Station.png"). Of a view in several seasons or in two
+ * versions of one game, the first is kept.
  */
-async function rankShots(lists: string[][], games: string[], source: Source): Promise<string[]> {
+async function rankShots(lists: string[][], games: string[], source: Source, trusted: Set<string>): Promise<string[]> {
   const codeless = games.length === 1 || !!source.screens;
   const files = [...new Set(lists.flat().map((f) => f.replace(/ /g, "_")))].filter((f) => usable(f, games, codeless));
   const info = await fileInfo(files);
+  const seen = new Set<string>();
   return files.filter((f) => {
     const size = info.get(f);
+    // Thumbnails and slivers (a lighthouse wall 75 px wide) are too small to place.
+    if (!size || Math.min(size.width, size.height) < 120) return false;
+    if (!codeOf(f) && !trusted.has(f) && !FILE_GAMES[f] && !source.screens?.[`${size.width}x${size.height}`]) return false;
     const code = codeOf(f) ?? (games.length === 1 ? games[0] : undefined);
-    return size && (!code || !(THREE_DS.has(code) || SWITCH.has(code)) || screenShaped(code, size.width, size.height));
+    if (code && (THREE_DS.has(code) || SWITCH.has(code)) && !screenShaped(code, size.width, size.height) && !MODEL_RENDERS.has(f)) return false;
+    const key = variantKey(f);
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
   });
 }
 
@@ -279,7 +448,25 @@ async function archiveShots(place: PlaceIn, source: Source): Promise<string[]> {
       else if (codeless && rest.length <= 2 && (prefix === photoSpot || rest.length > 0)) out.push(f.name);
     }
   }
-  return out;
+  return [...(ARCHIVE_FILES[`${place.region}|${place.name}`] ?? []), ...out];
+}
+
+const ALL_PLACES: PlaceIn[] = [];
+/**
+ * A file that names a different place on the map isn't a view of this one
+ * (Cerulean's Miracle Cycle page shows Goldenrod's too). Names inside this
+ * place's own ("Cerulean" in Cerulean Cave) don't count.
+ */
+function namesOtherPlace(file: string, place: PlaceIn, title = place.name): boolean {
+  if (KEEP_IN[file]) return KEEP_IN[file] !== place.name;
+  const fw = fileWords(file);
+  const own = squash(title) + squash(place.name);
+  return ALL_PLACES.some((p) => {
+    if (p.name === place.name) return false;
+    const pw = placeWords(p);
+    const key = pw.join("");
+    return key.length >= 5 && !own.includes(key) && spells(fw, pw);
+  });
 }
 
 /** A file's name as words, without its extension or a trailing variant letter ("Aether ParadiseA", "route1b"). */
@@ -333,39 +520,107 @@ async function backdropShots(place: PlaceIn, store: ShotStore, max: number): Pro
   );
 }
 
+/** Words in other wikis' file names that mean "not a view of the place". */
+const WIKI_NOT_A_VIEW = /(^|[ _(-])(localisation|carte|icône|icone|icon|animé|dessin|vs|pms|sticker|symbol|global|modell|embuscade|citydex|disambig|vote|wikipedia|lückenhaft|orden|passe|lettre|zygarde|smash|ssbu|betreten|storyboard|postcomp|lebensraum|tw(?=[ _.)-]|$)|ign(?=[ _.)-]|$)|map(?=[ _.)-]|$)|(lh|lv|vp|pg|ep|ag|hz|sl|xy|bw|dp)\d{2,3})/i;
+/** PokéWiki's floor maps ("Seeschauminseln EG", "… UG1"): guide maps with item markers. */
+const WIKI_FLOOR_MAP = /[ _(-](EG|UG\d*|OG\d*)[ _.)-]/;
+
+/** Words in other wikis' file names for the weather or time of day of a plain view ("Roche-sur-Gliffe pluie XY.png"). */
+const VIEW_WORDS = new Set(["pluie", "nuit", "jour", "soir", "matin", "neige", "hiver", "ete", "printemps", "automne", "regen", "nacht", "tag", "abend", "schnee", "winter", "sommer", "herbst", "fruhling"]);
+
 /**
- * The place's page on the Pokémon Wiki (Fandom): screen-shaped in-game shots of
- * the 3D games, named after the place. Bulbapedia has guidebook maps for most
- * X/Y, Sun/Moon and Sword/Shield routes; Fandom has the views.
+ * What to cut off another wiki's 3D shot: Poképédia and PokéWiki name a view
+ * after the place alone when it's the moment of arriving, with the place's
+ * banner at the top (at the bottom in Brilliant Diamond / Shining Pearl), and
+ * after the place and an item ("Route 9 Superepousse XY.png") when it shows
+ * the item being picked up, text box at the bottom. Weather and time-of-day
+ * views are kept whole.
  */
-async function fandomShots(place: PlaceIn, source: Source, games: string[], store: ShotStore, max: number): Promise<GeoShot[]> {
-  if (max <= 0 || !games.some((g) => THREE_DS.has(g) || SWITCH.has(g))) return [];
+function overlayTrim(wiki: Wiki, file: string, title: string, region: string, code: string): { top?: number; bottom?: number } {
+  const own = new Set([...words(title), ...words(region)]);
+  const codes = new Set(Object.keys(wiki.codes).map((c) => c.toLowerCase()));
+  const rest = fileWords(file).filter((w) => !own.has(w) && !codes.has(w) && !/^\d+$/.test(w));
+  if (rest.length && rest.every((w) => VIEW_WORDS.has(w))) return {};
+  if (rest.length && !rest.some((w) => /^(entree|arrivee|betreten|ankunft)$/.test(w))) return { bottom: 0.3 };
+  return code === "BDSP" ? { bottom: 0.22 } : { top: 0.22 };
+}
+
+/**
+ * The place's page on other wikis (Fandom, Poképédia, PokéWiki): screenshots
+ * named after the place, of the region's games. Bulbapedia has guidebook maps
+ * for most X/Y, Sun/Moon and Sword/Shield routes; these wikis have the views.
+ * 3D games' shots must be screen-shaped. Fills up to `max` shots.
+ */
+async function wikiShots(place: PlaceIn, source: Source, games: string[], store: ShotStore, max: number, retro: boolean, have3d: number): Promise<GeoShot[]> {
+  if (max <= 0) return [];
   const name = TITLES[`${place.region}|${place.name}`] ?? place.name;
   const unique = PLACE_COUNTS.get(place.name) === 1;
-  const title = await fandomPage([`${name} (${source.wiki})`, `${source.wiki} ${name}`, ...(unique ? [name] : [])]);
-  if (!title) return [];
-  // Fandom's 3DS shots are often a little cropped or scaled: 5:3-ish and small (guidebook scans are big).
+  let local: Partial<Record<"fr" | "de", string>> | null = null;
+  // Fandom's and Poképédia's 3DS shots are often a little cropped or scaled: 5:3-ish and small (guidebook scans are big).
   const ds = source.screens?.["400x240"];
-  const codeFor = (width: number, height: number) =>
+  const shapeless = (width: number, height: number) =>
     games.length === 1 ? games[0] : ds && width / height >= 1.6 && width / height <= 1.8 && width <= 800 ? ds : undefined;
-  const files = (await fandomImages(title)).filter((f) => {
-    if (FANDOM_DENYLIST.has(f.file) || !usable(f.file, games, true) || !namesPlace(f.file, place) || Math.min(f.width, f.height) < 200) return false;
-    const named = codeOf(f.file);
-    const code = named ?? codeFor(f.width, f.height);
-    if (!code || !(THREE_DS.has(code) || SWITCH.has(code))) return false;
-    return named || SWITCH.has(code) ? screenShaped(code, f.width, f.height) : f.width / f.height >= 1.6 && f.width / f.height <= 1.8 && f.width <= 800;
-  });
-  const fallback = (width: number, height: number) => {
-    const code = codeFor(width, height);
-    return code ? GAME_CODES[code] : undefined;
-  };
-  return collectShots(
-    files.map((f) => f.file),
-    max,
-    store,
-    storage,
-    { fallback, urls: new Map(files.map((f) => [f.file, f.url])), keyPrefix: "fandom:" }
-  );
+  const shots: GeoShot[] = [];
+  for (const wiki of WIKIS) {
+    if (shots.length >= max) break;
+    // Poképédia's and PokéWiki's views mostly carry a text box or the place's banner: only for places nothing else shows.
+    if (wiki.lang !== "en" && have3d + shots.length > 0) break;
+    if (wiki.lang !== "en") local ??= await localNames(name, source.wiki);
+    const title = wiki.lang === "en" ? name : local?.[wiki.lang];
+    if (!title) continue;
+    // A bare "Route 9" could be another region's.
+    const bare = wiki.lang === "en" ? unique : !/^Route \d+$/.test(title);
+    const page = await wikiPage(wiki, [`${title} (${source.wiki})`, `${source.wiki} ${title}`, ...(bare ? [title] : [])]);
+    if (!page) continue;
+    // A linked page's title can carry its region ("Route 13 (Alola)"); files don't.
+    const plainTitle = title.replace(/\s*\(.*\)$/, "");
+    const named = (file: string) =>
+      wiki.lang === "en" ? namesPlace(file, place) : spells(fileWords(file), words(plainTitle.replace(/\s+(Town|City|Village)$/i, "")));
+    const gameOf = new Map<string, string>();
+    const trimTop: Record<string, number> = {};
+    const trimBottom: Record<string, number> = {};
+    const files = (await wikiImages(wiki, page)).filter((f) => {
+      if (WIKI_DENYLIST.has(f.file) || WIKI_NOT_A_VIEW.test(f.file) || WIKI_FLOOR_MAP.test(f.file) || !usable(f.file, games, true) || !named(f.file)) return false;
+      const code = wikiCode(wiki, f.file);
+      const resolved = code ?? shapeless(f.width, f.height);
+      if (!resolved || !games.includes(resolved)) return false;
+      const threeD = THREE_DS.has(resolved) || SWITCH.has(resolved);
+      if (!threeD && !retro) return false;
+      // A 3DS capture is at most twice the screen's 400 px; wider 5:3 images are guidebook scans.
+      const ok = !threeD
+        ? Math.min(f.width, f.height) >= 144
+        : Math.min(f.width, f.height) >= 200 &&
+          (!THREE_DS.has(resolved) || f.width <= 800) &&
+          (code || SWITCH.has(resolved) ? screenShaped(resolved, f.width, f.height) : f.width / f.height >= 1.6 && f.width / f.height <= 1.8);
+      if (!ok) return false;
+      gameOf.set(f.file, GAME_CODES[resolved]);
+      if (threeD && wiki.lang !== "en") {
+        const trim = overlayTrim(wiki, f.file, plainTitle, source.wiki, resolved);
+        if (trim.top) trimTop[f.file] = trim.top;
+        if (trim.bottom) trimBottom[f.file] = trim.bottom;
+      }
+      return true;
+    });
+    // The plain view ("Route 9 XY.png") before the item-location shots (both cut free of their banner or text box).
+    files.sort((a, b) => a.file.length - b.file.length);
+    shots.push(
+      ...(await collectShots(
+        files.map((f) => f.file),
+        max - shots.length,
+        store,
+        storage,
+        {
+          fallback: (w, h) => (shapeless(w, h) ? GAME_CODES[shapeless(w, h)!] : undefined),
+          games: gameOf,
+          urls: new Map(files.map((f) => [f.file, f.url])),
+          keyPrefix: `${wiki.id}:`,
+          trimTop,
+          trimBottom,
+        }
+      ))
+    );
+  }
+  return shots;
 }
 
 /** The infobox `region` field allows this source (absent counts as yes). */
@@ -393,7 +648,9 @@ async function placePage(place: PlaceIn, source: Source): Promise<{ title: strin
       srsearch: `${name} ${source.wiki}`,
       srlimit: "3",
     });
-    titles.push(...found.query.search.map((s) => s.title));
+    // Only results named like the place ("Ghost (type)" is no page for the abandoned Thrifty Megamart).
+    const key = [...words(name)].sort((a, b) => b.length - a.length)[0] ?? "";
+    titles.push(...found.query.search.map((s) => s.title).filter((t) => words(t).includes(key)));
   }
   for (const title of titles) {
     const page = await leadSection(title);
@@ -415,25 +672,20 @@ async function ingestSource(source: Source, world: WorldPlaces, store: ShotStore
     const infobox = page ? await infoboxImages(page.wikitext) : [];
     const archive = await archiveShots(place, source);
     const gallery = page ? await galleryImages(page.title, [page.title, place.name, ...infobox.map(imageStem)]) : [];
-    const shots = await collectShots(await rankShots([infobox, archive, gallery], games, source), MAX_SHOTS, store, storage, {
+    const trusted = new Set([...infobox, ...(ARCHIVE_FILES[`${place.region}|${place.name}`] ?? []), ...archive.filter((f) => f.startsWith("Photo_Spot_"))].map((f) => f.replace(/ /g, "_")));
+    const ranked = (await rankShots([infobox, archive, gallery], games, source, trusted)).filter((f) => !namesOtherPlace(f, place));
+    const shots = await collectShots(ranked, MAX_SHOTS, store, storage, {
+      games: new Map(Object.entries(FILE_GAMES)),
       fallback: fallbackFor(source, games),
       trimBottom: TRIM_BOTTOM,
     });
-    shots.push(...(await fandomShots(place, source, games, store, FANDOM_SHOTS - count3d(shots))));
-    shots.push(...(await backdropShots(place, store, FANDOM_SHOTS - count3d(shots))));
+    shots.push(...(await wikiShots(place, source, games, store, WIKI_SHOTS - count3d(shots), shots.length === 0, count3d(shots))));
+    shots.push(...(await backdropShots(place, store, WIKI_SHOTS - count3d(shots))));
     if (page) {
       byTitle.set(squash(page.title), place);
       pageTitles.push(page.title);
     }
-    const step = Math.max(1, Math.ceil(place.mask.length / MAX_MASK_POINTS));
-    out.push({
-      name: place.name,
-      region: place.region,
-      // Stored normalised to the world map.
-      pin: [norm(place.x, world.W), norm(place.y, world.H)],
-      mask: place.mask.filter((_, i) => i % step === 0).map(([x, y]) => [norm(x, world.W), norm(y, world.H)]),
-      shots,
-    });
+    out.push({ name: place.name, region: place.region, ...placeArea(place, world), shots });
     console.log(`  ${shots.length ? "✓" : "·"} ${place.name}${page && squash(page.title) !== squash(place.name) ? ` [${page.title}]` : ""} (${shots.length} shots)`);
   }
 
@@ -441,12 +693,12 @@ async function ingestSource(source: Source, world: WorldPlaces, store: ShotStore
   const candidates = new Set<string>();
   for (const cat of [`Category:${source.wiki} locations`, `Category:${source.wiki} Gyms`]) for (const t of await categoryPages(cat)) candidates.add(t);
   for (const title of pageTitles) for (const t of await pageLinks(title)) candidates.add(t);
-  const taken = new Set([...byTitle.keys()]);
+  const taken = new Set([...byTitle.keys(), ...NOT_BUILDINGS]);
   const titles = (await withBuildingInfobox([...candidates].filter((t) => !taken.has(squash(t))))).sort();
   const find = (ref: string) => byTitle.get(squash(ref)) ?? byTitle.get(squash(`${source.wiki} ${ref}`));
   for (const title of titles) {
     const page = await leadSection(title);
-    if (!page || taken.has(squash(page.title)) || !inRegion(page.wikitext, source)) continue;
+    if (!page || taken.has(squash(page.title)) || MIRAGE_SPOT.test(page.title) || !inRegion(page.wikitext, source)) continue;
     const ref = firstLocationRef(page.wikitext);
     let parent = ref ? find(ref) : undefined;
     if (ref && !parent) {
@@ -457,7 +709,7 @@ async function ingestSource(source: Source, world: WorldPlaces, store: ShotStore
     const infobox = await infoboxImages(page.wikitext);
     const gallery = await galleryImages(page.title, [page.title, ...infobox.map(imageStem)]);
     const shots = await collectShots(
-      await rankShots([infobox, gallery], source.games, source),
+      (await rankShots([infobox, gallery], source.games, source, new Set(infobox.map((f) => f.replace(/ /g, "_"))))).filter((f) => !namesOtherPlace(f, parent, page.title)),
       MAX_BUILDING_SHOTS,
       store,
       storage,
@@ -468,7 +720,7 @@ async function ingestSource(source: Source, world: WorldPlaces, store: ShotStore
     out.push({ name: page.title, region: parent.region, parent: parent.name, shots });
     console.log(`  ✓ ${page.title} → ${parent.name} (${shots.length} shots)`);
   }
-  return out;
+  return keepOnce(out, store);
 }
 
 /** The world map, and one crop per region (with a margin), as static images. */
@@ -487,32 +739,159 @@ async function writeMaps(world: WorldPlaces) {
   return crops;
 }
 
-/** Tops up a region's existing places from Fandom and backdrops, without asking Bulbapedia again. */
+/**
+ * A screenshot two places' pages share (an area map that takes in its
+ * neighbour) would have two right answers: it stays with the place it is
+ * named after, or the longer name ("Hammerlocke Hills", not "Hammerlocke").
+ */
+function keepOnce(locations: WorldLocation[], store: ShotStore): WorldLocation[] {
+  const fileOf = new Map(Object.entries(store.cache).map(([file, id]) => [id, file.replace(/^[a-z]+:/, "").replace(/#.*$/, "")]));
+  const areaOf = (l: WorldLocation) => l.parent ?? l.name;
+  const areas = new Map<string, Set<string>>();
+  for (const l of locations) for (const s of l.shots) (areas.get(s.id) ?? areas.set(s.id, new Set()).get(s.id)!).add(areaOf(l));
+  for (const [id, where] of areas) {
+    if (where.size < 2) continue;
+    const file = fileOf.get(id) ?? "";
+    const named = [...where].filter((a) => spells(fileWords(file), words(a.replace(/\s+(Town|City|Village)$/i, ""))));
+    const keep = KEEP_IN[file] ?? named.sort((a, b) => b.length - a.length)[0] ?? [...where][0];
+    for (const l of locations) if (areaOf(l) !== keep) l.shots = l.shots.filter((s) => s.id !== id);
+    console.log(`  = ${file}: kept in ${keep}, not ${[...where].filter((a) => a !== keep).join(", ")}`);
+  }
+  return locations.filter((l) => !l.parent || l.shots.length);
+}
+
+/** A difference hash of a screenshot (borders trimmed, 17 × 16 grey): 256 bits, as a string of 0s and 1s. */
+async function shotHash(id: string): Promise<string | null> {
+  const res = await fetch(`${storage.baseUrl}/${id}.webp`).catch(() => null);
+  if (!res?.ok) return null;
+  let img = sharp(Buffer.from(await res.arrayBuffer())).flatten({ background: "#000" });
+  try {
+    img = sharp(await img.trim({ threshold: 30 }).toBuffer());
+  } catch {
+    // Nothing to trim.
+  }
+  const px = await img.resize(17, 16, { fit: "fill" }).greyscale().raw().toBuffer();
+  let bits = "";
+  for (let y = 0; y < 16; y++) for (let x = 0; x < 16; x++) bits += px[y * 17 + x] < px[y * 17 + x + 1] ? "1" : "0";
+  return bits;
+}
+function hashDistance(a: string, b: string): number {
+  let d = 0;
+  for (let i = 0; i < a.length; i++) if (a[i] !== b[i]) d++;
+  return d;
+}
+/** Hash distance under which two shots of one place are copies: of any game, or of the same game (seasons, Sword's and Shield's, a wiki's copy). */
+const SAME_PICTURE = 10;
+const SAME_GAME_PICTURE = 24;
+/** Two places whose shots are this alike (two Regi chambers, two open-sea routes) can't be told apart. */
+const LOOK_ALIKE = 18;
+
+/**
+ * Each place's screenshots, once: a town doesn't repeat its stadium's shot,
+ * and of two near-copies (a route in spring and in summer, the same view on
+ * two wikis) only the first is kept.
+ */
+async function nearCopies(locations: WorldLocation[], store: ShotStore): Promise<WorldLocation[]> {
+  const fromWiki = new Set(Object.entries(store.cache).filter(([file]) => /^[a-z]+:/.test(file)).map(([, id]) => id));
+  const hashes: Record<string, string | null> = existsSync(SHOT_HASHES) ? JSON.parse(readFileSync(SHOT_HASHES, "utf8")) : {};
+  for (const l of locations) for (const s of l.shots) if (!hashes[s.id]) hashes[s.id] = await shotHash(s.id);
+  writeFileSync(SHOT_HASHES, JSON.stringify(hashes));
+  const areas = new Map<string, WorldLocation[]>();
+  for (const l of locations) {
+    const key = `${l.region}|${l.parent ?? l.name}`;
+    areas.set(key, [...(areas.get(key) ?? []), l]);
+  }
+  for (const group of areas.values()) {
+    // Buildings first, so a shot both list stays with the building.
+    const ordered = [...group.filter((l) => l.parent), ...group.filter((l) => !l.parent)];
+    const kept: GeoShot[] = [];
+    for (const l of ordered) {
+      l.shots = l.shots.filter((s) => {
+        const h = hashes[s.id];
+        const copy = kept.some((k) => {
+          if (k.id === s.id) return true;
+          const kh = hashes[k.id];
+          if (!h || !kh) return false;
+          const d = hashDistance(h, kh);
+          return d <= SAME_PICTURE || (d <= SAME_GAME_PICTURE && k.game === s.game);
+        });
+        if (copy) console.log(`  ≈ ${l.region} | ${l.name}: dropped a copy of an earlier shot (${s.game})`);
+        else kept.push(s);
+        return !copy;
+      });
+    }
+  }
+  const all = locations.flatMap((l) => l.shots.map((s) => ({ s, area: `${l.region}|${l.parent ?? l.name}` })));
+  const alike = new Set<string>();
+  for (let i = 0; i < all.length; i++) {
+    for (let j = i + 1; j < all.length; j++) {
+      const a = hashes[all[i].s.id];
+      const b = hashes[all[j].s.id];
+      if (a && b && all[i].area !== all[j].area && all[i].s.id !== all[j].s.id && hashDistance(a, b) <= LOOK_ALIKE) {
+        // Another wiki's copy of a Bulbapedia shot, filed under a neighbouring place, goes; two of Bulbapedia's both go.
+        const wiki = [all[i].s.id, all[j].s.id].filter((id) => fromWiki.has(id));
+        for (const id of wiki.length === 1 ? wiki : [all[i].s.id, all[j].s.id]) alike.add(id);
+        console.log(`  ≈ ${all[i].area} and ${all[j].area} look the same: dropped ${wiki.length === 1 ? "the other wiki's copy" : "both shots"}`);
+      }
+    }
+  }
+  for (const l of locations) l.shots = l.shots.filter((s) => !alike.has(s.id));
+  return locations.filter((l) => !l.parent || l.shots.length);
+}
+
+/** Tops up a region's existing places from other wikis and backdrops, without asking Bulbapedia again. */
 async function topUp(source: Source, world: WorldPlaces, store: ShotStore, old: WorldLocation[]): Promise<WorldLocation[]> {
-  console.log(`\n== ${source.regions.join(" + ")}: Fandom`);
+  console.log(`\n== ${source.regions.join(" + ")}: top-up`);
   const out = old.filter((l) => source.regions.includes(l.region)).map((l) => ({ ...l, shots: [...l.shots] }));
   for (const place of world.places.filter((p) => source.regions.includes(p.region))) {
     const location = out.find((l) => !l.parent && l.region === place.region && l.name === place.name);
     if (!location) continue;
     const games = ONLY_GAMES[`${place.region}|${place.name}`] ?? source.games;
-    const fandom = await fandomShots(place, source, games, store, FANDOM_SHOTS - count3d(location.shots));
-    const backdrops = await backdropShots(place, store, FANDOM_SHOTS - count3d([...location.shots, ...fandom]));
-    const added = [...fandom, ...backdrops].filter((s) => !location.shots.some((t) => t.id === s.id));
+    const fromWikis = await wikiShots(place, source, games, store, WIKI_SHOTS - count3d(location.shots), location.shots.length === 0, count3d(location.shots));
+    const backdrops = await backdropShots(place, store, WIKI_SHOTS - count3d([...location.shots, ...fromWikis]));
+    const added = [...fromWikis, ...backdrops].filter((s) => !location.shots.some((t) => t.id === s.id));
     location.shots.push(...added);
     if (added.length) console.log(`  + ${place.name} (${added.length})`);
   }
-  return out;
+  return keepOnce(out, store);
+}
+
+async function withLock<T>(fn: () => Promise<T>): Promise<T> {
+  mkdirSync(path.dirname(LOCK), { recursive: true });
+  for (;;) {
+    try {
+      mkdirSync(LOCK);
+      break;
+    } catch {
+      await sleep(2000);
+    }
+  }
+  try {
+    return await fn();
+  } finally {
+    rmdirSync(LOCK);
+  }
+}
+
+/** Saves this run's uploads into the upload cache, keeping what other runs saved since it was read. */
+function saveCache(store: ShotStore, readAtStart: Record<string, string>) {
+  const onDisk: Record<string, string> = existsSync(SHOT_CACHE) ? JSON.parse(readFileSync(SHOT_CACHE, "utf8")) : {};
+  const ours = Object.entries(store.cache).filter(([file, id]) => readAtStart[file] !== id);
+  store.cache = { ...onDisk, ...Object.fromEntries(ours) };
+  Object.assign(readAtStart, Object.fromEntries(ours));
+  writeFileSync(SHOT_CACHE, JSON.stringify(store.cache));
 }
 
 async function main() {
   const args = process.argv.slice(2);
-  const fandomOnly = args.includes("--fandom-only");
+  const topUpOnly = args.includes("--top-up");
   const wanted = args.filter((a) => !a.startsWith("--")).map((s) => s.toLowerCase());
   const world: WorldPlaces = JSON.parse(readFileSync(PLACES, "utf8"));
   for (const name of new Set(world.places.map((p) => p.name))) {
     PLACE_COUNTS.set(name, new Set(world.places.filter((p) => p.name === name).map((p) => p.region)).size);
   }
   for (const place of world.places) PLACES_BY_REGION.set(place.region, [...(PLACES_BY_REGION.get(place.region) ?? []), place]);
+  ALL_PLACES.push(...world.places);
   const data = JSON.parse(readFileSync(OUT_DATA, "utf8"));
   await storage.ensureBucket();
   const old: WorldLocation[] = data.world?.locations ?? [];
@@ -520,27 +899,44 @@ async function main() {
     cache: existsSync(SHOT_CACHE) ? JSON.parse(readFileSync(SHOT_CACHE, "utf8")) : {},
     live: new Set(old.flatMap((l) => l.shots.map((s) => s.id))),
   };
+  const readAtStart = { ...store.cache };
 
-  let locations = old;
+  const built: WorldLocation[] = [];
+  const regions = new Set<string>();
   for (const source of SOURCES) {
     if (wanted.length && !source.regions.some((r) => wanted.includes(r.toLowerCase()))) continue;
-    const built = fandomOnly ? await topUp(source, world, store, old) : await ingestSource(source, world, store);
-    locations = [...locations.filter((l) => !source.regions.includes(l.region)), ...built];
+    const these = topUpOnly ? await topUp(source, world, store, old) : await ingestSource(source, world, store);
+    built.push(...these);
+    for (const r of source.regions) regions.add(r);
     mkdirSync(path.dirname(SHOT_CACHE), { recursive: true });
-    writeFileSync(SHOT_CACHE, JSON.stringify(store.cache));
-    const shots = built.reduce((s, l) => s + l.shots.length, 0);
-    console.log(`  → ${built.filter((l) => !l.parent).length} places, ${built.filter((l) => l.parent).length} buildings, ${shots} screenshots`);
+    await withLock(async () => saveCache(store, readAtStart));
+    const shots = these.reduce((s, l) => s + l.shots.length, 0);
+    console.log(`  → ${these.filter((l) => !l.parent).length} places, ${these.filter((l) => l.parent).length} buildings, ${shots} screenshots`);
   }
 
-  const crops = await writeMaps(world);
-  const out = {
-    storageBase: storage.baseUrl,
-    world: { map: { src: "/geo/maps/world.webp", width: world.W, height: world.H, squarePx: world.squarePx }, crops, locations },
-  };
-  writeFileSync(OUT_DATA, JSON.stringify(out));
-  // Screenshots the data no longer uses are deleted.
-  const kept = new Set(locations.flatMap((l) => l.shots.map((s) => s.id)));
-  await storage.remove(old.flatMap((l) => l.shots.map((s) => s.id)).filter((id) => !kept.has(id)));
+  await withLock(async () => {
+    // Other regions as they are now (another run may have rewritten them meanwhile).
+    const current: WorldLocation[] = JSON.parse(readFileSync(OUT_DATA, "utf8")).world?.locations ?? [];
+    const before = [...old, ...current];
+    const locations = await nearCopies([...current.filter((l) => !regions.has(l.region)), ...built], store);
+    // Every place's pin and area as world-places.json has them now.
+    const places = new Map(world.places.map((p) => [`${p.region}|${p.name}`, p]));
+    for (const l of locations) {
+      const place = l.parent ? undefined : places.get(`${l.region}|${l.name}`);
+      if (place) Object.assign(l, placeArea(place, world));
+    }
+    const crops = await writeMaps(world);
+    const out = {
+      storageBase: storage.baseUrl,
+      world: { map: { src: "/geo/maps/world.webp", width: world.W, height: world.H, squarePx: world.squarePx }, crops, locations },
+    };
+    writeFileSync(OUT_DATA, JSON.stringify(out));
+    // Screenshots the data no longer uses: the deployed site may still show them, so they go only when asked.
+    const kept = new Set(locations.flatMap((l) => l.shots.map((s) => s.id)));
+    const unused = [...new Set(before.flatMap((l) => l.shots.map((s) => s.id)))].filter((id) => !kept.has(id));
+    if (args.includes("--prune")) await storage.remove(unused);
+    else if (unused.length) console.log(`  ${unused.length} uploads no longer used (delete them with --prune after deploying)`);
+  });
 }
 
 void main();

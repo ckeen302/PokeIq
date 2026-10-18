@@ -92,6 +92,8 @@ const CLASSIC_GAMES = new Set([
   "Let's Go, Pikachu! / Eevee!",
   "X / Y",
   "Omega Ruby / Alpha Sapphire",
+  "Omega Ruby",
+  "Alpha Sapphire",
   "Sun / Moon",
   "Ultra Sun / Ultra Moon",
   "Sun / Moon / Ultra Sun / Ultra Moon",

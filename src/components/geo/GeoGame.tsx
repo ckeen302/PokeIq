@@ -465,10 +465,18 @@ export function GeoGame({ regions: allRegions, challenge }: GeoGameProps) {
           Screenshots from{" "}
           <a href="https://bulbapedia.bulbagarden.net" className="underline underline-offset-2" target="_blank" rel="noreferrer">
             Bulbapedia
-          </a>{" "}
-          and the{" "}
+          </a>
+          , the{" "}
           <a href="https://pokemon.fandom.com" className="underline underline-offset-2" target="_blank" rel="noreferrer">
             Pokémon Wiki
+          </a>
+          ,{" "}
+          <a href="https://www.pokepedia.fr" className="underline underline-offset-2" target="_blank" rel="noreferrer">
+            Poképédia
+          </a>{" "}
+          and{" "}
+          <a href="https://www.pokewiki.de" className="underline underline-offset-2" target="_blank" rel="noreferrer">
+            PokéWiki
           </a>
           . Pokémon game imagery © Nintendo / Game Freak / The Pokémon Company.{" "}
           <Link href="/atlas" className="underline underline-offset-2">

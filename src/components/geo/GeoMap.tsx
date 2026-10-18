@@ -100,8 +100,8 @@ export function GeoMap({ region, pick, revealed = [], onPick, className }: Props
     const [wx, wy] = toWorld(x, y);
     return view ? [wx * view.s + view.tx, wy * view.s + view.ty] : [0, 0];
   };
-  // The answer's area: dots about half a map square across, kept small enough not to hide the labels.
-  const areaR = view ? Math.min(9, Math.max(3, 14 * view.s)) : 3;
+  // The answer's area: a dot of radius 6 world px on every area point (8 px apart), so they join into one patch at any zoom.
+  const areaR = view ? Math.max(3, 6 * view.s) : 3;
 
   return (
     <div
@@ -129,10 +129,13 @@ export function GeoMap({ region, pick, revealed = [], onPick, className }: Props
             return (
               <g key={i}>
                 <g className="geo-area">
-                  {r.answer.mask.map(([x, y], k) => {
-                    const [mx, my] = toScreen(x, y);
-                    return <circle key={k} cx={mx} cy={my} r={areaR} className="fill-success/50" />;
-                  })}
+                  {/* Faded as one layer, so overlapping dots read as one even patch. */}
+                  <g opacity={0.5}>
+                    {r.answer.mask.map(([x, y], k) => {
+                      const [mx, my] = toScreen(x, y);
+                      return <circle key={k} cx={mx} cy={my} r={areaR} className="fill-success" />;
+                    })}
+                  </g>
                 </g>
                 {g && <line className="geo-line" pathLength={1} x1={g[0]} y1={g[1]} x2={ax} y2={ay} strokeWidth={2.5} strokeLinecap="round" stroke="#120f24" />}
                 <Flag x={ax} y={ay} />
