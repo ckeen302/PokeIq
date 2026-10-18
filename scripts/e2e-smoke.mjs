@@ -187,6 +187,94 @@ await page.getByRole("button", { name: /5-round game/ }).click();
 await playGeoRounds(5);
 await page.getByText("Survey complete").waitFor();
 
+// Two trainers in two browsers: Red opens a duel on Kanto, Blue joins from the link.
+step("pokéguessr duel: create, join, ready");
+const red = await newPage({ width: 1280, height: 900 });
+const blue = await newPage({ width: 1280, height: 900 });
+// No poll or action ever carries the answer or the other trainer's pin before the reveal.
+for (const p of [red, blue]) {
+  p.on("response", async (res) => {
+    if (!res.url().includes("/api/geo/duel/") || !res.ok()) return;
+    const body = await res.json().catch(() => null);
+    const live = body?.view?.round ?? body?.round;
+    if (live && /"(pin|mask|answer|name|x|y)"/.test(JSON.stringify({ ...live, yours: undefined }))) {
+      errors.push(`duel round leaked before the reveal: ${JSON.stringify(live)}`);
+    }
+  });
+}
+const shotLoaded = (p) =>
+  p.waitForFunction(
+    () => {
+      const img = document.querySelector("img[alt='Where is this?']");
+      return img?.complete && img.naturalWidth > 0;
+    },
+    null,
+    { timeout: 30_000 }
+  );
+await red.goto(`${BASE}/guessr?region=kanto`, { waitUntil: "networkidle" });
+await red.getByLabel("Your trainer name").fill("Red");
+await red.getByRole("button", { name: /Create duel/ }).click();
+await red.waitForURL(/\/guessr\/duel\/[a-z2-9]{8}$/);
+const duelUrl = red.url();
+await red.getByText("Waiting for a challenger").waitFor();
+await red.screenshot({ path: `${OUT}/duel-lobby.png` });
+const duelOg = await red.request.get(`${duelUrl}/opengraph-image`);
+if (duelOg.status() !== 200) errors.push(`duel OG image returned ${duelOg.status()}`);
+else fs.writeFileSync(`${OUT}/duel-og.png`, await duelOg.body());
+
+await blue.goto(duelUrl, { waitUntil: "networkidle" });
+await blue.getByText("Red challenges you!").waitFor();
+await blue.getByLabel("Your trainer name").fill("Blue");
+await blue.getByRole("button", { name: /Join duel/ }).click();
+await red.getByText("Blue").first().waitFor();
+await Promise.all([red, blue].map((p) => p.getByRole("button", { name: /^Ready$/ }).click()));
+
+step("pokéguessr duel: play to the end");
+/** Plays rounds until the duel is over, pinning at (at, at) across the map. Returns the rounds played. */
+async function playDuel(p, at, shoot) {
+  for (let i = 0; i < 12; i++) {
+    await shotLoaded(p);
+    if (shoot && i === 0) await p.screenshot({ path: `${OUT}/duel-round.png` });
+    const map = p.locator("[role=application]");
+    await map.hover();
+    const box = await map.boundingBox();
+    await map.click({ position: { x: box.width * at, y: box.height * at } });
+    await p.getByRole("button", { name: /^Guess$/ }).click();
+    const next = p.getByRole("button", { name: /Next round|See results/ });
+    await next.waitFor({ timeout: 30_000 });
+    if (shoot && i === 0) {
+      await p.waitForTimeout(1200);
+      await p.screenshot({ path: `${OUT}/duel-reveal.png` });
+    }
+    const label = await next.innerText();
+    await next.click();
+    if (/results/i.test(label)) return i + 1;
+  }
+  throw new Error("the duel didn't end");
+}
+const [duelRounds] = await Promise.all([playDuel(red, 0.5, true), playDuel(blue, 0.22, false)]);
+console.log(`  over after ${duelRounds} round${duelRounds === 1 ? "" : "s"}`);
+await red.getByText(/Victory!|Defeat|Draw/).first().waitFor();
+await blue.getByText(/Victory!|Defeat|Draw/).first().waitFor();
+await red.waitForTimeout(800);
+await red.screenshot({ path: `${OUT}/duel-summary.png`, fullPage: true });
+
+step("pokéguessr duel: rematch, then a forfeit");
+await red.getByRole("button", { name: /^Rematch$/ }).click();
+await red.waitForURL((url) => url.href !== duelUrl && url.pathname.startsWith("/guessr/duel/"));
+await blue.getByRole("button", { name: /Accept rematch/ }).click();
+await blue.waitForURL(red.url());
+// Pressing Rematch is being ready: the new duel starts straight away.
+await Promise.all([shotLoaded(red), shotLoaded(blue)]);
+await red.getByRole("button", { name: /Leave duel/ }).click();
+await red.getByRole("button", { name: /^Forfeit$/ }).click();
+await red.waitForURL(/\/guessr$/);
+await blue.getByText("Red left the duel.").waitFor();
+await blue.getByText("Victory!").waitFor();
+await blue.screenshot({ path: `${OUT}/duel-forfeit.png` });
+await red.context().close();
+await blue.context().close();
+
 step("world atlas: search, place card, link into PokéGuessr");
 await page.goto(`${BASE}/atlas`, { waitUntil: "networkidle" });
 await page.getByLabel("Search the map").fill("Saffron City");
