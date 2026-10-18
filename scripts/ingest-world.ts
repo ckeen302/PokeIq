@@ -213,6 +213,17 @@ const DENYLIST = new Set<string>([
   "Mirage_Island_location_RSE.png",
   // A glitched sky.
   "Valley_Windworks_dragon_event.png",
+  // Dialogue boxes, an examine screen and blurred or empty shots.
+  "Lake_Verity_Professor_Rowan_DP.png",
+  "Lilycove_Museum_Sculpture_ORAS.png",
+  "Lilycove_Museum_Poké_Ball_RSE.png",
+  "Lilycove_Museum_Poké_Ball_ORAS.png",
+  "Ruins_of_Alph_first_chamber_C.png",
+  "Ruins_of_Alph_first_chamber_HGSS.png",
+  "Pokemon_League_Vista_view_BDSP.png",
+  "SS_Anne_2F_RBY.png",
+  "SS_Anne_3F_RBY.png",
+  "SS_Anne_2F_FRLG.png",
 ]);
 /** Archive files for places whose town map is named after the place alone ("One_Island.png"). */
 const ARCHIVE_FILES: Record<string, string[]> = {
@@ -295,7 +306,13 @@ const WIKI_DENYLIST = new Set<string>([
   // Battle screens, and a photo of a 3DS screen.
   "Battle_Tree_1.png",
   "Battle_Tree_2.png",
+  "Battle_Tree_3.png",
+  "Battle_Tree_4.png",
   "Seaward_Cave.png",
+  // A speech bubble at the top; too dark or too close to place.
+  "Route_120_ORAS.jpg",
+  "Grotte_Granite_ROSA.png",
+  "Grotte_Étincelante_XY.png",
 ]);
 
 interface PlaceIn {
@@ -344,7 +361,7 @@ const placeArea = (place: PlaceIn, world: WorldPlaces) => ({
 
 /** Words in file names that mean "not a view of the place" ("battle", but not "Battle Frontier"). */
 const NOT_A_VIEW =
-  /(^|_)(map\d*|icon|concept|art|artwork|anime|tcg|manga|adventures|sign|battle(?!_(frontier|tower|tree|maison|subway|hall|factory|arcade|castle|pike|palace|dome|pyramid|resort|zone|park|royal|institute|court|tent|company))|battlefield|environment|referee|layout|sprite|dialogue|menu|logo|pre-release|prerelease|trailer|exhibit|painting|evolutions|generations|origins|hz|pg|dsd|unused|beta|jp|numbered|comparison|puzzle\d*|storyboard|postcomp|cutscene|event|prelease|psmd|pmd|tw|berries)(_|\.|$)/i;
+  /(^|_)(map\d*|icon|concept|art|artwork|anime|tcg|manga|adventures|sign|battle(?!_(frontier|tower|tree|maison|subway|hall|factory|arcade|castle|pike|palace|dome|pyramid|resort|zone|park|royal|institute|court|tent|company))|battlefield|environment|referee|layout|sprite|dialogue|menu|logo|pre-release|prerelease|trailer|exhibit|painting|evolutions|generations|origins|hz|pg|dsd|unused|beta|jp|numbered|comparison|puzzle\d*|storyboard|postcomp|cutscene|event|prelease|psmd|pmd|tw|berries|rooms|braille|tablet|sculpture)(_|\.|$)/i;
 
 /**
  * 3D games' screenshots are screen-shaped: 5:3 on the 3DS (400 × 240), 16:9
@@ -529,20 +546,25 @@ const WIKI_FLOOR_MAP = /[ _(-](EG|UG\d*|OG\d*)[ _.)-]/;
 const VIEW_WORDS = new Set(["pluie", "nuit", "jour", "soir", "matin", "neige", "hiver", "ete", "printemps", "automne", "regen", "nacht", "tag", "abend", "schnee", "winter", "sommer", "herbst", "fruhling"]);
 
 /**
- * What to cut off another wiki's 3D shot: Poképédia and PokéWiki name a view
- * after the place alone when it's the moment of arriving, with the place's
- * banner at the top (at the bottom in Brilliant Diamond / Shining Pearl), and
- * after the place and an item ("Route 9 Superepousse XY.png") when it shows
- * the item being picked up, text box at the bottom. Weather and time-of-day
- * views are kept whole.
+ * How to use another wiki's 3D shot, from its name. Poképédia and PokéWiki
+ * name a view after the place alone when it's the moment of arriving, with the
+ * place's name on screen: a banner at the top (X / Y, Sun / Moon, Sword /
+ * Shield, Scarlet / Violet) or a sign box at the bottom (Omega Ruby / Alpha
+ * Sapphire, Brilliant Diamond / Shining Pearl), which is cut off. Weather and
+ * time-of-day views are kept whole. Anything else in the name is an item, a
+ * TM or an event: X / Y's item shots are the spot with the pickup's text box
+ * along the bottom, which is cut off; a TM is a Gym Leader's cutscene, and the
+ * other games' item shots are dark dives and room interiors: null, not used.
  */
-function overlayTrim(wiki: Wiki, file: string, title: string, region: string, code: string): { top?: number; bottom?: number } {
+function overlayTrim(wiki: Wiki, file: string, title: string, region: string, code: string): { top?: number; bottom?: number } | null {
   const own = new Set([...words(title), ...words(region)]);
   const codes = new Set(Object.keys(wiki.codes).map((c) => c.toLowerCase()));
   const rest = fileWords(file).filter((w) => !own.has(w) && !codes.has(w) && !/^\d+$/.test(w));
   if (rest.length && rest.every((w) => VIEW_WORDS.has(w))) return {};
-  if (rest.length && !rest.some((w) => /^(entree|arrivee|betreten|ankunft)$/.test(w))) return { bottom: 0.3 };
-  return code === "BDSP" ? { bottom: 0.22 } : { top: 0.22 };
+  if (rest.some((w) => !/^(entree|arrivee|betreten|ankunft)$/.test(w))) {
+    return code === "XY" && !rest.some((w) => /^(ct|cs|tm|vm|dt|tr)\d+$/.test(w)) ? { bottom: 0.3 } : null;
+  }
+  return ["ORAS", "OR", "AS", "BDSP"].includes(code) ? { bottom: 0.3 } : { top: 0.27 };
 }
 
 /**
@@ -593,15 +615,16 @@ async function wikiShots(place: PlaceIn, source: Source, games: string[], store:
           (!THREE_DS.has(resolved) || f.width <= 800) &&
           (code || SWITCH.has(resolved) ? screenShaped(resolved, f.width, f.height) : f.width / f.height >= 1.6 && f.width / f.height <= 1.8);
       if (!ok) return false;
-      gameOf.set(f.file, GAME_CODES[resolved]);
       if (threeD && wiki.lang !== "en") {
         const trim = overlayTrim(wiki, f.file, plainTitle, source.wiki, resolved);
+        if (!trim) return false;
         if (trim.top) trimTop[f.file] = trim.top;
         if (trim.bottom) trimBottom[f.file] = trim.bottom;
       }
+      gameOf.set(f.file, GAME_CODES[resolved]);
       return true;
     });
-    // The plain view ("Route 9 XY.png") before the item-location shots (both cut free of their banner or text box).
+    // The plain view ("Route 9 XY.png") first.
     files.sort((a, b) => a.file.length - b.file.length);
     shots.push(
       ...(await collectShots(
