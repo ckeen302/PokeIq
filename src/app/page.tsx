@@ -5,6 +5,7 @@ import { ModeGrid } from "@/components/home/ModeGrid";
 import { HeroStats } from "@/components/home/HeroStats";
 import { HeroDevice } from "@/components/home/HeroDevice";
 import { HudHeading } from "@/components/game/HudHeading";
+import { GuessrFeature } from "@/components/home/GuessrFeature";
 
 export default function HomePage() {
   return (
@@ -28,6 +29,8 @@ export default function HomePage() {
         </div>
         <HeroDevice />
       </section>
+
+      <GuessrFeature />
 
       <section className="space-y-5" aria-labelledby="daily-heading">
         <HudHeading id="daily-heading" index={1} title="Today's puzzles" aside="Resets at local midnight" />

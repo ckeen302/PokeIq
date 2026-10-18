@@ -63,17 +63,21 @@ export function GeoMap({ region, pick, revealed = [], onPick, className }: Props
       <svg viewBox={`0 0 ${W} ${H}`} className="pointer-events-none absolute inset-0 h-full w-full" aria-hidden>
         {revealed.map((r, i) => (
           <g key={i}>
-            {r.answer.mask.map(([x, y], k) => (
-              <circle key={k} cx={x * W} cy={y * H} r={u * 1.4} className="fill-success/60" />
-            ))}
+            <g className="geo-area">
+              {r.answer.mask.map(([x, y], k) => (
+                <circle key={k} cx={x * W} cy={y * H} r={u * 1.4} className="fill-success/60" />
+              ))}
+            </g>
             {r.guess && (
               <line
+                className="geo-line"
+                pathLength={1}
                 x1={r.guess.x * W}
                 y1={r.guess.y * H}
                 x2={r.answer.pin[0] * W}
                 y2={r.answer.pin[1] * H}
                 strokeWidth={u * 0.6}
-                strokeDasharray={`${u * 1.8} ${u * 1.2}`}
+                strokeLinecap="round"
                 stroke="#120f24"
               />
             )}
@@ -81,36 +85,41 @@ export function GeoMap({ region, pick, revealed = [], onPick, className }: Props
             {r.guess && <Ball x={r.guess.x * W} y={r.guess.y * H} u={u} label={r.label} />}
           </g>
         ))}
-        {pick && <Ball x={pick.x * W} y={pick.y * H} u={u} />}
+        {/* Keyed by position so every new pin replays the drop. */}
+        {pick && <Ball key={`${pick.x},${pick.y}`} x={pick.x * W} y={pick.y * H} u={u} />}
       </svg>
     </div>
   );
 }
 
-/** The guess marker: a tiny Poké Ball. */
+/** The guess marker: a tiny Poké Ball that drops in. */
 function Ball({ x, y, u, label }: { x: number; y: number; u: number; label?: string }) {
   const r = u * 3;
   return (
     <g transform={`translate(${x} ${y})`}>
-      <circle r={r} fill="#fff" stroke="#120f24" strokeWidth={u * 0.7} />
-      <path d={`M${-r} 0a${r} ${r} 0 0 1 ${2 * r} 0z`} fill="#e2306f" stroke="#120f24" strokeWidth={u * 0.7} />
-      <circle r={u} fill="#fff" stroke="#120f24" strokeWidth={u * 0.5} />
-      {label && (
-        <text y={-r - u} textAnchor="middle" fontSize={u * 3.6} fontWeight={700} fill="#fff" stroke="#120f24" strokeWidth={u * 0.8} paintOrder="stroke">
-          {label}
-        </text>
-      )}
+      <g className="geo-drop">
+        <circle r={r} fill="#fff" stroke="#120f24" strokeWidth={u * 0.7} />
+        <path d={`M${-r} 0a${r} ${r} 0 0 1 ${2 * r} 0z`} fill="#e2306f" stroke="#120f24" strokeWidth={u * 0.7} />
+        <circle r={u} fill="#fff" stroke="#120f24" strokeWidth={u * 0.5} />
+        {label && (
+          <text y={-r - u} textAnchor="middle" fontSize={u * 3.6} fontWeight={700} fill="#fff" stroke="#120f24" strokeWidth={u * 0.8} paintOrder="stroke">
+            {label}
+          </text>
+        )}
+      </g>
     </g>
   );
 }
 
-/** The true location: a green flag. */
+/** The true location: a green flag that pops up after the line draws. */
 function Flag({ x, y, u }: { x: number; y: number; u: number }) {
   return (
     <g transform={`translate(${x} ${y})`}>
-      <circle r={u * 1.4} fill="#120f24" />
-      <path d={`M0 0V${-u * 7}`} stroke="#120f24" strokeWidth={u * 0.8} />
-      <path d={`M0 ${-u * 7}l${u * 4.5} ${u * 1.6}l${-u * 4.5} ${u * 1.6}z`} className="fill-success" stroke="#120f24" strokeWidth={u * 0.5} />
+      <g className="geo-flag">
+        <circle r={u * 1.4} fill="#120f24" />
+        <path d={`M0 0V${-u * 7}`} stroke="#120f24" strokeWidth={u * 0.8} />
+        <path d={`M0 ${-u * 7}l${u * 4.5} ${u * 1.6}l${-u * 4.5} ${u * 1.6}z`} className="fill-success" stroke="#120f24" strokeWidth={u * 0.5} />
+      </g>
     </g>
   );
 }

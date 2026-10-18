@@ -90,6 +90,10 @@ export const BADGES: BadgeDef[] = [
   { id: "daily-30", name: "Legend", description: "30-day Daily Challenge streak", emoji: "👑" },
   { id: "dle-3", name: "Detective", description: "Solve a Pokédle in 3 guesses or fewer", emoji: "🔍" },
   { id: "dle-1", name: "Psychic", description: "Solve a Pokédle in one guess", emoji: "🔮" },
+  { id: "geo-first", name: "Explorer", description: "Finish a PokéGuessr game", emoji: "🧭" },
+  { id: "geo-pinpoint", name: "Pinpoint", description: "Score 5,000 in a PokéGuessr round", emoji: "📍" },
+  { id: "geo-20k", name: "Cartographer", description: "Score 20,000+ in a PokéGuessr game", emoji: "🗺️" },
+  { id: "geo-streak-10", name: "Pathfinder", description: "Name 10 places in a row in PokéGuessr Streak", emoji: "🥾" },
 ];
 
 const PLAYABLE_MODES = ["whos-that", "cry", "dex", "types", "higher-lower"];
@@ -282,19 +286,30 @@ export function recordRun(result: RunResult, shareToken?: string): RunReward {
   };
 }
 
-/** A finished PokéGuessr game: XP scales with the score (max 100), and the best per mode is kept. */
-export function recordGeoGame(mode: string, score: number, daily?: string): { xp: number; best: boolean } {
+/** A finished PokéGuessr game or streak: XP, per-mode best, daily record and badges. */
+export function recordGeoGame(
+  board: string,
+  game: { kind: "game" | "streak"; score: number; rounds: number[]; daily?: string }
+): { xp: number; best: boolean; newBadges: BadgeDef[] } {
   const p: Progress = structuredClone(read());
-  const key = daily ? "geo:daily" : `geo:${mode}`;
-  const dailyKey = daily ? `geo-daily:${daily}` : null;
+  const key = game.daily ? "geo:daily" : `geo:${board}`;
+  const dailyKey = game.daily ? `geo-daily:${game.daily}` : null;
   // Like the other dailies, only the first game of the day earns XP.
-  const xp = dailyKey && p.best[dailyKey] !== undefined ? 0 : Math.round(score / 250);
-  const best = score > (p.best[key] ?? 0);
+  const xp = dailyKey && p.best[dailyKey] !== undefined ? 0 : game.kind === "streak" ? game.score * 10 : Math.round(game.score / 250);
+  const best = game.score > (p.best[key] ?? 0);
   p.xp += xp;
-  p.best[key] = Math.max(p.best[key] ?? 0, score);
-  if (dailyKey && p.best[dailyKey] === undefined) p.best[dailyKey] = score;
+  p.best[key] = Math.max(p.best[key] ?? 0, game.score);
+  p.best["geo:games"] = (p.best["geo:games"] ?? 0) + 1;
+  if (dailyKey && p.best[dailyKey] === undefined) p.best[dailyKey] = game.score;
+  if (!p.modulesPlayed.includes("geo")) p.modulesPlayed.push("geo");
+
+  const earned = ["geo-first"];
+  if (game.kind === "game" && game.rounds.some((r) => r >= 5000)) earned.push("geo-pinpoint");
+  if (game.kind === "game" && game.score >= 20000) earned.push("geo-20k");
+  if (game.kind === "streak" && game.score >= 10) earned.push("geo-streak-10");
+  const newBadges = award(p, earned, Date.now());
   write(p);
-  return { xp, best };
+  return { xp, best, newBadges };
 }
 
 /** Tally one graded answer against its skill tags (gen, type, mode, stat). */

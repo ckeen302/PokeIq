@@ -3,10 +3,12 @@ import data from "@/data/geo.json";
 import { Rng } from "@/lib/rng";
 import { deriveSeed, randomId, signToken, verifyToken } from "./crypto";
 import {
+  GEO_KINDS,
   GEO_MAX_ROUND_SCORE,
   GEO_ROUNDS,
   GEO_STYLES,
   type GeoAnswer,
+  type GeoChallenge,
   type GeoGuessResponse,
   type GeoRegionInfo,
   type GeoResult,
@@ -28,6 +30,8 @@ interface Shot {
 }
 interface Location {
   name: string;
+  /** Buildings and landmarks sit in a pinned town or route and share its area. */
+  parent?: string;
   pin: [number, number];
   mask: [number, number][];
   shots: Shot[];
@@ -48,19 +52,24 @@ const STATE_TTL_MS = 3 * 60 * 60 * 1000;
 const FALLOFF = 8;
 /** Inside (or within a whisker of) the highlighted area counts as perfect. */
 const PERFECT_RADIUS = 0.012;
+/** Streak mode: a pin this close to the place keeps the streak alive. */
+const STREAK_RADIUS = 0.035;
+/** The town maps are drawn on an 8-pixel grid. */
+const MAP_SQUARE_PX = 8;
 
 const isClassic = (shot: Shot) => shot.game.startsWith("Let's Go");
 const shotUrl = (id: string) => `/api/geo/shot/${id}`;
 const shotsFor = (location: Location, style: GeoStyle) => location.shots.filter((s) => (style === "classic") === isClassic(s));
+const regionOf = (id: string) => DATA.regions.find((r) => r.id === id);
+const poolFor = (spec: Pick<GeoSpec, "region" | "style">) =>
+  (regionOf(spec.region)?.locations ?? []).filter((l) => shotsFor(l, spec.style).length);
 
 export function geoRegions(): GeoRegionInfo[] {
   return DATA.regions.map((r) => ({
     id: r.id,
     name: r.name,
     map: r.map,
-    locations: Object.fromEntries(
-      GEO_STYLES.map((style) => [style, r.locations.filter((l) => shotsFor(l, style).length).length])
-    ) as Record<GeoStyle, number>,
+    locations: Object.fromEntries(GEO_STYLES.map((style) => [style, poolFor({ region: r.id, style }).length])) as Record<GeoStyle, number>,
     previews: Object.fromEntries(
       GEO_STYLES.map((style) => {
         const home = r.locations.find((l) => l.name === "Pallet Town");
@@ -71,9 +80,8 @@ export function geoRegions(): GeoRegionInfo[] {
   }));
 }
 
-export function isGeoSpec(spec: Pick<GeoSpec, "region" | "style">): boolean {
-  const region = DATA.regions.find((r) => r.id === spec.region);
-  return !!region && GEO_STYLES.includes(spec.style) && region.locations.filter((l) => shotsFor(l, spec.style).length).length >= GEO_ROUNDS;
+export function isGeoSpec(spec: Pick<GeoSpec, "region" | "style" | "kind">): boolean {
+  return GEO_STYLES.includes(spec.style) && GEO_KINDS.includes(spec.kind) && poolFor(spec).length >= GEO_ROUNDS;
 }
 
 export function shotSource(id: string): string | null {
@@ -85,36 +93,45 @@ interface PlannedRound {
   shot: string;
 }
 
-/** The game's five rounds: distinct locations, one screenshot each in the chosen style. */
+/**
+ * The game's rounds: five for a standard game, every place for a streak.
+ * One screenshot each in the chosen style, and no two rounds in the same
+ * town (a building and its town would be the same pin).
+ */
 export function planRounds(spec: GeoSpec, seed: string): PlannedRound[] {
   const rng = new Rng(deriveSeed("geo", seed));
-  const region = DATA.regions.find((r) => r.id === spec.region)!;
-  const pool = region.locations.filter((l) => shotsFor(l, spec.style).length);
-  return rng
-    .shuffle(pool)
-    .slice(0, GEO_ROUNDS)
-    .map((l) => ({ location: l.name, shot: rng.pick(shotsFor(l, spec.style)).id }));
+  const areas = new Set<string>();
+  const rounds: PlannedRound[] = [];
+  for (const location of rng.shuffle(poolFor(spec))) {
+    const area = location.parent ?? location.name;
+    if (areas.has(area)) continue;
+    areas.add(area);
+    rounds.push({ location: location.name, shot: rng.pick(shotsFor(location, spec.style)).id });
+    if (spec.kind === "game" && rounds.length === GEO_ROUNDS) break;
+  }
+  return rounds;
 }
 
 function lookup(spec: GeoSpec, round: PlannedRound) {
-  const region = DATA.regions.find((r) => r.id === spec.region)!;
+  const region = regionOf(spec.region)!;
   const location = region.locations.find((l) => l.name === round.location)!;
   return { region, location, shot: location.shots.find((s) => s.id === round.shot) ?? location.shots[0] };
 }
 
-/** Score for a guess at normalised (x, y) on the region map. */
-export function scoreGuess(spec: GeoSpec, round: PlannedRound, x: number, y: number): number {
+/** Distance from a guess at normalised (x, y) to the location's area, and its score. */
+export function measureGuess(spec: GeoSpec, round: PlannedRound, x: number, y: number) {
   const { region, location } = lookup(spec, round);
   const { width, height } = region.map;
-  let best = Infinity;
-  for (const [mx, my] of location.mask) best = Math.min(best, Math.hypot((x - mx) * width, (y - my) * height));
-  const d = best / Math.hypot(width, height);
-  return d <= PERFECT_RADIUS ? GEO_MAX_ROUND_SCORE : Math.round(GEO_MAX_ROUND_SCORE * Math.exp(-FALLOFF * d));
+  let px = Infinity;
+  for (const [mx, my] of location.mask) px = Math.min(px, Math.hypot((x - mx) * width, (y - my) * height));
+  const d = px / Math.hypot(width, height);
+  const score = d <= PERFECT_RADIUS ? GEO_MAX_ROUND_SCORE : Math.round(GEO_MAX_ROUND_SCORE * Math.exp(-FALLOFF * d));
+  return { score, hit: d <= STREAK_RADIUS, squares: d <= PERFECT_RADIUS ? 0 : Math.round((px / MAP_SQUARE_PX) * 10) / 10 };
 }
 
-export function answerFor(spec: GeoSpec, round: PlannedRound): GeoAnswer {
+export function answerFor(spec: GeoSpec, round: PlannedRound, squares = 0): GeoAnswer {
   const { location, shot } = lookup(spec, round);
-  return { name: location.name, game: shot.game, pin: location.pin, mask: location.mask };
+  return { name: location.name, parent: location.parent, game: shot.game, pin: location.pin, mask: location.mask, squares };
 }
 
 // ---------------------------------------------------------------------------
@@ -122,25 +139,43 @@ export function answerFor(spec: GeoSpec, round: PlannedRound): GeoAnswer {
 // ---------------------------------------------------------------------------
 
 export interface GeoState {
-  v: 2;
+  v: 3;
   sid: string;
   spec: GeoSpec;
   seed: string;
   startedAt: number;
-  /** One score per finished round. */
+  /** Trainer name, for the challenge link. */
+  name?: string;
+  /** One score per finished round (streaks: 1 per hit). */
   log: number[];
 }
 
-export function startGeo(spec: GeoSpec): { token: string; round: GeoRoundPublic } {
-  const seed = spec.daily ? `geo-daily:${spec.daily}` : randomId();
-  const state: GeoState = { v: 2, sid: randomId(), spec, seed, startedAt: Date.now(), log: [] };
+/** What a challenge link carries: the seed (so the same places come up) and the friend's result. */
+interface ChallengeCard {
+  s: string;
+  r: string;
+  y: GeoStyle;
+  n: string;
+  t: number;
+  p: number[];
+}
+
+export function readGeoChallenge(token: unknown): (GeoChallenge & { seed: string; region: string }) | null {
+  const card = verifyToken<ChallengeCard>("geo-challenge", token);
+  if (!card || !GEO_STYLES.includes(card.y) || !regionOf(card.r)) return null;
+  return { seed: card.s, region: card.r, style: card.y, name: card.n, score: card.t, rounds: card.p };
+}
+
+export function startGeo(spec: GeoSpec, opts: { seed?: string; name?: string } = {}): { token: string; round: GeoRoundPublic } {
+  const seed = opts.seed ?? (spec.daily ? `geo-daily:${spec.daily}` : randomId());
+  const state: GeoState = { v: 3, sid: randomId(), spec, seed, startedAt: Date.now(), name: opts.name, log: [] };
   const [first] = planRounds(spec, seed);
   return { token: signToken("geo", state), round: { index: 0, shot: shotUrl(first.shot) } };
 }
 
 export function readGeo(token: unknown): GeoState | null {
   const state = verifyToken<GeoState>("geo", token);
-  if (!state || state.v !== 2 || Date.now() - state.startedAt > STATE_TTL_MS) return null;
+  if (!state || state.v !== 3 || Date.now() - state.startedAt > STATE_TTL_MS) return null;
   return isGeoSpec(state.spec) ? state : null;
 }
 
@@ -149,40 +184,50 @@ export type GeoGuessOutcome =
   | { ok: false; status: number; error: string };
 
 export function gradeGeo(state: GeoState, guess: { x: number; y: number }): GeoGuessOutcome {
-  const rounds = planRounds(state.spec, state.seed);
+  const { spec } = state;
+  const rounds = planRounds(spec, state.seed);
   const index = state.log.length;
-  if (index >= rounds.length) return { ok: false, status: 409, error: "This game is already over." };
+  const streak = spec.kind === "streak";
+  const over = streak ? state.log.includes(0) || index >= rounds.length : index >= rounds.length;
+  if (over) return { ok: false, status: 409, error: "This game is already over." };
 
   const round = rounds[index];
-  const score = scoreGuess(state.spec, round, guess.x, guess.y);
-  const next: GeoState = { ...state, log: [...state.log, score] };
+  const { score, hit, squares } = measureGuess(spec, round, guess.x, guess.y);
+  const next: GeoState = { ...state, log: [...state.log, streak ? (hit ? 1 : 0) : score] };
   const total = next.log.reduce((s, x) => s + x, 0);
-  const done = next.log.length >= rounds.length;
+  const done = streak ? !hit || next.log.length >= rounds.length : next.log.length >= rounds.length;
   const now = Date.now();
 
   let result: GeoResult | undefined;
+  let challengeToken: string | undefined;
   if (done) {
     result = {
       sid: state.sid,
-      spec: state.spec,
+      spec,
       score: total,
-      rounds: rounds.map((r, i) => ({ score: next.log[i], name: r.location })),
+      rounds: next.log.map((s, i) => ({ score: s, name: rounds[i].location })),
       durationMs: Math.max(1, now - state.startedAt),
       finishedAt: now,
     };
+    if (!streak) {
+      const card: ChallengeCard = { s: state.seed, r: spec.region, y: spec.style, n: state.name ?? "", t: total, p: next.log };
+      challengeToken = signToken("geo-challenge", card);
+    }
   }
   return {
     ok: true,
     claimKey: `geo:${state.sid}:${index}`,
     body: {
       score,
-      answer: answerFor(state.spec, round),
+      hit,
+      answer: answerFor(spec, round, squares),
       token: signToken("geo", next),
       total,
       next: done ? undefined : { index: index + 1, shot: shotUrl(rounds[index + 1].shot) },
       done,
       result,
       resultToken: result ? signToken("geo-result", result) : undefined,
+      challengeToken,
     },
   };
 }

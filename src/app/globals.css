@@ -225,6 +225,40 @@
   }
 }
 
+/* ---------- PokéGuessr map markers ---------- */
+
+/* The guess pin drops in with a little bounce. */
+.geo-drop {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: geo-drop 0.38s cubic-bezier(0.3, 1.6, 0.5, 1);
+}
+@keyframes geo-drop {
+  from { transform: translateY(-60%) scale(0.6); opacity: 0; }
+  to { transform: none; opacity: 1; }
+}
+
+/* Reveal: the line from guess to answer draws itself, then the flag pops up. */
+.geo-line {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: geo-line 0.7s ease-out 0.1s forwards;
+}
+@keyframes geo-line {
+  to { stroke-dashoffset: 0; }
+}
+.geo-flag {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: geo-drop 0.4s cubic-bezier(0.3, 1.6, 0.5, 1) 0.6s backwards;
+}
+.geo-area {
+  animation: geo-fade 0.5s ease-out 0.5s backwards;
+}
+@keyframes geo-fade {
+  from { opacity: 0; }
+}
+
 /* ---------- Loading screen (BootLoader) ---------- */
 
 /* Poké Ball catch wobble: three shakes, then a beat of stillness. */
@@ -316,12 +350,17 @@ html.no-splash .boot-splash {
   .animate-flicker,
   .animate-scan,
   .boot-ball,
+  .geo-drop,
+  .geo-line,
+  .geo-flag,
+  .geo-area,
   .boot-gyri path,
   .boot-core,
   .boot-ripple {
     animation: none;
   }
-  .boot-gyri path {
+  .boot-gyri path,
+  .geo-line {
     stroke-dashoffset: 0;
   }
   .boot-ripple {

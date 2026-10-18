@@ -4,7 +4,7 @@ import { Medal } from "lucide-react";
 import { fetchBoard } from "@/lib/server/leaderboard";
 import { fetchGeoBoard } from "@/lib/server/geo-leaderboard";
 import { geoRegions } from "@/lib/server/geo";
-import { GEO_STYLES, geoBoardKey } from "@/lib/geo-types";
+import { GEO_KINDS, GEO_STYLES, geoBoardKey } from "@/lib/geo-types";
 import { dailyNumber, isValidDailyDate } from "@/lib/daily";
 import { FORMAT_INFO, MODULE_INFO, PLAY_MODULES, PLAYABLE_FORMATS } from "@/lib/modes";
 import { DIFFICULTIES, type Difficulty, type ModuleId, type QuizFormat } from "@/engines/types";
@@ -53,7 +53,12 @@ export default async function LeaderboardPage({ searchParams }: PageProps) {
 
   if (board === "geo") {
     const geoBoards = geoRegions().flatMap((r) =>
-      GEO_STYLES.map((style) => ({ id: geoBoardKey({ region: r.id, style }), name: `${r.name} ${style === "classic" ? "Classic" : "Retro"}` }))
+      GEO_KINDS.flatMap((kind) =>
+        GEO_STYLES.map((style) => ({
+          id: geoBoardKey({ region: r.id, style, kind }),
+          name: `${r.name} ${style === "classic" ? "Classic" : "Retro"}${kind === "streak" ? " Streak" : ""}`,
+        }))
+      )
     );
     const mode = geoBoards.find((b) => b.id === params.format)?.id ?? null;
     const geoEntries = mode ? await fetchGeoBoard({ mode }) : await fetchGeoBoard({ daily: date });
@@ -105,7 +110,9 @@ export default async function LeaderboardPage({ searchParams }: PageProps) {
                     <tr key={row.id} className="border-b last:border-0">
                       <td className="p-3 font-mono">{i + 1}</td>
                       <td className="p-3 font-medium">{row.player_name}</td>
-                      <td className="p-3 text-right font-mono tabular-nums">{row.score.toLocaleString("en-US")} / 25,000</td>
+                      <td className="p-3 text-right font-mono tabular-nums">
+                        {mode?.endsWith(":streak") ? `${row.score} in a row` : `${row.score.toLocaleString("en-US")} / 25,000`}
+                      </td>
                       <td className="hidden p-3 text-right tabular-nums sm:table-cell">{Math.round(row.duration_ms / 1000)}s</td>
                     </tr>
                   ))}

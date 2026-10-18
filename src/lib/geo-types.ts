@@ -5,10 +5,14 @@ export const GEO_MAX_ROUND_SCORE = 5000;
 
 /**
  * classic: 3D ground-level views from Let's Go, Pikachu! / Eevee! (the GeoGuessr feel).
- * retro:   top-down layouts of the whole area from the Game Boy / GBA / DS games.
+ * retro:   top-down layouts and screenshots from the Game Boy / GBA / DS games.
  */
 export const GEO_STYLES = ["classic", "retro"] as const;
 export type GeoStyle = (typeof GEO_STYLES)[number];
+
+/** game: five rounds scored by distance. streak: keep naming places until a pin misses. */
+export const GEO_KINDS = ["game", "streak"] as const;
+export type GeoKind = (typeof GEO_KINDS)[number];
 
 export interface GeoRegionInfo {
   id: string;
@@ -23,13 +27,15 @@ export interface GeoRegionInfo {
 export interface GeoSpec {
   region: string;
   style: GeoStyle;
+  kind: GeoKind;
   daily?: string;
-  /** Repeat starts of a daily are playable but not ranked. */
-  practice?: "repeat-daily";
+  /** Not ranked: a repeat start of a daily, or a friend's challenge (the places are known). */
+  practice?: "repeat-daily" | "challenge";
 }
 
-/** Leaderboard key for free play, e.g. "kanto:classic". */
-export const geoBoardKey = (spec: Pick<GeoSpec, "region" | "style">) => `${spec.region}:${spec.style}`;
+/** Leaderboard key for free play, e.g. "kanto:classic" or "kanto:classic:streak". */
+export const geoBoardKey = (spec: Pick<GeoSpec, "region" | "style" | "kind">) =>
+  `${spec.region}:${spec.style}${spec.kind === "streak" ? ":streak" : ""}`;
 
 export interface GeoRoundPublic {
   index: number;
@@ -38,14 +44,27 @@ export interface GeoRoundPublic {
 
 export interface GeoAnswer {
   name: string;
+  /** The town or route a building/landmark sits in. */
+  parent?: string;
   game: string;
   pin: [number, number];
   mask: [number, number][];
+  /** Distance from the guess to the location, in town-map squares (0 = inside it). */
+  squares: number;
+}
+
+/** A friend's finished game, carried in a challenge link. */
+export interface GeoChallenge {
+  name: string;
+  score: number;
+  rounds: number[];
+  style: GeoStyle;
 }
 
 export interface GeoResult {
   sid: string;
   spec: GeoSpec;
+  /** Points for a game, places in a row for a streak. */
   score: number;
   rounds: { score: number; name: string }[];
   durationMs: number;
@@ -60,6 +79,8 @@ export interface GeoStartResponse {
 
 export interface GeoGuessResponse {
   score: number;
+  /** Streak mode: the pin landed on the place. */
+  hit: boolean;
   answer: GeoAnswer;
   token: string;
   total: number;
@@ -67,4 +88,6 @@ export interface GeoGuessResponse {
   done: boolean;
   result?: GeoResult;
   resultToken?: string;
+  /** Standard games: a link token so friends can play the same five places. */
+  challengeToken?: string;
 }

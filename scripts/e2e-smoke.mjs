@@ -128,26 +128,55 @@ await page.getByText("How your PokéIQ was measured").waitFor();
 await page.waitForTimeout(1800);
 await page.screenshot({ path: `${OUT}/iq-test-results.png`, fullPage: true });
 
-step("pokéguessr: full game");
-await page.goto(`${BASE}/guessr`, { waitUntil: "networkidle" });
-await page.getByRole("button", { name: /Classic/ }).click();
-for (let i = 0; i < 5; i++) {
-  await page.waitForFunction(() => {
-    const img = document.querySelector("img[alt='Where is this?']");
-    return img?.complete && img.naturalWidth > 0;
-  });
-  const map = page.locator("[role=application]");
-  await map.hover();
-  const box = await map.boundingBox();
-  await map.click({ position: { x: box.width * 0.5, y: box.height * 0.5 } });
-  await page.getByRole("button", { name: /^Guess$/ }).click();
-  const next = page.getByRole("button", { name: /Next round|View summary/ });
-  await next.waitFor();
-  if (i === 0) await page.screenshot({ path: `${OUT}/guessr-reveal.png` });
-  await next.click();
+async function playGeoRounds(rounds) {
+  for (let i = 0; i < rounds; i++) {
+    await page.waitForFunction(() => {
+      const img = document.querySelector("img[alt='Where is this?']");
+      return img?.complete && img.naturalWidth > 0;
+    });
+    const map = page.locator("[role=application]");
+    await map.hover();
+    const box = await map.boundingBox();
+    await map.click({ position: { x: box.width * 0.5, y: box.height * 0.5 } });
+    await page.getByRole("button", { name: /^Guess$/ }).click();
+    const next = page.getByRole("button", { name: /Next round|View summary|See results/ });
+    await next.waitFor();
+    if (i === 0) await page.screenshot({ path: `${OUT}/guessr-reveal.png` });
+    const label = await next.innerText();
+    await next.click();
+    if (/summary|results/i.test(label)) return;
+  }
 }
+
+step("pokéguessr: 5-round game + challenge link");
+let geoChallenge = null;
+page.on("response", async (res) => {
+  if (res.url().endsWith("/api/geo/guess") && res.ok()) {
+    const body = await res.json().catch(() => null);
+    if (body?.challengeToken) geoChallenge = body.challengeToken;
+  }
+});
+await page.goto(`${BASE}/guessr`, { waitUntil: "networkidle" });
+await page.screenshot({ path: `${OUT}/guessr-setup.png`, fullPage: true });
+await page.getByRole("button", { name: /5-round game/ }).click();
+await playGeoRounds(5);
 await page.getByText("Survey complete").waitFor();
+await page.getByRole("button", { name: /Challenge a friend/ }).waitFor();
 await page.screenshot({ path: `${OUT}/guessr-summary.png`, fullPage: true });
+if (!geoChallenge) throw new Error("no PokéGuessr challenge token");
+
+step("pokéguessr: friend accepts the challenge");
+await page.goto(`${BASE}/guessr/c/${encodeURIComponent(geoChallenge)}`, { waitUntil: "networkidle" });
+await page.getByRole("button", { name: /Accept challenge/ }).click();
+await playGeoRounds(5);
+await page.getByText(/You beat|wins this one|Dead heat/).waitFor();
+await page.screenshot({ path: `${OUT}/guessr-challenge-result.png`, fullPage: true });
+
+step("pokéguessr: streak");
+await page.goto(`${BASE}/guessr`, { waitUntil: "networkidle" });
+await page.getByRole("button", { name: /Streak/ }).click();
+await playGeoRounds(60);
+await page.getByText("Streak over").first().waitFor();
 
 step("pokédex explorer");
 await page.goto(`${BASE}/pokedex`, { waitUntil: "networkidle" });

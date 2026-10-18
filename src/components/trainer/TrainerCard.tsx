@@ -106,6 +106,26 @@ export function TrainerCard() {
 
       <CoachPanel progress={progress} />
 
+      {(progress.best["geo:games"] ?? 0) > 0 && (
+        <Card>
+          <CardHeader className="flex-row items-center justify-between space-y-0">
+            <CardTitle className="text-lg">PokéGuessr</CardTitle>
+            <Link href="/guessr" className="text-sm text-primary hover:underline">
+              Play →
+            </Link>
+          </CardHeader>
+          <CardContent className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            <Stat label="Games played" value={progress.best["geo:games"] ?? 0} />
+            <Stat label="Best Classic game" value={(progress.best["geo:kanto:classic"] ?? 0).toLocaleString("en-US")} />
+            <Stat label="Best Retro game" value={(progress.best["geo:kanto:retro"] ?? 0).toLocaleString("en-US")} />
+            <Stat
+              label="Best streak"
+              value={Math.max(progress.best["geo:kanto:classic:streak"] ?? 0, progress.best["geo:kanto:retro:streak"] ?? 0)}
+            />
+          </CardContent>
+        </Card>
+      )}
+
       <Card>
         <CardHeader>
           <CardTitle className="text-lg">

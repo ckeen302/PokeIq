@@ -38,7 +38,11 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "This result is too old to submit." }, { status: 410 });
   }
   if (result.spec.practice) {
-    return NextResponse.json({ error: "Only your first daily game of the day can be ranked." }, { status: 403 });
+    const why =
+      result.spec.practice === "challenge"
+        ? "Challenge replays aren't ranked: start your own game to get on the board."
+        : "Only your first daily game of the day can be ranked.";
+    return NextResponse.json({ error: why }, { status: 403 });
   }
 
   const { error } = await supabase.from("geo_runs").insert({

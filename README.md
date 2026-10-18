@@ -37,7 +37,7 @@ Every question is generated on demand from a snapshot of all 1,025 Pokémon. No 
 | **Higher or Lower** | Two Pokémon, one stat (Speed, BST, weight…) |
 | **Formats** | Classic (10 × 15s), Survival (3 lives, endless) and Blitz (60s), with per-generation filters ("Gen 1 purist") |
 | **Challenge links** | `/c/<token>` replays the exact same questions and shows a head-to-head result; dynamic Open Graph cards for Discord, X and iMessage |
-| **Progression** | XP, levels, daily streaks, 15 badges and a trainer card. Local-first with no signup needed; optional accounts sync it across devices |
+| **Progression** | XP, levels, daily streaks, 19 badges and a trainer card. Local-first with no signup needed; optional accounts sync it across devices |
 | **Pokédex** | Searchable explorer (type and generation filters, sort by any stat, infinite scroll) and a page for every species: animated / 3D / shiny art with tilt, cries, Mega / regional / Gigantamax forms, stat bars with radar chart, Lv 50/100 ranges and percentiles, full type matchups, branching evolution trees with methods, complete learnsets (level-up / TM / egg / tutor), every Pokédex entry by game, breeding, training, regional dex numbers and names in 7 languages |
 | **Lookalikes** | A DINOv2 vision model embeds every silhouette offline. Its nearest neighbours drive hard-mode Who's That distractors and each Pokédex page's "easily confused with" panel |
 | **Coach** | Per-generation, per-type and per-mode accuracy with empirical-Bayes smoothing. It surfaces your focus areas and strengths and links each one to the right study tool |
