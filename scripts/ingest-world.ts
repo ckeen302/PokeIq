@@ -264,7 +264,42 @@ const DENYLIST = new Set<string>([
   "Tanoby_Ruins_Weepth_Chamber.png",
   // A labelled guide map.
   "Alola_Route_13.png",
+  // Regi chambers: the same room in two places.
+  "Desert_Ruins_interior_ORAS.png",
+  "Island_Cave_interior_ORAS.png",
+  // Text boxes over the view.
+  "Fallarbor_Battle_Tent_E.png",
+  "Seafloor_Cavern_aftermath_E.png",
+  "Lilycove_Museum_Curator_RSE.png",
+  // A photo board and a news broadcast, not the place.
+  "Mossdeep_Face_Board_ORAS.png",
+  "TV_Mauville_Interior_News_Desk.png",
+  // Floors that look the same as one already kept (Sky Pillar 3F and 5F, Cave of Origin B2F, Trainer Hill's own floors).
+  "Sky_Pillar_3F_after_E.png",
+  "Sky_Pillar_3F_before_E.png",
+  "Sky_Pillar_4F_after_E.png",
+  "Sky_Pillar_4F_before_E.png",
+  "Sky_Pillar_4F_RS.png",
+  "Cave_of_Origin_B3F_RS.png",
+  "Trainer_Hill_Carlotta_E.png",
+  "Trainer_Hill_Coleman_E.png",
+  "Trainer_Hill_Colleen_E.png",
+  "Trainer_Hill_Ed_E.png",
+  "Trainer_Hill_Edie_E.png",
+  "Trainer_Hill_Elizabeth_E.png",
+  // The exterior again (Emerald's is kept).
+  "Lilycove_Museum_RS.png",
+  // A close-up of the player; a field of grass like any other.
+  "Lumiose_Museum_XY.png",
+  "Friend_Safari_Field.png",
 ]);
+/**
+ * Files that aren't a fair view of the place they name: Omega Ruby / Alpha
+ * Sapphire's Mirage spots (look-alike islands that appear at random near a
+ * route), Emerald's copies of a route map with a cave entrance drawn in, and
+ * the Wild Area's dens past the first three (a den in every shot).
+ */
+const NOT_THE_PLACE = /^Mirage_(Cave|Mountain|Forest|Island)_|_E_(Terra_Cave|Marine_Cave|normal)\.|_den_[D-Z]_/i;
 /** Archive files for places whose town map is named after the place alone ("One_Island.png"). */
 const ARCHIVE_FILES: Record<string, string[]> = {
   "Sevii Islands|One Island": ["One_Island.png"],
@@ -349,6 +384,10 @@ const WIKI_DENYLIST = new Set<string>([
   "Battle_Tree_3.png",
   "Battle_Tree_4.png",
   "Seaward_Cave.png",
+  // Half the view blacked out.
+  "Roche-sur-Gliffe_Aquarium_XY.png",
+  // The same Pokémon Center front as the first.
+  "Motostoke_-_Pokémon_Center_2.jpg",
   // A speech bubble at the top; too dark or too close to place.
   "Route_120_ORAS.jpg",
   "Grotte_Granite_ROSA.png",
@@ -421,7 +460,7 @@ function screenShaped(code: string, width: number, height: number): boolean {
 
 function usable(file: string, games: string[], codeless: boolean): boolean {
   const f = file.replace(/ /g, "_");
-  if (DENYLIST.has(f) || NOT_A_VIEW.test(f) || MAP_PREVIEW.test(f)) return false;
+  if (DENYLIST.has(f) || NOT_A_VIEW.test(f) || MAP_PREVIEW.test(f) || NOT_THE_PLACE.test(f)) return false;
   const code = codeOf(f);
   // Single-game regions (X/Y, Sword/Shield, Scarlet/Violet…) often leave the game off the file name.
   return code ? games.includes(code) : codeless;
@@ -577,8 +616,14 @@ function namesOtherPlace(file: string, place: PlaceIn, title = place.name): bool
 
 /** A file's name as words, without its extension or a trailing variant letter ("Aether ParadiseA", "route1b"). */
 const fileWords = (file: string) => words(file.replace(/\.[a-z0-9]+$/i, "").replace(/(?<=[a-z\d])[A-D]$|(?<=\d)[a-d]$/, ""));
+/** Names too common to stand alone once "Village" is dropped (any "Pokémon …" file isn't Pokémon Village's). */
+const KEEP_SUFFIX = new Set(["pokemon", "tapu"]);
 /** A place's name as words, without "Town", "City" or "Village". */
-const placeWords = (place: PlaceIn) => words((TITLES[`${place.region}|${place.name}`] ?? place.name).replace(/\s+(Town|City|Village)$/i, ""));
+function placeWords(place: PlaceIn): string[] {
+  const name = TITLES[`${place.region}|${place.name}`] ?? place.name;
+  const short = words(name.replace(/\s+(Town|City|Village)$/i, ""));
+  return short.length === 1 && KEEP_SUFFIX.has(short[0]) ? words(name) : short;
+}
 
 /** Some run of the file's words spells the place's name ("Route14" and "Kalos_Route_4" spell Route 4; "Route_40" doesn't). */
 function spells(file: string[], place: string[]): boolean {
