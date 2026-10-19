@@ -344,6 +344,52 @@ const DENYLIST = new Set<string>([
   "Veilstone_Department_Store_3F_DP.png",
   "Veilstone_Department_Store_4F_DP.png",
   "Veilstone_Department_Store_5F_DP.png",
+  // A labelled guidebook map; floors pasted together.
+  "RG_Fuchsia_City.png",
+  "Pallet_Town_Red's_House_Y.png",
+  "Pewter_Museum_of_Science_interior_RBY.png",
+  "Pewter_Museum_of_Science_interior_FRLG.png",
+  // Mostly black or fog.
+  "Mt_Moon_B1F_FRLG.png",
+  "Rock_Tunnel_B1F_GSC.png",
+  "Rock_Tunnel_Darkness_LGPE.png",
+  "SS_Anne_3F_FRLG.png",
+  // The same room at both ends of Diglett's Cave.
+  "Diglett_Cave_Entrance_Route_11_FRLG.png",
+  "Diglett_Cave_Entrance_Route_2_FRLG.png",
+  // Floors and rooms that look like one already kept (Kanto).
+  "Celadon_Mansion_2F_RBY.png",
+  "Celadon_Mansion_3F_RBY.png",
+  "Underground_Path_Route_6_Entrance_LGPE.png",
+  "Underground_Path_Route_6_Side_LGPE.png",
+  "Underground_Path_Route_7_Entrance_LGPE.png",
+  "Underground_Path_Route_7_Side_LGPE.png",
+  "Underground_Path_Route_8_Entrance_LGPE.png",
+  "Underground_Path_Route_8_Side_LGPE.png",
+  "Seafoam_Islands_B1F_HGSS.png",
+  "Seafoam_Islands_B2F_RBY.png",
+  "Seafoam_Islands_B3F_HGSS.png",
+  "Seafoam_Islands_B3F_RBY.png",
+  "Victory_Road_3F_FRLG.png",
+  "Victory_Road_3F_GSC.png",
+  "Victory_Road_3F_HGSS.png",
+  "Celadon_Department_Store_2F_FRLG.png",
+  "Celadon_Department_Store_3F_FRLG.png",
+  "Pewter_Museum_Right_Entrance_LGPE.png",
+  "Pokémon_Mansion_2F_FRLG.png",
+  "Pokémon_Mansion_3F_FRLG.png",
+  "Pokémon_Mansion_B1F_FRLG.png",
+  "Pokémon_Tower_4F_RBY.png",
+  "Pokémon_Tower_5F_RBY.png",
+  "Pokémon_Tower_6F_RBY.png",
+  "SS_Anne_truck_RBY.png",
+  "SS_Anne_RBY.png",
+  "SS_Anne_FRLG.png",
+  "Silph_Co_5F_RBY.png",
+  "Silph_Co_6F_RBY.png",
+  "Silph_Co_3F_FRLG.png",
+  "Rocket_Hideout_B3F_FRLG.png",
+  "Rocket_Hideout_B4F_FRLG.png",
 ]);
 /**
  * Files that aren't a fair view of the place they name: Omega Ruby / Alpha
@@ -405,7 +451,10 @@ const MIRAGE_SPOT = /^Mirage (Island|Cave|Mountain|Forest) \(/;
 /** A screenshot both pages use, kept where it was taken (Gold / Silver put Blaine's Gym in the Seafoam Islands). */
 const KEEP_IN: Record<string, string> = {
   "Cinnabar_Gym_GSC.png": "Seafoam Islands",
+  "Cinnabar_Gym_HGSS.png": "Seafoam Islands",
   "Lilycove_Hideout_RSE.png": "Team Aqua Hideout",
+  // Bill's Sea Cottage, at the end of Route 25, not in Cerulean City.
+  ...Object.fromEntries(["RBY", "GSC", "FRLG", "HGSS"].map((code) => [`Cerulean_Cape_${code}.png`, "Route 25"])),
 };
 
 /** Screenshots with the place's name along the bottom (BDSP's banner, X/Y's Gym caption bar): it's cut off. */
@@ -883,7 +932,7 @@ async function ingestSource(source: Source, world: WorldPlaces, store: ShotStore
     const infobox = page ? await infoboxImages(page.wikitext) : [];
     const archive = await archiveShots(place, source);
     const gallery = page ? await galleryImages(page.title, [page.title, place.name, ...infobox.map(imageStem)]) : [];
-    const fromCategories = [...catCodes.keys()].filter((f) => games.includes(catCodes.get(f)!) && namesPlace(f, place));
+    const fromCategories = [...catCodes.keys()].filter((f) => games.includes(catCodes.get(f)!) && (KEEP_IN[f] ? KEEP_IN[f] === place.name : namesPlace(f, place)));
     const trusted = new Set(
       [...infobox, ...(ARCHIVE_FILES[`${place.region}|${place.name}`] ?? []), ...archive.filter((f) => f.startsWith("Photo_Spot_")), ...fromCategories].map((f) =>
         f.replace(/ /g, "_")
