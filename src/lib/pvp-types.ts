@@ -4,7 +4,7 @@
  * applies every rule) and the client.
  */
 
-import { DLE_MAX_GUESSES, type CellStatus, type DleRow } from "./dle-types";
+import { DLE_GUESS_COST, DLE_HINT_COST, DLE_HINT_KINDS, DLE_SOLVE_POINTS, dleBasePoints, type CellStatus, type DleHint, type DleRow } from "./dle-types";
 import type { DuelPlayerView, DuelStatus } from "./duel-types";
 import type { Difficulty, ModuleId } from "@/engines/types";
 import type { PublicQuestion } from "./session-types";
@@ -57,19 +57,19 @@ export const DLE_DUEL_REVEAL_MS = 15_000;
 /** Running out the clock without a single guess this many rounds in a row is a forfeit. */
 export const DLE_DUEL_IDLE_ROUNDS = 2;
 
-/** A first-guess solve. Each guess after the first costs DLE_DUEL_GUESS_COST, down to 300 on the last guess. */
-export const DLE_DUEL_SOLVE_POINTS = 1000;
-export const DLE_DUEL_GUESS_COST = Math.round(700 / (DLE_MAX_GUESSES - 1));
+/** A first-guess solve, down to 300 on the last guess: the same points as solo Pokédle (dle-types). */
+export const DLE_DUEL_SOLVE_POINTS = DLE_SOLVE_POINTS;
+export const DLE_DUEL_GUESS_COST = DLE_GUESS_COST;
 /** Solving at once earns this much more, falling linearly to 0 at the round's time limit. */
 export const DLE_DUEL_SPEED_BONUS = 150;
 
-/** Hints are opt-in in a duel, once each per round after your first guess, and cost points. */
-export const DLE_DUEL_HINTS = ["genus", "silhouette"] as const;
-export type DleDuelHint = (typeof DLE_DUEL_HINTS)[number];
-export const DLE_DUEL_HINT_COST: Record<DleDuelHint, number> = { genus: 150, silhouette: 300 };
+/** Hints are opt-in in a duel, once each per round after your first guess, and cost what they do solo. */
+export const DLE_DUEL_HINTS = DLE_HINT_KINDS;
+export type DleDuelHint = DleHint;
+export const DLE_DUEL_HINT_COST = DLE_HINT_COST;
 
 /** Points for solving in `guesses`. */
-export const dleDuelBase = (guesses: number) => DLE_DUEL_SOLVE_POINTS - (guesses - 1) * DLE_DUEL_GUESS_COST;
+export const dleDuelBase = dleBasePoints;
 /** The speed bonus for solving `ms` into a round. */
 export const dleDuelSpeed = (ms: number) => Math.round(DLE_DUEL_SPEED_BONUS * Math.max(0, 1 - ms / DLE_DUEL_ROUND_MS));
 

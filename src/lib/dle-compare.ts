@@ -27,13 +27,13 @@ export const isNumericColumn = (c: DleColumn): c is DleNumericColumn => (DLE_NUM
  * - generation: one away;
  * - height and weight: within 25% (the larger at most 1.25 times the
  *   smaller), or 0.1 m / 0.1 kg apart, so the tiniest Pokémon can be close;
- * - stage: never (it only runs Baby to 3, so "one away" would be almost
- *   every miss).
+ * - stage: one away, between stages 1 to 3 (a Baby is never close: it
+ *   sits outside its family's line).
  */
 export function isClose(column: DleNumericColumn, guess: number, answer: number): boolean {
   if (guess === answer) return false;
   if (column === "gen") return Math.abs(guess - answer) === 1;
-  if (column === "stage") return false;
+  if (column === "stage") return guess > 0 && answer > 0 && Math.abs(guess - answer) === 1;
   const [lo, hi] = guess < answer ? [guess, answer] : [answer, guess];
   return 4 * hi <= 5 * lo || hi - lo <= 1;
 }
@@ -93,8 +93,9 @@ export function misfit(guess: DleTraits, statuses: DleStatuses, candidate: DleTr
  * the Pokédex panel, so a clue becomes a filter without any arithmetic.
  */
 export function clueRange(column: DleNumericColumn, value: number, status: CellStatus): { min: number | null; max: number | null } {
-  const above = column === "gen" ? value + 1 : column === "stage" ? value : Math.max(Math.floor((5 * value) / 4), value + 1);
-  const below = column === "gen" ? value - 1 : column === "stage" ? value : Math.min(Math.ceil((4 * value) / 5), value - 1);
+  // The furthest close value each way (a Baby's stage has no close values above it, stage 1 none below).
+  const above = column === "gen" ? value + 1 : column === "stage" ? (value === 0 ? 0 : value + 1) : Math.max(Math.floor((5 * value) / 4), value + 1);
+  const below = column === "gen" ? value - 1 : column === "stage" ? (value <= 1 ? 1 : value - 1) : Math.min(Math.ceil((4 * value) / 5), value - 1);
   switch (status) {
     case "match":
       return { min: value, max: value };

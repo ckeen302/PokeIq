@@ -495,3 +495,15 @@ html.no-splash .boot-splash {
     animation: none;
   }
 }
+
+/* Pokédle clue cells. Colour-blind mode (data-dle-cb on <html>) swaps green
+   and yellow for Wordle's orange and blue; close clues keep a dashed border
+   either way, so they never rely on colour alone. */
+.dle-match { background: hsl(var(--success) / 0.9); color: hsl(var(--success-foreground)); border-color: hsl(var(--success)); }
+.dle-partial { background: rgb(234 179 8 / 0.85); color: #422006; border-color: #facc15; }
+.dle-close { background: rgb(234 179 8 / 0.4); color: hsl(var(--foreground)); border: 2px dashed #facc15; }
+.dle-far { background: hsl(var(--secondary)); color: hsl(var(--foreground)); border-color: hsl(var(--foreground) / 0.1); }
+.dle-miss { background: hsl(var(--muted) / 0.6); color: hsl(var(--muted-foreground)); border-color: hsl(var(--foreground) / 0.05); }
+html[data-dle-cb] .dle-match { background: #f5793a; color: #1f0d02; border-color: #f5793a; }
+html[data-dle-cb] .dle-partial { background: #85c0f9; color: #04213d; border-color: #85c0f9; }
+html[data-dle-cb] .dle-close { background: rgb(133 192 249 / 0.4); border-color: #85c0f9; }

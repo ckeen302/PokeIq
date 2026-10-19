@@ -1,3 +1,4 @@
+import { DLE_HINT_KINDS } from "./dle-types";
 import type { DailyRecord, DleRecord, Progress } from "./progress";
 
 /**
@@ -50,6 +51,8 @@ function dleRecord(v: unknown): DleRecord | null {
     guesses: o.guesses.filter((g): g is number => Number.isInteger(g)).slice(0, 8),
     solved: o.solved === true,
     over: o.over === true,
+    ...(o.hard === true && { hard: true }),
+    ...(Array.isArray(o.hints) && { hints: DLE_HINT_KINDS.filter((h) => (o.hints as unknown[]).includes(h)) }),
   };
 }
 

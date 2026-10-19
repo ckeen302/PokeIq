@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import { Pencil } from "lucide-react";
 import { BADGES, currentStreak, levelInfo, setTrainerName, useProgress } from "@/lib/progress";
 import { localDateString } from "@/lib/daily";
+import { dleStats } from "@/lib/dle-stats";
 import { iqTitle, ratingToIQ } from "@/lib/rating";
 import { MODULE_INFO, PLAY_MODULES, PLAYABLE_FORMATS as FORMATS } from "@/lib/modes";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -112,7 +113,7 @@ export function TrainerCard() {
             <Stat label="Dailies played" value={dailyDays} />
             <Stat label="Best daily streak" value={progress.daily.best} />
             <Stat label="Pokédles solved" value={dleSolved} />
-            <Stat label="Pokédle streak" value={currentStreak(progress.dle.last, progress.dle.streak, today)} />
+            <Stat label="Pokédle streak" value={dleStats(progress.dle.results, today).playStreak} />
           </CardContent>
         </Card>
       </motion.div>

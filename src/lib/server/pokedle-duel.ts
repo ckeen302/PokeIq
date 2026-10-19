@@ -1,10 +1,9 @@
 import "server-only";
 import { artworkUrl, getPokemon, MAX_GEN, poolFor, type Pokemon } from "@/lib/pokemon/pokedex";
 import { Rng } from "@/lib/rng";
-import { DLE_COLUMNS, DLE_MAX_GUESSES, type DleRow } from "@/lib/dle-types";
+import { DLE_COLUMNS, DLE_MAX_GUESSES, dleHintCost, type DleRow } from "@/lib/dle-types";
 import {
   DLE_DUEL_HINTS,
-  DLE_DUEL_HINT_COST,
   DLE_DUEL_IDLE_ROUNDS,
   DLE_DUEL_REVEAL_MS,
   DLE_DUEL_ROUNDS,
@@ -130,7 +129,8 @@ function roundScore(round: DleDuelRound, seat: number): DleDuelScore {
   const s = standing(round, seat);
   const base = s.solved ? dleDuelBase(s.count) : 0;
   const speed = s.ms !== undefined ? dleDuelSpeed(s.ms) : 0;
-  const cost = DLE_DUEL_HINTS.reduce((sum, hint) => sum + (round.hints[seat][hint] !== undefined ? DLE_DUEL_HINT_COST[hint] : 0), 0);
+  // The same hint costs as solo Pokédle (dleScore there is this without the speed bonus).
+  const cost = dleHintCost(DLE_DUEL_HINTS.filter((hint) => round.hints[seat][hint] !== undefined));
   return { guesses: s.count, solved: s.solved, ms: s.ms, base, speed, cost, points: Math.max(0, base + speed - cost) };
 }
 

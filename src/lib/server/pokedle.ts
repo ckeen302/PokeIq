@@ -5,8 +5,8 @@ import { deriveSeed } from "./crypto";
 import { hashString } from "@/lib/rng";
 import { mediaUrl } from "./session";
 import { dailyAnswerId } from "./pokedle-schedule";
-import { DLE_COLUMNS, DLE_HINTS, DLE_MAX_GUESSES, type DleColumn, type DleResponse, type DleRow } from "@/lib/dle-types";
-import { compareTraits, stageLabel, type DleTraits } from "@/lib/dle-compare";
+import { DLE_COLUMNS, DLE_MAX_GUESSES, type DleColumn, type DleHint, type DleResponse, type DleRow } from "@/lib/dle-types";
+import { compareTraits, misfit, stageLabel, type DleTraits } from "@/lib/dle-compare";
 
 /**
  * Pokédle — daily Pokémon deduction (Squirdle-style).
@@ -79,28 +79,56 @@ export function compare(guess: Pokemon, answer: Pokemon): DleRow {
   return { id: guess.id, name: guess.name, imageUrl: artworkUrl(guess.id), solved: guess.id === answer.id, cells };
 }
 
-export function evaluate(puzzle: DlePuzzle, guessIds: number[]): DleResponse {
-  const answer = answerFor(puzzle);
-  const rows: DleRow[] = [];
-  for (const id of guessIds.slice(0, DLE_MAX_GUESSES)) {
+/** The guesses that count: known Pokémon, each once, up to the limit, stopping at the answer. */
+function countedGuesses(guessIds: number[], answer: Pokemon): Pokemon[] {
+  const out: Pokemon[] = [];
+  for (const id of guessIds) {
+    if (out.length >= DLE_MAX_GUESSES) break;
     const guess = getPokemon(id);
-    if (!guess || rows.some((r) => r.id === id)) continue;
-    rows.push(compare(guess, answer));
+    if (!guess || out.some((p) => p.id === id)) continue;
+    out.push(guess);
     if (guess.id === answer.id) break;
   }
+  return out;
+}
 
+/**
+ * Hard mode: every guess must fit every clue so far. A Pokémon fits an
+ * earlier guess's clues exactly when, were it the answer, that guess would
+ * have got the same clues. Null when every guess fits, else why one doesn't.
+ */
+export function hardModeError(puzzle: DlePuzzle, guessIds: number[]): string | null {
+  const answer = traitsOf(answerFor(puzzle));
+  const guesses = countedGuesses(guessIds, answerFor(puzzle));
+  for (let i = 1; i < guesses.length; i++) {
+    const candidate = traitsOf(guesses[i]);
+    for (const earlier of guesses.slice(0, i)) {
+      const t = traitsOf(earlier);
+      const column = misfit(t, compareTraits(t, answer), candidate);
+      if (column) {
+        const label = DLE_COLUMNS.find((c) => c.key === column)!.label;
+        return `Hard mode: ${guesses[i].name} doesn't fit the ${label} clue from ${earlier.name}.`;
+      }
+    }
+  }
+  return null;
+}
+
+/** Every guess's clues, and the hints asked for (once there's a guess, while the puzzle is on). */
+export function evaluate(puzzle: DlePuzzle, guessIds: number[], hints: readonly DleHint[] = []): DleResponse {
+  const answer = answerFor(puzzle);
+  const rows = countedGuesses(guessIds, answer).map((guess) => compare(guess, answer));
   const solved = rows.some((r) => r.solved);
   const over = solved || rows.length >= DLE_MAX_GUESSES;
-  const misses = rows.filter((r) => !r.solved).length;
+  const open = !over && rows.length > 0;
 
   return {
     rows,
     solved,
     over,
     hints: {
-      silhouetteUrl:
-        !over && misses >= DLE_HINTS.silhouette ? mediaUrl({ kind: "silhouette", pokemonId: answer.id }) : undefined,
-      genus: !over && misses >= DLE_HINTS.genus ? `The ${answer.genus}` : undefined,
+      silhouetteUrl: open && hints.includes("silhouette") ? mediaUrl({ kind: "silhouette", pokemonId: answer.id }) : undefined,
+      genus: open && hints.includes("genus") ? `The ${answer.genus}` : undefined,
     },
     answer: over
       ? { id: answer.id, name: answer.name, imageUrl: artworkUrl(answer.id), genus: answer.genus }

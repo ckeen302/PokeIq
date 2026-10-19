@@ -38,6 +38,12 @@ describe("the curated pool", () => {
 });
 
 describe("the daily schedule", () => {
+  it("cuts over no earlier than 22 October 2026, after every player's launch-day today", () => {
+    // The schedule shipped on 19 October 2026 (UTC); in UTC+14 that was at most the 20th, so "tomorrow" anywhere was the 21st at the latest.
+    expect(DLE_CURATED_FROM >= "2026-10-22").toBe(true);
+    expect(ERAS[0].from).toBe(DLE_CURATED_FROM);
+  });
+
   it("keeps every date before the cutover on its original answer", () => {
     const before = days(LAUNCH_DATE, Math.round((Date.parse(DLE_CURATED_FROM) - Date.parse(LAUNCH_DATE)) / DAY_MS));
     expect(before.at(-1)).toBe(addDays(DLE_CURATED_FROM, -1));

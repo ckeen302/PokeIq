@@ -6,6 +6,7 @@ import { CalendarDays, ChevronRight, Compass, Flame, Search } from "lucide-react
 import { dailyNumber } from "@/lib/daily";
 import { currentStreak, geoDailyStreak, useProgress } from "@/lib/progress";
 import { useToday } from "@/lib/use-today";
+import { dleStats } from "@/lib/dle-stats";
 import { NextDailyCountdown } from "@/components/NextDailyCountdown";
 import { cn } from "@/lib/utils";
 
@@ -39,7 +40,7 @@ export function DailyCards() {
         description="Deduce the mystery Pokémon in 8 guesses from type, generation, size and color."
         status={dle?.over ? (dle.solved ? `Solved in ${dle.guesses.length}` : "Missed today") : dle?.guesses.length ? `In progress · ${dle.guesses.length}/8` : null}
         cleared={!!dle?.over}
-        streak={progress && today ? currentStreak(progress.dle.last, progress.dle.streak, today) : 0}
+        streak={progress && today ? dleStats(progress.dle.results, today).playStreak : 0}
         accent="258 94% 74%"
       />
       <DailyCard

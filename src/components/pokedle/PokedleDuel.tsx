@@ -5,7 +5,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
-import { ArrowDown, ArrowUp, Crown, Eye, Lightbulb, Loader2, RotateCcw, Swords, Tag, Timer, WifiOff } from "lucide-react";
+import { Crown, Eye, Lightbulb, Loader2, RotateCcw, Swords, Tag, Timer, WifiOff } from "lucide-react";
 import { DLE_COLUMNS, DLE_MAX_GUESSES, type CellStatus, type DleRow } from "@/lib/dle-types";
 import {
   DLE_DUEL_HINT_COST,
@@ -25,8 +25,9 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useDuel } from "@/components/duel/use-duel";
 import { DuelGone, DuelLoading, DuelLobby, DuelNotice, DuelVisitor, LeaveButton, MatchedNote, SeatDot, clock, seconds } from "@/components/duel/DuelParts";
-import { Board, CELL_STYLES, GuessInput, spriteUrl, type NameEntry } from "./parts";
-import { DexPanel } from "./DexPanel";
+import { Board, CELL_STYLES, CellGlyph, GuessInput, STATUS_TEXT, spriteUrl, type NameEntry } from "./parts";
+import { DexPanel, type Clue } from "./DexPanel";
+import { useApplyDlePrefs } from "@/lib/dle-local";
 import { cn } from "@/lib/utils";
 
 /**
@@ -66,6 +67,9 @@ export function PokedleDuel({ code, names }: { code: string; names: NameEntry[] 
   const [summary, setSummary] = useState(false);
   /** A Pokémon clicked in the Pokédex beside the board, for the guess box. */
   const [fill, setFill] = useState<{ name: string; n: number } | null>(null);
+  /** A clue clicked on the board, for the Pokédex's filters. */
+  const [clue, setClue] = useState<(Clue & { n: number }) | null>(null);
+  useApplyDlePrefs();
   const heard = useRef({ revealed: -1, theirSolve: false, end: false });
 
   // Each new screen (lobby, a round, a reveal, the result) starts at the top.
@@ -325,10 +329,10 @@ export function PokedleDuel({ code, names }: { code: string; names: NameEntry[] 
               </div>
             </div>
             {live.rows.length > 0 ? (
-              <Board rows={live.rows} />
+              <Board rows={live.rows} onClue={(column, guessId, status) => setClue((c) => ({ column, guessId, status, n: (c?.n ?? 0) + 1 }))} />
             ) : (
               <p className="text-center text-sm text-muted-foreground">
-                {DLE_MAX_GUESSES} guesses. 🟩 match · 🟨 right type, wrong slot · ▲▼ the answer is higher / lower.
+                {DLE_MAX_GUESSES} guesses. 🟩 match · 🟨 right type, wrong slot, or close (dashed, with ▲▼) · ▲▼ the answer is higher / lower.
               </p>
             )}
           </div>
@@ -342,6 +346,7 @@ export function PokedleDuel({ code, names }: { code: string; names: NameEntry[] 
             className="md:col-span-2 xl:col-span-1 xl:col-start-2 xl:row-start-1"
             gens={view.gens}
             guessed={guessed}
+            clue={clue}
             onPick={myBoard.done || timeUp ? undefined : (name) => setFill((f) => ({ name, n: (f?.n ?? 0) + 1 }))}
           />
         </div>
@@ -461,9 +466,8 @@ function Fighter({ view, seat, right }: { view: DleDuelView; seat: number; right
 /** One clue as a coloured square (the opponent's view: no names, no values). */
 function Square({ status }: { status: CellStatus }) {
   return (
-    <span className={cn("flex aspect-square items-center justify-center rounded-[3px] border", CELL_STYLES[status])}>
-      {status === "higher" && <ArrowUp className="h-2.5 w-2.5 text-primary" aria-hidden />}
-      {status === "lower" && <ArrowDown className="h-2.5 w-2.5 text-primary" aria-hidden />}
+    <span className={cn("flex aspect-square items-center justify-center rounded-[3px] border text-[8px]", CELL_STYLES[status])} title={STATUS_TEXT[status]}>
+      <CellGlyph status={status} size="h-2.5 w-2.5" />
     </span>
   );
 }

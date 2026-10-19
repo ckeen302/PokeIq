@@ -2,7 +2,8 @@
 
 /**
  * A clue: right; the right type in the other slot (partial); close, with
- * the direction to go (gen one away, height or weight within 25%); the
+ * the direction to go (gen or stage one away, height or weight within
+ * 25%); the
  * direction to go; or wrong.
  */
 export type CellStatus = "match" | "partial" | "close-higher" | "close-lower" | "higher" | "lower" | "miss";
@@ -69,13 +70,39 @@ export const DLE_CURATED_FROM = "2026-10-22";
 
 /** The daily's difficulty tier by weekday (0 = Sunday): easier early in the week, harder at the weekend. */
 export const DLE_WEEKDAY_TIER = [2, 0, 0, 0, 1, 1, 2] as const;
-/** Wrong guesses needed to unlock each hint. */
-export const DLE_HINTS = { silhouette: 4, genus: 6 } as const;
+/**
+ * Hints are opt-in, solo and in duels: nothing is shown until the player
+ * taps to use one (after their first guess), and each costs points.
+ */
+export const DLE_HINT_KINDS = ["genus", "silhouette"] as const;
+export type DleHint = (typeof DLE_HINT_KINDS)[number];
+export const DLE_HINT_COST: Record<DleHint, number> = { genus: 150, silhouette: 300 };
+export const DLE_HINT_LABEL: Record<DleHint, string> = { genus: "Category", silhouette: "Silhouette" };
+/** The share's marker for each hint used. */
+export const DLE_HINT_EMOJI: Record<DleHint, string> = { silhouette: "👤", genus: "📖" };
+
+/** A first-guess solve. Each guess after the first costs DLE_GUESS_COST, down to 300 on the last guess. */
+export const DLE_SOLVE_POINTS = 1000;
+export const DLE_GUESS_COST = Math.round(700 / (DLE_MAX_GUESSES - 1));
+
+/** Points for solving in `guesses`. */
+export const dleBasePoints = (guesses: number) => DLE_SOLVE_POINTS - (guesses - 1) * DLE_GUESS_COST;
+/** What the hints used cost, in all. */
+export const dleHintCost = (hints: readonly DleHint[]) => DLE_HINT_KINDS.reduce((sum, h) => sum + (hints.includes(h) ? DLE_HINT_COST[h] : 0), 0);
+
+/**
+ * A puzzle's points, the same rule as a duel round without the speed bonus:
+ * the solve's points (0 if unsolved) less the hints used, never below 0.
+ */
+export function dleScore(guesses: number, solved: boolean, hints: readonly DleHint[]): number {
+  return Math.max(0, (solved ? dleBasePoints(guesses) : 0) - dleHintCost(hints));
+}
 
 export interface DleResponse {
   rows: DleRow[];
   solved: boolean;
   over: boolean;
+  /** Only the hints asked for, and only while the puzzle is on (the answer shows after). */
   hints: { silhouetteUrl?: string; genus?: string };
   /** Only once the puzzle is over. */
   answer?: { id: number; name: string; imageUrl: string; genus: string };

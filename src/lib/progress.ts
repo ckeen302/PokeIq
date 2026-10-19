@@ -2,6 +2,7 @@
 
 import { useSyncExternalStore } from "react";
 import { previousDate } from "./daily";
+import type { DleHint } from "./dle-types";
 import { updatePlayerRating } from "./rating";
 import type { RunResult } from "./session-types";
 
@@ -24,6 +25,10 @@ export interface DleRecord {
   guesses: number[];
   solved: boolean;
   over: boolean;
+  /** Played in hard mode (every guess fit the clues before it). */
+  hard?: boolean;
+  /** The hints used, which cost points. */
+  hints?: DleHint[];
 }
 
 export interface Progress {

@@ -3,6 +3,7 @@ import { GET } from "@/app/api/pokedle/dex/route";
 import { compare } from "@/lib/server/pokedle";
 import { formatHeight, formatWeight, getPokemon, POKEDEX } from "@/lib/pokemon/pokedex";
 import type { DleDexRow } from "@/lib/dle-types";
+import { stageLabel } from "@/lib/dle-compare";
 
 describe("the Pokédex beside the Pokédle board", () => {
   it("lists exactly the guessable Pokémon, with the values the board's clues show", async () => {
@@ -20,7 +21,7 @@ describe("the Pokédex beside the Pokédle board", () => {
       expect(formatHeight(height)).toBe(cells.height.value);
       expect(formatWeight(weight)).toBe(cells.weight.value);
       expect(color).toBe(cells.color.value.toLowerCase());
-      expect(String(stage)).toBe(cells.stage.value);
+      expect(stageLabel(stage)).toBe(cells.stage.value);
     }
   });
 

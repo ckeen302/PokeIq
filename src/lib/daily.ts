@@ -27,6 +27,14 @@ export function isValidDailyDate(date: unknown, now = Date.now()): date is strin
   return Math.abs(t - today) <= DAY_MS;
 }
 
+/** Any daily from launch day to today, wherever the player is (the archive's past ones too). */
+export function isPlayableDailyDate(date: unknown, now = Date.now()): date is string {
+  if (typeof date !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(date)) return false;
+  const t = utcMidnight(date);
+  if (Number.isNaN(t) || new Date(t).toISOString().slice(0, 10) !== date) return false;
+  return t >= utcMidnight(LAUNCH_DATE) && t <= utcMidnight(new Date(now).toISOString().slice(0, 10)) + DAY_MS;
+}
+
 /** #1 on launch day. */
 export function dailyNumber(date: string): number {
   return Math.round((utcMidnight(date) - utcMidnight(LAUNCH_DATE)) / DAY_MS) + 1;
