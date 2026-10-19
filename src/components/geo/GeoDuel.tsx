@@ -1,10 +1,10 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
-import { Crown, Expand, Link2, Loader2, LogOut, MapPin as MapPinIcon, RotateCcw, Swords, Timer, WifiOff, X } from "lucide-react";
+import { Crown, Expand, Loader2, MapPin as MapPinIcon, RotateCcw, Swords, Timer, WifiOff, X } from "lucide-react";
 import {
   DUEL_COUNTDOWN_MS,
   DUEL_HP,
@@ -12,39 +12,26 @@ import {
   DUEL_ROUND_MS,
   duelMultiplier,
   type DuelRoundResult,
-  type DuelSeatResponse,
-  type DuelStatus,
   type DuelView,
 } from "@/lib/duel-types";
 import type { GeoAnswer, GeoRegionInfo } from "@/lib/geo-types";
-import { loadSeat, saveSeat } from "@/lib/duel-seat";
-import { setTrainerName, useProgress } from "@/lib/progress";
 import { play, unlockAudio } from "@/lib/sound";
-import { shareOrCopy } from "@/lib/share";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { HpBar } from "@/components/game/HpBar";
-import { CopyFallback } from "@/components/quiz/CopyFallback";
+import { useDuel } from "@/components/duel/use-duel";
+import { DuelGone, DuelLoading, DuelLobby, DuelNotice, DuelVisitor, LeaveButton, SEAT_COLORS, SeatDot, clock, seconds } from "@/components/duel/DuelParts";
 import { GeoMap, type MapPin, type RevealedRound } from "./GeoMap";
 import { cn } from "@/lib/utils";
 
 /**
  * A PokéGuessr duel at /guessr/duel/<code>: the lobby, the rounds, the reveals
- * and the result. The server runs the duel; this polls its state (every
+ * and the result. The server runs the duel; useDuel polls its state (every
  * second in play) and sends the trainer's actions. Timers count down on the
  * server's clock, corrected for this device's.
  */
 
-/** Each seat's colour, for names, pins and lines. */
-const SEAT_COLORS = ["#e2306f", "#38bdf8"];
-const POLL_MS: Record<DuelStatus, number> = { lobby: 2000, playing: 1000, finished: 3000 };
-
 const fmt = (n: number) => n.toLocaleString("en-US");
-const seconds = (ms: number) => Math.max(0, Math.ceil(ms / 1000));
-const clock = (ms: number) => {
-  const s = seconds(ms);
-  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
-};
 
 /** As in the single-player game: no "Kanto " before route names, and the region when the map doesn't say it. */
 const clean = (s: string) => s.replace(/^(Kanto|Johto|Hoenn|Sinnoh|Unova|Kalos|Alola|Galar|Paldea) (?=Route)/, "");
@@ -58,23 +45,6 @@ function distanceText(squares: number): string {
   return `${squares.toFixed(1)} map square${squares === 1 ? "" : "s"} away`;
 }
 
-async function post<T>(url: string, body: unknown): Promise<T> {
-  const res = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
-  const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error((data as { error?: string }).error ?? `Request failed (${res.status})`);
-  return data as T;
-}
-
-/** Device time, ticking four times a second. */
-function useClock(): number {
-  const [now, setNow] = useState(() => Date.now());
-  useEffect(() => {
-    const id = window.setInterval(() => setNow(Date.now()), 250);
-    return () => window.clearInterval(id);
-  }, []);
-  return now;
-}
-
 export interface GeoDuelProps {
   code: string;
   /** Every map: the duel is played on one of them. */
@@ -83,67 +53,11 @@ export interface GeoDuelProps {
 
 export function GeoDuel({ code, regions }: GeoDuelProps) {
   const router = useRouter();
-  const progress = useProgress();
-  const [view, setView] = useState<DuelView | null>(null);
-  const [offset, setOffset] = useState(0);
-  const [gone, setGone] = useState<string | null>(null);
-  const [offline, setOffline] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [busy, setBusy] = useState(false);
+  const { view, now, gone, offline, error, setError, busy, sawPlay, act, join, rematch: takeRematch } = useDuel<DuelView>(`/api/geo/duel/${code}`, code);
   const [pick, setPick] = useState<MapPin | null>(null);
   const [zoomed, setZoomed] = useState(false);
-  // Seen the duel in play here (not just its result after a reload): show the last reveal before the summary.
-  const [sawPlay, setSawPlay] = useState(false);
   const [summary, setSummary] = useState(false);
-  const token = useRef<string | null>(null);
-  const rev = useRef(-1);
-  const status = useRef<DuelStatus | null>(null);
   const heard = useRef({ revealed: -1, theirGuess: false, end: false });
-  const now = useClock() + offset;
-
-  const receive = useCallback((next: DuelView, sentAt: number) => {
-    // A slow response from before the latest change.
-    if (next.rev < rev.current) return;
-    rev.current = next.rev;
-    status.current = next.status;
-    if (next.status === "playing") setSawPlay(true);
-    setOffset(next.now - (sentAt + Date.now()) / 2);
-    setView(next);
-  }, []);
-
-  // Poll the duel: every second in play, slower in the lobby and after the end (for a rematch).
-  useEffect(() => {
-    token.current = loadSeat(code);
-    let stopped = false;
-    let timer = 0;
-    async function poll() {
-      const sentAt = Date.now();
-      try {
-        const res = await fetch(`/api/geo/duel/${code}`, {
-          cache: "no-store",
-          headers: token.current ? { "x-duel-token": token.current } : undefined,
-        });
-        const data = await res.json().catch(() => ({}));
-        if (res.status === 404) {
-          setGone((data as { error?: string }).error ?? "This duel has ended or never existed.");
-          return;
-        }
-        if (!res.ok) throw new Error(`Request failed (${res.status})`);
-        if (!stopped) {
-          receive(data as DuelView, sentAt);
-          setOffline(false);
-        }
-      } catch {
-        if (!stopped) setOffline(true);
-      }
-      if (!stopped) timer = window.setTimeout(poll, status.current ? POLL_MS[status.current] : 1000);
-    }
-    void poll();
-    return () => {
-      stopped = true;
-      window.clearTimeout(timer);
-    };
-  }, [code, receive]);
 
   // A new round: a fresh pin.
   const roundIndex = view?.round?.index;
@@ -151,7 +65,7 @@ export function GeoDuel({ code, regions }: GeoDuelProps) {
     setPick(null);
     setZoomed(false);
     setError(null);
-  }, [roundIndex]);
+  }, [roundIndex, setError]);
 
   // Each new screen (lobby, a round, a reveal, the result) starts at the top.
   const screen = !view ? "" : view.status === "lobby" ? "lobby" : view.round ? `round ${view.round.index}` : `reveal ${view.revealed.length} ${summary}`;
@@ -173,51 +87,9 @@ export function GeoDuel({ code, regions }: GeoDuelProps) {
     h.end = !!view.end;
   }, [view, sawPlay]);
 
-  async function act(body: Record<string, unknown>): Promise<boolean> {
-    setBusy(true);
-    setError(null);
-    const sentAt = Date.now();
-    try {
-      receive(await post<DuelView>(`/api/geo/duel/${code}`, { ...body, token: token.current }), sentAt);
-      return true;
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong.");
-      return false;
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  async function join(name: string) {
-    unlockAudio();
-    setBusy(true);
-    setError(null);
-    const sentAt = Date.now();
-    try {
-      const seat = await post<DuelSeatResponse>(`/api/geo/duel/${code}`, { action: "join", name });
-      saveSeat(code, seat.token);
-      token.current = seat.token;
-      if (!progress?.name) setTrainerName(name);
-      receive(seat.view, sentAt);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Couldn't join the duel.");
-    } finally {
-      setBusy(false);
-    }
-  }
-
   async function rematch() {
-    unlockAudio();
-    setBusy(true);
-    setError(null);
-    try {
-      const seat = await post<DuelSeatResponse>(`/api/geo/duel/${code}`, { action: "rematch", token: token.current });
-      saveSeat(seat.code, seat.token);
-      router.push(`/guessr/duel/${seat.code}`);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Couldn't start a rematch.");
-      setBusy(false);
-    }
+    const next = await takeRematch();
+    if (next) router.push(`/guessr/duel/${next}`);
   }
 
   async function leave() {
@@ -269,42 +141,66 @@ export function GeoDuel({ code, regions }: GeoDuelProps) {
 
   const map = view ? regions.find((r) => r.id === view.region) : undefined;
   if (gone || (view && !map)) {
-    return (
-      <Card className="mx-auto max-w-md">
-        <CardContent className="space-y-4 p-6 text-center">
-          <p className="font-display text-xl font-bold uppercase">Duel not found</p>
-          <p className="text-sm text-muted-foreground">{gone ?? "This duel's map isn't available any more."}</p>
-          <Link href="/guessr" className={buttonVariants()}>
-            Back to PokéGuessr
-          </Link>
-        </CardContent>
-      </Card>
-    );
+    return <DuelGone message={gone ?? "This duel's map isn't available any more."} href="/guessr" label="Back to PokéGuessr" />;
   }
-  if (!view || !map) {
-    return (
-      <div className="flex justify-center py-24">
-        <Loader2 className="h-6 w-6 animate-spin text-screen" aria-label="Loading the duel" />
-      </div>
-    );
-  }
+  if (!view || !map) return <DuelLoading />;
 
-  const notice = (error || offline) && (
-    <p role="alert" className="mx-auto mb-3 flex max-w-xl items-center justify-center gap-1.5 text-center text-sm text-destructive">
-      {!error && <WifiOff className="h-4 w-4" aria-hidden />}
-      {error ?? "Connection lost. Reconnecting…"}
-    </p>
-  );
+  const notice = <DuelNotice error={error} offline={offline} />;
 
   if (view.status === "lobby") {
     return (
       <>
         {notice}
-        <DuelLobby view={view} map={map} busy={busy} onJoin={join} onReady={(ready) => void act({ action: "ready", ready })} onLeave={() => void leave()} />
+        <DuelLobby
+          view={view}
+          path={`/guessr/duel/${view.code}`}
+          tag={`Duel · ${map.name}`}
+          title={
+            <>
+              Poké<span className="text-primary">Guessr</span> Duel
+            </>
+          }
+          invite={(host) => `${host} challenges you! The same places for both of you, ${fmt(DUEL_HP)} HP each.`}
+          about={`Head to head on the ${map.name} map. Both of you get the same places; the closer pin wins the round.`}
+          shareText={`Duel me in PokéGuessr! Same places, ${fmt(DUEL_HP)} HP each.`}
+          rules={[
+            {
+              label: "Rounds",
+              text: `The same screenshot for both of you. Once one of you guesses, the other has ${DUEL_COUNTDOWN_MS / 1000} seconds (${DUEL_ROUND_MS / 1000} s a round at most).`,
+            },
+            {
+              label: "Damage",
+              text: `${fmt(DUEL_HP)} HP each. The lower score loses the difference: 1× at first, ×1.5 from round 4, ×2 from round 6, up to ×3.`,
+            },
+            { label: "Winning", text: `First to 0 HP loses. After ${view.maxRounds} rounds, more HP wins. Leave (or go quiet) and you forfeit.` },
+          ]}
+          home="/guessr"
+          busy={busy}
+          onJoin={join}
+          onReady={(ready) => void act({ action: "ready", ready })}
+          onLeave={() => void leave()}
+        />
       </>
     );
   }
-  if (view.you === null) return <DuelVisitor view={view} map={map} />;
+  if (view.you === null) {
+    const winner = view.end?.winner;
+    return (
+      <DuelVisitor
+        tag={`PokéGuessr duel · ${map.name}`}
+        players={view.players}
+        status={
+          view.status === "finished"
+            ? winner === null || winner === undefined
+              ? "It ended in a draw."
+              : `${view.players[winner]?.name} won.`
+            : `Under way: round ${view.revealed.length + 1}. ${fmt(view.hp[0])} HP to ${fmt(view.hp[1])}.`
+        }
+        home="/guessr"
+        label="Start your own duel"
+      />
+    );
+  }
   const me = view.you;
   const them = view.players[1 - me]?.name ?? "your opponent";
 
@@ -492,10 +388,6 @@ export function GeoDuel({ code, regions }: GeoDuelProps) {
 // Pieces
 // ---------------------------------------------------------------------------
 
-function SeatDot({ seat }: { seat: number }) {
-  return <span className="inline-block h-2.5 w-2.5 shrink-0 rounded-full" style={{ background: SEAT_COLORS[seat] }} aria-hidden />;
-}
-
 /** Both trainers' names and HP bars, facing each other, with the round in the middle. */
 function DuelHud({ view, center, hit }: { view: DuelView; center: React.ReactNode; hit?: DuelRoundResult }) {
   return (
@@ -577,216 +469,6 @@ function DuelReveal({ view, map, result, children }: { view: DuelView; map: GeoR
         <span className="text-sm"> · Pokémon {result.answer.game}</span>
       </p>
     </>
-  );
-}
-
-/** Leave mid-duel, after a second press: it forfeits. */
-function LeaveButton({ busy, onLeave }: { busy: boolean; onLeave: () => void }) {
-  const [sure, setSure] = useState(false);
-  return (
-    <div className="flex items-center justify-center gap-2 pt-1">
-      {sure ? (
-        <>
-          <span className="text-sm text-muted-foreground">Leaving forfeits the duel.</span>
-          <Button size="sm" variant="destructive" disabled={busy} onClick={onLeave}>
-            Forfeit
-          </Button>
-          <Button size="sm" variant="ghost" onClick={() => setSure(false)}>
-            Stay
-          </Button>
-        </>
-      ) : (
-        <Button size="sm" variant="ghost" onClick={() => setSure(true)}>
-          <LogOut className="h-3.5 w-3.5" aria-hidden /> Leave duel
-        </Button>
-      )}
-    </div>
-  );
-}
-
-function DuelLobby({
-  view,
-  map,
-  busy,
-  onJoin,
-  onReady,
-  onLeave,
-}: {
-  view: DuelView;
-  map: GeoRegionInfo;
-  busy: boolean;
-  onJoin: (name: string) => void;
-  onReady: (ready: boolean) => void;
-  onLeave: () => void;
-}) {
-  const progress = useProgress();
-  const [name, setName] = useState("");
-  const [shared, setShared] = useState<"done" | "failed" | null>(null);
-  const me = view.you;
-  const host = view.players[0]?.name ?? "A trainer";
-  const url = `${typeof window !== "undefined" ? window.location.origin : ""}/guessr/duel/${view.code}`;
-  const ready = me !== null && view.players[me]?.ready;
-
-  useEffect(() => {
-    if (progress?.name && !name) setName(progress.name);
-  }, [progress?.name, name]);
-
-  async function share() {
-    const outcome = await shareOrCopy(`Duel me in PokéGuessr! Same places, ${fmt(DUEL_HP)} HP each.`, url);
-    if (outcome === "failed") setShared("failed");
-    else if (outcome !== "cancelled") setShared("done");
-  }
-
-  return (
-    <div className="mx-auto max-w-3xl space-y-6">
-      <div className="space-y-3 text-center">
-        <p className="hud-label text-screen">Duel · {map.name}</p>
-        <h1 className="font-display text-4xl font-bold uppercase tracking-tight sm:text-6xl">
-          Poké<span className="text-primary">Guessr</span> Duel
-        </h1>
-        <p className="mx-auto max-w-xl text-muted-foreground">
-          {me === null && view.players.length < 2
-            ? `${host} challenges you! The same places for both of you, ${fmt(DUEL_HP)} HP each.`
-            : `Head to head on the ${map.name} map. Both of you get the same places; the closer pin wins the round.`}
-        </p>
-      </div>
-
-      <Card>
-        <CardContent className="space-y-4 p-6">
-          <ol className="grid gap-3 sm:grid-cols-2" aria-label="Trainers">
-            {[0, 1].map((seat) => {
-              const player = view.players[seat];
-              return (
-                <li key={seat} className="flex items-center gap-3 rounded-md border bg-shade/20 px-4 py-3">
-                  <SeatDot seat={seat} />
-                  {player ? (
-                    <>
-                      <span className="min-w-0 flex-1 truncate font-display text-lg font-bold uppercase">
-                        {player.name}
-                        {me === seat && <span className="hud-label ml-2">You</span>}
-                      </span>
-                      <span className={cn("hud-label", player.ready ? "text-success" : player.quiet ? "text-warning" : "")}>
-                        {player.ready ? "Ready" : player.quiet ? "Away" : "Not ready"}
-                      </span>
-                    </>
-                  ) : (
-                    <span className="flex flex-1 items-center gap-2 text-sm text-muted-foreground">
-                      <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> Waiting for a challenger…
-                    </span>
-                  )}
-                </li>
-              );
-            })}
-          </ol>
-
-          {me !== null ? (
-            <div className="space-y-3">
-              <div className="flex gap-2">
-                <input
-                  readOnly
-                  value={url}
-                  aria-label="Duel link"
-                  onFocus={(e) => e.currentTarget.select()}
-                  className="h-10 min-w-0 flex-1 rounded-md border border-input bg-shade/20 px-3 font-mono text-xs"
-                />
-                <Button variant="outline" onClick={() => void share()}>
-                  <Link2 className="h-4 w-4" aria-hidden /> {shared === "done" ? "Copied!" : "Copy link"}
-                </Button>
-              </div>
-              {shared === "failed" && <CopyFallback text={url} />}
-              <Button size="lg" className="w-full" variant={ready ? "secondary" : "success"} disabled={busy} onClick={() => onReady(!ready)}>
-                {ready ? (view.players.length < 2 ? "Ready. Waiting for a challenger…" : "Cancel ready") : "Ready"}
-              </Button>
-              <p className="text-center text-xs text-muted-foreground">
-                The duel starts as soon as both of you are ready.{" "}
-                <button type="button" className="underline underline-offset-2 hover:text-foreground" onClick={onLeave}>
-                  Leave
-                </button>
-              </p>
-            </div>
-          ) : view.players.length < 2 ? (
-            <form
-              className="space-y-2"
-              onSubmit={(e) => {
-                e.preventDefault();
-                onJoin(name);
-              }}
-            >
-              <label htmlFor="duel-join-name" className="hud-label">
-                Your trainer name
-              </label>
-              <div className="flex gap-2">
-                <input
-                  id="duel-join-name"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  maxLength={24}
-                  required
-                  placeholder="Trainer name"
-                  className="h-12 min-w-0 flex-1 rounded-md border border-input bg-background px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                />
-                <Button type="submit" size="lg" disabled={busy || !name.trim()}>
-                  {busy ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : <Swords className="h-4 w-4" aria-hidden />}
-                  Join duel
-                </Button>
-              </div>
-            </form>
-          ) : (
-            <p className="text-center text-sm text-muted-foreground">
-              This duel is full.{" "}
-              <Link href="/guessr" className="underline underline-offset-2">
-                Start your own
-              </Link>
-              .
-            </p>
-          )}
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardContent className="grid gap-4 p-6 text-sm text-muted-foreground sm:grid-cols-3">
-          <p>
-            <span className="hud-label mb-1.5 block text-screen">Rounds</span>
-            The same screenshot for both of you. Once one of you guesses, the other has {DUEL_COUNTDOWN_MS / 1000} seconds (
-            {DUEL_ROUND_MS / 1000} s a round at most).
-          </p>
-          <p>
-            <span className="hud-label mb-1.5 block text-screen">Damage</span>
-            {fmt(DUEL_HP)} HP each. The lower score loses the difference: 1× at first, ×1.5 from round 4, ×2 from round 6, up to ×3.
-          </p>
-          <p>
-            <span className="hud-label mb-1.5 block text-screen">Winning</span>
-            First to 0 HP loses. After {view.maxRounds} rounds, more HP wins. Leave (or go quiet) and you forfeit.
-          </p>
-        </CardContent>
-      </Card>
-    </div>
-  );
-}
-
-/** Someone else's duel: who's playing and how it's going. */
-function DuelVisitor({ view, map }: { view: DuelView; map: GeoRegionInfo }) {
-  const [a, b] = view.players.map((p) => p.name);
-  const winner = view.end?.winner;
-  return (
-    <Card className="mx-auto max-w-md">
-      <CardContent className="space-y-4 p-6 text-center">
-        <p className="hud-label text-screen">PokéGuessr duel · {map.name}</p>
-        <p className="font-display text-2xl font-bold uppercase">
-          {a ?? "?"} vs {b ?? "?"}
-        </p>
-        <p className="text-sm text-muted-foreground">
-          {view.status === "finished"
-            ? winner === null || winner === undefined
-              ? "It ended in a draw."
-              : `${view.players[winner]?.name} won.`
-            : `Under way: round ${view.revealed.length + 1}. ${fmt(view.hp[0])} HP to ${fmt(view.hp[1])}.`}
-        </p>
-        <Link href="/guessr" className={cn(buttonVariants({ size: "lg" }), "w-full")}>
-          <Swords className="h-4 w-4" aria-hidden /> Start your own duel
-        </Link>
-      </CardContent>
-    </Card>
   );
 }
 
