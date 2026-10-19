@@ -784,6 +784,40 @@ await liveBlue.getByRole("button", { name: /Accept rematch/ }).click({ timeout: 
 await liveBlue.waitForURL(liveRed.url());
 await Promise.all([liveRed, liveBlue].map((p) => p.locator("[data-testid=move-button]").first().waitFor({ timeout: 60_000 })));
 await liveBlue.screenshot({ path: `${OUT}/battle-live-rematch.png` });
+for (const p of [liveRed, liveBlue]) await p.context().close();
+
+// Matchmaking: two trainers press "Find an opponent" for Random Battle, with no link, and land in one
+// battle that's already under way. Red searches first (and waits), Blue's search pairs them.
+step("battle matchmaking: find an opponent for Random Battle, then play a turn");
+const mmRed = await newPage({ width: 1280, height: 900 });
+const mmBlue = await newPage({ width: 1280, height: 900 });
+watchBattle(mmRed, "p1", "matched battle (Red)");
+watchBattle(mmBlue, "p2", "matched battle (Blue)");
+for (const [p, name] of [
+  [mmRed, "Red"],
+  [mmBlue, "Blue"],
+]) {
+  await p.goto(`${BASE}/battle/play?vs=anyone`, { waitUntil: "networkidle" });
+  await p.locator("label").filter({ hasText: "Gen 9 Random Battle" }).first().click();
+  await p.getByLabel("Your trainer name").fill(name);
+}
+await mmRed.getByRole("button", { name: /Find an opponent/ }).click();
+await mmRed.getByText("Searching for an opponent…").waitFor();
+await mmRed.waitForTimeout(1500);
+await mmRed.screenshot({ path: `${OUT}/battle-searching.png` });
+await mmBlue.getByRole("button", { name: /Find an opponent/ }).click();
+const matchedPath = /\/battle\/live\/[a-z2-9]{8}\?matched=1$/;
+await Promise.all([mmRed.waitForURL(matchedPath, { timeout: 30_000 }), mmBlue.waitForURL(matchedPath, { timeout: 30_000 })]);
+if (mmRed.url() !== mmBlue.url()) errors.push(`matched into different battles: ${mmRed.url()} vs ${mmBlue.url()}`);
+await mmRed.getByText("Matched! You vs Blue").waitFor();
+await mmBlue.getByText("Matched! You vs Red").waitFor();
+// No lobby: both have a move to make at once.
+await Promise.all([mmRed, mmBlue].map((p) => p.locator("[data-testid=move-button]").first().waitFor({ timeout: 60_000 })));
+await mmBlue.screenshot({ path: `${OUT}/battle-matched.png` });
+for (const p of [mmRed, mmBlue]) await p.getByRole("button", { name: "4x" }).click();
+const [mmTurn] = await Promise.all([playBattle(mmRed, 1, null), playBattle(mmBlue, 1, null)]);
+if (mmTurn < 2) errors.push(`the matched battle didn't get past turn ${mmTurn}`);
+for (const p of [mmRed, mmBlue]) await p.context().close();
 
 // The Battle Lab runs Showdown's simulator in Web Workers, in this browser.
 step("battle lab: a quick 1v1, 200 battles, a win % with its confidence interval, a sample replay");

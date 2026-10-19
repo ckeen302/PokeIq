@@ -7,11 +7,14 @@ import { setTrainerName, useProgress } from "@/lib/progress";
 import { unlockAudio } from "@/lib/sound";
 
 /**
- * "Find an opponent": searches (POST /api/duel/match) about once a second,
- * which keeps the search alive, until the server pairs this trainer with
- * someone searching for the same game and settings. Then the seat is saved,
- * as when joining by link, and it's off to the duel. Cancelling, leaving the
- * page or closing the tab ends the search.
+ * "Find an opponent": searches (POST to the matchmaking endpoint) about once
+ * a second, which keeps the search alive, until the server pairs this
+ * trainer with someone searching for the same game and settings. Then the
+ * seat is saved, as when joining by link, and it's off to the game.
+ * Cancelling, leaving the page or closing the tab ends the search.
+ *
+ * Duels use /api/duel/match; battles pass their own endpoint, where to keep
+ * the seat, and (per search) the team they bring.
  */
 
 const POLL_MS = 1000;
@@ -23,9 +26,15 @@ interface Matched {
   href: string;
 }
 
+export interface MatchmakingOptions {
+  endpoint?: string;
+  /** Keeps the seat token for the game matched into. */
+  save?: (code: string, token: string) => void;
+}
+
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-export function useMatchmaking(settings: Record<string, unknown> | undefined) {
+export function useMatchmaking(settings: Record<string, unknown> | undefined, { endpoint = "/api/duel/match", save = saveSeat }: MatchmakingOptions = {}) {
   const router = useRouter();
   const progress = useProgress();
   /** When this search began (device time), while one is on. */
@@ -36,13 +45,15 @@ export function useMatchmaking(settings: Record<string, unknown> | undefined) {
   const run = useRef(0);
   const settingsRef = useRef(settings);
   settingsRef.current = settings;
+  const endpointRef = useRef(endpoint);
+  endpointRef.current = endpoint;
 
   const giveUp = useCallback(() => {
     const t = ticket.current;
     ticket.current = null;
     if (t) {
       // keepalive: still sent when the page is going away.
-      void fetch("/api/duel/match", {
+      void fetch(endpointRef.current, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action: "cancel", settings: settingsRef.current, ticket: t }),
@@ -51,7 +62,8 @@ export function useMatchmaking(settings: Record<string, unknown> | undefined) {
     }
   }, []);
 
-  async function search(name: string) {
+  /** Searches as `name`; `extra` goes with every poll of this search (a battle's team). */
+  async function search(name: string, extra: Record<string, unknown> = {}) {
     if (!settingsRef.current) return;
     unlockAudio();
     setError(null);
@@ -61,23 +73,23 @@ export function useMatchmaking(settings: Record<string, unknown> | undefined) {
     if (!progress?.name) setTrainerName(name);
     while (run.current === id) {
       try {
-        const res = await fetch("/api/duel/match", {
+        const res = await fetch(endpointRef.current, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ action: "search", settings: settingsRef.current, name, ticket: ticket.current ?? undefined }),
+          body: JSON.stringify({ ...extra, action: "search", settings: settingsRef.current, name, ticket: ticket.current ?? undefined }),
         });
         const data = (await res.json().catch(() => ({}))) as Partial<Matched> & { status?: string; ticket?: string; error?: string };
         if (run.current !== id) return;
         if (res.ok && data.status === "matched" && data.code && data.token && data.href) {
           run.current++;
           ticket.current = null;
-          saveSeat(data.code, data.token);
+          save(data.code, data.token);
           router.push(`${data.href}?matched=1`);
           return;
         }
         if (res.ok && data.ticket) ticket.current = data.ticket;
         else if (res.status < 500 && res.status !== 429) {
-          // A request the server won't take (a bad name): stop and say why. Busy or offline: keep trying.
+          // A request the server won't take (a bad name, a team that breaks the rules): stop and say why. Busy or offline: keep trying.
           setError(data.error ?? `Request failed (${res.status})`);
           setSince(null);
           run.current++;

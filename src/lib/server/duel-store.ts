@@ -5,7 +5,7 @@ import { getServiceSupabase } from "@/lib/supabase";
 import { DUEL_CODE_RE } from "@/lib/duel-types";
 import type { Duel } from "./duel";
 import type { PvpDuel } from "./duels";
-import type { QueueRow } from "./matchmaking";
+import type { QueueRow } from "./match-queue";
 
 /**
  * Where duels live while they're played: one row per duel in Supabase

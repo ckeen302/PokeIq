@@ -6,7 +6,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Flag, Loader2, RotateCcw, Settings2, Swords, WifiOff } from "lucide-react";
 import { BATTLE_AWAY_MS, BATTLE_QUIET_MS, BATTLE_TIMER, PLAY_FORMAT_INFO, battleHref, type BattleView } from "@/lib/battle/play";
-import { DuelLobby } from "@/components/duel/DuelParts";
+import { DuelLobby, MatchedNote } from "@/components/duel/DuelParts";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
@@ -233,6 +233,8 @@ export function BattleRoom({ code }: { code: string }) {
   const foe = view.players[view.you === 0 ? 1 : 0];
   return (
     <div className="space-y-3">
+      {/* Matchmaking opened this battle (its link carries ?matched): "Matched! You vs Blue" for a few seconds. */}
+      {view.kind === "pvp" && <MatchedNote view={view} />}
       {offline && (
         <p role="alert" className="flex items-center justify-center gap-1.5 text-sm text-destructive">
           <WifiOff className="h-4 w-4" aria-hidden /> Connection lost. Reconnecting…

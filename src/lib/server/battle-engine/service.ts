@@ -364,7 +364,7 @@ function start(work: Work, now: number) {
 }
 
 /** A team for a seat in a bring-your-own format (none needed for random formats). */
-function checkTeam(format: PlayFormatId, team: string | undefined): Outcome<{ packed?: string }> {
+export function checkTeam(format: PlayFormatId, team: string | undefined): Outcome<{ packed?: string }> {
   if (PLAY_FORMAT_INFO[format].random) return { ok: true };
   if (!team?.trim()) return fail(400, `${PLAY_FORMAT_INFO[format].name} needs a team: paste one in Showdown's export format.`);
   const checked = prepareTeam(format, team);
@@ -402,6 +402,27 @@ export async function createLiveBattle(opts: { name: string; format: PlayFormatI
     return { ok: true as const, code, token: battleToken(code, me.id, 0), view: battleView(rec.meta, me.id, [], 0, now, 0) };
   }
   return fail(503, "Couldn't open a battle. Try again.");
+}
+
+/**
+ * A live battle for two trainers matchmaking paired: both seated and ready,
+ * so it's under way at once (no lobby). Teams, in bring-your-own formats,
+ * were checked before either joined the queue. Seat 0 is the trainer who
+ * was waiting. Null if no code was free.
+ */
+export async function createMatchedBattle(
+  format: PlayFormatId,
+  players: [{ name: string; team?: string }, { name: string; team?: string }],
+  now = Date.now()
+): Promise<{ code: string; ids: [string, string] } | null> {
+  for (let attempt = 0; attempt < 4; attempt++) {
+    const code = newBattleCode();
+    const seats = players.map((p) => ({ id: randomId(), name: p.name, ready: true, seenAt: now, team: p.team })) as [BattleSeat, BattleSeat];
+    const work = new Work(blankRecord(newMeta(code, "pvp", format, seats, now)));
+    start(work, now);
+    if (await insertBattle(work.rec)) return { code, ids: [seats[0].id, seats[1].id] };
+  }
+  return null;
 }
 
 // ---------------------------------------------------------------------------

@@ -1,23 +1,27 @@
 "use client";
 
-import { useCallback, useEffect, useId, useState } from "react";
+import { useCallback, useEffect, useId, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Bot, Loader2, Radio, Swords } from "lucide-react";
+import { Bot, Loader2, Radio, Swords, UserSearch, X } from "lucide-react";
 import { CPU_LEVEL_INFO, CPU_LEVELS, PLAY_FORMAT_INFO, PLAY_FORMATS, battleHref, type BattleSeatResponse, type CpuLevel, type PlayFormatId } from "@/lib/battle/play";
 import { saveBattleSeat } from "@/lib/battle/seat";
 import { setTrainerName, useProgress } from "@/lib/progress";
 import { unlockAudio } from "@/lib/sound";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { clock } from "@/components/duel/DuelParts";
+import { useMatchmaking } from "@/components/duel/use-matchmaking";
 import { cn } from "@/lib/utils";
 import { TeamPick } from "./TeamPick";
 
 /**
- * Starting a battle: against the computer (pick a level) or a friend (an
- * invite link), in a random format or one you bring a team to.
+ * Starting a battle: against the computer (pick a level), against whoever is
+ * searching for the same format right now ("Find an opponent"), or a friend
+ * (an invite link), in a random format or one you bring a team to.
  */
 
-export type Opponent = "cpu" | "pvp";
+/** cpu: the computer. match: matchmaking. pvp: a friend, through an invite link. */
+export type Opponent = "cpu" | "match" | "pvp";
 
 /** The last battle against the computer, so "Play again" can start the same one. */
 const LAST_KEY = "pokeiq:battle:last-cpu";
@@ -46,8 +50,20 @@ export function lastCpuSetup(): CpuSetup | null {
   }
 }
 
+/** Device time, ticking twice a second while `on`. */
+function useTicker(on: boolean): number {
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    if (!on) return;
+    setNow(Date.now());
+    const id = window.setInterval(() => setNow(Date.now()), 500);
+    return () => window.clearInterval(id);
+  }, [on]);
+  return now;
+}
+
 /** Starts a battle; returns its page, or throws with the server's reason. */
-export async function startBattle(body: { mode: Opponent } & Omit<CpuSetup, "level"> & { level?: CpuLevel }): Promise<string> {
+export async function startBattle(body: { mode: "cpu" | "pvp" } & Omit<CpuSetup, "level"> & { level?: CpuLevel }): Promise<string> {
   const res = await fetch("/api/battle", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
   const data = (await res.json().catch(() => ({}))) as Partial<BattleSeatResponse> & { error?: string };
   if (!res.ok || !data.code || !data.token) throw new Error(data.error ?? `Request failed (${res.status})`);
@@ -55,6 +71,12 @@ export async function startBattle(body: { mode: Opponent } & Omit<CpuSetup, "lev
   if (body.mode === "cpu") rememberCpuSetup({ name: body.name, format: body.format, level: body.level ?? "normal", team: body.team });
   return battleHref(body.mode, data.code);
 }
+
+const OPPONENTS = [
+  ["cpu", Bot, "Computer", "Battle a computer opponent, right now."],
+  ["match", UserSearch, "Find an opponent", "Get paired with a trainer searching for the same format, and battle live."],
+  ["pvp", Radio, "A friend", "Get an invite link and battle live, with a turn timer."],
+] as const;
 
 export function BattleSetup({ initial = "cpu" }: { initial?: Opponent }) {
   const router = useRouter();
@@ -69,6 +91,10 @@ export function BattleSetup({ initial = "cpu" }: { initial?: Opponent }) {
   const [error, setError] = useState<string | null>(null);
   const info = PLAY_FORMAT_INFO[format];
   const needsTeam = !info.random;
+  const settings = useMemo(() => ({ format }), [format]);
+  const finder = useMatchmaking(settings, { endpoint: "/api/battle/match", save: saveBattleSeat });
+  const searching = finder.searching;
+  const now = useTicker(searching);
 
   useEffect(() => {
     if (progress?.name && !name) setName(progress.name);
@@ -78,9 +104,14 @@ export function BattleSetup({ initial = "cpu" }: { initial?: Opponent }) {
 
   async function start(e: React.FormEvent) {
     e.preventDefault();
+    setError(null);
+    if (opponent === "match") {
+      // Searches until paired; the battle has started by the time it's found.
+      void finder.search(name.trim(), needsTeam ? { team } : {});
+      return;
+    }
     unlockAudio();
     setBusy(true);
-    setError(null);
     try {
       const href = await startBattle({ mode: opponent, name: name.trim(), format, level: opponent === "cpu" ? level : undefined, team: needsTeam ? team : undefined });
       if (!progress?.name) setTrainerName(name.trim());
@@ -91,19 +122,16 @@ export function BattleSetup({ initial = "cpu" }: { initial?: Opponent }) {
     }
   }
 
+  const problem = error ?? finder.error;
+
   return (
     <form onSubmit={start} className="grid gap-6 lg:grid-cols-[1fr_320px]">
       <div className="space-y-6">
         {/* Opponent */}
-        <fieldset className="space-y-2">
+        <fieldset className="space-y-2" disabled={searching}>
           <legend className="hud-label mb-2">Opponent</legend>
-          <div className="grid gap-3 sm:grid-cols-2">
-            {(
-              [
-                ["cpu", Bot, "Computer", "Battle a computer opponent, right now."],
-                ["pvp", Radio, "A friend", "Get an invite link and battle live, with a turn timer."],
-              ] as const
-            ).map(([value, Icon, title, blurb]) => (
+          <div className="grid gap-3 sm:grid-cols-3">
+            {OPPONENTS.map(([value, Icon, title, blurb]) => (
               <label
                 key={value}
                 className={cn("menu-item hud flex cursor-pointer items-start gap-3 rounded-lg border bg-card p-4", opponent === value && "border-primary ring-1 ring-primary")}
@@ -121,7 +149,7 @@ export function BattleSetup({ initial = "cpu" }: { initial?: Opponent }) {
         </fieldset>
 
         {/* Format */}
-        <fieldset className="space-y-2">
+        <fieldset className="space-y-2" disabled={searching}>
           <legend className="hud-label mb-2">Format</legend>
           <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
             {PLAY_FORMATS.map((f) => (
@@ -156,24 +184,28 @@ export function BattleSetup({ initial = "cpu" }: { initial?: Opponent }) {
         )}
 
         {needsTeam && (
-          <Card>
-            <CardContent className="p-4">
-              <TeamPick key={format} format={format} onChange={onTeam} idPrefix={id} />
-            </CardContent>
-          </Card>
+          <fieldset disabled={searching} className={cn(searching && "opacity-60")}>
+            <Card>
+              <CardContent className="p-4">
+                <TeamPick key={format} format={format} onChange={onTeam} idPrefix={id} />
+              </CardContent>
+            </Card>
+          </fieldset>
         )}
       </div>
 
       <Card className="h-fit border-primary/40 lg:sticky lg:top-20">
         <CardContent className="space-y-4 p-6">
           <p className="hud-label flex items-center gap-1.5 text-primary">
-            <Swords className="h-3.5 w-3.5" aria-hidden /> {opponent === "cpu" ? "Battle the computer" : "Battle a friend"}
+            <Swords className="h-3.5 w-3.5" aria-hidden /> {opponent === "cpu" ? "Battle the computer" : opponent === "match" ? "Battle anyone" : "Battle a friend"}
           </p>
           <p className="font-display text-2xl font-bold uppercase leading-tight">{info.name}</p>
           <p className="text-sm text-muted-foreground">
             {opponent === "cpu"
               ? `${CPU_LEVEL_INFO[level].name} computer. ${info.random ? "Random teams for both of you." : "It brings its own team."}`
-              : "You'll get a link to send. The battle starts when you're both ready."}
+              : opponent === "match"
+                ? `You'll be paired with the next trainer searching for ${info.name}, and the battle starts at once.${info.random ? " Teams are random." : " You each bring your own team."}`
+                : "You'll get a link to send. The battle starts when you're both ready."}
           </p>
           <div className="space-y-1.5">
             <label htmlFor={`${id}-name`} className="hud-label">
@@ -185,19 +217,39 @@ export function BattleSetup({ initial = "cpu" }: { initial?: Opponent }) {
               onChange={(e) => setName(e.target.value)}
               maxLength={24}
               required
+              disabled={searching}
               placeholder="Trainer name"
               className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             />
           </div>
-          {error && (
+          {problem && (
             <p role="alert" className="text-sm text-destructive">
-              {error}
+              {problem}
             </p>
           )}
-          <Button type="submit" size="lg" className="w-full" disabled={busy || !name.trim() || (needsTeam && !team)}>
-            {busy ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : <Swords className="h-4 w-4" aria-hidden />}
-            {opponent === "cpu" ? "Start battle" : "Create battle"}
-          </Button>
+          {searching ? (
+            <div className="space-y-2 rounded-md border border-screen/40 bg-screen/[0.06] p-3 text-center" role="status" data-testid="battle-searching">
+              <p className="flex items-center justify-center gap-2 font-display text-sm font-semibold uppercase tracking-wider text-screen">
+                <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> Searching for an opponent…
+              </p>
+              <p className="font-pixel text-xs tabular-nums text-muted-foreground">{clock(now - (finder.since ?? now))}</p>
+              <Button type="button" size="sm" variant="ghost" onClick={finder.cancel}>
+                <X className="h-3.5 w-3.5" aria-hidden /> Cancel
+              </Button>
+            </div>
+          ) : (
+            <Button type="submit" size="lg" className="w-full" disabled={busy || !name.trim() || (needsTeam && !team)}>
+              {busy ? (
+                <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
+              ) : opponent === "match" ? (
+                <UserSearch className="h-4 w-4" aria-hidden />
+              ) : (
+                <Swords className="h-4 w-4" aria-hidden />
+              )}
+              {opponent === "cpu" ? "Start battle" : opponent === "match" ? "Find an opponent" : "Create battle"}
+            </Button>
+          )}
+          {opponent === "match" && !searching && <p className="text-center text-xs text-muted-foreground">Leaving this page or closing the tab ends the search.</p>}
         </CardContent>
       </Card>
     </form>
