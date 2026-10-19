@@ -252,7 +252,9 @@ export function Pokedle({ names }: { names: NameEntry[] }) {
           </p>
         )}
       </div>
+      {/* A new puzzle (the day's, or another practice one) starts with every filter cleared. */}
       <DexPanel
+        key={mode === "daily" ? date : practiceSeed}
         className="xl:sticky xl:top-20"
         guessed={guessedIds}
         onPick={over || (mode === "daily" && !date) ? undefined : (name) => setFill((f) => ({ name, n: (f?.n ?? 0) + 1 }))}

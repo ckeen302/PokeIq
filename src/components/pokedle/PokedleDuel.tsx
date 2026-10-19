@@ -331,7 +331,9 @@ export function PokedleDuel({ code, names }: { code: string; names: NameEntry[] 
           <div className="order-first mx-auto w-full max-w-[13rem] md:order-none md:col-start-2 md:row-start-1 xl:hidden">
             <OpponentBoard name={them} seat={1 - me} board={theirs} quiet={view.players[1 - me]?.quiet} />
           </div>
+          {/* Each round starts with every filter cleared. */}
           <DexPanel
+            key={`${view.code}:${live.index}`}
             className="md:col-span-2 xl:col-span-1 xl:col-start-2 xl:row-start-1"
             gens={view.gens}
             guessed={guessed}
