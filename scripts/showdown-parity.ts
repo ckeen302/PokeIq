@@ -1,5 +1,5 @@
 /**
- * Parity between @pkmn/sim (what PokéIQ's battles run on) and the official
+ * Parity between @pkmn/sim (what the Battle Lab runs on in the browser) and the official
  * Pokémon Showdown simulator (the `pokemon-showdown` npm package).
  *
  * Every battle is played twice, once per engine, with the same format, seed
