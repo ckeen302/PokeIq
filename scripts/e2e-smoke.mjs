@@ -667,7 +667,7 @@ await page.getByRole("button", { name: "Import", exact: true }).first().click();
 await page.getByLabel("Showdown team").fill(OU_TEAM);
 await page.getByRole("button", { name: "Import team" }).click();
 // Pokémon Showdown's validator, through /api/battle/validate.
-await page.getByText("Legal in Gen 9 OU").waitFor({ timeout: 30_000 });
+await page.getByText("Legal in [Gen 9] OU").waitFor({ timeout: 30_000 });
 await page.getByRole("tab", { name: /Dragapult/ }).click();
 await page.getByRole("combobox", { name: "Move 1" }).waitFor();
 await page.screenshot({ path: `${OUT}/battle-teams.png`, fullPage: true });
@@ -714,7 +714,7 @@ step("battle vs computer: a random battle, played until it ends or turn 10");
 watchBattle(page, "p1", "cpu battle");
 await page.goto(`${BASE}/battle/play`, { waitUntil: "networkidle" });
 await page.screenshot({ path: `${OUT}/battle-setup.png`, fullPage: true });
-await page.locator("label").filter({ hasText: "Gen 9 Random Battle" }).first().click();
+await page.locator("label").filter({ hasText: "[Gen 9] Random Battle" }).first().click();
 await page.getByLabel("Your trainer name").fill("Red");
 await page.getByRole("button", { name: /Start battle/ }).click();
 await page.waitForURL(/\/battle\/play\/[a-z2-9]{8}$/);
@@ -729,7 +729,7 @@ if ((await page.getByTestId("battle-log").innerText()).length < 200) errors.push
 
 step("battle vs computer: Gen 9 OU with the team saved in the team builder");
 await page.goto(`${BASE}/battle/play`, { waitUntil: "networkidle" });
-await page.locator("label").filter({ hasText: "Gen 9 OU" }).first().click();
+await page.locator("label").filter({ hasText: "[Gen 9] OU" }).first().click();
 await page.getByRole("combobox", { name: "Saved team" }).waitFor();
 await page.getByLabel("Your trainer name").fill("Red");
 await page.getByRole("button", { name: /Start battle/ }).click();
@@ -747,7 +747,7 @@ const liveBlue = await newPage({ width: 1280, height: 900 });
 watchBattle(liveRed, "p1", "live battle (Red)");
 watchBattle(liveBlue, "p2", "live battle (Blue)");
 await liveRed.goto(`${BASE}/battle/play?vs=friend`, { waitUntil: "networkidle" });
-await liveRed.locator("label").filter({ hasText: "Gen 9 Random Battle" }).first().click();
+await liveRed.locator("label").filter({ hasText: "[Gen 9] Random Battle" }).first().click();
 await liveRed.getByLabel("Your trainer name").fill("Red");
 await liveRed.getByRole("button", { name: /Create battle/ }).click();
 await liveRed.waitForURL(/\/battle\/live\/[a-z2-9]{8}$/);
@@ -798,7 +798,7 @@ for (const [p, name] of [
   [mmBlue, "Blue"],
 ]) {
   await p.goto(`${BASE}/battle/play?vs=anyone`, { waitUntil: "networkidle" });
-  await p.locator("label").filter({ hasText: "Gen 9 Random Battle" }).first().click();
+  await p.locator("label").filter({ hasText: "[Gen 9] Random Battle" }).first().click();
   await p.getByLabel("Your trainer name").fill(name);
 }
 await mmRed.getByRole("button", { name: /Find an opponent/ }).click();

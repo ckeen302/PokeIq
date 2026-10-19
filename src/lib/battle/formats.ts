@@ -1,6 +1,6 @@
 /**
  * The competitive formats the Battle section supports. Ids are Pokémon
- * Showdown's, which is what @pkmn/sim validates and battles against, so a
+ * Showdown's, which is what the simulator validates and battles against, so a
  * saved team carries everything the battle engine needs to know its rules.
  */
 
@@ -32,7 +32,7 @@ export interface BattleFormat {
   natDex: boolean;
   /** "Min Source Gen = 9": only moves learnable in Scarlet / Violet. */
   paldeaOnly: boolean;
-  /** The @pkmn/randoms generator behind "Random team". */
+  /** The random-battle generator behind "Random team". */
   random: string;
   blurb: string;
 }
@@ -40,7 +40,7 @@ export interface BattleFormat {
 export const BATTLE_FORMATS: Record<BattleFormatId, BattleFormat> = {
   gen9ou: {
     id: "gen9ou",
-    name: "Gen 9 OU",
+    name: "[Gen 9] OU",
     gen: 9,
     gameType: "singles",
     level: 100,
@@ -53,7 +53,7 @@ export const BATTLE_FORMATS: Record<BattleFormatId, BattleFormat> = {
   },
   gen9ubers: {
     id: "gen9ubers",
-    name: "Gen 9 Ubers",
+    name: "[Gen 9] Ubers",
     gen: 9,
     gameType: "singles",
     level: 100,
@@ -66,7 +66,7 @@ export const BATTLE_FORMATS: Record<BattleFormatId, BattleFormat> = {
   },
   gen9uu: {
     id: "gen9uu",
-    name: "Gen 9 UU",
+    name: "[Gen 9] UU",
     gen: 9,
     gameType: "singles",
     level: 100,
@@ -79,7 +79,7 @@ export const BATTLE_FORMATS: Record<BattleFormatId, BattleFormat> = {
   },
   gen9doublesou: {
     id: "gen9doublesou",
-    name: "Gen 9 Doubles OU",
+    name: "[Gen 9] Doubles OU",
     gen: 9,
     gameType: "doubles",
     level: 100,
@@ -92,7 +92,7 @@ export const BATTLE_FORMATS: Record<BattleFormatId, BattleFormat> = {
   },
   gen9vgc2025regi: {
     id: "gen9vgc2025regi",
-    name: "Gen 9 VGC 2025 Reg I",
+    name: "[Gen 9] VGC 2025 Reg I",
     gen: 9,
     gameType: "doubles",
     level: 50,
@@ -105,7 +105,7 @@ export const BATTLE_FORMATS: Record<BattleFormatId, BattleFormat> = {
   },
   gen9nationaldex: {
     id: "gen9nationaldex",
-    name: "Gen 9 National Dex",
+    name: "[Gen 9] National Dex",
     gen: 9,
     gameType: "singles",
     level: 100,
@@ -118,7 +118,7 @@ export const BATTLE_FORMATS: Record<BattleFormatId, BattleFormat> = {
   },
   gen4ou: {
     id: "gen4ou",
-    name: "Gen 4 OU",
+    name: "[Gen 4] OU",
     gen: 4,
     gameType: "singles",
     level: 100,
@@ -131,7 +131,7 @@ export const BATTLE_FORMATS: Record<BattleFormatId, BattleFormat> = {
   },
   gen3ou: {
     id: "gen3ou",
-    name: "Gen 3 OU",
+    name: "[Gen 3] OU",
     gen: 3,
     gameType: "singles",
     level: 100,

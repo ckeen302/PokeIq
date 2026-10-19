@@ -30,19 +30,19 @@ export interface PlayFormatInfo {
 const BRING = "Bring your own team: a saved one, or paste one in Showdown's export format.";
 
 export const PLAY_FORMAT_INFO: Record<PlayFormatId, PlayFormatInfo> = {
-  gen9ou: { name: "Gen 9 OU", short: "OU", blurb: BRING, gameType: "singles", random: false },
-  gen9ubers: { name: "Gen 9 Ubers", short: "Ubers", blurb: BRING, gameType: "singles", random: false },
-  gen9uu: { name: "Gen 9 UU", short: "UU", blurb: BRING, gameType: "singles", random: false },
-  gen9doublesou: { name: "Gen 9 Doubles OU", short: "Doubles OU", blurb: BRING, gameType: "doubles", random: false },
+  gen9ou: { name: "[Gen 9] OU", short: "OU", blurb: BRING, gameType: "singles", random: false },
+  gen9ubers: { name: "[Gen 9] Ubers", short: "Ubers", blurb: BRING, gameType: "singles", random: false },
+  gen9uu: { name: "[Gen 9] UU", short: "UU", blurb: BRING, gameType: "singles", random: false },
+  gen9doublesou: { name: "[Gen 9] Doubles OU", short: "Doubles OU", blurb: BRING, gameType: "doubles", random: false },
   gen9randombattle: {
-    name: "Gen 9 Random Battle",
+    name: "[Gen 9] Random Battle",
     short: "Random Battle",
     blurb: "Six random Pokémon each, with sets built for them. No team needed.",
     gameType: "singles",
     random: true,
   },
   gen9randomdoublesbattle: {
-    name: "Gen 9 Random Doubles",
+    name: "[Gen 9] Random Doubles Battle",
     short: "Random Doubles",
     blurb: "Two Pokémon out at a time, random teams. Pick a target for each move.",
     gameType: "doubles",
