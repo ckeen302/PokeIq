@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { getServiceSupabase } from "@/lib/supabase";
+import { NAME_REJECTED, isCleanName } from "@/lib/name-filter";
 import { secretIsSecure, verifyToken } from "@/lib/server/crypto";
 import { clientIp, rateLimit } from "@/lib/server/rate-limit";
 import { geoBoardKey, type GeoResult } from "@/lib/geo-types";
@@ -14,14 +15,15 @@ const bodySchema = z.object({
     .trim()
     .min(1)
     .max(24)
-    .regex(/^[\p{L}\p{N} _.\-']+$/u, "Use letters, numbers, spaces, _ . - ' only"),
+    .regex(/^[\p{L}\p{N} _.\-']+$/u, "Use letters, numbers, spaces, _ . - ' only")
+    .refine(isCleanName, NAME_REJECTED),
 });
 
 const RESULT_MAX_AGE_MS = 6 * 60 * 60 * 1000;
 
 export async function POST(request: NextRequest) {
   if (!rateLimit(`geo-lb:${clientIp(request)}`, 10, 0.1)) {
-    return NextResponse.json({ error: "Too many submissions." }, { status: 429 });
+    return NextResponse.json({ error: "Too many submissions — try again in a minute." }, { status: 429 });
   }
   const supabase = getServiceSupabase();
   if (!supabase) return NextResponse.json({ saved: false, reason: "Persistence not configured" });

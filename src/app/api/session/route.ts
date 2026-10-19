@@ -5,6 +5,7 @@ import { isValidDailyDate } from "@/lib/daily";
 import { randomId, verifyToken } from "@/lib/server/crypto";
 import { clientIp, rateLimit } from "@/lib/server/rate-limit";
 import { startSession } from "@/lib/server/session";
+import { optionalName } from "@/lib/name-filter";
 import type { SessionSpec, ShareCard } from "@/lib/session-types";
 
 /**
@@ -12,6 +13,7 @@ import type { SessionSpec, ShareCard } from "@/lib/session-types";
  *   { module, format, difficulty, gens? }   regular run (fresh random seed)
  *   { daily: "YYYY-MM-DD" }                 today's Daily Challenge (shared seed)
  *   { challenge: "<share token>" }          replay a friend's exact quiz
+ * An optional `name` goes on the share card (left off if it isn't fit to show).
  *
  * Challenge replays, repeat starts of a daily and generation-filtered runs
  * are marked `practice` in the signed spec: they play normally but can't be
@@ -63,7 +65,7 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const response = NextResponse.json(startSession(spec, body.name), {
+    const response = NextResponse.json(startSession(spec, optionalName(body.name)), {
       headers: { "Cache-Control": "no-store" },
     });
     if (spec.daily && !spec.practice) {

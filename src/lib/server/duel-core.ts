@@ -2,6 +2,7 @@ import "server-only";
 import { z } from "zod";
 import { randomId, signToken, verifyToken } from "./crypto";
 import { DUEL_NAME_RE, type DuelPlayerView, type DuelStatus } from "@/lib/duel-types";
+import { NAME_REJECTED, isCleanName } from "@/lib/name-filter";
 import { PVP_AWAY_MS, PVP_LEAD_MS, PVP_QUIET_MS, type PvpEnd, type PvpEndReason, type PvpKind } from "@/lib/pvp-types";
 
 /**
@@ -15,12 +16,14 @@ import { PVP_AWAY_MS, PVP_LEAD_MS, PVP_QUIET_MS, type PvpEnd, type PvpEndReason,
  * functions are pure (they take `now` and return a new duel).
  */
 
+/** A trainer's name in duels, battles and matchmaking: the opponent sees it. */
 export const duelNameSchema = z
   .string()
   .trim()
   .min(1, "Enter a trainer name")
   .max(24)
-  .regex(DUEL_NAME_RE, "Use letters, numbers, spaces, _ . - ' only");
+  .regex(DUEL_NAME_RE, "Use letters, numbers, spaces, _ . - ' only")
+  .refine(isCleanName, NAME_REJECTED);
 
 // ---------------------------------------------------------------------------
 // Seats

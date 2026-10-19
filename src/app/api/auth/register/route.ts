@@ -14,11 +14,12 @@ import {
   setSessionCookie,
 } from "@/lib/server/auth";
 import { guardAuthRequest, serverError } from "@/lib/server/auth-route";
+import { NAME_REJECTED, isCleanName } from "@/lib/name-filter";
 
 /** POST /api/auth/register — { username, password } -> signed in + one-time recovery code. */
 
 const bodySchema = z.object({
-  username: z.string().regex(USERNAME_RE, "Trainer names are 3–20 letters, numbers, _ or -."),
+  username: z.string().regex(USERNAME_RE, "Trainer names are 3–20 letters, numbers, _ or -.").refine(isCleanName, NAME_REJECTED),
   password: z
     .string()
     .min(PASSWORD_MIN, `Passwords need at least ${PASSWORD_MIN} characters.`)
@@ -26,7 +27,8 @@ const bodySchema = z.object({
 });
 
 export async function POST(request: NextRequest) {
-  const blocked = guardAuthRequest(request, "register", 5);
+  // A household or classroom can sign up together; a script can't mint thousands of accounts.
+  const blocked = guardAuthRequest(request, "register", 8, 1);
   if (blocked) return blocked;
 
   const parsed = bodySchema.safeParse(await request.json().catch(() => ({})));

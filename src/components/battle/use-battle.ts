@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import type { BattleSeatResponse, BattleView } from "@/lib/battle/play";
 import { loadBattleSeat, saveBattleSeat } from "@/lib/battle/seat";
 import { setTrainerName, useProgress } from "@/lib/progress";
+import { battleHiddenDelay, battlePollDelay, fingerprint, startPoller } from "@/lib/polling";
 import { unlockAudio } from "@/lib/sound";
 
 /**
@@ -13,18 +14,13 @@ import { unlockAudio } from "@/lib/sound";
  * sends choices with the request counter they answer, and keeps a clock on
  * the server's time.
  *
- * Polling: every second in a live battle, slower in the lobby and after the
- * end (for a rematch). Against the computer every answer comes back with the
- * choice itself, so polling there is only a safety net.
+ * Polling (lib/polling): every second while waiting on the opponent, every
+ * 2 s while it's your move, with a poll right after a clock runs out; slower
+ * in the lobby and after the end (for a rematch). Against the computer every
+ * answer comes back with the choice itself, so polling there is only a
+ * safety net. A hidden tab only sends a heartbeat while its player is seated
+ * in a live battle, and catches up at once when it's shown again.
  */
-
-function pollDelay(view: BattleView | null): number | null {
-  if (!view) return 1000;
-  if (view.kind === "cpu") return view.status === "finished" ? null : 5000;
-  if (view.status === "lobby") return 2000;
-  if (view.status === "finished") return 3000;
-  return 1000;
-}
 
 async function post<T>(url: string, body: unknown): Promise<{ ok: boolean; status: number; data: T & { error?: string; view?: BattleView } }> {
   const res = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
@@ -49,6 +45,11 @@ export function useBattle(code: string) {
   const resets = useRef(0);
   const current = useRef<BattleView | null>(null);
   const kick = useRef<() => void>(() => {});
+  const touch = useRef<() => void>(() => {});
+  /** Polls in a row that found nothing new, and the last thing found. */
+  const quiet = useRef(0);
+  const lastSeen = useRef("");
+  const skew = useRef(0);
 
   const receive = useCallback((next: BattleView, sentAt: number) => {
     // A slow response from before the latest change.
@@ -70,58 +71,57 @@ export function useBattle(code: string) {
         window.setTimeout(() => kick.current(), 0);
       }
     }
+    // Heartbeats move `rev` on without changing anything to see.
+    const seen = fingerprint(next);
+    quiet.current = seen === lastSeen.current ? quiet.current + 1 : 0;
+    lastSeen.current = seen;
     current.current = next;
-    setOffset(next.now - (sentAt + Date.now()) / 2);
+    skew.current = next.now - (sentAt + Date.now()) / 2;
+    setOffset(skew.current);
     setView(next);
   }, []);
 
   useEffect(() => {
     token.current = loadBattleSeat(code);
     let stopped = false;
-    let timer = 0;
-    let polling = false;
-    let again = false;
-    async function poll() {
-      if (polling) {
-        again = true;
-        return;
-      }
-      polling = true;
-      window.clearTimeout(timer);
-      const sentAt = Date.now();
-      try {
-        const res = await fetch(`${api}?since=${lines.current.length}`, {
-          cache: "no-store",
-          headers: token.current ? { "x-battle-token": token.current } : undefined,
-        });
-        const data = await res.json().catch(() => ({}));
-        if (res.status === 404) {
-          setGone((data as { error?: string }).error ?? "This battle has ended or never existed.");
-          stopped = true;
-        } else if (!res.ok) throw new Error(`Request failed (${res.status})`);
-        else if (!stopped) {
-          receive(data as BattleView, sentAt);
-          setOffline(false);
+    let throttledUntil = 0;
+    const poller = startPoller({
+      async poll() {
+        const sentAt = Date.now();
+        try {
+          const res = await fetch(`${api}?since=${lines.current.length}`, {
+            cache: "no-store",
+            headers: token.current ? { "x-battle-token": token.current } : undefined,
+          });
+          const data = await res.json().catch(() => ({}));
+          if (stopped) return;
+          if (res.status === 404) {
+            setGone((data as { error?: string }).error ?? "This battle has ended or never existed.");
+            stopped = true;
+          } else if (res.status === 429) throttledUntil = Date.now() + 30_000;
+          else if (!res.ok) throw new Error(`Request failed (${res.status})`);
+          else {
+            receive(data as BattleView, sentAt);
+            setOffline(false);
+          }
+        } catch {
+          if (!stopped) setOffline(true);
         }
-      } catch {
-        if (!stopped) setOffline(true);
-      }
-      polling = false;
-      if (stopped) return;
-      if (again) {
-        again = false;
-        void poll();
-        return;
-      }
-      const delay = pollDelay(current.current);
-      if (delay !== null) timer = window.setTimeout(poll, delay);
-    }
-    kick.current = () => void poll();
-    void poll();
+      },
+      delay() {
+        if (stopped) return null;
+        const wait = battlePollDelay(current.current, quiet.current, Date.now() + skew.current);
+        return wait !== null && Date.now() < throttledUntil ? Math.max(wait, 5000) : wait;
+      },
+      hiddenDelay: () => (stopped ? null : battleHiddenDelay(current.current)),
+    });
+    kick.current = poller.kick;
+    touch.current = poller.touch;
     return () => {
       stopped = true;
       kick.current = () => {};
-      window.clearTimeout(timer);
+      touch.current = () => {};
+      poller.stop();
     };
   }, [api, code, receive]);
 
@@ -135,6 +135,7 @@ export function useBattle(code: string) {
         const out = await post<BattleView>(api, { ...body, token: token.current, since: lines.current.length });
         if (out.ok) {
           receive(out.data, sentAt);
+          touch.current();
           return true;
         }
         // A rejected choice comes back with the battle as it now stands.

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { isValidDailyDate } from "@/lib/daily";
 import { clientIp, rateLimit } from "@/lib/server/rate-limit";
+import { optionalName } from "@/lib/name-filter";
 import { isGeoSpec, readGeoChallenge, startGeo } from "@/lib/server/geo";
 import { GEO_KINDS, WORLD_REGION, geoDailyRegion, type GeoSpec } from "@/lib/geo-types";
 
@@ -11,7 +12,7 @@ import { GEO_KINDS, WORLD_REGION, geoDailyRegion, type GeoSpec } from "@/lib/geo
  *                             `recent` lists the areas the player just saw, so they don't come straight back
  *   { daily: "YYYY-MM-DD" }   the daily game (same five places for everyone)
  *   { challenge: "<token>" }  a friend's exact five places (not ranked)
- * An optional `name` is shown to friends on the challenge link.
+ * An optional `name` is shown to friends on the challenge link (left off if it isn't fit to show).
  */
 
 const DAILY_COOKIE = "piq_geo_daily";
@@ -55,7 +56,7 @@ export async function POST(request: NextRequest) {
   }
   if (!isGeoSpec(spec)) return NextResponse.json({ error: "Unknown region." }, { status: 400 });
 
-  const game = startGeo(spec, { seed, plan, name: body.name, recent: body.recent });
+  const game = startGeo(spec, { seed, plan, name: optionalName(body.name), recent: body.recent });
   const response = NextResponse.json({ ...game, region: spec.region, practice: spec.practice }, { headers: { "Cache-Control": "no-store" } });
   if (spec.daily && !spec.practice) {
     response.cookies.set(DAILY_COOKIE, [spec.daily, ...started].slice(0, 4).join(","), {

@@ -8,6 +8,7 @@ import { AccountSync } from "@/components/account/AccountSync";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
 import { SPLASH_INIT_SCRIPT, THEME_INIT_SCRIPT } from "@/lib/theme";
 import { BootLoader } from "@/components/layout/BootLoader";
+import { ErrorReporter, ReportProblem } from "@/components/layout/ReportProblem";
 import "./globals.css";
 
 const display = Chakra_Petch({ subsets: ["latin"], weight: ["500", "600", "700"], variable: "--font-display", display: "swap" });
@@ -78,6 +79,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <Link href="/quiz/gen-1-pokemon-quiz" className="hover:text-foreground">Gen 1 quiz</Link>
               <Link href="/quiz/pokemon-type-quiz" className="hover:text-foreground">Type chart quiz</Link>
               <Link href="/trainer" className="hover:text-foreground">Trainer card</Link>
+              <ReportProblem />
             </nav>
             <p className="mx-auto max-w-3xl pt-2 text-[11px] leading-relaxed text-muted-foreground/70">
               PokéIQ is a free, non-commercial fan project and is not affiliated with, endorsed or sponsored by
@@ -88,6 +90,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </footer>
         <MobileTabBar />
         <AccountSync />
+        <ErrorReporter />
         {/* The analytics endpoint only exists on Vercel deployments. */}
         {process.env.VERCEL && <Analytics />}
       </body>

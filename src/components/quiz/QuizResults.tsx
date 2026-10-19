@@ -21,6 +21,7 @@ import { IqConvergence } from "./IqConvergence";
 import { CopyFallback } from "./CopyFallback";
 import { NextDailyCountdown } from "@/components/NextDailyCountdown";
 import { cn } from "@/lib/utils";
+import { NAME_REJECTED, isCleanName } from "@/lib/name-filter";
 
 interface QuizResultsProps {
   result: RunResult;
@@ -138,6 +139,11 @@ export function QuizResults({ result, resultToken, shareToken, challenger, onRes
   async function submitScore() {
     const name = playerName.trim();
     if (!name || practice || saveState === "saving" || saveState === "saved") return;
+    if (!isCleanName(name)) {
+      setSaveError(NAME_REJECTED);
+      setSaveState("failed");
+      return;
+    }
     setSaveState("saving");
     setSaveError(null);
     setTrainerName(name);
@@ -312,7 +318,10 @@ export function QuizResults({ result, resultToken, shareToken, challenger, onRes
                 <input
                   id="player-name"
                   value={playerName}
-                  onChange={(e) => setPlayerName(e.target.value)}
+                  onChange={(e) => {
+                    setPlayerName(e.target.value);
+                    if (saveState === "failed") setSaveState("idle");
+                  }}
                   onKeyDown={(e) => e.key === "Enter" && submitScore()}
                   maxLength={24}
                   placeholder="Trainer name"
@@ -327,7 +336,11 @@ export function QuizResults({ result, resultToken, shareToken, challenger, onRes
                   {saveState === "saved" ? "Saved!" : "Submit"}
                 </Button>
               </div>
-              {saveState === "failed" && <p className="text-xs text-destructive">{saveError}</p>}
+              {saveState === "failed" && (
+                <p role="alert" className="text-xs text-destructive">
+                  {saveError}
+                </p>
+              )}
               {saveState === "disabled" && (
                 <p className="text-xs text-muted-foreground">Leaderboards aren&apos;t enabled on this deployment.</p>
               )}

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { getServiceSupabase } from "@/lib/supabase";
+import { NAME_REJECTED, isCleanName } from "@/lib/name-filter";
 import { secretIsSecure, verifyToken } from "@/lib/server/crypto";
 import { clientIp, rateLimit } from "@/lib/server/rate-limit";
 import { fetchBoard, practiceMessage } from "@/lib/server/leaderboard";
@@ -22,7 +23,8 @@ const submissionSchema = z.object({
     .trim()
     .min(1)
     .max(24)
-    .regex(/^[\p{L}\p{N} _.\-']+$/u, "Use letters, numbers, spaces, _ . - ' only"),
+    .regex(/^[\p{L}\p{N} _.\-']+$/u, "Use letters, numbers, spaces, _ . - ' only")
+    .refine(isCleanName, NAME_REJECTED),
 });
 
 const RESULT_MAX_AGE_MS = 6 * 60 * 60 * 1000;
@@ -41,12 +43,15 @@ export async function GET(request: NextRequest) {
           format: params.get("format") ?? undefined,
           difficulty: params.get("difficulty") ?? undefined,
         });
-  return NextResponse.json({ entries: entries ?? [], persistenceEnabled: entries !== null });
+  return NextResponse.json(
+    { entries: entries ?? [], persistenceEnabled: entries !== null },
+    { headers: { "Cache-Control": "public, max-age=0, s-maxage=30, stale-while-revalidate=60" } }
+  );
 }
 
 export async function POST(request: NextRequest) {
   if (!rateLimit(`lb:${clientIp(request)}`, 10, 0.1)) {
-    return NextResponse.json({ error: "Too many submissions." }, { status: 429 });
+    return NextResponse.json({ error: "Too many submissions — try again in a minute." }, { status: 429 });
   }
   const supabase = getServiceSupabase();
   if (!supabase) return NextResponse.json({ saved: false, reason: "Persistence not configured" });

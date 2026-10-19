@@ -1,6 +1,7 @@
 import "server-only";
 import { verifyToken } from "./crypto";
 import type { ShareCard } from "@/lib/session-types";
+import { optionalName } from "@/lib/name-filter";
 
 export function readShareCard(token: string): ShareCard | null {
   let raw: string;
@@ -9,5 +10,7 @@ export function readShareCard(token: string): ShareCard | null {
   } catch {
     return null; // malformed %-escape: treat as an invalid link (404), not a crash
   }
-  return verifyToken<ShareCard>("share", raw);
+  const card = verifyToken<ShareCard>("share", raw);
+  // Links signed before names were checked: shown without the name.
+  return card && { ...card, n: optionalName(card.n) };
 }

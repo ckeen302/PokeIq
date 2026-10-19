@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { RecoveryCodeCard } from "./RecoveryCodeCard";
 import { cn } from "@/lib/utils";
+import { NAME_REJECTED, isCleanName } from "@/lib/name-filter";
 
 type Mode = "login" | "register" | "recover";
 
@@ -65,6 +66,7 @@ export function AuthForm({ next = "/trainer" }: { next?: string }) {
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
+    if (mode === "register" && !isCleanName(username)) return setError(NAME_REJECTED);
     setBusy(true);
     setError(null);
     try {

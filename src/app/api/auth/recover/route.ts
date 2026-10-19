@@ -18,7 +18,7 @@ import {
   sameHash,
   setSessionCookie,
 } from "@/lib/server/auth";
-import { guardAuthRequest, serverError } from "@/lib/server/auth-route";
+import { guardAccount, guardAuthRequest, serverError } from "@/lib/server/auth-route";
 
 /**
  * POST /api/auth/recover — { username, recoveryCode, newPassword }.
@@ -36,11 +36,13 @@ const bodySchema = z.object({
 });
 
 export async function POST(request: NextRequest) {
-  const blocked = guardAuthRequest(request, "recover", 5);
+  const blocked = guardAuthRequest(request, "recover", 5, 1);
   if (blocked) return blocked;
 
   const parsed = bodySchema.safeParse(await request.json().catch(() => ({})));
   if (!parsed.success) return NextResponse.json({ error: parsed.error.issues[0].message }, { status: 400 });
+  const slow = guardAccount("recover", parsed.data.username, 5);
+  if (slow) return slow;
 
   try {
     const user = await findUserByName(parsed.data.username.trim());

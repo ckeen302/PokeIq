@@ -4,20 +4,27 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { saveSeat } from "@/lib/duel-seat";
 import { setTrainerName, useProgress } from "@/lib/progress";
+import { pageHidden } from "@/lib/polling";
 import { unlockAudio } from "@/lib/sound";
 
 /**
- * "Find an opponent": searches (POST to the matchmaking endpoint) about once
- * a second, which keeps the search alive, until the server pairs this
- * trainer with someone searching for the same game and settings. Then the
- * seat is saved, as when joining by link, and it's off to the game.
- * Cancelling, leaving the page or closing the tab ends the search.
+ * "Find an opponent": searches (POST to the matchmaking endpoint) every 1.5 s,
+ * which keeps the search alive, until the server pairs this trainer with
+ * someone searching for the same game and settings. Then the seat is saved,
+ * as when joining by link, and it's off to the game. Cancelling, leaving the
+ * page or closing the tab ends the search. Hiding the tab steps out of the
+ * queue (so nobody is paired with a trainer who isn't looking) and keeps the
+ * ticket: shown again, the search picks up where it was, collecting a match
+ * made just before it stepped out.
  *
  * Duels use /api/duel/match; battles pass their own endpoint, where to keep
  * the seat, and (per search) the team they bring.
  */
 
-const POLL_MS = 1000;
+/** The server passes over a search not heard from in 8 s. */
+const POLL_MS = 1500;
+/** Slower after a 429. */
+const THROTTLED_MS = 5000;
 
 interface Matched {
   status: "matched";
@@ -34,6 +41,19 @@ export interface MatchmakingOptions {
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
+/** Resolves once the tab is visible (at once if it is). */
+function whenVisible(): Promise<void> {
+  if (!pageHidden()) return Promise.resolve();
+  return new Promise((resolve) => {
+    const onChange = () => {
+      if (pageHidden()) return;
+      document.removeEventListener("visibilitychange", onChange);
+      resolve();
+    };
+    document.addEventListener("visibilitychange", onChange);
+  });
+}
+
 export function useMatchmaking(settings: Record<string, unknown> | undefined, { endpoint = "/api/duel/match", save = saveSeat }: MatchmakingOptions = {}) {
   const router = useRouter();
   const progress = useProgress();
@@ -48,19 +68,22 @@ export function useMatchmaking(settings: Record<string, unknown> | undefined, { 
   const endpointRef = useRef(endpoint);
   endpointRef.current = endpoint;
 
+  /** Takes the search out of the queue (a match made already is kept for the ticket). */
+  const leaveQueue = useCallback((t: string) => {
+    // keepalive: still sent when the page is going away.
+    void fetch(endpointRef.current, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "cancel", settings: settingsRef.current, ticket: t }),
+      keepalive: true,
+    }).catch(() => {});
+  }, []);
+
   const giveUp = useCallback(() => {
     const t = ticket.current;
     ticket.current = null;
-    if (t) {
-      // keepalive: still sent when the page is going away.
-      void fetch(endpointRef.current, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "cancel", settings: settingsRef.current, ticket: t }),
-        keepalive: true,
-      }).catch(() => {});
-    }
-  }, []);
+    if (t) leaveQueue(t);
+  }, [leaveQueue]);
 
   /** Searches as `name`; `extra` goes with every poll of this search (a battle's team). */
   async function search(name: string, extra: Record<string, unknown> = {}) {
@@ -72,6 +95,7 @@ export function useMatchmaking(settings: Record<string, unknown> | undefined, { 
     setSince(Date.now());
     if (!progress?.name) setTrainerName(name);
     while (run.current === id) {
+      let wait = POLL_MS;
       try {
         const res = await fetch(endpointRef.current, {
           method: "POST",
@@ -88,7 +112,8 @@ export function useMatchmaking(settings: Record<string, unknown> | undefined, { 
           return;
         }
         if (res.ok && data.ticket) ticket.current = data.ticket;
-        else if (res.status < 500 && res.status !== 429) {
+        else if (res.status === 429) wait = THROTTLED_MS;
+        else if (res.status < 500) {
           // A request the server won't take (a bad name, a team that breaks the rules): stop and say why. Busy or offline: keep trying.
           setError(data.error ?? `Request failed (${res.status})`);
           setSince(null);
@@ -98,7 +123,11 @@ export function useMatchmaking(settings: Record<string, unknown> | undefined, { 
       } catch {
         // Offline for a moment: the next poll tries again.
       }
-      await sleep(POLL_MS);
+      await sleep(wait);
+      if (pageHidden() && run.current === id) {
+        if (ticket.current) leaveQueue(ticket.current);
+        await whenVisible();
+      }
     }
   }
 

@@ -9,7 +9,7 @@ import { guardAuthRequest, serverError } from "@/lib/server/auth-route";
 const bodySchema = z.object({ password: z.string().min(1).max(PASSWORD_MAX) });
 
 export async function POST(request: NextRequest) {
-  const blocked = guardAuthRequest(request, "recovery-code", 5);
+  const blocked = guardAuthRequest(request, "recovery-code", 5, 1);
   if (blocked) return blocked;
 
   const parsed = bodySchema.safeParse(await request.json().catch(() => ({})));

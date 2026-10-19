@@ -1,5 +1,6 @@
 import "server-only";
 import { getServiceSupabase, type LeaderboardRow } from "@/lib/supabase";
+import { publicName } from "@/lib/name-filter";
 import type { PracticeReason, RunResult } from "@/lib/session-types";
 
 export type BoardFilter =
@@ -35,7 +36,8 @@ export async function fetchBoard(filter: BoardFilter, limit = 25): Promise<Leade
     console.error("[leaderboard] read failed:", error.message);
     return [];
   }
-  return data as LeaderboardRow[];
+  // Names stored before they were checked show as "Trainer".
+  return (data as LeaderboardRow[]).map((row) => ({ ...row, player_name: publicName(row.player_name) }));
 }
 
 const PRACTICE_MESSAGES: Record<PracticeReason, string> = {

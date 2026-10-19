@@ -17,7 +17,7 @@ export async function GET(_request: NextRequest, context: { params: Promise<{ id
     return new NextResponse(await upstream.arrayBuffer(), {
       headers: {
         "Content-Type": "image/webp",
-        "Cache-Control": "public, max-age=31536000, immutable",
+        "Cache-Control": "public, max-age=31536000, s-maxage=31536000, immutable",
       },
     });
   } catch {

@@ -4,10 +4,12 @@ import { useEffect } from "react";
 import Link from "next/link";
 import { RotateCcw } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
+import { reportError } from "@/lib/report";
 
 export default function ErrorPage({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
   useEffect(() => {
     console.error(error);
+    reportError(error, { source: "boundary", digest: error.digest });
   }, [error]);
 
   return (

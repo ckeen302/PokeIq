@@ -6,6 +6,7 @@ import { Loader2, Swords, UserSearch, X } from "lucide-react";
 import { saveSeat } from "@/lib/duel-seat";
 import { setTrainerName, useProgress } from "@/lib/progress";
 import { unlockAudio } from "@/lib/sound";
+import { NAME_REJECTED, isCleanName } from "@/lib/name-filter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { clock } from "./DuelParts";
@@ -65,6 +66,7 @@ export function NewDuelCard({
 
   async function create(e: React.FormEvent) {
     e.preventDefault();
+    if (!isCleanName(name)) return setError(NAME_REJECTED);
     unlockAudio();
     setBusy(true);
     setError(null);
@@ -108,7 +110,10 @@ export function NewDuelCard({
           <input
             id={id}
             value={name}
-            onChange={(e) => setName(e.target.value)}
+            onChange={(e) => {
+              setName(e.target.value);
+              setError(null);
+            }}
             maxLength={24}
             required
             disabled={finder.searching}
@@ -132,7 +137,7 @@ export function NewDuelCard({
                 Create duel
               </Button>
               {match && (
-                <Button type="button" size="lg" variant="outline" disabled={busy || !name.trim()} onClick={() => void finder.search(name.trim())}>
+                <Button type="button" size="lg" variant="outline" disabled={busy || !name.trim()} onClick={() => (isCleanName(name) ? void finder.search(name.trim()) : setError(NAME_REJECTED))}>
                   <UserSearch className="h-4 w-4" aria-hidden /> Find an opponent
                 </Button>
               )}

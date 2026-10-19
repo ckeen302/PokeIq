@@ -1,5 +1,6 @@
 import "server-only";
 import { getServiceSupabase } from "@/lib/supabase";
+import { publicName } from "@/lib/name-filter";
 
 export interface GeoBoardRow {
   id: string;
@@ -27,5 +28,6 @@ export async function fetchGeoBoard(filter: { daily: string } | { mode: string }
     console.error("[geo-leaderboard] read failed:", error.message);
     return [];
   }
-  return data as GeoBoardRow[];
+  // Names stored before they were checked show as "Trainer".
+  return (data as GeoBoardRow[]).map((row) => ({ ...row, player_name: publicName(row.player_name) }));
 }

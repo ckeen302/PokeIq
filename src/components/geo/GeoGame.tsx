@@ -44,6 +44,7 @@ import { CopyFallback } from "@/components/quiz/CopyFallback";
 import { GeoMap, type MapPin } from "./GeoMap";
 import { DuelCard } from "./DuelCard";
 import { cn } from "@/lib/utils";
+import { NAME_REJECTED, isCleanName } from "@/lib/name-filter";
 
 type Phase = "setup" | "loading" | "guessing" | "submitting" | "revealed" | "results" | "error";
 
@@ -801,6 +802,11 @@ function GeoSummary({
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
+    if (!isCleanName(name)) {
+      setSaveError(NAME_REJECTED);
+      setSave("error");
+      return;
+    }
     setSave("saving");
     setSaveError(null);
     try {
@@ -928,7 +934,10 @@ function GeoSummary({
                 <input
                   id="geo-name"
                   value={name}
-                  onChange={(e) => setName(e.target.value)}
+                  onChange={(e) => {
+                    setName(e.target.value);
+                    setSaveError(null);
+                  }}
                   maxLength={24}
                   required
                   placeholder="Trainer name"

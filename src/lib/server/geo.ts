@@ -1,6 +1,7 @@
 import "server-only";
 import data from "@/data/geo.json";
 import { Rng } from "@/lib/rng";
+import { publicName } from "@/lib/name-filter";
 import { decryptJson, deriveSeed, encryptJson, randomId, signToken, verifyToken } from "./crypto";
 import {
   GEO_KINDS,
@@ -390,7 +391,8 @@ interface ChallengeCard {
 export function readGeoChallenge(token: unknown): (GeoChallenge & { seed: string; region: string; plan?: string }) | null {
   const card = verifyToken<ChallengeCard>("geo-challenge", token);
   if (!card || card.y !== undefined || !regionOf(card.r)) return null;
-  return { seed: card.s, region: card.r, name: card.n, score: card.t, rounds: card.p, plan: card.l };
+  // Links signed before names were checked: shown without the name.
+  return { seed: card.s, region: card.r, name: publicName(card.n, ""), score: card.t, rounds: card.p, plan: card.l };
 }
 
 /**

@@ -9,7 +9,7 @@ import {
   setSessionCookie,
   verifyPassword,
 } from "@/lib/server/auth";
-import { guardAuthRequest, serverError } from "@/lib/server/auth-route";
+import { guardAccount, guardAuthRequest, serverError } from "@/lib/server/auth-route";
 
 /** POST /api/auth/login — { username, password } -> session cookie. */
 
@@ -24,6 +24,8 @@ export async function POST(request: NextRequest) {
 
   const parsed = bodySchema.safeParse(await request.json().catch(() => ({})));
   if (!parsed.success) return NextResponse.json({ error: "Enter your trainer name and password." }, { status: 400 });
+  const slow = guardAccount("login", parsed.data.username);
+  if (slow) return slow;
 
   try {
     const user = await findUserByName(parsed.data.username.trim());

@@ -11,6 +11,7 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { CopyFallback } from "@/components/quiz/CopyFallback";
 import { cn } from "@/lib/utils";
+import { NAME_REJECTED, isCleanName } from "@/lib/name-filter";
 
 /** Pieces every duel screen shares: seats, the lobby, leaving, notices. */
 
@@ -153,6 +154,7 @@ export interface DuelLobbyProps {
 export function DuelLobby({ view, path, tag, title, invite, about, shareText, rules, settings, home, busy, onJoin, onReady, onLeave, noun = "duel" }: DuelLobbyProps) {
   const progress = useProgress();
   const [name, setName] = useState("");
+  const [nameError, setNameError] = useState<string | null>(null);
   const [shared, setShared] = useState<"done" | "failed" | null>(null);
   const me = view.you;
   const host = view.players[0]?.name ?? "A trainer";
@@ -237,7 +239,8 @@ export function DuelLobby({ view, path, tag, title, invite, about, shareText, ru
               className="space-y-2"
               onSubmit={(e) => {
                 e.preventDefault();
-                onJoin(name);
+                if (isCleanName(name)) onJoin(name);
+                else setNameError(NAME_REJECTED);
               }}
             >
               <label htmlFor="duel-join-name" className="hud-label">
@@ -247,7 +250,10 @@ export function DuelLobby({ view, path, tag, title, invite, about, shareText, ru
                 <input
                   id="duel-join-name"
                   value={name}
-                  onChange={(e) => setName(e.target.value)}
+                  onChange={(e) => {
+                    setName(e.target.value);
+                    setNameError(null);
+                  }}
                   maxLength={24}
                   required
                   placeholder="Trainer name"
@@ -258,6 +264,11 @@ export function DuelLobby({ view, path, tag, title, invite, about, shareText, ru
                   Join {noun}
                 </Button>
               </div>
+              {nameError && (
+                <p role="alert" className="text-sm text-destructive">
+                  {nameError}
+                </p>
+              )}
             </form>
           ) : (
             <p className="text-center text-sm text-muted-foreground">
