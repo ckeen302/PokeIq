@@ -4,23 +4,28 @@ import { capitalize } from "@/lib/pokemon/type-matrix";
 import { deriveSeed } from "./crypto";
 import { hashString } from "@/lib/rng";
 import { mediaUrl } from "./session";
+import { dailyAnswerId } from "./pokedle-schedule";
 import { DLE_HINTS, DLE_MAX_GUESSES, type DleCell, type DleResponse, type DleRow } from "@/lib/dle-types";
 
 /**
  * Pokédle — daily Pokémon deduction (Squirdle-style).
  *
- * The answer is HMAC(secret, puzzleId) mod pool, so it's identical for every
- * player that day but can't be computed from the open-source code. The API is
- * stateless: the client sends its guess list and gets every row's feedback
- * recomputed, which keeps the server free of per-player storage.
+ * A daily's answer comes from the curated schedule (pokedle-schedule.ts);
+ * a practice puzzle's is HMAC(secret, puzzleId) mod pool. Either way it's
+ * the same for every player but can't be computed from the open-source
+ * code. The API is stateless: the client sends its guess list and gets
+ * every row's feedback recomputed, which keeps the server free of
+ * per-player storage.
  */
 
 export interface DlePuzzle {
+  /** "daily:YYYY-MM-DD" or "practice:<seed>". */
   id: string;
   gens?: number[];
 }
 
 export function answerFor(puzzle: DlePuzzle): Pokemon {
+  if (puzzle.id.startsWith("daily:") && !puzzle.gens?.length) return getPokemon(dailyAnswerId(puzzle.id.slice(6)))!;
   const pool = poolFor(puzzle.gens);
   const key = `${puzzle.id}|${(puzzle.gens ?? []).join(",")}`;
   return pool[hashString(deriveSeed("pokedle", key)) % pool.length];

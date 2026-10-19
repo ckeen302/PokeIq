@@ -43,6 +43,17 @@ export const DLE_COLUMNS: { key: DleColumn; label: string }[] = [
 export type DleDexRow = [id: number, name: string, gen: number, type1: string, type2: string | null, height: number, weight: number, color: string, stage: number];
 
 export const DLE_MAX_GUESSES = 8;
+
+/**
+ * From this date the daily answer comes from the curated pool (see
+ * src/lib/server/pokedle-schedule.ts); earlier dates keep their original
+ * answers. Chosen so that no player anywhere had reached it when the
+ * schedule shipped.
+ */
+export const DLE_CURATED_FROM = "2026-10-22";
+
+/** The daily's difficulty tier by weekday (0 = Sunday): easier early in the week, harder at the weekend. */
+export const DLE_WEEKDAY_TIER = [2, 0, 0, 0, 1, 1, 2] as const;
 /** Wrong guesses needed to unlock each hint. */
 export const DLE_HINTS = { silhouette: 4, genus: 6 } as const;
 
