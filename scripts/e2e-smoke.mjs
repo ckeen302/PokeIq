@@ -12,6 +12,11 @@ import { chromium } from "playwright";
 import fs from "fs";
 
 const BASE = process.argv[2] ?? "http://localhost:3000";
+// Pokédle opens its how-to sheet on a player's first visit.
+async function closeHowTo(p) {
+  const close = p.getByRole("button", { name: "Close" });
+  if (await close.isVisible().catch(() => false)) await close.click();
+}
 const OUT = "e2e-screenshots";
 fs.mkdirSync(OUT, { recursive: true });
 
@@ -42,7 +47,7 @@ function step(name) {
 /** Whether the guess box reads `name` (within a couple of seconds). */
 async function filledIn(p, name) {
   return p
-    .waitForFunction((want) => document.querySelector("input[aria-label='Guess a Pokémon']")?.value === want, name, { timeout: 2_000 })
+    .waitForFunction((want) => document.querySelector("input[aria-label^='Guess a Pokémon']")?.value === want, name, { timeout: 2_000 })
     .then(() => true)
     .catch(() => false);
 }
@@ -114,6 +119,7 @@ await page.screenshot({ path: `${OUT}/blitz.png` });
 
 step("pokédle");
 await page.goto(`${BASE}/pokedle`, { waitUntil: "networkidle" });
+await closeHowTo(page);
 // The Pokédex beside the board: filter it by hand, click a row to fill in the guess, Enter to guess.
 await page.getByText(/^1,025 Pokémon match$/).waitFor();
 await page.getByLabel("Has type").selectOption("electric");
@@ -123,7 +129,7 @@ await page.getByRole("button", { name: "Fill in Pikachu" }).click();
 if (!(await filledIn(page, "Pikachu"))) errors.push("the Pokédex didn't fill in the guess box");
 await page.keyboard.press("Enter");
 await page.waitForFunction(
-  () => document.querySelector("input[aria-label='Guess a Pokémon']")?.placeholder.startsWith("Guess 2") || document.body.innerText.includes("Got it in")
+  () => document.querySelector("input[aria-label^='Guess a Pokémon']")?.placeholder.startsWith("Guess 2") || document.body.innerText.includes("Got it in")
 );
 await page.screenshot({ path: `${OUT}/pokedle-dex.png` });
 await page.getByRole("button", { name: /Reset filters/ }).click();
@@ -344,6 +350,7 @@ for (const name of ["Red", "Blue"]) {
 }
 const [dleRed, dleBlue] = dle;
 await dleRed.p.goto(`${BASE}/pokedle`, { waitUntil: "networkidle" });
+await closeHowTo(dleRed.p);
 await dleRed.p.getByLabel("Your trainer name").fill("Red");
 await dleRed.p.getByRole("button", { name: /Create duel/ }).click();
 await dleRed.p.waitForURL(/\/pokedle\/duel\/[a-z2-9]{8}$/);
@@ -374,7 +381,8 @@ async function playPokedleDuel({ p, name, seen }, shoot) {
   let boughtHint = false;
   for (let i = 0; i < 600; i++) {
     // A pressed Next turns into "Waiting for…" once the server has it.
-    if ((await next.isVisible()) && (await next.isEnabled())) {
+    // The button can go between the two checks (the round moved on), so a slow check counts as no.
+    if ((await next.isVisible()) && (await next.isEnabled({ timeout: 1_000 }).catch(() => false))) {
       if (shoot) await p.screenshot({ path: `${OUT}/pokedle-duel-reveal.png`, fullPage: true });
       shoot = false;
       const label = await next.innerText();
@@ -392,7 +400,10 @@ async function playPokedleDuel({ p, name, seen }, shoot) {
         await p.getByText(/^The .+ Pokémon$/).waitFor();
       }
       const tried = new Set(round.rows.map((r) => r.id));
-      const pool = DEX.filter((c) => c.gen === 1 && !tried.has(c.id) && round.rows.every((r) => fits(c, r)));
+      const open = DEX.filter((c) => c.gen === 1 && !tried.has(c.id));
+      // Narrow by the clues when the rough check here agrees with them; any untried Pokémon otherwise.
+      const fitting = open.filter((c) => round.rows.every((r) => fits(c, r)));
+      const pool = fitting.length ? fitting : open;
       const pick = name === "Red" ? pool[0] : pool[pool.length - 1];
       const before = round.rows.length;
       if (name === "Red" && round.index === 0 && before === 0) {
@@ -529,6 +540,7 @@ async function findOpponent(path, ready) {
     [mBlue, "Blue"],
   ]) {
     await p.goto(`${BASE}${path}`, { waitUntil: "networkidle" });
+    await closeHowTo(p);
     await p.getByLabel("Your trainer name").fill(name);
   }
   await mRed.getByRole("button", { name: /Find an opponent/ }).click();
@@ -910,6 +922,7 @@ await mobile.waitForSelector("h2");
 await mobile.waitForTimeout(900);
 await mobile.screenshot({ path: `${OUT}/mobile-daily.png` });
 await mobile.goto(`${BASE}/pokedle`, { waitUntil: "networkidle" });
+await closeHowTo(mobile);
 await mobile.screenshot({ path: `${OUT}/mobile-pokedle.png` });
 
 await browser.close();
