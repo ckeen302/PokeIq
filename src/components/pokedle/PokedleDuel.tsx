@@ -5,7 +5,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
-import { Crown, Eye, Lightbulb, Loader2, RotateCcw, Swords, Tag, Timer, WifiOff } from "lucide-react";
+import { Crown, Eye, Filter, Lightbulb, Loader2, RotateCcw, Swords, Tag, Timer, UserSearch, WifiOff, X } from "lucide-react";
 import { DLE_COLUMNS, DLE_MAX_GUESSES, type CellStatus, type DleRow } from "@/lib/dle-types";
 import {
   DLE_DUEL_HINT_COST,
@@ -21,9 +21,11 @@ import {
   type DleDuelView,
 } from "@/lib/pvp-types";
 import { play, unlockAudio } from "@/lib/sound";
-import { Button, buttonVariants } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useDuel } from "@/components/duel/use-duel";
+import { useMatchmaking } from "@/components/duel/use-matchmaking";
+import { SeriesScore, seriesTag } from "@/components/duel/DuelSeries";
 import { DuelGone, DuelLoading, DuelLobby, DuelNotice, DuelVisitor, LeaveButton, MatchedNote, SeatDot, clock, seconds } from "@/components/duel/DuelParts";
 import { Board, CELL_STYLES, CellGlyph, GuessInput, STATUS_TEXT, spriteUrl, type NameEntry } from "./parts";
 import { DexPanel, type Clue } from "./DexPanel";
@@ -40,6 +42,8 @@ import { cn } from "@/lib/utils";
 
 const HOME = "/pokedle";
 const GENS = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+/** What "Find new opponent" searches for: the same queue as on /pokedle. */
+const MATCH = { game: "pokedle" };
 const HINT_INFO: Record<DleDuelHint, { label: string; icon: typeof Tag }> = {
   genus: { label: "Category", icon: Tag },
   silhouette: { label: "Silhouette", icon: Eye },
@@ -57,6 +61,10 @@ function useFirst<T>(key: number | undefined, value: T | undefined): T | undefin
   }
   return kept.value;
 }
+
+/** How many Pokémon still fit a board's clues: after its last guess, or the whole pool before one. */
+const leftOf = (board: Pick<DleDuelBoard, "possible">, pool: number) => board.possible.at(-1) ?? pool;
+const possibleText = (n: number) => `${fmt(n)} Pokémon still possible`;
 
 const progressText = (board: DleDuelBoard) =>
   board.solved ? `Solved in ${board.colours.length}` : board.done ? "Out of guesses" : `${board.colours.length}/${DLE_MAX_GUESSES} guesses`;
@@ -301,6 +309,7 @@ export function PokedleDuel({ code, names }: { code: string; names: NameEntry[] 
                     fill={fill}
                   />
                 )}
+                <PossibleMeter left={leftOf(myBoard, view.pool)} pool={view.pool} label="Still possible for you" />
                 {(!myBoard.done || myBoard.hints.length > 0) && (
                   <div className="mx-auto flex max-w-md flex-wrap items-center gap-3 rounded-md border bg-card p-3 text-sm">
                     <Lightbulb className="h-5 w-5 shrink-0 text-primary" aria-hidden />
@@ -325,7 +334,7 @@ export function PokedleDuel({ code, names }: { code: string; names: NameEntry[] 
                 )}
               </div>
               <div className="hidden xl:block">
-                <OpponentBoard name={them} seat={1 - me} board={theirs} quiet={view.players[1 - me]?.quiet} />
+                <OpponentBoard name={them} seat={1 - me} board={theirs} pool={view.pool} quiet={view.players[1 - me]?.quiet} />
               </div>
             </div>
             {live.rows.length > 0 ? (
@@ -338,7 +347,7 @@ export function PokedleDuel({ code, names }: { code: string; names: NameEntry[] 
           </div>
           {/* On a phone the opponent's progress comes first, above your (longer) board. */}
           <div className="order-first mx-auto w-full max-w-[13rem] md:order-none md:col-start-2 md:row-start-1 xl:hidden">
-            <OpponentBoard name={them} seat={1 - me} board={theirs} quiet={view.players[1 - me]?.quiet} />
+            <OpponentBoard name={them} seat={1 - me} board={theirs} pool={view.pool} quiet={view.players[1 - me]?.quiet} />
           </div>
           {/* Each round starts with every filter cleared. */}
           <DexPanel
@@ -441,7 +450,10 @@ function DuelHud({ view, center }: { view: DleDuelView; center: React.ReactNode 
   return (
     <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-4 rounded-md border bg-card/90 px-4 py-2 backdrop-blur">
       <Fighter view={view} seat={0} />
-      <div className="text-center">{center}</div>
+      <div className="text-center">
+        {center}
+        {seriesTag(view.series) && <div className="hud-label mt-0.5 text-warning">{seriesTag(view.series)}</div>}
+      </div>
       <Fighter view={view} seat={1} right />
     </div>
   );
@@ -489,7 +501,7 @@ function HintBadges({ hints }: { hints: DleDuelHint[] }) {
 }
 
 /** The opponent's progress in a live round: one row of colours per guess, and the hints they bought. */
-function OpponentBoard({ name, seat, board, quiet }: { name: string; seat: number; board: DleDuelBoard; quiet?: boolean }) {
+function OpponentBoard({ name, seat, board, pool, quiet }: { name: string; seat: number; board: DleDuelBoard; pool: number; quiet?: boolean }) {
   return (
     <Card className={cn(board.solved && "border-success/50")}>
       <CardContent className="space-y-3 p-4">
@@ -511,8 +523,32 @@ function OpponentBoard({ name, seat, board, quiet }: { name: string; seat: numbe
         </div>
         <HintBadges hints={board.hints} />
         <p className={cn("text-center font-display text-sm font-semibold uppercase tracking-wider", board.solved ? "text-success" : "text-muted-foreground")}>{progressText(board)}</p>
+        {!board.solved && <PossibleMeter left={leftOf(board, pool)} pool={pool} compact />}
       </CardContent>
     </Card>
+  );
+}
+
+/**
+ * "N Pokémon still possible": how many Pokémon fit every clue a board has
+ * shown, worked out on the server (the opponent's clues never leave it,
+ * only this count). The bar shrinks from the whole pool towards one.
+ */
+function PossibleMeter({ left, pool, label, compact }: { left: number; pool: number; label?: string; compact?: boolean }) {
+  // A log scale: the drop from 1,000 to 100 reads as much as 10 to 1.
+  const share = pool > 1 ? Math.log(Math.max(1, left)) / Math.log(pool) : 0;
+  return (
+    <div className={cn("space-y-1", !compact && "mx-auto max-w-md")} role="status" aria-label={`${label ? `${label}: ` : ""}${possibleText(left)}`}>
+      <p className={cn("flex items-center justify-between gap-2 text-muted-foreground", compact ? "text-[11px]" : "text-xs")}>
+        <span className="flex items-center gap-1">
+          <Filter className="h-3 w-3" aria-hidden /> {label ?? "Still possible"}
+        </span>
+        <span className="font-pixel tabular-nums text-foreground">{fmt(left)}</span>
+      </p>
+      <span className="block h-1.5 overflow-hidden rounded-full bg-foreground/10" aria-hidden>
+        <span className="block h-full rounded-full bg-screen transition-[width] duration-500" style={{ width: `${Math.max(2, share * 100)}%` }} />
+      </span>
+    </div>
   );
 }
 
@@ -607,6 +643,9 @@ function DuelSummary({ view, busy, onRematch }: { view: DleDuelView; busy: boole
   const won = end.winner === me;
   const draw = end.winner === null;
   const [mine, theirs] = [view.totals[me], view.totals[1 - me]];
+  // "Find new opponent": the matchmaking queue, as on /pokedle (every generation), under the same name.
+  const finder = useMatchmaking(MATCH);
+  const myName = view.players[me]?.name ?? "";
   const guesses = (seat: number) => view.revealed.reduce((sum, r) => sum + r.scores[seat].guesses, 0);
   const played = draw
     ? "Level on points, guesses and time."
@@ -636,26 +675,35 @@ function DuelSummary({ view, busy, onRematch }: { view: DleDuelView; busy: boole
 
       <DuelHud view={view} center={<div className="hud-label">Final</div>} />
 
+      {view.series && <SeriesScore series={view.series} players={view.players} you={me} />}
+
       <Card>
         <CardContent className="space-y-5 p-5">
           {view.revealed.length > 0 && (
             <div className="space-y-3">
               {view.revealed.map((r) => (
-                <div key={r.index} className="grid gap-3 rounded-md border bg-shade/20 p-3 sm:grid-cols-[10rem_1fr_1fr]">
-                  <span className="flex min-w-0 items-center gap-2">
+                <section key={r.index} className="space-y-3 rounded-md border bg-shade/20 p-3" aria-label={`Round ${r.index + 1}`}>
+                  <p className="flex min-w-0 items-center gap-2">
                     <span className="font-pixel text-xs text-muted-foreground">R{r.index + 1}</span>
                     <img src={spriteUrl(r.answer.id)} alt="" width={32} height={32} className="h-8 w-8 shrink-0" />
                     <span className="truncate font-semibold">{r.answer.name}</span>
-                  </span>
-                  {r.scores.map((score, seat) => (
-                    <div key={seat} className="space-y-1">
-                      <p className="hud-label flex items-center gap-1.5">
-                        <SeatDot seat={seat} /> {view.players[seat]?.name}
-                      </p>
-                      <Breakdown score={score} />
-                    </div>
-                  ))}
-                </div>
+                  </p>
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    {r.scores.map((score, seat) => (
+                      <div key={seat} className="min-w-0 space-y-2">
+                        <p className="hud-label flex items-center justify-between gap-1.5">
+                          <span className="flex min-w-0 items-center gap-1.5">
+                            <SeatDot seat={seat} /> <span className="truncate">{view.players[seat]?.name}</span>
+                          </span>
+                          <span className="tabular-nums">{fmt(score.points)} pts</span>
+                        </p>
+                        <Guesses rows={r.boards[seat].rows} />
+                        <HintBadges hints={r.boards[seat].hints} />
+                        <Breakdown score={score} />
+                      </div>
+                    ))}
+                  </div>
+                </section>
               ))}
             </div>
           )}
@@ -665,16 +713,40 @@ function DuelSummary({ view, busy, onRematch }: { view: DleDuelView; busy: boole
               Rematch requested!
             </p>
           )}
-          <div className="grid gap-2 sm:grid-cols-2">
-            <Button size="lg" variant="success" disabled={busy} onClick={onRematch}>
-              {busy ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : <RotateCcw className="h-4 w-4" aria-hidden />}
-              {view.rematch ? "Accept rematch" : "Rematch"}
-            </Button>
-            <Link href={HOME} className={cn(buttonVariants({ variant: "outline", size: "lg" }))}>
-              <Swords className="h-4 w-4" aria-hidden /> Back to Pokédle
+          {finder.searching ? (
+            <div className="space-y-2 rounded-md border border-screen/40 bg-screen/[0.06] p-3 text-center" role="status">
+              <p className="flex items-center justify-center gap-2 font-display text-sm font-semibold uppercase tracking-wider text-screen">
+                <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> Searching for an opponent…
+              </p>
+              <Button type="button" size="sm" variant="ghost" onClick={finder.cancel}>
+                <X className="h-3.5 w-3.5" aria-hidden /> Cancel
+              </Button>
+            </div>
+          ) : (
+            <div className="grid gap-2 sm:grid-cols-2">
+              <Button size="lg" variant="success" disabled={busy} onClick={onRematch}>
+                {busy ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : <RotateCcw className="h-4 w-4" aria-hidden />}
+                {view.rematch ? "Accept rematch" : "Rematch"}
+              </Button>
+              <Button size="lg" variant="outline" disabled={busy || !myName} onClick={() => void finder.search(myName)}>
+                <UserSearch className="h-4 w-4" aria-hidden /> Find new opponent
+              </Button>
+            </div>
+          )}
+          {finder.error && (
+            <p role="alert" className="text-center text-sm text-destructive">
+              {finder.error}
+            </p>
+          )}
+          <p className="text-center text-xs text-muted-foreground">
+            {view.series && view.series.winner === null
+              ? `A rematch is game ${view.series.game + 1} of the series, with new mystery Pokémon. It starts when you both press it.`
+              : "A rematch keeps the trainers and generations, with new mystery Pokémon. It starts when you both press it."}{" "}
+            <Link href={HOME} className="underline underline-offset-2 hover:text-foreground">
+              <Swords className="mr-1 inline h-3 w-3" aria-hidden />
+              Back to Pokédle
             </Link>
-          </div>
-          <p className="text-center text-xs text-muted-foreground">A rematch keeps the trainers and generations, with new mystery Pokémon. It starts when you both press it.</p>
+          </p>
         </CardContent>
       </Card>
     </div>

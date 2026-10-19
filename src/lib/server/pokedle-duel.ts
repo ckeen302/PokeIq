@@ -19,6 +19,7 @@ import {
 } from "@/lib/pvp-types";
 import { deriveSeed } from "./crypto";
 import { answerFor, compare } from "./pokedle";
+import { stillPossible } from "./pokedle-candidates";
 import { mediaUrl } from "./session";
 import {
   baseView,
@@ -41,16 +42,21 @@ import {
  * opt-in and cost points. The most points after three rounds wins (then
  * fewer guesses, then less time).
  *
- * Each trainer sees the other's progress as it happens, but only as colours
- * and which hints they bought: the Pokémon they guessed, the hints
- * themselves and the secret leave the server once the round is over. A round
- * ends when both trainers have solved or run out of guesses, or after three
- * minutes.
+ * Each trainer sees the other's progress as it happens, but only as colours,
+ * which hints they bought and how many Pokémon still fit their clues: the
+ * Pokémon they guessed, the hints themselves and the secret leave the server
+ * once the round is over. A round ends when both trainers have solved or run
+ * out of guesses, or after three minutes.
  */
 
 interface DleDuelGuess {
   id: number;
   at: number;
+  /**
+   * Pokémon still possible after this guess, worked out once when it's made
+   * (polls only read it). Absent on guesses from before the meter existed.
+   */
+  left?: number;
 }
 
 interface DleDuelRound {
@@ -232,7 +238,10 @@ export function guessPokedle(duel: PokedleDuel, playerId: string, index: number,
     if (s.done) return fail(409, "You're out of guesses.");
     if (!getPokemon(pokemonId)) return fail(400, "Unknown Pokémon.");
     if (round.guesses[seat].some((g) => g.id === pokemonId)) return fail(409, "You've already guessed that one.");
-    round.guesses[seat].push({ id: pokemonId, at: now });
+    const guess: DleDuelGuess = { id: pokemonId, at: now };
+    round.guesses[seat].push(guess);
+    // Worked out once, here: the polls that follow only read it.
+    guess.left = possibleAfter(d, round, seat).at(-1);
     return { ok: true, duel: d };
   });
 }
@@ -277,7 +286,22 @@ function rowsOf(round: DleDuelRound, seat: number): DleRow[] {
   return round.guesses[seat].map((g) => compare(getPokemon(g.id)!, answer));
 }
 
-function boardOf(round: DleDuelRound, seat: number, rows: DleRow[]): DleDuelBoard {
+/**
+ * After each of a seat's guesses, how many Pokémon (of the duel's
+ * generations) still fit every clue it has shown: stored with each guess,
+ * worked out here only for guesses made before the meter existed.
+ */
+function possibleAfter(d: PokedleDuel, round: DleDuelRound, seat: number): number[] {
+  const guesses = round.guesses[seat];
+  if (guesses.every((g) => g.left !== undefined)) return guesses.map((g) => g.left!);
+  return stillPossible(
+    getPokemon(round.secret)!,
+    guesses.map((g) => getPokemon(g.id)!),
+    poolFor(d.gens)
+  );
+}
+
+function boardOf(d: PokedleDuel, round: DleDuelRound, seat: number, rows: DleRow[]): DleDuelBoard {
   const s = standing(round, seat);
   return {
     colours: rows.map((row) => DLE_COLUMNS.map((c) => row.cells[c.key].status)),
@@ -285,6 +309,7 @@ function boardOf(round: DleDuelRound, seat: number, rows: DleRow[]): DleDuelBoar
     done: s.done,
     ms: s.ms,
     hints: DLE_DUEL_HINTS.filter((hint) => round.hints[seat][hint] !== undefined),
+    possible: possibleAfter(d, round, seat),
   };
 }
 
@@ -302,7 +327,7 @@ export function pokedleView(duel: PokedleDuel, playerId: string | null, now: num
         answer: { id: answer.id, name: answer.name, imageUrl: artworkUrl(answer.id), genus: answer.genus },
         boards: r.guesses.map((_, k) => {
           const rows = rowsOf(r, k);
-          return { ...boardOf(r, k, rows), rows };
+          return { ...boardOf(duel, r, k, rows), rows };
         }),
         scores: r.guesses.map((_, k) => roundScore(r, k)),
         totals: [...totals],
@@ -322,7 +347,7 @@ export function pokedleView(duel: PokedleDuel, playerId: string | null, now: num
       startsAt: live.startsAt,
       endsAt: closesAt(live),
       // Only colours and hint badges of the opponent's round: their rows stay here.
-      boards: live.guesses.map((_, k) => boardOf(live, k, rowsOf(live, k))),
+      boards: live.guesses.map((_, k) => boardOf(duel, live, k, rowsOf(live, k))),
       rows: seat >= 0 ? rowsOf(live, seat) : [],
       // Your own hints, and only the ones you bought.
       hints: {
@@ -336,6 +361,7 @@ export function pokedleView(duel: PokedleDuel, playerId: string | null, now: num
     kind: "pokedle",
     ...baseView(duel, playerId, now, rev),
     gens: duel.gens,
+    pool: poolFor(duel.gens).length,
     rounds: DLE_DUEL_ROUNDS,
     totals: duel.totals,
     round,

@@ -42,6 +42,23 @@ interface PvpViewBase {
   end?: PvpEnd;
   /** Once either trainer asks for a rematch: the new duel's code. */
   rematch?: string;
+  /** Rematches between the same two trainers make a best-of-three series (absent until both seats are filled). */
+  series?: PvpSeriesView;
+}
+
+/** A series is best of three: the first trainer to win two games takes it. */
+export const PVP_SERIES_BEST_OF = 3;
+export const PVP_SERIES_WINS = 2;
+
+export interface PvpSeriesView {
+  /** This game's number in the series (draws add a game). */
+  game: number;
+  /** Games won per seat, this one included once it's over. */
+  wins: number[];
+  /** Games drawn, this one included once it's over. */
+  draws: number;
+  /** The seat that has taken the series, or null while it's open. */
+  winner: number | null;
 }
 
 // ---------------------------------------------------------------------------
@@ -84,6 +101,11 @@ export interface DleDuelBoard {
   ms?: number;
   /** Hints bought this round: the opponent sees which, never the hints themselves. */
   hints: DleDuelHint[];
+  /**
+   * After each guess, how many Pokémon still fit every clue this trainer has
+   * seen: the race meter. Only the counts cross over, never the clues.
+   */
+  possible: number[];
 }
 
 /** A trainer's points for a round, and how they add up. */
@@ -131,6 +153,8 @@ export interface DleDuelView extends PvpViewBase {
   kind: "pokedle";
   /** The generations secrets come from (none: all of them). The creator picks in the lobby. */
   gens?: number[];
+  /** How many Pokémon could be the secret before any guess (the generations' whole Pokédex). */
+  pool: number;
   rounds: number;
   /** Points so far. */
   totals: number[];

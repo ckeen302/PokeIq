@@ -3,7 +3,16 @@ import { z } from "zod";
 import { randomId, signToken, verifyToken } from "./crypto";
 import { DUEL_NAME_RE, type DuelPlayerView, type DuelStatus } from "@/lib/duel-types";
 import { NAME_REJECTED, isCleanName } from "@/lib/name-filter";
-import { PVP_AWAY_MS, PVP_LEAD_MS, PVP_QUIET_MS, type PvpEnd, type PvpEndReason, type PvpKind } from "@/lib/pvp-types";
+import {
+  PVP_AWAY_MS,
+  PVP_LEAD_MS,
+  PVP_QUIET_MS,
+  PVP_SERIES_WINS,
+  type PvpEnd,
+  type PvpEndReason,
+  type PvpKind,
+  type PvpSeriesView,
+} from "@/lib/pvp-types";
 
 /**
  * What every duel shares: trainer names, signed seats, and (for the duels in
@@ -66,6 +75,16 @@ export interface PvpBase {
   players: PvpPlayer[];
   end?: PvpEnd;
   rematch?: string;
+  /** A rematch's series so far: the games before this one. */
+  series?: PvpSeries;
+}
+
+/** Where a best-of-three series stands before a game, by trainer (seats can swap when a rematch lobby is retaken). */
+export interface PvpSeries {
+  /** The two trainers' ids, in the order `wins` counts them. */
+  ids: string[];
+  wins: number[];
+  draws: number;
 }
 
 export interface PvpRules<D extends PvpBase> {
@@ -114,7 +133,54 @@ export function baseView(duel: PvpBase, playerId: string | null, now: number, re
     players: duel.players.map((p): DuelPlayerView => ({ name: p.name, ready: p.ready, quiet: now - p.seenAt > PVP_QUIET_MS })),
     end: duel.end,
     rematch: duel.rematch,
+    series: seriesView(duel),
   };
+}
+
+// ---------------------------------------------------------------------------
+// Series
+// ---------------------------------------------------------------------------
+
+const sameTrainers = (a: readonly string[], b: readonly string[]) => a.length === 2 && b.length === 2 && a.every((id) => b.includes(id));
+const seriesDecided = (s: PvpSeries) => s.wins.some((w) => w >= PVP_SERIES_WINS);
+
+/** The series this duel's two trainers carry into it: the stored one if it's theirs and still open, else a new one. */
+function seriesBefore(duel: PvpBase): PvpSeries | null {
+  if (duel.players.length !== 2) return null;
+  const ids = duel.players.map((p) => p.id);
+  const s = duel.series;
+  return s && sameTrainers(s.ids, ids) && !seriesDecided(s) ? s : { ids, wins: [0, 0], draws: 0 };
+}
+
+/** The series with this duel counted, once it's over. */
+function seriesCounted(duel: PvpBase): PvpSeries | null {
+  const s = seriesBefore(duel);
+  if (!s || duel.status !== "finished" || !duel.end) return s;
+  const winner = duel.end.winner;
+  if (winner === null) return { ...s, draws: s.draws + 1 };
+  const at = s.ids.indexOf(duel.players[winner].id);
+  return { ...s, wins: s.wins.map((w, k) => (k === at ? w + 1 : w)) };
+}
+
+/** The series as the duel's seats see it (absent until both seats are filled). */
+export function seriesView(duel: PvpBase): PvpSeriesView | undefined {
+  const before = seriesBefore(duel);
+  const after = seriesCounted(duel);
+  if (!before || !after) return undefined;
+  const wins = duel.players.map((p) => after.wins[after.ids.indexOf(p.id)]);
+  const winner = wins.findIndex((w) => w >= PVP_SERIES_WINS);
+  return {
+    game: before.wins[0] + before.wins[1] + before.draws + 1,
+    wins,
+    draws: after.draws,
+    winner: winner >= 0 ? winner : null,
+  };
+}
+
+/** What a rematch of `old` carries on: the series with `old` counted, or nothing once someone has taken it (a new series). */
+export function seriesForRematch(old: PvpBase): PvpSeries | undefined {
+  const s = seriesCounted(old);
+  return s && !seriesDecided(s) ? s : undefined;
 }
 
 // ---------------------------------------------------------------------------
@@ -216,10 +282,15 @@ export function leavePvp<D extends PvpBase>(rules: PvpRules<D>, duel: D, playerI
   });
 }
 
-/** A rematch: the same game and trainers (same seats), a new seed. Both start un-ready, as if just seen. */
+/**
+ * A rematch: the same game and trainers (same seats), a new seed, and the
+ * series so far. Both start un-ready, as if just seen.
+ */
 export function rematchPvp<D extends PvpBase>(rules: PvpRules<D>, old: D, code: string, now: number, seed?: string): D {
   const players = old.players.map((p) => ({ id: p.id, name: p.name, ready: false, seenAt: now }));
-  return rules.blank(pvpBase(old.kind, code, players, now, seed), old);
+  const next = rules.blank(pvpBase(old.kind, code, players, now, seed), old);
+  const series = seriesForRematch(old);
+  return series ? { ...next, series } : next;
 }
 
 /** Pressing Rematch: takes (or, if the lobby dropped them, retakes) your seat in the rematch, ready to go. */
