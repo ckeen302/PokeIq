@@ -151,6 +151,6 @@ export function isBattleFormatId(id: unknown): id is BattleFormatId {
 }
 
 /** Tera types only exist from Gen 9. */
-export function hasTera(format: BattleFormat): boolean {
+export function hasTera(format: { gen: number }): boolean {
   return format.gen >= 9;
 }

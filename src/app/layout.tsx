@@ -74,6 +74,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <Link href="/leaderboard" className="hover:text-foreground">Leaderboard</Link>
               <Link href="/battle/teams" className="hover:text-foreground">Team builder</Link>
               <Link href="/battle/calc" className="hover:text-foreground">Damage calc</Link>
+              <Link href="/battle/lab" className="hover:text-foreground">Battle Lab</Link>
               <Link href="/quiz/gen-1-pokemon-quiz" className="hover:text-foreground">Gen 1 quiz</Link>
               <Link href="/quiz/pokemon-type-quiz" className="hover:text-foreground">Type chart quiz</Link>
               <Link href="/trainer" className="hover:text-foreground">Trainer card</Link>

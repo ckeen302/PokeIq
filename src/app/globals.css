@@ -45,6 +45,10 @@
     /* How far coloured text is pulled toward the foreground for contrast. */
     --tint-ink: 0%;
     --radius: 0.5rem;
+    /* Battle Lab charts: Side A, Side B and draws (validated for colour-vision deficiency on this surface). */
+    --lab-a: #f1417c;
+    --lab-b: #9a74f8;
+    --lab-draw: #6e6a86;
   }
   .screen,
   .dark-scope {
@@ -79,6 +83,9 @@
     --ring: 262 72% 54%;
     --shade: 248 32% 78%;
     --tint-ink: 45%;
+    --lab-a: #d92d6b;
+    --lab-b: #6f4bd8;
+    --lab-draw: #8a879e;
   }
 }
 

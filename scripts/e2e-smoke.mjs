@@ -785,6 +785,34 @@ await liveBlue.waitForURL(liveRed.url());
 await Promise.all([liveRed, liveBlue].map((p) => p.locator("[data-testid=move-button]").first().waitFor({ timeout: 60_000 })));
 await liveBlue.screenshot({ path: `${OUT}/battle-live-rematch.png` });
 
+// The Battle Lab runs Showdown's simulator in Web Workers, in this browser.
+step("battle lab: a quick 1v1, 200 battles, a win % with its confidence interval, a sample replay");
+await page.goto(`${BASE}/battle/lab`, { waitUntil: "networkidle" });
+for (const [side, text] of [
+  ["Side A", "Pikachu @ Light Ball\nLevel: 50\n- Thunderbolt\n- Quick Attack"],
+  ["Side B", "Bulbasaur\nLevel: 50\n- Vine Whip\n- Tackle"],
+]) {
+  const card = page.getByRole("region", { name: side, exact: true });
+  await card.getByRole("button", { name: "Paste", exact: true }).click();
+  await card.getByLabel("Showdown team").fill(text);
+  await card.getByRole("button", { name: `Use for ${side}` }).click();
+}
+await page.getByRole("button", { name: "Custom", exact: true }).click();
+await page.getByLabel("Custom number of battles").fill("200");
+await page.getByRole("button", { name: /^Run 200 battles/ }).click();
+await page.getByTestId("lab-progress").waitFor({ timeout: 30_000 }).catch(() => {});
+await page.getByRole("button", { name: /Run again with seed/ }).waitFor({ timeout: 120_000 });
+const labSummary = await page.getByTestId("lab-summary").innerText();
+console.log(`  ${labSummary}`);
+if (!/wins \d+\.\d% \(± \d+\.\d%\) over 200 battles/.test(labSummary)) errors.push(`battle lab: unexpected summary "${labSummary}"`);
+const labTile = await page.getByTestId("lab-win-a").innerText();
+if (!/\d+\.\d%[\s\S]*95% CI \d+\.\d%–\d+\.\d%/.test(labTile)) errors.push(`battle lab: no win % with a confidence interval in "${labTile}"`);
+if (!/[?&]setup=[zj][\w-]+.*&seed=/.test(page.url())) errors.push(`battle lab: the setup isn't in the URL (${page.url()})`);
+await page.screenshot({ path: `${OUT}/battle-lab.png`, fullPage: true });
+await page.getByRole("button", { name: /^A .+ win$/, disabled: false }).first().click();
+await page.getByTestId("lab-replay-log").getByText(/used/).first().waitFor({ timeout: 30_000 });
+await page.getByTestId("lab-replay").screenshot({ path: `${OUT}/battle-lab-replay.png` });
+
 // Accounts are only on when the server has a store (Supabase, or
 // POKEIQ_LOCAL_ACCOUNTS=1 for a local production build).
 const me = await (await page.request.get(`${BASE}/api/auth/me`)).json();

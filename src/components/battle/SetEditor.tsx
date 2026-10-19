@@ -189,7 +189,7 @@ export function SetEditor({
             <div className="flex items-baseline justify-between">
               <span className="hud-label">Moves</span>
               <span className="hud-label normal-case tracking-wider">
-                {loading ? "Loading learnset…" : `${learnable.length} learnable in ${format.name}`}
+                {loading ? "Loading learnset…" : dex.anyMove ? `Any ${format.name} move · its own first` : `${learnable.length} learnable in ${format.name}`}
               </span>
             </div>
             <div className="grid gap-2 sm:grid-cols-2">

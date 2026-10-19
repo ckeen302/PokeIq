@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRight, Bot, Calculator, Castle, Factory, Radio, Swords, Users, type LucideIcon } from "lucide-react";
+import { ArrowRight, Bot, Calculator, Castle, Factory, FlaskConical, Radio, Swords, Users, type LucideIcon } from "lucide-react";
 import { HudHeading } from "@/components/game/HudHeading";
 import { HpBar } from "@/components/game/HpBar";
 import { BATTLE_FORMATS, BATTLE_FORMAT_IDS } from "@/lib/battle/formats";
@@ -8,13 +8,13 @@ import { BATTLE_FORMATS, BATTLE_FORMAT_IDS } from "@/lib/battle/formats";
 export const metadata: Metadata = {
   title: "Battle — Pokémon Team Builder & Damage Calculator",
   description:
-    "Build competitive Pokémon teams checked against Pokémon Showdown's own rules and calculate every hit with the Smogon damage calculator. Battle the computer or a friend, live, on Pokémon Showdown's own engine.",
+    "Build competitive Pokémon teams checked against Pokémon Showdown's own rules and calculate every hit with the Smogon damage calculator. Battle the computer or a friend, live, on Pokémon Showdown's own engine, or let the Battle Lab play a matchup thousands of times.",
   alternates: { canonical: "/battle" },
 };
 
 const SPRITES = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/showdown";
 
-const LIVE: { href: string; icon: LucideIcon; title: string; blurb: string; points: string[] }[] = [
+const LIVE: { href: string; icon: LucideIcon; title: string; blurb: string; points: string[]; wide?: boolean }[] = [
   {
     href: "/battle/play",
     icon: Bot,
@@ -42,6 +42,14 @@ const LIVE: { href: string; icon: LucideIcon; title: string; blurb: string; poin
     title: "Damage Calc",
     blurb: "The Smogon damage calculator: every move's damage range, KO chance and the full description line.",
     points: ["Boosts, status, Tera and current HP", "Weather, terrain, screens, spread moves", "Load sets straight from your teams"],
+  },
+  {
+    href: "/battle/lab",
+    icon: FlaskConical,
+    title: "Battle Lab",
+    blurb: "Who wins, and how often? Set up any matchup and let Showdown's engine play it thousands of times in your browser.",
+    points: ["Any Pokémon, level, item and move, Gen 1 to 9", "Smart, Greedy, Random or Scripted play per side", "Win % with a 95% confidence interval, KOs, crits, replays"],
+    wide: true,
   },
 ];
 
@@ -95,8 +103,8 @@ export default function BattlePage() {
       <section className="space-y-5">
         <HudHeading index={1} title="Battle tools" aside="Live" />
         <div className="grid gap-4 md:grid-cols-2">
-          {LIVE.map(({ href, icon: Icon, title, blurb, points }) => (
-            <Link key={href} href={href} className="menu-item hud group relative block rounded-lg border bg-card p-6 hover:border-screen/50">
+          {LIVE.map(({ href, icon: Icon, title, blurb, points, wide }) => (
+            <Link key={href} href={href} className={`menu-item hud group relative block rounded-lg border bg-card p-6 hover:border-screen/50${wide ? " md:col-span-2" : ""}`}>
               <div className="flex items-start gap-4">
                 <span className="screen flex h-14 w-14 shrink-0 items-center justify-center rounded-md text-screen">
                   <Icon className="relative z-[3] h-6 w-6" aria-hidden />

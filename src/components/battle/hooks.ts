@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import type { Move } from "@pkmn/data";
-import { loadFormatDex, loadSpriteLookup, type FormatDex } from "@/lib/battle/dex";
+import { loadFormatDex, loadLabDex, loadSpriteLookup, type FormatDex } from "@/lib/battle/dex";
 import type { BattleFormatId } from "@/lib/battle/formats";
 import type { TeamCheck, TeamSet } from "@/lib/battle/sets";
 import type { SpriteSpecies } from "@/lib/battle/sprites";
@@ -21,6 +21,22 @@ export function useFormatDex(format: BattleFormatId): { dex: FormatDex | null; e
     };
   }, [format]);
   return state.format === format ? state : { dex: null, error: false };
+}
+
+/** A generation's Custom Game Pokédex for the Battle Lab (null until it arrives). */
+export function useLabDex(gen: number): { dex: FormatDex | null; error: boolean } {
+  const [state, setState] = useState<{ gen: number; dex: FormatDex | null; error: boolean }>({ gen, dex: null, error: false });
+  useEffect(() => {
+    let live = true;
+    loadLabDex(gen).then(
+      (dex) => live && setState({ gen, dex, error: false }),
+      () => live && setState({ gen, dex: null, error: true })
+    );
+    return () => {
+      live = false;
+    };
+  }, [gen]);
+  return state.gen === gen ? state : { dex: null, error: false };
 }
 
 type SpriteLookup = (name: string) => SpriteSpecies | null;

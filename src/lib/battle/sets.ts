@@ -86,7 +86,7 @@ export function normalizeSet(raw: unknown): TeamSet | null {
 }
 
 /** A fresh slot for `species` at the format's level. */
-export function newSet(species: string, format: BattleFormat): TeamSet {
+export function newSet(species: string, format: Pick<BattleFormat, "level">): TeamSet {
   return completeSet({ species, level: format.level });
 }
 

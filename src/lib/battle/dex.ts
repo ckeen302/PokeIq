@@ -35,8 +35,19 @@ function calcExists(d: Data): boolean {
   return !("isNonstandard" in d && d.isNonstandard && !ALLOWED_NONSTANDARD.has(d.isNonstandard));
 }
 
+/** What the set editor needs to know about the rules it edits under: a team-builder format, or a Battle Lab generation. */
+export interface DexFormat {
+  id: string;
+  name: string;
+  gen: number;
+  /** The level new sets start at. */
+  level: number;
+  /** The tier the species search lists before anything is typed. */
+  homeTier: string;
+}
+
 export interface FormatDex {
-  format: BattleFormat;
+  format: DexFormat;
   gen: Generation;
   /** Every species a team can start with (no battle-only formes), by Dex number. */
   species: Specie[];
@@ -47,6 +58,8 @@ export interface FormatDex {
   tier(species: Specie): string;
   /** Moves the species can learn in this format, A to Z. */
   learnable(species: string): Promise<Move[]>;
+  /** Any move goes (the Battle Lab's Custom Game): `learnable` lists every move, the species' own first. */
+  anyMove?: boolean;
 }
 
 /** National Dex order, base forms before their formes. */
@@ -95,6 +108,57 @@ async function buildFormatDex(format: BattleFormat): Promise<FormatDex> {
         });
         moves.catch(() => learnsets.delete(specie.id));
         learnsets.set(specie.id, moves);
+      }
+      return moves;
+    },
+  };
+}
+
+const labCache = new Map<number, Promise<FormatDex>>();
+
+/**
+ * A generation's Custom Game, for the Battle Lab: every Pokémon, item and
+ * move the generation has (no tiers, no learnset limits, any level).
+ */
+export function loadLabDex(gen: number): Promise<FormatDex> {
+  let cached = labCache.get(gen);
+  if (!cached) {
+    cached = buildLabDex(gen);
+    cached.catch(() => labCache.delete(gen));
+    labCache.set(gen, cached);
+  }
+  return cached;
+}
+
+async function buildLabDex(num: number): Promise<FormatDex> {
+  const [{ Dex }, { Generations }] = await loadModules();
+  const gen = new Generations(Dex, calcExists).get(num);
+  const species = [...gen.species].filter((s) => !s.battleOnly && s.num > 0).sort(byDexNumber);
+  // Z-Moves and Max Moves come from other moves in battle; Struggle is what's left when nothing else is.
+  const allMoves = [...gen.moves].filter((m) => !m.isZ && !m.isMax && m.id !== "struggle").sort((a, b) => a.name.localeCompare(b.name));
+  const ordered = new Map<string, Promise<Move[]>>();
+  return {
+    format: { id: `lab-gen${num}`, name: `Gen ${num}`, gen: num, level: 100, homeTier: "OU" },
+    gen,
+    species,
+    items: [...gen.items].sort((a, b) => a.name.localeCompare(b.name)),
+    natures: [...gen.natures].sort((a, b) => a.name.localeCompare(b.name)),
+    types: [...gen.types].map((t) => t.name).filter((t) => t !== "???"),
+    tier: (s) => String(s.tier ?? ""),
+    anyMove: true,
+    learnable(name) {
+      const specie = gen.species.get(name);
+      if (!specie) return Promise.resolve(allMoves);
+      let moves = ordered.get(specie.id);
+      if (!moves) {
+        moves = gen.learnsets
+          .learnable(specie.name)
+          .then((table) => {
+            const own = new Set(Object.keys(table ?? {}));
+            return [...allMoves.filter((m) => own.has(m.id)), ...allMoves.filter((m) => !own.has(m.id))];
+          })
+          .catch(() => allMoves);
+        ordered.set(specie.id, moves);
       }
       return moves;
     },
