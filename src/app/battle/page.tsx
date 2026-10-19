@@ -8,7 +8,7 @@ import { BATTLE_FORMATS, BATTLE_FORMAT_IDS } from "@/lib/battle/formats";
 export const metadata: Metadata = {
   title: "Battle — Pokémon Team Builder & Damage Calculator",
   description:
-    "Build competitive Pokémon teams checked against Pokémon Showdown's own rules and calculate every hit with the Smogon damage calculator. Battle the computer on Pokémon Showdown's own engine; live battles against other trainers are on the way.",
+    "Build competitive Pokémon teams checked against Pokémon Showdown's own rules and calculate every hit with the Smogon damage calculator. Battle the computer or a friend, live, on Pokémon Showdown's own engine.",
   alternates: { canonical: "/battle" },
 };
 
@@ -21,6 +21,13 @@ const LIVE: { href: string; icon: LucideIcon; title: string; blurb: string; poin
     title: "Battle vs Computer",
     blurb: "Real battles on Pokémon Showdown's engine against a computer opponent that plays to win.",
     points: ["Random Battle, Random Doubles or your saved team", "Easy, Normal and Hard opponents", "Showdown's move animations, Tera and all"],
+  },
+  {
+    href: "/battle/play?vs=friend",
+    icon: Radio,
+    title: "Live Battles",
+    blurb: "Battle a friend in real time through an invite link, with Showdown's turn timer.",
+    points: ["Each side sees only what it should", "Random teams or your saved teams", "Rematch with one press"],
   },
   {
     href: "/battle/teams",
@@ -39,7 +46,6 @@ const LIVE: { href: string; icon: LucideIcon; title: string; blurb: string; poin
 ];
 
 const SOON: { icon: LucideIcon; title: string; blurb: string }[] = [
-  { icon: Radio, title: "Live Battles", blurb: "Battle other trainers in real time, friendly or ranked, through a share link." },
   { icon: Castle, title: "Battle Tower", blurb: "Your team against a climbing streak of computer trainers. How far can you go?" },
   { icon: Factory, title: "Battle Factory", blurb: "No team needed: rent random sets, battle, and swap in your opponent's best." },
 ];
@@ -88,7 +94,7 @@ export default function BattlePage() {
 
       <section className="space-y-5">
         <HudHeading index={1} title="Battle tools" aside="Live" />
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+        <div className="grid gap-4 md:grid-cols-2">
           {LIVE.map(({ href, icon: Icon, title, blurb, points }) => (
             <Link key={href} href={href} className="menu-item hud group relative block rounded-lg border bg-card p-6 hover:border-screen/50">
               <div className="flex items-start gap-4">
@@ -120,7 +126,7 @@ export default function BattlePage() {
 
       <section className="space-y-5">
         <HudHeading index={2} title="Coming soon" aside="Your saved teams will battle here" />
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-3 sm:grid-cols-2">
           {SOON.map(({ icon: Icon, title, blurb }) => (
             <div key={title} className="relative space-y-2 rounded-lg border border-dashed border-foreground/15 bg-card/50 p-5">
               <span className="hud-label absolute right-3 top-3 rounded-sm border border-warning/40 px-1.5 py-1 text-warning">Soon</span>

@@ -740,6 +740,51 @@ await page.locator("[data-testid=lead-button]").filter({ hasText: "Garchomp" }).
 await page.locator("[data-testid=move-button]").first().waitFor({ timeout: 60_000 });
 await page.getByText("What will Garchomp do?").waitFor();
 
+// A live battle in two browsers: Red opens it, Blue joins from the link.
+step("live battle: create, join, ready");
+const liveRed = await newPage({ width: 1280, height: 900 });
+const liveBlue = await newPage({ width: 1280, height: 900 });
+watchBattle(liveRed, "p1", "live battle (Red)");
+watchBattle(liveBlue, "p2", "live battle (Blue)");
+await liveRed.goto(`${BASE}/battle/play?vs=friend`, { waitUntil: "networkidle" });
+await liveRed.locator("label").filter({ hasText: "Gen 9 Random Battle" }).first().click();
+await liveRed.getByLabel("Your trainer name").fill("Red");
+await liveRed.getByRole("button", { name: /Create battle/ }).click();
+await liveRed.waitForURL(/\/battle\/live\/[a-z2-9]{8}$/);
+const liveUrl = liveRed.url();
+await liveRed.getByLabel("Battle link").waitFor();
+await liveRed.screenshot({ path: `${OUT}/battle-live-lobby.png` });
+const liveOg = await liveRed.request.get(`${liveUrl}/opengraph-image`);
+if (liveOg.status() !== 200) errors.push(`live battle OG image returned ${liveOg.status()}`);
+else fs.writeFileSync(`${OUT}/battle-live-og.png`, await liveOg.body());
+await liveBlue.goto(liveUrl, { waitUntil: "networkidle" });
+await liveBlue.getByLabel("Your trainer name").fill("Blue");
+await liveBlue.getByRole("button", { name: /Join battle/ }).click();
+await liveRed.getByRole("button", { name: "Ready", exact: true }).click();
+await liveBlue.getByRole("button", { name: "Ready", exact: true }).click();
+
+step("live battle: both choose moves for a couple of turns");
+await Promise.all([liveRed, liveBlue].map((p) => p.locator("[data-testid=move-button]").first().waitFor({ timeout: 60_000 })));
+for (const p of [liveRed, liveBlue]) await p.getByRole("button", { name: "4x" }).click();
+if (!(await liveRed.getByTestId("battle-clocks").count())) errors.push("the live battle shows no turn timer");
+const [redTurn] = await Promise.all([playBattle(liveRed, 2, "battle-live"), playBattle(liveBlue, 2, null)]);
+console.log(`  reached turn ${redTurn}`);
+
+step("live battle: Blue forfeits, then a rematch");
+if (!(await liveBlue.getByTestId("battle-result").count())) {
+  await liveBlue.getByRole("button", { name: "Forfeit", exact: true }).click();
+  await liveBlue.getByRole("button", { name: "Forfeit", exact: true }).click();
+  await liveRed.getByText("Blue forfeited.").waitFor({ timeout: 30_000 });
+  await liveBlue.getByText("You forfeited.").waitFor({ timeout: 30_000 });
+}
+await liveRed.screenshot({ path: `${OUT}/battle-live-result.png` });
+await liveRed.getByRole("button", { name: /^Rematch$/ }).click();
+await liveRed.waitForURL((url) => url.href !== liveUrl && url.pathname.startsWith("/battle/live/"));
+await liveBlue.getByRole("button", { name: /Accept rematch/ }).click({ timeout: 30_000 });
+await liveBlue.waitForURL(liveRed.url());
+await Promise.all([liveRed, liveBlue].map((p) => p.locator("[data-testid=move-button]").first().waitFor({ timeout: 60_000 })));
+await liveBlue.screenshot({ path: `${OUT}/battle-live-rematch.png` });
+
 // Accounts are only on when the server has a store (Supabase, or
 // POKEIQ_LOCAL_ACCOUNTS=1 for a local production build).
 const me = await (await page.request.get(`${BASE}/api/auth/me`)).json();

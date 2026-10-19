@@ -145,10 +145,12 @@ export interface DuelLobbyProps {
   onJoin: (name: string) => void;
   onReady: (ready: boolean) => void;
   onLeave: () => void;
+  /** What the game calls itself in the lobby's copy (default "duel"). */
+  noun?: string;
 }
 
 /** The lobby: both seats, the share link, Ready, and the join form for the friend. */
-export function DuelLobby({ view, path, tag, title, invite, about, shareText, rules, settings, home, busy, onJoin, onReady, onLeave }: DuelLobbyProps) {
+export function DuelLobby({ view, path, tag, title, invite, about, shareText, rules, settings, home, busy, onJoin, onReady, onLeave, noun = "duel" }: DuelLobbyProps) {
   const progress = useProgress();
   const [name, setName] = useState("");
   const [shared, setShared] = useState<"done" | "failed" | null>(null);
@@ -211,7 +213,7 @@ export function DuelLobby({ view, path, tag, title, invite, about, shareText, ru
                 <input
                   readOnly
                   value={url}
-                  aria-label="Duel link"
+                  aria-label={`${noun[0].toUpperCase()}${noun.slice(1)} link`}
                   onFocus={(e) => e.currentTarget.select()}
                   className="h-10 min-w-0 flex-1 rounded-md border border-input bg-shade/20 px-3 font-mono text-xs"
                 />
@@ -224,7 +226,7 @@ export function DuelLobby({ view, path, tag, title, invite, about, shareText, ru
                 {ready ? (view.players.length < 2 ? "Ready. Waiting for a challenger…" : "Cancel ready") : "Ready"}
               </Button>
               <p className="text-center text-xs text-muted-foreground">
-                The duel starts as soon as both of you are ready.{" "}
+                The {noun} starts as soon as both of you are ready.{" "}
                 <button type="button" className="underline underline-offset-2 hover:text-foreground" onClick={onLeave}>
                   Leave
                 </button>
@@ -253,13 +255,13 @@ export function DuelLobby({ view, path, tag, title, invite, about, shareText, ru
                 />
                 <Button type="submit" size="lg" disabled={busy || !name.trim()}>
                   {busy ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : <Swords className="h-4 w-4" aria-hidden />}
-                  Join duel
+                  Join {noun}
                 </Button>
               </div>
             </form>
           ) : (
             <p className="text-center text-sm text-muted-foreground">
-              This duel is full.{" "}
+              This {noun} is full.{" "}
               <Link href={home} className="underline underline-offset-2">
                 Start your own
               </Link>

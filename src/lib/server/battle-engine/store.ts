@@ -249,3 +249,18 @@ export async function deleteBattle(code: string): Promise<void> {
   }
   memory().delete(code);
 }
+
+/**
+ * A battle's public summary for its page and preview card (no simulator
+ * needed): null if there's no such battle, undefined if the store couldn't say.
+ */
+export async function peekBattle(code: string): Promise<{ kind: BattleKind; format: PlayFormatId; names: string[]; status: DuelStatus } | null | undefined> {
+  try {
+    const lite = await loadBattleMeta(code, null);
+    if (!lite) return null;
+    return { kind: lite.meta.kind, format: lite.meta.format, names: lite.meta.seats.map((s) => s.name), status: lite.meta.status };
+  } catch (err) {
+    console.error("[battle] read failed:", err);
+    return undefined;
+  }
+}

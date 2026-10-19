@@ -1,20 +1,25 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Flag, Loader2, RotateCcw, Settings2, WifiOff } from "lucide-react";
+import { Flag, Loader2, RotateCcw, Settings2, Swords, WifiOff } from "lucide-react";
+import { BATTLE_AWAY_MS, BATTLE_QUIET_MS, BATTLE_TIMER, PLAY_FORMAT_INFO, battleHref, type BattleView } from "@/lib/battle/play";
+import { DuelLobby } from "@/components/duel/DuelParts";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { lastCpuSetup, startBattle } from "./BattleSetup";
-import { useBattle } from "./use-battle";
+import { TeamPick } from "./TeamPick";
+import { useBattle, type BattleHandle } from "./use-battle";
 
 /**
- * A battle's page: keeps the battle fresh (useBattle) and draws it. The
- * battle screen and the simulator's client libraries load only here, on
- * demand, so the rest of the site stays light.
+ * A battle's page: keeps the battle fresh (useBattle) and draws it: the
+ * lobby of a live battle (the invite link, Ready, joining with a name and,
+ * in team formats, a team), then the battle itself. The battle screen and
+ * the simulator's client libraries load only here, on demand, so the rest
+ * of the site stays light.
  */
 
 const BattleScreen = dynamic(() => import("./play/BattleScreen"), {
@@ -73,8 +78,8 @@ function CpuAgain() {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const setup = typeof window !== "undefined" ? lastCpuSetup() : null;
   async function again() {
+    const setup = lastCpuSetup();
     if (!setup) return router.push("/battle/play");
     setBusy(true);
     setError(null);
@@ -100,18 +105,121 @@ function CpuAgain() {
   );
 }
 
+/** After a live battle: a rematch with the same trainers (and teams), once both press it. */
+function LiveAgain({ view, battle }: { view: BattleView; battle: BattleHandle }) {
+  const router = useRouter();
+  async function rematch() {
+    const next = await battle.rematch();
+    if (next) router.push(battleHref("pvp", next));
+  }
+  return (
+    <div className="space-y-2">
+      {view.rematch && (
+        <p role="status" className="font-display text-sm font-semibold uppercase tracking-wider text-warning">
+          Rematch requested!
+        </p>
+      )}
+      <div className="flex flex-wrap justify-center gap-2">
+        <Button variant="success" disabled={battle.busy} onClick={() => void rematch()}>
+          {battle.busy ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : <RotateCcw className="h-4 w-4" aria-hidden />}
+          {view.rematch ? "Accept rematch" : "Rematch"}
+        </Button>
+        <Link href="/battle/play" className={buttonVariants({ variant: "outline" })}>
+          <Swords className="h-4 w-4" aria-hidden /> New battle
+        </Link>
+      </div>
+      <p className="text-xs text-muted-foreground">A rematch keeps the trainers, the format and any teams you brought. It starts when you both press it.</p>
+    </div>
+  );
+}
+
+function LiveLobby({ code, view, battle }: { code: string; view: BattleView; battle: BattleHandle }) {
+  const router = useRouter();
+  const info = PLAY_FORMAT_INFO[view.format];
+  const [team, setTeam] = useState("");
+  const onTeam = useCallback((t: string) => setTeam(t), []);
+  const timer = BATTLE_TIMER[info.gameType];
+  const joining = view.you === null && view.players.length < 2;
+  const host = view.players[0]?.name;
+
+  return (
+    <div className="space-y-3">
+      {(battle.error || battle.offline) && (
+        <p role="alert" className="text-center text-sm text-destructive">
+          {battle.error ?? "Connection lost. Reconnecting…"}
+        </p>
+      )}
+      <DuelLobby
+        view={view}
+        path={`/battle/live/${code}`}
+        tag={`Live battle · ${info.name}`}
+        title={
+          view.players.length === 2 ? (
+            <>
+              {view.players[0].name} <span className="text-muted-foreground">vs</span> {view.players[1].name}
+            </>
+          ) : (
+            <>
+              Pokémon <span className="text-primary">battle</span>
+            </>
+          )
+        }
+        invite={(h) => `${h} challenges you to a ${info.name} battle. Pick a trainer name${info.random ? "" : " and a team"} to join.`}
+        about={`Send the link to a friend. The battle starts when you're both ready.${info.random ? " Teams are random." : ""}`}
+        shareText={`${host ?? "I"} challenge${host ? "s" : ""} you to a ${info.name} battle on PokéIQ!`}
+        rules={[
+          { label: "Format", text: <>{info.name}: {info.random ? info.blurb : "each of you brings a team, checked against Pokémon Showdown's rules."}</> },
+          {
+            label: "Turn timer",
+            text: (
+              <>
+                {timer.bank / 1000} s in the bank{timer.perTurn ? `, +${timer.perTurn / 1000} s a turn` : ""}, {timer.cap / 1000} s at most per turn. Run out twice and you lose.
+              </>
+            ),
+          },
+          {
+            label: "Fair play",
+            text: (
+              <>
+                You see only your own team and what your opponent reveals. Leaving forfeits after {Math.round((BATTLE_AWAY_MS - BATTLE_QUIET_MS) / 1000)} s
+                away.
+              </>
+            ),
+          },
+        ]}
+        settings={joining && !info.random ? <TeamPick format={view.format} onChange={onTeam} idPrefix={`join-${code}`} /> : undefined}
+        home="/battle/play?vs=friend"
+        noun="battle"
+        busy={battle.busy}
+        onJoin={(name) => {
+          if (!info.random && !team) {
+            battle.setError("Pick or paste a team first.");
+            return;
+          }
+          void battle.join(name, info.random ? undefined : team);
+        }}
+        onReady={(ready) => void battle.act({ action: "ready", ready })}
+        onLeave={async () => {
+          if (await battle.act({ action: "forfeit" })) router.push("/battle");
+        }}
+      />
+    </div>
+  );
+}
+
 export function BattleRoom({ code }: { code: string }) {
   const battle = useBattle(code);
   const { view, gone, offline } = battle;
 
   if (gone) return <BattleGone message={gone} />;
   if (!view) return <ScreenLoading />;
+  if (view.status === "lobby") return <LiveLobby code={code} view={view} battle={battle} />;
 
   if (view.you === null) {
     return (
       <Card className="mx-auto max-w-md">
         <CardContent className="space-y-3 p-6 text-center">
-          <p className="hud-label text-screen">Battle in progress</p>
+          <p className="hud-label text-screen">{view.status === "finished" ? "Battle over" : "Battle in progress"}</p>
           <p className="font-display text-2xl font-bold uppercase">{view.players.map((p) => p.name).join(" vs ")}</p>
           <p className="text-sm text-muted-foreground">This battle is between two other trainers.</p>
           <Link href="/battle/play" className={cn(buttonVariants({ size: "lg" }), "w-full")}>
@@ -122,11 +230,17 @@ export function BattleRoom({ code }: { code: string }) {
     );
   }
 
+  const foe = view.players[view.you === 0 ? 1 : 0];
   return (
     <div className="space-y-3">
       {offline && (
         <p role="alert" className="flex items-center justify-center gap-1.5 text-sm text-destructive">
           <WifiOff className="h-4 w-4" aria-hidden /> Connection lost. Reconnecting…
+        </p>
+      )}
+      {view.kind === "pvp" && view.status === "playing" && foe?.quiet && (
+        <p role="status" className="flex items-center justify-center gap-1.5 text-sm text-warning" data-testid="foe-disconnected">
+          <WifiOff className="h-4 w-4" aria-hidden /> {foe.name} lost their connection. If they don&apos;t come back within a minute, they forfeit.
         </p>
       )}
       <BattleScreen
@@ -136,7 +250,7 @@ export function BattleRoom({ code }: { code: string }) {
         busy={battle.busy}
         error={battle.error}
         onChoose={(rqid, choice) => void battle.choose(rqid, choice)}
-        endActions={view.kind === "cpu" ? <CpuAgain /> : null}
+        endActions={view.kind === "cpu" ? <CpuAgain /> : <LiveAgain view={view} battle={battle} />}
       />
       {view.status === "playing" && <ForfeitButton busy={battle.busy} onForfeit={() => void battle.act({ action: "forfeit" })} />}
     </div>

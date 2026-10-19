@@ -663,14 +663,3 @@ export function battleView(meta: BattleMeta, playerId: string | null, log: strin
   return view;
 }
 
-/** A battle's public summary for its page and preview card: null if there's no such battle, undefined if the store couldn't say. */
-export async function peekBattle(code: string): Promise<{ kind: BattleMeta["kind"]; format: PlayFormatId; names: string[]; status: BattleMeta["status"] } | null | undefined> {
-  try {
-    const lite = await loadBattleMeta(code, null);
-    if (!lite) return null;
-    return { kind: lite.meta.kind, format: lite.meta.format, names: lite.meta.seats.map((s) => s.name), status: lite.meta.status };
-  } catch (err) {
-    console.error("[battle] read failed:", err);
-    return undefined;
-  }
-}
