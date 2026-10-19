@@ -290,7 +290,7 @@ describe("damage calc", () => {
     const [eq, claw, sd] = calcMoves(calc(), chomp, tran, emptyField());
     // 359 Atk vs 248 Def into 386 HP: 104-123 base, ×1.5 STAB, ×4 effectiveness.
     expect(eq).toMatchObject({ move: "Earthquake", damage: [624, 736], ko: "guaranteed OHKO" });
-    expect(eq.percent[0]).toBeCloseTo(161.66, 1);
+    expect(eq.percent).toEqual([161.6, 190.6]);
     expect(eq.desc).toBe("252 Atk Garchomp Earthquake vs. 252 HP / 0 Def Heatran: 624-736 (161.6 - 190.6%) -- guaranteed OHKO");
     expect(eq.rolls).toHaveLength(16);
     // Steel resists Dragon: 99 base, ×1.5 STAB, ×0.5.

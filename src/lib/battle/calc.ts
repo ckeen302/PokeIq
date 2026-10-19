@@ -201,7 +201,8 @@ export function calcMoves(calc: Calc, attacker: CalcSide, defender: CalcSide, fi
       lines.push({
         ...base,
         damage: [min, max],
-        percent: [(min / hp) * 100, (max / hp) * 100],
+        // Showdown's calculator floors to a tenth of a percent (20.93% is 20.9%).
+        percent: [Math.floor((min * 1000) / hp) / 10, Math.floor((max * 1000) / hp) / 10],
         ko: max > 0 ? result.kochance(false).text : "",
         desc: hits ? result.fullDesc("%", false) : `${result.attacker.name} ${move.name} vs. ${result.defender.name}: 0-0 (0 - 0%)`,
         rolls: Array.isArray(result.damage) && typeof result.damage[0] === "number" ? (result.damage as number[]) : [],

@@ -220,6 +220,9 @@ describe("the damage calculator", () => {
           });
         const result = SmogonCalc.calculate(reference, mk(attacker), mk(defender), new SmogonCalc.Move(reference, line.move), new SmogonCalc.Field({ weather: field.weather ? (field.weather as never) : undefined }));
         expect(line.damage, `gen ${gen} ${line.move}`).toEqual(result.range());
+        // The percentages shown are the ones in Showdown's own description line.
+        const shown = /\(([\d.]+) - ([\d.]+)%\)/.exec(result.fullDesc("%", false));
+        expect(line.percent, `gen ${gen} ${line.move} %`).toEqual([Number(shown?.[1]), Number(shown?.[2])]);
       }
     }
   });
