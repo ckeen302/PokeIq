@@ -17,6 +17,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${SITE_URL}/pokedex/study`, changeFrequency: "monthly", priority: 0.7 },
     { url: `${SITE_URL}/leaderboard`, changeFrequency: "hourly", priority: 0.5 },
     { url: `${SITE_URL}/battle`, changeFrequency: "weekly", priority: 0.8 },
+    { url: `${SITE_URL}/battle/play`, changeFrequency: "monthly", priority: 0.8 },
     { url: `${SITE_URL}/battle/teams`, changeFrequency: "monthly", priority: 0.8 },
     { url: `${SITE_URL}/battle/calc`, changeFrequency: "monthly", priority: 0.8 },
     { url: `${SITE_URL}/battle/lab`, changeFrequency: "monthly", priority: 0.7 },

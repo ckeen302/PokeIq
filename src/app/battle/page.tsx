@@ -1,18 +1,31 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRight, Bot, Calculator, Castle, Factory, FlaskConical, Radio, Swords, Users, type LucideIcon } from "lucide-react";
+import { ArrowRight, Bot, Calculator, Castle, Factory, FlaskConical, Radio, UserSearch, Users, type LucideIcon } from "lucide-react";
 import { HudHeading } from "@/components/game/HudHeading";
 import { HpBar } from "@/components/game/HpBar";
 import { BATTLE_FORMATS, BATTLE_FORMAT_IDS } from "@/lib/battle/formats";
 
 export const metadata: Metadata = {
-  title: "Battle — Pokémon Team Builder & Damage Calculator",
+  title: "Pokémon Battles Online — PvP, vs Computer & Team Builder",
   description:
-    "Build competitive Pokémon teams checked against Pokémon Showdown's own rules and calculate every hit with the Smogon damage calculator. Battle the computer or a friend, live, on Pokémon Showdown's own engine, or let the Battle Lab play a matchup thousands of times.",
+    "Battle Pokémon online on Pokémon Showdown's own engine: find an opponent for a live PvP battle in seconds, battle a friend through a link, or battle the computer. Plus a team builder checked against Showdown's rules, the Smogon damage calculator and the Battle Lab.",
   alternates: { canonical: "/battle" },
 };
 
 const SPRITES = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/showdown";
+
+/** The three ways into a battle, biggest first. */
+const BATTLE_NOW: { href: string; icon: LucideIcon; label: string; blurb: string; primary?: boolean }[] = [
+  { href: "/battle/play", icon: Bot, label: "Battle now", blurb: "vs the computer", primary: true },
+  { href: "/battle/play?vs=anyone", icon: UserSearch, label: "Find an opponent", blurb: "live, matched in seconds" },
+  { href: "/battle/play?vs=friend", icon: Radio, label: "Battle a friend", blurb: "send an invite link" },
+];
+
+const TOOLS: { href: string; icon: LucideIcon; label: string }[] = [
+  { href: "/battle/teams", icon: Users, label: "Build a team" },
+  { href: "/battle/calc", icon: Calculator, label: "Damage calc" },
+  { href: "/battle/lab", icon: FlaskConical, label: "Battle Lab" },
+];
 
 const LIVE: { href: string; icon: LucideIcon; title: string; blurb: string; points: string[]; wide?: boolean }[] = [
   {
@@ -23,11 +36,11 @@ const LIVE: { href: string; icon: LucideIcon; title: string; blurb: string; poin
     points: ["Random Battle, Random Doubles or your saved team", "Easy, Normal and Hard opponents", "Showdown's move animations, Tera and all"],
   },
   {
-    href: "/battle/play?vs=friend",
-    icon: Radio,
-    title: "Live Battles",
-    blurb: "Battle a friend in real time through an invite link, with Showdown's turn timer.",
-    points: ["Each side sees only what it should", "Random teams or your saved teams", "Rematch with one press"],
+    href: "/battle/play?vs=anyone",
+    icon: UserSearch,
+    title: "Battle Online",
+    blurb: "Find an opponent searching for the same format and battle live, or send a friend an invite link. Anyone with the link can watch.",
+    points: ["Matchmaking in every format, random teams or your own", "Showdown's turn timer; each side sees only what it should", "Rematch with one press"],
   },
   {
     href: "/battle/teams",
@@ -68,40 +81,46 @@ export default function BattlePage() {
             <span className="led h-1.5 w-1.5 animate-blink text-screen" /> Battle unit · Pokémon Showdown rules
           </p>
           <h1 className="font-display text-5xl font-bold uppercase leading-[0.95] tracking-tight sm:text-7xl">
-            Build. Calc.
+            Battle anyone.
             <br />
-            <span className="text-primary [text-shadow:0_0_30px_hsl(var(--primary)/0.45)]">Battle.</span>
+            <span className="text-primary [text-shadow:0_0_30px_hsl(var(--primary)/0.45)]">Right now.</span>
           </h1>
           <p className="max-w-xl text-base text-muted-foreground sm:text-lg">
-            Competitive teams checked against the same rules as Pokémon Showdown, and the Smogon damage calculator for every hit.
-            The teams you build here are the ones you&apos;ll battle with.
+            Real Pokémon battles on Pokémon Showdown&apos;s own engine: against the computer, a trainer searching right now, or a
+            friend through a link. Random teams, or the team you build here.
           </p>
-          <div className="flex flex-wrap gap-3">
-            <Link
-              href="/battle/play"
-              className="inline-flex items-center gap-2 rounded-md bg-primary px-5 py-3 font-display text-sm font-bold uppercase tracking-wider text-primary-foreground shadow-[0_4px_0_hsl(var(--primary-shadow))] transition-transform hover:-translate-y-0.5"
-            >
-              <Swords className="h-4 w-4" aria-hidden /> Battle now
-            </Link>
-            <Link
-              href="/battle/teams"
-              className="inline-flex items-center gap-2 rounded-md border bg-card px-5 py-3 font-display text-sm font-bold uppercase tracking-wider shadow-[0_3px_0_hsl(var(--border))] transition-colors hover:border-screen/60"
-            >
-              <Users className="h-4 w-4" aria-hidden /> Build a team
-            </Link>
-            <Link
-              href="/battle/calc"
-              className="inline-flex items-center gap-2 rounded-md border bg-card px-5 py-3 font-display text-sm font-bold uppercase tracking-wider shadow-[0_3px_0_hsl(var(--border))] transition-colors hover:border-screen/60"
-            >
-              <Calculator className="h-4 w-4" aria-hidden /> Open the calc
-            </Link>
+          <div className="grid gap-3 sm:grid-cols-3" data-testid="battle-now">
+            {BATTLE_NOW.map(({ href, icon: Icon, label, blurb, primary }) => (
+              <Link
+                key={href}
+                href={href}
+                className={
+                  primary
+                    ? "flex flex-col items-start gap-1 rounded-md bg-primary px-4 py-3 text-primary-foreground shadow-[0_4px_0_hsl(var(--primary-shadow))] transition-transform hover:-translate-y-0.5"
+                    : "flex flex-col items-start gap-1 rounded-md border bg-card px-4 py-3 shadow-[0_3px_0_hsl(var(--border))] transition-colors hover:border-screen/60"
+                }
+              >
+                <span className="flex items-center gap-2 font-display text-sm font-bold uppercase tracking-wider">
+                  <Icon className="h-4 w-4" aria-hidden /> {label}
+                </span>
+                <span className={primary ? "text-xs text-primary-foreground/80" : "text-xs text-muted-foreground"}>{blurb}</span>
+              </Link>
+            ))}
+          </div>
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+            <span className="hud-label">Tools</span>
+            {TOOLS.map(({ href, icon: Icon, label }) => (
+              <Link key={href} href={href} className="inline-flex items-center gap-1.5 font-display text-xs font-bold uppercase tracking-wider text-muted-foreground transition-colors hover:text-foreground">
+                <Icon className="h-3.5 w-3.5" aria-hidden /> {label}
+              </Link>
+            ))}
           </div>
         </div>
         <BattleScene />
       </section>
 
       <section className="space-y-5">
-        <HudHeading index={1} title="Battle tools" aside="Live" />
+        <HudHeading index={1} title="Battles and tools" aside="Live" />
         <div className="grid gap-4 md:grid-cols-2">
           {LIVE.map(({ href, icon: Icon, title, blurb, points, wide }) => (
             <Link key={href} href={href} className={`menu-item hud group relative block rounded-lg border bg-card p-6 hover:border-screen/50${wide ? " md:col-span-2" : ""}`}>
