@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { completeSet, MAX_IV, normalizeSet, STATS, type TeamSet } from "@/lib/battle/sets";
+import { completeSet, fitStatsToGen, MAX_IV, normalizeSet, STATS, type TeamSet } from "@/lib/battle/sets";
 import {
   BOOST_IDS,
   doublesAllowed,
@@ -104,10 +104,15 @@ function cleanSide(raw: unknown): LabSide {
   return { team, strategy: isLabStrategy(r.strategy) ? r.strategy : "smart", loop: r.loop === true, field: cleanField(r.field) };
 }
 
-/** Keeps a setup to what its generation has: no doubles before Gen 3, no Snow in Gen 4, no 3 layers of Gen 2 Spikes… */
+/**
+ * Keeps a setup to what its generation has: no doubles before Gen 3, no
+ * Snow in Gen 4, no 3 layers of Gen 2 Spikes, Gen 1-2 DVs and stat
+ * experience as those games have them (one Special, a derived HP DV)…
+ */
 export function fitToGen(setup: LabSetup): LabSetup {
   const { gen } = setup;
   const allowed = new Map(sideFieldFor(gen).map((f) => [f.key, f.layers]));
+  const stats = (mon: LabMon): LabMon => ({ ...mon, set: fitStatsToGen(mon.set, gen) });
   const field = (f: LabSideField): LabSideField => {
     const out = { ...EMPTY_SIDE_FIELD };
     for (const [key, layers] of allowed) {
@@ -122,8 +127,8 @@ export function fitToGen(setup: LabSetup): LabSetup {
     weather: weathersFor(gen).includes(setup.weather) ? setup.weather : "",
     terrain: terrainsFor(gen).includes(setup.terrain) ? setup.terrain : "",
     sides: [
-      { ...setup.sides[0], field: field(setup.sides[0].field) },
-      { ...setup.sides[1], field: field(setup.sides[1].field) },
+      { ...setup.sides[0], team: setup.sides[0].team.map(stats), field: field(setup.sides[0].field) },
+      { ...setup.sides[1], team: setup.sides[1].team.map(stats), field: field(setup.sides[1].field) },
     ],
   };
 }

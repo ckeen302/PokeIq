@@ -85,9 +85,48 @@ export function normalizeSet(raw: unknown): TeamSet | null {
   return parsed.success ? completeSet(parsed.data) : null;
 }
 
-/** A fresh slot for `species` at the format's level. */
-export function newSet(species: string, format: Pick<BattleFormat, "level">): TeamSet {
-  return completeSet({ species, level: format.level });
+// ---------------------------------------------------------------------------
+// Stats by generation, as Showdown's validator rules them
+// ---------------------------------------------------------------------------
+
+/**
+ * Gen 1-2 have DVs (0-15) where later games have IVs, stored as IVs the way
+ * Showdown does (the simulator reads DV = IV / 2, rounded down), and stat
+ * experience where later games have EVs: up to 252 in every stat, with no
+ * total (Showdown's "EV Limit = Auto" is 510 from Gen 3 only).
+ */
+export const hasDVs = (gen: number) => gen <= 2;
+export const evLimit = (gen: number): number | null => (hasDVs(gen) ? null : MAX_TOTAL_EVS);
+export const MAX_DV = 15;
+export const toDV = (iv: number) => Math.floor(iv / 2);
+export const fromDV = (dv: number) => dv * 2 + 1;
+
+/**
+ * Gen 1-2 sets brought in line with how those games work, as Showdown's
+ * validator requires: one Special DV and stat experience for both SpA and
+ * SpD, and the HP DV made of the low bits of the Atk, Def, Spe and Special
+ * DVs. Later generations are left alone.
+ */
+export function fitStatsToGen<T extends { evs: StatsTable; ivs: StatsTable }>(stats: T, gen: number): T {
+  if (!hasDVs(gen)) return stats;
+  const dv = (s: StatKey) => toDV(stats.ivs[s]);
+  const hp = (dv("atk") % 2) * 8 + (dv("def") % 2) * 4 + (dv("spe") % 2) * 2 + (dv("spa") % 2);
+  return {
+    ...stats,
+    evs: { ...stats.evs, spd: stats.evs.spa },
+    ivs: { ...stats.ivs, hp: fromDV(hp), spd: stats.ivs.spa },
+  };
+}
+
+/**
+ * A fresh slot for `species` at the format's level. Showdown's own team
+ * builder defaults: no nature (Serious, neutral), 31 IVs, no EVs, except
+ * in Gen 1-2, where stat experience is free and maxed out.
+ */
+export function newSet(species: string, format: Pick<BattleFormat, "level"> & { gen?: number }): TeamSet {
+  const set = completeSet({ species, level: format.level });
+  if (format.gen !== undefined && hasDVs(format.gen)) set.evs = fill(MAX_EVS);
+  return set;
 }
 
 export function evTotal(set: TeamSet): number {
@@ -134,7 +173,7 @@ export function exportShowdown(sets: readonly TeamSet[]): string {
   return sets.map((s) => Sets.exportSet(s)).join("");
 }
 
-/** Showdown's packed one-line team, what @pkmn/sim's battle streams take. */
+/** Showdown's packed one-line team, what the simulator takes. */
 export function packTeam(sets: readonly TeamSet[]): string {
   return new Team([...sets]).pack();
 }

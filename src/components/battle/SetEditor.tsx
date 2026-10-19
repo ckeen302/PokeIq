@@ -5,7 +5,7 @@ import type { Move, Specie } from "@pkmn/data";
 import { Sparkles, Trash2, TriangleAlert } from "lucide-react";
 import type { FormatDex } from "@/lib/battle/dex";
 import { hasTera } from "@/lib/battle/formats";
-import { newSet, type TeamSet } from "@/lib/battle/sets";
+import { fitStatsToGen, fromDV, hasDVs, newSet, type TeamSet } from "@/lib/battle/sets";
 import { cn } from "@/lib/utils";
 import { BattleSprite } from "./BattleSprite";
 import { Field, inputClass, NumberInput, Toggle } from "./controls";
@@ -59,10 +59,15 @@ export function SetEditor({
     if (move) moves[i] = move.name;
     else moves.splice(i, 1);
     const next = { ...set, moves: moves.filter(Boolean).slice(0, 4) };
-    // A typed Hidden Power needs the IVs that give its type.
+    // A typed Hidden Power needs the IVs that give its type (in Gen 2, the Atk and Def DVs).
     if (move?.id.startsWith("hiddenpower") && move.type !== "Normal") {
-      const hp = gen.types.get(move.type)?.HPivs ?? {};
-      next.ivs = { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31, ...hp };
+      const type = gen.types.get(move.type);
+      if (hasDVs(gen.num)) {
+        const dvs = Object.fromEntries(Object.entries(type?.HPdvs ?? {}).map(([s, dv]) => [s, fromDV(dv as number)]));
+        Object.assign(next, fitStatsToGen({ evs: next.evs, ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31, ...dvs } }, gen.num));
+      } else {
+        next.ivs = { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31, ...(type?.HPivs ?? {}) };
+      }
     }
     onChange(next);
   }
@@ -139,19 +144,21 @@ export function SetEditor({
             <Field label="Level">
               <NumberInput label="Level" value={set.level} min={1} max={100} onChange={(level) => update({ level })} />
             </Field>
-            <Field label="Gender">
-              <select
-                value={species?.gender ?? set.gender}
-                disabled={!!species?.gender}
-                onChange={(e) => update({ gender: e.target.value })}
-                className={inputClass}
-              >
-                {species?.gender === "N" && <option value="N">None</option>}
-                <option value="">Random</option>
-                <option value="M">Male</option>
-                <option value="F">Female</option>
-              </select>
-            </Field>
+            {gen.num > 1 && (
+              <Field label="Gender">
+                <select
+                  value={species?.gender ?? set.gender}
+                  disabled={!!species?.gender}
+                  onChange={(e) => update({ gender: e.target.value })}
+                  className={inputClass}
+                >
+                  {species?.gender === "N" && <option value="N">None</option>}
+                  <option value="">Random</option>
+                  <option value="M">Male</option>
+                  <option value="F">Female</option>
+                </select>
+              </Field>
+            )}
             {hasTera(format) ? (
               <Field label="Tera type">
                 <TypeSelect label="Tera type" types={dex.types} value={set.teraType ?? ""} allowNone="Default" onChange={(t) => update({ teraType: t || undefined })} />
@@ -159,29 +166,38 @@ export function SetEditor({
             ) : (
               <span />
             )}
-            <div className="space-y-1.5">
-              <span className="hud-label block">Shiny</span>
-              <Toggle pressed={!!set.shiny} onChange={(shiny) => update({ shiny: shiny || undefined })} className="h-9 w-full justify-center">
-                <Sparkles className={cn("h-3.5 w-3.5", set.shiny && "text-warning")} aria-hidden /> {set.shiny ? "Shiny" : "Regular"}
-              </Toggle>
-            </div>
-            <Field label="Ability" className="col-span-2">
-              <select value={set.ability} onChange={(e) => update({ ability: e.target.value })} className={inputClass}>
-                {!abilities.includes(set.ability) && <option value={set.ability}>{set.ability || "—"}</option>}
-                {abilities.map((a) => (
-                  <option key={a} value={a}>
-                    {a}
-                    {species?.abilities.H === a ? " (Hidden)" : ""}
-                  </option>
-                ))}
-              </select>
-            </Field>
-            <Field label="Item" className="col-span-2">
-              <ItemSelect items={dex.items} value={set.item} onSelect={(item) => update({ item: item?.name ?? "" })} />
-            </Field>
-            <Field label="Nature" className="col-span-2 sm:col-span-4">
-              <NatureSelect natures={dex.natures} value={set.nature} onChange={(n) => update({ nature: n })} />
-            </Field>
+            {gen.num > 1 && (
+              <div className="space-y-1.5">
+                <span className="hud-label block">Shiny</span>
+                <Toggle pressed={!!set.shiny} onChange={(shiny) => update({ shiny: shiny || undefined })} className="h-9 w-full justify-center">
+                  <Sparkles className={cn("h-3.5 w-3.5", set.shiny && "text-warning")} aria-hidden /> {set.shiny ? "Shiny" : "Regular"}
+                </Toggle>
+              </div>
+            )}
+            {/* Abilities and natures arrive in Gen 3, held items in Gen 2. */}
+            {gen.num >= 3 && (
+              <Field label="Ability" className="col-span-2">
+                <select value={set.ability} onChange={(e) => update({ ability: e.target.value })} className={inputClass}>
+                  {!abilities.includes(set.ability) && <option value={set.ability}>{set.ability || "—"}</option>}
+                  {abilities.map((a) => (
+                    <option key={a} value={a}>
+                      {a}
+                      {species?.abilities.H === a ? " (Hidden)" : ""}
+                    </option>
+                  ))}
+                </select>
+              </Field>
+            )}
+            {gen.num >= 2 && (
+              <Field label="Item" className="col-span-2">
+                <ItemSelect items={dex.items} value={set.item} onSelect={(item) => update({ item: item?.name ?? "" })} />
+              </Field>
+            )}
+            {gen.num >= 3 && (
+              <Field label="Nature" className="col-span-2 sm:col-span-4">
+                <NatureSelect natures={dex.natures} value={set.nature} onChange={(n) => update({ nature: n })} />
+              </Field>
+            )}
           </div>
 
           {/* Moves */}
