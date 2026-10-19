@@ -264,7 +264,8 @@ export function PokedleDuel({ code, names }: { code: string; names: NameEntry[] 
         </AnimatePresence>
 
         <div className="grid gap-4 md:grid-cols-[1fr_13rem] md:items-start">
-          <div className="space-y-4">
+          {/* min-w-0: the board scrolls sideways on a phone instead of widening the page. */}
+          <div className="min-w-0 space-y-4">
             {!myBoard.done && (
               <GuessInput
                 key={live.index}
