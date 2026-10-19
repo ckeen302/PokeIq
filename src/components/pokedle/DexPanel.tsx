@@ -1,34 +1,28 @@
 "use client";
 
 /* eslint-disable @next/next/no-img-element -- tiny sprites; next/image adds nothing here */
-import { useEffect, useMemo, useRef, useState } from "react";
-import { ArrowDown, ArrowUp, BookOpen, Loader2, RotateCcw, Search, X } from "lucide-react";
-import { formatHeight, formatWeight } from "@/lib/pokemon/constants";
-import { typeColor, typeTextColor } from "@/lib/pokemon/type-colors";
-import { DLE_COLUMNS, type CellStatus, type DleColumn, type DleDexRow } from "@/lib/dle-types";
-import { clueRange, clueStatus, isNumericColumn, stageLabel, type DleTraits } from "@/lib/dle-compare";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { BookOpen, Check, Eraser, Loader2, PencilLine, RotateCcw, Search, X } from "lucide-react";
+import { GENERATION_REGIONS } from "@/lib/pokemon/constants";
+import { typeColor } from "@/lib/pokemon/type-colors";
+import type { DleDexRow } from "@/lib/dle-types";
+import { ruledOut, type DexClue } from "@/lib/dle-dex";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { CellGlyph, CELL_STYLES, STATUS_TEXT, spriteUrl } from "./parts";
+import { spriteUrl } from "./parts";
 import { cn } from "@/lib/utils";
 
 /**
- * A reference Pokédex beside the Pokédle board, for working the puzzle out
- * by elimination: every guessable Pokémon with exactly the attributes the
- * clues are about, filtered and sorted by hand. It never reads the board:
- * applying the clues is the player's job (an auto-solver would make a duel
- * pointless), and the list is the same for every puzzle, so it can't give
- * an answer away. A clue the player picks on the board (one at a time,
- * never all at once) becomes a filter here, read exactly as the board
- * reads it, close bands included. Clicking a row fills it into the guess
- * box. Its parent keys it by puzzle, so a new game starts unfiltered.
+ * A Pokédex notebook beside the Pokédle board, for working the puzzle out
+ * by elimination, as in Guess Who: every guessable Pokémon as a sprite, by
+ * generation. Like Wordle's keyboard it keeps the easy bookkeeping for you,
+ * greying out whatever the generation and type clues rule out, and nothing
+ * more: it doesn't know any Pokémon's height, weight, colour or stage (the
+ * API never sends them), so those clues are the player's to apply, by
+ * crossing Pokémon off by hand. Both players in a duel get the same panel.
+ * Its parent keys it by puzzle, so a new game starts with nothing crossed
+ * off and no filters.
  */
-
-const ROW_H = 32;
-/** The list's height: only the rows in view (plus a few) are rendered. */
-const VIEW_H = 448;
-const OVERSCAN = 6;
-const ALL_GENS = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 
 let dex: Promise<DleDexRow[]> | null = null;
 /** Loaded once per visit (and cached by the browser): the same list for every puzzle. */
@@ -44,20 +38,7 @@ function loadDex(): Promise<DleDexRow[]> {
   return dex;
 }
 
-type SortKey = "id" | "name" | "gen" | "type1" | "type2" | "height" | "weight" | "color" | "stage";
-const FIELD: Record<SortKey, number> = { id: 0, name: 1, gen: 2, type1: 3, type2: 4, height: 5, weight: 6, color: 7, stage: 8 };
-/** The board's columns, in the board's order. */
-const COLUMNS: { key: SortKey; label: string }[] = [
-  { key: "name", label: "Pokémon" },
-  { key: "gen", label: "Gen" },
-  { key: "type1", label: "Type 1" },
-  { key: "type2", label: "Type 2" },
-  { key: "height", label: "Height" },
-  { key: "weight", label: "Weight" },
-  { key: "color", label: "Color" },
-  { key: "stage", label: "Stage" },
-];
-const GRID = "grid grid-cols-[1.25rem_minmax(0,1fr)_1.6rem_3rem_3rem_2.7rem_3.1rem_2.7rem_2.2rem] items-center gap-1";
+const ALL_GENS = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 
 interface Filters {
   q: string;
@@ -66,81 +47,30 @@ interface Filters {
   types: string[];
   /** Only one type. */
   mono: boolean;
-  color: string;
-  /** "" for any, else a stage (0 is Baby). */
-  stage: string;
-  /** Clues picked on the board: Pokémon that would have given the same clue. */
-  clues: Clue[];
-  /** Metres and kilograms, as typed. */
-  hMin: string;
-  hMax: string;
-  wMin: string;
-  wMax: string;
+  /** Hide what the clues rule out, what's crossed off and what's been guessed. */
+  hide: boolean;
 }
+const NO_FILTERS: Filters = { q: "", gens: [], types: [], mono: false, hide: false };
 
-/** One board clue: the guess's `column` got `status`. */
-export interface Clue {
-  column: DleColumn;
-  guessId: number;
-  status: CellStatus;
-}
-
-const NO_FILTERS: Filters = { q: "", gens: [], types: [], mono: false, color: "", stage: "", clues: [], hMin: "", hMax: "", wMin: "", wMax: "" };
-
-const traits = (row: DleDexRow): DleTraits => ({ gen: row[2], type1: row[3], type2: row[4], height: row[5], weight: row[6], color: row[7], stage: row[8] });
-
-/** A clue as a filter's label: numbers as the range they allow ("Height 1.3–1.6 m"), the rest as the clue. */
-function clueLabel(clue: Clue, guess: DleDexRow): string {
-  const label = DLE_COLUMNS.find((c) => c.key === clue.column)!.label;
-  const t = traits(guess);
-  if (isNumericColumn(clue.column)) {
-    const { min, max } = clueRange(clue.column, t[clue.column], clue.status);
-    const fmt = (v: number) => (clue.column === "height" ? `${v / 10} m` : clue.column === "weight" ? `${v / 10} kg` : clue.column === "stage" ? stageLabel(v) : String(v));
-    const range = min !== null && max !== null ? (min === max ? fmt(min) : `${fmt(min)}–${fmt(max)}`) : min !== null ? `≥ ${fmt(min)}` : max !== null ? `≤ ${fmt(max)}` : "";
-    return `${label} ${range}`;
-  }
-  const value = clue.column === "type1" ? cap(t.type1) : clue.column === "type2" ? (t.type2 ? cap(t.type2) : "None") : cap(t.color);
-  return `${label} ${value}: ${STATUS_TEXT[clue.status]}`;
-}
+/** What a tap on a Pokémon does. */
+type Tool = "cross" | "fill";
 
 const normalize = (s: string) =>
   s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/[^a-z0-9]/g, "");
 const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
-/** A typed bound, or null when blank or not a number. */
-const bound = (s: string) => (s.trim() === "" || Number.isNaN(Number(s)) ? null : Number(s));
-
-function matches(row: DleDexRow, f: Filters, q: string, byId: Map<number, DleDexRow>): boolean {
-  const [, name, gen, t1, t2, height, weight, color, stage] = row;
-  for (const c of f.clues) {
-    const guess = byId.get(c.guessId);
-    if (guess && clueStatus(c.column, traits(guess), traits(row)) !== c.status) return false;
-  }
-  if (q && !normalize(name).includes(q)) return false;
-  if (f.gens.length && !f.gens.includes(gen)) return false;
-  if (f.types.some((t) => t !== t1 && t !== t2)) return false;
-  if (f.mono && t2) return false;
-  if (f.color && color !== f.color) return false;
-  if (f.stage !== "" && stage !== Number(f.stage)) return false;
-  const [hMin, hMax, wMin, wMax] = [bound(f.hMin), bound(f.hMax), bound(f.wMin), bound(f.wMax)];
-  if (hMin !== null && height / 10 < hMin) return false;
-  if (hMax !== null && height / 10 > hMax) return false;
-  if (wMin !== null && weight / 10 < wMin) return false;
-  if (wMax !== null && weight / 10 > wMax) return false;
-  return true;
-}
 
 export function DexPanel({
   gens: limit,
+  clues,
   guessed,
   onPick,
-  clue,
   className,
 }: {
-  /** A clue picked on the board, to add as a filter; `n` changes with every pick. */
-  clue?: (Clue & { n: number }) | null;
   /** A duel's generations: the list holds only these (none: every generation). */
   gens?: number[];
-  /** Already guessed this puzzle: dimmed. */
+  /** The board's generation and type clues, which grey out what they rule out. */
+  clues: readonly DexClue[];
+  /** Already guessed this puzzle. */
   guessed: ReadonlySet<number>;
   /** Fills a Pokémon into the guess box; absent once you can't guess. */
   onPick?: (name: string) => void;
@@ -149,20 +79,8 @@ export function DexPanel({
   const [rows, setRows] = useState<DleDexRow[] | null>(null);
   const [failed, setFailed] = useState(false);
   const [filters, setFilters] = useState<Filters>(NO_FILTERS);
-  const [sort, setSort] = useState<{ key: SortKey; dir: 1 | -1 }>({ key: "id", dir: 1 });
-  const [top, setTop] = useState(0);
-  const scroller = useRef<HTMLDivElement | null>(null);
-  // A pick from before this panel appeared (an earlier puzzle) stays out of it.
-  const picked = useRef(clue?.n);
-
-  useEffect(() => {
-    if (!clue || clue.n === picked.current) return;
-    picked.current = clue.n;
-    const { column, guessId, status } = clue;
-    setFilters((f) =>
-      f.clues.some((c) => c.column === column && c.guessId === guessId) ? f : { ...f, clues: [...f.clues, { column, guessId, status }] }
-    );
-  }, [clue]);
+  const [crossed, setCrossed] = useState<ReadonlySet<number>>(() => new Set());
+  const [tool, setTool] = useState<Tool>("cross");
 
   useEffect(() => {
     let live = true;
@@ -181,26 +99,24 @@ export function DexPanel({
   }, [rows, limitKey]);
   const genChoices = limitKey ? limitKey.split(",").map(Number) : ALL_GENS;
   const types = useMemo(() => [...new Set(base.flatMap((r) => [r[3], r[4] ?? r[3]]))].sort(), [base]);
-  const colors = useMemo(() => [...new Set(base.map((r) => r[7]))].sort(), [base]);
 
-  const byId = useMemo(() => new Map((rows ?? []).map((r) => [r[0], r])), [rows]);
-  const list = useMemo(() => {
+  const out = useMemo(() => ruledOut(base, clues), [base, clues]);
+  const left = base.filter((r) => !out.has(r[0]) && !crossed.has(r[0]) && !guessed.has(r[0])).length;
+
+  const groups = useMemo(() => {
     const q = normalize(filters.q);
-    const i = FIELD[sort.key];
-    return base
-      .filter((r) => matches(r, filters, q, byId))
-      .sort((a, b) => {
-        const [x, y] = [a[i] ?? "", b[i] ?? ""];
-        const c = typeof x === "number" && typeof y === "number" ? x - y : String(x).localeCompare(String(y));
-        return c * sort.dir || a[0] - b[0];
-      });
-  }, [base, filters, sort, byId]);
-
-  // New filters or order: back to the top of the list.
-  useEffect(() => {
-    if (scroller.current) scroller.current.scrollTop = 0;
-    setTop(0);
-  }, [list]);
+    const shown = base.filter(([id, name, gen, t1, t2]) => {
+      if (q && !normalize(name).includes(q)) return false;
+      if (filters.gens.length && !filters.gens.includes(gen)) return false;
+      if (filters.types.some((t) => t !== t1 && t !== t2)) return false;
+      if (filters.mono && t2) return false;
+      if (filters.hide && (out.has(id) || crossed.has(id) || guessed.has(id))) return false;
+      return true;
+    });
+    const byGen = new Map<number, DleDexRow[]>();
+    for (const r of shown) byGen.set(r[2], [...(byGen.get(r[2]) ?? []), r]);
+    return [...byGen.entries()].sort((a, b) => a[0] - b[0]);
+  }, [base, filters, out, crossed, guessed]);
 
   const set = <K extends keyof Filters>(key: K, value: Filters[K]) => setFilters((f) => ({ ...f, [key]: value }));
   const toggleGen = (g: number) => set("gens", filters.gens.includes(g) ? filters.gens.filter((x) => x !== g) : [...filters.gens, g].sort((a, b) => a - b));
@@ -210,10 +126,14 @@ export function DexPanel({
     else next.splice(slot, 1);
     set("types", [...new Set(next.filter(Boolean))]);
   };
-  const sortBy = (key: SortKey) => setSort((s) => (s.key === key ? { key, dir: s.dir === 1 ? -1 : 1 } : { key, dir: 1 }));
-
-  const first = Math.max(0, Math.floor(top / ROW_H) - OVERSCAN);
-  const last = Math.min(list.length, Math.ceil((top + VIEW_H) / ROW_H) + OVERSCAN);
+  const toggleCross = (id: number) =>
+    setCrossed((c) => {
+      const next = new Set(c);
+      if (!next.delete(id)) next.add(id);
+      return next;
+    });
+  const fill = tool === "fill" && onPick ? onPick : undefined;
+  const filtered = filters.q !== "" || filters.gens.length > 0 || filters.types.length > 0 || filters.mono || filters.hide;
   const field = "h-8 rounded-md border border-input bg-background px-2 text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
 
   return (
@@ -224,48 +144,31 @@ export function DexPanel({
             <BookOpen className="h-3.5 w-3.5" aria-hidden /> Pokédex
           </p>
           <span className="text-xs text-muted-foreground" role="status">
-            {rows ? `${list.length.toLocaleString("en-US")} Pokémon match` : ""}
+            {rows ? `${left.toLocaleString("en-US")} left in play` : ""}
           </span>
-          <Button size="sm" variant="ghost" className="h-7 px-2" onClick={() => setFilters(NO_FILTERS)} disabled={filters === NO_FILTERS}>
-            <RotateCcw className="h-3 w-3" aria-hidden /> Reset filters
+          <Button size="sm" variant="ghost" className="h-7 px-2" onClick={() => setFilters(NO_FILTERS)} disabled={!filtered}>
+            <RotateCcw className="h-3 w-3" aria-hidden /> Show all
+          </Button>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="flex rounded-md border border-foreground/15 p-0.5" role="radiogroup" aria-label="Tapping a Pokémon">
+            <ToolButton active={tool === "cross"} onClick={() => setTool("cross")} icon={<X className="h-3 w-3" aria-hidden />} label="Cross off" />
+            <ToolButton active={tool === "fill"} onClick={() => setTool("fill")} icon={<PencilLine className="h-3 w-3" aria-hidden />} label="Fill in" disabled={!onPick} />
+          </div>
+          <label className="flex items-center gap-1.5 text-xs text-muted-foreground">
+            <input type="checkbox" checked={filters.hide} onChange={(e) => set("hide", e.target.checked)} className="accent-[hsl(var(--primary))]" />
+            Hide what&apos;s out
+          </label>
+          <Button size="sm" variant="ghost" className="ml-auto h-7 px-2" onClick={() => setCrossed(new Set())} disabled={crossed.size === 0}>
+            <Eraser className="h-3 w-3" aria-hidden /> Uncross all
           </Button>
         </div>
 
         <div className="relative">
           <Search className="pointer-events-none absolute left-2 top-2 h-4 w-4 text-muted-foreground" aria-hidden />
-          <input
-            value={filters.q}
-            onChange={(e) => set("q", e.target.value)}
-            placeholder="Search by name"
-            aria-label="Search the Pokédex"
-            className={cn(field, "w-full pl-8")}
-          />
+          <input value={filters.q} onChange={(e) => set("q", e.target.value)} placeholder="Search by name" aria-label="Search the Pokédex" className={cn(field, "w-full pl-8")} />
         </div>
-
-        {filters.clues.length > 0 && (
-          <ul className="flex flex-wrap gap-1" aria-label="Clue filters">
-            {filters.clues.map((c) => {
-              const guess = byId.get(c.guessId);
-              if (!guess) return null;
-              const text = clueLabel(c, guess);
-              return (
-                <li key={`${c.column}:${c.guessId}`}>
-                  <button
-                    type="button"
-                    onClick={() => set("clues", filters.clues.filter((x) => x !== c))}
-                    className={cn("flex items-center gap-1 rounded-md border px-1.5 py-0.5 text-[11px] font-semibold", CELL_STYLES[c.status])}
-                    aria-label={`Remove the filter ${text} (from ${guess[1]})`}
-                    title={`From ${guess[1]}. Click to remove.`}
-                  >
-                    <CellGlyph status={c.status} size="h-3 w-3" />
-                    {text}
-                    <X className="h-3 w-3" aria-hidden />
-                  </button>
-                </li>
-              );
-            })}
-          </ul>
-        )}
 
         <div className="flex flex-wrap gap-1" role="group" aria-label="Generations">
           {genChoices.map((g) => (
@@ -301,108 +204,88 @@ export function DexPanel({
               </option>
             ))}
           </select>
-          <select value={filters.color} onChange={(e) => set("color", e.target.value)} aria-label="Color" className={field}>
-            <option value="">Color: any</option>
-            {colors.map((c) => (
-              <option key={c} value={c}>
-                {cap(c)}
-              </option>
-            ))}
-          </select>
-          <select value={filters.stage} onChange={(e) => set("stage", e.target.value)} aria-label="Stage" className={field}>
-            <option value="">Stage: any</option>
-            {[0, 1, 2, 3].map((s) => (
-              <option key={s} value={s}>
-                {s === 0 ? "Baby" : `Stage ${s}`}
-              </option>
-            ))}
-          </select>
           <label className="col-span-2 flex items-center gap-2 text-muted-foreground">
             <input type="checkbox" checked={filters.mono} onChange={(e) => set("mono", e.target.checked)} className="accent-[hsl(var(--primary))]" />
             No second type
           </label>
-          <Range label="Height (m)" min={filters.hMin} max={filters.hMax} onMin={(v) => set("hMin", v)} onMax={(v) => set("hMax", v)} field={field} />
-          <Range label="Weight (kg)" min={filters.wMin} max={filters.wMax} onMin={(v) => set("wMin", v)} onMax={(v) => set("wMax", v)} field={field} />
         </div>
 
-        <div className="-mx-3 overflow-x-auto px-3">
-          <div className="min-w-[24rem]">
-            <div className={cn(GRID, "border-b border-foreground/10 pb-1 font-pixel text-[9px] uppercase tracking-wider text-muted-foreground")}>
-              <span />
-              {COLUMNS.map((c) => (
-                <button key={c.key} type="button" onClick={() => sortBy(c.key)} className={cn("flex items-center gap-0.5 truncate text-left hover:text-foreground", sort.key === c.key && "text-screen")}>
-                  {c.label}
-                  {sort.key === c.key && (sort.dir === 1 ? <ArrowUp className="h-2.5 w-2.5 shrink-0" aria-hidden /> : <ArrowDown className="h-2.5 w-2.5 shrink-0" aria-hidden />)}
-                </button>
-              ))}
-            </div>
-            <div ref={scroller} onScroll={(e) => setTop(e.currentTarget.scrollTop)} style={{ height: VIEW_H }} className="overflow-y-auto" aria-label="Pokédex list">
-              {!rows ? (
-                <p className="flex items-center justify-center gap-2 py-10 text-sm text-muted-foreground">
-                  {failed ? "Couldn't load the Pokédex." : <Loader2 className="h-4 w-4 animate-spin" aria-label="Loading the Pokédex" />}
-                </p>
-              ) : list.length === 0 ? (
-                <p className="py-10 text-center text-sm text-muted-foreground">No Pokémon match these filters.</p>
-              ) : (
-                <div style={{ height: list.length * ROW_H }} className="relative">
-                  {list.slice(first, last).map((row, k) => {
-                    const [id, name, gen, t1, t2, height, weight, color, stage] = row;
-                    return (
-                      <button
-                        key={id}
-                        type="button"
-                        disabled={!onPick}
-                        onClick={() => onPick?.(name)}
-                        aria-label={`Fill in ${name}`}
-                        title={onPick ? `Fill in ${name}` : name}
-                        style={{ top: (first + k) * ROW_H, height: ROW_H }}
-                        className={cn(
-                          GRID,
-                          "absolute inset-x-0 rounded-sm px-0.5 text-left text-[11px] transition-colors",
-                          onPick && "hover:bg-screen/10",
-                          guessed.has(id) && "opacity-40"
-                        )}
-                      >
-                        <img src={spriteUrl(id)} alt="" width={20} height={20} loading="lazy" className="h-5 w-5" />
-                        <span className="truncate font-semibold">{name}</span>
-                        <span className="tabular-nums">{gen}</span>
-                        <TypeChip type={t1} />
-                        {t2 ? <TypeChip type={t2} /> : <span className="text-muted-foreground">None</span>}
-                        <span className="tabular-nums">{formatHeight(height)}</span>
-                        <span className="tabular-nums">{formatWeight(weight)}</span>
-                        <span className="truncate">{cap(color)}</span>
-                        <span className="text-center tabular-nums">{stageLabel(stage)}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-          </div>
+        <div className="h-[26rem] overflow-y-auto pr-1 xl:h-[32rem]" aria-label="Pokédex">
+          {!rows ? (
+            <p className="flex items-center justify-center gap-2 py-10 text-sm text-muted-foreground">
+              {failed ? "Couldn't load the Pokédex." : <Loader2 className="h-4 w-4 animate-spin" aria-label="Loading the Pokédex" />}
+            </p>
+          ) : groups.length === 0 ? (
+            <p className="py-10 text-center text-sm text-muted-foreground">No Pokémon here. Try “Show all”.</p>
+          ) : (
+            groups.map(([gen, list]) => (
+              <section key={gen} aria-label={`Generation ${gen}`} className="mb-3">
+                <h3 className="sticky top-0 z-10 mb-1 bg-card/95 py-1 font-pixel text-[9px] uppercase tracking-wider text-muted-foreground backdrop-blur">
+                  Gen {gen} · {GENERATION_REGIONS[gen]}
+                </h3>
+                <ul className="grid grid-cols-[repeat(auto-fill,minmax(4.25rem,1fr))] gap-1">
+                  {list.map((row) => (
+                    <li key={row[0]}>
+                      <Tile row={row} out={out.has(row[0])} crossed={crossed.has(row[0])} guessed={guessed.has(row[0])} onTap={fill ? () => fill(row[1]) : () => toggleCross(row[0])} tool={fill ? "fill" : "cross"} />
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            ))
+          )}
         </div>
-        <p className="text-[11px] text-muted-foreground">Filters are yours to set: the Pokédex never reads your clues by itself. Click a clue on the board to filter by it, or a Pokémon here to fill it in.</p>
+        <p className="text-[11px] text-muted-foreground">
+          Greyed out: ruled out by your generation and type clues. Height, weight, color and stage are yours to work out: cross off what they rule out.
+        </p>
       </CardContent>
     </Card>
   );
 }
 
-function TypeChip({ type }: { type: string }) {
+function ToolButton({ active, onClick, icon, label, disabled }: { active: boolean; onClick: () => void; icon: ReactNode; label: string; disabled?: boolean }) {
   return (
-    <span className="truncate rounded-sm px-1 text-center text-[10px] font-semibold leading-4" style={{ background: typeColor(type), color: typeTextColor(type) }}>
-      {cap(type)}
-    </span>
+    <button
+      type="button"
+      role="radio"
+      aria-checked={active}
+      onClick={onClick}
+      disabled={disabled}
+      className={cn(
+        "flex items-center gap-1 rounded px-2 py-1 text-xs font-semibold transition-colors disabled:opacity-40",
+        active ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
+      )}
+    >
+      {icon} {label}
+    </button>
   );
 }
 
-function Range({ label, min, max, onMin, onMax, field }: { label: string; min: string; max: string; onMin: (v: string) => void; onMax: (v: string) => void; field: string }) {
+function Tile({ row, out, crossed, guessed, tool, onTap }: { row: DleDexRow; out: boolean; crossed: boolean; guessed: boolean; tool: Tool; onTap: () => void }) {
+  const [id, name, , t1, t2] = row;
+  const state = guessed ? "guessed" : crossed ? "crossed off" : out ? "ruled out by the clues" : null;
+  const action = tool === "fill" ? `Fill in ${name}` : crossed ? `Put ${name} back` : `Cross off ${name}`;
   return (
-    <div className="space-y-1">
-      <span className="text-muted-foreground">{label}</span>
-      <div className="flex items-center gap-1">
-        <input type="number" min={0} step="0.1" inputMode="decimal" value={min} onChange={(e) => onMin(e.target.value)} placeholder="min" aria-label={`${label} from`} className={cn(field, "w-full min-w-0")} />
-        <span className="text-muted-foreground">–</span>
-        <input type="number" min={0} step="0.1" inputMode="decimal" value={max} onChange={(e) => onMax(e.target.value)} placeholder="max" aria-label={`${label} to`} className={cn(field, "w-full min-w-0")} />
-      </div>
-    </div>
+    <button
+      type="button"
+      onClick={onTap}
+      aria-label={state ? `${action} (${state})` : action}
+      aria-pressed={tool === "cross" ? crossed : undefined}
+      title={`${name} · ${cap(t1)}${t2 ? ` / ${cap(t2)}` : ""}${state ? ` · ${state}` : ""}`}
+      className={cn(
+        "relative flex w-full flex-col items-center rounded-md border border-transparent px-0.5 pb-1 pt-0.5 transition-colors hover:border-screen/40 hover:bg-screen/10",
+        out && !guessed && "opacity-30 grayscale",
+        crossed && "opacity-45 grayscale",
+        guessed && "opacity-50"
+      )}
+    >
+      <img src={spriteUrl(id)} alt="" width={40} height={40} loading="lazy" className="h-10 w-10" />
+      <span className="w-full truncate text-center text-[10px] font-semibold leading-tight">{name}</span>
+      <span className="mt-0.5 flex h-1 w-8 overflow-hidden rounded-full" aria-hidden>
+        <span className="flex-1" style={{ background: typeColor(t1) }} />
+        <span className="flex-1" style={{ background: typeColor(t2 ?? t1) }} />
+      </span>
+      {crossed && <X className="absolute left-1/2 top-1 h-9 w-9 -translate-x-1/2 text-destructive" strokeWidth={2.5} aria-hidden />}
+      {guessed && <Check className="absolute right-0.5 top-0.5 h-3 w-3 text-screen" aria-hidden />}
+    </button>
   );
 }

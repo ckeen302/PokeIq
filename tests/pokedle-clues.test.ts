@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { BABY_IDS, compare, dleStage, evaluate, hardModeError, traitsOf, answerFor } from "@/lib/server/pokedle";
-import { clueRange, clueStatus, compareTraits, DLE_NUMERIC_COLUMNS, misfit, type DleTraits } from "@/lib/dle-compare";
+import { clueStatus, compareTraits, DLE_PANEL_COLUMNS, panelMisfit, type DleTraits } from "@/lib/dle-compare";
 import { getPokemon, POKEDEX } from "@/lib/pokemon/pokedex";
 import { DLE_COLUMNS, DLE_HINT_COST, dleScore, type DleColumn } from "@/lib/dle-types";
 import { DLE_DUEL_HINT_COST, dleDuelBase } from "@/lib/pvp-types";
@@ -46,41 +46,41 @@ describe("close clues", () => {
     expect(clueStatus("stage", s(3), s(2))).toBe("close-lower");
     expect(clueStatus("stage", s(1), s(3))).toBe("higher");
   });
-
-  it("turns a clue into the exact range of values that would give it", () => {
-    const base = traitsOf(byName("Pikachu"));
-    for (const column of DLE_NUMERIC_COLUMNS) {
-      const values = column === "gen" ? [1, 2, 5, 9] : column === "stage" ? [0, 1, 2, 3] : [1, 2, 4, 9, 10, 37, 120, 9999];
-      const all = column === "gen" ? [...Array(9)].map((_, i) => i + 1) : column === "stage" ? [0, 1, 2, 3] : [...Array(12000)].map((_, i) => i + 1);
-      for (const v of values) {
-        for (const a of all) {
-          const status = clueStatus(column, { ...base, [column]: v }, { ...base, [column]: a });
-          const { min, max } = clueRange(column, v, status);
-          expect(min === null || a >= min, `${column} ${v}→${a} ${status}`).toBe(true);
-          expect(max === null || a <= max, `${column} ${v}→${a} ${status}`).toBe(true);
-        }
-      }
-    }
-  });
 });
 
 describe("hard mode", () => {
   const puzzle = { id: "practice:hardtest" };
   const answer = answerFor(puzzle);
 
-  it("accepts a guess exactly when it would have given every earlier guess the same clues", () => {
+  const panelStatuses = (g: DleTraits, a: DleTraits) => DLE_PANEL_COLUMNS.map((c) => clueStatus(c, g, a)).join();
+
+  it("accepts a guess exactly when it would have given every earlier guess the same gen and type clues", () => {
     const first = POKEDEX.find((p) => p.id !== answer.id)!;
     const want = compareTraits(traitsOf(first), traitsOf(answer));
     let fits = 0;
     for (const c of POKEDEX.slice(0, 400)) {
       if (c.id === first.id) continue;
-      const same = statuses(traitsOf(first), traitsOf(c)).join() === statuses(traitsOf(first), traitsOf(answer)).join();
-      expect(misfit(traitsOf(first), want, traitsOf(c)) === null).toBe(same);
+      const same = panelStatuses(traitsOf(first), traitsOf(c)) === panelStatuses(traitsOf(first), traitsOf(answer));
+      expect(panelMisfit(traitsOf(first), want, traitsOf(c)) === null).toBe(same);
       expect(hardModeError(puzzle, [first.id, c.id]) === null).toBe(same);
       if (same) fits++;
     }
     expect(hardModeError(puzzle, [first.id, answer.id])).toBeNull();
     expect(fits).toBeGreaterThan(0);
+  });
+
+  it("never checks height, weight, color or stage, so a turned-down guess gives none of them away", () => {
+    // Guesses that fit the first guess's gen and type clues but not all of its clues: hard mode lets them all through.
+    const first = POKEDEX.find((p) => p.id !== answer.id)!;
+    const sneaky = POKEDEX.filter(
+      (c) =>
+        c.id !== first.id &&
+        c.id !== answer.id &&
+        panelStatuses(traitsOf(first), traitsOf(c)) === panelStatuses(traitsOf(first), traitsOf(answer)) &&
+        statuses(traitsOf(first), traitsOf(c)).join() !== statuses(traitsOf(first), traitsOf(answer)).join()
+    );
+    expect(sneaky.length).toBeGreaterThan(0);
+    for (const c of sneaky) expect(hardModeError(puzzle, [first.id, c.id])).toBeNull();
   });
 
   it("names the clue a misfit breaks", () => {

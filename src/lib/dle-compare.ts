@@ -2,8 +2,8 @@ import { DLE_COLUMNS, type CellStatus, type DleColumn } from "./dle-types";
 
 /**
  * Pokédle's clues, in one place: the server's puzzles and duels, hard mode's
- * check that a guess fits the clues so far, and the Pokédex panel's clue
- * filters all use these functions. They only compare two sets of
+ * check that a guess fits the clues so far, and the Pokédex panel's greying
+ * all use these functions. They only compare two sets of
  * attributes; nothing here knows an answer, so it's safe in the browser.
  */
 
@@ -19,8 +19,6 @@ export interface DleTraits {
 }
 
 export type DleNumericColumn = "gen" | "height" | "weight" | "stage";
-export const DLE_NUMERIC_COLUMNS: readonly DleNumericColumn[] = ["gen", "height", "weight", "stage"];
-export const isNumericColumn = (c: DleColumn): c is DleNumericColumn => (DLE_NUMERIC_COLUMNS as readonly string[]).includes(c);
 
 /**
  * Close (yellow, with the arrow):
@@ -46,7 +44,7 @@ function numberStatus(column: DleNumericColumn, guess: number, answer: number): 
 }
 
 /** Type 1 / Type 2: the same type in that slot, the type in the other slot, or not a type the answer has. */
-function typeStatus(guess: DleTraits, answer: DleTraits, slot: 0 | 1): CellStatus {
+function typeStatus(guess: DlePanelTraits, answer: DlePanelTraits, slot: 0 | 1): CellStatus {
   const g = slot === 0 ? guess.type1 : guess.type2;
   const a = slot === 0 ? answer.type1 : answer.type2;
   if (!g) return a ? "miss" : "match";
@@ -78,38 +76,30 @@ export function compareTraits(guess: DleTraits, answer: DleTraits): DleStatuses 
 }
 
 /**
- * The first column where `candidate` doesn't fit the clues `statuses` that
- * `guess` got, or null if it fits them all. A Pokémon could still be the
- * answer exactly when it fits every row so far (hard mode's rule).
+ * The clues the Pokédex beside the board reads for you, like Wordle's
+ * keyboard: generation and types, which anyone can see in the Pokédex. A
+ * Pokémon's height, weight, colour and stage are never in it (or sent to
+ * the browser), so those clues are for the player to work out from memory.
+ * Hard mode checks only these too, or a rejected guess would tell you a
+ * hidden attribute for free.
  */
-export function misfit(guess: DleTraits, statuses: DleStatuses, candidate: DleTraits): DleColumn | null {
-  for (const { key } of DLE_COLUMNS) if (clueStatus(key, guess, candidate) !== statuses[key]) return key;
-  return null;
+export const DLE_PANEL_COLUMNS = ["gen", "type1", "type2"] as const;
+export type DlePanelColumn = (typeof DLE_PANEL_COLUMNS)[number];
+export type DlePanelTraits = Pick<DleTraits, "gen" | "type1" | "type2">;
+
+/** A generation or type clue, from just the generation and types. */
+export function panelClueStatus(column: DlePanelColumn, guess: DlePanelTraits, answer: DlePanelTraits): CellStatus {
+  return column === "gen" ? numberStatus("gen", guess.gen, answer.gen) : typeStatus(guess, answer, column === "type1" ? 0 : 1);
 }
 
 /**
- * The values (inclusive, in the column's units) a numeric column can take
- * given that a guess with `value` got `status`; null bounds are open. Used by
- * the Pokédex panel, so a clue becomes a filter without any arithmetic.
+ * The first generation or type clue that `guess` got (`statuses`) and that
+ * `candidate` couldn't have given, or null: the Pokédex greys `candidate`
+ * out exactly when this isn't null for some guess.
  */
-export function clueRange(column: DleNumericColumn, value: number, status: CellStatus): { min: number | null; max: number | null } {
-  // The furthest close value each way (a Baby's stage has no close values above it, stage 1 none below).
-  const above = column === "gen" ? value + 1 : column === "stage" ? (value === 0 ? 0 : value + 1) : Math.max(Math.floor((5 * value) / 4), value + 1);
-  const below = column === "gen" ? value - 1 : column === "stage" ? (value <= 1 ? 1 : value - 1) : Math.min(Math.ceil((4 * value) / 5), value - 1);
-  switch (status) {
-    case "match":
-      return { min: value, max: value };
-    case "close-higher":
-      return { min: value + 1, max: above };
-    case "close-lower":
-      return { min: below, max: value - 1 };
-    case "higher":
-      return { min: above + 1, max: null };
-    case "lower":
-      return { min: null, max: below - 1 };
-    default:
-      return { min: null, max: null };
-  }
+export function panelMisfit(guess: DlePanelTraits, statuses: Pick<DleStatuses, DlePanelColumn>, candidate: DlePanelTraits): DlePanelColumn | null {
+  for (const key of DLE_PANEL_COLUMNS) if (panelClueStatus(key, guess, candidate) !== statuses[key]) return key;
+  return null;
 }
 
 /** "Baby", or the stage number. */

@@ -120,20 +120,29 @@ await page.screenshot({ path: `${OUT}/blitz.png` });
 step("pokédle");
 await page.goto(`${BASE}/pokedle`, { waitUntil: "networkidle" });
 await closeHowTo(page);
-// The Pokédex beside the board: filter it by hand, click a row to fill in the guess, Enter to guess.
-await page.getByText(/^1,025 Pokémon match$/).waitFor();
+// The Pokédex beside the board only ever gets names, generations and types.
+const dexRows = await (await page.request.get(`${BASE}/api/pokedle/dex`)).json();
+if (dexRows.length !== 1025 || dexRows.some((r) => r.length !== 5)) errors.push(`the Pokédex API sent more than names, generations and types: ${JSON.stringify(dexRows[0])}`);
+// Filter it by hand, cross a Pokémon off and put it back, then fill one into the guess box, Enter to guess.
+await page.getByText(/^1,025 left in play$/).waitFor();
 await page.getByLabel("Has type").selectOption("electric");
 await page.getByLabel("Search the Pokédex").fill("pika");
-await page.getByText(/^1 Pokémon match$/).waitFor();
-await page.getByRole("button", { name: "Fill in Pikachu" }).click();
+await page.getByRole("button", { name: "Cross off Pikachu", exact: true }).click();
+await page.getByText(/^1,024 left in play$/).waitFor();
+await page.getByRole("button", { name: /^Put Pikachu back/ }).click();
+await page.getByRole("radio", { name: /Fill in/ }).click();
+await page.getByRole("button", { name: "Fill in Pikachu", exact: true }).click();
 if (!(await filledIn(page, "Pikachu"))) errors.push("the Pokédex didn't fill in the guess box");
 await page.keyboard.press("Enter");
 await page.waitForFunction(
   () => document.querySelector("input[aria-label^='Guess a Pokémon']")?.placeholder.startsWith("Guess 2") || document.body.innerText.includes("Got it in")
 );
+await page.getByRole("button", { name: /Show all/ }).click();
+// The gen and type clues grey out what they rule out, by themselves.
+if (!(await page.getByText(/Got it in/).count())) {
+  await page.waitForFunction(() => Number((document.body.innerText.match(/([\d,]+) left in play/)?.[1] ?? "1025").replace(/,/g, "")) < 1024);
+}
 await page.screenshot({ path: `${OUT}/pokedle-dex.png` });
-await page.getByRole("button", { name: /Reset filters/ }).click();
-await page.getByText(/^1,025 Pokémon match$/).waitFor();
 for (const name of ["Charizard", "Gengar"]) {
   if (await page.getByText(/Got it in/).count()) break;
   await page.getByLabel("Guess a Pokémon").fill(name);
@@ -408,13 +417,14 @@ async function playPokedleDuel({ p, name, seen }, shoot) {
       const before = round.rows.length;
       if (name === "Red" && round.index === 0 && before === 0) {
         // Red's first guess comes from the Pokédex beside the board (only the duel's Gen 1 in it).
-        await p.getByText(/^151 Pokémon match$/).waitFor();
+        await p.getByText(/^151 left in play$/).waitFor();
         if (shoot) await p.screenshot({ path: `${OUT}/pokedle-duel-round.png`, fullPage: true });
         await p.getByLabel("Search the Pokédex").fill(pick.name);
+        await p.getByRole("radio", { name: /Fill in/ }).click();
         await p.getByRole("button", { name: `Fill in ${pick.name}`, exact: true }).click();
         if (!(await filledIn(p, pick.name))) errors.push(`the duel's Pokédex didn't fill in ${pick.name}: "${await input.inputValue()}"`);
         await input.press("Enter");
-        await p.getByRole("button", { name: /Reset filters/ }).click();
+        await p.getByRole("button", { name: /Show all/ }).click();
       } else {
         await input.fill(pick.name);
         const option = p.locator("[role=option]").filter({ has: p.locator("span", { hasText: new RegExp(`^${escapeRe(pick.name)}$`) }) });

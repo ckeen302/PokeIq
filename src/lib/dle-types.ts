@@ -52,11 +52,12 @@ export const DLE_COLUMNS: { key: DleColumn; label: string }[] = [
 ];
 
 /**
- * One guessable Pokémon for the reference Pokédex beside the board: the
- * attributes Pokédle's clues are about (height in decimetres, weight in
- * hectograms, as the board's clues compare them; stage 0 is a baby).
+ * One guessable Pokémon for the Pokédex beside the board: its name,
+ * generation and types, and nothing else. Height, weight, colour and stage
+ * clues are worked out from memory, so those are never sent to the browser
+ * for the panel (see DLE_PANEL_COLUMNS in dle-compare.ts).
  */
-export type DleDexRow = [id: number, name: string, gen: number, type1: string, type2: string | null, height: number, weight: number, color: string, stage: number];
+export type DleDexRow = [id: number, name: string, gen: number, type1: string, type2: string | null];
 
 export const DLE_MAX_GUESSES = 8;
 

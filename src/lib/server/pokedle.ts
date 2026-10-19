@@ -6,7 +6,7 @@ import { hashString } from "@/lib/rng";
 import { mediaUrl } from "./session";
 import { dailyAnswerId } from "./pokedle-schedule";
 import { DLE_COLUMNS, DLE_MAX_GUESSES, type DleColumn, type DleHint, type DleResponse, type DleRow } from "@/lib/dle-types";
-import { compareTraits, misfit, stageLabel, type DleTraits } from "@/lib/dle-compare";
+import { compareTraits, panelMisfit, stageLabel, type DleTraits } from "@/lib/dle-compare";
 
 /**
  * Pokédle — daily Pokémon deduction (Squirdle-style).
@@ -93,9 +93,13 @@ function countedGuesses(guessIds: number[], answer: Pokemon): Pokemon[] {
 }
 
 /**
- * Hard mode: every guess must fit every clue so far. A Pokémon fits an
- * earlier guess's clues exactly when, were it the answer, that guess would
- * have got the same clues. Null when every guess fits, else why one doesn't.
+ * Hard mode: every guess must fit the generation and type clues so far,
+ * the ones the Pokédex greys out for you (DLE_PANEL_COLUMNS), as Wordle's
+ * hard mode holds you to the letters its keyboard shows. A Pokémon fits an
+ * earlier guess's clues when, were it the answer, that guess would have got
+ * the same ones. Height, weight, colour and stage aren't checked: a turned
+ * down guess would tell you those for free. Null when every guess fits,
+ * else why one doesn't.
  */
 export function hardModeError(puzzle: DlePuzzle, guessIds: number[]): string | null {
   const answer = traitsOf(answerFor(puzzle));
@@ -104,7 +108,7 @@ export function hardModeError(puzzle: DlePuzzle, guessIds: number[]): string | n
     const candidate = traitsOf(guesses[i]);
     for (const earlier of guesses.slice(0, i)) {
       const t = traitsOf(earlier);
-      const column = misfit(t, compareTraits(t, answer), candidate);
+      const column = panelMisfit(t, compareTraits(t, answer), candidate);
       if (column) {
         const label = DLE_COLUMNS.find((c) => c.key === column)!.label;
         return `Hard mode: ${guesses[i].name} doesn't fit the ${label} clue from ${earlier.name}.`;

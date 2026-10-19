@@ -29,7 +29,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { NextDailyCountdown } from "@/components/NextDailyCountdown";
 import { CopyFallback } from "@/components/quiz/CopyFallback";
 import { Board, GuessInput, clueText, type NameEntry } from "./parts";
-import { DexPanel, type Clue } from "./DexPanel";
+import { DexPanel } from "./DexPanel";
+import { dexClues } from "@/lib/dle-dex";
 import { ArchiveSheet, HowToSheet, StatsSheet } from "./sheets";
 import { cn } from "@/lib/utils";
 
@@ -95,8 +96,6 @@ export function Pokedle({
   const inputRef = useRef<HTMLInputElement | null>(null);
   /** A Pokémon clicked in the Pokédex beside the board, for the guess box. */
   const [fill, setFill] = useState<{ name: string; n: number } | null>(null);
-  /** A clue clicked on the board, for the Pokédex's filters. */
-  const [clue, setClue] = useState<(Clue & { n: number }) | null>(null);
 
   const target: Target | null = mode === "practice" ? { kind: "practice", seed: practiceSeed } : date ? { kind: mode, date } : null;
   const gameKey = mode === "practice" ? `practice:${practiceSeed}` : `${mode}:${date}`;
@@ -188,6 +187,7 @@ export function Pokedle({
   );
 
   const guessedIds = useMemo(() => new Set(guesses), [guesses]);
+  const panelClues = useMemo(() => dexClues(state?.rows ?? []), [state]);
   const over = state?.over ?? false;
   const stats = useMemo(() => (progress && today ? dleStats(progress.dle.results, today) : null), [progress, today]);
 
@@ -327,7 +327,7 @@ export function Pokedle({
               onClick={toggleHard}
               disabled={guesses.length > 0}
               aria-pressed={hard}
-              title={guesses.length > 0 ? "Hard mode is set before the first guess" : "Every guess must fit every clue so far"}
+              title={guesses.length > 0 ? "Hard mode is set before the first guess" : "Every guess must fit the gen and type clues so far: no greyed-out Pokémon"}
               className={cn(
                 "ml-1 flex items-center gap-1 rounded-md border px-2 py-1 text-xs font-semibold transition-colors disabled:cursor-not-allowed",
                 hard ? "border-destructive/60 bg-destructive/10 text-destructive" : "border-foreground/15 text-muted-foreground hover:text-foreground"
@@ -459,7 +459,7 @@ export function Pokedle({
         )}
 
         {state && state.rows.length > 0 && (
-          <Board rows={state.rows} onClue={(column, guessId, status) => setClue((c) => ({ column, guessId, status, n: (c?.n ?? 0) + 1 }))} />
+          <Board rows={state.rows} />
         )}
 
         {!over && mode === "daily" && (
@@ -480,7 +480,7 @@ export function Pokedle({
         key={gameKey}
         className="xl:sticky xl:top-20"
         guessed={guessedIds}
-        clue={clue}
+        clues={panelClues}
         onPick={over || !target ? undefined : (name) => setFill((f) => ({ name, n: (f?.n ?? 0) + 1 }))}
       />
 

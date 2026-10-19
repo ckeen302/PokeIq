@@ -8,7 +8,7 @@ import { evaluate, hardModeError } from "@/lib/server/pokedle";
 /**
  * POST /api/pokedle { date | practiceSeed, gens?, guesses: number[], hints?, hard? }
  * Returns feedback for every guess so far (stateless recompute), and the
- * hints asked for. In hard mode every guess must fit the clues before it.
+ * hints asked for. In hard mode every guess must fit the gen and type clues before it.
  * A date can be any daily from launch to today (past ones for the archive).
  */
 

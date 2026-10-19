@@ -208,7 +208,7 @@ export interface ResultInput {
   /** "u:<account id>" or "d:<browser id>". */
   identity: string;
   guesses: number[];
-  /** Played in hard mode: kept only if every guess really did fit the clues before it. */
+  /** Played in hard mode: kept only if every guess really did fit the gen and type clues before it. */
   hard?: boolean;
   /** The hints the trainer opened. */
   hints?: readonly DleHint[];

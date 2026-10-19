@@ -25,7 +25,7 @@ export interface DleRecord {
   guesses: number[];
   solved: boolean;
   over: boolean;
-  /** Played in hard mode (every guess fit the clues before it). */
+  /** Played in hard mode (every guess fit the gen and type clues before it). */
   hard?: boolean;
   /** The hints used, which cost points. */
   hints?: DleHint[];

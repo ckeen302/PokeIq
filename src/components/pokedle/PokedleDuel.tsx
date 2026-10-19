@@ -28,7 +28,8 @@ import { useMatchmaking } from "@/components/duel/use-matchmaking";
 import { SeriesScore, seriesTag } from "@/components/duel/DuelSeries";
 import { DuelGone, DuelLoading, DuelLobby, DuelNotice, DuelVisitor, LeaveButton, MatchedNote, SeatDot, clock, seconds } from "@/components/duel/DuelParts";
 import { Board, CELL_STYLES, CellGlyph, GuessInput, STATUS_TEXT, spriteUrl, type NameEntry } from "./parts";
-import { DexPanel, type Clue } from "./DexPanel";
+import { DexPanel } from "./DexPanel";
+import { dexClues } from "@/lib/dle-dex";
 import { useApplyDlePrefs } from "@/lib/dle-local";
 import { cn } from "@/lib/utils";
 
@@ -75,8 +76,6 @@ export function PokedleDuel({ code, names }: { code: string; names: NameEntry[] 
   const [summary, setSummary] = useState(false);
   /** A Pokémon clicked in the Pokédex beside the board, for the guess box. */
   const [fill, setFill] = useState<{ name: string; n: number } | null>(null);
-  /** A clue clicked on the board, for the Pokédex's filters. */
-  const [clue, setClue] = useState<(Clue & { n: number }) | null>(null);
   useApplyDlePrefs();
   const heard = useRef({ revealed: -1, theirSolve: false, end: false });
 
@@ -107,6 +106,7 @@ export function PokedleDuel({ code, names }: { code: string; names: NameEntry[] 
   const silhouette = useFirst(view?.round?.index, view?.round?.hints.silhouetteUrl);
   const mine = view?.round?.rows;
   const guessed = useMemo(() => new Set((mine ?? []).map((r) => r.id)), [mine]);
+  const panelClues = useMemo(() => dexClues(mine ?? []), [mine]);
 
   async function leave() {
     if (await act({ action: "leave" })) router.push(HOME);
@@ -338,7 +338,7 @@ export function PokedleDuel({ code, names }: { code: string; names: NameEntry[] 
               </div>
             </div>
             {live.rows.length > 0 ? (
-              <Board rows={live.rows} onClue={(column, guessId, status) => setClue((c) => ({ column, guessId, status, n: (c?.n ?? 0) + 1 }))} />
+              <Board rows={live.rows} />
             ) : (
               <p className="text-center text-sm text-muted-foreground">
                 {DLE_MAX_GUESSES} guesses. 🟩 match · 🟨 right type, wrong slot, or close (dashed, with ▲▼) · ▲▼ the answer is higher / lower.
@@ -355,7 +355,7 @@ export function PokedleDuel({ code, names }: { code: string; names: NameEntry[] 
             className="md:col-span-2 xl:col-span-1 xl:col-start-2 xl:row-start-1"
             gens={view.gens}
             guessed={guessed}
-            clue={clue}
+            clues={panelClues}
             onPick={myBoard.done || timeUp ? undefined : (name) => setFill((f) => ({ name, n: (f?.n ?? 0) + 1 }))}
           />
         </div>

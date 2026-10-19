@@ -97,10 +97,10 @@ export function HowToSheet({ onClose }: { onClose: () => void }) {
         </div>
         <ul className="list-disc space-y-1 pl-5 text-muted-foreground">
           <li>
-            <b className="text-foreground">Hard mode</b> (set it before your first guess): every guess must fit every clue so far. Your share gets a *.
+            <b className="text-foreground">The Pokédex</b> beside the board is your notebook. Like Wordle&apos;s keyboard, it greys out every Pokémon your generation and type clues rule out. Height, weight, color and stage are up to you: tap a Pokémon to cross it off, or switch to <i>Fill in</i> to put it in the guess box.
           </li>
           <li>
-            <b className="text-foreground">The Pokédex</b> beside the board lists every Pokémon. Click a clue on the board to filter by it, or a Pokémon to fill it in.
+            <b className="text-foreground">Hard mode</b> (set it before your first guess): every guess must fit the generation and type clues so far, so no greyed-out Pokémon. Your share gets a *.
           </li>
           <li>
             <b className="text-foreground">Streaks:</b> finish the daily, won or lost, to keep your 🔥 play streak. Every {DLE_FREEZE_EVERY} days in a row earn a 🧊 freeze (up to {DLE_MAX_FREEZES}) that covers a missed day by itself.

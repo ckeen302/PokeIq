@@ -215,10 +215,9 @@ export function GuessInput({
 /**
  * Every guess so far, newest on top, with each clue's colour and glyph.
  * Only the newest guess flips in (cell by cell), and not at all for
- * players who prefer reduced motion. `onClue` makes each clue a button
- * (the Pokédex panel's clue filters).
+ * players who prefer reduced motion.
  */
-export function Board({ rows, flipNewest = true, onClue }: { rows: DleRow[]; flipNewest?: boolean; onClue?: (column: DleColumn, guessId: number, status: CellStatus) => void }) {
+export function Board({ rows, flipNewest = true }: { rows: DleRow[]; flipNewest?: boolean }) {
   const reduced = useReducedMotion();
   return (
     <div className="-mx-4 overflow-x-auto px-4 pb-2">
@@ -246,7 +245,6 @@ export function Board({ rows, flipNewest = true, onClue }: { rows: DleRow[]; fli
                   label={c.label}
                   cell={row.cells[c.key]}
                   delay={flip ? i * 0.12 : null}
-                  onClick={onClue ? () => onClue(c.key, row.id, row.cells[c.key].status) : undefined}
                 />
               ))}
             </div>
@@ -260,19 +258,8 @@ export function Board({ rows, flipNewest = true, onClue }: { rows: DleRow[]; fli
 /** A clue as words: "Height 1.2 m: close, the answer is higher". */
 export const clueText = (label: string, cell: DleCell) => `${label} ${cell.value}: ${STATUS_TEXT[cell.status]}`;
 
-function Cell({ cell, label, delay, onClick }: { cell: DleCell; label: string; delay: number | null; onClick?: () => void }) {
+function Cell({ cell, label, delay }: { cell: DleCell; label: string; delay: number | null }) {
   const text = clueText(label, cell);
-  const className = cn(
-    "flex min-h-12 w-full flex-col items-center justify-center gap-0.5 rounded-lg border px-1 text-center text-[11px] font-semibold leading-tight",
-    CELL_STYLES[cell.status],
-    onClick && "cursor-pointer transition-[filter] hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-  );
-  const body = (
-    <>
-      <span>{cell.value}</span>
-      <CellGlyph status={cell.status} />
-    </>
-  );
   return (
     <motion.div
       role="cell"
@@ -280,15 +267,14 @@ function Cell({ cell, label, delay, onClick }: { cell: DleCell; label: string; d
       animate={{ rotateX: 0, opacity: 1 }}
       transition={{ delay: delay ?? 0, duration: 0.35 }}
     >
-      {onClick ? (
-        <button type="button" onClick={onClick} className={className} aria-label={`${text}. Filter the Pokédex by this clue`} title={`${text}. Click to filter the Pokédex by this clue.`}>
-          {body}
-        </button>
-      ) : (
-        <div className={className} aria-label={text} title={text}>
-          {body}
-        </div>
-      )}
+      <div
+        className={cn("flex min-h-12 w-full flex-col items-center justify-center gap-0.5 rounded-lg border px-1 text-center text-[11px] font-semibold leading-tight", CELL_STYLES[cell.status])}
+        aria-label={text}
+        title={text}
+      >
+        <span>{cell.value}</span>
+        <CellGlyph status={cell.status} />
+      </div>
     </motion.div>
   );
 }
