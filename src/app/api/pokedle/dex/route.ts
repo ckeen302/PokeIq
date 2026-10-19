@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { POKEDEX } from "@/lib/pokemon/pokedex";
+import { traitsOf } from "@/lib/server/pokedle";
 import type { DleDexRow } from "@/lib/dle-types";
 
 /**
@@ -12,6 +13,9 @@ import type { DleDexRow } from "@/lib/dle-types";
 export const dynamic = "force-static";
 
 export function GET() {
-  const rows: DleDexRow[] = POKEDEX.map((p) => [p.id, p.name, p.gen, p.types[0], p.types[1] ?? null, p.height, p.weight, p.color, p.stage]);
+  const rows: DleDexRow[] = POKEDEX.map((p) => {
+    const t = traitsOf(p);
+    return [p.id, p.name, t.gen, t.type1, t.type2, t.height, t.weight, t.color, t.stage];
+  });
   return NextResponse.json(rows, { headers: { "Cache-Control": "public, max-age=86400, stale-while-revalidate=604800" } });
 }
