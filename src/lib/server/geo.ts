@@ -1,7 +1,7 @@
 import "server-only";
 import data from "@/data/geo.json";
 import { Rng } from "@/lib/rng";
-import { deriveSeed, randomId, signToken, verifyToken } from "./crypto";
+import { decryptJson, deriveSeed, encryptJson, randomId, signToken, verifyToken } from "./crypto";
 import {
   GEO_KINDS,
   GEO_MAX_ROUND_SCORE,
@@ -92,6 +92,8 @@ const HOME: Record<string, string> = {
  */
 const LOOK: Record<string, string> = {
   "Red / Green / Blue / Yellow": "Red / Blue / Yellow",
+  "Red / Blue": "Red / Blue / Yellow",
+  Yellow: "Red / Blue / Yellow",
   "Gold / Silver": "Gold / Silver / Crystal",
   Crystal: "Gold / Silver / Crystal",
   "Ruby / Sapphire": "Ruby / Sapphire / Emerald",
@@ -143,7 +145,6 @@ const REGIONS: Region[] = (() => {
   const world = worldRegion(DATA.world);
   return [world, ...Object.entries(DATA.world.crops).map(([id, crop]) => cropRegion(world, id, crop))];
 })();
-const SHOT_IDS = new Set(REGIONS.flatMap((r) => r.locations.flatMap((l) => l.shots.map((s) => s.id))));
 
 const shotUrl = (id: string) => `/api/geo/shot/${id}`;
 const regionOf = (id: string) => REGIONS.find((r) => r.id === id);
@@ -219,7 +220,7 @@ export function geoRegions(): GeoRegionInfo[] {
     const home = areas.find((a) => a.place?.name === HOME[r.id])?.place ?? areas[0]?.place;
     // The newest game's view of it.
     const shot = home?.shots.reduce((a, b) => (releaseRank(b.game) > releaseRank(a.game) ? b : a));
-    const games = [...new Set(areas.flatMap((a) => [a.place, ...a.buildings].flatMap((l) => l?.shots.map((s) => s.game) ?? [])))];
+    const games = [...new Set(areas.flatMap((a) => [a.place, ...a.buildings].flatMap((l) => l?.shots.map((s) => lookOf(s.game)) ?? [])))];
     return {
       id: r.id,
       name: r.name,
@@ -235,8 +236,9 @@ export function isGeoSpec(spec: Pick<GeoSpec, "region" | "kind">): boolean {
   return GEO_KINDS.includes(spec.kind) && areasOf(spec.region).length >= GEO_ROUNDS;
 }
 
-export function shotSource(id: string): string | null {
-  return SHOT_IDS.has(id) ? `${STORAGE_BASE}/${id}.webp` : null;
+/** Any screenshot in storage: a game started before an update keeps showing its own. */
+export function shotSource(id: string): string {
+  return `${STORAGE_BASE}/${id}.webp`;
 }
 
 interface PlannedRound {
@@ -244,6 +246,8 @@ interface PlannedRound {
   /** World data: the place's region (names repeat across regions: Route 1, Victory Road…). */
   region?: string;
   shot: string;
+  /** The screenshot's game, in case an update replaces the screenshot mid-game. */
+  game?: string;
 }
 
 /**
@@ -255,7 +259,7 @@ function pickRound(rng: Rng, area: Area): PlannedRound {
   const location = area.place && (!area.buildings.length || rng.chance(0.5)) ? area.place : rng.pick(area.buildings);
   const look = rng.pick([...new Set(location.shots.map((s) => lookOf(s.game)))]);
   const shot = rng.pick(location.shots.filter((s) => lookOf(s.game) === look));
-  return { location: location.name, region: location.region, shot: shot.id };
+  return { location: location.name, region: location.region, shot: shot.id, game: shot.game };
 }
 
 /**
@@ -288,10 +292,23 @@ function staleness(spec: GeoSpec, rounds: PlannedRound[], recent: Map<string, nu
 /** Seeds tried for a free-play game, keeping the one that repeats the player's recent places least. */
 const SEED_TRIES = 64;
 
+const findLocation = (spec: Pick<GeoSpec, "region">, round: PlannedRound) =>
+  regionOf(spec.region)?.locations.find((l) => l.name === round.location && l.region === round.region);
+
 function lookup(spec: GeoSpec, round: PlannedRound) {
   const region = regionOf(spec.region)!;
-  const location = region.locations.find((l) => l.name === round.location && l.region === round.region)!;
-  return { region, location, shot: location.shots.find((s) => s.id === round.shot) ?? location.shots[0] };
+  const location = findLocation(spec, round);
+  if (!location) throw new Error(`No place ${round.region} | ${round.location} on ${spec.region}`);
+  const shot = location.shots.find((s) => s.id === round.shot) ?? { id: round.shot, game: round.game ?? location.shots[0].game };
+  return { region, location, shot };
+}
+
+/** A game's planned rounds, sealed into its token (encrypted: the token mustn't give the places away). */
+type SealedRound = [location: string, region: string | undefined, shot: string, game: string | undefined];
+const seal = (rounds: PlannedRound[]) => encryptJson(rounds.map((r): SealedRound => [r.location, r.region, r.shot, r.game]));
+function unseal(sealed: string | undefined): PlannedRound[] | null {
+  const rounds = sealed ? decryptJson<SealedRound[]>(sealed) : null;
+  return Array.isArray(rounds) ? rounds.map(([location, region, shot, game]) => ({ location, region: region ?? undefined, shot, game: game ?? undefined })) : null;
 }
 
 /** Distance in map pixels from (x, y) to the nearest point of a location's area. */
@@ -349,6 +366,12 @@ export interface GeoState {
   name?: string;
   /** One score per finished round (streaks: 1 per hit). */
   log: number[];
+  /**
+   * The rounds as planned at the start, sealed: a five-round game's five, a
+   * streak's current one. A game in progress outlives an update to the
+   * places or screenshots (the seed alone would plan other rounds).
+   */
+  plan?: string;
 }
 
 /** What a challenge link carries: the seed (so the same places come up) and the friend's result. */
@@ -360,19 +383,24 @@ interface ChallengeCard {
   n: string;
   t: number;
   p: number[];
+  /** The five rounds, sealed, so the challenge stays the same five screenshots after an update. */
+  l?: string;
 }
 
-export function readGeoChallenge(token: unknown): (GeoChallenge & { seed: string; region: string }) | null {
+export function readGeoChallenge(token: unknown): (GeoChallenge & { seed: string; region: string; plan?: string }) | null {
   const card = verifyToken<ChallengeCard>("geo-challenge", token);
   if (!card || card.y !== undefined || !regionOf(card.r)) return null;
-  return { seed: card.s, region: card.r, name: card.n, score: card.t, rounds: card.p };
+  return { seed: card.s, region: card.r, name: card.n, score: card.t, rounds: card.p, plan: card.l };
 }
 
 /**
  * Starts a game. Free play takes the player's recently seen areas (most
  * recent first) and, of a few seeds, plays the one that repeats them least.
  */
-export function startGeo(spec: GeoSpec, opts: { seed?: string; name?: string; recent?: string[] } = {}): { token: string; round: GeoRoundPublic } {
+export function startGeo(
+  spec: GeoSpec,
+  opts: { seed?: string; name?: string; recent?: string[]; plan?: string } = {}
+): { token: string; round: GeoRoundPublic } {
   let seed = opts.seed ?? (spec.daily ? `geo-daily:${spec.daily}` : randomId());
   if (!opts.seed && !spec.daily && opts.recent?.length) {
     // Never more than half the map's areas, so a fresh game is always possible.
@@ -385,9 +413,12 @@ export function startGeo(spec: GeoSpec, opts: { seed?: string; name?: string; re
       if (stale < best) [seed, best] = [next, stale];
     }
   }
-  const state: GeoState = { v: 4, sid: randomId(), spec, seed, startedAt: Date.now(), name: opts.name, log: [] };
-  const [first] = planRounds(spec, seed);
-  return { token: signToken("geo", state), round: { index: 0, shot: shotUrl(first.shot) } };
+  // A challenge's own five rounds when it carries them and they're all still on the map.
+  const given = spec.kind === "game" ? unseal(opts.plan)?.filter((r) => findLocation(spec, r)) : undefined;
+  const rounds = given?.length === GEO_ROUNDS ? given : planRounds(spec, seed, spec.kind === "game" ? GEO_ROUNDS : 1);
+  const plan = given?.length === GEO_ROUNDS ? opts.plan : seal(rounds);
+  const state: GeoState = { v: 4, sid: randomId(), spec, seed, startedAt: Date.now(), name: opts.name, log: [], plan };
+  return { token: signToken("geo", state), round: { index: 0, shot: shotUrl(rounds[0].shot) } };
 }
 
 export function readGeo(token: unknown): GeoState | null {
@@ -402,15 +433,19 @@ export type GeoGuessOutcome =
 
 export function gradeGeo(state: GeoState, guess: { x: number; y: number }): GeoGuessOutcome {
   const { spec } = state;
-  const rounds = planRounds(spec, state.seed);
-  const index = state.log.length;
   const streak = spec.kind === "streak";
+  const sealed = unseal(state.plan);
+  // A game plays the rounds it started with; a streak its current round, then the next as planned now.
+  const rounds = !streak && sealed ? sealed : planRounds(spec, state.seed);
+  const index = state.log.length;
   const over = streak ? state.log.includes(0) || index >= rounds.length : index >= rounds.length;
   if (over) return { ok: false, status: 409, error: "This game is already over." };
 
-  const round = rounds[index];
+  const round = (streak ? sealed?.[0] : undefined) ?? rounds[index];
+  if (!findLocation(spec, round)) return { ok: false, status: 409, error: "PokéGuessr was just updated. Start a new game." };
   const { score, hit, squares } = measureGuess(spec, round, guess.x, guess.y);
   const next: GeoState = { ...state, log: [...state.log, streak ? (hit ? 1 : 0) : score] };
+  if (streak && rounds[index + 1]) next.plan = seal([rounds[index + 1]]);
   const total = next.log.reduce((s, x) => s + x, 0);
   const done = streak ? !hit || next.log.length >= rounds.length : next.log.length >= rounds.length;
   const now = Date.now();
@@ -427,7 +462,7 @@ export function gradeGeo(state: GeoState, guess: { x: number; y: number }): GeoG
       finishedAt: now,
     };
     if (!streak) {
-      const card: ChallengeCard = { s: state.seed, r: spec.region, n: state.name ?? "", t: total, p: next.log };
+      const card: ChallengeCard = { s: state.seed, r: spec.region, n: state.name ?? "", t: total, p: next.log, l: state.plan };
       challengeToken = signToken("geo-challenge", card);
     }
   }

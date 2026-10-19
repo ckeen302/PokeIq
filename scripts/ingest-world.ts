@@ -292,6 +292,23 @@ const DENYLIST = new Set<string>([
   // A close-up of the player; a field of grass like any other.
   "Lumiose_Museum_XY.png",
   "Friend_Safari_Field.png",
+  // A route drawn over a split view; rooms pasted side by side; a photo board; a sliver of a building.
+  "Castelia_City_Oceanfront_Road_B2W2.png",
+  "Relic_Castle_B7F_Maze_B2W2.png",
+  "Humilau_City_Face_Board.png",
+  "Castelia_Gym_exterior_BWB2W2.png",
+  // Rooms that look like others already kept (Relic Castle, Victory Road, the Plasma Frigate, Route 10's badge gates).
+  "Relic_Castle_B3F_R_BW.png",
+  "Relic_Castle_B4F_R_BW.png",
+  "Relic_Castle_B7F_L_BW.png",
+  "Relic_Castle_B7F_R_BW.png",
+  "Victory_Road_3F_R_BW.png",
+  "Victory_Road_4F_L_BW.png",
+  "Victory_Road_4F_M_BW.png",
+  "Victory_Road_6F_BW.png",
+  "Plasma_Frigate_B1F_Right_B2.png",
+  "Unova_Route_10_Quake_Badge_Gate_BW.png",
+  "Unova_Route_10_Jet_Badge_Gate_BW.png",
 ]);
 /**
  * Files that aren't a fair view of the place they name: Omega Ruby / Alpha

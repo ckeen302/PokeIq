@@ -190,6 +190,19 @@ describe("PokéGuessr", () => {
     expect(readGeo(start.token.slice(0, -2) + (start.token.endsWith("AA") ? "BB" : "AA"))).toBeNull();
   });
 
+  it("a game in progress keeps its rounds through an update", () => {
+    // The token carries its rounds, sealed: change what the seed would plan, and the game plays on as it started.
+    const start = startGeo(kanto, { seed: "planned" });
+    const state = readGeo(start.token)!;
+    expect(start.token).not.toMatch(/Route|City|Town|Kanto/);
+    const moved = { ...state, seed: "something-else" };
+    const [first] = planRounds(kanto, "planned");
+    const outcome = gradeGeo(readGeo(signToken("geo", moved))!, { x: 0.5, y: 0.5 });
+    if (!outcome.ok) throw new Error(outcome.error);
+    expect(outcome.body.answer.name).toBe(answerFor(kanto, first).name);
+    expect(outcome.body.next!.shot).toBe(`/api/geo/shot/${planRounds(kanto, "planned")[1].shot}`);
+  });
+
   it("gives everyone the same daily game", () => {
     const a = startGeo({ ...kanto, daily: "2026-10-18" });
     const b = startGeo({ ...kanto, daily: "2026-10-18" }, { recent: ["Kanto|Pallet Town"] });

@@ -35,6 +35,7 @@ export async function POST(request: NextRequest) {
 
   let spec: GeoSpec;
   let seed: string | undefined;
+  let plan: string | undefined;
   const started = (request.cookies.get(DAILY_COOKIE)?.value ?? "").split(",").filter(Boolean);
   if (body.daily !== undefined) {
     if (!isValidDailyDate(body.daily)) {
@@ -48,12 +49,13 @@ export async function POST(request: NextRequest) {
     if (!challenge) return NextResponse.json({ error: "That challenge link isn't valid." }, { status: 400 });
     spec = { region: challenge.region, kind: "game", practice: "challenge" };
     seed = challenge.seed;
+    plan = challenge.plan;
   } else {
     spec = { region: body.region, kind: body.kind };
   }
   if (!isGeoSpec(spec)) return NextResponse.json({ error: "Unknown region." }, { status: 400 });
 
-  const game = startGeo(spec, { seed, name: body.name, recent: body.recent });
+  const game = startGeo(spec, { seed, plan, name: body.name, recent: body.recent });
   const response = NextResponse.json({ ...game, region: spec.region, practice: spec.practice }, { headers: { "Cache-Control": "no-store" } });
   if (spec.daily && !spec.practice) {
     response.cookies.set(DAILY_COOKIE, [spec.daily, ...started].slice(0, 4).join(","), {
