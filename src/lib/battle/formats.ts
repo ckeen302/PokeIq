@@ -150,7 +150,10 @@ export function isBattleFormatId(id: unknown): id is BattleFormatId {
   return typeof id === "string" && (BATTLE_FORMAT_IDS as readonly string[]).includes(id);
 }
 
-/** Tera types only exist from Gen 9. */
-export function hasTera(format: { gen: number }): boolean {
-  return format.gen >= 9;
+/** Gen 9 formats whose rules include Showdown's Terastal Clause (no Terastallizing). */
+const TERASTAL_CLAUSE = new Set<string>(["gen9nationaldex"]);
+
+/** Tera types only exist from Gen 9, and not where the Terastal Clause bans them. */
+export function hasTera(format: { gen: number; id: string }): boolean {
+  return format.gen >= 9 && !TERASTAL_CLAUSE.has(format.id);
 }

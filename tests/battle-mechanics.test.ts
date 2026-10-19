@@ -6,7 +6,7 @@ import * as SmogonCalc from "@smogon/calc";
 import * as AdaptableCalc from "@smogon/calc/dist/adaptable";
 import { effectiveness, moveInfo, type MoveInfo } from "@/components/battle/play/moves";
 import type { MonSnap } from "@/components/battle/play/model";
-import { BATTLE_FORMATS, BATTLE_FORMAT_IDS } from "@/lib/battle/formats";
+import { BATTLE_FORMATS, BATTLE_FORMAT_IDS, hasTera } from "@/lib/battle/formats";
 import { PLAY_FORMAT_INFO, PLAY_FORMATS } from "@/lib/battle/play";
 import { calcMoves, emptyField, sideFromSet, type CalcSide } from "@/lib/battle/calc";
 import { loadCalcGenerations } from "@/lib/battle/dex";
@@ -43,10 +43,11 @@ describe("formats", () => {
     }
   });
 
-  it("each team-builder format's level is the one its rules set", () => {
+  it("each team-builder format's level and Tera are the ones its rules set", () => {
     for (const id of BATTLE_FORMAT_IDS) {
       const table = ShowdownDex.formats.getRuleTable(ShowdownDex.formats.get(id));
       expect(BATTLE_FORMATS[id].level, id).toBe(table.adjustLevel ?? table.defaultLevel ?? 100);
+      expect(hasTera(BATTLE_FORMATS[id]), id).toBe(BATTLE_FORMATS[id].gen >= 9 && !table.has("terastalclause"));
     }
   });
 });
