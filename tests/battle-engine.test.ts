@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { Battle } from "@pkmn/sim";
-import { SimSession, randomTeam, replay, type SideID, type SimResult, type SimSnapshot } from "@/lib/server/battle-engine/engine";
+import { readFileSync } from "node:fs";
+import { createRequire } from "node:module";
+import { Battle, TeamValidator, Teams } from "pokemon-showdown";
+import { SIM_VERSION, SimSession, randomTeam, replay, type SideID, type SimResult, type SimSnapshot } from "@/lib/server/battle-engine/engine";
 import { firstChoice, randomChoice } from "@/lib/server/battle-engine/choices";
 import { chooseCpu, seededRandom } from "@/lib/server/battle-engine/cpu";
 import { cpuTeam, prepareTeam } from "@/lib/server/battle-engine/teams";
@@ -44,6 +46,22 @@ function play(formatid: string, turns: number, pick: (req: BattleRequest, side: 
 }
 
 describe("battle engine", () => {
+  it("is the installed official simulator, and says which version", () => {
+    const pkg = createRequire(import.meta.url).resolve("pokemon-showdown/package.json");
+    const { version } = JSON.parse(readFileSync(pkg, "utf8")) as { version: string };
+    expect(SIM_VERSION).toBe(`pokemon-showdown@${version}`);
+    expect(start("gen9randombattle").battle).toBeInstanceOf(Battle);
+  });
+
+  it("the computer's OU teams are legal in OU", () => {
+    const validator = TeamValidator.get("gen9ou");
+    for (const seed of ["1,1,1,1", "2,2,2,2", "3,3,3,3"]) {
+      const team = Teams.unpack(cpuTeam("gen9ou", seed))!;
+      expect(team).toHaveLength(6);
+      expect(validator.validateTeam(team)).toBeNull();
+    }
+  });
+
   it("creates, takes choices and resumes from a JSON snapshot", () => {
     const first = start("gen9randombattle");
     const created = first.result();

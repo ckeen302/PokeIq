@@ -1,9 +1,15 @@
 import "server-only";
-import { Battle, PRNG, Teams, extractChannelMessages, type PRNGSeed } from "@pkmn/sim";
-import { TeamGenerators } from "@pkmn/randoms";
+import { Battle, PRNG, Teams } from "pokemon-showdown";
+import { extractChannelMessages } from "pokemon-showdown/dist/sim/battle";
+import type { PRNGSeed } from "pokemon-showdown/dist/sim/prng";
 import type { BattleRequest } from "@/lib/battle/play";
 
 /**
+ * Pokémon Showdown's own simulator (the official `pokemon-showdown`
+ * package), random teams included, so a battle here plays out exactly as
+ * it would on Showdown: `npm run verify:showdown` plays thousands of
+ * battles against it to prove it.
+ *
  * The simulator as a pure "state in, state out" step, which suits a
  * stateless serverless function and one Supabase row per battle.
  *
@@ -21,10 +27,12 @@ import type { BattleRequest } from "@/lib/battle/play";
  * choice is logged without its target and wouldn't replay.
  */
 
-Teams.setGeneratorFactory(TeamGenerators);
-
-/** The installed @pkmn/sim version, stored on every battle. */
-export const SIM_VERSION = "0.10.11";
+/**
+ * The engine and its version, stored on every battle (the installed
+ * `pokemon-showdown` version: a test keeps them in step). Battles saved by
+ * an earlier engine (@pkmn/sim "0.10.11") are rebuilt from their input log.
+ */
+export const SIM_VERSION = "pokemon-showdown@0.11.11";
 
 export type SideID = "p1" | "p2";
 export const SIDES: readonly SideID[] = ["p1", "p2"];

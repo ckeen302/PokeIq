@@ -1,12 +1,10 @@
 import "server-only";
-import { PRNG, Teams, TeamValidator, type PokemonSet, type PRNGSeed } from "@pkmn/sim";
-import { TeamGenerators } from "@pkmn/randoms";
+import { PRNG, Teams, TeamValidator } from "pokemon-showdown";
+import type { PRNGSeed } from "pokemon-showdown/dist/sim/prng";
 import { PLAY_FORMAT_INFO, BATTLE_TEAM_MAX, type PlayFormatId } from "@/lib/battle/play";
 import { randomTeam as legalRandomTeam } from "@/lib/server/battle";
 import type { BattleFormatId } from "@/lib/battle/formats";
 import { newSeed, randomTeam } from "./engine";
-// The OU tier of Pokémon Showdown's gen 9 Battle Factory sets (MIT, see data/LICENSE-pokemon-showdown.txt).
-import FACTORY_OU from "./data/gen9-factory-sets-ou.json";
 
 /**
  * Teams for a battle: generated for random formats, brought by the player
@@ -49,19 +47,30 @@ export function prepareTeam(format: PlayFormatId, text: string): TeamCheck {
   return { ok: true, packed: Teams.pack(team), size: team.length };
 }
 
-/** The generator's Factory hooks, which @pkmn/randoms ships without data. */
+type PokemonSet = ReturnType<typeof Teams.generate>[number];
+
+/** The random-team generator's Battle Factory hooks (Showdown ships the sets with it). */
 interface FactoryGenerator {
-  randomFactorySets: unknown;
   factoryTier: string;
   randomFactoryTeam(side: { name: string }): PokemonSet[];
 }
 
-/** An OU team for the computer: tournament-grade Battle Factory sets (they pass the OU validator). */
+/**
+ * An OU team for the computer: Showdown's tournament-grade Battle Factory
+ * sets for OU. Tiers move, so a team is kept only once it passes the OU
+ * validator (a few tries, then the team builder's random legal team).
+ */
 function factoryOuTeam(seed: string): string {
-  const generator = TeamGenerators.getTeamGenerator("gen9randombattle", seed as PRNGSeed) as unknown as FactoryGenerator;
-  generator.randomFactorySets = FACTORY_OU;
-  generator.factoryTier = "OU";
-  return Teams.pack(generator.randomFactoryTeam({ name: "p2" }));
+  const prng = new PRNG(seed as PRNGSeed);
+  const validator = TeamValidator.get("gen9ou");
+  for (let attempt = 0; attempt < 5; attempt++) {
+    const generator = Teams.getGenerator("gen9randombattle", prng.getSeed()) as FactoryGenerator;
+    prng.random();
+    generator.factoryTier = "OU";
+    const team = generator.randomFactoryTeam({ name: "p2" });
+    if (!validator.validateTeam(structuredClone(team))) return Teams.pack(team);
+  }
+  return Teams.pack(legalRandomTeam("gen9ou") as PokemonSet[]);
 }
 
 /**

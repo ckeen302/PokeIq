@@ -1,12 +1,11 @@
 import "server-only";
-import { Dex, TeamValidator } from "@pkmn/sim";
-import { TeamGenerators } from "@pkmn/randoms";
+import { Dex, Teams, TeamValidator } from "pokemon-showdown";
 import { BATTLE_FORMATS, type BattleFormatId } from "@/lib/battle/formats";
 import { completeSet, TEAM_SIZE, type TeamCheck, type TeamSet } from "@/lib/battle/sets";
 
 /**
  * Team legality and random teams, on Pokémon Showdown's own rules
- * (@pkmn/sim's TeamValidator). Server-side so the simulator's data never
+ * (the official simulator's TeamValidator). Server-side so the simulator's data never
  * ships to the browser; the battle engine will run here too.
  */
 
@@ -34,12 +33,12 @@ export function checkTeam(format: BattleFormatId, sets: TeamSet[]): TeamCheck {
 
 /**
  * Six random-battle sets that are legal in the format: sets are drawn from
- * the format's @pkmn/randoms generator and kept when they pass the
+ * the format's random-battle generator and kept when they pass the
  * validator, then the whole team is checked (Species and Item Clauses).
  */
 export function randomTeam(format: BattleFormatId): TeamSet[] {
   const info = BATTLE_FORMATS[format];
-  const generator = TeamGenerators.getTeamGenerator(info.random);
+  const generator = Teams.getGenerator(info.random);
   const dex = Dex.forGen(info.gen);
   const v = validator(format);
   let best: TeamSet[] = [];
@@ -55,7 +54,7 @@ export function randomTeam(format: BattleFormatId): TeamSet[] {
           species: raw.species,
           item: raw.item ?? "",
           ability: raw.ability ?? "",
-          moves: raw.moves.map((m) => dex.moves.get(m).name),
+          moves: raw.moves.map((m: string) => dex.moves.get(m).name),
           nature: raw.nature ?? "",
           gender: raw.gender ?? "",
           evs: raw.evs,

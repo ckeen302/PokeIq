@@ -10,6 +10,7 @@ import {
 } from "@/lib/server/battle-engine/service";
 import { loadBattle, saveBattle } from "@/lib/server/battle-engine/store";
 import { firstChoice } from "@/lib/server/battle-engine/choices";
+import { SIM_VERSION } from "@/lib/server/battle-engine/engine";
 import { BATTLE_TIMER, type BattleView } from "@/lib/battle/play";
 
 const T0 = Date.UTC(2026, 9, 19, 12, 0, 0);
@@ -156,12 +157,13 @@ Adamant Nature
     if (!made.ok) throw new Error(made.error);
     let view = await choose(made.code, made.token, made.view);
     const stored = (await loadBattle(made.code))!;
-    stored.rec.meta.simVersion = "0.10.10";
+    // A battle saved by the previous engine (@pkmn/sim 0.10.11).
+    stored.rec.meta.simVersion = "0.10.11";
     expect(await saveBattle(made.code, stored.version, { meta: stored.rec.meta })).toBe(true);
     view = await choose(made.code, made.token, (await pollBattle(made.code, made.token, view.log.total) as { view: BattleView }).view);
     expect(view.turn).toBeGreaterThanOrEqual(2);
     expect((await loadBattle(made.code))!.rec.inputLog.filter((l) => l.startsWith(">p1 ")).length).toBe(2);
-    expect((await loadBattle(made.code))!.rec.meta.simVersion).toBe("0.10.11");
+    expect((await loadBattle(made.code))!.rec.meta.simVersion).toBe(SIM_VERSION);
   });
 });
 

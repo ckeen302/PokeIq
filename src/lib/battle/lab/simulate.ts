@@ -15,6 +15,21 @@ import { labFormatId, SIDE_NAMES, TURN_LIMIT, type LabSetup } from "./types";
  * numbers: KOs and who scored them, crits, misses, moves used.
  *
  * Runs in a Web Worker in the browser, and in Node for the tests.
+ *
+ * @pkmn/sim is the browser build of Showdown's simulator; the official
+ * package (what live and computer battles run on) only runs in Node. They
+ * play Gen 9 and the Lab's Gen 4 example line for line alike, and differ
+ * where @pkmn/sim 0.10.11 hasn't caught up with Showdown yet
+ * (`npm run verify:showdown` counts each one over 2,000+ battles):
+ * - Gen 1-8: recoil damage names the Pokémon that was hit ([of]); text only.
+ * - Gen 2-7: Pursuit on a switching target is an activation, not a move of
+ *   its own (PP and Pressure can differ).
+ * - Gen 3-4: Encore can last a turn longer.
+ * - Gen 4: Truant doesn't count the turn its Pokémon switched in; Custap
+ *   Berry is a message rather than an item activation.
+ * - Gen 1: the Desync Clause makes the move fail instead of resolving it as
+ *   the acting player's cartridge would.
+ * - Gen 1 and 3 rule lists and descriptions are older.
  */
 
 export class LabSetupError extends Error {}

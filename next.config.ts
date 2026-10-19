@@ -30,7 +30,15 @@ const nextConfig: NextConfig = {
   poweredByHeader: false,
   // The battle simulator runs as plain Node modules: bundled and minified,
   // its state serializer (which records constructor names) breaks.
-  serverExternalPackages: ["@pkmn/sim", "@pkmn/randoms", "@pkmn/mods"],
+  serverExternalPackages: ["pokemon-showdown", "@pkmn/sim"],
+  // Showdown loads its data, formats and random-team generators with
+  // computed require() paths, which file tracing can't follow.
+  outputFileTracingIncludes: Object.fromEntries(
+    ["/api/battle/**", "/battle/**"].map((route) => [
+      route,
+      ["./node_modules/pokemon-showdown/dist/{config,data,lib,sim}/**/*.{js,json}"],
+    ])
+  ),
   async headers() {
     return [
       { source: "/:path*", headers: securityHeaders },
