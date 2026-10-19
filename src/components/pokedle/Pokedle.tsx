@@ -46,9 +46,24 @@ export interface PokedleFinished {
   hard: boolean;
   hints: DleHint[];
   score: number;
+  /** The guesses that counted, in order (Pokémon ids). */
+  guessIds: number[];
 }
 
-export function Pokedle({ names, community }: { names: NameEntry[]; community?: (finished: PokedleFinished) => React.ReactNode }) {
+/** How the result compares with everyone's, for the share text (see buildPokedleShare). */
+export type PokedleShareCommunity = { percentile: number; players: number };
+
+/**
+ * `community` renders beside a finished daily; it can hand back the
+ * player's percentile with `setShare` (undefined: none) for the share text.
+ */
+export function Pokedle({
+  names,
+  community,
+}: {
+  names: NameEntry[];
+  community?: (finished: PokedleFinished, setShare: (community: PokedleShareCommunity | undefined) => void) => React.ReactNode;
+}) {
   const progress = useProgress();
   const prefs = useDlePrefs();
   useApplyDlePrefs();
@@ -68,6 +83,8 @@ export function Pokedle({ names, community }: { names: NameEntry[]; community?: 
   const [copied, setCopied] = useState(false);
   const [copyFallback, setCopyFallback] = useState<string | null>(null);
   const [sheet, setSheet] = useState<"howto" | "stats" | "archive" | null>(null);
+  /** The community panel's percentile for the share, with the finished game it belongs to. */
+  const [shareStanding, setShareStanding] = useState<{ key: string; community?: PokedleShareCommunity } | null>(null);
   /** What a screen reader hears after each guess. */
   const [announce, setAnnounce] = useState("");
   /** Latest request id: responses to superseded requests (mode switches) are ignored. */
@@ -231,6 +248,12 @@ export function Pokedle({ names, community }: { names: NameEntry[]; community?: 
     if (d) loadDate(d, "daily");
   }
 
+  const finishedKey = over && state && date && mode === "daily" ? `${date}|${state.rows.map((r) => r.id).join(",")}` : null;
+  const setShare = useCallback(
+    (community: PokedleShareCommunity | undefined) => setShareStanding(finishedKey ? { key: finishedKey, community } : null),
+    [finishedKey]
+  );
+
   async function share() {
     if (!state || !date || mode === "practice") return;
     const text = buildPokedleShare({
@@ -243,6 +266,7 @@ export function Pokedle({ names, community }: { names: NameEntry[]; community?: 
       url: `${window.location.origin}/pokedle`,
       colourBlind: prefs?.colourBlind,
       archive: mode === "archive",
+      community: mode === "daily" && shareStanding?.key === finishedKey ? shareStanding.community : undefined,
     });
     const outcome = await shareOrCopy(text);
     if (outcome === "failed") {
@@ -264,7 +288,7 @@ export function Pokedle({ names, community }: { names: NameEntry[]; community?: 
   const score = state ? dleScore(state.rows.length, state.solved, hints) : 0;
   const finished: PokedleFinished | null =
     over && state && date && mode === "daily"
-      ? { date, number: dailyNumber(date), solved: state.solved, guesses: state.rows.length, hard, hints, score }
+      ? { date, number: dailyNumber(date), solved: state.solved, guesses: state.rows.length, hard, hints, score, guessIds: state.rows.map((r) => r.id) }
       : null;
   const title = mode === "practice" ? "Pokédle · Practice" : date ? `Pokédle #${dailyNumber(date)}${mode === "archive" ? ` · Archive (${date})` : ""}` : "Pokédle";
   const iconButton = "rounded-md p-2 text-muted-foreground hover:bg-screen/10 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
@@ -430,7 +454,7 @@ export function Pokedle({ names, community }: { names: NameEntry[]; community?: 
                 {mode !== "daily" && <p className="text-xs text-muted-foreground">{mode === "archive" ? "Archive" : "Practice"} games don&apos;t count toward streaks or stats.</p>}
               </CardContent>
             </Card>
-            {finished && community?.(finished)}
+            {finished && community?.(finished, setShare)}
           </motion.section>
         )}
 

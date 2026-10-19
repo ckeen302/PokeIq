@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { POKEDEX } from "@/lib/pokemon/pokedex";
-import { Pokedle } from "@/components/pokedle/Pokedle";
+import { PokedleWithCommunity } from "@/components/pokedle/PokedleCommunity";
 import { PokedleDuelCard } from "@/components/pokedle/PokedleDuelCard";
 
 export const metadata: Metadata = {
@@ -14,7 +14,7 @@ export default function PokedlePage() {
   const names = POKEDEX.map((p) => [p.id, p.name, p.gen] as [number, string, number]);
   return (
     <div className="space-y-10">
-      <Pokedle names={names} />
+      <PokedleWithCommunity names={names} />
       <div id="duel" className="mx-auto max-w-3xl scroll-mt-24">
         <PokedleDuelCard />
       </div>
