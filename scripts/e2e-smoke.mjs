@@ -679,6 +679,67 @@ await page.getByRole("menuitem", { name: /Dragapult/ }).first().click();
 await page.getByText(/Dragapult Draco Meteor vs\. .*Heatran: \d+-\d+ \(/).waitFor();
 await page.screenshot({ path: `${OUT}/battle-calc.png`, fullPage: true });
 
+/** Battle responses must never carry the simulator's state, input log, seed or the other side's request. */
+function watchBattle(p, side, label) {
+  p.on("response", async (res) => {
+    if (!/\/api\/battle(\/[a-z2-9]{8})?(\?|$)/.test(res.url())) return;
+    const text = await res.text().catch(() => "");
+    if (/"(state|inputLog|seed|input_log)"|\|request\||\|split\|/.test(text)) errors.push(`${label}: hidden battle data leaked: ${text.slice(0, 200)}`);
+    const other = side === "p1" ? "p2" : "p1";
+    if (text.includes(`"side":{"name"`) && text.includes(`"id":"${other}","pokemon"`)) errors.push(`${label}: the other side's request leaked`);
+  });
+}
+
+/** Clicks moves (or a switch when forced) until the battle ends or passes `maxTurn`. Returns the turns played. */
+async function playBattle(p, maxTurn, shoot) {
+  for (let i = 0; i < 80; i++) {
+    const ready = p.locator("[data-testid=move-button]:not([disabled]), [data-testid=switch-button]:not([disabled]), [data-testid=lead-button], [data-testid=battle-result]");
+    await ready.first().waitFor({ timeout: 90_000 });
+    const turn = Number((await p.getByText(/^Turn \d+$/).first().innerText()).replace(/\D/g, ""));
+    if ((await p.locator("[data-testid=battle-result]").count()) || turn > maxTurn) return turn;
+    if (shoot && i === 2) await p.screenshot({ path: `${OUT}/${shoot}.png` });
+    const leads = p.locator("[data-testid=lead-button]");
+    const moves = p.locator("[data-testid=move-button]:not([disabled])");
+    if (await leads.count()) await leads.first().click();
+    else if (await moves.count()) {
+      await moves.first().click();
+      // Doubles: aim at the first foe.
+      if (await p.locator("[data-testid=target-button]").count()) await p.locator("[data-testid=target-button]").first().click();
+    } else await p.locator("[data-testid=switch-button]:not([disabled])").first().click();
+  }
+  throw new Error("the battle didn't progress");
+}
+
+step("battle vs computer: a random battle, played until it ends or turn 10");
+watchBattle(page, "p1", "cpu battle");
+await page.goto(`${BASE}/battle/play`, { waitUntil: "networkidle" });
+await page.screenshot({ path: `${OUT}/battle-setup.png`, fullPage: true });
+await page.locator("label").filter({ hasText: "Gen 9 Random Battle" }).first().click();
+await page.getByLabel("Your trainer name").fill("Red");
+await page.getByRole("button", { name: /Start battle/ }).click();
+await page.waitForURL(/\/battle\/play\/[a-z2-9]{8}$/);
+await page.locator("[data-testid=move-button]").first().waitFor({ timeout: 60_000 });
+await page.screenshot({ path: `${OUT}/battle-cpu.png` });
+await page.getByRole("button", { name: "4x" }).click();
+const cpuTurns = await playBattle(page, 10, "battle-cpu-turn");
+console.log(`  stopped at turn ${cpuTurns}`);
+if (cpuTurns < 3) errors.push(`the battle against the computer only reached turn ${cpuTurns}`);
+await page.screenshot({ path: `${OUT}/battle-cpu-later.png`, fullPage: true });
+if ((await page.getByTestId("battle-log").innerText()).length < 200) errors.push("the battle log stayed empty");
+
+step("battle vs computer: Gen 9 OU with the team saved in the team builder");
+await page.goto(`${BASE}/battle/play`, { waitUntil: "networkidle" });
+await page.locator("label").filter({ hasText: "Gen 9 OU" }).first().click();
+await page.getByRole("combobox", { name: "Saved team" }).waitFor();
+await page.getByLabel("Your trainer name").fill("Red");
+await page.getByRole("button", { name: /Start battle/ }).click();
+await page.waitForURL(/\/battle\/play\/[a-z2-9]{8}$/);
+await page.locator("[data-testid=lead-button]").first().waitFor({ timeout: 60_000 });
+await page.screenshot({ path: `${OUT}/battle-preview.png` });
+await page.locator("[data-testid=lead-button]").filter({ hasText: "Garchomp" }).click();
+await page.locator("[data-testid=move-button]").first().waitFor({ timeout: 60_000 });
+await page.getByText("What will Garchomp do?").waitFor();
+
 // Accounts are only on when the server has a store (Supabase, or
 // POKEIQ_LOCAL_ACCOUNTS=1 for a local production build).
 const me = await (await page.request.get(`${BASE}/api/auth/me`)).json();

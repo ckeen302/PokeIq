@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRight, Bot, Calculator, Castle, Factory, Radio, Users, type LucideIcon } from "lucide-react";
+import { ArrowRight, Bot, Calculator, Castle, Factory, Radio, Swords, Users, type LucideIcon } from "lucide-react";
 import { HudHeading } from "@/components/game/HudHeading";
 import { HpBar } from "@/components/game/HpBar";
 import { BATTLE_FORMATS, BATTLE_FORMAT_IDS } from "@/lib/battle/formats";
@@ -8,13 +8,20 @@ import { BATTLE_FORMATS, BATTLE_FORMAT_IDS } from "@/lib/battle/formats";
 export const metadata: Metadata = {
   title: "Battle — Pokémon Team Builder & Damage Calculator",
   description:
-    "Build competitive Pokémon teams checked against Pokémon Showdown's own rules and calculate every hit with the Smogon damage calculator. Battles against the computer and other trainers are on the way.",
+    "Build competitive Pokémon teams checked against Pokémon Showdown's own rules and calculate every hit with the Smogon damage calculator. Battle the computer on Pokémon Showdown's own engine; live battles against other trainers are on the way.",
   alternates: { canonical: "/battle" },
 };
 
 const SPRITES = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/showdown";
 
 const LIVE: { href: string; icon: LucideIcon; title: string; blurb: string; points: string[] }[] = [
+  {
+    href: "/battle/play",
+    icon: Bot,
+    title: "Battle vs Computer",
+    blurb: "Real battles on Pokémon Showdown's engine against a computer opponent that plays to win.",
+    points: ["Random Battle, Random Doubles or your saved team", "Easy, Normal and Hard opponents", "Showdown's move animations, Tera and all"],
+  },
   {
     href: "/battle/teams",
     icon: Users,
@@ -32,7 +39,6 @@ const LIVE: { href: string; icon: LucideIcon; title: string; blurb: string; poin
 ];
 
 const SOON: { icon: LucideIcon; title: string; blurb: string }[] = [
-  { icon: Bot, title: "Battle vs Computer", blurb: "Take a saved team up against a computer opponent that plays to win." },
   { icon: Radio, title: "Live Battles", blurb: "Battle other trainers in real time, friendly or ranked, through a share link." },
   { icon: Castle, title: "Battle Tower", blurb: "Your team against a climbing streak of computer trainers. How far can you go?" },
   { icon: Factory, title: "Battle Factory", blurb: "No team needed: rent random sets, battle, and swap in your opponent's best." },
@@ -58,8 +64,14 @@ export default function BattlePage() {
           </p>
           <div className="flex flex-wrap gap-3">
             <Link
-              href="/battle/teams"
+              href="/battle/play"
               className="inline-flex items-center gap-2 rounded-md bg-primary px-5 py-3 font-display text-sm font-bold uppercase tracking-wider text-primary-foreground shadow-[0_4px_0_hsl(var(--primary-shadow))] transition-transform hover:-translate-y-0.5"
+            >
+              <Swords className="h-4 w-4" aria-hidden /> Battle now
+            </Link>
+            <Link
+              href="/battle/teams"
+              className="inline-flex items-center gap-2 rounded-md border bg-card px-5 py-3 font-display text-sm font-bold uppercase tracking-wider shadow-[0_3px_0_hsl(var(--border))] transition-colors hover:border-screen/60"
             >
               <Users className="h-4 w-4" aria-hidden /> Build a team
             </Link>
@@ -76,7 +88,7 @@ export default function BattlePage() {
 
       <section className="space-y-5">
         <HudHeading index={1} title="Battle tools" aside="Live" />
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {LIVE.map(({ href, icon: Icon, title, blurb, points }) => (
             <Link key={href} href={href} className="menu-item hud group relative block rounded-lg border bg-card p-6 hover:border-screen/50">
               <div className="flex items-start gap-4">
@@ -108,7 +120,7 @@ export default function BattlePage() {
 
       <section className="space-y-5">
         <HudHeading index={2} title="Coming soon" aside="Your saved teams will battle here" />
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {SOON.map(({ icon: Icon, title, blurb }) => (
             <div key={title} className="relative space-y-2 rounded-lg border border-dashed border-foreground/15 bg-card/50 p-5">
               <span className="hud-label absolute right-3 top-3 rounded-sm border border-warning/40 px-1.5 py-1 text-warning">Soon</span>

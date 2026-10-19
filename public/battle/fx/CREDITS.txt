@@ -1,0 +1,13 @@
+Battle effect images
+
+The .png and .jpg images here are from Pokémon Showdown's client
+(play.pokemonshowdown.com/fx/), which dedicates them to the public domain
+(CC0 1.0): https://creativecommons.org/publicdomain/zero/1.0/
+
+The images there that are not CC0 (icicle, icicle-pink, lightning, rocks,
+rock1, rock2 and bone) are not used. The .svg files with those names were
+drawn for PokéIQ instead.
+
+The move animations that use these images are ported from Pokémon
+Showdown's battle-animations-moves.ts (CC0) and battle-animations.ts (MIT,
+Copyright (c) 2011-2026 Guangcong Luo and other contributors).
