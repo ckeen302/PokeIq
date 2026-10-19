@@ -1,4 +1,5 @@
 import "server-only";
+import { canonicalJson } from "@/lib/server/canonical-json";
 import { randomInt } from "node:crypto";
 import { getServiceSupabase } from "@/lib/supabase";
 import { DUEL_CODE_RE } from "@/lib/duel-types";
@@ -164,7 +165,8 @@ function duelTable<D>(table: string, label: string, { column = "code", keyOf = (
       const now = Date.now();
       const out = change(stored.duel, now);
       if (!out.ok) return out;
-      if (JSON.stringify(out.duel) === JSON.stringify(stored.duel)) return { ...out, now, rev: stored.version };
+      // Unchanged (whatever order jsonb gave the keys back in): no write.
+      if (canonicalJson(out.duel) === canonicalJson(stored.duel)) return { ...out, now, rev: stored.version };
       if (await save(out.duel, stored.version)) return { ...out, now, rev: stored.version + 1 };
     }
     return { ok: false, status: 503, error: "The duel is busy. Try again." };

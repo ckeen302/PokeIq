@@ -1,4 +1,5 @@
 import "server-only";
+import { canonicalJson } from "@/lib/server/canonical-json";
 import { randomInt } from "node:crypto";
 import { randomId, signToken, verifyToken } from "../crypto";
 import { fail, type PvpFailure } from "../duel-core";
@@ -159,7 +160,8 @@ class Work {
     SIDES.forEach((side, seat) => {
       const pending = session.pending(side);
       const object = session.requestObject(side);
-      const fresh = object !== this.sim!.before[seat] || JSON.stringify(pending) !== JSON.stringify(meta.requests[seat]);
+      // Compared by content in a fixed key order: the stored copy comes back from jsonb with its keys reordered.
+      const fresh = object !== this.sim!.before[seat] || canonicalJson(pending) !== canonicalJson(meta.requests[seat]);
       this.sim!.before[seat] = object;
       if (!fresh) return;
       const wasPending = meta.requests[seat] !== null;

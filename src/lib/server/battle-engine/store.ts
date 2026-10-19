@@ -204,8 +204,20 @@ export async function insertBattle(rec: BattleRecord): Promise<boolean> {
   const rows = memory();
   for (const [code, row] of rows) if (row.expires <= Date.now()) rows.delete(code);
   if (rows.has(rec.meta.code)) return false;
-  rows.set(rec.meta.code, { json: JSON.stringify(rec), version: 0, expires: Date.now() + TTL_MS });
+  rows.set(rec.meta.code, { json: JSON.stringify({ ...rec, meta: jsonbOrder(rec.meta) }), version: 0, expires: Date.now() + TTL_MS });
   return true;
+}
+
+/**
+ * An object with its keys in the order Postgres's jsonb gives them back
+ * (shorter keys first, then bytewise), so the in-memory store hands back
+ * `meta` exactly as Supabase would: nothing may rely on key order.
+ */
+export function jsonbOrder<T>(value: T): T {
+  if (Array.isArray(value)) return value.map(jsonbOrder) as T;
+  if (!value || typeof value !== "object") return value;
+  const keys = Object.keys(value).sort((a, b) => Buffer.byteLength(a) - Buffer.byteLength(b) || (a < b ? -1 : a > b ? 1 : 0));
+  return Object.fromEntries(keys.map((k) => [k, jsonbOrder((value as Record<string, unknown>)[k])])) as T;
 }
 
 /**
@@ -233,7 +245,7 @@ export async function saveBattle(code: string, version: number, patch: BattlePat
   const row = rows.get(code);
   if (!row || row.version !== version) return false;
   const rec = JSON.parse(row.json) as BattleRecord;
-  rec.meta = patch.meta;
+  rec.meta = jsonbOrder(patch.meta);
   if (patch.state !== undefined) rec.state = patch.state;
   if (patch.inputLog) rec.inputLog = patch.inputLog;
   for (const [channel, lines] of Object.entries(patch.logs ?? {})) rec.logs[channel as BattleChannel] = lines;

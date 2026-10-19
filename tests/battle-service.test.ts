@@ -190,6 +190,18 @@ describe("live battles", () => {
     expect(stored!.rec.logs.spectator.filter((l) => /^\|move\|p[12]a: /.test(l)).length).toBeGreaterThanOrEqual(1);
   });
 
+  it("one player choosing first leaves the other's request (and clock) alone", async () => {
+    const { code, red, blue } = await liveBattle();
+    const [r, b] = [await poll(code, red), await poll(code, blue)];
+    at(5_000);
+    await choose(code, red, r);
+    // Blue still holds the request from before Red chose: it must still be the current one.
+    const b2 = await poll(code, blue);
+    expect(b2.request?.rqid).toBe(b.request?.rqid);
+    expect(b2.clocks?.you.deadline).toBe(b.clocks?.you.deadline);
+    await choose(code, blue, b);
+  });
+
   it("retries on a compare-and-swap clash", async () => {
     const { code } = await liveBattle();
     const versionSeen = (await loadBattle(code))!.version;
