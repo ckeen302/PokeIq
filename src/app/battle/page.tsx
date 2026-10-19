@@ -1,0 +1,187 @@
+import type { Metadata } from "next";
+import Link from "next/link";
+import { ArrowRight, Bot, Calculator, Castle, Factory, Radio, Users, type LucideIcon } from "lucide-react";
+import { HudHeading } from "@/components/game/HudHeading";
+import { HpBar } from "@/components/game/HpBar";
+import { BATTLE_FORMATS, BATTLE_FORMAT_IDS } from "@/lib/battle/formats";
+
+export const metadata: Metadata = {
+  title: "Battle — Pokémon Team Builder & Damage Calculator",
+  description:
+    "Build competitive Pokémon teams checked against Pokémon Showdown's own rules and calculate every hit with the Smogon damage calculator. Battles against the computer and other trainers are on the way.",
+  alternates: { canonical: "/battle" },
+};
+
+const SPRITES = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/showdown";
+
+const LIVE: { href: string; icon: LucideIcon; title: string; blurb: string; points: string[] }[] = [
+  {
+    href: "/battle/teams",
+    icon: Users,
+    title: "Team Builder",
+    blurb: "Six slots, every format's learnsets and Pokémon Showdown's own legality check, live as you build.",
+    points: ["8 formats from Gen 9 OU to Gen 3 OU", "EVs, IVs, natures and live stats", "Showdown import / export, random teams"],
+  },
+  {
+    href: "/battle/calc",
+    icon: Calculator,
+    title: "Damage Calc",
+    blurb: "The Smogon damage calculator: every move's damage range, KO chance and the full description line.",
+    points: ["Boosts, status, Tera and current HP", "Weather, terrain, screens, spread moves", "Load sets straight from your teams"],
+  },
+];
+
+const SOON: { icon: LucideIcon; title: string; blurb: string }[] = [
+  { icon: Bot, title: "Battle vs Computer", blurb: "Take a saved team up against a computer opponent that plays to win." },
+  { icon: Radio, title: "Live Battles", blurb: "Battle other trainers in real time, friendly or ranked, through a share link." },
+  { icon: Castle, title: "Battle Tower", blurb: "Your team against a climbing streak of computer trainers. How far can you go?" },
+  { icon: Factory, title: "Battle Factory", blurb: "No team needed: rent random sets, battle, and swap in your opponent's best." },
+];
+
+export default function BattlePage() {
+  return (
+    <div className="mx-auto max-w-6xl space-y-14">
+      {/* Title screen */}
+      <section className="grid items-center gap-10 pt-2 lg:grid-cols-[1.1fr_1fr]">
+        <div className="space-y-6">
+          <p className="hud-label flex items-center gap-2 text-screen">
+            <span className="led h-1.5 w-1.5 animate-blink text-screen" /> Battle unit · Pokémon Showdown rules
+          </p>
+          <h1 className="font-display text-5xl font-bold uppercase leading-[0.95] tracking-tight sm:text-7xl">
+            Build. Calc.
+            <br />
+            <span className="text-primary [text-shadow:0_0_30px_hsl(var(--primary)/0.45)]">Battle.</span>
+          </h1>
+          <p className="max-w-xl text-base text-muted-foreground sm:text-lg">
+            Competitive teams checked against the same rules as Pokémon Showdown, and the Smogon damage calculator for every hit.
+            The teams you build here are the ones you&apos;ll battle with.
+          </p>
+          <div className="flex flex-wrap gap-3">
+            <Link
+              href="/battle/teams"
+              className="inline-flex items-center gap-2 rounded-md bg-primary px-5 py-3 font-display text-sm font-bold uppercase tracking-wider text-primary-foreground shadow-[0_4px_0_hsl(var(--primary-shadow))] transition-transform hover:-translate-y-0.5"
+            >
+              <Users className="h-4 w-4" aria-hidden /> Build a team
+            </Link>
+            <Link
+              href="/battle/calc"
+              className="inline-flex items-center gap-2 rounded-md border bg-card px-5 py-3 font-display text-sm font-bold uppercase tracking-wider shadow-[0_3px_0_hsl(var(--border))] transition-colors hover:border-screen/60"
+            >
+              <Calculator className="h-4 w-4" aria-hidden /> Open the calc
+            </Link>
+          </div>
+        </div>
+        <BattleScene />
+      </section>
+
+      <section className="space-y-5">
+        <HudHeading index={1} title="Battle tools" aside="Live" />
+        <div className="grid gap-4 md:grid-cols-2">
+          {LIVE.map(({ href, icon: Icon, title, blurb, points }) => (
+            <Link key={href} href={href} className="menu-item hud group relative block rounded-lg border bg-card p-6 hover:border-screen/50">
+              <div className="flex items-start gap-4">
+                <span className="screen flex h-14 w-14 shrink-0 items-center justify-center rounded-md text-screen">
+                  <Icon className="relative z-[3] h-6 w-6" aria-hidden />
+                </span>
+                <div className="min-w-0 flex-1 space-y-2">
+                  <div className="flex items-center gap-2">
+                    <span className="font-display text-xl font-bold uppercase tracking-wide">{title}</span>
+                    <span className="hud-label flex items-center gap-1.5 text-success">
+                      <span className="led h-1.5 w-1.5 text-success" /> Live
+                    </span>
+                  </div>
+                  <p className="text-sm text-muted-foreground">{blurb}</p>
+                  <ul className="space-y-1 pt-1 text-sm">
+                    {points.map((p) => (
+                      <li key={p} className="flex items-center gap-2">
+                        <span className="font-pixel text-[9px] text-primary">▶</span> {p}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                <ArrowRight className="h-5 w-5 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-1 group-hover:text-foreground" aria-hidden />
+              </div>
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      <section className="space-y-5">
+        <HudHeading index={2} title="Coming soon" aside="Your saved teams will battle here" />
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          {SOON.map(({ icon: Icon, title, blurb }) => (
+            <div key={title} className="relative space-y-2 rounded-lg border border-dashed border-foreground/15 bg-card/50 p-5">
+              <span className="hud-label absolute right-3 top-3 rounded-sm border border-warning/40 px-1.5 py-1 text-warning">Soon</span>
+              <Icon className="h-6 w-6 text-muted-foreground" aria-hidden />
+              <h3 className="font-display text-base font-bold uppercase tracking-wide">{title}</h3>
+              <p className="text-sm text-muted-foreground">{blurb}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section className="space-y-5">
+        <HudHeading index={3} title="Formats" aside="Pokémon Showdown's rules for each" />
+        <div className="grid gap-px overflow-hidden rounded-lg border bg-border sm:grid-cols-2 lg:grid-cols-4">
+          {BATTLE_FORMAT_IDS.map((id) => {
+            const f = BATTLE_FORMATS[id];
+            return (
+              <div key={id} className="space-y-1 bg-card p-4">
+                <div className="flex items-baseline justify-between gap-2">
+                  <span className="font-display font-bold uppercase tracking-wide">{f.name}</span>
+                  <span className="hud-label text-screen">{f.gameType}</span>
+                </div>
+                <p className="text-xs text-muted-foreground">{f.blurb}</p>
+              </div>
+            );
+          })}
+        </div>
+      </section>
+    </div>
+  );
+}
+
+/** A Gen 4-style battle screen: what the calc says about Garchomp's Earthquake into Heatran. */
+function BattleScene() {
+  return (
+    <div className="dark-scope mx-auto w-full max-w-[460px] select-none" aria-hidden>
+      <div className="rounded-[18px] border-2 border-black/60 bg-gradient-to-b from-[hsl(256_52%_30%)] to-[hsl(260_52%_16%)] p-3 shadow-[0_24px_60px_-18px_hsl(var(--screen)/0.55),inset_0_2px_0_hsl(258_80%_75%/0.35)]">
+        <div className="screen relative aspect-[4/3] overflow-hidden rounded-lg bg-[linear-gradient(180deg,hsl(258_60%_22%)_0%,hsl(262_45%_14%)_55%,hsl(250_45%_9%)_100%)]">
+          {/* Platforms */}
+          <span className="absolute right-[6%] top-[38%] h-[13%] w-[44%] rounded-[50%] bg-[radial-gradient(closest-side,hsl(var(--screen)/0.35),transparent)]" />
+          <span className="absolute bottom-[14%] left-[2%] h-[15%] w-[52%] rounded-[50%] bg-[radial-gradient(closest-side,hsl(var(--primary)/0.3),transparent)]" />
+          {/* eslint-disable-next-line @next/next/no-img-element -- animated sprite */}
+          <img src={`${SPRITES}/485.gif`} alt="" className="absolute right-[16%] top-[13%] z-[1] h-[32%] object-contain [image-rendering:pixelated]" />
+          {/* eslint-disable-next-line @next/next/no-img-element -- animated sprite */}
+          <img src={`${SPRITES}/back/445.gif`} alt="" className="absolute bottom-[17%] left-[12%] z-[1] h-[40%] object-contain [image-rendering:pixelated]" />
+
+          {/* Foe HP box */}
+          <div className="absolute left-[5%] top-[7%] z-[3] w-[44%] rounded-md border border-white/15 bg-black/55 px-2.5 py-1.5 backdrop-blur">
+            <div className="flex items-baseline justify-between font-pixel text-[10px] text-white">
+              <span>HEATRAN</span>
+              <span className="text-white/70">Lv100</span>
+            </div>
+            <HpBar value={0.18} label="HP" className="mt-1" />
+          </div>
+          {/* Player HP box */}
+          <div className="absolute bottom-[28%] right-[5%] z-[3] w-[44%] rounded-md border border-white/15 bg-black/55 px-2.5 py-1.5 backdrop-blur">
+            <div className="flex items-baseline justify-between font-pixel text-[10px] text-white">
+              <span>GARCHOMP</span>
+              <span className="text-white/70">Lv100</span>
+            </div>
+            <HpBar value={0.86} label="HP" className="mt-1" />
+            <div className="mt-1 text-right font-pixel text-[9px] text-white/70">307/357</div>
+          </div>
+
+          {/* Text box */}
+          <div className="absolute inset-x-[3%] bottom-[3%] z-[3] rounded-md border-2 border-white/70 bg-[hsl(250_45%_8%/0.92)] px-3 py-2 font-pixel text-[10px] leading-relaxed text-white">
+            <p>
+              EARTHQUAKE <span className="text-white/60">vs</span> HEATRAN: <span className="text-warning">161.6 – 190.6%</span>
+            </p>
+            <p className="text-success">▶ guaranteed OHKO</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

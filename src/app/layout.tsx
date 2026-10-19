@@ -57,7 +57,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }} />
         <header className="glass sticky top-0 z-50">
           <div className="container flex h-14 items-center justify-between">
-            <Link href="/" aria-label="PokéIQ home">
+            <Link href="/" aria-label="PokéIQ home" className="shrink-0">
               <Logo />
             </Link>
             <DesktopNav />
@@ -72,6 +72,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <Link href="/pokedex/study" className="hover:text-foreground">Study mode</Link>
               <Link href="/atlas" className="hover:text-foreground">World atlas</Link>
               <Link href="/leaderboard" className="hover:text-foreground">Leaderboard</Link>
+              <Link href="/battle/teams" className="hover:text-foreground">Team builder</Link>
+              <Link href="/battle/calc" className="hover:text-foreground">Damage calc</Link>
               <Link href="/quiz/gen-1-pokemon-quiz" className="hover:text-foreground">Gen 1 quiz</Link>
               <Link href="/quiz/pokemon-type-quiz" className="hover:text-foreground">Type chart quiz</Link>
               <Link href="/trainer" className="hover:text-foreground">Trainer card</Link>

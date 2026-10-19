@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
-import { BookOpen, CalendarDays, Compass, Gamepad2, Home, Search, User } from "lucide-react";
+import { BookOpen, CalendarDays, Compass, Gamepad2, Home, Search, Swords, User } from "lucide-react";
 import { levelInfo, useProgress } from "@/lib/progress";
 import { useAccount } from "@/lib/account";
 import { cn } from "@/lib/utils";
@@ -19,6 +19,7 @@ const DESKTOP_LINKS = [
   { href: "/play", label: "Modes" },
   { href: "/pokedex", label: "Pokédex" },
   { href: "/leaderboard", label: "Leaderboard" },
+  { href: "/battle", label: "Battle" },
 ];
 
 const MOBILE_TABS = [
@@ -28,6 +29,7 @@ const MOBILE_TABS = [
   { href: "/guessr", label: "Guessr", icon: Compass },
   { href: "/pokedex", label: "Pokédex", icon: BookOpen },
   { href: "/play", label: "Modes", icon: Gamepad2 },
+  { href: "/battle", label: "Battle", icon: Swords },
 ];
 
 function isActive(pathname: string, href: string) {
@@ -48,7 +50,8 @@ export function DesktopNav() {
               key={href}
               href={href}
               className={cn(
-                "relative px-3 py-2 font-display text-[13px] font-semibold uppercase tracking-[0.12em] text-muted-foreground transition-colors hover:text-foreground",
+                // Tighter between lg and xl so every link fits on one row.
+                "relative whitespace-nowrap px-2 py-2 font-display text-[12px] font-semibold uppercase tracking-[0.06em] text-muted-foreground transition-colors hover:text-foreground xl:px-3 xl:text-[13px] xl:tracking-[0.12em]",
                 active && "text-foreground"
               )}
               aria-current={active ? "page" : undefined}
@@ -57,7 +60,7 @@ export function DesktopNav() {
               {active && (
                 <motion.span
                   layoutId="nav-active"
-                  className="absolute inset-x-3 -bottom-[9px] h-[3px] bg-primary shadow-[0_0_10px_hsl(var(--primary))]"
+                  className="absolute inset-x-2 -bottom-[9px] h-[3px] bg-primary shadow-[0_0_10px_hsl(var(--primary))] xl:inset-x-3"
                   transition={{ type: "spring", stiffness: 500, damping: 38 }}
                 />
               )}
@@ -70,7 +73,7 @@ export function DesktopNav() {
       {account.status === "ready" && account.enabled && !account.user && (
         <Link
           href="/login"
-          className="hidden px-2 font-display text-[13px] font-semibold uppercase tracking-[0.12em] text-muted-foreground transition-colors hover:text-foreground sm:block"
+          className="hidden whitespace-nowrap px-2 font-display text-[13px] font-semibold uppercase tracking-[0.12em] text-muted-foreground transition-colors hover:text-foreground sm:block lg:hidden xl:block"
         >
           Sign in
         </Link>
@@ -96,7 +99,7 @@ export function MobileTabBar() {
   const pathname = usePathname();
   return (
     <nav
-      className="glass-top fixed inset-x-0 bottom-0 z-50 grid grid-cols-6 pb-[env(safe-area-inset-bottom)] lg:hidden"
+      className="glass-top fixed inset-x-0 bottom-0 z-50 grid grid-cols-7 pb-[env(safe-area-inset-bottom)] lg:hidden"
       aria-label="Primary"
     >
       {MOBILE_TABS.map(({ href, label, icon: Icon }) => {

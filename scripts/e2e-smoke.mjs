@@ -596,6 +596,89 @@ for (const path of ["/trainer", "/leaderboard?board=iq", "/pokemon/eevee", "/pok
   await page.screenshot({ path: `${OUT}/${path.slice(1).replace(/[^a-z0-9]+/gi, "_")}.png` });
 }
 
+step("battle: hub, team builder (paste an OU team, validate), damage calc");
+const OU_TEAM = `Garchomp @ Rocky Helmet
+Ability: Rough Skin
+Tera Type: Steel
+EVs: 252 HP / 4 Def / 252 Spe
+Jolly Nature
+- Stealth Rock
+- Earthquake
+- Dragon Tail
+- Spikes
+
+Great Tusk @ Booster Energy
+Ability: Protosynthesis
+Tera Type: Ground
+EVs: 252 Atk / 4 SpD / 252 Spe
+Jolly Nature
+- Headlong Rush
+- Ice Spinner
+- Rapid Spin
+- Knock Off
+
+Gholdengo @ Choice Scarf
+Ability: Good as Gold
+Tera Type: Steel
+EVs: 252 SpA / 4 SpD / 252 Spe
+Timid Nature
+IVs: 0 Atk
+- Make It Rain
+- Shadow Ball
+- Trick
+- Focus Blast
+
+Kingambit @ Leftovers
+Ability: Supreme Overlord
+Tera Type: Dark
+EVs: 252 HP / 252 Atk / 4 SpD
+Adamant Nature
+- Swords Dance
+- Kowtow Cleave
+- Sucker Punch
+- Iron Head
+
+Dragapult @ Choice Specs
+Ability: Infiltrator
+Tera Type: Ghost
+EVs: 252 SpA / 4 SpD / 252 Spe
+Timid Nature
+- Draco Meteor
+- Shadow Ball
+- Flamethrower
+- U-turn
+
+Toxapex @ Black Sludge
+Ability: Regenerator
+Tera Type: Fairy
+EVs: 252 HP / 252 Def / 4 SpD
+Bold Nature
+IVs: 0 Atk
+- Toxic Spikes
+- Recover
+- Haze
+- Surf
+`;
+await page.goto(`${BASE}/battle`, { waitUntil: "networkidle" });
+await page.screenshot({ path: `${OUT}/battle-hub.png`, fullPage: true });
+await page.getByRole("link", { name: /Team Builder/ }).first().click();
+await page.waitForURL(/\/battle\/teams/);
+await page.getByRole("button", { name: "Import", exact: true }).first().click();
+await page.getByLabel("Showdown team").fill(OU_TEAM);
+await page.getByRole("button", { name: "Import team" }).click();
+// Pokémon Showdown's validator, through /api/battle/validate.
+await page.getByText("Legal in Gen 9 OU").waitFor({ timeout: 30_000 });
+await page.getByRole("tab", { name: /Dragapult/ }).click();
+await page.getByRole("combobox", { name: "Move 1" }).waitFor();
+await page.screenshot({ path: `${OUT}/battle-teams.png`, fullPage: true });
+await page.goto(`${BASE}/battle/calc`, { waitUntil: "networkidle" });
+await page.getByText(/Garchomp Earthquake vs\. .*Heatran: \d+-\d+ \(/).waitFor({ timeout: 30_000 });
+// The saved team feeds the calc.
+await page.getByRole("button", { name: /Load from my team/ }).first().click();
+await page.getByRole("menuitem", { name: /Dragapult/ }).first().click();
+await page.getByText(/Dragapult Draco Meteor vs\. .*Heatran: \d+-\d+ \(/).waitFor();
+await page.screenshot({ path: `${OUT}/battle-calc.png`, fullPage: true });
+
 // Accounts are only on when the server has a store (Supabase, or
 // POKEIQ_LOCAL_ACCOUNTS=1 for a local production build).
 const me = await (await page.request.get(`${BASE}/api/auth/me`)).json();

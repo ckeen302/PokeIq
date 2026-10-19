@@ -47,6 +47,8 @@ Every question is generated on demand from a snapshot of all 1,025 Pokémon. No 
 | **Lookalikes** | A DINOv2 vision model embeds every silhouette offline. Its nearest neighbours drive hard-mode Who's That distractors and each Pokédex page's "easily confused with" panel |
 | **Coach** | Per-generation, per-type and per-mode accuracy with empirical-Bayes smoothing. It surfaces your focus areas and strengths and links each one to the right study tool |
 | **Study mode** | Flip-and-swipe flashcards (silhouette, Pokédex entry or typing) with missed cards re-queued and per-generation mastery tracking; quiz answers link straight to the Pokédex |
+| **Team Builder** | Competitive teams for Gen 9 OU, Ubers, UU, Doubles OU, VGC 2025 Reg I, National Dex, Gen 4 OU and Gen 3 OU. Six slots with species search, moves limited to each format's learnsets (type, category, power, accuracy, PP), abilities, items, natures, Tera types, EV sliders, IVs and live stats. Every edit is checked by Pokémon Showdown's own team validator, with problems shown on the slot they belong to. Showdown import / export round-trips exactly; random legal teams; saved on the device |
+| **Damage Calculator** | The Smogon damage calculator for Gens 3–9, both ways: every move's damage range in % and HP, KO chance and the full Showdown description. Boosts, status, Tera, current HP, weather, terrain, screens, hazards, doubles spread, crits, Helping Hand and the rest; load either side from a saved team |
 | **SEO** | 15 quiz landing pages plus 1,025 static Pokémon pages, with a sitemap, JSON-LD and canonical URLs |
 | **Sound** | Synthesized Web Audio effects (no audio files) for answers, streaks and results, with a mute toggle (`M`) |
 | **PWA** | Installable on iOS and Android, with safe-area insets and app shortcuts |
@@ -115,6 +117,10 @@ Items start with heuristic priors (generation, zoom, distractor similarity, stat
 
 **Simulation results.** 175 simulated players span true ratings 700–1900, and their answers are drawn from the same response model. After 20 questions the adaptive test's estimate is off by **88 rating points on average (≈ 6.6 IQ points)**. A fixed 20-question quiz is off by **123 points (≈ 9.2 IQ points)**, so adaptive selection cuts the error by about 28%, with the biggest gains for very strong and very weak players. These numbers assume the item difficulties are correct; real-world accuracy depends on calibration data. Tests in `tests/adaptive.test.ts` check that the adaptive test serves harder questions to stronger players and ranks them above weaker ones.
 
+### Battle
+
+The Battle section runs on Pokémon Showdown's own code: `@pkmn/sim` (MIT) for the rules, `@pkmn/dex` and `@pkmn/data` for the data, `@pkmn/sets` for Showdown's text and packed team formats, `@pkmn/randoms` for random sets and `@smogon/calc` for damage. Their data runs to megabytes, so the browser only fetches it on the team builder and calc pages, through dynamic imports (about 350 KB gzipped, plus 400 KB of learnsets on the first move list); every other page's bundle is unchanged. Legality is decided on the server: `/api/battle/validate` runs the simulator's `TeamValidator` for the team's format and returns problems per set, and `/api/battle/random` deals random-battle sets that pass it. The simulator stays an external Node package (`serverExternalPackages`), since minifying it breaks its state serializer. Saved teams live in `src/lib/battle/teams.ts` (localStorage, like progress); a team's sets are Showdown sets, and `listTeams(format)` and `teamShowdownText(id)` are what battles read. Sprites come from PokéAPI's repo: `scripts/battle-sprites.ts` maps Showdown's form ids to PokéAPI's and records which animated sprites exist.
+
 ### PokéGuessr data pipeline
 
 Every PokéGuessr map is the world atlas: the whole world, or one region's part of it. `scripts/geo/world-places.json` holds every place on the atlas (its name, region and area in world-map pixels, traced from each game's own town map) and each region's box. `scripts/ingest-world.ts` finds each place's Bulbapedia page and collects in-game screenshots from its infobox, its gallery and the Bulbagarden Archives (including X/Y's Photo Spots and Ultra Sun / Ultra Moon's Photo Club backdrops), then tops up the 3D games from the place's pages on the Pokémon Wiki (Fandom), Poképédia and PokéWiki (found through PokéAPI's names and Bulbapedia's language links), since Bulbapedia has only guidebook maps for most X/Y, Sun/Moon and Sword/Shield routes. It keeps only real views: a 3D game's file has to be screen-shaped (5:3 on the 3DS, 16:9 or 2:1 on the Switch), which drops guidebook maps, scans and renders; Town Map previews, item-pickup shots (their text boxes) and files naming another place are dropped, near-copies (a route's four seasons, the same view on two wikis) are found by image hash and kept once, and shots that name the place or show the wrong one are denylisted after reviewing contact sheets of every screenshot. Screenshots are re-encoded under random ids and uploaded to Supabase Storage, so image URLs reveal nothing. Buildings and landmarks get their own rounds and share their town's area, stored as a point every 8 px so a guess anywhere in it scores full marks. The id-to-location mapping is server-only, rounds are seeded from the server secret, and every guess is graded on the server: 5,000 · e^(−10 · d / D), with D the map's diagonal.
@@ -180,6 +186,7 @@ npm run ingest         # Pokédex + study data (~10 s)
 npm run lookalikes     # DINOv2 silhouette index (~3 min on CPU; dev-only dependency)
 npm run icons          # regenerate favicon / PWA icons from src/lib/brand/logo-svg.ts
 npm run ingest:world   # PokéGuessr places and screenshots (needs Supabase env vars)
+npm run battle:sprites # Showdown form ids → PokéAPI sprite ids, checked against the sprite repo
 ```
 
 ## Project layout
@@ -196,6 +203,7 @@ src/
 │   │                             # calibration, pokedle, leaderboard, auth + accounts
 │   ├── rating.ts                 # IRT/Elo PokéIQ model
 │   ├── progress.ts               # local XP / streaks / badges store
+│   ├── battle/                   # formats, Showdown sets, saved teams, calc glue, lazy data loaders
 │   └── pokemon/                  # Pokédex access + 18×18 type matrix
 ├── app/
 │   ├── api/                      # session · answer · media · pokedle · leaderboard · auth · progress
