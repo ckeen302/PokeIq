@@ -119,6 +119,17 @@ export function fitStatsToGen<T extends { evs: StatsTable; ivs: StatsTable }>(st
 }
 
 /**
+ * A set as its generation can have it: no ability or nature before Gen 3,
+ * no held item in Gen 1 (a Custom Game would still apply them), and Gen 1-2
+ * stats as `fitStatsToGen` has them.
+ */
+export function fitSetToGen(set: TeamSet, gen: number): TeamSet {
+  const out = fitStatsToGen(set, gen);
+  if (gen >= 3) return out;
+  return { ...out, ability: "", nature: "", item: gen === 1 ? "" : out.item };
+}
+
+/**
  * A fresh slot for `species` at the format's level. Showdown's own team
  * builder defaults: no nature (Serious, neutral), 31 IVs, no EVs, except
  * in Gen 1-2, where stat experience is free and maxed out.

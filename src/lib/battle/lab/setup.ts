@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { completeSet, fitStatsToGen, MAX_IV, normalizeSet, STATS, type TeamSet } from "@/lib/battle/sets";
+import { completeSet, fitSetToGen, MAX_IV, normalizeSet, STATS, type TeamSet } from "@/lib/battle/sets";
 import {
   BOOST_IDS,
   doublesAllowed,
@@ -106,13 +106,14 @@ function cleanSide(raw: unknown): LabSide {
 
 /**
  * Keeps a setup to what its generation has: no doubles before Gen 3, no
- * Snow in Gen 4, no 3 layers of Gen 2 Spikes, Gen 1-2 DVs and stat
- * experience as those games have them (one Special, a derived HP DV)…
+ * Snow in Gen 4, no 3 layers of Gen 2 Spikes, no abilities or natures
+ * before Gen 3, and Gen 1-2 DVs and stat experience as those games have
+ * them (one Special, a derived HP DV)…
  */
 export function fitToGen(setup: LabSetup): LabSetup {
   const { gen } = setup;
   const allowed = new Map(sideFieldFor(gen).map((f) => [f.key, f.layers]));
-  const stats = (mon: LabMon): LabMon => ({ ...mon, set: fitStatsToGen(mon.set, gen) });
+  const stats = (mon: LabMon): LabMon => ({ ...mon, set: fitSetToGen(mon.set, gen) });
   const field = (f: LabSideField): LabSideField => {
     const out = { ...EMPTY_SIDE_FIELD };
     for (const [key, layers] of allowed) {
