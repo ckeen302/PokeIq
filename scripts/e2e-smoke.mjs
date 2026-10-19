@@ -275,6 +275,133 @@ await blue.screenshot({ path: `${OUT}/duel-forfeit.png` });
 await red.context().close();
 await blue.context().close();
 
+// A Pokédle duel: Red and Blue each solve with a small solver that keeps
+// only the Pokémon consistent with every clue so far.
+step("pokédle duel: create, join, ready");
+const DEX = JSON.parse(fs.readFileSync(new URL("../src/data/pokedex.json", import.meta.url), "utf8"));
+const DEX_BY_ID = new Map(DEX.map((p) => [p.id, p]));
+const numberFits = (cand, guess, status) => (status === "match" ? cand === guess : status === "higher" ? cand > guess : cand < guess);
+function typeFits(cand, guess, slot, status) {
+  const g = guess.types[slot];
+  if (!g) return status === "match" ? !cand.types[slot] : !!cand.types[slot];
+  if (status === "match") return cand.types[slot] === g;
+  if (status === "partial") return cand.types[slot] !== g && cand.types.includes(g);
+  return !cand.types.includes(g);
+}
+function fits(cand, row) {
+  const g = DEX_BY_ID.get(row.id);
+  const c = row.cells;
+  return (
+    numberFits(cand.gen, g.gen, c.gen.status) &&
+    typeFits(cand, g, 0, c.type1.status) &&
+    typeFits(cand, g, 1, c.type2.status) &&
+    numberFits(cand.height, g.height, c.height.status) &&
+    numberFits(cand.weight, g.weight, c.weight.status) &&
+    (c.color.status === "match") === (cand.color === g.color) &&
+    numberFits(cand.stage, g.stage, c.stage.status)
+  );
+}
+const dle = [];
+for (const name of ["Red", "Blue"]) {
+  const p = await newPage({ width: 1280, height: 900 });
+  const seen = { rev: -1, view: null };
+  p.on("response", async (res) => {
+    if (!/\/api\/duel(\/|$)/.test(res.url()) || !res.ok()) return;
+    const body = await res.json().catch(() => null);
+    const view = body?.view ?? body;
+    if (!view || typeof view.rev !== "number") return;
+    // Only colours of the opponent's guesses before a round is over.
+    const round = view.round;
+    if (round && /"(id|name|value|imageUrl)"/.test(JSON.stringify(round.boards))) {
+      errors.push(`pokédle duel round leaked before the reveal: ${JSON.stringify(round).slice(0, 300)}`);
+    }
+    if (view.rev >= seen.rev) Object.assign(seen, { rev: view.rev, view });
+  });
+  dle.push({ p, name, seen });
+}
+const [dleRed, dleBlue] = dle;
+await dleRed.p.goto(`${BASE}/pokedle`, { waitUntil: "networkidle" });
+await dleRed.p.getByLabel("Your trainer name").fill("Red");
+await dleRed.p.getByRole("button", { name: /Create duel/ }).click();
+await dleRed.p.waitForURL(/\/pokedle\/duel\/[a-z2-9]{8}$/);
+const dleUrl = dleRed.p.url();
+await dleRed.p.getByText("Waiting for a challenger").waitFor();
+// The creator picks the generations in the lobby.
+await dleRed.p.getByRole("button", { name: "Gen 1", exact: true }).click();
+await dleRed.p.getByRole("button", { name: "Gen 1", pressed: true }).waitFor();
+await dleRed.p.screenshot({ path: `${OUT}/pokedle-duel-lobby.png` });
+const dleOg = await dleRed.p.request.get(`${dleUrl}/opengraph-image`);
+if (dleOg.status() !== 200) errors.push(`pokédle duel OG image returned ${dleOg.status()}`);
+else fs.writeFileSync(`${OUT}/pokedle-duel-og.png`, await dleOg.body());
+
+await dleBlue.p.goto(dleUrl, { waitUntil: "networkidle" });
+await dleBlue.p.getByText("Red challenges you!").waitFor();
+await dleBlue.p.getByText("Gen 1", { exact: true }).waitFor();
+await dleBlue.p.getByLabel("Your trainer name").fill("Blue");
+await dleBlue.p.getByRole("button", { name: /Join duel/ }).click();
+await dleRed.p.getByText("Blue").first().waitFor();
+await Promise.all(dle.map(({ p }) => p.getByRole("button", { name: /^Ready$/ }).click()));
+
+step("pokédle duel: three rounds to the end");
+const escapeRe = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+/** Plays until the results; Blue works through the candidates from the other end of the Pokédex. */
+async function playPokedleDuel({ p, name, seen }, shoot) {
+  const input = p.getByLabel("Guess a Pokémon");
+  const next = p.getByRole("button", { name: /Next round|See results/ });
+  let boughtHint = false;
+  for (let i = 0; i < 600; i++) {
+    // A pressed Next turns into "Waiting for…" once the server has it.
+    if ((await next.isVisible()) && (await next.isEnabled())) {
+      if (shoot) await p.screenshot({ path: `${OUT}/pokedle-duel-reveal.png`, fullPage: true });
+      shoot = false;
+      const label = await next.innerText();
+      await next.click({ timeout: 5_000 }).catch(() => {});
+      if (/results/i.test(label)) return;
+      await p.waitForTimeout(300);
+      continue;
+    }
+    const round = seen.view?.round;
+    if (round && (await input.isVisible()) && (await input.isEnabled())) {
+      // Red buys the category once, to see a hint come through.
+      if (name === "Red" && !boughtHint && round.rows.length === 1) {
+        boughtHint = true;
+        await p.getByRole("button", { name: /Category/ }).click();
+        await p.getByText(/^The .+ Pokémon$/).waitFor();
+      }
+      const tried = new Set(round.rows.map((r) => r.id));
+      const pool = DEX.filter((c) => c.gen === 1 && !tried.has(c.id) && round.rows.every((r) => fits(c, r)));
+      const pick = name === "Red" ? pool[0] : pool[pool.length - 1];
+      await input.fill(pick.name);
+      const option = p.locator("[role=option]").filter({ has: p.locator("span", { hasText: new RegExp(`^${escapeRe(pick.name)}$`) }) });
+      const before = round.rows.length;
+      await option.click();
+      if (shoot && before === 2) await p.screenshot({ path: `${OUT}/pokedle-duel-round.png`, fullPage: true });
+      for (let w = 0; w < 50 && (seen.view?.round?.rows.length ?? before + 1) === before && seen.view?.round?.index === round.index; w++) await p.waitForTimeout(100);
+      continue;
+    }
+    await p.waitForTimeout(250);
+  }
+  throw new Error(`${name}'s Pokédle duel didn't end`);
+}
+await Promise.all([playPokedleDuel(dleRed, true), playPokedleDuel(dleBlue, false)]);
+await dleRed.p.getByText(/Victory!|Defeat|Draw/).first().waitFor();
+await dleBlue.p.getByText(/Victory!|Defeat|Draw/).first().waitFor();
+await dleRed.p.screenshot({ path: `${OUT}/pokedle-duel-summary.png`, fullPage: true });
+if (dleRed.seen.view?.revealed?.length !== 3) errors.push(`pokédle duel ended after ${dleRed.seen.view?.revealed?.length} rounds`);
+
+step("pokédle duel: rematch, then a forfeit");
+await dleRed.p.getByRole("button", { name: /^Rematch$/ }).click();
+await dleRed.p.waitForURL((url) => url.href !== dleUrl && url.pathname.startsWith("/pokedle/duel/"));
+await dleBlue.p.getByRole("button", { name: /Accept rematch/ }).click();
+await dleBlue.p.waitForURL(dleRed.p.url());
+await Promise.all(dle.map(({ p }) => p.getByLabel("Guess a Pokémon").waitFor()));
+await dleRed.p.getByRole("button", { name: /Leave duel/ }).click();
+await dleRed.p.getByRole("button", { name: /^Forfeit$/ }).click();
+await dleRed.p.waitForURL(/\/pokedle$/);
+await dleBlue.p.getByText("Red left the duel.").waitFor();
+await dleBlue.p.getByText("Victory!").waitFor();
+for (const { p } of dle) await p.context().close();
+
 step("world atlas: search, place card, link into PokéGuessr");
 await page.goto(`${BASE}/atlas`, { waitUntil: "networkidle" });
 await page.getByLabel("Search the map").fill("Saffron City");

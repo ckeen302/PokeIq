@@ -2,43 +2,21 @@
 
 /* eslint-disable @next/next/no-img-element -- tiny sprites/silhouettes; next/image adds nothing here */
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { motion } from "framer-motion";
 import { track } from "@vercel/analytics";
-import { ArrowDown, ArrowUp, Check, Lightbulb, RefreshCw, Share2 } from "lucide-react";
+import { Check, Lightbulb, RefreshCw, Share2 } from "lucide-react";
 import { dailyNumber } from "@/lib/daily";
 import { currentStreak, getProgress, saveDle, useProgress } from "@/lib/progress";
 import { shareOrCopy, shareText } from "@/lib/share";
 import { useToday } from "@/lib/use-today";
 import { play } from "@/lib/sound";
-import {
-  DLE_COLUMNS,
-  DLE_HINTS,
-  DLE_MAX_GUESSES,
-  type CellStatus,
-  type DleCell,
-  type DleResponse,
-} from "@/lib/dle-types";
+import { DLE_COLUMNS, DLE_HINTS, DLE_MAX_GUESSES, type CellStatus, type DleResponse } from "@/lib/dle-types";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { NextDailyCountdown } from "@/components/NextDailyCountdown";
 import { CopyFallback } from "@/components/quiz/CopyFallback";
+import { Board, GuessInput, type NameEntry } from "./parts";
 import { cn } from "@/lib/utils";
-
-type NameEntry = [id: number, name: string, gen: number];
-
-const spriteUrl = (id: number) =>
-  `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png`;
-
-const normalize = (s: string) =>
-  s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/[^a-z0-9]/g, "");
-
-const CELL_STYLES: Record<CellStatus, string> = {
-  match: "bg-success/90 text-success-foreground border-success",
-  partial: "bg-yellow-500/85 text-yellow-950 border-yellow-400",
-  higher: "bg-secondary text-foreground border-foreground/10",
-  lower: "bg-secondary text-foreground border-foreground/10",
-  miss: "bg-muted/60 text-muted-foreground border-foreground/5",
-};
 
 type Target = { kind: "daily"; date: string } | { kind: "practice"; seed: string };
 
@@ -57,8 +35,6 @@ export function Pokedle({ names }: { names: NameEntry[] }) {
   const [state, setState] = useState<DleResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [query, setQuery] = useState("");
-  const [highlight, setHighlight] = useState(0);
   const [copied, setCopied] = useState(false);
   const [copyFallback, setCopyFallback] = useState<string | null>(null);
   /** Latest request id: responses to superseded requests (mode switches) are ignored. */
@@ -115,19 +91,6 @@ export function Pokedle({ names }: { names: NameEntry[] }) {
   );
 
   const guessedIds = useMemo(() => new Set(guesses), [guesses]);
-  const suggestions = useMemo(() => {
-    const q = normalize(query);
-    if (!q) return [];
-    const starts: NameEntry[] = [];
-    const contains: NameEntry[] = [];
-    for (const entry of names) {
-      if (guessedIds.has(entry[0])) continue;
-      const n = normalize(entry[1]);
-      if (n.startsWith(q)) starts.push(entry);
-      else if (n.includes(q)) contains.push(entry);
-    }
-    return [...starts, ...contains].slice(0, 7);
-  }, [query, names, guessedIds]);
 
   const over = state?.over ?? false;
 
@@ -141,15 +104,14 @@ export function Pokedle({ names }: { names: NameEntry[] }) {
     if (prev === null || (mode === "daily" && (guesses.length === 0 || over))) loadDaily(today);
   }, [today, progress, mode, guesses.length, over, loadDaily]);
 
-  function submitGuess(entry: NameEntry | undefined) {
-    if (!entry || over || loading) return;
-    if (mode === "daily" && !date) return;
+  function submitGuess(entry: NameEntry): boolean {
+    if (over || loading) return false;
+    if (mode === "daily" && !date) return false;
     guessedRef.current = true;
     const next = [...guesses, entry[0]];
     setGuesses(next);
-    setQuery("");
-    setHighlight(0);
     void evaluate(next, mode === "daily" ? { kind: "daily", date: date! } : { kind: "practice", seed: practiceSeed });
+    return true;
   }
 
   function newPractice() {
@@ -159,7 +121,6 @@ export function Pokedle({ names }: { names: NameEntry[] }) {
     setGuesses([]);
     setState(null);
     setLoading(false);
-    setQuery("");
     setCopyFallback(null);
     setTimeout(() => inputRef.current?.focus(), 50);
   }
@@ -201,62 +162,16 @@ export function Pokedle({ names }: { names: NameEntry[] }) {
       </div>
 
       {!over && (
-        <div className="relative mx-auto max-w-md">
-          <input
-            ref={inputRef}
-            value={query}
-            onChange={(e) => {
-              setQuery(e.target.value);
-              setHighlight(0);
-            }}
-            onKeyDown={(e) => {
-              if (e.key === "ArrowDown") {
-                e.preventDefault();
-                setHighlight((h) => Math.min(h + 1, suggestions.length - 1));
-              } else if (e.key === "ArrowUp") {
-                e.preventDefault();
-                setHighlight((h) => Math.max(h - 1, 0));
-              } else if (e.key === "Enter") {
-                submitGuess(suggestions[highlight]);
-              }
-            }}
-            placeholder={`Guess ${guesses.length + 1} of ${DLE_MAX_GUESSES} — type a Pokémon…`}
-            autoComplete="off"
-            spellCheck={false}
-            disabled={mode === "daily" && !date}
-            aria-label="Guess a Pokémon"
-            className="h-12 w-full rounded-md border-2 border-foreground/15 bg-shade/40 px-4 font-display text-base tracking-wide focus-visible:border-screen/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
-          />
-          <AnimatePresence>
-            {suggestions.length > 0 && (
-              <motion.ul
-                initial={{ opacity: 0, y: -4 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0 }}
-                className="absolute inset-x-0 top-14 z-20 overflow-hidden rounded-md border-2 border-foreground/15 bg-card shadow-2xl"
-                role="listbox"
-              >
-                {suggestions.map((entry, i) => (
-                  <li key={entry[0]}>
-                    <button
-                      type="button"
-                      onMouseDown={(e) => e.preventDefault()}
-                      onClick={() => submitGuess(entry)}
-                      onMouseEnter={() => setHighlight(i)}
-                      className={cn("menu-item flex w-full items-center gap-3 px-3 py-1.5 text-left font-display text-sm font-semibold", i === highlight && "bg-screen/10")}
-                      role="option"
-                      aria-selected={i === highlight}
-                    >
-                      <img src={spriteUrl(entry[0])} alt="" width={40} height={40} className="h-10 w-10" loading="lazy" />
-                      <span className="flex-1 font-medium">{entry[1]}</span>
-                      <span className="text-xs text-muted-foreground">Gen {entry[2]}</span>
-                    </button>
-                  </li>
-                ))}
-              </motion.ul>
-            )}
-          </AnimatePresence>
-        </div>
+        <GuessInput
+          // A new puzzle starts with an empty box.
+          key={mode === "daily" ? date : practiceSeed}
+          inputRef={inputRef}
+          names={names}
+          exclude={guessedIds}
+          disabled={mode === "daily" && !date}
+          placeholder={`Guess ${guesses.length + 1} of ${DLE_MAX_GUESSES} — type a Pokémon…`}
+          onGuess={submitGuess}
+        />
       )}
 
       {error && <p className="text-center text-sm text-destructive">{error}</p>}
@@ -331,49 +246,5 @@ export function Pokedle({ names }: { names: NameEntry[] }) {
         </p>
       )}
     </div>
-  );
-}
-
-function Board({ rows }: { rows: DleResponse["rows"] }) {
-  return (
-    <div className="-mx-4 overflow-x-auto px-4 pb-2">
-      <div className="mx-auto min-w-[560px] max-w-3xl space-y-2">
-        <div className="hud-label grid grid-cols-[minmax(92px,1.3fr)_repeat(7,minmax(56px,1fr))] gap-1.5 text-center">
-          <div className="text-left">Pokémon</div>
-          {DLE_COLUMNS.map((c) => (
-            <div key={c.key}>{c.label}</div>
-          ))}
-        </div>
-        {[...rows].reverse().map((row, r) => (
-          <div key={row.id} className="grid grid-cols-[minmax(92px,1.3fr)_repeat(7,minmax(56px,1fr))] gap-1.5">
-            <div className="flex items-center gap-1.5 rounded-lg border bg-card/80 px-1.5">
-              <img src={spriteUrl(row.id)} alt="" width={36} height={36} className="h-9 w-9 shrink-0" />
-              <span className="truncate text-xs font-semibold">{row.name}</span>
-            </div>
-            {DLE_COLUMNS.map((c, i) => (
-              <Cell key={c.key} cell={row.cells[c.key]} delay={r === 0 ? i * 0.12 : 0} />
-            ))}
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function Cell({ cell, delay }: { cell: DleCell; delay: number }) {
-  return (
-    <motion.div
-      initial={{ rotateX: 90, opacity: 0 }}
-      animate={{ rotateX: 0, opacity: 1 }}
-      transition={{ delay, duration: 0.35 }}
-      className={cn(
-        "flex min-h-12 flex-col items-center justify-center rounded-lg border px-1 text-center text-[11px] font-semibold leading-tight",
-        CELL_STYLES[cell.status]
-      )}
-    >
-      <span>{cell.value}</span>
-      {cell.status === "higher" && <ArrowUp className="h-3.5 w-3.5 text-primary" aria-label="answer is higher" />}
-      {cell.status === "lower" && <ArrowDown className="h-3.5 w-3.5 text-primary" aria-label="answer is lower" />}
-    </motion.div>
   );
 }

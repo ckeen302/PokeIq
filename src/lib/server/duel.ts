@@ -1,6 +1,6 @@
 import "server-only";
-import { z } from "zod";
-import { randomId, signToken, verifyToken } from "./crypto";
+import { randomId } from "./crypto";
+import { duelNameSchema, readSeatToken, seatToken } from "./duel-core";
 import { answerFor, isGeoSpec, measureGuess, planRounds } from "./geo";
 import {
   DUEL_AWAY_MS,
@@ -9,7 +9,6 @@ import {
   DUEL_IDLE_ROUNDS,
   DUEL_LEAD_MS,
   DUEL_MAX_ROUNDS,
-  DUEL_NAME_RE,
   DUEL_QUIET_MS,
   DUEL_REVEAL_MS,
   DUEL_ROUND_MS,
@@ -81,12 +80,7 @@ const GRACE_MS = 1_000;
 /** Enough steps to catch up on any duel (each round has at most a reveal and a start). */
 const MAX_STEPS = 4 * DUEL_MAX_ROUNDS + 8;
 
-export const duelNameSchema = z
-  .string()
-  .trim()
-  .min(1, "Enter a trainer name")
-  .max(24)
-  .regex(DUEL_NAME_RE, "Use letters, numbers, spaces, _ . - ' only");
+export { duelNameSchema };
 
 /** A duel's map as the single-player engine sees it, for scoring pins and naming places. */
 const geoSpec = (region: string): GeoSpec => ({ region, kind: "game" });
@@ -119,12 +113,11 @@ function closesAt(round: DuelRound): number {
 
 /** A trainer's secret: their seat in one duel, signed so nobody can act for anyone else. */
 export function duelToken(code: string, playerId: string): string {
-  return signToken("geo-duel", { d: code, p: playerId });
+  return seatToken("geo-duel", code, playerId);
 }
 
 export function readDuelToken(token: unknown, code: string): string | null {
-  const seat = verifyToken<{ d: string; p: string }>("geo-duel", token);
-  return seat && seat.d === code && typeof seat.p === "string" ? seat.p : null;
+  return readSeatToken("geo-duel", token, code);
 }
 
 // ---------------------------------------------------------------------------

@@ -1,0 +1,42 @@
+import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
+import { clientIp, rateLimit } from "@/lib/server/rate-limit";
+import { duelNameSchema, pvpToken } from "@/lib/server/duel-core";
+import { duelsEnabled, newDuelCode, pvpStore } from "@/lib/server/duel-store";
+import { duelView, type PvpDuel } from "@/lib/server/duels";
+import { createPokedleDuel } from "@/lib/server/pokedle-duel";
+import type { PvpSeatResponse } from "@/lib/pvp-types";
+
+/**
+ * POST /api/duel — open a duel and return its code, the creator's player
+ * token and the lobby:
+ *   { kind: "pokedle", name }    a Pokédle duel; the friend joins at /pokedle/duel/<code>
+ */
+
+const bodySchema = z.discriminatedUnion("kind", [z.object({ kind: z.literal("pokedle"), name: duelNameSchema })]);
+
+export async function POST(request: NextRequest) {
+  if (!rateLimit(`duel-new:${clientIp(request)}`, 10, 0.2)) {
+    return NextResponse.json({ error: "Too many duels started — take a breather." }, { status: 429 });
+  }
+  if (!duelsEnabled()) {
+    return NextResponse.json({ error: "Duels aren't enabled on this server yet." }, { status: 503 });
+  }
+  const parsed = bodySchema.safeParse(await request.json().catch(() => ({})));
+  if (!parsed.success) return NextResponse.json({ error: parsed.error.issues[0].message }, { status: 400 });
+  const body = parsed.data;
+
+  try {
+    for (let attempt = 0; attempt < 4; attempt++) {
+      const now = Date.now();
+      const { duel, playerId }: { duel: PvpDuel; playerId: string } = createPokedleDuel(body.name, newDuelCode(), now);
+      if (!(await pvpStore.insert(duel))) continue; // code taken: roll another
+      const seat: PvpSeatResponse = { code: duel.code, token: pvpToken(duel.code, playerId), view: duelView(duel, playerId, now, 0) };
+      return NextResponse.json(seat, { headers: { "Cache-Control": "no-store" } });
+    }
+    return NextResponse.json({ error: "Couldn't open a duel. Try again." }, { status: 503 });
+  } catch (err) {
+    console.error("[duel] create failed:", err);
+    return NextResponse.json({ error: "Couldn't open a duel. Try again." }, { status: 503 });
+  }
+}

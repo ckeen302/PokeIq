@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { POKEDEX } from "@/lib/pokemon/pokedex";
 import { Pokedle } from "@/components/pokedle/Pokedle";
+import { PokedleDuelCard } from "@/components/pokedle/PokedleDuelCard";
 
 export const metadata: Metadata = {
   title: "Pokédle — Daily Pokémon Guessing Game",
@@ -11,5 +12,12 @@ export const metadata: Metadata = {
 export default function PokedlePage() {
   // Only id + name + gen go to the client — enough for autocomplete, no answers.
   const names = POKEDEX.map((p) => [p.id, p.name, p.gen] as [number, string, number]);
-  return <Pokedle names={names} />;
+  return (
+    <div className="space-y-10">
+      <Pokedle names={names} />
+      <div className="mx-auto max-w-3xl">
+        <PokedleDuelCard />
+      </div>
+    </div>
+  );
 }
