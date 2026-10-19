@@ -116,7 +116,7 @@ function switchInOrder(side: Side, request: BattleRequest): string {
 function expectedDamage(battle: Battle, side: Side, attacker: Pokemon, option: SlotOption, doubles: boolean): number {
   if (!option.move) return 0;
   const gen = calcGen(battle);
-  const f = field(battle, doubles);
+  const f = field(battle, doubles, side);
   const mine = toCalc(battle, attacker, false);
   const foes = side.foe.active.filter(alive);
   const spread = option.move.target === "allAdjacentFoes" || option.move.target === "allAdjacent";
@@ -181,7 +181,7 @@ function safeDamage(battle: Battle, side: Side, attacker: Pokemon, option: SlotO
 function bestDamage(battle: Battle, side: Side, p: Pokemon, doubles: boolean): number {
   try {
     const gen = calcGen(battle);
-    const f = field(battle, doubles);
+    const f = field(battle, doubles, side);
     const mine = toCalc(battle, p, false);
     let best = 0;
     for (const foe of side.foe.active.filter(alive)) {

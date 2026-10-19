@@ -87,6 +87,7 @@ function makeCalc(battle: Battle, p: Pokemon, hidden: boolean, tera?: boolean): 
   const gen = calcGen(battle);
   const name = calcName(gen, p);
   const teraType = p.terastallized ? p.terastallized : tera ? p.teraType : undefined;
+  const isDynamaxed = p.volatiles.dynamax ? true : undefined;
   if (hidden) {
     const maxHP = new CalcMon(gen, name, { level: p.level, evs: { hp: 84 } }).maxHP();
     return new CalcMon(gen, name, {
@@ -97,6 +98,7 @@ function makeCalc(battle: Battle, p: Pokemon, hidden: boolean, tera?: boolean): 
       status: (p.status || "") as never,
       curHP: Math.max(1, Math.round((p.hp / p.maxhp) * maxHP)),
       teraType: teraType as never,
+      isDynamaxed,
     });
   }
   return new CalcMon(gen, name, {
@@ -111,17 +113,61 @@ function makeCalc(battle: Battle, p: Pokemon, hidden: boolean, tera?: boolean): 
     status: (p.status || "") as never,
     curHP: Math.max(1, p.hp),
     teraType: teraType as never,
+    isDynamaxed,
   });
 }
 
-export function field(battle: Battle, doubles: boolean): Field {
-  const weather = (
-    { sunnyday: "Sun", desolateland: "Harsh Sunshine", raindance: "Rain", primordialsea: "Heavy Rain", sandstorm: "Sand", snowscape: "Snow", hail: "Hail" } as Record<string, string>
-  )[battle.field.weather];
-  const terrain = ({ electricterrain: "Electric", grassyterrain: "Grassy", psychicterrain: "Psychic", mistyterrain: "Misty" } as Record<string, string>)[
-    battle.field.terrain
-  ];
-  return new Field({ gameType: doubles ? "Doubles" : "Singles", weather: weather as never, terrain: terrain as never });
+const WEATHER: Record<string, string> = {
+  sunnyday: "Sun",
+  desolateland: "Harsh Sunshine",
+  raindance: "Rain",
+  primordialsea: "Heavy Rain",
+  sandstorm: "Sand",
+  snowscape: "Snow",
+  hail: "Hail",
+  deltastream: "Strong Winds",
+};
+const TERRAIN: Record<string, string> = { electricterrain: "Electric", grassyterrain: "Grassy", psychicterrain: "Psychic", mistyterrain: "Misty" };
+const RUIN = { beadsofruin: "isBeadsOfRuin", swordofruin: "isSwordOfRuin", tabletsofruin: "isTabletsOfRuin", vesselofruin: "isVesselOfRuin" } as const;
+
+/** One side's screens, hazards and Tailwind, as the calculator takes them. */
+function calcSide(side: Side) {
+  const has = (id: string) => !!side.sideConditions[id];
+  return {
+    isReflect: has("reflect"),
+    isLightScreen: has("lightscreen"),
+    isAuroraVeil: has("auroraveil"),
+    isTailwind: has("tailwind"),
+    isSR: has("stealthrock"),
+    spikes: (side.sideConditions.spikes as { layers?: number } | undefined)?.layers ?? 0,
+  };
+}
+
+/**
+ * The battle's field for a hit by `attacker`'s side: weather, terrain,
+ * Gravity and the rooms, both sides' screens, and a Ruin ability on the
+ * field (the calculator works out the attacker's and defender's own).
+ */
+export function field(battle: Battle, doubles: boolean, attacker?: Side): Field {
+  const pseudo = (id: string) => !!battle.field.pseudoWeather[id];
+  const ruin: Partial<Record<(typeof RUIN)[keyof typeof RUIN], boolean>> = {};
+  for (const side of battle.sides) {
+    for (const p of side.active) {
+      const flag = alive(p) ? RUIN[p.ability as keyof typeof RUIN] : undefined;
+      if (flag) ruin[flag] = true;
+    }
+  }
+  return new Field({
+    gameType: doubles ? "Doubles" : "Singles",
+    weather: WEATHER[battle.field.weather] as never,
+    terrain: TERRAIN[battle.field.terrain] as never,
+    isGravity: pseudo("gravity"),
+    isMagicRoom: pseudo("magicroom"),
+    isWonderRoom: pseudo("wonderroom"),
+    ...ruin,
+    attackerSide: attacker ? calcSide(attacker) : undefined,
+    defenderSide: attacker ? calcSide(attacker.foe) : undefined,
+  });
 }
 
 export interface Hit {
@@ -219,8 +265,14 @@ export function seededRandom(seed: string): () => number {
   };
 }
 
+/** The field for each direction of a hit: ours on them, theirs on us (each side's screens differ). */
+interface Fields {
+  ours: Field;
+  theirs: Field;
+}
+
 /** How well `p` would do against `foes`: what it threatens minus what it takes. */
-function matchup(battle: Battle, p: Pokemon, foes: Pokemon[], f: Field): number {
+function matchup(battle: Battle, p: Pokemon, foes: Pokemon[], f: Fields): number {
   if (!foes.length) return p.hp / p.maxhp;
   const gen = calcGen(battle);
   const mine = toCalc(battle, p, false);
@@ -228,24 +280,25 @@ function matchup(battle: Battle, p: Pokemon, foes: Pokemon[], f: Field): number 
   for (const foe of foes) {
     const foeCalc = toCalc(battle, foe, true);
     let out = 0;
-    for (const slot of p.moveSlots) out = Math.max(out, hit(gen, mine, foeCalc, slot.move, f).frac);
-    total += out - threat(battle, foe, mine, f) * 1.1;
+    for (const slot of p.moveSlots) out = Math.max(out, hit(gen, mine, foeCalc, slot.move, f.ours).frac);
+    total += out - threat(battle, foe, mine, f.theirs) * 1.1;
   }
   return total / foes.length + 0.2 * (p.hp / p.maxhp);
 }
 
 /** Scores one active slot's move options against the foes. */
-function scoreMoves(battle: Battle, side: Side, slot: number, options: SlotOption[], level: CpuLevel, doubles: boolean, f: Field): Scored[] {
+function scoreMoves(battle: Battle, side: Side, slot: number, options: SlotOption[], level: CpuLevel, doubles: boolean, f: Fields): Scored[] {
   const me = side.active[slot];
   const foes = side.foe.active.filter(alive);
   if (!alive(me) || !foes.length) return options.filter((o) => o.kind === "move").map((o) => ({ text: o.text, score: 0, option: o }));
   const gen = calcGen(battle);
   const mine = toCalc(battle, me, false);
   const mineTera = me.canTerastallize ? toCalc(battle, me, false, true) : null;
-  const incoming = Math.max(...foes.map((foe) => threat(battle, foe, mine, f)));
+  const incoming = Math.max(...foes.map((foe) => threat(battle, foe, mine, f.theirs)));
   const myHp = me.hp / me.maxhp;
-  const fastest = Math.max(...foes.map((foe) => foe.getStat("spe")));
-  const faster = me.getStat("spe") > fastest;
+  // Action speed: paralysis, Choice Scarf, Tailwind and Trick Room included, as the turn order uses it.
+  const fastest = Math.max(...foes.map((foe) => foe.getActionSpeed()));
+  const faster = me.getActionSpeed() > fastest;
   const out: Scored[] = [];
 
   for (const o of options) {
@@ -259,7 +312,7 @@ function scoreMoves(battle: Battle, side: Side, slot: number, options: SlotOptio
     let score = 0;
     let anyKo = false;
     for (const foe of victims) {
-      const h = hit(gen, attacker, toCalc(battle, foe, true), o.move.move, f);
+      const h = hit(gen, attacker, toCalc(battle, foe, true), o.move.move, f.ours);
       const frac = h.frac * (spread && doubles ? 0.75 : 1);
       score += frac;
       if (h.ko > 0) {
@@ -272,7 +325,7 @@ function scoreMoves(battle: Battle, side: Side, slot: number, options: SlotOptio
     // Earthquake and friends also hit the partner.
     if (doubles && o.move.target === "allAdjacent") {
       const ally = side.active[1 - slot];
-      if (alive(ally)) score -= hit(gen, attacker, toCalc(battle, ally, false), o.move.move, f).frac * 0.9;
+      if (alive(ally)) score -= hit(gen, attacker, toCalc(battle, ally, false), o.move.move, f.ours).frac * 0.9;
     }
     if (SETUP.has(id)) {
       const safe = incoming < 0.35 && myHp > 0.6 && (me.boosts.atk ?? 0) < 2 && (me.boosts.spa ?? 0) < 2;
@@ -326,7 +379,7 @@ export function chooseCpu(
 }
 
 function decide(battle: Battle, side: Side, request: BattleRequest, level: CpuLevel, doubles: boolean, rand: () => number): string {
-  const f = field(battle, doubles);
+  const f: Fields = { ours: field(battle, doubles, side), theirs: field(battle, doubles, side.foe) };
   const foes = side.foe.active.filter(alive);
   const noise = NOISE[level];
   const jitter = () => (rand() - 0.5) * noise;
@@ -379,8 +432,8 @@ function decide(battle: Battle, side: Side, request: BattleRequest, level: CpuLe
     const me = side.active[slot];
     if (!doubles && level !== "easy" && alive(me) && foes.length && !request.active?.[slot]?.trapped) {
       const mine = toCalc(battle, me, false);
-      const incoming = threat(battle, foes[0], mine, f);
-      const faster = me.getStat("spe") > foes[0].getStat("spe");
+      const incoming = threat(battle, foes[0], mine, f.theirs);
+      const faster = me.getActionSpeed() > foes[0].getActionSpeed();
       const bestAttack = Math.max(0, ...scored.map((s) => s.score));
       const outmatched = incoming >= me.hp / me.maxhp && !faster && bestAttack < 1;
       // A matchup is at most 1.2, so a switch scores at most 1.7 (outmatched) or 0.6. With no noise, a
