@@ -52,6 +52,7 @@ const EFFECT_LABEL: Record<Effect, { text: string; className: string }> = {
 const CATEGORY_MARK: Record<string, string> = { Physical: "✸ Physical", Special: "◎ Special", Status: "◇ Status" };
 
 function MoveButton({
+  gen,
   move,
   index,
   foes,
@@ -60,6 +61,7 @@ function MoveButton({
   disabled,
   onPick,
 }: {
+  gen: number;
   move: BattleRequestMove;
   index: number;
   foes: (MonSnap | null)[];
@@ -68,11 +70,11 @@ function MoveButton({
   disabled: boolean;
   onPick: (index: number, move: BattleRequestMove) => void;
 }) {
-  const info = moveInfo(move.id || move.move);
+  const info = moveInfo(move.move || move.id, gen);
   const type = tera && info.id === "terablast" && teraType ? teraType : info.type;
   const color = typeColor(type.toLowerCase());
   const off = disabled || !!move.disabled;
-  const hints = foes.map((foe) => effectiveness(info, foe, tera ? teraType : undefined));
+  const hints = foes.map((foe) => effectiveness(info, foe, tera ? teraType : undefined, gen));
   const shown = hints.filter((h): h is Effect => h !== null);
   return (
     <button
@@ -300,7 +302,7 @@ export function Controls({ request, snap, me, doubles, busy, onChoose }: Props) 
     return (
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <p className="font-display text-lg font-bold uppercase">{moveInfo(aiming.move.id).name}: pick a target</p>
+          <p className="font-display text-lg font-bold uppercase">{moveInfo(aiming.move.move || aiming.move.id, snap.gen).name}: pick a target</p>
           <button type="button" className="hud-label hover:text-foreground" onClick={() => setAiming(null)}>
             Back
           </button>
@@ -357,7 +359,7 @@ export function Controls({ request, snap, me, doubles, busy, onChoose }: Props) 
       </div>
       <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
         {active.moves.map((move, i) => (
-          <MoveButton key={`${move.id}-${i}`} move={move} index={i + 1} foes={foes} tera={tera} teraType={teraType} disabled={busy} onPick={pickMove} />
+          <MoveButton key={`${move.id}-${i}`} gen={snap.gen} move={move} index={i + 1} foes={foes} tera={tera} teraType={teraType} disabled={busy} onPick={pickMove} />
         ))}
       </div>
       <SwitchGrid

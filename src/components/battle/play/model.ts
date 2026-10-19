@@ -59,6 +59,8 @@ export interface SideSnap {
 }
 
 export interface Snap {
+  /** The battle's generation (from its `|gen|` line; 9 until then). */
+  gen: number;
   turn: number;
   sides: Record<SideId, SideSnap>;
   weather: string;
@@ -245,6 +247,7 @@ export class BattleModel {
   snapshot(): Snap {
     const b = this.battle;
     return {
+      gen: b.gen.num,
       turn: b.turn,
       sides: { p1: sideSnap(b.p1), p2: sideSnap(b.p2) },
       weather: b.field.weather ?? "",

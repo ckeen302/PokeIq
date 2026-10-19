@@ -44,7 +44,7 @@ const SPEED_KEY = "pokeiq:battle:speed";
 
 function emptySnap(): Snap {
   const side = (id: SideId) => ({ id, name: "", active: [], team: [], total: 6, conditions: [] });
-  return { turn: 0, sides: { p1: side("p1"), p2: side("p2") }, weather: "", terrain: "", pseudo: [] };
+  return { gen: 9, turn: 0, sides: { p1: side("p1"), p2: side("p2") }, weather: "", terrain: "", pseudo: [] };
 }
 
 function RichText({ text }: { text: string }) {
