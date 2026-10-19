@@ -26,6 +26,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useDuel } from "@/components/duel/use-duel";
 import { DuelGone, DuelLoading, DuelLobby, DuelNotice, DuelVisitor, LeaveButton, SeatDot, clock, seconds } from "@/components/duel/DuelParts";
 import { Board, CELL_STYLES, GuessInput, spriteUrl, type NameEntry } from "./parts";
+import { DexPanel } from "./DexPanel";
 import { cn } from "@/lib/utils";
 
 /**
@@ -63,6 +64,8 @@ export function PokedleDuel({ code, names }: { code: string; names: NameEntry[] 
   const router = useRouter();
   const { view, now, gone, offline, error, busy, sawPlay, act, join, rematch } = useDuel<DleDuelView>(`/api/duel/${code}`, code);
   const [summary, setSummary] = useState(false);
+  /** A Pokémon clicked in the Pokédex beside the board, for the guess box. */
+  const [fill, setFill] = useState<{ name: string; n: number } | null>(null);
   const heard = useRef({ revealed: -1, theirSolve: false, end: false });
 
   // Each new screen (lobby, a round, a reveal, the result) starts at the top.
@@ -230,7 +233,7 @@ export function PokedleDuel({ code, names }: { code: string; names: NameEntry[] 
       void act({ action: "hint", round: live.index, hint });
     };
     return (
-      <div className="mx-auto max-w-4xl space-y-4">
+      <div className="mx-auto max-w-4xl space-y-4 xl:max-w-none">
         {notice}
         <DuelHud
           view={view}
@@ -263,47 +266,59 @@ export function PokedleDuel({ code, names }: { code: string; names: NameEntry[] 
           )}
         </AnimatePresence>
 
-        <div className="grid gap-4 md:grid-cols-[1fr_13rem] md:items-start">
+        {/*
+          Your board and the opponent's side by side, the Pokédex below them. On a wide screen the
+          Pokédex sits beside everything, and the opponent's board beside your guess box.
+        */}
+        <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_13rem] md:items-start xl:grid-cols-[minmax(0,1fr)_30rem]">
           {/* min-w-0: the board scrolls sideways on a phone instead of widening the page. */}
-          <div className="min-w-0 space-y-4">
-            {!myBoard.done && (
-              <GuessInput
-                key={live.index}
-                names={names}
-                exclude={guessed}
-                disabled={timeUp}
-                placeholder={timeUp ? "Time's up" : `Guess ${live.rows.length + 1} of ${DLE_MAX_GUESSES} — type a Pokémon…`}
-                onGuess={(entry) => {
-                  if (busy || timeUp) return false;
-                  unlockAudio();
-                  play("click");
-                  void act({ action: "guess", round: live.index, pokemon: entry[0] });
-                  return true;
-                }}
-              />
-            )}
-            {(!myBoard.done || myBoard.hints.length > 0) && (
-              <div className="mx-auto flex max-w-md flex-wrap items-center gap-3 rounded-md border bg-card p-3 text-sm">
-                <Lightbulb className="h-5 w-5 shrink-0 text-primary" aria-hidden />
-                {silhouette && <img src={silhouette} alt="Silhouette hint" className="spotlight h-20 w-20 rounded-lg object-contain p-1" />}
-                {live.hints.genus && <span className="font-medium text-foreground">{live.hints.genus}</span>}
+          <div className="min-w-0 space-y-4 md:col-start-1 md:row-start-1">
+            <div className="xl:grid xl:grid-cols-[minmax(0,1fr)_13rem] xl:items-start xl:gap-4">
+              <div className="space-y-4">
                 {!myBoard.done && (
-                  <div className="flex flex-1 flex-wrap justify-end gap-2">
-                    {(["genus", "silhouette"] as const)
-                      .filter((hint) => !myBoard.hints.includes(hint))
-                      .map((hint) => {
-                        const Icon = HINT_INFO[hint].icon;
-                        return (
-                          <Button key={hint} size="sm" variant="outline" disabled={busy || live.rows.length === 0 || timeUp} onClick={() => buy(hint)}>
-                            <Icon className="h-3.5 w-3.5" aria-hidden /> {HINT_INFO[hint].label} −{DLE_DUEL_HINT_COST[hint]}
-                          </Button>
-                        );
-                      })}
+                  <GuessInput
+                    key={live.index}
+                    names={names}
+                    exclude={guessed}
+                    disabled={timeUp}
+                    placeholder={timeUp ? "Time's up" : `Guess ${live.rows.length + 1} of ${DLE_MAX_GUESSES} — type a Pokémon…`}
+                    onGuess={(entry) => {
+                      if (busy || timeUp) return false;
+                      unlockAudio();
+                      play("click");
+                      void act({ action: "guess", round: live.index, pokemon: entry[0] });
+                      return true;
+                    }}
+                    fill={fill}
+                  />
+                )}
+                {(!myBoard.done || myBoard.hints.length > 0) && (
+                  <div className="mx-auto flex max-w-md flex-wrap items-center gap-3 rounded-md border bg-card p-3 text-sm">
+                    <Lightbulb className="h-5 w-5 shrink-0 text-primary" aria-hidden />
+                    {silhouette && <img src={silhouette} alt="Silhouette hint" className="spotlight h-20 w-20 rounded-lg object-contain p-1" />}
+                    {live.hints.genus && <span className="font-medium text-foreground">{live.hints.genus}</span>}
+                    {!myBoard.done && (
+                      <div className="flex flex-1 flex-wrap justify-end gap-2">
+                        {(["genus", "silhouette"] as const)
+                          .filter((hint) => !myBoard.hints.includes(hint))
+                          .map((hint) => {
+                            const Icon = HINT_INFO[hint].icon;
+                            return (
+                              <Button key={hint} size="sm" variant="outline" disabled={busy || live.rows.length === 0 || timeUp} onClick={() => buy(hint)}>
+                                <Icon className="h-3.5 w-3.5" aria-hidden /> {HINT_INFO[hint].label} −{DLE_DUEL_HINT_COST[hint]}
+                              </Button>
+                            );
+                          })}
+                      </div>
+                    )}
+                    {live.rows.length === 0 && <p className="w-full text-xs text-muted-foreground">Hints open after your first guess. They cost points if you solve.</p>}
                   </div>
                 )}
-                {live.rows.length === 0 && <p className="w-full text-xs text-muted-foreground">Hints open after your first guess. They cost points if you solve.</p>}
               </div>
-            )}
+              <div className="hidden xl:block">
+                <OpponentBoard name={them} seat={1 - me} board={theirs} quiet={view.players[1 - me]?.quiet} />
+              </div>
+            </div>
             {live.rows.length > 0 ? (
               <Board rows={live.rows} />
             ) : (
@@ -313,9 +328,15 @@ export function PokedleDuel({ code, names }: { code: string; names: NameEntry[] 
             )}
           </div>
           {/* On a phone the opponent's progress comes first, above your (longer) board. */}
-          <div className="order-first mx-auto w-full max-w-[13rem] md:order-none">
+          <div className="order-first mx-auto w-full max-w-[13rem] md:order-none md:col-start-2 md:row-start-1 xl:hidden">
             <OpponentBoard name={them} seat={1 - me} board={theirs} quiet={view.players[1 - me]?.quiet} />
           </div>
+          <DexPanel
+            className="md:col-span-2 xl:col-span-1 xl:col-start-2 xl:row-start-1"
+            gens={view.gens}
+            guessed={guessed}
+            onPick={myBoard.done || timeUp ? undefined : (name) => setFill((f) => ({ name, n: (f?.n ?? 0) + 1 }))}
+          />
         </div>
         {leaveButton}
       </div>

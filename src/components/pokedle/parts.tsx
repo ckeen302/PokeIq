@@ -1,7 +1,7 @@
 "use client";
 
 /* eslint-disable @next/next/no-img-element -- tiny sprites; next/image adds nothing here */
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowDown, ArrowUp } from "lucide-react";
 import { DLE_COLUMNS, type CellStatus, type DleCell, type DleRow } from "@/lib/dle-types";
@@ -32,6 +32,7 @@ export function GuessInput({
   placeholder,
   onGuess,
   inputRef,
+  fill,
 }: {
   names: NameEntry[];
   /** Already guessed: left out of the list. */
@@ -40,23 +41,45 @@ export function GuessInput({
   placeholder: string;
   /** False when the guess wasn't taken (the text stays). */
   onGuess: (entry: NameEntry) => boolean;
-  inputRef?: React.Ref<HTMLInputElement>;
+  inputRef?: React.RefObject<HTMLInputElement | null>;
+  /** A name to put in the box (from the Pokédex beside the board); `n` changes with every fill. */
+  fill?: { name: string; n: number } | null;
 }) {
   const [query, setQuery] = useState("");
   const [highlight, setHighlight] = useState(0);
+  const ownRef = useRef<HTMLInputElement | null>(null);
+  const ref = inputRef ?? ownRef;
+  // A fill from before this box appeared (an earlier round) stays out of it.
+  const filled = useRef(fill?.n);
+
+  useEffect(() => {
+    if (!fill || fill.n === filled.current) return;
+    filled.current = fill.n;
+    setQuery(fill.name);
+    setHighlight(0);
+    ref.current?.focus();
+    // Only a new fill puts a name in the box; the ref never changes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fill]);
 
   const suggestions = useMemo(() => {
     const q = normalize(query);
     if (!q) return [];
+    const typed = query.trim().toLowerCase();
+    // The exact name first ("Mew" before Mewtwo, Nidoran♂ before Nidoran♀ when that's what you typed).
+    const exact: NameEntry[] = [];
+    const same: NameEntry[] = [];
     const starts: NameEntry[] = [];
     const contains: NameEntry[] = [];
     for (const entry of names) {
       if (exclude.has(entry[0])) continue;
       const n = normalize(entry[1]);
-      if (n.startsWith(q)) starts.push(entry);
+      if (entry[1].toLowerCase() === typed) exact.push(entry);
+      else if (n === q) same.push(entry);
+      else if (n.startsWith(q)) starts.push(entry);
       else if (n.includes(q)) contains.push(entry);
     }
-    return [...starts, ...contains].slice(0, 7);
+    return [...exact, ...same, ...starts, ...contains].slice(0, 7);
   }, [query, names, exclude]);
 
   function submit(entry: NameEntry | undefined) {
@@ -68,7 +91,7 @@ export function GuessInput({
   return (
     <div className="relative mx-auto max-w-md">
       <input
-        ref={inputRef}
+        ref={ref}
         value={query}
         onChange={(e) => {
           setQuery(e.target.value);

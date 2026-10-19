@@ -35,6 +35,13 @@ export const DLE_COLUMNS: { key: DleColumn; label: string }[] = [
   { key: "stage", label: "Stage" },
 ];
 
+/**
+ * One guessable Pokémon for the reference Pokédex beside the board: the
+ * attributes Pokédle's clues are about (height in decimetres, weight in
+ * hectograms, as the board's clues compare them).
+ */
+export type DleDexRow = [id: number, name: string, gen: number, type1: string, type2: string | null, height: number, weight: number, color: string, stage: number];
+
 export const DLE_MAX_GUESSES = 8;
 /** Wrong guesses needed to unlock each hint. */
 export const DLE_HINTS = { silhouette: 4, genus: 6 } as const;

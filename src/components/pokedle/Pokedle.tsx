@@ -16,6 +16,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { NextDailyCountdown } from "@/components/NextDailyCountdown";
 import { CopyFallback } from "@/components/quiz/CopyFallback";
 import { Board, GuessInput, type NameEntry } from "./parts";
+import { DexPanel } from "./DexPanel";
 import { cn } from "@/lib/utils";
 
 type Target = { kind: "daily"; date: string } | { kind: "practice"; seed: string };
@@ -43,6 +44,8 @@ export function Pokedle({ names }: { names: NameEntry[] }) {
   /** Only a guess the player just made should make a sound (not restores). */
   const guessedRef = useRef(false);
   const inputRef = useRef<HTMLInputElement | null>(null);
+  /** A Pokémon clicked in the Pokédex beside the board, for the guess box. */
+  const [fill, setFill] = useState<{ name: string; n: number } | null>(null);
 
   const evaluate = useCallback(async (list: number[], target: Target) => {
     const id = ++reqRef.current;
@@ -150,101 +153,110 @@ export function Pokedle({ names }: { names: NameEntry[] }) {
   const misses = state ? state.rows.filter((r) => !r.solved).length : 0;
 
   return (
-    <div className="mx-auto max-w-3xl space-y-6">
-      <div className="space-y-2 text-center">
-        <p className="hud-label text-screen">
-          {mode === "practice" ? "Pokédle · Practice" : date ? `Pokédle #${dailyNumber(date)}` : "Pokédle"}
-        </p>
-        <h1 className="font-display text-4xl font-bold uppercase tracking-tight sm:text-5xl">Guess the mystery Pokémon</h1>
-        <p className="text-sm text-muted-foreground">
-          {DLE_MAX_GUESSES} guesses. 🟩 match · 🟨 right type, wrong slot · ▲▼ the answer is higher / lower.
-        </p>
-      </div>
+    // The game, and beside it (below on smaller screens) the reference Pokédex.
+    <div className="mx-auto grid max-w-3xl gap-6 xl:max-w-none xl:grid-cols-[minmax(0,1fr)_30rem] xl:items-start">
+      <div className="min-w-0 space-y-6">
+        <div className="space-y-2 text-center">
+          <p className="hud-label text-screen">
+            {mode === "practice" ? "Pokédle · Practice" : date ? `Pokédle #${dailyNumber(date)}` : "Pokédle"}
+          </p>
+          <h1 className="font-display text-4xl font-bold uppercase tracking-tight sm:text-5xl">Guess the mystery Pokémon</h1>
+          <p className="text-sm text-muted-foreground">
+            {DLE_MAX_GUESSES} guesses. 🟩 match · 🟨 right type, wrong slot · ▲▼ the answer is higher / lower.
+          </p>
+        </div>
 
-      {!over && (
-        <GuessInput
-          // A new puzzle starts with an empty box.
-          key={mode === "daily" ? date : practiceSeed}
-          inputRef={inputRef}
-          names={names}
-          exclude={guessedIds}
-          disabled={mode === "daily" && !date}
-          placeholder={`Guess ${guesses.length + 1} of ${DLE_MAX_GUESSES} — type a Pokémon…`}
-          onGuess={submitGuess}
-        />
-      )}
+        {!over && (
+          <GuessInput
+            // A new puzzle starts with an empty box.
+            key={mode === "daily" ? date : practiceSeed}
+            inputRef={inputRef}
+            names={names}
+            exclude={guessedIds}
+            disabled={mode === "daily" && !date}
+            placeholder={`Guess ${guesses.length + 1} of ${DLE_MAX_GUESSES} — type a Pokémon…`}
+            onGuess={submitGuess}
+            fill={fill}
+          />
+        )}
 
-      {error && <p className="text-center text-sm text-destructive">{error}</p>}
+        {error && <p className="text-center text-sm text-destructive">{error}</p>}
 
-      {!over && (state?.hints.silhouetteUrl || state?.hints.genus || guesses.length > 0) && (
-        <div className="mx-auto flex max-w-md items-center gap-4 rounded-md border bg-card p-3 text-sm">
-          <Lightbulb className="h-5 w-5 shrink-0 text-primary" aria-hidden />
-          {state?.hints.silhouetteUrl ? (
-            <img src={state.hints.silhouetteUrl} alt="Silhouette hint" className="spotlight h-20 w-20 rounded-lg object-contain p-1" />
-          ) : null}
-          <div className="space-y-0.5 text-muted-foreground">
-            <div>{state?.hints.silhouetteUrl ? "Silhouette unlocked" : `Silhouette hint after ${DLE_HINTS.silhouette} misses (${Math.min(misses, DLE_HINTS.silhouette)}/${DLE_HINTS.silhouette})`}</div>
-            <div>
-              {state?.hints.genus ? (
-                <span className="font-medium text-foreground">{state.hints.genus}</span>
-              ) : (
-                `Category hint after ${DLE_HINTS.genus} misses`
-              )}
+        {!over && (state?.hints.silhouetteUrl || state?.hints.genus || guesses.length > 0) && (
+          <div className="mx-auto flex max-w-md items-center gap-4 rounded-md border bg-card p-3 text-sm">
+            <Lightbulb className="h-5 w-5 shrink-0 text-primary" aria-hidden />
+            {state?.hints.silhouetteUrl ? (
+              <img src={state.hints.silhouetteUrl} alt="Silhouette hint" className="spotlight h-20 w-20 rounded-lg object-contain p-1" />
+            ) : null}
+            <div className="space-y-0.5 text-muted-foreground">
+              <div>{state?.hints.silhouetteUrl ? "Silhouette unlocked" : `Silhouette hint after ${DLE_HINTS.silhouette} misses (${Math.min(misses, DLE_HINTS.silhouette)}/${DLE_HINTS.silhouette})`}</div>
+              <div>
+                {state?.hints.genus ? (
+                  <span className="font-medium text-foreground">{state.hints.genus}</span>
+                ) : (
+                  `Category hint after ${DLE_HINTS.genus} misses`
+                )}
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {over && state?.answer && (
-        <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}>
-          <Card className={cn("mx-auto max-w-md", state.solved ? "border-success/50" : "border-destructive/40")}>
-            <CardContent className="space-y-4 p-6 text-center">
-              <img src={state.answer.imageUrl} alt={state.answer.name} className="mx-auto h-36 w-36 object-contain" />
-              <div>
-                <div className="text-2xl font-bold">{state.solved ? `Got it in ${state.rows.length}!` : "So close!"}</div>
-                <div className="text-muted-foreground">
-                  It was <b className="text-foreground">{state.answer.name}</b>, the {state.answer.genus}.
+        {over && state?.answer && (
+          <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}>
+            <Card className={cn("mx-auto max-w-md", state.solved ? "border-success/50" : "border-destructive/40")}>
+              <CardContent className="space-y-4 p-6 text-center">
+                <img src={state.answer.imageUrl} alt={state.answer.name} className="mx-auto h-36 w-36 object-contain" />
+                <div>
+                  <div className="text-2xl font-bold">{state.solved ? `Got it in ${state.rows.length}!` : "So close!"}</div>
+                  <div className="text-muted-foreground">
+                    It was <b className="text-foreground">{state.answer.name}</b>, the {state.answer.genus}.
+                  </div>
                 </div>
-              </div>
-              <div className="grid gap-2 sm:grid-cols-2">
-                {mode === "daily" ? (
-                  <Button onClick={share}>
-                    {copied ? <Check className="h-4 w-4" /> : <Share2 className="h-4 w-4" />} {copied ? "Copied!" : "Share"}
+                <div className="grid gap-2 sm:grid-cols-2">
+                  {mode === "daily" ? (
+                    <Button onClick={share}>
+                      {copied ? <Check className="h-4 w-4" /> : <Share2 className="h-4 w-4" />} {copied ? "Copied!" : "Share"}
+                    </Button>
+                  ) : (
+                    <Button variant="outline" onClick={backToDaily}>Today&apos;s Pokédle</Button>
+                  )}
+                  <Button variant={mode === "daily" ? "outline" : "default"} onClick={newPractice}>
+                    <RefreshCw className="h-4 w-4" /> {mode === "daily" ? "Practice mode" : "New puzzle"}
                   </Button>
-                ) : (
-                  <Button variant="outline" onClick={backToDaily}>Today&apos;s Pokédle</Button>
+                </div>
+                {mode === "daily" && today && date !== today && (
+                  <Button className="w-full" onClick={backToDaily}>
+                    Play today&apos;s Pokédle
+                  </Button>
                 )}
-                <Button variant={mode === "daily" ? "outline" : "default"} onClick={newPractice}>
-                  <RefreshCw className="h-4 w-4" /> {mode === "daily" ? "Practice mode" : "New puzzle"}
-                </Button>
-              </div>
-              {mode === "daily" && today && date !== today && (
-                <Button className="w-full" onClick={backToDaily}>
-                  Play today&apos;s Pokédle
-                </Button>
-              )}
-              {copyFallback && <CopyFallback text={copyFallback} />}
-              {mode === "daily" && <NextDailyCountdown label="Next Pokédle in" />}
-              {mode === "daily" && progress && today && currentStreak(progress.dle.last, progress.dle.streak, today) > 0 && (
-                <p className="text-sm font-semibold text-orange-400">
-                  🔥 {currentStreak(progress.dle.last, progress.dle.streak, today)}-day solve streak
-                </p>
-              )}
-            </CardContent>
-          </Card>
-        </motion.div>
-      )}
+                {copyFallback && <CopyFallback text={copyFallback} />}
+                {mode === "daily" && <NextDailyCountdown label="Next Pokédle in" />}
+                {mode === "daily" && progress && today && currentStreak(progress.dle.last, progress.dle.streak, today) > 0 && (
+                  <p className="text-sm font-semibold text-orange-400">
+                    🔥 {currentStreak(progress.dle.last, progress.dle.streak, today)}-day solve streak
+                  </p>
+                )}
+              </CardContent>
+            </Card>
+          </motion.div>
+        )}
 
-      {state && state.rows.length > 0 && <Board rows={state.rows} />}
+        {state && state.rows.length > 0 && <Board rows={state.rows} />}
 
-      {!over && mode === "daily" && (
-        <p className="text-center text-xs text-muted-foreground">
-          Want more?{" "}
-          <button type="button" onClick={newPractice} className="text-primary hover:underline">
-            Play unlimited practice puzzles
-          </button>
-        </p>
-      )}
+        {!over && mode === "daily" && (
+          <p className="text-center text-xs text-muted-foreground">
+            Want more?{" "}
+            <button type="button" onClick={newPractice} className="text-primary hover:underline">
+              Play unlimited practice puzzles
+            </button>
+          </p>
+        )}
+      </div>
+      <DexPanel
+        className="xl:sticky xl:top-20"
+        guessed={guessedIds}
+        onPick={over || (mode === "daily" && !date) ? undefined : (name) => setFill((f) => ({ name, n: (f?.n ?? 0) + 1 }))}
+      />
     </div>
   );
 }
