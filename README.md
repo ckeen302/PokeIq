@@ -33,6 +33,7 @@ Every question is generated on demand from a snapshot of all 1,025 Pokémon. No 
 | **World atlas** | Every mainline region on one zoomable map, laid out like the real places they're based on, with every town, route and landmark labelled from the games' own maps |
 | **PokéGuessr Duels** | Head-to-head PvP, GeoGuessr Duels style: pick a map, send a friend the link, both press Ready and you get the same places. Once one of you guesses, the other has 15 seconds. 6,000 HP each: every round the lower score loses the difference, times a multiplier that climbs from ×1.5 (round 4) to ×3. First to 0 HP loses, more HP wins after 10 rounds, leaving forfeits, and a rematch is one click |
 | **Pokédle Duels** | Head-to-head Pokédle through a share link: three rounds, the same mystery Pokémon for both of you (never the day's solo answer, from all generations or the ones the creator picks). A solve scores 1,000 on the first guess down to 300 on the last, plus up to 150 for speed; hints are opt-in and cost points (category −150, silhouette −300). You see your opponent's colours and hint badges as they play, never their Pokémon. The most points wins, then fewer guesses, then less time |
+| **Quiz Duels** | Any quiz mode and difficulty, head to head through a share link: the same 10 questions for both of you (built on the server from one seed), 15 seconds each. You see when your opponent locks in, never what they picked; the reveal shows the right answer and both picks. A points race: 100 for a right answer plus up to 50 for speed, the most points after 10 questions wins. Start one from any quiz's setup screen or the game modes page |
 | **Who's That Pokémon?** | Silhouettes rendered on the server, with a "zoomed-in" hard mode that always frames recognisable outline |
 | **Cry Quiz** | Identify Pokémon by their in-game cry |
 | **Dex Detective** | Censored Pokédex entries, categories ("the Seed Pokémon") and abilities |
@@ -121,7 +122,7 @@ Every PokéGuessr map is the world atlas: the whole world, or one region's part 
 
 A duel is one row on the server (`geo_duels`, RLS-locked to the service role), and `src/lib/server/duel.ts` applies every rule as a pure function of the duel and the time. Nothing runs on a timer: each poll or action catches the duel up on whatever is due (a round closing 15 s after the first guess or 90 s after it started, the next round starting, a trainer who hasn't been heard from in 30 s forfeiting), dated by the rules rather than by when the request arrived, so both players see the same duel. Writes are a compare-and-swap on the row's version, so two players acting at once never overwrite each other. Each player holds a signed token for their seat, and views are cut per player: a round's answer and the opponent's pin only leave the server in the reveal. Clients poll every second in play. Without Supabase (or with `POKEIQ_LOCAL_ACCOUNTS=1`) duels live in memory, which is right for one server process; production needs Supabase for them.
 
-Pokédle duels (and any later kind) share one table, `duels`, with a `kind` column, and one API (`/api/duel`, `/api/duel/<code>`). `src/lib/server/duel-core.ts` holds what every duel shares (signed seats, the lobby, presence, forfeits, rematches) and each game plugs in its own rules: `src/lib/server/pokedle-duel.ts` keeps the round's secret and both trainers' guesses on the server and sends each trainer their own clues in full, but the opponent's only as colours and hint badges until the round is over.
+Pokédle and quiz duels share one table, `duels`, with a `kind` column, and one API (`/api/duel`, `/api/duel/<code>`). `src/lib/server/duel-core.ts` holds what every duel shares (signed seats, the lobby, presence, forfeits, rematches) and each game plugs in its own rules. `src/lib/server/pokedle-duel.ts` keeps the round's secret and both trainers' guesses on the server and sends each trainer their own clues in full, but the opponent's only as colours and hint badges until the round is over. `src/lib/server/quiz-duel.ts` builds each question with the solo quiz's engines from the duel's seed and sends it only once it starts (with media behind the usual encrypted tokens); the answer and both picks go out in the reveal. On the client, `src/components/duel/` has the polling hook and the lobby every duel uses, PokéGuessr's included.
 
 ## Getting started
 
@@ -203,7 +204,7 @@ src/
 │   └── c/[token]                 # challenge links + dynamic OG image
 └── components/                   # QuizController (one runtime for every mode)
 scripts/ingest-pokedex.ts · ingest-details.ts · silhouette-lookalikes.ts · e2e-smoke.mjs
-supabase/migrations/          # 0001 schema · 0002 adaptive test · 0003 hardening · 0004 accounts · 0005 PokéGuessr · 0006 PokéGuessr maps · 0007 PokéGuessr duels · 0008 duels (Pokédle)
+supabase/migrations/          # 0001 schema · 0002 adaptive test · 0003 hardening · 0004 accounts · 0005 PokéGuessr · 0006 PokéGuessr maps · 0007 PokéGuessr duels · 0008 duels (Pokédle, quizzes)
 tests/
 ```
 

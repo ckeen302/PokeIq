@@ -1,9 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useId, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2, Swords } from "lucide-react";
-import { pvpHref, type PvpKind, type PvpSeatResponse } from "@/lib/pvp-types";
 import { saveSeat } from "@/lib/duel-seat";
 import { setTrainerName, useProgress } from "@/lib/progress";
 import { unlockAudio } from "@/lib/sound";
@@ -11,25 +10,30 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 
 /**
- * "Duel a friend": opens a duel (POST /api/duel) and goes to its lobby, where
- * the share link is. `settings` are the game's own choices (a quiz's mode and
- * difficulty), and `children` the controls that pick them.
+ * "Duel a friend": opens a duel and goes to its lobby, where the share link
+ * is. `body` is what the endpoint needs besides the trainer's name (the game,
+ * a map, a quiz's mode and difficulty), and `children` the controls that pick
+ * it.
  */
 export function NewDuelCard({
-  kind,
-  settings,
+  endpoint = "/api/duel",
+  body,
+  href,
   heading,
   blurb,
   children,
 }: {
-  kind: PvpKind;
-  settings?: Record<string, unknown>;
+  endpoint?: string;
+  body: Record<string, unknown>;
+  /** The new duel's page. */
+  href: (code: string) => string;
   heading: string;
   blurb: React.ReactNode;
   children?: React.ReactNode;
 }) {
   const router = useRouter();
   const progress = useProgress();
+  const id = useId();
   const [name, setName] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -44,16 +48,16 @@ export function NewDuelCard({
     setBusy(true);
     setError(null);
     try {
-      const res = await fetch("/api/duel", {
+      const res = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...settings, kind, name }),
+        body: JSON.stringify({ ...body, name }),
       });
-      const data = (await res.json().catch(() => ({}))) as Partial<PvpSeatResponse> & { error?: string };
+      const data = (await res.json().catch(() => ({}))) as { code?: string; token?: string; error?: string };
       if (!res.ok || !data.code || !data.token) throw new Error(data.error ?? `Request failed (${res.status})`);
       saveSeat(data.code, data.token);
       if (!progress?.name) setTrainerName(name);
-      router.push(pvpHref(kind, data.code));
+      router.push(href(data.code));
     } catch (err) {
       setError(err instanceof Error ? err.message : "Couldn't open a duel.");
       setBusy(false);
@@ -77,11 +81,11 @@ export function NewDuelCard({
           )}
         </CardContent>
         <div className="flex flex-col justify-center gap-2 p-6 pt-0 md:w-72 md:pt-6">
-          <label htmlFor={`duel-name-${kind}`} className="hud-label">
+          <label htmlFor={id} className="hud-label">
             Your trainer name
           </label>
           <input
-            id={`duel-name-${kind}`}
+            id={id}
             value={name}
             onChange={(e) => setName(e.target.value)}
             maxLength={24}

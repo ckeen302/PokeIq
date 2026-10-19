@@ -15,7 +15,8 @@ const LOGO_DATA_URI = `data:image/svg+xml;base64,${Buffer.from(LOGO_SVG).toStrin
 const TEASER = ["#22c55e", "#eab308", "#334155", "#22c55e", "#334155", "#334155", "#22c55e"];
 
 export default async function Image({ params }: { params: Promise<{ code: string }> }) {
-  const duel = await pvpStore.peek((await params).code);
+  const found = await pvpStore.peek((await params).code);
+  const duel = found?.kind === "pokedle" ? found : undefined;
   const [host, guest] = duel?.players.map((p) => p.name) ?? [];
 
   return new ImageResponse(

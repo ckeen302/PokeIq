@@ -15,7 +15,7 @@ export default function PokedlePage() {
   return (
     <div className="space-y-10">
       <Pokedle names={names} />
-      <div className="mx-auto max-w-3xl">
+      <div id="duel" className="mx-auto max-w-3xl scroll-mt-24">
         <PokedleDuelCard />
       </div>
     </div>

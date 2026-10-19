@@ -207,7 +207,7 @@ export function mediaUrl(ref: MediaRef): string {
   return `/api/media/${encryptJson({ k: ref.kind, id: ref.pokemonId, x: Date.now() + MEDIA_TTL_MS })}`;
 }
 
-function toPublic(q: Question, index: number, rules: FormatRules): PublicQuestion {
+export function toPublic(q: Question, index: number, rules: FormatRules): PublicQuestion {
   return {
     index,
     module: q.module,
@@ -237,7 +237,7 @@ function skillTags(q: Question): string[] {
   return tags;
 }
 
-function learnHref(q: Question): string | undefined {
+export function learnHref(q: Question): string | undefined {
   const id = q.revealMedia?.pokemonId ?? q.media?.pokemonId;
   const slug = id ? getPokemon(id)?.slug : undefined;
   return slug ? `/pokemon/${slug}` : undefined;

@@ -5,15 +5,27 @@ import { duelNameSchema, pvpToken } from "@/lib/server/duel-core";
 import { duelsEnabled, newDuelCode, pvpStore } from "@/lib/server/duel-store";
 import { duelView, type PvpDuel } from "@/lib/server/duels";
 import { createPokedleDuel } from "@/lib/server/pokedle-duel";
+import { createQuizDuel } from "@/lib/server/quiz-duel";
+import { DIFFICULTIES, MODULES } from "@/engines/types";
+import { PLAY_MODULES } from "@/lib/modes";
 import type { PvpSeatResponse } from "@/lib/pvp-types";
 
 /**
  * POST /api/duel — open a duel and return its code, the creator's player
  * token and the lobby:
- *   { kind: "pokedle", name }    a Pokédle duel; the friend joins at /pokedle/duel/<code>
+ *   { kind: "pokedle", name }                        a Pokédle duel, at /pokedle/duel/<code>
+ *   { kind: "quiz", name, module, difficulty }       a quiz duel, at /quiz/duel/<code>
  */
 
-const bodySchema = z.discriminatedUnion("kind", [z.object({ kind: z.literal("pokedle"), name: duelNameSchema })]);
+const bodySchema = z.discriminatedUnion("kind", [
+  z.object({ kind: z.literal("pokedle"), name: duelNameSchema }),
+  z.object({
+    kind: z.literal("quiz"),
+    name: duelNameSchema,
+    module: z.enum(MODULES).refine((m) => PLAY_MODULES.includes(m), "Unknown quiz mode."),
+    difficulty: z.enum(DIFFICULTIES).default("medium"),
+  }),
+]);
 
 export async function POST(request: NextRequest) {
   if (!rateLimit(`duel-new:${clientIp(request)}`, 10, 0.2)) {
@@ -29,9 +41,11 @@ export async function POST(request: NextRequest) {
   try {
     for (let attempt = 0; attempt < 4; attempt++) {
       const now = Date.now();
-      const { duel, playerId }: { duel: PvpDuel; playerId: string } = createPokedleDuel(body.name, newDuelCode(), now);
+      const code = newDuelCode();
+      const { duel, playerId }: { duel: PvpDuel; playerId: string } =
+        body.kind === "pokedle" ? createPokedleDuel(body.name, code, now) : createQuizDuel(body.module, body.difficulty, body.name, code, now);
       if (!(await pvpStore.insert(duel))) continue; // code taken: roll another
-      const seat: PvpSeatResponse = { code: duel.code, token: pvpToken(duel.code, playerId), view: duelView(duel, playerId, now, 0) };
+      const seat: PvpSeatResponse = { code, token: pvpToken(code, playerId), view: duelView(duel, playerId, now, 0) };
       return NextResponse.json(seat, { headers: { "Cache-Control": "no-store" } });
     }
     return NextResponse.json({ error: "Couldn't open a duel. Try again." }, { status: 503 });

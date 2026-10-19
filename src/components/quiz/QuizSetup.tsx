@@ -8,6 +8,7 @@ import { FORMAT_INFO, MODULE_INFO, PLAYABLE_FORMATS } from "@/lib/modes";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { QuizController, type StartRequest } from "./QuizController";
+import { QuizDuelCard } from "./QuizDuelCard";
 import { cn } from "@/lib/utils";
 
 /**
@@ -113,6 +114,9 @@ export function QuizSetup({ module, initialFormat, initialDifficulty = "medium",
               </Button>
             </CardContent>
           </Card>
+          <div className="mx-auto mt-6 max-w-2xl">
+            <QuizDuelCard module={module} difficulty={difficulty} />
+          </div>
         </motion.div>
       )}
     </AnimatePresence>

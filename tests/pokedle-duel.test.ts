@@ -10,7 +10,8 @@ import {
   skipPokedleReveal,
   type PokedleDuel,
 } from "@/lib/server/pokedle-duel";
-import { joinDuel, leaveDuel, linkRematch, readyDuel, rematchOf, takeRematchSeat, touchDuel } from "@/lib/server/duels";
+import { asKind, joinDuel, leaveDuel, linkRematch, readyDuel, rematchOf, takeRematchSeat, touchDuel } from "@/lib/server/duels";
+import { answerQuiz } from "@/lib/server/quiz-duel";
 import { pvpToken, readPvpToken, type PvpFailure, type PvpOutcome } from "@/lib/server/duel-core";
 import { duelToken, readDuelToken } from "@/lib/server/duel";
 import { pvpStore } from "@/lib/server/duel-store";
@@ -430,12 +431,14 @@ describe("pokédle duel: store", () => {
     vi.setSystemTime(duel.rounds[0].startsAt + SECOND);
     const [a, b] = misses(duel, 2);
     const [x, y] = await Promise.all([
-      pvpStore.update(code, (d, now) => guessPokedle(d, red, 0, a, now)),
-      pvpStore.update(code, (d, now) => guessPokedle(d, blue, 0, b, now)),
+      pvpStore.update(code, (d, now) => asKind(d, "pokedle", (p) => guessPokedle(p, red, 0, a, now))),
+      pvpStore.update(code, (d, now) => asKind(d, "pokedle", (p) => guessPokedle(p, blue, 0, b, now))),
     ]);
     expect(x.ok && y.ok).toBe(true);
+    // A quiz move on a Pokédle duel is refused.
+    expect((await pvpStore.update(code, (d, now) => asKind(d, "quiz", (q) => answerQuiz(q, red, 0, "Pikachu", now)))).ok).toBe(false);
     const after = (await pvpStore.load(code))!;
-    expect(after.duel.rounds[0].guesses.map((g) => g.map((v) => v.id))).toEqual([[a], [b]]);
+    expect((after.duel as PokedleDuel).rounds[0].guesses.map((g) => g.map((v) => v.id))).toEqual([[a], [b]]);
     expect(after.version).toBe(2);
     expect(await pvpStore.save(after.duel, 1)).toBe(false);
   });

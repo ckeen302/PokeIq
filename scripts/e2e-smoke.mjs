@@ -402,6 +402,91 @@ await dleBlue.p.getByText("Red left the duel.").waitFor();
 await dleBlue.p.getByText("Victory!").waitFor();
 for (const { p } of dle) await p.context().close();
 
+// A quiz duel: Who's That Pokémon on easy, ten questions. Red answers first;
+// Blue sees Red lock in (never the pick), then answers.
+step("quiz duel: create, join, ready");
+const quiz = [];
+for (const name of ["Red", "Blue"]) {
+  const p = await newPage({ width: 1280, height: 900 });
+  const seen = { rev: -1, view: null };
+  p.on("response", async (res) => {
+    if (!/\/api\/duel(\/|$)/.test(res.url()) || !res.ok()) return;
+    const body = await res.json().catch(() => null);
+    const view = body?.view ?? body;
+    if (!view || typeof view.rev !== "number") return;
+    // The live question never carries the answer, the explanation or anyone's pick.
+    if (view.question && /"(answer|explanation|revealUrl|picks|choice)"/.test(JSON.stringify(view.question))) {
+      errors.push(`quiz duel question leaked before the reveal: ${JSON.stringify(view.question).slice(0, 300)}`);
+    }
+    if (view.rev >= seen.rev) Object.assign(seen, { rev: view.rev, view });
+  });
+  quiz.push({ p, name, seen });
+}
+const [quizRed, quizBlue] = quiz;
+await quizRed.p.goto(`${BASE}/quiz/whos-that-pokemon`, { waitUntil: "networkidle" });
+await quizRed.p.getByRole("button", { name: "easy", exact: true }).last().click();
+await quizRed.p.getByLabel("Your trainer name").fill("Red");
+await quizRed.p.getByRole("button", { name: /Create duel/ }).click();
+await quizRed.p.waitForURL(/\/quiz\/duel\/[a-z2-9]{8}$/);
+const quizUrl = quizRed.p.url();
+await quizRed.p.getByText("Waiting for a challenger").waitFor();
+await quizRed.p.screenshot({ path: `${OUT}/quiz-duel-lobby.png` });
+const quizOg = await quizRed.p.request.get(`${quizUrl}/opengraph-image`);
+if (quizOg.status() !== 200) errors.push(`quiz duel OG image returned ${quizOg.status()}`);
+else fs.writeFileSync(`${OUT}/quiz-duel-og.png`, await quizOg.body());
+// A quiz duel's link on the Pokédle duel route goes to the right page.
+await quizBlue.p.goto(quizUrl.replace("/quiz/duel/", "/pokedle/duel/"), { waitUntil: "networkidle" });
+await quizBlue.p.waitForURL(quizUrl);
+await quizBlue.p.getByText("Red challenges you!").waitFor();
+await quizBlue.p.getByText("Easy", { exact: true }).waitFor();
+await quizBlue.p.getByLabel("Your trainer name").fill("Blue");
+await quizBlue.p.getByRole("button", { name: /Join duel/ }).click();
+await quizRed.p.getByText("Blue").first().waitFor();
+await Promise.all(quiz.map(({ p }) => p.getByRole("button", { name: /^Ready$/ }).click()));
+
+step("quiz duel: ten questions to the end");
+/** Answers every question with `key` (Blue waits for Red to lock in first), until the results. */
+async function playQuizDuel({ p, name, seen }, key, shoot) {
+  const next = p.getByRole("button", { name: /Next question|See results/ });
+  let sawLock = false;
+  for (let i = 0; i < 800; i++) {
+    if ((await next.isVisible()) && (await next.isEnabled())) {
+      if (shoot) await p.screenshot({ path: `${OUT}/quiz-duel-reveal.png`, fullPage: true });
+      shoot = false;
+      const label = await next.innerText();
+      await next.click({ timeout: 5_000 }).catch(() => {});
+      if (/results/i.test(label)) return;
+      await p.waitForTimeout(300);
+      continue;
+    }
+    const live = seen.view?.question;
+    if (live?.question && !live.yours && (await p.getByText("TIME", { exact: true }).isVisible())) {
+      if (name === "Blue") {
+        if (!live.answered[0]) {
+          await p.waitForTimeout(100);
+          continue;
+        }
+        if (!sawLock) {
+          await p.getByText("Red has locked in!").waitFor({ timeout: 5_000 });
+          sawLock = true;
+        }
+      }
+      if (shoot && name === "Red" && live.index === 0) await p.screenshot({ path: `${OUT}/quiz-duel-question.png` });
+      await p.keyboard.press(key);
+      for (let w = 0; w < 50 && seen.view?.question?.index === live.index && !seen.view.question.yours; w++) await p.waitForTimeout(100);
+      continue;
+    }
+    await p.waitForTimeout(150);
+  }
+  throw new Error(`${name}'s quiz duel didn't end`);
+}
+await Promise.all([playQuizDuel(quizRed, "1", true), playQuizDuel(quizBlue, "2", false)]);
+await quizRed.p.getByText(/Victory!|Defeat|Draw/).first().waitFor();
+await quizBlue.p.getByText(/Victory!|Defeat|Draw/).first().waitFor();
+await quizRed.p.screenshot({ path: `${OUT}/quiz-duel-summary.png`, fullPage: true });
+if (quizRed.seen.view?.revealed?.length !== 10) errors.push(`quiz duel ended after ${quizRed.seen.view?.revealed?.length} questions`);
+for (const { p } of quiz) await p.context().close();
+
 step("world atlas: search, place card, link into PokéGuessr");
 await page.goto(`${BASE}/atlas`, { waitUntil: "networkidle" });
 await page.getByLabel("Search the map").fill("Saffron City");

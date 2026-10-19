@@ -3,10 +3,11 @@ import { z } from "zod";
 import { clientIp, rateLimit } from "@/lib/server/rate-limit";
 import { duelNameSchema, pvpToken, readPvpToken, type PvpFailure } from "@/lib/server/duel-core";
 import { duelsEnabled, newDuelCode, pvpStore } from "@/lib/server/duel-store";
-import { duelView, joinDuel, leaveDuel, linkRematch, readyDuel, rematchOf, takeRematchSeat, touchDuel } from "@/lib/server/duels";
-import { buyPokedleHint, guessPokedle, setPokedleGens, skipPokedleReveal } from "@/lib/server/pokedle-duel";
+import { asKind, duelView, joinDuel, leaveDuel, linkRematch, readyDuel, rematchOf, skipReveal, takeRematchSeat, touchDuel } from "@/lib/server/duels";
+import { buyPokedleHint, guessPokedle, setPokedleGens } from "@/lib/server/pokedle-duel";
+import { answerQuiz } from "@/lib/server/quiz-duel";
 import { DUEL_CODE_RE } from "@/lib/duel-types";
-import { DLE_DUEL_HINTS, DLE_DUEL_ROUNDS, type PvpSeatResponse } from "@/lib/pvp-types";
+import { DLE_DUEL_HINTS, QUIZ_DUEL_QUESTIONS, type PvpSeatResponse } from "@/lib/pvp-types";
 
 /**
  * GET  /api/duel/:code — the duel as you may see it (header x-duel-token:
@@ -18,6 +19,7 @@ import { DLE_DUEL_HINTS, DLE_DUEL_ROUNDS, type PvpSeatResponse } from "@/lib/pvp
  *   { action: "gens", token, gens }               Pokédle, in the lobby: the creator picks the generations
  *   { action: "guess", token, round, pokemon }    Pokédle: guess a Pokémon (by id)
  *   { action: "hint", token, round, hint }        Pokédle: buy a hint ("genus" or "silhouette")
+ *   { action: "answer", token, round, choice }    quiz: lock in an answer to question `round`
  *   { action: "next", token, round }              end the reveal early (once both press it)
  *   { action: "leave", token }                    leave the lobby, or forfeit
  *   { action: "rematch", token }                  a new duel with the same game and trainers
@@ -25,7 +27,8 @@ import { DLE_DUEL_HINTS, DLE_DUEL_ROUNDS, type PvpSeatResponse } from "@/lib/pvp
 
 const NO_STORE = { "Cache-Control": "no-store" };
 const token = z.string().min(10).max(512);
-const round = z.number().int().min(0).max(DLE_DUEL_ROUNDS);
+/** A Pokédle round or a quiz question. */
+const round = z.number().int().min(0).max(QUIZ_DUEL_QUESTIONS);
 
 const bodySchema = z.discriminatedUnion("action", [
   z.object({ action: z.literal("join"), name: duelNameSchema }),
@@ -33,6 +36,7 @@ const bodySchema = z.discriminatedUnion("action", [
   z.object({ action: z.literal("gens"), token, gens: z.array(z.number().int().min(1).max(9)).max(9) }),
   z.object({ action: z.literal("guess"), token, round, pokemon: z.number().int().positive().max(100_000) }),
   z.object({ action: z.literal("hint"), token, round, hint: z.enum(DLE_DUEL_HINTS) }),
+  z.object({ action: z.literal("answer"), token, round, choice: z.string().min(1).max(200) }),
   z.object({ action: z.literal("next"), token, round }),
   z.object({ action: z.literal("leave"), token }),
   z.object({ action: z.literal("rematch"), token }),
@@ -99,13 +103,15 @@ export async function POST(request: NextRequest, context: Context) {
         case "ready":
           return readyDuel(duel, playerId, body.ready, now);
         case "gens":
-          return setPokedleGens(duel, playerId, body.gens, now);
+          return asKind(duel, "pokedle", (d) => setPokedleGens(d, playerId, body.gens, now));
         case "guess":
-          return guessPokedle(duel, playerId, body.round, body.pokemon, now);
+          return asKind(duel, "pokedle", (d) => guessPokedle(d, playerId, body.round, body.pokemon, now));
         case "hint":
-          return buyPokedleHint(duel, playerId, body.round, body.hint, now);
+          return asKind(duel, "pokedle", (d) => buyPokedleHint(d, playerId, body.round, body.hint, now));
+        case "answer":
+          return asKind(duel, "quiz", (d) => answerQuiz(d, playerId, body.round, body.choice, now));
         case "next":
-          return skipPokedleReveal(duel, playerId, body.round, now);
+          return skipReveal(duel, playerId, body.round, now);
         case "leave":
           return leaveDuel(duel, playerId, now);
       }

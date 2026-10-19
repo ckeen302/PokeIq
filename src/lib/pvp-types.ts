@@ -6,8 +6,10 @@
 
 import { DLE_MAX_GUESSES, type CellStatus, type DleRow } from "./dle-types";
 import type { DuelPlayerView, DuelStatus } from "./duel-types";
+import type { Difficulty, ModuleId } from "@/engines/types";
+import type { PublicQuestion } from "./session-types";
 
-export const PVP_KINDS = ["pokedle"] as const;
+export const PVP_KINDS = ["pokedle", "quiz"] as const;
 export type PvpKind = (typeof PVP_KINDS)[number];
 
 /** "Round 2" shows for a moment before play, so both trainers start together. */
@@ -139,7 +141,80 @@ export interface DleDuelView extends PvpViewBase {
   next?: { at: number; pressed: boolean[] };
 }
 
-export type PvpView = DleDuelView;
+// ---------------------------------------------------------------------------
+// Quiz duels
+// ---------------------------------------------------------------------------
+
+/** Ten questions, the same for both trainers. */
+export const QUIZ_DUEL_QUESTIONS = 10;
+/** Each question is open this long. */
+export const QUIZ_DUEL_QUESTION_MS = 15_000;
+/** The reveal stays up this long, unless both trainers press Next sooner. */
+export const QUIZ_DUEL_REVEAL_MS = 8_000;
+/** No answer to this many questions in a row is a forfeit. */
+export const QUIZ_DUEL_IDLE_QUESTIONS = 3;
+/** A right answer scores this, plus up to QUIZ_DUEL_SPEED_BONUS for answering at once (as in solo Classic). */
+export const QUIZ_DUEL_POINTS = 100;
+export const QUIZ_DUEL_SPEED_BONUS = 50;
+
+/** Points for a right answer `ms` into the question. */
+export const quizDuelPoints = (ms: number) =>
+  QUIZ_DUEL_POINTS + Math.round(QUIZ_DUEL_SPEED_BONUS * Math.max(0, 1 - ms / QUIZ_DUEL_QUESTION_MS));
+
+/** A question as both trainers see it: the solo quiz's public question, without its timer. */
+export type QuizDuelQuestionView = Pick<PublicQuestion, "module" | "prompt" | "detail" | "options" | "media" | "cards">;
+
+export interface QuizDuelLiveQuestion {
+  index: number;
+  /** Server time the question appears. */
+  startsAt: number;
+  /** Server time answers close. */
+  endsAt: number;
+  /** Sent once the question has started. */
+  question?: QuizDuelQuestionView;
+  /** Who has locked in (never what they picked). */
+  answered: boolean[];
+  /** Your own pick, once locked in. */
+  yours?: string;
+}
+
+export interface QuizDuelPick {
+  choice: string;
+  correct: boolean;
+  /** Time from the question appearing to the pick. */
+  ms: number;
+  points: number;
+}
+
+export interface QuizDuelResult {
+  index: number;
+  question: QuizDuelQuestionView;
+  answer: string;
+  explanation?: string;
+  /** The Pokémon's artwork, for the latest reveal only. */
+  revealUrl?: string;
+  learnHref?: string;
+  /** One per seat: the pick, or null (no answer in time: 0 points). */
+  picks: (QuizDuelPick | null)[];
+  /** Points so far, after this question. */
+  scores: number[];
+}
+
+export interface QuizDuelView extends PvpViewBase {
+  kind: "quiz";
+  module: ModuleId;
+  difficulty: Difficulty;
+  total: number;
+  /** Points so far. */
+  scores: number[];
+  /** The question being played, until it's revealed. */
+  question?: QuizDuelLiveQuestion;
+  revealed: QuizDuelResult[];
+  /** During a reveal: when the next question starts, and who has pressed Next. */
+  next?: { at: number; pressed: boolean[] };
+}
+
+export type PvpView = DleDuelView | QuizDuelView;
 
 /** Creating, joining or rematching a duel: its code, your seat's token and the duel. */
 export interface PvpSeatResponse {
