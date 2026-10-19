@@ -154,7 +154,7 @@ export function Pokedle({ names }: { names: NameEntry[] }) {
 
   return (
     // The game, and beside it (below on smaller screens) the reference Pokédex.
-    <div className="mx-auto grid max-w-3xl gap-6 xl:max-w-none xl:grid-cols-[minmax(0,1fr)_30rem] xl:items-start">
+    <div className="mx-auto grid max-w-3xl grid-cols-1 gap-6 xl:max-w-none xl:grid-cols-[minmax(0,1fr)_30rem] xl:items-start">
       <div className="min-w-0 space-y-6">
         <div className="space-y-2 text-center">
           <p className="hud-label text-screen">

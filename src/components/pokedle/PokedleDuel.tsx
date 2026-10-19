@@ -275,7 +275,7 @@ export function PokedleDuel({ code, names }: { code: string; names: NameEntry[] 
           Your board and the opponent's side by side, the Pokédex below them. On a wide screen the
           Pokédex sits beside everything, and the opponent's board beside your guess box.
         */}
-        <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_13rem] md:items-start xl:grid-cols-[minmax(0,1fr)_30rem]">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-[minmax(0,1fr)_13rem] md:items-start xl:grid-cols-[minmax(0,1fr)_30rem]">
           {/* min-w-0: the board scrolls sideways on a phone instead of widening the page. */}
           <div className="min-w-0 space-y-4 md:col-start-1 md:row-start-1">
             <div className="xl:grid xl:grid-cols-[minmax(0,1fr)_13rem] xl:items-start xl:gap-4">

@@ -17,7 +17,7 @@ const item = {
 export function ModeGrid() {
   const progress = useProgress();
   return (
-    <motion.div className="grid gap-3 md:grid-cols-2" variants={container} initial="hidden" animate="show">
+    <motion.div className="grid grid-cols-1 gap-3 md:grid-cols-2" variants={container} initial="hidden" animate="show">
       {PLAY_MODULES.map((id, i) => {
         const info = MODULE_INFO[id];
         const best = progress?.best[`${id}:${info.defaultFormat}`];
