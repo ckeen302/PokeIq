@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Bot, Loader2, Radio, Swords, UserSearch, X } from "lucide-react";
 import { CPU_LEVEL_INFO, CPU_LEVELS, PLAY_FORMAT_INFO, PLAY_FORMATS, battleHref, type BattleSeatResponse, type CpuLevel, type PlayFormatId } from "@/lib/battle/play";
 import { saveBattleSeat } from "@/lib/battle/seat";
+import { NAME_REJECTED, isCleanName } from "@/lib/name-filter";
 import { setTrainerName, useProgress } from "@/lib/progress";
 import { unlockAudio } from "@/lib/sound";
 import { Button } from "@/components/ui/button";
@@ -105,6 +106,7 @@ export function BattleSetup({ initial = "cpu" }: { initial?: Opponent }) {
   async function start(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
+    if (!isCleanName(name)) return setError(NAME_REJECTED);
     if (opponent === "match") {
       // Searches until paired; the battle has started by the time it's found.
       void finder.search(name.trim(), needsTeam ? { team } : {});
