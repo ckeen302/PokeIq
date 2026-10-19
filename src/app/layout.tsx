@@ -6,6 +6,7 @@ import { DesktopNav, MobileTabBar } from "@/components/layout/SiteNav";
 import { Logo } from "@/components/layout/Logo";
 import { AccountSync } from "@/components/account/AccountSync";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
+import { SITE_DESCRIPTION, SITE_TAGLINE, jsonLd } from "@/lib/seo";
 import { SPLASH_INIT_SCRIPT, THEME_INIT_SCRIPT } from "@/lib/theme";
 import { BootLoader } from "@/components/layout/BootLoader";
 import { ErrorReporter, ReportProblem } from "@/components/layout/ReportProblem";
@@ -15,18 +16,22 @@ const display = Chakra_Petch({ subsets: ["latin"], weight: ["500", "600", "700"]
 const body = Inter({ subsets: ["latin"], variable: "--font-body", display: "swap" });
 const pixel = Silkscreen({ subsets: ["latin"], weight: ["400", "700"], variable: "--font-pixel", display: "swap" });
 
+/**
+ * Site-wide defaults. `metadataBase` is SITE_URL (NEXT_PUBLIC_SITE_URL, else
+ * pokeiq.vercel.app), so every Open Graph image URL is absolute. Pages set
+ * their own title, description and preview through `pageMetadata`.
+ */
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: "PokéIQ — The Ultimate Pokémon Quiz",
-    template: "%s · PokéIQ",
+    default: `${SITE_NAME}: ${SITE_TAGLINE}`,
+    template: `%s · ${SITE_NAME}`,
   },
-  description:
-    "Test your Pokémon knowledge: daily challenges, Who's That Pokémon silhouettes, cry quizzes, Pokédex entries, type matchups and Pokédle. Get your PokéIQ.",
+  description: SITE_DESCRIPTION,
   applicationName: SITE_NAME,
   manifest: "/manifest.webmanifest",
-  openGraph: { siteName: SITE_NAME, type: "website" },
-  twitter: { card: "summary_large_image" },
+  openGraph: { siteName: SITE_NAME, type: "website", locale: "en_US", title: `${SITE_NAME}: ${SITE_TAGLINE}`, description: SITE_DESCRIPTION },
+  twitter: { card: "summary_large_image", title: `${SITE_NAME}: ${SITE_TAGLINE}`, description: SITE_DESCRIPTION },
   appleWebApp: { capable: true, statusBarStyle: "black-translucent", title: SITE_NAME },
 };
 
@@ -42,7 +47,7 @@ const websiteJsonLd = {
   "@type": "WebSite",
   name: SITE_NAME,
   url: SITE_URL,
-  description: "Daily Pokémon quizzes and puzzles that measure your PokéIQ.",
+  description: SITE_DESCRIPTION,
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -55,7 +60,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <div className="boot-splash" aria-hidden>
           <BootLoader idPrefix="splash" />
         </div>
-        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }} />
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(websiteJsonLd) }} />
         <header className="glass sticky top-0 z-50">
           <div className="container flex h-14 items-center justify-between">
             <Link href="/" aria-label="PokéIQ home" className="shrink-0">

@@ -33,12 +33,14 @@ const nextConfig: NextConfig = {
   serverExternalPackages: ["pokemon-showdown", "@pkmn/sim"],
   // Showdown loads its data, formats and random-team generators with
   // computed require() paths, which file tracing can't follow.
-  outputFileTracingIncludes: Object.fromEntries(
-    ["/api/battle/**", "/battle/**"].map((route) => [
-      route,
-      ["./node_modules/pokemon-showdown/dist/{config,data,lib,sim}/**/*.{js,json}"],
-    ])
-  ),
+  // Link-preview cards drawn on request (invites, Pokémon pages) read their
+  // fonts from disk by a computed path.
+  outputFileTracingIncludes: {
+    ...Object.fromEntries(
+      ["/api/battle/**", "/battle/**"].map((route) => [route, ["./node_modules/pokemon-showdown/dist/{config,data,lib,sim}/**/*.{js,json}"]])
+    ),
+    "/**/opengraph-image*": ["./src/assets/fonts/*.ttf"],
+  },
   async headers() {
     return [
       { source: "/:path*", headers: securityHeaders },

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { inviteMetadata } from "@/lib/seo";
 import { cache } from "react";
 import { notFound, redirect } from "next/navigation";
 import { PokedleDuel } from "@/components/pokedle/PokedleDuel";
@@ -15,15 +16,10 @@ const findDuel = cache(pvpStore.peek);
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const duel = await findDuel((await params).code);
-  if (!duel || duel.kind !== "pokedle") return { title: "Pokédle duel", robots: { index: false } };
+  if (!duel || duel.kind !== "pokedle") return inviteMetadata("A Pokédle duel", "Head-to-head Pokédle: the same mystery Pokémon for both of you, three rounds.");
   const [host, guest] = duel.players.map((p) => p.name);
   const title = guest ? `${host} vs ${guest}: a Pokédle duel` : `${host || "A trainer"} challenges you to a Pokédle duel`;
-  return {
-    title,
-    description: "Head-to-head Pokédle: the same mystery Pokémon for both of you, three rounds, fewer guesses and quicker solves score more.",
-    openGraph: { title, description: "Same mystery Pokémon, three rounds, the most points wins." },
-    robots: { index: false },
-  };
+  return inviteMetadata(title, "Head-to-head Pokédle: the same mystery Pokémon for both of you, three rounds, fewer guesses and quicker solves score more.");
 }
 
 export default async function PokedleDuelPage({ params }: PageProps) {

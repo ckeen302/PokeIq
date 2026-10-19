@@ -1,13 +1,14 @@
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 import { POKEDEX } from "@/lib/pokemon/pokedex";
 import { PokedexExplorer, type DexListItem } from "@/components/pokedex/PokedexExplorer";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Pokédex — All 1,025 Pokémon",
   description:
     "Browse and search every Pokémon from Kanto to Paldea. Filter by type and generation, sort by stats, and study evolutions, moves, abilities and weaknesses.",
-  alternates: { canonical: "/pokedex" },
-};
+  path: "/pokedex",
+});
 
 export default function PokedexPage() {
   const items: DexListItem[] = POKEDEX.map((p) => ({

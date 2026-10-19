@@ -1,13 +1,15 @@
 import type { Metadata } from "next";
+import { SHARE_IMAGES, pageMetadata } from "@/lib/seo";
 import { BattleHeader } from "@/components/battle/BattleHeader";
 import { BattleSetup, type Opponent } from "@/components/battle/BattleSetup";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Pokémon Battle — vs Computer, Online or a Friend",
   description:
     "Real Pokémon battles on Pokémon Showdown's engine: Random Battle, Random Doubles or your own OU team, against a computer opponent, a trainer found by matchmaking, or a friend through an invite link.",
-  alternates: { canonical: "/battle/play" },
-};
+  image: SHARE_IMAGES.battle,
+  path: "/battle/play",
+});
 
 export default async function BattlePlayPage({ searchParams }: { searchParams: Promise<{ vs?: string }> }) {
   const { vs } = await searchParams;

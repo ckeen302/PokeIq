@@ -1,7 +1,8 @@
 {
-  "name": "PokéIQ — The Ultimate Pokémon Quiz",
+  "id": "/",
+  "name": "PokéIQ: Pokémon games",
   "short_name": "PokéIQ",
-  "description": "Daily Pokémon challenges, Pokédle, Who's That Pokémon, cry quizzes, Pokédex entries and type matchups — get your PokéIQ.",
+  "description": "PokéGuessr, a daily Pokédle with live duels, Showdown-accurate battles, a Battle Lab and quizzes on all 1,025 Pokémon.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#08071a",
@@ -28,16 +29,25 @@
   ],
   "shortcuts": [
     {
-      "name": "Daily Challenge",
-      "url": "/daily"
+      "name": "PokéGuessr",
+      "url": "/guessr"
     },
     {
       "name": "Pokédle",
       "url": "/pokedle"
     },
     {
-      "name": "Who's That Pokémon?",
-      "url": "/quiz/whos-that-pokemon"
+      "name": "Battle",
+      "url": "/battle"
+    },
+    {
+      "name": "Battle Lab",
+      "url": "/battle/lab"
     }
+  ],
+  "scope": "/",
+  "categories": [
+    "games",
+    "entertainment"
   ]
 }

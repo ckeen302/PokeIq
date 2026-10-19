@@ -1,13 +1,15 @@
 import type { Metadata } from "next";
+import { SHARE_IMAGES, pageMetadata } from "@/lib/seo";
 import { BattleHeader } from "@/components/battle/BattleHeader";
 import { DamageCalc } from "@/components/battle/DamageCalc";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Pokémon Damage Calculator — Every Gen, Every Hit",
   description:
     "The Smogon damage calculator for Generations 3 to 9: damage ranges, KO chances and full descriptions with boosts, status, Tera, weather, terrain, screens and doubles spread. Load sets from your teams.",
-  alternates: { canonical: "/battle/calc" },
-};
+  image: SHARE_IMAGES.battle,
+  path: "/battle/calc",
+});
 
 export default function CalcPage() {
   return (

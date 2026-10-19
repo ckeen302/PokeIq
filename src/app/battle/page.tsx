@@ -1,16 +1,17 @@
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 import Link from "next/link";
 import { ArrowRight, Bot, Calculator, Castle, Factory, FlaskConical, Radio, UserSearch, Users, type LucideIcon } from "lucide-react";
 import { HudHeading } from "@/components/game/HudHeading";
 import { HpBar } from "@/components/game/HpBar";
 import { BATTLE_FORMATS, BATTLE_FORMAT_IDS } from "@/lib/battle/formats";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Pokémon Battles Online — PvP, vs Computer & Team Builder",
   description:
     "Battle Pokémon online on Pokémon Showdown's own engine: find an opponent for a live PvP battle in seconds, battle a friend through a link, or battle the computer. Plus a team builder checked against Showdown's rules, the Smogon damage calculator and the Battle Lab.",
-  alternates: { canonical: "/battle" },
-};
+  path: "/battle",
+});
 
 const SPRITES = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/showdown";
 

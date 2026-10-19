@@ -233,6 +233,22 @@ export function geoRegions(): GeoRegionInfo[] {
   });
 }
 
+/** Headline numbers for the home page and share cards, counted from the data so they stay true. */
+export function geoStats(): { places: number; screenshots: number; games: number } {
+  const world = geoRegions().find((r) => r.id === WORLD_REGION);
+  const located = regionOf(WORLD_REGION)?.locations ?? [];
+  return {
+    places: world?.locations ?? 0,
+    screenshots: located.reduce((n, l) => n + l.shots.length, 0),
+    games: world?.games.length ?? 0,
+  };
+}
+
+/** Where a town sits on the world map (0–1 across and down), for the home page's showcase. */
+export function geoWorldPin(region: string, name: string): [number, number] | null {
+  return regionOf(WORLD_REGION)?.locations.find((l) => l.region === region && l.name === name && !l.parent)?.pin ?? null;
+}
+
 export function isGeoSpec(spec: Pick<GeoSpec, "region" | "kind">): boolean {
   return GEO_KINDS.includes(spec.kind) && areasOf(spec.region).length >= GEO_ROUNDS;
 }

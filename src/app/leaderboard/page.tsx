@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 import { Medal } from "lucide-react";
 import { fetchBoard } from "@/lib/server/leaderboard";
 import { fetchGeoBoard } from "@/lib/server/geo-leaderboard";
@@ -13,7 +14,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { cn } from "@/lib/utils";
 import { LocalDateRedirect } from "./local-date-redirect";
 
-export const metadata: Metadata = { title: "Leaderboard" };
+export const metadata: Metadata = pageMetadata({
+  title: "Leaderboards",
+  description: "The top PokéIQ trainers: today's Daily Challenge, PokéIQ ratings, PokéGuessr and every quiz mode, updated live.",
+  path: "/leaderboard",
+});
 export const dynamic = "force-dynamic";
 
 interface PageProps {

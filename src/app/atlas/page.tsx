@@ -1,12 +1,14 @@
 import type { Metadata } from "next";
+import { SHARE_IMAGES, pageMetadata } from "@/lib/seo";
 import { WorldAtlas } from "@/components/atlas/WorldAtlas";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Pokémon World Atlas: every region on one map",
   description:
     "Every mainline Pokémon region from Kanto to Paldea on one zoomable world map, with every town, city, route and landmark labelled from the games' own maps.",
-  alternates: { canonical: "/atlas" },
-};
+  image: SHARE_IMAGES.site,
+  path: "/atlas",
+});
 
 export default function AtlasPage() {
   return <WorldAtlas src="/geo/maps/world.webp" />;

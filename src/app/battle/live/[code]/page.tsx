@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { inviteMetadata } from "@/lib/seo";
 import { cache } from "react";
 import { notFound, redirect } from "next/navigation";
 import { BattleRoom } from "@/components/battle/BattleRoom";
@@ -16,16 +17,11 @@ const findBattle = cache(peekBattle);
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { code } = await params;
   const battle = DUEL_CODE_RE.test(code) ? await findBattle(code) : null;
-  if (!battle) return { title: "Pokémon battle", robots: { index: false } };
+  if (!battle) return inviteMetadata("A live Pokémon battle", "A live Pokémon battle on Pokémon Showdown's engine. Open the link, pick a name and battle.");
   const [host, guest] = battle.names;
   const format = PLAY_FORMAT_INFO[battle.format].name;
-  const title = guest ? `${host} vs ${guest}: a ${format} battle` : `${host || "A trainer"} challenges you to a ${format} battle`;
-  return {
-    title,
-    description: "A live Pokémon battle on Pokémon Showdown's engine. Open the link, pick a name and battle.",
-    openGraph: { title, description: `${format} · live on PokéIQ · real Showdown mechanics` },
-    robots: { index: false },
-  };
+  const title = guest ? `${host} vs ${guest}: a live Pokémon battle` : `${host || "A trainer"} challenges you to a live Pokémon battle`;
+  return inviteMetadata(title, `${format}, live on Pokémon Showdown's engine. Open the link, pick a name and battle.`);
 }
 
 export default async function LiveBattlePage({ params }: PageProps) {

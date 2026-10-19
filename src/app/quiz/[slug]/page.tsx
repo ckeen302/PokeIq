@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 import { ModeIcon } from "@/components/game/ModeIcon";
 import { MODULE_INFO, QUIZ_PRESETS, presetFor } from "@/lib/modes";
 import { QuizSetupFromQuery } from "./QuizSetupFromQuery";
@@ -22,12 +23,7 @@ export function generateStaticParams() {
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const preset = presetFor((await params).slug);
   if (!preset) return {};
-  return {
-    title: preset.title,
-    description: preset.description,
-    alternates: { canonical: `/quiz/${preset.slug}` },
-    openGraph: { title: preset.title, description: preset.description },
-  };
+  return pageMetadata({ title: preset.title, description: preset.description, path: `/quiz/${preset.slug}` });
 }
 
 export const dynamicParams = false;
