@@ -309,6 +309,41 @@ const DENYLIST = new Set<string>([
   "Plasma_Frigate_B1F_Right_B2.png",
   "Unova_Route_10_Quake_Badge_Gate_BW.png",
   "Unova_Route_10_Jet_Badge_Gate_BW.png",
+  // Models rendered on grey, not a view.
+  "Snowpoint_Temple.png",
+  "Jubilife_TV.png",
+  "Pick_a_Peck_of_Colors_Flower_Shop.png",
+  "Pokétch_Company.png",
+  "Vista_Lighthouse.png",
+  // Rooms pasted together, a labelled zone map, a mostly black floor.
+  "Old_Chateau_girl_room_DPPt.png",
+  "Sunyshore_Gym_DPPt.png",
+  "Pal_Park_Zones.png",
+  "Canalave_Gym_4F_DPPt.png",
+  // Platinum-only rooms filed under Diamond / Pearl too; Spear Pillar filed as the Distortion World.
+  "Distortion_World_physics.png",
+  "Distortion_World_portal_Pt.png",
+  "Global_Terminal_2F_PtHGSS.png",
+  "Global_Terminal_3F_PtHGSS.png",
+  // Floors that look like one already kept (Distortion World, Mt. Coronet, Spear Pillar, Veilstone Department Store, Victory Road, Jubilife TV, the Galactic building).
+  "Distortion_World_B6F_Pt.png",
+  "Distortion_World_B7F_Giratina_Pt.png",
+  "Distortion_World_B7F_Pt.png",
+  "Mt_Coronet_3F_DP.png",
+  "Mt_Coronet_5F_Pt.png",
+  "Mt_Coronet_6F_DPPt.png",
+  "Mt_Coronet_7F_DPPt.png",
+  "Spear_Pillar_P.png",
+  "Spear_Pillar_Pt.png",
+  "Veilstone_Department_Store_2F_Pt.png",
+  "Veilstone_Department_Store_3F_Pt.png",
+  "Veilstone_Department_Store_4F_Pt.png",
+  "Victory_Road_B1F_Deep_Exit_DP.png",
+  "Jubilife_TV_4F_DPPt.png",
+  "Galactic_Eterna_Building_4F_DP.png",
+  "Veilstone_Department_Store_3F_DP.png",
+  "Veilstone_Department_Store_4F_DP.png",
+  "Veilstone_Department_Store_5F_DP.png",
 ]);
 /**
  * Files that aren't a fair view of the place they name: Omega Ruby / Alpha
