@@ -10,8 +10,10 @@ export function PokedleDuelCard() {
     <NewDuelCard
       body={{ kind: "pokedle" }}
       href={(code) => pvpHref("pokedle", code)}
+      // Matchmaking plays every generation (one queue, so it fills up); pick generations in a duel with a friend.
+      match={{ game: "pokedle" }}
       heading="Head to head · Pokédle"
-      blurb={`The same mystery Pokémon for both of you, ${DLE_DUEL_ROUNDS} rounds of ${DLE_MAX_GUESSES} guesses and ${DLE_DUEL_ROUND_MS / 60_000} minutes. Fewer guesses and a quicker solve score more; hints cost points. You see your friend's colours as they guess. Send them the link and press Ready.`}
+      blurb={`The same mystery Pokémon for both of you, ${DLE_DUEL_ROUNDS} rounds of ${DLE_MAX_GUESSES} guesses and ${DLE_DUEL_ROUND_MS / 60_000} minutes. Fewer guesses and a quicker solve score more; hints cost points. You see your opponent's colours as they guess. Send a friend the link (and pick the generations in the lobby), or find an opponent: matched duels use every generation.`}
     />
   );
 }

@@ -24,7 +24,7 @@ import { play, unlockAudio } from "@/lib/sound";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useDuel } from "@/components/duel/use-duel";
-import { DuelGone, DuelLoading, DuelLobby, DuelNotice, DuelVisitor, LeaveButton, SeatDot, clock, seconds } from "@/components/duel/DuelParts";
+import { DuelGone, DuelLoading, DuelLobby, DuelNotice, DuelVisitor, LeaveButton, MatchedNote, SeatDot, clock, seconds } from "@/components/duel/DuelParts";
 import { Board, CELL_STYLES, GuessInput, spriteUrl, type NameEntry } from "./parts";
 import { DexPanel } from "./DexPanel";
 import { cn } from "@/lib/utils";
@@ -108,7 +108,12 @@ export function PokedleDuel({ code, names }: { code: string; names: NameEntry[] 
   if (gone) return <DuelGone message={gone} href={HOME} label="Back to Pokédle" />;
   if (!view) return <DuelLoading />;
 
-  const notice = <DuelNotice error={error} offline={offline} />;
+  const notice = (
+    <>
+      <MatchedNote view={view} />
+      <DuelNotice error={error} offline={offline} />
+    </>
+  );
 
   if (view.status === "lobby") {
     return (

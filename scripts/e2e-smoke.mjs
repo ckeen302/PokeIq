@@ -520,6 +520,40 @@ await quizRed.p.screenshot({ path: `${OUT}/quiz-duel-summary.png`, fullPage: tru
 if (quizRed.seen.view?.revealed?.length !== 10) errors.push(`quiz duel ended after ${quizRed.seen.view?.revealed?.length} questions`);
 for (const { p } of quiz) await p.context().close();
 
+// Matchmaking: two trainers press "Find an opponent" for the same game, with no link, and land in one duel
+// that starts on its own. Red searches first (and waits), Blue's search pairs them.
+async function findOpponent(path, ready) {
+  const [mRed, mBlue] = [await newPage({ width: 1280, height: 900 }), await newPage({ width: 1280, height: 900 })];
+  for (const [p, name] of [
+    [mRed, "Red"],
+    [mBlue, "Blue"],
+  ]) {
+    await p.goto(`${BASE}${path}`, { waitUntil: "networkidle" });
+    await p.getByLabel("Your trainer name").fill(name);
+  }
+  await mRed.getByRole("button", { name: /Find an opponent/ }).click();
+  await mRed.getByText("Searching for an opponent…").waitFor();
+  await mRed.waitForTimeout(1500);
+  await mRed.screenshot({ path: `${OUT}/matchmaking-searching.png` });
+  await mBlue.getByRole("button", { name: /Find an opponent/ }).click();
+  const duelPath = new RegExp(`/${path === "/pokedle" ? "pokedle" : "guessr"}/duel/[a-z2-9]{8}\\?matched=1$`);
+  await Promise.all([mRed.waitForURL(duelPath), mBlue.waitForURL(duelPath)]);
+  if (mRed.url() !== mBlue.url()) errors.push(`matched into different duels: ${mRed.url()} vs ${mBlue.url()}`);
+  await mRed.getByText("Matched! You vs Blue").waitFor();
+  await mBlue.getByText("Matched! You vs Red").waitFor();
+  // No lobby: round 1 starts after the countdown.
+  await Promise.all([ready(mRed), ready(mBlue)]);
+  await mRed.getByRole("button", { name: /Leave duel/ }).click();
+  await mRed.getByRole("button", { name: /^Forfeit$/ }).click();
+  await mBlue.getByText("Red left the duel.").waitFor();
+  await mRed.context().close();
+  await mBlue.context().close();
+}
+step("matchmaking: pokédle");
+await findOpponent("/pokedle", (p) => p.getByLabel("Guess a Pokémon").waitFor());
+step("matchmaking: pokéguessr world");
+await findOpponent("/guessr", shotLoaded);
+
 step("world atlas: search, place card, link into PokéGuessr");
 await page.goto(`${BASE}/atlas`, { waitUntil: "networkidle" });
 await page.getByLabel("Search the map").fill("Saffron City");

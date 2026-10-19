@@ -20,7 +20,7 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { HpBar } from "@/components/game/HpBar";
 import { useDuel } from "@/components/duel/use-duel";
-import { DuelGone, DuelLoading, DuelLobby, DuelNotice, DuelVisitor, LeaveButton, SEAT_COLORS, SeatDot, clock, seconds } from "@/components/duel/DuelParts";
+import { DuelGone, DuelLoading, DuelLobby, DuelNotice, DuelVisitor, LeaveButton, MatchedNote, SEAT_COLORS, SeatDot, clock, seconds } from "@/components/duel/DuelParts";
 import { GeoMap, type MapPin, type RevealedRound } from "./GeoMap";
 import { cn } from "@/lib/utils";
 
@@ -145,7 +145,12 @@ export function GeoDuel({ code, regions }: GeoDuelProps) {
   }
   if (!view || !map) return <DuelLoading />;
 
-  const notice = <DuelNotice error={error} offline={offline} />;
+  const notice = (
+    <>
+      <MatchedNote view={view} />
+      <DuelNotice error={error} offline={offline} />
+    </>
+  );
 
   if (view.status === "lobby") {
     return (

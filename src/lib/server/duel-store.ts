@@ -4,6 +4,7 @@ import { getServiceSupabase } from "@/lib/supabase";
 import { DUEL_CODE_RE } from "@/lib/duel-types";
 import type { Duel } from "./duel";
 import type { PvpDuel } from "./duels";
+import type { QueueRow } from "./matchmaking";
 
 /**
  * Where duels live while they're played: one row per duel in Supabase
@@ -58,18 +59,23 @@ function memory(table: string): Map<string, MemoryRow> {
   return rows;
 }
 
-/**
- * One table of duels. `columns` adds a row's extra columns on insert (the
- * shared table records each duel's kind).
- */
-function duelTable<D extends { code: string }>(table: string, label: string, columns: (duel: D) => Record<string, unknown> = () => ({})) {
+interface TableOptions<D> {
+  /** The row's key column, and the record's key (a duel's code by default). */
+  column?: string;
+  keyOf?: (record: D) => string;
+  /** Extra columns written on insert (the shared table records each duel's kind). */
+  columns?: (record: D) => Record<string, unknown>;
+}
+
+/** One table of records, each a row keyed by `column`, changed only by compare-and-swap. */
+function duelTable<D>(table: string, label: string, { column = "code", keyOf = (d) => (d as { code: string }).code, columns = () => ({}) }: TableOptions<D> = {}) {
   async function load(code: string): Promise<StoredDuel<D> | null> {
     const sb = remote();
     if (sb) {
       const { data, error } = await sb
         .from(table)
         .select("state, version, expires_at")
-        .eq("code", code)
+        .eq(column, code)
         .maybeSingle<{ state: D; version: number; expires_at: string }>();
       if (error) throw new Error(error.message);
       if (!data || Date.parse(data.expires_at) <= Date.now()) return null;
@@ -100,15 +106,15 @@ function duelTable<D extends { code: string }>(table: string, label: string, col
       await sb.from(table).delete().lt("expires_at", new Date().toISOString());
       const { error } = await sb
         .from(table)
-        .insert({ ...columns(duel), code: duel.code, version: 0, state: duel, expires_at: new Date(expires).toISOString() });
+        .insert({ ...columns(duel), [column]: keyOf(duel), version: 0, state: duel, expires_at: new Date(expires).toISOString() });
       if (error?.code === "23505") return false;
       if (error) throw new Error(error.message);
       return true;
     }
     const rows = memory(table);
     for (const [code, row] of rows) if (row.expires <= Date.now()) rows.delete(code);
-    if (rows.has(duel.code)) return false;
-    rows.set(duel.code, { json: JSON.stringify(duel), version: 0, expires });
+    if (rows.has(keyOf(duel))) return false;
+    rows.set(keyOf(duel), { json: JSON.stringify(duel), version: 0, expires });
     return true;
   }
 
@@ -120,23 +126,23 @@ function duelTable<D extends { code: string }>(table: string, label: string, col
       const { data, error } = await sb
         .from(table)
         .update({ state: duel, version: version + 1, updated_at: new Date().toISOString(), expires_at: new Date(expires).toISOString() })
-        .eq("code", duel.code)
+        .eq(column, keyOf(duel))
         .eq("version", version)
-        .select("code");
+        .select(column);
       if (error) throw new Error(error.message);
       return (data ?? []).length === 1;
     }
     const rows = memory(table);
-    const row = rows.get(duel.code);
+    const row = rows.get(keyOf(duel));
     if (!row || row.version !== version) return false;
-    rows.set(duel.code, { json: JSON.stringify(duel), version: version + 1, expires });
+    rows.set(keyOf(duel), { json: JSON.stringify(duel), version: version + 1, expires });
     return true;
   }
 
   async function remove(code: string): Promise<void> {
     const sb = remote();
     if (sb) {
-      await sb.from(table).delete().eq("code", code);
+      await sb.from(table).delete().eq(column, code);
       return;
     }
     memory(table).delete(code);
@@ -177,4 +183,7 @@ export const deleteDuel = geo.remove;
 export const updateDuel = geo.update;
 
 /** Every other kind of duel (Pokédle, quizzes): one shared table. */
-export const pvpStore = duelTable<PvpDuel>("duels", "duel", (duel) => ({ kind: duel.kind }));
+export const pvpStore = duelTable<PvpDuel>("duels", "duel", { columns: (duel) => ({ kind: duel.kind }) });
+
+/** Matchmaking: one row per queue (a game and its settings), keyed by the queue's key. */
+export const queueStore = duelTable<QueueRow>("duel_queue", "duel-queue", { column: "key", keyOf: (row) => row.key });

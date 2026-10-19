@@ -33,6 +33,7 @@ Every question is generated on demand from a snapshot of all 1,025 Pokémon. No 
 | **World atlas** | Every mainline region on one zoomable map, laid out like the real places they're based on, with every town, route and landmark labelled from the games' own maps |
 | **PokéGuessr Duels** | Head-to-head PvP, GeoGuessr Duels style: pick a map, send a friend the link, both press Ready and you get the same places. Once one of you guesses, the other has 15 seconds. 6,000 HP each: every round the lower score loses the difference, times a multiplier that climbs from ×1.5 (round 4) to ×3. First to 0 HP loses, more HP wins after 10 rounds, leaving forfeits, and a rematch is one click |
 | **Pokédle Duels** | Head-to-head Pokédle through a share link: three rounds, the same mystery Pokémon for both of you (never the day's solo answer, from all generations or the ones the creator picks). A solve scores 1,000 on the first guess down to 300 on the last, plus up to 150 for speed; hints are opt-in and cost points (category −150, silhouette −300). You see your opponent's colours and hint badges as they play, never their Pokémon. The most points wins, then fewer guesses, then less time |
+| **Matchmaking** | "Find an opponent" on the PokéGuessr and Pokédle duel cards pairs you with anyone searching for the same game and map (Pokédle matches play every generation), no link needed. The duel starts on its own after a short countdown |
 | **Quiz Duels** | Any quiz mode and difficulty, head to head through a share link: the same 10 questions for both of you (built on the server from one seed), 15 seconds each. You see when your opponent locks in, never what they picked; the reveal shows the right answer and both picks. A points race: 100 for a right answer plus up to 50 for speed, the most points after 10 questions wins. Start one from any quiz's setup screen or the game modes page |
 | **Who's That Pokémon?** | Silhouettes rendered on the server, with a "zoomed-in" hard mode that always frames recognisable outline |
 | **Cry Quiz** | Identify Pokémon by their in-game cry |
@@ -124,6 +125,8 @@ A duel is one row on the server (`geo_duels`, RLS-locked to the service role), a
 
 Pokédle and quiz duels share one table, `duels`, with a `kind` column, and one API (`/api/duel`, `/api/duel/<code>`). `src/lib/server/duel-core.ts` holds what every duel shares (signed seats, the lobby, presence, forfeits, rematches) and each game plugs in its own rules. `src/lib/server/pokedle-duel.ts` keeps the round's secret and both trainers' guesses on the server and sends each trainer their own clues in full, but the opponent's only as colours and hint badges until the round is over. `src/lib/server/quiz-duel.ts` builds each question with the solo quiz's engines from the duel's seed and sends it only once it starts (with media behind the usual encrypted tokens); the answer and both picks go out in the reveal. On the client, `src/components/duel/` has the polling hook and the lobby every duel uses, PokéGuessr's included.
 
+Matchmaking (`src/lib/server/matchmaking.ts`, `POST /api/duel/match`) keeps one row per queue in `duel_queue` (a game and its settings, like `geo:world` or `pokedle:all`) holding at most one waiting trainer. A search either pairs with a waiting trainer who is still polling (it opens the duel with both seated and ready, then takes them out of the queue) or becomes the one waiting; every change is a compare-and-swap, so nobody is paired twice and two searches never wait on each other. Searches poll once a second, and a search not heard from in 8 seconds is passed over.
+
 ## Getting started
 
 ```bash
@@ -204,7 +207,7 @@ src/
 │   └── c/[token]                 # challenge links + dynamic OG image
 └── components/                   # QuizController (one runtime for every mode)
 scripts/ingest-pokedex.ts · ingest-details.ts · silhouette-lookalikes.ts · e2e-smoke.mjs
-supabase/migrations/          # 0001 schema · 0002 adaptive test · 0003 hardening · 0004 accounts · 0005 PokéGuessr · 0006 PokéGuessr maps · 0007 PokéGuessr duels · 0008 duels (Pokédle, quizzes)
+supabase/migrations/          # 0001 schema · 0002 adaptive test · 0003 hardening · 0004 accounts · 0005 PokéGuessr · 0006 PokéGuessr maps · 0007 PokéGuessr duels · 0008 duels (Pokédle, quizzes) · 0009 matchmaking queue
 tests/
 ```
 

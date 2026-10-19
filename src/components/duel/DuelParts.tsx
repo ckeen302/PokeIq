@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { AnimatePresence, motion } from "framer-motion";
 import { Link2, Loader2, LogOut, Swords, WifiOff } from "lucide-react";
 import type { DuelPlayerView } from "@/lib/duel-types";
 import { useProgress } from "@/lib/progress";
@@ -24,6 +25,46 @@ export const clock = (ms: number) => {
 
 export function SeatDot({ seat }: { seat: number }) {
   return <span className="inline-block h-2.5 w-2.5 shrink-0 rounded-full" style={{ background: SEAT_COLORS[seat] }} aria-hidden />;
+}
+
+/** When each matched duel's "Matched!" first showed, so it shows once (not again on every new screen). */
+const matchedShown = new Map<string, number>();
+const MATCHED_SHOW_MS = 8_000;
+
+/**
+ * "Matched! You vs Blue" for the first few seconds of a duel matchmaking
+ * opened (its link carries ?matched). The trainer who was waiting may only
+ * arrive as round 1 starts, so it's a banner over whatever screen is up.
+ */
+export function MatchedNote({ view }: { view: { you: number | null; players: DuelPlayerView[] } }) {
+  const [shown, setShown] = useState(false);
+  useEffect(() => {
+    if (!new URLSearchParams(window.location.search).has("matched")) return;
+    const key = window.location.pathname;
+    const first = matchedShown.get(key) ?? Date.now();
+    matchedShown.set(key, first);
+    const left = first + MATCHED_SHOW_MS - Date.now();
+    if (left <= 0) return;
+    setShown(true);
+    const id = window.setTimeout(() => setShown(false), left);
+    return () => window.clearTimeout(id);
+  }, []);
+  const them = view.you === null ? undefined : view.players[1 - view.you]?.name;
+  return (
+    <AnimatePresence>
+      {shown && them && (
+        <motion.p
+          initial={{ scale: 0.8, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          exit={{ opacity: 0 }}
+          role="status"
+          className="mb-3 text-center font-display text-2xl font-bold uppercase text-success"
+        >
+          Matched! You vs {them}
+        </motion.p>
+      )}
+    </AnimatePresence>
+  );
 }
 
 /** A server error, or the connection dropping. */
