@@ -560,12 +560,14 @@ export async function createMatchedBattle(
   format: PlayFormatId,
   players: [MatchedPlayer, MatchedPlayer],
   now = Date.now(),
-  opts: { ranked?: boolean } = {}
-): Promise<{ code: string; ids: [string, string] } | null> {
+  opts: { ranked?: boolean; tournament?: { id: string; graceMs: number } } = {}
+): Promise<{ code: string; ids: [string, string]; seenAt: number } | null> {
+  // A tournament match waits longer for a trainer to turn up: they're told by a toast, not sitting in a queue.
+  const seenAt = now + (opts.tournament?.graceMs ?? 0);
   for (let attempt = 0; attempt < 4; attempt++) {
     const code = newBattleCode();
     const seats = players.map((p) => {
-      const seat: BattleSeat = { id: randomId(), name: p.name, ready: true, seenAt: now, team: p.team };
+      const seat: BattleSeat = { id: randomId(), name: p.name, ready: true, seenAt, team: p.team };
       if (p.player) seat.player = p.player;
       if (opts.ranked && p.rating) seat.rating = { rating: p.rating.rating, games: p.rating.games };
       return seat;
@@ -574,9 +576,10 @@ export async function createMatchedBattle(
     // Matchmade battles are open to spectators, like Showdown's ladder.
     work.meta.public = true;
     if (opts.ranked) work.meta.ranked = true;
-    work.meta.chat = systemLine(undefined, `Matched: ${seats[0].name} vs ${seats[1].name}. Good luck!`, now);
+    if (opts.tournament) work.meta.tournament = opts.tournament.id;
+    work.meta.chat = systemLine(undefined, `${opts.tournament ? "Tournament match" : "Matched"}: ${seats[0].name} vs ${seats[1].name}. Good luck!`, now);
     start(work, now);
-    if (await insertBattle(work.rec)) return { code, ids: [seats[0].id, seats[1].id] };
+    if (await insertBattle(work.rec)) return { code, ids: [seats[0].id, seats[1].id], seenAt };
   }
   return null;
 }
@@ -683,6 +686,13 @@ export async function chatBattle(code: string, playerId: string, text: string, s
 function touch(meta: BattleMeta, playerId: string | null, now: number): boolean {
   let changed = false;
   const seat = meta.seats.find((s) => s.id === playerId);
+  // A tournament records that the trainer turned up for their match.
+  // (Seen a moment later than a trainer who never came, so if both go quiet the no-show loses first.)
+  if (seat && meta.tournament && seat.arrived === undefined && meta.status !== "finished") {
+    seat.arrived = now;
+    seat.seenAt = Math.max(seat.seenAt + 1, now);
+    changed = true;
+  }
   // After the end nobody can time out, and the computer's battles don't track presence.
   if (seat && meta.status !== "finished" && meta.kind === "pvp" && now - seat.seenAt >= SEEN_STEP_MS) {
     seat.seenAt = now;
@@ -935,6 +945,7 @@ export function battleView(meta: BattleMeta, playerId: string | null, log: strin
     view.spectators = spectatorCount(meta, now);
     if (meta.public) view.public = true;
     if (meta.ranked) view.ranked = true;
+    if (meta.tournament) view.tournament = meta.tournament;
     if (meta.settled) {
       view.settled = true;
       if (meta.settled.ratings) view.ratings = meta.settled.ratings;

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+import { gate } from "@/lib/server/moderation";
 import { clientIp, rateLimit } from "@/lib/server/rate-limit";
 import { duelNameSchema } from "@/lib/server/duel-core";
 import { newTicket } from "@/lib/server/match-queue";
@@ -64,6 +65,10 @@ export async function POST(request: NextRequest) {
   const parsed = bodySchema.safeParse(await request.json().catch(() => ({})));
   if (!parsed.success) return NextResponse.json({ error: parsed.error.issues[0].message }, { status: 400, headers: NO_STORE });
   const body = parsed.data;
+  if (body.action === "search") {
+    const blocked = await gate(request, "play");
+    if (blocked) return blocked;
+  }
 
   try {
     if (body.action === "cancel") {

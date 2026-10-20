@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+import { gate } from "@/lib/server/moderation";
 import { USERNAME_RE } from "@/lib/server/auth";
 import { communityRequest, friendsAction, NO_STORE, outcome } from "@/lib/server/community-route";
 import {
@@ -49,6 +50,10 @@ export async function POST(request: NextRequest) {
   const parsed = bodySchema.safeParse(await request.json().catch(() => ({})));
   if (!parsed.success) return NextResponse.json({ error: parsed.error.issues[0].message }, { status: 400, headers: NO_STORE });
   const body = parsed.data;
+  if (body.action === "request") {
+    const blocked = await gate(request, "social");
+    if (blocked) return blocked;
+  }
   const { store, user } = ctx;
   return friendsAction(async () => {
     if (body.action === "appear-offline") {

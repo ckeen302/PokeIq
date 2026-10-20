@@ -5,6 +5,7 @@ import { saveSeat } from "./duel-seat";
 import { loadBattleSeat, saveBattleSeat } from "./battle/seat";
 import { ensureBattleId } from "./battle/replay-client";
 import type { ModuleId } from "@/engines/types";
+import type { TournamentMatchNote } from "./tournaments";
 import type { ActivityKind, ChallengeAnswer, ChallengeKind, ChallengeView, FriendsResponse, HeartbeatResponse } from "./community";
 
 /**
@@ -28,9 +29,11 @@ interface CommunityState {
   requests: number;
   challenges: ChallengeView[];
   answers: ChallengeAnswer[];
+  /** Tournament matches ready to play. */
+  matches: TournamentMatchNote[];
 }
 
-let state: CommunityState = { open: false, tab: "friends", list: null, loading: false, error: null, off: false, requests: 0, challenges: [], answers: [] };
+let state: CommunityState = { open: false, tab: "friends", list: null, loading: false, error: null, off: false, requests: 0, challenges: [], answers: [], matches: [] };
 const listeners = new Set<() => void>();
 /** Challenges and answers already shown and closed (the next heartbeat may still carry them). */
 const dismissed = new Set<string>();
@@ -88,7 +91,7 @@ export async function friendAction(body: Record<string, unknown>): Promise<{ sta
 }
 
 /** One heartbeat. Returns false when friends are off here or the trainer isn't signed in (stop beating). */
-export async function beat(activity: { kind: ActivityKind; code?: string }): Promise<boolean> {
+export async function beat(activity: { kind: ActivityKind; code?: string; room?: string }): Promise<boolean> {
   try {
     const res = await fetch("/api/presence", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(activity) });
     if (res.status === 401) return false;
@@ -101,6 +104,7 @@ export async function beat(activity: { kind: ActivityKind; code?: string }): Pro
     set({
       requests: out.requests,
       challenges: out.challenges.filter((c) => !dismissed.has(c.id)),
+      matches: (out.matches ?? []).filter((m) => !dismissed.has(m.code)),
       // Answers are delivered once: keep the ones not yet closed.
       answers: [...state.answers, ...out.answers.filter((a) => !dismissed.has(a.id) && !state.answers.some((b) => b.id === a.id))],
     });
@@ -112,7 +116,7 @@ export async function beat(activity: { kind: ActivityKind; code?: string }): Pro
 
 export function dismissNote(id: string) {
   dismissed.add(id);
-  set({ challenges: state.challenges.filter((c) => c.id !== id), answers: state.answers.filter((a) => a.id !== id) });
+  set({ challenges: state.challenges.filter((c) => c.id !== id), answers: state.answers.filter((a) => a.id !== id), matches: state.matches.filter((m) => m.code !== id) });
 }
 
 /** Accepts (returns the invite page to go to) or declines a friend's challenge. */
@@ -165,4 +169,11 @@ export async function challengeToDuel(to: string, name: string, choice: Exclude<
   saveSeat(seat.code, seat.token);
   await sendChallenge(to, choice.kind, seat.code, seat.token);
   return href(seat.code);
+}
+
+/** "Play now" on a tournament match: keeps the seat on this device and returns the battle's page. */
+export function openTournamentMatch(note: { code: string; token: string }): string {
+  saveBattleSeat(note.code, note.token);
+  dismissNote(note.code);
+  return `/battle/live/${note.code}`;
 }

@@ -1245,6 +1245,169 @@ if (me.enabled) {
   for (const p of [fa, fb]) await p.context().close();
 }
 
+// Tournaments, chat rooms, moderation and feedback: four signed-in trainers.
+// Set E2E_ADMIN to a fresh trainer name that's also in the server's
+// POKEIQ_ADMINS to run the moderation steps (it's registered here).
+if (me.enabled) {
+  step("tournaments: four trainers sign up for a Random Battle bracket");
+  const stamp = Date.now().toString(36).slice(-5);
+  const admin = process.env.E2E_ADMIN ?? null;
+  const names = [admin ?? `tp${stamp}a`, `tp${stamp}b`, `tp${stamp}c`, `tp${stamp}d`];
+  const tp = [];
+  for (const name of names) {
+    const p = await newPage({ width: 1280, height: 900 });
+    await p.goto(BASE, { waitUntil: "networkidle" });
+    const res = await p.request.post(`${BASE}/api/auth/register`, { data: { username: name, password: "correct horse battery" }, headers: { Origin: BASE } });
+    if (!res.ok()) throw new Error(`register ${name}: ${res.status()}`);
+    tp.push(p);
+  }
+  const tourOn = (await (await tp[0].request.get(`${BASE}/api/tournaments`)).json()).available;
+  if (!tourOn) console.log("  tournaments are off on this server (migration 0020): skipped");
+  else {
+    const host = tp[0];
+    await host.goto(`${BASE}/battle/tournaments`, { waitUntil: "networkidle" });
+    await host.getByTestId("tournament-create").waitFor();
+    await host.getByLabel("Max players").selectOption("4");
+    await host.screenshot({ path: `${OUT}/tournaments-lobby.png` });
+    await host.getByRole("button", { name: /Open tournament/ }).click();
+    await host.waitForURL(/\/battle\/tournaments\/[a-z2-9]{10}$/);
+    const tourUrl = host.url();
+    const tourApi = tourUrl.replace("/battle/tournaments/", "/api/tournaments/");
+    for (const p of tp) {
+      if (p !== host) await p.goto(tourUrl, { waitUntil: "networkidle" });
+      await p.getByTestId("join-tournament").click();
+      await p.getByTestId("leave-tournament").or(p.locator("[data-testid=tournament][data-status=running]")).first().waitFor({ timeout: 15_000 });
+    }
+    // Four of four: sign-ups close at once and round one starts.
+    await host.locator("[data-testid=tournament][data-status=running]").waitFor({ timeout: 30_000 });
+    await host.getByTestId("bracket").waitFor();
+    await host.screenshot({ path: `${OUT}/tournament-bracket.png`, fullPage: true });
+
+    /** The trainers whose match in round `round` is ready, by asking the server as each of them. */
+    async function ready(round, want) {
+      for (let i = 0; i < 40; i++) {
+        const out = [];
+        for (const [n, p] of tp.entries()) {
+          const view = await (await p.request.get(tourApi)).json();
+          const mine = view.you?.match && view.matches.find((m) => m.code === view.you.match.code);
+          if (mine?.round === round && mine.state === "playing") out.push({ p, name: names[n], against: view.you.match.against });
+        }
+        if (out.length >= want) return out;
+        await host.waitForTimeout(1_500);
+      }
+      throw new Error(`tournament: expected ${want} trainers with a match ready`);
+    }
+
+    for (const [round, want] of [
+      [1, 4],
+      [2, 2],
+    ]) {
+      step(`tournaments: round ${round}, each match decided by a forfeit`);
+      const players = await ready(round, want);
+      for (const [i, { p }] of players.entries()) {
+        if (round === 2 && i === 0) {
+          // The friend-challenge toast: "Your match is ready" on any page.
+          await p.goto(`${BASE}/battle`, { waitUntil: "networkidle" });
+          await p.getByTestId("match-toast").waitFor({ timeout: 30_000 });
+          await p.screenshot({ path: `${OUT}/tournament-toast.png` });
+          await p.getByTestId("match-toast").getByRole("button", { name: /Play now/ }).click();
+        } else {
+          await p.goto(tourUrl, { waitUntil: "networkidle" });
+          await p.getByTestId("play-match").click({ timeout: 20_000 });
+        }
+        await p.waitForURL(/\/battle\/live\/[a-z2-9]{8}/);
+        await p.locator("[data-testid=move-button]").first().waitFor({ timeout: 60_000 });
+      }
+      // The later name of each pair forfeits.
+      for (const { p, name, against } of players) {
+        if (name < against) continue;
+        await p.getByRole("button", { name: "Forfeit", exact: true }).click();
+        await p.getByRole("button", { name: "Forfeit", exact: true }).click();
+        await p.getByText("You forfeited.").waitFor({ timeout: 30_000 });
+        await p.getByTestId("back-to-tournament").click();
+        await p.waitForURL(tourUrl);
+      }
+    }
+    await host.goto(tourUrl, { waitUntil: "networkidle" });
+    await host.getByTestId("tournament-winner").waitFor({ timeout: 30_000 });
+    await host.screenshot({ path: `${OUT}/tournament-winner.png`, fullPage: true });
+    await host.goto(`${BASE}/battle/tournaments`, { waitUntil: "networkidle" });
+    await host.getByTestId("tournament-history").filter({ hasText: names[0] }).waitFor({ timeout: 15_000 });
+  }
+
+  step("chat rooms: two trainers talk in the Lobby; a swear is masked; a report");
+  const [ra, rb] = [tp[1], tp[2]];
+  for (const p of [ra, rb]) await p.goto(`${BASE}/rooms/lobby`, { waitUntil: "networkidle" });
+  const roomsOn = await ra.getByTestId("room-chat").isVisible().catch(() => false);
+  if (!roomsOn) console.log("  chat rooms are off on this server (migration 0020): skipped");
+  else {
+    const say = async (p, text) => {
+      await p.getByLabel("Room message").fill(text);
+      await p.getByLabel("Room message").press("Enter");
+      await p.getByTestId("room-text").filter({ hasText: text.replace("shit", "•••") }).first().waitFor({ timeout: 10_000 });
+    };
+    await say(ra, `hello from ${names[1]}`);
+    await rb.getByTestId("room-text").filter({ hasText: `hello from ${names[1]}` }).waitFor({ timeout: 15_000 });
+    await say(rb, "what the shit");
+    const masked = ra.getByTestId("room-line").filter({ hasText: "what the •••" });
+    await masked.waitFor({ timeout: 15_000 });
+    if (await ra.getByText("what the shit").count()) errors.push("a swear in a room wasn't masked");
+    // Who's here comes from presence: each sees the other.
+    await rb.getByTestId("room-users").getByText(names[1]).waitFor({ timeout: 20_000 });
+    await masked.hover();
+    await masked.getByTestId("room-report").click();
+    await masked.getByText("Reported").waitFor();
+    await ra.screenshot({ path: `${OUT}/room-lobby.png` });
+
+    step("feedback: an idea about tournaments, from /feedback; the footer opens the same form");
+    const fp = tp[3];
+    await fp.goto(`${BASE}/feedback`, { waitUntil: "networkidle" });
+    await fp.getByRole("button", { name: "Idea" }).click();
+    await fp.getByLabel("Which part of PokéIQ").selectOption("tournaments");
+    const idea = `E2E idea ${stamp}: a Little Cup tournament every evening`;
+    await fp.getByLabel("Message").fill(idea);
+    await fp.getByRole("button", { name: "Send", exact: true }).click();
+    await fp.getByTestId("feedback-sent").waitFor();
+    await fp.getByRole("button", { name: "Report a problem" }).click();
+    await fp.getByRole("dialog").getByTestId("feedback-form").waitFor();
+    await fp.screenshot({ path: `${OUT}/feedback-dialog.png` });
+    await fp.keyboard.press("Escape");
+
+    // Not an admin: the page is a 404 and so is its API.
+    await ra.goto(`${BASE}/admin`, { waitUntil: "networkidle" });
+    if (!(await ra.getByText("A wild 404 appeared!").isVisible()) || (await ra.getByText("Moderation desk").count())) errors.push("/admin isn't hidden from a trainer who isn't an admin");
+    if ((await ra.request.get(`${BASE}/api/admin?tab=audit`)).status() !== 404) errors.push("/api/admin answered a trainer who isn't an admin");
+    if (!admin) console.log("  E2E_ADMIN not set: moderation steps skipped");
+    else {
+      step("moderation: an admin mutes a trainer, who then can't post");
+      const desk = tp[0];
+      await desk.goto(`${BASE}/admin`, { waitUntil: "networkidle" });
+      await desk.getByTestId("admin-reports").waitFor();
+      await desk.getByTestId("admin-report").filter({ hasText: "what the •••" }).first().waitFor({ timeout: 15_000 });
+      await desk.getByTestId("admin-tab-users").click();
+      await desk.getByTestId("admin-user-query").fill(names[2]);
+      await desk.getByTestId("admin-user-query").press("Enter");
+      await desk.getByTestId("admin-mute-1h").click();
+      await desk.getByTestId("admin-sanction").filter({ hasText: /Muted until/ }).waitFor();
+      await desk.screenshot({ path: `${OUT}/admin-mute.png` });
+      await rb.waitForTimeout(1_100);
+      await rb.getByLabel("Room message").fill("am I muted?");
+      await rb.getByLabel("Room message").press("Enter");
+      await rb.getByTestId("room-error").filter({ hasText: /muted/ }).waitFor({ timeout: 10_000 });
+
+      step("moderation: the feedback shows on the admin page");
+      await desk.getByTestId("admin-tab-reports").click();
+      await desk.getByLabel("Category").selectOption("idea");
+      await desk.locator("[data-testid=admin-reports][aria-busy=false]").getByTestId("admin-report").filter({ hasText: idea }).waitFor({ timeout: 15_000 });
+      if (await desk.getByTestId("admin-report").filter({ hasText: "Chat report" }).count()) errors.push("the admin's category filter let a chat report through");
+      await desk.screenshot({ path: `${OUT}/admin-feedback.png`, fullPage: true });
+      await desk.getByTestId("admin-tab-audit").click();
+      await desk.getByTestId("admin-audit").getByText("mute").first().waitFor();
+    }
+  }
+  for (const p of tp) await p.context().close();
+}
+
 step("mobile: home + daily");
 const mobile = await newPage({ width: 393, height: 852 });
 await mobile.goto(BASE, { waitUntil: "networkidle" });

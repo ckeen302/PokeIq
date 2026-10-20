@@ -15,13 +15,16 @@ export const REPORT_BODY_MAX = 16_000;
 /** `extra`, as JSON. */
 export const REPORT_EXTRA_MAX = 6_000;
 
-export type ReportKind = "error" | "feedback";
+export type ReportKind = "error" | "feedback" | "chat";
 
 export interface ReportBody {
   kind: ReportKind;
   message: string;
   page?: string;
   contact?: string;
+  /** Feedback: an idea, a bug or something else, and which part of the site it's about. */
+  category?: "idea" | "bug" | "other";
+  mode?: string;
   extra?: Record<string, unknown>;
 }
 
@@ -39,6 +42,9 @@ const NOISE = [
 
 let errorsSent = 0;
 const seenThisPage = new Set<string>();
+/** The last few errors this page hit (sent or not), attached to a bug report. */
+const recent: { at: number; message: string }[] = [];
+export const recentClientErrors = () => recent.slice();
 
 /** The page this report is about: path and query, without the origin. */
 export function currentPage(): string {
@@ -84,6 +90,8 @@ export function reportError(error: unknown, extra: Record<string, unknown> = {})
     const message = (err ? `${err.name}: ${err.message}` : String(error ?? "Unknown error")).slice(0, REPORT_MESSAGE_MAX);
     const stack = (err?.stack ?? "").slice(0, 3000);
     if (NOISE.some((re) => re.test(message) || re.test(stack))) return;
+    recent.push({ at: Date.now(), message: message.slice(0, 300) });
+    if (recent.length > 5) recent.shift();
     const key = `${message.slice(0, 200)}|${stack.split("\n")[1]?.trim() ?? ""}`;
     if (alreadySeen(key)) return;
     errorsSent++;

@@ -61,6 +61,8 @@ export interface FriendStore {
   setInvisible(userId: string, invisible: boolean): Promise<void>;
   /** Visible trainers whose presence hasn't expired by `now` (at most `limit`). */
   onlineIds(now: number, limit?: number): Promise<string[]>;
+  /** Visible trainers in chat rooms right now (one room, or all of them). */
+  roomPresence(now: number, room?: string, limit?: number): Promise<{ userId: string; room: string }[]>;
 
   insertChallenge(c: ChallengeRow): Promise<void>;
   /** Unexpired challenges to `user`, or from `user` (any status). */
@@ -147,6 +149,12 @@ export function memoryFriendStore(): FriendStore {
     },
     async onlineIds(now, limit = 5000) {
       return [...db().presence.values()].filter((p) => !p.invisible && p.expiresAt > now).slice(0, limit).map((p) => p.userId);
+    },
+    async roomPresence(now, room, limit = 2000) {
+      return [...db().presence.values()]
+        .filter((p) => !p.invisible && p.expiresAt > now && p.activity?.room && (!room || p.activity.room === room))
+        .slice(0, limit)
+        .map((p) => ({ userId: p.userId, room: p.activity!.room! }));
     },
     async insertChallenge(c) {
       db().challenges.set(c.id, copy(c));
@@ -301,6 +309,13 @@ export function supabaseFriendStore(sb: Sb): FriendStore {
       const { data, error } = await sb.from("user_presence").select("user_id").eq("invisible", false).gt("expires_at", iso(now)).limit(limit);
       check(error);
       return (data ?? []).map((r: { user_id: string }) => r.user_id);
+    },
+    async roomPresence(now, room, limit = 2000) {
+      let q = sb.from("user_presence").select("user_id, room:activity->>room").eq("invisible", false).gt("expires_at", iso(now));
+      q = room ? q.eq("activity->>room", room) : q.not("activity->>room", "is", null);
+      const { data, error } = await q.limit(limit);
+      check(error);
+      return ((data ?? []) as unknown as { user_id: string; room: string | null }[]).filter((r) => r.room).map((r) => ({ userId: r.user_id, room: r.room! }));
     },
     async insertChallenge(c) {
       // Opportunistic cleanup keeps the table small without a cron job.

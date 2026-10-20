@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+import { gate } from "@/lib/server/moderation";
 import { clientIp, rateLimit } from "@/lib/server/rate-limit";
 import { duelNameSchema } from "@/lib/server/duel-core";
 import { battlesEnabled } from "@/lib/server/battle-engine/store";
@@ -47,6 +48,10 @@ export async function POST(request: NextRequest) {
   const parsed = bodySchema.safeParse(await request.json().catch(() => ({})));
   if (!parsed.success) return NextResponse.json({ error: parsed.error.issues[0].message }, { status: 400, headers: NO_STORE });
   const body = parsed.data;
+  if (body.mode === "pvp") {
+    const blocked = await gate(request, "play");
+    if (blocked) return blocked;
+  }
   try {
     const player = (await battlePlayerKey(request, body.rankedId)) ?? undefined;
     const out = body.mode === "cpu" ? await createCpuBattle({ ...body, player }) : await createLiveBattle({ ...body, player });

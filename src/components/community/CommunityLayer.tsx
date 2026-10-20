@@ -2,9 +2,9 @@
 
 import { useEffect, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { Check, Loader2, Swords, X } from "lucide-react";
+import { Check, Loader2, Swords, Trophy, X } from "lucide-react";
 import { useAccount } from "@/lib/account";
-import { answerChallenge, beat, dismissNote, useCommunity } from "@/lib/friends-client";
+import { answerChallenge, beat, dismissNote, openTournamentMatch, useCommunity } from "@/lib/friends-client";
 import { PRESENCE_BEAT_MS, PRESENCE_MIN_GAP_MS, activityFromPath } from "@/lib/community";
 import { Button } from "@/components/ui/button";
 import { FriendsPanel } from "./FriendsPanel";
@@ -72,10 +72,14 @@ export function CommunityLayer() {
 
 function Toasts() {
   const router = useRouter();
-  const { challenges, answers } = useCommunity();
+  const pathname = usePathname();
+  const community = useCommunity();
+  const { challenges, answers } = community;
+  // Not on the match's own page.
+  const matches = community.matches.filter((m) => pathname !== `/battle/live/${m.code}`);
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  if (!challenges.length && !answers.length && !error) return null;
+  if (!challenges.length && !answers.length && !matches.length && !error) return null;
 
   async function answer(id: string, accept: boolean) {
     setBusy(id);
@@ -92,6 +96,24 @@ function Toasts() {
 
   return (
     <div className="fixed bottom-20 right-4 z-[60] flex w-80 flex-col gap-2 lg:bottom-6" aria-live="polite">
+      {matches.slice(0, 2).map((m) => (
+        <div key={m.code} role="alert" className="hud rounded-lg border border-warning/60 bg-card p-3 shadow-xl" data-testid="match-toast">
+          <p className="hud-label flex items-center gap-1.5 text-warning">
+            <Trophy className="h-3.5 w-3.5" aria-hidden /> Your match is ready
+          </p>
+          <p className="mt-1 text-sm">
+            {m.title}: you vs <span className="font-semibold">{m.against}</span>.
+          </p>
+          <div className="mt-2 flex gap-2">
+            <Button size="sm" variant="success" onClick={() => router.push(openTournamentMatch(m))}>
+              <Swords className="h-3.5 w-3.5" aria-hidden /> Play now
+            </Button>
+            <Button size="sm" variant="ghost" onClick={() => dismissNote(m.code)}>
+              Later
+            </Button>
+          </div>
+        </div>
+      ))}
       {challenges.slice(0, 3).map((c) => (
         <div key={c.id} role="alert" className="hud rounded-lg border border-primary/60 bg-card p-3 shadow-xl" data-testid="challenge-toast">
           <p className="hud-label flex items-center gap-1.5 text-primary">

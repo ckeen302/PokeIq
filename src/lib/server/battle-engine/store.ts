@@ -40,6 +40,8 @@ export interface BattleSeat {
   player?: string;
   /** Ranked battles: the rating and ranked games this trainer had when matched. */
   rating?: { rating: number; games: number };
+  /** Tournament battles: when this trainer first opened the battle (absent: they never showed). */
+  arrived?: number;
 }
 
 export interface SideClock {
@@ -96,8 +98,10 @@ export interface BattleMeta {
   public?: boolean;
   /** A trainer chose "Don't allow spectators": never listed, no spectators while it's played, an unlisted replay. */
   hidden?: boolean;
-  /** A ranked ladder battle (matchmade only). */
+  /** A ranked ladder battle (matchmade or a rated tournament match). */
   ranked?: boolean;
+  /** A tournament match: the tournament's id. */
+  tournament?: string;
   /** Spectators: an anonymous viewer id → when it last polled. */
   watchers?: Record<string, number>;
   /** Live battles: the timer is off until a player starts it. */
