@@ -4,9 +4,12 @@ import { useCallback, useEffect, useId, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Bot, Loader2, Radio, Swords, UserSearch, X } from "lucide-react";
-import { CPU_LEVEL_INFO, CPU_LEVELS, PLAY_FORMAT_INFO, PLAY_FORMATS, battleHref, type BattleSeatResponse, type CpuLevel, type PlayFormatId } from "@/lib/battle/play";
+import { CPU_LEVEL_INFO, CPU_LEVELS, PLAY_FORMAT_INFO, PLAY_FORMATS, battleHref, type BattleSeatResponse, type CpuLevel, type PlayFormatId, type StandardFormatId } from "@/lib/battle/play";
 import { saveBattleSeat } from "@/lib/battle/seat";
 import { ensureBattleId } from "@/lib/battle/replay-client";
+import { isLadderFormat } from "@/lib/battle/ladder";
+import { useLadderStanding } from "@/lib/battle/ladder-client";
+import { TierBadge } from "@/components/pokedle/Ranked";
 import { NAME_REJECTED, isCleanName } from "@/lib/name-filter";
 import { setTrainerName, useProgress } from "@/lib/progress";
 import { unlockAudio } from "@/lib/sound";
@@ -130,6 +133,9 @@ export function BattleSetup({ initial = "cpu" }: { initial?: Opponent }) {
   const [watchable, setWatchable] = useState(false);
   /** Friend battles: the turn timer runs from the start (off: either player can start it). */
   const [timerOn, setTimerOn] = useState(true);
+  /** Find an opponent: the format's ranked queue (paired by rating) instead of the casual one. */
+  const [ranked, setRanked] = useState(false);
+  const ladder = useLadderStanding(opponent === "match" && isLadderFormat(format) ? (format as StandardFormatId) : null);
   const custom = format === "custom";
   const info = PLAY_FORMAT_INFO[format];
   const formatName = custom ? customName(rules) : info.name;
@@ -156,7 +162,8 @@ export function BattleSetup({ initial = "cpu" }: { initial?: Opponent }) {
   useEffect(() => {
     if ((opponent === "match" && format === "custom") || (opponent === "cpu" && format === "factory")) setFormat("gen9randombattle");
   }, [opponent, format]);
-  const settings = useMemo(() => ({ format }), [format]);
+  const rankedOn = opponent === "match" && ranked && isLadderFormat(format) && ladder.status !== "off";
+  const settings = useMemo(() => ({ format, ranked: rankedOn }), [format, rankedOn]);
   const finder = useMatchmaking(settings, { endpoint: "/api/battle/match", save: saveBattleSeat });
   const searching = finder.searching;
   const now = useTicker(searching);
@@ -173,7 +180,8 @@ export function BattleSetup({ initial = "cpu" }: { initial?: Opponent }) {
     if (!isCleanName(name)) return setError(NAME_REJECTED);
     if (opponent === "match") {
       // Searches until paired; the battle has started by the time it's found.
-      void finder.search(name.trim(), needsTeam ? { team } : {});
+      const rankedId = (await ensureBattleId()) ?? undefined;
+      void finder.search(name.trim(), { ...(needsTeam ? { team } : {}), rankedId });
       return;
     }
     unlockAudio();
@@ -332,6 +340,26 @@ export function BattleSetup({ initial = "cpu" }: { initial?: Opponent }) {
               className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             />
           </div>
+          {opponent === "match" && isLadderFormat(format) && (
+            <div className="space-y-2" data-testid="ranked-option">
+              <Toggle
+                checked={rankedOn}
+                onChange={setRanked}
+                disabled={searching || ladder.status === "off"}
+                label="Ranked"
+                hint={ladder.status === "off" ? "Ranked battles open soon." : "Paired by rating on the ladder. A forfeit or leaving counts as a loss."}
+                testId="ranked-toggle"
+              />
+              {rankedOn && ladder.status === "ready" && (
+                <p className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                  {ladder.you && ladder.you.games > 0 ? <TierBadge rating={ladder.you.rating} games={ladder.you.games} size="sm" /> : <span>Unrated: you start at 1,000.</span>}
+                  <Link href={`/battle/ladder?format=${format}`} className="underline-offset-2 hover:text-foreground hover:underline">
+                    Ladder
+                  </Link>
+                </p>
+              )}
+            </div>
+          )}
           {opponent === "pvp" && (
             <div className="space-y-2">
               <Toggle checked={watchable} onChange={setWatchable} label="Let anyone watch" hint="List it in Watch live. Off: only people with the link can watch." testId="let-anyone-watch" />
@@ -346,7 +374,7 @@ export function BattleSetup({ initial = "cpu" }: { initial?: Opponent }) {
           {searching ? (
             <div className="space-y-2 rounded-md border border-screen/40 bg-screen/[0.06] p-3 text-center" role="status" data-testid="battle-searching">
               <p className="flex items-center justify-center gap-2 font-display text-sm font-semibold uppercase tracking-wider text-screen">
-                <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> Searching for an opponent…
+                <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> {rankedOn ? "Searching for a ranked rival…" : "Searching for an opponent…"}
               </p>
               <p className="font-pixel text-xs tabular-nums text-muted-foreground">{clock(now - (finder.since ?? now))}</p>
               <Button type="button" size="sm" variant="ghost" onClick={finder.cancel}>

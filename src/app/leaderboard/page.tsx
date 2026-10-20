@@ -16,6 +16,10 @@ import { LocalDateRedirect } from "./local-date-redirect";
 import { RankedUnavailable, rankedStore } from "@/lib/server/ranked";
 import type { RankedLeaderRow } from "@/lib/ranked";
 import { TierBadge, YourLadderSpot } from "@/components/pokedle/Ranked";
+import { LadderTable, LadderTabs, YourBattleStanding } from "@/components/battle/LadderParts";
+import { isLadderFormat } from "@/lib/battle/ladder";
+import type { StandardFormatId } from "@/lib/battle/play";
+import { ladderTop } from "@/lib/server/battle-engine/ladder";
 
 export const metadata: Metadata = pageMetadata({
   title: "Leaderboards",
@@ -31,7 +35,12 @@ interface PageProps {
 export default async function LeaderboardPage({ searchParams }: PageProps) {
   const params = await searchParams;
   const board =
-    params.board === "daily" || params.board === "iq" || params.board === "geo" || params.board === "pokedle" || PLAY_MODULES.includes(params.board as ModuleId)
+    params.board === "daily" ||
+    params.board === "iq" ||
+    params.board === "geo" ||
+    params.board === "pokedle" ||
+    params.board === "battle" ||
+    PLAY_MODULES.includes(params.board as ModuleId)
       ? params.board!
       : "daily";
   const format: QuizFormat = (PLAYABLE_FORMATS as readonly string[]).includes(params.format ?? "") ? (params.format as QuizFormat) : "classic";
@@ -46,6 +55,7 @@ export default async function LeaderboardPage({ searchParams }: PageProps) {
     { id: "iq", label: "PokéIQ Test" },
     { id: "geo", label: "PokéGuessr" },
     { id: "pokedle", label: "Pokédle Ranked" },
+    { id: "battle", label: "Battle Ladder" },
     ...PLAY_MODULES.map((m) => ({ id: m, label: MODULE_INFO[m].title })),
   ];
   const tabRow = (
@@ -59,6 +69,38 @@ export default async function LeaderboardPage({ searchParams }: PageProps) {
       ))}
     </div>
   );
+
+  if (board === "battle") {
+    const battleFormat: StandardFormatId = isLadderFormat(params.format) ? params.format : "gen9randombattle";
+    const rows = await ladderTop(battleFormat);
+    return (
+      <div className="mx-auto max-w-3xl space-y-6">
+        <div className="space-y-4 text-center">
+          <h1 className="font-display text-4xl font-bold uppercase tracking-tight sm:text-5xl">Leaderboard</h1>
+          {tabRow}
+          <p className="text-sm text-muted-foreground">
+            The ranked battle ladder: the top 100 by rating in each format.{" "}
+            <Link href={`/battle/ladder?format=${battleFormat}`} className="text-primary underline-offset-2 hover:underline">
+              Full ladder
+            </Link>
+          </p>
+        </div>
+        <div className="flex justify-center">
+          <LadderTabs format={battleFormat} hrefBase="/leaderboard?board=battle&format=" />
+        </div>
+        {rows === null ? (
+          <Card>
+            <CardContent className="py-10 text-center text-muted-foreground">Ranked battles open soon.</CardContent>
+          </Card>
+        ) : (
+          <>
+            <YourBattleStanding format={battleFormat} />
+            <LadderTable rows={rows} format={battleFormat} />
+          </>
+        )}
+      </div>
+    );
+  }
 
   if (board === "pokedle") {
     const ladder = await rankedLadder();

@@ -38,6 +38,8 @@ export interface Waiter {
   seenAt: number;
   /** What the trainer brings, checked before they joined the queue (a battle team, packed). Server-side only. */
   team?: string;
+  /** A battle ladder key (an HMAC). Server-side only. */
+  player?: string;
 }
 
 export interface QueueRow {
@@ -73,11 +75,13 @@ export function planSearch(row: QueueRow, ticket: string, now: number): SearchPl
 const fresh = (matched: QueueRow["matched"], now: number) => Object.fromEntries(Object.entries(matched).filter(([, m]) => now - m.at < MATCH_KEEP_MS));
 
 /** You take the waiting slot (or, already in it, say you're still here; what you brought stays). */
-export function withWaiter(row: QueueRow, me: { ticket: string; name: string; team?: string }, now: number): QueueRow {
+export function withWaiter(row: QueueRow, me: { ticket: string; name: string; team?: string; player?: string }, now: number): QueueRow {
   const mine = row.waiting?.ticket === me.ticket ? row.waiting : undefined;
   const team = me.team ?? mine?.team;
   const waiting: Waiter = { ticket: me.ticket, name: me.name, since: mine?.since ?? now, seenAt: now };
   if (team) waiting.team = team;
+  const player = me.player ?? mine?.player;
+  if (player) waiting.player = player;
   return { key: row.key, waiting, matched: fresh(row.matched, now) };
 }
 
@@ -103,6 +107,13 @@ export const newTicket = () => randomId(12);
 // ---------------------------------------------------------------------------
 
 /** A game opened for two matched trainers: its code, each seat's id (the waiter's first), and how to throw it away. */
+/** A trainer a game opens for: their name (made distinct), and what they brought. */
+export interface QueuedPlayer {
+  name: string;
+  team?: string;
+  player?: string;
+}
+
 export interface OpenedGame {
   code: string;
   ids: [string, string];
@@ -112,6 +123,8 @@ export interface OpenedGame {
 export interface Searcher {
   ticket: string;
   name: string;
+  /** A battle ladder key (server-side only), for the trainer's battle record and replays. */
+  player?: string;
   /**
    * What the searcher brings (a battle team), checked only when it's needed:
    * before they wait, or before they pair. A failure ends the search.
@@ -137,7 +150,7 @@ const writeQueue = (row: QueueRow, version: number | null) => (version === null 
 export async function searchQueue(
   key: string,
   me: Searcher,
-  open: (players: [{ name: string; team?: string }, { name: string; team?: string }], now: number) => Promise<OpenedGame | null>
+  open: (players: [QueuedPlayer, QueuedPlayer], now: number) => Promise<OpenedGame | null>
 ): Promise<QueueResult | PvpFailure> {
   let brought: { ok: true; team?: string } | PvpFailure | null = null;
   const bring = () => (brought ??= me.bring ? me.bring() : { ok: true });
@@ -156,7 +169,7 @@ export async function searchQueue(
     const mine = bring();
     if (!mine.ok) return mine;
     if (plan.kind === "wait") {
-      const next = withWaiter(row, { ticket: me.ticket, name: me.name, team: mine.team }, now);
+      const next = withWaiter(row, { ticket: me.ticket, name: me.name, team: mine.team, player: me.player }, now);
       if (!(await writeQueue(next, version))) continue;
       return { ok: true, status: "waiting", ticket: me.ticket, since: next.waiting!.since };
     }
@@ -165,8 +178,8 @@ export async function searchQueue(
     const [a, b] = seatNames(plan.opponent.name, me.name);
     const game = await open(
       [
-        { name: a, team: plan.opponent.team },
-        { name: b, team: mine.team },
+        { name: a, team: plan.opponent.team, player: plan.opponent.player },
+        { name: b, team: mine.team, player: me.player },
       ],
       now
     );

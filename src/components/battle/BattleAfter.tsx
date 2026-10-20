@@ -8,6 +8,8 @@ import { rememberReplay } from "@/lib/battle/replay-client";
 import { shareOrCopy } from "@/lib/share";
 import { Button, buttonVariants } from "@/components/ui/button";
 import type { BattleHandle } from "./use-battle";
+import { RatingChange } from "@/components/pokedle/Ranked";
+import { isProvisional } from "@/lib/ranked";
 
 /** Shares a replay's link (the system share sheet, or the clipboard). */
 export function ShareReplay({ id, text, size = "sm" }: { id: string; text: string; size?: "sm" | "default" }) {
@@ -42,8 +44,42 @@ export function BattleAfter({ view, battle }: { view: BattleView; battle: Battle
     if (view.replay && view.you !== null) rememberReplay(view.replay);
   }, [view.replay, view.you]);
 
-  if (!played || view.you === null) return null;
+  if (view.you === null) return null;
   const players = view.players.map((p) => p.name).join(" vs ");
+  const mine = view.ratings?.[view.you];
+  const games = view.players[view.you]?.games;
+  return (
+    <div className="space-y-3">
+      {view.ranked &&
+        (mine ? (
+          <div className="mx-auto max-w-sm text-left" data-testid="rating-change">
+            <RatingChange before={mine.before} after={mine.after} provisional={games !== undefined && isProvisional(games)} />
+          </div>
+        ) : !view.settled ? (
+          <p className="hud-label flex items-center justify-center gap-1.5">
+            <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden /> Updating ratings…
+          </p>
+        ) : null)}
+      {played && <ReplayButtons view={view} battle={battle} auto={auto} saving={saving} setSaving={setSaving} players={players} />}
+    </div>
+  );
+}
+
+function ReplayButtons({
+  view,
+  battle,
+  auto,
+  saving,
+  setSaving,
+  players,
+}: {
+  view: BattleView;
+  battle: BattleHandle;
+  auto: boolean | undefined;
+  saving: boolean;
+  setSaving: (s: boolean) => void;
+  players: string;
+}) {
   return (
     <div className="flex flex-wrap items-center justify-center gap-2" data-testid="replay-actions">
       {view.replay ? (
