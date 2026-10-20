@@ -5,11 +5,13 @@ import { updateBattle, type Outcome } from "./service";
 import { loadBattle, type BattleRecord, type BattleSettled } from "./store";
 import { ReplaysUnavailable, replayFromRecord, replayStore } from "./replays";
 import { ladderStore, settleRankedBattle } from "./ladder";
+import { recordStore, resultsOf } from "./records";
 import { RankedUnavailable } from "../ranked";
 
 /**
  * What happens once a live battle is over, exactly once per battle: a ranked
- * battle moves both ratings (ladder.ts); ranked
+ * battle moves both ratings (ladder.ts), each known trainer's record gets
+ * the result (records.ts), and ranked
  * battles and battles open to spectators are saved as replays (the spectator
  * channel only). The battle then records that it's settled, so polls stop
  * asking. Any write here is idempotent (keyed by the battle's code), so
@@ -57,6 +59,13 @@ export async function settleBattle(code: string): Promise<void> {
   }
   // The replay shows the ratings the trainers brought.
   if (settled.ratings) rec.meta.settled = settled;
+  // Each known trainer's record (wins and losses per format, their latest battles).
+  const records = recordStore();
+  try {
+    await records?.record(resultsOf(meta, settled.ratings, now));
+  } catch (err) {
+    if (!(err instanceof RankedUnavailable)) throw err;
+  }
   let replay = meta.replay ?? null;
   if (!replay && (meta.ranked || meta.public) && replayable(rec)) replay = await storeReplay(rec, true, now);
   await updateBattle(code, (work) => {

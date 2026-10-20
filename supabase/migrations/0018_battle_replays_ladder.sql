@@ -1,4 +1,4 @@
--- Battle replays (and, below, the battle ladder).
+-- Battle replays, the battle ladder and battle records (each below).
 --
 -- A replay is one finished battle's public log: the spectator channel, the
 -- very lines Pokémon Showdown shows its spectators. It never holds a
@@ -253,6 +253,73 @@ as $$
     limit least(greatest(p_limit, 1), 100)
   ) t;
 $$;
+
+-- ---------------------------------------------------------------------------
+-- Battle records: one row per trainer (ladder key) per finished live battle,
+-- for wins and losses per format and the latest battles on their profile.
+-- Keyed by the battle and the trainer, so writing it twice changes nothing.
+-- ---------------------------------------------------------------------------
+
+create table if not exists public.battle_results (
+  battle_code    text        not null check (battle_code ~ '^[a-hjkmnp-z2-9]{8}$'),
+  player_key     text        not null check (player_key ~ '^[A-Za-z0-9_-]{16,64}$'),
+  format         text        not null check (char_length(format) between 1 and 60),
+  format_name    text        not null check (char_length(format_name) between 1 and 80),
+  name           text        not null check (char_length(name) between 1 and 24),
+  opponent       text        not null check (char_length(opponent) between 1 and 24),
+  result         text        not null check (result in ('win', 'loss', 'draw')),
+  ranked         boolean     not null default false,
+  rating_before  integer,
+  rating_after   integer,
+  created_at     timestamptz not null default now(),
+  primary key (battle_code, player_key)
+);
+
+create index if not exists battle_results_player_idx on public.battle_results (player_key, created_at desc);
+
+alter table public.battle_results enable row level security;
+revoke all on public.battle_results from anon, authenticated;
+
+-- A trainer's record per format and their latest battles (each with whether
+-- its replay was saved), without keys.
+create or replace function public.battle_profile(p_key text, p_limit integer)
+returns jsonb
+language sql
+stable
+security invoker
+set search_path = public
+as $$
+  select jsonb_build_object(
+    'formats', coalesce((
+      select jsonb_agg(jsonb_build_object(
+        'format', f.format, 'format_name', f.format_name, 'wins', f.wins, 'losses', f.losses, 'draws', f.draws
+      ) order by f.wins + f.losses + f.draws desc)
+      from (
+        select format, max(format_name) as format_name,
+               count(*) filter (where result = 'win') as wins,
+               count(*) filter (where result = 'loss') as losses,
+               count(*) filter (where result = 'draw') as draws
+        from public.battle_results where player_key = p_key group by format
+      ) f
+    ), '[]'::jsonb),
+    'recent', coalesce((
+      select jsonb_agg(jsonb_build_object(
+        'battle_code', r.battle_code, 'format', r.format, 'format_name', r.format_name, 'name', r.name,
+        'opponent', r.opponent, 'result', r.result, 'ranked', r.ranked, 'rating_before', r.rating_before,
+        'rating_after', r.rating_after, 'created_at', r.created_at,
+        'replay', exists (select 1 from public.battle_replays p where p.id = r.battle_code)
+      ) order by r.created_at desc)
+      from (
+        select * from public.battle_results where player_key = p_key
+        order by created_at desc
+        limit least(greatest(p_limit, 1), 50)
+      ) r
+    ), '[]'::jsonb)
+  );
+$$;
+
+revoke all on function public.battle_profile(text, integer) from public, anon, authenticated;
+grant execute on function public.battle_profile(text, integer) to service_role;
 
 revoke all on function public.battle_ranked_apply(text, text, text[], text[], integer[], integer[], integer[], numeric[]) from public, anon, authenticated;
 revoke all on function public.battle_ladder_standing(text, text) from public, anon, authenticated;

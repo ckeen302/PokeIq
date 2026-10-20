@@ -13,6 +13,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { CoachPanel } from "./CoachPanel";
 import { AccountPanel } from "@/components/account/AccountPanel";
+import { MyBattleRecord } from "@/components/battle/MyBattleRecord";
 import { BadgeMedal } from "@/components/game/BadgeMedal";
 import { ModeIcon } from "@/components/game/ModeIcon";
 import { cn } from "@/lib/utils";
@@ -119,6 +120,8 @@ export function TrainerCard() {
       </motion.div>
 
       <AccountPanel />
+
+      <MyBattleRecord />
 
       <CoachPanel progress={progress} />
 
