@@ -76,7 +76,13 @@ const FRONTIER: { href: string | null; icon: LucideIcon; title: string; blurb: s
     blurb: "No team needed: rent six Pokémon from Showdown's Battle Factory sets and see how long a streak you can build.",
     points: ["Level 100 Factory or level 50 BSS Factory", "Trade for your opponent's Pokémon after each win", "Or battle live: both trainers rent a team"],
   },
-  { href: null, icon: Castle, title: "Battle Tower", blurb: "Your team against a climbing streak of computer trainers. How far can you go?", points: [] },
+  {
+    href: "/battle/tower",
+    icon: Castle,
+    title: "Battle Tower",
+    blurb: "Your team against a climbing streak of computer trainers under Flat Rules. How far can you go?",
+    points: ["Level 50, bring six, pick three", "Saved, built or quick teams, checked by Showdown", "The Tower Tycoon every seventh battle"],
+  },
 ];
 
 export default function BattlePage() {

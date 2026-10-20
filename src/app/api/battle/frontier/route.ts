@@ -4,13 +4,15 @@ import { clientIp, rateLimit } from "@/lib/server/rate-limit";
 import { duelNameSchema } from "@/lib/server/duel-core";
 import { userFromRequest } from "@/lib/server/auth";
 import { battlesEnabled } from "@/lib/server/battle-engine/store";
-import { nextRunBattle, runResult, startFactoryRun, swapRun } from "@/lib/server/battle-engine/frontier";
+import { nextRunBattle, runResult, startFactoryRun, startTowerRun, swapRun } from "@/lib/server/battle-engine/frontier";
+import { BATTLE_TEAM_MAX } from "@/lib/battle/play";
 import { frontierBests } from "@/lib/server/frontier-store";
 import { DUEL_CODE_RE } from "@/lib/duel-types";
 
 /**
- * POST /api/battle/frontier: Battle Factory runs.
+ * POST /api/battle/frontier: Battle Factory and Battle Tower runs.
  *   { action: "start", mode: "factory", style, name }  a new run and its rental team
+ *   { action: "start", mode: "tower", name, team }     a new Tower run with your team (Showdown export), checked for Flat Rules
  *   { action: "next", run }                            the run's next battle: { code, token, href }
  *   { action: "result", code, token }                  after that battle: { won, run, best }
  *   { action: "swap", run, give, take }                the Factory's trade after a win (give -1: keep your team)
@@ -26,7 +28,13 @@ const NO_STORE = { "Cache-Control": "no-store" };
 const run = z.string().min(10).max(16_000);
 
 const bodySchema = z.discriminatedUnion("action", [
-  z.object({ action: z.literal("start"), mode: z.literal("factory"), style: z.enum(["open", "bss"]).default("open"), name: duelNameSchema }),
+  z.object({
+    action: z.literal("start"),
+    mode: z.enum(["factory", "tower"]),
+    style: z.enum(["open", "bss"]).default("open"),
+    name: duelNameSchema,
+    team: z.string().max(BATTLE_TEAM_MAX).optional(),
+  }),
   z.object({ action: z.literal("next"), run }),
   z.object({ action: z.literal("result"), code: z.string().regex(DUEL_CODE_RE), token: z.string().max(2000) }),
   z.object({ action: z.literal("swap"), run, give: z.number().int().min(-1).max(5), take: z.number().int().min(0).max(5) }),
@@ -58,6 +66,7 @@ export async function POST(request: NextRequest) {
 async function act(body: z.infer<typeof bodySchema>, request: NextRequest) {
   switch (body.action) {
     case "start":
+      if (body.mode === "tower") return startTowerRun(body.name, body.team ?? "");
       return startFactoryRun(body.name, body.style);
     case "next":
       return nextRunBattle(body.run);

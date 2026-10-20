@@ -229,6 +229,10 @@ export function BattleSetup({ initial = "cpu" }: { initial?: Opponent }) {
             Looking for a streak? Rent a team in the{" "}
             <Link href="/battle/factory" className="font-semibold text-foreground underline-offset-2 hover:underline">
               Battle Factory
+            </Link>{" "}
+            or climb the{" "}
+            <Link href="/battle/tower" className="font-semibold text-foreground underline-offset-2 hover:underline">
+              Battle Tower
             </Link>
             .
           </p>

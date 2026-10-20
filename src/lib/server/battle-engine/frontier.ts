@@ -18,7 +18,7 @@ import {
   type FrontierRunView,
 } from "@/lib/battle/frontier";
 import type { PlayFormatId } from "@/lib/battle/play";
-import { factoryTeam, pickFactoryTier } from "./teams";
+import { factoryTeam, pickFactoryTier, prepareTeamFor, TOWER_FORMAT, towerTeam, tycoonTeam } from "./teams";
 import { createRunBattle, readBattleToken } from "./service";
 import { loadBattleMeta } from "./store";
 import { recordFrontierBest } from "../frontier-store";
@@ -113,15 +113,22 @@ export function startFactoryRun(name: string, style: FactoryStyle): Out<{ run: F
   return { ok: true, run: runView(run) };
 }
 
-/** The computer's team for the next battle of a run. Tower teams come from tower.ts (see `towerFoeTeam`). */
-export type FoeTeamMaker = (run: FrontierRun) => string;
-
-const factoryFoe: FoeTeamMaker = (run) => Teams.pack(factoryTeam(run.style ?? "open", run.tier ?? "OU"));
-
-const foeMakers: Partial<Record<FrontierMode, FoeTeamMaker>> = { factory: factoryFoe };
-export function registerFoeTeams(mode: FrontierMode, maker: FoeTeamMaker) {
-  foeMakers[mode] = maker;
+/** A new Tower run with the player's team, checked by Showdown for the Tower's format (Flat Rules). */
+export function startTowerRun(name: string, text: string): Out<{ run: FrontierRunView }> {
+  const checked = prepareTeamFor(TOWER_FORMAT, text);
+  if (!checked.ok) return fail(400, checked.errors.join(" "));
+  if (checked.size < 3) return fail(400, "Bring at least three Pokémon: you pick three to battle.");
+  const run: FrontierRun = { v: 1, id: randomId(), mode: "tower", name, team: checked.packed, streak: 0, over: false };
+  return { ok: true, run: runView(run) };
 }
+
+/** The computer's team for the next battle of a run. */
+type FoeTeamMaker = (run: FrontierRun) => string;
+
+const foeMakers: Record<FrontierMode, FoeTeamMaker> = {
+  factory: (run) => Teams.pack(factoryTeam(run.style ?? "open", run.tier ?? "OU")),
+  tower: (run) => Teams.pack(isBoss("tower", run.streak) ? tycoonTeam() : towerTeam()),
+};
 
 /** Starts the run's next battle (once per streak step). */
 export async function nextRunBattle(token: unknown): Promise<Out<{ code: string; token: string; href: string }>> {
@@ -129,7 +136,6 @@ export async function nextRunBattle(token: unknown): Promise<Out<{ code: string;
   if (!run) return fail(400, "That run isn't valid any more. Start a new one.");
   if (run.over) return fail(409, "This run is over. Start a new one.");
   const maker = foeMakers[run.mode];
-  if (!maker) return fail(400, "Unknown facility.");
   if (!(await claimOnce(`frontier:${run.id}:${run.streak}`))) return fail(409, "This battle of your run has already started. Open it from where you left off, or start a new run.");
   const level = frontierCpuLevel(run.mode, run.streak);
   const made = await createRunBattle({

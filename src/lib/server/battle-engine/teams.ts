@@ -2,7 +2,7 @@ import "server-only";
 import { PRNG, Teams, TeamValidator } from "pokemon-showdown";
 import type { PRNGSeed } from "pokemon-showdown/dist/sim/prng";
 import { PLAY_FORMAT_INFO, BATTLE_TEAM_MAX, type PlayFormatId } from "@/lib/battle/play";
-import { randomTeam as legalRandomTeam } from "@/lib/server/battle";
+import { legalRandomTeam as legalRandomSets, randomTeam as legalRandomTeam } from "@/lib/server/battle";
 import type { BattleFormatId } from "@/lib/battle/formats";
 import type { FactoryStyle } from "@/lib/battle/frontier";
 import { completeSet, type TeamSet } from "@/lib/battle/sets";
@@ -136,3 +136,38 @@ export function factoryTeam(style: FactoryStyle, tier: string, seed: string = ne
   generator.factoryTier = tier;
   return generator.randomFactoryTeam({ name: "p1" });
 }
+
+// ---------------------------------------------------------------------------
+// The Battle Tower
+// ---------------------------------------------------------------------------
+
+/** The Tower's rules: Showdown's Flat Rules format (level 50, bring 6 pick 3, Species, Item and Nickname Clauses). */
+export const TOWER_FORMAT = "gen9bssregi";
+
+/**
+ * A Tower trainer's team: six random-battle sets (the same source as the
+ * computer's other teams) at level 50 that pass the Tower's validator.
+ */
+export function towerTeam(): PokemonSet[] {
+  return legalRandomSets({ generator: "gen9randombattle", gen: 9, level: 50, validator: TeamValidator.get(TOWER_FORMAT) }) as PokemonSet[];
+}
+
+/**
+ * The Tower Tycoon's team (and the Tower's quick team): Showdown's Battle
+ * Stadium Factory sets, built for exactly these rules, kept once they pass
+ * the Tower's validator; random-battle sets if none do.
+ */
+export function tycoonTeam(seed: string = newSeed()): PokemonSet[] {
+  const prng = new PRNG(seed as PRNGSeed);
+  const validator = TeamValidator.get(TOWER_FORMAT);
+  for (let attempt = 0; attempt < 6; attempt++) {
+    const team = factoryTeam("bss", "", prng.getSeed());
+    prng.random();
+    if (!validator.validateTeam(structuredClone(team))) return team;
+  }
+  return towerTeam();
+}
+
+/** The player's quick team for the Tower: tournament sets, legal under Flat Rules. */
+export const towerQuickTeam = (): TeamSet[] => tycoonTeam().map((set) => completeSet({ ...set, name: "" }));
+

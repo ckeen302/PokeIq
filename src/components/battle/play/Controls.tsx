@@ -175,14 +175,19 @@ function SwitchGrid({
   );
 }
 
-/** Team preview: their six (species only), then tap your lead (two in doubles); the rest follow in order. */
+/**
+ * Team preview: their six (species only), then tap your lead (two in doubles);
+ * the rest follow in order. Bring 6, pick N: tap the N that battle, in order.
+ */
 function TeamPreview({ request, doubles, busy, onChoose, foes }: { request: BattleRequest; doubles: boolean; busy: boolean; onChoose: (c: string) => void; foes: MonSnap[] }) {
   const [leads, setLeads] = useState<number[]>([]);
-  const need = doubles ? 2 : 1;
+  const size = request.side.pokemon.length;
+  const picking = !!request.maxChosenTeamSize && request.maxChosenTeamSize < size;
+  const need = picking ? request.maxChosenTeamSize! : doubles ? 2 : 1;
   const pick = (n: number) => {
     const next = leads.includes(n) ? leads.filter((l) => l !== n) : [...leads, n];
     if (next.length >= need) {
-      const rest = request.side.pokemon.map((_, i) => i + 1).filter((i) => !next.includes(i));
+      const rest = picking ? [] : request.side.pokemon.map((_, i) => i + 1).filter((i) => !next.includes(i));
       onChoose(`team ${[...next, ...rest].join("")}`);
       setLeads([]);
     } else setLeads(next);
@@ -202,7 +207,9 @@ function TeamPreview({ request, doubles, busy, onChoose, foes }: { request: Batt
           </div>
         </div>
       )}
-      <p className="font-display text-lg font-bold uppercase">{doubles ? "Choose your two leads" : "Choose your lead"}</p>
+      <p className="font-display text-lg font-bold uppercase">
+        {picking ? `Choose ${need} to battle (the first leads)` : doubles ? "Choose your two leads" : "Choose your lead"}
+      </p>
       <div className="grid grid-cols-3 gap-2 sm:grid-cols-6">
         {request.side.pokemon.map((p, i) => {
           const species = speciesOf(p);
