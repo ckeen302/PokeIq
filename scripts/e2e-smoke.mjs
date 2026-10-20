@@ -428,6 +428,11 @@ async function playPokedleDuel({ p, name, seen }, shoot) {
       } else {
         await input.fill(pick.name);
         const option = p.locator("[role=option]").filter({ has: p.locator("span", { hasText: new RegExp(`^${escapeRe(pick.name)}$`) }) });
+        if (!(await option.waitFor({ timeout: 5_000 }).then(() => true, () => false))) {
+          const listed = await p.locator("[role=option]").allInnerTexts();
+          await p.screenshot({ path: `${OUT}/pokedle-duel-no-option.png`, fullPage: true });
+          throw new Error(`${name}: no suggestion for ${pick.name} (box "${await input.inputValue()}", listed ${JSON.stringify(listed)}, tried ${[...tried]})`);
+        }
         await option.click();
       }
       for (let w = 0; w < 50 && (seen.view?.round?.rows.length ?? before + 1) === before && seen.view?.round?.index === round.index; w++) await p.waitForTimeout(100);
