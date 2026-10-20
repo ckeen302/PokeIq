@@ -52,6 +52,16 @@ async function filledIn(p, name) {
     .catch(() => false);
 }
 
+/** Chat: `from` sends `text` (Enter sends) and `to` sees `shown` (the text as the server let it through). */
+async function chatTo(from, to, text, shown = text) {
+  const input = from.getByTestId("chat").last().getByLabel("Chat message");
+  await input.fill(text);
+  await input.press("Enter");
+  await to.getByTestId("chat").last().getByTestId("chat-text").filter({ hasText: shown }).first().waitFor({ timeout: 15_000 });
+  // One message a second per trainer.
+  await from.waitForTimeout(1_100);
+}
+
 const page = await newPage({ width: 1280, height: 900 });
 
 step("home");
@@ -390,6 +400,9 @@ await dleBlue.p.getByRole("radio", { name: /^Full Pokédex/, checked: true }).wa
 await dleBlue.p.getByLabel("Your trainer name").fill("Blue");
 await dleBlue.p.getByRole("button", { name: /Join duel/ }).click();
 await dleRed.p.getByText("Blue").first().waitFor();
+// Chat in the lobby: both ways, a swear masked.
+await chatTo(dleRed.p, dleBlue.p, "good luck!");
+await chatTo(dleBlue.p, dleRed.p, "you too, this will be shit hard", "you too, this will be ••• hard");
 await Promise.all(dle.map(({ p }) => p.getByRole("button", { name: /^Ready$/ }).click()));
 
 step("pokédle duel: three rounds to the end");
@@ -459,6 +472,8 @@ async function playPokedleDuel({ p, name, seen }, shoot) {
 await Promise.all([playPokedleDuel(dleRed, true), playPokedleDuel(dleBlue, false)]);
 await dleRed.p.getByText(/Victory!|Defeat|Draw/).first().waitFor();
 await dleBlue.p.getByText(/Victory!|Defeat|Draw/).first().waitFor();
+// Chat opens again on the results screen.
+await chatTo(dleBlue.p, dleRed.p, "gg wp");
 await dleRed.p.screenshot({ path: `${OUT}/pokedle-duel-summary.png`, fullPage: true });
 if (dleRed.seen.view?.revealed?.length !== 3) errors.push(`pokédle duel ended after ${dleRed.seen.view?.revealed?.length} rounds`);
 
@@ -808,6 +823,12 @@ step("live battle: both choose moves for a couple of turns");
 await Promise.all([liveRed, liveBlue].map((p) => p.locator("[data-testid=move-button]").first().waitFor({ timeout: 60_000 })));
 for (const p of [liveRed, liveBlue]) await p.getByRole("button", { name: "4x" }).click();
 if (!(await liveRed.getByTestId("battle-clocks").count())) errors.push("the live battle shows no turn timer");
+// Chat beside the battle log: both ways; a link is refused.
+await chatTo(liveRed, liveBlue, "good luck!");
+await chatTo(liveBlue, liveRed, "have fun");
+await liveBlue.getByTestId("chat").getByLabel("Chat message").fill("www.example.com");
+await liveBlue.getByTestId("chat").getByLabel("Chat message").press("Enter");
+await liveBlue.getByTestId("chat-error").filter({ hasText: "Links can't be sent in chat." }).waitFor();
 const [redTurn] = await Promise.all([playBattle(liveRed, 2, "battle-live"), playBattle(liveBlue, 2, null)]);
 console.log(`  reached turn ${redTurn}`);
 
