@@ -1350,10 +1350,11 @@ if (me.enabled) {
       await p.getByTestId("room-text").filter({ hasText: text.replace("shit", "•••") }).first().waitFor({ timeout: 10_000 });
     };
     await say(ra, `hello from ${names[1]}`);
-    await rb.getByTestId("room-text").filter({ hasText: `hello from ${names[1]}` }).waitFor({ timeout: 15_000 });
+    // Without Realtime, rooms refresh every 5 s through a CDN-cached read, so a message can take ~10–15 s.
+    await rb.getByTestId("room-text").filter({ hasText: `hello from ${names[1]}` }).waitFor({ timeout: 30_000 });
     await say(rb, "what the shit");
     const masked = ra.getByTestId("room-line").filter({ hasText: "what the •••" });
-    await masked.waitFor({ timeout: 15_000 });
+    await masked.waitFor({ timeout: 30_000 });
     if (await ra.getByText("what the shit").count()) errors.push("a swear in a room wasn't masked");
     // Who's here comes from presence, and the list is cached at the CDN to keep requests down,
     // so another trainer can take up to about a minute to show.
