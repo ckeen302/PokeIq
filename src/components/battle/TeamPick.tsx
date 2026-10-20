@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { ClipboardPaste, Hammer, LoaderCircle, Pencil, Shuffle, Users, X, Zap } from "lucide-react";
-import { createTeam, deleteTeam, fetchQuickTeam, lastTeamId, packedTeam, rememberTeam, saveTeam, useTeams, type BattleTeam } from "@/lib/battle/teams";
+import { createTeam, deleteTeam, fetchQuickTeam, fetchQuickTeamFor, lastTeamId, packedTeam, rememberTeam, saveTeam, useTeams, type BattleTeam } from "@/lib/battle/teams";
 import { packTeam, type TeamSet } from "@/lib/battle/sets";
 import type { BattleFormatId } from "@/lib/battle/formats";
 import { BATTLE_TEAM_MAX, PLAY_FORMAT_INFO, type PlayFormatId } from "@/lib/battle/play";
@@ -25,10 +25,26 @@ type Editing = { id: string; fresh: boolean };
  * (legal for the format, editable afterwards). Pasting a Showdown export
  * stays as a secondary import. Reports the team text (or "" for none yet).
  */
-export function TeamPick({ format, onChange, idPrefix }: { format: PlayFormatId; onChange: (team: string) => void; idPrefix: string }) {
-  const fmt = format as BattleFormatId;
-  const short = PLAY_FORMAT_INFO[format].short;
-  const saved = useTeams(fmt);
+/**
+ * Where a team comes from when it isn't one of PLAY_FORMATS (custom rules, the Battle Tower):
+ * the team builder format whose saved teams fit (null: none), and the quick-team request.
+ */
+export interface TeamSource {
+  name: string;
+  short: string;
+  saved: BattleFormatId | null;
+  quick: Record<string, unknown>;
+  /** What the quick team note says about its sets. */
+  quickNote?: string;
+}
+
+export function TeamPick({ format, onChange, idPrefix, source }: { format: PlayFormatId; onChange: (team: string) => void; idPrefix: string; source?: TeamSource }) {
+  const fmt = (source ? (source.saved ?? "gen9ou") : format) as BattleFormatId;
+  const short = source?.short ?? PLAY_FORMAT_INFO[format].short;
+  const name = source?.name ?? PLAY_FORMAT_INFO[format].name;
+  const canSave = !source || source.saved !== null;
+  const library = useTeams(fmt);
+  const saved = canSave ? library : library && [];
   const sprite = useSpriteLookup();
   const [picked, setPicked] = useState<Mode | null>(null);
   const [teamId, setTeamId] = useState<string | null>(null);
@@ -51,7 +67,7 @@ export function TeamPick({ format, onChange, idPrefix }: { format: PlayFormatId;
   async function dealQuick() {
     setQuick((q) => ({ ...q, busy: true, error: null }));
     try {
-      setQuick({ sets: await fetchQuickTeam(fmt), busy: false, error: null });
+      setQuick({ sets: await (source ? fetchQuickTeamFor(source.quick) : fetchQuickTeam(fmt)), busy: false, error: null });
     } catch (err) {
       setQuick((q) => ({ ...q, busy: false, error: err instanceof Error ? err.message : "Couldn't deal a quick team." }));
     }
@@ -75,14 +91,14 @@ export function TeamPick({ format, onChange, idPrefix }: { format: PlayFormatId;
 
   const OPTIONS = [
     { key: "saved", Icon: Users, title: "Saved team", note: usable.length ? `${usable.length} for ${short}` : "None yet", disabled: !usable.length, act: () => setPicked("saved") },
-    { key: "build", Icon: Hammer, title: "Build a team", note: "Team builder, right here", disabled: false, act: build },
+    { key: "build", Icon: Hammer, title: "Build a team", note: canSave ? "Team builder, right here" : "Not for this generation", disabled: !canSave, act: build },
     { key: "quick", Icon: Zap, title: "Quick team", note: "One click, legal and ready", disabled: false, act: () => setPicked("quick") },
   ] as const;
 
   return (
     <div className="space-y-3" data-testid="team-pick">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <span className="hud-label">Your team · {PLAY_FORMAT_INFO[format].name}</span>
+        <span className="hud-label">Your team · {name}</span>
         <button
           type="button"
           onClick={() => setPicked(mode === "paste" ? null : "paste")}
@@ -157,17 +173,21 @@ export function TeamPick({ format, onChange, idPrefix }: { format: PlayFormatId;
               <LoaderCircle className="h-4 w-4 animate-spin" aria-hidden /> Dealing a {short} team…
             </p>
           )}
-          <p className="text-xs text-muted-foreground">Tournament-tested sets, legal in {short}. Keep it, deal another, or make it yours.</p>
+          <p className="text-xs text-muted-foreground">{source?.quickNote ?? `Tournament-tested sets, legal in ${short}.`} Keep it, deal another{canSave ? ", or make it yours" : ""}.</p>
           <div className="flex flex-wrap gap-2">
             <Button type="button" size="sm" variant="outline" onClick={() => void dealQuick()} disabled={quick.busy}>
               <Shuffle className="h-4 w-4" aria-hidden /> Another
             </Button>
-            <Button type="button" size="sm" variant="outline" onClick={editQuick} disabled={!quick.sets || quick.busy}>
-              <Pencil className="h-4 w-4" aria-hidden /> Edit this team
-            </Button>
-            <Button type="button" size="sm" variant="secondary" onClick={build}>
-              <Hammer className="h-4 w-4" aria-hidden /> Build your own
-            </Button>
+            {canSave && (
+              <>
+                <Button type="button" size="sm" variant="outline" onClick={editQuick} disabled={!quick.sets || quick.busy}>
+                  <Pencil className="h-4 w-4" aria-hidden /> Edit this team
+                </Button>
+                <Button type="button" size="sm" variant="secondary" onClick={build}>
+                  <Hammer className="h-4 w-4" aria-hidden /> Build your own
+                </Button>
+              </>
+            )}
           </div>
         </div>
       )}

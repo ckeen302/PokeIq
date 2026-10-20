@@ -21,10 +21,13 @@ export const maxDuration = 30;
 
 const NO_STORE = { "Cache-Control": "no-store" };
 const team = z.string().max(BATTLE_TEAM_MAX).optional();
+const format = z.enum([...PLAY_FORMATS, "custom"]);
+/** Format "custom" takes `rules` (custom-rules.ts), checked by Showdown's format parser before the battle starts. */
+const rules = z.record(z.unknown()).optional();
 
 const bodySchema = z.discriminatedUnion("mode", [
-  z.object({ mode: z.literal("cpu"), name: duelNameSchema, format: z.enum(PLAY_FORMATS), level: z.enum(CPU_LEVELS).default("normal"), team }),
-  z.object({ mode: z.literal("pvp"), name: duelNameSchema, format: z.enum(PLAY_FORMATS), team }),
+  z.object({ mode: z.literal("cpu"), name: duelNameSchema, format, level: z.enum(CPU_LEVELS).default("normal"), team, rules }),
+  z.object({ mode: z.literal("pvp"), name: duelNameSchema, format, team, rules }),
 ]);
 
 export async function POST(request: NextRequest) {

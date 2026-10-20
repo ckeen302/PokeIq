@@ -420,6 +420,7 @@ function decide(battle: Battle, side: Side, request: BattleRequest, level: CpuLe
   const parts: string[] = [];
   const taken = new Set<number>();
   let teraUsed = false;
+  let megaUsed = false;
   for (let slot = 0; slot < slots; slot++) {
     const options = moveSlotOptions(request, slot, doubles);
     if (options.length === 1 && options[0].kind === "pass") {
@@ -463,7 +464,12 @@ function decide(battle: Battle, side: Side, request: BattleRequest, level: CpuLe
     if (pick.option?.tera) teraUsed = true;
     const switchTo = /^switch (\d+)$/.exec(pick.text);
     if (switchTo) taken.add(Number(switchTo[1]));
-    parts.push(pick.text);
+    // Mega Evolution (Gens 6-7, where the rules allow it) is all upside: past Easy, always.
+    const active = request.active?.[slot];
+    if (pick.option?.kind === "move" && level !== "easy" && !megaUsed && active?.canMegaEvo) {
+      megaUsed = true;
+      parts.push(`${pick.text} mega`);
+    } else parts.push(pick.text);
   }
   return parts.join(", ");
 }

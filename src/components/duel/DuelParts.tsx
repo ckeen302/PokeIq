@@ -287,7 +287,7 @@ export function DuelLobby({ view, path, tag, title, invite, about, shareText, ru
       {chat}
 
       <Card>
-        <CardContent className={cn("grid gap-4 p-6 text-sm text-muted-foreground", rules.length === 3 && "sm:grid-cols-3")}>
+        <CardContent className={cn("grid gap-4 p-6 text-sm text-muted-foreground", rules.length === 3 ? "sm:grid-cols-3" : rules.length > 3 && "sm:grid-cols-2")}>
           {rules.map((rule) => (
             <p key={rule.label}>
               <span className="hud-label mb-1.5 block text-screen">{rule.label}</span>

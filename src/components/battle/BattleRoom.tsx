@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -11,7 +11,8 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { lastCpuSetup, startBattle } from "./BattleSetup";
-import { TeamPick } from "./TeamPick";
+import { TeamPick, type TeamSource } from "./TeamPick";
+import { builderFormatFor, customName, describeRules } from "@/lib/battle/custom-rules";
 import { useBattle, type BattleHandle } from "./use-battle";
 import { ChatBox } from "@/components/chat/ChatBox";
 
@@ -153,10 +154,19 @@ function LiveAgain({ view, battle }: { view: BattleView; battle: BattleHandle })
 
 function LiveLobby({ code, view, battle }: { code: string; view: BattleView; battle: BattleHandle }) {
   const router = useRouter();
-  const info = PLAY_FORMAT_INFO[view.format];
+  const base = PLAY_FORMAT_INFO[view.format];
+  const info = { ...base, name: view.formatName ?? base.name };
   const [team, setTeam] = useState("");
   const onTeam = useCallback((t: string) => setTeam(t), []);
-  const timer = BATTLE_TIMER[info.gameType];
+  const timer = view.timer === undefined ? BATTLE_TIMER[info.gameType] : view.timer;
+  const rules = view.rules;
+  const source = useMemo<TeamSource | undefined>(
+    () =>
+      rules
+        ? { name: customName(rules), short: `Gen ${rules.gen}`, saved: builderFormatFor(rules.gen), quick: { rules }, quickNote: `Random-battle sets from Gen ${rules.gen}, checked against these rules.` }
+        : undefined,
+    [rules]
+  );
   const joining = view.you === null && view.players.length < 2;
   const host = view.players[0]?.name;
 
@@ -187,12 +197,15 @@ function LiveLobby({ code, view, battle }: { code: string; view: BattleView; bat
         shareText={`${host ?? "I"} challenge${host ? "s" : ""} you to a ${info.name} battle on PokéIQ!`}
         rules={[
           { label: "Format", text: <>{info.name}: {info.random ? info.blurb : "each of you brings a team, checked against Pokémon Showdown's rules."}</> },
+          ...(rules ? describeRules(rules).map((r) => ({ label: r.label, text: <>{r.text}</> })) : []),
           {
             label: "Turn timer",
-            text: (
+            text: timer ? (
               <>
                 {timer.bank / 1000} s in the bank{timer.perTurn ? `, +${timer.perTurn / 1000} s a turn` : ""}, {timer.cap / 1000} s at most per turn. Run out twice and you lose.
               </>
+            ) : (
+              <>Off: take your time.</>
             ),
           },
           {
@@ -205,7 +218,7 @@ function LiveLobby({ code, view, battle }: { code: string; view: BattleView; bat
             ),
           },
         ]}
-        settings={joining && !info.random ? <TeamPick format={view.format} onChange={onTeam} idPrefix={`join-${code}`} /> : undefined}
+        settings={joining && !info.random ? <TeamPick format={view.format} onChange={onTeam} idPrefix={`join-${code}`} source={source} /> : undefined}
         home="/battle/play?vs=friend"
         noun="battle"
         chat={<BattleChat view={view} battle={battle} />}

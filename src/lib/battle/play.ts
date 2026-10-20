@@ -7,6 +7,7 @@
 
 import type { DuelPlayerView, DuelStatus } from "@/lib/duel-types";
 import type { ChatLine } from "@/lib/chat";
+import type { CustomRules } from "./custom-rules";
 
 // ---------------------------------------------------------------------------
 // Formats
@@ -17,7 +18,14 @@ import type { ChatLine } from "@/lib/chat";
  * a saved or pasted team can be brought to.
  */
 export const PLAY_FORMATS = ["gen9randombattle", "gen9randomdoublesbattle", "gen9ou", "gen9ubers", "gen9uu", "gen9doublesou"] as const;
-export type PlayFormatId = (typeof PLAY_FORMATS)[number];
+export type StandardFormatId = (typeof PLAY_FORMATS)[number];
+/**
+ * Formats with their own way in: "custom" (the players' own ruleset, see
+ * custom-rules.ts). A battle in one keeps Showdown's real format id beside it.
+ */
+export const SPECIAL_FORMATS = ["custom"] as const;
+export type SpecialFormatId = (typeof SPECIAL_FORMATS)[number];
+export type PlayFormatId = StandardFormatId | SpecialFormatId;
 
 export interface PlayFormatInfo {
   name: string;
@@ -35,6 +43,13 @@ export const PLAY_FORMAT_INFO: Record<PlayFormatId, PlayFormatInfo> = {
   gen9ubers: { name: "[Gen 9] Ubers", short: "Ubers", blurb: BRING, gameType: "singles", random: false },
   gen9uu: { name: "[Gen 9] UU", short: "UU", blurb: BRING, gameType: "singles", random: false },
   gen9doublesou: { name: "[Gen 9] Doubles OU", short: "Doubles OU", blurb: BRING, gameType: "doubles", random: false },
+  custom: {
+    name: "Custom rules",
+    short: "Custom",
+    blurb: "Your own ruleset: any generation's mechanics, level, gimmicks, clauses and team size.",
+    gameType: "singles",
+    random: false,
+  },
   gen9randombattle: {
     name: "[Gen 9] Random Battle",
     short: "Random Battle",
@@ -51,7 +66,7 @@ export const PLAY_FORMAT_INFO: Record<PlayFormatId, PlayFormatInfo> = {
   },
 };
 
-export const isPlayFormat = (value: unknown): value is PlayFormatId =>
+export const isPlayFormat = (value: unknown): value is StandardFormatId =>
   typeof value === "string" && (PLAY_FORMATS as readonly string[]).includes(value);
 
 /** A pasted team is at most this long (six sets in Showdown's export format are ~2-3 KB). */
@@ -124,6 +139,11 @@ export interface BattleRequestActive {
   maybeDisabled?: boolean;
   maybeLocked?: boolean;
   canTerastallize?: string;
+  canMegaEvo?: boolean;
+  /** Per move: its Z-Move, or null. */
+  canZMove?: ({ move: string; target: string } | null)[];
+  canDynamax?: boolean;
+  maxMoves?: { maxMoves: { move: string; target: string; disabled?: boolean }[] };
 }
 
 export interface BattleRequestPokemon {
@@ -211,6 +231,12 @@ export interface BattleView {
   rematch?: string;
   /** Live battles: the players' chat, oldest first. */
   chat?: ChatLine[];
+  /** Custom rules: the ruleset, with its name ("[Gen 4] Custom · Lv 50"). */
+  rules?: CustomRules;
+  /** The format's name as the players see it, where it isn't PLAY_FORMAT_INFO's. */
+  formatName?: string;
+  /** Live battles: the turn timer (null: off). */
+  timer?: { bank: number; perTurn: number; cap: number } | null;
 }
 
 /** Creating, joining or rematching a battle: its code, your seat's token and the battle. */

@@ -21,6 +21,8 @@ import { SIDES, SIM_VERSION, SimReplayError, SimSession, newSeed, seatOfSide, si
 import { chooseCpu, seededRandom } from "./cpu";
 import { randomChoice } from "./choices";
 import { cpuTeam, prepareTeam, seatTeam } from "./teams";
+import { checkRules, customCpuTeam, prepareCustomTeam } from "./custom";
+import { customName, customTimer, type CustomRules } from "@/lib/battle/custom-rules";
 import {
   insertBattle,
   loadBattle,
@@ -172,7 +174,7 @@ class Work {
       if (!clock) return;
       if (!pending) stopClock(clock, now);
       // The simulator updated the same request (a move turned out to be disabled): the clock keeps running.
-      else if (!(pending.update && wasPending && clock.deadline !== null)) startClock(clock, now, !!pending.teamPreview, meta.format);
+      else if (!(pending.update && wasPending && clock.deadline !== null)) startClock(clock, now, !!pending.teamPreview, timerOf(meta));
     });
     if (res.ended && !meta.end) {
       endBattle(meta, this.reason ?? "normal", res.winner ? seatOfSide(res.winner) : null, now);
@@ -195,15 +197,21 @@ function endBattle(meta: BattleMeta, reason: BattleEndReason, winner: 0 | 1 | nu
 // The clocks
 // ---------------------------------------------------------------------------
 
-const timerOf = (format: PlayFormatId) => BATTLE_TIMER[PLAY_FORMAT_INFO[format].gameType];
+type Timer = { bank: number; perTurn: number; cap: number };
 
-export function newClock(format: PlayFormatId): SideClock {
-  return { bank: timerOf(format).bank, startedAt: null, deadline: null, preview: false, timeouts: 0 };
+/** A battle's turn timer: its ruleset's (null: no timer), else the format's. */
+export function timerOf(meta: Pick<BattleMeta, "format" | "rules">): Timer | null {
+  if (meta.rules) return customTimer(meta.rules);
+  return BATTLE_TIMER[PLAY_FORMAT_INFO[meta.format].gameType];
+}
+
+export function newClock(timer: Timer): SideClock {
+  return { bank: timer.bank, startedAt: null, deadline: null, preview: false, timeouts: 0 };
 }
 
 /** A new request: the bank grows a little and this turn's deadline is set (team preview has its own limit). */
-export function startClock(clock: SideClock, now: number, preview: boolean, format: PlayFormatId) {
-  const timer = timerOf(format);
+export function startClock(clock: SideClock, now: number, preview: boolean, timer: Timer | null) {
+  if (!timer) return;
   clock.startedAt = now;
   clock.preview = preview;
   if (preview) {
@@ -353,37 +361,61 @@ function start(work: Work, now: number) {
   const meta = work.meta;
   const teams = meta.seats.map((s) => (s.id === CPU_SEAT_ID ? s.team! : seatTeam(meta.format, s.team)));
   const session = SimSession.create({
-    formatid: meta.format,
+    formatid: meta.formatid ?? meta.format,
     seed: meta.seed,
     p1: { name: meta.seats[0].name, team: teams[0] },
     p2: { name: meta.seats[1].name, team: teams[1] },
   });
   work.begin(session);
   meta.status = "playing";
-  if (meta.kind === "pvp") meta.clocks = [newClock(meta.format), newClock(meta.format)];
+  const timer = timerOf(meta);
+  if (meta.kind === "pvp" && timer) meta.clocks = [newClock(timer), newClock(timer)];
   playCpu(work, session);
   work.absorb(now);
 }
 
-/** A team for a seat in a bring-your-own format (none needed for random formats). */
-export function checkTeam(format: PlayFormatId, team: string | undefined): Outcome<{ packed?: string }> {
+/** A team for a seat in a bring-your-own format (none needed for random formats); custom rules check it against the ruleset. */
+export function checkTeam(format: PlayFormatId, team: string | undefined, rules?: CustomRules): Outcome<{ packed?: string }> {
   if (PLAY_FORMAT_INFO[format].random) return { ok: true };
   if (!team?.trim()) return fail(400, `${PLAY_FORMAT_INFO[format].name} needs a team: paste one in Showdown's export format.`);
-  const checked = prepareTeam(format, team);
+  if (format === "custom" && !rules) return fail(400, "Custom battles need a ruleset.");
+  const checked = rules ? prepareCustomTeam(rules, team) : prepareTeam(format, team);
   return checked.ok ? { ok: true, packed: checked.packed } : fail(400, checked.errors.join(" "));
 }
 
 /** The computer's name, never the same as the player's (the simulator tells sides apart by name). */
 const cpuName = (player: string) => (player.toLowerCase() === "cpu" ? "Computer" : "CPU");
 
-export async function createCpuBattle(opts: { name: string; format: PlayFormatId; level: CpuLevel; team?: string }, now = Date.now()) {
-  const team = checkTeam(opts.format, opts.team);
+/** Custom rules checked by Showdown's format parser: the ruleset and its format id, or the parser's reasons. */
+function customFormat(format: PlayFormatId, raw: unknown): Outcome<{ custom?: { rules: CustomRules; formatid: string } }> {
+  if (format !== "custom") return { ok: true };
+  const checked = checkRules(raw);
+  return checked.ok ? { ok: true, custom: { rules: checked.rules, formatid: checked.formatid } } : fail(400, `These rules don't work together: ${checked.errors.join(" ")}`);
+}
+
+function applyCustom(meta: BattleMeta, custom: { rules: CustomRules; formatid: string } | undefined) {
+  if (!custom) return;
+  meta.rules = custom.rules;
+  meta.formatid = custom.formatid;
+}
+
+export async function createCpuBattle(opts: { name: string; format: PlayFormatId; level: CpuLevel; team?: string; rules?: unknown }, now = Date.now()) {
+  const custom = customFormat(opts.format, opts.rules);
+  if (!custom.ok) return custom;
+  const team = checkTeam(opts.format, opts.team, custom.custom?.rules);
   if (!team.ok) return team;
+  let foeTeam: string;
+  try {
+    foeTeam = custom.custom ? customCpuTeam(custom.custom.rules) : cpuTeam(opts.format);
+  } catch (err) {
+    return fail(400, err instanceof Error ? err.message : "Couldn't build the computer's team.");
+  }
   for (let attempt = 0; attempt < 4; attempt++) {
     const code = newBattleCode();
     const me: BattleSeat = { id: randomId(), name: opts.name, ready: true, seenAt: now, team: team.packed };
-    const cpu: BattleSeat = { id: CPU_SEAT_ID, name: cpuName(opts.name), ready: true, seenAt: now, team: cpuTeam(opts.format) };
+    const cpu: BattleSeat = { id: CPU_SEAT_ID, name: cpuName(opts.name), ready: true, seenAt: now, team: foeTeam };
     const meta = newMeta(code, "cpu", opts.format, [me, cpu], now);
+    applyCustom(meta, custom.custom);
     meta.cpu = { level: opts.level };
     const work = new Work(blankRecord(meta));
     start(work, now);
@@ -393,13 +425,16 @@ export async function createCpuBattle(opts: { name: string; format: PlayFormatId
   return fail(503, "Couldn't start a battle. Try again.");
 }
 
-export async function createLiveBattle(opts: { name: string; format: PlayFormatId; team?: string }, now = Date.now()) {
-  const team = checkTeam(opts.format, opts.team);
+export async function createLiveBattle(opts: { name: string; format: PlayFormatId; team?: string; rules?: unknown }, now = Date.now()) {
+  const custom = customFormat(opts.format, opts.rules);
+  if (!custom.ok) return custom;
+  const team = checkTeam(opts.format, opts.team, custom.custom?.rules);
   if (!team.ok) return team;
   for (let attempt = 0; attempt < 4; attempt++) {
     const code = newBattleCode();
     const me: BattleSeat = { id: randomId(), name: opts.name, ready: false, seenAt: now, team: team.packed };
     const rec = blankRecord(newMeta(code, "pvp", opts.format, [me], now));
+    applyCustom(rec.meta, custom.custom);
     if (!(await insertBattle(rec))) continue;
     return { ok: true as const, code, token: battleToken(code, me.id, 0), view: battleView(rec.meta, me.id, [], 0, now, 0) };
   }
@@ -551,7 +586,7 @@ export async function actOnBattle(
   if ((body.action === "join" && body.team !== undefined) || body.action === "team") {
     const lite = await loadBattleMeta(code, null);
     if (!lite) return fail(404, "This battle has ended or never existed.");
-    const team = checkTeam(lite.meta.format, body.team);
+    const team = checkTeam(lite.meta.format, body.team, lite.meta.rules);
     if (!team.ok) return team;
     packed = team.packed;
   }
@@ -636,6 +671,7 @@ export async function rematchBattle(code: string, playerId: string): Promise<Out
     for (let attempt = 0; attempt < 4 && !opened; attempt++) {
       const now = Date.now();
       const fresh = newMeta(newBattleCode(), "pvp", old.format, old.seats.map((s) => ({ id: s.id, name: s.name, ready: false, seenAt: now, team: s.team })), now);
+      if (old.rules && old.formatid) applyCustom(fresh, { rules: old.rules, formatid: old.formatid });
       // The chat carries on into the rematch.
       if (old.chat?.length) fresh.chat = old.chat;
       if (await insertBattle(blankRecord(fresh))) opened = fresh.code;
@@ -717,6 +753,11 @@ export function battleView(meta: BattleMeta, playerId: string | null, log: strin
   if (meta.end) view.end = meta.end;
   if (meta.rematch) view.rematch = meta.rematch;
   if (meta.kind === "pvp" && meta.chat?.length) view.chat = meta.chat;
+  if (meta.rules) {
+    view.rules = meta.rules;
+    view.formatName = customName(meta.rules);
+  }
+  if (meta.kind === "pvp") view.timer = timerOf(meta);
   return view;
 }
 

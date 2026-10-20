@@ -38,17 +38,28 @@ export function checkTeam(format: BattleFormatId, sets: TeamSet[]): TeamCheck {
  */
 export function randomTeam(format: BattleFormatId): TeamSet[] {
   const info = BATTLE_FORMATS[format];
-  const generator = Teams.getGenerator(info.random);
-  const dex = Dex.forGen(info.gen);
-  const v = validator(format);
+  return legalRandomTeam({ generator: info.random, gen: info.gen, level: info.level, validator: validator(format) });
+}
+
+/**
+ * Random-battle sets from `generator` that pass `validator`, at `level`,
+ * `size` of them: the team builder's random teams, and quick or computer
+ * teams for any ruleset (custom rules, the Battle Tower). May come back
+ * short if the generator rarely makes legal sets.
+ */
+export function legalRandomTeam(opts: { generator: string; gen: number; level: number; validator: TeamValidator; size?: number; tries?: number }): TeamSet[] {
+  const size = opts.size ?? TEAM_SIZE;
+  const generator = Teams.getGenerator(opts.generator);
+  const dex = Dex.forGen(opts.gen);
+  const v = opts.validator;
   let best: TeamSet[] = [];
-  for (let attempt = 0; attempt < 8; attempt++) {
+  for (let attempt = 0; attempt < (opts.tries ?? 8); attempt++) {
     const team: TeamSet[] = [];
     const species = new Set<number>();
     const items = new Set<string>();
-    for (let draw = 0; draw < 12 && team.length < TEAM_SIZE; draw++) {
+    for (let draw = 0; draw < 12 && team.length < size; draw++) {
       for (const raw of generator.getTeam()) {
-        if (team.length >= TEAM_SIZE) break;
+        if (team.length >= size) break;
         const set = completeSet({
           name: "",
           species: raw.species,
@@ -59,9 +70,9 @@ export function randomTeam(format: BattleFormatId): TeamSet[] {
           gender: raw.gender ?? "",
           evs: raw.evs,
           ivs: raw.ivs,
-          level: info.level,
+          level: opts.level,
           shiny: raw.shiny,
-          teraType: info.gen >= 9 ? raw.teraType : undefined,
+          teraType: opts.gen >= 9 ? raw.teraType : undefined,
         });
         const num = dex.species.get(set.species).num;
         if (species.has(num) || (set.item && items.has(set.item))) continue;
@@ -72,7 +83,7 @@ export function randomTeam(format: BattleFormatId): TeamSet[] {
       }
     }
     if (team.length > best.length) best = team;
-    if (team.length === TEAM_SIZE && !v.validateTeam(copy(team))) return team;
+    if (team.length === size && !v.validateTeam(copy(team))) return team;
   }
   return best;
 }

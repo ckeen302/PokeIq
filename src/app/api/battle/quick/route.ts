@@ -2,11 +2,20 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { PLAY_FORMAT_INFO, PLAY_FORMATS } from "@/lib/battle/play";
 import { quickTeam } from "@/lib/server/battle-engine/teams";
+import { customRandomTeam } from "@/lib/server/battle-engine/custom";
 import { clientIp, rateLimit } from "@/lib/server/rate-limit";
 
-/** POST /api/battle/quick { format } -> { sets }: a ready-to-battle team, legal in the format. */
+/**
+ * POST /api/battle/quick { format } -> { sets }: a ready-to-battle team, legal in the format.
+ * { rules } instead: a team legal under that custom ruleset.
+ */
 
-const bodySchema = z.object({ format: z.enum(PLAY_FORMATS).refine((f) => !PLAY_FORMAT_INFO[f].random) });
+export const runtime = "nodejs";
+
+const bodySchema = z.union([
+  z.object({ format: z.enum(PLAY_FORMATS).refine((f) => !PLAY_FORMAT_INFO[f].random) }),
+  z.object({ rules: z.record(z.unknown()) }),
+]);
 
 export async function POST(request: NextRequest) {
   if (!rateLimit(`battle-quick:${clientIp(request)}`, 20, 0.5)) {
@@ -16,5 +25,11 @@ export async function POST(request: NextRequest) {
   if (!parsed.success) {
     return NextResponse.json({ error: "Unknown format." }, { status: 400 });
   }
-  return NextResponse.json({ sets: quickTeam(parsed.data.format) }, { headers: { "Cache-Control": "no-store" } });
+  const body = parsed.data;
+  try {
+    const sets = "rules" in body ? customRandomTeam(body.rules as never) : quickTeam(body.format);
+    return NextResponse.json({ sets }, { headers: { "Cache-Control": "no-store" } });
+  } catch (err) {
+    return NextResponse.json({ error: err instanceof Error ? err.message : "Couldn't deal a quick team." }, { status: 400 });
+  }
 }

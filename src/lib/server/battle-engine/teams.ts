@@ -21,6 +21,11 @@ const MAX_ERRORS = 8;
 
 export function prepareTeam(format: PlayFormatId, text: string): TeamCheck {
   if (PLAY_FORMAT_INFO[format].random) return { ok: false, errors: ["This format uses random teams."] };
+  return prepareTeamFor(format, text);
+}
+
+/** `prepareTeam` for any Showdown format id (custom rules included: validate the id first, see custom.ts). */
+export function prepareTeamFor(formatid: string, text: string): TeamCheck {
   const trimmed = text.trim();
   if (!trimmed) return { ok: false, errors: ["Paste a team in Showdown's export format."] };
   if (trimmed.length > BATTLE_TEAM_MAX) return { ok: false, errors: ["That team is too long."] };
@@ -35,7 +40,7 @@ export function prepareTeam(format: PlayFormatId, text: string): TeamCheck {
   for (const set of team) set.name = "";
   let problems: string[] | null;
   try {
-    problems = TeamValidator.get(format).validateTeam(team);
+    problems = TeamValidator.get(formatid).validateTeam(team);
   } catch (err) {
     console.error("[battle] team validation failed:", err);
     return { ok: false, errors: ["Couldn't check that team. Try again."] };

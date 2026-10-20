@@ -13,7 +13,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import { clock } from "@/components/duel/DuelParts";
 import { useMatchmaking } from "@/components/duel/use-matchmaking";
 import { cn } from "@/lib/utils";
-import { TeamPick } from "./TeamPick";
+import { TeamPick, type TeamSource } from "./TeamPick";
+import { CustomRulesEditor, RulesVerdictNote, useRulesCheck } from "./CustomRulesEditor";
+import { DEFAULT_CUSTOM_RULES, builderFormatFor, customName, lastCustomRules, rememberCustomRules, type CustomRules } from "@/lib/battle/custom-rules";
 
 /**
  * Starting a battle: against the computer (pick a level), against whoever is
@@ -32,6 +34,8 @@ export interface CpuSetup {
   format: PlayFormatId;
   level: CpuLevel;
   team?: string;
+  /** Custom rules (format "custom"). */
+  rules?: CustomRules;
 }
 
 export function rememberCpuSetup(setup: CpuSetup) {
@@ -69,7 +73,8 @@ export async function startBattle(body: { mode: "cpu" | "pvp" } & Omit<CpuSetup,
   const data = (await res.json().catch(() => ({}))) as Partial<BattleSeatResponse> & { error?: string };
   if (!res.ok || !data.code || !data.token) throw new Error(data.error ?? `Request failed (${res.status})`);
   saveBattleSeat(data.code, data.token);
-  if (body.mode === "cpu") rememberCpuSetup({ name: body.name, format: body.format, level: body.level ?? "normal", team: body.team });
+  if (body.rules) rememberCustomRules(body.rules);
+  if (body.mode === "cpu") rememberCpuSetup({ name: body.name, format: body.format, level: body.level ?? "normal", team: body.team, rules: body.rules });
   return battleHref(body.mode, data.code);
 }
 
@@ -90,8 +95,33 @@ export function BattleSetup({ initial = "cpu" }: { initial?: Opponent }) {
   const [name, setName] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [rules, setRules] = useState<CustomRules>(DEFAULT_CUSTOM_RULES);
+  const custom = format === "custom";
   const info = PLAY_FORMAT_INFO[format];
+  const formatName = custom ? customName(rules) : info.name;
   const needsTeam = !info.random;
+  const verdict = useRulesCheck(custom ? rules : null, custom ? team : "");
+  const rulesBroken = verdict?.state === "bad" && verdict.errors.length > 0;
+  const teamSource = useMemo<TeamSource | undefined>(
+    () =>
+      custom
+        ? {
+            name: customName(rules),
+            short: `Gen ${rules.gen}`,
+            saved: builderFormatFor(rules.gen),
+            quick: { rules },
+            quickNote: `Random-battle sets from Gen ${rules.gen}, checked against your rules.`,
+          }
+        : undefined,
+    [custom, rules]
+  );
+
+  // The last custom ruleset, remembered on this device.
+  useEffect(() => setRules(lastCustomRules()), []);
+  // Matchmaking keeps to the standard formats.
+  useEffect(() => {
+    if (opponent === "match" && format === "custom") setFormat("gen9randombattle");
+  }, [opponent, format]);
   const settings = useMemo(() => ({ format }), [format]);
   const finder = useMatchmaking(settings, { endpoint: "/api/battle/match", save: saveBattleSeat });
   const searching = finder.searching;
@@ -115,7 +145,14 @@ export function BattleSetup({ initial = "cpu" }: { initial?: Opponent }) {
     unlockAudio();
     setBusy(true);
     try {
-      const href = await startBattle({ mode: opponent, name: name.trim(), format, level: opponent === "cpu" ? level : undefined, team: needsTeam ? team : undefined });
+      const href = await startBattle({
+        mode: opponent,
+        name: name.trim(),
+        format,
+        level: opponent === "cpu" ? level : undefined,
+        team: needsTeam ? team : undefined,
+        rules: custom ? rules : undefined,
+      });
       if (!progress?.name) setTrainerName(name.trim());
       router.push(href);
     } catch (err) {
@@ -167,8 +204,30 @@ export function BattleSetup({ initial = "cpu" }: { initial?: Opponent }) {
                 <span className="text-xs text-muted-foreground">{PLAY_FORMAT_INFO[f].gameType === "doubles" ? "Doubles. " : ""}{PLAY_FORMAT_INFO[f].random ? PLAY_FORMAT_INFO[f].blurb : "Bring a team: saved, built here, or a quick one."}</span>
               </label>
             ))}
+            {opponent !== "match" && (
+              <label
+                className={cn("flex cursor-pointer flex-col gap-1 rounded-md border border-dashed bg-card px-3 py-2.5 hover:border-screen/60", custom && "border-solid border-primary ring-1 ring-primary")}
+                data-testid="format-custom"
+              >
+                <input type="radio" name={`${id}-format`} value="custom" checked={custom} onChange={() => setFormat("custom")} className="sr-only" />
+                <span className="flex items-center justify-between gap-2">
+                  <span className="font-display text-sm font-bold uppercase">Custom rules</span>
+                  <span className="hud-label text-screen">Gen 1–9</span>
+                </span>
+                <span className="text-xs text-muted-foreground">{PLAY_FORMAT_INFO.custom.blurb}</span>
+              </label>
+            )}
           </div>
         </fieldset>
+
+        {custom && (
+          <Card>
+            <CardContent className="space-y-3 p-4">
+              <CustomRulesEditor rules={rules} onChange={setRules} live={opponent === "pvp"} />
+              <RulesVerdictNote verdict={verdict} />
+            </CardContent>
+          </Card>
+        )}
 
         {opponent === "cpu" && (
           <fieldset className="space-y-2">
@@ -189,7 +248,7 @@ export function BattleSetup({ initial = "cpu" }: { initial?: Opponent }) {
           <fieldset disabled={searching} className={cn(searching && "opacity-60")}>
             <Card>
               <CardContent className="p-4">
-                <TeamPick key={format} format={format} onChange={onTeam} idPrefix={id} />
+                <TeamPick key={custom ? `custom:${rules.gen}:${rules.level}:${rules.levelMode}:${rules.teamSize}` : format} format={format} onChange={onTeam} idPrefix={id} source={teamSource} />
               </CardContent>
             </Card>
           </fieldset>
@@ -201,7 +260,7 @@ export function BattleSetup({ initial = "cpu" }: { initial?: Opponent }) {
           <p className="hud-label flex items-center gap-1.5 text-primary">
             <Swords className="h-3.5 w-3.5" aria-hidden /> {opponent === "cpu" ? "Battle the computer" : opponent === "match" ? "Battle anyone" : "Battle a friend"}
           </p>
-          <p className="font-display text-2xl font-bold uppercase leading-tight">{info.name}</p>
+          <p className="font-display text-2xl font-bold uppercase leading-tight">{formatName}</p>
           <p className="text-sm text-muted-foreground">
             {opponent === "cpu"
               ? `${CPU_LEVEL_INFO[level].name} computer. ${info.random ? "Random teams for both of you." : "It brings its own team."}`
@@ -240,7 +299,7 @@ export function BattleSetup({ initial = "cpu" }: { initial?: Opponent }) {
               </Button>
             </div>
           ) : (
-            <Button type="submit" size="lg" className="w-full" disabled={busy || !name.trim() || (needsTeam && !team)}>
+            <Button type="submit" size="lg" className="w-full" disabled={busy || !name.trim() || (needsTeam && !team) || rulesBroken}>
               {busy ? (
                 <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
               ) : opponent === "match" ? (

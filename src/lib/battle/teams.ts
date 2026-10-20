@@ -211,11 +211,16 @@ export function rememberTeam(format: BattleFormatId, id: string) {
 }
 
 /** A ready-to-battle team legal in `format` (Showdown's Battle Factory sets where it has them). */
-export async function fetchQuickTeam(format: BattleFormatId): Promise<TeamSet[]> {
+export function fetchQuickTeam(format: BattleFormatId): Promise<TeamSet[]> {
+  return fetchQuickTeamFor({ format });
+}
+
+/** A quick team for any request /api/battle/quick takes: `{ format }`, or `{ rules }` (custom rules). */
+export async function fetchQuickTeamFor(request: Record<string, unknown>): Promise<TeamSet[]> {
   const res = await fetch("/api/battle/quick", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ format }),
+    body: JSON.stringify(request),
   });
   const body = (await res.json().catch(() => ({}))) as { sets?: unknown[]; error?: string };
   const sets = body.sets?.map(normalizeSet).filter((s): s is TeamSet => s !== null);

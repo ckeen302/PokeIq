@@ -4,6 +4,7 @@ import { DUEL_CODE_RE } from "@/lib/duel-types";
 import type { BattleEnd, PlayFormatId, BattleKind, BattleRequest, CpuLevel } from "@/lib/battle/play";
 import type { DuelStatus } from "@/lib/duel-types";
 import type { ChatLine } from "@/lib/chat";
+import type { CustomRules } from "@/lib/battle/custom-rules";
 
 /**
  * Where battles live while they're played: one row per battle in Supabase
@@ -52,6 +53,10 @@ export interface BattleMeta {
   code: string;
   kind: BattleKind;
   format: PlayFormatId;
+  /** Showdown's format id, where it isn't `format` (custom rules: "gen4customgame@@@..."). Validated before it's stored. */
+  formatid?: string;
+  /** Custom rules: the ruleset the players chose. */
+  rules?: CustomRules;
   status: DuelStatus;
   simVersion: string;
   /** The simulator's PRNG seed. Server-side only. */

@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { ArrowLeftRight, Crosshair, Gem, Undo2 } from "lucide-react";
+import { ArrowLeftRight, Crosshair, Gem, Sparkles, Undo2 } from "lucide-react";
 import type { BattleRequest, BattleRequestMove, BattleRequestPokemon } from "@/lib/battle/play";
 import { BattleSprite } from "@/components/battle/BattleSprite";
 import { typeColor, typeTextColor } from "@/lib/pokemon/type-colors";
@@ -18,6 +18,9 @@ import { teraColor } from "./player";
  * in doubles a choice per Pokémon with a target where the move needs one.
  * Every choice goes out in the simulator's syntax, fully explicit.
  */
+
+type Extra = "mega" | "zmove" | "dynamax";
+const EXTRA_LABEL: Record<Extra, string> = { mega: "Mega Evolve", zmove: "Z-Move", dynamax: "Dynamax" };
 
 interface Props {
   request: BattleRequest;
@@ -228,6 +231,8 @@ function TeamPreview({ request, doubles, busy, onChoose, foes }: { request: Batt
 export function Controls({ request, snap, me, doubles, busy, onChoose }: Props) {
   const [parts, setParts] = useState<string[]>([]);
   const [tera, setTera] = useState(false);
+  /** Mega Evolution, a Z-Move or Dynamax for this Pokémon's move (where the rules and gen allow it). */
+  const [extra, setExtra] = useState<Extra | null>(null);
   const [aiming, setAiming] = useState<{ index: number; move: BattleRequestMove; targets: number[] } | null>(null);
   const foeSide = snap.sides[other(me)];
   const mySide = snap.sides[me];
@@ -249,11 +254,14 @@ export function Controls({ request, snap, me, doubles, busy, onChoose }: Props) 
   const slot = filled.length;
   const switchingIn = useMemo(() => parts.map((c) => /^switch (\d+)$/.exec(c)?.[1]).filter(Boolean).map(Number), [parts]);
   const teraTaken = parts.some((c) => c.includes("terastallize"));
+  const extraTaken = (e: Extra) => parts.some((c) => c.endsWith(` ${e}`));
+  const suffix = () => `${tera && teraType ? " terastallize" : ""}${extra && extraOn(extra) ? ` ${extra}` : ""}`;
 
   function add(choice: string) {
     const next = fill([...filled, choice]);
     setAiming(null);
     setTera(false);
+    setExtra(null);
     if (next.length >= slots) {
       onChoose(next.join(", "));
       setParts([]);
@@ -293,6 +301,11 @@ export function Controls({ request, snap, me, doubles, busy, onChoose }: Props) 
   const teraType = active.canTerastallize && !teraTaken ? active.canTerastallize : undefined;
   const foes = doubles ? foeSide.active : foeSide.active.slice(0, 1);
   const trapped = !!active.trapped;
+  const extras: Extra[] = [];
+  if (active.canMegaEvo && !extraTaken("mega")) extras.push("mega");
+  if (active.canZMove?.some(Boolean) && !extraTaken("zmove")) extras.push("zmove");
+  if (active.canDynamax && !extraTaken("dynamax")) extras.push("dynamax");
+  const extraOn = (e: Extra) => extras.includes(e);
 
   if (aiming) {
     const label = (t: number) => {
@@ -314,7 +327,7 @@ export function Controls({ request, snap, me, doubles, busy, onChoose }: Props) 
               type="button"
               data-testid="target-button"
               disabled={busy}
-              onClick={() => add(`move ${aiming.index} ${t}${tera && teraType ? " terastallize" : ""}`)}
+              onClick={() => add(`move ${aiming.index} ${t}${suffix()}`)}
               className={cn("menu-item flex items-center gap-2 rounded-md border bg-card px-3 py-2 text-left hover:border-screen/60", t < 0 && "border-dashed")}
             >
               <Crosshair className="h-4 w-4 text-primary" aria-hidden />
@@ -330,7 +343,7 @@ export function Controls({ request, snap, me, doubles, busy, onChoose }: Props) 
   const pickMove = (index: number, move: BattleRequestMove) => {
     const targets = doubles ? targetChoices(move.target, slot) : [];
     if (targets.length > 1) setAiming({ index, move, targets });
-    else add(`move ${index}${targets[0] ? ` ${targets[0]}` : ""}${tera && teraType ? " terastallize" : ""}`);
+    else add(`move ${index}${targets[0] ? ` ${targets[0]}` : ""}${suffix()}`);
   };
 
   return (
@@ -355,11 +368,37 @@ export function Controls({ request, snap, me, doubles, busy, onChoose }: Props) 
               {tera ? " on" : ""}
             </button>
           )}
+          {extras.map((e) => (
+            <button
+              key={e}
+              type="button"
+              onClick={() => setExtra((x) => (x === e ? null : e))}
+              aria-pressed={extra === e}
+              data-testid={`${e}-toggle`}
+              className={cn(
+                "flex items-center gap-1.5 rounded-md border px-3 py-1.5 font-display text-xs font-bold uppercase tracking-wider transition",
+                extra === e ? "border-primary bg-primary text-primary-foreground shadow-[0_0_14px_hsl(var(--primary)/0.6)]" : "bg-card text-foreground hover:border-screen/60"
+              )}
+            >
+              <Sparkles className="h-3.5 w-3.5" aria-hidden /> {EXTRA_LABEL[e]}
+              {extra === e ? " on" : ""}
+            </button>
+          ))}
         </div>
       </div>
       <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
         {active.moves.map((move, i) => (
-          <MoveButton key={`${move.id}-${i}`} gen={snap.gen} move={move} index={i + 1} foes={foes} tera={tera} teraType={teraType} disabled={busy} onPick={pickMove} />
+          <MoveButton
+            key={`${move.id}-${i}`}
+            gen={snap.gen}
+            move={move}
+            index={i + 1}
+            foes={foes}
+            tera={tera}
+            teraType={teraType}
+            disabled={busy || (extra === "zmove" && !active.canZMove?.[i])}
+            onPick={pickMove}
+          />
         ))}
       </div>
       <SwitchGrid

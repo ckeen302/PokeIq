@@ -258,7 +258,7 @@ export default function BattleScreen({ view, log, offset, busy, error, onChoose,
               {foeName}
               {cpu && <span className="hud-label ml-1.5">{cpu}</span>}
             </span>
-            <span className="hud-label ml-2 hidden sm:inline">{PLAY_FORMAT_INFO[view.format].name}</span>
+            <span className="hud-label ml-2 hidden sm:inline">{view.formatName ?? PLAY_FORMAT_INFO[view.format].name}</span>
           </div>
           {view.clocks && view.status === "playing" && (
             <div className="flex items-center gap-3 font-pixel text-[11px]" data-testid="battle-clocks">
