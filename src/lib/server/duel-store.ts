@@ -6,6 +6,7 @@ import { DUEL_CODE_RE } from "@/lib/duel-types";
 import type { Duel } from "./duel";
 import type { PvpDuel } from "./duels";
 import type { QueueRow } from "./match-queue";
+import type { RankedQueueRow } from "./ranked-queue";
 
 /**
  * Where duels live while they're played: one row per duel in Supabase
@@ -189,3 +190,6 @@ export const pvpStore = duelTable<PvpDuel>("duels", "duel", { columns: (duel) =>
 
 /** Matchmaking: one row per queue (a game and its settings), keyed by the queue's key. */
 export const queueStore = duelTable<QueueRow>("duel_queue", "duel-queue", { column: "key", keyOf: (row) => row.key });
+
+/** Ranked matchmaking: the same table, one row per ranked queue, holding every trainer waiting in it. */
+export const rankedQueueStore = duelTable<RankedQueueRow>("duel_queue", "ranked-queue", { column: "key", keyOf: (row) => row.key });

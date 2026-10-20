@@ -13,6 +13,9 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { LocalDateRedirect } from "./local-date-redirect";
+import { RankedUnavailable, rankedStore } from "@/lib/server/ranked";
+import type { RankedLeaderRow } from "@/lib/ranked";
+import { TierBadge, YourLadderSpot } from "@/components/pokedle/Ranked";
 
 export const metadata: Metadata = pageMetadata({
   title: "Leaderboards",
@@ -28,7 +31,7 @@ interface PageProps {
 export default async function LeaderboardPage({ searchParams }: PageProps) {
   const params = await searchParams;
   const board =
-    params.board === "daily" || params.board === "iq" || params.board === "geo" || PLAY_MODULES.includes(params.board as ModuleId)
+    params.board === "daily" || params.board === "iq" || params.board === "geo" || params.board === "pokedle" || PLAY_MODULES.includes(params.board as ModuleId)
       ? params.board!
       : "daily";
   const format: QuizFormat = (PLAYABLE_FORMATS as readonly string[]).includes(params.format ?? "") ? (params.format as QuizFormat) : "classic";
@@ -42,6 +45,7 @@ export default async function LeaderboardPage({ searchParams }: PageProps) {
     { id: "daily", label: "Daily" },
     { id: "iq", label: "PokéIQ Test" },
     { id: "geo", label: "PokéGuessr" },
+    { id: "pokedle", label: "Pokédle Ranked" },
     ...PLAY_MODULES.map((m) => ({ id: m, label: MODULE_INFO[m].title })),
   ];
   const tabRow = (
@@ -55,6 +59,68 @@ export default async function LeaderboardPage({ searchParams }: PageProps) {
       ))}
     </div>
   );
+
+  if (board === "pokedle") {
+    const ladder = await rankedLadder();
+    return (
+      <div className="mx-auto max-w-3xl space-y-6">
+        <div className="space-y-4 text-center">
+          <h1 className="font-display text-4xl font-bold uppercase tracking-tight sm:text-5xl">Leaderboard</h1>
+          {tabRow}
+          <p className="text-sm text-muted-foreground">Ranked Pokédle duels: the top 100 by rating.</p>
+        </div>
+        {ladder === null ? (
+          <Card>
+            <CardContent className="py-10 text-center text-muted-foreground">Ranked play opens soon.</CardContent>
+          </Card>
+        ) : (
+          <>
+            <YourLadderSpot />
+            {ladder.length === 0 ? (
+              <Card>
+                <CardContent className="py-10 text-center text-muted-foreground">
+                  Nobody is ranked yet.{" "}
+                  <Link href="/pokedle#ranked" className="text-primary underline-offset-2 hover:underline">
+                    Queue a ranked duel
+                  </Link>{" "}
+                  and be the first!
+                </CardContent>
+              </Card>
+            ) : (
+              <Card>
+                <CardContent className="p-0">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b text-left text-xs uppercase text-muted-foreground">
+                        <th className="p-3">#</th>
+                        <th className="p-3">Trainer</th>
+                        <th className="p-3">Rank</th>
+                        <th className="hidden p-3 text-right sm:table-cell">W–L</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {ladder.map((row) => (
+                        <tr key={row.position} className="border-b last:border-0">
+                          <td className="p-3 font-mono tabular-nums text-muted-foreground">{row.position}</td>
+                          <td className="max-w-[10rem] truncate p-3 font-semibold">{row.name}</td>
+                          <td className="p-3">
+                            <TierBadge rating={row.rating} games={row.games} size="sm" />
+                          </td>
+                          <td className="hidden p-3 text-right tabular-nums sm:table-cell">
+                            {row.wins}–{row.losses}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </CardContent>
+              </Card>
+            )}
+          </>
+        )}
+      </div>
+    );
+  }
 
   if (board === "geo") {
     const maps = geoRegions()
@@ -266,4 +332,16 @@ export default async function LeaderboardPage({ searchParams }: PageProps) {
       </p>
     </div>
   );
+}
+
+/** The ranked ladder's top 100, or null while ranked play is off. */
+async function rankedLadder(): Promise<RankedLeaderRow[] | null> {
+  const store = rankedStore();
+  if (!store) return null;
+  try {
+    return await store.top(100);
+  } catch (err) {
+    if (!(err instanceof RankedUnavailable)) console.error("[ranked] ladder failed:", err);
+    return null;
+  }
 }

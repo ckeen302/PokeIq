@@ -8,6 +8,12 @@ import {
   PVP_LEAD_MS,
   PVP_QUIET_MS,
   PVP_SERIES_WINS,
+  EMOTE_BURST,
+  EMOTE_GAP_MS,
+  EMOTE_SHOW_MS,
+  EMOTE_WINDOW_MS,
+  type DuelEmote,
+  type PvpEmoteView,
   type PvpEnd,
   type PvpEndReason,
   type PvpKind,
@@ -77,6 +83,9 @@ export interface PvpBase {
   rematch?: string;
   /** A rematch's series so far: the games before this one. */
   series?: PvpSeries;
+  /** Recent reactions (see emotePvp), and how many the duel has had. */
+  emotes?: PvpEmoteView[];
+  emoteCount?: number;
 }
 
 /** Where a best-of-three series stands before a game, by trainer (seats can swap when a rematch lobby is retaken). */
@@ -134,6 +143,7 @@ export function baseView(duel: PvpBase, playerId: string | null, now: number, re
     end: duel.end,
     rematch: duel.rematch,
     series: seriesView(duel),
+    emotes: (duel.emotes ?? []).filter((e) => now - e.at < EMOTE_SHOW_MS),
   };
 }
 
@@ -311,4 +321,34 @@ export function takeRematchSeatPvp<D extends PvpBase>(rules: PvpRules<D>, duel: 
 export function linkRematchPvp<D extends PvpBase>(duel: D, code: string): PvpOutcome<D> {
   if (duel.status !== "finished") return fail(409, "The duel isn't over yet.");
   return { ok: true, duel: duel.rematch ? duel : { ...duel, rematch: code } };
+}
+
+// ---------------------------------------------------------------------------
+// Reactions
+// ---------------------------------------------------------------------------
+
+/** Reactions kept on the duel: enough to judge the rate limit and show the latest. */
+const EMOTES_KEPT = 12;
+
+/** Why `seat` can't send a reaction at `now` (too many, too fast), or null if it can. */
+export function emoteBlocked(emotes: readonly PvpEmoteView[], seat: number, now: number): string | null {
+  const mine = emotes.filter((e) => e.seat === seat);
+  const last = mine[mine.length - 1];
+  if (last && now - last.at < EMOTE_GAP_MS) return "One reaction at a time.";
+  if (mine.filter((e) => now - e.at < EMOTE_WINDOW_MS).length >= EMOTE_BURST) return "Easy on the reactions.";
+  return null;
+}
+
+/** A preset reaction to the opponent: during play or after the end, a few at a time. */
+export function emotePvp<D extends PvpBase>(rules: PvpRules<D>, duel: D, playerId: string, emote: DuelEmote, now: number): PvpOutcome<D> {
+  return seated(rules, duel, playerId, now, (d, seat) => {
+    if (d.status === "lobby" || d.players.length < 2) return fail(409, "Reactions open once the duel starts.");
+    const emotes = (d.emotes ?? []).filter((e) => now - e.at < Math.max(EMOTE_WINDOW_MS, EMOTE_SHOW_MS));
+    const blocked = emoteBlocked(emotes, seat, now);
+    if (blocked) return fail(429, blocked);
+    const n = (d.emoteCount ?? 0) + 1;
+    d.emotes = [...emotes, { n, seat, emote, at: now }].slice(-EMOTES_KEPT);
+    d.emoteCount = n;
+    return { ok: true, duel: d };
+  });
 }

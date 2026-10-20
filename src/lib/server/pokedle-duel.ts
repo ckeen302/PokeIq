@@ -17,7 +17,9 @@ import {
   type DleDuelScore,
   type DleDuelView,
 } from "@/lib/pvp-types";
+import { isProvisional } from "@/lib/ranked";
 import { deriveSeed } from "./crypto";
+import type { RankedMatch } from "./ranked";
 import { answerFor, compare } from "./pokedle";
 import { stillPossible } from "./pokedle-candidates";
 import { mediaUrl } from "./session";
@@ -80,6 +82,20 @@ export interface PokedleDuel extends PvpBase {
   /** Points so far. */
   totals: number[];
   rounds: DleDuelRound[];
+  /** How the trainers met: the casual or the ranked queue (absent: a friend's invite, or a rematch, which is always casual). */
+  queue?: "casual" | "ranked";
+  ranked?: PokedleRanked;
+}
+
+/** A ranked duel's trainers, as the ratings know them. */
+export interface PokedleRanked {
+  /** Each seat's rating key (an HMAC). Server-side only. */
+  keys: [string, string];
+  /** Each seat's rating and ranked games going in. */
+  ratings: [number, number];
+  games: [number, number];
+  /** Each seat's rating before and after, once the duel has been counted. */
+  result?: { before: [number, number]; after: [number, number] };
 }
 
 /** A guess sent just before the bell still counts if it arrives within this long after it. */
@@ -195,9 +211,33 @@ export const pokedleRules: PvpRules<PokedleDuel> = {
   blank: (base, like) => blankDuel(base, like.gens),
 };
 
-export function createPokedleDuel(name: string, code: string, now: number, seed?: string): { duel: PokedleDuel; playerId: string } {
+export function createPokedleDuel(
+  name: string,
+  code: string,
+  now: number,
+  seed?: string,
+  extra: Pick<PokedleDuel, "queue" | "ranked"> = {}
+): { duel: PokedleDuel; playerId: string } {
   const seat = newSeat(name, now);
-  return { duel: blankDuel(pvpBase("pokedle", code, [seat], now, seed)), playerId: seat.id };
+  return { duel: { ...blankDuel(pvpBase("pokedle", code, [seat], now, seed)), ...extra }, playerId: seat.id };
+}
+
+/** A finished ranked duel that hasn't been counted yet: what counting it needs. Null otherwise. */
+export function rankedMatchOf(duel: PokedleDuel): RankedMatch | null {
+  if (!duel.ranked || duel.ranked.result || duel.status !== "finished" || !duel.end || duel.players.length !== 2) return null;
+  return {
+    code: duel.code,
+    keys: duel.ranked.keys,
+    names: [duel.players[0].name, duel.players[1].name],
+    reason: duel.end.reason,
+    winner: duel.end.winner,
+  };
+}
+
+/** Records how a ranked duel was counted (once: a later call changes nothing). */
+export function withRankedResult(duel: PokedleDuel, result: { before: [number, number]; after: [number, number] }): PokedleDuel {
+  if (!duel.ranked || duel.ranked.result) return duel;
+  return { ...duel, ranked: { ...duel.ranked, result } };
 }
 
 // ---------------------------------------------------------------------------
@@ -367,5 +407,12 @@ export function pokedleView(duel: PokedleDuel, playerId: string | null, now: num
     round,
     revealed,
     next: duel.status === "playing" && last?.result ? { at: last.result.nextAt, pressed: last.skip } : undefined,
+    queue: duel.queue,
+    // Ratings, never the keys behind them.
+    ranked: duel.ranked && {
+      ratings: duel.ranked.ratings,
+      provisional: duel.ranked.games.map(isProvisional),
+      result: duel.ranked.result,
+    },
   };
 }

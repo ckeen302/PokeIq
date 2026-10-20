@@ -6,6 +6,8 @@ import { deleteDuel, insertDuel, newDuelCode, pvpStore } from "./duel-store";
 import { joinDuel, readyDuel } from "./duels";
 import { createPokedleDuel } from "./pokedle-duel";
 import { cancelQueue, searchQueue, type OpenedGame } from "./match-queue";
+import { RANKED_QUEUE_KEY, cancelRankedQueue, searchRankedQueue, type RankedSeat } from "./ranked-queue";
+import type { RatingState } from "@/lib/ranked";
 import { pvpHref } from "@/lib/pvp-types";
 
 /**
@@ -36,11 +38,11 @@ export {
  */
 export const matchSettingsSchema = z.discriminatedUnion("game", [
   z.object({ game: z.literal("geo"), region: z.string().max(20).refine(isDuelMap, "Unknown map.") }),
-  z.object({ game: z.literal("pokedle") }),
+  z.object({ game: z.literal("pokedle"), ranked: z.boolean().optional() }),
 ]);
 export type MatchSettings = z.infer<typeof matchSettingsSchema>;
 
-export const queueKey = (s: MatchSettings) => (s.game === "geo" ? `geo:${s.region}` : "pokedle:all");
+export const queueKey = (s: MatchSettings) => (s.game === "geo" ? `geo:${s.region}` : s.ranked ? RANKED_QUEUE_KEY : "pokedle:all");
 
 export type SearchResult =
   | { ok: true; status: "waiting"; ticket: string; since: number }
@@ -65,7 +67,7 @@ async function openDuel(settings: MatchSettings, names: [string, string], now: n
       const ready = must(readyGeoDuel(must(readyGeoDuel(joined, a, true, now)).duel, b, true, now)).duel;
       if (await insertDuel(ready)) return { code, ids: [a, b], remove: () => deleteDuel(code) };
     } else {
-      const { duel, playerId: a } = createPokedleDuel(names[0], code, now);
+      const { duel, playerId: a } = createPokedleDuel(names[0], code, now, undefined, { queue: "casual" });
       const { duel: joined, playerId: b } = must(joinDuel(duel, names[1], now));
       const ready = must(readyDuel(must(readyDuel(joined, a, true, now)).duel, b, true, now)).duel;
       if (await pvpStore.insert(ready)) return { code, ids: [a, b], remove: () => pvpStore.remove(code) };
@@ -98,5 +100,37 @@ export async function searchMatch(settings: MatchSettings, name: string, ticket:
 
 /** Gives up a search. */
 export function cancelMatch(settings: MatchSettings, ticket: string): Promise<void> {
-  return cancelQueue(queueKey(settings), ticket);
+  return settings.game === "pokedle" && settings.ranked ? cancelRankedQueue(ticket) : cancelQueue(queueKey(settings), ticket);
+}
+
+// ---------------------------------------------------------------------------
+// Ranked
+// ---------------------------------------------------------------------------
+
+/** A ranked Pokédle duel for two matched trainers (every generation), stored and under way. Seat 0 is the trainer who was waiting. */
+async function openRankedDuel(players: [RankedSeat, RankedSeat], now: number): Promise<OpenedGame | null> {
+  for (let attempt = 0; attempt < 4; attempt++) {
+    const code = newDuelCode();
+    const ranked = {
+      keys: [players[0].player, players[1].player] as [string, string],
+      ratings: [players[0].rating, players[1].rating] as [number, number],
+      games: [players[0].games, players[1].games] as [number, number],
+    };
+    const { duel, playerId: a } = createPokedleDuel(players[0].name, code, now, undefined, { queue: "ranked", ranked });
+    const { duel: joined, playerId: b } = must(joinDuel(duel, players[1].name, now));
+    const ready = must(readyDuel(must(readyDuel(joined, a, true, now)).duel, b, true, now)).duel;
+    if (await pvpStore.insert(ready)) return { code, ids: [a, b], remove: () => pvpStore.remove(code) };
+  }
+  return null;
+}
+
+/**
+ * A ranked search (or its next poll) by the trainer whose rating key is
+ * `player`: paired by rating, or waiting. `rating` reads their rating when
+ * it's needed (it throws RankedUnavailable before the migration).
+ */
+export async function searchRankedMatch(name: string, ticket: string, player: string, rating: () => Promise<RatingState>): Promise<SearchResult | PvpFailure> {
+  const out = await searchRankedQueue({ ticket, name, player }, rating, openRankedDuel);
+  if (!out.ok || out.status === "waiting") return out;
+  return seat({ game: "pokedle", ranked: true }, out.code, out.playerId);
 }

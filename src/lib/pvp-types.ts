@@ -44,6 +44,27 @@ interface PvpViewBase {
   rematch?: string;
   /** Rematches between the same two trainers make a best-of-three series (absent until both seats are filled). */
   series?: PvpSeriesView;
+  /** Reactions sent in the last few seconds, oldest first. */
+  emotes?: PvpEmoteView[];
+}
+
+/** The preset reactions duellists can send each other: no free text. */
+export const DUEL_EMOTES = ["gg", "fire", "wow", "sweat", "clap"] as const;
+export type DuelEmote = (typeof DUEL_EMOTES)[number];
+export const EMOTE_TEXT: Record<DuelEmote, string> = { gg: "GG", fire: "🔥", wow: "😮", sweat: "😅", clap: "👏" };
+/** A trainer may send a reaction at most this often, and at most EMOTE_BURST in any EMOTE_WINDOW_MS. */
+export const EMOTE_GAP_MS = 1_500;
+export const EMOTE_BURST = 3;
+export const EMOTE_WINDOW_MS = 10_000;
+/** A reaction shows for this long. */
+export const EMOTE_SHOW_MS = 6_000;
+
+export interface PvpEmoteView {
+  /** Counts up with every reaction in the duel: each is shown once. */
+  n: number;
+  seat: number;
+  emote: DuelEmote;
+  at: number;
 }
 
 /** A series is best of three: the first trainer to win two games takes it. */
@@ -163,6 +184,17 @@ export interface DleDuelView extends PvpViewBase {
   revealed: DleDuelRoundResult[];
   /** During a reveal: when the next round starts, and who has pressed Next. */
   next?: { at: number; pressed: boolean[] };
+  /** How the trainers met: the casual or the ranked queue (absent: a friend's invite, or a rematch). */
+  queue?: "casual" | "ranked";
+  /** A ranked duel: each seat's rating going in, and once it's been counted, before and after. */
+  ranked?: DleDuelRanked;
+}
+
+export interface DleDuelRanked {
+  ratings: number[];
+  provisional: boolean[];
+  /** Set once the duel has been counted. */
+  result?: { before: number[]; after: number[] };
 }
 
 // ---------------------------------------------------------------------------

@@ -3,6 +3,7 @@ import { pageMetadata } from "@/lib/seo";
 import { POKEDEX } from "@/lib/pokemon/pokedex";
 import { PokedleWithCommunity } from "@/components/pokedle/PokedleCommunity";
 import { PokedleDuelCard } from "@/components/pokedle/PokedleDuelCard";
+import { RankedCard } from "@/components/pokedle/Ranked";
 
 export const metadata: Metadata = pageMetadata({
   title: "Pokédle — Daily Pokémon Guessing Game",
@@ -17,7 +18,10 @@ export default function PokedlePage() {
   return (
     <div className="space-y-10">
       <PokedleWithCommunity names={names} />
-      <div id="duel" className="mx-auto max-w-3xl scroll-mt-24">
+      <div id="duel" className="mx-auto max-w-3xl scroll-mt-24 space-y-4">
+        <div id="ranked" className="scroll-mt-24">
+          <RankedCard />
+        </div>
         <PokedleDuelCard />
       </div>
     </div>

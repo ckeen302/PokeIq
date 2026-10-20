@@ -3,11 +3,12 @@ import { z } from "zod";
 import { clientIp, rateLimit } from "@/lib/server/rate-limit";
 import { duelNameSchema, pvpToken, readPvpToken, type PvpFailure } from "@/lib/server/duel-core";
 import { duelsEnabled, newDuelCode, pvpStore } from "@/lib/server/duel-store";
-import { asKind, duelView, joinDuel, leaveDuel, linkRematch, readyDuel, rematchOf, skipReveal, takeRematchSeat, touchDuel } from "@/lib/server/duels";
+import { settleRankedDuel } from "@/lib/server/ranked-duels";
+import { asKind, duelView, emoteDuel, joinDuel, leaveDuel, linkRematch, readyDuel, rematchOf, skipReveal, takeRematchSeat, touchDuel } from "@/lib/server/duels";
 import { buyPokedleHint, guessPokedle, setPokedleGens } from "@/lib/server/pokedle-duel";
 import { answerQuiz } from "@/lib/server/quiz-duel";
 import { DUEL_CODE_RE } from "@/lib/duel-types";
-import { DLE_DUEL_HINTS, QUIZ_DUEL_QUESTIONS, type PvpSeatResponse } from "@/lib/pvp-types";
+import { DLE_DUEL_HINTS, DUEL_EMOTES, QUIZ_DUEL_QUESTIONS, type PvpSeatResponse } from "@/lib/pvp-types";
 
 /**
  * GET  /api/duel/:code — the duel as you may see it (header x-duel-token:
@@ -22,6 +23,7 @@ import { DLE_DUEL_HINTS, QUIZ_DUEL_QUESTIONS, type PvpSeatResponse } from "@/lib
  *   { action: "answer", token, round, choice }    quiz: lock in an answer to question `round`
  *   { action: "next", token, round }              end the reveal early (once both press it)
  *   { action: "leave", token }                    leave the lobby, or forfeit
+ *   { action: "emote", token, emote }             a preset reaction ("gg", "fire", "wow", "sweat", "clap")
  *   { action: "rematch", token }                  a new duel with the same game and trainers
  */
 
@@ -39,6 +41,7 @@ const bodySchema = z.discriminatedUnion("action", [
   z.object({ action: z.literal("answer"), token, round, choice: z.string().min(1).max(200) }),
   z.object({ action: z.literal("next"), token, round }),
   z.object({ action: z.literal("leave"), token }),
+  z.object({ action: z.literal("emote"), token, emote: z.enum(DUEL_EMOTES) }),
   z.object({ action: z.literal("rematch"), token }),
 ]);
 
@@ -67,7 +70,9 @@ export async function GET(request: NextRequest, context: Context) {
   try {
     const out = await pvpStore.update(code, (duel, now) => ({ ok: true as const, duel: touchDuel(duel, playerId, now) }));
     if (!out.ok) return failure(out);
-    return NextResponse.json(duelView(out.duel, playerId, out.now, out.rev), { headers: NO_STORE });
+    // A ranked duel that just ended is counted here, on the next request.
+    const { duel, rev } = await settleRankedDuel(out.duel, out.rev);
+    return NextResponse.json(duelView(duel, playerId, out.now, rev), { headers: NO_STORE });
   } catch (err) {
     return storeError(err);
   }
@@ -97,6 +102,10 @@ export async function POST(request: NextRequest, context: Context) {
     const playerId = readPvpToken(body.token, code);
     if (!playerId) return NextResponse.json({ error: "That isn't your seat in this duel." }, { status: 403 });
     if (body.action === "rematch") return await rematch(code, playerId);
+    // Reactions have their own, tighter limit (the duel also allows only a few at a time per trainer).
+    if (body.action === "emote" && !rateLimit(`duel-emote:${clientIp(request)}`, 6, 0.5)) {
+      return NextResponse.json({ error: "Easy on the reactions." }, { status: 429, headers: NO_STORE });
+    }
 
     const out = await pvpStore.update(code, (duel, now) => {
       switch (body.action) {
@@ -114,10 +123,13 @@ export async function POST(request: NextRequest, context: Context) {
           return skipReveal(duel, playerId, body.round, now);
         case "leave":
           return leaveDuel(duel, playerId, now);
+        case "emote":
+          return emoteDuel(duel, playerId, body.emote, now);
       }
     });
     if (!out.ok) return failure(out);
-    return NextResponse.json(duelView(out.duel, playerId, out.now, out.rev), { headers: NO_STORE });
+    const { duel, rev } = await settleRankedDuel(out.duel, out.rev);
+    return NextResponse.json(duelView(duel, playerId, out.now, rev), { headers: NO_STORE });
   } catch (err) {
     return storeError(err);
   }

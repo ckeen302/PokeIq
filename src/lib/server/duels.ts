@@ -1,6 +1,7 @@
 import "server-only";
-import type { PvpView } from "@/lib/pvp-types";
+import type { DuelEmote, PvpView } from "@/lib/pvp-types";
 import {
+  emotePvp,
   fail,
   joinPvp,
   leavePvp,
@@ -39,6 +40,7 @@ export const leaveDuel = <D extends PvpDuel>(duel: D, playerId: string, now: num
 export const rematchOf = <D extends PvpDuel>(old: D, code: string, now: number, seed?: string) => rematchPvp(rulesOf(old), old, code, now, seed);
 export const takeRematchSeat = <D extends PvpDuel>(duel: D, playerId: string, name: string, now: number) =>
   takeRematchSeatPvp(rulesOf(duel), duel, playerId, name, now);
+export const emoteDuel = <D extends PvpDuel>(duel: D, playerId: string, emote: DuelEmote, now: number) => emotePvp(rulesOf(duel), duel, playerId, emote, now);
 export const linkRematch = <D extends PvpDuel>(duel: D, code: string) => linkRematchPvp(duel, code);
 
 /** Next round or question, please: once both trainers press it, the reveal ends early. */

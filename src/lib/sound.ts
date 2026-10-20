@@ -4,7 +4,7 @@
  * when AudioContext is unavailable.
  */
 
-type SoundKind = "correct" | "wrong" | "streak" | "fanfare" | "click";
+type SoundKind = "correct" | "wrong" | "streak" | "fanfare" | "click" | "tick" | "close" | "ping";
 
 const MUTE_KEY = "pokeiq-muted";
 
@@ -115,6 +115,16 @@ function playUnsafe(kind: SoundKind): void {
       break;
     case "click":
       tone(audio, 440, now, 0.05, "triangle", 0.04);
+      break;
+    case "tick":
+      tone(audio, 1046, now, 0.04, "square", 0.025);
+      break;
+    case "close":
+      tone(audio, 523, now, 0.08, "triangle", 0.05);
+      tone(audio, 784, now + 0.07, 0.12, "triangle", 0.05);
+      break;
+    case "ping":
+      tone(audio, 988, now, 0.06, "sine", 0.04);
       break;
   }
 }
