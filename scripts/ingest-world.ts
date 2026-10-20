@@ -19,6 +19,7 @@
  * Growing the data a little at a time, without rebuilding it (shots dropped in
  * review stay dropped):
  *   … npm run ingest:world -- --crops Hoenn            # views cut from thin places' area maps → .data/geo-candidates.json
+ *   … npm run ingest:world -- --crops --thin Hoenn     # only for places with a single shot (from smaller maps too)
  *   … npm run ingest:world -- --expand Galar           # new Bulbapedia and other-wiki shots of places already on the map → the same
  *   … npm run ingest:world -- --accept=reviewed.json   # adds reviewed candidates to the data (near-copies are skipped)
  */
@@ -58,7 +59,7 @@ import {
   pixelScale,
   viewCrop,
 } from "./geo/bulbapedia";
-import { genericTiles, nativePixels, pickViews, screenOf, tileFamily, tileGrid, type Box, type TileGrid } from "./geo/map-crops";
+import { AREA_PER_VIEW, AREA_PER_VIEW_THIN, genericTiles, nativePixels, pickViews, screenOf, tileFamily, tileGrid, type Box, type TileGrid } from "./geo/map-crops";
 import { WIKIS, localNames, wikiCode, wikiImages, wikiPage, type Wiki } from "./geo/wikis";
 
 const PLACES = path.join(process.cwd(), "scripts/geo/world-places.json");
@@ -621,13 +622,19 @@ function fallbackFor(source: Source, games: string[]): ShotFallback | undefined 
   };
 }
 
-/** Games whose versions share their maps: one screenshot of a place per family (Ruby / Sapphire's or Emerald's, not both). */
+/**
+ * Games whose versions share their maps: one screenshot of a place per family
+ * (Ruby / Sapphire's or Emerald's, not both). Black 2 / White 2 rebuilt much
+ * of Unova two years on, so theirs is a family of its own (a map that didn't
+ * change is dropped later as a copy).
+ */
 const FAMILIES: Record<string, string> = {
   ...Object.fromEntries(["RB", "RBY", "RGBY", "Y"].map((c) => [c, "gen1"])),
   ...Object.fromEntries(["GS", "GSC", "C"].map((c) => [c, "gen2"])),
   ...Object.fromEntries(["RS", "RSE", "SE", "E"].map((c) => [c, "gen3"])),
   ...Object.fromEntries(["DP", "Pt", "DPPt"].map((c) => [c, "gen4"])),
-  ...Object.fromEntries(["BW", "B", "W", "B2W2", "B2", "W2", "BWB2W2"].map((c) => [c, "gen5"])),
+  ...Object.fromEntries(["BW", "B", "W", "BWB2W2"].map((c) => [c, "gen5"])),
+  ...Object.fromEntries(["B2W2", "B2", "W2"].map((c) => [c, "gen5b"])),
 };
 /** A file's name without its game, season or variant: "Unova_Route_9_Spring_BW" and "…_Summer_B2W2" are one view. */
 function variantKey(file: string): string {
@@ -1197,7 +1204,7 @@ const sameLocation = (a: { region: string; name: string; parent?: string }, b: {
  * distinctive rooms. Each sprite game's map gives its share of the views the
  * place lacks.
  */
-async function cropViews(old: WorldLocation[], regions: Set<string>, store: ShotStore): Promise<Candidate[]> {
+async function cropViews(old: WorldLocation[], regions: Set<string>, store: ShotStore, onlyThin = false): Promise<Candidate[]> {
   const fileOf = sourceFiles(store);
   const here = old.filter((l) => regions.has(l.region));
   // Every area map of these regions: all of them say which tiles every town has, the thin places' get views.
@@ -1230,7 +1237,7 @@ async function cropViews(old: WorldLocation[], regions: Set<string>, store: Shot
 
   const out: Candidate[] = [];
   for (const l of here) {
-    const room = (l.parent ? CROP_TARGET_BUILDING : CROP_TARGET) - l.shots.length;
+    const room = onlyThin && l.shots.length > 1 ? 0 : (l.parent ? CROP_TARGET_BUILDING : CROP_TARGET) - l.shots.length;
     const mine = shots.filter((x) => x.l === l && maps.has(x.file));
     if (room <= 0 || !mine.length) continue;
     let added = 0;
@@ -1238,7 +1245,7 @@ async function cropViews(old: WorldLocation[], regions: Set<string>, store: Shot
       const max = Math.min(room - added, Math.ceil(room / mine.length));
       if (max <= 0) continue;
       const { source, k, grid } = maps.get(file)!;
-      const views = pickViews(grid, screenOf(s.game)!, max, viewCrop(grid.width, grid.height), generic.get(tileFamily(s.game)), cut.get(file));
+      const views = pickViews(grid, screenOf(s.game)!, max, viewCrop(grid.width, grid.height), generic.get(tileFamily(s.game)), cut.get(file), l.shots.length === 1 ? AREA_PER_VIEW_THIN : AREA_PER_VIEW);
       for (const v of views) {
         const key = `crop:${file}#${v.left},${v.top},${v.width},${v.height}@${ENCODING}`;
         let id = store.cache[key];
@@ -1386,7 +1393,7 @@ async function main() {
     for (const source of SOURCES) {
       const regions = new Set(source.regions.filter((r) => !wanted.length || wanted.includes(r.toLowerCase())));
       if (!regions.size) continue;
-      found.push(...(args.includes("--crops") ? await cropViews(old, regions, store) : await expand(source, regions, world, store, old)));
+      found.push(...(args.includes("--crops") ? await cropViews(old, regions, store, args.includes("--thin")) : await expand(source, regions, world, store, old)));
       writeFileSync(out, JSON.stringify(found, null, 1));
       await withLock(async () => saveCache(store, readAtStart));
     }

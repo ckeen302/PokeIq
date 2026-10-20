@@ -16,7 +16,9 @@ const VIEW_SCREENS = 1.5;
 /** Map tiles (metatiles) are 16 px in every sprite game. */
 const TILE = 16;
 /** A map this many views big, or more, gives one view per this many (up to MAX_VIEWS). */
-const AREA_PER_VIEW = 2.5;
+export const AREA_PER_VIEW = 2.5;
+/** A place with a single shot takes a view from a smaller map: any other look at it is worth a round. */
+export const AREA_PER_VIEW_THIN = 1.6;
 const MAX_VIEWS = 3;
 /** Views that share more than this much of their area with another, or with what the place's own shot already shows, are skipped. */
 const MAX_OVERLAP = 0.2;
@@ -112,7 +114,8 @@ export function pickViews(
   max = MAX_VIEWS,
   shown?: Box,
   generic?: ReadonlySet<string>,
-  taken: Box[] = []
+  taken: Box[] = [],
+  areaPerView = AREA_PER_VIEW
 ): Box[] {
   const { width, height, cols, rows, keys, flat } = grid;
   let [vw, vh] = screen.map((s) => Math.round((s * VIEW_SCREENS) / TILE) * TILE);
@@ -120,7 +123,7 @@ export function pickViews(
   const fit = Math.min(1, width / vw, height / vh);
   if (fit * VIEW_SCREENS < 1) return [];
   [vw, vh] = [Math.floor((vw * fit) / TILE) * TILE, Math.floor((vh * fit) / TILE) * TILE];
-  const count = Math.min(max, Math.floor((width * height) / (vw * vh) / AREA_PER_VIEW));
+  const count = Math.min(max, Math.floor((width * height) / (vw * vh) / areaPerView));
   if (count < 1) return [];
   const uses = new Map<string, number>();
   for (const k of keys) uses.set(k, (uses.get(k) ?? 0) + 1);
