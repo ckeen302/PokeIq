@@ -13,7 +13,7 @@ export const WIKI = "https://bulbapedia.bulbagarden.net/w/api.php";
 export const BUCKET = "geo";
 
 /** Part of every upload's cache key: bumping it re-encodes and re-uploads every screenshot. */
-const ENCODING = "v2";
+export const ENCODING = "v2";
 /** 3D captures are kept up to this width (a 1080p capture is scaled down a little). */
 const PHOTO_WIDTH = 1600;
 /** Sprite graphics are scaled up by a whole number until the longer side is at least this, every pixel kept sharp. */
@@ -444,7 +444,7 @@ export function firstLocationRef(wikitext: string): string | null {
 // ---------------------------------------------------------------------------
 
 /** How big a sprite screenshot's pixels are: 2 when every 2 × 2 block is one colour (a doubled capture), and so on. */
-async function pixelScale(source: Buffer): Promise<number> {
+export async function pixelScale(source: Buffer): Promise<number> {
   const { data, info } = await sharp(source).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
   const at = (x: number, y: number) => data.readUInt32LE((y * info.width + x) * 4);
   for (const k of [4, 3, 2]) {
@@ -467,7 +467,7 @@ async function pixelScale(source: Buffer): Promise<number> {
  * neighbour, lossless), so they stay crisp at any size. 3D captures keep up to
  * 1600 px; smaller ones (the 3DS's 400 px screen) are doubled smoothly.
  */
-async function encodeShot(source: Buffer, game: string, crop: { left: number; top: number; width: number; height: number }): Promise<Buffer> {
+export async function encodeShot(source: Buffer, game: string, crop: { left: number; top: number; width: number; height: number }): Promise<Buffer> {
   if (PIXEL_GAME.test(game)) {
     const k = await pixelScale(source);
     const snap = (v: number) => Math.floor(v / k) * k;
