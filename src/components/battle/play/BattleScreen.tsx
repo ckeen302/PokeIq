@@ -2,8 +2,8 @@
 
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { MusicControl, trackFor, useBattleMusic } from "./MusicControl";
-import { Eye, FastForward, Gauge, Loader2, ScrollText, SkipForward, Timer } from "lucide-react";
-import { CPU_LEVEL_INFO, PLAY_FORMAT_INFO, type BattleView } from "@/lib/battle/play";
+import { Eye, FastForward, Gauge, Loader2, ScrollText, SkipForward, Sparkles, Timer } from "lucide-react";
+import { CPU_LEVEL_INFO, PLAY_FORMAT_INFO, type BattleRequestPokemon, type BattleView } from "@/lib/battle/play";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { Dex } from "@pkmn/dex";
@@ -90,6 +90,7 @@ interface Entry {
 
 const SPEEDS = [0.5, 1, 2, 4] as const;
 const SPEED_KEY = "pokeiq:battle:speed";
+const ANIM_KEY = "pokeiq:battle:animations";
 
 function emptySnap(): Snap {
   const side = (id: SideId) => ({ id, name: "", active: [], team: [], total: 6, conditions: [] });
@@ -137,6 +138,18 @@ export default function BattleScreen({ view, log, offset, busy, error, onChoose,
   const generation = useRef(0);
   /** Battle log option: animations on (off: each step lands at once, text and all). */
   const animations = useRef(true);
+  const [animationsOn, setAnimationsOn] = useState(true);
+  const toggleAnimations = (on: boolean) => {
+    animations.current = on;
+    setAnimationsOn(on);
+    // Turning them off mid-turn: the rest of the turn lands at once.
+    if (!on) abort.current?.abort();
+    try {
+      window.localStorage.setItem(ANIM_KEY, on ? "on" : "off");
+    } catch {
+      // not remembered
+    }
+  };
   const me: SideId = view.you === 1 ? "p2" : "p1";
   const doubles = PLAY_FORMAT_INFO[view.format].gameType === "doubles";
   const model = useRef<BattleModel | null>(null);
@@ -170,6 +183,14 @@ export default function BattleScreen({ view, log, offset, busy, error, onChoose,
       // keep 1x
     }
     void loadAnims().catch(() => undefined);
+    try {
+      if (window.localStorage.getItem(ANIM_KEY) === "off") {
+        animations.current = false;
+        setAnimationsOn(false);
+      }
+    } catch {
+      // animations stay on
+    }
   }, []);
 
   const changeSpeed = (next: number) => {
@@ -285,10 +306,13 @@ export default function BattleScreen({ view, log, offset, busy, error, onChoose,
   // Your team's sprites, ready for when they switch in.
   const requestTeam = view.request?.data.side.pokemon;
   const [myTeam, setMyTeam] = useState<{ ident: string; name: string }[]>([]);
+  /** Your team as the latest request listed it (the tooltips' exact stats, between requests too). */
+  const [lastTeam, setLastTeam] = useState<BattleRequestPokemon[] | undefined>(undefined);
   useEffect(() => {
     if (!requestTeam) return;
     for (const p of requestTeam) preloadDetails(p.details, true);
     setMyTeam(requestTeam.map((p) => ({ ident: p.ident, name: p.ident.split(": ")[1] ?? p.ident })));
+    setLastTeam(requestTeam);
   }, [requestTeam]);
   // Your whole team as party balls, with faints and status as they've played out (never ahead of the animation).
   const myBalls = useMemo<Ball[] | undefined>(() => {
@@ -369,7 +393,7 @@ export default function BattleScreen({ view, log, offset, busy, error, onChoose,
             </div>
           )}
           <MusicControl />
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1" role="group" aria-label="Battle log options: text speed and animations" title="Text speed">
             <Gauge className="h-3.5 w-3.5 text-muted-foreground" aria-hidden />
             {SPEEDS.map((s) => (
               <button
@@ -385,6 +409,16 @@ export default function BattleScreen({ view, log, offset, busy, error, onChoose,
             <button type="button" onClick={skip} disabled={!playing} className="ml-1 flex items-center gap-1 rounded-sm px-1.5 py-0.5 font-pixel text-[10px] text-muted-foreground hover:text-foreground disabled:opacity-40" aria-label="Skip the animations">
               <SkipForward className="h-3 w-3" aria-hidden /> Skip
             </button>
+            <button
+              type="button"
+              onClick={() => toggleAnimations(!animationsOn)}
+              aria-pressed={animationsOn}
+              className="ml-1 flex items-center gap-1 rounded-sm px-1.5 py-0.5 font-pixel text-[10px] text-muted-foreground hover:text-foreground"
+              title="Battle log option: animate each step, or show it at once"
+              data-testid="animations-toggle"
+            >
+              <Sparkles className="h-3 w-3" aria-hidden /> {animationsOn ? "Anims on" : "Anims off"}
+            </button>
             <button type="button" onClick={() => setShowLog((s) => !s)} className="ml-1 flex items-center gap-1 rounded-sm px-1.5 py-0.5 font-pixel text-[10px] text-muted-foreground hover:text-foreground lg:hidden" aria-expanded={showLog}>
               <ScrollText className="h-3 w-3" aria-hidden /> Log
             </button>
@@ -393,7 +427,7 @@ export default function BattleScreen({ view, log, offset, busy, error, onChoose,
 
         {toolbar}
 
-        <Stage snap={snap} me={me} doubles={doubles} popups={popups} onHandle={onHandle} myBalls={myBalls} />
+        <Stage snap={snap} me={me} doubles={doubles} popups={popups} onHandle={onHandle} myBalls={myBalls} format={view.format} myRequest={lastTeam} watching={watching} />
 
         {/* The text box: the latest line of the battle. */}
         <div className="dialog-box min-h-[4.25rem] text-sm leading-relaxed text-muted-foreground" data-done={showControls} aria-live="polite" data-testid="battle-message">
@@ -409,7 +443,7 @@ export default function BattleScreen({ view, log, offset, busy, error, onChoose,
         <Card>
           <CardContent className="p-4">
             {showControls ? (
-              <Controls key={view.request!.rqid} request={view.request!.data} snap={snap} me={me} doubles={doubles} busy={busy} onChoose={(choice) => onChoose(view.request!.rqid, choice)} />
+              <Controls key={view.request!.rqid} request={view.request!.data} snap={snap} me={me} doubles={doubles} busy={busy} format={view.format} onChoose={(choice) => onChoose(view.request!.rqid, choice)} />
             ) : ended ? (
               <div className="space-y-3 text-center" data-testid="battle-result">
                 <p className={cn("font-display text-3xl font-bold uppercase", result!.tone === "win" ? "text-success" : result!.tone === "draw" ? "text-foreground" : "text-destructive")}>

@@ -9,6 +9,8 @@ import { battleSpriteCandidates, spriteData } from "./sprites";
 import type { PopupTone, StageHandle, StageSprite } from "./player";
 import { Hud, TeamBalls, type Ball } from "./Hud";
 import { Backdrop } from "./Backdrop";
+import { MonTip, Tip, tipFromRequest, tipFromSnap } from "./Tooltips";
+import type { BattleRequestPokemon } from "@/lib/battle/play";
 import { cn } from "@/lib/utils";
 
 export interface Popup {
@@ -159,9 +161,15 @@ export interface StageProps {
   onHandle: (handle: StageHandle) => void;
   /** Your whole team for the party balls (unseen members show as healthy). */
   myBalls?: Ball[];
+  /** The battle's format (for the Pokémon tooltips). */
+  format?: string;
+  /** Your team as your latest request listed it (exact stats in the tooltips). */
+  myRequest?: BattleRequestPokemon[];
+  /** A spectator or a replay: neither side is yours. */
+  watching?: boolean;
 }
 
-export function Stage({ snap, me, doubles, popups, onHandle, myBalls }: StageProps) {
+export function Stage({ snap, me, doubles, popups, onHandle, myBalls, format = "", myRequest, watching = false }: StageProps) {
   const outer = useRef<HTMLDivElement>(null);
   const stage = useRef<HTMLDivElement>(null);
   const backdrop = useRef<HTMLDivElement>(null);
@@ -211,7 +219,10 @@ export function Stage({ snap, me, doubles, popups, onHandle, myBalls }: StagePro
   const weather = WEATHER_CLASS[snap.weather];
   const tint = TERRAIN_TINT[snap.terrain];
   const trickRoom = snap.pseudo.includes("trickroom");
-  const fieldChips = [snap.weather, snap.terrain && `${snap.terrain} Terrain`, ...snap.pseudo.map((p) => PSEUDO[p] ?? null)].filter(Boolean) as string[];
+  const fieldChips: Chip[] = [];
+  if (snap.weather) fieldChips.push({ label: snap.weather, turns: snap.turns?.weather });
+  if (snap.terrain) fieldChips.push({ label: `${snap.terrain} Terrain`, turns: snap.turns?.terrain });
+  for (const p of snap.pseudo) if (PSEUDO[p]) fieldChips.push({ label: PSEUDO[p], turns: snap.turns?.[p] });
 
   return (
     <div className="relative">
@@ -239,21 +250,38 @@ export function Stage({ snap, me, doubles, popups, onHandle, myBalls }: StagePro
         <div className="pointer-events-none absolute inset-0 z-10">
           <span className="hud-label absolute left-1/2 top-2 -translate-x-1/2 rounded-sm bg-black/55 px-2 py-1 text-white/80">Turn {Math.max(1, snap.turn)}</span>
           {fieldChips.length > 0 && (
-            <div className="absolute right-2 top-2 flex flex-col items-end gap-1">
+            <div className="absolute right-2 top-2 flex flex-col items-end gap-1" data-testid="field-conditions">
               {fieldChips.map((chip) => (
-                <span key={chip} className="hud-label rounded-sm bg-black/60 px-2 py-1 text-white/90">
-                  {chip}
+                <span key={chip.label} className="hud-label flex items-center gap-1.5 rounded-sm bg-black/60 px-2 py-1 text-white/90">
+                  {chip.label}
+                  {chip.turns && <TurnsLeft turns={chip.turns} />}
                 </span>
               ))}
             </div>
           )}
           <div className="absolute left-[2%] top-[3%] hidden w-[42%] flex-col gap-1 sm:flex">
-            {snap.sides[foe].active.map((mon, i) => (mon ? <Hud key={i} mon={mon} mine={false} compact={doubles} /> : null))}
+            {snap.sides[foe].active.map((mon, i) =>
+              mon ? (
+                <Tip key={i} place="bottom" content={() => <MonTip mon={tipFromSnap(mon)} mine={false} gen={snap.gen} format={format} />}>
+                  <Hud mon={mon} mine={false} compact={doubles} />
+                </Tip>
+              ) : null
+            )}
             <TeamBalls side={snap.sides[foe]} />
+            <SideConditions side={snap.sides[foe]} />
           </div>
           <div className="absolute bottom-[4%] right-[2%] hidden w-[42%] flex-col items-stretch gap-1 sm:flex">
+            <SideConditions side={snap.sides[me]} align="end" />
             <TeamBalls side={snap.sides[me]} align="end" balls={myBalls} />
-            {snap.sides[me].active.map((mon, i) => (mon ? <Hud key={i} mon={mon} mine compact={doubles} /> : null))}
+            {snap.sides[me].active.map((mon, i) => {
+              if (!mon) return null;
+              const own = myRequest?.find((p) => p.ident === mon.key);
+              return (
+                <Tip key={i} content={() => <MonTip mon={own ? tipFromRequest(own, mon) : tipFromSnap(mon)} mine={!watching} gen={snap.gen} format={format} />}>
+                  <Hud mon={mon} mine={!watching} compact={doubles} />
+                </Tip>
+              );
+            })}
           </div>
           {popups.map((p) => {
             const at = p.ref ? slotCenter(p.ref, me, active) : { x: 0.5, y: 0.35 };
@@ -279,6 +307,56 @@ export function Stage({ snap, me, doubles, popups, onHandle, myBalls }: StagePro
           {snap.sides[me].active.map((mon, i) => (mon ? <Hud key={i} mon={mon} mine compact={doubles} /> : null))}
         </div>
       </div>
+    </div>
+  );
+}
+
+interface Chip {
+  label: string;
+  turns?: [number, number];
+}
+
+/** "3" or "3–5": turns left, as Showdown counts them. */
+function TurnsLeft({ turns }: { turns: [number, number] }) {
+  const [min, max] = turns;
+  return (
+    <span className="rounded-sm bg-white/15 px-1 font-pixel text-[9px] tabular-nums text-white" title={`${min === max ? min : `${min} to ${max}`} turn${max === 1 ? "" : "s"} left`}>
+      {min === max ? min : `${min}–${max}`}
+    </span>
+  );
+}
+
+const SIDE_KIND: Record<string, "hazard" | "screen"> = {
+  stealthrock: "hazard",
+  spikes: "hazard",
+  toxicspikes: "hazard",
+  stickyweb: "hazard",
+  gmaxsteelsurge: "hazard",
+  reflect: "screen",
+  lightscreen: "screen",
+  auroraveil: "screen",
+  safeguard: "screen",
+  mist: "screen",
+};
+
+/** One side's hazards, screens and the rest (Tailwind, Lucky Chant...), with layers and turns left. */
+function SideConditions({ side, align = "start" }: { side: SideSnap; align?: "start" | "end" }) {
+  if (!side.conditions.length) return null;
+  return (
+    <div className={cn("flex flex-wrap gap-1", align === "end" && "justify-end")} data-testid={`side-conditions-${side.id}`}>
+      {side.conditions.map((c) => (
+        <span
+          key={c.id}
+          className={cn(
+            "hud-label flex items-center gap-1 rounded-sm px-1.5 py-0.5 text-[9px]",
+            SIDE_KIND[c.id] === "hazard" ? "bg-amber-500/80 text-black" : SIDE_KIND[c.id] === "screen" ? "bg-sky-400/80 text-black" : "bg-black/60 text-white/90"
+          )}
+        >
+          {c.name}
+          {c.level > 1 && <span>×{c.level}</span>}
+          {c.turns && <TurnsLeft turns={c.turns} />}
+        </span>
+      ))}
     </div>
   );
 }

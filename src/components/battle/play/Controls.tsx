@@ -11,6 +11,8 @@ import { other, type MonSnap, type SideId, type Snap } from "./model";
 import { effectiveness, moveInfo, targetChoices, type Effect } from "./moves";
 import { HpBar, STATUS_STYLE } from "./Hud";
 import { teraColor } from "./player";
+import { MonTip, MoveTip, Tip, isRandomFormat, tipFromRequest, tipFromSnap } from "./Tooltips";
+import type { FieldMon, FieldState } from "@/lib/battle/tooltip-calc";
 
 /**
  * What the player can do now, built from their request: pick a lead (team
@@ -29,6 +31,8 @@ interface Props {
   doubles: boolean;
   busy: boolean;
   onChoose: (choice: string) => void;
+  /** The battle's format (random formats know their spreads; tooltips use it). */
+  format: string;
 }
 
 const fainted = (p: BattleRequestPokemon) => p.condition.endsWith(" fnt");
@@ -52,7 +56,31 @@ const EFFECT_LABEL: Record<Effect, { text: string; className: string }> = {
   immune: { text: "No effect", className: "bg-slate-500 text-white" },
 };
 
-const CATEGORY_MARK: Record<string, string> = { Physical: "✸ Physical", Special: "◎ Special", Status: "◇ Status" };
+/** What the Pokémon tooltips need: the generation, the format and your Pokémon as the field shows them. */
+type TipInfo = { gen: number; format: string; seen: MonSnap[] };
+
+const NO_FIELD: FieldState = { doubles: false, weather: "", terrain: "", pseudo: [], attacker: [], defender: [] };
+
+/** Your Pokémon as the damage calculator should see it: exact stats, item, ability and HP from the request; boosts from the field. */
+function attackerOf(p: BattleRequestPokemon | undefined, seen: MonSnap | null | undefined, teraOn: boolean, teraType?: string): FieldMon | null {
+  if (!p) return null;
+  const [hpText, status] = p.condition.split(" ");
+  const [hp, max] = hpText.split("/").map(Number);
+  return {
+    species: speciesOf(p),
+    level: Number(/, L(\d+)/.exec(p.details)?.[1] ?? 100),
+    hpPercent: max ? (hp / max) * 100 : 100,
+    boosts: seen?.boosts ?? {},
+    status: status && status !== "fnt" ? status : "",
+    item: p.item ? Dex.items.get(p.item).name : undefined,
+    ability: Dex.abilities.get(p.ability || p.baseAbility).name || undefined,
+    teraType: teraOn && teraType ? teraType : p.terastallized || undefined,
+    terastallized: (teraOn && !!teraType) || !!p.terastallized,
+    stats: { ...p.stats, hp: max || undefined },
+  };
+}
+
+const CATEGORY_MARK: Record<string, string> ={ Physical: "✸ Physical", Special: "◎ Special", Status: "◇ Status" };
 
 function MoveButton({
   gen,
@@ -63,6 +91,7 @@ function MoveButton({
   teraType,
   disabled,
   onPick,
+  tip,
 }: {
   gen: number;
   move: BattleRequestMove;
@@ -72,6 +101,8 @@ function MoveButton({
   teraType?: string;
   disabled: boolean;
   onPick: (index: number, move: BattleRequestMove) => void;
+  /** What the move tooltip needs for its damage ranges. */
+  tip?: { attacker: FieldMon | null; field: FieldState; randomBattle: boolean; foes: (MonSnap | null)[] };
 }) {
   const info = moveInfo(move.move || move.id, gen);
   const type = tera && info.id === "terablast" && teraType ? teraType : info.type;
@@ -80,11 +111,11 @@ function MoveButton({
   const hints = foes.map((foe) => effectiveness(info, foe, tera ? teraType : undefined, gen));
   const shown = hints.filter((h): h is Effect => h !== null);
   return (
+    <Tip content={() => <MoveTip info={info} type={type} pp={move.pp} maxpp={move.maxpp} gen={gen} attacker={tip?.attacker ?? null} foes={tip?.foes ?? foes} field={tip?.field ?? NO_FIELD} randomBattle={!!tip?.randomBattle} />}>
     <button
       type="button"
       disabled={off}
       onClick={() => onPick(index, move)}
-      title={info.desc}
       data-testid="move-button"
       className={cn(
         "group relative flex min-h-[4.25rem] flex-col justify-between overflow-hidden rounded-md border-2 px-3 py-2 text-left transition-[transform,filter] duration-100 hover:-translate-y-0.5 hover:brightness-110 active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:translate-y-0",
@@ -125,6 +156,7 @@ function MoveButton({
       )}
       {typeof move.disabled === "string" && <span className="font-pixel text-[8px] uppercase">Disabled</span>}
     </button>
+    </Tip>
   );
 }
 
@@ -133,11 +165,13 @@ function SwitchGrid({
   allowed,
   onPick,
   label,
+  tipInfo,
 }: {
   pokemon: BattleRequestPokemon[];
   allowed: (p: BattleRequestPokemon, i: number) => boolean;
   onPick: (index: number) => void;
   label: string;
+  tipInfo?: TipInfo;
 }) {
   return (
     <div className="space-y-2">
@@ -150,8 +184,8 @@ function SwitchGrid({
           const ok = allowed(p, i);
           const species = speciesOf(p);
           return (
+            <Tip key={p.ident} content={() => <MonTip mon={tipFromRequest(p, tipInfo?.seen.find((m) => m.key === p.ident))} mine gen={tipInfo?.gen ?? 9} format={tipInfo?.format ?? ""} />}>
             <button
-              key={p.ident}
               type="button"
               disabled={!ok}
               onClick={() => onPick(i + 1)}
@@ -168,6 +202,7 @@ function SwitchGrid({
                 <span className="font-pixel text-[9px] text-muted-foreground">{fainted(p) ? "Fainted" : p.active ? "In battle" : `${hp}/${max}`}</span>
               </span>
             </button>
+            </Tip>
           );
         })}
       </div>
@@ -179,7 +214,21 @@ function SwitchGrid({
  * Team preview: their six (species only), then tap your lead (two in doubles);
  * the rest follow in order. Bring 6, pick N: tap the N that battle, in order.
  */
-function TeamPreview({ request, doubles, busy, onChoose, foes }: { request: BattleRequest; doubles: boolean; busy: boolean; onChoose: (c: string) => void; foes: MonSnap[] }) {
+function TeamPreview({
+  request,
+  doubles,
+  busy,
+  onChoose,
+  foes,
+  tipInfo,
+}: {
+  request: BattleRequest;
+  doubles: boolean;
+  busy: boolean;
+  onChoose: (c: string) => void;
+  foes: MonSnap[];
+  tipInfo: TipInfo;
+}) {
   const [leads, setLeads] = useState<number[]>([]);
   const size = request.side.pokemon.length;
   const picking = !!request.maxChosenTeamSize && request.maxChosenTeamSize < size;
@@ -199,10 +248,12 @@ function TeamPreview({ request, doubles, busy, onChoose, foes }: { request: Batt
           <p className="hud-label">Their team</p>
           <div className="flex flex-wrap gap-1" data-testid="foe-preview">
             {foes.map((m) => (
-              <span key={m.key} className="flex flex-col items-center rounded-md border border-screen/30 bg-shade/20 px-1.5 py-1" title={m.species}>
+              <Tip key={m.key} content={() => <MonTip mon={tipFromSnap(m)} mine={false} gen={tipInfo.gen} format={tipInfo.format} />}>
+              <span className="flex flex-col items-center rounded-md border border-screen/30 bg-shade/20 px-1.5 py-1">
                 <BattleSprite species={speciesKey(m.species)} size={44} />
                 <span className="max-w-[4.5rem] truncate text-[10px] text-muted-foreground">{m.species}</span>
               </span>
+              </Tip>
             ))}
           </div>
         </div>
@@ -235,7 +286,7 @@ function TeamPreview({ request, doubles, busy, onChoose, foes }: { request: Batt
   );
 }
 
-export function Controls({ request, snap, me, doubles, busy, onChoose }: Props) {
+export function Controls({ request, snap, me, doubles, busy, onChoose, format }: Props) {
   const [parts, setParts] = useState<string[]>([]);
   const [tera, setTera] = useState(false);
   /** Mega Evolution, a Z-Move or Dynamax for this Pokémon's move (where the rules and gen allow it). */
@@ -275,7 +326,7 @@ export function Controls({ request, snap, me, doubles, busy, onChoose }: Props) 
     } else setParts(next);
   }
 
-  if (request.teamPreview) return <TeamPreview request={request} doubles={doubles} busy={busy} onChoose={onChoose} foes={foeSide.team} />;
+  if (request.teamPreview) return <TeamPreview request={request} doubles={doubles} busy={busy} onChoose={onChoose} foes={foeSide.team} tipInfo={{ gen: snap.gen, format, seen: mySide.team }} />;
   if (slot >= slots) return null;
   const actor = request.side.pokemon[slot];
   const actorName = actor?.ident.split(": ")[1] ?? "your Pokémon";
@@ -295,6 +346,7 @@ export function Controls({ request, snap, me, doubles, busy, onChoose }: Props) 
           {back}
         </div>
         <SwitchGrid
+          tipInfo={{ gen: snap.gen, format, seen: mySide.team }}
           pokemon={request.side.pokemon}
           label={reviving ? "Fainted Pokémon" : "Your team"}
           allowed={(p, i) => !busy && !p.active && !switchingIn.includes(i + 1) && (reviving ? fainted(p) : !fainted(p))}
@@ -307,6 +359,7 @@ export function Controls({ request, snap, me, doubles, busy, onChoose }: Props) 
   const active = request.active![slot];
   const teraType = active.canTerastallize && !teraTaken ? active.canTerastallize : undefined;
   const foes = doubles ? foeSide.active : foeSide.active.slice(0, 1);
+  const fieldState: FieldState = { doubles, weather: snap.weather, terrain: snap.terrain, pseudo: snap.pseudo, attacker: mySide.conditions, defender: foeSide.conditions };
   const trapped = !!active.trapped;
   const extras: Extra[] = [];
   if (active.canMegaEvo && !extraTaken("mega")) extras.push("mega");
@@ -405,10 +458,12 @@ export function Controls({ request, snap, me, doubles, busy, onChoose }: Props) 
             teraType={teraType}
             disabled={busy || (extra === "zmove" && !active.canZMove?.[i])}
             onPick={pickMove}
+            tip={{ attacker: attackerOf(request.side.pokemon[slot], mySide.active[slot], tera, teraType), field: fieldState, randomBattle: isRandomFormat(format), foes }}
           />
         ))}
       </div>
       <SwitchGrid
+        tipInfo={{ gen: snap.gen, format, seen: mySide.team }}
         pokemon={request.side.pokemon}
         label={trapped ? "Can't switch: trapped" : "Switch"}
         allowed={(p, i) => !busy && !trapped && !p.active && !fainted(p) && !switchingIn.includes(i + 1)}

@@ -55,7 +55,8 @@ export interface SideSnap {
   active: (MonSnap | null)[];
   team: MonSnap[];
   total: number;
-  conditions: { id: string; name: string; level: number }[];
+  /** Hazards, screens and the like; turns left as Showdown counts them (min to max; 0: no end). */
+  conditions: { id: string; name: string; level: number; turns?: [number, number] }[];
 }
 
 export interface Snap {
@@ -66,6 +67,8 @@ export interface Snap {
   weather: string;
   terrain: string;
   pseudo: string[];
+  /** Turns left (min to max) for the weather, the terrain and each field effect, where they run out. */
+  turns?: Record<string, [number, number]>;
 }
 
 export interface Step {
@@ -188,7 +191,7 @@ function sideSnap(side: Side): SideSnap {
     active: side.active.map((p) => (p ? monSnap(p) : null)),
     team: side.team.map(monSnap),
     total: side.totalPokemon,
-    conditions: Object.entries(side.sideConditions).map(([id, c]) => ({ id, name: c.name, level: c.level })),
+    conditions: Object.entries(side.sideConditions).map(([id, c]) => ({ id, name: c.name, level: c.level, ...(c.maxDuration ? { turns: [c.minDuration || c.maxDuration, c.maxDuration] as [number, number] } : {}) })),
   };
 }
 
@@ -253,8 +256,21 @@ export class BattleModel {
       weather: b.field.weather ?? "",
       terrain: b.field.terrain ?? "",
       pseudo: Object.keys(b.field.pseudoWeather),
+      turns: fieldTurns(b),
     };
   }
+}
+
+/** Turns left for the weather ("weather"), the terrain ("terrain") and each pseudo-weather, where Showdown's client knows them. */
+function fieldTurns(b: Battle): Record<string, [number, number]> {
+  const out: Record<string, [number, number]> = {};
+  const add = (id: string, s: { minDuration: number; maxDuration: number } | undefined) => {
+    if (s?.maxDuration) out[id] = [s.minDuration || s.maxDuration, s.maxDuration];
+  };
+  if (b.field.weather) add("weather", b.field.weatherState);
+  if (b.field.terrain) add("terrain", b.field.terrainState);
+  for (const [id, s] of Object.entries(b.field.pseudoWeather)) add(id, s);
+  return out;
 }
 
 /**
