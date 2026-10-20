@@ -452,8 +452,12 @@ async function playPokedleDuel({ p, name, seen }, shoot) {
         if (!(await filledIn(p, pick.name))) errors.push(`the duel's Pokédex didn't fill in ${pick.name}: "${await input.inputValue()}"`);
         await input.press("Enter");
         // At the Full Pokédex a clue clicked on the board becomes a filter.
-        await p.getByRole("button", { name: /^Height .*Filter the Pokédex by this clue$/ }).first().click();
-        await p.getByRole("list", { name: "Clue filters" }).waitFor();
+        // (Any clue: which ones can filter depends on the round's answer.)
+        const clue = p.getByRole("button", { name: /Filter the Pokédex by this clue$/ }).first();
+        if (await clue.waitFor({ timeout: 5_000 }).then(() => true, () => false)) {
+          await clue.click();
+          await p.getByRole("list", { name: "Clue filters" }).waitFor();
+        } else console.log("  (no filterable clue on the first guess)");
         await p.getByRole("button", { name: /Show all/ }).click();
       } else {
         await input.fill(pick.name);
