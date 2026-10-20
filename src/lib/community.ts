@@ -22,7 +22,7 @@ export const MAX_PENDING_OUT = 50;
 export const MAX_CHALLENGES_OUT = 5;
 
 /** What a page says the trainer is doing (the server picks the words). */
-export const ACTIVITY_KINDS = ["browsing", "battle", "watching", "teams", "pokedle", "guessr", "quiz", "daily", "iqtest", "pokedex", "duel"] as const;
+export const ACTIVITY_KINDS = ["browsing", "battle", "watching", "teams", "pokedle", "guessr", "quiz", "daily", "iqtest", "pokedex", "duel", "room"] as const;
 export type ActivityKind = (typeof ACTIVITY_KINDS)[number];
 
 const ACTIVITY_LABEL: Record<ActivityKind, string> = {
@@ -37,12 +37,15 @@ const ACTIVITY_LABEL: Record<ActivityKind, string> = {
   iqtest: "Taking the PokéIQ test",
   pokedex: "Browsing the Pokédex",
   duel: "In a duel",
+  room: "In a chat room",
 };
 
 export const activityLabel = (kind: ActivityKind) => ACTIVITY_LABEL[kind];
 
 /** The activity a page reports, from its path (a battle page adds its code). */
-export function activityFromPath(pathname: string): { kind: ActivityKind; code?: string } {
+export function activityFromPath(pathname: string): { kind: ActivityKind; code?: string; room?: string } {
+  const room = /^\/rooms\/([a-z]{2,20})$/.exec(pathname);
+  if (room) return { kind: "room", room: room[1] };
   const battle = /^\/battle\/(?:live|play)\/([a-z2-9]{8})/.exec(pathname);
   if (battle) return { kind: "battle", code: battle[1] };
   if (/^\/(?:pokedle|quiz|guessr)\/duel\//.test(pathname)) return { kind: "duel" };
@@ -62,6 +65,8 @@ export interface FriendActivity {
   kind: ActivityKind;
   label: string;
   watch?: string;
+  /** In a chat room: which (its user list comes from presence). */
+  room?: string;
 }
 
 export interface FriendDaily {

@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Bot, Castle, ChevronDown, Clapperboard, Eye, Hammer, Link2, Loader2, Megaphone, Search, Shuffle, Swords, Trophy, Users, X, type LucideIcon } from "lucide-react";
+import { Bot, Castle, ChevronDown, Clapperboard, Eye, Hammer, Link2, Loader2, Megaphone, MessagesSquare, Search, Shuffle, Swords, Trophy, Users, X, type LucideIcon } from "lucide-react";
 import { PAST_GENS, PLAY_FORMAT_INFO, type PlayFormatId, type StandardFormatId } from "@/lib/battle/play";
 import { BATTLE_FORMATS } from "@/lib/battle/formats";
 import { saveBattleSeat } from "@/lib/battle/seat";
@@ -174,6 +174,7 @@ const SECONDARY: { href?: string; onClick?: () => void; icon: LucideIcon; label:
   { href: "/battle/ladder", icon: Trophy, label: "Ladder", testId: "home-ladder" },
   { href: "/battle/tournaments", icon: Castle, label: "Tournaments", testId: "home-tournaments" },
   { href: "/battle/watch", icon: Eye, label: "Watch live", testId: "home-watch" },
+  { href: "/rooms", icon: MessagesSquare, label: "Chat rooms", testId: "home-rooms" },
   { href: "/users", icon: Search, label: "Find a user", testId: "home-find-user" },
   { onClick: () => openFriends("friends"), icon: Users, label: "Friends", testId: "home-friends" },
 ];
@@ -195,6 +196,11 @@ export function BattleHome({ news }: { news: NewsItem[] }) {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => setRules(lastCustomRules()), []);
+  // "/battle?format=gen9ou" (a chat room's Battle! link) opens on that format.
+  useEffect(() => {
+    const wanted = new URLSearchParams(window.location.search).get("format");
+    if (wanted && wanted in PLAY_FORMAT_INFO && wanted !== "tower") setFormat(wanted as PlayFormatId);
+  }, []);
   useEffect(() => {
     if (!name && (account.user?.username || progress?.name)) setName(account.user?.username ?? progress?.name ?? "");
   }, [account.user?.username, progress?.name, name]);

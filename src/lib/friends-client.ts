@@ -91,7 +91,7 @@ export async function friendAction(body: Record<string, unknown>): Promise<{ sta
 }
 
 /** One heartbeat. Returns false when friends are off here or the trainer isn't signed in (stop beating). */
-export async function beat(activity: { kind: ActivityKind; code?: string }): Promise<boolean> {
+export async function beat(activity: { kind: ActivityKind; code?: string; room?: string }): Promise<boolean> {
   try {
     const res = await fetch("/api/presence", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(activity) });
     if (res.status === 401) return false;

@@ -21,6 +21,7 @@ const DESKTOP_LINKS = [
   { href: "/pokedex", label: "Pokédex" },
   { href: "/leaderboard", label: "Leaderboard" },
   { href: "/battle", label: "Battle" },
+  { href: "/rooms", label: "Rooms" },
 ];
 
 const MOBILE_TABS = [

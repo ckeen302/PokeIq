@@ -35,3 +35,41 @@ create index if not exists tournaments_players_idx on public.tournaments using g
 
 alter table public.tournaments enable row level security;
 revoke all on public.tournaments from anon, authenticated;
+
+-- ---------------------------------------------------------------------------
+-- Chat rooms
+-- ---------------------------------------------------------------------------
+--
+-- The official rooms are defined in the code (src/lib/rooms.ts); each keeps
+-- its last 100 messages (older ones are deleted as new ones arrive). Text is
+-- stored as the server let it through: link-free, swears masked. user_id is
+-- for moderators only and is never sent to browsers. room_settings holds
+-- each room's slow mode.
+
+create table if not exists public.room_messages (
+  id          bigserial   primary key,
+  room        text        not null check (room ~ '^[a-z]{2,20}$'),
+  user_id     uuid        not null references public.profiles (id) on delete cascade,
+  name        text        not null check (char_length(name) between 1 and 40),
+  text        text        not null check (char_length(text) between 1 and 400),
+  created_at  timestamptz not null default now()
+);
+
+create index if not exists room_messages_room_idx on public.room_messages (room, id desc);
+create index if not exists room_messages_user_idx on public.room_messages (room, user_id, id desc);
+
+create table if not exists public.room_settings (
+  room          text        primary key check (room ~ '^[a-z]{2,20}$'),
+  slow_seconds  integer     not null default 0 check (slow_seconds between 0 and 600),
+  updated_at    timestamptz not null default now()
+);
+
+alter table public.room_messages enable row level security;
+alter table public.room_settings enable row level security;
+revoke all on public.room_messages from anon, authenticated;
+revoke all on public.room_settings from anon, authenticated;
+revoke all on sequence public.room_messages_id_seq from anon, authenticated;
+
+-- Who's in a room comes from presence (0019): a heartbeat from a room page
+-- carries {"room": "<id>"} in its activity.
+create index if not exists user_presence_room_idx on public.user_presence ((activity ->> 'room'), expires_at) where activity ? 'room';
