@@ -5,6 +5,7 @@ import { nextRunBattle, readRun, runResult, startFactoryRun, swapRun } from "@/l
 import { actOnBattle, battleToken, createMatchedBattle, pollBattle, readBattleToken, updateBattle } from "@/lib/server/battle-engine/service";
 import { factoryTeam } from "@/lib/server/battle-engine/teams";
 import { recordFrontierBest } from "@/lib/server/frontier-store";
+import { loadBattle } from "@/lib/server/battle-engine/store";
 
 const mons = (...species: string[]) => species.map((s, i) => ({ species: s, item: `Item ${i}` }));
 
@@ -120,6 +121,12 @@ describe("a Factory run", () => {
     // The next battle uses the new team.
     const second = await nextRunBattle(swapped.run.token);
     if (!second.ok) throw new Error(second.error);
+    // The battle is played with the run's (swapped) team, never a generated one.
+    const played = Teams.unpack((await loadBattle(second.code))!.rec.meta.seats[0].team!)!;
+    expect(played.map((m) => m.species)).toEqual(swapped.run.team.map((m) => m.species));
+    const polled = await pollBattle(second.code, second.token, 0);
+    if (!polled.ok) throw new Error(polled.error);
+    expect(polled.view.request!.data.side.pokemon.map((p) => p.details.split(",")[0])).toEqual(swapped.run.team.map((m) => m.species));
     const me = readBattleToken(second.token, second.code)!;
     const forfeited = await actOnBattle(second.code, me.playerId, { action: "forfeit" }, 0);
     expect(forfeited.ok).toBe(true);

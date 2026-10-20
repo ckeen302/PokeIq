@@ -101,9 +101,10 @@ export function cpuTeam(format: PlayFormatId, seed: string = newSeed()): string 
   return Teams.pack(legalRandomTeam(format as BattleFormatId) as PokemonSet[]);
 }
 
-/** A seat's team at the start: generated in random formats, otherwise the one they brought. */
+/** A seat's team at the start: the one they brought (a Factory rental included), else generated in random formats. */
 export function seatTeam(format: PlayFormatId, brought: string | undefined): string {
-  if (PLAY_FORMAT_INFO[format].random) return randomTeam(format, PRNG.generateSeed());
+  // A Battle Factory run brings its rental team; nobody else brings one to a random format.
+  if (PLAY_FORMAT_INFO[format].random && !brought) return randomTeam(format, PRNG.generateSeed());
   if (!brought) throw new Error(`A ${format} battle can't start without a team.`);
   return brought;
 }
