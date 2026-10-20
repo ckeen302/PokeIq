@@ -753,7 +753,8 @@ function watchBattle(p, side, label) {
 
 /** Clicks moves (or a switch when forced) until the battle ends or passes `maxTurn`. Returns the turns played. */
 async function playBattle(p, maxTurn, shoot) {
-  for (let i = 0; i < 80; i++) {
+  // A battle played to the end needs more steps than one stopped early.
+  for (let i = 0; i < (maxTurn >= 200 ? 600 : 80); i++) {
     const ready = p.locator("[data-testid=move-button]:not([disabled]), [data-testid=switch-button]:not([disabled]), [data-testid=lead-button]:not([disabled]), [data-testid=battle-result]");
     await ready.first().waitFor({ timeout: 90_000 });
     const turn = Number((await p.getByText(/^Turn \d+$/).first().innerText()).replace(/\D/g, ""));
@@ -934,6 +935,9 @@ if (!(await liveBlue.getByTestId("battle-result").count())) {
   await liveBlue.getByText("You forfeited.").waitFor({ timeout: 30_000 });
 }
 await liveRed.screenshot({ path: `${OUT}/battle-live-result.png` });
+// A private friend battle saves its replay only when a trainer asks.
+await liveRed.getByTestId("save-replay").click({ timeout: 30_000 });
+await liveRed.getByTestId("watch-replay").waitFor({ timeout: 15_000 });
 await liveRed.getByRole("button", { name: /^Rematch$/ }).click();
 await liveRed.waitForURL((url) => url.href !== liveUrl && url.pathname.startsWith("/battle/live/"));
 await liveBlue.getByRole("button", { name: /Accept rematch/ }).click({ timeout: 30_000 });
@@ -973,7 +977,90 @@ await mmBlue.screenshot({ path: `${OUT}/battle-matched.png` });
 for (const p of [mmRed, mmBlue]) await p.getByRole("button", { name: "4x" }).click();
 const [mmTurn] = await Promise.all([playBattle(mmRed, 1, null), playBattle(mmBlue, 1, null)]);
 if (mmTurn < 2) errors.push(`the matched battle didn't get past turn ${mmTurn}`);
-for (const p of [mmRed, mmBlue]) await p.context().close();
+
+// Spectating: a third trainer finds the battle in the Watch lobby and sees what Showdown's spectators see.
+step("watch live: a third trainer watches the matched battle from /battle/watch");
+const mmCode = /\/battle\/live\/([a-z2-9]{8})/.exec(mmRed.url())[1];
+const watcher = await newPage({ width: 1280, height: 900 });
+watcher.on("response", async (res) => {
+  if (!/\/api\/battle\//.test(res.url())) return;
+  const text = await res.text().catch(() => "");
+  if (/"(state|inputLog|seed|input_log|requests|watchers|player)"|\|request\||\|split\||"side":\{"name"/.test(text)) errors.push(`spectator: hidden battle data leaked: ${text.slice(0, 200)}`);
+});
+await watcher.goto(`${BASE}/battle/watch`, { waitUntil: "networkidle" });
+const card = watcher.locator(`a[href="/battle/live/${mmCode}"]`);
+await card.waitFor({ timeout: 20_000 });
+if (!/Turn \d+/i.test(await card.innerText()) || !/Red/i.test(await card.innerText()) || !/watching/i.test(await card.innerText())) errors.push(`watch lobby card is missing facts: ${await card.innerText()}`);
+await watcher.screenshot({ path: `${OUT}/battle-watch.png`, fullPage: true });
+await card.click();
+await watcher.waitForURL(`${BASE}/battle/live/${mmCode}`);
+await watcher.getByTestId("spectating").waitFor();
+await watcher.getByTestId("battle-log").getByText(/sent out/).first().waitFor({ timeout: 30_000 });
+await mmRed.getByTestId("spectator-count").filter({ hasText: /[1-9] watching/ }).waitFor({ timeout: 30_000 });
+if (await watcher.locator("[data-testid=move-button]").count()) errors.push("a spectator was offered moves");
+await watcher.screenshot({ path: `${OUT}/battle-spectator.png` });
+
+step("battle tooltips: a move's damage range from the calculator, a Pokémon's details");
+await mmRed.locator("[data-testid=move-button]:not([disabled]), [data-testid=switch-button]:not([disabled])").first().waitFor({ timeout: 60_000 });
+if (await mmRed.locator("[data-testid=move-button]:not([disabled])").count()) {
+  await mmRed.locator("[data-testid=move-button]:not([disabled])").first().hover();
+  const tip = mmRed.getByTestId("move-tooltip");
+  await tip.waitFor();
+  const tipText = await tip.innerText();
+  if (!/Power|Accuracy/i.test(tipText) || !/PP \d+\/\d+/i.test(tipText)) errors.push(`move tooltip is missing details: ${tipText}`);
+  const damaging = await mmRed.getByTestId("move-damage").count();
+  if (damaging) {
+    await mmRed.getByTestId("damage-range").first().waitFor({ timeout: 15_000 });
+    const range = await mmRed.getByTestId("damage-range").first().innerText();
+    if (!/^\d+(\.\d)?–\d+(\.\d)?%$/.test(range.trim())) errors.push(`damage range looks wrong: "${range}"`);
+    console.log(`  damage range: ${range}`);
+  }
+  await mmRed.screenshot({ path: `${OUT}/battle-move-tooltip.png` });
+}
+await mmRed.getByTestId("hud-foe").first().hover();
+await mmRed.getByTestId("mon-tooltip").waitFor();
+if (!/Ability/i.test(await mmRed.getByTestId("mon-tooltip").innerText())) errors.push("Pokémon tooltip has no ability line");
+await mmRed.screenshot({ path: `${OUT}/battle-mon-tooltip.png` });
+await mmRed.mouse.move(5, 5);
+
+step("matched battle: play to the end; the spectator sees the result; the replay saves itself");
+const [mmEnd] = await Promise.all([playBattle(mmRed, 1000, null), playBattle(mmBlue, 1000, null)]);
+console.log(`  the battle ended on turn ${mmEnd}`);
+for (const p of [mmRed, mmBlue, watcher]) await p.getByTestId("battle-result").waitFor({ timeout: 60_000 });
+await watcher.screenshot({ path: `${OUT}/battle-spectator-result.png` });
+await mmRed.getByTestId("watch-replay").waitFor({ timeout: 45_000 });
+await mmRed.screenshot({ path: `${OUT}/battle-matched-result.png` });
+
+step("replay: open it, step through it, jump, play");
+await mmRed.getByTestId("watch-replay").click();
+await mmRed.waitForURL(`${BASE}/battle/replay/${mmCode}`);
+const turnLabel = () => mmRed.getByTestId("replay-turn").innerText();
+await mmRed.getByTestId("replay-forward").click();
+await mmRed.getByTestId("replay-turn").filter({ hasText: /^Leads \// }).waitFor();
+await mmRed.getByTestId("replay-forward").click();
+await mmRed.getByTestId("replay-turn").filter({ hasText: /^Turn 1 \// }).waitFor();
+await mmRed.getByTestId("replay-back").click();
+await mmRed.getByTestId("replay-turn").filter({ hasText: /^Leads \// }).waitFor();
+await mmRed.getByTestId("battle-log").getByText(/sent out/).first().waitFor();
+await mmRed.getByRole("button", { name: "0.5x" }).click();
+await mmRed.getByRole("button", { name: "4x" }).click();
+await mmRed.getByTestId("replay-play").click();
+await mmRed.getByTestId("replay-turn").filter({ hasText: /^Turn [3-9]/ }).waitFor({ timeout: 60_000 });
+await mmRed.getByTestId("replay-pause").click();
+await mmRed.screenshot({ path: `${OUT}/battle-replay.png` });
+await mmRed.getByTestId("replay-end").click();
+await mmRed.getByTestId("battle-result").waitFor({ timeout: 30_000 });
+console.log(`  replay at: ${await turnLabel()}`);
+const replayOg = await mmRed.request.get(`${BASE}/battle/replay/${mmCode}/opengraph-image`);
+if (replayOg.status() !== 200) errors.push(`replay OG image returned ${replayOg.status()}`);
+else fs.writeFileSync(`${OUT}/battle-replay-og.png`, await replayOg.body());
+await mmRed.goto(`${BASE}/battle/replays`, { waitUntil: "networkidle" });
+await mmRed.getByTestId("recent-replays").locator(`a[href="/battle/replay/${mmCode}"]`).waitFor({ timeout: 15_000 });
+await mmRed.getByTestId("my-replays").locator(`a[href="/battle/replay/${mmCode}"]`).waitFor({ timeout: 15_000 });
+await mmRed.screenshot({ path: `${OUT}/battle-replays.png`, fullPage: true });
+await mmRed.goto(`${BASE}/battle/ladder`, { waitUntil: "networkidle" });
+await mmRed.screenshot({ path: `${OUT}/battle-ladder.png`, fullPage: true });
+for (const p of [mmRed, mmBlue, watcher]) await p.context().close();
 
 // The Battle Lab runs Showdown's simulator in Web Workers, in this browser.
 step("battle lab: a quick 1v1, 200 battles, a win % with its confidence interval, a sample replay");

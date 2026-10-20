@@ -139,7 +139,8 @@ export function ReplayViewer({ replay }: { replay: ReplayData }) {
         className={button}
         onClick={() => {
           pause();
-          if (animating.current) jump(turnRef.current);
+          // Mid-animation: skip the rest of this turn and show the next one as it stands.
+          if (animating.current) jump(turnRef.current + 1);
           else forward();
         }}
         disabled={atEnd}
@@ -153,7 +154,8 @@ export function ReplayViewer({ replay }: { replay: ReplayData }) {
       </button>
       <label className="ml-auto flex min-w-[12rem] flex-1 items-center gap-2 sm:max-w-xs">
         <span className="hud-label shrink-0 tabular-nums" data-testid="replay-turn">
-          {turn === 0 ? "Start" : atEnd ? "End" : `Turn ${turn}`} / {last}
+          {/* Step t shows the log up to turn t's start: turn t - 1 has played out. */}
+          {turn === 0 ? "Start" : atEnd ? "End" : turn === 1 ? "Leads" : `Turn ${turn - 1}`} / {last}
         </span>
         <input
           type="range"
