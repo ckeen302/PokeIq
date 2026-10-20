@@ -1145,6 +1145,106 @@ if (me.enabled) {
   await page.getByText(`Signed in as`).waitFor();
 }
 
+// The battle home: the format menu, then "Battle!" pairs two trainers searching for Random Battle.
+step("battle home: format menu, live counters, Battle! matchmaking");
+const homeRed = await newPage({ width: 1280, height: 900 });
+const homeBlue = await newPage({ width: 1280, height: 900 });
+for (const [p, name] of [
+  [homeRed, "Red"],
+  [homeBlue, "Blue"],
+]) {
+  await p.goto(`${BASE}/battle`, { waitUntil: "networkidle" });
+  await p.getByTestId("live-counts").waitFor();
+  const trainer = p.getByLabel("Your trainer name");
+  if (!(await trainer.isVisible().catch(() => false))) await p.getByRole("button", { name: /change/ }).click();
+  await p.getByLabel("Your trainer name").fill(name);
+}
+await homeRed.getByTestId("format-picker").click();
+await homeRed.getByRole("option", { name: "[Gen 4] OU" }).waitFor();
+await homeRed.getByTestId("format-menu").screenshot({ path: `${OUT}/battle-home-formats.png` });
+await homeRed.getByRole("option", { name: "Random Battle" }).first().click();
+await homeRed.getByTestId("battle-button").click();
+await homeRed.getByTestId("battle-searching").waitFor();
+await homeBlue.getByTestId("battle-button").click();
+await Promise.all([homeRed.waitForURL(matchedPath, { timeout: 30_000 }), homeBlue.waitForURL(matchedPath, { timeout: 30_000 })]);
+if (homeRed.url() !== homeBlue.url()) errors.push(`battle home matched into different battles: ${homeRed.url()} vs ${homeBlue.url()}`);
+await Promise.all([homeRed, homeBlue].map((p) => p.locator("[data-testid=move-button]").first().waitFor({ timeout: 60_000 })));
+const counts = await (await homeRed.request.get(`${BASE}/api/live`)).json();
+if (typeof counts.online !== "number" || typeof counts.battles !== "number") errors.push(`live counters: ${JSON.stringify(counts)}`);
+for (const p of [homeRed, homeBlue]) await p.context().close();
+
+// Friends: two accounts, a request, online status, a challenge to a Random Battle, user search and the profile.
+if (me.enabled) {
+  step("friends: request, accept, online status");
+  const stamp = Date.now().toString(36).slice(-6);
+  const [nameA, nameB] = [`fr${stamp}a`, `fr${stamp}b`];
+  const fa = await newPage({ width: 1280, height: 900 });
+  const fb = await newPage({ width: 1280, height: 900 });
+  for (const [p, name] of [
+    [fa, nameA],
+    [fb, nameB],
+  ]) {
+    await p.goto(BASE, { waitUntil: "networkidle" });
+    const res = await p.request.post(`${BASE}/api/auth/register`, { data: { username: name, password: "correct horse battery" }, headers: { Origin: BASE } });
+    if (!res.ok()) throw new Error(`register ${name}: ${res.status()}`);
+    await p.reload({ waitUntil: "networkidle" });
+  }
+  // A refocused tab sends its heartbeat at once (at most every 20 s) instead of waiting out the minute.
+  const nudge = (p) => p.evaluate(() => window.dispatchEvent(new Event("focus")));
+  const friendsOn = (await (await fa.request.get(`${BASE}/api/friends`)).json()).available;
+  if (!friendsOn) console.log("  friends are off on this server (migration 0019): skipped");
+  else {
+    await fa.getByTestId("friends-button").click();
+    await fa.getByRole("tab", { name: /Add/ }).click();
+    await fa.getByLabel("Trainer name").fill(nameB);
+    await fa.getByRole("button", { name: /Send/ }).click();
+    await fa.getByText(`Request sent to ${nameB}.`).waitFor();
+    await fa.keyboard.press("Escape");
+    await fb.reload({ waitUntil: "networkidle" });
+    await fb.getByTestId("friends-badge").waitFor({ timeout: 15_000 });
+    await fb.getByTestId("friends-button").click();
+    await fb.getByTestId("incoming-request").filter({ hasText: nameA }).getByRole("button", { name: /Accept/ }).click();
+    await fb.getByRole("tab", { name: /Friends/ }).click();
+    await fb.getByTestId("friend-row").filter({ hasText: nameA }).waitFor();
+    await fb.keyboard.press("Escape");
+    await fa.reload({ waitUntil: "networkidle" });
+    await fa.getByTestId("friends-button").click();
+    const row = fa.getByTestId("friend-row").filter({ hasText: nameB });
+    await row.waitFor();
+    if ((await row.getAttribute("data-online")) !== "true") errors.push("a friend with a tab open shows offline");
+    await fa.screenshot({ path: `${OUT}/friends-panel.png` });
+
+    step("friends: challenge to a Random Battle, accepted from the toast");
+    await row.getByRole("button", { name: /Challenge/ }).click();
+    await fa.getByTestId("challenge-options").getByRole("button", { name: /Random Battle/ }).click();
+    await fa.waitForURL(/\/battle\/live\/[a-z2-9]{8}$/, { timeout: 20_000 });
+    const challengeUrl = fa.url();
+    await fb.waitForTimeout(21_000);
+    await nudge(fb);
+    const toast = fb.getByTestId("challenge-toast");
+    await toast.waitFor({ timeout: 70_000 });
+    await fb.screenshot({ path: `${OUT}/friends-challenge-toast.png` });
+    await toast.getByRole("button", { name: /Accept/ }).click();
+    await fb.waitForURL(challengeUrl, { timeout: 20_000 });
+    await fb.getByLabel("Your trainer name").fill(nameB);
+    await fb.getByRole("button", { name: /Join battle/ }).click();
+    await fa.getByRole("button", { name: "Ready", exact: true }).click();
+    await fb.getByRole("button", { name: "Ready", exact: true }).click();
+    await Promise.all([fa, fb].map((p) => p.locator("[data-testid=move-button]").first().waitFor({ timeout: 60_000 })));
+
+    step("find a user: search, then the profile");
+    await fa.goto(`${BASE}/users`, { waitUntil: "networkidle" });
+    await fa.getByTestId("user-search").fill(nameB.slice(0, 7));
+    await fa.getByTestId("user-results").getByRole("link", { name: nameB }).click();
+    await fa.waitForURL(new RegExp(`/u/${nameB}$`));
+    await fa.getByTestId("friend-status-badge").waitFor({ timeout: 15_000 });
+    await fa.screenshot({ path: `${OUT}/profile.png`, fullPage: true });
+    const old = await fa.request.get(`${BASE}/battle/player/${nameB}`, { maxRedirects: 0 });
+    if (![307, 308].includes(old.status())) errors.push(`/battle/player/<name> didn't redirect (${old.status()})`);
+  }
+  for (const p of [fa, fb]) await p.context().close();
+}
+
 step("mobile: home + daily");
 const mobile = await newPage({ width: 393, height: 852 });
 await mobile.goto(BASE, { waitUntil: "networkidle" });
