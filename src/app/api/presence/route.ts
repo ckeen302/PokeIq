@@ -3,6 +3,7 @@ import { z } from "zod";
 import { communityRequest, friendsAction, NO_STORE } from "@/lib/server/community-route";
 import { accountDirectory, heartbeat } from "@/lib/server/friends";
 import { battleActivity } from "@/lib/server/community-games";
+import { matchNotes } from "@/lib/server/tournaments/service";
 import { ACTIVITY_KINDS, activityLabel, type FriendActivity } from "@/lib/community";
 
 /**
@@ -10,7 +11,7 @@ import { ACTIVITY_KINDS, activityLabel, type FriendActivity } from "@/lib/commun
  * about once a minute while a tab is visible (none while hidden). Marks them
  * online for PRESENCE_TTL_MS with what they're doing (the server picks the
  * words; a battle is named only if they're seated in it) and returns what's
- * waiting: friend requests, challenges, answers to their challenges.
+ * waiting: friend requests, challenges, answers to their challenges, and tournament matches ready to play.
  */
 
 export const dynamic = "force-dynamic";
@@ -26,6 +27,9 @@ export async function POST(request: NextRequest) {
   const { kind, code } = parsed.data;
   return friendsAction(async () => {
     const activity: FriendActivity = kind === "battle" && code ? await battleActivity(code, ctx.user.id) : { kind, label: activityLabel(kind) };
-    return NextResponse.json(await heartbeat(ctx.store, accountDirectory, ctx.user, activity), { headers: NO_STORE });
+    const beat = await heartbeat(ctx.store, accountDirectory, ctx.user, activity);
+    // Tournament matches waiting for them (their tournaments move on as they do); never worth failing the heartbeat over.
+    const matches = await matchNotes(ctx.user.id).catch(() => []);
+    return NextResponse.json({ ...beat, matches }, { headers: NO_STORE });
   });
 }

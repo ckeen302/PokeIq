@@ -134,6 +134,16 @@ function LiveAgain({ view, battle }: { view: BattleView; battle: BattleHandle })
     const next = await battle.rematch();
     if (next) router.push(battleHref("pvp", next));
   }
+  // A tournament match: the next one is the bracket's to decide.
+  if (view.tournament) {
+    return (
+      <div className="flex flex-wrap justify-center gap-2">
+        <Link href={`/battle/tournaments/${view.tournament}`} className={buttonVariants({ variant: "success" })} data-testid="back-to-tournament">
+          <Swords className="h-4 w-4" aria-hidden /> Back to the tournament
+        </Link>
+      </div>
+    );
+  }
   return (
     <div className="space-y-2">
       {view.rematch && (

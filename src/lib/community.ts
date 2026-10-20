@@ -1,3 +1,4 @@
+import type { TournamentMatchNote } from "./tournaments";
 /**
  * Friends, presence and challenges: what the browser and the server share.
  *
@@ -130,6 +131,8 @@ export interface HeartbeatResponse {
   requests: number;
   challenges: ChallengeView[];
   answers: ChallengeAnswer[];
+  /** Tournament matches waiting for this trainer ("Your match is ready"). */
+  matches?: TournamentMatchNote[];
 }
 
 /** After a battle or duel: whether the opponent was signed in, and where you stand with them. */

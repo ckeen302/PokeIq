@@ -307,6 +307,8 @@ export interface BattleView {
   public?: boolean;
   /** A ranked ladder battle. */
   ranked?: boolean;
+  /** A tournament match: the tournament's id. */
+  tournament?: string;
   /** After the end: everything that's recorded has been (ratings, history, any automatic replay). */
   settled?: boolean;
   /** Ranked, once settled: the rating change per seat. */
