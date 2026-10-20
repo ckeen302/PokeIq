@@ -4,6 +4,7 @@ import type { PRNGSeed } from "pokemon-showdown/dist/sim/prng";
 import { PLAY_FORMAT_INFO, BATTLE_TEAM_MAX, type PlayFormatId } from "@/lib/battle/play";
 import { randomTeam as legalRandomTeam } from "@/lib/server/battle";
 import type { BattleFormatId } from "@/lib/battle/formats";
+import type { FactoryStyle } from "@/lib/battle/frontier";
 import { completeSet, type TeamSet } from "@/lib/battle/sets";
 import { newSeed, randomTeam } from "./engine";
 
@@ -55,12 +56,6 @@ export function prepareTeamFor(formatid: string, text: string): TeamCheck {
 
 type PokemonSet = ReturnType<typeof Teams.generate>[number];
 
-/** The random-team generator's Battle Factory hooks (Showdown ships the sets with it). */
-interface FactoryGenerator {
-  factoryTier: string;
-  randomFactoryTeam(side: { name: string }): PokemonSet[];
-}
-
 /** Battle Factory tiers Showdown ships sets for, by team format. */
 const FACTORY_TIER: Partial<Record<PlayFormatId, string>> = { gen9ou: "OU", gen9ubers: "Uber", gen9uu: "UU" };
 
@@ -69,7 +64,7 @@ const FACTORY_TIER: Partial<Record<PlayFormatId, string>> = { gen9ou: "OU", gen9
  * Tiers move, so a team is kept only once it passes the format's validator
  * (a few tries, then the team builder's random legal team).
  */
-function factoryTeam(format: PlayFormatId, seed: string): PokemonSet[] {
+function legalFactoryTeam(format: PlayFormatId, seed: string): PokemonSet[] {
   const tier = FACTORY_TIER[format];
   if (tier) {
     const prng = new PRNG(seed as PRNGSeed);
@@ -92,7 +87,7 @@ function factoryTeam(format: PlayFormatId, seed: string): PokemonSet[] {
  */
 export function quickTeam(format: PlayFormatId, seed: string = newSeed()): TeamSet[] {
   if (PLAY_FORMAT_INFO[format].random) throw new Error("This format uses random teams.");
-  return factoryTeam(format, seed).map((set) => completeSet({ ...set, name: "" }));
+  return legalFactoryTeam(format, seed).map((set) => completeSet({ ...set, name: "" }));
 }
 
 /**
@@ -102,7 +97,7 @@ export function quickTeam(format: PlayFormatId, seed: string = newSeed()): TeamS
  */
 export function cpuTeam(format: PlayFormatId, seed: string = newSeed()): string {
   if (PLAY_FORMAT_INFO[format].random) return randomTeam(format, seed);
-  if (format === "gen9ou") return Teams.pack(factoryTeam(format, seed));
+  if (format === "gen9ou") return Teams.pack(legalFactoryTeam(format, seed));
   return Teams.pack(legalRandomTeam(format as BattleFormatId) as PokemonSet[]);
 }
 
@@ -111,4 +106,33 @@ export function seatTeam(format: PlayFormatId, brought: string | undefined): str
   if (PLAY_FORMAT_INFO[format].random) return randomTeam(format, PRNG.generateSeed());
   if (!brought) throw new Error(`A ${format} battle can't start without a team.`);
   return brought;
+}
+
+// ---------------------------------------------------------------------------
+// The Battle Factory's rental teams
+// ---------------------------------------------------------------------------
+
+/** The tiers Showdown's Battle Factory draws from. */
+export const FACTORY_TIERS = ["Uber", "OU", "UU", "RU", "NU", "PU"] as const;
+
+/** The random-team generator's Battle Factory hooks (Showdown ships the sets with it). */
+export interface FactoryGenerator {
+  factoryTier: string;
+  randomFactoryTeam(side: { name: string }): PokemonSet[];
+  randomBSSFactoryTeam(side: { name: string }): PokemonSet[];
+}
+
+export function pickFactoryTier(seed: string = newSeed()): string {
+  return new PRNG(seed as PRNGSeed).sample([...FACTORY_TIERS]);
+}
+
+/** A rental team from Showdown's own Battle Factory (or BSS Factory) sets. */
+export function factoryTeam(style: FactoryStyle, tier: string, seed: string = newSeed()): PokemonSet[] {
+  if (style === "bss") {
+    const generator = Teams.getGenerator("gen9bssfactory", seed as PRNGSeed) as unknown as FactoryGenerator;
+    return generator.randomBSSFactoryTeam({ name: "p1" });
+  }
+  const generator = Teams.getGenerator("gen9battlefactory", seed as PRNGSeed) as unknown as FactoryGenerator;
+  generator.factoryTier = tier;
+  return generator.randomFactoryTeam({ name: "p1" });
 }

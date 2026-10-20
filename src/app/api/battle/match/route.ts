@@ -25,7 +25,8 @@ export const maxDuration = 30;
 
 const NO_STORE = { "Cache-Control": "no-store" };
 const ticket = z.string().regex(/^[\w-]{16}$/, "Bad ticket.");
-const settings = z.object({ format: z.enum(PLAY_FORMATS) });
+// Matchmaking keeps to the standard formats, plus the Battle Factory (both trainers rent teams).
+const settings = z.object({ format: z.enum([...PLAY_FORMATS, "factory"]) });
 
 const bodySchema = z.discriminatedUnion("action", [
   z.object({ action: z.literal("search"), settings, name: duelNameSchema, team: z.string().max(BATTLE_TEAM_MAX).optional(), ticket: ticket.optional() }),

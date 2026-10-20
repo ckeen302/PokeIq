@@ -67,9 +67,16 @@ const LIVE: { href: string; icon: LucideIcon; title: string; blurb: string; poin
   },
 ];
 
-const SOON: { icon: LucideIcon; title: string; blurb: string }[] = [
-  { icon: Castle, title: "Battle Tower", blurb: "Your team against a climbing streak of computer trainers. How far can you go?" },
-  { icon: Factory, title: "Battle Factory", blurb: "No team needed: rent random sets, battle, and swap in your opponent's best." },
+/** The Battle Frontier: runs against the computer. `href` null: not open yet. */
+const FRONTIER: { href: string | null; icon: LucideIcon; title: string; blurb: string; points: string[] }[] = [
+  {
+    href: "/battle/factory",
+    icon: Factory,
+    title: "Battle Factory",
+    blurb: "No team needed: rent six Pokémon from Showdown's Battle Factory sets and see how long a streak you can build.",
+    points: ["Level 100 Factory or level 50 BSS Factory", "Trade for your opponent's Pokémon after each win", "Or battle live: both trainers rent a team"],
+  },
+  { href: null, icon: Castle, title: "Battle Tower", blurb: "Your team against a climbing streak of computer trainers. How far can you go?", points: [] },
 ];
 
 export default function BattlePage() {
@@ -153,16 +160,38 @@ export default function BattlePage() {
       </section>
 
       <section className="space-y-5">
-        <HudHeading index={2} title="Coming soon" aside="Your saved teams will battle here" />
-        <div className="grid gap-3 sm:grid-cols-2">
-          {SOON.map(({ icon: Icon, title, blurb }) => (
-            <div key={title} className="relative space-y-2 rounded-lg border border-dashed border-foreground/15 bg-card/50 p-5">
-              <span className="hud-label absolute right-3 top-3 rounded-sm border border-warning/40 px-1.5 py-1 text-warning">Soon</span>
-              <Icon className="h-6 w-6 text-muted-foreground" aria-hidden />
-              <h3 className="font-display text-base font-bold uppercase tracking-wide">{title}</h3>
-              <p className="text-sm text-muted-foreground">{blurb}</p>
-            </div>
-          ))}
+        <HudHeading index={2} title="Battle Frontier" aside="Streaks against the computer" />
+        <div className="grid gap-4 md:grid-cols-2" data-testid="battle-frontier">
+          {FRONTIER.map(({ href, icon: Icon, title, blurb, points }) =>
+            href ? (
+              <Link key={title} href={href} className="menu-item hud group relative block rounded-lg border bg-card p-6 hover:border-screen/50">
+                <div className="flex items-start gap-4">
+                  <span className="screen flex h-14 w-14 shrink-0 items-center justify-center rounded-md text-screen">
+                    <Icon className="relative z-[3] h-6 w-6" aria-hidden />
+                  </span>
+                  <div className="min-w-0 flex-1 space-y-2">
+                    <span className="font-display text-xl font-bold uppercase tracking-wide">{title}</span>
+                    <p className="text-sm text-muted-foreground">{blurb}</p>
+                    <ul className="space-y-1 pt-1 text-sm">
+                      {points.map((p) => (
+                        <li key={p} className="flex items-center gap-2">
+                          <span className="font-pixel text-[9px] text-primary">▶</span> {p}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                  <ArrowRight className="h-5 w-5 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-1 group-hover:text-foreground" aria-hidden />
+                </div>
+              </Link>
+            ) : (
+              <div key={title} className="relative space-y-2 rounded-lg border border-dashed border-foreground/15 bg-card/50 p-5">
+                <span className="hud-label absolute right-3 top-3 rounded-sm border border-warning/40 px-1.5 py-1 text-warning">Soon</span>
+                <Icon className="h-6 w-6 text-muted-foreground" aria-hidden />
+                <h3 className="font-display text-base font-bold uppercase tracking-wide">{title}</h3>
+                <p className="text-sm text-muted-foreground">{blurb}</p>
+              </div>
+            )
+          )}
         </div>
       </section>
 

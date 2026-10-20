@@ -5,6 +5,8 @@ import type { BattleEnd, PlayFormatId, BattleKind, BattleRequest, CpuLevel } fro
 import type { DuelStatus } from "@/lib/duel-types";
 import type { ChatLine } from "@/lib/chat";
 import type { CustomRules } from "@/lib/battle/custom-rules";
+import type { FrontierBattleInfo } from "@/lib/battle/frontier";
+import type { FrontierRun } from "./frontier";
 
 /**
  * Where battles live while they're played: one row per battle in Supabase
@@ -57,6 +59,10 @@ export interface BattleMeta {
   formatid?: string;
   /** Custom rules: the ruleset the players chose. */
   rules?: CustomRules;
+  /** A Battle Frontier run's battle: where the run stood, and its state (server-side only: the player's team). */
+  frontier?: { info: FrontierBattleInfo; run: FrontierRun };
+  /** A live Battle Factory battle: the tier both rental teams come from. */
+  factoryTier?: string;
   status: DuelStatus;
   simVersion: string;
   /** The simulator's PRNG seed. Server-side only. */

@@ -8,6 +8,7 @@
 import type { DuelPlayerView, DuelStatus } from "@/lib/duel-types";
 import type { ChatLine } from "@/lib/chat";
 import type { CustomRules } from "./custom-rules";
+import type { FrontierBattleInfo } from "./frontier";
 
 // ---------------------------------------------------------------------------
 // Formats
@@ -21,9 +22,10 @@ export const PLAY_FORMATS = ["gen9randombattle", "gen9randomdoublesbattle", "gen
 export type StandardFormatId = (typeof PLAY_FORMATS)[number];
 /**
  * Formats with their own way in: "custom" (the players' own ruleset, see
- * custom-rules.ts). A battle in one keeps Showdown's real format id beside it.
+ * custom-rules.ts) and the Battle Frontier's (frontier.ts). Their battles
+ * run on Showdown's own format ids (see the server's battle service).
  */
-export const SPECIAL_FORMATS = ["custom"] as const;
+export const SPECIAL_FORMATS = ["custom", "factory", "bssfactory", "tower"] as const;
 export type SpecialFormatId = (typeof SPECIAL_FORMATS)[number];
 export type PlayFormatId = StandardFormatId | SpecialFormatId;
 
@@ -47,6 +49,27 @@ export const PLAY_FORMAT_INFO: Record<PlayFormatId, PlayFormatInfo> = {
     name: "Custom rules",
     short: "Custom",
     blurb: "Your own ruleset: any generation's mechanics, level, gimmicks, clauses and team size.",
+    gameType: "singles",
+    random: false,
+  },
+  factory: {
+    name: "[Gen 9] Battle Factory",
+    short: "Battle Factory",
+    blurb: "Rental teams from Showdown's Battle Factory sets: level 100, six on six, Standard rules. No team needed.",
+    gameType: "singles",
+    random: true,
+  },
+  bssfactory: {
+    name: "[Gen 9] BSS Factory",
+    short: "BSS Factory",
+    blurb: "Rental teams from Showdown's Battle Stadium sets: level 50, bring six, pick three.",
+    gameType: "singles",
+    random: true,
+  },
+  tower: {
+    name: "Battle Tower",
+    short: "Tower",
+    blurb: "Flat Rules: level 50, bring six, pick three; Species, Item and Nickname Clauses.",
     gameType: "singles",
     random: false,
   },
@@ -235,6 +258,8 @@ export interface BattleView {
   rules?: CustomRules;
   /** The format's name as the players see it, where it isn't PLAY_FORMAT_INFO's. */
   formatName?: string;
+  /** A Battle Frontier run's battle: where the run stands. */
+  frontier?: FrontierBattleInfo;
   /** Live battles: the turn timer (null: off). */
   timer?: { bank: number; perTurn: number; cap: number } | null;
 }

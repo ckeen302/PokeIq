@@ -260,6 +260,11 @@ export default function BattleScreen({ view, log, offset, busy, error, onChoose,
             </span>
             <span className="hud-label ml-2 hidden sm:inline">{view.formatName ?? PLAY_FORMAT_INFO[view.format].name}</span>
           </div>
+          {view.frontier && (
+            <span className="hud-label rounded-sm border border-primary/40 px-1.5 py-1 text-primary" data-testid="battle-streak">
+              {view.frontier.boss ? "Tycoon battle · " : ""}Round {view.frontier.round}, battle {view.frontier.battle}/7 · Streak {view.frontier.streak}
+            </span>
+          )}
           {view.clocks && view.status === "playing" && (
             <div className="flex items-center gap-3 font-pixel text-[11px]" data-testid="battle-clocks">
               <Timer className="h-3.5 w-3.5 text-muted-foreground" aria-hidden />

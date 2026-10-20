@@ -12,6 +12,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { lastCpuSetup, startBattle } from "./BattleSetup";
 import { TeamPick, type TeamSource } from "./TeamPick";
+import { FrontierAfter } from "./Frontier";
 import { builderFormatFor, customName, describeRules } from "@/lib/battle/custom-rules";
 import { useBattle, type BattleHandle } from "./use-battle";
 import { ChatBox } from "@/components/chat/ChatBox";
@@ -285,7 +286,7 @@ export function BattleRoom({ code }: { code: string }) {
         busy={battle.busy}
         error={battle.error}
         onChoose={(rqid, choice) => void battle.choose(rqid, choice)}
-        endActions={view.kind === "cpu" ? <CpuAgain /> : <LiveAgain view={view} battle={battle} />}
+        endActions={view.frontier ? <FrontierAfter view={view} /> : view.kind === "cpu" ? <CpuAgain /> : <LiveAgain view={view} battle={battle} />}
         side={view.kind === "pvp" ? <BattleChat view={view} battle={battle} collapsible /> : undefined}
       />
       {view.status === "playing" && <ForfeitButton busy={battle.busy} onForfeit={() => void battle.act({ action: "forfeit" })} />}

@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useId, useMemo, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Bot, Loader2, Radio, Swords, UserSearch, X } from "lucide-react";
 import { CPU_LEVEL_INFO, CPU_LEVELS, PLAY_FORMAT_INFO, PLAY_FORMATS, battleHref, type BattleSeatResponse, type CpuLevel, type PlayFormatId } from "@/lib/battle/play";
@@ -78,6 +79,9 @@ export async function startBattle(body: { mode: "cpu" | "pvp" } & Omit<CpuSetup,
   return battleHref(body.mode, data.code);
 }
 
+/** Live battles add the Battle Factory: both trainers rent a team. */
+const LIVE_FORMATS: readonly PlayFormatId[] = [...PLAY_FORMATS, "factory"];
+
 const OPPONENTS = [
   ["cpu", Bot, "Computer", "Battle a computer opponent, right now."],
   ["match", UserSearch, "Find an opponent", "Get paired with a trainer searching for the same format, and battle live."],
@@ -118,9 +122,9 @@ export function BattleSetup({ initial = "cpu" }: { initial?: Opponent }) {
 
   // The last custom ruleset, remembered on this device.
   useEffect(() => setRules(lastCustomRules()), []);
-  // Matchmaking keeps to the standard formats.
+  // Matchmaking keeps to the standard formats (and the Factory); Factory runs vs the computer have their own page.
   useEffect(() => {
-    if (opponent === "match" && format === "custom") setFormat("gen9randombattle");
+    if ((opponent === "match" && format === "custom") || (opponent === "cpu" && format === "factory")) setFormat("gen9randombattle");
   }, [opponent, format]);
   const settings = useMemo(() => ({ format }), [format]);
   const finder = useMatchmaking(settings, { endpoint: "/api/battle/match", save: saveBattleSeat });
@@ -191,7 +195,7 @@ export function BattleSetup({ initial = "cpu" }: { initial?: Opponent }) {
         <fieldset className="space-y-2" disabled={searching}>
           <legend className="hud-label mb-2">Format</legend>
           <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-            {PLAY_FORMATS.map((f) => (
+            {(opponent === "cpu" ? PLAY_FORMATS : LIVE_FORMATS).map((f) => (
               <label
                 key={f}
                 className={cn("flex cursor-pointer flex-col gap-1 rounded-md border bg-card px-3 py-2.5 hover:border-screen/60", format === f && "border-primary ring-1 ring-primary")}
@@ -219,6 +223,16 @@ export function BattleSetup({ initial = "cpu" }: { initial?: Opponent }) {
             )}
           </div>
         </fieldset>
+
+        {opponent === "cpu" && (
+          <p className="text-xs text-muted-foreground" data-testid="frontier-links">
+            Looking for a streak? Rent a team in the{" "}
+            <Link href="/battle/factory" className="font-semibold text-foreground underline-offset-2 hover:underline">
+              Battle Factory
+            </Link>
+            .
+          </p>
+        )}
 
         {custom && (
           <Card>
