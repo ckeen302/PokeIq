@@ -749,16 +749,24 @@ function watchBattle(p, side, label) {
 /** Clicks moves (or a switch when forced) until the battle ends or passes `maxTurn`. Returns the turns played. */
 async function playBattle(p, maxTurn, shoot) {
   for (let i = 0; i < 80; i++) {
-    const ready = p.locator("[data-testid=move-button]:not([disabled]), [data-testid=switch-button]:not([disabled]), [data-testid=lead-button], [data-testid=battle-result]");
+    const ready = p.locator("[data-testid=move-button]:not([disabled]), [data-testid=switch-button]:not([disabled]), [data-testid=lead-button]:not([disabled]), [data-testid=battle-result]");
     await ready.first().waitFor({ timeout: 90_000 });
     const turn = Number((await p.getByText(/^Turn \d+$/).first().innerText()).replace(/\D/g, ""));
     if ((await p.locator("[data-testid=battle-result]").count()) || turn > maxTurn) return turn;
     if (shoot && i === 2) await p.screenshot({ path: `${OUT}/${shoot}.png` });
-    const leads = p.locator("[data-testid=lead-button]");
+    const leads = p.locator("[data-testid=lead-button]:not([disabled])");
     const moves = p.locator("[data-testid=move-button]:not([disabled])");
-    if (await leads.count()) await leads.first().click();
-    else if (await moves.count()) {
-      await moves.first().click();
+    // Team preview: tap the lead (or, bring 6 pick 3, the three that battle) until it's sent.
+    if (await leads.count()) {
+      const pick = /Choose (\d) to battle/.exec(await p.locator("body").innerText());
+      const need = pick ? Number(pick[1]) : 1;
+      for (let k = 0; k < need; k++) await leads.nth(k).click();
+    } else if (await moves.count()) {
+      // The move that looks strongest from its button: power times its effectiveness hint.
+      const texts = (await moves.allInnerTexts()).map((t) => t.toLowerCase());
+      const score = (t) => (Number(/pow (\d+)/.exec(t)?.[1] ?? 0) || 1) * (t.includes("super effective") ? 2 : t.includes("not very") ? 0.5 : t.includes("no effect") ? 0 : 1);
+      const best = texts.reduce((b, t, i) => (score(t) > score(texts[b]) ? i : b), 0);
+      await moves.nth(best).click();
       // Doubles: aim at the first foe.
       if (await p.locator("[data-testid=target-button]").count()) await p.locator("[data-testid=target-button]").first().click();
     } else await p.locator("[data-testid=switch-button]:not([disabled])").first().click();
@@ -795,6 +803,87 @@ await page.screenshot({ path: `${OUT}/battle-preview.png` });
 await page.locator("[data-testid=lead-button]").filter({ hasText: "Garchomp" }).click();
 await page.locator("[data-testid=move-button]").first().waitFor({ timeout: 60_000 });
 await page.getByText("What will Garchomp do?").waitFor();
+
+step("battle vs computer: custom rules, Gen 4 at level 50 with Sleep Clause");
+await page.goto(`${BASE}/battle/play`, { waitUntil: "networkidle" });
+await page.getByTestId("format-custom").click();
+await page.getByTestId("gen-4").click();
+await page.locator("#custom-level").fill("50");
+if ((await page.getByTestId("clause-sleep").getAttribute("aria-pressed")) !== "true") await page.getByTestId("clause-sleep").click();
+await page.getByTestId("rules-ok").waitFor({ timeout: 30_000 });
+await page.screenshot({ path: `${OUT}/battle-custom-setup.png`, fullPage: true });
+await page.getByLabel("Your trainer name").fill("Red");
+await page.getByRole("button", { name: /Start battle/ }).click();
+await page.waitForURL(/\/battle\/play\/[a-z2-9]{8}$/);
+await page.getByText(/\[Gen 4\] Custom · Lv 50/).first().waitFor({ timeout: 60_000 });
+await page.getByRole("button", { name: "4x" }).click();
+const customTurns = await playBattle(page, 4, "battle-custom-turn");
+if (customTurns < 3) errors.push(`the Gen 4 custom battle only reached turn ${customTurns}`);
+if (!/L50/.test(await page.getByTestId("battle-log").innerText().catch(() => ""))) console.log("  (level shown in sprites only)");
+
+step("battle music: plays after a click, toggles off and stays off");
+await page.getByTestId("music-control").waitFor();
+await page.mouse.click(5, 5);
+await page.waitForTimeout(1500);
+const tracks = await page.evaluate(() => performance.getEntriesByType("resource").map((e) => e.name).filter((n) => /\/audio\/battle\/.+\.(ogg|mp3)$/.test(n)));
+if (!tracks.length) errors.push("battle music never loaded");
+else console.log(`  loaded ${tracks.map((t) => t.split("/").pop()).join(", ")}`);
+await page.getByTestId("music-toggle").click();
+if ((await page.getByTestId("music-toggle").getAttribute("aria-pressed")) !== "false") errors.push("the music toggle didn't turn off");
+await page.reload({ waitUntil: "networkidle" });
+await page.getByTestId("music-toggle").waitFor();
+if ((await page.getByTestId("music-toggle").getAttribute("aria-pressed")) !== "false") errors.push("music off wasn't remembered");
+await page.getByTestId("music-toggle").click();
+
+step("Battle Factory: rent a team, battle, and trade after a win");
+await page.goto(`${BASE}/battle/factory`, { waitUntil: "networkidle" });
+let factoryWon = false;
+for (let attempt = 0; attempt < 4 && !factoryWon; attempt++) {
+  await page.goto(`${BASE}/battle/factory`, { waitUntil: "networkidle" });
+  if (await page.getByRole("button", { name: /Give up this run/ }).count()) await page.getByRole("button", { name: /Give up this run/ }).click();
+  await page.locator("#frontier-name").fill("Red");
+  await page.getByTestId("frontier-start").click();
+  await page.getByTestId("frontier-mon").first().waitFor({ timeout: 30_000 });
+  if (attempt === 0) await page.screenshot({ path: `${OUT}/battle-factory.png`, fullPage: true });
+  await page.getByTestId("frontier-next").click();
+  await page.waitForURL(/\/battle\/play\/[a-z2-9]{8}$/);
+  await page.getByTestId("battle-streak").waitFor({ timeout: 60_000 });
+  await page.getByRole("button", { name: "4x" }).click();
+  await playBattle(page, 200, attempt === 0 ? "battle-factory-turn" : undefined);
+  await page.getByTestId("frontier-after").waitFor({ timeout: 30_000 });
+  factoryWon = (await page.getByTestId("frontier-continue").count()) > 0;
+}
+if (factoryWon) {
+  await page.getByTestId("frontier-continue").click();
+  await page.getByTestId("factory-swap").waitFor({ timeout: 30_000 });
+  await page.screenshot({ path: `${OUT}/battle-factory-swap.png`, fullPage: true });
+  const before = await page.getByTestId("swap-give").first().innerText();
+  // Take a Pokémon that isn't already on the team (Species Clause).
+  const mine = (await page.getByTestId("swap-give").allInnerTexts()).map((t) => t.split("\n")[0]);
+  const theirs = (await page.getByTestId("swap-take").allInnerTexts()).map((t) => t.split("\n")[0]);
+  const take = theirs.findIndex((t) => !mine.includes(t));
+  await page.getByTestId("swap-give").first().click();
+  await page.getByTestId("swap-take").nth(Math.max(0, take)).click();
+  await page.getByTestId("swap-confirm").click();
+  await page.getByTestId("frontier-mon").first().waitFor({ timeout: 30_000 });
+  if ((await page.getByTestId("frontier-mon").first().innerText()) === before) errors.push("the Factory trade didn't change the team");
+  if (!/Streak\s*1/.test(await page.getByTestId("frontier-streak").innerText())) errors.push("the Factory streak didn't show 1");
+} else console.log("  no win in 4 tries: the trade wasn't exercised");
+
+step("Battle Tower: enter with a quick team, pick three at team preview");
+await page.goto(`${BASE}/battle/tower`, { waitUntil: "networkidle" });
+if (await page.getByRole("button", { name: /Give up this run/ }).count()) await page.getByRole("button", { name: /Give up this run/ }).click();
+await page.locator("#frontier-name").fill("Red");
+await page.getByRole("button", { name: /Quick team/ }).click();
+await page.getByTestId("quick-team").locator("img").first().waitFor({ timeout: 30_000 });
+await page.getByTestId("tower-enter").click();
+await page.getByTestId("frontier-next").click();
+await page.waitForURL(/\/battle\/play\/[a-z2-9]{8}$/);
+await page.getByText(/Choose 3 to battle/).waitFor({ timeout: 60_000 });
+await page.screenshot({ path: `${OUT}/battle-tower-preview.png` });
+for (let k = 0; k < 3; k++) await page.locator("[data-testid=lead-button]").nth(k).click();
+await page.locator("[data-testid=move-button]").first().waitFor({ timeout: 60_000 });
+await page.screenshot({ path: `${OUT}/battle-tower.png` });
 
 // A live battle in two browsers: Red opens it, Blue joins from the link.
 step("live battle: create, join, ready");
