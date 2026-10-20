@@ -1,5 +1,6 @@
 import type { DuelStatus } from "./duel-types";
 import type { BattleView } from "./battle/play";
+import { chatBusy, type ChatLine } from "./chat";
 
 /**
  * Polling that spares the server (each poll is a function invocation): a tab
@@ -151,7 +152,11 @@ export interface DuelPace {
   round?: Timed;
   question?: Timed;
   next?: { at: number };
+  chat?: ChatLine[];
 }
+
+/** A lobby or a finished match whose chat is busy polls every 2 s (and keeps polling), so replies come through quickly. */
+const CHAT_POLL_MS = 2000;
 
 /**
  * Duels (PokéGuessr, Pokédle, quizzes), while the tab is visible: every
@@ -163,6 +168,7 @@ export interface DuelPace {
  */
 export function duelPollDelay(view: DuelPace | null, quietPolls: number, serverNow: number, wake?: number): number | null {
   if (!view) return 1000;
+  if (view.status !== "playing" && chatBusy(view.chat, serverNow)) return CHAT_POLL_MS;
   if (view.status === "finished") {
     if (view.end && serverNow - view.end.at > FINISHED_POLL_MS) return null;
     return backoff(4000, 15_000, quietPolls);
@@ -193,6 +199,7 @@ export function duelHiddenDelay(view: DuelPace | null): number | null {
 export function battlePollDelay(view: BattleView | null, quietPolls: number, serverNow: number): number | null {
   if (!view) return 1000;
   if (view.kind === "cpu") return view.status === "finished" ? null : 5000;
+  if (view.status !== "playing" && chatBusy(view.chat, serverNow)) return CHAT_POLL_MS;
   if (view.status === "finished") {
     if (view.end && serverNow - view.end.at > FINISHED_POLL_MS) return null;
     return backoff(4000, 15_000, quietPolls);

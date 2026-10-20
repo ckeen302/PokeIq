@@ -5,7 +5,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { Crown, Eye, Filter, Flame, Lightbulb, Loader2, RotateCcw, Swords, Tag, Timer, Trophy, UserSearch, Volume2, VolumeX, WifiOff } from "lucide-react";
+import { Crown, Eye, Filter, Flame, Lightbulb, Loader2, RotateCcw, Swords, Tag, Timer, Trophy, UserSearch, WifiOff } from "lucide-react";
 import { DLE_COLUMNS, DLE_MAX_GUESSES, type CellStatus, type DleRow } from "@/lib/dle-types";
 import {
   DLE_DUEL_HINT_COST,
@@ -14,10 +14,6 @@ import {
   DLE_DUEL_SPEED_BONUS,
   dleDuelBase,
   pvpHref,
-  DUEL_EMOTES,
-  EMOTE_GAP_MS,
-  EMOTE_SHOW_MS,
-  EMOTE_TEXT,
   type DuelEmote,
   type DleDuelBoard,
   type DleDuelHint,
@@ -26,7 +22,8 @@ import {
   type DleDuelView,
 } from "@/lib/pvp-types";
 import { unlockAudio } from "@/lib/sound";
-import { setDuelSfx, sfx, useDuelSfx } from "@/lib/duel-sfx";
+import { sfx } from "@/lib/duel-sfx";
+import { DuelChat, DuelTools, EmoteFeed } from "@/components/duel/DuelReactions";
 import { useRanked } from "@/lib/ranked-client";
 import { RANKED_MATCH, RatingChange, Searching, TierBadge, rankedExtra } from "./Ranked";
 import { Button } from "@/components/ui/button";
@@ -169,6 +166,7 @@ export function PokedleDuel({ code, names }: { code: string; names: NameEntry[] 
     </>
   );
   const tools = view.you !== null && <DuelTools onEmote={emote} />;
+  const chat = <DuelChat view={view} game="Pokédle duel" onSend={(text) => send({ action: "chat", text })} />;
 
   if (view.status === "lobby") {
     return (
@@ -214,6 +212,7 @@ export function PokedleDuel({ code, names }: { code: string; names: NameEntry[] 
             },
           ]}
           home={HOME}
+          chat={chat}
           busy={busy}
           onJoin={join}
           onReady={(ready) => void act({ action: "ready", ready })}
@@ -251,7 +250,10 @@ export function PokedleDuel({ code, names }: { code: string; names: NameEntry[] 
       <>
         {notice}
         <DuelSummary view={view} busy={busy} onRematch={() => void startRematch()} />
-        <div className="mx-auto mt-4 max-w-3xl">{tools}</div>
+        <div className="mx-auto mt-4 max-w-3xl space-y-4">
+          {tools}
+          {chat}
+        </div>
       </>
     );
   }
@@ -930,103 +932,6 @@ function Momentum({ them, mine, theirs, pool }: { them: string; mine: DleDuelBoa
       {(ahead || theirLeft === 1) && <Flame className="h-4 w-4 shrink-0" aria-hidden />}
       {text}
     </p>
-  );
-}
-
-/** The reactions bar and the sound switch. */
-function DuelTools({ onEmote }: { onEmote: (e: DuelEmote) => Promise<string | null> }) {
-  const on = useDuelSfx();
-  const [coolUntil, setCoolUntil] = useState(0);
-  const [note, setNote] = useState<string | null>(null);
-  const [, force] = useState(0);
-  useEffect(() => {
-    if (!coolUntil) return;
-    const id = window.setTimeout(() => force((n) => n + 1), Math.max(0, coolUntil - Date.now()) + 20);
-    return () => window.clearTimeout(id);
-  }, [coolUntil]);
-  const cooling = coolUntil > Date.now();
-  return (
-    <div className="mx-auto flex max-w-md flex-wrap items-center justify-center gap-2">
-      <span className="hud-label">React</span>
-      {DUEL_EMOTES.map((e) => (
-        <button
-          key={e}
-          type="button"
-          disabled={cooling}
-          onClick={async () => {
-            setCoolUntil(Date.now() + EMOTE_GAP_MS);
-            const err = await onEmote(e);
-            setNote(err);
-          }}
-          className="h-9 min-w-9 rounded-full border border-foreground/15 bg-card px-2.5 text-base font-bold transition-transform hover:scale-110 hover:border-primary/60 disabled:opacity-50 disabled:hover:scale-100"
-          aria-label={`Send ${e === "gg" ? "GG" : EMOTE_TEXT[e]}`}
-        >
-          {e === "gg" ? <span className="font-display text-xs">GG</span> : EMOTE_TEXT[e]}
-        </button>
-      ))}
-      <button
-        type="button"
-        onClick={() => setDuelSfx(!on)}
-        aria-pressed={on}
-        className="ml-2 flex h-9 items-center gap-1 rounded-full border border-foreground/15 bg-card px-3 text-xs text-muted-foreground hover:text-foreground"
-        title={on ? "Sound effects on" : "Sound effects off"}
-      >
-        {on ? <Volume2 className="h-3.5 w-3.5" aria-hidden /> : <VolumeX className="h-3.5 w-3.5" aria-hidden />} Sound {on ? "on" : "off"}
-      </button>
-      {note && (
-        <p className="w-full text-center text-xs text-muted-foreground" role="status">
-          {note}
-        </p>
-      )}
-    </div>
-  );
-}
-
-/** Reactions as they arrive: a bubble on the sender's side of the screen. */
-function EmoteFeed({ view }: { view: DleDuelView }) {
-  const reduced = useReducedMotion();
-  const [shown, setShown] = useState<{ n: number; seat: number; emote: DuelEmote }[]>([]);
-  const seen = useRef(0);
-  const timers = useRef<number[]>([]);
-  useEffect(() => {
-    const fresh = (view.emotes ?? []).filter((e) => e.n > seen.current && view.now - e.at < EMOTE_SHOW_MS);
-    if (!fresh.length) return;
-    seen.current = Math.max(...fresh.map((e) => e.n));
-    if (fresh.some((e) => e.seat !== view.you)) sfx("ping");
-    setShown((s) => [...s, ...fresh.map(({ n, seat, emote }) => ({ n, seat, emote }))].slice(-6));
-    const ns = new Set(fresh.map((e) => e.n));
-    // Each bubble's own timer: later polls don't cut it short.
-    timers.current.push(window.setTimeout(() => setShown((s) => s.filter((x) => !ns.has(x.n))), 3_000));
-  }, [view.emotes, view.now, view.you]);
-  useEffect(() => {
-    const list = timers.current;
-    return () => list.forEach((id) => window.clearTimeout(id));
-  }, []);
-  return (
-    <div className="pointer-events-none fixed inset-x-0 top-20 z-50 mx-auto flex max-w-4xl justify-between px-4" aria-live="polite">
-      {[0, 1].map((seat) => (
-        <div key={seat} className={cn("flex flex-col gap-2", seat === 1 && "items-end")}>
-          <AnimatePresence>
-            {shown
-              .filter((e) => e.seat === seat)
-              .map((e) => (
-                <motion.span
-                  key={e.n}
-                  initial={reduced ? { opacity: 0 } : { opacity: 0, y: 12, scale: 0.6 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: reduced ? 0 : -10 }}
-                  className="flex items-center gap-1.5 rounded-full border bg-card/95 px-3 py-1.5 text-2xl shadow-lg backdrop-blur"
-                >
-                  <span className="max-w-[8rem] truncate font-display text-[11px] font-bold uppercase text-muted-foreground">
-                    {seat === view.you ? "You" : view.players[seat]?.name}
-                  </span>
-                  {e.emote === "gg" ? <span className="font-display text-lg font-bold">GG</span> : EMOTE_TEXT[e.emote]}
-                </motion.span>
-              ))}
-          </AnimatePresence>
-        </div>
-      ))}
-    </div>
   );
 }
 

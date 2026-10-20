@@ -51,3 +51,14 @@ export function tooManyRequests(error = "Slow down a little — try again in a m
     { status: 429, headers: { "Retry-After": String(retryAfterSeconds), "Cache-Control": "no-store" } }
   );
 }
+
+/**
+ * Chat messages, on top of the per-trainer limit each battle or duel keeps
+ * (one a second, five in ten seconds): the same per trainer on this instance,
+ * and per address. A friendly 429, or null to go ahead.
+ */
+export function chatRateLimit(ip: string, player: string): NextResponse | null {
+  if (!rateLimit(`chat-player:${player}`, 5, 0.5)) return tooManyRequests("You're sending messages too fast. Wait a few seconds.", 5);
+  if (!rateLimit(`chat-ip:${ip}`, 10, 1)) return tooManyRequests("Lots of messages from your network. Wait a few seconds.", 10);
+  return null;
+}

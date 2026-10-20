@@ -25,6 +25,7 @@ import { DialogBox } from "@/components/game/DialogBox";
 import { HpBar } from "@/components/game/HpBar";
 import { useDuel } from "@/components/duel/use-duel";
 import { DuelGone, DuelLoading, DuelLobby, DuelNotice, DuelVisitor, LeaveButton, SEAT_COLORS, SeatDot, seconds } from "@/components/duel/DuelParts";
+import { DuelChat, DuelTools, EmoteFeed } from "@/components/duel/DuelReactions";
 import { CryPlayer, ImageMedia } from "./QuestionMedia";
 import { cn } from "@/lib/utils";
 
@@ -54,7 +55,7 @@ const questionDue = (v: QuizDuelView) => (v.question && !v.question.question ? v
 
 export function QuizDuel({ code }: { code: string }) {
   const router = useRouter();
-  const { view, now, gone, offline, error, busy, sawPlay, act, join, rematch } = useDuel<QuizDuelView>(`/api/duel/${code}`, code, questionDue);
+  const { view, now, gone, offline, error, busy, sawPlay, act, send, join, rematch } = useDuel<QuizDuelView>(`/api/duel/${code}`, code, questionDue);
   const [summary, setSummary] = useState(false);
   const heard = useRef({ revealed: -1, theirs: false, end: false });
 
@@ -141,7 +142,21 @@ export function QuizDuel({ code }: { code: string }) {
 
   const info = MODULE_INFO[view.module];
   const tag = `Quiz duel · ${info.title} · ${capitalize(view.difficulty)}`;
-  const notice = <DuelNotice error={error} offline={offline} />;
+  const notice = (
+    <>
+      <DuelNotice error={error} offline={offline} />
+      <EmoteFeed view={view} />
+    </>
+  );
+  const tools = view.you !== null && (
+    <DuelTools
+      onEmote={(e) => {
+        unlockAudio();
+        return send({ action: "emote", emote: e });
+      }}
+    />
+  );
+  const chat = <DuelChat view={view} game="Quiz duel" onSend={(text) => send({ action: "chat", text })} />;
 
   if (view.status === "lobby") {
     return (
@@ -179,6 +194,7 @@ export function QuizDuel({ code }: { code: string }) {
             },
           ]}
           home={home}
+          chat={chat}
           busy={busy}
           onJoin={join}
           onReady={(ready) => void act({ action: "ready", ready })}
@@ -215,6 +231,10 @@ export function QuizDuel({ code }: { code: string }) {
       <>
         {notice}
         <DuelSummary view={view} busy={busy} home={home} onRematch={() => void startRematch()} />
+        <div className="mx-auto mt-4 max-w-3xl space-y-4">
+          {tools}
+          {chat}
+        </div>
       </>
     );
   }
@@ -243,6 +263,7 @@ export function QuizDuel({ code }: { code: string }) {
             <p className="text-sm text-muted-foreground">Right and fast: up to {QUIZ_DUEL_POINTS + QUIZ_DUEL_SPEED_BONUS} points.</p>
           </CardContent>
         </Card>
+        {tools}
         {leaveButton}
       </div>
     );
@@ -289,6 +310,7 @@ export function QuizDuel({ code }: { code: string }) {
             {timeUp && !locked && <p className="text-center text-sm text-muted-foreground">Time&apos;s up! Waiting for the reveal…</p>}
           </CardContent>
         </Card>
+        {tools}
         {leaveButton}
       </div>
     );
@@ -334,6 +356,7 @@ export function QuizDuel({ code }: { code: string }) {
             </Button>
           </CardContent>
         </Card>
+        {tools}
         {!final && leaveButton}
       </div>
     );

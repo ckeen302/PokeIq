@@ -6,6 +6,7 @@
  */
 
 import type { DuelPlayerView, DuelStatus } from "@/lib/duel-types";
+import type { ChatLine } from "@/lib/chat";
 
 // ---------------------------------------------------------------------------
 // Formats
@@ -208,6 +209,8 @@ export interface BattleView {
   end?: BattleEnd;
   /** Once either player asks for a rematch: the new battle's code. */
   rematch?: string;
+  /** Live battles: the players' chat, oldest first. */
+  chat?: ChatLine[];
 }
 
 /** Creating, joining or rematching a battle: its code, your seat's token and the battle. */

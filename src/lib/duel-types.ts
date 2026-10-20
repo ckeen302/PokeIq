@@ -4,6 +4,8 @@
  */
 
 import type { GeoAnswer } from "./geo-types";
+import type { PvpEmoteView } from "./pvp-types";
+import type { ChatLine } from "./chat";
 
 /** Each trainer starts with this much HP. */
 export const DUEL_HP = 6000;
@@ -101,6 +103,10 @@ export interface DuelView {
   end?: DuelEnd;
   /** Once either trainer asks for a rematch: the new duel's code. */
   rematch?: string;
+  /** Reactions sent in the last few seconds, oldest first. */
+  emotes?: PvpEmoteView[];
+  /** Chat, oldest first: open in the lobby and after the end. */
+  chat?: ChatLine[];
 }
 
 /** Creating, joining or rematching a duel: its code, your seat's token and the duel. */

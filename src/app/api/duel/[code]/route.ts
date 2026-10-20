@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { clientIp, rateLimit } from "@/lib/server/rate-limit";
+import { chatRateLimit, clientIp, rateLimit } from "@/lib/server/rate-limit";
 import { duelNameSchema, pvpToken, readPvpToken, type PvpFailure } from "@/lib/server/duel-core";
 import { duelsEnabled, newDuelCode, pvpStore } from "@/lib/server/duel-store";
 import { settleRankedDuel } from "@/lib/server/ranked-duels";
-import { asKind, duelView, emoteDuel, joinDuel, leaveDuel, linkRematch, readyDuel, rematchOf, skipReveal, takeRematchSeat, touchDuel } from "@/lib/server/duels";
+import { CHAT_BODY_MAX } from "@/lib/server/chat";
+import { asKind, chatDuel, duelView, emoteDuel, joinDuel, leaveDuel, linkRematch, readyDuel, rematchOf, skipReveal, takeRematchSeat, touchDuel } from "@/lib/server/duels";
 import { buyPokedleHint, guessPokedle, setPokedleAssist, setPokedleGens } from "@/lib/server/pokedle-duel";
 import { DLE_ASSISTS } from "@/lib/dle-assist";
 import { answerQuiz } from "@/lib/server/quiz-duel";
@@ -27,6 +28,7 @@ import { DLE_DUEL_HINTS, DUEL_EMOTES, QUIZ_DUEL_QUESTIONS, type PvpSeatResponse 
  *   { action: "leave", token }                    leave the lobby, or forfeit
  *   { action: "emote", token, emote }             a preset reaction ("gg", "fire", "wow", "sweat", "clap")
  *   { action: "rematch", token }                  a new duel with the same game and trainers
+ *   { action: "chat", token, text }               a chat message, in the lobby or after the end (see server/chat.ts)
  */
 
 const NO_STORE = { "Cache-Control": "no-store" };
@@ -46,6 +48,7 @@ const bodySchema = z.discriminatedUnion("action", [
   z.object({ action: z.literal("leave"), token }),
   z.object({ action: z.literal("emote"), token, emote: z.enum(DUEL_EMOTES) }),
   z.object({ action: z.literal("rematch"), token }),
+  z.object({ action: z.literal("chat"), token, text: z.string().max(CHAT_BODY_MAX, "Keep it under 200 characters.") }),
 ]);
 
 type Context = { params: Promise<{ code: string }> };
@@ -109,6 +112,10 @@ export async function POST(request: NextRequest, context: Context) {
     if (body.action === "emote" && !rateLimit(`duel-emote:${clientIp(request)}`, 6, 0.5)) {
       return NextResponse.json({ error: "Easy on the reactions." }, { status: 429, headers: NO_STORE });
     }
+    if (body.action === "chat") {
+      const limited = chatRateLimit(clientIp(request), playerId);
+      if (limited) return limited;
+    }
 
     const out = await pvpStore.update(code, (duel, now) => {
       switch (body.action) {
@@ -130,6 +137,8 @@ export async function POST(request: NextRequest, context: Context) {
           return leaveDuel(duel, playerId, now);
         case "emote":
           return emoteDuel(duel, playerId, body.emote, now);
+        case "chat":
+          return chatDuel(duel, playerId, body.text, now);
       }
     });
     if (!out.ok) return failure(out);

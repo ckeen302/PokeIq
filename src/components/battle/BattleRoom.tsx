@@ -13,6 +13,24 @@ import { cn } from "@/lib/utils";
 import { lastCpuSetup, startBattle } from "./BattleSetup";
 import { TeamPick } from "./TeamPick";
 import { useBattle, type BattleHandle } from "./use-battle";
+import { ChatBox } from "@/components/chat/ChatBox";
+
+/** A live battle's chat: the two players talk; anyone else watching reads along. */
+function BattleChat({ view, battle, collapsible, className }: { view: BattleView; battle: BattleHandle; collapsible?: boolean; className?: string }) {
+  return (
+    <ChatBox
+      lines={view.chat}
+      you={view.you}
+      players={view.players}
+      code={view.code}
+      game="Live battle"
+      onSend={battle.chat}
+      closed={view.rematch ? "A rematch is open: press Rematch to keep chatting there." : undefined}
+      collapsible={collapsible}
+      className={className}
+    />
+  );
+}
 
 /**
  * A battle's page: keeps the battle fresh (useBattle) and draws it: the
@@ -190,6 +208,7 @@ function LiveLobby({ code, view, battle }: { code: string; view: BattleView; bat
         settings={joining && !info.random ? <TeamPick format={view.format} onChange={onTeam} idPrefix={`join-${code}`} /> : undefined}
         home="/battle/play?vs=friend"
         noun="battle"
+        chat={<BattleChat view={view} battle={battle} />}
         busy={battle.busy}
         onJoin={(name) => {
           if (!info.random && !team) {
@@ -225,6 +244,7 @@ export function BattleRoom({ code }: { code: string }) {
           <Link href="/battle/play" className={cn(buttonVariants({ size: "lg" }), "w-full")}>
             Start your own
           </Link>
+          {view.kind === "pvp" && <BattleChat view={view} battle={battle} />}
         </CardContent>
       </Card>
     );
@@ -253,6 +273,7 @@ export function BattleRoom({ code }: { code: string }) {
         error={battle.error}
         onChoose={(rqid, choice) => void battle.choose(rqid, choice)}
         endActions={view.kind === "cpu" ? <CpuAgain /> : <LiveAgain view={view} battle={battle} />}
+        side={view.kind === "pvp" ? <BattleChat view={view} battle={battle} collapsible /> : undefined}
       />
       {view.status === "playing" && <ForfeitButton busy={battle.busy} onForfeit={() => void battle.act({ action: "forfeit" })} />}
     </div>

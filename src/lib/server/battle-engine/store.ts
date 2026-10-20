@@ -3,6 +3,7 @@ import { getServiceSupabase } from "@/lib/supabase";
 import { DUEL_CODE_RE } from "@/lib/duel-types";
 import type { BattleEnd, PlayFormatId, BattleKind, BattleRequest, CpuLevel } from "@/lib/battle/play";
 import type { DuelStatus } from "@/lib/duel-types";
+import type { ChatLine } from "@/lib/chat";
 
 /**
  * Where battles live while they're played: one row per battle in Supabase
@@ -72,6 +73,8 @@ export interface BattleMeta {
   lines: Record<BattleChannel, number>;
   end?: BattleEnd;
   rematch?: string;
+  /** Live battles: the players' chat, the last few dozen lines (a rematch carries them on). */
+  chat?: ChatLine[];
 }
 
 export interface BattleRecord {

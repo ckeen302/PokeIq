@@ -31,6 +31,8 @@ export interface BattleScreenProps {
   onChoose: (rqid: number, choice: string) => void;
   /** Shown under the result once the battle is over and has played out. */
   endActions?: React.ReactNode;
+  /** Under the battle log: the players' chat in a live battle. */
+  side?: React.ReactNode;
 }
 
 interface Entry {
@@ -80,7 +82,7 @@ function useTick(active: boolean) {
   return now;
 }
 
-export default function BattleScreen({ view, log, offset, busy, error, onChoose, endActions }: BattleScreenProps) {
+export default function BattleScreen({ view, log, offset, busy, error, onChoose, endActions, side }: BattleScreenProps) {
   const me: SideId = view.you === 1 ? "p2" : "p1";
   const doubles = PLAY_FORMAT_INFO[view.format].gameType === "doubles";
   const model = useRef<BattleModel | null>(null);
@@ -350,13 +352,19 @@ export default function BattleScreen({ view, log, offset, busy, error, onChoose,
       </div>
 
       {/* The battle log. */}
-      <aside className={cn("min-w-0 lg:block", showLog ? "block" : "hidden")} aria-label="Battle log">
-        <Card className="lg:sticky lg:top-20">
+      <aside className="min-w-0 space-y-3 lg:sticky lg:top-20 lg:self-start">
+        <Card className={cn("lg:block", showLog ? "block" : "hidden")} aria-label="Battle log">
           <CardContent className="p-0">
             <p className="hud-label flex items-center gap-1.5 border-b px-4 py-3">
               <ScrollText className="h-3 w-3" aria-hidden /> Battle log
             </p>
-            <div className="max-h-[28rem] space-y-1 overflow-y-auto px-4 py-3 text-xs leading-relaxed text-muted-foreground lg:max-h-[calc(100vh-12rem)]" data-testid="battle-log">
+            <div
+              className={cn(
+                "max-h-[28rem] space-y-1 overflow-y-auto px-4 py-3 text-xs leading-relaxed text-muted-foreground",
+                side ? "lg:max-h-[calc(100vh-30rem)] lg:min-h-[10rem]" : "lg:max-h-[calc(100vh-12rem)]"
+              )}
+              data-testid="battle-log"
+            >
               {entries.map((e) =>
                 e.turn !== undefined ? (
                   <p key={e.id} className="hud-label pt-2 text-screen">
@@ -372,6 +380,7 @@ export default function BattleScreen({ view, log, offset, busy, error, onChoose,
             </div>
           </CardContent>
         </Card>
+        {side}
       </aside>
     </div>
   );

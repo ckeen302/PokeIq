@@ -155,6 +155,23 @@ export function useBattle(code: string) {
 
   const choose = useCallback((rqid: number, choice: string) => act({ action: "choose", rqid, choice }), [act]);
 
+  /** A chat message: never blocks play (no busy state); a refusal comes back as its message. */
+  const chat = useCallback(
+    async (text: string): Promise<string | null> => {
+      const sentAt = Date.now();
+      try {
+        const out = await post<BattleView>(api, { action: "chat", text, token: token.current, since: lines.current.length });
+        if (!out.ok) return out.data.error ?? `Request failed (${out.status})`;
+        receive(out.data, sentAt);
+        touch.current();
+        return null;
+      } catch {
+        return "Couldn't send that. Check your connection.";
+      }
+    },
+    [api, receive]
+  );
+
   async function join(name: string, team?: string) {
     unlockAudio();
     setBusy(true);
@@ -191,7 +208,7 @@ export function useBattle(code: string) {
     }
   }
 
-  return { view, log, offset, gone, offline, error, setError, busy, act, choose, join, rematch };
+  return { view, log, offset, gone, offline, error, setError, busy, act, choose, chat, join, rematch };
 }
 
 export type BattleHandle = ReturnType<typeof useBattle>;

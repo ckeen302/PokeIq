@@ -148,10 +148,12 @@ export interface DuelLobbyProps {
   onLeave: () => void;
   /** What the game calls itself in the lobby's copy (default "duel"). */
   noun?: string;
+  /** The lobby's chat box, under the seats. */
+  chat?: React.ReactNode;
 }
 
 /** The lobby: both seats, the share link, Ready, and the join form for the friend. */
-export function DuelLobby({ view, path, tag, title, invite, about, shareText, rules, settings, home, busy, onJoin, onReady, onLeave, noun = "duel" }: DuelLobbyProps) {
+export function DuelLobby({ view, path, tag, title, invite, about, shareText, rules, settings, home, busy, onJoin, onReady, onLeave, noun = "duel", chat }: DuelLobbyProps) {
   const progress = useProgress();
   const [name, setName] = useState("");
   const [nameError, setNameError] = useState<string | null>(null);
@@ -281,6 +283,8 @@ export function DuelLobby({ view, path, tag, title, invite, about, shareText, ru
           )}
         </CardContent>
       </Card>
+
+      {chat}
 
       <Card>
         <CardContent className={cn("grid gap-4 p-6 text-sm text-muted-foreground", rules.length === 3 && "sm:grid-cols-3")}>

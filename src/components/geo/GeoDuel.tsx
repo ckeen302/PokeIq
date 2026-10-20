@@ -21,6 +21,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { HpBar } from "@/components/game/HpBar";
 import { useDuel } from "@/components/duel/use-duel";
 import { DuelGone, DuelLoading, DuelLobby, DuelNotice, DuelVisitor, LeaveButton, MatchedNote, SEAT_COLORS, SeatDot, clock, seconds } from "@/components/duel/DuelParts";
+import { DuelChat, DuelTools, EmoteFeed } from "@/components/duel/DuelReactions";
 import { GeoMap, type MapPin, type RevealedRound } from "./GeoMap";
 import { cn } from "@/lib/utils";
 
@@ -53,7 +54,7 @@ export interface GeoDuelProps {
 
 export function GeoDuel({ code, regions }: GeoDuelProps) {
   const router = useRouter();
-  const { view, now, gone, offline, error, setError, busy, sawPlay, act, join, rematch: takeRematch } = useDuel<DuelView>(`/api/geo/duel/${code}`, code);
+  const { view, now, gone, offline, error, setError, busy, sawPlay, act, send, join, rematch: takeRematch } = useDuel<DuelView>(`/api/geo/duel/${code}`, code);
   const [pick, setPick] = useState<MapPin | null>(null);
   const [zoomed, setZoomed] = useState(false);
   const [summary, setSummary] = useState(false);
@@ -149,8 +150,18 @@ export function GeoDuel({ code, regions }: GeoDuelProps) {
     <>
       <MatchedNote view={view} />
       <DuelNotice error={error} offline={offline} />
+      <EmoteFeed view={view} />
     </>
   );
+  const tools = view.you !== null && (
+    <DuelTools
+      onEmote={(e) => {
+        unlockAudio();
+        return send({ action: "emote", emote: e });
+      }}
+    />
+  );
+  const chat = <DuelChat view={view} game="PokéGuessr duel" onSend={(text) => send({ action: "chat", text })} />;
 
   if (view.status === "lobby") {
     return (
@@ -180,6 +191,7 @@ export function GeoDuel({ code, regions }: GeoDuelProps) {
             { label: "Winning", text: `First to 0 HP loses. After ${view.maxRounds} rounds, more HP wins. Leave (or go quiet) and you forfeit.` },
           ]}
           home="/guessr"
+          chat={chat}
           busy={busy}
           onJoin={join}
           onReady={(ready) => void act({ action: "ready", ready })}
@@ -214,6 +226,10 @@ export function GeoDuel({ code, regions }: GeoDuelProps) {
       <>
         {notice}
         <DuelSummary view={view} map={map} busy={busy} onRematch={() => void rematch()} />
+        <div className="mx-auto mt-4 max-w-3xl space-y-4">
+          {tools}
+          {chat}
+        </div>
       </>
     );
   }
@@ -246,6 +262,7 @@ export function GeoDuel({ code, regions }: GeoDuelProps) {
             </p>
           </CardContent>
         </Card>
+        {tools}
         {leaveButton}
       </div>
     );
@@ -329,6 +346,7 @@ export function GeoDuel({ code, regions }: GeoDuelProps) {
             </Button>
           </div>
         </div>
+        {tools}
         {leaveButton}
 
         <AnimatePresence>
@@ -381,6 +399,7 @@ export function GeoDuel({ code, regions }: GeoDuelProps) {
             {final ? "See results ▶" : pressed ? `Waiting for ${them}… (${nextIn})` : `Next round (${nextIn}) ▶`}
           </Button>
         </DuelReveal>
+        {tools}
         {!final && leaveButton}
       </div>
     );

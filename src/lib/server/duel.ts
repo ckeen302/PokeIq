@@ -1,6 +1,9 @@
 import "server-only";
 import { randomId } from "./crypto";
-import { duelNameSchema, readSeatToken, seatToken } from "./duel-core";
+import { chatClosed, duelNameSchema, emoteBlocked, readSeatToken, seatToken } from "./duel-core";
+import { postChat, systemLine } from "./chat";
+import type { ChatLine } from "@/lib/chat";
+import { EMOTE_SHOW_MS, EMOTE_WINDOW_MS, type DuelEmote, type PvpEmoteView } from "@/lib/pvp-types";
 import { answerFor, isGeoSpec, measureGuess, planRounds } from "./geo";
 import {
   DUEL_AWAY_MS,
@@ -67,12 +70,19 @@ export interface Duel {
   rounds: DuelRound[];
   end?: DuelEnd;
   rematch?: string;
+  /** Recent reactions, and how many the duel has had. */
+  emotes?: PvpEmoteView[];
+  emoteCount?: number;
+  /** Chat in the lobby and after the end. */
+  chat?: ChatLine[];
 }
 
 export type DuelFailure = { ok: false; status: number; error: string };
 export type DuelOutcome = { ok: true; duel: Duel } | DuelFailure;
 
 const fail = (status: number, error: string): DuelFailure => ({ ok: false, status, error });
+/** Reactions kept on the duel: enough to judge the rate limit and show the latest. */
+const EMOTES_KEPT = 12;
 /** Heartbeats move `seenAt` on in steps this big, so polling doesn't write every second. */
 const SEEN_STEP_MS = 5_000;
 /** A guess sent just before the bell still counts if it arrives within this long after it. */
@@ -143,12 +153,14 @@ export function joinDuel(duel: Duel, name: string, now: number): { ok: true; due
   }
   const playerId = randomId();
   d.players.push({ id: playerId, name, ready: false, seenAt: now });
+  d.chat = systemLine(d.chat, `${name} joined`, now);
   return { ok: true, duel: d, playerId };
 }
 
-/** A rematch: the same map and trainers (same seats), new places. Both start un-ready, as if just seen. */
+/** A rematch: the same map and trainers (same seats), new places, the chat so far. Both start un-ready, as if just seen. */
 export function rematchOf(old: Duel, code: string, now: number, seed?: string): Duel {
-  return blankDuel(old.region, code, old.players.map((p) => ({ id: p.id, name: p.name, ready: false, seenAt: now })), now, seed);
+  const next = blankDuel(old.region, code, old.players.map((p) => ({ id: p.id, name: p.name, ready: false, seenAt: now })), now, seed);
+  return old.chat?.length ? { ...next, chat: old.chat } : next;
 }
 
 /** Pressing Rematch: takes (or, if the lobby dropped them, retakes) your seat in the rematch, ready to go. */
@@ -258,6 +270,7 @@ function reveal(d: Duel, round: DuelRound, at: number) {
 function finish(d: Duel, reason: DuelEndReason, winner: number | null, at: number) {
   d.status = "finished";
   d.end = { reason, winner, at };
+  d.chat = systemLine(d.chat, "GG!", at);
 }
 
 // ---------------------------------------------------------------------------
@@ -271,6 +284,32 @@ function seated(duel: Duel, playerId: string, now: number, act: (d: Duel, seat: 
   if (seat < 0) return fail(403, "You're not in this duel.");
   const out = act(d, seat);
   return out.ok ? { ok: true, duel: advanceDuel(out.duel, now) } : out;
+}
+
+/** A preset reaction to the opponent: during play or after the end, a few at a time (as in the other duels). */
+export function emoteDuel(duel: Duel, playerId: string, emote: DuelEmote, now: number): DuelOutcome {
+  return seated(duel, playerId, now, (d, seat) => {
+    if (d.status === "lobby" || d.players.length < 2) return fail(409, "Reactions open once the duel starts.");
+    const emotes = (d.emotes ?? []).filter((e) => now - e.at < Math.max(EMOTE_WINDOW_MS, EMOTE_SHOW_MS));
+    const blocked = emoteBlocked(emotes, seat, now);
+    if (blocked) return fail(429, blocked);
+    const n = (d.emoteCount ?? 0) + 1;
+    d.emotes = [...emotes, { n, seat, emote, at: now }].slice(-EMOTES_KEPT);
+    d.emoteCount = n;
+    return { ok: true, duel: d };
+  });
+}
+
+/** A seated trainer's chat message, in the lobby or after the end. */
+export function chatDuel(duel: Duel, playerId: string, text: string, now: number): DuelOutcome {
+  return seated(duel, playerId, now, (d, seat) => {
+    const closed = chatClosed(d.status, d.rematch);
+    if (closed) return fail(409, closed);
+    const out = postChat(d.chat, seat, d.players[seat].name, text, now);
+    if (!out.ok) return out;
+    d.chat = out.chat;
+    return { ok: true, duel: d };
+  });
 }
 
 const notPlaying = (d: Duel) => fail(409, d.status === "lobby" ? "The duel hasn't started yet." : "This duel is over.");
@@ -371,5 +410,7 @@ export function duelView(duel: Duel, playerId: string | null, now: number, rev: 
     next: duel.status === "playing" && last?.result ? { at: last.result.nextAt, pressed: last.skip } : undefined,
     end: duel.end,
     rematch: duel.rematch,
+    emotes: (duel.emotes ?? []).filter((e) => now - e.at < EMOTE_SHOW_MS),
+    ...(duel.chat?.length ? { chat: duel.chat } : {}),
   };
 }

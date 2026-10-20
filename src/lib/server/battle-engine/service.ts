@@ -3,6 +3,7 @@ import { canonicalJson } from "@/lib/server/canonical-json";
 import { randomInt } from "node:crypto";
 import { randomId, signToken, verifyToken } from "../crypto";
 import { fail, type PvpFailure } from "../duel-core";
+import { postChat, systemLine } from "../chat";
 import {
   BATTLE_AWAY_MS,
   PLAY_FORMAT_INFO,
@@ -187,6 +188,7 @@ function endBattle(meta: BattleMeta, reason: BattleEndReason, winner: 0 | 1 | nu
     clock.startedAt = null;
     clock.deadline = null;
   }
+  if (meta.kind === "pvp") meta.chat = systemLine(meta.chat, "GG!", at);
 }
 
 // ---------------------------------------------------------------------------
@@ -419,6 +421,7 @@ export async function createMatchedBattle(
     const code = newBattleCode();
     const seats = players.map((p) => ({ id: randomId(), name: p.name, ready: true, seenAt: now, team: p.team })) as [BattleSeat, BattleSeat];
     const work = new Work(blankRecord(newMeta(code, "pvp", format, seats, now)));
+    work.meta.chat = systemLine(undefined, `Matched: ${seats[0].name} vs ${seats[1].name}. Good luck!`, now);
     start(work, now);
     if (await insertBattle(work.rec)) return { code, ids: [seats[0].id, seats[1].id] };
   }
@@ -483,6 +486,33 @@ export async function pollBattle(code: string, token: unknown, since: number): P
   return fail(503, "The battle is busy. Try again.");
 }
 
+/**
+ * A chat message from a seated player in a live battle (checked and masked in
+ * chat.ts). Only the battle's meta changes, so it's a light compare-and-swap
+ * like a poll's; the answer is the player's view from line `since`.
+ */
+export async function chatBattle(code: string, playerId: string, text: string, since: number): Promise<Outcome<{ view: BattleView }>> {
+  for (let attempt = 0; attempt < MAX_TRIES; attempt++) {
+    const lite = await loadBattleMeta(code, null);
+    if (!lite) return fail(404, "This battle has ended or never existed.");
+    const seat = seatIndex(lite.meta, playerId);
+    if (seat < 0) return fail(403, "Only the trainers in this battle can chat.");
+    if (lite.meta.kind !== "pvp") return fail(400, "There's no one to chat with here.");
+    if (lite.meta.rematch) return fail(409, "The chat moved to the rematch: press Rematch to keep chatting.");
+    const now = Date.now();
+    const meta = structuredClone(lite.meta);
+    const out = postChat(meta.chat, seat, meta.seats[seat].name, text, now);
+    if (!out.ok) return out;
+    meta.chat = out.chat;
+    touch(meta, playerId, now);
+    if (await saveBattle(code, lite.version, { meta })) {
+      const mine = await loadBattleMeta(code, channelOf(seat));
+      return { ok: true, view: battleView(meta, playerId, mine?.log ?? [], since, now, lite.version + 1) };
+    }
+  }
+  return fail(503, "The battle is busy. Try again.");
+}
+
 /** Marks a player as here, and drops players who left a lobby. True if anything changed. */
 function touch(meta: BattleMeta, playerId: string | null, now: number): boolean {
   let changed = false;
@@ -539,6 +569,7 @@ export async function actOnBattle(
       if (!PLAY_FORMAT_INFO[meta.format].random && !packed) return fail(400, `${PLAY_FORMAT_INFO[meta.format].name} needs a team: paste one in Showdown's export format.`);
       joined = randomId();
       meta.seats.push({ id: joined, name: body.name, ready: false, seenAt: now, team: packed });
+      meta.chat = systemLine(meta.chat, `${body.name} joined`, now);
       return { ok: true };
     }
 
@@ -605,6 +636,8 @@ export async function rematchBattle(code: string, playerId: string): Promise<Out
     for (let attempt = 0; attempt < 4 && !opened; attempt++) {
       const now = Date.now();
       const fresh = newMeta(newBattleCode(), "pvp", old.format, old.seats.map((s) => ({ id: s.id, name: s.name, ready: false, seenAt: now, team: s.team })), now);
+      // The chat carries on into the rematch.
+      if (old.chat?.length) fresh.chat = old.chat;
       if (await insertBattle(blankRecord(fresh))) opened = fresh.code;
     }
     if (!opened) return fail(503, "Couldn't open a rematch. Try again.");
@@ -683,6 +716,7 @@ export function battleView(meta: BattleMeta, playerId: string | null, log: strin
   }
   if (meta.end) view.end = meta.end;
   if (meta.rematch) view.rematch = meta.rematch;
+  if (meta.kind === "pvp" && meta.chat?.length) view.chat = meta.chat;
   return view;
 }
 

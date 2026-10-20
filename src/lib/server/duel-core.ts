@@ -19,6 +19,8 @@ import {
   type PvpKind,
   type PvpSeriesView,
 } from "@/lib/pvp-types";
+import type { ChatLine } from "@/lib/chat";
+import { postChat, systemLine } from "./chat";
 
 /**
  * What every duel shares: trainer names, signed seats, and (for the duels in
@@ -86,6 +88,8 @@ export interface PvpBase {
   /** Recent reactions (see emotePvp), and how many the duel has had. */
   emotes?: PvpEmoteView[];
   emoteCount?: number;
+  /** Chat in the lobby and after the end (the last few dozen lines; a rematch carries them on). */
+  chat?: ChatLine[];
 }
 
 /** Where a best-of-three series stands before a game, by trainer (seats can swap when a rematch lobby is retaken). */
@@ -128,6 +132,7 @@ export const newSeat = (name: string, now: number): PvpPlayer => ({ id: randomId
 export function finish(d: PvpBase, reason: PvpEndReason, winner: number | null, at: number) {
   d.status = "finished";
   d.end = { reason, winner, at };
+  d.chat = systemLine(d.chat, "GG!", at);
 }
 
 /** The view fields every duel shares. */
@@ -144,6 +149,7 @@ export function baseView(duel: PvpBase, playerId: string | null, now: number, re
     rematch: duel.rematch,
     series: seriesView(duel),
     emotes: (duel.emotes ?? []).filter((e) => now - e.at < EMOTE_SHOW_MS),
+    ...(duel.chat?.length ? { chat: duel.chat } : {}),
   };
 }
 
@@ -255,6 +261,7 @@ export function joinPvp<D extends PvpBase>(rules: PvpRules<D>, duel: D, name: st
   }
   const seat = newSeat(name, now);
   d.players.push(seat);
+  d.chat = systemLine(d.chat, `${name} joined`, now);
   return { ok: true, duel: d, playerId: seat.id };
 }
 
@@ -300,7 +307,8 @@ export function rematchPvp<D extends PvpBase>(rules: PvpRules<D>, old: D, code: 
   const players = old.players.map((p) => ({ id: p.id, name: p.name, ready: false, seenAt: now }));
   const next = rules.blank(pvpBase(old.kind, code, players, now, seed), old);
   const series = seriesForRematch(old);
-  return series ? { ...next, series } : next;
+  const carried = old.chat?.length ? { ...next, chat: old.chat } : next;
+  return series ? { ...carried, series } : carried;
 }
 
 /** Pressing Rematch: takes (or, if the lobby dropped them, retakes) your seat in the rematch, ready to go. */
@@ -326,6 +334,25 @@ export function linkRematchPvp<D extends PvpBase>(duel: D, code: string): PvpOut
 // ---------------------------------------------------------------------------
 // Reactions
 // ---------------------------------------------------------------------------
+
+/** Why chat is closed on a duel right now, or null if it's open: in the lobby and after the end, until a rematch opens. */
+export function chatClosed(status: DuelStatus, rematch: string | undefined): string | null {
+  if (status === "playing") return "Chat opens again after the duel. Send a reaction instead!";
+  if (rematch) return "The chat moved to the rematch lobby: press Rematch to keep chatting.";
+  return null;
+}
+
+/** A seated trainer's chat message (checked and masked in chat.ts), in the lobby or after the end. */
+export function chatPvp<D extends PvpBase>(rules: PvpRules<D>, duel: D, playerId: string, text: string, now: number): PvpOutcome<D> {
+  return seated(rules, duel, playerId, now, (d, seat) => {
+    const closed = chatClosed(d.status, d.rematch);
+    if (closed) return fail(409, closed);
+    const out = postChat(d.chat, seat, d.players[seat].name, text, now);
+    if (!out.ok) return out;
+    d.chat = out.chat;
+    return { ok: true, duel: d };
+  });
+}
 
 /** Reactions kept on the duel: enough to judge the rate limit and show the latest. */
 const EMOTES_KEPT = 12;

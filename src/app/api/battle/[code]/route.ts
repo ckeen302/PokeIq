@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { clientIp, rateLimit } from "@/lib/server/rate-limit";
+import { chatRateLimit, clientIp, rateLimit } from "@/lib/server/rate-limit";
+import { CHAT_BODY_MAX } from "@/lib/server/chat";
 import { duelNameSchema, type PvpFailure } from "@/lib/server/duel-core";
 import { battlesEnabled } from "@/lib/server/battle-engine/store";
-import { actOnBattle, battleToken, pollBattle, readBattleToken, rematchBattle } from "@/lib/server/battle-engine/service";
+import { actOnBattle, battleToken, chatBattle, pollBattle, readBattleToken, rematchBattle } from "@/lib/server/battle-engine/service";
 import { DUEL_CODE_RE } from "@/lib/duel-types";
 import { BATTLE_CHOICE_RE, BATTLE_TEAM_MAX, type BattleSeatResponse } from "@/lib/battle/play";
 
@@ -20,6 +21,7 @@ import { BATTLE_CHOICE_RE, BATTLE_TEAM_MAX, type BattleSeatResponse } from "@/li
  *   { action: "choose", token, rqid, choice }     answer request `rqid` ("move 1", "switch 3", "team 213456"...)
  *   { action: "forfeit", token }                  leave the lobby, or forfeit the battle
  *   { action: "rematch", token }                  a new live battle with the same players
+ *   { action: "chat", token, text }               live battles: a chat message (see server/chat.ts)
  * Every action takes `since` too, and answers with your view from there.
  */
 
@@ -44,6 +46,7 @@ const bodySchema = z.discriminatedUnion("action", [
   }),
   z.object({ action: z.literal("forfeit"), token, since }),
   z.object({ action: z.literal("rematch"), token }),
+  z.object({ action: z.literal("chat"), token, text: z.string().max(CHAT_BODY_MAX, "Keep it under 200 characters."), since }),
 ]);
 
 type Context = { params: Promise<{ code: string }> };
@@ -107,6 +110,14 @@ export async function POST(request: NextRequest, context: Context) {
       if (!out.ok) return failure(out);
       const next: BattleSeatResponse = { code: out.code, token: out.token, view: out.view };
       return NextResponse.json(next, { headers: NO_STORE });
+    }
+
+    if (body.action === "chat") {
+      const limited = chatRateLimit(clientIp(request), seat.playerId);
+      if (limited) return limited;
+      const out = await chatBattle(code, seat.playerId, body.text, body.since);
+      if (!out.ok) return failure(out);
+      return NextResponse.json(out.view, { headers: NO_STORE });
     }
 
     const out = await actOnBattle(code, seat.playerId, body, body.since);

@@ -9,6 +9,7 @@ import type { DuelPlayerView, DuelStatus } from "./duel-types";
 import type { Difficulty, ModuleId } from "@/engines/types";
 import type { PublicQuestion } from "./session-types";
 import type { DleAssist } from "./dle-assist";
+import type { ChatLine } from "./chat";
 
 export const PVP_KINDS = ["pokedle", "quiz"] as const;
 export type PvpKind = (typeof PVP_KINDS)[number];
@@ -47,6 +48,8 @@ interface PvpViewBase {
   series?: PvpSeriesView;
   /** Reactions sent in the last few seconds, oldest first. */
   emotes?: PvpEmoteView[];
+  /** Chat, oldest first: open in the lobby and after the end. */
+  chat?: ChatLine[];
 }
 
 /** The preset reactions duellists can send each other: no free text. */
