@@ -1098,7 +1098,8 @@ const me = await (await page.request.get(`${BASE}/api/auth/me`)).json();
 if (me.enabled) {
   step("accounts: register, sync, sign out, sign in, recover");
   const username = `e2e_${Date.now().toString(36)}`;
-  await page.goto(`${BASE}/login`, { waitUntil: "networkidle" });
+  await page.goto(`${BASE}/login`, { waitUntil: "domcontentloaded" });
+  await page.getByLabel("Trainer name").waitFor();
   await page.getByRole("tab", { name: "Create account" }).click();
   await page.getByLabel("Trainer name").fill(username);
   await page.getByLabel("Password").fill("correct horse battery");
@@ -1121,7 +1122,8 @@ if (me.enabled) {
   const cleared = await page.evaluate(() => JSON.parse(localStorage.getItem("pokeiq:progress:v1") ?? "{}").xp ?? 0);
   if (cleared !== 0) throw new Error("sign-out left progress on the device");
 
-  await page.goto(`${BASE}/login`, { waitUntil: "networkidle" });
+  await page.goto(`${BASE}/login`, { waitUntil: "domcontentloaded" });
+  await page.getByLabel("Trainer name").waitFor();
   await page.getByLabel("Trainer name").fill(username);
   await page.getByLabel("Password").fill("wrong password!!");
   await page.getByRole("button", { name: "Sign in" }).last().click();
@@ -1132,7 +1134,8 @@ if (me.enabled) {
   await page.waitForFunction(() => (JSON.parse(localStorage.getItem("pokeiq:progress:v1") ?? "{}").xp ?? 0) > 0);
 
   await page.getByRole("button", { name: "Sign out" }).click();
-  await page.goto(`${BASE}/login`, { waitUntil: "networkidle" });
+  await page.goto(`${BASE}/login`, { waitUntil: "domcontentloaded" });
+  await page.getByLabel("Trainer name").waitFor();
   await page.getByRole("tab", { name: "Forgot password" }).click();
   await page.getByLabel("Trainer name").fill(username);
   await page.getByLabel("Recovery code").fill(recoveryCode.toLowerCase());
