@@ -63,6 +63,11 @@ async function chatTo(from, to, text, shown = text) {
 }
 
 const page = await newPage({ width: 1280, height: 900 });
+// Battle music starts on the first click anywhere, so note its requests from the start.
+const musicRequests = [];
+page.on("request", (r) => {
+  if (/\/audio\/battle\/.+\.(ogg|mp3)$/.test(r.url())) musicRequests.push(r.url());
+});
 
 step("home");
 await page.goto(BASE, { waitUntil: "networkidle" });
@@ -825,9 +830,9 @@ step("battle music: plays after a click, toggles off and stays off");
 await page.getByTestId("music-control").waitFor();
 await page.mouse.click(5, 5);
 await page.waitForTimeout(1500);
-const tracks = await page.evaluate(() => performance.getEntriesByType("resource").map((e) => e.name).filter((n) => /\/audio\/battle\/.+\.(ogg|mp3)$/.test(n)));
-if (!tracks.length) errors.push("battle music never loaded");
-else console.log(`  loaded ${tracks.map((t) => t.split("/").pop()).join(", ")}`);
+const loaded = musicRequests.at(-1);
+if (!loaded) errors.push("battle music never loaded");
+else console.log(`  loaded ${loaded.split("/").pop()}`);
 await page.getByTestId("music-toggle").click();
 if ((await page.getByTestId("music-toggle").getAttribute("aria-pressed")) !== "false") errors.push("the music toggle didn't turn off");
 await page.reload({ waitUntil: "networkidle" });
