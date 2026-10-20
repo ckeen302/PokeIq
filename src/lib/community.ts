@@ -147,6 +147,9 @@ export interface LiveCounts {
   battles: number;
 }
 
+/** A user search: a prefix of a valid account name, at least two characters. */
+export const USER_QUERY_RE = /^[A-Za-z0-9_-]{2,20}$/;
+
 /** A user search hit. */
 export interface UserHit {
   username: string;

@@ -54,7 +54,7 @@ export function MyBattleRecord() {
         />
       )}
       {user && (
-        <Link href={`/battle/player/${encodeURIComponent(user)}`} className="hud-label block hover:text-foreground">
+        <Link href={`/u/${encodeURIComponent(user)}`} className="hud-label block hover:text-foreground">
           Your public battle profile →
         </Link>
       )}
