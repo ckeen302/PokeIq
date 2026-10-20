@@ -39,6 +39,7 @@ import { DLE_ASSIST_INFO, type DleAssist } from "@/lib/dle-assist";
 import { dexClues } from "@/lib/dle-dex";
 import { useApplyDlePrefs } from "@/lib/dle-local";
 import { cn } from "@/lib/utils";
+import { AddFriendAfterGame } from "@/components/community/AddFriend";
 
 /**
  * A Pokédle duel at /pokedle/duel/<code>: the lobby, three rounds with their
@@ -251,6 +252,7 @@ export function PokedleDuel({ code, names }: { code: string; names: NameEntry[] 
         {notice}
         <DuelSummary view={view} busy={busy} onRematch={() => void startRematch()} />
         <div className="mx-auto mt-4 max-w-3xl space-y-4">
+          {view.you !== null && <AddFriendAfterGame kind="pokedle" code={view.code} />}
           {tools}
           {chat}
         </div>

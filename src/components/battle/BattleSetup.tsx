@@ -20,6 +20,7 @@ import { useMatchmaking } from "@/components/duel/use-matchmaking";
 import { cn } from "@/lib/utils";
 import { TeamPick, type TeamSource } from "./TeamPick";
 import { CustomRulesEditor, RulesVerdictNote, useRulesCheck } from "./CustomRulesEditor";
+import { challengeToBattle } from "@/lib/friends-client";
 import { DEFAULT_CUSTOM_RULES, builderFormatFor, customName, lastCustomRules, rememberCustomRules, type CustomRules } from "@/lib/battle/custom-rules";
 
 /**
@@ -117,7 +118,8 @@ const OPPONENTS = [
   ["pvp", Radio, "A friend", "Get an invite link and battle live, with a turn timer."],
 ] as const;
 
-export function BattleSetup({ initial = "cpu" }: { initial?: Opponent }) {
+/** `challenge`: a friend's account name; a friend battle is sent to them as a challenge once it's open. */
+export function BattleSetup({ initial = "cpu", challenge }: { initial?: Opponent; challenge?: string }) {
   const router = useRouter();
   const progress = useProgress();
   const id = useId();
@@ -197,6 +199,7 @@ export function BattleSetup({ initial = "cpu" }: { initial?: Opponent }) {
         ...(opponent === "pvp" ? { public: watchable, timer: timerOn } : {}),
       });
       if (!progress?.name) setTrainerName(name.trim());
+      if (challenge && opponent === "pvp") await challengeToBattle(challenge, href.split("/").pop()!).catch(() => undefined);
       router.push(href);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Couldn't start a battle.");
@@ -323,7 +326,9 @@ export function BattleSetup({ initial = "cpu" }: { initial?: Opponent }) {
               ? `${CPU_LEVEL_INFO[level].name} computer. ${info.random ? "Random teams for both of you." : "It brings its own team."}`
               : opponent === "match"
                 ? `You'll be paired with the next trainer searching for ${info.name}, and the battle starts at once.${info.random ? " Teams are random." : " You each bring your own team."}`
-                : "You'll get a link to send. The battle starts when you're both ready."}
+                : challenge
+                  ? `${challenge} gets your challenge at once (and you get the link too). The battle starts when you're both ready.`
+                  : "You'll get a link to send. The battle starts when you're both ready."}
           </p>
           <div className="space-y-1.5">
             <label htmlFor={`${id}-name`} className="hud-label">
@@ -390,7 +395,7 @@ export function BattleSetup({ initial = "cpu" }: { initial?: Opponent }) {
               ) : (
                 <Swords className="h-4 w-4" aria-hidden />
               )}
-              {opponent === "cpu" ? "Start battle" : opponent === "match" ? "Find an opponent" : "Create battle"}
+              {opponent === "cpu" ? "Start battle" : opponent === "match" ? "Find an opponent" : challenge ? `Challenge ${challenge}` : "Create battle"}
             </Button>
           )}
           {opponent === "match" && !searching && <p className="text-center text-xs text-muted-foreground">Leaving this page or closing the tab ends the search.</p>}

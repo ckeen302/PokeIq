@@ -254,3 +254,70 @@ export async function saveProgress(userId: string, progress: unknown): Promise<v
   fileDb().progress[userId] = progress;
   saveFileDb();
 }
+
+// ---------------------------------------------------------------------------
+// Looking trainers up (friends, find a user)
+// ---------------------------------------------------------------------------
+
+export async function findUserById(id: string): Promise<PublicUser | null> {
+  return (await usersByIds([id]))[0] ?? null;
+}
+
+/** Accounts by id (unknown ids are left out). */
+export async function usersByIds(ids: string[]): Promise<PublicUser[]> {
+  const unique = [...new Set(ids)];
+  if (!unique.length) return [];
+  const sb = getServiceSupabase();
+  if (sb) {
+    const { data, error } = await sb.from("profiles").select("id, username, created_at").in("id", unique);
+    if (error) throw new Error(error.message);
+    return (data ?? []).map((r: { id: string; username: string; created_at: string }) => ({ id: r.id, username: r.username, createdAt: r.created_at }));
+  }
+  const wanted = new Set(unique);
+  return fileDb().users.filter((u) => wanted.has(u.id)).map(toPublicUser);
+}
+
+/** Usernames starting with `prefix` (case-insensitive), alphabetically. */
+export async function searchUsers(prefix: string, limit = 20): Promise<string[]> {
+  const lower = prefix.toLowerCase();
+  const sb = getServiceSupabase();
+  if (sb) {
+    // `_` is a LIKE wildcard and may be part of a name: escape it (and `\`, `%`, which names can't hold anyway).
+    const pattern = `${lower.replace(/[\\%_]/g, (c) => `\\${c}`)}%`;
+    const { data, error } = await sb.from("profiles").select("username").like("username_lower", pattern).order("username_lower").limit(limit);
+    if (error) throw new Error(error.message);
+    return (data ?? []).map((r: { username: string }) => r.username);
+  }
+  return fileDb()
+    .users.filter((u) => u.username.toLowerCase().startsWith(lower))
+    .map((u) => u.username)
+    .sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()))
+    .slice(0, limit);
+}
+
+/** The public bits of accounts' synced progress: XP and the two dailies. */
+export interface ProgressDigest {
+  xp: number;
+  daily: unknown;
+  dle: unknown;
+}
+
+export async function progressDigests(ids: string[]): Promise<Map<string, ProgressDigest>> {
+  const out = new Map<string, ProgressDigest>();
+  const unique = [...new Set(ids)];
+  if (!unique.length) return out;
+  const sb = getServiceSupabase();
+  if (sb) {
+    const { data, error } = await sb.from("user_progress").select("user_id, xp:progress->xp, daily:progress->daily, dle:progress->dle").in("user_id", unique);
+    if (error) throw new Error(error.message);
+    for (const r of (data ?? []) as { user_id: string; xp: unknown; daily: unknown; dle: unknown }[]) {
+      out.set(r.user_id, { xp: typeof r.xp === "number" ? r.xp : 0, daily: r.daily, dle: r.dle });
+    }
+    return out;
+  }
+  for (const id of unique) {
+    const p = fileDb().progress[id] as { xp?: unknown; daily?: unknown; dle?: unknown } | undefined;
+    if (p) out.set(id, { xp: typeof p.xp === "number" ? p.xp : 0, daily: p.daily, dle: p.dle });
+  }
+  return out;
+}
