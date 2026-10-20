@@ -1352,8 +1352,9 @@ if (me.enabled) {
     const masked = ra.getByTestId("room-line").filter({ hasText: "what the •••" });
     await masked.waitFor({ timeout: 15_000 });
     if (await ra.getByText("what the shit").count()) errors.push("a swear in a room wasn't masked");
-    // Who's here comes from presence: each sees the other.
-    await rb.getByTestId("room-users").getByText(names[1]).waitFor({ timeout: 20_000 });
+    // Who's here comes from presence, and the list is cached at the CDN to keep requests down,
+    // so another trainer can take up to about a minute to show.
+    await rb.getByTestId("room-users").getByText(names[1]).waitFor({ timeout: 90_000 });
     await masked.hover();
     await masked.getByTestId("room-report").click();
     await masked.getByText("Reported").waitFor();
