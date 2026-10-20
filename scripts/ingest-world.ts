@@ -15,8 +15,16 @@
  *   SUPABASE_URL=… SUPABASE_SERVICE_ROLE_KEY=… npm run ingest:world -- Hoenn Kalos # selected regions
  *   … npm run ingest:world -- --top-up Alola   # only top up existing places from other wikis
  *   … npm run ingest:world -- --prune Alola    # also delete uploads the data no longer uses (once the site that used them is redeployed)
+ *
+ * Growing the data a little at a time, without rebuilding it (shots dropped in
+ * review stay dropped):
+ *   … npm run ingest:world -- --crops Hoenn            # views cut from thin places' area maps → .data/geo-candidates.json
+ *   … npm run ingest:world -- --crops --thin Hoenn     # only for places with a single shot (from smaller maps too)
+ *   … npm run ingest:world -- --expand Galar           # new Bulbapedia and other-wiki shots of places already on the map → the same
+ *   … npm run ingest:world -- --accept=reviewed.json   # adds reviewed candidates to the data (near-copies are skipped)
  */
 import { existsSync, mkdirSync, readFileSync, rmdirSync, writeFileSync } from "node:fs";
+import { randomBytes } from "node:crypto";
 import path from "node:path";
 import sharp from "sharp";
 import {
@@ -45,7 +53,13 @@ import {
   withBuildingInfobox,
   type GeoShot,
   type ShotStore,
+  ENCODING,
+  download,
+  encodeShot,
+  pixelScale,
+  viewCrop,
 } from "./geo/bulbapedia";
+import { AREA_PER_VIEW, AREA_PER_VIEW_THIN, genericTiles, nativePixels, pickViews, screenOf, tileFamily, tileGrid, type Box, type TileGrid } from "./geo/map-crops";
 import { WIKIS, localNames, wikiCode, wikiImages, wikiPage, type Wiki } from "./geo/wikis";
 
 const PLACES = path.join(process.cwd(), "scripts/geo/world-places.json");
@@ -55,6 +69,8 @@ const SHOT_CACHE = path.join(process.cwd(), ".data", "geo-shot-cache.json");
 const SHOT_HASHES = path.join(process.cwd(), ".data", "geo-shot-hashes.json");
 /** Held while the data and caches are read and rewritten, so regions can be imported side by side. */
 const LOCK = path.join(process.cwd(), ".data", "ingest-world.lock");
+/** New shots waiting for review (--crops, --expand), unless --out= says otherwise. */
+const CANDIDATES = path.join(process.cwd(), ".data", "geo-candidates.json");
 
 const MAX_SHOTS = 14;
 /** 3D screenshots a place gets from other wikis, counting the ones Bulbapedia already gave it. */
@@ -606,13 +622,19 @@ function fallbackFor(source: Source, games: string[]): ShotFallback | undefined 
   };
 }
 
-/** Games whose versions share their maps: one screenshot of a place per family (Ruby / Sapphire's or Emerald's, not both). */
+/**
+ * Games whose versions share their maps: one screenshot of a place per family
+ * (Ruby / Sapphire's or Emerald's, not both). Black 2 / White 2 rebuilt much
+ * of Unova two years on, so theirs is a family of its own (a map that didn't
+ * change is dropped later as a copy).
+ */
 const FAMILIES: Record<string, string> = {
   ...Object.fromEntries(["RB", "RBY", "RGBY", "Y"].map((c) => [c, "gen1"])),
   ...Object.fromEntries(["GS", "GSC", "C"].map((c) => [c, "gen2"])),
   ...Object.fromEntries(["RS", "RSE", "SE", "E"].map((c) => [c, "gen3"])),
   ...Object.fromEntries(["DP", "Pt", "DPPt"].map((c) => [c, "gen4"])),
-  ...Object.fromEntries(["BW", "B", "W", "B2W2", "B2", "W2", "BWB2W2"].map((c) => [c, "gen5"])),
+  ...Object.fromEntries(["BW", "B", "W", "BWB2W2"].map((c) => [c, "gen5"])),
+  ...Object.fromEntries(["B2W2", "B2", "W2"].map((c) => [c, "gen5b"])),
 };
 /** A file's name without its game, season or variant: "Unova_Route_9_Spring_BW" and "…_Summer_B2W2" are one view. */
 function variantKey(file: string): string {
@@ -836,7 +858,7 @@ function overlayTrim(wiki: Wiki, file: string, title: string, region: string, co
  * for most X/Y, Sun/Moon and Sword/Shield routes; these wikis have the views.
  * 3D games' shots must be screen-shaped. Fills up to `max` shots.
  */
-async function wikiShots(place: PlaceIn, source: Source, games: string[], store: ShotStore, max: number, retro: boolean, have3d: number): Promise<GeoShot[]> {
+async function wikiShots(place: PlaceIn, source: Source, games: string[], store: ShotStore, max: number, retro: boolean, have3d: number, everyWiki = false): Promise<GeoShot[]> {
   if (max <= 0) return [];
   const name = TITLES[`${place.region}|${place.name}`] ?? place.name;
   const unique = PLACE_COUNTS.get(place.name) === 1;
@@ -849,7 +871,7 @@ async function wikiShots(place: PlaceIn, source: Source, games: string[], store:
   for (const wiki of WIKIS) {
     if (shots.length >= max) break;
     // Poképédia's and PokéWiki's views mostly carry a text box or the place's banner: only for places nothing else shows.
-    if (wiki.lang !== "en" && have3d + shots.length > 0) break;
+    if (wiki.lang !== "en" && have3d + shots.length > 0 && !everyWiki) break;
     if (wiki.lang !== "en") local ??= await localNames(name, source.wiki);
     const title = wiki.lang === "en" ? name : local?.[wiki.lang];
     if (!title) continue;
@@ -1153,6 +1175,171 @@ async function topUp(source: Source, world: WorldPlaces, store: ShotStore, old: 
   return keepOnce(out, store);
 }
 
+/** A new shot of a place already on the map, waiting for review. */
+interface Candidate {
+  region: string;
+  name: string;
+  parent?: string;
+  game: string;
+  id: string;
+  /** Where it came from: its cache key (a crop's names its map and the box cut from it). */
+  file: string;
+}
+/** Shots a town or route, and a building, should have before views are cut from its maps. */
+const CROP_TARGET = 5;
+const CROP_TARGET_BUILDING = 3;
+/** The Bulbapedia file each uploaded id was made from (not another wiki's, not trimmed). */
+const sourceFiles = (store: ShotStore) =>
+  new Map(
+    Object.entries(store.cache)
+      .filter(([key]) => key.endsWith(`@${ENCODING}`) && !/[:#]/.test(key))
+      .map(([key, id]) => [id, key.slice(0, -ENCODING.length - 1)])
+  );
+const sameLocation = (a: { region: string; name: string; parent?: string }, b: { region: string; name: string; parent?: string }) =>
+  a.region === b.region && a.name === b.name && a.parent === b.parent;
+
+/**
+ * Views cut from the area maps of thin places (fewer than CROP_TARGET
+ * shots): a long route's ends, a city's Gym and landmarks, a dungeon's
+ * distinctive rooms. Each sprite game's map gives its share of the views the
+ * place lacks.
+ */
+async function cropViews(old: WorldLocation[], regions: Set<string>, store: ShotStore, onlyThin = false): Promise<Candidate[]> {
+  const fileOf = sourceFiles(store);
+  const here = old.filter((l) => regions.has(l.region));
+  // Every area map of these regions: all of them say which tiles every town has, the thin places' get views.
+  const shots = here.flatMap((l) => l.shots.filter((s) => screenOf(s.game) && fileOf.has(s.id)).map((s) => ({ l, s, file: fileOf.get(s.id)! })));
+  const info = await fileInfo([...new Set(shots.map((x) => x.file))]);
+  const maps = new Map<string, { source: Buffer; k: number; grid: TileGrid }>();
+  for (const { file } of shots) {
+    const url = info.get(file)?.url;
+    if (!url || maps.has(file)) continue;
+    try {
+      const source = await download(url);
+      const k = await pixelScale(source);
+      const { rgba, width, height } = await nativePixels(source, k);
+      maps.set(file, { source, k, grid: tileGrid(rgba, width, height) });
+    } catch (err) {
+      console.log(`  ! ${file}: ${(err as Error).message}`);
+    }
+  }
+  const generic = new Map<string, Set<string>>();
+  for (const family of new Set(shots.map((x) => tileFamily(x.s.game)))) {
+    const grids = [...new Set(shots.filter((x) => tileFamily(x.s.game) === family).map((x) => x.file))].flatMap((f) => maps.get(f)?.grid ?? []);
+    generic.set(family, genericTiles(grids));
+  }
+  // Views cut before, kept or not.
+  const cut = new Map<string, Box[]>();
+  for (const key of Object.keys(store.cache)) {
+    const m = key.match(/^crop:(.+)#(\d+),(\d+),(\d+),(\d+)@/);
+    if (m) cut.set(m[1], [...(cut.get(m[1]) ?? []), { left: +m[2], top: +m[3], width: +m[4], height: +m[5] }]);
+  }
+
+  const out: Candidate[] = [];
+  for (const l of here) {
+    const room = onlyThin && l.shots.length > 1 ? 0 : (l.parent ? CROP_TARGET_BUILDING : CROP_TARGET) - l.shots.length;
+    const mine = shots.filter((x) => x.l === l && maps.has(x.file));
+    if (room <= 0 || !mine.length) continue;
+    let added = 0;
+    for (const { s, file } of mine) {
+      const max = Math.min(room - added, Math.ceil(room / mine.length));
+      if (max <= 0) continue;
+      const { source, k, grid } = maps.get(file)!;
+      const views = pickViews(grid, screenOf(s.game)!, max, viewCrop(grid.width, grid.height), generic.get(tileFamily(s.game)), cut.get(file), l.shots.length === 1 ? AREA_PER_VIEW_THIN : AREA_PER_VIEW);
+      for (const v of views) {
+        const key = `crop:${file}#${v.left},${v.top},${v.width},${v.height}@${ENCODING}`;
+        let id = store.cache[key];
+        if (!id) {
+          id = randomBytes(9).toString("base64url");
+          await storage.upload(id, await encodeShot(source, s.game, { left: v.left * k, top: v.top * k, width: v.width * k, height: v.height * k }));
+          store.cache[key] = id;
+        }
+        out.push({ region: l.region, name: l.name, ...(l.parent ? { parent: l.parent } : {}), game: s.game, id, file: key });
+        added++;
+      }
+      if (views.length) console.log(`  + ${l.region} | ${l.name}: ${views.length} views of ${file}`);
+    }
+  }
+  return out;
+}
+
+/**
+ * New Bulbapedia and other-wiki shots of places already on the map. The
+ * region is discovered as in a full import, but only files never uploaded
+ * before count (one uploaded earlier and no longer in the data was dropped in
+ * review), and the data isn't rewritten. Thin places also ask every other
+ * wiki, even when they already have a 3D shot.
+ */
+async function expand(source: Source, regions: Set<string>, world: WorldPlaces, store: ShotStore, old: WorldLocation[]): Promise<Candidate[]> {
+  const tried = new Set(Object.keys(store.cache));
+  // Everything uploaded before is reused as it is, not uploaded again.
+  for (const id of Object.values(store.cache)) store.live.add(id);
+  const built = (await ingestSource(source, world, store)).filter((l) => regions.has(l.region));
+  for (const l of built) {
+    const current = old.find((o) => sameLocation(o, l));
+    if (l.parent || !current || current.shots.length >= CROP_TARGET) continue;
+    const place = world.places.find((p) => p.region === l.region && p.name === l.name)!;
+    const games = ONLY_GAMES[`${place.region}|${place.name}`] ?? source.games;
+    l.shots.push(...(await wikiShots(place, source, games, store, 2 * WIKI_SHOTS, false, 0, true)));
+  }
+  const fresh = new Map(Object.entries(store.cache).filter(([key]) => !tried.has(key)).map(([key, id]) => [id, key]));
+  const out: Candidate[] = [];
+  for (const l of built) {
+    const current = old.find((o) => sameLocation(o, l));
+    if (!current) continue;
+    for (const s of l.shots) {
+      const file = fresh.get(s.id);
+      if (!file || current.shots.some((c) => c.id === s.id) || out.some((c) => c.id === s.id)) continue;
+      out.push({ region: l.region, name: l.name, ...(l.parent ? { parent: l.parent } : {}), game: s.game, id: s.id, file });
+    }
+  }
+  return out;
+}
+
+/**
+ * Adds reviewed candidates to the data, after the shots already there. One
+ * that copies a shot of its own place, or looks the same as another place's,
+ * is skipped.
+ */
+async function acceptCandidates(accepted: Candidate[]) {
+  const data = JSON.parse(readFileSync(OUT_DATA, "utf8"));
+  const locations: WorldLocation[] = data.world.locations;
+  const hashes: Record<string, string | null> = existsSync(SHOT_HASHES) ? JSON.parse(readFileSync(SHOT_HASHES, "utf8")) : {};
+  const areaOf = (l: { region: string; name: string; parent?: string }) => `${l.region}|${l.parent ?? l.name}`;
+  const all = locations.flatMap((l) => l.shots.map((s) => ({ s, area: areaOf(l) })));
+  for (const { s } of all) if (hashes[s.id] === undefined) hashes[s.id] = await shotHash(s.id);
+  let added = 0;
+  for (const c of accepted) {
+    const l = locations.find((x) => sameLocation(x, c));
+    if (!l || all.some(({ s }) => s.id === c.id)) {
+      console.log(`  ! ${c.region} | ${c.name}: ${l ? "already in the data" : "no such place"}`);
+      continue;
+    }
+    const h = (hashes[c.id] ??= await shotHash(c.id));
+    if (!h) {
+      console.log(`  ! ${c.file}: not uploaded`);
+      continue;
+    }
+    const area = areaOf(c);
+    const copy = all.find(({ s, area: a }) => {
+      const other = hashes[s.id];
+      if (!other) return false;
+      const d = hashDistance(h, other);
+      return a === area ? d <= SAME_PICTURE || (d <= SAME_GAME_PICTURE && s.game === c.game) : d <= LOOK_ALIKE;
+    });
+    if (copy) {
+      console.log(`  ≈ ${area}: ${c.file} looks like a shot of ${copy.area}`);
+      continue;
+    }
+    l.shots.push({ id: c.id, game: c.game });
+    all.push({ s: { id: c.id, game: c.game }, area });
+    added++;
+  }
+  writeFileSync(SHOT_HASHES, JSON.stringify(hashes));
+  writeFileSync(OUT_DATA, JSON.stringify(data));
+  console.log(`  → added ${added} of ${accepted.length} shots`);
+}
+
 async function withLock<T>(fn: () => Promise<T>): Promise<T> {
   mkdirSync(path.dirname(LOCK), { recursive: true });
   for (;;) {
@@ -1197,6 +1384,22 @@ async function main() {
     live: new Set(old.flatMap((l) => l.shots.map((s) => s.id))),
   };
   const readAtStart = { ...store.cache };
+
+  const accept = args.find((a) => a.startsWith("--accept="))?.slice("--accept=".length);
+  if (accept) return withLock(() => acceptCandidates(JSON.parse(readFileSync(accept, "utf8"))));
+  if (args.includes("--crops") || args.includes("--expand")) {
+    const out = args.find((a) => a.startsWith("--out="))?.slice("--out=".length) ?? CANDIDATES;
+    const found: Candidate[] = [];
+    for (const source of SOURCES) {
+      const regions = new Set(source.regions.filter((r) => !wanted.length || wanted.includes(r.toLowerCase())));
+      if (!regions.size) continue;
+      found.push(...(args.includes("--crops") ? await cropViews(old, regions, store, args.includes("--thin")) : await expand(source, regions, world, store, old)));
+      writeFileSync(out, JSON.stringify(found, null, 1));
+      await withLock(async () => saveCache(store, readAtStart));
+    }
+    console.log(`  → ${found.length} candidates in ${out}`);
+    return;
+  }
 
   const built: WorldLocation[] = [];
   const regions = new Set<string>();
