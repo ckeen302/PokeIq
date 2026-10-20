@@ -2,6 +2,7 @@
 
 import { useEffect, useSyncExternalStore } from "react";
 import type { DleHint } from "./dle-types";
+import { DLE_DEFAULT_ASSIST, type DleAssist } from "./dle-assist";
 
 /**
  * Pokédle's settings and archive games, on this device only. Archive games
@@ -14,6 +15,8 @@ export interface DlePrefs {
   colourBlind: boolean;
   /** Hard mode for the next daily started. */
   hard: boolean;
+  /** The Pokédex assist level for the next game started (the last one picked). */
+  assist: DleAssist;
   /** The how-to sheet has been seen. */
   seenHowTo: boolean;
 }
@@ -24,11 +27,12 @@ export interface DleArchiveRecord {
   over: boolean;
   hard?: boolean;
   hints?: DleHint[];
+  assist?: DleAssist;
 }
 
 const PREFS_KEY = "pokeiq:pokedle-prefs:v1";
 const ARCHIVE_KEY = "pokeiq:pokedle-archive:v1";
-const DEFAULT_PREFS: DlePrefs = { colourBlind: false, hard: false, seenHowTo: false };
+const DEFAULT_PREFS: DlePrefs = { colourBlind: false, hard: false, assist: DLE_DEFAULT_ASSIST, seenHowTo: false };
 
 function load<T>(key: string, fallback: T): T {
   try {

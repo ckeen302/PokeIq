@@ -1,4 +1,5 @@
 import { DLE_HINT_KINDS } from "./dle-types";
+import { isDleAssist } from "./dle-assist";
 import type { DailyRecord, DleRecord, Progress } from "./progress";
 
 /**
@@ -53,6 +54,7 @@ function dleRecord(v: unknown): DleRecord | null {
     over: o.over === true,
     ...(o.hard === true && { hard: true }),
     ...(Array.isArray(o.hints) && { hints: DLE_HINT_KINDS.filter((h) => (o.hints as unknown[]).includes(h)) }),
+    ...(isDleAssist(o.assist) && { assist: o.assist }),
   };
 }
 

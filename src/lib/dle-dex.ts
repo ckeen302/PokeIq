@@ -1,4 +1,4 @@
-import { DLE_PANEL_COLUMNS, panelMisfit, type DlePanelColumn, type DlePanelTraits } from "./dle-compare";
+import { DLE_PANEL_COLUMNS, panelMisfit, type DlePanelColumn, type DlePanelTraits, type DleTraits } from "./dle-compare";
 import type { CellStatus, DleDexRow, DleRow } from "./dle-types";
 
 /**
@@ -42,4 +42,11 @@ export function ruledOut(rows: readonly DleDexRow[], clues: readonly DexClue[]):
     if (guesses.some((g) => panelMisfit(g.traits, g.statuses, t) !== null)) out.add(row[0]);
   }
   return out;
+}
+
+/** Every attribute the clues compare, from a Full Pokédex row; null for a lighter level's row, which doesn't have them. */
+export function dexFullTraits(row: DleDexRow): DleTraits | null {
+  const [, , gen, type1, type2, stage, color, height, weight] = row;
+  if (stage === undefined || color === undefined || height === undefined || weight === undefined) return null;
+  return { gen, type1, type2, stage, color, height, weight };
 }

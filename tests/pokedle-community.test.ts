@@ -204,7 +204,7 @@ describe("pokédle results: the day's totals", () => {
     const you = await recordDleResult({ date: TODAY, identity: "d:db-trainer-000001", guesses: solveIn(TODAY, 4) }, db, NOW);
     expect(you).toEqual({
       ok: true,
-      you: { recorded: true, guesses: 4, solved: true, firstGuess: { id: 25, name: "Pikachu" }, position: 3, rank: 2, sameOpener: 2 },
+      you: { recorded: true, guesses: 4, solved: true, firstGuess: { id: 25, name: "Pikachu" }, position: 3, rank: 2, sameOpener: 2, assist: "notebook", score: 700 },
     });
     expect(rpc).toHaveBeenCalledWith("dle_record_result", expect.objectContaining({ p_date: TODAY, p_guesses: 4, p_solved: true, p_first: misses(TODAY, 1)[0] }));
     // Any other database error is an error, not "off".
@@ -238,6 +238,8 @@ describe("pokédle results: where you stand", () => {
     position,
     rank: solved ? position : null,
     sameOpener: 1,
+    assist: "notebook",
+    score: 0,
   });
 
   it("puts solves by guess count in order, then misses", () => {

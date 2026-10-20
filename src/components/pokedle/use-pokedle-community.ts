@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { isValidDailyDate } from "@/lib/daily";
 import { dlePlayerId } from "@/lib/dle-player";
 import type { DleHint } from "@/lib/dle-types";
+import type { DleAssist } from "@/lib/dle-assist";
 import {
   shareCommunity,
   standingOf,
@@ -47,6 +48,8 @@ export interface PokedleCommunityGame {
   /** Played in hard mode (the server checks it). */
   hard: boolean;
   hints: DleHint[];
+  /** The Pokédex assist level it was played at. */
+  assist: DleAssist;
 }
 
 const loads = new Map<string, Promise<PokedleCommunityData | null>>();
@@ -60,13 +63,13 @@ async function json<T>(request: Promise<Response>): Promise<T | null> {
   }
 }
 
-async function load({ date, guessIds, hard, hints }: PokedleCommunityGame): Promise<PokedleCommunityData | null> {
+async function load({ date, guessIds, hard, hints, assist }: PokedleCommunityGame): Promise<PokedleCommunityData | null> {
   const [result, stats] = await Promise.all([
     json<DleResultResponse>(
       fetch("/api/pokedle/result", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ date, player: dlePlayerId(), guesses: guessIds, hard, hints }),
+        body: JSON.stringify({ date, player: dlePlayerId(), guesses: guessIds, hard, hints, assist }),
       })
     ),
     json<DleStatsResponse>(fetch(`/api/pokedle/stats?date=${encodeURIComponent(date)}`)),

@@ -3,6 +3,7 @@
 import { useSyncExternalStore } from "react";
 import { previousDate } from "./daily";
 import type { DleHint } from "./dle-types";
+import type { DleAssist } from "./dle-assist";
 import { updatePlayerRating } from "./rating";
 import type { RunResult } from "./session-types";
 
@@ -29,6 +30,8 @@ export interface DleRecord {
   hard?: boolean;
   /** The hints used, which cost points. */
   hints?: DleHint[];
+  /** The Pokédex assist level, fixed at the first guess (absent: the Notebook). */
+  assist?: DleAssist;
 }
 
 export interface Progress {

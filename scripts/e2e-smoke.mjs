@@ -120,9 +120,16 @@ await page.screenshot({ path: `${OUT}/blitz.png` });
 step("pokédle");
 await page.goto(`${BASE}/pokedle`, { waitUntil: "networkidle" });
 await closeHowTo(page);
-// The Pokédex beside the board only ever gets names, generations and types.
+// The Pokédex beside the board gets only what its assist level shows: names, generations and types for the Notebook (the default).
 const dexRows = await (await page.request.get(`${BASE}/api/pokedle/dex`)).json();
 if (dexRows.length !== 1025 || dexRows.some((r) => r.length !== 5)) errors.push(`the Pokédex API sent more than names, generations and types: ${JSON.stringify(dexRows[0])}`);
+for (const [assist, width] of [["notebook", 5], ["field", 7], ["full", 9]]) {
+  const rows = await (await page.request.get(`${BASE}/api/pokedle/dex?assist=${assist}`)).json();
+  if (rows.length !== 1025 || rows.some((r) => r.length !== width)) errors.push(`the ${assist} Pokédex sent the wrong columns: ${JSON.stringify(rows[0])}`);
+}
+if ((await page.request.get(`${BASE}/api/pokedle/dex?assist=off`)).status() !== 404) errors.push("assist off still got a Pokédex");
+// The assist setting starts at the Notebook, before the first guess.
+await page.getByRole("radiogroup", { name: "Pokédex assist", exact: true }).getByRole("radio", { name: /^Notebook/, checked: true }).waitFor();
 // Filter it by hand, cross a Pokémon off and put it back, then fill one into the guess box, Enter to guess.
 await page.getByText(/^1,025 left in play$/).waitFor();
 await page.getByLabel("Has type").selectOption("electric");
@@ -368,6 +375,9 @@ await dleRed.p.getByText("Waiting for a challenger").waitFor();
 // The creator picks the generations in the lobby.
 await dleRed.p.getByRole("button", { name: "Gen 1", exact: true }).click();
 await dleRed.p.getByRole("button", { name: "Gen 1", pressed: true }).waitFor();
+// …and the Pokédex assist both trainers get.
+await dleRed.p.getByRole("radio", { name: /^Full Pokédex/ }).click();
+await dleRed.p.getByRole("radio", { name: /^Full Pokédex/, checked: true }).waitFor();
 await dleRed.p.screenshot({ path: `${OUT}/pokedle-duel-lobby.png` });
 const dleOg = await dleRed.p.request.get(`${dleUrl}/opengraph-image`);
 if (dleOg.status() !== 200) errors.push(`pokédle duel OG image returned ${dleOg.status()}`);
@@ -376,6 +386,7 @@ else fs.writeFileSync(`${OUT}/pokedle-duel-og.png`, await dleOg.body());
 await dleBlue.p.goto(dleUrl, { waitUntil: "networkidle" });
 await dleBlue.p.getByText("Red challenges you!").waitFor();
 await dleBlue.p.getByText("Gen 1", { exact: true }).waitFor();
+await dleBlue.p.getByRole("radio", { name: /^Full Pokédex/, checked: true }).waitFor();
 await dleBlue.p.getByLabel("Your trainer name").fill("Blue");
 await dleBlue.p.getByRole("button", { name: /Join duel/ }).click();
 await dleRed.p.getByText("Blue").first().waitFor();
@@ -424,6 +435,9 @@ async function playPokedleDuel({ p, name, seen }, shoot) {
         await p.getByRole("button", { name: `Fill in ${pick.name}`, exact: true }).click();
         if (!(await filledIn(p, pick.name))) errors.push(`the duel's Pokédex didn't fill in ${pick.name}: "${await input.inputValue()}"`);
         await input.press("Enter");
+        // At the Full Pokédex a clue clicked on the board becomes a filter.
+        await p.getByRole("button", { name: /^Height .*Filter the Pokédex by this clue$/ }).first().click();
+        await p.getByRole("list", { name: "Clue filters" }).waitFor();
         await p.getByRole("button", { name: /Show all/ }).click();
       } else {
         await input.fill(pick.name);

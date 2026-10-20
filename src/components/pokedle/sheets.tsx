@@ -7,6 +7,7 @@ import { DLE_FREEZE_EVERY, DLE_MAX_FREEZES, type DleResultLike, type DleStats } 
 import { DLE_HINT_COST, DLE_HINT_EMOJI, DLE_HINT_KINDS, DLE_HINT_LABEL, DLE_MAX_GUESSES, dleBasePoints, type DleRow } from "@/lib/dle-types";
 import { Button } from "@/components/ui/button";
 import { Board } from "./parts";
+import { DLE_ASSISTS, DLE_ASSIST_INFO, multiplierText } from "@/lib/dle-assist";
 import { cn } from "@/lib/utils";
 
 /** Pokédle's pop-up sheets: how to play, stats and the archive. */
@@ -97,7 +98,18 @@ export function HowToSheet({ onClose }: { onClose: () => void }) {
         </div>
         <ul className="list-disc space-y-1 pl-5 text-muted-foreground">
           <li>
-            <b className="text-foreground">The Pokédex</b> beside the board is your notebook. Like Wordle&apos;s keyboard, it greys out every Pokémon your generation and type clues rule out. Height, weight, color and stage are up to you: tap a Pokémon to cross it off, or switch to <i>Fill in</i> to put it in the guess box.
+            <b className="text-foreground">The Pokédex</b> beside the board is your notebook. Like Wordle&apos;s keyboard, it greys out every Pokémon your generation and type clues rule out. Tap a Pokémon to cross it off, or switch to <i>Fill in</i> to put it in the guess box.
+          </li>
+          <li>
+            <b className="text-foreground">Pokédex assist</b> (set it before your first guess; it stays for the game) is how much the Pokédex helps. Less help, more points:
+            <ul className="mt-1 space-y-0.5 pl-1">
+              {DLE_ASSISTS.map((a) => (
+                <li key={a}>
+                  {DLE_ASSIST_INFO[a].emoji} <b className="text-foreground">{DLE_ASSIST_INFO[a].label}</b> {multiplierText(a)}: {DLE_ASSIST_INFO[a].blurb}
+                </li>
+              ))}
+            </ul>
+            Your result and share show the level. Duels give both trainers the same one; ranked always uses the Notebook.
           </li>
           <li>
             <b className="text-foreground">Hard mode</b> (set it before your first guess): every guess must fit the generation and type clues so far, so no greyed-out Pokémon. Your share gets a *.

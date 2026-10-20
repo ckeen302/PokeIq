@@ -5,6 +5,7 @@
  */
 
 import { DLE_MAX_GUESSES } from "./dle-types";
+import type { DleAssist } from "./dle-assist";
 
 /** How everyone did on one day's puzzle. The same for every trainer, so it's cached. */
 export interface DleDaySummary {
@@ -27,6 +28,9 @@ export interface DlePersonal {
   guesses: number;
   solved: boolean;
   firstGuess: { id: number; name: string };
+  /** The Pokédex assist level of the result kept, and its points at that level. */
+  assist: DleAssist;
+  score: number;
   /** Trainers who finished before you, plus you. */
   position: number;
   /** "You were the #N trainer to solve today" (null when not solved). */

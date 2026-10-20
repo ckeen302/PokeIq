@@ -8,17 +8,18 @@ import { createPokedleDuel } from "@/lib/server/pokedle-duel";
 import { createQuizDuel } from "@/lib/server/quiz-duel";
 import { DIFFICULTIES, MODULES } from "@/engines/types";
 import { PLAY_MODULES } from "@/lib/modes";
+import { DLE_ASSISTS } from "@/lib/dle-assist";
 import type { PvpSeatResponse } from "@/lib/pvp-types";
 
 /**
  * POST /api/duel — open a duel and return its code, the creator's player
  * token and the lobby:
- *   { kind: "pokedle", name }                        a Pokédle duel, at /pokedle/duel/<code>
+ *   { kind: "pokedle", name, assist? }               a Pokédle duel, at /pokedle/duel/<code> (assist: the Pokédex level, changeable in the lobby)
  *   { kind: "quiz", name, module, difficulty }       a quiz duel, at /quiz/duel/<code>
  */
 
 const bodySchema = z.discriminatedUnion("kind", [
-  z.object({ kind: z.literal("pokedle"), name: duelNameSchema }),
+  z.object({ kind: z.literal("pokedle"), name: duelNameSchema, assist: z.enum(DLE_ASSISTS).optional() }),
   z.object({
     kind: z.literal("quiz"),
     name: duelNameSchema,
@@ -43,7 +44,7 @@ export async function POST(request: NextRequest) {
       const now = Date.now();
       const code = newDuelCode();
       const { duel, playerId }: { duel: PvpDuel; playerId: string } =
-        body.kind === "pokedle" ? createPokedleDuel(body.name, code, now) : createQuizDuel(body.module, body.difficulty, body.name, code, now);
+        body.kind === "pokedle" ? createPokedleDuel(body.name, code, now, undefined, { assist: body.assist }) : createQuizDuel(body.module, body.difficulty, body.name, code, now);
       if (!(await pvpStore.insert(duel))) continue; // code taken: roll another
       const seat: PvpSeatResponse = { code, token: pvpToken(code, playerId), view: duelView(duel, playerId, now, 0) };
       return NextResponse.json(seat, { headers: { "Cache-Control": "no-store" } });

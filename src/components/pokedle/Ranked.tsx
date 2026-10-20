@@ -196,7 +196,8 @@ export function RankedCard() {
             </>
           )}
           <p className="text-xs text-muted-foreground">
-            Matched with trainers near your rating, every generation. Leaving counts as a loss.{" "}
+            Matched with trainers near your rating, every generation, always with the Notebook Pokédex (the same assist for everyone on the ladder). Leaving
+            counts as a loss.{" "}
             <Link href="/leaderboard?board=pokedle" className="underline underline-offset-2 hover:text-foreground">
               Ranked ladder
             </Link>

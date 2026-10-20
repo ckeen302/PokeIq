@@ -18,6 +18,7 @@ import {
   type DleDuelView,
 } from "@/lib/pvp-types";
 import { isProvisional } from "@/lib/ranked";
+import { DLE_DEFAULT_ASSIST, DLE_RANKED_ASSIST, type DleAssist } from "@/lib/dle-assist";
 import { deriveSeed } from "./crypto";
 import type { RankedMatch } from "./ranked";
 import { answerFor, compare } from "./pokedle";
@@ -79,6 +80,12 @@ export interface PokedleDuel extends PvpBase {
   kind: "pokedle";
   /** Secrets come from these generations (none: all of them). */
   gens?: number[];
+  /**
+   * The Pokédex assist level both trainers play with (absent: the Notebook).
+   * The creator picks it in the lobby; matchmaking pairs trainers who
+   * searched with the same one; ranked is always the Notebook.
+   */
+  assist?: DleAssist;
   /** Points so far. */
   totals: number[];
   rounds: DleDuelRound[];
@@ -189,7 +196,17 @@ function closeRound(d: PokedleDuel, round: DleDuelRound, at: number, timedOut: b
   else if (d.rounds.length >= DLE_DUEL_ROUNDS) finish(d, "played", winnerOf(d), at);
 }
 
-const blankDuel = (base: PvpBase, gens?: number[]): PokedleDuel => ({ ...base, kind: "pokedle", ...(gens && { gens }), totals: [0, 0], rounds: [] });
+const blankDuel = (base: PvpBase, gens?: number[], assist?: DleAssist): PokedleDuel => ({
+  ...base,
+  kind: "pokedle",
+  ...(gens && { gens }),
+  ...(assist && assist !== DLE_DEFAULT_ASSIST && { assist }),
+  totals: [0, 0],
+  rounds: [],
+});
+
+/** The level a duel is played at. */
+export const duelAssist = (d: Pick<PokedleDuel, "assist" | "ranked">): DleAssist => (d.ranked ? DLE_RANKED_ASSIST : (d.assist ?? DLE_DEFAULT_ASSIST));
 
 export const pokedleRules: PvpRules<PokedleDuel> = {
   begin(d, at) {
@@ -208,7 +225,8 @@ export const pokedleRules: PvpRules<PokedleDuel> = {
     d.rounds.push(newRound(d, round.result.nextAt + PVP_LEAD_MS));
     return true;
   },
-  blank: (base, like) => blankDuel(base, like.gens),
+  // A rematch keeps the generations and the assist level (a rematch is always casual, never ranked).
+  blank: (base, like) => blankDuel(base, like.gens, duelAssist(like)),
 };
 
 export function createPokedleDuel(
@@ -216,10 +234,12 @@ export function createPokedleDuel(
   code: string,
   now: number,
   seed?: string,
-  extra: Pick<PokedleDuel, "queue" | "ranked"> = {}
+  extra: Pick<PokedleDuel, "queue" | "ranked" | "assist"> = {}
 ): { duel: PokedleDuel; playerId: string } {
   const seat = newSeat(name, now);
-  return { duel: { ...blankDuel(pvpBase("pokedle", code, [seat], now, seed)), ...extra }, playerId: seat.id };
+  const { assist, ...rest } = extra;
+  // Ranked is always played with the Notebook.
+  return { duel: { ...blankDuel(pvpBase("pokedle", code, [seat], now, seed), undefined, rest.ranked ? undefined : assist), ...rest }, playerId: seat.id };
 }
 
 /** A finished ranked duel that hasn't been counted yet: what counting it needs. Null otherwise. */
@@ -263,6 +283,21 @@ export function setPokedleGens(duel: PokedleDuel, playerId: string, gens: number
     if (JSON.stringify(next) === JSON.stringify(d.gens)) return { ok: true, duel: d };
     if (next) d.gens = next;
     else delete d.gens;
+    // Both get to see the change before the duel starts.
+    for (const p of d.players) p.ready = false;
+    return { ok: true, duel: d };
+  });
+}
+
+/** In the lobby, the trainer who made the duel picks the Pokédex assist level both play with. */
+export function setPokedleAssist(duel: PokedleDuel, playerId: string, assist: DleAssist, now: number): PvpOutcome<PokedleDuel> {
+  return seated(pokedleRules, duel, playerId, now, (d, seat) => {
+    if (d.status !== "lobby") return fail(409, "The duel has already started.");
+    if (seat !== 0) return fail(403, "Only the trainer who made the duel picks the Pokédex assist.");
+    if (d.ranked) return fail(409, "Ranked duels always use the Notebook.");
+    if (assist === duelAssist(d)) return { ok: true, duel: d };
+    if (assist === DLE_DEFAULT_ASSIST) delete d.assist;
+    else d.assist = assist;
     // Both get to see the change before the duel starts.
     for (const p of d.players) p.ready = false;
     return { ok: true, duel: d };
@@ -401,6 +436,7 @@ export function pokedleView(duel: PokedleDuel, playerId: string | null, now: num
     kind: "pokedle",
     ...baseView(duel, playerId, now, rev),
     gens: duel.gens,
+    assist: duelAssist(duel),
     pool: poolFor(duel.gens).length,
     rounds: DLE_DUEL_ROUNDS,
     totals: duel.totals,

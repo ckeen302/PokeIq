@@ -6,7 +6,8 @@ import { DLE_COLUMNS, type DleDexRow } from "@/lib/dle-types";
 import { DLE_PANEL_COLUMNS } from "@/lib/dle-compare";
 import { dexClues, ruledOut } from "@/lib/dle-dex";
 
-const dexRows = async () => (await GET().json()) as DleDexRow[];
+const req = (query = "") => new Request(`http://localhost/api/pokedle/dex${query}`);
+const dexRows = async () => (await GET(req()).json()) as DleDexRow[];
 
 describe("the Pokédex beside the Pokédle board", () => {
   it("lists exactly the guessable Pokémon, with only their name, generation and types", async () => {
@@ -28,7 +29,7 @@ describe("the Pokédex beside the Pokédle board", () => {
   });
 
   it("never sends a Pokémon's height, weight, color or stage", async () => {
-    const text = await GET().text();
+    const text = await GET(req()).text();
     const snorlax = getPokemon(143)!;
     // Snorlax's row as sent: its weight (4600 hg), height (21 dm) and color are nowhere in it.
     const row = text.match(/\[143,[^\]]*\]/)![0];
@@ -38,9 +39,9 @@ describe("the Pokédex beside the Pokédle board", () => {
   });
 
   it("is the same list whatever the puzzle, so it can't point at an answer", async () => {
-    const [a, b] = await Promise.all([GET().text(), GET().text()]);
+    const [a, b] = await Promise.all([GET(req()).text(), GET(req()).text()]);
     expect(a).toBe(b);
-    expect(GET().headers.get("cache-control")).toMatch(/public/);
+    expect(GET(req()).headers.get("cache-control")).toMatch(/public/);
   });
 });
 

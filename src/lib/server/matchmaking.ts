@@ -9,6 +9,7 @@ import { cancelQueue, searchQueue, type OpenedGame } from "./match-queue";
 import { RANKED_QUEUE_KEY, cancelRankedQueue, searchRankedQueue, type RankedSeat } from "./ranked-queue";
 import type { RatingState } from "@/lib/ranked";
 import { pvpHref } from "@/lib/pvp-types";
+import { DLE_ASSISTS, DLE_DEFAULT_ASSIST } from "@/lib/dle-assist";
 
 /**
  * Matchmaking for duels: trainers searching for the same game with the same
@@ -33,16 +34,24 @@ export {
 
 /**
  * What can be matched: PokéGuessr on any map, and Pokédle on every
- * generation (one queue, so it fills up; a duel with picked generations is
- * one you invite a friend to).
+ * generation (a duel with picked generations is one you invite a friend
+ * to), one casual queue per Pokédex assist level so both trainers play
+ * with the same one. Ranked is one queue, always the Notebook: its
+ * `assist` is ignored.
  */
 export const matchSettingsSchema = z.discriminatedUnion("game", [
   z.object({ game: z.literal("geo"), region: z.string().max(20).refine(isDuelMap, "Unknown map.") }),
-  z.object({ game: z.literal("pokedle"), ranked: z.boolean().optional() }),
+  z.object({ game: z.literal("pokedle"), ranked: z.boolean().optional(), assist: z.enum(DLE_ASSISTS).optional() }),
 ]);
 export type MatchSettings = z.infer<typeof matchSettingsSchema>;
 
-export const queueKey = (s: MatchSettings) => (s.game === "geo" ? `geo:${s.region}` : s.ranked ? RANKED_QUEUE_KEY : "pokedle:all");
+/** The queue a search waits in. The Notebook keeps the queue Pokédle had before levels. */
+export function queueKey(s: MatchSettings): string {
+  if (s.game === "geo") return `geo:${s.region}`;
+  if (s.ranked) return RANKED_QUEUE_KEY;
+  const assist = s.assist ?? DLE_DEFAULT_ASSIST;
+  return assist === DLE_DEFAULT_ASSIST ? "pokedle:all" : `pokedle:all:${assist}`;
+}
 
 export type SearchResult =
   | { ok: true; status: "waiting"; ticket: string; since: number }
@@ -67,7 +76,7 @@ async function openDuel(settings: MatchSettings, names: [string, string], now: n
       const ready = must(readyGeoDuel(must(readyGeoDuel(joined, a, true, now)).duel, b, true, now)).duel;
       if (await insertDuel(ready)) return { code, ids: [a, b], remove: () => deleteDuel(code) };
     } else {
-      const { duel, playerId: a } = createPokedleDuel(names[0], code, now, undefined, { queue: "casual" });
+      const { duel, playerId: a } = createPokedleDuel(names[0], code, now, undefined, { queue: "casual", assist: settings.assist });
       const { duel: joined, playerId: b } = must(joinDuel(duel, names[1], now));
       const ready = must(readyDuel(must(readyDuel(joined, a, true, now)).duel, b, true, now)).duel;
       if (await pvpStore.insert(ready)) return { code, ids: [a, b], remove: () => pvpStore.remove(code) };

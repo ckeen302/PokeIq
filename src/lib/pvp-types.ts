@@ -8,6 +8,7 @@ import { DLE_GUESS_COST, DLE_HINT_COST, DLE_HINT_KINDS, DLE_SOLVE_POINTS, dleBas
 import type { DuelPlayerView, DuelStatus } from "./duel-types";
 import type { Difficulty, ModuleId } from "@/engines/types";
 import type { PublicQuestion } from "./session-types";
+import type { DleAssist } from "./dle-assist";
 
 export const PVP_KINDS = ["pokedle", "quiz"] as const;
 export type PvpKind = (typeof PVP_KINDS)[number];
@@ -174,6 +175,8 @@ export interface DleDuelView extends PvpViewBase {
   kind: "pokedle";
   /** The generations secrets come from (none: all of them). The creator picks in the lobby. */
   gens?: number[];
+  /** The Pokédex assist level both trainers play with. The creator picks in the lobby; ranked is always the Notebook. */
+  assist: DleAssist;
   /** How many Pokémon could be the secret before any guess (the generations' whole Pokédex). */
   pool: number;
   rounds: number;

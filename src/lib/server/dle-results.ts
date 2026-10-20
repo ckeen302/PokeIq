@@ -3,6 +3,7 @@ import { getServiceSupabase } from "@/lib/supabase";
 import { getPokemon } from "@/lib/pokemon/pokedex";
 import { isValidDailyDate, LAUNCH_DATE } from "@/lib/daily";
 import { DLE_HINT_KINDS, DLE_MAX_GUESSES, type DleHint } from "@/lib/dle-types";
+import { DLE_DEFAULT_ASSIST, dleAssistOf, type DleAssist } from "@/lib/dle-assist";
 import type { DleDaySummary, DlePersonal } from "@/lib/dle-community";
 import { deriveSeed } from "./crypto";
 import { evaluate, hardModeError, type DlePuzzle } from "./pokedle";
@@ -25,6 +26,10 @@ import { evaluate, hardModeError, type DlePuzzle } from "./pokedle";
  * or in memory with POKEIQ_LOCAL_ACCOUNTS=1 (tests and the local E2E run).
  * Without either, or before the migration has been applied, there are no
  * community stats: callers get null and the page shows no panel.
+ *
+ * Each result keeps the Pokédex assist level it was played at and the points
+ * that level scored (migration 0015). Until that migration is applied the
+ * results are still recorded, without them.
  */
 
 /** What the browser sends to identify a trainer: a random id it keeps. */
@@ -44,12 +49,16 @@ export interface DleResultRow {
   hard: boolean;
   hints: number;
   firstGuess: number;
+  /** The Pokédex assist level the game was played at. */
+  assist: DleAssist;
+  /** Its points at that level (dleScore). */
+  score: number;
 }
 
 /** What recording a result returns: the row kept, and where it stands. */
 export interface RecordedRow {
   recorded: boolean;
-  row: Pick<DleResultRow, "guesses" | "solved" | "firstGuess">;
+  row: Pick<DleResultRow, "guesses" | "solved" | "firstGuess" | "assist" | "score">;
   position: number;
   rank: number | null;
   sameOpener: number;
@@ -99,7 +108,7 @@ export function memoryResultStore(): DleResultStore {
       const me = mine;
       return {
         recorded,
-        row: { guesses: me.guesses, solved: me.solved, firstGuess: me.firstGuess },
+        row: { guesses: me.guesses, solved: me.solved, firstGuess: me.firstGuess, assist: me.assist, score: me.score },
         position: day.filter((r) => r.seq <= me.seq).length,
         rank: me.solved ? day.filter((r) => r.solved && r.seq <= me.seq).length : null,
         sameOpener: day.filter((r) => r.firstGuess === me.firstGuess).length,
@@ -137,6 +146,11 @@ const MISSING = new Set(["42P01", "42883", "PGRST202", "PGRST205"]);
 /** After finding the table missing, look again this much later (so applying the migration needs no redeploy). */
 const RECHECK_MS = 60_000;
 let missingUntil = 0;
+/** The same for migration 0015 (the assist level and points): until then, results are recorded without them. */
+let noAssistUntil = 0;
+
+/** dle_record_result without 0015's parameters: the function hasn't been replaced yet. */
+const OLD_SIGNATURE = new Set(["PGRST202", "42883"]);
 
 function tableMissing(error: { code?: string; message?: string }): boolean {
   if (!MISSING.has(error.code ?? "")) return false;
@@ -149,7 +163,7 @@ export function supabaseResultStore(sb: NonNullable<ReturnType<typeof getService
   return {
     async record(row) {
       if (Date.now() < missingUntil) return null;
-      const { data, error } = await sb.rpc("dle_record_result", {
+      const args = {
         p_date: row.date,
         p_player: row.player,
         p_guesses: row.guesses,
@@ -157,15 +171,34 @@ export function supabaseResultStore(sb: NonNullable<ReturnType<typeof getService
         p_hard: row.hard,
         p_hints: row.hints,
         p_first: row.firstGuess,
-      });
+      };
+      const withAssist = Date.now() >= noAssistUntil;
+      let { data, error } = await sb.rpc("dle_record_result", withAssist ? { ...args, p_assist: row.assist, p_score: row.score } : args);
+      if (error && withAssist && OLD_SIGNATURE.has(error.code ?? "")) {
+        // Before 0015: record without the level (and look for it again in a minute).
+        noAssistUntil = Date.now() + RECHECK_MS;
+        ({ data, error } = await sb.rpc("dle_record_result", args));
+      }
       if (error) {
         if (tableMissing(error)) return null;
         throw new Error(error.message);
       }
-      const r = data as { recorded: boolean; guesses: number; solved: boolean; first_guess: number; position: number; rank: number | null; same_opener: number };
+      const r = data as {
+        recorded: boolean;
+        guesses: number;
+        solved: boolean;
+        first_guess: number;
+        assist?: string | null;
+        score?: number | null;
+        position: number;
+        rank: number | null;
+        same_opener: number;
+      };
+      // Without 0015 the row has no level: this request's is the best there is.
+      const kept = r.assist == null ? { assist: row.assist, score: row.score } : { assist: dleAssistOf(r.assist), score: Number(r.score ?? 0) };
       return {
         recorded: r.recorded,
-        row: { guesses: r.guesses, solved: r.solved, firstGuess: r.first_guess },
+        row: { guesses: r.guesses, solved: r.solved, firstGuess: r.first_guess, ...kept },
         position: Number(r.position),
         rank: r.rank === null ? null : Number(r.rank),
         sameOpener: Number(r.same_opener),
@@ -212,6 +245,8 @@ export interface ResultInput {
   hard?: boolean;
   /** The hints the trainer opened. */
   hints?: readonly DleHint[];
+  /** The Pokédex assist level the game was played at (the Notebook when absent). */
+  assist?: DleAssist;
 }
 
 /**
@@ -225,7 +260,9 @@ export async function recordDleResult(
 ): Promise<{ ok: true; you: DlePersonal } | RecordFailure | null> {
   if (!isValidDailyDate(input.date, now)) return fail(400, "Only today's Pokédle counts.");
   const puzzle = dailyPuzzle(input.date);
-  const result = evaluate(puzzle, input.guesses);
+  const assist = input.assist ?? DLE_DEFAULT_ASSIST;
+  const hints = DLE_HINT_KINDS.filter((h) => input.hints?.includes(h));
+  const result = evaluate(puzzle, input.guesses, hints, assist);
   if (!result.over) return fail(409, "Finish the puzzle first.");
   if (!store) return null;
   const out = await store.record({
@@ -234,8 +271,10 @@ export async function recordDleResult(
     guesses: result.rows.length,
     solved: result.solved,
     hard: input.hard === true && hardModeError(puzzle, input.guesses) === null,
-    hints: DLE_HINT_KINDS.filter((h) => input.hints?.includes(h)).length,
+    hints: hints.length,
     firstGuess: result.rows[0].id,
+    assist,
+    score: result.score ?? 0,
   });
   if (!out) return null;
   const first = getPokemon(out.row.firstGuess);
@@ -246,6 +285,8 @@ export async function recordDleResult(
       guesses: out.row.guesses,
       solved: out.row.solved,
       firstGuess: { id: out.row.firstGuess, name: first?.name ?? `#${out.row.firstGuess}` },
+      assist: out.row.assist,
+      score: out.row.score,
       position: out.position,
       rank: out.rank,
       sameOpener: out.sameOpener,

@@ -1,8 +1,10 @@
 import { DLE_HINT_EMOJI, DLE_HINT_KINDS, DLE_MAX_GUESSES, isNear, type CellStatus, type DleHint } from "./dle-types";
+import { DLE_ASSIST_INFO, type DleAssist } from "./dle-assist";
 
 /**
  * Pokédle's share text: the puzzle number, guesses (X for a miss), `*` for
- * hard mode, a marker per hint used, the play streak, one square per clue
+ * hard mode, the Pokédex assist level's marker (🧠 off, 📓 notebook,
+ * 🔎 field guide, 📚 full), a marker per hint used, the play streak, one square per clue
  * (exact, partial or close, wrong: arrows would break the gradient), an
  * optional line on how the player did against everyone else, and a short
  * link. It's built from colours only, so it can never name a guess or the
@@ -15,6 +17,8 @@ export interface PokedleShareInput {
   solved: boolean;
   hard: boolean;
   hints: readonly DleHint[];
+  /** The Pokédex assist level (none: no marker, as before levels). */
+  assist?: DleAssist;
   /** The play streak (0: none shown). */
   streak: number;
   /** The link, e.g. "https://pokeiq.app/pokedle" (shown without the scheme). */
@@ -44,7 +48,8 @@ export function buildPokedleShare(input: PokedleShareInput): string {
   const hints = DLE_HINT_KINDS.filter((h) => input.hints.includes(h))
     .map((h) => DLE_HINT_EMOJI[h])
     .join("");
-  const header = [`Pokédle #${input.number}${input.archive ? " (archive)" : ""}`, score, hints, !input.archive && input.streak > 0 ? `🔥${input.streak}` : ""]
+  const assist = input.assist ? DLE_ASSIST_INFO[input.assist].emoji : "";
+  const header = [`Pokédle #${input.number}${input.archive ? " (archive)" : ""}`, score, assist, hints, !input.archive && input.streak > 0 ? `🔥${input.streak}` : ""]
     .filter(Boolean)
     .join(" ");
   const grid = input.rows.map((row) => row.map((s) => shareSquare(s, input.colourBlind)).join(""));

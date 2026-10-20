@@ -36,7 +36,9 @@ import { useMatchmaking } from "@/components/duel/use-matchmaking";
 import { SeriesScore, seriesTag } from "@/components/duel/DuelSeries";
 import { DuelGone, DuelLoading, DuelLobby, DuelNotice, DuelVisitor, LeaveButton, MatchedNote, SeatDot, clock, seconds } from "@/components/duel/DuelParts";
 import { Board, CELL_STYLES, CellGlyph, GuessInput, STATUS_TEXT, spriteUrl, type NameEntry } from "./parts";
-import { DexPanel } from "./DexPanel";
+import { DexPanel, type DexPick } from "./DexPanel";
+import { AssistPicker } from "./AssistPicker";
+import { DLE_ASSIST_INFO, type DleAssist } from "@/lib/dle-assist";
 import { dexClues } from "@/lib/dle-dex";
 import { useApplyDlePrefs } from "@/lib/dle-local";
 import { cn } from "@/lib/utils";
@@ -51,8 +53,8 @@ import { cn } from "@/lib/utils";
 
 const HOME = "/pokedle";
 const GENS = [1, 2, 3, 4, 5, 6, 7, 8, 9];
-/** What "Find new opponent" searches for: the same queue as on /pokedle. */
-const MATCH = { game: "pokedle" };
+/** What "Find new opponent" searches for: the same queue as on /pokedle, at the duel's Pokédex assist level. */
+const matchFor = (assist: DleAssist) => ({ game: "pokedle", assist });
 /** The last stretch of a round: the clock gets loud. */
 const FINAL_MS = 10_000;
 /** A guess that leaves this few Pokémon possible is close. */
@@ -88,6 +90,8 @@ export function PokedleDuel({ code, names }: { code: string; names: NameEntry[] 
   const [summary, setSummary] = useState(false);
   /** A Pokémon clicked in the Pokédex beside the board, for the guess box. */
   const [fill, setFill] = useState<{ name: string; n: number } | null>(null);
+  /** A clue clicked on the board, for the Full Pokédex's filters. */
+  const [pick, setPick] = useState<(DexPick & { n: number }) | null>(null);
   useApplyDlePrefs();
   const heard = useRef({ revealed: -1, theirSolve: false, end: false, mine: -1, theirs: -1, round: -1, tick: -1 });
 
@@ -185,6 +189,13 @@ export function PokedleDuel({ code, names }: { code: string; names: NameEntry[] 
           settings={
             <div className="space-y-3">
               <GenPicker view={view} busy={busy} onPick={(gens) => void act({ action: "gens", gens })} />
+              <AssistPicker
+                value={view.assist}
+                points={false}
+                disabled={busy || view.you !== 0}
+                onChange={view.you === 0 ? (assist) => void act({ action: "assist", assist }) : undefined}
+                note={view.you === 0 ? undefined : `${DLE_ASSIST_INFO[view.assist].label}: ${DLE_ASSIST_INFO[view.assist].blurb} The trainer who made the duel picks it; you both get the same.`}
+              />
               <LobbyRank />
             </div>
           }
@@ -381,7 +392,10 @@ export function PokedleDuel({ code, names }: { code: string; names: NameEntry[] 
               </div>
             </div>
             {live.rows.length > 0 ? (
-              <Board rows={live.rows} />
+              <Board
+                rows={live.rows}
+                onClue={view.assist === "full" ? (column, guessId, cell) => setPick((p) => ({ column, guessId, status: cell.status, value: cell.value, n: (p?.n ?? 0) + 1 })) : undefined}
+              />
             ) : (
               <p className="text-center text-sm text-muted-foreground">
                 {DLE_MAX_GUESSES} guesses. 🟩 match · 🟨 right type, wrong slot, or close (dashed, with ▲▼) · ▲▼ the answer is higher / lower.
@@ -393,14 +407,22 @@ export function PokedleDuel({ code, names }: { code: string; names: NameEntry[] 
             <OpponentBoard name={them} seat={1 - me} board={theirs} pool={view.pool} quiet={view.players[1 - me]?.quiet} round={live.index} />
           </div>
           {/* Each round starts with every filter cleared. */}
-          <DexPanel
-            key={`${view.code}:${live.index}`}
-            className="md:col-span-2 xl:col-span-1 xl:col-start-2 xl:row-start-1"
-            gens={view.gens}
-            guessed={guessed}
-            clues={panelClues}
-            onPick={myBoard.done || timeUp ? undefined : (name) => setFill((f) => ({ name, n: (f?.n ?? 0) + 1 }))}
-          />
+          {view.assist === "off" ? (
+            <p className="rounded-md border bg-card p-3 text-center text-sm text-muted-foreground md:col-span-2 xl:col-span-1 xl:col-start-2 xl:row-start-1">
+              {DLE_ASSIST_INFO.off.emoji} Pokédex assist off: no Pokédex in this duel, for either of you.
+            </p>
+          ) : (
+            <DexPanel
+              key={`${view.code}:${live.index}`}
+              assist={view.assist}
+              className="md:col-span-2 xl:col-span-1 xl:col-start-2 xl:row-start-1"
+              gens={view.gens}
+              guessed={guessed}
+              clues={panelClues}
+              pick={pick}
+              onPick={myBoard.done || timeUp ? undefined : (name) => setFill((f) => ({ name, n: (f?.n ?? 0) + 1 }))}
+            />
+          )}
         </div>
         {tools}
         {leaveButton}
@@ -742,7 +764,8 @@ function DuelSummary({ view, busy, onRematch }: { view: DleDuelView; busy: boole
   const [mine, theirs] = [view.totals[me], view.totals[1 - me]];
   // "Find new opponent" / "Play again": the queue this duel came from (casual for a friend's duel), under the same name.
   const ranked = view.queue === "ranked";
-  const finder = useMatchmaking(ranked ? RANKED_MATCH : MATCH);
+  const casual = useMemo(() => matchFor(view.assist), [view.assist]);
+  const finder = useMatchmaking(ranked ? RANKED_MATCH : casual);
   const myName = view.players[me]?.name ?? "";
   const guesses = (seat: number) => view.revealed.reduce((sum, r) => sum + r.scores[seat].guesses, 0);
   const played = draw
@@ -763,7 +786,9 @@ function DuelSummary({ view, busy, onRematch }: { view: DleDuelView; busy: boole
   return (
     <div className="mx-auto max-w-3xl space-y-6">
       <div className="space-y-2 text-center">
-        <p className="hud-label text-screen">Pokédle duel over · {gensText(view.gens)}</p>
+        <p className="hud-label text-screen">
+          Pokédle duel over · {gensText(view.gens)} · {DLE_ASSIST_INFO[view.assist].label}
+        </p>
         <div className={cn("flex items-center justify-center gap-3 font-display text-6xl font-bold uppercase", won ? "text-success" : draw ? "text-screen" : "text-destructive")}>
           {won && <Crown className="h-12 w-12" aria-hidden />}
           {draw ? "Draw" : won ? "Victory!" : "Defeat"}

@@ -5,7 +5,8 @@ import { deriveSeed } from "./crypto";
 import { hashString } from "@/lib/rng";
 import { mediaUrl } from "./session";
 import { dailyAnswerId } from "./pokedle-schedule";
-import { DLE_COLUMNS, DLE_MAX_GUESSES, type DleColumn, type DleHint, type DleResponse, type DleRow } from "@/lib/dle-types";
+import { DLE_COLUMNS, DLE_MAX_GUESSES, dleScore, type DleColumn, type DleHint, type DleResponse, type DleRow } from "@/lib/dle-types";
+import { DLE_DEFAULT_ASSIST, type DleAssist } from "@/lib/dle-assist";
 import { compareTraits, panelMisfit, stageLabel, type DleTraits } from "@/lib/dle-compare";
 
 /**
@@ -118,8 +119,12 @@ export function hardModeError(puzzle: DlePuzzle, guessIds: number[]): string | n
   return null;
 }
 
-/** Every guess's clues, and the hints asked for (once there's a guess, while the puzzle is on). */
-export function evaluate(puzzle: DlePuzzle, guessIds: number[], hints: readonly DleHint[] = []): DleResponse {
+/**
+ * Every guess's clues, and the hints asked for (once there's a guess, while
+ * the puzzle is on). Once it's over, the points too, at the Pokédex assist
+ * level the game is played at.
+ */
+export function evaluate(puzzle: DlePuzzle, guessIds: number[], hints: readonly DleHint[] = [], assist: DleAssist = DLE_DEFAULT_ASSIST): DleResponse {
   const answer = answerFor(puzzle);
   const rows = countedGuesses(guessIds, answer).map((guess) => compare(guess, answer));
   const solved = rows.some((r) => r.solved);
@@ -134,6 +139,7 @@ export function evaluate(puzzle: DlePuzzle, guessIds: number[], hints: readonly 
       silhouetteUrl: open && hints.includes("silhouette") ? mediaUrl({ kind: "silhouette", pokemonId: answer.id }) : undefined,
       genus: open && hints.includes("genus") ? `The ${answer.genus}` : undefined,
     },
+    score: over ? dleScore(rows.length, solved, hints, assist) : undefined,
     answer: over
       ? { id: answer.id, name: answer.name, imageUrl: artworkUrl(answer.id), genus: answer.genus }
       : undefined,

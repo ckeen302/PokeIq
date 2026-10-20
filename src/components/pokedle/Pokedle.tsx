@@ -29,8 +29,10 @@ import { Card, CardContent } from "@/components/ui/card";
 import { NextDailyCountdown } from "@/components/NextDailyCountdown";
 import { CopyFallback } from "@/components/quiz/CopyFallback";
 import { Board, GuessInput, clueText, type NameEntry } from "./parts";
-import { DexPanel } from "./DexPanel";
+import { DexPanel, type DexPick } from "./DexPanel";
+import { AssistPicker } from "./AssistPicker";
 import { dexClues } from "@/lib/dle-dex";
+import { DLE_ASSIST_INFO, DLE_DEFAULT_ASSIST, dleAssistOf, multiplierText, type DleAssist } from "@/lib/dle-assist";
 import { ArchiveSheet, HowToSheet, StatsSheet } from "./sheets";
 import { cn } from "@/lib/utils";
 
@@ -46,6 +48,9 @@ export interface PokedleFinished {
   guesses: number;
   hard: boolean;
   hints: DleHint[];
+  /** The Pokédex assist level it was played at. */
+  assist: DleAssist;
+  /** Points, at that level's multiplier. */
   score: number;
   /** The guesses that counted, in order (Pokémon ids). */
   guessIds: number[];
@@ -78,6 +83,8 @@ export function Pokedle({
   const [guesses, setGuesses] = useState<number[]>([]);
   const [hints, setHints] = useState<DleHint[]>([]);
   const [hard, setHard] = useState(false);
+  /** The Pokédex assist level: picked before the first guess, fixed after. */
+  const [assist, setAssist] = useState<DleAssist>(DLE_DEFAULT_ASSIST);
   const [state, setState] = useState<DleResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -96,6 +103,8 @@ export function Pokedle({
   const inputRef = useRef<HTMLInputElement | null>(null);
   /** A Pokémon clicked in the Pokédex beside the board, for the guess box. */
   const [fill, setFill] = useState<{ name: string; n: number } | null>(null);
+  /** A clue clicked on the board, for the Full Pokédex's filters. */
+  const [pick, setPick] = useState<(DexPick & { n: number }) | null>(null);
 
   const target: Target | null = mode === "practice" ? { kind: "practice", seed: practiceSeed } : date ? { kind: mode, date } : null;
   const gameKey = mode === "practice" ? `practice:${practiceSeed}` : `${mode}:${date}`;
@@ -107,7 +116,7 @@ export function Pokedle({
    * connection), `undo` puts the game back as it was.
    */
   const evaluate = useCallback(
-    async (list: number[], t: Target, opts: { hints: DleHint[]; hard: boolean; undo?: { guesses: number[]; hints: DleHint[]; name?: string } }) => {
+    async (list: number[], t: Target, opts: { hints: DleHint[]; hard: boolean; assist: DleAssist; undo?: { guesses: number[]; hints: DleHint[]; name?: string } }) => {
       const id = ++reqRef.current;
       setLoading(true);
       setError(null);
@@ -120,17 +129,18 @@ export function Pokedle({
             guesses: list,
             hints: opts.hints,
             hard: opts.hard,
+            assist: opts.assist,
           }),
         });
         const body = await res.json();
         if (!res.ok) throw new Error(body.error ?? "Request failed");
         const result = body as DleResponse;
-        const record = { guesses: list, solved: result.solved, over: result.over, hard: opts.hard, hints: opts.hints };
+        const record = { guesses: list, solved: result.solved, over: result.over, hard: opts.hard, hints: opts.hints, assist: opts.assist };
         // A daily guess is saved even if the player has since switched modes.
         if (t.kind === "daily") {
           const wasOver = getProgress().dle.results[t.date]?.over;
           saveDle(t.date, record);
-          if (result.over && !wasOver) track("pokedle_complete", { solved: result.solved, guesses: list.length, hard: opts.hard, hints: opts.hints.length });
+          if (result.over && !wasOver) track("pokedle_complete", { solved: result.solved, guesses: list.length, hard: opts.hard, hints: opts.hints.length, assist: opts.assist });
         } else if (t.kind === "archive") {
           saveArchiveRecord(t.date, record);
         }
@@ -178,10 +188,13 @@ export function Pokedle({
       const list = saved?.guesses ?? [];
       const h = saved?.hints ?? [];
       const isHard = list.length ? saved?.hard === true : getDlePrefs().hard;
+      // A game under way keeps the level it started with (an old record: the Notebook, the only level there was).
+      const level = list.length ? dleAssistOf(saved?.assist) : getDlePrefs().assist;
       setGuesses(list);
       setHints(h);
       setHard(isHard);
-      if (list.length) void evaluate(list, { kind, date: d }, { hints: h, hard: isHard });
+      setAssist(level);
+      if (list.length) void evaluate(list, { kind, date: d }, { hints: h, hard: isHard, assist: level });
     },
     [evaluate]
   );
@@ -211,7 +224,7 @@ export function Pokedle({
     guessedRef.current = true;
     const next = [...guesses, entry[0]];
     setGuesses(next);
-    void evaluate(next, target, { hints, hard, undo: { guesses, hints, name: entry[1] } });
+    void evaluate(next, target, { hints, hard, assist, undo: { guesses, hints, name: entry[1] } });
     return true;
   }
 
@@ -220,13 +233,19 @@ export function Pokedle({
     const next = [...hints, hint];
     setHints(next);
     track("pokedle_hint", { hint, mode });
-    void evaluate(guesses, target, { hints: next, hard, undo: { guesses, hints } });
+    void evaluate(guesses, target, { hints: next, hard, assist, undo: { guesses, hints } });
   }
 
   function toggleHard() {
     if (guesses.length > 0) return;
     setHard(!hard);
     setDlePrefs({ hard: !hard });
+  }
+
+  function pickAssist(level: DleAssist) {
+    if (guesses.length > 0) return;
+    setAssist(level);
+    setDlePrefs({ assist: level });
   }
 
   function newPractice() {
@@ -236,6 +255,7 @@ export function Pokedle({
     setGuesses([]);
     setHints([]);
     setHard(getDlePrefs().hard);
+    setAssist(getDlePrefs().assist);
     setState(null);
     setLoading(false);
     setError(null);
@@ -262,6 +282,7 @@ export function Pokedle({
       solved: state.solved,
       hard,
       hints,
+      assist,
       streak: stats?.playStreak ?? 0,
       url: `${window.location.origin}/pokedle`,
       colourBlind: prefs?.colourBlind,
@@ -285,17 +306,17 @@ export function Pokedle({
   }, [sheet]);
 
   const dailyDone = stats?.doneToday ?? false;
-  const score = state ? dleScore(state.rows.length, state.solved, hints) : 0;
+  const score = state ? (state.score ?? dleScore(state.rows.length, state.solved, hints, assist)) : 0;
   const finished: PokedleFinished | null =
     over && state && date && mode === "daily"
-      ? { date, number: dailyNumber(date), solved: state.solved, guesses: state.rows.length, hard, hints, score, guessIds: state.rows.map((r) => r.id) }
+      ? { date, number: dailyNumber(date), solved: state.solved, guesses: state.rows.length, hard, hints, assist, score, guessIds: state.rows.map((r) => r.id) }
       : null;
   const title = mode === "practice" ? "Pokédle · Practice" : date ? `Pokédle #${dailyNumber(date)}${mode === "archive" ? ` · Archive (${date})` : ""}` : "Pokédle";
   const iconButton = "rounded-md p-2 text-muted-foreground hover:bg-screen/10 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
 
   return (
     // The game, and beside it (below on smaller screens) the reference Pokédex.
-    <div className="mx-auto grid max-w-3xl grid-cols-1 gap-6 xl:max-w-none xl:grid-cols-[minmax(0,1fr)_30rem] xl:items-start">
+    <div className={cn("mx-auto grid max-w-3xl grid-cols-1 gap-6", assist !== "off" && "xl:max-w-none xl:grid-cols-[minmax(0,1fr)_30rem] xl:items-start")}>
       <div className="min-w-0 space-y-6">
         <div className="space-y-2 text-center">
           <div className="flex items-center justify-center gap-1">
@@ -336,6 +357,12 @@ export function Pokedle({
               <ShieldAlert className="h-3.5 w-3.5" aria-hidden /> Hard mode {hard ? "on" : "off"}
             </button>
           </div>
+          <AssistPicker
+            value={assist}
+            onChange={pickAssist}
+            disabled={guesses.length > 0}
+            note={guesses.length > 0 ? `${DLE_ASSIST_INFO[assist].label} for this game: the Pokédex assist is set before the first guess.` : undefined}
+          />
           <p className="text-sm text-muted-foreground">
             {DLE_MAX_GUESSES} guesses. 🟩 match · 🟨 right type, wrong slot, or close (dashed, with ▲▼) · ▲▼ the answer is higher / lower.
           </p>
@@ -419,6 +446,9 @@ export function Pokedle({
                     {score.toLocaleString("en-US")} points
                     {hard && <span className="ml-2 text-destructive">Hard mode *</span>}
                   </div>
+                  <div className="text-xs text-muted-foreground" data-testid="assist-result">
+                    {DLE_ASSIST_INFO[assist].emoji} Pokédex assist: {DLE_ASSIST_INFO[assist].label} {multiplierText(assist)}
+                  </div>
                   {hints.length > 0 && (
                     <div className="text-xs text-muted-foreground">
                       Hints used: {hints.map((h) => `${DLE_HINT_EMOJI[h]} ${DLE_HINT_LABEL[h]} −${DLE_HINT_COST[h]}`).join(", ")}
@@ -459,7 +489,10 @@ export function Pokedle({
         )}
 
         {state && state.rows.length > 0 && (
-          <Board rows={state.rows} />
+          <Board
+            rows={state.rows}
+            onClue={assist === "full" ? (column, guessId, cell) => setPick((p) => ({ column, guessId, status: cell.status, value: cell.value, n: (p?.n ?? 0) + 1 })) : undefined}
+          />
         )}
 
         {!over && mode === "daily" && (
@@ -475,14 +508,19 @@ export function Pokedle({
           </p>
         )}
       </div>
-      {/* A new puzzle (the day's, a past one or another practice one) starts with every filter cleared. */}
-      <DexPanel
-        key={gameKey}
-        className="xl:sticky xl:top-20"
-        guessed={guessedIds}
-        clues={panelClues}
-        onPick={over || !target ? undefined : (name) => setFill((f) => ({ name, n: (f?.n ?? 0) + 1 }))}
-      />
+      {/* A new puzzle (the day's, a past one or another practice one) starts with every filter cleared. Assist off: no Pokédex. */}
+      {/* Only once the game (and its level) is known, so a lighter level never loads a heavier Pokédex first. */}
+      {target && assist !== "off" && (
+        <DexPanel
+          key={`${gameKey}|${assist}`}
+          assist={assist}
+          className="xl:sticky xl:top-20"
+          guessed={guessedIds}
+          clues={panelClues}
+          pick={pick}
+          onPick={over || !target ? undefined : (name) => setFill((f) => ({ name, n: (f?.n ?? 0) + 1 }))}
+        />
+      )}
 
       {sheet === "howto" && <HowToSheet onClose={closeSheet} />}
       {sheet === "stats" && stats && (
