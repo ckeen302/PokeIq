@@ -4,6 +4,7 @@ import { clientIp, rateLimit } from "@/lib/server/rate-limit";
 import { duelNameSchema } from "@/lib/server/duel-core";
 import { battlesEnabled } from "@/lib/server/battle-engine/store";
 import { createCpuBattle, createLiveBattle } from "@/lib/server/battle-engine/service";
+import { battlePlayerKey } from "@/lib/server/battle-engine/identity";
 import { PLAY_FORMATS, BATTLE_TEAM_MAX, CPU_LEVELS, type BattleSeatResponse } from "@/lib/battle/play";
 
 /**
@@ -27,10 +28,12 @@ const team = z.string().max(BATTLE_TEAM_MAX).optional();
 const format = z.enum([...PLAY_FORMATS, "custom"]);
 /** Format "custom" takes `rules` (custom-rules.ts), checked by Showdown's format parser before the battle starts. */
 const rules = z.record(z.unknown()).optional();
+/** The browser's signed id (see /api/battle/id), for the trainer's battle record and replays. */
+const rankedId = z.string().max(200).optional();
 
 const bodySchema = z.discriminatedUnion("mode", [
-  z.object({ mode: z.literal("cpu"), name: duelNameSchema, format, level: z.enum(CPU_LEVELS).default("normal"), team, rules }),
-  z.object({ mode: z.literal("pvp"), name: duelNameSchema, format, team, rules, public: z.boolean().default(false), timer: z.boolean().default(true) }),
+  z.object({ mode: z.literal("cpu"), name: duelNameSchema, format, level: z.enum(CPU_LEVELS).default("normal"), team, rules, rankedId }),
+  z.object({ mode: z.literal("pvp"), name: duelNameSchema, format, team, rules, rankedId, public: z.boolean().default(false), timer: z.boolean().default(true) }),
 ]);
 
 export async function POST(request: NextRequest) {
@@ -44,7 +47,8 @@ export async function POST(request: NextRequest) {
   if (!parsed.success) return NextResponse.json({ error: parsed.error.issues[0].message }, { status: 400, headers: NO_STORE });
   const body = parsed.data;
   try {
-    const out = body.mode === "cpu" ? await createCpuBattle(body) : await createLiveBattle(body);
+    const player = (await battlePlayerKey(request, body.rankedId)) ?? undefined;
+    const out = body.mode === "cpu" ? await createCpuBattle({ ...body, player }) : await createLiveBattle({ ...body, player });
     if (!out.ok) return NextResponse.json({ error: out.error }, { status: out.status, headers: NO_STORE });
     const seat: BattleSeatResponse = { code: out.code, token: out.token, view: out.view };
     return NextResponse.json(seat, { headers: NO_STORE });

@@ -1,0 +1,204 @@
+"use client";
+
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import dynamic from "next/dynamic";
+import Link from "next/link";
+import { ChevronLeft, ChevronRight, ChevronsRight, Loader2, Pause, Play, RotateCcw, Swords } from "lucide-react";
+import type { BattleView } from "@/lib/battle/play";
+import { lastTurn, linesThrough, replayResult, type ReplayData } from "@/lib/battle/replay";
+import { buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import { ShareReplay } from "./BattleAfter";
+
+const BattleScreen = dynamic(() => import("./play/BattleScreen"), {
+  ssr: false,
+  loading: () => (
+    <div className="flex aspect-[16/9] w-full items-center justify-center rounded-lg border bg-card">
+      <Loader2 className="h-6 w-6 animate-spin text-screen" aria-label="Loading the replay" />
+    </div>
+  ),
+});
+
+/** A short pause between turns while playing, so each one reads as a turn. */
+const BETWEEN_TURNS_MS = 450;
+
+/**
+ * A replay, played on the battle screen itself (the same sprites and
+ * animations): play and pause, a turn back or forward, jump to any turn, and
+ * the screen's own speed control (0.5× to 4×). Going forward animates the
+ * turn; going back or jumping shows the battle as it stood at once.
+ */
+export function ReplayViewer({ replay }: { replay: ReplayData }) {
+  const last = useMemo(() => lastTurn(replay.log), [replay.log]);
+  /** The turn whose start is on screen (0: nothing yet; last + 1: the end). */
+  const [turn, setTurn] = useState(0);
+  const [shown, setShown] = useState<{ lines: string[]; reset: number; instant?: boolean }>({ lines: [], reset: 0 });
+  const [playing, setPlaying] = useState(false);
+  const playingRef = useRef(false);
+  const turnRef = useRef(0);
+  const animating = useRef(false);
+  const timer = useRef<number | undefined>(undefined);
+  const end = last + 1;
+  const atEnd = turn >= end;
+
+  /** Shows the next turn, animated. */
+  const forward = useCallback(() => {
+    const next = turnRef.current + 1;
+    if (next > end) return false;
+    turnRef.current = next;
+    setTurn(next);
+    animating.current = true;
+    setShown((s) => ({ lines: linesThrough(replay.log, next), reset: s.reset }));
+    return true;
+  }, [end, replay.log]);
+
+  /** Shows turn `t` as it stood, at once. */
+  const jump = useCallback(
+    (t: number) => {
+      const to = Math.max(0, Math.min(end, t));
+      window.clearTimeout(timer.current);
+      turnRef.current = to;
+      setTurn(to);
+      animating.current = false;
+      setShown((s) => ({ lines: to === 0 ? [] : linesThrough(replay.log, to), reset: s.reset + 1, instant: true }));
+    },
+    [end, replay.log]
+  );
+
+  const pause = useCallback(() => {
+    playingRef.current = false;
+    setPlaying(false);
+    window.clearTimeout(timer.current);
+  }, []);
+
+  const play = useCallback(() => {
+    if (turnRef.current >= end) jump(0);
+    playingRef.current = true;
+    setPlaying(true);
+    if (!animating.current) {
+      window.clearTimeout(timer.current);
+      timer.current = window.setTimeout(() => {
+        if (playingRef.current && !forward()) pause();
+      }, 0);
+    }
+  }, [end, forward, jump, pause]);
+
+  // The screen's queue ran dry: the next turn, if playing.
+  const onIdle = useCallback(() => {
+    animating.current = false;
+    if (!playingRef.current) return;
+    window.clearTimeout(timer.current);
+    timer.current = window.setTimeout(() => {
+      if (playingRef.current && !forward()) pause();
+    }, BETWEEN_TURNS_MS);
+  }, [forward, pause]);
+
+  useEffect(() => {
+    if (atEnd && playing) pause();
+  }, [atEnd, playing, pause]);
+  useEffect(() => () => window.clearTimeout(timer.current), []);
+
+  const view = useMemo<BattleView>(
+    () => ({
+      code: replay.id,
+      kind: "pvp",
+      format: replay.format,
+      formatName: replay.formatName,
+      status: atEnd ? "finished" : "playing",
+      now: 0,
+      rev: 0,
+      you: null,
+      players: replay.players.map((name, i) => ({ name, ready: true, quiet: false, hasTeam: true, ...(replay.ratings ? { rating: replay.ratings[i] } : {}) })),
+      turn: Math.min(turn, last),
+      log: { from: 0, total: 0, lines: [] },
+      request: null,
+      waiting: false,
+      ranked: replay.ranked,
+      ...(atEnd ? { end: { reason: replay.reason, winner: replay.winner, at: 0 } } : {}),
+    }),
+    [replay, atEnd, turn, last]
+  );
+
+  const button = "flex h-9 items-center gap-1.5 rounded-md border bg-card px-3 font-display text-xs font-bold uppercase tracking-wider hover:border-screen/60 disabled:opacity-40";
+  const toolbar = (
+    <div className="flex flex-wrap items-center gap-2 rounded-lg border bg-card/60 p-2" data-testid="replay-controls">
+      <button type="button" className={button} onClick={() => jump(turn - 1)} disabled={turn <= 0} aria-label="Back a turn" data-testid="replay-back">
+        <ChevronLeft className="h-4 w-4" aria-hidden /> Turn
+      </button>
+      {playing ? (
+        <button type="button" className={cn(button, "border-primary text-primary")} onClick={pause} data-testid="replay-pause">
+          <Pause className="h-4 w-4" aria-hidden /> Pause
+        </button>
+      ) : (
+        <button type="button" className={cn(button, "border-primary bg-primary text-primary-foreground hover:brightness-110")} onClick={play} data-testid="replay-play">
+          {atEnd ? <RotateCcw className="h-4 w-4" aria-hidden /> : <Play className="h-4 w-4" aria-hidden />} {atEnd ? "Replay" : "Play"}
+        </button>
+      )}
+      <button
+        type="button"
+        className={button}
+        onClick={() => {
+          pause();
+          if (animating.current) jump(turnRef.current);
+          else forward();
+        }}
+        disabled={atEnd}
+        aria-label="Forward a turn"
+        data-testid="replay-forward"
+      >
+        Turn <ChevronRight className="h-4 w-4" aria-hidden />
+      </button>
+      <button type="button" className={button} onClick={() => jump(end)} disabled={atEnd} data-testid="replay-end">
+        End <ChevronsRight className="h-4 w-4" aria-hidden />
+      </button>
+      <label className="ml-auto flex min-w-[12rem] flex-1 items-center gap-2 sm:max-w-xs">
+        <span className="hud-label shrink-0 tabular-nums" data-testid="replay-turn">
+          {turn === 0 ? "Start" : atEnd ? "End" : `Turn ${turn}`} / {last}
+        </span>
+        <input
+          type="range"
+          min={0}
+          max={end}
+          value={turn}
+          onChange={(e) => {
+            pause();
+            jump(Number(e.target.value));
+          }}
+          aria-label="Jump to a turn"
+          className="w-full accent-[hsl(var(--primary))]"
+          data-testid="replay-seek"
+        />
+      </label>
+    </div>
+  );
+
+  return (
+    <div className="space-y-3">
+      <BattleScreen
+        view={view}
+        log={shown}
+        offset={0}
+        busy={false}
+        error={null}
+        onChoose={() => {}}
+        replay
+        onIdle={onIdle}
+        toolbar={toolbar}
+        endActions={
+          <div className="flex flex-wrap justify-center gap-2">
+            <ShareReplay id={replay.id} text={`${replayResult(replay)} in ${replay.formatName}: watch the replay on PokéIQ`} size="default" />
+            <Link href="/battle/replays" className={buttonVariants({ variant: "outline" })}>
+              More replays
+            </Link>
+            <Link href="/battle/play" className={buttonVariants()}>
+              <Swords className="h-4 w-4" aria-hidden /> Battle
+            </Link>
+          </div>
+        }
+      />
+      <div className="flex justify-end">
+        <ShareReplay id={replay.id} text={`${replayResult(replay)} in ${replay.formatName}: watch the replay on PokéIQ`} />
+      </div>
+    </div>
+  );
+}

@@ -463,7 +463,7 @@ function applyCustom(meta: BattleMeta, custom: { rules: CustomRules; formatid: s
   meta.formatid = custom.formatid;
 }
 
-export async function createCpuBattle(opts: { name: string; format: PlayFormatId; level: CpuLevel; team?: string; rules?: unknown }, now = Date.now()) {
+export async function createCpuBattle(opts: { name: string; format: PlayFormatId; level: CpuLevel; team?: string; rules?: unknown; player?: string }, now = Date.now()) {
   const custom = customFormat(opts.format, opts.rules);
   if (!custom.ok) return custom;
   const team = checkTeam(opts.format, opts.team, custom.custom?.rules);
@@ -476,7 +476,7 @@ export async function createCpuBattle(opts: { name: string; format: PlayFormatId
   }
   for (let attempt = 0; attempt < 4; attempt++) {
     const code = newBattleCode();
-    const me: BattleSeat = { id: randomId(), name: opts.name, ready: true, seenAt: now, team: team.packed };
+    const me: BattleSeat = { id: randomId(), name: opts.name, ready: true, seenAt: now, team: team.packed, ...(opts.player ? { player: opts.player } : {}) };
     const cpu: BattleSeat = { id: CPU_SEAT_ID, name: cpuName(opts.name), ready: true, seenAt: now, team: foeTeam };
     const meta = newMeta(code, "cpu", opts.format, [me, cpu], now);
     applyCustom(meta, custom.custom);
@@ -697,7 +697,7 @@ function touch(meta: BattleMeta, playerId: string | null, now: number): boolean 
 }
 
 export type BattleAction =
-  | { action: "join"; name: string; team?: string }
+  | { action: "join"; name: string; team?: string; player?: string }
   | { action: "ready"; ready: boolean }
   | { action: "team"; team: string }
   | { action: "choose"; rqid: number; choice: string }
@@ -733,7 +733,7 @@ export async function actOnBattle(
       if (meta.seats.some((s) => s.name.toLowerCase() === body.name.toLowerCase())) return fail(409, `${body.name} is already in this battle. Pick another name.`);
       if (!PLAY_FORMAT_INFO[meta.format].random && !packed) return fail(400, `${PLAY_FORMAT_INFO[meta.format].name} needs a team: paste one in Showdown's export format.`);
       joined = randomId();
-      meta.seats.push({ id: joined, name: body.name, ready: false, seenAt: now, team: packed });
+      meta.seats.push({ id: joined, name: body.name, ready: false, seenAt: now, team: packed, ...(body.player ? { player: body.player } : {}) });
       meta.chat = systemLine(meta.chat, `${body.name} joined`, now);
       return { ok: true };
     }

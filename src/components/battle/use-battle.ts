@@ -6,6 +6,7 @@ import { loadBattleSeat, saveBattleSeat } from "@/lib/battle/seat";
 import { setTrainerName, useProgress } from "@/lib/progress";
 import { battleHiddenDelay, battlePollDelay, fingerprint, startPoller } from "@/lib/polling";
 import { unlockAudio } from "@/lib/sound";
+import { ensureBattleId } from "@/lib/battle/replay-client";
 
 /**
  * A battle as this player may see it, kept fresh: polls the server with the
@@ -200,7 +201,8 @@ export function useBattle(code: string) {
     setError(null);
     const sentAt = Date.now();
     try {
-      const out = await post<BattleSeatResponse>(api, { action: "join", name, team });
+      const rankedId = (await ensureBattleId()) ?? undefined;
+      const out = await post<BattleSeatResponse>(api, { action: "join", name, team, rankedId });
       if (!out.ok) throw new Error(out.data.error ?? `Request failed (${out.status})`);
       saveBattleSeat(code, out.data.token);
       token.current = out.data.token;

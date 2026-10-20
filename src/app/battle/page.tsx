@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { pageMetadata } from "@/lib/seo";
 import Link from "next/link";
-import { ArrowRight, Bot, Calculator, Castle, Eye, Factory, FlaskConical, Radio, UserSearch, Users, type LucideIcon } from "lucide-react";
+import { ArrowRight, Bot, Calculator, Castle, Clapperboard, Eye, Factory, FlaskConical, Radio, UserSearch, Users, type LucideIcon } from "lucide-react";
 import { HudHeading } from "@/components/game/HudHeading";
 import { HpBar } from "@/components/game/HpBar";
 import { BATTLE_FORMATS, BATTLE_FORMAT_IDS } from "@/lib/battle/formats";
@@ -27,6 +27,7 @@ const TOOLS: { href: string; icon: LucideIcon; label: string }[] = [
   { href: "/battle/calc", icon: Calculator, label: "Damage calc" },
   { href: "/battle/lab", icon: FlaskConical, label: "Battle Lab" },
   { href: "/battle/watch", icon: Eye, label: "Watch live" },
+  { href: "/battle/replays", icon: Clapperboard, label: "Replays" },
 ];
 
 const LIVE: { href: string; icon: LucideIcon; title: string; blurb: string; points: string[]; wide?: boolean }[] = [

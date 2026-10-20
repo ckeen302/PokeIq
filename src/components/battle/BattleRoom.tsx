@@ -16,6 +16,7 @@ import { FrontierAfter } from "./Frontier";
 import { builderFormatFor, customName, describeRules } from "@/lib/battle/custom-rules";
 import { useBattle, type BattleHandle } from "./use-battle";
 import { ChatBox } from "@/components/chat/ChatBox";
+import { BattleAfter } from "./BattleAfter";
 
 /** A live battle's chat: the two players talk; anyone else watching reads along. */
 function BattleChat({ view, battle, collapsible, className }: { view: BattleView; battle: BattleHandle; collapsible?: boolean; className?: string }) {
@@ -326,7 +327,16 @@ export function BattleRoom({ code }: { code: string }) {
         error={battle.error}
         onChoose={(rqid, choice) => void battle.choose(rqid, choice)}
         onStartTimer={() => void battle.startTimer()}
-        endActions={view.frontier ? <FrontierAfter view={view} /> : view.kind === "cpu" ? <CpuAgain /> : <LiveAgain view={view} battle={battle} />}
+        endActions={
+          view.frontier ? (
+            <FrontierAfter view={view} />
+          ) : (
+            <div className="space-y-3">
+              <BattleAfter view={view} battle={battle} />
+              {view.kind === "cpu" ? <CpuAgain /> : <LiveAgain view={view} battle={battle} />}
+            </div>
+          )
+        }
         side={view.kind === "pvp" ? <BattleChat view={view} battle={battle} collapsible /> : undefined}
       />
       {view.status === "playing" && <ForfeitButton busy={battle.busy} onForfeit={() => void battle.act({ action: "forfeit" })} />}

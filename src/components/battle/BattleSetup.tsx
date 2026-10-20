@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { Bot, Loader2, Radio, Swords, UserSearch, X } from "lucide-react";
 import { CPU_LEVEL_INFO, CPU_LEVELS, PLAY_FORMAT_INFO, PLAY_FORMATS, battleHref, type BattleSeatResponse, type CpuLevel, type PlayFormatId } from "@/lib/battle/play";
 import { saveBattleSeat } from "@/lib/battle/seat";
+import { ensureBattleId } from "@/lib/battle/replay-client";
 import { NAME_REJECTED, isCleanName } from "@/lib/name-filter";
 import { setTrainerName, useProgress } from "@/lib/progress";
 import { unlockAudio } from "@/lib/sound";
@@ -72,7 +73,8 @@ function useTicker(on: boolean): number {
 export async function startBattle(
   body: { mode: "cpu" | "pvp" } & Omit<CpuSetup, "level"> & { level?: CpuLevel; public?: boolean; timer?: boolean }
 ): Promise<string> {
-  const res = await fetch("/api/battle", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+  const rankedId = (await ensureBattleId()) ?? undefined;
+  const res = await fetch("/api/battle", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...body, rankedId }) });
   const data = (await res.json().catch(() => ({}))) as Partial<BattleSeatResponse> & { error?: string };
   if (!res.ok || !data.code || !data.token) throw new Error(data.error ?? `Request failed (${res.status})`);
   saveBattleSeat(data.code, data.token);

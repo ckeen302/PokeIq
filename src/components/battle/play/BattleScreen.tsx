@@ -133,6 +133,10 @@ export default function BattleScreen({ view, log, offset, busy, error, onChoose,
   const watching = view.you === null;
   const idle = useRef(onIdle);
   idle.current = onIdle;
+  /** Counts resets, so a step still animating from before one doesn't commit its state. */
+  const generation = useRef(0);
+  /** Battle log option: animations on (off: each step lands at once, text and all). */
+  const animations = useRef(true);
   const me: SideId = view.you === 1 ? "p2" : "p1";
   const doubles = PLAY_FORMAT_INFO[view.format].gameType === "doubles";
   const model = useRef<BattleModel | null>(null);
@@ -202,19 +206,24 @@ export default function BattleScreen({ view, log, offset, busy, error, onChoose,
     const reducedMotion = typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
     while (queue.current.length) {
       const step = queue.current.shift()!;
+      // A reset (a replay jumping to another turn) mid-step: the old step must not paint over the new state.
+      const g = generation.current;
+      const commit = (s: Snap) => {
+        if (g === generation.current) setSnap(s);
+      };
       addEntry(step);
       if (step.text.trim() && step.cmd !== "turn") setMessage(step.text);
-      if (skipping.current || !stage.current) {
-        if (!queue.current.length && step.snap) setSnap(step.snap);
+      if (skipping.current || !stage.current || !animations.current) {
+        if (!queue.current.length && step.snap) commit(step.snap);
         continue;
       }
       const controller = new AbortController();
       abort.current = controller;
       try {
-        await playStep(step, { stage: stage.current, commit: setSnap, popup, speed: speedRef.current, signal: controller.signal, reducedMotion: !!reducedMotion });
+        await playStep(step, { stage: stage.current, commit, popup, speed: speedRef.current, signal: controller.signal, reducedMotion: !!reducedMotion });
       } catch (err) {
         console.error("[battle] step failed:", err);
-        if (step.snap) setSnap(step.snap);
+        if (step.snap) commit(step.snap);
       }
     }
     skipping.current = false;
@@ -228,12 +237,19 @@ export default function BattleScreen({ view, log, offset, busy, error, onChoose,
   useLayoutEffect(() => {
     let first = false;
     if (!model.current || log.reset !== resetSeen.current) {
+      const restart = !!model.current;
       model.current = new BattleModel(me);
       fed.current = 0;
       queue.current = [];
       resetSeen.current = log.reset;
       setEntries([]);
       first = true;
+      if (restart) {
+        generation.current += 1;
+        abort.current?.abort();
+        setSnap(emptySnap());
+        setMessage("");
+      }
     }
     const fresh = log.lines.slice(fed.current);
     fed.current = log.lines.length;
