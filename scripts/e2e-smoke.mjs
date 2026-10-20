@@ -867,7 +867,7 @@ if (factoryWon) {
   await page.getByTestId("swap-confirm").click();
   await page.getByTestId("frontier-mon").first().waitFor({ timeout: 30_000 });
   if ((await page.getByTestId("frontier-mon").first().innerText()) === before) errors.push("the Factory trade didn't change the team");
-  if (!/Streak\s*1/.test(await page.getByTestId("frontier-streak").innerText())) errors.push("the Factory streak didn't show 1");
+  if (!/streak\s*1\b/i.test(await page.getByTestId("frontier-streak").innerText())) errors.push("the Factory streak didn't show 1");
 } else console.log("  no win in 4 tries: the trade wasn't exercised");
 
 step("Battle Tower: enter with a quick team, pick three at team preview");
