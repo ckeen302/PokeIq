@@ -94,6 +94,8 @@ export interface BattleMeta {
   chat?: ChatLine[];
   /** Live battles: listed in the Watch lobby (matchmade battles always; friend battles when the host lets anyone watch). */
   public?: boolean;
+  /** A trainer chose "Don't allow spectators": never listed, no spectators while it's played, an unlisted replay. */
+  hidden?: boolean;
   /** A ranked ladder battle (matchmade only). */
   ranked?: boolean;
   /** Spectators: an anonymous viewer id → when it last polled. */
@@ -334,6 +336,34 @@ export async function listLiveBattles(limit = 60): Promise<LiveBattleRow[]> {
     .sort((a, b) => b.createdAt - a.createdAt)
     .slice(0, limit)
     .map((meta) => ({ meta, createdAt: meta.createdAt }));
+}
+
+/**
+ * Live battles between trainers under way right now (any privacy: only
+ * counted, never listed), touched within `freshMs`: just each seat's ladder
+ * key, for the live counters on the battle home.
+ */
+export async function activeBattleSeats(freshMs = 120_000, limit = 1000): Promise<(string | null)[][]> {
+  const now = Date.now();
+  const sb = remote();
+  if (sb) {
+    const { data, error } = await sb
+      .from(TABLE)
+      .select("seats:meta->seats")
+      .eq("kind", "pvp")
+      .eq("meta->>status", "playing")
+      .gt("updated_at", new Date(now - freshMs).toISOString())
+      .gt("expires_at", new Date(now).toISOString())
+      .limit(limit);
+    if (error) throw new Error(error.message);
+    return ((data ?? []) as unknown as { seats: { player?: string }[] | null }[]).map((r) => (r.seats ?? []).map((s) => s.player ?? null));
+  }
+  return [...memory().values()]
+    .filter((row) => row.expires > now)
+    .map((row) => (JSON.parse(row.json) as BattleRecord).meta)
+    .filter((m) => m.kind === "pvp" && m.status === "playing" && m.seats.some((s) => now - s.seenAt <= freshMs))
+    .slice(0, limit)
+    .map((m) => m.seats.map((s) => s.player ?? null));
 }
 
 /**

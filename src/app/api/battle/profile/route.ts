@@ -9,7 +9,7 @@ import type { BattleProfileResponse } from "@/lib/battle/profile";
  * browser's signed id; a signed-in trainer is their account): wins and
  * losses per format, ladder ratings, and your latest battles.
  * { available: false } until records are on (migration 0018).
- * Public profiles of accounts are pages: /battle/player/<name>.
+ * Public profiles of accounts are pages: /u/<name>.
  */
 
 const NO_STORE = { "Cache-Control": "no-store" };

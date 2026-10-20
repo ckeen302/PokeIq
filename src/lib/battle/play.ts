@@ -19,7 +19,18 @@ import type { FrontierBattleInfo } from "./frontier";
  * a saved or pasted team can be brought to.
  */
 export const PLAY_FORMATS = ["gen9randombattle", "gen9randomdoublesbattle", "gen9ou", "gen9ubers", "gen9uu", "gen9doublesou"] as const;
-export type StandardFormatId = (typeof PLAY_FORMATS)[number];
+
+/**
+ * Past generations: Showdown's popular formats from Gen 8 back to Gen 1
+ * (Random Battle, OU and UU in each), the same engine with each
+ * generation's own mechanics. Live and against the computer; not laddered.
+ */
+export const PAST_GENS = [8, 7, 6, 5, 4, 3, 2, 1] as const;
+export const PAST_FORMATS = PAST_GENS.flatMap((g) => [`gen${g}randombattle`, `gen${g}ou`, `gen${g}uu`] as const) as readonly PastFormatId[];
+export type PastFormatId = `gen${(typeof PAST_GENS)[number]}${"randombattle" | "ou" | "uu"}`;
+/** Every standard format a battle can be played in: the current ones, then the past generations. */
+export const ALL_FORMATS: readonly StandardFormatId[] = [...PLAY_FORMATS, ...PAST_FORMATS];
+export type StandardFormatId = (typeof PLAY_FORMATS)[number] | PastFormatId;
 /**
  * Formats with their own way in: "custom" (the players' own ruleset, see
  * custom-rules.ts) and the Battle Frontier's (frontier.ts). Their battles
@@ -40,7 +51,27 @@ export interface PlayFormatInfo {
 
 const BRING = "Bring your own team: a saved one, or paste one in Showdown's export format.";
 
+const PAST_TIER = { randombattle: "Random Battle", ou: "OU", uu: "UU" } as const;
+
+function pastInfo(): Record<PastFormatId, PlayFormatInfo> {
+  const out = {} as Record<PastFormatId, PlayFormatInfo>;
+  for (const g of PAST_GENS) {
+    for (const tier of ["randombattle", "ou", "uu"] as const) {
+      const random = tier === "randombattle";
+      out[`gen${g}${tier}`] = {
+        name: `[Gen ${g}] ${PAST_TIER[tier]}`,
+        short: `Gen ${g} ${random ? "Random" : PAST_TIER[tier]}`,
+        blurb: random ? `Six random Pokémon each with Gen ${g}'s own sets and mechanics. No team needed.` : BRING,
+        gameType: "singles",
+        random,
+      };
+    }
+  }
+  return out;
+}
+
 export const PLAY_FORMAT_INFO: Record<PlayFormatId, PlayFormatInfo> = {
+  ...pastInfo(),
   gen9ou: { name: "[Gen 9] OU", short: "OU", blurb: BRING, gameType: "singles", random: false },
   gen9ubers: { name: "[Gen 9] Ubers", short: "Ubers", blurb: BRING, gameType: "singles", random: false },
   gen9uu: { name: "[Gen 9] UU", short: "UU", blurb: BRING, gameType: "singles", random: false },
@@ -90,7 +121,7 @@ export const PLAY_FORMAT_INFO: Record<PlayFormatId, PlayFormatInfo> = {
 };
 
 export const isPlayFormat = (value: unknown): value is StandardFormatId =>
-  typeof value === "string" && (PLAY_FORMATS as readonly string[]).includes(value);
+  typeof value === "string" && (ALL_FORMATS as readonly string[]).includes(value);
 
 /** A pasted team is at most this long (six sets in Showdown's export format are ~2-3 KB). */
 export const BATTLE_TEAM_MAX = 12_000;

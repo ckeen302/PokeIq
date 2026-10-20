@@ -9,6 +9,7 @@ import { useAccount } from "@/lib/account";
 import { cn } from "@/lib/utils";
 import { MuteToggle } from "./MuteToggle";
 import { ThemeToggle } from "./ThemeToggle";
+import { FriendsButton } from "@/components/community/FriendsButton";
 
 const DESKTOP_LINKS = [
   { href: "/daily", label: "Daily" },
@@ -68,6 +69,7 @@ export function DesktopNav() {
           );
         })}
       </div>
+      <FriendsButton />
       <ThemeToggle />
       <MuteToggle />
       {account.status === "ready" && account.enabled && !account.user && (

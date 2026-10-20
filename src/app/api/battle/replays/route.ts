@@ -3,7 +3,7 @@ import { z } from "zod";
 import { clientIp, rateLimit, tooManyRequests } from "@/lib/server/rate-limit";
 import { ReplaysUnavailable, replayStore } from "@/lib/server/battle-engine/replays";
 import { battlePlayerKey } from "@/lib/server/battle-engine/identity";
-import { PLAY_FORMATS, SPECIAL_FORMATS } from "@/lib/battle/play";
+import { ALL_FORMATS, SPECIAL_FORMATS, type PlayFormatId } from "@/lib/battle/play";
 import { REPLAY_ID_RE, type ReplayListResponse } from "@/lib/battle/replay";
 
 /**
@@ -17,7 +17,7 @@ import { REPLAY_ID_RE, type ReplayListResponse } from "@/lib/battle/replay";
 const NO_STORE = { "Cache-Control": "no-store" };
 const querySchema = z.object({
   scope: z.enum(["recent", "mine"]).default("recent"),
-  format: z.enum([...PLAY_FORMATS, ...SPECIAL_FORMATS]).optional(),
+  format: z.enum([...SPECIAL_FORMATS, ...ALL_FORMATS] as [PlayFormatId, ...PlayFormatId[]]).optional(),
   ids: z
     .string()
     .max(600)

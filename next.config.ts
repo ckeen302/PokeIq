@@ -37,9 +37,14 @@ const nextConfig: NextConfig = {
   // fonts from disk by a computed path.
   outputFileTracingIncludes: {
     ...Object.fromEntries(
-      ["/api/battle/**", "/battle/**"].map((route) => [route, ["./node_modules/pokemon-showdown/dist/{config,data,lib,sim}/**/*.{js,json}"]])
+      // Friends name battles (challenges, "now playing") and profiles read battle records: the same engine.
+      ["/api/battle/**", "/battle/**", "/api/friends/**", "/api/presence", "/api/live", "/u/**"].map((route) => [route, ["./node_modules/pokemon-showdown/dist/{config,data,lib,sim}/**/*.{js,json}"]])
     ),
     "/**/opengraph-image*": ["./src/assets/fonts/*.ttf"],
+  },
+  // Battle profiles became the trainer's profile.
+  async redirects() {
+    return [{ source: "/battle/player/:name", destination: "/u/:name", permanent: true }];
   },
   async headers() {
     return [

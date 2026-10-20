@@ -5,6 +5,7 @@ import { Analytics } from "@vercel/analytics/next";
 import { DesktopNav, MobileTabBar } from "@/components/layout/SiteNav";
 import { Logo } from "@/components/layout/Logo";
 import { AccountSync } from "@/components/account/AccountSync";
+import { CommunityLayer } from "@/components/community/CommunityLayer";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
 import { SITE_DESCRIPTION, SITE_TAGLINE, jsonLd } from "@/lib/seo";
 import { SPLASH_INIT_SCRIPT, THEME_INIT_SCRIPT } from "@/lib/theme";
@@ -100,6 +101,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </footer>
         <MobileTabBar />
         <AccountSync />
+        <CommunityLayer />
         <ErrorReporter />
         {/* The analytics endpoint only exists on Vercel deployments. */}
         {process.env.VERCEL && <Analytics />}

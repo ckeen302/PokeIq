@@ -11,16 +11,17 @@ export const metadata: Metadata = pageMetadata({
   path: "/battle/play",
 });
 
-export default async function BattlePlayPage({ searchParams }: { searchParams: Promise<{ vs?: string }> }) {
-  const { vs } = await searchParams;
+export default async function BattlePlayPage({ searchParams }: { searchParams: Promise<{ vs?: string; challenge?: string }> }) {
+  const { vs, challenge } = await searchParams;
   // ?vs=anyone opens on "Find an opponent", ?vs=friend on the invite link.
-  const opening: Opponent = vs === "anyone" ? "match" : vs === "friend" ? "pvp" : "cpu";
+  const friend = challenge && /^[A-Za-z0-9_-]{3,20}$/.test(challenge) ? challenge : undefined;
+  const opening: Opponent = friend || vs === "friend" ? "pvp" : vs === "anyone" ? "match" : "cpu";
   return (
     <div className="mx-auto max-w-6xl space-y-8">
       <BattleHeader crumb="Play" title="Start a" accent="battle">
         Pokémon Showdown&apos;s own battle engine: every move, ability and item works as it does there. Pick an opponent, a format and go.
       </BattleHeader>
-      <BattleSetup initial={opening} />
+      <BattleSetup initial={opening} challenge={friend} />
     </div>
   );
 }

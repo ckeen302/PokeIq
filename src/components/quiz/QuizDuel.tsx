@@ -28,6 +28,7 @@ import { DuelGone, DuelLoading, DuelLobby, DuelNotice, DuelVisitor, LeaveButton,
 import { DuelChat, DuelTools, EmoteFeed } from "@/components/duel/DuelReactions";
 import { CryPlayer, ImageMedia } from "./QuestionMedia";
 import { cn } from "@/lib/utils";
+import { AddFriendAfterGame } from "@/components/community/AddFriend";
 
 /**
  * A quiz duel at /quiz/duel/<code>: the lobby, ten questions with their
@@ -232,6 +233,7 @@ export function QuizDuel({ code }: { code: string }) {
         {notice}
         <DuelSummary view={view} busy={busy} home={home} onRematch={() => void startRematch()} />
         <div className="mx-auto mt-4 max-w-3xl space-y-4">
+          {view.you !== null && <AddFriendAfterGame kind="quiz" code={view.code} />}
           {tools}
           {chat}
         </div>

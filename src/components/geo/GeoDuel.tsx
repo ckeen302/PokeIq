@@ -24,6 +24,7 @@ import { DuelGone, DuelLoading, DuelLobby, DuelNotice, DuelVisitor, LeaveButton,
 import { DuelChat, DuelTools, EmoteFeed } from "@/components/duel/DuelReactions";
 import { GeoMap, type MapPin, type RevealedRound } from "./GeoMap";
 import { cn } from "@/lib/utils";
+import { AddFriendAfterGame } from "@/components/community/AddFriend";
 
 /**
  * A PokéGuessr duel at /guessr/duel/<code>: the lobby, the rounds, the reveals
@@ -227,6 +228,7 @@ export function GeoDuel({ code, regions }: GeoDuelProps) {
         {notice}
         <DuelSummary view={view} map={map} busy={busy} onRematch={() => void rematch()} />
         <div className="mx-auto mt-4 max-w-3xl space-y-4">
+          {view.you !== null && <AddFriendAfterGame kind="guessr" code={view.code} />}
           {tools}
           {chat}
         </div>
