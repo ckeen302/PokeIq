@@ -4,6 +4,7 @@ import type { PRNGSeed } from "pokemon-showdown/dist/sim/prng";
 import { PLAY_FORMAT_INFO, BATTLE_TEAM_MAX, type PlayFormatId } from "@/lib/battle/play";
 import { randomTeam as legalRandomTeam } from "@/lib/server/battle";
 import type { BattleFormatId } from "@/lib/battle/formats";
+import { completeSet, type TeamSet } from "@/lib/battle/sets";
 import { newSeed, randomTeam } from "./engine";
 
 /**
@@ -55,22 +56,38 @@ interface FactoryGenerator {
   randomFactoryTeam(side: { name: string }): PokemonSet[];
 }
 
+/** Battle Factory tiers Showdown ships sets for, by team format. */
+const FACTORY_TIER: Partial<Record<PlayFormatId, string>> = { gen9ou: "OU", gen9ubers: "Uber", gen9uu: "UU" };
+
 /**
- * An OU team for the computer: Showdown's tournament-grade Battle Factory
- * sets for OU. Tiers move, so a team is kept only once it passes the OU
- * validator (a few tries, then the team builder's random legal team).
+ * Showdown's tournament-grade Battle Factory sets for the format's tier.
+ * Tiers move, so a team is kept only once it passes the format's validator
+ * (a few tries, then the team builder's random legal team).
  */
-function factoryOuTeam(seed: string): string {
-  const prng = new PRNG(seed as PRNGSeed);
-  const validator = TeamValidator.get("gen9ou");
-  for (let attempt = 0; attempt < 5; attempt++) {
-    const generator = Teams.getGenerator("gen9randombattle", prng.getSeed()) as FactoryGenerator;
-    prng.random();
-    generator.factoryTier = "OU";
-    const team = generator.randomFactoryTeam({ name: "p2" });
-    if (!validator.validateTeam(structuredClone(team))) return Teams.pack(team);
+function factoryTeam(format: PlayFormatId, seed: string): PokemonSet[] {
+  const tier = FACTORY_TIER[format];
+  if (tier) {
+    const prng = new PRNG(seed as PRNGSeed);
+    const validator = TeamValidator.get(format);
+    for (let attempt = 0; attempt < 5; attempt++) {
+      const generator = Teams.getGenerator("gen9randombattle", prng.getSeed()) as FactoryGenerator;
+      prng.random();
+      generator.factoryTier = tier;
+      const team = generator.randomFactoryTeam({ name: "p2" });
+      if (!validator.validateTeam(structuredClone(team))) return team;
+    }
   }
-  return Teams.pack(legalRandomTeam("gen9ou") as PokemonSet[]);
+  return legalRandomTeam(format as BattleFormatId) as PokemonSet[];
+}
+
+/**
+ * The player's "Quick team": Battle Factory sets where Showdown has them
+ * (OU, Ubers, UU), otherwise six random-battle sets that pass the format's
+ * validator. Sets come back nameless and complete, as the team builder keeps them.
+ */
+export function quickTeam(format: PlayFormatId, seed: string = newSeed()): TeamSet[] {
+  if (PLAY_FORMAT_INFO[format].random) throw new Error("This format uses random teams.");
+  return factoryTeam(format, seed).map((set) => completeSet({ ...set, name: "" }));
 }
 
 /**
@@ -80,7 +97,7 @@ function factoryOuTeam(seed: string): string {
  */
 export function cpuTeam(format: PlayFormatId, seed: string = newSeed()): string {
   if (PLAY_FORMAT_INFO[format].random) return randomTeam(format, seed);
-  if (format === "gen9ou") return factoryOuTeam(seed);
+  if (format === "gen9ou") return Teams.pack(factoryTeam(format, seed));
   return Teams.pack(legalRandomTeam(format as BattleFormatId) as PokemonSet[]);
 }
 

@@ -1,0 +1,20 @@
+import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
+import { PLAY_FORMAT_INFO, PLAY_FORMATS } from "@/lib/battle/play";
+import { quickTeam } from "@/lib/server/battle-engine/teams";
+import { clientIp, rateLimit } from "@/lib/server/rate-limit";
+
+/** POST /api/battle/quick { format } -> { sets }: a ready-to-battle team, legal in the format. */
+
+const bodySchema = z.object({ format: z.enum(PLAY_FORMATS).refine((f) => !PLAY_FORMAT_INFO[f].random) });
+
+export async function POST(request: NextRequest) {
+  if (!rateLimit(`battle-quick:${clientIp(request)}`, 20, 0.5)) {
+    return NextResponse.json({ error: "Too many quick teams — slow down a little." }, { status: 429 });
+  }
+  const parsed = bodySchema.safeParse(await request.json().catch(() => null));
+  if (!parsed.success) {
+    return NextResponse.json({ error: "Unknown format." }, { status: 400 });
+  }
+  return NextResponse.json({ sets: quickTeam(parsed.data.format) }, { headers: { "Cache-Control": "no-store" } });
+}
