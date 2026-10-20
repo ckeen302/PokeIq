@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+import { gate } from "@/lib/server/moderation";
 import { BATTLE_TEAM_MAX } from "@/lib/battle/play";
 import { TOURNAMENT_ID_RE, hostAction, joinTournament, leaveTournament, viewTournament } from "@/lib/server/tournaments/service";
 import { NO_STORE, result, tournamentAction, tournamentRequest } from "@/lib/server/tournaments/route";
@@ -55,6 +56,10 @@ export async function POST(request: NextRequest, context: Context) {
   const parsed = bodySchema.safeParse(await request.json().catch(() => ({})));
   if (!parsed.success) return NextResponse.json({ error: parsed.error.issues[0].message }, { status: 400, headers: NO_STORE });
   const body = parsed.data;
+  if (body.action === "join") {
+    const blocked = await gate(request, "play");
+    if (blocked) return blocked;
+  }
   return tournamentAction(async () => {
     if (body.action === "join") return result(await joinTournament(id, user, body.team));
     if (body.action === "leave") return result(await leaveTournament(id, user));

@@ -28,7 +28,7 @@ export interface ChatLine {
 /** "Report" on a message: what goes to POST /api/report, with the battle or duel's code and the message. */
 export function chatReport(line: ChatLine, code: string, game: string, page: string) {
   return {
-    kind: "feedback" as const,
+    kind: "chat" as const,
     message: `Chat report (${game} ${code}): ${line.name ?? "?"} said "${line.text}"`,
     page,
     extra: { chat: { code, game, n: line.n, at: line.at, seat: line.seat, name: line.name, text: line.text } },

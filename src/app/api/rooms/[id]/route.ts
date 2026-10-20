@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+import { gate } from "@/lib/server/moderation";
 import { sameOrigin, sessionTokenHash, userFromRequest } from "@/lib/server/auth";
 import { chatRateLimit, clientIp, rateLimit, tooManyRequests } from "@/lib/server/rate-limit";
 import { CHAT_BODY_MAX } from "@/lib/server/chat";
@@ -54,6 +55,10 @@ export async function POST(request: NextRequest, context: Context) {
   const parsed = bodySchema.safeParse(await request.json().catch(() => ({})));
   if (!parsed.success) return NextResponse.json({ error: parsed.error.issues[0].message }, { status: 400, headers: NO_STORE });
   const body = parsed.data;
+  if (body.action === "post") {
+    const blocked = await gate(request, "chat");
+    if (blocked) return blocked;
+  }
   const store = roomStore();
   if (!store) return NextResponse.json({ error: "Chat rooms open soon." }, { status: 503, headers: NO_STORE });
   try {

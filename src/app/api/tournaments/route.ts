@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+import { gate } from "@/lib/server/moderation";
 import { createTournament, listTournaments } from "@/lib/server/tournaments/service";
 import { NO_STORE, result, tournamentAction, tournamentRequest } from "@/lib/server/tournaments/route";
 import { rateLimit, tooManyRequests } from "@/lib/server/rate-limit";
@@ -36,6 +37,8 @@ export async function POST(request: NextRequest) {
   const user = ctx.user!;
   const parsed = bodySchema.safeParse(await request.json().catch(() => ({})));
   if (!parsed.success) return NextResponse.json({ error: parsed.error.issues[0].message }, { status: 400, headers: NO_STORE });
+  const blocked = await gate(request, "play");
+  if (blocked) return blocked;
   if (!rateLimit(`tour-create-user:${user.id}`, 3, 3 / 3600)) return tooManyRequests("You've opened a few tournaments already. Try again later.", 600);
   return tournamentAction(async () => {
     const out = await createTournament(user, parsed.data);

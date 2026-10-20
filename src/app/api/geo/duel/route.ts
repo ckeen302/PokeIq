@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+import { gate } from "@/lib/server/moderation";
 import { clientIp, rateLimit } from "@/lib/server/rate-limit";
 import { createDuel, duelNameSchema, duelToken, duelView, isDuelMap } from "@/lib/server/duel";
 import { duelsEnabled, insertDuel, newDuelCode } from "@/lib/server/duel-store";
@@ -27,6 +28,8 @@ export async function POST(request: NextRequest) {
   const parsed = bodySchema.safeParse(await request.json().catch(() => ({})));
   if (!parsed.success) return NextResponse.json({ error: parsed.error.issues[0].message }, { status: 400 });
   const { region, name } = parsed.data;
+  const blocked = await gate(request, "play");
+  if (blocked) return blocked;
   if (!isDuelMap(region)) return NextResponse.json({ error: "Unknown map." }, { status: 400 });
 
   try {

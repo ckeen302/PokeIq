@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+import { gate } from "@/lib/server/moderation";
 import { chatRateLimit, clientIp, rateLimit } from "@/lib/server/rate-limit";
 import { CHAT_BODY_MAX } from "@/lib/server/chat";
 import { duelNameSchema, type PvpFailure } from "@/lib/server/duel-core";
@@ -110,6 +111,11 @@ export async function POST(request: NextRequest, context: Context) {
   const parsed = bodySchema.safeParse(await request.json().catch(() => ({})));
   if (!parsed.success) return NextResponse.json({ error: parsed.error.issues[0].message }, { status: 400, headers: NO_STORE });
   const body = parsed.data;
+  // Muted trainers can't chat; banned ones can't take a seat in a live battle either.
+  if (body.action === "chat" || body.action === "join" || body.action === "rematch") {
+    const blocked = await gate(request, body.action === "chat" ? "chat" : "play");
+    if (blocked) return blocked;
+  }
 
   try {
     if (body.action === "join") {

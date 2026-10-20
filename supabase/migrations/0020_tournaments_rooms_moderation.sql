@@ -73,3 +73,61 @@ revoke all on sequence public.room_messages_id_seq from anon, authenticated;
 -- Who's in a room comes from presence (0019): a heartbeat from a room page
 -- carries {"room": "<id>"} in its activity.
 create index if not exists user_presence_room_idx on public.user_presence ((activity ->> 'room'), expires_at) where activity ? 'room';
+
+-- ---------------------------------------------------------------------------
+-- Moderation
+-- ---------------------------------------------------------------------------
+--
+-- user_sanctions: one row per trainer a moderator has acted on. A mute
+-- (until muted_until; 9999-12-31 is "permanent") stops chat and room
+-- posting; a ban stops PvP, posting, tournaments and friend requests. The
+-- server checks both at every one of those doors.
+-- mod_actions: the audit log of every moderator action. Moderators are the
+-- usernames in the POKEIQ_ADMINS environment variable, never a table, so
+-- nothing here can make anyone an admin.
+
+create table if not exists public.user_sanctions (
+  user_id      uuid        primary key references public.profiles (id) on delete cascade,
+  username     text        not null,
+  muted_until  timestamptz,
+  banned       boolean     not null default false,
+  ban_reason   text        check (char_length(ban_reason) <= 200),
+  updated_at   timestamptz not null default now(),
+  updated_by   text        not null
+);
+
+create table if not exists public.mod_actions (
+  id          bigserial   primary key,
+  created_at  timestamptz not null default now(),
+  admin       text        not null,
+  action      text        not null check (char_length(action) <= 40),
+  target      text        not null check (char_length(target) <= 80),
+  detail      text        check (char_length(detail) <= 300)
+);
+
+create index if not exists mod_actions_created_idx on public.mod_actions (id desc);
+
+alter table public.user_sanctions enable row level security;
+alter table public.mod_actions enable row level security;
+revoke all on public.user_sanctions from anon, authenticated;
+revoke all on public.mod_actions from anon, authenticated;
+revoke all on sequence public.mod_actions_id_seq from anon, authenticated;
+
+-- ---------------------------------------------------------------------------
+-- Reports and feedback (0012's table)
+-- ---------------------------------------------------------------------------
+--
+-- Chat reports become their own kind; feedback says whether it's an idea, a
+-- bug or something else, and which part of the site it's about; reports
+-- remember who sent them (signed-in trainers) and when a moderator resolved
+-- them.
+
+alter table public.reports drop constraint if exists reports_kind_check;
+alter table public.reports add constraint reports_kind_check check (kind in ('error', 'feedback', 'chat'));
+alter table public.reports add column if not exists category text check (category in ('idea', 'bug', 'other'));
+alter table public.reports add column if not exists mode text check (char_length(mode) <= 20);
+alter table public.reports add column if not exists reporter text check (char_length(reporter) <= 40);
+alter table public.reports add column if not exists resolved_at timestamptz;
+alter table public.reports add column if not exists resolved_by text check (char_length(resolved_by) <= 40);
+
+create index if not exists reports_open_idx on public.reports (id desc) where resolved_at is null;
