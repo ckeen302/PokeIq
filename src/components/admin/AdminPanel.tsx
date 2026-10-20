@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { Check, Loader2, RotateCcw, Search, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -47,11 +47,14 @@ function useLoad<T>(load: () => Promise<T>, deps: unknown[]) {
   const [error, setError] = useState<string | null>(null);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const run = useCallback(load, deps);
+  const latest = useRef(0);
   const reload = useCallback(() => {
     setError(null);
+    // Only the latest request counts: an older answer arriving late is dropped.
+    const n = ++latest.current;
     run()
-      .then(setData)
-      .catch((err: Error) => setError(err.message));
+      .then((d) => n === latest.current && setData(d))
+      .catch((err: Error) => n === latest.current && setError(err.message));
   }, [run]);
   useEffect(reload, [reload]);
   return { data, error, reload, setError };
@@ -64,6 +67,13 @@ function Reports() {
   const [status, setStatus] = useState("open");
   const q = new URLSearchParams({ tab: "reports", kind, category, mode, status }).toString();
   const { data, error, reload, setError } = useLoad(() => api<{ reports: ReportRow[]; stored: boolean }>(q), [q]);
+  // Filters changed: don't show the old list while the new one loads.
+  const [shownQ, setShownQ] = useState(q);
+  useEffect(() => {
+    if (data) setShownQ(q);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data]);
+  const fresh = shownQ === q;
 
   async function resolve(id: number, resolved: boolean) {
     try {
@@ -108,7 +118,7 @@ function Reports() {
       {error && <p className="text-sm text-destructive">{error}</p>}
       {data && !data.stored && <p className="text-sm text-muted-foreground">Reports aren&apos;t stored on this server (no database).</p>}
       {data?.reports.length === 0 && <p className="text-sm text-muted-foreground">Nothing here.</p>}
-      <ul className="space-y-2" data-testid="admin-reports">
+      <ul className={cn("space-y-2", !fresh && "opacity-50")} data-testid="admin-reports" aria-busy={!fresh}>
         {data?.reports.map((r) => (
           <li key={r.id} className={cn("hud space-y-1 rounded-lg border bg-card p-3 text-sm", r.resolvedAt && "opacity-60")} data-testid="admin-report">
             <div className="flex flex-wrap items-center gap-2 text-xs">

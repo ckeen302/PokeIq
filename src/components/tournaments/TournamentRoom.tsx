@@ -34,7 +34,7 @@ export function TournamentRoom({ id }: { id: string }) {
       // the next poll
     }
   }
-  useVisiblePoll(load, live ? 4_000 : null);
+  useVisiblePoll(load, live ? 5_000 : null);
 
   async function act(action: string, extra: Record<string, unknown> = {}) {
     setBusy(true);

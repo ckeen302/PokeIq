@@ -107,14 +107,21 @@ export function RoomChat({ room }: { room: string }) {
   }, [realtime, polling, room, apply, load]);
 
   useVisiblePoll(load, polling ? ROOM_POLL_MS : null);
-  useVisiblePoll(async () => {
+  const loadUsers = useCallback(async () => {
     try {
       const res = await fetch(`/api/rooms/${room}/users`);
       if (res.ok) setUsers(((await res.json()) as { users: string[] }).users);
     } catch {
       // next time
     }
-  }, ROOM_USERS_MS);
+  }, [room]);
+  useVisiblePoll(loadUsers, ROOM_USERS_MS);
+  // Once more shortly after arriving, when this page's own heartbeat has said we're here.
+  useEffect(() => {
+    const t = window.setTimeout(() => void loadUsers(), 4_000);
+    return () => window.clearTimeout(t);
+  }, [loadUsers]);
+  const here = me && !users.includes(me) ? [...users, me].sort((a, b) => a.localeCompare(b)) : users;
 
   const shown = messages.filter((m) => !muted.includes(m.name.toLowerCase()));
   const lastId = shown[shown.length - 1]?.id ?? 0;
@@ -258,10 +265,10 @@ export function RoomChat({ room }: { room: string }) {
       </div>
       <aside className="hud space-y-2 rounded-lg border bg-card p-3 text-sm">
         <p className="hud-label flex items-center gap-1.5">
-          <Users className="h-3.5 w-3.5" aria-hidden /> Here now ({users.length})
+          <Users className="h-3.5 w-3.5" aria-hidden /> Here now ({here.length})
         </p>
         <ul className="max-h-80 space-y-1 overflow-y-auto" data-testid="room-users">
-          {users.map((u) => (
+          {here.map((u) => (
             <li key={u} className="flex items-center gap-1">
               <Link href={`/u/${u}`} className="min-w-0 flex-1 truncate hover:underline">
                 {u}
