@@ -164,7 +164,7 @@ export function BattleSetup({ initial = "cpu" }: { initial?: Opponent }) {
                   <span className="font-display text-sm font-bold uppercase">{PLAY_FORMAT_INFO[f].name}</span>
                   <span className="hud-label text-screen">{PLAY_FORMAT_INFO[f].random ? "Random" : "Your team"}</span>
                 </span>
-                <span className="text-xs text-muted-foreground">{PLAY_FORMAT_INFO[f].gameType === "doubles" ? "Doubles. " : ""}{PLAY_FORMAT_INFO[f].random ? PLAY_FORMAT_INFO[f].blurb : "Bring a saved or pasted team."}</span>
+                <span className="text-xs text-muted-foreground">{PLAY_FORMAT_INFO[f].gameType === "doubles" ? "Doubles. " : ""}{PLAY_FORMAT_INFO[f].random ? PLAY_FORMAT_INFO[f].blurb : "Bring a team: saved, built here, or a quick one."}</span>
               </label>
             ))}
           </div>

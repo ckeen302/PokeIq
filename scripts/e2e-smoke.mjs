@@ -771,7 +771,7 @@ if ((await page.getByTestId("battle-log").innerText()).length < 200) errors.push
 step("battle vs computer: Gen 9 OU with the team saved in the team builder");
 await page.goto(`${BASE}/battle/play`, { waitUntil: "networkidle" });
 await page.locator("label").filter({ hasText: "[Gen 9] OU" }).first().click();
-await page.getByRole("combobox", { name: "Saved team" }).waitFor();
+await page.getByRole("radiogroup", { name: "Saved team" }).getByRole("radio", { checked: true }).waitFor();
 await page.getByLabel("Your trainer name").fill("Red");
 await page.getByRole("button", { name: /Start battle/ }).click();
 await page.waitForURL(/\/battle\/play\/[a-z2-9]{8}$/);

@@ -180,3 +180,45 @@ export function packedTeam(id: string): string | null {
   const team = getTeam(id);
   return team ? packTeam(team.sets) : null;
 }
+
+// ---------------------------------------------------------------------------
+// Battle setup: the last team used per format, and quick teams
+// ---------------------------------------------------------------------------
+
+const LAST_KEY = "pokeiq:battle-teams:last";
+
+function lastTeams(): Record<string, unknown> {
+  try {
+    const raw: unknown = JSON.parse(localStorage.getItem(LAST_KEY) ?? "{}");
+    return raw && typeof raw === "object" ? (raw as Record<string, unknown>) : {};
+  } catch {
+    return {};
+  }
+}
+
+/** The saved team last picked for a battle in `format`, if any. */
+export function lastTeamId(format: BattleFormatId): string | null {
+  const id = lastTeams()[format];
+  return typeof id === "string" ? id : null;
+}
+
+export function rememberTeam(format: BattleFormatId, id: string) {
+  try {
+    localStorage.setItem(LAST_KEY, JSON.stringify({ ...lastTeams(), [format]: id }));
+  } catch {
+    // Private mode / quota: the newest team is picked instead.
+  }
+}
+
+/** A ready-to-battle team legal in `format` (Showdown's Battle Factory sets where it has them). */
+export async function fetchQuickTeam(format: BattleFormatId): Promise<TeamSet[]> {
+  const res = await fetch("/api/battle/quick", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ format }),
+  });
+  const body = (await res.json().catch(() => ({}))) as { sets?: unknown[]; error?: string };
+  const sets = body.sets?.map(normalizeSet).filter((s): s is TeamSet => s !== null);
+  if (!res.ok || !sets?.length) throw new Error(body.error ?? "Couldn't deal a quick team.");
+  return sets;
+}

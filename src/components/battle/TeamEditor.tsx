@@ -20,12 +20,16 @@ export function TeamEditor({
   onDelete,
   onRandom,
   randomBusy,
+  lockFormat = false,
 }: {
   team: BattleTeam;
-  onDuplicate: () => void;
-  onDelete: () => void;
+  /** Without these (the battle setup's inline builder) Duplicate and Delete are left out. */
+  onDuplicate?: () => void;
+  onDelete?: () => void;
   onRandom: (format: BattleFormatId) => void;
   randomBusy: boolean;
+  /** Keep the team in its format (it's being built for a battle in that format). */
+  lockFormat?: boolean;
 }) {
   const format = BATTLE_FORMATS[team.format];
   const { dex, error } = useFormatDex(team.format);
@@ -73,7 +77,7 @@ export function TeamEditor({
         </label>
         <label className="w-48 space-y-1.5">
           <span className="hud-label block">Format</span>
-          <select value={team.format} onChange={(e) => isBattleFormatId(e.target.value) && save({ format: e.target.value })} className={cn(inputClass, "h-10")}>
+          <select value={team.format} disabled={lockFormat} onChange={(e) => isBattleFormatId(e.target.value) && save({ format: e.target.value })} className={cn(inputClass, "h-10")}>
             {BATTLE_FORMAT_IDS.map((id) => (
               <option key={id} value={id}>
                 {BATTLE_FORMATS[id].name}
@@ -99,10 +103,12 @@ export function TeamEditor({
         <Button size="sm" variant="outline" onClick={() => onRandom(team.format)} disabled={randomBusy}>
           {randomBusy ? <LoaderCircle className="h-4 w-4 animate-spin" aria-hidden /> : <Shuffle className="h-4 w-4" aria-hidden />} Random team
         </Button>
-        <Button size="sm" variant="outline" onClick={onDuplicate}>
-          <CopyPlus className="h-4 w-4" aria-hidden /> Duplicate
-        </Button>
-        {confirmDelete ? (
+        {onDuplicate && (
+          <Button size="sm" variant="outline" onClick={onDuplicate}>
+            <CopyPlus className="h-4 w-4" aria-hidden /> Duplicate
+          </Button>
+        )}
+        {!onDelete ? null : confirmDelete ? (
           <span className="flex items-center gap-1.5">
             <Button size="sm" variant="destructive" onClick={onDelete}>
               Delete team
@@ -122,7 +128,7 @@ export function TeamEditor({
         <ImportPanel
           confirmLabel="Replace this team"
           onImport={(sets, meta) => {
-            save({ sets, name: meta.name ?? team.name, format: meta.format ?? team.format });
+            save({ sets, name: meta.name ?? team.name, format: lockFormat ? team.format : (meta.format ?? team.format) });
             setSlot(0);
             setPanel(null);
           }}
