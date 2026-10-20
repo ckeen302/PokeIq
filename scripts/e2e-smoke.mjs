@@ -490,6 +490,193 @@ await dleBlue.p.getByText("Red left the duel.").waitFor();
 await dleBlue.p.getByText("Victory!").waitFor();
 for (const { p } of dle) await p.context().close();
 
+// Who Am I?: a practice round, then a full duel (a clue bid, an ability, a wrong guess).
+step("who am i: practice round");
+const WA_TYPES = ["normal", "fire", "water", "grass", "electric", "ice", "fighting", "poison", "ground", "flying", "psychic", "bug", "rock", "ghost", "dragon", "dark", "steel", "fairy"];
+const WA_COLORS = { red: ["red", "pink"], blue: ["blue", "purple"], green: ["green"], yellow: ["yellow", "brown"], mono: ["white", "gray", "black"] };
+const waCap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
+/** The broad and generation questions, as the menu shows them: [tab, question text, cost, test]. */
+const WA_QUESTIONS = [
+  ...WA_TYPES.map((t) => ["Type", `Am I ${waCap(t)}-type?`, 10, (p) => p.types.includes(t)]),
+  ...Object.entries(WA_COLORS).map(([k, cs]) => ["Basics", null, 10, (p) => cs.includes(p.color), k]),
+  ["Basics", "Am I dual-typed?", 10, (p) => p.types.length > 1],
+  ["Basics", "Am I fully evolved?", 10, (p) => p.fullyEvolved],
+  ...[2, 3, 4, 5, 6, 7, 8, 9].map((g) => ["Basics", `Am I from Gen ${g} or later?`, 10, (p) => p.gen >= g]),
+  ...[1, 2, 3, 4, 5, 6, 7, 8, 9].map((g) => ["Generation", `Am I from Gen ${g}?`, 20, (p) => p.gen === g]),
+];
+const WA_COLOR_TEXT = { red: "red or pink", blue: "blue or purple", green: "green", yellow: "yellow or brown", mono: "white, grey or black" };
+for (const q of WA_QUESTIONS) if (q[1] === null) q[1] = `Am I mostly ${WA_COLOR_TEXT[q[4]]}?`;
+
+/** Watches a page's Who Am I? responses: the latest view (solo or duel), and any secret that leaks before its reveal. */
+function watchWhoami(p) {
+  const seen = { rev: -1, view: null, live: [] };
+  p.on("response", async (res) => {
+    if (!/\/api\/(whoami|duel)(\/|$)/.test(res.url()) || !res.ok()) return;
+    const body = await res.json().catch(() => null);
+    const view = body?.view ?? body;
+    if (!view || (view.kind !== "whoami" && !Array.isArray(view.known))) return;
+    if (view.round) {
+      const json = JSON.stringify(view.round);
+      if (/"(secret|fact|answer)"/.test(json)) errors.push(`who am i round leaked: ${json.slice(0, 200)}`);
+      seen.live.push(json);
+    }
+    if (view.kind !== "whoami" || view.rev >= seen.rev) Object.assign(seen, { rev: view.rev ?? 0, view });
+  });
+  return seen;
+}
+
+/** Asks the question that best splits what's left (from the menu), or guesses once few are left. Returns true once solved. */
+async function whoamiStep(p, mine, { wrongFirst = false } = {}) {
+  const alive = mine.alive.map((id) => DEX_BY_ID.get(id));
+  const askedTexts = new Set(mine.known.map((k) => k.text));
+  const options = WA_QUESTIONS.filter(([, text, cost]) => !askedTexts.has(text) && cost <= mine.pp)
+    .map((q) => ({ q, yes: alive.filter(q[3]).length }))
+    .filter((o) => o.yes > 0 && o.yes < alive.length)
+    .sort((a, b) => Math.abs(a.yes - alive.length / 2) - Math.abs(b.yes - alive.length / 2));
+  if (alive.length > 3 && options.length && !wrongFirst) {
+    const [tab, text] = options[0].q;
+    await p.getByRole("tab", { name: new RegExp(`^${tab}`) }).click();
+    await acted(p, () => p.locator(`button[title^="${text}"]`).click());
+    return false;
+  }
+  const pick = alive[0];
+  await p.getByTestId("whoami-grid").getByRole("button", { name: pick.name, exact: true }).click();
+  await acted(p, () => p.getByTestId("whoami-guess").click());
+  return true;
+}
+/** Does `act` and waits for its answer from the server (and for the page to have read it). */
+async function acted(p, act) {
+  const answered = p.waitForResponse((r) => /\/api\/(whoami|duel)(\/|$)/.test(r.url()) && r.request().method() === "POST");
+  await act();
+  await answered;
+  await p.waitForTimeout(150);
+}
+/** What the browser knows, with each question's text (for the helper above). */
+const knownOf = (mine) => ({ ...mine, known: mine.known.map((k) => ({ ...k, text: WA_QUESTIONS.find((q) => questionId(q) === k.q)?.[1] })) });
+function questionId(q) {
+  const [tab, text] = q;
+  if (tab === "Type") return `type:${text.match(/Am I (\w+)-type/)[1].toLowerCase()}`;
+  if (tab === "Generation") return `gen:${text.match(/Gen (\d)/)[1]}`;
+  if (text.includes("or later")) return `from:${text.match(/Gen (\d)/)[1]}`;
+  if (text.includes("dual")) return "dual";
+  if (text.includes("fully")) return "final";
+  return `color:${q[4]}`;
+}
+
+const wa = await newPage({ width: 1440, height: 900 });
+const waSeen = watchWhoami(wa);
+await wa.goto(`${BASE}/whoami`, { waitUntil: "networkidle" });
+await wa.screenshot({ path: `${OUT}/whoami.png`, fullPage: true });
+const waOg = await wa.request.get(`${BASE}/whoami/opengraph-image`);
+if (waOg.status() !== 200) errors.push(`who am i OG image returned ${waOg.status()}`);
+else fs.writeFileSync(`${OUT}/whoami-og.png`, await waOg.body());
+await wa.getByLabel("From generation").selectOption("1");
+await wa.getByLabel("To generation").selectOption("2");
+await wa.getByTestId("whoami-pool-size").filter({ hasText: /\d+ Pokémon/ }).waitFor();
+await wa.getByTestId("whoami-practice").click();
+await wa.getByTestId("whoami-grid").waitFor();
+let waShot = false;
+for (let i = 0; i < 40; i++) {
+  const view = waSeen.view;
+  if (view?.answer) break;
+  await whoamiStep(wa, knownOf(view));
+  if (!waShot && view.known.length >= 3) {
+    await wa.screenshot({ path: `${OUT}/whoami-practice.png`, fullPage: true });
+    waShot = true;
+  }
+  // A wrong guess locks for 12 s.
+  if (waSeen.view.lockUntil > waSeen.view.now) await wa.waitForTimeout(waSeen.view.lockUntil - waSeen.view.now + 300);
+}
+await wa.getByTestId("whoami-result").waitFor();
+await wa.getByTestId("whoami-score").waitFor();
+await wa.screenshot({ path: `${OUT}/whoami-practice-result.png` });
+await wa.context().close();
+
+step("who am i duel: create, join, ready");
+const waDuel = [];
+for (const name of ["Red", "Blue"]) {
+  const p = await newPage({ width: 1440, height: 900 });
+  waDuel.push({ p, name, seen: watchWhoami(p) });
+}
+const [waRed, waBlue] = waDuel;
+await waRed.p.goto(`${BASE}/whoami`, { waitUntil: "networkidle" });
+await waRed.p.getByRole("button", { name: /^Frisk/ }).click();
+await waRed.p.getByLabel("Your trainer name").fill("Red");
+await waRed.p.getByRole("button", { name: /Create duel/ }).click();
+await waRed.p.waitForURL(/\/whoami\/duel\/[a-z2-9]{8}$/);
+const waUrl = waRed.p.url();
+await waRed.p.getByText("Waiting for a challenger").waitFor();
+await waRed.p.getByLabel("To generation").selectOption("1");
+await waRed.p.getByTestId("whoami-pool-size").filter({ hasText: /^\d\d Pokémon/ }).waitFor();
+const waDuelOg = await waRed.p.request.get(`${waUrl}/opengraph-image`);
+if (waDuelOg.status() !== 200) errors.push(`who am i duel OG image returned ${waDuelOg.status()}`);
+await waBlue.p.goto(waUrl, { waitUntil: "networkidle" });
+await waBlue.p.getByText("Red challenges you!").waitFor();
+await waBlue.p.getByLabel("Your trainer name").fill("Blue");
+await waBlue.p.getByRole("button", { name: /Join duel/ }).click();
+await waBlue.p.getByRole("button", { name: /^Taunt/ }).click();
+await waRed.p.getByText("Blue brings").waitFor();
+await chatTo(waRed.p, waBlue.p, "good luck!");
+await waRed.p.screenshot({ path: `${OUT}/whoami-duel-lobby.png` });
+await Promise.all(waDuel.map(({ p }) => p.getByRole("button", { name: /^Ready$/ }).click()));
+
+step("who am i duel: a wrong guess, abilities, a clue bid, then best of three");
+await Promise.all(waDuel.map(({ p }) => p.getByTestId("whoami-grid").waitFor({ timeout: 15_000 })));
+const mineOf = (d) => d.seen.view?.round?.mine;
+// Blue guesses wrong (a lockout), asks once; Red frisks Blue, Blue taunts Red.
+await whoamiStep(waBlue.p, knownOf(mineOf(waBlue)), { wrongFirst: true });
+await waBlue.p.getByText(/Locked \d+s/).first().waitFor();
+await waBlue.p.waitForTimeout(12_500);
+await whoamiStep(waBlue.p, knownOf(mineOf(waBlue)));
+await waRed.p.getByTestId("whoami-use-ability").click();
+await waRed.p.getByText(/Blue has \d+ Pokémon left/).waitFor();
+await waBlue.p.getByTestId("whoami-use-ability").click();
+await waRed.p.getByText(/Taunted \d+s/).first().waitFor();
+await waRed.p.screenshot({ path: `${OUT}/whoami-duel-round.png`, fullPage: true });
+// The first clue drops 40 s in: both bid.
+await Promise.all(waDuel.map(({ p }) => p.getByTestId("whoami-bid").waitFor({ timeout: 45_000 })));
+await waRed.p.getByTestId("whoami-bid").click();
+await waBlue.p.getByLabel("Your bid").fill("3");
+await waBlue.p.getByTestId("whoami-bid").click();
+await waRed.p.getByText(/You won it|won it with|nobody wins it/).waitFor({ timeout: 15_000 });
+await waRed.p.screenshot({ path: `${OUT}/whoami-duel-bid.png`, fullPage: true });
+const waClue = waRed.seen.view.round?.drop?.result;
+if (!waClue) errors.push("who am i duel: the clue bid didn't settle");
+// Red solves each round first; Blue follows.
+for (let round = 0; round < 3; round++) {
+  for (const d of [waRed, waBlue]) {
+    for (let i = 0; i < 40 && mineOf(d) && d.seen.view.round.boards[waDuel.indexOf(d)].solvedMs === undefined; i++) {
+      const mine = mineOf(d);
+      if (mine.lockUntil > d.seen.view.now) await d.p.waitForTimeout(mine.lockUntil - d.seen.view.now + 300);
+      await whoamiStep(d.p, knownOf(mineOf(d)));
+    }
+  }
+  await waRed.p.getByTestId("whoami-reveal").waitFor({ timeout: 40_000 });
+  if (round === 0) await waRed.p.screenshot({ path: `${OUT}/whoami-duel-reveal.png`, fullPage: true });
+  if (waRed.seen.view.status === "finished") break;
+  await Promise.all(waDuel.map(({ p }) => p.getByTestId("whoami-next").click()));
+  await Promise.all(waDuel.map(({ p }) => p.getByTestId("whoami-grid").waitFor({ timeout: 15_000 })));
+}
+await waRed.p.getByRole("button", { name: /See results/ }).click();
+await waRed.p.getByTestId("whoami-summary").getByText("You win!").waitFor();
+await waRed.p.screenshot({ path: `${OUT}/whoami-duel-summary.png`, fullPage: true });
+// No secret in any live round before its reveal.
+for (const r of waRed.seen.view.revealed) {
+  if ([...waRed.seen.live, ...waBlue.seen.live].some((json) => json.includes(`"${r.answer.name}"`))) errors.push(`who am i duel leaked ${r.answer.name}`);
+}
+step("who am i duel: rematch");
+await waRed.p.getByTestId("whoami-rematch").click();
+await waRed.p.waitForURL((url) => url.href !== waUrl && url.pathname.startsWith("/whoami/duel/"));
+await waBlue.p.getByRole("button", { name: /See results/ }).click();
+await waBlue.p.getByRole("button", { name: /Accept rematch/ }).click();
+await waBlue.p.waitForURL(waRed.p.url());
+await Promise.all(waDuel.map(({ p }) => p.getByTestId("whoami-grid").waitFor({ timeout: 15_000 })));
+await waRed.p.getByRole("button", { name: /Leave duel/ }).click();
+await waRed.p.getByRole("button", { name: /^Forfeit$/ }).click();
+await waRed.p.waitForURL(/\/whoami$/);
+await waBlue.p.getByText("Your opponent left the duel.").waitFor();
+for (const { p } of waDuel) await p.context().close();
+
 // A quiz duel: Who's That Pokémon on easy, ten questions. Red answers first;
 // Blue sees Red lock in (never the pick), then answers.
 step("quiz duel: create, join, ready");

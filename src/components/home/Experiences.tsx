@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, Brain, CalendarDays, Compass, FlaskConical, Search, Swords, type LucideIcon } from "lucide-react";
+import { ArrowRight, Brain, CalendarDays, CircleHelp, Compass, FlaskConical, Search, Swords, type LucideIcon } from "lucide-react";
 import { HpBar } from "@/components/game/HpBar";
 import { ModeIcon } from "@/components/game/ModeIcon";
 import { MODULE_INFO, PLAY_MODULES, moduleHref } from "@/lib/modes";
@@ -51,6 +51,20 @@ const EXPERIENCES: Experience[] = [
     ),
   },
   {
+    href: "/whoami",
+    title: "Who Am I?",
+    blurb: "Yes/no questions, a shrinking grid, a live race",
+    icon: CircleHelp,
+    accent: "199 92% 64%",
+    visual: (
+      <div className="grid grid-cols-8 gap-1">
+        {Array.from({ length: 16 }, (_, i) => (
+          <span key={i} className={cn("aspect-square rounded-[3px]", [2, 7, 13].includes(i) ? "bg-screen shadow-[0_0_6px_hsl(var(--screen))]" : "bg-shade/50 opacity-40")} />
+        ))}
+      </div>
+    ),
+  },
+  {
     href: "/battle",
     title: "Battle",
     blurb: "Showdown engine: vs computer, or live PvP with matchmaking",
@@ -91,11 +105,11 @@ const QUIZZES: { href: string; label: string; icon: React.ReactNode }[] = [
   { href: "/daily", label: "Daily Challenge", icon: <CalendarDays className="h-3.5 w-3.5" aria-hidden /> },
 ];
 
-/** The four headline games, then every quiz, right under the title screen. */
+/** The headline games, then every quiz, right under the title screen. */
 export function Experiences() {
   return (
     <section aria-label="Games" className="space-y-3 sm:space-y-4">
-      <ul className="grid grid-cols-2 gap-2.5 sm:gap-4 lg:grid-cols-4">
+      <ul className="grid grid-cols-2 gap-2.5 sm:gap-4 lg:grid-cols-5">
         {EXPERIENCES.map(({ href, title, blurb, icon: Icon, accent, visual }, i) => (
           <li
             key={href}

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { SHARE_IMAGES, pageMetadata } from "@/lib/seo";
-import { MapPin, Swords, Target } from "lucide-react";
+import { CircleHelp, MapPin, Swords, Target } from "lucide-react";
 import { ModeGrid } from "@/components/home/ModeGrid";
 import { QuizDuelCard } from "@/components/quiz/QuizDuelCard";
 import { FORMAT_INFO, PLAYABLE_FORMATS, QUIZ_PRESETS } from "@/lib/modes";
@@ -21,6 +21,12 @@ const DUELS = [
     icon: Target,
     title: "Pokédle duel",
     blurb: "The same mystery Pokémon, three rounds. Fewer guesses and quicker solves score more.",
+  },
+  {
+    href: "/whoami",
+    icon: CircleHelp,
+    title: "Who Am I? duel",
+    blurb: "The same secret Pokémon, yes/no questions paid in PP, sealed clue bids. First to name it wins the round.",
   },
   {
     href: "/guessr",
@@ -53,7 +59,7 @@ export default function PlayPage() {
         </h2>
         <p className="text-sm text-muted-foreground">Head to head through a share link: the same questions, puzzles or places for both of you, live.</p>
         <QuizDuelCard />
-        <div className="grid gap-3 sm:grid-cols-2">
+        <div className="grid gap-3 sm:grid-cols-3">
           {DUELS.map(({ href, icon: Icon, title, blurb }) => (
             <Link key={href} href={href} className="flex items-start gap-3 rounded-md border bg-card p-4 transition hover:border-primary/50">
               <Icon className="mt-0.5 h-5 w-5 shrink-0 text-primary" aria-hidden />
