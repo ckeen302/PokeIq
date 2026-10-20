@@ -14,7 +14,7 @@ import { RANKED_START } from "@/lib/ranked";
  *                                                   { status: "waiting", ticket, since } or, once
  *                                                   paired, { status: "matched", code, token, href }
  *   { action: "cancel", settings, ticket }          give up the search
- * settings: { game: "geo", region } or { game: "pokedle", ranked? }. A ranked search also sends
+ * settings: { game: "geo", region }, { game: "pokedle", ranked? } or { game: "whoami", from, to, casual, ability? }. A ranked search also sends
  * `rankedId` (the signed id /api/pokedle/ranked gave this browser) unless signed in.
  */
 

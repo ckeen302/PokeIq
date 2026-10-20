@@ -9,9 +9,10 @@ import type { DuelPlayerView, DuelStatus } from "./duel-types";
 import type { Difficulty, ModuleId } from "@/engines/types";
 import type { PublicQuestion } from "./session-types";
 import type { DleAssist } from "./dle-assist";
+import type { WhoamiDuelView } from "./whoami";
 import type { ChatLine } from "./chat";
 
-export const PVP_KINDS = ["pokedle", "quiz"] as const;
+export const PVP_KINDS = ["pokedle", "quiz", "whoami"] as const;
 export type PvpKind = (typeof PVP_KINDS)[number];
 
 /** "Round 2" shows for a moment before play, so both trainers start together. */
@@ -276,7 +277,7 @@ export interface QuizDuelView extends PvpViewBase {
   next?: { at: number; pressed: boolean[] };
 }
 
-export type PvpView = DleDuelView | QuizDuelView;
+export type PvpView = DleDuelView | QuizDuelView | WhoamiDuelView;
 
 /** Creating, joining or rematching a duel: its code, your seat's token and the duel. */
 export interface PvpSeatResponse {

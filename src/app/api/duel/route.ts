@@ -6,6 +6,8 @@ import { duelsEnabled, newDuelCode, pvpStore } from "@/lib/server/duel-store";
 import { duelView, type PvpDuel } from "@/lib/server/duels";
 import { createPokedleDuel } from "@/lib/server/pokedle-duel";
 import { createQuizDuel } from "@/lib/server/quiz-duel";
+import { createWhoamiDuel } from "@/lib/server/whoami-duel";
+import { whoamiAbilitySchema, whoamiSettingsSchema } from "@/lib/server/whoami-schema";
 import { DIFFICULTIES, MODULES } from "@/engines/types";
 import { PLAY_MODULES } from "@/lib/modes";
 import { DLE_ASSISTS } from "@/lib/dle-assist";
@@ -16,6 +18,7 @@ import type { PvpSeatResponse } from "@/lib/pvp-types";
  * token and the lobby:
  *   { kind: "pokedle", name, assist? }               a Pokédle duel, at /pokedle/duel/<code> (assist: the Pokédex level, changeable in the lobby)
  *   { kind: "quiz", name, module, difficulty }       a quiz duel, at /quiz/duel/<code>
+ *   { kind: "whoami", name, settings?, ability? }    a Who Am I? duel, at /whoami/duel/<code>
  */
 
 const bodySchema = z.discriminatedUnion("kind", [
@@ -26,6 +29,7 @@ const bodySchema = z.discriminatedUnion("kind", [
     module: z.enum(MODULES).refine((m) => PLAY_MODULES.includes(m), "Unknown quiz mode."),
     difficulty: z.enum(DIFFICULTIES).default("medium"),
   }),
+  z.object({ kind: z.literal("whoami"), name: duelNameSchema, settings: whoamiSettingsSchema.optional(), ability: whoamiAbilitySchema.optional() }),
 ]);
 
 export async function POST(request: NextRequest) {
@@ -44,7 +48,11 @@ export async function POST(request: NextRequest) {
       const now = Date.now();
       const code = newDuelCode();
       const { duel, playerId }: { duel: PvpDuel; playerId: string } =
-        body.kind === "pokedle" ? createPokedleDuel(body.name, code, now, undefined, { assist: body.assist }) : createQuizDuel(body.module, body.difficulty, body.name, code, now);
+        body.kind === "pokedle"
+          ? createPokedleDuel(body.name, code, now, undefined, { assist: body.assist })
+          : body.kind === "whoami"
+            ? createWhoamiDuel(body.name, code, now, { settings: body.settings, ability: body.ability })
+            : createQuizDuel(body.module, body.difficulty, body.name, code, now);
       if (!(await pvpStore.insert(duel))) continue; // code taken: roll another
       const seat: PvpSeatResponse = { code, token: pvpToken(code, playerId), view: duelView(duel, playerId, now, 0) };
       return NextResponse.json(seat, { headers: { "Cache-Control": "no-store" } });

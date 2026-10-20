@@ -5,6 +5,10 @@ import { pvpToken, type PvpFailure } from "./duel-core";
 import { deleteDuel, insertDuel, newDuelCode, pvpStore } from "./duel-store";
 import { joinDuel, readyDuel } from "./duels";
 import { createPokedleDuel } from "./pokedle-duel";
+import { createWhoamiDuel } from "./whoami-duel";
+import { whoamiAbilitySchema, whoamiSettingsSchema } from "./whoami-schema";
+import { normalizeSettings } from "./whoami";
+import { WHOAMI_ABILITIES, type WhoamiAbility } from "@/lib/whoami";
 import { cancelQueue, searchQueue, type OpenedGame } from "./match-queue";
 import { RANKED_QUEUE_KEY, cancelRankedQueue, searchRankedQueue, type RankedSeat } from "./ranked-queue";
 import type { RatingState } from "@/lib/ranked";
@@ -42,12 +46,18 @@ export {
 export const matchSettingsSchema = z.discriminatedUnion("game", [
   z.object({ game: z.literal("geo"), region: z.string().max(20).refine(isDuelMap, "Unknown map.") }),
   z.object({ game: z.literal("pokedle"), ranked: z.boolean().optional(), assist: z.enum(DLE_ASSISTS).optional() }),
+  // Who Am I?: one queue per pool (generations, legendaries); the ability is the trainer's own and pairs with any.
+  whoamiSettingsSchema.extend({ game: z.literal("whoami"), ability: whoamiAbilitySchema.optional() }),
 ]);
 export type MatchSettings = z.infer<typeof matchSettingsSchema>;
 
 /** The queue a search waits in. The Notebook keeps the queue Pokédle had before levels. */
 export function queueKey(s: MatchSettings): string {
   if (s.game === "geo") return `geo:${s.region}`;
+  if (s.game === "whoami") {
+    const w = normalizeSettings(s);
+    return `whoami:${w.from}-${w.to}${w.casual ? ":casual" : ""}`;
+  }
   if (s.ranked) return RANKED_QUEUE_KEY;
   const assist = s.assist ?? DLE_DEFAULT_ASSIST;
   return assist === DLE_DEFAULT_ASSIST ? "pokedle:all" : `pokedle:all:${assist}`;
@@ -67,7 +77,11 @@ const must = <T extends { ok: boolean }>(out: T | PvpFailure): Extract<T, { ok: 
  * ready, so round 1 starts after the usual countdown. Seat 0 is the trainer
  * who was waiting.
  */
-async function openDuel(settings: MatchSettings, names: [string, string], now: number): Promise<OpenedGame | null> {
+/** A brought trainer ability (from the queue row), if it's one. */
+const abilityFrom = (team?: string) => ((WHOAMI_ABILITIES as readonly string[]).includes(team ?? "") ? (team as WhoamiAbility) : undefined);
+
+async function openDuel(settings: MatchSettings, players: [{ name: string; team?: string }, { name: string; team?: string }], now: number): Promise<OpenedGame | null> {
+  const names = players.map((p) => p.name) as [string, string];
   for (let attempt = 0; attempt < 4; attempt++) {
     const code = newDuelCode();
     if (settings.game === "geo") {
@@ -75,6 +89,13 @@ async function openDuel(settings: MatchSettings, names: [string, string], now: n
       const { duel: joined, playerId: b } = must(joinGeoDuel(duel, names[1], now));
       const ready = must(readyGeoDuel(must(readyGeoDuel(joined, a, true, now)).duel, b, true, now)).duel;
       if (await insertDuel(ready)) return { code, ids: [a, b], remove: () => deleteDuel(code) };
+    } else if (settings.game === "whoami") {
+      const { duel, playerId: a } = createWhoamiDuel(names[0], code, now, { settings, ability: abilityFrom(players[0].team), queue: "casual" });
+      const { duel: joined, playerId: b } = must(joinDuel(duel, names[1], now));
+      const second = abilityFrom(players[1].team);
+      const picked = second ? { ...joined, abilities: { ...joined.abilities, [b]: second } } : joined;
+      const ready = must(readyDuel(must(readyDuel(picked, a, true, now)).duel, b, true, now)).duel;
+      if (await pvpStore.insert(ready)) return { code, ids: [a, b], remove: () => pvpStore.remove(code) };
     } else {
       const { duel, playerId: a } = createPokedleDuel(names[0], code, now, undefined, { queue: "casual", assist: settings.assist });
       const { duel: joined, playerId: b } = must(joinDuel(duel, names[1], now));
@@ -88,7 +109,7 @@ async function openDuel(settings: MatchSettings, names: [string, string], now: n
 function seat(settings: MatchSettings, code: string, playerId: string): SearchResult {
   return settings.game === "geo"
     ? { ok: true, status: "matched", code, token: duelToken(code, playerId), href: `/guessr/duel/${code}` }
-    : { ok: true, status: "matched", code, token: pvpToken(code, playerId), href: pvpHref("pokedle", code) };
+    : { ok: true, status: "matched", code, token: pvpToken(code, playerId), href: pvpHref(settings.game, code) };
 }
 
 /**
@@ -96,13 +117,9 @@ function seat(settings: MatchSettings, code: string, playerId: string): SearchRe
  * search's own; a first search passes a new one.
  */
 export async function searchMatch(settings: MatchSettings, name: string, ticket: string): Promise<SearchResult | PvpFailure> {
-  const out = await searchQueue(queueKey(settings), { ticket, name }, (players, now) =>
-    openDuel(
-      settings,
-      players.map((p) => p.name) as [string, string],
-      now
-    )
-  );
+  // A Who Am I? trainer brings their ability (it waits with them in the queue).
+  const bring = settings.game === "whoami" && settings.ability ? () => ({ ok: true as const, team: settings.ability }) : undefined;
+  const out = await searchQueue(queueKey(settings), { ticket, name, bring }, (players, now) => openDuel(settings, players, now));
   if (!out.ok || out.status === "waiting") return out;
   return seat(settings, out.code, out.playerId);
 }
