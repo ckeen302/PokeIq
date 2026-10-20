@@ -5,7 +5,7 @@ import { duelNameSchema } from "@/lib/server/duel-core";
 import { battlesEnabled } from "@/lib/server/battle-engine/store";
 import { createCpuBattle, createLiveBattle } from "@/lib/server/battle-engine/service";
 import { battlePlayerKey } from "@/lib/server/battle-engine/identity";
-import { PLAY_FORMATS, BATTLE_TEAM_MAX, CPU_LEVELS, type BattleSeatResponse } from "@/lib/battle/play";
+import { ALL_FORMATS, BATTLE_TEAM_MAX, CPU_LEVELS, type BattleSeatResponse, type StandardFormatId } from "@/lib/battle/play";
 
 /**
  * POST /api/battle: start a battle and return its code, the creator's seat
@@ -14,7 +14,8 @@ import { PLAY_FORMATS, BATTLE_TEAM_MAX, CPU_LEVELS, type BattleSeatResponse } fr
  *   { mode: "pvp", name, format, team?, public?, timer? }
  *        a live battle with an invite link, at /battle/live/<code>; private
  *        unless `public` (listed in the Watch lobby); `timer: false` starts
- *        it with the turn timer off, for either player to start
+ *        it with the turn timer off, for either player to start; `hidden`:
+ *        "Don't allow spectators" (nobody but the two trainers can watch)
  * `team` (Showdown export text) is required for formats without random teams.
  */
 
@@ -25,7 +26,7 @@ export const maxDuration = 30;
 
 const NO_STORE = { "Cache-Control": "no-store" };
 const team = z.string().max(BATTLE_TEAM_MAX).optional();
-const format = z.enum([...PLAY_FORMATS, "custom"]);
+const format = z.enum(["custom", ...ALL_FORMATS] as [StandardFormatId | "custom", ...(StandardFormatId | "custom")[]]);
 /** Format "custom" takes `rules` (custom-rules.ts), checked by Showdown's format parser before the battle starts. */
 const rules = z.record(z.unknown()).optional();
 /** The browser's signed id (see /api/battle/id), for the trainer's battle record and replays. */
@@ -33,7 +34,7 @@ const rankedId = z.string().max(200).optional();
 
 const bodySchema = z.discriminatedUnion("mode", [
   z.object({ mode: z.literal("cpu"), name: duelNameSchema, format, level: z.enum(CPU_LEVELS).default("normal"), team, rules, rankedId }),
-  z.object({ mode: z.literal("pvp"), name: duelNameSchema, format, team, rules, rankedId, public: z.boolean().default(false), timer: z.boolean().default(true) }),
+  z.object({ mode: z.literal("pvp"), name: duelNameSchema, format, team, rules, rankedId, public: z.boolean().default(false), hidden: z.boolean().default(false), timer: z.boolean().default(true) }),
 ]);
 
 export async function POST(request: NextRequest) {

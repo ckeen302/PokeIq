@@ -5,12 +5,13 @@ import { duelNameSchema } from "@/lib/server/duel-core";
 import { newTicket } from "@/lib/server/match-queue";
 import { battlesEnabled } from "@/lib/server/battle-engine/store";
 import { cancelBattleSearch, searchBattle, searchRankedBattle } from "@/lib/server/battle-engine/matchmaking";
+import { hideBattle, readBattleToken } from "@/lib/server/battle-engine/service";
 import { battlePlayerKey } from "@/lib/server/battle-engine/identity";
 import { ladderStore } from "@/lib/server/battle-engine/ladder";
 import { RankedUnavailable } from "@/lib/server/ranked";
 import { RANKED_START } from "@/lib/ranked";
 import { isLadderFormat } from "@/lib/battle/ladder";
-import { BATTLE_TEAM_MAX, PLAY_FORMATS } from "@/lib/battle/play";
+import { ALL_FORMATS, BATTLE_TEAM_MAX, type StandardFormatId } from "@/lib/battle/play";
 
 /**
  * POST /api/battle/match — find an opponent for a live battle:
@@ -36,7 +37,7 @@ export const maxDuration = 30;
 const NO_STORE = { "Cache-Control": "no-store" };
 const ticket = z.string().regex(/^[\w-]{16}$/, "Bad ticket.");
 // Matchmaking keeps to the standard formats, plus the Battle Factory (both trainers rent teams).
-const settings = z.object({ format: z.enum([...PLAY_FORMATS, "factory"]), ranked: z.boolean().default(false) });
+const settings = z.object({ format: z.enum(["factory", ...ALL_FORMATS] as [StandardFormatId | "factory", ...(StandardFormatId | "factory")[]]), ranked: z.boolean().default(false) });
 
 const bodySchema = z.discriminatedUnion("action", [
   z.object({
@@ -46,6 +47,8 @@ const bodySchema = z.discriminatedUnion("action", [
     team: z.string().max(BATTLE_TEAM_MAX).optional(),
     ticket: ticket.optional(),
     rankedId: z.string().max(200).optional(),
+    /** "Don't allow spectators": the battle is hidden as soon as this trainer collects it. */
+    hidden: z.boolean().optional(),
   }),
   z.object({ action: z.literal("cancel"), settings, ticket }),
 ]);
@@ -83,6 +86,10 @@ export async function POST(request: NextRequest) {
       }
     } else out = await searchBattle(format, body.name, body.ticket ?? newTicket(), body.team, player);
     if (!out.ok) return NextResponse.json({ error: out.error }, { status: out.status, headers: NO_STORE });
+    if (out.status === "matched" && body.hidden) {
+      const seat = readBattleToken(out.token, out.code);
+      if (seat) await hideBattle(out.code, seat.playerId).catch((err) => console.error("[battle-match] hide failed:", err));
+    }
     const result =
       out.status === "waiting"
         ? { status: out.status, ticket: out.ticket, since: out.since }

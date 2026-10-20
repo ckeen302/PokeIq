@@ -75,7 +75,7 @@ function useTicker(on: boolean): number {
 
 /** Starts a battle; returns its page, or throws with the server's reason. */
 export async function startBattle(
-  body: { mode: "cpu" | "pvp" } & Omit<CpuSetup, "level"> & { level?: CpuLevel; public?: boolean; timer?: boolean }
+  body: { mode: "cpu" | "pvp" } & Omit<CpuSetup, "level"> & { level?: CpuLevel; public?: boolean; hidden?: boolean; timer?: boolean }
 ): Promise<string> {
   const rankedId = (await ensureBattleId()) ?? undefined;
   const res = await fetch("/api/battle", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...body, rankedId }) });

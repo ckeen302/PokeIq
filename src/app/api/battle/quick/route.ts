@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { PLAY_FORMAT_INFO, PLAY_FORMATS } from "@/lib/battle/play";
+import { ALL_FORMATS, PLAY_FORMAT_INFO, type StandardFormatId } from "@/lib/battle/play";
 import { quickTeam, towerQuickTeam } from "@/lib/server/battle-engine/teams";
 import { customRandomTeam } from "@/lib/server/battle-engine/custom";
 import { clientIp, rateLimit } from "@/lib/server/rate-limit";
@@ -13,7 +13,7 @@ import { clientIp, rateLimit } from "@/lib/server/rate-limit";
 export const runtime = "nodejs";
 
 const bodySchema = z.union([
-  z.object({ format: z.enum(PLAY_FORMATS).refine((f) => !PLAY_FORMAT_INFO[f].random) }),
+  z.object({ format: z.enum(ALL_FORMATS as [StandardFormatId, ...StandardFormatId[]]).refine((f) => !PLAY_FORMAT_INFO[f].random) }),
   z.object({ rules: z.record(z.unknown()) }),
   z.object({ tower: z.literal(true) }),
 ]);

@@ -3,7 +3,7 @@ import { PRNG, Teams, TeamValidator } from "pokemon-showdown";
 import type { PRNGSeed } from "pokemon-showdown/dist/sim/prng";
 import { PLAY_FORMAT_INFO, BATTLE_TEAM_MAX, type PlayFormatId } from "@/lib/battle/play";
 import { legalRandomTeam as legalRandomSets, randomTeam as legalRandomTeam } from "@/lib/server/battle";
-import type { BattleFormatId } from "@/lib/battle/formats";
+import { BATTLE_FORMATS, type BattleFormatId } from "@/lib/battle/formats";
 import type { FactoryStyle } from "@/lib/battle/frontier";
 import { completeSet, type TeamSet } from "@/lib/battle/sets";
 import { newSeed, randomTeam } from "./engine";
@@ -77,7 +77,7 @@ function legalFactoryTeam(format: PlayFormatId, seed: string): PokemonSet[] {
       if (!validator.validateTeam(structuredClone(team))) return team;
     }
   }
-  return legalRandomTeam(format as BattleFormatId) as PokemonSet[];
+  return formatRandomTeam(format);
 }
 
 /**
@@ -98,7 +98,18 @@ export function quickTeam(format: PlayFormatId, seed: string = newSeed()): TeamS
 export function cpuTeam(format: PlayFormatId, seed: string = newSeed()): string {
   if (PLAY_FORMAT_INFO[format].random) return randomTeam(format, seed);
   if (format === "gen9ou") return Teams.pack(legalFactoryTeam(format, seed));
-  return Teams.pack(legalRandomTeam(format as BattleFormatId) as PokemonSet[]);
+  return Teams.pack(formatRandomTeam(format));
+}
+
+/**
+ * Six random-battle sets legal in a team format: the team builder's random
+ * teams, or for a past generation's format its own random-battle sets that
+ * pass its validator.
+ */
+function formatRandomTeam(format: PlayFormatId): PokemonSet[] {
+  if (format in BATTLE_FORMATS) return legalRandomTeam(format as BattleFormatId) as PokemonSet[];
+  const gen = Number(/^gen(\d)/.exec(format)?.[1] ?? 9);
+  return legalRandomSets({ generator: `gen${gen}randombattle`, gen, level: 100, validator: TeamValidator.get(format) }) as PokemonSet[];
 }
 
 /** A seat's team at the start: the one they brought (a Factory rental included), else generated in random formats. */

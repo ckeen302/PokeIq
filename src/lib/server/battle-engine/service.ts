@@ -519,7 +519,7 @@ export async function createRunBattle(
  * the turn timer off, for either player to start.
  */
 export async function createLiveBattle(
-  opts: { name: string; format: PlayFormatId; team?: string; rules?: unknown; public?: boolean; timer?: boolean; player?: string },
+  opts: { name: string; format: PlayFormatId; team?: string; rules?: unknown; public?: boolean; hidden?: boolean; timer?: boolean; player?: string },
   now = Date.now()
 ) {
   const custom = customFormat(opts.format, opts.rules);
@@ -532,7 +532,8 @@ export async function createLiveBattle(
     if (opts.player) me.player = opts.player;
     const rec = blankRecord(newMeta(code, "pvp", opts.format, [me], now));
     applyCustom(rec.meta, custom.custom);
-    if (opts.public) rec.meta.public = true;
+    if (opts.hidden) rec.meta.hidden = true;
+    else if (opts.public) rec.meta.public = true;
     if (opts.timer === false) rec.meta.timerOff = true;
     if (!(await insertBattle(rec))) continue;
     return { ok: true as const, code, token: battleToken(code, me.id, 0), view: battleView(rec.meta, me.id, [], 0, now, 0) };
@@ -617,6 +618,7 @@ export async function pollBattle(code: string, token: unknown, since: number, vi
     let lite = await loadBattleMeta(code, guess);
     if (!lite) return fail(404, "This battle has ended or never existed.");
     const seat = seatIndex(lite.meta, playerId);
+    if (seat < 0 && lite.meta.hidden && lite.meta.status !== "finished") return fail(403, "This battle doesn't allow spectators.");
     const channel = channelFor(lite.meta, seat);
     if (channel !== guess) {
       lite = await loadBattleMeta(code, channel);
@@ -802,6 +804,21 @@ function choose(work: Work, seat: number, rqid: number, choice: string, now: num
   return result.ok ? { ok: true } : { ok: true, rejected: result.error };
 }
 
+/**
+ * "Don't allow spectators" for a matched battle, from either trainer: it
+ * leaves the Watch lobby, nobody can spectate it while it's played, and
+ * its replay is kept unlisted.
+ */
+export async function hideBattle(code: string, playerId: string): Promise<Outcome<object>> {
+  const out = await updateBattle(code, (work) => {
+    if (seatIndex(work.meta, playerId) < 0) return fail(403, "You're not in this battle.");
+    work.meta.hidden = true;
+    work.meta.public = false;
+    return { ok: true };
+  });
+  return out.ok ? { ok: true } : out;
+}
+
 /** Pressing Rematch after a live battle: the first player opens it, both take their seats in it, ready. */
 export async function rematchBattle(code: string, playerId: string): Promise<Outcome<{ code: string; token: string; view: BattleView }>> {
   const loaded = await loadBattleMeta(code, null);
@@ -822,6 +839,7 @@ export async function rematchBattle(code: string, playerId: string): Promise<Out
       if (old.rules && old.formatid) applyCustom(fresh, { rules: old.rules, formatid: old.formatid });
       // A rematch is a friendly (never ranked), listed for watching if the first battle was.
       if (old.public) fresh.public = true;
+      if (old.hidden) fresh.hidden = true;
       if (old.timerOff) fresh.timerOff = true;
       // The chat carries on into the rematch.
       if (old.chat?.length) fresh.chat = old.chat;

@@ -67,7 +67,7 @@ export async function settleBattle(code: string): Promise<void> {
     if (!(err instanceof RankedUnavailable)) throw err;
   }
   let replay = meta.replay ?? null;
-  if (!replay && (meta.ranked || meta.public) && replayable(rec)) replay = await storeReplay(rec, true, now);
+  if (!replay && (meta.ranked || meta.public) && replayable(rec)) replay = await storeReplay(rec, !meta.hidden, now);
   await updateBattle(code, (work) => {
     if (!work.meta.settled) work.meta.settled = settled;
     if (replay && !work.meta.replay) work.meta.replay = replay;

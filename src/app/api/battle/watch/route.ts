@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { clientIp, rateLimit, tooManyRequests } from "@/lib/server/rate-limit";
 import { battlesEnabled } from "@/lib/server/battle-engine/store";
 import { listWatchable } from "@/lib/server/battle-engine/watch";
-import { PLAY_FORMATS, SPECIAL_FORMATS } from "@/lib/battle/play";
+import { ALL_FORMATS, SPECIAL_FORMATS } from "@/lib/battle/play";
 import type { WatchResponse } from "@/lib/battle/watch";
 
 /**
@@ -15,7 +15,7 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 const NO_STORE = { "Cache-Control": "no-store" };
-const FORMATS = new Set<string>([...PLAY_FORMATS, ...SPECIAL_FORMATS]);
+const FORMATS = new Set<string>([...ALL_FORMATS, ...SPECIAL_FORMATS]);
 
 export async function GET(request: NextRequest) {
   if (!rateLimit(`battle-watch:${clientIp(request)}`, 20, 1)) return tooManyRequests();
