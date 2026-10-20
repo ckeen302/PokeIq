@@ -172,7 +172,7 @@ export function RankedCard() {
   const you = state.status === "ready" ? state.you : null;
   return (
     <Card className="overflow-hidden border-warning/40">
-      <CardContent className="grid gap-5 p-6 md:grid-cols-[1fr_18rem]">
+      <CardContent className={cn("grid gap-5 p-6", state.status !== "off" && "md:grid-cols-[1fr_18rem]")}>
         <div className="min-w-0 space-y-3">
           <p className="hud-label flex items-center gap-1.5 text-warning">
             <Trophy className="h-3.5 w-3.5" aria-hidden /> Ranked
@@ -207,35 +207,37 @@ export function RankedCard() {
             </p>
           )}
         </div>
-        <div className="flex flex-col justify-center gap-2">
-          <label htmlFor={id} className="hud-label">
-            Your trainer name
-          </label>
-          <input
-            id={id}
-            value={name}
-            onChange={(e) => {
-              setName(e.target.value);
-              setError(null);
-            }}
-            maxLength={24}
-            disabled={finder.searching}
-            placeholder="Trainer name"
-            className="h-10 min-w-0 rounded-md border border-input bg-background px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          />
-          {finder.searching ? (
-            <Searching since={finder.since} onCancel={finder.cancel} ranked />
-          ) : (
-            <Button
-              type="button"
-              size="lg"
-              disabled={state.status !== "ready" || !name.trim()}
-              onClick={() => (isCleanName(name) ? void finder.search(name.trim(), rankedExtra()) : setError(NAME_REJECTED))}
-            >
-              <Trophy className="h-4 w-4" aria-hidden /> Queue ranked
-            </Button>
-          )}
-        </div>
+        {state.status !== "off" && (
+          <div className="flex flex-col justify-center gap-2">
+            <label htmlFor={id} className="hud-label">
+              Ranked trainer name
+            </label>
+            <input
+              id={id}
+              value={name}
+              onChange={(e) => {
+                setName(e.target.value);
+                setError(null);
+              }}
+              maxLength={24}
+              disabled={finder.searching}
+              placeholder="Trainer name"
+              className="h-10 min-w-0 rounded-md border border-input bg-background px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            />
+            {finder.searching ? (
+              <Searching since={finder.since} onCancel={finder.cancel} ranked />
+            ) : (
+              <Button
+                type="button"
+                size="lg"
+                disabled={state.status !== "ready" || !name.trim()}
+                onClick={() => (isCleanName(name) ? void finder.search(name.trim(), rankedExtra()) : setError(NAME_REJECTED))}
+              >
+                <Trophy className="h-4 w-4" aria-hidden /> Queue ranked
+              </Button>
+            )}
+          </div>
+        )}
       </CardContent>
     </Card>
   );

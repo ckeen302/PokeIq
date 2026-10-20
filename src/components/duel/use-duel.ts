@@ -154,6 +154,17 @@ export function useDuel<V extends DuelPace>(api: string, code: string, wakeAt?: 
     }
   }
 
+  /** A side action (a reaction) that never blocks play: no busy state; a refusal comes back as its message. */
+  async function send(body: Record<string, unknown>): Promise<string | null> {
+    const sentAt = Date.now();
+    try {
+      settle(await post<V>(api, { ...body, token: token.current }), sentAt);
+      return null;
+    } catch (err) {
+      return err instanceof Error ? err.message : "Something went wrong.";
+    }
+  }
+
   async function join(name: string) {
     unlockAudio();
     setBusy(true);
@@ -188,5 +199,5 @@ export function useDuel<V extends DuelPace>(api: string, code: string, wakeAt?: 
     }
   }
 
-  return { view, now, gone, offline, error, setError, busy, sawPlay, act, join, rematch };
+  return { view, now, gone, offline, error, setError, busy, sawPlay, act, send, join, rematch };
 }

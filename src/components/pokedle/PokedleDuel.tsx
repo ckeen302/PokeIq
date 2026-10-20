@@ -4,8 +4,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { AnimatePresence, motion } from "framer-motion";
-import { Crown, Eye, Filter, Lightbulb, Loader2, RotateCcw, Swords, Tag, Timer, UserSearch, WifiOff, X } from "lucide-react";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { Crown, Eye, Filter, Flame, Lightbulb, Loader2, RotateCcw, Swords, Tag, Timer, Trophy, UserSearch, Volume2, VolumeX, WifiOff } from "lucide-react";
 import { DLE_COLUMNS, DLE_MAX_GUESSES, type CellStatus, type DleRow } from "@/lib/dle-types";
 import {
   DLE_DUEL_HINT_COST,
@@ -14,13 +14,21 @@ import {
   DLE_DUEL_SPEED_BONUS,
   dleDuelBase,
   pvpHref,
+  DUEL_EMOTES,
+  EMOTE_GAP_MS,
+  EMOTE_SHOW_MS,
+  EMOTE_TEXT,
+  type DuelEmote,
   type DleDuelBoard,
   type DleDuelHint,
   type DleDuelRoundResult,
   type DleDuelScore,
   type DleDuelView,
 } from "@/lib/pvp-types";
-import { play, unlockAudio } from "@/lib/sound";
+import { unlockAudio } from "@/lib/sound";
+import { setDuelSfx, sfx, useDuelSfx } from "@/lib/duel-sfx";
+import { useRanked } from "@/lib/ranked-client";
+import { RANKED_MATCH, RatingChange, Searching, TierBadge, rankedExtra } from "./Ranked";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useDuel } from "@/components/duel/use-duel";
@@ -45,6 +53,10 @@ const HOME = "/pokedle";
 const GENS = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 /** What "Find new opponent" searches for: the same queue as on /pokedle. */
 const MATCH = { game: "pokedle" };
+/** The last stretch of a round: the clock gets loud. */
+const FINAL_MS = 10_000;
+/** A guess that leaves this few Pokémon possible is close. */
+const CLOSE_LEFT = 5;
 const HINT_INFO: Record<DleDuelHint, { label: string; icon: typeof Tag }> = {
   genus: { label: "Category", icon: Tag },
   silhouette: { label: "Silhouette", icon: Eye },
@@ -72,12 +84,12 @@ const progressText = (board: DleDuelBoard) =>
 
 export function PokedleDuel({ code, names }: { code: string; names: NameEntry[] }) {
   const router = useRouter();
-  const { view, now, gone, offline, error, busy, sawPlay, act, join, rematch } = useDuel<DleDuelView>(`/api/duel/${code}`, code);
+  const { view, now, gone, offline, error, busy, sawPlay, act, send, join, rematch } = useDuel<DleDuelView>(`/api/duel/${code}`, code);
   const [summary, setSummary] = useState(false);
   /** A Pokémon clicked in the Pokédex beside the board, for the guess box. */
   const [fill, setFill] = useState<{ name: string; n: number } | null>(null);
   useApplyDlePrefs();
-  const heard = useRef({ revealed: -1, theirSolve: false, end: false });
+  const heard = useRef({ revealed: -1, theirSolve: false, end: false, mine: -1, theirs: -1, round: -1, tick: -1 });
 
   // Each new screen (lobby, a round, a reveal, the result) starts at the top.
   const screen = !view ? "" : view.status === "lobby" ? "lobby" : view.round ? `round ${view.round.index}` : `reveal ${view.revealed.length} ${summary}`;
@@ -85,23 +97,48 @@ export function PokedleDuel({ code, names }: { code: string; names: NameEntry[] 
     if (screen) window.scrollTo({ top: 0, behavior: "smooth" });
   }, [screen]);
 
-  // Sounds: the opponent solving, and each round's result.
+  // Sounds (when turned on): your guesses, the opponent solving, and each round's result.
   useEffect(() => {
     if (!view || view.you === null) return;
     const h = heard.current;
-    const theirSolve = !!view.round?.boards[1 - view.you]?.solved;
-    if (theirSolve && !h.theirSolve) play("click");
+    const live = view.round;
+    const myBoard = live?.boards[view.you];
+    const theirBoard = live?.boards[1 - view.you];
+    const theirSolve = !!theirBoard?.solved;
+    if (live && myBoard && theirBoard) {
+      if (h.round === live.index && myBoard.colours.length > h.mine) {
+        sfx(myBoard.solved ? "correct" : (myBoard.possible.at(-1) ?? Infinity) <= CLOSE_LEFT ? "close" : "click");
+      }
+      // The rival's guesses ping; their solve too (below).
+      if (h.round === live.index && theirBoard.colours.length > h.theirs && !theirSolve) sfx("ping");
+      h.round = live.index;
+      h.mine = myBoard.colours.length;
+      h.theirs = theirBoard.colours.length;
+    }
+    if (theirSolve && !h.theirSolve) sfx("ping");
     h.theirSolve = theirSolve;
     if (h.revealed >= 0 && view.revealed.length > h.revealed) {
       const { scores } = view.revealed[view.revealed.length - 1];
       const [mine, theirs] = [scores[view.you].points, scores[1 - view.you].points];
-      play(mine > theirs ? "correct" : mine === theirs ? "streak" : "wrong");
+      sfx(mine > theirs ? "correct" : mine === theirs ? "streak" : "wrong");
     }
     h.revealed = view.revealed.length;
     // A forfeit skips the last reveal, so its result sounds straight away.
-    if (view.end?.reason === "left" && !h.end && sawPlay && view.end.winner === view.you) play("fanfare");
+    if (view.end?.reason === "left" && !h.end && sawPlay && view.end.winner === view.you) sfx("fanfare");
     h.end = !!view.end;
   }, [view, sawPlay]);
+
+  // The last ten seconds tick, while you're still guessing.
+  const finalSecond = view?.round && view.you !== null && !view.round.boards[view.you].done ? Math.ceil((view.round.endsAt - now) / 1000) : -1;
+  useEffect(() => {
+    if (finalSecond > 0 && finalSecond <= FINAL_MS / 1000 && heard.current.tick !== finalSecond) sfx("tick");
+    heard.current.tick = finalSecond;
+  }, [finalSecond]);
+
+  const emote = async (e: DuelEmote) => {
+    unlockAudio();
+    return send({ action: "emote", emote: e });
+  };
 
   const silhouette = useFirst(view?.round?.index, view?.round?.hints.silhouetteUrl);
   const mine = view?.round?.rows;
@@ -124,8 +161,10 @@ export function PokedleDuel({ code, names }: { code: string; names: NameEntry[] 
     <>
       <MatchedNote view={view} />
       <DuelNotice error={error} offline={offline} />
+      <EmoteFeed view={view} />
     </>
   );
+  const tools = view.you !== null && <DuelTools onEmote={emote} />;
 
   if (view.status === "lobby") {
     return (
@@ -143,7 +182,12 @@ export function PokedleDuel({ code, names }: { code: string; names: NameEntry[] 
           invite={(host) => `${host} challenges you! The same mystery Pokémon for both of you, three rounds, the most points wins.`}
           about="Head to head: the same mystery Pokémon for both of you, three rounds. Solve in fewer guesses, and faster, for more points."
           shareText="Duel me in Pokédle! Same mystery Pokémon, fewer guesses wins."
-          settings={<GenPicker view={view} busy={busy} onPick={(gens) => void act({ action: "gens", gens })} />}
+          settings={
+            <div className="space-y-3">
+              <GenPicker view={view} busy={busy} onPick={(gens) => void act({ action: "gens", gens })} />
+              <LobbyRank />
+            </div>
+          }
           rules={[
             {
               label: "Rounds",
@@ -196,6 +240,7 @@ export function PokedleDuel({ code, names }: { code: string; names: NameEntry[] 
       <>
         {notice}
         <DuelSummary view={view} busy={busy} onRematch={() => void startRematch()} />
+        <div className="mx-auto mt-4 max-w-3xl">{tools}</div>
       </>
     );
   }
@@ -236,6 +281,7 @@ export function PokedleDuel({ code, names }: { code: string; names: NameEntry[] 
     const myBoard = live.boards[me];
     const theirs = live.boards[1 - me];
     const timeUp = left <= 0;
+    const final = left > 0 && left <= FINAL_MS;
     const banner = myBoard.done
       ? myBoard.solved
         ? `Solved in ${myBoard.colours.length}! Waiting for ${them}…`
@@ -259,10 +305,7 @@ export function PokedleDuel({ code, names }: { code: string; names: NameEntry[] 
               <div className="hud-label">
                 Round {live.index + 1}/{view.rounds}
               </div>
-              <div className={cn("flex items-center justify-center gap-1 font-pixel text-lg tabular-nums", left < 30_000 ? "text-destructive" : "text-screen")}>
-                <Timer className="h-4 w-4" aria-hidden />
-                {clock(left)}
-              </div>
+              <RoundClock left={left} final={final && !myBoard.done} />
             </>
           }
         />
@@ -282,6 +325,7 @@ export function PokedleDuel({ code, names }: { code: string; names: NameEntry[] 
             </motion.p>
           )}
         </AnimatePresence>
+        <Momentum them={them} mine={myBoard} theirs={theirs} pool={view.pool} />
 
         {/*
           Your board and the opponent's side by side, the Pokédex below them. On a wide screen the
@@ -302,7 +346,6 @@ export function PokedleDuel({ code, names }: { code: string; names: NameEntry[] 
                     onGuess={(entry) => {
                       if (busy || timeUp) return false;
                       unlockAudio();
-                      play("click");
                       void act({ action: "guess", round: live.index, pokemon: entry[0] });
                       return true;
                     }}
@@ -334,7 +377,7 @@ export function PokedleDuel({ code, names }: { code: string; names: NameEntry[] 
                 )}
               </div>
               <div className="hidden xl:block">
-                <OpponentBoard name={them} seat={1 - me} board={theirs} pool={view.pool} quiet={view.players[1 - me]?.quiet} />
+                <OpponentBoard name={them} seat={1 - me} board={theirs} pool={view.pool} quiet={view.players[1 - me]?.quiet} round={live.index} />
               </div>
             </div>
             {live.rows.length > 0 ? (
@@ -347,7 +390,7 @@ export function PokedleDuel({ code, names }: { code: string; names: NameEntry[] 
           </div>
           {/* On a phone the opponent's progress comes first, above your (longer) board. */}
           <div className="order-first mx-auto w-full max-w-[13rem] md:order-none md:col-start-2 md:row-start-1 xl:hidden">
-            <OpponentBoard name={them} seat={1 - me} board={theirs} pool={view.pool} quiet={view.players[1 - me]?.quiet} />
+            <OpponentBoard name={them} seat={1 - me} board={theirs} pool={view.pool} quiet={view.players[1 - me]?.quiet} round={live.index} />
           </div>
           {/* Each round starts with every filter cleared. */}
           <DexPanel
@@ -359,6 +402,7 @@ export function PokedleDuel({ code, names }: { code: string; names: NameEntry[] 
             onPick={myBoard.done || timeUp ? undefined : (name) => setFill((f) => ({ name, n: (f?.n ?? 0) + 1 }))}
           />
         </div>
+        {tools}
         {leaveButton}
       </div>
     );
@@ -380,7 +424,7 @@ export function PokedleDuel({ code, names }: { code: string; names: NameEntry[] 
             disabled={!final && (pressed || busy)}
             onClick={() => {
               if (final) {
-                play(view.end?.winner === me ? "fanfare" : view.end?.winner === null ? "streak" : "wrong");
+                sfx(view.end?.winner === me ? "fanfare" : view.end?.winner === null ? "streak" : "wrong");
                 setSummary(true);
               } else void act({ action: "next", round: last.index });
             }}
@@ -388,6 +432,7 @@ export function PokedleDuel({ code, names }: { code: string; names: NameEntry[] 
             {final ? "See results ▶" : pressed ? `Waiting for ${them}… (${nextIn})` : `Next round (${nextIn}) ▶`}
           </Button>
         </RoundReveal>
+        {tools}
         {!final && leaveButton}
       </div>
     );
@@ -471,16 +516,27 @@ function Fighter({ view, seat, right }: { view: DleDuelView; seat: number; right
         {player?.quiet && view.status === "playing" && <WifiOff className="h-3.5 w-3.5 shrink-0 text-warning" aria-label="Connection lost" />}
       </div>
       <div className={cn("font-pixel text-base tabular-nums", ahead ? "text-success" : "text-screen")}>{fmt(view.totals[seat])} pts</div>
+      {view.ranked && (
+        <div className={cn("flex", right && "justify-end")}>
+          <TierBadge rating={view.ranked.ratings[seat]} games={view.ranked.provisional[seat] ? 0 : undefined} size="sm" />
+        </div>
+      )}
     </div>
   );
 }
 
-/** One clue as a coloured square (the opponent's view: no names, no values). */
-function Square({ status }: { status: CellStatus }) {
-  return (
+/** One clue as a coloured square (the opponent's view: no names, no values). With `delay`, it flips in like a board cell. */
+function Square({ status, delay }: { status: CellStatus; delay?: number }) {
+  const square = (
     <span className={cn("flex aspect-square items-center justify-center rounded-[3px] border text-[8px]", CELL_STYLES[status])} title={STATUS_TEXT[status]}>
       <CellGlyph status={status} size="h-2.5 w-2.5" />
     </span>
+  );
+  if (delay === undefined) return square;
+  return (
+    <motion.span className="block" initial={{ rotateX: 90, opacity: 0 }} animate={{ rotateX: 0, opacity: 1 }} transition={{ delay, duration: 0.35 }}>
+      {square}
+    </motion.span>
   );
 }
 
@@ -500,22 +556,63 @@ function HintBadges({ hints }: { hints: DleDuelHint[] }) {
   );
 }
 
-/** The opponent's progress in a live round: one row of colours per guess, and the hints they bought. */
-function OpponentBoard({ name, seat, board, pool, quiet }: { name: string; seat: number; board: DleDuelBoard; pool: number; quiet?: boolean }) {
+/**
+ * The opponent's progress in a live round: one row of colours per guess,
+ * filling in as they guess (the newest row flips in), with a "Rival
+ * guessed!" pulse, and the hints they bought.
+ */
+function OpponentBoard({ name, seat, board, pool, quiet, round }: { name: string; seat: number; board: DleDuelBoard; pool: number; quiet?: boolean; round: number }) {
+  const reduced = useReducedMotion();
+  const count = board.colours.length;
+  // Rows already there when this board (re)appeared don't flip: only guesses made while you watch.
+  const [seen] = useState(() => ({ round, count }));
+  const [pulse, setPulse] = useState(0);
+  const last = useRef({ round, count });
+  useEffect(() => {
+    if (last.current.round === round && count > last.current.count) setPulse((p) => p + 1);
+    last.current = { round, count };
+  }, [round, count]);
+  const flipRow = !reduced && (seen.round !== round || count > seen.count) ? count - 1 : -1;
   return (
-    <Card className={cn(board.solved && "border-success/50")}>
+    <Card className={cn("relative", board.solved && "border-success/50")}>
+      <AnimatePresence>
+        {pulse > 0 && (
+          <motion.span
+            key={pulse}
+            className="pointer-events-none absolute inset-0 rounded-[inherit] ring-2 ring-warning"
+            initial={{ opacity: 0.9 }}
+            animate={{ opacity: 0 }}
+            transition={{ duration: reduced ? 0.01 : 1.2 }}
+            aria-hidden
+          />
+        )}
+      </AnimatePresence>
+      <AnimatePresence>
+        {pulse > 0 && (
+          <motion.span
+            key={`t${pulse}`}
+            role="status"
+            className="pointer-events-none absolute -top-3 left-1/2 z-10 -translate-x-1/2 whitespace-nowrap rounded-full border border-warning/60 bg-card px-2 py-0.5 font-display text-[11px] font-bold uppercase tracking-wider text-warning shadow"
+            initial={reduced ? { opacity: 1 } : { opacity: 0, y: 6, scale: 0.8 }}
+            animate={reduced ? { opacity: 0 } : { opacity: [1, 1, 0], y: 0, scale: 1 }}
+            transition={{ duration: 1.8, times: [0, 0.7, 1] }}
+          >
+            {board.solved ? "Rival solved it!" : "Rival guessed!"}
+          </motion.span>
+        )}
+      </AnimatePresence>
       <CardContent className="space-y-3 p-4">
         <p className="hud-label flex items-center gap-1.5">
           <SeatDot seat={seat} /> <span className="truncate">{name}</span>
           {quiet && <WifiOff className="h-3.5 w-3.5 shrink-0 text-warning" aria-label="Connection lost" />}
         </p>
-        <div className="space-y-1" aria-label={`${name}: ${progressText(board)}`}>
+        <div className="space-y-1" style={{ perspective: 400 }} aria-label={`${name}: ${progressText(board)}`}>
           {Array.from({ length: DLE_MAX_GUESSES }).map((_, r) => {
             const row = board.colours[r];
             return (
-              <div key={r} className="grid grid-cols-7 gap-1">
+              <div key={row ? `g${r}` : `e${r}`} className="grid grid-cols-7 gap-1">
                 {row
-                  ? row.map((status, i) => <Square key={i} status={status} />)
+                  ? row.map((status, i) => <Square key={i} status={status} delay={r === flipRow ? i * 0.1 : undefined} />)
                   : Array.from({ length: 7 }).map((_, i) => <span key={i} className="aspect-square rounded-[3px] border border-dashed border-foreground/10" />)}
               </div>
             );
@@ -643,8 +740,9 @@ function DuelSummary({ view, busy, onRematch }: { view: DleDuelView; busy: boole
   const won = end.winner === me;
   const draw = end.winner === null;
   const [mine, theirs] = [view.totals[me], view.totals[1 - me]];
-  // "Find new opponent": the matchmaking queue, as on /pokedle (every generation), under the same name.
-  const finder = useMatchmaking(MATCH);
+  // "Find new opponent" / "Play again": the queue this duel came from (casual for a friend's duel), under the same name.
+  const ranked = view.queue === "ranked";
+  const finder = useMatchmaking(ranked ? RANKED_MATCH : MATCH);
   const myName = view.players[me]?.name ?? "";
   const guesses = (seat: number) => view.revealed.reduce((sum, r) => sum + r.scores[seat].guesses, 0);
   const played = draw
@@ -675,7 +773,9 @@ function DuelSummary({ view, busy, onRematch }: { view: DleDuelView; busy: boole
 
       <DuelHud view={view} center={<div className="hud-label">Final</div>} />
 
-      {view.series && <SeriesScore series={view.series} players={view.players} you={me} />}
+      {view.ranked && <RankedOutcome view={view} />}
+
+      {view.series && !ranked && <SeriesScore series={view.series} players={view.players} you={me} />}
 
       <Card>
         <CardContent className="space-y-5 p-5">
@@ -714,12 +814,17 @@ function DuelSummary({ view, busy, onRematch }: { view: DleDuelView; busy: boole
             </p>
           )}
           {finder.searching ? (
-            <div className="space-y-2 rounded-md border border-screen/40 bg-screen/[0.06] p-3 text-center" role="status">
-              <p className="flex items-center justify-center gap-2 font-display text-sm font-semibold uppercase tracking-wider text-screen">
-                <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> Searching for an opponent…
-              </p>
-              <Button type="button" size="sm" variant="ghost" onClick={finder.cancel}>
-                <X className="h-3.5 w-3.5" aria-hidden /> Cancel
+            <Searching since={finder.since} onCancel={finder.cancel} ranked={ranked} />
+          ) : view.queue ? (
+            // From the queue: going again is the main thing; a rematch with this trainer is there too (always casual).
+            <div className="grid gap-2 sm:grid-cols-[2fr_1fr]">
+              <Button size="lg" variant="success" disabled={busy || !myName} onClick={() => void finder.search(myName, ranked ? rankedExtra() : {})} autoFocus>
+                {ranked ? <Trophy className="h-4 w-4" aria-hidden /> : <UserSearch className="h-4 w-4" aria-hidden />}
+                {ranked ? "Queue ranked" : "Play again"}
+              </Button>
+              <Button size="lg" variant="outline" disabled={busy} onClick={onRematch}>
+                {busy ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : <RotateCcw className="h-4 w-4" aria-hidden />}
+                {view.rematch ? "Accept rematch" : ranked ? "Casual rematch" : "Rematch"}
               </Button>
             </div>
           ) : (
@@ -749,6 +854,214 @@ function DuelSummary({ view, busy, onRematch }: { view: DleDuelView; busy: boole
           </p>
         </CardContent>
       </Card>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Live feel
+// ---------------------------------------------------------------------------
+
+/** The round's clock: calm, then red under 30 s, then big and pulsing for the last ten. */
+function RoundClock({ left, final }: { left: number; final: boolean }) {
+  const reduced = useReducedMotion();
+  const secondsLeft = Math.max(0, Math.ceil(left / 1000));
+  if (!final) {
+    return (
+      <div className={cn("flex items-center justify-center gap-1 font-pixel text-lg tabular-nums", left < 30_000 ? "text-destructive" : "text-screen")}>
+        <Timer className="h-4 w-4" aria-hidden />
+        {clock(left)}
+      </div>
+    );
+  }
+  return (
+    <motion.div
+      key={secondsLeft}
+      initial={reduced ? false : { scale: 1.5, opacity: 0.4 }}
+      animate={{ scale: 1, opacity: 1 }}
+      transition={{ duration: 0.3 }}
+      className="flex items-center justify-center gap-1 font-pixel text-3xl tabular-nums text-destructive drop-shadow-[0_0_8px_hsl(0_80%_55%/0.6)]"
+      role="timer"
+      aria-label={`${secondsLeft} seconds left`}
+    >
+      {secondsLeft}
+    </motion.div>
+  );
+}
+
+/** "Rival is down to 3 possible": how the race stands, by Pokémon still possible. */
+function Momentum({ them, mine, theirs, pool }: { them: string; mine: DleDuelBoard; theirs: DleDuelBoard; pool: number }) {
+  if (theirs.done || theirs.colours.length === 0) return null;
+  const theirLeft = leftOf(theirs, pool);
+  const myLeft = leftOf(mine, pool);
+  const ahead = !mine.done && theirLeft < myLeft;
+  const text =
+    theirLeft === 1 ? `${them} has it down to 1. One guess from solving!` : `${them} is down to ${fmt(theirLeft)} possible${mine.done ? "" : ` · you: ${fmt(myLeft)}`}`;
+  return (
+    <p
+      role="status"
+      className={cn("flex items-center justify-center gap-1.5 text-center text-sm font-semibold", ahead || theirLeft === 1 ? "text-warning" : "text-muted-foreground")}
+    >
+      {(ahead || theirLeft === 1) && <Flame className="h-4 w-4 shrink-0" aria-hidden />}
+      {text}
+    </p>
+  );
+}
+
+/** The reactions bar and the sound switch. */
+function DuelTools({ onEmote }: { onEmote: (e: DuelEmote) => Promise<string | null> }) {
+  const on = useDuelSfx();
+  const [coolUntil, setCoolUntil] = useState(0);
+  const [note, setNote] = useState<string | null>(null);
+  const [, force] = useState(0);
+  useEffect(() => {
+    if (!coolUntil) return;
+    const id = window.setTimeout(() => force((n) => n + 1), Math.max(0, coolUntil - Date.now()) + 20);
+    return () => window.clearTimeout(id);
+  }, [coolUntil]);
+  const cooling = coolUntil > Date.now();
+  return (
+    <div className="mx-auto flex max-w-md flex-wrap items-center justify-center gap-2">
+      <span className="hud-label">React</span>
+      {DUEL_EMOTES.map((e) => (
+        <button
+          key={e}
+          type="button"
+          disabled={cooling}
+          onClick={async () => {
+            setCoolUntil(Date.now() + EMOTE_GAP_MS);
+            const err = await onEmote(e);
+            setNote(err);
+          }}
+          className="h-9 min-w-9 rounded-full border border-foreground/15 bg-card px-2.5 text-base font-bold transition-transform hover:scale-110 hover:border-primary/60 disabled:opacity-50 disabled:hover:scale-100"
+          aria-label={`Send ${e === "gg" ? "GG" : EMOTE_TEXT[e]}`}
+        >
+          {e === "gg" ? <span className="font-display text-xs">GG</span> : EMOTE_TEXT[e]}
+        </button>
+      ))}
+      <button
+        type="button"
+        onClick={() => setDuelSfx(!on)}
+        aria-pressed={on}
+        className="ml-2 flex h-9 items-center gap-1 rounded-full border border-foreground/15 bg-card px-3 text-xs text-muted-foreground hover:text-foreground"
+        title={on ? "Sound effects on" : "Sound effects off"}
+      >
+        {on ? <Volume2 className="h-3.5 w-3.5" aria-hidden /> : <VolumeX className="h-3.5 w-3.5" aria-hidden />} Sound {on ? "on" : "off"}
+      </button>
+      {note && (
+        <p className="w-full text-center text-xs text-muted-foreground" role="status">
+          {note}
+        </p>
+      )}
+    </div>
+  );
+}
+
+/** Reactions as they arrive: a bubble on the sender's side of the screen. */
+function EmoteFeed({ view }: { view: DleDuelView }) {
+  const reduced = useReducedMotion();
+  const [shown, setShown] = useState<{ n: number; seat: number; emote: DuelEmote }[]>([]);
+  const seen = useRef(0);
+  const timers = useRef<number[]>([]);
+  useEffect(() => {
+    const fresh = (view.emotes ?? []).filter((e) => e.n > seen.current && view.now - e.at < EMOTE_SHOW_MS);
+    if (!fresh.length) return;
+    seen.current = Math.max(...fresh.map((e) => e.n));
+    if (fresh.some((e) => e.seat !== view.you)) sfx("ping");
+    setShown((s) => [...s, ...fresh.map(({ n, seat, emote }) => ({ n, seat, emote }))].slice(-6));
+    const ns = new Set(fresh.map((e) => e.n));
+    // Each bubble's own timer: later polls don't cut it short.
+    timers.current.push(window.setTimeout(() => setShown((s) => s.filter((x) => !ns.has(x.n))), 3_000));
+  }, [view.emotes, view.now, view.you]);
+  useEffect(() => {
+    const list = timers.current;
+    return () => list.forEach((id) => window.clearTimeout(id));
+  }, []);
+  return (
+    <div className="pointer-events-none fixed inset-x-0 top-20 z-50 mx-auto flex max-w-4xl justify-between px-4" aria-live="polite">
+      {[0, 1].map((seat) => (
+        <div key={seat} className={cn("flex flex-col gap-2", seat === 1 && "items-end")}>
+          <AnimatePresence>
+            {shown
+              .filter((e) => e.seat === seat)
+              .map((e) => (
+                <motion.span
+                  key={e.n}
+                  initial={reduced ? { opacity: 0 } : { opacity: 0, y: 12, scale: 0.6 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: reduced ? 0 : -10 }}
+                  className="flex items-center gap-1.5 rounded-full border bg-card/95 px-3 py-1.5 text-2xl shadow-lg backdrop-blur"
+                >
+                  <span className="max-w-[8rem] truncate font-display text-[11px] font-bold uppercase text-muted-foreground">
+                    {seat === view.you ? "You" : view.players[seat]?.name}
+                  </span>
+                  {e.emote === "gg" ? <span className="font-display text-lg font-bold">GG</span> : EMOTE_TEXT[e.emote]}
+                </motion.span>
+              ))}
+          </AnimatePresence>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/** In a friend's duel lobby: your ranked tier and streak, if you have one. */
+function LobbyRank() {
+  const { state } = useRanked();
+  if (state.status !== "ready" || !state.you || state.you.games === 0) return null;
+  const you = state.you;
+  return (
+    <div className="flex flex-wrap items-center justify-center gap-3 text-xs text-muted-foreground">
+      <span className="hud-label">Your rank</span>
+      <TierBadge rating={you.rating} games={you.games} size="sm" />
+      {you.position !== null && <span>#{fmt(you.position)}</span>}
+      {you.streak > 0 && (
+        <span className="flex items-center gap-1 font-semibold text-warning">
+          <Flame className="h-3.5 w-3.5" aria-hidden /> {you.streak} win streak
+        </span>
+      )}
+    </div>
+  );
+}
+
+/** After a ranked duel: the rating change and, once counted, your streak and place. */
+function RankedOutcome({ view }: { view: DleDuelView }) {
+  const me = view.you!;
+  const result = view.ranked?.result;
+  const { state, reload } = useRanked({ enabled: !!result });
+  useEffect(() => {
+    if (result) reload();
+  }, [result, reload]);
+  if (!result) {
+    return (
+      <p className="flex items-center justify-center gap-2 text-sm text-muted-foreground" role="status">
+        <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> Counting your rating…
+      </p>
+    );
+  }
+  const you = state.status === "ready" ? state.you : null;
+  return (
+    <div className="space-y-2">
+      <RatingChange before={result.before[me]} after={result.after[me]} provisional={view.ranked?.provisional[me]} />
+      {you && (
+        <p className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
+          {you.position !== null && (
+            <span>
+              Ladder <b className="text-foreground">#{fmt(you.position)}</b> of {fmt(you.players)}
+            </span>
+          )}
+          {you.streak > 1 ? (
+            <span className="flex items-center gap-1 font-semibold text-warning">
+              <Flame className="h-4 w-4" aria-hidden /> {you.streak} wins in a row!
+            </span>
+          ) : you.streak === 1 ? (
+            <span>Win the next one to start a streak.</span>
+          ) : null}
+          <Link href="/leaderboard?board=pokedle" className="underline underline-offset-2 hover:text-foreground">
+            Ranked ladder
+          </Link>
+        </p>
+      )}
     </div>
   );
 }
