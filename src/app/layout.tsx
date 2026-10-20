@@ -89,7 +89,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <p className="mx-auto max-w-3xl pt-2 text-[11px] leading-relaxed text-muted-foreground/70">
               PokéIQ is a free, non-commercial fan project and is not affiliated with, endorsed or sponsored by
               Nintendo, Game Freak, Creatures or The Pokémon Company. Pokémon and all related names are trademarks
-              of their respective owners. Data from PokéAPI.
+              of their respective owners. Data from PokéAPI. Battle music: original chiptune by Ted Kerr, Julie Damsgaard (Spring Spring) and
+              congusbongus via OpenGameArt.org, under CC0 and CC BY 3.0 (
+              <a href="/audio/battle/CREDITS.md" className="underline-offset-2 hover:underline">
+                credits
+              </a>
+              ).
             </p>
           </div>
         </footer>

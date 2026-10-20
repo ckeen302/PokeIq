@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { MusicControl, trackFor, useBattleMusic } from "./MusicControl";
 import { FastForward, Gauge, Loader2, ScrollText, SkipForward, Timer } from "lucide-react";
 import { CPU_LEVEL_INFO, PLAY_FORMAT_INFO, type BattleView } from "@/lib/battle/play";
 import { Card, CardContent } from "@/components/ui/card";
@@ -245,6 +246,7 @@ export default function BattleScreen({ view, log, offset, busy, error, onChoose,
   const ended = !!view.end && !pending;
   const won = ended && view.end!.winner !== null && view.end!.winner === view.you;
   const tie = ended && view.end!.winner === null;
+  useBattleMusic(trackFor(view, ended, won));
 
   return (
     <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_300px]">
@@ -274,6 +276,7 @@ export default function BattleScreen({ view, log, offset, busy, error, onChoose,
               <span className="text-muted-foreground">Foe {view.clocks.foe.deadline ? clock(view.clocks.foe.deadline - now) : clock(view.clocks.foe.bank)}</span>
             </div>
           )}
+          <MusicControl />
           <div className="flex items-center gap-1">
             <Gauge className="h-3.5 w-3.5 text-muted-foreground" aria-hidden />
             {SPEEDS.map((s) => (

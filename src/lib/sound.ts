@@ -44,6 +44,17 @@ export function setMuted(muted: boolean): void {
   } catch {
     // keep the in-memory value
   }
+  window.dispatchEvent(new CustomEvent(MUTE_EVENT, { detail: muted }));
+}
+
+const MUTE_EVENT = "pokeiq:muted";
+
+/** Calls `listener` whenever the site's sound is muted or unmuted (battle music follows it). */
+export function onMuteChange(listener: (muted: boolean) => void): () => void {
+  if (typeof window === "undefined") return () => undefined;
+  const handler = (e: Event) => listener(!!(e as CustomEvent<boolean>).detail);
+  window.addEventListener(MUTE_EVENT, handler);
+  return () => window.removeEventListener(MUTE_EVENT, handler);
 }
 
 /**

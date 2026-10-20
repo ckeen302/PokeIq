@@ -133,6 +133,7 @@ npm run verify:showdown          # 2,000-battle parity check against official Sh
 - Pokémon data, artwork and sprites: [PokéAPI](https://pokeapi.co).
 - Battle simulation: [Pokémon Showdown](https://github.com/smogon/pokemon-showdown) (MIT) and the [@pkmn](https://github.com/pkmn) packages (MIT).
 - Damage calculator: [@smogon/calc](https://github.com/smogon/damage-calc) (MIT).
+- Battle music (original chiptune, never game music; details in [public/audio/battle/CREDITS.md](public/audio/battle/CREDITS.md)): "8-Bit RPG Battle/Encounter Theme" by Ted Kerr (Wolfgang_, CC0), "Battle! vs Minor Gyokaijuu" by Julie Damsgaard (Spring Spring, CC0), "Face The Champion!" by Julie Damsgaard (Spring Spring, [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/), shortened) and "Glorious victory fanfare NES" by congusbongus (CC0), all from [OpenGameArt.org](https://opengameart.org).
 
 PokéIQ's own source code is released under the [MIT License](LICENSE).
 
