@@ -206,7 +206,8 @@ export function battlePollDelay(view: BattleView | null, quietPolls: number, ser
   }
   if (view.status === "lobby") return view.players.length >= 2 ? 2000 : backoff(2000, 5000, quietPolls);
   const deadlines = [view.clocks?.you.deadline, view.clocks?.foe.deadline];
-  if (view.you === null) return untilNext(backoff(3000, 10_000, quietPolls), serverNow, deadlines);
+  // Spectators follow the battle closely, easing off while nothing happens.
+  if (view.you === null) return untilNext(backoff(1500, 4000, quietPolls), serverNow, deadlines);
   const yourMove = view.request !== null && !view.waiting;
   return untilNext(yourMove ? 2000 : 1000, serverNow, deadlines);
 }

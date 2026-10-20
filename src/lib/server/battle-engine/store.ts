@@ -36,6 +36,10 @@ export interface BattleSeat {
   seenAt: number;
   /** A brought team, packed and validated (bring-your-own formats). Server-side only. */
   team?: string;
+  /** The trainer's ladder key (an HMAC of their account or signed anonymous id). Server-side only. */
+  player?: string;
+  /** Ranked battles: the rating and ranked games this trainer had when matched. */
+  rating?: { rating: number; games: number };
 }
 
 export interface SideClock {
@@ -68,6 +72,8 @@ export interface BattleMeta {
   /** The simulator's PRNG seed. Server-side only. */
   seed: string;
   createdAt: number;
+  /** When both trainers were in and the battle began. */
+  startedAt?: number;
   /** Seat 0 plays p1, seat 1 plays p2. */
   seats: BattleSeat[];
   cpu?: { level: CpuLevel };
@@ -86,6 +92,24 @@ export interface BattleMeta {
   rematch?: string;
   /** Live battles: the players' chat, the last few dozen lines (a rematch carries them on). */
   chat?: ChatLine[];
+  /** Live battles: listed in the Watch lobby (matchmade battles always; friend battles when the host lets anyone watch). */
+  public?: boolean;
+  /** A ranked ladder battle (matchmade only). */
+  ranked?: boolean;
+  /** Spectators: an anonymous viewer id → when it last polled. */
+  watchers?: Record<string, number>;
+  /** Live battles: the timer is off until a player starts it. */
+  timerOff?: boolean;
+  /** After the end: what was recorded (ratings, history, the replay). */
+  settled?: BattleSettled;
+  /** The saved replay's id. */
+  replay?: string;
+}
+
+export interface BattleSettled {
+  at: number;
+  /** Ranked: each seat's rating before and after. */
+  ratings?: [{ before: number; after: number }, { before: number; after: number }];
 }
 
 export interface BattleRecord {
@@ -274,6 +298,42 @@ export async function deleteBattle(code: string): Promise<void> {
     return;
   }
   memory().delete(code);
+}
+
+/** One live battle as the Watch lobby lists it (no simulator needed). */
+export interface LiveBattleRow {
+  meta: BattleMeta;
+  createdAt: number;
+}
+
+/**
+ * Live battles under way that are listed for watching (newest first, at most
+ * `limit`): matchmade and opted-in friend battles. Only `meta` is read; the
+ * caller picks the public fields out of it.
+ */
+export async function listLiveBattles(limit = 60): Promise<LiveBattleRow[]> {
+  const sb = remote();
+  if (sb) {
+    const { data, error } = await sb
+      .from(TABLE)
+      .select("meta, created_at")
+      .eq("kind", "pvp")
+      .eq("meta->>status", "playing")
+      .eq("meta->>public", "true")
+      .gt("expires_at", new Date().toISOString())
+      .order("created_at", { ascending: false })
+      .limit(limit);
+    if (error) throw new Error(error.message);
+    return (data ?? []).map((r: { meta: BattleMeta; created_at: string }) => ({ meta: r.meta, createdAt: Date.parse(r.created_at) }));
+  }
+  const now = Date.now();
+  return [...memory().values()]
+    .filter((row) => row.expires > now)
+    .map((row) => (JSON.parse(row.json) as BattleRecord).meta)
+    .filter((m) => m.kind === "pvp" && m.status === "playing" && m.public === true)
+    .sort((a, b) => b.createdAt - a.createdAt)
+    .slice(0, limit)
+    .map((meta) => ({ meta, createdAt: meta.createdAt }));
 }
 
 /**

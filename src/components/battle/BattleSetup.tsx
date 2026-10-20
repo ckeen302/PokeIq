@@ -69,7 +69,9 @@ function useTicker(on: boolean): number {
 }
 
 /** Starts a battle; returns its page, or throws with the server's reason. */
-export async function startBattle(body: { mode: "cpu" | "pvp" } & Omit<CpuSetup, "level"> & { level?: CpuLevel }): Promise<string> {
+export async function startBattle(
+  body: { mode: "cpu" | "pvp" } & Omit<CpuSetup, "level"> & { level?: CpuLevel; public?: boolean; timer?: boolean }
+): Promise<string> {
   const res = await fetch("/api/battle", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
   const data = (await res.json().catch(() => ({}))) as Partial<BattleSeatResponse> & { error?: string };
   if (!res.ok || !data.code || !data.token) throw new Error(data.error ?? `Request failed (${res.status})`);
@@ -77,6 +79,28 @@ export async function startBattle(body: { mode: "cpu" | "pvp" } & Omit<CpuSetup,
   if (body.rules) rememberCustomRules(body.rules);
   if (body.mode === "cpu") rememberCpuSetup({ name: body.name, format: body.format, level: body.level ?? "normal", team: body.team, rules: body.rules });
   return battleHref(body.mode, data.code);
+}
+
+/** A labelled on/off switch with a line of help. */
+export function Toggle({ checked, onChange, label, hint, testId, disabled }: { checked: boolean; onChange: (on: boolean) => void; label: string; hint?: string; testId?: string; disabled?: boolean }) {
+  return (
+    <label className={cn("flex cursor-pointer items-start gap-3 rounded-md border bg-card px-3 py-2", checked && "border-primary/60", disabled && "cursor-not-allowed opacity-50")}>
+      <input type="checkbox" className="peer sr-only" checked={checked} disabled={disabled} onChange={(e) => onChange(e.target.checked)} data-testid={testId} />
+      <span
+        aria-hidden
+        className={cn(
+          "relative mt-0.5 inline-block h-5 w-9 shrink-0 rounded-full transition-colors peer-focus-visible:ring-2 peer-focus-visible:ring-ring",
+          checked ? "bg-primary" : "bg-foreground/20"
+        )}
+      >
+        <span className={cn("absolute top-0.5 h-4 w-4 rounded-full bg-white shadow transition-[left]", checked ? "left-[1.125rem]" : "left-0.5")} />
+      </span>
+      <span className="min-w-0">
+        <span className="block font-display text-sm font-bold uppercase">{label}</span>
+        {hint && <span className="block text-xs text-muted-foreground">{hint}</span>}
+      </span>
+    </label>
+  );
 }
 
 /** Live battles add the Battle Factory: both trainers rent a team. */
@@ -100,6 +124,10 @@ export function BattleSetup({ initial = "cpu" }: { initial?: Opponent }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [rules, setRules] = useState<CustomRules>(DEFAULT_CUSTOM_RULES);
+  /** Friend battles: listed in the Watch lobby (off: only people with the link can watch). */
+  const [watchable, setWatchable] = useState(false);
+  /** Friend battles: the turn timer runs from the start (off: either player can start it). */
+  const [timerOn, setTimerOn] = useState(true);
   const custom = format === "custom";
   const info = PLAY_FORMAT_INFO[format];
   const formatName = custom ? customName(rules) : info.name;
@@ -156,6 +184,7 @@ export function BattleSetup({ initial = "cpu" }: { initial?: Opponent }) {
         level: opponent === "cpu" ? level : undefined,
         team: needsTeam ? team : undefined,
         rules: custom ? rules : undefined,
+        ...(opponent === "pvp" ? { public: watchable, timer: timerOn } : {}),
       });
       if (!progress?.name) setTrainerName(name.trim());
       router.push(href);
@@ -301,6 +330,12 @@ export function BattleSetup({ initial = "cpu" }: { initial?: Opponent }) {
               className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             />
           </div>
+          {opponent === "pvp" && (
+            <div className="space-y-2">
+              <Toggle checked={watchable} onChange={setWatchable} label="Let anyone watch" hint="List it in Watch live. Off: only people with the link can watch." testId="let-anyone-watch" />
+              <Toggle checked={timerOn} onChange={setTimerOn} label="Turn timer" hint="Off: either of you can start it mid-battle." testId="timer-on" />
+            </div>
+          )}
           {problem && (
             <p role="alert" className="text-sm text-destructive">
               {problem}

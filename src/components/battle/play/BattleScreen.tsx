@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { MusicControl, trackFor, useBattleMusic } from "./MusicControl";
-import { FastForward, Gauge, Loader2, ScrollText, SkipForward, Timer } from "lucide-react";
+import { Eye, FastForward, Gauge, Loader2, ScrollText, SkipForward, Timer } from "lucide-react";
 import { CPU_LEVEL_INFO, PLAY_FORMAT_INFO, type BattleView } from "@/lib/battle/play";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
@@ -24,7 +24,8 @@ import type { Ball } from "./Hud";
 
 export interface BattleScreenProps {
   view: BattleView;
-  log: { lines: string[]; reset: number };
+  /** `instant`: on a reset, show where the battle stands at once (no animations), as when catching up. */
+  log: { lines: string[]; reset: number; instant?: boolean };
   /** Server time minus device time. */
   offset: number;
   busy: boolean;
@@ -34,6 +35,51 @@ export interface BattleScreenProps {
   endActions?: React.ReactNode;
   /** Under the battle log: the players' chat in a live battle. */
   side?: React.ReactNode;
+  /** A live battle with the timer off: start it. */
+  onStartTimer?: () => void;
+  /** Under the header: a replay's playback controls. */
+  toolbar?: React.ReactNode;
+  /** A replay: no clocks, waiting or controls, just the battle. */
+  replay?: boolean;
+  /** Called whenever the animation queue runs dry (a replay feeds the next turn then). */
+  onIdle?: () => void;
+}
+
+/** How a finished battle ended, told from one trainer's side or, for spectators and replays, neutrally. */
+export function endText(view: Pick<BattleView, "end" | "players" | "you">, turns: number): { title: string; detail: string; tone: "win" | "loss" | "draw" } {
+  const end = view.end!;
+  const names = view.players.map((p) => p.name);
+  const winner = end.winner === null ? null : (names[end.winner] ?? "A trainer");
+  const loser = end.winner === null ? null : (names[1 - end.winner] ?? "A trainer");
+  const turnsText = `${turns} turn${turns === 1 ? "" : "s"}`;
+  if (view.you === null) {
+    if (end.winner === null) return { title: end.reason === "nocontest" ? "No contest" : "A draw", detail: end.reason === "nocontest" ? "The battle couldn't go on." : `After ${turnsText}.`, tone: "draw" };
+    const why =
+      end.reason === "forfeit" ? `${loser} forfeited.` : end.reason === "timeout" ? `${loser} ran out of time.` : end.reason === "left" ? `${loser} disconnected.` : `In ${turnsText}.`;
+    return { title: `${winner} won!`, detail: why, tone: "win" };
+  }
+  const won = end.winner === view.you;
+  const foe = names[view.you === 0 ? 1 : 0] ?? "Opponent";
+  if (end.winner === null) return { title: "A draw", detail: end.reason === "nocontest" ? "The battle couldn't go on." : `After ${turnsText}.`, tone: "draw" };
+  const detail =
+    end.reason === "forfeit"
+      ? won
+        ? `${foe} forfeited.`
+        : "You forfeited."
+      : end.reason === "timeout"
+        ? won
+          ? `${foe} ran out of time.`
+          : "You ran out of time."
+        : end.reason === "left"
+          ? won
+            ? `${foe} disconnected.`
+            : "You were disconnected."
+          : end.reason === "nocontest"
+            ? "The battle couldn't go on."
+            : won
+              ? `You beat ${foe} in ${turnsText}.`
+              : `${foe} won in ${turnsText}.`;
+  return { title: won ? "Victory!" : "Defeat", detail, tone: won ? "win" : "loss" };
 }
 
 interface Entry {
@@ -42,7 +88,7 @@ interface Entry {
   text: string;
 }
 
-const SPEEDS = [1, 2, 4] as const;
+const SPEEDS = [0.5, 1, 2, 4] as const;
 const SPEED_KEY = "pokeiq:battle:speed";
 
 function emptySnap(): Snap {
@@ -83,7 +129,10 @@ function useTick(active: boolean) {
   return now;
 }
 
-export default function BattleScreen({ view, log, offset, busy, error, onChoose, endActions, side }: BattleScreenProps) {
+export default function BattleScreen({ view, log, offset, busy, error, onChoose, endActions, side, onStartTimer, toolbar, replay, onIdle }: BattleScreenProps) {
+  const watching = view.you === null;
+  const idle = useRef(onIdle);
+  idle.current = onIdle;
   const me: SideId = view.you === 1 ? "p2" : "p1";
   const doubles = PLAY_FORMAT_INFO[view.format].gameType === "doubles";
   const model = useRef<BattleModel | null>(null);
@@ -172,6 +221,7 @@ export default function BattleScreen({ view, log, offset, busy, error, onChoose,
     abort.current = null;
     running.current = false;
     setPlaying(false);
+    idle.current?.();
   }, [addEntry, popup]);
 
   // New lines: into the model, then onto the queue (or straight to the screen when catching up).
@@ -190,7 +240,7 @@ export default function BattleScreen({ view, log, offset, busy, error, onChoose,
     if (!fresh.length) return;
     const m = model.current;
     // Coming back to a battle under way: no replaying the history, just show where it stands.
-    const catchUp = first && fresh.some((line) => /^\|turn\|([2-9]|\d\d)/.test(line));
+    const catchUp = first && (log.instant ?? fresh.some((line) => /^\|turn\|([2-9]|\d\d)/.test(line)));
     if (catchUp) {
       const caught: Entry[] = [];
       for (const line of fresh) {
@@ -200,6 +250,9 @@ export default function BattleScreen({ view, log, offset, busy, error, onChoose,
       }
       setEntries(caught.slice(-600));
       setSnap(m.snapshot());
+      const last = [...caught].reverse().find((e) => e.turn === undefined);
+      setMessage(last?.text ?? "");
+      window.setTimeout(() => idle.current?.(), 0);
       return;
     }
     for (const line of fresh) {
@@ -245,7 +298,7 @@ export default function BattleScreen({ view, log, offset, busy, error, onChoose,
   const showControls = !pending && view.status === "playing" && !!view.request && !view.end;
   const ended = !!view.end && !pending;
   const won = ended && view.end!.winner !== null && view.end!.winner === view.you;
-  const tie = ended && view.end!.winner === null;
+  const result = ended ? endText(view, snap.turn) : null;
   useBattleMusic(trackFor(view, ended, won));
 
   return (
@@ -254,14 +307,37 @@ export default function BattleScreen({ view, log, offset, busy, error, onChoose,
         {/* Who's playing, the clocks and playback controls. */}
         <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
           <div className="flex min-w-0 basis-full items-center gap-2 font-display text-sm font-bold uppercase tracking-wide sm:basis-auto sm:flex-1">
-            <span className="truncate text-primary">{youName}</span>
+            <span className="truncate text-primary">
+              {youName}
+              {view.players[view.you ?? 0]?.rating !== undefined && <span className="hud-label ml-1.5 tabular-nums">{view.players[view.you ?? 0].rating}</span>}
+            </span>
             <span className="hud-label">vs</span>
             <span className="truncate text-screen">
               {foeName}
               {cpu && <span className="hud-label ml-1.5">{cpu}</span>}
+              {view.players[view.you === 1 ? 0 : 1]?.rating !== undefined && <span className="hud-label ml-1.5 tabular-nums">{view.players[view.you === 1 ? 0 : 1].rating}</span>}
             </span>
-            <span className="hud-label ml-2 hidden sm:inline">{view.formatName ?? PLAY_FORMAT_INFO[view.format].name}</span>
+            <span className="hud-label ml-2 hidden sm:inline">
+              {view.ranked ? "Ranked · " : ""}
+              {view.formatName ?? PLAY_FORMAT_INFO[view.format].name}
+            </span>
           </div>
+          {view.kind === "pvp" && view.spectators !== undefined && !replay && (
+            <span className="hud-label flex items-center gap-1" title="Spectators watching now" data-testid="spectator-count">
+              <Eye className="h-3.5 w-3.5" aria-hidden /> {view.spectators} watching
+            </span>
+          )}
+          {view.timerStartable && onStartTimer && !watching && (
+            <button
+              type="button"
+              onClick={onStartTimer}
+              disabled={busy}
+              className="flex items-center gap-1 rounded-sm border border-screen/50 px-2 py-0.5 font-pixel text-[10px] uppercase text-screen hover:bg-screen/10 disabled:opacity-50"
+              data-testid="start-timer"
+            >
+              <Timer className="h-3 w-3" aria-hidden /> Start timer
+            </button>
+          )}
           {view.frontier && (
             <span className="hud-label rounded-sm border border-primary/40 px-1.5 py-1 text-primary" data-testid="battle-streak">
               {view.frontier.boss ? "Tycoon battle · " : ""}Round {view.frontier.round}, battle {view.frontier.battle}/7 · Streak {view.frontier.streak}
@@ -299,6 +375,8 @@ export default function BattleScreen({ view, log, offset, busy, error, onChoose,
           </div>
         </div>
 
+        {toolbar}
+
         <Stage snap={snap} me={me} doubles={doubles} popups={popups} onHandle={onHandle} myBalls={myBalls} />
 
         {/* The text box: the latest line of the battle. */}
@@ -318,30 +396,16 @@ export default function BattleScreen({ view, log, offset, busy, error, onChoose,
               <Controls key={view.request!.rqid} request={view.request!.data} snap={snap} me={me} doubles={doubles} busy={busy} onChoose={(choice) => onChoose(view.request!.rqid, choice)} />
             ) : ended ? (
               <div className="space-y-3 text-center" data-testid="battle-result">
-                <p className={cn("font-display text-3xl font-bold uppercase", won ? "text-success" : tie ? "text-foreground" : "text-destructive")}>
-                  {won ? "Victory!" : tie ? "A draw" : "Defeat"}
+                <p className={cn("font-display text-3xl font-bold uppercase", result!.tone === "win" ? "text-success" : result!.tone === "draw" ? "text-foreground" : "text-destructive")}>
+                  {result!.title}
                 </p>
-                <p className="text-sm text-muted-foreground">
-                  {view.end!.reason === "forfeit"
-                    ? won
-                      ? `${foeName} forfeited.`
-                      : "You forfeited."
-                    : view.end!.reason === "timeout"
-                      ? won
-                        ? `${foeName} ran out of time.`
-                        : "You ran out of time."
-                      : view.end!.reason === "left"
-                        ? won
-                          ? `${foeName} disconnected.`
-                          : "You were disconnected."
-                        : view.end!.reason === "nocontest"
-                          ? "The battle couldn't go on."
-                          : won
-                            ? `You beat ${foeName} in ${snap.turn} turn${snap.turn === 1 ? "" : "s"}.`
-                            : `${foeName} won in ${snap.turn} turn${snap.turn === 1 ? "" : "s"}.`}
-                </p>
+                <p className="text-sm text-muted-foreground">{result!.detail}</p>
                 {endActions}
               </div>
+            ) : replay ? (
+              <p className="flex items-center justify-center gap-2 py-3 text-sm text-muted-foreground" data-testid="replay-status">
+                <FastForward className={cn("h-4 w-4", pending && "animate-pulse")} aria-hidden /> {pending ? "Playing the turn…" : `Turn ${snap.turn}`}
+              </p>
             ) : (
               <p className="flex items-center justify-center gap-2 py-3 text-sm text-muted-foreground" data-testid="battle-waiting">
                 {pending ? (
@@ -350,7 +414,7 @@ export default function BattleScreen({ view, log, offset, busy, error, onChoose,
                   </>
                 ) : (
                   <>
-                    <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> {busy ? "Sending…" : view.cpu ? "The computer is thinking…" : `Waiting for ${foeName}…`}
+                    <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> {busy ? "Sending…" : view.cpu ? "The computer is thinking…" : watching ? "The trainers are choosing…" : `Waiting for ${foeName}…`}
                   </>
                 )}
               </p>

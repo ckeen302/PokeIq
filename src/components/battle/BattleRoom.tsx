@@ -4,7 +4,7 @@ import { useCallback, useMemo, useState } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Flag, Loader2, RotateCcw, Settings2, Swords, WifiOff } from "lucide-react";
+import { Eye, Flag, Loader2, RotateCcw, Settings2, Swords, WifiOff } from "lucide-react";
 import { BATTLE_AWAY_MS, BATTLE_QUIET_MS, BATTLE_TIMER, PLAY_FORMAT_INFO, battleHref, type BattleView } from "@/lib/battle/play";
 import { DuelLobby, MatchedNote } from "@/components/duel/DuelParts";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -206,8 +206,12 @@ function LiveLobby({ code, view, battle }: { code: string; view: BattleView; bat
                 {timer.bank / 1000} s in the bank{timer.perTurn ? `, +${timer.perTurn / 1000} s a turn` : ""}, {timer.cap / 1000} s at most per turn. Run out twice and you lose.
               </>
             ) : (
-              <>Off: take your time.</>
+              <>Off: take your time. Either of you can start it mid-battle.</>
             ),
+          },
+          {
+            label: "Spectators",
+            text: view.public ? <>Listed in Watch live: anyone can watch.</> : <>Private: only people with the link can watch.</>,
           },
           {
             label: "Fair play",
@@ -248,6 +252,41 @@ export function BattleRoom({ code }: { code: string }) {
   if (!view) return <ScreenLoading />;
   if (view.status === "lobby") return <LiveLobby code={code} view={view} battle={battle} />;
 
+  // Spectators of a live battle see what Showdown's spectators see: the spectator channel, no request.
+  if (view.you === null && view.kind === "pvp") {
+    return (
+      <div className="space-y-3">
+        <p className="hud-label flex items-center justify-center gap-1.5 text-screen" data-testid="spectating">
+          <Eye className="h-3.5 w-3.5" aria-hidden /> You&apos;re watching {view.players.map((p) => p.name).join(" vs ")}
+        </p>
+        {offline && (
+          <p role="alert" className="flex items-center justify-center gap-1.5 text-sm text-destructive">
+            <WifiOff className="h-4 w-4" aria-hidden /> Connection lost. Reconnecting…
+          </p>
+        )}
+        <BattleScreen
+          view={view}
+          log={battle.log}
+          offset={battle.offset}
+          busy={false}
+          error={null}
+          onChoose={() => {}}
+          endActions={
+            <div className="flex flex-wrap justify-center gap-2">
+              <Link href="/battle/watch" className={buttonVariants()}>
+                <Eye className="h-4 w-4" aria-hidden /> Watch another
+              </Link>
+              <Link href="/battle/play" className={buttonVariants({ variant: "outline" })}>
+                <Swords className="h-4 w-4" aria-hidden /> Battle yourself
+              </Link>
+            </div>
+          }
+          side={<BattleChat view={view} battle={battle} collapsible />}
+        />
+      </div>
+    );
+  }
+
   if (view.you === null) {
     return (
       <Card className="mx-auto max-w-md">
@@ -286,6 +325,7 @@ export function BattleRoom({ code }: { code: string }) {
         busy={battle.busy}
         error={battle.error}
         onChoose={(rqid, choice) => void battle.choose(rqid, choice)}
+        onStartTimer={() => void battle.startTimer()}
         endActions={view.frontier ? <FrontierAfter view={view} /> : view.kind === "cpu" ? <CpuAgain /> : <LiveAgain view={view} battle={battle} />}
         side={view.kind === "pvp" ? <BattleChat view={view} battle={battle} collapsible /> : undefined}
       />

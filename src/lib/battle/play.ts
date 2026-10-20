@@ -222,7 +222,13 @@ export interface BattleClockView {
 export interface BattlePlayerView extends DuelPlayerView {
   /** In the lobby of a bring-your-own-team format: whether a team is in. */
   hasTeam: boolean;
+  /** Ranked battles: the rating (and ranked games) this trainer brought. */
+  rating?: number;
+  games?: number;
 }
+
+/** A finished ranked battle: each seat's rating before and after. */
+export type BattleRatings = [{ before: number; after: number }, { before: number; after: number }];
 
 export interface BattleView {
   code: string;
@@ -262,6 +268,22 @@ export interface BattleView {
   frontier?: FrontierBattleInfo;
   /** Live battles: the turn timer (null: off). */
   timer?: { bank: number; perTurn: number; cap: number } | null;
+  /** Live battles with the timer off: either player may start it. */
+  timerStartable?: boolean;
+  /** Live battles: how many spectators are watching right now. */
+  spectators?: number;
+  /** Live battles: listed in the Watch lobby. */
+  public?: boolean;
+  /** A ranked ladder battle. */
+  ranked?: boolean;
+  /** After the end: everything that's recorded has been (ratings, history, any automatic replay). */
+  settled?: boolean;
+  /** Ranked, once settled: the rating change per seat. */
+  ratings?: BattleRatings;
+  /** The saved replay's id, once there is one. */
+  replay?: string;
+  /** When the battle began (server time). */
+  startedAt?: number;
 }
 
 /** Creating, joining or rematching a battle: its code, your seat's token and the battle. */

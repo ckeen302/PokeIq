@@ -10,7 +10,10 @@ import { PLAY_FORMATS, BATTLE_TEAM_MAX, CPU_LEVELS, type BattleSeatResponse } fr
  * POST /api/battle: start a battle and return its code, the creator's seat
  * token and their view:
  *   { mode: "cpu", name, format, level, team? }   against the computer, at /battle/play/<code>
- *   { mode: "pvp", name, format, team? }          a live battle with an invite link, at /battle/live/<code>
+ *   { mode: "pvp", name, format, team?, public?, timer? }
+ *        a live battle with an invite link, at /battle/live/<code>; private
+ *        unless `public` (listed in the Watch lobby); `timer: false` starts
+ *        it with the turn timer off, for either player to start
  * `team` (Showdown export text) is required for formats without random teams.
  */
 
@@ -27,7 +30,7 @@ const rules = z.record(z.unknown()).optional();
 
 const bodySchema = z.discriminatedUnion("mode", [
   z.object({ mode: z.literal("cpu"), name: duelNameSchema, format, level: z.enum(CPU_LEVELS).default("normal"), team, rules }),
-  z.object({ mode: z.literal("pvp"), name: duelNameSchema, format, team, rules }),
+  z.object({ mode: z.literal("pvp"), name: duelNameSchema, format, team, rules, public: z.boolean().default(false), timer: z.boolean().default(true) }),
 ]);
 
 export async function POST(request: NextRequest) {

@@ -20,6 +20,7 @@ import { BATTLE_CHOICE_RE, BATTLE_TEAM_MAX, type BattleSeatResponse } from "@/li
  *   { action: "team", token, team }               in the lobby: bring (or replace) your team
  *   { action: "choose", token, rqid, choice }     answer request `rqid` ("move 1", "switch 3", "team 213456"...)
  *   { action: "forfeit", token }                  leave the lobby, or forfeit the battle
+ *   { action: "timer", token }                    start the turn timer (a live battle that began with it off)
  *   { action: "rematch", token }                  a new live battle with the same players
  *   { action: "chat", token, text }               live battles: a chat message (see server/chat.ts)
  * Every action takes `since` too, and answers with your view from there.
@@ -45,6 +46,7 @@ const bodySchema = z.discriminatedUnion("action", [
     since,
   }),
   z.object({ action: z.literal("forfeit"), token, since }),
+  z.object({ action: z.literal("timer"), token, since }),
   z.object({ action: z.literal("rematch"), token }),
   z.object({ action: z.literal("chat"), token, text: z.string().max(CHAT_BODY_MAX, "Keep it under 200 characters."), since }),
 ]);
@@ -73,7 +75,7 @@ export async function GET(request: NextRequest, context: Context) {
   const raw = Number(request.nextUrl.searchParams.get("since") ?? 0);
   const from = Number.isInteger(raw) && raw >= 0 ? raw : 0;
   try {
-    const out = await pollBattle(code, request.headers.get("x-battle-token"), from);
+    const out = await pollBattle(code, request.headers.get("x-battle-token"), from, request.headers.get("x-battle-viewer"));
     if (!out.ok) return failure(out);
     return NextResponse.json(out.view, { headers: NO_STORE });
   } catch (err) {

@@ -22,6 +22,20 @@ import { unlockAudio } from "@/lib/sound";
  * in a live battle, and catches up at once when it's shown again.
  */
 
+/** This tab's anonymous spectator id: it only counts heads in the "watching" number. */
+function viewerId(): string {
+  try {
+    let id = window.sessionStorage.getItem("pokeiq:battle:viewer");
+    if (!id) {
+      id = Array.from(crypto.getRandomValues(new Uint8Array(12)), (b) => "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_"[b & 63]).join("");
+      window.sessionStorage.setItem("pokeiq:battle:viewer", id);
+    }
+    return id;
+  } catch {
+    return "anonymous-viewer";
+  }
+}
+
 async function post<T>(url: string, body: unknown): Promise<{ ok: boolean; status: number; data: T & { error?: string; view?: BattleView } }> {
   const res = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
   const data = (await res.json().catch(() => ({}))) as T & { error?: string; view?: BattleView };
@@ -57,7 +71,14 @@ export function useBattle(code: string) {
     rev.current = next.rev;
     const have = lines.current.length;
     const { from, total, lines: incoming } = next.log;
-    if (next.you !== null) {
+    // A seated player's own channel; a spectator's is the spectator channel (the server picks which).
+    if (current.current && current.current.you !== next.you && have > 0) {
+      // Another channel altogether: start over from it.
+      lines.current = from === 0 ? [...incoming] : [];
+      resets.current += 1;
+      setLog({ lines: lines.current, reset: resets.current });
+      if (from > 0) window.setTimeout(() => kick.current(), 0);
+    } else {
       if (from <= have && total > have) {
         lines.current = [...lines.current, ...incoming.slice(have - from)];
         setLog({ lines: lines.current, reset: resets.current });
@@ -91,7 +112,7 @@ export function useBattle(code: string) {
         try {
           const res = await fetch(`${api}?since=${lines.current.length}`, {
             cache: "no-store",
-            headers: token.current ? { "x-battle-token": token.current } : undefined,
+            headers: token.current ? { "x-battle-token": token.current } : { "x-battle-viewer": viewerId() },
           });
           const data = await res.json().catch(() => ({}));
           if (stopped) return;
@@ -154,6 +175,7 @@ export function useBattle(code: string) {
   );
 
   const choose = useCallback((rqid: number, choice: string) => act({ action: "choose", rqid, choice }), [act]);
+  const startTimer = useCallback(() => act({ action: "timer" }), [act]);
 
   /** A chat message: never blocks play (no busy state); a refusal comes back as its message. */
   const chat = useCallback(
@@ -208,7 +230,7 @@ export function useBattle(code: string) {
     }
   }
 
-  return { view, log, offset, gone, offline, error, setError, busy, act, choose, chat, join, rematch };
+  return { view, log, offset, gone, offline, error, setError, busy, act, choose, startTimer, chat, join, rematch };
 }
 
 export type BattleHandle = ReturnType<typeof useBattle>;

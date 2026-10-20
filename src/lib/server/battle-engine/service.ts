@@ -82,6 +82,48 @@ export function readBattleToken(token: unknown, code: string): { playerId: strin
 const seatIndex = (meta: BattleMeta, playerId: string | null) => (playerId ? meta.seats.findIndex((s) => s.id === playerId) : -1);
 const channelOf = (seat: number): BattleChannel => (seat === 0 ? "p1" : "p2");
 
+/**
+ * The one channel a viewer may read: a seated player's own, and for anyone
+ * else watching a live battle the spectator channel (what Showdown's
+ * spectators see: no request, no hidden set, HP in percent). Nothing for a
+ * visitor to a battle against the computer.
+ */
+export function channelFor(meta: Pick<BattleMeta, "kind">, seat: number): BattleChannel | null {
+  if (seat === 0 || seat === 1) return channelOf(seat);
+  return meta.kind === "pvp" ? "spectator" : null;
+}
+
+const viewerLog = (rec: BattleRecord, seat: number) => {
+  const channel = channelFor(rec.meta, seat);
+  return channel ? rec.logs[channel] : [];
+};
+
+// ---------------------------------------------------------------------------
+// Spectators
+// ---------------------------------------------------------------------------
+
+/** A spectator's anonymous id (made up by their browser; it only counts heads). */
+export const VIEWER_RE = /^[A-Za-z0-9_-]{8,32}$/;
+/** A spectator not heard from in this long has gone. */
+export const WATCHER_TTL_MS = 30_000;
+/** A spectator's poll refreshes their mark at most this often, to spare writes. */
+const WATCH_STEP_MS = 12_000;
+const WATCHERS_MAX = 200;
+
+/** Spectators watching now. */
+export const spectatorCount = (meta: Pick<BattleMeta, "watchers">, now: number) =>
+  Object.values(meta.watchers ?? {}).filter((at) => now - at <= WATCHER_TTL_MS).length;
+
+/** Marks a spectator as watching (and forgets those who left). True if `meta` changed. */
+export function touchWatcher(meta: BattleMeta, viewer: string | null, now: number): boolean {
+  if (!viewer || !VIEWER_RE.test(viewer) || meta.kind !== "pvp" || meta.status !== "playing") return false;
+  const seen = meta.watchers?.[viewer];
+  if (seen !== undefined && now - seen < WATCH_STEP_MS) return false;
+  const live = Object.entries(meta.watchers ?? {}).filter(([id, at]) => id !== viewer && now - at <= WATCHER_TTL_MS);
+  meta.watchers = Object.fromEntries([...live.slice(-(WATCHERS_MAX - 1)), [viewer, now]]);
+  return true;
+}
+
 // ---------------------------------------------------------------------------
 // Working on a battle
 // ---------------------------------------------------------------------------
@@ -377,8 +419,9 @@ function start(work: Work, now: number) {
   });
   work.begin(session);
   meta.status = "playing";
+  meta.startedAt = now;
   const timer = timerOf(meta);
-  if (meta.kind === "pvp" && timer) meta.clocks = [newClock(timer), newClock(timer)];
+  if (meta.kind === "pvp" && timer && !meta.timerOff) meta.clocks = [newClock(timer), newClock(timer)];
   playCpu(work, session);
   work.absorb(now);
 }
@@ -470,7 +513,15 @@ export async function createRunBattle(
   return fail(503, "Couldn't start a battle. Try again.");
 }
 
-export async function createLiveBattle(opts: { name: string; format: PlayFormatId; team?: string; rules?: unknown }, now = Date.now()) {
+/**
+ * A friend battle with an invite link. Private unless the host lets anyone
+ * watch (then it's listed in the Watch lobby); `timer: false` starts it with
+ * the turn timer off, for either player to start.
+ */
+export async function createLiveBattle(
+  opts: { name: string; format: PlayFormatId; team?: string; rules?: unknown; public?: boolean; timer?: boolean; player?: string },
+  now = Date.now()
+) {
   const custom = customFormat(opts.format, opts.rules);
   if (!custom.ok) return custom;
   const team = checkTeam(opts.format, opts.team, custom.custom?.rules);
@@ -478,8 +529,11 @@ export async function createLiveBattle(opts: { name: string; format: PlayFormatI
   for (let attempt = 0; attempt < 4; attempt++) {
     const code = newBattleCode();
     const me: BattleSeat = { id: randomId(), name: opts.name, ready: false, seenAt: now, team: team.packed };
+    if (opts.player) me.player = opts.player;
     const rec = blankRecord(newMeta(code, "pvp", opts.format, [me], now));
     applyCustom(rec.meta, custom.custom);
+    if (opts.public) rec.meta.public = true;
+    if (opts.timer === false) rec.meta.timerOff = true;
     if (!(await insertBattle(rec))) continue;
     return { ok: true as const, code, token: battleToken(code, me.id, 0), view: battleView(rec.meta, me.id, [], 0, now, 0) };
   }
@@ -492,15 +546,33 @@ export async function createLiveBattle(opts: { name: string; format: PlayFormatI
  * were checked before either joined the queue. Seat 0 is the trainer who
  * was waiting. Null if no code was free.
  */
+export interface MatchedPlayer {
+  name: string;
+  team?: string;
+  /** Ladder key (server-side only). */
+  player?: string;
+  /** Ranked: the rating they queued with. */
+  rating?: { rating: number; games: number };
+}
+
 export async function createMatchedBattle(
   format: PlayFormatId,
-  players: [{ name: string; team?: string }, { name: string; team?: string }],
-  now = Date.now()
+  players: [MatchedPlayer, MatchedPlayer],
+  now = Date.now(),
+  opts: { ranked?: boolean } = {}
 ): Promise<{ code: string; ids: [string, string] } | null> {
   for (let attempt = 0; attempt < 4; attempt++) {
     const code = newBattleCode();
-    const seats = players.map((p) => ({ id: randomId(), name: p.name, ready: true, seenAt: now, team: p.team })) as [BattleSeat, BattleSeat];
+    const seats = players.map((p) => {
+      const seat: BattleSeat = { id: randomId(), name: p.name, ready: true, seenAt: now, team: p.team };
+      if (p.player) seat.player = p.player;
+      if (opts.ranked && p.rating) seat.rating = { rating: p.rating.rating, games: p.rating.games };
+      return seat;
+    }) as [BattleSeat, BattleSeat];
     const work = new Work(blankRecord(newMeta(code, "pvp", format, seats, now)));
+    // Matchmade battles are open to spectators, like Showdown's ladder.
+    work.meta.public = true;
+    if (opts.ranked) work.meta.ranked = true;
     work.meta.chat = systemLine(undefined, `Matched: ${seats[0].name} vs ${seats[1].name}. Good luck!`, now);
     start(work, now);
     if (await insertBattle(work.rec)) return { code, ids: [seats[0].id, seats[1].id] };
@@ -536,16 +608,21 @@ export async function updateBattle<T extends object>(
 }
 
 /** A poll: marks the player as here, catches the battle up and returns their view from line `since`. */
-export async function pollBattle(code: string, token: unknown, since: number): Promise<Outcome<{ view: BattleView }>> {
+export async function pollBattle(code: string, token: unknown, since: number, viewer: string | null = null): Promise<Outcome<{ view: BattleView }>> {
   const seatToken = readBattleToken(token, code);
   const playerId = seatToken?.playerId ?? null;
   for (let attempt = 0; attempt < MAX_TRIES; attempt++) {
-    let lite = await loadBattleMeta(code, seatToken ? channelOf(seatToken.seat) : null);
+    // A guess at the channel (the seat in the token, else the spectators'), checked against the seats below.
+    const guess: BattleChannel = seatToken ? channelOf(seatToken.seat) : "spectator";
+    let lite = await loadBattleMeta(code, guess);
     if (!lite) return fail(404, "This battle has ended or never existed.");
     const seat = seatIndex(lite.meta, playerId);
-    if (seat >= 0 && seatToken && seat !== seatToken.seat) {
-      lite = await loadBattleMeta(code, channelOf(seat));
+    const channel = channelFor(lite.meta, seat);
+    if (channel !== guess) {
+      lite = await loadBattleMeta(code, channel);
       if (!lite) return fail(404, "This battle has ended or never existed.");
+      // The seats changed in between: start over, so a channel only ever reaches its own viewer.
+      if (seatIndex(lite.meta, playerId) !== seat) continue;
     }
     const now = Date.now();
     if (overdue(lite.meta, now)) {
@@ -557,9 +634,16 @@ export async function pollBattle(code: string, token: unknown, since: number): P
       });
       if (!out.ok) return out;
       const s = seatIndex(out.rec.meta, playerId);
-      return { ok: true, view: battleView(out.rec.meta, playerId, s >= 0 ? out.rec.logs[channelOf(s)] : [], since, out.now, out.rev) };
+      return { ok: true, view: battleView(out.rec.meta, playerId, viewerLog(out.rec, s), since, out.now, out.rev) };
     }
     const meta = structuredClone(lite.meta);
+    if (seat < 0) {
+      // A spectator: counted with one try (a clash waits for their next poll), never blocking the players.
+      if (touchWatcher(meta, viewer, now) && (await saveBattle(code, lite.version, { meta }))) {
+        return { ok: true, view: battleView(meta, playerId, lite.log, since, now, lite.version + 1) };
+      }
+      return { ok: true, view: battleView(lite.meta, playerId, lite.log, since, now, lite.version) };
+    }
     if (!touch(meta, playerId, now)) return { ok: true, view: battleView(meta, playerId, lite.log, since, now, lite.version) };
     if (await saveBattle(code, lite.version, { meta })) return { ok: true, view: battleView(meta, playerId, lite.log, since, now, lite.version + 1) };
   }
@@ -617,7 +701,8 @@ export type BattleAction =
   | { action: "ready"; ready: boolean }
   | { action: "team"; team: string }
   | { action: "choose"; rqid: number; choice: string }
-  | { action: "forfeit" };
+  | { action: "forfeit" }
+  | { action: "timer" };
 
 /** An action by a player. `join` has no seat yet; everything else needs `playerId`. */
 export async function actOnBattle(
@@ -676,6 +761,8 @@ export async function actOnBattle(
       }
       case "choose":
         return choose(work, seat, body.rqid, body.choice, now);
+      case "timer":
+        return startTimer(work, seat, now);
     }
   });
   if (!out.ok) return out;
@@ -683,6 +770,21 @@ export async function actOnBattle(
   const seat = seatIndex(out.rec.meta, me);
   const view = battleView(out.rec.meta, me, seat >= 0 ? out.rec.logs[channelOf(seat)] : [], joined ? 0 : since, out.now, out.rev);
   return { ok: true, view, playerId: me, rejected: out.rejected };
+}
+
+/** "Start timer" in a live battle that began with the timer off: both clocks start, as on Showdown. */
+function startTimer(work: Work, seat: number, now: number): Outcome<{ rejected?: string }> {
+  const meta = work.meta;
+  if (meta.kind !== "pvp" || meta.status !== "playing") return fail(409, "The timer only runs while a live battle is under way.");
+  const timer = timerOf(meta);
+  if (!meta.timerOff || !timer) return { ok: true };
+  meta.timerOff = false;
+  meta.clocks = [newClock(timer), newClock(timer)];
+  meta.requests.forEach((request, s) => {
+    if (request) startClock(meta.clocks![s], now, !!request.teamPreview, timer);
+  });
+  meta.chat = systemLine(meta.chat, `${meta.seats[seat].name} started the timer.`, now);
+  return { ok: true };
 }
 
 function choose(work: Work, seat: number, rqid: number, choice: string, now: number): Outcome<{ rejected?: string }> {
@@ -715,8 +817,12 @@ export async function rematchBattle(code: string, playerId: string): Promise<Out
     let opened: string | null = null;
     for (let attempt = 0; attempt < 4 && !opened; attempt++) {
       const now = Date.now();
-      const fresh = newMeta(newBattleCode(), "pvp", old.format, old.seats.map((s) => ({ id: s.id, name: s.name, ready: false, seenAt: now, team: s.team })), now);
+      const seats = old.seats.map((s) => ({ id: s.id, name: s.name, ready: false, seenAt: now, team: s.team, ...(s.player ? { player: s.player } : {}) }));
+      const fresh = newMeta(newBattleCode(), "pvp", old.format, seats, now);
       if (old.rules && old.formatid) applyCustom(fresh, { rules: old.rules, formatid: old.formatid });
+      // A rematch is a friendly (never ranked), listed for watching if the first battle was.
+      if (old.public) fresh.public = true;
+      if (old.timerOff) fresh.timerOff = true;
       // The chat carries on into the rematch.
       if (old.chat?.length) fresh.chat = old.chat;
       if (await insertBattle(blankRecord(fresh))) opened = fresh.code;
@@ -738,7 +844,7 @@ export async function rematchBattle(code: string, playerId: string): Promise<Out
     if (meta.status !== "lobby") return seat >= 0 ? { ok: true } : fail(409, "The rematch has already started.");
     if (seat < 0) {
       if (meta.seats.length >= 2) return fail(409, "The rematch is full.");
-      meta.seats.push({ id: me.id, name: me.name, ready: false, seenAt: now, team: me.team });
+      meta.seats.push({ id: me.id, name: me.name, ready: false, seenAt: now, team: me.team, ...(me.player ? { player: me.player } : {}) });
       seat = meta.seats.length - 1;
     }
     meta.seats[seat].seenAt = now;
@@ -752,7 +858,7 @@ export async function rematchBattle(code: string, playerId: string): Promise<Out
     ok: true,
     code: next,
     token: battleToken(next, playerId, Math.max(0, seat)),
-    view: battleView(out.rec.meta, playerId, seat >= 0 ? out.rec.logs[channelOf(seat)] : [], 0, out.now, out.rev),
+    view: battleView(out.rec.meta, playerId, viewerLog(out.rec, seat), 0, out.now, out.rev),
   };
 }
 
@@ -768,7 +874,9 @@ export async function rematchBattle(code: string, playerId: string): Promise<Out
 export function battleView(meta: BattleMeta, playerId: string | null, log: string[], since: number, now: number, rev: number): BattleView {
   const seat = seatIndex(meta, playerId);
   const you = seat === 0 || seat === 1 ? seat : null;
-  const total = you === null ? 0 : log.length;
+  // `log` is the viewer's own channel (channelFor): a spectator's is the spectator channel; a visitor to a computer battle has none.
+  const visible = channelFor(meta, seat) ? log : [];
+  const total = visible.length;
   const from = since >= 0 && since <= total ? since : 0;
   const request = you !== null && meta.requests[you] ? { rqid: meta.rqid[you], data: meta.requests[you]! } : null;
   const view: BattleView = {
@@ -784,9 +892,10 @@ export function battleView(meta: BattleMeta, playerId: string | null, log: strin
       ready: s.ready,
       quiet: meta.kind === "pvp" && meta.status !== "finished" && now - s.seenAt > (meta.status === "lobby" ? 10_000 : BATTLE_QUIET_MS),
       hasTeam: PLAY_FORMAT_INFO[meta.format].random || !!s.team,
+      ...(meta.ranked && s.rating ? { rating: s.rating.rating, games: s.rating.games } : {}),
     })),
     turn: meta.turn,
-    log: { from, total, lines: you === null ? [] : log.slice(from) },
+    log: { from, total, lines: visible.slice(from) },
     request,
     waiting: you !== null && meta.status === "playing" && !request,
   };
@@ -802,7 +911,19 @@ export function battleView(meta: BattleMeta, playerId: string | null, log: strin
     view.rules = meta.rules;
     view.formatName = customName(meta.rules);
   }
-  if (meta.kind === "pvp") view.timer = timerOf(meta);
+  if (meta.kind === "pvp") {
+    view.timer = meta.timerOff ? null : timerOf(meta);
+    if (meta.timerOff && meta.status === "playing" && timerOf(meta)) view.timerStartable = true;
+    view.spectators = spectatorCount(meta, now);
+    if (meta.public) view.public = true;
+    if (meta.ranked) view.ranked = true;
+    if (meta.settled) {
+      view.settled = true;
+      if (meta.settled.ratings) view.ratings = meta.settled.ratings;
+    }
+  }
+  if (meta.replay) view.replay = meta.replay;
+  if (meta.startedAt) view.startedAt = meta.startedAt;
   if (meta.frontier) view.frontier = meta.frontier.info;
   if (meta.factoryTier) view.formatName = `${PLAY_FORMAT_INFO[meta.format].name} · ${meta.factoryTier}`;
   else if (meta.frontier?.info.tier) view.formatName = `${PLAY_FORMAT_INFO[meta.format].name} · ${meta.frontier.info.tier}`;
