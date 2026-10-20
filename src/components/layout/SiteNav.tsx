@@ -15,7 +15,6 @@ const DESKTOP_LINKS = [
   { href: "/iq-test", label: "IQ Test" },
   { href: "/pokedle", label: "Pokédle" },
   { href: "/guessr", label: "Guessr" },
-  { href: "/whoami", label: "Who Am I?" },
   { href: "/atlas", label: "Atlas" },
   { href: "/play", label: "Modes" },
   { href: "/pokedex", label: "Pokédex" },
@@ -52,7 +51,7 @@ export function DesktopNav() {
               href={href}
               className={cn(
                 // Tighter between lg and xl so every link fits on one row.
-                "relative whitespace-nowrap px-2 py-2 font-display text-[12px] font-semibold uppercase tracking-[0.06em] text-muted-foreground transition-colors hover:text-foreground xl:px-2.5 xl:text-[13px] 2xl:px-3 xl:tracking-[0.12em]",
+                "relative whitespace-nowrap px-2 py-2 font-display text-[12px] font-semibold uppercase tracking-[0.06em] text-muted-foreground transition-colors hover:text-foreground xl:px-3 xl:text-[13px] xl:tracking-[0.12em]",
                 active && "text-foreground"
               )}
               aria-current={active ? "page" : undefined}
@@ -61,7 +60,7 @@ export function DesktopNav() {
               {active && (
                 <motion.span
                   layoutId="nav-active"
-                  className="absolute inset-x-2 -bottom-[9px] h-[3px] bg-primary shadow-[0_0_10px_hsl(var(--primary))] xl:inset-x-2.5 2xl:inset-x-3"
+                  className="absolute inset-x-2 -bottom-[9px] h-[3px] bg-primary shadow-[0_0_10px_hsl(var(--primary))] xl:inset-x-3"
                   transition={{ type: "spring", stiffness: 500, damping: 38 }}
                 />
               )}
