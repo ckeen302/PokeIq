@@ -198,6 +198,8 @@ if (!/Custom · 5 clues · Gen 1 · 6 guesses · 60 s blitz · No dex/.test(prac
 await page.getByLabel("Guess a Pokémon").fill("Bulbasaur");
 await page.locator("[role=option]").first().click();
 await page.waitForFunction(() => document.querySelector("input[aria-label^='Guess a Pokémon']")?.placeholder.startsWith("Guess 2 of 6") || document.body.innerText.includes("Got it in"));
+// The board's header row draws after the first answer comes back.
+await page.getByRole("columnheader", { name: "Weight" }).first().waitFor({ timeout: 15_000 });
 if ((await headerTexts()) !== SQUIRDLE_HEADERS) errors.push(`the custom practice game shows the wrong columns: ${await headerTexts()}`);
 if (!(await page.getByText(/Got it in/).count())) await page.getByRole("timer").waitFor();
 await page.screenshot({ path: `${OUT}/pokedle-practice-settings.png`, fullPage: true });
