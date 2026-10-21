@@ -30,6 +30,13 @@ const DUELS = [
   },
 ];
 
+/** Daily, the PokéIQ test and the Atlas left the top bar; they live here too. */
+const MORE = [
+  { href: "/daily", label: "Daily Challenge" },
+  { href: "/iq-test", label: "PokéIQ Test" },
+  { href: "/atlas", label: "World Atlas" },
+];
+
 export default function PlayPage() {
   const genPresets = QUIZ_PRESETS.filter((p) => p.gens);
   return (
@@ -39,6 +46,13 @@ export default function PlayPage() {
         <p className="text-muted-foreground">Pick a mode, then choose a format, difficulty and generations.</p>
       </div>
       <ModeGrid />
+      <nav aria-label="More to play" className="flex flex-wrap justify-center gap-3">
+        {MORE.map(({ href, label }) => (
+          <Link key={href} href={href} className="rounded-md border bg-card px-4 py-2 text-sm font-semibold transition hover:border-primary/50">
+            {label}
+          </Link>
+        ))}
+      </nav>
       <section className="grid gap-4 sm:grid-cols-3">
         {PLAYABLE_FORMATS.map((f) => (
           <div key={f} className="rounded-md border bg-card p-5">
