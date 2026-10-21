@@ -75,6 +75,8 @@ export interface AnswerResponse {
   revealUrl?: string;
   /** Pokédex page for the Pokémon behind this question (study link). */
   learnHref?: string;
+  /** Trivia modes: the Bulbapedia page the answer was checked against. */
+  sourceUrl?: string;
   /** Skill tags for the weak-spot coach, e.g. ["mod:dex", "gen:3", "type:fire"]. */
   tags: string[];
   gained: number;

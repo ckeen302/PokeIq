@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Play, Settings2 } from "lucide-react";
 import { DIFFICULTIES, type Difficulty, type ModuleId, type QuizFormat } from "@/engines/types";
-import { FORMAT_INFO, MODULE_INFO, PLAYABLE_FORMATS } from "@/lib/modes";
+import { FORMAT_INFO, MODULE_INFO, PLAYABLE_FORMATS, filterFor } from "@/lib/modes";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { QuizController, type StartRequest } from "./QuizController";
@@ -16,8 +16,6 @@ import { cn } from "@/lib/utils";
  * a click on purpose — it's the user gesture that unlocks cry audio.
  */
 
-const REGIONS = ["Kanto", "Johto", "Hoenn", "Sinnoh", "Unova", "Kalos", "Alola", "Galar", "Paldea"];
-
 interface QuizSetupProps {
   module: ModuleId;
   initialFormat?: QuizFormat;
@@ -27,6 +25,7 @@ interface QuizSetupProps {
 
 export function QuizSetup({ module, initialFormat, initialDifficulty = "medium", initialGens = [] }: QuizSetupProps) {
   const info = MODULE_INFO[module];
+  const filter = filterFor(module);
   const [format, setFormat] = useState<QuizFormat>(initialFormat ?? info.defaultFormat);
   const [difficulty, setDifficulty] = useState<Difficulty>(initialDifficulty);
   const [gens, setGens] = useState<number[]>(initialGens);
@@ -93,20 +92,16 @@ export function QuizSetup({ module, initialFormat, initialDifficulty = "medium",
                 </div>
               </Field>
 
-              <Field label={gens.length ? `Generations (${gens.length} selected)` : "Generations (all)"}>
+              <Field label={gens.length ? `${filter.label} (${gens.length} selected)` : `${filter.label} (all)`}>
                 <div className="flex flex-wrap gap-2">
                   <Chip active={gens.length === 0} onClick={() => setGens([])}>All</Chip>
-                  {REGIONS.map((region, i) => (
-                    <Chip key={region} active={gens.includes(i + 1)} onClick={() => toggleGen(i + 1)} title={region}>
-                      Gen {i + 1}
+                  {filter.chips.map((chip, i) => (
+                    <Chip key={chip.label} active={gens.includes(i + 1)} onClick={() => toggleGen(i + 1)} title={chip.title}>
+                      {chip.label}
                     </Chip>
                   ))}
                 </div>
-                {gens.length === 0 && (
-                  <p className="text-xs text-muted-foreground">
-                    Without a filter, Easy uses Gens 1–2, Medium Gens 1–5 and Hard all nine.
-                  </p>
-                )}
+                {gens.length === 0 && filter.note && <p className="text-xs text-muted-foreground">{filter.note}</p>}
               </Field>
 
               <Button size="lg" className="w-full" onClick={start}>

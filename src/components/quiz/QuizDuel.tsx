@@ -1,5 +1,6 @@
 "use client";
 
+import { SourceLink } from "./SourceLink";
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
@@ -340,7 +341,7 @@ export function QuizDuel({ code }: { code: string }) {
               ))}
             </div>
             <DialogBox text={verdict} speed={10} className={mine?.correct ? "border-success/90" : "border-destructive/90"}>
-              {last.explanation && (
+              {(last.explanation || last.sourceUrl) && (
                 <p className="text-sm text-muted-foreground">
                   {last.explanation}
                   {last.learnHref && (
@@ -351,6 +352,7 @@ export function QuizDuel({ code }: { code: string }) {
                       </Link>
                     </>
                   )}
+                  {last.sourceUrl && <SourceLink href={last.sourceUrl} />}
                 </p>
               )}
             </DialogBox>

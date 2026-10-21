@@ -18,7 +18,7 @@ const mediaSchema = z.object({
 export const questionSchema = z
   .object({
     itemKey: z.string().min(3),
-    module: z.enum(["whos-that", "cry", "dex", "types", "higher-lower"]),
+    module: z.enum(["whos-that", "cry", "dex", "types", "higher-lower", "games", "anime"]),
     prompt: z.string().min(8),
     detail: z.string().optional(),
     media: mediaSchema.optional(),
@@ -26,6 +26,7 @@ export const questionSchema = z
     options: z.array(z.string().min(1)).min(2).max(6),
     answer: z.string().min(1),
     explanation: z.string().optional(),
+    source: z.string().url().optional(),
     revealMedia: mediaSchema.optional(),
     rating: z.number().min(400).max(2400),
   })

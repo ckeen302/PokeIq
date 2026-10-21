@@ -1,0 +1,9 @@
+[
+  {"region":"Hoenn","gen":3,"basis":"Kyushu","source":"https://bulbapedia.bulbagarden.net/wiki/Hoenn"},
+  {"region":"Sinnoh","gen":4,"basis":"Hokkaido","source":"https://bulbapedia.bulbagarden.net/wiki/Sinnoh"},
+  {"region":"Unova","gen":5,"basis":"New York City","source":"https://bulbapedia.bulbagarden.net/wiki/Unova"},
+  {"region":"Kalos","gen":6,"basis":"France","source":"https://bulbapedia.bulbagarden.net/wiki/Kalos"},
+  {"region":"Alola","gen":7,"basis":"Hawaii","source":"https://bulbapedia.bulbagarden.net/wiki/Alola"},
+  {"region":"Galar","gen":8,"basis":"Great Britain","source":"https://bulbapedia.bulbagarden.net/wiki/Galar"},
+  {"region":"Paldea","gen":9,"basis":"the Iberian Peninsula","source":"https://bulbapedia.bulbagarden.net/wiki/Paldea"}
+]

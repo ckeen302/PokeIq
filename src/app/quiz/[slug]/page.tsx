@@ -65,11 +65,19 @@ export default async function QuizPage({ params }: PageProps) {
 
       <section className="mx-auto max-w-2xl space-y-3 text-sm text-muted-foreground">
         <h2 className="font-display text-base font-bold uppercase tracking-wider text-foreground">How it works</h2>
-        <p>
-          Every question is generated on the fly from the complete Pokédex — there are thousands of possible
-          questions, so no two runs are the same. Answers are checked on our server and your PokéIQ is calculated
-          from how hard each question you got right actually was.
-        </p>
+        {preset.module === "games" || preset.module === "anime" ? (
+          <p>
+            Every question was checked against Bulbapedia, and each answer links the page it came from. Where the games
+            differ, the question names the game. Answers are checked on our server and your PokéIQ is calculated from how
+            hard each question you got right actually was.
+          </p>
+        ) : (
+          <p>
+            Every question is generated on the fly from the complete Pokédex — there are thousands of possible
+            questions, so no two runs are the same. Answers are checked on our server and your PokéIQ is calculated
+            from how hard each question you got right actually was.
+          </p>
+        )}
         <p>
           <b className="text-foreground">Classic</b> is 10 questions with 15 seconds each.{" "}
           <b className="text-foreground">Survival</b> keeps going until you lose three lives.{" "}

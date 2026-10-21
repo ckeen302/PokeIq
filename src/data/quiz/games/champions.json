@@ -1,0 +1,12 @@
+[
+  {"gen":2,"game":"Pokémon Gold, Silver and Crystal","champion":"Lance","source":"https://bulbapedia.bulbagarden.net/wiki/Lance"},
+  {"gen":3,"game":"Pokémon Ruby and Sapphire","champion":"Steven","avoid":["Wallace"],"source":"https://bulbapedia.bulbagarden.net/wiki/Steven_Stone"},
+  {"gen":3,"game":"Pokémon Emerald","champion":"Wallace","avoid":["Steven"],"source":"https://bulbapedia.bulbagarden.net/wiki/Wallace"},
+  {"gen":4,"game":"Pokémon Diamond, Pearl and Platinum","champion":"Cynthia","source":"https://bulbapedia.bulbagarden.net/wiki/Cynthia"},
+  {"gen":5,"game":"Pokémon Black and White","champion":"Alder","avoid":["Iris"],"source":"https://bulbapedia.bulbagarden.net/wiki/Alder"},
+  {"gen":5,"game":"Pokémon Black 2 and White 2","champion":"Iris","avoid":["Alder"],"source":"https://bulbapedia.bulbagarden.net/wiki/Iris"},
+  {"gen":6,"game":"Pokémon X and Y","champion":"Diantha","source":"https://bulbapedia.bulbagarden.net/wiki/Diantha"},
+  {"gen":6,"game":"Pokémon Omega Ruby and Alpha Sapphire","champion":"Steven","avoid":["Wallace"],"source":"https://bulbapedia.bulbagarden.net/wiki/Steven_Stone"},
+  {"gen":8,"game":"Pokémon Sword and Shield","champion":"Leon","source":"https://bulbapedia.bulbagarden.net/wiki/Leon"},
+  {"gen":9,"game":"Pokémon Scarlet and Violet","champion":"Geeta","title":"Top Champion","source":"https://bulbapedia.bulbagarden.net/wiki/Geeta"}
+]

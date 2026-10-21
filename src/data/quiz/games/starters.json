@@ -1,0 +1,13 @@
+[
+  {"gen":1,"game":"Pokémon Red and Blue","grass":"Bulbasaur","fire":"Charmander","water":"Squirtle","source":"https://bulbapedia.bulbagarden.net/wiki/Starter_Pok%C3%A9mon"},
+  {"gen":2,"game":"Pokémon Gold and Silver","grass":"Chikorita","fire":"Cyndaquil","water":"Totodile","source":"https://bulbapedia.bulbagarden.net/wiki/Starter_Pok%C3%A9mon"},
+  {"gen":3,"game":"Pokémon Ruby and Sapphire","grass":"Treecko","fire":"Torchic","water":"Mudkip","source":"https://bulbapedia.bulbagarden.net/wiki/Starter_Pok%C3%A9mon"},
+  {"gen":4,"game":"Pokémon Diamond and Pearl","grass":"Turtwig","fire":"Chimchar","water":"Piplup","source":"https://bulbapedia.bulbagarden.net/wiki/Starter_Pok%C3%A9mon"},
+  {"gen":5,"game":"Pokémon Black and White","grass":"Snivy","fire":"Tepig","water":"Oshawott","source":"https://bulbapedia.bulbagarden.net/wiki/Starter_Pok%C3%A9mon"},
+  {"gen":6,"game":"Pokémon X and Y","grass":"Chespin","fire":"Fennekin","water":"Froakie","source":"https://bulbapedia.bulbagarden.net/wiki/Starter_Pok%C3%A9mon"},
+  {"gen":7,"game":"Pokémon Sun and Moon","grass":"Rowlet","fire":"Litten","water":"Popplio","source":"https://bulbapedia.bulbagarden.net/wiki/Starter_Pok%C3%A9mon"},
+  {"gen":8,"game":"Pokémon Sword and Shield","grass":"Grookey","fire":"Scorbunny","water":"Sobble","source":"https://bulbapedia.bulbagarden.net/wiki/Starter_Pok%C3%A9mon"},
+  {"gen":8,"game":"Pokémon Legends: Arceus","grass":"Rowlet","fire":"Cyndaquil","water":"Oshawott","source":"https://bulbapedia.bulbagarden.net/wiki/Starter_Pok%C3%A9mon"},
+  {"gen":9,"game":"Pokémon Scarlet and Violet","grass":"Sprigatito","fire":"Fuecoco","water":"Quaxly","source":"https://bulbapedia.bulbagarden.net/wiki/Starter_Pok%C3%A9mon"},
+  {"gen":9,"game":"Pokémon Legends: Z-A","grass":"Chikorita","fire":"Tepig","water":"Totodile","source":"https://bulbapedia.bulbagarden.net/wiki/Starter_Pok%C3%A9mon"}
+]

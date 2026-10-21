@@ -1,4 +1,4 @@
-import { ArrowUpDown, AudioLines, BookText, ScanEye, Shuffle, Zap, type LucideIcon } from "lucide-react";
+import { ArrowUpDown, AudioLines, BookText, Gamepad2, ScanEye, Shuffle, Tv, Zap, type LucideIcon } from "lucide-react";
 import type { ModuleId } from "@/engines/types";
 
 const ICONS: Record<ModuleId, LucideIcon> = {
@@ -7,6 +7,8 @@ const ICONS: Record<ModuleId, LucideIcon> = {
   dex: BookText,
   types: Zap,
   "higher-lower": ArrowUpDown,
+  games: Gamepad2,
+  anime: Tv,
   mixed: Shuffle,
 };
 

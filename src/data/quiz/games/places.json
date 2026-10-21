@@ -1,0 +1,15 @@
+[
+  {"place":"Lavender Town","region":"Kanto","gen":1,"difficulty":"easy","source":"https://bulbapedia.bulbagarden.net/wiki/Lavender_Town"},
+  {"place":"Cinnabar Island","region":"Kanto","gen":1,"difficulty":"easy","source":"https://bulbapedia.bulbagarden.net/wiki/Cinnabar_Island"},
+  {"place":"Goldenrod City","region":"Johto","gen":2,"difficulty":"medium","source":"https://bulbapedia.bulbagarden.net/wiki/Goldenrod_City"},
+  {"place":"Lake of Rage","region":"Johto","gen":2,"difficulty":"medium","source":"https://bulbapedia.bulbagarden.net/wiki/Lake_of_Rage"},
+  {"place":"Lilycove City","region":"Hoenn","gen":3,"difficulty":"medium","source":"https://bulbapedia.bulbagarden.net/wiki/Lilycove_City"},
+  {"place":"Sky Pillar","region":"Hoenn","gen":3,"difficulty":"hard","source":"https://bulbapedia.bulbagarden.net/wiki/Sky_Pillar"},
+  {"place":"Hearthome City","region":"Sinnoh","gen":4,"difficulty":"medium","source":"https://bulbapedia.bulbagarden.net/wiki/Hearthome_City"},
+  {"place":"Castelia City","region":"Unova","gen":5,"difficulty":"medium","source":"https://bulbapedia.bulbagarden.net/wiki/Castelia_City"},
+  {"place":"Anistar City","region":"Kalos","gen":6,"difficulty":"medium","source":"https://bulbapedia.bulbagarden.net/wiki/Anistar_City"},
+  {"place":"Malie City","region":"Alola","gen":7,"difficulty":"medium","source":"https://bulbapedia.bulbagarden.net/wiki/Malie_City"},
+  {"place":"Hammerlocke","region":"Galar","gen":8,"difficulty":"medium","source":"https://bulbapedia.bulbagarden.net/wiki/Hammerlocke"},
+  {"place":"Levincia","region":"Paldea","gen":9,"difficulty":"medium","source":"https://bulbapedia.bulbagarden.net/wiki/Levincia"},
+  {"place":"Area Zero","region":"Paldea","gen":9,"difficulty":"hard","source":"https://bulbapedia.bulbagarden.net/wiki/Area_Zero"}
+]
