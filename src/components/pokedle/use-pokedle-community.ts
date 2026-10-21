@@ -5,6 +5,7 @@ import { isValidDailyDate } from "@/lib/daily";
 import { dlePlayerId } from "@/lib/dle-player";
 import type { DleHint } from "@/lib/dle-types";
 import type { DleAssist } from "@/lib/dle-assist";
+import type { DleDailyFormat } from "@/lib/dle-format";
 import {
   shareCommunity,
   standingOf,
@@ -45,6 +46,8 @@ export interface PokedleCommunityGame {
   date: string;
   /** The guesses that counted, in order. */
   guessIds: number[];
+  /** Which daily (each has its own results): Classic when absent. */
+  format?: DleDailyFormat;
   /** Played in hard mode (the server checks it). */
   hard: boolean;
   hints: DleHint[];
@@ -63,16 +66,16 @@ async function json<T>(request: Promise<Response>): Promise<T | null> {
   }
 }
 
-async function load({ date, guessIds, hard, hints, assist }: PokedleCommunityGame): Promise<PokedleCommunityData | null> {
+async function load({ date, format = "classic", guessIds, hard, hints, assist }: PokedleCommunityGame): Promise<PokedleCommunityData | null> {
   const [result, stats] = await Promise.all([
     json<DleResultResponse>(
       fetch("/api/pokedle/result", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ date, player: dlePlayerId(), guesses: guessIds, hard, hints, assist }),
+        body: JSON.stringify({ date, format, player: dlePlayerId(), guesses: guessIds, hard, hints, assist }),
       })
     ),
-    json<DleStatsResponse>(fetch(`/api/pokedle/stats?date=${encodeURIComponent(date)}`)),
+    json<DleStatsResponse>(fetch(`/api/pokedle/stats?date=${encodeURIComponent(date)}${format === "classic" ? "" : `&format=${format}`}`)),
   ]);
   if (!result?.available || !stats?.available) return null;
   const totals: DleDaySummary = { date: stats.date, players: stats.players, solved: stats.solved, dist: stats.dist, failed: stats.failed, openers: stats.openers };
@@ -82,7 +85,7 @@ async function load({ date, guessIds, hard, hints, assist }: PokedleCommunityGam
 
 export function usePokedleCommunity(game: PokedleCommunityGame | null | undefined): PokedleCommunityState {
   // Only a finished daily that still counts: today's (or yesterday's / tomorrow's somewhere).
-  const key = game && game.guessIds.length > 0 && isValidDailyDate(game.date) ? `${game.date}|${game.guessIds.join(",")}` : null;
+  const key = game && game.guessIds.length > 0 && isValidDailyDate(game.date) ? `${game.format ?? "classic"}|${game.date}|${game.guessIds.join(",")}` : null;
   const [state, setState] = useState<{ key: string; data: PokedleCommunityData | null } | null>(null);
   const gameRef = useRef(game);
   gameRef.current = game;

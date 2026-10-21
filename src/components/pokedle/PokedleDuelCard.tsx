@@ -1,31 +1,55 @@
 "use client";
 
 import { useMemo } from "react";
-import { DLE_MAX_GUESSES } from "@/lib/dle-types";
 import { DLE_DEFAULT_ASSIST } from "@/lib/dle-assist";
-import { setDlePrefs, useDlePrefs } from "@/lib/dle-local";
+import { DLE_DEFAULT_SETTINGS, DLE_FORMAT_LABEL } from "@/lib/dle-format";
+import { getDlePrefs, setDlePrefs, useDlePrefs } from "@/lib/dle-local";
 import { DLE_DUEL_ROUNDS, DLE_DUEL_ROUND_MS, pvpHref } from "@/lib/pvp-types";
 import { NewDuelCard } from "@/components/duel/NewDuelCard";
 import { AssistPicker } from "./AssistPicker";
+import { cn } from "@/lib/utils";
 
 /**
  * "Duel a friend" on /pokedle: opens a Pokédle duel and goes to its lobby.
- * The Pokédex assist level (the last one picked, solo or here) goes with
- * it: a friend's duel starts at it (the lobby can change it), and "Find an
- * opponent" only pairs trainers who picked the same one.
+ * The Pokédex level and the format and settings (the last ones picked, solo
+ * or here) go with it: a friend's duel starts with them (the lobby can
+ * change them), and "Find an opponent" only pairs trainers who picked the
+ * same Pokédex level and format (Classic or Squirdle-style, each with its
+ * standard rules: few queues, so they fill up).
  */
 export function PokedleDuelCard() {
-  const assist = useDlePrefs()?.assist ?? DLE_DEFAULT_ASSIST;
-  const match = useMemo(() => ({ game: "pokedle", assist }), [assist]);
+  const prefs = useDlePrefs();
+  const assist = prefs?.assist ?? DLE_DEFAULT_ASSIST;
+  const settings = prefs?.settings ?? DLE_DEFAULT_SETTINGS;
+  const format = settings.format === "squirdle" ? "squirdle" : "classic";
+  const match = useMemo(() => ({ game: "pokedle", assist, format }), [assist, format]);
+  const body = useMemo(() => ({ kind: "pokedle", assist, settings }), [assist, settings]);
   return (
     <NewDuelCard
-      body={{ kind: "pokedle", assist }}
+      body={body}
       href={(code) => pvpHref("pokedle", code)}
-      // Matchmaking plays every generation (one queue per assist level, so it fills up); pick generations in a duel with a friend.
+      // Matchmaking plays every generation (one queue per level and format, so it fills up); pick generations and more in a duel with a friend.
       match={match}
       heading="Head to head · Pokédle"
-      blurb={`The same mystery Pokémon for both of you, ${DLE_DUEL_ROUNDS} rounds of ${DLE_MAX_GUESSES} guesses and ${DLE_DUEL_ROUND_MS / 60_000} minutes. Fewer guesses and a quicker solve score more; hints cost points. You see your opponent's colours as they guess. Send a friend the link (and pick the generations in the lobby), or find an opponent: matched duels use every generation and pair you with someone on the same Pokédex assist.`}
+      blurb={`The same mystery Pokémon for both of you, ${DLE_DUEL_ROUNDS} rounds of ${DLE_DUEL_ROUND_MS / 60_000} minutes. Fewer guesses and a quicker solve score more; hints cost points. You see your opponent's colours as they guess. Send a friend the link (and pick the format, generations and settings in the lobby), or find an opponent: matched duels use every generation and pair you with someone on the same format and Pokédex.`}
     >
+      <div className="flex flex-wrap items-center gap-1.5 pt-1">
+        <span className="text-xs font-semibold text-muted-foreground">Duel format</span>
+        <div className="flex rounded-md border border-foreground/15 p-0.5" role="radiogroup" aria-label="Duel format">
+          {(["classic", "squirdle"] as const).map((f) => (
+            <button
+              key={f}
+              type="button"
+              role="radio"
+              aria-checked={format === f}
+              onClick={() => setDlePrefs({ settings: { ...getDlePrefs().settings, format: f } })}
+              className={cn("rounded px-2 py-1 text-xs font-semibold", format === f ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground")}
+            >
+              {DLE_FORMAT_LABEL[f]}
+            </button>
+          ))}
+        </div>
+      </div>
       <AssistPicker value={assist} points={false} label="Pokédex assist for duels" onChange={(a) => setDlePrefs({ assist: a })} className="pt-1 [&>div]:justify-start [&>p]:text-left" />
     </NewDuelCard>
   );

@@ -4,7 +4,6 @@
 import { motion } from "framer-motion";
 import { Users } from "lucide-react";
 import { useEffect } from "react";
-import { DLE_MAX_GUESSES } from "@/lib/dle-types";
 import { DLE_MIN_PLAYERS_FOR_PERCENTILE, averageGuesses, bucketOf, buckets, percentText } from "@/lib/dle-community";
 import { usePokedleCommunity, type PokedleCommunityGame } from "./use-pokedle-community";
 import { Pokedle, type PokedleShareCommunity } from "./Pokedle";
@@ -47,7 +46,8 @@ export function PokedleCommunity({
   const { summary, you, standing } = state.data;
   const { players, solved } = summary;
   const all = buckets(summary);
-  const mine = bucketOf(you);
+  const max = summary.dist.length;
+  const mine = bucketOf(you, max);
   const widest = Math.max(1, ...all);
   const avg = averageGuesses(summary);
   const others = you.sameOpener - 1;
@@ -91,19 +91,19 @@ export function PokedleCommunity({
       <ol className="space-y-1" aria-label="Guesses everyone needed">
         {all.map((n, k) => {
           const yours = k === mine;
-          const label = k < DLE_MAX_GUESSES ? String(k + 1) : "X";
+          const label = k < max ? String(k + 1) : "X";
           return (
             <li
               key={label}
               className="grid grid-cols-[1rem_minmax(0,1fr)_2.5rem] items-center gap-2 text-xs"
-              aria-label={`${k < DLE_MAX_GUESSES ? `Solved in ${label}` : "Not solved"}: ${trainers(n)}${yours ? " (you)" : ""}`}
+              aria-label={`${k < max ? `Solved in ${label}` : "Not solved"}: ${trainers(n)}${yours ? " (you)" : ""}`}
             >
               <span className={cn("font-pixel text-[10px]", yours ? "text-foreground" : "text-muted-foreground")}>{label}</span>
               <span className="h-4 overflow-hidden rounded-sm bg-foreground/5">
                 <motion.span
                   className={cn(
                     "block h-full rounded-sm",
-                    yours ? (you.solved ? "bg-success" : "bg-destructive/80") : k === DLE_MAX_GUESSES ? "bg-destructive/25" : "bg-foreground/20"
+                    yours ? (you.solved ? "bg-success" : "bg-destructive/80") : k === max ? "bg-destructive/25" : "bg-foreground/20"
                   )}
                   initial={{ width: 0 }}
                   animate={{ width: n ? `${Math.max(3, (n / widest) * 100)}%` : 0 }}

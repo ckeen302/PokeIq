@@ -34,7 +34,7 @@ export function AssistPicker({
     <div className={cn("space-y-1", className)}>
       <div className="flex flex-wrap items-center justify-center gap-1.5">
         <span className="flex items-center gap-1 text-xs font-semibold text-muted-foreground">
-          <BookOpen className="h-3.5 w-3.5" aria-hidden /> Pokédex assist
+          <BookOpen className="h-3.5 w-3.5" aria-hidden /> Pokédex
         </span>
         <div className="flex flex-wrap justify-center rounded-md border border-foreground/15 p-0.5" role="radiogroup" aria-label={label}>
           {DLE_ASSISTS.map((a) => (
