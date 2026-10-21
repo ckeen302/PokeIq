@@ -218,15 +218,31 @@ export function GuessInput({
  * players who prefer reduced motion. `onClue` makes each clue a button (the
  * Full Pokédex's clue filters).
  */
-export function Board({ rows, flipNewest = true, onClue }: { rows: DleRow[]; flipNewest?: boolean; onClue?: (column: DleColumn, guessId: number, cell: DleCell) => void }) {
+export function Board({
+  rows,
+  columns,
+  close = true,
+  flipNewest = true,
+  onClue,
+}: {
+  rows: DleRow[];
+  /** The game's clue columns (default: the ones the rows have). */
+  columns?: readonly DleColumn[];
+  /** False: the game has no close states (the headers' help leaves them out). */
+  close?: boolean;
+  flipNewest?: boolean;
+  onClue?: (column: DleColumn, guessId: number, cell: DleCell) => void;
+}) {
   const reduced = useReducedMotion();
+  const shown = DLE_COLUMNS.filter((c) => (columns ? columns.includes(c.key) : rows.some((r) => r.cells[c.key])));
+  const grid = { gridTemplateColumns: `minmax(92px,1.3fr) repeat(${shown.length},minmax(56px,1fr))` };
   return (
     <div className="-mx-4 overflow-x-auto px-4 pb-2">
-      <div className="mx-auto min-w-[560px] max-w-3xl space-y-2" role="table" aria-label="Your guesses, newest first">
-        <div className="hud-label grid grid-cols-[minmax(92px,1.3fr)_repeat(7,minmax(56px,1fr))] gap-1.5 text-center" role="row">
+      <div className="mx-auto max-w-3xl space-y-2" style={{ minWidth: 92 + shown.length * 66 }} role="table" aria-label="Your guesses, newest first">
+        <div className="hud-label grid gap-1.5 text-center" style={grid} role="row">
           <div className="text-left" role="columnheader">Pokémon</div>
-          {DLE_COLUMNS.map((c) => (
-            <div key={c.key} role="columnheader" title={COLUMN_HELP[c.key]} className="cursor-help underline decoration-dotted decoration-foreground/30 underline-offset-2">
+          {shown.map((c) => (
+            <div key={c.key} role="columnheader" title={close ? COLUMN_HELP[c.key] : COLUMN_HELP[c.key].replace(/ Close:.*$/, " ▲ / ▼ only, no close state.")} className="cursor-help underline decoration-dotted decoration-foreground/30 underline-offset-2">
               {c.label}
             </div>
           ))}
@@ -235,20 +251,19 @@ export function Board({ rows, flipNewest = true, onClue }: { rows: DleRow[]; fli
           // Rows are keyed by Pokémon, so only a new row mounts (and flips); the rest stay put.
           const flip = flipNewest && !reduced && r === 0;
           return (
-            <div key={row.id} className="grid grid-cols-[minmax(92px,1.3fr)_repeat(7,minmax(56px,1fr))] gap-1.5" role="row">
+            <div key={row.id} className="grid gap-1.5" style={grid} role="row">
               <div className="flex items-center gap-1.5 rounded-lg border bg-card/80 px-1.5" role="rowheader">
                 <img src={spriteUrl(row.id)} alt="" width={36} height={36} className="h-9 w-9 shrink-0" />
                 <span className="truncate text-xs font-semibold">{row.name}</span>
               </div>
-              {DLE_COLUMNS.map((c, i) => (
-                <Cell
-                  key={c.key}
-                  label={c.label}
-                  cell={row.cells[c.key]}
-                  delay={flip ? i * 0.12 : null}
-                  onClick={onClue ? () => onClue(c.key, row.id, row.cells[c.key]) : undefined}
-                />
-              ))}
+              {shown.map((c, i) => {
+                const cell = row.cells[c.key];
+                return cell ? (
+                  <Cell key={c.key} label={c.label} cell={cell} delay={flip ? i * 0.12 : null} onClick={onClue ? () => onClue(c.key, row.id, cell) : undefined} />
+                ) : (
+                  <div key={c.key} role="cell" />
+                );
+              })}
             </div>
           );
         })}

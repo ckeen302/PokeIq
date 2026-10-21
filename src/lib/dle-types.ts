@@ -1,6 +1,7 @@
 /** Pokédle wire types (shared by server + client). */
 
-import { DLE_DEFAULT_ASSIST, withAssist, type DleAssist } from "./dle-assist";
+import { DLE_ASSIST_INFO, DLE_DEFAULT_ASSIST, type DleAssist } from "./dle-assist";
+import type { DleRules } from "./dle-format";
 
 /**
  * A clue: right; the right type in the other slot (partial); close, with
@@ -29,19 +30,12 @@ export interface DleRow {
   id: number;
   name: string;
   imageUrl: string;
-  cells: {
-    gen: DleCell;
-    type1: DleCell;
-    type2: DleCell;
-    height: DleCell;
-    weight: DleCell;
-    color: DleCell;
-    stage: DleCell;
-  };
+  /** Only the columns the game's rules show (dle-format): the server never computes or sends the others. */
+  cells: Partial<Record<DleColumn, DleCell>>;
   solved: boolean;
 }
 
-export type DleColumn = keyof DleRow["cells"];
+export type DleColumn = "gen" | "type1" | "type2" | "height" | "weight" | "color" | "stage";
 
 export const DLE_COLUMNS: { key: DleColumn; label: string }[] = [
   { key: "gen", label: "Gen" },
@@ -73,6 +67,9 @@ export const DLE_MAX_GUESSES = 8;
  */
 export const DLE_CURATED_FROM = "2026-10-22";
 
+/** The first Squirdle-style daily (its own curated deck: see pokedle-schedule.ts). */
+export const DLE_SQUIRDLE_FROM = "2026-10-20";
+
 /** The daily's difficulty tier by weekday (0 = Sunday): easier early in the week, harder at the weekend. */
 export const DLE_WEEKDAY_TIER = [2, 0, 0, 0, 1, 1, 2] as const;
 /**
@@ -86,12 +83,17 @@ export const DLE_HINT_LABEL: Record<DleHint, string> = { genus: "Category", silh
 /** The share's marker for each hint used. */
 export const DLE_HINT_EMOJI: Record<DleHint, string> = { silhouette: "👤", genus: "📖" };
 
-/** A first-guess solve. Each guess after the first costs DLE_GUESS_COST, down to 300 on the last guess. */
+/**
+ * A first-guess solve. Each guess after the first costs DLE_GUESS_COST,
+ * down to DLE_MIN_SOLVE_POINTS (Classic's 8th guess), whatever the game's
+ * guess count: more guesses only give more chances, never more points.
+ */
 export const DLE_SOLVE_POINTS = 1000;
+export const DLE_MIN_SOLVE_POINTS = 300;
 export const DLE_GUESS_COST = Math.round(700 / (DLE_MAX_GUESSES - 1));
 
 /** Points for solving in `guesses`. */
-export const dleBasePoints = (guesses: number) => DLE_SOLVE_POINTS - (guesses - 1) * DLE_GUESS_COST;
+export const dleBasePoints = (guesses: number) => Math.max(DLE_MIN_SOLVE_POINTS, DLE_SOLVE_POINTS - (guesses - 1) * DLE_GUESS_COST);
 /** What the hints used cost, in all. */
 export const dleHintCost = (hints: readonly DleHint[]) => DLE_HINT_KINDS.reduce((sum, h) => sum + (hints.includes(h) ? DLE_HINT_COST[h] : 0), 0);
 
@@ -99,13 +101,17 @@ export const dleHintCost = (hints: readonly DleHint[]) => DLE_HINT_KINDS.reduce(
  * A puzzle's points, the same rule as a duel round without the speed bonus:
  * the solve's points (0 if unsolved) less the hints used, never below 0,
  * then times the Pokédex assist level's multiplier (solo only: both
- * duellists always share a level).
+ * duellists always share a level) and the board's bonus (rulesBonus in
+ * dle-format: fewer clue columns or no close states).
  */
-export function dleScore(guesses: number, solved: boolean, hints: readonly DleHint[], assist: DleAssist = DLE_DEFAULT_ASSIST): number {
-  return withAssist(Math.max(0, (solved ? dleBasePoints(guesses) : 0) - dleHintCost(hints)), assist);
+export function dleScore(guesses: number, solved: boolean, hints: readonly DleHint[], assist: DleAssist = DLE_DEFAULT_ASSIST, bonus = 0): number {
+  const points = Math.max(0, (solved ? dleBasePoints(guesses) : 0) - dleHintCost(hints));
+  return Math.round(points * DLE_ASSIST_INFO[assist].multiplier * (1 + bonus));
 }
 
 export interface DleResponse {
+  /** The rules the server played the game by. */
+  rules: DleRules;
   rows: DleRow[];
   solved: boolean;
   over: boolean;
@@ -113,6 +119,8 @@ export interface DleResponse {
   hints: { silhouetteUrl?: string; genus?: string };
   /** The game's points at the assist level it was played at, once it's over. */
   score?: number;
+  /** The clock ran out (a timed practice game). */
+  timedOut?: boolean;
   /** Only once the puzzle is over. */
   answer?: { id: number; name: string; imageUrl: string; genus: string };
 }

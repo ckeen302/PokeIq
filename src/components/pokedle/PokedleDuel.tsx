@@ -6,7 +6,9 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { Crown, Eye, Filter, Flame, Lightbulb, Loader2, RotateCcw, Swords, Tag, Timer, Trophy, UserSearch, WifiOff } from "lucide-react";
-import { DLE_COLUMNS, DLE_MAX_GUESSES, type CellStatus, type DleRow } from "@/lib/dle-types";
+import { DLE_COLUMNS, type CellStatus, type DleRow } from "@/lib/dle-types";
+import { rulesTags, settingsOf, type DleRules } from "@/lib/dle-format";
+import { RulesChip, SettingsPanel } from "./SettingsPanel";
 import {
   DLE_DUEL_HINT_COST,
   DLE_DUEL_IDLE_ROUNDS,
@@ -52,8 +54,8 @@ import { Avatar } from "@/components/avatar/Avatar";
 
 const HOME = "/pokedle";
 const GENS = [1, 2, 3, 4, 5, 6, 7, 8, 9];
-/** What "Find new opponent" searches for: the same queue as on /pokedle, at the duel's Pokédex assist level. */
-const matchFor = (assist: DleAssist) => ({ game: "pokedle", assist });
+/** What "Find new opponent" searches for: the same queue as on /pokedle, at the duel's Pokédex level and format (a custom duel: Classic's queue). */
+const matchFor = (assist: DleAssist, rules: Pick<DleRules, "format">) => ({ game: "pokedle", assist, format: rules.format === "squirdle" ? "squirdle" : "classic" });
 /** The last stretch of a round: the clock gets loud. */
 const FINAL_MS = 10_000;
 /** A guess that leaves this few Pokémon possible is close. */
@@ -80,8 +82,8 @@ function useFirst<T>(key: number | undefined, value: T | undefined): T | undefin
 const leftOf = (board: Pick<DleDuelBoard, "possible">, pool: number) => board.possible.at(-1) ?? pool;
 const possibleText = (n: number) => `${fmt(n)} Pokémon still possible`;
 
-const progressText = (board: DleDuelBoard) =>
-  board.solved ? `Solved in ${board.colours.length}` : board.done ? "Out of guesses" : `${board.colours.length}/${DLE_MAX_GUESSES} guesses`;
+const progressText = (board: DleDuelBoard, max: number) =>
+  board.solved ? `Solved in ${board.colours.length}` : board.done ? "Out of guesses" : `${board.colours.length}/${max} guesses`;
 
 export function PokedleDuel({ code, names }: { code: string; names: NameEntry[] }) {
   const router = useRouter();
@@ -188,6 +190,14 @@ export function PokedleDuel({ code, names }: { code: string; names: NameEntry[] 
           shareText="Duel me in Pokédle! Same mystery Pokémon, fewer guesses wins."
           settings={
             <div className="space-y-3">
+              <div className="flex justify-center">
+                <RulesChip rules={view.rules} dex={view.assist === "off" ? "No dex" : DLE_ASSIST_INFO[view.assist].label} />
+              </div>
+              {view.you === 0 && !view.ranked ? (
+                <SettingsPanel duel value={settingsOf(view.rules)} disabled={busy} onChange={(settings) => void act({ action: "settings", settings })} />
+              ) : (
+                <p className="text-center text-xs text-muted-foreground">The trainer who made the duel picks the format and settings; you both play by the same.</p>
+              )}
               <GenPicker view={view} busy={busy} onPick={(gens) => void act({ action: "gens", gens })} />
               <AssistPicker
                 value={view.assist}
@@ -202,11 +212,11 @@ export function PokedleDuel({ code, names }: { code: string; names: NameEntry[] 
           rules={[
             {
               label: "Rounds",
-              text: `Three rounds, the same mystery Pokémon for both of you, with Pokédle's ${DLE_MAX_GUESSES} guesses and clues and ${DLE_DUEL_ROUND_MS / 60_000} minutes a round. You see your opponent's colours as they guess, never their Pokémon.`,
+              text: `Three rounds, the same mystery Pokémon for both of you, with ${view.rules.maxGuesses} guesses and ${view.rules.columns.length} clues (${rulesTags(view.rules)[0]}), and ${view.rules.timer === "60s" ? "60 seconds" : `${DLE_DUEL_ROUND_MS / 60_000} minutes`} a round. You see your opponent's colours as they guess, never their Pokémon.`,
             },
             {
               label: "Points",
-              text: `A solve scores ${fmt(dleDuelBase(1))} on the first guess down to ${dleDuelBase(DLE_MAX_GUESSES)} on the last, plus up to ${DLE_DUEL_SPEED_BONUS} for speed. Hints cost points: category −${DLE_DUEL_HINT_COST.genus}, silhouette −${DLE_DUEL_HINT_COST.silhouette}.`,
+              text: `A solve scores ${fmt(dleDuelBase(1))} on the first guess down to ${dleDuelBase(view.rules.maxGuesses)} on the last, plus up to ${DLE_DUEL_SPEED_BONUS} for speed. Hints cost points: category −${DLE_DUEL_HINT_COST.genus}, silhouette −${DLE_DUEL_HINT_COST.silhouette}.`,
             },
             {
               label: "Winning",
@@ -358,7 +368,7 @@ export function PokedleDuel({ code, names }: { code: string; names: NameEntry[] 
                     names={names}
                     exclude={guessed}
                     disabled={timeUp}
-                    placeholder={timeUp ? "Time's up" : `Guess ${live.rows.length + 1} of ${DLE_MAX_GUESSES} — type a Pokémon…`}
+                    placeholder={timeUp ? "Time's up" : `Guess ${live.rows.length + 1} of ${view.rules.maxGuesses} — type a Pokémon…`}
                     onGuess={(entry) => {
                       if (busy || timeUp) return false;
                       unlockAudio();
@@ -369,7 +379,7 @@ export function PokedleDuel({ code, names }: { code: string; names: NameEntry[] 
                   />
                 )}
                 <PossibleMeter left={leftOf(myBoard, view.pool)} pool={view.pool} label="Still possible for you" />
-                {(!myBoard.done || myBoard.hints.length > 0) && (
+                {view.rules.hints && (!myBoard.done || myBoard.hints.length > 0) && (
                   <div className="mx-auto flex max-w-md flex-wrap items-center gap-3 rounded-md border bg-card p-3 text-sm">
                     <Lightbulb className="h-5 w-5 shrink-0 text-primary" aria-hidden />
                     {silhouette && <img src={silhouette} alt="Silhouette hint" className="spotlight h-20 w-20 rounded-lg object-contain p-1" />}
@@ -393,23 +403,25 @@ export function PokedleDuel({ code, names }: { code: string; names: NameEntry[] 
                 )}
               </div>
               <div className="hidden xl:block">
-                <OpponentBoard name={them} seat={1 - me} board={theirs} pool={view.pool} quiet={view.players[1 - me]?.quiet} round={live.index} />
+                <OpponentBoard name={them} seat={1 - me} board={theirs} pool={view.pool} quiet={view.players[1 - me]?.quiet} round={live.index} rules={view.rules} />
               </div>
             </div>
             {live.rows.length > 0 ? (
               <Board
                 rows={live.rows}
+                columns={view.rules.columns}
+                close={view.rules.close}
                 onClue={view.assist === "full" ? (column, guessId, cell) => setPick((p) => ({ column, guessId, status: cell.status, value: cell.value, n: (p?.n ?? 0) + 1 })) : undefined}
               />
             ) : (
               <p className="text-center text-sm text-muted-foreground">
-                {DLE_MAX_GUESSES} guesses. 🟩 match · 🟨 right type, wrong slot, or close (dashed, with ▲▼) · ▲▼ the answer is higher / lower.
+                {view.rules.maxGuesses} guesses. 🟩 match · 🟨 right type, wrong slot{view.rules.close ? ", or close (dashed, with ▲▼)" : ""} · ▲▼ the answer is higher / lower.
               </p>
             )}
           </div>
           {/* On a phone the opponent's progress comes first, above your (longer) board. */}
           <div className="order-first mx-auto w-full max-w-[13rem] md:order-none md:col-start-2 md:row-start-1 xl:hidden">
-            <OpponentBoard name={them} seat={1 - me} board={theirs} pool={view.pool} quiet={view.players[1 - me]?.quiet} round={live.index} />
+            <OpponentBoard name={them} seat={1 - me} board={theirs} pool={view.pool} quiet={view.players[1 - me]?.quiet} round={live.index} rules={view.rules} />
           </div>
           {/* Each round starts with every filter cleared. */}
           {view.assist === "off" ? (
@@ -422,6 +434,7 @@ export function PokedleDuel({ code, names }: { code: string; names: NameEntry[] 
               assist={view.assist}
               className="md:col-span-2 xl:col-span-1 xl:col-start-2 xl:row-start-1"
               gens={view.gens}
+              close={view.rules.close}
               guessed={guessed}
               clues={panelClues}
               pick={pick}
@@ -589,7 +602,24 @@ function HintBadges({ hints }: { hints: DleDuelHint[] }) {
  * filling in as they guess (the newest row flips in), with a "Rival
  * guessed!" pulse, and the hints they bought.
  */
-function OpponentBoard({ name, seat, board, pool, quiet, round }: { name: string; seat: number; board: DleDuelBoard; pool: number; quiet?: boolean; round: number }) {
+function OpponentBoard({
+  name,
+  seat,
+  board,
+  pool,
+  quiet,
+  round,
+  rules,
+}: {
+  name: string;
+  seat: number;
+  board: DleDuelBoard;
+  pool: number;
+  quiet?: boolean;
+  round: number;
+  rules: Pick<DleRules, "maxGuesses" | "columns">;
+}) {
+  const cols = { gridTemplateColumns: `repeat(${rules.columns.length},minmax(0,1fr))` };
   const reduced = useReducedMotion();
   const count = board.colours.length;
   // Rows already there when this board (re)appeared don't flip: only guesses made while you watch.
@@ -634,20 +664,20 @@ function OpponentBoard({ name, seat, board, pool, quiet, round }: { name: string
           <SeatDot seat={seat} /> <span className="truncate">{name}</span>
           {quiet && <WifiOff className="h-3.5 w-3.5 shrink-0 text-warning" aria-label="Connection lost" />}
         </p>
-        <div className="space-y-1" style={{ perspective: 400 }} aria-label={`${name}: ${progressText(board)}`}>
-          {Array.from({ length: DLE_MAX_GUESSES }).map((_, r) => {
+        <div className="space-y-1" style={{ perspective: 400 }} aria-label={`${name}: ${progressText(board, rules.maxGuesses)}`}>
+          {Array.from({ length: rules.maxGuesses }).map((_, r) => {
             const row = board.colours[r];
             return (
-              <div key={row ? `g${r}` : `e${r}`} className="grid grid-cols-7 gap-1">
+              <div key={row ? `g${r}` : `e${r}`} className="grid gap-1" style={cols}>
                 {row
                   ? row.map((status, i) => <Square key={i} status={status} delay={r === flipRow ? i * 0.1 : undefined} />)
-                  : Array.from({ length: 7 }).map((_, i) => <span key={i} className="aspect-square rounded-[3px] border border-dashed border-foreground/10" />)}
+                  : Array.from({ length: rules.columns.length }).map((_, i) => <span key={i} className="aspect-square rounded-[3px] border border-dashed border-foreground/10" />)}
               </div>
             );
           })}
         </div>
         <HintBadges hints={board.hints} />
-        <p className={cn("text-center font-display text-sm font-semibold uppercase tracking-wider", board.solved ? "text-success" : "text-muted-foreground")}>{progressText(board)}</p>
+        <p className={cn("text-center font-display text-sm font-semibold uppercase tracking-wider", board.solved ? "text-success" : "text-muted-foreground")}>{progressText(board, rules.maxGuesses)}</p>
         {!board.solved && <PossibleMeter left={leftOf(board, pool)} pool={pool} compact />}
       </CardContent>
     </Card>
@@ -683,11 +713,11 @@ function Guesses({ rows }: { rows: DleRow[] }) {
   return (
     <ol className="space-y-1">
       {rows.map((row) => (
-        <li key={row.id} className="grid grid-cols-[2rem_minmax(0,1fr)_repeat(7,1.1rem)] items-center gap-1 text-xs">
+        <li key={row.id} className="grid items-center gap-1 text-xs" style={{ gridTemplateColumns: `2rem minmax(0,1fr) repeat(${DLE_COLUMNS.filter((c) => row.cells[c.key]).length},1.1rem)` }}>
           <img src={spriteUrl(row.id)} alt="" width={32} height={32} className="h-8 w-8" />
           <span className="truncate font-semibold">{row.name}</span>
           {DLE_COLUMNS.map((c) => (
-            <Square key={c.key} status={row.cells[c.key].status} />
+            row.cells[c.key] && <Square key={c.key} status={row.cells[c.key]!.status} />
           ))}
         </li>
       ))}
@@ -770,7 +800,7 @@ function DuelSummary({ view, busy, onRematch }: { view: DleDuelView; busy: boole
   const [mine, theirs] = [view.totals[me], view.totals[1 - me]];
   // "Find new opponent" / "Play again": the queue this duel came from (casual for a friend's duel), under the same name.
   const ranked = view.queue === "ranked";
-  const casual = useMemo(() => matchFor(view.assist), [view.assist]);
+  const casual = useMemo(() => matchFor(view.assist, view.rules), [view.assist, view.rules]);
   const finder = useMatchmaking(ranked ? RANKED_MATCH : casual);
   const myName = view.players[me]?.name ?? "";
   const guesses = (seat: number) => view.revealed.reduce((sum, r) => sum + r.scores[seat].guesses, 0);
@@ -793,7 +823,7 @@ function DuelSummary({ view, busy, onRematch }: { view: DleDuelView; busy: boole
     <div className="mx-auto max-w-3xl space-y-6">
       <div className="space-y-2 text-center">
         <p className="hud-label text-screen">
-          Pokédle duel over · {gensText(view.gens)} · {DLE_ASSIST_INFO[view.assist].label}
+          Pokédle duel over · {rulesTags(view.rules).join(" · ")} · {DLE_ASSIST_INFO[view.assist].label}
         </p>
         <div className={cn("flex items-center justify-center gap-3 font-display text-6xl font-bold uppercase", won ? "text-success" : draw ? "text-screen" : "text-destructive")}>
           {won && <Crown className="h-12 w-12" aria-hidden />}

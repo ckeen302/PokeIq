@@ -3,7 +3,8 @@ import poolV1 from "@/data/pokedle-pool.json";
 import { getPokemon, POKEDEX } from "@/lib/pokemon/pokedex";
 import { LAUNCH_DATE } from "@/lib/daily";
 import { hashString, Rng } from "@/lib/rng";
-import { DLE_CURATED_FROM, DLE_WEEKDAY_TIER } from "@/lib/dle-types";
+import { DLE_CURATED_FROM, DLE_SQUIRDLE_FROM, DLE_WEEKDAY_TIER } from "@/lib/dle-types";
+import type { DleDailyFormat } from "@/lib/dle-format";
 import { deriveSeed } from "./crypto";
 
 /**
@@ -41,9 +42,17 @@ interface Era {
   key: string;
   /** Pokédex numbers, easier tier first. */
   tiers: number[][];
+  /** Never the Classic daily's answer of the same day (the Squirdle-style daily's eras). */
+  shadow?: boolean;
 }
 
 export const ERAS: readonly Era[] = [{ from: DLE_CURATED_FROM, key: "pool-v1", tiers: poolV1.tiers }];
+
+/**
+ * The Squirdle-style daily: its own deck of the same curated pool, under its
+ * own key, so its answer is a different Pokémon from Classic's every day.
+ */
+export const SQUIRDLE_ERAS: readonly Era[] = [{ from: DLE_SQUIRDLE_FROM, key: "squirdle-v1", tiers: poolV1.tiers, shadow: true }];
 
 /** Days an answer's evolution family stays out, and how far back "just before a cycle" reaches. */
 export const RECENT_DAYS = 45;
@@ -61,18 +70,20 @@ export function legacyDailyId(date: string): number {
   return POKEDEX[hashString(deriveSeed("pokedle", `daily:${date}|`)) % POKEDEX.length].id;
 }
 
-function eraOn(date: string): Era | undefined {
+function eraOn(date: string, eras: readonly Era[]): Era | undefined {
   let found: Era | undefined;
-  for (const era of ERAS) if (date >= era.from) found = era;
+  for (const era of eras) if (date >= era.from) found = era;
   return found;
 }
 
 const eraSize = (era: Era) => era.tiers.reduce((n, t) => n + t.length, 0);
 
-/** The daily answer's Pokédex number on `date` (a valid YYYY-MM-DD). */
-export function dailyAnswerId(date: string): number {
-  const era = eraOn(date);
-  if (!era) return legacyDailyId(date);
+/** The daily answer's Pokédex number on `date` (a valid YYYY-MM-DD), for Classic or the Squirdle-style daily. */
+export function dailyAnswerId(date: string, format: DleDailyFormat = "classic"): number {
+  const squirdle = format === "squirdle";
+  const era = eraOn(date, squirdle ? SQUIRDLE_ERAS : ERAS);
+  // Before the Squirdle-style daily began there was none: a keyed pick, never played.
+  if (!era) return squirdle ? POKEDEX[hashString(deriveSeed("pokedle", `squirdle:${date}`)) % POKEDEX.length].id : legacyDailyId(date);
   const day = dayNumber(date) - dayNumber(era.from);
   const size = eraSize(era);
   return cycleOrder(era, Math.floor(day / size))[day % size];
@@ -139,9 +150,12 @@ export function cycleOrder(era: Era, index: number): number[] {
     const queue = queues[tier];
     const prev = history[history.length - 1];
     const chains = new Set(history.slice(-RECENT_DAYS).map((e) => e.chain));
+    // A shadow era's day never shares Classic's evolution family that day.
+    const clash = era.shadow ? entry(dailyAnswerId(dateOf(first + p))).chain : null;
     const window = queue.slice(0, LOOKAHEAD);
-    let k = window.findIndex((e) => !chains.has(e.chain) && e.gen !== prev?.gen && e.type !== prev?.type);
-    if (k < 0) k = window.findIndex((e) => !chains.has(e.chain));
+    let k = window.findIndex((e) => !chains.has(e.chain) && e.chain !== clash && e.gen !== prev?.gen && e.type !== prev?.type);
+    if (k < 0) k = window.findIndex((e) => !chains.has(e.chain) && e.chain !== clash);
+    if (k < 0) k = queue.findIndex((e) => e.chain !== clash);
     if (k < 0) k = 0;
     const [pick] = queue.splice(k, 1);
     order.push(pick.id);

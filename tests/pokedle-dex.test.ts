@@ -22,9 +22,9 @@ describe("the Pokédex beside the Pokédle board", () => {
       // A guess's own clue values (compared against any answer: Pikachu here) are what the row shows.
       const { cells } = compare(p, pikachu);
       expect(name).toBe(p.name);
-      expect(String(gen)).toBe(cells.gen.value);
-      expect(t1).toBe(cells.type1.value.toLowerCase());
-      expect(t2 ?? "none").toBe(cells.type2.value.toLowerCase());
+      expect(String(gen)).toBe(cells.gen!.value);
+      expect(t1).toBe(cells.type1!.value.toLowerCase());
+      expect(t2 ?? "none").toBe(cells.type2!.value.toLowerCase());
     }
   });
 
@@ -65,7 +65,7 @@ describe("greying out, like Wordle's keyboard", () => {
         // Were p the answer, would every guess have got the same gen and type clues?
         const fits = board.every((r) => {
           const cells = compare(getPokemon(r.id)!, p).cells;
-          return DLE_PANEL_COLUMNS.every((c) => cells[c].status === r.cells[c].status);
+          return DLE_PANEL_COLUMNS.every((c) => cells[c]!.status === r.cells[c]!.status);
         });
         expect(out.has(p.id), `${p.name} vs ${answer.name}`).toBe(!fits);
       }
@@ -74,7 +74,7 @@ describe("greying out, like Wordle's keyboard", () => {
       const hidden = stillIn.filter((p) =>
         board.some((r) => {
           const cells = compare(getPokemon(r.id)!, p).cells;
-          return DLE_COLUMNS.some((c) => cells[c.key].status !== r.cells[c.key].status);
+          return DLE_COLUMNS.some((c) => cells[c.key]!.status !== r.cells[c.key]!.status);
         })
       );
       expect(hidden.length).toBeGreaterThan(0);

@@ -9,6 +9,7 @@ import type { DuelPlayerView, DuelStatus } from "./duel-types";
 import type { Difficulty, ModuleId } from "@/engines/types";
 import type { PublicQuestion } from "./session-types";
 import type { DleAssist } from "./dle-assist";
+import type { DleRules } from "./dle-format";
 import type { ChatLine } from "./chat";
 
 export const PVP_KINDS = ["pokedle", "quiz"] as const;
@@ -113,11 +114,13 @@ export const DLE_DUEL_HINT_COST = DLE_HINT_COST;
 /** Points for solving in `guesses`. */
 export const dleDuelBase = dleBasePoints;
 /** The speed bonus for solving `ms` into a round. */
-export const dleDuelSpeed = (ms: number) => Math.round(DLE_DUEL_SPEED_BONUS * Math.max(0, 1 - ms / DLE_DUEL_ROUND_MS));
+export const dleDuelSpeed = (ms: number) => dleDuelSpeedIn(ms, DLE_DUEL_ROUND_MS);
+/** The speed bonus in a round of `roundMs` (a blitz duel's 60 seconds). */
+export const dleDuelSpeedIn = (ms: number, roundMs: number) => Math.round(DLE_DUEL_SPEED_BONUS * Math.max(0, 1 - ms / roundMs));
 
 /** One trainer's guesses in a round, as the opponent may see them: colours only, never the Pokémon. */
 export interface DleDuelBoard {
-  /** Each guess's feedback, oldest first, in DLE_COLUMNS order. */
+  /** Each guess's feedback, oldest first, in the order of the duel's columns (rules.columns). */
   colours: CellStatus[][];
   solved: boolean;
   /** Solved, or out of guesses. */
@@ -180,6 +183,8 @@ export interface DleDuelView extends PvpViewBase {
   gens?: number[];
   /** The Pokédex assist level both trainers play with. The creator picks in the lobby; ranked is always the Notebook. */
   assist: DleAssist;
+  /** The format and settings both play by (Classic for ranked): the columns shown, guesses, close states, hints, the round clock. The creator picks them in the lobby. */
+  rules: DleRules;
   /** How many Pokémon could be the secret before any guess (the generations' whole Pokédex). */
   pool: number;
   rounds: number;

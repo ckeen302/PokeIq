@@ -47,7 +47,8 @@ export interface DleStats {
 const DAY_MS = 86_400_000;
 const nextDate = (date: string) => new Date(Date.parse(`${date}T00:00:00Z`) + DAY_MS).toISOString().slice(0, 10);
 
-export function dleStats(results: Readonly<Record<string, DleResultLike>>, today: string): DleStats {
+/** `maxGuesses`: the format's guesses (8 for Classic, 9 for the Squirdle-style daily), the distribution's length. */
+export function dleStats(results: Readonly<Record<string, DleResultLike>>, today: string, maxGuesses: number = DLE_MAX_GUESSES): DleStats {
   const finished = Object.keys(results)
     .filter((d) => d <= today && results[d].over)
     .sort();
@@ -62,7 +63,7 @@ export function dleStats(results: Readonly<Record<string, DleResultLike>>, today
     freezes: 0,
     frozenDays: [],
     savedByFreeze: false,
-    distribution: Array<number>(DLE_MAX_GUESSES).fill(0),
+    distribution: Array<number>(maxGuesses).fill(0),
     losses: 0,
     hardWins: 0,
     doneToday: results[today]?.over === true,
@@ -72,7 +73,7 @@ export function dleStats(results: Readonly<Record<string, DleResultLike>>, today
     const r = results[d];
     if (r.solved) {
       stats.wins++;
-      const n = Math.min(Math.max(r.guesses.length, 1), DLE_MAX_GUESSES);
+      const n = Math.min(Math.max(r.guesses.length, 1), maxGuesses);
       stats.distribution[n - 1]++;
       if (r.hard) stats.hardWins++;
     } else stats.losses++;

@@ -67,8 +67,8 @@ export interface DleShareCommunity {
 export const DLE_MIN_PLAYERS_FOR_PERCENTILE = 10;
 
 /** A result's bucket in the distribution: solves by guess count, then a miss after them all. */
-export function bucketOf(result: { guesses: number; solved: boolean }): number {
-  return result.solved ? Math.min(Math.max(result.guesses, 1), DLE_MAX_GUESSES) - 1 : DLE_MAX_GUESSES;
+export function bucketOf(result: { guesses: number; solved: boolean }, max: number = DLE_MAX_GUESSES): number {
+  return result.solved ? Math.min(Math.max(result.guesses, 1), max) - 1 : max;
 }
 
 /** The distribution as one list: solves in 1 … DLE_MAX_GUESSES, then misses. */
@@ -87,14 +87,15 @@ export function averageGuesses(s: Pick<DleDaySummary, "dist">): number | null {
  */
 export function withYou(summary: DleDaySummary, you: DlePersonal): DleDaySummary {
   if (summary.players >= you.position) return summary;
-  const k = bucketOf(you);
+  const max = summary.dist.length;
+  const k = bucketOf(you, max);
   const all = buckets(summary).map((n, i) => (i === k ? n + 1 : n));
   return {
     ...summary,
     players: summary.players + 1,
     solved: summary.solved + (you.solved ? 1 : 0),
-    dist: all.slice(0, DLE_MAX_GUESSES),
-    failed: all[DLE_MAX_GUESSES],
+    dist: all.slice(0, max),
+    failed: all[max],
   };
 }
 
@@ -105,7 +106,7 @@ export function withYou(summary: DleDaySummary, you: DlePersonal): DleDaySummary
  */
 export function standingOf(summary: Pick<DleDaySummary, "dist" | "failed">, result: { guesses: number; solved: boolean }): DleStanding | null {
   const all = buckets(summary);
-  const k = bucketOf(result);
+  const k = bucketOf(result, summary.dist.length);
   const sum = (list: number[]) => list.reduce((a, b) => a + b, 0);
   const better = sum(all.slice(0, k));
   const same = Math.max(1, all[k]);

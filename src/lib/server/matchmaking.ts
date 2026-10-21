@@ -10,6 +10,7 @@ import { RANKED_QUEUE_KEY, cancelRankedQueue, searchRankedQueue, type RankedSeat
 import type { RatingState } from "@/lib/ranked";
 import { pvpHref } from "@/lib/pvp-types";
 import { DLE_ASSISTS, DLE_DEFAULT_ASSIST } from "@/lib/dle-assist";
+import { DLE_DAILY_FORMATS } from "@/lib/dle-format";
 
 /**
  * Matchmaking for duels: trainers searching for the same game with the same
@@ -36,21 +37,24 @@ export {
  * What can be matched: PokéGuessr on any map, and Pokédle on every
  * generation (a duel with picked generations is one you invite a friend
  * to), one casual queue per Pokédex assist level so both trainers play
- * with the same one. Ranked is one queue, always the Notebook: its
- * `assist` is ignored.
+ * with the same one, and one per format (Classic or Squirdle-style, each
+ * with its standard rules), so there are few queues and trainers still
+ * find each other. Ranked is one queue, always Classic and the Notebook: its
+ * `assist` and `format` are ignored.
  */
 export const matchSettingsSchema = z.discriminatedUnion("game", [
   z.object({ game: z.literal("geo"), region: z.string().max(20).refine(isDuelMap, "Unknown map.") }),
-  z.object({ game: z.literal("pokedle"), ranked: z.boolean().optional(), assist: z.enum(DLE_ASSISTS).optional() }),
+  z.object({ game: z.literal("pokedle"), ranked: z.boolean().optional(), assist: z.enum(DLE_ASSISTS).optional(), format: z.enum(DLE_DAILY_FORMATS).optional() }),
 ]);
 export type MatchSettings = z.infer<typeof matchSettingsSchema>;
 
-/** The queue a search waits in. The Notebook keeps the queue Pokédle had before levels. */
+/** The queue a search waits in. Classic with the Notebook keeps the queue Pokédle had before levels and formats. */
 export function queueKey(s: MatchSettings): string {
   if (s.game === "geo") return `geo:${s.region}`;
   if (s.ranked) return RANKED_QUEUE_KEY;
   const assist = s.assist ?? DLE_DEFAULT_ASSIST;
-  return assist === DLE_DEFAULT_ASSIST ? "pokedle:all" : `pokedle:all:${assist}`;
+  const base = s.format === "squirdle" ? "pokedle:squirdle" : "pokedle:all";
+  return assist === DLE_DEFAULT_ASSIST ? base : `${base}:${assist}`;
 }
 
 export type SearchResult =
@@ -76,7 +80,7 @@ async function openDuel(settings: MatchSettings, names: [string, string], now: n
       const ready = must(readyGeoDuel(must(readyGeoDuel(joined, a, true, now)).duel, b, true, now)).duel;
       if (await insertDuel(ready)) return { code, ids: [a, b], remove: () => deleteDuel(code) };
     } else {
-      const { duel, playerId: a } = createPokedleDuel(names[0], code, now, undefined, { queue: "casual", assist: settings.assist });
+      const { duel, playerId: a } = createPokedleDuel(names[0], code, now, undefined, { queue: "casual", assist: settings.assist, settings: { format: settings.format ?? "classic" } });
       const { duel: joined, playerId: b } = must(joinDuel(duel, names[1], now));
       const ready = must(readyDuel(must(readyDuel(joined, a, true, now)).duel, b, true, now)).duel;
       if (await pvpStore.insert(ready)) return { code, ids: [a, b], remove: () => pvpStore.remove(code) };

@@ -49,7 +49,7 @@ function dleRecord(v: unknown): DleRecord | null {
   const o = obj(v);
   if (!Array.isArray(o.guesses)) return null;
   return {
-    guesses: o.guesses.filter((g): g is number => Number.isInteger(g)).slice(0, 8),
+    guesses: o.guesses.filter((g): g is number => Number.isInteger(g)).slice(0, 10),
     solved: o.solved === true,
     over: o.over === true,
     ...(o.hard === true && { hard: true }),
@@ -86,6 +86,7 @@ export function normalizeProgress(raw: unknown): Progress | null {
       : [],
     daily: streakBlock(o.daily, dailyRecord),
     dle: streakBlock(o.dle, dleRecord),
+    ...(o.squirdle !== undefined && { squirdle: streakBlock(o.squirdle, dleRecord) }),
     badges: numberMap(o.badges),
     skills,
   };
@@ -97,6 +98,8 @@ interface StreakBlock<T> {
   best: number;
   results: Record<string, T>;
 }
+
+const EMPTY_BLOCK: StreakBlock<DleRecord> = { last: null, streak: 0, best: 0, results: {} };
 
 function laterStreak<T>(a: StreakBlock<T>, b: StreakBlock<T>): StreakBlock<T> {
   // The side that finished a puzzle most recently holds the live streak.
@@ -136,6 +139,7 @@ export function mergeProgress(local: Progress, remote: Progress): Progress {
     modulesPlayed: [...new Set([...remote.modulesPlayed, ...local.modulesPlayed])],
     daily: laterStreak(local.daily, remote.daily),
     dle: laterStreak(local.dle, remote.dle),
+    ...((local.squirdle || remote.squirdle) && { squirdle: laterStreak(local.squirdle ?? EMPTY_BLOCK, remote.squirdle ?? EMPTY_BLOCK) }),
     badges,
     skills,
   };

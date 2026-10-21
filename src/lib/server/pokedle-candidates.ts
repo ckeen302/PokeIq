@@ -2,10 +2,11 @@ import "server-only";
 import type { Pokemon } from "@/lib/pokemon/pokedex";
 import type { DleRow } from "@/lib/dle-types";
 import { compare } from "./pokedle";
+import { CLASSIC_RULES, type DleRules } from "@/lib/dle-format";
 
 /**
  * "Pokémon still possible": how many Pokémon fit every clue a trainer has
- * been shown.
+ * been shown (only the columns the game shows, as it shows them).
  *
  * A candidate fits a guess exactly when that guess, compared with the
  * candidate, would have shown the same clues (and the same solved-or-not)
@@ -21,8 +22,8 @@ export function clueKey(row: DleRow): string {
 }
 
 /** Whether `candidate` could still be the answer after `guess` showed its clues against `answer`. */
-export function fits(guess: Pokemon, answer: Pokemon, candidate: Pokemon): boolean {
-  return clueKey(compare(guess, candidate)) === clueKey(compare(guess, answer));
+export function fits(guess: Pokemon, answer: Pokemon, candidate: Pokemon, rules: Pick<DleRules, "columns" | "close"> = CLASSIC_RULES): boolean {
+  return clueKey(compare(guess, candidate, rules)) === clueKey(compare(guess, answer, rules));
 }
 
 /**
@@ -30,11 +31,11 @@ export function fits(guess: Pokemon, answer: Pokemon, candidate: Pokemon): boole
  * is after guess 1). Each guess only filters what the guesses before it left,
  * so a whole board costs little more than one pass over the pool.
  */
-export function stillPossible(answer: Pokemon, guesses: readonly Pokemon[], pool: readonly Pokemon[]): number[] {
+export function stillPossible(answer: Pokemon, guesses: readonly Pokemon[], pool: readonly Pokemon[], rules: Pick<DleRules, "columns" | "close"> = CLASSIC_RULES): number[] {
   let left = pool;
   return guesses.map((guess) => {
-    const want = clueKey(compare(guess, answer));
-    left = left.filter((candidate) => clueKey(compare(guess, candidate)) === want);
+    const want = clueKey(compare(guess, answer, rules));
+    left = left.filter((candidate) => clueKey(compare(guess, candidate, rules)) === want);
     return left.length;
   });
 }

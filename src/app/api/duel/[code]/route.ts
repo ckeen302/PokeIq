@@ -8,7 +8,7 @@ import { duelsEnabled, newDuelCode, pvpStore } from "@/lib/server/duel-store";
 import { settleRankedDuel } from "@/lib/server/ranked-duels";
 import { CHAT_BODY_MAX } from "@/lib/server/chat";
 import { asKind, chatDuel, duelView, emoteDuel, joinDuel, leaveDuel, linkRematch, readyDuel, rematchOf, skipReveal, takeRematchSeat, touchDuel } from "@/lib/server/duels";
-import { buyPokedleHint, guessPokedle, setPokedleAssist, setPokedleGens } from "@/lib/server/pokedle-duel";
+import { buyPokedleHint, guessPokedle, setPokedleAssist, setPokedleGens, setPokedleSettings } from "@/lib/server/pokedle-duel";
 import { DLE_ASSISTS } from "@/lib/dle-assist";
 import { answerQuiz } from "@/lib/server/quiz-duel";
 import { DUEL_CODE_RE } from "@/lib/duel-types";
@@ -23,6 +23,7 @@ import { DLE_DUEL_HINTS, DUEL_EMOTES, QUIZ_DUEL_QUESTIONS, type PvpSeatResponse 
  *   { action: "ready", token, ready }             in the lobby; the duel starts when both are ready
  *   { action: "gens", token, gens }               Pokédle, in the lobby: the creator picks the generations
  *   { action: "assist", token, assist }           Pokédle, in the lobby: the creator picks the Pokédex assist level
+ *   { action: "settings", token, settings }       Pokédle, in the lobby: the creator picks the format and settings (dle-format DleSettings)
  *   { action: "guess", token, round, pokemon }    Pokédle: guess a Pokémon (by id)
  *   { action: "hint", token, round, hint }        Pokédle: buy a hint ("genus" or "silhouette")
  *   { action: "answer", token, round, choice }    quiz: lock in an answer to question `round`
@@ -43,6 +44,7 @@ const bodySchema = z.discriminatedUnion("action", [
   z.object({ action: z.literal("ready"), token, ready: z.boolean() }),
   z.object({ action: z.literal("gens"), token, gens: z.array(z.number().int().min(1).max(9)).max(9) }),
   z.object({ action: z.literal("assist"), token, assist: z.enum(DLE_ASSISTS) }),
+  z.object({ action: z.literal("settings"), token, settings: z.record(z.string(), z.unknown()) }),
   z.object({ action: z.literal("guess"), token, round, pokemon: z.number().int().positive().max(100_000) }),
   z.object({ action: z.literal("hint"), token, round, hint: z.enum(DLE_DUEL_HINTS) }),
   z.object({ action: z.literal("answer"), token, round, choice: z.string().min(1).max(200) }),
@@ -131,6 +133,8 @@ export async function POST(request: NextRequest, context: Context) {
           return asKind(duel, "pokedle", (d) => setPokedleGens(d, playerId, body.gens, now));
         case "assist":
           return asKind(duel, "pokedle", (d) => setPokedleAssist(d, playerId, body.assist, now));
+        case "settings":
+          return asKind(duel, "pokedle", (d) => setPokedleSettings(d, playerId, body.settings, now));
         case "guess":
           return asKind(duel, "pokedle", (d) => guessPokedle(d, playerId, body.round, body.pokemon, now));
         case "hint":

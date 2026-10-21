@@ -2,13 +2,16 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { DLE_HINT_KINDS } from "@/lib/dle-types";
 import { DLE_ASSISTS } from "@/lib/dle-assist";
+import { DLE_DAILY_FORMATS } from "@/lib/dle-format";
 import { clientIp, rateLimit, tooManyRequests } from "@/lib/server/rate-limit";
 import { sessionTokenHash, userFromRequest } from "@/lib/server/auth";
 import { DLE_PLAYER_RE, recordDleResult } from "@/lib/server/dle-results";
 import type { DleResultResponse } from "@/lib/dle-community";
 
 /**
- * POST /api/pokedle/result { date, player, guesses, hard?, hints?: ("genus" | "silhouette")[], assist? }
+ * POST /api/pokedle/result { date, format?, player, guesses, hard?, hints?: ("genus" | "silhouette")[], assist? }
+ *
+ * `format`: which daily, Classic (the default) or squirdle; each has its own results.
  *
  * Records a finished daily Pokédle for the community stats and returns
  * where it puts you (DleResultResponse). The server plays `guesses` again,
@@ -33,6 +36,7 @@ const bodySchema = z.object({
   hard: z.boolean().optional(),
   hints: z.array(z.enum(DLE_HINT_KINDS)).max(DLE_HINT_KINDS.length).optional(),
   assist: z.enum(DLE_ASSISTS).optional(),
+  format: z.enum(DLE_DAILY_FORMATS).optional(),
 });
 
 /** The signed-in trainer's account, if any (one lookup, only with a session cookie). */
@@ -51,11 +55,11 @@ export async function POST(request: NextRequest) {
   }
   const parsed = bodySchema.safeParse(await request.json().catch(() => ({})));
   if (!parsed.success) return NextResponse.json({ error: parsed.error.issues[0].message }, { status: 400, headers: NO_STORE });
-  const { date, player, guesses, hard, hints, assist } = parsed.data;
+  const { date, player, guesses, hard, hints, assist, format } = parsed.data;
 
   try {
     const account = await accountId(request);
-    const out = await recordDleResult({ date, identity: account ? `u:${account}` : `d:${player}`, guesses, hard, hints, assist });
+    const out = await recordDleResult({ date, identity: account ? `u:${account}` : `d:${player}`, guesses, hard, hints, assist, format });
     if (out && !out.ok) return NextResponse.json({ error: out.error }, { status: out.status, headers: NO_STORE });
     const body: DleResultResponse = out ? { available: true, you: out.you } : { available: false };
     return NextResponse.json(body, { headers: NO_STORE });

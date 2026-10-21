@@ -115,7 +115,7 @@ describe("pokedle", () => {
     const wrong = answer.id === 1 ? 4 : 1;
     const res = evaluate(puzzle, [wrong, answer.id]);
     expect(res.solved).toBe(true);
-    expect(res.rows[1].cells.gen.status).toBe("match");
+    expect(res.rows[1].cells.gen!.status).toBe("match");
     expect(res.answer?.id).toBe(answer.id);
   });
 

@@ -7,6 +7,7 @@ import { GENERATION_REGIONS, formatHeight, formatWeight } from "@/lib/pokemon/co
 import { typeColor } from "@/lib/pokemon/type-colors";
 import { DLE_COLUMNS, type CellStatus, type DleColumn, type DleDexRow } from "@/lib/dle-types";
 import { clueStatus, stageLabel } from "@/lib/dle-compare";
+import { strictStatus } from "@/lib/dle-format";
 import { DLE_ASSIST_INFO, type DleAssist } from "@/lib/dle-assist";
 import { dexFullTraits, ruledOut, type DexClue } from "@/lib/dle-dex";
 import { Card, CardContent } from "@/components/ui/card";
@@ -92,7 +93,7 @@ const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 const bound = (s: string) => (s.trim() === "" || Number.isNaN(Number(s)) ? null : Number(s));
 
 /** Does a row pass the view filters (not the greying, crossing off or hiding)? */
-function passes(row: DleDexRow, f: Filters, q: string, byId: Map<number, DleDexRow>): boolean {
+function passes(row: DleDexRow, f: Filters, q: string, byId: Map<number, DleDexRow>, close: boolean): boolean {
   const [, name, gen, t1, t2, stage, color, height, weight] = row;
   if (q && !normalize(name).includes(q)) return false;
   if (f.gens.length && !f.gens.includes(gen)) return false;
@@ -112,7 +113,7 @@ function passes(row: DleDexRow, f: Filters, q: string, byId: Map<number, DleDexR
     for (const p of f.picks) {
       const guess = byId.get(p.guessId);
       const g = guess && dexFullTraits(guess);
-      if (g && clueStatus(p.column, g, traits) !== p.status) return false;
+      if (g && strictStatus(clueStatus(p.column, g, traits), close) !== p.status) return false;
     }
   }
   return true;
@@ -121,6 +122,7 @@ function passes(row: DleDexRow, f: Filters, q: string, byId: Map<number, DleDexR
 export function DexPanel({
   assist,
   gens: limit,
+  close = true,
   clues,
   guessed,
   onPick,
@@ -129,8 +131,10 @@ export function DexPanel({
 }: {
   /** The game's assist level: what the Pokédex knows and filters by. */
   assist: PanelAssist;
-  /** A duel's generations: the list holds only these (none: every generation). */
+  /** The game's generations: the list holds only these (none: every generation). */
   gens?: number[];
+  /** False: the game shows no close states, so its clues read without them. */
+  close?: boolean;
   /** The board's generation and type clues, which grey out what they rule out. */
   clues: readonly DexClue[];
   /** Already guessed this puzzle. */
@@ -180,13 +184,13 @@ export function DexPanel({
   const colors = useMemo(() => [...new Set(base.flatMap((r) => (r[6] ? [r[6]] : [])))].sort(), [base]);
   const byId = useMemo(() => new Map((rows ?? []).map((r) => [r[0], r])), [rows]);
 
-  const out = useMemo(() => ruledOut(base, clues), [base, clues]);
+  const out = useMemo(() => ruledOut(base, clues, close), [base, clues, close]);
   const left = base.filter((r) => !out.has(r[0]) && !crossed.has(r[0]) && !guessed.has(r[0])).length;
 
   const groups = useMemo(() => {
     const q = normalize(filters.q);
     const shown = base.filter((row) => {
-      if (!passes(row, filters, q, byId)) return false;
+      if (!passes(row, filters, q, byId, close)) return false;
       const id = row[0];
       if (filters.hide && (out.has(id) || crossed.has(id) || guessed.has(id))) return false;
       return true;
@@ -194,7 +198,7 @@ export function DexPanel({
     const byGen = new Map<number, DleDexRow[]>();
     for (const r of shown) byGen.set(r[2], [...(byGen.get(r[2]) ?? []), r]);
     return [...byGen.entries()].sort((a, b) => a[0] - b[0]);
-  }, [base, filters, out, crossed, guessed, byId]);
+  }, [base, filters, out, crossed, guessed, byId, close]);
 
   const set = <K extends keyof Filters>(key: K, value: Filters[K]) => setFilters((f) => ({ ...f, [key]: value }));
   const toggleGen = (g: number) => set("gens", filters.gens.includes(g) ? filters.gens.filter((x) => x !== g) : [...filters.gens, g].sort((a, b) => a - b));

@@ -11,8 +11,15 @@ import { DLE_ASSIST_INFO, type DleAssist } from "./dle-assist";
  * answer.
  */
 export interface PokedleShareInput {
-  number: number;
-  /** Each guess's clues, oldest first, in DLE_COLUMNS order. */
+  /** The daily's number; none for a practice game. */
+  number?: number;
+  /** The game's guesses (Classic's 8 when absent). */
+  max?: number;
+  /** The format and settings tags (rulesTags), after the number: "Pokédle #142 · Squirdle 4/9". */
+  tags?: readonly string[];
+  /** Squirdle's own symbols: ✅ 🔼 🔽 🟨 ❌, with the generation column's arrow masked as 🟦 on a daily, as Squirdle does (it gives the answer's era away). */
+  squirdle?: boolean;
+  /** Each guess's clues, oldest first, in board order (the generation first when shown). */
   rows: CellStatus[][];
   solved: boolean;
   hard: boolean;
@@ -43,16 +50,29 @@ export function shortUrl(url: string): string {
   return url.replace(/^https?:\/\//, "").replace(/[?#].*$/, "").replace(/\/$/, "");
 }
 
+/** Squirdle's share symbols (its game.js): ✅ right, 🔼 / 🔽 the answer is higher / lower, 🟨 the type in the other slot, ❌ wrong. */
+export function squirdleSymbol(status: CellStatus): string {
+  if (status === "match") return "✅";
+  if (status === "partial") return "🟨";
+  if (status === "higher" || status === "close-higher") return "🔼";
+  if (status === "lower" || status === "close-lower") return "🔽";
+  return "❌";
+}
+
 export function buildPokedleShare(input: PokedleShareInput): string {
-  const score = `${input.solved ? input.rows.length : "X"}/${DLE_MAX_GUESSES}${input.hard ? "*" : ""}`;
+  const score = `${input.solved ? input.rows.length : "X"}/${input.max ?? DLE_MAX_GUESSES}${input.hard ? "*" : ""}`;
   const hints = DLE_HINT_KINDS.filter((h) => input.hints.includes(h))
     .map((h) => DLE_HINT_EMOJI[h])
     .join("");
   const assist = input.assist ? DLE_ASSIST_INFO[input.assist].emoji : "";
-  const header = [`Pokédle #${input.number}${input.archive ? " (archive)" : ""}`, score, assist, hints, !input.archive && input.streak > 0 ? `🔥${input.streak}` : ""]
-    .filter(Boolean)
-    .join(" ");
-  const grid = input.rows.map((row) => row.map((s) => shareSquare(s, input.colourBlind)).join(""));
+  const daily = input.number !== undefined;
+  const title = [daily ? `Pokédle #${input.number}${input.archive ? " (archive)" : ""}` : "Pokédle Practice", ...(input.tags ?? [])].join(" · ");
+  const header = [title, score, assist, hints, daily && !input.archive && input.streak > 0 ? `🔥${input.streak}` : ""].filter(Boolean).join(" ");
+  const grid = input.rows.map((row) =>
+    row
+      .map((s, i) => (input.squirdle ? (daily && i === 0 && s !== "match" ? "🟦" : squirdleSymbol(s)) : shareSquare(s, input.colourBlind)))
+      .join("")
+  );
   const lines = [header, ...grid];
   const c = input.community;
   if (c && c.players > 1 && Number.isFinite(c.percentile)) {
