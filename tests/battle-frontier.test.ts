@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { Teams } from "pokemon-showdown";
+import { Dex, Teams } from "pokemon-showdown";
 import { afterBattle, bestOf, frontierCpuLevel, frontierStage, isBoss, swapTeam } from "@/lib/battle/frontier";
-import { nextRunBattle, readRun, runResult, startFactoryRun, swapRun } from "@/lib/server/battle-engine/frontier";
+import { nextRunBattle, readRun, runResult, signRun, startFactoryRun, swapRun, type FrontierRun } from "@/lib/server/battle-engine/frontier";
 import { actOnBattle, battleToken, createMatchedBattle, pollBattle, readBattleToken, updateBattle } from "@/lib/server/battle-engine/service";
 import { factoryTeam } from "@/lib/server/battle-engine/teams";
 import { recordFrontierBest } from "@/lib/server/frontier-store";
@@ -159,5 +159,81 @@ describe("a Factory run", () => {
     expect((await nextRunBattle(token)).ok).toBe(false);
     expect(readRun(token)).toBeNull();
     expect(Teams.unpack(readRun(started.run.token)!.team)).toHaveLength(6);
+  });
+
+  describe("trades with Showdown's own Factory sets", () => {
+    // Greninja-Bond's Factory set has 0 Attack IVs, which the standard
+    // validator's event check refuses; Showdown's Factory never validates it.
+    const set = (species: string, ability: string, item: string, moves: string[], ivs: Partial<Record<string, number>> = {}) => ({
+      name: "", species, ability, item, moves, nature: "Timid", gender: "", level: 100,
+      evs: { hp: 0, atk: 0, def: 0, spa: 252, spd: 4, spe: 252 },
+      ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31, ...ivs },
+    });
+    const greninja = set("Greninja-Bond", "Battle Bond", "Life Orb", ["Hydro Pump", "Dark Pulse", "Ice Beam", "U-turn"], { atk: 0 });
+    const others = [
+      set("Metagross", "Clear Body", "Choice Band", ["Meteor Mash", "Earthquake", "Bullet Punch", "Zen Headbutt"]),
+      set("Garchomp", "Rough Skin", "Rocky Helmet", ["Earthquake", "Stealth Rock", "Dragon Tail", "Spikes"]),
+      set("Corviknight", "Pressure", "Leftovers", ["Brave Bird", "Roost", "Defog", "U-turn"]),
+      set("Clefable", "Magic Guard", "Sticky Barb", ["Moonblast", "Moonlight", "Calm Mind", "Flamethrower"]),
+      set("Heatran", "Flash Fire", "Air Balloon", ["Magma Storm", "Earth Power", "Taunt", "Stealth Rock"]),
+    ];
+    const foe = [
+      set("Clodsire", "Water Absorb", "Heavy-Duty Boots", ["Earthquake", "Recover", "Toxic", "Spikes"]),
+      { ...greninja },
+      set("Rotom-Wash", "Levitate", "Choice Scarf", ["Hydro Pump", "Volt Switch", "Trick", "Will-O-Wisp"]),
+      set("Garchomp", "Rough Skin", "Choice Scarf", ["Earthquake", "Outrage", "Stone Edge", "Fire Fang"]),
+    ];
+    const won = (team: object[], offer: object[], extra: Partial<FrontierRun> = {}) =>
+      signRun({ v: 1, id: `trade-${Math.random()}`, mode: "factory", style: "open", tier: "OU", name: "Red", team: Teams.pack(team as never), streak: 1, over: false, offer: Teams.pack(offer as never), ...extra });
+
+    const playsWith = async (token: string, species: string[]) => {
+      const battle = await nextRunBattle(token);
+      if (!battle.ok) throw new Error(battle.error);
+      const polled = await pollBattle(battle.code, battle.token, 0);
+      if (!polled.ok) throw new Error(polled.error);
+      expect(polled.view.status).toBe("playing");
+      // Showdown shows Greninja-Bond as plain "Greninja" until Battle Bond triggers.
+      const base = (s: string) => Dex.species.get(s).baseSpecies;
+      expect(polled.view.request!.data.side.pokemon.map((p) => base(p.details.split(",")[0]))).toEqual(species.map(base));
+      expect((await loadBattle(battle.code))!.rec.meta.seats[0].team).toBe(readRun(token)!.team);
+    };
+
+    it("keeps an event-only set the player already rented, and the next battle starts", async () => {
+      const swapped = swapRun(won([greninja, ...others], foe), 1, 0);
+      if (!swapped.ok) throw new Error(swapped.error);
+      expect(swapped.run.team.map((m) => m.species)).toEqual(["Greninja-Bond", "Clodsire", "Garchomp", "Corviknight", "Clefable", "Heatran"]);
+      await playsWith(swapped.run.token, ["Greninja-Bond", "Clodsire", "Garchomp", "Corviknight", "Clefable", "Heatran"]);
+    });
+
+    it("takes an event-only set from the beaten team, and the next battle starts", async () => {
+      const swapped = swapRun(won([set("Dragapult", "Infiltrator", "Choice Specs", ["Shadow Ball", "Draco Meteor", "Flamethrower", "U-turn"]), ...others], foe), 0, 1);
+      if (!swapped.ok) throw new Error(swapped.error);
+      expect(swapped.run.team[0].species).toBe("Greninja-Bond");
+      await playsWith(swapped.run.token, ["Greninja-Bond", "Metagross", "Garchomp", "Corviknight", "Clefable", "Heatran"]);
+    });
+
+    it("still keeps Species Clause and Item Clause", () => {
+      expect(swapRun(won([greninja, ...others], foe), 0, 3).ok).toBe(false); // a second Garchomp
+      const bss = (s: object) => ({ ...s, level: 50 });
+      // Corviknight already holds Leftovers: a second one is refused unless it's Corviknight that goes.
+      const mine = [greninja, ...others].map(bss);
+      const theirs = [bss(set("Rotom-Wash", "Levitate", "Leftovers", ["Hydro Pump", "Volt Switch", "Protect", "Will-O-Wisp"]))];
+      expect(swapRun(won(mine, theirs, { style: "bss", tier: undefined }), 0, 0).ok).toBe(false);
+      expect(swapRun(won(mine, theirs, { style: "bss", tier: undefined }), 3, 0).ok).toBe(true);
+    });
+
+    it("refuses forged trades", () => {
+      const token = won([greninja, ...others], foe);
+      // A set that isn't on the beaten team.
+      expect(swapRun(token, 0, foe.length).ok).toBe(false);
+      // A tampered offer breaks the run's signature.
+      const [body, sig] = token.split(".");
+      const forged = JSON.parse(Buffer.from(body, "base64url").toString());
+      forged.offer = Teams.pack([set("Koraidon", "Orichalcum Pulse", "Choice Band", ["Flare Blitz", "Close Combat", "U-turn", "Outrage"])] as never);
+      expect(swapRun(`${Buffer.from(JSON.stringify(forged)).toString("base64url")}.${sig}`, 0, 0).ok).toBe(false);
+      // No trade without a win to trade after.
+      expect(swapRun(won([greninja, ...others], foe, { offer: undefined }), 0, 0).ok).toBe(false);
+      expect(swapRun(won([greninja, ...others], foe, { over: true }), 0, 0).ok).toBe(false);
+    });
   });
 });

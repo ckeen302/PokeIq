@@ -1,5 +1,5 @@
 import "server-only";
-import { Dex, Teams, TeamValidator } from "pokemon-showdown";
+import { Dex, Teams } from "pokemon-showdown";
 import { randomId, signToken, verifyToken } from "../crypto";
 import { claimOnce } from "../replay-guard";
 import { fail, type PvpFailure } from "../duel-core";
@@ -184,10 +184,12 @@ export function swapRun(token: unknown, give: number, take: number): Out<{ run: 
     base: (s) => Dex.species.get(s).baseSpecies,
   });
   if (!swapped.ok) return fail(400, swapped.error);
-  // The rules still hold for the new team (Showdown's own validator for the format).
-  const formatid = run.style === "bss" ? "gen9bssfactory" : "gen9customgame@@@Standard";
-  const problems = TeamValidator.get(formatid).validateTeam(structuredClone(swapped.team));
-  if (problems?.length) return fail(400, problems.slice(0, 3).join(" "));
+  // No TeamValidator here: like Showdown's own Battle Factory, rental teams
+  // are never validated (some Factory sets, e.g. Greninja-Bond with 0 Attack
+  // IVs, fail its event checks). Every set already comes from Factory data:
+  // the team and the offer travel in the signed run, and swapTeam only moves
+  // a set from the beaten team in, keeping Species Clause (and Item Clause in
+  // BSS).
   return { ok: true, run: runView({ ...run, team: Teams.pack(swapped.team), offer: undefined }) };
 }
 
