@@ -174,6 +174,11 @@ await page.screenshot({ path: `${OUT}/pokedle.png`, fullPage: true });
 
 step("pokédle: the Squirdle daily, and a practice game with advanced settings");
 const headerTexts = async () => (await page.getByRole("columnheader").allTextContents()).map((s) => s.trim()).join(",");
+/** The board re-renders as the format switches: give its header row a moment to settle on the expected columns. */
+const headersSettle = async (want) => {
+  for (let i = 0; i < 40 && (await headerTexts()) !== want; i++) await page.waitForTimeout(250);
+  return headerTexts();
+};
 const SQUIRDLE_HEADERS = "Pokémon,Gen,Type 1,Type 2,Height,Weight";
 await page.getByRole("radio", { name: "Squirdle daily" }).click();
 await page.getByText(/Pokédle #\d+ · Squirdle/).waitFor();
@@ -181,7 +186,7 @@ if (!/Squirdle · 9 guesses/.test(await page.getByTestId("rules-chip").innerText
 await page.getByLabel("Guess a Pokémon").fill("Pikachu");
 await page.locator("[role=option]").first().click();
 await page.waitForFunction(() => document.querySelector("input[aria-label^='Guess a Pokémon']")?.placeholder.startsWith("Guess 2 of 9") || document.body.innerText.includes("Got it in"));
-if ((await headerTexts()) !== SQUIRDLE_HEADERS) errors.push(`the Squirdle daily shows the wrong columns: ${await headerTexts()}`);
+{ const got = await headersSettle(SQUIRDLE_HEADERS); if (got !== SQUIRDLE_HEADERS) errors.push(`the Squirdle daily shows the wrong columns: ${got}`); }
 await page.screenshot({ path: `${OUT}/pokedle-squirdle.png`, fullPage: true });
 await page.getByRole("radio", { name: "Classic daily" }).click();
 await page.getByRole("button", { name: /practice puzzles/ }).click();
@@ -200,7 +205,7 @@ await page.locator("[role=option]").first().click();
 await page.waitForFunction(() => document.querySelector("input[aria-label^='Guess a Pokémon']")?.placeholder.startsWith("Guess 2 of 6") || document.body.innerText.includes("Got it in"));
 // The board's header row draws after the first answer comes back.
 await page.getByRole("columnheader", { name: "Weight" }).first().waitFor({ timeout: 15_000 });
-if ((await headerTexts()) !== SQUIRDLE_HEADERS) errors.push(`the custom practice game shows the wrong columns: ${await headerTexts()}`);
+{ const got = await headersSettle(SQUIRDLE_HEADERS); if (got !== SQUIRDLE_HEADERS) errors.push(`the custom practice game shows the wrong columns: ${got}`); }
 if (!(await page.getByText(/Got it in/).count())) await page.getByRole("timer").waitFor();
 await page.screenshot({ path: `${OUT}/pokedle-practice-settings.png`, fullPage: true });
 // Back to the defaults for whoever plays next in this browser.
