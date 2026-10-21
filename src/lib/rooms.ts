@@ -1,3 +1,4 @@
+import type { PublicAvatar } from "./avatar";
 /**
  * Chat rooms: the official rooms, shared by the server (which checks,
  * stores and delivers every message) and the pages.
@@ -127,6 +128,8 @@ export interface RoomMessage {
   at: number;
   name: string;
   text: string;
+  /** The sender's avatar. */
+  avatar?: PublicAvatar;
 }
 
 export interface RoomState {

@@ -4,6 +4,7 @@ import { gate } from "@/lib/server/moderation";
 import { BATTLE_TEAM_MAX } from "@/lib/battle/play";
 import { TOURNAMENT_ID_RE, hostAction, joinTournament, leaveTournament, viewTournament } from "@/lib/server/tournaments/service";
 import { NO_STORE, result, tournamentAction, tournamentRequest } from "@/lib/server/tournaments/route";
+import { withAvatars } from "@/lib/server/avatars";
 
 /**
  * GET  /api/tournaments/:id: the tournament, brought up to date (finished
@@ -43,7 +44,7 @@ export async function GET(request: NextRequest, context: Context) {
   return tournamentAction(async () => {
     const view = await viewTournament(id, ctx.user);
     if (!view) return NextResponse.json({ error: "That tournament doesn't exist." }, { status: 404, headers: NO_STORE });
-    return NextResponse.json(view, { headers: NO_STORE });
+    return NextResponse.json(await withAvatars(view, view.players.map((p) => p.name)), { headers: NO_STORE });
   });
 }
 

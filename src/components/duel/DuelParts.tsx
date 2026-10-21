@@ -12,6 +12,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { CopyFallback } from "@/components/quiz/CopyFallback";
 import { cn } from "@/lib/utils";
 import { NAME_REJECTED, isCleanName } from "@/lib/name-filter";
+import { Avatar } from "@/components/avatar/Avatar";
 
 /** Pieces every duel screen shares: seats, the lobby, leaving, notices. */
 
@@ -191,6 +192,7 @@ export function DuelLobby({ view, path, tag, title, invite, about, shareText, ru
                   <SeatDot seat={seat} />
                   {player ? (
                     <>
+                      <Avatar avatar={player.avatar} size={32} />
                       <span className="min-w-0 flex-1 truncate font-display text-lg font-bold uppercase">
                         {player.name}
                         {me === seat && <span className="hud-label ml-2">You</span>}

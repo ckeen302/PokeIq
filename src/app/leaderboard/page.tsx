@@ -20,6 +20,8 @@ import { LadderTable, LadderTabs, YourBattleStanding } from "@/components/battle
 import { isLadderFormat } from "@/lib/battle/ladder";
 import type { StandardFormatId } from "@/lib/battle/play";
 import { ladderTop } from "@/lib/server/battle-engine/ladder";
+import { avatarsByNames } from "@/lib/server/avatars";
+import { NameAvatar } from "@/components/avatar/Avatar";
 
 export const metadata: Metadata = pageMetadata({
   title: "Leaderboards",
@@ -73,6 +75,7 @@ export default async function LeaderboardPage({ searchParams }: PageProps) {
   if (board === "battle") {
     const battleFormat: StandardFormatId = isLadderFormat(params.format) ? params.format : "gen9randombattle";
     const rows = await ladderTop(battleFormat);
+    const avatars = await avatarsByNames((rows ?? []).map((r) => r.name));
     return (
       <div className="mx-auto max-w-3xl space-y-6">
         <div className="space-y-4 text-center">
@@ -95,7 +98,7 @@ export default async function LeaderboardPage({ searchParams }: PageProps) {
         ) : (
           <>
             <YourBattleStanding format={battleFormat} />
-            <LadderTable rows={rows} format={battleFormat} />
+            <LadderTable rows={rows} format={battleFormat} avatars={avatars} />
           </>
         )}
       </div>
@@ -104,6 +107,7 @@ export default async function LeaderboardPage({ searchParams }: PageProps) {
 
   if (board === "pokedle") {
     const ladder = await rankedLadder();
+    const avatars = await avatarsByNames((ladder ?? []).map((r) => r.name));
     return (
       <div className="mx-auto max-w-3xl space-y-6">
         <div className="space-y-4 text-center">
@@ -144,7 +148,12 @@ export default async function LeaderboardPage({ searchParams }: PageProps) {
                       {ladder.map((row) => (
                         <tr key={row.position} className="border-b last:border-0">
                           <td className="p-3 font-mono tabular-nums text-muted-foreground">{row.position}</td>
-                          <td className="max-w-[10rem] truncate p-3 font-semibold">{row.name}</td>
+                          <td className="max-w-[10rem] truncate p-3 font-semibold">
+                            <span className="flex items-center gap-2">
+                              <NameAvatar name={row.name} avatars={avatars} />
+                              <span className="truncate">{row.name}</span>
+                            </span>
+                          </td>
                           <td className="p-3">
                             <TierBadge rating={row.rating} games={row.games} size="sm" />
                           </td>
@@ -178,6 +187,7 @@ export default async function LeaderboardPage({ searchParams }: PageProps) {
     const map = maps.find((r) => r.boards.some((b) => b.id === params.format));
     const mode = map ? params.format! : null;
     const geoEntries = mode ? await fetchGeoBoard({ mode }) : await fetchGeoBoard({ daily: date });
+    const avatars = await avatarsByNames((geoEntries ?? []).map((r) => r.player_name));
     return (
       <div className="mx-auto max-w-3xl space-y-6">
         {!mode && !params.date && <LocalDateRedirect serverDate={date} board="geo" />}
@@ -236,7 +246,12 @@ export default async function LeaderboardPage({ searchParams }: PageProps) {
                   {geoEntries.map((row, i) => (
                     <tr key={row.id} className="border-b last:border-0">
                       <td className="p-3 font-mono">{i + 1}</td>
-                      <td className="p-3 font-medium">{row.player_name}</td>
+                      <td className="p-3 font-medium">
+                        <span className="flex items-center gap-2">
+                          <NameAvatar name={row.player_name} avatars={avatars} />
+                          {row.player_name}
+                        </span>
+                      </td>
                       <td className="p-3 text-right font-mono tabular-nums">
                         {mode?.endsWith(":streak") ? `${row.score} in a row` : `${row.score.toLocaleString("en-US")} / 25,000`}
                       </td>
@@ -258,6 +273,7 @@ export default async function LeaderboardPage({ searchParams }: PageProps) {
       : board === "iq"
         ? await fetchBoard({ kind: "iq" })
         : await fetchBoard({ kind: "module", module: board, format, difficulty });
+  const avatars = await avatarsByNames((entries ?? []).map((r) => r.player_name));
 
 
   return (
@@ -329,6 +345,7 @@ export default async function LeaderboardPage({ searchParams }: PageProps) {
                       )}
                       aria-label={`Rank ${place}`}
                     />
+                    <NameAvatar name={row.player_name} avatars={avatars} size={40} className="mx-auto mt-2" />
                     <div className="mt-2 truncate font-semibold">{row.player_name}</div>
                     <div className="font-mono text-sm tabular-nums text-muted-foreground">{row.score.toLocaleString()} pts</div>
                     <Badge variant="secondary" className="mt-2">IQ {row.pokeiq}</Badge>
@@ -354,7 +371,12 @@ export default async function LeaderboardPage({ searchParams }: PageProps) {
                   {entries.map((row, i) => (
                     <tr key={row.id} className="border-b last:border-0">
                       <td className="p-3 font-mono">{i + 1}</td>
-                      <td className="p-3 font-medium">{row.player_name}</td>
+                      <td className="p-3 font-medium">
+                        <span className="flex items-center gap-2">
+                          <NameAvatar name={row.player_name} avatars={avatars} />
+                          {row.player_name}
+                        </span>
+                      </td>
                       <td className="p-3 text-right font-mono tabular-nums">{row.score.toLocaleString()}</td>
                       <td className="p-3 text-right tabular-nums">{row.pokeiq}</td>
                       <td className="hidden p-3 text-right tabular-nums sm:table-cell">

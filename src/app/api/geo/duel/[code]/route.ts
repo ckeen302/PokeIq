@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { seatAvatars } from "@/lib/server/avatars";
 import { z } from "zod";
 import { gate } from "@/lib/server/moderation";
 import { chatRateLimit, clientIp, rateLimit } from "@/lib/server/rate-limit";
@@ -80,7 +81,7 @@ export async function GET(request: NextRequest, context: Context) {
   try {
     const out = await updateDuel(code, (duel, now) => ({ ok: true as const, duel: touchDuel(duel, playerId, now) }));
     if (!out.ok) return failure(out);
-    return NextResponse.json(duelView(out.duel, playerId, out.now, out.rev), { headers: NO_STORE });
+    return NextResponse.json(await seatAvatars(duelView(out.duel, playerId, out.now, out.rev)), { headers: NO_STORE });
   } catch (err) {
     return storeError(err);
   }
@@ -107,7 +108,7 @@ export async function POST(request: NextRequest, context: Context) {
     if (body.action === "join") {
       const out = await updateDuel(code, (duel, now) => joinDuel(duel, body.name, now));
       if (!out.ok) return failure(out);
-      const seat: DuelSeatResponse = { code, token: duelToken(code, out.playerId), view: duelView(out.duel, out.playerId, out.now, out.rev) };
+      const seat: DuelSeatResponse = { code, token: duelToken(code, out.playerId), view: await seatAvatars(duelView(out.duel, out.playerId, out.now, out.rev)) };
       return NextResponse.json(seat, { headers: NO_STORE });
     }
 
@@ -140,7 +141,7 @@ export async function POST(request: NextRequest, context: Context) {
       }
     });
     if (!out.ok) return failure(out);
-    return NextResponse.json(duelView(out.duel, playerId, out.now, out.rev), { headers: NO_STORE });
+    return NextResponse.json(await seatAvatars(duelView(out.duel, playerId, out.now, out.rev)), { headers: NO_STORE });
   } catch (err) {
     return storeError(err);
   }
@@ -175,6 +176,6 @@ async function rematch(code: string, playerId: string) {
 
   const out = await updateDuel(next, (duel, now) => takeRematchSeat(duel, playerId, me.name, now));
   if (!out.ok) return failure(out);
-  const seat: DuelSeatResponse = { code: next, token: duelToken(next, playerId), view: duelView(out.duel, playerId, out.now, out.rev) };
+  const seat: DuelSeatResponse = { code: next, token: duelToken(next, playerId), view: await seatAvatars(duelView(out.duel, playerId, out.now, out.rev)) };
   return NextResponse.json(seat, { headers: NO_STORE });
 }

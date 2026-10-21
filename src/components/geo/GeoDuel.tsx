@@ -25,6 +25,7 @@ import { DuelChat, DuelTools, EmoteFeed } from "@/components/duel/DuelReactions"
 import { GeoMap, type MapPin, type RevealedRound } from "./GeoMap";
 import { cn } from "@/lib/utils";
 import { AddFriendAfterGame } from "@/components/community/AddFriend";
+import { Avatar } from "@/components/avatar/Avatar";
 
 /**
  * A PokéGuessr duel at /guessr/duel/<code>: the lobby, the rounds, the reveals
@@ -432,6 +433,7 @@ function Fighter({ view, seat, damage, right }: { view: DuelView; seat: number; 
     <div className={cn("min-w-0 space-y-1", right && "text-right")}>
       <div className={cn("flex items-center gap-1.5", right && "flex-row-reverse")}>
         <SeatDot seat={seat} />
+        {player && <Avatar avatar={player.avatar} size={24} />}
         <span className="truncate font-display font-bold uppercase">{player?.name ?? "—"}</span>
         {view.you === seat && <span className="hud-label">You</span>}
         {player?.quiet && view.status === "playing" && <WifiOff className="h-3.5 w-3.5 shrink-0 text-warning" aria-label="Connection lost" />}

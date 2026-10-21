@@ -6,6 +6,8 @@ import { CHAT_MAX, chatReport, type ChatLine } from "@/lib/chat";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import type { PublicAvatar } from "@/lib/avatar";
+import { Avatar } from "@/components/avatar/Avatar";
 
 /**
  * Chat between the two trainers of a live battle or a duel. Every message
@@ -83,7 +85,7 @@ export interface ChatBoxProps {
   lines: ChatLine[] | undefined;
   /** Your seat, or null for a visitor (who reads but can't post). */
   you: number | null;
-  players: { name: string }[];
+  players: { name: string; avatar?: PublicAvatar }[];
   /** The battle or duel, for reports. */
   code: string;
   /** What it is, for reports: "Live battle", "Pokédle duel"... */
@@ -195,6 +197,7 @@ export function ChatBox({ lines = [], you, players, code, game, onSend, closed, 
                   ) : (
                     <div key={line.n} className="group flex items-baseline gap-1.5 break-words" data-testid="chat-line">
                       <span className="shrink-0 text-[10px] tabular-nums text-muted-foreground">{time(line.at)}</span>
+                      <Avatar avatar={players[line.seat]?.name === line.name ? players[line.seat]?.avatar : null} size={20} className="self-center" />
                       <p className="min-w-0 flex-1">
                         <span className={cn("font-semibold", SEAT_TEXT[line.seat] ?? "")}>{line.name}</span>
                         <span className="text-muted-foreground">: </span>

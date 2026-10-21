@@ -13,6 +13,7 @@ import { loadAnims, playStep, type PopupTone, type StageHandle } from "./player"
 import { Stage, type Popup } from "./Stage";
 import { Controls } from "./Controls";
 import type { Ball } from "./Hud";
+import { Avatar } from "@/components/avatar/Avatar";
 
 /**
  * The battle screen. Lines from the player's channel go through the model
@@ -347,11 +348,13 @@ export default function BattleScreen({ view, log, offset, busy, error, onChoose,
         {/* Who's playing, the clocks and playback controls. */}
         <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
           <div className="flex min-w-0 basis-full items-center gap-2 font-display text-sm font-bold uppercase tracking-wide sm:basis-auto sm:flex-1">
+            <Avatar avatar={view.players[view.you ?? 0]?.avatar} size={24} />
             <span className="truncate text-primary">
               {youName}
               {view.players[view.you ?? 0]?.rating !== undefined && <span className="hud-label ml-1.5 tabular-nums">{view.players[view.you ?? 0].rating}</span>}
             </span>
             <span className="hud-label">vs</span>
+            <Avatar avatar={view.cpu ? null : view.players[view.you === 1 ? 0 : 1]?.avatar} size={24} />
             <span className="truncate text-screen">
               {foeName}
               {cpu && <span className="hud-label ml-1.5">{cpu}</span>}

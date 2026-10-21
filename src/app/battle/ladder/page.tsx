@@ -9,6 +9,7 @@ import { isLadderFormat } from "@/lib/battle/ladder";
 import { PLAY_FORMAT_INFO, type StandardFormatId } from "@/lib/battle/play";
 import { RANKED_PROVISIONAL_GAMES, RANKED_START } from "@/lib/ranked";
 import { ladderTop } from "@/lib/server/battle-engine/ladder";
+import { avatarsByNames } from "@/lib/server/avatars";
 
 export const metadata: Metadata = pageMetadata({
   title: "Pokémon Battle Ladder — Ranked Ratings by Format",
@@ -23,6 +24,7 @@ export default async function LadderPage({ searchParams }: { searchParams: Promi
   const { format: raw } = await searchParams;
   const format: StandardFormatId = isLadderFormat(raw) ? raw : "gen9randombattle";
   const rows = await ladderTop(format);
+  const avatars = await avatarsByNames((rows ?? []).map((r) => r.name));
   return (
     <div className="mx-auto max-w-4xl space-y-6">
       <BattleHeader crumb="Ladder" title="Battle" accent="ladder">
@@ -42,7 +44,7 @@ export default async function LadderPage({ searchParams }: { searchParams: Promi
         <>
           <YourBattleStanding format={format} />
           <h2 className="font-display text-xl font-bold uppercase tracking-wide">{PLAY_FORMAT_INFO[format].name}: top 100</h2>
-          <LadderTable rows={rows} format={format} />
+          <LadderTable rows={rows} format={format} avatars={avatars} />
         </>
       )}
     </div>

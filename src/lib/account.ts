@@ -3,6 +3,7 @@
 import { useSyncExternalStore } from "react";
 import { getProgress, onProgressChange, replaceProgress, resetProgress, type Progress } from "./progress";
 import { mergeProgress, normalizeProgress } from "./progress-merge";
+import type { PublicAvatar } from "./avatar";
 
 /**
  * Client side of trainer accounts. Progress stays local-first (play without
@@ -15,6 +16,8 @@ export interface AccountUser {
   id: string;
   username: string;
   createdAt: string;
+  /** Their avatar (from /api/auth/me). */
+  avatar?: PublicAvatar;
 }
 
 export interface AccountState {
@@ -94,7 +97,8 @@ export async function initAccount(): Promise<void> {
 
 async function signedIn(user: AccountUser) {
   set({ user });
-  const me = await api<{ progress: unknown }>("/api/auth/me").catch(() => ({ progress: null }));
+  const me = await api<{ user: AccountUser | null; progress: unknown }>("/api/auth/me").catch(() => ({ user: null, progress: null }));
+  if (me.user) set({ user: me.user });
   await startSync(user, me.progress);
 }
 
@@ -130,6 +134,11 @@ export async function newRecoveryCode(password: string): Promise<string> {
     body: JSON.stringify({ password }),
   });
   return res.recoveryCode;
+}
+
+/** After picking a new avatar: shows it at once (the header, menus). */
+export function setAccountAvatar(avatar: PublicAvatar) {
+  if (state.user) set({ user: { ...state.user, avatar } });
 }
 
 /** Saves any pending changes, ends the session and clears this device's copy. */

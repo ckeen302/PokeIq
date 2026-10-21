@@ -6,6 +6,7 @@ import { battleActivity } from "@/lib/server/community-games";
 import { roomById } from "@/lib/rooms";
 import { matchNotes } from "@/lib/server/tournaments/service";
 import { ACTIVITY_KINDS, activityLabel, type FriendActivity } from "@/lib/community";
+import { avatarsByNames } from "@/lib/server/avatars";
 
 /**
  * POST /api/presence { kind, code? }: the signed-in trainer's heartbeat,
@@ -37,6 +38,9 @@ export async function POST(request: NextRequest) {
     const beat = await heartbeat(ctx.store, accountDirectory, ctx.user, activity);
     // Tournament matches waiting for them (their tournaments move on as they do); never worth failing the heartbeat over.
     const matches = await matchNotes(ctx.user.id).catch(() => []);
-    return NextResponse.json({ ...beat, matches }, { headers: NO_STORE });
+    const avatars = beat.challenges.length || beat.answers.length ? await avatarsByNames([...beat.challenges.map((c) => c.from), ...beat.answers.map((a) => a.to)]) : {};
+    const challenges = beat.challenges.map((c) => (avatars[c.from.toLowerCase()] ? { ...c, avatar: avatars[c.from.toLowerCase()] } : c));
+    const answers = beat.answers.map((a) => (avatars[a.to.toLowerCase()] ? { ...a, avatar: avatars[a.to.toLowerCase()] } : a));
+    return NextResponse.json({ ...beat, challenges, answers, matches }, { headers: NO_STORE });
   });
 }

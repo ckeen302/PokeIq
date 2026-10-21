@@ -1,4 +1,5 @@
 import type { PlayFormatId } from "./play";
+import type { AvatarMap } from "../avatar";
 
 /**
  * The Watch lobby: live battles anyone may spectate (matchmade battles, and
@@ -22,6 +23,8 @@ export interface WatchEntry {
 export interface WatchResponse {
   now: number;
   battles: WatchEntry[];
+  /** The players' avatars, by lower-cased name. */
+  avatars?: AvatarMap;
 }
 
 /** "just now", "3 min ago", "1 h 5 min ago". */

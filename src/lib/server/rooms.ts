@@ -6,6 +6,7 @@ import type { PublicUser } from "./accounts";
 import { chatBlocked, checkChat } from "./chat";
 import { saveReport } from "./reports";
 import { broadcastRoom } from "./realtime";
+import { avatarsByIds } from "./avatars";
 
 /**
  * Chat rooms (migration 0020): each room keeps its last 100 messages and a
@@ -183,6 +184,15 @@ const fail = (status: number, error: string): Fail => ({ ok: false, status, erro
 
 export const publicMessage = (m: StoredMessage): RoomMessage => ({ id: m.id, at: m.at, name: m.name, text: m.text });
 
+/** Messages as anyone may see them, each with its sender's avatar (one lookup for all). */
+export async function publicMessages(messages: StoredMessage[]): Promise<RoomMessage[]> {
+  const avatars = await avatarsByIds(messages.map((m) => m.userId));
+  return messages.map((m) => {
+    const avatar = avatars.get(m.userId);
+    return avatar ? { ...publicMessage(m), avatar } : publicMessage(m);
+  });
+}
+
 /** A signed-in trainer's message (muted or banned trainers are turned away before this): checked, rate-limited, slowed, stored and delivered. */
 export async function postToRoom(store: RoomStore, user: PublicUser, room: string, raw: unknown, now = Date.now()): Promise<Result<{ message: RoomMessage }>> {
   if (!roomById(room)) return fail(404, "There's no such room.");
@@ -199,7 +209,8 @@ export async function postToRoom(store: RoomStore, user: PublicUser, room: strin
   if (!checked.ok) return fail(400, checked.error);
   const stored = await store.insert({ room, userId: user.id, name: user.username, text: checked.text, at: now });
   await store.trim(room, ROOM_KEPT);
-  const message = publicMessage(stored);
+  const avatar = (await avatarsByIds([user.id])).get(user.id);
+  const message = { ...publicMessage(stored), ...(avatar ? { avatar } : {}) };
   await broadcastRoom({ type: "msg", room, msg: message });
   return { ok: true, message };
 }

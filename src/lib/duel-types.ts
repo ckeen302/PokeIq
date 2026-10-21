@@ -1,3 +1,4 @@
+import type { PublicAvatar } from "./avatar";
 /**
  * PokéGuessr duels: two trainers, the same rounds, GeoGuessr Duels rules.
  * Shared by the server (which applies every rule) and the client.
@@ -46,6 +47,8 @@ export interface DuelEnd {
 
 export interface DuelPlayerView {
   name: string;
+  /** Signed-in trainers' avatars (added by the routes). */
+  avatar?: PublicAvatar;
   ready: boolean;
   /** Not heard from for a while (closed the tab, lost the connection). */
   quiet: boolean;

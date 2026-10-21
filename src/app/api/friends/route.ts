@@ -17,6 +17,7 @@ import {
 import { findUserById } from "@/lib/server/accounts";
 import { seatIn, encounterKey } from "@/lib/server/community-games";
 import { CHALLENGE_KINDS } from "@/lib/community";
+import { avatarsByNames } from "@/lib/server/avatars";
 
 /**
  * GET /api/friends: the signed-in trainer's friends (online status, what
@@ -34,7 +35,13 @@ export const dynamic = "force-dynamic";
 export async function GET(request: NextRequest) {
   const ctx = await communityRequest(request, "friends-list", { capacity: 20, perMinute: 20 });
   if (ctx instanceof NextResponse) return ctx;
-  return friendsAction(async () => NextResponse.json(await listFriends(ctx.store, accountDirectory, ctx.user), { headers: NO_STORE }));
+  return friendsAction(async () => {
+    const list = await listFriends(ctx.store, accountDirectory, ctx.user);
+    // Every avatar in one lookup.
+    const avatars = await avatarsByNames([...list.friends, ...list.incoming, ...list.outgoing].map((f) => f.username));
+    const withAvatar = <T extends { username: string }>(f: T): T => (avatars[f.username.toLowerCase()] ? { ...f, avatar: avatars[f.username.toLowerCase()] } : f);
+    return NextResponse.json({ ...list, friends: list.friends.map(withAvatar), incoming: list.incoming.map(withAvatar), outgoing: list.outgoing.map(withAvatar) }, { headers: NO_STORE });
+  });
 }
 
 const username = z.string().regex(USERNAME_RE, "No trainer by that name.");

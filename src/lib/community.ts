@@ -1,4 +1,5 @@
 import type { TournamentMatchNote } from "./tournaments";
+import type { PublicAvatar } from "./avatar";
 /**
  * Friends, presence and challenges: what the browser and the server share.
  *
@@ -78,6 +79,7 @@ export interface FriendDaily {
 
 export interface FriendView {
   username: string;
+  avatar?: PublicAvatar;
   online: boolean;
   activity: FriendActivity | null;
   daily: FriendDaily | null;
@@ -86,6 +88,7 @@ export interface FriendView {
 
 export interface FriendRequestView {
   username: string;
+  avatar?: PublicAvatar;
   at: number;
 }
 
@@ -116,6 +119,8 @@ export function challengeHref(kind: ChallengeKind, code: string): string {
 export interface ChallengeView {
   id: string;
   from: string;
+  /** The challenger's avatar. */
+  avatar?: PublicAvatar;
   kind: ChallengeKind;
   label: string;
   href: string;
@@ -126,6 +131,8 @@ export interface ChallengeView {
 export interface ChallengeAnswer {
   id: string;
   to: string;
+  /** The friend's avatar. */
+  avatar?: PublicAvatar;
   label: string;
   status: "accepted" | "declined";
 }
