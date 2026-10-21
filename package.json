@@ -17,7 +17,8 @@
     "lookalikes": "tsx scripts/silhouette-lookalikes.ts",
     "icons": "tsx scripts/generate-icons.ts",
     "battle:sprites": "tsx scripts/battle-sprites.ts",
-    "verify:showdown": "tsx scripts/showdown-parity.ts"
+    "verify:showdown": "tsx scripts/showdown-parity.ts",
+    "verify:quiz": "tsx scripts/quiz-verify.ts"
   },
   "dependencies": {
     "@pkmn/client": "0.7.3",
