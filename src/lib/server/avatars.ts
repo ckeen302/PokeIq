@@ -1,6 +1,6 @@
 import "server-only";
 import { getServiceSupabase } from "@/lib/supabase";
-import { bestTier, checkAvatar, defaultAvatar, levelFromXp, parseAvatar, type Avatar, type AvatarMap, type AvatarUnlocks, type PublicAvatar } from "@/lib/avatar";
+import { PICTURE_ID_RE, bestTier, checkAvatar, defaultAvatar, levelFromXp, parseAvatar, type Avatar, type AvatarMap, type AvatarUnlocks, type PublicAvatar } from "@/lib/avatar";
 import { progressDigests, usersByIds, usersByNames } from "./accounts";
 import { rankedKey, rankedStore } from "./ranked";
 import { battleKey } from "./battle-engine/identity";
@@ -19,10 +19,17 @@ import type { DuelPlayerView } from "@/lib/duel-types";
 
 export class AvatarsUnavailable extends Error {}
 
-/** What profiles.avatar holds. */
-export type StoredAvatar = Avatar;
+/**
+ * What profiles.avatar holds: the trainer's pick, whether to show their own
+ * picture, and the approved picture's id (only the server's moderation
+ * flow sets that one).
+ */
+export interface StoredAvatar extends Avatar {
+  usePicture?: boolean;
+  picture?: string | null;
+}
 
-interface Row {
+export interface Row {
   id: string;
   username: string;
   avatar: unknown;
@@ -107,9 +114,19 @@ export function avatarStore(): AvatarStore | null {
 // Looking avatars up
 // ---------------------------------------------------------------------------
 
-/** What everyone sees for an account: its choice, or its default. */
+/** The stored pick, or the account's default. */
+export function storedAvatar(row: Row): StoredAvatar {
+  const avatar = parseAvatar(row.avatar) ?? defaultAvatar(row.username);
+  const raw = (row.avatar && typeof row.avatar === "object" ? row.avatar : {}) as Record<string, unknown>;
+  const picture = typeof raw.picture === "string" && PICTURE_ID_RE.test(raw.picture) ? raw.picture : null;
+  return { ...avatar, usePicture: raw.usePicture === true, picture };
+}
+
+/** What everyone sees for an account: its pick (or default), or its approved picture when it chose to show it. */
 export function publicAvatar(row: Row): PublicAvatar {
-  return parseAvatar(row.avatar) ?? defaultAvatar(row.username);
+  const s = storedAvatar(row);
+  const out: PublicAvatar = { pokemonId: s.pokemonId, shiny: s.shiny, frame: s.frame };
+  return s.usePicture && s.picture ? { ...out, picture: s.picture } : out;
 }
 
 const CACHE_MS = 60_000;
@@ -165,7 +182,7 @@ export async function seatAvatars<V extends { players: DuelPlayerView[] }>(view:
   return { ...view, players: view.players.map((p) => (map[p.name.toLowerCase()] ? { ...p, avatar: map[p.name.toLowerCase()] } : p)) };
 }
 
-function forget(userId: string, username: string) {
+export function forget(userId: string, username: string) {
   byId.delete(userId);
   byName.delete(username.toLowerCase());
 }
@@ -187,27 +204,48 @@ export async function avatarUnlocks(userId: string): Promise<AvatarUnlocks> {
   return { level: levelFromXp(digests.get(userId)?.xp ?? 0), tier: bestTier(ratings) };
 }
 
-/** The account's own avatar (its choice or default). */
-export async function ownAvatar(user: { id: string; username: string }): Promise<PublicAvatar> {
+/** The account's own stored avatar (its choice or default). */
+export async function ownStoredAvatar(user: { id: string; username: string }): Promise<StoredAvatar> {
   const store = avatarStore();
   const row = store ? (await store.rows("id", [user.id]).catch(() => []))[0] : undefined;
-  return row ? publicAvatar(row) : defaultAvatar(user.username);
+  return row ? storedAvatar(row) : { ...defaultAvatar(user.username), usePicture: false, picture: null };
 }
 
-export type SaveAvatar = { ok: true; avatar: PublicAvatar } | { ok: false; status: number; error: string };
+/** The account's own avatar, as everyone sees it. */
+export async function ownAvatar(user: { id: string; username: string }): Promise<PublicAvatar> {
+  const s = await ownStoredAvatar(user);
+  return publicAvatar({ id: user.id, username: user.username, avatar: s });
+}
 
-/** Saves a trainer's pick, after checking the Pokémon is real and the shiny and frame are theirs to use. */
+/** Changes what's stored (the moderation flow setting or clearing the approved picture). */
+export async function updateStoredAvatar(user: { id: string; username: string }, change: (s: StoredAvatar) => StoredAvatar): Promise<void> {
+  const store = avatarStore();
+  if (!store) throw new AvatarsUnavailable("No store.");
+  await store.save(user.id, change(await ownStoredAvatar(user)));
+  forget(user.id, user.username);
+}
+
+export type SaveAvatar = { ok: true; avatar: PublicAvatar; usePicture: boolean } | { ok: false; status: number; error: string };
+
+/**
+ * Saves a trainer's pick, after checking the Pokémon is real and the shiny
+ * and frame are theirs to use. `usePicture`: show their own picture instead
+ * (once a moderator has approved one; the Pokémon until then).
+ */
 export async function chooseAvatar(user: { id: string; username: string }, raw: unknown): Promise<SaveAvatar> {
   const store = avatarStore();
   if (!store?.saves()) return { ok: false, status: 503, error: "Avatars open soon." };
   const checked = checkAvatar(raw, await avatarUnlocks(user.id));
   if (!checked.ok) return { ok: false, status: 403, error: checked.error };
+  const usePicture = !!raw && typeof raw === "object" && (raw as { usePicture?: unknown }).usePicture === true;
+  const was = await ownStoredAvatar(user);
+  const next: StoredAvatar = { ...checked.avatar, usePicture, picture: was.picture ?? null };
   try {
-    await store.save(user.id, checked.avatar);
+    await store.save(user.id, next);
   } catch (err) {
     if (err instanceof AvatarsUnavailable) return { ok: false, status: 503, error: "Avatars open soon." };
     throw err;
   }
   forget(user.id, user.username);
-  return { ok: true, avatar: checked.avatar };
+  return { ok: true, avatar: publicAvatar({ id: user.id, username: user.username, avatar: next }), usePicture };
 }

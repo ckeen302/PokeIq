@@ -3,8 +3,9 @@ import { artUrl } from "./pokemon/art";
 
 /**
  * Profile pictures: any Pokémon (shiny from trainer level 10) in a frame
- * earned by level milestones or ranked tiers. Shared by the server, which
- * checks every choice against what the account has unlocked, and the pages.
+ * earned by level milestones or ranked tiers, or a picture of their own
+ * once a moderator has approved it. Shared by the server, which checks
+ * every choice against what the account has unlocked, and the pages.
  */
 
 export const AVATAR_MAX_ID = 1025;
@@ -30,8 +31,10 @@ export interface Avatar {
   frame: AvatarFrame;
 }
 
-/** What everyone sees. */
-export type PublicAvatar = Avatar;
+/** What everyone sees: the Pokémon, or the trainer's approved picture (its id) in the same frame. */
+export interface PublicAvatar extends Avatar {
+  picture?: string;
+}
 
 /** What the account has earned: its trainer level and best ranked tier (Pokédle or the battle ladder). */
 export interface AvatarUnlocks {
@@ -100,18 +103,56 @@ export function defaultAvatar(username: string): Avatar {
   return { pokemonId: (h % AVATAR_MAX_ID) + 1, shiny: false, frame: "none" };
 }
 
-/** The image to show. */
+/** An uploaded picture's id: random, URL-safe. */
+export const PICTURE_ID_RE = /^[A-Za-z0-9_-]{16,32}$/;
+
+/** An uploaded picture's image (64 or 256 px). */
+export const pictureSrc = (id: string, large = false) => `/api/avatar/img/${id}?s=${large ? 256 : 64}`;
+
+/** The image to show: the approved picture, else the Pokémon's artwork. */
 export function avatarSrc(a: PublicAvatar, large = false): string {
+  if (a.picture && PICTURE_ID_RE.test(a.picture)) return pictureSrc(a.picture, large);
   return artUrl(a.pokemonId, large ? 256 : 96, a.shiny);
 }
 
 /** Avatars by lower-cased trainer name, for views that list names (only accounts are in it). */
 export type AvatarMap = Record<string, PublicAvatar>;
 
+// ---------------------------------------------------------------------------
+// Uploaded pictures
+// ---------------------------------------------------------------------------
+
+export const PICTURE_MAX_BYTES = 2 * 1024 * 1024;
+export const PICTURE_TYPES = ["image/png", "image/jpeg", "image/webp", "image/gif"] as const;
+export const PICTURES_PER_DAY = 5;
+export const PICTURE_STRIKE_LIMIT = 3;
+
+export type PictureStatus = "pending" | "approved" | "rejected" | "deleted";
+
 /** The trainer's own avatar settings, as GET /api/avatar returns them. */
 export interface AvatarSettings {
   /** Choices can be saved (false before the migration: everyone shows their default). */
   available: boolean;
   avatar: Avatar;
+  /** Show "My picture" (once one is approved) instead of the Pokémon. */
+  usePicture: boolean;
   unlocks: AvatarUnlocks;
+  pictures: {
+    /** Uploading is open here (false: "opening soon"). */
+    open: boolean;
+    /** The approved picture, and the one waiting for review. */
+    approved: string | null;
+    pending: { id: string; at: number } | null;
+    /** Uploads left today. */
+    left: number;
+    /** Why this trainer can't upload right now (strikes, a ban or a mute), or null. */
+    blocked: string | null;
+  };
+}
+
+/** A picture waiting for review, as moderators see it. */
+export interface PendingPicture {
+  id: string;
+  username: string;
+  at: number;
 }

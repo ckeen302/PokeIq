@@ -11,6 +11,8 @@ import { TournamentsUnavailable } from "@/lib/server/tournaments/store";
 import { FEEDBACK_CATEGORIES, MUTE_DURATIONS, PERMANENT, type MuteDuration, type Sanction } from "@/lib/moderation";
 import { ROOM_IDS, SLOW_MODES } from "@/lib/rooms";
 import { USERNAME_RE } from "@/lib/server/auth";
+import { approvePicture, pendingPictures, rejectPicture } from "@/lib/server/avatar-uploads";
+import { PICTURE_ID_RE } from "@/lib/avatar";
 
 /**
  * The moderators' API, for accounts named in POKEIQ_ADMINS only (anyone
@@ -22,6 +24,7 @@ import { USERNAME_RE } from "@/lib/server/auth";
  * GET ?tab=rooms&room=                            a room's messages and slow mode
  * GET ?tab=tournaments                            open and running tournaments
  * GET ?tab=audit                                  the latest moderator actions
+ * GET ?tab=avatars                                profile pictures waiting for review, and how many
  * POST { action, ... }                            see bodySchema
  */
 
@@ -45,6 +48,8 @@ const bodySchema = z.discriminatedUnion("action", [
   z.object({ action: z.literal("clearRoom"), room }),
   z.object({ action: z.literal("cancelTournament"), id: tourId, reason: z.string().trim().max(200).default("") }),
   z.object({ action: z.literal("dq"), id: tourId, name }),
+  z.object({ action: z.literal("approvePicture"), id: z.string().regex(PICTURE_ID_RE) }),
+  z.object({ action: z.literal("rejectPicture"), id: z.string().regex(PICTURE_ID_RE), strike: z.boolean().default(false) }),
 ]);
 
 const notFound = () => NextResponse.json({ error: "Not found" }, { status: 404, headers: NO_STORE });
@@ -93,6 +98,10 @@ export async function GET(request: NextRequest) {
         return NextResponse.json(await listTournaments(), { headers: NO_STORE });
       case "audit":
         return NextResponse.json({ entries: (await modStore()?.audit(200)) ?? [] }, { headers: NO_STORE });
+      case "avatars": {
+        const out = await pendingPictures();
+        return NextResponse.json(out ? { open: true, ...out } : { open: false, pending: [], count: 0 }, { headers: NO_STORE });
+      }
       default:
         return bad("Unknown tab.");
     }
@@ -165,6 +174,18 @@ export async function POST(request: NextRequest) {
         if (!out.ok) return bad(out.error, out.status);
         await audit(admin, body.action === "dq" ? "disqualify" : "cancel tournament", body.id, body.action === "dq" ? body.name : body.reason || null);
         return ok();
+      }
+      case "approvePicture": {
+        const out = await approvePicture(body.id, admin.username);
+        if (!out.ok) return bad(out.error, out.status);
+        await audit(admin, "approve picture", out.username, body.id);
+        return ok();
+      }
+      case "rejectPicture": {
+        const out = await rejectPicture(body.id, admin.username, body.strike);
+        if (!out.ok) return bad(out.error, out.status);
+        await audit(admin, body.strike ? "reject picture + strike" : "reject picture", out.username, body.strike ? `${body.id} (strike ${out.strikes})` : body.id);
+        return ok({ strikes: out.strikes });
       }
     }
   } catch (err) {

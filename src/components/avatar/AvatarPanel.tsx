@@ -1,8 +1,21 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Loader2, Lock, Search, Sparkles } from "lucide-react";
-import { AVATAR_FRAMES, SHINY_HINT, frameHint, frameUnlocked, shinyUnlocked, type Avatar as AvatarChoice, type AvatarFrame, type AvatarSettings } from "@/lib/avatar";
+import { Clock, Loader2, Lock, Search, Sparkles, Trash2, Upload } from "lucide-react";
+import {
+  AVATAR_FRAMES,
+  PICTURE_MAX_BYTES,
+  PICTURE_TYPES,
+  SHINY_HINT,
+  frameHint,
+  frameUnlocked,
+  pictureSrc,
+  shinyUnlocked,
+  type Avatar as AvatarChoice,
+  type AvatarFrame,
+  type AvatarSettings,
+  type PublicAvatar,
+} from "@/lib/avatar";
 import { setAccountAvatar, useAccount } from "@/lib/account";
 import { artUrl } from "@/lib/pokemon/art";
 import { TYPE_COLORS } from "@/lib/pokemon/type-colors";
@@ -16,7 +29,8 @@ import { Avatar } from "./Avatar";
  * The avatar picker on the trainer card (accounts only): any Pokémon, by
  * name, generation or type; shiny from level 10; frames from level
  * milestones and ranked tiers. Locked choices say how to unlock them. The
- * server checks every pick again.
+ * server checks every pick again. Or their own picture, which nobody else
+ * sees until a moderator approves it; frames apply to it too.
  */
 
 const PAGE = 120;
@@ -27,11 +41,14 @@ export function AvatarPanel() {
   const account = useAccount();
   const [settings, setSettings] = useState<AvatarSettings | null>(null);
   const [draft, setDraft] = useState<AvatarChoice | null>(null);
+  const [usePicture, setUsePicture] = useState(false);
   const [open, setOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
   const userId = account.user?.id;
+
+  const [tick, setTick] = useState(0);
 
   useEffect(() => {
     if (!userId) return;
@@ -42,27 +59,35 @@ export function AvatarPanel() {
         if (!live || !s) return;
         setSettings(s);
         setDraft(s.avatar);
+        setUsePicture(s.usePicture);
       })
       .catch(() => undefined);
     return () => {
       live = false;
     };
-  }, [userId]);
+  }, [userId, tick]);
 
   if (!account.user) return null;
   if (!settings || !draft) return null;
   const u = settings.unlocks;
-  const changed = JSON.stringify(draft) !== JSON.stringify(settings.avatar);
+  const changed = JSON.stringify(draft) !== JSON.stringify(settings.avatar) || usePicture !== settings.usePicture;
+  const approved = settings.pictures.approved;
+  const preview: PublicAvatar = usePicture && approved ? { ...draft, picture: approved } : draft;
+  /** After an upload or a delete: the header shows what everyone now sees, and the settings reload. */
+  const refreshed = (avatar?: PublicAvatar) => {
+    if (avatar) setAccountAvatar(avatar);
+    setTick((t) => t + 1);
+  };
 
   async function save() {
     if (!draft) return;
     setSaving(true);
     setError(null);
     try {
-      const res = await fetch("/api/avatar", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(draft) });
-      const body = (await res.json().catch(() => ({}))) as { avatar?: AvatarChoice; error?: string };
+      const res = await fetch("/api/avatar", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...draft, usePicture }) });
+      const body = (await res.json().catch(() => ({}))) as { avatar?: PublicAvatar; error?: string };
       if (!res.ok || !body.avatar) throw new Error(body.error ?? "Couldn't save your avatar.");
-      setSettings((s) => (s ? { ...s, avatar: body.avatar! } : s));
+      setSettings((s) => (s ? { ...s, avatar: draft, usePicture } : s));
       setAccountAvatar(body.avatar);
       setSaved(true);
       setOpen(false);
@@ -87,7 +112,7 @@ export function AvatarPanel() {
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="flex items-center gap-4">
-          <Avatar avatar={draft} size={72} />
+          <Avatar avatar={preview} size={72} />
           <div className="space-y-1 text-sm">
             <p className="text-muted-foreground">
               Shown next to your name in the header, chats, lobbies, friends and leaderboards.
@@ -100,6 +125,8 @@ export function AvatarPanel() {
             )}
           </div>
         </div>
+
+        <Pictures settings={settings} usePicture={usePicture} setUsePicture={setUsePicture} frame={draft.frame} onChanged={refreshed} />
 
         {open && (
           <div className="space-y-4">
@@ -127,7 +154,7 @@ export function AvatarPanel() {
                       className={cn("flex items-center gap-2 rounded-md border px-2 py-1 text-xs", draft.frame === f.id ? "border-screen bg-screen/10" : "border-border", locked && "cursor-not-allowed opacity-60")}
                       data-testid={`avatar-frame-${f.id}`}
                     >
-                      <Avatar avatar={{ ...draft, frame: f.id }} size={24} />
+                      <Avatar avatar={{ ...preview, frame: f.id }} size={24} />
                       <span>{f.name}</span>
                       {locked && (
                         <span className="flex items-center gap-1 text-muted-foreground">
@@ -141,19 +168,146 @@ export function AvatarPanel() {
             </div>
 
             <MonGrid selected={draft.pokemonId} shiny={draft.shiny} onPick={(id) => setDraft({ ...draft, pokemonId: id })} />
+          </div>
+        )}
 
-            <div className="flex gap-2">
-              <Button onClick={save} disabled={!changed || saving} data-testid="avatar-save">
-                {saving && <Loader2 className="h-4 w-4 animate-spin" aria-hidden />} Save avatar
-              </Button>
-              <Button variant="ghost" onClick={() => setDraft(settings.avatar)} disabled={!changed}>
-                Reset
-              </Button>
-            </div>
+        {(open || changed) && (
+          <div className="flex gap-2">
+            <Button onClick={save} disabled={!changed || saving} data-testid="avatar-save">
+              {saving && <Loader2 className="h-4 w-4 animate-spin" aria-hidden />} Save avatar
+            </Button>
+            <Button
+              variant="ghost"
+              onClick={() => {
+                setDraft(settings.avatar);
+                setUsePicture(settings.usePicture);
+              }}
+              disabled={!changed}
+            >
+              Reset
+            </Button>
           </div>
         )}
       </CardContent>
     </Card>
+  );
+}
+
+/** "Pokémon avatar" or "My picture": uploading, the picture waiting for review, replacing and deleting. */
+function Pictures({
+  settings,
+  usePicture,
+  setUsePicture,
+  frame,
+  onChanged,
+}: {
+  settings: AvatarSettings;
+  usePicture: boolean;
+  setUsePicture: (on: boolean) => void;
+  frame: AvatarFrame;
+  onChanged: (avatar?: PublicAvatar) => void;
+}) {
+  const p = settings.pictures;
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function call(init: RequestInit, url: string) {
+    setBusy(true);
+    setError(null);
+    try {
+      const res = await fetch(url, init);
+      const body = (await res.json().catch(() => ({}))) as { avatar?: PublicAvatar; error?: string };
+      if (!res.ok) throw new Error(body.error ?? "Something went wrong. Try again.");
+      onChanged(body.avatar);
+    } catch (err) {
+      setError((err as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  function upload(file: File | undefined) {
+    if (!file) return;
+    if (!(PICTURE_TYPES as readonly string[]).includes(file.type)) return setError("Use a PNG, JPEG, WebP or GIF image.");
+    if (file.size > PICTURE_MAX_BYTES) return setError("That image is too big: the limit is 2 MB.");
+    const form = new FormData();
+    form.append("file", file);
+    void call({ method: "POST", body: form }, "/api/avatar/upload");
+  }
+
+  const remove = (which: "pending" | "approved") => {
+    if (window.confirm(which === "pending" ? "Delete the picture waiting for review?" : "Delete your picture? You'll show your Pokémon instead.")) void call({ method: "DELETE" }, `/api/avatar/upload?which=${which}`);
+  };
+
+  return (
+    <div className="space-y-3 rounded-md border p-3" data-testid="avatar-pictures">
+      <div className="flex flex-wrap gap-4 text-sm" role="radiogroup" aria-label="Profile picture">
+        <label className="flex items-center gap-2">
+          <input type="radio" name="avatar-kind" checked={!usePicture} onChange={() => setUsePicture(false)} /> Pokémon avatar
+        </label>
+        <label className={cn("flex items-center gap-2", !p.open && "opacity-60")}>
+          <input type="radio" name="avatar-kind" checked={usePicture} disabled={!p.open && !p.approved} onChange={() => setUsePicture(true)} data-testid="avatar-use-picture" /> My picture
+        </label>
+      </div>
+      {!p.open ? (
+        <p className="text-sm text-muted-foreground">Uploading your own picture opens soon.</p>
+      ) : (
+        <>
+          <div className="flex flex-wrap items-start gap-4">
+            {p.approved && (
+              <figure className="space-y-1 text-center text-xs">
+                <Avatar avatar={{ pokemonId: 1, shiny: false, frame, picture: p.approved }} size={64} />
+                <figcaption className="text-muted-foreground">Approved</figcaption>
+                <Button size="sm" variant="ghost" className="h-7 px-2 text-destructive" disabled={busy} onClick={() => remove("approved")}>
+                  <Trash2 className="h-3.5 w-3.5" aria-hidden /> Delete
+                </Button>
+              </figure>
+            )}
+            {p.pending && (
+              <figure className="space-y-1 text-center text-xs" data-testid="avatar-pending">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={pictureSrc(p.pending.id)} alt="Your picture waiting for review" width={64} height={64} className="mx-auto h-16 w-16 rounded-full object-cover opacity-80 ring-2 ring-warning" />
+                <figcaption className="flex items-center justify-center gap-1 font-semibold text-warning">
+                  <Clock className="h-3 w-3" aria-hidden /> Waiting for review
+                </figcaption>
+                <Button size="sm" variant="ghost" className="h-7 px-2 text-destructive" disabled={busy} onClick={() => remove("pending")}>
+                  <Trash2 className="h-3.5 w-3.5" aria-hidden /> Delete
+                </Button>
+              </figure>
+            )}
+          </div>
+          {p.blocked ? (
+            <p className="text-sm text-muted-foreground">{p.blocked}</p>
+          ) : (
+            <div className="space-y-1">
+              <label className={cn("inline-flex cursor-pointer items-center gap-2 rounded-md border px-3 py-1.5 text-sm hover:border-screen/60", (busy || !p.left) && "pointer-events-none opacity-60")}>
+                {busy ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : <Upload className="h-4 w-4" aria-hidden />}
+                {p.approved || p.pending ? "Upload a new picture" : "Upload a picture"}
+                <input
+                  type="file"
+                  accept={PICTURE_TYPES.join(",")}
+                  className="sr-only"
+                  disabled={busy || !p.left}
+                  onChange={(e) => {
+                    upload(e.target.files?.[0]);
+                    e.target.value = "";
+                  }}
+                  data-testid="avatar-upload"
+                />
+              </label>
+              <p className="text-xs text-muted-foreground">
+                PNG, JPEG, WebP or GIF, up to 2 MB. A moderator checks every picture first: until then, everyone else sees your Pokémon. Never upload a photo of yourself or anything personal. {p.left} upload{p.left === 1 ? "" : "s"} left today.
+              </p>
+            </div>
+          )}
+        </>
+      )}
+      {error && (
+        <p role="alert" className="text-sm text-destructive">
+          {error}
+        </p>
+      )}
+    </div>
   );
 }
 
