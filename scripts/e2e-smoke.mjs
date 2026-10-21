@@ -873,7 +873,12 @@ if (factoryWon) {
   await page.getByTestId("swap-give").first().click();
   await page.getByTestId("swap-take").nth(Math.max(0, take)).click();
   await page.getByTestId("swap-confirm").click();
-  await page.getByTestId("frontier-mon").first().waitFor({ timeout: 30_000 });
+  // Either the new team shows, or the server said why the trade was refused.
+  const traded = await Promise.race([
+    page.getByTestId("frontier-mon").first().waitFor({ timeout: 30_000 }).then(() => true),
+    page.getByRole("alert").first().waitFor({ timeout: 30_000 }).then(() => false),
+  ]);
+  if (!traded) throw new Error(`the Factory trade was refused: ${await page.getByRole("alert").first().innerText()} (gave ${before.split("\n")[0]}, took ${theirs[Math.max(0, take)]})`);
   if ((await page.getByTestId("frontier-mon").first().innerText()) === before) errors.push("the Factory trade didn't change the team");
   if (!/streak\s*1\b/i.test(await page.getByTestId("frontier-streak").innerText())) errors.push("the Factory streak didn't show 1");
 } else console.log("  no win in 4 tries: the trade wasn't exercised");
@@ -1098,7 +1103,8 @@ const me = await (await page.request.get(`${BASE}/api/auth/me`)).json();
 if (me.enabled) {
   step("accounts: register, sync, sign out, sign in, recover");
   const username = `e2e_${Date.now().toString(36)}`;
-  await page.goto(`${BASE}/login`, { waitUntil: "networkidle" });
+  await page.goto(`${BASE}/login`, { waitUntil: "domcontentloaded" });
+  await page.getByLabel("Trainer name").waitFor();
   await page.getByRole("tab", { name: "Create account" }).click();
   await page.getByLabel("Trainer name").fill(username);
   await page.getByLabel("Password").fill("correct horse battery");
@@ -1121,7 +1127,8 @@ if (me.enabled) {
   const cleared = await page.evaluate(() => JSON.parse(localStorage.getItem("pokeiq:progress:v1") ?? "{}").xp ?? 0);
   if (cleared !== 0) throw new Error("sign-out left progress on the device");
 
-  await page.goto(`${BASE}/login`, { waitUntil: "networkidle" });
+  await page.goto(`${BASE}/login`, { waitUntil: "domcontentloaded" });
+  await page.getByLabel("Trainer name").waitFor();
   await page.getByLabel("Trainer name").fill(username);
   await page.getByLabel("Password").fill("wrong password!!");
   await page.getByRole("button", { name: "Sign in" }).last().click();
@@ -1132,7 +1139,8 @@ if (me.enabled) {
   await page.waitForFunction(() => (JSON.parse(localStorage.getItem("pokeiq:progress:v1") ?? "{}").xp ?? 0) > 0);
 
   await page.getByRole("button", { name: "Sign out" }).click();
-  await page.goto(`${BASE}/login`, { waitUntil: "networkidle" });
+  await page.goto(`${BASE}/login`, { waitUntil: "domcontentloaded" });
+  await page.getByLabel("Trainer name").waitFor();
   await page.getByRole("tab", { name: "Forgot password" }).click();
   await page.getByLabel("Trainer name").fill(username);
   await page.getByLabel("Recovery code").fill(recoveryCode.toLowerCase());
@@ -1347,13 +1355,15 @@ if (me.enabled) {
       await p.getByTestId("room-text").filter({ hasText: text.replace("shit", "•••") }).first().waitFor({ timeout: 10_000 });
     };
     await say(ra, `hello from ${names[1]}`);
-    await rb.getByTestId("room-text").filter({ hasText: `hello from ${names[1]}` }).waitFor({ timeout: 15_000 });
+    // Without Realtime, rooms refresh every 5 s through a CDN-cached read, so a message can take ~10–15 s.
+    await rb.getByTestId("room-text").filter({ hasText: `hello from ${names[1]}` }).waitFor({ timeout: 30_000 });
     await say(rb, "what the shit");
     const masked = ra.getByTestId("room-line").filter({ hasText: "what the •••" });
-    await masked.waitFor({ timeout: 15_000 });
+    await masked.waitFor({ timeout: 30_000 });
     if (await ra.getByText("what the shit").count()) errors.push("a swear in a room wasn't masked");
-    // Who's here comes from presence: each sees the other.
-    await rb.getByTestId("room-users").getByText(names[1]).waitFor({ timeout: 20_000 });
+    // Who's here comes from presence, and the list is cached at the CDN to keep requests down,
+    // so another trainer can take up to about a minute to show.
+    await rb.getByTestId("room-users").getByText(names[1]).waitFor({ timeout: 90_000 });
     await masked.hover();
     await masked.getByTestId("room-report").click();
     await masked.getByText("Reported").waitFor();
