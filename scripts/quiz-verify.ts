@@ -2,7 +2,13 @@
  * Re-checks the Mainline Games and Pokémon Anime quiz data against the
  * Bulbapedia page each row cites.
  *
- *   npx tsx scripts/quiz-verify.ts [--only games|anime] [--json out.json]
+ *   npm run verify:quiz -- [--only games|anime] [--json out.json]
+ *   NODE_USE_ENV_PROXY=1 npx tsx scripts/quiz-verify.ts [...]
+ *
+ * NODE_USE_ENV_PROXY=1 is required where outbound traffic goes through a
+ * proxy (HTTPS_PROXY): without it Node's fetch ignores the proxy and
+ * Bulbapedia answers with a Cloudflare 403. The npm script sets it, and the
+ * script refuses to run without it when HTTPS_PROXY is set.
  *
  * For every data-table row and hand-written question it fetches the cited
  * page (rendered text, cached on disk), and checks that the facts the
@@ -240,6 +246,10 @@ function animeChecks(): Check[] {
 }
 
 async function main() {
+  if ((process.env.HTTPS_PROXY || process.env.https_proxy) && process.env.NODE_USE_ENV_PROXY !== "1") {
+    console.error("Set NODE_USE_ENV_PROXY=1 (or use `npm run verify:quiz`): Node's fetch only uses HTTPS_PROXY with it.");
+    process.exit(2);
+  }
   const only = process.argv.includes("--only") ? process.argv[process.argv.indexOf("--only") + 1] : null;
   const jsonOut = process.argv.includes("--json") ? process.argv[process.argv.indexOf("--json") + 1] : null;
   const checks = [...(only !== "anime" ? gameChecks() : []), ...(only !== "games" ? animeChecks() : [])];
