@@ -10,6 +10,8 @@ import { battleKey } from "@/lib/server/battle-engine/identity";
 import { battleProfile } from "@/lib/server/battle-engine/records";
 import { replayStore } from "@/lib/server/battle-engine/replays";
 import { rankedKey, rankedStore } from "@/lib/server/ranked";
+import { avatarsByIds } from "@/lib/server/avatars";
+import { Avatar } from "@/components/avatar/Avatar";
 import { BattleProfileView } from "@/components/battle/BattleProfileView";
 import { ReplayRow } from "@/components/battle/ReplayLists";
 import { TierBadge } from "@/components/pokedle/Ranked";
@@ -46,15 +48,17 @@ const findProfile = cache(async (raw: string) => {
   const key = battleKey(`u:${user.id}`);
   const replays = replayStore();
   const ranked = rankedStore();
-  const [digest, battles, pokedle, mine] = await Promise.all([
+  const [digest, battles, pokedle, mine, avatars] = await Promise.all([
     quietly("progress", progressDigests([user.id]).then((m) => m.get(user.id) ?? null), null),
     quietly("battles", battleProfile(key), null),
     quietly<RankedStanding | null>("pokedle", ranked?.standing(rankedKey(`u:${user.id}`)), null),
     quietly<ReplaySummary[]>("replays", replays?.mine(key, [], 30), []),
+    avatarsByIds([user.id]),
   ]);
   return {
     username: user.username,
     joined: user.createdAt,
+    avatar: avatars.get(user.id) ?? null,
     level: levelOf(digest?.xp ?? 0),
     xp: digest?.xp ?? 0,
     battles,
@@ -88,6 +92,7 @@ export default async function UserProfilePage({ params }: PageProps) {
 
       <section className="hud relative overflow-hidden rounded-xl border bg-card p-6">
         <div className="flex flex-wrap items-start gap-5">
+          <Avatar avatar={found.avatar} size={80} />
           <span className="screen flex h-20 w-20 shrink-0 flex-col items-center justify-center rounded-lg text-screen">
             <span className="relative z-[3] font-pixel text-[10px]">LV</span>
             <span className="relative z-[3] font-display text-3xl font-bold">{found.level}</span>

@@ -10,6 +10,7 @@ import type { FriendView } from "@/lib/community";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { ChallengeOptions } from "./ChallengeOptions";
+import { Avatar } from "@/components/avatar/Avatar";
 
 /** The friends panel: friends with their status, requests both ways, and adding a friend by name. */
 export function FriendsPanel() {
@@ -162,7 +163,10 @@ function FriendRow({ friend, me }: { friend: FriendView; me: string }) {
   return (
     <li className={cn("rounded-lg border bg-card p-3", !friend.online && "opacity-75")} data-testid="friend-row" data-online={friend.online}>
       <div className="flex items-start gap-2.5">
-        <span className={cn("mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full", friend.online ? "bg-success shadow-[0_0_8px_hsl(var(--success))]" : "bg-foreground/25")} aria-hidden />
+        <span className="relative shrink-0">
+          <Avatar avatar={friend.avatar} size={32} />
+          <span className={cn("absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full ring-2 ring-card", friend.online ? "bg-success shadow-[0_0_8px_hsl(var(--success))]" : "bg-foreground/40")} aria-hidden />
+        </span>
         <div className="min-w-0 flex-1">
           <Link href={`/u/${encodeURIComponent(friend.username)}`} onClick={closeFriends} className="font-display font-bold hover:underline">
             {friend.username}
@@ -227,6 +231,7 @@ function Requests() {
         <Section title="Wants to be friends">
           {list.incoming.map((r) => (
             <li key={r.username} className="flex items-center gap-2 rounded-lg border bg-card p-2.5" data-testid="incoming-request">
+              <Avatar avatar={r.avatar} size={24} />
               <Link href={`/u/${encodeURIComponent(r.username)}`} onClick={closeFriends} className="flex-1 truncate font-display font-bold hover:underline">
                 {r.username}
               </Link>
@@ -247,6 +252,7 @@ function Requests() {
         <Section title="Sent">
           {list.outgoing.map((r) => (
             <li key={r.username} className="flex items-center gap-2 rounded-lg border bg-card p-2.5">
+              <Avatar avatar={r.avatar} size={24} />
               <span className="flex-1 truncate font-display font-bold">{r.username}</span>
               <span className="hud-label">Waiting</span>
               <Button size="sm" variant="ghost" className="h-8 px-2" onClick={() => run({ action: "remove", username: r.username })}>

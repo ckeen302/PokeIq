@@ -8,8 +8,9 @@ import { FEEDBACK_CATEGORIES, FEEDBACK_MODES, MUTE_DURATIONS, PERMANENT, type Au
 import { ROOMS, SLOW_MODES, type RoomMessage } from "@/lib/rooms";
 import type { TournamentSummary } from "@/lib/tournaments";
 import { cn } from "@/lib/utils";
+import { pictureSrc, type PendingPicture } from "@/lib/avatar";
 
-const TABS = ["reports", "users", "rooms", "tournaments", "audit"] as const;
+const TABS = ["reports", "users", "rooms", "tournaments", "avatars", "audit"] as const;
 type Tab = (typeof TABS)[number];
 const FIELD = "h-9 rounded-md border border-input bg-background px-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
 const when = (at: number) => new Date(at).toLocaleString([], { dateStyle: "short", timeStyle: "short" });
@@ -24,12 +25,24 @@ async function api<T>(query: string | null, body?: unknown): Promise<T> {
 /** The moderation desk: reports, users, rooms, tournaments and the audit log. */
 export function AdminPanel() {
   const [tab, setTab] = useState<Tab>("reports");
+  // Pictures waiting for review, counted on the tab from the start.
+  const [pending, setPending] = useState<number | null>(null);
+  useEffect(() => {
+    api<{ count: number }>("tab=avatars")
+      .then((d) => setPending(d.count))
+      .catch(() => undefined);
+  }, []);
   return (
     <div className="space-y-4">
       <div role="tablist" className="flex gap-2 border-b pb-2">
         {TABS.map((t) => (
           <Button key={t} role="tab" aria-selected={tab === t} size="sm" variant={tab === t ? "default" : "ghost"} onClick={() => setTab(t)} data-testid={`admin-tab-${t}`}>
             {t[0].toUpperCase() + t.slice(1)}
+            {t === "avatars" && !!pending && (
+              <span className="rounded-full bg-warning px-1.5 font-pixel text-[9px] text-black" data-testid="admin-avatars-count">
+                {pending}
+              </span>
+            )}
           </Button>
         ))}
       </div>
@@ -37,6 +50,7 @@ export function AdminPanel() {
       {tab === "users" && <Users />}
       {tab === "rooms" && <Rooms />}
       {tab === "tournaments" && <Tournaments />}
+      {tab === "avatars" && <Avatars onCount={setPending} />}
       {tab === "audit" && <Audit />}
     </div>
   );
@@ -367,6 +381,62 @@ function Tournaments() {
           </li>
         ))}
       </ul>
+    </div>
+  );
+}
+
+function Avatars({ onCount }: { onCount: (n: number) => void }) {
+  const { data, error, reload, setError } = useLoad(() => api<{ open: boolean; pending: PendingPicture[]; count: number }>("tab=avatars"), []);
+  const [busy, setBusy] = useState<string | null>(null);
+  useEffect(() => {
+    if (data) onCount(data.count);
+  }, [data, onCount]);
+
+  async function decide(id: string, body: Record<string, unknown>) {
+    setBusy(id);
+    try {
+      await api(null, { id, ...body });
+      reload();
+    } catch (err) {
+      setError((err as Error).message);
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  if (error) return <p className="text-sm text-destructive">{error}</p>;
+  if (!data) return <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" aria-hidden />;
+  if (!data.open) return <p className="text-sm text-muted-foreground">Picture uploads are off until migration 0021 and the avatars bucket are in place.</p>;
+  return (
+    <div className="space-y-3">
+      <p className="text-sm text-muted-foreground">
+        {data.count} picture{data.count === 1 ? "" : "s"} waiting for review. Nobody else sees a picture until it&apos;s approved. Three strikes stop a trainer uploading.
+      </p>
+      {data.pending.length === 0 ? (
+        <p className="text-sm text-muted-foreground">Nothing to review.</p>
+      ) : (
+        <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5" data-testid="admin-avatars">
+          {data.pending.map((p) => (
+            <li key={p.id} className="space-y-2 rounded-lg border bg-card p-3 text-sm" data-testid="admin-avatar">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={pictureSrc(p.id, true)} alt={`Picture from ${p.username}`} width={256} height={256} loading="lazy" className="aspect-square w-full rounded-md bg-muted object-cover" />
+              <p className="truncate font-semibold">{p.username}</p>
+              <p className="text-xs text-muted-foreground">{when(p.at)}</p>
+              <div className="flex flex-wrap gap-1.5">
+                <Button size="sm" variant="success" disabled={busy === p.id} onClick={() => void decide(p.id, { action: "approvePicture" })} data-testid="admin-avatar-approve">
+                  <Check className="h-3.5 w-3.5" aria-hidden /> Approve
+                </Button>
+                <Button size="sm" variant="ghost" disabled={busy === p.id} onClick={() => void decide(p.id, { action: "rejectPicture", strike: false })}>
+                  Reject
+                </Button>
+                <Button size="sm" variant="ghost" className="text-destructive" disabled={busy === p.id} onClick={() => void decide(p.id, { action: "rejectPicture", strike: true })}>
+                  Reject + strike
+                </Button>
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }

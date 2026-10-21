@@ -1,4 +1,5 @@
 import { ALL_FORMATS, PLAY_FORMAT_INFO, type PlayFormatId, type StandardFormatId } from "@/lib/battle/play";
+import type { AvatarMap } from "./avatar";
 
 /**
  * Tournaments, shared by the server (which owns every tournament: sign-ups,
@@ -93,6 +94,8 @@ export interface TournamentView {
   cancelReason?: string;
   version: number;
   now: number;
+  /** The players' avatars, by lower-cased name. */
+  avatars?: AvatarMap;
   /** The viewer: joined, and their match waiting to be played (with its seat token). */
   you?: { joined: boolean; host: boolean; match: { code: string; token: string; against: string } | null };
 }

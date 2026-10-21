@@ -277,6 +277,20 @@ export async function usersByIds(ids: string[]): Promise<PublicUser[]> {
   return fileDb().users.filter((u) => wanted.has(u.id)).map(toPublicUser);
 }
 
+/** Accounts by name, case-insensitively (unknown names are left out). */
+export async function usersByNames(names: string[]): Promise<PublicUser[]> {
+  const unique = [...new Set(names.map((n) => n.toLowerCase()))];
+  if (!unique.length) return [];
+  const sb = getServiceSupabase();
+  if (sb) {
+    const { data, error } = await sb.from("profiles").select("id, username, created_at").in("username_lower", unique);
+    if (error) throw new Error(error.message);
+    return (data ?? []).map((r: { id: string; username: string; created_at: string }) => ({ id: r.id, username: r.username, createdAt: r.created_at }));
+  }
+  const wanted = new Set(unique);
+  return fileDb().users.filter((u) => wanted.has(u.username.toLowerCase())).map(toPublicUser);
+}
+
 /** Usernames starting with `prefix` (case-insensitive), alphabetically. */
 export async function searchUsers(prefix: string, limit = 20): Promise<string[]> {
   const lower = prefix.toLowerCase();

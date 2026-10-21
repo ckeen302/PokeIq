@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { seatAvatars } from "@/lib/server/avatars";
 import { z } from "zod";
 import { gate } from "@/lib/server/moderation";
 import { chatRateLimit, clientIp, rateLimit } from "@/lib/server/rate-limit";
@@ -79,7 +80,7 @@ export async function GET(request: NextRequest, context: Context) {
     if (!out.ok) return failure(out);
     // A ranked duel that just ended is counted here, on the next request.
     const { duel, rev } = await settleRankedDuel(out.duel, out.rev);
-    return NextResponse.json(duelView(duel, playerId, out.now, rev), { headers: NO_STORE });
+    return NextResponse.json(await seatAvatars(duelView(duel, playerId, out.now, rev)), { headers: NO_STORE });
   } catch (err) {
     return storeError(err);
   }
@@ -106,7 +107,7 @@ export async function POST(request: NextRequest, context: Context) {
     if (body.action === "join") {
       const out = await pvpStore.update(code, (duel, now) => joinDuel(duel, body.name, now));
       if (!out.ok) return failure(out);
-      const seat: PvpSeatResponse = { code, token: pvpToken(code, out.playerId), view: duelView(out.duel, out.playerId, out.now, out.rev) };
+      const seat: PvpSeatResponse = { code, token: pvpToken(code, out.playerId), view: await seatAvatars(duelView(out.duel, out.playerId, out.now, out.rev)) };
       return NextResponse.json(seat, { headers: NO_STORE });
     }
 
@@ -148,7 +149,7 @@ export async function POST(request: NextRequest, context: Context) {
     });
     if (!out.ok) return failure(out);
     const { duel, rev } = await settleRankedDuel(out.duel, out.rev);
-    return NextResponse.json(duelView(duel, playerId, out.now, rev), { headers: NO_STORE });
+    return NextResponse.json(await seatAvatars(duelView(duel, playerId, out.now, rev)), { headers: NO_STORE });
   } catch (err) {
     return storeError(err);
   }
@@ -183,6 +184,6 @@ async function rematch(code: string, playerId: string) {
 
   const out = await pvpStore.update(next, (duel, now) => takeRematchSeat(duel, playerId, me.name, now));
   if (!out.ok) return failure(out);
-  const seat: PvpSeatResponse = { code: next, token: pvpToken(next, playerId), view: duelView(out.duel, playerId, out.now, out.rev) };
+  const seat: PvpSeatResponse = { code: next, token: pvpToken(next, playerId), view: await seatAvatars(duelView(out.duel, playerId, out.now, out.rev)) };
   return NextResponse.json(seat, { headers: NO_STORE });
 }

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { seatAvatars } from "@/lib/server/avatars";
 import { z } from "zod";
 import { gate } from "@/lib/server/moderation";
 import { chatRateLimit, clientIp, rateLimit } from "@/lib/server/rate-limit";
@@ -93,7 +94,7 @@ export async function GET(request: NextRequest, context: Context) {
         console.error("[battle] settling failed:", err);
       }
     }
-    return NextResponse.json(out.view, { headers: NO_STORE });
+    return NextResponse.json(await seatAvatars(out.view), { headers: NO_STORE });
   } catch (err) {
     return storeError(err);
   }
@@ -122,7 +123,7 @@ export async function POST(request: NextRequest, context: Context) {
       const player = await battlePlayerKey(request, body.rankedId);
       const out = await actOnBattle(code, null, { action: "join", name: body.name, team: body.team, player: player ?? undefined }, 0);
       if (!out.ok) return failure(out);
-      const seat: BattleSeatResponse = { code, token: battleToken(code, out.playerId, out.view.you ?? 1), view: out.view };
+      const seat: BattleSeatResponse = { code, token: battleToken(code, out.playerId, out.view.you ?? 1), view: await seatAvatars(out.view) };
       return NextResponse.json(seat, { headers: NO_STORE });
     }
 
@@ -132,7 +133,7 @@ export async function POST(request: NextRequest, context: Context) {
     if (body.action === "rematch") {
       const out = await rematchBattle(code, seat.playerId);
       if (!out.ok) return failure(out);
-      const next: BattleSeatResponse = { code: out.code, token: out.token, view: out.view };
+      const next: BattleSeatResponse = { code: out.code, token: out.token, view: await seatAvatars(out.view) };
       return NextResponse.json(next, { headers: NO_STORE });
     }
 
@@ -141,7 +142,7 @@ export async function POST(request: NextRequest, context: Context) {
       if (!saved.ok) return failure(saved);
       const out = await pollBattle(code, body.token, body.since);
       if (!out.ok) return failure(out);
-      return NextResponse.json(out.view, { headers: NO_STORE });
+      return NextResponse.json(await seatAvatars(out.view), { headers: NO_STORE });
     }
 
     if (body.action === "chat") {
@@ -149,14 +150,14 @@ export async function POST(request: NextRequest, context: Context) {
       if (limited) return limited;
       const out = await chatBattle(code, seat.playerId, body.text, body.since);
       if (!out.ok) return failure(out);
-      return NextResponse.json(out.view, { headers: NO_STORE });
+      return NextResponse.json(await seatAvatars(out.view), { headers: NO_STORE });
     }
 
     const out = await actOnBattle(code, seat.playerId, body, body.since);
     if (!out.ok) return failure(out);
     // An illegal choice: the simulator's reason, with the (possibly updated) request to answer instead.
-    if (out.rejected) return NextResponse.json({ error: out.rejected, view: out.view }, { status: 422, headers: NO_STORE });
-    return NextResponse.json(out.view, { headers: NO_STORE });
+    if (out.rejected) return NextResponse.json({ error: out.rejected, view: await seatAvatars(out.view) }, { status: 422, headers: NO_STORE });
+    return NextResponse.json(await seatAvatars(out.view), { headers: NO_STORE });
   } catch (err) {
     return storeError(err);
   }

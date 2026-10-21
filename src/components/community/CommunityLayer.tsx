@@ -8,6 +8,7 @@ import { answerChallenge, beat, dismissNote, openTournamentMatch, useCommunity }
 import { PRESENCE_BEAT_MS, PRESENCE_MIN_GAP_MS, activityFromPath } from "@/lib/community";
 import { Button } from "@/components/ui/button";
 import { FriendsPanel } from "./FriendsPanel";
+import { Avatar } from "@/components/avatar/Avatar";
 
 /**
  * Site-wide friends: the presence heartbeat (signed-in trainers only; once
@@ -119,8 +120,11 @@ function Toasts() {
           <p className="hud-label flex items-center gap-1.5 text-primary">
             <Swords className="h-3.5 w-3.5" aria-hidden /> Challenge
           </p>
-          <p className="mt-1 text-sm">
+          <p className="mt-1 flex items-center gap-1.5 text-sm">
+            <Avatar avatar={c.avatar} size={24} />
+            <span>
             <span className="font-semibold">{c.from}</span> challenges you to a <span className="font-semibold">{c.label}</span>.
+            </span>
           </p>
           <div className="mt-2 flex gap-2">
             <Button size="sm" variant="success" disabled={busy === c.id} onClick={() => void answer(c.id, true)}>
@@ -134,6 +138,7 @@ function Toasts() {
       ))}
       {answers.map((a) => (
         <div key={a.id} role="status" className="flex items-start gap-2 rounded-lg border bg-card p-3 text-sm shadow-xl">
+          <Avatar avatar={a.avatar} size={24} />
           <p className="flex-1">
             <span className="font-semibold">{a.to}</span> {a.status === "accepted" ? "accepted" : "declined"} your {a.label} challenge.
           </p>

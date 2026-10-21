@@ -4,7 +4,7 @@ import { gate } from "@/lib/server/moderation";
 import { sameOrigin, sessionTokenHash, userFromRequest } from "@/lib/server/auth";
 import { chatRateLimit, clientIp, rateLimit, tooManyRequests } from "@/lib/server/rate-limit";
 import { CHAT_BODY_MAX } from "@/lib/server/chat";
-import { RoomsUnavailable, postToRoom, publicMessage, reportRoomMessage, roomStore } from "@/lib/server/rooms";
+import { RoomsUnavailable, postToRoom, publicMessages, reportRoomMessage, roomStore } from "@/lib/server/rooms";
 import { realtimeClientConfig } from "@/lib/server/realtime";
 import { roomById, type RoomState } from "@/lib/rooms";
 
@@ -37,7 +37,7 @@ export async function GET(request: NextRequest, context: Context) {
   if (!store) return NextResponse.json(off, { headers: NO_STORE });
   try {
     const [messages, slow] = await Promise.all([store.messages(room.id), store.slow(room.id)]);
-    const body: RoomState = { available: true, room: room.id, messages: messages.map(publicMessage), slow, realtime: realtimeClientConfig() };
+    const body: RoomState = { available: true, room: room.id, messages: await publicMessages(messages), slow, realtime: realtimeClientConfig() };
     return NextResponse.json(body, { headers: { "Cache-Control": "public, s-maxage=4, stale-while-revalidate=4" } });
   } catch (err) {
     if (!(err instanceof RoomsUnavailable)) console.error("[rooms]", err);

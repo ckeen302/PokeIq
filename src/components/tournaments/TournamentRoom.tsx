@@ -12,6 +12,8 @@ import { PLAY_FORMAT_INFO } from "@/lib/battle/play";
 import { STYLE_NAME, type BracketNodeView, type TournamentMatchView, type TournamentView } from "@/lib/tournaments";
 import { cn } from "@/lib/utils";
 import { countdown } from "./TournamentLobby";
+import { NameAvatar } from "@/components/avatar/Avatar";
+import type { AvatarMap } from "@/lib/avatar";
 
 /** One tournament: sign-ups, the live bracket or table, your match, and the winner. Polls while it's going on. */
 export function TournamentRoom({ id }: { id: string }) {
@@ -136,7 +138,7 @@ export function TournamentRoom({ id }: { id: string }) {
         </div>
       )}
 
-      {view.status !== "signup" && view.style === "elim" && view.bracket && <Bracket root={view.bracket} matches={view.matches} />}
+      {view.status !== "signup" && view.style === "elim" && view.bracket && <Bracket root={view.bracket} matches={view.matches} avatars={view.avatars} />}
       {view.status !== "signup" && view.style === "rr" && <Standings view={view} />}
       {view.status !== "signup" && <MatchList view={view} />}
     </div>
@@ -159,7 +161,8 @@ function PlayerList({ view }: { view: TournamentView }) {
       ) : (
         <ul className="flex flex-wrap gap-2" data-testid="tournament-players">
           {view.players.map((p) => (
-            <li key={p.name} className="rounded-md border bg-background px-2 py-1 text-sm">
+            <li key={p.name} className="flex items-center gap-1.5 rounded-md border bg-background px-2 py-1 text-sm">
+              <NameAvatar name={p.name} avatars={view.avatars} />
               <Link href={`/u/${p.name}`} className="hover:underline">
                 {p.name}
               </Link>
@@ -192,7 +195,7 @@ function Winner({ view }: { view: TournamentView }) {
 }
 
 /** The elimination tree, one column per round. */
-function Bracket({ root, matches }: { root: BracketNodeView; matches: TournamentMatchView[] }) {
+function Bracket({ root, matches, avatars }: { root: BracketNodeView; matches: TournamentMatchView[]; avatars?: AvatarMap }) {
   const byId = new Map(matches.map((m) => [m.id, m]));
   const rounds: BracketNodeView[][] = [];
   const height = (n: BracketNodeView): number => (n.children ? 1 + Math.max(height(n.children[0]), height(n.children[1])) : 0);
@@ -219,7 +222,10 @@ function Bracket({ root, matches }: { root: BracketNodeView; matches: Tournament
                 const won = n.state === "finished" && name !== null && n.name === name;
                 return (
                   <div className={cn("flex items-center justify-between gap-2 px-2 py-1", won && "font-semibold text-success")}>
-                    <span className={cn("truncate", !name && "italic text-muted-foreground")}>{name ?? "TBD"}</span>
+                    <span className="flex min-w-0 items-center gap-1.5">
+                      {name && <NameAvatar name={name} avatars={avatars} />}
+                      <span className={cn("truncate", !name && "italic text-muted-foreground")}>{name ?? "TBD"}</span>
+                    </span>
                     {m && <span className="tabular-nums text-xs">{m.wins[i]}</span>}
                   </div>
                 );
@@ -263,7 +269,12 @@ function Standings({ view }: { view: TournamentView }) {
           {rows.map((p, i) => (
             <tr key={p.name} className="border-t">
               <td className="px-3 py-1.5 tabular-nums">{i + 1}</td>
-              <td className={cn("px-3 py-1.5", p.dq && "text-muted-foreground line-through")}>{p.name}</td>
+              <td className={cn("px-3 py-1.5", p.dq && "text-muted-foreground line-through")}>
+                <span className="flex items-center gap-1.5">
+                  <NameAvatar name={p.name} avatars={view.avatars} />
+                  {p.name}
+                </span>
+              </td>
               <td className="px-3 py-1.5 text-right tabular-nums">{p.wins}</td>
               <td className="px-3 py-1.5 text-right tabular-nums">{p.losses}</td>
               <td className="px-3 py-1.5 text-right font-semibold tabular-nums">{p.score}</td>

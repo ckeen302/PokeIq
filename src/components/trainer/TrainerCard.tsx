@@ -18,10 +18,14 @@ import { BadgeMedal } from "@/components/game/BadgeMedal";
 import { ModeIcon } from "@/components/game/ModeIcon";
 import { cn } from "@/lib/utils";
 import { NAME_REJECTED, isCleanName } from "@/lib/name-filter";
+import { useAccount } from "@/lib/account";
+import { Avatar } from "@/components/avatar/Avatar";
+import { AvatarPanel } from "@/components/avatar/AvatarPanel";
 
 /** Local-first trainer profile: level, PokéIQ, streaks, bests and badges. */
 export function TrainerCard() {
   const progress = useProgress();
+  const account = useAccount();
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState("");
   const [nameError, setNameError] = useState<string | null>(null);
@@ -53,48 +57,51 @@ export function TrainerCard() {
         <Card className="overflow-hidden">
           <div className="bg-gradient-to-br from-primary/25 via-primary/5 to-transparent p-6">
             <div className="flex flex-wrap items-center justify-between gap-4">
-              <div className="space-y-1">
-                <p className="hud-label text-screen">Trainer card</p>
-                {editing ? (
-                  <>
-                    <form
-                      className="flex gap-2"
-                      onSubmit={(e) => {
-                        e.preventDefault();
-                        saveName();
-                      }}
-                    >
-                      <input
-                        autoFocus
-                        value={name}
-                        onChange={(e) => {
-                          setName(e.target.value);
-                          setNameError(null);
+              <div className="flex items-center gap-4">
+                <Avatar avatar={account.user?.avatar} size={72} />
+                <div className="space-y-1">
+                  <p className="hud-label text-screen">Trainer card</p>
+                  {editing ? (
+                    <>
+                      <form
+                        className="flex gap-2"
+                        onSubmit={(e) => {
+                          e.preventDefault();
+                          saveName();
                         }}
-                        maxLength={24}
-                        aria-invalid={nameError ? true : undefined}
-                        className="h-10 rounded-md border border-input bg-background px-3 text-lg font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                        placeholder="Your trainer name"
-                      />
-                      <button type="submit" className="rounded-md bg-primary px-3 text-sm font-semibold text-primary-foreground">
-                        Save
-                      </button>
-                    </form>
-                    {nameError && (
-                      <p role="alert" className="text-sm text-destructive">
-                        {nameError}
-                      </p>
-                    )}
-                  </>
-                ) : (
-                  <button type="button" onClick={() => setEditing(true)} className="group flex items-center gap-2 text-left">
-                    <h1 className="font-display text-3xl font-bold uppercase tracking-wide">{progress.name || "Unnamed Trainer"}</h1>
-                    <Pencil className="h-4 w-4 text-muted-foreground group-hover:text-foreground" aria-label="Edit name" />
-                  </button>
-                )}
-                <p className="text-sm text-muted-foreground">
-                  Level {lvl.level} · {progress.xp.toLocaleString()} XP · {lvl.toNext} XP to level {lvl.level + 1}
-                </p>
+                      >
+                        <input
+                          autoFocus
+                          value={name}
+                          onChange={(e) => {
+                            setName(e.target.value);
+                            setNameError(null);
+                          }}
+                          maxLength={24}
+                          aria-invalid={nameError ? true : undefined}
+                          className="h-10 rounded-md border border-input bg-background px-3 text-lg font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                          placeholder="Your trainer name"
+                        />
+                        <button type="submit" className="rounded-md bg-primary px-3 text-sm font-semibold text-primary-foreground">
+                          Save
+                        </button>
+                      </form>
+                      {nameError && (
+                        <p role="alert" className="text-sm text-destructive">
+                          {nameError}
+                        </p>
+                      )}
+                    </>
+                  ) : (
+                    <button type="button" onClick={() => setEditing(true)} className="group flex items-center gap-2 text-left">
+                      <h1 className="font-display text-3xl font-bold uppercase tracking-wide">{progress.name || "Unnamed Trainer"}</h1>
+                      <Pencil className="h-4 w-4 text-muted-foreground group-hover:text-foreground" aria-label="Edit name" />
+                    </button>
+                  )}
+                  <p className="text-sm text-muted-foreground">
+                    Level {lvl.level} · {progress.xp.toLocaleString()} XP · {lvl.toNext} XP to level {lvl.level + 1}
+                  </p>
+                </div>
               </div>
               <div className="text-right">
                 <div className="hud-label">PokéIQ</div>
@@ -120,6 +127,8 @@ export function TrainerCard() {
       </motion.div>
 
       <AccountPanel />
+
+      <AvatarPanel />
 
       <MyBattleRecord />
 

@@ -4,6 +4,7 @@ import { battlesEnabled } from "@/lib/server/battle-engine/store";
 import { listWatchable } from "@/lib/server/battle-engine/watch";
 import { ALL_FORMATS, SPECIAL_FORMATS } from "@/lib/battle/play";
 import type { WatchResponse } from "@/lib/battle/watch";
+import { withAvatars } from "@/lib/server/avatars";
 
 /**
  * GET /api/battle/watch[?format=gen9ou]: live battles anyone may watch
@@ -25,7 +26,8 @@ export async function GET(request: NextRequest) {
   if (!battlesEnabled()) return NextResponse.json({ now, battles: [] } satisfies WatchResponse, { headers: NO_STORE });
   try {
     const battles = await listWatchable((raw as WatchResponse["battles"][number]["format"]) ?? null, now);
-    return NextResponse.json({ now, battles } satisfies WatchResponse, { headers: NO_STORE });
+    const body: WatchResponse = await withAvatars({ now, battles }, battles.flatMap((b) => b.players.map((p) => p.name)));
+    return NextResponse.json(body, { headers: NO_STORE });
   } catch (err) {
     console.error("[battle-watch]", err);
     return NextResponse.json({ error: "Couldn't load live battles. Try again." }, { status: 503, headers: NO_STORE });

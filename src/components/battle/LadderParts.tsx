@@ -9,6 +9,8 @@ import { useLadderStanding } from "@/lib/battle/ladder-client";
 import { TierBadge, TierProgress } from "@/components/pokedle/Ranked";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import { NameAvatar } from "@/components/avatar/Avatar";
+import type { AvatarMap } from "@/lib/avatar";
 
 const fmt = (n: number) => n.toLocaleString("en-US");
 
@@ -36,7 +38,7 @@ export function LadderTabs({ format, hrefBase }: { format: StandardFormatId; hre
 }
 
 /** The top of a format's ladder. */
-export function LadderTable({ rows, format }: { rows: RankedLeaderRow[]; format: StandardFormatId }) {
+export function LadderTable({ rows, format, avatars }: { rows: RankedLeaderRow[]; format: StandardFormatId; avatars?: AvatarMap }) {
   if (!rows.length) {
     return (
       <Card>
@@ -68,7 +70,12 @@ export function LadderTable({ rows, format }: { rows: RankedLeaderRow[]; format:
                 <td className="p-3 font-mono tabular-nums text-muted-foreground">
                   {row.position <= 3 ? <Medal className={cn("h-4 w-4", row.position === 1 ? "text-warning" : row.position === 2 ? "text-slate-300" : "text-amber-600")} aria-label={`${row.position}`} /> : row.position}
                 </td>
-                <td className="max-w-[12rem] truncate p-3 font-semibold">{row.name}</td>
+                <td className="max-w-[12rem] truncate p-3 font-semibold">
+                  <span className="flex items-center gap-2">
+                    <NameAvatar name={row.name} avatars={avatars} />
+                    <span className="truncate">{row.name}</span>
+                  </span>
+                </td>
                 <td className="p-3">
                   <TierBadge rating={row.rating} games={row.games} size="sm" />
                 </td>

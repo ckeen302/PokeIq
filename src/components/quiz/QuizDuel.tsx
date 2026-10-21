@@ -29,6 +29,7 @@ import { DuelChat, DuelTools, EmoteFeed } from "@/components/duel/DuelReactions"
 import { CryPlayer, ImageMedia } from "./QuestionMedia";
 import { cn } from "@/lib/utils";
 import { AddFriendAfterGame } from "@/components/community/AddFriend";
+import { Avatar } from "@/components/avatar/Avatar";
 
 /**
  * A quiz duel at /quiz/duel/<code>: the lobby, ten questions with their
@@ -389,6 +390,7 @@ function Fighter({ view, seat, gained, right }: { view: QuizDuelView; seat: numb
     <div className={cn("min-w-0 space-y-0.5", right && "text-right")}>
       <div className={cn("flex items-center gap-1.5", right && "flex-row-reverse")}>
         <SeatDot seat={seat} />
+        {player && <Avatar avatar={player.avatar} size={24} />}
         <span className="truncate font-display font-bold uppercase">{player?.name ?? "—"}</span>
         {view.you === seat && <span className="hud-label">You</span>}
         {player?.quiet && view.status === "playing" && <WifiOff className="h-3.5 w-3.5 shrink-0 text-warning" aria-label="Connection lost" />}

@@ -10,6 +10,7 @@ import { subscribeRoom } from "@/lib/rooms-client";
 import { CHAT_MAX } from "@/lib/chat";
 import { ROOM_KEPT, ROOM_POLL_MS, ROOM_USERS_MS, type RoomEvent, type RoomMessage, type RoomState } from "@/lib/rooms";
 import { cn } from "@/lib/utils";
+import { Avatar } from "@/components/avatar/Avatar";
 
 /**
  * A chat room: the last 100 messages (plain text, every one checked on the
@@ -205,6 +206,7 @@ export function RoomChat({ room }: { room: string }) {
               {shown.map((m) => (
                 <div key={m.id} className="group flex items-baseline gap-1.5 break-words" data-testid="room-line">
                   <span className="shrink-0 text-[10px] tabular-nums text-muted-foreground">{time(m.at)}</span>
+                  <Avatar avatar={m.avatar} size={20} className="self-center" />
                   <p className="min-w-0 flex-1">
                     <Link href={`/u/${m.name}`} className={cn("font-semibold hover:underline", m.name === me ? "text-primary" : "text-screen")}>
                       {m.name}

@@ -9,13 +9,15 @@ import { startPoller } from "@/lib/polling";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import { NameAvatar } from "@/components/avatar/Avatar";
+import type { AvatarMap } from "@/lib/avatar";
 
 /** The lobby refreshes this often while it's in view (and not at all while hidden). */
 const REFRESH_MS = 15_000;
 
 const FILTERS: (PlayFormatId | null)[] = [null, ...PLAY_FORMATS, "factory"];
 
-function BattleCard({ b, now }: { b: WatchEntry; now: number }) {
+function BattleCard({ b, now, avatars }: { b: WatchEntry; now: number; avatars?: AvatarMap }) {
   return (
     <Link
       href={`/battle/live/${b.code}`}
@@ -33,6 +35,7 @@ function BattleCard({ b, now }: { b: WatchEntry; now: number }) {
       <span className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 font-display text-lg font-bold uppercase leading-tight">
         {b.players.map((p, i) => (
           <span key={i} className={cn("min-w-0", i === 1 && "order-3 text-right")}>
+            <NameAvatar name={p.name} avatars={avatars} size={28} className={cn("mb-1", i === 1 && "ml-auto")} />
             <span className={cn("block truncate", i === 0 ? "text-primary" : "text-screen")}>{p.name}</span>
             {p.rating !== undefined && <span className="block font-pixel text-[10px] font-normal tabular-nums text-muted-foreground">{p.rating}</span>}
           </span>
@@ -129,7 +132,7 @@ export function WatchLobby() {
       ) : battles.length ? (
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3" data-testid="watch-list">
           {battles.map((b) => (
-            <BattleCard key={b.code} b={b} now={data!.now} />
+            <BattleCard key={b.code} b={b} now={data!.now} avatars={data!.avatars} />
           ))}
         </div>
       ) : (

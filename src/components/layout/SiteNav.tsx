@@ -3,9 +3,10 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
-import { BookOpen, CalendarDays, Compass, Gamepad2, Home, Search, Swords, User } from "lucide-react";
+import { BookOpen, CalendarDays, Compass, Gamepad2, Home, Search, Swords } from "lucide-react";
 import { levelInfo, useProgress } from "@/lib/progress";
 import { useAccount } from "@/lib/account";
+import { Avatar } from "@/components/avatar/Avatar";
 import { cn } from "@/lib/utils";
 import { MuteToggle } from "./MuteToggle";
 import { ThemeToggle } from "./ThemeToggle";
@@ -88,7 +89,7 @@ export function DesktopNav() {
           isActive(pathname, "/trainer") && "border-screen/60 text-foreground"
         )}
       >
-        <User className="h-4 w-4" aria-hidden />
+        <Avatar avatar={account.user?.avatar} size={22} />
         <span className="max-w-[9rem] truncate font-display font-semibold">{account.user?.username ?? (progress?.name || "Trainer")}</span>
         {progress && progress.xp > 0 && (
           <span className="font-pixel text-[10px] text-screen">Lv{levelInfo(progress.xp).level}</span>
