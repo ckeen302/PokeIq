@@ -1,0 +1,13 @@
+[
+  {"gen":1,"game":"Pokémon Red, Blue and Yellow","professor":"Professor Oak","source":"https://bulbapedia.bulbagarden.net/wiki/Professor_Oak"},
+  {"gen":2,"game":"Pokémon Gold, Silver and Crystal","professor":"Professor Elm","avoid":["Professor Oak"],"source":"https://bulbapedia.bulbagarden.net/wiki/Professor_Elm"},
+  {"gen":3,"game":"Pokémon Ruby, Sapphire and Emerald","professor":"Professor Birch","source":"https://bulbapedia.bulbagarden.net/wiki/Professor_Birch"},
+  {"gen":4,"game":"Pokémon Diamond, Pearl and Platinum","professor":"Professor Rowan","source":"https://bulbapedia.bulbagarden.net/wiki/Professor_Rowan"},
+  {"gen":5,"game":"Pokémon Black and White","professor":"Professor Juniper","source":"https://bulbapedia.bulbagarden.net/wiki/Professor_Juniper"},
+  {"gen":6,"game":"Pokémon X and Y","professor":"Professor Sycamore","source":"https://bulbapedia.bulbagarden.net/wiki/Professor_Sycamore"},
+  {"gen":7,"game":"Pokémon Sun and Moon","professor":"Professor Kukui","source":"https://bulbapedia.bulbagarden.net/wiki/Professor_Kukui"},
+  {"gen":8,"game":"Pokémon Sword and Shield","professor":"Professor Magnolia","source":"https://bulbapedia.bulbagarden.net/wiki/Professor_Magnolia"},
+  {"gen":8,"game":"Pokémon Legends: Arceus","professor":"Professor Laventon","avoid":["Professor Rowan"],"source":"https://bulbapedia.bulbagarden.net/wiki/Professor_Laventon"},
+  {"gen":9,"game":"Pokémon Scarlet","professor":"Professor Sada","avoid":["Professor Turo"],"source":"https://bulbapedia.bulbagarden.net/wiki/Professor_Sada"},
+  {"gen":9,"game":"Pokémon Violet","professor":"Professor Turo","avoid":["Professor Sada"],"source":"https://bulbapedia.bulbagarden.net/wiki/Professor_Turo"}
+]

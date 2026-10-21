@@ -11,6 +11,38 @@ export interface ModuleInfo {
   /** HSL triplet used for per-mode accent glows. */
   accent: string;
   defaultFormat: QuizFormat;
+  /** The optional filter in the setup screen (the session's `gens`). Defaults to Pokédex generations. */
+  filter?: QuizFilter;
+}
+
+export interface QuizFilter {
+  label: string;
+  /** Chip labels for values 1..n, with an optional hover title. */
+  chips: { label: string; title?: string }[];
+  /** Shown when nothing is selected. */
+  note?: string;
+}
+
+const REGION_TITLES = ["Kanto", "Johto", "Hoenn", "Sinnoh", "Unova", "Kalos", "Alola", "Galar", "Paldea"];
+const MIX_NOTE = "Every difficulty mixes easy, medium and hard questions; the setting tilts the mix.";
+
+export const GEN_FILTER: QuizFilter = {
+  label: "Generations",
+  chips: REGION_TITLES.map((title, i) => ({ label: `Gen ${i + 1}`, title })),
+  note: "Without a filter, Easy uses Gens 1–2, Medium Gens 1–5 and Hard all nine.",
+};
+
+/** Same nine values: a game's generation, remakes included (FireRed is Gen 3). */
+const GAMES_FILTER: QuizFilter = { ...GEN_FILTER, note: MIX_NOTE };
+
+const ANIME_FILTER: QuizFilter = {
+  label: "Series",
+  chips: ["Original", "Advanced", "Diamond & Pearl", "Black & White", "XY", "Sun & Moon", "Journeys", "Horizons"].map((label) => ({ label })),
+  note: MIX_NOTE,
+};
+
+export function filterFor(module: ModuleId): QuizFilter {
+  return MODULE_INFO[module].filter ?? GEN_FILTER;
 }
 
 export const MODULE_INFO: Record<ModuleId, ModuleInfo> = {
@@ -59,6 +91,26 @@ export const MODULE_INFO: Record<ModuleId, ModuleInfo> = {
     accent: "154 68% 46%",
     defaultFormat: "survival",
   },
+  games: {
+    id: "games",
+    title: "Mainline Games",
+    tagline: "Gyms, rivals, regions & more",
+    description: "Gym Leaders, Champions, villains, starters, regions and mechanics from every core RPG, Red and Blue to Legends: Z-A.",
+    emoji: "🎮",
+    accent: "12 90% 62%",
+    defaultFormat: "classic",
+    filter: GAMES_FILTER,
+  },
+  anime: {
+    id: "anime",
+    title: "Pokémon Anime",
+    tagline: "Ash, friends & Team Rocket",
+    description: "Ash's Pokémon, his companions and rivals, Team Rocket, league results, movies and Horizons. English dub names.",
+    emoji: "📺",
+    accent: "48 96% 58%",
+    defaultFormat: "classic",
+    filter: ANIME_FILTER,
+  },
   mixed: {
     id: "mixed",
     title: "Mixed Bag",
@@ -70,7 +122,7 @@ export const MODULE_INFO: Record<ModuleId, ModuleInfo> = {
   },
 };
 
-export const PLAY_MODULES: ModuleId[] = ["whos-that", "cry", "dex", "types", "higher-lower", "mixed"];
+export const PLAY_MODULES: ModuleId[] = ["whos-that", "cry", "dex", "types", "higher-lower", "games", "anime", "mixed"];
 
 export const FORMAT_INFO: Record<QuizFormat, { title: string; description: string }> = {
   classic: { title: "Classic", description: "10 questions · 15s each" },
@@ -132,6 +184,20 @@ export const QUIZ_PRESETS: QuizPreset[] = [
     title: "Pokémon Higher or Lower — Base Stats Game",
     h1: "Higher or Lower",
     description: "Which Pokémon is faster, heavier or has the higher base stat total? Keep your streak alive.",
+  },
+  {
+    slug: "pokemon-games-quiz",
+    module: "games",
+    title: "Pokémon Games Quiz — Gym Leaders, Champions & Regions",
+    h1: "Mainline Games Quiz",
+    description: "How well do you know the core Pokémon RPGs? Gym Leaders, Elite Four, rivals, villains, starters and regions from Red and Blue to Legends: Z-A.",
+  },
+  {
+    slug: "pokemon-anime-quiz",
+    module: "anime",
+    title: "Pokémon Anime Quiz — Ash, Team Rocket & Horizons",
+    h1: "Pokémon Anime Quiz",
+    description: "Ash's Pokémon, his friends and rivals, Team Rocket, league results, the movies and Pokémon Horizons. Every answer checked against Bulbapedia.",
   },
   {
     slug: "pokemon-trivia-quiz",

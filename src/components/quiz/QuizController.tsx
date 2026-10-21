@@ -1,5 +1,6 @@
 "use client";
 
+import { SourceLink } from "./SourceLink";
 import { useCallback, useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
@@ -501,7 +502,7 @@ export function QuizController({ request, challenger, onRestart }: QuizControlle
                   speed={10}
                   className={graded.correct ? "border-success/90" : "border-destructive/90"}
                 >
-                  {graded.explanation && (
+                  {(graded.explanation || graded.sourceUrl) && (
                     <p className="text-sm text-muted-foreground">
                       {graded.explanation}
                       {graded.learnHref && (
@@ -512,6 +513,7 @@ export function QuizController({ request, challenger, onRestart }: QuizControlle
                           </Link>
                         </>
                       )}
+                      {graded.sourceUrl && <SourceLink href={graded.sourceUrl} />}
                     </p>
                   )}
                 </DialogBox>

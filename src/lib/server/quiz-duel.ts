@@ -212,6 +212,7 @@ export function quizView(duel: QuizDuel, playerId: string | null, now: number, r
         explanation: q.explanation,
         revealUrl: index === lastRevealed && q.revealMedia ? mediaUrl(q.revealMedia) : undefined,
         learnHref: learnHref(q),
+        sourceUrl: q.source,
         picks: x.picks.map((_, k) => scorePick(duel, index, k)),
         scores: [...scores],
       },

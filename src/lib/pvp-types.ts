@@ -256,6 +256,7 @@ export interface QuizDuelResult {
   /** The Pokémon's artwork, for the latest reveal only. */
   revealUrl?: string;
   learnHref?: string;
+  sourceUrl?: string;
   /** One per seat: the pick, or null (no answer in time: 0 points). */
   picks: (QuizDuelPick | null)[];
   /** Points so far, after this question. */

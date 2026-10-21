@@ -1,0 +1,12 @@
+[
+  {"gen":1,"game":"Pokémon Red and Blue","team":"Team Rocket","leader":"Giovanni","source":"https://bulbapedia.bulbagarden.net/wiki/Team_Rocket"},
+  {"gen":3,"game":"Pokémon Ruby, Sapphire and Emerald","team":"Team Magma","leader":"Maxie","source":"https://bulbapedia.bulbagarden.net/wiki/Team_Magma"},
+  {"gen":3,"game":"Pokémon Ruby, Sapphire and Emerald","team":"Team Aqua","leader":"Archie","source":"https://bulbapedia.bulbagarden.net/wiki/Team_Aqua"},
+  {"gen":4,"game":"Pokémon Diamond, Pearl and Platinum","team":"Team Galactic","leader":"Cyrus","source":"https://bulbapedia.bulbagarden.net/wiki/Team_Galactic"},
+  {"gen":5,"game":"Pokémon Black and White","team":"Team Plasma","leader":"Ghetsis","ask":"team","source":"https://bulbapedia.bulbagarden.net/wiki/Team_Plasma"},
+  {"gen":6,"game":"Pokémon X and Y","team":"Team Flare","leader":"Lysandre","source":"https://bulbapedia.bulbagarden.net/wiki/Team_Flare"},
+  {"gen":7,"game":"Pokémon Sun and Moon","team":"Team Skull","leader":"Guzma","source":"https://bulbapedia.bulbagarden.net/wiki/Team_Skull"},
+  {"gen":7,"game":"Pokémon Sun and Moon","team":"Aether Foundation","leader":"Lusamine","source":"https://bulbapedia.bulbagarden.net/wiki/Aether_Foundation"},
+  {"gen":8,"game":"Pokémon Sword and Shield","team":"Macro Cosmos","leader":"Chairman Rose","source":"https://bulbapedia.bulbagarden.net/wiki/Macro_Cosmos"},
+  {"gen":9,"game":"Pokémon Scarlet and Violet","team":"Team Star","leader":"Penny","source":"https://bulbapedia.bulbagarden.net/wiki/Team_Star"}
+]

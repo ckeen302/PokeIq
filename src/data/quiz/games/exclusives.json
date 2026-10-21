@@ -1,0 +1,7 @@
+[
+  {"gen":1,"a":"Pokémon Red","b":"Pokémon Blue","onlyA":["Ekans","Oddish","Mankey","Growlithe","Scyther","Electabuzz"],"onlyB":["Sandshrew","Vulpix","Meowth","Bellsprout","Pinsir","Magmar"],"source":"https://bulbapedia.bulbagarden.net/wiki/Pok%C3%A9mon_Red_and_Blue_Versions"},
+  {"gen":2,"a":"Pokémon Gold","b":"Pokémon Silver","onlyA":["Mankey","Growlithe","Spinarak","Gligar","Teddiursa","Mantine"],"onlyB":["Vulpix","Meowth","Ledyba","Skarmory","Delibird","Phanpy"],"source":"https://bulbapedia.bulbagarden.net/wiki/Pok%C3%A9mon_Gold_and_Silver_Versions"},
+  {"gen":3,"a":"Pokémon Ruby","b":"Pokémon Sapphire","onlyA":["Seedot","Mawile","Zangoose","Solrock"],"onlyB":["Lotad","Sableye","Seviper","Lunatone"],"source":"https://bulbapedia.bulbagarden.net/wiki/Pok%C3%A9mon_Ruby_and_Sapphire_Versions"},
+  {"gen":8,"a":"Pokémon Sword","b":"Pokémon Shield","onlyA":["Deino","Jangmo-o","Flapple","Stonjourner","Turtonator"],"onlyB":["Larvitar","Goomy","Appletun","Eiscue","Drampa"],"source":"https://bulbapedia.bulbagarden.net/wiki/Pok%C3%A9mon_Sword_and_Shield"},
+  {"gen":9,"a":"Pokémon Scarlet","b":"Pokémon Violet","onlyA":["Great Tusk","Armarouge","Scream Tail","Brute Bonnet"],"onlyB":["Iron Treads","Ceruledge","Iron Bundle","Iron Hands"],"source":"https://bulbapedia.bulbagarden.net/wiki/Pok%C3%A9mon_Scarlet_and_Violet"}
+]

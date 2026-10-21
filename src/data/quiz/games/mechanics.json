@@ -1,0 +1,19 @@
+[
+  {"name":"Abilities","gen":3,"games":"Pokémon Ruby and Sapphire","source":"https://bulbapedia.bulbagarden.net/wiki/Ability"},
+  {"name":"Natures","gen":3,"games":"Pokémon Ruby and Sapphire","source":"https://bulbapedia.bulbagarden.net/wiki/Nature"},
+  {"name":"Double Battles","gen":3,"games":"Pokémon Ruby and Sapphire","source":"https://bulbapedia.bulbagarden.net/wiki/Double_Battle"},
+  {"name":"Pokémon Contests","gen":3,"games":"Pokémon Ruby and Sapphire","source":"https://bulbapedia.bulbagarden.net/wiki/Pok%C3%A9mon_Contest"},
+  {"name":"held items","gen":2,"games":"Pokémon Gold and Silver","source":"https://bulbapedia.bulbagarden.net/wiki/Held_item"},
+  {"name":"Pokémon breeding and Eggs","gen":2,"games":"Pokémon Gold and Silver","source":"https://bulbapedia.bulbagarden.net/wiki/Pok%C3%A9mon_breeding"},
+  {"name":"Shiny Pokémon","gen":2,"games":"Pokémon Gold and Silver","source":"https://bulbapedia.bulbagarden.net/wiki/Shiny_Pok%C3%A9mon"},
+  {"name":"the Steel and Dark types","gen":2,"games":"Pokémon Gold and Silver","source":"https://bulbapedia.bulbagarden.net/wiki/Type"},
+  {"name":"the physical/special split","gen":4,"games":"Pokémon Diamond and Pearl","source":"https://bulbapedia.bulbagarden.net/wiki/Damage_category"},
+  {"name":"the Global Trade Station (GTS)","gen":4,"games":"Pokémon Diamond and Pearl","source":"https://bulbapedia.bulbagarden.net/wiki/Global_Trade_Station"},
+  {"name":"Hidden Abilities","gen":5,"games":"Pokémon Black and White","source":"https://bulbapedia.bulbagarden.net/wiki/Hidden_Ability"},
+  {"name":"Triple Battles","gen":5,"games":"Pokémon Black and White","source":"https://bulbapedia.bulbagarden.net/wiki/Triple_Battle"},
+  {"name":"the Fairy type","gen":6,"games":"Pokémon X and Y","source":"https://bulbapedia.bulbagarden.net/wiki/Fairy_(type)"},
+  {"name":"Mega Evolution","gen":6,"games":"Pokémon X and Y","source":"https://bulbapedia.bulbagarden.net/wiki/Mega_Evolution"},
+  {"name":"Z-Moves","gen":7,"games":"Pokémon Sun and Moon","source":"https://bulbapedia.bulbagarden.net/wiki/Z-Move"},
+  {"name":"Dynamax","gen":8,"games":"Pokémon Sword and Shield","source":"https://bulbapedia.bulbagarden.net/wiki/Dynamax"},
+  {"name":"Terastallization","gen":9,"games":"Pokémon Scarlet and Violet","source":"https://bulbapedia.bulbagarden.net/wiki/Terastal_phenomenon"}
+]

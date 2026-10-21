@@ -1,0 +1,11 @@
+[
+  {"league":"Indigo Plateau Conference","series":1,"result":"Top 16","opponent":"Ritchie","won":false,"source":"https://bulbapedia.bulbagarden.net/wiki/Indigo_Plateau_Conference"},
+  {"league":"Orange League","series":1,"result":"Winner","opponent":"Drake","won":true,"source":"https://bulbapedia.bulbagarden.net/wiki/Drake_(Orange_Islands)"},
+  {"league":"Silver Conference","series":1,"result":"Top 8","opponent":"Harrison","won":false,"source":"https://bulbapedia.bulbagarden.net/wiki/Silver_Conference"},
+  {"league":"Ever Grande Conference","series":2,"result":"Top 8","opponent":"Tyson","won":false,"source":"https://bulbapedia.bulbagarden.net/wiki/Ever_Grande_Conference"},
+  {"league":"Lily of the Valley Conference","series":3,"result":"Top 4","opponent":"Tobias","won":false,"source":"https://bulbapedia.bulbagarden.net/wiki/Lily_of_the_Valley_Conference"},
+  {"league":"Vertress Conference","series":4,"result":"Top 8","opponent":"Cameron","won":false,"source":"https://bulbapedia.bulbagarden.net/wiki/Vertress_Conference"},
+  {"league":"Lumiose Conference","series":5,"result":"Runner-up","opponent":"Alain","won":false,"source":"https://bulbapedia.bulbagarden.net/wiki/Lumiose_Conference"},
+  {"league":"Manalo Conference","series":6,"result":"Winner","opponent":"Gladion","won":true,"source":"https://bulbapedia.bulbagarden.net/wiki/Manalo_Conference"},
+  {"league":"Pokémon World Coronation Series","series":7,"result":"Winner","opponent":"Leon","won":true,"source":"https://bulbapedia.bulbagarden.net/wiki/Pok%C3%A9mon_World_Coronation_Series"}
+]

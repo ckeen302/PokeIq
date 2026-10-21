@@ -391,6 +391,7 @@ export function gradeAnswer(state: SessionState, choice: string | null): AnswerO
     explanation: q.explanation,
     revealUrl: q.revealMedia ? mediaUrl(q.revealMedia) : undefined,
     learnHref: learnHref(q),
+    sourceUrl: q.source,
     tags: runExpired ? [] : skillTags(q),
     gained,
     score: next.score,

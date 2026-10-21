@@ -6,6 +6,7 @@ import { randomId, verifyToken } from "@/lib/server/crypto";
 import { clientIp, rateLimit } from "@/lib/server/rate-limit";
 import { startSession } from "@/lib/server/session";
 import { optionalName } from "@/lib/name-filter";
+import { filterFor } from "@/lib/modes";
 import type { SessionSpec, ShareCard } from "@/lib/session-types";
 
 /**
@@ -57,9 +58,10 @@ export async function POST(request: NextRequest) {
     // Same seed => identical questions. Not a daily entry, even if it replays one.
     spec = { module: card.m, format: card.f, difficulty: card.d, gens: card.g, seed: card.s, practice: "challenge" };
   } else {
-    // All nine generations is the same as no filter.
-    const unique = [...new Set(body.gens ?? [])].sort((a, b) => a - b);
-    const gens = unique.length > 0 && unique.length < 9 ? unique : undefined;
+    // Every generation (or anime series) selected is the same as no filter.
+    const size = filterFor(body.module).chips.length;
+    const unique = [...new Set(body.gens ?? [])].filter((g) => g <= size).sort((a, b) => a - b);
+    const gens = unique.length > 0 && unique.length < size ? unique : undefined;
     spec = { module: body.module, format: body.format, difficulty: body.difficulty, gens, seed: randomId() };
     if (gens) spec.practice = "filtered";
   }
