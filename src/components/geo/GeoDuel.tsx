@@ -38,8 +38,10 @@ const fmt = (n: number) => n.toLocaleString("en-US");
 
 /** As in the single-player game: no "Kanto " before route names, and the region when the map doesn't say it. */
 const clean = (s: string) => s.replace(/^(Kanto|Johto|Hoenn|Sinnoh|Unova|Kalos|Alola|Galar|Paldea) (?=Route)/, "");
+/** The in-game name, without the wiki's disambiguation ("Iron Ruins (Sinnoh)", "Battle Tower (Generation III)", "Victory Road (BW)"). */
+const shown = (s: string) => clean(s).replace(/ \((Kanto|Johto|Hoenn|Sinnoh|Unova|Kalos|Alola|Galar|Paldea|Generation [IVX]+|BW|B2W2|Jagged Pass)\)$/, "");
 function placeName(answer: GeoAnswer, map: GeoRegionInfo): string {
-  const name = answer.parent ? `${clean(answer.name)} · ${clean(answer.parent)}` : clean(answer.name);
+  const name = answer.parent ? `${shown(answer.name)} · ${shown(answer.parent)}` : shown(answer.name);
   return answer.region && answer.region !== map.name ? `${name}, ${answer.region}` : name;
 }
 

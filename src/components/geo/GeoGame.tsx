@@ -95,8 +95,10 @@ const where = (region: GeoRegionInfo) => (region.id === WORLD_REGION ? "the Pok�
  * routes carry, plus the region when the map doesn't make it obvious.
  */
 const clean = (s: string) => s.replace(/^(Kanto|Johto|Hoenn|Sinnoh|Unova|Kalos|Alola|Galar|Paldea) (?=Route)/, "");
+/** The in-game name, without the wiki's disambiguation ("Iron Ruins (Sinnoh)", "Battle Tower (Generation III)", "Victory Road (BW)"). */
+const shown = (s: string) => clean(s).replace(/ \((Kanto|Johto|Hoenn|Sinnoh|Unova|Kalos|Alola|Galar|Paldea|Generation [IVX]+|BW|B2W2|Jagged Pass)\)$/, "");
 function placeName(answer: { name: string; parent?: string; region?: string }, map?: GeoRegionInfo): string {
-  const name = answer.parent ? `${clean(answer.name)} · ${clean(answer.parent)}` : clean(answer.name);
+  const name = answer.parent ? `${shown(answer.name)} · ${shown(answer.parent)}` : shown(answer.name);
   return answer.region && map && answer.region !== map.name ? `${name}, ${answer.region}` : name;
 }
 
