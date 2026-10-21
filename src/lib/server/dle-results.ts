@@ -2,11 +2,12 @@ import "server-only";
 import { getServiceSupabase } from "@/lib/supabase";
 import { getPokemon } from "@/lib/pokemon/pokedex";
 import { isValidDailyDate, LAUNCH_DATE } from "@/lib/daily";
-import { DLE_HINT_KINDS, DLE_MAX_GUESSES, type DleHint } from "@/lib/dle-types";
+import { DLE_HINT_KINDS, DLE_SQUIRDLE_FROM, type DleHint } from "@/lib/dle-types";
 import { DLE_DEFAULT_ASSIST, dleAssistOf, type DleAssist } from "@/lib/dle-assist";
+import { dailyRules, type DleDailyFormat } from "@/lib/dle-format";
 import type { DleDaySummary, DlePersonal } from "@/lib/dle-community";
 import { deriveSeed } from "./crypto";
-import { evaluate, hardModeError, type DlePuzzle } from "./pokedle";
+import { dailyPuzzleOf, evaluate, hardModeError, type DlePuzzle } from "./pokedle";
 
 /**
  * Pokédle community stats: one result per daily puzzle and trainer, and the
@@ -35,14 +36,16 @@ import { evaluate, hardModeError, type DlePuzzle } from "./pokedle";
 /** What the browser sends to identify a trainer: a random id it keeps. */
 export const DLE_PLAYER_RE = /^[A-Za-z0-9_-]{16,64}$/;
 
-/** The day's puzzle, as /api/pokedle plays it. */
-export const dailyPuzzle = (date: string): DlePuzzle => ({ id: `daily:${date}` });
+/** The day's puzzle in a format, as /api/pokedle plays it. */
+export const dailyPuzzle = (date: string, format: DleDailyFormat = "classic"): DlePuzzle => dailyPuzzleOf(date, format);
 
 /** The key a trainer's results are stored under: an HMAC, never the id itself. */
 export const playerKey = (identity: string) => deriveSeed("dle-player", identity);
 
 export interface DleResultRow {
   date: string;
+  /** Each format's daily is its own puzzle, with its own results (migration 0022). */
+  format: DleDailyFormat;
   player: string;
   guesses: number;
   solved: boolean;
@@ -77,7 +80,7 @@ export interface RawSummary {
 export interface DleResultStore {
   /** Keeps the first result per day and trainer; returns the row kept. Null when the store isn't there. */
   record(row: DleResultRow): Promise<RecordedRow | null>;
-  summary(date: string): Promise<RawSummary | null>;
+  summary(date: string, format?: DleDailyFormat): Promise<RawSummary | null>;
 }
 
 const TOP_OPENERS = 5;
@@ -94,14 +97,15 @@ const globalStore = globalThis as unknown as { __pokeiqDleResults?: { seq: numbe
 
 export function memoryResultStore(): DleResultStore {
   const db = (globalStore.__pokeiqDleResults ??= { seq: 0, days: new Map<string, MemoryRow[]>() });
-  const dayOf = (date: string) => {
-    let rows = db.days.get(date);
-    if (!rows) db.days.set(date, (rows = []));
+  const dayOf = (date: string, format: DleDailyFormat = "classic") => {
+    const key = format === "classic" ? date : `${date}|${format}`;
+    let rows = db.days.get(key);
+    if (!rows) db.days.set(key, (rows = []));
     return rows;
   };
   return {
     async record(row) {
-      const day = dayOf(row.date);
+      const day = dayOf(row.date, row.format);
       let mine = day.find((r) => r.player === row.player);
       const recorded = !mine;
       if (!mine) day.push((mine = { ...row, seq: ++db.seq }));
@@ -114,8 +118,8 @@ export function memoryResultStore(): DleResultStore {
         sameOpener: day.filter((r) => r.firstGuess === me.firstGuess).length,
       };
     },
-    async summary(date) {
-      const day = dayOf(date);
+    async summary(date, format) {
+      const day = dayOf(date, format);
       const solves: Record<number, number> = {};
       const openers = new Map<number, number>();
       for (const r of day) {
@@ -159,10 +163,69 @@ function tableMissing(error: { code?: string; message?: string }): boolean {
   return true;
 }
 
+/**
+ * Migration 0022 (a format per result): until it's applied, only Classic has
+ * community stats. Classic's calls never send a format, so they work either
+ * way; the Squirdle-style daily's are off (null) while the functions don't
+ * take one, without turning Classic's off.
+ */
+let noFormatsUntil = 0;
+
+function formatsMissing(error: { code?: string; message?: string }): boolean {
+  if (!MISSING.has(error.code ?? "")) return false;
+  if (Date.now() >= noFormatsUntil) console.warn("[dle-results] Squirdle-style community stats are off until migration 0022_pokedle_formats.sql is applied:", error.message);
+  noFormatsUntil = Date.now() + RECHECK_MS;
+  return true;
+}
+
+/** dle_record_result's reply as the row kept. */
+function recordedOf(data: unknown, row: DleResultRow): RecordedRow {
+  const r = data as {
+    recorded: boolean;
+    guesses: number;
+    solved: boolean;
+    first_guess: number;
+    assist?: string | null;
+    score?: number | null;
+    position: number;
+    rank: number | null;
+    same_opener: number;
+  };
+  // Without 0015 the row has no level: this request's is the best there is.
+  const kept = r.assist == null ? { assist: row.assist, score: row.score } : { assist: dleAssistOf(r.assist), score: Number(r.score ?? 0) };
+  return {
+    recorded: r.recorded,
+    row: { guesses: r.guesses, solved: r.solved, firstGuess: r.first_guess, ...kept },
+    position: Number(r.position),
+    rank: r.rank === null ? null : Number(r.rank),
+    sameOpener: Number(r.same_opener),
+  };
+}
+
 export function supabaseResultStore(sb: NonNullable<ReturnType<typeof getServiceSupabase>>): DleResultStore {
   return {
     async record(row) {
       if (Date.now() < missingUntil) return null;
+      if (row.format !== "classic") {
+        if (Date.now() < noFormatsUntil) return null;
+        const { data, error } = await sb.rpc("dle_record_result", {
+          p_date: row.date,
+          p_player: row.player,
+          p_guesses: row.guesses,
+          p_solved: row.solved,
+          p_hard: row.hard,
+          p_hints: row.hints,
+          p_first: row.firstGuess,
+          p_assist: row.assist,
+          p_score: row.score,
+          p_format: row.format,
+        });
+        if (error) {
+          if (formatsMissing(error)) return null;
+          throw new Error(error.message);
+        }
+        return recordedOf(data, row);
+      }
       const args = {
         p_date: row.date,
         p_player: row.player,
@@ -183,32 +246,15 @@ export function supabaseResultStore(sb: NonNullable<ReturnType<typeof getService
         if (tableMissing(error)) return null;
         throw new Error(error.message);
       }
-      const r = data as {
-        recorded: boolean;
-        guesses: number;
-        solved: boolean;
-        first_guess: number;
-        assist?: string | null;
-        score?: number | null;
-        position: number;
-        rank: number | null;
-        same_opener: number;
-      };
-      // Without 0015 the row has no level: this request's is the best there is.
-      const kept = r.assist == null ? { assist: row.assist, score: row.score } : { assist: dleAssistOf(r.assist), score: Number(r.score ?? 0) };
-      return {
-        recorded: r.recorded,
-        row: { guesses: r.guesses, solved: r.solved, firstGuess: r.first_guess, ...kept },
-        position: Number(r.position),
-        rank: r.rank === null ? null : Number(r.rank),
-        sameOpener: Number(r.same_opener),
-      };
+      return recordedOf(data, row);
     },
-    async summary(date) {
+    async summary(date, format = "classic") {
       if (Date.now() < missingUntil) return null;
-      const { data, error } = await sb.rpc("dle_day_summary", { p_date: date });
+      const classic = format === "classic";
+      if (!classic && Date.now() < noFormatsUntil) return null;
+      const { data, error } = await sb.rpc("dle_day_summary", classic ? { p_date: date } : { p_date: date, p_format: format });
       if (error) {
-        if (tableMissing(error)) return null;
+        if (classic ? tableMissing(error) : formatsMissing(error)) return null;
         throw new Error(error.message);
       }
       const r = data as { players: number; solved: number; solves: Record<string, number>; openers: [number, number][] };
@@ -247,6 +293,8 @@ export interface ResultInput {
   hints?: readonly DleHint[];
   /** The Pokédex assist level the game was played at (the Notebook when absent). */
   assist?: DleAssist;
+  /** Which daily: Classic (when absent) or the Squirdle-style one. */
+  format?: DleDailyFormat;
 }
 
 /**
@@ -259,18 +307,22 @@ export async function recordDleResult(
   now = Date.now()
 ): Promise<{ ok: true; you: DlePersonal } | RecordFailure | null> {
   if (!isValidDailyDate(input.date, now)) return fail(400, "Only today's Pokédle counts.");
-  const puzzle = dailyPuzzle(input.date);
+  const format = input.format ?? "classic";
+  if (format === "squirdle" && input.date < DLE_SQUIRDLE_FROM) return fail(400, "No Squirdle-style Pokédle that day.");
+  const puzzle = dailyPuzzle(input.date, format);
+  const rules = dailyRules(format);
   const assist = input.assist ?? DLE_DEFAULT_ASSIST;
   const hints = DLE_HINT_KINDS.filter((h) => input.hints?.includes(h));
-  const result = evaluate(puzzle, input.guesses, hints, assist);
+  const result = evaluate(puzzle, input.guesses, hints, assist, rules);
   if (!result.over) return fail(409, "Finish the puzzle first.");
   if (!store) return null;
   const out = await store.record({
     date: input.date,
+    format,
     player: playerKey(input.identity),
     guesses: result.rows.length,
     solved: result.solved,
-    hard: input.hard === true && hardModeError(puzzle, input.guesses) === null,
+    hard: input.hard === true && hardModeError(puzzle, input.guesses, rules) === null,
     hints: hints.length,
     firstGuess: result.rows[0].id,
     assist,
@@ -303,10 +355,11 @@ export function isStatsDate(date: unknown, now = Date.now()): date is string {
 }
 
 /** The day's totals. Null when community stats are off. */
-export async function dleDaySummary(date: string, store: DleResultStore | null = resultStore()): Promise<DleDaySummary | null> {
-  const raw = store ? await store.summary(date) : null;
+export async function dleDaySummary(date: string, store: DleResultStore | null = resultStore(), format: DleDailyFormat = "classic"): Promise<DleDaySummary | null> {
+  if (format === "squirdle" && date < DLE_SQUIRDLE_FROM) return null;
+  const raw = store ? await store.summary(date, format) : null;
   if (!raw) return null;
-  const dist = Array.from({ length: DLE_MAX_GUESSES }, (_, k) => raw.solves[k + 1] ?? 0);
+  const dist = Array.from({ length: dailyRules(format).maxGuesses }, (_, k) => raw.solves[k + 1] ?? 0);
   return {
     date,
     players: raw.players,

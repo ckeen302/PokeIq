@@ -1,4 +1,5 @@
-import { DLE_COLUMNS, type CellStatus, type DleColumn } from "./dle-types";
+import { type CellStatus, type DleColumn } from "./dle-types";
+import { CLASSIC_RULES, strictStatus, type DleRules } from "./dle-format";
 
 /**
  * Pokédle's clues, in one place: the server's puzzles and duels, hard mode's
@@ -66,12 +67,17 @@ export function clueStatus(column: DleColumn, guess: DleTraits, answer: DleTrait
   }
 }
 
-export type DleStatuses = Record<DleColumn, CellStatus>;
+/** The clue of each column a game shows (only those). */
+export type DleStatuses = Partial<Record<DleColumn, CellStatus>>;
 
-/** Every column's clue for `guess` when the answer is `answer`. */
-export function compareTraits(guess: DleTraits, answer: DleTraits): DleStatuses {
-  const out = {} as DleStatuses;
-  for (const { key } of DLE_COLUMNS) out[key] = clueStatus(key, guess, answer);
+/**
+ * The clue of every column the rules show for `guess` when the answer is
+ * `answer`, with close states turned into plain arrows when the rules have
+ * none (Squirdle-style, or strict).
+ */
+export function compareTraits(guess: DleTraits, answer: DleTraits, rules: Pick<DleRules, "columns" | "close"> = CLASSIC_RULES): DleStatuses {
+  const out: DleStatuses = {};
+  for (const key of rules.columns) out[key] = strictStatus(clueStatus(key, guess, answer), rules.close);
   return out;
 }
 
@@ -95,10 +101,15 @@ export function panelClueStatus(column: DlePanelColumn, guess: DlePanelTraits, a
 /**
  * The first generation or type clue that `guess` got (`statuses`) and that
  * `candidate` couldn't have given, or null: the Pokédex greys `candidate`
- * out exactly when this isn't null for some guess.
+ * out exactly when this isn't null for some guess. A column the game
+ * doesn't show (missing from `statuses`) rules nothing out; `close` false
+ * reads clues as the game shows them without close states.
  */
-export function panelMisfit(guess: DlePanelTraits, statuses: Pick<DleStatuses, DlePanelColumn>, candidate: DlePanelTraits): DlePanelColumn | null {
-  for (const key of DLE_PANEL_COLUMNS) if (panelClueStatus(key, guess, candidate) !== statuses[key]) return key;
+export function panelMisfit(guess: DlePanelTraits, statuses: Pick<DleStatuses, DlePanelColumn>, candidate: DlePanelTraits, close = true): DlePanelColumn | null {
+  for (const key of DLE_PANEL_COLUMNS) {
+    const got = statuses[key];
+    if (got !== undefined && strictStatus(panelClueStatus(key, guess, candidate), close) !== got) return key;
+  }
   return null;
 }
 

@@ -54,13 +54,13 @@ describe("the daily schedule", () => {
     }
     if (!process.env.POKEIQ_SECRET) {
       // Pinned with the development secret: Linoone, Arcanine, Tinkatuff, Toucannon, Musharna.
-      expect(before.map(dailyAnswerId)).toEqual([264, 59, 958, 733, 518]);
+      expect(before.map((d) => dailyAnswerId(d))).toEqual([264, 59, 958, 733, 518]);
     }
   });
 
   it("deals the pool with no repeats in a cycle, then deals it again", () => {
     const era = ERAS[0];
-    const cycle = days(era.from, POOL.length).map(dailyAnswerId);
+    const cycle = days(era.from, POOL.length).map((d) => dailyAnswerId(d));
     expect(new Set(cycle).size).toBe(POOL.length);
     expect([...cycle].sort((a, b) => a - b)).toEqual([...POOL].sort((a, b) => a - b));
     const next = cycleOrder(era, 1);
@@ -75,22 +75,22 @@ describe("the daily schedule", () => {
 
   it("is deterministic, and the answer is the same Pokémon wherever it's asked for", () => {
     const sample = days(DLE_CURATED_FROM, 60);
-    expect(sample.map(dailyAnswerId)).toEqual(sample.map(dailyAnswerId));
+    expect(sample.map((d) => dailyAnswerId(d))).toEqual(sample.map((d) => dailyAnswerId(d)));
     for (const date of sample.slice(0, 10)) expect(answerFor({ id: `daily:${date}` }).id).toBe(dailyAnswerId(date));
   });
 
   it("depends on the server secret, so the open-source code can't predict it", () => {
     const sample = days(DLE_CURATED_FROM, 30);
-    const mine = sample.map(dailyAnswerId);
+    const mine = sample.map((d) => dailyAnswerId(d));
     const saved = process.env.POKEIQ_SECRET;
     process.env.POKEIQ_SECRET = "another-secret-entirely-0123456789";
     try {
-      expect(sample.map(dailyAnswerId)).not.toEqual(mine);
+      expect(sample.map((d) => dailyAnswerId(d))).not.toEqual(mine);
     } finally {
       if (saved === undefined) delete process.env.POKEIQ_SECRET;
       else process.env.POKEIQ_SECRET = saved;
     }
-    expect(sample.map(dailyAnswerId)).toEqual(mine);
+    expect(sample.map((d) => dailyAnswerId(d))).toEqual(mine);
   });
 
   it("follows the weekday curve, mixes generations and spaces out evolution families", () => {

@@ -3,6 +3,7 @@
 import { useEffect, useSyncExternalStore } from "react";
 import type { DleHint } from "./dle-types";
 import { DLE_DEFAULT_ASSIST, type DleAssist } from "./dle-assist";
+import { DLE_DEFAULT_SETTINGS, cleanSettings, type DleDailyFormat, type DleSettings } from "./dle-format";
 
 /**
  * Pokédle's settings and archive games, on this device only. Archive games
@@ -17,6 +18,10 @@ export interface DlePrefs {
   hard: boolean;
   /** The Pokédex assist level for the next game started (the last one picked). */
   assist: DleAssist;
+  /** The format and advanced settings for practice games (and the duels you make). */
+  settings: DleSettings;
+  /** The daily last picked: Classic or Squirdle-style. */
+  dailyFormat: DleDailyFormat;
   /** The how-to sheet has been seen. */
   seenHowTo: boolean;
 }
@@ -32,7 +37,7 @@ export interface DleArchiveRecord {
 
 const PREFS_KEY = "pokeiq:pokedle-prefs:v1";
 const ARCHIVE_KEY = "pokeiq:pokedle-archive:v1";
-const DEFAULT_PREFS: DlePrefs = { colourBlind: false, hard: false, assist: DLE_DEFAULT_ASSIST, seenHowTo: false };
+const DEFAULT_PREFS: DlePrefs = { colourBlind: false, hard: false, assist: DLE_DEFAULT_ASSIST, settings: DLE_DEFAULT_SETTINGS, dailyFormat: "classic", seenHowTo: false };
 
 function load<T>(key: string, fallback: T): T {
   try {
@@ -56,7 +61,12 @@ const listeners = new Set<() => void>();
 
 export function getDlePrefs(): DlePrefs {
   if (typeof window === "undefined") return DEFAULT_PREFS;
-  return (prefs ??= load(PREFS_KEY, DEFAULT_PREFS));
+  if (!prefs) {
+    const loaded = load(PREFS_KEY, DEFAULT_PREFS);
+    // Whatever was stored, settings that are all valid.
+    prefs = { ...loaded, settings: cleanSettings(loaded.settings), dailyFormat: loaded.dailyFormat === "squirdle" ? "squirdle" : "classic" };
+  }
+  return prefs;
 }
 
 export function setDlePrefs(patch: Partial<DlePrefs>) {

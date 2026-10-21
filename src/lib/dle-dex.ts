@@ -12,7 +12,8 @@ import type { CellStatus, DleDexRow, DleRow } from "./dle-types";
 /** A guess's generation and type clues: all the Pokédex reads from a board row. */
 export interface DexClue {
   guessId: number;
-  statuses: Record<DlePanelColumn, CellStatus>;
+  /** Only the columns the game shows. */
+  statuses: Partial<Record<DlePanelColumn, CellStatus>>;
 }
 
 export const dexTraits = (row: DleDexRow): DlePanelTraits => ({ gen: row[2], type1: row[3], type2: row[4] });
@@ -21,7 +22,7 @@ export const dexTraits = (row: DleDexRow): DlePanelTraits => ({ gen: row[2], typ
 export function dexClues(rows: readonly Pick<DleRow, "id" | "cells">[]): DexClue[] {
   return rows.map((r) => ({
     guessId: r.id,
-    statuses: Object.fromEntries(DLE_PANEL_COLUMNS.map((c) => [c, r.cells[c].status])) as Record<DlePanelColumn, CellStatus>,
+    statuses: Object.fromEntries(DLE_PANEL_COLUMNS.flatMap((c) => (r.cells[c] ? [[c, r.cells[c].status]] : []))) as DexClue["statuses"],
   }));
 }
 
@@ -30,7 +31,7 @@ export function dexClues(rows: readonly Pick<DleRow, "id" | "cells">[]): DexClue
  * the answer, a guess would have got a different generation or type clue.
  * Guesses missing from `rows` (none, in practice) rule nothing out.
  */
-export function ruledOut(rows: readonly DleDexRow[], clues: readonly DexClue[]): Set<number> {
+export function ruledOut(rows: readonly DleDexRow[], clues: readonly DexClue[], close = true): Set<number> {
   const byId = new Map(rows.map((r) => [r[0], r]));
   const guesses = clues.flatMap((c) => {
     const row = byId.get(c.guessId);
@@ -39,7 +40,7 @@ export function ruledOut(rows: readonly DleDexRow[], clues: readonly DexClue[]):
   const out = new Set<number>();
   for (const row of rows) {
     const t = dexTraits(row);
-    if (guesses.some((g) => panelMisfit(g.traits, g.statuses, t) !== null)) out.add(row[0]);
+    if (guesses.some((g) => panelMisfit(g.traits, g.statuses, t, close) !== null)) out.add(row[0]);
   }
   return out;
 }

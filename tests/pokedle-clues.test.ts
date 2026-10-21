@@ -33,7 +33,7 @@ describe("close clues", () => {
   it("marks gen, height, weight and stage close, keeping the direction", () => {
     const row = compare(byName("Pikachu"), byName("Raichu"));
     expect(row.cells.stage).toEqual({ value: "1", status: "close-higher" });
-    expect(row.cells.height.status).toBe("higher"); // 0.4 m vs 0.8 m: twice as tall, not close
+    expect(row.cells.height!.status).toBe("higher"); // 0.4 m vs 0.8 m: twice as tall, not close
     const g = (gen: number) => ({ ...traitsOf(byName("Pikachu")), gen });
     expect(clueStatus("gen", g(3), g(4))).toBe("close-higher");
     expect(clueStatus("gen", g(3), g(5))).toBe("higher");

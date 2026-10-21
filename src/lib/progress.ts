@@ -47,6 +47,8 @@ export interface Progress {
   modulesPlayed: string[];
   daily: { last: string | null; streak: number; best: number; results: Record<string, DailyRecord> };
   dle: { last: string | null; streak: number; best: number; results: Record<string, DleRecord> };
+  /** The Squirdle-style daily: its own results, streaks and stats (absent until one is played). */
+  squirdle?: { last: string | null; streak: number; best: number; results: Record<string, DleRecord> };
   badges: Record<string, number>;
   /** Per-skill tallies for the coach: tag -> [correct, answered]. */
   skills: Record<string, [number, number]>;
@@ -352,24 +354,31 @@ export function recordAnswer(tags: readonly string[], correct: boolean) {
   write({ ...p, skills });
 }
 
-export function saveDle(date: string, record: DleRecord): BadgeDef[] {
+/** A format's daily results: Classic's (`dle`), or the Squirdle-style daily's. */
+export function dleBlock(p: Progress, format: "classic" | "squirdle" = "classic"): Progress["dle"] {
+  return format === "squirdle" ? (p.squirdle ?? { last: null, streak: 0, best: 0, results: {} }) : p.dle;
+}
+
+export function saveDle(date: string, record: DleRecord, format: "classic" | "squirdle" = "classic"): BadgeDef[] {
   const p: Progress = structuredClone(read());
-  const existing = p.dle.results[date];
-  p.dle.results[date] = record;
+  const block = dleBlock(p, format);
+  if (format === "squirdle") p.squirdle = block;
+  const existing = block.results[date];
+  block.results[date] = record;
   let fresh: BadgeDef[] = [];
   if (record.over && !existing?.over) {
     if (record.solved) {
-      p.dle.streak = streakAfter(p.dle.last, p.dle.streak, date);
-      p.dle.best = Math.max(p.dle.best, p.dle.streak);
-      p.xp += 20 + (8 - record.guesses.length) * 10;
+      block.streak = streakAfter(block.last, block.streak, date);
+      block.best = Math.max(block.best, block.streak);
+      p.xp += Math.max(10, 20 + (8 - record.guesses.length) * 10);
       const earned: string[] = [];
       if (record.guesses.length <= 3) earned.push("dle-3");
       if (record.guesses.length === 1) earned.push("dle-1");
       fresh = award(p, earned, Date.now());
     } else {
-      p.dle.streak = 0;
+      block.streak = 0;
     }
-    p.dle.last = date;
+    block.last = date;
   }
   write(p);
   return fresh;
