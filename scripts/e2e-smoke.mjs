@@ -67,6 +67,41 @@ const page = await newPage({ width: 1280, height: 900 });
 const musicRequests = [];
 page.on("request", (r) => /\/audio\/battle\/.+\.(ogg|mp3)$/.test(r.url()) && musicRequests.push(r.url()));
 
+/** One Classic run of a trivia quiz: ten answers, a source link on every reveal, no early answers. */
+async function playTriviaRun(p, slug) {
+  const leaks = [];
+  let sources = 0;
+  const watch = async (res) => {
+    const path = new URL(res.url()).pathname;
+    if (!/^\/api\/session(\/answer|\/next)?$/.test(path) || !res.ok()) return;
+    const body = await res.json().catch(() => null);
+    for (const q of [body?.question, body?.next]) {
+      if (q && /"answer"|"explanation"|bulbapedia/i.test(JSON.stringify(q))) leaks.push(JSON.stringify(q).slice(0, 200));
+    }
+    if (path.endsWith("/answer") && /^https:\/\/bulbapedia\.bulbagarden\.net\/wiki\//.test(body?.sourceUrl ?? "")) sources++;
+  };
+  p.on("response", watch);
+  await p.goto(`${BASE}/quiz/${slug}`, { waitUntil: "networkidle" });
+  await p.getByRole("button", { name: /^Start/ }).click();
+  await p.waitForSelector("h2");
+  for (let i = 0; i < 10; i++) {
+    await p.locator("main button:not([disabled])").filter({ hasNotText: /settings/i }).first().click();
+    const next = p.getByRole("button", { name: /Next question|See results/ });
+    await next.waitFor({ timeout: 10_000 });
+    await p.getByRole("link", { name: /Source: Bulbapedia/ }).waitFor({ timeout: 5_000 });
+    if (i === 0) {
+      await p.waitForTimeout(700);
+      await p.screenshot({ path: `${OUT}/quiz-${slug}-revealed.png` });
+    }
+    await next.click();
+  }
+  await p.locator("main").getByText("PokéIQ").first().waitFor();
+  await p.screenshot({ path: `${OUT}/quiz-${slug}-results.png`, fullPage: true });
+  p.off("response", watch);
+  if (leaks.length) errors.push(`${slug}: a question arrived with its answer: ${leaks[0]}`);
+  if (sources !== 10) errors.push(`${slug}: ${sources}/10 answers carried a Bulbapedia source`);
+}
+
 step("home");
 await page.goto(BASE, { waitUntil: "networkidle" });
 await page.screenshot({ path: `${OUT}/home.png`, fullPage: true });
@@ -118,6 +153,13 @@ for (const slug of ["pokemon-higher-or-lower", "pokemon-type-quiz", "pokedex-ent
   await page.waitForSelector("h2");
   await page.waitForTimeout(900);
   await page.screenshot({ path: `${OUT}/quiz-${slug}.png` });
+}
+
+// The trivia quizzes: a full Classic run each. Questions never carry the answer
+// or its source; each reveal links the Bulbapedia page it was checked against.
+for (const slug of ["pokemon-games-quiz", "pokemon-anime-quiz"]) {
+  step(`${slug}: full classic run`);
+  await playTriviaRun(page, slug);
 }
 
 step("blitz format");
@@ -497,7 +539,7 @@ await dleBlue.p.getByText("Red left the duel.").waitFor();
 await dleBlue.p.getByText("Victory!").waitFor();
 for (const { p } of dle) await p.context().close();
 
-// A quiz duel: Who's That Pokémon on easy, ten questions. Red answers first;
+// A quiz duel: Mainline Games on easy, ten questions. Red answers first;
 // Blue sees Red lock in (never the pick), then answers.
 step("quiz duel: create, join, ready");
 const quiz = [];
@@ -518,7 +560,7 @@ for (const name of ["Red", "Blue"]) {
   quiz.push({ p, name, seen });
 }
 const [quizRed, quizBlue] = quiz;
-await quizRed.p.goto(`${BASE}/quiz/whos-that-pokemon`, { waitUntil: "networkidle" });
+await quizRed.p.goto(`${BASE}/quiz/pokemon-games-quiz`, { waitUntil: "networkidle" });
 await quizRed.p.getByRole("button", { name: "easy", exact: true }).last().click();
 await quizRed.p.getByLabel("Your trainer name").fill("Red");
 await quizRed.p.getByRole("button", { name: /Create duel/ }).click();
