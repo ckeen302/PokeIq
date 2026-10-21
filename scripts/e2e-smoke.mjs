@@ -915,9 +915,9 @@ if (factoryWon) {
   // Either the new team shows, or the server said why the trade was refused.
   const traded = await Promise.race([
     page.getByTestId("frontier-mon").first().waitFor({ timeout: 30_000 }).then(() => true),
-    page.getByRole("alert").first().waitFor({ timeout: 30_000 }).then(() => false),
+    page.locator("main [role=alert]").first().waitFor({ timeout: 30_000 }).then(() => false),
   ]);
-  if (!traded) throw new Error(`the Factory trade was refused: ${await page.getByRole("alert").first().innerText()} (gave ${before.split("\n")[0]}, took ${theirs[Math.max(0, take)]})`);
+  if (!traded) throw new Error(`the Factory trade was refused: ${await page.locator("main [role=alert]").first().innerText()} (gave ${before.split("\n")[0]}, took ${theirs[Math.max(0, take)]})`);
   if ((await page.getByTestId("frontier-mon").first().innerText()) === before) errors.push("the Factory trade didn't change the team");
   if (!/streak\s*1\b/i.test(await page.getByTestId("frontier-streak").innerText())) errors.push("the Factory streak didn't show 1");
 } else console.log("  no win in 4 tries: the trade wasn't exercised");
