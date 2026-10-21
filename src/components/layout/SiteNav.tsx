@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
-import { BookOpen, CalendarDays, Compass, Gamepad2, Home, Search, Swords } from "lucide-react";
+import { BookOpen, CalendarDays, Compass, Gamepad2, Home, MessagesSquare, Search, Swords } from "lucide-react";
 import { levelInfo, useProgress } from "@/lib/progress";
 import { useAccount } from "@/lib/account";
 import { Avatar } from "@/components/avatar/Avatar";
@@ -13,16 +13,12 @@ import { ThemeToggle } from "./ThemeToggle";
 import { FriendsButton } from "@/components/community/FriendsButton";
 
 const DESKTOP_LINKS = [
-  { href: "/daily", label: "Daily" },
-  { href: "/iq-test", label: "IQ Test" },
   { href: "/pokedle", label: "Pokédle" },
   { href: "/guessr", label: "Guessr" },
-  { href: "/atlas", label: "Atlas" },
-  { href: "/play", label: "Modes" },
+  { href: "/battle", label: "Battle" },
+  { href: "/play", label: "Quizzes" },
   { href: "/pokedex", label: "Pokédex" },
   { href: "/leaderboard", label: "Leaderboard" },
-  { href: "/battle", label: "Battle" },
-  { href: "/rooms", label: "Rooms" },
 ];
 
 const MOBILE_TABS = [
@@ -54,7 +50,7 @@ export function DesktopNav() {
               href={href}
               className={cn(
                 // Tighter between lg and xl so every link fits on one row.
-                "relative whitespace-nowrap px-2 py-2 font-display text-[12px] font-semibold uppercase tracking-[0.06em] text-muted-foreground transition-colors hover:text-foreground xl:px-3 xl:text-[13px] xl:tracking-[0.12em]",
+                "relative whitespace-nowrap px-3 py-2 font-display text-[13px] font-semibold uppercase tracking-[0.12em] text-muted-foreground transition-colors hover:text-foreground xl:px-4",
                 active && "text-foreground"
               )}
               aria-current={active ? "page" : undefined}
@@ -63,7 +59,7 @@ export function DesktopNav() {
               {active && (
                 <motion.span
                   layoutId="nav-active"
-                  className="absolute inset-x-2 -bottom-[9px] h-[3px] bg-primary shadow-[0_0_10px_hsl(var(--primary))] xl:inset-x-3"
+                  className="absolute inset-x-3 -bottom-[9px] h-[3px] bg-primary shadow-[0_0_10px_hsl(var(--primary))] xl:inset-x-4"
                   transition={{ type: "spring", stiffness: 500, damping: 38 }}
                 />
               )}
@@ -71,6 +67,14 @@ export function DesktopNav() {
           );
         })}
       </div>
+      <Link
+        href="/rooms"
+        aria-label="Chat rooms"
+        title="Chat rooms"
+        className={cn("rounded-md p-2 text-muted-foreground transition-colors hover:text-foreground", isActive(pathname, "/rooms") && "text-foreground")}
+      >
+        <MessagesSquare className="h-5 w-5" aria-hidden />
+      </Link>
       <FriendsButton />
       <ThemeToggle />
       <MuteToggle />
