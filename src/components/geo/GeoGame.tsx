@@ -10,6 +10,7 @@ import {
   Globe2,
   Link2,
   Loader2,
+  Shapes,
   MapPin as MapPinIcon,
   RotateCcw,
   Swords,
@@ -61,6 +62,7 @@ import {
 import { GameFilter, GameGuessPicker, type FilterChoice, filterPlaces, gameGuessOptions, readGuessGame, rememberGuessGame } from "./GameFilter";
 import { GEO_ERA_NAMES, GEO_GAME_BONUS, geoFamily, type GeoEra, type GeoFamilyId } from "@/lib/geo-families";
 import { cn } from "@/lib/utils";
+import { isWorldwide, themeOf } from "@/lib/geo-themes";
 import { NAME_REJECTED, isCleanName } from "@/lib/name-filter";
 
 type Phase = "setup" | "loading" | "guessing" | "submitting" | "revealed" | "results" | "error";
@@ -112,7 +114,7 @@ function verdict(score: number): string {
 }
 
 const playable = (region: GeoRegionInfo | undefined) => (region?.locations ?? 0) >= GEO_ROUNDS;
-const where = (region: GeoRegionInfo) => (region.id === WORLD_REGION ? "the Pokémon world" : region.name);
+const where = (region: GeoRegionInfo) => (region.id === WORLD_REGION ? "the Pokémon world" : region.theme ? `the ${region.name} map` : region.name);
 
 /**
  * "Saffron City" or "Silph Co. · Saffron City", without the "Kanto " prefix
@@ -399,7 +401,10 @@ export function GeoGame({ regions: allRegions, challenge }: GeoGameProps) {
     const bestStreak = progress?.best[`geo:${boardOf({ region, kind: "streak", filter })}`];
     const challengeMap = challenge ? byId(challenge.region) : undefined;
     const loading = phase === "loading";
-    const isWorld = region.id === WORLD_REGION;
+    const isWorld = isWorldwide(region.id);
+    const theme = themeOf(region.id);
+    const maps = regions.filter((r) => !r.theme);
+    const themed = regions.filter((r) => r.theme);
     return (
       <div className="mx-auto max-w-4xl space-y-8">
         <div className="space-y-3 text-center">
@@ -481,9 +486,9 @@ export function GeoGame({ regions: allRegions, challenge }: GeoGameProps) {
         <div className="space-y-4">
           <h2 className="font-display text-xl font-bold uppercase">Free play</h2>
 
-          {regions.length > 1 && (
+          {maps.length > 1 && (
             <div className="flex flex-wrap gap-1.5" role="radiogroup" aria-label="Map">
-              {regions.map((r) => (
+              {maps.map((r) => (
                 <button
                   key={r.id}
                   type="button"
@@ -499,6 +504,35 @@ export function GeoGame({ regions: allRegions, challenge }: GeoGameProps) {
                   {r.name}
                 </button>
               ))}
+            </div>
+          )}
+
+          {themed.length > 0 && (
+            <div className="space-y-1.5">
+              <p className="hud-label">Themed maps</p>
+              <div className="flex flex-wrap gap-1.5" role="radiogroup" aria-label="Themed map">
+                {themed.map((r) => (
+                  <button
+                    key={r.id}
+                    type="button"
+                    role="radio"
+                    aria-checked={r.id === region.id}
+                    onClick={() => chooseRegion(r.id)}
+                    className={cn(
+                      "flex items-center gap-1.5 rounded-md border px-3 py-1.5 font-display text-xs font-semibold uppercase tracking-wider transition-colors",
+                      r.id === region.id ? "border-screen bg-screen/15 text-foreground" : "bg-card text-muted-foreground hover:border-screen/50 hover:text-foreground"
+                    )}
+                  >
+                    <Shapes className="h-3.5 w-3.5" aria-hidden />
+                    {r.name}
+                  </button>
+                ))}
+              </div>
+              {theme && (
+                <p className="text-sm text-muted-foreground" data-testid="geo-theme-blurb">
+                  {theme.blurb} {fmt(region.locations)} places across the world, with leaderboards of their own.
+                </p>
+              )}
             </div>
           )}
 
@@ -782,7 +816,7 @@ function RoundReveal({
   const { graded, guess: g } = current;
   const shown = useCountUp(graded.score);
   const isStreak = game.kind === "streak";
-  const isWorld = game.region.id === WORLD_REGION;
+  const isWorld = isWorldwide(game.region.id);
   return (
     <div className="mx-auto max-w-4xl space-y-4">
       {hud}

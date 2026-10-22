@@ -1,5 +1,7 @@
 import "server-only";
 import data from "@/data/geo.json";
+import themeTags from "@/data/geo-themes.json";
+import { GEO_THEMES, isWorldwide, themeMapId, themeOf } from "@/lib/geo-themes";
 import { Rng } from "@/lib/rng";
 import { publicName } from "@/lib/name-filter";
 import { decryptJson, deriveSeed, encryptJson, randomId, signToken, verifyToken } from "./crypto";
@@ -141,10 +143,29 @@ function cropRegion(world: Region, id: string, crop: WorldData["crops"][string])
   return { ...world, id, name: crop.name, map: { src: crop.src, width: x1 - x0, height: y1 - y0, box: crop.box }, locations };
 }
 
-/** The world, then each region on its part of the world map. */
+type ThemeTags = { places?: string[]; buildings?: string[]; preview: string };
+const THEME_TAGS = themeTags as Record<string, ThemeTags>;
+const placeKey = (l: Pick<Location, "region" | "name">) => `${l.region}|${l.name}`;
+
+/**
+ * A themed map: the whole world map, with only the theme's places (a town or
+ * route with its buildings), or only its buildings (the Gyms, each on its
+ * own, at its town's pin).
+ */
+function themeRegion(world: Region, id: string, name: string, tags: ThemeTags): Region {
+  const places = new Set(tags.places ?? []);
+  const buildings = new Set(tags.buildings ?? []);
+  const locations = world.locations.filter((l) =>
+    l.parent ? buildings.has(placeKey(l)) || places.has(`${l.region}|${l.parent}`) : places.has(placeKey(l))
+  );
+  return { ...world, id, name, locations };
+}
+
+/** The world, then each region on its part of the world map, then the themed maps. */
 const REGIONS: Region[] = (() => {
   const world = worldRegion(DATA.world);
-  return [world, ...Object.entries(DATA.world.crops).map(([id, crop]) => cropRegion(world, id, crop))];
+  const themes = GEO_THEMES.flatMap((t) => (THEME_TAGS[t.id] ? [themeRegion(world, themeMapId(t.id), t.name, THEME_TAGS[t.id])] : []));
+  return [world, ...Object.entries(DATA.world.crops).map(([id, crop]) => cropRegion(world, id, crop)), ...themes];
 })();
 
 const shotUrl = (id: string) => `/api/geo/shot/${id}`;
@@ -229,7 +250,11 @@ function familyCombos(region: string): FamilyCombos {
 export function geoRegions(): GeoRegionInfo[] {
   return REGIONS.map((r) => {
     const areas = areasOf({ region: r.id });
-    const home = areas.find((a) => a.place?.name === HOME[r.id])?.place ?? areas[0]?.place;
+    // A themed map's preview is its own kind of place (a Gym, a cave…).
+    const preview = THEME_TAGS[themeOf(r.id)?.id ?? ""]?.preview;
+    const home = preview
+      ? r.locations.find((l) => placeKey(l) === preview && l.shots.length)
+      : (areas.find((a) => a.place?.name === HOME[r.id])?.place ?? areas[0]?.place);
     // The newest game's view of it.
     const shots = home ? usableShots(home, allowedFamilies({})) : [];
     const shot = shots.length ? shots.reduce((a, b) => (familyRank(b.family) > familyRank(a.family) ? b : a)) : undefined;
@@ -246,6 +271,7 @@ export function geoRegions(): GeoRegionInfo[] {
       families,
       combos,
       preview: shot ? shotUrl(shot.id) : null,
+      ...(themeOf(r.id) ? { theme: true } : {}),
     };
   });
 }
@@ -337,7 +363,7 @@ export function planRounds(spec: Pick<GeoSpec, "region" | "kind"> & Omit<DealSpe
   const allowed = allowedFamilies(spec);
   const areas = rng.shuffle(areasOf(spec));
   const max = Math.min(limit, spec.kind === "game" ? GEO_ROUNDS : Infinity);
-  const oneEach = spec.region === WORLD_REGION && spec.kind === "game" && new Set(areas.map((a) => a.group)).size >= GEO_ROUNDS;
+  const oneEach = isWorldwide(spec.region) && spec.kind === "game" && new Set(areas.map((a) => a.group)).size >= GEO_ROUNDS;
   const groups = new Set<string>();
   const rounds: PlannedRound[] = [];
   for (const area of areas) {
@@ -408,7 +434,8 @@ export function measureGuess(spec: Pick<GeoSpec, "region">, round: PlannedRound,
   const px = nearestPx(region, location, x, y);
   const perfect = px <= region.perfectPx;
   const score = perfect ? GEO_MAX_ROUND_SCORE : Math.round(GEO_MAX_ROUND_SCORE * Math.exp((-FALLOFF * px) / diagonal));
-  const hit = region.id === WORLD_REGION ? regionAt(region, x, y) === groupOf(location.region) : px / diagonal <= STREAK_RADIUS;
+  // Themed maps share the world map, so a pin's region is read from every place on it, not just the theme's.
+  const hit = isWorldwide(region.id) ? regionAt(regionOf(WORLD_REGION)!, x, y) === groupOf(location.region) : px / diagonal <= STREAK_RADIUS;
   return { score, hit, squares: perfect ? 0 : Math.round((px / region.squarePx) * 10) / 10 };
 }
 
