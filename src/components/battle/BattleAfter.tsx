@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Clapperboard, Loader2, Save } from "lucide-react";
+import { Activity, Clapperboard, Loader2, Save } from "lucide-react";
 import { PLAY_FORMAT_INFO, type BattleView } from "@/lib/battle/play";
 import { rememberReplay } from "@/lib/battle/replay-client";
 import { battleShareText, replayShareText, shareUrl, type BattleShareResult } from "@/lib/share";
@@ -114,6 +114,9 @@ function ReplayButtons({
         <>
           <Link href={`/battle/replay/${view.replay}`} className={buttonVariants({ size: "sm" })} data-testid="watch-replay">
             <Clapperboard className="h-4 w-4" aria-hidden /> Watch replay
+          </Link>
+          <Link href={`/battle/replay/${view.replay}?analysis=1&side=${view.you ?? 0}#analysis`} className={buttonVariants({ size: "sm", variant: "outline" })} data-testid="analyse-battle">
+            <Activity className="h-4 w-4" aria-hidden /> Analysis
           </Link>
           <ShareReplay id={view.replay} result={players} formatName={view.formatName ?? PLAY_FORMAT_INFO[view.format].name} />
         </>

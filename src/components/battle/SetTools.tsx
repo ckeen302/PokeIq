@@ -84,7 +84,7 @@ export function EvGoals({ dex, usage, set, onChange }: { dex: FormatDex; usage: 
   if (dex.gen.num <= 2) return null;
   const update = (i: number, d: Draft | null) => {
     setResult(null);
-    setGoals((g) => (d ? g.map((x, j) => (j === i ? d : x)) : g.filter((_, j) => j !== i)));
+    setGoals((g) => (!d ? g.filter((_, j) => j !== i) : i >= g.length ? [...g, d] : g.map((x, j) => (j === i ? d : x))));
   };
 
   function solve() {
