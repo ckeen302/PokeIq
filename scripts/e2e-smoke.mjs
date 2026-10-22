@@ -354,6 +354,52 @@ await page.getByRole("button", { name: /Challenge a friend/ }).waitFor();
 await page.screenshot({ path: `${OUT}/guessr-summary.png`, fullPage: true });
 if (!geoChallenge) throw new Error("no PokéGuessr challenge token");
 
+step("pokéguessr: look around (flip through a place's views)");
+await page.goto(`${BASE}/guessr`, { waitUntil: "networkidle" });
+await page.getByRole("button", { name: /5-round game/ }).click();
+{
+  const shotReady = () =>
+    page.waitForFunction(() => {
+      const img = document.querySelector("img[data-testid='geo-shot']");
+      return img?.complete && img.naturalWidth > 0;
+    });
+  let looked = false;
+  for (let i = 0; i < 5 && !looked; i++) {
+    await shotReady();
+    const counter = page.getByTestId("geo-view-count");
+    if (await counter.count()) {
+      const count = Number((await counter.innerText()).split("/")[1]);
+      if (!(count > 1)) throw new Error(`bad view count: ${await counter.innerText()}`);
+      const shotSrc = () => page.getByTestId("geo-shot").getAttribute("src");
+      const at = (n) => page.getByTestId("geo-view-count").filter({ hasText: `${n} / ${count}` }).waitFor();
+      const first = await shotSrc();
+      await page.getByRole("button", { name: "Next view" }).click();
+      await at(2);
+      if ((await shotSrc()) === first) throw new Error("the next view shows the same screenshot");
+      await page.keyboard.press("ArrowLeft");
+      await at(1);
+      if ((await shotSrc()) !== first) throw new Error("← didn't go back to the first view");
+      await page.keyboard.press("ArrowLeft");
+      await at(count);
+      await page.getByRole("tab", { name: `View 2 of ${count}` }).click();
+      await at(2);
+      await shotReady();
+      await page.waitForFunction(() => getComputedStyle(document.querySelector("img[data-testid='geo-shot']")).opacity === "1");
+      await page.screenshot({ path: `${OUT}/geo-mode-look-around.png` });
+      looked = true;
+    }
+    const map = page.locator("[role=application]");
+    await map.hover();
+    const box = await map.boundingBox();
+    await map.click({ position: { x: box.width * 0.5, y: box.height * 0.5 } });
+    await page.getByRole("button", { name: /^Guess$/ }).click();
+    const next = page.getByRole("button", { name: /Next round|View summary|See results/ });
+    await next.waitFor();
+    await next.click();
+  }
+  if (!looked) throw new Error("no round with more than one view in five rounds");
+}
+
 step("pokéguessr: friend accepts the challenge");
 await page.goto(`${BASE}/guessr/c/${encodeURIComponent(geoChallenge)}`, { waitUntil: "networkidle" });
 await page.getByRole("button", { name: /Accept challenge/ }).click();
