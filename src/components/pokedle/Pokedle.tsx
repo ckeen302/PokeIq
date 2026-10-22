@@ -4,7 +4,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { track } from "@vercel/analytics";
-import { BarChart3, CalendarDays, CircleHelp, Contrast, Lightbulb, RefreshCw, ShieldAlert, Timer } from "lucide-react";
+import { BarChart3, CalendarDays, CircleHelp, Dices, Lightbulb, RefreshCw, Settings, Timer, X } from "lucide-react";
 import { dailyNumber } from "@/lib/daily";
 import { dleBlock, getProgress, saveDle, useProgress } from "@/lib/progress";
 import { useToday } from "@/lib/use-today";
@@ -27,6 +27,8 @@ import {
 } from "@/lib/dle-format";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Popover } from "@/components/ui/popover";
+import { InfoTip } from "@/components/ui/tooltip";
 import { NextDailyCountdown } from "@/components/NextDailyCountdown";
 import { ShareButton } from "@/components/share/ShareButton";
 import { Board, GuessInput, clueText, type NameEntry } from "./parts";
@@ -100,6 +102,8 @@ export function Pokedle({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [sheet, setSheet] = useState<"howto" | "stats" | "archive" | null>(null);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const closeSettings = useCallback(() => setSettingsOpen(false), []);
   /** The community panel's percentile for the share, with the finished game it belongs to. */
   const [shareStanding, setShareStanding] = useState<{ key: string; community?: PokedleShareCommunity } | null>(null);
   /** What a screen reader hears after each guess. */
@@ -312,7 +316,8 @@ export function Pokedle({
     loadDate(today, "daily", f);
   }
 
-  function newPractice() {
+  /** A new practice puzzle; `openSettings` shows its settings (from the toolbar, where the player is choosing one). */
+  function newPractice(openSettings = false) {
     reqRef.current++; // drop any in-flight daily response
     setMode("practice");
     setPracticeSeed(Math.random().toString(36).slice(2, 10));
@@ -325,7 +330,8 @@ export function Pokedle({
     setLoading(false);
     setError(null);
     setClockStart(null);
-    setTimeout(() => inputRef.current?.focus(), 50);
+    if (openSettings) setSettingsOpen(true);
+    else setTimeout(() => inputRef.current?.focus(), 50);
   }
 
   function backToDaily() {
@@ -380,92 +386,123 @@ export function Pokedle({
     mode === "practice"
       ? "Pokédle · Practice"
       : date
-        ? `Pokédle #${dailyNumber(date)}${mode === "daily" && format === "squirdle" ? " · Squirdle" : ""}${mode === "archive" ? ` · Archive (${date})` : ""}`
+        ? `Pokédle #${dailyNumber(date)}${mode === "daily" && format === "squirdle" ? " · Stats" : ""}${mode === "archive" ? ` · Archive (${date})` : ""}`
         : "Pokédle";
-  const iconButton = "rounded-md p-2 text-muted-foreground hover:bg-screen/10 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
+  const iconButton =
+    "relative rounded-md p-2 text-muted-foreground transition-colors hover:bg-screen/10 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-40";
   const locked = guesses.length > 0;
   const bonus = bonusText(rules);
   const timeUp = Boolean(timerMs) && clockStart !== null && clockLeft <= 0;
+  /** The one setting worth flagging beside the gear: hard mode first, else a Pokédex level other than the default. */
+  const settingsBadge = hard ? "Hard" : assist !== DLE_DEFAULT_ASSIST ? DLE_ASSIST_INFO[assist].label : null;
 
   return (
     // The game, and beside it (below on smaller screens) the reference Pokédex.
     <div className={cn("mx-auto grid max-w-3xl grid-cols-1 gap-6", assist !== "off" && "xl:max-w-none xl:grid-cols-[minmax(0,1fr)_30rem] xl:items-start")}>
-      <div className="min-w-0 space-y-6">
-        <div className="space-y-2 text-center">
-          <div className="flex items-center justify-center gap-1">
+      <div className="min-w-0 space-y-5">
+        <div className="space-y-4 text-center">
+          <div className="space-y-2">
             <p className="hud-label text-screen">{title}</p>
+            <h1 className="font-display text-4xl font-bold uppercase tracking-tight">Guess the mystery Pokémon</h1>
           </div>
-          <h1 className="font-display text-4xl font-bold uppercase tracking-tight sm:text-5xl">Guess the mystery Pokémon</h1>
-          {mode === "daily" && (
-            <div className="flex justify-center">
-              <div className="flex rounded-md border border-foreground/15 p-0.5" role="radiogroup" aria-label="Daily format">
-                {(["classic", "squirdle"] as const).map((f) => (
-                  <button
-                    key={f}
-                    type="button"
-                    role="radio"
-                    aria-checked={format === f}
-                    onClick={() => pickFormat(f)}
-                    disabled={!today || (f === "squirdle" && !!today && today < DLE_SQUIRDLE_FROM)}
-                    className={cn("rounded px-3 py-1 text-sm font-semibold", format === f ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground")}
-                  >
-                    {f === "classic" ? "Classic daily" : "Squirdle daily"}
-                  </button>
-                ))}
-              </div>
+          <div className="flex justify-center">
+            <div className="flex rounded-md border border-foreground/15 bg-card p-0.5" role="radiogroup" aria-label="Daily format">
+              {(["classic", "squirdle"] as const).map((f) => (
+                <button
+                  key={f}
+                  type="button"
+                  role="radio"
+                  aria-checked={mode === "daily" && format === f}
+                  aria-label={f === "classic" ? "Classic daily" : "Stats daily"}
+                  title={f === "classic" ? "Today's Classic puzzle" : "Today's Stats puzzle"}
+                  onClick={() => pickFormat(f)}
+                  disabled={!today || (f === "squirdle" && !!today && today < DLE_SQUIRDLE_FROM)}
+                  className={cn(
+                    "min-w-24 rounded px-4 py-1.5 font-display text-sm font-semibold uppercase tracking-wider transition-colors",
+                    mode === "daily" && format === f ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
+                  )}
+                >
+                  {DLE_FORMAT_LABEL[f]}
+                </button>
+              ))}
             </div>
-          )}
-          <div className="flex flex-wrap items-center justify-center gap-1" role="toolbar" aria-label="Pokédle options">
+          </div>
+          <div className="flex items-center justify-center gap-1" role="toolbar" aria-label="Pokédle options">
             <button type="button" className={iconButton} onClick={() => setSheet("howto")} aria-label="How to play" title="How to play">
               <CircleHelp className="h-5 w-5" />
             </button>
             <button type="button" className={iconButton} onClick={() => setSheet("stats")} aria-label="Statistics" title="Statistics" disabled={!stats}>
               <BarChart3 className="h-5 w-5" />
             </button>
-            <button type="button" className={iconButton} onClick={() => setSheet("archive")} aria-label="Archive of past dailies" title="Archive" disabled={!today}>
+            <button type="button" className={iconButton} onClick={() => setSheet("archive")} aria-label="Archive of past dailies" title="Archive of past dailies" disabled={!today}>
               <CalendarDays className="h-5 w-5" />
             </button>
             <button
               type="button"
-              className={cn(iconButton, prefs?.colourBlind && "text-screen")}
-              onClick={() => setDlePrefs({ colourBlind: !prefs?.colourBlind })}
-              aria-pressed={prefs?.colourBlind ?? false}
-              aria-label="Colour-blind colours (orange and blue)"
-              title="Colour-blind colours"
+              className={cn(iconButton, mode === "practice" && "text-screen")}
+              onClick={() => newPractice(true)}
+              aria-pressed={mode === "practice"}
+              aria-label="Practice puzzles (any format and settings)"
+              title="Practice puzzles: any format and settings"
             >
-              <Contrast className="h-5 w-5" />
+              <Dices className="h-5 w-5" />
             </button>
-            <button
-              type="button"
-              onClick={toggleHard}
-              disabled={locked}
-              aria-pressed={hard}
-              title={locked ? "Hard mode is set before the first guess" : "Every guess must fit the gen and type clues so far: no greyed-out Pokémon"}
-              className={cn(
-                "ml-1 flex items-center gap-1 rounded-md border px-2 py-1 text-xs font-semibold transition-colors disabled:cursor-not-allowed",
-                hard ? "border-destructive/60 bg-destructive/10 text-destructive" : "border-foreground/15 text-muted-foreground hover:text-foreground"
+            <div className="relative flex items-center">
+              <button
+                type="button"
+                className={cn(iconButton, settingsOpen && "bg-screen/10 text-foreground")}
+                onClick={() => setSettingsOpen((o) => !o)}
+                aria-expanded={settingsOpen}
+                aria-haspopup="dialog"
+                aria-label="Settings"
+                title="Settings"
+              >
+                <Settings className="h-5 w-5" />
+              </button>
+              {settingsBadge && (
+                <span className="ml-0.5 rounded-sm border border-foreground/15 px-1.5 py-0.5 font-pixel text-[9px] uppercase tracking-wider text-muted-foreground" data-testid="settings-badge">
+                  {settingsBadge}
+                </span>
               )}
-            >
-              <ShieldAlert className="h-3.5 w-3.5" aria-hidden /> Hard mode {hard ? "on" : "off"}
-            </button>
+              <Popover open={settingsOpen} onClose={closeSettings} label="Pokédle settings" className={cn("space-y-4", mode === "practice" && !locked ? "w-[38rem]" : "w-[28rem]")}>
+                <div className="flex items-start justify-between gap-3">
+                  <div className="space-y-1.5">
+                    <p className="hud-label">This game</p>
+                    <RulesChip rules={rules} dex={dexLabel} hard={hard} />
+                  </div>
+                  <button type="button" onClick={closeSettings} aria-label="Close settings" className="rounded-md p-1 text-muted-foreground hover:text-foreground">
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
+                {locked && <p className="text-xs text-muted-foreground">Set before the first guess: these stay as they are for this game.</p>}
+                <div className="space-y-1.5">
+                  <p className="hud-label">Pokédex assist</p>
+                  <AssistPicker value={assist} onChange={pickAssist} disabled={locked} className="[&>div>span]:hidden [&>div]:justify-start [&>p]:text-left" />
+                </div>
+                <div className="space-y-2 border-t pt-3">
+                  <SettingToggle
+                    label="Hard mode"
+                    description="Every guess must fit the gen and type clues so far. Your share gets a *."
+                    checked={hard}
+                    onChange={toggleHard}
+                    disabled={locked}
+                  />
+                  <SettingToggle
+                    label="Colour-blind colours"
+                    description="Orange and blue in place of green and yellow."
+                    checked={prefs?.colourBlind ?? false}
+                    onChange={() => setDlePrefs({ colourBlind: !prefs?.colourBlind })}
+                  />
+                </div>
+                {mode === "practice" && settings && !locked && (
+                  <div className="space-y-1.5 border-t pt-3">
+                    <p className="hud-label">Practice puzzle</p>
+                    <SettingsPanel value={settings} onChange={pickSettings} />
+                  </div>
+                )}
+              </Popover>
+            </div>
           </div>
-          <AssistPicker
-            value={assist}
-            onChange={pickAssist}
-            disabled={locked}
-            note={locked ? `${DLE_ASSIST_INFO[assist].label} for this game: the Pokédex is set before the first guess.` : undefined}
-          />
-          {mode === "practice" && settings && !locked && <SettingsPanel value={settings} onChange={pickSettings} />}
-          <div className="flex justify-center">
-            <RulesChip rules={rules} dex={dexLabel} hard={hard} />
-          </div>
-          <p className="text-sm text-muted-foreground">
-            {rules.maxGuesses} guesses.{" "}
-            {rules.close
-              ? "🟩 match · 🟨 right type, wrong slot, or close (dashed, with ▲▼) · ▲▼ the answer is higher / lower."
-              : "🟩 match · 🟨 right type, wrong slot · ▲▼ the answer is higher / lower (no close states)."}
-            {bonus && ` Harder board: ${bonus} points.`}
-          </p>
         </div>
 
         {mode === "archive" && (
@@ -479,7 +516,7 @@ export function Pokedle({
 
         {stats?.atRisk && !over && (
           <p className="mx-auto max-w-md rounded-md border border-orange-400/50 bg-orange-400/10 px-3 py-2 text-center text-sm font-semibold text-orange-400" role="status">
-            🔥 Your {stats.playStreak}-day streak is at risk: finish today&apos;s {statsFormat === "squirdle" ? "Squirdle daily" : "Pokédle"} to keep it.
+            🔥 Your {stats.playStreak}-day streak is at risk: finish today&apos;s {statsFormat === "squirdle" ? "Stats daily" : "Pokédle"} to keep it.
             {stats.freezes > 0 && <span className="block text-xs font-normal">A 🧊 freeze would cover one missed day.</span>}
             {mode !== "daily" && (
               <button type="button" onClick={backToDaily} className="ml-1 underline">
@@ -498,17 +535,48 @@ export function Pokedle({
         )}
 
         {!over && (
-          <GuessInput
-            // A new puzzle starts with an empty box.
-            key={gameKey}
-            inputRef={inputRef}
-            names={names}
-            exclude={guessedIds}
-            disabled={!target || timeUp}
-            placeholder={timeUp ? "Time's up" : `Guess ${guesses.length + 1} of ${rules.maxGuesses}: type a Pokémon…`}
-            onGuess={submitGuess}
-            fill={fill}
-          />
+          <div className="space-y-3">
+            <GuessInput
+              // A new puzzle starts with an empty box.
+              key={gameKey}
+              inputRef={inputRef}
+              names={names}
+              exclude={guessedIds}
+              disabled={!target || timeUp}
+              placeholder={timeUp ? "Time's up" : `Guess ${guesses.length + 1} of ${rules.maxGuesses}: type a Pokémon…`}
+              onGuess={submitGuess}
+              fill={fill}
+            />
+            {guesses.length > 0 && rules.hints && (
+              <div className="flex flex-wrap items-center justify-center gap-2" data-testid="hints">
+                <span className="hud-label flex items-center gap-1">
+                  <Lightbulb className="h-3.5 w-3.5 text-primary" aria-hidden /> Hints
+                </span>
+                {DLE_HINT_KINDS.map((h) =>
+                  hints.includes(h) ? (
+                    h === "silhouette" && state?.hints.silhouetteUrl ? (
+                      <img key={h} src={state.hints.silhouetteUrl} alt="Silhouette hint" className="spotlight h-12 w-12 rounded-md object-contain p-0.5" />
+                    ) : h === "genus" && state?.hints.genus ? (
+                      <span key={h} className="rounded-full border border-screen/40 bg-screen/[0.06] px-3 py-1 text-xs font-semibold">
+                        {DLE_HINT_EMOJI[h]} {state.hints.genus}
+                      </span>
+                    ) : null
+                  ) : (
+                    <button
+                      key={h}
+                      type="button"
+                      onClick={() => takeHint(h)}
+                      disabled={loading}
+                      className="rounded-full border border-foreground/15 bg-card px-3 py-1 text-xs font-semibold text-muted-foreground transition-colors hover:border-screen/50 hover:text-foreground disabled:opacity-50"
+                    >
+                      {DLE_HINT_EMOJI[h]} {DLE_HINT_LABEL[h]} <span className="tabular-nums text-destructive/80">−{DLE_HINT_COST[h]}</span>
+                    </button>
+                  )
+                )}
+                <InfoTip label="About hints">Hints are optional: each costs the points shown, and shows on your result and your share.</InfoTip>
+              </div>
+            )}
+          </div>
         )}
 
         {error && (
@@ -517,28 +585,9 @@ export function Pokedle({
           </p>
         )}
 
-        {!over && guesses.length > 0 && rules.hints && (
-          <div className="mx-auto flex max-w-md items-center gap-4 rounded-md border bg-card p-3 text-sm">
-            <Lightbulb className="h-5 w-5 shrink-0 text-primary" aria-hidden />
-            {state?.hints.silhouetteUrl && <img src={state.hints.silhouetteUrl} alt="Silhouette hint" className="spotlight h-20 w-20 rounded-lg object-contain p-1" />}
-            <div className="min-w-0 flex-1 space-y-1.5 text-muted-foreground">
-              {state?.hints.genus && <div className="font-medium text-foreground">{state.hints.genus}</div>}
-              <div className="flex flex-wrap gap-1.5">
-                {DLE_HINT_KINDS.filter((h) => !hints.includes(h)).map((h) => (
-                  <Button key={h} size="sm" variant="outline" onClick={() => takeHint(h)} disabled={loading}>
-                    {DLE_HINT_EMOJI[h]} {DLE_HINT_LABEL[h]} −{DLE_HINT_COST[h]}
-                  </Button>
-                ))}
-              </div>
-              <p className="text-xs">{hints.length < DLE_HINT_KINDS.length ? "Hints are optional: each costs points and shows on your result and share." : "Both hints used."}</p>
-            </div>
-          </div>
-        )}
-
         <div className="sr-only" aria-live="polite" role="status">
           {announce}
         </div>
-
         {/* The finished state: the result, sharing, what's next, and room for a community panel. */}
         {over && state?.answer && (
           <motion.section aria-label="Result" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="space-y-4">
@@ -569,7 +618,7 @@ export function Pokedle({
                 </div>
                 <div className="grid gap-2 sm:grid-cols-2">
                   <ShareButton getText={shareTextNow} label="Share" kind="pokedle" />
-                  <Button variant={mode === "practice" ? "default" : "outline"} onClick={newPractice}>
+                  <Button variant={mode === "practice" ? "default" : "outline"} onClick={() => newPractice()}>
                     <RefreshCw className="h-4 w-4" /> {mode === "practice" ? "New puzzle" : "Practice mode"}
                   </Button>
                 </div>
@@ -586,7 +635,7 @@ export function Pokedle({
                 {mode === "daily" && <NextDailyCountdown label="Next Pokédle in" />}
                 {mode === "daily" && stats && stats.playStreak > 0 && (
                   <p className="text-sm font-semibold text-orange-400">
-                    🔥 {stats.playStreak}-day {format === "squirdle" ? "Squirdle " : ""}play streak{stats.freezes > 0 && ` · 🧊 ${stats.freezes}`}
+                    🔥 {stats.playStreak}-day {format === "squirdle" ? "Stats " : ""}play streak{stats.freezes > 0 && ` · 🧊 ${stats.freezes}`}
                   </p>
                 )}
                 {mode !== "daily" && <p className="text-xs text-muted-foreground">{mode === "archive" ? "Archive" : "Practice"} games don&apos;t count toward streaks or stats.</p>}
@@ -603,19 +652,6 @@ export function Pokedle({
             close={rules.close}
             onClue={assist === "full" ? (column, guessId, cell) => setPick((p) => ({ column, guessId, status: cell.status, value: cell.value, n: (p?.n ?? 0) + 1 })) : undefined}
           />
-        )}
-
-        {!over && mode === "daily" && (
-          <p className="text-center text-xs text-muted-foreground">
-            {dailyDone ? "Want more? " : "After today's puzzle: "}
-            <button type="button" onClick={newPractice} className={dailyDone ? "text-primary hover:underline" : "underline decoration-dotted hover:text-foreground"}>
-              practice puzzles (any format and settings)
-            </button>
-            {" · "}
-            <button type="button" onClick={() => setSheet("archive")} className={dailyDone ? "text-primary hover:underline" : "underline decoration-dotted hover:text-foreground"} disabled={!today}>
-              the archive
-            </button>
-          </p>
         )}
       </div>
       {/* A new puzzle (the day's, a past one or another practice one) starts with every filter cleared. Pokédex off: no Pokédex. */}
@@ -638,7 +674,7 @@ export function Pokedle({
       {sheet === "stats" && stats && progress && today && (
         <StatsSheet
           stats={stats}
-          title={statsFormat === "squirdle" ? "Squirdle daily statistics" : undefined}
+          title={statsFormat === "squirdle" ? "Stats daily statistics" : undefined}
           todayGuesses={(() => {
             const r = dleBlock(progress, statsFormat).results[today];
             return r?.over ? (r.solved ? r.guesses.length : 0) : null;
@@ -659,5 +695,31 @@ export function Pokedle({
         />
       )}
     </div>
+  );
+}
+
+/** A setting that's on or off: its name and line, and a switch. */
+function SettingToggle({ label, description, checked, onChange, disabled }: { label: string; description: string; checked: boolean; onChange: () => void; disabled?: boolean }) {
+  return (
+    <label className={cn("flex items-center justify-between gap-4", disabled ? "cursor-not-allowed opacity-60" : "cursor-pointer")}>
+      <span className="min-w-0">
+        <span className="block text-sm font-semibold">{label}</span>
+        <span className="block text-xs text-muted-foreground">{description}</span>
+      </span>
+      <button
+        type="button"
+        role="switch"
+        aria-checked={checked}
+        aria-label={label}
+        disabled={disabled}
+        onClick={onChange}
+        className={cn(
+          "relative h-5 w-9 shrink-0 rounded-full border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed",
+          checked ? "border-primary bg-primary" : "border-foreground/20 bg-shade/30"
+        )}
+      >
+        <span className={cn("absolute top-0.5 h-3.5 w-3.5 rounded-full bg-foreground transition-[left]", checked ? "left-[1.1rem] bg-primary-foreground" : "left-0.5")} />
+      </button>
+    </label>
   );
 }

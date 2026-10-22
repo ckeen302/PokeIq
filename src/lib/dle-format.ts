@@ -25,10 +25,10 @@ export type DleDailyFormat = (typeof DLE_DAILY_FORMATS)[number];
 export const isDleFormat = (v: unknown): v is DleFormat => typeof v === "string" && (DLE_FORMATS as readonly string[]).includes(v);
 export const isDailyFormat = (v: unknown): v is DleDailyFormat => v === "classic" || v === "squirdle";
 
-export const DLE_FORMAT_LABEL: Record<DleFormat, string> = { classic: "Classic", squirdle: "Squirdle", custom: "Custom" };
+export const DLE_FORMAT_LABEL: Record<DleFormat, string> = { classic: "Classic", squirdle: "Stats", custom: "Custom" };
 export const DLE_FORMAT_BLURB: Record<DleFormat, string> = {
   classic: "Seven clues, with close states (yellow) for near misses.",
-  squirdle: "Gen, types, height and weight with ▲ / ▼ only, like Squirdle. Guesses scale with the generation range.",
+  squirdle: "Gen, types, height and weight with ▲ / ▼ only. Guesses scale with the generation range.",
   custom: "Pick the clue columns you want (3 or more).",
 };
 

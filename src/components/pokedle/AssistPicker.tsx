@@ -16,6 +16,7 @@ export function AssistPicker({
   note,
   points = true,
   label = "Pokédex assist",
+  blurb = true,
   className,
 }: {
   value: DleAssist;
@@ -27,6 +28,8 @@ export function AssistPicker({
   points?: boolean;
   /** The setting's accessible name, when a page has more than one. */
   label?: string;
+  /** Show the chosen level's line underneath (off in compact rows, where each option's tooltip has it). */
+  blurb?: boolean;
   className?: string;
 }) {
   const info = DLE_ASSIST_INFO[value];
@@ -57,9 +60,11 @@ export function AssistPicker({
           ))}
         </div>
       </div>
-      <p className="text-center text-xs text-muted-foreground" data-testid="assist-blurb">
-        {note ?? info.blurb}
-      </p>
+      {blurb && (
+        <p className="text-center text-xs text-muted-foreground" data-testid="assist-blurb">
+          {note ?? info.blurb}
+        </p>
+      )}
     </div>
   );
 }

@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { clock } from "./DuelParts";
 import { useMatchmaking } from "./use-matchmaking";
+import { HowItWorks } from "./HowItWorks";
 
 /** Device time, ticking twice a second while `on`. */
 function useTicker(on: boolean): number {
@@ -39,6 +40,7 @@ export function NewDuelCard({
   heading,
   blurb,
   match,
+  info,
   children,
 }: {
   endpoint?: string;
@@ -50,6 +52,8 @@ export function NewDuelCard({
   /** Matchmaking settings, e.g. { game: "geo", region }. */
   match?: Record<string, unknown>;
   children?: React.ReactNode;
+  /** The longer explanation, behind a "How it works" toggle. */
+  info?: React.ReactNode;
 }) {
   const router = useRouter();
   const progress = useProgress();
@@ -97,6 +101,7 @@ export function NewDuelCard({
           <p className="font-display text-2xl font-bold uppercase">{heading}</p>
           <p className="text-sm text-muted-foreground">{blurb}</p>
           {children}
+          {info && <HowItWorks>{info}</HowItWorks>}
           {(error ?? finder.error) && (
             <p role="alert" className="text-sm text-destructive">
               {error ?? finder.error}

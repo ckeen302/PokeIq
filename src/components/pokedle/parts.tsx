@@ -235,10 +235,11 @@ export function Board({
 }) {
   const reduced = useReducedMotion();
   const shown = DLE_COLUMNS.filter((c) => (columns ? columns.includes(c.key) : rows.some((r) => r.cells[c.key])));
-  const grid = { gridTemplateColumns: `minmax(92px,1.3fr) repeat(${shown.length},minmax(56px,1fr))` };
+  // Fixed tracks: the name column fits a full name beside its sprite, and every clue tile is the same size.
+  const grid = { gridTemplateColumns: `10rem repeat(${shown.length},3.75rem)` };
   return (
     <div className="-mx-4 overflow-x-auto px-4 pb-2">
-      <div className="mx-auto max-w-3xl space-y-2" style={{ minWidth: 92 + shown.length * 66 }} role="table" aria-label="Your guesses, newest first">
+      <div className="mx-auto w-max space-y-1.5" role="table" aria-label="Your guesses, newest first">
         <div className="hud-label grid gap-1.5 text-center" style={grid} role="row">
           <div className="text-left" role="columnheader">Pokémon</div>
           {shown.map((c) => (
@@ -252,9 +253,9 @@ export function Board({
           const flip = flipNewest && !reduced && r === 0;
           return (
             <div key={row.id} className="grid gap-1.5" style={grid} role="row">
-              <div className="flex items-center gap-1.5 rounded-lg border bg-card/80 px-1.5" role="rowheader">
+              <div className="flex h-12 items-center gap-1.5 rounded-lg border bg-card/80 pl-1 pr-2" role="rowheader" title={row.name}>
                 <img src={spriteUrl(row.id)} alt="" width={36} height={36} className="h-9 w-9 shrink-0" />
-                <span className="truncate text-xs font-semibold">{row.name}</span>
+                <span className="line-clamp-2 min-w-0 break-words text-xs font-semibold leading-tight">{row.name}</span>
               </div>
               {shown.map((c, i) => {
                 const cell = row.cells[c.key];
@@ -278,7 +279,7 @@ export const clueText = (label: string, cell: DleCell) => `${label} ${cell.value
 function Cell({ cell, label, delay, onClick }: { cell: DleCell; label: string; delay: number | null; onClick?: () => void }) {
   const text = clueText(label, cell);
   const className = cn(
-    "flex min-h-12 w-full flex-col items-center justify-center gap-0.5 rounded-lg border px-1 text-center text-[11px] font-semibold leading-tight",
+    "flex h-12 w-full flex-col items-center justify-center gap-0.5 rounded-lg border px-1 text-center text-[11px] font-semibold leading-tight",
     CELL_STYLES[cell.status],
     onClick && "cursor-pointer transition-[filter] hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
   );

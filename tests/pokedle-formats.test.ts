@@ -239,7 +239,7 @@ describe("share text, results and scoring", () => {
     const text = buildPokedleShare({
       number: 3,
       max: 9,
-      tags: ["Squirdle"],
+      tags: ["Stats"],
       squirdle: true,
       rows: [
         ["higher", "partial", "miss", "lower", "higher"],
@@ -252,7 +252,7 @@ describe("share text, results and scoring", () => {
       streak: 2,
       url: "https://pokeiq.vercel.app/pokedle",
     });
-    expect(text.split("\n")).toEqual(["PokéIQ Pokédle #3 · Squirdle 2/9 🧠 🔥2", "🟦🟨❌🔽🔼", "✅✅✅✅✅", "https://pokeiq.vercel.app/pokedle"]);
+    expect(text.split("\n")).toEqual(["PokéIQ Pokédle #3 · Stats 2/9 🧠 🔥2", "🟦🟨❌🔽🔼", "✅✅✅✅✅", "https://pokeiq.vercel.app/pokedle"]);
   });
 
   it("shares a practice game with its settings tags", () => {
@@ -263,7 +263,7 @@ describe("share text, results and scoring", () => {
   });
 
   it("tags a game for the summary chip and result", () => {
-    expect(rulesTags(dleRules({ format: "squirdle", gens: [1, 4], guesses: 8 }), { dex: "No dex" }).join(" · ")).toBe("Squirdle · Gen 1–4 · 8 guesses · No dex");
+    expect(rulesTags(dleRules({ format: "squirdle", gens: [1, 4], guesses: 8 }), { dex: "No dex" }).join(" · ")).toBe("Stats · Gen 1–4 · 8 guesses · No dex");
     expect(rulesTags(CLASSIC_RULES, { dex: "Notebook", hard: true }).join(" · ")).toBe("Classic · 8 guesses · Notebook · Hard");
     expect(rulesTags(dleRules({ close: false, hints: false, pool: "legendary" }))).toEqual(["Classic", "8 guesses", "Strict", "No hints", "Legendaries"]);
   });

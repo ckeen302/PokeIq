@@ -94,15 +94,15 @@ export function HowToSheet({ onClose }: { onClose: () => void }) {
               <b>Classic:</b> the seven clues above, 8 guesses.
             </li>
             <li>
-              <b>Squirdle-style:</b> Squirdle&apos;s format. Gen, Type 1, Type 2, Height and Weight; ✓ right, ▲▼ higher or lower (no close states), 🟨 the type in the other slot. Guesses scale with the
-              generations, as in Squirdle: 5 for Gen 1 only, up to 9 for all nine (the daily).
+              <b>Stats:</b> Gen, Type 1, Type 2, Height and Weight; ✓ right, ▲▼ higher or lower (no close states), 🟨 the type in the other slot. Guesses scale with the
+              generations: 5 for Gen 1 only, up to 9 for all nine (the daily).
             </li>
             <li>
               <b>Custom</b> (practice and duels): pick 3 or more clue columns.
             </li>
           </ul>
           <p>
-            The daily comes in Classic and Squirdle-style: one puzzle each for everyone, each with its own streaks and stats. Practice games and duels add advanced settings: generations, 6, 8 or 10
+            The daily comes in Classic and Stats: one puzzle each for everyone, each with its own streaks and stats. Practice games and duels add advanced settings: generations, 6, 8 or 10
             guesses, hints on or off, strict (▲▼ only, no close states), a 3-minute or 60-second timer, and a legendaries-only pool.
           </p>
         </div>
@@ -114,7 +114,7 @@ export function HowToSheet({ onClose }: { onClose: () => void }) {
           </p>
           <p data-testid="bonus-rule">
             A harder board pays more: +{Math.round(DLE_COLUMN_BONUS * 100)}% for each clue column hidden and +{Math.round(DLE_STRICT_BONUS * 100)}% without close states, up to +
-            {Math.round(DLE_MAX_BONUS * 100)}% (Squirdle-style: +{Math.round(rulesBonus(dailyRules("squirdle")) * 100)}%). It multiplies with the Pokédex level below.
+            {Math.round(DLE_MAX_BONUS * 100)}% (Stats: +{Math.round(rulesBonus(dailyRules("squirdle")) * 100)}%). It multiplies with the Pokédex level below.
           </p>
           <p>
             Hints are never automatic. After your first guess you can tap to use one:{" "}

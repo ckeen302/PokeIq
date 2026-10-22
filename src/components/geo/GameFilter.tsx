@@ -90,8 +90,7 @@ export function GameFilter({
       <div className="flex flex-wrap items-center gap-1.5" role="radiogroup" aria-label="Games">
         <span className="hud-label mr-1">Games</span>
         {eras.map((era) => {
-          const n = era ? count(era) : region.locations;
-          const off = !!era && n < GEO_FILTER_MIN_PLACES;
+          const off = !!era && count(era) < GEO_FILTER_MIN_PLACES;
           return (
             <button
               key={era ?? "all"}
@@ -99,13 +98,12 @@ export function GameFilter({
               role="radio"
               aria-checked={filter.era === era}
               disabled={off}
-              title={off ? `${GEO_ERA_NAMES[era]}: only ${n} place${n === 1 ? "" : "s"} on this map (${GEO_FILTER_MIN_PLACES} needed)` : undefined}
+              title={off ? `${GEO_ERA_NAMES[era]}: not enough places with its screenshots on this map` : undefined}
               onClick={() => onChange({ era, families: filter.families.filter((f) => !era || familyEra(f) === era) })}
               className={chip(filter.era === era, off)}
               data-testid={`geo-era-${era ?? "all"}`}
             >
               {GEO_ERA_NAMES[era ?? "all"]}
-              <span className="font-pixel text-[9px] text-muted-foreground">{n}</span>
             </button>
           );
         })}
@@ -132,7 +130,6 @@ export function GameFilter({
       {picking && (
         <div className="flex flex-wrap gap-1.5" role="group" aria-label="Pick games">
           {families.map((id) => {
-            const n = count(undefined, [id]);
             return (
               <button
                 key={id}
@@ -144,7 +141,6 @@ export function GameFilter({
                 data-testid={`geo-family-${id}`}
               >
                 {geoFamily(id).short}
-                <span className="font-pixel text-[9px] text-muted-foreground">{n}</span>
               </button>
             );
           })}
