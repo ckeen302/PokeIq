@@ -43,7 +43,7 @@ describe("PokéGuessr game families", () => {
   });
 
   it("gives every screenshot in the data a family that matches its game", () => {
-    expect(shots.length).toBeGreaterThan(2000);
+    expect(shots.length).toBeGreaterThan(1500);
     for (const s of shots) {
       expect(isGeoFamily(s.family), s.id).toBe(true);
       expect(familyOfGame(s.game), `${s.id} ${s.game}`).toBe(s.family);

@@ -1,1 +1,5420 @@
-{"audit": [], "added": []}
+{
+ "audit": [
+  {
+   "id": "pzs5yiKtbiNW",
+   "action": "remove",
+   "at": {
+    "region": "Kanto",
+    "name": "Celadon Condominiums",
+    "parent": "Celadon City"
+   },
+   "reason": "too-generic: a dirt path between two fences behind the Celadon Mansion, nothing that places it"
+  },
+  {
+   "id": "vj3ikSFNIJ37",
+   "action": "remove",
+   "at": {
+    "region": "Kanto",
+    "name": "Celadon Condominiums",
+    "parent": "Celadon City"
+   },
+   "reason": "too-generic: a plain Game Boy room with a desk and a table (Celadon Mansion side room)"
+  },
+  {
+   "id": "cs58w_gEUBJr",
+   "action": "remove",
+   "at": {
+    "region": "Kanto",
+    "name": "Cerulean City"
+   },
+   "reason": "bad-image: a 662x276 strip left after cutting off the arrival banner; too low and too cropped to read"
+  },
+  {
+   "id": "nf6jPvLVfKlV",
+   "action": "remove",
+   "at": {
+    "region": "Kanto",
+    "name": "Indigo Plateau"
+   },
+   "reason": "too-generic: reads as a standard Pokémon Center and Mart interior (Indigo Plateau lobby)"
+  },
+  {
+   "id": "ZzOJPwnf8s5I",
+   "action": "remove",
+   "at": {
+    "region": "Kanto",
+    "name": "Indigo Plateau"
+   },
+   "reason": "too-generic: reads as a standard Pokémon Center and Mart interior (Indigo Plateau lobby)"
+  },
+  {
+   "id": "nk1q4D6Gnq-z",
+   "action": "remove",
+   "at": {
+    "region": "Kanto",
+    "name": "Mt. Moon Square",
+    "parent": "Mt. Moon"
+   },
+   "reason": "near-duplicate: a close crop of the same HeartGold / SoulSilver map of Mt. Moon Square as another shot (the pond and house again)"
+  },
+  {
+   "id": "RtxqNmW5fAv2",
+   "action": "remove",
+   "at": {
+    "region": "Kanto",
+    "name": "Pewter City"
+   },
+   "reason": "too-generic: a 662x276 strip of a flower bed and a sign left after cutting off the arrival banner; nothing places it in Pewter City"
+  },
+  {
+   "id": "cvIjs0Ln95jx",
+   "action": "remove",
+   "at": {
+    "region": "Kanto",
+    "name": "Rock Tunnel"
+   },
+   "reason": "too-generic: a dark stretch of cave floor with a boulder; nothing marks it as Rock Tunnel"
+  },
+  {
+   "id": "91Soe5SIfW66",
+   "action": "remove",
+   "at": {
+    "region": "Kanto",
+    "name": "Route 11"
+   },
+   "reason": "too-generic: patches of tall grass and a dirt path, like any Let's Go route"
+  },
+  {
+   "id": "uqpzSmvnv4Ii",
+   "action": "remove",
+   "at": {
+    "region": "Kanto",
+    "name": "Route 21"
+   },
+   "reason": "too-generic: the middle of a long sea route, open water and two sandbars; any sea route looks the same"
+  },
+  {
+   "id": "PAi-bIVw6b7g",
+   "action": "remove",
+   "at": {
+    "region": "Kanto",
+    "name": "Route 21"
+   },
+   "reason": "too-generic: the middle of a long sea route, open water and sandbars; any sea route looks the same"
+  },
+  {
+   "id": "m2p3OjDLb3-g",
+   "action": "remove",
+   "at": {
+    "region": "Kanto",
+    "name": "Route 21"
+   },
+   "reason": "too-generic: the middle of a long sea route, open water and sandbars; any sea route looks the same"
+  },
+  {
+   "id": "IRbICId9wzbf",
+   "action": "remove",
+   "at": {
+    "region": "Kanto",
+    "name": "Sea Cottage",
+    "parent": "Route 25"
+   },
+   "reason": "near-duplicate: the same FireRed / LeafGreen view of the cottage and its ponds as the Cerulean Cape shot of Route 25"
+  },
+  {
+   "id": "O_iqFzL0W959",
+   "action": "remove",
+   "at": {
+    "region": "Kanto",
+    "name": "Route 26"
+   },
+   "reason": "too-generic: a crop of cliffs and a path with two stairs, nothing that marks Route 26"
+  },
+  {
+   "id": "QhQizl8YzMq2",
+   "action": "remove",
+   "at": {
+    "region": "Kanto",
+    "name": "Seafoam Islands"
+   },
+   "reason": "too-generic: Blaine's Gold / Silver / Crystal gym in the Seafoam Islands is a bare cave room with a few boulders"
+  },
+  {
+   "id": "EeLPQ1Ep2XFt",
+   "action": "remove",
+   "at": {
+    "region": "Kanto",
+    "name": "Tohjo Falls"
+   },
+   "reason": "near-duplicate: a close crop of the same HeartGold / SoulSilver Tohjo Falls map, the same two waterfalls"
+  },
+  {
+   "id": "CA_CmnQhqMbm",
+   "action": "remove",
+   "at": {
+    "region": "Kanto",
+    "name": "Viridian City"
+   },
+   "reason": "too-generic: a move tutor by a pond and some trees; nothing that places it in Viridian City"
+  },
+  {
+   "id": "YuiP651CcHuw",
+   "action": "remove",
+   "at": {
+    "region": "Kanto",
+    "name": "Viridian City"
+   },
+   "reason": "too-generic: trees, a pond and two people at night; nothing that places it in Viridian City"
+  },
+  {
+   "id": "qbuR_PjejtL7",
+   "action": "remove",
+   "at": {
+    "region": "Kanto",
+    "name": "Viridian City"
+   },
+   "reason": "too-generic: a dirt path past the corner of a Pokémon Center, like any Let's Go town"
+  },
+  {
+   "id": "j1S6vn6aWyza",
+   "action": "remove",
+   "at": {
+    "region": "Kalos",
+    "name": "Dendemille Town"
+   },
+   "reason": "too-generic: a fenced field of soil by a river, nothing that marks Dendemille Town"
+  },
+  {
+   "id": "jbFjP0zltBGu",
+   "action": "remove",
+   "at": {
+    "region": "Kalos",
+    "name": "Kiloude City"
+   },
+   "reason": "too-generic: a TMV platform; Kiloude, Lumiose and Couriway stations look the same"
+  },
+  {
+   "id": "qhImziMp664u",
+   "action": "remove",
+   "at": {
+    "region": "Kalos",
+    "name": "Lost Hotel"
+   },
+   "reason": "bad-image: half the frame is black; the rest is a bookshelf in a corridor"
+  },
+  {
+   "id": "-XqbdC8krlMR",
+   "action": "remove",
+   "at": {
+    "region": "Kalos",
+    "name": "Lumiose City"
+   },
+   "reason": "too-generic: a plain office interior (the Lumiose Press)"
+  },
+  {
+   "id": "v8K1gHP1C9M6",
+   "action": "remove",
+   "at": {
+    "region": "Kalos",
+    "name": "Poké Ball Factory"
+   },
+   "reason": "too-generic: a hedge maze in the rain, nothing that marks the Poké Ball Factory"
+  },
+  {
+   "id": "vD48rGMOir7Q",
+   "action": "remove",
+   "at": {
+    "region": "Kalos",
+    "name": "Unknown Dungeon (Kalos)",
+    "parent": "Pokémon Village"
+   },
+   "reason": "too-generic: a dark, empty cave floor with a few rocks"
+  },
+  {
+   "id": "-JyIX-mne_cF",
+   "action": "remove",
+   "at": {
+    "region": "Kalos",
+    "name": "Power Plant"
+   },
+   "reason": "too-generic: a lab room with computers and scientists, like any lab interior"
+  },
+  {
+   "id": "N5aMVUPpSoON",
+   "action": "remove",
+   "at": {
+    "region": "Kalos",
+    "name": "Route 10"
+   },
+   "reason": "gives-away: the route's own signpost with a big '10' is in the middle of the shot"
+  },
+  {
+   "id": "JI6CD7JCa1ly",
+   "action": "remove",
+   "at": {
+    "region": "Kalos",
+    "name": "Route 14"
+   },
+   "reason": "gives-away: the route's own signpost with a big '14'"
+  },
+  {
+   "id": "77CMKp0NbWCx",
+   "action": "remove",
+   "at": {
+    "region": "Kalos",
+    "name": "Route 15"
+   },
+   "reason": "too-generic: a dirt path and a patch of fallen leaves, like any autumn Kalos route"
+  },
+  {
+   "id": "kgzqiNPaJmtW",
+   "action": "remove",
+   "at": {
+    "region": "Kalos",
+    "name": "Route 19"
+   },
+   "reason": "near-duplicate: the same rope bridge in the rain from almost the same angle as the other Route 19 shot"
+  },
+  {
+   "id": "Ji05nYjYxKu_",
+   "action": "remove",
+   "at": {
+    "region": "Kalos",
+    "name": "Route 20"
+   },
+   "reason": "too-generic: a patch of grass and a tree in a dark wood"
+  },
+  {
+   "id": "39o6CxFg7AUL",
+   "action": "remove",
+   "at": {
+    "region": "Kalos",
+    "name": "Route 21"
+   },
+   "reason": "gives-away: the route signpost reading '21' is in the shot"
+  },
+  {
+   "id": "ZLnn0F5OlMZm",
+   "action": "remove",
+   "at": {
+    "region": "Kalos",
+    "name": "Route 4"
+   },
+   "reason": "too-generic: a path, a tree and stone steps, like many Kalos routes"
+  },
+  {
+   "id": "xwsVGaetKuFo",
+   "action": "remove",
+   "at": {
+    "region": "Kalos",
+    "name": "Route 8"
+   },
+   "reason": "gives-away: the route signpost reading '8' is in the shot"
+  },
+  {
+   "id": "ihgMSd6Uj4Ia",
+   "action": "remove",
+   "at": {
+    "region": "Kalos",
+    "name": "Santalune Forest"
+   },
+   "reason": "too-generic: a dirt path between dark trees, any forest"
+  },
+  {
+   "id": "LnDz16rIsM5A",
+   "action": "remove",
+   "at": {
+    "region": "Kalos",
+    "name": "Santalune Forest"
+   },
+   "reason": "too-generic: sunbeams through trees, any forest"
+  },
+  {
+   "id": "0Gs22wZumKve",
+   "action": "remove",
+   "at": {
+    "region": "Kalos",
+    "name": "Shalour City"
+   },
+   "reason": "near-duplicate: the same view of the Tower of Mastery across the causeway as the Tower of Mastery shot"
+  },
+  {
+   "id": "K8MCtHynZZhp",
+   "action": "remove",
+   "at": {
+    "region": "Kalos",
+    "name": "Terminus Cave"
+   },
+   "reason": "too-generic: a dark cave floor with a patch of grass"
+  },
+  {
+   "id": "F5YnDfPSrV7I",
+   "action": "remove",
+   "at": {
+    "region": "Alola",
+    "name": "Battle Royal Dome"
+   },
+   "reason": "near-duplicate: the same view of the Battle Royal Dome stage as the other shot, cropped"
+  },
+  {
+   "id": "K0P6jLffc0zj",
+   "action": "remove",
+   "at": {
+    "region": "Alola",
+    "name": "Battle Tree"
+   },
+   "reason": "near-duplicate: the same path up to the Battle Tree entrance as the other Sun / Moon shot"
+  },
+  {
+   "id": "tVb3aBQ1peq5",
+   "action": "remove",
+   "at": {
+    "region": "Alola",
+    "name": "Blush Mountain"
+   },
+   "reason": "near-duplicate: the same view of the Blush Mountain power plant and truck as the other shot"
+  },
+  {
+   "id": "IwwnLZV0z_sc",
+   "action": "remove",
+   "at": {
+    "region": "Alola",
+    "name": "Brooklet Hill"
+   },
+   "reason": "too-generic: a fenced patch of cliff above the sea"
+  },
+  {
+   "id": "lJZpnXuaM1Ev",
+   "action": "remove",
+   "at": {
+    "region": "Alola",
+    "name": "Brooklet Hill"
+   },
+   "reason": "too-generic: a beach and a short boardwalk"
+  },
+  {
+   "id": "UcvwMs4FpT88",
+   "action": "remove",
+   "at": {
+    "region": "Alola",
+    "name": "Exeggutor Island"
+   },
+   "reason": "too-generic: a grassy clifftop by the sea with a small ruin; no Exeggutor or anything else that marks the island"
+  },
+  {
+   "id": "E6VS0niomAS-",
+   "action": "remove",
+   "at": {
+    "region": "Alola",
+    "name": "Hano Beach"
+   },
+   "reason": "too-generic: an empty stretch of sand with two parasols"
+  },
+  {
+   "id": "cJfouZkvxYMK",
+   "action": "remove",
+   "at": {
+    "region": "Alola",
+    "name": "Hano Grand Resort"
+   },
+   "reason": "near-duplicate: the same view of the resort entrance as the other shot, cropped"
+  },
+  {
+   "id": "fSeJ3YUxRPWU",
+   "action": "remove",
+   "at": {
+    "region": "Alola",
+    "name": "Hau'oli Cemetery"
+   },
+   "reason": "too-generic: two gravestones on a path; Memorial Hill looks the same"
+  },
+  {
+   "id": "jasd7NJciwej",
+   "action": "remove",
+   "at": {
+    "region": "Alola",
+    "name": "Heahea City"
+   },
+   "reason": "too-generic: a shop interior with a photo cut-out board; such boards stand in several towns"
+  },
+  {
+   "id": "fY50jt3lcinF",
+   "action": "remove",
+   "at": {
+    "region": "Alola",
+    "name": "Lake of the Sunne / Moone"
+   },
+   "reason": "near-duplicate: the same stairway as the other Lake of the Sunne shot"
+  },
+  {
+   "id": "ZwTc57nJwS7g",
+   "action": "remove",
+   "at": {
+    "region": "Alola",
+    "name": "Mahalo Trail"
+   },
+   "reason": "near-duplicate: the same view up the Mahalo Trail steps as the other shot, cropped"
+  },
+  {
+   "id": "dhV3g40Ld-y_",
+   "action": "remove",
+   "at": {
+    "region": "Alola",
+    "name": "Malie City"
+   },
+   "reason": "near-duplicate: the same view of Malie City's gate street as the other shot, cropped"
+  },
+  {
+   "id": "k-XtHT2BcpvC",
+   "action": "remove",
+   "at": {
+    "region": "Alola",
+    "name": "Memorial Hill"
+   },
+   "reason": "near-duplicate: the same hedged path between graves as the other Memorial Hill shot"
+  },
+  {
+   "id": "xi_3sBvWDXtA",
+   "action": "remove",
+   "at": {
+    "region": "Alola",
+    "name": "Mount Hokulani"
+   },
+   "reason": "near-duplicate: the same road up to the Pokémon Center as the other Mount Hokulani shot"
+  },
+  {
+   "id": "2fnOlnUZ-Ih4",
+   "action": "remove",
+   "at": {
+    "region": "Alola",
+    "name": "Plains Grotto"
+   },
+   "reason": "not in-game footage: a render of the cave's 3D model on black, a view no player ever sees"
+  },
+  {
+   "id": "bXX5yrivHFep",
+   "action": "remove",
+   "at": {
+    "region": "Alola",
+    "name": "Po Town"
+   },
+   "reason": "near-duplicate: the same rainy road into Po Town as the other Sun / Moon shot, cropped"
+  },
+  {
+   "id": "0h6ZC5m5K23g",
+   "action": "remove",
+   "at": {
+    "region": "Alola",
+    "name": "Route 1"
+   },
+   "reason": "gives-away: the route signpost with its number is in the shot"
+  },
+  {
+   "id": "x0JaIxO9wwwm",
+   "action": "remove",
+   "at": {
+    "region": "Alola",
+    "name": "Route 10"
+   },
+   "reason": "gives-away: the route signpost reading '10' is in the shot"
+  },
+  {
+   "id": "HQ0xhMT8-E0h",
+   "action": "remove",
+   "at": {
+    "region": "Alola",
+    "name": "Route 11"
+   },
+   "reason": "gives-away: the route signpost reading '11' is in the shot"
+  },
+  {
+   "id": "ekiAR56UDLBl",
+   "action": "remove",
+   "at": {
+    "region": "Alola",
+    "name": "Route 15"
+   },
+   "reason": "gives-away: the route signpost with its number is in the shot"
+  },
+  {
+   "id": "bT5ytRjR-Q8W",
+   "action": "remove",
+   "at": {
+    "region": "Alola",
+    "name": "Route 2"
+   },
+   "reason": "gives-away: the route signpost with its number is in the shot"
+  },
+  {
+   "id": "h_aqOGMIUe6V",
+   "action": "remove",
+   "at": {
+    "region": "Alola",
+    "name": "Route 3"
+   },
+   "reason": "gives-away: the route signpost with its number is in the shot"
+  },
+  {
+   "id": "NH4SArDKEVAY",
+   "action": "remove",
+   "at": {
+    "region": "Alola",
+    "name": "Route 5"
+   },
+   "reason": "gives-away: the route signpost with its number is in the shot"
+  },
+  {
+   "id": "B-2qZgmgutkP",
+   "action": "remove",
+   "at": {
+    "region": "Alola",
+    "name": "Route 7"
+   },
+   "reason": "near-duplicate: the same view of the road to Wela Volcano Park as the other Route 7 shot, cropped"
+  },
+  {
+   "id": "LI-46xLAIe9M",
+   "action": "remove",
+   "at": {
+    "region": "Alola",
+    "name": "Route 8"
+   },
+   "reason": "gives-away: the route signpost reading '08' is in the shot"
+  },
+  {
+   "id": "0mTez1uNXIhT",
+   "action": "remove",
+   "at": {
+    "region": "Alola",
+    "name": "Route 9"
+   },
+   "reason": "gives-away: the route signpost with its number is in the shot"
+  },
+  {
+   "id": "07bqORDXScrb",
+   "action": "remove",
+   "at": {
+    "region": "Alola",
+    "name": "Route 9"
+   },
+   "reason": "too-generic: crossing dirt paths and a notice board"
+  },
+  {
+   "id": "LvHkLaLyf9Fb",
+   "action": "remove",
+   "at": {
+    "region": "Alola",
+    "name": "Ruins of Conflict"
+   },
+   "reason": "too-generic: a stone doorway inside a ruin; the four island ruins look the same inside"
+  },
+  {
+   "id": "-TDtSwPNzoPH",
+   "action": "remove",
+   "at": {
+    "region": "Alola",
+    "name": "Seaward Cave"
+   },
+   "reason": "too-generic: a shallow pool on a cave floor"
+  },
+  {
+   "id": "TVCTqXz6Daj3",
+   "action": "remove",
+   "at": {
+    "region": "Alola",
+    "name": "Shady House"
+   },
+   "reason": "too-generic: an empty room with a red carpet and two windows"
+  },
+  {
+   "id": "eHuqP6eIRr2t",
+   "action": "remove",
+   "at": {
+    "region": "Alola",
+    "name": "Ula'ula Meadow"
+   },
+   "reason": "near-duplicate: the same boardwalk through the red flowers as the other Ula'ula Meadow shot"
+  },
+  {
+   "id": "rmisqYUWwryW",
+   "action": "remove",
+   "at": {
+    "region": "Alola",
+    "name": "Verdant Cavern"
+   },
+   "reason": "too-generic: a dark green cave floor"
+  },
+  {
+   "id": "SI7_EnPWLer3",
+   "action": "remove",
+   "at": {
+    "region": "Alola",
+    "name": "Wela Volcano Park"
+   },
+   "reason": "near-duplicate: the same ledge below the lava as the other Wela Volcano Park shot"
+  },
+  {
+   "id": "8mJeIMOGWVxo",
+   "action": "remove",
+   "at": {
+    "region": "Crown Tundra",
+    "name": "Iceberg Ruins"
+   },
+   "reason": "too-generic: the Regi chamber, the same room in every Crown Tundra ruin"
+  },
+  {
+   "id": "0Mk_pDDpEfOl",
+   "action": "remove",
+   "at": {
+    "region": "Crown Tundra",
+    "name": "Iron Ruins"
+   },
+   "reason": "too-generic: the Regi chamber, the same room in every Crown Tundra ruin"
+  },
+  {
+   "id": "WBGwok3-zXoJ",
+   "action": "remove",
+   "at": {
+    "region": "Crown Tundra",
+    "name": "Max Lair"
+   },
+   "reason": "near-duplicate: the same lit gateway into the Max Lair as the other shot"
+  },
+  {
+   "id": "PmTRSEx0amne",
+   "action": "remove",
+   "at": {
+    "region": "Crown Tundra",
+    "name": "Rock Peak Ruins"
+   },
+   "reason": "too-generic: the Regi chamber, the same room in every Crown Tundra ruin"
+  },
+  {
+   "id": "pV-I1lXz6Zwq",
+   "action": "remove",
+   "at": {
+    "region": "Crown Tundra",
+    "name": "Three-Point Pass"
+   },
+   "reason": "too-generic: a dirt path between grey rocks"
+  },
+  {
+   "id": "eZ1c9raBURJE",
+   "action": "remove",
+   "at": {
+    "region": "Galar",
+    "name": "Giant's Seat"
+   },
+   "reason": "too-generic: the foot of a rock pillar and a den; Wild Area zones are full of both"
+  },
+  {
+   "id": "0TiffBL2_-ky",
+   "action": "remove",
+   "at": {
+    "region": "Galar",
+    "name": "Glimwood Tangle"
+   },
+   "reason": "near-duplicate: the same glowing mushrooms from almost the same spot as the other Glimwood Tangle shot"
+  },
+  {
+   "id": "-0hFyglU_BMO",
+   "action": "remove",
+   "at": {
+    "region": "Galar",
+    "name": "Route 1"
+   },
+   "reason": "gives-away: the route signpost reading '01' stands by the path"
+  },
+  {
+   "id": "PZw8PTD3aUNV",
+   "action": "remove",
+   "at": {
+    "region": "Galar",
+    "name": "Route 1"
+   },
+   "reason": "gives-away: the route signpost reading '01' stands by the path"
+  },
+  {
+   "id": "RklmjWOeQbow",
+   "action": "remove",
+   "at": {
+    "region": "Galar",
+    "name": "Route 10"
+   },
+   "reason": "gives-away: the route signpost reading '10' is in the corner"
+  },
+  {
+   "id": "95zFJxy6LWcc",
+   "action": "remove",
+   "at": {
+    "region": "Galar",
+    "name": "North Lake Miloch"
+   },
+   "reason": "too-generic: a den by a red cliff; the Wild Area has dozens like it"
+  },
+  {
+   "id": "aIuXu18ykHEJ",
+   "action": "remove",
+   "at": {
+    "region": "Galar",
+    "name": "Route 4"
+   },
+   "reason": "too-generic: a dirt road through grass with a field far off"
+  },
+  {
+   "id": "cwSyecDoSJ7m",
+   "action": "remove",
+   "at": {
+    "region": "Isle of Armor",
+    "name": "Brawlers' Cave"
+   },
+   "reason": "too-generic: a brown cave ledge with nothing distinctive"
+  },
+  {
+   "id": "IqiG5PjsYy6I",
+   "action": "remove",
+   "at": {
+    "region": "Isle of Armor",
+    "name": "Forest of Focus"
+   },
+   "reason": "too-generic: a den on a grassy bank under a tree"
+  },
+  {
+   "id": "dTx1YYhrombQ",
+   "action": "remove",
+   "at": {
+    "region": "Isle of Armor",
+    "name": "Honeycalm Island"
+   },
+   "reason": "near-duplicate: the same tree and den as the other Honeycalm Island shot"
+  },
+  {
+   "id": "xueSWCbww_DQ",
+   "action": "remove",
+   "at": {
+    "region": "Isle of Armor",
+    "name": "Loop Lagoon"
+   },
+   "reason": "too-generic: dark open water below grey cliffs"
+  },
+  {
+   "id": "wsSqmJLLQpMS",
+   "action": "remove",
+   "at": {
+    "region": "Isle of Armor",
+    "name": "Loop Lagoon"
+   },
+   "reason": "too-generic: a den in open water between two cliffs"
+  },
+  {
+   "id": "AwFV0WbVHuQl",
+   "action": "remove",
+   "at": {
+    "region": "Isle of Armor",
+    "name": "Potbottom Desert"
+   },
+   "reason": "too-generic: a sandstorm and a dead tree; the Wild Area's Dusty Bowl looks the same"
+  },
+  {
+   "id": "3MD8wM54440Z",
+   "action": "remove",
+   "at": {
+    "region": "Kitakami",
+    "name": "Kitakami Road"
+   },
+   "reason": "gives-away: the game's minimap in the corner shows exactly where on the map the player stands"
+  },
+  {
+   "id": "_YmSMvklNsaf",
+   "action": "remove",
+   "at": {
+    "region": "Paldea",
+    "name": "Cabo Poco"
+   },
+   "reason": "gives-away: the game's minimap in the corner shows where the player stands"
+  },
+  {
+   "id": "Kf541woS8iz3",
+   "action": "remove",
+   "at": {
+    "region": "Paldea",
+    "name": "Cascarrafa Gym",
+    "parent": "Cascarrafa"
+   },
+   "reason": "too-generic: the standard Gym sign by a pond and trees; nothing places it in Cascarrafa"
+  },
+  {
+   "id": "kFttvfk8XJg-",
+   "action": "remove",
+   "at": {
+    "region": "Paldea",
+    "name": "Cortondo Gym",
+    "parent": "Cortondo"
+   },
+   "reason": "too-generic: the standard Gym sign with palms and mountains; nothing places it in Cortondo"
+  },
+  {
+   "id": "YudJAU2yoATG",
+   "action": "remove",
+   "at": {
+    "region": "Paldea",
+    "name": "Area Zero",
+    "parent": "Great Crater of Paldea"
+   },
+   "reason": "gives-away: the game's minimap in the corner shows where the player stands"
+  },
+  {
+   "id": "SmmENHKJ4OQG",
+   "action": "remove",
+   "at": {
+    "region": "Paldea",
+    "name": "Area Zero",
+    "parent": "Great Crater of Paldea"
+   },
+   "reason": "gives-away: the game's minimap in the corner shows where the player stands"
+  },
+  {
+   "id": "lNAe_do9bN-v",
+   "action": "remove",
+   "at": {
+    "region": "Paldea",
+    "name": "Zero Gate",
+    "parent": "Great Crater of Paldea"
+   },
+   "reason": "gives-away: the game's minimap in the corner shows where the player stands"
+  },
+  {
+   "id": "Q_3Qg99SywjC",
+   "action": "remove",
+   "at": {
+    "region": "Paldea",
+    "name": "Inlet Grotto"
+   },
+   "reason": "near-duplicate: the same glowing moss in the dark as the other Inlet Grotto shot"
+  },
+  {
+   "id": "W1vNed7rxAa9",
+   "action": "remove",
+   "at": {
+    "region": "Paldea",
+    "name": "Los Platos"
+   },
+   "reason": "near-duplicate: the same street into Los Platos as the other street shot, by day"
+  },
+  {
+   "id": "zMRVPe9GGS-7",
+   "action": "remove",
+   "at": {
+    "region": "Paldea",
+    "name": "Naranja and Uva Academy"
+   },
+   "reason": "gives-away: the game's minimap in the corner shows where the player stands"
+  },
+  {
+   "id": "A3slho0v3F0Z",
+   "action": "remove",
+   "at": {
+    "region": "Paldea",
+    "name": "North Paldean Sea"
+   },
+   "reason": "too-generic: open sea and a strip of beach"
+  },
+  {
+   "id": "ZE8Sh_vUK2ro",
+   "action": "remove",
+   "at": {
+    "region": "Paldea",
+    "name": "North Paldean Sea"
+   },
+   "reason": "too-generic: open sea, a sandbar and a rocky island"
+  },
+  {
+   "id": "GkNuhZz8KnWh",
+   "action": "remove",
+   "at": {
+    "region": "Paldea",
+    "name": "North Province (Area One)"
+   },
+   "reason": "near-duplicate: the same view over the ponds as the other North Province (Area One) shot, cropped"
+  },
+  {
+   "id": "BtRnimZVZkWm",
+   "action": "remove",
+   "at": {
+    "region": "Paldea",
+    "name": "Pokémon League"
+   },
+   "reason": "near-duplicate: the same front of the League building as the other shot"
+  },
+  {
+   "id": "w2oJuET7kjCd",
+   "action": "remove",
+   "at": {
+    "region": "Paldea",
+    "name": "Porto Marinada"
+   },
+   "reason": "near-duplicate: the same aerial view of the market hall as the other Porto Marinada shot"
+  },
+  {
+   "id": "yGA8Gy0Zzulb",
+   "action": "remove",
+   "at": {
+    "region": "Paldea",
+    "name": "Socarrat Trail"
+   },
+   "reason": "near-duplicate: the same golden grass and pines as the other Socarrat Trail shot"
+  },
+  {
+   "id": "8ByYbV19Ppsc",
+   "action": "remove",
+   "at": {
+    "region": "Paldea",
+    "name": "Groundblight Shrine",
+    "parent": "Socarrat Trail"
+   },
+   "reason": "too-generic: a close-up of a shrine seal on bare rock; the four shrines' seals look alike"
+  },
+  {
+   "id": "nGR1sax1vRjH",
+   "action": "remove",
+   "at": {
+    "region": "Paldea",
+    "name": "South Paldean Sea"
+   },
+   "reason": "too-generic: a coastal path, a palm tree and the sea"
+  },
+  {
+   "id": "jyERmnWAhA2n",
+   "action": "remove",
+   "at": {
+    "region": "Paldea",
+    "name": "Tagtree Thicket"
+   },
+   "reason": "near-duplicate: the same graffiti-wrapped trees as the other Tagtree Thicket shot"
+  },
+  {
+   "id": "eu1bTk4o6tr2",
+   "action": "remove",
+   "at": {
+    "region": "Paldea",
+    "name": "West Paldean Sea"
+   },
+   "reason": "too-generic: a sunset over open sea from a pier"
+  },
+  {
+   "id": "vtcExosX5bL2",
+   "action": "remove",
+   "at": {
+    "region": "Paldea",
+    "name": "West Province (Area One)"
+   },
+   "reason": "near-duplicate: the same view of the path up to the wind turbines as the other West Province (Area One) shot"
+  },
+  {
+   "id": "MOpnZ1F-aeX6",
+   "action": "remove",
+   "at": {
+    "region": "Sevii Islands",
+    "name": "Altering Cave"
+   },
+   "reason": "near-duplicate: a crop of most of the same one-room cave map as the other Altering Cave shot"
+  },
+  {
+   "id": "mw0CdpR11DjN",
+   "action": "remove",
+   "at": {
+    "region": "Sevii Islands",
+    "name": "Birth Island"
+   },
+   "reason": "near-duplicate: a crop of the same island map as the other Birth Island shot"
+  },
+  {
+   "id": "Mpr0v5zbeing",
+   "action": "remove",
+   "at": {
+    "region": "Sevii Islands",
+    "name": "Bond Bridge"
+   },
+   "reason": "too-generic: trees, ledges and steps, like any FireRed / LeafGreen route"
+  },
+  {
+   "id": "LEb55e9QwUEJ",
+   "action": "remove",
+   "at": {
+    "region": "Sevii Islands",
+    "name": "Canyon Entrance"
+   },
+   "reason": "too-generic: grass, ledges and steps between cliffs"
+  },
+  {
+   "id": "ik_q7QvhGrHN",
+   "action": "remove",
+   "at": {
+    "region": "Sevii Islands",
+    "name": "Cape Brink"
+   },
+   "reason": "too-generic: a pond between cliffs and a sandy bank"
+  },
+  {
+   "id": "J5a6zvfjmGrl",
+   "action": "remove",
+   "at": {
+    "region": "Sevii Islands",
+    "name": "Five Isle Meadow"
+   },
+   "reason": "near-duplicate: an overlapping crop of the same meadow and warehouse roof as the other Five Isle Meadow crop"
+  },
+  {
+   "id": "ti-bxOdN1ceJ",
+   "action": "remove",
+   "at": {
+    "region": "Sevii Islands",
+    "name": "Memorial Pillar"
+   },
+   "reason": "near-duplicate: an overlapping crop of the same pillar islet as the other Memorial Pillar crop"
+  },
+  {
+   "id": "8Pt5YoPj_VI5",
+   "action": "remove",
+   "at": {
+    "region": "Sevii Islands",
+    "name": "Mt. Ember"
+   },
+   "reason": "too-generic: rock terraces, stairs and grass, a crop of the mountain map"
+  },
+  {
+   "id": "vqZZBHR-e5fu",
+   "action": "remove",
+   "at": {
+    "region": "Sevii Islands",
+    "name": "Outcast Island"
+   },
+   "reason": "too-generic: open sea dotted with rocks and sandbars"
+  },
+  {
+   "id": "XEvOuL9EkVC-",
+   "action": "remove",
+   "at": {
+    "region": "Sevii Islands",
+    "name": "Resort Gorgeous"
+   },
+   "reason": "near-duplicate: a crop of the same islet and house as the other Resort Gorgeous shot"
+  },
+  {
+   "id": "r1m3C0W8OIPo",
+   "action": "remove",
+   "at": {
+    "region": "Sevii Islands",
+    "name": "Ruin Valley"
+   },
+   "reason": "too-generic: rocky ledges, sand and grass, a crop of the valley map"
+  },
+  {
+   "id": "SKUtLBXP83rI",
+   "action": "remove",
+   "at": {
+    "region": "Sevii Islands",
+    "name": "Sevault Canyon"
+   },
+   "reason": "too-generic: rocky ledges around a patch of grass, a crop of the canyon map"
+  },
+  {
+   "id": "LAJ78BPrmMZk",
+   "action": "remove",
+   "at": {
+    "region": "Sevii Islands",
+    "name": "Tanoby Ruins"
+   },
+   "reason": "near-duplicate: another crop of the same chamber islets, the same as the two other Tanoby Ruins crops"
+  },
+  {
+   "id": "kLGLsfwU6zxs",
+   "action": "remove",
+   "at": {
+    "region": "Sevii Islands",
+    "name": "Three Isle Port"
+   },
+   "reason": "too-generic: a ferry pier and open water; every Sevii port looks the same"
+  },
+  {
+   "id": "toPt-MHp3R6l",
+   "action": "remove",
+   "at": {
+    "region": "Sevii Islands",
+    "name": "Trainer Tower"
+   },
+   "reason": "too-generic: steps down a cliff to open sea dotted with rocks"
+  },
+  {
+   "id": "2o3Wi0AbyC_K",
+   "action": "remove",
+   "at": {
+    "region": "Sevii Islands",
+    "name": "Treasure Beach"
+   },
+   "reason": "too-generic: sand, grass and rocks, a crop of the beach map"
+  },
+  {
+   "id": "wLhDYTxG5Mya",
+   "action": "remove",
+   "at": {
+    "region": "Sevii Islands",
+    "name": "Two Island"
+   },
+   "reason": "too-generic: a ferry pier and a Pokémon Center; every Sevii port looks the same"
+  },
+  {
+   "id": "i39hLLgIGQ_v",
+   "action": "remove",
+   "at": {
+    "region": "Johto",
+    "name": "Blackthorn City"
+   },
+   "reason": "too-generic: a thatched hut among brown rocks; could be any mountain route"
+  },
+  {
+   "id": "10wUVBgnk--9",
+   "action": "remove",
+   "at": {
+    "region": "Johto",
+    "name": "Cherrygrove City"
+   },
+   "reason": "too-generic: a Pokémon Center, a Mart and two houses; any HeartGold / SoulSilver town"
+  },
+  {
+   "id": "UbHEphVE0TxV",
+   "action": "remove",
+   "at": {
+    "region": "Johto",
+    "name": "Cianwood City"
+   },
+   "reason": "near-duplicate: the same northern stretch of beach and cliffs as the North Cianwood shot"
+  },
+  {
+   "id": "3Aqwo1JEGvw8",
+   "action": "remove",
+   "at": {
+    "region": "Johto",
+    "name": "Cliff Edge Gate",
+    "parent": "Cianwood City"
+   },
+   "reason": "near-duplicate: a crop of the same Cliff Edge Gate map as the other shot"
+  },
+  {
+   "id": "TPDFJFT2M-pR",
+   "action": "remove",
+   "at": {
+    "region": "Johto",
+    "name": "Dark Cave"
+   },
+   "reason": "too-generic: a crop of grey cave ledges and water"
+  },
+  {
+   "id": "PXVHmnEpzVoJ",
+   "action": "remove",
+   "at": {
+    "region": "Johto",
+    "name": "Dragon's Den"
+   },
+   "reason": "near-duplicate: a close crop of the shrine from the same Gold / Silver Dragon's Den map as the other shot"
+  },
+  {
+   "id": "DgnPp95DnCcX",
+   "action": "remove",
+   "at": {
+    "region": "Johto",
+    "name": "Ecruteak Gym",
+    "parent": "Ecruteak City"
+   },
+   "reason": "near-duplicate: a crop of the same HeartGold / SoulSilver Ecruteak Gym map as the other shot"
+  },
+  {
+   "id": "t5p5TiNLepir",
+   "action": "remove",
+   "at": {
+    "region": "Johto",
+    "name": "Frontier Access"
+   },
+   "reason": "near-duplicate: a crop of the same Frontier Access map as the other shot"
+  },
+  {
+   "id": "FSaqL4gREH-U",
+   "action": "remove",
+   "at": {
+    "region": "Johto",
+    "name": "Goldenrod City"
+   },
+   "reason": "near-duplicate: the same Department Store block as the Department Store shot"
+  },
+  {
+   "id": "HuLS41t4TgsU",
+   "action": "remove",
+   "at": {
+    "region": "Johto",
+    "name": "Goldenrod Department Store",
+    "parent": "Goldenrod City"
+   },
+   "reason": "too-generic: a department store sales floor; Celadon's looks the same in HeartGold / SoulSilver"
+  },
+  {
+   "id": "dTmwAcLIENO-",
+   "action": "remove",
+   "at": {
+    "region": "Johto",
+    "name": "Goldenrod Game Corner",
+    "parent": "Goldenrod City"
+   },
+   "reason": "too-generic: Gold / Silver's Celadon and Goldenrod Game Corners share this interior"
+  },
+  {
+   "id": "Mgfpcv5cwkfy",
+   "action": "remove",
+   "at": {
+    "region": "Johto",
+    "name": "Goldenrod Game Corner",
+    "parent": "Goldenrod City"
+   },
+   "reason": "too-generic: HeartGold / SoulSilver's Celadon and Goldenrod Game Corners share this interior"
+  },
+  {
+   "id": "CO3Rt3MoBZYo",
+   "action": "remove",
+   "at": {
+    "region": "Kanto",
+    "name": "Celadon Game Corner",
+    "parent": "Celadon City"
+   },
+   "reason": "too-generic: Gold / Silver / Crystal's Celadon and Goldenrod Game Corners share this interior"
+  },
+  {
+   "id": "C2QdoIuenPqt",
+   "action": "remove",
+   "at": {
+    "region": "Kanto",
+    "name": "Celadon Game Corner",
+    "parent": "Celadon City"
+   },
+   "reason": "too-generic: HeartGold / SoulSilver's Celadon and Goldenrod Game Corners share this interior"
+  },
+  {
+   "id": "6dZoQj14sm92",
+   "action": "remove",
+   "at": {
+    "region": "Johto",
+    "name": "Goldenrod City"
+   },
+   "reason": "near-duplicate: the same Radio Tower corner of the city as the Radio Tower shot"
+  },
+  {
+   "id": "aFH24627vwOG",
+   "action": "remove",
+   "at": {
+    "region": "Johto",
+    "name": "Goldenrod Tunnel",
+    "parent": "Goldenrod City"
+   },
+   "reason": "near-duplicate: a crop of the same Goldenrod Tunnel basement map as the other shot"
+  },
+  {
+   "id": "HELZcZUL0XDS",
+   "action": "remove",
+   "at": {
+    "region": "Johto",
+    "name": "Pokémon Communication Center",
+    "parent": "Goldenrod City"
+   },
+   "reason": "near-duplicate: a crop of the same Communication Center floor as the other shot"
+  },
+  {
+   "id": "b9--07umXuRL",
+   "action": "remove",
+   "at": {
+    "region": "Johto",
+    "name": "Ice Path"
+   },
+   "reason": "near-duplicate: a crop of the same Crystal Ice Path 1F map as the other shot"
+  },
+  {
+   "id": "WKZSNtNvyVQ_",
+   "action": "remove",
+   "at": {
+    "region": "Johto",
+    "name": "Ilex Forest"
+   },
+   "reason": "too-generic: rows of trees and a few small cuttable trees, any forest"
+  },
+  {
+   "id": "LEvC86LklqqK",
+   "action": "remove",
+   "at": {
+    "region": "Johto",
+    "name": "Mt. Mortar"
+   },
+   "reason": "too-generic: a crop of grey cave ledges, water and a ladder; any HeartGold / SoulSilver cave"
+  },
+  {
+   "id": "f2Gg8amQ-klr",
+   "action": "remove",
+   "at": {
+    "region": "Johto",
+    "name": "Mt. Mortar"
+   },
+   "reason": "too-generic: a crop of grey cave ledges, water and a ladder; any HeartGold / SoulSilver cave"
+  },
+  {
+   "id": "-DuqhQibNh4x",
+   "action": "remove",
+   "at": {
+    "region": "Johto",
+    "name": "Mt. Mortar"
+   },
+   "reason": "too-generic: a crop of grey cave ledges, water and a ladder; any HeartGold / SoulSilver cave"
+  },
+  {
+   "id": "YevbNy3tkvz4",
+   "action": "remove",
+   "at": {
+    "region": "Johto",
+    "name": "National Park"
+   },
+   "reason": "too-generic: a crop of paving, a fence and a gatehouse roof"
+  },
+  {
+   "id": "55et_9tCcnmA",
+   "action": "remove",
+   "at": {
+    "region": "Johto",
+    "name": "National Park"
+   },
+   "reason": "near-duplicate: a close crop of the fountain from the same HeartGold / SoulSilver National Park map as the other shot"
+  },
+  {
+   "id": "2fmIG3Aq3NPG",
+   "action": "remove",
+   "at": {
+    "region": "Johto",
+    "name": "National Park"
+   },
+   "reason": "too-generic: a crop of benches, a fence and a flower bed"
+  },
+  {
+   "id": "Iw7FYr5oVxvr",
+   "action": "remove",
+   "at": {
+    "region": "Johto",
+    "name": "Olivine City"
+   },
+   "reason": "too-generic: a Poké Mart on a paved square"
+  },
+  {
+   "id": "0vnc8KB2w3XY",
+   "action": "remove",
+   "at": {
+    "region": "Johto",
+    "name": "Battle Tower (Generation II)",
+    "parent": "Olivine City"
+   },
+   "reason": "near-duplicate: a crop of the same Battle Tower map as the other Crystal shot"
+  },
+  {
+   "id": "OKwFdJtgzYjf",
+   "action": "remove",
+   "at": {
+    "region": "Johto",
+    "name": "Route 29"
+   },
+   "reason": "too-generic: a crop of trees, flowers and grass"
+  },
+  {
+   "id": "3H0k1pH1wcVI",
+   "action": "remove",
+   "at": {
+    "region": "Johto",
+    "name": "Route 30"
+   },
+   "reason": "too-generic: a crop of a path, trees, a house and a pond"
+  },
+  {
+   "id": "ZGvLOfKbOnUr",
+   "action": "remove",
+   "at": {
+    "region": "Johto",
+    "name": "Route 31"
+   },
+   "reason": "too-generic: a cave mouth in a cliff among trees"
+  },
+  {
+   "id": "xmaGDg6zJ1Cx",
+   "action": "remove",
+   "at": {
+    "region": "Johto",
+    "name": "Route 31"
+   },
+   "reason": "too-generic: a gatehouse, a sign and a path"
+  },
+  {
+   "id": "5uPG4MFKRHjY",
+   "action": "remove",
+   "at": {
+    "region": "Johto",
+    "name": "Route 32"
+   },
+   "reason": "too-generic: a cave mouth among brown rocks"
+  },
+  {
+   "id": "oY_9wFGrMrkj",
+   "action": "remove",
+   "at": {
+    "region": "Johto",
+    "name": "Route 34"
+   },
+   "reason": "too-generic: a crop of grass, trees, a pond and a sign"
+  },
+  {
+   "id": "y30nsqt66a2n",
+   "action": "remove",
+   "at": {
+    "region": "Johto",
+    "name": "Route 34"
+   },
+   "reason": "too-generic: a crop of a river, trees and a gatehouse"
+  },
+  {
+   "id": "4-7YjbyRxTWb",
+   "action": "remove",
+   "at": {
+    "region": "Johto",
+    "name": "Route 35"
+   },
+   "reason": "too-generic: a crop of a gatehouse, trees and a path"
+  },
+  {
+   "id": "tt7guQIiEOp2",
+   "action": "remove",
+   "at": {
+    "region": "Johto",
+    "name": "Route 35"
+   },
+   "reason": "too-generic: a crop of a house, a path and trees"
+  },
+  {
+   "id": "TxWa6ffPsiQ8",
+   "action": "remove",
+   "at": {
+    "region": "Johto",
+    "name": "Route 36"
+   },
+   "reason": "too-generic: a crop of trees and grass"
+  },
+  {
+   "id": "dKS1Or2WgqcK",
+   "action": "remove",
+   "at": {
+    "region": "Johto",
+    "name": "Route 36"
+   },
+   "reason": "too-generic: a crop of a gatehouse, trees and a path"
+  },
+  {
+   "id": "Pud-nb7qgwth",
+   "action": "remove",
+   "at": {
+    "region": "Johto",
+    "name": "Route 38"
+   },
+   "reason": "too-generic: a crop of fences, a path and trees"
+  },
+  {
+   "id": "54GkgDWr40S4",
+   "action": "remove",
+   "at": {
+    "region": "Johto",
+    "name": "Route 39"
+   },
+   "reason": "near-duplicate: the same barn and Miltank pasture as the Moomoo Farm shot"
+  },
+  {
+   "id": "iqHy5wiJPVwt",
+   "action": "remove",
+   "at": {
+    "region": "Johto",
+    "name": "Route 39"
+   },
+   "reason": "near-duplicate: the same farmhouse and pasture as the Gold / Silver / Crystal Moomoo Farm shot"
+  },
+  {
+   "id": "Phd-2a6op8ou",
+   "action": "remove",
+   "at": {
+    "region": "Johto",
+    "name": "Moomoo Farm",
+    "parent": "Route 39"
+   },
+   "reason": "too-generic: a dirt floor with a fence and three people; nothing that places it"
+  },
+  {
+   "id": "hmwAtCvqgjf0",
+   "action": "remove",
+   "at": {
+    "region": "Johto",
+    "name": "Route 41"
+   },
+   "reason": "near-duplicate: another crop of one of the four identical Whirl Island islets, the same as the other Route 41 crop"
+  },
+  {
+   "id": "LRH4OaNCIQrJ",
+   "action": "remove",
+   "at": {
+    "region": "Johto",
+    "name": "Route 42"
+   },
+   "reason": "too-generic: a crop of brown rocks, a pond and a cave mouth; Route 42's maps show more than any one crop"
+  },
+  {
+   "id": "pnZgsiXsSkJ6",
+   "action": "remove",
+   "at": {
+    "region": "Johto",
+    "name": "Route 42"
+   },
+   "reason": "too-generic: a crop of brown rocks, a pond and a cave mouth; Route 42's maps show more than any one crop"
+  },
+  {
+   "id": "EAeG3b3MBo0N",
+   "action": "remove",
+   "at": {
+    "region": "Johto",
+    "name": "Route 42"
+   },
+   "reason": "too-generic: a crop of brown rocks, a pond and a cave mouth; Route 42's maps show more than any one crop"
+  },
+  {
+   "id": "gKrjbKOTu5ls",
+   "action": "remove",
+   "at": {
+    "region": "Johto",
+    "name": "Route 43"
+   },
+   "reason": "too-generic: a crop of a gatehouse, a sign and rocks"
+  },
+  {
+   "id": "u7AUI2_Wa0xI",
+   "action": "remove",
+   "at": {
+    "region": "Johto",
+    "name": "Route 43"
+   },
+   "reason": "too-generic: a crop of a gatehouse, a path and trees"
+  },
+  {
+   "id": "istKA_jkmQgL",
+   "action": "remove",
+   "at": {
+    "region": "Johto",
+    "name": "Route 44"
+   },
+   "reason": "too-generic: a crop of trees, rocks and water from the route map; any mountain route"
+  },
+  {
+   "id": "SCAhWyPnbPW7",
+   "action": "remove",
+   "at": {
+    "region": "Johto",
+    "name": "Route 44"
+   },
+   "reason": "too-generic: a crop of trees, rocks and water from the route map; any mountain route"
+  },
+  {
+   "id": "E0sYSWx2bUdQ",
+   "action": "remove",
+   "at": {
+    "region": "Johto",
+    "name": "Route 45"
+   },
+   "reason": "too-generic: a crop of trees, rocks and water from the route map; any mountain route"
+  },
+  {
+   "id": "o3PMSo9XpzRa",
+   "action": "remove",
+   "at": {
+    "region": "Johto",
+    "name": "Route 45"
+   },
+   "reason": "too-generic: a crop of trees, rocks and water from the route map; any mountain route"
+  },
+  {
+   "id": "WAEEOFLoSBUs",
+   "action": "remove",
+   "at": {
+    "region": "Johto",
+    "name": "Route 45"
+   },
+   "reason": "too-generic: a crop of trees, rocks and water from the route map; any mountain route"
+  },
+  {
+   "id": "0f2yzI5sI8G9",
+   "action": "remove",
+   "at": {
+    "region": "Johto",
+    "name": "Route 46"
+   },
+   "reason": "too-generic: a crop of trees, rocks and water from the route map; any mountain route"
+  },
+  {
+   "id": "Y-01M9mI-G12",
+   "action": "remove",
+   "at": {
+    "region": "Johto",
+    "name": "Route 47"
+   },
+   "reason": "too-generic: a crop of trees, rocks and water from the route map; any mountain route"
+  },
+  {
+   "id": "6qdwfEoDIblt",
+   "action": "remove",
+   "at": {
+    "region": "Johto",
+    "name": "Cliff Cave",
+    "parent": "Route 47"
+   },
+   "reason": "too-generic: a small cave room with two ladders"
+  },
+  {
+   "id": "iGJdyG5lpd0N",
+   "action": "remove",
+   "at": {
+    "region": "Johto",
+    "name": "Embedded Tower",
+    "parent": "Route 47"
+   },
+   "reason": "near-duplicate: a crop of the same Embedded Tower map as the other shot"
+  },
+  {
+   "id": "n7if9vSswO9z",
+   "action": "remove",
+   "at": {
+    "region": "Johto",
+    "name": "Route 48"
+   },
+   "reason": "near-duplicate: a crop of the Safari Zone gate from the same Route 48 map as the other shot"
+  },
+  {
+   "id": "Cdxlnbf42eOl",
+   "action": "remove",
+   "at": {
+    "region": "Johto",
+    "name": "Union Cave"
+   },
+   "reason": "too-generic: a cave mouth among brown rocks with a sign"
+  },
+  {
+   "id": "PqFNLw0mL5eX",
+   "action": "remove",
+   "at": {
+    "region": "Johto",
+    "name": "Violet City"
+   },
+   "reason": "too-generic: a Poké Mart, a house and a Gym corner on paving"
+  },
+  {
+   "id": "QDJZFTejQEsx",
+   "action": "remove",
+   "at": {
+    "region": "Johto",
+    "name": "Violet City"
+   },
+   "reason": "near-duplicate: the bridge to Sprout Tower again, as in the other Violet City crop"
+  },
+  {
+   "id": "VZj_hxpMh8jZ",
+   "action": "remove",
+   "at": {
+    "region": "Johto",
+    "name": "Whirl Islands"
+   },
+   "reason": "too-generic: a crop of grey cave ledges and two ladders"
+  },
+  {
+   "id": "C6M3WLkxcj1x",
+   "action": "remove",
+   "at": {
+    "region": "Hoenn",
+    "name": "Abandoned Ship"
+   },
+   "reason": "near-duplicate: the same top deck of the Abandoned Ship as the exterior shot"
+  },
+  {
+   "id": "jWmBP52cj7Z9",
+   "action": "remove",
+   "at": {
+    "region": "Hoenn",
+    "name": "Ancient Tomb"
+   },
+   "reason": "near-duplicate: the same tomb mound and ponds as the other Ruby / Sapphire / Emerald shot"
+  },
+  {
+   "id": "jblybBG99ic6",
+   "action": "remove",
+   "at": {
+    "region": "Hoenn",
+    "name": "Desert Ruins"
+   },
+   "reason": "near-duplicate: the same tomb entrance in the sand as the other Omega Ruby / Alpha Sapphire shot"
+  },
+  {
+   "id": "TTns4wtw0Wqv",
+   "action": "remove",
+   "at": {
+    "region": "Hoenn",
+    "name": "Desert Underpass"
+   },
+   "reason": "too-generic: a sandy cave floor with rock walls"
+  },
+  {
+   "id": "d_BgCE623fio",
+   "action": "remove",
+   "at": {
+    "region": "Hoenn",
+    "name": "Dewford Town"
+   },
+   "reason": "too-generic: the front of a house on sand"
+  },
+  {
+   "id": "tGVOSF7zPq1P",
+   "action": "remove",
+   "at": {
+    "region": "Hoenn",
+    "name": "Ever Grande City"
+   },
+   "reason": "too-generic: reads as a standard Pokémon Center and Mart interior (the League lobby)"
+  },
+  {
+   "id": "PTR4B5Vhj19B",
+   "action": "remove",
+   "at": {
+    "region": "Hoenn",
+    "name": "Fallarbor Town"
+   },
+   "reason": "too-generic: dusty ground and the foot of a ramp"
+  },
+  {
+   "id": "qYYGhBgrIOdo",
+   "action": "remove",
+   "at": {
+    "region": "Hoenn",
+    "name": "Fortree City"
+   },
+   "reason": "near-duplicate: a crop of most of the same Emerald Fortree City map as the other shot"
+  },
+  {
+   "id": "wGr3YICZZ-uT",
+   "action": "remove",
+   "at": {
+    "region": "Hoenn",
+    "name": "Island Cave"
+   },
+   "reason": "near-duplicate: the same cave mound on the beach as the other Omega Ruby / Alpha Sapphire Island Cave shot"
+  },
+  {
+   "id": "ZJ8w-CtIvXs-",
+   "action": "remove",
+   "at": {
+    "region": "Hoenn",
+    "name": "Magma Hideout (Jagged Pass)",
+    "parent": "Jagged Pass"
+   },
+   "reason": "near-duplicate: a crop of the same Magma Hideout 4F map as the other shot"
+  },
+  {
+   "id": "shonVXnFlSYH",
+   "action": "remove",
+   "at": {
+    "region": "Hoenn",
+    "name": "Lilycove City"
+   },
+   "reason": "too-generic: a crop of a Pokémon Center, a Mart and houses"
+  },
+  {
+   "id": "qk47j7p5Ia0q",
+   "action": "remove",
+   "at": {
+    "region": "Hoenn",
+    "name": "Lilycove City"
+   },
+   "reason": "too-generic: a crop of houses, trees and a pond"
+  },
+  {
+   "id": "iQKI-EkwfpP3",
+   "action": "remove",
+   "at": {
+    "region": "Hoenn",
+    "name": "Cove Lily Motel",
+    "parent": "Lilycove City"
+   },
+   "reason": "too-generic: the front of a plain house with a sign"
+  },
+  {
+   "id": "4zb3jXqYgB4Q",
+   "action": "remove",
+   "at": {
+    "region": "Hoenn",
+    "name": "Cove Lily Motel",
+    "parent": "Lilycove City"
+   },
+   "reason": "too-generic: a plain house with a sign"
+  },
+  {
+   "id": "oFavtwdK8sFs",
+   "action": "remove",
+   "at": {
+    "region": "Hoenn",
+    "name": "Mauville City"
+   },
+   "reason": "near-duplicate: a crop of the same Emerald Mauville City map as the other shot"
+  },
+  {
+   "id": "g-VV01TOxDHa",
+   "action": "remove",
+   "at": {
+    "region": "Hoenn",
+    "name": "Mauville Food Court",
+    "parent": "Mauville City"
+   },
+   "reason": "too-generic: a shop doorway between two planters"
+  },
+  {
+   "id": "r167azCSCar5",
+   "action": "remove",
+   "at": {
+    "region": "Hoenn",
+    "name": "Mauville Game Corner",
+    "parent": "Mauville City"
+   },
+   "reason": "too-generic: shuttered shopfronts and a notice"
+  },
+  {
+   "id": "-0NbjOgtLUYi",
+   "action": "remove",
+   "at": {
+    "region": "Hoenn",
+    "name": "Mauville Gym",
+    "parent": "Mauville City"
+   },
+   "reason": "too-generic: the standard Ruby / Sapphire Gym building among flowers"
+  },
+  {
+   "id": "cKQTrQg8G68M",
+   "action": "remove",
+   "at": {
+    "region": "Hoenn",
+    "name": "TV Mauville",
+    "parent": "Mauville City"
+   },
+   "reason": "too-generic: a shop interior with a counter and shelves"
+  },
+  {
+   "id": "FbtRhnOr4e3t",
+   "action": "remove",
+   "at": {
+    "region": "Hoenn",
+    "name": "Meteor Falls"
+   },
+   "reason": "too-generic: a washed-out map of rock terraces with nothing to place it"
+  },
+  {
+   "id": "ceAC1-VoJrYv",
+   "action": "remove",
+   "at": {
+    "region": "Hoenn",
+    "name": "Meteor Falls"
+   },
+   "reason": "near-duplicate: a crop of the same Meteor Falls 1F map as the other shot"
+  },
+  {
+   "id": "R8uU34fGYSrn",
+   "action": "remove",
+   "at": {
+    "region": "Hoenn",
+    "name": "Mossdeep City"
+   },
+   "reason": "near-duplicate: the Space Center again, as in the Space Center shot"
+  },
+  {
+   "id": "8962qIiBIVp-",
+   "action": "remove",
+   "at": {
+    "region": "Hoenn",
+    "name": "Mossdeep City"
+   },
+   "reason": "too-generic: a crop of grassy terraces, steps and a house"
+  },
+  {
+   "id": "Nh_SSyX7odzc",
+   "action": "remove",
+   "at": {
+    "region": "Hoenn",
+    "name": "Mossdeep City"
+   },
+   "reason": "too-generic: a crop of grassy terraces and steps"
+  },
+  {
+   "id": "X_zHRDhr2D6e",
+   "action": "remove",
+   "at": {
+    "region": "Hoenn",
+    "name": "Mt. Pyre"
+   },
+   "reason": "near-duplicate: a crop of the same Mt. Pyre exterior map as the other shot"
+  },
+  {
+   "id": "pr8Dk1p6QsN3",
+   "action": "remove",
+   "at": {
+    "region": "Hoenn",
+    "name": "New Mauville"
+   },
+   "reason": "near-duplicate: a crop of the same New Mauville map as the other shot"
+  },
+  {
+   "id": "bPjn4PE4cKwW",
+   "action": "remove",
+   "at": {
+    "region": "Hoenn",
+    "name": "New Mauville"
+   },
+   "reason": "near-duplicate: a crop of the same New Mauville map as the other shot"
+  },
+  {
+   "id": "H2KEx3RUt6H_",
+   "action": "remove",
+   "at": {
+    "region": "Hoenn",
+    "name": "Pacifidlog Town"
+   },
+   "reason": "near-duplicate: a crop of the same Pacifidlog Town map as the other shot"
+  },
+  {
+   "id": "hdWw5Iiu8_fR",
+   "action": "remove",
+   "at": {
+    "region": "Hoenn",
+    "name": "Petalburg City"
+   },
+   "reason": "near-duplicate: a crop of the same Petalburg City map as the other shot"
+  },
+  {
+   "id": "YjKQyMrGGbVH",
+   "action": "remove",
+   "at": {
+    "region": "Hoenn",
+    "name": "Petalburg Gym",
+    "parent": "Petalburg City"
+   },
+   "reason": "near-duplicate: a crop of the same Petalburg Gym map as the other shot"
+  },
+  {
+   "id": "oIy0CsSNLHZB",
+   "action": "remove",
+   "at": {
+    "region": "Hoenn",
+    "name": "Petalburg Woods"
+   },
+   "reason": "too-generic: a dark forest floor with a pond"
+  },
+  {
+   "id": "ro_LzTrSFF7r",
+   "action": "remove",
+   "at": {
+    "region": "Hoenn",
+    "name": "Pretty Petal Flower Shop"
+   },
+   "reason": "near-duplicate: the same shopfront as the other Omega Ruby / Alpha Sapphire shot, cropped"
+  },
+  {
+   "id": "tgb-0EbJd9SM",
+   "action": "remove",
+   "at": {
+    "region": "Hoenn",
+    "name": "Route 101"
+   },
+   "reason": "near-duplicate: a crop of the same Route 101 map as the other shot"
+  },
+  {
+   "id": "BHAxt4JLks39",
+   "action": "remove",
+   "at": {
+    "region": "Hoenn",
+    "name": "Route 102"
+   },
+   "reason": "too-generic: a crop of trees, grass and ledges"
+  },
+  {
+   "id": "VqEPxo2d4JC5",
+   "action": "remove",
+   "at": {
+    "region": "Hoenn",
+    "name": "Route 104"
+   },
+   "reason": "wrong-place: the crop is mostly the Pretty Petal Flower Shop, a place of its own on the map"
+  },
+  {
+   "id": "5YOiQDIaRq3y",
+   "action": "remove",
+   "at": {
+    "region": "Hoenn",
+    "name": "Route 106"
+   },
+   "reason": "near-duplicate: a crop of the Granite Cave cliff from the same Route 106 map as the other shot"
+  },
+  {
+   "id": "tDgZYe8hCJOv",
+   "action": "remove",
+   "at": {
+    "region": "Hoenn",
+    "name": "Route 109"
+   },
+   "reason": "near-duplicate: more of the same beach and parasols as the other Route 109 crop"
+  },
+  {
+   "id": "Nrdeqq9ty95k",
+   "action": "remove",
+   "at": {
+    "region": "Hoenn",
+    "name": "Route 110"
+   },
+   "reason": "near-duplicate: another stretch of the same cycling road over water as the other Route 110 crops"
+  },
+  {
+   "id": "mJeuTE89IB-W",
+   "action": "remove",
+   "at": {
+    "region": "Hoenn",
+    "name": "Route 110"
+   },
+   "reason": "too-generic: a crop of the cycling road edge, grass and water"
+  },
+  {
+   "id": "c5Q_kvmhgLLk",
+   "action": "remove",
+   "at": {
+    "region": "Hoenn",
+    "name": "Route 111"
+   },
+   "reason": "too-generic: a crop of rocks, grass and sand"
+  },
+  {
+   "id": "3fZRrBhsY091",
+   "action": "remove",
+   "at": {
+    "region": "Hoenn",
+    "name": "Route 111"
+   },
+   "reason": "too-generic: a crop of rock ridges and sand"
+  },
+  {
+   "id": "qDoXz0AV-bsY",
+   "action": "remove",
+   "at": {
+    "region": "Hoenn",
+    "name": "Route 111"
+   },
+   "reason": "too-generic: a crop of rock ridges and sand"
+  },
+  {
+   "id": "yPtGQMwfwcOD",
+   "action": "remove",
+   "at": {
+    "region": "Hoenn",
+    "name": "Route 114"
+   },
+   "reason": "too-generic: a crop of grass, rocks and ledges"
+  },
+  {
+   "id": "BmFd94Gr-Odu",
+   "action": "remove",
+   "at": {
+    "region": "Hoenn",
+    "name": "Route 115"
+   },
+   "reason": "too-generic: a crop of rock terraces with a cave mouth"
+  },
+  {
+   "id": "EeVtoPou9i09",
+   "action": "remove",
+   "at": {
+    "region": "Hoenn",
+    "name": "Route 115"
+   },
+   "reason": "too-generic: a crop of rock terraces, trees and grass"
+  },
+  {
+   "id": "gCMSsJam7qpe",
+   "action": "remove",
+   "at": {
+    "region": "Hoenn",
+    "name": "Route 115"
+   },
+   "reason": "too-generic: a crop of rock terraces, trees and grass"
+  },
+  {
+   "id": "jO3UMsraQTIZ",
+   "action": "remove",
+   "at": {
+    "region": "Hoenn",
+    "name": "Route 115"
+   },
+   "reason": "too-generic: a crop of rock terraces, trees and grass"
+  },
+  {
+   "id": "JkRXoB6YoeQ2",
+   "action": "remove",
+   "at": {
+    "region": "Hoenn",
+    "name": "Route 118"
+   },
+   "reason": "too-generic: a crop of sea, sand and trees"
+  },
+  {
+   "id": "cBl1uyN4sDnM",
+   "action": "remove",
+   "at": {
+    "region": "Hoenn",
+    "name": "Route 119"
+   },
+   "reason": "wrong-place: the crop is mostly the Weather Institute, a place of its own on the map"
+  },
+  {
+   "id": "InvqbASHMq6C",
+   "action": "remove",
+   "at": {
+    "region": "Hoenn",
+    "name": "Route 119"
+   },
+   "reason": "too-generic: a crop of trees, a path and steps"
+  },
+  {
+   "id": "7W_5qznJbuS_",
+   "action": "remove",
+   "at": {
+    "region": "Hoenn",
+    "name": "Route 119"
+   },
+   "reason": "too-generic: a crop of trees, a bridge and a pond"
+  },
+  {
+   "id": "yotkBBJnHr_6",
+   "action": "remove",
+   "at": {
+    "region": "Hoenn",
+    "name": "Route 120"
+   },
+   "reason": "too-generic: a crop of trees and ponds"
+  },
+  {
+   "id": "oZwR13E532Pg",
+   "action": "remove",
+   "at": {
+    "region": "Hoenn",
+    "name": "Route 120"
+   },
+   "reason": "too-generic: a crop of ridges, grass and a pond"
+  },
+  {
+   "id": "mzOTWXzoIJqc",
+   "action": "remove",
+   "at": {
+    "region": "Hoenn",
+    "name": "Route 120"
+   },
+   "reason": "too-generic: a crop of a bridge, a pond and trees"
+  },
+  {
+   "id": "Bcjfwr3wAoud",
+   "action": "remove",
+   "at": {
+    "region": "Hoenn",
+    "name": "Route 121"
+   },
+   "reason": "wrong-place: the crop is mostly the Safari Zone gate, a place of its own on the map"
+  },
+  {
+   "id": "ZOC1O8g3chp2",
+   "action": "remove",
+   "at": {
+    "region": "Hoenn",
+    "name": "Route 121"
+   },
+   "reason": "too-generic: a crop of fences, grass and trees"
+  },
+  {
+   "id": "Sh8ZWE9qaM-2",
+   "action": "remove",
+   "at": {
+    "region": "Hoenn",
+    "name": "Route 122"
+   },
+   "reason": "too-generic: a crop of a cliff with a cave mouth over the sea"
+  },
+  {
+   "id": "f7qcnyx-Tp_r",
+   "action": "remove",
+   "at": {
+    "region": "Hoenn",
+    "name": "Battle Tower (Generation III)",
+    "parent": "Route 130"
+   },
+   "reason": "near-duplicate: a crop of the same Battle Tower map as the other shot"
+  },
+  {
+   "id": "U8Cm4dHbKJy_",
+   "action": "remove",
+   "at": {
+    "region": "Hoenn",
+    "name": "Rustboro City"
+   },
+   "reason": "too-generic: a crop of a Pokémon Center, a fountain and paving"
+  },
+  {
+   "id": "lECQEaaa8vaM",
+   "action": "remove",
+   "at": {
+    "region": "Hoenn",
+    "name": "Pokémon Trainers' School",
+    "parent": "Rustboro City"
+   },
+   "reason": "too-generic: a plain building on paving with a fountain"
+  },
+  {
+   "id": "AGUIQMKy0chp",
+   "action": "remove",
+   "at": {
+    "region": "Hoenn",
+    "name": "Rusturf Tunnel"
+   },
+   "reason": "too-generic: a green cave wall and floor"
+  },
+  {
+   "id": "kEGEmqxKUvyQ",
+   "action": "remove",
+   "at": {
+    "region": "Hoenn",
+    "name": "Safari Zone"
+   },
+   "reason": "too-generic: a gatehouse counter interior"
+  },
+  {
+   "id": "hIQomI8z_X4J",
+   "action": "remove",
+   "at": {
+    "region": "Hoenn",
+    "name": "Safari Zone"
+   },
+   "reason": "too-generic: a crop of trees and grass with a house roof"
+  },
+  {
+   "id": "PNf3Xk8KqK-W",
+   "action": "remove",
+   "at": {
+    "region": "Hoenn",
+    "name": "Safari Zone"
+   },
+   "reason": "too-generic: a crop of trees, ledges and sand"
+  },
+  {
+   "id": "_nleyadXvwBU",
+   "action": "remove",
+   "at": {
+    "region": "Hoenn",
+    "name": "Sea Mauville"
+   },
+   "reason": "near-duplicate: the same view of the wrecked hull as the other Sea Mauville shot, cropped"
+  },
+  {
+   "id": "cbqOZlQWvLEi",
+   "action": "remove",
+   "at": {
+    "region": "Hoenn",
+    "name": "Sealed Chamber"
+   },
+   "reason": "near-duplicate: Ruby / Sapphire's copy of the same Sealed Chamber room as the Emerald shot"
+  },
+  {
+   "id": "oPgOlWCT3II3",
+   "action": "remove",
+   "at": {
+    "region": "Hoenn",
+    "name": "Secret Islet"
+   },
+   "reason": "too-generic: one tree on a sandy islet; many small islets look the same"
+  },
+  {
+   "id": "v5uFbOck_P7-",
+   "action": "remove",
+   "at": {
+    "region": "Hoenn",
+    "name": "Secret Meadow"
+   },
+   "reason": "near-duplicate: the same meadow from the same angle as the other Secret Meadow shot, cropped"
+  },
+  {
+   "id": "I1_QvZq7woSR",
+   "action": "remove",
+   "at": {
+    "region": "Hoenn",
+    "name": "Secret Shore"
+   },
+   "reason": "near-duplicate: the same shallow stream from the same angle as the other Secret Shore shot, cropped"
+  },
+  {
+   "id": "KwZKcGGKUT1m",
+   "action": "remove",
+   "at": {
+    "region": "Hoenn",
+    "name": "Shoal Cave"
+   },
+   "reason": "near-duplicate: a crop of the same Shoal Cave room map as the other shot"
+  },
+  {
+   "id": "zxXxpBCZxZ6k",
+   "action": "remove",
+   "at": {
+    "region": "Hoenn",
+    "name": "Slateport City"
+   },
+   "reason": "too-generic: a balloon stall on paving; nothing else in view"
+  },
+  {
+   "id": "z5PkM4Nbiw6q",
+   "action": "remove",
+   "at": {
+    "region": "Hoenn",
+    "name": "Slateport City"
+   },
+   "reason": "near-duplicate: the Oceanic Museum and Stern's Shipyard again, as in their own shots"
+  },
+  {
+   "id": "MBcb9O5EgZcH",
+   "action": "remove",
+   "at": {
+    "region": "Hoenn",
+    "name": "Slateport City"
+   },
+   "reason": "too-generic: a crop of a Contest Hall roof, a house and trees"
+  },
+  {
+   "id": "WLoGg_2WmrGj",
+   "action": "remove",
+   "at": {
+    "region": "Hoenn",
+    "name": "Southern Island"
+   },
+   "reason": "near-duplicate: a crop of the same Southern Island map as the other shot"
+  },
+  {
+   "id": "b8hflWTGFOD5",
+   "action": "remove",
+   "at": {
+    "region": "Hoenn",
+    "name": "Southern Island"
+   },
+   "reason": "too-generic: a grass path between trees and streams"
+  },
+  {
+   "id": "MREqxGOdOH-p",
+   "action": "remove",
+   "at": {
+    "region": "Hoenn",
+    "name": "Trainer Hill"
+   },
+   "reason": "not a standard view: an e-Reader card's custom floor, not part of the game as shipped"
+  },
+  {
+   "id": "cnl7oGNbiZjG",
+   "action": "remove",
+   "at": {
+    "region": "Hoenn",
+    "name": "Trick House"
+   },
+   "reason": "near-duplicate: a crop of the same Trick House map as the other shot"
+  },
+  {
+   "id": "jQ0nIIQcr91D",
+   "action": "remove",
+   "at": {
+    "region": "Hoenn",
+    "name": "Trick House"
+   },
+   "reason": "too-generic: a wooden house by the water"
+  },
+  {
+   "id": "mhjOCg-gHvSA",
+   "action": "remove",
+   "at": {
+    "region": "Hoenn",
+    "name": "Weather Institute"
+   },
+   "reason": "near-duplicate: the same front of the Weather Institute as the other Omega Ruby / Alpha Sapphire shot"
+  },
+  {
+   "id": "GcqIzCm02TC5",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Battle Park"
+   },
+   "reason": "too-generic: a crop of hedges, paths and trees"
+  },
+  {
+   "id": "0p7P64H4mGFW",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Canalave City"
+   },
+   "reason": "near-duplicate: the same canal-side view as the other Brilliant Diamond / Shining Pearl Canalave shot"
+  },
+  {
+   "id": "iQ1YNLLz_qeb",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Canalave Library",
+    "parent": "Canalave City"
+   },
+   "reason": "near-duplicate: another library floor laid out like the 1F shot"
+  },
+  {
+   "id": "9i9_GfvXxJr0",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Canalave Library",
+    "parent": "Canalave City"
+   },
+   "reason": "too-generic: tables and shelves; reads as any library room"
+  },
+  {
+   "id": "uxTEA_bi6Nq0",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Canalave Library",
+    "parent": "Canalave City"
+   },
+   "reason": "near-duplicate: Platinum's copy of the same library front as the Diamond / Pearl shot"
+  },
+  {
+   "id": "p5KcQS3NUjto",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Distortion World"
+   },
+   "reason": "near-duplicate: a crop of the same Distortion World 1F map as the other shot"
+  },
+  {
+   "id": "vqEZOE4B_3dK",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Eterna Forest"
+   },
+   "reason": "too-generic: a crop of trees, grass and ledges"
+  },
+  {
+   "id": "AYw6Gkx0t-bw",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Eterna Forest"
+   },
+   "reason": "too-generic: a crop of trees, grass and ledges"
+  },
+  {
+   "id": "nKE0I-XijNLQ",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Fight Area"
+   },
+   "reason": "near-duplicate: the same Pokémon Center corner as the other Brilliant Diamond / Shining Pearl Fight Area shot"
+  },
+  {
+   "id": "5LGaah_tDsDj",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Fight Area"
+   },
+   "reason": "too-generic: a crop of a Pokémon Center, crates and houses"
+  },
+  {
+   "id": "DLRdVUh0miPH",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Battle Frontier (Generation IV)",
+    "parent": "Fight Area"
+   },
+   "reason": "near-duplicate: the Battle Tower's front again, as in the Battle Tower shot"
+  },
+  {
+   "id": "_AkgvS7voYP5",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Floaroma Meadow"
+   },
+   "reason": "too-generic: a crop of a flower field and trees"
+  },
+  {
+   "id": "DeNZazLbQ3UH",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Floaroma Meadow"
+   },
+   "reason": "too-generic: a crop of a flower field and a ledge"
+  },
+  {
+   "id": "8c-cyfDPCYqn",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Floaroma Town"
+   },
+   "reason": "too-generic: a Pokémon Center beside a dirt path and flowers"
+  },
+  {
+   "id": "4C5JOoPdkw0o",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Flower Paradise"
+   },
+   "reason": "near-duplicate: the same terraced flower beds from the same spot as the other Brilliant Diamond / Shining Pearl shot"
+  },
+  {
+   "id": "bQGhXQlJu1tL",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Great Marsh"
+   },
+   "reason": "not a plain view: the binoculars screen, a close-up of a Yanma over marsh grass"
+  },
+  {
+   "id": "xX331CvogISQ",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Great Marsh"
+   },
+   "reason": "too-generic: an empty gatehouse room with binocular stands"
+  },
+  {
+   "id": "uqGNvIB1d4Qh",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Hearthome City"
+   },
+   "reason": "too-generic: a crop of houses, a Contest Hall roof and a road"
+  },
+  {
+   "id": "-Bgk9HiEmlrU",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Hearthome City"
+   },
+   "reason": "too-generic: a crop of a road, a fountain and houses"
+  },
+  {
+   "id": "zoO1KaZeuE7Q",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Hotel Grand Lake"
+   },
+   "reason": "too-generic: a crop of villas and terraces, like the other Hotel Grand Lake crops"
+  },
+  {
+   "id": "fnr_ZSD-7qSK",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Hotel Grand Lake"
+   },
+   "reason": "too-generic: a crop of a villa, paving and terraces"
+  },
+  {
+   "id": "7b-0ZKdZmQF0",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Hotel Grand Lake"
+   },
+   "reason": "too-generic: a crop of a villa, paving and a pool corner"
+  },
+  {
+   "id": "UQ4M4Gk5auC9",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Seven Stars Restaurant",
+    "parent": "Hotel Grand Lake"
+   },
+   "reason": "near-duplicate: Platinum's view of the restaurant front, the same as the Brilliant Diamond / Shining Pearl one in pixel art"
+  },
+  {
+   "id": "nDxqqnC75d1O",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Iron Ruins (Sinnoh)",
+    "parent": "Iron Island"
+   },
+   "reason": "too-generic: the Regi chamber, the same room in Sinnoh's three ruins"
+  },
+  {
+   "id": "x-RzALAy0OcM",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Jubilife City"
+   },
+   "reason": "too-generic: a crop of a Pokémon Center, a Mart and roads"
+  },
+  {
+   "id": "SelIYk3xiLR9",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Jubilife City"
+   },
+   "reason": "too-generic: a crop of a road, lamps and building corners"
+  },
+  {
+   "id": "LU7SzuL5iFdf",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Jubilife TV",
+    "parent": "Jubilife City"
+   },
+   "reason": "too-generic: a lobby with a counter, plants and tables"
+  },
+  {
+   "id": "fO7QgMz1RxJz",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Jubilife TV",
+    "parent": "Jubilife City"
+   },
+   "reason": "too-generic: an empty room with three machines"
+  },
+  {
+   "id": "Nt1lxFpNM3lx",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Pokétch Company",
+    "parent": "Jubilife City"
+   },
+   "reason": "too-generic: a plain office front with planters"
+  },
+  {
+   "id": "oEm6QU5RubvB",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Trainers' School (Sinnoh)",
+    "parent": "Jubilife City"
+   },
+   "reason": "too-generic: a classroom; reads as any school room"
+  },
+  {
+   "id": "jBxVBj6Ytv0l",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Trainers' School (Sinnoh)",
+    "parent": "Jubilife City"
+   },
+   "reason": "too-generic: a classroom; reads as any school room"
+  },
+  {
+   "id": "9ISTTjH_rwy4",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Lake Acuity"
+   },
+   "reason": "too-generic: a snowy shore and grey water; Lake Acuity's lake looks like any icy lake"
+  },
+  {
+   "id": "026ZLTXyfEnP",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Lake Acuity"
+   },
+   "reason": "too-generic: a crop of the lake shore and snowy trees"
+  },
+  {
+   "id": "vz9g7-je5MGh",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Lake Acuity"
+   },
+   "reason": "too-generic: a crop of the lake shore and snowy trees"
+  },
+  {
+   "id": "MpCK_INybMsT",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Lake Valor"
+   },
+   "reason": "too-generic: a crop of lake water, trees and the cave islet edge"
+  },
+  {
+   "id": "weuhxgbBsJ_r",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Lake Verity"
+   },
+   "reason": "too-generic: a lake shore and pine trees"
+  },
+  {
+   "id": "GXhef3q8n4ik",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Lake Verity"
+   },
+   "reason": "too-generic: a crop of lake water and trees"
+  },
+  {
+   "id": "TmxBHk1oLo5n",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Lake Verity"
+   },
+   "reason": "too-generic: a crop of lake water, grass and trees"
+  },
+  {
+   "id": "siQzAYLAfCgW",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Lost Tower"
+   },
+   "reason": "gives-away: the Route 209 signpost reads '209'"
+  },
+  {
+   "id": "OqvH4tSnYHUh",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Lost Tower"
+   },
+   "reason": "near-duplicate: an emptier floor of the same graveyard tower as the 2F shot"
+  },
+  {
+   "id": "kATbWj-e2j76",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Maniac Tunnel"
+   },
+   "reason": "too-generic: a plain cave room with a few rocks"
+  },
+  {
+   "id": "0LR9RhvF14ub",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Mt. Coronet"
+   },
+   "reason": "too-generic: a crop of cave ledges and water"
+  },
+  {
+   "id": "INtFXBAfbtNj",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Old Chateau"
+   },
+   "reason": "too-generic: dim bedrooms; reads as any house interior"
+  },
+  {
+   "id": "gLsgE085jeSt",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Old Chateau"
+   },
+   "reason": "bad-image: three separate rooms pasted side by side with black gaps"
+  },
+  {
+   "id": "0lSqQypKjjt0",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Old Chateau"
+   },
+   "reason": "bad-image: half of the picture is black"
+  },
+  {
+   "id": "K8yGwhSquK1k",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Old Chateau"
+   },
+   "reason": "too-generic: a dark forest path with a fence"
+  },
+  {
+   "id": "gVn3Idyv_aAU",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Oreburgh City"
+   },
+   "reason": "too-generic: a crop of a Pokémon Center, a Mart and houses"
+  },
+  {
+   "id": "EBEJtwLava-R",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Oreburgh Gate"
+   },
+   "reason": "too-generic: a dark brown cave passage with rocks"
+  },
+  {
+   "id": "fF64YcKWIVNF",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Oreburgh Mine"
+   },
+   "reason": "near-duplicate: a crop of the same Oreburgh Mine B2F map as the other shot"
+  },
+  {
+   "id": "WFKNSErvA7kF",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Pal Park"
+   },
+   "reason": "near-duplicate: the Pal Park building again, as in the other two shots"
+  },
+  {
+   "id": "Wka11d1gM--A",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Pal Park"
+   },
+   "reason": "too-generic: a crop of grass, trees and ledges"
+  },
+  {
+   "id": "FAYcLMWmK4_F",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Pal Park"
+   },
+   "reason": "too-generic: a crop of ledges, steps and a beach"
+  },
+  {
+   "id": "Y7fHqtsyPrDW",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Pastoria City"
+   },
+   "reason": "near-duplicate: a crop of the same Brilliant Diamond / Shining Pearl view of Pastoria as the other shot"
+  },
+  {
+   "id": "ydZCMv6B4MVZ",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Pokémon League"
+   },
+   "reason": "not in-game footage: the League model on a blank white background"
+  },
+  {
+   "id": "TBmqc2CAP9sM",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Pokémon League"
+   },
+   "reason": "too-generic: reads as a standard Pokémon Center and Mart interior (the League lobby)"
+  },
+  {
+   "id": "brcT-bqJjY_k",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Pokémon League"
+   },
+   "reason": "too-generic: reads as a standard Pokémon Center and Mart interior (the League lobby)"
+  },
+  {
+   "id": "P3sx8lOAWkvr",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Pokémon Mansion"
+   },
+   "reason": "bad-image: separate rooms pasted together with black gaps"
+  },
+  {
+   "id": "7wnjkxYB2Y27",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Pokémon Mansion"
+   },
+   "reason": "bad-image: a crop of separate rooms pasted together with black gaps"
+  },
+  {
+   "id": "7JKQHXCmW95o",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Resort Area"
+   },
+   "reason": "near-duplicate: the same Pokémon Center and pool corner as the other Brilliant Diamond / Shining Pearl shot"
+  },
+  {
+   "id": "qkgu0nVod6ku",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Resort Area"
+   },
+   "reason": "too-generic: a Pokémon Center, a road and a small pool"
+  },
+  {
+   "id": "czQGDCB3RKbb",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Ribbon Syndicate",
+    "parent": "Resort Area"
+   },
+   "reason": "too-generic: a room of machines and rugs; nothing places it"
+  },
+  {
+   "id": "0ttn9QXrccdO",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Route 201"
+   },
+   "reason": "gives-away: the route signpost reads '201'"
+  },
+  {
+   "id": "WMBLzp0pCGeW",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Route 201"
+   },
+   "reason": "too-generic: a crop of grass, trees and a path"
+  },
+  {
+   "id": "HyU0rjQjZg-P",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Route 202"
+   },
+   "reason": "gives-away: the route signpost with its number is in the shot"
+  },
+  {
+   "id": "wdK-RmJMViN4",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Route 203"
+   },
+   "reason": "gives-away: the route signpost with its number is in the shot"
+  },
+  {
+   "id": "TUz3Lw6hflWT",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Route 204"
+   },
+   "reason": "gives-away: the route signpost with its number is in the shot"
+  },
+  {
+   "id": "6Nic-nj8C_Aj",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Route 201"
+   },
+   "reason": "too-generic: a crop of grass, trees and paths"
+  },
+  {
+   "id": "4LBunoFgzSKe",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Route 203"
+   },
+   "reason": "too-generic: a crop of grass, trees and paths"
+  },
+  {
+   "id": "A659GAroewgi",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Route 204"
+   },
+   "reason": "too-generic: a crop of grass, trees and paths"
+  },
+  {
+   "id": "E5KE1VZ_vqTs",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Route 204"
+   },
+   "reason": "too-generic: a crop of trees, ledges and a cave mouth"
+  },
+  {
+   "id": "jlIedVdTUqr6",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Route 204"
+   },
+   "reason": "too-generic: a crop of ponds, fences and a path"
+  },
+  {
+   "id": "G8Fwf5G050qc",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Route 205"
+   },
+   "reason": "gives-away: the route signpost reads '205'"
+  },
+  {
+   "id": "TNh3o46NzVre",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Route 205"
+   },
+   "reason": "bad-image: a small map with large blank grey areas"
+  },
+  {
+   "id": "sv_Uru2P1N3R",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Route 205"
+   },
+   "reason": "too-generic: a honey tree, grass and a river bank"
+  },
+  {
+   "id": "UcObjba-yVNa",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Route 205"
+   },
+   "reason": "too-generic: a crop of cliffs, stairs and grass"
+  },
+  {
+   "id": "bcL-9uofsAye",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Route 206"
+   },
+   "reason": "gives-away: the route signpost reads '206'"
+  },
+  {
+   "id": "ChPtVK5hzdG3",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Route 206"
+   },
+   "reason": "too-generic: a crop of a gatehouse, trees and a path"
+  },
+  {
+   "id": "TN3uZuP0Z-YD",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Route 206"
+   },
+   "reason": "near-duplicate: another stretch of the same Cycling Road as the other Route 206 shots"
+  },
+  {
+   "id": "rM5nurDg04rU",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Route 207"
+   },
+   "reason": "gives-away: the route signpost reads '207'"
+  },
+  {
+   "id": "JNlGEiJBRsZj",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Route 207"
+   },
+   "reason": "too-generic: a crop of rocky ledges and slopes"
+  },
+  {
+   "id": "1pEB0Bta5-11",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Route 208"
+   },
+   "reason": "gives-away: the route signpost reads '208'"
+  },
+  {
+   "id": "IHp76x4mWR8N",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Route 209"
+   },
+   "reason": "gives-away: the route signpost reads '209'"
+  },
+  {
+   "id": "whOZ1nG5XcOw",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Route 210"
+   },
+   "reason": "gives-away: the route signpost reads '210'"
+  },
+  {
+   "id": "KN0JSnO0kjQ5",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Route 210"
+   },
+   "reason": "bad-image: the map fills a corner; most of the picture is blank grey"
+  },
+  {
+   "id": "ujmnruuVzhKJ",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Route 210"
+   },
+   "reason": "too-generic: a crop of cliffs, bridges and a waterfall, like the other Route 210 crop"
+  },
+  {
+   "id": "G0cGZarJSla5",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Route 210"
+   },
+   "reason": "too-generic: a crop of tall grass and ledges"
+  },
+  {
+   "id": "_AIOG5XURvG4",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Route 211"
+   },
+   "reason": "gives-away: the route signpost reads '211'"
+  },
+  {
+   "id": "l4uoHYjCh6bK",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Route 211"
+   },
+   "reason": "bad-image: the route's two halves pasted side by side"
+  },
+  {
+   "id": "VYoT93KOhfjT",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Route 212"
+   },
+   "reason": "gives-away: the route signpost reads '212'"
+  },
+  {
+   "id": "K1oQCbp9K4AJ",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Route 212"
+   },
+   "reason": "bad-image: an L-shaped map; most of the picture is blank grey"
+  },
+  {
+   "id": "O7EZ1rbtkfmG",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Route 212"
+   },
+   "reason": "too-generic: a crop of marsh, trees and a house corner"
+  },
+  {
+   "id": "-5GFZPsj2-Ev",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Route 213"
+   },
+   "reason": "gives-away: the route signpost reads '213'"
+  },
+  {
+   "id": "l2dZF5Wfbnkc",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Route 213"
+   },
+   "reason": "near-duplicate: more of the same beach and rocks as the other Route 213 crop"
+  },
+  {
+   "id": "mI6kEWBcMZox",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Route 213"
+   },
+   "reason": "too-generic: a crop of grass, sand and a gatehouse corner"
+  },
+  {
+   "id": "ppwwMNBdZ4eo",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Route 214"
+   },
+   "reason": "gives-away: the route signpost reads '214'"
+  },
+  {
+   "id": "E1z5PLSpe-MF",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Route 214"
+   },
+   "reason": "too-generic: a crop of rocky paths, tall grass and fences"
+  },
+  {
+   "id": "aGwzdmhAhw-Q",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Route 215"
+   },
+   "reason": "gives-away: the route signpost reads '215'"
+  },
+  {
+   "id": "qoM4tv-GRN8J",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Route 215"
+   },
+   "reason": "too-generic: a crop of trees, grass and a bridge"
+  },
+  {
+   "id": "FRcO93PRsKtt",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Route 215"
+   },
+   "reason": "near-duplicate: the same bridge as in the whole Route 215 map"
+  },
+  {
+   "id": "cPxB_Tijprxt",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Route 216"
+   },
+   "reason": "gives-away: the route signpost reads '216'"
+  },
+  {
+   "id": "6dKU-stdr61g",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Route 216"
+   },
+   "reason": "too-generic: a crop of snowy ledges and stairs"
+  },
+  {
+   "id": "XH-_JZ07_S4k",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Route 217"
+   },
+   "reason": "too-generic: the Regi chamber, the same room in Sinnoh's three ruins"
+  },
+  {
+   "id": "QYkLe1VeJYoE",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Route 217"
+   },
+   "reason": "too-generic: a crop of a cabin in the snow"
+  },
+  {
+   "id": "ZppbsSFZU9rU",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Route 218"
+   },
+   "reason": "gives-away: the route signpost reads '218'"
+  },
+  {
+   "id": "DX9Pi6jB-4GS",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Route 218"
+   },
+   "reason": "too-generic: a crop of grass, rocks and water"
+  },
+  {
+   "id": "1nG8641sKjZw",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Route 218"
+   },
+   "reason": "too-generic: a crop of water, a bridge and a gatehouse corner"
+  },
+  {
+   "id": "0MV9Wrb85w0K",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Route 219"
+   },
+   "reason": "gives-away: the route signpost reads '219'"
+  },
+  {
+   "id": "Rdc_OV0LDmHR",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Route 220"
+   },
+   "reason": "too-generic: a sandbar and brown rocks in shallow sea"
+  },
+  {
+   "id": "lW9ZdLFEz2OO",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Route 220"
+   },
+   "reason": "near-duplicate: a crop of the same Route 220 islets as the whole-route shot"
+  },
+  {
+   "id": "QUC33o_rCT6E",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Route 221"
+   },
+   "reason": "too-generic: a crop of trees, grass and a house roof"
+  },
+  {
+   "id": "oFAdfmDqopKN",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Route 222"
+   },
+   "reason": "gives-away: the route signpost reads '222'"
+  },
+  {
+   "id": "hDIxKVgN1eEO",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Route 222"
+   },
+   "reason": "too-generic: a crop of beach, a ledge and trees"
+  },
+  {
+   "id": "9aS_dr9vCsHy",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Route 223"
+   },
+   "reason": "too-generic: open sea with rocks; any sea route"
+  },
+  {
+   "id": "PGAAIrxXp5mN",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Route 223"
+   },
+   "reason": "too-generic: a crop of open sea with rocks"
+  },
+  {
+   "id": "Q9Zqgtp6vlpQ",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Route 224"
+   },
+   "reason": "bad-image: an L-shaped map; a third of the picture is blank grey"
+  },
+  {
+   "id": "eKvrEMUGEJpG",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Route 224"
+   },
+   "reason": "too-generic: a crop of a rocky plateau and sea"
+  },
+  {
+   "id": "b0CpBJhZ-CqA",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Route 224"
+   },
+   "reason": "too-generic: a crop of beach, flowers and sea"
+  },
+  {
+   "id": "w4wZTp04X0Du",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Route 225"
+   },
+   "reason": "gives-away: the route signpost reads '225'"
+  },
+  {
+   "id": "qs0qsOhiiS5X",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Route 225"
+   },
+   "reason": "too-generic: a crop of a bridge, ledges and grass"
+  },
+  {
+   "id": "W0F96aZjcWBH",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Route 225"
+   },
+   "reason": "too-generic: a crop of a house, stairs and ledges"
+  },
+  {
+   "id": "SJQX4N0oQNX4",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Route 226"
+   },
+   "reason": "gives-away: the route signpost reads '226'"
+  },
+  {
+   "id": "cloF4xg26CX1",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Route 226"
+   },
+   "reason": "bad-image: the map has a blank grey corner and is mostly cliff"
+  },
+  {
+   "id": "7tRIahcxSQlA",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Route 226"
+   },
+   "reason": "too-generic: a crop of rock terraces and grass"
+  },
+  {
+   "id": "iSONHitEbaoi",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Route 226"
+   },
+   "reason": "too-generic: a crop of rock terraces and grass"
+  },
+  {
+   "id": "Zzr8-i5mz3MU",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Route 227"
+   },
+   "reason": "gives-away: the route signpost reads '227'"
+  },
+  {
+   "id": "Zt-ck2pjL1gw",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Route 227"
+   },
+   "reason": "too-generic: a crop of a house, boulders and grass"
+  },
+  {
+   "id": "Pfe9uCCB6JH_",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Route 228"
+   },
+   "reason": "too-generic: a crop of sandy ledges and paths"
+  },
+  {
+   "id": "rYM494xPp9-T",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Rock Peak Ruins (Sinnoh)",
+    "parent": "Route 228"
+   },
+   "reason": "too-generic: the Regi chamber, the same room in Sinnoh's three ruins"
+  },
+  {
+   "id": "KnIV6wiI6PQD",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Route 229"
+   },
+   "reason": "gives-away: the route signpost reads '229'"
+  },
+  {
+   "id": "hIq_2F_Bwi27",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Route 229"
+   },
+   "reason": "too-generic: a crop of a path, trees and water"
+  },
+  {
+   "id": "Zed8S9BwpUS7",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Route 230"
+   },
+   "reason": "gives-away: the route signpost reads '230'"
+  },
+  {
+   "id": "iG4TRStm6zt9",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Route 230"
+   },
+   "reason": "gives-away: the route signpost reads '230'"
+  },
+  {
+   "id": "SGFIp9DvqRTz",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Route 230"
+   },
+   "reason": "near-duplicate: a crop of the same Route 230 island as the whole-route shot"
+  },
+  {
+   "id": "-SIZ9bmtF7VF",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Sandgem Town"
+   },
+   "reason": "near-duplicate: the same houses and Pokémon Center as the other Brilliant Diamond / Shining Pearl Sandgem shot"
+  },
+  {
+   "id": "SmJ3HfevYN7N",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Seabreak Path"
+   },
+   "reason": "near-duplicate: a crop of the same flower path between seas as the other Diamond / Pearl shot"
+  },
+  {
+   "id": "zQ9NIfyLoMan",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Sendoff Spring"
+   },
+   "reason": "too-generic: a crop of cliffs, trees and water"
+  },
+  {
+   "id": "bKDuyLFUZwMq",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Snowpoint City"
+   },
+   "reason": "near-duplicate: the same snowy view of the Gym and the harbour as the other Brilliant Diamond / Shining Pearl shot"
+  },
+  {
+   "id": "A_HsUzu2mRCb",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Snowpoint City"
+   },
+   "reason": "too-generic: a crop of snowy trees, a Gym roof and a Pokémon Center"
+  },
+  {
+   "id": "vVSSTCVjJP1G",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Snowpoint Gym",
+    "parent": "Snowpoint City"
+   },
+   "reason": "near-duplicate: Platinum's copy of the same Gym puzzle as the Diamond / Pearl shot"
+  },
+  {
+   "id": "ygiG7F4r3P3i",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Solaceon Ruins"
+   },
+   "reason": "bad-image: separate rooms pasted together on black"
+  },
+  {
+   "id": "a7maFnRRKlRu",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Solaceon Ruins"
+   },
+   "reason": "too-generic: rocky ledges and a cave mouth by trees"
+  },
+  {
+   "id": "30tMbHGDkpgX",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Solaceon Ruins"
+   },
+   "reason": "too-generic: an empty ruin room with Unown glyphs, like every Solaceon chamber"
+  },
+  {
+   "id": "8Vup9uYnjRyJ",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Solaceon Ruins"
+   },
+   "reason": "too-generic: a dim ruin corridor with stairs"
+  },
+  {
+   "id": "mspylHEYe-Zu",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Solaceon Town"
+   },
+   "reason": "too-generic: a Pokémon Center and a house on grass"
+  },
+  {
+   "id": "pf3A7bm1A2Ay",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Spear Pillar"
+   },
+   "reason": "near-duplicate: Pearl's Spear Pillar from the same spot as Diamond's, only the legendary differs"
+  },
+  {
+   "id": "PO6koGPx_gHG",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Hall of Origin",
+    "parent": "Spear Pillar"
+   },
+   "reason": "near-duplicate: a crop of the same Spear Pillar stairs as the Hall of Origin map"
+  },
+  {
+   "id": "0ED5aKPvKyYs",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Spring Path"
+   },
+   "reason": "too-generic: a forest path between trees and a cliff"
+  },
+  {
+   "id": "tmeaWnhmxchO",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Sunyshore Market",
+    "parent": "Sunyshore City"
+   },
+   "reason": "too-generic: a shop interior with stalls and shelves"
+  },
+  {
+   "id": "8Jfy9lnQN12V",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Vista Lighthouse",
+    "parent": "Sunyshore City"
+   },
+   "reason": "near-duplicate: the lighthouse crop again, the same as in the Sunyshore City crop"
+  },
+  {
+   "id": "L8PmV-1Gu8nb",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Survival Area"
+   },
+   "reason": "near-duplicate: a crop of the same Survival Area map as the other shot"
+  },
+  {
+   "id": "tMk1At-usfcT",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Twinleaf Town"
+   },
+   "reason": "too-generic: a plain wooden house by a dirt path"
+  },
+  {
+   "id": "YDcUOVas7DIg",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Twinleaf Town"
+   },
+   "reason": "too-generic: two wooden houses and a dirt crossroads"
+  },
+  {
+   "id": "6kOOoz0ooFLm",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Valley Windworks"
+   },
+   "reason": "too-generic: a generator room interior"
+  },
+  {
+   "id": "25Rn99ZCXAcO",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Valley Windworks"
+   },
+   "reason": "too-generic: a generator room interior"
+  },
+  {
+   "id": "A85z_Yr4zxG0",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Veilstone Department Store",
+    "parent": "Veilstone City"
+   },
+   "reason": "too-generic: a plain tower block entrance behind a low wall"
+  },
+  {
+   "id": "3pOsiFHHTwUp",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Veilstone Department Store",
+    "parent": "Veilstone City"
+   },
+   "reason": "too-generic: a department store sales floor; reads as any store interior"
+  },
+  {
+   "id": "VBomFfy006Uf",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Veilstone Department Store",
+    "parent": "Veilstone City"
+   },
+   "reason": "too-generic: a department store sales floor; reads as any store interior"
+  },
+  {
+   "id": "uYogX_ufAepB",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Veilstone Game Corner",
+    "parent": "Veilstone City"
+   },
+   "reason": "too-generic: a Game Corner floor of slot machines; reads as any Game Corner"
+  },
+  {
+   "id": "3M7TBHvBlTo7",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Victory Road"
+   },
+   "reason": "too-generic: a cave mouth in a cliff above water"
+  },
+  {
+   "id": "Q4xG7GvdqGYZ",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Victory Road"
+   },
+   "reason": "near-duplicate: a crop of the same Victory Road B1F map as the other shot"
+  },
+  {
+   "id": "g557wvMeALwg",
+   "action": "remove",
+   "at": {
+    "region": "Sinnoh",
+    "name": "Wayward Cave"
+   },
+   "reason": "too-generic: a dark cave floor map with nothing distinctive"
+  },
+  {
+   "id": "R0DPMIzWk6ZM",
+   "action": "remove",
+   "at": {
+    "region": "Blueberry Academy",
+    "name": "Blueberry Academy"
+   },
+   "reason": "too-generic: a dorm room with a bed and a kitchenette"
+  },
+  {
+   "id": "ybUfcm7941pr",
+   "action": "remove",
+   "at": {
+    "region": "Blueberry Academy",
+    "name": "Torchlit Labyrinth",
+    "parent": "Coastal Biome"
+   },
+   "reason": "too-generic: a dark cave with a brazier"
+  },
+  {
+   "id": "drnlsHMBePD2",
+   "action": "remove",
+   "at": {
+    "region": "Blueberry Academy",
+    "name": "Polar Biome"
+   },
+   "reason": "near-duplicate: the same icy cliffs from the same spot as the other Polar Biome shot"
+  },
+  {
+   "id": "TM1uzSknKkEX",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Abundant Shrine"
+   },
+   "reason": "too-generic: a crop of fields, steps and trees"
+  },
+  {
+   "id": "M4A0vocvg-A-",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Abundant Shrine"
+   },
+   "reason": "too-generic: a crop of trees, fields and a path"
+  },
+  {
+   "id": "HqpD07smvy7V",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Abyssal Ruins"
+   },
+   "reason": "near-duplicate: a crop of the same blue maze floor as the Abyssal Ruins maps"
+  },
+  {
+   "id": "qP4WaSLSKkNr",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Accumula Town"
+   },
+   "reason": "too-generic: a crop of a Pokémon Center and paving"
+  },
+  {
+   "id": "oHEOanHP00oR",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Anville Town"
+   },
+   "reason": "near-duplicate: Black / White's Anville Town map, the same as the Black 2 / White 2 one"
+  },
+  {
+   "id": "LiiztK5YABbT",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Anville Town"
+   },
+   "reason": "too-generic: a crop of houses, a fence and a ledge"
+  },
+  {
+   "id": "3jQ1D-ACATF_",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Aspertia City"
+   },
+   "reason": "too-generic: a crop of a Gym corner, a Pokémon Center and shops"
+  },
+  {
+   "id": "Til0bbKGfOle",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Aspertia Gym",
+    "parent": "Aspertia City"
+   },
+   "reason": "too-generic: the standard Black 2 / White 2 Gym building"
+  },
+  {
+   "id": "1PGbHjbGix-S",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Black City / White Forest"
+   },
+   "reason": "too-generic: a crop of dark rooftops only"
+  },
+  {
+   "id": "7WNPPUyIXsY_",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Castelia Gym",
+    "parent": "Castelia City"
+   },
+   "reason": "near-duplicate: a crop of the same Black / White Castelia Gym map as the other shot"
+  },
+  {
+   "id": "hF9r8HciNl1K",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Passerby Analytics HQ",
+    "parent": "Castelia City"
+   },
+   "reason": "too-generic: a plain office interior"
+  },
+  {
+   "id": "eFn3S-moeIEj",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Passerby Analytics HQ",
+    "parent": "Castelia City"
+   },
+   "reason": "too-generic: a plain office interior, the same as the Black 2 / White 2 one"
+  },
+  {
+   "id": "iRrGKz-IxPGH",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Castelia Sewers"
+   },
+   "reason": "too-generic: a crop of sewer walkways and water"
+  },
+  {
+   "id": "TSy287u-GK9i",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Castelia Sewers"
+   },
+   "reason": "too-generic: a crop of sewer walkways and water"
+  },
+  {
+   "id": "ApuICNG96Vz_",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Cave of Being"
+   },
+   "reason": "near-duplicate: a crop of the same Cave of Being map as the other shot"
+  },
+  {
+   "id": "A2kAcFqYEtIf",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Celestial Tower"
+   },
+   "reason": "near-duplicate: a crop of the same rooftop as the Celestial Tower rooftop map"
+  },
+  {
+   "id": "igaaCVkK345H",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Celestial Tower"
+   },
+   "reason": "near-duplicate: another floor of graves laid out like the 1F shot"
+  },
+  {
+   "id": "cCuoMO0nQpwc",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Challenger's Cave"
+   },
+   "reason": "too-generic: a crop of a cave bridge and water"
+  },
+  {
+   "id": "bPpV_qirPFfG",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Underground Ruins",
+    "parent": "Clay Tunnel"
+   },
+   "reason": "near-duplicate: a crop of the same Underground Ruins chamber map as the other shot"
+  },
+  {
+   "id": "tv-wqDY5PXLK",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Cold Storage"
+   },
+   "reason": "too-generic: a crop of containers and a dock"
+  },
+  {
+   "id": "nmVDKcLKPwjP",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Cold Storage"
+   },
+   "reason": "near-duplicate: a crop of the same Cold Storage interior map as the other shot"
+  },
+  {
+   "id": "s9byvpFxq-o8",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Cold Storage"
+   },
+   "reason": "too-generic: a crop of warehouses and containers"
+  },
+  {
+   "id": "_ZtfQo4tVFie",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Desert Resort"
+   },
+   "reason": "near-duplicate: Black / White's Desert Resort map, nearly the same as the Black 2 / White 2 one"
+  },
+  {
+   "id": "eQWJfcK6iY8f",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Dragonspiral Tower"
+   },
+   "reason": "too-generic: a flooded room in a dim tower"
+  },
+  {
+   "id": "1jE_rAAounnd",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Dreamyard"
+   },
+   "reason": "near-duplicate: Black / White's Dreamyard basement, the same as the Black 2 / White 2 one"
+  },
+  {
+   "id": "U4kcBj1QZ_4Q",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Dreamyard"
+   },
+   "reason": "near-duplicate: Black / White's Dreamyard ruins, nearly the same as the Black 2 / White 2 map"
+  },
+  {
+   "id": "9nHVizStErtB",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Driftveil City"
+   },
+   "reason": "near-duplicate: Black / White's Driftveil map, nearly the same as the Black 2 / White 2 one"
+  },
+  {
+   "id": "nGOeSk9YqNYK",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Driftveil Drawbridge"
+   },
+   "reason": "too-generic: a close view of a red bridge deck"
+  },
+  {
+   "id": "IShfWBDZx5qe",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Entralink"
+   },
+   "reason": "too-generic: a crop of grass and trees"
+  },
+  {
+   "id": "6WBjobL3v1MI",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Entralink"
+   },
+   "reason": "too-generic: a crop of grass, trees and stones"
+  },
+  {
+   "id": "UlLAPcXU39lm",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Floccesy Ranch"
+   },
+   "reason": "too-generic: a crop of a fenced field and trees"
+  },
+  {
+   "id": "5v380PJryPGP",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Floccesy Ranch"
+   },
+   "reason": "too-generic: a crop of flowers, a river and trees"
+  },
+  {
+   "id": "GvsvHAh6yqqQ",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Floccesy Town"
+   },
+   "reason": "too-generic: a crop of two red barns and trees"
+  },
+  {
+   "id": "3yFOy-fcmBgY",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Floccesy Town"
+   },
+   "reason": "too-generic: a crop of a road crossing and houses"
+  },
+  {
+   "id": "LN7tf3btL2RK",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Giant Chasm"
+   },
+   "reason": "too-generic: snowy trees and a small frozen pond"
+  },
+  {
+   "id": "_r4I1OhXUPO_",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Humilau City"
+   },
+   "reason": "near-duplicate: more of the same huts on stilts as the other Humilau crop"
+  },
+  {
+   "id": "Z-Be1pdJS_IW",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Icirrus City"
+   },
+   "reason": "bad-image: an L-shaped map with a blank grey corner"
+  },
+  {
+   "id": "NDef7ppRU3fV",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Icirrus City"
+   },
+   "reason": "too-generic: a dim crop of a path, a bridge and a building corner"
+  },
+  {
+   "id": "KyuAJdMtfYaY",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Icirrus Gym",
+    "parent": "Icirrus City"
+   },
+   "reason": "near-duplicate: a crop of the same Icirrus Gym map as the other shot"
+  },
+  {
+   "id": "9ee1NqtYoSA2",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Join Avenue"
+   },
+   "reason": "near-duplicate: a crop of the same Join Avenue walkway as the other shots"
+  },
+  {
+   "id": "SlF_DenF5e9c",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Join Avenue"
+   },
+   "reason": "near-duplicate: a crop of the same Join Avenue walkway as the other shots"
+  },
+  {
+   "id": "8kucEns3A66K",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Lacunosa Town"
+   },
+   "reason": "too-generic: a crop of a Pokémon Center and paving"
+  },
+  {
+   "id": "ZnsGz39T7Wub",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Lacunosa Town"
+   },
+   "reason": "near-duplicate: Black / White's Lacunosa Town map, the same as the Black 2 / White 2 one"
+  },
+  {
+   "id": "kyvFpkxei63_",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Lentimas Town"
+   },
+   "reason": "too-generic: a crop of a house corner and a dirt square"
+  },
+  {
+   "id": "PedQTe7blWtL",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Liberty Garden"
+   },
+   "reason": "too-generic: a crop of a garden path and the shore"
+  },
+  {
+   "id": "OEO5N5S0PXDw",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Liberty Garden"
+   },
+   "reason": "near-duplicate: the lighthouse foot again, as in the whole Liberty Garden map"
+  },
+  {
+   "id": "IH_gD75HyoOW",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Lostlorn Forest"
+   },
+   "reason": "too-generic: a crop of forest, flowers and stumps"
+  },
+  {
+   "id": "7TjoapXhkpr6",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Marine Tube"
+   },
+   "reason": "too-generic: a crop of blue rock and the end of a tube"
+  },
+  {
+   "id": "A71M54BFPjj_",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Marine Tube"
+   },
+   "reason": "near-duplicate: another crop of the same tube and Wailord as the other Marine Tube shots"
+  },
+  {
+   "id": "JpIWGHOO6Dx6",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Marvelous Bridge"
+   },
+   "reason": "near-duplicate: a crop of the same bridge arches as the whole Marvelous Bridge map"
+  },
+  {
+   "id": "LNxBjBkoqPbN",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Mistralton Cave"
+   },
+   "reason": "near-duplicate: Black / White's Mistralton Cave map, the same as the Black 2 / White 2 one"
+  },
+  {
+   "id": "up8CRSM8H_Xo",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Mistralton Cave"
+   },
+   "reason": "too-generic: a crop of a brown cave with boulders"
+  },
+  {
+   "id": "1Gug23EUe-QF",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Mistralton City"
+   },
+   "reason": "near-duplicate: Black / White's Mistralton map, the same as the Black 2 / White 2 one"
+  },
+  {
+   "id": "DVtUA0yBi_eG",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Mistralton Gym",
+    "parent": "Mistralton City"
+   },
+   "reason": "near-duplicate: a crop of the same Black / White Mistralton Gym map as the other shot"
+  },
+  {
+   "id": "A3NbqpB2hc9O",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Moor of Icirrus"
+   },
+   "reason": "too-generic: a crop of marsh water and trees"
+  },
+  {
+   "id": "CrEUOIIBWhvi",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Moor of Icirrus"
+   },
+   "reason": "too-generic: a crop of marsh and a row of trees"
+  },
+  {
+   "id": "HpGsYRhV39qe",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "N's Castle"
+   },
+   "reason": "too-generic: a dark ruined corridor"
+  },
+  {
+   "id": "ZMBXyGE26Bno",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Nacrene City"
+   },
+   "reason": "too-generic: a crop of warehouses, trees and a road"
+  },
+  {
+   "id": "6PvB-yt57lQN",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Nacrene City"
+   },
+   "reason": "near-duplicate: Black / White's Nacrene map, nearly the same as the Black 2 / White 2 one"
+  },
+  {
+   "id": "K09LGCtk4l1i",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Nimbasa City"
+   },
+   "reason": "near-duplicate: Black / White's Nimbasa map, nearly the same as the Black 2 / White 2 one"
+  },
+  {
+   "id": "ofdNgr4iS2nj",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Nimbasa Gym",
+    "parent": "Nimbasa City"
+   },
+   "reason": "near-duplicate: a crop of the same Nimbasa Gym map as the other shot"
+  },
+  {
+   "id": "mRrsi6dFjFOX",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Nuvema Town"
+   },
+   "reason": "too-generic: one house close up"
+  },
+  {
+   "id": "iAFc2pnHRYSw",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Nuvema Town"
+   },
+   "reason": "near-duplicate: a crop of the same Nuvema Town map as the other shot"
+  },
+  {
+   "id": "I6dtc4s-kxvG",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Opelucid City"
+   },
+   "reason": "too-generic: a frozen square in front of a Pokémon Center"
+  },
+  {
+   "id": "7ujuGgcY0GUw",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Opelucid City"
+   },
+   "reason": "too-generic: a crop of a road and buildings"
+  },
+  {
+   "id": "Q841QYfeag57",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Opelucid City"
+   },
+   "reason": "near-duplicate: Black's Opelucid map, the same as Black 2's"
+  },
+  {
+   "id": "CyVarQAkCcbK",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "P2 Laboratory"
+   },
+   "reason": "too-generic: a lab room with machines"
+  },
+  {
+   "id": "gqJv-qLqH_fy",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Pinwheel Forest"
+   },
+   "reason": "bad-image: an L-shaped map with a blank grey area"
+  },
+  {
+   "id": "Utnqm9erZXT_",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Pinwheel Forest"
+   },
+   "reason": "too-generic: a crop of trees, a pond and a ledge"
+  },
+  {
+   "id": "O__EM1Jg2UCP",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Plasma Frigate"
+   },
+   "reason": "too-generic: a ship's bridge room; nothing places it"
+  },
+  {
+   "id": "VMUne4ZmaOPC",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Poké Transfer Lab"
+   },
+   "reason": "too-generic: a lab interior with machines and stairs"
+  },
+  {
+   "id": "H9j5gE-N9KeS",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Pokémon World Tournament"
+   },
+   "reason": "near-duplicate: a crop of the same dome and plaza as the other Pokémon World Tournament shots"
+  },
+  {
+   "id": "AiLg36XeNcf3",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Pokémon World Tournament"
+   },
+   "reason": "near-duplicate: a crop of the same dome and fountain as the other Pokémon World Tournament shots"
+  },
+  {
+   "id": "6OCObKz2wDlg",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Pokéstar Studios"
+   },
+   "reason": "too-generic: a theatre lobby interior"
+  },
+  {
+   "id": "jJod1ucqhidY",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Pokéstar Studios"
+   },
+   "reason": "too-generic: a lobby with a counter and pillars"
+  },
+  {
+   "id": "cQvG6YFuxQAn",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Relic Castle"
+   },
+   "reason": "too-generic: a sandy ruin room with two sand pits"
+  },
+  {
+   "id": "LWgqad02Xrse",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Relic Passage"
+   },
+   "reason": "too-generic: a dark cave corridor map"
+  },
+  {
+   "id": "N_dfCKIq9Ykm",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Route 1"
+   },
+   "reason": "too-generic: a crop of a lake with rocks and trees"
+  },
+  {
+   "id": "jZMqFb0EgUe6",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Route 1"
+   },
+   "reason": "too-generic: a crop of a river, a bridge and grass"
+  },
+  {
+   "id": "DyNYLxKhOu8V",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Route 1"
+   },
+   "reason": "too-generic: a crop of shore, trees and grass"
+  },
+  {
+   "id": "pW9KRmBwxyiA",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Route 10"
+   },
+   "reason": "near-duplicate: another Badge Check Gate laid out like the Trio Badge gate shot"
+  },
+  {
+   "id": "zk0I0X8j8V0H",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Route 10"
+   },
+   "reason": "near-duplicate: another Badge Check Gate laid out like the Trio Badge gate shot"
+  },
+  {
+   "id": "8rOtfRd13p8X",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Route 10"
+   },
+   "reason": "near-duplicate: another Badge Check Gate laid out like the Trio Badge gate shot"
+  },
+  {
+   "id": "4Zagz7nxSBnH",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Route 10"
+   },
+   "reason": "near-duplicate: another Badge Check Gate laid out like the Trio Badge gate shot"
+  },
+  {
+   "id": "9_cFLKIcuYyR",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Route 11"
+   },
+   "reason": "near-duplicate: Black / White's Route 11 map, nearly the same as the Black 2 / White 2 one"
+  },
+  {
+   "id": "alUdqQCpirfv",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Route 11"
+   },
+   "reason": "too-generic: a crop of a camper, grass and a bridge end"
+  },
+  {
+   "id": "DSzMMjdox9u_",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Route 12"
+   },
+   "reason": "near-duplicate: Black / White's Route 12 map, nearly the same as the Black 2 / White 2 one"
+  },
+  {
+   "id": "9VGYHmi10Tzq",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Route 12"
+   },
+   "reason": "too-generic: a crop of grass, fences and trees"
+  },
+  {
+   "id": "knxajKU3qxEK",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Route 13"
+   },
+   "reason": "bad-image: an odd-shaped map with large blank grey areas"
+  },
+  {
+   "id": "UaYzVK4_xr_b",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Route 13"
+   },
+   "reason": "too-generic: a crop of cliffs, rocks and sea"
+  },
+  {
+   "id": "X24qDsjLYaXj",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Route 13"
+   },
+   "reason": "too-generic: a crop of sand, a parasol and a building corner"
+  },
+  {
+   "id": "saYdE_ped0a6",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Route 14"
+   },
+   "reason": "too-generic: a crop of a pool, a waterfall and cliffs"
+  },
+  {
+   "id": "RT_g8DNZA1Mg",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Route 14"
+   },
+   "reason": "too-generic: a crop of a river, rocks and a cliff"
+  },
+  {
+   "id": "4IHnwSybixhZ",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Route 14"
+   },
+   "reason": "too-generic: a crop of grass, streams and bridges"
+  },
+  {
+   "id": "aHsxUcKS4Yum",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Route 15"
+   },
+   "reason": "too-generic: a crop of ledges, boulders and a road corner"
+  },
+  {
+   "id": "OOAb0JMUYwtn",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Route 15"
+   },
+   "reason": "too-generic: a crop of a camper, steps and grass"
+  },
+  {
+   "id": "QcqwsigfvTq7",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Route 16"
+   },
+   "reason": "too-generic: a crop of trees and a fence"
+  },
+  {
+   "id": "kjmP1yY07565",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Route 16"
+   },
+   "reason": "too-generic: a crop of a road corner and trees"
+  },
+  {
+   "id": "dFYgqsPFzY2r",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Route 16"
+   },
+   "reason": "near-duplicate: Black / White's Route 16 map, nearly the same as the Black 2 / White 2 one"
+  },
+  {
+   "id": "BmvKw6pTKGKA",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Route 17"
+   },
+   "reason": "too-generic: open sea with sandbars and a grey blank corner"
+  },
+  {
+   "id": "gUTlf-X2dWE7",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Route 18"
+   },
+   "reason": "too-generic: a crop of beach, bridges and trees"
+  },
+  {
+   "id": "XbNaY_RUZ534",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Route 18"
+   },
+   "reason": "too-generic: a crop of cliffs, trees and a sandy pit"
+  },
+  {
+   "id": "4I6LcOWpvaEt",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Route 18"
+   },
+   "reason": "too-generic: a crop of beach, a cliff and trees"
+  },
+  {
+   "id": "VumHqC-VE-Mf",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Route 20"
+   },
+   "reason": "too-generic: a crop of trees, water and grass"
+  },
+  {
+   "id": "BvpxQ7PXeIjt",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Route 20"
+   },
+   "reason": "too-generic: a crop of trees, water and grass"
+  },
+  {
+   "id": "Mq36a7QT4ck4",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Route 20"
+   },
+   "reason": "too-generic: a crop of trees, water and grass"
+  },
+  {
+   "id": "bL600u3-nHku",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Route 21"
+   },
+   "reason": "too-generic: a crop of beach, palms and sea"
+  },
+  {
+   "id": "lYa4jVOP0dWr",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Route 21"
+   },
+   "reason": "too-generic: a crop of beach, palms and sea"
+  },
+  {
+   "id": "LldY_lWcChUK",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Route 21"
+   },
+   "reason": "too-generic: a crop of beach, palms and sea"
+  },
+  {
+   "id": "nOgFlkeiGRkn",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Route 22"
+   },
+   "reason": "too-generic: a crop of trees, ledges and paths from the route map"
+  },
+  {
+   "id": "6dWvkRZLx0RW",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Route 22"
+   },
+   "reason": "too-generic: a crop of trees, ledges and paths from the route map"
+  },
+  {
+   "id": "KSUHWsRPVCrf",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Route 22"
+   },
+   "reason": "too-generic: a crop of trees, ledges and paths from the route map"
+  },
+  {
+   "id": "Wa679NaLHpmu",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Route 22"
+   },
+   "reason": "too-generic: a crop of trees, ledges and paths from the route map"
+  },
+  {
+   "id": "Z1LmtPfEw1ae",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Route 23"
+   },
+   "reason": "too-generic: a crop of trees, ledges and paths from the route map"
+  },
+  {
+   "id": "K71oDyI1axfe",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Route 23"
+   },
+   "reason": "too-generic: a crop of trees, ledges and paths from the route map"
+  },
+  {
+   "id": "uAh54LykoHCL",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Route 23"
+   },
+   "reason": "bad-image: half of the map is blank grey"
+  },
+  {
+   "id": "HxAl7YOwLWvJ",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Route 3"
+   },
+   "reason": "near-duplicate: Black / White's Route 3 map, nearly the same as the Black 2 / White 2 one"
+  },
+  {
+   "id": "pKJ0U4gLkqh3",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Route 4"
+   },
+   "reason": "too-generic: a crop of sand, ledges and cones"
+  },
+  {
+   "id": "00ksQqgj_elW",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Route 5"
+   },
+   "reason": "too-generic: a crop of a road, a camper and trees"
+  },
+  {
+   "id": "pkwY1UtgFRrT",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Route 5"
+   },
+   "reason": "near-duplicate: Black / White's Route 5 map, nearly the same as the Black 2 / White 2 one"
+  },
+  {
+   "id": "o9pWXNJ0G816",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Route 5"
+   },
+   "reason": "too-generic: a crop of a camper, grass and trees"
+  },
+  {
+   "id": "TYM30X92WUTZ",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Route 6"
+   },
+   "reason": "too-generic: a crop of a river, bridges and trees"
+  },
+  {
+   "id": "enIyKRY_CfVV",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Route 7"
+   },
+   "reason": "bad-image: an L-shaped map with a blank grey quarter"
+  },
+  {
+   "id": "fz4xS9gzvUJ5",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Route 7"
+   },
+   "reason": "too-generic: a crop of tall grass, fences and trees"
+  },
+  {
+   "id": "cfRjPJFvOe7R",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Route 7"
+   },
+   "reason": "too-generic: a crop of tall grass, fences and trees"
+  },
+  {
+   "id": "09LpLod7fOn0",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Route 7"
+   },
+   "reason": "too-generic: a crop of tall grass, fences and trees"
+  },
+  {
+   "id": "k722tvogQhBY",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Route 8"
+   },
+   "reason": "too-generic: a crop of marsh ponds and trees"
+  },
+  {
+   "id": "NSALMLbPoMwh",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Route 8"
+   },
+   "reason": "near-duplicate: Black / White's Route 8 map, nearly the same as the Black 2 / White 2 one"
+  },
+  {
+   "id": "5kseNM_o161Q",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Route 8"
+   },
+   "reason": "too-generic: a crop of a pond and trees"
+  },
+  {
+   "id": "fyn58OlG0Mxc",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Route 8"
+   },
+   "reason": "too-generic: a crop of marsh ponds and trees"
+  },
+  {
+   "id": "N0_Dr6bJ3ZMt",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Route 9"
+   },
+   "reason": "too-generic: a crop of a road, vending machines and trees"
+  },
+  {
+   "id": "WQRT8wpNcH74",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Route 9"
+   },
+   "reason": "near-duplicate: Black / White's Route 9 map, nearly the same as the Black 2 / White 2 one"
+  },
+  {
+   "id": "svJ_zBDaBX31",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Seaside Cave"
+   },
+   "reason": "too-generic: a crop of cave water and ledges"
+  },
+  {
+   "id": "gogmZgbiB9JB",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Strange House"
+   },
+   "reason": "too-generic: a dim room of shelves and chairs"
+  },
+  {
+   "id": "xLVUR4qb24NA",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Striaton City"
+   },
+   "reason": "near-duplicate: Black / White's Striaton map, nearly the same as the Black 2 / White 2 one"
+  },
+  {
+   "id": "zVbNVojwiSpc",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Striaton Gym",
+    "parent": "Striaton City"
+   },
+   "reason": "near-duplicate: a crop of the same Striaton Gym map as the other shot"
+  },
+  {
+   "id": "IHM0jmU0UKjw",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Tubeline Bridge"
+   },
+   "reason": "near-duplicate: a crop of the same Tubeline Bridge map as the other shot"
+  },
+  {
+   "id": "hA42N364x6da",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Twist Mountain"
+   },
+   "reason": "too-generic: a crop of mine walkways and ledges"
+  },
+  {
+   "id": "LFIkqdzOeuDm",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Undella Bay"
+   },
+   "reason": "too-generic: a crop of open sea and sandbars"
+  },
+  {
+   "id": "NnwV2tn6oQuB",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Undella Town"
+   },
+   "reason": "too-generic: a crop of a digger and sand ledges"
+  },
+  {
+   "id": "Ne0ovjr_akXr",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Unity Tower"
+   },
+   "reason": "near-duplicate: Black / White's Unity Tower map, the same as the Black 2 / White 2 one"
+  },
+  {
+   "id": "Suzwx7Uxw96k",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Victory Road (B2W2)"
+   },
+   "reason": "near-duplicate: a crop of the same Victory Road cliffside map as the other shot"
+  },
+  {
+   "id": "ujKlNyERU8u6",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Victory Road (BW)"
+   },
+   "reason": "too-generic: a narrow cave strip with a stream"
+  },
+  {
+   "id": "gGDhJ7mUmKaB",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Village Bridge"
+   },
+   "reason": "near-duplicate: Black / White's Village Bridge map, the same as the Black 2 / White 2 one"
+  },
+  {
+   "id": "Bww578pX_RSG",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Village Bridge"
+   },
+   "reason": "near-duplicate: a crop of the same bridge as the other Village Bridge crop"
+  },
+  {
+   "id": "yxZYlfZ2_ELJ",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Virbank City"
+   },
+   "reason": "too-generic: a crop of a Pokémon Center and a road"
+  },
+  {
+   "id": "AF8HJJL1xJV9",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Virbank Gym",
+    "parent": "Virbank City"
+   },
+   "reason": "too-generic: a dark L-shaped corridor"
+  },
+  {
+   "id": "QsRLYtSK8hNv",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Virbank Complex"
+   },
+   "reason": "near-duplicate: a crop of the same Virbank Complex exterior map as the other shot"
+  },
+  {
+   "id": "pgA_ArVg1bdo",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Wellspring Cave"
+   },
+   "reason": "near-duplicate: Black / White's Wellspring Cave 1F, the same as the Black 2 / White 2 one"
+  },
+  {
+   "id": "RP6djnohLGkG",
+   "action": "remove",
+   "at": {
+    "region": "Unova",
+    "name": "Wellspring Cave"
+   },
+   "reason": "near-duplicate: a crop of the same Wellspring Cave B1F map as the other shot"
+  },
+  {
+   "id": "e5-navyHZPdx",
+   "action": "relabel",
+   "at": {
+    "region": "Unova",
+    "name": "Black City / White Forest"
+   },
+   "from": "Black / White",
+   "to": "Black",
+   "reason": "wrong-game: Black City is only in Pokémon Black (White has White Forest here)"
+  },
+  {
+   "id": "r9FSQrUMpPzJ",
+   "action": "relabel",
+   "at": {
+    "region": "Unova",
+    "name": "Black City / White Forest"
+   },
+   "from": "Black / White",
+   "to": "White",
+   "reason": "wrong-game: White Forest is only in Pokémon White (Black has Black City here)"
+  },
+  {
+   "id": "wgwJdUWbNvId",
+   "action": "relabel",
+   "at": {
+    "region": "Unova",
+    "name": "Black City / White Forest"
+   },
+   "from": "Black 2 / White 2",
+   "to": "Black 2",
+   "reason": "wrong-game: Black City is only in Black 2 (White 2 has White Forest here)"
+  },
+  {
+   "id": "j1fKD6Ba4Dlr",
+   "action": "relabel",
+   "at": {
+    "region": "Unova",
+    "name": "Black City / White Forest"
+   },
+   "from": "Black 2 / White 2",
+   "to": "White 2",
+   "reason": "wrong-game: White Forest is only in White 2 (Black 2 has Black City here)"
+  },
+  {
+   "id": "m1sX9PAHrrn0",
+   "action": "relabel",
+   "at": {
+    "region": "Unova",
+    "name": "Black Tower",
+    "parent": "Black City / White Forest"
+   },
+   "from": "Black 2 / White 2",
+   "to": "Black 2",
+   "reason": "wrong-game: the Black Tower is only in Black 2 (White 2 has the White Treehollow)"
+  },
+  {
+   "id": "z22JBwI01W9s",
+   "action": "relabel",
+   "at": {
+    "region": "Unova",
+    "name": "Black Tower",
+    "parent": "Black City / White Forest"
+   },
+   "from": "Black 2 / White 2",
+   "to": "Black 2",
+   "reason": "wrong-game: the Black Tower is only in Black 2 (White 2 has the White Treehollow)"
+  },
+  {
+   "id": "Mtn4GGtElNuV",
+   "action": "relabel",
+   "at": {
+    "region": "Unova",
+    "name": "Opelucid City"
+   },
+   "from": "Black 2 / White 2",
+   "to": "Black 2",
+   "reason": "wrong-game: this futuristic Opelucid City is Black 2's (White 2's is the old-fashioned town)"
+  },
+  {
+   "id": "kpWBNm0ZE_sf",
+   "action": "relabel",
+   "at": {
+    "region": "Unova",
+    "name": "Opelucid City"
+   },
+   "from": "Black 2 / White 2",
+   "to": "White 2",
+   "reason": "wrong-game: this old-fashioned, frozen Opelucid City is White 2's"
+  },
+  {
+   "id": "2OOKvN5DyDkr",
+   "action": "relabel",
+   "at": {
+    "region": "Unova",
+    "name": "Opelucid Gym",
+    "parent": "Opelucid City"
+   },
+   "from": "Black / White / Black 2 / White 2",
+   "to": "Black / Black 2",
+   "reason": "wrong-game: this Opelucid Gym front is Black's and Black 2's (White's and White 2's is the old-fashioned one)"
+  }
+ ],
+ "added": []
+}

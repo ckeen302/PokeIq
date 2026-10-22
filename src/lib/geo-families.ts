@@ -69,6 +69,13 @@ const GAME_FAMILY: Record<string, GeoFamilyId> = {
   "Black / White / Black 2 / White 2": "bw",
   "Black / White": "bw",
   "Black 2 / White 2": "bw",
+  // Places that differ by version (Black City and White Forest, Opelucid City).
+  Black: "bw",
+  White: "bw",
+  "Black 2": "bw",
+  "White 2": "bw",
+  "Black / Black 2": "bw",
+  "White / White 2": "bw",
   "X / Y": "xy",
   "Omega Ruby / Alpha Sapphire": "oras",
   "Omega Ruby": "oras",

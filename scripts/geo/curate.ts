@@ -28,7 +28,7 @@ const SHOT_CACHE = path.join(ROOT, ".data/geo-shot-cache.json");
 export interface Shot {
   id: string;
   game: string;
-  family?: GeoFamilyId;
+  family?: string;
 }
 export interface Location {
   name: string;
@@ -180,7 +180,7 @@ export function coverage(locations: Location[]): Coverage[] {
   for (const l of locations) {
     const key = `${l.region}|${l.parent ?? l.name}`;
     const counts = areas.get(key) ?? new Map<GeoFamilyId, number>();
-    for (const s of l.shots) counts.set(s.family!, (counts.get(s.family!) ?? 0) + 1);
+    for (const s of l.shots) counts.set(s.family as GeoFamilyId, (counts.get(s.family as GeoFamilyId) ?? 0) + 1);
     areas.set(key, counts);
   }
   const out = new Map<string, Coverage>();

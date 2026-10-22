@@ -65,7 +65,7 @@ describe("PokéGuessr", () => {
       expect(isGeoSpec({ region: id, kind: "game" }), id).toBe(true);
       expect(x0 >= 0 && y0 >= 0 && x1 <= worldW && y1 <= worldH && x0 < x1 && y0 < y1, id).toBe(true);
     }
-    expect(w.locations).toBeGreaterThanOrEqual(600);
+    expect(w.locations).toBeGreaterThanOrEqual(550);
     // Every board key fits the leaderboard's mode column.
     for (const r of regions) for (const kind of GEO_KINDS) expect(geoBoardKey({ region: r.id, kind }).length).toBeLessThanOrEqual(40);
   });
@@ -226,7 +226,7 @@ describe("PokéGuessr", () => {
   it("scores a guess on any place's flag perfectly", () => {
     // A world streak visits every place on the map.
     const rounds = planRounds(worldStreak, "every-flag");
-    expect(rounds.length).toBeGreaterThan(600);
+    expect(rounds.length).toBeGreaterThan(550);
     for (const round of rounds) {
       const { pin, name } = answerFor(worldStreak, round);
       expect(measureGuess(worldStreak, round, pin[0], pin[1]).score, name).toBe(GEO_MAX_ROUND_SCORE);

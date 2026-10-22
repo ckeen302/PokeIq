@@ -61,6 +61,7 @@ import {
 } from "./geo/bulbapedia";
 import { AREA_PER_VIEW, AREA_PER_VIEW_THIN, genericTiles, nativePixels, pickViews, screenOf, tileFamily, tileGrid, type Box, type TileGrid } from "./geo/map-crops";
 import { WIKIS, localNames, wikiCode, wikiImages, wikiPage, type Wiki } from "./geo/wikis";
+import { applyCuration, familyFor, readCuration } from "./geo/curate";
 
 const PLACES = path.join(process.cwd(), "scripts/geo/world-places.json");
 const WORLD_MAP = path.join(process.cwd(), "public/geo/maps/world.webp");
@@ -1331,7 +1332,7 @@ async function acceptCandidates(accepted: Candidate[]) {
       console.log(`  ≈ ${area}: ${c.file} looks like a shot of ${copy.area}`);
       continue;
     }
-    l.shots.push({ id: c.id, game: c.game });
+    l.shots.push({ id: c.id, game: c.game, family: familyFor(c.game, c.id) });
     all.push({ s: { id: c.id, game: c.game }, area });
     added++;
   }
@@ -1425,6 +1426,8 @@ async function main() {
       const place = l.parent ? undefined : places.get(`${l.region}|${l.name}`);
       if (place) Object.assign(l, placeArea(place, world));
     }
+    // Hand curation on top (scripts/geo/curation.json): fixes and removals after review, added shots, every shot's family.
+    for (const line of applyCuration(locations, readCuration())) console.log(`  ${line}`);
     const crops = await writeMaps(world);
     const out = {
       storageBase: storage.baseUrl,

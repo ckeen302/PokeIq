@@ -34,6 +34,8 @@ const BUILDING_TEMPLATES = ["Template:Infobox location", "Template:GymInfobox"];
 export interface GeoShot {
   id: string;
   game: string;
+  /** The game family (scripts/geo/curate.ts gives every shot its own). */
+  family?: string;
 }
 
 /** The part of a width × height image to keep: all of it, or the middle of a long strip. */
