@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { pageMetadata } from "@/lib/seo";
 import { Connections } from "@/components/connections/Connections";
+import { ConnectionsDuelCard } from "@/components/connections/ConnectionsDuelCard";
 
 export const metadata: Metadata = pageMetadata({
   title: "PokéConnections — Daily Pokémon Connections Puzzle",
@@ -11,5 +12,12 @@ export const metadata: Metadata = pageMetadata({
 
 export default function ConnectionsPage() {
   // The tiles come from /api/connections once the player's local date is known; the groups never reach the page.
-  return <Connections />;
+  return (
+    <div className="space-y-10">
+      <Connections />
+      <div id="duel" className="mx-auto max-w-3xl scroll-mt-24">
+        <ConnectionsDuelCard />
+      </div>
+    </div>
+  );
 }

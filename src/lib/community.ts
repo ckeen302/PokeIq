@@ -49,7 +49,7 @@ export function activityFromPath(pathname: string): { kind: ActivityKind; code?:
   if (room) return { kind: "room", room: room[1] };
   const battle = /^\/battle\/(?:live|play)\/([a-z2-9]{8})/.exec(pathname);
   if (battle) return { kind: "battle", code: battle[1] };
-  if (/^\/(?:pokedle|quiz|guessr)\/duel\//.test(pathname)) return { kind: "duel" };
+  if (/^\/(?:pokedle|quiz|guessr|connections)\/duel\//.test(pathname)) return { kind: "duel" };
   if (pathname.startsWith("/battle/watch") || pathname.startsWith("/battle/replay")) return { kind: "watching" };
   if (pathname.startsWith("/battle/teams")) return { kind: "teams" };
   if (pathname.startsWith("/pokedle")) return { kind: "pokedle" };
@@ -107,11 +107,12 @@ export interface FriendsResponse {
 // Challenges
 // ---------------------------------------------------------------------------
 
-export const CHALLENGE_KINDS = ["battle", "pokedle", "quiz", "guessr"] as const;
+export const CHALLENGE_KINDS = ["battle", "pokedle", "quiz", "guessr", "connections"] as const;
 export type ChallengeKind = (typeof CHALLENGE_KINDS)[number];
 
 /** Where a challenge is played: the existing invite page of each game. */
 export function challengeHref(kind: ChallengeKind, code: string): string {
+  if (kind === "connections") return `/connections/duel/${code}`;
   return kind === "battle" ? `/battle/live/${code}` : kind === "pokedle" ? `/pokedle/duel/${code}` : kind === "quiz" ? `/quiz/duel/${code}` : `/guessr/duel/${code}`;
 }
 

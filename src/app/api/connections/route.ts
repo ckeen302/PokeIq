@@ -22,7 +22,8 @@ import { checkGuesses, dailyConnPuzzle, practiceConnPuzzle, puzzleView } from "@
  */
 
 const NO_STORE = { "Cache-Control": "no-store" };
-const SEED = z.string().regex(/^[a-z0-9]{4,24}$/);
+/** A practice seed, with Unlimited's difficulty in front when it isn't normal: "hard-x7k2abcd". */
+const SEED = z.string().regex(/^(?:(?:easy|normal|hard)-)?[a-z0-9]{4,24}$/);
 
 /** The puzzle a request names, or an error. */
 function puzzleFor(date: string | null | undefined, practice: string | null | undefined) {
@@ -44,7 +45,7 @@ export async function GET(request: NextRequest) {
 
 const bodySchema = z.object({
   date: z.string().max(10).optional(),
-  practice: z.string().max(24).optional(),
+  practice: z.string().max(32).optional(),
   // At most every group plus every mistake, and a few repeats.
   guesses: z
     .array(z.array(z.number().int().positive().max(100_000)).length(CONN_GROUP_SIZE))

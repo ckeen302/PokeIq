@@ -7,6 +7,7 @@ import { duelsEnabled, newDuelCode, pvpStore } from "@/lib/server/duel-store";
 import { duelView, type PvpDuel } from "@/lib/server/duels";
 import { createPokedleDuel } from "@/lib/server/pokedle-duel";
 import { createQuizDuel } from "@/lib/server/quiz-duel";
+import { createConnectionsDuel } from "@/lib/server/connections-duel";
 import { DIFFICULTIES, MODULES } from "@/engines/types";
 import { PLAY_MODULES } from "@/lib/modes";
 import { DLE_ASSISTS } from "@/lib/dle-assist";
@@ -17,6 +18,7 @@ import type { PvpSeatResponse } from "@/lib/pvp-types";
  * token and the lobby:
  *   { kind: "pokedle", name, assist?, settings? }    a Pokédle duel, at /pokedle/duel/<code> (assist: the Pokédex level; settings: the format and settings; both changeable in the lobby)
  *   { kind: "quiz", name, module, difficulty }       a quiz duel, at /quiz/duel/<code>
+ *   { kind: "connections", name }                    a PokéConnections race, at /connections/duel/<code>
  */
 
 const bodySchema = z.discriminatedUnion("kind", [
@@ -27,6 +29,7 @@ const bodySchema = z.discriminatedUnion("kind", [
     module: z.enum(MODULES).refine((m) => PLAY_MODULES.includes(m), "Unknown quiz mode."),
     difficulty: z.enum(DIFFICULTIES).default("medium"),
   }),
+  z.object({ kind: z.literal("connections"), name: duelNameSchema }),
 ]);
 
 export async function POST(request: NextRequest) {
@@ -47,7 +50,11 @@ export async function POST(request: NextRequest) {
       const now = Date.now();
       const code = newDuelCode();
       const { duel, playerId }: { duel: PvpDuel; playerId: string } =
-        body.kind === "pokedle" ? createPokedleDuel(body.name, code, now, undefined, { assist: body.assist, settings: body.settings }) : createQuizDuel(body.module, body.difficulty, body.name, code, now);
+        body.kind === "pokedle"
+          ? createPokedleDuel(body.name, code, now, undefined, { assist: body.assist, settings: body.settings })
+          : body.kind === "quiz"
+            ? createQuizDuel(body.module, body.difficulty, body.name, code, now)
+            : createConnectionsDuel(body.name, code, now);
       if (!(await pvpStore.insert(duel))) continue; // code taken: roll another
       const seat: PvpSeatResponse = { code, token: pvpToken(code, playerId), view: duelView(duel, playerId, now, 0) };
       return NextResponse.json(seat, { headers: { "Cache-Control": "no-store" } });

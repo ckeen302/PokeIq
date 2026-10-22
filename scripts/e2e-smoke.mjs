@@ -10,6 +10,7 @@
  */
 import { chromium } from "playwright";
 import fs from "fs";
+import { execFileSync } from "child_process";
 
 const BASE = process.argv[2] ?? "http://localhost:3000";
 // Pokédle opens its how-to sheet on a player's first visit.
@@ -299,6 +300,32 @@ step("pokéconnections: a full daily, one wrong guess then a solve");
   // A reload restores the finished game.
   await page.reload({ waitUntil: "networkidle" });
   await page.getByTestId("conn-result").waitFor();
+
+  // Unlimited, straight from the daily's result: a Hard puzzle, solved from the Pokédex data alone, then the next one.
+  await page.getByRole("radiogroup", { name: "PokéConnections mode" }).getByRole("radio", { name: "Daily", checked: true }).waitFor();
+  await page.getByTestId("conn-duel-link").waitFor();
+  await page.getByTestId("conn-play-unlimited").click();
+  await page.getByTestId("conn-unlimited").waitFor();
+  await page.getByRole("radio", { name: "Unlimited", checked: true }).waitFor();
+  const hardTiles = page.waitForResponse((r) => /\/api\/connections\?practice=hard-/.test(r.url()));
+  await page.getByRole("radio", { name: "Hard" }).click();
+  const hard = await (await hardTiles).json();
+  await page.locator(`[data-testid=conn-tile][data-id="${hard.tiles[0].id}"]`).waitFor();
+  const [unlimitedGroups] = JSON.parse(
+    execFileSync("npx", ["tsx", "scripts/connections-solve.ts", ...hard.tiles.map((t) => String(t.id))], { encoding: "utf8", cwd: new URL("..", import.meta.url).pathname })
+  );
+  for (const [i, g] of unlimitedGroups.entries()) {
+    await pick(g);
+    await page.locator("[data-testid=conn-group]").nth(i).waitFor();
+  }
+  await page.getByTestId("conn-result").waitFor();
+  await page.screenshot({ path: `${OUT}/conn-unlimited-result.png`, fullPage: true });
+  const nextTiles = page.waitForResponse((r) => /\/api\/connections\?practice=hard-/.test(r.url()));
+  await page.getByTestId("conn-next").click();
+  const next = await (await nextTiles).json();
+  if (next.key === hard.key) errors.push("Next puzzle gave the same puzzle");
+  await page.getByTestId("conn-tile").nth(15).waitFor();
+  await page.screenshot({ path: `${OUT}/conn-unlimited.png` });
 }
 
 step("adaptive PokéIQ test (20 questions)");
@@ -669,6 +696,106 @@ await dleBlue.p.getByText("Red left the duel.").waitFor();
 await dleBlue.p.getByText("Victory!").waitFor();
 for (const { p } of dle) await p.context().close();
 
+// A PokéConnections race. The browser never learns the groups before the
+// end, so the test works them out like a player with the Pokédex data could
+// (scripts/connections-solve.ts). Blue makes a "one away" and a wrong guess;
+// Red solves it cleanly and wins. Then a rematch, which Red forfeits.
+step("pokéconnections duel: create, join, race to the end");
+{
+  const race = [];
+  for (const name of ["Red", "Blue"]) {
+    const p = await newPage({ width: 1280, height: 900 });
+    p.on("response", async (res) => {
+      if (!/\/api\/duel(\/|$)/.test(res.url()) || !res.ok()) return;
+      const body = await res.json().catch(() => null);
+      const view = body?.view ?? body;
+      if (view?.kind !== "connections" || view.status === "finished") return;
+      // Before the end: no group's name, rule or Pokémon, except the ones this trainer found.
+      const rest = JSON.stringify({ ...view, mine: view.mine && { ...view.mine, found: undefined } });
+      if (/"(reveal|rows|label|rule|why|herrings|members)"/.test(rest)) errors.push(`${name}'s PokéConnections duel leaked before the end: ${rest.slice(0, 300)}`);
+    });
+    race.push(p);
+  }
+  const [red, blue] = race;
+  await red.goto(`${BASE}/connections`, { waitUntil: "networkidle" });
+  await closeHowTo(red);
+  await red.getByText("Head to head · PokéConnections").waitFor();
+  await red.getByLabel("Your trainer name").fill("Red");
+  await red.getByRole("button", { name: /Create duel/ }).click();
+  await red.waitForURL(/\/connections\/duel\/[a-z2-9]{8}$/);
+  const raceUrl = red.url();
+  await red.getByText("Waiting for a challenger").waitFor();
+  await red.screenshot({ path: `${OUT}/conn-duel-lobby.png` });
+  const og = await red.request.get(`${raceUrl}/opengraph-image`);
+  if (og.status() !== 200) errors.push(`PokéConnections duel OG image returned ${og.status()}`);
+  else fs.writeFileSync(`${OUT}/conn-duel-og.png`, await og.body());
+
+  await blue.goto(raceUrl, { waitUntil: "networkidle" });
+  await blue.getByText("Red challenges you!").waitFor();
+  await blue.getByLabel("Your trainer name").fill("Blue");
+  await blue.getByRole("button", { name: /Join duel/ }).click();
+  await red.getByText("Blue").first().waitFor();
+  await Promise.all(race.map((p) => p.getByRole("button", { name: /^Ready$/ }).click()));
+  await Promise.all(race.map((p) => p.getByTestId("conn-tile").nth(15).waitFor({ timeout: 15_000 })));
+
+  // Both see the same sixteen, and the groups come from the data alone.
+  const tileIds = async (p) => (await p.getByTestId("conn-tile").evaluateAll((els) => els.map((e) => Number(e.dataset.id)))).sort((a, b) => a - b);
+  const ids = await tileIds(red);
+  if (JSON.stringify(ids) !== JSON.stringify(await tileIds(blue))) errors.push("the two racers got different Pokémon");
+  const [groups] = JSON.parse(execFileSync("npx", ["tsx", "scripts/connections-solve.ts", ...ids.map(String)], { encoding: "utf8", cwd: new URL("..", import.meta.url).pathname }));
+  if (!groups) throw new Error(`no solution for the duel's grid ${ids}`);
+  const pick = async (p, four) => {
+    for (const id of four) await p.locator(`[data-testid=conn-tile][data-id="${id}"]`).click();
+    await p.getByTestId("conn-submit").click();
+  };
+
+  // Blue: one away, then a plain miss.
+  await pick(blue, [...groups[0].slice(0, 3), groups[1][0]]);
+  await blue.getByTestId("conn-toast").filter({ hasText: "One away…" }).waitFor();
+  await blue.screenshot({ path: `${OUT}/conn-duel-oneaway.png` });
+  await blue.getByLabel("3 of 4 mistakes left").waitFor();
+  await blue.getByRole("button", { name: "Deselect all" }).click();
+  await pick(blue, [groups[0][0], groups[0][1], groups[1][0], groups[1][1]]);
+  await blue.getByLabel("2 of 4 mistakes left").waitFor();
+  await blue.getByRole("button", { name: "Deselect all" }).click();
+
+  // Red finds a group: Blue sees its colour and count, never the Pokémon.
+  await pick(red, groups[2]);
+  await red.locator("[data-testid=conn-group]").first().waitFor();
+  await blue.getByTestId("conn-racer-0").and(blue.locator('[aria-label*="1 of 4 groups found"]')).waitFor({ timeout: 10_000 });
+  await red.getByTestId("conn-racer-1").and(red.locator('[aria-label*="2 of 4 mistakes"]')).waitFor({ timeout: 10_000 });
+  await blue.screenshot({ path: `${OUT}/conn-duel-race.png` });
+  await red.screenshot({ path: `${OUT}/conn-duel-race-red.png` });
+  if ((await blue.locator("[data-testid=conn-group]").count()) !== 0) errors.push("Blue sees a group Red found");
+
+  // Red finishes cleanly: Blue could only tie, so it ends there.
+  for (const g of [groups[0], groups[1], groups[3]]) {
+    await pick(red, g);
+    await red.waitForTimeout(400);
+  }
+  await Promise.all(race.map((p) => p.getByTestId("conn-duel-result").waitFor({ timeout: 15_000 })));
+  await red.getByText("Victory!").waitFor();
+  await blue.getByText("Defeat").waitFor();
+  await blue.getByText("Red found all four groups first.").waitFor();
+  await Promise.all(race.map((p) => p.getByTestId("conn-why").waitFor()));
+  await red.screenshot({ path: `${OUT}/conn-duel-result.png`, fullPage: true });
+  await blue.screenshot({ path: `${OUT}/conn-duel-result-blue.png` });
+
+  step("pokéconnections duel: rematch, then a forfeit");
+  await red.getByRole("button", { name: /^Rematch$/ }).click();
+  await red.waitForURL((url) => url.href !== raceUrl && url.pathname.startsWith("/connections/duel/"));
+  await blue.getByRole("button", { name: /Accept rematch/ }).click();
+  await blue.waitForURL(red.url());
+  await Promise.all(race.map((p) => p.getByTestId("conn-tile").first().waitFor({ timeout: 15_000 })));
+  if (JSON.stringify(await tileIds(red)) === JSON.stringify(ids)) errors.push("the rematch kept the same Pokémon");
+  await red.getByRole("button", { name: /Leave duel/ }).click();
+  await red.getByRole("button", { name: /^Forfeit$/ }).click();
+  await red.waitForURL(/\/connections$/);
+  await blue.getByText("Red left the duel.").waitFor();
+  await blue.getByText("Victory!").waitFor();
+  for (const p of race) await p.context().close();
+}
+
 // A quiz duel: Mainline Games on easy, ten questions. Red answers first;
 // Blue sees Red lock in (never the pick), then answers.
 step("quiz duel: create, join, ready");
@@ -771,7 +898,7 @@ async function findOpponent(path, ready) {
   await mRed.waitForTimeout(1500);
   await mRed.screenshot({ path: `${OUT}/matchmaking-searching.png` });
   await mBlue.getByRole("button", { name: /Find an opponent/ }).click();
-  const duelPath = new RegExp(`/${path === "/pokedle" ? "pokedle" : "guessr"}/duel/[a-z2-9]{8}\\?matched=1$`);
+  const duelPath = new RegExp(`${path}/duel/[a-z2-9]{8}\\?matched=1$`);
   await Promise.all([mRed.waitForURL(duelPath), mBlue.waitForURL(duelPath)]);
   if (mRed.url() !== mBlue.url()) errors.push(`matched into different duels: ${mRed.url()} vs ${mBlue.url()}`);
   await mRed.getByText("Matched! You vs Blue").waitFor();
@@ -786,6 +913,8 @@ async function findOpponent(path, ready) {
 }
 step("matchmaking: pokédle");
 await findOpponent("/pokedle", (p) => p.getByLabel("Guess a Pokémon").waitFor());
+step("matchmaking: pokéconnections");
+await findOpponent("/connections", (p) => p.getByTestId("conn-tile").first().waitFor({ timeout: 15_000 }));
 step("matchmaking: pokéguessr world");
 await findOpponent("/guessr", shotLoaded);
 

@@ -45,21 +45,26 @@ const practiceCache = new Map<string, Puzzle>();
 export function practiceConnPuzzle(seed: string): Puzzle {
   let p = practiceCache.get(seed);
   if (!p) {
-    p = generatePuzzle(`practice:${seed}`);
+    // "hard-x7k2…": Unlimited's difficulty rides in the seed, so every guess check finds the same puzzle.
+    const level = /^(easy|hard)-/.exec(seed)?.[1] as "easy" | "hard" | undefined;
+    p = generatePuzzle(`practice:${seed}`, level ? { difficulty: level } : {});
     if (practiceCache.size > 500) practiceCache.clear();
     practiceCache.set(seed, p);
   }
   return p;
 }
 
-const tile = (id: number): ConnTile => ({ id, name: factsOf(id).name });
+/** A Pokémon as a tile: its id and name. */
+export const connTile = (id: number): ConnTile => ({ id, name: factsOf(id).name });
+const tile = connTile;
 
 /** What a player starts with: sixteen tiles, in the grid's order. */
 export function puzzleView(puzzle: Puzzle, key: string, date?: string): ConnPuzzleResponse {
   return { key, ...(date && { number: connNumber(date) }), tiles: puzzle.tiles.map(tile) };
 }
 
-function reveal(puzzle: Puzzle, level: ConnLevel): ConnGroupReveal {
+/** A found group: its colour, name and Pokémon (no explanation). */
+export function groupReveal(puzzle: Puzzle, level: ConnLevel): ConnGroupReveal {
   const g = puzzle.groups[level];
   return { level, label: categoryOf(g.category).label, members: g.members.map(tile) };
 }
@@ -68,7 +73,7 @@ function reveal(puzzle: Puzzle, level: ConnLevel): ConnGroupReveal {
 export function explainGroup(puzzle: Puzzle, level: ConnLevel): ConnGroupExplained {
   const c = categoryOf(puzzle.groups[level].category);
   return {
-    ...reveal(puzzle, level),
+    ...groupReveal(puzzle, level),
     rule: c.rule,
     lines: puzzle.groups[level].members.map((id) => ({ ...tile(id), why: c.why(factsOf(id)) })),
     herrings: herringsOf(puzzle, level)
@@ -82,7 +87,7 @@ export function checkGuesses(puzzle: Puzzle, guesses: number[][]): ConnGuessResp
   const state = playGuesses(puzzle, guesses);
   return {
     results: state.results,
-    found: state.found.map((lv) => reveal(puzzle, lv)),
+    found: state.found.map((lv) => groupReveal(puzzle, lv)),
     mistakes: state.mistakes,
     over: state.over,
     won: state.won,
