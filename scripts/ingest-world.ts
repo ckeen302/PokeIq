@@ -154,7 +154,6 @@ const TITLES: Record<string, string> = {
   "Alola|Lake of the Sunne / Moone": "Lake of the Sunne",
   "Alola|Altar of the Sunne / Moone": "Altar of the Sunne",
   "Unova|Black City / White Forest": "Black City",
-  "Unova|Victory Road (BW)": "Victory Road (Unova)",
   "Unova|Victory Road (B2W2)": "Victory Road (Unova)",
   "Paldea|Naranja and Uva Academy": "Naranja Academy",
   "Hoenn|Battle Frontier": "Battle Frontier (Generation III)",
@@ -162,12 +161,10 @@ const TITLES: Record<string, string> = {
 };
 /** Places that share a page with another version of themselves: keep only their own game's screenshots. */
 const ONLY_GAMES: Record<string, string[]> = {
-  "Unova|Victory Road (BW)": ["BW", "B", "W"],
   "Unova|Victory Road (B2W2)": ["B2W2", "B2", "W2"],
 };
 /** Archive file-name prefixes for places whose files aren't named after their map label. */
 const ARCHIVE_PREFIXES: Record<string, string[]> = {
-  "Unova|Victory Road (BW)": ["Victory_Road_"],
   "Unova|Victory Road (B2W2)": ["Victory_Road_"],
   "Unova|Black City / White Forest": ["Black_City_", "White_Forest_"],
   // The Safari Zone until Generation III and in Let's Go; HeartGold / SoulSilver's Pal Park on the same spot.
