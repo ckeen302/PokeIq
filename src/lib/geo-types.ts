@@ -65,6 +65,8 @@ export const geoBoardKey = (spec: Pick<GeoSpec, "region" | "kind"> & { era?: Geo
 export interface GeoRoundPublic {
   index: number;
   shot: string;
+  /** Look around: every view of the place this game can show, the dealt shot first (only when there's more than one). */
+  views?: string[];
 }
 
 export interface GeoAnswer {

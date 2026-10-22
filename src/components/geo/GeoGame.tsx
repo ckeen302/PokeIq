@@ -6,7 +6,6 @@ import { AnimatePresence, motion } from "framer-motion";
 import {
   Check,
   Compass,
-  Expand,
   Flame,
   Globe2,
   Link2,
@@ -45,6 +44,8 @@ import { ShareButton } from "@/components/share/ShareButton";
 import { GeoMap, type MapPin } from "./GeoMap";
 import { DuelCard } from "./DuelCard";
 import { ReportShot } from "./ReportShot";
+import { ShotCarousel, shotFit } from "./ShotCarousel";
+import { roundViewsOf } from "@/lib/geo-look";
 import { GameFilter, GameGuessPicker, type FilterChoice, filterPlaces, gameGuessOptions, readGuessGame, rememberGuessGame } from "./GameFilter";
 import { GEO_ERA_NAMES, GEO_GAME_BONUS, geoFamily, type GeoEra, type GeoFamilyId } from "@/lib/geo-families";
 import { cn } from "@/lib/utils";
@@ -130,16 +131,6 @@ function rememberArea(answer: { name: string; parent?: string; region?: string }
   }
 }
 
-/**
- * How a screenshot fills the frame: wide 3D captures fill it (just past the
- * light frame on Let's Go's), anything else fits inside; small pixel art is
- * scaled up without blurring.
- */
-function shotFit(img: HTMLImageElement): { className: string; pixelated: boolean } {
-  const ratio = img.naturalWidth / Math.max(1, img.naturalHeight);
-  return { className: ratio >= 1.6 && ratio <= 1.85 ? "scale-[1.07] object-cover" : "object-contain", pixelated: img.naturalWidth <= 512 };
-}
-
 /** The answer on the world atlas (Kanto's own map predates the world data, so its places carry no region). */
 const atlasHref = (answer: { name: string; parent?: string; region?: string }) =>
   `/atlas?q=${encodeURIComponent(`${clean(answer.parent ?? answer.name)} · ${answer.region ?? "Kanto"}`)}`;
@@ -195,8 +186,8 @@ export function GeoGame({ regions: allRegions, challenge }: GeoGameProps) {
   const [game, setGame] = useState<Game | null>(null);
   const [pick, setPick] = useState<MapPin | null>(null);
   const [played, setPlayed] = useState<Played[]>([]);
-  const [shotLoaded, setShotLoaded] = useState(false);
-  const [fit, setFit] = useState<ReturnType<typeof shotFit> | null>(null);
+  const [viewIndex, setViewIndex] = useState(0);
+  const [zoomPixelated, setZoomPixelated] = useState(false);
   const [zoomed, setZoomed] = useState(false);
   const [reward, setReward] = useState<Reward | null>(null);
   const [isChallenge, setIsChallenge] = useState(false);
@@ -281,8 +272,7 @@ export function GeoGame({ regions: allRegions, challenge }: GeoGameProps) {
       setPick(null);
       setPlayed([]);
       setReward(null);
-      setShotLoaded(false);
-      setFit(null);
+      setViewIndex(0);
       setPhase("guessing");
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (err) {
@@ -332,8 +322,7 @@ export function GeoGame({ regions: allRegions, challenge }: GeoGameProps) {
     setGame({ ...game, round: graded.next });
     setPick(null);
     setGamePick(null);
-    setShotLoaded(false);
-    setFit(null);
+    setViewIndex(0);
     setPhase("guessing");
   }
 
@@ -610,38 +599,12 @@ export function GeoGame({ regions: allRegions, challenge }: GeoGameProps) {
   }
 
   // ---- guessing ------------------------------------------------------------------
+  const views = roundViewsOf(game.round);
   return (
     <div className="mx-auto max-w-6xl space-y-3">
       {hud}
       <div className="relative">
-        <div className="screen relative aspect-[16/9] w-full overflow-hidden rounded-lg">
-          {!shotLoaded && <div className="absolute inset-0 animate-pulse bg-foreground/5" aria-hidden />}
-          {/* eslint-disable-next-line @next/next/no-img-element -- server-proxied, CDN-cached screenshot */}
-          <img
-            key={game.round.shot}
-            src={game.round.shot}
-            alt="Where is this?"
-            onLoad={(e) => {
-              setFit(shotFit(e.currentTarget));
-              setShotLoaded(true);
-            }}
-            className={cn(
-              "absolute inset-0 h-full w-full transition-opacity duration-300",
-              fit?.className ?? "object-contain",
-              shotLoaded ? "opacity-100" : "opacity-0"
-            )}
-            style={{ imageRendering: fit?.pixelated ? "pixelated" : "auto" }}
-          />
-          <button
-            type="button"
-            onClick={() => setZoomed(true)}
-            className="absolute left-3 top-3 z-[3] flex h-9 w-9 items-center justify-center rounded-md bg-black/55 text-white backdrop-blur transition-colors hover:bg-black/75"
-            aria-label="View the screenshot full screen"
-            title="Full screen"
-          >
-            <Expand className="h-4 w-4" />
-          </button>
-        </div>
+        <ShotCarousel views={views} index={viewIndex} onIndex={setViewIndex} onZoom={() => setZoomed(true)} />
 
         {/* GeoGuessr-style mini-map (the atlas): docked bottom-right on desktop, grows on hover. */}
         <div className="group mt-3 space-y-2 lg:absolute lg:bottom-4 lg:right-4 lg:z-10 lg:mt-0 lg:w-[24rem] lg:transition-[width] lg:duration-200 lg:focus-within:w-[46rem] lg:hover:w-[46rem]">
@@ -678,10 +641,11 @@ export function GeoGame({ regions: allRegions, challenge }: GeoGameProps) {
           >
             {/* eslint-disable-next-line @next/next/no-img-element -- same cached screenshot, full size */}
             <img
-              src={game.round.shot}
+              src={views[viewIndex] ?? game.round.shot}
               alt="Where is this?"
+              onLoad={(e) => setZoomPixelated(shotFit(e.currentTarget).pixelated)}
               className="max-h-full max-w-full rounded-md object-contain"
-              style={{ imageRendering: fit?.pixelated ? "pixelated" : "auto" }}
+              style={{ imageRendering: zoomPixelated ? "pixelated" : "auto" }}
             />
             <button
               type="button"
