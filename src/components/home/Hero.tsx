@@ -1,12 +1,10 @@
 import Link from "next/link";
 import { ArrowRight, Compass } from "lucide-react";
-import { geoStats } from "@/lib/server/geo";
 import { POKEDEX } from "@/lib/pokemon/pokedex";
 import { GuessrShowcase } from "./GuessrShowcase";
 import { HeroStats } from "./HeroStats";
 import { WORLD_THUMB, showcaseSlides } from "./showcase";
 
-const fmt = (n: number) => n.toLocaleString("en-US");
 
 /**
  * The title screen: what PokéIQ is, in three lines, over a real PokéGuessr
@@ -14,8 +12,9 @@ const fmt = (n: number) => n.toLocaleString("en-US");
  * text runs over its lower edge, so the four headline games below still fit
  * on the first screen.
  */
+const fmt = (n: number) => n.toLocaleString("en-US");
+
 export function Hero() {
-  const stats = geoStats();
   return (
     <section className="dark-scope relative isolate overflow-hidden rounded-2xl border border-white/10 bg-card shadow-[0_30px_80px_-30px_hsl(var(--screen)/0.45)]">
       <div className="absolute inset-x-0 top-0 aspect-video overflow-hidden lg:inset-y-0 lg:left-auto lg:aspect-auto lg:w-[66%]">
@@ -50,9 +49,6 @@ export function Hero() {
             or today&apos;s Pokédle <ArrowRight className="h-4 w-4" aria-hidden />
           </Link>
         </div>
-        <p className="hud-label leading-relaxed text-foreground/70">
-          {fmt(stats.places)} places · {fmt(stats.screenshots)} screenshots · {stats.games} games
-        </p>
         <HeroStats />
       </div>
     </section>
