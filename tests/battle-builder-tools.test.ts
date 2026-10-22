@@ -5,6 +5,7 @@ import * as lib from "@smogon/calc/dist/adaptable";
 import { coverageChart, defensiveMultiplier, memberTyping, multiplierLabel } from "@/lib/battle/coverage";
 import { applySpread, candidateNatures, optimizeSpread, speedEvsFor, speedWith, survives } from "@/lib/battle/ev-goals";
 import { POKEPASTE_MAX_BYTES, pokepasteId, pokepasteRawUrl } from "@/lib/battle/pokepaste";
+import { koShare, matchupLine, threatReports } from "@/lib/battle/threats";
 import { completeSet, type PartialSet } from "@/lib/battle/sets";
 import { loadUsage, parseSpread, popularSets, speedBenchmarks, USAGE_FORMATS } from "@/lib/battle/usage";
 
@@ -202,5 +203,22 @@ describe("usage data", () => {
     const [only] = popularSets(mon, { level: 100, tera: false, isStatus: (m) => gen9.moves.get(m)?.category === "Status" });
     expect(only.set.moves).toEqual(["Earthquake", "Outrage", "Stone Edge", "Fire Fang"]);
     expect(only.label).toBe("Choice Scarf · Jolly 252 Atk / 4 SpD / 252 Spe");
+  });
+});
+
+describe("threats", () => {
+  it("flags a threat no member survives or outspeeds and OHKOs, and says why", () => {
+    const kyogre = set({ species: "Kyogre", ability: "Drizzle", item: "Choice Specs", nature: "Modest", evs: { spa: 252, spe: 252 }, moves: ["Water Spout", "Thunder"] });
+    const coal = set({ species: "Coalossal", ability: "Steam Engine", nature: "Hardy", moves: ["Flamethrower"] });
+    const [report] = threatReports(calc, [coal], [{ set: kyogre, label: "test", usage: 0.5 }]);
+    expect(report.struggles).toBe(true);
+    expect(report.matchups[0].survives).toBe(false);
+    expect(report.matchups[0].takes?.move).toBe("Water Spout");
+    expect(matchupLine(report.matchups[0])).toMatch(/^Coalossal: takes [\d.]+–[\d.]+% from Water Spout; does [\d.]+–[\d.]+% back with Flamethrower, slower$/);
+    const pex = set({ species: "Toxapex", ability: "Regenerator", nature: "Calm", evs: { hp: 252, spd: 252 }, moves: ["Surf"] });
+    const [ok] = threatReports(calc, [coal, pex], [{ set: { ...kyogre, item: "" }, label: "test", usage: 0.5 }]);
+    expect(ok.matchups[1].survives).toBe(true);
+    expect(ok.struggles).toBe(false);
+    expect(koShare([90, 95, 100, 105], 100)).toBe(0.5);
   });
 });
