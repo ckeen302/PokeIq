@@ -536,7 +536,11 @@ export type GeoGuessOutcome =
   | { ok: true; claimKey: string; body: GeoGuessResponse }
   | { ok: false; status: number; error: string };
 
-export function gradeGeo(state: GeoState, guess: { x: number; y: number; family?: string }): GeoGuessOutcome {
+/**
+ * Grades a guess. `timeout`: the round's clock ran out before a pin went down
+ * (the Timer setting), which scores nothing and ends a streak.
+ */
+export function gradeGeo(state: GeoState, guess: { x: number; y: number; family?: string; timeout?: boolean }): GeoGuessOutcome {
   const { spec } = state;
   const streak = spec.kind === "streak";
   const sealed = unseal(state.plan);
@@ -548,7 +552,8 @@ export function gradeGeo(state: GeoState, guess: { x: number; y: number; family?
 
   const round = (streak ? sealed?.[0] : undefined) ?? rounds[index];
   if (!findLocation(spec, round)) return { ok: false, status: 409, error: "PokéGuessr was just updated. Start a new game." };
-  const { score, hit, squares } = measureGuess(spec, round, guess.x, guess.y);
+  const measured = measureGuess(spec, round, guess.x, guess.y);
+  const { score, hit, squares } = guess.timeout ? { score: 0, hit: false, squares: measured.squares } : measured;
   const answer = answerFor(spec, round, squares);
   const gameGuess = spec.guessGame ? gradeGameGuess(answer, guess.family) : undefined;
   const next: GeoState = { ...state, log: [...state.log, streak ? (hit ? 1 : 0) : score] };
@@ -584,6 +589,7 @@ export function gradeGeo(state: GeoState, guess: { x: number; y: number; family?
     body: {
       score,
       hit,
+      ...(guess.timeout ? { timedOut: true } : {}),
       answer,
       ...(gameGuess ? { gameGuess, bonusTotal } : {}),
       token: signToken("geo", next),
