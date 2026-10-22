@@ -120,6 +120,8 @@ export interface GeoGameGuess {
 
 export interface GeoGuessResponse {
   score: number;
+  /** The round's clock ran out with no pin down (the Timer setting): no points. */
+  timedOut?: boolean;
   gameGuess?: GeoGameGuess;
   /** "Guess the game too": the bonus so far. */
   bonusTotal?: number;

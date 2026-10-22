@@ -8,7 +8,8 @@ import { GEO_FAMILY_IDS } from "@/lib/geo-families";
 
 /**
  * POST /api/geo/guess — { token, x, y, family? } (x, y normalised 0–1 on the
- * region map; `family`: "guess the game too", the game family named).
+ * region map; `family`: "guess the game too", the game family named;
+ * `timeout`: the Timer setting's clock ran out with no pin down, so no points).
  */
 
 const bodySchema = z.object({
@@ -16,6 +17,7 @@ const bodySchema = z.object({
   x: z.number().min(0).max(1),
   y: z.number().min(0).max(1),
   family: z.enum(GEO_FAMILY_IDS as [string, ...string[]]).optional(),
+  timeout: z.boolean().optional(),
 });
 
 export async function POST(request: NextRequest) {
@@ -33,7 +35,7 @@ export async function POST(request: NextRequest) {
   if (!outcome.ok) return NextResponse.json({ error: outcome.error }, { status: outcome.status });
 
   // Each round can be guessed once; an identical retry (lost response) gets the same answer back.
-  const fingerprint = requestFingerprint(parsed.data.token, String(parsed.data.x), String(parsed.data.y), parsed.data.family ?? "");
+  const fingerprint = requestFingerprint(parsed.data.token, String(parsed.data.x), String(parsed.data.y), parsed.data.family ?? "", parsed.data.timeout ? "timeout" : "");
   if (!(await claimOnce(outcome.claimKey))) {
     const cached = recallResponse(outcome.claimKey, fingerprint);
     if (cached) return NextResponse.json(cached, { headers: { "Cache-Control": "no-store" } });

@@ -13,6 +13,7 @@ import {
   MapPin as MapPinIcon,
   RotateCcw,
   Swords,
+  Timer,
   Trophy,
   X,
 } from "lucide-react";
@@ -46,6 +47,17 @@ import { DuelCard } from "./DuelCard";
 import { ReportShot } from "./ReportShot";
 import { ShotCarousel, shotFit } from "./ShotCarousel";
 import { roundViewsOf } from "@/lib/geo-look";
+import { GeoSettingsButton } from "./GeoSettings";
+import {
+  DEFAULT_GEO_SETTINGS,
+  GEO_ZOOM,
+  readGeoSettings,
+  rememberGeoSettings,
+  secondsLeft,
+  visibleViews,
+  zoomOrigin,
+  type GeoPlaySettings,
+} from "@/lib/geo-settings";
 import { GameFilter, GameGuessPicker, type FilterChoice, filterPlaces, gameGuessOptions, readGuessGame, rememberGuessGame } from "./GameFilter";
 import { GEO_ERA_NAMES, GEO_GAME_BONUS, geoFamily, type GeoEra, type GeoFamilyId } from "@/lib/geo-families";
 import { cn } from "@/lib/utils";
@@ -62,12 +74,15 @@ interface Game {
   /** The game filter it was started with (the daily: every game). */
   filter: FilterChoice;
   guessGame: boolean;
+  /** No move, Zoomed and the round timer, as set when the game started. */
+  settings: GeoPlaySettings;
   token: string;
   round: GeoRoundPublic;
 }
 
 interface Played {
-  guess: MapPin;
+  /** Null when the round's clock ran out with no pin down. */
+  guess: MapPin | null;
   graded: GeoGuessResponse;
   /** The screenshot's URL, for reporting it. */
   shot: string;
@@ -188,6 +203,9 @@ export function GeoGame({ regions: allRegions, challenge }: GeoGameProps) {
   const [played, setPlayed] = useState<Played[]>([]);
   const [viewIndex, setViewIndex] = useState(0);
   const [zoomPixelated, setZoomPixelated] = useState(false);
+  const [settings, setSettings] = useState<GeoPlaySettings>(DEFAULT_GEO_SETTINGS);
+  const [roundStartedAt, setRoundStartedAt] = useState(0);
+  const [now, setNow] = useState(0);
   const [zoomed, setZoomed] = useState(false);
   const [reward, setReward] = useState<Reward | null>(null);
   const [isChallenge, setIsChallenge] = useState(false);
@@ -201,6 +219,12 @@ export function GeoGame({ regions: allRegions, challenge }: GeoGameProps) {
 
   // "Guess the game too" is remembered on this device.
   useEffect(() => setGuessGame(readGuessGame()), []);
+  useEffect(() => setSettings(readGeoSettings()), []);
+
+  function chooseSettings(next: GeoPlaySettings) {
+    setSettings(next);
+    rememberGeoSettings(next);
+  }
 
   // /guessr?region=johto opens on that map (the atlas links here).
   useEffect(() => {
@@ -264,6 +288,7 @@ export function GeoGame({ regions: allRegions, challenge }: GeoGameProps) {
         practice: res.practice,
         filter: played,
         guessGame: !!bonus.guessGame,
+        settings,
         token: res.token,
         round: res.round,
       });
@@ -273,6 +298,7 @@ export function GeoGame({ regions: allRegions, challenge }: GeoGameProps) {
       setPlayed([]);
       setReward(null);
       setViewIndex(0);
+      setRoundStartedAt(Date.now());
       setPhase("guessing");
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (err) {
@@ -281,11 +307,13 @@ export function GeoGame({ regions: allRegions, challenge }: GeoGameProps) {
     }
   }
 
-  async function guess() {
-    if (!game || !pick || phase !== "guessing") return;
+  /** `timeUp`: the round's clock ran out, so the pin (if any) is guessed where it is. */
+  async function guess(timeUp = false) {
+    if (!game || (!pick && !timeUp) || phase !== "guessing") return;
     setPhase("submitting");
     try {
-      const graded = await post<GeoGuessResponse>("/api/geo/guess", { token: game.token, ...pick, ...(game.guessGame && gamePick ? { family: gamePick } : {}) });
+      const at = pick ?? { x: 0, y: 0, timeout: true };
+      const graded = await post<GeoGuessResponse>("/api/geo/guess", { token: game.token, ...at, ...(game.guessGame && gamePick ? { family: gamePick } : {}) });
       const nextPlayed = [...played, { guess: pick, graded, shot: game.round.shot }];
       setPlayed(nextPlayed);
       setGame({ ...game, token: graded.token });
@@ -323,8 +351,23 @@ export function GeoGame({ regions: allRegions, challenge }: GeoGameProps) {
     setPick(null);
     setGamePick(null);
     setViewIndex(0);
+    setRoundStartedAt(Date.now());
     setPhase("guessing");
   }
+
+  // The Timer setting: a clock per round; at zero the pin is guessed where it is (no pin: no points).
+  const timer = game?.settings.timer ?? 0;
+  const timeLeft = timer && (phase === "guessing" || phase === "submitting") ? secondsLeft(roundStartedAt, now || roundStartedAt, timer) : null;
+  useEffect(() => {
+    if (!timer || phase !== "guessing") return;
+    setNow(Date.now());
+    const id = window.setInterval(() => setNow(Date.now()), 250);
+    return () => window.clearInterval(id);
+  }, [timer, phase, roundStartedAt]);
+  useEffect(() => {
+    if (timeLeft === 0 && phase === "guessing") void guess(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- fires once, when the clock hits zero
+  }, [timeLeft, phase]);
 
   // GeoGuessr's shortcuts: Space / Enter to guess, then for the next round. Esc closes the zoomed view.
   useEffect(() => {
@@ -461,6 +504,8 @@ export function GeoGame({ regions: allRegions, challenge }: GeoGameProps) {
 
           <GameFilter region={region} filter={filter} onChange={chooseFilter} guessGame={guessGame} onGuessGame={chooseGuessGame} />
 
+          <GeoSettingsButton value={settings} onChange={chooseSettings} />
+
           {(filter.families.length > 0 || filter.era) && (
             <p className="text-sm text-muted-foreground">
               {filter.families.length ? "Hand-picked games are practice: no leaderboard." : `${GEO_ERA_NAMES[filter.era!]} has leaderboards of its own.`}
@@ -567,6 +612,19 @@ export function GeoGame({ regions: allRegions, challenge }: GeoGameProps) {
         </div>
       </div>
       <div className="flex shrink-0 gap-6 text-right">
+        {timeLeft !== null && (
+          <div>
+            <div className="hud-label">Time</div>
+            <div
+              className={cn("flex items-center justify-end gap-1 font-pixel tabular-nums", timeLeft <= 10 ? "text-destructive" : "text-foreground")}
+              data-testid="geo-time-left"
+              aria-live={timeLeft <= 10 ? "polite" : "off"}
+            >
+              <Timer className="h-3.5 w-3.5" aria-hidden />
+              {timeLeft}
+            </div>
+          </div>
+        )}
         {isStreak ? (
           <div>
             <div className="hud-label">Streak</div>
@@ -599,12 +657,14 @@ export function GeoGame({ regions: allRegions, challenge }: GeoGameProps) {
   }
 
   // ---- guessing ------------------------------------------------------------------
-  const views = roundViewsOf(game.round);
+  const views = visibleViews(roundViewsOf(game.round), game.settings);
+  const zoom = game.settings.zoomed ? (src: string) => ({ scale: GEO_ZOOM, origin: zoomOrigin(src) }) : undefined;
+  const zoomedView = zoom?.(views[viewIndex] ?? game.round.shot);
   return (
     <div className="mx-auto max-w-6xl space-y-3">
       {hud}
       <div className="relative">
-        <ShotCarousel views={views} index={viewIndex} onIndex={setViewIndex} onZoom={() => setZoomed(true)} />
+        <ShotCarousel views={views} index={viewIndex} onIndex={setViewIndex} onZoom={() => setZoomed(true)} zoom={zoom} />
 
         {/* GeoGuessr-style mini-map (the atlas): docked bottom-right on desktop, grows on hover. */}
         <div className="group mt-3 space-y-2 lg:absolute lg:bottom-4 lg:right-4 lg:z-10 lg:mt-0 lg:w-[24rem] lg:transition-[width] lg:duration-200 lg:focus-within:w-[46rem] lg:hover:w-[46rem]">
@@ -639,14 +699,19 @@ export function GeoGame({ regions: allRegions, challenge }: GeoGameProps) {
             role="dialog"
             aria-label="Screenshot, full screen"
           >
-            {/* eslint-disable-next-line @next/next/no-img-element -- same cached screenshot, full size */}
-            <img
-              src={views[viewIndex] ?? game.round.shot}
-              alt="Where is this?"
-              onLoad={(e) => setZoomPixelated(shotFit(e.currentTarget).pixelated)}
-              className="max-h-full max-w-full rounded-md object-contain"
-              style={{ imageRendering: zoomPixelated ? "pixelated" : "auto" }}
-            />
+            <div className="max-h-full max-w-full overflow-hidden rounded-md">
+              {/* eslint-disable-next-line @next/next/no-img-element -- same cached screenshot, full size */}
+              <img
+                src={views[viewIndex] ?? game.round.shot}
+                alt="Where is this?"
+                onLoad={(e) => setZoomPixelated(shotFit(e.currentTarget).pixelated)}
+                className="max-h-[calc(100vh-2rem)] max-w-full object-contain"
+                style={{
+                  imageRendering: zoomPixelated ? "pixelated" : "auto",
+                  ...(zoomedView ? { transform: `scale(${zoomedView.scale})`, transformOrigin: `${zoomedView.origin[0]}% ${zoomedView.origin[1]}%` } : {}),
+                }}
+              />
+            </div>
             <button
               type="button"
               className="absolute right-4 top-4 flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20"
@@ -762,7 +827,7 @@ function RoundReveal({
           It was <span className="font-semibold text-foreground">{placeName(graded.answer, game.region)}</span>
           <span className="text-sm"> · Pokémon {graded.answer.game}</span>
           <br />
-          <span className="text-sm">{distanceText(graded.answer.squares)}</span>
+          <span className="text-sm" data-testid="geo-distance">{graded.timedOut ? "Time's up: no pin down" : distanceText(graded.answer.squares)}</span>
           <span className="text-sm">
             {" · "}
             <Link href={atlasHref(graded.answer)} target="_blank" className="underline underline-offset-2 hover:text-foreground">
