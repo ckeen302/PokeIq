@@ -1,7 +1,10 @@
 /** PokéGuessr types shared by the server and the client. */
+import type { FamilyCombos, GeoEra, GeoFamilyId } from "./geo-families";
 
 export const GEO_ROUNDS = 5;
 export const GEO_MAX_ROUND_SCORE = 5000;
+/** A map with a game filter (an era, or picked games) needs this many places to play: fewer and the filter is off. */
+export const GEO_FILTER_MIN_PLACES = 10;
 
 /** game: five rounds scored by distance. streak: keep naming places until a pin misses. */
 export const GEO_KINDS = ["game", "streak"] as const;
@@ -30,6 +33,10 @@ export interface GeoRegionInfo {
   locations: number;
   /** Games the screenshots come from, from Red / Blue to the latest remakes. */
   games: string[];
+  /** The game families it has screenshots of, in release order. */
+  families: GeoFamilyId[];
+  /** How many places have screenshots from exactly which families (for the game filters' counts). */
+  combos: FamilyCombos;
   /** A preview screenshot (a starting town, so it gives nothing away). */
   preview: string | null;
 }
@@ -38,12 +45,22 @@ export interface GeoSpec {
   region: string;
   kind: GeoKind;
   daily?: string;
-  /** Not ranked: a repeat start of a daily, or a friend's challenge (the places are known). */
-  practice?: "repeat-daily" | "challenge";
+  /**
+   * Not ranked: a repeat start of a daily, a friend's challenge (the places
+   * are known), or a game on hand-picked game families (practice only).
+   */
+  practice?: "repeat-daily" | "challenge" | "filtered";
+  /** Only Classic 2D or Modern 3D screenshots (all games when unset). */
+  era?: GeoEra;
+  /** Only these families (within the era): practice. */
+  families?: GeoFamilyId[];
+  /** "Guess the game too": name the screenshot's game family for bonus points each round. */
+  guessGame?: boolean;
 }
 
-/** Leaderboard key for free play, e.g. "kanto" or "kanto:streak". */
-export const geoBoardKey = (spec: Pick<GeoSpec, "region" | "kind">) => `${spec.region}${spec.kind === "streak" ? ":streak" : ""}`;
+/** Leaderboard key for free play, e.g. "kanto", "kanto:streak" or "world:2d" (the eras have boards of their own). */
+export const geoBoardKey = (spec: Pick<GeoSpec, "region" | "kind"> & { era?: GeoEra }) =>
+  `${spec.region}${spec.era ? `:${spec.era}` : ""}${spec.kind === "streak" ? ":streak" : ""}`;
 
 export interface GeoRoundPublic {
   index: number;
@@ -54,7 +71,9 @@ export interface GeoAnswer {
   name: string;
   /** The town or route a building/landmark sits in. */
   parent?: string;
+  /** The screenshot's game (the specific version when known) and its family. */
   game: string;
+  family: GeoFamilyId;
   pin: [number, number];
   mask: [number, number][];
   /** Distance from the guess to the location, in town-map squares (0 = inside it). */
@@ -73,8 +92,10 @@ export interface GeoChallenge {
 export interface GeoResult {
   sid: string;
   spec: GeoSpec;
-  /** Points for a game, places in a row for a streak. */
+  /** Points for a game (distance only, as ranked), places in a row for a streak. */
   score: number;
+  /** "Guess the game too": the bonus points on top (never part of the ranked score). */
+  bonus?: number;
   rounds: { score: number; name: string }[];
   durationMs: number;
   finishedAt: number;
@@ -88,8 +109,18 @@ export interface GeoStartResponse {
   practice?: GeoSpec["practice"];
 }
 
+/** "Guess the game too": what the player named and what it earned. */
+export interface GeoGameGuess {
+  guessed: GeoFamilyId | null;
+  correct: boolean;
+  bonus: number;
+}
+
 export interface GeoGuessResponse {
   score: number;
+  gameGuess?: GeoGameGuess;
+  /** "Guess the game too": the bonus so far. */
+  bonusTotal?: number;
   /** Streak mode: the pin landed on the place (on the world map: in the right region). */
   hit: boolean;
   answer: GeoAnswer;

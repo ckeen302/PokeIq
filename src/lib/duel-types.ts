@@ -1,4 +1,5 @@
 import type { PublicAvatar } from "./avatar";
+import type { GeoEra } from "./geo-families";
 /**
  * PokéGuessr duels: two trainers, the same rounds, GeoGuessr Duels rules.
  * Shared by the server (which applies every rule) and the client.
@@ -88,6 +89,8 @@ export interface DuelView {
   code: string;
   /** The map: the world or a region. */
   region: string;
+  /** Only Classic 2D or Modern 3D screenshots (every game when unset). */
+  era?: GeoEra;
   status: DuelStatus;
   /** Server clock, so timers agree whatever the device's clock says. */
   now: number;

@@ -4,11 +4,13 @@ import { Rng } from "@/lib/rng";
 import { publicName } from "@/lib/name-filter";
 import { decryptJson, deriveSeed, encryptJson, randomId, signToken, verifyToken } from "./crypto";
 import {
+  GEO_FILTER_MIN_PLACES,
   GEO_KINDS,
   GEO_MAX_ROUND_SCORE,
   GEO_ROUNDS,
   type GeoAnswer,
   type GeoChallenge,
+  type GeoGameGuess,
   type GeoGuessResponse,
   type GeoRegionInfo,
   type GeoResult,
@@ -16,6 +18,18 @@ import {
   type GeoSpec,
   WORLD_REGION,
 } from "@/lib/geo-types";
+import {
+  GEO_GAME_BONUS,
+  allowedFamilies,
+  familyOfGame,
+  familyRank,
+  geoFamily,
+  isGeoFamily,
+  normalizeFamilies,
+  type FamilyCombos,
+  type GeoEra,
+  type GeoFamilyId,
+} from "@/lib/geo-families";
 
 /**
  * PokéGuessr: GeoGuessr for the Pokémon world. Each round shows an in-game
@@ -26,7 +40,9 @@ import {
 
 interface Shot {
   id: string;
+  /** The game as specifically as it's known ("Crystal", "Black 2 / White 2"). */
   game: string;
+  family: GeoFamilyId;
 }
 interface Location {
   name: string;
@@ -52,7 +68,8 @@ interface Region {
   locations: Location[];
 }
 
-type StoredLocation = Omit<Location, "pin" | "mask"> & Partial<Pick<Location, "pin" | "mask">>;
+type StoredShot = { id: string; game: string; family?: string };
+type StoredLocation = Omit<Location, "pin" | "mask" | "shots"> & Partial<Pick<Location, "pin" | "mask">> & { shots: StoredShot[] };
 interface WorldData {
   map: { src: string; width: number; height: number; squarePx: number };
   /** Region maps cut from the world map: their box in world pixels and the atlas regions they play. */
@@ -86,37 +103,20 @@ const HOME: Record<string, string> = {
   galar: "Postwick",
   paldea: "Cabo Poco",
 };
-/**
- * Versions that share their graphics are one look of a place: a round picks
- * one of the place's looks (Red / Blue, FireRed, HeartGold, Let's Go…), then
- * a screenshot of it, so Emerald's and Ruby's shots don't crowd out the remakes.
- */
-const LOOK: Record<string, string> = {
-  "Red / Green / Blue / Yellow": "Red / Blue / Yellow",
-  "Red / Blue": "Red / Blue / Yellow",
-  Yellow: "Red / Blue / Yellow",
-  "Gold / Silver": "Gold / Silver / Crystal",
-  Crystal: "Gold / Silver / Crystal",
-  "Ruby / Sapphire": "Ruby / Sapphire / Emerald",
-  "Sapphire / Emerald": "Ruby / Sapphire / Emerald",
-  Emerald: "Ruby / Sapphire / Emerald",
-  "Diamond / Pearl": "Diamond / Pearl / Platinum",
-  Platinum: "Diamond / Pearl / Platinum",
-  "Black / White": "Black / White / Black 2 / White 2",
-  "Black 2 / White 2": "Black / White / Black 2 / White 2",
-  "Omega Ruby": "Omega Ruby / Alpha Sapphire",
-  "Alpha Sapphire": "Omega Ruby / Alpha Sapphire",
-  "Sun / Moon": "Sun / Moon / Ultra Sun / Ultra Moon",
-  "Ultra Sun / Ultra Moon": "Sun / Moon / Ultra Sun / Ultra Moon",
-};
-const lookOf = (game: string) => LOOK[game] ?? game;
+
+/** A stored shot with its family (the data carries it; older data is read from the game's label). */
+function readShot(s: StoredShot): Shot | null {
+  const family = isGeoFamily(s.family) ? s.family : familyOfGame(s.game);
+  return family ? { id: s.id, game: s.game, family } : null;
+}
 
 /** The world map, with buildings placed in (and sharing the area of) their parent place. */
 function worldRegion(world: WorldData): Region {
   const byName = new Map(world.locations.filter((l) => l.pin).map((l) => [`${l.region}|${l.name}`, l]));
   const locations = world.locations.flatMap((l): Location[] => {
     const home = l.pin ? l : byName.get(`${l.region}|${l.parent}`);
-    return home?.pin && home.mask ? [{ ...l, pin: home.pin, mask: home.mask }] : [];
+    const shots = l.shots.flatMap((s) => readShot(s) ?? []);
+    return home?.pin && home.mask ? [{ ...l, shots, pin: home.pin, mask: home.mask }] : [];
   });
   const { squarePx, ...map } = world.map;
   return {
@@ -152,6 +152,29 @@ const regionOf = (id: string) => REGIONS.find((r) => r.id === id);
 /** A town or route with its buildings: one pin, so at most one round. */
 const areaOf = (location: Pick<Location, "region" | "name" | "parent">) => `${location.region}|${location.parent ?? location.name}`;
 
+// ---------------------------------------------------------------------------
+// Shots out of rotation (players' reports), and the game filters
+// ---------------------------------------------------------------------------
+
+/** Shots players reported enough (or a moderator removed): kept for games already under way, never dealt again. */
+let HIDDEN: ReadonlySet<string> = new Set();
+
+/** Replaces the hidden shots (geo-reports.ts keeps them fresh). */
+export function setHiddenShots(ids: Iterable<string>) {
+  const next = new Set(ids);
+  if (next.size === HIDDEN.size && [...next].every((id) => HIDDEN.has(id))) return;
+  HIDDEN = next;
+  FILTERED.clear();
+}
+export const hiddenShots = (): ReadonlySet<string> => HIDDEN;
+
+/** What a game deals from: a map, and optionally an era or some game families. */
+type DealSpec = Pick<GeoSpec, "region" | "era" | "families">;
+const filtered = (spec: Omit<DealSpec, "region">) => !!spec.era || !!spec.families?.length;
+
+/** A place's shots a game can deal: in the filter's families, and not hidden. */
+const usableShots = (location: Location, allowed: ReadonlySet<GeoFamilyId>) => location.shots.filter((s) => allowed.has(s.family) && !HIDDEN.has(s.id));
+
 /** A town or route and the buildings and landmarks in it, with screenshots. */
 interface Area {
   key: string;
@@ -160,7 +183,7 @@ interface Area {
   buildings: Location[];
 }
 
-/** Each map's areas, in data order. */
+/** Each map's areas, in data order (every shot, hidden or not). */
 const AREAS = new Map(
   REGIONS.map((r) => {
     const areas = new Map<string, Area>();
@@ -175,59 +198,53 @@ const AREAS = new Map(
     return [r.id, [...areas.values()]];
   })
 );
-const areasOf = (region: string) => AREAS.get(region) ?? [];
 
-/** Drops combined labels the others already cover ("Sun / Moon / Ultra Sun / Ultra Moon" next to "Sun / Moon" and "Ultra Sun / Ultra Moon"). */
-function gameList(games: string[]): string[] {
-  const parts = (game: string) => game.split(" / ");
-  const covered = (game: string) =>
-    parts(game).every((p) => games.some((other) => parts(other).length < parts(game).length && parts(other).includes(p)));
-  return games.filter((game) => !covered(game));
+/** A map's areas a filter can deal, cut down to the places with usable shots (cached until the hidden shots change). */
+const FILTERED = new Map<string, Area[]>();
+function areasOf(spec: DealSpec): Area[] {
+  const allowed = allowedFamilies(spec);
+  const key = `${spec.region}|${[...allowed].join(",")}`;
+  const cached = FILTERED.get(key);
+  if (cached) return cached;
+  const areas = (AREAS.get(spec.region) ?? []).flatMap((a): Area[] => {
+    const place = a.place && usableShots(a.place, allowed).length ? a.place : undefined;
+    const buildings = a.buildings.filter((b) => usableShots(b, allowed).length);
+    return place || buildings.length ? [{ ...a, place, buildings }] : [];
+  });
+  FILTERED.set(key, areas);
+  return areas;
 }
 
-/** Games in release order (the order of their first screenshot in the data is arbitrary). */
-const RELEASE_ORDER = [
-  "Red",
-  "Gold",
-  "Crystal",
-  "Ruby",
-  "Sapphire",
-  "Emerald",
-  "FireRed",
-  "Diamond",
-  "Platinum",
-  "HeartGold",
-  "Black / White",
-  "Black / White /",
-  "Black 2",
-  "X / Y",
-  "Omega Ruby",
-  "Sun",
-  "Ultra Sun",
-  "Let's Go",
-  "Sword",
-  "Brilliant Diamond",
-  "Scarlet",
-  "Legends: Z-A",
-];
-const releaseRank = (game: string) => {
-  const i = RELEASE_ORDER.findLastIndex((g) => game.startsWith(g));
-  return i < 0 ? RELEASE_ORDER.length : i;
-};
+/** Each family set's number of places on a map (playable shots only): "rby,frlg" → 12. */
+function familyCombos(region: string): FamilyCombos {
+  const combos: FamilyCombos = {};
+  for (const a of areasOf({ region })) {
+    const families = new Set([a.place, ...a.buildings].flatMap((l) => (l ? l.shots.filter((s) => !HIDDEN.has(s.id)).map((s) => s.family) : [])));
+    const key = [...families].sort((x, y) => familyRank(x) - familyRank(y)).join(",");
+    combos[key] = (combos[key] ?? 0) + 1;
+  }
+  return combos;
+}
 
 export function geoRegions(): GeoRegionInfo[] {
   return REGIONS.map((r) => {
-    const areas = areasOf(r.id);
+    const areas = areasOf({ region: r.id });
     const home = areas.find((a) => a.place?.name === HOME[r.id])?.place ?? areas[0]?.place;
     // The newest game's view of it.
-    const shot = home?.shots.reduce((a, b) => (releaseRank(b.game) > releaseRank(a.game) ? b : a));
-    const games = [...new Set(areas.flatMap((a) => [a.place, ...a.buildings].flatMap((l) => l?.shots.map((s) => lookOf(s.game)) ?? [])))];
+    const shots = home ? usableShots(home, allowedFamilies({})) : [];
+    const shot = shots.length ? shots.reduce((a, b) => (familyRank(b.family) > familyRank(a.family) ? b : a)) : undefined;
+    const combos = familyCombos(r.id);
+    const families = [...new Set(Object.keys(combos).flatMap((k) => k.split(",")))]
+      .filter(isGeoFamily)
+      .sort((a, b) => familyRank(a) - familyRank(b));
     return {
       id: r.id,
       name: r.name,
       map: { src: r.map.src, box: r.map.box },
       locations: areas.length,
-      games: gameList(games).sort((a, b) => releaseRank(a) - releaseRank(b)),
+      games: families.map((f) => geoFamily(f).name),
+      families,
+      combos,
       preview: shot ? shotUrl(shot.id) : null,
     };
   });
@@ -239,8 +256,8 @@ export function geoStats(): { places: number; screenshots: number; games: number
   const located = regionOf(WORLD_REGION)?.locations ?? [];
   return {
     places: world?.locations ?? 0,
-    screenshots: located.reduce((n, l) => n + l.shots.length, 0),
-    games: world?.games.length ?? 0,
+    screenshots: located.reduce((n, l) => n + l.shots.filter((s) => !HIDDEN.has(s.id)).length, 0),
+    games: world?.families.length ?? 0,
   };
 }
 
@@ -249,14 +266,41 @@ export function geoWorldPin(region: string, name: string): [number, number] | nu
   return regionOf(WORLD_REGION)?.locations.find((l) => l.region === region && l.name === name && !l.parent)?.pin ?? null;
 }
 
-export function isGeoSpec(spec: Pick<GeoSpec, "region" | "kind">): boolean {
-  return GEO_KINDS.includes(spec.kind) && areasOf(spec.region).length >= GEO_ROUNDS;
+/**
+ * Whether a map (with its filter) can be played: enough places for a game,
+ * and with an era or picked games, at least GEO_FILTER_MIN_PLACES of them.
+ */
+export function isGeoSpec(spec: Pick<GeoSpec, "region" | "kind"> & Omit<DealSpec, "region">): boolean {
+  const min = filtered(spec) ? Math.max(GEO_ROUNDS, GEO_FILTER_MIN_PLACES) : GEO_ROUNDS;
+  return GEO_KINDS.includes(spec.kind) && areasOf(spec).length >= min;
+}
+
+/** A filter as the server keeps it: a known era, and picked families only when they narrow it. */
+export function geoFilter(era: unknown, families: unknown): { era?: GeoEra; families?: GeoFamilyId[] } {
+  const e = era === "2d" || era === "3d" ? era : undefined;
+  const f = normalizeFamilies(e, Array.isArray(families) ? families.filter((x): x is string => typeof x === "string") : undefined);
+  return { ...(e ? { era: e } : {}), ...(f ? { families: f } : {}) };
 }
 
 /** Any screenshot in storage: a game started before an update keeps showing its own. */
 export function shotSource(id: string): string {
   return `${STORAGE_BASE}/${id}.webp`;
 }
+
+/** A screenshot's place and game as the data has them (the moderators' review queue). */
+export function shotInfo(id: string): { place: string; game: string; family: GeoFamilyId } | null {
+  for (const l of regionOf(WORLD_REGION)?.locations ?? []) {
+    const shot = l.shots.find((s) => s.id === id);
+    if (shot) return { place: `${l.parent ? `${l.name} · ${l.parent}` : l.name}, ${l.region}`, game: shot.game, family: shot.family };
+  }
+  return null;
+}
+
+/** Every screenshot id in the data. */
+export function isKnownShot(id: string): boolean {
+  return KNOWN_SHOTS.has(id);
+}
+const KNOWN_SHOTS = new Set((regionOf(WORLD_REGION)?.locations ?? []).flatMap((l) => l.shots.map((s) => s.id)));
 
 interface PlannedRound {
   location: string;
@@ -269,13 +313,15 @@ interface PlannedRound {
 
 /**
  * A round in an area: the town or route itself half the time (when it has
- * screenshots), else one of its buildings; then one of the place's looks, and
- * a screenshot of that look.
+ * screenshots), else one of its buildings; then one of the place's game
+ * families, and a screenshot from it (so Emerald's and Ruby's shots don't
+ * crowd out the remakes).
  */
-function pickRound(rng: Rng, area: Area): PlannedRound {
+function pickRound(rng: Rng, area: Area, allowed: ReadonlySet<GeoFamilyId>): PlannedRound {
   const location = area.place && (!area.buildings.length || rng.chance(0.5)) ? area.place : rng.pick(area.buildings);
-  const look = rng.pick([...new Set(location.shots.map((s) => lookOf(s.game)))]);
-  const shot = rng.pick(location.shots.filter((s) => lookOf(s.game) === look));
+  const shots = usableShots(location, allowed);
+  const family = rng.pick([...new Set(shots.map((s) => s.family))]);
+  const shot = rng.pick(shots.filter((s) => s.family === family));
   return { location: location.name, region: location.region, shot: shot.id, game: shot.game };
 }
 
@@ -284,11 +330,12 @@ function pickRound(rng: Rng, area: Area): PlannedRound {
  * Every town, route and landmark is equally likely, from every game it's in,
  * and no two rounds share a town (a building and its town are the same pin).
  * A five-round world game visits five different regions. `limit` stops early
- * (the first rounds don't depend on it).
+ * (the first rounds don't depend on it). A filter deals only its games' shots.
  */
-export function planRounds(spec: Pick<GeoSpec, "region" | "kind">, seed: string, limit = Infinity): PlannedRound[] {
+export function planRounds(spec: Pick<GeoSpec, "region" | "kind"> & Omit<DealSpec, "region">, seed: string, limit = Infinity): PlannedRound[] {
   const rng = new Rng(deriveSeed("geo", seed));
-  const areas = rng.shuffle(areasOf(spec.region));
+  const allowed = allowedFamilies(spec);
+  const areas = rng.shuffle(areasOf(spec));
   const max = Math.min(limit, spec.kind === "game" ? GEO_ROUNDS : Infinity);
   const oneEach = spec.region === WORLD_REGION && spec.kind === "game" && new Set(areas.map((a) => a.group)).size >= GEO_ROUNDS;
   const groups = new Set<string>();
@@ -297,7 +344,7 @@ export function planRounds(spec: Pick<GeoSpec, "region" | "kind">, seed: string,
     if (rounds.length >= max) break;
     if (oneEach && groups.has(area.group)) continue;
     groups.add(area.group);
-    rounds.push(pickRound(rng, area));
+    rounds.push(pickRound(rng, area, allowed));
   }
   return rounds;
 }
@@ -312,11 +359,12 @@ const SEED_TRIES = 64;
 const findLocation = (spec: Pick<GeoSpec, "region">, round: PlannedRound) =>
   regionOf(spec.region)?.locations.find((l) => l.name === round.location && l.region === round.region);
 
-function lookup(spec: GeoSpec, round: PlannedRound) {
+function lookup(spec: Pick<GeoSpec, "region">, round: PlannedRound) {
   const region = regionOf(spec.region)!;
   const location = findLocation(spec, round);
   if (!location) throw new Error(`No place ${round.region} | ${round.location} on ${spec.region}`);
-  const shot = location.shots.find((s) => s.id === round.shot) ?? { id: round.shot, game: round.game ?? location.shots[0].game };
+  const game = round.game ?? location.shots[0].game;
+  const shot = location.shots.find((s) => s.id === round.shot) ?? { id: round.shot, game, family: familyOfGame(game) ?? location.shots[0].family };
   return { region, location, shot };
 }
 
@@ -353,7 +401,7 @@ function regionAt(region: Region, x: number, y: number): string {
  * score on GeoGuessr's curve. Streaks: on a region's map the pin has to land
  * on the place; on the world map, in the right region (like a country streak).
  */
-export function measureGuess(spec: GeoSpec, round: PlannedRound, x: number, y: number) {
+export function measureGuess(spec: Pick<GeoSpec, "region">, round: PlannedRound, x: number, y: number) {
   const { region, location } = lookup(spec, round);
   const { width, height } = region.map;
   const diagonal = Math.hypot(width, height);
@@ -364,9 +412,16 @@ export function measureGuess(spec: GeoSpec, round: PlannedRound, x: number, y: n
   return { score, hit, squares: perfect ? 0 : Math.round((px / region.squarePx) * 10) / 10 };
 }
 
-export function answerFor(spec: GeoSpec, round: PlannedRound, squares = 0): GeoAnswer {
+export function answerFor(spec: Pick<GeoSpec, "region">, round: PlannedRound, squares = 0): GeoAnswer {
   const { location, shot } = lookup(spec, round);
-  return { name: location.name, parent: location.parent, game: shot.game, pin: location.pin, mask: location.mask, squares, region: location.region };
+  return { name: location.name, parent: location.parent, game: shot.game, family: shot.family, pin: location.pin, mask: location.mask, squares, region: location.region };
+}
+
+/** "Guess the game too": the bonus for naming the screenshot's family. */
+export function gradeGameGuess(answer: Pick<GeoAnswer, "family">, guessed: string | undefined): GeoGameGuess {
+  const family = isGeoFamily(guessed) ? guessed : null;
+  const correct = family === answer.family;
+  return { guessed: family, correct, bonus: correct ? GEO_GAME_BONUS : 0 };
 }
 
 // ---------------------------------------------------------------------------
@@ -383,6 +438,8 @@ export interface GeoState {
   name?: string;
   /** One score per finished round (streaks: 1 per hit). */
   log: number[];
+  /** "Guess the game too": the bonus each finished round earned. */
+  bonus?: number[];
   /**
    * The rounds as planned at the start, sealed: a five-round game's five, a
    * streak's current one. A game in progress outlives an update to the
@@ -402,13 +459,18 @@ interface ChallengeCard {
   p: number[];
   /** The five rounds, sealed, so the challenge stays the same five screenshots after an update. */
   l?: string;
+  /** The friend's game filter: era and picked families. */
+  e?: GeoEra;
+  f?: GeoFamilyId[];
 }
 
-export function readGeoChallenge(token: unknown): (GeoChallenge & { seed: string; region: string; plan?: string }) | null {
+export function readGeoChallenge(
+  token: unknown
+): (GeoChallenge & { seed: string; region: string; plan?: string; era?: GeoEra; families?: GeoFamilyId[] }) | null {
   const card = verifyToken<ChallengeCard>("geo-challenge", token);
   if (!card || card.y !== undefined || !regionOf(card.r)) return null;
   // Links signed before names were checked: shown without the name.
-  return { seed: card.s, region: card.r, name: publicName(card.n, ""), score: card.t, rounds: card.p, plan: card.l };
+  return { seed: card.s, region: card.r, name: publicName(card.n, ""), score: card.t, rounds: card.p, plan: card.l, ...geoFilter(card.e, card.f) };
 }
 
 /**
@@ -422,7 +484,7 @@ export function startGeo(
   let seed = opts.seed ?? (spec.daily ? `geo-daily:${spec.daily}` : randomId());
   if (!opts.seed && !spec.daily && opts.recent?.length) {
     // Never more than half the map's areas, so a fresh game is always possible.
-    const recent = opts.recent.slice(0, Math.floor(areasOf(spec.region).length / 2));
+    const recent = opts.recent.slice(0, Math.floor(areasOf(spec).length / 2));
     const weights = new Map(recent.map((key, i) => [key, recent.length - i] as const));
     let best = staleness(spec, planRounds(spec, seed, GEO_ROUNDS), weights);
     for (let i = 1; i < SEED_TRIES && best > 0; i++) {
@@ -449,7 +511,7 @@ export type GeoGuessOutcome =
   | { ok: true; claimKey: string; body: GeoGuessResponse }
   | { ok: false; status: number; error: string };
 
-export function gradeGeo(state: GeoState, guess: { x: number; y: number }): GeoGuessOutcome {
+export function gradeGeo(state: GeoState, guess: { x: number; y: number; family?: string }): GeoGuessOutcome {
   const { spec } = state;
   const streak = spec.kind === "streak";
   const sealed = unseal(state.plan);
@@ -462,9 +524,13 @@ export function gradeGeo(state: GeoState, guess: { x: number; y: number }): GeoG
   const round = (streak ? sealed?.[0] : undefined) ?? rounds[index];
   if (!findLocation(spec, round)) return { ok: false, status: 409, error: "PokéGuessr was just updated. Start a new game." };
   const { score, hit, squares } = measureGuess(spec, round, guess.x, guess.y);
+  const answer = answerFor(spec, round, squares);
+  const gameGuess = spec.guessGame ? gradeGameGuess(answer, guess.family) : undefined;
   const next: GeoState = { ...state, log: [...state.log, streak ? (hit ? 1 : 0) : score] };
+  if (gameGuess) next.bonus = [...(state.bonus ?? []), gameGuess.bonus];
   if (streak && rounds[index + 1]) next.plan = seal([rounds[index + 1]]);
   const total = next.log.reduce((s, x) => s + x, 0);
+  const bonusTotal = next.bonus?.reduce((s, x) => s + x, 0);
   const done = streak ? !hit || next.log.length >= rounds.length : next.log.length >= rounds.length;
   const now = Date.now();
 
@@ -475,12 +541,15 @@ export function gradeGeo(state: GeoState, guess: { x: number; y: number }): GeoG
       sid: state.sid,
       spec,
       score: total,
+      ...(bonusTotal !== undefined ? { bonus: bonusTotal } : {}),
       rounds: next.log.map((s, i) => ({ score: s, name: rounds[i].location })),
       durationMs: Math.max(1, now - state.startedAt),
       finishedAt: now,
     };
     if (!streak) {
       const card: ChallengeCard = { s: state.seed, r: spec.region, n: state.name ?? "", t: total, p: next.log, l: state.plan };
+      if (spec.era) card.e = spec.era;
+      if (spec.families) card.f = spec.families;
       challengeToken = signToken("geo-challenge", card);
     }
   }
@@ -490,7 +559,8 @@ export function gradeGeo(state: GeoState, guess: { x: number; y: number }): GeoG
     body: {
       score,
       hit,
-      answer: answerFor(spec, round, squares),
+      answer,
+      ...(gameGuess ? { gameGuess, bonusTotal } : {}),
       token: signToken("geo", next),
       total,
       next: done ? undefined : { index: index + 1, shot: shotUrl(rounds[index + 1].shot) },

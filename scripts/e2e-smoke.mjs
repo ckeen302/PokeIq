@@ -326,6 +326,42 @@ await page.getByRole("button", { name: /5-round game/ }).click();
 await playGeoRounds(5);
 await page.getByText("Survey complete").waitFor();
 
+step("pokéguessr: Classic 2D, guess the game too, report a screenshot");
+await page.goto(`${BASE}/guessr?region=kalos`, { waitUntil: "networkidle" });
+// Kalos has no sprite games: Classic 2D is off there, and says why.
+if (!(await page.getByTestId("geo-era-2d").isDisabled())) throw new Error("Classic 2D should be off on the Kalos map");
+await page.goto(`${BASE}/guessr?region=kanto`, { waitUntil: "networkidle" });
+await page.getByTestId("geo-era-2d").click();
+await page.getByTestId("geo-guess-game").check();
+await page.getByRole("button", { name: /5-round game/ }).click();
+for (let i = 0; i < 5; i++) {
+  await page.waitForFunction(() => {
+    const img = document.querySelector("img[alt='Where is this?']");
+    return img?.complete && img.naturalWidth > 0;
+  });
+  const map = page.locator("[role=application]");
+  await map.hover();
+  const box = await map.boundingBox();
+  await map.click({ position: { x: box.width * 0.4, y: box.height * 0.6 } });
+  await page.getByTestId("geo-game-pick").selectOption({ index: 1 + (i % 3) });
+  await page.getByRole("button", { name: /^Guess$/ }).click();
+  await page.getByTestId("geo-game-bonus").waitFor();
+  if (i === 0) {
+    await page.getByTestId("geo-report").click();
+    await page.getByRole("radio", { name: "Too generic to place" }).click();
+    await page.getByTestId("geo-report-send").click();
+    await page.getByTestId("geo-report-sent").waitFor();
+    await page.screenshot({ path: `${OUT}/guessr-report.png` });
+  }
+  await page.getByRole("button", { name: /Next round|View summary/ }).click();
+}
+await page.getByText("Survey complete").waitFor();
+await page.getByTestId("geo-bonus-total").waitFor();
+await page.screenshot({ path: `${OUT}/guessr-2d-summary.png`, fullPage: true });
+await page.getByRole("button", { name: /Play again/ }).click();
+await page.getByTestId("geo-guess-game").uncheck();
+await page.getByTestId("geo-era-all").click();
+
 // Two trainers in two browsers: Red opens a duel on Kanto, Blue joins from the link.
 step("pokéguessr duel: create, join, ready");
 const red = await newPage({ width: 1280, height: 900 });
@@ -1501,6 +1537,13 @@ if (me.enabled) {
       await desk.screenshot({ path: `${OUT}/admin-feedback.png`, fullPage: true });
       await desk.getByTestId("admin-tab-audit").click();
       await desk.getByTestId("admin-audit").getByText("mute").first().waitFor();
+
+      step("moderation: the reported PokéGuessr screenshot is in the review queue; keep it");
+      await desk.getByTestId("admin-tab-shots").click();
+      await desk.getByTestId("admin-shot").first().waitFor({ timeout: 15_000 });
+      await desk.screenshot({ path: `${OUT}/admin-shots.png`, fullPage: true });
+      await desk.getByTestId("admin-shot-keep").first().click();
+      await desk.getByText("Nothing here.").waitFor();
     }
   }
   for (const p of tp) await p.context().close();

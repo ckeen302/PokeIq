@@ -43,7 +43,9 @@ export async function POST(request: NextRequest) {
     const why =
       result.spec.practice === "challenge"
         ? "Challenge replays aren't ranked: start your own game to get on the board."
-        : "Only your first daily game of the day can be ranked.";
+        : result.spec.practice === "filtered"
+          ? "Games on hand-picked games are practice: play All games, Classic 2D or Modern 3D to rank."
+          : "Only your first daily game of the day can be ranked.";
     return NextResponse.json({ error: why }, { status: 403 });
   }
 

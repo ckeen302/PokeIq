@@ -11,6 +11,7 @@ import type { RatingState } from "@/lib/ranked";
 import { pvpHref } from "@/lib/pvp-types";
 import { DLE_ASSISTS, DLE_DEFAULT_ASSIST } from "@/lib/dle-assist";
 import { DLE_DAILY_FORMATS } from "@/lib/dle-format";
+import { GEO_ERAS } from "@/lib/geo-families";
 
 /**
  * Matchmaking for duels: trainers searching for the same game with the same
@@ -42,15 +43,19 @@ export {
  * find each other. Ranked is one queue, always Classic and the Notebook: its
  * `assist` and `format` are ignored.
  */
-export const matchSettingsSchema = z.discriminatedUnion("game", [
-  z.object({ game: z.literal("geo"), region: z.string().max(20).refine(isDuelMap, "Unknown map.") }),
-  z.object({ game: z.literal("pokedle"), ranked: z.boolean().optional(), assist: z.enum(DLE_ASSISTS).optional(), format: z.enum(DLE_DAILY_FORMATS).optional() }),
-]);
+export const matchSettingsSchema = z
+  .discriminatedUnion("game", [
+    z.object({ game: z.literal("geo"), region: z.string().max(20), era: z.enum(GEO_ERAS).optional() }),
+    z.object({ game: z.literal("pokedle"), ranked: z.boolean().optional(), assist: z.enum(DLE_ASSISTS).optional(), format: z.enum(DLE_DAILY_FORMATS).optional() }),
+  ])
+  .superRefine((s, ctx) => {
+    if (s.game === "geo" && !isDuelMap(s.region, s.era)) ctx.addIssue({ code: z.ZodIssueCode.custom, message: s.era ? "That map has too few places for those games." : "Unknown map." });
+  });
 export type MatchSettings = z.infer<typeof matchSettingsSchema>;
 
 /** The queue a search waits in. Classic with the Notebook keeps the queue Pokédle had before levels and formats. */
 export function queueKey(s: MatchSettings): string {
-  if (s.game === "geo") return `geo:${s.region}`;
+  if (s.game === "geo") return `geo:${s.region}${s.era ? `:${s.era}` : ""}`;
   if (s.ranked) return RANKED_QUEUE_KEY;
   const assist = s.assist ?? DLE_DEFAULT_ASSIST;
   const base = s.format === "squirdle" ? "pokedle:squirdle" : "pokedle:all";
@@ -75,7 +80,7 @@ async function openDuel(settings: MatchSettings, names: [string, string], now: n
   for (let attempt = 0; attempt < 4; attempt++) {
     const code = newDuelCode();
     if (settings.game === "geo") {
-      const { duel, playerId: a } = createDuel(settings.region, names[0], code, now);
+      const { duel, playerId: a } = createDuel(settings.region, names[0], code, now, undefined, settings.era);
       const { duel: joined, playerId: b } = must(joinGeoDuel(duel, names[1], now));
       const ready = must(readyGeoDuel(must(readyGeoDuel(joined, a, true, now)).duel, b, true, now)).duel;
       if (await insertDuel(ready)) return { code, ids: [a, b], remove: () => deleteDuel(code) };
