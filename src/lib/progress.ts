@@ -34,6 +34,16 @@ export interface DleRecord {
   assist?: DleAssist;
 }
 
+/** A PokéConnections daily on this device: the guesses made (four Pokémon ids each), and how it went. */
+export interface ConnRecord {
+  guesses: number[][];
+  solved: boolean;
+  over: boolean;
+  mistakes: number;
+  /** Time spent on it, in milliseconds (while the page was open). */
+  ms?: number;
+}
+
 export interface Progress {
   v: 1;
   name: string;
@@ -49,6 +59,8 @@ export interface Progress {
   dle: { last: string | null; streak: number; best: number; results: Record<string, DleRecord> };
   /** The Squirdle-style daily: its own results, streaks and stats (absent until one is played). */
   squirdle?: { last: string | null; streak: number; best: number; results: Record<string, DleRecord> };
+  /** PokéConnections' dailies (absent until one is played). */
+  conn?: { last: string | null; streak: number; best: number; results: Record<string, ConnRecord> };
   badges: Record<string, number>;
   /** Per-skill tallies for the coach: tag -> [correct, answered]. */
   skills: Record<string, [number, number]>;
@@ -357,6 +369,31 @@ export function recordAnswer(tags: readonly string[], correct: boolean) {
 /** A format's daily results: Classic's (`dle`), or the Squirdle-style daily's. */
 export function dleBlock(p: Progress, format: "classic" | "squirdle" = "classic"): Progress["dle"] {
   return format === "squirdle" ? (p.squirdle ?? { last: null, streak: 0, best: 0, results: {} }) : p.dle;
+}
+
+/** PokéConnections' daily results. */
+export function connBlock(p: Progress): NonNullable<Progress["conn"]> {
+  return p.conn ?? { last: null, streak: 0, best: 0, results: {} };
+}
+
+/** Saves a PokéConnections daily (in progress or finished); a first finish moves the streak and earns XP. */
+export function saveConn(date: string, record: ConnRecord) {
+  const p: Progress = structuredClone(read());
+  const block = connBlock(p);
+  p.conn = block;
+  const existing = block.results[date];
+  block.results[date] = record;
+  if (record.over && !existing?.over) {
+    if (record.solved) {
+      block.streak = streakAfter(block.last, block.streak, date);
+      block.best = Math.max(block.best, block.streak);
+      p.xp += 20 + (4 - record.mistakes) * 10;
+    } else {
+      block.streak = 0;
+    }
+    block.last = date;
+  }
+  write(p);
 }
 
 export function saveDle(date: string, record: DleRecord, format: "classic" | "squirdle" = "classic"): BadgeDef[] {

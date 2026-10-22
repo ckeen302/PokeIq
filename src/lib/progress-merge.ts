@@ -1,6 +1,6 @@
 import { DLE_HINT_KINDS } from "./dle-types";
 import { isDleAssist } from "./dle-assist";
-import type { DailyRecord, DleRecord, Progress } from "./progress";
+import type { ConnRecord, DailyRecord, DleRecord, Progress } from "./progress";
 
 /**
  * Pure helpers for syncing progress between the browser and a trainer
@@ -58,6 +58,23 @@ function dleRecord(v: unknown): DleRecord | null {
   };
 }
 
+function connRecord(v: unknown): ConnRecord | null {
+  const o = obj(v);
+  if (!Array.isArray(o.guesses)) return null;
+  const guesses = o.guesses
+    .filter((g): g is unknown[] => Array.isArray(g) && g.length === 4)
+    .map((g) => g.filter((id): id is number => Number.isInteger(id) && (id as number) > 0))
+    .filter((g) => g.length === 4)
+    .slice(0, 12);
+  return {
+    guesses,
+    solved: o.solved === true,
+    over: o.over === true,
+    mistakes: Math.min(4, Math.floor(num(o.mistakes))),
+    ...(typeof o.ms === "number" && Number.isFinite(o.ms) && o.ms >= 0 && { ms: Math.round(o.ms) }),
+  };
+}
+
 /** Coerces untrusted JSON into a well-formed Progress, or null if it isn't one. */
 export function normalizeProgress(raw: unknown): Progress | null {
   const o = obj(raw);
@@ -87,6 +104,7 @@ export function normalizeProgress(raw: unknown): Progress | null {
     daily: streakBlock(o.daily, dailyRecord),
     dle: streakBlock(o.dle, dleRecord),
     ...(o.squirdle !== undefined && { squirdle: streakBlock(o.squirdle, dleRecord) }),
+    ...(o.conn !== undefined && { conn: streakBlock(o.conn, connRecord) }),
     badges: numberMap(o.badges),
     skills,
   };
@@ -100,6 +118,7 @@ interface StreakBlock<T> {
 }
 
 const EMPTY_BLOCK: StreakBlock<DleRecord> = { last: null, streak: 0, best: 0, results: {} };
+const EMPTY_CONN: StreakBlock<ConnRecord> = { last: null, streak: 0, best: 0, results: {} };
 
 function laterStreak<T>(a: StreakBlock<T>, b: StreakBlock<T>): StreakBlock<T> {
   // The side that finished a puzzle most recently holds the live streak.
@@ -140,6 +159,7 @@ export function mergeProgress(local: Progress, remote: Progress): Progress {
     daily: laterStreak(local.daily, remote.daily),
     dle: laterStreak(local.dle, remote.dle),
     ...((local.squirdle || remote.squirdle) && { squirdle: laterStreak(local.squirdle ?? EMPTY_BLOCK, remote.squirdle ?? EMPTY_BLOCK) }),
+    ...((local.conn || remote.conn) && { conn: laterStreak(local.conn ?? EMPTY_CONN, remote.conn ?? EMPTY_CONN) }),
     badges,
     skills,
   };

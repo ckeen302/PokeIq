@@ -4,7 +4,7 @@ import type { DleFormat } from "@/lib/dle-format";
 import { FORMAT_INFO, MODULE_INFO } from "@/lib/modes";
 import { GEO_MAX_ROUND_SCORE, GEO_ROUNDS, WORLD_REGION } from "@/lib/geo-types";
 import { PLAY_FORMAT_INFO } from "@/lib/battle/play";
-import type { BattleShareResult, GuessrShareResult, PokedleShareResult, QuizShareResult } from "./payload";
+import type { BattleShareResult, ConnectionsShareResult, GuessrShareResult, PokedleShareResult, QuizShareResult } from "./payload";
 
 /**
  * Every game's share text, built the same way (`composeShare`):
@@ -233,6 +233,39 @@ export function quizShareText(r: QuizShareResult, url?: string): string {
     score: test ? `🧠 ${r.pokeiq} · ${r.correct}/${r.total}` : `${r.correct}/${r.total}`,
     badges: [r.streak ? `🔥${r.streak}` : null, r.seconds !== undefined && `⏱${clock(r.seconds)}`],
     lines: [test ? `${fmt(r.score)} pts` : `🧠 PokéIQ ${r.pokeiq} · ${fmt(r.score)} pts`, emojiGrid(r.grid)],
+    url,
+  });
+}
+
+// ---------------------------------------------------------------------------
+// PokéConnections
+// ---------------------------------------------------------------------------
+
+/** A group level's square: yellow, green, blue, purple (easiest to hardest), as in NYT Connections. */
+export const CONN_SQUARES = ["🟨", "🟩", "🟦", "🟪"] as const;
+
+/** "PokéConnections #12", "PokéConnections Practice". */
+export function connectionsTitle(r: Pick<ConnectionsShareResult, "daily" | "archive">): string {
+  return r.daily !== undefined ? `PokéConnections #${r.daily}${r.archive ? " (archive)" : ""}` : "PokéConnections Practice";
+}
+
+/** Mistakes in a game: the guesses that weren't a whole group. */
+export const connMistakes = (rows: readonly string[]) => rows.filter((r) => !/^([0-3])\1{3}$/.test(r)).length;
+
+/** "Perfect!", "2 mistakes", "Not solved". */
+export function connectionsScore(r: Pick<ConnectionsShareResult, "solved" | "rows">): string {
+  if (!r.solved) return "Not solved";
+  const m = connMistakes(r.rows);
+  return m === 0 ? "Perfect!" : `${m} mistake${m === 1 ? "" : "s"}`;
+}
+
+/** The guesses as rows of coloured squares (each Pokémon picked, by its group), like NYT's: never a name. */
+export function connectionsShareText(r: ConnectionsShareResult, url?: string): string {
+  return composeShare({
+    title: connectionsTitle(r),
+    score: connectionsScore(r),
+    badges: [r.streak ? `🔥${r.streak}` : null, r.seconds !== undefined && `⏱${clock(r.seconds)}`],
+    lines: r.rows.map((row) => [...row].map((d) => CONN_SQUARES[Number(d)]).join("")),
     url,
   });
 }
