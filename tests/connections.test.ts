@@ -222,12 +222,12 @@ describe("daily calendar and stats", () => {
     const [y, g, b, p] = puzzle.groups.map((x) => x.members);
     const store = memoryConnStore();
     expect(await recordConnResult({ date, identity: "d:one", guesses: [y] }, store, now)).toMatchObject({ ok: false, status: 409 });
-    expect(await recordConnResult({ date, identity: "d:one", guesses: [y, g, b, p] }, store, now)).toEqual({ ok: true, summary: { players: 1, solved: 1, perfect: 1 } });
+    expect(await recordConnResult({ date, identity: "d:one", guesses: [y, g, b, p] }, store, now)).toMatchObject({ ok: true, summary: { players: 1, solved: 1, perfect: 1 } });
     // The first result is kept.
-    expect(await recordConnResult({ date, identity: "d:one", guesses: [[y[0], g[0], b[0], p[0]], y, g, b, p] }, store, now)).toEqual({ ok: true, summary: { players: 1, solved: 1, perfect: 1 } });
-    expect(await recordConnResult({ date, identity: "d:two", guesses: [[y[0], g[0], b[0], p[0]], y, g, b, p] }, store, now)).toEqual({ ok: true, summary: { players: 2, solved: 2, perfect: 1 } });
+    expect(await recordConnResult({ date, identity: "d:one", guesses: [[y[0], g[0], b[0], p[0]], y, g, b, p] }, store, now)).toMatchObject({ ok: true, summary: { players: 1, solved: 1, perfect: 1 } });
+    expect(await recordConnResult({ date, identity: "d:two", guesses: [[y[0], g[0], b[0], p[0]], y, g, b, p] }, store, now)).toMatchObject({ ok: true, summary: { players: 2, solved: 2, perfect: 1 } });
     // Without a store (no table yet): the game goes on, no stats.
-    expect(await recordConnResult({ date, identity: "d:three", guesses: [y, g, b, p] }, null, now)).toEqual({ ok: true, summary: null });
+    expect(await recordConnResult({ date, identity: "d:three", guesses: [y, g, b, p] }, null, now)).toMatchObject({ ok: true, summary: null });
     expect(await recordConnResult({ date: "2026-10-01", identity: "d:x", guesses: [y] }, store, now)).toMatchObject({ ok: false, status: 400 });
   });
 

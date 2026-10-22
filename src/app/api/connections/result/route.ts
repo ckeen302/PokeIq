@@ -3,20 +3,25 @@ import { z } from "zod";
 import { CONN_GROUP_SIZE, CONN_GROUPS, CONN_MAX_MISTAKES, type ConnResultResponse } from "@/lib/connections/types";
 import { clientIp, rateLimit, tooManyRequests } from "@/lib/server/rate-limit";
 import { sessionTokenHash, userFromRequest } from "@/lib/server/auth";
+import { duelNameSchema } from "@/lib/server/duel-core";
 import { recordConnResult } from "@/lib/server/connections-results";
 
 /**
- * POST /api/connections/result { date, player, guesses }
+ * POST /api/connections/result { date, player, guesses, start?, name? }
  *
- * Records a finished daily PokéConnections for the day's stats and returns
- * them (ConnResultResponse: trainers, solves, perfect solves). The server
- * plays `guesses` again, so a result can't be made up; the first result
- * per trainer and day is kept, and sending it again (a reload) just returns
- * the totals. `player` is the random id the browser keeps; a signed-in
- * trainer counts as their account instead, on every device.
+ * Records a finished daily PokéConnections and returns the day's stats
+ * (ConnResultResponse: trainers, solves, perfect solves) and where it stands
+ * on the daily leaderboard. The server plays `guesses` again, so nothing can
+ * be made up: the mistakes come from that replay, and the time from `start`,
+ * the token the server signed when it dealt the tiles, to now. The first
+ * result per trainer and day is kept; sending it again (a reload, or with a
+ * name added) just returns where it stands.
  *
- * { available: false } when stats are off (no Supabase, or the table isn't
- * there yet): the game works the same without them.
+ * `player` is the random id the browser keeps. A signed-in trainer counts as
+ * their account, everywhere, and ranks under their username; otherwise
+ * `name` (their trainer name) is needed to rank.
+ *
+ * { available: false } when stats are off: the game works the same without them.
  */
 
 const NO_STORE = { "Cache-Control": "no-store" };
@@ -28,12 +33,14 @@ const bodySchema = z.object({
     .array(z.array(z.number().int().positive().max(100_000)).length(CONN_GROUP_SIZE))
     .min(1)
     .max(CONN_GROUPS + CONN_MAX_MISTAKES + 4),
+  start: z.string().max(400).optional(),
+  name: duelNameSchema.optional(),
 });
 
-async function accountId(request: NextRequest): Promise<string | null> {
+async function account(request: NextRequest) {
   if (!sessionTokenHash(request)) return null;
   try {
-    return (await userFromRequest(request))?.id ?? null;
+    return await userFromRequest(request);
   } catch {
     return null;
   }
@@ -43,12 +50,12 @@ export async function POST(request: NextRequest) {
   if (!rateLimit(`conn-result:${clientIp(request)}`, 20, 0.5)) return tooManyRequests();
   const parsed = bodySchema.safeParse(await request.json().catch(() => ({})));
   if (!parsed.success) return NextResponse.json({ error: parsed.error.issues[0].message }, { status: 400, headers: NO_STORE });
-  const { date, player, guesses } = parsed.data;
+  const { date, player, guesses, start, name } = parsed.data;
   try {
-    const account = await accountId(request);
-    const out = await recordConnResult({ date, identity: account ? `u:${account}` : `d:${player}`, guesses });
+    const user = await account(request);
+    const out = await recordConnResult({ date, identity: user ? `u:${user.id}` : `d:${player}`, guesses, start, name: user ? user.username : (name ?? null) });
     if (!out.ok) return NextResponse.json({ error: out.error }, { status: out.status, headers: NO_STORE });
-    const body: ConnResultResponse = out.summary ? { available: true, summary: out.summary } : { available: false };
+    const body: ConnResultResponse = out.summary ? { available: true, summary: out.summary, board: out.board } : { available: false, board: out.board };
     return NextResponse.json(body, { headers: NO_STORE });
   } catch (err) {
     // Stats are a bonus: the game goes on without them.

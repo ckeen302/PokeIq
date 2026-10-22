@@ -277,6 +277,15 @@ step("pokéconnections: a full daily, one wrong guess then a solve");
   await closeHowTo(page);
   await page.getByTestId("conn-tile").first().waitFor();
   if ((await page.getByTestId("conn-tile").count()) !== 16) errors.push("PokéConnections didn't show 16 tiles");
+  // The keyboard hints, and S to shuffle.
+  await page.getByTestId("conn-keys").waitFor();
+  const order = async () => (await page.getByTestId("conn-tile").evaluateAll((els) => els.map((e) => e.dataset.id))).join();
+  const before = await order();
+  for (let i = 0; i < 3 && (await order()) === before; i++) {
+    await page.keyboard.press("s");
+    await page.waitForTimeout(300);
+  }
+  if ((await order()) === before) errors.push("S didn't shuffle the grid");
   const pick = async (ids) => {
     for (const id of ids) await page.locator(`[data-testid=conn-tile][data-id="${id}"]`).click();
     await page.getByTestId("conn-submit").click();
@@ -296,7 +305,28 @@ step("pokéconnections: a full daily, one wrong guess then a solve");
   await page.getByTestId("conn-why").waitFor();
   if (!(await page.getByText("1/4").count())) errors.push("PokéConnections' result doesn't show one mistake");
   await page.getByTestId("conn-community").waitFor({ timeout: 10_000 }).catch(() => errors.push("PokéConnections' daily stats didn't show"));
+  // The streak flame, tomorrow's countdown, and the first-solve badge.
+  await page.getByTestId("conn-streak").filter({ hasText: "1 day" }).waitFor();
+  await page.getByTestId("conn-tomorrow").filter({ hasText: /Come back tomorrow for #\d+/ }).waitFor();
+  await page.getByTestId("conn-badges").filter({ hasText: "Connected" }).waitFor();
+  // Today's leaderboard: a trainer without a name (or with one already taken today) is asked for one, then ranked.
+  const board = page.getByTestId("conn-board");
+  await board.waitFor({ timeout: 10_000 });
+  const placed = board.getByTestId("conn-board-place");
+  const boardName = `Linker ${Date.now() % 100_000}`;
+  if (!(await placed.waitFor({ timeout: 3_000 }).then(() => true, () => false))) {
+    await board.getByLabel(/trainer name|Pick another/).fill(boardName);
+    await board.getByRole("button", { name: "Rank me" }).click();
+    await placed.waitFor({ timeout: 10_000 });
+  }
+  if (!/You're #\d+ of \d+ today/.test(await placed.innerText())) errors.push(`the PokéConnections board place reads "${await placed.innerText()}"`);
+  const rankedAs = await board.locator("li.font-semibold span.truncate").first().innerText().catch(() => null);
+  if (!rankedAs) errors.push("your row isn't highlighted on today's PokéConnections board");
+  // The board takes no time from the client: the entry's time is the server's.
+  const forged = await page.request.post(`${BASE}/api/connections/result`, { data: { date: today, player: "e2e-forged-player-0001", guesses: groups, start: "eyJkIjoiMjAyNi0wMS0wMSIsInQiOjB9.bad", name: "Forger" } });
+  if ((await forged.json()).board?.unranked !== "untimed") errors.push("a forged start token got onto the board");
   await page.screenshot({ path: `${OUT}/connections.png`, fullPage: true });
+  await board.screenshot({ path: `${OUT}/conn-board.png` });
   // A reload restores the finished game.
   await page.reload({ waitUntil: "networkidle" });
   await page.getByTestId("conn-result").waitFor();
@@ -319,6 +349,11 @@ step("pokéconnections: a full daily, one wrong guess then a solve");
     await page.locator("[data-testid=conn-group]").nth(i).waitFor();
   }
   await page.getByTestId("conn-result").waitFor();
+  // A clean solve: the celebration, and the Hard-mode badge.
+  await page.getByTestId("conn-perfect").waitFor();
+  await page.getByTestId("conn-badges").filter({ hasText: "Hard Wired" }).waitFor();
+  await page.waitForTimeout(600);
+  await page.screenshot({ path: `${OUT}/conn-perfect.png` });
   await page.screenshot({ path: `${OUT}/conn-unlimited-result.png`, fullPage: true });
   const nextTiles = page.waitForResponse((r) => /\/api\/connections\?practice=hard-/.test(r.url()));
   await page.getByTestId("conn-next").click();
@@ -326,6 +361,17 @@ step("pokéconnections: a full daily, one wrong guess then a solve");
   if (next.key === hard.key) errors.push("Next puzzle gave the same puzzle");
   await page.getByTestId("conn-tile").nth(15).waitFor();
   await page.screenshot({ path: `${OUT}/conn-unlimited.png` });
+
+  // The board on /leaderboard, and PokéConnections on the trainer card.
+  await page.goto(`${BASE}/leaderboard?board=connections&date=${today}`, { waitUntil: "networkidle" });
+  await page.getByTestId("leaderboard-connections").getByText(rankedAs ?? boardName, { exact: true }).waitFor();
+  await page.screenshot({ path: `${OUT}/conn-leaderboard.png` });
+  await page.goto(`${BASE}/trainer`, { waitUntil: "networkidle" });
+  const card = page.getByTestId("trainer-connections");
+  await card.waitFor();
+  if (!/Games won/.test(await card.innerText())) errors.push("the trainer card has no PokéConnections games won");
+  await card.scrollIntoViewIfNeeded();
+  await card.screenshot({ path: `${OUT}/conn-trainer.png` });
 }
 
 step("adaptive PokéIQ test (20 questions)");

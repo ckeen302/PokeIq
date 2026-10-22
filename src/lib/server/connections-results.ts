@@ -1,9 +1,10 @@
 import "server-only";
 import { getServiceSupabase } from "@/lib/supabase";
-import { isCurrentConnDate, type ConnDaySummary } from "@/lib/connections/types";
+import { isCurrentConnDate, type ConnBoardStanding, type ConnDaySummary } from "@/lib/connections/types";
 import { playGuesses } from "@/lib/connections/generator";
 import { deriveSeed } from "./crypto";
 import { dailyConnPuzzle } from "./connections";
+import { connBoardStore, timeFromStart, type ConnBoardStore } from "./connections-board";
 
 /**
  * PokéConnections' daily stats: "71% of trainers solved today's, 18% got
@@ -86,13 +87,29 @@ export function connResultStore(): ConnResultStore | null {
   return sb ? supabaseConnStore(sb) : null;
 }
 
-export type ConnRecordOutcome = { ok: true; summary: ConnDaySummary | null } | { ok: false; status: number; error: string };
+export type ConnRecordOutcome = { ok: true; summary: ConnDaySummary | null; board: ConnBoardStanding } | { ok: false; status: number; error: string };
 
-/** Records a finished daily after playing its guesses again; `summary` is null when stats are off. */
+export interface ConnResultInput {
+  date: string;
+  /** "u:<account id>" or "d:<browser id>". */
+  identity: string;
+  guesses: number[][];
+  /** The start token the server signed when it dealt the tiles (startToken). */
+  start?: string;
+  /** The name to rank under: a signed-in trainer's username, or a checked trainer name. None: not ranked. */
+  name?: string | null;
+}
+
+/**
+ * Records a finished daily after playing its guesses again: the day's stats
+ * (`summary`, null when they're off) and, for a named trainer who solved it,
+ * the leaderboard. Both from the server's own replay and clock only.
+ */
 export async function recordConnResult(
-  input: { date: string; identity: string; guesses: number[][] },
+  input: ConnResultInput,
   store: ConnResultStore | null = connResultStore(),
-  now = Date.now()
+  now = Date.now(),
+  board: ConnBoardStore | null = connBoardStore()
 ): Promise<ConnRecordOutcome> {
   if (!isCurrentConnDate(input.date, now)) return { ok: false, status: 400, error: "Only today's PokéConnections counts." };
   let state;
@@ -102,7 +119,23 @@ export async function recordConnResult(
     return { ok: false, status: 400, error: (err as Error).message };
   }
   if (!state.over) return { ok: false, status: 409, error: "Finish the puzzle first." };
-  if (!store) return { ok: true, summary: null };
-  const summary = await store.record({ date: input.date, player: connPlayerKey(input.identity), solved: state.won, mistakes: state.mistakes });
-  return { ok: true, summary };
+  const player = connPlayerKey(input.identity);
+  const summary = store ? await store.record({ date: input.date, player, solved: state.won, mistakes: state.mistakes }) : null;
+  return { ok: true, summary, board: await rankOnBoard(board, input, player, state.won, state.mistakes, now) };
+}
+
+async function rankOnBoard(board: ConnBoardStore | null, input: ConnResultInput, player: string, solved: boolean, mistakes: number, now: number): Promise<ConnBoardStanding> {
+  if (!board) return { unranked: "off" };
+  // Already on today's board (a reload, or a name added afterwards): where they stand.
+  const already = await board.standing(input.date, player);
+  if (already) return { ...already, name: input.name ?? "" };
+  if (!solved) return { unranked: "unsolved" };
+  if (!input.name) return { unranked: "no-name" };
+  const durationMs = timeFromStart(input.start, input.date, now);
+  if (durationMs === null) return { unranked: "untimed" };
+  const out = await board.record({ date: input.date, player, name: input.name, mistakes, durationMs });
+  if (out === null) return { unranked: "off" };
+  if (out === "name-taken") return { unranked: "name-taken" };
+  const standing = await board.standing(input.date, player);
+  return standing ? { ...standing, name: input.name } : { unranked: "off" };
 }

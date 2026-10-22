@@ -23,6 +23,9 @@ import type { StandardFormatId } from "@/lib/battle/play";
 import { ladderTop } from "@/lib/server/battle-engine/ladder";
 import { avatarsByNames } from "@/lib/server/avatars";
 import { NameAvatar } from "@/components/avatar/Avatar";
+import { connBoardStore } from "@/lib/server/connections-board";
+import { connNumber, isPlayableConnDate, type ConnBoardRow } from "@/lib/connections/types";
+import { clock } from "@/lib/share/text";
 
 export const metadata: Metadata = pageMetadata({
   title: "Leaderboards",
@@ -42,6 +45,7 @@ export default async function LeaderboardPage({ searchParams }: PageProps) {
     params.board === "iq" ||
     params.board === "geo" ||
     params.board === "pokedle" ||
+    params.board === "connections" ||
     params.board === "battle" ||
     PLAY_MODULES.includes(params.board as ModuleId)
       ? params.board!
@@ -58,6 +62,7 @@ export default async function LeaderboardPage({ searchParams }: PageProps) {
     { id: "iq", label: "PokéIQ Test" },
     { id: "geo", label: "PokéGuessr" },
     { id: "pokedle", label: "Pokédle Ranked" },
+    { id: "connections", label: "PokéConnections" },
     { id: "battle", label: "Battle Ladder" },
     ...PLAY_MODULES.map((m) => ({ id: m, label: MODULE_INFO[m].title })),
   ];
@@ -170,6 +175,72 @@ export default async function LeaderboardPage({ searchParams }: PageProps) {
             )}
           </>
         )}
+      </div>
+    );
+  }
+
+  if (board === "connections") {
+    const connDate = params.date && isPlayableConnDate(params.date) ? params.date : today;
+    const rows = await connBoardTop(connDate);
+    const avatars = await avatarsByNames((rows ?? []).map((r) => r.name));
+    return (
+      <div className="mx-auto max-w-3xl space-y-6" data-testid="leaderboard-connections">
+        {!params.date && <LocalDateRedirect serverDate={connDate} board="connections" />}
+        <div className="space-y-4 text-center">
+          <h1 className="font-display text-4xl font-bold uppercase tracking-tight sm:text-5xl">Leaderboard</h1>
+          {tabRow}
+          <p className="text-sm text-muted-foreground">
+            PokéConnections #{connNumber(connDate)} · {connDate}: fewest mistakes, then fastest.
+          </p>
+        </div>
+        {rows === null ? (
+          <Card>
+            <CardContent className="py-10 text-center text-muted-foreground">The PokéConnections leaderboard opens soon.</CardContent>
+          </Card>
+        ) : rows.length === 0 ? (
+          <Card>
+            <CardContent className="py-10 text-center text-muted-foreground">
+              No solves yet.{" "}
+              <Link href="/connections" className="text-primary underline-offset-2 hover:underline">
+                Play today&apos;s PokéConnections
+              </Link>{" "}
+              and be the first!
+            </CardContent>
+          </Card>
+        ) : (
+          <Card>
+            <CardContent className="p-0">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b text-left text-xs uppercase text-muted-foreground">
+                    <th className="p-3">#</th>
+                    <th className="p-3">Trainer</th>
+                    <th className="p-3 text-right">Mistakes</th>
+                    <th className="p-3 text-right">Time</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {rows.map((row, i) => (
+                    <tr key={`${row.name}-${i}`} className="border-b last:border-0">
+                      <td className="p-3 font-mono">{i + 1}</td>
+                      <td className="p-3 font-medium">
+                        <span className="flex items-center gap-2">
+                          <NameAvatar name={row.name} avatars={avatars} />
+                          {row.name}
+                        </span>
+                      </td>
+                      <td className="p-3 text-right tabular-nums">{row.mistakes === 0 ? "Perfect" : row.mistakes}</td>
+                      <td className="p-3 text-right font-mono tabular-nums">{clock(row.ms / 1000)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </CardContent>
+          </Card>
+        )}
+        <p className="text-center text-xs text-muted-foreground">
+          Every entry was checked on the server: it replays each trainer&apos;s guesses and times the game with its own clock. Signed-in and named trainers only.
+        </p>
       </div>
     );
   }
@@ -400,6 +471,16 @@ export default async function LeaderboardPage({ searchParams }: PageProps) {
       </p>
     </div>
   );
+}
+
+/** A day's PokéConnections board (the top 100), or null while it's off. */
+async function connBoardTop(date: string): Promise<ConnBoardRow[] | null> {
+  try {
+    return (await connBoardStore()?.top(date, 100)) ?? null;
+  } catch (err) {
+    console.error("[connections] leaderboard failed:", err);
+    return null;
+  }
 }
 
 /** The ranked ladder's top 100, or null while ranked play is off. */

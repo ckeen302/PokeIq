@@ -1,6 +1,7 @@
 import { DLE_HINT_KINDS } from "./dle-types";
 import { isDleAssist } from "./dle-assist";
 import type { ConnRecord, DailyRecord, DleRecord, Progress } from "./progress";
+import { EMPTY_CONN_PLAY, type ConnPlay } from "./connections/play";
 
 /**
  * Pure helpers for syncing progress between the browser and a trainer
@@ -75,6 +76,24 @@ function connRecord(v: unknown): ConnRecord | null {
   };
 }
 
+const CONN_COUNTERS = ["wins", "perfect", "hard", "duelWins", "duelLosses", "duelDraws"] as const;
+
+function connPlayOf(v: unknown): ConnPlay {
+  const o = obj(v);
+  const out: ConnPlay = { ...EMPTY_CONN_PLAY, duels: [] };
+  for (const k of CONN_COUNTERS) out[k] = Math.floor(num(o[k]));
+  out.duels = Array.isArray(o.duels) ? o.duels.filter((c): c is string => typeof c === "string" && /^[a-hjkmnp-z2-9]{8}$/.test(c)).slice(-50) : [];
+  return out;
+}
+
+/** Tallies take the larger side (the same games on two devices aren't counted twice); counted duels are unioned. */
+function mergeConnPlay(a: ConnPlay | undefined, b: ConnPlay | undefined): ConnPlay {
+  const [x, y] = [a ?? EMPTY_CONN_PLAY, b ?? EMPTY_CONN_PLAY];
+  const out: ConnPlay = { ...EMPTY_CONN_PLAY, duels: [...new Set([...y.duels, ...x.duels])].slice(-50) };
+  for (const k of CONN_COUNTERS) out[k] = Math.max(x[k], y[k]);
+  return out;
+}
+
 /** Coerces untrusted JSON into a well-formed Progress, or null if it isn't one. */
 export function normalizeProgress(raw: unknown): Progress | null {
   const o = obj(raw);
@@ -105,6 +124,7 @@ export function normalizeProgress(raw: unknown): Progress | null {
     dle: streakBlock(o.dle, dleRecord),
     ...(o.squirdle !== undefined && { squirdle: streakBlock(o.squirdle, dleRecord) }),
     ...(o.conn !== undefined && { conn: streakBlock(o.conn, connRecord) }),
+    ...(o.connPlay !== undefined && { connPlay: connPlayOf(o.connPlay) }),
     badges: numberMap(o.badges),
     skills,
   };
@@ -160,6 +180,7 @@ export function mergeProgress(local: Progress, remote: Progress): Progress {
     dle: laterStreak(local.dle, remote.dle),
     ...((local.squirdle || remote.squirdle) && { squirdle: laterStreak(local.squirdle ?? EMPTY_BLOCK, remote.squirdle ?? EMPTY_BLOCK) }),
     ...((local.conn || remote.conn) && { conn: laterStreak(local.conn ?? EMPTY_CONN, remote.conn ?? EMPTY_CONN) }),
+    ...((local.connPlay || remote.connPlay) && { connPlay: mergeConnPlay(local.connPlay, remote.connPlay) }),
     badges,
     skills,
   };

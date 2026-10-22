@@ -456,6 +456,9 @@ export interface ProgressDigest {
   xp: number;
   daily: unknown;
   dle: unknown;
+  /** PokéConnections: the daily streak ({ last, streak, best }, never the results) and the tallies (lib/connections/play). Untrusted shapes. */
+  conn?: { last: unknown; streak: unknown; best: unknown } | null;
+  connPlay?: unknown;
 }
 
 export async function progressDigests(ids: string[]): Promise<Map<string, ProgressDigest>> {
@@ -464,16 +467,34 @@ export async function progressDigests(ids: string[]): Promise<Map<string, Progre
   if (!unique.length) return out;
   const sb = getServiceSupabase();
   if (sb) {
-    const { data, error } = await sb.from("user_progress").select("user_id, xp:progress->xp, daily:progress->daily, dle:progress->dle").in("user_id", unique);
+    const { data, error } = await sb
+      .from("user_progress")
+      .select("user_id, xp:progress->xp, daily:progress->daily, dle:progress->dle, connLast:progress->conn->last, connStreak:progress->conn->streak, connBest:progress->conn->best, connPlay:progress->connPlay")
+      .in("user_id", unique);
     if (error) throw new Error(error.message);
-    for (const r of (data ?? []) as { user_id: string; xp: unknown; daily: unknown; dle: unknown }[]) {
-      out.set(r.user_id, { xp: typeof r.xp === "number" ? r.xp : 0, daily: r.daily, dle: r.dle });
+    type Row = { user_id: string; xp: unknown; daily: unknown; dle: unknown; connLast: unknown; connStreak: unknown; connBest: unknown; connPlay: unknown };
+    for (const r of (data ?? []) as Row[]) {
+      out.set(r.user_id, {
+        xp: typeof r.xp === "number" ? r.xp : 0,
+        daily: r.daily,
+        dle: r.dle,
+        conn: r.connLast === null && r.connStreak === null ? null : { last: r.connLast, streak: r.connStreak, best: r.connBest },
+        connPlay: r.connPlay,
+      });
     }
     return out;
   }
   for (const id of unique) {
-    const p = fileDb().progress[id] as { xp?: unknown; daily?: unknown; dle?: unknown } | undefined;
-    if (p) out.set(id, { xp: typeof p.xp === "number" ? p.xp : 0, daily: p.daily, dle: p.dle });
+    const p = fileDb().progress[id] as { xp?: unknown; daily?: unknown; dle?: unknown; conn?: { last?: unknown; streak?: unknown; best?: unknown }; connPlay?: unknown } | undefined;
+    if (p) {
+      out.set(id, {
+        xp: typeof p.xp === "number" ? p.xp : 0,
+        daily: p.daily,
+        dle: p.dle,
+        conn: p.conn ? { last: p.conn.last, streak: p.conn.streak, best: p.conn.best } : null,
+        connPlay: p.connPlay,
+      });
+    }
   }
   return out;
 }

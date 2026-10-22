@@ -4,18 +4,21 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, LayoutGroup, MotionConfig, motion } from "framer-motion";
 import { track } from "@vercel/analytics";
 import { BarChart3, CalendarDays, CircleHelp, Dices, Infinity as InfinityIcon, RefreshCw, Settings, Shuffle, Swords, Timer, X } from "lucide-react";
-import { connBlock, getProgress, saveConn, useProgress, type ConnRecord } from "@/lib/progress";
+import { connBlock, getProgress, recordConnGame, saveConn, setTrainerName, useProgress, type BadgeDef, type ConnRecord } from "@/lib/progress";
 import { useToday } from "@/lib/use-today";
 import { play } from "@/lib/sound";
 import { dlePlayerId } from "@/lib/dle-player";
 import { clock, connectionsShareText, shareUrl, type ConnectionsShareResult } from "@/lib/share";
-import { connArchive, connStats, getConnPrefs, saveConnArchive, setConnPrefs, useConnPrefs, type ConnPrefs } from "@/lib/connections/local";
+import { connArchive, connStats, getConnPrefs, rememberStart, saveConnArchive, setConnPrefs, startFor, useConnPrefs, type ConnPrefs } from "@/lib/connections/local";
 import {
   CONN_GROUP_SIZE,
   CONN_GROUPS,
   CONN_MAX_MISTAKES,
   connNumber,
   guessKey,
+  type ConnBoardResponse,
+  type ConnBoardRow,
+  type ConnBoardStanding,
   type ConnDaySummary,
   type ConnGuessResponse,
   type ConnLevel,
@@ -26,10 +29,10 @@ import {
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Popover } from "@/components/ui/popover";
-import { NextDailyCountdown } from "@/components/NextDailyCountdown";
 import { ShareButton } from "@/components/share/ShareButton";
 import { GridTile, GroupBar, GuessHistory, MistakeDots, WhyPanel, type TileMotion } from "./parts";
 import { ConnArchiveSheet, ConnHowToSheet, ConnStatsSheet } from "./sheets";
+import { ComeBackTomorrow, DailyLeaderboard, KeyHints, NewBadges, PerfectBanner, StreakFlame, useCelebration } from "./results";
 import { cn } from "@/lib/utils";
 
 /** Today's daily, a past daily from the archive (never counted), or a practice puzzle. */
@@ -75,6 +78,12 @@ export function Connections() {
   const [sheet, setSheet] = useState<"howto" | "stats" | "archive" | null>(null);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [summary, setSummary] = useState<ConnDaySummary | null>(null);
+  const [board, setBoard] = useState<ConnBoardStanding | null>(null);
+  const [boardRows, setBoardRows] = useState<ConnBoardRow[] | null>(null);
+  /** Badges the game just finished earned. */
+  const [fresh, setFresh] = useState<BadgeDef[]>([]);
+  /** Confetti for a game won just now (not one restored on a reload). */
+  const [celebrate, setCelebrate] = useState<"perfect" | "solved" | null>(null);
   const [announce, setAnnounce] = useState("");
   /** Time on this game: what's banked, and when the running stretch began (null: not running). */
   const [elapsed, setElapsed] = useState({ banked: 0, since: null as number | null });
@@ -110,9 +119,11 @@ export function Connections() {
 
   // ---- Saving ----------------------------------------------------------------
 
-  const save = useCallback((t: Target, record: ConnRecord) => {
-    if (t.kind === "daily") saveConn(t.date, record);
-    else if (t.kind === "archive") saveConnArchive(t.date, record);
+  /** Saves the game where its mode keeps it; a daily's first finish returns the badges it earned. */
+  const save = useCallback((t: Target, record: ConnRecord): BadgeDef[] => {
+    if (t.kind === "daily") return saveConn(t.date, record);
+    if (t.kind === "archive") saveConnArchive(t.date, record);
+    return [];
   }, []);
 
   // ---- Loading a puzzle ------------------------------------------------------
@@ -130,6 +141,10 @@ export function Connections() {
     setRevealed(0);
     setError(null);
     setSummary(null);
+    setBoard(null);
+    setBoardRows(null);
+    setFresh([]);
+    setCelebrate(null);
     setTileMotion(null);
     setBusy(true);
     const saved = t.kind === "practice" ? undefined : t.kind === "daily" ? connBlock(getProgress()).results[t.date] : (connArchive()[t.date] ?? connBlock(getProgress()).results[t.date]);
@@ -142,6 +157,8 @@ export function Connections() {
       if (!res.ok) throw new Error(body.error ?? "Couldn't load the puzzle.");
       if (id !== reqRef.current) return;
       const p = body as ConnPuzzleResponse;
+      // The first deal of the day times the game for the leaderboard (a reload doesn't restart the clock).
+      if (t.kind === "daily") rememberStart(t.date, p.start);
       setPuzzle(p);
       setOrder(p.tiles.map((x) => x.id));
       if (list.length) {
@@ -199,27 +216,46 @@ export function Connections() {
 
   // A finished daily: record it for the day's stats (and get them back).
   const finishedDaily = over && target?.kind === "daily" ? target.date : null;
+  /**
+   * Sends the finished daily: the server replays it for the day's stats and
+   * the leaderboard (timed by its own start token), then the board loads. A
+   * trainer can send it again with a name to get ranked.
+   */
+  const sendResult = useCallback(
+    async (date: string, list: number[][], name?: string) => {
+      try {
+        const r = await fetch("/api/connections/result", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ date, player: dlePlayerId(), guesses: list, start: startFor(date), ...((name || getProgress().name) && { name: name || getProgress().name }) }),
+        });
+        const body = r.ok ? ((await r.json()) as ConnResultResponse) : null;
+        if (!body) return;
+        if (body.available) setSummary(body.summary);
+        setBoard(body.board ?? null);
+        if (body.board && !("unranked" in body.board && body.board.unranked === "off")) {
+          const b = await fetch(`/api/connections/leaderboard?date=${date}`, { cache: "no-store" });
+          if (b.ok) setBoardRows(((await b.json()) as ConnBoardResponse).rows);
+        }
+      } catch {
+        // No stats or board today: the game doesn't need them.
+      }
+    },
+    []
+  );
   useEffect(() => {
     if (!finishedDaily || !guesses.length) return;
-    let live = true;
-    fetch("/api/connections/result", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ date: finishedDaily, player: dlePlayerId(), guesses }),
-    })
-      .then((r) => (r.ok ? (r.json() as Promise<ConnResultResponse>) : null))
-      .then((body) => {
-        if (live && body?.available) setSummary(body.summary);
-      })
-      .catch(() => {
-        // No stats today: the game doesn't need them.
-      });
-    return () => {
-      live = false;
-    };
+    void sendResult(finishedDaily, guesses);
     // Once per finished daily (the guesses are final by then).
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [finishedDaily]);
+
+  /** A name to rank under, from the results screen: it becomes the trainer name too. */
+  async function rankAs(name: string) {
+    if (!finishedDaily) return;
+    if (!getProgress().name) setTrainerName(name);
+    await sendResult(finishedDaily, guesses, name);
+  }
 
   // ---- Playing ---------------------------------------------------------------
 
@@ -266,9 +302,15 @@ export function Connections() {
       const result = body as ConnGuessResponse;
       const last = result.results.at(-1);
       const elapsedMs = elapsed.banked + (elapsed.since !== null ? Date.now() - elapsed.since : 0);
-      save(target, { guesses: next, solved: result.won, over: result.over, mistakes: result.mistakes, ms: Math.round(elapsedMs) });
+      const earned = save(target, { guesses: next, solved: result.won, over: result.over, mistakes: result.mistakes, ms: Math.round(elapsedMs) });
       setGuesses(next);
-      if (result.over && !state?.over && target.kind === "daily") track("connections_complete", { won: result.won, mistakes: result.mistakes });
+      if (result.over && !state?.over) {
+        // Unlimited and the archive count toward the tallies and badges too (never the streak).
+        const badges = target.kind === "daily" ? earned : recordConnGame(result.won, result.mistakes, target.kind === "practice" && target.seed.startsWith("hard-"));
+        setFresh(badges);
+        setCelebrate(result.won ? (result.mistakes === 0 ? "perfect" : "solved") : null);
+        if (target.kind === "daily") track("connections_complete", { won: result.won, mistakes: result.mistakes });
+      }
       const reduced = reducedMotion();
       if (last?.kind === "correct") {
         const group = result.found.at(-1)!;
@@ -315,12 +357,15 @@ export function Connections() {
   }
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (sheet || settingsOpen || e.defaultPrevented) return;
+      if (sheet || settingsOpen || e.defaultPrevented || e.metaKey || e.ctrlKey || e.altKey) return;
+      if ((e.target as HTMLElement | null)?.closest("input, textarea, select")) return;
       if (e.key === "Escape" && selected.length) setSelected([]);
+      // S shuffles, while there's a grid to shuffle.
+      else if ((e.key === "s" || e.key === "S") && puzzle && !over) shuffle();
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [sheet, settingsOpen, selected.length]);
+  });
 
   // ---- Modes -----------------------------------------------------------------
 
@@ -348,6 +393,9 @@ export function Connections() {
 
   const daily = target && target.kind !== "practice" ? target : null;
   const streak = stats?.playStreak ?? 0;
+  // The name you rank under: the server's answer (your username when signed in), else your trainer name.
+  const rankName = board && "position" in board && board.name ? board.name : progress?.name || null;
+  useCelebration(revealDone && celebrate ? celebrate : null);
 
   function shareTextNow(): string {
     const result: ConnectionsShareResult = {
@@ -582,6 +630,7 @@ export function Connections() {
                 Submit
               </Button>
             </div>
+            <KeyHints />
             {prefs?.showTimer && (
               <p className="flex items-center justify-center gap-1.5 font-mono text-sm tabular-nums text-muted-foreground" role="timer" aria-label="Time">
                 <Timer className="h-4 w-4" aria-hidden /> {clock(ms / 1000)}
@@ -596,11 +645,17 @@ export function Connections() {
             <Card className={cn("mx-auto max-w-md", won ? "border-success/50" : "border-destructive/40")}>
               <CardContent className="space-y-5 p-6 text-center">
                 <div>
-                  <div className="font-display text-3xl font-bold uppercase tracking-tight">
-                    {won ? (state.mistakes === 0 ? "Perfect!" : state.mistakes === CONN_MAX_MISTAKES - 1 ? "Phew!" : "Solved!") : "Next time!"}
-                  </div>
-                  <p className="text-sm text-muted-foreground">{won ? "You found all four groups." : `You found ${state.found.length} of 4 groups.`}</p>
+                  {won && state.mistakes === 0 ? (
+                    <PerfectBanner />
+                  ) : (
+                    <div className="font-display text-3xl font-bold uppercase tracking-tight">{won ? (state.mistakes === CONN_MAX_MISTAKES - 1 ? "Phew!" : "Solved!") : "Next time!"}</div>
+                  )}
+                  <p className="text-sm text-muted-foreground">
+                    {won ? (state.mistakes === 0 ? "All four groups, not a single mistake." : "You found all four groups.") : `You found ${state.found.length} of 4 groups.`}
+                  </p>
                 </div>
+                {mode === "daily" && stats && <StreakFlame streak={streak} best={Math.max(stats.bestPlayStreak, streak)} />}
+                <NewBadges badges={fresh} />
                 <GuessHistory rows={historyRows} symbols={symbols} />
                 <dl className="grid grid-cols-3 gap-2 text-center">
                   <div>
@@ -614,8 +669,8 @@ export function Connections() {
                     <dd className="font-display text-2xl font-bold tabular-nums">{ms >= 1000 ? clock(ms / 1000) : "–"}</dd>
                   </div>
                   <div>
-                    <dt className="text-[11px] text-muted-foreground">Streak</dt>
-                    <dd className="font-display text-2xl font-bold tabular-nums">{mode === "daily" ? `🔥${streak}` : "–"}</dd>
+                    <dt className="text-[11px] text-muted-foreground">Groups</dt>
+                    <dd className="font-display text-2xl font-bold tabular-nums">{state.found.length}/4</dd>
                   </div>
                 </dl>
                 {mode === "daily" && summary && summary.players > 0 && (
@@ -649,7 +704,8 @@ export function Connections() {
                     Play today&apos;s PokéConnections
                   </Button>
                 )}
-                {mode === "daily" && <NextDailyCountdown label="Next puzzle in" />}
+                {mode === "daily" && daily && <DailyLeaderboard date={daily.date} standing={board} rows={boardRows} you={rankName} onName={rankAs} />}
+                {mode === "daily" && daily && <ComeBackTomorrow next={connNumber(daily.date) + 1} />}
                 {mode !== "daily" && <p className="text-xs text-muted-foreground">{mode === "archive" ? "Archive" : "Practice"} games don&apos;t count toward streaks or stats.</p>}
               </CardContent>
             </Card>

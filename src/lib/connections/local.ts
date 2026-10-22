@@ -89,3 +89,23 @@ export function connStats(results: Readonly<Record<string, ConnRecord>>, today: 
   );
   return dleStats(asDle, today, CONN_MAX_MISTAKES);
 }
+
+const STARTS_KEY = "pokeiq:connections-starts:v1";
+
+/**
+ * The server's start token for a daily (it times the game for the
+ * leaderboard): the first one this device got that day is kept, so
+ * reloading never restarts the clock.
+ */
+export function rememberStart(date: string, token: string | undefined): void {
+  if (!token) return;
+  const starts = load<Record<string, string>>(STARTS_KEY, {});
+  if (starts[date]) return;
+  // Only the last few days are worth keeping.
+  const kept = Object.fromEntries(Object.entries(starts).sort(([a], [b]) => b.localeCompare(a)).slice(0, 6));
+  store(STARTS_KEY, { ...kept, [date]: token });
+}
+
+export function startFor(date: string): string | undefined {
+  return load<Record<string, string>>(STARTS_KEY, {})[date];
+}

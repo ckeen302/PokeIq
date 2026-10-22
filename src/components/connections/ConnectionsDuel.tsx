@@ -9,6 +9,8 @@ import { CONN_DUEL_MS, CONN_DUEL_PENALTY_MS, pvpHref, type ConnDuelBoard, type C
 import { CONN_GROUP_SIZE, CONN_GROUPS, CONN_LEVELS, CONN_MAX_MISTAKES, guessKey, type ConnTile } from "@/lib/connections/types";
 import { CONN_SQUARES } from "@/lib/share";
 import { useConnPrefs } from "@/lib/connections/local";
+import { recordConnDuel, type BadgeDef } from "@/lib/progress";
+import { NewBadges } from "./results";
 import { play, unlockAudio, vibrate } from "@/lib/sound";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -62,6 +64,17 @@ export function ConnectionsDuel({ code }: { code: string }) {
   const tileRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const toastTimer = useRef<number | undefined>(undefined);
   const heard = useRef({ results: -1, theirs: -1, theirMistakes: -1, end: false });
+  const [duelBadges, setDuelBadges] = useState<BadgeDef[]>([]);
+
+  // A finished duel counts toward your record and badges, once (by its code, so a reload never counts it twice).
+  const endedAs = view?.status === "finished" && view.you !== null && view.end ? (view.end.winner === null ? "draw" : view.end.winner === view.you ? "win" : "loss") : null;
+  useEffect(() => {
+    if (!endedAs || !view) return;
+    const badges = recordConnDuel(view.code, endedAs);
+    if (badges.length) setDuelBadges(badges);
+    // Once per duel.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [endedAs, view?.code]);
 
   const me = view?.you ?? null;
   const mine = view?.mine;
@@ -268,6 +281,9 @@ export function ConnectionsDuel({ code }: { code: string }) {
       <MotionConfig reducedMotion="user">
         {notice}
         <DuelSummary view={view} busy={busy} symbols={symbols} onRematch={() => void startRematch()} />
+        <div className="mx-auto mt-4 max-w-3xl text-center">
+          <NewBadges badges={duelBadges} />
+        </div>
         <div className="mx-auto mt-4 max-w-3xl space-y-4">
           <AddFriendAfterGame kind="connections" code={view.code} />
           {tools}
