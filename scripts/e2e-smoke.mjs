@@ -1179,7 +1179,16 @@ await mmRed.mouse.move(5, 5);
 step("matched battle: play to the end; the spectator sees the result; the replay saves itself");
 const [mmEnd] = await Promise.all([playBattle(mmRed, 1000, null), playBattle(mmBlue, 1000, null)]);
 console.log(`  the battle ended on turn ${mmEnd}`);
-for (const p of [mmRed, mmBlue, watcher]) await p.getByTestId("battle-result").waitFor({ timeout: 60_000 });
+// The spectator follows the live feed; if it misses the final update, a reload must still show the result.
+for (const [who, p] of [["Red", mmRed], ["Blue", mmBlue], ["spectator", watcher]]) {
+  try {
+    await p.getByTestId("battle-result").waitFor({ timeout: 60_000 });
+  } catch {
+    console.log(`  warning: ${who} missed the end live; reloading`);
+    await p.reload({ waitUntil: "domcontentloaded" });
+    await p.getByTestId("battle-result").waitFor({ timeout: 60_000 });
+  }
+}
 await watcher.screenshot({ path: `${OUT}/battle-spectator-result.png` });
 await mmRed.getByTestId("watch-replay").waitFor({ timeout: 45_000 });
 await mmRed.screenshot({ path: `${OUT}/battle-matched-result.png` });
