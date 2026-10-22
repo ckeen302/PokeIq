@@ -400,6 +400,37 @@ await page.getByRole("button", { name: /5-round game/ }).click();
   if (!looked) throw new Error("no round with more than one view in five rounds");
 }
 
+step("pokéguessr: no move, zoomed, 30s timer (time runs out with no pin)");
+await page.goto(`${BASE}/guessr`, { waitUntil: "networkidle" });
+await page.getByTestId("geo-settings").click();
+await page.getByTestId("geo-no-move").click();
+await page.getByTestId("geo-zoomed").click();
+await page.getByTestId("geo-timer-30").click();
+await page.getByTestId("geo-settings-badge").filter({ hasText: "No move · Zoomed · 30s" }).waitFor();
+await page.keyboard.press("Escape");
+await page.getByRole("button", { name: /5-round game/ }).click();
+await page.waitForFunction(() => {
+  const img = document.querySelector("img[data-testid='geo-shot']");
+  return img?.complete && img.naturalWidth > 0 && getComputedStyle(img).opacity === "1";
+});
+if (await page.getByTestId("geo-view-count").count()) throw new Error("No move should show one screenshot");
+if ((await page.getByTestId("geo-shot").getAttribute("data-zoomed")) !== "true") throw new Error("the screenshot isn't zoomed");
+{
+  const left = Number(await page.getByTestId("geo-time-left").innerText());
+  if (!(left > 20 && left <= 30)) throw new Error(`timer shows ${left}`);
+}
+await page.screenshot({ path: `${OUT}/geo-mode-no-move-zoom-timer.png` });
+await page.getByTestId("geo-distance").filter({ hasText: "Time's up" }).waitFor({ timeout: 40_000 });
+await page.screenshot({ path: `${OUT}/geo-mode-timer-up.png` });
+// Back to the defaults, so the steps after this play the usual way.
+await page.goto(`${BASE}/guessr`, { waitUntil: "networkidle" });
+await page.getByTestId("geo-settings").click();
+await page.getByTestId("geo-no-move").click();
+await page.getByTestId("geo-zoomed").click();
+await page.getByTestId("geo-timer-0").click();
+if (await page.getByTestId("geo-settings-badge").count()) throw new Error("settings didn't switch off");
+await page.keyboard.press("Escape");
+
 step("pokéguessr: friend accepts the challenge");
 await page.goto(`${BASE}/guessr/c/${encodeURIComponent(geoChallenge)}`, { waitUntil: "networkidle" });
 await page.getByRole("button", { name: /Accept challenge/ }).click();

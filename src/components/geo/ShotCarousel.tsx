@@ -27,17 +27,24 @@ export function ShotCarousel({
   index,
   onIndex,
   onZoom,
+  zoom,
 }: {
   views: string[];
   index: number;
   onIndex: (index: number) => void;
   onZoom: () => void;
+  /** The Zoomed setting: blow each view up around a point of it (percentages), so only a close-up shows. */
+  zoom?: (src: string) => { scale: number; origin: [number, number] } | null;
 }) {
   const [fits, setFits] = useState<Record<string, Fit>>({});
   const count = views.length;
   const src = views[Math.min(index, count - 1)];
   const fit = fits[src];
   const many = count > 1;
+  const zoomStyle = (v: string) => {
+    const z = zoom?.(v);
+    return z ? { transform: `scale(${z.scale})`, transformOrigin: `${z.origin[0]}% ${z.origin[1]}%` } : {};
+  };
   const imgRef = useRef<HTMLImageElement>(null);
   const measure = (img: HTMLImageElement) => {
     const f = shotFit(img);
@@ -84,8 +91,9 @@ export function ShotCarousel({
           ref={imgRef}
           onLoad={(e) => measure(e.currentTarget)}
           className={cn("absolute inset-0 h-full w-full transition-opacity duration-300", fit?.className ?? "object-contain", fit ? "opacity-100" : "opacity-0")}
-          style={{ imageRendering: fit?.pixelated ? "pixelated" : "auto" }}
+          style={{ imageRendering: fit?.pixelated ? "pixelated" : "auto", ...zoomStyle(src) }}
           data-testid="geo-shot"
+          data-zoomed={zoom?.(src) ? "true" : undefined}
         />
         <button
           type="button"
@@ -125,7 +133,7 @@ export function ShotCarousel({
                 )}
               >
                 {/* eslint-disable-next-line @next/next/no-img-element -- same cached screenshot, as a thumbnail */}
-                <img src={v} alt="" className="h-full w-full object-cover" style={{ imageRendering: fits[v]?.pixelated ? "pixelated" : "auto" }} />
+                <img src={v} alt="" className="h-full w-full object-cover" style={{ imageRendering: fits[v]?.pixelated ? "pixelated" : "auto", ...zoomStyle(v) }} />
               </button>
             ))}
           </div>
