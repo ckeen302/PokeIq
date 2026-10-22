@@ -65,6 +65,8 @@ export interface ConnPuzzleResponse {
   /** The daily's number (none for practice). */
   number?: number;
   tiles: ConnTile[];
+  /** A daily only: the server's signed note of when it dealt the tiles, which times the game for the leaderboard. */
+  start?: string;
 }
 
 export type ConnGuessKind = "correct" | "one-away" | "wrong" | "repeat";
@@ -105,7 +107,24 @@ export interface ConnDaySummary {
   perfect: number;
 }
 
-export type ConnResultResponse = { available: false } | { available: true; summary: ConnDaySummary };
+/** Where a finished daily stands on the leaderboard: its place, or why it isn't on it. */
+export type ConnBoardStanding = { position: number; total: number; name: string } | { unranked: "no-name" | "unsolved" | "untimed" | "name-taken" | "off" };
+
+export type ConnResultResponse = ({ available: false } | { available: true; summary: ConnDaySummary }) & { board?: ConnBoardStanding };
+
+/** One line of the daily leaderboard: fewest mistakes, then fastest. */
+export interface ConnBoardRow {
+  name: string;
+  mistakes: number;
+  /** From the server dealing the tiles to the finished game reaching it. */
+  ms: number;
+}
+
+/** GET /api/connections/leaderboard?date=…: the day's top trainers (null rows: the board is off). */
+export interface ConnBoardResponse {
+  date: string;
+  rows: ConnBoardRow[] | null;
+}
 
 /** "a,b,c,d" for a guess, order-free: how repeats are spotted. */
 export const guessKey = (ids: readonly number[]) => [...ids].sort((a, b) => a - b).join(",");

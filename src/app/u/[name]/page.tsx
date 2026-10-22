@@ -6,6 +6,7 @@ import { CalendarDays, Clapperboard, Search, Swords } from "lucide-react";
 import { pageMetadata } from "@/lib/seo";
 import { USERNAME_RE } from "@/lib/server/auth";
 import { findUserByName, progressDigests } from "@/lib/server/accounts";
+import { connDigest } from "@/lib/server/friends";
 import { battleKey } from "@/lib/server/battle-engine/identity";
 import { battleProfile } from "@/lib/server/battle-engine/records";
 import { replayStore } from "@/lib/server/battle-engine/replays";
@@ -63,6 +64,7 @@ const findProfile = cache(async (raw: string) => {
     xp: digest?.xp ?? 0,
     battles,
     pokedle,
+    connections: connDigest(digest),
     replays: mine.filter((r) => r.public).slice(0, 6),
   };
 });
@@ -144,6 +146,29 @@ export default async function UserProfilePage({ params }: PageProps) {
               </ul>
             ) : (
               <p className="text-sm text-muted-foreground">No ranked battles yet.</p>
+            )}
+          </CardContent>
+        </Card>
+        <Card className="md:col-span-2" data-testid="profile-connections">
+          <CardContent className="space-y-3 p-5">
+            <p className="hud-label text-screen">PokéConnections</p>
+            {found.connections ? (
+              <dl className="grid grid-cols-2 gap-3 text-center sm:grid-cols-5">
+                {[
+                  ["Streak", `🔥${found.connections.streak}`],
+                  ["Best streak", found.connections.best],
+                  ["Games won", found.connections.wins],
+                  ["Perfect solves", found.connections.perfect],
+                  ["Duel record", `${found.connections.duelWins}–${found.connections.duelLosses}${found.connections.duelDraws ? `–${found.connections.duelDraws}` : ""}`],
+                ].map(([label, value]) => (
+                  <div key={label} className="flex flex-col-reverse rounded-md border bg-shade/20 p-2">
+                    <dt className="text-[11px] text-muted-foreground">{label}</dt>
+                    <dd className="font-display text-xl font-bold tabular-nums">{value}</dd>
+                  </div>
+                ))}
+              </dl>
+            ) : (
+              <p className="text-sm text-muted-foreground">No PokéConnections played yet.</p>
             )}
           </CardContent>
         </Card>

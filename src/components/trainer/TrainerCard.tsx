@@ -4,7 +4,9 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { Pencil } from "lucide-react";
-import { BADGES, currentStreak, levelInfo, setTrainerName, useProgress } from "@/lib/progress";
+import { BADGES, connBlock, currentStreak, levelInfo, setTrainerName, useProgress, type Progress } from "@/lib/progress";
+import { EMPTY_CONN_PLAY } from "@/lib/connections/play";
+import { connStats } from "@/lib/connections/local";
 import { localDateString } from "@/lib/daily";
 import { dleStats } from "@/lib/dle-stats";
 import { iqTitle, ratingToIQ } from "@/lib/rating";
@@ -151,6 +153,8 @@ export function TrainerCard() {
         </Card>
       )}
 
+      {(progress.conn || progress.connPlay) && <ConnectionsCard progress={progress} today={today} />}
+
       <Card>
         <CardHeader>
           <CardTitle className="text-lg">
@@ -221,6 +225,33 @@ export function TrainerCard() {
 function geoBest(best: Record<string, number>, streak: boolean): number {
   const boards = Object.entries(best).filter(([k]) => /^geo:[a-z]+(:classic|:retro)?(:streak)?$/.test(k) && !/^geo:(games|daily)$/.test(k));
   return Math.max(0, ...boards.filter(([k]) => k.endsWith(":streak") === streak).map(([, v]) => v));
+}
+
+/** PokéConnections: the daily streak, games won in every mode, perfect solves and the duel record. */
+function ConnectionsCard({ progress, today }: { progress: Progress; today: string }) {
+  const play = { ...EMPTY_CONN_PLAY, ...progress.connPlay };
+  const block = connBlock(progress);
+  const stats = connStats(block.results, today);
+  return (
+    <Card data-testid="trainer-connections">
+      <CardHeader className="flex-row items-center justify-between space-y-0">
+        <CardTitle className="text-lg">PokéConnections</CardTitle>
+        <Link href="/connections" className="text-sm text-primary hover:underline">
+          Play →
+        </Link>
+      </CardHeader>
+      <CardContent className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <Stat label="Streak" value={`🔥${stats.playStreak}`} />
+        <Stat label="Best streak" value={Math.max(stats.bestPlayStreak, block.best)} />
+        <Stat label="Games won" value={play.wins} />
+        <Stat label="Perfect solves" value={play.perfect} />
+        <Stat label="Dailies won" value={stats.wins} />
+        <Stat label="Hard solves" value={play.hard} />
+        <Stat label="Duel record" value={`${play.duelWins}–${play.duelLosses}${play.duelDraws ? `–${play.duelDraws}` : ""}`} />
+        <Stat label="Badges" value={`${BADGES.filter((b) => b.id.startsWith("conn-") && progress.badges[b.id]).length}/${BADGES.filter((b) => b.id.startsWith("conn-")).length}`} />
+      </CardContent>
+    </Card>
+  );
 }
 
 function Stat({ label, value }: { label: string; value: React.ReactNode }) {

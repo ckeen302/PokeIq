@@ -3,6 +3,7 @@ import { z } from "zod";
 import { isPlayableConnDate, CONN_GROUP_SIZE, CONN_GROUPS, CONN_MAX_MISTAKES } from "@/lib/connections/types";
 import { clientIp, rateLimit, tooManyRequests } from "@/lib/server/rate-limit";
 import { checkGuesses, dailyConnPuzzle, practiceConnPuzzle, puzzleView } from "@/lib/server/connections";
+import { startToken } from "@/lib/server/connections-board";
 
 /**
  * PokéConnections.
@@ -40,7 +41,9 @@ export async function GET(request: NextRequest) {
   const params = request.nextUrl.searchParams;
   const found = puzzleFor(params.get("date"), params.get("practice"));
   if ("error" in found) return NextResponse.json({ error: found.error }, { status: 400, headers: NO_STORE });
-  return NextResponse.json(puzzleView(found.puzzle, found.key, found.date), { headers: NO_STORE });
+  const view = puzzleView(found.puzzle, found.key, found.date);
+  // A daily is timed from here, by the server's clock (see connections-board.ts).
+  return NextResponse.json(found.date ? { ...view, start: startToken(found.date) } : view, { headers: NO_STORE });
 }
 
 const bodySchema = z.object({

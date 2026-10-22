@@ -5,6 +5,9 @@ import { previousDate } from "./daily";
 import type { DleHint } from "./dle-types";
 import type { DleAssist } from "./dle-assist";
 import { updatePlayerRating } from "./rating";
+import { connStats } from "./connections/local";
+import { EMPTY_CONN_PLAY, type ConnPlay } from "./connections/play";
+export type { ConnPlay };
 import type { RunResult } from "./session-types";
 
 /**
@@ -44,6 +47,7 @@ export interface ConnRecord {
   ms?: number;
 }
 
+
 export interface Progress {
   v: 1;
   name: string;
@@ -61,6 +65,8 @@ export interface Progress {
   squirdle?: { last: string | null; streak: number; best: number; results: Record<string, DleRecord> };
   /** PokéConnections' dailies (absent until one is played). */
   conn?: { last: string | null; streak: number; best: number; results: Record<string, ConnRecord> };
+  /** PokéConnections across every mode (daily, Unlimited, archive) and duels: for the profile and badges. */
+  connPlay?: ConnPlay;
   badges: Record<string, number>;
   /** Per-skill tallies for the coach: tag -> [correct, answered]. */
   skills: Record<string, [number, number]>;
@@ -116,6 +122,12 @@ export const BADGES: BadgeDef[] = [
   { id: "geo-pinpoint", name: "Pinpoint", description: "Score 5,000 in a PokéGuessr round", emoji: "📍" },
   { id: "geo-20k", name: "Cartographer", description: "Score 20,000+ in a PokéGuessr game", emoji: "🗺️" },
   { id: "geo-streak-10", name: "Pathfinder", description: "Name 10 places in a row in PokéGuessr Streak", emoji: "🥾" },
+  { id: "conn-first", name: "Connected", description: "Solve your first PokéConnections", emoji: "🧩" },
+  { id: "conn-streak-7", name: "Linked Up", description: "7-day PokéConnections streak", emoji: "🔗" },
+  { id: "conn-streak-30", name: "Grand Linker", description: "30-day PokéConnections streak", emoji: "⛓️" },
+  { id: "conn-perfect-10", name: "Flawless", description: "10 perfect PokéConnections solves (no mistakes)", emoji: "💎" },
+  { id: "conn-duel-10", name: "Speed Racer", description: "Win 10 PokéConnections duels", emoji: "🏁" },
+  { id: "conn-hard", name: "Hard Wired", description: "Solve an Unlimited PokéConnections on Hard", emoji: "🧠" },
 ];
 
 const PLAYABLE_MODES = ["whos-that", "cry", "dex", "types", "higher-lower"];
@@ -377,12 +389,32 @@ export function connBlock(p: Progress): NonNullable<Progress["conn"]> {
 }
 
 /** Saves a PokéConnections daily (in progress or finished); a first finish moves the streak and earns XP. */
-export function saveConn(date: string, record: ConnRecord) {
+/** A finished game in any mode: the tallies, and the badges they earn. */
+function countConnGame(p: Progress, solved: boolean, mistakes: number, hard: boolean): string[] {
+  const play = (p.connPlay = { ...EMPTY_CONN_PLAY, ...p.connPlay });
+  if (!solved) return [];
+  play.wins++;
+  if (mistakes === 0) play.perfect++;
+  if (hard) play.hard++;
+  return [
+    "conn-first",
+    ...(play.perfect >= 10 ? ["conn-perfect-10"] : []),
+    ...(hard ? ["conn-hard"] : []),
+  ];
+}
+
+/**
+ * Saves a PokéConnections daily (in progress or finished); a first finish
+ * moves the streak, earns XP and counts toward the badges. Returns the
+ * badges it just earned.
+ */
+export function saveConn(date: string, record: ConnRecord): BadgeDef[] {
   const p: Progress = structuredClone(read());
   const block = connBlock(p);
   p.conn = block;
   const existing = block.results[date];
   block.results[date] = record;
+  let fresh: BadgeDef[] = [];
   if (record.over && !existing?.over) {
     if (record.solved) {
       block.streak = streakAfter(block.last, block.streak, date);
@@ -392,8 +424,37 @@ export function saveConn(date: string, record: ConnRecord) {
       block.streak = 0;
     }
     block.last = date;
+    // The streak the results screen shows: days finished in a row, with freezes.
+    const streak = connStats(block.results, date).playStreak;
+    const earned = [...countConnGame(p, record.solved, record.mistakes, false), ...(streak >= 7 ? ["conn-streak-7"] : []), ...(streak >= 30 ? ["conn-streak-30"] : [])];
+    fresh = award(p, earned, Date.now());
   }
   write(p);
+  return fresh;
+}
+
+/** A finished Unlimited or archive game: it counts toward the tallies and badges, never the streak. A little XP for a solve. */
+export function recordConnGame(solved: boolean, mistakes: number, hard: boolean): BadgeDef[] {
+  const p: Progress = structuredClone(read());
+  if (solved) p.xp += 5 + (4 - mistakes) * 2;
+  const fresh = award(p, countConnGame(p, solved, mistakes, hard), Date.now());
+  write(p);
+  return fresh;
+}
+
+/** A finished PokéConnections duel, counted once per duel (by its code). */
+export function recordConnDuel(code: string, outcome: "win" | "loss" | "draw"): BadgeDef[] {
+  const p: Progress = structuredClone(read());
+  const play = (p.connPlay = { ...EMPTY_CONN_PLAY, ...p.connPlay });
+  if (play.duels.includes(code)) return [];
+  play.duels = [...play.duels, code].slice(-50);
+  if (outcome === "win") play.duelWins++;
+  else if (outcome === "loss") play.duelLosses++;
+  else play.duelDraws++;
+  if (outcome === "win") p.xp += 15;
+  const fresh = award(p, play.duelWins >= 10 ? ["conn-duel-10"] : [], Date.now());
+  write(p);
+  return fresh;
 }
 
 export function saveDle(date: string, record: DleRecord, format: "classic" | "squirdle" = "classic"): BadgeDef[] {

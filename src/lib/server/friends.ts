@@ -189,6 +189,32 @@ export function dailyDigest(digest: ProgressDigest | undefined, now = Date.now()
   return out.daily || out.dle ? out : null;
 }
 
+export interface ConnProfile {
+  streak: number;
+  best: number;
+  wins: number;
+  perfect: number;
+  duelWins: number;
+  duelLosses: number;
+  duelDraws: number;
+}
+
+/** A trainer's PokéConnections for their profile, from their synced progress (never trusted to be well-formed); null if they haven't played. */
+export function connDigest(digest: ProgressDigest | null | undefined, now = Date.now()): ConnProfile | null {
+  if (!digest || (!digest.conn && !digest.connPlay)) return null;
+  const play = (digest.connPlay && typeof digest.connPlay === "object" ? digest.connPlay : {}) as Record<string, unknown>;
+  const out: ConnProfile = {
+    streak: liveStreak(digest.conn?.last, digest.conn?.streak, now),
+    best: Math.floor(num(digest.conn?.best)),
+    wins: Math.floor(num(play.wins)),
+    perfect: Math.floor(num(play.perfect)),
+    duelWins: Math.floor(num(play.duelWins)),
+    duelLosses: Math.floor(num(play.duelLosses)),
+    duelDraws: Math.floor(num(play.duelDraws)),
+  };
+  return out.wins || out.best || out.duelWins + out.duelLosses + out.duelDraws ? out : null;
+}
+
 export async function listFriends(store: FriendStore, dir: Directory, me: PublicUser, now = Date.now()): Promise<FriendsResponse> {
   const [rows, blockedIds, mine] = await Promise.all([store.friendshipsOf(me.id), store.blocksOf(me.id), store.presence([me.id])]);
   const other = (f: Friendship) => (f.a === me.id ? f.b : f.a);
