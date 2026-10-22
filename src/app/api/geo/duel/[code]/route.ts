@@ -25,6 +25,7 @@ import {
   type DuelFailure,
 } from "@/lib/server/duel";
 import { deleteDuel, duelsEnabled, insertDuel, loadDuel, newDuelCode, updateDuel } from "@/lib/server/duel-store";
+import { settleGeoRankedDuel } from "@/lib/server/geo-ranked";
 import { DUEL_CODE_RE, DUEL_MAX_ROUNDS, type DuelSeatResponse } from "@/lib/duel-types";
 
 /**
@@ -84,7 +85,9 @@ export async function GET(request: NextRequest, context: Context) {
   try {
     const out = await updateDuel(code, (duel, now) => ({ ok: true as const, duel: touchDuel(duel, playerId, now) }));
     if (!out.ok) return failure(out);
-    return NextResponse.json(await seatAvatars(duelView(out.duel, playerId, out.now, out.rev)), { headers: NO_STORE });
+    // A ranked duel that just ended is counted here, once (see geo-ranked.ts).
+    const { duel, rev } = await settleGeoRankedDuel(out.duel, out.rev);
+    return NextResponse.json(await seatAvatars(duelView(duel, playerId, out.now, rev)), { headers: NO_STORE });
   } catch (err) {
     return storeError(err);
   }
@@ -146,7 +149,8 @@ export async function POST(request: NextRequest, context: Context) {
       }
     });
     if (!out.ok) return failure(out);
-    return NextResponse.json(await seatAvatars(duelView(out.duel, playerId, out.now, out.rev)), { headers: NO_STORE });
+    const { duel, rev } = await settleGeoRankedDuel(out.duel, out.rev);
+    return NextResponse.json(await seatAvatars(duelView(duel, playerId, out.now, rev)), { headers: NO_STORE });
   } catch (err) {
     return storeError(err);
   }

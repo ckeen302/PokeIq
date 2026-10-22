@@ -24,6 +24,9 @@ import {
 } from "@/lib/duel-types";
 import type { GeoSpec } from "@/lib/geo-types";
 import type { GeoEra } from "@/lib/geo-families";
+import { isProvisional } from "@/lib/ranked";
+import type { PvpEndReason } from "@/lib/pvp-types";
+import type { RankedMatch } from "./ranked";
 
 /**
  * PokéGuessr duels: two trainers on the same rounds, GeoGuessr Duels style.
@@ -78,6 +81,19 @@ export interface Duel {
   emoteCount?: number;
   /** Chat in the lobby and after the end. */
   chat?: ChatLine[];
+  /** A ranked duel (matched in the ranked queue): see geo-ranked.ts. */
+  ranked?: GeoDuelRanked;
+}
+
+/** A ranked duel's trainers as the season's ratings know them, and once counted, how it moved them. */
+export interface GeoDuelRanked {
+  season: string;
+  /** Each seat's rating key (an HMAC, never the trainer's id). */
+  keys: [string, string];
+  /** Each seat's rating and ranked games going in. */
+  ratings: [number, number];
+  games: [number, number];
+  result?: { before: [number, number]; after: [number, number] };
 }
 
 export type DuelFailure = { ok: false; status: number; error: string };
@@ -142,9 +158,40 @@ function blankDuel(region: string, code: string, players: DuelPlayer[], now: num
   return { v: 1, code, region, ...(era ? { era } : {}), seed, createdAt: now, status: "lobby", players, maxRounds, hp: [DUEL_HP, DUEL_HP], rounds: [] };
 }
 
-export function createDuel(region: string, name: string, code: string, now: number, seed?: string, era?: GeoEra): { duel: Duel; playerId: string } {
+export function createDuel(
+  region: string,
+  name: string,
+  code: string,
+  now: number,
+  seed?: string,
+  era?: GeoEra,
+  ranked?: Omit<GeoDuelRanked, "result">
+): { duel: Duel; playerId: string } {
   const playerId = randomId();
-  return { duel: blankDuel(region, code, [{ id: playerId, name, ready: false, seenAt: now }], now, seed, era), playerId };
+  const duel = blankDuel(region, code, [{ id: playerId, name, ready: false, seenAt: now }], now, seed, era);
+  return { duel: ranked ? { ...duel, ranked } : duel, playerId };
+}
+
+/** How a duel ended, as the rating maths reads it: played out (by HP or rounds), or left / sat out. */
+const endReason = (reason: DuelEnd["reason"]): PvpEndReason => (reason === "hp" || reason === "rounds" ? "played" : reason);
+
+/** A finished ranked duel that hasn't been counted yet: what counting it needs. Null otherwise. */
+export function rankedMatchOf(duel: Duel): (RankedMatch & { season: string }) | null {
+  if (!duel.ranked || duel.ranked.result || duel.status !== "finished" || !duel.end || duel.players.length !== 2) return null;
+  return {
+    code: duel.code,
+    season: duel.ranked.season,
+    keys: duel.ranked.keys,
+    names: [duel.players[0].name, duel.players[1].name],
+    reason: endReason(duel.end.reason),
+    winner: duel.end.winner,
+  };
+}
+
+/** Records how a ranked duel was counted (once: a later call changes nothing). */
+export function withRankedResult(duel: Duel, result: { before: [number, number]; after: [number, number] }): Duel {
+  if (!duel.ranked || duel.ranked.result) return duel;
+  return { ...duel, ranked: { ...duel.ranked, result } };
 }
 
 export function joinDuel(duel: Duel, name: string, now: number): { ok: true; duel: Duel; playerId: string } | DuelFailure {
@@ -416,5 +463,15 @@ export function duelView(duel: Duel, playerId: string | null, now: number, rev: 
     rematch: duel.rematch,
     emotes: (duel.emotes ?? []).filter((e) => now - e.at < EMOTE_SHOW_MS),
     ...(duel.chat?.length ? { chat: duel.chat } : {}),
+    ...(duel.ranked
+      ? {
+          ranked: {
+            season: duel.ranked.season,
+            ratings: duel.ranked.ratings,
+            provisional: duel.ranked.games.map(isProvisional) as [boolean, boolean],
+            ...(duel.ranked.result ? { result: duel.ranked.result } : {}),
+          },
+        }
+      : {}),
   };
 }

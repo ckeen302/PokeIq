@@ -14,7 +14,9 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { LocalDateRedirect } from "./local-date-redirect";
-import { RankedUnavailable, rankedStore } from "@/lib/server/ranked";
+import { RankedUnavailable, rankedStore, type RankedLadder } from "@/lib/server/ranked";
+import { geoLadder } from "@/lib/server/geo-ranked";
+import { geoSeasonName, geoSeasonOf, isGeoSeason, previousGeoSeason } from "@/lib/geo-ranked";
 import type { RankedLeaderRow } from "@/lib/ranked";
 import { TierBadge, YourLadderSpot } from "@/components/pokedle/Ranked";
 import { LadderTable, LadderTabs, YourBattleStanding } from "@/components/battle/LadderParts";
@@ -35,7 +37,7 @@ export const metadata: Metadata = pageMetadata({
 export const dynamic = "force-dynamic";
 
 interface PageProps {
-  searchParams: Promise<{ board?: string; format?: string; difficulty?: string; date?: string }>;
+  searchParams: Promise<{ board?: string; format?: string; difficulty?: string; date?: string; season?: string }>;
 }
 
 export default async function LeaderboardPage({ searchParams }: PageProps) {
@@ -139,39 +141,7 @@ export default async function LeaderboardPage({ searchParams }: PageProps) {
                 </CardContent>
               </Card>
             ) : (
-              <Card>
-                <CardContent className="p-0">
-                  <table className="w-full text-sm">
-                    <thead>
-                      <tr className="border-b text-left text-xs uppercase text-muted-foreground">
-                        <th className="p-3">#</th>
-                        <th className="p-3">Trainer</th>
-                        <th className="p-3">Rank</th>
-                        <th className="hidden p-3 text-right sm:table-cell">W–L</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {ladder.map((row) => (
-                        <tr key={row.position} className="border-b last:border-0">
-                          <td className="p-3 font-mono tabular-nums text-muted-foreground">{row.position}</td>
-                          <td className="max-w-[10rem] truncate p-3 font-semibold">
-                            <span className="flex items-center gap-2">
-                              <NameAvatar name={row.name} avatars={avatars} />
-                              <span className="truncate">{row.name}</span>
-                            </span>
-                          </td>
-                          <td className="p-3">
-                            <TierBadge rating={row.rating} games={row.games} size="sm" />
-                          </td>
-                          <td className="hidden p-3 text-right tabular-nums sm:table-cell">
-                            {row.wins}–{row.losses}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </CardContent>
-              </Card>
+              <RankedLadderTable ladder={ladder} avatars={avatars} />
             )}
           </>
         )}
@@ -245,6 +215,56 @@ export default async function LeaderboardPage({ searchParams }: PageProps) {
     );
   }
 
+  if (board === "geo" && params.format === "ranked") {
+    const current = geoSeasonOf(Date.now());
+    const season = isGeoSeason(params.season) && params.season <= current ? params.season : current;
+    const seasons = [current, previousGeoSeason(current), previousGeoSeason(previousGeoSeason(current))];
+    const ladder = await rankedLadder(geoLadder(season));
+    const avatars = await avatarsByNames((ladder ?? []).map((r) => r.name));
+    return (
+      <div className="mx-auto max-w-3xl space-y-6">
+        <div className="space-y-4 text-center">
+          <h1 className="font-display text-4xl font-bold uppercase tracking-tight sm:text-5xl">Leaderboard</h1>
+          {tabRow}
+          <div className="flex flex-wrap justify-center gap-2">
+            <Link href="/leaderboard?board=geo">
+              <Badge variant="outline" className="hover:bg-accent">
+                PokéGuessr boards
+              </Badge>
+            </Link>
+            {seasons.map((s) => (
+              <Link key={s} href={`/leaderboard?board=geo&format=ranked${s === current ? "" : `&season=${s}`}`}>
+                <Badge variant={s === season ? "secondary" : "outline"} className="hover:bg-accent">
+                  Ranked · {geoSeasonName(s)}
+                </Badge>
+              </Link>
+            ))}
+          </div>
+          <p className="text-sm text-muted-foreground">
+            Ranked PokéGuessr duels, {geoSeasonName(season)} season: the top 100 by rating. Every month starts again at 1,000.
+          </p>
+        </div>
+        {ladder === null ? (
+          <Card>
+            <CardContent className="py-10 text-center text-muted-foreground">Ranked PokéGuessr opens soon.</CardContent>
+          </Card>
+        ) : ladder.length === 0 ? (
+          <Card>
+            <CardContent className="py-10 text-center text-muted-foreground">
+              Nobody is ranked this season yet.{" "}
+              <Link href="/guessr#ranked" className="text-primary underline-offset-2 hover:underline">
+                Queue a ranked duel
+              </Link>{" "}
+              and be the first!
+            </CardContent>
+          </Card>
+        ) : (
+          <RankedLadderTable ladder={ladder} avatars={avatars} />
+        )}
+      </div>
+    );
+  }
+
   if (board === "geo") {
     const maps = geoRegions()
       .map((r) => ({
@@ -273,6 +293,11 @@ export default async function LeaderboardPage({ searchParams }: PageProps) {
             <Link href="/leaderboard?board=geo">
               <Badge variant={!mode ? "secondary" : "outline"} className="hover:bg-accent">
                 Daily #{dailyNumber(date)}
+              </Badge>
+            </Link>
+            <Link href="/leaderboard?board=geo&format=ranked">
+              <Badge variant="outline" className="hover:bg-accent">
+                Ranked duels
               </Badge>
             </Link>
             {maps.map((r) => (
@@ -483,9 +508,9 @@ async function connBoardTop(date: string): Promise<ConnBoardRow[] | null> {
   }
 }
 
-/** The ranked ladder's top 100, or null while ranked play is off. */
-async function rankedLadder(): Promise<RankedLeaderRow[] | null> {
-  const store = rankedStore();
+/** A ranked ladder's top 100 (ranked Pokédle's unless named), or null while ranked play is off. */
+async function rankedLadder(ladder?: RankedLadder): Promise<RankedLeaderRow[] | null> {
+  const store = rankedStore(ladder);
   if (!store) return null;
   try {
     return await store.top(100);
@@ -493,4 +518,43 @@ async function rankedLadder(): Promise<RankedLeaderRow[] | null> {
     if (!(err instanceof RankedUnavailable)) console.error("[ranked] ladder failed:", err);
     return null;
   }
+}
+
+/** A ranked ladder: place, trainer, tier badge and record. */
+function RankedLadderTable({ ladder, avatars }: { ladder: RankedLeaderRow[]; avatars: Awaited<ReturnType<typeof avatarsByNames>> }) {
+  return (
+    <Card>
+      <CardContent className="p-0">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="border-b text-left text-xs uppercase text-muted-foreground">
+              <th className="p-3">#</th>
+              <th className="p-3">Trainer</th>
+              <th className="p-3">Rank</th>
+              <th className="hidden p-3 text-right sm:table-cell">W–L</th>
+            </tr>
+          </thead>
+          <tbody>
+            {ladder.map((row) => (
+              <tr key={row.position} className="border-b last:border-0">
+                <td className="p-3 font-mono tabular-nums text-muted-foreground">{row.position}</td>
+                <td className="max-w-[10rem] truncate p-3 font-semibold">
+                  <span className="flex items-center gap-2">
+                    <NameAvatar name={row.name} avatars={avatars} />
+                    <span className="truncate">{row.name}</span>
+                  </span>
+                </td>
+                <td className="p-3">
+                  <TierBadge rating={row.rating} games={row.games} size="sm" />
+                </td>
+                <td className="hidden p-3 text-right tabular-nums sm:table-cell">
+                  {row.wins}–{row.losses}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </CardContent>
+    </Card>
+  );
 }

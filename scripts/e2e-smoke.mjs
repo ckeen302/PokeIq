@@ -648,6 +648,43 @@ await blue.screenshot({ path: `${OUT}/duel-forfeit.png` });
 await red.context().close();
 await blue.context().close();
 
+step("pokéguessr ranked: queue, matched by rating, a forfeit moves both ratings, the season ladder");
+{
+  const ash = await newPage({ width: 1280, height: 900 });
+  const gary = await newPage({ width: 1280, height: 900 });
+  for (const [p, name] of [
+    [ash, "Ash"],
+    [gary, "Gary"],
+  ]) {
+    await p.goto(`${BASE}/guessr#ranked`, { waitUntil: "networkidle" });
+    await p.getByTestId("geo-ranked-season").getByText(/Season: \w+ \d{4}/).waitFor();
+    await p.getByTestId("geo-ranked-name").fill(name);
+  }
+  await ash.getByTestId("geo-ranked").getByText(/^Poké Ball (I|II|III)$/).first().waitFor();
+  await ash.getByTestId("geo-ranked-queue").click();
+  await ash.getByText("Searching for a ranked rival").waitFor();
+  await gary.getByTestId("geo-ranked-queue").click();
+  await Promise.all([ash, gary].map((p) => p.waitForURL(/\/guessr\/duel\/[a-z2-9]{8}$/, { timeout: 30_000 })));
+  if (ash.url() !== gary.url()) throw new Error("ranked trainers ended up in different duels");
+  await Promise.all([shotLoaded(ash), shotLoaded(gary)]);
+  await ash.getByRole("button", { name: /Leave duel/ }).click();
+  await ash.getByRole("button", { name: /^Forfeit$/ }).click();
+  await gary.getByText("Victory!").waitFor();
+  await gary.getByText(/Ranked duel over · \w+ \d{4} season/).waitFor();
+  await gary.getByLabel(/^Rating \+\d+, now \d+$/).waitFor();
+  await gary.waitForTimeout(1500);
+  await gary.screenshot({ path: `${OUT}/geo-mode-ranked.png` });
+  // Back on /guessr, Ash's card has the loss; the season's ladder has them both.
+  await ash.goto(`${BASE}/guessr#ranked`, { waitUntil: "networkidle" });
+  await ash.getByTestId("geo-ranked").getByText("0W · 1L").waitFor();
+  await ash.goto(`${BASE}/leaderboard?board=geo&format=ranked`, { waitUntil: "networkidle" });
+  await ash.locator("table").getByText("Gary", { exact: true }).waitFor();
+  await ash.locator("table").getByText("Ash", { exact: true }).waitFor();
+  await ash.screenshot({ path: `${OUT}/geo-mode-ranked-ladder.png`, fullPage: true });
+  await ash.context().close();
+  await gary.context().close();
+}
+
 // A Pokédle duel: Red and Blue each solve with a small solver that keeps
 // only the Pokémon consistent with every clue so far.
 step("pokédle duel: create, join, ready");

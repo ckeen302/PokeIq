@@ -1,3 +1,4 @@
+import type { GeoDuelRankedView } from "./geo-ranked";
 import type { PublicAvatar } from "./avatar";
 import type { GeoEra } from "./geo-families";
 /**
@@ -113,6 +114,8 @@ export interface DuelView {
   emotes?: PvpEmoteView[];
   /** Chat, oldest first: open in the lobby and after the end. */
   chat?: ChatLine[];
+  /** A ranked duel: the season, each seat's rating going in, and once counted, the change. */
+  ranked?: GeoDuelRankedView;
 }
 
 /** Creating, joining or rematching a duel: its code, your seat's token and the duel. */

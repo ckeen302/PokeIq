@@ -33,8 +33,12 @@ export type RankedState =
   | { status: "off" }
   | { status: "ready"; you: RankedStanding | null; top?: RankedLeaderRow[] };
 
-/** The trainer's ranked standing (and with `top`, the top 100). `reload` fetches it again. */
-export function useRanked({ top = false, enabled = true }: { top?: boolean; enabled?: boolean } = {}) {
+/**
+ * The trainer's ranked standing (and with `top`, the top 100). `reload`
+ * fetches it again. `endpoint` picks the ladder: ranked Pokédle's, or
+ * ranked PokéGuessr's (/api/geo/ranked, the current season).
+ */
+export function useRanked({ top = false, enabled = true, endpoint = "/api/pokedle/ranked" }: { top?: boolean; enabled?: boolean; endpoint?: string } = {}) {
   const [state, setState] = useState<RankedState>({ status: "loading" });
   const [tick, setTick] = useState(0);
   const reload = useCallback(() => setTick((t) => t + 1), []);
@@ -44,7 +48,7 @@ export function useRanked({ top = false, enabled = true }: { top?: boolean; enab
     (async () => {
       try {
         const id = rankedId();
-        const res = await fetch(`/api/pokedle/ranked${top ? "?top=1" : ""}`, { headers: id ? { "x-ranked-id": id } : {}, cache: "no-store" });
+        const res = await fetch(`${endpoint}${top ? "?top=1" : ""}`, { headers: id ? { "x-ranked-id": id } : {}, cache: "no-store" });
         const data = (await res.json().catch(() => null)) as RankedResponse | null;
         if (!live) return;
         if (data?.id) keepId(data.id);
@@ -57,6 +61,6 @@ export function useRanked({ top = false, enabled = true }: { top?: boolean; enab
     return () => {
       live = false;
     };
-  }, [top, enabled, tick]);
+  }, [top, enabled, tick, endpoint]);
   return { state, reload };
 }

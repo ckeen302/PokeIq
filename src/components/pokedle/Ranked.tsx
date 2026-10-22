@@ -101,7 +101,7 @@ export function TierProgress({ rating, from }: { rating: number; from?: number }
   );
 }
 
-function Record({ you }: { you: RankedStanding }) {
+export function RankedRecord({ you }: { you: RankedStanding }) {
   return (
     <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
       {you.position !== null && (
@@ -186,7 +186,7 @@ export function RankedCard() {
             <>
               <TierBadge rating={you.rating} games={you.games} size="lg" />
               <TierProgress rating={you.rating} />
-              <Record you={you} />
+              <RankedRecord you={you} />
             </>
           ) : (
             <>
@@ -328,7 +328,7 @@ export function YourLadderSpot() {
               <span className="font-pixel text-sm text-muted-foreground">#{fmt(you.position ?? 0)}</span>
               <TierBadge rating={you.rating} games={you.games} />
             </span>
-            <Record you={you} />
+            <RankedRecord you={you} />
           </>
         ) : (
           <p className="text-sm text-muted-foreground">

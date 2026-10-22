@@ -88,6 +88,26 @@ export type ApplyOutcome =
   /** A rating moved since it was read: compute again from these. */
   | { status: "stale"; current: [RatingState, RatingState] };
 
+/**
+ * A ladder: Pokédle's, or one PokéGuessr season's (see geo-ranked.ts). The
+ * same maths and the same store, each with ratings of its own: in memory
+ * under its own name, in Supabase through its own functions (with `args`
+ * added to every call, such as the season).
+ */
+export interface RankedLadder {
+  id: string;
+  fns: { apply: string; standing: string; top: string };
+  args?: Record<string, unknown>;
+  /** The migration that creates its tables and functions (named in the log while it's missing). */
+  migration: string;
+}
+
+export const POKEDLE_LADDER: RankedLadder = {
+  id: "pokedle",
+  fns: { apply: "pokedle_ranked_apply", standing: "pokedle_ranked_standing", top: "pokedle_ranked_top" },
+  migration: "0014_pokedle_ranked.sql",
+};
+
 export interface RankedStore {
   /** Null when there's no such trainer yet. */
   rating(key: string): Promise<RatingState | null>;
@@ -115,15 +135,23 @@ interface MemoryDb {
   matches: Map<string, { keys: [string, string]; before: [number, number]; after: [number, number] }>;
 }
 
-const globalStore = globalThis as unknown as { __pokeiqRanked?: MemoryDb };
+const globalStore = globalThis as unknown as { __pokeiqRanked?: MemoryDb; __pokeiqRankedLadders?: Map<string, MemoryDb> };
+
+/** A ladder's ratings in memory (Pokédle's where they always were). */
+function memoryDb(ladder: string): MemoryDb {
+  if (ladder === POKEDLE_LADDER.id) return (globalStore.__pokeiqRanked ??= { players: new Map(), matches: new Map() });
+  const all = (globalStore.__pokeiqRankedLadders ??= new Map());
+  if (!all.has(ladder)) all.set(ladder, { players: new Map(), matches: new Map() });
+  return all.get(ladder)!;
+}
 
 const blankPlayer = (name: string): MemoryPlayer => ({ rating: RANKED_START, games: 0, name, wins: 0, losses: 0, draws: 0, streak: 0, bestStreak: 0 });
 
 const ladder = (db: MemoryDb) =>
   [...db.players.values()].filter((p) => p.games > 0).sort((a, b) => b.rating - a.rating || b.games - a.games || a.name.localeCompare(b.name));
 
-export function memoryRankedStore(): RankedStore {
-  const db = (globalStore.__pokeiqRanked ??= { players: new Map(), matches: new Map() });
+export function memoryRankedStore(which: RankedLadder = POKEDLE_LADDER): RankedStore {
+  const db = memoryDb(which.id);
   return {
     async rating(key) {
       const p = db.players.get(key);
@@ -178,6 +206,7 @@ export function memoryRankedStore(): RankedStore {
 /** Forgets every rating in memory (tests). */
 export function clearMemoryRanked() {
   globalStore.__pokeiqRanked = undefined;
+  globalStore.__pokeiqRankedLadders = undefined;
 }
 
 // ---- Supabase -------------------------------------------------------------------
@@ -186,13 +215,14 @@ export function clearMemoryRanked() {
 const MISSING = new Set(["42P01", "42883", "PGRST202", "PGRST205"]);
 /** After finding them missing, look again this much later (so applying the migration needs no redeploy). */
 const RECHECK_MS = 60_000;
-let missingUntil = 0;
+/** Per migration: until when its tables are taken to be missing. */
+const missingUntil = new Map<string, number>();
 
-function check(error: { code?: string; message?: string } | null) {
+function check(error: { code?: string; message?: string } | null, migration: string) {
   if (!error) return;
   if (MISSING.has(error.code ?? "")) {
-    if (Date.now() >= missingUntil) console.warn("[ranked] ranked play is off until migration 0014_pokedle_ranked.sql is applied:", error.message);
-    missingUntil = Date.now() + RECHECK_MS;
+    if (Date.now() >= (missingUntil.get(migration) ?? 0)) console.warn(`[ranked] ranked play is off until migration ${migration} is applied:`, error.message);
+    missingUntil.set(migration, Date.now() + RECHECK_MS);
     throw new RankedUnavailable(error.message);
   }
   throw new Error(error.message);
@@ -203,20 +233,20 @@ const pair = <T>(v: unknown, map: (x: unknown) => T): [T, T] => {
   return [map(a[0]), map(a[1])];
 };
 
-export function supabaseRankedStore(sb: NonNullable<ReturnType<typeof getServiceSupabase>>): RankedStore {
-  const call = async (fn: string, args: Record<string, unknown>) => {
-    if (Date.now() < missingUntil) throw new RankedUnavailable("migration 0014 not applied");
-    const { data, error } = await sb.rpc(fn, args);
-    check(error);
+export function supabaseRankedStore(sb: NonNullable<ReturnType<typeof getServiceSupabase>>, ladder: RankedLadder = POKEDLE_LADDER): RankedStore {
+  const call = async (fn: "apply" | "standing" | "top", args: Record<string, unknown>) => {
+    if (Date.now() < (missingUntil.get(ladder.migration) ?? 0)) throw new RankedUnavailable(`migration ${ladder.migration} not applied`);
+    const { data, error } = await sb.rpc(ladder.fns[fn], { ...args, ...ladder.args });
+    check(error, ladder.migration);
     return data as Record<string, unknown> | null;
   };
   return {
     async rating(key) {
-      const r = await call("pokedle_ranked_standing", { p_key: key });
+      const r = await call("standing", { p_key: key });
       return r && r.rating !== null && r.rating !== undefined ? { rating: Number(r.rating), games: Number(r.games) } : null;
     },
     async standing(key) {
-      const r = await call("pokedle_ranked_standing", { p_key: key });
+      const r = await call("standing", { p_key: key });
       if (!r || r.rating === null || r.rating === undefined) return null;
       return {
         rating: Number(r.rating),
@@ -231,7 +261,7 @@ export function supabaseRankedStore(sb: NonNullable<ReturnType<typeof getService
       };
     },
     async top(limit) {
-      const rows = ((await call("pokedle_ranked_top", { p_limit: limit })) ?? []) as unknown as Record<string, unknown>[];
+      const rows = ((await call("top", { p_limit: limit })) ?? []) as unknown as Record<string, unknown>[];
       return rows.map((r, i) => ({
         position: i + 1,
         name: String(r.name),
@@ -242,7 +272,7 @@ export function supabaseRankedStore(sb: NonNullable<ReturnType<typeof getService
       }));
     },
     async apply(input) {
-      const r = (await call("pokedle_ranked_apply", {
+      const r = (await call("apply", {
         p_code: input.code,
         p_keys: input.keys,
         p_names: input.names,
@@ -267,11 +297,11 @@ export function supabaseRankedStore(sb: NonNullable<ReturnType<typeof getService
 }
 
 /** Where ratings live: memory for tests, local E2E and development without Supabase; else Supabase; null in production without it. */
-export function rankedStore(): RankedStore | null {
-  if (process.env.POKEIQ_LOCAL_ACCOUNTS === "1") return memoryRankedStore();
+export function rankedStore(ladder: RankedLadder = POKEDLE_LADDER): RankedStore | null {
+  if (process.env.POKEIQ_LOCAL_ACCOUNTS === "1") return memoryRankedStore(ladder);
   const sb = getServiceSupabase();
-  if (sb) return supabaseRankedStore(sb);
-  return process.env.NODE_ENV !== "production" ? memoryRankedStore() : null;
+  if (sb) return supabaseRankedStore(sb, ladder);
+  return process.env.NODE_ENV !== "production" ? memoryRankedStore(ladder) : null;
 }
 
 // ---------------------------------------------------------------------------

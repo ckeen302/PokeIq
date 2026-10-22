@@ -1,5 +1,7 @@
 "use client";
 
+import { RatingChange } from "@/components/pokedle/Ranked";
+import { geoSeasonName } from "@/lib/geo-ranked";
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -533,7 +535,7 @@ function DuelSummary({ view, map, busy, onRematch }: { view: DuelView; map: GeoR
   return (
     <div className="mx-auto max-w-4xl space-y-6">
       <div className="space-y-2 text-center">
-        <p className="hud-label text-screen">Duel over · {map.name}</p>
+        <p className="hud-label text-screen">{view.ranked ? `Ranked duel over · ${geoSeasonName(view.ranked.season)} season` : `Duel over · ${map.name}`}</p>
         <div
           className={cn(
             "flex items-center justify-center gap-3 font-display text-6xl font-bold uppercase",
@@ -545,6 +547,18 @@ function DuelSummary({ view, map, busy, onRematch }: { view: DuelView; map: GeoR
         </div>
         <p className="text-muted-foreground">{reason}</p>
       </div>
+
+      {view.ranked && (
+        <div className="mx-auto max-w-md" data-testid="geo-ranked-result">
+          {view.ranked.result ? (
+            <RatingChange before={view.ranked.result.before[me]} after={view.ranked.result.after[me]} provisional={view.ranked.provisional[me]} />
+          ) : (
+            <p className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
+              <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> Counting your rating…
+            </p>
+          )}
+        </div>
+      )}
 
       <DuelHud view={view} center={<div className="hud-label">Final</div>} />
 
@@ -600,7 +614,9 @@ function DuelSummary({ view, map, busy, onRematch }: { view: DuelView; map: GeoR
               <Swords className="h-4 w-4" aria-hidden /> Back to PokéGuessr
             </Link>
           </div>
-          <p className="text-center text-xs text-muted-foreground">A rematch keeps the map and the trainers, with new places. It starts when you both press it.</p>
+          <p className="text-center text-xs text-muted-foreground">
+            A rematch keeps the map and the trainers, with new places{view.ranked ? ", as a casual duel" : ""}. It starts when you both press it.
+          </p>
         </CardContent>
       </Card>
     </div>

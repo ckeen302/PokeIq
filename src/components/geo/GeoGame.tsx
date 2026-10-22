@@ -44,6 +44,7 @@ import { CopyFallback } from "@/components/quiz/CopyFallback";
 import { ShareButton } from "@/components/share/ShareButton";
 import { GeoMap, type MapPin } from "./GeoMap";
 import { DuelCard } from "./DuelCard";
+import { GeoRankedCard } from "./GeoRanked";
 import { ReportShot } from "./ReportShot";
 import { ShotCarousel, shotFit } from "./ShotCarousel";
 import { roundViewsOf } from "@/lib/geo-look";
@@ -540,6 +541,10 @@ export function GeoGame({ regions: allRegions, challenge }: GeoGameProps) {
               onClick={() => void start({ kind: "streak" })}
             />
           </div>
+        </div>
+
+        <div id="ranked" className="scroll-mt-20">
+          <GeoRankedCard />
         </div>
 
         {/* Duels play an era when the map has enough of it (hand-picked games are practice), else every game. */}

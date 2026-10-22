@@ -7,6 +7,8 @@ import { duelsEnabled } from "@/lib/server/duel-store";
 import { cancelMatch, matchSettingsSchema, newTicket, searchMatch, searchRankedMatch } from "@/lib/server/matchmaking";
 import { RankedUnavailable, rankedIdentity, rankedKey, rankedStore } from "@/lib/server/ranked";
 import { RANKED_START } from "@/lib/ranked";
+import { geoRankedKey, geoRankedStore } from "@/lib/server/geo-ranked";
+import { geoSeasonOf } from "@/lib/geo-ranked";
 
 /**
  * POST /api/duel/match — find an opponent (PokéGuessr on a map, or Pokédle):
@@ -15,8 +17,9 @@ import { RANKED_START } from "@/lib/ranked";
  *                                                   { status: "waiting", ticket, since } or, once
  *                                                   paired, { status: "matched", code, token, href }
  *   { action: "cancel", settings, ticket }          give up the search
- * settings: { game: "geo", region } or { game: "pokedle", ranked? }. A ranked search also sends
- * `rankedId` (the signed id /api/pokedle/ranked gave this browser) unless signed in.
+ * settings: { game: "geo", region, ranked? } or { game: "pokedle", ranked? }. A ranked search also
+ * sends `rankedId` (the signed id /api/pokedle/ranked or /api/geo/ranked gave this browser) unless
+ * signed in. Ranked PokéGuessr is the world map, every game, rated in the current season.
  */
 
 const NO_STORE = { "Cache-Control": "no-store" };
@@ -54,16 +57,18 @@ export async function POST(request: NextRequest) {
       await cancelMatch(body.settings, body.ticket);
       return NextResponse.json({ ok: true }, { headers: NO_STORE });
     }
-    const ranked = body.settings.game === "pokedle" && body.settings.ranked;
+    const geoRanked = body.settings.game === "geo" && !!body.settings.ranked;
+    const ranked = (body.settings.game === "pokedle" && body.settings.ranked) || geoRanked;
     let out: Awaited<ReturnType<typeof searchMatch>>;
     if (ranked) {
-      const store = rankedStore();
+      const season = geoRanked ? geoSeasonOf(Date.now()) : undefined;
+      const store = season ? geoRankedStore(season) : rankedStore();
       if (!store) return NextResponse.json({ error: "Ranked isn't open on this server yet." }, { status: 503, headers: NO_STORE });
       const identity = await rankedIdentity(request, body.rankedId);
       if (!identity) return NextResponse.json({ error: "Reload the page to get your ranked card." }, { status: 400, headers: NO_STORE });
-      const key = rankedKey(identity);
+      const key = season ? geoRankedKey(identity) : rankedKey(identity);
       try {
-        out = await searchRankedMatch(body.name, body.ticket ?? newTicket(), key, async () => (await store.rating(key)) ?? { rating: RANKED_START, games: 0 });
+        out = await searchRankedMatch(body.name, body.ticket ?? newTicket(), key, async () => (await store.rating(key)) ?? { rating: RANKED_START, games: 0 }, season);
       } catch (err) {
         if (err instanceof RankedUnavailable) return NextResponse.json({ error: "Ranked opens soon. Casual duels are on." }, { status: 409, headers: NO_STORE });
         throw err;

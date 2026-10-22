@@ -13,6 +13,7 @@ import { pvpHref } from "@/lib/pvp-types";
 import { DLE_ASSISTS, DLE_DEFAULT_ASSIST } from "@/lib/dle-assist";
 import { DLE_DAILY_FORMATS } from "@/lib/dle-format";
 import { GEO_ERAS } from "@/lib/geo-families";
+import { GEO_RANKED_REGION } from "@/lib/geo-ranked";
 
 /**
  * Matchmaking for duels: trainers searching for the same game with the same
@@ -46,18 +47,23 @@ export {
  */
 export const matchSettingsSchema = z
   .discriminatedUnion("game", [
-    z.object({ game: z.literal("geo"), region: z.string().max(20), era: z.enum(GEO_ERAS).optional() }),
+    z.object({ game: z.literal("geo"), region: z.string().max(20), era: z.enum(GEO_ERAS).optional(), ranked: z.boolean().optional() }),
     z.object({ game: z.literal("pokedle"), ranked: z.boolean().optional(), assist: z.enum(DLE_ASSISTS).optional(), format: z.enum(DLE_DAILY_FORMATS).optional() }),
     z.object({ game: z.literal("connections") }),
   ])
   .superRefine((s, ctx) => {
     if (s.game === "geo" && !isDuelMap(s.region, s.era)) ctx.addIssue({ code: z.ZodIssueCode.custom, message: s.era ? "That map has too few places for those games." : "Unknown map." });
+    // Ranked PokéGuessr is one queue: the whole world, every game.
+    if (s.game === "geo" && s.ranked && (s.region !== GEO_RANKED_REGION || s.era)) ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Ranked is played on the world map, every game." });
   });
 export type MatchSettings = z.infer<typeof matchSettingsSchema>;
 
 /** The queue a search waits in. Classic with the Notebook keeps the queue Pokédle had before levels and formats. */
+/** Ranked PokéGuessr's queue (ratings are by season; the queue is one). */
+export const GEO_RANKED_QUEUE_KEY = "geo:ranked";
+
 export function queueKey(s: MatchSettings): string {
-  if (s.game === "geo") return `geo:${s.region}${s.era ? `:${s.era}` : ""}`;
+  if (s.game === "geo") return s.ranked ? GEO_RANKED_QUEUE_KEY : `geo:${s.region}${s.era ? `:${s.era}` : ""}`;
   if (s.game === "connections") return "connections";
   if (s.ranked) return RANKED_QUEUE_KEY;
   const assist = s.assist ?? DLE_DEFAULT_ASSIST;
@@ -124,7 +130,9 @@ export async function searchMatch(settings: MatchSettings, name: string, ticket:
 
 /** Gives up a search. */
 export function cancelMatch(settings: MatchSettings, ticket: string): Promise<void> {
-  return settings.game === "pokedle" && settings.ranked ? cancelRankedQueue(ticket) : cancelQueue(queueKey(settings), ticket);
+  if (settings.game === "pokedle" && settings.ranked) return cancelRankedQueue(ticket);
+  if (settings.game === "geo" && settings.ranked) return cancelRankedQueue(ticket, GEO_RANKED_QUEUE_KEY);
+  return cancelQueue(queueKey(settings), ticket);
 }
 
 // ---------------------------------------------------------------------------
@@ -148,12 +156,42 @@ async function openRankedDuel(players: [RankedSeat, RankedSeat], now: number): P
   return null;
 }
 
+/** A ranked PokéGuessr duel for two matched trainers (the world, every game), stored and under way. Seat 0 is the trainer who was waiting. */
+async function openRankedGeoDuel(players: [RankedSeat, RankedSeat], season: string, now: number): Promise<OpenedGame | null> {
+  for (let attempt = 0; attempt < 4; attempt++) {
+    const code = newDuelCode();
+    const ranked = {
+      season,
+      keys: [players[0].player, players[1].player] as [string, string],
+      ratings: [players[0].rating, players[1].rating] as [number, number],
+      games: [players[0].games, players[1].games] as [number, number],
+    };
+    const { duel, playerId: a } = createDuel(GEO_RANKED_REGION, players[0].name, code, now, undefined, undefined, ranked);
+    const { duel: joined, playerId: b } = must(joinGeoDuel(duel, players[1].name, now));
+    const ready = must(readyGeoDuel(must(readyGeoDuel(joined, a, true, now)).duel, b, true, now)).duel;
+    if (await insertDuel(ready)) return { code, ids: [a, b], remove: () => deleteDuel(code) };
+  }
+  return null;
+}
+
 /**
  * A ranked search (or its next poll) by the trainer whose rating key is
  * `player`: paired by rating, or waiting. `rating` reads their rating when
- * it's needed (it throws RankedUnavailable before the migration).
+ * it's needed (it throws RankedUnavailable before the migration). With
+ * `geoSeason`, it's ranked PokéGuessr in that season; else ranked Pokédle.
  */
-export async function searchRankedMatch(name: string, ticket: string, player: string, rating: () => Promise<RatingState>): Promise<SearchResult | PvpFailure> {
+export async function searchRankedMatch(
+  name: string,
+  ticket: string,
+  player: string,
+  rating: () => Promise<RatingState>,
+  geoSeason?: string
+): Promise<SearchResult | PvpFailure> {
+  if (geoSeason) {
+    const out = await searchRankedQueue({ ticket, name, player }, rating, (players, now) => openRankedGeoDuel(players, geoSeason, now), GEO_RANKED_QUEUE_KEY);
+    if (!out.ok || out.status === "waiting") return out;
+    return seat({ game: "geo", region: GEO_RANKED_REGION, ranked: true }, out.code, out.playerId);
+  }
   const out = await searchRankedQueue({ ticket, name, player }, rating, openRankedDuel);
   if (!out.ok || out.status === "waiting") return out;
   return seat({ game: "pokedle", ranked: true }, out.code, out.playerId);
