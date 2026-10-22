@@ -18,6 +18,7 @@ import {
   X,
 } from "lucide-react";
 import {
+  GEO_FILTER_MIN_PLACES,
   GEO_MAX_ROUND_SCORE,
   GEO_ROUNDS,
   WORLD_REGION,
@@ -43,6 +44,9 @@ import { CopyFallback } from "@/components/quiz/CopyFallback";
 import { ShareButton } from "@/components/share/ShareButton";
 import { GeoMap, type MapPin } from "./GeoMap";
 import { DuelCard } from "./DuelCard";
+import { ReportShot } from "./ReportShot";
+import { GameFilter, GameGuessPicker, type FilterChoice, filterPlaces, gameGuessOptions, readGuessGame, rememberGuessGame } from "./GameFilter";
+import { GEO_ERA_NAMES, GEO_GAME_BONUS, geoFamily, type GeoEra, type GeoFamilyId } from "@/lib/geo-families";
 import { cn } from "@/lib/utils";
 import { NAME_REJECTED, isCleanName } from "@/lib/name-filter";
 
@@ -54,6 +58,9 @@ interface Game {
   kind: GeoKind;
   daily?: string;
   practice?: string;
+  /** The game filter it was started with (the daily: every game). */
+  filter: FilterChoice;
+  guessGame: boolean;
   token: string;
   round: GeoRoundPublic;
 }
@@ -61,7 +68,13 @@ interface Game {
 interface Played {
   guess: MapPin;
   graded: GeoGuessResponse;
+  /** The screenshot's URL, for reporting it. */
+  shot: string;
 }
+
+/** The personal-best and leaderboard board of a game: its map, kind and era (hand-picked games keep a best of their own). */
+const boardOf = (game: Pick<Game, "region" | "kind" | "filter">) =>
+  `${geoBoardKey({ region: game.region.id, kind: game.kind, era: game.filter.era })}${game.filter.families.length ? ":custom" : ""}`;
 
 interface Reward {
   xp: number;
@@ -174,7 +187,7 @@ export interface GeoGameProps {
   /** Every map: the world and each region. */
   regions: GeoRegionInfo[];
   /** Set on /guessr/c/<token>: a friend's game to replay. */
-  challenge?: GeoChallenge & { token: string; region: string };
+  challenge?: GeoChallenge & { token: string; region: string; era?: GeoEra; families?: GeoFamilyId[] };
 }
 
 export function GeoGame({ regions: allRegions, challenge }: GeoGameProps) {
@@ -193,13 +206,24 @@ export function GeoGame({ regions: allRegions, challenge }: GeoGameProps) {
   const [zoomed, setZoomed] = useState(false);
   const [reward, setReward] = useState<Reward | null>(null);
   const [isChallenge, setIsChallenge] = useState(false);
+  const [filter, setFilter] = useState<FilterChoice>({ era: undefined, families: [] });
+  const [guessGame, setGuessGame] = useState(false);
+  const [gamePick, setGamePick] = useState<string | null>(null);
 
   const region = byId(regionId) ?? regions[0];
+  const places = filterPlaces(region, filter);
+  const filterOk = !filter.era && !filter.families.length ? playable(region) : places >= GEO_FILTER_MIN_PLACES;
+
+  // "Guess the game too" is remembered on this device.
+  useEffect(() => setGuessGame(readGuessGame()), []);
 
   // /guessr?region=johto opens on that map (the atlas links here).
   useEffect(() => {
-    const id = new URLSearchParams(window.location.search).get("region");
+    const params = new URLSearchParams(window.location.search);
+    const id = params.get("region");
     if (id && !challenge && regions.some((r) => r.id === id)) setRegionId(id);
+    const era = params.get("era");
+    if (era === "2d" || era === "3d") setFilter({ era, families: [] });
     // eslint-disable-next-line react-hooks/exhaustive-deps -- read the URL once
   }, []);
 
@@ -208,6 +232,19 @@ export function GeoGame({ regions: allRegions, challenge }: GeoGameProps) {
     const url = new URL(window.location.href);
     url.searchParams.set("region", id);
     window.history.replaceState(null, "", url);
+  }
+
+  function chooseFilter(next: FilterChoice) {
+    setFilter(next);
+    const url = new URL(window.location.href);
+    if (next.era) url.searchParams.set("era", next.era);
+    else url.searchParams.delete("era");
+    window.history.replaceState(null, "", url);
+  }
+
+  function chooseGuessGame(on: boolean) {
+    setGuessGame(on);
+    rememberGuessGame(on);
   }
 
   const current = phase === "revealed" ? played[played.length - 1] : null;
@@ -219,15 +256,33 @@ export function GeoGame({ regions: allRegions, challenge }: GeoGameProps) {
     setPhase("loading");
     setError(null);
     try {
+      const bonus = guessGame && opts.kind === "game" ? { guessGame: true } : {};
+      const picked = { era: filter.era, families: filter.families.length ? filter.families : undefined };
       const body = opts.challenge
-        ? { challenge: opts.challenge, name: progress?.name || undefined }
+        ? { challenge: opts.challenge, name: progress?.name || undefined, ...bonus }
         : opts.daily
-          ? { daily: opts.daily, name: progress?.name || undefined }
-          : { region: region.id, kind: opts.kind, name: progress?.name || undefined, recent: readRecent() };
+          ? { daily: opts.daily, name: progress?.name || undefined, ...bonus }
+          : { region: region.id, kind: opts.kind, ...picked, name: progress?.name || undefined, recent: readRecent(), ...bonus };
       const res = await post<GeoStartResponse>("/api/geo", body);
       const map = byId(res.region) ?? allRegions.find((r) => r.id === res.region);
       if (!map) throw new Error("That map isn't available right now.");
-      setGame({ region: map, kind: opts.kind, daily: opts.daily, practice: res.practice, token: res.token, round: res.round });
+      // A friend's challenge plays on their filter, the daily on every game.
+      const played: FilterChoice = opts.challenge
+        ? { era: challenge?.era, families: challenge?.families ?? [] }
+        : opts.daily
+          ? { era: undefined, families: [] }
+          : filter;
+      setGame({
+        region: map,
+        kind: opts.kind,
+        daily: opts.daily,
+        practice: res.practice,
+        filter: played,
+        guessGame: !!bonus.guessGame,
+        token: res.token,
+        round: res.round,
+      });
+      setGamePick(null);
       setIsChallenge(!!opts.challenge);
       setPick(null);
       setPlayed([]);
@@ -246,8 +301,8 @@ export function GeoGame({ regions: allRegions, challenge }: GeoGameProps) {
     if (!game || !pick || phase !== "guessing") return;
     setPhase("submitting");
     try {
-      const graded = await post<GeoGuessResponse>("/api/geo/guess", { token: game.token, ...pick });
-      const nextPlayed = [...played, { guess: pick, graded }];
+      const graded = await post<GeoGuessResponse>("/api/geo/guess", { token: game.token, ...pick, ...(game.guessGame && gamePick ? { family: gamePick } : {}) });
+      const nextPlayed = [...played, { guess: pick, graded, shot: game.round.shot }];
       setPlayed(nextPlayed);
       setGame({ ...game, token: graded.token });
       rememberArea(graded.answer);
@@ -256,7 +311,7 @@ export function GeoGame({ regions: allRegions, challenge }: GeoGameProps) {
       if (graded.next) new window.Image().src = graded.next.shot;
       if (graded.done && graded.result) {
         setReward(
-          recordGeoGame(geoBoardKey({ region: game.region.id, kind: game.kind }), {
+          recordGeoGame(boardOf(game), {
             kind: game.kind,
             score: graded.result.score,
             rounds: nextPlayed.map((p) => p.graded.score),
@@ -282,6 +337,7 @@ export function GeoGame({ regions: allRegions, challenge }: GeoGameProps) {
     }
     setGame({ ...game, round: graded.next });
     setPick(null);
+    setGamePick(null);
     setShotLoaded(false);
     setFit(null);
     setPhase("guessing");
@@ -313,11 +369,16 @@ export function GeoGame({ regions: allRegions, challenge }: GeoGameProps) {
   if (phase === "setup" || phase === "loading" || (phase === "error" && !game)) {
     const dailyDone = today ? progress?.best[`geo-daily:${today}`] : undefined;
     const dailyMap = today ? byId(geoDailyRegion(today, playable(byId(WORLD_REGION)))) : undefined;
-    const bestGame = progress?.best[`geo:${geoBoardKey({ region: region.id, kind: "game" })}`];
-    const bestStreak = progress?.best[`geo:${geoBoardKey({ region: region.id, kind: "streak" })}`];
+    const bestGame = progress?.best[`geo:${boardOf({ region, kind: "game", filter })}`];
+    const bestStreak = progress?.best[`geo:${boardOf({ region, kind: "streak", filter })}`];
     const challengeMap = challenge ? byId(challenge.region) : undefined;
     const loading = phase === "loading";
     const isWorld = region.id === WORLD_REGION;
+    const filterName = filter.families.length
+      ? filter.families.map((f) => geoFamily(f).short).join(", ")
+      : filter.era
+        ? GEO_ERA_NAMES[filter.era]
+        : null;
     return (
       <div className="mx-auto max-w-4xl space-y-8">
         <div className="space-y-3 text-center">
@@ -420,8 +481,13 @@ export function GeoGame({ regions: allRegions, challenge }: GeoGameProps) {
             </div>
           )}
 
+          <GameFilter region={region} filter={filter} onChange={chooseFilter} guessGame={guessGame} onGuessGame={chooseGuessGame} />
+
           <p className="text-sm text-muted-foreground">
-            {fmt(region.locations)} places, each shown in every game it appears in: {gamesText(region.games)}.
+            {filterName
+              ? `${fmt(places)} places with ${filterName} screenshots.`
+              : `${fmt(region.locations)} places, each shown in every game it appears in: ${gamesText(region.games)}.`}{" "}
+            {filter.families.length ? "Hand-picked games are practice: no leaderboard." : filter.era ? `${GEO_ERA_NAMES[filter.era]} has leaderboards of its own.` : ""}
           </p>
 
           <div className="grid gap-4 sm:grid-cols-2">
@@ -435,7 +501,7 @@ export function GeoGame({ regions: allRegions, challenge }: GeoGameProps) {
                   : `Five places, up to ${fmt(MAX_TOTAL)} points. Then challenge a friend to beat you.`
               }
               stat={bestGame ? `Best ${fmt(bestGame)}` : null}
-              disabled={loading}
+              disabled={loading || !filterOk}
               onClick={() => void start({ kind: "game" })}
             />
             <ModeCard
@@ -448,13 +514,14 @@ export function GeoGame({ regions: allRegions, challenge }: GeoGameProps) {
                   : "Pin the exact place, again and again. One miss and it's over."
               }
               stat={bestStreak ? `Best ${bestStreak} in a row` : null}
-              disabled={loading}
+              disabled={loading || !filterOk}
               onClick={() => void start({ kind: "streak" })}
             />
           </div>
         </div>
 
-        <DuelCard region={region} />
+        {/* Duels play an era when the map has enough of it (hand-picked games are practice), else every game. */}
+        <DuelCard region={region} era={filter.era && filterPlaces(region, { era: filter.era, families: [] }) >= GEO_FILTER_MIN_PLACES ? filter.era : undefined} />
 
         <p className="text-center text-xs text-muted-foreground">
           Screenshots from{" "}
@@ -518,6 +585,7 @@ export function GeoGame({ regions: allRegions, challenge }: GeoGameProps) {
         <div className="hud-label">Map</div>
         <div className="truncate font-display font-bold uppercase">
           {game.region.name}
+          {game.filter.families.length ? " · Picked games" : game.filter.era ? ` · ${GEO_ERA_NAMES[game.filter.era]}` : ""}
           {game.daily ? ` · Daily #${dailyNumber(game.daily)}` : isStreak ? " · Streak" : ""}
         </div>
       </div>
@@ -599,6 +667,9 @@ export function GeoGame({ regions: allRegions, challenge }: GeoGameProps) {
               }}
             />
           </div>
+          {game.guessGame && pick && (
+            <GameGuessPicker options={gameGuessOptions(game.region, game.filter)} value={gamePick} onChange={setGamePick} />
+          )}
           <Button className="w-full" size="lg" disabled={!pick || phase === "submitting"} onClick={() => void guess()}>
             {phase === "submitting" ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : <MapPinIcon className="h-4 w-4" aria-hidden />}
             {pick ? "Guess" : "Place your pin on the map"}
@@ -726,6 +797,15 @@ function RoundReveal({
             </div>
           </>
         )}
+        {graded.gameGuess && (
+          <p className={cn("text-sm font-semibold", graded.gameGuess.correct ? "text-success" : "text-muted-foreground")} data-testid="geo-game-bonus">
+            {graded.gameGuess.correct
+              ? `Right game! +${fmt(graded.gameGuess.bonus)} bonus`
+              : graded.gameGuess.guessed
+                ? `Not ${geoFamily(graded.gameGuess.guessed).name}: no bonus`
+                : `No game named: no bonus (worth ${fmt(GEO_GAME_BONUS)})`}
+          </p>
+        )}
         <p className="text-muted-foreground">
           It was <span className="font-semibold text-foreground">{placeName(graded.answer, game.region)}</span>
           <span className="text-sm"> · Pokémon {graded.answer.game}</span>
@@ -741,6 +821,9 @@ function RoundReveal({
         <Button size="lg" className="w-full max-w-xs" onClick={onNext}>
           {graded.done ? (isStreak ? "See results" : "View summary") : "Next round"} ▶
         </Button>
+        <div>
+          <ReportShot key={current.shot} shot={current.shot} mode={game.daily ? "daily" : "solo"} />
+        </div>
       </motion.div>
     </div>
   );
@@ -767,6 +850,7 @@ function GeoSummary({
   const { region } = game;
   const isStreak = game.kind === "streak";
   const total = played.reduce((s, p) => s + p.graded.score, 0);
+  const bonus = game.guessGame ? (played.at(-1)?.graded.bonusTotal ?? 0) : null;
   const streak = played.filter((p) => p.graded.hit).length;
   const headline = useCountUp(isStreak ? streak : total, 1100);
   const [name, setName] = useState("");
@@ -826,6 +910,11 @@ function GeoSummary({
         {!isStreak && (
           <>
             <div className="text-sm text-muted-foreground">out of {fmt(MAX_TOTAL)}</div>
+            {bonus !== null && (
+              <div className="text-sm font-semibold text-success" data-testid="geo-bonus-total">
+                +{fmt(bonus)} game bonus · {fmt(total + bonus)} with the bonus (the leaderboard counts the map score)
+              </div>
+            )}
             <div className="meter mx-auto max-w-xl">
               <motion.div className="h-full bg-primary" initial={{ width: 0 }} animate={{ width: `${(total / MAX_TOTAL) * 100}%` }} transition={{ duration: 1.1 }} />
             </div>
@@ -896,6 +985,7 @@ function GeoSummary({
                 <span className="min-w-0 flex-1 truncate text-sm">
                   <span className="font-semibold">{placeName(p.graded.answer, region)}</span>
                   <span className="text-muted-foreground"> · {p.graded.answer.game}</span>
+                  {p.graded.gameGuess?.correct && <span className="text-success"> · +{fmt(p.graded.gameGuess.bonus)}</span>}
                 </span>
                 {!isStreak && <span className="font-pixel text-xs tabular-nums">{fmt(p.graded.score)}</span>}
               </li>
@@ -949,13 +1039,15 @@ function GeoSummary({
             <p className="text-xs text-muted-foreground">Only your first daily game of the day goes on the leaderboard.</p>
           ) : game.practice === "challenge" ? (
             <p className="text-xs text-muted-foreground">Challenge games aren&apos;t ranked, since the places were shared.</p>
+          ) : game.practice === "filtered" ? (
+            <p className="text-xs text-muted-foreground">Games on hand-picked games are practice: play All games, Classic 2D or Modern 3D to rank.</p>
           ) : null}
 
           <Link
             href={
               game.daily
                 ? `/leaderboard?board=geo&date=${game.daily}`
-                : `/leaderboard?board=geo&format=${geoBoardKey({ region: region.id, kind: game.kind })}`
+                : `/leaderboard?board=geo&format=${geoBoardKey({ region: region.id, kind: game.kind, era: game.filter.era })}`
             }
             className={cn(buttonVariants({ variant: "outline", size: "lg" }), "w-full")}
           >

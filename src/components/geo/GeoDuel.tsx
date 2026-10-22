@@ -23,6 +23,8 @@ import { useDuel } from "@/components/duel/use-duel";
 import { DuelGone, DuelLoading, DuelLobby, DuelNotice, DuelVisitor, LeaveButton, MatchedNote, SEAT_COLORS, SeatDot, clock, seconds } from "@/components/duel/DuelParts";
 import { DuelChat, DuelTools, EmoteFeed } from "@/components/duel/DuelReactions";
 import { GeoMap, type MapPin, type RevealedRound } from "./GeoMap";
+import { ReportShot } from "./ReportShot";
+import { GEO_ERA_NAMES } from "@/lib/geo-families";
 import { cn } from "@/lib/utils";
 import { AddFriendAfterGame } from "@/components/community/AddFriend";
 import { Avatar } from "@/components/avatar/Avatar";
@@ -174,14 +176,14 @@ export function GeoDuel({ code, regions }: GeoDuelProps) {
         <DuelLobby
           view={view}
           path={`/guessr/duel/${view.code}`}
-          tag={`Duel · ${map.name}`}
+          tag={`Duel · ${map.name}${view.era ? ` · ${GEO_ERA_NAMES[view.era]}` : ""}`}
           title={
             <>
               Poké<span className="text-primary">Guessr</span> Duel
             </>
           }
           invite={(host) => `${host} challenges you! The same places for both of you, ${fmt(DUEL_HP)} HP each.`}
-          about={`Head to head on the ${map.name} map. Both of you get the same places; the closer pin wins the round.`}
+          about={`Head to head on the ${map.name} map${view.era ? `, ${GEO_ERA_NAMES[view.era]} screenshots only` : ""}. Both of you get the same places; the closer pin wins the round.`}
           shareText={`Duel me in PokéGuessr! Same places, ${fmt(DUEL_HP)} HP each.`}
           rules={[
             {
@@ -498,6 +500,11 @@ function DuelReveal({ view, map, result, children }: { view: DuelView; map: GeoR
         It was <span className="font-semibold text-foreground">{placeName(result.answer, map)}</span>
         <span className="text-sm"> · Pokémon {result.answer.game}</span>
       </p>
+      {me !== null && (
+        <div className="text-center">
+          <ReportShot key={result.shot} shot={result.shot} mode="duel" />
+        </div>
+      )}
     </>
   );
 }

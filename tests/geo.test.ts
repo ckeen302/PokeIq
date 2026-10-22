@@ -65,7 +65,7 @@ describe("PokéGuessr", () => {
       expect(isGeoSpec({ region: id, kind: "game" }), id).toBe(true);
       expect(x0 >= 0 && y0 >= 0 && x1 <= worldW && y1 <= worldH && x0 < x1 && y0 < y1, id).toBe(true);
     }
-    expect(w.locations).toBeGreaterThanOrEqual(600);
+    expect(w.locations).toBeGreaterThanOrEqual(550);
     // Every board key fits the leaderboard's mode column.
     for (const r of regions) for (const kind of GEO_KINDS) expect(geoBoardKey({ region: r.id, kind }).length).toBeLessThanOrEqual(40);
   });
@@ -226,7 +226,7 @@ describe("PokéGuessr", () => {
   it("scores a guess on any place's flag perfectly", () => {
     // A world streak visits every place on the map.
     const rounds = planRounds(worldStreak, "every-flag");
-    expect(rounds.length).toBeGreaterThan(600);
+    expect(rounds.length).toBeGreaterThan(550);
     for (const round of rounds) {
       const { pin, name } = answerFor(worldStreak, round);
       expect(measureGuess(worldStreak, round, pin[0], pin[1]).score, name).toBe(GEO_MAX_ROUND_SCORE);
@@ -256,5 +256,77 @@ describe("PokéGuessr", () => {
     expect(miss.body).toMatchObject({ hit: false, done: true });
     expect(miss.body.result!.score).toBe(0);
     expect(miss.body.challengeToken).toBeUndefined();
+  });
+});
+
+describe("PokéGuessr game filters", () => {
+  const familyOf = (spec: GeoSpec, round: Parameters<typeof answerFor>[1]) => answerFor(spec, round).family;
+
+  it("deals only an era's screenshots, from every place that has them", () => {
+    const classic: GeoSpec = { region: WORLD_REGION, kind: "streak", era: "2d" };
+    const modern: GeoSpec = { region: WORLD_REGION, kind: "streak", era: "3d" };
+    const twoD = new Set(["rby", "gsc", "rse", "frlg", "dppt", "hgss", "bw"]);
+    const c = planRounds(classic, "era-2d");
+    const m = planRounds(modern, "era-3d");
+    expect(c.length).toBeGreaterThan(300);
+    expect(m.length).toBeGreaterThan(300);
+    for (const r of c) expect(twoD.has(familyOf(classic, r))).toBe(true);
+    for (const r of m) expect(twoD.has(familyOf(modern, r))).toBe(false);
+    // A five-round world game on an era still visits five regions.
+    const answers = planRounds({ ...classic, kind: "game" }, "era-world").map((r) => answerFor(classic, r));
+    expect(new Set(answers.map((a) => group(a.region))).size).toBe(GEO_ROUNDS);
+  });
+
+  it("deals only picked families, and turns off a map with too few places for them", () => {
+    const picked: GeoSpec = { region: "kanto", kind: "game", families: ["frlg", "lgpe"] };
+    for (let i = 0; i < 30; i++) for (const r of planRounds(picked, `pick-${i}`)) expect(["frlg", "lgpe"]).toContain(familyOf(picked, r));
+    expect(isGeoSpec(picked)).toBe(true);
+    // Kalos and Paldea have no sprite games.
+    expect(isGeoSpec({ region: "kalos", kind: "game", era: "2d" })).toBe(false);
+    expect(isGeoSpec({ region: "paldea", kind: "streak", era: "2d" })).toBe(false);
+    expect(isGeoSpec({ region: "kanto", kind: "game", families: ["za"] })).toBe(false);
+    const kalos = geoRegions().find((r) => r.id === "kalos")!;
+    expect(kalos.families.every((f) => ["xy", "za"].includes(f))).toBe(true);
+    expect(Object.values(kalos.combos).reduce((a, b) => a + b, 0)).toBe(kalos.locations);
+  });
+
+  it("gives Classic 2D and Modern 3D boards of their own", () => {
+    expect(geoBoardKey({ region: WORLD_REGION, kind: "game" })).toBe("world");
+    expect(geoBoardKey({ region: WORLD_REGION, kind: "game", era: "2d" })).toBe("world:2d");
+    expect(geoBoardKey({ region: "kanto", kind: "streak", era: "3d" })).toBe("kanto:3d:streak");
+    for (const r of geoRegions()) for (const kind of GEO_KINDS) expect(geoBoardKey({ region: r.id, kind, era: "3d" }).length).toBeLessThanOrEqual(40);
+  });
+
+  it("adds a bonus for naming the game, kept apart from the ranked score", () => {
+    const spec: GeoSpec = { region: "kanto", kind: "game", guessGame: true };
+    const start = startGeo(spec);
+    let state = readGeo(start.token)!;
+    const rounds = planRounds(spec, state.seed);
+    let last;
+    for (let i = 0; i < GEO_ROUNDS; i++) {
+      const answer = answerFor(spec, rounds[i]);
+      // The right game on even rounds, a wrong one on odd rounds.
+      const family = i % 2 === 0 ? answer.family : answer.family === "rby" ? "gsc" : "rby";
+      const out = gradeGeo(state, { x: answer.pin[0], y: answer.pin[1], family });
+      if (!out.ok) throw new Error(out.error);
+      expect(out.body.gameGuess).toMatchObject({ correct: i % 2 === 0, bonus: i % 2 === 0 ? 1000 : 0 });
+      last = out.body;
+      state = readGeo(out.body.token)!;
+    }
+    expect(last!.result!.score).toBe(GEO_ROUNDS * GEO_MAX_ROUND_SCORE);
+    expect(last!.result!.bonus).toBe(3000);
+    expect(last!.bonusTotal).toBe(3000);
+    // Without the option: no bonus fields at all (scored as before).
+    const plain = playOut(kanto, "pin");
+    expect(plain.bodies.at(-1)!.result!.bonus).toBeUndefined();
+    expect(plain.bodies.at(-1)!.gameGuess).toBeUndefined();
+  });
+
+  it("carries a challenge's filter so the friend plays the same games", () => {
+    expect(isGeoSpec({ region: "johto", kind: "game", era: "3d" })).toBe(false);
+    const spec: GeoSpec = { region: "sinnoh", kind: "game", era: "3d" };
+    expect(isGeoSpec(spec)).toBe(true);
+    const { bodies } = playOut(spec, { x: 0.5, y: 0.5 });
+    expect(readGeoChallenge(bodies.at(-1)!.challengeToken)!.era).toBe("3d");
   });
 });

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { seatAvatars } from "@/lib/server/avatars";
 import { z } from "zod";
 import { gate } from "@/lib/server/moderation";
+import { syncHiddenShots } from "@/lib/server/geo-reports";
 import { chatRateLimit, clientIp, rateLimit } from "@/lib/server/rate-limit";
 import { CHAT_BODY_MAX } from "@/lib/server/chat";
 import { DUEL_EMOTES } from "@/lib/pvp-types";
@@ -77,6 +78,8 @@ export async function GET(request: NextRequest, context: Context) {
   }
   const code = await codeFrom(context);
   if (!code) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  // New rounds are dealt as the duel moves on: not from shots players have since flagged.
+  await syncHiddenShots();
   const playerId = readDuelToken(request.headers.get("x-duel-token"), code);
   try {
     const out = await updateDuel(code, (duel, now) => ({ ok: true as const, duel: touchDuel(duel, playerId, now) }));
@@ -96,6 +99,8 @@ export async function POST(request: NextRequest, context: Context) {
   }
   const code = await codeFrom(context);
   if (!code) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  // New rounds are dealt as the duel moves on: not from shots players have since flagged.
+  await syncHiddenShots();
   const parsed = bodySchema.safeParse(await request.json().catch(() => ({})));
   if (!parsed.success) return NextResponse.json({ error: parsed.error.issues[0].message }, { status: 400 });
   const body = parsed.data;

@@ -3,13 +3,19 @@ import { z } from "zod";
 import { clientIp, rateLimit } from "@/lib/server/rate-limit";
 import { claimOnce, recallResponse, rememberResponse, requestFingerprint } from "@/lib/server/replay-guard";
 import { gradeGeo, readGeo } from "@/lib/server/geo";
+import { syncHiddenShots } from "@/lib/server/geo-reports";
+import { GEO_FAMILY_IDS } from "@/lib/geo-families";
 
-/** POST /api/geo/guess — { token, x, y } (x, y normalised 0–1 on the region map). */
+/**
+ * POST /api/geo/guess — { token, x, y, family? } (x, y normalised 0–1 on the
+ * region map; `family`: "guess the game too", the game family named).
+ */
 
 const bodySchema = z.object({
   token: z.string().min(10).max(4096),
   x: z.number().min(0).max(1),
   y: z.number().min(0).max(1),
+  family: z.enum(GEO_FAMILY_IDS as [string, ...string[]]).optional(),
 });
 
 export async function POST(request: NextRequest) {
@@ -22,11 +28,12 @@ export async function POST(request: NextRequest) {
   const state = readGeo(parsed.data.token);
   if (!state) return NextResponse.json({ error: "Game expired or invalid — start a new one." }, { status: 401 });
 
+  await syncHiddenShots();
   const outcome = gradeGeo(state, parsed.data);
   if (!outcome.ok) return NextResponse.json({ error: outcome.error }, { status: outcome.status });
 
   // Each round can be guessed once; an identical retry (lost response) gets the same answer back.
-  const fingerprint = requestFingerprint(parsed.data.token, String(parsed.data.x), String(parsed.data.y));
+  const fingerprint = requestFingerprint(parsed.data.token, String(parsed.data.x), String(parsed.data.y), parsed.data.family ?? "");
   if (!(await claimOnce(outcome.claimKey))) {
     const cached = recallResponse(outcome.claimKey, fingerprint);
     if (cached) return NextResponse.json(cached, { headers: { "Cache-Control": "no-store" } });

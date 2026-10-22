@@ -13,6 +13,9 @@ import { ROOM_IDS, SLOW_MODES } from "@/lib/rooms";
 import { USERNAME_RE } from "@/lib/server/auth";
 import { approvePicture, pendingPictures, rejectPicture } from "@/lib/server/avatar-uploads";
 import { PICTURE_ID_RE } from "@/lib/avatar";
+import { GeoReportsUnavailable, reviewShot, shotReviewQueue } from "@/lib/server/geo-reports";
+import { shotInfo } from "@/lib/server/geo";
+import { GEO_SHOT_ID_RE, type GeoShotReview } from "@/lib/geo-reports";
 
 /**
  * The moderators' API, for accounts named in POKEIQ_ADMINS only (anyone
@@ -25,6 +28,7 @@ import { PICTURE_ID_RE } from "@/lib/avatar";
  * GET ?tab=tournaments                            open and running tournaments
  * GET ?tab=audit                                  the latest moderator actions
  * GET ?tab=avatars                                profile pictures waiting for review, and how many
+ * GET ?tab=shots&status=                          PokéGuessr screenshots players reported, grouped by shot
  * POST { action, ... }                            see bodySchema
  */
 
@@ -50,13 +54,15 @@ const bodySchema = z.discriminatedUnion("action", [
   z.object({ action: z.literal("dq"), id: tourId, name }),
   z.object({ action: z.literal("approvePicture"), id: z.string().regex(PICTURE_ID_RE) }),
   z.object({ action: z.literal("rejectPicture"), id: z.string().regex(PICTURE_ID_RE), strike: z.boolean().default(false) }),
+  z.object({ action: z.literal("keepShot"), shot: z.string().regex(GEO_SHOT_ID_RE) }),
+  z.object({ action: z.literal("removeShot"), shot: z.string().regex(GEO_SHOT_ID_RE) }),
 ]);
 
 const notFound = () => NextResponse.json({ error: "Not found" }, { status: 404, headers: NO_STORE });
 const bad = (error: string, status = 400) => NextResponse.json({ error }, { status, headers: NO_STORE });
 
 function missingTables(err: unknown) {
-  return err instanceof ModerationUnavailable || err instanceof RoomsUnavailable || err instanceof TournamentsUnavailable || err instanceof NoTournaments;
+  return err instanceof GeoReportsUnavailable || err instanceof ModerationUnavailable || err instanceof RoomsUnavailable || err instanceof TournamentsUnavailable || err instanceof NoTournaments;
 }
 
 export async function GET(request: NextRequest) {
@@ -102,10 +108,20 @@ export async function GET(request: NextRequest) {
         const out = await pendingPictures();
         return NextResponse.json(out ? { open: true, ...out } : { open: false, pending: [], count: 0 }, { headers: NO_STORE });
       }
+      case "shots": {
+        const status = q.get("status");
+        const queue = await shotReviewQueue(status === "kept" || status === "removed" || status === "all" ? status : "open");
+        const shots: GeoShotReview[] = (queue ?? []).map((s) => {
+          const info = shotInfo(s.shot);
+          return { ...s, src: `/api/geo/shot/${s.shot}`, place: info?.place ?? null, game: info?.game ?? null };
+        });
+        return NextResponse.json({ shots, stored: queue !== null }, { headers: NO_STORE });
+      }
       default:
         return bad("Unknown tab.");
     }
   } catch (err) {
+    if (err instanceof GeoReportsUnavailable) return bad("Screenshot reports need migration 0025: run it in Supabase first.", 503);
     if (missingTables(err)) return bad("That needs migration 0020: run it in Supabase first.", 503);
     console.error("[admin]", err);
     return bad("Something went wrong on our side.", 500);
@@ -175,6 +191,14 @@ export async function POST(request: NextRequest) {
         await audit(admin, body.action === "dq" ? "disqualify" : "cancel tournament", body.id, body.action === "dq" ? body.name : body.reason || null);
         return ok();
       }
+      case "keepShot":
+      case "removeShot": {
+        const n = await reviewShot(body.shot, body.action === "keepShot" ? "keep" : "remove", admin.username);
+        if (!n) return bad("No open reports on that screenshot.", 409);
+        const info = shotInfo(body.shot);
+        await audit(admin, body.action === "keepShot" ? "keep screenshot" : "remove screenshot", body.shot, info ? `${info.place} · ${info.game}` : null);
+        return ok({ reports: n });
+      }
       case "approvePicture": {
         const out = await approvePicture(body.id, admin.username);
         if (!out.ok) return bad(out.error, out.status);
@@ -189,6 +213,7 @@ export async function POST(request: NextRequest) {
       }
     }
   } catch (err) {
+    if (err instanceof GeoReportsUnavailable) return bad("Screenshot reports need migration 0025: run it in Supabase first.", 503);
     if (missingTables(err)) return bad("That needs migration 0020: run it in Supabase first.", 503);
     console.error("[admin]", err);
     return bad("Something went wrong on our side.", 500);

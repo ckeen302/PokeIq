@@ -23,6 +23,7 @@ import {
   type DuelView,
 } from "@/lib/duel-types";
 import type { GeoSpec } from "@/lib/geo-types";
+import type { GeoEra } from "@/lib/geo-families";
 
 /**
  * PokéGuessr duels: two trainers on the same rounds, GeoGuessr Duels style.
@@ -61,6 +62,8 @@ export interface Duel {
   v: 1;
   code: string;
   region: string;
+  /** Only Classic 2D or Modern 3D screenshots (every game when unset). */
+  era?: GeoEra;
   seed: string;
   createdAt: number;
   status: DuelStatus;
@@ -101,10 +104,10 @@ const geoSpec = (region: string): GeoSpec => ({ region, kind: "game" });
  * equally likely and no two rounds share a town; one seed, so both trainers
  * get the same places.
  */
-const planDuel = (region: string, seed: string, count: number) => planRounds({ region, kind: "streak" }, seed, count);
+const planDuel = (region: string, seed: string, count: number, era?: GeoEra) => planRounds({ region, kind: "streak", ...(era ? { era } : {}) }, seed, count);
 
-/** Whether a map can host a duel. */
-export const isDuelMap = (region: string) => isGeoSpec(geoSpec(region));
+/** Whether a map (in an era) can host a duel. */
+export const isDuelMap = (region: string, era?: GeoEra) => isGeoSpec({ ...geoSpec(region), ...(era ? { era } : {}) });
 
 /** Same route as the single-player game; screenshot ids are random, so the URL gives nothing away. */
 const shotUrl = (round: PlannedRound) => `/api/geo/shot/${round.shot}`;
@@ -134,14 +137,14 @@ export function readDuelToken(token: unknown, code: string): string | null {
 // Creating and joining
 // ---------------------------------------------------------------------------
 
-function blankDuel(region: string, code: string, players: DuelPlayer[], now: number, seed = randomId()): Duel {
-  const maxRounds = planDuel(region, seed, DUEL_MAX_ROUNDS).length;
-  return { v: 1, code, region, seed, createdAt: now, status: "lobby", players, maxRounds, hp: [DUEL_HP, DUEL_HP], rounds: [] };
+function blankDuel(region: string, code: string, players: DuelPlayer[], now: number, seed = randomId(), era?: GeoEra): Duel {
+  const maxRounds = planDuel(region, seed, DUEL_MAX_ROUNDS, era).length;
+  return { v: 1, code, region, ...(era ? { era } : {}), seed, createdAt: now, status: "lobby", players, maxRounds, hp: [DUEL_HP, DUEL_HP], rounds: [] };
 }
 
-export function createDuel(region: string, name: string, code: string, now: number, seed?: string): { duel: Duel; playerId: string } {
+export function createDuel(region: string, name: string, code: string, now: number, seed?: string, era?: GeoEra): { duel: Duel; playerId: string } {
   const playerId = randomId();
-  return { duel: blankDuel(region, code, [{ id: playerId, name, ready: false, seenAt: now }], now, seed), playerId };
+  return { duel: blankDuel(region, code, [{ id: playerId, name, ready: false, seenAt: now }], now, seed, era), playerId };
 }
 
 export function joinDuel(duel: Duel, name: string, now: number): { ok: true; duel: Duel; playerId: string } | DuelFailure {
@@ -159,7 +162,7 @@ export function joinDuel(duel: Duel, name: string, now: number): { ok: true; due
 
 /** A rematch: the same map and trainers (same seats), new places, the chat so far. Both start un-ready, as if just seen. */
 export function rematchOf(old: Duel, code: string, now: number, seed?: string): Duel {
-  const next = blankDuel(old.region, code, old.players.map((p) => ({ id: p.id, name: p.name, ready: false, seenAt: now })), now, seed);
+  const next = blankDuel(old.region, code, old.players.map((p) => ({ id: p.id, name: p.name, ready: false, seenAt: now })), now, seed, old.era);
   return old.chat?.length ? { ...next, chat: old.chat } : next;
 }
 
@@ -245,7 +248,7 @@ function step(d: Duel, now: number): boolean {
 }
 
 function newRound(d: Duel, startsAt: number): DuelRound {
-  const plan = planDuel(d.region, d.seed, d.rounds.length + 1)[d.rounds.length];
+  const plan = planDuel(d.region, d.seed, d.rounds.length + 1, d.era)[d.rounds.length];
   return { plan, startsAt, guesses: d.players.map(() => null), skip: d.players.map(() => false) };
 }
 
@@ -389,6 +392,7 @@ export function duelView(duel: Duel, playerId: string | null, now: number, rev: 
   return {
     code: duel.code,
     region: duel.region,
+    ...(duel.era ? { era: duel.era } : {}),
     status: duel.status,
     now,
     rev,

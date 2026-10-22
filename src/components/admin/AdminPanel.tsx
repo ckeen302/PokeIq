@@ -9,8 +9,9 @@ import { ROOMS, SLOW_MODES, type RoomMessage } from "@/lib/rooms";
 import type { TournamentSummary } from "@/lib/tournaments";
 import { cn } from "@/lib/utils";
 import { pictureSrc, type PendingPicture } from "@/lib/avatar";
+import { GEO_HIDE_THRESHOLD, GEO_REPORT_REASONS, type GeoReportReason, type GeoShotReview } from "@/lib/geo-reports";
 
-const TABS = ["reports", "users", "rooms", "tournaments", "avatars", "audit"] as const;
+const TABS = ["reports", "shots", "users", "rooms", "tournaments", "avatars", "audit"] as const;
 type Tab = (typeof TABS)[number];
 const FIELD = "h-9 rounded-md border border-input bg-background px-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
 const when = (at: number) => new Date(at).toLocaleString([], { dateStyle: "short", timeStyle: "short" });
@@ -47,6 +48,7 @@ export function AdminPanel() {
         ))}
       </div>
       {tab === "reports" && <Reports />}
+      {tab === "shots" && <Shots />}
       {tab === "users" && <Users />}
       {tab === "rooms" && <Rooms />}
       {tab === "tournaments" && <Tournaments />}
@@ -437,6 +439,89 @@ function Avatars({ onCount }: { onCount: (n: number) => void }) {
           ))}
         </ul>
       )}
+    </div>
+  );
+}
+
+/** PokéGuessr screenshots players reported: keep one (its reports are cleared) or remove it from rotation. */
+function Shots() {
+  const [status, setStatus] = useState("open");
+  const { data, error, reload, setError } = useLoad(() => api<{ shots: GeoShotReview[]; stored: boolean }>(`tab=shots&status=${status}`), [status]);
+  const [busy, setBusy] = useState<string | null>(null);
+
+  async function decide(shot: string, action: "keepShot" | "removeShot") {
+    setBusy(shot);
+    try {
+      await api(null, { action, shot });
+      reload();
+    } catch (err) {
+      setError((err as Error).message);
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  return (
+    <div className="space-y-3">
+      <div className="flex flex-wrap items-center gap-2">
+        <select className={FIELD} value={status} onChange={(e) => setStatus(e.target.value)} aria-label="Status">
+          <option value="open">Waiting for review</option>
+          <option value="kept">Kept</option>
+          <option value="removed">Removed</option>
+          <option value="all">All</option>
+        </select>
+        <p className="text-xs text-muted-foreground">
+          {GEO_HIDE_THRESHOLD} distinct reporters take a screenshot out of rotation until it&apos;s reviewed. Keep clears its reports; Remove keeps it out (drop it from the data in the next import).
+        </p>
+      </div>
+      {error && <p className="text-sm text-destructive">{error}</p>}
+      {data && !data.stored && <p className="text-sm text-muted-foreground">Screenshot reports aren&apos;t stored on this server (no database).</p>}
+      {data?.shots.length === 0 && <p className="text-sm text-muted-foreground">Nothing here.</p>}
+      <ul className="grid gap-3 lg:grid-cols-2" data-testid="admin-shots">
+        {data?.shots.map((s) => (
+          <li key={s.shot} className="hud space-y-2 rounded-lg border bg-card p-3 text-sm" data-testid="admin-shot">
+            {/* eslint-disable-next-line @next/next/no-img-element -- the game's own CDN-cached screenshot */}
+            <img src={s.src} alt={s.place ?? s.shot} loading="lazy" className="aspect-video w-full rounded-md bg-black object-contain" />
+            <div className="flex flex-wrap items-center gap-2 text-xs">
+              <span className="font-semibold text-foreground">{s.place ?? "Not in the data any more"}</span>
+              {s.game && <span className="rounded border px-1.5 py-0.5">{s.game}</span>}
+              {s.hidden && <span className="rounded bg-destructive/20 px-1.5 py-0.5 font-semibold uppercase text-destructive">Out of rotation</span>}
+              <span className="text-muted-foreground">
+                {s.reporters} reporter{s.reporters === 1 ? "" : "s"} · {s.modes.join(", ")} · {when(s.last)}
+              </span>
+              <span className="font-mono text-muted-foreground">{s.shot}</span>
+            </div>
+            <div className="flex flex-wrap gap-1.5 text-xs">
+              {Object.entries(s.reasons).map(([reason, n]) => (
+                <span key={reason} className="rounded bg-primary/15 px-1.5 py-0.5">
+                  {GEO_REPORT_REASONS[reason as GeoReportReason]} ×{n}
+                </span>
+              ))}
+            </div>
+            {s.notes.length > 0 && (
+              <ul className="space-y-0.5 rounded border bg-background p-2 text-xs">
+                {s.notes.map((n, i) => (
+                  <li key={i} className="break-words">
+                    “{n}”
+                  </li>
+                ))}
+              </ul>
+            )}
+            {s.status === "open" ? (
+              <div className="flex gap-2">
+                <Button size="sm" variant="success" disabled={busy === s.shot} onClick={() => void decide(s.shot, "keepShot")} data-testid="admin-shot-keep">
+                  <Check className="h-3.5 w-3.5" aria-hidden /> Keep
+                </Button>
+                <Button size="sm" variant="destructive" disabled={busy === s.shot} onClick={() => void decide(s.shot, "removeShot")} data-testid="admin-shot-remove">
+                  <Trash2 className="h-3.5 w-3.5" aria-hidden /> Remove
+                </Button>
+              </div>
+            ) : (
+              <p className="text-xs text-muted-foreground">{s.status === "kept" ? "Kept" : "Removed"}</p>
+            )}
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }
