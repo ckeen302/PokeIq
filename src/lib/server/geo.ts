@@ -417,6 +417,31 @@ export function answerFor(spec: Pick<GeoSpec, "region">, round: PlannedRound, sq
   return { name: location.name, parent: location.parent, game: shot.game, family: shot.family, pin: location.pin, mask: location.mask, squares, region: location.region };
 }
 
+/** Look around: at most this many views of a place per round. */
+export const GEO_MAX_VIEWS = 8;
+
+/**
+ * Look around: every screenshot of the round's place the game can deal (its
+ * filter's families, none hidden), the dealt one first, so the player can
+ * flip through them like moving in Street View. With "guess the game too"
+ * only the dealt shot's family, so the other views don't give the game away.
+ */
+export function roundViews(spec: DealSpec & Pick<GeoSpec, "guessGame">, round: PlannedRound): string[] {
+  const location = findLocation(spec, round);
+  if (!location) return [round.shot];
+  const allowed = allowedFamilies(spec);
+  const dealt = location.shots.find((s) => s.id === round.shot);
+  const family = dealt?.family ?? familyOfGame(round.game ?? "");
+  const others = usableShots(location, allowed).filter((s) => s.id !== round.shot && (!spec.guessGame || s.family === family));
+  return [round.shot, ...others.map((s) => s.id)].slice(0, GEO_MAX_VIEWS);
+}
+
+/** A round as the player sees it: the dealt screenshot, and the place's other views when there are any. */
+function publicRound(spec: GeoSpec, index: number, round: PlannedRound): GeoRoundPublic {
+  const views = roundViews(spec, round);
+  return { index, shot: shotUrl(round.shot), ...(views.length > 1 ? { views: views.map(shotUrl) } : {}) };
+}
+
 /** "Guess the game too": the bonus for naming the screenshot's family. */
 export function gradeGameGuess(answer: Pick<GeoAnswer, "family">, guessed: string | undefined): GeoGameGuess {
   const family = isGeoFamily(guessed) ? guessed : null;
@@ -498,7 +523,7 @@ export function startGeo(
   const rounds = given?.length === GEO_ROUNDS ? given : planRounds(spec, seed, spec.kind === "game" ? GEO_ROUNDS : 1);
   const plan = given?.length === GEO_ROUNDS ? opts.plan : seal(rounds);
   const state: GeoState = { v: 4, sid: randomId(), spec, seed, startedAt: Date.now(), name: opts.name, log: [], plan };
-  return { token: signToken("geo", state), round: { index: 0, shot: shotUrl(rounds[0].shot) } };
+  return { token: signToken("geo", state), round: publicRound(spec, 0, rounds[0]) };
 }
 
 export function readGeo(token: unknown): GeoState | null {
@@ -563,7 +588,7 @@ export function gradeGeo(state: GeoState, guess: { x: number; y: number; family?
       ...(gameGuess ? { gameGuess, bonusTotal } : {}),
       token: signToken("geo", next),
       total,
-      next: done ? undefined : { index: index + 1, shot: shotUrl(rounds[index + 1].shot) },
+      next: done ? undefined : publicRound(spec, index + 1, rounds[index + 1]),
       done,
       result,
       resultToken: result ? signToken("geo-result", result) : undefined,
