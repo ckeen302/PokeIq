@@ -73,7 +73,9 @@ export type ShareOutcome = "shared" | "copied" | "cancelled" | "failed";
 export async function shareOrCopy(text: string, url?: string): Promise<ShareOutcome> {
   const full = shareText(text, url);
   const data = { text: full };
-  if (typeof navigator.share === "function" && (typeof navigator.canShare !== "function" || navigator.canShare(data))) {
+  // The OS share sheet only on touch devices; desktop players get a straight copy.
+  const touch = window.matchMedia("(pointer: coarse)").matches;
+  if (touch && typeof navigator.share === "function" && (typeof navigator.canShare !== "function" || navigator.canShare(data))) {
     try {
       await navigator.share(data);
       return "shared";
