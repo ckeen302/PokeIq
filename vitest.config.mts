@@ -5,6 +5,8 @@ export default defineConfig({
   test: {
     include: ["tests/**/*.test.ts"],
     environment: "node",
+    // Battle simulations run real games; a loaded CI runner can push one past the 5s default.
+    testTimeout: 30_000,
   },
   resolve: {
     alias: {
