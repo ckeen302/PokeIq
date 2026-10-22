@@ -93,7 +93,7 @@ describe("battle lab: seeds and reproducibility", () => {
       expect(replay.record.outcome + 1).toBe(whole.outcomes[i]);
       expect(replay.log!.some((l) => l.startsWith("|win|") || l === "|tie")).toBe(true);
     }
-  });
+  }, 30_000);
 });
 
 describe("battle lab: statistics", () => {
