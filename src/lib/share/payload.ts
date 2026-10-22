@@ -88,7 +88,23 @@ export interface BattleShareResult {
   turns: number;
 }
 
-export type ShareResult = PokedleShareResult | GuessrShareResult | QuizShareResult | BattleShareResult;
+/**
+ * A PokéConnections game: each guess as four digits, the group (0 yellow to
+ * 3 purple) of each Pokémon picked. Colours only: never a Pokémon or a
+ * group's name, so a daily's link can't spoil it.
+ */
+export interface ConnectionsShareResult {
+  game: "connections";
+  daily?: number;
+  archive?: boolean;
+  solved: boolean;
+  /** One per guess, oldest first: four of "0123". */
+  rows: string[];
+  seconds?: number;
+  streak?: number;
+}
+
+export type ShareResult = PokedleShareResult | GuessrShareResult | QuizShareResult | BattleShareResult | ConnectionsShareResult;
 export type ShareGame = ShareResult["game"];
 
 /** Longest payload accepted (and produced). */
@@ -98,7 +114,9 @@ const DLE_MAX_ROWS = 12;
 const DLE_MAX_COLUMNS = 7;
 export const SHARE_QUIZ_GRID = 60;
 
-const GAME_CODES: Record<ShareGame, string> = { pokedle: "dle", guessr: "geo", quiz: "quiz", battle: "bat" };
+const GAME_CODES: Record<ShareGame, string> = { pokedle: "dle", guessr: "geo", quiz: "quiz", battle: "bat", connections: "con" };
+/** A PokéConnections game's most guesses: four groups and four mistakes, less the one that ends it. */
+const CONN_MAX_ROWS = 7;
 const DLE_FORMAT_CODES: Record<DleFormat, string> = { classic: "c", squirdle: "s", custom: "x" };
 const DLE_HINT_CODES: Record<DleHint, string> = { genus: "g", silhouette: "s" };
 const OUTCOME_CODES = { win: "w", loss: "l", tie: "t" } as const;
@@ -158,6 +176,16 @@ export function encodeShare(result: ShareResult): string {
     case "battle":
       fields.push(["f", result.format], ["o", OUTCOME_CODES[result.outcome]], ["l", result.cpu], ["k", result.ranked], ["t", result.turns]);
       break;
+    case "connections":
+      fields.push(
+        ["n", result.daily],
+        ["a", result.archive],
+        ["w", result.solved ? 1 : 0],
+        ["k", result.streak || undefined],
+        ["e", result.seconds],
+        ["r", result.rows.slice(0, CONN_MAX_ROWS).join("-")]
+      );
+      break;
   }
   const parts = [GAME_CODES[result.game]];
   for (const [key, value] of fields) {
@@ -212,7 +240,37 @@ export function decodeShare(raw: unknown): ShareResult | null {
       return decodeQuiz(f);
     case "battle":
       return decodeBattle(f);
+    case "connections":
+      return decodeConnections(f);
   }
+}
+
+/** A row that's one whole group: a right guess. */
+const isGroupRow = (row: string) => /^([0-3])\1{3}$/.test(row);
+
+function decodeConnections(f: Record<string, string>): ConnectionsShareResult | null {
+  const solved = f.w === "1" ? true : f.w === "0" ? false : undefined;
+  if (solved === undefined || !f.r) return null;
+  const rows = f.r.split("-");
+  if (rows.length > CONN_MAX_ROWS || rows.some((r) => !/^[0-3]{4}$/.test(r))) return null;
+  const found = rows.filter(isGroupRow);
+  const mistakes = rows.length - found.length;
+  // A real game: each group found once, at most four mistakes, and it ends on the guess that finished it.
+  if (new Set(found).size !== found.length || mistakes > 4) return null;
+  if (solved ? found.length !== 4 || !isGroupRow(rows[rows.length - 1]) : mistakes !== 4 || isGroupRow(rows[rows.length - 1])) return null;
+  const daily = num(f.n, 1, DAILY_MAX);
+  const seconds = num(f.e, 1, 86_400);
+  const streak = num(f.k, 1, 100_000);
+  const archive = daily !== undefined && f.a === "1";
+  return {
+    game: "connections",
+    ...(daily !== undefined && { daily }),
+    ...(archive && { archive: true }),
+    solved,
+    rows,
+    ...(seconds !== undefined && { seconds }),
+    ...(streak !== undefined && daily !== undefined && !archive && { streak }),
+  };
 }
 
 const DAILY_MAX = 100_000;

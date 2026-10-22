@@ -1,0 +1,619 @@
+"use client";
+
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { AnimatePresence, LayoutGroup, MotionConfig, motion } from "framer-motion";
+import { track } from "@vercel/analytics";
+import { BarChart3, CalendarDays, CircleHelp, Dices, RefreshCw, Settings, Shuffle, Timer, X } from "lucide-react";
+import { connBlock, getProgress, saveConn, useProgress, type ConnRecord } from "@/lib/progress";
+import { useToday } from "@/lib/use-today";
+import { play } from "@/lib/sound";
+import { dlePlayerId } from "@/lib/dle-player";
+import { clock, connectionsShareText, shareUrl, type ConnectionsShareResult } from "@/lib/share";
+import { connArchive, connStats, getConnPrefs, saveConnArchive, setConnPrefs, useConnPrefs } from "@/lib/connections/local";
+import {
+  CONN_GROUP_SIZE,
+  CONN_GROUPS,
+  CONN_MAX_MISTAKES,
+  connNumber,
+  guessKey,
+  type ConnDaySummary,
+  type ConnGuessResponse,
+  type ConnLevel,
+  type ConnPuzzleResponse,
+  type ConnResultResponse,
+  type ConnTile,
+} from "@/lib/connections/types";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Popover } from "@/components/ui/popover";
+import { NextDailyCountdown } from "@/components/NextDailyCountdown";
+import { ShareButton } from "@/components/share/ShareButton";
+import { GridTile, GroupBar, GuessHistory, MistakeDots, WhyPanel, type TileMotion } from "./parts";
+import { ConnArchiveSheet, ConnHowToSheet, ConnStatsSheet } from "./sheets";
+import { cn } from "@/lib/utils";
+
+/** Today's daily, a past daily from the archive (never counted), or a practice puzzle. */
+type Target = { kind: "daily"; date: string } | { kind: "archive"; date: string } | { kind: "practice"; seed: string };
+type Mode = Target["kind"];
+
+const newSeed = () => Math.random().toString(36).slice(2, 10).padEnd(8, "0");
+const TOAST_MS = 1600;
+/** How long a right guess's tiles bounce before they become a bar. */
+const JUMP_MS = 620;
+/** Between groups revealed after a loss. */
+const REVEAL_MS = 750;
+
+const query = (t: Target): Record<string, string> => (t.kind === "practice" ? { practice: t.seed } : { date: t.date });
+
+function reducedMotion(): boolean {
+  return typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+}
+
+export function Connections() {
+  const progress = useProgress();
+  const prefs = useConnPrefs();
+  const today = useToday();
+  const [target, setTarget] = useState<Target | null>(null);
+  const [puzzle, setPuzzle] = useState<ConnPuzzleResponse | null>(null);
+  /** The grid's current order (shuffling changes it). */
+  const [order, setOrder] = useState<number[]>([]);
+  const [selected, setSelected] = useState<number[]>([]);
+  const [guesses, setGuesses] = useState<number[][]>([]);
+  const [state, setState] = useState<ConnGuessResponse | null>(null);
+  /** After a loss, how many of the missing groups have been revealed so far. */
+  const [revealed, setRevealed] = useState(0);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [toast, setToast] = useState<{ text: string; n: number } | null>(null);
+  const [tileMotion, setTileMotion] = useState<{ kind: Exclude<TileMotion, null>; ids: number[]; n: number } | null>(null);
+  const [sheet, setSheet] = useState<"howto" | "stats" | "archive" | null>(null);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [summary, setSummary] = useState<ConnDaySummary | null>(null);
+  const [announce, setAnnounce] = useState("");
+  /** Time on this game: what's banked, and when the running stretch began (null: not running). */
+  const [elapsed, setElapsed] = useState({ banked: 0, since: null as number | null });
+  const [now, setNow] = useState(() => Date.now());
+  const reqRef = useRef(0);
+  const seenTodayRef = useRef<string | null>(null);
+  const tileRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  const toastTimer = useRef<number | undefined>(undefined);
+  const closeSettings = useCallback(() => setSettingsOpen(false), []);
+
+  const mode: Mode = target?.kind ?? "daily";
+  const symbols = prefs?.symbols ?? true;
+  const over = state?.over ?? false;
+  const won = state?.won ?? false;
+  const foundLevels = useMemo(() => new Set((state?.found ?? []).map((g) => g.level)), [state]);
+  /** The bars on screen: groups found, then (after a loss) the missing ones revealed so far, easiest first. */
+  const bars = useMemo(() => {
+    if (!state) return [];
+    const missing = over && !won ? (state.reveal ?? []).filter((g) => !foundLevels.has(g.level)).slice(0, revealed) : [];
+    return [...state.found, ...missing];
+  }, [state, over, won, foundLevels, revealed]);
+  const placed = useMemo(() => new Set(bars.flatMap((b) => b.members.map((m) => m.id))), [bars]);
+  const tilesById = useMemo(() => new Map((puzzle?.tiles ?? []).map((t) => [t.id, t])), [puzzle]);
+  const remaining = order.filter((id) => !placed.has(id)).map((id) => tilesById.get(id)!).filter(Boolean);
+  const missingCount = over && !won ? CONN_GROUPS - (state?.found.length ?? 0) : 0;
+  const revealDone = over && (won || revealed >= missingCount);
+  const mistakesLeft = CONN_MAX_MISTAKES - (state?.mistakes ?? 0);
+  const ms = elapsed.banked + (elapsed.since !== null ? now - elapsed.since : 0);
+
+  const stats = useMemo(() => (progress && today ? connStats(connBlock(progress).results, today) : null), [progress, today]);
+
+  // ---- Saving ----------------------------------------------------------------
+
+  const save = useCallback((t: Target, record: ConnRecord) => {
+    if (t.kind === "daily") saveConn(t.date, record);
+    else if (t.kind === "archive") saveConnArchive(t.date, record);
+  }, []);
+
+  // ---- Loading a puzzle ------------------------------------------------------
+
+  const load = useCallback(async (t: Target) => {
+    const id = ++reqRef.current;
+    setTarget(t);
+    setPuzzle(null);
+    setOrder([]);
+    setSelected([]);
+    setState(null);
+    setRevealed(0);
+    setError(null);
+    setSummary(null);
+    setTileMotion(null);
+    setBusy(true);
+    const saved = t.kind === "practice" ? undefined : t.kind === "daily" ? connBlock(getProgress()).results[t.date] : (connArchive()[t.date] ?? connBlock(getProgress()).results[t.date]);
+    const list = saved?.guesses ?? [];
+    setGuesses(list);
+    setElapsed({ banked: saved?.ms ?? 0, since: null });
+    try {
+      const res = await fetch(`/api/connections?${new URLSearchParams(query(t))}`);
+      const body = await res.json();
+      if (!res.ok) throw new Error(body.error ?? "Couldn't load the puzzle.");
+      if (id !== reqRef.current) return;
+      const p = body as ConnPuzzleResponse;
+      setPuzzle(p);
+      setOrder(p.tiles.map((x) => x.id));
+      if (list.length) {
+        const r = await fetch("/api/connections", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...query(t), guesses: list }) });
+        const restored = await r.json();
+        if (!r.ok) throw new Error(restored.error ?? "Couldn't restore your game.");
+        if (id !== reqRef.current) return;
+        setState(restored as ConnGuessResponse);
+        setRevealed(CONN_GROUPS);
+      }
+    } catch (err) {
+      if (id === reqRef.current) setError(err instanceof Error ? err.message : "Something went wrong.");
+    } finally {
+      if (id === reqRef.current) setBusy(false);
+    }
+  }, []);
+
+  // Today's daily once local storage is ready; roll over at midnight unless mid-game.
+  useEffect(() => {
+    if (!today || !progress) return;
+    const prev = seenTodayRef.current;
+    if (prev === today) return;
+    seenTodayRef.current = today;
+    if (prev === null || (mode === "daily" && (guesses.length === 0 || over))) void load({ kind: "daily", date: today });
+  }, [today, progress, mode, guesses.length, over, load]);
+
+  // How to play, on a first visit.
+  useEffect(() => {
+    if (prefs && progress && !prefs.seenHowTo && Object.keys(connBlock(progress).results).length === 0) setSheet("howto");
+  }, [prefs, progress]);
+
+  // The clock: runs while a started game is open and visible.
+  const started = guesses.length > 0 || selected.length > 0;
+  useEffect(() => {
+    if (!puzzle || over || !started) return;
+    const resume = () => setElapsed((e) => (e.since === null && document.visibilityState === "visible" ? { ...e, since: Date.now() } : e));
+    const pause = () => setElapsed((e) => (e.since !== null ? { banked: e.banked + Date.now() - e.since, since: null } : e));
+    resume();
+    const onVis = () => (document.visibilityState === "visible" ? resume() : pause());
+    document.addEventListener("visibilitychange", onVis);
+    const tick = setInterval(() => setNow(Date.now()), 500);
+    return () => {
+      document.removeEventListener("visibilitychange", onVis);
+      clearInterval(tick);
+      pause();
+    };
+  }, [puzzle, over, started]);
+
+  // After a loss, reveal the missing groups one by one, easiest first.
+  useEffect(() => {
+    if (!over || won || revealed >= missingCount) return;
+    const t = setTimeout(() => setRevealed((r) => r + 1), revealed === 0 ? 500 : REVEAL_MS);
+    return () => clearTimeout(t);
+  }, [over, won, revealed, missingCount]);
+
+  // A finished daily: record it for the day's stats (and get them back).
+  const finishedDaily = over && target?.kind === "daily" ? target.date : null;
+  useEffect(() => {
+    if (!finishedDaily || !guesses.length) return;
+    let live = true;
+    fetch("/api/connections/result", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ date: finishedDaily, player: dlePlayerId(), guesses }),
+    })
+      .then((r) => (r.ok ? (r.json() as Promise<ConnResultResponse>) : null))
+      .then((body) => {
+        if (live && body?.available) setSummary(body.summary);
+      })
+      .catch(() => {
+        // No stats today: the game doesn't need them.
+      });
+    return () => {
+      live = false;
+    };
+    // Once per finished daily (the guesses are final by then).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [finishedDaily]);
+
+  // ---- Playing ---------------------------------------------------------------
+
+  function showToast(text: string) {
+    window.clearTimeout(toastTimer.current);
+    setToast((t) => ({ text, n: (t?.n ?? 0) + 1 }));
+    toastTimer.current = window.setTimeout(() => setToast(null), TOAST_MS);
+  }
+  useEffect(() => () => window.clearTimeout(toastTimer.current), []);
+
+  function toggle(id: number) {
+    if (over || busy || !puzzle) return;
+    setSelected((s) => (s.includes(id) ? s.filter((x) => x !== id) : s.length < CONN_GROUP_SIZE ? [...s, id] : s));
+  }
+
+  function shuffle() {
+    setOrder((o) => {
+      const rest = o.filter((id) => !placed.has(id));
+      for (let i = rest.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [rest[i], rest[j]] = [rest[j], rest[i]];
+      }
+      return [...o.filter((id) => placed.has(id)), ...rest];
+    });
+  }
+
+  async function submit() {
+    if (!target || !puzzle || over || busy || selected.length !== CONN_GROUP_SIZE) return;
+    const pick = [...selected];
+    if (guesses.some((g) => guessKey(g) === guessKey(pick))) {
+      showToast("Already guessed!");
+      setAnnounce("Already guessed. That doesn't cost a mistake.");
+      return;
+    }
+    const next = [...guesses, pick];
+    const id = ++reqRef.current;
+    setBusy(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/connections", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...query(target), guesses: next }) });
+      const body = await res.json();
+      if (!res.ok) throw new Error(body.error ?? "Couldn't check that guess.");
+      if (id !== reqRef.current) return;
+      const result = body as ConnGuessResponse;
+      const last = result.results.at(-1);
+      const elapsedMs = elapsed.banked + (elapsed.since !== null ? Date.now() - elapsed.since : 0);
+      save(target, { guesses: next, solved: result.won, over: result.over, mistakes: result.mistakes, ms: Math.round(elapsedMs) });
+      setGuesses(next);
+      if (result.over && !state?.over && target.kind === "daily") track("connections_complete", { won: result.won, mistakes: result.mistakes });
+      const reduced = reducedMotion();
+      if (last?.kind === "correct") {
+        const group = result.found.at(-1)!;
+        setTileMotion({ kind: "jump", ids: pick, n: Date.now() });
+        play("correct");
+        setAnnounce(`Correct: ${group.label}. ${group.members.map((m) => m.name).join(", ")}.${result.won ? " Puzzle solved!" : ""}`);
+        await new Promise((r) => setTimeout(r, reduced ? 0 : JUMP_MS));
+        if (id !== reqRef.current) return;
+        setTileMotion(null);
+        setSelected([]);
+        setState(result);
+        if (result.won) play("fanfare");
+      } else {
+        setTileMotion({ kind: "shake", ids: pick, n: Date.now() });
+        play("wrong");
+        const oneAway = last?.kind === "one-away";
+        if (oneAway) showToast("One away…");
+        const left = CONN_MAX_MISTAKES - result.mistakes;
+        setAnnounce(`${oneAway ? "One away. " : "Not a group. "}${result.over ? "No mistakes left: here are the groups." : `${left} mistake${left === 1 ? "" : "s"} left.`}`);
+        setState(result);
+        if (result.over) setSelected([]);
+        window.setTimeout(() => setTileMotion((m) => (m?.kind === "shake" ? null : m)), 450);
+      }
+    } catch (err) {
+      if (id === reqRef.current) setError(err instanceof Error ? err.message : "Something went wrong.");
+    } finally {
+      if (id === reqRef.current) setBusy(false);
+    }
+  }
+
+  // Keyboard: arrows move between tiles, Enter submits a full selection, Esc deselects.
+  function onTileKey(e: React.KeyboardEvent<HTMLButtonElement>, index: number) {
+    const cols = 4;
+    const move = { ArrowRight: 1, ArrowLeft: -1, ArrowDown: cols, ArrowUp: -cols }[e.key];
+    if (move !== undefined) {
+      e.preventDefault();
+      const nextIndex = Math.min(remaining.length - 1, Math.max(0, index + move));
+      tileRefs.current[nextIndex]?.focus();
+    } else if (e.key === "Enter") {
+      e.preventDefault();
+      if (selected.length === CONN_GROUP_SIZE) void submit();
+      else toggle(remaining[index].id);
+    }
+  }
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (sheet || settingsOpen || e.defaultPrevented) return;
+      if (e.key === "Escape" && selected.length) setSelected([]);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [sheet, settingsOpen, selected.length]);
+
+  // ---- Modes -----------------------------------------------------------------
+
+  function newPractice() {
+    void load({ kind: "practice", seed: newSeed() });
+  }
+
+  function backToDaily() {
+    if (today) void load({ kind: "daily", date: today });
+  }
+
+  const closeSheet = useCallback(() => {
+    if (sheet === "howto") setConnPrefs({ seenHowTo: true });
+    setSheet(null);
+  }, [sheet]);
+
+  // ---- Results ---------------------------------------------------------------
+
+  /** Each guess as its tiles' groups (known once it's over). */
+  const historyRows = useMemo<ConnLevel[][]>(() => {
+    if (!state?.reveal) return [];
+    const levelOf = new Map(state.reveal.flatMap((g) => g.members.map((m) => [m.id, g.level] as const)));
+    return guesses.map((g) => g.map((id) => levelOf.get(id) ?? 0));
+  }, [state, guesses]);
+
+  const daily = target && target.kind !== "practice" ? target : null;
+  const streak = stats?.playStreak ?? 0;
+
+  function shareTextNow(): string {
+    const result: ConnectionsShareResult = {
+      game: "connections",
+      ...(daily && { daily: connNumber(daily.date) }),
+      ...(daily?.kind === "archive" && { archive: true }),
+      solved: won,
+      rows: historyRows.map((r) => r.join("")),
+      ...(ms >= 1000 && { seconds: Math.round(ms / 1000) }),
+      ...(daily?.kind === "daily" && streak > 0 && { streak }),
+    };
+    return connectionsShareText(result, shareUrl(result));
+  }
+
+  const title = mode === "practice" ? "PokéConnections · Practice" : daily ? `PokéConnections #${connNumber(daily.date)}${mode === "archive" ? ` · Archive (${daily.date})` : ""}` : "PokéConnections";
+  const iconButton =
+    "relative rounded-md p-2 text-muted-foreground transition-colors hover:bg-screen/10 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-40";
+  const motionFor = (id: number): TileMotion => (tileMotion?.ids.includes(id) ? tileMotion.kind : null);
+  const todayRecord = today && progress ? connBlock(progress).results[today] : undefined;
+
+  return (
+    <MotionConfig reducedMotion="user">
+      <div className="mx-auto max-w-3xl space-y-5">
+        <div className="space-y-4 text-center">
+          <div className="space-y-2">
+            <p className="hud-label text-screen" data-testid="conn-title">
+              {title}
+            </p>
+            <h1 className="font-display text-4xl font-bold uppercase tracking-tight">Find the four groups</h1>
+            <p className="text-sm text-muted-foreground">Sixteen Pokémon, four hidden links. Every Pokémon fits exactly one.</p>
+          </div>
+          <div className="flex items-center justify-center gap-1" role="toolbar" aria-label="PokéConnections options">
+            <button type="button" className={iconButton} onClick={() => setSheet("howto")} aria-label="How to play" title="How to play">
+              <CircleHelp className="h-5 w-5" />
+            </button>
+            <button type="button" className={iconButton} onClick={() => setSheet("stats")} aria-label="Statistics" title="Statistics" disabled={!stats}>
+              <BarChart3 className="h-5 w-5" />
+            </button>
+            <button type="button" className={iconButton} onClick={() => setSheet("archive")} aria-label="Archive of past dailies" title="Archive of past dailies" disabled={!today}>
+              <CalendarDays className="h-5 w-5" />
+            </button>
+            <button type="button" className={cn(iconButton, mode === "practice" && "text-screen")} onClick={newPractice} aria-pressed={mode === "practice"} aria-label="New practice puzzle" title="New practice puzzle (unlimited)">
+              <Dices className="h-5 w-5" />
+            </button>
+            <div className="relative flex items-center">
+              <button
+                type="button"
+                className={cn(iconButton, settingsOpen && "bg-screen/10 text-foreground")}
+                onClick={() => setSettingsOpen((o) => !o)}
+                aria-expanded={settingsOpen}
+                aria-haspopup="dialog"
+                aria-label="Settings"
+                title="Settings"
+              >
+                <Settings className="h-5 w-5" />
+              </button>
+              <Popover open={settingsOpen} onClose={closeSettings} label="PokéConnections settings" className="w-[24rem] max-w-[calc(100vw-2rem)] space-y-4">
+                <div className="flex items-start justify-between gap-3">
+                  <p className="hud-label pt-1">Settings</p>
+                  <button type="button" onClick={closeSettings} aria-label="Close settings" className="rounded-md p-1 text-muted-foreground hover:text-foreground">
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
+                <SettingToggle
+                  label="Group symbols"
+                  description="● ▲ ■ ◆ on each group as well as its colour (easier with colour blindness)."
+                  checked={symbols}
+                  onChange={() => setConnPrefs({ symbols: !getConnPrefs().symbols })}
+                />
+                <SettingToggle label="Show the clock" description="A running timer above the grid. Your time is on your result either way." checked={prefs?.showTimer ?? false} onChange={() => setConnPrefs({ showTimer: !getConnPrefs().showTimer })} />
+              </Popover>
+            </div>
+          </div>
+        </div>
+
+        {mode === "archive" && (
+          <p className="mx-auto max-w-md rounded-md border border-screen/40 bg-screen/[0.06] px-3 py-2 text-center text-sm">
+            Archive: a past daily, just for fun. It doesn&apos;t count toward your streaks or stats.{" "}
+            <button type="button" onClick={backToDaily} className="font-semibold text-primary hover:underline">
+              Back to today&apos;s
+            </button>
+          </p>
+        )}
+        {mode === "practice" && (
+          <p className="mx-auto max-w-md rounded-md border border-screen/40 bg-screen/[0.06] px-3 py-2 text-center text-sm">
+            Practice puzzle: unlimited, and never counted.{" "}
+            <button type="button" onClick={backToDaily} className="font-semibold text-primary hover:underline">
+              Back to today&apos;s
+            </button>
+          </p>
+        )}
+        {mode === "daily" && stats?.atRisk && !over && (
+          <p className="mx-auto max-w-md rounded-md border border-orange-400/50 bg-orange-400/10 px-3 py-2 text-center text-sm font-semibold text-orange-400" role="status">
+            🔥 Your {stats.playStreak}-day streak is at risk: finish today&apos;s puzzle to keep it.
+          </p>
+        )}
+
+        {/* The board: found groups as bars on top, the tiles still in play below. */}
+        <div className="relative">
+          <AnimatePresence>
+            {toast && (
+              <motion.div
+                key={toast.n}
+                initial={{ opacity: 0, y: -6 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                className="pointer-events-none absolute inset-x-0 top-[40%] z-20 flex justify-center"
+                role="status"
+                aria-live="assertive"
+                data-testid="conn-toast"
+              >
+                <span className="rounded-md bg-foreground px-5 py-2.5 font-display text-base font-bold uppercase tracking-wider text-background shadow-[0_10px_30px_rgb(0_0_0/0.45)]">{toast.text}</span>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {!puzzle ? (
+            <div className="grid grid-cols-4 gap-2 sm:gap-2.5" aria-busy="true" aria-label="Loading the puzzle">
+              {Array.from({ length: 16 }, (_, i) => (
+                <div key={i} className="h-[7.25rem] animate-pulse rounded-lg border bg-card sm:h-[8.25rem]" />
+              ))}
+            </div>
+          ) : (
+            <LayoutGroup>
+              <div className="space-y-2 sm:space-y-2.5">
+                {bars.map((g) => (
+                  <GroupBar key={g.level} group={g} symbols={symbols} revealed={!foundLevels.has(g.level)} />
+                ))}
+                {remaining.length > 0 && (
+                  <div className="grid grid-cols-4 gap-2 sm:gap-2.5" data-testid="conn-grid" aria-label="Pokémon to group">
+                    {remaining.map((t: ConnTile, i) => (
+                      <GridTile
+                        key={t.id}
+                        ref={(el) => {
+                          tileRefs.current[i] = el;
+                        }}
+                        tile={t}
+                        index={i}
+                        selected={selected.includes(t.id)}
+                        disabled={over || (busy && !tileMotion)}
+                        motionKind={motionFor(t.id)}
+                        order={tileMotion ? tileMotion.ids.indexOf(t.id) : 0}
+                        onToggle={() => toggle(t.id)}
+                        onKeyDown={(e) => onTileKey(e, i)}
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
+            </LayoutGroup>
+          )}
+        </div>
+
+        {error && (
+          <p className="text-center text-sm text-destructive" role="alert">
+            {error}
+          </p>
+        )}
+        <div className="sr-only" aria-live="polite" role="status">
+          {announce}
+        </div>
+
+        {!over && puzzle && (
+          <div className="space-y-4">
+            <MistakeDots left={mistakesLeft} max={CONN_MAX_MISTAKES} />
+            <div className="flex flex-wrap items-center justify-center gap-2.5">
+              <Button variant="outline" onClick={shuffle} disabled={busy} className="rounded-full sm:min-w-28">
+                <Shuffle className="h-4 w-4" aria-hidden /> Shuffle
+              </Button>
+              <Button variant="outline" onClick={() => setSelected([])} disabled={busy || selected.length === 0} className="rounded-full sm:min-w-28">
+                Deselect all
+              </Button>
+              <Button onClick={() => void submit()} disabled={busy || selected.length !== CONN_GROUP_SIZE} className="rounded-full sm:min-w-28" data-testid="conn-submit">
+                Submit
+              </Button>
+            </div>
+            {prefs?.showTimer && (
+              <p className="flex items-center justify-center gap-1.5 font-mono text-sm tabular-nums text-muted-foreground" role="timer" aria-label="Time">
+                <Timer className="h-4 w-4" aria-hidden /> {clock(ms / 1000)}
+              </p>
+            )}
+          </div>
+        )}
+
+        {/* The finished game: result, history, sharing, what's next, and why. */}
+        {revealDone && state?.reveal && (
+          <motion.section aria-label="Result" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="space-y-6 pt-2" data-testid="conn-result">
+            <Card className={cn("mx-auto max-w-md", won ? "border-success/50" : "border-destructive/40")}>
+              <CardContent className="space-y-5 p-6 text-center">
+                <div>
+                  <div className="font-display text-3xl font-bold uppercase tracking-tight">
+                    {won ? (state.mistakes === 0 ? "Perfect!" : state.mistakes === CONN_MAX_MISTAKES - 1 ? "Phew!" : "Solved!") : "Next time!"}
+                  </div>
+                  <p className="text-sm text-muted-foreground">{won ? "You found all four groups." : `You found ${state.found.length} of 4 groups.`}</p>
+                </div>
+                <GuessHistory rows={historyRows} symbols={symbols} />
+                <dl className="grid grid-cols-3 gap-2 text-center">
+                  <div>
+                    <dt className="text-[11px] text-muted-foreground">Mistakes</dt>
+                    <dd className="font-display text-2xl font-bold tabular-nums">
+                      {state.mistakes}/{CONN_MAX_MISTAKES}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="text-[11px] text-muted-foreground">Time</dt>
+                    <dd className="font-display text-2xl font-bold tabular-nums">{ms >= 1000 ? clock(ms / 1000) : "–"}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-[11px] text-muted-foreground">Streak</dt>
+                    <dd className="font-display text-2xl font-bold tabular-nums">{mode === "daily" ? `🔥${streak}` : "–"}</dd>
+                  </div>
+                </dl>
+                {mode === "daily" && summary && summary.players > 0 && (
+                  <p className="rounded-md border bg-shade/30 px-3 py-2 text-sm" data-testid="conn-community">
+                    <b>{Math.round((100 * summary.solved) / summary.players)}%</b> of {summary.players.toLocaleString("en-US")} trainer{summary.players === 1 ? "" : "s"} solved today&apos;s ·{" "}
+                    <b>{Math.round((100 * summary.perfect) / summary.players)}%</b> got it perfect
+                  </p>
+                )}
+                <div className="grid gap-2 sm:grid-cols-2">
+                  <ShareButton getText={shareTextNow} label="Share" kind="connections" />
+                  <Button variant={mode === "practice" ? "default" : "outline"} onClick={newPractice}>
+                    <RefreshCw className="h-4 w-4" aria-hidden /> {mode === "practice" ? "New puzzle" : "Practice"}
+                  </Button>
+                </div>
+                {mode !== "daily" && today && !todayRecord?.over && (
+                  <Button className="w-full" onClick={backToDaily}>
+                    Play today&apos;s PokéConnections
+                  </Button>
+                )}
+                {mode === "daily" && <NextDailyCountdown label="Next puzzle in" />}
+                {mode !== "daily" && <p className="text-xs text-muted-foreground">{mode === "archive" ? "Archive" : "Practice"} games don&apos;t count toward streaks or stats.</p>}
+              </CardContent>
+            </Card>
+            <WhyPanel groups={state.reveal} symbols={symbols} />
+          </motion.section>
+        )}
+      </div>
+
+      {sheet === "howto" && <ConnHowToSheet onClose={closeSheet} />}
+      {sheet === "stats" && stats && <ConnStatsSheet stats={stats} todayMistakes={todayRecord?.over ? (todayRecord.solved ? todayRecord.mistakes : CONN_MAX_MISTAKES) : null} onClose={closeSheet} />}
+      {sheet === "archive" && today && progress && (
+        <ConnArchiveSheet
+          today={today}
+          daily={connBlock(progress).results}
+          archive={connArchive()}
+          onPlay={(d) => {
+            setSheet(null);
+            void load({ kind: "archive", date: d });
+          }}
+          onClose={closeSheet}
+        />
+      )}
+    </MotionConfig>
+  );
+}
+
+/** A setting that's on or off: its name and line, and a switch (Pokédle's). */
+function SettingToggle({ label, description, checked, onChange }: { label: string; description: string; checked: boolean; onChange: () => void }) {
+  return (
+    <label className="flex cursor-pointer items-center justify-between gap-4">
+      <span className="min-w-0">
+        <span className="block text-sm font-semibold">{label}</span>
+        <span className="block text-xs text-muted-foreground">{description}</span>
+      </span>
+      <button
+        type="button"
+        role="switch"
+        aria-checked={checked}
+        aria-label={label}
+        onClick={onChange}
+        className={cn(
+          "relative h-5 w-9 shrink-0 rounded-full border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+          checked ? "border-primary bg-primary" : "border-foreground/20 bg-shade/30"
+        )}
+      >
+        <span className={cn("absolute top-0.5 h-3.5 w-3.5 rounded-full bg-foreground transition-[left]", checked ? "left-[1.1rem] bg-primary-foreground" : "left-0.5")} />
+      </button>
+    </label>
+  );
+}

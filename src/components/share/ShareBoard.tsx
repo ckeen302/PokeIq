@@ -10,6 +10,10 @@ const TILE_CLASS: Record<ShareTile, string> = {
   up: "bg-muted-foreground/30",
   down: "bg-muted-foreground/30",
   mask: "bg-blue-500",
+  "conn-yellow": "bg-[#f2cf55]",
+  "conn-green": "bg-[#96c860]",
+  "conn-blue": "bg-[#8fb2ef]",
+  "conn-purple": "bg-[#bd8ad8]",
 };
 
 const TILE_LABEL: Record<ShareTile, string> = {
@@ -21,6 +25,10 @@ const TILE_LABEL: Record<ShareTile, string> = {
   up: "higher",
   down: "lower",
   mask: "hidden",
+  "conn-yellow": "yellow",
+  "conn-green": "green",
+  "conn-blue": "blue",
+  "conn-purple": "purple",
 };
 
 /** A shared result's board: rows of squares, plus optional numbers under them (PokéGuessr's points). */

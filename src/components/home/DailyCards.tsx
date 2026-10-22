@@ -2,11 +2,13 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { CalendarDays, ChevronRight, Compass, Flame, Search } from "lucide-react";
+import { CalendarDays, ChevronRight, Compass, Flame, LayoutGrid, Search } from "lucide-react";
 import { dailyNumber } from "@/lib/daily";
 import { currentStreak, geoDailyStreak, useProgress } from "@/lib/progress";
 import { useToday } from "@/lib/use-today";
 import { dleStats } from "@/lib/dle-stats";
+import { connStats } from "@/lib/connections/local";
+import { connNumber } from "@/lib/connections/types";
 import { NextDailyCountdown } from "@/components/NextDailyCountdown";
 import { cn } from "@/lib/utils";
 
@@ -18,9 +20,10 @@ export function DailyCards() {
   const daily = today ? progress?.daily.results[today] : undefined;
   const dle = today ? progress?.dle.results[today] : undefined;
   const geo = today ? progress?.best[`geo-daily:${today}`] : undefined;
+  const conn = today ? progress?.conn?.results[today] : undefined;
 
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+    <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
       <DailyCard
         href="/daily"
         icon={<CalendarDays className="h-5 w-5" />}
@@ -53,6 +56,17 @@ export function DailyCards() {
         cleared={geo !== undefined}
         streak={progress && today ? geoDailyStreak(progress, today) : 0}
         accent="154 68% 46%"
+      />
+      <DailyCard
+        href="/connections"
+        icon={<LayoutGrid className="h-5 w-5" />}
+        title="PokéConnections"
+        number={today ? connNumber(today) : null}
+        description="16 Pokémon, 4 hidden groups. Find the links with 4 mistakes to spare."
+        status={conn?.over ? (conn.solved ? (conn.mistakes ? `Solved · ${conn.mistakes} mistake${conn.mistakes === 1 ? "" : "s"}` : "Perfect") : "Missed today") : conn?.guesses.length ? "In progress" : null}
+        cleared={!!conn?.over}
+        streak={progress?.conn && today ? connStats(progress.conn.results, today).playStreak : 0}
+        accent="42 98% 60%"
       />
     </div>
   );

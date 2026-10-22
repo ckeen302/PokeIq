@@ -12,13 +12,15 @@ import { MuteToggle } from "./MuteToggle";
 import { ThemeToggle } from "./ThemeToggle";
 import { FriendsButton } from "@/components/community/FriendsButton";
 
-const DESKTOP_LINKS = [
+const DESKTOP_LINKS: { href: string; label: string; wideOnly?: boolean }[] = [
   { href: "/pokedle", label: "Pokédle" },
+  { href: "/connections", label: "Connections" },
   { href: "/guessr", label: "Guessr" },
   { href: "/battle", label: "Battle" },
   { href: "/play", label: "Quizzes" },
   { href: "/pokedex", label: "Pokédex" },
-  { href: "/leaderboard", label: "Leaderboard" },
+  // Only on wide screens: with PokéConnections the row is too long for 1024px (the footer links it too).
+  { href: "/leaderboard", label: "Leaderboard", wideOnly: true },
 ];
 
 const MOBILE_TABS = [
@@ -42,7 +44,7 @@ export function DesktopNav() {
   return (
     <nav className="flex items-center gap-1">
       <div className="hidden items-center lg:flex">
-        {DESKTOP_LINKS.map(({ href, label }) => {
+        {DESKTOP_LINKS.map(({ href, label, wideOnly }) => {
           const active = isActive(pathname, href);
           return (
             <Link
@@ -51,7 +53,8 @@ export function DesktopNav() {
               className={cn(
                 // Tighter between lg and xl so every link fits on one row.
                 "relative whitespace-nowrap px-3 py-2 font-display text-[13px] font-semibold uppercase tracking-[0.12em] text-muted-foreground transition-colors hover:text-foreground xl:px-4",
-                active && "text-foreground"
+                active && "text-foreground",
+                wideOnly && "hidden xl:block"
               )}
               aria-current={active ? "page" : undefined}
             >

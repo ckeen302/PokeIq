@@ -260,6 +260,47 @@ await page.screenshot({ path: `${OUT}/pokedle-practice-settings.png`, fullPage: 
 // Back to the defaults for whoever plays next in this browser.
 await page.evaluate(() => localStorage.removeItem("pokeiq:pokedle-prefs:v1"));
 
+step("pokéconnections: a full daily, one wrong guess then a solve");
+{
+  // The answers come from the committed dailies file (the browser never gets them before the end).
+  const dailies = JSON.parse(fs.readFileSync("src/data/connections-dailies.json", "utf8"));
+  const today = await page.evaluate(() => {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  });
+  const day = Math.round((Date.parse(`${today}T00:00:00Z`) - Date.parse(`${dailies.start}T00:00:00Z`)) / 86_400_000);
+  const groups = dailies.puzzles[day].g.map(([, ...members]) => members);
+  const tilesRes = await (await page.request.get(`${BASE}/api/connections?date=${today}`)).text();
+  if (/label|members|category|reveal/.test(tilesRes)) errors.push("PokéConnections' tiles came with the groups");
+  await page.goto(`${BASE}/connections`, { waitUntil: "networkidle" });
+  await closeHowTo(page);
+  await page.getByTestId("conn-tile").first().waitFor();
+  if ((await page.getByTestId("conn-tile").count()) !== 16) errors.push("PokéConnections didn't show 16 tiles");
+  const pick = async (ids) => {
+    for (const id of ids) await page.locator(`[data-testid=conn-tile][data-id="${id}"]`).click();
+    await page.getByTestId("conn-submit").click();
+  };
+  // Two from one group and two from another: wrong, a mistake.
+  await pick([groups[0][0], groups[0][1], groups[1][0], groups[1][1]]);
+  await page.getByLabel("3 of 4 mistakes left").waitFor();
+  // The same four again: free.
+  await page.getByTestId("conn-submit").click();
+  await page.getByTestId("conn-toast").filter({ hasText: "Already guessed" }).waitFor();
+  await page.getByRole("button", { name: "Deselect all" }).click();
+  for (const [i, g] of groups.entries()) {
+    await pick(g);
+    await page.locator("[data-testid=conn-group]").nth(i).waitFor();
+  }
+  await page.getByTestId("conn-result").waitFor();
+  await page.getByTestId("conn-why").waitFor();
+  if (!(await page.getByText("1/4").count())) errors.push("PokéConnections' result doesn't show one mistake");
+  await page.getByTestId("conn-community").waitFor({ timeout: 10_000 }).catch(() => errors.push("PokéConnections' daily stats didn't show"));
+  await page.screenshot({ path: `${OUT}/connections.png`, fullPage: true });
+  // A reload restores the finished game.
+  await page.reload({ waitUntil: "networkidle" });
+  await page.getByTestId("conn-result").waitFor();
+}
+
 step("adaptive PokéIQ test (20 questions)");
 await page.goto(`${BASE}/iq-test`, { waitUntil: "networkidle" });
 await page.getByRole("button", { name: /Start the test/ }).click();

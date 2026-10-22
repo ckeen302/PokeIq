@@ -3,7 +3,7 @@ import { DLE_ASSIST_INFO } from "@/lib/dle-assist";
 import { MODULE_INFO } from "@/lib/modes";
 import { GEO_MAX_ROUND_SCORE, GEO_ROUNDS, WORLD_REGION } from "@/lib/geo-types";
 import { PLAY_FORMAT_INFO } from "@/lib/battle/play";
-import { battleOpponent, clock, guessrTitle, quizTitle } from "./text";
+import { battleOpponent, clock, connMistakes, connectionsScore, connectionsTitle, guessrTitle, quizTitle } from "./text";
 import type { ShareResult } from "./payload";
 
 /**
@@ -13,7 +13,10 @@ import type { ShareResult } from "./payload";
  */
 
 /** One square of a board. */
-export type ShareTile = "hit" | "near" | "far" | "miss" | "wrong" | "up" | "down" | "mask";
+export type ShareTile = "hit" | "near" | "far" | "miss" | "wrong" | "up" | "down" | "mask" | ConnShareTile;
+/** PokéConnections' group colours, easiest to hardest. */
+export type ConnShareTile = "conn-yellow" | "conn-green" | "conn-blue" | "conn-purple";
+export const CONN_SHARE_TILES: readonly ConnShareTile[] = ["conn-yellow", "conn-green", "conn-blue", "conn-purple"];
 
 export type ShareAccent = "violet" | "green" | "yellow" | "pink" | "cyan";
 
@@ -139,6 +142,29 @@ export function describeShare(r: ShareResult): ShareView {
         description: daily
           ? "Ten Pokémon questions, the same for every trainer, every day. Keep your streak going on PokéIQ."
           : "How well do you know Pokémon? Free quizzes on all 1,025 Pokémon, no sign-up. Can you beat this score?",
+      };
+    }
+    case "connections": {
+      const label = connectionsTitle(r);
+      const found = r.rows.filter((row) => /^([0-3])\1{3}$/.test(row)).length;
+      const mistakes = connMistakes(r.rows);
+      const time = r.seconds !== undefined ? ` in ${clock(r.seconds)}` : "";
+      const detail = r.solved
+        ? `Found all four groups with ${mistakes === 0 ? "no mistakes" : `${mistakes} mistake${mistakes === 1 ? "" : "s"}`}${time}`
+        : `Found ${found} of 4 groups before running out of mistakes`;
+      const headline = r.solved ? (mistakes === 0 ? "Perfect" : "Solved") : `${found}/4`;
+      return {
+        game: "PokéConnections",
+        label,
+        headline,
+        detail,
+        chips: [r.seconds !== undefined && `Time ${clock(r.seconds)}`, r.streak && `${r.streak}-day streak`].filter((c): c is string => Boolean(c)),
+        tiles: r.rows.map((row) => [...row].map((d) => CONN_SHARE_TILES[Number(d)])),
+        accent: "violet",
+        playHref: "/connections",
+        playLabel: r.daily !== undefined ? "Play today's PokéConnections" : "Play PokéConnections",
+        title: `${label}: ${connectionsScore(r)}`,
+        description: "Sixteen Pokémon, four hidden groups. Find what links them in a new puzzle every day on PokéIQ. Can you do better?",
       };
     }
     case "battle": {

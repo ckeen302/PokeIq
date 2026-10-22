@@ -19,6 +19,10 @@ const TILE: Record<ShareTile, { bg: string; mark?: string }> = {
   up: { bg: C.edge, mark: "↑" },
   down: { bg: C.edge, mark: "↓" },
   mask: { bg: "#3b82f6" },
+  "conn-yellow": { bg: "#f2cf55" },
+  "conn-green": { bg: "#96c860" },
+  "conn-blue": { bg: "#8fb2ef" },
+  "conn-purple": { bg: "#bd8ad8" },
 };
 
 /** The board, sized to fit about 470 × 380. */
