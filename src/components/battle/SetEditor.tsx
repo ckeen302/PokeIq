@@ -9,7 +9,8 @@ import { fitStatsToGen, fromDV, hasDVs, newSet, type TeamSet } from "@/lib/battl
 import { cn } from "@/lib/utils";
 import { BattleSprite } from "./BattleSprite";
 import { Field, inputClass, NumberInput, Toggle } from "./controls";
-import { useLearnable } from "./hooks";
+import { useLearnable, useUsage } from "./hooks";
+import { EvGoals, PopularSets } from "./SetTools";
 import { BattleType, ItemSelect, MoveSelect, NatureSelect, SpeciesSelect, TypeSelect } from "./pickers";
 import { StatEditor } from "./StatEditor";
 
@@ -32,6 +33,7 @@ export function SetEditor({
   const { format, gen } = dex;
   const species = set ? gen.species.get(set.species) : undefined;
   const { moves: learnable, loading } = useLearnable(dex, species?.name);
+  const usage = useUsage(format.id);
   // Before anything is typed, the search lists the format's own tier.
   const initial = useMemo(() => {
     const own = dex.species.filter((s) => dex.tier(s) === dex.format.homeTier);
@@ -120,6 +122,7 @@ export function SetEditor({
             <SpeciesSelect species={dex.species} initial={initial} tier={dex.tier} value={set.species} current={species} shiny={set.shiny} onSelect={pickSpecies} />
           </Field>
           {!species && <p className="text-xs text-destructive">{set.species} isn&apos;t in {format.name}.</p>}
+          {species && <PopularSets dex={dex} usage={usage} set={set} onChange={onChange} />}
           <Field label="Nickname">
             <input
               value={set.name}
@@ -243,6 +246,9 @@ export function SetEditor({
                 onEvs={(evs) => update({ evs })}
                 onIvs={(ivs) => update({ ivs })}
               />
+            ) : null}
+            {species ? (
+              <EvGoals dex={dex} usage={usage} set={set} onChange={onChange} />
             ) : (
               <p className="text-sm text-muted-foreground">Pick a species to see its stats.</p>
             )}

@@ -19,6 +19,9 @@ const BattleScreen = dynamic(() => import("./play/BattleScreen"), {
   ),
 });
 
+// The analysis brings the simulator's tracker and the damage calc: loaded with the page, not in its first bundle.
+const ReplayAnalysis = dynamic(() => import("./ReplayAnalysis").then((m) => m.ReplayAnalysis), { ssr: false });
+
 /** A short pause between turns while playing, so each one reads as a turn. */
 const BETWEEN_TURNS_MS = 450;
 
@@ -201,6 +204,7 @@ export function ReplayViewer({ replay }: { replay: ReplayData }) {
       <div className="flex justify-end">
         <ShareReplay id={replay.id} result={replayResult(replay)} formatName={replay.formatName} />
       </div>
+      <ReplayAnalysis replay={replay} />
     </div>
   );
 }

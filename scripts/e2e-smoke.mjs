@@ -822,6 +822,28 @@ await page.getByText("Legal in [Gen 9] OU").waitFor({ timeout: 30_000 });
 await page.getByRole("tab", { name: /Dragapult/ }).click();
 await page.getByRole("combobox", { name: "Move 1" }).waitFor();
 await page.screenshot({ path: `${OUT}/battle-teams.png`, fullPage: true });
+
+step("team builder: type coverage chart, threats, popular sets, EV goals");
+const coverage = page.getByTestId("coverage-chart");
+await coverage.waitFor({ timeout: 30_000 });
+// Columns: type, six members, then Weak / Resist / Immune / Hit SE.
+const coverageCell = (type, col) => coverage.locator(`tr[data-type="${type}"] td`).nth(col).innerText();
+// Ground: Gholdengo, Kingambit and Toxapex are weak; Ice: Garchomp (4×) and Dragapult.
+if ((await coverageCell("Ground", 7)).trim() !== "3") errors.push(`coverage: Ground weaknesses read ${await coverageCell("Ground", 7)}, expected 3`);
+if ((await coverageCell("Ice", 1)).trim() !== "4×") errors.push(`coverage: Garchomp vs Ice reads ${await coverageCell("Ice", 1)}, expected 4×`);
+if ((await coverageCell("Electric", 1)).trim() !== "0") errors.push("coverage: Garchomp should be immune to Electric");
+if (Number(await coverage.getByTestId("coverage-se-Fairy").innerText()) < 1) errors.push("coverage: nothing hits Fairy super-effectively?");
+await page.getByTestId("threat-list").getByText(/struggles against|answers each of/).first().waitFor({ timeout: 30_000 });
+await page.getByTestId("popular-sets").waitFor({ timeout: 15_000 });
+await coverage.screenshot({ path: `${OUT}/battle-teams-coverage.png` });
+await page.getByTestId("ev-goals").getByRole("button", { name: /EV goals/ }).click();
+await page.getByRole("button", { name: "Outspeed" }).click();
+await page.getByTestId("ev-solve").click();
+await page.getByTestId("ev-result").waitFor({ timeout: 30_000 });
+console.log(`  EV goal: ${(await page.getByTestId("ev-result").innerText()).split("\n")[0]}`);
+// Pokepaste links: anything but a pokepast.es paste is refused before a request is made.
+const badPaste = await page.request.get(`${BASE}/api/battle/pokepaste?url=${encodeURIComponent("https://example.com/0123456789abcdef")}`);
+if (badPaste.status() !== 400) errors.push(`pokepaste route accepted another host (${badPaste.status()})`);
 await page.goto(`${BASE}/battle/calc`, { waitUntil: "networkidle" });
 await page.getByText(/Garchomp Earthquake vs\. .*Heatran: \d+-\d+ \(/).waitFor({ timeout: 30_000 });
 // The saved team feeds the calc.
@@ -1146,6 +1168,28 @@ await mmRed.screenshot({ path: `${OUT}/battle-replay.png` });
 await mmRed.getByTestId("replay-end").click();
 await mmRed.getByTestId("battle-result").waitFor({ timeout: 30_000 });
 console.log(`  replay at: ${await turnLabel()}`);
+
+step("replay analysis: the after-battle link, win chance by turn, key moments");
+await mmRed.goto(`${BASE}/battle/live/${mmCode}`, { waitUntil: "networkidle" });
+await mmRed.getByTestId("analyse-battle").click();
+await mmRed.waitForURL(new RegExp(`/battle/replay/${mmCode}\\?analysis=1&side=[01]`));
+const analysis = mmRed.getByTestId("replay-analysis");
+const analysisStart = Date.now();
+await analysis.getByTestId("analysis-progress").waitFor({ timeout: 30_000 }).catch(() => {});
+await analysis.getByTestId("key-moments").waitFor({ timeout: 180_000 });
+const analysisSecs = ((Date.now() - analysisStart) / 1000).toFixed(1);
+if ((await analysis.getByTestId("analysis-chart").locator("path").count()) < 2) errors.push("analysis: no win-chance line");
+const assumptions = await analysis.getByTestId("analysis-assumptions").innerText();
+if (!/95% confidence interval/.test(assumptions) || !/assumed/.test(assumptions)) errors.push(`analysis: the assumptions aren't spelled out: ${assumptions}`);
+for (const line of (await analysis.getByTestId("key-moments").locator("li").allInnerTexts())) {
+  if (!/^Turn \d+: .+ \(win chance \d+% → (\d+%|won|lost|draw)\)\.$/.test(line)) errors.push(`analysis: odd key moment "${line}"`);
+  else console.log(`  ${line}`);
+}
+console.log(`  analysis took ${analysisSecs} s`);
+await analysis.screenshot({ path: `${OUT}/battle-replay-analysis.png` });
+// Cached in this browser: a reload shows it at once.
+await mmRed.reload({ waitUntil: "networkidle" });
+await mmRed.getByTestId("replay-analysis").getByTestId("key-moments").waitFor({ timeout: 10_000 });
 const replayOg = await mmRed.request.get(`${BASE}/battle/replay/${mmCode}/opengraph-image`);
 if (replayOg.status() !== 200) errors.push(`replay OG image returned ${replayOg.status()}`);
 else fs.writeFileSync(`${OUT}/battle-replay-og.png`, await replayOg.body());

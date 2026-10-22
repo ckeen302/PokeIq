@@ -18,7 +18,7 @@ export const DRAW_COLOR = "var(--lab-draw)";
 const useIsoLayoutEffect = typeof window === "undefined" ? useEffect : useLayoutEffect;
 
 /** The element's width, kept up to date. */
-function useWidth<T extends HTMLElement>(): [React.RefObject<T | null>, number] {
+export function useWidth<T extends HTMLElement>(): [React.RefObject<T | null>, number] {
   const ref = useRef<T | null>(null);
   const [width, setWidth] = useState(0);
   useIsoLayoutEffect(() => {
@@ -73,7 +73,7 @@ export function Legend({ items }: { items: { label: string; color: string; line?
   );
 }
 
-function Tooltip({ x, width, children }: { x: number; width: number; children: React.ReactNode }) {
+export function Tooltip({ x, width, children }: { x: number; width: number; children: React.ReactNode }) {
   const left = Math.max(0, Math.min(width - 168, x - 84));
   return (
     <div
