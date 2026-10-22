@@ -5809,6 +5809,159 @@
    "game": "Brilliant Diamond / Shining Pearl",
    "source": "https://www.pokepedia.fr/Fichier:Route_211_Zinc_DEPS.png (view cut at 0,0,1280,560)",
    "checked": "item text box cropped off"
+  },
+  {
+   "id": "MFJceQg_qtuG",
+   "region": "Alola",
+   "name": "Hano Beach",
+   "game": "Sun / Moon",
+   "source": "https://www.pokewiki.de/Datei:SoMo_Zygarde-Zelle_Hanohano-Strand_(Akala)_8.png",
+   "checked": "the lifeguard tower at the end of the beach"
+  },
+  {
+   "id": "-N4s-lPu9AMX",
+   "region": "Kalos",
+   "name": "Kiloude City",
+   "game": "X / Y",
+   "source": "https://www.pokewiki.de/Datei:Kontaktsafari.jpg",
+   "checked": "the Friend Safari building, outside"
+  },
+  {
+   "id": "pPypNQYvVoTd",
+   "region": "Kalos",
+   "name": "Kiloude City",
+   "game": "X / Y",
+   "source": "https://www.pokepedia.fr/Fichier:Batisques_Rappel_Max_Caché_XY.png (view cut at 0,0,400,172)",
+   "checked": "item text box cropped off"
+  },
+  {
+   "id": "OqX6A-wcAZ9k",
+   "region": "Kalos",
+   "name": "Kiloude City",
+   "game": "X / Y",
+   "source": "https://www.pokepedia.fr/Fichier:Batisques_Pépite_XY.png (view cut at 0,0,400,172)",
+   "checked": "item text box cropped off"
+  },
+  {
+   "id": "9MlF8BSGYOPR",
+   "region": "Kalos",
+   "name": "Shalour City",
+   "game": "X / Y",
+   "source": "https://www.pokepedia.fr/Fichier:Arène_de_Yantreizh_Extérieur.png",
+   "checked": "the Gym's outside (the Gym's own shot is its interior)"
+  },
+  {
+   "id": "8qu7bwcxYwZT",
+   "region": "Kalos",
+   "name": "Shalour City",
+   "game": "X / Y",
+   "source": "https://www.pokepedia.fr/Fichier:Yantreizh_CS03_XY.png (view cut at 0,0,400,172)",
+   "checked": "item text box cropped off"
+  },
+  {
+   "id": "tErgsjRKYNH-",
+   "region": "Kalos",
+   "name": "Santalune Forest",
+   "game": "X / Y",
+   "source": "https://www.pokepedia.fr/Fichier:Forêt_de_Neuvartault_Poké_Ball_Serena_XY.png (view cut at 0,0,400,172)",
+   "checked": "where Shauna and Serena wait in the forest; item text box cropped off"
+  },
+  {
+   "id": "Bvx4LUNbQxai",
+   "region": "Galar",
+   "name": "Route 4",
+   "game": "Sword / Shield",
+   "source": "https://www.pokewiki.de/Datei:SWSH_Route_4_(Screenshot).jpg (view cut at 330,0,950,720)",
+   "checked": "route signpost '04' cropped out"
+  },
+  {
+   "id": "3k496998MPJS",
+   "region": "Galar",
+   "name": "Route 4",
+   "game": "Sword / Shield",
+   "source": "https://www.pokepedia.fr/Fichier:Route_4_Poudrénergie_EB.png"
+  },
+  {
+   "id": "PxTHr6TMgC4F",
+   "region": "Galar",
+   "name": "Route 4",
+   "game": "Sword / Shield",
+   "source": "https://www.pokepedia.fr/Fichier:Route_4_Rune_Purifiante_EB.png"
+  },
+  {
+   "id": "sDL1HjWsE-EO",
+   "region": "Galar",
+   "name": "Route 4",
+   "game": "Sword / Shield",
+   "source": "https://www.pokepedia.fr/Fichier:Route_4_Bec_Pointu_EB.png"
+  },
+  {
+   "id": "yzUqMi5hF3wp",
+   "region": "Isle of Armor",
+   "name": "Loop Lagoon",
+   "game": "Sword / Shield",
+   "source": "https://www.pokewiki.de/Datei:SWSH_Ringbucht.jpg"
+  },
+  {
+   "id": "N2x4Sbcs20Wr",
+   "region": "Isle of Armor",
+   "name": "Loop Lagoon",
+   "game": "Sword / Shield",
+   "source": "https://www.pokepedia.fr/Fichier:Lagune_Circulaire_Arbre_à_Baies_EB.png"
+  },
+  {
+   "id": "n8iG8BYDGOP3",
+   "region": "Unova",
+   "name": "Route 7",
+   "game": "Black / White",
+   "source": "https://www.pokepedia.fr/Fichier:Route_7_NB.png",
+   "checked": "autumn tall grass and the raised walkways"
+  },
+  {
+   "id": "Qb1_pbAaci5r",
+   "region": "Unova",
+   "name": "Route 7",
+   "game": "Black / White",
+   "source": "https://www.pokepedia.fr/Fichier:Route_7_CT57_NB.png (view cut at 0,0,256,140)",
+   "checked": "item text box cropped off"
+  },
+  {
+   "id": "JkVihypnNZpJ",
+   "region": "Unova",
+   "name": "Route 7",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokewiki.de/Datei:Versteckte_Lichtung_-_Route_7.png",
+   "checked": "the Hidden Grotto beside the walkway"
+  },
+  {
+   "id": "im4LeSjUfByz",
+   "region": "Unova",
+   "name": "Route 23",
+   "game": "Black / White / Black 2 / White 2",
+   "source": "https://www.pokepedia.fr/Fichier:Route_23_unys.png"
+  },
+  {
+   "id": "r2WuV-yEpRdf",
+   "region": "Unova",
+   "name": "Route 23",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokewiki.de/Datei:Versteckte_Lichtung_-_Route_23.png"
+  },
+  {
+   "id": "c9i7Vg0Swqrl",
+   "region": "Unova",
+   "name": "Route 23",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokepedia.fr/Fichier:Route_23_Super_Bonbon_N2B2.png (view cut at 0,0,256,140)",
+   "checked": "item text box cropped off"
+  },
+  {
+   "id": "i8JlRa42TBf3",
+   "region": "Unova",
+   "name": "Route 23",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokepedia.fr/Fichier:Route_23_Écaillecœur_N2B2.png (view cut at 0,0,256,140)",
+   "checked": "item text box cropped off"
   }
  ]
 }
