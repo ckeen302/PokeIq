@@ -5,6 +5,7 @@ import { pvpToken, type PvpFailure } from "./duel-core";
 import { deleteDuel, insertDuel, newDuelCode, pvpStore } from "./duel-store";
 import { joinDuel, readyDuel } from "./duels";
 import { createPokedleDuel } from "./pokedle-duel";
+import { createConnectionsDuel } from "./connections-duel";
 import { cancelQueue, searchQueue, type OpenedGame } from "./match-queue";
 import { RANKED_QUEUE_KEY, cancelRankedQueue, searchRankedQueue, type RankedSeat } from "./ranked-queue";
 import type { RatingState } from "@/lib/ranked";
@@ -41,12 +42,13 @@ export {
  * with the same one, and one per format (Classic or Squirdle-style, each
  * with its standard rules), so there are few queues and trainers still
  * find each other. Ranked is one queue, always Classic and the Notebook: its
- * `assist` and `format` are ignored.
+ * `assist` and `format` are ignored. PokéConnections races have one queue.
  */
 export const matchSettingsSchema = z
   .discriminatedUnion("game", [
     z.object({ game: z.literal("geo"), region: z.string().max(20), era: z.enum(GEO_ERAS).optional() }),
     z.object({ game: z.literal("pokedle"), ranked: z.boolean().optional(), assist: z.enum(DLE_ASSISTS).optional(), format: z.enum(DLE_DAILY_FORMATS).optional() }),
+    z.object({ game: z.literal("connections") }),
   ])
   .superRefine((s, ctx) => {
     if (s.game === "geo" && !isDuelMap(s.region, s.era)) ctx.addIssue({ code: z.ZodIssueCode.custom, message: s.era ? "That map has too few places for those games." : "Unknown map." });
@@ -56,6 +58,7 @@ export type MatchSettings = z.infer<typeof matchSettingsSchema>;
 /** The queue a search waits in. Classic with the Notebook keeps the queue Pokédle had before levels and formats. */
 export function queueKey(s: MatchSettings): string {
   if (s.game === "geo") return `geo:${s.region}${s.era ? `:${s.era}` : ""}`;
+  if (s.game === "connections") return "connections";
   if (s.ranked) return RANKED_QUEUE_KEY;
   const assist = s.assist ?? DLE_DEFAULT_ASSIST;
   const base = s.format === "squirdle" ? "pokedle:squirdle" : "pokedle:all";
@@ -85,7 +88,10 @@ async function openDuel(settings: MatchSettings, names: [string, string], now: n
       const ready = must(readyGeoDuel(must(readyGeoDuel(joined, a, true, now)).duel, b, true, now)).duel;
       if (await insertDuel(ready)) return { code, ids: [a, b], remove: () => deleteDuel(code) };
     } else {
-      const { duel, playerId: a } = createPokedleDuel(names[0], code, now, undefined, { queue: "casual", assist: settings.assist, settings: { format: settings.format ?? "classic" } });
+      const { duel, playerId: a } =
+        settings.game === "connections"
+          ? createConnectionsDuel(names[0], code, now)
+          : createPokedleDuel(names[0], code, now, undefined, { queue: "casual", assist: settings.assist, settings: { format: settings.format ?? "classic" } });
       const { duel: joined, playerId: b } = must(joinDuel(duel, names[1], now));
       const ready = must(readyDuel(must(readyDuel(joined, a, true, now)).duel, b, true, now)).duel;
       if (await pvpStore.insert(ready)) return { code, ids: [a, b], remove: () => pvpStore.remove(code) };
@@ -97,7 +103,7 @@ async function openDuel(settings: MatchSettings, names: [string, string], now: n
 function seat(settings: MatchSettings, code: string, playerId: string): SearchResult {
   return settings.game === "geo"
     ? { ok: true, status: "matched", code, token: duelToken(code, playerId), href: `/guessr/duel/${code}` }
-    : { ok: true, status: "matched", code, token: pvpToken(code, playerId), href: pvpHref("pokedle", code) };
+    : { ok: true, status: "matched", code, token: pvpToken(code, playerId), href: pvpHref(settings.game, code) };
 }
 
 /**

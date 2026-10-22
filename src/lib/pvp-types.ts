@@ -11,8 +11,9 @@ import type { PublicQuestion } from "./session-types";
 import type { DleAssist } from "./dle-assist";
 import type { DleRules } from "./dle-format";
 import type { ChatLine } from "./chat";
+import type { ConnGroupExplained, ConnGroupReveal, ConnGuessKind, ConnLevel, ConnTile } from "./connections/types";
 
-export const PVP_KINDS = ["pokedle", "quiz"] as const;
+export const PVP_KINDS = ["pokedle", "quiz", "connections"] as const;
 export type PvpKind = (typeof PVP_KINDS)[number];
 
 /** "Round 2" shows for a moment before play, so both trainers start together. */
@@ -282,7 +283,55 @@ export interface QuizDuelView extends PvpViewBase {
   next?: { at: number; pressed: boolean[] };
 }
 
-export type PvpView = DleDuelView | QuizDuelView;
+// ---------------------------------------------------------------------------
+// PokéConnections duels
+// ---------------------------------------------------------------------------
+
+/** Each mistake adds this much to a solve's time. */
+export const CONN_DUEL_PENALTY_MS = 15_000;
+/** The race ends after this long, solved or not. */
+export const CONN_DUEL_MS = 10 * 60_000;
+
+/** A trainer's race as both trainers see it: colours and counts only, never which Pokémon. */
+export interface ConnDuelBoard {
+  /** The groups found, in the order found (their colours only). */
+  found: ConnLevel[];
+  mistakes: number;
+  solved: boolean;
+  /** Out of mistakes. */
+  out: boolean;
+  /** Time from the start to the solve (or to running out). */
+  ms?: number;
+  /** A solve's time plus CONN_DUEL_PENALTY_MS per mistake: the lower wins. */
+  score?: number;
+}
+
+/** Your own race, in full. */
+export interface ConnDuelMine {
+  /** Every guess you made, oldest first (four Pokémon ids each). */
+  guesses: number[][];
+  results: ConnGuessKind[];
+  /** The groups you found, with their names and Pokémon. */
+  found: ConnGroupReveal[];
+}
+
+export interface ConnDuelView extends PvpViewBase {
+  kind: "connections";
+  /** While the race is on: when it starts, and when it ends at the latest. */
+  round?: { startsAt: number; endsAt: number };
+  /** The sixteen Pokémon, once the race has started. */
+  tiles?: ConnTile[];
+  /** One per seat, once the race has begun. */
+  boards: ConnDuelBoard[];
+  /** Your own guesses and the groups you found (seated trainers only). */
+  mine?: ConnDuelMine;
+  /** After the end only: all four groups, explained. */
+  reveal?: ConnGroupExplained[];
+  /** After the end only: each seat's guesses as group colours. */
+  rows?: ConnLevel[][][];
+}
+
+export type PvpView = DleDuelView | QuizDuelView | ConnDuelView;
 
 /** Creating, joining or rematching a duel: its code, your seat's token and the duel. */
 export interface PvpSeatResponse {

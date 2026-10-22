@@ -1,7 +1,7 @@
 import "server-only";
 import { C, VersusVisual, ogCard } from "./card";
 
-export type ChallengeGame = "pokedle" | "quiz" | "geo" | "battle";
+export type ChallengeGame = "pokedle" | "quiz" | "geo" | "battle" | "connections";
 
 /**
  * The link-preview card for every invite (Pokédle, quiz and PokéGuessr
@@ -16,6 +16,7 @@ const GAMES: Record<ChallengeGame, { eyebrow: string; accent: string; footer: st
   quiz: { eyebrow: "Quiz duel", accent: C.yellow, footer: "Same questions · right and fast wins · tap to play →" },
   geo: { eyebrow: "PokéGuessr duel", accent: C.green, footer: "Same places · closer pin wins · tap to play →" },
   battle: { eyebrow: "Live battle", accent: C.pink, footer: "Pokémon Showdown rules · live · tap to battle →" },
+  connections: { eyebrow: "PokéConnections duel", accent: C.cyan, footer: "Same 16 Pokémon · find the 4 groups first · tap to race →" },
 };
 
 export const CHALLENGE_ALT = "A PokéIQ challenge: open the link to play";

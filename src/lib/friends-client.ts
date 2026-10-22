@@ -134,7 +134,8 @@ export type ChallengeChoice =
   | { kind: "battle"; code: string }
   | { kind: "pokedle" }
   | { kind: "quiz"; module: ModuleId }
-  | { kind: "guessr"; region?: string };
+  | { kind: "guessr"; region?: string }
+  | { kind: "connections" };
 
 /** Sends a friend the code of a game you already opened. */
 export async function sendChallenge(to: string, kind: ChallengeKind, code: string, token: string): Promise<void> {
@@ -164,7 +165,9 @@ export async function challengeToDuel(to: string, name: string, choice: Exclude<
       ? { endpoint: "/api/geo/duel", body: { name, region: choice.region ?? "world" }, href: (c: string) => `/guessr/duel/${c}` }
       : choice.kind === "pokedle"
         ? { endpoint: "/api/duel", body: { kind: "pokedle", name }, href: (c: string) => `/pokedle/duel/${c}` }
-        : { endpoint: "/api/duel", body: { kind: "quiz", name, module: choice.module, difficulty: "medium" }, href: (c: string) => `/quiz/duel/${c}` };
+        : choice.kind === "connections"
+          ? { endpoint: "/api/duel", body: { kind: "connections", name }, href: (c: string) => `/connections/duel/${c}` }
+          : { endpoint: "/api/duel", body: { kind: "quiz", name, module: choice.module, difficulty: "medium" }, href: (c: string) => `/quiz/duel/${c}` };
   const seat = await api<{ code: string; token: string }>(endpoint, body);
   saveSeat(seat.code, seat.token);
   await sendChallenge(to, choice.kind, seat.code, seat.token);
