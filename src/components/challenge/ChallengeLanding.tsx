@@ -2,12 +2,14 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Swords } from "lucide-react";
+import Link from "next/link";
+import { CalendarDays, Swords } from "lucide-react";
 import type { ShareCard } from "@/lib/session-types";
 import { MODULE_INFO } from "@/lib/modes";
 import { QuizController } from "@/components/quiz/QuizController";
 import { ResultGrid } from "@/components/quiz/ResultGrid";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
 
 export function ChallengeLanding({ card, token, runLabel }: { card: ShareCard; token: string; runLabel: string }) {
@@ -53,6 +55,11 @@ export function ChallengeLanding({ card, token, runLabel }: { card: ShareCard; t
           <Button size="lg" className="w-full text-base" onClick={() => setPlaying(true)}>
             Accept challenge
           </Button>
+          {card.day && (
+            <Link href="/daily" className={cn(buttonVariants({ variant: "outline", size: "lg" }), "w-full")}>
+              <CalendarDays className="h-4 w-4" aria-hidden /> Play today&apos;s Daily Challenge
+            </Link>
+          )}
         </CardContent>
       </Card>
     </motion.div>

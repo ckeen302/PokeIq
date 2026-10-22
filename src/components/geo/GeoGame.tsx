@@ -13,7 +13,6 @@ import {
   Loader2,
   MapPin as MapPinIcon,
   RotateCcw,
-  Share2,
   Swords,
   Trophy,
   X,
@@ -36,11 +35,12 @@ import { dailyNumber } from "@/lib/daily";
 import { useToday } from "@/lib/use-today";
 import { recordGeoGame, useProgress, type BadgeDef } from "@/lib/progress";
 import { play, unlockAudio } from "@/lib/sound";
-import { shareOrCopy } from "@/lib/share";
+import { guessrShareText, guessrSquare, shareOrCopy, shareUrl, type GuessrShareResult } from "@/lib/share";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { BadgeMedal } from "@/components/game/BadgeMedal";
 import { CopyFallback } from "@/components/quiz/CopyFallback";
+import { ShareButton } from "@/components/share/ShareButton";
 import { GeoMap, type MapPin } from "./GeoMap";
 import { DuelCard } from "./DuelCard";
 import { cn } from "@/lib/utils";
@@ -72,12 +72,7 @@ interface Reward {
 const fmt = (n: number) => n.toLocaleString("en-US");
 const MAX_TOTAL = GEO_ROUNDS * GEO_MAX_ROUND_SCORE;
 
-function emoji(score: number): string {
-  if (score >= 4000) return "🟩";
-  if (score >= 2000) return "🟨";
-  if (score > 0) return "🟧";
-  return "🟥";
-}
+const emoji = guessrSquare;
 
 function verdict(score: number): string {
   if (score >= GEO_MAX_ROUND_SCORE) return "Spot on!";
@@ -777,29 +772,27 @@ function GeoSummary({
   const [name, setName] = useState("");
   const [save, setSave] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const [saveError, setSaveError] = useState<string | null>(null);
-  const [shared, setShared] = useState<{ kind: "result" | "challenge"; outcome: "done" | "failed" } | null>(null);
+  const [shared, setShared] = useState<"done" | "failed" | null>(null);
 
   useEffect(() => {
     if (progress?.name && !name) setName(progress.name);
   }, [progress?.name, name]);
 
   const origin = typeof window !== "undefined" ? window.location.origin : "";
-  const title = game.daily
-    ? `PokéGuessr Daily #${dailyNumber(game.daily)}`
-    : `PokéGuessr ${region.name}${isStreak ? " Streak" : ""}`;
-  const text = isStreak
-    ? `${title}: ${streak} place${streak === 1 ? "" : "s"} in a row 🔥`
-    : `${title}: ${fmt(total)} / ${fmt(MAX_TOTAL)}\n${played.map((p) => emoji(p.graded.score)).join("")}`;
+  const shareResult: GuessrShareResult = {
+    game: "guessr",
+    ...(game.daily ? { daily: dailyNumber(game.daily) } : {}),
+    region: region.id,
+    ...(isStreak ? { streak } : { rounds: played.map((p) => p.graded.score) }),
+  };
   const challengeUrl = challengeToken ? `${origin}/guessr/c/${encodeURIComponent(challengeToken)}` : null;
   const canRank = !game.practice && !!resultToken;
 
-  async function share(kind: "result" | "challenge") {
-    const outcome =
-      kind === "challenge" && challengeUrl
-        ? await shareOrCopy(`I scored ${fmt(total)} in PokéGuessr. Same five places, can you beat me?`, challengeUrl)
-        : await shareOrCopy(text, `${origin}/guessr`);
-    if (outcome === "failed") setShared({ kind, outcome: "failed" });
-    else if (outcome !== "cancelled") setShared({ kind, outcome: "done" });
+  async function shareChallenge() {
+    if (!challengeUrl) return;
+    const outcome = await shareOrCopy(`I scored ${fmt(total)} in PokéGuessr. Same five places, can you beat me?`, challengeUrl);
+    if (outcome === "failed") setShared("failed");
+    else if (outcome !== "cancelled") setShared("done");
   }
 
   async function submit(e: React.FormEvent) {
@@ -911,21 +904,17 @@ function GeoSummary({
 
           <div className="grid gap-2 sm:grid-cols-2">
             {challengeUrl && (
-              <Button className="sm:col-span-2" size="lg" variant="success" onClick={() => void share("challenge")}>
+              <Button className="sm:col-span-2" size="lg" variant="success" onClick={() => void shareChallenge()}>
                 <Link2 className="h-4 w-4" aria-hidden />
-                {shared?.kind === "challenge" && shared.outcome === "done" ? "Challenge link copied!" : "Challenge a friend"}
+                {shared === "done" ? "Challenge link copied!" : "Challenge a friend"}
               </Button>
             )}
-            <Button size="lg" onClick={() => void share("result")}>
-              <Share2 className="h-4 w-4" aria-hidden /> {shared?.kind === "result" && shared.outcome === "done" ? "Copied!" : "Share result"}
-            </Button>
+            <ShareButton size="lg" kind="guessr" getText={() => guessrShareText(shareResult, region.name, shareUrl(shareResult))} />
             <Button size="lg" variant="secondary" onClick={onRestart}>
               <RotateCcw className="h-4 w-4" aria-hidden /> Play again
             </Button>
           </div>
-          {shared?.outcome === "failed" && (
-            <CopyFallback text={shared.kind === "challenge" && challengeUrl ? challengeUrl : `${text}\n${origin}/guessr`} />
-          )}
+          {shared === "failed" && challengeUrl && <CopyFallback text={challengeUrl} />}
 
           {canRank ? (
             <form className="space-y-2" onSubmit={submit}>

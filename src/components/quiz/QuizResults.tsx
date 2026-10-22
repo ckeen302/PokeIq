@@ -5,11 +5,12 @@ import Link from "next/link";
 import confetti from "canvas-confetti";
 import { animate, motion, useMotionValue, useTransform } from "framer-motion";
 import { track } from "@vercel/analytics";
-import { Check, Link2, Loader2, RotateCcw, Share2, Swords, Trophy } from "lucide-react";
+import { Check, Link2, Loader2, RotateCcw, Swords, Trophy } from "lucide-react";
 import type { PracticeReason, RunResult, ShareCard } from "@/lib/session-types";
 import { iqInterval, iqTitle } from "@/lib/rating";
-import { levelInfo, recordRun, setTrainerName, useProgress, type RunReward } from "@/lib/progress";
+import { currentStreak, levelInfo, recordRun, setTrainerName, useProgress, type RunReward } from "@/lib/progress";
 import { challengeUrl, resultShareText, shareOrCopy, shareText } from "@/lib/share";
+import { ShareButton } from "@/components/share/ShareButton";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -56,7 +57,6 @@ export function QuizResults({ result, resultToken, shareToken, challenger, onRes
   const [playerName, setPlayerName] = useState("");
   const [saveState, setSaveState] = useState<SaveState>("idle");
   const [saveError, setSaveError] = useState<string | null>(null);
-  const [shareState, setShareState] = useState<"idle" | "copied" | "shared">("idle");
   const [linkState, setLinkState] = useState<"idle" | "copied">("idle");
   const [copyFallback, setCopyFallback] = useState<string | null>(null);
   const firedRef = useRef(false);
@@ -110,17 +110,11 @@ export function QuizResults({ result, resultToken, shareToken, challenger, onRes
     }
   }, [accuracy]);
 
-  async function share() {
-    const text = resultShareText(result);
-    const url = challengeUrl(shareToken);
-    const outcome = await shareOrCopy(text, url);
-    if (outcome === "failed") return setCopyFallback(shareText(text, url));
-    if (outcome !== "cancelled") {
-      setCopyFallback(null);
-      setShareState(outcome);
-      track("share", { kind: isDaily ? "daily" : "run", via: outcome });
-      setTimeout(() => setShareState("idle"), 2500);
-    }
+  /** Score, time and a square per answer; the link is the run's /c/ challenge (same questions, signed score). */
+  function shareTextNow(): string {
+    const day = result.spec.daily;
+    const streak = day && progress ? currentStreak(progress.daily.last, progress.daily.streak, day) : undefined;
+    return resultShareText(result, challengeUrl(shareToken), streak);
   }
 
   async function copyChallenge() {
@@ -293,10 +287,7 @@ export function QuizResults({ result, resultToken, shareToken, challenger, onRes
           )}
 
           <div className="grid gap-2 sm:grid-cols-2">
-            <Button size="lg" onClick={share}>
-              {shareState === "idle" ? <Share2 className="h-4 w-4" /> : <Check className="h-4 w-4" />}
-              {shareState === "copied" ? "Copied to clipboard!" : shareState === "shared" ? "Shared!" : "Share result"}
-            </Button>
+            <ShareButton size="lg" kind={isDaily ? "daily" : isAdaptive ? "iq-test" : "run"} getText={shareTextNow} />
             <Button size="lg" variant="outline" onClick={copyChallenge}>
               {linkState === "copied" ? <Check className="h-4 w-4" /> : <Link2 className="h-4 w-4" />}
               {linkState === "copied" ? "Challenge link copied!" : "Challenge a friend"}

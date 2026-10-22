@@ -4,13 +4,12 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { track } from "@vercel/analytics";
-import { BarChart3, CalendarDays, Check, CircleHelp, Contrast, Lightbulb, RefreshCw, Share2, ShieldAlert, Timer } from "lucide-react";
+import { BarChart3, CalendarDays, CircleHelp, Contrast, Lightbulb, RefreshCw, ShieldAlert, Timer } from "lucide-react";
 import { dailyNumber } from "@/lib/daily";
 import { dleBlock, getProgress, saveDle, useProgress } from "@/lib/progress";
-import { shareOrCopy } from "@/lib/share";
 import { useToday } from "@/lib/use-today";
 import { play } from "@/lib/sound";
-import { buildPokedleShare } from "@/lib/dle-share";
+import { buildPokedleShare, pokedleShareResult, shareUrl } from "@/lib/share";
 import { dleStats } from "@/lib/dle-stats";
 import { archiveRecords, getArchiveRecord, getDlePrefs, saveArchiveRecord, setDlePrefs, useApplyDlePrefs, useDlePrefs } from "@/lib/dle-local";
 import { DLE_COLUMNS, DLE_HINT_COST, DLE_HINT_EMOJI, DLE_HINT_KINDS, DLE_HINT_LABEL, DLE_SQUIRDLE_FROM, dleScore, type DleHint, type DleResponse } from "@/lib/dle-types";
@@ -29,7 +28,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { NextDailyCountdown } from "@/components/NextDailyCountdown";
-import { CopyFallback } from "@/components/quiz/CopyFallback";
+import { ShareButton } from "@/components/share/ShareButton";
 import { Board, GuessInput, clueText, type NameEntry } from "./parts";
 import { DexPanel, type DexPick } from "./DexPanel";
 import { AssistPicker } from "./AssistPicker";
@@ -100,8 +99,6 @@ export function Pokedle({
   const [state, setState] = useState<DleResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [copied, setCopied] = useState(false);
-  const [copyFallback, setCopyFallback] = useState<string | null>(null);
   const [sheet, setSheet] = useState<"howto" | "stats" | "archive" | null>(null);
   /** The community panel's percentile for the share, with the finished game it belongs to. */
   const [shareStanding, setShareStanding] = useState<{ key: string; community?: PokedleShareCommunity } | null>(null);
@@ -211,8 +208,7 @@ export function Pokedle({
       setState(null);
       setLoading(false);
       setError(null);
-      setCopyFallback(null);
-      setClockStart(null);
+        setClockStart(null);
       // An archive game picks up from the daily if that was played (it's saved apart from then on).
       const saved = kind === "daily" ? resultsOf(f)[d] : (getArchiveRecord(d) ?? resultsOf("classic")[d]);
       const list = saved?.guesses ?? [];
@@ -328,7 +324,6 @@ export function Pokedle({
     setState(null);
     setLoading(false);
     setError(null);
-    setCopyFallback(null);
     setClockStart(null);
     setTimeout(() => inputRef.current?.focus(), 50);
   }
@@ -346,35 +341,28 @@ export function Pokedle({
 
   const dexLabel = assist === "off" ? "No dex" : DLE_ASSIST_INFO[assist].label;
 
-  async function share() {
-    if (!state) return;
+  /** The share text: the board as colours, and a link that carries it (/s/…) for the preview card. */
+  function shareTextNow(): string {
+    if (!state) return "";
     const daily = mode !== "practice" && date;
-    const text = buildPokedleShare({
+    const input = {
       number: daily ? dailyNumber(date) : undefined,
       max: rules.maxGuesses,
       // A daily's settings are fixed: its format says it all. A practice game says what it was played by.
       tags: daily ? [DLE_FORMAT_LABEL[rules.format]] : rulesTags(rules).filter((t) => !/ guesses$/.test(t)),
       squirdle: rules.format === "squirdle",
+      format: rules.format,
       rows: state.rows.map((r) => rules.columns.flatMap((c) => (r.cells[c] ? [r.cells[c]!.status] : []))),
       solved: state.solved,
       hard,
       hints,
       assist,
       streak: stats?.playStreak ?? 0,
-      url: `${window.location.origin}/pokedle`,
       colourBlind: prefs?.colourBlind,
       archive: mode === "archive",
       community: mode === "daily" && shareStanding?.key === finishedKey ? shareStanding.community : undefined,
-    });
-    const outcome = await shareOrCopy(text);
-    if (outcome === "failed") {
-      setCopyFallback(text);
-    } else if (outcome !== "cancelled") {
-      setCopyFallback(null);
-      setCopied(true);
-      track("share", { kind: "pokedle", via: outcome, variant: mode, format: rules.format });
-      setTimeout(() => setCopied(false), 2500);
-    }
+    };
+    return buildPokedleShare({ ...input, url: shareUrl(pokedleShareResult(input)) });
   }
 
   const closeSheet = useCallback(() => {
@@ -580,9 +568,7 @@ export function Pokedle({
                   )}
                 </div>
                 <div className="grid gap-2 sm:grid-cols-2">
-                  <Button onClick={share}>
-                    {copied ? <Check className="h-4 w-4" /> : <Share2 className="h-4 w-4" />} {copied ? "Copied!" : "Share"}
-                  </Button>
+                  <ShareButton getText={shareTextNow} label="Share" kind="pokedle" />
                   <Button variant={mode === "practice" ? "default" : "outline"} onClick={newPractice}>
                     <RefreshCw className="h-4 w-4" /> {mode === "practice" ? "New puzzle" : "Practice mode"}
                   </Button>
@@ -597,7 +583,6 @@ export function Pokedle({
                     Play today&apos;s Pokédle
                   </Button>
                 )}
-                {copyFallback && <CopyFallback text={copyFallback} />}
                 {mode === "daily" && <NextDailyCountdown label="Next Pokédle in" />}
                 {mode === "daily" && stats && stats.playStreak > 0 && (
                   <p className="text-sm font-semibold text-orange-400">

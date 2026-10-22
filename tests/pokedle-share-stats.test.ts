@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildPokedleShare } from "@/lib/dle-share";
+import { buildPokedleShare } from "@/lib/share";
 import { dleStats, type DleResultLike } from "@/lib/dle-stats";
 import type { CellStatus } from "@/lib/dle-types";
 
@@ -14,26 +14,26 @@ describe("buildPokedleShare", () => {
   const base = { number: 142, rows, solved: true, hard: false, hints: [], streak: 0, url: "https://pokeiq.vercel.app/pokedle" };
 
   it("is a three-colour grid, close counting as yellow, with a short link", () => {
-    expect(buildPokedleShare(base)).toBe(["Pokédle #142 2/8", "⬛🟨⬛🟨⬛⬛⬛", "🟩🟩🟩🟩🟩🟩🟩", "pokeiq.vercel.app/pokedle"].join("\n"));
+    expect(buildPokedleShare(base)).toBe(["PokéIQ Pokédle #142 2/8", "⬛🟨⬛🟨⬛⬛⬛", "🟩🟩🟩🟩🟩🟩🟩", "https://pokeiq.vercel.app/pokedle"].join("\n"));
   });
 
   it("marks hard mode, hints, the streak and a loss", () => {
     const text = buildPokedleShare({ ...base, solved: false, hard: true, hints: ["genus", "silhouette"], streak: 12 });
-    expect(text.split("\n")[0]).toBe("Pokédle #142 X/8* 📖👤 🔥12");
+    expect(text.split("\n")[0]).toBe("PokéIQ Pokédle #142 X/8* 📖👤 🔥12");
   });
 
   it("adds the community line only when given, and uses orange and blue for colour-blind players", () => {
     const text = buildPokedleShare({ ...base, colourBlind: true, community: { percentile: 82.4, players: 4213 } });
-    expect(text.split("\n")).toEqual(["Pokédle #142 2/8", "⬛🟦⬛🟦⬛⬛⬛", "🟧🟧🟧🟧🟧🟧🟧", "Top 18% of 4,213 trainers", "pokeiq.vercel.app/pokedle"]);
+    expect(text.split("\n")).toEqual(["PokéIQ Pokédle #142 2/8", "⬛🟦⬛🟦⬛⬛⬛", "🟧🟧🟧🟧🟧🟧🟧", "Top 18% of 4,213 trainers", "https://pokeiq.vercel.app/pokedle"]);
   });
 
   it("marks an archive game and leaves its streak off", () => {
-    expect(buildPokedleShare({ ...base, archive: true, streak: 5 }).split("\n")[0]).toBe("Pokédle #142 (archive) 2/8");
+    expect(buildPokedleShare({ ...base, archive: true, streak: 5 }).split("\n")[0]).toBe("PokéIQ Pokédle #142 (archive) 2/8");
   });
 
   it("never spells out a guess or the answer", () => {
     const text = buildPokedleShare({ ...base, hard: true, hints: ["silhouette"], streak: 3 });
-    expect(text.replace("pokeiq.vercel.app/pokedle", "").replace("Pokédle", "")).not.toMatch(/[A-Za-z]/);
+    expect(text.replace("https://pokeiq.vercel.app/pokedle", "").replace("PokéIQ Pokédle", "")).not.toMatch(/[A-Za-z]/);
   });
 });
 
