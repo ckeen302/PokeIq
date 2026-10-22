@@ -54,6 +54,7 @@ interface FileDb {
   users: UserRecord[];
   sessions: SessionRecord[];
   progress: Record<string, unknown>;
+  identities?: IdentityRecord[];
 }
 
 const DB_PATH = path.join(process.cwd(), ".data", "pokeiq-accounts.json");
@@ -124,6 +125,21 @@ export async function createUser(user: UserRecord): Promise<UserRecord | "taken"
   return user;
 }
 
+/** Removes a profile (and, by cascade, its sessions and identities). Only for undoing a half-made signup. */
+export async function deleteProfile(id: string): Promise<void> {
+  const sb = getServiceSupabase();
+  if (sb) {
+    const { error } = await sb.from("profiles").delete().eq("id", id);
+    if (error) throw new Error(error.message);
+    return;
+  }
+  const db = fileDb();
+  db.users = db.users.filter((u) => u.id !== id);
+  db.sessions = db.sessions.filter((s) => s.userId !== id);
+  db.identities = (db.identities ?? []).filter((i) => i.profileId !== id);
+  saveFileDb();
+}
+
 export async function findUserByName(username: string): Promise<UserRecord | null> {
   const sb = getServiceSupabase();
   if (sb) {
@@ -136,6 +152,20 @@ export async function findUserByName(username: string): Promise<UserRecord | nul
     return data ? fromRow(data) : null;
   }
   return fileDb().users.find((u) => u.username.toLowerCase() === username.toLowerCase()) ?? null;
+}
+
+export async function findUserRecordById(id: string): Promise<UserRecord | null> {
+  const sb = getServiceSupabase();
+  if (sb) {
+    const { data, error } = await sb
+      .from("profiles")
+      .select("id, username, password_hash, recovery_code_hash, created_at")
+      .eq("id", id)
+      .maybeSingle<ProfileRow>();
+    if (error) throw new Error(error.message);
+    return data ? fromRow(data) : null;
+  }
+  return fileDb().users.find((u) => u.id === id) ?? null;
 }
 
 export async function updateCredentials(
@@ -158,6 +188,118 @@ export async function updateCredentials(
   if (!user) return;
   if (changes.passwordHash) user.passwordHash = changes.passwordHash;
   if (changes.recoveryCodeHash) user.recoveryCodeHash = changes.recoveryCodeHash;
+  saveFileDb();
+}
+
+// ---------------------------------------------------------------------------
+// Sign-in identities (Discord / Google). Emails here are private to the owner.
+// ---------------------------------------------------------------------------
+
+export interface IdentityRecord {
+  provider: string;
+  providerUserId: string;
+  profileId: string;
+  email: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface IdentityRow {
+  provider: string;
+  provider_user_id: string;
+  profile_id: string;
+  email: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+const IDENTITY_COLUMNS = "provider, provider_user_id, profile_id, email, created_at, updated_at";
+
+const fromIdentityRow = (r: IdentityRow): IdentityRecord => ({
+  provider: r.provider,
+  providerUserId: r.provider_user_id,
+  profileId: r.profile_id,
+  email: r.email,
+  createdAt: r.created_at,
+  updatedAt: r.updated_at,
+});
+
+export async function findIdentity(provider: string, providerUserId: string): Promise<IdentityRecord | null> {
+  const sb = getServiceSupabase();
+  if (sb) {
+    const { data, error } = await sb
+      .from("auth_identities")
+      .select(IDENTITY_COLUMNS)
+      .eq("provider", provider)
+      .eq("provider_user_id", providerUserId)
+      .maybeSingle<IdentityRow>();
+    if (error) throw new Error(error.message);
+    return data ? fromIdentityRow(data) : null;
+  }
+  return (fileDb().identities ?? []).find((i) => i.provider === provider && i.providerUserId === providerUserId) ?? null;
+}
+
+export async function identitiesOf(profileId: string): Promise<IdentityRecord[]> {
+  const sb = getServiceSupabase();
+  if (sb) {
+    const { data, error } = await sb.from("auth_identities").select(IDENTITY_COLUMNS).eq("profile_id", profileId).order("created_at");
+    if (error) throw new Error(error.message);
+    return ((data ?? []) as IdentityRow[]).map(fromIdentityRow);
+  }
+  return (fileDb().identities ?? []).filter((i) => i.profileId === profileId);
+}
+
+/** "conflict" if that provider account, or this provider on this profile, is already linked. */
+export async function insertIdentity(rec: IdentityRecord): Promise<IdentityRecord | "conflict"> {
+  const sb = getServiceSupabase();
+  if (sb) {
+    const { error } = await sb.from("auth_identities").insert({
+      provider: rec.provider,
+      provider_user_id: rec.providerUserId,
+      profile_id: rec.profileId,
+      email: rec.email,
+      created_at: rec.createdAt,
+      updated_at: rec.updatedAt,
+    });
+    if (error?.code === "23505") return "conflict";
+    if (error) throw new Error(error.message);
+    return rec;
+  }
+  const db = fileDb();
+  const list = (db.identities ??= []);
+  if (list.some((i) => (i.provider === rec.provider && i.providerUserId === rec.providerUserId) || (i.profileId === rec.profileId && i.provider === rec.provider))) {
+    return "conflict";
+  }
+  list.push(rec);
+  saveFileDb();
+  return rec;
+}
+
+/** Keeps the stored verified email current after a sign-in. */
+export async function touchIdentity(provider: string, providerUserId: string, email: string | null): Promise<void> {
+  const updatedAt = new Date().toISOString();
+  const sb = getServiceSupabase();
+  if (sb) {
+    const { error } = await sb.from("auth_identities").update({ email, updated_at: updatedAt }).eq("provider", provider).eq("provider_user_id", providerUserId);
+    if (error) throw new Error(error.message);
+    return;
+  }
+  const rec = (fileDb().identities ?? []).find((i) => i.provider === provider && i.providerUserId === providerUserId);
+  if (!rec) return;
+  rec.email = email;
+  rec.updatedAt = updatedAt;
+  saveFileDb();
+}
+
+export async function deleteIdentity(profileId: string, provider: string): Promise<void> {
+  const sb = getServiceSupabase();
+  if (sb) {
+    const { error } = await sb.from("auth_identities").delete().eq("profile_id", profileId).eq("provider", provider);
+    if (error) throw new Error(error.message);
+    return;
+  }
+  const db = fileDb();
+  db.identities = (db.identities ?? []).filter((i) => !(i.profileId === profileId && i.provider === provider));
   saveFileDb();
 }
 
