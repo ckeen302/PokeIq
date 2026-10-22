@@ -401,6 +401,20 @@ await page.getByRole("button", { name: /5-round game/ }).click();
 await playGeoRounds(5);
 await page.getByText("Survey complete").waitFor();
 
+step("pokéguessr: a themed map (Caves), its own leaderboard");
+await page.goto(`${BASE}/guessr`, { waitUntil: "networkidle" });
+await page.getByRole("radiogroup", { name: "Themed map" }).getByRole("radio", { name: "Caves" }).click();
+await page.getByTestId("geo-theme-blurb").filter({ hasText: "Caves, mines and tunnels" }).waitFor();
+if (!page.url().includes("region=theme-caves")) throw new Error(`themed map not in the URL: ${page.url()}`);
+await page.screenshot({ path: `${OUT}/geo-mode-themed-maps.png`, fullPage: true });
+await page.getByRole("button", { name: /5-round game/ }).click();
+await page.getByText("Caves").first().waitFor();
+await playGeoRounds(5);
+await page.getByText("Survey complete").waitFor();
+await page.goto(`${BASE}/leaderboard?board=geo&format=theme-caves`, { waitUntil: "networkidle" });
+await page.getByText("Caves 5 rounds").waitFor();
+await page.getByText("Caves Streak").waitFor();
+
 step("pokéguessr: Classic 2D, guess the game too, report a screenshot");
 await page.goto(`${BASE}/guessr?region=kalos`, { waitUntil: "networkidle" });
 // Kalos has no sprite games: Classic 2D is off there, and says why.

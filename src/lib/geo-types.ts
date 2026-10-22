@@ -12,8 +12,20 @@ export type GeoKind = (typeof GEO_KINDS)[number];
 
 /** The region played on the whole world map. */
 export const WORLD_REGION = "world";
-/** Maps in pickers: the whole world first, then the regions in release order. */
-export const GEO_MAP_ORDER = [WORLD_REGION, "kanto", "johto", "hoenn", "sinnoh", "unova", "kalos", "alola", "galar", "paldea"];
+/** Maps in pickers: the whole world first, then the regions in release order, then the themed maps. */
+export const GEO_MAP_ORDER = [
+  WORLD_REGION,
+  "kanto",
+  "johto",
+  "hoenn",
+  "sinnoh",
+  "unova",
+  "kalos",
+  "alola",
+  "galar",
+  "paldea",
+  ...["gyms", "caves", "towns", "routes", "water", "forests", "legendary", "starters"].map((t) => `theme-${t}`),
+];
 export const geoMapRank = (id: string) => (GEO_MAP_ORDER.includes(id) ? GEO_MAP_ORDER.indexOf(id) : GEO_MAP_ORDER.length);
 /** The daily game is played on the world map from this date (Kanto before it). */
 export const WORLD_DAILY_FROM = "2026-10-18";
@@ -39,6 +51,8 @@ export interface GeoRegionInfo {
   combos: FamilyCombos;
   /** A preview screenshot (a starting town, so it gives nothing away). */
   preview: string | null;
+  /** Themed maps: the whole world, played on one kind of place (see geo-themes.ts). */
+  theme?: boolean;
 }
 
 export interface GeoSpec {

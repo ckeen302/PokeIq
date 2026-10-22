@@ -204,14 +204,29 @@ export default async function LeaderboardPage({ searchParams }: PageProps) {
                 Daily #{dailyNumber(date)}
               </Badge>
             </Link>
-            {maps.map((r) => (
-              <Link key={r.id} href={`/leaderboard?board=geo&format=${r.boards[0].id}`}>
-                <Badge variant={map?.id === r.id ? "secondary" : "outline"} className="hover:bg-accent">
-                  {r.name}
-                </Badge>
-              </Link>
-            ))}
+            {maps
+              .filter((r) => !r.theme)
+              .map((r) => (
+                <Link key={r.id} href={`/leaderboard?board=geo&format=${r.boards[0].id}`}>
+                  <Badge variant={map?.id === r.id ? "secondary" : "outline"} className="hover:bg-accent">
+                    {r.name}
+                  </Badge>
+                </Link>
+              ))}
           </div>
+          {maps.some((r) => r.theme) && (
+            <div className="flex flex-wrap justify-center gap-2" aria-label="Themed maps">
+              {maps
+                .filter((r) => r.theme)
+                .map((r) => (
+                  <Link key={r.id} href={`/leaderboard?board=geo&format=${r.boards[0].id}`}>
+                    <Badge variant={map?.id === r.id ? "secondary" : "outline"} className="hover:bg-accent">
+                      {r.name}
+                    </Badge>
+                  </Link>
+                ))}
+            </div>
+          )}
           {map && (
             <div className="flex flex-wrap justify-center gap-2">
               {map.boards.map((b) => (
