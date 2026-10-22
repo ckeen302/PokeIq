@@ -7,6 +7,7 @@ import { newRecoveryCode, signOut, useAccount } from "@/lib/account";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { RecoveryCodeCard } from "./RecoveryCodeCard";
+import { ConnectedAccounts } from "./ConnectedAccounts";
 import { cn } from "@/lib/utils";
 
 /** Trainer-card section: sign-in prompt, or account status and security actions. */
@@ -17,6 +18,8 @@ export function AccountPanel() {
   const [code, setCode] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  // Discord / Google-only trainers have no password, so no recovery code to renew.
+  const [hasPassword, setHasPassword] = useState(true);
 
   if (account.status === "loading" || !account.enabled) return null;
 
@@ -77,15 +80,17 @@ export function AccountPanel() {
             </p>
           </div>
           <div className="flex gap-2">
-            <Button variant="outline" size="sm" onClick={() => setAsking((v) => !v)}>
-              <ShieldCheck className="h-4 w-4" aria-hidden /> New recovery code
-            </Button>
+            {hasPassword && (
+              <Button variant="outline" size="sm" onClick={() => setAsking((v) => !v)}>
+                <ShieldCheck className="h-4 w-4" aria-hidden /> New recovery code
+              </Button>
+            )}
             <Button variant="secondary" size="sm" onClick={() => void signOut()}>
               <LogOut className="h-4 w-4" aria-hidden /> Sign out
             </Button>
           </div>
         </div>
-        {asking && (
+        {asking && hasPassword && (
           <form className="flex flex-wrap gap-2" onSubmit={regenerate}>
             <input
               type="password"
@@ -106,6 +111,7 @@ export function AccountPanel() {
             )}
           </form>
         )}
+        <ConnectedAccounts onPasswordKnown={setHasPassword} />
       </CardContent>
     </Card>
   );

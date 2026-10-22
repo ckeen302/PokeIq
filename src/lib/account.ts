@@ -4,6 +4,7 @@ import { useSyncExternalStore } from "react";
 import { getProgress, onProgressChange, replaceProgress, resetProgress, type Progress } from "./progress";
 import { mergeProgress, normalizeProgress } from "./progress-merge";
 import type { PublicAvatar } from "./avatar";
+import type { OAuthProvider, OwnIdentity } from "./oauth";
 
 /**
  * Client side of trainer accounts. Progress stays local-first (play without
@@ -126,6 +127,23 @@ export async function recoverAccount(username: string, recoveryCode: string, new
   });
   await signedIn(res.user);
   return res.recoveryCode;
+}
+
+/** Finishes a first Discord / Google sign-in: makes the trainer with the chosen name. */
+export async function completeOAuthSignup(username: string, ageConfirmed: boolean): Promise<void> {
+  const res = await api<{ user: AccountUser }>("/api/auth/oauth/signup", {
+    method: "POST",
+    body: JSON.stringify({ username, ageConfirmed }),
+  });
+  await signedIn(res.user);
+}
+
+export async function connectedAccounts(): Promise<{ identities: OwnIdentity[]; hasPassword: boolean }> {
+  return api("/api/auth/oauth/identities", { cache: "no-store" });
+}
+
+export async function unlinkAccount(provider: OAuthProvider): Promise<void> {
+  await api(`/api/auth/oauth/identities?provider=${provider}`, { method: "DELETE" });
 }
 
 export async function newRecoveryCode(password: string): Promise<string> {

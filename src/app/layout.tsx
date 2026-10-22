@@ -85,6 +85,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <Link href="/quiz/gen-1-pokemon-quiz" className="hover:text-foreground">Gen 1 quiz</Link>
               <Link href="/quiz/pokemon-type-quiz" className="hover:text-foreground">Type chart quiz</Link>
               <Link href="/trainer" className="hover:text-foreground">Trainer card</Link>
+              <Link href="/privacy" className="hover:text-foreground">Privacy</Link>
               <ReportProblem />
             </nav>
             <p className="mx-auto max-w-3xl pt-2 text-[11px] leading-relaxed text-muted-foreground/70">

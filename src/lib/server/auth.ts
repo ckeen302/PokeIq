@@ -25,6 +25,17 @@ export const USERNAME_RE = /^[A-Za-z0-9_-]{3,20}$/;
 export const PASSWORD_MIN = 8;
 export const PASSWORD_MAX = 128;
 
+/**
+ * Stored as password_hash for accounts made with Discord / Google: it isn't a
+ * valid "s1$" hash, so verifyPassword always rejects it and nobody can sign in
+ * to such an account with a password.
+ */
+export const NO_PASSWORD = "none";
+
+export function hasPassword(stored: string): boolean {
+  return stored.startsWith("s1$");
+}
+
 export async function hashPassword(password: string): Promise<string> {
   const salt = randomBytes(16).toString("hex");
   const hash = await scryptAsync(password, salt, KEYLEN);

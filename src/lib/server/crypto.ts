@@ -79,22 +79,23 @@ export function verifyToken<T>(kind: string, token: unknown): T | null {
 // Encrypted media tokens
 // ---------------------------------------------------------------------------
 
-function mediaKey(): Buffer {
-  return createHash("sha256").update(`${secret()}:media`).digest();
+function mediaKey(purpose = "media"): Buffer {
+  return createHash("sha256").update(`${secret()}:${purpose}`).digest();
 }
 
-export function encryptJson(payload: unknown): string {
+export function encryptJson(payload: unknown, purpose?: string): string {
   const iv = randomBytes(12);
-  const cipher = createCipheriv("aes-256-gcm", mediaKey(), iv);
+  const cipher = createCipheriv("aes-256-gcm", mediaKey(purpose), iv);
   const ct = Buffer.concat([cipher.update(JSON.stringify(payload), "utf8"), cipher.final()]);
   return b64url(Buffer.concat([iv, cipher.getAuthTag(), ct]));
 }
 
-export function decryptJson<T>(token: string): T | null {
+/** Authenticated decryption: a tampered token, or one sealed for another `purpose`, gives null. */
+export function decryptJson<T>(token: string, purpose?: string): T | null {
   try {
     const raw = Buffer.from(token, "base64url");
     if (raw.length < 29) return null;
-    const decipher = createDecipheriv("aes-256-gcm", mediaKey(), raw.subarray(0, 12));
+    const decipher = createDecipheriv("aes-256-gcm", mediaKey(purpose), raw.subarray(0, 12));
     decipher.setAuthTag(raw.subarray(12, 28));
     const pt = Buffer.concat([decipher.update(raw.subarray(28)), decipher.final()]);
     return JSON.parse(pt.toString("utf8")) as T;
