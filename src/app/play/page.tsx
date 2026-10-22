@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { SHARE_IMAGES, pageMetadata } from "@/lib/seo";
+import { pageMetadata } from "@/lib/seo";
 import { MapPin, Swords, Target } from "lucide-react";
 import { ModeGrid } from "@/components/home/ModeGrid";
 import { QuizDuelCard } from "@/components/quiz/QuizDuelCard";
@@ -10,7 +10,6 @@ import { DUEL_HP } from "@/lib/duel-types";
 export const metadata: Metadata = pageMetadata({
   title: "All Pokémon Quiz Modes",
   description: "Who's That Pokémon, cry quiz, Pokédex entries, type matchups, higher or lower — in Classic, Survival and Blitz formats.",
-  image: SHARE_IMAGES.site,
   path: "/play",
 });
 

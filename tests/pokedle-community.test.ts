@@ -15,7 +15,7 @@ import {
 import { answerFor, hardModeError } from "@/lib/server/pokedle";
 import { POKEDEX } from "@/lib/pokemon/pokedex";
 import { DLE_MAX_GUESSES, type DleHint } from "@/lib/dle-types";
-import { buildPokedleShare } from "@/lib/dle-share";
+import { buildPokedleShare } from "@/lib/share";
 import {
   DLE_MIN_PLAYERS_FOR_PERCENTILE,
   averageGuesses,

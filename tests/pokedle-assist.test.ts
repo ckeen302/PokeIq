@@ -6,7 +6,7 @@ import { POST as guessPOST } from "@/app/api/pokedle/route";
 import { POST as resultPOST } from "@/app/api/pokedle/result/route";
 import { DLE_ASSISTS, DLE_ASSIST_INFO, dleAssistOf, withAssist, type DleAssist } from "@/lib/dle-assist";
 import { dleBasePoints, dleScore, type DleDexRow, type DleResponse } from "@/lib/dle-types";
-import { buildPokedleShare } from "@/lib/dle-share";
+import { buildPokedleShare } from "@/lib/share";
 import { dexFullTraits } from "@/lib/dle-dex";
 import type { DleResultResponse } from "@/lib/dle-community";
 import { answerFor, evaluate, traitsOf } from "@/lib/server/pokedle";
@@ -114,8 +114,8 @@ describe("assist levels and points", () => {
 
   it("marks the level in the share text", () => {
     const base = { number: 7, rows: [["match", "match", "match", "match", "match", "match", "match"] as const].map((r) => [...r]), solved: true, hard: false, hints: [], streak: 0, url: "https://pokeiq.app/pokedle" };
-    expect(buildPokedleShare(base).split("\n")[0]).toBe("Pokédle #7 1/8");
-    for (const assist of DLE_ASSISTS) expect(buildPokedleShare({ ...base, assist }).split("\n")[0]).toBe(`Pokédle #7 1/8 ${DLE_ASSIST_INFO[assist].emoji}`);
+    expect(buildPokedleShare(base).split("\n")[0]).toBe("PokéIQ Pokédle #7 1/8");
+    for (const assist of DLE_ASSISTS) expect(buildPokedleShare({ ...base, assist }).split("\n")[0]).toBe(`PokéIQ Pokédle #7 1/8 ${DLE_ASSIST_INFO[assist].emoji}`);
   });
 });
 

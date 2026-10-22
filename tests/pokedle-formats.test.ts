@@ -20,7 +20,7 @@ import { ruledOut, dexClues } from "@/lib/dle-dex";
 import { answerFor, compare, dailyPuzzleOf, evaluate, hardModeError, practicePuzzle, traitsOf } from "@/lib/server/pokedle";
 import { dailyAnswerId } from "@/lib/server/pokedle-schedule";
 import { clearMemoryResults, dleDaySummary, memoryResultStore, recordDleResult } from "@/lib/server/dle-results";
-import { buildPokedleShare } from "@/lib/dle-share";
+import { buildPokedleShare } from "@/lib/share";
 import { dleStats } from "@/lib/dle-stats";
 import { createPokedleDuel, duelRules, guessPokedle, pokedleView, roundSecret, setPokedleGens, setPokedleSettings, buyPokedleHint, type PokedleDuel } from "@/lib/server/pokedle-duel";
 import { joinDuel, readyDuel } from "@/lib/server/duels";
@@ -252,14 +252,14 @@ describe("share text, results and scoring", () => {
       streak: 2,
       url: "https://pokeiq.vercel.app/pokedle",
     });
-    expect(text.split("\n")).toEqual(["Pokédle #3 · Squirdle 2/9 🧠 🔥2", "🟦🟨❌🔽🔼", "✅✅✅✅✅", "pokeiq.vercel.app/pokedle"]);
+    expect(text.split("\n")).toEqual(["PokéIQ Pokédle #3 · Squirdle 2/9 🧠 🔥2", "🟦🟨❌🔽🔼", "✅✅✅✅✅", "https://pokeiq.vercel.app/pokedle"]);
   });
 
   it("shares a practice game with its settings tags", () => {
     const rules = dleRules({ format: "custom", columns: ["gen", "type1", "type2"], gens: [1, 1], guesses: 6, timer: "60s" });
     const tags = rulesTags(rules).filter((t) => !/ guesses$/.test(t));
     const text = buildPokedleShare({ max: 6, tags, rows: [["match", "match", "match"]], solved: true, hard: true, hints: [], streak: 9, url: "https://x.app/pokedle" });
-    expect(text.split("\n")[0]).toBe("Pokédle Practice · Custom · 3 clues · Gen 1 · 60 s blitz 1/6*");
+    expect(text.split("\n")[0]).toBe("PokéIQ Pokédle Practice · Custom · 3 clues · Gen 1 · 60 s blitz 1/6*");
   });
 
   it("tags a game for the summary chip and result", () => {

@@ -188,7 +188,7 @@ export function ReplayViewer({ replay }: { replay: ReplayData }) {
         toolbar={toolbar}
         endActions={
           <div className="flex flex-wrap justify-center gap-2">
-            <ShareReplay id={replay.id} text={`${replayResult(replay)} in ${replay.formatName}: watch the replay on PokéIQ`} size="default" />
+            <ShareReplay id={replay.id} result={replayResult(replay)} formatName={replay.formatName} size="default" />
             <Link href="/battle/replays" className={buttonVariants({ variant: "outline" })}>
               More replays
             </Link>
@@ -199,7 +199,7 @@ export function ReplayViewer({ replay }: { replay: ReplayData }) {
         }
       />
       <div className="flex justify-end">
-        <ShareReplay id={replay.id} text={`${replayResult(replay)} in ${replay.formatName}: watch the replay on PokéIQ`} />
+        <ShareReplay id={replay.id} result={replayResult(replay)} formatName={replay.formatName} />
       </div>
     </div>
   );
