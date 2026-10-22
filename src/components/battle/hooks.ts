@@ -1,8 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import type { Move } from "@pkmn/data";
-import { loadFormatDex, loadLabDex, loadSpriteLookup, type FormatDex } from "@/lib/battle/dex";
+import type { Generation, Generations, Move } from "@pkmn/data";
+import type { CalcModule } from "@/lib/battle/calc";
+import { loadCalcGenerations, loadFormatDex, loadLabDex, loadSpriteLookup, type FormatDex } from "@/lib/battle/dex";
+import { isUsageFormat, loadUsage, type UsageFile } from "@/lib/battle/usage";
 import type { BattleFormatId } from "@/lib/battle/formats";
 import type { TeamCheck, TeamSet } from "@/lib/battle/sets";
 import type { SpriteSpecies } from "@/lib/battle/sprites";
@@ -115,4 +117,41 @@ export function useTeamCheck(format: BattleFormatId, sets: TeamSet[]): CheckStat
   if (state?.key === key) return state.result;
   const last = state?.result.status === "done" ? state.result.check : null;
   return { status: "checking", last };
+}
+
+export type CalcHandle = { gen: Generation; lib: CalcModule };
+let calcLib: Promise<[CalcModule, Generations]> | null = null;
+
+/** The damage calculator on generation `num` (null until it loads). */
+export function useCalc(num: number): CalcHandle | null {
+  const [state, setState] = useState<{ num: number; calc: CalcHandle } | null>(null);
+  useEffect(() => {
+    let live = true;
+    calcLib ??= Promise.all([import("@smogon/calc/dist/adaptable"), loadCalcGenerations()]);
+    calcLib.then(
+      ([lib, gens]) => live && setState({ num, calc: { gen: gens.get(num), lib } }),
+      () => (calcLib = null)
+    );
+    return () => {
+      live = false;
+    };
+  }, [num]);
+  return state?.num === num ? state.calc : null;
+}
+
+/** The usage statistics for a format, when it has any (null while loading, or without data). */
+export function useUsage(format: string): UsageFile | null {
+  const [state, setState] = useState<{ format: string; file: UsageFile } | null>(null);
+  useEffect(() => {
+    if (!isUsageFormat(format)) return;
+    let live = true;
+    loadUsage(format).then(
+      (file) => live && setState({ format, file }),
+      () => undefined
+    );
+    return () => {
+      live = false;
+    };
+  }, [format]);
+  return state?.format === format ? state.file : null;
 }

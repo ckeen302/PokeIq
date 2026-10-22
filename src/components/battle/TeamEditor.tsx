@@ -1,16 +1,18 @@
 "use client";
 
 import { useState } from "react";
-import { Check, ClipboardCopy, CopyPlus, FileInput, FileOutput, LoaderCircle, Plus, ShieldAlert, ShieldCheck, Shuffle, Trash2, TriangleAlert } from "lucide-react";
+import { Check, ClipboardCopy, CopyPlus, FileInput, FileOutput, Link2, LoaderCircle, Plus, ShieldAlert, ShieldCheck, Shuffle, Trash2, TriangleAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { BATTLE_FORMATS, BATTLE_FORMAT_IDS, isBattleFormatId, type BattleFormatId } from "@/lib/battle/formats";
-import { exportShowdown, importShowdown, TEAM_SIZE, type TeamSet } from "@/lib/battle/sets";
+import { pokepasteId } from "@/lib/battle/pokepaste";
+import { exportShowdown, importShowdown, TEAM_SIZE, type ImportedTeam, type TeamSet } from "@/lib/battle/sets";
 import { saveTeam, type BattleTeam } from "@/lib/battle/teams";
 import { cn } from "@/lib/utils";
 import { BattleSprite } from "./BattleSprite";
 import { inputClass } from "./controls";
 import { useFormatDex, useSpriteLookup, useTeamCheck, type CheckState } from "./hooks";
 import { SetEditor } from "./SetEditor";
+import { TeamInsights } from "./TeamInsights";
 
 type Panel = "import" | "export" | null;
 
@@ -203,6 +205,8 @@ export function TeamEditor({
           </p>
         )}
       </div>
+
+      {dex && <TeamInsights dex={dex} sets={team.sets} />}
     </div>
   );
 }
@@ -248,8 +252,46 @@ export function ImportPanel({
 }) {
   const [text, setText] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [link, setLink] = useState("");
+  const [fetching, setFetching] = useState(false);
+
+  async function importLink() {
+    if (!pokepasteId(link)) return setError("That isn't a pokepast.es link. Paste one like https://pokepast.es/1a2b3c4d5e6f7a8b.");
+    setFetching(true);
+    setError(null);
+    try {
+      const res = await fetch(`/api/battle/pokepaste?url=${encodeURIComponent(link.trim())}`);
+      const body = (await res.json().catch(() => ({}))) as Partial<ImportedTeam> & { error?: string };
+      if (!res.ok || !body.sets) throw new Error(body.error ?? "Couldn't import that paste.");
+      onImport(body.sets, { name: body.name?.slice(0, 60), format: isBattleFormatId(body.format) ? body.format : undefined });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Couldn't import that paste.");
+    } finally {
+      setFetching(false);
+    }
+  }
+
   return (
     <div className="space-y-2 rounded-lg border bg-card p-4">
+      <div className="flex flex-wrap items-end gap-2">
+        <label className="min-w-[16rem] flex-1 space-y-1.5">
+          <span className="hud-label block">Pokepaste link</span>
+          <input
+            value={link}
+            onChange={(e) => {
+              setLink(e.target.value);
+              setError(null);
+            }}
+            onKeyDown={(e) => e.key === "Enter" && link.trim() && importLink()}
+            placeholder="https://pokepast.es/…"
+            className={inputClass}
+            data-testid="pokepaste-link"
+          />
+        </label>
+        <Button size="sm" variant="outline" onClick={importLink} disabled={!link.trim() || fetching} data-testid="pokepaste-import">
+          {fetching ? <LoaderCircle className="h-4 w-4 animate-spin" aria-hidden /> : <Link2 className="h-4 w-4" aria-hidden />} Import link
+        </Button>
+      </div>
       <label className="block space-y-1.5">
         <span className="hud-label block">Showdown team</span>
         <textarea
