@@ -186,6 +186,8 @@ export interface LabMon {
   status: LabStatus;
   /** Starting stat stages (−6 to +6). Only the Pokémon that start in battle keep them. */
   boosts: Partial<Record<BoostId, number>>;
+  /** Starts already Terastallized into its Tera type (the replay analysis, from a battle in progress). */
+  terastallized?: boolean;
 }
 
 export interface LabSide {
@@ -195,6 +197,8 @@ export interface LabSide {
   /** Scripted: start the list over after the last move (otherwise the last move repeats). */
   loop: boolean;
   field: LabSideField;
+  /** The side has already Terastallized this battle (the replay analysis): no Tera left. */
+  teraUsed?: boolean;
 }
 
 export interface LabSetup {

@@ -164,6 +164,14 @@ function applyStart(battle: Battle, prep: PreparedLab): string[] {
         if (p.isActive) battle.add("-sethp", p, p.getHealth, "[silent]");
         changed = true;
       }
+      if (mon.terastallized && setup.gen === 9 && p.teraType) {
+        // As the simulator's own Terastallization leaves it (the type change), without its message.
+        p.terastallized = p.teraType;
+        p.addedType = "";
+        p.knownType = true;
+        p.apparentType = p.teraType;
+        changed = true;
+      }
       if (mon.status) {
         if (!p.setStatus(mon.status)) misses.push(`${SIDE_NAMES[s]}'s ${p.name} can't start ${mon.status === "slp" ? "asleep" : `with that status (${mon.status})`}.`);
         changed = true;
@@ -181,6 +189,11 @@ function applyStart(battle: Battle, prep: PreparedLab): string[] {
         }
       }
     });
+  }
+  for (const s of [0, 1] as const) {
+    if (!setup.sides[s].teraUsed) continue;
+    for (const p of battle.sides[s].pokemon) p.canTerastallize = null;
+    changed = true;
   }
   const source = battle.sides[0].active[0];
   if (setup.weather && source) {
