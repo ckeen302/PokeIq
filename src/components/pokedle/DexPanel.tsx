@@ -2,7 +2,7 @@
 
 /* eslint-disable @next/next/no-img-element -- tiny sprites; next/image adds nothing here */
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
-import { BookOpen, Check, Eraser, Loader2, PencilLine, RotateCcw, Search, X } from "lucide-react";
+import { BookOpen, Check, Eraser, EyeOff, Loader2, PencilLine, RotateCcw, Search, X } from "lucide-react";
 import { GENERATION_REGIONS, formatHeight, formatWeight } from "@/lib/pokemon/constants";
 import { typeColor } from "@/lib/pokemon/type-colors";
 import { DLE_COLUMNS, type CellStatus, type DleColumn, type DleDexRow } from "@/lib/dle-types";
@@ -11,7 +11,7 @@ import { strictStatus } from "@/lib/dle-format";
 import { DLE_ASSIST_INFO, type DleAssist } from "@/lib/dle-assist";
 import { dexFullTraits, ruledOut, type DexClue } from "@/lib/dle-dex";
 import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { InfoTip } from "@/components/ui/tooltip";
 import { STATUS_TEXT, spriteUrl } from "./parts";
 import { cn } from "@/lib/utils";
 
@@ -218,107 +218,115 @@ export function DexPanel({
   const filtered = JSON.stringify(filters) !== JSON.stringify(NO_FILTERS);
   const input = "h-8 rounded-md border border-input bg-background px-2 text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
 
+  const iconAction = (on = false) =>
+    cn(
+      "rounded p-1.5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-35",
+      on ? "bg-screen/15 text-foreground" : "text-muted-foreground hover:text-foreground"
+    );
+
   return (
     <Card className={className} data-assist={assist}>
-      <CardContent className="space-y-3 p-3">
+      <CardContent className="space-y-3 p-4">
+        {/* One header row: the title, then how a tap works and the secondary actions, grouped. */}
         <div className="flex items-center justify-between gap-2">
           <p className="hud-label flex items-center gap-1.5 text-screen">
             <BookOpen className="h-3.5 w-3.5" aria-hidden /> Pokédex
             <span className="font-sans normal-case tracking-normal text-muted-foreground">· {DLE_ASSIST_INFO[assist].label}</span>
           </p>
-          <span className="text-xs text-muted-foreground" role="status">
-            {rows ? `${left.toLocaleString("en-US")} left in play` : ""}
-          </span>
-          <Button size="sm" variant="ghost" className="h-7 px-2" onClick={() => setFilters(NO_FILTERS)} disabled={!filtered}>
-            <RotateCcw className="h-3 w-3" aria-hidden /> Show all
-          </Button>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-2">
-          <div className="flex rounded-md border border-foreground/15 p-0.5" role="radiogroup" aria-label="Tapping a Pokémon">
-            <ToolButton active={tool === "cross"} onClick={() => setTool("cross")} icon={<X className="h-3 w-3" aria-hidden />} label="Cross off" />
-            <ToolButton active={tool === "fill"} onClick={() => setTool("fill")} icon={<PencilLine className="h-3 w-3" aria-hidden />} label="Fill in" disabled={!onPick} />
+          <div className="flex items-center gap-1.5">
+            <div className="flex rounded-md border border-foreground/15 p-0.5" role="radiogroup" aria-label="Tapping a Pokémon">
+              <ToolButton active={tool === "cross"} onClick={() => setTool("cross")} icon={<X className="h-3 w-3" aria-hidden />} label="Cross off" />
+              <ToolButton active={tool === "fill"} onClick={() => setTool("fill")} icon={<PencilLine className="h-3 w-3" aria-hidden />} label="Fill in" disabled={!onPick} />
+            </div>
+            <div className="flex rounded-md border border-foreground/15 p-0.5" role="group" aria-label="Pokédex view">
+              <button type="button" className={iconAction(filters.hide)} aria-pressed={filters.hide} onClick={() => set("hide", !filters.hide)} aria-label="Hide what's out" title="Hide what's out">
+                <EyeOff className="h-3.5 w-3.5" aria-hidden />
+              </button>
+              <button type="button" className={iconAction()} onClick={() => setCrossed(new Set())} disabled={crossed.size === 0} aria-label="Uncross all" title="Uncross all">
+                <Eraser className="h-3.5 w-3.5" aria-hidden />
+              </button>
+              <button type="button" className={iconAction()} onClick={() => setFilters(NO_FILTERS)} disabled={!filtered} aria-label="Show all (clear the filters)" title="Show all: clear the filters">
+                <RotateCcw className="h-3.5 w-3.5" aria-hidden />
+              </button>
+            </div>
           </div>
-          <label className="flex items-center gap-1.5 text-xs text-muted-foreground">
-            <input type="checkbox" checked={filters.hide} onChange={(e) => set("hide", e.target.checked)} className="accent-[hsl(var(--primary))]" />
-            Hide what&apos;s out
-          </label>
-          <Button size="sm" variant="ghost" className="ml-auto h-7 px-2" onClick={() => setCrossed(new Set())} disabled={crossed.size === 0}>
-            <Eraser className="h-3 w-3" aria-hidden /> Uncross all
-          </Button>
         </div>
 
-        <div className="relative">
-          <Search className="pointer-events-none absolute left-2 top-2 h-4 w-4 text-muted-foreground" aria-hidden />
-          <input value={filters.q} onChange={(e) => set("q", e.target.value)} placeholder="Search by name" aria-label="Search the Pokédex" className={cn(input, "w-full pl-8")} />
-        </div>
-
-        <div className="flex flex-wrap gap-1" role="group" aria-label="Generations">
-          {genChoices.map((g) => (
-            <button
-              key={g}
-              type="button"
-              aria-pressed={filters.gens.includes(g)}
-              onClick={() => toggleGen(g)}
-              className={cn(
-                "rounded-sm border px-1.5 py-1 font-pixel text-[9px] uppercase tracking-wider transition-colors",
-                filters.gens.includes(g) ? "border-primary bg-primary text-primary-foreground" : "border-foreground/10 bg-shade/20 text-muted-foreground hover:border-primary/50 hover:text-foreground"
-              )}
-            >
-              Gen {g}
-            </button>
-          ))}
-        </div>
-
-        <div className="grid grid-cols-2 gap-2 text-xs">
-          <select value={filters.types[0] ?? ""} onChange={(e) => setType(0, e.target.value)} aria-label="Has type" className={input}>
-            <option value="">Has type: any</option>
+        <div className="flex gap-2">
+          <div className="relative min-w-0 flex-1">
+            <Search className="pointer-events-none absolute left-2 top-2 h-4 w-4 text-muted-foreground" aria-hidden />
+            <input value={filters.q} onChange={(e) => set("q", e.target.value)} placeholder="Search by name" aria-label="Search the Pokédex" className={cn(input, "w-full pl-8")} />
+          </div>
+          <select value={filters.types[0] ?? ""} onChange={(e) => setType(0, e.target.value)} aria-label="Has type" className={cn(input, "w-28")}>
+            <option value="">Any type</option>
             {types.map((t) => (
               <option key={t} value={t}>
                 Has {cap(t)}
               </option>
             ))}
           </select>
-          <select value={filters.types[1] ?? ""} onChange={(e) => setType(1, e.target.value)} aria-label="And type" className={input} disabled={!filters.types[0]}>
-            <option value="">And type: any</option>
+          <select value={filters.types[1] ?? ""} onChange={(e) => setType(1, e.target.value)} aria-label="And type" className={cn(input, "w-28")} disabled={!filters.types[0]}>
+            <option value="">And any</option>
             {types.map((t) => (
               <option key={t} value={t}>
                 And {cap(t)}
               </option>
             ))}
           </select>
-          {field && (
-            <>
-              <select value={filters.stage} onChange={(e) => set("stage", e.target.value)} aria-label="Stage" className={input}>
-                <option value="">Stage: any</option>
-                {STAGES.map((s) => (
-                  <option key={s} value={s}>
-                    Stage {stageLabel(s)}
-                  </option>
-                ))}
-              </select>
-              <select value={filters.color} onChange={(e) => set("color", e.target.value)} aria-label="Color" className={input}>
-                <option value="">Color: any</option>
-                {colors.map((c) => (
-                  <option key={c} value={c}>
-                    {cap(c)}
-                  </option>
-                ))}
-              </select>
-            </>
-          )}
-          {full && (
-            <>
-              <Range label="Height (m)" min={filters.hMin} max={filters.hMax} onMin={(v) => set("hMin", v)} onMax={(v) => set("hMax", v)} className={input} />
-              <Range label="Weight (kg)" min={filters.wMin} max={filters.wMax} onMin={(v) => set("wMin", v)} onMax={(v) => set("wMax", v)} className={input} />
-            </>
-          )}
-          <label className="col-span-2 flex items-center gap-2 text-muted-foreground">
+        </div>
+
+        {field && (
+          <div className="grid grid-cols-2 gap-2 text-xs">
+            <select value={filters.stage} onChange={(e) => set("stage", e.target.value)} aria-label="Stage" className={input}>
+              <option value="">Stage: any</option>
+              {STAGES.map((s) => (
+                <option key={s} value={s}>
+                  Stage {stageLabel(s)}
+                </option>
+              ))}
+            </select>
+            <select value={filters.color} onChange={(e) => set("color", e.target.value)} aria-label="Color" className={input}>
+              <option value="">Color: any</option>
+              {colors.map((c) => (
+                <option key={c} value={c}>
+                  {cap(c)}
+                </option>
+              ))}
+            </select>
+            {full && (
+              <>
+                <Range label="Height (m)" min={filters.hMin} max={filters.hMax} onMin={(v) => set("hMin", v)} onMax={(v) => set("hMax", v)} className={input} />
+                <Range label="Weight (kg)" min={filters.wMin} max={filters.wMax} onMin={(v) => set("wMin", v)} onMax={(v) => set("wMax", v)} className={input} />
+              </>
+            )}
+          </div>
+        )}
+
+        <div className="flex items-center gap-1">
+          <span className="hud-label mr-1">Gen</span>
+          <div className="flex flex-wrap gap-1" role="group" aria-label="Generations">
+            {genChoices.map((g) => (
+              <button
+                key={g}
+                type="button"
+                aria-pressed={filters.gens.includes(g)}
+                aria-label={`Gen ${g}`}
+                title={`Gen ${g} · ${GENERATION_REGIONS[g]}`}
+                onClick={() => toggleGen(g)}
+                className={cn(
+                  "h-6 w-6 rounded-sm border font-pixel text-[9px] transition-colors",
+                  filters.gens.includes(g) ? "border-primary bg-primary text-primary-foreground" : "border-foreground/10 bg-shade/20 text-muted-foreground hover:border-primary/50 hover:text-foreground"
+                )}
+              >
+                {g}
+              </button>
+            ))}
+          </div>
+          <label className="ml-auto flex items-center gap-1.5 whitespace-nowrap text-xs text-muted-foreground">
             <input type="checkbox" checked={filters.mono} onChange={(e) => set("mono", e.target.checked)} className="accent-[hsl(var(--primary))]" />
             No second type
           </label>
         </div>
-
         {full && filters.picks.length > 0 && (
           <ul className="flex flex-wrap gap-1" aria-label="Clue filters">
             {filters.picks.map((p) => {
@@ -364,13 +372,16 @@ export function DexPanel({
             ))
           )}
         </div>
-        <p className="text-[11px] text-muted-foreground">
-          {assist === "notebook"
+        <div className="flex items-center justify-between gap-2 border-t pt-2 text-xs text-muted-foreground">
+          <span role="status">{rows ? `${left.toLocaleString("en-US")} left in play` : ""}</span>
+          <InfoTip label="How the Pokédex works" className="left-auto right-0 translate-x-0">
+            {assist === "notebook"
             ? "Greyed out: ruled out by your generation and type clues. Height, weight, color and stage are yours to work out: cross off what they rule out."
             : assist === "field"
               ? "Greyed out: ruled out by your generation and type clues. Filter by stage and color; height and weight are yours to work out."
               : "Greyed out: ruled out by your generation and type clues. Filter by any attribute, or click a clue on the board to add it as a filter."}
-        </p>
+          </InfoTip>
+        </div>
       </CardContent>
     </Card>
   );

@@ -308,7 +308,7 @@ export async function recordDleResult(
 ): Promise<{ ok: true; you: DlePersonal } | RecordFailure | null> {
   if (!isValidDailyDate(input.date, now)) return fail(400, "Only today's Pokédle counts.");
   const format = input.format ?? "classic";
-  if (format === "squirdle" && input.date < DLE_SQUIRDLE_FROM) return fail(400, "No Squirdle-style Pokédle that day.");
+  if (format === "squirdle" && input.date < DLE_SQUIRDLE_FROM) return fail(400, "No Stats Pokédle that day.");
   const puzzle = dailyPuzzle(input.date, format);
   const rules = dailyRules(format);
   const assist = input.assist ?? DLE_DEFAULT_ASSIST;

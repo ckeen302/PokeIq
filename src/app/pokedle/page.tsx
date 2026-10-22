@@ -18,7 +18,7 @@ export default function PokedlePage() {
   return (
     <div className="space-y-10">
       <PokedleWithCommunity names={names} />
-      <div id="duel" className="mx-auto max-w-3xl scroll-mt-24 space-y-4">
+      <div id="duel" className="scroll-mt-24 space-y-4">
         <div id="ranked" className="scroll-mt-24">
           <RankedCard />
         </div>

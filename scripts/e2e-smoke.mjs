@@ -183,8 +183,11 @@ for (const [assist, width] of [["notebook", 5], ["field", 7], ["full", 9]]) {
   if (rows.length !== 1025 || rows.some((r) => r.length !== width)) errors.push(`the ${assist} Pokédex sent the wrong columns: ${JSON.stringify(rows[0])}`);
 }
 if ((await page.request.get(`${BASE}/api/pokedle/dex?assist=off`)).status() !== 404) errors.push("assist off still got a Pokédex");
-// The assist setting starts at the Notebook, before the first guess.
+// The assist setting (in the settings popover) starts at the Notebook, before the first guess.
+await page.getByRole("button", { name: "Settings", exact: true }).click();
 await page.getByRole("radiogroup", { name: "Pokédex assist", exact: true }).getByRole("radio", { name: /^Notebook/, checked: true }).waitFor();
+await page.screenshot({ path: `${OUT}/pokedle-settings.png` });
+await page.keyboard.press("Escape");
 // Filter it by hand, cross a Pokémon off and put it back, then fill one into the guess box, Enter to guess.
 await page.getByText(/^1,025 left in play$/).waitFor();
 await page.getByLabel("Has type").selectOption("electric");
@@ -214,7 +217,7 @@ for (const name of ["Charizard", "Gengar"]) {
 }
 await page.screenshot({ path: `${OUT}/pokedle.png`, fullPage: true });
 
-step("pokédle: the Squirdle daily, and a practice game with advanced settings");
+step("pokédle: the Stats daily, and a practice game with advanced settings");
 const headerTexts = async () => (await page.getByRole("columnheader").allTextContents()).map((s) => s.trim()).join(",");
 /** The board re-renders as the format switches: give its header row a moment to settle on the expected columns. */
 const headersSettle = async (want) => {
@@ -222,16 +225,19 @@ const headersSettle = async (want) => {
   return headerTexts();
 };
 const SQUIRDLE_HEADERS = "Pokémon,Gen,Type 1,Type 2,Height,Weight";
-await page.getByRole("radio", { name: "Squirdle daily" }).click();
-await page.getByText(/Pokédle #\d+ · Squirdle/).waitFor();
-if (!/Squirdle · 9 guesses/.test(await page.getByTestId("rules-chip").innerText())) errors.push("the Squirdle daily's chip doesn't say Squirdle, 9 guesses");
+await page.getByRole("radio", { name: "Stats daily" }).click();
+await page.getByText(/Pokédle #\d+ · Stats/).waitFor();
+await page.getByRole("button", { name: "Settings", exact: true }).click();
+if (!/Stats · 9 guesses/.test(await page.getByTestId("rules-chip").innerText())) errors.push("the Stats daily's chip doesn't say Stats, 9 guesses");
+await page.keyboard.press("Escape");
 await page.getByLabel("Guess a Pokémon").fill("Pikachu");
 await page.locator("[role=option]").first().click();
 await page.waitForFunction(() => document.querySelector("input[aria-label^='Guess a Pokémon']")?.placeholder.startsWith("Guess 2 of 9") || document.body.innerText.includes("Got it in"));
-{ const got = await headersSettle(SQUIRDLE_HEADERS); if (got !== SQUIRDLE_HEADERS) errors.push(`the Squirdle daily shows the wrong columns: ${got}`); }
+{ const got = await headersSettle(SQUIRDLE_HEADERS); if (got !== SQUIRDLE_HEADERS) errors.push(`the Stats daily shows the wrong columns: ${got}`); }
 await page.screenshot({ path: `${OUT}/pokedle-squirdle.png`, fullPage: true });
 await page.getByRole("radio", { name: "Classic daily" }).click();
-await page.getByRole("button", { name: /practice puzzles/ }).click();
+// The practice button opens a practice puzzle with its settings popover.
+await page.getByRole("button", { name: /Practice puzzles/ }).click();
 const settingsPanel = page.getByRole("region", { name: "Game settings" });
 await settingsPanel.getByRole("radiogroup", { name: "Format" }).getByRole("radio", { name: "Custom" }).click();
 await settingsPanel.getByRole("button", { name: "Color", exact: true }).click();
@@ -242,6 +248,7 @@ await settingsPanel.getByRole("radio", { name: "60 s blitz" }).click();
 await page.getByRole("radiogroup", { name: "Pokédex assist", exact: true }).getByRole("radio", { name: /^Off/ }).click();
 const practiceChip = await page.getByTestId("rules-chip").innerText();
 if (!/Custom · 5 clues · Gen 1 · 6 guesses · 60 s blitz · No dex/.test(practiceChip)) errors.push(`practice settings chip: ${practiceChip}`);
+await page.keyboard.press("Escape");
 await page.getByLabel("Guess a Pokémon").fill("Bulbasaur");
 await page.locator("[role=option]").first().click();
 await page.waitForFunction(() => document.querySelector("input[aria-label^='Guess a Pokémon']")?.placeholder.startsWith("Guess 2 of 6") || document.body.innerText.includes("Got it in"));
@@ -507,8 +514,8 @@ await dleRed.p.getByText("Waiting for a challenger").waitFor();
 await dleRed.p.getByRole("button", { name: "Gen 1", exact: true }).click();
 await dleRed.p.getByRole("button", { name: "Gen 1", pressed: true }).waitFor();
 // The host plays it Squirdle-style: five columns, ▲ / ▼ only, Squirdle's 5 guesses for one generation.
-await dleRed.p.getByRole("radiogroup", { name: "Format" }).getByRole("radio", { name: "Squirdle" }).click();
-await dleRed.p.getByTestId("rules-chip").filter({ hasText: /Squirdle · Gen 1 · 5 guesses/ }).waitFor();
+await dleRed.p.getByRole("radiogroup", { name: "Format" }).getByRole("radio", { name: "Stats" }).click();
+await dleRed.p.getByTestId("rules-chip").filter({ hasText: /Stats · Gen 1 · 5 guesses/ }).waitFor();
 // …and the Pokédex assist both trainers get.
 await dleRed.p.getByRole("radio", { name: /^Full Pokédex/ }).click();
 await dleRed.p.getByRole("radio", { name: /^Full Pokédex/, checked: true }).waitFor();
@@ -521,7 +528,7 @@ await dleBlue.p.goto(dleUrl, { waitUntil: "networkidle" });
 await dleBlue.p.getByText("Red challenges you!").waitFor();
 await dleBlue.p.getByText("Gen 1", { exact: true }).waitFor();
 // The guest sees the host's format and settings, and can't change them.
-await dleBlue.p.getByTestId("rules-chip").filter({ hasText: /Squirdle · Gen 1 · 5 guesses/ }).waitFor();
+await dleBlue.p.getByTestId("rules-chip").filter({ hasText: /Stats · Gen 1 · 5 guesses/ }).waitFor();
 if (await dleBlue.p.getByRole("radiogroup", { name: "Format" }).count()) errors.push("the guest can change the duel's format");
 await dleBlue.p.getByRole("radio", { name: /^Full Pokédex/, checked: true }).waitFor();
 await dleBlue.p.getByLabel("Your trainer name").fill("Blue");

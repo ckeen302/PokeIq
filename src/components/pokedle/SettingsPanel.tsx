@@ -179,7 +179,7 @@ export function SettingsPanel({
       )}
 
       <Row label="Guesses">
-        <Choice active={value.guesses === 0} disabled={disabled} onClick={() => set("guesses", 0)} title={squirdle ? "Squirdle's count: 5 for one generation, up to 9 for all" : undefined}>
+        <Choice active={value.guesses === 0} disabled={disabled} onClick={() => set("guesses", 0)} title={squirdle ? "Stats' count: 5 for one generation, up to 9 for all" : undefined}>
           Auto ({ownGuesses})
         </Choice>
         {DLE_GUESS_CHOICES.map((n) => (
@@ -199,10 +199,10 @@ export function SettingsPanel({
       </Row>
 
       <Row label="Close states">
-        <Choice active={rules.close} disabled={disabled || squirdle} onClick={() => set("close", true)} title={squirdle ? "Squirdle-style never has close states" : "Yellow ▲ / ▼ for near misses"}>
+        <Choice active={rules.close} disabled={disabled || squirdle} onClick={() => set("close", true)} title={squirdle ? "Stats never has close states" : "Yellow ▲ / ▼ for near misses"}>
           On
         </Choice>
-        <Choice active={!rules.close} disabled={disabled || squirdle} onClick={() => set("close", false)} title="Squirdle strict: ▲ / ▼ only">
+        <Choice active={!rules.close} disabled={disabled || squirdle} onClick={() => set("close", false)} title="Strict: ▲ / ▼ only">
           Strict (▲ / ▼ only)
         </Choice>
       </Row>

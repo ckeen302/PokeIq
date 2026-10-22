@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useMatchmaking } from "@/components/duel/use-matchmaking";
 import { clock } from "@/components/duel/DuelParts";
+import { HowItWorks } from "@/components/duel/HowItWorks";
 import { cn } from "@/lib/utils";
 
 /** The ranked queue's matchmaking settings. */
@@ -172,7 +173,7 @@ export function RankedCard() {
   const you = state.status === "ready" ? state.you : null;
   return (
     <Card className="overflow-hidden border-warning/40">
-      <CardContent className={cn("grid gap-5 p-6", state.status !== "off" && "md:grid-cols-[1fr_18rem]")}>
+      <CardContent className={cn("grid gap-5 p-6", state.status !== "off" && "md:grid-cols-[1fr_15rem]")}>
         <div className="min-w-0 space-y-3">
           <p className="hud-label flex items-center gap-1.5 text-warning">
             <Trophy className="h-3.5 w-3.5" aria-hidden /> Ranked
@@ -190,18 +191,26 @@ export function RankedCard() {
           ) : (
             <>
               <TierBadge rating={1000} games={0} size="lg" />
-              <p className="text-sm text-muted-foreground">
-                Everyone starts at 1,000. Win to climb from Poké Ball to Master Ball; your first {RANKED_PROVISIONAL_GAMES} games move your rating faster.
-              </p>
+              <p className="text-sm text-muted-foreground">Climb from Poké Ball to Master Ball against trainers near your rating.</p>
             </>
           )}
-          <p className="text-xs text-muted-foreground">
-            Matched with trainers near your rating, every generation, always with the Notebook Pokédex (the same assist for everyone on the ladder). Leaving
-            counts as a loss.{" "}
-            <Link href="/leaderboard?board=pokedle" className="underline underline-offset-2 hover:text-foreground">
-              Ranked ladder
-            </Link>
-          </p>
+          {state.status !== "off" && (
+            <HowItWorks
+              extra={
+                <Link href="/leaderboard?board=pokedle" className="font-semibold text-muted-foreground underline-offset-2 hover:text-foreground hover:underline">
+                  Ranked ladder
+                </Link>
+              }
+            >
+              <p>
+                Everyone starts at 1,000. Win to climb from Poké Ball to Master Ball; your first {RANKED_PROVISIONAL_GAMES} games move your rating faster.
+              </p>
+              <p>
+                Matched with trainers near your rating, every generation, always with the Notebook Pokédex (the same assist for everyone on the ladder). Leaving counts as a
+                loss.
+              </p>
+            </HowItWorks>
+          )}
           {(error ?? finder.error) && (
             <p role="alert" className="text-sm text-destructive">
               {error ?? finder.error}

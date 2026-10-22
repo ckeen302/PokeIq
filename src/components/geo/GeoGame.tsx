@@ -110,12 +110,6 @@ function placeName(answer: { name: string; parent?: string; region?: string }, m
   return answer.region && map && answer.region !== map.name ? `${name}, ${answer.region}` : name;
 }
 
-/** "Every game from Red / Blue / Yellow to Scarlet / Violet". */
-function gamesText(games: string[]): string {
-  if (games.length <= 1) return games[0] ? `Pokémon ${games[0]}` : "the games";
-  return `${games.length} games, from ${games[0]} to ${games.at(-1)}`;
-}
-
 /** Areas the player saw lately, most recent first, so a new game doesn't bring them straight back. */
 const RECENT_KEY = "pokeiq:geo-recent";
 const RECENT_MAX = 200;
@@ -374,11 +368,6 @@ export function GeoGame({ regions: allRegions, challenge }: GeoGameProps) {
     const challengeMap = challenge ? byId(challenge.region) : undefined;
     const loading = phase === "loading";
     const isWorld = region.id === WORLD_REGION;
-    const filterName = filter.families.length
-      ? filter.families.map((f) => geoFamily(f).short).join(", ")
-      : filter.era
-        ? GEO_ERA_NAMES[filter.era]
-        : null;
     return (
       <div className="mx-auto max-w-4xl space-y-8">
         <div className="space-y-3 text-center">
@@ -483,12 +472,11 @@ export function GeoGame({ regions: allRegions, challenge }: GeoGameProps) {
 
           <GameFilter region={region} filter={filter} onChange={chooseFilter} guessGame={guessGame} onGuessGame={chooseGuessGame} />
 
-          <p className="text-sm text-muted-foreground">
-            {filterName
-              ? `${fmt(places)} places with ${filterName} screenshots.`
-              : `${fmt(region.locations)} places, each shown in every game it appears in: ${gamesText(region.games)}.`}{" "}
-            {filter.families.length ? "Hand-picked games are practice: no leaderboard." : filter.era ? `${GEO_ERA_NAMES[filter.era]} has leaderboards of its own.` : ""}
-          </p>
+          {(filter.families.length > 0 || filter.era) && (
+            <p className="text-sm text-muted-foreground">
+              {filter.families.length ? "Hand-picked games are practice: no leaderboard." : `${GEO_ERA_NAMES[filter.era!]} has leaderboards of its own.`}
+            </p>
+          )}
 
           <div className="grid gap-4 sm:grid-cols-2">
             <ModeCard
