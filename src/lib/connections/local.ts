@@ -18,11 +18,13 @@ export interface ConnPrefs {
   symbols: boolean;
   /** A running clock above the grid. */
   showTimer: boolean;
+  /** Unlimited's difficulty: which bands the groups come from (see the generator's DIFFICULTY_BANDS). */
+  level: "easy" | "normal" | "hard";
 }
 
 const PREFS_KEY = "pokeiq:connections-prefs:v1";
 const ARCHIVE_KEY = "pokeiq:connections-archive:v1";
-const DEFAULT_PREFS: ConnPrefs = { seenHowTo: false, symbols: true, showTimer: false };
+const DEFAULT_PREFS: ConnPrefs = { seenHowTo: false, symbols: true, showTimer: false, level: "normal" };
 
 function load<T extends object>(key: string, fallback: T): T {
   try {

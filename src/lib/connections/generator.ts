@@ -242,6 +242,8 @@ export interface GenerateOptions {
   avoidPokemon?: ReadonlySet<number>;
   /** Ways to fill a set of categories before keeping the best (×3 tries). */
   candidates?: number;
+  /** Unlimited's difficulty (DIFFICULTY_BANDS); dailies are always normal. */
+  difficulty?: ConnDifficulty;
 }
 
 /** Tries to fill four categories with four Pokémon each; null if they don't fit together. */
@@ -268,9 +270,21 @@ function fill(rng: Rng, cats: Category[], avoid: ReadonlySet<number>): PuzzleGro
   return groups;
 }
 
-function pickCategories(rng: Rng, avoid: ReadonlySet<string>): Category[] | null {
+/**
+ * Which difficulty band each of a puzzle's four categories comes from.
+ * Normal (every daily) takes one from each; Easy two from the easiest and
+ * none from the hardest; Hard none from the easiest and two from the hardest.
+ */
+export const DIFFICULTY_BANDS = {
+  easy: [0, 0, 1, 2],
+  normal: [0, 1, 2, 3],
+  hard: [1, 2, 3, 3],
+} as const;
+export type ConnDifficulty = keyof typeof DIFFICULTY_BANDS;
+
+function pickCategories(rng: Rng, avoid: ReadonlySet<string>, bands: readonly number[] = DIFFICULTY_BANDS.normal): Category[] | null {
   const cats: Category[] = [];
-  for (let band = 0; band < BANDS.length; band++) {
+  for (const band of bands) {
     const options = CATEGORIES.filter((c) => bandOf(c) === band && !avoid.has(c.id) && !cats.some((o) => o.family === c.family));
     const c = weightedPick(rng, options, (c) => FAMILY_WEIGHT[c.family] / (FAMILY_SIZE.get(`${c.family}|${band}`) ?? 1));
     if (!c) return null;
@@ -305,7 +319,7 @@ export function generatePuzzle(seed: string, options: GenerateOptions = {}): Puz
   for (let set = 0; set < 400; set++) {
     // Late on, let go of the variety rules rather than fail.
     const strict = set < 300;
-    const cats = pickCategories(rng, strict ? (options.avoidCategories ?? none) : none);
+    const cats = pickCategories(rng, strict ? (options.avoidCategories ?? none) : none, DIFFICULTY_BANDS[options.difficulty ?? "normal"]);
     if (!cats) continue;
     let best: { groups: PuzzleGroup[]; score: number } | null = null;
     for (let i = 0; i < tries; i++) {

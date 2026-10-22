@@ -271,3 +271,27 @@ describe("the share payload", () => {
     expect(decodeShare("con.w1.r00001-1111-2222-3333")).toBeNull();
   });
 });
+
+describe("Unlimited's difficulty", () => {
+  const difficulties = (p: Puzzle) => p.groups.map((g) => categoryOf(g.category).difficulty);
+  const seeds = ["u1", "u2", "u3", "u4", "u5", "u6"];
+
+  it("easy has no tricky group, hard no easy one, and both stay fair", () => {
+    for (const s of seeds) {
+      const easy = practiceConnPuzzle(`easy-${s}abcd`);
+      const hard = practiceConnPuzzle(`hard-${s}abcd`);
+      expect(validatePuzzle(easy)).toEqual([]);
+      expect(validatePuzzle(hard)).toEqual([]);
+      expect(Math.max(...difficulties(easy))).toBeLessThan(3.15);
+      expect(difficulties(easy).filter((d) => d < 1.75).length).toBeGreaterThanOrEqual(2);
+      expect(Math.min(...difficulties(hard))).toBeGreaterThanOrEqual(1.75);
+      expect(difficulties(hard).filter((d) => d >= 3.15).length).toBeGreaterThanOrEqual(2);
+    }
+  });
+
+  it("rides in the seed: the same seed is the same puzzle, and a plain seed is normal", () => {
+    expect(practiceConnPuzzle("hard-zzzz1234")).toEqual(generatePuzzle("practice:hard-zzzz1234", { difficulty: "hard" }));
+    expect(practiceConnPuzzle("normal-zzzz1234")).toEqual(generatePuzzle("practice:normal-zzzz1234"));
+    expect(practiceConnPuzzle("zzzz1234")).toEqual(generatePuzzle("practice:zzzz1234"));
+  });
+});

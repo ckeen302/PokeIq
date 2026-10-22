@@ -3,13 +3,13 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, LayoutGroup, MotionConfig, motion } from "framer-motion";
 import { track } from "@vercel/analytics";
-import { BarChart3, CalendarDays, CircleHelp, Dices, RefreshCw, Settings, Shuffle, Timer, X } from "lucide-react";
+import { BarChart3, CalendarDays, CircleHelp, Dices, Infinity as InfinityIcon, RefreshCw, Settings, Shuffle, Swords, Timer, X } from "lucide-react";
 import { connBlock, getProgress, saveConn, useProgress, type ConnRecord } from "@/lib/progress";
 import { useToday } from "@/lib/use-today";
 import { play } from "@/lib/sound";
 import { dlePlayerId } from "@/lib/dle-player";
 import { clock, connectionsShareText, shareUrl, type ConnectionsShareResult } from "@/lib/share";
-import { connArchive, connStats, getConnPrefs, saveConnArchive, setConnPrefs, useConnPrefs } from "@/lib/connections/local";
+import { connArchive, connStats, getConnPrefs, saveConnArchive, setConnPrefs, useConnPrefs, type ConnPrefs } from "@/lib/connections/local";
 import {
   CONN_GROUP_SIZE,
   CONN_GROUPS,
@@ -23,7 +23,7 @@ import {
   type ConnResultResponse,
   type ConnTile,
 } from "@/lib/connections/types";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Popover } from "@/components/ui/popover";
 import { NextDailyCountdown } from "@/components/NextDailyCountdown";
@@ -36,7 +36,13 @@ import { cn } from "@/lib/utils";
 type Target = { kind: "daily"; date: string } | { kind: "archive"; date: string } | { kind: "practice"; seed: string };
 type Mode = Target["kind"];
 
-const newSeed = () => Math.random().toString(36).slice(2, 10).padEnd(8, "0");
+/** A practice seed, with Unlimited's difficulty in front ("hard-x7k2abcd"): the server reads it back from there. */
+const newSeed = (level: ConnPrefs["level"] = "normal") => `${level}-${Math.random().toString(36).slice(2, 10).padEnd(8, "0")}`;
+const LEVELS: { id: ConnPrefs["level"]; label: string; hint: string }[] = [
+  { id: "easy", label: "Easy", hint: "Two straightforward groups, no tricky one" },
+  { id: "normal", label: "Normal", hint: "One group of each colour, like the daily" },
+  { id: "hard", label: "Hard", hint: "No easy group, two tricky ones" },
+];
 const TOAST_MS = 1600;
 /** How long a right guess's tiles bounce before they become a bar. */
 const JUMP_MS = 620;
@@ -75,12 +81,14 @@ export function Connections() {
   const [now, setNow] = useState(() => Date.now());
   const reqRef = useRef(0);
   const seenTodayRef = useRef<string | null>(null);
+  const loadedRef = useRef(false);
   const tileRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const toastTimer = useRef<number | undefined>(undefined);
   const closeSettings = useCallback(() => setSettingsOpen(false), []);
 
   const mode: Mode = target?.kind ?? "daily";
   const symbols = prefs?.symbols ?? true;
+  const level = prefs?.level ?? "normal";
   const over = state?.over ?? false;
   const won = state?.won ?? false;
   const foundLevels = useMemo(() => new Set((state?.found ?? []).map((g) => g.level)), [state]);
@@ -111,6 +119,9 @@ export function Connections() {
 
   const load = useCallback(async (t: Target) => {
     const id = ++reqRef.current;
+    // A new puzzle (Next puzzle, a mode, the archive) starts at the top; the first one loads where the page opened.
+    if (loadedRef.current) window.scrollTo({ top: 0, behavior: reducedMotion() ? "auto" : "smooth" });
+    loadedRef.current = true;
     setTarget(t);
     setPuzzle(null);
     setOrder([]);
@@ -313,8 +324,8 @@ export function Connections() {
 
   // ---- Modes -----------------------------------------------------------------
 
-  function newPractice() {
-    void load({ kind: "practice", seed: newSeed() });
+  function newPractice(level: ConnPrefs["level"] = getConnPrefs().level) {
+    void load({ kind: "practice", seed: newSeed(level) });
   }
 
   function backToDaily() {
@@ -368,6 +379,40 @@ export function Connections() {
             <h1 className="font-display text-4xl font-bold uppercase tracking-tight">Find the four groups</h1>
             <p className="text-sm text-muted-foreground">Sixteen Pokémon, four hidden links. Every Pokémon fits exactly one.</p>
           </div>
+          <div className="flex justify-center">
+            <div className="flex flex-wrap justify-center rounded-md border border-foreground/15 bg-card p-0.5" role="radiogroup" aria-label="PokéConnections mode">
+              {(
+                [
+                  { id: "daily", label: "Daily", title: "Today's puzzle, the same for everyone", on: backToDaily, disabled: !today },
+                  { id: "practice", label: "Unlimited", title: "A fresh puzzle every time, as many as you like", on: () => newPractice() },
+                  { id: "archive", label: "Archive", title: "Every past daily", on: () => setSheet("archive"), disabled: !today },
+                ] as const
+              ).map((m) => (
+                <button
+                  key={m.id}
+                  type="button"
+                  role="radio"
+                  aria-checked={mode === m.id}
+                  title={m.title}
+                  onClick={m.on}
+                  disabled={"disabled" in m && m.disabled}
+                  className={cn(
+                    "min-w-[5.5rem] rounded px-3 py-1.5 font-display text-sm font-semibold uppercase tracking-wider transition-colors sm:min-w-24 sm:px-4",
+                    mode === m.id ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
+                  )}
+                >
+                  {m.label}
+                </button>
+              ))}
+              <a
+                href="#duel"
+                title="Race a friend or a stranger to the four groups"
+                className="flex min-w-[5.5rem] items-center justify-center gap-1.5 rounded px-3 py-1.5 font-display text-sm font-semibold uppercase tracking-wider text-muted-foreground transition-colors hover:text-foreground sm:min-w-24 sm:px-4"
+              >
+                <Swords className="h-3.5 w-3.5" aria-hidden /> Duel
+              </a>
+            </div>
+          </div>
           <div className="flex items-center justify-center gap-1" role="toolbar" aria-label="PokéConnections options">
             <button type="button" className={iconButton} onClick={() => setSheet("howto")} aria-label="How to play" title="How to play">
               <CircleHelp className="h-5 w-5" />
@@ -378,7 +423,7 @@ export function Connections() {
             <button type="button" className={iconButton} onClick={() => setSheet("archive")} aria-label="Archive of past dailies" title="Archive of past dailies" disabled={!today}>
               <CalendarDays className="h-5 w-5" />
             </button>
-            <button type="button" className={cn(iconButton, mode === "practice" && "text-screen")} onClick={newPractice} aria-pressed={mode === "practice"} aria-label="New practice puzzle" title="New practice puzzle (unlimited)">
+            <button type="button" className={cn(iconButton, mode === "practice" && "text-screen")} onClick={() => newPractice()} aria-pressed={mode === "practice"} aria-label="New practice puzzle" title="New practice puzzle (unlimited)">
               <Dices className="h-5 w-5" />
             </button>
             <div className="relative flex items-center">
@@ -421,12 +466,36 @@ export function Connections() {
           </p>
         )}
         {mode === "practice" && (
-          <p className="mx-auto max-w-md rounded-md border border-screen/40 bg-screen/[0.06] px-3 py-2 text-center text-sm">
-            Practice puzzle: unlimited, and never counted.{" "}
-            <button type="button" onClick={backToDaily} className="font-semibold text-primary hover:underline">
-              Back to today&apos;s
-            </button>
-          </p>
+          <div className="mx-auto max-w-md space-y-2 rounded-md border border-screen/40 bg-screen/[0.06] px-3 py-2.5 text-center text-sm" data-testid="conn-unlimited">
+            <p>Unlimited: a fresh puzzle every time, never counted toward your streak.</p>
+            <div className="flex items-center justify-center gap-2">
+              <span className="hud-label">Difficulty</span>
+              <div className="flex gap-1" role="radiogroup" aria-label="Unlimited difficulty">
+                {LEVELS.map((l) => (
+                  <button
+                    key={l.id}
+                    type="button"
+                    role="radio"
+                    aria-checked={level === l.id}
+                    title={l.hint}
+                    onClick={() => {
+                      if (level === l.id) return;
+                      setConnPrefs({ level: l.id });
+                      // A new puzzle at that level, unless this one is under way.
+                      if (guesses.length === 0 || over) newPractice(l.id);
+                    }}
+                    className={cn(
+                      "h-8 rounded-sm border px-2.5 font-pixel text-[10px] uppercase tracking-wider transition-colors",
+                      level === l.id ? "border-primary bg-primary text-primary-foreground" : "border-foreground/10 bg-shade/20 text-muted-foreground hover:border-primary/50 hover:text-foreground"
+                    )}
+                  >
+                    {l.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+            {guesses.length > 0 && !over && <p className="text-xs text-muted-foreground">A new difficulty starts with your next puzzle.</p>}
+          </div>
         )}
         {mode === "daily" && stats?.atRisk && !over && (
           <p className="mx-auto max-w-md rounded-md border border-orange-400/50 bg-orange-400/10 px-3 py-2 text-center text-sm font-semibold text-orange-400" role="status">
@@ -555,12 +624,26 @@ export function Connections() {
                     <b>{Math.round((100 * summary.perfect) / summary.players)}%</b> got it perfect
                   </p>
                 )}
-                <div className="grid gap-2 sm:grid-cols-2">
-                  <ShareButton getText={shareTextNow} label="Share" kind="connections" />
-                  <Button variant={mode === "practice" ? "default" : "outline"} onClick={newPractice}>
-                    <RefreshCw className="h-4 w-4" aria-hidden /> {mode === "practice" ? "New puzzle" : "Practice"}
-                  </Button>
-                </div>
+                {mode === "practice" ? (
+                  <div className="space-y-2">
+                    <Button size="lg" className="h-14 w-full text-base" onClick={() => newPractice()} data-testid="conn-next">
+                      <RefreshCw className="h-5 w-5" aria-hidden /> Next puzzle ▶
+                    </Button>
+                    <ShareButton getText={shareTextNow} label="Share" kind="connections" variant="outline" className="w-full" />
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    <ShareButton getText={shareTextNow} label="Share" kind="connections" className="w-full" />
+                    <div className="grid gap-2 sm:grid-cols-2">
+                      <Button size="lg" variant="success" onClick={() => newPractice()} data-testid="conn-play-unlimited">
+                        <InfinityIcon className="h-5 w-5" aria-hidden /> Play unlimited
+                      </Button>
+                      <a href="#duel" className={cn(buttonVariants({ size: "lg", variant: "outline" }))} data-testid="conn-duel-link">
+                        <Swords className="h-5 w-5" aria-hidden /> Duel a friend
+                      </a>
+                    </div>
+                  </div>
+                )}
                 {mode !== "daily" && today && !todayRecord?.over && (
                   <Button className="w-full" onClick={backToDaily}>
                     Play today&apos;s PokéConnections

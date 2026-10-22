@@ -300,6 +300,32 @@ step("pokéconnections: a full daily, one wrong guess then a solve");
   // A reload restores the finished game.
   await page.reload({ waitUntil: "networkidle" });
   await page.getByTestId("conn-result").waitFor();
+
+  // Unlimited, straight from the daily's result: a Hard puzzle, solved from the Pokédex data alone, then the next one.
+  await page.getByRole("radiogroup", { name: "PokéConnections mode" }).getByRole("radio", { name: "Daily", checked: true }).waitFor();
+  await page.getByTestId("conn-duel-link").waitFor();
+  await page.getByTestId("conn-play-unlimited").click();
+  await page.getByTestId("conn-unlimited").waitFor();
+  await page.getByRole("radio", { name: "Unlimited", checked: true }).waitFor();
+  const hardTiles = page.waitForResponse((r) => /\/api\/connections\?practice=hard-/.test(r.url()));
+  await page.getByRole("radio", { name: "Hard" }).click();
+  const hard = await (await hardTiles).json();
+  await page.locator(`[data-testid=conn-tile][data-id="${hard.tiles[0].id}"]`).waitFor();
+  const [unlimitedGroups] = JSON.parse(
+    execFileSync("npx", ["tsx", "scripts/connections-solve.ts", ...hard.tiles.map((t) => String(t.id))], { encoding: "utf8", cwd: new URL("..", import.meta.url).pathname })
+  );
+  for (const [i, g] of unlimitedGroups.entries()) {
+    await pick(g);
+    await page.locator("[data-testid=conn-group]").nth(i).waitFor();
+  }
+  await page.getByTestId("conn-result").waitFor();
+  await page.screenshot({ path: `${OUT}/conn-unlimited-result.png`, fullPage: true });
+  const nextTiles = page.waitForResponse((r) => /\/api\/connections\?practice=hard-/.test(r.url()));
+  await page.getByTestId("conn-next").click();
+  const next = await (await nextTiles).json();
+  if (next.key === hard.key) errors.push("Next puzzle gave the same puzzle");
+  await page.getByTestId("conn-tile").nth(15).waitFor();
+  await page.screenshot({ path: `${OUT}/conn-unlimited.png` });
 }
 
 step("adaptive PokéIQ test (20 questions)");

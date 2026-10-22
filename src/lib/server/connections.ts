@@ -45,7 +45,9 @@ const practiceCache = new Map<string, Puzzle>();
 export function practiceConnPuzzle(seed: string): Puzzle {
   let p = practiceCache.get(seed);
   if (!p) {
-    p = generatePuzzle(`practice:${seed}`);
+    // "hard-x7k2…": Unlimited's difficulty rides in the seed, so every guess check finds the same puzzle.
+    const level = /^(easy|hard)-/.exec(seed)?.[1] as "easy" | "hard" | undefined;
+    p = generatePuzzle(`practice:${seed}`, level ? { difficulty: level } : {});
     if (practiceCache.size > 500) practiceCache.clear();
     practiceCache.set(seed, p);
   }

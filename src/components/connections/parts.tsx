@@ -36,7 +36,7 @@ export const GridTile = forwardRef<
     onKeyDown: (e: React.KeyboardEvent<HTMLButtonElement>) => void;
   }
 >(function GridTile({ tile, index, selected, disabled, motionKind, order, onToggle, onKeyDown }, ref) {
-  const long = tile.name.length > 11;
+  const long = tile.name.length > 9;
   return (
     <motion.button
       ref={ref}
