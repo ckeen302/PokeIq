@@ -12,6 +12,8 @@ import { WORLD_THUMB, showcaseSlides } from "./showcase";
  * text runs over its lower edge, so the four headline games below still fit
  * on the first screen.
  */
+const fmt = (n: number) => n.toLocaleString("en-US");
+
 export function Hero() {
   return (
     <section className="dark-scope relative isolate overflow-hidden rounded-2xl border border-white/10 bg-card shadow-[0_30px_80px_-30px_hsl(var(--screen)/0.45)]">
