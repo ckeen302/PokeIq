@@ -452,7 +452,6 @@ const ARCHIVE_FILES: Record<string, string[]> = {
   "Sevii Islands|Seven Island": ["Seven_Island.png"],
   // The islands on the 3DS's lower screen.
   "Alola|Poké Pelago": ["Isle_Abeens.png", "Isle_Aphun.png", "Isle_Aplenny.png", "Isle_Avue.png", "Isle_Evelup.png"],
-  "Alola|Plains Grotto": ["Plains_Grotto_USUM.png"],
 };
 /** The game of archive files whose name and size don't say. */
 const FILE_GAMES: Record<string, string> = Object.fromEntries([
