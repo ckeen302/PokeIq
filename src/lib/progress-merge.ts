@@ -2,6 +2,7 @@ import { DLE_HINT_KINDS } from "./dle-types";
 import { isDleAssist } from "./dle-assist";
 import type { ConnRecord, DailyRecord, DleRecord, Progress } from "./progress";
 import { EMPTY_CONN_PLAY, type ConnPlay } from "./connections/play";
+import { EMPTY_PDK_PLAY, PDK_COUNTERS, type PdkPlay, type PdkRecord } from "./pikadoku/play";
 
 /**
  * Pure helpers for syncing progress between the browser and a trainer
@@ -76,6 +77,39 @@ function connRecord(v: unknown): ConnRecord | null {
   };
 }
 
+function pdkRecord(v: unknown): PdkRecord | null {
+  const o = obj(v);
+  if (!Array.isArray(o.guesses)) return null;
+  const guesses = o.guesses
+    .map((g) => obj(g))
+    .filter((g) => Number.isInteger(g.cell) && (g.cell as number) >= 0 && (g.cell as number) < 9 && Number.isInteger(g.id) && (g.id as number) > 0)
+    .map((g) => ({ cell: g.cell as number, id: g.id as number }))
+    .slice(0, 40);
+  return {
+    guesses,
+    won: o.won === true,
+    over: o.over === true,
+    solved: Math.min(9, Math.floor(num(o.solved))),
+    score: typeof o.score === "number" && Number.isFinite(o.score) ? o.score : null,
+    ...(typeof o.ms === "number" && Number.isFinite(o.ms) && o.ms >= 0 && { ms: Math.round(o.ms) }),
+  };
+}
+
+function pdkPlayOf(v: unknown): PdkPlay {
+  const o = obj(v);
+  const out: PdkPlay = { ...EMPTY_PDK_PLAY, duels: [] };
+  for (const k of PDK_COUNTERS) out[k] = Math.floor(num(o[k]));
+  if (Array.isArray(o.duels)) out.duels = o.duels.filter((d): d is string => typeof d === "string").slice(-50);
+  return out;
+}
+
+function mergePdkPlay(a: PdkPlay | undefined, b: PdkPlay | undefined): PdkPlay {
+  const [x, y] = [a ?? EMPTY_PDK_PLAY, b ?? EMPTY_PDK_PLAY];
+  const out: PdkPlay = { ...EMPTY_PDK_PLAY, duels: [...new Set([...y.duels, ...x.duels])].slice(-50) };
+  for (const k of PDK_COUNTERS) out[k] = Math.max(x[k], y[k]);
+  return out;
+}
+
 const CONN_COUNTERS = ["wins", "perfect", "hard", "duelWins", "duelLosses", "duelDraws"] as const;
 
 function connPlayOf(v: unknown): ConnPlay {
@@ -125,6 +159,8 @@ export function normalizeProgress(raw: unknown): Progress | null {
     ...(o.squirdle !== undefined && { squirdle: streakBlock(o.squirdle, dleRecord) }),
     ...(o.conn !== undefined && { conn: streakBlock(o.conn, connRecord) }),
     ...(o.connPlay !== undefined && { connPlay: connPlayOf(o.connPlay) }),
+    ...(o.pdk !== undefined && { pdk: streakBlock(o.pdk, pdkRecord) }),
+    ...(o.pdkPlay !== undefined && { pdkPlay: pdkPlayOf(o.pdkPlay) }),
     badges: numberMap(o.badges),
     skills,
   };
@@ -138,6 +174,7 @@ interface StreakBlock<T> {
 }
 
 const EMPTY_BLOCK: StreakBlock<DleRecord> = { last: null, streak: 0, best: 0, results: {} };
+const EMPTY_PDK: StreakBlock<PdkRecord> = { last: null, streak: 0, best: 0, results: {} };
 const EMPTY_CONN: StreakBlock<ConnRecord> = { last: null, streak: 0, best: 0, results: {} };
 
 function laterStreak<T>(a: StreakBlock<T>, b: StreakBlock<T>): StreakBlock<T> {
@@ -180,6 +217,8 @@ export function mergeProgress(local: Progress, remote: Progress): Progress {
     dle: laterStreak(local.dle, remote.dle),
     ...((local.squirdle || remote.squirdle) && { squirdle: laterStreak(local.squirdle ?? EMPTY_BLOCK, remote.squirdle ?? EMPTY_BLOCK) }),
     ...((local.conn || remote.conn) && { conn: laterStreak(local.conn ?? EMPTY_CONN, remote.conn ?? EMPTY_CONN) }),
+    ...((local.pdk || remote.pdk) && { pdk: laterStreak(local.pdk ?? EMPTY_PDK, remote.pdk ?? EMPTY_PDK) }),
+    ...((local.pdkPlay || remote.pdkPlay) && { pdkPlay: mergePdkPlay(local.pdkPlay, remote.pdkPlay) }),
     ...((local.connPlay || remote.connPlay) && { connPlay: mergeConnPlay(local.connPlay, remote.connPlay) }),
     badges,
     skills,
