@@ -2,7 +2,8 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
-import { Info, Search } from "lucide-react";
+import { Baby, BarChart3, Bone, Circle, Crown, Dna, GitBranch, Handshake, Info, Layers, type LucideIcon, Maximize2, MapPin, Orbit, Rocket, Search, Sparkle, Sparkles, Swords, Trophy, Zap } from "lucide-react";
+import { TypeBadge } from "@/components/pokedex/TypeBadge";
 import { Sheet } from "@/components/pokedle/sheets";
 import { spriteUrl } from "@/lib/pokemon/art";
 import { PDK_FAMILY_LABELS, categoryHint, type PdkCategoryView, type PdkFamily, type PdkGridView } from "@/lib/pikadoku/types";
@@ -48,6 +49,30 @@ const FAMILY_TINT: Record<PdkFamily, string> = {
   other: "border-amber-400/50 bg-amber-400/10",
 };
 
+const ICONS: Record<string, LucideIcon> = {
+  "types:dual": Layers,
+  "types:single": Circle,
+  "other:legendary": Crown,
+  "other:mythical": Sparkles,
+  "other:lm": Crown,
+  "other:fossil": Bone,
+  "other:baby": Baby,
+  "other:mega": Zap,
+  "other:gmax": Maximize2,
+  "other:paradox": Orbit,
+  "other:ultrabeast": Rocket,
+  "other:partner": Handshake,
+  "other:ou": Trophy,
+  "evo:branch": GitBranch,
+};
+const FAMILY_ICON: Record<PdkFamily, LucideIcon> = { types: Layers, regions: MapPin, evolution: Dna, moves: Swords, abilities: Sparkle, other: BarChart3 };
+
+/** A category's icon: its own where it has one, else its family's. */
+function CategoryIcon({ cat }: { cat: PdkCategoryView }) {
+  const Icon = ICONS[cat.id] ?? FAMILY_ICON[cat.family];
+  return <Icon className="h-3.5 w-3.5 shrink-0 opacity-80 sm:h-4 sm:w-4" aria-hidden />;
+}
+
 function Header({ cat, testId }: { cat: PdkCategoryView | undefined; testId: string }) {
   const [open, setOpen] = useState(false);
   const tipId = `${testId}-tip`;
@@ -55,10 +80,17 @@ function Header({ cat, testId }: { cat: PdkCategoryView | undefined; testId: str
     <div
       data-testid={testId}
       title={cat ? PDK_FAMILY_LABELS[cat.family] : undefined}
-      className={cn("relative flex min-h-14 items-center justify-center rounded-md border px-1.5 py-1 text-center text-[11px] font-semibold leading-tight sm:text-sm", cat ? FAMILY_TINT[cat.family] : "border-foreground/10")}
+      className={cn("relative flex min-h-14 items-center justify-center rounded-md border px-1.5 py-1 text-center text-[11px] font-bold leading-tight sm:text-sm", cat ? FAMILY_TINT[cat.family] : "border-foreground/10")}
       onMouseLeave={() => setOpen(false)}
     >
-      <span className={cat ? "pr-3" : undefined}>{cat?.label ?? "…"}</span>
+      {cat?.id.startsWith("type:") ? (
+        <TypeBadge type={cat.id.slice(5)} size="md" className="max-w-full" />
+      ) : (
+        <span className={cn("flex flex-col items-center gap-0.5 font-display font-bold uppercase tracking-wide", cat && "pr-3")}>
+          {cat && <CategoryIcon cat={cat} />}
+          <span>{cat?.label ?? "…"}</span>
+        </span>
+      )}
       {cat && (
         <>
           <button
