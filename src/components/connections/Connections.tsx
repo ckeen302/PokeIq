@@ -173,8 +173,8 @@ export function Connections({ customId }: { customId?: string } = {}) {
     setElapsed({ banked: saved?.ms ?? 0, since: null });
     try {
       const res = await fetch(`/api/connections?${new URLSearchParams(query(t))}`);
-      const body = await res.json();
-      if (!res.ok) throw new Error(body.error ?? "Couldn't load the puzzle.");
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(body.error ?? "Couldn't load the puzzle. Try again.");
       if (id !== reqRef.current) return;
       const p = body as ConnPuzzleResponse;
       // The first deal of the day times the game for the leaderboard (a reload doesn't restart the clock).

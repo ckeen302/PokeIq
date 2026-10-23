@@ -74,7 +74,13 @@ export function practiceConnPuzzle(seed: string): Puzzle {
     // "hard-x7k2…": Unlimited's difficulty rides in the seed, so every guess check finds the same puzzle.
     const { pack, difficulty } = parsePracticeSeed(seed);
     // Practice puzzles may have one or two mixed groups (the seed decides); a pack's never do.
-    p = generatePuzzle(`practice:${seed}`, { ...(difficulty && { difficulty }), ...(pack ? { pack } : { mixed: "seed" as const }) });
+    const base = pack ? { pack } : { mixed: "seed" as const };
+    try {
+      p = generatePuzzle(`practice:${seed}`, { ...(difficulty && { difficulty }), ...base });
+    } catch {
+      // A small pack can't always fill an Easy (or Hard) grid; deal its Normal grid for this seed instead.
+      p = generatePuzzle(`practice:${seed}`, base);
+    }
     if (practiceCache.size > 500) practiceCache.clear();
     practiceCache.set(seed, p);
   }
