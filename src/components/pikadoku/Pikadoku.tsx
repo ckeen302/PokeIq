@@ -10,6 +10,8 @@ import { play } from "@/lib/sound";
 import { pikadokuShareText, shareUrl, type PikadokuShareResult } from "@/lib/share";
 import { rarityGrid } from "@/lib/pikadoku/share";
 import { archiveKey, loadPdkArchive, savePdkArchiveLocal } from "@/lib/pikadoku/archive";
+import { challengeLabel, decodeChallenge, encodeChallenge, judgeChallenge } from "@/lib/pikadoku/challenge";
+import { composeShare } from "@/lib/share/text";
 import { connNumber } from "@/lib/connections/types";
 import { EMPTY_PDK_PLAY } from "@/lib/pikadoku/play";
 import {
@@ -79,6 +81,9 @@ export function Pikadoku() {
   const [mode, setMode] = useState<Mode>("daily");
   const [prefs, setPrefs] = useState<Prefs | null>(null);
   const [seed, setSeed] = useState<string | null>(null);
+  /** Settings that came with a challenge link (they win over this device's until the next grid), and the result to beat. */
+  const [linkSettings, setLinkSettings] = useState<PdkSettings | null>(null);
+  const [challenge, setChallenge] = useState<{ solved: number; guesses: number } | null>(null);
   const [grid, setGrid] = useState<PdkGridView | null>(null);
   const [pp, setPp] = useState<number>(PDK_PP);
   const [start, setStart] = useState<string | undefined>();
@@ -103,16 +108,28 @@ export function Pikadoku() {
   const toastTimer = useRef<number | undefined>(undefined);
 
   useEffect(() => setPrefs(loadPrefs()), []);
+  // A challenge link (/pikadoku?c=...) opens that exact Unlimited grid.
+  useEffect(() => {
+    const c = decodeChallenge(new URLSearchParams(window.location.search).get("c"));
+    if (!c) return;
+    setLinkSettings(c.settings);
+    setChallenge(c.result);
+    setSeed(c.seed);
+    setMode("practice");
+    window.history.replaceState(null, "", window.location.pathname);
+  }, []);
   useEffect(() => () => window.clearTimeout(toastTimer.current), []);
-  const patchPrefs = (patch: Partial<Prefs>) =>
+  const patchPrefs = (patch: Partial<Prefs>) => {
+    if (patch.settings) setLinkSettings(null);
     setPrefs((p) => {
       const next = { ...(p ?? loadPrefs()), ...patch };
       savePrefs(next);
       return next;
     });
+  };
 
   const difficulty = prefs?.difficulty ?? "normal";
-  const settings = prefs?.settings ?? DEFAULT_PDK_SETTINGS;
+  const settings = linkSettings ?? prefs?.settings ?? DEFAULT_PDK_SETTINGS;
   const storeKey = mode === "archive" ? (archive ? archiveKey(archive.date, archive.difficulty) : null) : today ? (difficulty === "normal" ? today : `${today}:${difficulty}`) : null;
 
   /** The request fields that name this grid. */
@@ -287,6 +304,8 @@ export function Pikadoku() {
   }
 
   function newPractice() {
+    setLinkSettings(null);
+    setChallenge(null);
     setMode("practice");
     setSeed(newSeed());
   }
@@ -324,6 +343,14 @@ export function Pikadoku() {
     const r = shareResult();
     return pikadokuShareText(r, shareUrl(r));
   };
+  /** "Share this grid": a link that deals the same Unlimited grid, with this game's result to beat once it's over. */
+  const challengeText = () => {
+    if (!seed) return "";
+    const mine = result ? { solved: result.solved, guesses: guesses.length } : null;
+    const url = `${window.location.origin}/pikadoku?c=${encodeChallenge({ seed, settings, result: mine })}`;
+    return composeShare({ title: "Pikadoku (Unlimited) challenge", score: mine ? challengeLabel(mine) : undefined, lines: [mine ? "Can you beat me on the same grid?" : "Play the same grid with me:"], url });
+  };
+  const verdict = result && challenge && mode === "practice" ? judgeChallenge({ solved: result.solved, guesses: guesses.length }, challenge) : null;
 
   const rankName = progress?.name ?? "";
   const heading = mode === "archive" && archive ? `Archive #${connNumber(archive.date)} · ${DIFF_LABEL[archive.difficulty]}` : mode === "daily" && today ? `Daily #${connNumber(today)} · ${DIFF_LABEL[difficulty]}` : "Unlimited";
@@ -457,6 +484,11 @@ export function Pikadoku() {
             Archive: #{connNumber(archive.date)} ({archive.date}), {DIFF_LABEL[archive.difficulty]}. For fun: it never counts toward the daily board or your streak.
           </p>
         )}
+        {mode === "practice" && challenge && (
+          <p className="mx-auto max-w-md rounded-md border border-warning/50 bg-warning/10 px-3 py-2 text-center text-sm font-semibold" data-testid="pdk-challenge">
+            Challenge: beat {challengeLabel(challenge)}
+          </p>
+        )}
         {mode === "practice" && (
           <p className="mx-auto max-w-md rounded-md border border-screen/40 bg-screen/[0.06] px-3 py-2 text-center text-sm" data-testid="pdk-unlimited">
             Unlimited: a fresh grid every time, never counted toward your streak.{settings.timer && <b className="ml-2 tabular-nums">{clockText(elapsed)}</b>}
@@ -497,7 +529,8 @@ export function Pikadoku() {
         )}
 
         {!over && grid && (
-          <div className="flex justify-center">
+          <div className="flex flex-wrap justify-center gap-2">
+            {mode === "practice" && <ShareButton getText={challengeText} kind="pikadoku-challenge" label="Share this grid" variant="outline" size="sm" />}
             <Button type="button" variant="outline" size="sm" onClick={() => void giveUp()} disabled={busy} data-testid="pdk-giveup">
               <Flag className="h-4 w-4" aria-hidden /> Give up
             </Button>
@@ -544,8 +577,14 @@ export function Pikadoku() {
                   </Button>
                 </form>
               )}
+              {verdict && challenge && (
+                <p className="text-sm font-semibold" data-testid="pdk-challenge-result">
+                  {verdict === "beat" ? `You beat ${challengeLabel(challenge)}!` : verdict === "tied" ? `You tied ${challengeLabel(challenge)}.` : `Not quite: you needed to beat ${challengeLabel(challenge)}.`}
+                </p>
+              )}
               <div className="flex flex-wrap justify-center gap-2">
                 <ShareButton getText={shareText} kind="pikadoku" label="Share result" />
+                {mode === "practice" && <ShareButton getText={challengeText} kind="pikadoku-challenge" label="Share this grid" variant="outline" data-testid="pdk-share-grid" />}
                 {mode === "practice" && (
                   <Button type="button" onClick={newPractice}>
                     <Dices className="h-4 w-4" aria-hidden /> New grid
