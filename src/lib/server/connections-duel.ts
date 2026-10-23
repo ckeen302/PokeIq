@@ -74,7 +74,7 @@ export interface SeatRace extends PlayState {
   score?: number;
 }
 
-export function seatRace(d: ConnectionsDuel, puzzle: Puzzle, seat: number): SeatRace {
+export function seatRace(d: Pick<ConnectionsDuel, "boards" | "startsAt">, puzzle: Puzzle, seat: number): SeatRace {
   const guesses = d.boards[seat]?.guesses ?? [];
   const start = d.startsAt ?? 0;
   const state = playGuesses(puzzle, guesses.map((g) => g.ids));
@@ -94,11 +94,11 @@ export function seatRace(d: ConnectionsDuel, puzzle: Puzzle, seat: number): Seat
  * the lower score (time plus penalties); otherwise more groups found, then
  * fewer mistakes.
  */
-const rank = (s: SeatRace): number[] => (s.won ? [2, -s.score!] : [1, s.found.length, -s.mistakes]);
+export const raceRank = (s: SeatRace): number[] => (s.won ? [2, -s.score!] : [1, s.found.length, -s.mistakes]);
 
 /** The winning seat, or null for a draw. */
 export function raceWinner(s: SeatRace[]): number | null {
-  const [a, b] = s.map(rank);
+  const [a, b] = s.map(raceRank);
   for (let i = 0; i < Math.max(a.length, b.length); i++) if (a[i] !== b[i]) return a[i] > b[i] ? 0 : 1;
   return null;
 }
