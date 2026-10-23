@@ -11,6 +11,8 @@ export interface PdkFinishInput {
   date?: string;
   difficulty: PdkDifficulty;
   practice?: string;
+  /** An archive game: played for fun, never recorded. */
+  archive?: boolean;
   settings: PdkSettings;
   guesses: PdkGuess[];
   giveUp?: boolean;
@@ -49,7 +51,7 @@ export async function finishGame(input: PdkFinishInput, store: PdkStore | null =
   }
   if (!replay.over) return { ok: false, status: 409, error: "Finish the grid first." };
   const answers = new Map(replay.locked);
-  const counted = daily && isCurrentConnDate(input.date, now);
+  const counted = daily && !input.archive && isCurrentConnDate(input.date, now);
   const player = pdkPlayerKey(input.identity);
   let counts: PdkCounts | null = null;
   let rank = null;

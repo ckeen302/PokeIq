@@ -39,6 +39,7 @@ export async function POST(request: NextRequest) {
       date: d.date,
       difficulty: d.difficulty as PdkDifficulty,
       practice: d.practice,
+      archive: d.archive,
       settings: parseSettings(d.settings),
       guesses: d.guesses,
       giveUp: d.giveUp,

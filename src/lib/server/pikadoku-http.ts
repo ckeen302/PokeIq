@@ -10,6 +10,8 @@ export const gridFields = {
   date: z.string().max(10).optional(),
   difficulty: z.enum(PDK_DIFFICULTIES as [string, ...string[]]).default("normal"),
   practice: z.string().regex(/^[a-z0-9]{4,24}$/).optional(),
+  /** A past daily played from the archive: never counted for the day's stats, board or streak. */
+  archive: z.boolean().optional(),
   settings: z
     .object({
       unlimitedPP: z.boolean().optional(),
