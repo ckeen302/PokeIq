@@ -37,6 +37,7 @@ export async function POST(request: NextRequest) {
   try {
     const out = await finishGame({
       date: d.date,
+      week: d.week,
       difficulty: d.difficulty as PdkDifficulty,
       practice: d.practice,
       archive: d.archive,

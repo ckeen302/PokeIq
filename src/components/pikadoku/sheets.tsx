@@ -39,6 +39,9 @@ export function PdkHowToSheet({ onClose }: { onClose: () => void }) {
             When the game ends you see <b>every valid answer</b> for every cell, rarest first, and why each miss didn&apos;t fit.
           </li>
           <li>
+            The <b>Weekly</b> grid is themed (Kanto, Starters, Legendary, Gen 9 and Competitive weeks in turn), live from Monday to Sunday, with its own board. It never moves your daily streak.
+          </li>
+          <li>
             <b>Unlimited</b> deals a new grid on demand: unlimited PP, a soft-lock guard, single-answer cells, a timer, and the category families you want.
           </li>
           <li>
