@@ -77,6 +77,7 @@ export function PdkBoard({
   names,
   onCell,
   disabled,
+  stealable,
   testPrefix = "pdk",
 }: {
   grid: PdkGridView | null;
@@ -84,6 +85,8 @@ export function PdkBoard({
   names: Map<number, string>;
   onCell?: (cell: number) => void;
   disabled?: boolean;
+  /** Filled cells that can still be played (Steals mode: the opponent's). */
+  stealable?: (cell: number) => boolean;
   testPrefix?: string;
 }) {
   return (
@@ -105,7 +108,7 @@ export function PdkBoard({
               type="button"
               role="gridcell"
               data-testid={`${testPrefix}-cell-${i}`}
-              disabled={disabled || filled || !onCell || !grid}
+              disabled={disabled || (filled && !stealable?.(i)) || !onCell || !grid}
               onClick={() => onCell?.(i)}
               aria-label={`Row ${r + 1}, column ${c + 1}: ${label}`}
               className={cn(
