@@ -65,19 +65,54 @@ export const PDK_RULES = [
   "Move categories use the Scarlet & Violet learnset of the species; stat categories use base stats.",
 ];
 
-/** Tooltip text for a category: exactly what counts, forms included. */
+const FORMS_OWN = "Forms are their own picks with their own types, stats and abilities.";
+const FORMS_FOLLOW = "A form follows its species here.";
+
+/**
+ * Tooltip text for a category header: exactly what counts, forms included.
+ * Matches how the categories are computed (lib/pikadoku/categories).
+ */
 export function categoryHint(id: string): string {
-  const forms = "Forms are their own picks, with their own types, stats and abilities.";
-  if (id.startsWith("type:") || id.startsWith("types:")) return `Counts a Pokémon's own types. ${forms} Mega Charizard X is Fire and Dragon.`;
-  if (id.startsWith("region:") || id.startsWith("form:")) return `A species counts for the region it debuted in; a regional form counts for the region it debuted in (Alolan Raichu: Alola); Megas and Gigantamax forms count for their species' region.`;
-  if (id.startsWith("evo:")) return "Judged by the evolution line. A form follows its species' line: Alolan Raichu is a second stage.";
-  if (id.startsWith("move:")) return "Scarlet & Violet learnset of the species. Forms use their species' moves.";
-  if (id.startsWith("ability:")) return `Abilities of the form picked: Mega Charizard X has Tough Claws, not Blaze. ${id === "ability:hidden" ? "Hidden abilities count." : ""}`.trim();
-  if (id.startsWith("stat:")) return "Base stats of the form picked: a Mega's stats are its own.";
-  if (id === "other:mega" || id === "other:gmax") return "The species has this form, so the species and each of its forms count.";
-  if (id === "other:paradox" || id === "other:ultrabeast") return "From a hand-kept list of the official ones. Forms follow their species.";
-  if (id === "other:partner") return "A starter or any Pokémon in a starter's evolution line, from Kanto to Paldea. Forms follow their species.";
-  return `Legendary, Mythical, fossil, baby and OU status belong to the species; forms follow it. ${forms}`;
+  const [kind, a] = id.split(":");
+  switch (kind) {
+    case "type":
+      return `Counts a Pokémon with ${a[0].toUpperCase() + a.slice(1)} as one of its types. ${FORMS_OWN} Mega Charizard X is Fire and Dragon, Alolan Raichu is Electric and Psychic.`;
+    case "types":
+      return `Counts the Pokémon's own types, so a form can differ from its species: Charizard is dual-typed, and so is Mega Charizard X. ${FORMS_OWN}`;
+    case "region":
+      return a === "hisui"
+        ? "Only Hisuian forms: their debut region is Hisui (Pokémon Legends: Arceus). Species count for the region they debuted in; Megas and Gigantamax forms count for their species' region."
+        : "A species counts for the region it debuted in. A regional form counts for the region it debuted in (Alolan Raichu is Alola, Raichu is Kanto). Megas and Gigantamax forms count for their species' region.";
+    case "form":
+      return "The species has a regional form from that region, so the species and each of its forms count (Raichu and Alolan Raichu both match 'Has an Alolan form').";
+    case "evo":
+      return `Judged by the evolution line. ${FORMS_FOLLOW} Alolan Raichu is a second stage, like Raichu; Mega Charizard X is a fully evolved Charmander line member.`;
+    case "move":
+      return "Needs the move in the Scarlet & Violet learnset of the species. Forms use their species' moves.";
+    case "ability":
+      return id === "ability:hidden"
+        ? "Has an ability marked hidden. Abilities belong to the form picked: Mega Charizard X has only Tough Claws, so it has no hidden ability."
+        : "Has this ability in any slot. Abilities belong to the form picked: Mega Charizard X has Tough Claws, not Blaze.";
+    case "stat":
+      return "Uses base stats of the form picked: a Mega Evolution's stats are its own, higher than its species'.";
+    default:
+      break;
+  }
+  switch (id) {
+    case "other:mega":
+    case "other:gmax":
+      return "The species has this form, so the species and each of its forms count (Charizard and Mega Charizard X both match 'Has a Mega Evolution').";
+    case "other:paradox":
+      return "Hand-kept list of the official Paradox Pokémon (Great Tusk to Iron Crown). Forms follow their species.";
+    case "other:ultrabeast":
+      return "Hand-kept list of the eleven Ultra Beasts (Nihilego to Blacephalon). Necrozma is not one. Forms follow their species.";
+    case "other:partner":
+      return "Any Pokémon in the evolution line of a main-series starter from Kanto to Paldea. " + FORMS_FOLLOW;
+    case "other:ou":
+      return `Appears in the Gen 9 OU usage data. ${FORMS_FOLLOW}`;
+    default:
+      return `Legendary, Mythical, fossil and baby status belong to the species. ${FORMS_FOLLOW}`;
+  }
 }
 
 /** What /api/pikadoku/result sends once a game is over. */
