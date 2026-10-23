@@ -7,49 +7,68 @@ import { archiveDates, archiveKey } from "@/lib/pikadoku/archive";
 import { connNumber } from "@/lib/connections/types";
 
 const KINDS: [PdkFamily, string][] = [
-  ["types", "Fire type, Dual-typed (one matching type is enough)"],
-  ["regions", "Introduced in Kanto to Paldea (a regional form counts for the region it debuted in), has an Alolan, Galarian, Hisuian or Paldean form"],
-  ["evolution", "Basic, fully evolved, evolves with a stone, by trade or friendship, branching evolution"],
-  ["moves", "Learns Trick Room, Surf or Stealth Rock in Scarlet & Violet"],
-  ["abilities", "Has Levitate or Intimidate (any slot), has a hidden ability"],
-  ["other", "Legendary, Mythical, Paradox, Ultra Beast, First Partner (starter lines), fossil, baby, has a Mega or Gigantamax form, base Speed 100+, base stat total 600+, OU-relevant"],
+  ["types", "Fighting, Dual-type, Monotype (one matching type is enough)"],
+  ["regions", "Kanto to Paldea, by where a Pokémon debuted (a regional form counts for the region it debuted in)"],
+  ["evolution", "No evolution line, Evolved by item, Not fully evolved"],
+  ["moves", "A few famous moves, such as Surf or Earthquake (Expert adds deeper learnsets)"],
+  ["abilities", "Expert only: well-known and obscure abilities"],
+  ["other", "Legendary, Mythical, Paradox, Ultra-Beast, First Partner, Fossil, Baby, Mega, GMax (Expert adds stat thresholds)"],
 ];
 
 export function PdkHowToSheet({ onClose }: { onClose: () => void }) {
+  const tile = (big: string, small: string) => (
+    <div className="rounded-md border border-foreground/10 p-3 text-center">
+      <p className="font-display text-2xl font-bold tabular-nums">{big}</p>
+      <p className="hud-label">{small}</p>
+    </div>
+  );
   return (
-    <Sheet title="How to play" onClose={onClose} wide>
+    <Sheet title="Fill the grid. Keep your score low." onClose={onClose} wide>
       <div className="space-y-4 text-sm" data-testid="pdk-howto">
-        <p>
-          Fill the <b>3×3 grid</b>: every cell needs a Pokémon that fits <b>both</b> its row and its column. A Pokémon can be used once.
-        </p>
-        <ul className="space-y-1.5">
-          <li>
-            You have <b>{PDK_PP} guesses (PP)</b> in a daily, and a wrong guess uses one too. Correct answers lock in.
-          </li>
-          <li>
-            Your <b>uniqueness score</b> is the sum of the share of players who picked each of your answers: <b>lower is better</b>. Each cell shows its rarity once it locks.
-          </li>
-          <li>
-            <b>Easy, Normal and Expert</b> dailies: Normal is the main grid for the leaderboard. Every grid is checked to be solvable. Some days a <b>Master Puzzle</b> made by hand replaces the Normal grid.
-          </li>
-          <li>
-            Tap the <b>i</b> on any category to see exactly what counts, forms included. The <b>Archive</b> lets you play past dailies; they never count toward the board or your streak.
-          </li>
-          <li>
-            When the game ends you see <b>every valid answer</b> for every cell, rarest first, and why each miss didn&apos;t fit.
-          </li>
-          <li>
-            The <b>Weekly</b> grid is themed (Kanto, Starters, Legendary, Gen 9 and Competitive weeks in turn), live from Monday to Sunday, with its own board. It never moves your daily streak.
-          </li>
-          <li>
-            <b>Unlimited</b> deals a new grid on demand: unlimited PP, a soft-lock guard, single-answer cells, a timer, and the category families you want.
-          </li>
-          <li>
-            <b>Tic Tac Toe</b>: two trainers share a grid and take turns claiming cells. Three in a row wins; a wrong guess or a timeout passes the turn.
-          </li>
-        </ul>
+        <div className="grid grid-cols-3 gap-2">
+          {tile("9", "boxes to fill")}
+          {tile(String(PDK_PP), "guesses only")}
+          {tile("0", "reused Pokémon")}
+        </div>
         <div>
-          <p className="hud-label mb-1.5">Forms and regions</p>
+          <p className="hud-label mb-1.5">Core rules</p>
+          <ul className="list-disc space-y-1.5 pl-5">
+            <li>
+              Every box needs a Pokémon that fits <b>both</b> its row and its column. Each Pokémon can be used once.
+            </li>
+            <li>
+              You get <b>{PDK_PP} guesses (PP)</b>, and a wrong guess uses one too. Correct answers lock in.
+            </li>
+            <li>
+              <b>UNIQ</b> starts at 900 (100 for every empty box). Each pick counts the share of players who chose it, so rarer picks pull it down. <b>Lower is better.</b>
+            </li>
+            <li>
+              <b>PTS</b> is the number of boxes you have filled. Tap <b>UNIQ</b> to see your rank on the board.
+            </li>
+            <li>
+              Tap the <b>i</b> on any category to see exactly what counts. When the game ends you see <b>every valid answer</b> for every box, and why each miss didn&apos;t fit.
+            </li>
+            <li>
+              Every grid is checked to be solvable. Some days a hand-made <b>Master Puzzle</b> replaces the Daily Puzzle.
+            </li>
+          </ul>
+        </div>
+        <div>
+          <p className="hud-label mb-1.5">Modes</p>
+          <ul className="list-disc space-y-1.5 pl-5">
+            <li>
+              <b>Daily Puzzle</b>: one grid a day, the same for everyone. Under <b>More</b>: Easy and Expert dailies, the themed Weekly grid and the Archive of past dailies (these never move your streak).
+            </li>
+            <li>
+              <b>Unlimited</b>: a fresh grid on demand, with unlimited PP, a soft-lock guard, single-answer boxes, a timer and the category families you want.
+            </li>
+            <li>
+              <b>Tic Tac Toe</b>: two trainers share a grid and take turns claiming boxes. Three in a row wins; a wrong guess or a timeout passes the turn.
+            </li>
+          </ul>
+        </div>
+        <div>
+          <p className="hud-label mb-1.5">Regions and forms</p>
           <ul className="list-disc space-y-1 pl-5" data-testid="pdk-rules">
             {PDK_RULES.map((r) => (
               <li key={r}>{r}</li>

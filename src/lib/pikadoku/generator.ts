@@ -37,7 +37,12 @@ export function gridFromIds(ids: PdkGridIds): PdkGrid {
 export function generateGrid(seed: string, opts: GenOptions): PdkGridIds {
   const rng = new Rng(`pikadoku:${opts.difficulty}:${seed}`);
   const families = opts.families?.length ? opts.families : PDK_FAMILIES;
-  const pool = allCategories().filter((c) => c.tier <= MAX_TIER[opts.difficulty] && families.includes(c.family));
+  const inFamilies = allCategories().filter((c) => c.tier <= MAX_TIER[opts.difficulty] && families.includes(c.family));
+  // Easy: types, regions and simple categories. Normal (and Unlimited's defaults): PokeDoku's mix. Expert: everything, trivia included.
+  // A family choice the mix can't serve (say, only abilities) falls back to the plain tier rule.
+  const styled = inFamilies.filter((c) => (opts.difficulty === "normal" ? c.classic : opts.difficulty === "easy" ? c.family !== "moves" && c.family !== "abilities" : true));
+  const pool = styled.length >= 6 ? styled : inFamilies;
+  const oneMove = pool !== inFamilies && opts.difficulty === "normal";
   const byFamily = new Map<PdkFamily, PdkCategory[]>();
   for (const c of pool) byFamily.set(c.family, [...(byFamily.get(c.family) ?? []), c]);
   const fams = [...byFamily.keys()];
@@ -49,6 +54,7 @@ export function generateGrid(seed: string, opts: GenOptions): PdkGridIds {
     for (let guard = 0; picked.length < PDK_SIZE * 2 && guard < 60; guard++) {
       const c = rng.pick(byFamily.get(rng.pick(fams))!);
       if (groups.has(c.group)) continue;
+      if (oneMove && c.family === "moves" && picked.some((x) => x.family === "moves")) continue;
       groups.add(c.group);
       picked.push(c);
     }

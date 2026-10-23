@@ -68,11 +68,12 @@ export interface PdkCategory {
   /** Two categories of one group never share a grid. */
   group: string;
   test: (f: Facts) => boolean;
+  /** In PokeDoku's mix: what Normal dailies and Unlimited's defaults draw from. */
+  classic: boolean;
 }
 
 const FOSSILS = new Set([138, 139, 140, 141, 142, 345, 346, 347, 348, 408, 409, 410, 411, 564, 565, 566, 567, 696, 697, 698, 699, 880, 881, 882, 883]);
 const FORM_REGION: Record<string, string> = { alola: "Alola", galar: "Galar", hisui: "Hisui", paldea: "Paldea" };
-const FORM_LABEL: Record<string, string> = { alola: "an Alolan", galar: "a Galarian", hisui: "a Hisuian", paldea: "a Paldean" };
 const cap = (s: string) => s.replace(/(^|[\s-])([a-z])/g, (_, a, b) => a + b.toUpperCase());
 
 const SPECIAL_FORMS = new Set(["starter", "primal", "origin", "crowned", "eternal"]);
@@ -173,40 +174,45 @@ const ULTRA_BEAST = new Set(ULTRA_BEAST_IDS);
 /** Every evolution line that starts from a starter, derived from the data's chain ids. */
 const STARTER_CHAINS = new Set(dex.filter((p) => STARTER_IDS.includes(p.id)).map((p) => p.chain));
 
+/** The famous moves PokeDoku draws on (at most one per Normal grid). */
+export const CLASSIC_MOVES = ["Acrobatics", "Brick Break", "Calm Mind", "Close Combat", "Crunch", "Dazzling Gleam", "Earthquake", "Flamethrower", "Fly", "Hydro Pump", "Ice Beam", "Ice Punch", "Metronome", "Protect", "Psychic", "Razor Leaf", "Shadow Ball", "Sludge Bomb", "Surf", "Tail Slap", "Thunderbolt"];
+const CLASSIC_IDS = new Set(["types:dual", "types:single", "evo:none", "evo:item", "evo:notfull", "other:legendary", "other:mythical", "other:fossil", "other:baby", "other:mega", "other:gmax", "other:paradox", "other:ultrabeast", "other:partner", ...CLASSIC_MOVES.map((m) => `move:${m}`)]);
+const isClassic = (id: string) => /^type:|^region:\d/.test(id) || CLASSIC_IDS.has(id);
+
 function build(): PdkCategory[] {
   const out: PdkCategory[] = [];
-  const add = (id: string, family: PdkFamily, label: string, tier: 1 | 2 | 3, test: (f: Facts) => boolean, group = id) => out.push({ id, family, label, tier, group, test });
-  for (const t of TYPE_LIST) add(`type:${t}`, "types", `${cap(t)} type`, 1, (f) => f.types.includes(t));
-  add("types:dual", "types", "Dual-typed", 1, (f) => f.types.length === 2, "typecount");
-  add("types:single", "types", "Monotype (one type only)", 1, (f) => f.types.length === 1, "typecount");
-  for (const [gen, region] of Object.entries(GENERATION_REGIONS)) add(`region:${gen}`, "regions", `Introduced in ${region}`, 1, (f) => f.gen === Number(gen));
-  add("region:hisui", "regions", "Introduced in Hisui (Hisuian forms)", 3, (f) => f.region === "Hisui");
-  for (const [key, region] of Object.entries(FORM_REGION)) add(`form:${key}`, "regions", `Has ${FORM_LABEL[key]} form`, 2, (f) => f.formRegions.includes(region));
-  add("evo:basic", "evolution", "Basic (first stage)", 1, (f) => f.stage === 1, "stage");
+  const add = (id: string, family: PdkFamily, label: string, tier: 1 | 2 | 3, test: (f: Facts) => boolean, group = id) => out.push({ id, family, label, tier, group, test, classic: isClassic(id) });
+  for (const t of TYPE_LIST) add(`type:${t}`, "types", cap(t), 1, (f) => f.types.includes(t));
+  add("types:dual", "types", "Dual-type", 1, (f) => f.types.length === 2, "typecount");
+  add("types:single", "types", "Monotype", 1, (f) => f.types.length === 1, "typecount");
+  for (const [gen, region] of Object.entries(GENERATION_REGIONS)) add(`region:${gen}`, "regions", region, 1, (f) => f.gen === Number(gen));
+  add("region:hisui", "regions", "Hisui", 3, (f) => f.region === "Hisui");
+  for (const [key, region] of Object.entries(FORM_REGION)) add(`form:${key}`, "regions", `${region} form`, 2, (f) => f.formRegions.includes(region));
+  add("evo:basic", "evolution", "Basic", 1, (f) => f.stage === 1, "stage");
   add("evo:stage2", "evolution", "Second stage", 1, (f) => f.stage === 2, "stage");
   add("evo:stage3", "evolution", "Third stage", 2, (f) => f.stage === 3, "stage");
-  add("evo:notfull", "evolution", "Can still evolve", 1, (f) => !f.fullyEvolved, "evolves");
+  add("evo:notfull", "evolution", "Not fully evolved", 1, (f) => !f.fullyEvolved, "evolves");
   add("evo:full", "evolution", "Fully evolved", 1, (f) => f.fullyEvolved, "evolves");
-  add("evo:none", "evolution", "No evolution line (doesn't evolve)", 2, (f) => f.chainSize === 1, "evolves");
-  add("evo:item", "evolution", "Evolves by using an item", 2, (f) => f.evolvesBy.some(itemEvo));
-  add("evo:stone", "evolution", "Evolves with a stone", 2, (f) => f.evolvesBy.some((m) => /stone/.test(m)));
-  add("evo:trade", "evolution", "Evolves by trade", 2, (f) => f.evolvesBy.some((m) => /trade/.test(m)));
-  add("evo:friend", "evolution", "Evolves with friendship", 2, (f) => f.evolvesBy.some((m) => /friendship/.test(m)));
-  add("evo:level", "evolution", "Evolves by level", 2, (f) => f.evolvesBy.some((m) => /^level \d/.test(m)));
-  add("evo:branch", "evolution", "Has a branching evolution", 3, (f) => f.evolvesBy.length > 1);
-  add("evo:three", "evolution", "In a three-stage line", 2, (f) => f.chainSize >= 3);
+  add("evo:none", "evolution", "No evolution line", 2, (f) => f.chainSize === 1, "evolves");
+  add("evo:item", "evolution", "Evolved by item", 2, (f) => f.evolvesBy.some(itemEvo));
+  add("evo:stone", "evolution", "Evolved by stone", 2, (f) => f.evolvesBy.some((m) => /stone/.test(m)));
+  add("evo:trade", "evolution", "Evolved by trade", 2, (f) => f.evolvesBy.some((m) => /trade/.test(m)));
+  add("evo:friend", "evolution", "Evolved by friendship", 2, (f) => f.evolvesBy.some((m) => /friendship/.test(m)));
+  add("evo:level", "evolution", "Evolved by level", 2, (f) => f.evolvesBy.some((m) => /^level \d/.test(m)));
+  add("evo:branch", "evolution", "Branching evolution", 3, (f) => f.evolvesBy.length > 1);
+  add("evo:three", "evolution", "Three-stage line", 2, (f) => f.chainSize >= 3);
   add("other:legendary", "other", "Legendary", 1, (f) => f.legendary, "legend");
   add("other:mythical", "other", "Mythical", 2, (f) => f.mythical, "legend");
   add("other:lm", "other", "Legendary or Mythical", 2, (f) => f.legendary || f.mythical, "legend");
-  add("other:fossil", "other", "Fossil Pokémon", 2, (f) => f.fossil);
-  add("other:baby", "other", "Baby Pokémon", 2, (f) => f.isBaby);
-  add("other:mega", "other", "Has a Mega Evolution", 2, (f) => f.hasMega);
-  add("other:gmax", "other", "Has a Gigantamax form", 2, (f) => f.hasGmax);
-  add("other:paradox", "other", "Paradox Pokémon", 2, (f) => PARADOX.has(f.baseId));
-  add("other:ultrabeast", "other", "Ultra Beast", 2, (f) => ULTRA_BEAST.has(f.baseId));
-  add("other:partner", "other", "First Partner (starter line)", 2, (f) => STARTER_CHAINS.has(f.chain));
-  add("other:ou", "other", "OU-relevant (Gen 9 OU)", 3, (f) => f.ou);
-  add("ability:hidden", "abilities", "Has a hidden ability", 1, (f) => f.abilities.some((a) => a.hidden));
+  add("other:fossil", "other", "Fossil", 2, (f) => f.fossil);
+  add("other:baby", "other", "Baby", 2, (f) => f.isBaby);
+  add("other:mega", "other", "Mega", 2, (f) => f.hasMega);
+  add("other:gmax", "other", "GMax", 2, (f) => f.hasGmax);
+  add("other:paradox", "other", "Paradox", 2, (f) => PARADOX.has(f.baseId));
+  add("other:ultrabeast", "other", "Ultra-Beast", 2, (f) => ULTRA_BEAST.has(f.baseId));
+  add("other:partner", "other", "First Partner", 2, (f) => STARTER_CHAINS.has(f.chain));
+  add("other:ou", "other", "Gen 9 OU", 3, (f) => f.ou);
+  add("ability:hidden", "abilities", "Hidden ability", 1, (f) => f.abilities.some((a) => a.hidden));
   for (const [stat, name] of Object.entries(STAT_NAMES)) {
     const hi = stat === "atk" || stat === "spa" ? 120 : 100;
     add(`stat:${stat}:${hi}`, "other", `Base ${name} ${hi}+`, 2, (f) => f.stats[stat as keyof typeof STAT_NAMES] >= hi, `stat:${stat}`);
@@ -223,8 +229,8 @@ function build(): PdkCategory[] {
     for (const a of new Set(f.abilities.map((x) => x.name))) ab.set(a, (ab.get(a) ?? 0) + 1);
     for (const m of f.moves) mv.set(m, (mv.get(m) ?? 0) + 1);
   }
-  for (const [name, n] of ab) if (n >= 10) add(`ability:${name}`, "abilities", `Has the ability ${cap(name.replace(/-/g, " "))}`, n >= 40 ? 2 : 3, (f) => f.abilities.some((a) => a.name === name));
-  for (const [name, n] of mv) if (n >= 10 && n <= 700) add(`move:${name}`, "moves", `Learns ${name} (SV)`, n >= 120 ? 2 : 3, (f) => f.moves.has(name));
+  for (const [name, n] of ab) if (n >= 10) add(`ability:${name}`, "abilities", cap(name.replace(/-/g, " ")), n >= 40 ? 2 : 3, (f) => f.abilities.some((a) => a.name === name));
+  for (const [name, n] of mv) if (n >= 10 && n <= 700) add(`move:${name}`, "moves", name, n >= 120 ? 2 : 3, (f) => f.moves.has(name));
   return out;
 }
 
