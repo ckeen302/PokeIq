@@ -55,7 +55,7 @@ export async function seatIn(kind: ChallengeKind, code: string, token: unknown):
   const players = stored.duel.players.map((p) => p.id);
   if (!players.includes(me)) return null;
   const label =
-    stored.duel.kind === "quiz" ? `Quiz duel · ${MODULE_INFO[stored.duel.module]?.title ?? "Quiz"}` : stored.duel.kind === "connections" ? "PokéConnections duel" : "Pokédle duel";
+    stored.duel.kind === "quiz" ? `Quiz duel · ${MODULE_INFO[stored.duel.module]?.title ?? "Quiz"}` : stored.duel.kind === "connections" ? "PokéConnections duel" : stored.duel.kind === "pikadoku" ? "Pikadoku duel" : "Pokédle duel";
   return { me, players, lobby: stored.duel.status === "lobby", label };
 }
 

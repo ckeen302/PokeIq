@@ -6,6 +6,7 @@ import { deleteDuel, insertDuel, newDuelCode, pvpStore } from "./duel-store";
 import { joinDuel, readyDuel } from "./duels";
 import { createPokedleDuel } from "./pokedle-duel";
 import { createConnectionsDuel } from "./connections-duel";
+import { createPikadokuDuel } from "./pikadoku-duel";
 import { cancelQueue, searchQueue, type OpenedGame } from "./match-queue";
 import { RANKED_QUEUE_KEY, cancelRankedQueue, searchRankedQueue, type RankedSeat } from "./ranked-queue";
 import type { RatingState } from "@/lib/ranked";
@@ -49,6 +50,7 @@ export const matchSettingsSchema = z
     z.object({ game: z.literal("geo"), region: z.string().max(20), era: z.enum(GEO_ERAS).optional() }),
     z.object({ game: z.literal("pokedle"), ranked: z.boolean().optional(), assist: z.enum(DLE_ASSISTS).optional(), format: z.enum(DLE_DAILY_FORMATS).optional() }),
     z.object({ game: z.literal("connections") }),
+    z.object({ game: z.literal("pikadoku") }),
   ])
   .superRefine((s, ctx) => {
     if (s.game === "geo" && !isDuelMap(s.region, s.era)) ctx.addIssue({ code: z.ZodIssueCode.custom, message: s.era ? "That map has too few places for those games." : "Unknown map." });
@@ -59,6 +61,7 @@ export type MatchSettings = z.infer<typeof matchSettingsSchema>;
 export function queueKey(s: MatchSettings): string {
   if (s.game === "geo") return `geo:${s.region}${s.era ? `:${s.era}` : ""}`;
   if (s.game === "connections") return "connections";
+  if (s.game === "pikadoku") return "pikadoku";
   if (s.ranked) return RANKED_QUEUE_KEY;
   const assist = s.assist ?? DLE_DEFAULT_ASSIST;
   const base = s.format === "squirdle" ? "pokedle:squirdle" : "pokedle:all";
@@ -91,6 +94,8 @@ async function openDuel(settings: MatchSettings, names: [string, string], now: n
       const { duel, playerId: a } =
         settings.game === "connections"
           ? createConnectionsDuel(names[0], code, now)
+          : settings.game === "pikadoku"
+            ? createPikadokuDuel(names[0], code, now)
           : createPokedleDuel(names[0], code, now, undefined, { queue: "casual", assist: settings.assist, settings: { format: settings.format ?? "classic" } });
       const { duel: joined, playerId: b } = must(joinDuel(duel, names[1], now));
       const ready = must(readyDuel(must(readyDuel(joined, a, true, now)).duel, b, true, now)).duel;

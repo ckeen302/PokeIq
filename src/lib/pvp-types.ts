@@ -11,9 +11,10 @@ import type { PublicQuestion } from "./session-types";
 import type { DleAssist } from "./dle-assist";
 import type { DleRules } from "./dle-format";
 import type { ChatLine } from "./chat";
+import type { PdkGridView } from "./pikadoku/types";
 import type { ConnGroupExplained, ConnGroupReveal, ConnGuessKind, ConnLevel, ConnTile } from "./connections/types";
 
-export const PVP_KINDS = ["pokedle", "quiz", "connections"] as const;
+export const PVP_KINDS = ["pokedle", "quiz", "connections", "pikadoku"] as const;
 export type PvpKind = (typeof PVP_KINDS)[number];
 
 /** "Round 2" shows for a moment before play, so both trainers start together. */
@@ -331,7 +332,26 @@ export interface ConnDuelView extends PvpViewBase {
   rows?: ConnLevel[][][];
 }
 
-export type PvpView = DleDuelView | QuizDuelView | ConnDuelView;
+/** A Pikadoku Tic Tac Toe duel: seat 0 plays X, seat 1 plays O. Never carries a cell's valid answers. */
+export interface PdkDuelView extends PvpViewBase {
+  kind: "pikadoku";
+  settings: { turnSecs: number; families: string[] };
+  round?: { startsAt: number };
+  /** The six categories, once play starts. */
+  grid?: PdkGridView;
+  /** Per cell: the seat that owns it, or null. */
+  owners: (0 | 1 | null)[];
+  /** Per cell: the Pokémon id claimed there. */
+  picks: (number | null)[];
+  /** Whose turn it is (a seat), and when it runs out. */
+  turn: 0 | 1;
+  turnEndsAt?: number;
+  /** The winning row, once there is one. */
+  line: number[] | null;
+  last?: { seat: number; cell: number; id: number; hit: boolean; at: number };
+}
+
+export type PvpView = DleDuelView | QuizDuelView | ConnDuelView | PdkDuelView;
 
 /** Creating, joining or rematching a duel: its code, your seat's token and the duel. */
 export interface PvpSeatResponse {

@@ -56,6 +56,9 @@ export function ChallengeOptions({ friend, me, onDone, className }: { friend: st
       <button type="button" className={item} disabled={!!busy} onClick={() => void go("connections", () => challengeToDuel(friend, me, { kind: "connections" }))}>
         {spin("connections", <LayoutGrid className="h-4 w-4 text-primary" aria-hidden />)} PokéConnections race
       </button>
+      <button type="button" className={item} disabled={!!busy} onClick={() => void go("pikadoku", () => challengeToDuel(friend, me, { kind: "pikadoku" }))}>
+        {spin("pikadoku", <LayoutGrid className="h-4 w-4 text-primary" aria-hidden />)} Pikadoku Tic Tac Toe
+      </button>
       <div className="flex items-center gap-2 px-2.5 py-1">
         <button type="button" className="flex items-center gap-2 text-sm hover:underline disabled:opacity-50" disabled={!!busy} onClick={() => void go("quiz", () => challengeToDuel(friend, me, { kind: "quiz", module: quiz }))}>
           {spin("quiz", <Swords className="h-4 w-4 text-primary" aria-hidden />)} Quiz duel:

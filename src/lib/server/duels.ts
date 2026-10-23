@@ -17,6 +17,7 @@ import {
 import { pokedleRules, pokedleView, skipPokedleReveal, type PokedleDuel } from "./pokedle-duel";
 import { quizRules, quizView, skipQuizReveal, type QuizDuel } from "./quiz-duel";
 import { connectionsRules, connectionsView, type ConnectionsDuel } from "./connections-duel";
+import { pikadokuRules, pikadokuView, type PikadokuDuel } from "./pikadoku-duel";
 
 /**
  * Every duel in the shared `duels` table, whatever its game: the lobby,
@@ -25,12 +26,13 @@ import { connectionsRules, connectionsView, type ConnectionsDuel } from "./conne
  * with their game.
  */
 
-export type PvpDuel = PokedleDuel | QuizDuel | ConnectionsDuel;
+export type PvpDuel = PokedleDuel | QuizDuel | ConnectionsDuel | PikadokuDuel;
 
 const RULES: { [K in PvpDuel["kind"]]: PvpRules<Extract<PvpDuel, { kind: K }>> } = {
   pokedle: pokedleRules,
   quiz: quizRules,
   connections: connectionsRules,
+  pikadoku: pikadokuRules,
 };
 
 /** The rules of the duel's game (each kind's rules take its own duels, so a duel always gets its own). */
@@ -49,7 +51,7 @@ export const linkRematch = <D extends PvpDuel>(duel: D, code: string) => linkRem
 
 /** Next round or question, please: once both trainers press it, the reveal ends early. */
 export function skipReveal(duel: PvpDuel, playerId: string, index: number, now: number): PvpOutcome<PvpDuel> {
-  if (duel.kind === "connections") return fail(400, "A PokéConnections duel has no reveal to skip.");
+  if (duel.kind === "connections" || duel.kind === "pikadoku") return fail(400, "This duel has no reveal to skip.");
   return duel.kind === "pokedle" ? skipPokedleReveal(duel, playerId, index, now) : skipQuizReveal(duel, playerId, index, now);
 }
 
@@ -61,5 +63,6 @@ export function asKind<K extends PvpDuel["kind"]>(duel: PvpDuel, kind: K, act: (
 /** What one trainer (or a visitor: null) may see of the duel right now. */
 export function duelView(duel: PvpDuel, playerId: string | null, now: number, rev: number): PvpView {
   if (duel.kind === "connections") return connectionsView(duel, playerId, now, rev);
+  if (duel.kind === "pikadoku") return pikadokuView(duel, playerId, now, rev);
   return duel.kind === "pokedle" ? pokedleView(duel, playerId, now, rev) : quizView(duel, playerId, now, rev);
 }
