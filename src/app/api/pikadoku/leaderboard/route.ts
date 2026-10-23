@@ -1,13 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { isPlayableConnDate } from "@/lib/connections/types";
+import { isLiveWeek } from "@/lib/pikadoku/weeks";
 import { clientIp, rateLimit, tooManyRequests } from "@/lib/server/rate-limit";
 import { friendStore } from "@/lib/server/friends-store";
 import { sessionTokenHash, userFromRequest } from "@/lib/server/auth";
 import { pdkPlayerKey, pdkStore } from "@/lib/server/pikadoku-board";
-import { PDK_DIFFICULTIES, type PdkBoardResponse, type PdkDifficulty } from "@/lib/pikadoku/types";
+import { PDK_DIFFICULTIES, type PdkBoardResponse, type PdkDifficulty, type PdkSlot } from "@/lib/pikadoku/types";
 
 /**
  * GET /api/pikadoku/leaderboard?date=YYYY-MM-DD[&difficulty=normal][&scope=friends]
+ * GET /api/pikadoku/leaderboard?week=<Monday>[&scope=friends]      the live weekly grid's board
  *
  * The day's board: most cells solved, then the lowest uniqueness score, then
  * the quicker time. `rows` is null when the board is off. ?scope=friends is
@@ -16,9 +18,11 @@ import { PDK_DIFFICULTIES, type PdkBoardResponse, type PdkDifficulty } from "@/l
 export async function GET(request: NextRequest) {
   if (!rateLimit(`pdk-board:${clientIp(request)}`, 60, 2)) return tooManyRequests();
   const p = request.nextUrl.searchParams;
-  const date = p.get("date");
-  const difficulty = (p.get("difficulty") ?? "normal") as PdkDifficulty;
-  if (!isPlayableConnDate(date) || !PDK_DIFFICULTIES.includes(difficulty)) return NextResponse.json({ error: "No Pikadoku that day." }, { status: 400, headers: { "Cache-Control": "no-store" } });
+  const week = p.get("week");
+  const date = week ?? p.get("date");
+  const difficulty: PdkSlot = week ? "weekly" : ((p.get("difficulty") ?? "normal") as PdkDifficulty);
+  const valid = week ? isLiveWeek(week) : isPlayableConnDate(date) && PDK_DIFFICULTIES.includes(difficulty as PdkDifficulty);
+  if (!valid || !date) return NextResponse.json({ error: "No Pikadoku that day." }, { status: 400, headers: { "Cache-Control": "no-store" } });
   const friends = p.get("scope") === "friends";
   try {
     let all = (await pdkStore()?.board(date, difficulty)) ?? null;

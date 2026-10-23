@@ -40,7 +40,7 @@ export async function GET(request: NextRequest) {
     } as never,
   });
   if ("error" in found) return NextResponse.json({ error: found.error }, { status: 400, headers: NO_STORE });
-  const body = { grid: gridView(found.grid), pp: ppFor(found.daily, found.settings) ?? 0, ...(found.daily && { start: pdkStartToken(found.key) }), ...(found.daily && found.master && { master: { by: found.master } }) };
+  const body = { grid: gridView(found.grid), pp: ppFor(found.daily, found.settings) ?? 0, ...(found.daily && { start: pdkStartToken(found.key) }), ...(found.daily && "master" in found && found.master && { master: { by: found.master } }), ...("weekly" in found && { weekly: found.weekly }) };
   return NextResponse.json(body, { headers: NO_STORE });
 }
 
@@ -66,10 +66,10 @@ export async function POST(request: NextRequest) {
   const out = checkGuess(found.grid, parsed.data.guesses, parsed.data.next, { pp, guard: !found.daily && found.settings.softLockGuard });
   if (!out.ok) return NextResponse.json({ error: out.error }, { status: 400, headers: NO_STORE });
   let pct: number | null = null;
-  if (out.valid && !out.softlock && found.daily && parsed.data.date) {
+  if (out.valid && !out.softlock && found.daily && found.slot) {
     // The rarity so far, counting this pick in (the final score is recomputed from recorded answers).
     const counts = await pdkStore()
-      ?.counts(parsed.data.date, parsed.data.difficulty as never)
+      ?.counts(found.slot.date, found.slot.difficulty)
       .catch(() => null);
     if (counts) {
       const { cell, id } = parsed.data.next;

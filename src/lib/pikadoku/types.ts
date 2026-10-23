@@ -8,6 +8,8 @@ export const PDK_CELLS = PDK_SIZE * PDK_SIZE;
 export const PDK_PP = 9;
 
 export type PdkDifficulty = "easy" | "normal" | "expert";
+/** Where a board lives: a daily difficulty, or the weekly grid. */
+export type PdkSlot = PdkDifficulty | "weekly";
 export const PDK_DIFFICULTIES: PdkDifficulty[] = ["easy", "normal", "expert"];
 /** Fewest valid answers any cell must have, per difficulty. */
 export const PDK_MIN_ANSWERS: Record<PdkDifficulty, number> = { easy: 8, normal: 3, expert: 1 };
@@ -141,7 +143,7 @@ export interface PdkBoardRowView {
 }
 export interface PdkBoardResponse {
   date: string;
-  difficulty: PdkDifficulty;
+  difficulty: PdkSlot;
   rows: PdkBoardRowView[] | null;
   signedIn?: boolean;
 }

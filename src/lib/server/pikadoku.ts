@@ -23,6 +23,7 @@ import {
  */
 
 import { masterFor } from "./pikadoku-master";
+import { weeklyIds } from "@/lib/pikadoku/weekly";
 
 const NAMES = new Map(allFacts().map((f) => [f.id, f.name]));
 export const pokemonName = (id: number) => NAMES.get(id) ?? `#${id}`;
@@ -44,6 +45,11 @@ export function dailyGrid(date: string, difficulty: PdkDifficulty): PdkGrid {
   const m = difficulty === "normal" ? masterFor(date) : null;
   if (m) return remember(`m:${date}:${m.rows.join(",")}:${m.cols.join(",")}`, () => gridFromIds({ rows: m.rows, cols: m.cols }));
   return remember(`d:${date}:${difficulty}`, () => gridFromIds(FILE[date]?.[difficulty] ?? generateGrid(date, { difficulty })));
+}
+
+/** The weekly themed grid for a week (given by its Monday). */
+export function weeklyGrid(monday: string): PdkGrid {
+  return remember(`w:${monday}`, () => gridFromIds(weeklyIds(monday)));
 }
 
 /** An Unlimited grid from its seed and settings (the same seed always deals the same grid). */
