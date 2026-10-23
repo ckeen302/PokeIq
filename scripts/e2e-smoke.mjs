@@ -374,6 +374,42 @@ step("pokéconnections: a full daily, one wrong guess then a solve");
   await card.screenshot({ path: `${OUT}/conn-trainer.png` });
 }
 
+step("pikadoku: a full daily (9 PP, one wrong guess), the score and the answers reveal");
+{
+  const today = await page.evaluate(() => {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  });
+  // The solver is built from the data; the browser never gets the answers before the end.
+  const solved = JSON.parse(execFileSync("npx", ["tsx", "scripts/pikadoku-solve.ts", today, "normal"], { encoding: "utf8", cwd: new URL("..", import.meta.url).pathname }));
+  const gridRes = await (await page.request.get(`${BASE}/api/pikadoku?date=${today}&difficulty=normal`)).text();
+  if (/answers|members|"ids"/.test(gridRes)) errors.push("Pikadoku's grid came with answers");
+  await page.goto(`${BASE}/pikadoku`, { waitUntil: "networkidle" });
+  await page.getByTestId("pdk-row-0").waitFor();
+  await page.getByTestId("pdk-cell-0").waitFor();
+  const label = async (id) => (await page.getByTestId(id).innerText()).trim();
+  if (!(await label("pdk-row-0")) || (await label("pdk-row-0")) === "…") errors.push("Pikadoku's row category didn't load");
+  const play = async (cell, name, id) => {
+    await page.getByTestId(`pdk-cell-${cell}`).click();
+    await page.getByTestId("pdk-search").fill(name);
+    await page.getByTestId(`pdk-option-${id}`).click();
+  };
+  await play(solved.wrong.cell, solved.wrong.name, solved.wrong.id);
+  await page.getByTestId("pdk-toast").filter({ hasText: "doesn't fit" }).waitFor();
+  if (!/8/.test(await page.getByTestId("pdk-pp").innerText())) errors.push("a wrong Pikadoku guess didn't use a PP");
+  // 9 PP and one is spent: eight right answers end the game at 8 of 9.
+  for (const { cell, id, name } of solved.solution.slice(0, 8)) await play(cell, name, id);
+  await page.getByTestId("pdk-result").waitFor({ timeout: 15_000 });
+  if (!/8 of 9 cells/.test(await page.getByTestId("pdk-result").innerText())) errors.push("Pikadoku's result doesn't show 8 of 9 cells");
+  await page.getByTestId("pdk-score").waitFor();
+  await page.getByTestId("pdk-reveal").waitFor();
+  if ((await page.getByTestId("pdk-misses").count()) !== 1) errors.push("Pikadoku's reveal doesn't explain the miss");
+  if (!(await page.getByTestId("pdk-reveal-0").innerText()).includes("valid")) errors.push("Pikadoku's reveal doesn't list the cell's answers");
+  // The server plays the guesses again: a forged, unfinished game gets no reveal.
+  const early = await page.request.post(`${BASE}/api/pikadoku/result`, { data: { date: today, difficulty: "normal", player: "e2e-pdk-forged-player-1", guesses: [] } });
+  if (early.status() !== 409) errors.push(`Pikadoku revealed answers for an unfinished game (${early.status()})`);
+}
+
 step("adaptive PokéIQ test (20 questions)");
 await page.goto(`${BASE}/iq-test`, { waitUntil: "networkidle" });
 await page.getByRole("button", { name: /Start the test/ }).click();
