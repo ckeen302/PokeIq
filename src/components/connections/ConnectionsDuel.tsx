@@ -14,6 +14,7 @@ import { NewBadges } from "./results";
 import { play, unlockAudio, vibrate } from "@/lib/sound";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { ConnRankedOutcome } from "./ConnectionsRanked";
 import { useDuel } from "@/components/duel/use-duel";
 import { DuelGone, DuelLoading, DuelLobby, DuelNotice, DuelVisitor, LeaveButton, MatchedNote, SeatDot, clock, seconds } from "@/components/duel/DuelParts";
 import { DuelChat, DuelTools, EmoteFeed } from "@/components/duel/DuelReactions";
@@ -534,6 +535,8 @@ function DuelSummary({ view, busy, symbols, onRematch }: { view: ConnDuelView; b
         </div>
         <p className="text-muted-foreground">{reasonText(view, me)}</p>
       </div>
+
+      {view.ranked && <ConnRankedOutcome view={view} />}
 
       <RaceHud view={view} now={view.now} symbols={symbols} />
 

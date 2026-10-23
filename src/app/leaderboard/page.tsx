@@ -2,6 +2,8 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { pageMetadata } from "@/lib/seo";
 import { Medal } from "lucide-react";
+import { connRankedStore } from "@/lib/server/connections-ranked";
+import { connSeasonLabel, connSeasonOf } from "@/lib/connections/ranked";
 import { fetchBoard } from "@/lib/server/leaderboard";
 import { fetchGeoBoard } from "@/lib/server/geo-leaderboard";
 import { geoRegions, isGeoSpec } from "@/lib/server/geo";
@@ -45,6 +47,7 @@ export default async function LeaderboardPage({ searchParams }: PageProps) {
     params.board === "iq" ||
     params.board === "geo" ||
     params.board === "pokedle" ||
+    params.board === "connections-ranked" ||
     params.board === "connections" ||
     params.board === "battle" ||
     PLAY_MODULES.includes(params.board as ModuleId)
@@ -63,6 +66,7 @@ export default async function LeaderboardPage({ searchParams }: PageProps) {
     { id: "geo", label: "PokéGuessr" },
     { id: "pokedle", label: "Pokédle Ranked" },
     { id: "connections", label: "PokéConnections" },
+    { id: "connections-ranked", label: "Connections Ranked" },
     { id: "battle", label: "Battle Ladder" },
     ...PLAY_MODULES.map((m) => ({ id: m, label: MODULE_INFO[m].title })),
   ];
@@ -111,15 +115,19 @@ export default async function LeaderboardPage({ searchParams }: PageProps) {
     );
   }
 
-  if (board === "pokedle") {
-    const ladder = await rankedLadder();
+  if (board === "pokedle" || board === "connections-ranked") {
+    const isConn = board === "connections-ranked";
+    const season = connSeasonOf(Date.now());
+    const ladder = await rankedLadder(isConn ? season : null);
     const avatars = await avatarsByNames((ladder ?? []).map((r) => r.name));
     return (
       <div className="mx-auto max-w-3xl space-y-6">
         <div className="space-y-4 text-center">
           <h1 className="font-display text-4xl font-bold uppercase tracking-tight sm:text-5xl">Leaderboard</h1>
           {tabRow}
-          <p className="text-sm text-muted-foreground">Ranked Pokédle duels: the top 100 by rating.</p>
+          <p className="text-sm text-muted-foreground">
+            {isConn ? `Ranked PokéConnections races, ${connSeasonLabel(season)} season: the top 100 by rating. The ladder starts over every month.` : "Ranked Pokédle duels: the top 100 by rating."}
+          </p>
         </div>
         {ladder === null ? (
           <Card>
@@ -127,13 +135,13 @@ export default async function LeaderboardPage({ searchParams }: PageProps) {
           </Card>
         ) : (
           <>
-            <YourLadderSpot />
+            {!isConn && <YourLadderSpot />}
             {ladder.length === 0 ? (
               <Card>
                 <CardContent className="py-10 text-center text-muted-foreground">
                   Nobody is ranked yet.{" "}
-                  <Link href="/pokedle#ranked" className="text-primary underline-offset-2 hover:underline">
-                    Queue a ranked duel
+                  <Link href={isConn ? "/connections#ranked" : "/pokedle#ranked"} className="text-primary underline-offset-2 hover:underline">
+                    Queue a ranked {isConn ? "race" : "duel"}
                   </Link>{" "}
                   and be the first!
                 </CardContent>
@@ -499,8 +507,8 @@ async function connBoardTop(date: string): Promise<ConnBoardRow[] | null> {
 }
 
 /** The ranked ladder's top 100, or null while ranked play is off. */
-async function rankedLadder(): Promise<RankedLeaderRow[] | null> {
-  const store = rankedStore();
+async function rankedLadder(connSeason: string | null = null): Promise<RankedLeaderRow[] | null> {
+  const store = connSeason ? connRankedStore(connSeason) : rankedStore();
   if (!store) return null;
   try {
     return await store.top(100);

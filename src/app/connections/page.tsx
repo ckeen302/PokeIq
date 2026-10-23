@@ -4,6 +4,7 @@ import { Connections } from "@/components/connections/Connections";
 import { PuzzleOfTheDay } from "@/components/connections/PuzzleOfTheDay";
 import { GameInfo } from "@/components/seo/GameInfo";
 import { ConnectionsDuelCard } from "@/components/connections/ConnectionsDuelCard";
+import { ConnectionsRankedCard } from "@/components/connections/ConnectionsRanked";
 
 export const metadata: Metadata = pageMetadata({
   title: "PokéConnections: the Daily Pokémon Connections Puzzle",
@@ -20,6 +21,9 @@ export default function ConnectionsPage() {
       <PuzzleOfTheDay />
       <div id="duel" className="mx-auto max-w-3xl scroll-mt-24">
         <ConnectionsDuelCard />
+      </div>
+      <div id="ranked" className="mx-auto max-w-3xl scroll-mt-24">
+        <ConnectionsRankedCard />
       </div>
       <GameInfo
         path="/connections"

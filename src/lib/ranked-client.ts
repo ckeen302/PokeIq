@@ -19,7 +19,7 @@ export function rankedId(): string | null {
   }
 }
 
-function keepId(id: string) {
+export function keepRankedId(id: string) {
   try {
     window.localStorage.setItem(ID_KEY, id);
   } catch {
@@ -47,7 +47,7 @@ export function useRanked({ top = false, enabled = true }: { top?: boolean; enab
         const res = await fetch(`/api/pokedle/ranked${top ? "?top=1" : ""}`, { headers: id ? { "x-ranked-id": id } : {}, cache: "no-store" });
         const data = (await res.json().catch(() => null)) as RankedResponse | null;
         if (!live) return;
-        if (data?.id) keepId(data.id);
+        if (data?.id) keepRankedId(data.id);
         if (!res.ok || !data || !data.available) return setState((s) => (s.status === "ready" ? s : { status: "off" }));
         setState({ status: "ready", you: data.you, top: data.top });
       } catch {
