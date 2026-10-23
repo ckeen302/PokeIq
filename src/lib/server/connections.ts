@@ -1,6 +1,8 @@
 import "server-only";
 import dailiesData from "@/data/connections-dailies.json";
 import { categoryOf } from "@/lib/connections/categories";
+import { tileRef } from "@/lib/connections/mixed";
+import { isPokemonTile } from "@/lib/connections/tiles";
 import { factsOf } from "@/lib/connections/facts";
 import { generatePuzzle, herringsOf, playGuesses, type Puzzle } from "@/lib/connections/generator";
 import { connNumber, type ConnGroupExplained, type ConnGroupReveal, type ConnGuessResponse, type ConnLevel, type ConnPuzzleResponse, type ConnTile } from "@/lib/connections/types";
@@ -52,9 +54,11 @@ export function dailyConnPuzzle(date: string, disabled?: DisabledCategories): Pu
   const entry = DAILIES.puzzles[day];
   const base = entry ? fromFile(entry) : null;
   const off = disabledFor(date, disabled);
-  if (!off.size) return base ?? generatePuzzle(`daily:${date}`);
+  // Days past the pre-generated file are dealt with mixed groups; every day in the file stays as it was.
+  const fresh = { mixed: "seed" as const };
+  if (!off.size) return base ?? generatePuzzle(`daily:${date}`, fresh);
   if (base && !base.groups.some((g) => off.has(g.category))) return base;
-  return generatePuzzle(`daily:${date}`, { excludeCategories: off });
+  return generatePuzzle(`daily:${date}`, base ? { excludeCategories: off } : { excludeCategories: off, ...fresh });
 }
 
 /** The number of pre-generated dailies (the rest are generated on demand). */
@@ -68,15 +72,20 @@ export function practiceConnPuzzle(seed: string): Puzzle {
   if (!p) {
     // "hard-x7k2…": Unlimited's difficulty rides in the seed, so every guess check finds the same puzzle.
     const level = /^(easy|hard)-/.exec(seed)?.[1] as "easy" | "hard" | undefined;
-    p = generatePuzzle(`practice:${seed}`, level ? { difficulty: level } : {});
+    // Practice puzzles may have one or two mixed groups (the seed decides).
+    p = generatePuzzle(`practice:${seed}`, { ...(level && { difficulty: level }), mixed: "seed" });
     if (practiceCache.size > 500) practiceCache.clear();
     practiceCache.set(seed, p);
   }
   return p;
 }
 
-/** A Pokémon as a tile: its id and name. */
-export const connTile = (id: number): ConnTile => ({ id, name: factsOf(id).name });
+/** A tile: a Pokémon's id and name, or a mixed group's move, ability or type. */
+export function connTile(id: number): ConnTile {
+  if (isPokemonTile(id)) return { id, name: factsOf(id).name };
+  const ref = tileRef(id);
+  return { id, name: ref.name, kind: ref.kind as "move" | "ability" | "type", ...(ref.type && { type: ref.type }) };
+}
 const tile = connTile;
 
 /** What a player starts with: sixteen tiles, in the grid's order. */
@@ -96,7 +105,7 @@ export function explainGroup(puzzle: Puzzle, level: ConnLevel): ConnGroupExplain
   return {
     ...groupReveal(puzzle, level),
     rule: c.rule,
-    lines: puzzle.groups[level].members.map((id) => ({ ...tile(id), why: c.why(factsOf(id)) })),
+    lines: puzzle.groups[level].members.map((id) => ({ ...tile(id), why: isPokemonTile(id) ? c.why(factsOf(id)) : c.whyTile!(tileRef(id)) })),
     herrings: herringsOf(puzzle, level)
       .slice(0, 3)
       .map((h) => ({ ...tile(h.id), reason: h.reason })),

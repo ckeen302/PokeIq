@@ -1,6 +1,8 @@
 import { Rng } from "@/lib/rng";
 import { CATEGORIES, categoryOf, type Category, type CategoryFamily } from "./categories";
 import { FACTS, SV, factsOf, type Facts } from "./facts";
+import { MIXED_CATEGORIES, linkTiles, patternsFor, tileRef, type TileRef } from "./mixed";
+import { isPokemonTile } from "./tiles";
 import { CONN_GROUPS, CONN_GROUP_SIZE, CONN_MAX_MISTAKES, guessKey, type ConnGuessKind, type ConnLevel } from "./types";
 
 /**
@@ -29,6 +31,14 @@ export interface Puzzle {
 // The uniqueness rule
 // ---------------------------------------------------------------------------
 
+const slugOf = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "");
+
+/** A move or ability tile that is the exact subject of another group ("Can have Levitate", "Learns Surf"): a technicality. */
+function clashesWithTopic(ref: TileRef, cats: readonly Category[]): boolean {
+  const prefixes = ref.kind === "ability" ? ["ability:", "hidden:"] : ref.kind === "move" ? ["move:"] : [];
+  return cats.some((c) => prefixes.some((p) => c.id.startsWith(p) && slugOf(c.id.slice(p.length)) === slugOf(ref.name)));
+}
+
 /**
  * Every reason the puzzle is unfair, or [] when it's fine:
  * - four groups of four, sixteen different Pokémon, one per evolution family;
@@ -36,6 +46,9 @@ export interface Puzzle {
  *   other groups' guards: no technicalities);
  * - a group about Scarlet & Violet learnsets only beside Pokémon that are in SV;
  * - the grid order is those sixteen.
+ * A mixed group's moves, abilities and types are tiles too: each must pass
+ * its own group's tile test and no other group's (only mixed groups accept
+ * them), and an ability or move can't be the very one another group is about.
  */
 export function validatePuzzle(puzzle: { groups: readonly PuzzleGroup[]; tiles?: readonly number[] }): string[] {
   const errors: string[] = [];
@@ -55,15 +68,26 @@ export function validatePuzzle(puzzle: { groups: readonly PuzzleGroup[]; tiles?:
   if (groups.some((g) => g.members.length !== CONN_GROUP_SIZE)) errors.push("a group without exactly four Pokémon");
   if (new Set(ids).size !== ids.length) errors.push("a Pokémon twice");
   let facts: Facts[];
+  let refs: Map<number, TileRef>;
   try {
-    facts = ids.map(factsOf);
+    facts = ids.filter(isPokemonTile).map(factsOf);
+    refs = new Map(ids.filter((id) => !isPokemonTile(id)).map((id) => [id, tileRef(id)]));
   } catch (err) {
     return [...errors, (err as Error).message];
   }
   if (new Set(facts.map((f) => f.familyKey)).size !== facts.length) errors.push("two Pokémon from one evolution family");
+  if (refs.size && !cats.some((c) => c.mixed)) errors.push("a move, ability or type tile outside a mixed group");
   const sv = cats.some((c) => c.needsSV);
   groups.forEach((g, gi) => {
     for (const id of g.members) {
+      const ref = refs.get(id);
+      if (ref) {
+        const fits = cats.filter((c) => c.testTile?.(ref));
+        if (!cats[gi].testTile?.(ref)) errors.push(`${ref.name} doesn't fit its own group (${cats[gi].label})`);
+        if (fits.length !== 1) errors.push(`${ref.name} fits ${fits.length} groups: ${fits.map((c) => c.label).join(", ")}`);
+        if (clashesWithTopic(ref, cats)) errors.push(`${ref.name} is the very ${ref.kind} another group is about`);
+        continue;
+      }
       const f = factsOf(id);
       const fits = cats.filter((c) => c.test(f));
       if (!cats[gi].test(f)) errors.push(`${f.name} doesn't fit its own group (${cats[gi].label})`);
@@ -152,6 +176,7 @@ export function herringsOf(puzzle: { groups: readonly PuzzleGroup[] }, gi: numbe
   puzzle.groups.forEach((g, i) => {
     if (i === gi) return;
     for (const id of g.members) {
+      if (!isPokemonTile(id)) continue;
       const reason = cat.lure!(factsOf(id));
       if (reason) out.push({ id, reason });
     }
@@ -168,7 +193,7 @@ export function groupRating(puzzle: { groups: readonly PuzzleGroup[] }, gi: numb
 const OBVIOUS = CATEGORIES.filter((c) => c.id.startsWith("type:") || c.id.startsWith("gen:"));
 
 function decoys(groups: readonly PuzzleGroup[]): number {
-  const ids = groups.flatMap((g) => g.members);
+  const ids = groups.flatMap((g) => g.members).filter(isPokemonTile);
   let n = 0;
   for (const c of OBVIOUS) {
     const hits = ids.filter((id) => c.test(factsOf(id)));
@@ -218,13 +243,15 @@ const FAMILY_WEIGHT: Record<CategoryFamily, number> = {
 };
 
 const POOL = FACTS.filter((f) => f.pooled);
-const MEMBERS = new Map(CATEGORIES.map((c) => [c.id, POOL.filter((f) => c.test(f))]));
+const MEMBERS = new Map([...CATEGORIES, ...MIXED_CATEGORIES].map((c) => [c.id, POOL.filter((f) => c.test(f))]));
 const FAMILY_SIZE = new Map<string, number>();
 for (const c of CATEGORIES) FAMILY_SIZE.set(`${c.family}|${bandOf(c)}`, (FAMILY_SIZE.get(`${c.family}|${bandOf(c)}`) ?? 0) + 1);
 
 function bandOf(c: Category): number {
   return BANDS.findIndex(([lo, hi]) => c.difficulty >= lo && c.difficulty < hi);
 }
+
+const count = (p: string, c: string) => p.split(c).length - 1;
 
 function weightedPick<T>(rng: Rng, items: readonly T[], weight: (t: T) => number): T | undefined {
   const total = items.reduce((s, t) => s + weight(t), 0);
@@ -248,6 +275,12 @@ export interface GenerateOptions {
   candidates?: number;
   /** Unlimited's difficulty (DIFFICULTY_BANDS); dailies are always normal. */
   difficulty?: ConnDifficulty;
+  /**
+   * How many groups are mixed (moves, abilities and types beside Pokémon):
+   * 0 or 1 or 2, or "seed" to let the seed decide (none, one or two).
+   * Left out, none: every puzzle made before mixed groups is unchanged.
+   */
+  mixed?: 0 | 1 | 2 | "seed";
 }
 
 /** Tries to fill four categories with four Pokémon each; null if they don't fit together. */
@@ -263,12 +296,27 @@ function fill(rng: Rng, cats: Category[], avoid: ReadonlySet<number>): PuzzleGro
   for (const i of order) {
     const lureWeight = (f: Facts) => 1 + 2 * cats.filter((o, j) => j !== i && o.lure?.(f)).length;
     let pool = eligible[i].filter((f) => !usedFamilies.has(f.familyKey));
-    for (let k = 0; k < CONN_GROUP_SIZE; k++) {
+    // A mixed group: some Pokémon, and the rest moves, abilities and the type itself.
+    const mixedType = cats[i].mixed ? cats[i].id.slice("mixed:".length) : null;
+    const pattern = mixedType ? rng.pick(patternsFor(mixedType)) : null;
+    for (let k = 0; k < (pattern ? count(pattern, "P") : CONN_GROUP_SIZE); k++) {
       const f = weightedPick(rng, pool, lureWeight);
       if (!f) return null;
       groups[i].members.push(f.id);
       usedFamilies.add(f.familyKey);
       pool = pool.filter((g) => g.familyKey !== f.familyKey);
+    }
+    if (mixedType && pattern) {
+      const link = linkTiles(mixedType);
+      const usable = (ids: number[]) => rng.shuffle(ids.filter((id) => !clashesWithTopic(tileRef(id), cats)));
+      const moves = usable(link.moves);
+      const abilities = usable(link.abilities);
+      for (const c of pattern) {
+        if (c === "M") groups[i].members.push(moves.pop()!);
+        else if (c === "A") groups[i].members.push(abilities.pop()!);
+        else if (c === "T") groups[i].members.push(link.type);
+      }
+      if (groups[i].members.includes(undefined as unknown as number) || groups[i].members.length !== CONN_GROUP_SIZE) return null;
     }
   }
   return groups;
@@ -297,6 +345,24 @@ function pickCategories(rng: Rng, avoid: ReadonlySet<string>, bands: readonly nu
   return cats;
 }
 
+/**
+ * Swaps the group(s) in the middle bands for mixed ones (in place), unless
+ * a type-family group is left beside them. False when it can't.
+ */
+function withMixed(rng: Rng, cats: Category[], wanted: number, banned: ReadonlySet<string>): boolean {
+  const slots = wanted === 1 ? [rng.next() < 0.5 ? 1 : 2] : [1, 2];
+  const options = MIXED_CATEGORIES.filter((c) => !banned.has(c.id));
+  const chosen: Category[] = [];
+  for (const slot of slots) {
+    const left = options.filter((o) => !chosen.includes(o));
+    if (!left.length) return false;
+    const c = rng.pick(left);
+    chosen.push(c);
+    cats[slot] = c;
+  }
+  return cats.every((c) => c.mixed || c.family !== "type");
+}
+
 /** Orders groups easiest first (by groupRating) and shuffles the sixteen tiles. */
 function finish(rng: Rng, groups: PuzzleGroup[]): Puzzle {
   const rated = groups.map((g, i) => ({ g, r: groupRating({ groups }, i) }));
@@ -318,6 +384,7 @@ const GOOD_ENOUGH = 4;
 export function generatePuzzle(seed: string, options: GenerateOptions = {}): Puzzle {
   const rng = new Rng(`pokeconnections:${seed}`);
   const tries = (options.candidates ?? 12) * 3;
+  const wanted = options.mixed === "seed" ? [0, 1, 1, 2][new Rng(`pokeconnections-mixed:${seed}`).int(0, 3)] : (options.mixed ?? 0);
   const none = new Set<never>();
   let fallback: { groups: PuzzleGroup[]; score: number } | null = null;
   for (let set = 0; set < 400; set++) {
@@ -327,6 +394,7 @@ export function generatePuzzle(seed: string, options: GenerateOptions = {}): Puz
     const avoid = strict && options.avoidCategories ? new Set([...options.avoidCategories, ...banned]) : banned;
     const cats = pickCategories(rng, avoid, DIFFICULTY_BANDS[options.difficulty ?? "normal"]);
     if (!cats) continue;
+    if (wanted > 0 && !withMixed(rng, cats, wanted, banned)) continue;
     let best: { groups: PuzzleGroup[]; score: number } | null = null;
     for (let i = 0; i < tries; i++) {
       const groups = fill(rng, cats, strict ? (options.avoidPokemon ?? none) : none);

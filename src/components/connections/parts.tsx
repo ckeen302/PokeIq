@@ -3,6 +3,8 @@
 /* eslint-disable @next/next/no-img-element -- small sprites from the site's own art route; next/image adds nothing here */
 import { forwardRef } from "react";
 import { motion } from "framer-motion";
+import { Sparkles } from "lucide-react";
+import { typeColor, typeTextColor } from "@/lib/pokemon/type-colors";
 import { artUrl } from "@/lib/pokemon/art";
 import { CONN_LEVELS, type ConnGroupExplained, type ConnGroupReveal, type ConnLevel, type ConnTile } from "@/lib/connections/types";
 import { cn } from "@/lib/utils";
@@ -18,6 +20,36 @@ export function LevelMark({ level, className }: { level: ConnLevel; className?: 
     </span>
   );
 }
+
+/**
+ * A tile's picture: a sprite for a Pokémon, a type-coloured chip for a move
+ * or a type, an icon for an ability. `size` is the box in pixels.
+ */
+export function TileArt({ tile, size, className }: { tile: ConnTile; size: number; className?: string }) {
+  if (!tile.kind) return <img src={artUrl(tile.id, size <= 48 ? 96 : 160)} alt="" draggable={false} className={className} />;
+  const small = size <= 48;
+  if (tile.kind === "ability") {
+    return (
+      <span aria-hidden data-tile-kind="ability" className={cn("flex items-center justify-center rounded-full border-2 border-dashed border-foreground/30 bg-muted text-foreground/70", className)}>
+        <Sparkles className={small ? "h-4 w-4" : "h-7 w-7"} />
+      </span>
+    );
+  }
+  const type = tile.type ?? "normal";
+  return (
+    <span
+      aria-hidden
+      data-tile-kind={tile.kind}
+      className={cn("flex items-center justify-center font-display font-bold uppercase leading-none", tile.kind === "move" ? "rounded-md" : "rounded-full", small ? "text-[8px]" : "text-[11px]", className)}
+      style={{ background: typeColor(type), color: typeTextColor(type) }}
+    >
+      {tile.kind === "move" ? "Move" : type}
+    </span>
+  );
+}
+
+/** What a tile is, in words, for screen readers and the "Why?" panel. */
+export const tileKindLabel = (tile: ConnTile) => (tile.kind === "move" ? "Move" : tile.kind === "ability" ? "Ability" : tile.kind === "type" ? "Type" : "Pokémon");
 
 export type TileMotion = "jump" | "shake" | null;
 
@@ -49,7 +81,7 @@ export const GridTile = forwardRef<
       data-id={tile.id}
       data-hinted={hinted ? "true" : undefined}
       aria-pressed={selected}
-      aria-label={`${tile.name}${hinted ? ", hint: in the easiest group left" : ""}${selected ? ", selected" : ""}`}
+      aria-label={`${tile.kind ? `${tileKindLabel(tile)} ` : ""}${tile.name}${hinted ? ", hint: in the easiest group left" : ""}${selected ? ", selected" : ""}`}
       disabled={disabled}
       onClick={onToggle}
       onKeyDown={onKeyDown}
@@ -78,10 +110,9 @@ export const GridTile = forwardRef<
           💡
         </span>
       )}
-      <img
-        src={artUrl(tile.id, 160)}
-        alt=""
-        draggable={false}
+      <TileArt
+        tile={tile}
+        size={76}
         className={cn("h-16 w-16 object-contain transition-transform duration-150 sm:h-[4.75rem] sm:w-[4.75rem]", !selected && "group-hover:scale-105")}
       />
       <span className={cn("block w-full font-display font-bold uppercase leading-tight [overflow-wrap:anywhere] sm:truncate sm:tracking-wide", long ? "text-[9px] sm:text-xs" : "text-[10px] sm:text-sm")}>{tile.name}</span>
@@ -112,7 +143,7 @@ export function GroupBar({ group, symbols, revealed }: { group: ConnGroupReveal;
       <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-0.5">
         {group.members.map((m) => (
           <span key={m.id} className="flex items-center gap-1 text-sm font-semibold">
-            <img src={artUrl(m.id, 96)} alt="" className="h-8 w-8 object-contain" />
+            <TileArt tile={m} size={32} className="h-8 w-8 shrink-0 object-contain" />
             {m.name}
           </span>
         ))}
@@ -179,9 +210,10 @@ export function WhyPanel({ groups, symbols }: { groups: ConnGroupExplained[]; sy
               <ul className="space-y-1.5">
                 {g.lines.map((l) => (
                   <li key={l.id} className="flex items-center gap-2.5 text-sm">
-                    <img src={artUrl(l.id, 96)} alt="" className="h-8 w-8 shrink-0 object-contain" />
+                    <TileArt tile={l} size={32} className="h-8 w-8 shrink-0 object-contain" />
                     <span className="min-w-0">
                       <b className="font-semibold">{l.name}</b>
+                      {l.kind && <span className="ml-1 rounded bg-muted px-1 py-px align-middle text-[10px] font-semibold uppercase text-muted-foreground">{tileKindLabel(l)}</span>}
                       <span className="text-muted-foreground">: {l.why}</span>
                     </span>
                   </li>

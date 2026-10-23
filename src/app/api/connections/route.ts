@@ -6,6 +6,7 @@ import { checkGuesses, practiceConnPuzzle, puzzleView } from "@/lib/server/conne
 import { effectiveDaily } from "@/lib/server/connections-social";
 import { startToken } from "@/lib/server/connections-board";
 import { checkCustom, customView, getCustom } from "@/lib/server/connections-custom";
+import { TILE_ID_MAX } from "@/lib/connections/tiles";
 import { CUSTOM_SEED_RE } from "@/lib/connections/custom";
 
 /**
@@ -61,7 +62,7 @@ const bodySchema = z.object({
   practice: z.string().max(32).optional(),
   // At most every group plus every mistake, and a few repeats.
   guesses: z
-    .array(z.array(z.number().int().positive().max(100_000)).length(CONN_GROUP_SIZE))
+    .array(z.array(z.number().int().positive().max(TILE_ID_MAX)).length(CONN_GROUP_SIZE))
     .max(CONN_GROUPS + CONN_MAX_MISTAKES + 4),
 });
 

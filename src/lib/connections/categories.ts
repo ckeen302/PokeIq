@@ -1,6 +1,7 @@
 import { GENERATION_REGIONS, STAT_LABELS, type StatKey } from "@/lib/pokemon/constants";
 import { curatedCategories } from "./curated";
 import { wordplayCategories } from "./wordplay";
+import type { TileRef } from "./mixed";
 import { FACTS, MOVES, SV, factsOf, isFriendship, isTrade, nameOf, stoneOf, type Facts, type Region } from "./facts";
 
 /**
@@ -41,6 +42,12 @@ export interface Category {
   lure?(f: Facts): string | null;
   /** Its facts come from Scarlet & Violet's learnsets: every tile in the puzzle must be in SV, so each one can be checked. */
   needsSV?: boolean;
+  /** A mixed group (./mixed): its tiles can also be moves, abilities and types. */
+  mixed?: boolean;
+  /** Whether a move, ability or type tile belongs (mixed groups only; every other category rejects them). */
+  testTile?(ref: TileRef): boolean;
+  /** Why such a tile belongs. */
+  whyTile?(ref: TileRef): string;
 }
 
 const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
@@ -569,9 +576,16 @@ const ALL = build();
 export const CATEGORIES: Category[] = ALL.filter((c) => !BLACKLIST.has(c.id) && new Set(FACTS.filter((f) => f.pooled && c.test(f)).map((f) => f.familyKey)).size >= MIN_MEMBERS);
 const BY_ID = new Map(ALL.map((c) => [c.id, c]));
 
+const EXTRA = new Map<string, Category>();
+
+/** Adds categories that are looked up by id but never drawn as ordinary ones (the mixed groups). */
+export function registerCategories(list: readonly Category[]) {
+  for (const c of list) EXTRA.set(c.id, c);
+}
+
 /** Any category by id, the blacklisted ones too (an old daily may name one). */
 export function categoryOf(id: string): Category {
-  const c = BY_ID.get(id);
+  const c = BY_ID.get(id) ?? EXTRA.get(id);
   if (!c) throw new Error(`No PokéConnections category ${id}`);
   return c;
 }
