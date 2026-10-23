@@ -28,7 +28,7 @@ import { CUSTOM_SEED_RE } from "@/lib/connections/custom";
 
 const NO_STORE = { "Cache-Control": "no-store" };
 /** A practice seed, with Unlimited's difficulty in front when it isn't normal: "hard-x7k2abcd". */
-const SEED = z.string().regex(/^(?:(?:easy|normal|hard)-)?[a-z0-9]{4,24}$/);
+const SEED = z.string().regex(/^(?:(?:kanto|gen9|competitive)-)?(?:(?:easy|normal|hard)-)?[a-z0-9]{4,24}$/);
 
 /** The puzzle a request names, or an error. */
 async function puzzleFor(date: string | null | undefined, practice: string | null | undefined) {

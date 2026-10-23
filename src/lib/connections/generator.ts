@@ -3,6 +3,8 @@ import { CATEGORIES, categoryOf, type Category, type CategoryFamily } from "./ca
 import { FACTS, SV, factsOf, type Facts } from "./facts";
 import { MIXED_CATEGORIES, linkTiles, patternsFor, tileRef, type TileRef } from "./mixed";
 import { isPokemonTile } from "./tiles";
+import { packIds } from "./packs";
+import type { ConnPack } from "./pack-seed";
 import { CONN_GROUPS, CONN_GROUP_SIZE, CONN_MAX_MISTAKES, guessKey, type ConnGuessKind, type ConnLevel } from "./types";
 
 /**
@@ -244,6 +246,24 @@ const FAMILY_WEIGHT: Record<CategoryFamily, number> = {
 
 const POOL = FACTS.filter((f) => f.pooled);
 const MEMBERS = new Map([...CATEGORIES, ...MIXED_CATEGORIES].map((c) => [c.id, POOL.filter((f) => c.test(f))]));
+const packMembers = new Map<ConnPack, Map<string, Facts[]>>();
+
+/** Each category's pool members, narrowed to a pack when there is one. */
+function membersFor(pack?: ConnPack): Map<string, Facts[]> {
+  if (!pack) return MEMBERS;
+  let m = packMembers.get(pack);
+  if (!m) {
+    const ids = packIds(pack);
+    m = new Map([...MEMBERS].map(([id, list]) => [id, list.filter((f) => ids.has(f.id))]));
+    packMembers.set(pack, m);
+  }
+  return m;
+}
+
+/** A category is usable in a pack when enough different evolution families of the pack pass it. */
+const PACK_MIN_FAMILIES = 6;
+const familiesIn = (list: readonly Facts[] | undefined) => new Set((list ?? []).map((f) => f.familyKey)).size;
+
 const FAMILY_SIZE = new Map<string, number>();
 for (const c of CATEGORIES) FAMILY_SIZE.set(`${c.family}|${bandOf(c)}`, (FAMILY_SIZE.get(`${c.family}|${bandOf(c)}`) ?? 0) + 1);
 
@@ -275,6 +295,8 @@ export interface GenerateOptions {
   candidates?: number;
   /** Unlimited's difficulty (DIFFICULTY_BANDS); dailies are always normal. */
   difficulty?: ConnDifficulty;
+  /** A themed pack: every Pokémon comes from it (mixed groups are off, their moves and abilities aren't the pack's). */
+  pack?: ConnPack;
   /**
    * How many groups are mixed (moves, abilities and types beside Pokémon):
    * 0 or 1 or 2, or "seed" to let the seed decide (none, one or two).
@@ -284,12 +306,12 @@ export interface GenerateOptions {
 }
 
 /** Tries to fill four categories with four Pokémon each; null if they don't fit together. */
-function fill(rng: Rng, cats: Category[], avoid: ReadonlySet<number>): PuzzleGroup[] | null {
+function fill(rng: Rng, cats: Category[], avoid: ReadonlySet<number>, members: Map<string, Facts[]> = MEMBERS): PuzzleGroup[] | null {
   const sv = cats.some((c) => c.needsSV);
   const usedFamilies = new Set<number>();
   const groups: PuzzleGroup[] = cats.map((c) => ({ category: c.id, members: [] }));
   const eligible = cats.map((c, i) =>
-    (MEMBERS.get(c.id) ?? []).filter((f) => !avoid.has(f.id) && (!sv || f.learnsetGame === SV) && cats.every((o, j) => j === i || (!o.test(f) && !o.guard?.(f))))
+    (members.get(c.id) ?? []).filter((f) => !avoid.has(f.id) && (!sv || f.learnsetGame === SV) && cats.every((o, j) => j === i || (!o.test(f) && !o.guard?.(f))))
   );
   // The tightest category first.
   const order = [0, 1, 2, 3].sort((a, b) => eligible[a].length - eligible[b].length);
@@ -334,10 +356,10 @@ export const DIFFICULTY_BANDS = {
 } as const;
 export type ConnDifficulty = keyof typeof DIFFICULTY_BANDS;
 
-function pickCategories(rng: Rng, avoid: ReadonlySet<string>, bands: readonly number[] = DIFFICULTY_BANDS.normal): Category[] | null {
+function pickCategories(rng: Rng, avoid: ReadonlySet<string>, bands: readonly number[] = DIFFICULTY_BANDS.normal, members?: Map<string, Facts[]>): Category[] | null {
   const cats: Category[] = [];
   for (const band of bands) {
-    const options = CATEGORIES.filter((c) => bandOf(c) === band && !avoid.has(c.id) && !cats.some((o) => o.family === c.family));
+    const options = CATEGORIES.filter((c) => bandOf(c) === band && !avoid.has(c.id) && !cats.some((o) => o.family === c.family) && (!members || familiesIn(members.get(c.id)) >= PACK_MIN_FAMILIES));
     const c = weightedPick(rng, options, (c) => FAMILY_WEIGHT[c.family] / (FAMILY_SIZE.get(`${c.family}|${band}`) ?? 1));
     if (!c) return null;
     cats.push(c);
@@ -384,7 +406,8 @@ const GOOD_ENOUGH = 4;
 export function generatePuzzle(seed: string, options: GenerateOptions = {}): Puzzle {
   const rng = new Rng(`pokeconnections:${seed}`);
   const tries = (options.candidates ?? 12) * 3;
-  const wanted = options.mixed === "seed" ? [0, 1, 1, 2][new Rng(`pokeconnections-mixed:${seed}`).int(0, 3)] : (options.mixed ?? 0);
+  const members = options.pack ? membersFor(options.pack) : undefined;
+  const wanted = options.pack ? 0 : options.mixed === "seed" ? [0, 1, 1, 2][new Rng(`pokeconnections-mixed:${seed}`).int(0, 3)] : (options.mixed ?? 0);
   const none = new Set<never>();
   let fallback: { groups: PuzzleGroup[]; score: number } | null = null;
   for (let set = 0; set < 400; set++) {
@@ -392,12 +415,12 @@ export function generatePuzzle(seed: string, options: GenerateOptions = {}): Puz
     const strict = set < 300;
     const banned = options.excludeCategories ?? none;
     const avoid = strict && options.avoidCategories ? new Set([...options.avoidCategories, ...banned]) : banned;
-    const cats = pickCategories(rng, avoid, DIFFICULTY_BANDS[options.difficulty ?? "normal"]);
+    const cats = pickCategories(rng, avoid, DIFFICULTY_BANDS[options.difficulty ?? "normal"], members);
     if (!cats) continue;
     if (wanted > 0 && !withMixed(rng, cats, wanted, banned)) continue;
     let best: { groups: PuzzleGroup[]; score: number } | null = null;
     for (let i = 0; i < tries; i++) {
-      const groups = fill(rng, cats, strict ? (options.avoidPokemon ?? none) : none);
+      const groups = fill(rng, cats, strict ? (options.avoidPokemon ?? none) : none, members);
       if (!groups || validatePuzzle({ groups }).length) continue;
       const score = scorePuzzle(groups);
       if (!best || score > best.score) best = { groups, score };

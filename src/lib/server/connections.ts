@@ -1,6 +1,7 @@
 import "server-only";
 import dailiesData from "@/data/connections-dailies.json";
 import { categoryOf } from "@/lib/connections/categories";
+import { parsePracticeSeed } from "@/lib/connections/pack-seed";
 import { tileRef } from "@/lib/connections/mixed";
 import { isPokemonTile } from "@/lib/connections/tiles";
 import { factsOf } from "@/lib/connections/facts";
@@ -71,9 +72,9 @@ export function practiceConnPuzzle(seed: string): Puzzle {
   let p = practiceCache.get(seed);
   if (!p) {
     // "hard-x7k2…": Unlimited's difficulty rides in the seed, so every guess check finds the same puzzle.
-    const level = /^(easy|hard)-/.exec(seed)?.[1] as "easy" | "hard" | undefined;
-    // Practice puzzles may have one or two mixed groups (the seed decides).
-    p = generatePuzzle(`practice:${seed}`, { ...(level && { difficulty: level }), mixed: "seed" });
+    const { pack, difficulty } = parsePracticeSeed(seed);
+    // Practice puzzles may have one or two mixed groups (the seed decides); a pack's never do.
+    p = generatePuzzle(`practice:${seed}`, { ...(difficulty && { difficulty }), ...(pack ? { pack } : { mixed: "seed" as const }) });
     if (practiceCache.size > 500) practiceCache.clear();
     practiceCache.set(seed, p);
   }
