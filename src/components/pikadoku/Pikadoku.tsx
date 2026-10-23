@@ -7,7 +7,8 @@ import { getProgress, pdkBlock, recordPdkGame, savePdk, setTrainerName, useProgr
 import { useToday } from "@/lib/use-today";
 import { dlePlayerId } from "@/lib/dle-player";
 import { play } from "@/lib/sound";
-import { composeShare } from "@/lib/share/text";
+import { pikadokuShareText, shareUrl, type PikadokuShareResult } from "@/lib/share";
+import { rarityGrid } from "@/lib/pikadoku/share";
 import { connNumber } from "@/lib/connections/types";
 import { EMPTY_PDK_PLAY } from "@/lib/pikadoku/play";
 import {
@@ -299,16 +300,18 @@ export function Pikadoku() {
   const [nameDraft, setNameDraft] = useState("");
   const cells: BoardCell[] = Array.from({ length: 9 }, (_, i) => ({ id: locked[i]?.id ?? null, pct: locked[i]?.pct ?? null, miss: missCell === i }));
   const block = pdkBlock(progress ?? getProgress());
+  /** The rarity-coloured result: colours only, never a Pokémon. */
+  const shareResult = (): PikadokuShareResult => ({
+    game: "pikadoku",
+    ...(mode === "daily" && today ? { daily: connNumber(today) } : {}),
+    difficulty: mode === "daily" ? difficulty : "normal",
+    grid: rarityGrid((i) => !!locked[i], result?.pcts ?? Array.from({ length: 9 }, (_, i) => locked[i]?.pct ?? null)),
+    ...(result?.score != null && { score: result.score }),
+    ...(mode === "daily" && block.streak > 1 && { streak: block.streak }),
+  });
   const shareText = () => {
-    const r = result;
-    const squares = [0, 1, 2].map((row) => [0, 1, 2].map((c) => (locked[row * 3 + c] ? "🟩" : "⬛")).join("")).join("\n");
-    return composeShare({
-      title: mode === "daily" && today ? `Pikadoku #${connNumber(today)} (${DIFF_LABEL[difficulty]})` : "Pikadoku (Unlimited)",
-      score: `${r?.solved ?? lockedCount}/9`,
-      badges: [r?.score != null && `Score ${r.score}`, block.streak > 1 && mode === "daily" && `🔥${block.streak}`],
-      lines: squares.split("\n"),
-      url: `${window.location.origin}/pikadoku`,
-    });
+    const r = shareResult();
+    return pikadokuShareText(r, shareUrl(r));
   };
 
   const rankName = progress?.name ?? "";

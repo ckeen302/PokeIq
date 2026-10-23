@@ -3,7 +3,7 @@ import { DLE_ASSIST_INFO } from "@/lib/dle-assist";
 import { MODULE_INFO } from "@/lib/modes";
 import { GEO_MAX_ROUND_SCORE, GEO_ROUNDS, WORLD_REGION } from "@/lib/geo-types";
 import { PLAY_FORMAT_INFO } from "@/lib/battle/play";
-import { battleOpponent, clock, connMistakes, connectionsScore, connectionsTitle, guessrTitle, quizTitle } from "./text";
+import { battleOpponent, clock, connMistakes, connectionsScore, connectionsTitle, guessrTitle, pikadokuSolved, pikadokuTitle, quizTitle } from "./text";
 import type { ShareResult } from "./payload";
 
 /**
@@ -13,7 +13,10 @@ import type { ShareResult } from "./payload";
  */
 
 /** One square of a board. */
-export type ShareTile = "hit" | "near" | "far" | "miss" | "wrong" | "up" | "down" | "mask" | ConnShareTile;
+export type ShareTile = "hit" | "near" | "far" | "miss" | "wrong" | "up" | "down" | "mask" | ConnShareTile | PdkShareTile;
+/** Pikadoku's rarity colours: under 1%, under 10%, under 25%, 25% and over, and wrong or empty. */
+export type PdkShareTile = "pdk-purple" | "pdk-blue" | "pdk-green" | "pdk-yellow" | "pdk-empty";
+const PDK_TILE: Record<string, PdkShareTile> = { p: "pdk-purple", b: "pdk-blue", g: "pdk-green", y: "pdk-yellow", x: "pdk-empty" };
 /** PokéConnections' group colours, easiest to hardest. */
 export type ConnShareTile = "conn-yellow" | "conn-green" | "conn-blue" | "conn-purple";
 export const CONN_SHARE_TILES: readonly ConnShareTile[] = ["conn-yellow", "conn-green", "conn-blue", "conn-purple"];
@@ -165,6 +168,25 @@ export function describeShare(r: ShareResult): ShareView {
         playLabel: r.daily !== undefined ? "Play today's PokéConnections" : "Play PokéConnections",
         title: `${label}: ${connectionsScore(r)}`,
         description: "Sixteen Pokémon, four hidden groups. Find what links them in a new puzzle every day on PokéIQ. Can you do better?",
+      };
+    }
+    case "pikadoku": {
+      const label = pikadokuTitle(r);
+      const solved = pikadokuSolved(r.grid);
+      const rare = [...r.grid].filter((c) => c === "p" || c === "b").length;
+      const detail = solved === 9 ? "Filled the whole grid" : `Filled ${solved} of 9 cells`;
+      return {
+        game: "Pikadoku",
+        label,
+        headline: `${solved}/9`,
+        detail: r.score !== undefined ? `${detail} · uniqueness score ${r.score}` : detail,
+        chips: [r.score !== undefined && `Score ${r.score}`, rare > 0 && `${rare} rare pick${rare === 1 ? "" : "s"}`, r.streak && `${r.streak}-day streak`].filter((c): c is string => Boolean(c)),
+        tiles: [0, 1, 2].map((row) => [...r.grid.slice(row * 3, row * 3 + 3)].map((c) => PDK_TILE[c] ?? "pdk-empty")),
+        accent: "yellow",
+        playHref: "/pikadoku",
+        playLabel: r.weekly !== undefined ? "Play this week's Pikadoku" : "Play today's Pikadoku",
+        title: `${label}: ${solved}/9${r.score !== undefined ? ` · score ${r.score}` : ""}`,
+        description: "Pokémon Sudoku: one Pokémon for each cell, matching its row and column. The rarer your picks, the lower your score. Can you do better?",
       };
     }
     case "battle": {
