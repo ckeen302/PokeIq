@@ -4,11 +4,12 @@ import { pageMetadata } from "@/lib/seo";
 import { Swords } from "lucide-react";
 import { ModeGrid } from "@/components/home/ModeGrid";
 import { QuizDuelCard } from "@/components/quiz/QuizDuelCard";
+import { GameInfo } from "@/components/seo/GameInfo";
 import { FORMAT_INFO, PLAYABLE_FORMATS, QUIZ_PRESETS } from "@/lib/modes";
 
 export const metadata: Metadata = pageMetadata({
-  title: "All Pokémon Quiz Modes",
-  description: "Who's That Pokémon, cry quiz, Pokédex entries, type matchups, higher or lower — in Classic, Survival and Blitz formats.",
+  title: "Who's That Pokémon Quiz and More Pokémon Quiz Modes",
+  description: "Play the Who's That Pokémon quiz, a cry quiz, Pokédex entries, type matchups, higher or lower — in Classic, Survival and Blitz formats.",
   path: "/play",
 });
 
@@ -60,6 +61,23 @@ export default function PlayPage() {
           ))}
         </div>
       </section>
+      <GameInfo
+        path="/play"
+        name={`the Pokémon quizzes`}
+        description={`Free Pokémon quizzes including the Who's That Pokémon quiz, a cry quiz and type matchups, in Classic, Survival and Blitz formats.`}
+        intro={`Play the Who's That Pokémon quiz and our other Pokémon quizzes in three formats, covering all 1,025 Pokémon.`}
+        steps={[
+          "Pick a quiz mode and the generations to include.",
+          "Choose a format: Classic, Survival or Blitz.",
+          "Answer before the clock runs out.",
+          "Your PokéIQ is calculated from how hard the questions you got right were.",
+        ]}
+        faqs={[
+          { q: `What formats are there?`, a: `Classic is 10 questions with 15 seconds each, Survival is endless with 3 lives and Blitz gives you 60 seconds to answer as many as you can.` },
+          { q: `Can I choose which generations to play?`, a: `Yes, pick the generations to include, or jump straight to a quiz by generation.` },
+          { q: `Can I play against a friend?`, a: `Yes, send a friend a link and answer the same questions head to head, live.` },
+        ]}
+      />
     </div>
   );
 }

@@ -1,8 +1,9 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { pageMetadata } from "@/lib/seo";
+import Link from "next/link";
+import { jsonLd, pageMetadata } from "@/lib/seo";
+import { dexBreadcrumbs, dexDescription, dexSummary, dexTitle } from "@/lib/pokemon/dex-seo";
 import { POKEDEX, artworkUrl, getPokemonBySlug } from "@/lib/pokemon/pokedex";
-import { capitalize } from "@/lib/pokemon/type-matrix";
 import { getDexEntry } from "@/lib/pokemon/details";
 import { DexEntry } from "@/components/pokedex/entry/DexEntry";
 
@@ -21,10 +22,9 @@ interface PageProps {
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const p = getPokemonBySlug((await params).slug);
   if (!p) return {};
-  const types = p.types.map(capitalize).join("/");
   return pageMetadata({
-    title: `${p.name} Pokédex — Stats, Evolution, Moves & Weaknesses`,
-    description: `${p.name} (#${p.id}) is a ${types}-type ${p.genus} from Gen ${p.gen}. Base stats, evolution, full moveset, abilities, type weaknesses and every Pokédex entry.`,
+    title: dexTitle(p),
+    description: dexDescription(p),
     path: `/pokemon/${p.slug}`,
     socialTitle: `${p.name} (#${p.id}) · PokéIQ Pokédex`,
   });
@@ -35,7 +35,7 @@ export default async function PokemonPage({ params }: PageProps) {
   if (!p) notFound();
   const data = getDexEntry(p);
 
-  const jsonLd = {
+  const pageLd = {
     "@context": "https://schema.org",
     "@type": "WebPage",
     name: `${p.name} — PokéIQ Pokédex`,
@@ -45,8 +45,19 @@ export default async function PokemonPage({ params }: PageProps) {
 
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(pageLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(dexBreadcrumbs(p)) }} />
       <DexEntry key={p.id} data={data} />
+      <section className="mx-auto mt-10 max-w-3xl space-y-3 text-sm text-muted-foreground" aria-label={`About ${p.name}`}>
+        <h2 className="font-display text-base font-bold uppercase tracking-wider text-foreground">{p.name} summary</h2>
+        <p>{dexSummary(p)}</p>
+        <p className="flex flex-wrap gap-x-4 gap-y-1">
+          <Link href="/quiz/whos-that-pokemon" className="underline-offset-2 hover:text-foreground hover:underline">Who&apos;s That Pokémon quiz</Link>
+          <Link href="/battle/teams" className="underline-offset-2 hover:text-foreground hover:underline">Pokémon team builder</Link>
+          <Link href="/battle/calc" className="underline-offset-2 hover:text-foreground hover:underline">Pokémon damage calculator</Link>
+          <Link href="/pokedex" className="underline-offset-2 hover:text-foreground hover:underline">Full Pokédex</Link>
+        </p>
+      </section>
     </>
   );
 }

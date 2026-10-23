@@ -12,6 +12,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${SITE_URL}/pokedle`, lastModified: now, changeFrequency: "daily", priority: 0.9 },
     { url: `${SITE_URL}/guessr`, lastModified: now, changeFrequency: "daily", priority: 0.9 },
     { url: `${SITE_URL}/connections`, lastModified: now, changeFrequency: "daily", priority: 0.9 },
+    { url: `${SITE_URL}/connections/community`, changeFrequency: "daily", priority: 0.6 },
+    { url: `${SITE_URL}/connections/create`, changeFrequency: "monthly", priority: 0.5 },
     { url: `${SITE_URL}/atlas`, changeFrequency: "monthly", priority: 0.7 },
     { url: `${SITE_URL}/play`, changeFrequency: "weekly", priority: 0.8 },
     { url: `${SITE_URL}/pokedex`, changeFrequency: "monthly", priority: 0.8 },
