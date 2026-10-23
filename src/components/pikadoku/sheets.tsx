@@ -8,11 +8,11 @@ import { connNumber } from "@/lib/connections/types";
 
 const KINDS: [PdkFamily, string][] = [
   ["types", "Fire type, Dual-typed (one matching type is enough)"],
-  ["regions", "Introduced in Kanto to Paldea, has an Alolan, Galarian, Hisuian or Paldean form"],
+  ["regions", "Introduced in Kanto to Paldea (a regional form counts for the region it debuted in), has an Alolan, Galarian, Hisuian or Paldean form"],
   ["evolution", "Basic, fully evolved, evolves with a stone, by trade or friendship, branching evolution"],
   ["moves", "Learns Trick Room, Surf or Stealth Rock in Scarlet & Violet"],
   ["abilities", "Has Levitate or Intimidate (any slot), has a hidden ability"],
-  ["other", "Legendary, Mythical, fossil, baby, has a Mega or Gigantamax form, base Speed 100+, base stat total 600+, OU-relevant"],
+  ["other", "Legendary, Mythical, Paradox, Ultra Beast, First Partner (starter lines), fossil, baby, has a Mega or Gigantamax form, base Speed 100+, base stat total 600+, OU-relevant"],
 ];
 
 export function PdkHowToSheet({ onClose }: { onClose: () => void }) {
@@ -30,7 +30,10 @@ export function PdkHowToSheet({ onClose }: { onClose: () => void }) {
             Your <b>uniqueness score</b> is the sum of the share of players who picked each of your answers: <b>lower is better</b>. Each cell shows its rarity once it locks.
           </li>
           <li>
-            <b>Easy, Normal and Expert</b> dailies: Normal is the main grid for the leaderboard. Every grid is checked to be solvable.
+            <b>Easy, Normal and Expert</b> dailies: Normal is the main grid for the leaderboard. Every grid is checked to be solvable. Some days a <b>Master Puzzle</b> made by hand replaces the Normal grid.
+          </li>
+          <li>
+            Tap the <b>i</b> on any category to see exactly what counts, forms included. The <b>Archive</b> lets you play past dailies; they never count toward the board or your streak.
           </li>
           <li>
             When the game ends you see <b>every valid answer</b> for every cell, rarest first, and why each miss didn&apos;t fit.
