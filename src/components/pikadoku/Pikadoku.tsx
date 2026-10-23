@@ -80,6 +80,7 @@ export function Pikadoku() {
   const [grid, setGrid] = useState<PdkGridView | null>(null);
   const [pp, setPp] = useState<number>(PDK_PP);
   const [start, setStart] = useState<string | undefined>();
+  const [master, setMaster] = useState<string | null>(null);
   const [guesses, setGuesses] = useState<PdkGuess[]>([]);
   const [locked, setLocked] = useState<Record<number, Locked>>({});
   const [missCell, setMissCell] = useState<number | null>(null);
@@ -187,12 +188,13 @@ export function Pikadoku() {
           qs.set("difficulty", target.difficulty);
         }
         const res = await fetch(`/api/pikadoku?${qs}`, { cache: "no-store" });
-        const data = (await res.json()) as { grid?: PdkGridView; pp?: number; start?: string; error?: string };
+        const data = (await res.json()) as { grid?: PdkGridView; pp?: number; start?: string; error?: string; master?: { by: string } };
         if (!live) return;
         if (!res.ok || !data.grid) return setError(data.error ?? "Couldn't load the grid.");
         setGrid(data.grid);
         setPp(data.pp ?? 0);
         setStart(data.start);
+        setMaster(data.master?.by ?? null);
         const saved = mode === "daily" && storeKey ? pdkBlock(getProgress()).results[storeKey] : undefined;
         if (saved?.guesses.length) {
           setGuesses(saved.guesses);
@@ -436,6 +438,12 @@ export function Pikadoku() {
         {mode === "practice" && (
           <p className="mx-auto max-w-md rounded-md border border-screen/40 bg-screen/[0.06] px-3 py-2 text-center text-sm" data-testid="pdk-unlimited">
             Unlimited: a fresh grid every time, never counted toward your streak.{settings.timer && <b className="ml-2 tabular-nums">{clockText(elapsed)}</b>}
+          </p>
+        )}
+
+        {mode === "daily" && master && (
+          <p className="mx-auto max-w-md rounded-md border border-warning/50 bg-warning/10 px-3 py-2 text-center text-sm font-semibold" data-testid="pdk-master">
+            Master Puzzle by {master}
           </p>
         )}
 

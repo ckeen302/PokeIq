@@ -17,6 +17,9 @@ import { GeoReportsUnavailable, reviewShot, shotReviewQueue } from "@/lib/server
 import { shotInfo } from "@/lib/server/geo";
 import { categoryFeedback, disableCategory } from "@/lib/server/connections-social";
 import { GEO_SHOT_ID_RE, type GeoShotReview } from "@/lib/geo-reports";
+import { allCategories } from "@/lib/pikadoku/categories";
+import { checkMaster } from "@/lib/pikadoku/master";
+import { allMasters, ensureMaster, refreshMaster, scheduleMaster, unscheduleMaster } from "@/lib/server/pikadoku-master";
 
 /**
  * The moderators' API, for accounts named in POKEIQ_ADMINS only (anyone
@@ -31,6 +34,7 @@ import { GEO_SHOT_ID_RE, type GeoShotReview } from "@/lib/geo-reports";
  * GET ?tab=avatars                                profile pictures waiting for review, and how many
  * GET ?tab=connections                              PokéConnections categories players reported or rated down
  * GET ?tab=shots&status=                          PokéGuessr screenshots players reported, grouped by shot
+ * GET ?tab=pikadoku                               Pikadoku's categories and the scheduled Master grids
  * POST { action, ... }                            see bodySchema
  */
 
@@ -59,6 +63,9 @@ const bodySchema = z.discriminatedUnion("action", [
   z.object({ action: z.literal("disableConnCategory"), category: z.string().max(80) }),
   z.object({ action: z.literal("keepShot"), shot: z.string().regex(GEO_SHOT_ID_RE) }),
   z.object({ action: z.literal("removeShot"), shot: z.string().regex(GEO_SHOT_ID_RE) }),
+  z.object({ action: z.literal("pdkCheck"), rows: z.array(z.string().max(60)).max(3), cols: z.array(z.string().max(60)).max(3) }),
+  z.object({ action: z.literal("pdkSchedule"), date: z.string().max(10), rows: z.array(z.string().max(60)).length(3), cols: z.array(z.string().max(60)).length(3) }),
+  z.object({ action: z.literal("pdkUnschedule"), date: z.string().max(10) }),
 ]);
 
 const notFound = () => NextResponse.json({ error: "Not found" }, { status: 404, headers: NO_STORE });
@@ -110,6 +117,18 @@ export async function GET(request: NextRequest) {
       case "avatars": {
         const out = await pendingPictures();
         return NextResponse.json(out ? { open: true, ...out } : { open: false, pending: [], count: 0 }, { headers: NO_STORE });
+      }
+      case "pikadoku": {
+        refreshMaster();
+        await ensureMaster();
+        return NextResponse.json(
+          {
+            today: new Date().toISOString().slice(0, 10),
+            categories: allCategories().map((c) => ({ id: c.id, label: c.label, family: c.family, tier: c.tier })),
+            scheduled: allMasters().map((m) => ({ ...m.grid, seed: m.seed })),
+          },
+          { headers: NO_STORE }
+        );
       }
       case "connections":
         return NextResponse.json(await categoryFeedback(), { headers: NO_STORE });
@@ -209,6 +228,19 @@ export async function POST(request: NextRequest) {
         const info = shotInfo(body.shot);
         await audit(admin, body.action === "keepShot" ? "keep screenshot" : "remove screenshot", body.shot, info ? `${info.place} · ${info.game}` : null);
         return ok({ reports: n });
+      }
+      case "pdkCheck":
+        return ok({ check: checkMaster(body.rows, body.cols) });
+      case "pdkSchedule": {
+        const out = await scheduleMaster({ date: body.date, rows: body.rows, cols: body.cols, by: admin.username });
+        if (!out.ok) return bad(out.error, out.status);
+        await audit(admin, "schedule Pikadoku Master", body.date, `${body.rows.join(",")} x ${body.cols.join(",")}`);
+        return ok();
+      }
+      case "pdkUnschedule": {
+        if (!(await unscheduleMaster(body.date))) return bad("Couldn't remove that day (it may have begun, or be a built-in seed).", 409);
+        await audit(admin, "unschedule Pikadoku Master", body.date);
+        return ok();
       }
       case "approvePicture": {
         const out = await approvePicture(body.id, admin.username);

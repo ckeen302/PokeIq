@@ -3,6 +3,7 @@ import { z } from "zod";
 import { isPlayableConnDate } from "@/lib/connections/types";
 import { PDK_CELLS, PDK_DIFFICULTIES, PDK_FAMILIES } from "@/lib/pikadoku/types";
 import { dailyGrid, parseSettings, practiceGrid } from "./pikadoku";
+import { masterFor } from "./pikadoku-master";
 
 /** The request fields shared by every Pikadoku endpoint: a daily or a practice seed. */
 export const gridFields = {
@@ -36,7 +37,7 @@ export function resolveGrid(q: Named) {
   const difficulty = q.difficulty as "easy" | "normal" | "expert";
   if (q.date && !q.practice) {
     if (!isPlayableConnDate(q.date)) return { error: "That daily isn't available." } as const;
-    return { grid: dailyGrid(q.date, difficulty), settings, daily: true as const, key: `${q.date}:${difficulty}` };
+    return { grid: dailyGrid(q.date, difficulty), settings, daily: true as const, key: `${q.date}:${difficulty}`, master: difficulty === "normal" ? masterFor(q.date)?.by : undefined };
   }
   if (q.practice && !q.date) return { grid: practiceGrid(q.practice, settings), settings, daily: false as const, key: `p:${q.practice}` };
   return { error: "Ask for a daily (date) or an Unlimited grid (practice)." } as const;
