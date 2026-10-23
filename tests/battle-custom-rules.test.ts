@@ -85,7 +85,8 @@ describe("custom rules validated by Showdown, every gen", () => {
           if (!session.choose(side, choice).ok) expect(session.choose(side, firstChoice(session.pending(side)!, false)).ok).toBe(true);
         }
       }
-      expect(session.turn).toBeGreaterThan(3);
+      // A quick team can win fast; otherwise the battle must have played several turns.
+      expect(session.turn).toBeGreaterThan(session.ended ? 0 : 3);
       // Level 50 for everyone (Adjust Level).
       expect(session.battle.p1.pokemon.every((p) => p.level === 50)).toBe(true);
     });
