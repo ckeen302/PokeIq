@@ -52,10 +52,16 @@ export const CONN_LEVELS = [
 
 export type ConnLevel = 0 | 1 | 2 | 3;
 
-/** A tile: a Pokémon's id and name (the sprite comes from /api/art). */
+/**
+ * A tile: a Pokémon's id and name (the sprite comes from /api/art), or a
+ * move, ability or type from a mixed group (`kind`, and `type` for the chip's
+ * colour). A Pokémon tile has no `kind`, so it looks as it always did.
+ */
 export interface ConnTile {
   id: number;
   name: string;
+  kind?: "move" | "ability" | "type";
+  type?: string;
 }
 
 /** GET /api/connections: the puzzle's tiles, never its groups. */

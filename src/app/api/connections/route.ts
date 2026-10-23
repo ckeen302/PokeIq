@@ -6,6 +6,7 @@ import { checkGuesses, practiceConnPuzzle, puzzleView } from "@/lib/server/conne
 import { effectiveDaily } from "@/lib/server/connections-social";
 import { startToken } from "@/lib/server/connections-board";
 import { checkCustom, customView, getCustom } from "@/lib/server/connections-custom";
+import { TILE_ID_MAX } from "@/lib/connections/tiles";
 import { CUSTOM_SEED_RE } from "@/lib/connections/custom";
 
 /**
@@ -27,7 +28,7 @@ import { CUSTOM_SEED_RE } from "@/lib/connections/custom";
 
 const NO_STORE = { "Cache-Control": "no-store" };
 /** A practice seed, with Unlimited's difficulty in front when it isn't normal: "hard-x7k2abcd". */
-const SEED = z.string().regex(/^(?:(?:easy|normal|hard)-)?[a-z0-9]{4,24}$/);
+const SEED = z.string().regex(/^(?:(?:kanto|gen9|competitive)-)?(?:(?:easy|normal|hard)-)?[a-z0-9]{4,24}$/);
 
 /** The puzzle a request names, or an error. */
 async function puzzleFor(date: string | null | undefined, practice: string | null | undefined) {
@@ -61,7 +62,7 @@ const bodySchema = z.object({
   practice: z.string().max(32).optional(),
   // At most every group plus every mistake, and a few repeats.
   guesses: z
-    .array(z.array(z.number().int().positive().max(100_000)).length(CONN_GROUP_SIZE))
+    .array(z.array(z.number().int().positive().max(TILE_ID_MAX)).length(CONN_GROUP_SIZE))
     .max(CONN_GROUPS + CONN_MAX_MISTAKES + 4),
 });
 

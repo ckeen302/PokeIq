@@ -70,7 +70,7 @@ interface TableOptions<D> {
 }
 
 /** One table of records, each a row keyed by `column`, changed only by compare-and-swap. */
-function duelTable<D>(table: string, label: string, { column = "code", keyOf = (d) => (d as { code: string }).code, columns = () => ({}) }: TableOptions<D> = {}) {
+export function duelTable<D>(table: string, label: string, { column = "code", keyOf = (d) => (d as { code: string }).code, columns = () => ({}) }: TableOptions<D> = {}) {
   async function load(code: string): Promise<StoredDuel<D> | null> {
     const sb = remote();
     if (sb) {

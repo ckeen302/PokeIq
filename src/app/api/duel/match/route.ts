@@ -4,8 +4,9 @@ import { gate } from "@/lib/server/moderation";
 import { clientIp, rateLimit } from "@/lib/server/rate-limit";
 import { duelNameSchema } from "@/lib/server/duel-core";
 import { duelsEnabled } from "@/lib/server/duel-store";
-import { cancelMatch, matchSettingsSchema, newTicket, searchMatch, searchRankedMatch } from "@/lib/server/matchmaking";
+import { cancelMatch, matchSettingsSchema, newTicket, searchMatch, searchRankedConnections, searchRankedMatch } from "@/lib/server/matchmaking";
 import { RankedUnavailable, rankedIdentity, rankedKey, rankedStore } from "@/lib/server/ranked";
+import { connRankedKey, connRankedStore } from "@/lib/server/connections-ranked";
 import { RANKED_START } from "@/lib/ranked";
 
 /**
@@ -15,7 +16,7 @@ import { RANKED_START } from "@/lib/ranked";
  *                                                   { status: "waiting", ticket, since } or, once
  *                                                   paired, { status: "matched", code, token, href }
  *   { action: "cancel", settings, ticket }          give up the search
- * settings: { game: "geo", region } or { game: "pokedle", ranked? }. A ranked search also sends
+ * settings: { game: "geo", region }, { game: "pokedle", ranked? } or { game: "connections", ranked? }. A ranked search also sends
  * `rankedId` (the signed id /api/pokedle/ranked gave this browser) unless signed in.
  */
 
@@ -54,16 +55,18 @@ export async function POST(request: NextRequest) {
       await cancelMatch(body.settings, body.ticket);
       return NextResponse.json({ ok: true }, { headers: NO_STORE });
     }
-    const ranked = body.settings.game === "pokedle" && body.settings.ranked;
+    const connRanked = body.settings.game === "connections" && body.settings.ranked;
+    const ranked = (body.settings.game === "pokedle" && body.settings.ranked) || connRanked;
     let out: Awaited<ReturnType<typeof searchMatch>>;
     if (ranked) {
-      const store = rankedStore();
+      const store = connRanked ? connRankedStore() : rankedStore();
       if (!store) return NextResponse.json({ error: "Ranked isn't open on this server yet." }, { status: 503, headers: NO_STORE });
       const identity = await rankedIdentity(request, body.rankedId);
       if (!identity) return NextResponse.json({ error: "Reload the page to get your ranked card." }, { status: 400, headers: NO_STORE });
-      const key = rankedKey(identity);
+      const key = connRanked ? connRankedKey(identity) : rankedKey(identity);
       try {
-        out = await searchRankedMatch(body.name, body.ticket ?? newTicket(), key, async () => (await store.rating(key)) ?? { rating: RANKED_START, games: 0 });
+        const search = connRanked ? searchRankedConnections : searchRankedMatch;
+        out = await search(body.name, body.ticket ?? newTicket(), key, async () => (await store.rating(key)) ?? { rating: RANKED_START, games: 0 });
       } catch (err) {
         if (err instanceof RankedUnavailable) return NextResponse.json({ error: "Ranked opens soon. Casual duels are on." }, { status: 409, headers: NO_STORE });
         throw err;

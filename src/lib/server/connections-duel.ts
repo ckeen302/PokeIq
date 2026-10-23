@@ -2,7 +2,9 @@ import "server-only";
 import { CONN_DUEL_MS, CONN_DUEL_PENALTY_MS, type ConnDuelBoard, type ConnDuelView } from "@/lib/pvp-types";
 import { CONN_GROUP_SIZE, CONN_GROUPS, guessKey, type ConnLevel } from "@/lib/connections/types";
 import { generatePuzzle, playGuesses, type PlayState, type Puzzle } from "@/lib/connections/generator";
+import { isProvisional } from "@/lib/ranked";
 import { connTile, explainGroup, groupReveal } from "./connections";
+import type { ConnRankedInfo } from "./connections-ranked";
 import { baseView, fail, finish, newSeat, notPlaying, pvpBase, seatOf, seated, type PvpBase, type PvpOutcome, type PvpRules } from "./duel-core";
 
 /**
@@ -35,6 +37,9 @@ export interface ConnectionsDuel extends PvpBase {
   startsAt?: number;
   /** One per seat: every guess, oldest first (repeats are never stored). */
   boards: { guesses: ConnDuelGuess[] }[];
+  /** How the trainers met: the casual or the ranked queue (absent: a friend's invite, or a rematch, which is always casual). */
+  queue?: "casual" | "ranked";
+  ranked?: ConnRankedInfo;
 }
 
 // ---------------------------------------------------------------------------
@@ -69,7 +74,7 @@ export interface SeatRace extends PlayState {
   score?: number;
 }
 
-export function seatRace(d: ConnectionsDuel, puzzle: Puzzle, seat: number): SeatRace {
+export function seatRace(d: Pick<ConnectionsDuel, "boards" | "startsAt">, puzzle: Puzzle, seat: number): SeatRace {
   const guesses = d.boards[seat]?.guesses ?? [];
   const start = d.startsAt ?? 0;
   const state = playGuesses(puzzle, guesses.map((g) => g.ids));
@@ -89,11 +94,11 @@ export function seatRace(d: ConnectionsDuel, puzzle: Puzzle, seat: number): Seat
  * the lower score (time plus penalties); otherwise more groups found, then
  * fewer mistakes.
  */
-const rank = (s: SeatRace): number[] => (s.won ? [2, -s.score!] : [1, s.found.length, -s.mistakes]);
+export const raceRank = (s: SeatRace): number[] => (s.won ? [2, -s.score!] : [1, s.found.length, -s.mistakes]);
 
 /** The winning seat, or null for a draw. */
 export function raceWinner(s: SeatRace[]): number | null {
-  const [a, b] = s.map(rank);
+  const [a, b] = s.map(raceRank);
   for (let i = 0; i < Math.max(a.length, b.length); i++) if (a[i] !== b[i]) return a[i] > b[i] ? 0 : 1;
   return null;
 }
@@ -144,9 +149,15 @@ export const connectionsRules: PvpRules<ConnectionsDuel> = {
   blank: (base) => blankDuel(base),
 };
 
-export function createConnectionsDuel(name: string, code: string, now: number, seed?: string): { duel: ConnectionsDuel; playerId: string } {
+export function createConnectionsDuel(
+  name: string,
+  code: string,
+  now: number,
+  seed?: string,
+  extra: Pick<ConnectionsDuel, "queue" | "ranked"> = {}
+): { duel: ConnectionsDuel; playerId: string } {
   const seat = newSeat(name, now);
-  return { duel: blankDuel(pvpBase("connections", code, [seat], now, seed)), playerId: seat.id };
+  return { duel: { ...blankDuel(pvpBase("connections", code, [seat], now, seed)), ...extra }, playerId: seat.id };
 }
 
 // ---------------------------------------------------------------------------
@@ -207,6 +218,9 @@ export function connectionsView(duel: ConnectionsDuel, playerId: string | null, 
   return {
     kind: "connections",
     ...baseView(duel, playerId, now, rev),
+    ...(duel.queue && { queue: duel.queue }),
+    // Ratings, never the keys behind them.
+    ...(duel.ranked && { ranked: { season: duel.ranked.season, ratings: duel.ranked.ratings, provisional: duel.ranked.games.map(isProvisional), result: duel.ranked.result } }),
     ...(duel.status === "playing" && start !== undefined && { round: { startsAt: start, endsAt: start + CONN_DUEL_MS } }),
     ...(puzzle && { tiles: puzzle.tiles.map(connTile) }),
     boards: races.map((r) => boardView(r, start!)),

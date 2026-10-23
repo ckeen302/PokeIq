@@ -12,6 +12,7 @@ import type { DleAssist } from "./dle-assist";
 import type { DleRules } from "./dle-format";
 import type { ChatLine } from "./chat";
 import type { PdkGridView } from "./pikadoku/types";
+import type { ConnDuelRanked } from "./connections/ranked";
 import type { ConnGroupExplained, ConnGroupReveal, ConnGuessKind, ConnLevel, ConnTile } from "./connections/types";
 
 export const PVP_KINDS = ["pokedle", "quiz", "connections", "pikadoku"] as const;
@@ -318,6 +319,10 @@ export interface ConnDuelMine {
 
 export interface ConnDuelView extends PvpViewBase {
   kind: "connections";
+  /** How the trainers met: the casual or the ranked queue (absent: a friend's invite, or a rematch). */
+  queue?: "casual" | "ranked";
+  /** A ranked duel: the season, each seat's rating going in, and once it's been counted, before and after. */
+  ranked?: ConnDuelRanked;
   /** While the race is on: when it starts, and when it ends at the latest. */
   round?: { startsAt: number; endsAt: number };
   /** The sixteen Pokémon, once the race has started. */
