@@ -158,7 +158,7 @@ export function describeShare(r: ShareResult): ShareView {
         label,
         headline,
         detail,
-        chips: [r.seconds !== undefined && `Time ${clock(r.seconds)}`, r.streak && `${r.streak}-day streak`].filter((c): c is string => Boolean(c)),
+        chips: [r.seconds !== undefined && `Time ${clock(r.seconds)}`, r.streak && `${r.streak}-day streak`, r.hinted && "Hint used"].filter((c): c is string => Boolean(c)),
         tiles: r.rows.map((row) => [...row].map((d) => CONN_SHARE_TILES[Number(d)])),
         accent: "violet",
         playHref: "/connections",

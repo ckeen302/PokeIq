@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, LayoutGroup, MotionConfig, motion } from "framer-motion";
 import { track } from "@vercel/analytics";
-import { BarChart3, CalendarDays, CircleHelp, Dices, Infinity as InfinityIcon, PencilLine, RefreshCw, Settings, Shuffle, Swords, Timer, X } from "lucide-react";
+import { BarChart3, CalendarDays, CircleHelp, Dices, Infinity as InfinityIcon, Lightbulb, PencilLine, RefreshCw, Settings, Shuffle, Swords, Timer, X } from "lucide-react";
 import { connBlock, getProgress, recordConnGame, saveConn, setTrainerName, useProgress, type BadgeDef, type ConnRecord } from "@/lib/progress";
 import { useToday } from "@/lib/use-today";
 import { play } from "@/lib/sound";
@@ -26,12 +26,14 @@ import {
   type ConnResultResponse,
   type ConnTile,
 } from "@/lib/connections/types";
+import type { ConnChallenge, ConnGroupStats, ConnHintResponse, ConnScore } from "@/lib/connections/social";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Popover } from "@/components/ui/popover";
 import { ShareButton } from "@/components/share/ShareButton";
 import { GridTile, GroupBar, GuessHistory, MistakeDots, WhyPanel, type TileMotion } from "./parts";
 import { ConnArchiveSheet, ConnHowToSheet, ConnStatsSheet } from "./sheets";
+import { ChallengeBanner, ChallengeResult, FeedbackPanel, GroupStats } from "./social";
 import { ComeBackTomorrow, DailyLeaderboard, KeyHints, NewBadges, PerfectBanner, StreakFlame, useCelebration } from "./results";
 import { cn } from "@/lib/utils";
 import { CUSTOM_SEED_RE, customSeed } from "@/lib/connections/custom";
@@ -87,6 +89,15 @@ export function Connections({ customId }: { customId?: string } = {}) {
   /** Confetti for a game won just now (not one restored on a reload). */
   const [celebrate, setCelebrate] = useState<"perfect" | "solved" | null>(null);
   const [announce, setAnnounce] = useState("");
+  /** The one hint: a Pokémon of the easiest group not found yet (the server keeps the record). */
+  const [hint, setHint] = useState<{ id: number; level: ConnLevel } | null>(null);
+  const [hintBusy, setHintBusy] = useState(false);
+  /** The game used the hint (so the results screen and share card say so). */
+  const [usedHint, setUsedHint] = useState(false);
+  const [groupStats, setGroupStats] = useState<ConnGroupStats | null>(null);
+  const [mine, setMine] = useState<ConnScore | null>(null);
+  /** A friend's "Beat my time" link. */
+  const [challenge, setChallenge] = useState<ConnChallenge | null>(null);
   /** Time on this game: what's banked, and when the running stretch began (null: not running). */
   const [elapsed, setElapsed] = useState({ banked: 0, since: null as number | null });
   const [now, setNow] = useState(() => Date.now());
@@ -145,6 +156,10 @@ export function Connections({ customId }: { customId?: string } = {}) {
     setSummary(null);
     setBoard(null);
     setBoardRows(null);
+    setHint(null);
+    setUsedHint(false);
+    setGroupStats(null);
+    setMine(null);
     setFresh([]);
     setCelebrate(null);
     setTileMotion(null);
@@ -152,6 +167,7 @@ export function Connections({ customId }: { customId?: string } = {}) {
     const saved = t.kind === "practice" ? undefined : t.kind === "daily" ? connBlock(getProgress()).results[t.date] : (connArchive()[t.date] ?? connBlock(getProgress()).results[t.date]);
     const list = saved?.guesses ?? [];
     setGuesses(list);
+    setUsedHint(!!saved?.hinted);
     setElapsed({ banked: saved?.ms ?? 0, since: null });
     try {
       const res = await fetch(`/api/connections?${new URLSearchParams(query(t))}`);
@@ -170,6 +186,12 @@ export function Connections({ customId }: { customId?: string } = {}) {
         if (id !== reqRef.current) return;
         setState(restored as ConnGuessResponse);
         setRevealed(CONN_GROUPS);
+      }
+      // A hint taken before a reload: the server hands back the same Pokémon.
+      if (t.kind === "daily" && saved?.hinted && !saved.over) {
+        const h = await fetch("/api/connections/hint", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ date: t.date, player: dlePlayerId(), guesses: list }) });
+        const hb = h.ok ? ((await h.json()) as ConnHintResponse) : null;
+        if (id === reqRef.current && hb?.available) setHint(hb.hint);
       }
     } catch (err) {
       if (id === reqRef.current) setError(err instanceof Error ? err.message : "Something went wrong.");
@@ -235,6 +257,9 @@ export function Connections({ customId }: { customId?: string } = {}) {
         const body = r.ok ? ((await r.json()) as ConnResultResponse) : null;
         if (!body) return;
         if (body.available) setSummary(body.summary);
+        setGroupStats(body.groups ?? null);
+        if (body.hinted) setUsedHint(true);
+        setMine(body.mine ?? null);
         setBoard(body.board ?? null);
         if (body.board && !("unranked" in body.board && body.board.unranked === "off")) {
           const b = await fetch(`/api/connections/leaderboard?date=${date}`, { cache: "no-store" });
@@ -261,6 +286,37 @@ export function Connections({ customId }: { customId?: string } = {}) {
   }
 
   // ---- Playing ---------------------------------------------------------------
+
+  // A friend's "Beat my time" link (/connections?beat=<token>): the server says whose result it is.
+  useEffect(() => {
+    const token = new URLSearchParams(window.location.search).get("beat");
+    if (!token) return;
+    fetch(`/api/connections/beat?token=${encodeURIComponent(token)}`)
+      .then((r) => (r.ok ? (r.json() as Promise<ConnChallenge>) : null))
+      .then((c) => c && setChallenge(c))
+      .catch(() => undefined);
+  }, []);
+
+  /** The optional hint (today's daily only, one per puzzle): the server picks the Pokémon and remembers it. */
+  async function takeHint() {
+    if (!target || target.kind !== "daily" || !puzzle || over || busy || hintBusy || usedHint) return;
+    setHintBusy(true);
+    setError(null);
+    try {
+      const r = await fetch("/api/connections/hint", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ date: target.date, player: dlePlayerId(), guesses }) });
+      const body = (await r.json()) as ConnHintResponse & { error?: string };
+      if (!r.ok) throw new Error(body.error ?? "Couldn't get a hint.");
+      if (!body.available) return showToast("Hints aren't available right now.");
+      setHint(body.hint);
+      setUsedHint(true);
+      save(target, { guesses, solved: false, over: false, mistakes: state?.mistakes ?? 0, ms: Math.round(ms), hinted: true });
+      setAnnounce(`Hint: ${tilesById.get(body.hint.id)?.name ?? "one Pokémon"} belongs to the easiest group left. It is marked on the grid.`);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Couldn't get a hint.");
+    } finally {
+      setHintBusy(false);
+    }
+  }
 
   function showToast(text: string) {
     window.clearTimeout(toastTimer.current);
@@ -305,7 +361,7 @@ export function Connections({ customId }: { customId?: string } = {}) {
       const result = body as ConnGuessResponse;
       const last = result.results.at(-1);
       const elapsedMs = elapsed.banked + (elapsed.since !== null ? Date.now() - elapsed.since : 0);
-      const earned = save(target, { guesses: next, solved: result.won, over: result.over, mistakes: result.mistakes, ms: Math.round(elapsedMs) });
+      const earned = save(target, { guesses: next, solved: result.won, over: result.over, mistakes: result.mistakes, ms: Math.round(elapsedMs), ...(usedHint && { hinted: true }) });
       setGuesses(next);
       if (result.over && !state?.over) {
         // Unlimited and the archive count toward the tallies and badges too (never the streak).
@@ -409,6 +465,7 @@ export function Connections({ customId }: { customId?: string } = {}) {
       rows: historyRows.map((r) => r.join("")),
       ...(ms >= 1000 && { seconds: Math.round(ms / 1000) }),
       ...(daily?.kind === "daily" && streak > 0 && { streak }),
+      ...(usedHint && { hinted: true }),
     };
     return connectionsShareText(result, shareUrl(result));
   }
@@ -619,6 +676,7 @@ export function Connections({ customId }: { customId?: string } = {}) {
                         order={tileMotion ? tileMotion.ids.indexOf(t.id) : 0}
                         onToggle={() => toggle(t.id)}
                         onKeyDown={(e) => onTileKey(e, i)}
+                        hinted={hint?.id === t.id}
                       />
                     ))}
                   </div>
@@ -650,7 +708,20 @@ export function Connections({ customId }: { customId?: string } = {}) {
               <Button onClick={() => void submit()} disabled={busy || selected.length !== CONN_GROUP_SIZE} className="rounded-full sm:min-w-28" data-testid="conn-submit">
                 Submit
               </Button>
+              {mode === "daily" && (
+                <Button
+                  variant="outline"
+                  onClick={() => void takeHint()}
+                  disabled={busy || hintBusy || usedHint}
+                  className="rounded-full sm:min-w-28"
+                  title="Reveals one Pokémon from the easiest group left. Once per puzzle, and you rank below everyone who played without it."
+                  data-testid="conn-hint"
+                >
+                  <Lightbulb className="h-4 w-4" aria-hidden /> {usedHint ? "Hint used" : "Hint"}
+                </Button>
+              )}
             </div>
+            {challenge && daily?.kind === "daily" && challenge.date === daily.date && <ChallengeBanner challenge={challenge} />}
             <KeyHints />
             {prefs?.showTimer && (
               <p className="flex items-center justify-center gap-1.5 font-mono text-sm tabular-nums text-muted-foreground" role="timer" aria-label="Time">
@@ -694,6 +765,15 @@ export function Connections({ customId }: { customId?: string } = {}) {
                     <dd className="font-display text-2xl font-bold tabular-nums">{state.found.length}/4</dd>
                   </div>
                 </dl>
+                {usedHint && mode === "daily" && (
+                  <p className="rounded-md border border-warning/40 bg-warning/[0.08] px-3 py-2 text-sm" data-testid="conn-hinted">
+                    <Lightbulb className="mr-1 inline h-4 w-4" aria-hidden /> You used the hint. Hinted games rank below every hint-free game on the leaderboard.
+                  </p>
+                )}
+                {mode === "daily" && <GroupStats stats={groupStats} />}
+                {mode === "daily" && challenge && daily && challenge.date === daily.date && (
+                  <ChallengeResult challenge={challenge} mine={mine ?? (won ? { mistakes: state.mistakes, ms, hinted: usedHint } : null)} />
+                )}
                 {mode === "daily" && summary && summary.players > 0 && (
                   <p className="rounded-md border bg-shade/30 px-3 py-2 text-sm" data-testid="conn-community">
                     <b>{Math.round((100 * summary.solved) / summary.players)}%</b> of {summary.players.toLocaleString("en-US")} trainer{summary.players === 1 ? "" : "s"} solved today&apos;s ·{" "}
@@ -726,6 +806,7 @@ export function Connections({ customId }: { customId?: string } = {}) {
                   </Button>
                 )}
                 {mode === "daily" && daily && <DailyLeaderboard date={daily.date} standing={board} rows={boardRows} you={rankName} onName={rankAs} />}
+                {daily && <FeedbackPanel date={daily.date} guesses={guesses} groups={state.reveal} />}
                 {mode === "daily" && daily && <ComeBackTomorrow next={connNumber(daily.date) + 1} />}
                 {mode !== "daily" && <p className="text-xs text-muted-foreground">{mode === "archive" ? "Archive" : "Practice"} games don&apos;t count toward streaks or stats.</p>}
               </CardContent>

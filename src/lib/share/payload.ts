@@ -102,6 +102,8 @@ export interface ConnectionsShareResult {
   rows: string[];
   seconds?: number;
   streak?: number;
+  /** Played with the one hint: marked on the share card and text. */
+  hinted?: boolean;
 }
 
 export type ShareResult = PokedleShareResult | GuessrShareResult | QuizShareResult | BattleShareResult | ConnectionsShareResult;
@@ -183,6 +185,7 @@ export function encodeShare(result: ShareResult): string {
         ["w", result.solved ? 1 : 0],
         ["k", result.streak || undefined],
         ["e", result.seconds],
+        ["h", result.hinted ? 1 : undefined],
         ["r", result.rows.slice(0, CONN_MAX_ROWS).join("-")]
       );
       break;
@@ -270,6 +273,7 @@ function decodeConnections(f: Record<string, string>): ConnectionsShareResult | 
     rows,
     ...(seconds !== undefined && { seconds }),
     ...(streak !== undefined && daily !== undefined && !archive && { streak }),
+    ...(f.h === "1" && { hinted: true }),
   };
 }
 

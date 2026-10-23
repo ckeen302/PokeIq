@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { isPlayableConnDate, CONN_GROUP_SIZE, CONN_GROUPS, CONN_MAX_MISTAKES } from "@/lib/connections/types";
 import { clientIp, rateLimit, tooManyRequests } from "@/lib/server/rate-limit";
-import { checkGuesses, dailyConnPuzzle, practiceConnPuzzle, puzzleView } from "@/lib/server/connections";
+import { checkGuesses, practiceConnPuzzle, puzzleView } from "@/lib/server/connections";
+import { effectiveDaily } from "@/lib/server/connections-social";
 import { startToken } from "@/lib/server/connections-board";
 import { checkCustom, customView, getCustom } from "@/lib/server/connections-custom";
 import { CUSTOM_SEED_RE } from "@/lib/connections/custom";
@@ -29,10 +30,10 @@ const NO_STORE = { "Cache-Control": "no-store" };
 const SEED = z.string().regex(/^(?:(?:easy|normal|hard)-)?[a-z0-9]{4,24}$/);
 
 /** The puzzle a request names, or an error. */
-function puzzleFor(date: string | null | undefined, practice: string | null | undefined) {
+async function puzzleFor(date: string | null | undefined, practice: string | null | undefined) {
   if (date && !practice) {
     if (!isPlayableConnDate(date)) return { error: "That daily puzzle isn't available." } as const;
-    return { puzzle: dailyConnPuzzle(date), key: `daily:${date}`, date } as const;
+    return { puzzle: await effectiveDaily(date), key: `daily:${date}`, date } as const;
   }
   if (practice && !date && SEED.safeParse(practice).success) return { puzzle: practiceConnPuzzle(practice), key: `practice:${practice}` } as const;
   return { error: "Ask for a daily (date) or a practice puzzle (practice)." } as const;
@@ -48,7 +49,7 @@ export async function GET(request: NextRequest) {
     if (!custom) return NextResponse.json({ error: "That puzzle doesn't exist." }, { status: 404, headers: NO_STORE });
     return NextResponse.json(customView(custom), { headers: NO_STORE });
   }
-  const found = puzzleFor(params.get("date"), params.get("practice"));
+  const found = await puzzleFor(params.get("date"), params.get("practice"));
   if ("error" in found) return NextResponse.json({ error: found.error }, { status: 400, headers: NO_STORE });
   const view = puzzleView(found.puzzle, found.key, found.date);
   // A daily is timed from here, by the server's clock (see connections-board.ts).
@@ -78,7 +79,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: (err as Error).message }, { status: 400, headers: NO_STORE });
     }
   }
-  const found = puzzleFor(parsed.data.date, parsed.data.practice);
+  const found = await puzzleFor(parsed.data.date, parsed.data.practice);
   if ("error" in found) return NextResponse.json({ error: found.error }, { status: 400, headers: NO_STORE });
   try {
     return NextResponse.json(checkGuesses(found.puzzle, parsed.data.guesses), { headers: NO_STORE });

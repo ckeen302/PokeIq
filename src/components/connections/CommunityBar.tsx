@@ -1,5 +1,6 @@
 "use client";
 
+import { creatorPath } from "@/lib/connections/social";
 import { useCallback, useEffect, useState } from "react";
 import { ThumbsDown, ThumbsUp } from "lucide-react";
 import { dlePlayerId } from "@/lib/dle-player";
@@ -69,7 +70,16 @@ export function CommunityBar({ id }: { id: string }) {
     <div className="mx-auto flex max-w-3xl flex-wrap items-center justify-between gap-3 rounded-md border border-foreground/15 bg-card px-4 py-3" data-testid="conn-community-bar">
       <div className="min-w-0">
         <p className="truncate font-display text-lg font-bold">{meta.title ?? "Untitled puzzle"}</p>
-        <p className="text-xs text-muted-foreground">by {meta.creator ?? "a trainer"}</p>
+        <p className="text-xs text-muted-foreground">
+          by{" "}
+          {meta.creator ? (
+            <a href={creatorPath(meta.creator)} className="text-primary hover:underline" data-testid="community-creator-link">
+              {meta.creator}
+            </a>
+          ) : (
+            "a trainer"
+          )}
+        </p>
       </div>
       <div className="flex flex-wrap items-center gap-2">
         {button(1, ThumbsUp, meta.up, "Thumbs up")}

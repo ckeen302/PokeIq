@@ -45,6 +45,8 @@ export interface ConnRecord {
   mistakes: number;
   /** Time spent on it, in milliseconds (while the page was open). */
   ms?: number;
+  /** Played with the one hint (the server holds the real record; this marks the screen and the share card). */
+  hinted?: boolean;
 }
 
 
@@ -127,6 +129,7 @@ export const BADGES: BadgeDef[] = [
   { id: "conn-streak-30", name: "Grand Linker", description: "30-day PokéConnections streak", emoji: "⛓️" },
   { id: "conn-perfect-10", name: "Flawless", description: "10 perfect PokéConnections solves (no mistakes)", emoji: "💎" },
   { id: "conn-duel-10", name: "Speed Racer", description: "Win 10 PokéConnections duels", emoji: "🏁" },
+  { id: "conn-featured", name: "Featured creator", description: "A PokéConnections puzzle you made was featured or became the Puzzle of the Day", emoji: "🌟" },
   { id: "conn-hard", name: "Hard Wired", description: "Solve an Unlimited PokéConnections on Hard", emoji: "🧠" },
 ];
 
@@ -439,6 +442,14 @@ export function recordConnGame(solved: boolean, mistakes: number, hard: boolean)
   if (solved) p.xp += 5 + (4 - mistakes) * 2;
   const fresh = award(p, countConnGame(p, solved, mistakes, hard), Date.now());
   write(p);
+  return fresh;
+}
+
+/** Awards the "Featured creator" badge (the server says when a puzzle of yours was featured); the badge if it is new. */
+export function awardFeaturedCreator(): BadgeDef[] {
+  const p: Progress = structuredClone(read());
+  const fresh = award(p, ["conn-featured"], Date.now());
+  if (fresh.length) write(p);
   return fresh;
 }
 

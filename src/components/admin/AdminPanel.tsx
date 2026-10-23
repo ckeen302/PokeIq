@@ -9,9 +9,10 @@ import { ROOMS, SLOW_MODES, type RoomMessage } from "@/lib/rooms";
 import type { TournamentSummary } from "@/lib/tournaments";
 import { cn } from "@/lib/utils";
 import { pictureSrc, type PendingPicture } from "@/lib/avatar";
+import { REPORT_LABELS, type ConnCategoryFeedback } from "@/lib/connections/social";
 import { GEO_HIDE_THRESHOLD, GEO_REPORT_REASONS, type GeoReportReason, type GeoShotReview } from "@/lib/geo-reports";
 
-const TABS = ["reports", "shots", "users", "rooms", "tournaments", "avatars", "audit"] as const;
+const TABS = ["reports", "shots", "connections", "users", "rooms", "tournaments", "avatars", "audit"] as const;
 type Tab = (typeof TABS)[number];
 const FIELD = "h-9 rounded-md border border-input bg-background px-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
 const when = (at: number) => new Date(at).toLocaleString([], { dateStyle: "short", timeStyle: "short" });
@@ -49,6 +50,7 @@ export function AdminPanel() {
       </div>
       {tab === "reports" && <Reports />}
       {tab === "shots" && <Shots />}
+      {tab === "connections" && <ConnectionsFeedback />}
       {tab === "users" && <Users />}
       {tab === "rooms" && <Rooms />}
       {tab === "tournaments" && <Tournaments />}
@@ -383,6 +385,83 @@ function Tournaments() {
           </li>
         ))}
       </ul>
+    </div>
+  );
+}
+
+/** PokéConnections: the categories players reported or rated down, with a "Disable category" action (dailies after tomorrow skip it). */
+function ConnectionsFeedback() {
+  const { data, error, reload, setError } = useLoad(() => api<{ stored: boolean; categories: ConnCategoryFeedback[] }>("tab=connections"), []);
+  const [sort, setSort] = useState<"reports" | "ratings">("reports");
+  const [busy, setBusy] = useState<string | null>(null);
+  const rows = [...(data?.categories ?? [])].sort((a, b) => (sort === "reports" ? b.reports - a.reports || b.down - b.up - (a.down - a.up) : b.down - b.up - (a.down - a.up) || b.reports - a.reports));
+
+  async function disable(c: ConnCategoryFeedback) {
+    if (!window.confirm(`Disable "${c.label}"? Future dailies will skip it; puzzles already played stay as they were.`)) return;
+    setBusy(c.category);
+    try {
+      await api(null, { action: "disableConnCategory", category: c.category });
+      reload();
+    } catch (err) {
+      setError((err as Error).message);
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  return (
+    <div className="space-y-3" data-testid="admin-connections">
+      <div className="flex items-center gap-2">
+        <label className="text-sm" htmlFor="conn-sort">
+          Sort by
+        </label>
+        <select id="conn-sort" className={FIELD} value={sort} onChange={(e) => setSort(e.target.value as "reports" | "ratings")}>
+          <option value="reports">Most reports</option>
+          <option value="ratings">Worst ratings</option>
+        </select>
+      </div>
+      {error && <p className="text-sm text-destructive">{error}</p>}
+      {data && !data.stored && <p className="text-sm text-muted-foreground">Feedback isn&apos;t stored on this server (no database, or migration 0030 isn&apos;t applied).</p>}
+      {data?.stored && rows.length === 0 && <p className="text-sm text-muted-foreground">No reports or down-votes yet.</p>}
+      {rows.length > 0 && (
+        <table className="w-full rounded-lg border bg-card text-sm">
+          <thead>
+            <tr className="border-b text-left text-xs text-muted-foreground">
+              <th className="px-3 py-2">Category</th>
+              <th className="px-3 py-2">Reports</th>
+              <th className="px-3 py-2">Reasons</th>
+              <th className="px-3 py-2">👍 / 👎</th>
+              <th className="px-3 py-2" />
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((c) => (
+              <tr key={c.category} className="border-b last:border-0" data-testid="admin-conn-row">
+                <td className="px-3 py-1.5">{c.label}</td>
+                <td className="px-3 py-1.5 tabular-nums">{c.reports}</td>
+                <td className="px-3 py-1.5 text-xs text-muted-foreground">
+                  {(Object.keys(c.reasons) as (keyof typeof c.reasons)[])
+                    .filter((r) => c.reasons[r] > 0)
+                    .map((r) => `${REPORT_LABELS[r]} ${c.reasons[r]}`)
+                    .join(" · ") || "–"}
+                </td>
+                <td className="px-3 py-1.5 tabular-nums">
+                  {c.up} / {c.down}
+                </td>
+                <td className="px-3 py-1.5 text-right">
+                  {c.disabled ? (
+                    <span className="text-xs text-muted-foreground">Disabled</span>
+                  ) : (
+                    <Button size="sm" variant="outline" disabled={busy === c.category} onClick={() => void disable(c)} data-testid="admin-conn-disable">
+                      Disable category
+                    </Button>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
     </div>
   );
 }

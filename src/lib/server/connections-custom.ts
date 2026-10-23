@@ -197,6 +197,8 @@ export interface CustomStore {
   /** Sets (1, -1) or clears (0) a vote; the tallies, or null when there's no such puzzle. */
   vote(id: string, voterKey: string, value: -1 | 0 | 1): Promise<{ up: number; down: number } | null>;
   myVote(id: string, voterKey: string): Promise<-1 | 0 | 1>;
+  /** A creator's puzzles by the name they're credited under (any capitalisation), newest first. */
+  byCreatorName(name: string, limit: number): Promise<StoredCustom[]>;
 }
 
 const globalStore = globalThis as unknown as { __pokeiqConnCustom?: { puzzles: Map<string, StoredCustom>; votes: Map<string, Map<string, -1 | 1>> } };
@@ -235,6 +237,12 @@ export function memoryCustomStore(): CustomStore {
     },
     async myVote(id, voterKey) {
       return mem.votes.get(id)?.get(voterKey) ?? 0;
+    },
+    async byCreatorName(name, limit) {
+      return [...mem.puzzles.values()]
+        .filter((p) => p.creatorName?.toLowerCase() === name.toLowerCase())
+        .sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt))
+        .slice(0, limit);
     },
   };
 }
@@ -317,6 +325,13 @@ export function supabaseCustomStore(sb: NonNullable<ReturnType<typeof getService
       const { data, error } = await sb.from("connections_custom_votes").select("value").eq("puzzle_id", id).eq("voter_key", voterKey).maybeSingle();
       if (error) fail(error);
       return ((data as { value: number } | null)?.value ?? 0) as -1 | 0 | 1;
+    },
+    async byCreatorName(name, limit) {
+      // ilike is case-insensitive; the name's own wildcards are escaped so it matches exactly.
+      const exact = name.replace(/[\\%_]/g, (c) => `\\${c}`);
+      const { data, error } = await sb.from("connections_custom").select("*").ilike("creator_name", exact).order("created_at", { ascending: false }).limit(limit);
+      if (error) fail(error);
+      return ((data ?? []) as Row[]).map(fromRow);
     },
   };
 }
