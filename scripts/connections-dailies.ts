@@ -9,9 +9,10 @@
  * Pokémon of the three days before, and every one passes validatePuzzle
  * (each of the 16 Pokémon fits exactly one group) or the script fails.
  *
- * IMPORTANT: once a daily has been played, don't regenerate the days up to
- * today (that would change answers players have seen). To extend the run,
- * raise DAYS: the days already there come out the same.
+ * Days up to tomorrow (UTC) are FROZEN: they are read back from the file and
+ * written out unchanged, so a played daily never changes even when the
+ * categories do. Only later days are regenerated. To extend the run, raise
+ * DAYS.
  */
 import fs from "node:fs";
 import path from "node:path";
@@ -25,9 +26,26 @@ const OUT = path.join(process.cwd(), "src/data/connections-dailies.json");
 
 const addDays = (date: string, n: number) => new Date(Date.parse(`${date}T00:00:00Z`) + n * 86_400_000).toISOString().slice(0, 10);
 
-function build(days: number): Puzzle[] {
-  const puzzles: Puzzle[] = [];
-  for (let i = 0; i < days; i++) {
+/**
+ * The days that must never change: every date up to tomorrow (UTC, so a
+ * player a day ahead of UTC is covered), read back from the file as it is.
+ * Raise it with --freeze-through=YYYY-MM-DD, never lower it.
+ */
+function frozenPuzzles(): Puzzle[] {
+  if (!fs.existsSync(OUT)) return [];
+  const arg = process.argv.find((a) => a.startsWith("--freeze-through="))?.slice("--freeze-through=".length);
+  const through = arg ?? addDays(new Date().toISOString().slice(0, 10), 1);
+  const file = JSON.parse(fs.readFileSync(OUT, "utf8")) as { start: string; puzzles: { g: (string | number)[][]; t: number[] }[] };
+  const keep = Math.max(0, Math.round((Date.parse(`${through}T00:00:00Z`) - Date.parse(`${file.start}T00:00:00Z`)) / 86_400_000) + 1);
+  return file.puzzles.slice(0, keep).map((e) => ({
+    groups: e.g.map(([category, ...members]) => ({ category: String(category), members: members.map(Number) })),
+    tiles: e.t,
+  }));
+}
+
+function build(days: number, frozen: Puzzle[] = []): Puzzle[] {
+  const puzzles: Puzzle[] = frozen.slice(0, days);
+  for (let i = puzzles.length; i < days; i++) {
     const avoidCategories = new Set(puzzles.slice(-7).flatMap((p) => p.groups.map((g) => g.category)));
     const avoidPokemon = new Set(puzzles.slice(-3).flatMap((p) => p.tiles));
     const puzzle = generatePuzzle(`daily:${addDays(CONN_LAUNCH_DATE, i)}`, { avoidCategories, avoidPokemon, candidates: 16 });
@@ -54,7 +72,7 @@ if (printAt >= 0) {
   const n = Number(process.argv[printAt + 1] ?? 20);
   build(n).forEach((p, i) => console.log(describe(p, addDays(CONN_LAUNCH_DATE, i))));
 } else {
-  const puzzles = build(DAYS);
+  const puzzles = build(DAYS, frozenPuzzles());
   const file = {
     about: "PokéConnections' daily puzzles from scripts/connections-dailies.ts: day 1 is `start`. Groups are easiest first (yellow, green, blue, purple); `t` is the grid's starting order. Server-only: these are the answers.",
     start: CONN_LAUNCH_DATE,
