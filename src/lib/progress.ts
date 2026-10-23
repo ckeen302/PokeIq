@@ -7,7 +7,8 @@ import type { DleAssist } from "./dle-assist";
 import { updatePlayerRating } from "./rating";
 import { connStats } from "./connections/local";
 import { EMPTY_CONN_PLAY, type ConnPlay } from "./connections/play";
-export type { ConnPlay };
+import { EMPTY_PDK_PLAY, type PdkPlay, type PdkRecord } from "./pikadoku/play";
+export type { ConnPlay, PdkPlay, PdkRecord };
 import type { RunResult } from "./session-types";
 
 /**
@@ -69,6 +70,10 @@ export interface Progress {
   conn?: { last: string | null; streak: number; best: number; results: Record<string, ConnRecord> };
   /** PokéConnections across every mode (daily, Unlimited, archive) and duels: for the profile and badges. */
   connPlay?: ConnPlay;
+  /** Pikadoku's dailies (absent until one is played). */
+  pdk?: { last: string | null; streak: number; best: number; results: Record<string, PdkRecord> };
+  /** Pikadoku across every mode and its Tic Tac Toe duels: for the profile and badges. */
+  pdkPlay?: PdkPlay;
   badges: Record<string, number>;
   /** Per-skill tallies for the coach: tag -> [correct, answered]. */
   skills: Record<string, [number, number]>;
@@ -130,6 +135,11 @@ export const BADGES: BadgeDef[] = [
   { id: "conn-perfect-10", name: "Flawless", description: "10 perfect PokéConnections solves (no mistakes)", emoji: "💎" },
   { id: "conn-duel-10", name: "Speed Racer", description: "Win 10 PokéConnections duels", emoji: "🏁" },
   { id: "conn-featured", name: "Featured creator", description: "A PokéConnections puzzle you made was featured or became the Puzzle of the Day", emoji: "🌟" },
+  { id: "pdk-first", name: "Grid Starter", description: "Solve your first Pikadoku", emoji: "🔢" },
+  { id: "pdk-perfect", name: "Nine for Nine", description: "Fill all 9 cells of a Pikadoku", emoji: "💯" },
+  { id: "pdk-rare", name: "Rare Finder", description: "A Pikadoku uniqueness score under 50", emoji: "🦄" },
+  { id: "pdk-streak-7", name: "Grid Regular", description: "7-day Pikadoku streak", emoji: "🔥" },
+  { id: "pdk-duel-10", name: "Three in a Row", description: "Win 10 Pikadoku Tic Tac Toe duels", emoji: "❌" },
   { id: "conn-hard", name: "Hard Wired", description: "Solve an Unlimited PokéConnections on Hard", emoji: "🧠" },
 ];
 
@@ -450,6 +460,66 @@ export function awardFeaturedCreator(): BadgeDef[] {
   const p: Progress = structuredClone(read());
   const fresh = award(p, ["conn-featured"], Date.now());
   if (fresh.length) write(p);
+  return fresh;
+}
+
+/** Pikadoku's daily results. */
+export function pdkBlock(p: Progress): NonNullable<Progress["pdk"]> {
+  return p.pdk ?? { last: null, streak: 0, best: 0, results: {} };
+}
+
+/** Counts a finished Pikadoku in any mode and returns the badge ids it earns. */
+function countPdkGame(p: Progress, won: boolean, score: number | null): string[] {
+  const play = (p.pdkPlay = { ...EMPTY_PDK_PLAY, ...p.pdkPlay });
+  play.games++;
+  if (!won) return [];
+  play.wins++;
+  return ["pdk-first", "pdk-perfect", ...(score !== null && score < 50 ? ["pdk-rare"] : [])];
+}
+
+/**
+ * Saves a Pikadoku daily (in progress or finished); a first finish moves the
+ * streak, earns XP and counts toward the badges. Returns the new badges.
+ */
+export function savePdk(date: string, record: PdkRecord): BadgeDef[] {
+  const p: Progress = structuredClone(read());
+  const block = pdkBlock(p);
+  p.pdk = block;
+  const existing = block.results[date];
+  block.results[date] = record;
+  let fresh: BadgeDef[] = [];
+  if (record.over && !existing?.over) {
+    block.streak = streakAfter(block.last, block.streak, date);
+    block.best = Math.max(block.best, block.streak);
+    p.xp += 5 + record.solved * 4;
+    block.last = date;
+    fresh = award(p, [...countPdkGame(p, record.won, record.score), ...(block.streak >= 7 ? ["pdk-streak-7"] : [])], Date.now());
+  }
+  write(p);
+  return fresh;
+}
+
+/** A finished Unlimited game: counts toward the tallies and badges, never the streak. */
+export function recordPdkGame(won: boolean): BadgeDef[] {
+  const p: Progress = structuredClone(read());
+  if (won) p.xp += 5;
+  const fresh = award(p, countPdkGame(p, won, null), Date.now());
+  write(p);
+  return fresh;
+}
+
+/** A finished Pikadoku Tic Tac Toe duel, counted once per duel (by its code). */
+export function recordPdkDuel(code: string, outcome: "win" | "loss" | "draw"): BadgeDef[] {
+  const p: Progress = structuredClone(read());
+  const play = (p.pdkPlay = { ...EMPTY_PDK_PLAY, ...p.pdkPlay });
+  if (play.duels.includes(code)) return [];
+  play.duels = [...play.duels, code].slice(-50);
+  if (outcome === "win") play.duelWins++;
+  else if (outcome === "loss") play.duelLosses++;
+  else play.duelDraws++;
+  if (outcome === "win") p.xp += 15;
+  const fresh = award(p, play.duelWins >= 10 ? ["pdk-duel-10"] : [], Date.now());
+  write(p);
   return fresh;
 }
 

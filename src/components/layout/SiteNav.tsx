@@ -15,6 +15,8 @@ import { FriendsButton } from "@/components/community/FriendsButton";
 const DESKTOP_LINKS: { href: string; label: string; wideOnly?: boolean }[] = [
   { href: "/pokedle", label: "Pokédle" },
   { href: "/connections", label: "Connections" },
+  // Only on wide screens, like the leaderboard: the row is full at 1024px (the home page and footer link it too).
+  { href: "/pikadoku", label: "Pikadoku", wideOnly: true },
   { href: "/guessr", label: "Guessr" },
   { href: "/battle", label: "Battle" },
   { href: "/play", label: "Quizzes" },

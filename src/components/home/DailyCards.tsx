@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { CalendarDays, ChevronRight, Compass, Flame, LayoutGrid, Search } from "lucide-react";
+import { CalendarDays, ChevronRight, Compass, Flame, Grid3x3, LayoutGrid, Search } from "lucide-react";
 import { dailyNumber } from "@/lib/daily";
 import { currentStreak, geoDailyStreak, useProgress } from "@/lib/progress";
 import { useToday } from "@/lib/use-today";
@@ -21,9 +21,10 @@ export function DailyCards() {
   const dle = today ? progress?.dle.results[today] : undefined;
   const geo = today ? progress?.best[`geo-daily:${today}`] : undefined;
   const conn = today ? progress?.conn?.results[today] : undefined;
+  const pdk = today ? progress?.pdk?.results[today] : undefined;
 
   return (
-    <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+    <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-5">
       <DailyCard
         href="/daily"
         icon={<CalendarDays className="h-5 w-5" />}
@@ -67,6 +68,17 @@ export function DailyCards() {
         cleared={!!conn?.over}
         streak={progress?.conn && today ? connStats(progress.conn.results, today).playStreak : 0}
         accent="42 98% 60%"
+      />
+      <DailyCard
+        href="/pikadoku"
+        icon={<Grid3x3 className="h-5 w-5" />}
+        title="Pikadoku"
+        number={today ? connNumber(today) : null}
+        description="Pokémon Sudoku: fill a 3×3 grid, one Pokémon per cell. Be rare to score low."
+        status={pdk?.over ? `${pdk.solved}/9${pdk.score !== null ? ` · score ${pdk.score}` : ""}` : pdk?.guesses.length ? "In progress" : null}
+        cleared={!!pdk?.over}
+        streak={progress?.pdk && today ? currentStreak(progress.pdk.last, progress.pdk.streak, today) : 0}
+        accent="190 90% 55%"
       />
     </div>
   );

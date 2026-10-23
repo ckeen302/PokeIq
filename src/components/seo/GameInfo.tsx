@@ -13,6 +13,7 @@ const GAMES = [
   { href: "/pokedle", label: "Pokédle" },
   { href: "/guessr", label: "PokéGuessr" },
   { href: "/connections", label: "Connections" },
+  { href: "/pikadoku", label: "Pikadoku" },
   { href: "/play", label: "Pokémon quizzes" },
   { href: "/battle", label: "Battles" },
   { href: "/daily", label: "Daily Challenge" },

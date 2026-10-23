@@ -12,6 +12,7 @@ import { buyPokedleHint, guessPokedle, setPokedleAssist, setPokedleGens, setPoke
 import { DLE_ASSISTS } from "@/lib/dle-assist";
 import { answerQuiz } from "@/lib/server/quiz-duel";
 import { guessConnections } from "@/lib/server/connections-duel";
+import { claimCell } from "@/lib/server/pikadoku-duel";
 import { CONN_GROUP_SIZE } from "@/lib/connections/types";
 import { DUEL_CODE_RE } from "@/lib/duel-types";
 import { DLE_DUEL_HINTS, DUEL_EMOTES, QUIZ_DUEL_QUESTIONS, type PvpSeatResponse } from "@/lib/pvp-types";
@@ -30,6 +31,7 @@ import { DLE_DUEL_HINTS, DUEL_EMOTES, QUIZ_DUEL_QUESTIONS, type PvpSeatResponse 
  *   { action: "hint", token, round, hint }        Pokédle: buy a hint ("genus" or "silhouette")
  *   { action: "answer", token, round, choice }    quiz: lock in an answer to question `round`
  *   { action: "group", token, pokemon }           PokéConnections: four Pokémon ids that belong together
+ *   { action: "claim", token, cell, pokemon }     Pikadoku: a Pokémon for a cell (a miss passes the turn)
  *   { action: "next", token, round }              end the reveal early (once both press it)
  *   { action: "leave", token }                    leave the lobby, or forfeit
  *   { action: "emote", token, emote }             a preset reaction ("gg", "fire", "wow", "sweat", "clap")
@@ -51,6 +53,7 @@ const bodySchema = z.discriminatedUnion("action", [
   z.object({ action: z.literal("guess"), token, round, pokemon: z.number().int().positive().max(100_000) }),
   z.object({ action: z.literal("hint"), token, round, hint: z.enum(DLE_DUEL_HINTS) }),
   z.object({ action: z.literal("answer"), token, round, choice: z.string().min(1).max(200) }),
+  z.object({ action: z.literal("claim"), token, cell: z.number().int().min(0).max(8), pokemon: z.number().int().positive().max(100_000) }),
   z.object({ action: z.literal("group"), token, pokemon: z.array(z.number().int().positive().max(100_000)).length(CONN_GROUP_SIZE) }),
   z.object({ action: z.literal("next"), token, round }),
   z.object({ action: z.literal("leave"), token }),
@@ -145,6 +148,8 @@ export async function POST(request: NextRequest, context: Context) {
           return asKind(duel, "pokedle", (d) => buyPokedleHint(d, playerId, body.round, body.hint, now));
         case "answer":
           return asKind(duel, "quiz", (d) => answerQuiz(d, playerId, body.round, body.choice, now));
+        case "claim":
+          return asKind(duel, "pikadoku", (d) => claimCell(d, playerId, body.cell, body.pokemon, now));
         case "group":
           return asKind(duel, "connections", (d) => guessConnections(d, playerId, body.pokemon, now));
         case "next":
