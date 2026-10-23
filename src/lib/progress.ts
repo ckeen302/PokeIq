@@ -508,6 +508,14 @@ export function recordPdkGame(won: boolean): BadgeDef[] {
   return fresh;
 }
 
+/**
+ * A finished archive daily: it counts toward the tallies and badges like an
+ * Unlimited game, but never the streak, the day's results or the board.
+ */
+export function savePdkArchive(record: PdkRecord): BadgeDef[] {
+  return record.over ? recordPdkGame(record.won) : [];
+}
+
 /** A finished Pikadoku Tic Tac Toe duel, counted once per duel (by its code). */
 export function recordPdkDuel(code: string, outcome: "win" | "loss" | "draw"): BadgeDef[] {
   const p: Progress = structuredClone(read());

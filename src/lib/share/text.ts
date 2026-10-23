@@ -4,7 +4,8 @@ import type { DleFormat } from "@/lib/dle-format";
 import { FORMAT_INFO, MODULE_INFO } from "@/lib/modes";
 import { GEO_MAX_ROUND_SCORE, GEO_ROUNDS, WORLD_REGION } from "@/lib/geo-types";
 import { PLAY_FORMAT_INFO } from "@/lib/battle/play";
-import type { BattleShareResult, ConnectionsShareResult, GuessrShareResult, PokedleShareResult, QuizShareResult } from "./payload";
+import { rarityLines } from "@/lib/pikadoku/share";
+import type { BattleShareResult, ConnectionsShareResult, GuessrShareResult, PikadokuShareResult, PokedleShareResult, QuizShareResult } from "./payload";
 
 /**
  * Every game's share text, built the same way (`composeShare`):
@@ -266,6 +267,33 @@ export function connectionsShareText(r: ConnectionsShareResult, url?: string): s
     score: connectionsScore(r),
     badges: [r.streak ? `🔥${r.streak}` : null, r.seconds !== undefined && `⏱${clock(r.seconds)}`, r.hinted && "💡hint"],
     lines: r.rows.map((row) => [...row].map((d) => CONN_SQUARES[Number(d)]).join("")),
+    url,
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Pikadoku
+// ---------------------------------------------------------------------------
+
+const PDK_DIFF_LABEL = { easy: "Easy", normal: "Normal", expert: "Expert" } as const;
+
+/** "Pikadoku #12 (Normal)", "Pikadoku Weekly #3", "Pikadoku (Unlimited)". */
+export function pikadokuTitle(r: Pick<PikadokuShareResult, "daily" | "weekly" | "archive" | "difficulty">): string {
+  if (r.weekly !== undefined) return `Pikadoku Weekly #${r.weekly}`;
+  if (r.daily !== undefined) return `Pikadoku #${r.daily}${r.archive ? " (archive)" : ""} (${PDK_DIFF_LABEL[r.difficulty]})`;
+  return "Pikadoku (Unlimited)";
+}
+
+/** Cells filled, out of nine. */
+export const pikadokuSolved = (grid: string) => [...grid].filter((c) => c !== "x").length;
+
+/** Nine squares coloured by how rare each pick was (🟪 under 1%, 🟦 under 10%, 🟩 under 25%, 🟨 25%+, ⬛ wrong or empty): never a Pokémon. */
+export function pikadokuShareText(r: PikadokuShareResult, url?: string): string {
+  return composeShare({
+    title: pikadokuTitle(r),
+    score: `${pikadokuSolved(r.grid)}/9`,
+    badges: [r.score !== undefined && `Score ${r.score}`, r.streak ? `🔥${r.streak}` : null],
+    lines: rarityLines(r.grid),
     url,
   });
 }

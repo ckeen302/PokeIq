@@ -23,6 +23,11 @@ const TILE: Record<ShareTile, { bg: string; mark?: string }> = {
   "conn-green": { bg: "#96c860" },
   "conn-blue": { bg: "#8fb2ef" },
   "conn-purple": { bg: "#bd8ad8" },
+  "pdk-purple": { bg: "#a855f7" },
+  "pdk-blue": { bg: "#3b82f6" },
+  "pdk-green": { bg: "#22c55e" },
+  "pdk-yellow": { bg: "#eab308" },
+  "pdk-empty": { bg: "#27272a" },
 };
 
 /** The board, sized to fit about 470 × 380. */

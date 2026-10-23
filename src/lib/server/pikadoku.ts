@@ -1,6 +1,6 @@
 import "server-only";
 import dailies from "@/data/pikadoku-dailies.json";
-import { allFacts, categoryById, membersOf } from "@/lib/pikadoku/categories";
+import { allFacts, baseOf, categoryById, membersOf } from "@/lib/pikadoku/categories";
 import { generateGrid, gridFromIds, type PdkGrid, type PdkGridIds } from "@/lib/pikadoku/generator";
 import { softLockSafe } from "@/lib/pikadoku/solve";
 import {
@@ -22,6 +22,9 @@ import {
  * answers are returned only by `revealFor`, once the replay says it's over.
  */
 
+import { masterFor } from "./pikadoku-master";
+import { weeklyIds } from "@/lib/pikadoku/weekly";
+
 const NAMES = new Map(allFacts().map((f) => [f.id, f.name]));
 export const pokemonName = (id: number) => NAMES.get(id) ?? `#${id}`;
 export const isDexId = (id: number) => NAMES.has(id);
@@ -37,9 +40,16 @@ const remember = (key: string, make: () => PdkGrid) => {
   return g;
 };
 
-/** A daily's grid: from the pre-generated year, else generated from the same seed. */
+/** A daily's grid: a curated Master grid (Normal only), else the pre-generated year, else generated from the same seed. */
 export function dailyGrid(date: string, difficulty: PdkDifficulty): PdkGrid {
+  const m = difficulty === "normal" ? masterFor(date) : null;
+  if (m) return remember(`m:${date}:${m.rows.join(",")}:${m.cols.join(",")}`, () => gridFromIds({ rows: m.rows, cols: m.cols }));
   return remember(`d:${date}:${difficulty}`, () => gridFromIds(FILE[date]?.[difficulty] ?? generateGrid(date, { difficulty })));
+}
+
+/** The weekly themed grid for a week (given by its Monday). */
+export function weeklyGrid(monday: string): PdkGrid {
+  return remember(`w:${monday}`, () => gridFromIds(weeklyIds(monday)));
 }
 
 /** An Unlimited grid from its seed and settings (the same seed always deals the same grid). */
@@ -86,10 +96,10 @@ export function replayGuesses(g: PdkGrid, guesses: PdkGuess[], opts: { pp: numbe
   for (const x of guesses) {
     if (isOver()) throw new Error("That game was already over.");
     if (!Number.isInteger(x.cell) || x.cell < 0 || x.cell >= PDK_CELLS || !isDexId(x.id)) throw new Error("Bad guess.");
-    if (locked.has(x.cell) || taken.has(x.id)) throw new Error("That cell or Pokémon was already used.");
+    if (locked.has(x.cell) || taken.has(baseOf(x.id))) throw new Error("That cell or Pokémon was already used.");
     if (g.answers[x.cell].includes(x.id)) {
       locked.set(x.cell, x.id);
-      taken.add(x.id);
+      taken.add(baseOf(x.id));
     } else wrong.push(x);
   }
   const over = isOver() || !!opts.giveUp;
@@ -109,7 +119,7 @@ export function checkGuess(g: PdkGrid, history: PdkGuess[], next: PdkGuess, opts
   if (r.over) return { ok: false, error: "That game is over." };
   if (!Number.isInteger(next.cell) || next.cell < 0 || next.cell >= PDK_CELLS || !isDexId(next.id)) return { ok: false, error: "Bad guess." };
   if (r.locked.has(next.cell)) return { ok: false, error: "That cell is already filled." };
-  if ([...r.locked.values()].includes(next.id)) return { ok: false, error: "You've already used that Pokémon." };
+  if ([...r.locked.values()].some((l) => baseOf(l) === baseOf(next.id))) return { ok: false, error: "You've already used that Pokémon (or its other form)." };
   const valid = g.answers[next.cell].includes(next.id);
   if (valid && opts.guard && !softLockSafe(g.answers, r.locked, next.cell, next.id)) return { ok: true, valid: true, softlock: true };
   return { ok: true, valid };

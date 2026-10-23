@@ -2,10 +2,10 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
-import { Search } from "lucide-react";
+import { Info, Search } from "lucide-react";
 import { Sheet } from "@/components/pokedle/sheets";
 import { spriteUrl } from "@/lib/pokemon/art";
-import { PDK_FAMILY_LABELS, type PdkCategoryView, type PdkFamily, type PdkGridView } from "@/lib/pikadoku/types";
+import { PDK_FAMILY_LABELS, categoryHint, type PdkCategoryView, type PdkFamily, type PdkGridView } from "@/lib/pikadoku/types";
 import { cn } from "@/lib/utils";
 
 /** The pieces Pikadoku's solo page and its Tic Tac Toe duel share: the dex names, the board and the picker. */
@@ -14,6 +14,9 @@ export interface DexName {
   id: number;
   name: string;
   slug: string;
+  /** The species (a form's own species id; equal to `id` for a species). */
+  base: number;
+  form?: boolean;
 }
 
 let dexPromise: Promise<DexName[]> | null = null;
@@ -46,13 +49,40 @@ const FAMILY_TINT: Record<PdkFamily, string> = {
 };
 
 function Header({ cat, testId }: { cat: PdkCategoryView | undefined; testId: string }) {
+  const [open, setOpen] = useState(false);
+  const tipId = `${testId}-tip`;
   return (
     <div
       data-testid={testId}
       title={cat ? PDK_FAMILY_LABELS[cat.family] : undefined}
-      className={cn("flex min-h-14 items-center justify-center rounded-md border px-1.5 py-1 text-center text-[11px] font-semibold leading-tight sm:text-sm", cat ? FAMILY_TINT[cat.family] : "border-foreground/10")}
+      className={cn("relative flex min-h-14 items-center justify-center rounded-md border px-1.5 py-1 text-center text-[11px] font-semibold leading-tight sm:text-sm", cat ? FAMILY_TINT[cat.family] : "border-foreground/10")}
+      onMouseLeave={() => setOpen(false)}
     >
-      {cat?.label ?? "…"}
+      <span className={cat ? "pr-3" : undefined}>{cat?.label ?? "…"}</span>
+      {cat && (
+        <>
+          <button
+            type="button"
+            aria-label={`What counts for ${cat.label}`}
+            aria-expanded={open}
+            aria-describedby={open ? tipId : undefined}
+            data-testid={`${testId}-info`}
+            onClick={() => setOpen((o) => !o)}
+            onMouseEnter={() => setOpen(true)}
+            onFocus={() => setOpen(true)}
+            onBlur={() => setOpen(false)}
+            onKeyDown={(e) => e.key === "Escape" && setOpen(false)}
+            className="absolute right-0.5 top-0.5 flex h-4 w-4 items-center justify-center rounded-full text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            <Info className="h-3.5 w-3.5" aria-hidden />
+          </button>
+          {open && (
+            <span id={tipId} role="tooltip" data-testid={tipId} className={cn("absolute top-full z-30 mt-1 w-56 max-w-[70vw] rounded-md border border-foreground/20 bg-card p-2 text-left text-xs font-normal leading-snug text-foreground shadow-lg", testId.endsWith("-row-0") || testId.endsWith("-row-1") || testId.endsWith("-row-2") ? "left-0" : testId.endsWith("-col-2") ? "right-0" : "left-1/2 -translate-x-1/2")}>
+              {categoryHint(cat.id)}
+            </span>
+          )}
+        </>
+      )}
     </div>
   );
 }
@@ -74,6 +104,7 @@ export function PdkBoard({
   names,
   onCell,
   disabled,
+  stealable,
   testPrefix = "pdk",
 }: {
   grid: PdkGridView | null;
@@ -81,6 +112,8 @@ export function PdkBoard({
   names: Map<number, string>;
   onCell?: (cell: number) => void;
   disabled?: boolean;
+  /** Filled cells that can still be played (Steals mode: the opponent's). */
+  stealable?: (cell: number) => boolean;
   testPrefix?: string;
 }) {
   return (
@@ -102,7 +135,7 @@ export function PdkBoard({
               type="button"
               role="gridcell"
               data-testid={`${testPrefix}-cell-${i}`}
-              disabled={disabled || filled || !onCell || !grid}
+              disabled={disabled || (filled && !stealable?.(i)) || !onCell || !grid}
               onClick={() => onCell?.(i)}
               aria-label={`Row ${r + 1}, column ${c + 1}: ${label}`}
               className={cn(
@@ -152,8 +185,10 @@ export function PdkPicker({ dex, used, title, busy, onPick, onClose }: { dex: De
     if (!s) return [];
     const starts: DexName[] = [];
     const inside: DexName[] = [];
+    // A form and its species are one Pokémon: using either rules out both.
+    const usedBase = new Set(dex.filter((p) => used.has(p.id)).map((p) => p.base));
     for (const p of dex) {
-      if (used.has(p.id)) continue;
+      if (used.has(p.id) || usedBase.has(p.base)) continue;
       const n = p.name.toLowerCase();
       if (n.startsWith(s)) starts.push(p);
       else if (n.includes(s)) inside.push(p);

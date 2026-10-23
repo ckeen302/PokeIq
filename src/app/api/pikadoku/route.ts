@@ -4,6 +4,7 @@ import { clientIp, rateLimit, tooManyRequests } from "@/lib/server/rate-limit";
 import { checkGuess, gridView, ppFor, replayGuesses } from "@/lib/server/pikadoku";
 import { gridFields, guessSchema, historySchema, resolveGrid } from "@/lib/server/pikadoku-http";
 import { pdkStartToken, pdkStore, pickPct } from "@/lib/server/pikadoku-board";
+import { ensureMaster } from "@/lib/server/pikadoku-master";
 import { PDK_PP } from "@/lib/pikadoku/types";
 
 /**
@@ -23,6 +24,7 @@ const NO_STORE = { "Cache-Control": "no-store" };
 
 export async function GET(request: NextRequest) {
   if (!rateLimit(`pdk-get:${clientIp(request)}`, 60, 1)) return tooManyRequests();
+  await ensureMaster();
   const p = request.nextUrl.searchParams;
   const fam = p.get("fam");
   const found = resolveGrid({
@@ -38,7 +40,7 @@ export async function GET(request: NextRequest) {
     } as never,
   });
   if ("error" in found) return NextResponse.json({ error: found.error }, { status: 400, headers: NO_STORE });
-  const body = { grid: gridView(found.grid), pp: ppFor(found.daily, found.settings) ?? 0, ...(found.daily && { start: pdkStartToken(found.key) }) };
+  const body = { grid: gridView(found.grid), pp: ppFor(found.daily, found.settings) ?? 0, ...(found.daily && { start: pdkStartToken(found.key) }), ...(found.daily && "master" in found && found.master && { master: { by: found.master } }), ...("weekly" in found && { weekly: found.weekly }) };
   return NextResponse.json(body, { headers: NO_STORE });
 }
 
@@ -48,6 +50,7 @@ export async function POST(request: NextRequest) {
   if (!rateLimit(`pdk-guess:${clientIp(request)}`, 60, 1)) return tooManyRequests("Too many guesses — slow down a little.");
   const parsed = bodySchema.safeParse(await request.json().catch(() => ({})));
   if (!parsed.success) return NextResponse.json({ error: parsed.error.issues[0].message }, { status: 400, headers: NO_STORE });
+  await ensureMaster();
   const found = resolveGrid(parsed.data);
   if ("error" in found) return NextResponse.json({ error: found.error }, { status: 400, headers: NO_STORE });
   const pp = found.daily ? PDK_PP : ppFor(false, found.settings);
@@ -63,10 +66,10 @@ export async function POST(request: NextRequest) {
   const out = checkGuess(found.grid, parsed.data.guesses, parsed.data.next, { pp, guard: !found.daily && found.settings.softLockGuard });
   if (!out.ok) return NextResponse.json({ error: out.error }, { status: 400, headers: NO_STORE });
   let pct: number | null = null;
-  if (out.valid && !out.softlock && found.daily && parsed.data.date) {
+  if (out.valid && !out.softlock && found.daily && found.slot) {
     // The rarity so far, counting this pick in (the final score is recomputed from recorded answers).
     const counts = await pdkStore()
-      ?.counts(parsed.data.date, parsed.data.difficulty as never)
+      ?.counts(found.slot.date, found.slot.difficulty)
       .catch(() => null);
     if (counts) {
       const { cell, id } = parsed.data.next;

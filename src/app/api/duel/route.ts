@@ -32,7 +32,7 @@ const bodySchema = z.discriminatedUnion("kind", [
     difficulty: z.enum(DIFFICULTIES).default("medium"),
   }),
   z.object({ kind: z.literal("connections"), name: duelNameSchema }),
-  z.object({ kind: z.literal("pikadoku"), name: duelNameSchema, turnSecs: z.number().int().min(10).max(90).optional(), families: z.array(z.string().max(12)).max(6).optional() }),
+  z.object({ kind: z.literal("pikadoku"), name: duelNameSchema, turnSecs: z.number().int().min(10).max(90).optional(), families: z.array(z.string().max(12)).max(6).optional(), steals: z.boolean().optional() }),
 ]);
 
 export async function POST(request: NextRequest) {
@@ -58,7 +58,7 @@ export async function POST(request: NextRequest) {
           : body.kind === "quiz"
             ? createQuizDuel(body.module, body.difficulty, body.name, code, now)
             : body.kind === "pikadoku"
-              ? createPikadokuDuel(body.name, code, now, { turnSecs: body.turnSecs, families: body.families })
+              ? createPikadokuDuel(body.name, code, now, { turnSecs: body.turnSecs, families: body.families, steals: body.steals })
               : createConnectionsDuel(body.name, code, now);
       if (!(await pvpStore.insert(duel))) continue; // code taken: roll another
       const seat: PvpSeatResponse = { code, token: pvpToken(code, playerId), view: duelView(duel, playerId, now, 0) };

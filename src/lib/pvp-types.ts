@@ -340,7 +340,7 @@ export interface ConnDuelView extends PvpViewBase {
 /** A Pikadoku Tic Tac Toe duel: seat 0 plays X, seat 1 plays O. Never carries a cell's valid answers. */
 export interface PdkDuelView extends PvpViewBase {
   kind: "pikadoku";
-  settings: { turnSecs: number; families: string[] };
+  settings: { turnSecs: number; families: string[]; steals?: boolean };
   round?: { startsAt: number; endsAt: number };
   /** The six categories, once play starts. */
   grid?: PdkGridView;
@@ -348,12 +348,14 @@ export interface PdkDuelView extends PvpViewBase {
   owners: (0 | 1 | null)[];
   /** Per cell: the Pokémon id claimed there. */
   picks: (number | null)[];
+  /** Species ids used so far, stolen-from ones included (none can be played again). */
+  used?: number[];
   /** Whose turn it is (a seat), and when it runs out. */
   turn: 0 | 1;
   turnEndsAt?: number;
   /** The winning row, once there is one. */
   line: number[] | null;
-  last?: { seat: number; cell: number; id: number; hit: boolean; at: number };
+  last?: { seat: number; cell: number; id: number; hit: boolean; at: number; outcome?: "claimed" | "stolen" | "missed" | "notrarer" | "timeout" | "illegal" };
 }
 
 export type PvpView = DleDuelView | QuizDuelView | ConnDuelView | PdkDuelView;

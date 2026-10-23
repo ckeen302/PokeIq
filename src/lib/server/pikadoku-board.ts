@@ -3,7 +3,7 @@ import { getServiceSupabase } from "@/lib/supabase";
 import { publicName } from "@/lib/name-filter";
 import { signToken, verifyToken, deriveSeed } from "./crypto";
 import { betterResult, rarityPct, uniquenessScore } from "@/lib/pikadoku/score";
-import { PDK_CELLS, type PdkDifficulty } from "@/lib/pikadoku/types";
+import { PDK_CELLS, type PdkSlot } from "@/lib/pikadoku/types";
 
 /**
  * Pikadoku's recorded answers (for each cell's rarity) and daily board.
@@ -31,7 +31,7 @@ export interface PdkCounts {
 }
 export interface PdkRecordInput {
   date: string;
-  difficulty: PdkDifficulty;
+  difficulty: PdkSlot;
   player: string;
   /** Ranked under this name, or not ranked when null. */
   name: string | null;
@@ -41,10 +41,10 @@ export interface PdkRecordInput {
 export interface PdkStore {
   /** Stores the first game per player and day; false if they had one already. Null when the store isn't there. */
   saveAnswers(input: PdkRecordInput): Promise<boolean | null>;
-  counts(date: string, difficulty: PdkDifficulty): Promise<PdkCounts | null>;
-  saveBoard(date: string, difficulty: PdkDifficulty, entry: PdkBoardEntry): Promise<void>;
+  counts(date: string, difficulty: PdkSlot): Promise<PdkCounts | null>;
+  saveBoard(date: string, difficulty: PdkSlot, entry: PdkBoardEntry): Promise<void>;
   /** The day's board, best first. */
-  board(date: string, difficulty: PdkDifficulty): Promise<PdkBoardEntry[] | null>;
+  board(date: string, difficulty: PdkSlot): Promise<PdkBoardEntry[] | null>;
 }
 
 export const pdkPlayerKey = (identity: string) => deriveSeed("pdk-player", identity);
@@ -126,6 +126,8 @@ function tally(rows: { cell: number; id: number }[]): PdkCounts {
 
 const MISSING = new Set(["42P01", "PGRST205"]);
 let missingUntil = 0;
+/** The weekly slot is refused by the difficulty check until migration 0033 widens it: the weekly rarity and board are simply off. */
+const weeklyUnsupported = (error: { code?: string }, slot: string) => slot === "weekly" && error.code === "23514";
 function missing(error: { code?: string; message?: string }) {
   if (!MISSING.has(error.code ?? "")) return false;
   if (Date.now() >= missingUntil) console.warn("[pikadoku] rarity and the board are off until migration 0032_pikadoku.sql is applied:", error.message);
@@ -141,7 +143,7 @@ export function supabasePdkStore(sb: NonNullable<ReturnType<typeof getServiceSup
       if (!rows.length) return false;
       const { error } = await sb.from("pikadoku_answers").insert(rows);
       if (!error) return true;
-      if (missing(error)) return null;
+      if (missing(error) || weeklyUnsupported(error, i.difficulty)) return null;
       if (error.code === "23505") return false;
       throw new Error(error.message);
     },
@@ -157,7 +159,7 @@ export function supabasePdkStore(sb: NonNullable<ReturnType<typeof getServiceSup
     async saveBoard(date, difficulty, e) {
       if (Date.now() < missingUntil) return;
       const { error } = await sb.from("pikadoku_board").insert({ puzzle_date: date, difficulty, player_key: e.player, player_name: e.name, solved: e.solved, score: e.score, duration_ms: e.ms });
-      if (error && !missing(error) && error.code !== "23505") throw new Error(error.message);
+      if (error && !missing(error) && !weeklyUnsupported(error, difficulty) && error.code !== "23505") throw new Error(error.message);
     },
     async board(date, difficulty) {
       if (Date.now() < missingUntil) return null;

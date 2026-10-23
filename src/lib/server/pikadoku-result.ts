@@ -1,15 +1,22 @@
 import "server-only";
 import { isCurrentConnDate } from "@/lib/connections/types";
 import { betterResult } from "@/lib/pikadoku/score";
+import { CONN_LAUNCH_DATE } from "@/lib/connections/types";
+import { isLiveWeek, weekStart } from "@/lib/pikadoku/weeks";
 import { PDK_CELLS, type PdkDifficulty, type PdkGuess, type PdkResultResponse, type PdkSettings } from "@/lib/pikadoku/types";
-import { dailyGrid, practiceGrid, ppFor, replayGuesses, revealFor } from "./pikadoku";
+import { ensureMaster } from "./pikadoku-master";
+import { dailyGrid, practiceGrid, ppFor, replayGuesses, revealFor, weeklyGrid } from "./pikadoku";
 import { pdkElapsed, pdkPlayerKey, pdkStore, pickPct, scoreAnswers, standingOf, type PdkCounts, type PdkStore } from "./pikadoku-board";
 
 export interface PdkFinishInput {
   /** A daily (date + difficulty) or a practice seed with its settings. */
   date?: string;
+  /** The weekly themed grid, by the Monday of its week. */
+  week?: string;
   difficulty: PdkDifficulty;
   practice?: string;
+  /** An archive game: played for fun, never recorded. */
+  archive?: boolean;
   settings: PdkSettings;
   guesses: PdkGuess[];
   giveUp?: boolean;
@@ -36,9 +43,14 @@ const plus = (c: PdkCounts, answers: ReadonlyMap<number, number>): PdkCounts => 
  * only built here, after the server's own replay says the game has ended.
  */
 export async function finishGame(input: PdkFinishInput, store: PdkStore | null = pdkStore(), now = Date.now()): Promise<PdkFinishOutcome> {
-  const daily = !!input.date && !input.practice;
-  if (daily && !/^\d{4}-\d{2}-\d{2}$/.test(input.date!)) return { ok: false, status: 400, error: "Bad date." };
-  const grid = daily ? dailyGrid(input.date!, input.difficulty) : practiceGrid(input.practice ?? "x", input.settings);
+  await ensureMaster();
+  const weekly = !!input.week && !input.date && !input.practice;
+  const daily = (!!input.date && !input.practice && !input.week) || weekly;
+  if (!weekly && daily && !/^\d{4}-\d{2}-\d{2}$/.test(input.date!)) return { ok: false, status: 400, error: "Bad date." };
+  if (weekly && !(/^\d{4}-\d{2}-\d{2}$/.test(input.week!) && weekStart(input.week!) === input.week && input.week! >= weekStart(CONN_LAUNCH_DATE))) return { ok: false, status: 400, error: "Bad week." };
+  // Where this game is recorded: the day's board for a difficulty, or the week's.
+  const slot = weekly ? { date: input.week!, difficulty: "weekly" as const } : daily ? { date: input.date!, difficulty: input.difficulty } : null;
+  const grid = weekly ? weeklyGrid(input.week!) : daily ? dailyGrid(input.date!, input.difficulty) : practiceGrid(input.practice ?? "x", input.settings);
   let replay;
   try {
     replay = replayGuesses(grid, input.guesses, { pp: ppFor(daily, input.settings), giveUp: input.giveUp });
@@ -47,26 +59,26 @@ export async function finishGame(input: PdkFinishInput, store: PdkStore | null =
   }
   if (!replay.over) return { ok: false, status: 409, error: "Finish the grid first." };
   const answers = new Map(replay.locked);
-  const counted = daily && isCurrentConnDate(input.date, now);
+  const counted = daily && !input.archive && (weekly ? isLiveWeek(input.week, now) : isCurrentConnDate(input.date, now));
   const player = pdkPlayerKey(input.identity);
   let counts: PdkCounts | null = null;
   let rank = null;
   let score: number | null = null;
   let pcts: (number | null)[] | null = null;
-  if (store && daily) {
+  if (store && slot) {
     let saved: boolean | null = false;
-    if (counted) saved = await store.saveAnswers({ date: input.date!, difficulty: input.difficulty, player, name: input.name ?? null, answers, ms: null });
-    const base = await store.counts(input.date!, input.difficulty);
+    if (counted) saved = await store.saveAnswers({ date: slot.date, difficulty: slot.difficulty, player, name: input.name ?? null, answers, ms: null });
+    const base = await store.counts(slot.date, slot.difficulty);
     // A game that wasn't stored (an archive day) is counted in virtually; a stored one already is.
     counts = base && (counted && saved !== null ? base : plus(base, answers));
     if (counts) {
       ({ score, pcts } = scoreAnswers(counts, answers));
       if (counted) {
-        const ms = pdkElapsed(input.start, `${input.date}:${input.difficulty}`, now) ?? 0;
+        const ms = pdkElapsed(input.start, `${slot.date}:${slot.difficulty}`, now) ?? 0;
         const mine = { player, name: input.name ?? "", solved: answers.size, score, ms };
         // A name sent later (a reload, or typed on the results screen) joins the board; the first entry per trainer is kept.
-        if (input.name && ms > 0) await store.saveBoard(input.date!, input.difficulty, mine);
-        const rows = (await store.board(input.date!, input.difficulty)) ?? [];
+        if (input.name && ms > 0) await store.saveBoard(slot.date, slot.difficulty, mine);
+        const rows = (await store.board(slot.date, slot.difficulty)) ?? [];
         const others = rows.filter((r) => r.player !== player);
         const merged = rows.some((r) => r.player === player) ? rows : [...others, mine].sort(betterResult);
         rank = standingOf(merged, player);

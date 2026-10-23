@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { Check, Loader2, RotateCcw, Search, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { PikadokuMasterEditor } from "./PikadokuMasterEditor";
 import { FEEDBACK_CATEGORIES, FEEDBACK_MODES, MUTE_DURATIONS, PERMANENT, type AuditEntry, type ReportRow, type Sanction } from "@/lib/moderation";
 import { ROOMS, SLOW_MODES, type RoomMessage } from "@/lib/rooms";
 import type { TournamentSummary } from "@/lib/tournaments";
@@ -12,7 +13,7 @@ import { pictureSrc, type PendingPicture } from "@/lib/avatar";
 import { REPORT_LABELS, type ConnCategoryFeedback } from "@/lib/connections/social";
 import { GEO_HIDE_THRESHOLD, GEO_REPORT_REASONS, type GeoReportReason, type GeoShotReview } from "@/lib/geo-reports";
 
-const TABS = ["reports", "shots", "connections", "users", "rooms", "tournaments", "avatars", "audit"] as const;
+const TABS = ["reports", "shots", "connections", "pikadoku", "users", "rooms", "tournaments", "avatars", "audit"] as const;
 type Tab = (typeof TABS)[number];
 const FIELD = "h-9 rounded-md border border-input bg-background px-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
 const when = (at: number) => new Date(at).toLocaleString([], { dateStyle: "short", timeStyle: "short" });
@@ -51,6 +52,7 @@ export function AdminPanel() {
       {tab === "reports" && <Reports />}
       {tab === "shots" && <Shots />}
       {tab === "connections" && <ConnectionsFeedback />}
+      {tab === "pikadoku" && <PikadokuMasterEditor />}
       {tab === "users" && <Users />}
       {tab === "rooms" && <Rooms />}
       {tab === "tournaments" && <Tournaments />}

@@ -1,16 +1,18 @@
 "use client";
 
 import { Sheet } from "@/components/pokedle/sheets";
-import { PDK_FAMILY_LABELS, PDK_PP, PDK_RULES, type PdkFamily } from "@/lib/pikadoku/types";
-import type { PdkPlay } from "@/lib/pikadoku/play";
+import { PDK_FAMILY_LABELS, PDK_PP, PDK_RULES, type PdkDifficulty, type PdkFamily } from "@/lib/pikadoku/types";
+import type { PdkPlay, PdkRecord } from "@/lib/pikadoku/play";
+import { archiveDates, archiveKey } from "@/lib/pikadoku/archive";
+import { connNumber } from "@/lib/connections/types";
 
 const KINDS: [PdkFamily, string][] = [
   ["types", "Fire type, Dual-typed (one matching type is enough)"],
-  ["regions", "Introduced in Kanto to Paldea, has an Alolan, Galarian, Hisuian or Paldean form"],
+  ["regions", "Introduced in Kanto to Paldea (a regional form counts for the region it debuted in), has an Alolan, Galarian, Hisuian or Paldean form"],
   ["evolution", "Basic, fully evolved, evolves with a stone, by trade or friendship, branching evolution"],
   ["moves", "Learns Trick Room, Surf or Stealth Rock in Scarlet & Violet"],
   ["abilities", "Has Levitate or Intimidate (any slot), has a hidden ability"],
-  ["other", "Legendary, Mythical, fossil, baby, has a Mega or Gigantamax form, base Speed 100+, base stat total 600+, OU-relevant"],
+  ["other", "Legendary, Mythical, Paradox, Ultra Beast, First Partner (starter lines), fossil, baby, has a Mega or Gigantamax form, base Speed 100+, base stat total 600+, OU-relevant"],
 ];
 
 export function PdkHowToSheet({ onClose }: { onClose: () => void }) {
@@ -28,10 +30,16 @@ export function PdkHowToSheet({ onClose }: { onClose: () => void }) {
             Your <b>uniqueness score</b> is the sum of the share of players who picked each of your answers: <b>lower is better</b>. Each cell shows its rarity once it locks.
           </li>
           <li>
-            <b>Easy, Normal and Expert</b> dailies: Normal is the main grid for the leaderboard. Every grid is checked to be solvable.
+            <b>Easy, Normal and Expert</b> dailies: Normal is the main grid for the leaderboard. Every grid is checked to be solvable. Some days a <b>Master Puzzle</b> made by hand replaces the Normal grid.
+          </li>
+          <li>
+            Tap the <b>i</b> on any category to see exactly what counts, forms included. The <b>Archive</b> lets you play past dailies; they never count toward the board or your streak.
           </li>
           <li>
             When the game ends you see <b>every valid answer</b> for every cell, rarest first, and why each miss didn&apos;t fit.
+          </li>
+          <li>
+            The <b>Weekly</b> grid is themed (Kanto, Starters, Legendary, Gen 9 and Competitive weeks in turn), live from Monday to Sunday, with its own board. It never moves your daily streak.
           </li>
           <li>
             <b>Unlimited</b> deals a new grid on demand: unlimited PP, a soft-lock guard, single-answer cells, a timer, and the category families you want.
@@ -81,6 +89,51 @@ export function PdkStatsSheet({ streak, best, play, onClose }: { streak: number;
         {cell("Duel wins", play.duelWins)}
         {cell("Duel losses", play.duelLosses)}
       </div>
+    </Sheet>
+  );
+}
+
+const ARCHIVE_DIFFS: { id: PdkDifficulty; label: string }[] = [
+  { id: "easy", label: "Easy" },
+  { id: "normal", label: "Normal" },
+  { id: "expert", label: "Expert" },
+];
+
+/** Every past daily, all three difficulties. Archive games never reach the board, the streak or the daily results. */
+export function PdkArchiveSheet({ today, archive, onPlay, onClose }: { today: string; archive: Readonly<Record<string, PdkRecord>>; onPlay: (date: string, difficulty: PdkDifficulty) => void; onClose: () => void }) {
+  const dates = archiveDates(today);
+  const status = (r: PdkRecord | undefined) => (!r ? "" : r.over ? (r.won ? "9/9" : `${r.solved}/9`) : r.guesses.length ? "…" : "");
+  return (
+    <Sheet title="Archive" onClose={onClose}>
+      <p className="mb-3 text-sm text-muted-foreground">Play any past daily at any difficulty. Archive games are just for fun: they never count toward the daily board or your streak.</p>
+      {dates.length === 0 ? (
+        <p className="py-6 text-center text-sm text-muted-foreground" data-testid="pdk-archive-empty">
+          No past dailies yet. Come back tomorrow.
+        </p>
+      ) : (
+        <ul className="max-h-[60vh] space-y-1 overflow-y-auto" data-testid="pdk-archive-list">
+          {dates.map((d) => (
+            <li key={d} className="flex flex-wrap items-center justify-between gap-2 rounded-md border px-3 py-2 text-sm">
+              <span className="font-semibold">
+                #{connNumber(d)} <span className="font-normal text-muted-foreground">· {d}</span>
+              </span>
+              <span className="flex gap-1">
+                {ARCHIVE_DIFFS.map(({ id, label }) => (
+                  <button
+                    key={id}
+                    type="button"
+                    onClick={() => onPlay(d, id)}
+                    data-testid={`pdk-archive-${d}-${id}`}
+                    className="rounded border border-foreground/15 px-2 py-1 text-xs font-semibold hover:border-primary hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  >
+                    {label} <span className="tabular-nums text-muted-foreground">{status(archive[archiveKey(d, id)])}</span>
+                  </button>
+                ))}
+              </span>
+            </li>
+          ))}
+        </ul>
+      )}
     </Sheet>
   );
 }

@@ -3,6 +3,7 @@ import detailsData from "@/data/pokedex-details.json";
 import movesData from "@/data/moves.json";
 import ouData from "@/data/smogon/gen9ou.json";
 import { GENERATION_REGIONS } from "@/lib/pokemon/constants";
+import { PARADOX_IDS, STARTER_IDS, ULTRA_BEAST_IDS } from "./curated";
 import type { PdkFamily } from "./types";
 
 /**
@@ -29,11 +30,20 @@ interface Raw {
 interface Details {
   isBaby: boolean;
   evolution: string[];
-  forms: { slug: string }[];
+  forms: { id: number; slug: string; name: string; types: string[]; stats: Raw["stats"]; abilities: { name: string; hidden: boolean }[] }[];
   learnset: { moves: [number, string, number, string?][] } | null;
 }
 
+/** What kind of form an entry is: a regional form, a Mega, a Gigantamax, or another notable form (Partner, Primal, Origin, Crowned, Eternamax). */
+export type FormKind = "regional" | "mega" | "gmax" | "special";
+
 export interface Facts extends Raw {
+  /** The species this entry belongs to (its own id for a species). A form and its species are one Pokémon for no-reuse. */
+  baseId: number;
+  /** Set for a form entry. */
+  form?: FormKind;
+  /** A form's slug (for the picker). */
+  slug?: string;
   region: string;
   isBaby: boolean;
   fossil: boolean;
@@ -65,6 +75,21 @@ const FORM_REGION: Record<string, string> = { alola: "Alola", galar: "Galar", hi
 const FORM_LABEL: Record<string, string> = { alola: "an Alolan", galar: "a Galarian", hisui: "a Hisuian", paldea: "a Paldean" };
 const cap = (s: string) => s.replace(/(^|[\s-])([a-z])/g, (_, a, b) => a + b.toUpperCase());
 
+const SPECIAL_FORMS = new Set(["starter", "primal", "origin", "crowned", "eternal"]);
+/** Debut generation of a regional form (Hisui's Legends: Arceus is no numbered generation: 0). */
+const FORM_GEN: Record<string, number> = { alola: 7, galar: 8, hisui: 0, paldea: 9 };
+
+/** Which forms get their own picker entry: regional forms, Megas, Gigantamax and a few notable forms. Totem and cosmetic forms don't. */
+export function formKind(slug: string): FormKind | null {
+  const parts = slug.split("-").slice(1);
+  if (parts.includes("totem")) return null;
+  if (parts.includes("mega")) return "mega";
+  if (parts.includes("gmax")) return "gmax";
+  if (parts.some((x) => FORM_REGION[x])) return "regional";
+  if (parts.some((x) => SPECIAL_FORMS.has(x))) return "special";
+  return null;
+}
+
 /** The region of a form slug: regional forms debut in their own region; Mega and Gigantamax follow the base (null here). */
 export function formRegion(slug: string): string | null {
   const parts = slug.split("-").slice(1);
@@ -87,11 +112,12 @@ export function allFacts(): Facts[] {
     sizes.set(p.chain, (sizes.get(p.chain) ?? 0) + 1);
     if (p.evolvesFrom) children.set(p.evolvesFrom, [...(children.get(p.evolvesFrom) ?? []), p.id]);
   }
-  table = dex.map((p) => {
+  const species: Facts[] = dex.map((p) => {
     const d = details[p.id];
     const kids = children.get(p.id) ?? [];
     return {
       ...p,
+      baseId: p.id,
       region: GENERATION_REGIONS[p.gen] ?? "Unknown",
       isBaby: !!d?.isBaby,
       fossil: FOSSILS.has(p.id),
@@ -105,27 +131,63 @@ export function allFacts(): Facts[] {
       ou: ouNames.has(p.name.toLowerCase()),
     };
   });
-  return table;
+  // Forms: their own types, stats and abilities; the debut region of a regional form, the species' region for the rest;
+  // everything else (evolution line, legendary status, moves) is the species'.
+  const forms: Facts[] = [];
+  for (const sp of species) {
+    for (const f of details[sp.id]?.forms ?? []) {
+      const kind = formKind(f.slug);
+      if (!kind) continue;
+      const key = kind === "regional" ? Object.keys(FORM_REGION).find((k) => f.slug.split("-").slice(1).includes(k)) : undefined;
+      forms.push({
+        ...sp,
+        id: f.id,
+        baseId: sp.id,
+        form: kind,
+        slug: f.slug,
+        name: f.name,
+        types: f.types,
+        stats: f.stats,
+        bst: Object.values(f.stats).reduce((a, b) => a + b, 0),
+        abilities: f.abilities.map((a) => ({ name: a.name, hidden: a.hidden })),
+        ...(key && { gen: FORM_GEN[key], region: FORM_REGION[key] }),
+      });
+    }
+  }
+  return (table = [...species, ...forms]);
+}
+
+let baseMap: Map<number, number> | null = null;
+/** The species a Pokémon id belongs to (a form maps to its species). A form and its species count as the same Pokémon. */
+export function baseOf(id: number): number {
+  if (!baseMap) baseMap = new Map(allFacts().filter((f) => f.baseId !== f.id).map((f) => [f.id, f.baseId]));
+  return baseMap.get(id) ?? id;
 }
 
 const TYPE_LIST = ["normal", "fire", "water", "electric", "grass", "ice", "fighting", "poison", "ground", "flying", "psychic", "bug", "rock", "ghost", "dragon", "dark", "steel", "fairy"];
 const STAT_NAMES = { hp: "HP", atk: "Attack", def: "Defense", spa: "Sp. Atk", spd: "Sp. Def", spe: "Speed" } as const;
 const itemEvo = (m: string) => /^use |holding/.test(m) && !/trade/.test(m);
 
+const PARADOX = new Set(PARADOX_IDS);
+const ULTRA_BEAST = new Set(ULTRA_BEAST_IDS);
+/** Every evolution line that starts from a starter, derived from the data's chain ids. */
+const STARTER_CHAINS = new Set(dex.filter((p) => STARTER_IDS.includes(p.id)).map((p) => p.chain));
+
 function build(): PdkCategory[] {
   const out: PdkCategory[] = [];
   const add = (id: string, family: PdkFamily, label: string, tier: 1 | 2 | 3, test: (f: Facts) => boolean, group = id) => out.push({ id, family, label, tier, group, test });
   for (const t of TYPE_LIST) add(`type:${t}`, "types", `${cap(t)} type`, 1, (f) => f.types.includes(t));
   add("types:dual", "types", "Dual-typed", 1, (f) => f.types.length === 2, "typecount");
-  add("types:single", "types", "Single-typed", 1, (f) => f.types.length === 1, "typecount");
+  add("types:single", "types", "Monotype (one type only)", 1, (f) => f.types.length === 1, "typecount");
   for (const [gen, region] of Object.entries(GENERATION_REGIONS)) add(`region:${gen}`, "regions", `Introduced in ${region}`, 1, (f) => f.gen === Number(gen));
+  add("region:hisui", "regions", "Introduced in Hisui (Hisuian forms)", 3, (f) => f.region === "Hisui");
   for (const [key, region] of Object.entries(FORM_REGION)) add(`form:${key}`, "regions", `Has ${FORM_LABEL[key]} form`, 2, (f) => f.formRegions.includes(region));
   add("evo:basic", "evolution", "Basic (first stage)", 1, (f) => f.stage === 1, "stage");
   add("evo:stage2", "evolution", "Second stage", 1, (f) => f.stage === 2, "stage");
   add("evo:stage3", "evolution", "Third stage", 2, (f) => f.stage === 3, "stage");
   add("evo:notfull", "evolution", "Can still evolve", 1, (f) => !f.fullyEvolved, "evolves");
   add("evo:full", "evolution", "Fully evolved", 1, (f) => f.fullyEvolved, "evolves");
-  add("evo:none", "evolution", "Doesn't evolve at all", 2, (f) => f.chainSize === 1, "evolves");
+  add("evo:none", "evolution", "No evolution line (doesn't evolve)", 2, (f) => f.chainSize === 1, "evolves");
   add("evo:item", "evolution", "Evolves by using an item", 2, (f) => f.evolvesBy.some(itemEvo));
   add("evo:stone", "evolution", "Evolves with a stone", 2, (f) => f.evolvesBy.some((m) => /stone/.test(m)));
   add("evo:trade", "evolution", "Evolves by trade", 2, (f) => f.evolvesBy.some((m) => /trade/.test(m)));
@@ -140,6 +202,9 @@ function build(): PdkCategory[] {
   add("other:baby", "other", "Baby Pokémon", 2, (f) => f.isBaby);
   add("other:mega", "other", "Has a Mega Evolution", 2, (f) => f.hasMega);
   add("other:gmax", "other", "Has a Gigantamax form", 2, (f) => f.hasGmax);
+  add("other:paradox", "other", "Paradox Pokémon", 2, (f) => PARADOX.has(f.baseId));
+  add("other:ultrabeast", "other", "Ultra Beast", 2, (f) => ULTRA_BEAST.has(f.baseId));
+  add("other:partner", "other", "First Partner (starter line)", 2, (f) => STARTER_CHAINS.has(f.chain));
   add("other:ou", "other", "OU-relevant (Gen 9 OU)", 3, (f) => f.ou);
   add("ability:hidden", "abilities", "Has a hidden ability", 1, (f) => f.abilities.some((a) => a.hidden));
   for (const [stat, name] of Object.entries(STAT_NAMES)) {
@@ -153,7 +218,8 @@ function build(): PdkCategory[] {
   // Abilities and moves: every one shared by enough species to fill a cell.
   const ab = new Map<string, number>();
   const mv = new Map<string, number>();
-  for (const f of allFacts()) {
+  // Counted over species only, so the category list (and its tiers) is the same as before forms were picks.
+  for (const f of allFacts().filter((x) => !x.form)) {
     for (const a of new Set(f.abilities.map((x) => x.name))) ab.set(a, (ab.get(a) ?? 0) + 1);
     for (const m of f.moves) mv.set(m, (mv.get(m) ?? 0) + 1);
   }
@@ -172,12 +238,14 @@ export function categoryById(id: string): PdkCategory | undefined {
   return BY_ID.get(id);
 }
 
+let max = 0;
+const maxId = () => (max ||= allFacts().reduce((a, f) => Math.max(a, f.id), 0));
 const members = new Map<string, Uint8Array>();
 /** A category's members as a flag per species id. */
 export function membersOf(cat: PdkCategory): Uint8Array {
   let m = members.get(cat.id);
   if (!m) {
-    m = new Uint8Array(1100);
+    m = new Uint8Array(maxId() + 1);
     for (const f of allFacts()) if (cat.test(f)) m[f.id] = 1;
     members.set(cat.id, m);
   }

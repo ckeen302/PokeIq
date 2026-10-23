@@ -33,22 +33,32 @@ const TURN_CHOICES = [15, 30, 45, 60];
 export function PikadokuDuelCard() {
   const [turnSecs, setTurnSecs] = useState(30);
   const [families, setFamilies] = useState<string[]>([...PDK_FAMILIES]);
-  const body = useMemo(() => ({ kind: "pikadoku", turnSecs, families }), [turnSecs, families]);
+  const [steals, setSteals] = useState(false);
+  const body = useMemo(() => ({ kind: "pikadoku", turnSecs, families, ...(steals && { steals: true }) }), [turnSecs, families, steals]);
   return (
     <NewDuelCard
       body={body}
       href={(code) => pvpHref("pikadoku", code)}
-      match={{ game: "pikadoku" }}
+      match={{ game: "pikadoku", ...(steals && { steals: true }) }}
       heading="Head to head · Tic Tac Toe"
       blurb="One grid, two trainers. Take turns claiming a cell with a Pokémon that fits; three in a row wins."
       info={
         <>
           <p>A wrong guess, or running out of time, passes the turn. Each Pokémon can be used once. Your opponent sees only which cells you have claimed.</p>
-          <p>Custom rules apply to a game you send to a friend; finding an opponent uses the standard 30-second turns and every category.</p>
+          <p>Steals: claim a cell your opponent holds by naming a different Pokémon that fits it and is rarer (a lower pick %). A stolen cell can be stolen back.</p>
+          <p>Turn timer and categories apply to a game you send to a friend; finding an opponent uses 30-second turns and every category. Steals applies to both.</p>
         </>
       }
     >
       <div className="space-y-2 text-left" data-testid="pdk-lobby-rules">
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="hud-label">Mode</span>
+          {[false, true].map((on) => (
+            <button key={String(on)} type="button" aria-pressed={steals === on} data-testid={`pdk-steals-${on ? "on" : "off"}`} onClick={() => setSteals(on)} title={on ? "Take cells from your opponent with a rarer Pokémon" : "Classic: a claimed cell stays claimed"} className={cn("rounded border px-2 py-0.5 text-xs font-semibold", steals === on ? "border-primary bg-primary/15" : "border-foreground/15 text-muted-foreground")}>
+              {on ? "Steals" : "Classic"}
+            </button>
+          ))}
+        </div>
         <div className="flex flex-wrap items-center gap-2">
           <span className="hud-label flex items-center gap-1">
             <Timer className="h-3.5 w-3.5" aria-hidden /> Turn timer
@@ -168,7 +178,8 @@ export function PikadokuDuel({ code }: { code: string }) {
           shareText="Play me at Pikadoku Tic Tac Toe! Claim cells with Pokémon that fit: three in a row wins."
           rules={[
             { label: "The game", text: "One 3×3 grid. Take turns naming a Pokémon that fits a cell's row and column to claim it. Three in a row wins." },
-            { label: "Misses", text: `A wrong guess, or running out of the ${view.settings.turnSecs}-second turn, passes the turn. A Pokémon can be used once.` },
+            { label: "Misses", text: `A wrong guess, or running out of the ${view.settings.turnSecs}-second turn, passes the turn. A Pokémon can be used once (a form and its species count as one).` },
+            ...(view.settings.steals ? [{ label: "Steals", text: "You can claim a cell your opponent holds by naming a different Pokémon that fits and is rarer (a lower pick %; without rarity data, any different Pokémon). A failed steal passes the turn. A stolen cell can be stolen back." }] : []),
             { label: "Categories", text: `This game draws on: ${view.settings.families.map((f) => PDK_FAMILY_LABELS[f as keyof typeof PDK_FAMILY_LABELS] ?? f).join(", ")}.` },
           ]}
           home={HOME}
@@ -183,7 +194,7 @@ export function PikadokuDuel({ code }: { code: string }) {
   }
 
   const cells: BoardCell[] = view.owners.map((o, i) => ({ id: view.picks[i], owner: o, highlight: !!view.line?.includes(i) }));
-  const board = <PdkBoard grid={view.grid ?? null} cells={cells} names={names} onCell={myTurn && playing ? (c) => setPicking(c) : undefined} disabled={!myTurn || busy} testPrefix="pdkd" />;
+  const board = <PdkBoard grid={view.grid ?? null} cells={cells} names={names} onCell={myTurn && playing ? (c) => setPicking(c) : undefined} disabled={!myTurn || busy} stealable={view.settings.steals && me !== null ? (c) => view.owners[c] === 1 - me : undefined} testPrefix="pdkd" />;
   const status = (
     <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-1 text-sm">
       {view.players.map((p, k) => (
@@ -267,7 +278,7 @@ export function PikadokuDuel({ code }: { code: string }) {
           {board}
           {view.last && (
             <p className="text-center text-xs text-muted-foreground">
-              {view.players[view.last.seat]?.name}: {names.get(view.last.id) ?? `#${view.last.id}`} {view.last.hit ? "claimed a cell." : "missed."}
+              {view.players[view.last.seat]?.name}: {names.get(view.last.id) ?? `#${view.last.id}`} {view.last.outcome === "stolen" ? "stole a cell." : view.last.outcome === "notrarer" ? "fits, but isn't rarer than the Pokémon there." : view.last.hit ? "claimed a cell." : "missed."}
             </p>
           )}
         </>
@@ -277,7 +288,7 @@ export function PikadokuDuel({ code }: { code: string }) {
       {picking !== null && view.grid && (
         <PdkPicker
           dex={dex}
-          used={new Set(view.picks.filter((x): x is number => x !== null))}
+          used={new Set([...view.picks.filter((x): x is number => x !== null), ...(view.used ?? [])])}
           busy={busy}
           title={`${view.grid.rows[Math.floor(picking / 3)].label} × ${view.grid.cols[picking % 3].label}`}
           onPick={(p) => void claim(p)}

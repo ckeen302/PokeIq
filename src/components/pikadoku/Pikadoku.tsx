@@ -2,11 +2,16 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { MotionConfig } from "framer-motion";
-import { BarChart3, CircleHelp, Dices, Flag, Loader2, Settings, Swords, X } from "lucide-react";
-import { getProgress, pdkBlock, recordPdkGame, savePdk, setTrainerName, useProgress, type BadgeDef } from "@/lib/progress";
+import { Archive, BarChart3, CircleHelp, Dices, Flag, Loader2, Settings, Swords, X } from "lucide-react";
+import { getProgress, pdkBlock, recordPdkGame, savePdk, savePdkArchive, setTrainerName, useProgress, type BadgeDef } from "@/lib/progress";
 import { useToday } from "@/lib/use-today";
 import { dlePlayerId } from "@/lib/dle-player";
 import { play } from "@/lib/sound";
+import { pikadokuShareText, shareUrl, type PikadokuShareResult } from "@/lib/share";
+import { rarityGrid } from "@/lib/pikadoku/share";
+import { archiveKey, loadPdkArchive, savePdkArchiveLocal } from "@/lib/pikadoku/archive";
+import { weekNumber, weekStart } from "@/lib/pikadoku/weeks";
+import { challengeLabel, decodeChallenge, encodeChallenge, judgeChallenge } from "@/lib/pikadoku/challenge";
 import { composeShare } from "@/lib/share/text";
 import { connNumber } from "@/lib/connections/types";
 import { EMPTY_PDK_PLAY } from "@/lib/pikadoku/play";
@@ -30,11 +35,11 @@ import { Popover } from "@/components/ui/popover";
 import { ShareButton } from "@/components/share/ShareButton";
 import { NewBadges, StreakFlame, useCelebration } from "@/components/connections/results";
 import { PdkBoard, PdkPicker, SettingToggle, iconButton, useDex, type BoardCell, type DexName } from "./parts";
-import { PdkHowToSheet, PdkStatsSheet } from "./sheets";
+import { PdkArchiveSheet, PdkHowToSheet, PdkStatsSheet } from "./sheets";
 import { cn } from "@/lib/utils";
 
-type Mode = "daily" | "practice";
-type Target = { date: string; difficulty: PdkDifficulty } | { practice: string; difficulty: "normal"; settings: PdkSettings };
+type Mode = "daily" | "weekly" | "practice" | "archive";
+type Target = { date: string; difficulty: PdkDifficulty; archive?: true } | { week: string; difficulty: "normal" } | { practice: string; difficulty: "normal"; settings: PdkSettings };
 const PREFS_KEY = "pokeiq:pikadoku:prefs";
 interface Prefs {
   difficulty: PdkDifficulty;
@@ -77,9 +82,15 @@ export function Pikadoku() {
   const [mode, setMode] = useState<Mode>("daily");
   const [prefs, setPrefs] = useState<Prefs | null>(null);
   const [seed, setSeed] = useState<string | null>(null);
+  /** Settings that came with a challenge link (they win over this device's until the next grid), and the result to beat. */
+  const [linkSettings, setLinkSettings] = useState<PdkSettings | null>(null);
+  const [challenge, setChallenge] = useState<{ solved: number; guesses: number } | null>(null);
   const [grid, setGrid] = useState<PdkGridView | null>(null);
   const [pp, setPp] = useState<number>(PDK_PP);
   const [start, setStart] = useState<string | undefined>();
+  const [master, setMaster] = useState<string | null>(null);
+  /** The live weekly grid's theme, from the server. */
+  const [weeklyInfo, setWeeklyInfo] = useState<{ week: number; theme: string; blurb: string; monday: string; sunday: string } | null>(null);
   const [guesses, setGuesses] = useState<PdkGuess[]>([]);
   const [locked, setLocked] = useState<Record<number, Locked>>({});
   const [missCell, setMissCell] = useState<number | null>(null);
@@ -89,7 +100,9 @@ export function Pikadoku() {
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<PdkResultResponse | null>(null);
   const [badges, setBadges] = useState<BadgeDef[]>([]);
-  const [sheet, setSheet] = useState<"howto" | "stats" | null>(null);
+  const [sheet, setSheet] = useState<"howto" | "stats" | "archive" | null>(null);
+  /** The past daily being played from the archive. */
+  const [archive, setArchive] = useState<{ date: string; difficulty: PdkDifficulty } | null>(null);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [showRank, setShowRank] = useState(false);
   const [elapsed, setElapsed] = useState(0);
@@ -98,22 +111,36 @@ export function Pikadoku() {
   const toastTimer = useRef<number | undefined>(undefined);
 
   useEffect(() => setPrefs(loadPrefs()), []);
+  // A challenge link (/pikadoku?c=...) opens that exact Unlimited grid.
+  useEffect(() => {
+    const c = decodeChallenge(new URLSearchParams(window.location.search).get("c"));
+    if (!c) return;
+    setLinkSettings(c.settings);
+    setChallenge(c.result);
+    setSeed(c.seed);
+    setMode("practice");
+    window.history.replaceState(null, "", window.location.pathname);
+  }, []);
   useEffect(() => () => window.clearTimeout(toastTimer.current), []);
-  const patchPrefs = (patch: Partial<Prefs>) =>
+  const patchPrefs = (patch: Partial<Prefs>) => {
+    if (patch.settings) setLinkSettings(null);
     setPrefs((p) => {
       const next = { ...(p ?? loadPrefs()), ...patch };
       savePrefs(next);
       return next;
     });
+  };
 
   const difficulty = prefs?.difficulty ?? "normal";
-  const settings = prefs?.settings ?? DEFAULT_PDK_SETTINGS;
-  const storeKey = today ? (difficulty === "normal" ? today : `${today}:${difficulty}`) : null;
+  const settings = linkSettings ?? prefs?.settings ?? DEFAULT_PDK_SETTINGS;
+  const week = today ? weekStart(today) : null;
+  /** Archive and weekly games are kept on this device apart from the daily results (and never move the streak). */
+  const storeKey = mode === "weekly" ? (week ? `weekly:${week}` : null) : mode === "archive" ? (archive ? archiveKey(archive.date, archive.difficulty) : null) : today ? (difficulty === "normal" ? today : `${today}:${difficulty}`) : null;
 
   /** The request fields that name this grid. */
   const target = useMemo<Target | null>(
-    () => (mode === "daily" ? (today ? { date: today, difficulty } : null) : seed ? { practice: seed, difficulty: "normal", settings } : null),
-    [mode, today, difficulty, seed, settings]
+    () => (mode === "weekly" ? (week ? { week, difficulty: "normal" } : null) : mode === "archive" ? (archive ? { date: archive.date, difficulty: archive.difficulty, archive: true } : null) : mode === "daily" ? (today ? { date: today, difficulty } : null) : seed ? { practice: seed, difficulty: "normal", settings } : null),
+    [mode, today, difficulty, seed, settings, archive, week]
   );
   const targetKey = target ? JSON.stringify(target) : null;
 
@@ -144,6 +171,13 @@ export function Pikadoku() {
         setLocked(Object.fromEntries(Object.entries(out.locked).map(([c, id]) => [Number(c), { id, pct: out.pcts?.[Number(c)] ?? null }])));
         if (mode === "daily" && storeKey) {
           const fresh = savePdk(storeKey, { guesses: list, won: out.won, over: true, solved: out.solved, score: out.score, ms: Date.now() - startedAt.current });
+          if (fresh.length) setBadges(fresh);
+        } else if ((mode === "archive" || mode === "weekly") && storeKey) {
+          // Archive and weekly games count toward the tallies, never the daily streak or results.
+          const again = !!loadPdkArchive()[storeKey]?.over;
+          const rec = { guesses: list, won: out.won, over: true, solved: out.solved, score: out.score };
+          savePdkArchiveLocal(storeKey, rec);
+          const fresh = again ? [] : savePdkArchive(rec);
           if (fresh.length) setBadges(fresh);
         } else {
           const fresh = recordPdkGame(out.won);
@@ -182,18 +216,22 @@ export function Pikadoku() {
           qs.set("guard", s.softLockGuard ? "1" : "0");
           qs.set("single", s.allowSingle ? "1" : "0");
           qs.set("fam", s.families.join(","));
+        } else if ("week" in target) {
+          qs.set("week", target.week);
         } else {
           qs.set("date", target.date);
           qs.set("difficulty", target.difficulty);
         }
         const res = await fetch(`/api/pikadoku?${qs}`, { cache: "no-store" });
-        const data = (await res.json()) as { grid?: PdkGridView; pp?: number; start?: string; error?: string };
+        const data = (await res.json()) as { grid?: PdkGridView; pp?: number; start?: string; error?: string; master?: { by: string }; weekly?: { week: number; theme: string; blurb: string; monday: string; sunday: string } };
         if (!live) return;
         if (!res.ok || !data.grid) return setError(data.error ?? "Couldn't load the grid.");
         setGrid(data.grid);
         setPp(data.pp ?? 0);
         setStart(data.start);
-        const saved = mode === "daily" && storeKey ? pdkBlock(getProgress()).results[storeKey] : undefined;
+        setMaster(data.master?.by ?? null);
+        setWeeklyInfo(data.weekly ?? null);
+        const saved = mode === "daily" && storeKey ? pdkBlock(getProgress()).results[storeKey] : (mode === "archive" || mode === "weekly") && storeKey ? loadPdkArchive()[storeKey] : undefined;
         if (saved?.guesses.length) {
           setGuesses(saved.guesses);
           const r = await fetch("/api/pikadoku", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...target, guesses: saved.guesses }) });
@@ -256,6 +294,7 @@ export function Pikadoku() {
       }
       const done = Object.keys(nextLocked).length === 9 || (pp > 0 && list.length >= pp);
       if (mode === "daily" && storeKey) savePdk(storeKey, { guesses: list, won: false, over: false, solved: Object.keys(nextLocked).length, score: null });
+      else if ((mode === "archive" || mode === "weekly") && storeKey) savePdkArchiveLocal(storeKey, { guesses: list, won: false, over: false, solved: Object.keys(nextLocked).length, score: null });
       if (done) await finish(list, false);
     } catch (err) {
       setError((err as Error).message);
@@ -273,6 +312,8 @@ export function Pikadoku() {
   }
 
   function newPractice() {
+    setLinkSettings(null);
+    setChallenge(null);
     setMode("practice");
     setSeed(newSeed());
   }
@@ -283,9 +324,10 @@ export function Pikadoku() {
   const [boardScope, setBoardScope] = useState<"all" | "friends">("all");
   const [board, setBoard] = useState<PdkBoardResponse | null>(null);
   useEffect(() => {
-    if (!today || mode !== "daily") return;
+    if (!today || (mode !== "daily" && mode !== "weekly")) return;
     let live = true;
-    fetch(`/api/pikadoku/leaderboard?date=${today}&difficulty=${difficulty}${boardScope === "friends" ? "&scope=friends" : ""}`)
+    const which = mode === "weekly" ? `week=${weekStart(today)}` : `date=${today}&difficulty=${difficulty}`;
+    fetch(`/api/pikadoku/leaderboard?${which}${boardScope === "friends" ? "&scope=friends" : ""}`)
       .then((r) => (r.ok ? (r.json() as Promise<PdkBoardResponse>) : null))
       .then((b) => live && setBoard(b))
       .catch(() => live && setBoard(null));
@@ -297,20 +339,30 @@ export function Pikadoku() {
   const [nameDraft, setNameDraft] = useState("");
   const cells: BoardCell[] = Array.from({ length: 9 }, (_, i) => ({ id: locked[i]?.id ?? null, pct: locked[i]?.pct ?? null, miss: missCell === i }));
   const block = pdkBlock(progress ?? getProgress());
+  /** The rarity-coloured result: colours only, never a Pokémon. */
+  const shareResult = (): PikadokuShareResult => ({
+    game: "pikadoku",
+    ...(mode === "weekly" && week ? { weekly: weekNumber(week) } : mode === "daily" && today ? { daily: connNumber(today) } : mode === "archive" && archive ? { daily: connNumber(archive.date), archive: true as const } : {}),
+    difficulty: mode === "daily" ? difficulty : mode === "archive" && archive ? archive.difficulty : "normal",
+    grid: rarityGrid((i) => !!locked[i], result?.pcts ?? Array.from({ length: 9 }, (_, i) => locked[i]?.pct ?? null)),
+    ...(result?.score != null && { score: result.score }),
+    ...(mode === "daily" && block.streak > 1 && { streak: block.streak }),
+  });
   const shareText = () => {
-    const r = result;
-    const squares = [0, 1, 2].map((row) => [0, 1, 2].map((c) => (locked[row * 3 + c] ? "🟩" : "⬛")).join("")).join("\n");
-    return composeShare({
-      title: mode === "daily" && today ? `Pikadoku #${connNumber(today)} (${DIFF_LABEL[difficulty]})` : "Pikadoku (Unlimited)",
-      score: `${r?.solved ?? lockedCount}/9`,
-      badges: [r?.score != null && `Score ${r.score}`, block.streak > 1 && mode === "daily" && `🔥${block.streak}`],
-      lines: squares.split("\n"),
-      url: `${window.location.origin}/pikadoku`,
-    });
+    const r = shareResult();
+    return pikadokuShareText(r, shareUrl(r));
   };
+  /** "Share this grid": a link that deals the same Unlimited grid, with this game's result to beat once it's over. */
+  const challengeText = () => {
+    if (!seed) return "";
+    const mine = result ? { solved: result.solved, guesses: guesses.length } : null;
+    const url = `${window.location.origin}/pikadoku?c=${encodeChallenge({ seed, settings, result: mine })}`;
+    return composeShare({ title: "Pikadoku (Unlimited) challenge", score: mine ? challengeLabel(mine) : undefined, lines: [mine ? "Can you beat me on the same grid?" : "Play the same grid with me:"], url });
+  };
+  const verdict = result && challenge && mode === "practice" ? judgeChallenge({ solved: result.solved, guesses: guesses.length }, challenge) : null;
 
   const rankName = progress?.name ?? "";
-  const heading = mode === "daily" && today ? `Daily #${connNumber(today)} · ${DIFF_LABEL[difficulty]}` : "Unlimited";
+  const heading = mode === "weekly" && week ? `Weekly #${weekNumber(week)}${weeklyInfo ? ` · ${weeklyInfo.theme}` : ""}` : mode === "archive" && archive ? `Archive #${connNumber(archive.date)} · ${DIFF_LABEL[archive.difficulty]}` : mode === "daily" && today ? `Daily #${connNumber(today)} · ${DIFF_LABEL[difficulty]}` : "Unlimited";
 
   return (
     <MotionConfig reducedMotion="user">
@@ -328,6 +380,7 @@ export function Pikadoku() {
               {(
                 [
                   { id: "daily", label: "Daily", title: "Today's grid, the same for everyone", on: () => setMode("daily") },
+                  { id: "weekly", label: "Weekly", title: "A themed grid that is live Monday to Sunday, with its own board", on: () => setMode("weekly") },
                   { id: "practice", label: "Unlimited", title: "A fresh grid every time", on: () => (seed ? setMode("practice") : newPractice()) },
                 ] as const
               ).map((m) => (
@@ -383,6 +436,9 @@ export function Pikadoku() {
             <button type="button" className={iconButton} onClick={() => setSheet("stats")} aria-label="Statistics" title="Statistics">
               <BarChart3 className="h-5 w-5" />
             </button>
+            <button type="button" className={cn(iconButton, mode === "archive" && "text-screen")} onClick={() => setSheet("archive")} aria-label="Archive of past dailies" title="Archive of past dailies" disabled={!today} data-testid="pdk-archive-btn">
+              <Archive className="h-5 w-5" />
+            </button>
             <button type="button" className={cn(iconButton, mode === "practice" && "text-screen")} onClick={newPractice} aria-pressed={mode === "practice"} aria-label="New Unlimited grid" title="New Unlimited grid">
               <Dices className="h-5 w-5" />
             </button>
@@ -433,9 +489,30 @@ export function Pikadoku() {
           </div>
         </div>
 
+        {mode === "weekly" && weeklyInfo && (
+          <p className="mx-auto max-w-md rounded-md border border-warning/50 bg-warning/10 px-3 py-2 text-center text-sm" data-testid="pdk-weekly">
+            <b>{weeklyInfo.theme}</b>: {weeklyInfo.blurb} Live until Sunday {weeklyInfo.sunday}. Doesn&apos;t count toward your daily streak.
+          </p>
+        )}
+        {mode === "archive" && archive && (
+          <p className="mx-auto max-w-md rounded-md border border-screen/40 bg-screen/[0.06] px-3 py-2 text-center text-sm" data-testid="pdk-archive-note">
+            Archive: #{connNumber(archive.date)} ({archive.date}), {DIFF_LABEL[archive.difficulty]}. For fun: it never counts toward the daily board or your streak.
+          </p>
+        )}
+        {mode === "practice" && challenge && (
+          <p className="mx-auto max-w-md rounded-md border border-warning/50 bg-warning/10 px-3 py-2 text-center text-sm font-semibold" data-testid="pdk-challenge">
+            Challenge: beat {challengeLabel(challenge)}
+          </p>
+        )}
         {mode === "practice" && (
           <p className="mx-auto max-w-md rounded-md border border-screen/40 bg-screen/[0.06] px-3 py-2 text-center text-sm" data-testid="pdk-unlimited">
             Unlimited: a fresh grid every time, never counted toward your streak.{settings.timer && <b className="ml-2 tabular-nums">{clockText(elapsed)}</b>}
+          </p>
+        )}
+
+        {mode === "daily" && master && (
+          <p className="mx-auto max-w-md rounded-md border border-warning/50 bg-warning/10 px-3 py-2 text-center text-sm font-semibold" data-testid="pdk-master">
+            Master Puzzle by {master}
           </p>
         )}
 
@@ -467,7 +544,8 @@ export function Pikadoku() {
         )}
 
         {!over && grid && (
-          <div className="flex justify-center">
+          <div className="flex flex-wrap justify-center gap-2">
+            {mode === "practice" && <ShareButton getText={challengeText} kind="pikadoku-challenge" label="Share this grid" variant="outline" size="sm" />}
             <Button type="button" variant="outline" size="sm" onClick={() => void giveUp()} disabled={busy} data-testid="pdk-giveup">
               <Flag className="h-4 w-4" aria-hidden /> Give up
             </Button>
@@ -482,21 +560,21 @@ export function Pikadoku() {
                 {result.score === null ? "Score hidden" : `Score ${result.score}`}
               </p>
               <p className="text-xs text-muted-foreground">Uniqueness score: the sum of the share of players who picked your answers. Lower is better.{result.score === null && " Rarity is off for now."}</p>
-              {mode === "daily" && result.counted && (
+              {(mode === "daily" || mode === "weekly") && result.counted && (
                 <div>
                   <Button type="button" variant="outline" size="sm" onClick={() => setShowRank((s) => !s)} data-testid="pdk-rank-btn">
                     Tap for rank
                   </Button>
                   {showRank && (
                     <p className="mt-2 text-sm" data-testid="pdk-rank">
-                      {result.rank ? `You're #${result.rank.position} of ${result.rank.total} on today's ${DIFF_LABEL[difficulty]} board.` : "The board is off right now."}
+                      {result.rank ? `You're #${result.rank.position} of ${result.rank.total} on ${mode === "weekly" ? "this week's" : `today's ${DIFF_LABEL[difficulty]}`} board.` : "The board is off right now."}
                     </p>
                   )}
                 </div>
               )}
               {mode === "daily" && block.streak > 0 && <StreakFlame streak={block.streak} best={block.best} />}
               <NewBadges badges={badges} />
-              {mode === "daily" && result.counted && !rankName && (
+              {(mode === "daily" || mode === "weekly") && result.counted && !rankName && (
                 <form
                   className="mx-auto flex max-w-xs gap-2"
                   onSubmit={(e) => {
@@ -514,8 +592,14 @@ export function Pikadoku() {
                   </Button>
                 </form>
               )}
+              {verdict && challenge && (
+                <p className="text-sm font-semibold" data-testid="pdk-challenge-result">
+                  {verdict === "beat" ? `You beat ${challengeLabel(challenge)}!` : verdict === "tied" ? `You tied ${challengeLabel(challenge)}.` : `Not quite: you needed to beat ${challengeLabel(challenge)}.`}
+                </p>
+              )}
               <div className="flex flex-wrap justify-center gap-2">
                 <ShareButton getText={shareText} kind="pikadoku" label="Share result" />
+                {mode === "practice" && <ShareButton getText={challengeText} kind="pikadoku-challenge" label="Share this grid" variant="outline" data-testid="pdk-share-grid" />}
                 {mode === "practice" && (
                   <Button type="button" onClick={newPractice}>
                     <Dices className="h-4 w-4" aria-hidden /> New grid
@@ -554,10 +638,10 @@ export function Pikadoku() {
           </section>
         )}
 
-        {mode === "daily" && (
+        {(mode === "daily" || mode === "weekly") && (
           <section className="space-y-2" aria-label="Leaderboard" data-testid="pdk-board">
             <div className="flex items-center justify-between">
-              <h2 className="font-display text-xl font-bold uppercase">Today&apos;s board · {DIFF_LABEL[difficulty]}</h2>
+              <h2 className="font-display text-xl font-bold uppercase">{mode === "weekly" ? `This week's board · ${weeklyInfo?.theme ?? "Weekly"}` : `Today's board · ${DIFF_LABEL[difficulty]}`}</h2>
               <div className="flex gap-1" role="tablist" aria-label="Leaderboard scope">
                 {(["all", "friends"] as const).map((s) => (
                   <button key={s} type="button" role="tab" aria-selected={boardScope === s} onClick={() => setBoardScope(s)} className={cn("rounded border px-2.5 py-1 text-xs font-semibold uppercase", boardScope === s ? "border-primary bg-primary/15" : "border-foreground/15 text-muted-foreground")}>
@@ -600,6 +684,18 @@ export function Pikadoku() {
           title={`${grid.rows[Math.floor(picking / 3)].label} × ${grid.cols[picking % 3].label}`}
           onPick={(p) => void pick(p)}
           onClose={() => setPicking(null)}
+        />
+      )}
+      {sheet === "archive" && today && (
+        <PdkArchiveSheet
+          today={today}
+          archive={loadPdkArchive()}
+          onPlay={(date, d) => {
+            setSheet(null);
+            setArchive({ date, difficulty: d });
+            setMode("archive");
+          }}
+          onClose={() => setSheet(null)}
         />
       )}
       {sheet === "howto" && <PdkHowToSheet onClose={() => setSheet(null)} />}
