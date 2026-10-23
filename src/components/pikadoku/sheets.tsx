@@ -1,8 +1,10 @@
 "use client";
 
 import { Sheet } from "@/components/pokedle/sheets";
-import { PDK_FAMILY_LABELS, PDK_PP, PDK_RULES, type PdkFamily } from "@/lib/pikadoku/types";
-import type { PdkPlay } from "@/lib/pikadoku/play";
+import { PDK_FAMILY_LABELS, PDK_PP, PDK_RULES, type PdkDifficulty, type PdkFamily } from "@/lib/pikadoku/types";
+import type { PdkPlay, PdkRecord } from "@/lib/pikadoku/play";
+import { archiveDates, archiveKey } from "@/lib/pikadoku/archive";
+import { connNumber } from "@/lib/connections/types";
 
 const KINDS: [PdkFamily, string][] = [
   ["types", "Fire type, Dual-typed (one matching type is enough)"],
@@ -81,6 +83,51 @@ export function PdkStatsSheet({ streak, best, play, onClose }: { streak: number;
         {cell("Duel wins", play.duelWins)}
         {cell("Duel losses", play.duelLosses)}
       </div>
+    </Sheet>
+  );
+}
+
+const ARCHIVE_DIFFS: { id: PdkDifficulty; label: string }[] = [
+  { id: "easy", label: "Easy" },
+  { id: "normal", label: "Normal" },
+  { id: "expert", label: "Expert" },
+];
+
+/** Every past daily, all three difficulties. Archive games never reach the board, the streak or the daily results. */
+export function PdkArchiveSheet({ today, archive, onPlay, onClose }: { today: string; archive: Readonly<Record<string, PdkRecord>>; onPlay: (date: string, difficulty: PdkDifficulty) => void; onClose: () => void }) {
+  const dates = archiveDates(today);
+  const status = (r: PdkRecord | undefined) => (!r ? "" : r.over ? (r.won ? "9/9" : `${r.solved}/9`) : r.guesses.length ? "…" : "");
+  return (
+    <Sheet title="Archive" onClose={onClose}>
+      <p className="mb-3 text-sm text-muted-foreground">Play any past daily at any difficulty. Archive games are just for fun: they never count toward the daily board or your streak.</p>
+      {dates.length === 0 ? (
+        <p className="py-6 text-center text-sm text-muted-foreground" data-testid="pdk-archive-empty">
+          No past dailies yet. Come back tomorrow.
+        </p>
+      ) : (
+        <ul className="max-h-[60vh] space-y-1 overflow-y-auto" data-testid="pdk-archive-list">
+          {dates.map((d) => (
+            <li key={d} className="flex flex-wrap items-center justify-between gap-2 rounded-md border px-3 py-2 text-sm">
+              <span className="font-semibold">
+                #{connNumber(d)} <span className="font-normal text-muted-foreground">· {d}</span>
+              </span>
+              <span className="flex gap-1">
+                {ARCHIVE_DIFFS.map(({ id, label }) => (
+                  <button
+                    key={id}
+                    type="button"
+                    onClick={() => onPlay(d, id)}
+                    data-testid={`pdk-archive-${d}-${id}`}
+                    className="rounded border border-foreground/15 px-2 py-1 text-xs font-semibold hover:border-primary hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  >
+                    {label} <span className="tabular-nums text-muted-foreground">{status(archive[archiveKey(d, id)])}</span>
+                  </button>
+                ))}
+              </span>
+            </li>
+          ))}
+        </ul>
+      )}
     </Sheet>
   );
 }
