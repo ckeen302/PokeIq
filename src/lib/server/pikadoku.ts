@@ -22,6 +22,8 @@ import {
  * answers are returned only by `revealFor`, once the replay says it's over.
  */
 
+import { masterFor } from "./pikadoku-master";
+
 const NAMES = new Map(allFacts().map((f) => [f.id, f.name]));
 export const pokemonName = (id: number) => NAMES.get(id) ?? `#${id}`;
 export const isDexId = (id: number) => NAMES.has(id);
@@ -37,8 +39,10 @@ const remember = (key: string, make: () => PdkGrid) => {
   return g;
 };
 
-/** A daily's grid: from the pre-generated year, else generated from the same seed. */
+/** A daily's grid: a curated Master grid (Normal only), else the pre-generated year, else generated from the same seed. */
 export function dailyGrid(date: string, difficulty: PdkDifficulty): PdkGrid {
+  const m = difficulty === "normal" ? masterFor(date) : null;
+  if (m) return remember(`m:${date}:${m.rows.join(",")}:${m.cols.join(",")}`, () => gridFromIds({ rows: m.rows, cols: m.cols }));
   return remember(`d:${date}:${difficulty}`, () => gridFromIds(FILE[date]?.[difficulty] ?? generateGrid(date, { difficulty })));
 }
 

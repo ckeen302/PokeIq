@@ -2,6 +2,7 @@ import "server-only";
 import { isCurrentConnDate } from "@/lib/connections/types";
 import { betterResult } from "@/lib/pikadoku/score";
 import { PDK_CELLS, type PdkDifficulty, type PdkGuess, type PdkResultResponse, type PdkSettings } from "@/lib/pikadoku/types";
+import { ensureMaster } from "./pikadoku-master";
 import { dailyGrid, practiceGrid, ppFor, replayGuesses, revealFor } from "./pikadoku";
 import { pdkElapsed, pdkPlayerKey, pdkStore, pickPct, scoreAnswers, standingOf, type PdkCounts, type PdkStore } from "./pikadoku-board";
 
@@ -36,6 +37,7 @@ const plus = (c: PdkCounts, answers: ReadonlyMap<number, number>): PdkCounts => 
  * only built here, after the server's own replay says the game has ended.
  */
 export async function finishGame(input: PdkFinishInput, store: PdkStore | null = pdkStore(), now = Date.now()): Promise<PdkFinishOutcome> {
+  await ensureMaster();
   const daily = !!input.date && !input.practice;
   if (daily && !/^\d{4}-\d{2}-\d{2}$/.test(input.date!)) return { ok: false, status: 400, error: "Bad date." };
   const grid = daily ? dailyGrid(input.date!, input.difficulty) : practiceGrid(input.practice ?? "x", input.settings);

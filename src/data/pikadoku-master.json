@@ -1,0 +1,5 @@
+[
+  { "date": "2026-10-27", "by": "Caden", "rows": ["other:paradox", "other:partner", "type:fire"], "cols": ["type:ground", "type:dragon", "type:fighting"] },
+  { "date": "2026-10-30", "by": "Caden", "rows": ["other:ultrabeast", "other:mega", "region:6"], "cols": ["type:steel", "type:bug", "stat:hp:100"] },
+  { "date": "2026-11-03", "by": "Caden", "rows": ["form:alola", "other:fossil", "other:gmax"], "cols": ["type:grass", "type:ice", "type:steel"] }
+]
