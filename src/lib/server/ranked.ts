@@ -115,15 +115,21 @@ interface MemoryDb {
   matches: Map<string, { keys: [string, string]; before: [number, number]; after: [number, number] }>;
 }
 
-const globalStore = globalThis as unknown as { __pokeiqRanked?: MemoryDb };
+const globalStore = globalThis as unknown as { __pokeiqRanked?: MemoryDb; __pokeiqRankedNamed?: Map<string, MemoryDb> };
 
 const blankPlayer = (name: string): MemoryPlayer => ({ rating: RANKED_START, games: 0, name, wins: 0, losses: 0, draws: 0, streak: 0, bestStreak: 0 });
 
 const ladder = (db: MemoryDb) =>
   [...db.players.values()].filter((p) => p.games > 0).sort((a, b) => b.rating - a.rating || b.games - a.games || a.name.localeCompare(b.name));
 
-export function memoryRankedStore(): RankedStore {
-  const db = (globalStore.__pokeiqRanked ??= { players: new Map(), matches: new Map() });
+/**
+ * Ratings in memory. `name` keeps a separate ladder (PokéConnections has one
+ * per season); left out, it is Pokédle's.
+ */
+export function memoryRankedStore(name?: string): RankedStore {
+  const db = name
+    ? ((globalStore.__pokeiqRankedNamed ??= new Map()).get(name) ?? (globalStore.__pokeiqRankedNamed.set(name, { players: new Map(), matches: new Map() }), globalStore.__pokeiqRankedNamed.get(name)!))
+    : (globalStore.__pokeiqRanked ??= { players: new Map(), matches: new Map() });
   return {
     async rating(key) {
       const p = db.players.get(key);
@@ -178,6 +184,7 @@ export function memoryRankedStore(): RankedStore {
 /** Forgets every rating in memory (tests). */
 export function clearMemoryRanked() {
   globalStore.__pokeiqRanked = undefined;
+  globalStore.__pokeiqRankedNamed = undefined;
 }
 
 // ---- Supabase -------------------------------------------------------------------
@@ -203,20 +210,21 @@ const pair = <T>(v: unknown, map: (x: unknown) => T): [T, T] => {
   return [map(a[0]), map(a[1])];
 };
 
-export function supabaseRankedStore(sb: NonNullable<ReturnType<typeof getServiceSupabase>>): RankedStore {
-  const call = async (fn: string, args: Record<string, unknown>) => {
-    if (Date.now() < missingUntil) throw new RankedUnavailable("migration 0014 not applied");
-    const { data, error } = await sb.rpc(fn, args);
+export function supabaseRankedStore(sb: NonNullable<ReturnType<typeof getServiceSupabase>>, scope?: { prefix: string; season: string }): RankedStore {
+  const prefix = scope?.prefix ?? "pokedle_ranked";
+  const call = async (name: string, args: Record<string, unknown>) => {
+    if (Date.now() < missingUntil) throw new RankedUnavailable("ranked migration not applied");
+    const { data, error } = await sb.rpc(`${prefix}_${name}`, scope ? { p_season: scope.season, ...args } : args);
     check(error);
     return data as Record<string, unknown> | null;
   };
   return {
     async rating(key) {
-      const r = await call("pokedle_ranked_standing", { p_key: key });
+      const r = await call("standing", { p_key: key });
       return r && r.rating !== null && r.rating !== undefined ? { rating: Number(r.rating), games: Number(r.games) } : null;
     },
     async standing(key) {
-      const r = await call("pokedle_ranked_standing", { p_key: key });
+      const r = await call("standing", { p_key: key });
       if (!r || r.rating === null || r.rating === undefined) return null;
       return {
         rating: Number(r.rating),
@@ -231,7 +239,7 @@ export function supabaseRankedStore(sb: NonNullable<ReturnType<typeof getService
       };
     },
     async top(limit) {
-      const rows = ((await call("pokedle_ranked_top", { p_limit: limit })) ?? []) as unknown as Record<string, unknown>[];
+      const rows = ((await call("top", { p_limit: limit })) ?? []) as unknown as Record<string, unknown>[];
       return rows.map((r, i) => ({
         position: i + 1,
         name: String(r.name),
@@ -242,7 +250,7 @@ export function supabaseRankedStore(sb: NonNullable<ReturnType<typeof getService
       }));
     },
     async apply(input) {
-      const r = (await call("pokedle_ranked_apply", {
+      const r = (await call("apply", {
         p_code: input.code,
         p_keys: input.keys,
         p_names: input.names,

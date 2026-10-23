@@ -857,7 +857,7 @@ step("pokéconnections duel: create, join, race to the end");
   await red.goto(`${BASE}/connections`, { waitUntil: "networkidle" });
   await closeHowTo(red);
   await red.getByText("Head to head · PokéConnections").waitFor();
-  await red.getByLabel("Your trainer name").fill("Red");
+  await red.locator("#duel").getByLabel("Your trainer name").fill("Red");
   await red.getByRole("button", { name: /Create duel/ }).click();
   await red.waitForURL(/\/connections\/duel\/[a-z2-9]{8}$/);
   const raceUrl = red.url();
@@ -1028,7 +1028,7 @@ async function findOpponent(path, ready) {
   ]) {
     await p.goto(`${BASE}${path}`, { waitUntil: "networkidle" });
     await closeHowTo(p);
-    await p.getByLabel("Your trainer name").fill(name);
+    await p.getByLabel("Your trainer name").first().fill(name);
   }
   await mRed.getByRole("button", { name: /Find an opponent/ }).click();
   await mRed.getByText("Searching for an opponent…").waitFor();

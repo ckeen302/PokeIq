@@ -3,6 +3,7 @@ import { pvpStore } from "./duel-store";
 import type { PvpDuel } from "./duels";
 import { rankedMatchOf, withRankedResult } from "./pokedle-duel";
 import { RankedUnavailable, rankedStore, settleRanked } from "./ranked";
+import { settleConnRanked, withConnRankedResult } from "./connections-ranked";
 
 /**
  * Counts a ranked duel once it's over: the ratings move (once per duel, see
@@ -11,6 +12,12 @@ import { RankedUnavailable, rankedStore, settleRanked } from "./ranked";
  * or if the ratings couldn't be reached: the next poll tries again).
  */
 export async function settleRankedDuel<D extends PvpDuel>(duel: D, rev: number): Promise<{ duel: D; rev: number }> {
+  if (duel.kind === "connections") {
+    const result = await settleConnRanked(duel);
+    if (!result) return { duel, rev };
+    const out = await pvpStore.update(duel.code, (d) => ({ ok: true as const, duel: d.kind === "connections" ? withConnRankedResult(d, result) : d }));
+    return out.ok ? { duel: out.duel as D, rev: out.rev } : { duel, rev };
+  }
   if (duel.kind !== "pokedle") return { duel, rev };
   const match = rankedMatchOf(duel);
   const store = match && rankedStore();

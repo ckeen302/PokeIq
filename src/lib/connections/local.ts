@@ -11,6 +11,8 @@ import { CONN_MAX_MISTAKES } from "./types";
  * to a trainer account; archive games are kept apart so they never count.
  */
 
+import type { ConnPack } from "./pack-seed";
+
 export interface ConnPrefs {
   /** The how-to sheet has been seen. */
   seenHowTo: boolean;
@@ -20,6 +22,8 @@ export interface ConnPrefs {
   showTimer: boolean;
   /** Unlimited's difficulty: which bands the groups come from (see the generator's DIFFICULTY_BANDS). */
   level: "easy" | "normal" | "hard";
+  /** Unlimited's themed pack ("all": none). */
+  pack?: "all" | ConnPack;
 }
 
 const PREFS_KEY = "pokeiq:connections-prefs:v1";

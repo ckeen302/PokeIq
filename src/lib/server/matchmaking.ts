@@ -7,6 +7,7 @@ import { joinDuel, readyDuel } from "./duels";
 import { createPokedleDuel } from "./pokedle-duel";
 import { createConnectionsDuel } from "./connections-duel";
 import { cancelQueue, searchQueue, type OpenedGame } from "./match-queue";
+import { CONN_RANKED_QUEUE_KEY, connSeasonOf } from "@/lib/connections/ranked";
 import { RANKED_QUEUE_KEY, cancelRankedQueue, searchRankedQueue, type RankedSeat } from "./ranked-queue";
 import type { RatingState } from "@/lib/ranked";
 import { pvpHref } from "@/lib/pvp-types";
@@ -48,7 +49,7 @@ export const matchSettingsSchema = z
   .discriminatedUnion("game", [
     z.object({ game: z.literal("geo"), region: z.string().max(20), era: z.enum(GEO_ERAS).optional() }),
     z.object({ game: z.literal("pokedle"), ranked: z.boolean().optional(), assist: z.enum(DLE_ASSISTS).optional(), format: z.enum(DLE_DAILY_FORMATS).optional() }),
-    z.object({ game: z.literal("connections") }),
+    z.object({ game: z.literal("connections"), ranked: z.boolean().optional() }),
   ])
   .superRefine((s, ctx) => {
     if (s.game === "geo" && !isDuelMap(s.region, s.era)) ctx.addIssue({ code: z.ZodIssueCode.custom, message: s.era ? "That map has too few places for those games." : "Unknown map." });
@@ -58,7 +59,7 @@ export type MatchSettings = z.infer<typeof matchSettingsSchema>;
 /** The queue a search waits in. Classic with the Notebook keeps the queue Pokédle had before levels and formats. */
 export function queueKey(s: MatchSettings): string {
   if (s.game === "geo") return `geo:${s.region}${s.era ? `:${s.era}` : ""}`;
-  if (s.game === "connections") return "connections";
+  if (s.game === "connections") return s.ranked ? CONN_RANKED_QUEUE_KEY : "connections";
   if (s.ranked) return RANKED_QUEUE_KEY;
   const assist = s.assist ?? DLE_DEFAULT_ASSIST;
   const base = s.format === "squirdle" ? "pokedle:squirdle" : "pokedle:all";
@@ -124,6 +125,7 @@ export async function searchMatch(settings: MatchSettings, name: string, ticket:
 
 /** Gives up a search. */
 export function cancelMatch(settings: MatchSettings, ticket: string): Promise<void> {
+  if (settings.game === "connections" && settings.ranked) return cancelRankedQueue(ticket, CONN_RANKED_QUEUE_KEY);
   return settings.game === "pokedle" && settings.ranked ? cancelRankedQueue(ticket) : cancelQueue(queueKey(settings), ticket);
 }
 
@@ -157,4 +159,29 @@ export async function searchRankedMatch(name: string, ticket: string, player: st
   const out = await searchRankedQueue({ ticket, name, player }, rating, openRankedDuel);
   if (!out.ok || out.status === "waiting") return out;
   return seat({ game: "pokedle", ranked: true }, out.code, out.playerId);
+}
+
+/** A ranked PokéConnections race for two matched trainers, stored and under way. Seat 0 is the trainer who was waiting. */
+async function openRankedConnectionsDuel(players: [RankedSeat, RankedSeat], now: number): Promise<OpenedGame | null> {
+  for (let attempt = 0; attempt < 4; attempt++) {
+    const code = newDuelCode();
+    const ranked = {
+      season: connSeasonOf(now),
+      keys: [players[0].player, players[1].player] as [string, string],
+      ratings: [players[0].rating, players[1].rating] as [number, number],
+      games: [players[0].games, players[1].games] as [number, number],
+    };
+    const { duel, playerId: a } = createConnectionsDuel(players[0].name, code, now, undefined, { queue: "ranked", ranked });
+    const { duel: joined, playerId: b } = must(joinDuel(duel, players[1].name, now));
+    const ready = must(readyDuel(must(readyDuel(joined, a, true, now)).duel, b, true, now)).duel;
+    if (await pvpStore.insert(ready)) return { code, ids: [a, b], remove: () => pvpStore.remove(code) };
+  }
+  return null;
+}
+
+/** A ranked PokéConnections search (or its next poll) by the trainer whose rating key is `player`. */
+export async function searchRankedConnections(name: string, ticket: string, player: string, rating: () => Promise<RatingState>): Promise<SearchResult | PvpFailure> {
+  const out = await searchRankedQueue({ ticket, name, player }, rating, openRankedConnectionsDuel, CONN_RANKED_QUEUE_KEY);
+  if (!out.ok || out.status === "waiting") return out;
+  return seat({ game: "connections", ranked: true }, out.code, out.playerId);
 }
