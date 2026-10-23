@@ -42,3 +42,11 @@ alter table public.pikadoku_board enable row level security;
 
 revoke all on public.pikadoku_answers from anon, authenticated;
 revoke all on public.pikadoku_board from anon, authenticated;
+
+-- Tic Tac Toe races run in the shared duels table and can be friend challenges:
+-- allow the 'pikadoku' kind in both, keeping every kind they already allow.
+alter table public.duels drop constraint if exists duels_kind_check;
+alter table public.duels add constraint duels_kind_check check (kind in ('pokedle', 'quiz', 'connections', 'pikadoku'));
+
+alter table public.friend_challenges drop constraint if exists friend_challenges_kind_check;
+alter table public.friend_challenges add constraint friend_challenges_kind_check check (kind in ('battle', 'pokedle', 'quiz', 'guessr', 'connections', 'pikadoku'));
