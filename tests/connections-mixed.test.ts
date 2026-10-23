@@ -35,11 +35,8 @@ describe("mixed tiles", () => {
     expect(validatePuzzle(two)).toEqual([]);
   });
 
-  it("the seed decides practice puzzles: never more than two mixed groups", () => {
-    const counts = SEEDS.map((s) => practiceConnPuzzle(s).groups.filter((g) => g.category.startsWith("mixed:")).length);
-    expect(Math.max(...counts)).toBeLessThanOrEqual(2);
-    expect(counts.some((c) => c > 0)).toBe(true);
-    expect(counts.some((c) => c === 0)).toBe(true);
+  it("practice puzzles are Pokémon only: no move, ability or type tiles", () => {
+    for (const s of SEEDS) expect(practiceConnPuzzle(s).groups.every((g) => !g.category.startsWith("mixed:"))).toBe(true);
   });
 
   it("the validator rejects a tile that fits two groups or none", () => {

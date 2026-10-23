@@ -55,8 +55,8 @@ export function dailyConnPuzzle(date: string, disabled?: DisabledCategories): Pu
   const entry = DAILIES.puzzles[day];
   const base = entry ? fromFile(entry) : null;
   const off = disabledFor(date, disabled);
-  // Days past the pre-generated file are dealt with mixed groups; every day in the file stays as it was.
-  const fresh = { mixed: "seed" as const };
+  // Pokémon-only tiles: no move, ability or type tiles in any puzzle.
+  const fresh = {};
   if (!off.size) return base ?? generatePuzzle(`daily:${date}`, fresh);
   if (base && !base.groups.some((g) => off.has(g.category))) return base;
   return generatePuzzle(`daily:${date}`, base ? { excludeCategories: off } : { excludeCategories: off, ...fresh });
@@ -74,7 +74,7 @@ export function practiceConnPuzzle(seed: string): Puzzle {
     // "hard-x7k2…": Unlimited's difficulty rides in the seed, so every guess check finds the same puzzle.
     const { pack, difficulty } = parsePracticeSeed(seed);
     // Practice puzzles may have one or two mixed groups (the seed decides); a pack's never do.
-    const base = pack ? { pack } : { mixed: "seed" as const };
+    const base = pack ? { pack } : {};
     try {
       p = generatePuzzle(`practice:${seed}`, { ...(difficulty && { difficulty }), ...base });
     } catch {

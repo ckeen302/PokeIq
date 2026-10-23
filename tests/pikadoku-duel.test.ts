@@ -33,7 +33,10 @@ describe("Pikadoku Tic Tac Toe duel", () => {
     const { d: d0, a, b, t } = started();
     const grid = gridFromIds(d0.gridIds);
     const right = (cell: number, skip: number[] = []) => grid.answers[cell].find((id) => !skip.includes(id))!;
-    const wrongId = (cell: number) => (grid.answers[cell].includes(1) ? 2 : 1);
+    // A Pokémon that doesn't fit: scan up from #1 (Ivysaur can fit a cell Bulbasaur does).
+    const wrongId = (cell: number) => {
+      for (let id = 1; ; id++) if (!grid.answers[cell].includes(id)) return id;
+    };
     // Not your turn.
     expect(claimCell(d0, b, 0, right(0), t).ok).toBe(false);
     // A wrong guess passes the turn.

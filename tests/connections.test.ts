@@ -290,8 +290,8 @@ describe("Unlimited's difficulty", () => {
   });
 
   it("rides in the seed: the same seed is the same puzzle, and a plain seed is normal", () => {
-    expect(practiceConnPuzzle("hard-zzzz1234")).toEqual(generatePuzzle("practice:hard-zzzz1234", { difficulty: "hard", mixed: "seed" }));
-    expect(practiceConnPuzzle("normal-zzzz1234")).toEqual(generatePuzzle("practice:normal-zzzz1234", { mixed: "seed" }));
-    expect(practiceConnPuzzle("zzzz1234")).toEqual(generatePuzzle("practice:zzzz1234", { mixed: "seed" }));
+    expect(practiceConnPuzzle("hard-zzzz1234")).toEqual(generatePuzzle("practice:hard-zzzz1234", { difficulty: "hard" }));
+    expect(practiceConnPuzzle("normal-zzzz1234")).toEqual(generatePuzzle("practice:normal-zzzz1234", {}));
+    expect(practiceConnPuzzle("zzzz1234")).toEqual(generatePuzzle("practice:zzzz1234", {}));
   });
 });
