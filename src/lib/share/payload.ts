@@ -3,6 +3,8 @@ import { DLE_ASSISTS, type DleAssist } from "@/lib/dle-assist";
 import type { DleFormat } from "@/lib/dle-format";
 import { DLE_HINT_KINDS, type DleHint } from "@/lib/dle-types";
 import { GEO_MAP_ORDER, GEO_MAX_ROUND_SCORE, GEO_ROUNDS } from "@/lib/geo-types";
+import { PDK_DIFFICULTIES, type PdkDifficulty } from "@/lib/pikadoku/types";
+import { RARITY_LETTERS } from "@/lib/pikadoku/share";
 import { CPU_LEVELS, PLAY_FORMAT_INFO, type CpuLevel, type PlayFormatId } from "@/lib/battle/play";
 
 /**
@@ -106,7 +108,28 @@ export interface ConnectionsShareResult {
   hinted?: boolean;
 }
 
-export type ShareResult = PokedleShareResult | GuessrShareResult | QuizShareResult | BattleShareResult | ConnectionsShareResult;
+/**
+ * A Pikadoku game: nine letters, one per cell, for how rare the pick was
+ * (p under 1%, b under 10%, g under 25%, y 25% or more, x wrong or empty).
+ * Colours only: never a Pokémon or a category.
+ */
+export interface PikadokuShareResult {
+  game: "pikadoku";
+  /** The daily's number; none for an Unlimited grid. */
+  daily?: number;
+  /** The weekly grid's number (weeks since launch). */
+  weekly?: number;
+  /** A past daily from the archive. */
+  archive?: boolean;
+  difficulty: PdkDifficulty;
+  /** Nine letters of RARITY_LETTERS, row-major. */
+  grid: string;
+  /** The uniqueness score (lower is better). */
+  score?: number;
+  streak?: number;
+}
+
+export type ShareResult = PokedleShareResult | GuessrShareResult | QuizShareResult | BattleShareResult | ConnectionsShareResult | PikadokuShareResult;
 export type ShareGame = ShareResult["game"];
 
 /** Longest payload accepted (and produced). */
@@ -116,7 +139,7 @@ const DLE_MAX_ROWS = 12;
 const DLE_MAX_COLUMNS = 7;
 export const SHARE_QUIZ_GRID = 60;
 
-const GAME_CODES: Record<ShareGame, string> = { pokedle: "dle", guessr: "geo", quiz: "quiz", battle: "bat", connections: "con" };
+const GAME_CODES: Record<ShareGame, string> = { pokedle: "dle", guessr: "geo", quiz: "quiz", battle: "bat", connections: "con", pikadoku: "pdk" };
 /** A PokéConnections game's most guesses: four groups and four mistakes, less the one that ends it. */
 const CONN_MAX_ROWS = 7;
 const DLE_FORMAT_CODES: Record<DleFormat, string> = { classic: "c", squirdle: "s", custom: "x" };
@@ -189,6 +212,17 @@ export function encodeShare(result: ShareResult): string {
         ["r", result.rows.slice(0, CONN_MAX_ROWS).join("-")]
       );
       break;
+    case "pikadoku":
+      fields.push(
+        ["n", result.daily],
+        ["z", result.weekly],
+        ["a", result.archive],
+        ["f", result.difficulty[0]],
+        ["g", result.grid],
+        ["q", result.score === undefined ? undefined : Math.round(result.score * 10)],
+        ["k", result.streak || undefined]
+      );
+      break;
   }
   const parts = [GAME_CODES[result.game]];
   for (const [key, value] of fields) {
@@ -245,7 +279,30 @@ export function decodeShare(raw: unknown): ShareResult | null {
       return decodeBattle(f);
     case "connections":
       return decodeConnections(f);
+    case "pikadoku":
+      return decodePikadoku(f);
   }
+}
+
+function decodePikadoku(f: Record<string, string>): PikadokuShareResult | null {
+  const difficulty = PDK_DIFFICULTIES.find((d) => d[0] === f.f);
+  if (!difficulty || !f.g || !new RegExp(`^[${RARITY_LETTERS}]{9}$`).test(f.g)) return null;
+  const daily = num(f.n, 1, DAILY_MAX);
+  const weekly = num(f.z, 1, 10_000);
+  if (daily !== undefined && weekly !== undefined) return null;
+  const tenths = num(f.q, 0, 9000);
+  const streak = num(f.k, 1, 100_000);
+  const archive = daily !== undefined && f.a === "1";
+  return {
+    game: "pikadoku",
+    ...(daily !== undefined && { daily }),
+    ...(weekly !== undefined && { weekly }),
+    ...(archive && { archive: true }),
+    difficulty,
+    grid: f.g,
+    ...(tenths !== undefined && { score: tenths / 10 }),
+    ...(streak !== undefined && daily !== undefined && !archive && { streak }),
+  };
 }
 
 /** A row that's one whole group: a right guess. */

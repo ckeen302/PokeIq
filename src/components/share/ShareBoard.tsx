@@ -14,6 +14,11 @@ const TILE_CLASS: Record<ShareTile, string> = {
   "conn-green": "bg-[#96c860]",
   "conn-blue": "bg-[#8fb2ef]",
   "conn-purple": "bg-[#bd8ad8]",
+  "pdk-purple": "bg-[#a855f7]",
+  "pdk-blue": "bg-[#3b82f6]",
+  "pdk-green": "bg-[#22c55e]",
+  "pdk-yellow": "bg-[#eab308]",
+  "pdk-empty": "bg-zinc-800",
 };
 
 const TILE_LABEL: Record<ShareTile, string> = {
@@ -29,6 +34,11 @@ const TILE_LABEL: Record<ShareTile, string> = {
   "conn-green": "green",
   "conn-blue": "blue",
   "conn-purple": "purple",
+  "pdk-purple": "under 1%",
+  "pdk-blue": "under 10%",
+  "pdk-green": "under 25%",
+  "pdk-yellow": "25% or more",
+  "pdk-empty": "wrong or empty",
 };
 
 /** A shared result's board: rows of squares, plus optional numbers under them (PokéGuessr's points). */
