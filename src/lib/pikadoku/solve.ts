@@ -1,4 +1,4 @@
-import { allFacts, membersOf, type PdkCategory } from "./categories";
+import { allFacts, baseOf, membersOf, type PdkCategory } from "./categories";
 import { PDK_CELLS, PDK_SIZE, PDK_MIN_ANSWERS, type PdkDifficulty } from "./types";
 
 /** Species ids that fit both a row and a column category, in dex order. */
@@ -23,21 +23,23 @@ export function gridAnswers(rows: PdkCategory[], cols: PdkCategory[]): number[][
  * assignment (cell -> id) or null.
  */
 export function matchCells(cells: { cell: number; options: number[] }[], banned: ReadonlySet<number> = new Set()): Map<number, number> | null {
-  const owner = new Map<number, number>(); // id -> index in cells
+  // A form and its species are one Pokémon: they share a key (and `banned` holds species ids).
+  const owner = new Map<number, { i: number; id: number }>();
   const tryCell = (i: number, seen: Set<number>): boolean => {
     for (const id of cells[i].options) {
-      if (banned.has(id) || seen.has(id)) continue;
-      seen.add(id);
-      const j = owner.get(id);
-      if (j === undefined || tryCell(j, seen)) {
-        owner.set(id, i);
+      const key = baseOf(id);
+      if (banned.has(key) || seen.has(key)) continue;
+      seen.add(key);
+      const j = owner.get(key);
+      if (j === undefined || tryCell(j.i, seen)) {
+        owner.set(key, { i, id });
         return true;
       }
     }
     return false;
   };
   for (let i = 0; i < cells.length; i++) if (!tryCell(i, new Set())) return null;
-  return new Map([...owner].map(([id, i]) => [cells[i].cell, id]));
+  return new Map([...owner.values()].map(({ i, id }) => [cells[i].cell, id]));
 }
 
 /** A grid is solvable when every cell has enough answers and nine different Pokémon can fill it. */
@@ -57,7 +59,7 @@ export function solveGrid(answers: number[][]): Map<number, number> | null {
  * unsolvable (no distinct Pokémon for each)? `locked` maps cell -> id.
  */
 export function softLockSafe(answers: number[][], locked: ReadonlyMap<number, number>, cell: number, id: number): boolean {
-  const used = new Set<number>([...locked.values(), id]);
+  const used = new Set<number>([...locked.values(), id].map(baseOf));
   const open = answers.map((options, c) => ({ cell: c, options })).filter((x) => x.cell !== cell && !locked.has(x.cell));
   return matchCells(open, used) !== null;
 }

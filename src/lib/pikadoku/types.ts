@@ -57,12 +57,28 @@ export interface PdkReveal {
 }
 
 export const PDK_RULES = [
-  "A Pokémon is judged by its species. Its region is where the species debuted (Pikachu is Kanto).",
-  "A regional form counts for the region it debuted in: Alolan Raichu is an Alola form, so Raichu matches 'Has an Alolan form' (and not 'Introduced in Alola').",
-  "Mega Evolutions and Gigantamax forms count for the base Pokémon's region and for 'Has a Mega Evolution' or 'Has a Gigantamax form'.",
-  "A type category needs just one of the Pokémon's types to match; forms don't change a species' answers.",
-  "Move categories use the Scarlet & Violet learnset; stat categories use base stats.",
+  "Forms are their own picks: regional forms (Alolan Raichu), Megas (Mega Charizard X and Y), Gigantamax forms and a few notable forms (Partner Pikachu, Primal Kyogre, Origin formes, Crowned Zacian).",
+  "A form's types, stats and abilities are its own. Its evolution line, legendary status and moves are its species'.",
+  "A regional form counts for the region it debuted in: Alolan Raichu is from Alola, Galarian Meowth from Galar, Paldean Wooper from Paldea, Hisuian Growlithe from Hisui. A Mega or Gigantamax form counts for its species' region.",
+  "No reuse: a form and its species are the same Pokémon. Once you use Charizard, Mega Charizard X is taken too, and the other way round. (Stricter than PokeDoku, where forms can repeat.)",
+  "A species counts for 'Has an Alolan form' (and its forms of other regions); a type category needs just one of the Pokémon's types to match.",
+  "Move categories use the Scarlet & Violet learnset of the species; stat categories use base stats.",
 ];
+
+/** Tooltip text for a category: exactly what counts, forms included. */
+export function categoryHint(id: string): string {
+  const forms = "Forms are their own picks, with their own types, stats and abilities.";
+  if (id.startsWith("type:") || id.startsWith("types:")) return `Counts a Pokémon's own types. ${forms} Mega Charizard X is Fire and Dragon.`;
+  if (id.startsWith("region:") || id.startsWith("form:")) return `A species counts for the region it debuted in; a regional form counts for the region it debuted in (Alolan Raichu: Alola); Megas and Gigantamax forms count for their species' region.`;
+  if (id.startsWith("evo:")) return "Judged by the evolution line. A form follows its species' line: Alolan Raichu is a second stage.";
+  if (id.startsWith("move:")) return "Scarlet & Violet learnset of the species. Forms use their species' moves.";
+  if (id.startsWith("ability:")) return `Abilities of the form picked: Mega Charizard X has Tough Claws, not Blaze. ${id === "ability:hidden" ? "Hidden abilities count." : ""}`.trim();
+  if (id.startsWith("stat:")) return "Base stats of the form picked: a Mega's stats are its own.";
+  if (id === "other:mega" || id === "other:gmax") return "The species has this form, so the species and each of its forms count.";
+  if (id === "other:paradox" || id === "other:ultrabeast") return "From a hand-kept list of the official ones. Forms follow their species.";
+  if (id === "other:partner") return "A starter or any Pokémon in a starter's evolution line, from Kanto to Paldea. Forms follow their species.";
+  return `Legendary, Mythical, fossil, baby and OU status belong to the species; forms follow it. ${forms}`;
+}
 
 /** What /api/pikadoku/result sends once a game is over. */
 export interface PdkResultResponse {

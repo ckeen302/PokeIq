@@ -20,7 +20,7 @@ export const gridFields = {
     .optional(),
 };
 
-export const guessSchema = z.object({ cell: z.number().int().min(0).max(PDK_CELLS - 1), id: z.number().int().positive().max(2000) });
+export const guessSchema = z.object({ cell: z.number().int().min(0).max(PDK_CELLS - 1), id: z.number().int().positive().max(12000) });
 export const historySchema = z.array(guessSchema).max(PDK_CELLS * 40);
 
 interface Named {

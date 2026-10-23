@@ -32,12 +32,13 @@ export function tttWinner(owners: readonly (TttMark | null)[]): { mark: TttMark;
 export type TttOutcome = "claimed" | "missed" | "timeout" | "illegal";
 
 /** A turn's guess. `valid` is the server's check of the Pokémon against the cell. */
-export function playTtt(s: TttState, cell: number, id: number, valid: boolean): { state: TttState; outcome: TttOutcome } {
-  if (s.winner || cell < 0 || cell > 8 || s.owners[cell] || s.used.includes(id)) return { state: s, outcome: "illegal" };
+export function playTtt(s: TttState, cell: number, id: number, valid: boolean, base: (id: number) => number = (x) => x): { state: TttState; outcome: TttOutcome } {
+  // `used` holds species ids: a form and its species are one Pokémon.
+  if (s.winner || cell < 0 || cell > 8 || s.owners[cell] || s.used.includes(base(id))) return { state: s, outcome: "illegal" };
   if (!valid) return { state: { ...s, turn: other(s.turn) }, outcome: "missed" };
   const owners = s.owners.slice();
   owners[cell] = s.turn;
-  const used = [...s.used, id];
+  const used = [...s.used, base(id)];
   const win = tttWinner(owners);
   if (win) return { state: { owners, used, turn: s.turn, winner: win.mark, line: win.line }, outcome: "claimed" };
   const full = owners.every(Boolean);
