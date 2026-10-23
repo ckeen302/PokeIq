@@ -3,6 +3,7 @@ import detailsData from "@/data/pokedex-details.json";
 import movesData from "@/data/moves.json";
 import ouData from "@/data/smogon/gen9ou.json";
 import { GENERATION_REGIONS } from "@/lib/pokemon/constants";
+import { PARADOX_IDS, STARTER_IDS, ULTRA_BEAST_IDS } from "./curated";
 import type { PdkFamily } from "./types";
 
 /**
@@ -167,6 +168,10 @@ const TYPE_LIST = ["normal", "fire", "water", "electric", "grass", "ice", "fight
 const STAT_NAMES = { hp: "HP", atk: "Attack", def: "Defense", spa: "Sp. Atk", spd: "Sp. Def", spe: "Speed" } as const;
 const itemEvo = (m: string) => /^use |holding/.test(m) && !/trade/.test(m);
 
+const PARADOX = new Set(PARADOX_IDS);
+const ULTRA_BEAST = new Set(ULTRA_BEAST_IDS);
+/** Every evolution line that starts from a starter, derived from the data's chain ids. */
+const STARTER_CHAINS = new Set(dex.filter((p) => STARTER_IDS.includes(p.id)).map((p) => p.chain));
 
 function build(): PdkCategory[] {
   const out: PdkCategory[] = [];
@@ -197,6 +202,9 @@ function build(): PdkCategory[] {
   add("other:baby", "other", "Baby Pokémon", 2, (f) => f.isBaby);
   add("other:mega", "other", "Has a Mega Evolution", 2, (f) => f.hasMega);
   add("other:gmax", "other", "Has a Gigantamax form", 2, (f) => f.hasGmax);
+  add("other:paradox", "other", "Paradox Pokémon", 2, (f) => PARADOX.has(f.baseId));
+  add("other:ultrabeast", "other", "Ultra Beast", 2, (f) => ULTRA_BEAST.has(f.baseId));
+  add("other:partner", "other", "First Partner (starter line)", 2, (f) => STARTER_CHAINS.has(f.chain));
   add("other:ou", "other", "OU-relevant (Gen 9 OU)", 3, (f) => f.ou);
   add("ability:hidden", "abilities", "Has a hidden ability", 1, (f) => f.abilities.some((a) => a.hidden));
   for (const [stat, name] of Object.entries(STAT_NAMES)) {
