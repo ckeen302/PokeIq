@@ -177,7 +177,7 @@ export function DexEntry({ data }: { data: DexEntryData }) {
               href={`/pokemon/${n.slug}`}
               className={cn("group flex items-center gap-3 hud rounded-lg border bg-card p-3 transition hover:border-primary/40", i === 1 && "flex-row-reverse text-right")}
             >
-              <img src={artUrl(n.id, 96)} alt="" width={64} height={64} className="h-16 w-16 transition-transform group-hover:scale-110" />
+              <img src={artUrl(n.id, 96)} loading="lazy" alt="" width={64} height={64} className="h-16 w-16 transition-transform group-hover:scale-110" />
               <div>
                 <div className="hud-label">No.{String(n.id).padStart(4, "0")}</div>
                 <div className="font-display font-bold uppercase tracking-wide">{n.name}</div>

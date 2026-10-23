@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { pageMetadata } from "@/lib/seo";
+import { GameInfo } from "@/components/seo/GameInfo";
 import { ModeIcon } from "@/components/game/ModeIcon";
 import { MODULE_INFO, QUIZ_PRESETS, presetFor } from "@/lib/modes";
 import { QuizSetupFromQuery } from "./QuizSetupFromQuery";
@@ -94,6 +95,22 @@ export default async function QuizPage({ params }: PageProps) {
             ))}
         </p>
       </section>
+      <GameInfo
+        path={`/quiz/${preset.slug}`}
+        name={`${preset.h1}`}
+        description={`${preset.description}`}
+        intro={`${preset.h1} is one of our free Pokémon quizzes, like the Who's That Pokémon quiz: ${preset.description}`}
+        steps={[
+          "Choose a format and difficulty, and the generations to include.",
+          "Answer each question before the timer runs out.",
+          "Your PokéIQ is calculated from how hard the questions you got right were.",
+        ]}
+        faqs={[
+          { q: `What formats can I play?`, a: `Classic is 10 questions with 15 seconds each, Survival is endless with 3 lives and Blitz gives you 60 seconds to answer as many as you can.` },
+          { q: `Do I need an account?`, a: `No sign-up is needed to play.` },
+          { q: `Can I play against a friend?`, a: `Yes, quiz duels let you answer the same questions head to head, live.` },
+        ]}
+      />
     </div>
   );
 }

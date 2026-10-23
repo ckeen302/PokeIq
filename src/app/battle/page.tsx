@@ -2,15 +2,16 @@ import type { Metadata } from "next";
 import { pageMetadata } from "@/lib/seo";
 import Link from "next/link";
 import { ArrowRight, Bot, Calculator, Castle, Factory, FlaskConical, UserSearch, Users, type LucideIcon } from "lucide-react";
+import { GameInfo } from "@/components/seo/GameInfo";
 import { HudHeading } from "@/components/game/HudHeading";
 import { BATTLE_FORMATS, BATTLE_FORMAT_IDS } from "@/lib/battle/formats";
 import { BattleHome, type NewsItem } from "@/components/battle/BattleHome";
 import NEWS from "@/data/news.json";
 
 export const metadata: Metadata = pageMetadata({
-  title: "Pokémon Battles Online — PvP, vs Computer & Team Builder",
+  title: "Pokémon Battle Simulator: PvP, vs Computer & Team Builder",
   description:
-    "Battle Pokémon online on Pokémon Showdown's own engine: find an opponent for a live PvP battle in seconds, battle a friend through a link, or battle the computer. Plus a team builder checked against Showdown's rules, the Smogon damage calculator and the Battle Lab.",
+    "A Pokémon battle simulator on Pokémon Showdown's own engine: find an opponent for a live PvP battle in seconds, battle a friend through a link, or battle the computer. Plus a team builder checked against Showdown's rules, the Smogon damage calculator and the Battle Lab.",
   path: "/battle",
 });
 
@@ -161,6 +162,24 @@ export default function BattlePage() {
           })}
         </div>
       </section>
+      <GameInfo
+        path="/battle"
+        name="Pokémon battles"
+        description="A free Pokémon battle simulator on Pokémon Showdown's engine: battle the computer, a friend or a stranger, with a team builder, damage calculator and Battle Lab."
+        intro="This Pokémon battle simulator runs on Pokémon Showdown's own engine: battle the computer, a friend through a link, or an opponent found online."
+        steps={[
+          "Pick a mode: battle the computer, battle online, or open the Battle Frontier.",
+          "Use a random team or build your own in the team builder.",
+          "Choose your moves each turn and win the battle.",
+          "Check matchups with the damage calculator or simulate thousands of battles in the Battle Lab.",
+        ]}
+        faqs={[
+          { q: "Is this a Pokémon battle simulator?", a: "Yes. Battles run on Pokémon Showdown's engine, against the computer or live against another player." },
+          { q: "Can I build my own team?", a: "Yes, the team builder checks your team against Pokémon Showdown's rules for each format." },
+          { q: "Is there a Pokémon damage calculator?", a: "Yes, the damage calculator is powered by the Smogon damage calculator." },
+          { q: "What is the Battle Lab?", a: "It lets you set up any matchup and have the engine play it thousands of times to estimate win odds." },
+        ]}
+      />
     </div>
   );
 }
