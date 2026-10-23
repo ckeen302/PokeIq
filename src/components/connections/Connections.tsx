@@ -5,7 +5,7 @@ import { AnimatePresence, LayoutGroup, MotionConfig, motion } from "framer-motio
 import { track } from "@vercel/analytics";
 import { BarChart3, CalendarDays, CircleHelp, Dices, Infinity as InfinityIcon, Lightbulb, PencilLine, RefreshCw, Settings, Shuffle, Swords, Timer, X } from "lucide-react";
 import { connBlock, getProgress, recordConnGame, saveConn, setTrainerName, useProgress, type BadgeDef, type ConnRecord } from "@/lib/progress";
-import { CONN_PACKS, PACK_INFO, parsePracticeSeed } from "@/lib/connections/pack-seed";
+import { parsePracticeSeed } from "@/lib/connections/pack-seed";
 import { useToday } from "@/lib/use-today";
 import { play } from "@/lib/sound";
 import { dlePlayerId } from "@/lib/dle-player";
@@ -112,7 +112,6 @@ export function Connections({ customId }: { customId?: string } = {}) {
   const mode: Mode = target?.kind ?? "daily";
   const symbols = prefs?.symbols ?? true;
   const level = prefs?.level ?? "normal";
-  const pack = prefs?.pack ?? "all";
   const over = state?.over ?? false;
   const won = state?.won ?? false;
   const foundLevels = useMemo(() => new Set((state?.found ?? []).map((g) => g.level)), [state]);
@@ -173,8 +172,8 @@ export function Connections({ customId }: { customId?: string } = {}) {
     setElapsed({ banked: saved?.ms ?? 0, since: null });
     try {
       const res = await fetch(`/api/connections?${new URLSearchParams(query(t))}`);
-      const body = await res.json();
-      if (!res.ok) throw new Error(body.error ?? "Couldn't load the puzzle.");
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(body.error ?? "Couldn't load the puzzle. Try again.");
       if (id !== reqRef.current) return;
       const p = body as ConnPuzzleResponse;
       // The first deal of the day times the game for the leaderboard (a reload doesn't restart the clock).
@@ -430,8 +429,8 @@ export function Connections({ customId }: { customId?: string } = {}) {
 
   // ---- Modes -----------------------------------------------------------------
 
-  function newPractice(level: ConnPrefs["level"] = getConnPrefs().level, pack: ConnPrefs["pack"] = getConnPrefs().pack) {
-    void load({ kind: "practice", seed: newSeed(level, pack) });
+  function newPractice(level: ConnPrefs["level"] = getConnPrefs().level) {
+    void load({ kind: "practice", seed: newSeed(level) });
   }
 
   function backToDaily() {
@@ -622,32 +621,7 @@ export function Connections({ customId }: { customId?: string } = {}) {
                 ))}
               </div>
             </div>
-            <div className="flex flex-wrap items-center justify-center gap-2" data-testid="conn-packs">
-              <span className="hud-label">Pack</span>
-              <div className="flex flex-wrap justify-center gap-1" role="radiogroup" aria-label="Unlimited pack">
-                {(["all", ...CONN_PACKS] as const).map((p) => (
-                  <button
-                    key={p}
-                    type="button"
-                    role="radio"
-                    aria-checked={pack === p}
-                    title={p === "all" ? "Every Pokémon" : PACK_INFO[p].blurb}
-                    onClick={() => {
-                      if (pack === p) return;
-                      setConnPrefs({ pack: p });
-                      if (guesses.length === 0 || over) newPractice(level, p);
-                    }}
-                    className={cn(
-                      "h-8 rounded-sm border px-2.5 font-pixel text-[10px] uppercase tracking-wider transition-colors",
-                      pack === p ? "border-primary bg-primary text-primary-foreground" : "border-foreground/10 bg-shade/20 text-muted-foreground hover:border-primary/50 hover:text-foreground"
-                    )}
-                  >
-                    {p === "all" ? "All" : PACK_INFO[p].name}
-                  </button>
-                ))}
-              </div>
-            </div>
-            {guesses.length > 0 && !over && <p className="text-xs text-muted-foreground">A new difficulty or pack starts with your next puzzle.</p>}
+            {guesses.length > 0 && !over && <p className="text-xs text-muted-foreground">A new difficulty starts with your next puzzle.</p>}
           </div>
         )}
         {mode === "daily" && stats?.atRisk && !over && (
