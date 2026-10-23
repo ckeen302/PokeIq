@@ -1,5 +1,7 @@
 import { CATEGORIES } from "./categories";
 import { factsOf } from "./facts";
+import { MIXED_CATEGORIES, tileRef } from "./mixed";
+import { isPokemonTile } from "./tiles";
 import { CONN_GROUP_SIZE, CONN_GROUPS, guessKey } from "./types";
 
 /**
@@ -16,8 +18,10 @@ export function solveGrid(tiles: readonly number[]): number[][][] {
   const grid = new Set(tiles);
   // A category that fits exactly four of the sixteen could be one of the groups.
   const candidates = new Map<string, number[]>();
-  for (const c of CATEGORIES) {
-    const members = tiles.filter((id) => c.test(factsOf(id)));
+  // Move, ability and type tiles only fit mixed groups, through testTile.
+  const fits = (c: (typeof CATEGORIES)[number], id: number) => (isPokemonTile(id) ? c.test(factsOf(id)) : (c.testTile?.(tileRef(id)) ?? false));
+  for (const c of new Set([...CATEGORIES, ...MIXED_CATEGORIES])) {
+    const members = tiles.filter((id) => fits(c, id));
     if (members.length === CONN_GROUP_SIZE) candidates.set(guessKey(members), [...members].sort((a, b) => a - b));
   }
   const sets = [...candidates.values()];
