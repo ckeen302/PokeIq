@@ -1,4 +1,6 @@
 import { GENERATION_REGIONS, STAT_LABELS, type StatKey } from "@/lib/pokemon/constants";
+import { curatedCategories } from "./curated";
+import { wordplayCategories } from "./wordplay";
 import { FACTS, MOVES, SV, factsOf, isFriendship, isTrade, nameOf, stoneOf, type Facts, type Region } from "./facts";
 
 /**
@@ -21,7 +23,7 @@ import { FACTS, MOVES, SV, factsOf, isFriendship, isTrade, nameOf, stoneOf, type
  * read badly are left out here; BLACKLIST names any found unfair in review.
  */
 
-export type CategoryFamily = "type" | "origin" | "evolution" | "battle" | "stats" | "body" | "forms" | "breeding" | "name";
+export type CategoryFamily = "type" | "origin" | "evolution" | "battle" | "stats" | "body" | "forms" | "breeding" | "name" | "wordplay" | "lore";
 
 export interface Category {
   id: string;
@@ -545,6 +547,8 @@ function build(): Category[] {
       return "an accent";
     },
   });
+  // Name wordplay and hand-checked lists (./wordplay, ./curated): blue and purple.
+  out.push(...wordplayCategories(new Set(out.map((c) => c.id))), ...curatedCategories());
   return out;
 }
 

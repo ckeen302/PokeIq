@@ -213,6 +213,8 @@ const FAMILY_WEIGHT: Record<CategoryFamily, number> = {
   forms: 0.9,
   breeding: 0.3,
   name: 0.4,
+  wordplay: 1.2,
+  lore: 1.2,
 };
 
 const POOL = FACTS.filter((f) => f.pooled);
