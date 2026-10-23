@@ -264,7 +264,7 @@ export function connectionsShareText(r: ConnectionsShareResult, url?: string): s
   return composeShare({
     title: connectionsTitle(r),
     score: connectionsScore(r),
-    badges: [r.streak ? `🔥${r.streak}` : null, r.seconds !== undefined && `⏱${clock(r.seconds)}`],
+    badges: [r.streak ? `🔥${r.streak}` : null, r.seconds !== undefined && `⏱${clock(r.seconds)}`, r.hinted && "💡hint"],
     lines: r.rows.map((row) => [...row].map((d) => CONN_SQUARES[Number(d)]).join("")),
     url,
   });

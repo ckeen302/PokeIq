@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { pageMetadata } from "@/lib/seo";
 import { Connections } from "@/components/connections/Connections";
+import { PuzzleOfTheDay } from "@/components/connections/PuzzleOfTheDay";
 import { ConnectionsDuelCard } from "@/components/connections/ConnectionsDuelCard";
 
 export const metadata: Metadata = pageMetadata({
@@ -15,6 +16,7 @@ export default function ConnectionsPage() {
   return (
     <div className="space-y-10">
       <Connections />
+      <PuzzleOfTheDay />
       <div id="duel" className="mx-auto max-w-3xl scroll-mt-24">
         <ConnectionsDuelCard />
       </div>

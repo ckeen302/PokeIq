@@ -3,8 +3,9 @@ import { getServiceSupabase } from "@/lib/supabase";
 import { isCurrentConnDate, type ConnBoardStanding, type ConnDaySummary } from "@/lib/connections/types";
 import { playGuesses } from "@/lib/connections/generator";
 import { deriveSeed } from "./crypto";
-import { dailyConnPuzzle } from "./connections";
+import type { ConnGroupStats } from "@/lib/connections/social";
 import { connBoardStore, timeFromStart, type ConnBoardStore } from "./connections-board";
+import { effectiveDaily, hintUsed, recordGroupStats, socialStore, type SocialStore } from "./connections-social";
 
 /**
  * PokéConnections' daily stats: "71% of trainers solved today's, 18% got
@@ -87,7 +88,19 @@ export function connResultStore(): ConnResultStore | null {
   return sb ? supabaseConnStore(sb) : null;
 }
 
-export type ConnRecordOutcome = { ok: true; summary: ConnDaySummary | null; board: ConnBoardStanding } | { ok: false; status: number; error: string };
+export interface ConnRecordOk {
+  ok: true;
+  summary: ConnDaySummary | null;
+  board: ConnBoardStanding;
+  /** The share of today's players who found each group, from the server's replays. */
+  groups?: ConnGroupStats;
+  /** The player took the one hint (recorded by the server when it gave it). */
+  hinted: boolean;
+  /** The ranked entry, once the player is on the board. */
+  mine?: { mistakes: number; ms: number; hinted: boolean };
+}
+
+export type ConnRecordOutcome = ConnRecordOk | { ok: false; status: number; error: string };
 
 export interface ConnResultInput {
   date: string;
@@ -109,22 +122,35 @@ export async function recordConnResult(
   input: ConnResultInput,
   store: ConnResultStore | null = connResultStore(),
   now = Date.now(),
-  board: ConnBoardStore | null = connBoardStore()
+  board: ConnBoardStore | null = connBoardStore(),
+  social: SocialStore | null = socialStore()
 ): Promise<ConnRecordOutcome> {
   if (!isCurrentConnDate(input.date, now)) return { ok: false, status: 400, error: "Only today's PokéConnections counts." };
   let state;
   try {
-    state = playGuesses(dailyConnPuzzle(input.date), input.guesses);
+    state = playGuesses(await effectiveDaily(input.date, social), input.guesses);
   } catch (err) {
     return { ok: false, status: 400, error: (err as Error).message };
   }
   if (!state.over) return { ok: false, status: 409, error: "Finish the puzzle first." };
   const player = connPlayerKey(input.identity);
   const summary = store ? await store.record({ date: input.date, player, solved: state.won, mistakes: state.mistakes }) : null;
-  return { ok: true, summary, board: await rankOnBoard(board, input, player, state.won, state.mistakes, now) };
+  // The hint is the server's own record, never a flag from the client.
+  const hinted = await hintUsed(input.date, player, social);
+  const groups = await recordGroupStats(input.date, player, state, social);
+  const standing = await rankOnBoard(board, input, player, state.won, state.mistakes, hinted, now);
+  const entry = board && "position" in standing ? (await board.byPlayers(input.date, [player]))[0] : undefined;
+  return {
+    ok: true,
+    summary,
+    board: standing,
+    hinted,
+    ...(groups && { groups }),
+    ...(entry && { mine: { mistakes: entry.mistakes, ms: entry.durationMs, hinted: !!entry.hinted } }),
+  };
 }
 
-async function rankOnBoard(board: ConnBoardStore | null, input: ConnResultInput, player: string, solved: boolean, mistakes: number, now: number): Promise<ConnBoardStanding> {
+async function rankOnBoard(board: ConnBoardStore | null, input: ConnResultInput, player: string, solved: boolean, mistakes: number, hinted: boolean, now: number): Promise<ConnBoardStanding> {
   if (!board) return { unranked: "off" };
   // Already on today's board (a reload, or a name added afterwards): where they stand.
   const already = await board.standing(input.date, player);
@@ -133,7 +159,7 @@ async function rankOnBoard(board: ConnBoardStore | null, input: ConnResultInput,
   if (!input.name) return { unranked: "no-name" };
   const durationMs = timeFromStart(input.start, input.date, now);
   if (durationMs === null) return { unranked: "untimed" };
-  const out = await board.record({ date: input.date, player, name: input.name, mistakes, durationMs });
+  const out = await board.record({ date: input.date, player, name: input.name, mistakes, durationMs, hinted });
   if (out === null) return { unranked: "off" };
   if (out === "name-taken") return { unranked: "name-taken" };
   const standing = await board.standing(input.date, player);

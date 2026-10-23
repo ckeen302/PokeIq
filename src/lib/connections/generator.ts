@@ -240,6 +240,8 @@ function weightedPick<T>(rng: Rng, items: readonly T[], weight: (t: T) => number
 export interface GenerateOptions {
   /** Categories not to use (the last few days'). */
   avoidCategories?: ReadonlySet<string>;
+  /** Categories never to use, however long the search takes (the ones moderators switched off). */
+  excludeCategories?: ReadonlySet<string>;
   /** Pokémon not to use (the last few days'). */
   avoidPokemon?: ReadonlySet<number>;
   /** Ways to fill a set of categories before keeping the best (×3 tries). */
@@ -321,7 +323,9 @@ export function generatePuzzle(seed: string, options: GenerateOptions = {}): Puz
   for (let set = 0; set < 400; set++) {
     // Late on, let go of the variety rules rather than fail.
     const strict = set < 300;
-    const cats = pickCategories(rng, strict ? (options.avoidCategories ?? none) : none, DIFFICULTY_BANDS[options.difficulty ?? "normal"]);
+    const banned = options.excludeCategories ?? none;
+    const avoid = strict && options.avoidCategories ? new Set([...options.avoidCategories, ...banned]) : banned;
+    const cats = pickCategories(rng, avoid, DIFFICULTY_BANDS[options.difficulty ?? "normal"]);
     if (!cats) continue;
     let best: { groups: PuzzleGroup[]; score: number } | null = null;
     for (let i = 0; i < tries; i++) {

@@ -29,11 +29,32 @@ function fromFile(entry: DailiesFile["puzzles"][number]): Puzzle {
   };
 }
 
+/**
+ * Categories moderators switched off: category id -> the last date still
+ * served as it was. A daily after that date skips them (it is dealt again
+ * from the date, without them); that date and every earlier one, which
+ * players may already have played, never change.
+ */
+export type DisabledCategories = ReadonlyMap<string, string>;
+
+/** The ids switched off for a date. */
+export function disabledFor(date: string, disabled?: DisabledCategories): Set<string> {
+  const out = new Set<string>();
+  disabled?.forEach((after, id) => {
+    if (date > after) out.add(id);
+  });
+  return out;
+}
+
 /** The daily for a date: the pre-generated one, or (past the file's last day) one generated from the date. */
-export function dailyConnPuzzle(date: string): Puzzle {
+export function dailyConnPuzzle(date: string, disabled?: DisabledCategories): Puzzle {
   const day = Math.round((Date.parse(`${date}T00:00:00Z`) - Date.parse(`${DAILIES.start}T00:00:00Z`)) / DAY_MS);
   const entry = DAILIES.puzzles[day];
-  return entry ? fromFile(entry) : generatePuzzle(`daily:${date}`);
+  const base = entry ? fromFile(entry) : null;
+  const off = disabledFor(date, disabled);
+  if (!off.size) return base ?? generatePuzzle(`daily:${date}`);
+  if (base && !base.groups.some((g) => off.has(g.category))) return base;
+  return generatePuzzle(`daily:${date}`, { excludeCategories: off });
 }
 
 /** The number of pre-generated dailies (the rest are generated on demand). */

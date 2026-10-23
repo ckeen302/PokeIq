@@ -15,6 +15,7 @@ import { approvePicture, pendingPictures, rejectPicture } from "@/lib/server/ava
 import { PICTURE_ID_RE } from "@/lib/avatar";
 import { GeoReportsUnavailable, reviewShot, shotReviewQueue } from "@/lib/server/geo-reports";
 import { shotInfo } from "@/lib/server/geo";
+import { categoryFeedback, disableCategory } from "@/lib/server/connections-social";
 import { GEO_SHOT_ID_RE, type GeoShotReview } from "@/lib/geo-reports";
 
 /**
@@ -28,6 +29,7 @@ import { GEO_SHOT_ID_RE, type GeoShotReview } from "@/lib/geo-reports";
  * GET ?tab=tournaments                            open and running tournaments
  * GET ?tab=audit                                  the latest moderator actions
  * GET ?tab=avatars                                profile pictures waiting for review, and how many
+ * GET ?tab=connections                              PokéConnections categories players reported or rated down
  * GET ?tab=shots&status=                          PokéGuessr screenshots players reported, grouped by shot
  * POST { action, ... }                            see bodySchema
  */
@@ -54,6 +56,7 @@ const bodySchema = z.discriminatedUnion("action", [
   z.object({ action: z.literal("dq"), id: tourId, name }),
   z.object({ action: z.literal("approvePicture"), id: z.string().regex(PICTURE_ID_RE) }),
   z.object({ action: z.literal("rejectPicture"), id: z.string().regex(PICTURE_ID_RE), strike: z.boolean().default(false) }),
+  z.object({ action: z.literal("disableConnCategory"), category: z.string().max(80) }),
   z.object({ action: z.literal("keepShot"), shot: z.string().regex(GEO_SHOT_ID_RE) }),
   z.object({ action: z.literal("removeShot"), shot: z.string().regex(GEO_SHOT_ID_RE) }),
 ]);
@@ -108,6 +111,8 @@ export async function GET(request: NextRequest) {
         const out = await pendingPictures();
         return NextResponse.json(out ? { open: true, ...out } : { open: false, pending: [], count: 0 }, { headers: NO_STORE });
       }
+      case "connections":
+        return NextResponse.json(await categoryFeedback(), { headers: NO_STORE });
       case "shots": {
         const status = q.get("status");
         const queue = await shotReviewQueue(status === "kept" || status === "removed" || status === "all" ? status : "open");
@@ -190,6 +195,12 @@ export async function POST(request: NextRequest) {
         if (!out.ok) return bad(out.error, out.status);
         await audit(admin, body.action === "dq" ? "disqualify" : "cancel tournament", body.id, body.action === "dq" ? body.name : body.reason || null);
         return ok();
+      }
+      case "disableConnCategory": {
+        const out = await disableCategory(body.category, admin.username);
+        if (!out.ok) return bad(out.error, out.status);
+        await audit(admin, "disable connections category", body.category, `dailies after ${out.after}`);
+        return ok({ after: out.after });
       }
       case "keepShot":
       case "removeShot": {

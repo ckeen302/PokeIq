@@ -1,6 +1,6 @@
 import {
   Backpack, BadgeCheck, Brain, CalendarCheck, Compass, Crown, Flame, Footprints, Gem, GraduationCap, Map, MapPinned, Medal,
-  Navigation, ScrollText, Search, Shield, Sparkles, Zap, Puzzle, Link, Link2, Diamond, Flag, Cpu, type LucideIcon,
+  Navigation, ScrollText, Search, Shield, Sparkles, Zap, Puzzle, Link, Link2, Diamond, Flag, Cpu, Star, type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -30,6 +30,7 @@ const ICONS: Record<string, LucideIcon> = {
   "conn-perfect-10": Diamond,
   "conn-duel-10": Flag,
   "conn-hard": Cpu,
+  "conn-featured": Star,
 };
 
 /** Gym-badge style medal: metallic octagon with an icon. */

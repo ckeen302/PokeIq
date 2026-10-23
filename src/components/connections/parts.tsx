@@ -34,8 +34,10 @@ export const GridTile = forwardRef<
     order: number;
     onToggle: () => void;
     onKeyDown: (e: React.KeyboardEvent<HTMLButtonElement>) => void;
+    /** The hint: this Pokémon belongs to the easiest group not found yet. */
+    hinted?: boolean;
   }
->(function GridTile({ tile, index, selected, disabled, motionKind, order, onToggle, onKeyDown }, ref) {
+>(function GridTile({ tile, index, selected, disabled, motionKind, order, onToggle, onKeyDown, hinted }, ref) {
   const long = tile.name.length > 9;
   return (
     <motion.button
@@ -45,8 +47,9 @@ export const GridTile = forwardRef<
       data-index={index}
       data-testid="conn-tile"
       data-id={tile.id}
+      data-hinted={hinted ? "true" : undefined}
       aria-pressed={selected}
-      aria-label={`${tile.name}${selected ? ", selected" : ""}`}
+      aria-label={`${tile.name}${hinted ? ", hint: in the easiest group left" : ""}${selected ? ", selected" : ""}`}
       disabled={disabled}
       onClick={onToggle}
       onKeyDown={onKeyDown}
@@ -66,9 +69,15 @@ export const GridTile = forwardRef<
         selected
           ? "border-screen bg-screen text-background shadow-[0_3px_0_hsl(var(--screen)/0.45)]"
           : "border-foreground/10 bg-card text-foreground shadow-[0_3px_0_hsl(var(--border))] hover:border-screen/60 hover:bg-screen/[0.07]",
+        hinted && !selected && "ring-2 ring-warning ring-offset-1 ring-offset-background",
         disabled && !selected && "cursor-default"
       )}
     >
+      {hinted && (
+        <span aria-hidden className="absolute right-1 top-1 text-xs">
+          💡
+        </span>
+      )}
       <img
         src={artUrl(tile.id, 160)}
         alt=""

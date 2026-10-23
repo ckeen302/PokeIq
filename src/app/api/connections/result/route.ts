@@ -55,7 +55,8 @@ export async function POST(request: NextRequest) {
     const user = await account(request);
     const out = await recordConnResult({ date, identity: user ? `u:${user.id}` : `d:${player}`, guesses, start, name: user ? user.username : (name ?? null) });
     if (!out.ok) return NextResponse.json({ error: out.error }, { status: out.status, headers: NO_STORE });
-    const body: ConnResultResponse = out.summary ? { available: true, summary: out.summary, board: out.board } : { available: false, board: out.board };
+    const extras = { board: out.board, hinted: out.hinted, ...(out.groups && { groups: out.groups }), ...(out.mine && { mine: out.mine }) };
+    const body: ConnResultResponse = out.summary ? { available: true, summary: out.summary, ...extras } : { available: false, ...extras };
     return NextResponse.json(body, { headers: NO_STORE });
   } catch (err) {
     // Stats are a bonus: the game goes on without them.

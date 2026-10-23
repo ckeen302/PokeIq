@@ -2,6 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { isPlayableConnDate, type ConnBoardResponse } from "@/lib/connections/types";
 import { clientIp, rateLimit, tooManyRequests } from "@/lib/server/rate-limit";
 import { connBoardStore } from "@/lib/server/connections-board";
+import { friendStore } from "@/lib/server/friends-store";
+import { sessionTokenHash, userFromRequest } from "@/lib/server/auth";
+import { connPlayerKey } from "@/lib/server/connections-results";
+import { friendsBoard } from "@/lib/server/connections-social";
+import type { ConnFriendsBoardResponse } from "@/lib/connections/social";
 
 /**
  * GET /api/connections/leaderboard?date=YYYY-MM-DD[&limit=10]
@@ -11,6 +16,10 @@ import { connBoardStore } from "@/lib/server/connections-board";
  * CDN keeps it for 15 seconds. Every row was recorded from the server's own
  * replay and clock (see connections-board.ts). `rows` is null when the board
  * is off.
+ *
+ * ?scope=friends: you and your accepted friends on the day's board (a
+ * ConnFriendsBoardResponse), for the signed-in trainer only, so it is never
+ * cached. Same order: hint-free games first.
  */
 
 export async function GET(request: NextRequest) {
@@ -18,6 +27,7 @@ export async function GET(request: NextRequest) {
   const params = request.nextUrl.searchParams;
   const date = params.get("date");
   if (!isPlayableConnDate(date)) return NextResponse.json({ error: "No PokéConnections that day." }, { status: 400, headers: { "Cache-Control": "no-store" } });
+  if (params.get("scope") === "friends") return friends(request, date);
   const limit = Math.min(100, Math.max(1, Number(params.get("limit")) || 10));
   try {
     const rows = (await connBoardStore()?.top(date, limit)) ?? null;
@@ -26,5 +36,21 @@ export async function GET(request: NextRequest) {
   } catch (err) {
     console.error("[connections] leaderboard failed:", err);
     return NextResponse.json({ error: "Couldn't load the leaderboard." }, { status: 503, headers: { "Cache-Control": "no-store" } });
+  }
+}
+
+async function friends(request: NextRequest, date: string) {
+  const headers = { "Cache-Control": "private, no-store" };
+  let user = null;
+  if (sessionTokenHash(request)) user = await userFromRequest(request).catch(() => null);
+  if (!user) return NextResponse.json({ date, rows: null, signedIn: false } satisfies ConnFriendsBoardResponse, { headers });
+  try {
+    const board = connBoardStore();
+    const fs = friendStore();
+    const rows = board && fs ? await friendsBoard(date, user, fs, board, connPlayerKey) : null;
+    return NextResponse.json({ date, rows, signedIn: true } satisfies ConnFriendsBoardResponse, { headers });
+  } catch (err) {
+    console.error("[connections] friends board failed:", err);
+    return NextResponse.json({ error: "Couldn't load your friends' board." }, { status: 503, headers });
   }
 }

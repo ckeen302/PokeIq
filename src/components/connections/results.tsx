@@ -13,6 +13,7 @@ import { NextDailyCountdown } from "@/components/NextDailyCountdown";
 import { BadgeMedal } from "@/components/game/BadgeMedal";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { BeatMyTime, FriendsBoard } from "./social";
 
 /** PokéConnections' results-screen extras: the celebration, the streak flame, tomorrow, badges and the daily leaderboard. */
 
@@ -145,6 +146,7 @@ export function DailyLeaderboard({
   const [name, setName] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [tab, setTab] = useState<"all" | "friends">("all");
   if (!standing || (("unranked" in standing) && standing.unranked === "off") || rows === null) return null;
   const needsName = "unranked" in standing && (standing.unranked === "no-name" || standing.unranked === "name-taken");
 
@@ -168,6 +170,17 @@ export function DailyLeaderboard({
           Full board →
         </Link>
       </div>
+      <div role="tablist" className="flex gap-1.5" aria-label="Leaderboard">
+        {(["all", "friends"] as const).map((t) => (
+          <Button key={t} role="tab" size="sm" variant={tab === t ? "default" : "outline"} aria-selected={tab === t} className="h-7 px-3 text-xs" onClick={() => setTab(t)} data-testid={`conn-board-tab-${t}`}>
+            {t === "all" ? "Everyone" : "Friends"}
+          </Button>
+        ))}
+      </div>
+      {tab === "friends" ? (
+        <FriendsBoard date={date} refreshKey={standing} />
+      ) : (
+        <>
       {"position" in standing ? (
         <p className="text-sm" data-testid="conn-board-place">
           You&apos;re <b>#{standing.position}</b> of {standing.total.toLocaleString("en-US")} today.
@@ -210,7 +223,15 @@ export function DailyLeaderboard({
                 <span className="w-6 text-right font-mono tabular-nums text-muted-foreground">
                   {i < 3 ? <Medal className={cn("ml-auto h-4 w-4", ["text-yellow-400", "text-slate-300", "text-amber-600"][i])} aria-label={`#${i + 1}`} /> : i + 1}
                 </span>
-                <span className="min-w-0 flex-1 truncate">{r.name}</span>
+                <span className="min-w-0 flex-1 truncate">
+                  {r.name}
+                  {r.hinted && (
+                    <span title="Used the hint" aria-label="used the hint">
+                      {" "}
+                      💡
+                    </span>
+                  )}
+                </span>
                 <span className="tabular-nums text-muted-foreground" title={`${r.mistakes} of ${CONN_MAX_MISTAKES} mistakes`}>
                   {r.mistakes === 0 ? "Perfect" : `${r.mistakes} ✗`}
                 </span>
@@ -220,6 +241,9 @@ export function DailyLeaderboard({
           })}
         </ol>
       )}
+        </>
+      )}
+      {"position" in standing && <BeatMyTime date={date} />}
     </section>
   );
 }

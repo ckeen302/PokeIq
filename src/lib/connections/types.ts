@@ -110,7 +110,15 @@ export interface ConnDaySummary {
 /** Where a finished daily stands on the leaderboard: its place, or why it isn't on it. */
 export type ConnBoardStanding = { position: number; total: number; name: string } | { unranked: "no-name" | "unsolved" | "untimed" | "name-taken" | "off" };
 
-export type ConnResultResponse = ({ available: false } | { available: true; summary: ConnDaySummary }) & { board?: ConnBoardStanding };
+export type ConnResultResponse = ({ available: false } | { available: true; summary: ConnDaySummary }) & {
+  board?: ConnBoardStanding;
+  /** Today's players who found each group (index = level), counted from the server's own replays. */
+  groups?: { players: number; pct: [number, number, number, number] };
+  /** The server recorded a hint for this game. */
+  hinted?: boolean;
+  /** Your ranked result, for comparing with a friend's. */
+  mine?: { mistakes: number; ms: number; hinted: boolean };
+};
 
 /** One line of the daily leaderboard: fewest mistakes, then fastest. */
 export interface ConnBoardRow {
@@ -118,6 +126,8 @@ export interface ConnBoardRow {
   mistakes: number;
   /** From the server dealing the tiles to the finished game reaching it. */
   ms: number;
+  /** Played with the hint: ranked below every hint-free game. */
+  hinted?: boolean;
 }
 
 /** GET /api/connections/leaderboard?date=…: the day's top trainers (null rows: the board is off). */
