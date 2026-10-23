@@ -47,8 +47,8 @@ export const GYM_ACES: CuratedEntry[] = [
   ["Eldegoss", "Milo's ace in Turffield"],
   ["Drednaw", "Nessa's ace in Hulbury"],
   ["Centiskorch", "Kabu's ace in Motostoke"],
-  ["Coalossal", "Gordie's ace in Stow-on-Side"],
-  ["Gengar", "Allister's ace in Stow-on-Side (Sword)"],
+  ["Coalossal", "Gordie's ace in Circhester (Shield)"],
+  ["Gengar", "Allister's ace in Stow-on-Side (Shield)"],
   ["Machamp", "Bea's ace in Stow-on-Side (Sword)"],
   ["Alcremie", "Opal's ace in Ballonlea"],
   ["Lapras", "Melony's ace in Circhester"],
@@ -56,7 +56,7 @@ export const GYM_ACES: CuratedEntry[] = [
   ["Sudowoodo", "Brassius's ace in Cascarrafa"],
   ["Bellibolt", "Iono's ace in Levincia"],
   ["Toxtricity", "Ryme's ace in Montenevera"],
-  ["Cetitan", "Grusha's ace in Glaseado"],
+  ["Altaria", "Grusha's ace in Glaseado"],
   ["Crabominable", "Kofu's ace in Medali"],
 ];
 
