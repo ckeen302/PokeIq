@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { clientIp, rateLimit, tooManyRequests } from "@/lib/server/rate-limit";
-import { checkGuess, gridView, ppFor } from "@/lib/server/pikadoku";
+import { checkGuess, gridView, ppFor, replayGuesses } from "@/lib/server/pikadoku";
 import { gridFields, guessSchema, historySchema, resolveGrid } from "@/lib/server/pikadoku-http";
 import { pdkStartToken, pdkStore, pickPct } from "@/lib/server/pikadoku-board";
 import { PDK_PP } from "@/lib/pikadoku/types";
@@ -42,7 +42,7 @@ export async function GET(request: NextRequest) {
   return NextResponse.json(body, { headers: NO_STORE });
 }
 
-const bodySchema = z.object({ ...gridFields, guesses: historySchema, next: guessSchema });
+const bodySchema = z.object({ ...gridFields, guesses: historySchema, next: guessSchema.optional() });
 
 export async function POST(request: NextRequest) {
   if (!rateLimit(`pdk-guess:${clientIp(request)}`, 60, 1)) return tooManyRequests("Too many guesses — slow down a little.");
@@ -51,6 +51,15 @@ export async function POST(request: NextRequest) {
   const found = resolveGrid(parsed.data);
   if ("error" in found) return NextResponse.json({ error: found.error }, { status: 400, headers: NO_STORE });
   const pp = found.daily ? PDK_PP : ppFor(false, found.settings);
+  // No new guess: replay the history (a reload picks up where it left off).
+  if (!parsed.data.next) {
+    try {
+      const r = replayGuesses(found.grid, parsed.data.guesses, { pp });
+      return NextResponse.json({ locked: Object.fromEntries(r.locked), used: r.used, over: r.over }, { headers: NO_STORE });
+    } catch (err) {
+      return NextResponse.json({ error: (err as Error).message }, { status: 400, headers: NO_STORE });
+    }
+  }
   const out = checkGuess(found.grid, parsed.data.guesses, parsed.data.next, { pp, guard: !found.daily && found.settings.softLockGuard });
   if (!out.ok) return NextResponse.json({ error: out.error }, { status: 400, headers: NO_STORE });
   let pct: number | null = null;

@@ -64,7 +64,8 @@ export async function finishGame(input: PdkFinishInput, store: PdkStore | null =
       if (counted) {
         const ms = pdkElapsed(input.start, `${input.date}:${input.difficulty}`, now) ?? 0;
         const mine = { player, name: input.name ?? "", solved: answers.size, score, ms };
-        if (saved && input.name && ms > 0) await store.saveBoard(input.date!, input.difficulty, mine);
+        // A name sent later (a reload, or typed on the results screen) joins the board; the first entry per trainer is kept.
+        if (input.name && ms > 0) await store.saveBoard(input.date!, input.difficulty, mine);
         const rows = (await store.board(input.date!, input.difficulty)) ?? [];
         const others = rows.filter((r) => r.player !== player);
         const merged = rows.some((r) => r.player === player) ? rows : [...others, mine].sort(betterResult);

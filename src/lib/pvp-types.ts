@@ -336,7 +336,7 @@ export interface ConnDuelView extends PvpViewBase {
 export interface PdkDuelView extends PvpViewBase {
   kind: "pikadoku";
   settings: { turnSecs: number; families: string[] };
-  round?: { startsAt: number };
+  round?: { startsAt: number; endsAt: number };
   /** The six categories, once play starts. */
   grid?: PdkGridView;
   /** Per cell: the seat that owns it, or null. */

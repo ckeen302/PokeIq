@@ -135,7 +135,7 @@ export function pikadokuView(duel: PikadokuDuel, playerId: string | null, now: n
     kind: "pikadoku",
     ...baseView(duel, playerId, now, rev),
     settings: { turnSecs: duel.turnSecs, families: duel.families },
-    ...(duel.startsAt !== undefined && duel.status === "playing" && { round: { startsAt: duel.startsAt } }),
+    ...(duel.startsAt !== undefined && duel.status === "playing" && { round: { startsAt: duel.startsAt, endsAt: duel.startsAt + MAX_GAME_MS } }),
     ...(begun || duel.status === "finished" ? { grid: gridView(gridOf(duel)) } : {}),
     owners: duel.ttt.owners.map((o) => (o === "X" ? 0 : o === "O" ? 1 : null)),
     picks: duel.picks,
