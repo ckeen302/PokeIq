@@ -51,7 +51,7 @@ export const matchSettingsSchema = z
     z.object({ game: z.literal("geo"), region: z.string().max(20), era: z.enum(GEO_ERAS).optional() }),
     z.object({ game: z.literal("pokedle"), ranked: z.boolean().optional(), assist: z.enum(DLE_ASSISTS).optional(), format: z.enum(DLE_DAILY_FORMATS).optional() }),
     z.object({ game: z.literal("connections"), ranked: z.boolean().optional() }),
-    z.object({ game: z.literal("pikadoku") }),
+    z.object({ game: z.literal("pikadoku"), steals: z.boolean().optional() }),
   ])
   .superRefine((s, ctx) => {
     if (s.game === "geo" && !isDuelMap(s.region, s.era)) ctx.addIssue({ code: z.ZodIssueCode.custom, message: s.era ? "That map has too few places for those games." : "Unknown map." });
@@ -62,7 +62,7 @@ export type MatchSettings = z.infer<typeof matchSettingsSchema>;
 export function queueKey(s: MatchSettings): string {
   if (s.game === "geo") return `geo:${s.region}${s.era ? `:${s.era}` : ""}`;
   if (s.game === "connections") return s.ranked ? CONN_RANKED_QUEUE_KEY : "connections";
-  if (s.game === "pikadoku") return "pikadoku";
+  if (s.game === "pikadoku") return s.steals ? "pikadoku:steals" : "pikadoku";
   if (s.ranked) return RANKED_QUEUE_KEY;
   const assist = s.assist ?? DLE_DEFAULT_ASSIST;
   const base = s.format === "squirdle" ? "pokedle:squirdle" : "pokedle:all";
@@ -96,7 +96,7 @@ async function openDuel(settings: MatchSettings, names: [string, string], now: n
         settings.game === "connections"
           ? createConnectionsDuel(names[0], code, now)
           : settings.game === "pikadoku"
-            ? createPikadokuDuel(names[0], code, now)
+            ? createPikadokuDuel(names[0], code, now, { steals: settings.steals })
           : createPokedleDuel(names[0], code, now, undefined, { queue: "casual", assist: settings.assist, settings: { format: settings.format ?? "classic" } });
       const { duel: joined, playerId: b } = must(joinDuel(duel, names[1], now));
       const ready = must(readyDuel(must(readyDuel(joined, a, true, now)).duel, b, true, now)).duel;

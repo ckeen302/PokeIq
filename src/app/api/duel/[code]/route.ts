@@ -13,6 +13,7 @@ import { DLE_ASSISTS } from "@/lib/dle-assist";
 import { answerQuiz } from "@/lib/server/quiz-duel";
 import { guessConnections } from "@/lib/server/connections-duel";
 import { claimCell } from "@/lib/server/pikadoku-duel";
+import { pdkPickRates } from "@/lib/server/pikadoku-rates";
 import { CONN_GROUP_SIZE } from "@/lib/connections/types";
 import { DUEL_CODE_RE } from "@/lib/duel-types";
 import { DLE_DUEL_HINTS, DUEL_EMOTES, QUIZ_DUEL_QUESTIONS, type PvpSeatResponse } from "@/lib/pvp-types";
@@ -120,6 +121,7 @@ export async function POST(request: NextRequest, context: Context) {
       return NextResponse.json(seat, { headers: NO_STORE });
     }
 
+    const rates = body.action === "claim" ? await pdkPickRates().catch(() => null) : null;
     const playerId = readPvpToken(body.token, code);
     if (!playerId) return NextResponse.json({ error: "That isn't your seat in this duel." }, { status: 403 });
     if (body.action === "rematch") return await rematch(code, playerId);
@@ -149,7 +151,7 @@ export async function POST(request: NextRequest, context: Context) {
         case "answer":
           return asKind(duel, "quiz", (d) => answerQuiz(d, playerId, body.round, body.choice, now));
         case "claim":
-          return asKind(duel, "pikadoku", (d) => claimCell(d, playerId, body.cell, body.pokemon, now));
+          return asKind(duel, "pikadoku", (d) => claimCell(d, playerId, body.cell, body.pokemon, now, rates));
         case "group":
           return asKind(duel, "connections", (d) => guessConnections(d, playerId, body.pokemon, now));
         case "next":
