@@ -1365,7 +1365,9 @@ if (factoryWon) {
   // Take a Pokémon that isn't already on the team (Species Clause).
   const mine = (await page.getByTestId("swap-give").allInnerTexts()).map((t) => t.split("\n")[0]);
   const theirs = (await page.getByTestId("swap-take").allInnerTexts()).map((t) => t.split("\n")[0]);
-  const take = theirs.findIndex((t) => !mine.includes(t));
+  // Species Clause: Arceus-Water is still Arceus, so compare species, not forms.
+  const species = (n) => n.trim().toUpperCase().replace(/-(WATER|FIRE|GRASS|ELECTRIC|ICE|FIGHTING|POISON|GROUND|FLYING|PSYCHIC|BUG|ROCK|GHOST|DRAGON|DARK|STEEL|FAIRY|ALOLA|GALAR|HISUI|PALDEA|MEGA.*|GMAX|THERIAN|ORIGIN|.*)$/, "");
+  const take = theirs.findIndex((t) => !mine.some((m) => species(m) === species(t)));
   await page.getByTestId("swap-give").first().click();
   await page.getByTestId("swap-take").nth(Math.max(0, take)).click();
   await page.getByTestId("swap-confirm").click();
