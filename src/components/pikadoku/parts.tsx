@@ -86,9 +86,10 @@ function Header({ cat, testId }: { cat: PdkCategoryView | undefined; testId: str
       {cat?.id.startsWith("type:") ? (
         <TypeBadge type={cat.id.slice(5)} size="md" className="max-w-full" />
       ) : (
-        <span className={cn("flex flex-col items-center gap-0.5 font-display font-bold uppercase tracking-wide", cat && "pr-3")}>
+        <span className={cn("flex min-w-0 max-w-full flex-col items-center gap-0.5 font-display font-bold uppercase tracking-wide", cat && "pr-3")}>
           {cat && <CategoryIcon cat={cat} />}
-          <span>{cat?.label ?? "…"}</span>
+          {/* Long one-word labels (FLAMETHROWER) shrink to stay inside the header. */}
+          <span className={cn("max-w-full whitespace-nowrap", (cat?.label.length ?? 0) > 10 && "text-[9px] tracking-tight sm:text-[11px]")}>{cat?.label ?? "…"}</span>
         </span>
       )}
       {cat && (
