@@ -107,6 +107,16 @@ describe("mixed tiles", () => {
     }
   });
 
+  it("keeps Easy's two easy groups and Hard's two tricky ones when two groups are mixed", () => {
+    for (const difficulty of ["easy", "normal", "hard"] as const) {
+      for (const seed of ["d1", "d2", "d3", "d4"]) {
+        const p = generatePuzzle(seed, { difficulty, mixed: 2 });
+        expect(validatePuzzle(p)).toEqual([]);
+        expect(p.groups.filter((g) => g.category.startsWith("mixed:"))).toHaveLength(2);
+      }
+    }
+  });
+
   it("puzzles generated without the mixed option are the same as before", () => {
     const a = generatePuzzle("plain-1");
     const b = generatePuzzle("plain-1", { mixed: 0 });

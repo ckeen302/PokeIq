@@ -371,8 +371,10 @@ function pickCategories(rng: Rng, avoid: ReadonlySet<string>, bands: readonly nu
  * Swaps the group(s) in the middle bands for mixed ones (in place), unless
  * a type-family group is left beside them. False when it can't.
  */
-function withMixed(rng: Rng, cats: Category[], wanted: number, banned: ReadonlySet<string>): boolean {
-  const slots = wanted === 1 ? [rng.next() < 0.5 ? 1 : 2] : [1, 2];
+function withMixed(rng: Rng, cats: Category[], wanted: number, banned: ReadonlySet<string>, bands: readonly number[]): boolean {
+  // Only a middle-band slot (a mixed group is medium: 1.75 to 2.45), so Easy keeps two easy groups and Hard two tricky ones.
+  const middle = bands.map((b, i) => [b, i]).filter(([b]) => b === 1 || b === 2).map(([, i]) => i);
+  const slots = wanted === 1 ? [middle[rng.next() < 0.5 ? 0 : 1] ?? middle[0]] : middle.slice(0, 2);
   const options = MIXED_CATEGORIES.filter((c) => !banned.has(c.id));
   const chosen: Category[] = [];
   for (const slot of slots) {
@@ -382,7 +384,9 @@ function withMixed(rng: Rng, cats: Category[], wanted: number, banned: ReadonlyS
     chosen.push(c);
     cats[slot] = c;
   }
-  return cats.every((c) => c.mixed || c.family !== "type");
+  // A regular type group ("Pure Fire", "Fire/Flying") about the same type as a mixed group would make its tiles ambiguous.
+  const mixedTypes = cats.filter((c) => c.mixed).map((c) => c.id.slice("mixed:".length));
+  return cats.every((c) => c.mixed || c.family !== "type" || !c.id.split(/[:-]/).slice(1).some((t) => mixedTypes.includes(t)));
 }
 
 /** Orders groups easiest first (by groupRating) and shuffles the sixteen tiles. */
@@ -415,9 +419,10 @@ export function generatePuzzle(seed: string, options: GenerateOptions = {}): Puz
     const strict = set < 300;
     const banned = options.excludeCategories ?? none;
     const avoid = strict && options.avoidCategories ? new Set([...options.avoidCategories, ...banned]) : banned;
-    const cats = pickCategories(rng, avoid, DIFFICULTY_BANDS[options.difficulty ?? "normal"], members);
+    const bands = DIFFICULTY_BANDS[options.difficulty ?? "normal"];
+    const cats = pickCategories(rng, avoid, bands, members);
     if (!cats) continue;
-    if (wanted > 0 && !withMixed(rng, cats, wanted, banned)) continue;
+    if (wanted > 0 && !withMixed(rng, cats, wanted, banned, bands)) continue;
     let best: { groups: PuzzleGroup[]; score: number } | null = null;
     for (let i = 0; i < tries; i++) {
       const groups = fill(rng, cats, strict ? (options.avoidPokemon ?? none) : none, members);
@@ -429,6 +434,8 @@ export function generatePuzzle(seed: string, options: GenerateOptions = {}): Puz
     if (best.score >= GOOD_ENOUGH) return finish(rng, best.groups);
     if (!fallback || best.score > fallback.score) fallback = best;
   }
+  // A mixed puzzle that can't be built (rare) is an ordinary one rather than an error.
+  if (!fallback && wanted > 0) return generatePuzzle(seed, { ...options, mixed: 0 });
   if (!fallback) throw new Error(`No puzzle for seed ${seed}`);
   return finish(rng, fallback.groups);
 }
