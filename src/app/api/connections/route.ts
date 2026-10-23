@@ -4,6 +4,8 @@ import { isPlayableConnDate, CONN_GROUP_SIZE, CONN_GROUPS, CONN_MAX_MISTAKES } f
 import { clientIp, rateLimit, tooManyRequests } from "@/lib/server/rate-limit";
 import { checkGuesses, dailyConnPuzzle, practiceConnPuzzle, puzzleView } from "@/lib/server/connections";
 import { startToken } from "@/lib/server/connections-board";
+import { checkCustom, customView, getCustom } from "@/lib/server/connections-custom";
+import { CUSTOM_SEED_RE } from "@/lib/connections/custom";
 
 /**
  * PokéConnections.
@@ -39,6 +41,13 @@ function puzzleFor(date: string | null | undefined, practice: string | null | un
 export async function GET(request: NextRequest) {
   if (!rateLimit(`conn-get:${clientIp(request)}`, 60, 1)) return tooManyRequests();
   const params = request.nextUrl.searchParams;
+  // A community puzzle (/connections/c/<id>) plays as practice=custom-<id>: tiles only, from the creator's stored groups.
+  const customId = CUSTOM_SEED_RE.exec(params.get("practice") ?? "")?.[1];
+  if (customId && !params.get("date")) {
+    const custom = await getCustom(customId);
+    if (!custom) return NextResponse.json({ error: "That puzzle doesn't exist." }, { status: 404, headers: NO_STORE });
+    return NextResponse.json(customView(custom), { headers: NO_STORE });
+  }
   const found = puzzleFor(params.get("date"), params.get("practice"));
   if ("error" in found) return NextResponse.json({ error: found.error }, { status: 400, headers: NO_STORE });
   const view = puzzleView(found.puzzle, found.key, found.date);
@@ -59,6 +68,16 @@ export async function POST(request: NextRequest) {
   if (!rateLimit(`conn-guess:${clientIp(request)}`, 40, 1)) return tooManyRequests("Too many guesses — slow down a little.");
   const parsed = bodySchema.safeParse(await request.json().catch(() => ({})));
   if (!parsed.success) return NextResponse.json({ error: parsed.error.issues[0].message }, { status: 400, headers: NO_STORE });
+  const customId = CUSTOM_SEED_RE.exec(parsed.data.practice ?? "")?.[1];
+  if (customId && !parsed.data.date) {
+    const custom = await getCustom(customId);
+    if (!custom) return NextResponse.json({ error: "That puzzle doesn't exist." }, { status: 404, headers: NO_STORE });
+    try {
+      return NextResponse.json(checkCustom(custom, parsed.data.guesses), { headers: NO_STORE });
+    } catch (err) {
+      return NextResponse.json({ error: (err as Error).message }, { status: 400, headers: NO_STORE });
+    }
+  }
   const found = puzzleFor(parsed.data.date, parsed.data.practice);
   if ("error" in found) return NextResponse.json({ error: found.error }, { status: 400, headers: NO_STORE });
   try {

@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, LayoutGroup, MotionConfig, motion } from "framer-motion";
 import { track } from "@vercel/analytics";
-import { BarChart3, CalendarDays, CircleHelp, Dices, Infinity as InfinityIcon, RefreshCw, Settings, Shuffle, Swords, Timer, X } from "lucide-react";
+import { BarChart3, CalendarDays, CircleHelp, Dices, Infinity as InfinityIcon, PencilLine, RefreshCw, Settings, Shuffle, Swords, Timer, X } from "lucide-react";
 import { connBlock, getProgress, recordConnGame, saveConn, setTrainerName, useProgress, type BadgeDef, type ConnRecord } from "@/lib/progress";
 import { useToday } from "@/lib/use-today";
 import { play } from "@/lib/sound";
@@ -34,6 +34,7 @@ import { GridTile, GroupBar, GuessHistory, MistakeDots, WhyPanel, type TileMotio
 import { ConnArchiveSheet, ConnHowToSheet, ConnStatsSheet } from "./sheets";
 import { ComeBackTomorrow, DailyLeaderboard, KeyHints, NewBadges, PerfectBanner, StreakFlame, useCelebration } from "./results";
 import { cn } from "@/lib/utils";
+import { CUSTOM_SEED_RE, customSeed } from "@/lib/connections/custom";
 
 /** Today's daily, a past daily from the archive (never counted), or a practice puzzle. */
 type Target = { kind: "daily"; date: string } | { kind: "archive"; date: string } | { kind: "practice"; seed: string };
@@ -58,7 +59,8 @@ function reducedMotion(): boolean {
   return typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 }
 
-export function Connections() {
+/** `customId`: a community puzzle (/connections/c/<id>) to open first instead of the daily. */
+export function Connections({ customId }: { customId?: string } = {}) {
   const progress = useProgress();
   const prefs = useConnPrefs();
   const today = useToday();
@@ -182,8 +184,9 @@ export function Connections() {
     const prev = seenTodayRef.current;
     if (prev === today) return;
     seenTodayRef.current = today;
-    if (prev === null || (mode === "daily" && (guesses.length === 0 || over))) void load({ kind: "daily", date: today });
-  }, [today, progress, mode, guesses.length, over, load]);
+    if (prev === null && customId) void load({ kind: "practice", seed: customSeed(customId) });
+    else if (prev === null || (mode === "daily" && (guesses.length === 0 || over))) void load({ kind: "daily", date: today });
+  }, [today, progress, mode, guesses.length, over, load, customId]);
 
   // How to play, on a first visit.
   useEffect(() => {
@@ -410,7 +413,9 @@ export function Connections() {
     return connectionsShareText(result, shareUrl(result));
   }
 
-  const title = mode === "practice" ? "PokéConnections · Practice" : daily ? `PokéConnections #${connNumber(daily.date)}${mode === "archive" ? ` · Archive (${daily.date})` : ""}` : "PokéConnections";
+  /** A community puzzle: plays like practice, with its own byline and votes above the grid (see the page). */
+  const isCustom = target?.kind === "practice" && CUSTOM_SEED_RE.test(target.seed);
+  const title = isCustom ? "PokéConnections · Community puzzle" : mode === "practice" ? "PokéConnections · Practice" : daily ? `PokéConnections #${connNumber(daily.date)}${mode === "archive" ? ` · Archive (${daily.date})` : ""}` : "PokéConnections";
   const iconButton =
     "relative rounded-md p-2 text-muted-foreground transition-colors hover:bg-screen/10 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-40";
   const motionFor = (id: number): TileMotion => (tileMotion?.ids.includes(id) ? tileMotion.kind : null);
@@ -458,6 +463,14 @@ export function Connections() {
                 className="flex min-w-[5.5rem] items-center justify-center gap-1.5 rounded px-3 py-1.5 font-display text-sm font-semibold uppercase tracking-wider text-muted-foreground transition-colors hover:text-foreground sm:min-w-24 sm:px-4"
               >
                 <Swords className="h-3.5 w-3.5" aria-hidden /> Duel
+              </a>
+              <a
+                href="/connections/create"
+                title="Build your own puzzle and share a link"
+                data-testid="conn-create-link"
+                className="flex min-w-[5.5rem] items-center justify-center gap-1.5 rounded px-3 py-1.5 font-display text-sm font-semibold uppercase tracking-wider text-muted-foreground transition-colors hover:text-foreground sm:min-w-24 sm:px-4"
+              >
+                <PencilLine className="h-3.5 w-3.5" aria-hidden /> Create
               </a>
             </div>
           </div>
@@ -513,7 +526,15 @@ export function Connections() {
             </button>
           </p>
         )}
-        {mode === "practice" && (
+        {isCustom && (
+          <p className="mx-auto max-w-md rounded-md border border-screen/40 bg-screen/[0.06] px-3 py-2 text-center text-sm" data-testid="conn-community">
+            A puzzle made by another trainer. It doesn&apos;t count toward your streak.{" "}
+            <a href="/connections/community" className="font-semibold text-primary hover:underline">
+              More community puzzles
+            </a>
+          </p>
+        )}
+        {mode === "practice" && !isCustom && (
           <div className="mx-auto max-w-md space-y-2 rounded-md border border-screen/40 bg-screen/[0.06] px-3 py-2.5 text-center text-sm" data-testid="conn-unlimited">
             <p>Unlimited: a fresh puzzle every time, never counted toward your streak.</p>
             <div className="flex items-center justify-center gap-2">
