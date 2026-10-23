@@ -400,7 +400,7 @@ step("pikadoku: a full daily (9 PP, one wrong guess), the score and the answers 
   // 9 PP and one is spent: eight right answers end the game at 8 of 9.
   for (const { cell, id, name } of solved.solution.slice(0, 8)) await play(cell, name, id);
   await page.getByTestId("pdk-result").waitFor({ timeout: 15_000 });
-  if (!/8 of 9 cells/.test(await page.getByTestId("pdk-result").innerText())) errors.push("Pikadoku's result doesn't show 8 of 9 cells");
+  if (!/8 of 9 cells/i.test(await page.getByTestId("pdk-result").innerText())) errors.push("Pikadoku's result doesn't show 8 of 9 cells");
   await page.getByTestId("pdk-score").waitFor();
   await page.getByTestId("pdk-reveal").waitFor();
   if ((await page.getByTestId("pdk-misses").count()) !== 1) errors.push("Pikadoku's reveal doesn't explain the miss");
