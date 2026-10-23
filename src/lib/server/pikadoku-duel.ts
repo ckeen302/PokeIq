@@ -3,6 +3,7 @@ import type { PdkDuelView } from "@/lib/pvp-types";
 import { generateGrid, gridFromIds, type PdkGrid, type PdkGridIds } from "@/lib/pikadoku/generator";
 import { newTtt, playTtt, timeoutTtt, type TttState } from "@/lib/pikadoku/tictactoe";
 import { PDK_FAMILIES, type PdkFamily } from "@/lib/pikadoku/types";
+import { baseOf } from "@/lib/pikadoku/categories";
 import { gridView, isDexId } from "./pikadoku";
 import { baseView, fail, finish, newSeat, notPlaying, pvpBase, seated, type PvpBase, type PvpOutcome, type PvpRules } from "./duel-core";
 
@@ -117,7 +118,7 @@ export function claimCell(duel: PikadokuDuel, playerId: string, cell: number, id
     if (!Number.isInteger(cell) || cell < 0 || cell > 8 || !isDexId(id)) return fail(400, "Pick a cell and a Pokémon.");
     if ((d.ttt.turn === "X" ? 0 : 1) !== seat) return fail(409, "It's not your turn.");
     const valid = gridOf(d).answers[cell].includes(id);
-    const { state, outcome } = playTtt(d.ttt, cell, id, valid);
+    const { state, outcome } = playTtt(d.ttt, cell, id, valid, baseOf);
     if (outcome === "illegal") return fail(409, d.ttt.owners[cell] ? "That cell is taken." : "That Pokémon was already used.");
     d.ttt = state;
     d.turnStart = now;

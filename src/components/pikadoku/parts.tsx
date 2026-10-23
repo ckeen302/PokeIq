@@ -14,6 +14,9 @@ export interface DexName {
   id: number;
   name: string;
   slug: string;
+  /** The species (a form's own species id; equal to `id` for a species). */
+  base: number;
+  form?: boolean;
 }
 
 let dexPromise: Promise<DexName[]> | null = null;
@@ -152,8 +155,10 @@ export function PdkPicker({ dex, used, title, busy, onPick, onClose }: { dex: De
     if (!s) return [];
     const starts: DexName[] = [];
     const inside: DexName[] = [];
+    // A form and its species are one Pokémon: using either rules out both.
+    const usedBase = new Set(dex.filter((p) => used.has(p.id)).map((p) => p.base));
     for (const p of dex) {
-      if (used.has(p.id)) continue;
+      if (used.has(p.id) || usedBase.has(p.base)) continue;
       const n = p.name.toLowerCase();
       if (n.startsWith(s)) starts.push(p);
       else if (n.includes(s)) inside.push(p);
