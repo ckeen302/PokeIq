@@ -24,7 +24,7 @@ export const GEO_MAP_ORDER = [
   "alola",
   "galar",
   "paldea",
-  ...["gyms", "caves", "towns", "routes", "water", "forests", "legendary"].map((t) => `theme-${t}`),
+  ...["gyms", "towns", "routes"].map((t) => `theme-${t}`),
 ];
 export const geoMapRank = (id: string) => (GEO_MAP_ORDER.includes(id) ? GEO_MAP_ORDER.indexOf(id) : GEO_MAP_ORDER.length);
 /** The daily game is played on the world map from this date (Kanto before it). */
