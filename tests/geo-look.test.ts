@@ -82,26 +82,19 @@ describe("look around: a round's views", () => {
     expect(roundViews(world, round)).toEqual([round.shot]);
   });
 
-  it("sends the views with each round, from the start to the last guess", () => {
-    let seen = 0;
+  it("sends exactly one screenshot per round, from the start to the last guess", () => {
     for (let g = 0; g < 10; g++) {
       const start = startGeo(world, { seed: `look-start-${g}` });
       let round = start.round;
       let token = start.token;
       for (;;) {
-        const views = round.views ?? [round.shot];
-        expect(views[0]).toBe(round.shot);
-        if (round.views) {
-          expect(round.views.length).toBeGreaterThan(1);
-          seen++;
-        }
-        for (const v of views) expect(v).toMatch(/^\/api\/geo\/shot\/[A-Za-z0-9_-]+$/);
+        expect(round.views).toBeUndefined();
+        expect(round.shot).toMatch(/^\/api\/geo\/shot\/[A-Za-z0-9_-]+$/);
         const graded = gradeGeo(readGeo(token)!, { x: 0.5, y: 0.5 });
         if (!graded.ok || graded.body.done) break;
         token = graded.body.token;
         round = graded.body.next!;
       }
     }
-    expect(seen).toBeGreaterThan(0);
   });
 });

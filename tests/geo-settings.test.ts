@@ -21,8 +21,8 @@ describe("play settings", () => {
 
   it("sums the settings up for the button, or nothing when all are off", () => {
     expect(geoSettingsBadge(DEFAULT_GEO_SETTINGS)).toBeNull();
-    expect(geoSettingsBadge({ noMove: true, zoomed: false, timer: 0 })).toBe("No move");
-    expect(geoSettingsBadge({ noMove: true, zoomed: true, timer: 30 })).toBe("No move · Zoomed · 30s");
+    expect(geoSettingsBadge({ noMove: false, zoomed: true, timer: 0 })).toBe("Zoomed");
+    expect(geoSettingsBadge({ noMove: false, zoomed: true, timer: 30 })).toBe("Zoomed · 30s");
   });
 
   it("No move shows only the dealt screenshot", () => {
