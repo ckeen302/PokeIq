@@ -30,6 +30,8 @@ export interface PublicQuestion {
   prompt: string;
   detail?: string;
   options: string[];
+  /** Image URL per option (same order), when the options are pictures. */
+  images?: string[];
   media?: { type: "image" | "audio"; url: string; zoom?: boolean };
   cards?: { label: string; imageUrl: string }[];
   timeLimitMs: number | null;

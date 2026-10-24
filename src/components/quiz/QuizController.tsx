@@ -471,7 +471,18 @@ export function QuizController({ request, challenger, onRestart }: QuizControlle
               </>
             )}
 
-            {isCards ? (
+            {question.images ? (
+              <div className="grid grid-cols-2 gap-3">
+                {question.options.map((option, i) => (
+                  <AnswerTile key={option} index={i} option={option} phase={phase} selected={selected} graded={graded} onPick={submit} card>
+                    <div className="screen relative mx-auto aspect-square w-full max-w-[200px] rounded-md">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={question.images![i]} alt={`Option ${i + 1}`} width={384} height={384} draggable={false} className="relative z-[1] h-full w-full object-contain p-1 [image-rendering:pixelated]" />
+                    </div>
+                  </AnswerTile>
+                ))}
+              </div>
+            ) : isCards ? (
               <div className="grid grid-cols-2 gap-3">
                 {question.cards!.map((card, i) => {
                   const option = question.options[i];

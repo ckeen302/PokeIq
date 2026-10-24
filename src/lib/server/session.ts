@@ -1,3 +1,4 @@
+import { shinyImageUrl } from "@/lib/shiny";
 import "server-only";
 import { z } from "zod";
 import { Rng } from "@/lib/rng";
@@ -214,6 +215,7 @@ export function toPublic(q: Question, index: number, rules: FormatRules): Public
     prompt: q.prompt,
     detail: q.detail,
     options: q.options,
+    images: q.optionImages ? q.options.map(shinyImageUrl) : undefined,
     media: q.media
       ? { type: q.media.kind === "cry" ? "audio" : "image", url: mediaUrl(q.media), zoom: q.media.kind === "silhouette-zoom" }
       : undefined,

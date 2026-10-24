@@ -72,6 +72,18 @@ export default async function QuizPage({ params }: PageProps) {
             differ, the question names the game. Answers are checked on our server and your PokéIQ is calculated from how
             hard each question you got right actually was.
           </p>
+        ) : preset.module === "shiny" ? (
+          <p>
+            Each round shows four pictures of one Pokémon: its real shiny and three fakes made by shifting the colours.
+            Easy fakes are far off, Normal ones are close, Hard ones are barely different. Answers are checked on our
+            server, and nothing in the picture addresses says which one is real.
+          </p>
+        ) : preset.module === "competitive" ? (
+          <p>
+            Every question is generated from the Pokémon Showdown data (current generation): abilities, move types and
+            categories, and item effects. Answers are checked on our server and your PokéIQ is calculated from how hard
+            each question you got right actually was.
+          </p>
         ) : (
           <p>
             Every question is generated on the fly from the complete Pokédex — there are thousands of possible

@@ -163,6 +163,43 @@ for (const slug of ["pokemon-games-quiz", "pokemon-anime-quiz"]) {
   await playTriviaRun(page, slug);
 }
 
+// Real Shiny: four picture options whose URLs and API payloads never say which is real.
+step("real shiny quiz: three questions");
+{
+  const leaks = [];
+  const seenImages = [];
+  const watch = async (res) => {
+    const path = new URL(res.url()).pathname;
+    if (!/^\/api\/session(\/answer|\/next)?$/.test(path) || !res.ok()) return;
+    const body = await res.json().catch(() => null);
+    for (const q of [body?.question, body?.next]) {
+      if (!q) continue;
+      if (/"answer"|"explanation"|real|fake|decoy/i.test(JSON.stringify(q).replace(/Which one is the real shiny/g, ""))) leaks.push(JSON.stringify(q).slice(0, 200));
+      if (q.images?.length === 4 && q.images.every((u) => /\/shiny\/[0-9a-f]{32}\.webp$/.test(u))) seenImages.push(q.images);
+    }
+  };
+  page.on("response", watch);
+  await page.goto(`${BASE}/quiz/real-shiny-quiz`, { waitUntil: "networkidle" });
+  await page.getByRole("button", { name: /^Start/ }).click();
+  await page.waitForSelector("h2");
+  for (let i = 0; i < 3; i++) {
+    await page.locator("[data-answer-tile]").first().waitFor();
+    if (i === 0) {
+      await page.waitForFunction(() => [...document.querySelectorAll("[data-answer-tile] img")].every((im) => im.complete), null, { timeout: 15_000 }).catch(() => {});
+      const loaded = await page.$$eval("[data-answer-tile] img", (ims) => ims.filter((im) => im.naturalWidth > 0).length);
+      if (loaded < 4) errors.push(`real shiny: only ${loaded}/4 images loaded`);
+      await page.screenshot({ path: `${OUT}/quiz-real-shiny.png` });
+    }
+    await page.locator("[data-answer-tile]:not([disabled])").nth(i).click();
+    const next = page.getByRole("button", { name: /Next question|See results/ });
+    await next.waitFor({ timeout: 10_000 });
+    await next.click();
+  }
+  page.off("response", watch);
+  if (leaks.length) errors.push(`real shiny: a question leaked: ${leaks[0]}`);
+  if (seenImages.length < 3) errors.push(`real shiny: only ${seenImages.length}/3 questions had four image options`);
+}
+
 step("blitz format");
 await page.goto(`${BASE}/quiz/pokemon-trivia-quiz?format=blitz`, { waitUntil: "networkidle" });
 await page.getByRole("button", { name: /^Start/ }).click();

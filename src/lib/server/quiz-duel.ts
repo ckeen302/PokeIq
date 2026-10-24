@@ -190,7 +190,7 @@ export function skipQuizReveal(duel: QuizDuel, playerId: string, index: number, 
 /** What both trainers see of a question: no answer, no explanation, no reveal art. */
 function questionView(q: Question, index: number): QuizDuelQuestionView {
   const p = toPublic(q, index, FORMAT_RULES.classic);
-  return { module: p.module, prompt: p.prompt, detail: p.detail, options: p.options, media: p.media, cards: p.cards };
+  return { module: p.module, prompt: p.prompt, detail: p.detail, options: p.options, images: p.images, media: p.media, cards: p.cards };
 }
 
 /** What one trainer (or a visitor: null) may see of the duel right now. */
