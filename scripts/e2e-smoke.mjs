@@ -107,6 +107,22 @@ step("home");
 await page.goto(BASE, { waitUntil: "networkidle" });
 await page.screenshot({ path: `${OUT}/home.png`, fullPage: true });
 
+step("pokédex entry: Where to find it");
+await page.goto(`${BASE}/pokemon/starly`, { waitUntil: "networkidle" });
+{
+  const sec = page.locator("#encounters");
+  await sec.waitFor();
+  const open = await sec.locator("table tbody tr").count();
+  if (open === 0) errors.push("dex entry: Where to find it has no rows in the newest generation");
+  const collapsed = sec.locator("button[aria-expanded=false]").first();
+  if ((await collapsed.count()) === 0) errors.push("dex entry: older generations are not collapsible");
+  else {
+    await collapsed.click();
+    if ((await sec.locator("table tbody tr").count()) <= open) errors.push("dex entry: expanding a generation added no rows");
+  }
+  await sec.screenshot({ path: `${OUT}/dex-encounters.png` });
+}
+
 // A full Classic run, capturing the server's share token for the challenge flow.
 step("who's that pokémon: full classic run");
 let shareToken = null;

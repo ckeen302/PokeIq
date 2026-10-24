@@ -1,4 +1,5 @@
 import type { Pokemon, StatKey } from "./pokedex";
+import type { EncGen } from "./encounter-types";
 
 /** Serializable view model for one Pokédex page (server -> client). */
 
@@ -71,6 +72,8 @@ export interface DexEntryData {
   defenses: { type: string; multiplier: number }[];
   stabSuperEffective: string[];
   percentiles: Record<StatKey | "bst", number>;
+  /** Where to find it, newest generation first; null until the encounter pipeline has run for this species. */
+  encounters: EncGen[] | null;
   prev: DexNeighbour | null;
   next: DexNeighbour | null;
   /** Most similar silhouettes (DINOv2 embedding neighbours). */
