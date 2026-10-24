@@ -9,7 +9,7 @@
  *  - an overview list of areas per game (wild / fixed / raid) for the rest,
  *    which carries no levels or rates.
  */
-import type { RawRow } from "../../src/lib/pokemon/encounter-transform";
+import { plainNote, type RawRow } from "../../src/lib/pokemon/encounter-transform";
 
 const ENT: Record<string, string> = { amp: "&", lt: "<", gt: ">", quot: '"', apos: "'", nbsp: " ", eacute: "é", Eacute: "É", rsquo: "’", lsquo: "‘", ndash: "–", mdash: "—" };
 export const decode = (s: string) =>
@@ -17,10 +17,10 @@ export const decode = (s: string) =>
     .replace(/&#(\d+);/g, (_, n) => String.fromCharCode(Number(n)))
     .replace(/&#x([0-9a-f]+);/gi, (_, n) => String.fromCharCode(parseInt(n, 16)))
     .replace(/&([a-zA-Z]+);/g, (m, n) => ENT[n] ?? m);
-const text = (html: string) => decode(html.replace(/<[^>]+>/g, " ")).replace(/\s+/g, " ").trim();
+export const text = (html: string) => decode(html.replace(/<[^>]+>/g, " ")).replace(/\s+/g, " ").trim();
 
 /** "14 - 16" -> "14–16", "15 - 15" -> "15". */
-function levels(s: string): string | undefined {
+export function levels(s: string): string | undefined {
   const m = s.match(/(\d+)\s*-\s*(\d+)/);
   if (!m) return s.match(/\d+/) ? s.trim() : undefined;
   return m[1] === m[2] ? m[1] : `${m[1]}–${m[2]}`;
@@ -29,7 +29,7 @@ const rate = (s: string) => (/\d/.test(s) ? s.replace(/\s+/g, "") : undefined);
 const baseOf = (loc: string) => loc.split(" - ")[0].trim();
 const subOf = (loc: string) => loc.split(" - ").slice(1).join(" - ").trim() || undefined;
 /** "Great Marsh - Area 2" -> place + sub-area. */
-const place = (loc: string) => ({ loc: baseOf(loc), base: baseOf(loc), sub: subOf(loc) });
+export const place = (loc: string) => ({ loc: baseOf(loc), base: baseOf(loc), sub: subOf(loc) });
 
 function tableAfter(html: string, anchor: string): string | undefined {
   const i = html.indexOf(`name="${anchor}"`);
@@ -146,14 +146,21 @@ export function parseOverview(html: string, opts: { skipDetailedBase?: boolean }
     // ("Gift from Leon in Postwick"), which the detail tables don't carry.
     const notesOnly = !!opts.skipDetailedBase && ((!region && BASE_DETAIL_GAMES.has(ver)) || (!!region && !/Isle of Armor|Crown Tundra/.test(region)));
     const megaDim = game === "Legends: Z-A Mega Dimension";
+    // A bare "Galarian Form" line heads the places after it: the form goes into their notes.
+    const heads: { form: string; at: number; raw: string; n?: string }[] = [];
     for (const seg of info.html.split(/<br\s*\/?>/i)) {
       const t = text(seg);
       if (!t) continue;
       const links = [...seg.matchAll(/<a[^>]*>([\s\S]*?)<\/a>/g)].map((l) => text(l[1])).filter(Boolean);
       const n = region || undefined;
+      const head = !links.length && t.match(/^(\w+ Form|(?:Red|Yellow|Orange|Blue|White) Flower)\s*:?$/);
+      if (head) {
+        heads.push({ form: head[1].replace(/ Form$/, " form"), at: out.length, raw: t, n });
+        continue;
+      }
       // Link-less text ("Starter Pokémon in Cabo Poco", "Event only"…) is shown as a note row.
       if (!links.length && !/Massive Mass Outbreak/i.test(t) && !/^(Fixed|Max Raid Battles|Tera Raid Battles):?$/.test(t)) {
-        out.push({ ver, x: n ? `${t} (${n})` : t });
+        out.push({ ver, x: plainNote(t, n) });
         continue;
       }
       if (notesOnly) continue;
@@ -171,12 +178,32 @@ export function parseOverview(html: string, opts: { skipDetailedBase?: boolean }
         for (const s of spot.length ? spot : [text(bold)]) out.push({ ver, loc: `${s} (${text(bold)})`, base: s, m, n: /or nearby/.test(t) ? "or nearby" : n });
         continue;
       }
-      if (m === "Tera Raid" || m === "Max Raid") {
+      if (megaDim) {
+        // "Hyperspace Lumiose - Grass (4 Star), Poison (4 Star)": one row per wild zone, the zone as a note.
+        const zones = links.map((l) => l.match(/^(.+?) \((\d+) Star\)$/)).filter((z): z is RegExpMatchArray => !!z);
+        for (const z of zones) out.push({ ver, loc: "Hyperspace Lumiose", base: undefined, m: "Hyperspace", n: `${z[1]} zone · ${z[2]}★` });
+        if (!zones.length) for (const l of links) out.push({ ver, loc: l, base: undefined, m: "Hyperspace", n });
+        continue;
+      }
+      if (m === "Tera Raid") {
+        // "3 Star Raid Battles" -> Tera Raid Battles, note "3★"
+        for (const l of links) {
+          const star = l.match(/^(\d+) Star/)?.[1];
+          out.push({ ver, loc: "Tera Raid Battles", base: undefined, m, n: [n, star ? `${star}★` : l].filter(Boolean).join(" · ") });
+        }
+        continue;
+      }
+      if (m === "Max Raid") {
         for (const l of links) out.push({ ver, loc: l, base: m === "Max Raid" ? l : undefined, m, n });
         continue;
       }
       for (const l of links) out.push({ ver, loc: l, base: l, m, n });
     }
+    heads.forEach((h, k) => {
+      const placed = out.slice(h.at, heads[k + 1]?.at ?? out.length).filter((r) => r.loc);
+      for (const r of placed) r.n = [h.form, r.n].filter(Boolean).join(" · ");
+      if (!placed.length) out.push({ ver, x: plainNote(h.raw, h.n) });
+    });
   }
   return out;
 }

@@ -1,5 +1,227 @@
 {
  "hide": {
+  "17": {
+   "heartgold": [
+    "Johto Safari Zone"
+   ],
+   "soulsilver": [
+    "Johto Safari Zone"
+   ]
+  },
+  "19": {
+   "gold": [
+    "Route 8"
+   ],
+   "silver": [
+    "Route 8"
+   ]
+  },
+  "29": {
+   "crystal": [
+    "Route 35"
+   ]
+  },
+  "32": {
+   "crystal": [
+    "Route 35"
+   ]
+  },
+  "42": {
+   "platinum": [
+    "Lost Tower"
+   ],
+   "sun": [
+    "Royal Avenue"
+   ],
+   "moon": [
+    "Royal Avenue"
+   ],
+   "ultra-sun": [
+    "Royal Avenue"
+   ],
+   "ultra-moon": [
+    "Royal Avenue"
+   ]
+  },
+  "52": {
+   "crystal": [
+    "Route 35"
+   ]
+  },
+  "60": {
+   "gold": [
+    "Route 43"
+   ],
+   "silver": [
+    "Route 43"
+   ],
+   "crystal": [
+    "Route 43"
+   ],
+   "heartgold": [
+    "Cliff Cave"
+   ],
+   "soulsilver": [
+    "Cliff Cave"
+   ]
+  },
+  "61": {
+   "heartgold": [
+    "Route 44"
+   ],
+   "soulsilver": [
+    "Route 44"
+   ]
+  },
+  "72": {
+   "sun": [
+    "Route 1"
+   ],
+   "moon": [
+    "Route 1"
+   ]
+  },
+  "73": {
+   "ultra-sun": [
+    "Ancient Poni Path"
+   ],
+   "ultra-moon": [
+    "Ancient Poni Path"
+   ]
+  },
+  "74": {
+   "diamond": [
+    "Ruin Maniac Cave",
+    "Maniac Tunnel"
+   ],
+   "pearl": [
+    "Ruin Maniac Cave",
+    "Maniac Tunnel"
+   ],
+   "platinum": [
+    "Ruin Maniac Cave",
+    "Maniac Tunnel"
+   ],
+   "heartgold": [
+    "Cerulean Cave"
+   ],
+   "soulsilver": [
+    "Cerulean Cave"
+   ]
+  },
+  "75": {
+   "heartgold": [
+    "Cerulean Cave"
+   ],
+   "soulsilver": [
+    "Cerulean Cave"
+   ]
+  },
+  "76": {
+   "heartgold": [
+    "Johto Safari Zone"
+   ],
+   "soulsilver": [
+    "Johto Safari Zone"
+   ]
+  },
+  "79": {
+   "pearl": [
+    "Route 205"
+   ]
+  },
+  "80": {
+   "leafgreen": [
+    "Cinnabar Island"
+   ]
+  },
+  "90": {
+   "gold": [
+    "Sea Route 41",
+    "Sea Route 20",
+    "Cinnabar Island",
+    "Sea Route 21"
+   ],
+   "silver": [
+    "Sea Route 41",
+    "Sea Route 20",
+    "Cinnabar Island",
+    "Sea Route 21"
+   ],
+   "crystal": [
+    "Sea Route 41",
+    "Sea Route 20",
+    "Cinnabar Island",
+    "Sea Route 21"
+   ]
+  },
+  "93": {
+   "sun": [
+    "Royal Avenue"
+   ],
+   "moon": [
+    "Royal Avenue"
+   ],
+   "ultra-sun": [
+    "Royal Avenue"
+   ],
+   "ultra-moon": [
+    "Royal Avenue"
+   ]
+  },
+  "94": {
+   "sun": [
+    "Royal Avenue"
+   ],
+   "moon": [
+    "Royal Avenue"
+   ],
+   "ultra-sun": [
+    "Royal Avenue"
+   ],
+   "ultra-moon": [
+    "Royal Avenue"
+   ]
+  },
+  "98": {
+   "gold": [
+    "Union Cave"
+   ],
+   "silver": [
+    "Union Cave"
+   ],
+   "crystal": [
+    "Union Cave"
+   ]
+  },
+  "99": {
+   "gold": [
+    "Union Cave"
+   ],
+   "silver": [
+    "Union Cave"
+   ],
+   "crystal": [
+    "Union Cave"
+   ],
+   "heartgold": [
+    "Seafoam Islands"
+   ],
+   "soulsilver": [
+    "Seafoam Islands"
+   ],
+   "leafgreen": [
+    "Sea Route 19",
+    "Sea Route 20",
+    "Sea Route 21"
+   ],
+   "red": [
+    "Cerulean Cave"
+   ],
+   "blue": [
+    "Cerulean Cave"
+   ]
+  },
   "117": {
    "firered": [
     "Sea Route 19",
@@ -24,31 +246,38 @@
    ]
   },
   "120": {
-   "crystal": [
-    "Union Cave"
+   "platinum": [
+    "Sunyshore City"
    ],
    "gold": [
     "Union Cave"
    ],
-   "heartgold": [
-    "Sea Route 19"
-   ],
-   "platinum": [
-    "Sunyshore City"
-   ],
    "silver": [
     "Union Cave"
+   ],
+   "crystal": [
+    "Union Cave"
+   ],
+   "heartgold": [
+    "Sea Route 19"
    ],
    "soulsilver": [
     "Sea Route 19"
    ]
   },
   "129": {
-   "crystal": [
+   "platinum": [
+    "Route 228"
+   ],
+   "gold": [
     "Mt. Mortar",
     "Tohjo Falls"
    ],
-   "gold": [
+   "silver": [
+    "Mt. Mortar",
+    "Tohjo Falls"
+   ],
+   "crystal": [
     "Mt. Mortar",
     "Tohjo Falls"
    ],
@@ -56,25 +285,13 @@
     "Cliff Cave",
     "Route 4"
    ],
-   "moon": [
-    "Tapu Village"
-   ],
-   "pearl": [
-    "Oreburgh Gate",
-    "Route 219"
-   ],
-   "platinum": [
-    "Route 228"
-   ],
-   "silver": [
-    "Mt. Mortar",
-    "Tohjo Falls"
-   ],
    "soulsilver": [
     "Cliff Cave",
     "Route 4"
    ],
-   "sun": [
+   "ultra-sun": [
+    "Ancient Poni Path",
+    "Hau'oli City",
     "Tapu Village"
    ],
    "ultra-moon": [
@@ -82,41 +299,39 @@
     "Hau'oli City",
     "Tapu Village"
    ],
-   "ultra-sun": [
-    "Ancient Poni Path",
-    "Hau'oli City",
+   "sun": [
+    "Tapu Village"
+   ],
+   "moon": [
     "Tapu Village"
    ]
   },
   "130": {
-   "moon": [
-    "Tapu Village"
-   ],
-   "pearl": [
-    "Oreburgh Gate"
-   ],
    "platinum": [
     "Route 228"
+   ],
+   "ultra-sun": [
+    "Ancient Poni Path",
+    "Hau'oli City",
+    "Tapu Village"
+   ],
+   "ultra-moon": [
+    "Ancient Poni Path",
+    "Hau'oli City",
+    "Tapu Village"
    ],
    "sun": [
     "Tapu Village"
    ],
-   "ultra-moon": [
-    "Ancient Poni Path",
-    "Hau'oli City",
-    "Tapu Village"
-   ],
-   "ultra-sun": [
-    "Ancient Poni Path",
-    "Hau'oli City",
+   "moon": [
     "Tapu Village"
    ]
   },
   "131": {
-   "ultra-moon": [
+   "ultra-sun": [
     "Ancient Poni Path"
    ],
-   "ultra-sun": [
+   "ultra-moon": [
     "Ancient Poni Path"
    ]
   },
@@ -128,22 +343,17 @@
     "Route 12"
    ]
   },
-  "16": {
-   "leafgreen": [
-    "Route 1"
-   ]
-  },
   "161": {
    "platinum": [
     "Route 202"
    ]
   },
   "163": {
-   "heartgold": [
-    "Route 31"
-   ],
    "platinum": [
     "Route 211"
+   ],
+   "heartgold": [
+    "Route 31"
    ],
    "soulsilver": [
     "Route 31"
@@ -157,71 +367,44 @@
     "Berry Fields"
    ]
   },
-  "17": {
-   "heartgold": [
-    "Johto Safari Zone"
-   ],
-   "soulsilver": [
-    "Johto Safari Zone"
-   ]
-  },
   "170": {
-   "crystal": [
-    "Cinnabar Island",
-    "Sea Route 20",
-    "Sea Route 21",
-    "Sea Route 41"
-   ],
    "gold": [
-    "Cinnabar Island",
+    "Sea Route 41",
     "Sea Route 20",
-    "Sea Route 21",
-    "Sea Route 41"
+    "Cinnabar Island",
+    "Sea Route 21"
    ],
    "silver": [
-    "Cinnabar Island",
+    "Sea Route 41",
     "Sea Route 20",
-    "Sea Route 21",
-    "Sea Route 41"
+    "Cinnabar Island",
+    "Sea Route 21"
+   ],
+   "crystal": [
+    "Sea Route 41",
+    "Sea Route 20",
+    "Cinnabar Island",
+    "Sea Route 21"
    ]
   },
   "171": {
+   "gold": [
+    "Sea Route 41",
+    "Sea Route 20",
+    "Cinnabar Island",
+    "Sea Route 21"
+   ],
+   "silver": [
+    "Sea Route 41",
+    "Sea Route 20",
+    "Cinnabar Island",
+    "Sea Route 21"
+   ],
    "crystal": [
-    "Cinnabar Island",
+    "Sea Route 41",
     "Sea Route 20",
-    "Sea Route 21",
-    "Sea Route 41"
-   ],
-   "gold": [
     "Cinnabar Island",
-    "Sea Route 20",
-    "Sea Route 21",
-    "Sea Route 41"
-   ],
-   "silver": [
-    "Cinnabar Island",
-    "Sea Route 20",
-    "Sea Route 21",
-    "Sea Route 41"
-   ]
-  },
-  "185": {
-   "emerald": [
-    "Hoenn Battle Frontier"
-   ]
-  },
-  "19": {
-   "gold": [
-    "Route 8"
-   ],
-   "heartgold": [
-    "Route 30",
-    "Route 31"
-   ],
-   "silver": [
-    "Route 38",
-    "Route 39",
-    "Route 8"
+    "Sea Route 21"
    ]
   },
   "194": {
@@ -232,14 +415,6 @@
   "195": {
    "crystal": [
     "Mt. Silver"
-   ],
-   "soulsilver": [
-    "Route 26"
-   ]
-  },
-  "20": {
-   "silver": [
-    "Union Cave"
    ]
   },
   "200": {
@@ -249,48 +424,36 @@
   },
   "201": {
    "firered": [
-    "Viapos Chamber",
-    "Weepth Chamber"
+    "Weepth Chamber",
+    "Viapos Chamber"
    ],
    "leafgreen": [
-    "Viapos Chamber",
-    "Weepth Chamber"
-   ]
-  },
-  "208": {
-   "black-2": [
-    "Glacier Room",
-    "Iron Room",
-    "Rocky Mountain Room"
-   ],
-   "white-2": [
-    "Glacier Room",
-    "Iron Room",
-    "Rocky Mountain Room"
+    "Weepth Chamber",
+    "Viapos Chamber"
    ]
   },
   "222": {
-   "crystal": [
-    "Union Cave"
-   ],
    "gold": [
     "Union Cave"
    ],
    "silver": [
     "Union Cave"
    ],
-   "ultra-moon": [
-    "Hau'oli City"
+   "crystal": [
+    "Union Cave"
    ],
    "ultra-sun": [
+    "Hau'oli City"
+   ],
+   "ultra-moon": [
     "Hau'oli City"
    ]
   },
   "224": {
-   "ultra-moon": [
+   "ultra-sun": [
     "Hau'oli City"
    ],
-   "ultra-sun": [
+   "ultra-moon": [
     "Hau'oli City"
    ]
   },
@@ -299,15 +462,7 @@
     "Trainer Tower"
    ]
   },
-  "269": {
-   "soulsilver": [
-    "National Park"
-   ]
-  },
   "278": {
-   "emerald": [
-    "Dewford Town"
-   ],
    "platinum": [
     "Pastoria City"
    ],
@@ -316,19 +471,19 @@
    ],
    "sapphire": [
     "Dewford Town"
+   ],
+   "emerald": [
+    "Dewford Town"
    ]
   },
   "279": {
-   "emerald": [
-    "Dewford Town"
-   ],
-   "pearl": [
-    "Route 219"
-   ],
    "ruby": [
     "Dewford Town"
    ],
    "sapphire": [
+    "Dewford Town"
+   ],
+   "emerald": [
     "Dewford Town"
    ]
   },
@@ -343,43 +498,6 @@
    ],
    "soulsilver": [
     "Johto Safari Zone"
-   ]
-  },
-  "29": {
-   "crystal": [
-    "Route 35"
-   ]
-  },
-  "299": {
-   "black-2": [
-    "Glacier Room",
-    "Iron Room",
-    "Rocky Mountain Room"
-   ],
-   "white-2": [
-    "Glacier Room",
-    "Iron Room",
-    "Rocky Mountain Room"
-   ]
-  },
-  "304": {
-   "black-2": [
-    "Guidance Chamber"
-   ],
-   "white-2": [
-    "Guidance Chamber"
-   ]
-  },
-  "305": {
-   "black-2": [
-    "Glacier Room",
-    "Iron Room",
-    "Rocky Mountain Room"
-   ],
-   "white-2": [
-    "Glacier Room",
-    "Iron Room",
-    "Rocky Mountain Room"
    ]
   },
   "312": {
@@ -404,34 +522,29 @@
    ]
   },
   "318": {
-   "ultra-moon": [
+   "ultra-sun": [
     "Ancient Poni Path"
    ],
-   "ultra-sun": [
+   "ultra-moon": [
     "Ancient Poni Path"
    ]
   },
   "319": {
-   "ultra-moon": [
-    "Ancient Poni Path"
-   ],
    "ultra-sun": [
     "Ancient Poni Path"
-   ]
-  },
-  "32": {
-   "crystal": [
-    "Route 35"
+   ],
+   "ultra-moon": [
+    "Ancient Poni Path"
    ]
   },
   "320": {
    "platinum": [
     "Sea Route 223"
    ],
-   "ultra-moon": [
+   "ultra-sun": [
     "Ancient Poni Path"
    ],
-   "ultra-sun": [
+   "ultra-moon": [
     "Ancient Poni Path"
    ]
   },
@@ -439,10 +552,10 @@
    "platinum": [
     "Sea Route 223"
    ],
-   "ultra-moon": [
+   "ultra-sun": [
     "Ancient Poni Path"
    ],
-   "ultra-sun": [
+   "ultra-moon": [
     "Ancient Poni Path"
    ]
   },
@@ -454,24 +567,11 @@
     "Johto Safari Zone"
    ]
   },
-  "339": {
-   "pearl": [
-    "Oreburgh Gate"
-   ]
-  },
-  "349": {
-   "diamond": [
-    "Mt. Coronet"
-   ],
-   "pearl": [
-    "Mt. Coronet"
-   ]
-  },
   "352": {
-   "alpha-sapphire": [
+   "omega-ruby": [
     "Mossdeep Space Center"
    ],
-   "omega-ruby": [
+   "alpha-sapphire": [
     "Mossdeep Space Center"
    ]
   },
@@ -480,10 +580,10 @@
     "Route 121",
     "Route 123"
    ],
-   "ultra-moon": [
+   "ultra-sun": [
     "Royal Avenue"
    ],
-   "ultra-sun": [
+   "ultra-moon": [
     "Royal Avenue"
    ]
   },
@@ -493,76 +593,73 @@
    ]
   },
   "359": {
-   "moon": [
-    "Route 14"
-   ],
    "sun": [
     "Route 14"
    ],
-   "ultra-moon": [
+   "moon": [
     "Route 14"
    ],
    "ultra-sun": [
     "Route 14"
+   ],
+   "ultra-moon": [
+    "Route 14"
    ]
   },
   "360": {
-   "emerald": [
-    "Route 130"
-   ],
    "ruby": [
     "Route 130"
    ],
    "sapphire": [
     "Route 130"
+   ],
+   "emerald": [
+    "Route 130"
    ]
   },
   "361": {
-   "moon": [
-    "Route 14"
-   ],
    "sun": [
     "Route 14"
    ],
-   "ultra-moon": [
+   "moon": [
     "Route 14"
    ],
    "ultra-sun": [
+    "Route 14"
+   ],
+   "ultra-moon": [
     "Route 14"
    ]
   },
   "366": {
-   "pearl": [
-    "Route 219"
-   ],
-   "ultra-moon": [
+   "ultra-sun": [
     "Hau'oli City"
    ],
-   "ultra-sun": [
+   "ultra-moon": [
     "Hau'oli City"
    ]
   },
   "367": {
-   "ultra-moon": [
+   "ultra-sun": [
     "Hau'oli City"
    ],
-   "ultra-sun": [
+   "ultra-moon": [
     "Hau'oli City"
    ]
   },
   "368": {
-   "ultra-moon": [
+   "ultra-sun": [
     "Hau'oli City"
    ],
-   "ultra-sun": [
+   "ultra-moon": [
     "Hau'oli City"
    ]
   },
   "369": {
-   "ultra-moon": [
+   "ultra-sun": [
     "Ancient Poni Path"
    ],
-   "ultra-sun": [
+   "ultra-moon": [
     "Ancient Poni Path"
    ]
   },
@@ -570,24 +667,16 @@
    "platinum": [
     "Route 224"
    ],
-   "ultra-moon": [
+   "ultra-sun": [
     "Hau'oli City"
    ],
-   "ultra-sun": [
+   "ultra-moon": [
     "Hau'oli City"
    ]
   },
   "371": {
    "pearl": [
     "Route 210"
-   ]
-  },
-  "41": {
-   "heartgold": [
-    "Route 42"
-   ],
-   "pearl": [
-    "Oreburgh Gate"
    ]
   },
   "412": {
@@ -606,186 +695,70 @@
     "Berry Fields"
    ]
   },
-  "42": {
-   "moon": [
-    "Royal Avenue"
-   ],
-   "pearl": [
-    "Oreburgh Gate"
-   ],
-   "platinum": [
-    "Lost Tower"
-   ],
-   "sun": [
-    "Royal Avenue"
-   ],
-   "ultra-moon": [
-    "Royal Avenue"
-   ],
-   "ultra-sun": [
-    "Royal Avenue"
-   ]
-  },
-  "433": {
-   "soulsilver": [
-    "Johto Safari Zone"
-   ]
-  },
   "438": {
    "pearl": [
-    "Route 210",
-    "Trophy Garden"
-   ]
-  },
-  "439": {
-   "pearl": [
-    "Trophy Garden"
+    "Route 210"
    ]
   },
   "449": {
    "diamond": [
-    "Maniac Tunnel",
-    "Ruin Maniac Cave"
+    "Ruin Maniac Cave",
+    "Maniac Tunnel"
    ],
    "pearl": [
-    "Maniac Tunnel",
-    "Ruin Maniac Cave"
+    "Ruin Maniac Cave",
+    "Maniac Tunnel"
    ],
    "platinum": [
-    "Maniac Tunnel",
-    "Ruin Maniac Cave"
-   ]
-  },
-  "455": {
-   "heartgold": [
-    "Johto Safari Zone"
+    "Ruin Maniac Cave",
+    "Maniac Tunnel"
    ]
   },
   "456": {
-   "moon": [
+   "sun": [
     "Route 1"
    ],
-   "pearl": [
-    "Route 219"
-   ],
-   "sun": [
+   "moon": [
     "Route 1"
    ]
   },
   "457": {
-   "ultra-moon": [
-    "Ancient Poni Path"
-   ],
    "ultra-sun": [
     "Ancient Poni Path"
-   ]
-  },
-  "52": {
-   "crystal": [
-    "Route 35"
-   ]
-  },
-  "523": {
-   "black-2": [
-    "Route 3"
+   ],
+   "ultra-moon": [
+    "Ancient Poni Path"
    ]
   },
   "525": {
    "black": [
-    "Guidance Chamber",
     "Trial Chamber"
-   ],
-   "black-2": [
-    "Glacier Room",
-    "Guidance Chamber",
-    "Iron Room",
-    "Rocky Mountain Room"
    ],
    "white": [
-    "Guidance Chamber",
     "Trial Chamber"
-   ],
-   "white-2": [
-    "Glacier Room",
-    "Guidance Chamber",
-    "Iron Room",
-    "Rocky Mountain Room"
    ]
   },
   "527": {
    "black": [
-    "Guidance Chamber",
     "Trial Chamber"
    ],
-   "black-2": [
-    "Glacier Room",
-    "Guidance Chamber",
-    "Iron Room",
-    "Rocky Mountain Room"
-   ],
    "white": [
-    "Guidance Chamber",
     "Trial Chamber"
-   ],
-   "white-2": [
-    "Glacier Room",
-    "Guidance Chamber",
-    "Iron Room",
-    "Rocky Mountain Room"
-   ]
-  },
-  "529": {
-   "black": [
-    "Guidance Chamber"
-   ],
-   "black-2": [
-    "Guidance Chamber"
-   ],
-   "white": [
-    "Guidance Chamber"
-   ],
-   "white-2": [
-    "Guidance Chamber"
    ]
   },
   "530": {
    "black": [
     "Trial Chamber"
    ],
-   "black-2": [
-    "Glacier Room",
-    "Iron Room",
-    "Rocky Mountain Room"
-   ],
    "white": [
     "Trial Chamber"
-   ],
-   "white-2": [
-    "Glacier Room",
-    "Iron Room",
-    "Rocky Mountain Room"
-   ]
-  },
-  "539": {
-   "black-2": [
-    "Route 15"
-   ]
-  },
-  "54": {
-   "pearl": [
-    "Oreburgh Gate"
-   ]
-  },
-  "55": {
-   "pearl": [
-    "Oreburgh Gate"
    ]
   },
   "582": {
-   "ultra-moon": [
+   "ultra-sun": [
     "Mount Lanakila"
    ],
-   "ultra-sun": [
+   "ultra-moon": [
     "Mount Lanakila"
    ]
   },
@@ -795,45 +768,6 @@
    ],
    "white": [
     "Giant Chasm"
-   ]
-  },
-  "60": {
-   "crystal": [
-    "Route 43"
-   ],
-   "gold": [
-    "Route 43"
-   ],
-   "heartgold": [
-    "Cliff Cave"
-   ],
-   "silver": [
-    "Route 43"
-   ],
-   "soulsilver": [
-    "Cliff Cave"
-   ]
-  },
-  "61": {
-   "heartgold": [
-    "Route 44"
-   ],
-   "soulsilver": [
-    "Route 44"
-   ]
-  },
-  "610": {
-   "black": [
-    "Guidance Chamber"
-   ],
-   "black-2": [
-    "Guidance Chamber"
-   ],
-   "white": [
-    "Guidance Chamber"
-   ],
-   "white-2": [
-    "Guidance Chamber"
    ]
   },
   "619": {
@@ -848,18 +782,8 @@
    "black": [
     "Trial Chamber"
    ],
-   "black-2": [
-    "Glacier Room",
-    "Iron Room",
-    "Rocky Mountain Room"
-   ],
    "white": [
     "Trial Chamber"
-   ],
-   "white-2": [
-    "Glacier Room",
-    "Iron Room",
-    "Rocky Mountain Room"
    ]
   },
   "665": {
@@ -871,273 +795,93 @@
    ]
   },
   "707": {
-   "moon": [
-    "Royal Avenue"
-   ],
    "sun": [
     "Royal Avenue"
    ],
-   "ultra-moon": [
+   "moon": [
     "Royal Avenue"
    ],
    "ultra-sun": [
     "Royal Avenue"
-   ]
-  },
-  "72": {
-   "moon": [
-    "Route 1"
-   ],
-   "sun": [
-    "Route 1"
-   ]
-  },
-  "73": {
-   "pearl": [
-    "Route 219"
    ],
    "ultra-moon": [
-    "Ancient Poni Path"
-   ],
-   "ultra-sun": [
-    "Ancient Poni Path"
+    "Royal Avenue"
    ]
   },
   "735": {
-   "moon": [
-    "Route 14"
-   ],
    "sun": [
     "Route 14"
    ],
-   "ultra-moon": [
+   "moon": [
     "Route 14"
    ],
    "ultra-sun": [
+    "Route 14"
+   ],
+   "ultra-moon": [
     "Route 14"
    ]
   },
   "739": {
-   "moon": [
-    "Alola Berry Fields",
-    "Route 12",
-    "Route 15"
-   ],
    "sun": [
-    "Alola Berry Fields",
     "Route 12",
     "Route 15"
    ],
-   "ultra-moon": [
-    "Alola Berry Fields"
-   ],
-   "ultra-sun": [
-    "Alola Berry Fields"
-   ]
-  },
-  "74": {
-   "diamond": [
-    "Maniac Tunnel",
-    "Ruin Maniac Cave"
-   ],
-   "heartgold": [
-    "Cerulean Cave"
-   ],
-   "pearl": [
-    "Maniac Tunnel",
-    "Oreburgh Gate",
-    "Route 210",
-    "Route 211",
-    "Ruin Maniac Cave"
-   ],
-   "platinum": [
-    "Maniac Tunnel",
-    "Ruin Maniac Cave"
-   ],
-   "soulsilver": [
-    "Cerulean Cave"
+   "moon": [
+    "Route 12",
+    "Route 15"
    ]
   },
   "746": {
-   "moon": [
-    "Tapu Village"
-   ],
-   "sun": [
+   "ultra-sun": [
+    "Hau'oli City",
     "Tapu Village"
    ],
    "ultra-moon": [
     "Hau'oli City",
     "Tapu Village"
    ],
-   "ultra-sun": [
-    "Hau'oli City",
+   "sun": [
+    "Tapu Village"
+   ],
+   "moon": [
     "Tapu Village"
    ]
   },
   "747": {
-   "ultra-moon": [
-    "Hau'oli City"
-   ],
    "ultra-sun": [
     "Hau'oli City"
-   ]
-  },
-  "75": {
-   "heartgold": [
-    "Cerulean Cave"
    ],
-   "soulsilver": [
-    "Cerulean Cave"
-   ]
-  },
-  "76": {
-   "heartgold": [
-    "Johto Safari Zone"
-   ],
-   "soulsilver": [
-    "Johto Safari Zone"
+   "ultra-moon": [
+    "Hau'oli City"
    ]
   },
   "778": {
-   "moon": [
-    "Royal Avenue"
-   ],
    "sun": [
     "Royal Avenue"
    ],
-   "ultra-moon": [
+   "moon": [
     "Royal Avenue"
    ],
    "ultra-sun": [
+    "Royal Avenue"
+   ],
+   "ultra-moon": [
     "Royal Avenue"
    ]
   },
   "779": {
-   "moon": [
-    "Tapu Village"
-   ],
    "sun": [
     "Tapu Village"
    ],
-   "ultra-moon": [
+   "moon": [
     "Tapu Village"
    ],
    "ultra-sun": [
     "Tapu Village"
-   ]
-  },
-  "79": {
-   "pearl": [
-    "Route 205"
-   ]
-  },
-  "80": {
-   "leafgreen": [
-    "Cinnabar Island"
-   ]
-  },
-  "81": {
-   "heartgold": [
-    "Route 6"
-   ]
-  },
-  "90": {
-   "crystal": [
-    "Cinnabar Island",
-    "Sea Route 20",
-    "Sea Route 21",
-    "Sea Route 41"
-   ],
-   "gold": [
-    "Cinnabar Island",
-    "Sea Route 20",
-    "Sea Route 21",
-    "Sea Route 41"
-   ],
-   "silver": [
-    "Cinnabar Island",
-    "Sea Route 20",
-    "Sea Route 21",
-    "Sea Route 41"
-   ]
-  },
-  "93": {
-   "moon": [
-    "Royal Avenue"
-   ],
-   "sun": [
-    "Royal Avenue"
    ],
    "ultra-moon": [
-    "Royal Avenue"
-   ],
-   "ultra-sun": [
-    "Royal Avenue"
-   ]
-  },
-  "94": {
-   "moon": [
-    "Royal Avenue"
-   ],
-   "sun": [
-    "Royal Avenue"
-   ],
-   "ultra-moon": [
-    "Royal Avenue"
-   ],
-   "ultra-sun": [
-    "Royal Avenue"
-   ]
-  },
-  "95": {
-   "black-2": [
-    "Glacier Room",
-    "Iron Room",
-    "Rocky Mountain Room"
-   ],
-   "white-2": [
-    "Glacier Room",
-    "Iron Room",
-    "Rocky Mountain Room"
-   ]
-  },
-  "98": {
-   "crystal": [
-    "Union Cave"
-   ],
-   "gold": [
-    "Union Cave"
-   ],
-   "silver": [
-    "Union Cave"
-   ]
-  },
-  "99": {
-   "blue": [
-    "Cerulean Cave"
-   ],
-   "crystal": [
-    "Union Cave"
-   ],
-   "gold": [
-    "Union Cave"
-   ],
-   "heartgold": [
-    "Seafoam Islands"
-   ],
-   "leafgreen": [
-    "Sea Route 19",
-    "Sea Route 20",
-    "Sea Route 21"
-   ],
-   "red": [
-    "Cerulean Cave"
-   ],
-   "silver": [
-    "Union Cave"
-   ],
-   "soulsilver": [
-    "Seafoam Islands"
+    "Tapu Village"
    ]
   }
  }
