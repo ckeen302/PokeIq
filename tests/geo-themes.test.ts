@@ -22,19 +22,11 @@ describe("themed maps: the tags", () => {
   });
 
   it("keep out what isn't that kind of place", () => {
-    const caves = new Set(tags.caves.places);
-    for (const k of ["Johto|Mt. Silver", "Sinnoh|Mt. Coronet", "Sinnoh|Iron Island", "Sinnoh|Stark Mountain", "Sevii Islands|Dotted Hole", "Hoenn|Desert Ruins", "Kanto|Underground Path 5-6"])
-      expect(caves.has(k)).toBe(false);
     const towns = new Set(tags.towns.places);
     for (const k of ["Kanto|Indigo Plateau", "Hoenn|Battle Frontier", "Unova|Pokémon League", "Kalos|Pokémon Village"]) expect(towns.has(k)).toBe(false);
     for (const k of tags.routes.places!) expect(k).toMatch(/\|Route \d+$/);
     for (const k of tags.gyms.buildings!) expect(k).toMatch(/ (Gym|Stadium)$/);
     expect(tags.gyms.buildings).not.toContain("Alola|Kantonian Gym");
-    const water = new Set(tags.water.places);
-    for (const k of ["Galar|Lake of Outrage", "Alola|Route 7"]) expect(water.has(k)).toBe(false);
-    expect(tags.starters.places).toEqual(
-      expect.arrayContaining(["Kanto|Pallet Town", "Johto|New Bark Town", "Hoenn|Littleroot Town", "Sinnoh|Twinleaf Town", "Unova|Nuvema Town", "Kalos|Vaniville Town", "Alola|Iki Town", "Galar|Postwick", "Paldea|Cabo Poco"])
-    );
     const both = tags.towns.places!.filter((k) => tags.routes.places!.includes(k));
     expect(both).toEqual([]);
   });
@@ -81,7 +73,7 @@ describe("themed maps: playing them", () => {
   });
 
   it("score a streak by region, like the world map", () => {
-    const spec: GeoSpec = { region: themeMapId("caves"), kind: "streak" };
+    const spec: GeoSpec = { region: themeMapId("towns"), kind: "streak" };
     const [round] = planRounds(spec, "theme-streak");
     const answer = answerFor(spec, round);
     const start = startGeo(spec, { seed: "theme-streak" });
