@@ -126,7 +126,9 @@ describe("a Factory run", () => {
     expect(played.map((m) => m.species)).toEqual(swapped.run.team.map((m) => m.species));
     const polled = await pollBattle(second.code, second.token, 0);
     if (!polled.ok) throw new Error(polled.error);
-    expect(polled.view.request!.data.side.pokemon.map((p) => p.details.split(",")[0])).toEqual(swapped.run.team.map((m) => m.species));
+    // The battle shows some forms by their base name (Greninja-Bond is "Greninja" in battle), so compare base species.
+    const base = (n: string) => Dex.species.get(n).baseSpecies;
+    expect(polled.view.request!.data.side.pokemon.map((p) => base(p.details.split(",")[0]))).toEqual(swapped.run.team.map((m) => base(m.species)));
     const me = readBattleToken(second.token, second.code)!;
     const forfeited = await actOnBattle(second.code, me.playerId, { action: "forfeit" }, 0);
     expect(forfeited.ok).toBe(true);
