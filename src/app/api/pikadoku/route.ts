@@ -29,6 +29,7 @@ export async function GET(request: NextRequest) {
   const fam = p.get("fam");
   const found = resolveGrid({
     date: p.get("date") ?? undefined,
+    week: p.get("week") ?? undefined,
     difficulty: p.get("difficulty") ?? "normal",
     practice: p.get("practice") ?? undefined,
     settings: {
