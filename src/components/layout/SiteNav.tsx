@@ -99,7 +99,7 @@ export function DesktopNav() {
         )}
       >
         <Avatar avatar={account.user?.avatar} size={22} />
-        <span className="max-w-[9rem] truncate font-display font-semibold">{account.user?.username ?? (progress?.name || "Trainer")}</span>
+        <span className="max-w-[5rem] truncate font-display font-semibold sm:max-w-[9rem]">{account.user?.username ?? (progress?.name || "Trainer")}</span>
         {progress && progress.xp > 0 && (
           <span className="font-pixel text-[10px] text-screen">Lv{levelInfo(progress.xp).level}</span>
         )}
