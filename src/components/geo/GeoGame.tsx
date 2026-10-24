@@ -60,7 +60,7 @@ import {
   zoomOrigin,
   type GeoPlaySettings,
 } from "@/lib/geo-settings";
-import { GameFilter, GameGuessPicker, type FilterChoice, filterPlaces, gameGuessOptions, readGuessGame, rememberGuessGame } from "./GameFilter";
+import { GameFilter, GameGuessPicker, type FilterChoice, filterPlaces, gameGuessOptions } from "./GameFilter";
 import { GEO_ERA_NAMES, GEO_GAME_BONUS, geoFamily, type GeoEra, type GeoFamilyId } from "@/lib/geo-families";
 import { cn } from "@/lib/utils";
 import { preloadImage } from "@/lib/preload";
@@ -216,15 +216,12 @@ export function GeoGame({ regions: allRegions, challenge }: GeoGameProps) {
   const [reward, setReward] = useState<Reward | null>(null);
   const [isChallenge, setIsChallenge] = useState(false);
   const [filter, setFilter] = useState<FilterChoice>({ era: undefined, families: [] });
-  const [guessGame, setGuessGame] = useState(false);
   const [gamePick, setGamePick] = useState<string | null>(null);
 
   const region = byId(regionId) ?? regions[0];
   const places = filterPlaces(region, filter);
   const filterOk = !filter.era && !filter.families.length ? playable(region) : places >= GEO_FILTER_MIN_PLACES;
 
-  // "Guess the game too" is remembered on this device.
-  useEffect(() => setGuessGame(readGuessGame()), []);
   useEffect(() => setSettings(readGeoSettings()), []);
 
   function chooseSettings(next: GeoPlaySettings) {
@@ -257,11 +254,6 @@ export function GeoGame({ regions: allRegions, challenge }: GeoGameProps) {
     window.history.replaceState(null, "", url);
   }
 
-  function chooseGuessGame(on: boolean) {
-    setGuessGame(on);
-    rememberGuessGame(on);
-  }
-
   const current = phase === "revealed" ? played[played.length - 1] : null;
   const total = played.reduce((s, p) => s + p.graded.score, 0);
   const streak = played.filter((p) => p.graded.hit).length;
@@ -271,7 +263,7 @@ export function GeoGame({ regions: allRegions, challenge }: GeoGameProps) {
     setPhase("loading");
     setError(null);
     try {
-      const bonus = guessGame && opts.kind === "game" ? { guessGame: true } : {};
+      const bonus: { guessGame?: boolean } = {};
       const picked = { era: filter.era, families: filter.families.length ? filter.families : undefined };
       const body = opts.challenge
         ? { challenge: opts.challenge, name: progress?.name || undefined, ...bonus }
@@ -559,7 +551,7 @@ export function GeoGame({ regions: allRegions, challenge }: GeoGameProps) {
             </div>
           )}
 
-          <GameFilter region={region} filter={filter} onChange={chooseFilter} guessGame={guessGame} onGuessGame={chooseGuessGame} />
+          <GameFilter region={region} filter={filter} onChange={chooseFilter} />
 
           <GeoSettingsButton value={settings} onChange={chooseSettings} />
 

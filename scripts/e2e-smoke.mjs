@@ -599,13 +599,12 @@ await page.goto(`${BASE}/leaderboard?board=geo&format=theme-towns`, { waitUntil:
 await page.getByText("Towns and Cities 5 rounds").waitFor();
 await page.getByText("Towns and Cities Streak").waitFor();
 
-step("pokéguessr: Classic 2D, guess the game too, report a screenshot");
+step("pokéguessr: Classic 2D, report a screenshot");
 await page.goto(`${BASE}/guessr?region=kalos`, { waitUntil: "networkidle" });
 // Kalos has no sprite games: Classic 2D is off there, and says why.
 if (!(await page.getByTestId("geo-era-2d").isDisabled())) throw new Error("Classic 2D should be off on the Kalos map");
 await page.goto(`${BASE}/guessr?region=kanto`, { waitUntil: "networkidle" });
 await page.getByTestId("geo-era-2d").click();
-await page.getByTestId("geo-guess-game").check();
 await page.getByRole("button", { name: /5-round game/ }).click();
 for (let i = 0; i < 5; i++) {
   await page.waitForFunction(() => {
@@ -616,9 +615,8 @@ for (let i = 0; i < 5; i++) {
   await map.hover();
   const box = await map.boundingBox();
   await map.click({ position: { x: box.width * 0.4, y: box.height * 0.6 } });
-  await page.getByTestId("geo-game-pick").selectOption({ index: 1 + (i % 3) });
   await page.getByRole("button", { name: /^Guess$/ }).click();
-  await page.getByTestId("geo-game-bonus").waitFor();
+  await page.getByRole("button", { name: /Next round|View summary/ }).waitFor();
   if (i === 0) {
     await page.getByTestId("geo-report").click();
     await page.getByRole("radio", { name: "Too generic to place" }).click();
@@ -629,10 +627,9 @@ for (let i = 0; i < 5; i++) {
   await page.getByRole("button", { name: /Next round|View summary/ }).click();
 }
 await page.getByText("Survey complete").waitFor();
-await page.getByTestId("geo-bonus-total").waitFor();
 await page.screenshot({ path: `${OUT}/guessr-2d-summary.png`, fullPage: true });
 await page.getByRole("button", { name: /Play again/ }).click();
-await page.getByTestId("geo-guess-game").uncheck();
+if (await page.getByTestId("geo-guess-game").count()) errors.push("PokéGuessr still offers Guess the game too");
 await page.getByTestId("geo-era-all").click();
 
 // Two trainers in two browsers: Red opens a duel on Kanto, Blue joins from the link.
