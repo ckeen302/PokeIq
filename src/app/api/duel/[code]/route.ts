@@ -57,7 +57,7 @@ const bodySchema = z.discriminatedUnion("action", [
   z.object({ action: z.literal("answer"), token, round, choice: z.string().min(1).max(200) }),
   z.object({ action: z.literal("loaded"), token, round }),
   z.object({ action: z.literal("claim"), token, cell: z.number().int().min(0).max(8), pokemon: z.number().int().positive().max(100_000) }),
-  z.object({ action: z.literal("group"), token, pokemon: z.array(z.number().int().positive().max(100_000)).length(CONN_GROUP_SIZE) }),
+  z.object({ action: z.literal("group"), token, pokemon: z.array(z.number().int().positive().max(100_000)).min(CONN_GROUP_SIZE).max(CONN_GROUP_SIZE + 1) }),
   z.object({ action: z.literal("next"), token, round }),
   z.object({ action: z.literal("leave"), token }),
   z.object({ action: z.literal("emote"), token, emote: z.enum(DUEL_EMOTES) }),

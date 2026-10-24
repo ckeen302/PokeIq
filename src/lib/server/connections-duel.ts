@@ -1,6 +1,6 @@
 import "server-only";
 import { CONN_DUEL_MS, CONN_DUEL_PENALTY_MS, type ConnDuelBoard, type ConnDuelView } from "@/lib/pvp-types";
-import { CONN_GROUP_SIZE, CONN_GROUPS, guessKey, type ConnLevel } from "@/lib/connections/types";
+import { connLevels, guessKey, type ConnLevel, type ConnSize } from "@/lib/connections/types";
 import { generatePuzzle, playGuesses, type PlayState, type Puzzle } from "@/lib/connections/generator";
 import { isProvisional } from "@/lib/ranked";
 import { connTile, explainGroup, groupReveal } from "./connections";
@@ -8,8 +8,8 @@ import type { ConnRankedInfo } from "./connections-ranked";
 import { baseView, fail, finish, newSeat, notPlaying, pvpBase, seatOf, seated, type PvpBase, type PvpOutcome, type PvpRules } from "./duel-core";
 
 /**
- * PokéConnections duels: a race. Both trainers get the same sixteen
- * Pokémon, from the practice generator seeded by the duel (its own `duel:`
+ * PokéConnections duels: a race. Both trainers get the same sixteen (or,
+ * on a 5×5 board the creator picked, twenty-five) Pokémon, from the practice generator seeded by the duel (its own `duel:`
  * seeds, which the practice endpoint can't reach, and never a daily). The
  * first to find all four groups wins; each mistake adds CONN_DUEL_PENALTY_MS
  * to a solve's time, so a quick but sloppy solve can still lose; four
@@ -33,6 +33,8 @@ interface ConnDuelGuess {
 
 export interface ConnectionsDuel extends PvpBase {
   kind: "connections";
+  /** 5 for a 5×5 board (the creator's pick; a rematch keeps it); absent: 4×4. Never set on a ranked duel. */
+  size?: ConnSize;
   /** When the race starts (set once both trainers are ready). */
   startsAt?: number;
   /** One per seat: every guess, oldest first (repeats are never stored). */
@@ -49,12 +51,13 @@ export interface ConnectionsDuel extends PvpBase {
 const puzzles = new Map<string, Puzzle>();
 
 /** The duel's puzzle: the practice generator, seeded by the duel (server-side only). */
-export function duelPuzzle(d: Pick<ConnectionsDuel, "seed">): Puzzle {
-  let p = puzzles.get(d.seed);
+export function duelPuzzle(d: Pick<ConnectionsDuel, "seed" | "size">): Puzzle {
+  const key = d.size === 5 ? `s5:${d.seed}` : d.seed;
+  let p = puzzles.get(key);
   if (!p) {
-    p = generatePuzzle(`duel:${d.seed}`);
+    p = generatePuzzle(`duel:${d.seed}`, d.size === 5 ? { size: 5 } : {});
     if (puzzles.size > 200) puzzles.clear();
-    puzzles.set(d.seed, p);
+    puzzles.set(key, p);
   }
   return p;
 }
@@ -130,7 +133,7 @@ export function decidedAt(start: number, s: SeatRace[]): number {
 // The rules
 // ---------------------------------------------------------------------------
 
-const blankDuel = (base: PvpBase): ConnectionsDuel => ({ ...base, kind: "connections", boards: [] });
+const blankDuel = (base: PvpBase, size?: ConnSize): ConnectionsDuel => ({ ...base, kind: "connections", ...(size === 5 && { size }), boards: [] });
 
 export const connectionsRules: PvpRules<ConnectionsDuel> = {
   begin(d, at) {
@@ -146,7 +149,8 @@ export const connectionsRules: PvpRules<ConnectionsDuel> = {
     finish(d, "played", raceWinner(races), at);
     return true;
   },
-  blank: (base) => blankDuel(base),
+  // A rematch keeps the board size.
+  blank: (base, like) => blankDuel(base, like?.size),
 };
 
 export function createConnectionsDuel(
@@ -154,10 +158,12 @@ export function createConnectionsDuel(
   code: string,
   now: number,
   seed?: string,
-  extra: Pick<ConnectionsDuel, "queue" | "ranked"> = {}
+  extra: Pick<ConnectionsDuel, "queue" | "ranked" | "size"> = {}
 ): { duel: ConnectionsDuel; playerId: string } {
   const seat = newSeat(name, now);
-  return { duel: { ...blankDuel(pvpBase("connections", code, [seat], now, seed)), ...extra }, playerId: seat.id };
+  // Ranked duels are always 4×4.
+  const { size, ...rest } = extra;
+  return { duel: { ...blankDuel(pvpBase("connections", code, [seat], now, seed), rest.ranked ? undefined : size), ...rest }, playerId: seat.id };
 }
 
 // ---------------------------------------------------------------------------
@@ -172,7 +178,8 @@ export function guessConnections(duel: ConnectionsDuel, playerId: string, ids: n
     const puzzle = duelPuzzle(d);
     const race = seatRace(d, puzzle, seat);
     if (race.over) return fail(409, race.won ? "You've found every group: waiting for the result." : "You're out of mistakes: waiting for the result.");
-    if (ids.length !== CONN_GROUP_SIZE || new Set(ids).size !== CONN_GROUP_SIZE) return fail(400, "Pick four different Pokémon.");
+    const n = puzzle.groups.length;
+    if (ids.length !== n || new Set(ids).size !== n) return fail(400, `Pick ${n === 5 ? "five" : "four"} different Pokémon.`);
     const board = d.boards[seat];
     if (board.guesses.some((g) => guessKey(g.ids) === guessKey(ids))) return fail(409, "Already guessed!");
     try {
@@ -218,6 +225,7 @@ export function connectionsView(duel: ConnectionsDuel, playerId: string | null, 
   return {
     kind: "connections",
     ...baseView(duel, playerId, now, rev),
+    ...(duel.size === 5 && { size: duel.size }),
     ...(duel.queue && { queue: duel.queue }),
     // Ratings, never the keys behind them.
     ...(duel.ranked && { ranked: { season: duel.ranked.season, ratings: duel.ranked.ratings, provisional: duel.ranked.games.map(isProvisional), result: duel.ranked.result } }),
@@ -233,7 +241,7 @@ export function connectionsView(duel: ConnectionsDuel, playerId: string | null, 
         },
       }),
     ...(over && {
-      reveal: ([0, 1, 2, 3] as ConnLevel[]).slice(0, CONN_GROUPS).map((lv) => explainGroup(puzzle, lv)),
+      reveal: connLevels(puzzle.groups.length as ConnSize).map((lv) => explainGroup(puzzle, lv)),
       rows: duel.boards.map((b) => b.guesses.map((g) => g.ids.map((id) => levelOf!.get(id)!))),
     }),
   };

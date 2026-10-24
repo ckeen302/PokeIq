@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { Sheet } from "@/components/pokedle/sheets";
 import { DLE_FREEZE_EVERY, DLE_MAX_FREEZES, type DleStats } from "@/lib/dle-stats";
-import { CONN_LAUNCH_DATE, CONN_LEVELS, CONN_MAX_MISTAKES, connNumber, type ConnLevel } from "@/lib/connections/types";
+import { CONN_LAUNCH_DATE, CONN_LEVELS_4, CONN_MAX_MISTAKES, connNumber, type ConnLevel } from "@/lib/connections/types";
 import type { ConnRecord } from "@/lib/progress";
 import { previousDate } from "@/lib/daily";
 import { LevelMark, levelStyle } from "./parts";
@@ -45,7 +45,7 @@ export function ConnHowToSheet({ onClose }: { onClose: () => void }) {
         <div className="space-y-2 rounded-md border bg-shade/30 p-3">
           <p className="font-semibold">Colours, easiest to trickiest</p>
           <div className="flex flex-wrap gap-2">
-            {CONN_LEVELS.map((l, i) => (
+            {CONN_LEVELS_4.map((l, i) => (
               <span key={l.name} className="flex items-center gap-1.5 rounded px-2.5 py-1 text-xs font-bold uppercase tracking-wide" style={levelStyle(i as ConnLevel)}>
                 <LevelMark level={i as ConnLevel} /> {l.name}
               </span>

@@ -7,7 +7,7 @@ import { dlePlayerId } from "@/lib/dle-player";
 import { getProgress } from "@/lib/progress";
 import type { LinkOption, Suggestion } from "@/lib/server/connections-suggest";
 import { CUSTOM_GROUP_NAME_MAX, CUSTOM_TITLE_MAX, customPath, type CustomCheckResponse } from "@/lib/connections/custom";
-import { CONN_GROUPS, CONN_GROUP_SIZE, CONN_LEVELS, type ConnLevel, type ConnTile } from "@/lib/connections/types";
+import { CONN_GROUPS, CONN_GROUP_SIZE, CONN_LEVELS, CONN_LEVELS_4, type ConnLevel, type ConnTile } from "@/lib/connections/types";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -25,7 +25,7 @@ interface DraftGroup {
   members: ConnTile[];
 }
 
-const emptyGroups = (): DraftGroup[] => CONN_LEVELS.map((_, i) => ({ name: "", level: i as ConnLevel, members: [] }));
+const emptyGroups = (): DraftGroup[] => CONN_LEVELS_4.map((_, i) => ({ name: "", level: i as ConnLevel, members: [] }));
 
 export function CreatePuzzle() {
   const [groups, setGroups] = useState<DraftGroup[]>(emptyGroups);
@@ -375,7 +375,7 @@ export function CreatePuzzle() {
                   className="h-9 rounded-md border border-foreground/15 px-2 text-sm"
                   style={{ background: lv.hex, color: "#17142b" }}
                 >
-                  {CONN_LEVELS.map((l, n) => (
+                  {CONN_LEVELS_4.map((l, n) => (
                     <option key={l.name} value={n}>
                       {l.symbol} {l.name}
                     </option>

@@ -5,7 +5,8 @@ import { MIXED_CATEGORIES, linkTiles, patternsFor, tileRef, type TileRef } from 
 import { isPokemonTile } from "./tiles";
 import { packIds } from "./packs";
 import type { ConnPack } from "./pack-seed";
-import { CONN_GROUPS, CONN_GROUP_SIZE, CONN_MAX_MISTAKES, guessKey, type ConnGuessKind, type ConnLevel } from "./types";
+import { solveGrid } from "./solver";
+import { connMaxMistakes, guessKey, isConnSize, type ConnGuessKind, type ConnLevel, type ConnSize } from "./types";
 
 /**
  * PokéConnections puzzles: four categories, four Pokémon each, built so
@@ -25,7 +26,7 @@ export interface PuzzleGroup {
 export interface Puzzle {
   /** Easiest first: index = level (yellow, green, blue, purple). */
   groups: PuzzleGroup[];
-  /** The 16 Pokémon in the order the grid starts in. */
+  /** The 16 (or, on a 5×5 board, 25) Pokémon in the order the grid starts in. */
   tiles: number[];
 }
 
@@ -55,7 +56,9 @@ function clashesWithTopic(ref: TileRef, cats: readonly Category[]): boolean {
 export function validatePuzzle(puzzle: { groups: readonly PuzzleGroup[]; tiles?: readonly number[] }): string[] {
   const errors: string[] = [];
   const { groups } = puzzle;
-  if (groups.length !== CONN_GROUPS) errors.push(`${groups.length} groups, not ${CONN_GROUPS}`);
+  if (!isConnSize(groups.length)) errors.push(`${groups.length} groups, not 4 or 5`);
+  // A board of n×n: n groups of n.
+  const size = groups.length;
   const cats: Category[] = [];
   for (const g of groups) {
     try {
@@ -67,7 +70,7 @@ export function validatePuzzle(puzzle: { groups: readonly PuzzleGroup[]; tiles?:
   if (errors.length) return errors;
   if (new Set(groups.map((g) => g.category)).size !== groups.length) errors.push("a category twice");
   const ids = groups.flatMap((g) => g.members);
-  if (groups.some((g) => g.members.length !== CONN_GROUP_SIZE)) errors.push("a group without exactly four Pokémon");
+  if (groups.some((g) => g.members.length !== size)) errors.push(`a group without exactly ${size} Pokémon`);
   if (new Set(ids).size !== ids.length) errors.push("a Pokémon twice");
   let facts: Facts[];
   let refs: Map<number, TileRef>;
@@ -131,11 +134,13 @@ export interface PlayState {
  */
 export function playGuesses(puzzle: Puzzle, guesses: readonly (readonly number[])[]): PlayState {
   const tiles = new Set(puzzle.tiles);
+  const size = puzzle.groups.length;
+  const maxMistakes = connMaxMistakes(size as ConnSize);
   const seen = new Set<string>();
   const state: PlayState = { results: [], found: [], mistakes: 0, over: false, won: false };
   for (const guess of guesses) {
-    if (guess.length !== CONN_GROUP_SIZE || new Set(guess).size !== CONN_GROUP_SIZE || guess.some((id) => !tiles.has(id))) {
-      throw new Error("A guess is four different Pokémon from the grid.");
+    if (guess.length !== size || new Set(guess).size !== size || guess.some((id) => !tiles.has(id))) {
+      throw new Error(`A guess is ${size === 5 ? "five" : "four"} different Pokémon from the grid.`);
     }
     const key = guessKey(guess);
     if (state.over || seen.has(key)) {
@@ -147,16 +152,16 @@ export function playGuesses(puzzle: Puzzle, guesses: readonly (readonly number[]
     }
     seen.add(key);
     const overlaps = puzzle.groups.map((g) => g.members.filter((id) => guess.includes(id)).length);
-    const hit = overlaps.indexOf(CONN_GROUP_SIZE);
+    const hit = overlaps.indexOf(size);
     if (hit >= 0) {
       state.found.push(hit as ConnLevel);
       state.results.push({ kind: "correct", level: hit as ConnLevel });
     } else {
       state.mistakes++;
-      state.results.push({ kind: Math.max(...overlaps) === CONN_GROUP_SIZE - 1 ? "one-away" : "wrong" });
+      state.results.push({ kind: Math.max(...overlaps) === size - 1 ? "one-away" : "wrong" });
     }
-    if (state.found.length === CONN_GROUPS) state.over = state.won = true;
-    else if (state.mistakes >= CONN_MAX_MISTAKES) state.over = true;
+    if (state.found.length === size) state.over = state.won = true;
+    else if (state.mistakes >= maxMistakes) state.over = true;
   }
   return state;
 }
@@ -199,7 +204,7 @@ function decoys(groups: readonly PuzzleGroup[]): number {
   let n = 0;
   for (const c of OBVIOUS) {
     const hits = ids.filter((id) => c.test(factsOf(id)));
-    if (hits.length >= CONN_GROUP_SIZE && !groups.some((g) => hits.every((id) => g.members.includes(id)))) n++;
+    if (hits.length >= groups.length && !groups.some((g) => hits.every((id) => g.members.includes(id)))) n++;
   }
   return n;
 }
@@ -303,6 +308,26 @@ export interface GenerateOptions {
    * Left out, none: every puzzle made before mixed groups is unchanged.
    */
   mixed?: 0 | 1 | 2 | "seed";
+  /** 4 (the default, and every daily) or 5: five groups of five, which also must have exactly one solution (see isUniquelySolvable). */
+  size?: ConnSize;
+  /** Counts what the search did (for scripts/connections-5x5.ts). */
+  stats?: GenStats;
+}
+
+export interface GenStats {
+  /** Category sets tried. */
+  sets: number;
+  /** Fills attempted. */
+  fills: number;
+  /** Fills that were full but unfair (validatePuzzle). */
+  invalid: number;
+  /** Fair fills thrown out because the grid had another way to split it. */
+  ambiguous: number;
+}
+
+/** True when the tiles split into groups of exactly one way (solveGrid: every category that fits exactly a group's size of them). */
+export function isUniquelySolvable(tiles: readonly number[]): boolean {
+  return solveGrid(tiles, 2).length === 1;
 }
 
 /** Tries to fill four categories with four Pokémon each; null if they don't fit together. */
@@ -314,14 +339,14 @@ function fill(rng: Rng, cats: Category[], avoid: ReadonlySet<number>, members: M
     (members.get(c.id) ?? []).filter((f) => !avoid.has(f.id) && (!sv || f.learnsetGame === SV) && cats.every((o, j) => j === i || (!o.test(f) && !o.guard?.(f))))
   );
   // The tightest category first.
-  const order = [0, 1, 2, 3].sort((a, b) => eligible[a].length - eligible[b].length);
+  const order = cats.map((_, i) => i).sort((a, b) => eligible[a].length - eligible[b].length);
   for (const i of order) {
     const lureWeight = (f: Facts) => 1 + 2 * cats.filter((o, j) => j !== i && o.lure?.(f)).length;
     let pool = eligible[i].filter((f) => !usedFamilies.has(f.familyKey));
     // A mixed group: some Pokémon, and the rest moves, abilities and the type itself.
     const mixedType = cats[i].mixed ? cats[i].id.slice("mixed:".length) : null;
     const pattern = mixedType ? rng.pick(patternsFor(mixedType)) : null;
-    for (let k = 0; k < (pattern ? count(pattern, "P") : CONN_GROUP_SIZE); k++) {
+    for (let k = 0; k < (pattern ? count(pattern, "P") : cats.length); k++) {
       const f = weightedPick(rng, pool, lureWeight);
       if (!f) return null;
       groups[i].members.push(f.id);
@@ -338,7 +363,7 @@ function fill(rng: Rng, cats: Category[], avoid: ReadonlySet<number>, members: M
         else if (c === "A") groups[i].members.push(abilities.pop()!);
         else if (c === "T") groups[i].members.push(link.type);
       }
-      if (groups[i].members.includes(undefined as unknown as number) || groups[i].members.length !== CONN_GROUP_SIZE) return null;
+      if (groups[i].members.includes(undefined as unknown as number) || groups[i].members.length !== cats.length) return null;
     }
   }
   return groups;
@@ -355,6 +380,13 @@ export const DIFFICULTY_BANDS = {
   hard: [1, 2, 3, 3],
 } as const;
 export type ConnDifficulty = keyof typeof DIFFICULTY_BANDS;
+
+/** The same for a 5×5 board: a fifth group, drawn from the middle bands (or, on Hard, the top one). */
+export const DIFFICULTY_BANDS_5 = {
+  easy: [0, 0, 1, 1, 2],
+  normal: [0, 1, 1, 2, 3],
+  hard: [1, 2, 2, 3, 3],
+} as const;
 
 function pickCategories(rng: Rng, avoid: ReadonlySet<string>, bands: readonly number[] = DIFFICULTY_BANDS.normal, members?: Map<string, Facts[]>): Category[] | null {
   const cats: Category[] = [];
@@ -397,8 +429,9 @@ function finish(rng: Rng, groups: PuzzleGroup[]): Puzzle {
   return { groups: ordered, tiles: rng.shuffle(ordered.flatMap((g) => g.members)) };
 }
 
-/** A puzzle needs at least this score (scorePuzzle) to be kept, unless nothing better turns up. */
+/** A puzzle needs at least this score (scorePuzzle) to be kept, unless nothing better turns up (a bigger board, more herrings). */
 const GOOD_ENOUGH = 4;
+const goodEnough = (size: ConnSize) => (GOOD_ENOUGH * size) / 4;
 
 /**
  * A puzzle from a seed: the same seed always gives the same puzzle. Picks
@@ -411,7 +444,9 @@ export function generatePuzzle(seed: string, options: GenerateOptions = {}): Puz
   const rng = new Rng(`pokeconnections:${seed}`);
   const tries = (options.candidates ?? 12) * 3;
   const members = options.pack ? membersFor(options.pack) : undefined;
-  const wanted = options.pack ? 0 : options.mixed === "seed" ? [0, 1, 1, 2][new Rng(`pokeconnections-mixed:${seed}`).int(0, 3)] : (options.mixed ?? 0);
+  const size: ConnSize = options.size ?? 4;
+  const stats = options.stats;
+  const wanted = options.pack || size === 5 ? 0 : options.mixed === "seed" ? [0, 1, 1, 2][new Rng(`pokeconnections-mixed:${seed}`).int(0, 3)] : (options.mixed ?? 0);
   const none = new Set<never>();
   let fallback: { groups: PuzzleGroup[]; score: number } | null = null;
   for (let set = 0; set < 400; set++) {
@@ -419,19 +454,30 @@ export function generatePuzzle(seed: string, options: GenerateOptions = {}): Puz
     const strict = set < 300;
     const banned = options.excludeCategories ?? none;
     const avoid = strict && options.avoidCategories ? new Set([...options.avoidCategories, ...banned]) : banned;
-    const bands = DIFFICULTY_BANDS[options.difficulty ?? "normal"];
+    const bands = (size === 5 ? DIFFICULTY_BANDS_5 : DIFFICULTY_BANDS)[options.difficulty ?? "normal"];
     const cats = pickCategories(rng, avoid, bands, members);
     if (!cats) continue;
+    if (stats) stats.sets++;
     if (wanted > 0 && !withMixed(rng, cats, wanted, banned, bands)) continue;
     let best: { groups: PuzzleGroup[]; score: number } | null = null;
     for (let i = 0; i < tries; i++) {
       const groups = fill(rng, cats, strict ? (options.avoidPokemon ?? none) : none, members);
-      if (!groups || validatePuzzle({ groups }).length) continue;
+      if (stats) stats.fills++;
+      if (!groups) continue;
+      if (validatePuzzle({ groups }).length) {
+        if (stats) stats.invalid++;
+        continue;
+      }
+      // A 5×5 board also has to have only one way to split it, whatever the other categories say.
+      if (size === 5 && !isUniquelySolvable(groups.flatMap((g) => g.members))) {
+        if (stats) stats.ambiguous++;
+        continue;
+      }
       const score = scorePuzzle(groups);
       if (!best || score > best.score) best = { groups, score };
     }
     if (!best) continue;
-    if (best.score >= GOOD_ENOUGH) return finish(rng, best.groups);
+    if (best.score >= goodEnough(size)) return finish(rng, best.groups);
     if (!fallback || best.score > fallback.score) fallback = best;
   }
   // A mixed puzzle that can't be built (rare) is an ordinary one rather than an error.

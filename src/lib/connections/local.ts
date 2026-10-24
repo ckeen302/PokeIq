@@ -24,6 +24,8 @@ export interface ConnPrefs {
   level: "easy" | "normal" | "hard";
   /** Unlimited's themed pack ("all": none). */
   pack?: "all" | ConnPack;
+  /** Unlimited's board: 4×4 (the default) or 5×5. The daily is always 4×4. */
+  size?: 4 | 5;
 }
 
 const PREFS_KEY = "pokeiq:connections-prefs:v1";

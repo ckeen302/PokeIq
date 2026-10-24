@@ -1,6 +1,6 @@
 /**
  * Themed practice packs, client-safe: which packs there are and how a pack
- * rides in a practice seed ("kanto-x7k2abcd", "kanto-hard-x7k2abcd"), so the
+ * rides in a practice seed ("kanto-x7k2abcd", "kanto-hard-x7k2abcd", "s5-hard-x7k2abcd"), so the
  * server rebuilds the same puzzle for every guess check. The Pokémon each
  * pack allows are in ./packs (server data).
  */
@@ -16,9 +16,12 @@ export const PACK_INFO: Record<ConnPack, { name: string; blurb: string }> = {
 
 export const isConnPack = (s: unknown): s is ConnPack => CONN_PACKS.includes(s as ConnPack);
 
-/** Splits a practice seed into its pack and difficulty. */
-export function parsePracticeSeed(seed: string): { pack?: ConnPack; difficulty?: "easy" | "hard" } {
-  const m = /^(?:(kanto|gen9|competitive)-)?(?:(easy|normal|hard)-)?[a-z0-9]{4,24}$/.exec(seed);
-  const difficulty = m?.[2] === "easy" || m?.[2] === "hard" ? m[2] : undefined;
-  return { ...(m?.[1] && { pack: m[1] as ConnPack }), ...(difficulty && { difficulty }) };
+/** A practice seed: "s5-" first for a 5×5 board, then the pack, then the difficulty, then the random part. */
+export const PRACTICE_SEED_RE = /^(?:(s5)-)?(?:(kanto|gen9|competitive)-)?(?:(easy|normal|hard)-)?[a-z0-9]{4,24}$/;
+
+/** Splits a practice seed into its size, pack and difficulty. */
+export function parsePracticeSeed(seed: string): { size?: 5; pack?: ConnPack; difficulty?: "easy" | "hard" } {
+  const m = PRACTICE_SEED_RE.exec(seed);
+  const difficulty = m?.[3] === "easy" || m?.[3] === "hard" ? m[3] : undefined;
+  return { ...(m?.[1] && { size: 5 as const }), ...(m?.[2] && { pack: m[2] as ConnPack }), ...(difficulty && { difficulty }) };
 }

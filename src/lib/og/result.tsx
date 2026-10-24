@@ -23,6 +23,7 @@ const TILE: Record<ShareTile, { bg: string; mark?: string }> = {
   "conn-green": { bg: "#96c860" },
   "conn-blue": { bg: "#8fb2ef" },
   "conn-purple": { bg: "#bd8ad8" },
+  "conn-red": { bg: "#e8776c" },
   "pdk-purple": { bg: "#a855f7" },
   "pdk-blue": { bg: "#3b82f6" },
   "pdk-green": { bg: "#22c55e" },

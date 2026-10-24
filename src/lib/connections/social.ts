@@ -35,7 +35,8 @@ export interface ConnGroupStats {
 /** "Only 12% found purple" / "88% found yellow": null while there are too few players. */
 export function groupStatLine(stats: ConnGroupStats | undefined | null, level: ConnLevel): string | null {
   if (!stats || stats.players < GROUP_STATS_MIN) return null;
-  const pct = stats.pct[level];
+  const pct = (stats.pct as readonly number[])[level];
+  if (pct === undefined) return null;
   const colour = CONN_LEVELS[level].name.toLowerCase();
   return pct < 50 ? `Only ${pct}% found ${colour}` : `${pct}% found ${colour}`;
 }

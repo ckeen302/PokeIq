@@ -12,11 +12,12 @@ import { dlePlayerId } from "@/lib/dle-player";
 import { clock, connectionsShareText, shareUrl, type ConnectionsShareResult } from "@/lib/share";
 import { connArchive, connStats, getConnPrefs, rememberStart, saveConnArchive, setConnPrefs, startFor, useConnPrefs, type ConnPrefs } from "@/lib/connections/local";
 import {
-  CONN_GROUP_SIZE,
-  CONN_GROUPS,
   CONN_MAX_MISTAKES,
+  CONN_SIZES,
+  connMaxMistakes,
   connNumber,
   guessKey,
+  type ConnSize,
   type ConnBoardResponse,
   type ConnBoardRow,
   type ConnBoardStanding,
@@ -43,8 +44,11 @@ import { CUSTOM_SEED_RE, customSeed } from "@/lib/connections/custom";
 type Target = { kind: "daily"; date: string } | { kind: "archive"; date: string } | { kind: "practice"; seed: string };
 type Mode = Target["kind"];
 
-/** A practice seed, with Unlimited's difficulty in front ("hard-x7k2abcd"): the server reads it back from there. */
-const newSeed = (level: ConnPrefs["level"] = "normal", pack: ConnPrefs["pack"] = "all") => `${pack === "all" ? "" : `${pack}-`}${level}-${Math.random().toString(36).slice(2, 10).padEnd(8, "0")}`;
+/** A practice seed, with Unlimited's board size and difficulty in front ("s5-hard-x7k2abcd"): the server reads them back from there. */
+const newSeed = (level: ConnPrefs["level"] = "normal", pack: ConnPrefs["pack"] = "all", size: ConnSize = 4) =>
+  `${size === 5 ? "s5-" : ""}${pack === "all" ? "" : `${pack}-`}${level}-${Math.random().toString(36).slice(2, 10).padEnd(8, "0")}`;
+const SIZE_WORDS = { 4: "four", 5: "five" } as const;
+const SIZE_SQUARES = { 4: "Sixteen", 5: "Twenty-five" } as const;
 const LEVELS: { id: ConnPrefs["level"]; label: string; hint: string }[] = [
   { id: "easy", label: "Easy", hint: "Two straightforward groups, no tricky one" },
   { id: "normal", label: "Normal", hint: "One group of each colour, like the daily" },
@@ -112,6 +116,9 @@ export function Connections({ customId }: { customId?: string } = {}) {
   const mode: Mode = target?.kind ?? "daily";
   const symbols = prefs?.symbols ?? true;
   const level = prefs?.level ?? "normal";
+  const pickedSize: ConnSize = prefs?.size === 5 ? 5 : 4;
+  /** This board's side: the puzzle's, else its seed's (Unlimited), else 4: the daily is always 4×4. */
+  const size: ConnSize = puzzle?.size ?? (target?.kind === "practice" ? (parsePracticeSeed(target.seed).size ?? 4) : 4);
   const over = state?.over ?? false;
   const won = state?.won ?? false;
   const foundLevels = useMemo(() => new Set((state?.found ?? []).map((g) => g.level)), [state]);
@@ -124,9 +131,9 @@ export function Connections({ customId }: { customId?: string } = {}) {
   const placed = useMemo(() => new Set(bars.flatMap((b) => b.members.map((m) => m.id))), [bars]);
   const tilesById = useMemo(() => new Map((puzzle?.tiles ?? []).map((t) => [t.id, t])), [puzzle]);
   const remaining = order.filter((id) => !placed.has(id)).map((id) => tilesById.get(id)!).filter(Boolean);
-  const missingCount = over && !won ? CONN_GROUPS - (state?.found.length ?? 0) : 0;
+  const missingCount = over && !won ? size - (state?.found.length ?? 0) : 0;
   const revealDone = over && (won || revealed >= missingCount);
-  const mistakesLeft = CONN_MAX_MISTAKES - (state?.mistakes ?? 0);
+  const mistakesLeft = connMaxMistakes(size) - (state?.mistakes ?? 0);
   const ms = elapsed.banked + (elapsed.since !== null ? now - elapsed.since : 0);
 
   const stats = useMemo(() => (progress && today ? connStats(connBlock(progress).results, today) : null), [progress, today]);
@@ -186,7 +193,7 @@ export function Connections({ customId }: { customId?: string } = {}) {
         if (!r.ok) throw new Error(restored.error ?? "Couldn't restore your game.");
         if (id !== reqRef.current) return;
         setState(restored as ConnGuessResponse);
-        setRevealed(CONN_GROUPS);
+        setRevealed(5);
       }
       // A hint taken before a reload: the server hands back the same Pokémon.
       if (t.kind === "daily" && saved?.hinted && !saved.over) {
@@ -328,7 +335,7 @@ export function Connections({ customId }: { customId?: string } = {}) {
 
   function toggle(id: number) {
     if (over || busy || !puzzle) return;
-    setSelected((s) => (s.includes(id) ? s.filter((x) => x !== id) : s.length < CONN_GROUP_SIZE ? [...s, id] : s));
+    setSelected((s) => (s.includes(id) ? s.filter((x) => x !== id) : s.length < size ? [...s, id] : s));
   }
 
   function shuffle() {
@@ -343,7 +350,7 @@ export function Connections({ customId }: { customId?: string } = {}) {
   }
 
   async function submit() {
-    if (!target || !puzzle || over || busy || selected.length !== CONN_GROUP_SIZE) return;
+    if (!target || !puzzle || over || busy || selected.length !== size) return;
     const pick = [...selected];
     if (guesses.some((g) => guessKey(g) === guessKey(pick))) {
       showToast("Already guessed!");
@@ -388,7 +395,7 @@ export function Connections({ customId }: { customId?: string } = {}) {
         play("wrong");
         const oneAway = last?.kind === "one-away";
         if (oneAway) showToast("One away…");
-        const left = CONN_MAX_MISTAKES - result.mistakes;
+        const left = connMaxMistakes(size) - result.mistakes;
         setAnnounce(`${oneAway ? "One away. " : "Not a group. "}${result.over ? "No mistakes left: here are the groups." : `${left} mistake${left === 1 ? "" : "s"} left.`}`);
         setState(result);
         if (result.over) setSelected([]);
@@ -403,7 +410,7 @@ export function Connections({ customId }: { customId?: string } = {}) {
 
   // Keyboard: arrows move between tiles, Enter submits a full selection, Esc deselects.
   function onTileKey(e: React.KeyboardEvent<HTMLButtonElement>, index: number) {
-    const cols = 4;
+    const cols = size;
     const move = { ArrowRight: 1, ArrowLeft: -1, ArrowDown: cols, ArrowUp: -cols }[e.key];
     if (move !== undefined) {
       e.preventDefault();
@@ -411,7 +418,7 @@ export function Connections({ customId }: { customId?: string } = {}) {
       tileRefs.current[nextIndex]?.focus();
     } else if (e.key === "Enter") {
       e.preventDefault();
-      if (selected.length === CONN_GROUP_SIZE) void submit();
+      if (selected.length === size) void submit();
       else toggle(remaining[index].id);
     }
   }
@@ -429,8 +436,8 @@ export function Connections({ customId }: { customId?: string } = {}) {
 
   // ---- Modes -----------------------------------------------------------------
 
-  function newPractice(level: ConnPrefs["level"] = getConnPrefs().level) {
-    void load({ kind: "practice", seed: newSeed(level) });
+  function newPractice(level: ConnPrefs["level"] = getConnPrefs().level, boardSize: ConnSize = getConnPrefs().size === 5 ? 5 : 4) {
+    void load({ kind: "practice", seed: newSeed(level, "all", boardSize) });
   }
 
   function backToDaily() {
@@ -487,8 +494,10 @@ export function Connections({ customId }: { customId?: string } = {}) {
             <p className="hud-label text-screen" data-testid="conn-title">
               {title}
             </p>
-            <h1 className="font-display text-4xl font-bold uppercase tracking-tight">Find the four groups</h1>
-            <p className="text-sm text-muted-foreground">Sixteen Pokémon, four hidden links. Every Pokémon fits exactly one.</p>
+            <h1 className="font-display text-4xl font-bold uppercase tracking-tight">Find the {SIZE_WORDS[size]} groups</h1>
+            <p className="text-sm text-muted-foreground">
+              {SIZE_SQUARES[size]} Pokémon, {SIZE_WORDS[size]} hidden links. Every Pokémon fits exactly one.
+            </p>
           </div>
           <div className="flex justify-center">
             <div className="flex flex-wrap justify-center rounded-md border border-foreground/15 bg-card p-0.5" role="radiogroup" aria-label="PokéConnections mode">
@@ -621,7 +630,34 @@ export function Connections({ customId }: { customId?: string } = {}) {
                 ))}
               </div>
             </div>
-            {guesses.length > 0 && !over && <p className="text-xs text-muted-foreground">A new difficulty starts with your next puzzle.</p>}
+            <div className="flex items-center justify-center gap-2">
+              <span className="hud-label">Board</span>
+              <div className="flex gap-1" role="radiogroup" aria-label="Unlimited board size" data-testid="conn-size">
+                {CONN_SIZES.map((n) => (
+                  <button
+                    key={n}
+                    type="button"
+                    role="radio"
+                    aria-checked={pickedSize === n}
+                    title={n === 4 ? "Sixteen Pokémon, four groups of four, four mistakes" : "Twenty-five Pokémon, five groups of five, five mistakes"}
+                    data-testid={`conn-size-${n}`}
+                    onClick={() => {
+                      if (pickedSize === n) return;
+                      setConnPrefs({ size: n });
+                      // A new puzzle at that size, unless this one is under way.
+                      if (guesses.length === 0 || over) newPractice(level, n);
+                    }}
+                    className={cn(
+                      "h-8 rounded-sm border px-2.5 font-pixel text-[10px] uppercase tracking-wider transition-colors",
+                      pickedSize === n ? "border-primary bg-primary text-primary-foreground" : "border-foreground/10 bg-shade/20 text-muted-foreground hover:border-primary/50 hover:text-foreground"
+                    )}
+                  >
+                    {n}×{n}
+                  </button>
+                ))}
+              </div>
+            </div>
+            {guesses.length > 0 && !over && <p className="text-xs text-muted-foreground">A new difficulty or board size starts with your next puzzle.</p>}
           </div>
         )}
         {mode === "daily" && stats?.atRisk && !over && (
@@ -650,19 +686,19 @@ export function Connections({ customId }: { customId?: string } = {}) {
           </AnimatePresence>
 
           {!puzzle ? (
-            <div className="grid grid-cols-4 gap-2 sm:gap-2.5" aria-busy="true" aria-label="Loading the puzzle">
-              {Array.from({ length: 16 }, (_, i) => (
-                <div key={i} className="h-[7.25rem] animate-pulse rounded-lg border bg-card sm:h-[8.25rem]" />
+            <div className={cn("grid gap-2 sm:gap-2.5", size === 5 ? "grid-cols-5" : "grid-cols-4")} aria-busy="true" aria-label="Loading the puzzle">
+              {Array.from({ length: size * size }, (_, i) => (
+                <div key={i} className={cn("animate-pulse rounded-lg border bg-card", size === 5 ? "h-[5.5rem] sm:h-[6.75rem]" : "h-[7.25rem] sm:h-[8.25rem]")} />
               ))}
             </div>
           ) : (
             <LayoutGroup>
               <div className="space-y-2 sm:space-y-2.5">
                 {bars.map((g) => (
-                  <GroupBar key={g.level} group={g} symbols={symbols} revealed={!foundLevels.has(g.level)} />
+                  <GroupBar key={g.level} group={g} symbols={symbols} revealed={!foundLevels.has(g.level)} compact={size === 5} />
                 ))}
                 {remaining.length > 0 && (
-                  <div className="grid grid-cols-4 gap-2 sm:gap-2.5" data-testid="conn-grid" aria-label="Pokémon to group">
+                  <div className={cn("grid gap-2 sm:gap-2.5", size === 5 ? "grid-cols-5" : "grid-cols-4")} data-testid="conn-grid" data-size={size} aria-label="Pokémon to group">
                     {remaining.map((t: ConnTile, i) => (
                       <GridTile
                         key={t.id}
@@ -678,6 +714,7 @@ export function Connections({ customId }: { customId?: string } = {}) {
                         onToggle={() => toggle(t.id)}
                         onKeyDown={(e) => onTileKey(e, i)}
                         hinted={hint?.id === t.id}
+                        compact={size === 5}
                       />
                     ))}
                   </div>
@@ -698,7 +735,7 @@ export function Connections({ customId }: { customId?: string } = {}) {
 
         {!over && puzzle && (
           <div className="space-y-4">
-            <MistakeDots left={mistakesLeft} max={CONN_MAX_MISTAKES} />
+            <MistakeDots left={mistakesLeft} max={connMaxMistakes(size)} />
             <div className="flex flex-wrap items-center justify-center gap-2.5">
               <Button variant="outline" onClick={shuffle} disabled={busy} className="rounded-full sm:min-w-28">
                 <Shuffle className="h-4 w-4" aria-hidden /> Shuffle
@@ -706,7 +743,7 @@ export function Connections({ customId }: { customId?: string } = {}) {
               <Button variant="outline" onClick={() => setSelected([])} disabled={busy || selected.length === 0} className="rounded-full sm:min-w-28">
                 Deselect all
               </Button>
-              <Button onClick={() => void submit()} disabled={busy || selected.length !== CONN_GROUP_SIZE} className="rounded-full sm:min-w-28" data-testid="conn-submit">
+              <Button onClick={() => void submit()} disabled={busy || selected.length !== size} className="rounded-full sm:min-w-28" data-testid="conn-submit">
                 Submit
               </Button>
               {mode === "daily" && (
@@ -741,10 +778,10 @@ export function Connections({ customId }: { customId?: string } = {}) {
                   {won && state.mistakes === 0 ? (
                     <PerfectBanner />
                   ) : (
-                    <div className="font-display text-3xl font-bold uppercase tracking-tight">{won ? (state.mistakes === CONN_MAX_MISTAKES - 1 ? "Phew!" : "Solved!") : "Next time!"}</div>
+                    <div className="font-display text-3xl font-bold uppercase tracking-tight">{won ? (state.mistakes === connMaxMistakes(size) - 1 ? "Phew!" : "Solved!") : "Next time!"}</div>
                   )}
                   <p className="text-sm text-muted-foreground">
-                    {won ? (state.mistakes === 0 ? "All four groups, not a single mistake." : "You found all four groups.") : `You found ${state.found.length} of 4 groups.`}
+                    {won ? (state.mistakes === 0 ? `All ${SIZE_WORDS[size]} groups, not a single mistake.` : `You found all ${SIZE_WORDS[size]} groups.`) : `You found ${state.found.length} of ${size} groups.`}
                   </p>
                 </div>
                 {mode === "daily" && stats && <StreakFlame streak={streak} best={Math.max(stats.bestPlayStreak, streak)} />}
@@ -754,7 +791,7 @@ export function Connections({ customId }: { customId?: string } = {}) {
                   <div>
                     <dt className="text-[11px] text-muted-foreground">Mistakes</dt>
                     <dd className="font-display text-2xl font-bold tabular-nums">
-                      {state.mistakes}/{CONN_MAX_MISTAKES}
+                      {state.mistakes}/{connMaxMistakes(size)}
                     </dd>
                   </div>
                   <div>
@@ -763,7 +800,9 @@ export function Connections({ customId }: { customId?: string } = {}) {
                   </div>
                   <div>
                     <dt className="text-[11px] text-muted-foreground">Groups</dt>
-                    <dd className="font-display text-2xl font-bold tabular-nums">{state.found.length}/4</dd>
+                    <dd className="font-display text-2xl font-bold tabular-nums">
+                      {state.found.length}/{size}
+                    </dd>
                   </div>
                 </dl>
                 {usedHint && mode === "daily" && (

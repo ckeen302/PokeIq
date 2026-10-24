@@ -68,8 +68,10 @@ export const GridTile = forwardRef<
     onKeyDown: (e: React.KeyboardEvent<HTMLButtonElement>) => void;
     /** The hint: this Pokémon belongs to the easiest group not found yet. */
     hinted?: boolean;
+    /** A 5×5 board: smaller tiles, so five fit across. */
+    compact?: boolean;
   }
->(function GridTile({ tile, index, selected, disabled, motionKind, order, onToggle, onKeyDown, hinted }, ref) {
+>(function GridTile({ tile, index, selected, disabled, motionKind, order, onToggle, onKeyDown, hinted, compact }, ref) {
   const long = tile.name.length > 9;
   return (
     <motion.button
@@ -95,9 +97,9 @@ export const GridTile = forwardRef<
       }
       whileTap={disabled ? undefined : { scale: 0.96 }}
       className={cn(
-        "group relative flex h-[7.25rem] min-w-0 select-none flex-col items-center justify-center gap-0.5 rounded-lg border px-1.5 pb-2 pt-1 text-center",
+        "group relative flex min-w-0 select-none flex-col items-center justify-center gap-0.5 rounded-lg border px-1.5 pb-2 pt-1 text-center",
         "transition-[background-color,border-color,color,box-shadow] duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
-        "sm:h-[8.25rem]",
+        compact ? "h-[5.5rem] sm:h-[6.75rem]" : "h-[7.25rem] sm:h-[8.25rem]",
         selected
           ? "border-screen bg-screen text-background shadow-[0_3px_0_hsl(var(--screen)/0.45)]"
           : "border-foreground/10 bg-card text-foreground shadow-[0_3px_0_hsl(var(--border))] hover:border-screen/60 hover:bg-screen/[0.07]",
@@ -113,22 +115,25 @@ export const GridTile = forwardRef<
       <TileArt
         tile={tile}
         size={76}
-        className={cn("h-16 w-16 object-contain transition-transform duration-150 sm:h-[4.75rem] sm:w-[4.75rem]", !selected && "group-hover:scale-105")}
+        className={cn(compact ? "h-10 w-10 sm:h-14 sm:w-14" : "h-16 w-16 sm:h-[4.75rem] sm:w-[4.75rem]", "object-contain transition-transform duration-150", !selected && "group-hover:scale-105")}
       />
-      <span className={cn("block w-full font-display font-bold uppercase leading-tight [overflow-wrap:anywhere] sm:truncate sm:tracking-wide", long ? "text-[9px] sm:text-xs" : "text-[10px] sm:text-sm")}>{tile.name}</span>
+      <span className={cn("block w-full font-display font-bold uppercase leading-tight [overflow-wrap:anywhere] sm:truncate sm:tracking-wide", compact ? (long ? "text-[8px] sm:text-[11px]" : "text-[9px] sm:text-xs") : long ? "text-[9px] sm:text-xs" : "text-[10px] sm:text-sm")}>{tile.name}</span>
     </motion.button>
   );
 });
 
 /** A found group: a coloured bar with its name and its four Pokémon. */
-export function GroupBar({ group, symbols, revealed }: { group: ConnGroupReveal; symbols: boolean; revealed?: boolean }) {
+export function GroupBar({ group, symbols, revealed, compact }: { group: ConnGroupReveal; symbols: boolean; revealed?: boolean; compact?: boolean }) {
   return (
     <motion.div
       layout
       initial={{ opacity: 0, scale: 0.92 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ type: "spring", stiffness: 380, damping: 28 }}
-      className="relative flex h-[7.25rem] flex-col items-center justify-center gap-1 overflow-hidden rounded-lg px-4 text-center shadow-[0_3px_0_rgb(0_0_0/0.25)] sm:h-[8.25rem]"
+      className={cn(
+        "relative flex flex-col items-center justify-center gap-1 overflow-hidden rounded-lg px-4 text-center shadow-[0_3px_0_rgb(0_0_0/0.25)]",
+        compact ? "h-[5.5rem] sm:h-[6.75rem]" : "h-[7.25rem] sm:h-[8.25rem]"
+      )}
       style={levelStyle(group.level)}
       data-testid="conn-group"
       data-level={group.level}

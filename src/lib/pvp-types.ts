@@ -321,6 +321,8 @@ export interface ConnDuelMine {
 
 export interface ConnDuelView extends PvpViewBase {
   kind: "connections";
+  /** 5 for a 5×5 board (absent: 4×4). */
+  size?: 4 | 5;
   /** How the trainers met: the casual or the ranked queue (absent: a friend's invite, or a rematch). */
   queue?: "casual" | "ranked";
   /** A ranked duel: the season, each seat's rating going in, and once it's been counted, before and after. */
