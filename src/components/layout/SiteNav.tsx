@@ -44,8 +44,9 @@ export function DesktopNav() {
   const progress = useProgress();
   const account = useAccount();
   return (
-    <nav className="flex items-center gap-1">
-      <div className="hidden items-center lg:flex">
+    <nav className="flex flex-1 items-center gap-1">
+      {/* Full-width bar: logo far left, links centred in the space between, actions far right. */}
+      <div className="hidden flex-1 items-center justify-center lg:flex">
         {DESKTOP_LINKS.map(({ href, label, wideOnly }) => {
           const active = isActive(pathname, href);
           return (
