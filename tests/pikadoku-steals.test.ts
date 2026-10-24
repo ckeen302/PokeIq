@@ -82,7 +82,10 @@ describe("Steals in a duel", () => {
   };
 
   it("enforces rarity on the server and shows the mode in the view", () => {
-    const { d, a, b, t } = started(true);
+    // The grid is random: deal until cell 0 has three different Pokémon to steal with.
+    let game = started(true);
+    for (let i = 0; i < 50 && distinct(gridFromIds(game.d.gridIds).answers[0]).length < 3; i++) game = started(true);
+    const { d, a, b, t } = game;
     expect(pikadokuView(d, a, t, 1).settings.steals).toBe(true);
     const [x, y, z] = distinct(gridFromIds(d.gridIds).answers[0]);
     const rates = new Map([[x, 10], [y, 2], [z, 40]]);
