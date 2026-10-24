@@ -26,13 +26,14 @@ const UA = "Mozilla/5.0 (compatible; PokeIQ-dex-build/1.0)";
 const dex = pokedex as { id: number; name: string; gen: number; evolvesFrom: number | null }[];
 const atlas = buildAtlasIndex((geo as { world: { locations: { name: string; region: string }[] } }).world.locations);
 
-let last = 0;
+/** One shared request slot per host so parallel species builds stay polite. */
+const nextSlot = { pokeapi: 0, serebii: 0 };
 async function politeFetch(url: string, host: "pokeapi" | "serebii"): Promise<Response> {
-  const gap = host === "serebii" ? 400 : 60;
+  const gap = host === "serebii" ? 250 : 25;
   for (let attempt = 1; ; attempt++) {
-    const wait = last + gap - Date.now();
-    if (wait > 0) await new Promise((r) => setTimeout(r, wait));
-    last = Date.now();
+    const at = Math.max(Date.now(), nextSlot[host]);
+    nextSlot[host] = at + gap;
+    if (at > Date.now()) await new Promise((r) => setTimeout(r, at - Date.now()));
     try {
       const res = await fetch(url, { headers: { "user-agent": UA }, redirect: "follow" });
       if (res.ok || res.status === 404 || attempt >= 4) return res;
@@ -90,7 +91,35 @@ async function resolveArea(url: string, slug: string): Promise<AreaName> {
   return sub && sub !== loc ? { loc, area: sub } : { loc };
 }
 
-async function buildOne(id: number): Promise<void> {
+/** Species ids each game can contain at all (null = unknown, so assume yes). */
+async function gameDex(): Promise<(id: number, ver: string) => boolean> {
+  const ids = async (names: string[]) => {
+    const set = new Set<number>();
+    for (const n of names) {
+      const d = await getJson<{ pokemon_entries: { pokemon_species: { url: string } }[] }>(`pokeapi/pokedex/${n}.json`, `https://pokeapi.co/api/v2/pokedex/${n}/`);
+      for (const e of d?.pokemon_entries ?? []) set.add(Number(e.pokemon_species.url.match(/species\/(\d+)/)![1]));
+    }
+    return set.size ? set : null;
+  };
+  const sets: Record<string, Set<number> | null> = {
+    sword: await ids(["galar", "isle-of-armor", "crown-tundra"]),
+    "brilliant-diamond": null,
+    "legends-arceus": await ids(["hisui"]),
+    scarlet: await ids(["paldea", "kitakami", "blueberry"]),
+    "legends-za": await ids(["lumiose-city", "hyperspace"]),
+  };
+  sets.shield = sets.sword;
+  sets["shining-pearl"] = null;
+  sets.violet = sets.scarlet;
+  return (id, ver) => {
+    if (ver === "brilliant-diamond" || ver === "shining-pearl") return id <= 493;
+    if (ver.startsWith("lets-go")) return id <= 151 || id === 808 || id === 809;
+    const set = sets[ver];
+    return set ? set.has(id) : true;
+  };
+}
+
+async function buildOne(id: number, inDex: (id: number, ver: string) => boolean): Promise<void> {
   const mon = dex.find((p) => p.id === id);
   if (!mon) throw new Error(`unknown id ${id}`);
   const raw: RawRow[] = [];
@@ -131,7 +160,7 @@ async function buildOne(id: number): Promise<void> {
 
   const parent = mon.evolvesFrom ? dex.find((p) => p.id === mon.evolvesFrom)?.name : undefined;
   const species = await getJson<{ is_baby: boolean }>(`pokeapi/species/${id}.json`, `https://pokeapi.co/api/v2/pokemon-species/${id}/`);
-  const gens = groupByGen(raw, { id, speciesGen: mon.gen, evolvesFrom: parent, isBaby: species?.is_baby }, atlas);
+  const gens = groupByGen(raw, { id, speciesGen: mon.gen, evolvesFrom: parent, isBaby: species?.is_baby, inGame: (v) => inDex(id, v) }, atlas);
   fs.mkdirSync(OUT, { recursive: true });
   fs.writeFileSync(path.join(OUT, `${id}.json`), JSON.stringify({ gens }));
   console.log(`#${id} ${mon.name}: ${gens.map((g) => `G${g.g}=${g.rows.length}`).join(" ")}`);
@@ -141,13 +170,19 @@ async function main() {
   const args = process.argv.slice(2);
   const ids = args.includes("--all") ? dex.map((p) => p.id) : args.map(Number).filter(Boolean);
   if (!ids.length) throw new Error("usage: build-encounters.ts <id...> | --all");
-  for (const id of ids) {
-    try {
-      await buildOne(id);
-    } catch (e) {
-      console.error(`#${id} failed:`, (e as Error).message);
-      process.exitCode = 1;
+  const inDex = await gameDex();
+  let next = 0;
+  const worker = async () => {
+    while (next < ids.length) {
+      const id = ids[next++];
+      try {
+        await buildOne(id, inDex);
+      } catch (e) {
+        console.error(`#${id} failed:`, (e as Error).message);
+        process.exitCode = 1;
+      }
     }
-  }
+  };
+  await Promise.all(Array.from({ length: 8 }, worker));
 }
 void main();

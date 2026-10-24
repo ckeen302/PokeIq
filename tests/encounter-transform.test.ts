@@ -132,8 +132,30 @@ describe("groupByGen", () => {
   it("says where evolved forms come from, and skips Let's Go outside Kanto", () => {
     const gens = groupByGen([], { id: 398, speciesGen: 4, evolvesFrom: "Staravia" });
     expect(gens.find((g) => g.g === 4)!.rows[0].x).toBe("Evolve from Staravia");
-    expect(gens.find((g) => g.g === 7)!.rows.flatMap((r) => r.v)).not.toContain("lets-go-pikachu");
+    expect(gens.find((g) => g.g === 7)!.rows.find((r) => r.v.includes("lets-go-pikachu"))!.x).toBe("Not in this game");
     const kanto = groupByGen([], { id: 25, speciesGen: 1 });
     expect(kanto.find((g) => g.g === 7)!.rows.flatMap((r) => r.v)).toContain("lets-go-pikachu");
+  });
+});
+
+describe("compaction and game membership", () => {
+  const r = (over: Partial<RawRow>): RawRow => ({ ver: "diamond", loc: "Great Marsh", base: "Great Marsh", m: "Grass", lv: "22", r: "10%", ...over });
+  it("folds rows that differ only by sub-area", () => {
+    const rows = mergeVersions([r({ sub: "Area 1" }), r({ sub: "Area 2" }), r({ sub: "Area 10" }), r({ sub: "Area 3", lv: "24" })]);
+    expect(rows).toHaveLength(2);
+    expect(rows.find((x) => x.lv === "22")).toMatchObject({ loc: "Great Marsh", n: "Area 1, Area 2, Area 10" });
+  });
+  it("collapses identical rod rows across many places", () => {
+    const rod = (loc: string) => r({ loc, base: loc, m: "Old Rod", lv: "5", r: "100%" });
+    const rows = mergeVersions(["A", "B", "C", "D", "E"].map(rod));
+    expect(rows).toHaveLength(1);
+    expect(rows[0]).toMatchObject({ loc: "Most fishable water" });
+    expect(mergeVersions(["A", "B"].map(rod))).toHaveLength(2);
+  });
+  it("says 'Not in this game' only where the species can't exist", () => {
+    const gens = groupByGen([], { id: 600, speciesGen: 5, inGame: (v) => v !== "legends-arceus", evolvesFrom: "Klang" });
+    const g8 = gens.find((g) => g.g === 8)!;
+    expect(g8.rows.find((x) => x.v.includes("legends-arceus"))!.x).toBe("Not in this game");
+    expect(g8.rows.find((x) => x.v.includes("sword"))!.x).toBe("Evolve from Klang");
   });
 });

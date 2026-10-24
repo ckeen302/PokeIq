@@ -29,6 +29,7 @@ export function EncountersSection({ gens, name }: { gens: EncGen[]; name: string
       {gens.map((gen) => {
         const isOpen = open.has(gen.g);
         const places = gen.rows.filter((r) => r.loc).length;
+        const absent = gen.rows.every((r) => r.x === "Not in this game");
         return (
           <div key={gen.g} className="overflow-hidden rounded-md border border-foreground/10">
             <button
@@ -40,7 +41,7 @@ export function EncountersSection({ gens, name }: { gens: EncGen[]; name: string
             >
               <span className="font-pixel text-[10px] uppercase tracking-wider text-primary">Gen {ROMAN[gen.g]}</span>
               <span className="min-w-0 flex-1 truncate text-xs text-muted-foreground">
-                {places ? `${places} ${places === 1 ? "way" : "ways"} to find ${name}` : `${name} isn't found in the wild`}
+                {places ? `${places} ${places === 1 ? "way" : "ways"} to find ${name}` : absent ? `${name} isn't in these games` : `${name} isn't found in the wild`}
               </span>
               <ChevronDown className={cn("h-4 w-4 shrink-0 text-muted-foreground transition-transform", isOpen && "rotate-180")} aria-hidden />
             </button>

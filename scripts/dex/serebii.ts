@@ -27,6 +27,9 @@ function levels(s: string): string | undefined {
 }
 const rate = (s: string) => (/\d/.test(s) ? s.replace(/\s+/g, "") : undefined);
 const baseOf = (loc: string) => loc.split(" - ")[0].trim();
+const subOf = (loc: string) => loc.split(" - ").slice(1).join(" - ").trim() || undefined;
+/** "Great Marsh - Area 2" -> place + sub-area. */
+const place = (loc: string) => ({ loc: baseOf(loc), base: baseOf(loc), sub: subOf(loc) });
 
 function tableAfter(html: string, anchor: string): string | undefined {
   const i = html.indexOf(`name="${anchor}"`);
@@ -52,7 +55,7 @@ export function parseSwshDetail(html: string, anchor: string, ver: string): RawR
   for (const [loc, method, weather, rarity, lvl] of cells(t)) {
     const m = method === "Random" ? "Grass (random)" : method;
     const key = [loc, m, rarity, lvl].join("|");
-    const g = groups.get(key) ?? { ver, loc, base: baseOf(loc), m, lv: levels(lvl), r: rate(rarity), weather: [] };
+    const g = groups.get(key) ?? { ver, ...place(loc), m, lv: levels(lvl), r: rate(rarity), weather: [] };
     g.weather.push(weather);
     groups.set(key, g);
   }
@@ -80,7 +83,7 @@ export function parseBdspDetail(html: string, anchor: string, ver: string): RawR
     groups.set(key, g);
   }
   return [...groups.values()].map((g) => {
-    const row: RawRow = { ver, loc: g.loc, base: baseOf(g.loc), m: g.m, lv: g.lv };
+    const row: RawRow = { ver, ...place(g.loc), m: g.m, lv: g.lv };
     if (g.any) row.r = g.any;
     else if (g.slots[0] === g.slots[1] && g.slots[1] === g.slots[2]) row.r = g.slots[0];
     else row.t = g.slots;
@@ -92,7 +95,7 @@ export function parseBdspDetail(html: string, anchor: string, ver: string): RawR
 export function parseLgpeDetail(html: string, anchor: string, ver: string): RawRow[] {
   const t = tableAfter(html, anchor);
   if (!t) return [];
-  return cells(t).map(([loc, method, rarity, lvl]) => ({ ver, loc, base: baseOf(loc), m: method, lv: levels(lvl), r: rate(rarity) }));
+  return cells(t).map(([loc, method, rarity, lvl]) => ({ ver, ...place(loc), m: method, lv: levels(lvl), r: rate(rarity) }));
 }
 
 /* ----------------------------------------------------------- overview -- */
@@ -147,6 +150,11 @@ export function parseOverview(html: string, opts: { skipDetailedBase?: boolean }
       if (!t) continue;
       const links = [...seg.matchAll(/<a[^>]*>([\s\S]*?)<\/a>/g)].map((l) => text(l[1])).filter(Boolean);
       const n = region || undefined;
+      // Link-less text ("Starter Pokémon in Cabo Poco", "Event only"…) is shown as a note row.
+      if (!links.length && !/Massive Mass Outbreak/i.test(t) && !/^(Fixed|Max Raid Battles|Tera Raid Battles):$/.test(t)) {
+        out.push({ ver, x: n ? `${t} (${n})` : t });
+        continue;
+      }
       if (/Massive Mass Outbreak/i.test(t)) {
         out.push({ ver, loc: (links[0] ?? t).split(":")[0].trim(), base: undefined, m: "Massive mass outbreak", n });
         continue;

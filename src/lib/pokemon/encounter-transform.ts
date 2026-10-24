@@ -9,8 +9,10 @@ import { VERSIONS, VERSION_BY_KEY, versionOrder, type EncGen, type EncRow } from
 /** One row for one version, before identical versions are merged. */
 export interface RawRow {
   ver: string;
-  /** Display label. */
+  /** Place label. */
   loc?: string;
+  /** Sub-area of the place ("1F", "Area 2", "after Galactic intervention"). */
+  sub?: string;
   /** Place name used for the atlas lookup (area suffixes stripped). */
   base?: string;
   m?: string;
@@ -135,7 +137,7 @@ export function rowsFromPokeApi(
   const out: RawRow[] = [];
   for (const enc of encounters) {
     const area = resolveArea(enc.location_area.name);
-    const label = area.area && !area.area.toLowerCase().startsWith(area.loc.toLowerCase()) ? `${area.loc} (${area.area})` : area.area ?? area.loc;
+    const label = area.loc;
     for (const vd of enc.version_details) {
       if (!versionFilter(vd.version.name)) continue;
       // group by method + non-time condition
@@ -152,7 +154,8 @@ export function rowsFromPokeApi(
         groups.set(key, g);
       }
       for (const g of groups.values()) {
-        const row: RawRow = { ver: vd.version.name, loc: label, base: area.loc, m: methodLabel(g.method, label) };
+        const row: RawRow = { ver: vd.version.name, loc: label, base: area.loc, m: methodLabel(g.method, `${label} ${area.area ?? ""}`) };
+        if (area.area) row.sub = area.area;
         if (g.method !== "npc-trade") row.lv = levelText(g.lo, g.hi); // a trade's level is whatever you send
         if (g.cond) row.n = g.cond;
         if (!NO_RATE_METHODS.has(g.method)) {
@@ -218,10 +221,50 @@ export function atlasQuery(base: string | undefined, versions: string[], idx: At
   return hits.length === 1 ? `${hits[0].name} · ${hits[0].region}` : undefined;
 }
 
-const sig = (r: RawRow) => JSON.stringify([r.loc, r.base, r.m, r.lv, r.r, r.t, r.n, r.x]);
+const sig = (r: RawRow) => JSON.stringify([r.loc, r.base, r.m, r.lv, r.r, r.t, r.n, r.x, r.sub]);
+const sigNoSub = (r: RawRow) => JSON.stringify([r.ver, r.loc, r.base, r.m, r.lv, r.r, r.t, r.n, r.x]);
+const FISHING = /rod|fishing/i;
+
+/** Rows that differ only by sub-area become one row listing the areas. */
+function foldSubAreas(raw: RawRow[]): RawRow[] {
+  const groups = new Map<string, { row: RawRow; subs: string[] }>();
+  for (const r of raw) {
+    const g = groups.get(sigNoSub(r)) ?? { row: r, subs: [] };
+    if (r.sub && !g.subs.includes(r.sub)) g.subs.push(r.sub);
+    groups.set(sigNoSub(r), g);
+  }
+  return [...groups.values()].map(({ row, subs }) => {
+    const { sub: _s, ...rest } = row;
+    void _s;
+    if (!subs.length) return rest;
+    subs.sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
+    return { ...rest, sub: subs.join(", ") };
+  });
+}
+
+/** The same rod/fishing row in many places collapses into one "most water" row. */
+function foldFishing(rows: EncRow[]): EncRow[] {
+  const groups = new Map<string, EncRow[]>();
+  for (const r of rows) {
+    if (!r.m || !FISHING.test(r.m) || !r.loc) continue;
+    const key = JSON.stringify([r.v, r.m, r.lv, r.r, r.t]);
+    groups.set(key, [...(groups.get(key) ?? []), r]);
+  }
+  const drop = new Set<EncRow>();
+  const added = new Map<EncRow, EncRow>();
+  for (const list of groups.values()) {
+    const places = [...new Set(list.map((r) => r.loc!))];
+    if (places.length < 4) continue;
+    const f = list[0];
+    list.forEach((r) => drop.add(r));
+    added.set(f, { v: f.v, loc: "Most fishable water", m: f.m, lv: f.lv, ...(f.r ? { r: f.r } : {}), ...(f.t ? { t: f.t } : {}), n: `${places.length} places: ${places.slice(0, 4).join(", ")}…` });
+  }
+  return rows.flatMap((r) => (added.has(r) ? [added.get(r)!] : drop.has(r) ? [] : [r]));
+}
 
 /** Merge rows whose content is identical across versions into one multi-version row. */
 export function mergeVersions(raw: RawRow[], atlas?: AtlasIndex): EncRow[] {
+  raw = foldSubAreas(raw);
   const groups = new Map<string, { row: RawRow; vers: Set<string> }>();
   for (const r of raw) {
     const g = groups.get(sig(r)) ?? { row: r, vers: new Set<string>() };
@@ -239,11 +282,12 @@ export function mergeVersions(raw: RawRow[], atlas?: AtlasIndex): EncRow[] {
     if (row.lv) out.lv = row.lv;
     if (row.r) out.r = row.r;
     if (row.t) out.t = row.t;
-    if (row.n) out.n = row.n;
+    const note = [row.n, row.sub].filter(Boolean).join(" · ");
+    if (note) out.n = note;
     if (row.x) out.x = row.x;
     rows.push(out);
   }
-  return rows.sort((a, b) => versionOrder(a.v[0]) - versionOrder(b.v[0]) || (a.loc ?? "~").localeCompare(b.loc ?? "~", undefined, { numeric: true }) || (a.m ?? "").localeCompare(b.m ?? ""));
+  return foldFishing(rows).sort((a, b) => versionOrder(a.v[0]) - versionOrder(b.v[0]) || (a.loc ?? "~").localeCompare(b.loc ?? "~", undefined, { numeric: true }) || (a.m ?? "").localeCompare(b.m ?? ""));
 }
 
 /* ----------------------------------------------------- generations etc. -- */
@@ -254,6 +298,8 @@ export interface FallbackContext {
   speciesGen: number;
   evolvesFrom?: string;
   isBaby?: boolean;
+  /** False when the game can't contain the species at all (default true). */
+  inGame?: (version: string) => boolean;
 }
 
 /** Let's Go only contains the original 151 + Meltan/Melmetal. */
@@ -268,12 +314,12 @@ export function groupByGen(raw: RawRow[], ctx: FallbackContext, atlas?: AtlasInd
   const gens: EncGen[] = [];
   const maxGen = Math.max(...VERSIONS.map((v) => v.gen));
   for (let g = maxGen; g >= ctx.speciesGen; g--) {
-    const versions = VERSIONS.filter((v) => v.gen === g && (!v.key.startsWith("lets-go") || inLetsGo(ctx.id)));
+    const versions = VERSIONS.filter((v) => v.gen === g);
     const inGen = raw.filter((r) => VERSION_BY_KEY[r.ver]?.gen === g);
     const have = new Set(inGen.map((r) => r.ver));
     const fill: RawRow[] = versions
       .filter((v) => !have.has(v.key))
-      .map((v) => ({ ver: v.key, x: ctx.evolvesFrom ? `Evolve from ${ctx.evolvesFrom}` : ctx.isBaby ? "Breed" : "Not found in the wild" }));
+      .map((v) => ({ ver: v.key, x: !(ctx.inGame?.(v.key) ?? (!v.key.startsWith("lets-go") || inLetsGo(ctx.id))) ? "Not in this game" : ctx.evolvesFrom ? `Evolve from ${ctx.evolvesFrom}` : ctx.isBaby ? "Breed" : "Not found in the wild" }));
     const rows = mergeVersions(inGen, atlas);
     const fillRows = mergeVersions(fill);
     if (rows.length + fillRows.length) gens.push({ g, rows: [...rows, ...fillRows] });
