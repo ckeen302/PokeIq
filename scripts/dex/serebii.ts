@@ -142,8 +142,9 @@ export function parseOverview(html: string, opts: { skipDetailedBase?: boolean }
     }
     if (!game || !(game in GAME_VERSIONS)) continue;
     const ver = GAME_VERSIONS[game];
-    if (opts.skipDetailedBase && !region && BASE_DETAIL_GAMES.has(ver)) continue;
-    if (opts.skipDetailedBase && region && !/Isle of Armor|Crown Tundra/.test(region)) continue;
+    // Games whose detail tables we parse separately: keep only the link-less notes
+    // ("Gift from Leon in Postwick"), which the detail tables don't carry.
+    const notesOnly = !!opts.skipDetailedBase && ((!region && BASE_DETAIL_GAMES.has(ver)) || (!!region && !/Isle of Armor|Crown Tundra/.test(region)));
     const megaDim = game === "Legends: Z-A Mega Dimension";
     for (const seg of info.html.split(/<br\s*\/?>/i)) {
       const t = text(seg);
@@ -151,10 +152,11 @@ export function parseOverview(html: string, opts: { skipDetailedBase?: boolean }
       const links = [...seg.matchAll(/<a[^>]*>([\s\S]*?)<\/a>/g)].map((l) => text(l[1])).filter(Boolean);
       const n = region || undefined;
       // Link-less text ("Starter Pokémon in Cabo Poco", "Event only"…) is shown as a note row.
-      if (!links.length && !/Massive Mass Outbreak/i.test(t) && !/^(Fixed|Max Raid Battles|Tera Raid Battles):$/.test(t)) {
+      if (!links.length && !/Massive Mass Outbreak/i.test(t) && !/^(Fixed|Max Raid Battles|Tera Raid Battles):?$/.test(t)) {
         out.push({ ver, x: n ? `${t} (${n})` : t });
         continue;
       }
+      if (notesOnly) continue;
       if (/Massive Mass Outbreak/i.test(t)) {
         out.push({ ver, loc: (links[0] ?? t).split(":")[0].trim(), base: undefined, m: "Massive mass outbreak", n });
         continue;

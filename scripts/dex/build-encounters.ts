@@ -18,8 +18,14 @@ import path from "node:path";
 import geo from "../../src/data/geo.json";
 import pokedex from "../../src/data/pokedex.json";
 import { buildAtlasIndex, groupByGen, rowsFromPokeApi, type AreaName, type PokeApiEncounter, type RawRow } from "../../src/lib/pokemon/encounter-transform";
+import hidden from "./encounter-hidden.json";
 import { parseBdspDetail, parseLgpeDetail, parseOverview, parseSwshDetail } from "./serebii";
 
+/**
+ * species id -> version -> PokéAPI place labels to hide. Written by the Serebii cross-check
+ * (wild rows in a game where Serebii's per-generation location page doesn't list that place).
+ */
+const HIDDEN = (hidden as { hide: Record<string, Record<string, string[]>> }).hide;
 const RAW = process.env.DEX_RAW ?? path.join(process.cwd(), ".cache/dex-raw");
 const OUT = path.join(process.cwd(), "src/data/encounters");
 const UA = "Mozilla/5.0 (compatible; PokeIQ-dex-build/1.0)";
@@ -88,6 +94,8 @@ async function resolveArea(url: string, slug: string): Promise<AreaName> {
     const rest = slug.replace(area.location.name, "").replace(/^-|-area$/g, "").replace(/^-+|-+$/g, "");
     sub = rest && rest !== "area" ? pretty(rest) : undefined;
   }
+  // PokéAPI files Cliff Cave (HGSS) under Route 47 as "Inside cave" / "Cave gate".
+  if (loc === "Route 47" && sub && /cave/i.test(sub)) return { loc: "Cliff Cave" };
   return sub && sub !== loc ? { loc, area: sub } : { loc };
 }
 
@@ -114,6 +122,8 @@ async function gameDex(): Promise<(id: number, ver: string) => boolean> {
   return (id, ver) => {
     if (ver === "brilliant-diamond" || ver === "shining-pearl") return id <= 493;
     if (ver.startsWith("lets-go")) return id <= 151 || id === 808 || id === 809;
+    // Meltan / Melmetal debuted in Let's Go and never existed in Sun/Moon or Ultra Sun/Ultra Moon.
+    if (["sun", "moon", "ultra-sun", "ultra-moon"].includes(ver)) return id <= 807;
     const set = sets[ver];
     return set ? set.has(id) : true;
   };
@@ -128,7 +138,14 @@ async function buildOne(id: number, inDex: (id: number, ver: string) => boolean)
   const enc = (await getJson<PokeApiEncounter[]>(`pokeapi/encounters/${id}.json`, `https://pokeapi.co/api/v2/pokemon/${id}/encounters`)) ?? [];
   const areas = new Map<string, AreaName>();
   for (const e of enc) if (!areas.has(e.location_area.name)) areas.set(e.location_area.name, await resolveArea(e.location_area.url, e.location_area.name));
-  raw.push(...rowsFromPokeApi(enc, (slug) => areas.get(slug) ?? { loc: pretty(slug) }));
+  const hide = HIDDEN[String(id)] ?? {};
+  // PokéAPI wild rows that Serebii's location page contradicts are hidden (see encounter-hidden.json).
+  raw.push(...rowsFromPokeApi(enc, (slug) => areas.get(slug) ?? { loc: pretty(slug) }).filter((r) => !(r.loc && (hide[r.ver]?.includes(r.loc) || /^Unknown;/.test(r.loc)))));
+  if (process.env.DEX_DUMP) {
+    // Audit hook: the PokéAPI rows before merging (scripts/dex audit compares them with Serebii).
+    fs.mkdirSync(process.env.DEX_DUMP, { recursive: true });
+    fs.writeFileSync(path.join(process.env.DEX_DUMP, `${id}.json`), JSON.stringify(raw));
+  }
 
   // --- Serebii: Let's Go detail (Kanto 151 + Meltan/Melmetal)
   const nnn = String(id).padStart(3, "0");
@@ -157,6 +174,12 @@ async function buildOne(id: number, inDex: (id: number, ver: string) => boolean)
   // --- Serebii: Scarlet/Violet (+ DLC, Z-A)
   const sv = await cached(`serebii/sv-${nnn}.html`, `https://www.serebii.net/pokedex-sv/${nnn}.shtml`, "serebii");
   if (sv) raw.push(...parseOverview(sv.body));
+
+  // "Transfer from HOME…" notes only help when the game has no catchable spot; next to real rows they confuse.
+  const withPlaces = new Set(raw.filter((r) => r.loc).map((r) => r.ver));
+  const shown = raw.filter((r) => !(r.x && withPlaces.has(r.ver) && /^Transfer (from|through) Pokémon HOME/i.test(r.x)));
+  raw.length = 0;
+  raw.push(...shown);
 
   const parent = mon.evolvesFrom ? dex.find((p) => p.id === mon.evolvesFrom)?.name : undefined;
   const species = await getJson<{ is_baby: boolean }>(`pokeapi/species/${id}.json`, `https://pokeapi.co/api/v2/pokemon-species/${id}/`);

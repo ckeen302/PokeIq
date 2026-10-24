@@ -96,37 +96,64 @@ export function methodLabel(name: string, loc = ""): string {
   return METHOD_LABELS[name] ?? name.replace(/-/g, " ").replace(/^./, (c) => c.toUpperCase());
 }
 
-const COND_DROP = /(-no|-off|-none|-not-mentioned)$/;
-const COND_LABELS: Record<string, string> = {
-  "swarm-yes": "Swarm",
-  "radar-on": "PokéRadar",
-  "radio-hoenn": "Hoenn Sound",
-  "radio-sinnoh": "Sinnoh Sound",
-};
+/** Conditions that describe the ordinary case: the row is shown without a note. */
+const COND_PLAIN = /^(swarm-no|radar-off|radio-off|slot2-none|bug-catching-contest-no|johto-safari-blocks-inactive|backlot-not-mentioned|great-marsh-daily-slot-none)$/;
 
-/** Non-time encounter conditions -> a short human label ("" for the plain case). */
-export function conditionLabel(names: string[]): string {
-  return names
-    .filter((n) => !n.startsWith("time-") && !COND_DROP.test(n))
-    .map((n) => {
-      if (COND_LABELS[n]) return COND_LABELS[n];
-      if (n.startsWith("slot2-")) return `GBA slot: ${SLOT2[n.slice(6)] ?? titleCase(n.slice(6))}`;
-      if (n.startsWith("season-")) return titleCase(n.slice(7));
-      return titleCase(n);
-    })
-    .sort()
-    .join(", ");
+/**
+ * Encounters that only happen under a niche modifier players find confusing
+ * (Gen 4 dual-slot "GBA game inserted" rows and the HGSS / Pokégear radio
+ * shows). The whole encounter is dropped rather than shown with a note.
+ */
+export function isNicheCondition(names: string[]): boolean {
+  return names.some((n) => (n.startsWith("slot2-") && n !== "slot2-none") || n === "radio-hoenn" || n === "radio-sinnoh");
 }
 
-const SLOT2: Record<string, string> = { ruby: "Ruby", sapphire: "Sapphire", emerald: "Emerald", firered: "FireRed", leafgreen: "LeafGreen" };
+const COND_LABELS: Record<string, string> = {
+  "swarm-yes": "Swarm",
+  "radar-on": "Poké Radar",
+  "headbutt-tree-common": "Common trees",
+  "headbutt-tree-rare": "Rare trees",
+  "headbutt-tree-secret": "One special tree",
+  "bug-catching-contest-yes": "Bug-Catching Contest",
+  "backlot-mentioned": "Daily, after Mr. Backlot mentions it",
+  "story-progress-national-dex": "After National Dex",
+  "story-progress-before-national-dex": "Before National Dex",
+  "story-progress-hall-of-fame": "After the Hall of Fame",
+  "story-progress-before-hall-of-fame": "Before the Hall of Fame",
+};
 const titleCase = (s: string) => s.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+const sentence = (s: string) => s.replace(/-/g, " ").replace(/^./, (c) => c.toUpperCase());
+
+function oneCondition(n: string): string {
+  if (COND_LABELS[n]) return COND_LABELS[n];
+  if (n.startsWith("season-")) return `${titleCase(n.slice(7))} only`;
+  if (n.startsWith("weekday-")) return `${titleCase(n.slice(8))}s`;
+  if (n.startsWith("weather-")) return `Weather: ${sentence(n.slice(8))}`;
+  if (n.startsWith("great-marsh-daily-slot-")) return "Changes daily";
+  if (n.startsWith("johto-safari-blocks-")) return "Needs Safari Zone objects placed";
+  if (n.startsWith("honey-tree-group-")) return "";
+  if (n.startsWith("friend-safari-slot-")) return "Friend Safari";
+  if (n.startsWith("trade-")) return `For your ${titleCase(n.slice(6))}`;
+  if (n.startsWith("coins-")) return `${Number(n.slice(6)).toLocaleString("en-US")} coins`;
+  if (n.startsWith("item-")) return `Needs ${titleCase(n.slice(5))}`;
+  if (n.startsWith("story-progress-")) return `After: ${sentence(n.slice(15))}`;
+  if (n.startsWith("starter-")) return `If you chose ${titleCase(n.slice(8))}`;
+  return sentence(n);
+}
+
+/** Non-time encounter conditions -> a short plain-English label ("" for the plain case). */
+export function conditionLabel(names: string[]): string {
+  return [...new Set(names.filter((n) => !n.startsWith("time-") && !COND_PLAIN.test(n)).map(oneCondition).filter(Boolean))].sort().join(", ");
+}
 
 export function levelText(lo: number, hi: number): string {
   return lo === hi ? String(lo) : `${lo}–${hi}`;
 }
 
 const SLOT_BY_COND: Record<string, 0 | 1 | 2> = { "time-morning": 0, "time-day": 1, "time-night": 2 };
-const NO_RATE_METHODS = new Set(["gift", "gift-egg", "only-one", "static", "npc-trade"]);
+const NO_RATE_METHODS = new Set(["gift", "gift-egg", "only-one", "static", "npc-trade", "honey-tree"]);
+/** Labels that pool several alternative tables, so a summed rate would be meaningless. */
+const NO_RATE_LABELS = /Changes daily|Safari Zone objects|Friend Safari/;
 
 /** Flatten PokéAPI encounters into one RawRow per (version, area, method, condition). */
 export function rowsFromPokeApi(
@@ -144,6 +171,7 @@ export function rowsFromPokeApi(
       const groups = new Map<string, { method: string; cond: string; lo: number; hi: number; slots: [number, number, number] }>();
       for (const d of vd.encounter_details) {
         const names = d.condition_values.map((c) => c.name);
+        if (isNicheCondition(names)) continue;
         const cond = conditionLabel(names);
         const key = `${d.method.name}|${cond}`;
         const g = groups.get(key) ?? { method: d.method.name, cond, lo: 255, hi: 0, slots: [0, 0, 0] as [number, number, number] };
@@ -158,8 +186,8 @@ export function rowsFromPokeApi(
         if (area.area) row.sub = area.area;
         if (g.method !== "npc-trade") row.lv = levelText(g.lo, g.hi); // a trade's level is whatever you send
         if (g.cond) row.n = g.cond;
-        if (!NO_RATE_METHODS.has(g.method)) {
-          const [m, d, n] = g.slots;
+        const [m, d, n] = g.slots;
+        if (!NO_RATE_METHODS.has(g.method) && !NO_RATE_LABELS.test(g.cond) && Math.max(m, d, n) <= 100) {
           if (m === d && d === n) row.r = `${m}%`;
           else row.t = g.slots.map((v) => (v ? `${v}%` : "—")) as [string, string, string];
         }
@@ -167,25 +195,7 @@ export function rowsFromPokeApi(
       }
     }
   }
-  return collapseSlot2(out);
-}
-
-/** Dual-slot rows that only differ by the inserted GBA game become one row ("GBA slot: Ruby, Sapphire"). */
-function collapseSlot2(rows: RawRow[]): RawRow[] {
-  const kept: RawRow[] = [];
-  const byKey = new Map<string, { row: RawRow; games: string[] }>();
-  for (const r of rows) {
-    if (!r.n?.startsWith("GBA slot: ")) {
-      kept.push(r);
-      continue;
-    }
-    const key = JSON.stringify([r.ver, r.loc, r.m, r.lv, r.r, r.t]);
-    const g = byKey.get(key) ?? { row: { ...r }, games: [] };
-    g.games.push(r.n.slice("GBA slot: ".length));
-    byKey.set(key, g);
-  }
-  for (const { row, games } of byKey.values()) kept.push({ ...row, n: `GBA slot: ${games.join(", ")}` });
-  return kept;
+  return out;
 }
 
 /* --------------------------------------------------------------- merge -- */
