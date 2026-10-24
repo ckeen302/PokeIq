@@ -17,6 +17,7 @@ import {
   Timer,
   Trophy,
   X,
+  Map as MapIcon,
 } from "lucide-react";
 import {
   GEO_FILTER_MIN_PLACES,
@@ -484,7 +485,12 @@ export function GeoGame({ regions: allRegions, challenge }: GeoGameProps) {
         </Card>
 
         <div className="space-y-4">
-          <h2 className="font-display text-xl font-bold uppercase">Free play</h2>
+          <div className="flex items-center justify-between gap-3">
+            <h2 className="font-display text-xl font-bold uppercase">Free play</h2>
+            <Link href="/atlas" className="flex items-center gap-1.5 rounded-md border px-3 py-1.5 font-display text-xs font-semibold uppercase tracking-wider text-muted-foreground transition-colors hover:border-primary/50 hover:text-foreground">
+              <MapIcon className="h-4 w-4" aria-hidden /> World Atlas
+            </Link>
+          </div>
 
           {maps.length > 1 && (
             <div className="flex flex-wrap gap-1.5" role="radiogroup" aria-label="Map">
