@@ -35,12 +35,14 @@ describe("about me: Pokémon validation", () => {
   it("drops cleared (null) slots", () => {
     expect(ok({ pokemon: { favorite: null }, games: { rival: null } })).toEqual({ pokemon: {}, games: {} });
   });
-  it("Best Starter: starter lines only", () => {
-    for (const id of [1, 2, 3, 7, 9, 906, 908, 912, 914]) expect(allowedFor("starter", id)).toBe(true);
+  it("Best Starter: first-stage starters only", () => {
+    for (const id of [1, 4, 7, 906, 909, 912]) expect(allowedFor("starter", id)).toBe(true);
+    for (const id of [2, 3, 6, 9, 908, 914]) expect(allowedFor("starter", id)).toBe(false);
     expect(allowedFor("starter", 25)).toBe(false);
     expect(allowedFor("starter", 150)).toBe(false);
     expect(checkAbout({ pokemon: { "best-starter": { id: 25, shiny: false } } }).ok).toBe(false);
-    expect(checkAbout({ pokemon: { "best-starter": { id: 6, shiny: false } } }).ok).toBe(true);
+    expect(checkAbout({ pokemon: { "best-starter": { id: 6, shiny: false } } }).ok).toBe(false);
+    expect(checkAbout({ pokemon: { "best-starter": { id: 4, shiny: false } } }).ok).toBe(true);
     for (const base of STARTER_BASES) expect(allowedFor("starter", base)).toBe(true);
   });
   it("Best Mega: Mega forms only", () => {
