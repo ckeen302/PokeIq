@@ -1,11 +1,11 @@
 /* eslint-disable jsx-a11y/alt-text, @next/next/no-img-element -- Satori draws plain <img> */
 import "server-only";
 import sharp from "sharp";
-import type { ImageResponse } from "next/og";
+import { ImageResponse } from "next/og";
 import { GAME_SLOTS, POKEMON_SLOTS, choiceLabel, type AboutData } from "@/lib/about-data";
 import { pokemonName } from "@/lib/about-validate";
 import { artworkUrl } from "@/lib/pokemon/pokedex";
-import { C, ogCard } from "./card";
+import { C, HOST, LOGO, loadFonts, ogCard } from "./card";
 
 /**
  * The shareable "About me" card: a trainer's Pokémon picks as a grid of
@@ -24,7 +24,7 @@ function sprite(id: number, shiny: boolean): Promise<string | null> {
     const src = artworkUrl(id).replace("/official-artwork/", `/official-artwork/${shiny ? "shiny/" : ""}`);
     p = fetch(src, { signal: AbortSignal.timeout(6000) })
       .then((r) => (r.ok ? r.arrayBuffer() : Promise.reject(new Error(String(r.status)))))
-      .then((b) => sharp(Buffer.from(b)).resize(112, 112, { fit: "contain", background: { r: 0, g: 0, b: 0, alpha: 0 } }).png().toBuffer())
+      .then((b) => sharp(Buffer.from(b)).resize(160, 160, { fit: "contain", background: { r: 0, g: 0, b: 0, alpha: 0 } }).png().toBuffer())
       .then((png) => `data:image/png;base64,${png.toString("base64")}`)
       .catch(() => {
         sprites.delete(key);
@@ -69,5 +69,82 @@ export async function aboutCard(username: string, about: AboutData, headers?: Re
       footer: "Make yours on PokéIQ →",
     },
     headers,
+  );
+}
+
+/** The tall "About Me: Pokémon" grid: every filled Pokémon slot as a tile, then the game picks. Sized to its content. */
+export async function aboutGrid(username: string, about: AboutData, headers?: Record<string, string>): Promise<ImageResponse> {
+  const picks = POKEMON_SLOTS.filter((s) => about.pokemon[s.id]).map((s) => ({ slot: s, pick: about.pokemon[s.id] }));
+  const art = await Promise.all(picks.map((p) => sprite(p.pick.id, p.pick.shiny)));
+  const games = GAME_SLOTS.filter((s) => about.games[s.id]).map((s) => ({ label: s.label, value: choiceLabel(s.id, about.games[s.id]) ?? "" }));
+  const W = 1200;
+  const PAD = 40;
+  const GAP = 16;
+  const tileW = Math.floor((W - PAD * 2 - GAP * 4) / 5);
+  const tileH = 268;
+  const chipW = Math.floor((W - PAD * 2 - GAP * 2) / 3);
+  const chipH = 92;
+  const pokeRows = Math.ceil(picks.length / 5);
+  const gameRows = Math.ceil(games.length / 3);
+  const head = 150;
+  const height =
+    PAD + head + (pokeRows ? pokeRows * tileH + (pokeRows - 1) * GAP + 30 : 0) + (gameRows ? 56 + gameRows * chipH + (gameRows - 1) * GAP + 20 : 0) + 70 + PAD;
+  const h = Math.max(height, 420);
+  return new ImageResponse(
+    (
+      <div style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column", position: "relative", background: C.bg, color: C.text, fontFamily: "Inter", padding: PAD }}>
+        <div style={{ position: "absolute", left: 0, right: 0, top: 0, height: 6, display: "flex", background: C.violet }} />
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", height: head, flexShrink: 0 }}>
+          <div style={{ display: "flex", flexDirection: "column" }}>
+            <div style={{ display: "flex", fontFamily: "Silkscreen", fontSize: 22, color: C.violet, letterSpacing: 2, textTransform: "uppercase" }}>About Me: Pokémon</div>
+            <div style={{ display: "flex", fontFamily: "Chakra Petch", fontSize: username.length > 14 ? 52 : 70, lineHeight: 1, letterSpacing: -1, textTransform: "uppercase", color: C.pink, marginTop: 12 }}>{username}</div>
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end" }}>
+            <div style={{ display: "flex", alignItems: "center" }}>
+              <img src={LOGO} width={56} height={56} />
+              <div style={{ display: "flex", marginLeft: 14, fontFamily: "Chakra Petch", fontSize: 38, letterSpacing: 2, textTransform: "uppercase" }}>
+                Poké<span style={{ color: C.pink }}>IQ</span>
+              </div>
+            </div>
+            <div style={{ display: "flex", marginTop: 8, fontFamily: "Silkscreen", fontSize: 18, color: C.muted }}>{HOST}</div>
+          </div>
+        </div>
+        {picks.length > 0 && (
+          <div style={{ display: "flex", flexWrap: "wrap", gap: GAP, marginTop: 30 }}>
+            {picks.map((p, i) => (
+              <div
+                key={p.slot.id}
+                style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "space-between", width: tileW, height: tileH, padding: "14px 8px", borderRadius: 16, background: C.panel, border: `3px solid ${p.pick.shiny ? C.yellow : C.edge}` }}
+              >
+                {art[i] ? <img src={art[i]!} width={170} height={170} /> : <div style={{ display: "flex", width: 170, height: 170 }} />}
+                <div style={{ display: "flex", justifyContent: "center", fontFamily: "Chakra Petch", fontSize: (pokemonName(p.pick.id) ?? "").length > 16 ? 16 : (pokemonName(p.pick.id) ?? "").length > 11 ? 20 : 24, color: C.text, whiteSpace: "nowrap" }}>
+                  {pokemonName(p.pick.id)}
+                </div>
+                <div style={{ display: "flex", justifyContent: "center", fontFamily: "Silkscreen", fontSize: 14, color: p.pick.shiny ? C.yellow : C.violet, textAlign: "center", textTransform: "uppercase", height: 34 }}>
+                  {p.slot.label}
+                  {p.pick.shiny ? " · Shiny" : ""}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+        {games.length > 0 && (
+          <div style={{ display: "flex", flexDirection: "column", marginTop: 30 }}>
+            <div style={{ display: "flex", fontFamily: "Silkscreen", fontSize: 22, color: C.violet, letterSpacing: 2, textTransform: "uppercase", marginBottom: 14 }}>My Pokémon Games</div>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: GAP }}>
+              {games.map((g) => (
+                <div key={g.label} style={{ display: "flex", flexDirection: "column", justifyContent: "center", width: chipW, height: chipH, padding: "0 20px", borderRadius: 14, background: C.panel, border: `2px solid ${C.edge}` }}>
+                  <div style={{ display: "flex", fontFamily: "Silkscreen", fontSize: 15, color: C.muted, textTransform: "uppercase" }}>{g.label}</div>
+                  <div style={{ display: "flex", marginTop: 6, fontFamily: "Chakra Petch", fontSize: 28, color: C.text }}>{g.value}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+        {picks.length === 0 && games.length === 0 && <div style={{ display: "flex", marginTop: 40, fontSize: 28, color: C.muted }}>Nothing picked yet.</div>}
+        <div style={{ display: "flex", marginTop: "auto", paddingTop: 24, fontFamily: "Chakra Petch", fontSize: 28, color: C.violet, letterSpacing: 1, textTransform: "uppercase" }}>Make yours on PokéIQ →</div>
+      </div>
+    ),
+    { width: W, height: h, fonts: await loadFonts(), headers },
   );
 }

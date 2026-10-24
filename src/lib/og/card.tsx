@@ -46,12 +46,12 @@ export function hslHex(triplet: string): string {
 /** Shorter cache for cards drawn from live data (an invite's names change when the guest joins). */
 export const LIVE_CARD_HEADERS = { "cache-control": "public, max-age=300, s-maxage=300" };
 
-const LOGO = `data:image/svg+xml;base64,${Buffer.from(LOGO_SVG).toString("base64")}`;
-const HOST = new URL(SITE_URL).host;
+export const LOGO = `data:image/svg+xml;base64,${Buffer.from(LOGO_SVG).toString("base64")}`;
+export const HOST = new URL(SITE_URL).host;
 
 type Font = { name: string; data: Buffer; weight: 400 | 600 | 700; style: "normal" };
 let fonts: Promise<Font[]> | null = null;
-function loadFonts(): Promise<Font[]> {
+export function loadFonts(): Promise<Font[]> {
   const file = (name: string) => readFile(join(process.cwd(), "src/assets/fonts", name));
   fonts ??= Promise.all([file("ChakraPetch-Bold.ttf"), file("Inter-SemiBold.ttf"), file("Silkscreen-Regular.ttf")]).then(([display, body, pixel]) => [
     { name: "Chakra Petch", data: display, weight: 700, style: "normal" },

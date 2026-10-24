@@ -73,7 +73,7 @@ export function AboutMe({ username, initial, names }: { username: string; initia
 
   async function share() {
     setSharing(true);
-    const url = `/u/${encodeURIComponent(username)}/about-image`;
+    const url = `/u/${encodeURIComponent(username)}/about-grid`;
     try {
       const blob = await (await fetch(url, { cache: "no-store" })).blob();
       const file = new File([blob], `pokeiq-${username}.png`, { type: "image/png" });
