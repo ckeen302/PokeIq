@@ -2,7 +2,7 @@
 
 import { useEffect, useSyncExternalStore } from "react";
 import type { DleHint } from "./dle-types";
-import { DLE_DEFAULT_ASSIST, type DleAssist } from "./dle-assist";
+import { type DleAssist } from "./dle-assist";
 import { DLE_DEFAULT_SETTINGS, cleanSettings, type DleDailyFormat, type DleSettings } from "./dle-format";
 
 /**
@@ -24,6 +24,8 @@ export interface DlePrefs {
   dailyFormat: DleDailyFormat;
   /** The how-to sheet has been seen. */
   seenHowTo: boolean;
+  /** The player picked `assist` themselves (older saves held the Notebook as a default, not a choice). */
+  assistPicked?: boolean;
 }
 
 export interface DleArchiveRecord {
@@ -37,7 +39,8 @@ export interface DleArchiveRecord {
 
 const PREFS_KEY = "pokeiq:pokedle-prefs:v1";
 const ARCHIVE_KEY = "pokeiq:pokedle-archive:v1";
-const DEFAULT_PREFS: DlePrefs = { colourBlind: false, hard: false, assist: DLE_DEFAULT_ASSIST, settings: DLE_DEFAULT_SETTINGS, dailyFormat: "classic", seenHowTo: false };
+// The Pokédex starts off, as in Wordle: the player turns it on in the settings.
+const DEFAULT_PREFS: DlePrefs = { colourBlind: false, hard: false, assist: "off", settings: DLE_DEFAULT_SETTINGS, dailyFormat: "classic", seenHowTo: false };
 
 function load<T>(key: string, fallback: T): T {
   try {
@@ -64,13 +67,18 @@ export function getDlePrefs(): DlePrefs {
   if (!prefs) {
     const loaded = load(PREFS_KEY, DEFAULT_PREFS);
     // Whatever was stored, settings that are all valid.
-    prefs = { ...loaded, settings: cleanSettings(loaded.settings), dailyFormat: loaded.dailyFormat === "squirdle" ? "squirdle" : "classic" };
+    prefs = {
+      ...loaded,
+      assist: loaded.assistPicked ? loaded.assist : "off",
+      settings: cleanSettings(loaded.settings),
+      dailyFormat: loaded.dailyFormat === "squirdle" ? "squirdle" : "classic",
+    };
   }
   return prefs;
 }
 
 export function setDlePrefs(patch: Partial<DlePrefs>) {
-  prefs = { ...getDlePrefs(), ...patch };
+  prefs = { ...getDlePrefs(), ...patch, ...(patch.assist && { assistPicked: true }) };
   store(PREFS_KEY, prefs);
   listeners.forEach((l) => l());
 }

@@ -237,9 +237,11 @@ for (const [assist, width] of [["notebook", 5], ["field", 7], ["full", 9]]) {
   if (rows.length !== 1025 || rows.some((r) => r.length !== width)) errors.push(`the ${assist} Pokédex sent the wrong columns: ${JSON.stringify(rows[0])}`);
 }
 if ((await page.request.get(`${BASE}/api/pokedle/dex?assist=off`)).status() !== 404) errors.push("assist off still got a Pokédex");
-// The assist setting (in the settings popover) starts at the Notebook, before the first guess.
+// The Pokédex is off by default, like Wordle: no notebook beside the board until the player turns it on.
+if (await page.getByLabel("Search the Pokédex").count()) errors.push("Pokédle shows the Pokédex before it is turned on");
 await page.getByRole("button", { name: "Settings", exact: true }).click();
-await page.getByRole("radiogroup", { name: "Pokédex assist", exact: true }).getByRole("radio", { name: /^Notebook/, checked: true }).waitFor();
+await page.getByRole("radiogroup", { name: "Pokédex assist", exact: true }).getByRole("radio", { name: /^Off/, checked: true }).waitFor();
+await page.getByRole("radiogroup", { name: "Pokédex assist", exact: true }).getByRole("radio", { name: /^Notebook/ }).click();
 await page.screenshot({ path: `${OUT}/pokedle-settings.png` });
 await page.keyboard.press("Escape");
 // Filter it by hand, cross a Pokémon off and put it back, then fill one into the guess box, Enter to guess.
