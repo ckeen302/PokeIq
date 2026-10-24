@@ -240,24 +240,6 @@
    "reason": "too-generic: a lab room with computers and scientists, like any lab interior"
   },
   {
-   "id": "N5aMVUPpSoON",
-   "action": "remove",
-   "at": {
-    "region": "Kalos",
-    "name": "Route 10"
-   },
-   "reason": "gives-away: the route's own signpost with a big '10' is in the middle of the shot"
-  },
-  {
-   "id": "JI6CD7JCa1ly",
-   "action": "remove",
-   "at": {
-    "region": "Kalos",
-    "name": "Route 14"
-   },
-   "reason": "gives-away: the route's own signpost with a big '14'"
-  },
-  {
    "id": "77CMKp0NbWCx",
    "action": "remove",
    "at": {
@@ -285,15 +267,6 @@
    "reason": "too-generic: a patch of grass and a tree in a dark wood"
   },
   {
-   "id": "39o6CxFg7AUL",
-   "action": "remove",
-   "at": {
-    "region": "Kalos",
-    "name": "Route 21"
-   },
-   "reason": "gives-away: the route signpost reading '21' is in the shot"
-  },
-  {
    "id": "ZLnn0F5OlMZm",
    "action": "remove",
    "at": {
@@ -301,15 +274,6 @@
     "name": "Route 4"
    },
    "reason": "too-generic: a path, a tree and stone steps, like many Kalos routes"
-  },
-  {
-   "id": "xwsVGaetKuFo",
-   "action": "remove",
-   "at": {
-    "region": "Kalos",
-    "name": "Route 8"
-   },
-   "reason": "gives-away: the route signpost reading '8' is in the shot"
   },
   {
    "id": "ihgMSd6Uj4Ia",
@@ -501,69 +465,6 @@
    "reason": "near-duplicate: the same rainy road into Po Town as the other Sun / Moon shot, cropped"
   },
   {
-   "id": "0h6ZC5m5K23g",
-   "action": "remove",
-   "at": {
-    "region": "Alola",
-    "name": "Route 1"
-   },
-   "reason": "gives-away: the route signpost with its number is in the shot"
-  },
-  {
-   "id": "x0JaIxO9wwwm",
-   "action": "remove",
-   "at": {
-    "region": "Alola",
-    "name": "Route 10"
-   },
-   "reason": "gives-away: the route signpost reading '10' is in the shot"
-  },
-  {
-   "id": "HQ0xhMT8-E0h",
-   "action": "remove",
-   "at": {
-    "region": "Alola",
-    "name": "Route 11"
-   },
-   "reason": "gives-away: the route signpost reading '11' is in the shot"
-  },
-  {
-   "id": "ekiAR56UDLBl",
-   "action": "remove",
-   "at": {
-    "region": "Alola",
-    "name": "Route 15"
-   },
-   "reason": "gives-away: the route signpost with its number is in the shot"
-  },
-  {
-   "id": "bT5ytRjR-Q8W",
-   "action": "remove",
-   "at": {
-    "region": "Alola",
-    "name": "Route 2"
-   },
-   "reason": "gives-away: the route signpost with its number is in the shot"
-  },
-  {
-   "id": "h_aqOGMIUe6V",
-   "action": "remove",
-   "at": {
-    "region": "Alola",
-    "name": "Route 3"
-   },
-   "reason": "gives-away: the route signpost with its number is in the shot"
-  },
-  {
-   "id": "NH4SArDKEVAY",
-   "action": "remove",
-   "at": {
-    "region": "Alola",
-    "name": "Route 5"
-   },
-   "reason": "gives-away: the route signpost with its number is in the shot"
-  },
-  {
    "id": "B-2qZgmgutkP",
    "action": "remove",
    "at": {
@@ -571,15 +472,6 @@
     "name": "Route 7"
    },
    "reason": "near-duplicate: the same view of the road to Wela Volcano Park as the other Route 7 shot, cropped"
-  },
-  {
-   "id": "LI-46xLAIe9M",
-   "action": "remove",
-   "at": {
-    "region": "Alola",
-    "name": "Route 8"
-   },
-   "reason": "gives-away: the route signpost reading '08' is in the shot"
   },
   {
    "id": "0mTez1uNXIhT",
@@ -717,15 +609,6 @@
    "reason": "near-duplicate: the same glowing mushrooms from almost the same spot as the other Glimwood Tangle shot"
   },
   {
-   "id": "-0hFyglU_BMO",
-   "action": "remove",
-   "at": {
-    "region": "Galar",
-    "name": "Route 1"
-   },
-   "reason": "gives-away: the route signpost reading '01' stands by the path"
-  },
-  {
    "id": "PZw8PTD3aUNV",
    "action": "remove",
    "at": {
@@ -733,15 +616,6 @@
     "name": "Route 1"
    },
    "reason": "gives-away: the route signpost reading '01' stands by the path"
-  },
-  {
-   "id": "RklmjWOeQbow",
-   "action": "remove",
-   "at": {
-    "region": "Galar",
-    "name": "Route 10"
-   },
-   "reason": "gives-away: the route signpost reading '10' is in the corner"
   },
   {
    "id": "95zFJxy6LWcc",
@@ -2809,15 +2683,6 @@
    "reason": "too-generic: a crop of lake water, grass and trees"
   },
   {
-   "id": "siQzAYLAfCgW",
-   "action": "remove",
-   "at": {
-    "region": "Sinnoh",
-    "name": "Lost Tower"
-   },
-   "reason": "gives-away: the Route 209 signpost reads '209'"
-  },
-  {
    "id": "OqvH4tSnYHUh",
    "action": "remove",
    "at": {
@@ -3017,15 +2882,6 @@
    "reason": "too-generic: a room of machines and rugs; nothing places it"
   },
   {
-   "id": "0ttn9QXrccdO",
-   "action": "remove",
-   "at": {
-    "region": "Sinnoh",
-    "name": "Route 201"
-   },
-   "reason": "gives-away: the route signpost reads '201'"
-  },
-  {
    "id": "WMBLzp0pCGeW",
    "action": "remove",
    "at": {
@@ -3033,33 +2889,6 @@
     "name": "Route 201"
    },
    "reason": "too-generic: a crop of grass, trees and a path"
-  },
-  {
-   "id": "HyU0rjQjZg-P",
-   "action": "remove",
-   "at": {
-    "region": "Sinnoh",
-    "name": "Route 202"
-   },
-   "reason": "gives-away: the route signpost with its number is in the shot"
-  },
-  {
-   "id": "wdK-RmJMViN4",
-   "action": "remove",
-   "at": {
-    "region": "Sinnoh",
-    "name": "Route 203"
-   },
-   "reason": "gives-away: the route signpost with its number is in the shot"
-  },
-  {
-   "id": "TUz3Lw6hflWT",
-   "action": "remove",
-   "at": {
-    "region": "Sinnoh",
-    "name": "Route 204"
-   },
-   "reason": "gives-away: the route signpost with its number is in the shot"
   },
   {
    "id": "6Nic-nj8C_Aj",
@@ -3107,15 +2936,6 @@
    "reason": "too-generic: a crop of ponds, fences and a path"
   },
   {
-   "id": "G8Fwf5G050qc",
-   "action": "remove",
-   "at": {
-    "region": "Sinnoh",
-    "name": "Route 205"
-   },
-   "reason": "gives-away: the route signpost reads '205'"
-  },
-  {
    "id": "TNh3o46NzVre",
    "action": "remove",
    "at": {
@@ -3143,15 +2963,6 @@
    "reason": "too-generic: a crop of cliffs, stairs and grass"
   },
   {
-   "id": "bcL-9uofsAye",
-   "action": "remove",
-   "at": {
-    "region": "Sinnoh",
-    "name": "Route 206"
-   },
-   "reason": "gives-away: the route signpost reads '206'"
-  },
-  {
    "id": "ChPtVK5hzdG3",
    "action": "remove",
    "at": {
@@ -3170,15 +2981,6 @@
    "reason": "near-duplicate: another stretch of the same Cycling Road as the other Route 206 shots"
   },
   {
-   "id": "rM5nurDg04rU",
-   "action": "remove",
-   "at": {
-    "region": "Sinnoh",
-    "name": "Route 207"
-   },
-   "reason": "gives-away: the route signpost reads '207'"
-  },
-  {
    "id": "JNlGEiJBRsZj",
    "action": "remove",
    "at": {
@@ -3186,33 +2988,6 @@
     "name": "Route 207"
    },
    "reason": "too-generic: a crop of rocky ledges and slopes"
-  },
-  {
-   "id": "1pEB0Bta5-11",
-   "action": "remove",
-   "at": {
-    "region": "Sinnoh",
-    "name": "Route 208"
-   },
-   "reason": "gives-away: the route signpost reads '208'"
-  },
-  {
-   "id": "IHp76x4mWR8N",
-   "action": "remove",
-   "at": {
-    "region": "Sinnoh",
-    "name": "Route 209"
-   },
-   "reason": "gives-away: the route signpost reads '209'"
-  },
-  {
-   "id": "whOZ1nG5XcOw",
-   "action": "remove",
-   "at": {
-    "region": "Sinnoh",
-    "name": "Route 210"
-   },
-   "reason": "gives-away: the route signpost reads '210'"
   },
   {
    "id": "KN0JSnO0kjQ5",
@@ -3242,15 +3017,6 @@
    "reason": "too-generic: a crop of tall grass and ledges"
   },
   {
-   "id": "_AIOG5XURvG4",
-   "action": "remove",
-   "at": {
-    "region": "Sinnoh",
-    "name": "Route 211"
-   },
-   "reason": "gives-away: the route signpost reads '211'"
-  },
-  {
    "id": "l4uoHYjCh6bK",
    "action": "remove",
    "at": {
@@ -3258,15 +3024,6 @@
     "name": "Route 211"
    },
    "reason": "bad-image: the route's two halves pasted side by side"
-  },
-  {
-   "id": "VYoT93KOhfjT",
-   "action": "remove",
-   "at": {
-    "region": "Sinnoh",
-    "name": "Route 212"
-   },
-   "reason": "gives-away: the route signpost reads '212'"
   },
   {
    "id": "K1oQCbp9K4AJ",
@@ -3287,15 +3044,6 @@
    "reason": "too-generic: a crop of marsh, trees and a house corner"
   },
   {
-   "id": "-5GFZPsj2-Ev",
-   "action": "remove",
-   "at": {
-    "region": "Sinnoh",
-    "name": "Route 213"
-   },
-   "reason": "gives-away: the route signpost reads '213'"
-  },
-  {
    "id": "l2dZF5Wfbnkc",
    "action": "remove",
    "at": {
@@ -3314,15 +3062,6 @@
    "reason": "too-generic: a crop of grass, sand and a gatehouse corner"
   },
   {
-   "id": "ppwwMNBdZ4eo",
-   "action": "remove",
-   "at": {
-    "region": "Sinnoh",
-    "name": "Route 214"
-   },
-   "reason": "gives-away: the route signpost reads '214'"
-  },
-  {
    "id": "E1z5PLSpe-MF",
    "action": "remove",
    "at": {
@@ -3330,15 +3069,6 @@
     "name": "Route 214"
    },
    "reason": "too-generic: a crop of rocky paths, tall grass and fences"
-  },
-  {
-   "id": "aGwzdmhAhw-Q",
-   "action": "remove",
-   "at": {
-    "region": "Sinnoh",
-    "name": "Route 215"
-   },
-   "reason": "gives-away: the route signpost reads '215'"
   },
   {
    "id": "qoM4tv-GRN8J",
@@ -3357,15 +3087,6 @@
     "name": "Route 215"
    },
    "reason": "near-duplicate: the same bridge as in the whole Route 215 map"
-  },
-  {
-   "id": "cPxB_Tijprxt",
-   "action": "remove",
-   "at": {
-    "region": "Sinnoh",
-    "name": "Route 216"
-   },
-   "reason": "gives-away: the route signpost reads '216'"
   },
   {
    "id": "6dKU-stdr61g",
@@ -3395,15 +3116,6 @@
    "reason": "too-generic: a crop of a cabin in the snow"
   },
   {
-   "id": "ZppbsSFZU9rU",
-   "action": "remove",
-   "at": {
-    "region": "Sinnoh",
-    "name": "Route 218"
-   },
-   "reason": "gives-away: the route signpost reads '218'"
-  },
-  {
    "id": "DX9Pi6jB-4GS",
    "action": "remove",
    "at": {
@@ -3420,15 +3132,6 @@
     "name": "Route 218"
    },
    "reason": "too-generic: a crop of water, a bridge and a gatehouse corner"
-  },
-  {
-   "id": "0MV9Wrb85w0K",
-   "action": "remove",
-   "at": {
-    "region": "Sinnoh",
-    "name": "Route 219"
-   },
-   "reason": "gives-away: the route signpost reads '219'"
   },
   {
    "id": "Rdc_OV0LDmHR",
@@ -3456,15 +3159,6 @@
     "name": "Route 221"
    },
    "reason": "too-generic: a crop of trees, grass and a house roof"
-  },
-  {
-   "id": "oFAdfmDqopKN",
-   "action": "remove",
-   "at": {
-    "region": "Sinnoh",
-    "name": "Route 222"
-   },
-   "reason": "gives-away: the route signpost reads '222'"
   },
   {
    "id": "hDIxKVgN1eEO",
@@ -3521,15 +3215,6 @@
    "reason": "too-generic: a crop of beach, flowers and sea"
   },
   {
-   "id": "w4wZTp04X0Du",
-   "action": "remove",
-   "at": {
-    "region": "Sinnoh",
-    "name": "Route 225"
-   },
-   "reason": "gives-away: the route signpost reads '225'"
-  },
-  {
    "id": "qs0qsOhiiS5X",
    "action": "remove",
    "at": {
@@ -3546,15 +3231,6 @@
     "name": "Route 225"
    },
    "reason": "too-generic: a crop of a house, stairs and ledges"
-  },
-  {
-   "id": "SJQX4N0oQNX4",
-   "action": "remove",
-   "at": {
-    "region": "Sinnoh",
-    "name": "Route 226"
-   },
-   "reason": "gives-away: the route signpost reads '226'"
   },
   {
    "id": "cloF4xg26CX1",
@@ -3582,15 +3258,6 @@
     "name": "Route 226"
    },
    "reason": "too-generic: a crop of rock terraces and grass"
-  },
-  {
-   "id": "Zzr8-i5mz3MU",
-   "action": "remove",
-   "at": {
-    "region": "Sinnoh",
-    "name": "Route 227"
-   },
-   "reason": "gives-away: the route signpost reads '227'"
   },
   {
    "id": "Zt-ck2pjL1gw",
@@ -3621,15 +3288,6 @@
    "reason": "too-generic: the Regi chamber, the same room in Sinnoh's three ruins"
   },
   {
-   "id": "KnIV6wiI6PQD",
-   "action": "remove",
-   "at": {
-    "region": "Sinnoh",
-    "name": "Route 229"
-   },
-   "reason": "gives-away: the route signpost reads '229'"
-  },
-  {
    "id": "hIq_2F_Bwi27",
    "action": "remove",
    "at": {
@@ -3637,24 +3295,6 @@
     "name": "Route 229"
    },
    "reason": "too-generic: a crop of a path, trees and water"
-  },
-  {
-   "id": "Zed8S9BwpUS7",
-   "action": "remove",
-   "at": {
-    "region": "Sinnoh",
-    "name": "Route 230"
-   },
-   "reason": "gives-away: the route signpost reads '230'"
-  },
-  {
-   "id": "iG4TRStm6zt9",
-   "action": "remove",
-   "at": {
-    "region": "Sinnoh",
-    "name": "Route 230"
-   },
-   "reason": "gives-away: the route signpost reads '230'"
   },
   {
    "id": "SGFIp9DvqRTz",
@@ -6069,6 +5709,437 @@
    "game": "Sword / Shield",
    "source": "https://bulbapedia.bulbagarden.net/wiki/File%3ANorth_Lake_Miloch_SwSh.png",
    "checked": "visually verified"
+  },
+  {
+   "id": "N5aMVUPpSoON",
+   "region": "Kalos",
+   "name": "Route 10",
+   "game": "X / Y",
+   "source": "https://pokemon.fandom.com/wiki/File:Route_10_Kalos.png",
+   "checked": "restored: its route signpost is a visible clue, which the rule now allows; visually verified"
+  },
+  {
+   "id": "JI6CD7JCa1ly",
+   "region": "Kalos",
+   "name": "Route 14",
+   "game": "X / Y",
+   "source": "https://www.pokepedia.fr/Fichier:Route_14_XY.png",
+   "checked": "restored: its route signpost is a visible clue, which the rule now allows; visually verified"
+  },
+  {
+   "id": "39o6CxFg7AUL",
+   "region": "Kalos",
+   "name": "Route 21",
+   "game": "X / Y",
+   "source": "https://www.pokepedia.fr/Fichier:Route_21_XY.png",
+   "checked": "restored: its route signpost is a visible clue, which the rule now allows; visually verified"
+  },
+  {
+   "id": "xwsVGaetKuFo",
+   "region": "Kalos",
+   "name": "Route 8",
+   "game": "X / Y",
+   "source": "https://www.pokepedia.fr/Fichier:Route_8_XY.png",
+   "checked": "restored: its route signpost is a visible clue, which the rule now allows; visually verified"
+  },
+  {
+   "id": "0h6ZC5m5K23g",
+   "region": "Alola",
+   "name": "Route 1",
+   "game": "Sun / Moon",
+   "source": "https://archives.bulbagarden.net/wiki/File:Alola_Route_1.png",
+   "checked": "restored: its route signpost is a visible clue, which the rule now allows; visually verified"
+  },
+  {
+   "id": "x0JaIxO9wwwm",
+   "region": "Alola",
+   "name": "Route 10",
+   "game": "Sun / Moon",
+   "source": "https://pokemon.fandom.com/wiki/File:Alola_Route_10.png",
+   "checked": "restored: its route signpost is a visible clue, which the rule now allows; visually verified"
+  },
+  {
+   "id": "HQ0xhMT8-E0h",
+   "region": "Alola",
+   "name": "Route 11",
+   "game": "Sun / Moon",
+   "source": "https://pokemon.fandom.com/wiki/File:Alola_Route_11.png",
+   "checked": "restored: its route signpost is a visible clue, which the rule now allows; visually verified"
+  },
+  {
+   "id": "ekiAR56UDLBl",
+   "region": "Alola",
+   "name": "Route 15",
+   "game": "Sun / Moon",
+   "source": "https://pokemon.fandom.com/wiki/File:Alola_Route_15.png",
+   "checked": "restored: its route signpost is a visible clue, which the rule now allows; visually verified"
+  },
+  {
+   "id": "bT5ytRjR-Q8W",
+   "region": "Alola",
+   "name": "Route 2",
+   "game": "Sun / Moon",
+   "source": "https://pokemon.fandom.com/wiki/File:Alola_Route_2.png",
+   "checked": "restored: its route signpost is a visible clue, which the rule now allows; visually verified"
+  },
+  {
+   "id": "h_aqOGMIUe6V",
+   "region": "Alola",
+   "name": "Route 3",
+   "game": "Sun / Moon",
+   "source": "https://pokemon.fandom.com/wiki/File:Alola_Route_3.png",
+   "checked": "restored: its route signpost is a visible clue, which the rule now allows; visually verified"
+  },
+  {
+   "id": "NH4SArDKEVAY",
+   "region": "Alola",
+   "name": "Route 5",
+   "game": "Sun / Moon",
+   "source": "https://archives.bulbagarden.net/wiki/File:Alola_Route_5.png",
+   "checked": "restored: its route signpost is a visible clue, which the rule now allows; visually verified"
+  },
+  {
+   "id": "LI-46xLAIe9M",
+   "region": "Alola",
+   "name": "Route 8",
+   "game": "Sun / Moon",
+   "source": "https://archives.bulbagarden.net/wiki/File:Alola_Route_8.png",
+   "checked": "restored: its route signpost is a visible clue, which the rule now allows; visually verified"
+  },
+  {
+   "id": "-0hFyglU_BMO",
+   "region": "Galar",
+   "name": "Route 1",
+   "game": "Sword / Shield",
+   "source": "https://archives.bulbagarden.net/wiki/File:Galar_Route_1_SwSh.png",
+   "checked": "restored: its route signpost is a visible clue, which the rule now allows; visually verified"
+  },
+  {
+   "id": "RklmjWOeQbow",
+   "region": "Galar",
+   "name": "Route 10",
+   "game": "Sword / Shield",
+   "source": "https://www.pokepedia.fr/Fichier:Route_10_EB.png",
+   "checked": "restored: its route signpost is a visible clue, which the rule now allows; visually verified"
+  },
+  {
+   "id": "siQzAYLAfCgW",
+   "region": "Sinnoh",
+   "name": "Lost Tower",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://archives.bulbagarden.net/wiki/File:Lost_Tower_BDSP.png",
+   "checked": "restored: its route signpost is a visible clue, which the rule now allows; visually verified"
+  },
+  {
+   "id": "0ttn9QXrccdO",
+   "region": "Sinnoh",
+   "name": "Route 201",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://archives.bulbagarden.net/wiki/File:Sinnoh_Route_201_BDSP.png",
+   "checked": "restored: its route signpost is a visible clue, which the rule now allows; visually verified"
+  },
+  {
+   "id": "HyU0rjQjZg-P",
+   "region": "Sinnoh",
+   "name": "Route 202",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://archives.bulbagarden.net/wiki/File:Sinnoh_Route_202_BDSP.png",
+   "checked": "restored: its route signpost is a visible clue, which the rule now allows; visually verified"
+  },
+  {
+   "id": "wdK-RmJMViN4",
+   "region": "Sinnoh",
+   "name": "Route 203",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://archives.bulbagarden.net/wiki/File:Sinnoh_Route_203_BDSP.png",
+   "checked": "restored: its route signpost is a visible clue, which the rule now allows; visually verified"
+  },
+  {
+   "id": "TUz3Lw6hflWT",
+   "region": "Sinnoh",
+   "name": "Route 204",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://archives.bulbagarden.net/wiki/File:Sinnoh_Route_204_BDSP.png",
+   "checked": "restored: its route signpost is a visible clue, which the rule now allows; visually verified"
+  },
+  {
+   "id": "G8Fwf5G050qc",
+   "region": "Sinnoh",
+   "name": "Route 205",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://archives.bulbagarden.net/wiki/File:Sinnoh_Route_205_BDSP.png",
+   "checked": "restored: its route signpost is a visible clue, which the rule now allows; visually verified"
+  },
+  {
+   "id": "bcL-9uofsAye",
+   "region": "Sinnoh",
+   "name": "Route 206",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://archives.bulbagarden.net/wiki/File:Sinnoh_Route_206_BDSP.png",
+   "checked": "restored: its route signpost is a visible clue, which the rule now allows; visually verified"
+  },
+  {
+   "id": "rM5nurDg04rU",
+   "region": "Sinnoh",
+   "name": "Route 207",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://archives.bulbagarden.net/wiki/File:Sinnoh_Route_207_BDSP.png",
+   "checked": "restored: its route signpost is a visible clue, which the rule now allows; visually verified"
+  },
+  {
+   "id": "1pEB0Bta5-11",
+   "region": "Sinnoh",
+   "name": "Route 208",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://archives.bulbagarden.net/wiki/File:Sinnoh_Route_208_BDSP.png",
+   "checked": "restored: its route signpost is a visible clue, which the rule now allows; visually verified"
+  },
+  {
+   "id": "IHp76x4mWR8N",
+   "region": "Sinnoh",
+   "name": "Route 209",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://archives.bulbagarden.net/wiki/File:Sinnoh_Route_209_BDSP.png",
+   "checked": "restored: its route signpost is a visible clue, which the rule now allows; visually verified"
+  },
+  {
+   "id": "whOZ1nG5XcOw",
+   "region": "Sinnoh",
+   "name": "Route 210",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://archives.bulbagarden.net/wiki/File:Sinnoh_Route_210_BDSP.png",
+   "checked": "restored: its route signpost is a visible clue, which the rule now allows; visually verified"
+  },
+  {
+   "id": "_AIOG5XURvG4",
+   "region": "Sinnoh",
+   "name": "Route 211",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://archives.bulbagarden.net/wiki/File:Sinnoh_Route_211_BDSP.png",
+   "checked": "restored: its route signpost is a visible clue, which the rule now allows; visually verified"
+  },
+  {
+   "id": "VYoT93KOhfjT",
+   "region": "Sinnoh",
+   "name": "Route 212",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://archives.bulbagarden.net/wiki/File:Sinnoh_Route_212.png",
+   "checked": "restored: its route signpost is a visible clue, which the rule now allows; visually verified"
+  },
+  {
+   "id": "-5GFZPsj2-Ev",
+   "region": "Sinnoh",
+   "name": "Route 213",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://archives.bulbagarden.net/wiki/File:Sinnoh_Route_213_BDSP.png",
+   "checked": "restored: its route signpost is a visible clue, which the rule now allows; visually verified"
+  },
+  {
+   "id": "ppwwMNBdZ4eo",
+   "region": "Sinnoh",
+   "name": "Route 214",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://archives.bulbagarden.net/wiki/File:Sinnoh_Route_214_BDSP.png",
+   "checked": "restored: its route signpost is a visible clue, which the rule now allows; visually verified"
+  },
+  {
+   "id": "aGwzdmhAhw-Q",
+   "region": "Sinnoh",
+   "name": "Route 215",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://archives.bulbagarden.net/wiki/File:Sinnoh_Route_215_BDSP.png",
+   "checked": "restored: its route signpost is a visible clue, which the rule now allows; visually verified"
+  },
+  {
+   "id": "cPxB_Tijprxt",
+   "region": "Sinnoh",
+   "name": "Route 216",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://archives.bulbagarden.net/wiki/File:Sinnoh_Route_216_BDSP.png",
+   "checked": "restored: its route signpost is a visible clue, which the rule now allows; visually verified"
+  },
+  {
+   "id": "ZppbsSFZU9rU",
+   "region": "Sinnoh",
+   "name": "Route 218",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://archives.bulbagarden.net/wiki/File:Sinnoh_Route_218_BDSP.png",
+   "checked": "restored: its route signpost is a visible clue, which the rule now allows; visually verified"
+  },
+  {
+   "id": "0MV9Wrb85w0K",
+   "region": "Sinnoh",
+   "name": "Route 219",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://archives.bulbagarden.net/wiki/File:Sinnoh_Route_219_BDSP.png",
+   "checked": "restored: its route signpost is a visible clue, which the rule now allows; visually verified"
+  },
+  {
+   "id": "oFAdfmDqopKN",
+   "region": "Sinnoh",
+   "name": "Route 222",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://archives.bulbagarden.net/wiki/File:Sinnoh_Route_222_BDSP.png",
+   "checked": "restored: its route signpost is a visible clue, which the rule now allows; visually verified"
+  },
+  {
+   "id": "w4wZTp04X0Du",
+   "region": "Sinnoh",
+   "name": "Route 225",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://archives.bulbagarden.net/wiki/File:Sinnoh_Route_225_BDSP.png",
+   "checked": "restored: its route signpost is a visible clue, which the rule now allows; visually verified"
+  },
+  {
+   "id": "SJQX4N0oQNX4",
+   "region": "Sinnoh",
+   "name": "Route 226",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://archives.bulbagarden.net/wiki/File:Sinnoh_Route_226_BDSP.png",
+   "checked": "restored: its route signpost is a visible clue, which the rule now allows; visually verified"
+  },
+  {
+   "id": "Zzr8-i5mz3MU",
+   "region": "Sinnoh",
+   "name": "Route 227",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://archives.bulbagarden.net/wiki/File:Sinnoh_Route_227_BDSP.png",
+   "checked": "restored: its route signpost is a visible clue, which the rule now allows; visually verified"
+  },
+  {
+   "id": "KnIV6wiI6PQD",
+   "region": "Sinnoh",
+   "name": "Route 229",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://archives.bulbagarden.net/wiki/File:Sinnoh_Route_229_BDSP.png",
+   "checked": "restored: its route signpost is a visible clue, which the rule now allows; visually verified"
+  },
+  {
+   "id": "Zed8S9BwpUS7",
+   "region": "Sinnoh",
+   "name": "Route 230",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://archives.bulbagarden.net/wiki/File:Sinnoh_Route_230_BDSP.png",
+   "checked": "restored: its route signpost is a visible clue, which the rule now allows; visually verified"
+  },
+  {
+   "id": "iG4TRStm6zt9",
+   "region": "Sinnoh",
+   "name": "Route 230",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Chenal_230_DEPS.png",
+   "checked": "restored: its route signpost is a visible clue, which the rule now allows; visually verified"
+  },
+  {
+   "id": "0cXz2D87wfBy",
+   "region": "Sinnoh",
+   "name": "Oreburgh City",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://bulbapedia.bulbagarden.net/wiki/File%3AOreburgh_City_BDSP.png",
+   "checked": "visually verified; banner or dialogue text allowed under the clue rule"
+  },
+  {
+   "id": "Qq51jzrCvjqK",
+   "region": "Sinnoh",
+   "name": "Snowpoint City",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://bulbapedia.bulbagarden.net/wiki/File%3ASnowpoint_City_BDSP.png",
+   "checked": "visually verified; banner or dialogue text allowed under the clue rule"
+  },
+  {
+   "id": "aFKHm_nr3-o7",
+   "region": "Hoenn",
+   "name": "Lilycove Museum",
+   "parent": "Lilycove City",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://bulbapedia.bulbagarden.net/wiki/File%3ALilycove_Museum_Landscape_ORAS.png",
+   "checked": "visually verified; banner or dialogue text allowed under the clue rule"
+  },
+  {
+   "id": "T6BdtSsj9GWb",
+   "region": "Hoenn",
+   "name": "Lilycove Museum",
+   "parent": "Lilycove City",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://bulbapedia.bulbagarden.net/wiki/File%3ALilycove_Museum_Legendary_Pok%C3%A9mon_Painting_ORAS.png",
+   "checked": "visually verified; banner or dialogue text allowed under the clue rule"
+  },
+  {
+   "id": "FU0a7nTOU_uk",
+   "region": "Hoenn",
+   "name": "Southern Island",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://bulbapedia.bulbagarden.net/wiki/File%3ASouthern_Island_ORAS.png",
+   "checked": "visually verified; banner or dialogue text allowed under the clue rule"
+  },
+  {
+   "id": "T4_ZNWYuPd34",
+   "region": "Kalos",
+   "name": "Cyllage Gym",
+   "parent": "Cyllage City",
+   "game": "X / Y",
+   "source": "https://bulbapedia.bulbagarden.net/wiki/File%3ACyllage_Gym_XY.png",
+   "checked": "visually verified; banner or dialogue text allowed under the clue rule"
+  },
+  {
+   "id": "yOZZC1ok-QXi",
+   "region": "Kalos",
+   "name": "Snowbelle Gym",
+   "parent": "Snowbelle City",
+   "game": "X / Y",
+   "source": "https://bulbapedia.bulbagarden.net/wiki/File%3ASnowbelle_Gym_XY.png",
+   "checked": "visually verified; banner or dialogue text allowed under the clue rule"
+  },
+  {
+   "id": "6d537TyXBzjv",
+   "region": "Kitakami",
+   "name": "Kitakami Road",
+   "game": "Scarlet / Violet",
+   "source": "https://archives.bulbagarden.net/wiki/File:Kitakami_Road_Path.jpg",
+   "checked": "visually verified; cropped to the left 78% to cut out the in-game minimap"
+  },
+  {
+   "id": "J6VGtjIQWp3Y",
+   "region": "Paldea",
+   "name": "Cabo Poco",
+   "game": "Scarlet / Violet",
+   "source": "https://archives.bulbagarden.net/wiki/File:Cabo_Poco_Player_house_SV.png",
+   "checked": "visually verified; cropped to the left 78% to cut out the in-game minimap"
+  },
+  {
+   "id": "sJ38IUZP-lgq",
+   "region": "Paldea",
+   "name": "Area Zero",
+   "parent": "Great Crater of Paldea",
+   "game": "Scarlet / Violet",
+   "source": "https://archives.bulbagarden.net/wiki/File:Area_Zero_Lower_Field_SV.png",
+   "checked": "visually verified; cropped to the left 78% to cut out the in-game minimap"
+  },
+  {
+   "id": "c553T9N-o1BA",
+   "region": "Paldea",
+   "name": "Area Zero",
+   "parent": "Great Crater of Paldea",
+   "game": "Scarlet / Violet",
+   "source": "https://archives.bulbagarden.net/wiki/File:SV_Area_Zero_Research_Station_4-2.png",
+   "checked": "visually verified; cropped to the left 78% to cut out the in-game minimap"
+  },
+  {
+   "id": "BitXo82AQYKD",
+   "region": "Paldea",
+   "name": "Zero Gate",
+   "parent": "Great Crater of Paldea",
+   "game": "Scarlet / Violet",
+   "source": "https://archives.bulbagarden.net/wiki/File:SV_Zero_Gate.png",
+   "checked": "visually verified; cropped to the left 78% to cut out the in-game minimap"
+  },
+  {
+   "id": "BnD1hsbzrv49",
+   "region": "Paldea",
+   "name": "Naranja and Uva Academy",
+   "game": "Scarlet / Violet",
+   "source": "https://archives.bulbagarden.net/wiki/File:Naranja_Academy.png",
+   "checked": "visually verified; cropped to the left 78% to cut out the in-game minimap"
   }
  ]
 }
