@@ -41,7 +41,6 @@ import { cn } from "@/lib/utils";
 type Mode = "daily" | "weekly" | "practice" | "archive";
 type Target = { date: string; difficulty: PdkDifficulty; archive?: true } | { week: string; difficulty: "normal" } | { practice: string; difficulty: "normal"; settings: PdkSettings };
 const PREFS_KEY = "pokeiq:pikadoku:prefs";
-const SEEN_KEY = "pokeiq:pikadoku:howto-seen";
 interface Prefs {
   difficulty: PdkDifficulty;
   settings: PdkSettings;
@@ -113,20 +112,7 @@ export function Pikadoku() {
   const toastTimer = useRef<number | undefined>(undefined);
 
   useEffect(() => setPrefs(loadPrefs()), []);
-  // First visit: the how-to opens once.
-  useEffect(() => {
-    try {
-      if (!window.localStorage.getItem(SEEN_KEY)) setSheet("howto");
-    } catch {
-      // No storage: skip the first-visit sheet.
-    }
-  }, []);
   const closeSheet = () => {
-    try {
-      window.localStorage.setItem(SEEN_KEY, "1");
-    } catch {
-      // Shown again next visit.
-    }
     setSheet(null);
   };
   // A challenge link (/pikadoku?c=...) opens that exact Unlimited grid.
