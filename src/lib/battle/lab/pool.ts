@@ -60,6 +60,8 @@ export function defaultPoolSize(): number {
 
 /** Milliseconds of battles per chunk once the pace is known. */
 const CHUNK_MS = 250;
+/** A run fails if no worker reports back for this long (a worker that died without a word), rather than waiting forever. */
+const STALL_MS = 30_000;
 
 interface Slot {
   worker: Worker;
@@ -116,15 +118,22 @@ export class LabPool {
     });
 
     const progress = (): LabProgress => ({ done, total, totals, outcomes, elapsedMs: performance.now() - started });
+    let watchdog: ReturnType<typeof setTimeout> | undefined;
+    const arm = () => {
+      clearTimeout(watchdog);
+      watchdog = setTimeout(() => fail(new LabRunError("The simulator stopped responding. Try again.", false)), STALL_MS);
+    };
     const finish = (cancelled: boolean) => {
       if (finished) return;
       finished = true;
+      clearTimeout(watchdog);
       this.listeners.delete(job);
       resolveRun({ ...progress(), cancelled, notes, misses });
     };
     const fail = (err: LabRunError) => {
       if (finished) return;
       finished = true;
+      clearTimeout(watchdog);
       this.listeners.delete(job);
       rejectRun(err);
     };
@@ -154,6 +163,7 @@ export class LabPool {
         return;
       }
       if (msg.type !== "chunk") return;
+      arm();
       mergeTotals(totals, msg.totals);
       outcomes.set(msg.outcomes, msg.from);
       const n = msg.to - msg.from;
@@ -164,6 +174,7 @@ export class LabPool {
       dispatch(slot);
     });
 
+    arm();
     this.slots.forEach((slot, i) => {
       this.post(slot, { type: "setup", job, setup, seed, check: i === 0 });
       dispatch(slot);

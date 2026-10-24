@@ -23,10 +23,12 @@ import { turnSetup } from "./setup";
 export const ANALYSIS_VERSION = 1;
 /** Aim to finish a typical battle in about this long. */
 export const BUDGET_MS = 25_000;
-export const MIN_ROLLOUTS = 60;
+export const MIN_ROLLOUTS = 40;
+/** Once the budget is spent, each remaining turn gets only this many, so a long battle on slow hardware still finishes. */
+export const OVER_BUDGET_ROLLOUTS = 10;
 export const MAX_ROLLOUTS = 300;
 /** Rollouts for the first turn, while the pace is unknown. */
-const FIRST_ROLLOUTS = 80;
+const FIRST_ROLLOUTS = 60;
 
 export class AnalysisUnsupported extends Error {}
 
@@ -138,7 +140,7 @@ export async function analyseReplay(
     const setup = turnSetup(parsed.turns[t], parsed.gen, sets, keys);
     if (!setup) continue;
     const elapsed = performance.now() - started;
-    const n = t === 1 ? FIRST_ROLLOUTS : rolloutsFor({ budgetMs: BUDGET_MS, elapsedMs: elapsed, turnsLeft: total - t + 1, msPerRollout: rollouts ? elapsed / rollouts : 0, min: MIN_ROLLOUTS, max: MAX_ROLLOUTS });
+    const n = t === 1 ? FIRST_ROLLOUTS : rolloutsFor({ budgetMs: BUDGET_MS, elapsedMs: elapsed, turnsLeft: total - t + 1, msPerRollout: rollouts ? elapsed / rollouts : 0, min: elapsed > BUDGET_MS ? OVER_BUDGET_ROLLOUTS : MIN_ROLLOUTS, max: MAX_ROLLOUTS });
     const run = pool.run(setup, seed, n, () => cancelled() && run.cancel());
     const out = await run.promise;
     if (cancelled()) return null;
