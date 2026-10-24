@@ -184,7 +184,12 @@ step("real shiny quiz: three questions");
   await page.waitForSelector("h2");
   for (let i = 0; i < 3; i++) {
     await page.locator("[data-answer-tile]").first().waitFor();
-    if (i === 0) await page.screenshot({ path: `${OUT}/quiz-real-shiny.png` });
+    if (i === 0) {
+      await page.waitForFunction(() => [...document.querySelectorAll("[data-answer-tile] img")].every((im) => im.complete), null, { timeout: 15_000 }).catch(() => {});
+      const loaded = await page.$$eval("[data-answer-tile] img", (ims) => ims.filter((im) => im.naturalWidth > 0).length);
+      if (loaded < 4) errors.push(`real shiny: only ${loaded}/4 images loaded`);
+      await page.screenshot({ path: `${OUT}/quiz-real-shiny.png` });
+    }
     await page.locator("[data-answer-tile]:not([disabled])").nth(i).click();
     const next = page.getByRole("button", { name: /Next question|See results/ });
     await next.waitFor({ timeout: 10_000 });
