@@ -5962,6 +5962,241 @@
    "game": "Black 2 / White 2",
    "source": "https://www.pokepedia.fr/Fichier:Route_23_Écaillecœur_N2B2.png (view cut at 0,0,256,140)",
    "checked": "item text box cropped off"
+  },
+  {
+   "id": "QmZI7TAJNedZ",
+   "region": "Sinnoh",
+   "name": "Floaroma Town",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://bulbapedia.bulbagarden.net/wiki/File%3AFloaroma_Town_BDSP.png",
+   "checked": "visually verified"
+  },
+  {
+   "id": "ksxWpvAfJCb4",
+   "region": "Sinnoh",
+   "name": "Old Chateau",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://bulbapedia.bulbagarden.net/wiki/File%3AOld_Chateau_Rotom_room_BDSP.png",
+   "checked": "visually verified"
+  },
+  {
+   "id": "m7MOIwaG8yz3",
+   "region": "Sinnoh",
+   "name": "Solaceon Town",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://bulbapedia.bulbagarden.net/wiki/File%3ASolaceon_Town_BDSP.png",
+   "checked": "visually verified"
+  },
+  {
+   "id": "l80GCIMrB6tS",
+   "region": "Sinnoh",
+   "name": "Survival Area",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://bulbapedia.bulbagarden.net/wiki/File%3ASurvival_Area_BDSP.png",
+   "checked": "visually verified"
+  },
+  {
+   "id": "QWNH7cymwhnx",
+   "region": "Sinnoh",
+   "name": "Veilstone Department Store",
+   "parent": "Veilstone City",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://bulbapedia.bulbagarden.net/wiki/File%3AVeilstone_Department_Store_BDSP.png",
+   "checked": "visually verified"
+  },
+  {
+   "id": "yqu28rIkeZeK",
+   "region": "Kanto",
+   "name": "Celadon Game Corner",
+   "parent": "Celadon City",
+   "game": "Let's Go, Pikachu! / Eevee!",
+   "source": "https://bulbapedia.bulbagarden.net/wiki/File%3ACeladon_Game_Corner_Right_Entrance_LGPE.png",
+   "checked": "visually verified"
+  },
+  {
+   "id": "z-VUkZiLnQqu",
+   "region": "Kanto",
+   "name": "Celadon Gym",
+   "parent": "Celadon City",
+   "game": "Let's Go, Pikachu! / Eevee!",
+   "source": "https://bulbapedia.bulbagarden.net/wiki/File%3ACeladon_Gym_Exterior_LGPE.png",
+   "checked": "visually verified"
+  },
+  {
+   "id": "x8l3RF-kU1ql",
+   "region": "Kanto",
+   "name": "Cerulean Gym",
+   "parent": "Cerulean City",
+   "game": "Let's Go, Pikachu! / Eevee!",
+   "source": "https://bulbapedia.bulbagarden.net/wiki/File%3ACerulean_Gym_Exterior_LGPE.png",
+   "checked": "visually verified"
+  },
+  {
+   "id": "DqjNLdRm1e6h",
+   "region": "Kanto",
+   "name": "Cinnabar Lab",
+   "parent": "Cinnabar Island",
+   "game": "Let's Go, Pikachu! / Eevee!",
+   "source": "https://bulbapedia.bulbagarden.net/wiki/File%3ACinnabar_Lab_Entrance_LGPE.png",
+   "checked": "visually verified"
+  },
+  {
+   "id": "x-XI1VuUiY4n",
+   "region": "Kanto",
+   "name": "Cinnabar Lab",
+   "parent": "Cinnabar Island",
+   "game": "Let's Go, Pikachu! / Eevee!",
+   "source": "https://bulbapedia.bulbagarden.net/wiki/File%3ACinnabar_Lab_Reception_Room_LGPE.png",
+   "checked": "visually verified"
+  },
+  {
+   "id": "jgZ0lbsGD0Wh",
+   "region": "Kanto",
+   "name": "Diglett's Cave",
+   "game": "Let's Go, Pikachu! / Eevee!",
+   "source": "https://bulbapedia.bulbagarden.net/wiki/File%3ADigletts_Cave_Route_11_LGPE.png",
+   "checked": "visually verified"
+  },
+  {
+   "id": "SP4YsOSUtC7U",
+   "region": "Kanto",
+   "name": "Fuchsia Gym",
+   "parent": "Fuchsia City",
+   "game": "Let's Go, Pikachu! / Eevee!",
+   "source": "https://bulbapedia.bulbagarden.net/wiki/File%3AFuchsia_Gym_Exterior_LGPE.png",
+   "checked": "visually verified"
+  },
+  {
+   "id": "M80RFLlYngNb",
+   "region": "Kanto",
+   "name": "GO Park",
+   "parent": "Fuchsia City",
+   "game": "Let's Go, Pikachu! / Eevee!",
+   "source": "https://bulbapedia.bulbagarden.net/wiki/File%3AGO_Park_Play_Yard_LGPE.jpg",
+   "checked": "visually verified"
+  },
+  {
+   "id": "B6KxKzXerxfz",
+   "region": "Kanto",
+   "name": "Pewter Gym",
+   "parent": "Pewter City",
+   "game": "Let's Go, Pikachu! / Eevee!",
+   "source": "https://bulbapedia.bulbagarden.net/wiki/File%3APewter_Gym_Exterior_LGPE.png",
+   "checked": "visually verified"
+  },
+  {
+   "id": "9yaj0hndf_Xa",
+   "region": "Kanto",
+   "name": "Saffron Gym",
+   "parent": "Saffron City",
+   "game": "Let's Go, Pikachu! / Eevee!",
+   "source": "https://bulbapedia.bulbagarden.net/wiki/File%3ASaffron_Gym_Exterior_LGPE.png",
+   "checked": "visually verified"
+  },
+  {
+   "id": "qZJdNXPGc1_m",
+   "region": "Hoenn",
+   "name": "Desert Ruins",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://bulbapedia.bulbagarden.net/wiki/File%3ADesert_Ruins_interior_ORAS.png",
+   "checked": "visually verified"
+  },
+  {
+   "id": "MZJhRZ-H90LZ",
+   "region": "Hoenn",
+   "name": "Ever Grande City",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://bulbapedia.bulbagarden.net/wiki/File%3AEver_Grande_City_Pok%C3%A9mon_League_ORAS.png",
+   "checked": "visually verified"
+  },
+  {
+   "id": "BOBTWtbLEgTi",
+   "region": "Hoenn",
+   "name": "Lilycove Museum",
+   "parent": "Lilycove City",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://bulbapedia.bulbagarden.net/wiki/File%3ALilycove_Museum_Grass_Pok%C3%A9mon_Painting_ORAS.png",
+   "checked": "visually verified"
+  },
+  {
+   "id": "VOPrLDUdYUZF",
+   "region": "Hoenn",
+   "name": "Mirage Island",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://bulbapedia.bulbagarden.net/wiki/File%3AMirage_Island_north_of_Route_113_ORAS.png",
+   "checked": "visually verified"
+  },
+  {
+   "id": "g2I2vRoNi8kF",
+   "region": "Hoenn",
+   "name": "Mirage Island",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://bulbapedia.bulbagarden.net/wiki/File%3AMirage_Island_north_of_Route_124_ORAS.png",
+   "checked": "visually verified"
+  },
+  {
+   "id": "hgmC3VBhkYD_",
+   "region": "Hoenn",
+   "name": "Mirage Island",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://bulbapedia.bulbagarden.net/wiki/File%3AMirage_Island_south_of_Pacifidlog_Town_ORAS.png",
+   "checked": "visually verified"
+  },
+  {
+   "id": "e38CWIIQo_H7",
+   "region": "Hoenn",
+   "name": "Trick House",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://bulbapedia.bulbagarden.net/wiki/File%3ATrick_House_ORAS.png",
+   "checked": "visually verified"
+  },
+  {
+   "id": "fpVILKoIv4CF",
+   "region": "Hoenn",
+   "name": "Verdanturf Town",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://bulbapedia.bulbagarden.net/wiki/File%3AVerdanturf_Town_ORAS.png",
+   "checked": "visually verified"
+  },
+  {
+   "id": "HTUry2TcdNDh",
+   "region": "Alola",
+   "name": "Blush Mountain",
+   "game": "Sun / Moon",
+   "source": "https://bulbapedia.bulbagarden.net/wiki/File%3ABlush_Mountain_SM.png",
+   "checked": "visually verified"
+  },
+  {
+   "id": "sDrA4dq1Bp62",
+   "region": "Alola",
+   "name": "Lush Jungle",
+   "game": "Sun / Moon",
+   "source": "https://bulbapedia.bulbagarden.net/wiki/File%3ALush_Jungle_SM.png",
+   "checked": "visually verified"
+  },
+  {
+   "id": "7y29TuoH48J1",
+   "region": "Galar",
+   "name": "Axew's Eye",
+   "game": "Sword / Shield",
+   "source": "https://bulbapedia.bulbagarden.net/wiki/File%3AAxew%27s_Eye_SwSh.png",
+   "checked": "visually verified"
+  },
+  {
+   "id": "3kj2T5SL3NnU",
+   "region": "Galar",
+   "name": "North Lake Miloch",
+   "game": "Sword / Shield",
+   "source": "https://bulbapedia.bulbagarden.net/wiki/File%3ANorth_Lake_Miloch_SwSh.png",
+   "checked": "visually verified"
+  },
+  {
+   "id": "iabDDUyHahQu",
+   "region": "Isle of Armor",
+   "name": "Loop Lagoon",
+   "game": "Sword / Shield",
+   "source": "https://bulbapedia.bulbagarden.net/wiki/File%3AGalar_Loop_Lagoon_SwSh.png",
+   "checked": "visually verified"
   }
  ]
 }
