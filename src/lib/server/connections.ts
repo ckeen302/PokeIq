@@ -6,7 +6,7 @@ import { tileRef } from "@/lib/connections/mixed";
 import { isPokemonTile } from "@/lib/connections/tiles";
 import { factsOf } from "@/lib/connections/facts";
 import { generatePuzzle, herringsOf, playGuesses, type Puzzle } from "@/lib/connections/generator";
-import { connNumber, type ConnGroupExplained, type ConnGroupReveal, type ConnGuessResponse, type ConnLevel, type ConnPuzzleResponse, type ConnTile } from "@/lib/connections/types";
+import { connLevels, connNumber, type ConnSize, type ConnGroupExplained, type ConnGroupReveal, type ConnGuessResponse, type ConnLevel, type ConnPuzzleResponse, type ConnTile } from "@/lib/connections/types";
 
 /**
  * PokéConnections on the server: which puzzle a date or practice seed is,
@@ -72,9 +72,10 @@ export function practiceConnPuzzle(seed: string): Puzzle {
   let p = practiceCache.get(seed);
   if (!p) {
     // "hard-x7k2…": Unlimited's difficulty rides in the seed, so every guess check finds the same puzzle.
-    const { pack, difficulty } = parsePracticeSeed(seed);
+    const { pack, difficulty, size } = parsePracticeSeed(seed);
     // Practice puzzles may have one or two mixed groups (the seed decides); a pack's never do.
-    const base = pack ? { pack } : {};
+    // A 5×5 board is never themed: a pack is too small to fill five groups of five, so it deals from every Pokémon.
+    const base = size ? { size } : pack ? { pack } : {};
     try {
       p = generatePuzzle(`practice:${seed}`, { ...(difficulty && { difficulty }), ...base });
     } catch {
@@ -95,9 +96,9 @@ export function connTile(id: number): ConnTile {
 }
 const tile = connTile;
 
-/** What a player starts with: sixteen tiles, in the grid's order. */
+/** What a player starts with: sixteen tiles (25 on a 5×5 board), in the grid's order. */
 export function puzzleView(puzzle: Puzzle, key: string, date?: string): ConnPuzzleResponse {
-  return { key, ...(date && { number: connNumber(date) }), tiles: puzzle.tiles.map(tile) };
+  return { key, ...(date && { number: connNumber(date) }), ...(puzzle.groups.length === 5 && { size: 5 as const }), tiles: puzzle.tiles.map(tile) };
 }
 
 /** A found group: its colour, name and Pokémon (no explanation). */
@@ -128,6 +129,6 @@ export function checkGuesses(puzzle: Puzzle, guesses: number[][]): ConnGuessResp
     mistakes: state.mistakes,
     over: state.over,
     won: state.won,
-    ...(state.over && { reveal: ([0, 1, 2, 3] as ConnLevel[]).map((lv) => explainGroup(puzzle, lv)) }),
+    ...(state.over && { reveal: connLevels(puzzle.groups.length as ConnSize).map((lv) => explainGroup(puzzle, lv)) }),
   };
 }

@@ -242,16 +242,20 @@ export function quizShareText(r: QuizShareResult, url?: string): string {
 // PokéConnections
 // ---------------------------------------------------------------------------
 
-/** A group level's square: yellow, green, blue, purple (easiest to hardest), as in NYT Connections. */
-export const CONN_SQUARES = ["🟨", "🟩", "🟦", "🟪"] as const;
+/** A group level's square: yellow, green, blue, purple (easiest to hardest), as in NYT Connections; red is a 5×5 board's fifth. */
+export const CONN_SQUARES = ["🟨", "🟩", "🟦", "🟪", "🟥"] as const;
 
-/** "PokéConnections #12", "PokéConnections Practice". */
-export function connectionsTitle(r: Pick<ConnectionsShareResult, "daily" | "archive">): string {
-  return r.daily !== undefined ? `PokéConnections #${r.daily}${r.archive ? " (archive)" : ""}` : "PokéConnections Practice";
+/** A board's side from its guess rows: 5 for a 5×5 game, else 4. */
+export const connSizeOf = (rows: readonly string[]) => (rows[0]?.length === 5 ? 5 : 4);
+
+/** "PokéConnections #12", "PokéConnections Practice", "PokéConnections Practice 5×5". */
+export function connectionsTitle(r: Pick<ConnectionsShareResult, "daily" | "archive" | "rows">): string {
+  const size = connSizeOf(r.rows) === 5 ? " 5×5" : "";
+  return r.daily !== undefined ? `PokéConnections #${r.daily}${r.archive ? " (archive)" : ""}` : `PokéConnections Practice${size}`;
 }
 
 /** Mistakes in a game: the guesses that weren't a whole group. */
-export const connMistakes = (rows: readonly string[]) => rows.filter((r) => !/^([0-3])\1{3}$/.test(r)).length;
+export const connMistakes = (rows: readonly string[]) => rows.filter((r) => !/^([0-4])\1{3,4}$/.test(r)).length;
 
 /** "Perfect!", "2 mistakes", "Not solved". */
 export function connectionsScore(r: Pick<ConnectionsShareResult, "solved" | "rows">): string {

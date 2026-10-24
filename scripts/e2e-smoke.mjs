@@ -415,6 +415,61 @@ step("pokéconnections: a full daily, one wrong guess then a solve");
   await page.getByTestId("conn-tile").nth(15).waitFor();
   await page.screenshot({ path: `${OUT}/conn-unlimited.png` });
 
+  // Unlimited 5×5: the size toggle, twenty-five tiles, five groups of five and five mistakes, solved from the data alone.
+  step("pokéconnections: an Unlimited 5×5 game, solved to the end");
+  const size5 = page.waitForResponse((r) => /\/api\/connections\?practice=s5-/.test(r.url()));
+  await page.getByTestId("conn-size-5").click();
+  const big = await (await size5).json();
+  if (big.size !== 5 || big.tiles.length !== 25) errors.push(`the 5×5 puzzle came as size ${big.size} with ${big.tiles.length} tiles`);
+  if (/label|members|category|reveal/.test(JSON.stringify(big))) errors.push("the 5×5 puzzle's tiles came with the groups");
+  await page.getByTestId("conn-tile").nth(24).waitFor();
+  if ((await page.getByTestId("conn-tile").count()) !== 25) errors.push("PokéConnections 5×5 didn't show 25 tiles");
+  if ((await page.getByTestId("conn-grid").getAttribute("data-size")) !== "5") errors.push("the 5×5 grid isn't marked size 5");
+  await page.getByLabel("5 of 5 mistakes left").waitFor();
+  // The server rejects a four-tile guess on a 5×5 board, and a five-tile guess on a 4×4 one.
+  const bad5 = await page.request.post(`${BASE}/api/connections`, { data: { practice: big.key.replace("practice:", ""), guesses: [big.tiles.slice(0, 4).map((t) => t.id)] } });
+  if (bad5.status() !== 400) errors.push(`a four-tile guess on a 5×5 board returned ${bad5.status()}`);
+  const bad4 = await page.request.post(`${BASE}/api/connections`, { data: { practice: next.key.replace("practice:", ""), guesses: [big.tiles.slice(0, 5).map((t) => t.id)] } });
+  if (bad4.status() !== 400) errors.push(`a five-tile guess on a 4×4 board returned ${bad4.status()}`);
+  const bigIds = big.tiles.map((t) => String(t.id));
+  const [big5] = JSON.parse(execFileSync("npx", ["tsx", "scripts/connections-solve.ts", ...bigIds], { encoding: "utf8", cwd: new URL("..", import.meta.url).pathname }));
+  if (big5?.length !== 5 || big5.some((g) => g.length !== 5)) throw new Error(`no 5×5 solution for ${bigIds}`);
+  // One away (four of one group and one of another), then two groups, and the board mid-game.
+  await pick([...big5[0].slice(0, 4), big5[1][0]]);
+  await page.getByTestId("conn-toast").filter({ hasText: "One away…" }).waitFor();
+  await page.getByLabel("4 of 5 mistakes left").waitFor();
+  await page.getByRole("button", { name: "Deselect all" }).click();
+  for (const [i, g] of big5.slice(0, 2).entries()) {
+    await pick(g);
+    await page.locator("[data-testid=conn-group]").nth(i).waitFor();
+  }
+  await page.waitForTimeout(500);
+  // The whole board in one frame: tall viewport, top of the page.
+  await page.setViewportSize({ width: 1280, height: 1400 });
+  await page.evaluate(() => window.scrollTo(0, 0));
+  await page.waitForTimeout(300);
+  await page.screenshot({ path: `${OUT}/conn-5x5.png` });
+  await page.setViewportSize({ width: 1280, height: 900 });
+  for (const [i, g] of big5.slice(2).entries()) {
+    await pick(g);
+    await page.locator("[data-testid=conn-group]").nth(i + 2).waitFor();
+  }
+  await page.getByTestId("conn-result").waitFor();
+  if (!(await page.getByTestId("conn-result").getByText("1/5", { exact: true }).count())) errors.push("the 5×5 result doesn't show one of five mistakes");
+  if (!(await page.getByTestId("conn-result").getByText("You found all five groups.").count())) errors.push("the 5×5 result doesn't say all five groups");
+  if ((await page.locator("[data-testid=conn-group]").count()) !== 5) errors.push("the 5×5 result doesn't show five groups");
+  await page.screenshot({ path: `${OUT}/conn-5x5-result.png`, fullPage: true });
+  // The size is remembered: Unlimited opens 5×5 after a reload.
+  await page.reload({ waitUntil: "networkidle" });
+  const again5 = page.waitForResponse((r) => /\/api\/connections\?practice=s5-/.test(r.url()));
+  await page.getByRole("radio", { name: "Unlimited" }).click();
+  await again5;
+  await page.getByRole("radio", { name: "5×5", checked: true }).waitFor();
+  // Back to 4×4 for the rest of the run.
+  const back4 = page.waitForResponse((r) => /\/api\/connections\?practice=(hard|easy|normal)-/.test(r.url()));
+  await page.getByTestId("conn-size-4").click();
+  await back4;
+
   // The board on /leaderboard, and PokéConnections on the trainer card.
   await page.goto(`${BASE}/leaderboard?board=connections&date=${today}`, { waitUntil: "networkidle" });
   await page.getByTestId("leaderboard-connections").getByText(rankedAs ?? boardName, { exact: true }).waitFor();
@@ -1036,6 +1091,59 @@ step("pokéconnections duel: create, join, race to the end");
   await red.waitForURL(/\/connections$/);
   await blue.getByText("Red left the duel.").waitFor();
   await blue.getByText("Victory!").waitFor();
+  for (const p of race) await p.context().close();
+}
+
+// A 5×5 PokéConnections race: the creator picks the size, the joiner sees it, the rematch keeps it.
+step("pokéconnections 5×5 duel: create, join, race, rematch");
+{
+  const race = [];
+  for (const name of ["Red", "Blue"]) race.push(await newPage({ width: 1280, height: 900 }));
+  const [red, blue] = race;
+  await red.goto(`${BASE}/connections`, { waitUntil: "networkidle" });
+  await closeHowTo(red);
+  await red.getByText("Head to head · PokéConnections").waitFor();
+  await red.getByTestId("conn-duel-size-5").click();
+  await red.locator("#duel").getByLabel("Your trainer name").fill("Red");
+  const created = red.waitForResponse((r) => r.url().endsWith("/api/duel") && r.request().method() === "POST");
+  await red.getByRole("button", { name: /Create duel/ }).click();
+  const made = await (await created).json();
+  if (made.view?.size !== 5) errors.push(`the 5×5 duel was created as size ${made.view?.size}`);
+  await red.waitForURL(/\/connections\/duel\/[a-z2-9]{8}$/);
+  const raceUrl = red.url();
+  await red.getByText("Waiting for a challenger").waitFor();
+  await blue.goto(raceUrl, { waitUntil: "networkidle" });
+  await blue.getByText("Red challenges you to a 5×5 board!").waitFor();
+  await blue.getByLabel("Your trainer name").fill("Blue");
+  await blue.getByRole("button", { name: /Join duel/ }).click();
+  await red.getByText("Blue").first().waitFor();
+  await Promise.all(race.map((p) => p.getByRole("button", { name: /^Ready$/ }).click()));
+  await Promise.all(race.map((p) => p.getByTestId("conn-tile").nth(24).waitFor({ timeout: 20_000 })));
+  for (const p of race) if ((await p.getByTestId("conn-tile").count()) !== 25) errors.push("a 5×5 duel board didn't show 25 tiles");
+  const ids25 = (await red.getByTestId("conn-tile").evaluateAll((els) => els.map((e) => Number(e.dataset.id)))).sort((a, b) => a - b);
+  const [groups5] = JSON.parse(execFileSync("npx", ["tsx", "scripts/connections-solve.ts", ...ids25.map(String)], { encoding: "utf8", cwd: new URL("..", import.meta.url).pathname }));
+  if (!groups5 || groups5.length !== 5) throw new Error(`no solution for the 5×5 duel's grid ${ids25}`);
+  const pick5 = async (p, five) => {
+    for (const id of five) await p.locator(`[data-testid=conn-tile][data-id="${id}"]`).click();
+    await p.getByTestId("conn-submit").click();
+  };
+  // Blue misses once (five mistakes allowed), Red solves it cleanly.
+  await pick5(blue, [...groups5[0].slice(0, 3), groups5[1][0], groups5[1][1]]);
+  await blue.getByLabel("4 of 5 mistakes left").waitFor();
+  for (const g of groups5) {
+    await pick5(red, g);
+    await red.waitForTimeout(400);
+  }
+  await Promise.all(race.map((p) => p.getByTestId("conn-duel-result").waitFor({ timeout: 15_000 })));
+  await red.getByText("Victory!").waitFor();
+  await blue.getByText("Red found all five groups first.").waitFor();
+  await red.getByRole("button", { name: /^Rematch$/ }).click();
+  await red.waitForURL((url) => url.href !== raceUrl && url.pathname.startsWith("/connections/duel/"));
+  await blue.getByRole("button", { name: /Accept rematch/ }).click();
+  await blue.waitForURL(red.url());
+  await Promise.all(race.map((p) => p.getByTestId("conn-tile").nth(24).waitFor({ timeout: 20_000 })));
+  if ((await red.getByTestId("conn-tile").count()) !== 25) errors.push("the 5×5 duel's rematch isn't 5×5");
+  await red.screenshot({ path: `${OUT}/conn-duel-5x5.png` });
   for (const p of race) await p.context().close();
 }
 

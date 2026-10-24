@@ -397,6 +397,6 @@ describe("the Featured creator badge and the hint on the share card", () => {
 
 describe("answer safety", () => {
   it("colours and levels are all the report and hint ever name", () => {
-    expect(CONN_LEVELS.map((l) => l.name)).toEqual(["Yellow", "Green", "Blue", "Purple"]);
+    expect(CONN_LEVELS.map((l) => l.name)).toEqual(["Yellow", "Green", "Blue", "Purple", "Red"]);
   });
 });

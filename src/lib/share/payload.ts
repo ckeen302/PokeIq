@@ -91,8 +91,8 @@ export interface BattleShareResult {
 }
 
 /**
- * A PokéConnections game: each guess as four digits, the group (0 yellow to
- * 3 purple) of each Pokémon picked. Colours only: never a Pokémon or a
+ * A PokéConnections game: each guess as four digits (five on a 5×5 board),
+ * the group (0 yellow to 3 purple, 4 red) of each Pokémon picked. Colours only: never a Pokémon or a
  * group's name, so a daily's link can't spoil it.
  */
 export interface ConnectionsShareResult {
@@ -100,7 +100,7 @@ export interface ConnectionsShareResult {
   daily?: number;
   archive?: boolean;
   solved: boolean;
-  /** One per guess, oldest first: four of "0123". */
+  /** One per guess, oldest first: four of "0123" (a 5×5 board: five of "01234"). */
   rows: string[];
   seconds?: number;
   streak?: number;
@@ -140,8 +140,8 @@ const DLE_MAX_COLUMNS = 7;
 export const SHARE_QUIZ_GRID = 60;
 
 const GAME_CODES: Record<ShareGame, string> = { pokedle: "dle", guessr: "geo", quiz: "quiz", battle: "bat", connections: "con", pikadoku: "pdk" };
-/** A PokéConnections game's most guesses: four groups and four mistakes, less the one that ends it. */
-const CONN_MAX_ROWS = 7;
+/** A PokéConnections game's most guesses: every group and every mistake, less the one that ends it (4×4: 7; 5×5: 9). */
+const connMaxRows = (size: number) => 2 * size - 1;
 const DLE_FORMAT_CODES: Record<DleFormat, string> = { classic: "c", squirdle: "s", custom: "x" };
 const DLE_HINT_CODES: Record<DleHint, string> = { genus: "g", silhouette: "s" };
 const OUTCOME_CODES = { win: "w", loss: "l", tie: "t" } as const;
@@ -209,7 +209,7 @@ export function encodeShare(result: ShareResult): string {
         ["k", result.streak || undefined],
         ["e", result.seconds],
         ["h", result.hinted ? 1 : undefined],
-        ["r", result.rows.slice(0, CONN_MAX_ROWS).join("-")]
+        ["r", result.rows.slice(0, connMaxRows(result.rows[0]?.length ?? 4)).join("-")]
       );
       break;
     case "pikadoku":
@@ -306,18 +306,20 @@ function decodePikadoku(f: Record<string, string>): PikadokuShareResult | null {
 }
 
 /** A row that's one whole group: a right guess. */
-const isGroupRow = (row: string) => /^([0-3])\1{3}$/.test(row);
+const isGroupRow = (row: string) => /^([0-4])\1{3,4}$/.test(row);
 
 function decodeConnections(f: Record<string, string>): ConnectionsShareResult | null {
   const solved = f.w === "1" ? true : f.w === "0" ? false : undefined;
   if (solved === undefined || !f.r) return null;
   const rows = f.r.split("-");
-  if (rows.length > CONN_MAX_ROWS || rows.some((r) => !/^[0-3]{4}$/.test(r))) return null;
+  // A board of n×n (4 or 5): every row n squares, from the first n groups' colours.
+  const size = rows[0].length;
+  if ((size !== 4 && size !== 5) || rows.length > connMaxRows(size) || rows.some((r) => r.length !== size || !new RegExp(`^[0-${size - 1}]{${size}}$`).test(r))) return null;
   const found = rows.filter(isGroupRow);
   const mistakes = rows.length - found.length;
-  // A real game: each group found once, at most four mistakes, and it ends on the guess that finished it.
-  if (new Set(found).size !== found.length || mistakes > 4) return null;
-  if (solved ? found.length !== 4 || !isGroupRow(rows[rows.length - 1]) : mistakes !== 4 || isGroupRow(rows[rows.length - 1])) return null;
+  // A real game: each group found once, at most n mistakes, and it ends on the guess that finished it.
+  if (new Set(found).size !== found.length || mistakes > size) return null;
+  if (solved ? found.length !== size || !isGroupRow(rows[rows.length - 1]) : mistakes !== size || isGroupRow(rows[rows.length - 1])) return null;
   const daily = num(f.n, 1, DAILY_MAX);
   const seconds = num(f.e, 1, 86_400);
   const streak = num(f.k, 1, 100_000);

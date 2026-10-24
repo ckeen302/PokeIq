@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { AnimatePresence, LayoutGroup, MotionConfig, motion } from "framer-motion";
 import { CheckCircle2, Crown, Loader2, RotateCcw, Shuffle, Swords, Timer, WifiOff, XCircle } from "lucide-react";
 import { CONN_DUEL_MS, CONN_DUEL_PENALTY_MS, pvpHref, type ConnDuelBoard, type ConnDuelView } from "@/lib/pvp-types";
-import { CONN_GROUP_SIZE, CONN_GROUPS, CONN_LEVELS, CONN_MAX_MISTAKES, guessKey, type ConnTile } from "@/lib/connections/types";
+import { CONN_LEVELS, guessKey, type ConnSize, type ConnTile } from "@/lib/connections/types";
 import { CONN_SQUARES } from "@/lib/share";
 import { useConnPrefs } from "@/lib/connections/local";
 import { recordConnDuel, type BadgeDef } from "@/lib/progress";
@@ -45,11 +45,15 @@ function timeText(b: ConnDuelBoard): string {
   return penalty ? `${clock(b.ms)} + ${clock(penalty)}` : clock(b.ms);
 }
 
+const sizeOf = (view: Pick<ConnDuelView, "size"> | undefined): ConnSize => (view?.size === 5 ? 5 : 4);
+const WORDS = { 4: "four", 5: "five" } as const;
+const SQUARES = { 4: "sixteen", 5: "twenty-five" } as const;
+
 /** "Solved in 1:53", "Out · 2/4 groups", "1/4 groups". */
-function boardStatus(b: ConnDuelBoard | undefined): string {
+function boardStatus(b: ConnDuelBoard | undefined, size: ConnSize): string {
   if (!b) return "";
   if (b.solved) return `Solved · ${clock(b.score ?? 0)}`;
-  return `${b.out ? "Out · " : ""}${b.found.length}/${CONN_GROUPS} groups`;
+  return `${b.out ? "Out · " : ""}${b.found.length}/${size} groups`;
 }
 
 export function ConnectionsDuel({ code }: { code: string }) {
@@ -79,6 +83,8 @@ export function ConnectionsDuel({ code }: { code: string }) {
 
   const me = view?.you ?? null;
   const mine = view?.mine;
+  /** 4×4, or the 5×5 board the creator picked. */
+  const size = sizeOf(view ?? undefined);
   const tilesKey = view?.tiles?.map((t) => t.id).join(",") ?? "";
 
   // The grid starts in the server's order; shuffling is yours alone.
@@ -114,7 +120,7 @@ export function ConnectionsDuel({ code }: { code: string }) {
         vibrate(60);
         setTileMotion({ kind: "shake", ids: last });
         if (kind === "one-away") showToast("One away…");
-        const left = CONN_MAX_MISTAKES - (view.boards[me]?.mistakes ?? 0);
+        const left = size - (view.boards[me]?.mistakes ?? 0);
         setAnnounce(`${kind === "one-away" ? "One away. " : "Not a group. "}${left} mistake${left === 1 ? "" : "s"} left.`);
         window.setTimeout(() => setTileMotion(null), 450);
       }
@@ -124,14 +130,14 @@ export function ConnectionsDuel({ code }: { code: string }) {
     if (theirs) {
       if (h.theirs >= 0 && theirs.found.length > h.theirs) {
         play("ping");
-        setAnnounce(`${view.players[1 - me]?.name ?? "Your opponent"} found a group (${theirs.found.length} of ${CONN_GROUPS}).`);
+        setAnnounce(`${view.players[1 - me]?.name ?? "Your opponent"} found a group (${theirs.found.length} of ${size}).`);
       }
       h.theirs = theirs.found.length;
       h.theirMistakes = theirs.mistakes;
     }
     if (view.end && !h.end && sawPlay) play(view.end.winner === me ? "fanfare" : view.end.winner === null ? "streak" : "wrong");
     h.end = !!view.end;
-  }, [view, me, mine, sawPlay, showToast]);
+  }, [view, me, mine, sawPlay, showToast, size]);
 
   const found = useMemo(() => new Set((mine?.found ?? []).flatMap((g) => g.members.map((m) => m.id))), [mine]);
   const tilesById = useMemo(() => new Map((view?.tiles ?? []).map((t) => [t.id, t])), [view?.tiles]);
@@ -143,7 +149,7 @@ export function ConnectionsDuel({ code }: { code: string }) {
 
   function toggle(id: number) {
     if (!canGuess || busy) return;
-    setSelected((s) => (s.includes(id) ? s.filter((x) => x !== id) : s.length < CONN_GROUP_SIZE ? [...s, id] : s));
+    setSelected((s) => (s.includes(id) ? s.filter((x) => x !== id) : s.length < size ? [...s, id] : s));
   }
 
   function shuffle() {
@@ -158,7 +164,7 @@ export function ConnectionsDuel({ code }: { code: string }) {
   }
 
   async function submit() {
-    if (!canGuess || busy || selected.length !== CONN_GROUP_SIZE) return;
+    if (!canGuess || busy || selected.length !== size) return;
     unlockAudio();
     if (mine?.guesses.some((g) => guessKey(g) === guessKey(selected))) {
       showToast("Already guessed!");
@@ -176,7 +182,7 @@ export function ConnectionsDuel({ code }: { code: string }) {
       tileRefs.current[Math.min(remaining.length - 1, Math.max(0, index + move))]?.focus();
     } else if (e.key === "Enter") {
       e.preventDefault();
-      if (selected.length === CONN_GROUP_SIZE) void submit();
+      if (selected.length === size) void submit();
       else toggle(remaining[index].id);
     }
   }
@@ -231,14 +237,14 @@ export function ConnectionsDuel({ code }: { code: string }) {
               PokéConnections <span className="text-primary">Race</span>
             </>
           }
-          invite={(host) => `${host} challenges you! The same sixteen Pokémon for both of you: the first to find all four groups wins.`}
-          about="The same sixteen Pokémon for both of you. Find the four groups of four before your opponent does."
-          shareText="Race me at PokéConnections! Same 16 Pokémon, first to find the 4 groups wins."
+          invite={(host) => `${host} challenges you${size === 5 ? " to a 5×5 board" : ""}! The same ${SQUARES[size]} Pokémon for both of you: the first to find all ${WORDS[size]} groups wins.`}
+          about={`The same ${SQUARES[size]} Pokémon for both of you${size === 5 ? " (a 5×5 board)" : ""}. Find the ${WORDS[size]} groups of ${WORDS[size]} before your opponent does.`}
+          shareText={`Race me at PokéConnections! Same ${size * size} Pokémon, first to find the ${size} groups wins.`}
           rules={[
-            { label: "The race", text: "The same sixteen Pokémon and four hidden groups for both of you. The first to find all four wins." },
+            { label: "The race", text: `The same ${SQUARES[size]} Pokémon and ${WORDS[size]} hidden groups for both of you${size === 5 ? " (a 5×5 board)" : ""}. The first to find all ${WORDS[size]} wins.` },
             {
               label: "Mistakes",
-              text: `Each mistake adds ${PENALTY_S} seconds to your time, so a quick but sloppy solve can still lose. ${CONN_MAX_MISTAKES} mistakes and you're out.`,
+              text: `Each mistake adds ${PENALTY_S} seconds to your time, so a quick but sloppy solve can still lose. ${size} mistakes and you're out.`,
             },
             {
               label: "Winning",
@@ -267,7 +273,7 @@ export function ConnectionsDuel({ code }: { code: string }) {
             ? winner === null || winner === undefined
               ? "It ended in a draw."
               : `${view.players[winner]?.name} won.`
-            : `Under way: ${view.players.map((p, k) => `${p.name} ${boardStatus(view.boards[k])}`).join(", ")}.`
+            : `Under way: ${view.players.map((p, k) => `${p.name} ${boardStatus(view.boards[k], size)}`).join(", ")}.`
         }
         home={HOME}
         label="Start your own race"
@@ -314,7 +320,9 @@ export function ConnectionsDuel({ code }: { code: string }) {
             <motion.p key={seconds(startsAt - now)} initial={{ scale: 1.4, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="font-display text-7xl font-bold tabular-nums">
               {Math.max(1, seconds(startsAt - now))}
             </motion.p>
-            <p className="text-sm text-muted-foreground">Sixteen Pokémon, four groups. Each mistake costs {PENALTY_S} seconds.</p>
+            <p className="text-sm text-muted-foreground">
+              {SQUARES[size][0].toUpperCase() + SQUARES[size].slice(1)} Pokémon, {WORDS[size]} groups. Each mistake costs {PENALTY_S} seconds.
+            </p>
           </CardContent>
         </Card>
         {tools}
@@ -350,10 +358,10 @@ export function ConnectionsDuel({ code }: { code: string }) {
           <LayoutGroup>
             <div className="space-y-2 sm:space-y-2.5">
               {(mine?.found ?? []).map((g) => (
-                <GroupBar key={g.level} group={g} symbols={symbols} />
+                <GroupBar key={g.level} group={g} symbols={symbols} compact={size === 5} />
               ))}
               {remaining.length > 0 && (
-                <div className="grid grid-cols-4 gap-2 sm:gap-2.5" data-testid="conn-grid" aria-label="Pokémon to group">
+                <div className={cn("grid gap-2 sm:gap-2.5", size === 5 ? "grid-cols-5" : "grid-cols-4")} data-testid="conn-grid" data-size={size} aria-label="Pokémon to group">
                   {remaining.map((t, i) => (
                     <GridTile
                       key={t.id}
@@ -368,6 +376,7 @@ export function ConnectionsDuel({ code }: { code: string }) {
                       order={tileMotion ? tileMotion.ids.indexOf(t.id) : 0}
                       onToggle={() => toggle(t.id)}
                       onKeyDown={(e) => onTileKey(e, i)}
+                      compact={size === 5}
                     />
                   ))}
                 </div>
@@ -382,11 +391,11 @@ export function ConnectionsDuel({ code }: { code: string }) {
         {done ? (
           <Card className={cn(myBoard?.solved ? "border-success/50" : "border-destructive/40")} data-testid="conn-duel-waiting">
             <CardContent className="space-y-1 p-5 text-center">
-              <p className="font-display text-2xl font-bold uppercase">{myBoard?.solved ? "All four found!" : "Out of mistakes"}</p>
+              <p className="font-display text-2xl font-bold uppercase">{myBoard?.solved ? `All ${WORDS[size]} found!` : "Out of mistakes"}</p>
               <p className="text-sm text-muted-foreground">
                 {myBoard?.solved
                   ? `Your time: ${timeText(myBoard)}${myBoard.mistakes ? ` = ${clock(myBoard.score ?? 0)}` : ""}.`
-                  : `You found ${myBoard?.found.length ?? 0} of ${CONN_GROUPS} groups.`}{" "}
+                  : `You found ${myBoard?.found.length ?? 0} of ${size} groups.`}{" "}
                 <span className="inline-flex items-center gap-1.5">
                   <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden /> Waiting for {them}…
                 </span>
@@ -395,7 +404,7 @@ export function ConnectionsDuel({ code }: { code: string }) {
           </Card>
         ) : (
           <div className="space-y-4">
-            <MistakeDots left={CONN_MAX_MISTAKES - (myBoard?.mistakes ?? 0)} max={CONN_MAX_MISTAKES} />
+            <MistakeDots left={size - (myBoard?.mistakes ?? 0)} max={size} />
             <div className="flex flex-wrap items-center justify-center gap-2.5">
               <Button variant="outline" onClick={shuffle} className="rounded-full sm:min-w-28">
                 <Shuffle className="h-4 w-4" aria-hidden /> Shuffle
@@ -403,7 +412,7 @@ export function ConnectionsDuel({ code }: { code: string }) {
               <Button variant="outline" onClick={() => (setSelected([]), setError(null))} disabled={selected.length === 0} className="rounded-full sm:min-w-28">
                 Deselect all
               </Button>
-              <Button onClick={() => void submit()} disabled={busy || selected.length !== CONN_GROUP_SIZE} className="rounded-full sm:min-w-28" data-testid="conn-submit">
+              <Button onClick={() => void submit()} disabled={busy || selected.length !== size} className="rounded-full sm:min-w-28" data-testid="conn-submit">
                 Submit
               </Button>
             </div>
@@ -447,7 +456,8 @@ function RaceHud({ view, now, symbols }: { view: ConnDuelView; now: number; symb
 function Racer({ view, seat, symbols, right }: { view: ConnDuelView; seat: number; symbols: boolean; right?: boolean }) {
   const player = view.players[seat];
   const board = view.boards[seat];
-  const label = `${player?.name ?? "—"}: ${board ? `${board.found.length} of ${CONN_GROUPS} groups found${board.found.length ? ` (${board.found.map((l) => CONN_LEVELS[l].name).join(", ")})` : ""}, ${board.mistakes} of ${CONN_MAX_MISTAKES} mistakes${board.solved ? ", solved" : board.out ? ", out" : ""}` : "ready"}`;
+  const size = sizeOf(view);
+  const label = `${player?.name ?? "—"}: ${board ? `${board.found.length} of ${size} groups found${board.found.length ? ` (${board.found.map((l) => CONN_LEVELS[l].name).join(", ")})` : ""}, ${board.mistakes} of ${size} mistakes${board.solved ? ", solved" : board.out ? ", out" : ""}` : "ready"}`;
   return (
     <div className={cn("min-w-0 space-y-1", right && "text-right")} aria-label={label} data-testid={`conn-racer-${seat}`}>
       <div className={cn("flex items-center gap-1.5", right && "flex-row-reverse")}>
@@ -458,7 +468,7 @@ function Racer({ view, seat, symbols, right }: { view: ConnDuelView; seat: numbe
         {player?.quiet && view.status === "playing" && <WifiOff className="h-3.5 w-3.5 shrink-0 text-warning" aria-label="Connection lost" />}
       </div>
       <div className={cn("flex items-center gap-1", right && "flex-row-reverse")} aria-hidden>
-        {Array.from({ length: CONN_GROUPS }, (_, i) => {
+        {Array.from({ length: size }, (_, i) => {
           const level = board?.found[i];
           return level === undefined ? (
             <span key={i} className="h-5 w-5 rounded-[4px] border border-dashed border-foreground/25 sm:h-6 sm:w-6" />
@@ -477,7 +487,7 @@ function Racer({ view, seat, symbols, right }: { view: ConnDuelView; seat: numbe
       </div>
       <div className={cn("flex items-center gap-1.5 text-xs text-muted-foreground", right && "flex-row-reverse")}>
         <span className="flex gap-0.5" aria-hidden>
-          {Array.from({ length: CONN_MAX_MISTAKES }, (_, i) => (
+          {Array.from({ length: size }, (_, i) => (
             <span key={i} className={cn("h-2 w-2 rounded-full", i < (board?.mistakes ?? 0) ? "bg-destructive" : "bg-foreground/20")} />
           ))}
         </span>
@@ -501,7 +511,7 @@ function reasonText(view: ConnDuelView, me: number): string {
   const [w, l] = won ? [mine, theirs] : [theirs, mine];
   const who = won ? "You" : them;
   if (w.solved && l.solved) return `${who} solved it in ${clock(w.score ?? 0)} to ${clock(l.score ?? 0)}, penalties included.`;
-  if (w.solved) return `${who} found all four groups first${l.out ? `; ${won ? them : "you"} ran out of mistakes` : ""}.`;
+  if (w.solved) return `${who} found all ${WORDS[sizeOf(view)]} groups first${l.out ? `; ${won ? them : "you"} ran out of mistakes` : ""}.`;
   if (w.found.length !== l.found.length) return `Nobody solved it: ${who} found more groups, ${w.found.length} to ${l.found.length}.`;
   return `Nobody solved it, and ${who.toLowerCase() === "you" ? "you" : who} made fewer mistakes.`;
 }
@@ -519,7 +529,7 @@ function DuelSummary({ view, busy, symbols, onRematch }: { view: ConnDuelView; b
     const board = view.boards[me];
     const headline = draw ? `drew with ${them}` : won ? `beat ${them}` : `lost to ${them}`;
     return [
-      `PokéIQ PokéConnections duel: I ${headline}! ${board?.solved ? `⏱${clock(board.score ?? 0)}` : `${board?.found.length ?? 0}/${CONN_GROUPS}`}`,
+      `PokéIQ PokéConnections duel: I ${headline}! ${board?.solved ? `⏱${clock(board.score ?? 0)}` : `${board?.found.length ?? 0}/${sizeOf(view)}`}`,
       ...rows.map((r) => r.map((l) => CONN_SQUARES[l]).join("")),
       `${window.location.origin}${HOME}`,
     ].join("\n");
@@ -553,7 +563,7 @@ function DuelSummary({ view, busy, symbols, onRematch }: { view: ConnDuelView; b
                   </p>
                   <p className={cn("flex items-center justify-center gap-1.5 font-display text-2xl font-bold tabular-nums", b?.solved ? "text-success" : "text-muted-foreground")}>
                     {b?.solved ? <CheckCircle2 className="h-5 w-5" aria-hidden /> : <XCircle className="h-5 w-5" aria-hidden />}
-                    {b?.solved ? clock(b.score ?? 0) : `${b?.found.length ?? 0}/${CONN_GROUPS}`}
+                    {b?.solved ? clock(b.score ?? 0) : `${b?.found.length ?? 0}/${sizeOf(view)}`}
                   </p>
                   <p className="text-xs text-muted-foreground">
                     {b?.solved ? (b.mistakes ? `Time ${timeText(b)} penalty (${b.mistakes} × ${PENALTY_S}s)` : `Clean solve in ${timeText(b)}`) : b?.out ? "Out of mistakes" : "Didn't finish"} ·{" "}
@@ -580,7 +590,7 @@ function DuelSummary({ view, busy, symbols, onRematch }: { view: ConnDuelView; b
               <Swords className="h-4 w-4" aria-hidden /> PokéConnections
             </Link>
           </div>
-          <p className="text-center text-xs text-muted-foreground">A rematch keeps the trainers, with sixteen new Pokémon. It starts when you both press it.</p>
+          <p className="text-center text-xs text-muted-foreground">A rematch keeps the trainers, with {SQUARES[sizeOf(view)]} new Pokémon{view.size === 5 ? " (still 5×5)" : ""}. It starts when you both press it.</p>
         </CardContent>
       </Card>
     </div>

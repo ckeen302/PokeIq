@@ -19,7 +19,7 @@ import type { PvpSeatResponse } from "@/lib/pvp-types";
  * token and the lobby:
  *   { kind: "pokedle", name, assist?, settings? }    a Pokédle duel, at /pokedle/duel/<code> (assist: the Pokédex level; settings: the format and settings; both changeable in the lobby)
  *   { kind: "quiz", name, module, difficulty }       a quiz duel, at /quiz/duel/<code>
- *   { kind: "connections", name }                    a PokéConnections race, at /connections/duel/<code>
+ *   { kind: "connections", name, size? }             a PokéConnections race (size 4 or 5: a 5×5 board), at /connections/duel/<code>
  *   { kind: "pikadoku", name, turnSecs?, families? } a Pikadoku Tic Tac Toe duel, at /pikadoku/duel/<code>
  */
 
@@ -31,7 +31,7 @@ const bodySchema = z.discriminatedUnion("kind", [
     module: z.enum(MODULES).refine((m) => PLAY_MODULES.includes(m), "Unknown quiz mode."),
     difficulty: z.enum(DIFFICULTIES).default("medium"),
   }),
-  z.object({ kind: z.literal("connections"), name: duelNameSchema }),
+  z.object({ kind: z.literal("connections"), name: duelNameSchema, size: z.union([z.literal(4), z.literal(5)]).optional() }),
   z.object({ kind: z.literal("pikadoku"), name: duelNameSchema, turnSecs: z.number().int().min(10).max(90).optional(), families: z.array(z.string().max(12)).max(6).optional(), steals: z.boolean().optional() }),
 ]);
 
@@ -59,7 +59,7 @@ export async function POST(request: NextRequest) {
             ? createQuizDuel(body.module, body.difficulty, body.name, code, now)
             : body.kind === "pikadoku"
               ? createPikadokuDuel(body.name, code, now, { turnSecs: body.turnSecs, families: body.families, steals: body.steals })
-              : createConnectionsDuel(body.name, code, now);
+              : createConnectionsDuel(body.name, code, now, undefined, { size: body.size });
       if (!(await pvpStore.insert(duel))) continue; // code taken: roll another
       const seat: PvpSeatResponse = { code, token: pvpToken(code, playerId), view: duelView(duel, playerId, now, 0) };
       return NextResponse.json(seat, { headers: { "Cache-Control": "no-store" } });

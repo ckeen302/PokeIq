@@ -3,7 +3,7 @@ import { DLE_ASSIST_INFO } from "@/lib/dle-assist";
 import { MODULE_INFO } from "@/lib/modes";
 import { GEO_MAX_ROUND_SCORE, GEO_ROUNDS, WORLD_REGION } from "@/lib/geo-types";
 import { PLAY_FORMAT_INFO } from "@/lib/battle/play";
-import { battleOpponent, clock, connMistakes, connectionsScore, connectionsTitle, guessrTitle, pikadokuSolved, pikadokuTitle, quizTitle } from "./text";
+import { battleOpponent, clock, connMistakes, connSizeOf, connectionsScore, connectionsTitle, guessrTitle, pikadokuSolved, pikadokuTitle, quizTitle } from "./text";
 import type { ShareResult } from "./payload";
 
 /**
@@ -18,8 +18,8 @@ export type ShareTile = "hit" | "near" | "far" | "miss" | "wrong" | "up" | "down
 export type PdkShareTile = "pdk-purple" | "pdk-blue" | "pdk-green" | "pdk-yellow" | "pdk-empty";
 const PDK_TILE: Record<string, PdkShareTile> = { p: "pdk-purple", b: "pdk-blue", g: "pdk-green", y: "pdk-yellow", x: "pdk-empty" };
 /** PokéConnections' group colours, easiest to hardest. */
-export type ConnShareTile = "conn-yellow" | "conn-green" | "conn-blue" | "conn-purple";
-export const CONN_SHARE_TILES: readonly ConnShareTile[] = ["conn-yellow", "conn-green", "conn-blue", "conn-purple"];
+export type ConnShareTile = "conn-yellow" | "conn-green" | "conn-blue" | "conn-purple" | "conn-red";
+export const CONN_SHARE_TILES: readonly ConnShareTile[] = ["conn-yellow", "conn-green", "conn-blue", "conn-purple", "conn-red"];
 
 export type ShareAccent = "violet" | "green" | "yellow" | "pink" | "cyan";
 
@@ -149,13 +149,15 @@ export function describeShare(r: ShareResult): ShareView {
     }
     case "connections": {
       const label = connectionsTitle(r);
-      const found = r.rows.filter((row) => /^([0-3])\1{3}$/.test(row)).length;
+      const size = connSizeOf(r.rows);
+      const word = size === 5 ? "five" : "four";
+      const found = r.rows.filter((row) => /^([0-4])\1{3,4}$/.test(row)).length;
       const mistakes = connMistakes(r.rows);
       const time = r.seconds !== undefined ? ` in ${clock(r.seconds)}` : "";
       const detail = r.solved
-        ? `Found all four groups with ${mistakes === 0 ? "no mistakes" : `${mistakes} mistake${mistakes === 1 ? "" : "s"}`}${time}`
-        : `Found ${found} of 4 groups before running out of mistakes`;
-      const headline = r.solved ? (mistakes === 0 ? "Perfect" : "Solved") : `${found}/4`;
+        ? `Found all ${word} groups with ${mistakes === 0 ? "no mistakes" : `${mistakes} mistake${mistakes === 1 ? "" : "s"}`}${time}`
+        : `Found ${found} of ${size} groups before running out of mistakes`;
+      const headline = r.solved ? (mistakes === 0 ? "Perfect" : "Solved") : `${found}/${size}`;
       return {
         game: "PokéConnections",
         label,
@@ -167,7 +169,7 @@ export function describeShare(r: ShareResult): ShareView {
         playHref: "/connections",
         playLabel: r.daily !== undefined ? "Play today's PokéConnections" : "Play PokéConnections",
         title: `${label}: ${connectionsScore(r)}`,
-        description: "Sixteen Pokémon, four hidden groups. Find what links them in a new puzzle every day on PokéIQ. Can you do better?",
+        description: `${size === 5 ? "Twenty-five Pokémon, five" : "Sixteen Pokémon, four"} hidden groups. Find what links them in a new puzzle every day on PokéIQ. Can you do better?`,
       };
     }
     case "pikadoku": {

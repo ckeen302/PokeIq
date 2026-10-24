@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { isPlayableConnDate, CONN_GROUP_SIZE, CONN_GROUPS, CONN_MAX_MISTAKES } from "@/lib/connections/types";
+import { PRACTICE_SEED_RE } from "@/lib/connections/pack-seed";
 import { clientIp, rateLimit, tooManyRequests } from "@/lib/server/rate-limit";
 import { checkGuesses, practiceConnPuzzle, puzzleView } from "@/lib/server/connections";
 import { effectiveDaily } from "@/lib/server/connections-social";
@@ -13,8 +14,8 @@ import { CUSTOM_SEED_RE } from "@/lib/connections/custom";
  * PokéConnections.
  *
  * GET /api/connections?date=YYYY-MM-DD | ?practice=<seed>
- *   The puzzle's sixteen tiles in their starting order (ConnPuzzleResponse),
- *   never its groups.
+ *   The puzzle's sixteen tiles (25 on a 5×5 Unlimited board, "s5-" in the
+ *   seed) in their starting order (ConnPuzzleResponse), never its groups.
  *
  * POST /api/connections { date | practice, guesses: number[][] }
  *   Every guess so far (four Pokémon ids each), played again in order
@@ -28,7 +29,7 @@ import { CUSTOM_SEED_RE } from "@/lib/connections/custom";
 
 const NO_STORE = { "Cache-Control": "no-store" };
 /** A practice seed, with Unlimited's difficulty in front when it isn't normal: "hard-x7k2abcd". */
-const SEED = z.string().regex(/^(?:(?:kanto|gen9|competitive)-)?(?:(?:easy|normal|hard)-)?[a-z0-9]{4,24}$/);
+const SEED = z.string().regex(PRACTICE_SEED_RE);
 
 /** The puzzle a request names, or an error. */
 async function puzzleFor(date: string | null | undefined, practice: string | null | undefined) {
@@ -62,8 +63,9 @@ const bodySchema = z.object({
   practice: z.string().max(32).optional(),
   // At most every group plus every mistake, and a few repeats.
   guesses: z
-    .array(z.array(z.number().int().positive().max(TILE_ID_MAX)).length(CONN_GROUP_SIZE))
-    .max(CONN_GROUPS + CONN_MAX_MISTAKES + 4),
+    // Four tiles to a guess (five on a 5×5 board: the puzzle says which, and playGuesses checks).
+    .array(z.array(z.number().int().positive().max(TILE_ID_MAX)).min(CONN_GROUP_SIZE).max(CONN_GROUP_SIZE + 1))
+    .max(CONN_GROUPS + 1 + CONN_MAX_MISTAKES + 1 + 4),
 });
 
 export async function POST(request: NextRequest) {

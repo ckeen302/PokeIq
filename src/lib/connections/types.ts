@@ -9,6 +9,13 @@ export const CONN_MAX_MISTAKES = 4;
 export const CONN_GROUPS = 4;
 export const CONN_GROUP_SIZE = 4;
 
+/** Board sizes: 4×4 (the default, and the only daily) or 5×5 (Unlimited and duels). */
+export const CONN_SIZES = [4, 5] as const;
+export type ConnSize = (typeof CONN_SIZES)[number];
+export const isConnSize = (n: unknown): n is ConnSize => n === 4 || n === 5;
+/** A board of n×n has n groups of n, and n mistakes are allowed: the last one ends the game. */
+export const connMaxMistakes = (size: ConnSize) => size;
+
 /** The first daily: #1. */
 export const CONN_LAUNCH_DATE = "2026-10-22";
 const DAY_MS = 86_400_000;
@@ -48,9 +55,16 @@ export const CONN_LEVELS = [
   { name: "Green", emoji: "🟩", symbol: "▲", hex: "#96c860", hint: "" },
   { name: "Blue", emoji: "🟦", symbol: "■", hex: "#8fb2ef", hint: "" },
   { name: "Purple", emoji: "🟪", symbol: "◆", hex: "#bd8ad8", hint: "Tricky" },
+  /** Only a 5×5 board has a fifth group. */
+  { name: "Red", emoji: "🟥", symbol: "★", hex: "#e8776c", hint: "Trickiest" },
 ] as const;
 
-export type ConnLevel = 0 | 1 | 2 | 3;
+/** The four levels of a 4×4 board (the daily, the Create page). */
+export const CONN_LEVELS_4 = CONN_LEVELS.slice(0, CONN_GROUPS);
+
+export type ConnLevel = 0 | 1 | 2 | 3 | 4;
+/** Levels 0 to size-1, easiest first. */
+export const connLevels = (size: ConnSize) => Array.from({ length: size }, (_, i) => i as ConnLevel);
 
 /**
  * A tile: a Pokémon's id and name (the sprite comes from /api/art), or a
@@ -71,6 +85,8 @@ export interface ConnPuzzleResponse {
   /** The daily's number (none for practice). */
   number?: number;
   tiles: ConnTile[];
+  /** 5 for a 5×5 Unlimited board; absent: 4×4. */
+  size?: ConnSize;
   /** A daily only: the server's signed note of when it dealt the tiles, which times the game for the leaderboard. */
   start?: string;
 }
