@@ -1852,6 +1852,61 @@ if (me.enabled) {
   for (const p of [fa, fb]) await p.context().close();
 }
 
+// Profile "About me": fill 3 Pokémon + 2 game slots, see them on the public profile, fetch the share image.
+if (me.enabled) {
+  step("about me: edit, save, public profile, share image");
+  const SCRATCH = "/tmp/claude-0/-home-user-PokeIq/ae145c40-09f4-5dce-9dff-1efa4a6ff4bb/scratchpad";
+  const aboutName = `ab${Date.now().toString(36).slice(-7)}`;
+  const ap = await newPage({ width: 1280, height: 1100 });
+  await ap.goto(BASE, { waitUntil: "networkidle" });
+  const reg = await ap.request.post(`${BASE}/api/auth/register`, { data: { username: aboutName, password: "correct horse battery" }, headers: { Origin: BASE } });
+  if (!reg.ok()) throw new Error(`register ${aboutName}: ${reg.status()}`);
+  await ap.goto(`${BASE}/u/${aboutName}`, { waitUntil: "networkidle" });
+  const aboutAvail = (await (await ap.request.get(`${BASE}/api/profile/about`)).json()).available;
+  if (!aboutAvail) console.log("  about me is off on this server: skipped");
+  else {
+    await ap.getByTestId("about-edit").click();
+    const pickMon = async (slot, id) => {
+      await ap.getByTestId(`about-slot-${slot}`).click();
+      await ap.getByTestId("about-search").fill(String(id));
+      await ap.getByTestId(`about-mon-${id}`).click();
+    };
+    await pickMon("favorite", 25);
+    await pickMon("best-mega", 10034);
+    await pickMon("best-eeveelution", 134);
+    await ap.getByTestId("about-game-favorite-game").selectOption("emerald");
+    await ap.getByTestId("about-game-best-region").selectOption("kanto");
+    await ap.getByTestId("about-save").click();
+    await ap.getByTestId("about-pokemon-best-mega").waitFor({ timeout: 15_000 });
+    // A bad pick is refused by the server.
+    const bad = await ap.request.put(`${BASE}/api/profile/about`, { data: { pokemon: { "best-mega": { id: 25, shiny: false } } }, headers: { Origin: BASE } });
+    if (bad.status() !== 400) errors.push(`about me: an invalid Mega pick got ${bad.status()}, not 400`);
+
+    // A visitor (signed out) sees the same, with no edit button.
+    const visitor = await newPage({ width: 1280, height: 1100 });
+    await visitor.goto(`${BASE}/u/${aboutName}`, { waitUntil: "networkidle" });
+    for (const t of ["about-pokemon-favorite", "about-pokemon-best-mega", "about-pokemon-best-eeveelution", "about-game-view-favorite-game", "about-game-view-best-region"]) await visitor.getByTestId(t).waitFor();
+    if (await visitor.getByTestId("about-pokemon-pet").count()) errors.push("about me: an empty slot shows to viewers");
+    if (await visitor.getByTestId("about-edit").count()) errors.push("about me: a visitor sees the edit button");
+    await visitor.getByTestId("profile-about").screenshot({ path: `${SCRATCH}/about-me.png` });
+    const img = await visitor.request.get(`${BASE}/u/${aboutName}/about-grid`);
+    if (img.status() !== 200 || !(img.headers()["content-type"] ?? "").includes("image/png")) errors.push(`about me: share image ${img.status()} ${img.headers()["content-type"]}`);
+    else await (await import("node:fs/promises")).writeFile(`${SCRATCH}/about-me-share.png`, await img.body());
+    // Every slot filled: the tall share grid.
+    const full = {
+      pokemon: { favorite: { id: 25 }, "second-favorite": { id: 6 }, "least-favorite": { id: 129 }, underrated: { id: 213 }, overrated: { id: 150 }, "best-starter": { id: 390 }, "best-dynamax": { id: 10196 }, "best-mega": { id: 10034 }, "best-regional": { id: 10103 }, "best-eeveelution": { id: 196 }, pet: { id: 143 }, "best-shiny": { id: 6 }, "idk-why": { id: 39, shiny: true }, "personal-story": { id: 94 }, nostalgic: { id: 150, shiny: true } },
+      games: { "favorite-game": "emerald", "least-favorite-game": "sword", "first-game": "red", "nostalgic-game": "heartgold", "best-region": "kanto", "best-soundtrack": "black-2", "underrated-game": "platinum", "gym-leader": "cynthia", rival: "silver", professor: "professor-oak", "villain-team": "team-galactic" },
+    };
+    const fullRes = await ap.request.put(`${BASE}/api/profile/about`, { data: full, headers: { Origin: BASE } });
+    if (!fullRes.ok()) errors.push(`about me: full save ${fullRes.status()}`);
+    const grid = await ap.request.get(`${BASE}/u/${aboutName}/about-grid`);
+    if (grid.status() !== 200 || !(grid.headers()["content-type"] ?? "").includes("image/png")) errors.push(`about me: full grid ${grid.status()}`);
+    else await (await import("node:fs/promises")).writeFile(`${SCRATCH}/about-me-share-full.png`, await grid.body());
+    await visitor.context().close();
+  }
+  await ap.context().close();
+}
+
 // Tournaments, chat rooms, moderation and feedback: four signed-in trainers.
 // Set E2E_ADMIN to a fresh trainer name that's also in the server's
 // POKEIQ_ADMINS to run the moderation steps (it's registered here).
