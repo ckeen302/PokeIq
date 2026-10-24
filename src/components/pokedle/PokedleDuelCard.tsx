@@ -1,7 +1,6 @@
 "use client";
 
 import { useMemo } from "react";
-import { DLE_DEFAULT_ASSIST } from "@/lib/dle-assist";
 import { DLE_DEFAULT_SETTINGS, DLE_FORMAT_LABEL } from "@/lib/dle-format";
 import { getDlePrefs, setDlePrefs, useDlePrefs } from "@/lib/dle-local";
 import { DLE_DUEL_ROUNDS, DLE_DUEL_ROUND_MS, pvpHref } from "@/lib/pvp-types";
@@ -19,7 +18,7 @@ import { cn } from "@/lib/utils";
  */
 export function PokedleDuelCard() {
   const prefs = useDlePrefs();
-  const assist = prefs?.assist ?? DLE_DEFAULT_ASSIST;
+  const assist = prefs?.assist ?? "off";
   const settings = prefs?.settings ?? DLE_DEFAULT_SETTINGS;
   const format = settings.format === "squirdle" ? "squirdle" : "classic";
   const match = useMemo(() => ({ game: "pokedle", assist, format }), [assist, format]);

@@ -36,7 +36,7 @@ import { DexPanel, type DexPick } from "./DexPanel";
 import { AssistPicker } from "./AssistPicker";
 import { RulesChip, SettingsPanel } from "./SettingsPanel";
 import { dexClues } from "@/lib/dle-dex";
-import { DLE_ASSIST_INFO, DLE_DEFAULT_ASSIST, dleAssistOf, multiplierText, type DleAssist } from "@/lib/dle-assist";
+import { DLE_ASSIST_INFO, dleAssistOf, multiplierText, type DleAssist } from "@/lib/dle-assist";
 import { ArchiveSheet, HowToSheet, StatsSheet } from "./sheets";
 import { cn } from "@/lib/utils";
 
@@ -97,7 +97,7 @@ export function Pokedle({
   const [hints, setHints] = useState<DleHint[]>([]);
   const [hard, setHard] = useState(false);
   /** The Pokédex assist level: picked before the first guess, fixed after. */
-  const [assist, setAssist] = useState<DleAssist>(DLE_DEFAULT_ASSIST);
+  const [assist, setAssist] = useState<DleAssist>("off");
   const [state, setState] = useState<DleResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -394,7 +394,7 @@ export function Pokedle({
   const bonus = bonusText(rules);
   const timeUp = Boolean(timerMs) && clockStart !== null && clockLeft <= 0;
   /** The one setting worth flagging beside the gear: hard mode first, else a Pokédex level other than the default. */
-  const settingsBadge = hard ? "Hard" : assist !== DLE_DEFAULT_ASSIST ? DLE_ASSIST_INFO[assist].label : null;
+  const settingsBadge = hard ? "Hard" : assist !== "off" ? DLE_ASSIST_INFO[assist].label : null;
 
   return (
     // The game, and beside it (below on smaller screens) the reference Pokédex.
