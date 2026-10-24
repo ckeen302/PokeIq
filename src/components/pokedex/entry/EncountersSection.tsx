@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { ChevronDown } from "lucide-react";
-import { VERSION_BY_KEY, type EncGen, type EncRow } from "@/lib/pokemon/encounter-types";
+import { VERSION_BY_KEY, genColumns, genSummary, type EncGen, type EncRow } from "@/lib/pokemon/encounter-types";
 import { cn } from "@/lib/utils";
 
 const ROMAN = ["", "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X"];
@@ -28,8 +28,6 @@ export function EncountersSection({ gens, name }: { gens: EncGen[]; name: string
     <div className="space-y-3 hud rounded-lg border bg-card p-4">
       {gens.map((gen) => {
         const isOpen = open.has(gen.g);
-        const places = gen.rows.filter((r) => r.loc).length;
-        const absent = gen.rows.every((r) => r.x === "Not in this game");
         return (
           <div key={gen.g} className="overflow-hidden rounded-md border border-foreground/10">
             <button
@@ -41,7 +39,7 @@ export function EncountersSection({ gens, name }: { gens: EncGen[]; name: string
             >
               <span className="font-pixel text-[10px] uppercase tracking-wider text-primary">Gen {ROMAN[gen.g]}</span>
               <span className="min-w-0 flex-1 truncate text-xs text-muted-foreground">
-                {places ? `${places} ${places === 1 ? "way" : "ways"} to find ${name}` : absent ? `${name} isn't in these games` : `${name} isn't found in the wild`}
+                {genSummary(gen, name)}
               </span>
               <ChevronDown className={cn("h-4 w-4 shrink-0 text-muted-foreground transition-transform", isOpen && "rotate-180")} aria-hidden />
             </button>
@@ -54,14 +52,16 @@ export function EncountersSection({ gens, name }: { gens: EncGen[]; name: string
         );
       })}
       <p className="text-[11px] text-muted-foreground">
-        Gens 1–7 from PokéAPI, Let&apos;s Go and Gens 8–9 from Serebii. Rates are the chance per encounter in that spot; Gen 8–9 raids and overview-only spots list no levels or rates. Tap a place to find it on the atlas.
+        Gens 1–7 from PokéAPI checked against Serebii (places PokéAPI lacks come from Serebii), Let&apos;s Go and Gens 8–9 from Serebii. Rates are the chance per encounter in that spot; Gen 8–9 raids and overview-only spots list no levels or rates. Tap a place to find it on the atlas.
       </p>
     </div>
   );
 }
 
 function GenTable({ rows }: { rows: EncRow[] }) {
-  const timed = rows.some((r) => r.t);
+  // Columns no row in this generation fills are left out entirely.
+  const { levels: showLv, rate: showRate, timed } = genColumns(rows);
+  const dataCols = 2 + (showLv ? 1 : 0) + (showRate ? (timed ? 3 : 1) : 0);
   return (
     <table className="w-full min-w-[34rem] text-sm">
       <thead>
@@ -75,12 +75,16 @@ function GenTable({ rows }: { rows: EncRow[] }) {
           <th className="p-2" rowSpan={timed ? 2 : 1}>
             Method
           </th>
-          <th className="p-2" rowSpan={timed ? 2 : 1}>
-            Levels
-          </th>
-          <th className={cn("p-2", timed ? "text-center" : "text-right")} colSpan={timed ? 3 : 1}>
-            Rate
-          </th>
+          {showLv && (
+            <th className="p-2" rowSpan={timed ? 2 : 1}>
+              Levels
+            </th>
+          )}
+          {showRate && (
+            <th className={cn("p-2", timed ? "text-center" : "text-right")} colSpan={timed ? 3 : 1}>
+              Rate
+            </th>
+          )}
         </tr>
         {timed && (
           <tr className="border-b text-[10px] uppercase tracking-wider text-muted-foreground">
@@ -99,7 +103,7 @@ function GenTable({ rows }: { rows: EncRow[] }) {
               <Badges versions={r.v} />
             </td>
             {r.x ? (
-              <td colSpan={timed ? 6 : 4} className="p-2 text-xs italic text-muted-foreground">
+              <td colSpan={dataCols} className="p-2 text-xs italic text-muted-foreground">
                 {r.x}
               </td>
             ) : (
@@ -115,8 +119,8 @@ function GenTable({ rows }: { rows: EncRow[] }) {
                   {r.n && <div className="text-[11px] font-normal text-muted-foreground">{r.n}</div>}
                 </td>
                 <td className="p-2">{r.m}</td>
-                <td className="p-2 font-mono text-xs tabular-nums">{r.lv ?? "—"}</td>
-                {r.t ? (
+                {showLv && <td className="p-2 font-mono text-xs tabular-nums">{r.lv ?? "—"}</td>}
+                {!showRate ? null : r.t ? (
                   r.t.map((v, k) => (
                     <td key={k} className="p-2 text-right font-mono text-xs tabular-nums">
                       {v}

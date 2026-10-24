@@ -88,3 +88,18 @@ export const VERSIONS: VersionInfo[] = [
 
 export const VERSION_BY_KEY: Record<string, VersionInfo> = Object.fromEntries(VERSIONS.map((v) => [v.key, v]));
 export const versionOrder = (key: string) => VERSIONS.findIndex((v) => v.key === key);
+
+const NEGATIVE = /^Not (in this game|found in the wild)$/;
+
+/** Collapsed-header summary of a generation; the count is always the number of table rows. */
+export function genSummary(gen: EncGen, name: string): string {
+  const n = gen.rows.length;
+  if (gen.rows.some((r) => r.loc || (r.x && !NEGATIVE.test(r.x)))) return `${n} ${n === 1 ? "entry" : "entries"} for ${name}`;
+  return gen.rows.every((r) => r.x === "Not in this game") ? `${name} isn't in these games` : `${name} isn't found in the wild`;
+}
+
+/** Which data columns a generation's table needs: a column no row fills is left out. */
+export function genColumns(rows: EncRow[]): { levels: boolean; rate: boolean; timed: boolean } {
+  const timed = rows.some((r) => r.t);
+  return { levels: rows.some((r) => !!r.lv), rate: timed || rows.some((r) => !!r.r), timed };
+}

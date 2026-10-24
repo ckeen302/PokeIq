@@ -198,6 +198,68 @@ export function rowsFromPokeApi(
   return out;
 }
 
+/* ------------------------------------------------------- plain notes -- */
+
+const DLC_NAMES: Record<string, string> = {
+  "Isle of Armor": "The Isle of Armor",
+  "Crown Tundra": "The Crown Tundra",
+  "Expansion Pass": "the Expansion Pass",
+  "The Teal Mask": "The Teal Mask",
+  "The Indigo Disk": "The Indigo Disk",
+  "The Hidden Treasure of Area Zero": "The Hidden Treasure of Area Zero",
+};
+const dlcName = (s: string) => DLC_NAMES[s.trim()] ?? s.trim();
+
+/**
+ * Serebii's free-text availability notes -> one short plain-English line, e.g.
+ * "Transfer from Pokémon HOME or Trade with players with The Hidden Treasure of Area Zero"
+ *   -> "Transfer from Pokémon HOME or trade (needs The Hidden Treasure of Area Zero)",
+ * "Evolve Ivysaur (The Indigo Disk)" -> "Evolve Ivysaur (in The Indigo Disk)".
+ * `region` is the DLC the line was listed under, if any.
+ */
+export function plainNote(raw: string, region?: string): string {
+  let s = raw.replace(/\s+/g, " ").replace(/\s*:\s*$/, "").trim();
+  // Trailing "(DLC)" tags; the listing's own DLC heading counts as one too.
+  const dlcs: string[] = [];
+  for (;;) {
+    const m = s.match(/\s*\((Isle of Armor|Crown Tundra|The Teal Mask|The Indigo Disk)\)$/);
+    if (!m) break;
+    dlcs.unshift(m[1]);
+    s = s.slice(0, m.index).trim();
+  }
+  if (region && !dlcs.includes(region)) dlcs.push(region);
+  // "(Alola Form)" / "(Kantonian)" style tags -> ", Alolan form"
+  const forms: string[] = [];
+  s = s.replace(/\s*\((Alola|Alolan|Kanto|Kantonian|Johto|Johtonian|Hoenn|Unova|Unovan|Galarian|Hisuian|Paldean)(?: Form)?\)/g, (_, f: string) => {
+    forms.push(f);
+    return "";
+  });
+  const formWord = (f: string) => ({ Alola: "Alolan", Kanto: "Kantonian", Johto: "Johtonian", Unova: "Unovan", Hoenn: "Hoenn" })[f] ?? f;
+  // "Johtonian Form: Trade in Cascarrafa"
+  const lead = s.match(/^(\w+) Form\s*:\s*(.+)$/);
+  if (lead) {
+    forms.push(lead[1]);
+    s = lead[2];
+  }
+  s = s
+    .replace(/^Evovle\b/, "Evolve")
+    .replace(/^trade\b/, "Trade")
+    .replace(/\.$/, "")
+    .replace(/^Transfer (?:from|through) Pokémon HOME or (?:obtain from event|through events)$/, "Transfer from Pokémon HOME or get it from an event")
+    .replace(/^Transfer from Pokémon HOME or Trade with players with (.+)$/, (_, d: string) => `Transfer from Pokémon HOME or trade (needs ${dlcName(d)})`)
+    .replace(/^Trade from Pokémon /, "Trade from ")
+    .replace(/ in Isle of Armor Area$/, "")
+    .replace(/^Gift from Diglett Master\b/, "Gift from the Diglett Master")
+    .replace(/^Event Only$/, "Event only")
+    .replace(/^(\w+) Form$/, "$1 form")
+    .replace(/^Hyperspace (.+)$/, "Hyperspace ($1)")
+    .replace(/^Starter Pokémon in (.+)$/, "Starter Pokémon, from $1")
+    .replace(/^Revive Fossil$/, "Revive its fossil");
+  if (forms.length) s += `, ${forms.map(formWord).join(", ")} form`;
+  if (dlcs.length) s += ` (in ${dlcs.map(dlcName).join(", ")})`;
+  return s.replace(/^./, (c) => c.toUpperCase());
+}
+
 /* --------------------------------------------------------------- merge -- */
 
 export type AtlasIndex = Map<string, { name: string; region: string }[]>;
