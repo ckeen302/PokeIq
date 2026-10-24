@@ -242,20 +242,6 @@ const LEGENDARY = [
 ];
 
 /** Where each adventure starts: the hero's home town, and where the first partner is handed over when that's elsewhere. */
-const STARTERS = [
-  "Kanto|Pallet Town",
-  "Johto|New Bark Town",
-  "Hoenn|Littleroot Town",
-  "Sinnoh|Twinleaf Town",
-  "Unova|Nuvema Town",
-  "Unova|Aspertia City",
-  "Kalos|Vaniville Town",
-  "Kalos|Aquacorde Town",
-  "Alola|Iki Town",
-  "Galar|Postwick",
-  "Paldea|Cabo Poco",
-];
-
 export function buildThemes(places: Place[], located: Located[]): Record<string, ThemeTags> {
   const key = (p: { region: string; name: string }) => `${p.region}|${p.name}`;
   const known = new Set(places.map(key));
@@ -279,7 +265,6 @@ export function buildThemes(places: Place[], located: Located[]): Record<string,
     water: { places: check(WATER, known, "water"), preview: "Hoenn|Route 105" },
     forests: { places: check(FORESTS, known, "forests"), preview: "Kanto|Viridian Forest" },
     legendary: { places: check(LEGENDARY, known, "legendary"), preview: "Johto|Bell Tower" },
-    starters: { places: check(STARTERS, known, "starters"), preview: "Kanto|Pallet Town" },
   };
 }
 

@@ -6,7 +6,7 @@
  */
 import { WORLD_REGION } from "./geo-types";
 
-export const GEO_THEME_IDS = ["gyms", "caves", "towns", "routes", "water", "forests", "legendary", "starters"] as const;
+export const GEO_THEME_IDS = ["gyms", "caves", "towns", "routes", "water", "forests", "legendary"] as const;
 export type GeoThemeId = (typeof GEO_THEME_IDS)[number];
 
 export interface GeoTheme {
@@ -24,7 +24,6 @@ export const GEO_THEMES: GeoTheme[] = [
   { id: "water", name: "Water and Coasts", blurb: "Seas, bays, lakes and beaches." },
   { id: "forests", name: "Forests", blurb: "Woods, jungles and thickets." },
   { id: "legendary", name: "Legendary spots", blurb: "Where the legends wait." },
-  { id: "starters", name: "Starter Towns", blurb: "Where every adventure begins." },
 ];
 
 /** A theme's map id: "theme-caves". */

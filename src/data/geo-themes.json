@@ -527,21 +527,5 @@
    "Unova|N's Castle"
   ],
   "preview": "Johto|Bell Tower"
- },
- "starters": {
-  "places": [
-   "Alola|Iki Town",
-   "Galar|Postwick",
-   "Hoenn|Littleroot Town",
-   "Johto|New Bark Town",
-   "Kalos|Aquacorde Town",
-   "Kalos|Vaniville Town",
-   "Kanto|Pallet Town",
-   "Paldea|Cabo Poco",
-   "Sinnoh|Twinleaf Town",
-   "Unova|Aspertia City",
-   "Unova|Nuvema Town"
-  ],
-  "preview": "Kanto|Pallet Town"
  }
 }

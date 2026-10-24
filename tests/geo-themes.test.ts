@@ -32,9 +32,6 @@ describe("themed maps: the tags", () => {
     expect(tags.gyms.buildings).not.toContain("Alola|Kantonian Gym");
     const water = new Set(tags.water.places);
     for (const k of ["Galar|Lake of Outrage", "Alola|Route 7"]) expect(water.has(k)).toBe(false);
-    expect(tags.starters.places).toEqual(
-      expect.arrayContaining(["Kanto|Pallet Town", "Johto|New Bark Town", "Hoenn|Littleroot Town", "Sinnoh|Twinleaf Town", "Unova|Nuvema Town", "Kalos|Vaniville Town", "Alola|Iki Town", "Galar|Postwick", "Paldea|Cabo Poco"])
-    );
     const both = tags.towns.places!.filter((k) => tags.routes.places!.includes(k));
     expect(both).toEqual([]);
   });
