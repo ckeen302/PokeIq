@@ -11,6 +11,8 @@ import type { AnswerResponse } from "@/lib/session-types";
 const bodySchema = z.object({
   token: z.string().min(10).max(16384),
   choice: z.string().max(200).nullable(),
+  /** Client-measured asset load time for this question (clamped server-side). */
+  loadMs: z.number().int().min(0).max(600_000).optional(),
 });
 
 const NO_STORE = { "Cache-Control": "no-store" };
@@ -24,7 +26,7 @@ export async function POST(request: NextRequest) {
   if (!parsed.success) {
     return NextResponse.json({ error: parsed.error.issues[0].message }, { status: 400 });
   }
-  const { token, choice } = parsed.data;
+  const { token, choice, loadMs } = parsed.data;
 
   const state = readSession(token);
   if (!state) {
@@ -38,7 +40,7 @@ export async function POST(request: NextRequest) {
 
   let outcome: AnswerOutcome;
   try {
-    outcome = gradeAnswer(state, choice);
+    outcome = gradeAnswer(state, choice, loadMs);
   } catch (err) {
     console.error("[api/session/answer]", err);
     return NextResponse.json({ error: "Couldn't load this question — please start a new run." }, { status: 500 });

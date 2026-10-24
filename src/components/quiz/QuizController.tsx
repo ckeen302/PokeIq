@@ -19,6 +19,7 @@ import { HpBar } from "@/components/game/HpBar";
 import { CryPlayer, ImageMedia } from "./QuestionMedia";
 import { QuizResults } from "./QuizResults";
 import { cn } from "@/lib/utils";
+import { preloadAssets, questionAssets } from "@/lib/preload";
 
 /**
  * <QuizController /> — the one quiz runtime behind every mode and format.
@@ -35,7 +36,8 @@ export type StartRequest =
   | { challenge: string };
 
 /** "expired": a Blitz run whose clock ran out before the server could close it. */
-type Phase = "loading" | "error" | "active" | "submitting" | "revealed" | "complete" | "expired";
+/** "preparing": the question's images / cry are loading; its clock hasn't started. */
+type Phase = "loading" | "error" | "preparing" | "active" | "submitting" | "revealed" | "complete" | "expired";
 
 interface QuizControllerProps {
   request: StartRequest;
@@ -80,6 +82,11 @@ export function QuizController({ request, challenger, onRestart }: QuizControlle
   const cardRef = useRef<HTMLDivElement | null>(null);
   const submittingRef = useRef(false);
   const advancingRef = useRef(false);
+  /** How long the current question took to load (sent with the answer). */
+  const loadMsRef = useRef(0);
+  /** Blitz: total load time excluded from the run clock. */
+  const runLoadRef = useRef(0);
+  const prepSeqRef = useRef(0);
 
   const isBlitz = rules?.runMs != null;
   const requestKey = JSON.stringify(request);
@@ -110,6 +117,16 @@ export function QuizController({ request, challenger, onRestart }: QuizControlle
         setAnswered(0);
         setGraded(null);
         setSelected(null);
+        // The clock starts only once every image / cry is ready.
+        const seq = ++prepSeqRef.current;
+        runStartRef.current = questionStartRef.current = Date.now();
+        setNow(Date.now());
+        setPhase("preparing");
+        const t0 = performance.now();
+        await preloadAssets(questionAssets(start.question));
+        if (cancelled || seq !== prepSeqRef.current) return;
+        loadMsRef.current = Math.round(performance.now() - t0);
+        runLoadRef.current = 0;
         runStartRef.current = questionStartRef.current = Date.now();
         setNow(Date.now());
         setPhase("active");
@@ -138,7 +155,7 @@ export function QuizController({ request, challenger, onRestart }: QuizControlle
         const res = await fetch("/api/session/answer", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ token: tokenRef.current, choice }),
+          body: JSON.stringify({ token: tokenRef.current, choice, loadMs: loadMsRef.current }),
         });
         const body = await res.json().catch(() => ({}));
         if (!res.ok) {
@@ -168,8 +185,8 @@ export function QuizController({ request, challenger, onRestart }: QuizControlle
       setStreak(result.streak);
       setLives(result.lives);
       setAnswered(result.answered);
-      // Warm the browser cache for the next question's media.
-      if (result.next?.media?.type === "image") new window.Image().src = result.next.media.url;
+      // Blitz: start loading the next question's assets during the flash.
+      if (result.next) void preloadAssets(questionAssets(result.next));
 
       setPhase("revealed");
       if (result.done) {
@@ -192,10 +209,21 @@ export function QuizController({ request, challenger, onRestart }: QuizControlle
       setQuestion(next);
       setSelected(null);
       setGraded(null);
-      questionStartRef.current = Date.now();
-      setNow(Date.now());
-      setPhase("active");
+      const seq = ++prepSeqRef.current;
+      const prepStart = Date.now();
+      questionStartRef.current = prepStart;
+      setNow(prepStart);
+      setPhase("preparing");
       if (!isBlitz) cardRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      void preloadAssets(questionAssets(next)).then(() => {
+        if (seq !== prepSeqRef.current) return;
+        const ready = Date.now();
+        loadMsRef.current = ready - prepStart;
+        runLoadRef.current += Math.min(ready - prepStart, 6000);
+        questionStartRef.current = ready;
+        setNow(ready);
+        setPhase("active");
+      });
     },
     [isBlitz]
   );
@@ -261,7 +289,8 @@ export function QuizController({ request, challenger, onRestart }: QuizControlle
 
   const questionMsLeft =
     rules?.questionMs != null ? Math.max(0, rules.questionMs - (now - questionStartRef.current)) : null;
-  const runMsLeft = rules?.runMs != null ? Math.max(0, rules.runMs - (now - runStartRef.current)) : null;
+  const runMsLeft =
+    rules?.runMs != null ? Math.max(0, rules.runMs - (now - runStartRef.current - runLoadRef.current)) : null;
 
   useEffect(() => {
     if (phase !== "active") return;
@@ -292,7 +321,7 @@ export function QuizController({ request, challenger, onRestart }: QuizControlle
   }, [phase, question, isBlitz, submit, advance]);
 
   // ---- render -------------------------------------------------------------
-  if (phase === "loading") return <LoadingCard />;
+  if (phase === "loading" || (phase === "preparing" && question?.index === 0)) return <LoadingCard />;
 
   if (phase === "error") {
     return (
@@ -343,6 +372,7 @@ export function QuizController({ request, challenger, onRestart }: QuizControlle
 
   if (!question || !rules) return null;
   const revealed = phase === "revealed";
+  const preparing = phase === "preparing";
   const isCards = Boolean(question.cards?.length);
   const timeFraction =
     questionMsLeft !== null ? questionMsLeft / rules.questionMs! : runMsLeft !== null ? runMsLeft / rules.runMs! : null;
@@ -430,15 +460,21 @@ export function QuizController({ request, challenger, onRestart }: QuizControlle
         </div>
       )}
 
-      <CardContent className="p-4 pt-4 sm:p-6 sm:pt-5">
+      <CardContent className="relative p-4 pt-4 sm:p-6 sm:pt-5">
+        {preparing && (
+          <div className="absolute inset-0 z-10 flex items-start justify-center pt-16" role="status">
+            <span className="hud-label animate-pulse text-muted-foreground">Loading next question…</span>
+          </div>
+        )}
         <AnimatePresence mode="wait">
           <motion.div
             key={question.index}
+            aria-hidden={preparing || undefined}
             initial={{ opacity: 0, x: 24 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -24 }}
             transition={{ duration: isBlitz ? 0.12 : 0.22, ease: [0.21, 0.47, 0.32, 0.98] }}
-            className="space-y-5"
+            className={cn("space-y-5", preparing && "invisible")}
           >
             <DialogBox as="h2" text={question.prompt} speed={isBlitz ? 0 : 12} />
 
@@ -489,7 +525,7 @@ export function QuizController({ request, challenger, onRestart }: QuizControlle
                   return (
                     <AnswerTile key={option} index={i} option={option} phase={phase} selected={selected} graded={graded} onPick={submit} card>
                       <div className="screen relative mx-auto aspect-square w-full max-w-[150px] rounded-md">
-                        <Image src={card.imageUrl} alt={card.label} fill priority sizes="150px" className="relative z-[1] object-contain p-2" />
+                        <Image src={card.imageUrl} alt={card.label} fill priority unoptimized sizes="150px" className="relative z-[1] object-contain p-2" />
                       </div>
                       <span className="text-center">{card.label}</span>
                     </AnswerTile>

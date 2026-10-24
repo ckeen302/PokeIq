@@ -28,6 +28,7 @@ import { useDuel } from "@/components/duel/use-duel";
 import { DuelGone, DuelLoading, DuelLobby, DuelNotice, DuelVisitor, LeaveButton, SEAT_COLORS, SeatDot, seconds } from "@/components/duel/DuelParts";
 import { DuelChat, DuelTools, EmoteFeed } from "@/components/duel/DuelReactions";
 import { CryPlayer, ImageMedia } from "./QuestionMedia";
+import { preloadAssets, questionAssets } from "@/lib/preload";
 import { cn } from "@/lib/utils";
 import { AddFriendAfterGame } from "@/components/community/AddFriend";
 import { Avatar } from "@/components/avatar/Avatar";
@@ -68,6 +69,19 @@ export function QuizDuel({ code }: { code: string }) {
   // One picture or cry per question, from its start through its reveal.
   const media = useFirst(live?.index ?? last?.index, live ? live.question?.media : last?.question.media);
   const revealArt = useFirst(last?.index, last?.revealUrl);
+
+  // Each trainer's clock starts once their browser has the question's images
+  // and cry loaded (bounded server-side): preload, then tell the server.
+  const liveQ = live?.question;
+  const liveIndex = live?.index;
+  const needsLoad = !!liveQ && view?.you != null && live?.loaded === false;
+  const loadSent = useRef(-1);
+  useEffect(() => {
+    if (!needsLoad || liveIndex === undefined || !liveQ || loadSent.current === liveIndex) return;
+    loadSent.current = liveIndex;
+    void preloadAssets(questionAssets({ ...liveQ, media })).then(() => send({ action: "loaded", round: liveIndex }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [needsLoad, liveIndex]);
 
   // Each new screen (lobby, a question, a reveal, the result) starts at the top.
   const screen = !view ? "" : view.status === "lobby" ? "lobby" : view.question ? `q ${view.question.index}` : `reveal ${view.revealed.length} ${summary}`;
@@ -275,7 +289,8 @@ export function QuizDuel({ code }: { code: string }) {
 
   // ---- answering -------------------------------------------------------------------------
   if (live?.question) {
-    const left = Math.max(0, live.endsAt - now);
+    const loading = live.loaded === false;
+    const left = loading ? QUIZ_DUEL_QUESTION_MS : Math.max(0, live.endsAt - now);
     const locked = live.yours ?? null;
     const theyLocked = live.answered[1 - me];
     const timeUp = left <= 0;
@@ -304,13 +319,20 @@ export function QuizDuel({ code }: { code: string }) {
             <HpBar value={left / QUIZ_DUEL_QUESTION_MS} label="TIME" className="flex-1" />
             <span className={cn("w-8 text-right font-pixel text-xs tabular-nums", left < QUIZ_DUEL_QUESTION_MS / 4 && "animate-blink text-destructive")}>{seconds(left)}</span>
           </div>
-          <CardContent className="space-y-5 p-4 pt-4 sm:p-6 sm:pt-5">
+          <CardContent className="relative space-y-5 p-4 pt-4 sm:p-6 sm:pt-5">
+            {loading && (
+              <div className="absolute inset-0 z-10 flex items-start justify-center pt-16" role="status">
+                <span className="hud-label animate-pulse text-muted-foreground">Loading question…</span>
+              </div>
+            )}
+            <div className={cn("space-y-5", loading && "invisible")} aria-hidden={loading || undefined}>
             <QuestionBody key={live.index} question={live.question} media={media} />
             <Options
               question={live.question}
-              onPick={locked || timeUp || busy ? undefined : (choice) => void answer(choice)}
+              onPick={locked || timeUp || busy || loading ? undefined : (choice) => void answer(choice)}
               mine={locked}
             />
+            </div>
             {timeUp && !locked && <p className="text-center text-sm text-muted-foreground">Time&apos;s up! Waiting for the reveal…</p>}
           </CardContent>
         </Card>

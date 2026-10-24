@@ -238,8 +238,10 @@ export interface QuizDuelLiveQuestion {
   index: number;
   /** Server time the question appears. */
   startsAt: number;
-  /** Server time answers close. */
+  /** Server time your answers close (counted from when your browser loaded the question). */
   endsAt: number;
+  /** Whether the server has your "loaded" signal (your clock is running from it). */
+  loaded?: boolean;
   /** Sent once the question has started. */
   question?: QuizDuelQuestionView;
   /** Who has locked in (never what they picked). */
