@@ -572,6 +572,23 @@ await playGeoRounds(5);
 await page.getByText(/You beat|wins this one|Dead heat/).waitFor();
 await page.screenshot({ path: `${OUT}/guessr-challenge-result.png`, fullPage: true });
 
+step("pokéguessr: 3-round game (picked rounds)");
+await page.goto(`${BASE}/guessr`, { waitUntil: "networkidle" });
+if ((await page.getByTestId("geo-rounds-5").getAttribute("aria-checked")) !== "true") throw new Error("5 rounds should be the default");
+await page.getByTestId("geo-rounds-3").click();
+await page.getByRole("button", { name: /3-round game/ }).click();
+let geoPlayed = 0;
+const countGuess = (res) => {
+  if (res.url().endsWith("/api/geo/guess") && res.ok()) geoPlayed++;
+};
+page.on("response", countGuess);
+await playGeoRounds(3);
+await page.getByText("Survey complete").waitFor();
+page.off("response", countGuess);
+if (geoPlayed !== 3) throw new Error(`a 3-round game took ${geoPlayed} guesses`);
+await page.getByText(/out of 15,000/).waitFor();
+await page.screenshot({ path: `${OUT}/guessr-3-round-summary.png`, fullPage: true });
+
 step("pokéguessr: streak");
 await page.goto(`${BASE}/guessr`, { waitUntil: "networkidle" });
 await page.getByRole("button", { name: /Streak/ }).click();
@@ -717,6 +734,37 @@ await red.waitForURL(/\/guessr$/);
 await blue.getByText("Red left the duel.").waitFor();
 await blue.getByText("Victory!").waitFor();
 await blue.screenshot({ path: `${OUT}/duel-forfeit.png` });
+
+step("pokéguessr duel: 3-round points race to the end, rematch keeps the settings");
+await red.goto(`${BASE}/guessr?region=kanto`, { waitUntil: "networkidle" });
+await red.getByTestId("geo-duel-mode-race").click();
+await red.getByTestId("geo-duel-rounds-3").click();
+await red.getByLabel("Your trainer name").fill("Red");
+await red.getByRole("button", { name: /Create duel/ }).click();
+await red.waitForURL(/\/guessr\/duel\/[a-z2-9]{8}$/);
+const raceUrl = red.url();
+await red.getByText("Waiting for a challenger").waitFor();
+await blue.goto(raceUrl, { waitUntil: "networkidle" });
+// The joiner sees the mode and rounds before accepting.
+await blue.getByText(/Red challenges you to a 3-round points race/).waitFor();
+await blue.getByLabel("Your trainer name").fill("Blue");
+await blue.getByRole("button", { name: /Join duel/ }).click();
+await red.getByText("Blue").first().waitFor();
+await Promise.all([red, blue].map((p) => p.getByRole("button", { name: /^Ready$/ }).click()));
+const [raceRounds] = await Promise.all([playDuel(red, 0.5, false), playDuel(blue, 0.22, false)]);
+if (raceRounds !== 3) throw new Error(`the 3-round race lasted ${raceRounds} rounds`);
+await red.getByText(/Victory!|Defeat|Draw/).first().waitFor();
+await blue.getByText(/Victory!|Defeat|Draw/).first().waitFor();
+await red.getByText(/points/).first().waitFor();
+await red.screenshot({ path: `${OUT}/duel-race-summary.png`, fullPage: true });
+await red.getByRole("button", { name: /^Rematch$/ }).click();
+await red.waitForURL((url) => url.href !== raceUrl && url.pathname.startsWith("/guessr/duel/"));
+await blue.getByRole("button", { name: /Accept rematch/ }).click();
+await blue.waitForURL(red.url());
+await Promise.all([shotLoaded(red), shotLoaded(blue)]);
+await red.getByText(/Round 1\/3/).first().waitFor();
+await red.getByRole("button", { name: /Leave duel/ }).click();
+await red.getByRole("button", { name: /^Forfeit$/ }).click();
 await red.context().close();
 await blue.context().close();
 

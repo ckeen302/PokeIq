@@ -3,6 +3,7 @@
 import { useCallback, useState } from "react";
 import { Settings, X } from "lucide-react";
 import { Popover } from "@/components/ui/popover";
+import { GEO_ROUND_OPTIONS, type GeoRounds } from "@/lib/geo-types";
 import { GEO_TIMERS, geoSettingsBadge, type GeoPlaySettings } from "@/lib/geo-settings";
 import { cn } from "@/lib/utils";
 
@@ -100,5 +101,46 @@ function SettingToggle({ label, description, checked, onChange, testId }: { labe
         <span className={cn("absolute top-0.5 h-3.5 w-3.5 rounded-full bg-foreground transition-[left]", checked ? "left-[1.1rem] bg-primary-foreground" : "left-0.5")} />
       </button>
     </label>
+  );
+}
+
+/** Game length: a small segmented control (3 / 5 / 10 rounds), in the style of the round-timer row. */
+export function RoundsPicker({
+  value,
+  onChange,
+  max = Infinity,
+  testId = "geo-rounds",
+  label = "Rounds",
+}: {
+  value: GeoRounds;
+  onChange: (next: GeoRounds) => void;
+  /** Lengths above this are off (the map has too few places). */
+  max?: number;
+  testId?: string;
+  label?: string;
+}) {
+  return (
+    <div className="space-y-1.5">
+      <p className="hud-label">{label}</p>
+      <div className="flex gap-1.5" role="radiogroup" aria-label={label}>
+        {GEO_ROUND_OPTIONS.map((n) => (
+          <button
+            key={n}
+            type="button"
+            role="radio"
+            aria-checked={value === n}
+            disabled={n > max}
+            onClick={() => onChange(n)}
+            data-testid={`${testId}-${n}`}
+            className={cn(
+              "min-w-12 rounded-md border px-3 py-1.5 font-display text-xs font-semibold uppercase tracking-wider transition-colors disabled:opacity-40",
+              value === n ? "border-screen bg-screen/15 text-foreground" : "bg-card text-muted-foreground hover:border-screen/50 hover:text-foreground"
+            )}
+          >
+            {n}
+          </button>
+        ))}
+      </div>
+    </div>
   );
 }

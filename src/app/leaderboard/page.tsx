@@ -7,7 +7,7 @@ import { connSeasonLabel, connSeasonOf } from "@/lib/connections/ranked";
 import { fetchBoard } from "@/lib/server/leaderboard";
 import { fetchGeoBoard } from "@/lib/server/geo-leaderboard";
 import { geoRegions, isGeoSpec } from "@/lib/server/geo";
-import { GEO_KINDS, geoBoardKey, geoMapRank } from "@/lib/geo-types";
+import { GEO_ROUND_OPTIONS, geoBoardKey, geoMapRank } from "@/lib/geo-types";
 import { GEO_ERA_NAMES, type GeoEra } from "@/lib/geo-families";
 import { dailyNumber, isValidDailyDate } from "@/lib/daily";
 import { FORMAT_INFO, MODULE_INFO, PLAY_MODULES, PLAYABLE_FORMATS } from "@/lib/modes";
@@ -259,10 +259,13 @@ export default async function LeaderboardPage({ searchParams }: PageProps) {
         ...r,
         // Every game, then Classic 2D and Modern 3D (each where the map has enough of its places).
         boards: ([undefined, "2d", "3d"] as (GeoEra | undefined)[]).flatMap((era) =>
-          GEO_KINDS.filter((kind) => isGeoSpec({ region: r.id, kind, ...(era ? { era } : {}) })).map((kind) => ({
-            id: geoBoardKey({ region: r.id, kind, era }),
-            name: `${era ? `${GEO_ERA_NAMES[era]} ` : ""}${kind === "streak" ? "Streak" : "5 rounds"}`,
-          }))
+          // A board per game length (3 / 5 / 10 rounds) and the streak.
+          ([...GEO_ROUND_OPTIONS.map((rounds) => ({ kind: "game" as const, rounds })), { kind: "streak" as const, rounds: undefined }])
+            .filter(({ kind, rounds }) => isGeoSpec({ region: r.id, kind, rounds, ...(era ? { era } : {}) }))
+            .map(({ kind, rounds }) => ({
+              id: geoBoardKey({ region: r.id, kind, era, rounds }),
+              name: `${era ? `${GEO_ERA_NAMES[era]} ` : ""}${kind === "streak" ? "Streak" : `${rounds} rounds`}`,
+            }))
         ),
       }))
       .filter((r) => r.boards.length)

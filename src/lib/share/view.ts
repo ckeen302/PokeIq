@@ -107,13 +107,13 @@ export function describeShare(r: ShareResult): ShareView {
       }
       const rounds = r.rounds ?? [];
       const total = rounds.reduce((s, p) => s + p, 0);
-      const max = GEO_ROUNDS * GEO_MAX_ROUND_SCORE;
+      const max = (rounds.length || GEO_ROUNDS) * GEO_MAX_ROUND_SCORE;
       return {
         game: "PokéGuessr",
         label: title,
         headline: fmt(total),
-        detail: `out of ${fmt(max)} points over ${GEO_ROUNDS} places`,
-        chips: [regionName(r.region), r.daily !== undefined ? "Daily game" : "Five rounds"],
+        detail: `out of ${fmt(max)} points over ${rounds.length || GEO_ROUNDS} places`,
+        chips: [regionName(r.region), r.daily !== undefined ? "Daily game" : `${rounds.length || GEO_ROUNDS} rounds`],
         tiles: [rounds.map(guessrTile)],
         numbers: rounds.map(fmt),
         accent: "green",

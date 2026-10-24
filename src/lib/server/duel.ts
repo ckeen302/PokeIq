@@ -17,12 +17,14 @@ import {
   DUEL_ROUND_MS,
   duelMultiplier,
   type DuelEnd,
+  type DuelMode,
+  type DuelSettings,
   type DuelEndReason,
   type DuelRoundResult,
   type DuelStatus,
   type DuelView,
 } from "@/lib/duel-types";
-import type { GeoSpec } from "@/lib/geo-types";
+import { GEO_ROUNDS, isGeoRounds, type GeoSpec } from "@/lib/geo-types";
 import type { GeoEra } from "@/lib/geo-families";
 
 /**
@@ -64,6 +66,8 @@ export interface Duel {
   region: string;
   /** Only Classic 2D or Modern 3D screenshots (every game when unset). */
   era?: GeoEra;
+  /** "race": a set number of rounds, highest total wins (unset = HP battle). */
+  mode?: DuelMode;
   seed: string;
   createdAt: number;
   status: DuelStatus;
@@ -107,10 +111,22 @@ const geoSpec = (region: string): GeoSpec => ({ region, kind: "game" });
 const planDuel = (region: string, seed: string, count: number, era?: GeoEra) => planRounds({ region, kind: "streak", ...(era ? { era } : {}) }, seed, count);
 
 /** Whether a map (in an era) can host a duel. */
+/** The winner of a points race by total points: a seat, or null for a draw. */
+export const raceWinner = (totals: number[]) => (totals[0] === totals[1] ? null : totals[0] > totals[1] ? 0 : 1);
+const raceTotals = (d: Duel) => d.players.map((_, seat) => d.rounds.reduce((sum, r) => sum + (r.result?.scores[seat] ?? 0), 0));
+/** Parses a duel's requested settings: HP by default, a race only with 3, 5 or 10 rounds. */
+export function parseDuelSettings(mode: unknown, rounds: unknown): DuelSettings | null {
+  if (mode === undefined || mode === "hp") return rounds === undefined ? { mode: "hp" } : null;
+  if (mode !== "race") return null;
+  if (rounds === undefined) return { mode: "race", rounds: GEO_ROUNDS };
+  return isGeoRounds(rounds) ? { mode: "race", rounds } : null;
+}
+
 export const isDuelMap = (region: string, era?: GeoEra) => isGeoSpec({ ...geoSpec(region), ...(era ? { era } : {}) });
 
 /** Same route as the single-player game; screenshot ids are random, so the URL gives nothing away. */
 const shotUrl = (round: PlannedRound) => `/api/geo/shot/${round.shot}`;
+const multiplierOf = (d: Pick<Duel, "mode">, index: number) => (d.mode === "race" ? 1 : duelMultiplier(index));
 const seatOf = (duel: Duel, playerId: string | null) => (playerId ? duel.players.findIndex((p) => p.id === playerId) : -1);
 const leader = (hp: number[]) => (hp[0] === hp[1] ? null : hp[0] > hp[1] ? 0 : 1);
 
@@ -137,14 +153,15 @@ export function readDuelToken(token: unknown, code: string): string | null {
 // Creating and joining
 // ---------------------------------------------------------------------------
 
-function blankDuel(region: string, code: string, players: DuelPlayer[], now: number, seed = randomId(), era?: GeoEra): Duel {
-  const maxRounds = planDuel(region, seed, DUEL_MAX_ROUNDS, era).length;
-  return { v: 1, code, region, ...(era ? { era } : {}), seed, createdAt: now, status: "lobby", players, maxRounds, hp: [DUEL_HP, DUEL_HP], rounds: [] };
+function blankDuel(region: string, code: string, players: DuelPlayer[], now: number, seed = randomId(), era?: GeoEra, settings?: DuelSettings): Duel {
+  const race = settings?.mode === "race";
+  const maxRounds = planDuel(region, seed, race ? (settings.rounds ?? GEO_ROUNDS) : DUEL_MAX_ROUNDS, era).length;
+  return { v: 1, code, region, ...(era ? { era } : {}), ...(race ? { mode: "race" as const } : {}), seed, createdAt: now, status: "lobby", players, maxRounds, hp: [DUEL_HP, DUEL_HP], rounds: [] };
 }
 
-export function createDuel(region: string, name: string, code: string, now: number, seed?: string, era?: GeoEra): { duel: Duel; playerId: string } {
+export function createDuel(region: string, name: string, code: string, now: number, seed?: string, era?: GeoEra, settings?: DuelSettings): { duel: Duel; playerId: string } {
   const playerId = randomId();
-  return { duel: blankDuel(region, code, [{ id: playerId, name, ready: false, seenAt: now }], now, seed, era), playerId };
+  return { duel: blankDuel(region, code, [{ id: playerId, name, ready: false, seenAt: now }], now, seed, era, settings), playerId };
 }
 
 export function joinDuel(duel: Duel, name: string, now: number): { ok: true; duel: Duel; playerId: string } | DuelFailure {
@@ -162,7 +179,7 @@ export function joinDuel(duel: Duel, name: string, now: number): { ok: true; due
 
 /** A rematch: the same map and trainers (same seats), new places, the chat so far. Both start un-ready, as if just seen. */
 export function rematchOf(old: Duel, code: string, now: number, seed?: string): Duel {
-  const next = blankDuel(old.region, code, old.players.map((p) => ({ id: p.id, name: p.name, ready: false, seenAt: now })), now, seed, old.era);
+  const next = blankDuel(old.region, code, old.players.map((p) => ({ id: p.id, name: p.name, ready: false, seenAt: now })), now, seed, old.era, old.mode === "race" && isGeoRounds(old.maxRounds) ? { mode: "race", rounds: old.maxRounds } : undefined);
   return old.chat?.length ? { ...next, chat: old.chat } : next;
 }
 
@@ -257,14 +274,20 @@ function reveal(d: Duel, round: DuelRound, at: number) {
   const index = d.rounds.indexOf(round);
   const measured = round.guesses.map((g) => (g ? measureGuess(geoSpec(d.region), round.plan, g.x, g.y) : null));
   const scores = measured.map((m) => m?.score ?? 0);
-  const hurt = scores[0] === scores[1] ? null : scores[0] < scores[1] ? 0 : 1;
+  const race = d.mode === "race";
+  const hurt = race || scores[0] === scores[1] ? null : scores[0] < scores[1] ? 0 : 1;
   const damage = hurt === null ? 0 : Math.round(Math.abs(scores[0] - scores[1]) * duelMultiplier(index));
   const hp = d.hp.map((h, seat) => (seat === hurt ? Math.max(0, h - damage) : h));
   round.result = { at, scores, squares: measured.map((m) => m?.squares ?? 0), damage, hurt, hp, nextAt: at + DUEL_REVEAL_MS };
   d.hp = hp;
 
   const idle = d.players.map((_, seat) => d.rounds.length >= DUEL_IDLE_ROUNDS && d.rounds.slice(-DUEL_IDLE_ROUNDS).every((r) => !r.guesses[seat]));
-  if (hp.some((h) => h <= 0)) finish(d, "hp", hp[0] > 0 ? 0 : 1, at);
+  if (race) {
+    const totals = raceTotals(d);
+    if (idle[0] !== idle[1]) finish(d, "idle", idle[0] ? 1 : 0, at);
+    else if (idle[0]) finish(d, "idle", raceWinner(totals), at);
+    else if (d.rounds.length >= d.maxRounds) finish(d, "rounds", raceWinner(totals), at);
+  } else if (hp.some((h) => h <= 0)) finish(d, "hp", hp[0] > 0 ? 0 : 1, at);
   else if (idle[0] !== idle[1]) finish(d, "idle", idle[0] ? 1 : 0, at);
   else if (idle[0]) finish(d, "idle", leader(hp), at);
   else if (d.rounds.length >= d.maxRounds) finish(d, "rounds", leader(hp), at);
@@ -376,7 +399,7 @@ export function duelView(duel: Duel, playerId: string | null, now: number, rev: 
     return [
       {
         index,
-        multiplier: duelMultiplier(index),
+        multiplier: multiplierOf(duel, index),
         shot: shotUrl(r.plan),
         answer: roundAnswer(duel, index),
         guesses: r.guesses.map((g, k) => (g ? { x: g.x, y: g.y, score: scores[k], squares: squares[k] } : null)),
@@ -393,6 +416,8 @@ export function duelView(duel: Duel, playerId: string | null, now: number, rev: 
     code: duel.code,
     region: duel.region,
     ...(duel.era ? { era: duel.era } : {}),
+    mode: duel.mode ?? "hp",
+    ...(duel.mode === "race" ? { totals: raceTotals(duel) } : {}),
     status: duel.status,
     now,
     rev,
@@ -402,7 +427,7 @@ export function duelView(duel: Duel, playerId: string | null, now: number, rev: 
     maxRounds: duel.maxRounds,
     round: live && {
       index: duel.rounds.length - 1,
-      multiplier: duelMultiplier(duel.rounds.length - 1),
+      multiplier: multiplierOf(duel, duel.rounds.length - 1),
       startsAt: live.startsAt,
       shot: now >= live.startsAt ? shotUrl(live.plan) : undefined,
       endsAt: closesAt(live),
