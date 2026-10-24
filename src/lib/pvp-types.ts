@@ -232,7 +232,7 @@ export const quizDuelPoints = (ms: number) =>
   QUIZ_DUEL_POINTS + Math.round(QUIZ_DUEL_SPEED_BONUS * Math.max(0, 1 - ms / QUIZ_DUEL_QUESTION_MS));
 
 /** A question as both trainers see it: the solo quiz's public question, without its timer. */
-export type QuizDuelQuestionView = Pick<PublicQuestion, "module" | "prompt" | "detail" | "options" | "media" | "cards">;
+export type QuizDuelQuestionView = Pick<PublicQuestion, "module" | "prompt" | "detail" | "options" | "images" | "media" | "cards">;
 
 export interface QuizDuelLiveQuestion {
   index: number;

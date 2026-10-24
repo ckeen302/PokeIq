@@ -14,11 +14,20 @@ import sharp from "sharp";
 export const OUT_SIZE = 384; // 96px sprites scaled 4x, nearest neighbour
 export type Tier = "near" | "medium" | "far";
 
-/** Mean ΔE targets per tier. `near` is subtle but clearly visible; MIN_DELTA_E is the hard floor. */
-export const TARGETS: Record<Tier, number> = { near: 9, medium: 18, far: 32 };
-export const MIN_DELTA_E = 7;
-/** Decoys must also differ from each other by at least this much. */
-export const MIN_PAIR_DELTA_E = 5;
+export type ShinyDifficulty = "easy" | "normal" | "hard";
+export const SHINY_DIFFICULTIES: ShinyDifficulty[] = ["easy", "normal", "hard"];
+
+/**
+ * Per difficulty: mean ΔE targets for the three decoys, a floor every decoy
+ * must clear (still visible, zoomed in on Hard), and a floor between decoys.
+ */
+export const PROFILES: Record<ShinyDifficulty, { targets: Record<Tier, number>; min: number; pair: number }> = {
+  easy: { targets: { near: 9, medium: 18, far: 32 }, min: 7, pair: 5 },
+  normal: { targets: { near: 7, medium: 11, far: 16 }, min: 5.5, pair: 3.5 },
+  hard: { targets: { near: 4, medium: 5.5, far: 7 }, min: 3.5, pair: 3 },
+};
+export const MIN_DELTA_E = PROFILES.easy.min;
+export const MIN_PAIR_DELTA_E = PROFILES.easy.pair;
 
 export interface Raw { data: Uint8Array; width: number; height: number }
 
@@ -111,23 +120,27 @@ function fit(src: Raw, target: number, sign: 1 | -1, tintDir: number, floor: num
 }
 
 /** Three decoys (near, medium, far) for one shiny, or throws if the minimum difference can't be met. */
-export function makeDecoys(src: Raw, seed: number): Decoy[] {
+export function makeDecoys(src: Raw, seed: number, difficulty: ShinyDifficulty = "easy"): Decoy[] {
+  const { targets, min, pair } = PROFILES[difficulty];
   const rnd = seeded(seed);
   const baseDir = rnd() * Math.PI * 2;
   const tiers: Tier[] = ["near", "medium", "far"];
-  for (let attempt = 0; attempt < 12; attempt++) {
+  // Attempts 0-11 draw random signs. Tiny or near-monochrome sprites can leave two
+  // decoys too alike; the later attempts alternate sign and push tints apart.
+  for (let attempt = 0; attempt < 40; attempt++) {
     const out: Decoy[] = [];
     for (const [i, tier] of tiers.entries()) {
-      const sign: 1 | -1 = rnd() < 0.5 ? 1 : -1;
+      const roll: 1 | -1 = rnd() < 0.5 ? 1 : -1;
+      const sign: 1 | -1 = attempt < 12 ? roll : i === 1 ? -1 : 1;
       // Spread tint directions so the three decoys are not just stronger copies of one another.
-      const dir = baseDir + (i * 2 * Math.PI) / 3 + attempt * 0.7;
-      const d = fit(src, TARGETS[tier], sign, dir, MIN_DELTA_E);
+      const dir = baseDir + (i * 2 * Math.PI) / 3 + attempt * 0.7 + (attempt >= 12 && i === 2 ? Math.PI : 0);
+      const d = fit(src, targets[tier], sign, dir, min);
       if (!d) break;
       out.push({ tier, ...d });
     }
     if (out.length < 3) continue;
     let ok = true;
-    for (let i = 0; i < 3; i++) for (let j = i + 1; j < 3; j++) if (meanDeltaE(out[i].raw, out[j].raw) < MIN_PAIR_DELTA_E) ok = false;
+    for (let i = 0; i < 3; i++) for (let j = i + 1; j < 3; j++) if (meanDeltaE(out[i].raw, out[j].raw) < pair) ok = false;
     if (ok) return out;
   }
   throw new Error("could not build decoys above the minimum difference");
@@ -141,7 +154,7 @@ export async function loadRaw(png: Buffer): Promise<Raw> {
 /** Every option (real or fake) goes through exactly this: same size, same format, no metadata. */
 export function encodeOption(raw: Raw): Promise<Buffer> {
   return sharp(Buffer.from(raw.data), { raw: { width: raw.width, height: raw.height, channels: 4 } })
-    .resize(OUT_SIZE, OUT_SIZE, { kernel: "nearest", fit: "contain", background: { r: 0, g: 0, b: 0, alpha: 0 } })
+    .resize(OUT_SIZE, OUT_SIZE, { kernel: raw.width <= 128 ? "nearest" : "lanczos3", fit: "contain", background: { r: 0, g: 0, b: 0, alpha: 0 } })
     .webp({ lossless: true, effort: 4 })
     .toBuffer();
 }

@@ -20,7 +20,7 @@ create table if not exists public.runs (
   id           uuid primary key default gen_random_uuid(),
   session_id   text not null,
   player_name  text not null check (char_length(player_name) between 1 and 24),
-  module       text not null check (module in ('whos-that', 'cry', 'dex', 'types', 'higher-lower', 'games', 'anime', 'competitive', 'mixed')),
+  module       text not null check (module in ('whos-that', 'cry', 'dex', 'types', 'higher-lower', 'games', 'anime', 'competitive', 'shiny', 'mixed')),
   format       text not null check (format in ('classic', 'survival', 'blitz')),
   difficulty   text not null check (difficulty in ('easy', 'medium', 'hard')),
   gens         smallint[],

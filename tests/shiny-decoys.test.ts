@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import sharp from "sharp";
-import { encodeOption, makeDecoys, meanDeltaE, MIN_DELTA_E, MIN_PAIR_DELTA_E, OUT_SIZE, type Raw } from "../scripts/shiny/decoys";
+import { encodeOption, makeDecoys, meanDeltaE, MIN_DELTA_E, MIN_PAIR_DELTA_E, OUT_SIZE, PROFILES, SHINY_DIFFICULTIES, type Raw } from "../scripts/shiny/decoys";
 
 function sprite(rgb: [number, number, number]): Raw {
   const w = 16;
@@ -11,6 +11,25 @@ function sprite(rgb: [number, number, number]): Raw {
   }
   return { data, width: w, height: w };
 }
+
+describe("shiny difficulty profiles", () => {
+  it.each(SHINY_DIFFICULTIES.flatMap((d) => [[d, [240, 190, 40]], [d, [210, 210, 210]], [d, [30, 30, 40]]]) as [(typeof SHINY_DIFFICULTIES)[number], [number, number, number]][])(
+    "%s: decoys clear the floors for %j",
+    (difficulty, rgb) => {
+      const real = sprite(rgb);
+      const { min, pair } = PROFILES[difficulty];
+      const decoys = makeDecoys(real, 77, difficulty);
+      for (const d of decoys) expect(meanDeltaE(real, d.raw)).toBeGreaterThanOrEqual(min);
+      for (let i = 0; i < 3; i++) for (let j = i + 1; j < 3; j++) expect(meanDeltaE(decoys[i].raw, decoys[j].raw)).toBeGreaterThanOrEqual(pair);
+    }
+  );
+  it("hard is tighter than normal, which is tighter than easy", () => {
+    const real = sprite([240, 190, 40]);
+    const far = (d: (typeof SHINY_DIFFICULTIES)[number]) => meanDeltaE(real, makeDecoys(real, 5, d)[2].raw);
+    expect(far("hard")).toBeLessThan(far("normal"));
+    expect(far("normal")).toBeLessThan(far("easy"));
+  });
+});
 
 describe("shiny decoys", () => {
   it.each([[[240, 190, 40]], [[200, 200, 205]], [[40, 40, 45]], [[250, 250, 250]]] as [[number, number, number]][])(

@@ -76,7 +76,6 @@ function bank(): Bank {
 }
 
 const MAX_GEN: Record<Difficulty, number> = { easy: 4, medium: 7, hard: 99 };
-const BASE_RATING: Record<Difficulty, number> = { easy: 950, medium: 1150, hard: 1350 };
 
 function ratingFor(kind: Kind, g: number): number {
   const kindBase = { holder: 1250, "move-type": 1000, "move-category": 1050, "item-desc": 1200, "ability-desc": 1250 }[kind];

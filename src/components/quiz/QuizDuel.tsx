@@ -467,8 +467,9 @@ function Options({
   names?: string[];
 }) {
   const cards = question.cards?.length ? question.cards : null;
+  const images = question.images ?? null;
   return (
-    <div className={cn("grid gap-2.5", cards ? "grid-cols-2" : "sm:grid-cols-2")}>
+    <div className={cn("grid gap-2.5", cards || images ? "grid-cols-2" : "sm:grid-cols-2")}>
       {question.options.map((option, i) => {
         const right = result?.answer === option;
         const pickedBy = result ? result.picks.flatMap((p, seat) => (p?.choice === option ? [seat] : [])) : [];
@@ -485,7 +486,7 @@ function Options({
             transition={{ delay: result ? 0 : 0.05 + i * 0.04, duration: 0.24 }}
             className={cn(
               "menu-item flex w-full flex-col items-stretch justify-center gap-2 rounded-md border-2 border-foreground/10 bg-shade/30 px-4 text-left font-display text-[15px] font-semibold tracking-wide",
-              card ? "py-3" : "min-h-[52px] py-2.5",
+              card || images ? "py-3" : "min-h-[52px] py-2.5",
               "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
               onPick && "hover:border-screen/60 hover:bg-screen/[0.06]",
               mine === option && "border-screen/70 bg-screen/10",
@@ -499,8 +500,14 @@ function Options({
                 <Image src={card.imageUrl} alt={card.label} fill priority sizes="150px" className="relative z-[1] object-contain p-2" />
               </div>
             )}
+            {images && (
+              <div className="screen relative mx-auto aspect-square w-full max-w-[200px] rounded-md">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={images[i]} alt={`Option ${i + 1}`} width={384} height={384} draggable={false} className="relative z-[1] h-full w-full object-contain p-1 [image-rendering:pixelated]" />
+              </div>
+            )}
             <span className="flex items-center justify-between gap-2">
-              <span className={cn("flex-1", card && "text-center")}>{card?.label ?? option}</span>
+              <span className={cn("flex-1", (card || images) && "text-center")}>{images ? `Option ${i + 1}` : (card?.label ?? option)}</span>
               {pickedBy.map((seat) => (
                 <span
                   key={seat}

@@ -18,11 +18,12 @@ const mediaSchema = z.object({
 export const questionSchema = z
   .object({
     itemKey: z.string().min(3),
-    module: z.enum(["whos-that", "cry", "dex", "types", "higher-lower", "games", "anime", "competitive"]),
+    module: z.enum(["whos-that", "cry", "dex", "types", "higher-lower", "games", "anime", "competitive", "shiny"]),
     prompt: z.string().min(8),
     detail: z.string().optional(),
     media: mediaSchema.optional(),
     cards: z.array(z.object({ pokemonId: z.number().int().positive(), label: z.string() })).optional(),
+    optionImages: z.boolean().optional(),
     options: z.array(z.string().min(1)).min(2).max(6),
     answer: z.string().min(1),
     explanation: z.string().optional(),

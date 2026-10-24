@@ -128,6 +128,15 @@ export const MODULE_INFO: Record<ModuleId, ModuleInfo> = {
     defaultFormat: "classic",
     filter: ITEM_FILTER,
   },
+  shiny: {
+    id: "shiny",
+    title: "Real Shiny?",
+    tagline: "Spot the genuine shiny",
+    description: "Four colourings of one Pokémon, only one is its real shiny. Easy fakes are far off, Hard fakes are barely different. All 1,025.",
+    emoji: "✨",
+    accent: "280 90% 70%",
+    defaultFormat: "classic",
+  },
   mixed: {
     id: "mixed",
     title: "Mixed Bag",
@@ -139,7 +148,7 @@ export const MODULE_INFO: Record<ModuleId, ModuleInfo> = {
   },
 };
 
-export const PLAY_MODULES: ModuleId[] = ["whos-that", "cry", "dex", "types", "higher-lower", "games", "anime", "competitive", "mixed"];
+export const PLAY_MODULES: ModuleId[] = ["whos-that", "cry", "dex", "types", "higher-lower", "games", "anime", "competitive", "shiny", "mixed"];
 
 export const FORMAT_INFO: Record<QuizFormat, { title: string; description: string }> = {
   classic: { title: "Classic", description: "10 questions · 15s each" },
@@ -215,6 +224,13 @@ export const QUIZ_PRESETS: QuizPreset[] = [
     title: "Pokémon Ability, Move & Item Quiz",
     h1: "Abilities, Moves & Items",
     description: "Which Pokémon can have this ability? What type is this move? What does this item do? Questions generated from the Pokémon Showdown data.",
+  },
+  {
+    slug: "real-shiny-quiz",
+    module: "shiny",
+    title: "Which Is the Real Shiny? Pokémon Shiny Quiz",
+    h1: "Which Is the Real Shiny?",
+    description: "One of four colourings is the real shiny, the rest are fakes. Can you tell? All 1,025 Pokémon, three difficulties.",
   },
   {
     slug: "pokemon-anime-quiz",

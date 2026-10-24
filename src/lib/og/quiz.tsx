@@ -12,6 +12,7 @@ const SAMPLES: Record<ModuleId, { question: string; answers: string[]; right: nu
   games: { question: "New in Gen III?", answers: ["Abilities", "Z-Moves", "Dynamax", "Tera"], right: 0 },
   anime: { question: "Ash's friend in Kalos?", answers: ["Dawn", "Serena", "May", "Iris"], right: 1 },
   competitive: { question: "Type of Moonblast?", answers: ["Fairy", "Psychic", "Dark", "Ghost"], right: 0 },
+  shiny: { question: "Which is the real shiny?", answers: ["1", "2", "3", "4"], right: 2 },
   mixed: { question: "A bit of everything", answers: ["Silhouettes", "Cries", "Dex entries", "Type chart"], right: -1 },
 };
 
