@@ -465,8 +465,9 @@ export function roundViews(spec: DealSpec & Pick<GeoSpec, "guessGame">, round: P
 
 /** A round as the player sees it: the dealt screenshot, and the place's other views when there are any. */
 function publicRound(spec: GeoSpec, index: number, round: PlannedRound): GeoRoundPublic {
-  const views = roundViews(spec, round);
-  return { index, shot: shotUrl(round.shot), ...(views.length > 1 ? { views: views.map(shotUrl) } : {}) };
+  // One screenshot per round, like GeoGuessr's single view; the place's other shots come up in other games.
+  void spec;
+  return { index, shot: shotUrl(round.shot) };
 }
 
 /** "Guess the game too": the bonus for naming the screenshot's family. */

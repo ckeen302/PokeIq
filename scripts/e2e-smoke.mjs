@@ -465,78 +465,49 @@ await page.getByRole("button", { name: /Challenge a friend/ }).waitFor();
 await page.screenshot({ path: `${OUT}/guessr-summary.png`, fullPage: true });
 if (!geoChallenge) throw new Error("no PokéGuessr challenge token");
 
-step("pokéguessr: look around (flip through a place's views)");
+step("pokéguessr: one screenshot per round (no flipping between views)");
 await page.goto(`${BASE}/guessr`, { waitUntil: "networkidle" });
 await page.getByRole("button", { name: /5-round game/ }).click();
-{
-  const shotReady = () =>
-    page.waitForFunction(() => {
-      const img = document.querySelector("img[data-testid='geo-shot']");
-      return img?.complete && img.naturalWidth > 0;
-    });
-  let looked = false;
-  for (let i = 0; i < 5 && !looked; i++) {
-    await shotReady();
-    const counter = page.getByTestId("geo-view-count");
-    if (await counter.count()) {
-      const count = Number((await counter.innerText()).split("/")[1]);
-      if (!(count > 1)) throw new Error(`bad view count: ${await counter.innerText()}`);
-      const shotSrc = () => page.getByTestId("geo-shot").getAttribute("src");
-      const at = (n) => page.getByTestId("geo-view-count").filter({ hasText: `${n} / ${count}` }).waitFor();
-      const first = await shotSrc();
-      await page.getByRole("button", { name: "Next view" }).click();
-      await at(2);
-      if ((await shotSrc()) === first) throw new Error("the next view shows the same screenshot");
-      await page.keyboard.press("ArrowLeft");
-      await at(1);
-      if ((await shotSrc()) !== first) throw new Error("← didn't go back to the first view");
-      await page.keyboard.press("ArrowLeft");
-      await at(count);
-      await page.getByRole("tab", { name: `View 2 of ${count}` }).click();
-      await at(2);
-      await shotReady();
-      await page.waitForFunction(() => getComputedStyle(document.querySelector("img[data-testid='geo-shot']")).opacity === "1");
-      await page.screenshot({ path: `${OUT}/geo-mode-look-around.png` });
-      looked = true;
-    }
-    const map = page.locator("[role=application]");
-    await map.hover();
-    const box = await map.boundingBox();
-    await map.click({ position: { x: box.width * 0.5, y: box.height * 0.5 } });
-    await page.getByRole("button", { name: /^Guess$/ }).click();
-    const next = page.getByRole("button", { name: /Next round|View summary|See results/ });
-    await next.waitFor();
-    await next.click();
-  }
-  if (!looked) throw new Error("no round with more than one view in five rounds");
+for (let i = 0; i < 5; i++) {
+  await page.waitForFunction(() => {
+    const img = document.querySelector("img[data-testid='geo-shot']");
+    return img?.complete && img.naturalWidth > 0;
+  });
+  if (await page.getByTestId("geo-view-count").count()) throw new Error("a round offers more than one screenshot");
+  if (await page.getByRole("button", { name: "Next view" }).count()) throw new Error("a round has a next-view button");
+  const map = page.locator("[role=application]");
+  await map.hover();
+  const box = await map.boundingBox();
+  await map.click({ position: { x: box.width * 0.5, y: box.height * 0.5 } });
+  await page.getByRole("button", { name: /^Guess$/ }).click();
+  const next = page.getByRole("button", { name: /Next round|View summary|See results/ });
+  await next.waitFor();
+  await next.click();
 }
 
-step("pokéguessr: no move, zoomed, 30s timer (time runs out with no pin)");
+step("pokéguessr: zoomed, 30s timer (time runs out with no pin)");
 await page.goto(`${BASE}/guessr`, { waitUntil: "networkidle" });
 await page.getByTestId("geo-settings").click();
-await page.getByTestId("geo-no-move").click();
 await page.getByTestId("geo-zoomed").click();
 await page.getByTestId("geo-timer-30").click();
-await page.getByTestId("geo-settings-badge").filter({ hasText: "No move · Zoomed · 30s" }).waitFor();
+await page.getByTestId("geo-settings-badge").filter({ hasText: "Zoomed · 30s" }).waitFor();
 await page.keyboard.press("Escape");
 await page.getByRole("button", { name: /5-round game/ }).click();
 await page.waitForFunction(() => {
   const img = document.querySelector("img[data-testid='geo-shot']");
   return img?.complete && img.naturalWidth > 0 && getComputedStyle(img).opacity === "1";
 });
-if (await page.getByTestId("geo-view-count").count()) throw new Error("No move should show one screenshot");
 if ((await page.getByTestId("geo-shot").getAttribute("data-zoomed")) !== "true") throw new Error("the screenshot isn't zoomed");
 {
   const left = Number(await page.getByTestId("geo-time-left").innerText());
   if (!(left > 20 && left <= 30)) throw new Error(`timer shows ${left}`);
 }
-await page.screenshot({ path: `${OUT}/geo-mode-no-move-zoom-timer.png` });
+await page.screenshot({ path: `${OUT}/geo-mode-zoom-timer.png` });
 await page.getByTestId("geo-distance").filter({ hasText: "Time's up" }).waitFor({ timeout: 40_000 });
 await page.screenshot({ path: `${OUT}/geo-mode-timer-up.png` });
 // Back to the defaults, so the steps after this play the usual way.
 await page.goto(`${BASE}/guessr`, { waitUntil: "networkidle" });
 await page.getByTestId("geo-settings").click();
-await page.getByTestId("geo-no-move").click();
 await page.getByTestId("geo-zoomed").click();
 await page.getByTestId("geo-timer-0").click();
 if (await page.getByTestId("geo-settings-badge").count()) throw new Error("settings didn't switch off");

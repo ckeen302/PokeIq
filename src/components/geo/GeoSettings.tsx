@@ -44,13 +44,6 @@ export function GeoSettingsButton({ value, onChange }: { value: GeoPlaySettings;
           </button>
         </div>
         <SettingToggle
-          label="No move"
-          description="One screenshot a round: no looking around the place."
-          checked={value.noMove}
-          onChange={() => set({ noMove: !value.noMove })}
-          testId="geo-no-move"
-        />
-        <SettingToggle
           label="Zoomed"
           description="A close-up crop of the screenshot instead of all of it."
           checked={value.zoomed}

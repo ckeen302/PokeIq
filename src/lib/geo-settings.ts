@@ -36,7 +36,7 @@ export function parseGeoSettings(raw: unknown): GeoPlaySettings {
 
 /** A short summary for the settings button, or null when every setting is off. */
 export function geoSettingsBadge(s: GeoPlaySettings): string | null {
-  const parts = [s.noMove && "No move", s.zoomed && "Zoomed", s.timer > 0 && `${s.timer}s`].filter(Boolean);
+  const parts = [s.zoomed && "Zoomed", s.timer > 0 && `${s.timer}s`].filter(Boolean);
   return parts.length ? parts.join(" · ") : null;
 }
 
