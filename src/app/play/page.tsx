@@ -17,7 +17,6 @@ export const metadata: Metadata = pageMetadata({
 const MORE = [
   { href: "/daily", label: "Daily Challenge" },
   { href: "/iq-test", label: "PokéIQ Test" },
-  { href: "/atlas", label: "World Atlas" },
 ];
 
 export default function PlayPage() {
