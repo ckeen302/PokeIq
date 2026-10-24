@@ -1,5 +1,6 @@
 /** Public bucket the pre-generated shiny-quiz images live in (scripts/shiny/upload.ts). */
+const SHINY_BASE = "https://vowzddxxxhxcmibhplgl.supabase.co/storage/v1/object/public/shiny";
+
 export function shinyImageUrl(name: string): string {
-  const base = process.env.SUPABASE_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
-  return `${base.replace(/\/+$/, "")}/storage/v1/object/public/shiny/${name}.webp`;
+  return `${SHINY_BASE}/${name}.webp`;
 }

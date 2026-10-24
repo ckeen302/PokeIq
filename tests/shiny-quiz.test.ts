@@ -6,7 +6,6 @@ import { gradeAnswer, questionAt, readSession, startSession } from "@/lib/server
 import type { SessionSpec } from "@/lib/session-types";
 
 process.env.POKEIQ_LOCAL_ACCOUNTS = "1";
-process.env.SUPABASE_URL = "https://example.supabase.co";
 
 const sets = answers.sets as Record<string, string[][]>;
 
@@ -62,8 +61,8 @@ describe("shiny quiz questions", () => {
     const payload = JSON.stringify(start.question);
     expect(payload).not.toMatch(/"answer"|"explanation"|real shiny colouring/);
     expect(start.question.images).toHaveLength(4);
-    for (const u of start.question.images!) expect(u).toMatch(/^https:\/\/example\.supabase\.co\/storage\/v1\/object\/public\/shiny\/[0-9a-f]{32}\.webp$/);
-    expect(start.question.images).toEqual(q.options.map((o) => `https://example.supabase.co/storage/v1/object/public/shiny/${o}.webp`));
+    for (const u of start.question.images!) expect(u).toMatch(/^https:\/\/vowzddxxxhxcmibhplgl\.supabase\.co\/storage\/v1\/object\/public\/shiny\/[0-9a-f]{32}\.webp$/);
+    expect(start.question.images).toEqual(q.options.map((o) => `https://vowzddxxxhxcmibhplgl.supabase.co/storage/v1/object/public/shiny/${o}.webp`));
     // Nothing the browser gets names the Pokémon, its id or a tier.
     expect(JSON.stringify([start.question.options, start.question.images])).not.toMatch(/near|medium|far|decoy|fake|real/i);
   });
