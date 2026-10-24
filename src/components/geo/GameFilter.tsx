@@ -1,13 +1,10 @@
 "use client";
 
-import { useState } from "react";
-import { ChevronDown, Gamepad2 } from "lucide-react";
 import { GEO_FILTER_MIN_PLACES, type GeoRegionInfo } from "@/lib/geo-types";
 import {
   GEO_ERA_NAMES,
   GEO_GAME_BONUS,
   allowedFamilies,
-  familyEra,
   geoFamily,
   placesFor,
   type GeoEra,
@@ -68,18 +65,11 @@ export function GameFilter({
   filter: FilterChoice;
   onChange: (next: FilterChoice) => void;
 }) {
-  const [picking, setPicking] = useState(filter.families.length > 0);
   const eras: (GeoEra | undefined)[] = [undefined, "2d", "3d"];
   const count = (era?: GeoEra, families: GeoFamilyId[] = []) => placesFor(region.combos, { era, families });
-  const families = region.families.filter((f) => !filter.era || familyEra(f) === filter.era);
   const places = count(filter.era, filter.families);
   const tooFew = (filter.era || filter.families.length) && places < GEO_FILTER_MIN_PLACES;
   const offEras = eras.filter((e): e is GeoEra => !!e && count(e) < GEO_FILTER_MIN_PLACES);
-
-  function toggle(id: GeoFamilyId) {
-    const next = filter.families.includes(id) ? filter.families.filter((f) => f !== id) : [...filter.families, id];
-    onChange({ ...filter, families: next });
-  }
 
   return (
     <div className="space-y-2" data-testid="geo-filter">
@@ -95,7 +85,7 @@ export function GameFilter({
               aria-checked={filter.era === era}
               disabled={off}
               title={off ? `${GEO_ERA_NAMES[era]}: not enough places with its screenshots on this map` : undefined}
-              onClick={() => onChange({ era, families: filter.families.filter((f) => !era || familyEra(f) === era) })}
+              onClick={() => onChange({ era, families: [] })}
               className={chip(filter.era === era, off)}
               data-testid={`geo-era-${era ?? "all"}`}
             >
@@ -103,42 +93,8 @@ export function GameFilter({
             </button>
           );
         })}
-        <button
-          type="button"
-          aria-expanded={picking}
-          onClick={() => {
-            if (picking && filter.families.length) onChange({ ...filter, families: [] });
-            setPicking(!picking);
-          }}
-          className={chip(picking)}
-          data-testid="geo-pick-games"
-        >
-          <Gamepad2 className="h-3.5 w-3.5" aria-hidden />
-          Pick games
-          <ChevronDown className={cn("h-3.5 w-3.5 transition-transform", picking && "rotate-180")} aria-hidden />
-        </button>
       </div>
 
-      {picking && (
-        <div className="flex flex-wrap gap-1.5" role="group" aria-label="Pick games">
-          {families.map((id) => {
-            return (
-              <button
-                key={id}
-                type="button"
-                aria-pressed={filter.families.includes(id)}
-                onClick={() => toggle(id)}
-                className={chip(filter.families.includes(id))}
-                title={geoFamily(id).name}
-                data-testid={`geo-family-${id}`}
-              >
-                {geoFamily(id).short}
-              </button>
-            );
-          })}
-          {!families.length && <p className="text-xs text-muted-foreground">No games of this era on this map.</p>}
-        </div>
-      )}
 
       {tooFew ? (
         <p role="note" className="text-xs text-warning" data-testid="geo-filter-note">
