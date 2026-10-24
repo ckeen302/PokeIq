@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
+import { revalidateTag } from "next/cache";
 import { z } from "zod";
 import { getServiceSupabase } from "@/lib/supabase";
 import { NAME_REJECTED, isCleanName } from "@/lib/name-filter";
 import { secretIsSecure, verifyToken } from "@/lib/server/crypto";
 import { clientIp, rateLimit } from "@/lib/server/rate-limit";
-import { fetchBoard, practiceMessage } from "@/lib/server/leaderboard";
+import { LEADERBOARD_TAG, fetchBoard, practiceMessage } from "@/lib/server/leaderboard";
 import type { RunResult } from "@/lib/session-types";
 
 /**
@@ -99,5 +100,6 @@ export async function POST(request: NextRequest) {
     console.error("[api/leaderboard] insert failed:", error.message);
     return NextResponse.json({ error: "Could not save score" }, { status: 503 });
   }
+  revalidateTag(LEADERBOARD_TAG);
   return NextResponse.json({ saved: true }, { status: 201 });
 }

@@ -1,4 +1,5 @@
 import "server-only";
+import { unstable_cache } from "next/cache";
 import { getServiceSupabase, type LeaderboardRow } from "@/lib/supabase";
 import { publicName } from "@/lib/name-filter";
 import type { PracticeReason, RunResult } from "@/lib/session-types";
@@ -8,8 +9,25 @@ export type BoardFilter =
   | { kind: "iq" }
   | { kind: "module"; module: string; format?: string; difficulty?: string };
 
-/** Top runs for a board, or null when persistence isn't configured. */
-export async function fetchBoard(filter: BoardFilter, limit = 25): Promise<LeaderboardRow[] | null> {
+/**
+ * Top runs for a board, or null when persistence isn't configured. Cached for
+ * a few seconds across requests: the leaderboard page is hit far more often
+ * than runs are saved, and a fresh score shows up within BOARD_TTL_S.
+ */
+const BOARD_TTL_S = 15;
+export const LEADERBOARD_TAG = "leaderboard";
+export function fetchBoard(filter: BoardFilter, limit = 25): Promise<LeaderboardRow[] | null> {
+  if (!getServiceSupabase()) return Promise.resolve(null);
+  return cachedBoard(JSON.stringify(filter), limit);
+}
+
+const cachedBoard = unstable_cache(
+  (filter: string, limit: number) => readBoard(JSON.parse(filter) as BoardFilter, limit),
+  ["leaderboard-board"],
+  { revalidate: BOARD_TTL_S, tags: [LEADERBOARD_TAG] }
+);
+
+async function readBoard(filter: BoardFilter, limit: number): Promise<LeaderboardRow[] | null> {
   const supabase = getServiceSupabase();
   if (!supabase) return null;
 
