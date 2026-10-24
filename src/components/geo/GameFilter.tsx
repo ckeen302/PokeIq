@@ -63,14 +63,10 @@ export function GameFilter({
   region,
   filter,
   onChange,
-  guessGame,
-  onGuessGame,
 }: {
   region: GeoRegionInfo;
   filter: FilterChoice;
   onChange: (next: FilterChoice) => void;
-  guessGame: boolean;
-  onGuessGame: (on: boolean) => void;
 }) {
   const [picking, setPicking] = useState(filter.families.length > 0);
   const eras: (GeoEra | undefined)[] = [undefined, "2d", "3d"];
@@ -121,10 +117,6 @@ export function GameFilter({
           Pick games
           <ChevronDown className={cn("h-3.5 w-3.5 transition-transform", picking && "rotate-180")} aria-hidden />
         </button>
-        <label className="ml-auto flex cursor-pointer items-center gap-2 text-sm" title={`After pinning, name the game for +${GEO_GAME_BONUS.toLocaleString("en-US")} a round`}>
-          <input type="checkbox" className="h-4 w-4 accent-[hsl(var(--screen))]" checked={guessGame} onChange={(e) => onGuessGame(e.target.checked)} data-testid="geo-guess-game" />
-          Guess the game too
-        </label>
       </div>
 
       {picking && (
@@ -160,11 +152,6 @@ export function GameFilter({
             have {offEras.length === 1 ? "its" : "their"} screenshots.
           </p>
         )
-      )}
-      {guessGame && (
-        <p className="text-xs text-muted-foreground">
-          Guess the game too: after pinning, name the screenshot&apos;s game for +{GEO_GAME_BONUS.toLocaleString("en-US")} a round (five-round games; leaderboards count the map score only).
-        </p>
       )}
     </div>
   );
