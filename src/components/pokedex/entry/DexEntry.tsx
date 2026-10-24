@@ -19,6 +19,7 @@ import { MovesSection } from "./MovesSection";
 import { EntriesSection } from "./EntriesSection";
 import { TrainingSection } from "./TrainingSection";
 import { LookalikesSection } from "./LookalikesSection";
+import { EncountersSection } from "./EncountersSection";
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
 
@@ -52,6 +53,7 @@ export function DexEntry({ data }: { data: DexEntryData }) {
     { id: "matchups", label: "Matchups" },
     data.evolutionTree && { id: "evolution", label: "Evolution" },
     data.lookalikes.length > 0 && { id: "lookalikes", label: "Lookalikes" },
+    data.encounters && { id: "encounters", label: "Where to find it" },
     data.learnset && { id: "moves", label: "Moves" },
     { id: "pokedex", label: "Pokédex" },
     { id: "breeding", label: "Training + breeding" },
@@ -131,6 +133,12 @@ export function DexEntry({ data }: { data: DexEntryData }) {
       {data.lookalikes.length > 0 && (
         <Section id="lookalikes" index={sectionIndex("lookalikes")} title="Easily confused with" subtitle="Most similar silhouettes">
           <LookalikesSection self={{ id: p.id, name: p.name }} lookalikes={data.lookalikes} />
+        </Section>
+      )}
+
+      {data.encounters && (
+        <Section id="encounters" index={sectionIndex("encounters")} title="Where to find it" subtitle="By game">
+          <EncountersSection gens={data.encounters} name={p.name} />
         </Section>
       )}
 

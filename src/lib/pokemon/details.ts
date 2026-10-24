@@ -6,6 +6,7 @@ import { TYPES, defensiveProfile, effectiveness, type PokemonType } from "./type
 import type { DexEntryData, DexMove, EvolutionNode } from "./dex-types";
 import { lookalikesOf } from "./lookalikes";
 import { fixEvolutionConditions } from "./evolution-fixes";
+import { getEncounters } from "./encounters";
 
 /**
  * Assembles everything the study Pokédex shows for one species into a single
@@ -144,6 +145,7 @@ export function getDexEntry(p: Pokemon): DexEntryData {
     percentiles: Object.fromEntries(
       [...STAT_KEYS, "bst" as const].map((k) => [k, percentile(k === "bst" ? p.bst : p.stats[k], STAT_DISTRIBUTIONS[k])])
     ) as DexEntryData["percentiles"],
+    encounters: getEncounters(p.id),
     prev: neighbour(p.id - 1),
     next: neighbour(p.id + 1),
     lookalikes: lookalikesOf(p.id, (o) => !evolutionFamily(p).some((f) => f.id === o.id))
