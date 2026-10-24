@@ -54,7 +54,7 @@ export function DesktopNav() {
               href={href}
               className={cn(
                 // Tighter between lg and xl so every link fits on one row.
-                "relative whitespace-nowrap px-3 py-2 font-display text-[13px] font-semibold uppercase tracking-[0.12em] text-muted-foreground transition-colors hover:text-foreground xl:px-4",
+                "relative whitespace-nowrap px-3 py-2 font-display text-[13px] font-semibold uppercase tracking-[0.12em] text-muted-foreground transition-colors hover:text-foreground xl:px-3 xl:tracking-[0.08em] 2xl:px-4 2xl:tracking-[0.12em]",
                 active && "text-foreground",
                 wideOnly && "hidden xl:block"
               )}
@@ -64,7 +64,7 @@ export function DesktopNav() {
               {active && (
                 <motion.span
                   layoutId="nav-active"
-                  className="absolute inset-x-3 -bottom-[9px] h-[3px] bg-primary shadow-[0_0_10px_hsl(var(--primary))] xl:inset-x-4"
+                  className="absolute inset-x-3 -bottom-[9px] h-[3px] bg-primary shadow-[0_0_10px_hsl(var(--primary))] xl:inset-x-3 2xl:inset-x-4"
                   transition={{ type: "spring", stiffness: 500, damping: 38 }}
                 />
               )}
