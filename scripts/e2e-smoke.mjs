@@ -385,8 +385,7 @@ step("pikadoku: a full daily (9 PP, one wrong guess), the score and the answers 
   const gridRes = await (await page.request.get(`${BASE}/api/pikadoku?date=${today}&difficulty=normal`)).text();
   if (/answers|members|"ids"/.test(gridRes)) errors.push("Pikadoku's grid came with answers");
   await page.goto(`${BASE}/pikadoku`, { waitUntil: "networkidle" });
-  await page.getByTestId("pdk-howto").waitFor(); // the first-visit how-to
-  await page.keyboard.press("Escape");
+  if (await page.getByTestId("pdk-howto").isVisible()) errors.push("Pikadoku auto-opened its how-to");
   await page.getByTestId("pdk-row-0").waitFor();
   await page.getByTestId("pdk-cell-0").waitFor();
   const label = async (id) => (await page.getByTestId(id).innerText()).trim();
