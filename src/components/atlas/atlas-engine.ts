@@ -356,20 +356,49 @@ export function createAtlas(canvas: HTMLCanvasElement, stage: HTMLElement, atlas
         p.inside?.forEach((b, i) => label(b, p.x, p.y, `500 SIZE ${sans}, system-ui`, 11, 18 + i * 14, "#c9f2dc"));
   }
 
-  function zoomAt(k: number, cx: number, cy: number) {
+  /** Zoom by k about screen point (cx, cy): eased over a few frames, so wheel notches glide instead of jumping. */
+  let zoomGoal: { s: number; cx: number; cy: number } | null = null;
+  function zoomAt(k: number, cx: number, cy: number, instant = false) {
     touched = true;
-    const s2 = Math.min(MAX_SCALE, Math.max(minS, view.s * k));
+    const s2 = Math.min(MAX_SCALE, Math.max(minS, (zoomGoal?.s ?? view.s) * k));
+    if (instant || reduceMotion) {
+      cancelAnimationFrame(anim);
+      zoomGoal = null;
+      scaleAbout(s2, cx, cy);
+      requestDraw();
+      return;
+    }
+    const gliding = zoomGoal !== null;
+    zoomGoal = { s: s2, cx, cy };
+    if (!gliding) {
+      cancelAnimationFrame(anim);
+      anim = requestAnimationFrame(zoomStep);
+    }
+  }
+  function scaleAbout(s2: number, cx: number, cy: number) {
     const r = s2 / view.s;
     view.tx = cx - (cx - view.tx) * r;
     view.ty = cy - (cy - view.ty) * r;
     view.s = s2;
     clamp();
-    requestDraw();
+  }
+  function zoomStep() {
+    if (!alive || !zoomGoal) return;
+    const { s: goal, cx, cy } = zoomGoal;
+    const ls = Math.log(view.s);
+    const lg = Math.log(goal);
+    const close = Math.abs(lg - ls) < 0.003;
+    scaleAbout(close ? goal : Math.exp(ls + (lg - ls) * 0.3), cx, cy);
+    draw();
+    // Stop once there, or if the zoom limits leave nowhere to go.
+    if (close || Math.abs(Math.log(view.s) - ls) < 1e-6) zoomGoal = null;
+    else anim = requestAnimationFrame(zoomStep);
   }
 
   /** Glide to show world point (wx, wy) at scale s2. */
   function glide(wx: number, wy: number, s2: number): Promise<void> {
     cancelAnimationFrame(anim);
+    zoomGoal = null;
     s2 = Math.min(MAX_SCALE, Math.max(minS, s2));
     const from = { ...view };
     return new Promise((done) => {
@@ -455,6 +484,7 @@ export function createAtlas(canvas: HTMLCanvasElement, stage: HTMLElement, atlas
     canvas.setPointerCapture(e.pointerId);
     pointers.set(e.pointerId, { x: e.offsetX, y: e.offsetY });
     cancelAnimationFrame(anim);
+    zoomGoal = null;
     if (pointers.size === 1) {
       drag = { x: e.offsetX, y: e.offsetY, tx: view.tx, ty: view.ty };
       moved = false;
@@ -504,7 +534,8 @@ export function createAtlas(canvas: HTMLCanvasElement, stage: HTMLElement, atlas
     e.preventDefault();
     // Trackpad pinch arrives as ctrl+wheel with small deltas; mouse wheels send big steps.
     const k = e.ctrlKey ? 0.012 : e.deltaMode === 1 ? 0.12 : 0.0035;
-    zoomAt(Math.exp(-e.deltaY * k), e.offsetX, e.offsetY);
+    // Pinches and trackpads already send many small steps, so they follow the fingers directly.
+    zoomAt(Math.exp(-e.deltaY * k), e.offsetX, e.offsetY, e.ctrlKey || (e.deltaMode === 0 && Math.abs(e.deltaY) < 40));
   };
   // In a game a double click is two guesses, not a zoom.
   const onDbl = (e: MouseEvent) => !opts.onTap && zoomAt(2, e.offsetX, e.offsetY);
