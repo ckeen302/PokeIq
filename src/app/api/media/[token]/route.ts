@@ -78,8 +78,8 @@ async function render(kind: MediaKind, id: number): Promise<Rendered> {
 export async function GET(_request: NextRequest, context: { params: Promise<{ token: string }> }) {
   const { token } = await context.params;
   const media = decryptJson<MediaToken>(token);
-  if (!media || !getPokemon(media.id)) return new NextResponse("Not found", { status: 404 });
-  if (media.x < Date.now()) return new NextResponse("Expired", { status: 410 });
+  if (!media || !getPokemon(media.id)) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  if (media.x < Date.now()) return NextResponse.json({ error: "Expired" }, { status: 410 });
 
   const key = `${media.k}:${media.id}`;
   try {
@@ -98,6 +98,6 @@ export async function GET(_request: NextRequest, context: { params: Promise<{ to
     });
   } catch (err) {
     console.error("[api/media]", err);
-    return new NextResponse("Upstream media unavailable", { status: 502 });
+    return NextResponse.json({ error: "Upstream media unavailable" }, { status: 502 });
   }
 }

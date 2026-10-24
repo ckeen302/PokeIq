@@ -13,10 +13,10 @@ import { pictureImage, type PictureSize } from "@/lib/server/avatar-uploads";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const notFound = () => new NextResponse("Not found", { status: 404, headers: { "Cache-Control": "no-store" } });
+const notFound = () => NextResponse.json({ error: "Not found" }, { status: 404, headers: { "Cache-Control": "no-store" } });
 
 export async function GET(request: NextRequest, context: { params: Promise<{ id: string }> }) {
-  if (!rateLimit(`avatar-img:${clientIp(request)}`, 300, 20)) return new NextResponse("Slow down", { status: 429 });
+  if (!rateLimit(`avatar-img:${clientIp(request)}`, 300, 20)) return NextResponse.json({ error: "Slow down" }, { status: 429 });
   const { id } = await context.params;
   const size: PictureSize = request.nextUrl.searchParams.get("s") === "256" ? 256 : 64;
   // Only look the viewer up when they're signed in (approved pictures don't need it).

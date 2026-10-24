@@ -9,11 +9,11 @@ import { shotSource } from "@/lib/server/geo";
  */
 export async function GET(_request: NextRequest, context: { params: Promise<{ id: string }> }) {
   const { id } = await context.params;
-  if (!/^[A-Za-z0-9_-]{8,24}$/.test(id)) return new NextResponse("Not found", { status: 404 });
+  if (!/^[A-Za-z0-9_-]{8,24}$/.test(id)) return NextResponse.json({ error: "Not found" }, { status: 404 });
   const source = shotSource(id);
   try {
     const upstream = await fetch(source, { signal: AbortSignal.timeout(10_000) });
-    if (!upstream.ok) return new NextResponse("Not found", { status: 404 });
+    if (!upstream.ok) return NextResponse.json({ error: "Not found" }, { status: 404 });
     return new NextResponse(await upstream.arrayBuffer(), {
       headers: {
         "Content-Type": "image/webp",
@@ -21,6 +21,6 @@ export async function GET(_request: NextRequest, context: { params: Promise<{ id
       },
     });
   } catch {
-    return new NextResponse("Upstream error", { status: 502 });
+    return NextResponse.json({ error: "Upstream error" }, { status: 502 });
   }
 }

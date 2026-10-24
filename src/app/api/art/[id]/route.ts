@@ -24,7 +24,7 @@ export async function GET(request: NextRequest, context: { params: Promise<{ id:
   const size = Number(request.nextUrl.searchParams.get("s") ?? 256);
   const shiny = request.nextUrl.searchParams.get("shiny") === "1";
   if (!Number.isInteger(id) || !isKnownId(id) || !SIZES.has(size)) {
-    return new NextResponse("Not found", { status: 404 });
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
   const key = `${id}:${size}:${shiny ? 1 : 0}`;
@@ -33,7 +33,7 @@ export async function GET(request: NextRequest, context: { params: Promise<{ id:
     const src = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${shiny ? "shiny/" : ""}${id}.png`;
     try {
       const res = await fetch(src, { signal: AbortSignal.timeout(8000) });
-      if (!res.ok) return new NextResponse("Artwork unavailable", { status: res.status === 404 ? 404 : 502 });
+      if (!res.ok) return NextResponse.json({ error: "Artwork unavailable" }, { status: res.status === 404 ? 404 : 502 });
       body = await sharp(Buffer.from(await res.arrayBuffer()))
         .resize(size, size, { fit: "contain", background: { r: 0, g: 0, b: 0, alpha: 0 } })
         .webp({ quality: 82 })
@@ -41,7 +41,7 @@ export async function GET(request: NextRequest, context: { params: Promise<{ id:
     } catch (err) {
       // Upstream timeout / network error or a corrupt image.
       console.error("[api/art]", id, err instanceof Error ? err.message : err);
-      return new NextResponse("Artwork unavailable", { status: 502 });
+      return NextResponse.json({ error: "Artwork unavailable" }, { status: 502 });
     }
     if (cache.size > 600) cache.delete(cache.keys().next().value!);
     cache.set(key, body);
