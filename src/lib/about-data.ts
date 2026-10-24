@@ -34,7 +34,7 @@ export const POKEMON_SLOTS: readonly PokemonSlot[] = [
 
 export const RULE_HINT: Record<PokemonRule, string> = {
   any: "Any Pokémon or form",
-  starter: "Starter lines only",
+  starter: "The 27 first-stage starters only",
   mega: "Mega forms only",
   gmax: "Gigantamax forms only",
   regional: "Alolan, Galarian, Hisuian and Paldean forms only",

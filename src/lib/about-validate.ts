@@ -7,7 +7,7 @@ type FormRow = [number, number, string, string, "mega" | "gmax" | "regional" | "
 export const FORMS = forms as FormRow[];
 const FORM_BY_ID = new Map(FORMS.map((f) => [f[0], f]));
 
-const STARTER_CHAINS = new Set(STARTER_BASES.map((id) => getPokemon(id)?.chain).filter((c): c is number => c !== undefined));
+const STARTERS = new Set<number>(STARTER_BASES);
 const EEVEE = new Set<number>(EEVEELUTIONS);
 
 /** Does this species/form id satisfy the slot's restriction? */
@@ -19,7 +19,7 @@ export function allowedFor(rule: PokemonRule, id: number): boolean {
     case "any":
       return true;
     case "starter":
-      return STARTER_CHAINS.has(species.chain);
+      return STARTERS.has(species.id) && !form;
     case "eeveelution":
       return EEVEE.has(species.id) && !form;
     case "mega":
