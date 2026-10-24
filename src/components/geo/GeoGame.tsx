@@ -24,6 +24,8 @@ import {
   GEO_MAX_ROUND_SCORE,
   GEO_ROUNDS,
   WORLD_REGION,
+  isGeoRounds,
+  type GeoRounds,
   geoBoardKey,
   geoDailyRegion,
   geoMapRank,
@@ -49,7 +51,7 @@ import { DuelCard } from "./DuelCard";
 import { ReportShot } from "./ReportShot";
 import { ShotCarousel, shotFit } from "./ShotCarousel";
 import { roundViewsOf } from "@/lib/geo-look";
-import { GeoSettingsButton } from "./GeoSettings";
+import { GeoSettingsButton, RoundsPicker } from "./GeoSettings";
 import {
   DEFAULT_GEO_SETTINGS,
   GEO_ZOOM,
@@ -73,6 +75,8 @@ interface Game {
   /** The map being played (a daily or a challenge picks its own). */
   region: GeoRegionInfo;
   kind: GeoKind;
+  /** Rounds in a game (5 for the Daily). */
+  rounds: number;
   daily?: string;
   practice?: string;
   /** The game filter it was started with (the daily: every game). */
@@ -93,8 +97,8 @@ interface Played {
 }
 
 /** The personal-best and leaderboard board of a game: its map, kind and era (hand-picked games keep a best of their own). */
-const boardOf = (game: Pick<Game, "region" | "kind" | "filter">) =>
-  `${geoBoardKey({ region: game.region.id, kind: game.kind, era: game.filter.era })}${game.filter.families.length ? ":custom" : ""}`;
+const boardOf = (game: Pick<Game, "region" | "kind" | "filter"> & { rounds?: number }) =>
+  `${geoBoardKey({ region: game.region.id, kind: game.kind, era: game.filter.era, rounds: game.rounds })}${game.filter.families.length ? ":custom" : ""}`;
 
 interface Reward {
   xp: number;
@@ -103,7 +107,7 @@ interface Reward {
 }
 
 const fmt = (n: number) => n.toLocaleString("en-US");
-const MAX_TOTAL = GEO_ROUNDS * GEO_MAX_ROUND_SCORE;
+const maxTotal = (rounds: number) => rounds * GEO_MAX_ROUND_SCORE;
 
 const emoji = guessrSquare;
 
@@ -217,9 +221,12 @@ export function GeoGame({ regions: allRegions, challenge }: GeoGameProps) {
   const [isChallenge, setIsChallenge] = useState(false);
   const [filter, setFilter] = useState<FilterChoice>({ era: undefined, families: [] });
   const [gamePick, setGamePick] = useState<string | null>(null);
+  const [rounds, setRounds] = useState<GeoRounds>(5);
 
   const region = byId(regionId) ?? regions[0];
   const places = filterPlaces(region, filter);
+  // A map too small for the picked length plays the default.
+  const playRounds: GeoRounds = rounds <= places ? rounds : GEO_ROUNDS;
   const filterOk = !filter.era && !filter.families.length ? playable(region) : places >= GEO_FILTER_MIN_PLACES;
 
   useEffect(() => setSettings(readGeoSettings()), []);
@@ -269,7 +276,7 @@ export function GeoGame({ regions: allRegions, challenge }: GeoGameProps) {
         ? { challenge: opts.challenge, name: progress?.name || undefined, ...bonus }
         : opts.daily
           ? { daily: opts.daily, name: progress?.name || undefined, ...bonus }
-          : { region: region.id, kind: opts.kind, ...picked, name: progress?.name || undefined, recent: readRecent(), ...bonus };
+          : { region: region.id, kind: opts.kind, ...(opts.kind === "game" ? { rounds: playRounds } : {}), ...picked, name: progress?.name || undefined, recent: readRecent(), ...bonus };
       const res = await post<GeoStartResponse>("/api/geo", body);
       const map = byId(res.region) ?? allRegions.find((r) => r.id === res.region);
       if (!map) throw new Error("That map isn't available right now.");
@@ -282,6 +289,7 @@ export function GeoGame({ regions: allRegions, challenge }: GeoGameProps) {
       setGame({
         region: map,
         kind: opts.kind,
+        rounds: opts.challenge && challenge && isGeoRounds(challenge.rounds.length) ? challenge.rounds.length : opts.kind === "game" && !opts.daily ? playRounds : GEO_ROUNDS,
         daily: opts.daily,
         practice: res.practice,
         filter: played,
@@ -407,7 +415,7 @@ export function GeoGame({ regions: allRegions, challenge }: GeoGameProps) {
   if (phase === "setup" || phase === "loading" || (phase === "error" && !game)) {
     const dailyDone = today ? progress?.best[`geo-daily:${today}`] : undefined;
     const dailyMap = today ? byId(geoDailyRegion(today, playable(byId(WORLD_REGION)))) : undefined;
-    const bestGame = progress?.best[`geo:${boardOf({ region, kind: "game", filter })}`];
+    const bestGame = progress?.best[`geo:${boardOf({ region, kind: "game", filter, rounds: playRounds })}`];
     const bestStreak = progress?.best[`geo:${boardOf({ region, kind: "streak", filter })}`];
     const challengeMap = challenge ? byId(challenge.region) : undefined;
     const loading = phase === "loading";
@@ -445,7 +453,7 @@ export function GeoGame({ regions: allRegions, challenge }: GeoGameProps) {
                   {challenge.name || "A trainer"} scored {fmt(challenge.score)}
                 </p>
                 <p className="text-sm text-muted-foreground">
-                  Same five places{challengeMap ? ` in ${where(challengeMap)}` : ""}, same screenshots.{" "}
+                  Same {challenge.rounds.length || 5} places{challengeMap ? ` in ${where(challengeMap)}` : ""}, same screenshots.{" "}
                   {challenge.rounds.map(emoji).join("")}
                 </p>
               </CardContent>
@@ -561,15 +569,17 @@ export function GeoGame({ regions: allRegions, challenge }: GeoGameProps) {
             </p>
           )}
 
+          <RoundsPicker value={playRounds} onChange={setRounds} max={places} label="Rounds in a game" />
+
           <div className="grid gap-4 sm:grid-cols-2">
             <ModeCard
               preview={region.preview ?? region.map.src}
               icon={<MapPinIcon className="h-5 w-5" aria-hidden />}
-              title="5-round game"
+              title={`${playRounds}-round game`}
               blurb={
                 isWorld
-                  ? `Five places in five different regions, up to ${fmt(MAX_TOTAL)} points. Then challenge a friend to beat you.`
-                  : `Five places, up to ${fmt(MAX_TOTAL)} points. Then challenge a friend to beat you.`
+                  ? `${playRounds} places in ${playRounds} different regions, up to ${fmt(maxTotal(playRounds))} points. Then challenge a friend to beat you.`
+                  : `${playRounds} places, up to ${fmt(maxTotal(playRounds))} points. Then challenge a friend to beat you.`
               }
               stat={bestGame ? `Best ${fmt(bestGame)}` : null}
               disabled={loading || !filterOk}
@@ -592,7 +602,7 @@ export function GeoGame({ regions: allRegions, challenge }: GeoGameProps) {
         </div>
 
         {/* Duels play an era when the map has enough of it (hand-picked games are practice), else every game. */}
-        <DuelCard region={region} era={filter.era && filterPlaces(region, { era: filter.era, families: [] }) >= GEO_FILTER_MIN_PLACES ? filter.era : undefined} />
+        <DuelCard region={region} places={places} era={filter.era && filterPlaces(region, { era: filter.era, families: [] }) >= GEO_FILTER_MIN_PLACES ? filter.era : undefined} />
 
         <p className="text-center text-xs text-muted-foreground">
           Screenshots from{" "}
@@ -687,7 +697,7 @@ export function GeoGame({ regions: allRegions, challenge }: GeoGameProps) {
             <div>
               <div className="hud-label">Round</div>
               <div className="font-pixel tabular-nums">
-                {Math.min(roundNumber, GEO_ROUNDS)}/{GEO_ROUNDS}
+                {Math.min(roundNumber, game.rounds)}/{game.rounds}
               </div>
             </div>
             <div>
@@ -940,7 +950,7 @@ function GeoSummary({
 
   async function shareChallenge() {
     if (!challengeUrl) return;
-    const outcome = await shareOrCopy(`I scored ${fmt(total)} in PokéGuessr. Same five places, can you beat me?`, challengeUrl);
+    const outcome = await shareOrCopy(`I scored ${fmt(total)} in PokéGuessr. Same ${played.length || 5} places, can you beat me?`, challengeUrl);
     if (outcome === "failed") setShared("failed");
     else if (outcome !== "cancelled") setShared("done");
   }
@@ -975,14 +985,14 @@ function GeoSummary({
         </div>
         {!isStreak && (
           <>
-            <div className="text-sm text-muted-foreground">out of {fmt(MAX_TOTAL)}</div>
+            <div className="text-sm text-muted-foreground">out of {fmt(maxTotal(game.rounds))}</div>
             {bonus !== null && (
               <div className="text-sm font-semibold text-success" data-testid="geo-bonus-total">
                 +{fmt(bonus)} game bonus · {fmt(total + bonus)} with the bonus (the leaderboard counts the map score)
               </div>
             )}
             <div className="meter mx-auto max-w-xl">
-              <motion.div className="h-full bg-primary" initial={{ width: 0 }} animate={{ width: `${(total / MAX_TOTAL) * 100}%` }} transition={{ duration: 1.1 }} />
+              <motion.div className="h-full bg-primary" initial={{ width: 0 }} animate={{ width: `${(total / maxTotal(game.rounds)) * 100}%` }} transition={{ duration: 1.1 }} />
             </div>
           </>
         )}
@@ -1113,7 +1123,7 @@ function GeoSummary({
             href={
               game.daily
                 ? `/leaderboard?board=geo&date=${game.daily}`
-                : `/leaderboard?board=geo&format=${geoBoardKey({ region: region.id, kind: game.kind, era: game.filter.era })}`
+                : `/leaderboard?board=geo&format=${geoBoardKey({ region: region.id, kind: game.kind, era: game.filter.era, rounds: game.rounds })}`
             }
             className={cn(buttonVariants({ variant: "outline", size: "lg" }), "w-full")}
           >

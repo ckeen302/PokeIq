@@ -10,6 +10,8 @@ import {
   GEO_KINDS,
   GEO_MAX_ROUND_SCORE,
   GEO_ROUNDS,
+  geoRoundsOf,
+  isGeoRounds,
   type GeoAnswer,
   type GeoChallenge,
   type GeoGameGuess,
@@ -296,8 +298,10 @@ export function geoWorldPin(region: string, name: string): [number, number] | nu
  * Whether a map (with its filter) can be played: enough places for a game,
  * and with an era or picked games, at least GEO_FILTER_MIN_PLACES of them.
  */
-export function isGeoSpec(spec: Pick<GeoSpec, "region" | "kind"> & Omit<DealSpec, "region">): boolean {
-  const min = filtered(spec) ? Math.max(GEO_ROUNDS, GEO_FILTER_MIN_PLACES) : GEO_ROUNDS;
+export function isGeoSpec(spec: Pick<GeoSpec, "region" | "kind" | "rounds"> & Omit<DealSpec, "region">): boolean {
+  if (spec.rounds !== undefined && !isGeoRounds(spec.rounds)) return false;
+  const rounds = geoRoundsOf(spec);
+  const min = filtered(spec) ? Math.max(rounds, GEO_FILTER_MIN_PLACES) : rounds;
   return GEO_KINDS.includes(spec.kind) && areasOf(spec).length >= min;
 }
 
@@ -358,12 +362,13 @@ function pickRound(rng: Rng, area: Area, allowed: ReadonlySet<GeoFamilyId>): Pla
  * A five-round world game visits five different regions. `limit` stops early
  * (the first rounds don't depend on it). A filter deals only its games' shots.
  */
-export function planRounds(spec: Pick<GeoSpec, "region" | "kind"> & Omit<DealSpec, "region">, seed: string, limit = Infinity): PlannedRound[] {
+export function planRounds(spec: Pick<GeoSpec, "region" | "kind" | "rounds"> & Omit<DealSpec, "region">, seed: string, limit = Infinity): PlannedRound[] {
   const rng = new Rng(deriveSeed("geo", seed));
   const allowed = allowedFamilies(spec);
   const areas = rng.shuffle(areasOf(spec));
-  const max = Math.min(limit, spec.kind === "game" ? GEO_ROUNDS : Infinity);
-  const oneEach = isWorldwide(spec.region) && spec.kind === "game" && new Set(areas.map((a) => a.group)).size >= GEO_ROUNDS;
+  const count = geoRoundsOf(spec);
+  const max = Math.min(limit, spec.kind === "game" ? count : Infinity);
+  const oneEach = isWorldwide(spec.region) && spec.kind === "game" && new Set(areas.map((a) => a.group)).size >= count;
   const groups = new Set<string>();
   const rounds: PlannedRound[] = [];
   for (const area of areas) {
@@ -539,17 +544,18 @@ export function startGeo(
     // Never more than half the map's areas, so a fresh game is always possible.
     const recent = opts.recent.slice(0, Math.floor(areasOf(spec).length / 2));
     const weights = new Map(recent.map((key, i) => [key, recent.length - i] as const));
-    let best = staleness(spec, planRounds(spec, seed, GEO_ROUNDS), weights);
+    let best = staleness(spec, planRounds(spec, seed, geoRoundsOf(spec)), weights);
     for (let i = 1; i < SEED_TRIES && best > 0; i++) {
       const next = randomId();
-      const stale = staleness(spec, planRounds(spec, next, GEO_ROUNDS), weights);
+      const stale = staleness(spec, planRounds(spec, next, geoRoundsOf(spec)), weights);
       if (stale < best) [seed, best] = [next, stale];
     }
   }
   // A challenge's own five rounds when it carries them and they're all still on the map.
   const given = spec.kind === "game" ? unseal(opts.plan)?.filter((r) => findLocation(spec, r)) : undefined;
-  const rounds = given?.length === GEO_ROUNDS ? given : planRounds(spec, seed, spec.kind === "game" ? GEO_ROUNDS : 1);
-  const plan = given?.length === GEO_ROUNDS ? opts.plan : seal(rounds);
+  const want = geoRoundsOf(spec);
+  const rounds = given?.length === want ? given : planRounds(spec, seed, spec.kind === "game" ? want : 1);
+  const plan = given?.length === want ? opts.plan : seal(rounds);
   const state: GeoState = { v: 4, sid: randomId(), spec, seed, startedAt: Date.now(), name: opts.name, log: [], plan };
   return { token: signToken("geo", state), round: publicRound(spec, 0, rounds[0]) };
 }

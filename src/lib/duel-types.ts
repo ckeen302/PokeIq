@@ -5,7 +5,7 @@ import type { GeoEra } from "./geo-families";
  * Shared by the server (which applies every rule) and the client.
  */
 
-import type { GeoAnswer } from "./geo-types";
+import type { GeoAnswer, GeoRounds } from "./geo-types";
 import type { PvpEmoteView } from "./pvp-types";
 import type { ChatLine } from "./chat";
 
@@ -34,6 +34,16 @@ export const DUEL_IDLE_ROUNDS = 3;
 /** Duel codes: eight letters and digits, without the ones that look alike (0/o, 1/l/i). */
 export const DUEL_CODE_RE = /^[a-hjkmnp-z2-9]{8}$/;
 export const DUEL_NAME_RE = /^[\p{L}\p{N} _.\-']+$/u;
+
+/** hp: the lower score each round loses HP (default). race: a fixed number of rounds, highest total wins. */
+export type DuelMode = "hp" | "race";
+export const DUEL_MODES: readonly DuelMode[] = ["hp", "race"];
+
+/** How a duel is set up: the mode and, for a points race, how many rounds. */
+export interface DuelSettings {
+  mode: DuelMode;
+  rounds?: GeoRounds;
+}
 
 export type DuelStatus = "lobby" | "playing" | "finished";
 /** hp: someone ran out. rounds: the last round was played. left: stopped responding or quit. idle: missed rounds in a row. */
@@ -91,6 +101,9 @@ export interface DuelView {
   region: string;
   /** Only Classic 2D or Modern 3D screenshots (every game when unset). */
   era?: GeoEra;
+  /** "race": a set number of rounds, highest total wins (with `totals` per seat). */
+  mode: DuelMode;
+  totals?: number[];
   status: DuelStatus;
   /** Server clock, so timers agree whatever the device's clock says. */
   now: number;

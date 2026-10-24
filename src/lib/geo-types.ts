@@ -2,6 +2,12 @@
 import type { FamilyCombos, GeoEra, GeoFamilyId } from "./geo-families";
 
 export const GEO_ROUNDS = 5;
+/** Game lengths a solo player or a points-race duel can pick (the Daily is always GEO_ROUNDS). */
+export const GEO_ROUND_OPTIONS = [3, 5, 10] as const;
+export type GeoRounds = (typeof GEO_ROUND_OPTIONS)[number];
+export const isGeoRounds = (n: unknown): n is GeoRounds => GEO_ROUND_OPTIONS.some((r) => r === n);
+/** A spec's round count: GEO_ROUNDS unless it picked another length. */
+export const geoRoundsOf = (spec: { rounds?: number }): number => (isGeoRounds(spec.rounds) ? spec.rounds : GEO_ROUNDS);
 export const GEO_MAX_ROUND_SCORE = 5000;
 /** A map with a game filter (an era, or picked games) needs this many places to play: fewer and the filter is off. */
 export const GEO_FILTER_MIN_PLACES = 10;
@@ -59,6 +65,8 @@ export interface GeoSpec {
   region: string;
   kind: GeoKind;
   daily?: string;
+  /** Games: 3, 5 or 10 rounds (unset = 5, as every score before this was). */
+  rounds?: GeoRounds;
   /**
    * Not ranked: a repeat start of a daily, a friend's challenge (the places
    * are known), or a game on hand-picked game families (practice only).
@@ -73,8 +81,10 @@ export interface GeoSpec {
 }
 
 /** Leaderboard key for free play, e.g. "kanto", "kanto:streak" or "world:2d" (the eras have boards of their own). */
-export const geoBoardKey = (spec: Pick<GeoSpec, "region" | "kind"> & { era?: GeoEra }) =>
-  `${spec.region}${spec.era ? `:${spec.era}` : ""}${spec.kind === "streak" ? ":streak" : ""}`;
+export const geoBoardKey = (spec: Pick<GeoSpec, "region" | "kind"> & { era?: GeoEra; rounds?: number }) =>
+  `${spec.region}${spec.era ? `:${spec.era}` : ""}${spec.kind === "streak" ? ":streak" : ""}${
+    spec.kind === "game" && geoRoundsOf(spec) !== GEO_ROUNDS ? `:r${geoRoundsOf(spec)}` : ""
+  }`;
 
 export interface GeoRoundPublic {
   index: number;

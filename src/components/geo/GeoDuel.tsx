@@ -147,6 +147,7 @@ export function GeoDuel({ code, regions }: GeoDuelProps) {
   });
 
   const map = view ? regions.find((r) => r.id === view.region) : undefined;
+  const race = view?.mode === "race";
   if (gone || (view && !map)) {
     return <DuelGone message={gone ?? "This duel's map isn't available any more."} href="/guessr" label="Back to PokéGuessr" />;
   }
@@ -176,25 +177,36 @@ export function GeoDuel({ code, regions }: GeoDuelProps) {
         <DuelLobby
           view={view}
           path={`/guessr/duel/${view.code}`}
-          tag={`Duel · ${map.name}${view.era ? ` · ${GEO_ERA_NAMES[view.era]}` : ""}`}
+          tag={`${race ? `Points race · ${view.maxRounds} rounds` : "HP battle"} · ${map.name}${view.era ? ` · ${GEO_ERA_NAMES[view.era]}` : ""}`}
           title={
             <>
               Poké<span className="text-primary">Guessr</span> Duel
             </>
           }
-          invite={(host) => `${host} challenges you! The same places for both of you, ${fmt(DUEL_HP)} HP each.`}
-          about={`Head to head on the ${map.name} map${view.era ? `, ${GEO_ERA_NAMES[view.era]} screenshots only` : ""}. Both of you get the same places; the closer pin wins the round.`}
-          shareText={`Duel me in PokéGuessr! Same places, ${fmt(DUEL_HP)} HP each.`}
+          invite={(host) =>
+            race
+              ? `${host} challenges you to a ${view.maxRounds}-round points race! The same places for both of you: most points wins.`
+              : `${host} challenges you! The same places for both of you, ${fmt(DUEL_HP)} HP each.`
+          }
+          about={`${race ? `A ${view.maxRounds}-round points race` : "Head to head"} on the ${map.name} map${view.era ? `, ${GEO_ERA_NAMES[view.era]} screenshots only` : ""}. Both of you get the same places; the closer pin wins the round.`}
+          shareText={race ? `Race me in PokéGuessr! Same ${view.maxRounds} places, most points wins.` : `Duel me in PokéGuessr! Same places, ${fmt(DUEL_HP)} HP each.`}
           rules={[
             {
               label: "Rounds",
               text: `The same screenshot for both of you. Once one of you guesses, the other has ${DUEL_COUNTDOWN_MS / 1000} seconds (${DUEL_ROUND_MS / 1000} s a round at most).`,
             },
+            race
+              ? { label: "Scoring", text: `Every round is worth up to ${fmt(5000)} points, no damage and no multipliers. ${view.maxRounds} rounds, and your points add up.` }
+              : {
+                  label: "Damage",
+                  text: `${fmt(DUEL_HP)} HP each. The lower score loses the difference: 1× at first, ×1.5 from round 4, ×2 from round 6, up to ×3.`,
+                },
             {
-              label: "Damage",
-              text: `${fmt(DUEL_HP)} HP each. The lower score loses the difference: 1× at first, ×1.5 from round 4, ×2 from round 6, up to ×3.`,
+              label: "Winning",
+              text: race
+                ? `After ${view.maxRounds} rounds, the higher total wins; level totals are a draw. Leave (or go quiet) and you forfeit.`
+                : `First to 0 HP loses. After ${view.maxRounds} rounds, more HP wins. Leave (or go quiet) and you forfeit.`,
             },
-            { label: "Winning", text: `First to 0 HP loses. After ${view.maxRounds} rounds, more HP wins. Leave (or go quiet) and you forfeit.` },
           ]}
           home="/guessr"
           chat={chat}
@@ -217,7 +229,9 @@ export function GeoDuel({ code, regions }: GeoDuelProps) {
             ? winner === null || winner === undefined
               ? "It ended in a draw."
               : `${view.players[winner]?.name} won.`
-            : `Under way: round ${view.revealed.length + 1}. ${fmt(view.hp[0])} HP to ${fmt(view.hp[1])}.`
+            : race
+              ? `Under way: round ${view.revealed.length + 1} of ${view.maxRounds}. ${fmt(view.totals?.[0] ?? 0)} points to ${fmt(view.totals?.[1] ?? 0)}.`
+              : `Under way: round ${view.revealed.length + 1}. ${fmt(view.hp[0])} HP to ${fmt(view.hp[1])}.`
         }
         home="/guessr"
         label="Start your own duel"
@@ -433,6 +447,7 @@ function DuelHud({ view, center, hit }: { view: DuelView; center: React.ReactNod
 function Fighter({ view, seat, damage, right }: { view: DuelView; seat: number; damage: number; right?: boolean }) {
   const player = view.players[seat];
   const hp = view.hp[seat];
+  const race = view.mode === "race";
   return (
     <div className={cn("min-w-0 space-y-1", right && "text-right")}>
       <div className={cn("flex items-center gap-1.5", right && "flex-row-reverse")}>
@@ -443,11 +458,13 @@ function Fighter({ view, seat, damage, right }: { view: DuelView; seat: number; 
         {player?.quiet && view.status === "playing" && <WifiOff className="h-3.5 w-3.5 shrink-0 text-warning" aria-label="Connection lost" />}
       </div>
       {/* The right-hand bar drains towards its own edge. */}
-      <div className={cn(right && "-scale-x-100")}>
-        <HpBar value={hp / DUEL_HP} />
-      </div>
+      {!race && (
+        <div className={cn(right && "-scale-x-100")}>
+          <HpBar value={hp / DUEL_HP} />
+        </div>
+      )}
       <div className={cn("flex items-center gap-2 font-pixel text-xs tabular-nums", right && "flex-row-reverse")}>
-        <span>{fmt(hp)} HP</span>
+        <span data-testid={race ? `geo-duel-total-${seat}` : undefined}>{race ? `${fmt(view.totals?.[seat] ?? 0)} pts` : `${fmt(hp)} HP`}</span>
         {damage > 0 && (
           <motion.span key={damage} initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} className="text-destructive">
             −{fmt(damage)}
@@ -486,7 +503,11 @@ function DuelReveal({ view, map, result, children }: { view: DuelView; map: GeoR
         {score(0)}
         <div className="space-y-2 text-center">
           <p className="font-display text-lg font-bold uppercase leading-tight">
-            {result.hurt === null
+            {view.mode === "race"
+              ? result.guesses[0]?.score === result.guesses[1]?.score
+                ? "Even round"
+                : `${name((result.guesses[0]?.score ?? 0) > (result.guesses[1]?.score ?? 0) ? 0 : 1)} won the round`
+              : result.hurt === null
               ? "Even round: no damage"
               : `${name(result.hurt)} ${result.hurt === me ? "take" : "takes"} ${fmt(result.damage)} damage`}
             {result.hurt !== null && result.multiplier > 1 && <span className="text-warning"> (×{result.multiplier})</span>}
@@ -518,7 +539,10 @@ function DuelSummary({ view, map, busy, onRematch }: { view: DuelView; map: GeoR
   const rounds = view.revealed.length;
   const reason = {
     hp: won ? `${them} ran out of HP.` : "You ran out of HP.",
-    rounds: `After ${rounds} rounds, ${draw ? "you're level on HP" : won ? "you have more HP" : `${them} has more HP`}.`,
+    rounds:
+      view.mode === "race"
+        ? `After ${rounds} rounds, ${draw ? "you're level on points" : won ? "you scored more points" : `${them} scored more points`}.`
+        : `After ${rounds} rounds, ${draw ? "you're level on HP" : won ? "you have more HP" : `${them} has more HP`}.`,
     left: won ? `${them} left the duel.` : "You left the duel.",
     idle: draw
       ? `Neither of you guessed for ${DUEL_IDLE_ROUNDS} rounds.`
@@ -553,7 +577,7 @@ function DuelSummary({ view, map, busy, onRematch }: { view: DuelView; map: GeoR
       <Card>
         <CardContent className="space-y-5 p-5">
           {rounds > 0 && (
-            <div className="grid grid-cols-[auto_1fr_auto_auto_auto] items-center gap-x-4 gap-y-1.5 text-sm">
+            <div className={cn("grid items-center gap-x-4 gap-y-1.5 text-sm", view.mode === "race" ? "grid-cols-[auto_1fr_auto_auto]" : "grid-cols-[auto_1fr_auto_auto_auto]")}>
               <span />
               <span className="hud-label">Place</span>
               {[0, 1].map((seat) => (
@@ -562,7 +586,7 @@ function DuelSummary({ view, map, busy, onRematch }: { view: DuelView; map: GeoR
                   {view.players[seat]?.name}
                 </span>
               ))}
-              <span className="hud-label text-right">Damage</span>
+              {view.mode !== "race" && <span className="hud-label text-right">Damage</span>}
               {view.revealed.map((r) => (
                 <div key={r.index} className="contents">
                   <span className="font-pixel text-xs text-muted-foreground">
@@ -578,9 +602,11 @@ function DuelSummary({ view, map, busy, onRematch }: { view: DuelView; map: GeoR
                       {g ? fmt(g.score) : "—"}
                     </span>
                   ))}
-                  <span className="text-right font-pixel text-xs tabular-nums" style={r.hurt === null ? undefined : { color: SEAT_COLORS[r.hurt] }}>
-                    {r.hurt === null ? "0" : `−${fmt(r.damage)}`}
-                  </span>
+                  {view.mode !== "race" && (
+                    <span className="text-right font-pixel text-xs tabular-nums" style={r.hurt === null ? undefined : { color: SEAT_COLORS[r.hurt] }}>
+                      {r.hurt === null ? "0" : `−${fmt(r.damage)}`}
+                    </span>
+                  )}
                 </div>
               ))}
             </div>

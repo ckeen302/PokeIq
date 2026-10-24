@@ -207,7 +207,7 @@ export function guessrShareText(r: GuessrShareResult, regionName: string, url?: 
   const total = rounds.reduce((s, p) => s + p, 0);
   return composeShare({
     title,
-    score: `${fmt(total)}/${fmt(GEO_ROUNDS * GEO_MAX_ROUND_SCORE)}`,
+    score: `${fmt(total)}/${fmt((rounds.length || GEO_ROUNDS) * GEO_MAX_ROUND_SCORE)}`,
     lines: [rounds.map(guessrSquare).join(""), rounds.map(fmt).join(" · ")],
     url,
   });

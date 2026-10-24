@@ -2,7 +2,7 @@ import { DIFFICULTIES, FORMATS, MODULES, type Difficulty, type ModuleId, type Qu
 import { DLE_ASSISTS, type DleAssist } from "@/lib/dle-assist";
 import type { DleFormat } from "@/lib/dle-format";
 import { DLE_HINT_KINDS, type DleHint } from "@/lib/dle-types";
-import { GEO_MAP_ORDER, GEO_MAX_ROUND_SCORE, GEO_ROUNDS } from "@/lib/geo-types";
+import { GEO_MAP_ORDER, GEO_MAX_ROUND_SCORE, isGeoRounds } from "@/lib/geo-types";
 import { PDK_DIFFICULTIES, type PdkDifficulty } from "@/lib/pikadoku/types";
 import { RARITY_LETTERS } from "@/lib/pikadoku/share";
 import { CPU_LEVELS, PLAY_FORMAT_INFO, type CpuLevel, type PlayFormatId } from "@/lib/battle/play";
@@ -378,7 +378,7 @@ function decodeGuessr(f: Record<string, string>): GuessrShareResult | null {
     return streak === undefined ? null : { game: "guessr", ...(daily !== undefined && { daily }), region, streak };
   }
   const rounds = (f.r ?? "").split("-").map((r) => num(r, 0, GEO_MAX_ROUND_SCORE));
-  if (rounds.length !== GEO_ROUNDS || rounds.some((r) => r === undefined)) return null;
+  if (!isGeoRounds(rounds.length) || rounds.some((r) => r === undefined)) return null;
   return { game: "guessr", ...(daily !== undefined && { daily }), region, rounds: rounds as number[] };
 }
 
