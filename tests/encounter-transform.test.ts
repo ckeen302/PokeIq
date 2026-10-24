@@ -56,14 +56,27 @@ describe("rowsFromPokeApi", () => {
     expect(rows[0].r).toBeUndefined();
   });
 
-  it("keeps a condition as a note and collapses dual-slot rows", () => {
+  it("keeps swarm as a note and drops dual-slot and radio rows entirely", () => {
     const rows = rowsFromPokeApi(
-      [enc("r201", { diamond: [detail(8, 2, 2, ["slot2-ruby"]), detail(8, 2, 2, ["slot2-emerald"]), detail(50, 2, 3, ["swarm-yes"])] })],
+      [
+        enc("r201", {
+          diamond: [
+            detail(8, 2, 2, ["slot2-ruby"]),
+            detail(8, 2, 2, ["slot2-emerald"]),
+            detail(4, 2, 2, ["slot2-none"]),
+            detail(50, 2, 3, ["swarm-yes"]),
+          ],
+          heartgold: [detail(10, 2, 2, ["radio-hoenn"]), detail(10, 2, 2, ["radio-off"])],
+        }),
+      ],
       area
     );
-    expect(rows.find((r) => r.n?.startsWith("GBA slot"))?.n).toBe("GBA slot: Ruby, Emerald");
+    expect(rows.some((r) => /GBA|slot|Sound/i.test(r.n ?? ""))).toBe(false);
     expect(rows.find((r) => r.n === "Swarm")).toBeDefined();
-    expect(rows).toHaveLength(2);
+    expect(rows.find((r) => r.ver === "diamond" && !r.n)?.r).toBe("4%");
+    expect(rows.find((r) => r.ver === "heartgold")).toMatchObject({ r: "10%" });
+    expect(rows.find((r) => r.ver === "heartgold")?.n).toBeUndefined();
+    expect(rows).toHaveLength(3);
   });
 });
 
@@ -73,7 +86,9 @@ describe("labels", () => {
     expect(methodLabel("walk", "Mt. Coronet 1F")).toBe("Cave");
     expect(methodLabel("super-rod")).toBe("Super Rod");
     expect(methodLabel("only-one")).toBe("Static");
-    expect(conditionLabel(["time-day", "swarm-no", "radar-on"])).toBe("PokéRadar");
+    expect(conditionLabel(["time-day", "swarm-no", "radar-on"])).toBe("Poké Radar");
+    expect(conditionLabel(["slot2-none", "radio-off", "johto-safari-blocks-inactive"])).toBe("");
+    expect(conditionLabel(["season-spring"])).toBe("Spring only");
     expect(levelText(5, 5)).toBe("5");
     expect(levelText(2, 4)).toBe("2–4");
   });

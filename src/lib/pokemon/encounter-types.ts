@@ -19,7 +19,7 @@ export interface EncRow {
   r?: string;
   /** Morning / Day / Night rates when they differ ("—" = never). */
   t?: [string, string, string];
-  /** Condition note: weather, swarm, radar, dual-slot, season… */
+  /** Condition note: swarm, Poké Radar, season, weather… (no dual-slot or radio rows). */
   n?: string;
   /** Free-text row spanning the data columns (evolve from X, not in the wild…). */
   x?: string;
