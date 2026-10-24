@@ -32,7 +32,8 @@ const cache = new Map<string, Rendered>();
 const CACHE_LIMIT = 400;
 
 async function fetchUpstream(url: string): Promise<Buffer> {
-  const res = await fetch(url, { signal: AbortSignal.timeout(8000) });
+  // Data Cache: artwork and cries never change, so cold instances skip the upstream trip.
+  const res = await fetch(url, { signal: AbortSignal.timeout(8000), cache: "force-cache", next: { revalidate: 60 * 60 * 24 * 30 } });
   if (!res.ok) throw new Error(`upstream ${res.status} for ${url}`);
   return Buffer.from(await res.arrayBuffer());
 }

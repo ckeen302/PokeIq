@@ -11,6 +11,7 @@ import { SITE_DESCRIPTION, SITE_TAGLINE, jsonLd } from "@/lib/seo";
 import { SPLASH_INIT_SCRIPT, THEME_INIT_SCRIPT } from "@/lib/theme";
 import { BootLoader } from "@/components/layout/BootLoader";
 import { ErrorReporter, ReportProblem } from "@/components/layout/ReportProblem";
+import { SHINY_ORIGIN } from "@/lib/shiny";
 import "./globals.css";
 
 const display = Chakra_Petch({ subsets: ["latin"], weight: ["500", "600", "700"], variable: "--font-display", display: "swap" });
@@ -56,8 +57,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" className={`${display.variable} ${body.variable} ${pixel.variable}`} suppressHydrationWarning>
       <head>
         {process.env.NEXT_PUBLIC_SUPABASE_URL && (
-          <link rel="preconnect" href={new URL(process.env.NEXT_PUBLIC_SUPABASE_URL).origin} crossOrigin="anonymous" />
+          <>
+            {/* API calls (CORS) and storage images (no-CORS) use separate connections. */}
+            <link rel="preconnect" href={new URL(process.env.NEXT_PUBLIC_SUPABASE_URL).origin} crossOrigin="anonymous" />
+            <link rel="preconnect" href={new URL(process.env.NEXT_PUBLIC_SUPABASE_URL).origin} />
+          </>
         )}
+        {/* Real Shiny quiz images (Supabase storage) and artwork / sprites (PokeAPI's CDN). */}
+        <link rel="preconnect" href={SHINY_ORIGIN} />
+        <link rel="preconnect" href="https://raw.githubusercontent.com" />
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT + SPLASH_INIT_SCRIPT }} />
       </head>
       <body className="flex min-h-screen flex-col">

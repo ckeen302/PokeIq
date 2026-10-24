@@ -67,6 +67,16 @@ export const FORMAT_RULES: Record<SessionSpec["format"], FormatRules> = {
 
 /** Network latency allowance on top of the visible timer. */
 const GRACE_MS = 2_500;
+/**
+ * Asset-loading allowance. The client starts its visible countdown only once
+ * the question's images / cry are loaded and decoded, and reports how long
+ * that took (`loadMs`) with its answer. The server's clock still starts when
+ * it serves the question; it simply credits the reported load time, clamped
+ * to this cap and to the real elapsed time. A dishonest client can therefore
+ * gain at most this much extra viewing time per question, while honest
+ * players on slow connections are never charged for downloading images.
+ */
+export const MAX_LOAD_CREDIT_MS = 6_000;
 const MAX_QUESTIONS = 250;
 /** Per-instance caches: enough for hundreds of concurrent runs, bounded in memory. */
 const MAX_STREAMS = 200;
@@ -95,6 +105,14 @@ export interface SessionState {
   lives: number | null;
   /** Timed formats: the next question hasn't been served yet (see nextQuestion). */
   paused?: true;
+  /** Blitz: total asset-loading time credited to the run clock so far. */
+  lc?: number;
+}
+
+/** Load-time credit for one question: client-reported, clamped server-side. */
+export function loadCredit(loadMs: number | undefined, elapsed: number): number {
+  if (!loadMs || !Number.isFinite(loadMs) || loadMs <= 0) return 0;
+  return Math.min(loadMs, MAX_LOAD_CREDIT_MS, Math.max(0, elapsed));
 }
 
 // ---------------------------------------------------------------------------
@@ -248,7 +266,7 @@ export function learnHref(q: Question): string | undefined {
 function isDone(state: SessionState, rules: FormatRules, now: number): boolean {
   if (rules.total !== null && state.log.length >= rules.total) return true;
   if (state.lives !== null && state.lives <= 0) return true;
-  if (rules.runMs !== null && now - state.startedAt > rules.runMs) return true;
+  if (rules.runMs !== null && now - state.startedAt - (state.lc ?? 0) > rules.runMs) return true;
   return state.log.length >= MAX_QUESTIONS;
 }
 
@@ -265,7 +283,7 @@ function buildResult(state: SessionState, now: number): RunResult {
     total: state.log.length,
     bestStreak: state.best,
     grid: state.log.map((e) => e[0]).join(""),
-    durationMs: Math.max(1, now - state.startedAt),
+    durationMs: Math.max(1, now - state.startedAt - (state.lc ?? 0)),
     rating,
     pokeiq: ratingToIQ(rating),
     finishedAt: now,
@@ -338,13 +356,15 @@ export function readSession(token: unknown): SessionState | null {
 }
 
 /** Pure grading step; the route handler performs the replay claim. */
-export function gradeAnswer(state: SessionState, choice: string | null): AnswerOutcome {
+export function gradeAnswer(state: SessionState, choice: string | null, loadMs?: number): AnswerOutcome {
   const rules = FORMAT_RULES[state.spec.format];
   const now = Date.now();
+  const credit = state.paused ? 0 : loadCredit(loadMs, now - state.servedAt);
+  const runCredit = rules.runMs !== null ? (state.lc ?? 0) + credit : 0;
   // Blitz: answers within the latency grace still count; the client's
   // "time's up" ping (choice === null) — or any request after the clock ran
   // out, e.g. from a backgrounded tab — closes the run with its result.
-  const runElapsed = now - state.startedAt;
+  const runElapsed = now - state.startedAt - runCredit;
   const runExpired =
     rules.runMs !== null &&
     (runElapsed > rules.runMs + GRACE_MS || (choice === null && runElapsed >= rules.runMs - 500));
@@ -358,7 +378,7 @@ export function gradeAnswer(state: SessionState, choice: string | null): AnswerO
 
   const index = state.log.length;
   const q = questionAt(state.spec, index, state.log);
-  const elapsed = now - state.servedAt;
+  const elapsed = now - state.servedAt - credit;
   const timedOut = rules.questionMs !== null && elapsed > rules.questionMs + GRACE_MS;
   const correct = !timedOut && !runExpired && choice !== null && choice === q.answer;
   const rating = itemRating(q.itemKey, q.rating);
@@ -380,6 +400,7 @@ export function gradeAnswer(state: SessionState, choice: string | null): AnswerO
     streak: correct ? state.streak + 1 : 0,
     best: Math.max(state.best, correct ? state.streak + 1 : 0),
     lives: state.lives !== null && !correct ? state.lives - 1 : state.lives,
+    ...(runCredit > 0 && { lc: runCredit }),
   };
 
   const done = runExpired || isDone(next, rules, now);

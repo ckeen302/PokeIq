@@ -63,6 +63,7 @@ import {
 import { GameFilter, GameGuessPicker, type FilterChoice, filterPlaces, gameGuessOptions, readGuessGame, rememberGuessGame } from "./GameFilter";
 import { GEO_ERA_NAMES, GEO_GAME_BONUS, geoFamily, type GeoEra, type GeoFamilyId } from "@/lib/geo-families";
 import { cn } from "@/lib/utils";
+import { preloadImage } from "@/lib/preload";
 import { isWorldwide, themeOf } from "@/lib/geo-themes";
 import { NAME_REJECTED, isCleanName } from "@/lib/name-filter";
 
@@ -208,6 +209,8 @@ export function GeoGame({ regions: allRegions, challenge }: GeoGameProps) {
   const [zoomPixelated, setZoomPixelated] = useState(false);
   const [settings, setSettings] = useState<GeoPlaySettings>(DEFAULT_GEO_SETTINGS);
   const [roundStartedAt, setRoundStartedAt] = useState(0);
+  /** The round's screenshot is loaded and decoded: only then does the Timer run. */
+  const [shotReady, setShotReady] = useState(false);
   const [now, setNow] = useState(0);
   const [zoomed, setZoomed] = useState(false);
   const [reward, setReward] = useState<Reward | null>(null);
@@ -360,13 +363,27 @@ export function GeoGame({ regions: allRegions, challenge }: GeoGameProps) {
 
   // The Timer setting: a clock per round; at zero the pin is guessed where it is (no pin: no points).
   const timer = game?.settings.timer ?? 0;
-  const timeLeft = timer && (phase === "guessing" || phase === "submitting") ? secondsLeft(roundStartedAt, now || roundStartedAt, timer) : null;
+  const roundShot = game?.round.shot;
   useEffect(() => {
-    if (!timer || phase !== "guessing") return;
+    if (!roundShot) return;
+    let off = false;
+    setShotReady(false);
+    void preloadImage(roundShot).then(() => {
+      if (off) return;
+      setRoundStartedAt(Date.now());
+      setShotReady(true);
+    });
+    return () => {
+      off = true;
+    };
+  }, [roundShot]);
+  const timeLeft = timer && shotReady && (phase === "guessing" || phase === "submitting") ? secondsLeft(roundStartedAt, now || roundStartedAt, timer) : null;
+  useEffect(() => {
+    if (!timer || !shotReady || phase !== "guessing") return;
     setNow(Date.now());
     const id = window.setInterval(() => setNow(Date.now()), 250);
     return () => window.clearInterval(id);
-  }, [timer, phase, roundStartedAt]);
+  }, [timer, shotReady, phase, roundStartedAt]);
   useEffect(() => {
     if (timeLeft === 0 && phase === "guessing") void guess(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps -- fires once, when the clock hits zero

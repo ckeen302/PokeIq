@@ -46,6 +46,11 @@ interface QuizDuelQuestion {
   picks: ({ choice: string; at: number } | null)[];
   /** Trainers who pressed Next during the reveal. */
   skip: boolean[];
+  /**
+   * When each trainer's browser had the question's images loaded (see
+   * loadedQuiz). That trainer's 15 seconds and speed bonus count from here.
+   */
+  loaded?: (number | null)[];
   /** Set by the reveal. */
   result?: { at: number; points: number[]; nextAt: number };
 }
@@ -68,14 +73,28 @@ const specOf = (d: QuizDuel): SessionSpec => ({ module: d.module, format: "class
 /** Question `index`, built on the server from the duel's seed: the same for both trainers. */
 export const duelQuestion = (d: QuizDuel, index: number): Question => questionAt(specOf(d), index);
 
-const closesAt = (q: QuizDuelQuestion) => q.startsAt + QUIZ_DUEL_QUESTION_MS;
+/**
+ * Loading allowance. Each trainer's clock starts when their browser reports
+ * the question's images / cry loaded ("loaded" action), clamped to at most
+ * this long after the question appeared. Without a report the clock starts at
+ * `startsAt` as before. A trainer stalling the report can gain at most this
+ * much extra viewing time, while a slow connection is never penalised.
+ */
+export const QUIZ_DUEL_LOAD_CAP_MS = 4_000;
+
+/** When a trainer's clock started on question `q`. */
+const seatStart = (q: QuizDuelQuestion, seat: number) => q.loaded?.[seat] ?? q.startsAt;
+/** When a trainer's answers close. */
+const seatCloses = (q: QuizDuelQuestion, seat: number) => seatStart(q, seat) + QUIZ_DUEL_QUESTION_MS;
+/** When the question closes for everyone. */
+const closesAt = (q: QuizDuelQuestion) => Math.max(...q.picks.map((_, seat) => seatCloses(q, seat)));
 
 function scorePick(d: QuizDuel, index: number, seat: number): QuizDuelPick | null {
   const q = d.questions[index];
   const pick = q.picks[seat];
   if (!pick) return null;
   const correct = pick.choice === duelQuestion(d, index).answer;
-  const ms = pick.at - q.startsAt;
+  const ms = Math.max(0, pick.at - seatStart(q, seat));
   return { choice: pick.choice, correct, ms, points: correct ? quizDuelPoints(ms) : 0 };
 }
 
@@ -163,8 +182,22 @@ export function answerQuiz(duel: QuizDuel, playerId: string, index: number, choi
     if (index !== d.questions.length - 1 || q.result) return fail(409, "That question is over.");
     if (now < q.startsAt) return fail(409, "The question hasn't started yet.");
     if (q.picks[seat]) return fail(409, "You've already answered.");
+    if (now > seatCloses(q, seat) + GRACE_MS) return fail(409, "Time's up for that question.");
     if (!duelQuestion(d, index).options.includes(choice)) return fail(400, "Pick one of the options.");
     q.picks[seat] = { choice, at: now };
+    return { ok: true, duel: d };
+  });
+}
+
+/** The trainer's browser has the question's assets ready: start their clock (once, bounded). */
+export function loadedQuiz(duel: QuizDuel, playerId: string, index: number, now: number): PvpOutcome<QuizDuel> {
+  return seated(quizRules, duel, playerId, now, (d, seat) => {
+    if (d.status !== "playing") return notPlaying(d);
+    const q = d.questions[d.questions.length - 1];
+    if (index !== d.questions.length - 1 || q.result || now < q.startsAt) return { ok: true, duel: d };
+    if (q.loaded?.[seat] != null || q.picks[seat]) return { ok: true, duel: d };
+    q.loaded ??= d.players.map(() => null);
+    q.loaded[seat] = Math.min(now, q.startsAt + QUIZ_DUEL_LOAD_CAP_MS);
     return { ok: true, duel: d };
   });
 }
@@ -232,7 +265,8 @@ export function quizView(duel: QuizDuel, playerId: string | null, now: number, r
     question: live && {
       index,
       startsAt: live.startsAt,
-      endsAt: closesAt(live),
+      endsAt: seat >= 0 ? seatCloses(live, seat) : closesAt(live),
+      loaded: seat >= 0 ? live.loaded?.[seat] != null : undefined,
       question: now >= live.startsAt ? questionView(duelQuestion(duel, index), index) : undefined,
       answered: live.picks.map(Boolean),
       yours: seat >= 0 ? live.picks[seat]?.choice : undefined,
