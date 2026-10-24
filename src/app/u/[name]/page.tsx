@@ -12,6 +12,9 @@ import { battleProfile } from "@/lib/server/battle-engine/records";
 import { replayStore } from "@/lib/server/battle-engine/replays";
 import { rankedKey, rankedStore } from "@/lib/server/ranked";
 import { avatarsByIds } from "@/lib/server/avatars";
+import { aboutFor } from "@/lib/server/about";
+import { pokemonName } from "@/lib/about-validate";
+import { AboutMe } from "@/components/community/AboutMe";
 import { Avatar } from "@/components/avatar/Avatar";
 import { BattleProfileView } from "@/components/battle/BattleProfileView";
 import { ReplayRow } from "@/components/battle/ReplayLists";
@@ -49,12 +52,13 @@ const findProfile = cache(async (raw: string) => {
   const key = battleKey(`u:${user.id}`);
   const replays = replayStore();
   const ranked = rankedStore();
-  const [digest, battles, pokedle, mine, avatars] = await Promise.all([
+  const [digest, battles, pokedle, mine, avatars, about] = await Promise.all([
     quietly("progress", progressDigests([user.id]).then((m) => m.get(user.id) ?? null), null),
     quietly("battles", battleProfile(key), null),
     quietly<RankedStanding | null>("pokedle", ranked?.standing(rankedKey(`u:${user.id}`)), null),
     quietly<ReplaySummary[]>("replays", replays?.mine(key, [], 30), []),
     avatarsByIds([user.id]),
+    aboutFor(user.id),
   ]);
   return {
     username: user.username,
@@ -65,6 +69,8 @@ const findProfile = cache(async (raw: string) => {
     battles,
     pokedle,
     connections: connDigest(digest),
+    about,
+    aboutNames: Object.fromEntries(Object.entries(about.pokemon).map(([slot, p]) => [slot, pokemonName(p.id) ?? ""])),
     replays: mine.filter((r) => r.public).slice(0, 6),
   };
 });
@@ -113,6 +119,8 @@ export default async function UserProfilePage({ params }: PageProps) {
           </div>
         </div>
       </section>
+
+      <AboutMe username={found.username} initial={found.about} names={found.aboutNames} />
 
       <div className="grid gap-4 md:grid-cols-2">
         <Card>
