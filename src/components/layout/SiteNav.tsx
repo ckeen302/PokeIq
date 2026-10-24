@@ -94,12 +94,12 @@ export function DesktopNav() {
       <Link
         href="/trainer"
         className={cn(
-          "ml-1 flex items-center gap-2 rounded-md border bg-card px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:border-screen/60 hover:text-foreground",
+          "ml-1 flex items-center gap-2 rounded-md border bg-card px-2 py-1.5 sm:px-3 text-sm text-muted-foreground transition-colors hover:border-screen/60 hover:text-foreground",
           isActive(pathname, "/trainer") && "border-screen/60 text-foreground"
         )}
       >
         <Avatar avatar={account.user?.avatar} size={22} />
-        <span className="max-w-[5rem] truncate font-display font-semibold sm:max-w-[9rem]">{account.user?.username ?? (progress?.name || "Trainer")}</span>
+        <span className="max-w-[4rem] truncate font-display font-semibold sm:max-w-[9rem]">{account.user?.username ?? (progress?.name || "Trainer")}</span>
         {progress && progress.xp > 0 && (
           <span className="font-pixel text-[10px] text-screen">Lv{levelInfo(progress.xp).level}</span>
         )}
