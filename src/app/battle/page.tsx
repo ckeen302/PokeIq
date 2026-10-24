@@ -174,9 +174,6 @@ export default function BattlePage() {
           "Check matchups with the damage calculator or simulate thousands of battles in the Battle Lab.",
         ]}
         faqs={[
-          { q: "Is this a Pokémon battle simulator?", a: "Yes. Battles run on Pokémon Showdown's engine, against the computer or live against another player." },
-          { q: "Can I build my own team?", a: "Yes, the team builder checks your team against Pokémon Showdown's rules for each format." },
-          { q: "Is there a Pokémon damage calculator?", a: "Yes, the damage calculator is powered by the Smogon damage calculator." },
           { q: "What is the Battle Lab?", a: "It lets you set up any matchup and have the engine play it thousands of times to estimate win odds." },
         ]}
       />

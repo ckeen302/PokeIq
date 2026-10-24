@@ -37,11 +37,8 @@ export default function PokedlePage() {
           "Come back tomorrow for a new Pokémon, or challenge a friend or a stranger to a live duel.",
         ]}
         faqs={[
-          { q: `What is Pokédle?`, a: `Pokédle is a Pokémon Wordle: a daily guessing game where each guess reveals clues about the mystery Pokémon.` },
           { q: `How many guesses do I get?`, a: `You have 8 tries to find the mystery Pokémon.` },
           { q: `What clues does each guess show?`, a: `Generation, type, height, weight, color and evolution stage, compared with the mystery Pokémon.` },
-          { q: `How often does the Pokémon change?`, a: `A new Pokémon every day.` },
-          { q: `Can I play against someone?`, a: `Yes. Pokédle has live duels against a friend through an invite link or against a stranger.` },
         ]}
       />
     </div>
