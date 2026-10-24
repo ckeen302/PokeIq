@@ -50,7 +50,7 @@ export function TournamentLobby() {
   if (off) return <p className="rounded-lg border border-dashed p-6 text-center text-muted-foreground">Tournaments open soon.</p>;
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[1fr_20rem]">
+    <div className="grid grid-cols-[minmax(0,1fr)] gap-6 lg:grid-cols-[1fr_20rem]">
       <div className="space-y-6">
         <section className="space-y-3">
           <h2 className="hud-label">Open and running</h2>

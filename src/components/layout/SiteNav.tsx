@@ -55,7 +55,7 @@ export function DesktopNav() {
               href={href}
               className={cn(
                 // Tighter between lg and xl so every link fits on one row.
-                "relative whitespace-nowrap px-3 py-2 font-display text-[13px] font-semibold uppercase tracking-[0.12em] text-muted-foreground transition-colors hover:text-foreground xl:px-4",
+                "relative whitespace-nowrap px-2 py-2 font-display text-[13px] font-semibold uppercase tracking-[0.12em] text-muted-foreground transition-colors hover:text-foreground xl:px-2.5 xl:tracking-[0.06em] 2xl:px-4 2xl:tracking-[0.12em]",
                 active && "text-foreground",
                 wideOnly && "hidden xl:block"
               )}
@@ -65,7 +65,7 @@ export function DesktopNav() {
               {active && (
                 <motion.span
                   layoutId="nav-active"
-                  className="absolute inset-x-3 -bottom-[9px] h-[3px] bg-primary shadow-[0_0_10px_hsl(var(--primary))] xl:inset-x-4"
+                  className="absolute inset-x-3 -bottom-[9px] h-[3px] bg-primary shadow-[0_0_10px_hsl(var(--primary))] xl:inset-x-3 2xl:inset-x-4"
                   transition={{ type: "spring", stiffness: 500, damping: 38 }}
                 />
               )}
@@ -87,7 +87,7 @@ export function DesktopNav() {
       {account.status === "ready" && account.enabled && !account.user && (
         <Link
           href="/login"
-          className="hidden whitespace-nowrap px-2 font-display text-[13px] font-semibold uppercase tracking-[0.12em] text-muted-foreground transition-colors hover:text-foreground sm:block lg:hidden xl:block"
+          className="hidden whitespace-nowrap px-2 font-display text-[13px] font-semibold uppercase tracking-[0.12em] text-muted-foreground transition-colors hover:text-foreground sm:block lg:hidden 2xl:block"
         >
           Sign in
         </Link>
@@ -95,12 +95,12 @@ export function DesktopNav() {
       <Link
         href="/trainer"
         className={cn(
-          "ml-1 flex items-center gap-2 rounded-md border bg-card px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:border-screen/60 hover:text-foreground",
+          "ml-1 flex items-center gap-2 rounded-md border bg-card px-2 py-1.5 sm:px-3 text-sm text-muted-foreground transition-colors hover:border-screen/60 hover:text-foreground",
           isActive(pathname, "/trainer") && "border-screen/60 text-foreground"
         )}
       >
         <Avatar avatar={account.user?.avatar} size={22} />
-        <span className="max-w-[9rem] truncate font-display font-semibold">{account.user?.username ?? (progress?.name || "Trainer")}</span>
+        <span className="max-w-[4rem] truncate font-display font-semibold sm:max-w-[9rem]">{account.user?.username ?? (progress?.name || "Trainer")}</span>
         {progress && progress.xp > 0 && (
           <span className="font-pixel text-[10px] text-screen">Lv{levelInfo(progress.xp).level}</span>
         )}

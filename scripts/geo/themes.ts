@@ -1,9 +1,7 @@
 /**
  * PokéGuessr's themed maps: which places each theme plays, written to
  * src/data/geo-themes.json. Towns and routes come from the atlas's own kinds;
- * Gyms are the Gym buildings (and Galar's Gym stadiums); the rest are lists
- * checked by hand, place by place, so a place tagged Cave is a cave. A name
- * here that isn't in the data is an error (a place renamed or merged).
+ * Gyms are the Gym buildings (and Galar's Gym stadiums).
  *
  *   npx tsx scripts/geo/themes.ts
  */
