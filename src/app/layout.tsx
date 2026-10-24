@@ -66,7 +66,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </div>
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(websiteJsonLd) }} />
         <header className="glass sticky top-0 z-50">
-          <div className="container flex h-14 items-center justify-between">
+          <div className="flex h-14 w-full items-center gap-4 px-4 sm:px-6 xl:px-10">
             <Link href="/" aria-label="PokéIQ home" className="shrink-0">
               <Logo />
             </Link>

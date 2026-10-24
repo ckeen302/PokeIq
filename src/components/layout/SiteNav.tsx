@@ -44,8 +44,9 @@ export function DesktopNav() {
   const progress = useProgress();
   const account = useAccount();
   return (
-    <nav className="flex items-center gap-1">
-      <div className="hidden items-center lg:flex">
+    <nav className="flex flex-1 items-center gap-1">
+      {/* Full-width bar: logo far left, links centred in the space between, actions far right. */}
+      <div className="hidden flex-1 items-center justify-center lg:flex">
         {DESKTOP_LINKS.map(({ href, label, wideOnly }) => {
           const active = isActive(pathname, href);
           return (
@@ -54,7 +55,7 @@ export function DesktopNav() {
               href={href}
               className={cn(
                 // Tighter between lg and xl so every link fits on one row.
-                "relative whitespace-nowrap px-3 py-2 font-display text-[13px] font-semibold uppercase tracking-[0.12em] text-muted-foreground transition-colors hover:text-foreground xl:px-3 xl:tracking-[0.08em] 2xl:px-4 2xl:tracking-[0.12em]",
+                "relative whitespace-nowrap px-2 py-2 font-display text-[13px] font-semibold uppercase tracking-[0.12em] text-muted-foreground transition-colors hover:text-foreground xl:px-2.5 xl:tracking-[0.06em] 2xl:px-4 2xl:tracking-[0.12em]",
                 active && "text-foreground",
                 wideOnly && "hidden xl:block"
               )}
@@ -86,7 +87,7 @@ export function DesktopNav() {
       {account.status === "ready" && account.enabled && !account.user && (
         <Link
           href="/login"
-          className="hidden whitespace-nowrap px-2 font-display text-[13px] font-semibold uppercase tracking-[0.12em] text-muted-foreground transition-colors hover:text-foreground sm:block lg:hidden xl:block"
+          className="hidden whitespace-nowrap px-2 font-display text-[13px] font-semibold uppercase tracking-[0.12em] text-muted-foreground transition-colors hover:text-foreground sm:block lg:hidden 2xl:block"
         >
           Sign in
         </Link>

@@ -562,19 +562,19 @@ await page.getByRole("button", { name: /5-round game/ }).click();
 await playGeoRounds(5);
 await page.getByText("Survey complete").waitFor();
 
-step("pokéguessr: a themed map (Routes), its own leaderboard");
+step("pokéguessr: a themed map (Towns and Cities), its own leaderboard");
 await page.goto(`${BASE}/guessr`, { waitUntil: "networkidle" });
-await page.getByRole("radiogroup", { name: "Themed map" }).getByRole("radio", { name: "Routes" }).click();
-await page.getByTestId("geo-theme-blurb").filter({ hasText: "The numbered routes" }).waitFor();
-if (!page.url().includes("region=theme-routes")) throw new Error(`themed map not in the URL: ${page.url()}`);
+await page.getByRole("radiogroup", { name: "Themed map" }).getByRole("radio", { name: "Towns and Cities" }).click();
+await page.getByTestId("geo-theme-blurb").filter({ hasText: "Every town and city" }).waitFor();
+if (!page.url().includes("region=theme-towns")) throw new Error(`themed map not in the URL: ${page.url()}`);
 await page.screenshot({ path: `${OUT}/geo-mode-themed-maps.png`, fullPage: true });
 await page.getByRole("button", { name: /5-round game/ }).click();
-await page.getByText("Routes").first().waitFor();
+await page.getByText("Towns and Cities").first().waitFor();
 await playGeoRounds(5);
 await page.getByText("Survey complete").waitFor();
-await page.goto(`${BASE}/leaderboard?board=geo&format=theme-routes`, { waitUntil: "networkidle" });
-await page.getByText("Routes 5 rounds").waitFor();
-await page.getByText("Routes Streak").waitFor();
+await page.goto(`${BASE}/leaderboard?board=geo&format=theme-towns`, { waitUntil: "networkidle" });
+await page.getByText("Towns and Cities 5 rounds").waitFor();
+await page.getByText("Towns and Cities Streak").waitFor();
 
 step("pokéguessr: Classic 2D, guess the game too, report a screenshot");
 await page.goto(`${BASE}/guessr?region=kalos`, { waitUntil: "networkidle" });

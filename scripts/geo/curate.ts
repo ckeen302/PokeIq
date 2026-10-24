@@ -8,6 +8,16 @@
  *   added   new shots, each with the page it came from and the place and game
  *           it was checked against
  *
+ * The bar a shot must pass (as in real GeoGuessr, reading a clue is part of the game):
+ *   ALLOWED   visible clues: route signposts and numbers, the town-name banner shown on
+ *             entering a place, dialogue or text boxes, buildings with names on them
+ *   EXCLUDED  the in-game minimap or any map overlay showing the player's position (crop it
+ *             out when a clean crop leaves a good view, else drop the image); broken
+ *             images and composites, renders, guidebook maps and overhead maps (Bulbapedia's
+ *             top-down area maps are never screenshots); the wrong place or game; generic
+ *             interiors or caves that could be anywhere; near-duplicates of shots already in
+ *   Cap each place at 5 shots per game family.
+ *
  * Applying it is idempotent. It also gives every shot its game family (see
  * src/lib/geo-families.ts) and keeps scripts/geo/shot-sources.json, the source
  * of every shot in the data, so any of them can be checked again later.

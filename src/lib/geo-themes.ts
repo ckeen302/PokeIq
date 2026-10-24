@@ -22,7 +22,7 @@ export const GEO_THEMES: GeoTheme[] = [
   { id: "routes", name: "Routes", blurb: "The numbered routes between them." },
 ];
 
-/** A theme's map id: "theme-gyms". */
+/** A theme's map id: "theme-towns". */
 export const themeMapId = (id: GeoThemeId) => `theme-${id}`;
 
 /** The theme a map id plays, or null for the world and the regions. */
