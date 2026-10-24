@@ -72,6 +72,12 @@ export default async function QuizPage({ params }: PageProps) {
             differ, the question names the game. Answers are checked on our server and your PokéIQ is calculated from how
             hard each question you got right actually was.
           </p>
+        ) : preset.module === "competitive" ? (
+          <p>
+            Every question is generated from the Pokémon Showdown data (current generation): abilities, move types and
+            categories, and item effects. Answers are checked on our server and your PokéIQ is calculated from how hard
+            each question you got right actually was.
+          </p>
         ) : (
           <p>
             Every question is generated on the fly from the complete Pokédex — there are thousands of possible

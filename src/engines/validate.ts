@@ -18,7 +18,7 @@ const mediaSchema = z.object({
 export const questionSchema = z
   .object({
     itemKey: z.string().min(3),
-    module: z.enum(["whos-that", "cry", "dex", "types", "higher-lower", "games", "anime"]),
+    module: z.enum(["whos-that", "cry", "dex", "types", "higher-lower", "games", "anime", "competitive"]),
     prompt: z.string().min(8),
     detail: z.string().optional(),
     media: mediaSchema.optional(),

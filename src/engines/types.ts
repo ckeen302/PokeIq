@@ -9,7 +9,7 @@ import type { Rng } from "@/lib/rng";
  * session seed when grading (see src/lib/server/session.ts).
  */
 
-export const MODULES = ["whos-that", "cry", "dex", "types", "higher-lower", "games", "anime", "mixed"] as const;
+export const MODULES = ["whos-that", "cry", "dex", "types", "higher-lower", "games", "anime", "competitive", "mixed"] as const;
 export type ModuleId = (typeof MODULES)[number];
 
 export const FORMATS = ["classic", "survival", "blitz", "adaptive"] as const;

@@ -41,6 +41,13 @@ const ANIME_FILTER: QuizFilter = {
   note: MIX_NOTE,
 };
 
+/** Same nine values: the generation an ability, move or item was introduced in. */
+const ITEM_FILTER: QuizFilter = {
+  ...GEN_FILTER,
+  label: "Introduced in",
+  note: "Without a filter, Easy uses Gens 1–4, Medium Gens 1–7 and Hard all nine.",
+};
+
 export function filterFor(module: ModuleId): QuizFilter {
   return MODULE_INFO[module].filter ?? GEN_FILTER;
 }
@@ -111,6 +118,16 @@ export const MODULE_INFO: Record<ModuleId, ModuleInfo> = {
     defaultFormat: "classic",
     filter: ANIME_FILTER,
   },
+  competitive: {
+    id: "competitive",
+    title: "Abilities, Moves & Items",
+    tagline: "Battle data from Showdown",
+    description: "Which Pokémon can have an ability, what type a move is, what an item or ability does. Straight from the Pokémon Showdown data.",
+    emoji: "⚔️",
+    accent: "350 84% 62%",
+    defaultFormat: "classic",
+    filter: ITEM_FILTER,
+  },
   mixed: {
     id: "mixed",
     title: "Mixed Bag",
@@ -122,7 +139,7 @@ export const MODULE_INFO: Record<ModuleId, ModuleInfo> = {
   },
 };
 
-export const PLAY_MODULES: ModuleId[] = ["whos-that", "cry", "dex", "types", "higher-lower", "games", "anime", "mixed"];
+export const PLAY_MODULES: ModuleId[] = ["whos-that", "cry", "dex", "types", "higher-lower", "games", "anime", "competitive", "mixed"];
 
 export const FORMAT_INFO: Record<QuizFormat, { title: string; description: string }> = {
   classic: { title: "Classic", description: "10 questions · 15s each" },
@@ -191,6 +208,13 @@ export const QUIZ_PRESETS: QuizPreset[] = [
     title: "Pokémon Games Quiz — Gym Leaders, Champions & Regions",
     h1: "Mainline Games Quiz",
     description: "How well do you know the core Pokémon RPGs? Gym Leaders, Elite Four, rivals, villains, starters and regions from Red and Blue to Legends: Z-A.",
+  },
+  {
+    slug: "pokemon-ability-move-item-quiz",
+    module: "competitive",
+    title: "Pokémon Ability, Move & Item Quiz",
+    h1: "Abilities, Moves & Items",
+    description: "Which Pokémon can have this ability? What type is this move? What does this item do? Questions generated from the Pokémon Showdown data.",
   },
   {
     slug: "pokemon-anime-quiz",
