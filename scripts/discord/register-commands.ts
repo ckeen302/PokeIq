@@ -5,12 +5,14 @@
  */
 const GAMES = ["pokedle", "connections", "pikadoku", "guessr", "quiz"].map((g) => ({ name: g, value: g }));
 const game = { type: 3, name: "game", description: "Which game", required: true, choices: GAMES };
+// Pokédle has no leaderboard, so /leaderboard doesn't offer it.
+const boardGame = { ...game, choices: GAMES.filter((g) => g.value !== "pokedle") };
 
 const commands = [
   { name: "daily", description: "Today's PokéIQ puzzles", type: 1 },
   { name: "dex", description: "Look up a Pokémon", type: 1, options: [{ type: 3, name: "pokemon", description: "Pokémon name", required: true, autocomplete: true }] },
   { name: "duel", description: "Open a casual duel and get the join link", type: 1, options: [game] },
-  { name: "leaderboard", description: "Today's top 10", type: 1, options: [game] },
+  { name: "leaderboard", description: "Today's top 10", type: 1, options: [boardGame] },
   { name: "help", description: "List the commands", type: 1 },
 ];
 
