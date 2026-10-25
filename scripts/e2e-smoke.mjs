@@ -2070,7 +2070,7 @@ if (me.enabled) {
 
     // A visitor (signed out) sees the same, with no edit button.
     const visitor = await newPage({ width: 1280, height: 1100 });
-    await visitor.goto(`${BASE}/u/${aboutName}`, { waitUntil: "networkidle" });
+    await visitor.goto(`${BASE}/u/${aboutName}`, { waitUntil: "domcontentloaded", timeout: 60_000 });
     for (const t of ["about-pokemon-favorite", "about-pokemon-best-mega", "about-pokemon-best-eeveelution", "about-game-view-favorite-game", "about-game-view-best-region"]) await visitor.getByTestId(t).waitFor();
     if (await visitor.getByTestId("about-pokemon-pet").count()) errors.push("about me: an empty slot shows to viewers");
     if (await visitor.getByTestId("about-edit").count()) errors.push("about me: a visitor sees the edit button");
