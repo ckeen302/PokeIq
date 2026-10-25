@@ -16,6 +16,7 @@ import { StatsSection } from "./StatsSection";
 import { MatchupSection } from "./MatchupSection";
 import { EvolutionSection } from "./EvolutionSection";
 import { MovesSection } from "./MovesSection";
+import { NamesSection } from "./NamesSection";
 import { EntriesSection } from "./EntriesSection";
 import { TrainingSection } from "./TrainingSection";
 import { LookalikesSection } from "./LookalikesSection";
@@ -56,6 +57,7 @@ export function DexEntry({ data }: { data: DexEntryData }) {
     data.encounters && { id: "encounters", label: "Where to find it" },
     data.learnset && { id: "moves", label: "Moves" },
     { id: "pokedex", label: "Pokédex" },
+    data.names.length > 0 && { id: "names", label: "Names" },
     { id: "breeding", label: "Training + breeding" },
   ].filter(Boolean) as { id: string; label: string }[];
   const active = useScrollSpy(sections.map((s) => s.id));
@@ -151,6 +153,12 @@ export function DexEntry({ data }: { data: DexEntryData }) {
       <Section id="pokedex" index={sectionIndex("pokedex")} title="Pokédex entries" subtitle={`${data.entries.length} unique entries`}>
         <EntriesSection entries={data.entries} />
       </Section>
+
+      {data.names.length > 0 && (
+        <Section id="names" index={sectionIndex("names")} title="Names in other languages" subtitle={`${data.names.length} languages`}>
+          <NamesSection names={data.names} />
+        </Section>
+      )}
 
       <Section id="breeding" index={sectionIndex("breeding")} title="Training & breeding">
         <TrainingSection data={data} />

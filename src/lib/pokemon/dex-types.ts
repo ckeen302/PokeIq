@@ -69,6 +69,8 @@ export interface DexEntryData {
   entries: { text: string; games: string[] }[];
   dexNumbers: { dex: string; number: number }[];
   forms: DexForm[];
+  /** The species name in each language the games ship (empty if none recorded). */
+  names: { lang: string; label: string; name: string }[];
   evolutionTree: EvolutionNode | null;
   learnset: { game: string; moves: DexMove[] } | null;
   defenses: { type: string; multiplier: number }[];

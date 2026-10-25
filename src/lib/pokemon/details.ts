@@ -8,6 +8,7 @@ import { lookalikesOf } from "./lookalikes";
 import { fixEvolutionConditions } from "./evolution-fixes";
 import { getEncounters } from "./encounters";
 import { moveSlugs } from "@/lib/dex/build";
+import { speciesNames } from "@/lib/dex/species-names";
 
 /**
  * Assembles everything the study Pokédex shows for one species into a single
@@ -127,6 +128,7 @@ export function getDexEntry(p: Pokemon): DexEntryData {
 
   return {
     core: p,
+    names: speciesNames(p.id),
     captureRate: raw?.captureRate ?? null,
     baseHappiness: raw?.baseHappiness ?? null,
     genderRate: raw?.genderRate ?? -1,

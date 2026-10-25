@@ -25,6 +25,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${SITE_URL}/pokedex/abilities`, changeFrequency: "monthly", priority: 0.7 },
     { url: `${SITE_URL}/pokedex/items`, changeFrequency: "monthly", priority: 0.7 },
     { url: `${SITE_URL}/pokedex/places`, changeFrequency: "monthly", priority: 0.7 },
+    { url: `${SITE_URL}/pokedex/types`, changeFrequency: "monthly", priority: 0.7 },
+    { url: `${SITE_URL}/pokedex/natures`, changeFrequency: "monthly", priority: 0.6 },
     { url: `${SITE_URL}/leaderboard`, changeFrequency: "hourly", priority: 0.5 },
     { url: `${SITE_URL}/battle`, changeFrequency: "weekly", priority: 0.8 },
     { url: `${SITE_URL}/battle/play`, changeFrequency: "monthly", priority: 0.8 },
