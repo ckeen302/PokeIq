@@ -38,6 +38,8 @@ export function BootLoader({ idPrefix, label = "Loading" }: { idPrefix: string; 
             <path d="M5 50a45 45 0 0 0 90 0z" fill={`url(#${id("shell")})`} />
             <path d="M5 50a45 45 0 0 0 90 0" fill="none" stroke="#120f24" strokeWidth="6" />
           </g>
+          {/* The inside of the ball, seen once the lid swings up and back on its rear hinge. */}
+          <ellipse className="boot-mouth" cx="50" cy="50" rx="43" ry="13" fill="#fff4f8" stroke="#120f24" strokeWidth="3" />
           <g className="boot-top">
           <path d="M5 50a45 45 0 0 1 90 0z" fill={`url(#${id("brain")})`} />
           <g className="boot-gyri" fill="none" stroke="#7a0d3a" strokeWidth="3.4" strokeLinecap="round" strokeLinejoin="round" opacity="0.75">
