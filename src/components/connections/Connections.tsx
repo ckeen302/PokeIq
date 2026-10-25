@@ -445,9 +445,13 @@ export function Connections({ customId }: { customId?: string } = {}) {
   }
 
   const closeSheet = useCallback(() => {
-    if (sheet === "howto") setConnPrefs({ seenHowTo: true });
     setSheet(null);
-  }, [sheet]);
+  }, []);
+  /** "Don't show again": the first-visit pop-up stays closed on this device. */
+  const closeHowToForever = useCallback(() => {
+    setConnPrefs({ seenHowTo: true });
+    setSheet(null);
+  }, []);
 
   // ---- Results ---------------------------------------------------------------
 
@@ -856,7 +860,7 @@ export function Connections({ customId }: { customId?: string } = {}) {
         )}
       </div>
 
-      {sheet === "howto" && <ConnHowToSheet onClose={closeSheet} />}
+      {sheet === "howto" && <ConnHowToSheet onClose={closeSheet} onNever={closeHowToForever} />}
       {sheet === "stats" && stats && <ConnStatsSheet stats={stats} todayMistakes={todayRecord?.over ? (todayRecord.solved ? todayRecord.mistakes : CONN_MAX_MISTAKES) : null} onClose={closeSheet} />}
       {sheet === "archive" && today && progress && (
         <ConnArchiveSheet

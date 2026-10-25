@@ -13,10 +13,29 @@ import fs from "fs";
 import { execFileSync } from "child_process";
 
 const BASE = process.argv[2] ?? "http://localhost:3000";
-// Pokédle opens its how-to sheet on a player's first visit.
+// Each game opens its how-to pop-up (with a live demo) on a first visit. "Don't show again" dismisses it for good on this device.
+const HOWTO = '[data-testid="howto-sheet"], [data-testid="pdk-howto"]';
 async function closeHowTo(p) {
-  const close = p.getByRole("button", { name: "Close" });
-  if (await close.isVisible().catch(() => false)) await close.click();
+  const sheet = p.locator(HOWTO).first();
+  if (await sheet.waitFor({ state: "visible", timeout: 2500 }).then(() => true, () => false)) {
+    await p.getByTestId("howto-never").click();
+    await sheet.waitFor({ state: "hidden" });
+  }
+}
+/** First visit: the pop-up opens by itself with its demo; "Let's play!" closes it, and it opens again on the next first-visit load until "Don't show again". */
+async function checkFirstVisitHowTo(p, game) {
+  const sheet = p.locator(HOWTO).first();
+  if (!(await sheet.waitFor({ state: "visible", timeout: 8000 }).then(() => true, () => false))) return errors.push(`${game} didn't auto-open its how-to on a first visit`);
+  if (!(await p.getByTestId("howto-demo").isVisible())) errors.push(`${game}'s how-to has no demo`);
+  await p.getByTestId("howto-play").click();
+  await sheet.waitFor({ state: "hidden" });
+  await p.reload({ waitUntil: "load" });
+  if (!(await sheet.waitFor({ state: "visible", timeout: 8000 }).then(() => true, () => false))) errors.push(`${game}'s how-to didn't open again after "Let's play!"`);
+  await p.getByTestId("howto-never").click();
+  await sheet.waitFor({ state: "hidden" });
+  await p.reload({ waitUntil: "load" });
+  await p.waitForTimeout(1500);
+  if (await sheet.isVisible()) errors.push(`${game}'s how-to opened again after "Don't show again"`);
 }
 const OUT = "e2e-screenshots";
 fs.mkdirSync(OUT, { recursive: true });
@@ -228,6 +247,7 @@ await page.screenshot({ path: `${OUT}/blitz.png` });
 
 step("pokédle");
 await page.goto(`${BASE}/pokedle`, { waitUntil: "networkidle" });
+await checkFirstVisitHowTo(page, "Pokédle");
 await closeHowTo(page);
 // The Pokédex beside the board gets only what its assist level shows: names, generations and types for the Notebook (the default).
 const dexRows = await (await page.request.get(`${BASE}/api/pokedle/dex`)).json();
@@ -329,6 +349,7 @@ step("pokéconnections: a full daily, one wrong guess then a solve");
   const tilesRes = await (await page.request.get(`${BASE}/api/connections?date=${today}`)).text();
   if (/label|members|category|reveal/.test(tilesRes)) errors.push("PokéConnections' tiles came with the groups");
   await page.goto(`${BASE}/connections`, { waitUntil: "networkidle" });
+  await checkFirstVisitHowTo(page, "PokéConnections");
   await closeHowTo(page);
   await page.getByTestId("conn-tile").first().waitFor();
   if ((await page.getByTestId("conn-tile").count()) !== 16) errors.push("PokéConnections didn't show 16 tiles");
@@ -495,7 +516,8 @@ step("pikadoku: a full daily (9 PP, one wrong guess), the score and the answers 
   const gridRes = await (await page.request.get(`${BASE}/api/pikadoku?date=${today}&difficulty=normal`)).text();
   if (/answers|members|"ids"/.test(gridRes)) errors.push("Pikadoku's grid came with answers");
   await page.goto(`${BASE}/pikadoku`, { waitUntil: "networkidle" });
-  if (await page.getByTestId("pdk-howto").isVisible()) errors.push("Pikadoku auto-opened its how-to");
+  await checkFirstVisitHowTo(page, "Pikadoku");
+  await closeHowTo(page);
   await page.getByTestId("pdk-row-0").waitFor();
   await page.getByTestId("pdk-cell-0").waitFor();
   const label = async (id) => (await page.getByTestId(id).innerText()).trim();
@@ -1992,7 +2014,7 @@ if (me.enabled) {
     await p.goto(BASE, { waitUntil: "networkidle" });
     const res = await p.request.post(`${BASE}/api/auth/register`, { data: { username: name, password: "correct horse battery" }, headers: { Origin: BASE } });
     if (!res.ok()) throw new Error(`register ${name}: ${res.status()}`);
-    await p.reload({ waitUntil: "networkidle" });
+    await p.reload({ waitUntil: "load" });
   }
   // A refocused tab sends its heartbeat at once (at most every 20 s) instead of waiting out the minute.
   const nudge = (p) => p.evaluate(() => window.dispatchEvent(new Event("focus")));

@@ -44,11 +44,14 @@ const PREFS_KEY = "pokeiq:pikadoku:prefs";
 interface Prefs {
   difficulty: PdkDifficulty;
   settings: PdkSettings;
+  /** "Don't show again" on the how-to pop-up. */
+  seenHowTo?: boolean;
 }
 function loadPrefs(): Prefs {
   const base: Prefs = { difficulty: "normal", settings: DEFAULT_PDK_SETTINGS };
   try {
     const raw = JSON.parse(window.localStorage.getItem(PREFS_KEY) ?? "null") as Partial<Prefs> | null;
+    if (raw?.seenHowTo === true) base.seenHowTo = true;
     if (raw?.difficulty && PDK_DIFFICULTIES.includes(raw.difficulty)) base.difficulty = raw.difficulty;
     if (raw?.settings) base.settings = { ...DEFAULT_PDK_SETTINGS, ...raw.settings, families: raw.settings.families?.filter((f) => PDK_FAMILIES.includes(f)) ?? PDK_FAMILIES };
   } catch {
@@ -111,7 +114,12 @@ export function Pikadoku() {
   const finishing = useRef(false);
   const toastTimer = useRef<number | undefined>(undefined);
 
-  useEffect(() => setPrefs(loadPrefs()), []);
+  useEffect(() => {
+    const p = loadPrefs();
+    setPrefs(p);
+    // How to play, on a first visit (a shared challenge link goes straight to its grid).
+    if (!p.seenHowTo && !new URLSearchParams(window.location.search).get("c")) setSheet("howto");
+  }, []);
   const closeSheet = () => {
     setSheet(null);
   };
@@ -727,7 +735,7 @@ export function Pikadoku() {
           onClose={() => setSheet(null)}
         />
       )}
-      {sheet === "howto" && <PdkHowToSheet onClose={closeSheet} />}
+      {sheet === "howto" && <PdkHowToSheet onClose={closeSheet} onNever={() => (patchPrefs({ seenHowTo: true }), closeSheet())} />}
       {sheet === "stats" && <PdkStatsSheet streak={block.streak} best={block.best} play={{ ...EMPTY_PDK_PLAY, ...progress?.pdkPlay }} onClose={() => setSheet(null)} />}
     </MotionConfig>
   );
