@@ -31,7 +31,15 @@ export interface ItemListItem {
   category: string;
 }
 
-export type DexListKind = "moves" | "abilities" | "items";
+export interface PlaceListItem {
+  slug: string;
+  name: string;
+  region: string;
+  type: string;
+  parent?: string;
+}
+
+export type DexListKind = "moves" | "abilities" | "items" | "places";
 
 const PAGE = 60;
 const CLASSES = ["physical", "special", "status"] as const;
@@ -40,13 +48,15 @@ const CLASS_CLS = { physical: "text-orange-400", special: "text-sky-400", status
 
 const normalize = (s: string) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/[^a-z0-9]/g, "");
 
-type Item = MoveListItem | AbilityListItem | ItemListItem;
+type Item = MoveListItem | AbilityListItem | ItemListItem | PlaceListItem;
 
 export function DexListExplorer({ kind, items }: { kind: DexListKind; items: Item[] }) {
   const [query, setQuery] = useState("");
   const [type, setType] = useState<string | null>(null);
   const [cls, setCls] = useState<string | null>(null);
   const [category, setCategory] = useState("");
+  const [region, setRegion] = useState("");
+  const [placeType, setPlaceType] = useState("");
   const [visible, setVisible] = useState(PAGE);
   const sentinelRef = useRef<HTMLDivElement | null>(null);
   const searchRef = useRef<HTMLInputElement | null>(null);
@@ -55,6 +65,8 @@ export function DexListExplorer({ kind, items }: { kind: DexListKind; items: Ite
     () => (kind === "items" ? [...new Set((items as ItemListItem[]).map((i) => i.category))].sort() : []),
     [kind, items]
   );
+  const regions = useMemo(() => (kind === "places" ? [...new Set((items as PlaceListItem[]).map((i) => i.region))].sort() : []), [kind, items]);
+  const placeTypes = useMemo(() => (kind === "places" ? [...new Set((items as PlaceListItem[]).map((i) => i.type))].sort() : []), [kind, items]);
 
   const filtered = useMemo(() => {
     const q = normalize(query);
@@ -66,11 +78,13 @@ export function DexListExplorer({ kind, items }: { kind: DexListKind; items: Ite
         if (cls && m.cls !== cls) return false;
       }
       if (kind === "items" && category && (it as ItemListItem).category !== category) return false;
+      if (kind === "places" && region && (it as PlaceListItem).region !== region) return false;
+      if (kind === "places" && placeType && (it as PlaceListItem).type !== placeType) return false;
       return true;
     });
-  }, [items, kind, query, type, cls, category]);
+  }, [items, kind, query, type, cls, category, region, placeType]);
 
-  useEffect(() => setVisible(PAGE), [query, type, cls, category]);
+  useEffect(() => setVisible(PAGE), [query, type, cls, category, region, placeType]);
 
   useEffect(() => {
     const el = sentinelRef.current;
@@ -95,12 +109,14 @@ export function DexListExplorer({ kind, items }: { kind: DexListKind; items: Ite
   }, []);
 
   const label = kind;
-  const hasFilters = query || type || cls || category;
+  const hasFilters = query || type || cls || category || region || placeType;
   const reset = () => {
     setQuery("");
     setType(null);
     setCls(null);
     setCategory("");
+    setRegion("");
+    setPlaceType("");
   };
 
   return (
@@ -135,6 +151,22 @@ export function DexListExplorer({ kind, items }: { kind: DexListKind; items: Ite
                 <option key={c} value={c}>{c}</option>
               ))}
             </select>
+          )}
+          {kind === "places" && (
+            <>
+              <select value={region} onChange={(e) => setRegion(e.target.value)} aria-label="Region" className="h-11 max-w-[200px] rounded-md border border-input bg-shade/40 px-3 font-display text-sm">
+                <option value="">All regions</option>
+                {regions.map((c) => (
+                  <option key={c} value={c}>{c}</option>
+                ))}
+              </select>
+              <select value={placeType} onChange={(e) => setPlaceType(e.target.value)} aria-label="Place type" className="h-11 max-w-[200px] rounded-md border border-input bg-shade/40 px-3 font-display text-sm">
+                <option value="">All types</option>
+                {placeTypes.map((c) => (
+                  <option key={c} value={c}>{c}</option>
+                ))}
+              </select>
+            </>
           )}
         </div>
 
@@ -230,6 +262,17 @@ export function DexListExplorer({ kind, items }: { kind: DexListKind; items: Ite
                 <span className="font-pixel text-[10px] tabular-nums text-muted-foreground">{a.count} Pokémon</span>
               </div>
               <p className="line-clamp-2 text-xs text-muted-foreground">{a.effect}</p>
+            </Link>
+          ))}
+        </div>
+      ) : kind === "places" ? (
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+          {(filtered.slice(0, visible) as PlaceListItem[]).map((it) => (
+            <Link key={it.slug} href={`/pokedex/places/${it.slug}`} data-testid="place-card" className="group rounded-lg border bg-card p-3 transition-colors hover:border-screen/60">
+              <span className="block truncate font-display text-sm font-bold uppercase tracking-wide group-hover:text-screen">{it.name}</span>
+              <span className="block truncate font-pixel text-[9px] uppercase tracking-wider text-muted-foreground">
+                {it.type} · {it.parent ? `${it.parent}, ` : ""}{it.region}
+              </span>
             </Link>
           ))}
         </div>

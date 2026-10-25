@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { slugFromKey } from "@/lib/dex/places";
 import { ChevronDown } from "lucide-react";
 import { VERSION_BY_KEY, genColumns, genSummary, type EncGen, type EncRow } from "@/lib/pokemon/encounter-types";
 import { cn } from "@/lib/utils";
@@ -52,7 +53,7 @@ export function EncountersSection({ gens, name }: { gens: EncGen[]; name: string
         );
       })}
       <p className="text-[11px] text-muted-foreground">
-        Gens 1–7 from PokéAPI checked against Serebii (places PokéAPI lacks come from Serebii), Let&apos;s Go and Gens 8–9 from Serebii. Rates are the chance per encounter in that spot; Gen 8–9 raids and overview-only spots list no levels or rates. Tap a place to find it on the atlas.
+        Gens 1–7 from PokéAPI checked against Serebii (places PokéAPI lacks come from Serebii), Let&apos;s Go and Gens 8–9 from Serebii. Rates are the chance per encounter in that spot; Gen 8–9 raids and overview-only spots list no levels or rates. Tap a place for its page, or Atlas to find it on the map.
       </p>
     </div>
   );
@@ -109,10 +110,15 @@ function GenTable({ rows }: { rows: EncRow[] }) {
             ) : (
               <>
                 <td className="p-2 font-semibold">
-                  {r.a ? (
-                    <Link href={`/atlas?q=${encodeURIComponent(r.a)}`} className="underline-offset-2 hover:text-primary hover:underline">
-                      {r.loc}
-                    </Link>
+                  {r.a && slugFromKey(r.a) ? (
+                    <span className="inline-flex flex-wrap items-baseline gap-x-1.5">
+                      <Link href={`/pokedex/places/${slugFromKey(r.a)}`} data-testid="enc-place-link" className="underline-offset-2 hover:text-primary hover:underline">
+                        {r.loc}
+                      </Link>
+                      <Link href={`/atlas?q=${encodeURIComponent(r.a)}`} className="text-[10px] font-normal uppercase tracking-wider text-muted-foreground hover:text-primary" aria-label={`Find ${r.loc} on the World Atlas`}>
+                        Atlas
+                      </Link>
+                    </span>
                   ) : (
                     r.loc
                   )}
@@ -140,7 +146,7 @@ function GenTable({ rows }: { rows: EncRow[] }) {
   );
 }
 
-function Badges({ versions }: { versions: string[] }) {
+export function Badges({ versions }: { versions: string[] }) {
   return (
     <div className="flex flex-wrap gap-0.5">
       {versions.map((key) => {
