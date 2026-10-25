@@ -1094,14 +1094,19 @@ step("pokéconnections duel: create, join, race to the end");
   if (!groups) throw new Error(`no solution for the duel's grid ${ids}`);
   const pick = async (p, four) => {
     for (const id of four) await p.locator(`[data-testid=conn-tile][data-id="${id}"]`).click();
-    await p.getByTestId("conn-submit").click();
+    // The race may still be arming: wait until Submit takes the four picks.
+    const submit = p.getByTestId("conn-submit");
+    await submit.waitFor();
+    for (let i = 0; i < 20 && (await submit.isDisabled()); i++) await p.waitForTimeout(250);
+    await submit.click();
   };
 
-  // Blue: one away, then a plain miss.
+  // Blue: one away, then a plain miss. The toast is brief, so the lasting proof is the mistake count.
+  const oneAway = blue.getByTestId("conn-toast").filter({ hasText: "One away…" }).waitFor({ timeout: 8_000 }).then(() => true, () => false);
   await pick(blue, [...groups[0].slice(0, 3), groups[1][0]]);
-  await blue.getByTestId("conn-toast").filter({ hasText: "One away…" }).waitFor();
-  await blue.screenshot({ path: `${OUT}/conn-duel-oneaway.png` });
   await blue.getByLabel("3 of 4 mistakes left").waitFor();
+  if (!(await oneAway)) errors.push("the duel didn't say One away… for three of a group");
+  await blue.screenshot({ path: `${OUT}/conn-duel-oneaway.png` });
   await blue.getByRole("button", { name: "Deselect all" }).click();
   await pick(blue, [groups[0][0], groups[0][1], groups[1][0], groups[1][1]]);
   await blue.getByLabel("2 of 4 mistakes left").waitFor();
