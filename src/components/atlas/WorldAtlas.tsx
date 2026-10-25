@@ -108,6 +108,9 @@ export function WorldAtlas({ src }: { src: string }) {
           <h1 className="font-display text-4xl font-bold uppercase tracking-tight sm:text-5xl">
             World <span className="text-primary">Atlas</span>
           </h1>
+          <Link href="/guessr/globe" className="inline-block font-display text-xs font-bold uppercase tracking-wider text-screen hover:underline">
+            View it as a 3D globe →
+          </Link>
         </div>
         <form
           role="search"

@@ -685,6 +685,15 @@ if (geoPlayed !== 3) throw new Error(`a 3-round game took ${geoPlayed} guesses`)
 await page.getByText(/out of 15,000/).waitFor();
 await page.screenshot({ path: `${OUT}/guessr-3-round-summary.png`, fullPage: true });
 
+step("pokéguessr: world globe card opens the 3D globe (canvas, or the no-WebGL fallback)");
+await page.goto(`${BASE}/guessr`, { waitUntil: "networkidle" });
+await page.getByTestId("globe-card").getByRole("link", { name: "Open the globe" }).click();
+await page.waitForURL(/\/guessr\/globe$/);
+await page.getByTestId("world-globe").waitFor();
+await page.locator('[data-testid="world-globe"] canvas, [data-testid="globe-fallback"]').first().waitFor({ state: "attached", timeout: 15000 });
+await page.waitForTimeout(1500);
+await page.screenshot({ path: `${OUT}/guessr-globe.png` });
+
 step("pokéguessr: streak");
 await page.goto(`${BASE}/guessr`, { waitUntil: "networkidle" });
 await page.getByRole("button", { name: /Streak/ }).click();
