@@ -623,6 +623,27 @@ for (let i = 0; i < 5; i++) {
     const img = document.querySelector("img[data-testid='geo-shot']");
     return img?.complete && img.naturalWidth > 0;
   });
+  if (i === 0) {
+    const fit = await page.evaluate(() => {
+      const img = document.querySelector("img[data-testid='geo-shot']");
+      const a = img.getBoundingClientRect();
+      const f = img.parentElement.getBoundingClientRect();
+      return { objectFit: img.dataset.fit === "tall" ? "cover" : getComputedStyle(img).objectFit, d: [a.x - f.x, a.y - f.y, a.width - f.width, a.height - f.height] };
+    });
+    if (fit.objectFit !== "cover") throw new Error(`round image object-fit is ${fit.objectFit}, not cover`);
+    if (fit.d.some((n) => Math.abs(n) > 2)) throw new Error(`round image doesn't fill its frame: ${fit.d}`);
+    await page.getByTestId("geo-fullscreen").click();
+    await page.locator("[data-testid=geo-shell][data-fullscreen=true]").waitFor();
+    const vp = await page.evaluate(() => {
+      const r = document.querySelector("img[data-testid='geo-shot']").getBoundingClientRect();
+      const sh = document.querySelector("[data-testid=geo-shell]").getBoundingClientRect();
+      return [r.width - sh.width, r.height - sh.height];
+    });
+    if (vp.some((n) => Math.abs(n) > 2)) throw new Error(`full-screen image doesn't fill the screen: ${vp}`);
+    await page.screenshot({ path: `${OUT}/geo-fullscreen-mode.png` });
+    await page.getByTestId("geo-fullscreen").click();
+    await page.locator("[data-testid=geo-shell]:not([data-fullscreen])").waitFor();
+  }
   if (await page.getByTestId("geo-view-count").count()) throw new Error("a round offers more than one screenshot");
   if (await page.getByRole("button", { name: "Next view" }).count()) throw new Error("a round has a next-view button");
   const map = page.locator("[role=application]");
