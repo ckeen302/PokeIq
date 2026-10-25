@@ -2,7 +2,7 @@
   "name": "pokeiq",
   "version": "1.0.0",
   "private": true,
-  "description": "Pok\u00e9IQ \u2014 the ultimate Pok\u00e9mon knowledge test: daily challenges, Pok\u00e9dle, Who's That Pok\u00e9mon, cries, Pok\u00e9dex entries, type matchups and an adaptive Pok\u00e9IQ rating.",
+  "description": "PokéIQ — the ultimate Pokémon knowledge test: daily challenges, Pokédle, Who's That Pokémon, cries, Pokédex entries, type matchups and an adaptive PokéIQ rating.",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -45,6 +45,7 @@
     "server-only": "^0.0.1",
     "sharp": "^0.35.5",
     "tailwind-merge": "^2.5.4",
+    "three": "0.170.0",
     "zod": "^3.23.8"
   },
   "devDependencies": {
@@ -55,6 +56,7 @@
     "@types/node": "^22.0.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
+    "@types/three": "0.170.0",
     "autoprefixer": "^10.4.20",
     "eslint": "^9.39.5",
     "eslint-config-next": "^15.5.20",

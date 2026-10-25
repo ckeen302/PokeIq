@@ -48,6 +48,7 @@ import { CopyFallback } from "@/components/quiz/CopyFallback";
 import { ShareButton } from "@/components/share/ShareButton";
 import { GeoMap, type MapPin } from "./GeoMap";
 import { DuelCard } from "./DuelCard";
+import { GlobePreview } from "@/components/globe/GlobePreview";
 import { ReportShot } from "./ReportShot";
 import { ShotCarousel, shotFit } from "./ShotCarousel";
 import { roundViewsOf } from "@/lib/geo-look";
@@ -603,6 +604,20 @@ export function GeoGame({ regions: allRegions, challenge }: GeoGameProps) {
 
         {/* Duels play an era when the map has enough of it (hand-picked games are practice), else every game. */}
         <DuelCard region={region} places={places} era={filter.era && filterPlaces(region, { era: filter.era, families: [] }) >= GEO_FILTER_MIN_PLACES ? filter.era : undefined} />
+
+        <Card className="overflow-hidden border-primary/40" data-testid="globe-card">
+          <CardContent className="flex flex-col items-center gap-4 p-6 md:flex-row">
+            <GlobePreview />
+            <div className="min-w-0 flex-1 space-y-2 text-center md:text-left">
+              <p className="hud-label text-primary">3D · Explore</p>
+              <p className="font-display text-2xl font-bold uppercase">World Globe</p>
+              <p className="text-sm text-muted-foreground">Spin the whole Pokémon world in 3D and zoom from regions down to every route.</p>
+            </div>
+            <Link href="/guessr/globe" className={cn(buttonVariants(), "w-full md:w-auto")}>
+              Open the globe
+            </Link>
+          </CardContent>
+        </Card>
 
         <p className="text-center text-xs text-muted-foreground">
           Screenshots from{" "}
