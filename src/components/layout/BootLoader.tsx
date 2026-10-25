@@ -12,8 +12,13 @@ export function BootLoader({ idPrefix, label = "Loading" }: { idPrefix: string; 
       <div className="relative h-28 w-28">
         <span className="boot-ripple" aria-hidden />
         <span className="boot-ripple [animation-delay:0.9s]" aria-hidden />
-        <span className="boot-burst" aria-hidden />
-        <svg viewBox="0 0 100 100" className="boot-ball relative h-full w-full" aria-hidden>
+        <span className="boot-beam" aria-hidden />
+        <span className="boot-rays" aria-hidden>
+          {[0, 45, 90, 135, 180, 225, 270, 315].map((a) => (
+            <i key={a} style={{ transform: `rotate(${a}deg)` }} />
+          ))}
+        </span>
+        <svg viewBox="0 0 100 100" className="boot-ball relative h-full w-full overflow-visible" aria-hidden>
           <defs>
             <linearGradient id={id("brain")} x1="0" y1="0" x2="0" y2="1">
               <stop offset="0" stopColor="#ff8ab4" />
