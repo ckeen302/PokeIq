@@ -4,15 +4,16 @@ import { useEffect, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight, Expand } from "lucide-react";
 import { stepView, viewKeyStep, viewLabel } from "@/lib/geo-look";
 import { cn } from "@/lib/utils";
+import { FullscreenButton } from "./GameShell";
 
 /**
- * How a screenshot fills the frame: wide 3D captures fill it (just past the
- * light frame on Let's Go's), anything else fits inside; small pixel art is
- * scaled up without blurring.
+ * How a screenshot fills the frame: always edge to edge (cover, centred, never
+ * stretched); small pixel art is scaled up without blurring.
  */
 export function shotFit(img: HTMLImageElement): { className: string; pixelated: boolean } {
   const ratio = img.naturalWidth / Math.max(1, img.naturalHeight);
-  return { className: ratio >= 1.6 && ratio <= 1.85 ? "scale-[1.07] object-cover" : "object-contain", pixelated: img.naturalWidth <= 512 };
+  void ratio;
+  return { className: "object-cover object-center", pixelated: img.naturalWidth <= 512 };
 }
 
 type Fit = ReturnType<typeof shotFit>;
@@ -28,6 +29,8 @@ export function ShotCarousel({
   onIndex,
   onZoom,
   zoom,
+  fs = false,
+  onFullscreen,
 }: {
   views: string[];
   index: number;
@@ -35,6 +38,8 @@ export function ShotCarousel({
   onZoom: () => void;
   /** The Zoomed setting: blow each view up around a point of it (percentages), so only a close-up shows. */
   zoom?: (src: string) => { scale: number; origin: [number, number] } | null;
+  fs?: boolean;
+  onFullscreen?: () => void;
 }) {
   const [fits, setFits] = useState<Record<string, Fit>>({});
   const count = views.length;
@@ -80,8 +85,8 @@ export function ShotCarousel({
   const arrow = "absolute top-1/2 z-[3] flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-black/55 text-white backdrop-blur transition-colors hover:bg-black/75 focus-visible:outline focus-visible:outline-2 focus-visible:outline-screen";
 
   return (
-    <div>
-      <div className="screen relative aspect-[16/9] w-full overflow-hidden rounded-lg" aria-roledescription={many ? "carousel" : undefined}>
+    <div className={fs ? "h-full" : undefined}>
+      <div className={cn("screen relative w-full overflow-hidden", fs ? "h-full rounded-none" : "aspect-[16/9] rounded-lg")} aria-roledescription={many ? "carousel" : undefined}>
         {!fit && <div className="absolute inset-0 animate-pulse bg-foreground/5" aria-hidden />}
         {/* eslint-disable-next-line @next/next/no-img-element -- server-proxied, CDN-cached screenshot */}
         <img
@@ -90,7 +95,7 @@ export function ShotCarousel({
           alt="Where is this?"
           ref={imgRef}
           onLoad={(e) => measure(e.currentTarget)}
-          className={cn("absolute inset-0 h-full w-full transition-opacity duration-300", fit?.className ?? "object-contain", fit ? "opacity-100" : "opacity-0")}
+          className={cn("absolute inset-0 h-full w-full transition-opacity duration-300", fit?.className ?? "object-cover object-center", fit ? "opacity-100" : "opacity-0")}
           style={{ imageRendering: fit?.pixelated ? "pixelated" : "auto", ...zoomStyle(src) }}
           data-testid="geo-shot"
           data-zoomed={zoom?.(src) ? "true" : undefined}
@@ -99,11 +104,12 @@ export function ShotCarousel({
           type="button"
           onClick={onZoom}
           className="absolute left-3 top-3 z-[3] flex h-9 w-9 items-center justify-center rounded-md bg-black/55 text-white backdrop-blur transition-colors hover:bg-black/75"
-          aria-label="View the screenshot full screen"
-          title="Full screen"
+          aria-label="View the whole screenshot"
+          title="Whole screenshot"
         >
           <Expand className="h-4 w-4" />
         </button>
+        {onFullscreen && <FullscreenButton fs={fs} onClick={onFullscreen} />}
         {many && (
           <>
             <button type="button" className={cn(arrow, "left-3")} onClick={() => onIndex(stepView(index, -1, count))} aria-label="Previous view" title="Previous view (←)">
@@ -112,7 +118,7 @@ export function ShotCarousel({
             <button type="button" className={cn(arrow, "right-3")} onClick={() => onIndex(stepView(index, 1, count))} aria-label="Next view" title="Next view (→)">
               <ChevronRight className="h-6 w-6" />
             </button>
-            <div className="hud-label absolute right-3 top-3 z-[3] rounded-md bg-black/55 px-2 py-1 tabular-nums text-white backdrop-blur" aria-live="polite" data-testid="geo-view-count">
+            <div className="hud-label absolute right-14 top-3 z-[3] rounded-md bg-black/55 px-2 py-1 tabular-nums text-white backdrop-blur" aria-live="polite" data-testid="geo-view-count">
               {index + 1} / {count}
             </div>
           </>

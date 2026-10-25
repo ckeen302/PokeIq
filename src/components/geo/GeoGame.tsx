@@ -51,6 +51,7 @@ import { DuelCard } from "./DuelCard";
 import { GlobePreview } from "@/components/globe/GlobePreview";
 import { ReportShot } from "./ReportShot";
 import { ShotCarousel, shotFit } from "./ShotCarousel";
+import { GameShell, dockClass } from "./GameShell";
 import { roundViewsOf } from "@/lib/geo-look";
 import { GeoSettingsButton, RoundsPicker } from "./GeoSettings";
 import {
@@ -727,7 +728,15 @@ export function GeoGame({ regions: allRegions, challenge }: GeoGameProps) {
 
   // ---- round result ------------------------------------------------------------
   if (phase === "revealed" && current) {
-    return <RoundReveal game={game} current={current} streak={streak} hud={hud} onNext={next} />;
+    return (
+      <GameShell>
+        {({ fs }) => (
+          <div className={fs ? "mx-auto max-w-6xl p-4" : undefined}>
+            <RoundReveal game={game} current={current} streak={streak} hud={hud} onNext={next} />
+          </div>
+        )}
+      </GameShell>
+    );
   }
 
   // ---- guessing ------------------------------------------------------------------
@@ -735,13 +744,15 @@ export function GeoGame({ regions: allRegions, challenge }: GeoGameProps) {
   const zoom = game.settings.zoomed ? (src: string) => ({ scale: GEO_ZOOM, origin: zoomOrigin(src) }) : undefined;
   const zoomedView = zoom?.(views[viewIndex] ?? game.round.shot);
   return (
-    <div className="mx-auto max-w-6xl space-y-3">
-      {hud}
-      <div className="relative">
-        <ShotCarousel views={views} index={viewIndex} onIndex={setViewIndex} onZoom={() => setZoomed(true)} zoom={zoom} />
+    <GameShell>
+      {({ fs, toggle }) => (
+    <div className={fs ? "relative h-full" : "mx-auto max-w-6xl space-y-3"}>
+      {fs ? <div className="absolute left-14 right-14 top-3 z-20">{hud}</div> : hud}
+      <div className={fs ? "absolute inset-0" : "relative"}>
+        <ShotCarousel views={views} index={viewIndex} onIndex={setViewIndex} onZoom={() => setZoomed(true)} zoom={zoom} fs={fs} onFullscreen={toggle} />
 
         {/* GeoGuessr-style mini-map (the atlas): docked bottom-right on desktop, grows on hover. */}
-        <div className="group mt-3 space-y-2 lg:absolute lg:bottom-4 lg:right-4 lg:z-10 lg:mt-0 lg:w-[24rem] lg:transition-[width] lg:duration-200 lg:focus-within:w-[46rem] lg:hover:w-[46rem]">
+        <div className={dockClass(fs)}>
           <div className="rounded-md lg:opacity-80 lg:shadow-2xl lg:transition-opacity lg:group-hover:opacity-100">
             <GeoMap
               region={game.region}
@@ -797,6 +808,8 @@ export function GeoGame({ regions: allRegions, challenge }: GeoGameProps) {
         )}
       </AnimatePresence>
     </div>
+      )}
+    </GameShell>
   );
 }
 

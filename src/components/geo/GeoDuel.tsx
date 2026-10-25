@@ -24,6 +24,8 @@ import { DuelGone, DuelLoading, DuelLobby, DuelNotice, DuelVisitor, LeaveButton,
 import { DuelChat, DuelTools, EmoteFeed } from "@/components/duel/DuelReactions";
 import { GeoMap, type MapPin, type RevealedRound } from "./GeoMap";
 import { ReportShot } from "./ReportShot";
+import { shotFit } from "./ShotCarousel";
+import { FullscreenButton, GameShell, dockClass } from "./GameShell";
 import { GEO_ERA_NAMES } from "@/lib/geo-families";
 import { cn } from "@/lib/utils";
 import { AddFriendAfterGame } from "@/components/community/AddFriend";
@@ -296,7 +298,10 @@ export function GeoDuel({ code, regions }: GeoDuelProps) {
     const theyGuessed = live.guessed[1 - me];
     const timeUp = left <= 0;
     return (
-      <div className="mx-auto max-w-6xl space-y-3">
+      <GameShell>
+        {({ fs, toggle }) => (
+      <div className={fs ? "relative h-full" : "mx-auto max-w-6xl space-y-3"}>
+        <div className={fs ? "absolute left-14 right-14 top-3 z-20 space-y-2" : "contents"}>
         {notice}
         <DuelHud
           view={view}
@@ -329,24 +334,32 @@ export function GeoDuel({ code, regions }: GeoDuelProps) {
             </motion.p>
           )}
         </AnimatePresence>
-        <div className="relative">
-          <div className="screen relative aspect-[16/9] w-full overflow-hidden rounded-lg">
+        </div>
+        <div className={fs ? "absolute inset-0" : "relative"}>
+          <div className={cn("screen relative w-full overflow-hidden", fs ? "h-full rounded-none" : "aspect-[16/9] rounded-lg")}>
             {live.shot && (
               // eslint-disable-next-line @next/next/no-img-element -- server-proxied, CDN-cached screenshot
-              <img key={live.shot} src={live.shot} alt="Where is this?" className="absolute inset-0 h-full w-full object-contain" />
+              <img key={live.shot} src={live.shot} alt="Where is this?"
+                data-testid="geo-shot"
+                onLoad={(e) => {
+                  e.currentTarget.style.imageRendering = shotFit(e.currentTarget).pixelated ? "pixelated" : "auto";
+                }}
+                className="absolute inset-0 h-full w-full object-cover object-center"
+              />
             )}
             <button
               type="button"
               onClick={() => setZoomed(true)}
               className="absolute left-3 top-3 z-[3] flex h-9 w-9 items-center justify-center rounded-md bg-black/55 text-white backdrop-blur transition-colors hover:bg-black/75"
-              aria-label="View the screenshot full screen"
-              title="Full screen"
+              aria-label="View the whole screenshot"
+              title="Whole screenshot"
             >
               <Expand className="h-4 w-4" />
             </button>
+            <FullscreenButton fs={fs} onClick={toggle} />
           </div>
 
-          <div className="group mt-3 space-y-2 lg:absolute lg:bottom-4 lg:right-4 lg:z-10 lg:mt-0 lg:w-[24rem] lg:transition-[width] lg:duration-200 lg:focus-within:w-[46rem] lg:hover:w-[46rem]">
+          <div className={dockClass(fs)}>
             <div className="rounded-md lg:opacity-80 lg:shadow-2xl lg:transition-opacity lg:group-hover:opacity-100">
               <GeoMap
                 region={map}
@@ -367,8 +380,10 @@ export function GeoDuel({ code, regions }: GeoDuelProps) {
             </Button>
           </div>
         </div>
-        {tools}
-        {leaveButton}
+        <div className={fs ? "absolute bottom-4 left-4 z-20 max-w-[min(24rem,50%)] space-y-2" : "contents"}>
+          {tools}
+          {leaveButton}
+        </div>
 
         <AnimatePresence>
           {zoomed && live.shot && (
@@ -394,6 +409,8 @@ export function GeoDuel({ code, regions }: GeoDuelProps) {
           )}
         </AnimatePresence>
       </div>
+        )}
+      </GameShell>
     );
   }
 
@@ -403,7 +420,9 @@ export function GeoDuel({ code, regions }: GeoDuelProps) {
     const pressed = view.next?.pressed[me] ?? false;
     const nextIn = view.next ? seconds(view.next.at - now) : 0;
     return (
-      <div className="mx-auto max-w-4xl space-y-4">
+      <GameShell>
+        {({ fs }) => (
+      <div className={cn("mx-auto max-w-4xl space-y-4", fs && "p-4")}>
         {notice}
         <DuelHud
           view={view}
@@ -423,6 +442,8 @@ export function GeoDuel({ code, regions }: GeoDuelProps) {
         {tools}
         {!final && leaveButton}
       </div>
+        )}
+      </GameShell>
     );
   }
 
