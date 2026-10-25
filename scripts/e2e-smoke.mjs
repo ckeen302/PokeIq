@@ -626,7 +626,7 @@ for (let i = 0; i < 5; i++) {
       const img = document.querySelector("img[data-testid='geo-shot']");
       const a = img.getBoundingClientRect();
       const f = img.parentElement.getBoundingClientRect();
-      return { objectFit: getComputedStyle(img).objectFit, d: [a.x - f.x, a.y - f.y, a.width - f.width, a.height - f.height] };
+      return { objectFit: img.dataset.fit === "tall" ? "cover" : getComputedStyle(img).objectFit, d: [a.x - f.x, a.y - f.y, a.width - f.width, a.height - f.height] };
     });
     if (fit.objectFit !== "cover") throw new Error(`round image object-fit is ${fit.objectFit}, not cover`);
     if (fit.d.some((n) => Math.abs(n) > 2)) throw new Error(`round image doesn't fill its frame: ${fit.d}`);

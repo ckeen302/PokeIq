@@ -7,13 +7,14 @@ import { cn } from "@/lib/utils";
 import { FullscreenButton } from "./GameShell";
 
 /**
- * How a screenshot fills the frame: always edge to edge (cover, centred, never
- * stretched); small pixel art is scaled up without blurring.
+ * How a screenshot fills the frame: edge to edge (cover, centred, never
+ * stretched), except tall map shots, where cover would hide most of the
+ * picture: those show whole over a blurred copy of themselves, so there are
+ * still no bars. Small pixel art is scaled up without blurring.
  */
-export function shotFit(img: HTMLImageElement): { className: string; pixelated: boolean } {
-  const ratio = img.naturalWidth / Math.max(1, img.naturalHeight);
-  void ratio;
-  return { className: "object-cover object-center", pixelated: img.naturalWidth <= 512 };
+export function shotFit(img: HTMLImageElement): { className: string; pixelated: boolean; tall: boolean } {
+  const tall = img.naturalWidth / Math.max(1, img.naturalHeight) < 1;
+  return { className: tall ? "object-contain object-center" : "object-cover object-center", pixelated: img.naturalWidth <= 512, tall };
 }
 
 type Fit = ReturnType<typeof shotFit>;
@@ -88,6 +89,10 @@ export function ShotCarousel({
     <div className={fs ? "h-full" : undefined}>
       <div className={cn("screen relative w-full overflow-hidden", fs ? "h-full rounded-none" : "aspect-[16/9] rounded-lg")} aria-roledescription={many ? "carousel" : undefined}>
         {!fit && <div className="absolute inset-0 animate-pulse bg-foreground/5" aria-hidden />}
+        {fit?.tall && (
+          // eslint-disable-next-line @next/next/no-img-element -- blurred fill behind a tall shot
+          <img src={src} alt="" aria-hidden className="absolute inset-0 h-full w-full scale-110 object-cover opacity-70 blur-xl" />
+        )}
         {/* eslint-disable-next-line @next/next/no-img-element -- server-proxied, CDN-cached screenshot */}
         <img
           key={src}
@@ -98,6 +103,7 @@ export function ShotCarousel({
           className={cn("absolute inset-0 h-full w-full transition-opacity duration-300", fit?.className ?? "object-cover object-center", fit ? "opacity-100" : "opacity-0")}
           style={{ imageRendering: fit?.pixelated ? "pixelated" : "auto", ...zoomStyle(src) }}
           data-testid="geo-shot"
+          data-fit={fit?.tall ? "tall" : undefined}
           data-zoomed={zoom?.(src) ? "true" : undefined}
         />
         <button
