@@ -120,6 +120,11 @@ export function Pikadoku() {
     // How to play, on a first visit (a shared challenge link goes straight to its grid).
     if (!p.seenHowTo && !new URLSearchParams(window.location.search).get("c")) setSheet("howto");
   }, []);
+  useEffect(() => {
+    const open = () => setSheet("howto");
+    window.addEventListener("pokeiq:howto", open);
+    return () => window.removeEventListener("pokeiq:howto", open);
+  }, []);
   const closeSheet = () => {
     setSheet(null);
   };

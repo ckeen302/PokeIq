@@ -20,6 +20,7 @@ export default function PikadokuPage() {
         <PikadokuDuelCard />
       </div>
       <GameInfo
+        howToButton
         path="/pikadoku"
         name="Pikadoku"
         description="Pikadoku is a free Pokémon Sudoku and Pokémon grid game: fill a 3×3 grid with a different Pokémon in each cell, matching both its row and its column."

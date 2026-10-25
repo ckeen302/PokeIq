@@ -220,8 +220,16 @@ export function Connections({ customId }: { customId?: string } = {}) {
 
   // How to play, on a first visit.
   useEffect(() => {
-    if (prefs && progress && !prefs.seenHowTo && Object.keys(connBlock(progress).results).length === 0) setSheet("howto");
-  }, [prefs, progress]);
+    const open = () => setSheet("howto");
+    window.addEventListener("pokeiq:howto", open);
+    return () => window.removeEventListener("pokeiq:howto", open);
+  }, []);
+  const howToShown = useRef(false);
+  useEffect(() => {
+    if (!prefs || howToShown.current) return;
+    howToShown.current = true;
+    if (!prefs.seenHowToDemo) setSheet("howto");
+  }, [prefs]);
 
   // The clock: runs while a started game is open and visible.
   const started = guesses.length > 0 || selected.length > 0;
@@ -449,7 +457,7 @@ export function Connections({ customId }: { customId?: string } = {}) {
   }, []);
   /** "Don't show again": the first-visit pop-up stays closed on this device. */
   const closeHowToForever = useCallback(() => {
-    setConnPrefs({ seenHowTo: true });
+    setConnPrefs({ seenHowTo: true, seenHowToDemo: true });
     setSheet(null);
   }, []);
 

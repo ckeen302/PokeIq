@@ -15,6 +15,23 @@ import { execFileSync } from "child_process";
 const BASE = process.argv[2] ?? "http://localhost:3000";
 // Each game opens its how-to pop-up (with a live demo) on a first visit. "Don't show again" dismisses it for good on this device.
 const HOWTO = '[data-testid="howto-sheet"], [data-testid="pdk-howto"]';
+/** Click a "Create duel"-style button until the page navigates: a click that lands before hydration does nothing. */
+async function clickUntilUrl(p, button, urlRe, refill) {
+  for (let i = 0; i < 4; i++) {
+    if (refill) await refill();
+    // Hydration can clear a name typed too early.
+    const name = p.getByLabel("Your trainer name").first();
+    if ((await name.count()) && !(await name.inputValue())) await name.fill("Red");
+    await button.click({ timeout: 10_000 }).catch(() => {});
+    try {
+      await p.waitForURL(urlRe, { timeout: 10_000 });
+      return;
+    } catch {
+      // Not hydrated yet: try again.
+    }
+  }
+  await p.waitForURL(urlRe);
+}
 async function closeHowTo(p) {
   const sheet = p.locator(HOWTO).first();
   if (await sheet.waitFor({ state: "visible", timeout: 2500 }).then(() => true, () => false)) {
@@ -763,8 +780,7 @@ const shotLoaded = (p) =>
   );
 await red.goto(`${BASE}/guessr?region=kanto`, { waitUntil: "networkidle" });
 await red.getByLabel("Your trainer name").fill("Red");
-await red.getByRole("button", { name: /Create duel/ }).click();
-await red.waitForURL(/\/guessr\/duel\/[a-z2-9]{8}$/);
+await clickUntilUrl(red, red.getByRole("button", { name: /Create duel/ }), /\/guessr\/duel\/[a-z2-9]{8}$/);
 const duelUrl = red.url();
 await red.getByText("Waiting for a challenger").waitFor();
 await red.screenshot({ path: `${OUT}/duel-lobby.png` });
@@ -828,8 +844,7 @@ await red.goto(`${BASE}/guessr?region=kanto`, { waitUntil: "networkidle" });
 await red.getByTestId("geo-duel-mode-race").click();
 await red.getByTestId("geo-duel-rounds-3").click();
 await red.getByLabel("Your trainer name").fill("Red");
-await red.getByRole("button", { name: /Create duel/ }).click();
-await red.waitForURL(/\/guessr\/duel\/[a-z2-9]{8}$/);
+await clickUntilUrl(red, red.getByRole("button", { name: /Create duel/ }), /\/guessr\/duel\/[a-z2-9]{8}$/);
 const raceUrl = red.url();
 await red.getByText("Waiting for a challenger").waitFor();
 await blue.goto(raceUrl, { waitUntil: "networkidle" });
@@ -905,8 +920,7 @@ const [dleRed, dleBlue] = dle;
 await dleRed.p.goto(`${BASE}/pokedle`, { waitUntil: "networkidle" });
 await closeHowTo(dleRed.p);
 await dleRed.p.getByLabel("Your trainer name").fill("Red");
-await dleRed.p.getByRole("button", { name: /Create duel/ }).click();
-await dleRed.p.waitForURL(/\/pokedle\/duel\/[a-z2-9]{8}$/);
+await clickUntilUrl(dleRed.p, dleRed.p.getByRole("button", { name: /Create duel/ }), /\/pokedle\/duel\/[a-z2-9]{8}$/);
 const dleUrl = dleRed.p.url();
 await dleRed.p.getByText("Waiting for a challenger").waitFor();
 // The creator picks the generations in the lobby.
@@ -1052,8 +1066,7 @@ step("pokéconnections duel: create, join, race to the end");
   await closeHowTo(red);
   await red.getByText("Head to head · PokéConnections").waitFor();
   await red.locator("#duel").getByLabel("Your trainer name").fill("Red");
-  await red.getByRole("button", { name: /Create duel/ }).click();
-  await red.waitForURL(/\/connections\/duel\/[a-z2-9]{8}$/);
+  await clickUntilUrl(red, red.getByRole("button", { name: /Create duel/ }), /\/connections\/duel\/[a-z2-9]{8}$/);
   const raceUrl = red.url();
   await red.getByText("Waiting for a challenger").waitFor();
   await red.screenshot({ path: `${OUT}/conn-duel-lobby.png` });
@@ -1204,8 +1217,7 @@ const [quizRed, quizBlue] = quiz;
 await quizRed.p.goto(`${BASE}/quiz/pokemon-games-quiz`, { waitUntil: "networkidle" });
 await quizRed.p.getByRole("button", { name: "easy", exact: true }).last().click();
 await quizRed.p.getByLabel("Your trainer name").fill("Red");
-await quizRed.p.getByRole("button", { name: /Create duel/ }).click();
-await quizRed.p.waitForURL(/\/quiz\/duel\/[a-z2-9]{8}$/);
+await clickUntilUrl(quizRed.p, quizRed.p.getByRole("button", { name: /Create duel/ }), /\/quiz\/duel\/[a-z2-9]{8}$/);
 const quizUrl = quizRed.p.url();
 await quizRed.p.getByText("Waiting for a challenger").waitFor();
 await quizRed.p.screenshot({ path: `${OUT}/quiz-duel-lobby.png` });
