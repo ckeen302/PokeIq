@@ -3,6 +3,7 @@ import { POKEDEX } from "@/lib/pokemon/pokedex";
 import { QUIZ_PRESETS } from "@/lib/modes";
 import { ABILITIES, ITEMS, MOVES } from "@/lib/dex/data";
 import { SITE_URL } from "@/lib/site";
+import { PLACES } from "@/lib/dex/places-data";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const now = new Date();
@@ -23,6 +24,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${SITE_URL}/pokedex/moves`, changeFrequency: "monthly", priority: 0.7 },
     { url: `${SITE_URL}/pokedex/abilities`, changeFrequency: "monthly", priority: 0.7 },
     { url: `${SITE_URL}/pokedex/items`, changeFrequency: "monthly", priority: 0.7 },
+    { url: `${SITE_URL}/pokedex/places`, changeFrequency: "monthly", priority: 0.7 },
     { url: `${SITE_URL}/leaderboard`, changeFrequency: "hourly", priority: 0.5 },
     { url: `${SITE_URL}/battle`, changeFrequency: "weekly", priority: 0.8 },
     { url: `${SITE_URL}/battle/play`, changeFrequency: "monthly", priority: 0.8 },
@@ -39,5 +41,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
     ...MOVES.map((m) => ({ url: `${SITE_URL}/pokedex/moves/${m.slug}`, changeFrequency: "monthly" as const, priority: 0.4 })),
     ...ABILITIES.map((a) => ({ url: `${SITE_URL}/pokedex/abilities/${a.slug}`, changeFrequency: "monthly" as const, priority: 0.4 })),
     ...ITEMS.map((i) => ({ url: `${SITE_URL}/pokedex/items/${i.slug}`, changeFrequency: "monthly" as const, priority: 0.3 })),
+    ...PLACES.map((p) => ({ url: `${SITE_URL}/pokedex/places/${p.slug}`, changeFrequency: "monthly" as const, priority: 0.3 })),
   ];
 }

@@ -126,6 +126,16 @@ describe("mergeVersions", () => {
     expect(atlasQuery("Route 1", ["black"], idx)).toBe("Route 1 · Unova");
     expect(atlasQuery("Route 1", ["heartgold"], idx)).toBeUndefined(); // Kanto and Johto
     expect(atlasQuery("Nowhere Cave", ["heartgold"], idx)).toBeUndefined();
+    const fmt = buildAtlasIndex([
+      { name: "East Province (Area Three)", region: "Paldea" },
+      { name: "Safari Zone", region: "Johto" },
+      { name: "Safari Zone", region: "Hoenn" },
+    ]);
+    expect(atlasQuery("East Province Area Three", ["scarlet"], fmt)).toBe("East Province (Area Three) · Paldea");
+    expect(atlasQuery("East Province Area 3", ["scarlet"], fmt)).toBe("East Province (Area Three) · Paldea");
+    expect(atlasQuery("East Province Area Two", ["scarlet"], fmt)).toBeUndefined();
+    expect(atlasQuery("Johto Safari Zone", ["heartgold"], fmt)).toBe("Safari Zone · Johto");
+    expect(atlasQuery("Hoenn Safari Zone", ["heartgold"], fmt)).toBeUndefined(); // prefix outside the games' regions
     const [row] = mergeVersions([{ ...base, ver: "diamond" }], idx);
     expect(row.a).toBe("Route 201 · Sinnoh");
   });

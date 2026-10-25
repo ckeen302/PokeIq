@@ -1307,12 +1307,12 @@ for (let i = 0; i < 3; i++) {
 }
 await page.screenshot({ path: `${OUT}/study.png` });
 
-step("pokédex tabs: moves, abilities, items");
+step("pokédex tabs: moves, abilities, items, places");
 {
   const SHOTS = process.env.DEX_SHOTS ?? OUT;
   fs.mkdirSync(SHOTS, { recursive: true });
   await page.goto(`${BASE}/pokedex`, { waitUntil: "networkidle" });
-  for (const tab of ["moves", "abilities", "items", "pokemon"]) {
+  for (const tab of ["moves", "abilities", "items", "places", "pokemon"]) {
     await page.getByTestId(`dex-tab-${tab}`).click();
     await page.waitForURL(tab === "pokemon" ? /\/pokedex$/ : new RegExp(`/pokedex/${tab}$`));
     await page.getByLabel(`Search ${tab === "pokemon" ? "Pokémon" : tab}`).waitFor();
@@ -1352,6 +1352,35 @@ step("pokédex tabs: moves, abilities, items");
   await page.goto(`${BASE}/pokemon/charizard`, { waitUntil: "networkidle" });
   await page.locator('a[href^="/pokedex/moves/"]').first().waitFor({ state: "attached" });
   await page.locator('a[href="/pokedex/abilities/blaze"]').first().waitFor();
+  // Places: search + region filter, open Route 1 (Kanto), then a Gym.
+  const revealAll = async () => {
+    for (let y = 0; y < (await page.evaluate(() => document.body.scrollHeight)); y += 500) {
+      await page.evaluate((top) => window.scrollTo(0, top), y);
+      await page.waitForTimeout(80);
+    }
+    await page.evaluate(() => window.scrollTo(0, 0));
+    await page.waitForTimeout(400);
+  };
+  await page.goto(`${BASE}/pokedex/places`, { waitUntil: "networkidle" });
+  await page.getByLabel("Search places").fill("route 1");
+  await page.getByLabel("Region").selectOption("Kanto");
+  await page.locator('a[href="/pokedex/places/route-1-kanto"]').waitFor();
+  await page.screenshot({ path: `${SHOTS}/dex-places.png` });
+  await page.locator('a[href="/pokedex/places/route-1-kanto"]').click();
+  await page.waitForURL(/\/pokedex\/places\/route-1-kanto$/);
+  for (const mon of ["Pidgey", "Rattata"]) await page.getByTestId("place-wild-row").filter({ hasText: mon }).first().waitFor({ state: "attached" });
+  await page.getByTestId("place-shot").scrollIntoViewIfNeeded();
+  const shotOk = await page
+    .getByTestId("place-shot")
+    .evaluate((img) => img.complete && img.naturalWidth > 0 || new Promise((r) => { img.onload = () => r(true); img.onerror = () => r(false); setTimeout(() => r(false), 15000); }));
+  if (!shotOk) throw new Error("Route 1 screenshot did not load");
+  await revealAll();
+  await page.screenshot({ path: `${SHOTS}/dex-route1.png`, fullPage: true });
+  await page.goto(`${BASE}/pokedex/places/pewter-gym-kanto`, { waitUntil: "networkidle" });
+  await page.getByTestId("place-gyms").filter({ hasText: "Brock" }).waitFor({ state: "attached" });
+  // Pokémon entry links its places to the Places tab.
+  await page.goto(`${BASE}/pokemon/wooper`, { waitUntil: "networkidle" });
+  await page.locator('a[href="/pokedex/places/glaseado-mountain-paldea"]').first().waitFor({ state: "attached" });
 }
 
 step("trainer, leaderboard, pokémon page");
@@ -2041,7 +2070,7 @@ if (me.enabled) {
 
     // A visitor (signed out) sees the same, with no edit button.
     const visitor = await newPage({ width: 1280, height: 1100 });
-    await visitor.goto(`${BASE}/u/${aboutName}`, { waitUntil: "networkidle" });
+    await visitor.goto(`${BASE}/u/${aboutName}`, { waitUntil: "domcontentloaded", timeout: 60_000 });
     for (const t of ["about-pokemon-favorite", "about-pokemon-best-mega", "about-pokemon-best-eeveelution", "about-game-view-favorite-game", "about-game-view-best-region"]) await visitor.getByTestId(t).waitFor();
     if (await visitor.getByTestId("about-pokemon-pet").count()) errors.push("about me: an empty slot shows to viewers");
     if (await visitor.getByTestId("about-edit").count()) errors.push("about me: a visitor sees the edit button");
