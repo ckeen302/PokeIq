@@ -13,6 +13,7 @@ import { HpBar, STATUS_STYLE } from "./Hud";
 import { teraColor } from "./player";
 import { MonTip, MoveTip, Tip, isRandomFormat, tipFromRequest, tipFromSnap } from "./Tooltips";
 import type { FieldMon, FieldState } from "@/lib/battle/tooltip-calc";
+import { useBattleKeys, type BattleKeys } from "./hotkeys";
 
 /**
  * What the player can do now, built from their request: pick a lead (team
@@ -33,6 +34,8 @@ interface Props {
   onChoose: (choice: string) => void;
   /** The battle's format (random formats know their spreads; tooltips use it). */
   format: string;
+  /** "?": show or hide the hotkey list. */
+  onHelp?: () => void;
 }
 
 const fainted = (p: BattleRequestPokemon) => p.condition.endsWith(" fnt");
@@ -117,6 +120,7 @@ function MoveButton({
       disabled={off}
       onClick={() => onPick(index, move)}
       data-testid="move-button"
+      aria-keyshortcuts={String(index)}
       className={cn(
         "group relative flex min-h-[4.25rem] flex-col justify-between overflow-hidden rounded-md border-2 px-3 py-2 text-left transition-[transform,filter] duration-100 hover:-translate-y-0.5 hover:brightness-110 active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:translate-y-0",
         tera && "ring-2 ring-offset-2 ring-offset-background"
@@ -130,7 +134,10 @@ function MoveButton({
       }}
     >
       <span className="flex items-start justify-between gap-2">
-        <span className="font-display text-base font-bold uppercase leading-tight tracking-wide">{info.name}</span>
+        <span className="font-display text-base font-bold uppercase leading-tight tracking-wide">
+          <kbd className="mr-1.5 hidden rounded-sm bg-black/25 px-1 align-middle font-pixel text-[9px] font-normal sm:inline">{index}</kbd>
+          {info.name}
+        </span>
         <span className="shrink-0 font-pixel text-[10px] tabular-nums opacity-90">
           {move.pp ?? "–"}/{move.maxpp ?? "–"}
         </span>
@@ -190,6 +197,8 @@ function SwitchGrid({
               disabled={!ok}
               onClick={() => onPick(i + 1)}
               data-testid="switch-button"
+              aria-keyshortcuts={`Shift+${i + 1}`}
+              title={`Shift+${i + 1}`}
               className="menu-item flex items-center gap-2 rounded-md border bg-card px-2 py-1.5 text-left hover:border-screen/60 disabled:cursor-not-allowed disabled:opacity-40"
             >
               <BattleSprite species={speciesKey(species)} animated={false} size={40} className="shrink-0" />
@@ -221,6 +230,7 @@ function TeamPreview({
   onChoose,
   foes,
   tipInfo,
+  keys,
 }: {
   request: BattleRequest;
   doubles: boolean;
@@ -228,6 +238,7 @@ function TeamPreview({
   onChoose: (c: string) => void;
   foes: MonSnap[];
   tipInfo: TipInfo;
+  keys: BattleKeys;
 }) {
   const [leads, setLeads] = useState<number[]>([]);
   const size = request.side.pokemon.length;
@@ -241,6 +252,10 @@ function TeamPreview({
       setLeads([]);
     } else setLeads(next);
   };
+  keys.digit = (n) => {
+    if (!busy && n <= size) pick(n);
+  };
+  keys.back = () => setLeads([]);
   return (
     <div className="space-y-3">
       {foes.length > 0 && (
@@ -286,7 +301,10 @@ function TeamPreview({
   );
 }
 
-export function Controls({ request, snap, me, doubles, busy, onChoose, format }: Props) {
+export function Controls({ request, snap, me, doubles, busy, onChoose, format, onHelp }: Props) {
+  /** Filled in below for whichever menu is showing; the listener reads it on every key. */
+  const keys: BattleKeys = {};
+  useBattleKeys(keys, () => onHelp?.());
   const [parts, setParts] = useState<string[]>([]);
   const [tera, setTera] = useState(false);
   /** Mega Evolution, a Z-Move or Dynamax for this Pokémon's move (where the rules and gen allow it). */
@@ -326,7 +344,7 @@ export function Controls({ request, snap, me, doubles, busy, onChoose, format }:
     } else setParts(next);
   }
 
-  if (request.teamPreview) return <TeamPreview request={request} doubles={doubles} busy={busy} onChoose={onChoose} foes={foeSide.team} tipInfo={{ gen: snap.gen, format, seen: mySide.team }} />;
+  if (request.teamPreview) return <TeamPreview request={request} doubles={doubles} busy={busy} onChoose={onChoose} foes={foeSide.team} tipInfo={{ gen: snap.gen, format, seen: mySide.team }} keys={keys} />;
   if (slot >= slots) return null;
   const actor = request.side.pokemon[slot];
   const actorName = actor?.ident.split(": ")[1] ?? "your Pokémon";
@@ -337,8 +355,15 @@ export function Controls({ request, snap, me, doubles, busy, onChoose, format }:
       </button>
     ) : null;
 
+  if (parts.length > 0) keys.back = () => setParts([]);
+
   if (request.forceSwitch) {
     const reviving = !!actor?.reviving;
+    const canPick = (p: BattleRequestPokemon | undefined, i: number) => !!p && !busy && !p.active && !switchingIn.includes(i + 1) && (reviving ? fainted(p) : !fainted(p));
+    keys.digit = (n) => {
+      if (canPick(request.side.pokemon[n - 1], n - 1)) add(`switch ${n}`);
+    };
+    keys.shiftDigit = keys.digit;
     return (
       <div className="space-y-2">
         <div className="flex items-center justify-between">
@@ -349,7 +374,7 @@ export function Controls({ request, snap, me, doubles, busy, onChoose, format }:
           tipInfo={{ gen: snap.gen, format, seen: mySide.team }}
           pokemon={request.side.pokemon}
           label={reviving ? "Fainted Pokémon" : "Your team"}
-          allowed={(p, i) => !busy && !p.active && !switchingIn.includes(i + 1) && (reviving ? fainted(p) : !fainted(p))}
+          allowed={(p, i) => canPick(p, i)}
           onPick={(n) => add(`switch ${n}`)}
         />
       </div>
@@ -368,6 +393,11 @@ export function Controls({ request, snap, me, doubles, busy, onChoose, format }:
   const extraOn = (e: Extra) => extras.includes(e);
 
   if (aiming) {
+    keys.digit = (n) => {
+      const t = aiming.targets[n - 1];
+      if (t !== undefined && !busy) add(`move ${aiming.index} ${t}${suffix()}`);
+    };
+    keys.back = () => setAiming(null);
     const label = (t: number) => {
       if (t > 0) return foeSide.active[t - 1]?.name ?? "Empty spot";
       return mySide.active[-t - 1]?.name ?? "Empty spot";
@@ -381,11 +411,12 @@ export function Controls({ request, snap, me, doubles, busy, onChoose, format }:
           </button>
         </div>
         <div className="grid grid-cols-2 gap-2">
-          {aiming.targets.map((t) => (
+          {aiming.targets.map((t, ti) => (
             <button
               key={t}
               type="button"
               data-testid="target-button"
+              aria-keyshortcuts={String(ti + 1)}
               disabled={busy}
               onClick={() => add(`move ${aiming.index} ${t}${suffix()}`)}
               className={cn("menu-item flex items-center gap-2 rounded-md border bg-card px-3 py-2 text-left hover:border-screen/60", t < 0 && "border-dashed")}
@@ -405,6 +436,17 @@ export function Controls({ request, snap, me, doubles, busy, onChoose, format }:
     if (targets.length > 1) setAiming({ index, move, targets });
     else add(`move ${index}${targets[0] ? ` ${targets[0]}` : ""}${suffix()}`);
   };
+  const canSwitchTo = (p: BattleRequestPokemon | undefined, i: number) => !!p && !busy && !trapped && !p.active && !fainted(p) && !switchingIn.includes(i + 1);
+  keys.digit = (n) => {
+    const move = active.moves[n - 1];
+    if (!move || busy || move.disabled || (extra === "zmove" && !active.canZMove?.[n - 1])) return;
+    pickMove(n, move);
+  };
+  keys.shiftDigit = (n) => {
+    if (canSwitchTo(request.side.pokemon[n - 1], n - 1)) add(`switch ${n}`);
+  };
+  if (teraType) keys.tera = () => setTera((t) => !t);
+  if (extras.length) keys.extra = () => setExtra((x) => (x ? null : extras[0]));
 
   return (
     <div className="space-y-3">
@@ -418,6 +460,8 @@ export function Controls({ request, snap, me, doubles, busy, onChoose, format }:
               onClick={() => setTera((t) => !t)}
               aria-pressed={tera}
               data-testid="tera-toggle"
+              aria-keyshortcuts="T"
+              title="T"
               className={cn(
                 "flex items-center gap-1.5 rounded-md border px-3 py-1.5 font-display text-xs font-bold uppercase tracking-wider transition",
                 tera ? "text-black" : "bg-card text-foreground hover:border-screen/60"
@@ -435,6 +479,7 @@ export function Controls({ request, snap, me, doubles, busy, onChoose, format }:
               onClick={() => setExtra((x) => (x === e ? null : e))}
               aria-pressed={extra === e}
               data-testid={`${e}-toggle`}
+              aria-keyshortcuts="M"
               className={cn(
                 "flex items-center gap-1.5 rounded-md border px-3 py-1.5 font-display text-xs font-bold uppercase tracking-wider transition",
                 extra === e ? "border-primary bg-primary text-primary-foreground shadow-[0_0_14px_hsl(var(--primary)/0.6)]" : "bg-card text-foreground hover:border-screen/60"
@@ -466,7 +511,7 @@ export function Controls({ request, snap, me, doubles, busy, onChoose, format }:
         tipInfo={{ gen: snap.gen, format, seen: mySide.team }}
         pokemon={request.side.pokemon}
         label={trapped ? "Can't switch: trapped" : "Switch"}
-        allowed={(p, i) => !busy && !trapped && !p.active && !fainted(p) && !switchingIn.includes(i + 1)}
+        allowed={(p, i) => canSwitchTo(p, i)}
         onPick={(n) => add(`switch ${n}`)}
       />
     </div>

@@ -17,6 +17,9 @@ export interface BattleFormatRecord {
   /** On the ladder: the rating and ranked games in this format. */
   rating?: number;
   ratedGames?: number;
+  /** Glicko-2: the rating deviation and GXE. */
+  rd?: number;
+  gxe?: number;
   /** Place on the format's ladder. */
   position?: number | null;
 }

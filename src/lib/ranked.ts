@@ -123,6 +123,9 @@ export interface RankedStanding {
   position: number | null;
   /** Ranked players in all. */
   players: number;
+  /** Glicko-2 ladders (battles): the rating deviation and GXE. */
+  rd?: number;
+  gxe?: number;
 }
 
 export interface RankedLeaderRow {
@@ -132,6 +135,9 @@ export interface RankedLeaderRow {
   games: number;
   wins: number;
   losses: number;
+  /** Glicko-2 ladders (battles): the rating deviation and GXE. */
+  rd?: number;
+  gxe?: number;
 }
 
 export type RankedResponse =

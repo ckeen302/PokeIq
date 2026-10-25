@@ -18,7 +18,20 @@ import type { FrontierBattleInfo } from "./frontier";
  * Random formats, plus the Gen 9 team-builder formats (src/lib/battle/formats.ts)
  * a saved or pasted team can be brought to.
  */
-export const PLAY_FORMATS = ["gen9randombattle", "gen9randomdoublesbattle", "gen9ou", "gen9ubers", "gen9uu", "gen9doublesou"] as const;
+export const PLAY_FORMATS = [
+  "gen9randombattle",
+  "gen9randomdoublesbattle",
+  "gen9ou",
+  "gen9ubers",
+  "gen9uu",
+  "gen9ru",
+  "gen9nu",
+  "gen9pu",
+  "gen9lc",
+  "gen9monotype",
+  "gen9nationaldex",
+  "gen9doublesou",
+] as const;
 
 /**
  * Past generations: Showdown's popular formats from Gen 8 back to Gen 1
@@ -75,6 +88,12 @@ export const PLAY_FORMAT_INFO: Record<PlayFormatId, PlayFormatInfo> = {
   gen9ou: { name: "[Gen 9] OU", short: "OU", blurb: BRING, gameType: "singles", random: false },
   gen9ubers: { name: "[Gen 9] Ubers", short: "Ubers", blurb: BRING, gameType: "singles", random: false },
   gen9uu: { name: "[Gen 9] UU", short: "UU", blurb: BRING, gameType: "singles", random: false },
+  gen9ru: { name: "[Gen 9] RU", short: "RU", blurb: BRING, gameType: "singles", random: false },
+  gen9nu: { name: "[Gen 9] NU", short: "NU", blurb: BRING, gameType: "singles", random: false },
+  gen9pu: { name: "[Gen 9] PU", short: "PU", blurb: BRING, gameType: "singles", random: false },
+  gen9lc: { name: "[Gen 9] LC", short: "LC", blurb: `Little Cup: level 5, first stages only. ${BRING}`, gameType: "singles", random: false },
+  gen9monotype: { name: "[Gen 9] Monotype", short: "Monotype", blurb: `Every Pokémon shares a type; no Tera. ${BRING}`, gameType: "singles", random: false },
+  gen9nationaldex: { name: "[Gen 9] National Dex", short: "Nat Dex", blurb: `Every Pokémon, Megas and Z-Moves; no Tera. ${BRING}`, gameType: "singles", random: false },
   gen9doublesou: { name: "[Gen 9] Doubles OU", short: "Doubles OU", blurb: BRING, gameType: "doubles", random: false },
   custom: {
     name: "Custom rules",
@@ -299,6 +318,8 @@ export interface BattleView {
   frontier?: FrontierBattleInfo;
   /** Live battles: the turn timer (null: off). */
   timer?: { bank: number; perTurn: number; cap: number } | null;
+  /** Live battles: running out the clock once loses (else the timer moves for you, and a second timeout loses). */
+  timeoutLoses?: boolean;
   /** Live battles with the timer off: either player may start it. */
   timerStartable?: boolean;
   /** Live battles: how many spectators are watching right now. */

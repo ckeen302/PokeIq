@@ -213,6 +213,8 @@ export async function battleProfile(key: string, limit = 20): Promise<BattleProf
       }
       f.rating = standing.rating;
       f.ratedGames = standing.games;
+      if (standing.rd !== undefined) f.rd = standing.rd;
+      if (standing.gxe !== undefined) f.gxe = standing.gxe;
       f.position = standing.position;
     }
   } catch (err) {

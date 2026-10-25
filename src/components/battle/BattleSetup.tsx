@@ -9,7 +9,7 @@ import { saveBattleSeat } from "@/lib/battle/seat";
 import { ensureBattleId } from "@/lib/battle/replay-client";
 import { isLadderFormat } from "@/lib/battle/ladder";
 import { useLadderStanding } from "@/lib/battle/ladder-client";
-import { TierBadge } from "@/components/pokedle/Ranked";
+import { GlickoBadge } from "./GlickoBadge";
 import { NAME_REJECTED, isCleanName } from "@/lib/name-filter";
 import { setTrainerName, useProgress } from "@/lib/progress";
 import { unlockAudio } from "@/lib/sound";
@@ -75,7 +75,7 @@ function useTicker(on: boolean): number {
 
 /** Starts a battle; returns its page, or throws with the server's reason. */
 export async function startBattle(
-  body: { mode: "cpu" | "pvp" } & Omit<CpuSetup, "level"> & { level?: CpuLevel; public?: boolean; hidden?: boolean; timer?: boolean }
+  body: { mode: "cpu" | "pvp" } & Omit<CpuSetup, "level"> & { level?: CpuLevel; public?: boolean; hidden?: boolean; timer?: boolean; timeoutLoses?: boolean }
 ): Promise<string> {
   const rankedId = (await ensureBattleId()) ?? undefined;
   const res = await fetch("/api/battle", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...body, rankedId }) });
@@ -135,6 +135,8 @@ export function BattleSetup({ initial = "cpu", challenge }: { initial?: Opponent
   const [watchable, setWatchable] = useState(false);
   /** Friend battles: the turn timer runs from the start (off: either player can start it). */
   const [timerOn, setTimerOn] = useState(true);
+  /** Friend battles: Showdown's rule, running out the clock once loses (off: the timer moves for you; twice loses). */
+  const [timeoutLoses, setTimeoutLoses] = useState(false);
   /** Find an opponent: the format's ranked queue (paired by rating) instead of the casual one. */
   const [ranked, setRanked] = useState(false);
   const ladder = useLadderStanding(opponent === "match" && isLadderFormat(format) ? (format as StandardFormatId) : null);
@@ -196,7 +198,7 @@ export function BattleSetup({ initial = "cpu", challenge }: { initial?: Opponent
         level: opponent === "cpu" ? level : undefined,
         team: needsTeam ? team : undefined,
         rules: custom ? rules : undefined,
-        ...(opponent === "pvp" ? { public: watchable, timer: timerOn } : {}),
+        ...(opponent === "pvp" ? { public: watchable, timer: timerOn, timeoutLoses } : {}),
       });
       if (!progress?.name) setTrainerName(name.trim());
       if (challenge && opponent === "pvp") await challengeToBattle(challenge, href.split("/").pop()!).catch(() => undefined);
@@ -357,7 +359,7 @@ export function BattleSetup({ initial = "cpu", challenge }: { initial?: Opponent
               />
               {rankedOn && ladder.status === "ready" && (
                 <p className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-                  {ladder.you && ladder.you.games > 0 ? <TierBadge rating={ladder.you.rating} games={ladder.you.games} size="sm" /> : <span>Unrated: you start at 1,000.</span>}
+                  {ladder.you && ladder.you.games > 0 ? <GlickoBadge rating={ladder.you.rating} rd={ladder.you.rd} gxe={ladder.you.gxe} size="sm" /> : <span>Unrated: you start at 1500 ± 350.</span>}
                   <Link href={`/battle/ladder?format=${format}`} className="underline-offset-2 hover:text-foreground hover:underline">
                     Ladder
                   </Link>
@@ -369,6 +371,13 @@ export function BattleSetup({ initial = "cpu", challenge }: { initial?: Opponent
             <div className="space-y-2">
               <Toggle checked={watchable} onChange={setWatchable} label="Let anyone watch" hint="List it in Watch live. Off: only people with the link can watch." testId="let-anyone-watch" />
               <Toggle checked={timerOn} onChange={setTimerOn} label="Turn timer" hint="Off: either of you can start it mid-battle." testId="timer-on" />
+              <Toggle
+                checked={timeoutLoses}
+                onChange={setTimeoutLoses}
+                label="Lose on timeout"
+                hint="As on Showdown: run out of time once and you lose. Off: the timer picks a move for you, and a second timeout loses."
+                testId="timeout-loses"
+              />
             </div>
           )}
           {problem && (

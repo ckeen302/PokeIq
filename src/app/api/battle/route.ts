@@ -15,7 +15,7 @@ import { ALL_FORMATS, BATTLE_TEAM_MAX, CPU_LEVELS, type BattleSeatResponse, type
  *   { mode: "pvp", name, format, team?, public?, timer? }
  *        a live battle with an invite link, at /battle/live/<code>; private
  *        unless `public` (listed in the Watch lobby); `timer: false` starts
- *        it with the turn timer off, for either player to start; `hidden`:
+ *        it with the turn timer off, for either player to start; `timeoutLoses`: running out the clock once loses; `hidden`:
  *        "Don't allow spectators" (nobody but the two trainers can watch)
  * `team` (Showdown export text) is required for formats without random teams.
  */
@@ -35,7 +35,7 @@ const rankedId = z.string().max(200).optional();
 
 const bodySchema = z.discriminatedUnion("mode", [
   z.object({ mode: z.literal("cpu"), name: duelNameSchema, format, level: z.enum(CPU_LEVELS).default("normal"), team, rules, rankedId }),
-  z.object({ mode: z.literal("pvp"), name: duelNameSchema, format, team, rules, rankedId, public: z.boolean().default(false), hidden: z.boolean().default(false), timer: z.boolean().default(true) }),
+  z.object({ mode: z.literal("pvp"), name: duelNameSchema, format, team, rules, rankedId, public: z.boolean().default(false), hidden: z.boolean().default(false), timer: z.boolean().default(true), timeoutLoses: z.boolean().default(false) }),
 ]);
 
 export async function POST(request: NextRequest) {

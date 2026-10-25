@@ -307,7 +307,7 @@ function catchUp(work: Work, now: number) {
     clock.timeouts += 1;
     clock.startedAt = null;
     clock.deadline = null;
-    if (clock.timeouts >= BATTLE_TIMEOUTS_TO_LOSE || (clock.bank <= 0 && !clock.preview)) {
+    if (meta.timeoutLoses || clock.timeouts >= BATTLE_TIMEOUTS_TO_LOSE || (clock.bank <= 0 && !clock.preview)) {
       if (!forceLose(work, seat, "timeout", now)) return;
       continue;
     }
@@ -516,10 +516,12 @@ export async function createRunBattle(
 /**
  * A friend battle with an invite link. Private unless the host lets anyone
  * watch (then it's listed in the Watch lobby); `timer: false` starts it with
- * the turn timer off, for either player to start.
+ * the turn timer off, for either player to start; `timeoutLoses`: running
+ * out the clock once loses at once (Showdown's rule), instead of the timer
+ * playing a move and a second timeout losing.
  */
 export async function createLiveBattle(
-  opts: { name: string; format: PlayFormatId; team?: string; rules?: unknown; public?: boolean; hidden?: boolean; timer?: boolean; player?: string },
+  opts: { name: string; format: PlayFormatId; team?: string; rules?: unknown; public?: boolean; hidden?: boolean; timer?: boolean; timeoutLoses?: boolean; player?: string },
   now = Date.now()
 ) {
   const custom = customFormat(opts.format, opts.rules);
@@ -535,6 +537,7 @@ export async function createLiveBattle(
     if (opts.hidden) rec.meta.hidden = true;
     else if (opts.public) rec.meta.public = true;
     if (opts.timer === false) rec.meta.timerOff = true;
+    if (opts.timeoutLoses) rec.meta.timeoutLoses = true;
     if (!(await insertBattle(rec))) continue;
     return { ok: true as const, code, token: battleToken(code, me.id, 0), view: battleView(rec.meta, me.id, [], 0, now, 0) };
   }
@@ -851,6 +854,7 @@ export async function rematchBattle(code: string, playerId: string): Promise<Out
       if (old.public) fresh.public = true;
       if (old.hidden) fresh.hidden = true;
       if (old.timerOff) fresh.timerOff = true;
+      if (old.timeoutLoses) fresh.timeoutLoses = true;
       // The chat carries on into the rematch.
       if (old.chat?.length) fresh.chat = old.chat;
       if (await insertBattle(blankRecord(fresh))) opened = fresh.code;
@@ -941,6 +945,7 @@ export function battleView(meta: BattleMeta, playerId: string | null, log: strin
   }
   if (meta.kind === "pvp") {
     view.timer = meta.timerOff ? null : timerOf(meta);
+    if (meta.timeoutLoses) view.timeoutLoses = true;
     if (meta.timerOff && meta.status === "playing" && timerOf(meta)) view.timerStartable = true;
     view.spectators = spectatorCount(meta, now);
     if (meta.public) view.public = true;

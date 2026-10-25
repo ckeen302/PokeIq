@@ -6,7 +6,7 @@ import type { RankedLeaderRow } from "@/lib/ranked";
 import { PLAY_FORMAT_INFO, type StandardFormatId } from "@/lib/battle/play";
 import { LADDER_FORMATS } from "@/lib/battle/ladder";
 import { useLadderStanding } from "@/lib/battle/ladder-client";
-import { TierBadge, TierProgress } from "@/components/pokedle/Ranked";
+import { GlickoBadge } from "./GlickoBadge";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { NameAvatar } from "@/components/avatar/Avatar";
@@ -60,7 +60,7 @@ export function LadderTable({ rows, format, avatars }: { rows: RankedLeaderRow[]
             <tr className="border-b text-left text-xs uppercase text-muted-foreground">
               <th className="p-3">#</th>
               <th className="p-3">Trainer</th>
-              <th className="p-3">Rank</th>
+              <th className="p-3">Rating</th>
               <th className="hidden p-3 text-right sm:table-cell">W–L</th>
             </tr>
           </thead>
@@ -77,7 +77,7 @@ export function LadderTable({ rows, format, avatars }: { rows: RankedLeaderRow[]
                   </span>
                 </td>
                 <td className="p-3">
-                  <TierBadge rating={row.rating} games={row.games} size="sm" />
+                  <GlickoBadge rating={row.rating} rd={row.rd} gxe={row.gxe} size="sm" />
                 </td>
                 <td className="hidden p-3 text-right tabular-nums sm:table-cell">
                   {row.wins}–{row.losses}
@@ -91,7 +91,7 @@ export function LadderTable({ rows, format, avatars }: { rows: RankedLeaderRow[]
   );
 }
 
-/** Your own standing in a format: tier, rating, place, record and progress to the next division. */
+/** Your own standing in a format: Glicko-2 rating, GXE, place and record. */
 export function YourBattleStanding({ format }: { format: StandardFormatId }) {
   const state = useLadderStanding(format);
   if (state.status === "loading") return <Loader2 className="mx-auto h-5 w-5 animate-spin text-screen" aria-label="Loading your standing" />;
@@ -106,7 +106,7 @@ export function YourBattleStanding({ format }: { format: StandardFormatId }) {
         {you && you.games > 0 ? (
           <>
             <div className="flex flex-wrap items-center justify-between gap-3">
-              <TierBadge rating={you.rating} games={you.games} size="lg" />
+              <GlickoBadge rating={you.rating} rd={you.rd} gxe={you.gxe} size="lg" />
               <div className="flex gap-5 text-right font-pixel text-xs tabular-nums">
                 <span>
                   <span className="block text-base text-foreground">#{you.position ?? "–"}</span>
@@ -128,11 +128,10 @@ export function YourBattleStanding({ format }: { format: StandardFormatId }) {
                 )}
               </div>
             </div>
-            <TierProgress rating={you.rating} />
           </>
         ) : (
           <p className="text-sm text-muted-foreground">
-            No ranked battles in this format yet. Everyone starts at 1,000; your first ten games move your rating faster.{" "}
+            No ranked battles in this format yet. Everyone starts at 1500 ± 350 (Glicko-2); while your rating deviation is high, each battle moves it a lot.{" "}
             <Link href="/battle/play?vs=anyone" className="font-semibold text-foreground underline-offset-2 hover:underline">
               Find a ranked battle
             </Link>
