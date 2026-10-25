@@ -605,6 +605,8 @@ page.on("response", async (res) => {
   }
 });
 await page.goto(`${BASE}/guessr`, { waitUntil: "networkidle" });
+await checkFirstVisitHowTo(page, "PokéGuessr");
+await closeHowTo(page);
 await page.screenshot({ path: `${OUT}/guessr-setup.png`, fullPage: true });
 await page.getByRole("button", { name: /5-round game/ }).click();
 await playGeoRounds(5);
@@ -779,6 +781,7 @@ const shotLoaded = (p) =>
     { timeout: 30_000 }
   );
 await red.goto(`${BASE}/guessr?region=kanto`, { waitUntil: "networkidle" });
+await closeHowTo(red);
 await red.getByLabel("Your trainer name").fill("Red");
 await clickUntilUrl(red, red.getByRole("button", { name: /Create duel/ }), /\/guessr\/duel\/[a-z2-9]{8}$/);
 const duelUrl = red.url();
@@ -841,6 +844,7 @@ await blue.screenshot({ path: `${OUT}/duel-forfeit.png` });
 
 step("pokéguessr duel: 3-round points race to the end, rematch keeps the settings");
 await red.goto(`${BASE}/guessr?region=kanto`, { waitUntil: "networkidle" });
+await closeHowTo(red);
 await red.getByTestId("geo-duel-mode-race").click();
 await red.getByTestId("geo-duel-rounds-3").click();
 await red.getByLabel("Your trainer name").fill("Red");

@@ -9,6 +9,8 @@ export const isGeoRounds = (n: unknown): n is GeoRounds => GEO_ROUND_OPTIONS.som
 /** A spec's round count: GEO_ROUNDS unless it picked another length. */
 export const geoRoundsOf = (spec: { rounds?: number }): number => (isGeoRounds(spec.rounds) ? spec.rounds : GEO_ROUNDS);
 export const GEO_MAX_ROUND_SCORE = 5000;
+/** GeoGuessr curve: score = max * e^(-GEO_FALLOFF * d / D), D the map diagonal. */
+export const GEO_FALLOFF = 10;
 /** A map with a game filter (an era, or picked games) needs this many places to play: fewer and the filter is off. */
 export const GEO_FILTER_MIN_PLACES = 10;
 

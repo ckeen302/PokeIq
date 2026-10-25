@@ -8,6 +8,7 @@ import { decryptJson, deriveSeed, encryptJson, randomId, signToken, verifyToken 
 import {
   GEO_FILTER_MIN_PLACES,
   GEO_KINDS,
+  GEO_FALLOFF,
   GEO_MAX_ROUND_SCORE,
   GEO_ROUNDS,
   geoRoundsOf,
@@ -86,7 +87,7 @@ const STORAGE_BASE =
   DATA.storageBase ?? `${process.env.SUPABASE_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/geo`;
 const STATE_TTL_MS = 3 * 60 * 60 * 1000;
 /** GeoGuessr's curve: 5000 · e^(−10 · d / D), with D the map diagonal. */
-const FALLOFF = 10;
+const FALLOFF = GEO_FALLOFF;
 /** Streak mode on a region's map: a pin this close to the place keeps the streak alive. */
 const STREAK_RADIUS = 0.035;
 /** Within half a town-map square of the place is spot on. */
