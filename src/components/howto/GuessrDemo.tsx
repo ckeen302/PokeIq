@@ -1,24 +1,27 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { animate, AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { useEffect, useRef, useState } from "react";
+import { Flag, MousePointer2 } from "lucide-react";
+import { animate, motion, useReducedMotion } from "framer-motion";
 import { GEO_FALLOFF, GEO_MAX_ROUND_SCORE } from "@/lib/geo-types";
 import { DemoFrame, useDemoFrame } from "./shared";
 
-/** A real screenshot (Pallet Town, Red / Blue / Yellow) and the Kanto map crop, scored with the game's own curve. */
-const SHOT = "/api/geo/shot/NpDGa_vBMQ0M";
-const MAP = { src: "/geo/maps/kanto.webp", w: 763, h: 550, squarePx: 28 };
-/** Pallet Town on the crop (world pin 0.68239, 0.55127 on the 5850 x 2565 map, less the crop's origin). */
-const ANSWER = { x: 344, y: 356 };
-const GUESS = { x: 331, y: 343 };
+/** A real Scarlet / Violet screenshot (Levincia) and the Paldea map crop, scored with the game's own curve. */
+const SHOT = "/api/geo/shot/uV4ANtrw-q6M";
+const MAP = { src: "/geo/maps/paldea.webp", w: 614, h: 564, squarePx: 28 };
+/** Levincia on the crop (world pin 0.41402, 0.53333 on the 5850 x 2565 map, less the crop's origin at 1907, 1068). */
+const ANSWER = { x: 0.41402 * 5850 - 1907, y: 0.53333 * 2565 - 1068 };
+const GUESS = { x: ANSWER.x - 14, y: ANSWER.y + 9 };
+const ZOOM = 1.7;
 const px = Math.hypot(GUESS.x - ANSWER.x, GUESS.y - ANSWER.y);
 const SCORE = Math.round(GEO_MAX_ROUND_SCORE * Math.exp((-GEO_FALLOFF * px) / Math.hypot(MAP.w, MAP.h)));
 const SQUARES = (Math.round((px / MAP.squarePx) * 10) / 10).toFixed(1);
 const fmt = (n: number) => n.toLocaleString("en-US");
-const pct = (p: { x: number; y: number }) => ({ left: `${(p.x / MAP.w) * 100}%`, top: `${(p.y / MAP.h) * 100}%` });
+const at = (p: { x: number; y: number }) => ({ x: (p.x / MAP.w) * 100, y: (p.y / MAP.h) * 100 });
+const pct = (p: { x: number; y: number }) => ({ left: `${at(p).x}%`, top: `${at(p).y}%` });
 
-/** 0 screenshot, 1 pin drops, 2 Guess pressed, 3 line draws to the real spot, 4 score counts up (held). */
-const MS = [1400, 1200, 700, 900, 3200];
+/** 0 cursor on the screenshot, 1 glides to the map, 2 map zooms, 3 click: pin drops, 4 cursor to Guess, 5 pressed, 6 line + flag, 7 score counts up (held). */
+const MS = [1300, 1000, 1000, 900, 900, 500, 1100, 3200];
 
 function Count({ to, run }: { to: number; run: boolean }) {
   const [n, setN] = useState(run ? 0 : to);
@@ -37,63 +40,104 @@ export function GuessrDemo() {
   const reduced = !!useReducedMotion();
   const f = useDemoFrame(MS);
   const [shotOk, setShotOk] = useState(true);
-  const dur = reduced ? 0 : 0.4;
+  const root = useRef<HTMLDivElement>(null);
+  const shotEl = useRef<HTMLDivElement>(null);
+  const mapEl = useRef<HTMLDivElement>(null);
+  const guessEl = useRef<HTMLSpanElement>(null);
+  const [cur, setCur] = useState({ x: 40, y: 40 });
+  const zoomed = f >= 2;
+  const origin = at(ANSWER);
+  useEffect(() => {
+    const r = root.current?.getBoundingClientRect();
+    const rel = (el: HTMLElement | null, fx: number, fy: number) => {
+      const b = el?.getBoundingClientRect();
+      return r && b ? { x: b.left - r.left + b.width * fx, y: b.top - r.top + b.height * fy } : null;
+    };
+    // A map point once the map has zoomed about the answer.
+    const onMap = (p: { x: number; y: number }) => {
+      const o = at(ANSWER);
+      const q = at(p);
+      return rel(mapEl.current, (o.x + (q.x - o.x) * ZOOM) / 100, (o.y + (q.y - o.y) * ZOOM) / 100);
+    };
+    const t =
+      f === 0
+        ? rel(shotEl.current, 0.55, 0.5)
+        : f === 1
+          ? rel(mapEl.current, 0.3, 0.7)
+          : f === 2
+            ? onMap({ x: GUESS.x - 50, y: GUESS.y + 40 })
+            : f === 3
+              ? onMap(GUESS)
+              : rel(guessEl.current, 0.5, 0.5);
+    if (t) setCur(t);
+  }, [f]);
+  const pressed = f === 5;
   return (
-    <DemoFrame label={`Demo: a Pokémon screenshot appears, a pin drops on the map, Guess is pressed, a line shows the real spot and the round scores ${fmt(SCORE)} of ${fmt(GEO_MAX_ROUND_SCORE)}`}>
-      <div className="mx-auto grid max-w-xl gap-3 sm:grid-cols-2">
-        <div className="relative aspect-[4/3] overflow-hidden rounded-md border-2 border-foreground/15 bg-shade/60">
+    <DemoFrame label={`Demo: a Pokémon screenshot appears, a cursor moves to the map, zooms in and drops a pin, presses Guess, a line shows the real spot and the round scores ${fmt(SCORE)} of ${fmt(GEO_MAX_ROUND_SCORE)}`}>
+      <div ref={root} className="relative mx-auto grid max-w-xl grid-cols-2 gap-3">
+        <div ref={shotEl} className="relative aspect-[4/3] overflow-hidden rounded-md border-2 border-foreground/15 bg-shade/60">
           {shotOk && (
             // eslint-disable-next-line @next/next/no-img-element -- the game's own cached screenshot
-            <img src={SHOT} alt="" onError={() => setShotOk(false)} className="h-full w-full object-cover [image-rendering:pixelated]" />
+            <img src={SHOT} alt="" onError={() => setShotOk(false)} className="h-full w-full object-cover" />
           )}
           <span className="hud-label absolute left-1.5 top-1.5 rounded bg-black/60 px-1.5 py-0.5 text-white">Where is this?</span>
         </div>
         <div className="space-y-2">
-          <div className="relative aspect-[763/550] overflow-hidden rounded-md border-2 border-foreground/15 bg-shade/60">
-            {/* eslint-disable-next-line @next/next/no-img-element -- static map crop */}
-            <img src={MAP.src} alt="" className="h-full w-full object-cover" />
-            <svg viewBox={`0 0 ${MAP.w} ${MAP.h}`} className="absolute inset-0 h-full w-full" preserveAspectRatio="none">
+          <div ref={mapEl} className="relative aspect-[614/564] overflow-hidden rounded-md border-2 border-foreground/15 bg-shade/60">
+            <motion.div
+              className="absolute inset-0"
+              style={{ transformOrigin: `${origin.x}% ${origin.y}%` }}
+              animate={{ scale: zoomed ? ZOOM : 1 }}
+              transition={{ duration: reduced ? 0 : 0.8, ease: "easeInOut" }}
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element -- static map crop */}
+              <img src={MAP.src} alt="" className="h-full w-full object-cover" />
+              <svg viewBox={`0 0 ${MAP.w} ${MAP.h}`} className="absolute inset-0 h-full w-full" preserveAspectRatio="none">
+                {f >= 6 && (
+                  <motion.line
+                    x1={GUESS.x}
+                    y1={GUESS.y}
+                    x2={ANSWER.x}
+                    y2={ANSWER.y}
+                    stroke="#fff"
+                    strokeWidth={3}
+                    strokeDasharray="7 5"
+                    initial={{ pathLength: reduced ? 1 : 0 }}
+                    animate={{ pathLength: 1 }}
+                    transition={{ duration: reduced ? 0 : 0.7 }}
+                  />
+                )}
+              </svg>
               {f >= 3 && (
-                <motion.line
-                  x1={GUESS.x}
-                  y1={GUESS.y}
-                  x2={ANSWER.x}
-                  y2={ANSWER.y}
-                  stroke="#fff"
-                  strokeWidth={5}
-                  strokeDasharray="10 7"
-                  initial={{ pathLength: reduced ? 1 : 0 }}
-                  animate={{ pathLength: 1 }}
-                  transition={{ duration: reduced ? 0 : 0.7 }}
-                />
-              )}
-            </svg>
-            <AnimatePresence>
-              {f >= 1 && (
                 <motion.span
-                  key="pin"
-                  initial={{ y: reduced ? 0 : -30, opacity: reduced ? 1 : 0 }}
+                  initial={{ y: reduced ? 0 : -40, opacity: reduced ? 1 : 0 }}
                   animate={{ y: 0, opacity: 1 }}
-                  transition={{ duration: dur }}
-                  className="absolute h-3.5 w-3.5 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white bg-destructive shadow"
+                  transition={reduced ? { duration: 0 } : { type: "spring", stiffness: 420, damping: 12 }}
+                  className="absolute h-2.5 w-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white bg-destructive shadow"
                   style={pct(GUESS)}
                 />
               )}
-              {f >= 3 && (
+              {f >= 6 && (
                 <motion.span
-                  key="spot"
                   initial={{ scale: reduced ? 1 : 0 }}
                   animate={{ scale: 1 }}
-                  transition={{ duration: dur }}
-                  className="absolute h-3.5 w-3.5 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white bg-success shadow"
+                  transition={{ duration: reduced ? 0 : 0.4 }}
+                  className="absolute -translate-x-1/2 -translate-y-full"
                   style={pct(ANSWER)}
-                />
+                >
+                  <Flag className="h-4 w-4 fill-success text-success" aria-hidden />
+                </motion.span>
               )}
-            </AnimatePresence>
+            </motion.div>
           </div>
           <div className="flex h-9 items-center justify-between gap-2">
-            <span className={`rounded-md border-2 px-3 py-1 text-xs font-bold uppercase ${f === 2 ? "scale-95 border-primary bg-primary text-primary-foreground" : "border-foreground/15 bg-card text-muted-foreground"}`}>Guess</span>
-            {f >= 4 && (
+            <span
+              ref={guessEl}
+              className={`rounded-md border-2 px-3 py-1 text-xs font-bold uppercase transition-transform ${f >= 3 ? "border-primary bg-primary text-primary-foreground" : "border-foreground/15 bg-card text-muted-foreground"} ${pressed ? "scale-90" : ""}`}
+            >
+              Guess
+            </span>
+            {f >= 7 && (
               <span className="text-right text-xs">
                 <b className="text-base">
                   <Count to={SCORE} run={!reduced} />
@@ -105,6 +149,16 @@ export function GuessrDemo() {
             )}
           </div>
         </div>
+        {!reduced && (
+          <motion.span
+            className="pointer-events-none absolute left-0 top-0 z-10"
+            initial={false}
+            animate={{ x: cur.x, y: cur.y, scale: pressed || f === 3 ? 0.85 : 1 }}
+            transition={{ duration: 0.8, ease: "easeInOut" }}
+          >
+            <MousePointer2 className="h-5 w-5 fill-white text-black drop-shadow" aria-hidden />
+          </motion.span>
+        )}
       </div>
     </DemoFrame>
   );
