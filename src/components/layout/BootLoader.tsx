@@ -12,6 +12,7 @@ export function BootLoader({ idPrefix, label = "Loading" }: { idPrefix: string; 
       <div className="relative h-28 w-28">
         <span className="boot-ripple" aria-hidden />
         <span className="boot-ripple [animation-delay:0.9s]" aria-hidden />
+        <span className="boot-burst" aria-hidden />
         <svg viewBox="0 0 100 100" className="boot-ball relative h-full w-full" aria-hidden>
           <defs>
             <linearGradient id={id("brain")} x1="0" y1="0" x2="0" y2="1">
@@ -28,19 +29,25 @@ export function BootLoader({ idPrefix, label = "Loading" }: { idPrefix: string; 
               <stop offset="1" stopColor="#8b5cf6" />
             </radialGradient>
           </defs>
+          <g className="boot-bottom">
+            <path d="M5 50a45 45 0 0 0 90 0z" fill={`url(#${id("shell")})`} />
+            <path d="M5 50a45 45 0 0 0 90 0" fill="none" stroke="#120f24" strokeWidth="6" />
+          </g>
+          <g className="boot-top">
           <path d="M5 50a45 45 0 0 1 90 0z" fill={`url(#${id("brain")})`} />
-          <path d="M5 50a45 45 0 0 0 90 0z" fill={`url(#${id("shell")})`} />
           <g className="boot-gyri" fill="none" stroke="#7a0d3a" strokeWidth="3.4" strokeLinecap="round" strokeLinejoin="round" opacity="0.75">
             {GYRI.map((d) => (
               <path key={d} d={d} pathLength={1} />
             ))}
           </g>
           <path d="M20 22c6-8 15-12 24-13" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" opacity="0.45" />
-          <rect x="5" y="45.5" width="90" height="9" fill="#120f24" />
+          <path d="M5 50a45 45 0 0 1 90 0" fill="none" stroke="#120f24" strokeWidth="6" />
+          <rect x="5" y="45.5" width="90" height="4.5" fill="#120f24" />
+          </g>
+          <rect x="5" y="50" width="90" height="4.5" fill="#120f24" />
           <circle cx="50" cy="50" r="15" fill="#120f24" />
           <circle className="boot-core" cx="50" cy="50" r="10" fill={`url(#${id("core")})`} />
           <circle cx="50" cy="50" r="10" fill="none" stroke="#a78bfa" strokeWidth="1.5" />
-          <circle cx="50" cy="50" r="45" fill="none" stroke="#120f24" strokeWidth="6" />
         </svg>
       </div>
       <div className="text-center">
