@@ -264,13 +264,20 @@ export function plainNote(raw: string, region?: string): string {
 
 export type AtlasIndex = Map<string, { name: string; region: string }[]>;
 
+const NUMBER_WORDS = "zero one two three four five six seven eight nine ten eleven twelve thirteen fourteen fifteen sixteen seventeen eighteen nineteen twenty".split(" ");
+
+/**
+ * Format-only normalisation: case, accents, punctuation, parentheses and
+ * number words ("East Province Area Three" = "East Province (Area 3)").
+ */
 export function normPlace(s: string): string {
   return s
     .normalize("NFD")
     .replace(/[̀-ͯ]/g, "")
     .toLowerCase()
     .replace(/[.'’]/g, "")
-    .replace(/[-–—]/g, " ")
+    .replace(/[-–—()]/g, " ")
+    .replace(/\b[a-z]+\b/g, (w) => (NUMBER_WORDS.includes(w) ? String(NUMBER_WORDS.indexOf(w)) : w))
     .replace(/\s+/g, " ")
     .trim();
 }
@@ -289,7 +296,13 @@ export function buildAtlasIndex(places: { name: string; region: string }[]): Atl
 export function atlasQuery(base: string | undefined, versions: string[], idx: AtlasIndex): string | undefined {
   if (!base) return undefined;
   const regions = new Set(versions.flatMap((v) => VERSION_BY_KEY[v]?.regions ?? []));
-  const hits = (idx.get(normPlace(base)) ?? []).filter((h) => regions.has(h.region));
+  let hits = (idx.get(normPlace(base)) ?? []).filter((h) => regions.has(h.region));
+  if (!hits.length) {
+    // "Johto Safari Zone" = the atlas's "Safari Zone" in Johto (the prefix must be one of the games' regions).
+    const m = /^(\S+) (.+)$/.exec(base);
+    const prefix = m ? [...regions].find((r) => r.toLowerCase() === m[1].toLowerCase()) : undefined;
+    if (m && prefix) hits = (idx.get(normPlace(m[2])) ?? []).filter((h) => h.region === prefix);
+  }
   return hits.length === 1 ? `${hits[0].name} · ${hits[0].region}` : undefined;
 }
 
