@@ -16,6 +16,8 @@ import type { ConnPack } from "./pack-seed";
 export interface ConnPrefs {
   /** The how-to sheet has been seen. */
   seenHowTo: boolean;
+  /** Dismissed the how-to with its live demo ("Don't show again"). */
+  seenHowToDemo?: boolean;
   /** Each group's symbol (● ▲ ■ ◆) beside its colour. */
   symbols: boolean;
   /** A running clock above the grid. */

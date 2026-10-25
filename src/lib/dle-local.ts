@@ -24,6 +24,8 @@ export interface DlePrefs {
   dailyFormat: DleDailyFormat;
   /** The how-to sheet has been seen. */
   seenHowTo: boolean;
+  /** Dismissed the how-to with its live demo ("Don't show again"). */
+  seenHowToDemo?: boolean;
   /** The player picked `assist` themselves (older saves held the Notebook as a default, not a choice). */
   assistPicked?: boolean;
 }

@@ -250,9 +250,12 @@ export function Pokedle({
   }, [today, progress, mode, format, guesses.length, over, loadDate]);
 
   // How to play, on a first visit.
+  const howToShown = useRef(false);
   useEffect(() => {
-    if (prefs && progress && !prefs.seenHowTo && Object.keys(progress.dle.results).length === 0) setSheet("howto");
-  }, [prefs, progress]);
+    if (!prefs || howToShown.current) return;
+    howToShown.current = true;
+    if (!prefs.seenHowToDemo) setSheet("howto");
+  }, [prefs]);
 
   // A timed practice game: the clock runs from the first guess; when it runs out, the game is over.
   const timerMs = mode === "practice" ? DLE_TIMER_MS[rules.timer] : 0;
@@ -376,7 +379,7 @@ export function Pokedle({
   }, []);
   /** "Don't show again": the first-visit pop-up stays closed on this device. */
   const closeHowToForever = useCallback(() => {
-    setDlePrefs({ seenHowTo: true });
+    setDlePrefs({ seenHowTo: true, seenHowToDemo: true });
     setSheet(null);
   }, []);
 
