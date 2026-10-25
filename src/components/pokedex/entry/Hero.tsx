@@ -4,6 +4,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion, useMotionValue, useSpring, useTransform } from "framer-motion";
+import Link from "next/link";
+import { slugify } from "@/lib/dex/build";
 import { Sparkles, Volume2 } from "lucide-react";
 import type { DexAbility, DexEntryData, DexForm } from "@/lib/pokemon/dex-types";
 import { GENERATION_REGIONS, formatHeight, formatWeight, titleCase } from "@/lib/pokemon/constants";
@@ -207,7 +209,7 @@ export function Hero({ data, form, onFormChange, types, abilities }: HeroProps) 
                   className="rounded-md border border-foreground/10 bg-shade/25 p-3"
                 >
                   <div className="flex items-center gap-2 font-display text-[15px] font-bold uppercase tracking-wide">
-                    {a.name}
+                    <Link href={`/pokedex/abilities/${slugify(a.name)}`} className="hover:text-screen">{a.name}</Link>
                     {a.hidden && <span className="rounded-sm border border-primary/50 px-1.5 py-1 font-pixel text-[9px] uppercase leading-none text-primary">Hidden</span>}
                   </div>
                   {a.effect && <p className="mt-0.5 text-xs text-muted-foreground">{a.effect}</p>}

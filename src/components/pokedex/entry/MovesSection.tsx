@@ -2,6 +2,7 @@
 
 import { Fragment, useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
+import Link from "next/link";
 import { ChevronDown, CircleDot, Search, Sparkle, Swords } from "lucide-react";
 import type { DexMove } from "@/lib/pokemon/dex-types";
 import { TypeBadge } from "../TypeBadge";
@@ -118,6 +119,14 @@ export function MovesSection({ moves, game }: { moves: DexMove[]; game: string }
                       >
                         {m.name}
                       </button>
+                      <Link
+                        href={`/pokedex/moves/${m.slug}`}
+                        onClick={(e) => e.stopPropagation()}
+                        className="ml-2 text-[10px] font-normal uppercase tracking-wider text-muted-foreground hover:text-screen"
+                        aria-label={`${m.name} move page`}
+                      >
+                        Page →
+                      </Link>
                     </td>
                     <td className="p-2">
                       <TypeBadge type={m.type} size="sm" />
