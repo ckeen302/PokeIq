@@ -2360,6 +2360,10 @@ await mobile.goto(`${BASE}/pokedle`, { waitUntil: "networkidle" });
 await closeHowTo(mobile);
 await mobile.screenshot({ path: `${OUT}/mobile-pokedle.png` });
 
+step("discord: unsigned interaction is rejected");
+const unsigned = await fetch(`${BASE}/api/discord`, { method: "POST", body: JSON.stringify({ type: 1 }) });
+if (unsigned.status !== 401) errors.push(`POST /api/discord without signature returned ${unsigned.status}, expected 401`);
+
 await browser.close();
 
 if (errors.length > 0) {
