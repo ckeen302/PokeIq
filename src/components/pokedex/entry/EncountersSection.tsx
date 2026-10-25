@@ -119,6 +119,10 @@ function GenTable({ rows }: { rows: EncRow[] }) {
                         Atlas
                       </Link>
                     </span>
+                  ) : r.p && slugFromKey(r.p) ? (
+                    <Link href={`/pokedex/places/${slugFromKey(r.p)}`} data-testid="enc-place-link" className="underline-offset-2 hover:text-primary hover:underline">
+                      {r.loc}
+                    </Link>
                   ) : (
                     r.loc
                   )}

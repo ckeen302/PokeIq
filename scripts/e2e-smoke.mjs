@@ -1390,6 +1390,9 @@ step("pokédex tabs: moves, abilities, items, places");
   // Pokémon entry links its places to the Places tab.
   await page.goto(`${BASE}/pokemon/wooper`, { waitUntil: "networkidle" });
   await page.locator('a[href="/pokedex/places/glaseado-mountain-paldea"]').first().waitFor({ state: "attached" });
+  // ...including places beyond the atlas.
+  await page.goto(`${BASE}/pokemon/magikarp`, { waitUntil: "networkidle" });
+  await page.locator('a[href="/pokedex/places/south-paldean-sea-paldea"]').first().waitFor({ state: "attached" });
 }
 
 step("trainer, leaderboard, pokémon page");
