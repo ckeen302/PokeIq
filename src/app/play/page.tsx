@@ -74,7 +74,6 @@ export default function PlayPage() {
         faqs={[
           { q: `What formats are there?`, a: `Classic is 10 questions with 15 seconds each, Survival is endless with 3 lives and Blitz gives you 60 seconds to answer as many as you can.` },
           { q: `Can I choose which generations to play?`, a: `Yes, pick the generations to include, or jump straight to a quiz by generation.` },
-          { q: `Can I play against a friend?`, a: `Yes, send a friend a link and answer the same questions head to head, live.` },
         ]}
       />
     </div>

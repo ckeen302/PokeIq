@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { ArrowRight, BookOpenCheck, Brain, Flame, Globe2, Swords } from "lucide-react";
+import { ArrowRight, BookOpenCheck, Brain, Coffee, Flame, Globe2, Swords } from "lucide-react";
+import { COFFEE_URL } from "@/lib/support";
 import { DailyCards } from "@/components/home/DailyCards";
 import { ModeGrid } from "@/components/home/ModeGrid";
 import { HeroDevice } from "@/components/home/HeroDevice";
@@ -92,6 +93,19 @@ export default function HomePage() {
           </div>
         ))}
       </section>
+
+      <div className="flex justify-center pb-2">
+        <a
+          href={COFFEE_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-2 rounded-md border border-[#ffdd00]/40 bg-[#ffdd00] px-5 py-2.5 font-display text-sm font-bold uppercase tracking-wider text-black transition-transform hover:-translate-y-0.5"
+          data-testid="coffee-button"
+        >
+          <Coffee className="h-4 w-4" aria-hidden />
+          Buy me a coffee
+        </a>
+      </div>
     </div>
   );
 }

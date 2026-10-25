@@ -41,10 +41,8 @@ export default function ConnectionsPage() {
           "Play the daily puzzle, browse the archive or practice without limit.",
         ]}
         faqs={[
-          { q: `What is PokéConnections?`, a: `A Pokémon version of the Connections puzzle: find the four hidden groups among sixteen Pokémon.` },
           { q: `What kinds of groups are there?`, a: `Types, abilities, evolutions, stats and more.` },
           { q: `How many mistakes can I make?`, a: `Four.` },
-          { q: `Is there a new puzzle every day?`, a: `Yes, and there is also an archive and unlimited practice.` },
         ]}
       />
     </div>

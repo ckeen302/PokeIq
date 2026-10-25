@@ -119,8 +119,6 @@ export default async function QuizPage({ params }: PageProps) {
         ]}
         faqs={[
           { q: `What formats can I play?`, a: `Classic is 10 questions with 15 seconds each, Survival is endless with 3 lives and Blitz gives you 60 seconds to answer as many as you can.` },
-          { q: `Do I need an account?`, a: `No sign-up is needed to play.` },
-          { q: `Can I play against a friend?`, a: `Yes, quiz duels let you answer the same questions head to head, live.` },
         ]}
       />
     </div>

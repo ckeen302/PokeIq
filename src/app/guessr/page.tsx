@@ -27,10 +27,8 @@ export default function GuessrPage() {
           "A new daily game is available every day.",
         ]}
         faqs={[
-          { q: `What is PokéGuessr?`, a: `PokéGuessr is a Pokémon GeoGuessr: guess where in the Pokémon world a view is from by placing a pin on the map.` },
           { q: `Which regions are included?`, a: `The Pokémon world from Kanto to Paldea.` },
           { q: `How is it scored?`, a: `The closer your pin is to the real location, the higher your score, up to 25,000 points.` },
-          { q: `Is there a daily game?`, a: `Yes, a new daily game every day.` },
         ]}
       />
     </div>
