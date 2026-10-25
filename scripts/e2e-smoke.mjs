@@ -1978,7 +1978,7 @@ for (const [p, name] of [
 }
 await rkRed.screenshot({ path: `${OUT}/battle-p1-ranked-setup.png`, fullPage: true });
 await rkRed.getByRole("button", { name: /Find an opponent/ }).click();
-await rkRed.getByText("Searching for an opponent…").waitFor();
+await rkRed.getByText("Searching for a ranked rival…").waitFor();
 await rkBlue.getByRole("button", { name: /Find an opponent/ }).click();
 await Promise.all([rkRed.waitForURL(matchedPath, { timeout: 30_000 }), rkBlue.waitForURL(matchedPath, { timeout: 30_000 })]);
 await Promise.all([rkRed, rkBlue].map((p) => p.locator("[data-testid=move-button]").first().waitFor({ timeout: 60_000 })));
