@@ -1378,6 +1378,15 @@ step("pokédex tabs: moves, abilities, items, places");
   await page.screenshot({ path: `${SHOTS}/dex-route1.png`, fullPage: true });
   await page.goto(`${BASE}/pokedex/places/pewter-gym-kanto`, { waitUntil: "networkidle" });
   await page.getByTestId("place-gyms").filter({ hasText: "Brock" }).waitFor({ state: "attached" });
+  // Places beyond the atlas: Hisui (Legends: Arceus) and Hoenn's Route 134.
+  for (const [q, slug, mon] of [["Jubilife Village", "jubilife-village-hisui", null], ["Route 134", "route-134-hoenn", "Tentacool"]]) {
+    await page.goto(`${BASE}/pokedex/places`, { waitUntil: "networkidle" });
+    await page.getByLabel("Search places").fill(q);
+    await page.locator(`a[href="/pokedex/places/${slug}"]`).click();
+    await page.waitForURL(new RegExp(`/pokedex/places/${slug}$`));
+    await page.getByRole("heading", { name: q }).first().waitFor();
+    if (mon) await page.getByTestId("place-wild-row").filter({ hasText: mon }).first().waitFor({ state: "attached" });
+  }
   // Pokémon entry links its places to the Places tab.
   await page.goto(`${BASE}/pokemon/wooper`, { waitUntil: "networkidle" });
   await page.locator('a[href="/pokedex/places/glaseado-mountain-paldea"]').first().waitFor({ state: "attached" });

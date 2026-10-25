@@ -7,7 +7,7 @@ import { ListHeader } from "@/components/pokedex/detail/DetailParts";
 
 export const metadata: Metadata = pageMetadata({
   title: "Pokémon Places — Towns, Routes, Caves & Gyms",
-  description: "Every town, route, cave and Gym on the PokéIQ World Atlas: the wild Pokémon found there in each game, screenshots and Gym Leaders.",
+  description: "Every town, route, cave and Gym in every main-series Pokémon region: the wild Pokémon found there in each game, screenshots and Gym Leaders.",
   path: "/pokedex/places",
 });
 
@@ -19,7 +19,7 @@ export default function PlacesPage() {
         kicker={`Place database · ${items.length.toLocaleString("en-US")} entries`}
         title="Poké"
         accent="dex"
-        blurb={`${items.length.toLocaleString("en-US")} towns, routes, caves and buildings from the World Atlas — the wild Pokémon in each game, a screenshot and the Gym Leaders.`}
+        blurb={`${items.length.toLocaleString("en-US")} towns, routes, caves and buildings from every main-series region — the wild Pokémon in each game, plus the World Atlas screenshot and Gym Leaders where there are some.`}
       />
       <DexTabs active="places" />
       <DexListExplorer kind="places" items={items} />
