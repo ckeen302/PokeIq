@@ -1,6 +1,77 @@
 import { describe, expect, it } from "vitest";
-import { groupByGame, invertEncounters, mostRecentShot, placeSlug, placeType, slugFromKey, type PlaceTags } from "@/lib/dex/places";
+import { groupByGame, invertEncounters, mostRecentShot, placeSlug, placeType, slugFromKey, versionRegions, type PlaceTags } from "@/lib/dex/places";
 import type { EncGen } from "@/lib/pokemon/encounter-types";
+import fs from "node:fs";
+import path from "node:path";
+import placesJson from "@/data/places.json";
+import { PLACES, getPlace, placeIndex, wildAt, PSEUDO_LOCATIONS } from "@/lib/dex/places-data";
+
+describe("invertEncounters with the places build's label map", () => {
+  it("splits a row between regions per version and keeps the section as a note", () => {
+    const enc: Record<string, { k: string; s?: string }> = {
+      "Route 17|Unova": { k: "Route 17 · Unova" },
+      "Route 17|Alola": { k: "Route 17 · Alola" },
+      "Lost Tower5F|Sinnoh": { k: "Lost Tower · Sinnoh", s: "5F" },
+      "Worn Bridge (Obsidian Fieldlands)|Hisui": { k: "Worn Bridge · Hisui" },
+    };
+    const files: [number, EncGen[]][] = [
+      [1, [{ g: 5, rows: [{ v: ["black", "sun"], loc: "Route 17", m: "Surf" }, { v: ["pearl"], loc: "Lost Tower5F", m: "Grass", n: "Night" }, { v: ["legends-arceus"], loc: "Worn Bridge (Obsidian Fieldlands)", m: "Wild" }, { v: ["red"], loc: "Kanto", m: "Grass" }] }]],
+    ];
+    const { byPlace, unmatched } = invertEncounters(files, (loc, v) => {
+      for (const r of versionRegions(v)) if (enc[`${loc}|${r}`]) return enc[`${loc}|${r}`];
+      return null;
+    });
+    expect(byPlace.get("Route 17 · Unova")![0].v).toEqual(["black"]);
+    expect(byPlace.get("Route 17 · Alola")![0].v).toEqual(["sun"]);
+    expect(byPlace.get("Lost Tower · Sinnoh")![0].n).toBe("5F · Night");
+    expect(byPlace.get("Worn Bridge · Hisui")).toHaveLength(1);
+    expect([...unmatched]).toEqual(["Kanto"]);
+  });
+});
+
+describe("places data (every region)", () => {
+  it("has a page for every region's places, Hisui and the DLCs included, with unique slugs", () => {
+    expect(new Set(PLACES.map((p) => p.slug)).size).toBe(PLACES.length);
+    const regions = new Set(PLACES.map((p) => p.region));
+    for (const r of ["Kanto", "Johto", "Hoenn", "Sinnoh", "Unova", "Kalos", "Alola", "Galar", "Isle of Armor", "Crown Tundra", "Hisui", "Paldea", "Kitakami", "Blueberry Academy", "Sevii Islands"]) expect(regions.has(r), r).toBe(true);
+    for (const slug of ["jubilife-village-hisui", "route-134-hoenn", "brooklet-hill-alola", "grand-underground-sinnoh", "wild-zone-1-kalos", "hyperspace-lumiose-kalos", "torchlit-labyrinth-blueberry-academy", "primeval-grotto-hisui", "coronet-highlands-hisui"])
+      expect(getPlace(slug), slug).toBeDefined();
+    expect(getPlace("primeval-grotto-hisui")!.parent).toBe("Coronet Highlands");
+    expect(getPlace("wild-zone-1-kalos")!.parent).toBe("Lumiose City");
+    expect(getPlace("jubilife-village-hisui")!.atlas).toBe(false);
+    expect(getPlace("route-1-kanto")!.atlas).toBe(true);
+  });
+
+  it("maps every encounter label to a place, except documented non-places", () => {
+    expect([...placeIndex().unmatched].filter((l) => !PSEUDO_LOCATIONS[l])).toEqual([]);
+    expect(PSEUDO_LOCATIONS["Tera Raid Battles"]).toBeDefined();
+  });
+
+  it("spot-check: 10 new pages' wild rows each come from a species-file row mapped to that place", () => {
+    const enc = (placesJson as unknown as { enc: Record<string, { k: string }> }).enc;
+    const dir = path.join(process.cwd(), "src/data/encounters");
+    const extra = PLACES.filter((p) => !p.atlas && wildAt(p.key).length);
+    let seed = 7;
+    const pick = new Set<(typeof extra)[number]>();
+    while (pick.size < 10) pick.add(extra[(seed = (seed * 48271) % 2147483647) % extra.length]);
+    for (const p of pick) {
+      const rows = wildAt(p.key);
+      let fileRows = 0;
+      for (const id of new Set(rows.map((r) => r.id))) {
+        const gens = JSON.parse(fs.readFileSync(path.join(dir, `${id}.json`), "utf8")).gens as EncGen[];
+        for (const g of gens)
+          for (const r of g.rows) {
+            if (!r.loc || r.a || r.x) continue;
+            const vs = r.v.filter((v) => versionRegions(v).some((reg) => enc[`${r.loc}|${reg}`]?.k === p.key));
+            if (!vs.length) continue;
+            fileRows++;
+            expect(rows.some((w) => w.id === id && w.m === r.m && w.lv === r.lv && w.v.join() === vs.join()), `${p.key} #${id} ${r.loc}`).toBe(true);
+          }
+      }
+      expect(fileRows, p.key).toBe(rows.length);
+    }
+  });
+});
 
 const tags: PlaceTags = {
   gyms: new Set(["Kanto|Pewter Gym", "Galar|Motostoke Stadium"]),

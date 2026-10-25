@@ -56,13 +56,19 @@ export default async function PlacePage({ params }: PageProps) {
               </Link>
             </p>
           )}
-          <Link
-            href={`/atlas?q=${encodeURIComponent(place.parent ? `${place.parent} · ${place.region}` : place.key)}`}
-            data-testid="place-atlas-link"
-            className="inline-flex items-center gap-1.5 rounded-sm border border-primary/40 px-3 py-1.5 font-pixel text-[10px] uppercase tracking-wider hover:bg-primary hover:text-primary-foreground"
-          >
-            <MapPin className="h-3.5 w-3.5" /> View on World Atlas
-          </Link>
+          {place.atlas ? (
+            <Link
+              href={`/atlas?q=${encodeURIComponent(place.parent ? `${place.parent} · ${place.region}` : place.key)}`}
+              data-testid="place-atlas-link"
+              className="inline-flex items-center gap-1.5 rounded-sm border border-primary/40 px-3 py-1.5 font-pixel text-[10px] uppercase tracking-wider hover:bg-primary hover:text-primary-foreground"
+            >
+              <MapPin className="h-3.5 w-3.5" /> View on World Atlas
+            </Link>
+          ) : (
+            <p className="text-xs text-muted-foreground" data-testid="place-no-map">
+              Not on the World Atlas yet, so no map pin or screenshot.
+            </p>
+          )}
         </div>
       </DetailHero>
 
@@ -92,6 +98,18 @@ export default async function PlacePage({ params }: PageProps) {
               </span>
             ))}
           </div>
+        </Section>
+      )}
+
+      {place.sections.length > 0 && (
+        <Section id="areas" index={++idx} title="Areas" subtitle={`${place.sections.length} floor${place.sections.length > 1 ? "s" : ""} and areas`}>
+          <ul className="flex flex-wrap gap-1.5" data-testid="place-areas">
+            {place.sections.map((s) => (
+              <li key={s} className="rounded-sm border px-2.5 py-1.5 text-xs">
+                {s}
+              </li>
+            ))}
+          </ul>
         </Section>
       )}
 
@@ -194,7 +212,7 @@ export default async function PlacePage({ params }: PageProps) {
       )}
 
       {inside.length > 0 && (
-        <Section id="inside" index={++idx} title="Inside" subtitle={`${inside.length} building${inside.length > 1 ? "s" : ""} and landmarks`}>
+        <Section id="inside" index={++idx} title="Inside" subtitle={`${inside.length} place${inside.length > 1 ? "s" : ""} inside`}>
           <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-3">
             {inside.map((p) => (
               <Link key={p.slug} href={`/pokedex/places/${p.slug}`} className="rounded-lg border bg-card p-3 hover:border-screen/60">

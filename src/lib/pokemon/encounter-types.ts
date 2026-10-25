@@ -11,6 +11,8 @@ export interface EncRow {
   loc?: string;
   /** Atlas search query ("Route 201 · Sinnoh") when the place matched confidently. */
   a?: string;
+  /** Places page key ("Name · Region") for rows without an atlas match, added at read time from places.json. */
+  p?: string;
   /** Method label (Grass, Surf, Old Rod, Gift, Static…). */
   m?: string;
   /** Level range, e.g. "2-4". */

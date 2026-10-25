@@ -5,7 +5,7 @@
  */
 import { slugify } from "./build";
 import { familyRank } from "@/lib/geo-families";
-import { versionOrder, type EncGen } from "@/lib/pokemon/encounter-types";
+import { VERSION_BY_KEY, versionOrder, type EncGen } from "@/lib/pokemon/encounter-types";
 
 export const PLACE_TYPES = ["City", "Town", "Route", "Gym", "Forest", "Cave", "Mountain", "Island", "Lake", "Tower", "Ruins", "League", "Building", "Other"] as const;
 export type PlaceType = (typeof PLACE_TYPES)[number];
@@ -46,7 +46,7 @@ const NAME_RULES: [RegExp, PlaceType][] = [
 export function placeType(p: { name: string; region: string; parent?: string }, tags: PlaceTags): PlaceType {
   const k = `${p.region}|${p.name}`;
   if (tags.gyms.has(k)) return "Gym";
-  if (tags.routes.has(k) || /^Route \d+$/.test(p.name)) return "Route";
+  if (tags.routes.has(k) || /^(Sea )?Route \d+$/.test(p.name)) return "Route";
   if (/\bCity$/.test(p.name)) return "City";
   if (/\bTown$/.test(p.name)) return "Town";
   if (tags.towns.has(k)) return "Town";
@@ -78,29 +78,55 @@ export interface PlaceEncounter {
   n?: string;
 }
 
-/** Inverts species encounter files into place key -> rows (only rows the atlas matched confidently). */
-export function invertEncounters(files: Iterable<[number, EncGen[]]>): { byPlace: Map<string, PlaceEncounter[]>; matched: Set<string>; unmatched: Set<string> } {
+/** Where an encounter label (without an atlas match) belongs for one version: the place key and an optional section. */
+export type LabelResolver = (loc: string, version: string) => { k: string; s?: string } | null;
+
+/** The regions a version's places are in (Legends: Arceus = Hisui). */
+export const versionRegions = (v: string): string[] => (v === "legends-arceus" ? ["Hisui"] : (VERSION_BY_KEY[v]?.regions ?? []));
+
+/**
+ * Inverts species encounter files into place key -> rows: rows the atlas matched
+ * (`a`), plus rows whose label the places build mapped (per version, so one row
+ * listing two regions' games splits between their places).
+ */
+export function invertEncounters(files: Iterable<[number, EncGen[]]>, resolve?: LabelResolver): { byPlace: Map<string, PlaceEncounter[]>; matched: Set<string>; unmatched: Set<string> } {
   const byPlace = new Map<string, PlaceEncounter[]>();
   const matched = new Set<string>();
   const unmatched = new Set<string>();
+  const push = (key: string, id: number, r: EncGen["rows"][number], v: string[], section?: string) => {
+    const list = byPlace.get(key) ?? [];
+    const e: PlaceEncounter = { id, v };
+    if (r.m) e.m = r.m;
+    if (r.lv) e.lv = r.lv;
+    if (r.r) e.r = r.r;
+    if (r.t) e.t = r.t;
+    const n = [section, r.n].filter(Boolean).join(" · ");
+    if (n) e.n = n;
+    list.push(e);
+    byPlace.set(key, list);
+  };
   for (const [id, gens] of files) {
     for (const g of gens) {
       for (const r of g.rows) {
         if (r.x || !r.loc) continue;
-        if (!r.a) {
+        if (r.a) {
+          matched.add(r.loc);
+          push(r.a, id, r, r.v);
+          continue;
+        }
+        const groups = new Map<string, { s?: string; v: string[] }>();
+        for (const v of r.v) {
+          const hit = resolve?.(r.loc, v);
+          if (!hit) continue;
+          const gk = `${hit.k}\u0000${hit.s ?? ""}`;
+          groups.set(gk, { s: hit.s, v: [...(groups.get(gk)?.v ?? []), v] });
+        }
+        if (!groups.size) {
           unmatched.add(r.loc);
           continue;
         }
         matched.add(r.loc);
-        const list = byPlace.get(r.a) ?? [];
-        const e: PlaceEncounter = { id, v: r.v };
-        if (r.m) e.m = r.m;
-        if (r.lv) e.lv = r.lv;
-        if (r.r) e.r = r.r;
-        if (r.t) e.t = r.t;
-        if (r.n) e.n = r.n;
-        list.push(e);
-        byPlace.set(r.a, list);
+        for (const [gk, { s, v }] of groups) push(gk.split("\u0000")[0], id, r, v, s);
       }
     }
   }
