@@ -605,6 +605,8 @@ page.on("response", async (res) => {
   }
 });
 await page.goto(`${BASE}/guessr`, { waitUntil: "networkidle" });
+await checkFirstVisitHowTo(page, "PokéGuessr");
+await closeHowTo(page);
 await page.screenshot({ path: `${OUT}/guessr-setup.png`, fullPage: true });
 await page.getByRole("button", { name: /5-round game/ }).click();
 await playGeoRounds(5);
@@ -779,6 +781,7 @@ const shotLoaded = (p) =>
     { timeout: 30_000 }
   );
 await red.goto(`${BASE}/guessr?region=kanto`, { waitUntil: "networkidle" });
+await closeHowTo(red);
 await red.getByLabel("Your trainer name").fill("Red");
 await clickUntilUrl(red, red.getByRole("button", { name: /Create duel/ }), /\/guessr\/duel\/[a-z2-9]{8}$/);
 const duelUrl = red.url();
@@ -841,6 +844,7 @@ await blue.screenshot({ path: `${OUT}/duel-forfeit.png` });
 
 step("pokéguessr duel: 3-round points race to the end, rematch keeps the settings");
 await red.goto(`${BASE}/guessr?region=kanto`, { waitUntil: "networkidle" });
+await closeHowTo(red);
 await red.getByTestId("geo-duel-mode-race").click();
 await red.getByTestId("geo-duel-rounds-3").click();
 await red.getByLabel("Your trainer name").fill("Red");
@@ -1090,14 +1094,19 @@ step("pokéconnections duel: create, join, race to the end");
   if (!groups) throw new Error(`no solution for the duel's grid ${ids}`);
   const pick = async (p, four) => {
     for (const id of four) await p.locator(`[data-testid=conn-tile][data-id="${id}"]`).click();
-    await p.getByTestId("conn-submit").click();
+    // The race may still be arming: wait until Submit takes the four picks.
+    const submit = p.getByTestId("conn-submit");
+    await submit.waitFor();
+    for (let i = 0; i < 20 && (await submit.isDisabled()); i++) await p.waitForTimeout(250);
+    await submit.click();
   };
 
-  // Blue: one away, then a plain miss.
+  // Blue: one away, then a plain miss. The toast is brief, so the lasting proof is the mistake count.
+  const oneAway = blue.getByTestId("conn-toast").filter({ hasText: "One away…" }).waitFor({ timeout: 8_000 }).then(() => true, () => false);
   await pick(blue, [...groups[0].slice(0, 3), groups[1][0]]);
-  await blue.getByTestId("conn-toast").filter({ hasText: "One away…" }).waitFor();
-  await blue.screenshot({ path: `${OUT}/conn-duel-oneaway.png` });
   await blue.getByLabel("3 of 4 mistakes left").waitFor();
+  if (!(await oneAway)) errors.push("the duel didn't say One away… for three of a group");
+  await blue.screenshot({ path: `${OUT}/conn-duel-oneaway.png` });
   await blue.getByRole("button", { name: "Deselect all" }).click();
   await pick(blue, [groups[0][0], groups[0][1], groups[1][0], groups[1][1]]);
   await blue.getByLabel("2 of 4 mistakes left").waitFor();
@@ -1743,8 +1752,7 @@ watchBattle(liveBlue, "p2", "live battle (Blue)");
 await liveRed.goto(`${BASE}/battle/play?vs=friend`, { waitUntil: "networkidle" });
 await liveRed.locator("label").filter({ hasText: "[Gen 9] Random Battle" }).first().click();
 await liveRed.getByLabel("Your trainer name").fill("Red");
-await liveRed.getByRole("button", { name: /Create battle/ }).click();
-await liveRed.waitForURL(/\/battle\/live\/[a-z2-9]{8}$/);
+await clickUntilUrl(liveRed, liveRed.getByRole("button", { name: /Create battle/ }), /\/battle\/live\/[a-z2-9]{8}$/);
 const liveUrl = liveRed.url();
 await liveRed.getByLabel("Battle link").waitFor();
 await liveRed.screenshot({ path: `${OUT}/battle-live-lobby.png` });

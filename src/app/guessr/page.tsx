@@ -18,6 +18,7 @@ export default function GuessrPage() {
       <GameInfo
         path="/guessr"
         name={`PokéGuessr`}
+        howToButton
         description={`PokéGuessr is a free Pokémon GeoGuessr: look at an in-game view, drop a pin on the map of the Pokémon world and score up to 25,000 points.`}
         intro={`PokéGuessr is the Pokémon GeoGuessr: you are dropped somewhere in the Pokémon world, from Kanto to Paldea, and have to work out where.`}
         steps={[

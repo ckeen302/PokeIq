@@ -50,6 +50,7 @@ import { GeoMap, type MapPin } from "./GeoMap";
 import { DuelCard } from "./DuelCard";
 import { GlobePreview } from "@/components/globe/GlobePreview";
 import { ReportShot } from "./ReportShot";
+import { GeoHowTo, HowToHelpButton } from "./GeoHowTo";
 import { ShotCarousel, shotFit } from "./ShotCarousel";
 import { roundViewsOf } from "@/lib/geo-look";
 import { GeoSettingsButton, RoundsPicker } from "./GeoSettings";
@@ -199,7 +200,16 @@ export interface GeoGameProps {
   challenge?: GeoChallenge & { token: string; region: string; era?: GeoEra; families?: GeoFamilyId[] };
 }
 
-export function GeoGame({ regions: allRegions, challenge }: GeoGameProps) {
+export function GeoGame(props: GeoGameProps) {
+  return (
+    <>
+      <GeoGameInner {...props} />
+      {!props.challenge && <GeoHowTo />}
+    </>
+  );
+}
+
+function GeoGameInner({ regions: allRegions, challenge }: GeoGameProps) {
   const today = useToday();
   const progress = useProgress();
   const regions = [...allRegions].filter((r) => playable(r)).sort((a, b) => geoMapRank(a.id) - geoMapRank(b.id));
@@ -426,7 +436,8 @@ export function GeoGame({ regions: allRegions, challenge }: GeoGameProps) {
     const themed = regions.filter((r) => r.theme);
     return (
       <div className="mx-auto max-w-4xl space-y-8">
-        <div className="space-y-3 text-center">
+        <div className="relative space-y-3 text-center">
+          <HowToHelpButton className="absolute right-0 top-0" />
           <p className="hud-label text-screen">Field survey · {region.name}</p>
           <h1 className="font-display text-4xl font-bold uppercase tracking-tight sm:text-6xl">
             Poké<span className="text-primary">Guessr</span>
@@ -685,7 +696,8 @@ export function GeoGame({ regions: allRegions, challenge }: GeoGameProps) {
           {game.daily ? ` · Daily #${dailyNumber(game.daily)}` : isStreak ? " · Streak" : ""}
         </div>
       </div>
-      <div className="flex shrink-0 gap-6 text-right">
+      <div className="flex shrink-0 items-center gap-6 text-right">
+        <HowToHelpButton />
         {timeLeft !== null && (
           <div>
             <div className="hud-label">Time</div>
