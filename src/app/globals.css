@@ -340,7 +340,74 @@
   display: grid;
   place-items: center;
   background: hsl(var(--background));
-  animation: boot-out 0.4s ease 0.9s forwards;
+  animation: boot-out 0.35s ease 1.5s forwards;
+}
+
+/* The splash ball catches once, clicks, then bursts open: the top half
+   swings up on its hinge, the bottom drops and a flash of light floods out. */
+.boot-burst {
+  display: none;
+}
+.boot-top,
+.boot-bottom {
+  transform-box: view-box;
+}
+.boot-splash .boot-ball {
+  animation: boot-wobble 1s ease-in-out 1 both, boot-pop 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) 1.05s forwards;
+}
+.boot-splash .boot-top {
+  transform-origin: 5px 50px;
+  animation: boot-top-open 0.42s cubic-bezier(0.2, 0.9, 0.25, 1.2) 1.05s forwards;
+}
+.boot-splash .boot-bottom {
+  animation: boot-bottom-drop 0.42s ease-out 1.05s forwards;
+}
+.boot-splash .boot-core {
+  animation: boot-core 1s ease-in-out 1, boot-click 0.15s ease-out 0.92s 1 both;
+}
+.boot-splash .boot-ripple {
+  animation-iteration-count: 1;
+}
+.boot-splash .boot-burst {
+  display: block;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 24px;
+  height: 24px;
+  margin: -12px 0 0 -12px;
+  border-radius: 9999px;
+  background: radial-gradient(circle, #fff 0%, #e9ddff 35%, hsl(var(--primary) / 0.55) 65%, transparent 72%);
+  opacity: 0;
+  animation: boot-burst 0.5s cubic-bezier(0.3, 0, 0.2, 1) 1.08s forwards;
+}
+.boot-splash .hud-label,
+.boot-splash .font-display {
+  animation: boot-fade-text 0.3s ease 1.05s forwards;
+}
+@keyframes boot-top-open {
+  to { transform: rotate(-48deg) translateY(-6px); opacity: 0; }
+}
+@keyframes boot-bottom-drop {
+  to { transform: translateY(16px); opacity: 0; }
+}
+@keyframes boot-pop {
+  0% { transform: scale(1); opacity: 1; }
+  45% { transform: scale(1.14); opacity: 1; }
+  100% { transform: scale(1.25); opacity: 0; }
+}
+@keyframes boot-click {
+  0% { filter: brightness(1); }
+  60% { filter: brightness(2.4); }
+  100% { filter: brightness(1.6); }
+}
+@keyframes boot-burst {
+  0% { opacity: 0; transform: scale(1); }
+  20% { opacity: 1; }
+  100% { opacity: 0; transform: scale(90); }
+}
+@keyframes boot-fade-text {
+  to { opacity: 0; transform: translateY(6px); }
 }
 @keyframes boot-out {
   to { opacity: 0; visibility: hidden; }

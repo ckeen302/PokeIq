@@ -27,7 +27,9 @@ export interface AccountState {
   user: AccountUser | null;
 }
 
-let state: AccountState = { status: "loading", enabled: true, user: null };
+/** What the server renders: hydration starts from this, never from an account already loaded in the browser. */
+const INITIAL: AccountState = { status: "loading", enabled: true, user: null };
+let state: AccountState = INITIAL;
 const listeners = new Set<() => void>();
 let started = false;
 let stopSync: (() => void) | null = null;
@@ -45,7 +47,7 @@ export function useAccount(): AccountState {
       return () => listeners.delete(l);
     },
     () => state,
-    () => state
+    () => INITIAL
   );
 }
 
