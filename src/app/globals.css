@@ -358,9 +358,22 @@
 .boot-splash .boot-ball {
   animation: boot-catch 1.05s ease-in-out 1 both, boot-ball-out 0.3s ease-in 1.4s forwards;
 }
+/* The hinge is at the back of the ball: seen from the front, the lid rises
+   straight up and tips back (foreshortening to a sliver), evenly on both
+   sides, uncovering the glowing inside. */
+.boot-mouth {
+  display: none;
+}
+.boot-splash .boot-mouth {
+  display: inline;
+  transform-box: view-box;
+  transform-origin: 50px 50px;
+  transform: scaleY(0);
+  animation: boot-mouth 0.2s cubic-bezier(0.2, 0.9, 0.3, 1.2) 1.12s forwards;
+}
 .boot-splash .boot-top {
-  transform-origin: 95px 50px;
-  animation: boot-lid 0.16s cubic-bezier(0.2, 0.9, 0.3, 1.3) 1.12s forwards;
+  transform-origin: 50px 50px;
+  animation: boot-lid 0.2s cubic-bezier(0.2, 0.9, 0.3, 1.2) 1.12s forwards;
 }
 .boot-splash .boot-core {
   animation: boot-core 1.05s ease-in-out 1, boot-click 0.12s ease-out 1.04s 1 both;
@@ -427,7 +440,10 @@
   82% { transform: rotate(10deg); }
 }
 @keyframes boot-lid {
-  to { transform: rotate(48deg) translate(0, -3px); }
+  to { transform: translateY(-15px) scaleY(0.3); }
+}
+@keyframes boot-mouth {
+  to { transform: scaleY(1); }
 }
 @keyframes boot-ball-out {
   to { transform: translateY(14px) scale(0.85); opacity: 0; }
