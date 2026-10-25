@@ -462,7 +462,7 @@ step("pokéconnections: a full daily, one wrong guess then a solve");
   if ((await page.locator("[data-testid=conn-group]").count()) !== 5) errors.push("the 5×5 result doesn't show five groups");
   await page.screenshot({ path: `${OUT}/conn-5x5-result.png`, fullPage: true });
   // The size is remembered: Unlimited opens 5×5 after a reload.
-  await page.reload({ waitUntil: "networkidle" });
+  await page.reload({ waitUntil: "domcontentloaded" });
   const again5 = page.waitForResponse((r) => /\/api\/connections\?practice=s5-/.test(r.url()));
   await page.getByRole("radio", { name: "Unlimited" }).click();
   await again5;
