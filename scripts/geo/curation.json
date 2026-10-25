@@ -6140,6 +6140,1604 @@
    "game": "Scarlet / Violet",
    "source": "https://archives.bulbagarden.net/wiki/File:Naranja_Academy.png",
    "checked": "visually verified; cropped to the left 78% to cut out the in-game minimap"
+  },
+  {
+   "id": "a-HeWTzBgllH",
+   "region": "Kitakami",
+   "name": "Apple Hills",
+   "game": "Scarlet / Violet",
+   "source": "https://www.pokewiki.de/Datei:KAPU_Fundort_Onea_und_Billy_1.jpg"
+  },
+  {
+   "id": "4Swtrd51J3zj",
+   "region": "Kitakami",
+   "name": "Apple Hills",
+   "game": "Scarlet / Violet",
+   "source": "https://www.pokewiki.de/Datei:KAPU_Fundort_Onea_und_Billy_4.jpg",
+   "checked": "in-game minimap cropped out (kept the left 1049 px of 1280)"
+  },
+  {
+   "id": "RU_1LbJMaRvT",
+   "region": "Kitakami",
+   "name": "Crystal Pool",
+   "game": "Scarlet / Violet",
+   "source": "https://www.pokewiki.de/Datei:KAPU_Kristallsee_(Kitakami).jpg"
+  },
+  {
+   "id": "r_JT_pmKoQYv",
+   "region": "Kitakami",
+   "name": "Fellhorn Gorge",
+   "game": "Scarlet / Violet",
+   "source": "https://www.pokewiki.de/Datei:KAPU_Hornschlucht.jpg"
+  },
+  {
+   "id": "xP-zwyD7JgCL",
+   "region": "Kitakami",
+   "name": "Infernal Pass",
+   "game": "Scarlet / Violet",
+   "source": "https://www.pokewiki.de/Datei:KAPU_Infernopass.jpg"
+  },
+  {
+   "id": "EyycEovpYDd0",
+   "region": "Kitakami",
+   "name": "Mossui Town",
+   "game": "Scarlet / Violet",
+   "source": "https://www.pokewiki.de/Datei:KAPU_Midoriya.jpg"
+  },
+  {
+   "id": "8A3sdC2qYxqK",
+   "region": "Kitakami",
+   "name": "Oni's Maw",
+   "game": "Scarlet / Violet",
+   "source": "https://www.pokewiki.de/Datei:KAPU_Rachen_des_Oni.jpg"
+  },
+  {
+   "id": "FsP_Y5gT0wOg",
+   "region": "Kitakami",
+   "name": "Paradise Barrens",
+   "game": "Scarlet / Violet",
+   "source": "https://www.pokewiki.de/Datei:KAPU_Paradiesebene.jpg"
+  },
+  {
+   "id": "J2R2CbHz4xLI",
+   "region": "Kitakami",
+   "name": "Reveler's Road",
+   "game": "Scarlet / Violet",
+   "source": "https://www.pokewiki.de/Datei:KAPU_Pfad_des_Tanzes.jpg"
+  },
+  {
+   "id": "8tr6r5WStjeI",
+   "region": "Kitakami",
+   "name": "Wistful Fields",
+   "game": "Scarlet / Violet",
+   "source": "https://www.pokewiki.de/Datei:KAPU_Wisterienfelder.jpg"
+  },
+  {
+   "id": "7sidYeXsz5oe",
+   "region": "Blueberry Academy",
+   "name": "Polar Biome",
+   "game": "Scarlet / Violet",
+   "source": "https://www.pokewiki.de/Datei:KAPU_Polar-Areal.png"
+  },
+  {
+   "id": "O6KsylsM90dm",
+   "region": "Blueberry Academy",
+   "name": "Coastal Biome",
+   "game": "Scarlet / Violet",
+   "source": "https://www.pokewiki.de/Datei:KAPU_Küsten-Areal.png"
+  },
+  {
+   "id": "fWN4UlkjKbVb",
+   "region": "Blueberry Academy",
+   "name": "Canyon Biome",
+   "game": "Scarlet / Violet",
+   "source": "https://www.pokewiki.de/Datei:KAPU_Canyon-Areal.png"
+  },
+  {
+   "id": "l-qeQPNN4p1w",
+   "region": "Blueberry Academy",
+   "name": "Savanna Biome",
+   "game": "Scarlet / Violet",
+   "source": "https://www.pokewiki.de/Datei:KAPU_Savannen-Areal.png"
+  },
+  {
+   "id": "YZdPyM2eU-qK",
+   "region": "Paldea",
+   "name": "Alfornada",
+   "game": "Scarlet / Violet",
+   "source": "https://www.pokewiki.de/Datei:KAPU_Asarilla.png"
+  },
+  {
+   "id": "Sd4gMFPK-keX",
+   "region": "Paldea",
+   "name": "Artazon",
+   "game": "Scarlet / Violet",
+   "source": "https://www.pokewiki.de/Datei:KAPU_Bolardin.png"
+  },
+  {
+   "id": "_Uzy9VHa17lH",
+   "region": "Paldea",
+   "name": "Asado Desert",
+   "game": "Scarlet / Violet",
+   "source": "https://www.pokewiki.de/Datei:KAPU_Brutzelwüste.jpg"
+  },
+  {
+   "id": "QogxNn_b6D3O",
+   "region": "Paldea",
+   "name": "Cortondo",
+   "game": "Scarlet / Violet",
+   "source": "https://www.pokewiki.de/Datei:KAPU_Moldrid.png"
+  },
+  {
+   "id": "m7Ap-vhNtk5Y",
+   "region": "Paldea",
+   "name": "East Province (Area One)",
+   "game": "Scarlet / Violet",
+   "source": "https://www.pokewiki.de/Datei:KAPU_Östliche_Zone_1.jpg"
+  },
+  {
+   "id": "QK1rVGUYHwc6",
+   "region": "Paldea",
+   "name": "East Province (Area Three)",
+   "game": "Scarlet / Violet",
+   "source": "https://www.pokewiki.de/Datei:KAPU_Östliche_Zone_3.jpg"
+  },
+  {
+   "id": "STK63wXkLs1S",
+   "region": "Paldea",
+   "name": "East Province (Area Two)",
+   "game": "Scarlet / Violet",
+   "source": "https://www.pokewiki.de/Datei:KAPU_Östliche_Zone_2.jpg"
+  },
+  {
+   "id": "j2zZpt2riYah",
+   "region": "Paldea",
+   "name": "Glaseado Mountain",
+   "game": "Scarlet / Violet",
+   "source": "https://www.pokewiki.de/Datei:KAPU_Montanata.png"
+  },
+  {
+   "id": "kNEWpBGRp1hv",
+   "region": "Paldea",
+   "name": "Great Crater of Paldea",
+   "game": "Scarlet / Violet",
+   "source": "https://www.pokewiki.de/Datei:KAPU_Schlund_von_Paldea.png"
+  },
+  {
+   "id": "WOVTQvwdFLpk",
+   "region": "Paldea",
+   "name": "Inlet Grotto",
+   "game": "Scarlet / Violet",
+   "source": "https://www.pokewiki.de/Datei:KAPU_Meeresbuchthöhle.png"
+  },
+  {
+   "id": "VlI_aWJZkQ9M",
+   "region": "Paldea",
+   "name": "Inlet Grotto",
+   "game": "Scarlet / Violet",
+   "source": "https://www.pokewiki.de/Datei:Hundemon_erscheint_in_der_Meeresbuchthöhle_KAPU.jpg"
+  },
+  {
+   "id": "CYZbSWDQl8IH",
+   "region": "Paldea",
+   "name": "Los Platos",
+   "game": "Scarlet / Violet",
+   "source": "https://www.pokewiki.de/Datei:KAPU_Pratolido.png"
+  },
+  {
+   "id": "hTFie8Sjp-yp",
+   "region": "Paldea",
+   "name": "Medali",
+   "game": "Scarlet / Violet",
+   "source": "https://www.pokewiki.de/Datei:KAPU_Mesclarra.png"
+  },
+  {
+   "id": "IHe1smKxhyya",
+   "region": "Paldea",
+   "name": "North Province (Area Three)",
+   "game": "Scarlet / Violet",
+   "source": "https://www.pokewiki.de/Datei:KAPU_Nördliche_Zone_3.jpg"
+  },
+  {
+   "id": "6TQJSHJ7FFQc",
+   "region": "Paldea",
+   "name": "Poco Path",
+   "game": "Scarlet / Violet",
+   "source": "https://www.pokewiki.de/Datei:KAPU_Cucharico-Pfad.png"
+  },
+  {
+   "id": "ijWq9O7tnMnj",
+   "region": "Paldea",
+   "name": "Pokémon League",
+   "game": "Scarlet / Violet",
+   "source": "https://www.pokewiki.de/Datei:KAPU_Pokémon-Liga_(Paldea).png"
+  },
+  {
+   "id": "zmrbciW-7hsf",
+   "region": "Paldea",
+   "name": "Socarrat Trail",
+   "game": "Scarlet / Violet",
+   "source": "https://www.pokewiki.de/Datei:KAPU_Knusperwaldweg.png"
+  },
+  {
+   "id": "dlN_5XGO1tJW",
+   "region": "Paldea",
+   "name": "South Province (Area One)",
+   "game": "Scarlet / Violet",
+   "source": "https://www.pokewiki.de/Datei:KAPU_Südliche_Zone_1.jpg"
+  },
+  {
+   "id": "PbJC8abfDG0a",
+   "region": "Paldea",
+   "name": "South Province (Area Six)",
+   "game": "Scarlet / Violet",
+   "source": "https://www.pokewiki.de/Datei:KAPU_Südliche_Zone_6.jpg"
+  },
+  {
+   "id": "AUAaazGD_wMJ",
+   "region": "Paldea",
+   "name": "South Province (Area Two)",
+   "game": "Scarlet / Violet",
+   "source": "https://www.pokewiki.de/Datei:KAPU_Südliche_Zone_2.jpg"
+  },
+  {
+   "id": "F6QAmii3FjmL",
+   "region": "Paldea",
+   "name": "Tagtree Thicket",
+   "game": "Scarlet / Violet",
+   "source": "https://www.pokewiki.de/Datei:KAPU_Schmierhain.png"
+  },
+  {
+   "id": "vxDCqycHOSbX",
+   "region": "Paldea",
+   "name": "West Province (Area Three)",
+   "game": "Scarlet / Violet",
+   "source": "https://www.pokewiki.de/Datei:KAPU_Westliche_Zone_3.jpg"
+  },
+  {
+   "id": "463Abl7tF05n",
+   "region": "Paldea",
+   "name": "West Province (Area Two)",
+   "game": "Scarlet / Violet",
+   "source": "https://www.pokewiki.de/Datei:KAPU_Westliche_Zone_2.jpg"
+  },
+  {
+   "id": "oIOLvjuq9zxc",
+   "region": "Paldea",
+   "name": "Zapapico",
+   "game": "Scarlet / Violet",
+   "source": "https://www.pokewiki.de/Datei:KAPU_Pinchores.png"
+  },
+  {
+   "id": "VLzuNn8hwZGs",
+   "region": "Paldea",
+   "name": "Zapapico",
+   "game": "Scarlet / Violet",
+   "source": "https://www.pokewiki.de/Datei:KAPU_Pinchores_Fluchrüstung_NPC.jpg",
+   "checked": "in-game minimap cropped out (kept the left 1049 px of 1280)"
+  },
+  {
+   "id": "KleYXRNyzOei",
+   "region": "Galar",
+   "name": "Axew's Eye",
+   "game": "Sword / Shield",
+   "source": "https://www.pokewiki.de/Datei:SWSH_Milza-See_(Auge).jpg"
+  },
+  {
+   "id": "ShRJbtRJK_3m",
+   "region": "Galar",
+   "name": "Ballonlea",
+   "game": "Sword / Shield",
+   "source": "https://www.pokewiki.de/Datei:SWSH_Fairballey_(Screenshot).jpg"
+  },
+  {
+   "id": "kNS9s7TTatyv",
+   "region": "Galar",
+   "name": "Bridge Field",
+   "game": "Sword / Shield",
+   "source": "https://www.pokewiki.de/Datei:SWSH_Brückental.jpg"
+  },
+  {
+   "id": "MznxRTxNZJeJ",
+   "region": "Galar",
+   "name": "Circhester",
+   "game": "Sword / Shield",
+   "source": "https://pokemon.fandom.com/wiki/File:Pokemon_Sword_&_Shield_Gameplay_14.jpg"
+  },
+  {
+   "id": "4rZp8xdxrblc",
+   "region": "Galar",
+   "name": "East Lake Axewell",
+   "game": "Sword / Shield",
+   "source": "https://www.pokewiki.de/Datei:SWSH_Milza-See_(Osten).jpg"
+  },
+  {
+   "id": "prU5gSISwQIp",
+   "region": "Galar",
+   "name": "Giant's Mirror",
+   "game": "Sword / Shield",
+   "source": "https://www.pokewiki.de/Datei:SWSH_Spiegel_des_Giganten.jpg"
+  },
+  {
+   "id": "c49oFDOy_H47",
+   "region": "Galar",
+   "name": "Glimwood Tangle",
+   "game": "Sword / Shield",
+   "source": "https://www.pokewiki.de/Datei:Wirrschein-Wald.jpg"
+  },
+  {
+   "id": "Ty5nenrN9BDr",
+   "region": "Galar",
+   "name": "Hammerlocke Hills",
+   "game": "Sword / Shield",
+   "source": "https://www.pokewiki.de/Datei:SWSH_Claw-Plateau.jpg"
+  },
+  {
+   "id": "XRfLXjeNon3A",
+   "region": "Galar",
+   "name": "Hulbury",
+   "game": "Sword / Shield",
+   "source": "https://www.pokewiki.de/Datei:SWSH_Keelton_(Screenshot).jpg"
+  },
+  {
+   "id": "gTZg5VcyL7PX",
+   "region": "Galar",
+   "name": "Lake of Outrage",
+   "game": "Sword / Shield",
+   "source": "https://www.pokewiki.de/Datei:SWSH_Wutanfall-See.jpg"
+  },
+  {
+   "id": "pPnh1NNutoJx",
+   "region": "Galar",
+   "name": "Motostoke Riverbank",
+   "game": "Sword / Shield",
+   "source": "https://www.pokewiki.de/Datei:SWSH_Engine-Flussufer.jpg"
+  },
+  {
+   "id": "oKYBdjGVUPEO",
+   "region": "Galar",
+   "name": "North Lake Miloch",
+   "game": "Sword / Shield",
+   "source": "https://www.pokewiki.de/Datei:SWSH_Milotic-See_(Norden).jpg"
+  },
+  {
+   "id": "GrtMmx2g35kp",
+   "region": "Galar",
+   "name": "Route 2",
+   "game": "Sword / Shield",
+   "source": "https://pokemon.fandom.com/wiki/File:Galar_Route_2_-_Number_Sign.jpg"
+  },
+  {
+   "id": "a7-HsWq8xnXu",
+   "region": "Galar",
+   "name": "Route 2",
+   "game": "Sword / Shield",
+   "source": "https://pokemon.fandom.com/wiki/File:Galar_Route_2_-_Trainers_Tip_Sign_1.jpg"
+  },
+  {
+   "id": "nDw48CjM2Y7P",
+   "region": "Galar",
+   "name": "Route 3",
+   "game": "Sword / Shield",
+   "source": "https://pokemon.fandom.com/wiki/File:Galar_Route_3_-_Number_Sign.jpg"
+  },
+  {
+   "id": "1LSVkwjMGlGA",
+   "region": "Galar",
+   "name": "Route 3",
+   "game": "Sword / Shield",
+   "source": "https://pokemon.fandom.com/wiki/File:Galar_Route_3_-_Trainer_Tips_Sign.jpg"
+  },
+  {
+   "id": "poT6fNNkDICT",
+   "region": "Galar",
+   "name": "Route 3",
+   "game": "Sword / Shield",
+   "source": "https://pokemon.fandom.com/wiki/File:Galar_Route_3_-_Berry_Tree.jpg"
+  },
+  {
+   "id": "f7S1aLm6KdjC",
+   "region": "Galar",
+   "name": "Route 7",
+   "game": "Sword / Shield",
+   "source": "https://www.pokepedia.fr/Fichier:Route_7_Champi_Suave_EB.png"
+  },
+  {
+   "id": "w-cjMUrvPbRG",
+   "region": "Galar",
+   "name": "Route 7",
+   "game": "Sword / Shield",
+   "source": "https://www.pokepedia.fr/Fichier:Route_7_Huile_EB.png"
+  },
+  {
+   "id": "rgIxa6jHfeea",
+   "region": "Galar",
+   "name": "Route 7",
+   "game": "Sword / Shield",
+   "source": "https://www.pokepedia.fr/Fichier:Route_7_Rapide_Ball_EB.png"
+  },
+  {
+   "id": "pVi6ZiCzn4Yq",
+   "region": "Galar",
+   "name": "Route 8",
+   "game": "Sword / Shield",
+   "source": "https://www.pokepedia.fr/Fichier:Route_8_(Ruines)_EB.png"
+  },
+  {
+   "id": "k5OvH50pPTN-",
+   "region": "Galar",
+   "name": "Route 8",
+   "game": "Sword / Shield",
+   "source": "https://www.pokepedia.fr/Fichier:Route_8_Champ'Duit_EB.png"
+  },
+  {
+   "id": "PjsBlPrdMKmR",
+   "region": "Galar",
+   "name": "Route 8",
+   "game": "Sword / Shield",
+   "source": "https://www.pokepedia.fr/Fichier:Route_8_CT43_EB.png"
+  },
+  {
+   "id": "j4ccO6BlJYhY",
+   "region": "Galar",
+   "name": "Route 9 Tunnel",
+   "game": "Sword / Shield",
+   "source": "https://www.pokewiki.de/Datei:SWSH_Route-9-Tunnel.jpg"
+  },
+  {
+   "id": "VfejA2WIdbXc",
+   "region": "Galar",
+   "name": "South Lake Miloch",
+   "game": "Sword / Shield",
+   "source": "https://www.pokewiki.de/Datei:SWSH_Milotic-See_(Süden).jpg"
+  },
+  {
+   "id": "iZw0hmZs3Nhl",
+   "region": "Galar",
+   "name": "Stony Wilderness",
+   "game": "Sword / Shield",
+   "source": "https://www.pokewiki.de/Datei:SWSH_Megalithen-Ebene.jpg"
+  },
+  {
+   "id": "iCOjrGO1f8dy",
+   "region": "Galar",
+   "name": "Stow-on-Side",
+   "game": "Sword / Shield",
+   "source": "https://www.pokewiki.de/Datei:SWSH_Passbeck_(Screenshot).jpg"
+  },
+  {
+   "id": "dvcmbroy2C4U",
+   "region": "Galar",
+   "name": "Turffield",
+   "game": "Sword / Shield",
+   "source": "https://www.pokewiki.de/Datei:SWSH_Turffield_(Screenshot).jpg"
+  },
+  {
+   "id": "TRo_NhRltOX_",
+   "region": "Galar",
+   "name": "Turffield",
+   "game": "Sword / Shield",
+   "source": "https://www.pokewiki.de/Datei:Geoglyphe_von_Turffield.jpg"
+  },
+  {
+   "id": "6QsejxfvZ8e5",
+   "region": "Galar",
+   "name": "Watchtower Ruins",
+   "game": "Sword / Shield",
+   "source": "https://pokemon.fandom.com/wiki/File:Wild_Area_4.PNG"
+  },
+  {
+   "id": "c3lfJl-qYnBB",
+   "region": "Galar",
+   "name": "Watchtower Ruins",
+   "game": "Sword / Shield",
+   "source": "https://www.pokewiki.de/Datei:SWSH_Wachturmruine.jpg"
+  },
+  {
+   "id": "ItTg1PjI4yd0",
+   "region": "Galar",
+   "name": "West Lake Axewell",
+   "game": "Sword / Shield",
+   "source": "https://www.pokewiki.de/Datei:SWSH_Milza-See_(Westen).jpg"
+  },
+  {
+   "id": "XRuTxm7tmzGf",
+   "region": "Isle of Armor",
+   "name": "Courageous Cavern",
+   "game": "Sword / Shield",
+   "source": "https://www.pokewiki.de/Datei:SWSH_Tapferkeitshöhle.jpg"
+  },
+  {
+   "id": "b5u6b4C69PBx",
+   "region": "Isle of Armor",
+   "name": "Courageous Cavern",
+   "game": "Sword / Shield",
+   "source": "https://www.pokewiki.de/Datei:SWSH_Digda-Suche_-_Tapferkeitshöhle_1.jpg"
+  },
+  {
+   "id": "DKP-obGhll9T",
+   "region": "Isle of Armor",
+   "name": "Fields of Honor",
+   "game": "Sword / Shield",
+   "source": "https://www.pokewiki.de/Datei:SWSH_Grußgefilde.jpg"
+  },
+  {
+   "id": "NEO1oz7L_Pdl",
+   "region": "Isle of Armor",
+   "name": "Forest of Focus",
+   "game": "Sword / Shield",
+   "source": "https://www.pokewiki.de/Datei:SWSH_Digda-Suche_-_Fokusforst_1.jpg"
+  },
+  {
+   "id": "v1LZkORrb1mX",
+   "region": "Isle of Armor",
+   "name": "Honeycalm Island",
+   "game": "Sword / Shield",
+   "source": "https://www.pokewiki.de/Datei:SWSH_Wabeninsel.jpg"
+  },
+  {
+   "id": "qXFS_JHxN2zJ",
+   "region": "Isle of Armor",
+   "name": "Honeycalm Island",
+   "game": "Sword / Shield",
+   "source": "https://www.pokewiki.de/Datei:SWSH_Digda-Suche_-_Wabeninsel_1.jpg"
+  },
+  {
+   "id": "j5mjrP4OPKUk",
+   "region": "Isle of Armor",
+   "name": "Honeycalm Sea",
+   "game": "Sword / Shield",
+   "source": "https://www.pokewiki.de/Datei:SWSH_Wabenmeer.jpg"
+  },
+  {
+   "id": "sPbQnZLzzlVj",
+   "region": "Isle of Armor",
+   "name": "Honeycalm Sea",
+   "game": "Sword / Shield",
+   "source": "https://www.pokewiki.de/Datei:SWSH_Digda-Suche_-_Wabenmeer_1.jpg"
+  },
+  {
+   "id": "1JCTqDRgZXQJ",
+   "region": "Isle of Armor",
+   "name": "Loop Lagoon",
+   "game": "Sword / Shield",
+   "source": "https://www.pokewiki.de/Datei:SWSH_Digda-Suche_-_Ringbucht_1.jpg"
+  },
+  {
+   "id": "V92fB3xkamAQ",
+   "region": "Isle of Armor",
+   "name": "Loop Lagoon",
+   "game": "Sword / Shield",
+   "source": "https://www.pokewiki.de/Datei:SWSH_Digda-Suche_-_Ringbucht_2.jpg"
+  },
+  {
+   "id": "NoE8m9NSNV_V",
+   "region": "Isle of Armor",
+   "name": "Potbottom Desert",
+   "game": "Sword / Shield",
+   "source": "https://www.pokewiki.de/Datei:SWSH_Digda-Suche_-_Wüstensenke_1.jpg"
+  },
+  {
+   "id": "LLr75oIsmcQR",
+   "region": "Isle of Armor",
+   "name": "Potbottom Desert",
+   "game": "Sword / Shield",
+   "source": "https://www.pokewiki.de/Datei:SWSH_Digda-Suche_-_Wüstensenke_2.jpg"
+  },
+  {
+   "id": "SuVFao-_lyxH",
+   "region": "Crown Tundra",
+   "name": "Iron Ruins",
+   "game": "Sword / Shield",
+   "source": "https://www.pokewiki.de/Datei:SWSH_Eisen-Ruinen.jpg"
+  },
+  {
+   "id": "SOtEPI_niloU",
+   "region": "Crown Tundra",
+   "name": "Slippery Slope",
+   "game": "Sword / Shield",
+   "source": "https://pokemon.fandom.com/wiki/File:Slippery_Slope.jpg"
+  },
+  {
+   "id": "yPvJ95P3_Yqb",
+   "region": "Hoenn",
+   "name": "Oldale Town",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://pokemon.fandom.com/wiki/File:Oldale_Town_(ORAS).png"
+  },
+  {
+   "id": "jHniptuc2ZOY",
+   "region": "Kalos",
+   "name": "Route 11",
+   "game": "X / Y",
+   "source": "https://www.pokepedia.fr/Fichier:Route_11_XY.png"
+  },
+  {
+   "id": "T5jCO3opod5I",
+   "region": "Sinnoh",
+   "name": "Canalave City",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokewiki.de/Datei:SDLP_Fleetburg.png"
+  },
+  {
+   "id": "875supzUP00q",
+   "region": "Sinnoh",
+   "name": "Eterna City",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokewiki.de/Datei:SDLP_Ewigenau.jpg"
+  },
+  {
+   "id": "otgHW6BiyVpE",
+   "region": "Sinnoh",
+   "name": "Flower Paradise",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokewiki.de/Datei:SDLP_Blumenparadies.jpg"
+  },
+  {
+   "id": "JiSyyViAwzAv",
+   "region": "Sinnoh",
+   "name": "Hearthome City",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokewiki.de/Datei:SDLP_Herzhofen.jpg"
+  },
+  {
+   "id": "PWfjKmccTJMY",
+   "region": "Sinnoh",
+   "name": "Jubilife City",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://pokemon.fandom.com/wiki/File:Jubilife_City_BDSP_screenshot.jpg"
+  },
+  {
+   "id": "StxSayOPCoV8",
+   "region": "Sinnoh",
+   "name": "Jubilife City",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokewiki.de/Datei:SDLP_Jubelstadt.jpg"
+  },
+  {
+   "id": "CjMhFrJO3_5L",
+   "region": "Sinnoh",
+   "name": "Newmoon Island",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokewiki.de/Datei:Neumondinsel,_außenbereich_SDLP.jpg"
+  },
+  {
+   "id": "gpet8miV52e6",
+   "region": "Sinnoh",
+   "name": "Pastoria City",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokewiki.de/Datei:SDLP_Weideburg.jpg"
+  },
+  {
+   "id": "ddvj2tddHPWJ",
+   "region": "Sinnoh",
+   "name": "Route 201",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Route_201_DEPS.png"
+  },
+  {
+   "id": "0tJQzCHqbDyH",
+   "region": "Sinnoh",
+   "name": "Route 202",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Route_202_DEPS.png"
+  },
+  {
+   "id": "VVFVAsnMRAZL",
+   "region": "Sinnoh",
+   "name": "Route 202",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Route_202_Poké_Ball_DEPS.png"
+  },
+  {
+   "id": "Eya7jSolEsjJ",
+   "region": "Sinnoh",
+   "name": "Route 203",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Route_203_DEPS.png"
+  },
+  {
+   "id": "UWaGISvZ39z9",
+   "region": "Sinnoh",
+   "name": "Route 203",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Route_203_Repousse_DEPS.png"
+  },
+  {
+   "id": "YUdFu-H3WWIi",
+   "region": "Sinnoh",
+   "name": "Route 203",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Route_203_Poké_Ball_DEPS.png"
+  },
+  {
+   "id": "4-bpkXDsQJfh",
+   "region": "Sinnoh",
+   "name": "Route 204",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Route_204_DEPS.png"
+  },
+  {
+   "id": "dDPNQ9meZIq0",
+   "region": "Sinnoh",
+   "name": "Route 205",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Route_205_DEPS.png"
+  },
+  {
+   "id": "XSpWNk81yQtS",
+   "region": "Sinnoh",
+   "name": "Route 205",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Route_205_Arbres_à_Baies_1_DEPS.png"
+  },
+  {
+   "id": "6I7TQVoiU4JS",
+   "region": "Sinnoh",
+   "name": "Route 205",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Route_205_Arbres_à_Baies_2_DEPS.png"
+  },
+  {
+   "id": "qQl6ftbFjG1T",
+   "region": "Sinnoh",
+   "name": "Route 206",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Route_206_DEPS.png"
+  },
+  {
+   "id": "R3maDjlANRVV",
+   "region": "Sinnoh",
+   "name": "Route 206",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Route_206_Arbres_à_Baies_1_DEPS.png"
+  },
+  {
+   "id": "AzhsE7jHwdy6",
+   "region": "Sinnoh",
+   "name": "Route 206",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Route_206_Arbres_à_Baies_2_DEPS.png"
+  },
+  {
+   "id": "S09FxYTXJpOJ",
+   "region": "Sinnoh",
+   "name": "Route 207",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Route_207_DEPS.png"
+  },
+  {
+   "id": "NPqi4nXvEs-A",
+   "region": "Sinnoh",
+   "name": "Route 207",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Route_207_Poké_Ball_DEPS.png"
+  },
+  {
+   "id": "mP2Wu57PSyhL",
+   "region": "Sinnoh",
+   "name": "Route 208",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Route_208_DEPS.png"
+  },
+  {
+   "id": "qQjpo1RY6H36",
+   "region": "Sinnoh",
+   "name": "Route 208",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Route_208_Arbres_à_Baies_DEPS.png"
+  },
+  {
+   "id": "VO_O71qZFMhf",
+   "region": "Sinnoh",
+   "name": "Route 208",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Route_208_Carbone_DEPS.png"
+  },
+  {
+   "id": "vhTsfA5Pnq6B",
+   "region": "Sinnoh",
+   "name": "Route 209",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Route_209_DEPS.png"
+  },
+  {
+   "id": "Kv_C_BqkqP65",
+   "region": "Sinnoh",
+   "name": "Route 209",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Route_209_Super_Canne_DEPS.png"
+  },
+  {
+   "id": "d1LmkfNq07sE",
+   "region": "Sinnoh",
+   "name": "Route 210",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Route_210_DEPS.png"
+  },
+  {
+   "id": "icIPuYeXJQQQ",
+   "region": "Sinnoh",
+   "name": "Route 210",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Route_210_Arbres_à_Baies_(Partie_Sud)_DEPS.png"
+  },
+  {
+   "id": "AJkW3BeYvi8h",
+   "region": "Sinnoh",
+   "name": "Route 210",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Route_210_CT51_DEPS.png"
+  },
+  {
+   "id": "WrvAnCuyjanY",
+   "region": "Sinnoh",
+   "name": "Route 212",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Route_212_DEPS.png"
+  },
+  {
+   "id": "4uoXqp-naxTI",
+   "region": "Sinnoh",
+   "name": "Route 212",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Route_212_Arbres_à_Baies_1_DEPS.png"
+  },
+  {
+   "id": "C3iA1Zea9khx",
+   "region": "Sinnoh",
+   "name": "Route 213",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Route_213_DEPS.png"
+  },
+  {
+   "id": "KR18btxzSXbA",
+   "region": "Sinnoh",
+   "name": "Route 213",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Route_213_Clé_de_Chambre_DEPS.png"
+  },
+  {
+   "id": "TbHBU1NUMk4U",
+   "region": "Sinnoh",
+   "name": "Route 214",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Route_214_DEPS.png"
+  },
+  {
+   "id": "U2dtnQVdLnBY",
+   "region": "Sinnoh",
+   "name": "Route 214",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Route_214_Grosse_Racine_DEPS.png"
+  },
+  {
+   "id": "z4-34K2KZrfJ",
+   "region": "Sinnoh",
+   "name": "Route 215",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Route_215_DEPS.png"
+  },
+  {
+   "id": "cXWW0iAWtcc3",
+   "region": "Sinnoh",
+   "name": "Route 215",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Route_215_CT66_DEPS.png"
+  },
+  {
+   "id": "NfKgdcIsU_6C",
+   "region": "Sinnoh",
+   "name": "Route 216",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Route_216_DEPS.png"
+  },
+  {
+   "id": "36RljJHng5T8",
+   "region": "Sinnoh",
+   "name": "Route 216",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Route_216_Total_Soin_DEPS.png"
+  },
+  {
+   "id": "q3XmKOMoajMl",
+   "region": "Sinnoh",
+   "name": "Route 216",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Route_216_Antigel_DEPS.png"
+  },
+  {
+   "id": "-ii6vBAXLZud",
+   "region": "Sinnoh",
+   "name": "Route 217",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Route_217_DEPS.png"
+  },
+  {
+   "id": "N7zEF_yNQ97I",
+   "region": "Sinnoh",
+   "name": "Route 218",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Route_218_Super_Bonbon_DEPS.png"
+  },
+  {
+   "id": "5im_JLG4k7iK",
+   "region": "Sinnoh",
+   "name": "Route 218",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Route_218_Sceau_Fleur_F_DEPS.png"
+  },
+  {
+   "id": "efyA3SXxHwOX",
+   "region": "Sinnoh",
+   "name": "Route 218",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Route_218_Sceau_Étincelle_B_DEPS.png"
+  },
+  {
+   "id": "ZNR-pKg-fkfM",
+   "region": "Sinnoh",
+   "name": "Route 219",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Route_219_DEPS.png"
+  },
+  {
+   "id": "kmpjbk-6dBUp",
+   "region": "Sinnoh",
+   "name": "Route 219",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Route_219_Antidote_DEPS.png"
+  },
+  {
+   "id": "oR3CN-1ku4MY",
+   "region": "Sinnoh",
+   "name": "Route 219",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Route_219_Super_Potion_DEPS.png"
+  },
+  {
+   "id": "nWGqWvKgN9BS",
+   "region": "Sinnoh",
+   "name": "Route 220",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Chenal_220_Huile_DEPS.png"
+  },
+  {
+   "id": "PwSQfiFfjSfY",
+   "region": "Sinnoh",
+   "name": "Route 220",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Chenal_220_Plaque_Hydro_DEPS.png"
+  },
+  {
+   "id": "ew7wFiyWRcfB",
+   "region": "Sinnoh",
+   "name": "Route 220",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Chenal_220_Perle_DEPS.png"
+  },
+  {
+   "id": "gdb1j2t9Qm6i",
+   "region": "Sinnoh",
+   "name": "Route 221",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Route_221_Protéine_DEPS.png"
+  },
+  {
+   "id": "sFyUK42SMk5p",
+   "region": "Sinnoh",
+   "name": "Route 221",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Route_221_Miel_(Objet_Visible)_DEPS.png"
+  },
+  {
+   "id": "fW0aM9ejun0a",
+   "region": "Sinnoh",
+   "name": "Route 222",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Route_222_DEPS.png"
+  },
+  {
+   "id": "rH7q6q-WsX0l",
+   "region": "Sinnoh",
+   "name": "Route 222",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Route_222_Miel_2_DEPS.png"
+  },
+  {
+   "id": "IzZkfLJfb1wT",
+   "region": "Sinnoh",
+   "name": "Route 222",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Route_222_Miel_DEPS.png"
+  },
+  {
+   "id": "m-GRnp4nKhy7",
+   "region": "Sinnoh",
+   "name": "Route 224",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Route_224_DEPS.png"
+  },
+  {
+   "id": "NWZSkO4fIH6l",
+   "region": "Sinnoh",
+   "name": "Route 224",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Route_224_Arbres_à_Baies_DEPS.png"
+  },
+  {
+   "id": "b2fzzz9w-vuW",
+   "region": "Sinnoh",
+   "name": "Route 224",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Route_224_Poussière_Étoile_1_DEPS.png"
+  },
+  {
+   "id": "MdzY5esew1bB",
+   "region": "Sinnoh",
+   "name": "Route 225",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Route_225_DEPS.png"
+  },
+  {
+   "id": "ZHQ9_ECatKNF",
+   "region": "Sinnoh",
+   "name": "Route 225",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Route_225_Arbres_à_Baies_DEPS.png"
+  },
+  {
+   "id": "xiOjKIm42bwP",
+   "region": "Sinnoh",
+   "name": "Route 225",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Route_225_PV_Plus_DEPS.png"
+  },
+  {
+   "id": "BzyabGRtAws4",
+   "region": "Sinnoh",
+   "name": "Route 226",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Chenal_226_DEPS.png"
+  },
+  {
+   "id": "pVPU2MlCl59J",
+   "region": "Sinnoh",
+   "name": "Route 226",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Chenal_226_Arbres_à_Baies_DEPS.png"
+  },
+  {
+   "id": "HaeJ2HXkkmv8",
+   "region": "Sinnoh",
+   "name": "Route 227",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Route_227_DEPS.png"
+  },
+  {
+   "id": "QmO9ZOIXmBXS",
+   "region": "Sinnoh",
+   "name": "Route 227",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Route_227_Total_Soin_DEPS.png"
+  },
+  {
+   "id": "iSIDUce3-kFh",
+   "region": "Sinnoh",
+   "name": "Route 227",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Route_227_Charbon_DEPS.png"
+  },
+  {
+   "id": "dUFqtJq8OEtg",
+   "region": "Sinnoh",
+   "name": "Route 228",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Route_228_DEPS.png"
+  },
+  {
+   "id": "lJPsmT_tSCUH",
+   "region": "Sinnoh",
+   "name": "Route 229",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Route_229_DEPS.png"
+  },
+  {
+   "id": "jF04LX8i_v0-",
+   "region": "Sinnoh",
+   "name": "Route 229",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Route_229_Arbres_à_Baies_DEPS.png"
+  },
+  {
+   "id": "8DDoLGExPjDN",
+   "region": "Sinnoh",
+   "name": "Route 229",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Route_229_Gros_Champi_DEPS.png"
+  },
+  {
+   "id": "lKVeQPw-rwpw",
+   "region": "Sinnoh",
+   "name": "Route 230",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Chenal_230_Carbone_DEPS.png"
+  },
+  {
+   "id": "pivzj6gMPjF8",
+   "region": "Sinnoh",
+   "name": "Seabreak Path",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokewiki.de/Datei:SDLP_Buhnenpfad.jpg"
+  },
+  {
+   "id": "EhQW_6eC6Kac",
+   "region": "Sinnoh",
+   "name": "Snowpoint City",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokewiki.de/Datei:SDLP_Blizzach.jpg"
+  },
+  {
+   "id": "NZwiSXcfctQp",
+   "region": "Sinnoh",
+   "name": "Spear Pillar",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokewiki.de/Datei:SDLP_Speersäule.jpg"
+  },
+  {
+   "id": "nI-CQov044ga",
+   "region": "Sinnoh",
+   "name": "Sunyshore City",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokewiki.de/Datei:SDLP_Sonnewik.jpg"
+  },
+  {
+   "id": "0YbGWpnvid4t",
+   "region": "Sinnoh",
+   "name": "Sunyshore City",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokewiki.de/Datei:Pokémon-Fels_SDLP.jpg"
+  },
+  {
+   "id": "N0fJw4y7XLr1",
+   "region": "Sinnoh",
+   "name": "Veilstone City",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokewiki.de/Datei:SDLP_Schleiede.jpg"
+  },
+  {
+   "id": "0ZAb8-YwNf3p",
+   "region": "Kanto",
+   "name": "Lavender Town",
+   "game": "Let's Go, Pikachu! / Eevee!",
+   "source": "https://pokemon.fandom.com/wiki/File:Lavender_Town_PE.png"
+  },
+  {
+   "id": "p2PHHoqDHx-p",
+   "region": "Kanto",
+   "name": "Pallet Town",
+   "game": "Let's Go, Pikachu! / Eevee!",
+   "source": "https://www.pokewiki.de/Datei:LGPE_Alabastia_Wohnhaus.jpg"
+  },
+  {
+   "id": "cTv5jPiIAyVJ",
+   "region": "Kanto",
+   "name": "Pewter City",
+   "game": "Let's Go, Pikachu! / Eevee!",
+   "source": "https://pokemon.fandom.com/wiki/File:Pewter_City_PE.png"
+  },
+  {
+   "id": "2_H3x6Xnux71",
+   "region": "Kanto",
+   "name": "Route 10",
+   "game": "Let's Go, Pikachu! / Eevee!",
+   "source": "https://pokemon.fandom.com/wiki/File:Route_10_PE.png"
+  },
+  {
+   "id": "MB3HnK1G5dyC",
+   "region": "Kanto",
+   "name": "Route 10",
+   "game": "Let's Go, Pikachu! / Eevee!",
+   "source": "https://www.pokepedia.fr/Fichier:Route_10_Super_Parfum_LGPE.png"
+  },
+  {
+   "id": "FWrks3WYCOok",
+   "region": "Kanto",
+   "name": "Route 10",
+   "game": "Let's Go, Pikachu! / Eevee!",
+   "source": "https://www.pokepedia.fr/Fichier:Route_10_Baie_Nanab_LGPE.png"
+  },
+  {
+   "id": "vNZSZEpf6-gm",
+   "region": "Kanto",
+   "name": "Route 11",
+   "game": "Let's Go, Pikachu! / Eevee!",
+   "source": "https://www.pokepedia.fr/Fichier:Route_11_Rappel_LGPE.png"
+  },
+  {
+   "id": "ZKdSSgYR2POd",
+   "region": "Kanto",
+   "name": "Route 11",
+   "game": "Let's Go, Pikachu! / Eevee!",
+   "source": "https://www.pokepedia.fr/Fichier:Route_11_Bonbon_Évoli_LGPE.png"
+  },
+  {
+   "id": "0bszbjG9IclA",
+   "region": "Kanto",
+   "name": "Route 11",
+   "game": "Let's Go, Pikachu! / Eevee!",
+   "source": "https://www.pokepedia.fr/Fichier:Route_11_Super_Potion_LGPE.png"
+  },
+  {
+   "id": "gSVfNA5WcZh0",
+   "region": "Kanto",
+   "name": "Route 12",
+   "game": "Let's Go, Pikachu! / Eevee!",
+   "source": "https://www.pokepedia.fr/Fichier:Route_12_Perle_LGPE.png"
+  },
+  {
+   "id": "8TmYa5RwoOqa",
+   "region": "Kanto",
+   "name": "Route 12",
+   "game": "Let's Go, Pikachu! / Eevee!",
+   "source": "https://www.pokepedia.fr/Fichier:Route_12_Baie_Nanana_argentée_LGPE.png"
+  },
+  {
+   "id": "V3ketUKZ4Lnd",
+   "region": "Kanto",
+   "name": "Route 12",
+   "game": "Let's Go, Pikachu! / Eevee!",
+   "source": "https://www.pokepedia.fr/Fichier:Route_12_CT50_LGPE.png"
+  },
+  {
+   "id": "D1e_YMGVwDsM",
+   "region": "Kanto",
+   "name": "Route 13",
+   "game": "Let's Go, Pikachu! / Eevee!",
+   "source": "https://www.pokepedia.fr/Fichier:Route_13_Baie_Nanana_dorée_LGPE.png"
+  },
+  {
+   "id": "LdnwOLg2u9EK",
+   "region": "Kanto",
+   "name": "Route 13",
+   "game": "Let's Go, Pikachu! / Eevee!",
+   "source": "https://www.pokepedia.fr/Fichier:Route_13_Baie_Nanab_argentée_LGPE.png"
+  },
+  {
+   "id": "X7kyL5J541jm",
+   "region": "Kanto",
+   "name": "Route 14",
+   "game": "Let's Go, Pikachu! / Eevee!",
+   "source": "https://www.pokepedia.fr/Fichier:Route_14_Baie_Framby_dorée_LGPE.png"
+  },
+  {
+   "id": "rkxBJFvxSmDn",
+   "region": "Kanto",
+   "name": "Route 14",
+   "game": "Let's Go, Pikachu! / Eevee!",
+   "source": "https://www.pokepedia.fr/Fichier:Route_14_Baie_Nanab_LGPE.png"
+  },
+  {
+   "id": "Tu8lq5LeqK7k",
+   "region": "Kanto",
+   "name": "Route 14",
+   "game": "Let's Go, Pikachu! / Eevee!",
+   "source": "https://www.pokepedia.fr/Fichier:Route_14_Hyper_Potion_LGPE.png"
+  },
+  {
+   "id": "HPhS4C__G4Oe",
+   "region": "Kanto",
+   "name": "Route 15",
+   "game": "Let's Go, Pikachu! / Eevee!",
+   "source": "https://www.pokepedia.fr/Fichier:Route_15_Baie_Nanab_dorée_LGPE.png"
+  },
+  {
+   "id": "00N70_fHxvM-",
+   "region": "Kanto",
+   "name": "Route 15",
+   "game": "Let's Go, Pikachu! / Eevee!",
+   "source": "https://www.pokepedia.fr/Fichier:Route_15_Tenue_d'Assistant_LGPE.png"
+  },
+  {
+   "id": "Y1RVHGqXZRJj",
+   "region": "Kanto",
+   "name": "Route 16",
+   "game": "Let's Go, Pikachu! / Eevee!",
+   "source": "https://www.pokepedia.fr/Fichier:Route_16_Réveil_LGPE.png"
+  },
+  {
+   "id": "5TwSHJlx6n90",
+   "region": "Kanto",
+   "name": "Route 16",
+   "game": "Let's Go, Pikachu! / Eevee!",
+   "source": "https://www.pokepedia.fr/Fichier:Route_16_CT14_LGPE.png"
+  },
+  {
+   "id": "ADHR7z672iI5",
+   "region": "Kanto",
+   "name": "Route 16",
+   "game": "Let's Go, Pikachu! / Eevee!",
+   "source": "https://www.pokepedia.fr/Fichier:Route_16_Hyper_Ball_LGPE.png"
+  },
+  {
+   "id": "oBjcTthR35Fg",
+   "region": "Kanto",
+   "name": "Route 17",
+   "game": "Let's Go, Pikachu! / Eevee!",
+   "source": "https://www.pokepedia.fr/Fichier:Route_17_Baie_Framby_argentée_LGPE.png"
+  },
+  {
+   "id": "Z-AmiPMZWH0X",
+   "region": "Kanto",
+   "name": "Route 17",
+   "game": "Let's Go, Pikachu! / Eevee!",
+   "source": "https://www.pokepedia.fr/Fichier:Route_17_Baie_Nanab_LGPE.png"
+  },
+  {
+   "id": "rJBSzTXaQPxZ",
+   "region": "Kanto",
+   "name": "Route 17",
+   "game": "Let's Go, Pikachu! / Eevee!",
+   "source": "https://www.pokepedia.fr/Fichier:Route_17_Baie_Nanana_LGPE.png"
+  },
+  {
+   "id": "Th-FsxRwABn-",
+   "region": "Kanto",
+   "name": "Route 18",
+   "game": "Let's Go, Pikachu! / Eevee!",
+   "source": "https://www.pokepedia.fr/Fichier:Route_18_Baie_Framby_LGPE.png"
+  },
+  {
+   "id": "50NFEOl9XW2i",
+   "region": "Kanto",
+   "name": "Route 18",
+   "game": "Let's Go, Pikachu! / Eevee!",
+   "source": "https://www.pokepedia.fr/Fichier:Route_18_Baie_Framby_argentée_LGPE.png"
+  },
+  {
+   "id": "BAGwSKHorjPI",
+   "region": "Kanto",
+   "name": "Route 18",
+   "game": "Let's Go, Pikachu! / Eevee!",
+   "source": "https://www.pokepedia.fr/Fichier:Route_18_Élixir_LGPE.png"
+  },
+  {
+   "id": "h4Q_sji5xmkv",
+   "region": "Kanto",
+   "name": "Route 1",
+   "game": "Let's Go, Pikachu! / Eevee!",
+   "source": "https://www.pokepedia.fr/Fichier:Route_1_Baie_Framby_LGPE.png"
+  },
+  {
+   "id": "79JTzrhow4Ab",
+   "region": "Kanto",
+   "name": "Route 1",
+   "game": "Let's Go, Pikachu! / Eevee!",
+   "source": "https://www.pokepedia.fr/Fichier:Route_1_Potion_LGPE.png"
+  },
+  {
+   "id": "5ItRWEM3aJdR",
+   "region": "Kanto",
+   "name": "Route 22",
+   "game": "Let's Go, Pikachu! / Eevee!",
+   "source": "https://www.pokepedia.fr/Fichier:Route_22_Poké_Ball_LGPE.png"
+  },
+  {
+   "id": "a-P_EhLXvbnG",
+   "region": "Kanto",
+   "name": "Route 24",
+   "game": "Let's Go, Pikachu! / Eevee!",
+   "source": "https://www.pokepedia.fr/Fichier:Route_24_Baie_Nanana_LGPE.png"
+  },
+  {
+   "id": "E6no5jrTG1ky",
+   "region": "Kanto",
+   "name": "Route 24",
+   "game": "Let's Go, Pikachu! / Eevee!",
+   "source": "https://www.pokepedia.fr/Fichier:Route_24_Baie_Framby_LGPE.png"
+  },
+  {
+   "id": "loBQRkUBjTyZ",
+   "region": "Kanto",
+   "name": "Route 25",
+   "game": "Let's Go, Pikachu! / Eevee!",
+   "source": "https://www.pokepedia.fr/Fichier:Route_25_Perle_LGPE.png"
+  },
+  {
+   "id": "c91rBOSzXbNy",
+   "region": "Kanto",
+   "name": "Route 25",
+   "game": "Let's Go, Pikachu! / Eevee!",
+   "source": "https://www.pokepedia.fr/Fichier:Route_25_Baie_Nanab_LGPE.png"
+  },
+  {
+   "id": "B1wgXSKBvymx",
+   "region": "Kanto",
+   "name": "Route 2",
+   "game": "Let's Go, Pikachu! / Eevee!",
+   "source": "https://pokemon.fandom.com/wiki/File:Route_2_PE.png"
+  },
+  {
+   "id": "UIHXrdeb8yki",
+   "region": "Kanto",
+   "name": "Route 2",
+   "game": "Let's Go, Pikachu! / Eevee!",
+   "source": "https://www.pokepedia.fr/Fichier:Route_2_Super_Ball_LGPE.png"
+  },
+  {
+   "id": "CFnmufp0nHO7",
+   "region": "Kanto",
+   "name": "Route 3",
+   "game": "Let's Go, Pikachu! / Eevee!",
+   "source": "https://pokemon.fandom.com/wiki/File:Route_3_PE.png"
+  },
+  {
+   "id": "K0al2CL_kEAl",
+   "region": "Kanto",
+   "name": "Route 3",
+   "game": "Let's Go, Pikachu! / Eevee!",
+   "source": "https://www.pokepedia.fr/Fichier:Route_3_Baie_Framby_LGPE.png"
+  },
+  {
+   "id": "Xrj9yFYsrdh7",
+   "region": "Kanto",
+   "name": "Route 3",
+   "game": "Let's Go, Pikachu! / Eevee!",
+   "source": "https://www.pokepedia.fr/Fichier:Route_3_Rappel_LGPE.png"
+  },
+  {
+   "id": "auoVnXbw8xMf",
+   "region": "Kanto",
+   "name": "Route 4",
+   "game": "Let's Go, Pikachu! / Eevee!",
+   "source": "https://www.pokepedia.fr/Fichier:Route_4_PP_Plus_LGPE.png"
+  },
+  {
+   "id": "xm3EWOp5twFe",
+   "region": "Kanto",
+   "name": "Route 4",
+   "game": "Let's Go, Pikachu! / Eevee!",
+   "source": "https://www.pokepedia.fr/Fichier:Route_4_Baie_Framby_LGPE.png"
+  },
+  {
+   "id": "wUgGDJEyJCTf",
+   "region": "Kanto",
+   "name": "Route 4",
+   "game": "Let's Go, Pikachu! / Eevee!",
+   "source": "https://www.pokepedia.fr/Fichier:Route_4_CT57_LGPE.png"
+  },
+  {
+   "id": "FgDNTPAYjZ1U",
+   "region": "Kanto",
+   "name": "Route 5",
+   "game": "Let's Go, Pikachu! / Eevee!",
+   "source": "https://pokemon.fandom.com/wiki/File:Route_5_PE_2.png"
+  },
+  {
+   "id": "Jtl29IcFAeoH",
+   "region": "Kanto",
+   "name": "Route 5",
+   "game": "Let's Go, Pikachu! / Eevee!",
+   "source": "https://www.pokepedia.fr/Fichier:Route_5_Baie_Framby_LGPE.png"
+  },
+  {
+   "id": "fMisqanOyDdb",
+   "region": "Kanto",
+   "name": "Route 6",
+   "game": "Let's Go, Pikachu! / Eevee!",
+   "source": "https://www.pokepedia.fr/Fichier:Route_6_Super_Bonbon_LGPE.png"
+  },
+  {
+   "id": "yRLQrL1BVl_b",
+   "region": "Kanto",
+   "name": "Route 6",
+   "game": "Let's Go, Pikachu! / Eevee!",
+   "source": "https://www.pokepedia.fr/Fichier:Route_6_Super_Potion_LGPE.png"
+  },
+  {
+   "id": "XMC7Iw2iMAXF",
+   "region": "Kanto",
+   "name": "Route 6",
+   "game": "Let's Go, Pikachu! / Eevee!",
+   "source": "https://www.pokepedia.fr/Fichier:Route_6_Garde-Stats_LGPE.png"
+  },
+  {
+   "id": "SQRbozXpbRYE",
+   "region": "Kanto",
+   "name": "Route 7",
+   "game": "Let's Go, Pikachu! / Eevee!",
+   "source": "https://www.pokepedia.fr/Fichier:Route_7_Baie_Nanab_LGPE.png"
+  },
+  {
+   "id": "8IoTxCOktx9F",
+   "region": "Kanto",
+   "name": "Route 7",
+   "game": "Let's Go, Pikachu! / Eevee!",
+   "source": "https://www.pokepedia.fr/Fichier:Route_7_Élixir_LGPE.png"
+  },
+  {
+   "id": "ae79QUEtn7_0",
+   "region": "Kanto",
+   "name": "Route 7",
+   "game": "Let's Go, Pikachu! / Eevee!",
+   "source": "https://www.pokepedia.fr/Fichier:Route_7_CT12_LGPE.png"
+  },
+  {
+   "id": "oM6U9G_x0XqF",
+   "region": "Kanto",
+   "name": "Route 8",
+   "game": "Let's Go, Pikachu! / Eevee!",
+   "source": "https://www.pokepedia.fr/Fichier:Route_8_Baie_Nanana_LGPE.png"
+  },
+  {
+   "id": "n-xXHRU4HbBZ",
+   "region": "Kanto",
+   "name": "Route 8",
+   "game": "Let's Go, Pikachu! / Eevee!",
+   "source": "https://www.pokepedia.fr/Fichier:Route_8_Vitesse_+_LGPE.png"
+  },
+  {
+   "id": "qBo7zhrcNqoB",
+   "region": "Kanto",
+   "name": "Route 8",
+   "game": "Let's Go, Pikachu! / Eevee!",
+   "source": "https://www.pokepedia.fr/Fichier:Route_8_Gros_Champi_LGPE.png"
+  },
+  {
+   "id": "NE9Shbf6dg9S",
+   "region": "Kanto",
+   "name": "Route 8",
+   "game": "Let's Go, Pikachu! / Eevee!",
+   "source": "https://www.pokepedia.fr/Fichier:Route_8_Pierre_Feu_LGPE.png"
+  },
+  {
+   "id": "9AqXJS0lkLDG",
+   "region": "Kanto",
+   "name": "Route 9",
+   "game": "Let's Go, Pikachu! / Eevee!",
+   "source": "https://pokemon.fandom.com/wiki/File:Route_9_PE.png"
+  },
+  {
+   "id": "nBI1Fat6SR3f",
+   "region": "Kanto",
+   "name": "Route 9",
+   "game": "Let's Go, Pikachu! / Eevee!",
+   "source": "https://www.pokepedia.fr/Fichier:Route_9_Baie_Nanana_LGPE.png"
+  },
+  {
+   "id": "9wy_6Z1q4STi",
+   "region": "Kanto",
+   "name": "Route 9",
+   "game": "Let's Go, Pikachu! / Eevee!",
+   "source": "https://www.pokepedia.fr/Fichier:Route_9_Super_Potion_LGPE.png"
+  },
+  {
+   "id": "XMHxdpeBWh64",
+   "region": "Kanto",
+   "name": "Vermilion City",
+   "game": "Let's Go, Pikachu! / Eevee!",
+   "source": "https://pokemon.fandom.com/wiki/File:Vermilion_City_Fan_Club_PE_-_Outside.png"
+  },
+  {
+   "id": "qr4XdfeB46yq",
+   "region": "Kanto",
+   "name": "Route 23",
+   "game": "Let's Go, Pikachu! / Eevee!",
+   "source": "https://www.pokepedia.fr/Fichier:Route_23_Baie_Framby_dorée_LGPE.png"
+  },
+  {
+   "id": "Od-P2vIc7793",
+   "region": "Kanto",
+   "name": "Route 23",
+   "game": "Let's Go, Pikachu! / Eevee!",
+   "source": "https://www.pokepedia.fr/Fichier:Route_23_Baie_Nanab_dorée_LGPE.png"
+  },
+  {
+   "id": "R-7McGN28Mnr",
+   "region": "Kanto",
+   "name": "Route 23",
+   "game": "Let's Go, Pikachu! / Eevee!",
+   "source": "https://www.pokepedia.fr/Fichier:Route_23_Baie_Nanana_dorée_LGPE.png"
   }
  ]
 }
