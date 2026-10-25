@@ -372,9 +372,13 @@ export function Pokedle({
   }
 
   const closeSheet = useCallback(() => {
-    if (sheet === "howto") setDlePrefs({ seenHowTo: true });
     setSheet(null);
-  }, [sheet]);
+  }, []);
+  /** "Don't show again": the first-visit pop-up stays closed on this device. */
+  const closeHowToForever = useCallback(() => {
+    setDlePrefs({ seenHowTo: true });
+    setSheet(null);
+  }, []);
 
   const dailyDone = stats?.doneToday ?? false;
   const score = state ? (state.score ?? dleScore(state.rows.length, state.solved, hints, assist, rulesBonus(rules))) : 0;
@@ -670,7 +674,7 @@ export function Pokedle({
         />
       )}
 
-      {sheet === "howto" && <HowToSheet onClose={closeSheet} />}
+      {sheet === "howto" && <HowToSheet onClose={closeSheet} onNever={closeHowToForever} />}
       {sheet === "stats" && stats && progress && today && (
         <StatsSheet
           stats={stats}

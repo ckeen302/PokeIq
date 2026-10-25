@@ -5,6 +5,8 @@ import { PDK_FAMILY_LABELS, PDK_PP, PDK_RULES, type PdkDifficulty, type PdkFamil
 import type { PdkPlay, PdkRecord } from "@/lib/pikadoku/play";
 import { archiveDates, archiveKey } from "@/lib/pikadoku/archive";
 import { connNumber } from "@/lib/connections/types";
+import { HowToActions, HowToCards } from "@/components/howto/shared";
+import { PikadokuDemo } from "@/components/howto/PikadokuDemo";
 
 const KINDS: [PdkFamily, string][] = [
   ["types", "Fighting, Dual-type, Monotype (one matching type is enough)"],
@@ -15,7 +17,7 @@ const KINDS: [PdkFamily, string][] = [
   ["other", "Legendary, Mythical, Paradox, Ultra-Beast, First Partner, Fossil, Baby, Mega, GMax (Expert adds stat thresholds)"],
 ];
 
-export function PdkHowToSheet({ onClose }: { onClose: () => void }) {
+export function PdkHowToSheet({ onClose, onNever }: { onClose: () => void; onNever?: () => void }) {
   const tile = (big: string, small: string) => (
     <div className="rounded-md border border-foreground/10 p-3 text-center">
       <p className="font-display text-2xl font-bold tabular-nums">{big}</p>
@@ -25,6 +27,17 @@ export function PdkHowToSheet({ onClose }: { onClose: () => void }) {
   return (
     <Sheet title="Fill the grid. Keep your score low." onClose={onClose} wide>
       <div className="space-y-4 text-sm" data-testid="pdk-howto">
+        <PikadokuDemo />
+        <HowToCards
+          cards={[
+            { title: "The goal", body: <p>Fill all 9 boxes of the grid, each with a Pokémon that fits both its row and its column.</p> },
+            { title: "Core rules", body: <p>You get {PDK_PP} guesses (PP), and a wrong guess uses one too. Each Pokémon can be used once.</p> },
+            { title: "Scoring", body: <p>UNIQ starts at 900 and rarer picks pull it down: lower is better. PTS is the number of boxes you filled.</p> },
+          ]}
+        />
+        <details className="rounded-md border bg-shade/30 p-3">
+          <summary className="cursor-pointer font-semibold">Full rules</summary>
+        <div className="mt-3 space-y-4">
         <div className="grid grid-cols-3 gap-2">
           {tile("9", "boxes to fill")}
           {tile(String(PDK_PP), "guesses only")}
@@ -86,6 +99,9 @@ export function PdkHowToSheet({ onClose }: { onClose: () => void }) {
             ))}
           </dl>
         </div>
+        </div>
+        </details>
+        <HowToActions onClose={onClose} onNever={onNever} />
       </div>
     </Sheet>
   );

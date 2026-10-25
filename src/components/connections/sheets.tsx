@@ -8,6 +8,8 @@ import type { ConnRecord } from "@/lib/progress";
 import { previousDate } from "@/lib/daily";
 import { LevelMark, levelStyle } from "./parts";
 import { cn } from "@/lib/utils";
+import { HowToActions, HowToCards } from "@/components/howto/shared";
+import { ConnectionsDemo } from "@/components/howto/ConnectionsDemo";
 
 /** PokéConnections' pop-up sheets: how to play, stats and the archive (Pokédle's sheet style). */
 
@@ -23,10 +25,29 @@ const KINDS: [string, string][] = [
   ["Names", "starts with the same letter, ends in “-ite”, four letters or fewer"],
 ];
 
-export function ConnHowToSheet({ onClose }: { onClose: () => void }) {
+export function ConnHowToSheet({ onClose, onNever }: { onClose: () => void; onNever?: () => void }) {
   return (
     <Sheet title="How to play" onClose={onClose} wide>
-      <div className="space-y-4 text-sm">
+      <div className="space-y-4 text-sm" data-testid="howto-sheet">
+        <ConnectionsDemo />
+        <HowToCards
+          cards={[
+            { title: "The goal", body: <p>Find the four groups of four Pokémon that share something. Pick four tiles and press Submit: a whole group locks in as a coloured bar.</p> },
+            {
+              title: "Core rules",
+              body: (
+                <p>
+                  {CONN_MAX_MISTAKES} mistakes and the game is over. “One away…” means three of your four belong together. Trying the same four again never costs a mistake.
+                </p>
+              ),
+            },
+            { title: "Colours", body: <p>Yellow is the easiest group and purple the trickiest. Watch for red herrings: a Fire type that isn&apos;t in the Fire group.</p> },
+            { title: "Daily", body: <p>A new puzzle every day, the same for everyone. Finish it, won or lost, to keep your 🔥 streak.</p> },
+          ]}
+        />
+        <details className="rounded-md border bg-shade/30 p-3">
+          <summary className="cursor-pointer font-semibold">Full rules</summary>
+        <div className="mt-3 space-y-4">
         <p>
           Find the <b>four groups of four</b> Pokémon that share something. Pick four tiles and press <b>Submit</b>: a whole group locks in as a coloured bar.
         </p>
@@ -79,9 +100,9 @@ export function ConnHowToSheet({ onClose }: { onClose: () => void }) {
             <kbd className="rounded border px-1">Enter</kbd> submits four, <kbd className="rounded border px-1">Esc</kbd> deselects all.
           </li>
         </ul>
-        <Button className="w-full" onClick={onClose}>
-          Let&apos;s play
-        </Button>
+        </div>
+        </details>
+        <HowToActions onClose={onClose} onNever={onNever} />
       </div>
     </Sheet>
   );

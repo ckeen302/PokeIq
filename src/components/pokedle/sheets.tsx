@@ -10,6 +10,8 @@ import { Button } from "@/components/ui/button";
 import { Board } from "./parts";
 import { DLE_ASSISTS, DLE_ASSIST_INFO, multiplierText } from "@/lib/dle-assist";
 import { cn } from "@/lib/utils";
+import { HowToActions, HowToCards } from "@/components/howto/shared";
+import { PokedleDemo } from "@/components/howto/PokedleDemo";
 
 /** Pokédle's pop-up sheets: how to play, stats and the archive. */
 
@@ -65,10 +67,29 @@ const EXAMPLE: DleRow = {
   },
 };
 
-export function HowToSheet({ onClose }: { onClose: () => void }) {
+export function HowToSheet({ onClose, onNever }: { onClose: () => void; onNever?: () => void }) {
   return (
     <Sheet title="How to play" onClose={onClose} wide>
-      <div className="space-y-4 text-sm">
+      <div className="space-y-4 text-sm" data-testid="howto-sheet">
+        <PokedleDemo />
+        <HowToCards
+          cards={[
+            { title: "The goal", body: <p>Guess the mystery Pokémon in {DLE_MAX_GUESSES} tries (in Classic). Every guess shows how it compares with the answer.</p> },
+            { title: "Core rules", body: <p>🟩 ✓ the answer has the same. 🟨 ≈ near or close. ▲▼ the answer is higher or lower. ⬛ ✕ no match.</p> },
+            {
+              title: "Scoring",
+              body: (
+                <p>
+                  A solve scores {dleBasePoints(1).toLocaleString("en-US")} on the first guess, less {DLE_GUESS_COST} for each guess after it, never below {DLE_MIN_SOLVE_POINTS}. A miss scores 0.
+                </p>
+              ),
+            },
+            { title: "Hints", body: <p>After your first guess you can tap to use a hint, at a cost in points.</p> },
+          ]}
+        />
+        <details className="rounded-md border bg-shade/30 p-3">
+          <summary className="cursor-pointer font-semibold">Full rules</summary>
+        <div className="mt-3 space-y-4">
         <p>
           Guess the mystery Pokémon in {DLE_MAX_GUESSES} tries (in Classic). Every guess shows how it compares with the answer. Say you guess Pikachu and the answer is Raichu:
         </p>
@@ -149,9 +170,9 @@ export function HowToSheet({ onClose }: { onClose: () => void }) {
             Keys: <kbd className="rounded border px-1">/</kbd> jumps to the guess box, <kbd className="rounded border px-1">↑</kbd> <kbd className="rounded border px-1">↓</kbd> and <kbd className="rounded border px-1">Enter</kbd> pick, <kbd className="rounded border px-1">Esc</kbd> clears.
           </li>
         </ul>
-        <Button className="w-full" onClick={onClose}>
-          Let&apos;s play
-        </Button>
+        </div>
+        </details>
+        <HowToActions onClose={onClose} onNever={onNever} />
       </div>
     </Sheet>
   );
