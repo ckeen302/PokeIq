@@ -7,6 +7,7 @@ import type { DexEntryData, DexMove, EvolutionNode } from "./dex-types";
 import { lookalikesOf } from "./lookalikes";
 import { fixEvolutionConditions } from "./evolution-fixes";
 import { getEncounters } from "./encounters";
+import { moveSlugs } from "@/lib/dex/build";
 
 /**
  * Assembles everything the study Pokédex shows for one species into a single
@@ -53,6 +54,7 @@ interface RawMove {
 
 const DETAILS = detailsData as unknown as Record<string, RawDetails>;
 const MOVES = movesData as unknown as Record<string, RawMove>;
+const MOVE_SLUGS = moveSlugs(MOVES);
 const STAT_KEYS: StatKey[] = ["hp", "atk", "def", "spa", "spd", "spe"];
 
 /** Share of all species with a strictly lower value — "faster than 73% of Pokémon". */
@@ -98,6 +100,7 @@ function learnset(raw: RawDetails): DexEntryData["learnset"] {
         method: method as DexMove["method"],
         level,
         tm: tm ?? null,
+        slug: MOVE_SLUGS.get(id) ?? "",
         name: mv.name,
         type: mv.type,
         cls: mv.cls as DexMove["cls"],

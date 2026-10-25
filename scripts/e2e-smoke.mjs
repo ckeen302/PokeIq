@@ -1305,6 +1305,53 @@ for (let i = 0; i < 3; i++) {
 }
 await page.screenshot({ path: `${OUT}/study.png` });
 
+step("pokédex tabs: moves, abilities, items");
+{
+  const SHOTS = process.env.DEX_SHOTS ?? OUT;
+  fs.mkdirSync(SHOTS, { recursive: true });
+  await page.goto(`${BASE}/pokedex`, { waitUntil: "networkidle" });
+  for (const tab of ["moves", "abilities", "items", "pokemon"]) {
+    await page.getByTestId(`dex-tab-${tab}`).click();
+    await page.waitForURL(tab === "pokemon" ? /\/pokedex$/ : new RegExp(`/pokedex/${tab}$`));
+    await page.getByLabel(`Search ${tab === "pokemon" ? "Pokémon" : tab}`).waitFor();
+  }
+  // Moves: search, then open the move page.
+  await page.getByTestId("dex-tab-moves").click();
+  await page.waitForURL(/\/pokedex\/moves$/);
+  await page.getByLabel("Search moves").fill("flamethrower");
+  await page.getByRole("link", { name: "Flamethrower" }).first().click();
+  await page.waitForURL(/\/pokedex\/moves\/flamethrower$/);
+  await page.getByRole("link", { name: /Charizard/ }).first().waitFor();
+  // Abilities: search, open Blaze and see Charizard.
+  await page.goto(`${BASE}/pokedex/abilities`, { waitUntil: "networkidle" });
+  await page.getByLabel("Search abilities").fill("blaze");
+  await page.getByRole("link", { name: /^Blaze/ }).first().click();
+  await page.waitForURL(/\/pokedex\/abilities\/blaze$/);
+  await page.getByRole("link", { name: /Charizard/ }).first().waitFor();
+  // Items: category filter + search, screenshot the list.
+  await page.goto(`${BASE}/pokedex/items`, { waitUntil: "networkidle" });
+  await page.getByLabel("Search items").fill("left");
+  await page.getByRole("link", { name: /Leftovers/ }).first().waitFor();
+  await page.screenshot({ path: `${SHOTS}/dex-items.png` });
+  await page.getByRole("link", { name: /Leftovers/ }).first().click();
+  await page.waitForURL(/\/pokedex\/items\/leftovers$/);
+  const holders = await page.getByTestId("item-holder").count();
+  if (holders < 1) throw new Error("Leftovers page lists no wild holder");
+  await page.getByTestId("item-sprite").waitFor();
+  const spriteOk = await page
+    .getByTestId("item-sprite")
+    .evaluate((img) => img.complete && img.naturalWidth > 0 || new Promise((r) => { img.onload = () => r(true); img.onerror = () => r(false); setTimeout(() => r(false), 8000); }));
+  if (!spriteOk) throw new Error("Leftovers sprite did not load");
+  await page.screenshot({ path: `${SHOTS}/dex-leftovers.png`, fullPage: true });
+  // A TM shows the move it teaches.
+  await page.goto(`${BASE}/pokedex/items/tm01`, { waitUntil: "networkidle" });
+  await page.getByRole("link", { name: "Focus Punch" }).first().waitFor();
+  // Move page links back from the Pokémon entry's Moves section.
+  await page.goto(`${BASE}/pokemon/charizard`, { waitUntil: "networkidle" });
+  await page.locator('a[href^="/pokedex/moves/"]').first().waitFor({ state: "attached" });
+  await page.locator('a[href="/pokedex/abilities/blaze"]').first().waitFor();
+}
+
 step("trainer, leaderboard, pokémon page");
 for (const path of ["/trainer", "/leaderboard?board=iq", "/pokemon/eevee", "/pokedex?type=ghost&sort=spe"]) {
   await page.goto(`${BASE}${path}`, { waitUntil: "networkidle" });

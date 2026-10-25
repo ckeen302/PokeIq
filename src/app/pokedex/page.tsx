@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { pageMetadata } from "@/lib/seo";
 import { POKEDEX } from "@/lib/pokemon/pokedex";
 import { PokedexExplorer, type DexListItem } from "@/components/pokedex/PokedexExplorer";
+import { DexTabs } from "@/components/pokedex/DexTabs";
 
 export const metadata: Metadata = pageMetadata({
   title: "Pokédex — All 1,025 Pokémon",
@@ -39,6 +40,7 @@ export default function PokedexPage() {
           entry. Study up, then test yourself.
         </p>
       </div>
+      <DexTabs active="pokemon" />
       <PokedexExplorer items={items} />
     </div>
   );

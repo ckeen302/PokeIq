@@ -24,6 +24,8 @@ export interface DexMove {
   method: "L" | "M" | "E" | "T";
   level: number;
   tm: string | null;
+  /** /pokedex/moves/[slug] */
+  slug: string;
   name: string;
   type: string;
   cls: "physical" | "special" | "status";
