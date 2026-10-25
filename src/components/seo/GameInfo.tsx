@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { HowToButton } from "./HowToButton";
 import { SITE_URL } from "@/lib/site";
 import { jsonLd } from "@/lib/seo";
 
@@ -43,9 +44,11 @@ interface Props {
   faqs: Faq[];
   /** Short description for the structured data. */
   description: string;
+  /** Show a button that opens the game's live how-to pop-up instead of the steps as text. */
+  howToButton?: boolean;
 }
 
-export function GameInfo({ path, name, intro, steps, faqs, description }: Props) {
+export function GameInfo({ path, name, intro, steps, faqs, description, howToButton }: Props) {
   const app = {
     "@context": "https://schema.org",
     "@type": "WebApplication",
@@ -69,11 +72,15 @@ export function GameInfo({ path, name, intro, steps, faqs, description }: Props)
       <div className="space-y-3 text-sm text-muted-foreground">
         <h2 className="font-display text-base font-bold uppercase tracking-wider text-foreground">How to play {name}</h2>
         <p>{intro}</p>
-        <ol className="list-decimal space-y-1 pl-5">
-          {steps.map((s) => (
-            <li key={s}>{s}</li>
-          ))}
-        </ol>
+        {howToButton ? (
+          <HowToButton name={name} />
+        ) : (
+          <ol className="list-decimal space-y-1 pl-5">
+            {steps.map((s) => (
+              <li key={s}>{s}</li>
+            ))}
+          </ol>
+        )}
       </div>
       <div className="space-y-2">
         <h2 className="font-display text-base font-bold uppercase tracking-wider">FAQ</h2>

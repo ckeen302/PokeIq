@@ -26,6 +26,7 @@ export default function PokedlePage() {
         <PokedleDuelCard />
       </div>
       <GameInfo
+        howToButton
         path="/pokedle"
         name={`Pokédle`}
         description={`Pokédle is a free daily Pokémon Wordle: guess the mystery Pokémon in 8 tries from clues about generation, type, height, weight, color and evolution stage.`}

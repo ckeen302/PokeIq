@@ -250,6 +250,11 @@ export function Pokedle({
   }, [today, progress, mode, format, guesses.length, over, loadDate]);
 
   // How to play, on a first visit.
+  useEffect(() => {
+    const open = () => setSheet("howto");
+    window.addEventListener("pokeiq:howto", open);
+    return () => window.removeEventListener("pokeiq:howto", open);
+  }, []);
   const howToShown = useRef(false);
   useEffect(() => {
     if (!prefs || howToShown.current) return;

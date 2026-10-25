@@ -30,6 +30,7 @@ export default function ConnectionsPage() {
         <ConnectionsPartyCard />
       </div>
       <GameInfo
+        howToButton
         path="/connections"
         name={`PokéConnections`}
         description={`PokéConnections is a free Pokémon Connections puzzle: sort sixteen Pokémon into four hidden groups with four mistakes to spare.`}
