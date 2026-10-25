@@ -1417,6 +1417,33 @@ step("pokédex tabs: moves, abilities, items, places");
   await page.locator('a[href="/pokedex/places/south-paldean-sea-paldea"]').first().waitFor({ state: "attached" });
 }
 
+step("pokédex: types, natures, names, form switcher");
+{
+  const SHOTS = process.env.DEX_SHOTS ?? OUT;
+  fs.mkdirSync(SHOTS, { recursive: true });
+  await page.goto(`${BASE}/pokedex`, { waitUntil: "networkidle" });
+  await page.getByTestId("dex-tab-types").click();
+  await page.waitForURL(/\/pokedex\/types$/);
+  await page.getByTestId("type-chart").waitFor();
+  if ((await page.locator('[data-testid^="tc-"]').count()) !== 324) errors.push("type chart isn't 18x18");
+  if (!(await page.getByTestId("tc-fairy-dragon").innerText()).includes("2")) errors.push("type chart: Fairy should be super effective on Dragon");
+  if (!(await page.getByTestId("tc-ground-flying").innerText()).includes("0")) errors.push("type chart: Ground should have no effect on Flying");
+  await page.screenshot({ path: `${SHOTS}/dex-types.png` });
+  await page.getByTestId("dex-tab-natures").click();
+  await page.waitForURL(/\/pokedex\/natures$/);
+  if ((await page.locator('[data-testid^="nature-"]:not([data-testid="nature-table"])').count()) !== 25) errors.push("natures page doesn't list 25 natures");
+  const adamant = await page.getByTestId("nature-adamant").innerText();
+  if (!/Attack/.test(adamant) || !/Sp\. Atk/.test(adamant)) errors.push(`Adamant row wrong: ${adamant}`);
+  await page.screenshot({ path: `${SHOTS}/dex-natures.png` });
+  await page.goto(`${BASE}/pokemon/charizard`, { waitUntil: "networkidle" });
+  const names = await page.getByTestId("dex-names").innerText();
+  if (!names.includes("リザードン") || !names.includes("Dracaufeu")) errors.push("charizard names section missing Japanese/French names");
+  await page.getByTestId("dex-names").scrollIntoViewIfNeeded();
+  await page.screenshot({ path: `${SHOTS}/dex-names.png` });
+  await page.getByRole("button", { name: "Mega Charizard X" }).click();
+  if (!(await page.locator("#stats").innerText()).includes("130")) errors.push("Mega Charizard X stats didn't switch (Attack 130)");
+}
+
 step("trainer, leaderboard, pokémon page");
 for (const path of ["/trainer", "/leaderboard?board=iq", "/pokemon/eevee", "/pokedex?type=ghost&sort=spe"]) {
   await page.goto(`${BASE}${path}`, { waitUntil: "networkidle" });
