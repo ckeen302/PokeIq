@@ -271,7 +271,13 @@ export function MoveTip({ info, type, pp, maxpp, gen, attacker, foes, field, ran
                     </span>
                     {line.ko && <span className="text-white/70"> · {line.ko}</span>}
                   </p>
-                  <p className="text-[10px] text-white/50">{line.desc}</p>
+                  {line.spreadNote ? (
+                    <p className="text-[10px] text-white/50" data-testid="damage-spread-note">
+                      {line.spreadNote}
+                    </p>
+                  ) : (
+                    <p className="text-[10px] text-white/50">{line.desc}</p>
+                  )}
                 </div>
               );
             })

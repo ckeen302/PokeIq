@@ -12,8 +12,8 @@ import type { StatsTable } from "./sets";
  * the spread (nature, EVs, IVs) that gives exactly those stats is found and
  * handed to the calculator, so it computes from the very same numbers. A
  * foe's spread isn't known: random battles use their fixed spread (84 EVs
- * and 31 IVs in every stat, a neutral nature); other formats assume none
- * (0 EVs, a neutral nature), as the calculator's own description says.
+ * and 31 IVs in every stat, a neutral nature); in other formats the
+ * range covers every plausible spread (see moveDamage).
  */
 
 /** What a random battle's Pokémon may have (GET /api/battle/randsets). */
@@ -177,9 +177,21 @@ export function sideFlags(conds: { id: string; level: number }[]): CalcSide["fla
   return { isReflect: has("reflect"), isLightScreen: has("lightscreen"), isAuroraVeil: has("auroraveil"), isTailwind: has("tailwind"), isSR: has("stealthrock") };
 }
 
+export interface MoveDamage extends CalcLine {
+  /**
+   * Set when the foe's spread is unknown (not a random battle): the range
+   * runs from the bulkiest plausible spread (252 HP and 252 in the defence
+   * the move hits, with a nature raising it) to the frailest (no EVs, a
+   * neutral nature), and this says so.
+   */
+  spreadNote?: string;
+}
+
 /**
  * One move's damage from `attacker` to `defender` on the battle's field:
- * the calculator's range, percentages, KO chance and description.
+ * the calculator's range, percentages, KO chance and description. A foe's
+ * exact spread is only known in random battles; elsewhere the range covers
+ * every plausible spread, from no investment to maximum bulk.
  */
 export function moveDamage(
   calc: { gen: Generation; lib: CalcModule },
@@ -188,8 +200,24 @@ export function moveDamage(
   defender: FieldMon,
   state: FieldState,
   randomBattle: boolean
-): CalcLine | null {
+): MoveDamage | null {
   const a = { ...fieldSide(calc.gen, attacker, randomBattle), moves: [move], flags: sideFlags(state.attacker) };
   const d = { ...fieldSide(calc.gen, defender, randomBattle), flags: sideFlags(state.defender), spikes: state.defender.find((c) => c.id === "spikes")?.level ?? 0 };
-  return calcMoves(calc, a, d, fieldOf(state))[0] ?? null;
+  const field = fieldOf(state);
+  const frail = calcMoves(calc, a, d, field)[0] ?? null;
+  if (!frail || randomBattle || defender.stats || frail.damage[1] === 0) return frail;
+  // Psyshock and friends are special moves that hit Defense.
+  const special = frail.category === "Special" && !["Psyshock", "Psystrike", "Secret Sword"].includes(frail.move);
+  const def: Exclude<StatId, "hp"> = special ? "spd" : "def";
+  const bulky = calcMoves(calc, a, { ...d, nature: special ? "Calm" : "Bold", evs: { ...d.evs, hp: 252, [def]: 252 } }, field)[0];
+  if (!bulky) return frail;
+  return {
+    ...frail,
+    damage: [bulky.damage[0], frail.damage[1]],
+    percent: [bulky.percent[0], frail.percent[1]],
+    ko: bulky.ko === frail.ko ? frail.ko : [bulky.ko || "no KO", frail.ko].join(" to "),
+    desc: `${bulky.desc} · ${frail.desc}`,
+    rolls: [],
+    spreadNote: `Spread unknown: max ${special ? "Sp. Def" : "Def"} (252 HP / 252+ ${special ? "SpD" : "Def"}) to no investment`,
+  };
 }

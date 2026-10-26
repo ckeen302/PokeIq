@@ -78,6 +78,12 @@ export interface CalcSide {
   moves: string[];
   flags: Partial<Record<SideFlag, boolean>>;
   spikes: number;
+  /** Gen 7: its moves become Z-Moves (needs the matching Z-Crystal). */
+  zMove?: boolean;
+  /** Gen 8: Dynamaxed (its moves become Max Moves, HP doubles). */
+  dynamaxed?: boolean;
+  /** Multi-hit moves: how many times they hit (0 or unset: the calc's default). */
+  hits?: number;
 }
 
 export interface CalcField {
@@ -161,6 +167,7 @@ export function makePokemon({ gen, lib }: Calc, side: CalcSide): CalcLib.Pokemon
     status: side.status,
     teraType: side.terastallized && side.teraType ? side.teraType : undefined,
     moves: side.moves.filter(Boolean),
+    isDynamaxed: (gen.num === 8 && side.dynamaxed) || undefined,
   } as ConstructorParameters<CalcModule["Pokemon"]>[2]);
   const max = pokemon.maxHP();
   pokemon.originalCurHP = Math.max(1, Math.min(max, Math.round((max * side.hpPercent) / 100)));
@@ -192,7 +199,7 @@ export function calcMoves(calc: Calc, attacker: CalcSide, defender: CalcSide, fi
     if (!data || !gen.types.get(data.type)) continue;
     const base: CalcLine = { move: data.name, type: data.type, category: data.category, damage: [0, 0], percent: [0, 0], ko: "", desc: "", rolls: [] };
     try {
-      const move = new lib.Move(asCalcGen(gen), name, { isCrit: field.crit });
+      const move = new lib.Move(asCalcGen(gen), name, { isCrit: field.crit, useZ: (gen.num === 7 && attacker.zMove) || undefined, useMax: (gen.num === 8 && attacker.dynamaxed) || undefined, hits: attacker.hits || undefined });
       const result = lib.calculate(asCalcGen(gen), atk.clone(), def.clone(), move, fieldState.clone());
       const [min, max] = result.range();
       const hp = result.defender.maxHP();
@@ -200,6 +207,9 @@ export function calcMoves(calc: Calc, attacker: CalcSide, defender: CalcSide, fi
       const hits = max > 0 || move.category === "Status";
       lines.push({
         ...base,
+        // A Z-Move or Max Move goes by its own name and type.
+        move: move.name,
+        type: move.type,
         damage: [min, max],
         // Showdown's calculator floors to a tenth of a percent (20.93% is 20.9%).
         percent: [Math.floor((min * 1000) / hp) / 10, Math.floor((max * 1000) / hp) / 10],

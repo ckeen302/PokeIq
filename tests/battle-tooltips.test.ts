@@ -26,7 +26,7 @@ describe("tooltip damage ranges", () => {
     for (const move of ["Earthquake", "Dragon Claw", "Stone Edge"]) {
       const ours = moveDamage(calc(), move, me, foe, noField, false)!;
       const theirs = lib.calculate(g(), chomp, tran, new lib.Move(g(), move));
-      expect(ours.damage).toEqual(theirs.range());
+      expect(ours.damage[1]).toEqual(theirs.range()[1]);
     }
   });
 
@@ -40,7 +40,7 @@ describe("tooltip damage ranges", () => {
     for (const move of ["Thunderbolt", "Hydro Pump", "Draco Meteor"]) {
       const ours = moveDamage(calc(), move, me, foe, state, false)!;
       const theirs = lib.calculate(g(), pult, target, new lib.Move(g(), move), field);
-      expect(ours.damage, move).toEqual(theirs.range());
+      expect(ours.damage[1], move).toEqual(theirs.range()[1]);
     }
   });
 
@@ -59,7 +59,24 @@ describe("tooltip damage ranges", () => {
     const d = new lib.Pokemon(g(4), "Skarmory", { level: 100, nature: "Hardy", evs: {} });
     const me: FieldMon = { species: "Garchomp", level: 100, hpPercent: 100, boosts: {}, status: "", terastallized: false, stats: statsOf(a) };
     const foe: FieldMon = { species: "Skarmory", level: 100, hpPercent: 100, boosts: {}, status: "", terastallized: false };
-    expect(moveDamage(calc(4), "Fire Fang", me, foe, noField, false)!.damage).toEqual(lib.calculate(g(4), a, d, new lib.Move(g(4), "Fire Fang")).range());
+    expect(moveDamage(calc(4), "Fire Fang", me, foe, noField, false)!.damage[1]).toEqual(lib.calculate(g(4), a, d, new lib.Move(g(4), "Fire Fang")).range()[1]);
+  });
+
+  it("cover every plausible foe spread outside random battles, labelled", () => {
+    const a = new lib.Pokemon(g(), "Garchomp", { level: 100, nature: "Jolly", evs: { atk: 252, spe: 252 } });
+    const me: FieldMon = { species: "Garchomp", level: 100, hpPercent: 100, boosts: {}, status: "", terastallized: false, stats: statsOf(a) };
+    const foe: FieldMon = { species: "Heatran", level: 100, hpPercent: 100, boosts: {}, status: "", terastallized: false };
+    const frail = new lib.Pokemon(g(), "Heatran", { nature: "Hardy", evs: {} });
+    const bulky = new lib.Pokemon(g(), "Heatran", { nature: "Bold", evs: { hp: 252, def: 252 } });
+    const ours = moveDamage(calc(), "Earthquake", me, foe, noField, false)!;
+    expect(ours.damage).toEqual([lib.calculate(g(), a, bulky, new lib.Move(g(), "Earthquake")).range()[0], lib.calculate(g(), a, frail, new lib.Move(g(), "Earthquake")).range()[1]]);
+    expect(ours.spreadNote).toMatch(/Spread unknown/);
+    // Special moves are measured against Sp. Def bulk.
+    const special = moveDamage(calc(), "Draco Meteor", me, foe, noField, false)!;
+    const calm = new lib.Pokemon(g(), "Heatran", { nature: "Calm", evs: { hp: 252, spd: 252 } });
+    expect(special.damage[0]).toBe(lib.calculate(g(), a, calm, new lib.Move(g(), "Draco Meteor")).range()[0]);
+    // Random battles know the spread: a single exact range, no note.
+    expect(moveDamage(calc(), "Earthquake", me, foe, noField, true)!.spreadNote).toBeUndefined();
   });
 });
 
