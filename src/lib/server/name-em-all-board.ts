@@ -163,7 +163,7 @@ const MISSING = new Set(["42P01", "PGRST205"]);
 let missingUntil = 0;
 function missing(error: { code?: string; message?: string }) {
   if (!MISSING.has(error.code ?? "")) return false;
-  if (Date.now() >= missingUntil) console.warn("[name-em-all] the leaderboards are off until migration 0038_name_em_all.sql is applied:", error.message);
+  if (Date.now() >= missingUntil) console.warn("[name-em-all] the leaderboards are off until migration 0039_name_em_all.sql is applied:", error.message);
   missingUntil = Date.now() + 60_000;
   return true;
 }

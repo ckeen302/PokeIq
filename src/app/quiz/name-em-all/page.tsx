@@ -64,6 +64,7 @@ export default function NameEmAllHub() {
       </div>
 
       <GameInfo
+        hidden
         path={NEA_PATH}
         name={NEA_TITLE}
         description="A free Pokémon recall quiz: name every Pokémon in a category against the clock."
