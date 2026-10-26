@@ -3,7 +3,7 @@ import detailsData from "@/data/pokedex-details.json";
 import movesData from "@/data/moves.json";
 import ouData from "@/data/smogon/gen9ou.json";
 import { GENERATION_REGIONS } from "@/lib/pokemon/constants";
-import { PARADOX_IDS, STARTER_IDS, ULTRA_BEAST_IDS } from "./curated";
+import { HISUI_SPECIES_IDS, MEGA_ZA_IDS, PARADOX_IDS, STARTER_IDS, ULTRA_BEAST_IDS } from "./curated";
 import type { PdkFamily } from "./types";
 
 /**
@@ -51,10 +51,25 @@ export interface Facts extends Raw {
   hasGmax: boolean;
   /** Debut regions of its regional forms (Alola, Galar, Hisui, Paldea). */
   formRegions: string[];
-  /** How the Pokémon's next stage(s) evolve from it: lower-cased methods. */
+  /**
+   * Every evolution step the Pokémon takes part in, lower-cased: how it evolved
+   * (from its pre-evolution) and how it evolves (into each next stage). A
+   * "Stone evolution" counts Pikachu (evolves with a Thunder Stone) and Raichu
+   * (evolved with one) alike, so neither reading of the category is marked wrong.
+   */
   evolvesBy: string[];
   hasEvolution: boolean;
   chainSize: number;
+  /**
+   * The stages it counts as. A line that starts with a baby gives two answers:
+   * counted with the baby (Pichu 1, Pikachu 2, Raichu 3) and without it, as the
+   * TCG does (Pikachu Basic, Raichu a second stage). Either is accepted.
+   */
+  stages: number[];
+  /** The deepest stage in its family (3 for a three-stage line). */
+  lineDepth: number;
+  /** Some member of its family evolves into two or more species (Eevee, Oddish's line, Wurmple's...). */
+  branching: boolean;
   moves: Set<string>;
   ou: boolean;
 }
@@ -102,17 +117,63 @@ export function formRegion(slug: string): string | null {
 const dex = dexData as unknown as Raw[];
 const details = detailsData as unknown as Record<string, Details>;
 const moveNames = movesData as unknown as Record<string, { name: string }>;
-const ouNames = new Set((ouData as { pokemon: { species: string }[] }).pokemon.map((p) => p.species.split("-")[0].toLowerCase()));
+/**
+ * The Gen 9 OU usage list, by species: "Landorus-Therian" and "Ogerpon-Wellspring"
+ * count for their species, "Ting-Lu" is a species name with a hyphen, and a
+ * regional suffix ("Slowking-Galar") names only that regional form, not the species.
+ */
+const dexNames = new Set(dex.map((p) => p.name.toLowerCase()));
+const ouSpecies = new Set<string>();
+const ouRegional = new Set<string>();
+for (const { species } of (ouData as { pokemon: { species: string }[] }).pokemon) {
+  const full = species.toLowerCase();
+  if (dexNames.has(full)) {
+    ouSpecies.add(full);
+    continue;
+  }
+  const [base, ...rest] = full.split("-");
+  const region = rest.find((x) => FORM_REGION[x]);
+  if (region) ouRegional.add(`${base}|${region}`);
+  else ouSpecies.add(base);
+}
+
+/**
+ * Evolution methods the data lacks or files under "Other" (Scarlet & Violet's
+ * newer evolutions), worded from the games (Bulbapedia: "Methods of evolution").
+ */
+const EVOLUTION_FIXES: Record<number, string[]> = {
+  809: ["Pokémon GO: 400 Meltan Candy"], // Melmetal
+  923: ["Level up after walking 1,000 steps in Let's Go mode"], // Pawmot
+  925: ["Level 25"], // Maushold
+  947: ["Level up after walking 1,000 steps in Let's Go mode"], // Brambleghast
+  954: ["Level up after walking 1,000 steps in Let's Go mode"], // Rabsca
+  964: ["Level 38 in a Union Circle"], // Palafin
+  979: ["Level up after using Rage Fist 20 times"], // Annihilape
+  983: ["Level up after defeating three Bisharp that hold a Leader's Crest"], // Kingambit
+  1000: ["Level up with 999 Gimmighoul Coins"], // Gholdengo
+  1011: ["Use Syrupy Apple"], // Dipplin
+  1013: ["Use Unremarkable Teacup", "Use Masterpiece Teacup"], // Sinistcha
+  1018: ["Use Metal Alloy"], // Archaludon
+  1019: ["Level up knowing Dragon Cheer"], // Hydrapple
+};
+/** How a species evolved from its pre-evolution, lower-cased. */
+const evolvedBy = (id: number): string[] => (EVOLUTION_FIXES[id] ?? (details[id]?.evolution ?? []).filter((m) => m !== "Other")).map((m) => m.toLowerCase());
 
 let table: Facts[] | null = null;
 export function allFacts(): Facts[] {
   if (table) return table;
   const children = new Map<number, number[]>();
   const sizes = new Map<number, number>();
+  const depth = new Map<number, number>();
+  const byId = new Map(dex.map((p) => [p.id, p]));
   for (const p of dex) {
     sizes.set(p.chain, (sizes.get(p.chain) ?? 0) + 1);
+    depth.set(p.chain, Math.max(depth.get(p.chain) ?? 0, p.stage));
     if (p.evolvesFrom) children.set(p.evolvesFrom, [...(children.get(p.evolvesFrom) ?? []), p.id]);
   }
+  const branchingChains = new Set(dex.filter((p) => (children.get(p.id)?.length ?? 0) > 1).map((p) => p.chain));
+  const rootOf = (p: Raw): Raw => (p.evolvesFrom && byId.has(p.evolvesFrom) ? rootOf(byId.get(p.evolvesFrom)!) : p);
+  const stagesOf = (p: Raw): number[] => (p.stage > 1 && details[rootOf(p).id]?.isBaby ? [p.stage, p.stage - 1] : [p.stage]);
   const species: Facts[] = dex.map((p) => {
     const d = details[p.id];
     const kids = children.get(p.id) ?? [];
@@ -125,11 +186,14 @@ export function allFacts(): Facts[] {
       hasMega: !!d?.forms.some((f) => f.slug.split("-").includes("mega")),
       hasGmax: !!d?.forms.some((f) => f.slug.split("-").includes("gmax")),
       formRegions: [...new Set((d?.forms ?? []).map((f) => formRegion(f.slug)).filter((r): r is string => !!r))],
-      evolvesBy: kids.flatMap((k) => (details[k]?.evolution ?? []).map((m) => m.toLowerCase())),
+      evolvesBy: [...evolvedBy(p.id), ...kids.flatMap(evolvedBy)],
       hasEvolution: kids.length > 0,
       chainSize: sizes.get(p.chain) ?? 1,
+      stages: stagesOf(p),
+      lineDepth: depth.get(p.chain) ?? p.stage,
+      branching: branchingChains.has(p.chain),
       moves: new Set((d?.learnset?.moves ?? []).map((m) => moveNames[m[0]]?.name).filter((n): n is string => !!n)),
-      ou: ouNames.has(p.name.toLowerCase()),
+      ou: ouSpecies.has(p.name.toLowerCase()),
     };
   });
   // Forms: their own types, stats and abilities; the debut region of a regional form, the species' region for the rest;
@@ -151,7 +215,8 @@ export function allFacts(): Facts[] {
         stats: f.stats,
         bst: Object.values(f.stats).reduce((a, b) => a + b, 0),
         abilities: f.abilities.map((a) => ({ name: a.name, hidden: a.hidden })),
-        ...(key && { gen: FORM_GEN[key], region: FORM_REGION[key] }),
+        // A regional form is OU only when the usage data names that form ("Slowking-Galar").
+        ...(key && { gen: FORM_GEN[key], region: FORM_REGION[key], ou: ouRegional.has(`${sp.name.toLowerCase()}|${key}`) }),
       });
     }
   }
@@ -167,7 +232,12 @@ export function baseOf(id: number): number {
 
 const TYPE_LIST = ["normal", "fire", "water", "electric", "grass", "ice", "fighting", "poison", "ground", "flying", "psychic", "bug", "rock", "ghost", "dragon", "dark", "steel", "fairy"];
 const STAT_NAMES = { hp: "HP", atk: "Attack", def: "Defense", spa: "Sp. Atk", spd: "Sp. Def", spe: "Speed" } as const;
-const itemEvo = (m: string) => /^use |holding/.test(m) && !/trade/.test(m);
+/** An item is used or held: stones, apples, Galarica, held trade items. "Use Psyshield Bash 20 times" is a move, not an item. */
+const itemEvo = (m: string) => (/^use /.test(m) && !/\d+ times/.test(m)) || /holding/.test(m);
+/** The ten evolution stones (an Oval Stone is held, not used, so it doesn't count). */
+const stoneEvo = (m: string) => /^use \w+ stone\b/.test(m);
+const MEGA_ZA = new Set(MEGA_ZA_IDS);
+const HISUI_SPECIES = new Set(HISUI_SPECIES_IDS);
 
 const PARADOX = new Set(PARADOX_IDS);
 const ULTRA_BEAST = new Set(ULTRA_BEAST_IDS);
@@ -186,27 +256,27 @@ function build(): PdkCategory[] {
   add("types:dual", "types", "Dual-type", 1, (f) => f.types.length === 2, "typecount");
   add("types:single", "types", "Monotype", 1, (f) => f.types.length === 1, "typecount");
   for (const [gen, region] of Object.entries(GENERATION_REGIONS)) add(`region:${gen}`, "regions", region, 1, (f) => f.gen === Number(gen));
-  add("region:hisui", "regions", "Hisui", 3, (f) => f.region === "Hisui");
+  add("region:hisui", "regions", "Hisui", 3, (f) => f.region === "Hisui" || (!f.form && HISUI_SPECIES.has(f.id)));
   for (const [key, region] of Object.entries(FORM_REGION)) add(`form:${key}`, "regions", `${region} form`, 2, (f) => f.formRegions.includes(region));
-  add("evo:basic", "evolution", "Basic", 1, (f) => f.stage === 1, "stage");
-  add("evo:stage2", "evolution", "Second stage", 1, (f) => f.stage === 2, "stage");
-  add("evo:stage3", "evolution", "Third stage", 2, (f) => f.stage === 3, "stage");
+  add("evo:basic", "evolution", "Basic", 1, (f) => f.stages.includes(1), "stage");
+  add("evo:stage2", "evolution", "Second stage", 1, (f) => f.stages.includes(2), "stage");
+  add("evo:stage3", "evolution", "Third stage", 2, (f) => f.stages.includes(3), "stage");
   add("evo:notfull", "evolution", "Not fully evolved", 1, (f) => !f.fullyEvolved, "evolves");
   add("evo:full", "evolution", "Fully evolved", 1, (f) => f.fullyEvolved, "evolves");
   add("evo:none", "evolution", "No evolution line", 2, (f) => f.chainSize === 1, "evolves");
-  add("evo:item", "evolution", "Evolved by item", 2, (f) => f.evolvesBy.some(itemEvo));
-  add("evo:stone", "evolution", "Evolved by stone", 2, (f) => f.evolvesBy.some((m) => /stone/.test(m)));
-  add("evo:trade", "evolution", "Evolved by trade", 2, (f) => f.evolvesBy.some((m) => /trade/.test(m)));
-  add("evo:friend", "evolution", "Evolved by friendship", 2, (f) => f.evolvesBy.some((m) => /friendship/.test(m)));
-  add("evo:level", "evolution", "Evolved by level", 2, (f) => f.evolvesBy.some((m) => /^level \d/.test(m)));
-  add("evo:branch", "evolution", "Branching evolution", 3, (f) => f.evolvesBy.length > 1);
-  add("evo:three", "evolution", "Three-stage line", 2, (f) => f.chainSize >= 3);
+  add("evo:item", "evolution", "Item evolution", 2, (f) => f.evolvesBy.some(itemEvo));
+  add("evo:stone", "evolution", "Stone evolution", 2, (f) => f.evolvesBy.some(stoneEvo));
+  add("evo:trade", "evolution", "Trade evolution", 2, (f) => f.evolvesBy.some((m) => /trade/.test(m)));
+  add("evo:friend", "evolution", "Friendship evolution", 2, (f) => f.evolvesBy.some((m) => /friendship|affection/.test(m)));
+  add("evo:level", "evolution", "Level-up evolution", 2, (f) => f.evolvesBy.some((m) => /^level \d/.test(m)));
+  add("evo:branch", "evolution", "Branching evolution", 3, (f) => f.branching);
+  add("evo:three", "evolution", "Three-stage line", 2, (f) => f.lineDepth >= 3);
   add("other:legendary", "other", "Legendary", 1, (f) => f.legendary, "legend");
   add("other:mythical", "other", "Mythical", 2, (f) => f.mythical, "legend");
   add("other:lm", "other", "Legendary or Mythical", 2, (f) => f.legendary || f.mythical, "legend");
   add("other:fossil", "other", "Fossil", 2, (f) => f.fossil);
   add("other:baby", "other", "Baby", 2, (f) => f.isBaby);
-  add("other:mega", "other", "Mega", 2, (f) => f.hasMega);
+  add("other:mega", "other", "Mega", 2, (f) => f.hasMega || MEGA_ZA.has(f.baseId));
   add("other:gmax", "other", "GMax", 2, (f) => f.hasGmax);
   add("other:paradox", "other", "Paradox", 2, (f) => PARADOX.has(f.baseId));
   add("other:ultrabeast", "other", "Ultra-Beast", 2, (f) => ULTRA_BEAST.has(f.baseId));

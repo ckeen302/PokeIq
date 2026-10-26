@@ -111,13 +111,32 @@ export function clearMemoryPdk() {
   g.__pokeiqPdk = undefined;
 }
 
-function tally(rows: { cell: number; id: number }[]): PdkCounts {
+/** Per-cell counts from answer rows, each standing for `n` players (1 for a raw row). */
+export function tally(rows: { cell: number; id: number; n?: number }[]): PdkCounts {
   const out: PdkCounts = { totals: Array(PDK_CELLS).fill(0), picks: Array.from({ length: PDK_CELLS }, () => new Map()) };
-  for (const { cell, id } of rows) {
-    out.totals[cell]++;
-    out.picks[cell].set(id, (out.picks[cell].get(id) ?? 0) + 1);
+  for (const { cell, id, n = 1 } of rows) {
+    if (!(cell >= 0 && cell < PDK_CELLS) || !(n > 0)) continue;
+    out.totals[cell] += n;
+    out.picks[cell].set(id, (out.picks[cell].get(id) ?? 0) + n);
   }
   return out;
+}
+
+const COUNTS_TTL_MS = 15_000;
+const recent = new Map<string, { at: number; counts: Promise<PdkCounts | null> }>();
+/**
+ * The day's counts for the live rarity shown after each guess, shared for 15
+ * seconds per server instance so a busy day doesn't run one query per guess.
+ * The final score never uses this: it reads fresh counts.
+ */
+export function cachedCounts(store: PdkStore, date: string, difficulty: PdkSlot, now = Date.now()): Promise<PdkCounts | null> {
+  const key = `${date}|${difficulty}`;
+  const hit = recent.get(key);
+  if (hit && now - hit.at < COUNTS_TTL_MS) return hit.counts;
+  if (recent.size > 50) recent.clear();
+  const counts = store.counts(date, difficulty).catch(() => null);
+  recent.set(key, { at: now, counts });
+  return counts;
 }
 
 // ---------------------------------------------------------------------------
@@ -125,6 +144,9 @@ function tally(rows: { cell: number; id: number }[]): PdkCounts {
 // ---------------------------------------------------------------------------
 
 const MISSING = new Set(["42P01", "PGRST205"]);
+/** The counting function (migration 0038) isn't there yet: read the rows instead. */
+const NO_FUNCTION = new Set(["PGRST202", "42883"]);
+let rpcMissingUntil = 0;
 let missingUntil = 0;
 /** The weekly slot is refused by the difficulty check until migration 0033 widens it: the weekly rarity and board are simply off. */
 const weeklyUnsupported = (error: { code?: string }, slot: string) => slot === "weekly" && error.code === "23514";
@@ -149,6 +171,14 @@ export function supabasePdkStore(sb: NonNullable<ReturnType<typeof getServiceSup
     },
     async counts(date, difficulty) {
       if (Date.now() < missingUntil) return null;
+      if (Date.now() >= rpcMissingUntil) {
+        // One row per cell and Pokémon, added up in the database (migration 0038).
+        const agg = await sb.rpc("pikadoku_counts", { p_date: date, p_difficulty: difficulty });
+        if (!agg.error) return tally((agg.data as { cell: number; pokemon_id: number; n: number | string }[]).map((r) => ({ cell: r.cell, id: r.pokemon_id, n: Number(r.n) })));
+        if (missing(agg.error)) return null;
+        if (!NO_FUNCTION.has(agg.error.code ?? "")) throw new Error(agg.error.message);
+        rpcMissingUntil = Date.now() + 60_000;
+      }
       const { data, error } = await sb.from("pikadoku_answers").select("cell, pokemon_id").eq("puzzle_date", date).eq("difficulty", difficulty).limit(90_000);
       if (error) {
         if (missing(error)) return null;

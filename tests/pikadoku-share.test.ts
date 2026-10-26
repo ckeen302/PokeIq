@@ -41,7 +41,7 @@ describe("share payload and card", () => {
     expect(view.tiles[0]).toEqual(["pdk-purple", "pdk-blue", "pdk-green"]);
     expect(view.tiles[2][2]).toBe("pdk-empty");
     const text = pikadokuShareText(result, "https://example.test/s/x");
-    expect(text.split("\n")).toEqual(["PokéIQ Pikadoku #4 (Normal) 7/9 Score 183.4 🔥3", "🟪🟦🟩", "🟨⬛🟨", "🟪🟦⬛", "https://example.test/s/x"]);
+    expect(text.split("\n")).toEqual(["PokéIQ Pikadoku #4 7/9", "Rarity: 183.4 🔥3", "🟪🟦🟩", "🟨⬛🟨", "🟪🟦⬛", "https://example.test/s/x"]);
   });
   it("labels archive and unlimited games", () => {
     expect(pikadokuShareText({ ...result, archive: true, streak: undefined }).split("\n")[0]).toContain("#4 (archive)");

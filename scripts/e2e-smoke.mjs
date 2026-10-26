@@ -544,7 +544,8 @@ step("pikadoku: a full daily (9 PP, one wrong guess), the score and the answers 
     await page.getByTestId("pdk-search").fill(name);
     await page.getByTestId(`pdk-option-${id}`).click();
   };
-  await play(solved.wrong.cell, solved.wrong.name, solved.wrong.id);
+  // The search forgives case and punctuation: the wrong guess is typed loosely.
+  await play(solved.wrong.cell, solved.wrong.name.toLowerCase().replace(/[^a-z0-9]/g, ""), solved.wrong.id);
   await page.getByTestId("pdk-toast").filter({ hasText: "doesn't fit" }).waitFor();
   if (!/8/.test(await page.getByTestId("pdk-pp").innerText())) errors.push("a wrong Pikadoku guess didn't use a PP");
   // 9 PP and one is spent: eight right answers end the game at 8 of 9.
@@ -555,6 +556,14 @@ step("pikadoku: a full daily (9 PP, one wrong guess), the score and the answers 
   await page.getByTestId("pdk-reveal").waitFor();
   if ((await page.getByTestId("pdk-misses").count()) !== 1) errors.push("Pikadoku's reveal doesn't explain the miss");
   if (!(await page.getByTestId("pdk-reveal-0").innerText()).includes("valid")) errors.push("Pikadoku's reveal doesn't list the cell's answers");
+  if (!(await page.getByTestId("pdk-countdown").isVisible())) errors.push("Pikadoku's result has no next-puzzle countdown");
+  if ((await page.getByTestId("pdk-rarity-preview").count()) !== 1) errors.push("Pikadoku's result doesn't preview the share colours");
+  await page.context().grantPermissions(["clipboard-read", "clipboard-write"]);
+  await page.getByTestId("pdk-result").getByTestId("share-result").click();
+  await page.getByTestId("share-toast").waitFor();
+  const pdkShare = await page.evaluate(() => navigator.clipboard.readText()).catch(() => "");
+  if (!/^PokéIQ Pikadoku #\d+ 8\/9\n/.test(pdkShare) || !/\/s\/pdk\./.test(pdkShare)) errors.push(`Pikadoku's share text is off: ${JSON.stringify(pdkShare)}`);
+  await page.screenshot({ path: `${OUT}/pikadoku-result.png`, fullPage: true });
   // The server plays the guesses again: a forged, unfinished game gets no reveal.
   const early = await page.request.post(`${BASE}/api/pikadoku/result`, { data: { date: today, difficulty: "normal", player: "e2e-pdk-forged-player-1", guesses: [] } });
   if (early.status() !== 409) errors.push(`Pikadoku revealed answers for an unfinished game (${early.status()})`);
@@ -2530,6 +2539,23 @@ if (me.enabled) {
     }
   }
   for (const p of tp) await p.context().close();
+}
+
+step("mobile: Pikadoku's whole grid fits a 390px phone without sideways scrolling");
+{
+  const phone = await newPage({ width: 390, height: 844 });
+  await phone.goto(`${BASE}/pikadoku`, { waitUntil: "networkidle" });
+  await closeHowTo(phone);
+  await phone.getByTestId("pdk-row-0").filter({ hasNotText: "…" }).waitFor();
+  const fit = await phone.evaluate(() => {
+    const last = document.querySelector("[data-testid=pdk-cell-8]").getBoundingClientRect();
+    const nav = [...document.querySelectorAll("nav")].map((n) => n.getBoundingClientRect()).filter((r) => r.top > window.innerHeight / 2)[0];
+    return { bottom: last.bottom, limit: nav ? nav.top : window.innerHeight, wide: document.documentElement.scrollWidth - window.innerWidth };
+  });
+  if (fit.bottom > fit.limit) errors.push(`Pikadoku's grid runs under the fold on a phone (${Math.round(fit.bottom)} > ${Math.round(fit.limit)})`);
+  if (fit.wide > 0) errors.push(`Pikadoku scrolls sideways on a phone by ${fit.wide}px`);
+  await phone.screenshot({ path: `${OUT}/pikadoku-mobile.png` });
+  await phone.context().close();
 }
 
 step("name 'em all: hub, a Gen 1 run (aliases, wrong category, pause, give up), share, a ranked clear, the daily, a race");

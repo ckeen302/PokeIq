@@ -3,7 +3,7 @@ import { z } from "zod";
 import { clientIp, rateLimit, tooManyRequests } from "@/lib/server/rate-limit";
 import { checkGuess, gridView, ppFor, replayGuesses } from "@/lib/server/pikadoku";
 import { gridFields, guessSchema, historySchema, resolveGrid } from "@/lib/server/pikadoku-http";
-import { pdkStartToken, pdkStore, pickPct } from "@/lib/server/pikadoku-board";
+import { cachedCounts, pdkStartToken, pdkStore, pickPct } from "@/lib/server/pikadoku-board";
 import { ensureMaster } from "@/lib/server/pikadoku-master";
 import { PDK_PP } from "@/lib/pikadoku/types";
 
@@ -69,9 +69,8 @@ export async function POST(request: NextRequest) {
   let pct: number | null = null;
   if (out.valid && !out.softlock && found.daily && found.slot) {
     // The rarity so far, counting this pick in (the final score is recomputed from recorded answers).
-    const counts = await pdkStore()
-      ?.counts(found.slot.date, found.slot.difficulty)
-      .catch(() => null);
+    const store = pdkStore();
+    const counts = store ? await cachedCounts(store, found.slot.date, found.slot.difficulty) : null;
     if (counts) {
       const { cell, id } = parsed.data.next;
       pct = pickPct({ totals: counts.totals.map((t, i) => t + (i === cell ? 1 : 0)), picks: counts.picks.map((m, i) => (i === cell ? new Map(m).set(id, (m.get(id) ?? 0) + 1) : m)) }, cell, id);
