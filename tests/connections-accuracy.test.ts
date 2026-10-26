@@ -54,6 +54,7 @@ const dex = (f: Facts): Species => {
  * - Sylveon: Showdown files the Fairy-move evolution as "levelExtra"; since Gen 8 it is high friendship.
  * - Melmetal: evolves from Meltan only in Pokémon GO, which Showdown leaves out.
  * - Floette: only AZ's Eternal Floette Mega Evolves (facts.ts keeps Floette out of and away from Mega groups).
+ * - Maushold: Showdown's base forme is the Family of Three (2.3 kg); tiles are PokéAPI's default Family of Four (2.8 kg).
  * - Toedscool, Toedscruel: Egg Group Grass in PokéAPI, Field in Showdown (kept out of and away from Egg Group groups).
  */
 const KNOWN = new Set([
@@ -62,6 +63,7 @@ const KNOWN = new Set([
   "Basculegion gender",
   "Minior stats",
   "Minior weight",
+  "Maushold weight",
   "Pikachu alola",
   "Sylveon friendship",
   "Melmetal prevo",
@@ -178,6 +180,7 @@ const KNOWN_ORACLE_SKIP = new Set([
   "Minior top",
   "Minior bst",
   "Minior body",
+  "Maushold body",
   "Sylveon friendship",
   "Melmetal no-evo",
   "Floette form",
