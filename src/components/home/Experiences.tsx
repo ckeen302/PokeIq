@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, Brain, CalendarDays, Compass, FlaskConical, Search, Swords, type LucideIcon } from "lucide-react";
+import { ArrowRight, Brain, CalendarDays, Compass, FlaskConical, ListChecks, Search, Swords, type LucideIcon } from "lucide-react";
 import { HpBar } from "@/components/game/HpBar";
 import { ModeIcon } from "@/components/game/ModeIcon";
 import { MODULE_INFO, PLAY_MODULES, moduleHref } from "@/lib/modes";
@@ -87,6 +87,7 @@ const EXPERIENCES: Experience[] = [
 /** Short quiz names for the chips (the full titles are on the quiz pages). */
 const QUIZZES: { href: string; label: string; icon: React.ReactNode }[] = [
   ...PLAY_MODULES.map((m) => ({ href: moduleHref(m), label: MODULE_INFO[m].title, icon: <ModeIcon module={m} className="h-3.5 w-3.5" /> })),
+  { href: "/quiz/name-em-all", label: "Name 'em All", icon: <ListChecks className="h-3.5 w-3.5" aria-hidden /> },
   { href: "/iq-test", label: "PokéIQ Test", icon: <Brain className="h-3.5 w-3.5" aria-hidden /> },
   { href: "/daily", label: "Daily Challenge", icon: <CalendarDays className="h-3.5 w-3.5" aria-hidden /> },
 ];

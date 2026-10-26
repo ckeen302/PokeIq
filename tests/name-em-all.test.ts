@@ -6,6 +6,9 @@ import { NEA_CATEGORIES, NEA_DAILY_POOL, NEA_DEXES, NEA_TYPES, neaCategory, neaD
 import { PARADOX_IDS, RESTRICTED_LEGENDARY_IDS, ULTRA_BEAST_IDS, neaCounts, neaOutsiders, neaTargets } from "@/lib/name-em-all/targets";
 import { buildMatcher, closestName, couldGrow, editDistance, matchName, normalizeName } from "@/lib/name-em-all/match";
 import { neaClock, neaShareText } from "@/lib/name-em-all/share";
+import { checkRun, clearMemoryNea, memoryNeaStore, neaElapsed, neaStartToken, readClaim, signClaim } from "@/lib/server/name-em-all-board";
+import { advanceRace, createRace, joinRace, nameInRace, raceView, readyRace, startRace } from "@/lib/server/name-em-all-race";
+import { parseScope } from "@/lib/server/name-em-all";
 
 const DEX = pokedex as { id: number; name: string; gen: number; types: string[]; legendary: boolean; mythical: boolean }[];
 const FORMS = forms as [number, number, string, string, string][];
@@ -268,5 +271,86 @@ describe("Name 'em All: the daily, timers and sharing", () => {
     expect(neaClock(3_723_000)).toBe("1:02:03");
     expect(neaShareText({ label: "Gen 1", named: 151, total: 151, ms: 372_000, mode: "regular" })).toBe("Name 'em All · Gen 1 · 151/151 in 6:12 🏆");
     expect(neaShareText({ label: "Fire", named: 40, total: 85, ms: 60_000, mode: "chaos", url: "https://x.test/q" })).toBe("Name 'em All · Fire · Chaos · 40/85 in 1:00\nhttps://x.test/q");
+  });
+});
+
+describe("Name 'em All: server checks", () => {
+  it("ranks a fair run and refuses paused, edited or superhuman ones", () => {
+    const named = [0, 1, 2];
+    const ok = checkRun({ total: 3, limitMs: 120_000, named, times: [2000, 4000, 130_000], ms: 130_000, wallMs: 131_000 });
+    expect(ok).toEqual({ ok: true, clear: 130_000, count: { named: 2, ms: 4000 } });
+    expect(checkRun({ total: 3, limitMs: 120_000, named, times: [2000, 4000, 6000], ms: 6000, wallMs: 200_000 })).toMatchObject({ ok: false, reason: expect.stringMatching(/Paused/) });
+    expect(checkRun({ total: 3, limitMs: 120_000, named, times: [10, 20, 30], ms: 30, wallMs: 40 })).toMatchObject({ ok: false, reason: expect.stringMatching(/faster/) });
+    expect(checkRun({ total: 3, limitMs: 120_000, named: [0, 0, 1], times: [2000, 4000, 6000], ms: 6000, wallMs: 6000 })).toMatchObject({ ok: false });
+    expect(checkRun({ total: 3, limitMs: 120_000, named: [0, 5], times: [2000, 4000], ms: 6000, wallMs: 6000 })).toMatchObject({ ok: false });
+    expect(checkRun({ total: 3, limitMs: 120_000, named: [0, 1], times: [4000, 2000], ms: 6000, wallMs: 6000 })).toMatchObject({ ok: false });
+    expect(checkRun({ total: 3, limitMs: 120_000, named: [0, 1], times: [2000, 4000], ms: 60_000, wallMs: 30_000 })).toMatchObject({ ok: false });
+    expect(checkRun({ total: 3, limitMs: 120_000, named: [], times: [], ms: 5000, wallMs: 5000 })).toEqual({ ok: true, clear: null, count: null });
+  });
+
+  it("signs start times and claims for one scope and player", () => {
+    const k = "k".repeat(20);
+    const t = neaStartToken("gen-1", k, 1_000);
+    expect(neaElapsed(t, "gen-1", k, 61_000)).toBe(60_000);
+    expect(neaElapsed(t, "gen-2", k, 61_000)).toBeNull();
+    expect(neaElapsed(t, "gen-1", "j".repeat(20), 61_000)).toBeNull();
+    expect(neaElapsed(`${t}x`, "gen-1", k, 61_000)).toBeNull();
+    const c = signClaim({ s: "gen-1", k, daily: false, total: 151, clear: null, count: { named: 3, ms: 1 }, t: 1_000 });
+    expect(readClaim(c, 2_000)?.count?.named).toBe(3);
+    expect(readClaim(c, 1_000 + 61 * 60_000)).toBeNull();
+  });
+
+  it("keeps each trainer's best (the first for the daily) and sorts the board", async () => {
+    clearMemoryNea();
+    const s = memoryNeaStore();
+    expect(await s.submit("gen-1", "count", { player: "a", name: "Ash", named: 50, total: 151, ms: 9000 }, false)).toBe(true);
+    expect(await s.submit("gen-1", "count", { player: "a", name: "Ash", named: 40, total: 151, ms: 1000 }, false)).toBe(false);
+    expect(await s.submit("gen-1", "count", { player: "a", name: "Ash", named: 60, total: 151, ms: 9000 }, false)).toBe(true);
+    await s.submit("gen-1", "count", { player: "b", name: "Misty", named: 60, total: 151, ms: 8000 }, false);
+    expect((await s.board("gen-1", "count"))!.map((r) => r.name)).toEqual(["Misty", "Ash"]);
+    expect(await s.submit("daily:2026-10-26", "count", { player: "a", name: "Ash", named: 1, total: 9, ms: 1 }, true)).toBe(true);
+    expect(await s.submit("daily:2026-10-26", "count", { player: "a", name: "Ash", named: 9, total: 9, ms: 1 }, true)).toBe(false);
+  });
+
+  it("reads scopes: categories and the day's daily", () => {
+    const now = Date.parse("2026-10-26T12:00:00Z");
+    expect(parseScope("gen-1", now)).toMatchObject({ category: "gen-1", total: 151, limitMs: 13 * 60_000, daily: null });
+    expect(parseScope("daily:2026-10-26", now)).toMatchObject({ category: neaDailyCategory("2026-10-26"), daily: "2026-10-26" });
+    expect(parseScope("daily:2026-09-01", now)).toBeNull();
+    expect(parseScope("nope", now)).toBeNull();
+  });
+
+  it("runs a race: lobby, start, names, a winner, and the clock", () => {
+    let now = 1_000_000;
+    const { race, playerId: host } = createRace("Red", "abcdefgh", "ultra-beasts", 11, 5, now);
+    const joined = joinRace(race, "Blue", now);
+    if (!joined.ok) throw new Error(joined.error);
+    expect(joinRace(joined.race, "blue", now)).toMatchObject({ ok: false });
+    expect(startRace(joined.race, host, now)).toMatchObject({ ok: false, status: 409 });
+    const ready = readyRace(joined.race, joined.playerId, true, now);
+    if (!ready.ok) throw new Error(ready.error);
+    expect(startRace(ready.race, joined.playerId, now)).toMatchObject({ ok: false, status: 403 });
+    const started = startRace(ready.race, host, now);
+    if (!started.ok) throw new Error(started.error);
+    const t0 = started.race.startsAt!;
+    expect(nameInRace(started.race, host, [0], now)).toMatchObject({ ok: false });
+    expect(nameInRace(started.race, host, Array.from({ length: 11 }, (_, i) => i), t0 + 500)).toMatchObject({ ok: false, status: 429 });
+    now = t0 + 10_000;
+    let r = nameInRace(started.race, joined.playerId, [0, 1, 2, 2, 99], now);
+    if (!r.ok) throw new Error(r.error);
+    expect(raceView(r.race, joined.playerId, now, 1).mine).toEqual([0, 1, 2]);
+    expect(raceView(r.race, host, now, 1).standings[0]).toMatchObject({ name: "Blue", named: 3, place: 1 });
+    expect(raceView(r.race, host, now, 1).mine).toEqual([]);
+    const afterBlue = r.race;
+    now += 10_000;
+    r = nameInRace(afterBlue, host, Array.from({ length: 11 }, (_, i) => i), now);
+    if (!r.ok) throw new Error(r.error);
+    expect(r.race.status).toBe("finished");
+    expect(r.race.end?.winner).toBe(0);
+    // Without a clear, the clock ends it and the most named wins (both kept polling).
+    const live = { ...afterBlue, players: afterBlue.players.map((p) => ({ ...p, seenAt: t0 + 5 * 60_000 })) };
+    const timed = advanceRace(live, t0 + 5 * 60_000 + 1);
+    expect(timed.status).toBe("finished");
+    expect(timed.end?.winner).toBe(1);
   });
 });
