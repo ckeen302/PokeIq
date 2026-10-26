@@ -1715,7 +1715,12 @@ await page.getByTestId("hotkeys-help").waitFor({ state: "detached", timeout: 5_0
   const firstMove = page.locator("[data-testid=move-button]").first();
   if (await firstMove.isEnabled()) {
     await page.keyboard.press("Digit1");
-    await page.getByTestId("battle-log").getByText(/^Turn 2$/).first().waitFor({ timeout: 30_000 });
+    // Turn 1 is played once turn 2 starts, or a KO asks for a switch first, or the battle ends.
+    await Promise.any([
+      page.getByTestId("battle-log").getByText(/^Turn 2$/).first().waitFor({ timeout: 30_000 }),
+      page.locator("[data-testid=switch-button]:not([disabled])").first().waitFor({ timeout: 30_000 }),
+      page.getByTestId("battle-result").waitFor({ timeout: 30_000 }),
+    ]);
     console.log("  hotkey 1 played turn 1");
   }
 }

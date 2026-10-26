@@ -98,6 +98,8 @@ interface Entry {
 }
 
 const LOG_OPTS_KEY = "pokeiq:battle:log-options";
+/** The longest one step of the battle may animate before it's cut short. */
+const STEP_WATCHDOG_MS = 8_000;
 /** "(The opposing Pikachu lost 45% of its health!)": the lines "Hide HP %" leaves out. */
 const PERCENT_LINE = /^\(.*\d+(?:\.\d+)?% of (?:its|their) health!?\)$/;
 
@@ -281,11 +283,16 @@ export default function BattleScreen({ view, log, offset, busy, error, onChoose,
       }
       const controller = new AbortController();
       abort.current = controller;
+      // A watchdog: no step may hold the battle up (an animation frame that never comes in a background tab, a broken animation).
+      const watchdog = window.setTimeout(() => controller.abort(), STEP_WATCHDOG_MS);
       try {
         await playStep(step, { stage: stage.current, commit, popup, speed: speedRef.current, signal: controller.signal, reducedMotion: !!reducedMotion });
+        if (controller.signal.aborted && step.snap && !skipping.current) commit(step.snap);
       } catch (err) {
         console.error("[battle] step failed:", err);
         if (step.snap) commit(step.snap);
+      } finally {
+        window.clearTimeout(watchdog);
       }
     }
     skipping.current = false;
