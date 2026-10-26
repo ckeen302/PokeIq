@@ -7867,6 +7867,30 @@
    "name": "Route 23",
    "game": "Let's Go, Pikachu! / Eevee!",
    "source": "https://www.pokepedia.fr/Fichier:Route_23_Baie_Nanana_dorée_LGPE.png"
+  },
+  {
+   "id": "uvzc6eXzh1RD",
+   "region": "Sinnoh",
+   "name": "Great Marsh",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Grand_Marais_DEPS.png",
+   "checked": "Poképédia's file for Grand Marais (the Great Marsh); the Great Marsh entrance building; uploaded whole (1280x720), not trimmed"
+  },
+  {
+   "id": "PQaT-synlfvn",
+   "region": "Sinnoh",
+   "name": "Lake Acuity",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Lac_Savoir_DEPS.png",
+   "checked": "Poképédia's file for Lac Savoir (Lake Acuity); the cavern islet in the lake; uploaded whole (1280x720), not trimmed"
+  },
+  {
+   "id": "f3pk4qpYPcgW",
+   "region": "Sinnoh",
+   "name": "Pokémon League",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Ligue_Pokémon_DEPS.png",
+   "checked": "Poképédia's file for the Sinnoh Pokémon League (DEPS = BDSP); the League building; uploaded whole (1280x720), not trimmed"
   }
  ]
 }
