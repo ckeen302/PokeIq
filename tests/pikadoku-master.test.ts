@@ -16,13 +16,13 @@ beforeEach(() => {
 });
 
 describe("curated grid validation", () => {
-  it("accepts a solvable grid and reports each cell's answer count, single answers included", () => {
+  it("accepts a solvable grid and reports each cell's answer count", () => {
     const c = checkMaster(["type:fire", "type:water", "type:grass"], ["type:flying", "type:fighting", "type:poison"]);
     expect(c.counts).toHaveLength(9);
     expect(c.counts!.every((n, i) => n === c.counts![i])).toBe(true);
     const tight = checkMaster(seeds[0].rows, seeds[0].cols);
     expect(tight.ok).toBe(true);
-    expect(Math.min(...tight.counts!)).toBeGreaterThanOrEqual(1);
+    expect(Math.min(...tight.counts!)).toBeGreaterThanOrEqual(2);
   });
   it("rejects repeats, unknown categories, wrong sizes, empty cells and ungrid-able picks", () => {
     expect(checkMaster(["type:fire", "type:fire", "type:grass"], ["type:flying", "type:fighting", "type:poison"]).ok).toBe(false);

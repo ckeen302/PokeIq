@@ -2,6 +2,7 @@
 
 /* eslint-disable @next/next/no-img-element -- sprites, artwork and the server-rendered silhouette */
 import { useEffect, useMemo, useRef, useState } from "react";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
@@ -34,8 +35,8 @@ import { useDuel } from "@/components/duel/use-duel";
 import { useMatchmaking } from "@/components/duel/use-matchmaking";
 import { SeriesScore, seriesTag } from "@/components/duel/DuelSeries";
 import { DuelGone, DuelLoading, DuelLobby, DuelNotice, DuelVisitor, LeaveButton, MatchedNote, SeatDot, clock, seconds } from "@/components/duel/DuelParts";
-import { Board, CELL_STYLES, CellGlyph, GuessInput, STATUS_TEXT, spriteUrl, type NameEntry } from "./parts";
-import { DexPanel, type DexPick } from "./DexPanel";
+import { Board, CELL_STYLES, CellGlyph, ClueLegend, GuessInput, STATUS_TEXT, spriteUrl, type NameEntry } from "./parts";
+import type { DexPick } from "./DexPanel";
 import { AssistPicker } from "./AssistPicker";
 import { DLE_ASSIST_INFO, type DleAssist } from "@/lib/dle-assist";
 import { dexClues } from "@/lib/dle-dex";
@@ -44,6 +45,9 @@ import { cn } from "@/lib/utils";
 import { AddFriendAfterGame } from "@/components/community/AddFriend";
 import { Avatar } from "@/components/avatar/Avatar";
 
+
+/** The Pokédex beside the board: loaded only for a duel that has one. */
+const DexPanel = dynamic(() => import("./DexPanel").then((m) => m.DexPanel), { ssr: false });
 /**
  * A Pokédle duel at /pokedle/duel/<code>: the lobby, three rounds with their
  * reveals, and the result. The server runs the duel; this polls it (every
@@ -406,18 +410,17 @@ export function PokedleDuel({ code, names }: { code: string; names: NameEntry[] 
                 <OpponentBoard name={them} seat={1 - me} board={theirs} pool={view.pool} quiet={view.players[1 - me]?.quiet} round={live.index} rules={view.rules} />
               </div>
             </div>
-            {live.rows.length > 0 ? (
+            {/* A place for every guess from the start, so the board doesn't grow under you mid-round. */}
+            <div className="space-y-3">
               <Board
                 rows={live.rows}
                 columns={view.rules.columns}
                 close={view.rules.close}
+                slots={view.rules.maxGuesses}
                 onClue={view.assist === "full" ? (column, guessId, cell) => setPick((p) => ({ column, guessId, status: cell.status, value: cell.value, n: (p?.n ?? 0) + 1 })) : undefined}
               />
-            ) : (
-              <p className="text-center text-sm text-muted-foreground">
-                {view.rules.maxGuesses} guesses. 🟩 match · 🟨 right type, wrong slot{view.rules.close ? ", or close (dashed, with ▲▼)" : ""} · ▲▼ the answer is higher / lower.
-              </p>
-            )}
+              <ClueLegend close={view.rules.close} />
+            </div>
           </div>
           {/* On a phone the opponent's progress comes first, above your (longer) board. */}
           <div className="order-first mx-auto w-full max-w-[13rem] md:order-none md:col-start-2 md:row-start-1 xl:hidden">

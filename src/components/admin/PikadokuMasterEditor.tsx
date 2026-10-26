@@ -101,7 +101,7 @@ export function PikadokuMasterEditor() {
   return (
     <div className="space-y-5" data-testid="admin-pikadoku">
       <p className="text-sm text-muted-foreground">
-        Pick three row and three column categories. The grid is checked with the same solvability test as the generated dailies (single-answer cells are allowed). On its date, the Normal daily uses it, shown as &ldquo;Master Puzzle by you&rdquo;. A day that has begun can&apos;t be changed.
+        Pick three row and three column categories. The grid is checked with the same solvability test as the generated dailies (every cell needs at least two valid Pokémon). On its date, the Normal daily uses it, shown as &ldquo;Master Puzzle by you&rdquo;. A day that has begun can&apos;t be changed.
       </p>
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-2">

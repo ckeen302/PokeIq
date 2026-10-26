@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
 import { POKEDEX } from "@/lib/pokemon/pokedex";
 import { QUIZ_PRESETS } from "@/lib/modes";
+import { NEA_CATEGORIES, NEA_PATH } from "@/lib/name-em-all/categories";
 import { ABILITIES, ITEMS, MOVES } from "@/lib/dex/data";
 import { SITE_URL } from "@/lib/site";
 import { PLACES } from "@/lib/dex/places-data";
@@ -47,6 +48,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${SITE_URL}/battle/replays`, changeFrequency: "daily", priority: 0.6 },
     { url: `${SITE_URL}/battle/ladder`, changeFrequency: "daily", priority: 0.6 },
     ...QUIZ_PRESETS.map((p) => ({ url: `${SITE_URL}/quiz/${p.slug}`, changeFrequency: "weekly" as const, priority: 0.8 })),
+    { url: `${SITE_URL}${NEA_PATH}`, changeFrequency: "weekly", priority: 0.8 },
+    { url: `${SITE_URL}${NEA_PATH}/daily`, lastModified: now, changeFrequency: "daily", priority: 0.7 },
+    ...NEA_CATEGORIES.map((c) => ({ url: `${SITE_URL}${NEA_PATH}/${c.id}`, changeFrequency: "monthly" as const, priority: 0.6 })),
     ...POKEDEX.map((p) => ({ url: `${SITE_URL}/pokemon/${p.slug}`, changeFrequency: "monthly" as const, priority: 0.5 })),
     ...MOVES.map((m) => ({ url: `${SITE_URL}/pokedex/moves/${m.slug}`, changeFrequency: "monthly" as const, priority: 0.4 })),
     ...ABILITIES.map((a) => ({ url: `${SITE_URL}/pokedex/abilities/${a.slug}`, changeFrequency: "monthly" as const, priority: 0.4 })),

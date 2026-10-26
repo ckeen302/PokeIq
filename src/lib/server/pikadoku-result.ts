@@ -86,7 +86,8 @@ export async function finishGame(input: PdkFinishInput, store: PdkStore | null =
     }
   }
   const c = counts;
-  const reveal = revealFor(grid, replay.wrong, c ? (cell, id) => pickPct(c, cell, id) : undefined);
+  // A cell nobody filled has no shares to show (pickPct would say 100% for every answer).
+  const reveal = revealFor(grid, replay.wrong, c ? (cell, id) => (c.totals[cell] > 0 ? pickPct(c, cell, id) : null) : undefined);
   return {
     ok: true,
     result: { won: replay.won, solved: answers.size, locked: Object.fromEntries(answers), pcts: pcts && pcts.length === PDK_CELLS ? pcts : null, score, rank, counted: counted && !!c, reveal },

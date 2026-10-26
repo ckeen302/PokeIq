@@ -281,23 +281,27 @@ export function connectionsShareText(r: ConnectionsShareResult, url?: string): s
 
 const PDK_DIFF_LABEL = { easy: "Easy", normal: "Normal", expert: "Expert" } as const;
 
-/** "Pikadoku #12 (Normal)", "Pikadoku Weekly #3", "Pikadoku (Unlimited)". */
+/** "Pikadoku #12" (the Normal daily), "Pikadoku #12 (Expert)", "Pikadoku Weekly #3", "Pikadoku (Unlimited)". */
 export function pikadokuTitle(r: Pick<PikadokuShareResult, "daily" | "weekly" | "archive" | "difficulty">): string {
   if (r.weekly !== undefined) return `Pikadoku Weekly #${r.weekly}`;
-  if (r.daily !== undefined) return `Pikadoku #${r.daily}${r.archive ? " (archive)" : ""} (${PDK_DIFF_LABEL[r.difficulty]})`;
+  if (r.daily !== undefined) return `Pikadoku #${r.daily}${r.archive ? " (archive)" : ""}${r.difficulty === "normal" ? "" : ` (${PDK_DIFF_LABEL[r.difficulty]})`}`;
   return "Pikadoku (Unlimited)";
 }
 
 /** Cells filled, out of nine. */
 export const pikadokuSolved = (grid: string) => [...grid].filter((c) => c !== "x").length;
 
-/** Nine squares coloured by how rare each pick was (🟪 under 1%, 🟦 under 10%, 🟩 under 25%, 🟨 25%+, ⬛ wrong or empty): never a Pokémon. */
+/**
+ * Immaculate Grid style: the title and cells filled, the rarity score (lower is
+ * rarer) and streak, then nine squares coloured by how rare each pick was
+ * (🟪 under 1%, 🟦 under 10%, 🟩 under 25%, 🟨 25%+, ⬛ wrong or empty): never a Pokémon.
+ */
 export function pikadokuShareText(r: PikadokuShareResult, url?: string): string {
+  const stats = [r.score !== undefined && `Rarity: ${r.score}`, r.streak ? `🔥${r.streak}` : null].filter(Boolean).join(" ");
   return composeShare({
     title: pikadokuTitle(r),
     score: `${pikadokuSolved(r.grid)}/9`,
-    badges: [r.score !== undefined && `Score ${r.score}`, r.streak ? `🔥${r.streak}` : null],
-    lines: rarityLines(r.grid),
+    lines: [...(stats ? [stats] : []), ...rarityLines(r.grid)],
     url,
   });
 }
