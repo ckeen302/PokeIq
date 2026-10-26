@@ -401,9 +401,29 @@ export function BattleRoom({ code }: { code: string }) {
 
   const foe = view.players[view.you === 0 ? 1 : 0];
   if (instant) {
-    return <ReplayViewer replay={replayOf(view, battle.log.lines)} instant={{ onClose: () => setInstant(false) }} />;
+    return <ReplayViewer replay={replayOf(view, battle.log.lines)} instant={{ onClose: () => setInstant(false), timed: !!view.clocks }} />;
   }
   const canReplay = view.turn >= 2 || view.status === "finished";
+  const replayTools = (
+    <>
+        {canReplay && (
+          <Button size="sm" variant="ghost" onClick={() => setInstant(true)} title="Watch the battle so far from the start (Showdown's instant replay)" data-testid="instant-replay-open">
+            <History className="h-3.5 w-3.5" aria-hidden /> Instant replay
+          </Button>
+        )}
+        {view.status === "finished" && (
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => void downloadReplay({ ...replayOf(view, battle.log.lines) })}
+            title="Showdown's replay file: opens in any browser and plays in Showdown's replay player"
+            data-testid="battle-download-replay"
+          >
+            <Download className="h-3.5 w-3.5" aria-hidden /> Download replay
+          </Button>
+        )}
+    </>
+  );
   return (
     <div className="space-y-3">
       {/* Matchmaking opened this battle (its link carries ?matched): "Matched! You vs Blue" for a few seconds. */}
@@ -430,10 +450,14 @@ export function BattleRoom({ code }: { code: string }) {
         onUndo={(rqid) => void battle.undo(rqid)}
         endActions={
           view.frontier ? (
-            <FrontierAfter view={view} />
+            <div className="space-y-3">
+              <FrontierAfter view={view} />
+              <div className="flex flex-wrap justify-center gap-1">{replayTools}</div>
+            </div>
           ) : (
             <div className="space-y-3">
               <BattleAfter view={view} battle={battle} />
+              <div className="flex flex-wrap justify-center gap-1">{replayTools}</div>
               {view.kind === "pvp" && view.you !== null && <AddFriendAfterGame kind="battle" code={view.code} />}
               {view.kind === "cpu" ? <CpuAgain /> : <LiveAgain view={view} battle={battle} />}
             </div>
@@ -442,22 +466,7 @@ export function BattleRoom({ code }: { code: string }) {
         side={view.kind === "pvp" ? <BattleChat view={view} battle={battle} collapsible /> : undefined}
       />
       <div className="flex flex-wrap items-center justify-end gap-1">
-        {canReplay && (
-          <Button size="sm" variant="ghost" onClick={() => setInstant(true)} title="Watch the battle so far from the start (Showdown's instant replay)" data-testid="instant-replay-open">
-            <History className="h-3.5 w-3.5" aria-hidden /> Instant replay
-          </Button>
-        )}
-        {view.status === "finished" && (
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={() => void downloadReplay({ ...replayOf(view, battle.log.lines) })}
-            title="Showdown's replay file: opens in any browser and plays in Showdown's replay player"
-            data-testid="battle-download-replay"
-          >
-            <Download className="h-3.5 w-3.5" aria-hidden /> Download replay
-          </Button>
-        )}
+        {view.status !== "finished" && replayTools}
         {view.status === "playing" && <ForfeitButton busy={battle.busy} onForfeit={() => void battle.act({ action: "forfeit" })} />}
       </div>
     </div>

@@ -32,7 +32,7 @@ const BETWEEN_TURNS_MS = 450;
  * the screen's own speed control (0.5× to 4×). Going forward animates the
  * turn; going back or jumping shows the battle as it stood at once.
  */
-export function ReplayViewer({ replay, instant }: { replay: ReplayData; instant?: { onClose: () => void } }) {
+export function ReplayViewer({ replay, instant }: { replay: ReplayData; instant?: { onClose: () => void; timed?: boolean } }) {
   const last = useMemo(() => lastTurn(replay.log), [replay.log]);
   /** The turn whose start is on screen (0: nothing yet; last + 1: the end). */
   const [turn, setTurn] = useState(0);
@@ -196,7 +196,7 @@ export function ReplayViewer({ replay, instant }: { replay: ReplayData; instant?
       <div className="space-y-3" data-testid="instant-replay">
         <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-warning/50 bg-warning/10 px-3 py-2 text-sm">
           <span>
-            <strong>Instant replay</strong> of this battle so far. The battle goes on meanwhile: your turn timer keeps running.
+            <strong>Instant replay</strong> of this battle so far. {instant.timed ? "The battle goes on meanwhile: your turn timer keeps running." : "The battle waits for you."}
           </span>
           <button type="button" className={cn(button, "border-primary bg-primary text-primary-foreground")} onClick={instant.onClose} data-testid="instant-replay-close">
             <X className="h-4 w-4" aria-hidden /> Back to the battle

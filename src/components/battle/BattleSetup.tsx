@@ -407,6 +407,11 @@ export function BattleSetup({ initial = "cpu", challenge }: { initial?: Opponent
               {opponent === "cpu" ? "Start battle" : opponent === "match" ? "Find an opponent" : challenge ? `Challenge ${challenge}` : "Create battle"}
             </Button>
           )}
+          {!searching && !busy && (!name.trim() || (needsTeam && !team)) && (
+            <p className="text-center text-xs text-muted-foreground" data-testid="setup-why-disabled">
+              {!name.trim() ? "Enter a trainer name to start." : "Pick a team, or a quick one, to start."}
+            </p>
+          )}
           {opponent === "match" && !searching && <p className="text-center text-xs text-muted-foreground">Leaving this page or closing the tab ends the search.</p>}
         </CardContent>
       </Card>

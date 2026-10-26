@@ -394,6 +394,18 @@ export default function BattleScreen({ view, log, offset, busy, error, onChoose,
   const myLeft = view.clocks && view.status === "playing" && view.clocks.you.deadline && !view.waiting && view.request ? view.clocks.you.deadline - now : null;
   const warning = timerWarning(myLeft);
 
+  // Phones: when it's your move, bring the move buttons into thumb reach (above the tab bar), as Showdown's mobile layout keeps them.
+  const controlsCard = useRef<HTMLDivElement>(null);
+  const requestId = showControls ? view.request?.rqid : undefined;
+  useEffect(() => {
+    if (requestId === undefined || replay || window.innerWidth >= 1024) return;
+    const el = controlsCard.current;
+    if (!el) return;
+    const box = el.getBoundingClientRect();
+    // The latest line of text stays in view just above the buttons.
+    if (box.top > window.innerHeight * 0.6 || box.bottom < 0) window.scrollTo({ top: window.scrollY + box.top - 150, behavior: "smooth" });
+  }, [requestId, replay]);
+
   // Showdown's inactivity messages in the log as either player's turn time runs down ("Red has 20 seconds left.").
   const nagged = useRef(new Map<string, Set<number>>());
   useEffect(() => {
@@ -551,7 +563,7 @@ export default function BattleScreen({ view, log, offset, busy, error, onChoose,
           </p>
         )}
 
-        <Card>
+        <Card ref={controlsCard}>
           <CardContent className="p-4">
             {showControls ? (
               <Controls key={view.request!.rqid} request={view.request!.data} snap={snap} me={me} doubles={doubles} busy={busy} format={view.format} onChoose={(choice) => onChoose(view.request!.rqid, choice)} onHelp={help.toggle} />

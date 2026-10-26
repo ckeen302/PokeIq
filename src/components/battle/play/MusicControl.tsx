@@ -59,7 +59,7 @@ export function MusicControl() {
         disabled={!prefs.on}
         aria-label="Music volume"
         data-testid="music-volume"
-        className="h-1 w-20 cursor-pointer accent-[hsl(var(--primary))] disabled:opacity-40"
+        className="hidden h-1 w-20 cursor-pointer sm:block accent-[hsl(var(--primary))] disabled:opacity-40"
       />
     </div>
   );
