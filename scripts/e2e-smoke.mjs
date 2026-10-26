@@ -1859,9 +1859,9 @@ step("live battle: both choose moves for a couple of turns");
 await Promise.all([liveRed, liveBlue].map((p) => p.locator("[data-testid=move-button]").first().waitFor({ timeout: 60_000 })));
 for (const p of [liveRed, liveBlue]) await p.getByRole("button", { name: "4x" }).click();
 if (!(await liveRed.getByTestId("battle-clocks").count())) errors.push("the live battle shows no turn timer");
-// The timer warns as the turn's time runs low (30 s left of a 90 s turn), and says running out loses.
+// The timer warns as the turn's time runs low (30 s left of Showdown's 150 s first turn), and says running out loses.
 step("live battle: the turn timer warns at 30 seconds left, with loss on timeout");
-await liveRed.getByTestId("timer-warning").waitFor({ timeout: 80_000 });
+await liveRed.getByTestId("timer-warning").waitFor({ timeout: 150_000 });
 if (!/lose the battle/.test(await liveRed.getByTestId("timer-warning").innerText())) errors.push("the timer warning doesn't say running out loses");
 await liveRed.screenshot({ path: `${OUT}/battle-p1-timer-warning.png` });
 // Cancel (Showdown's undo): Red picks a move, takes it back while Blue is still choosing, and gets the menu again.
