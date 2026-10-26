@@ -93,6 +93,17 @@ interface Entry {
   id: number;
   turn?: number;
   text: string;
+  /** Seconds since the epoch, when known. */
+  at?: number;
+}
+
+const LOG_OPTS_KEY = "pokeiq:battle:log-options";
+/** "(The opposing Pikachu lost 45% of its health!)": the lines "Hide HP %" leaves out. */
+const PERCENT_LINE = /^\(.*\d+(?:\.\d+)?% of (?:its|their) health!?\)$/;
+
+function stamp(at: number): string {
+  const d = new Date(at * 1000);
+  return `[${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}:${String(d.getSeconds()).padStart(2, "0")}]`;
 }
 
 const SPEEDS = [0.5, 1, 2, 4] as const;
@@ -179,6 +190,26 @@ export default function BattleScreen({ view, log, offset, busy, error, onChoose,
   const [showLog, setShowLog] = useState(false);
   const logEnd = useRef<HTMLDivElement>(null);
   const logBox = useRef<HTMLDivElement>(null);
+  /** Log options (Showdown's): timestamps on each line, and hiding the "lost N% of its health" lines. Remembered on this device. */
+  const [logOpts, setLogOpts] = useState<{ time: boolean; hidePct: boolean }>({ time: false, hidePct: false });
+  useEffect(() => {
+    try {
+      const saved = JSON.parse(window.localStorage.getItem(LOG_OPTS_KEY) ?? "{}");
+      setLogOpts({ time: saved.time === true, hidePct: saved.hidePct === true });
+    } catch {
+      // defaults
+    }
+  }, []);
+  const changeLogOpts = (next: Partial<typeof logOpts>) =>
+    setLogOpts((o) => {
+      const merged = { ...o, ...next };
+      try {
+        window.localStorage.setItem(LOG_OPTS_KEY, JSON.stringify(merged));
+      } catch {
+        // not remembered
+      }
+      return merged;
+    });
   /** Whether the log was scrolled to its end before the newest lines came in (as on Showdown, reading back stops the autoscroll). */
   const logAtEnd = useRef(true);
 
@@ -221,7 +252,7 @@ export default function BattleScreen({ view, log, offset, busy, error, onChoose,
     const text = step.text.trim();
     if (!text) return;
     const id = ++entryId.current;
-    setEntries((list) => [...list.slice(-600), step.cmd === "turn" ? { id, turn: Number(step.args[1]), text } : { id, text }]);
+    setEntries((list) => [...list.slice(-600), step.cmd === "turn" ? { id, turn: Number(step.args[1]), text, at: step.at } : { id, text, at: step.at }]);
   }, []);
 
   const popup = useCallback((ref: Step["who"], text: string, tone: PopupTone) => {
@@ -382,7 +413,8 @@ export default function BattleScreen({ view, log, offset, busy, error, onChoose,
       }
     }
     if (!lines.length) return;
-    setEntries((list) => [...list.slice(-600), ...lines.map((text) => ({ id: ++entryId.current, text }))]);
+    const at = Math.floor(Date.now() / 1000);
+    setEntries((list) => [...list.slice(-600), ...lines.map((text) => ({ id: ++entryId.current, text, at }))]);
   }, [now, view.clocks, view.status, replay, youName, foeName]);
 
   return (
@@ -560,9 +592,31 @@ export default function BattleScreen({ view, log, offset, busy, error, onChoose,
       <aside className="min-w-0 space-y-3 lg:sticky lg:top-20 lg:self-start">
         <Card className={cn("lg:block", showLog ? "block" : "hidden")} aria-label="Battle log">
           <CardContent className="p-0">
-            <p className="hud-label flex items-center gap-1.5 border-b px-4 py-3">
-              <ScrollText className="h-3 w-3" aria-hidden /> Battle log
-            </p>
+            <div className="flex items-center gap-1.5 border-b px-4 py-2">
+              <p className="hud-label flex flex-1 items-center gap-1.5 py-1">
+                <ScrollText className="h-3 w-3" aria-hidden /> Battle log
+              </p>
+              <button
+                type="button"
+                onClick={() => changeLogOpts({ time: !logOpts.time })}
+                aria-pressed={logOpts.time}
+                className={cn("rounded-sm px-1.5 py-1 font-pixel text-[10px] uppercase", logOpts.time ? "bg-screen text-black" : "text-muted-foreground hover:text-foreground")}
+                title="Show the time of each line"
+                data-testid="log-timestamps"
+              >
+                Time
+              </button>
+              <button
+                type="button"
+                onClick={() => changeLogOpts({ hidePct: !logOpts.hidePct })}
+                aria-pressed={logOpts.hidePct}
+                className={cn("rounded-sm px-1.5 py-1 font-pixel text-[10px] uppercase", logOpts.hidePct ? "bg-screen text-black" : "text-muted-foreground hover:text-foreground")}
+                title='Hide the "(lost N% of its health)" lines'
+                data-testid="log-hide-percent"
+              >
+                Hide HP %
+              </button>
+            </div>
             <div
               className={cn(
                 "max-h-[28rem] space-y-1 overflow-y-auto px-4 py-3 text-xs leading-relaxed text-muted-foreground",
@@ -578,11 +632,15 @@ export default function BattleScreen({ view, log, offset, busy, error, onChoose,
               {entries.map((e) =>
                 e.turn !== undefined ? (
                   <p key={e.id} className="hud-label pt-2 text-screen">
+                    {logOpts.time && e.at ? <span className="mr-1.5 font-mono normal-case text-muted-foreground">{stamp(e.at)}</span> : null}
                     Turn {e.turn}
                   </p>
-                ) : (
-                  <div key={e.id}>
-                    <RichText text={e.text} />
+                ) : logOpts.hidePct && PERCENT_LINE.test(e.text) ? null : (
+                  <div key={e.id} className={cn(logOpts.time && e.at && "flex gap-1.5")}>
+                    {logOpts.time && e.at ? <span className="shrink-0 font-mono text-[10px] text-muted-foreground/70">{stamp(e.at)}</span> : null}
+                    <div className="min-w-0">
+                      <RichText text={e.text} />
+                    </div>
                   </div>
                 )
               )}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -22,19 +22,70 @@ import { lastTurn, type ReplayData } from "@/lib/battle/replay";
 import { downloadReplay } from "./replay-download";
 
 /** A live battle's chat: the two players talk; anyone else watching reads along. */
+const IGNORE_KEY = "pokeiq:battle:ignored";
+
+function readIgnored(): string[] {
+  try {
+    const raw = JSON.parse(window.localStorage.getItem(IGNORE_KEY) ?? "[]");
+    return Array.isArray(raw) ? raw.filter((n): n is string => typeof n === "string").slice(-200) : [];
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * The battle's chat, with Showdown's /ignore: a spectator can ignore either
+ * trainer (remembered on this device, by name); players mute the opponent in
+ * the chat box.
+ * The game's own lines always show.
+ */
 function BattleChat({ view, battle, collapsible, className }: { view: BattleView; battle: BattleHandle; collapsible?: boolean; className?: string }) {
+  const [ignored, setIgnored] = useState<string[]>([]);
+  useEffect(() => setIgnored(readIgnored()), []);
+  const toggle = (name: string) => {
+    const next = ignored.includes(name) ? ignored.filter((n) => n !== name) : [...ignored, name];
+    setIgnored(next);
+    try {
+      window.localStorage.setItem(IGNORE_KEY, JSON.stringify(next));
+    } catch {
+      // not remembered
+    }
+  };
+  // Players mute the opponent from the chat box itself; spectators can ignore either trainer here.
+  const others = view.you === null ? view.players.map((p) => p.name) : [];
+  const lines = view.chat?.filter((l) => l.seat === null || !l.name || !ignored.includes(l.name) || l.seat === view.you);
+  const hidden = (view.chat?.length ?? 0) - (lines?.length ?? 0);
   return (
-    <ChatBox
-      lines={view.chat}
-      you={view.you}
-      players={view.players}
-      code={view.code}
-      game="Live battle"
-      onSend={battle.chat}
-      closed={view.rematch ? "A rematch is open: press Rematch to keep chatting there." : undefined}
-      collapsible={collapsible}
-      className={className}
-    />
+    <div className="space-y-1.5">
+      {others.length > 0 && (
+        <div className="flex flex-wrap items-center justify-end gap-1.5 text-[11px] text-muted-foreground" data-testid="chat-ignore">
+          {others.map((name) => (
+            <button
+              key={name}
+              type="button"
+              onClick={() => toggle(name)}
+              aria-pressed={ignored.includes(name)}
+              className={cn("rounded-sm border px-1.5 py-0.5 hover:text-foreground", ignored.includes(name) ? "border-warning/60 text-warning" : "border-border")}
+              title={ignored.includes(name) ? `Show ${name}'s messages again` : `Hide ${name}'s messages (Showdown's /ignore)`}
+            >
+              {ignored.includes(name) ? `Unignore ${name}` : `Ignore ${name}`}
+            </button>
+          ))}
+          {hidden > 0 && <span>({hidden} hidden)</span>}
+        </div>
+      )}
+      <ChatBox
+        lines={lines}
+        you={view.you}
+        players={view.players}
+        code={view.code}
+        game="Live battle"
+        onSend={battle.chat}
+        closed={view.rematch ? "A rematch is open: press Rematch to keep chatting there." : undefined}
+        collapsible={collapsible}
+        className={className}
+      />
+    </div>
   );
 }
 

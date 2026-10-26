@@ -68,8 +68,14 @@ describe("Showdown text and packed formats round-trip like Showdown's own", () =
     it(format, { timeout: 60_000 }, () => {
       const sets = randomTeam(format);
       const text = exportShowdown(sets);
-      // Our export is byte-for-byte Showdown's.
-      expect(text).toBe(Teams.export(structuredClone(sets) as never));
+      // Our export is Showdown's, line for line, except that (like Showdown's teambuilder) it leaves out
+      // IVs a Hidden Power type implies; Showdown's validator puts those back, to the same IVs.
+      const theirs = Teams.export(structuredClone(sets) as never);
+      const strip = (t: string) => t.split("\n").filter((l) => !l.startsWith("IVs: ")).join("\n");
+      expect(strip(text)).toBe(strip(theirs));
+      const back2 = Teams.import(text) ?? [];
+      TeamValidator.get(format).validateTeam(back2);
+      expect(back2.map((s) => s.ivs)).toEqual(sets.map((s) => s.ivs));
       // Import reads the text back to the same sets, and exports the same text again.
       const back = importShowdown(text)!.sets;
       expect(exportShowdown(back)).toBe(text);
