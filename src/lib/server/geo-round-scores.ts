@@ -55,7 +55,7 @@ let warnedAt = 0;
 function check(error: { code?: string; message?: string } | null): void {
   if (!error) return;
   if (MISSING.has(error.code ?? "") || /does not exist|schema cache/i.test(error.message ?? "")) {
-    if (Date.now() - warnedAt > 10 * 60_000) console.warn("[geo-round-scores] off until migration 0038_geo_round_scores.sql is applied:", error.message);
+    if (Date.now() - warnedAt > 10 * 60_000) console.warn("[geo-round-scores] off until migration 0040_geo_round_scores.sql is applied:", error.message);
     warnedAt = Date.now();
     throw new Unavailable(error.message);
   }
