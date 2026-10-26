@@ -95,7 +95,10 @@ export function LabResults({
           </p>
           <p className="hud-label normal-case tracking-wider">
             Gen {setup.gen} {setup.doubles ? "doubles" : "singles"} · {STRATEGY_INFO[setup.sides[0].strategy].name} vs {STRATEGY_INFO[setup.sides[1].strategy].name} · seed{" "}
-            <span className="font-mono text-foreground">{run.seed}</span>
+            <span className="font-mono text-foreground">{run.seed}</span> ·{" "}
+            <span className="text-foreground" data-testid="lab-sample-size">
+              {count(n)} {n === 1 ? "battle" : "battles"}
+            </span>
             {run.status === "cancelled" && " · cancelled"}
           </p>
         </div>
@@ -109,6 +112,11 @@ export function LabResults({
           Battles last <strong className="text-foreground">{n ? meanTurns(t).toFixed(1) : "—"}</strong> turns on average (median{" "}
           <strong className="text-foreground">{n ? medianTurns(t) : "—"}</strong>). The 95% confidence interval is a Wilson score interval: with more battles it narrows.
         </p>
+        {!running && n > 0 && margin(ciA) > 0.05 && (
+          <p className="rounded-md border border-warning/40 bg-warning/10 px-3 py-2 text-sm" data-testid="lab-small-sample">
+            Only {count(n)} {n === 1 ? "battle" : "battles"}: these odds could be off by up to {pct(margin(ciA))}. Run more battles for a firmer answer.
+          </p>
+        )}
         {!running && (
           <div className="flex flex-wrap gap-2">
             <Button size="sm" variant="outline" onClick={() => onRerun(run.seed)}>

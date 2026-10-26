@@ -239,6 +239,27 @@ describe("battle lab: matchups with a known answer", () => {
     expect(Math.abs(ci.p - 0.5)).toBeLessThan(0.08);
   }, 60_000);
 
+  it("swapping the sides swaps the odds (no bias toward Side A)", () => {
+    const a = [labMon(set("Garchomp", { nature: "Jolly", evs: { hp: 0, atk: 252, def: 0, spa: 0, spd: 4, spe: 252 }, moves: ["Earthquake", "Dragon Claw", "Stone Edge", "Swords Dance"] }))];
+    const b = [labMon(set("Rotom-Wash", { nature: "Bold", evs: { hp: 252, atk: 0, def: 252, spa: 0, spd: 4, spe: 0 }, moves: ["Hydro Pump", "Volt Switch", "Will-O-Wisp", "Pain Split"] }))];
+    const one = runLabRange(prepareLab(matchup(9, a, b)), "swap", 0, 600).totals;
+    const two = runLabRange(prepareLab(matchup(9, b, a)), "swap-2", 0, 600).totals;
+    const p1 = wilson(one.wins[0], one.wins[0] + one.wins[1]);
+    const p2 = wilson(two.wins[1], two.wins[0] + two.wins[1]);
+    // Garchomp's odds as Side A and as Side B: the two intervals overlap.
+    expect(p1.lo).toBeLessThan(p2.hi);
+    expect(p2.lo).toBeLessThan(p1.hi);
+  }, 120_000);
+
+  it("the same seed reproduces a run exactly; a different seed doesn't", () => {
+    const setup = matchup(9, randomTeam(9, "1,2,3,4"), randomTeam(9, "5,6,7,8"));
+    const x = runLabRange(prepareLab(setup), "repro", 0, 40).totals;
+    const y = runLabRange(prepareLab(setup), "repro", 0, 40).totals;
+    const z = runLabRange(prepareLab(setup), "other", 0, 40).totals;
+    expect(y).toEqual(x);
+    expect(z).not.toEqual(x);
+  }, 120_000);
+
   it("a faster, sure-hit one-hit KO wins every battle", () => {
     const fast = labMon(set("Garchomp", { nature: "Jolly", evs: { hp: 0, atk: 252, def: 0, spa: 0, spd: 4, spe: 252 }, moves: ["Earthquake"] }));
     const slow = labMon(set("Pikachu", { level: 5, moves: ["Thunderbolt"] }));
