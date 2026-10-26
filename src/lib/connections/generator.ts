@@ -1,5 +1,5 @@
 import { Rng } from "@/lib/rng";
-import { CATEGORIES, categoryOf, type Category, type CategoryFamily } from "./categories";
+import { ALL_CATEGORIES, CATEGORIES, categoryOf, type Category, type CategoryFamily } from "./categories";
 import { FACTS, SV, factsOf, type Facts } from "./facts";
 import { MIXED_CATEGORIES, linkTiles, patternsFor, tileRef, type TileRef } from "./mixed";
 import { isPokemonTile } from "./tiles";
@@ -108,6 +108,98 @@ export function validatePuzzle(puzzle: { groups: readonly PuzzleGroup[]; tiles?:
 }
 
 // ---------------------------------------------------------------------------
+// Second answers
+// ---------------------------------------------------------------------------
+
+/** Kinds of link every player looks for first: types, generations, Legendaries, first letters. */
+const SALIENT: ReadonlySet<CategoryFamily> = new Set<CategoryFamily>(["type", "origin", "name"]);
+
+const fittingCache = new Map<number, number[]>();
+/** The indexes (into ALL_CATEGORIES) of every category a Pokémon passes. */
+function fittingOf(id: number): number[] {
+  let out = fittingCache.get(id);
+  if (!out) {
+    const f = factsOf(id);
+    out = [];
+    ALL_CATEGORIES.forEach((c, i) => {
+      if (c.test(f)) out!.push(i);
+    });
+    fittingCache.set(id, out);
+  }
+  return out;
+}
+
+/** Adds every k-bit subset of the bits listed (as masks) to `out`. */
+function addSubsets(bits: readonly number[], k: number, out: Set<number>) {
+  const walk = (from: number, acc: number, left: number) => {
+    if (!left) return void out.add(acc);
+    for (let i = from; i <= bits.length - left; i++) walk(i + 1, acc | bits[i], left - 1);
+  };
+  walk(0, 0, k);
+}
+
+/** How secondAnswers words a second way to split the grid. */
+export const SECOND_SOLUTION = "a second solution";
+
+const lowestBit = (mask: number) => 31 - Math.clz32(mask & -mask);
+
+/**
+ * Why a fair puzzle (validatePuzzle) could still have a second answer, or []:
+ * - a lookalike group: exactly a group's worth of tiles share an obvious link
+ *   (a type, a generation, Legendary, a first letter) or a link of the same
+ *   kind as one of the puzzle's groups (a second "Highest stat"), without
+ *   being a group: a player who spots it is right, and would be told wrong;
+ * - a second solution: the tiles split into groups another way, every group
+ *   a true link from ANY category (blacklisted and small ones included), which
+ *   is how a player who knows the data could solve it.
+ * Red herrings with MORE tiles than a group (five Fire types: which four?)
+ * are fair and wanted; only exact lookalikes count. Moves, abilities and
+ * types (mixed groups) are left to validatePuzzle.
+ */
+export function secondAnswers(puzzle: { groups: readonly PuzzleGroup[] }, firstOnly = false): string[] {
+  const { groups } = puzzle;
+  const size = groups.length;
+  const tiles = groups.flatMap((g) => g.members).filter(isPokemonTile);
+  if (tiles.length !== size * size) return [];
+  // Tiles as bits: a group is a mask.
+  const bit = new Map(tiles.map((id, i) => [id, 1 << i]));
+  const maskOf = (ids: readonly number[]) => ids.reduce((m, id) => m | bit.get(id)!, 0);
+  const nameList = (mask: number) => tiles.filter((id) => mask & bit.get(id)!).map((id) => factsOf(id).name);
+  const own = new Set(groups.map((g) => g.category));
+  const families = new Set(groups.map((g) => categoryOf(g.category).family));
+  const groupMasks = new Set(groups.map((g) => maskOf(g.members)));
+  const byCategory = new Map<number, number[]>();
+  for (const id of tiles) for (const ci of fittingOf(id)) byCategory.set(ci, [...(byCategory.get(ci) ?? []), bit.get(id)!]);
+  const out: string[] = [];
+  const candidates = new Set<number>();
+  for (const [ci, bits] of byCategory) {
+    if (bits.length < size) continue;
+    const c = ALL_CATEGORIES[ci];
+    const mask = bits.reduce((m, b) => m | b, 0);
+    if (bits.length === size && !own.has(c.id) && !groupMasks.has(mask) && (SALIENT.has(c.family) || families.has(c.family))) {
+      out.push(`${nameList(mask).join(", ")} are all ${c.label}`);
+      if (firstOnly) return out;
+    }
+    addSubsets(bits, size, candidates);
+  }
+  // Exact cover: always take a set holding the lowest tile not yet covered (the sets are bucketed by their lowest tile).
+  const byLow: number[][] = tiles.map(() => []);
+  for (const m of candidates) byLow[lowestBit(m)].push(m);
+  const solutions: number[][] = [];
+  const cover = (left: number, chosen: number[]) => {
+    if (solutions.length > 1) return;
+    if (!left) return void solutions.push(chosen);
+    for (const m of byLow[lowestBit(left)]) if ((m & left) === m) cover(left & ~m, [...chosen, m]);
+  };
+  cover(tiles.reduce((m, id) => m | bit.get(id)!, 0), []);
+  if (solutions.length > 1) {
+    const other = solutions.find((sol) => sol.some((m) => !groupMasks.has(m)))!;
+    out.push(`${SECOND_SOLUTION}: ${other.map((m) => nameList(m).join("/")).join(" | ")}`);
+  }
+  return out;
+}
+
+// ---------------------------------------------------------------------------
 // Playing guesses
 // ---------------------------------------------------------------------------
 
@@ -196,7 +288,7 @@ export function groupRating(puzzle: { groups: readonly PuzzleGroup[] }, gi: numb
   return categoryOf(puzzle.groups[gi].category).difficulty + 0.2 * Math.min(2, herringsOf(puzzle, gi).length);
 }
 
-/** Obvious traits (a type, a generation) four or more tiles share across groups: tempting wrong groups. */
+/** Obvious traits (a type, a generation) MORE tiles than a group share across groups: tempting wrong groups (exactly a group's worth would be a second answer: see secondAnswers). */
 const OBVIOUS = CATEGORIES.filter((c) => c.id.startsWith("type:") || c.id.startsWith("gen:"));
 
 function decoys(groups: readonly PuzzleGroup[]): number {
@@ -204,7 +296,7 @@ function decoys(groups: readonly PuzzleGroup[]): number {
   let n = 0;
   for (const c of OBVIOUS) {
     const hits = ids.filter((id) => c.test(factsOf(id)));
-    if (hits.length >= groups.length && !groups.some((g) => hits.every((id) => g.members.includes(id)))) n++;
+    if (hits.length > groups.length && !groups.some((g) => hits.every((id) => g.members.includes(id)))) n++;
   }
   return n;
 }
@@ -473,7 +565,14 @@ export function generatePuzzle(seed: string, options: GenerateOptions = {}): Puz
         if (stats) stats.ambiguous++;
         continue;
       }
-      const score = scorePuzzle(groups);
+      // Never a lookalike group. Nor a second solution, except in a themed pack: a pack of one generation is so
+      // close-knit that some odd split (colours, Egg Groups, highest stats...) nearly always exists; there it costs score.
+      const answers = secondAnswers({ groups }, true);
+      if (answers.some((a) => !a.startsWith(SECOND_SOLUTION)) || (answers.length && !options.pack)) {
+        if (stats) stats.ambiguous++;
+        continue;
+      }
+      const score = scorePuzzle(groups) - (answers.length ? 1.5 : 0);
       if (!best || score > best.score) best = { groups, score };
     }
     if (!best) continue;

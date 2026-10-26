@@ -366,10 +366,28 @@ step("pokéconnections: a full daily, one wrong guess then a solve");
   const tilesRes = await (await page.request.get(`${BASE}/api/connections?date=${today}`)).text();
   if (/label|members|category|reveal/.test(tilesRes)) errors.push("PokéConnections' tiles came with the groups");
   await page.goto(`${BASE}/connections`, { waitUntil: "networkidle" });
-  await checkFirstVisitHowTo(page, "PokéConnections");
-  await closeHowTo(page);
+  // PokéConnections' how-to opens by itself once: closing it any way ("Let's play!" too) keeps it closed on the next visit.
+  {
+    const sheet = page.locator(HOWTO).first();
+    if (!(await sheet.waitFor({ state: "visible", timeout: 8000 }).then(() => true, () => false))) errors.push("PokéConnections didn't auto-open its how-to on a first visit");
+    else {
+      if (!(await page.getByTestId("howto-demo").isVisible())) errors.push("PokéConnections' how-to has no demo");
+      await page.getByTestId("howto-play").click();
+      await sheet.waitFor({ state: "hidden" });
+      await page.reload({ waitUntil: "load" });
+      await page.getByTestId("conn-tile").first().waitFor();
+      await page.waitForTimeout(1500);
+      if (await sheet.isVisible()) errors.push("PokéConnections' how-to opened again after \"Let's play!\"");
+    }
+    await closeHowTo(page);
+  }
   await page.getByTestId("conn-tile").first().waitFor();
   if ((await page.getByTestId("conn-tile").count()) !== 16) errors.push("PokéConnections didn't show 16 tiles");
+  // The whole board, its mistakes and its Submit fit a laptop screen without scrolling.
+  {
+    const submitBox = await page.getByTestId("conn-submit").boundingBox();
+    if (!submitBox || submitBox.y + submitBox.height > 900) errors.push(`PokéConnections' Submit is below the fold at 1280×900 (y=${submitBox?.y})`);
+  }
   // The keyboard hints, and S to shuffle.
   await page.getByTestId("conn-keys").waitFor();
   const order = async () => (await page.getByTestId("conn-tile").evaluateAll((els) => els.map((e) => e.dataset.id))).join();
@@ -389,7 +407,7 @@ step("pokéconnections: a full daily, one wrong guess then a solve");
   // The same four again: free.
   await page.getByTestId("conn-submit").click();
   await page.getByTestId("conn-toast").filter({ hasText: "Already guessed" }).waitFor();
-  await page.getByRole("button", { name: "Deselect all" }).click();
+  await page.getByTestId("conn-deselect").click();
   for (const [i, g] of groups.entries()) {
     await pick(g);
     await page.locator("[data-testid=conn-group]").nth(i).waitFor();
@@ -397,6 +415,16 @@ step("pokéconnections: a full daily, one wrong guess then a solve");
   await page.getByTestId("conn-result").waitFor();
   await page.getByTestId("conn-why").waitFor();
   if (!(await page.getByText("1/4").count())) errors.push("PokéConnections' result doesn't show one mistake");
+  // Share: copied with a "Copied!" toast (or, where the clipboard is refused, the text to copy by hand), coloured rows and a link, never a name.
+  {
+    await page.context().grantPermissions(["clipboard-read", "clipboard-write"], { origin: BASE });
+    await page.getByTestId("conn-result").getByTestId("share-result").first().click();
+    await page.getByTestId("share-toast").waitFor({ timeout: 5000 }).catch(() => errors.push("PokéConnections' Share showed no Copied! toast"));
+    const text = await page.evaluate(() => navigator.clipboard.readText()).catch(() => "");
+    const lines = text.split("\n");
+    if (!/^PokéIQ PokéConnections #\d+ /.test(lines[0] ?? "")) errors.push(`PokéConnections' share text starts "${lines[0]}"`);
+    if (lines.filter((l) => /^[🟨🟩🟦🟪]{4}$/u.test(l)).length !== 5) errors.push(`PokéConnections' share text hasn't five rows of squares: ${JSON.stringify(text)}`);
+    if (!/\/s\/con\./.test(lines.at(-1) ?? "")) errors.push("PokéConnections' share text has no link");  }
   await page.getByTestId("conn-community").waitFor({ timeout: 10_000 }).catch(() => errors.push("PokéConnections' daily stats didn't show"));
   // The streak flame, tomorrow's countdown, and the first-solve badge.
   await page.getByTestId("conn-streak").filter({ hasText: "1 day" }).waitFor();
@@ -478,7 +506,7 @@ step("pokéconnections: a full daily, one wrong guess then a solve");
   await pick([...big5[0].slice(0, 4), big5[1][0]]);
   await page.getByTestId("conn-toast").filter({ hasText: "One away…" }).waitFor();
   await page.getByLabel("4 of 5 mistakes left").waitFor();
-  await page.getByRole("button", { name: "Deselect all" }).click();
+  await page.getByTestId("conn-deselect").click();
   for (const [i, g] of big5.slice(0, 2).entries()) {
     await pick(g);
     await page.locator("[data-testid=conn-group]").nth(i).waitFor();

@@ -120,6 +120,29 @@ const REGIONAL_METHODS: Record<number, string[]> = {
   555: ["Use Ice Stone"], // Galarian Darmanitan
 };
 
+/*
+ * Where the PokéAPI snapshot is out of date or wrong, found by checking it
+ * against @pkmn/dex (Showdown's data) and Bulbapedia in
+ * tests/connections-accuracy.test.ts.
+ */
+/** Mega Evolutions added by Legends: Z-A and its Mega Dimension DLC (2025), which the snapshot predates. */
+const NEW_MEGAS = new Set([
+  26, 36, 71, 121, 149, 154, 160, 227, 358, 398, 478, 485, 491, 500, 530, 545, 560, 604, 609, 623, 652, 655, 658, 668, 687, 689, 691, 701, 718, 740, 768, 780, 801, 807, 870, 952, 970, 998,
+]);
+/** Only AZ's Eternal Floette has a Mega: a plain Floette is neither in nor out of "Can Mega Evolve". */
+export const MEGA_DISPUTED: ReadonlySet<number> = new Set([670]);
+/** Evolution methods newer games added (Scarlet & Violet: Crabrawler takes an Ice Stone). */
+const EXTRA_METHODS: Record<number, string[]> = { 740: ["Use Ice Stone"] };
+/** Gender ratios (eighths female) the snapshot files as genderless: Dipplin, Okidogi, Munkidori, Fezandipiti, Ogerpon, Terapagos. */
+const GENDER_FIXES: Record<number, number> = { 1011: 4, 1014: 0, 1015: 0, 1016: 0, 1017: 8, 1024: 4 };
+/** Weights (hectograms) the snapshot has wrong: Dipplin, Okidogi. */
+const WEIGHT_FIXES: Record<number, number> = { 1011: 44, 1014: 920 };
+
+/** An Ability the snapshot lists as both regular and Hidden (Finizen's Water Veil) is only a regular one. */
+function dedupeAbilities(list: { name: string; hidden: boolean }[]): { name: string; hidden: boolean }[] {
+  return list.filter((a) => !a.hidden || !list.some((b) => !b.hidden && b.name === a.name));
+}
+
 function build(): Facts[] {
   const chains = new Map<number, number[]>();
   for (const p of POKEDEX) chains.set(p.chain, [...(chains.get(p.chain) ?? []), p.id]);
@@ -141,7 +164,7 @@ function build(): Facts[] {
       stats: p.stats,
       bst: p.bst,
       height: p.height,
-      weight: p.weight,
+      weight: WEIGHT_FIXES[p.id] ?? p.weight,
       color: p.color,
       legendary: p.legendary,
       mythical: p.mythical,
@@ -149,12 +172,12 @@ function build(): Facts[] {
       family: chains.get(p.chain) ?? [p.id],
       familyKey: Math.min(...(chains.get(p.chain) ?? [p.id])),
       evolvesFrom: p.evolvesFrom,
-      evolution: p.evolvesFrom ? fixEvolutionConditions(p.id, d.evolution).filter((c) => !REGIONAL_METHODS[p.id]?.includes(c)) : [],
-      abilities: d.abilities.map((a) => ({ name: a.name, hidden: a.hidden })),
+      evolution: p.evolvesFrom ? [...fixEvolutionConditions(p.id, d.evolution).filter((c) => !REGIONAL_METHODS[p.id]?.includes(c)), ...(EXTRA_METHODS[p.id] ?? [])] : [],
+      abilities: dedupeAbilities(d.abilities.map((a) => ({ name: a.name, hidden: a.hidden }))),
       eggGroups: d.eggGroups,
-      genderRate: d.genderRate,
+      genderRate: GENDER_FIXES[p.id] ?? d.genderRate,
       regionalForms: REGIONS.filter((r) => formSlugs.some((s) => s.split("-").includes(r))),
-      mega: formSlugs.some((s) => /-mega(-[xy])?$/.test(s)),
+      mega: NEW_MEGAS.has(p.id) || formSlugs.some((s) => /-mega(-[xy])?$/.test(s)),
       gmax: formSlugs.some((s) => s.endsWith("-gmax")),
       learnsetGame: d.learnset?.game ?? null,
       levelUp,

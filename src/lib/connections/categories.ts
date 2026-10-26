@@ -2,7 +2,7 @@ import { GENERATION_REGIONS, STAT_LABELS, type StatKey } from "@/lib/pokemon/con
 import { curatedCategories } from "./curated";
 import { wordplayCategories } from "./wordplay";
 import type { TileRef } from "./mixed";
-import { FACTS, MOVES, SV, factsOf, isFriendship, isTrade, nameOf, stoneOf, type Facts, type Region } from "./facts";
+import { FACTS, MEGA_DISPUTED, MOVES, SV, factsOf, isFriendship, isTrade, nameOf, stoneOf, type Facts, type Region } from "./facts";
 
 /**
  * Every PokéConnections category: a group name, a test over a Pokémon's
@@ -69,6 +69,12 @@ const EGG_GROUP_NAME: Record<string, string> = {
   Water2: "Water 2",
   Water3: "Water 3",
 };
+
+/** Species only a regional form or variant of evolves (Farfetch’d, Qwilfish, Corsola, Basculin), and Meltan and Melmetal (only in Pokémon GO). */
+const EVOLUTION_DISPUTED = new Set([83, 211, 222, 550, 808, 809]);
+
+/** Toedscool and Toedscruel: Grass Egg Group in PokéAPI, Field in Showdown's data. */
+const EGG_DISPUTED = new Set([948, 949]);
 
 /** The fewest pool members (from different evolution families: a puzzle has one Pokémon per family) a category needs to be worth using. */
 export const MIN_MEMBERS = 5;
@@ -207,7 +213,10 @@ function build(): Category[] {
     label: "Doesn't evolve",
     rule: "None of them evolves or evolves from anything.",
     difficulty: 2.3,
-    test: (f) => f.family.length === 1,
+    // Not "alone in its family": Manaphy and Phione share one but neither evolves.
+    test: (f) => f.evolvesFrom === null && evolutionsOf(f).length === 0 && !EVOLUTION_DISPUTED.has(f.id),
+    // EVOLUTION_DISPUTED: arguable either way, so never in the group nor beside it.
+    guard: (f) => EVOLUTION_DISPUTED.has(f.id),
     why: () => "no evolutions",
   });
   const stoneEvos = pooled.filter((f) => f.evolution.some((c) => stoneOf(c)));
@@ -435,9 +444,10 @@ function build(): Category[] {
     id: "form:mega",
     family: "forms",
     label: "Can Mega Evolve",
-    rule: "Each one has a Mega Evolution.",
+    rule: "Each one has a Mega Evolution (Legends: Z-A's new Megas included).",
     difficulty: 2.4,
     test: (f) => f.mega,
+    guard: (f) => MEGA_DISPUTED.has(f.id),
     why: (f) => `Mega ${f.name} exists`,
     lure: (f) => (f.gmax ? "it has a Gigantamax form, not a Mega Evolution" : null),
   });
@@ -456,7 +466,8 @@ function build(): Category[] {
   for (const raw of [...new Set(FACTS.flatMap((f) => f.eggGroups))].sort()) {
     if (raw === "Ditto" || raw === "No Eggs") continue;
     const group = EGG_GROUP_NAME[raw] ?? raw;
-    const test = (f: Facts) => f.eggGroups.includes(raw);
+    // Sources disagree on Toedscool and Toedscruel (Grass or Field): never in an Egg Group group, nor beside one.
+    const test = (f: Facts) => f.eggGroups.includes(raw) && !EGG_DISPUTED.has(f.id);
     out.push({
       id: `egg:${group.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`,
       family: "breeding",
@@ -464,6 +475,7 @@ function build(): Category[] {
       rule: `Every one is in the ${group} Egg Group.`,
       difficulty: group === "Undiscovered" ? 3.2 : 3.4,
       test,
+      guard: (f) => EGG_DISPUTED.has(f.id),
       why: (f) => `Egg Group${f.eggGroups.length > 1 ? "s" : ""} ${f.eggGroups.map((g) => EGG_GROUP_NAME[g] ?? g).join(" and ")}`,
       lure: typeLure(test, (f) => `its Egg Group${f.eggGroups.length > 1 ? "s are" : " is"} ${f.eggGroups.map((g) => EGG_GROUP_NAME[g] ?? g).join(" and ")}`),
     });
@@ -573,6 +585,8 @@ export const BLACKLIST = new Set<string>([
 ]);
 
 const ALL = build();
+/** Every category built, the blacklisted and too-small ones too: anything a player might spot in a grid (tests/connections-accuracy.test.ts checks grids against all of them). */
+export const ALL_CATEGORIES: readonly Category[] = ALL;
 export const CATEGORIES: Category[] = ALL.filter((c) => !BLACKLIST.has(c.id) && new Set(FACTS.filter((f) => f.pooled && c.test(f)).map((f) => f.familyKey)).size >= MIN_MEMBERS);
 const BY_ID = new Map(ALL.map((c) => [c.id, c]));
 
