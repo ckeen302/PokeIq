@@ -11,7 +11,7 @@ import { solveGrid } from "@/lib/pikadoku/solve";
 import { rarityPct, uniquenessScore } from "@/lib/pikadoku/score";
 import { rarityLetter } from "@/lib/pikadoku/share";
 import { weeklyIds, weekStart, themeFor } from "@/lib/pikadoku/weekly";
-import { PDK_DIFFICULTIES, PDK_MIN_ANSWERS, type PdkDifficulty } from "@/lib/pikadoku/types";
+import { PDK_DIFFICULTIES, PDK_FAMILIES, PDK_MIN_ANSWERS, type PdkDifficulty } from "@/lib/pikadoku/types";
 import { CONN_LAUNCH_DATE } from "@/lib/connections/types";
 
 /**
@@ -289,6 +289,22 @@ describe("every upcoming daily is solvable with more than one answer per cell", 
     expect(c.counts![0]).toBe(1);
     expect(c.ok).toBe(false);
     expect(c.errors.join(" ")).toMatch(/only one valid Pokémon/);
+  });
+});
+
+describe("Unlimited and duel grids", () => {
+  it("deal for every choice of category families, single answers allowed or not", () => {
+    // Only moves, only abilities or only regions used to throw (a server error instead of a grid).
+    for (let m = 1; m < 1 << PDK_FAMILIES.length; m++) {
+      const families = PDK_FAMILIES.filter((_, i) => m & (1 << i));
+      for (const allowSingle of [false, true]) {
+        const ids = generateGrid(`fam${m}`, { difficulty: "normal", families, allowSingle });
+        expectFillable(ids, allowSingle ? 1 : PDK_MIN_ANSWERS.normal, `${families.join(",")} ${allowSingle}`);
+      }
+    }
+  }, 120_000);
+  it("keep dealing the same grid for a seed that always worked", () => {
+    expect(generateGrid("abc123", { difficulty: "normal" })).toEqual(generateGrid("abc123", { difficulty: "normal" }));
   });
 });
 

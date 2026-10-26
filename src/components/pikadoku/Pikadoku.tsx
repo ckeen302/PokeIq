@@ -193,6 +193,9 @@ export function Pikadoku() {
         const rankName = name || getProgress().name || undefined;
         const out = (await post("/api/pikadoku/result", { guesses: list, giveUp, player: dlePlayerId(), start, ...(rankName && { name: rankName }) })) as unknown as PdkResultResponse;
         setResult(out);
+        // The result card takes over: a guess toast must never sit on top of its Share button.
+        window.clearTimeout(toastTimer.current);
+        setToast(null);
         setLocked(Object.fromEntries(Object.entries(out.locked).map(([c, id]) => [Number(c), { id, pct: out.pcts?.[Number(c)] ?? null }])));
         if (mode === "daily" && storeKey) {
           const fresh = savePdk(storeKey, { guesses: list, won: out.won, over: true, solved: out.solved, score: out.score, ms: Date.now() - startedAt.current });
@@ -324,12 +327,13 @@ export function Pikadoku() {
         setLocked(nextLocked);
         setHitCell(cell);
         window.setTimeout(() => setHitCell(null), 900);
-        showToast(`${p.name} fits!${out.pct !== null ? ` ${out.pct}% picked it.` : ""}${ppNote}`, "hit");
+        // The last guess hands over to the result card instead of a toast.
+        if (!done) showToast(`${p.name} fits!${out.pct !== null ? ` ${out.pct}% picked it.` : ""}${ppNote}`, "hit");
         play("correct");
       } else {
         setMissCell(cell);
         window.setTimeout(() => setMissCell(null), 900);
-        showToast(`${p.name} doesn't fit there.${ppNote}`, "miss");
+        if (!done) showToast(`${p.name} doesn't fit there.${ppNote}`, "miss");
         play("wrong");
       }
       if (mode === "daily" && storeKey) savePdk(storeKey, { guesses: list, won: false, over: false, solved: Object.keys(nextLocked).length, score: null });

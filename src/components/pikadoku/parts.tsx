@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import { Baby, BarChart3, Bone, Circle, Crown, Dna, GitBranch, Handshake, Info, Layers, Loader2, type LucideIcon, Maximize2, MapPin, Orbit, Rocket, Search, Sparkle, Sparkles, Swords, Trophy, Zap } from "lucide-react";
 import { TypeBadge } from "@/components/pokedex/TypeBadge";
@@ -80,7 +80,51 @@ function CategoryIcon({ cat }: { cat: PdkCategoryView }) {
   return <Icon className="h-3.5 w-3.5 shrink-0 opacity-80 sm:h-4 sm:w-4" aria-hidden />;
 }
 
-const longestWord = (label: string | undefined) => Math.max(0, ...(label ?? "").split(/\s+/).map((w) => w.length));
+/**
+ * A category label that always fits its header whole: it wraps only between
+ * words (never inside one) and shrinks its font, down to 7px, until its longest
+ * word fits the cell ("NO EVOLUTION LINE", "FLAMETHROWER" at 390px).
+ */
+function FitLabel({ text }: { text: string }) {
+  const ref = useRef<HTMLSpanElement | null>(null);
+  useLayoutEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    let width = -1;
+    const fit = () => {
+      if (el.clientWidth === width) return;
+      width = el.clientWidth;
+      el.style.fontSize = "";
+      el.style.letterSpacing = "";
+      let size = parseFloat(getComputedStyle(el).fontSize);
+      let tight = false;
+      // Shrink to 8px, then drop the wide letter-spacing, then shrink to 6.5px at most (PROTOSYNTHESIS on a 360px phone).
+      while (el.scrollWidth > el.clientWidth + 0.5) {
+        if (size > 8) size -= 0.5;
+        else if (!tight) tight = true;
+        else if (size > 6.5) size -= 0.5;
+        else break;
+        el.style.fontSize = `${size}px`;
+        if (tight) el.style.letterSpacing = "-0.01em";
+      }
+    };
+    fit();
+    const ro = new ResizeObserver(fit);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [text]);
+  return (
+    <span ref={ref} data-fit-label className="block w-full [hyphens:none] [overflow-wrap:normal] [word-break:normal]">
+      {/* Each word (hyphenated ones too: SELF-DESTRUCT) stays on one line; lines break only at spaces. */}
+      {text.split(" ").map((w, i) => (
+        <span key={i}>
+          {i > 0 && " "}
+          <span className="whitespace-nowrap">{w}</span>
+        </span>
+      ))}
+    </span>
+  );
+}
 
 function Header({ cat, testId }: { cat: PdkCategoryView | undefined; testId: string }) {
   const [open, setOpen] = useState(false);
@@ -89,16 +133,15 @@ function Header({ cat, testId }: { cat: PdkCategoryView | undefined; testId: str
     <div
       data-testid={testId}
       title={cat ? PDK_FAMILY_LABELS[cat.family] : undefined}
-      className={cn("relative flex min-h-14 items-center justify-center rounded-md border px-1.5 py-1 text-center text-[11px] font-bold leading-tight sm:text-sm", cat ? FAMILY_TINT[cat.family] : "border-foreground/10")}
+      className={cn("relative flex min-h-14 items-center justify-center rounded-md border px-1 py-1 sm:px-1.5 text-center text-[11px] font-bold leading-tight sm:text-sm", cat ? FAMILY_TINT[cat.family] : "border-foreground/10")}
       onMouseLeave={() => setOpen(false)}
     >
       {cat?.id.startsWith("type:") ? (
         <TypeBadge type={cat.id.slice(5)} size="md" className="max-w-full" />
       ) : (
-        <span className={cn("flex min-w-0 max-w-full flex-col items-center gap-0.5 font-display font-bold uppercase tracking-wide", cat && "pr-3")}>
+        <span className="flex w-full min-w-0 flex-col items-center gap-0.5 font-display font-bold uppercase tracking-wide">
           {cat && <CategoryIcon cat={cat} />}
-          {/* Several words wrap ("NO EVOLUTION / LINE"); a long single word (FLAMETHROWER) shrinks to stay inside the header. */}
-          <span className={cn("max-w-full break-words", longestWord(cat?.label) > 7 ? "text-[9px] tracking-tight sm:text-[11px]" : (cat?.label.length ?? 0) > 12 && "text-[10px] sm:text-xs")}>{cat?.label ?? "…"}</span>
+          {cat ? <FitLabel text={cat.label} /> : <span>…</span>}
         </span>
       )}
       {cat && (

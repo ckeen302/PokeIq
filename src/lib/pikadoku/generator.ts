@@ -35,14 +35,29 @@ export function gridFromIds(ids: PdkGridIds): PdkGrid {
  * with enough answers and a matching that gives nine different Pokémon.
  */
 export function generateGrid(seed: string, opts: GenOptions): PdkGridIds {
+  // An unlucky seed retries on derived seeds, and a narrow family choice (only moves, say) widens its pool: first the
+  // plain tier rule, then every tier of those families. A seed that dealt a grid before still deals the same one.
+  for (const widen of [0, 1, 2] as const) {
+    for (let round = 0; round < (widen ? 4 : 12); round++) {
+      const ids = generateOnce(round ? `${seed}~${round}` : seed, opts, widen);
+      if (ids) return ids;
+    }
+  }
+  // Some choices can never fill a grid on their own (only regions: no Pokémon debuted in two; only abilities): add types.
+  if (opts.families?.length && !opts.families.includes("types")) return generateGrid(seed, { ...opts, families: [...opts.families, "types"] });
+  throw new Error(`No solvable grid found for ${opts.difficulty}:${seed}`);
+}
+
+function generateOnce(seed: string, opts: GenOptions, widen: 0 | 1 | 2): PdkGridIds | null {
   const rng = new Rng(`pikadoku:${opts.difficulty}:${seed}`);
   const families = opts.families?.length ? opts.families : PDK_FAMILIES;
-  const inFamilies = allCategories().filter((c) => c.tier <= MAX_TIER[opts.difficulty] && families.includes(c.family));
+  const inFamilies = allCategories().filter((c) => c.tier <= (widen === 2 ? 3 : MAX_TIER[opts.difficulty]) && families.includes(c.family));
   // Easy: types, regions and simple categories. Normal (and Unlimited's defaults): PokeDoku's mix. Expert: everything, trivia included.
   // A family choice the mix can't serve (say, only abilities) falls back to the plain tier rule.
   const styled = inFamilies.filter((c) => (opts.difficulty === "normal" ? c.classic : opts.difficulty === "easy" ? c.family !== "moves" && c.family !== "abilities" : true));
-  const pool = styled.length >= 6 ? styled : inFamilies;
-  const oneMove = pool !== inFamilies && opts.difficulty === "normal";
+  const pool = styled.length >= 6 && !widen ? styled : inFamilies;
+  // At most one move in PokeDoku's mix, when there is enough else to fill the grid.
+  const oneMove = pool !== inFamilies && opts.difficulty === "normal" && pool.filter((c) => c.family !== "moves").length >= 5;
   const byFamily = new Map<PdkFamily, PdkCategory[]>();
   for (const c of pool) byFamily.set(c.family, [...(byFamily.get(c.family) ?? []), c]);
   const fams = [...byFamily.keys()];
@@ -66,5 +81,5 @@ export function generateGrid(seed: string, opts: GenOptions): PdkGridIds {
     if (!isSolvable(answers, min)) continue;
     return { rows: rows.map((c) => c.id), cols: cols.map((c) => c.id) };
   }
-  throw new Error(`No solvable grid found for ${opts.difficulty}:${seed}`);
+  return null;
 }
