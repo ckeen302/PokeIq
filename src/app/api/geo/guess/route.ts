@@ -4,6 +4,7 @@ import { clientIp, rateLimit } from "@/lib/server/rate-limit";
 import { claimOnce, recallResponse, rememberResponse, requestFingerprint } from "@/lib/server/replay-guard";
 import { gradeGeo, readGeo } from "@/lib/server/geo";
 import { syncHiddenShots } from "@/lib/server/geo-reports";
+import { logRoundScore } from "@/lib/server/geo-round-scores";
 import { GEO_FAMILY_IDS } from "@/lib/geo-families";
 
 /**
@@ -42,5 +43,10 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "That round was already guessed." }, { status: 409 });
   }
   rememberResponse(outcome.claimKey, fingerprint, outcome.body);
+  // Each shot's real difficulty: how players score on it (a timed-out round says nothing about the shot).
+  if (!outcome.body.timedOut) {
+    const spec = state.spec;
+    void logRoundScore({ shot: outcome.shot, score: outcome.body.score, mode: spec.daily ? "daily" : spec.practice === "challenge" ? "challenge" : "solo" });
+  }
   return NextResponse.json(outcome.body, { headers: { "Cache-Control": "no-store" } });
 }

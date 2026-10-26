@@ -5,6 +5,7 @@ import { clientIp, rateLimit } from "@/lib/server/rate-limit";
 import { optionalName } from "@/lib/name-filter";
 import { geoFilter, isGeoSpec, readGeoChallenge, startGeo } from "@/lib/server/geo";
 import { syncHiddenShots } from "@/lib/server/geo-reports";
+import { syncShotScores } from "@/lib/server/geo-round-scores";
 import { GEO_FILTER_MIN_PLACES, GEO_KINDS, GEO_ROUND_OPTIONS, WORLD_REGION, geoDailyRegion, isGeoRounds, type GeoRounds, type GeoSpec } from "@/lib/geo-types";
 import { GEO_ERAS, GEO_FAMILY_IDS } from "@/lib/geo-families";
 
@@ -16,6 +17,7 @@ import { GEO_ERAS, GEO_FAMILY_IDS } from "@/lib/geo-families";
  *                             `recent` lists the areas the player just saw, so they don't come straight back
  *   { daily: "YYYY-MM-DD" }   the daily game (same five places for everyone, every game)
  *   { challenge: "<token>" }  a friend's exact five places (not ranked)
+ * `difficulty: "easy" | "hard"` deals shots the audit rates easier or harder (practice: not ranked).
  * `guessGame: true` adds "guess the game too" (five-round games): bonus points
  * for naming each screenshot's game, kept apart from the ranked score.
  * An optional `name` is shown to friends on the challenge link (left off if it isn't fit to show).
@@ -29,6 +31,8 @@ const bodySchema = z.object({
   era: z.enum(GEO_ERAS).optional(),
   families: z.array(z.enum(GEO_FAMILY_IDS as [string, ...string[]])).max(GEO_FAMILY_IDS.length).optional(),
   guessGame: z.boolean().optional(),
+  /** Easy or Hard (practice); Normal when left out. */
+  difficulty: z.enum(["easy", "normal", "hard"]).optional(),
   /** Game length: 3, 5 or 10 (default 5; the Daily is always 5). */
   rounds: z.number().refine((n) => (GEO_ROUND_OPTIONS as readonly number[]).includes(n), "Pick 3, 5 or 10 rounds.").optional(),
   daily: z.string().optional(),
@@ -44,7 +48,7 @@ export async function POST(request: NextRequest) {
   const parsed = bodySchema.safeParse(await request.json().catch(() => ({})));
   if (!parsed.success) return NextResponse.json({ error: parsed.error.issues[0].message }, { status: 400 });
   const body = parsed.data;
-  await syncHiddenShots();
+  await Promise.all([syncHiddenShots(), syncShotScores()]);
 
   let spec: GeoSpec;
   let seed: string | undefined;
@@ -63,7 +67,14 @@ export async function POST(request: NextRequest) {
     if (!challenge) return NextResponse.json({ error: "That challenge link isn't valid." }, { status: 400 });
     // The link carries the game length: one score per round.
     const rounds = challenge.rounds.length;
-    spec = { region: challenge.region, kind: "game", practice: "challenge", ...(rounds !== 5 && isGeoRounds(rounds) ? { rounds } : {}), ...geoFilter(challenge.era, challenge.families) };
+    spec = {
+      region: challenge.region,
+      kind: "game",
+      practice: "challenge",
+      ...(rounds !== 5 && isGeoRounds(rounds) ? { rounds } : {}),
+      ...geoFilter(challenge.era, challenge.families),
+      ...(challenge.difficulty ? { difficulty: challenge.difficulty } : {}),
+    };
     seed = challenge.seed;
     plan = challenge.plan;
   } else {
@@ -71,6 +82,10 @@ export async function POST(request: NextRequest) {
     spec = { region: body.region, kind: body.kind, ...filter };
     if (body.kind === "game" && body.rounds && body.rounds !== 5) spec.rounds = body.rounds as GeoRounds;
     if (filter.families) spec.practice = "filtered";
+    if (body.difficulty === "easy" || body.difficulty === "hard") {
+      spec.difficulty = body.difficulty;
+      spec.practice ??= "difficulty";
+    }
   }
   if (body.guessGame && spec.kind === "game") spec.guessGame = true;
   if (!isGeoSpec(spec)) {

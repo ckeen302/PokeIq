@@ -71,9 +71,11 @@ export interface GeoSpec {
   rounds?: GeoRounds;
   /**
    * Not ranked: a repeat start of a daily, a friend's challenge (the places
-   * are known), or a game on hand-picked game families (practice only).
+   * are known), a game on hand-picked game families, or an Easy or Hard game (practice only).
    */
-  practice?: "repeat-daily" | "challenge" | "filtered";
+  practice?: "repeat-daily" | "challenge" | "filtered" | "difficulty";
+  /** Easy or Hard: shots rated easier or harder by the audit (and players' scores). Practice: Normal keeps the leaderboards. */
+  difficulty?: "easy" | "hard";
   /** Only Classic 2D or Modern 3D screenshots (all games when unset). */
   era?: GeoEra;
   /** Only these families (within the era): practice. */

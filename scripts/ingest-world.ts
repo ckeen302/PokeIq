@@ -73,9 +73,9 @@ const LOCK = path.join(process.cwd(), ".data", "ingest-world.lock");
 /** New shots waiting for review (--crops, --expand), unless --out= says otherwise. */
 const CANDIDATES = path.join(process.cwd(), ".data", "geo-candidates.json");
 
-const MAX_SHOTS = 14;
+const MAX_SHOTS = 24;
 /** 3D screenshots a place gets from other wikis, counting the ones Bulbapedia already gave it. */
-const WIKI_SHOTS = 6;
+const WIKI_SHOTS = 10;
 const MAX_BUILDING_SHOTS = 10;
 /** Space around each region's crop, as a share of its size. */
 const CROP_MARGIN = 0.04;

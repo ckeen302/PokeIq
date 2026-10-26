@@ -95,11 +95,32 @@ async function fetchRetry(url: string): Promise<Response> {
     try {
       const res = await fetch(url, { headers: { "User-Agent": UA }, signal: AbortSignal.timeout(30_000) });
       if (res.ok) return res;
-      if (res.status !== 429 && res.status < 500) throw new Error(`${res.status} ${url}`);
+      // 403: a rate limiter in front of the wiki as often as a real refusal, so it is retried too.
+      if (res.status !== 429 && res.status !== 403 && res.status < 500) throw new Error(`${res.status} ${url}`);
+      if (attempt >= 4) throw new Error(`${res.status} ${url}`);
     } catch (err) {
       if (attempt >= 3) throw err;
     }
-    await sleep(1000 * 2 ** attempt);
+    await sleep(2000 * 2 ** attempt);
+  }
+}
+
+/**
+ * The Archives' own API sits behind a browser check from some networks. Its
+ * listings (categories, files by prefix) are then skipped with a warning, and
+ * the run goes on with Bulbapedia (which serves the Archives' file info as its
+ * shared repository) and the other wikis. Returns null when blocked.
+ */
+let archivesBlocked = false;
+export async function archivesApi<T>(params: Record<string, string>): Promise<T | null> {
+  if (archivesBlocked) return null;
+  try {
+    return await api<T>(ARCHIVES, params);
+  } catch (err) {
+    if (!/^403 /.test((err as Error).message)) throw err;
+    archivesBlocked = true;
+    console.warn("  ! The Archives' API is blocked from here: its category and prefix listings are skipped this run.");
+    return null;
   }
 }
 
@@ -121,7 +142,7 @@ export async function fileInfo(files: string[]): Promise<Map<string, { url: stri
     const batch = files.slice(i, i + 50);
     const r = await api<{
       query: { normalized?: { from: string; to: string }[]; pages: { title: string; imageinfo?: { url: string; width: number; height: number }[] }[] };
-    }>(ARCHIVES, { action: "query", titles: batch.map((f) => `File:${f}`).join("|"), prop: "imageinfo", iiprop: "url|size" });
+    }>(WIKI, { action: "query", titles: batch.map((f) => `File:${f}`).join("|"), prop: "imageinfo", iiprop: "url|size" });
     const back = new Map((r.query.normalized ?? []).map((n) => [n.to, n.from]));
     for (const p of r.query.pages) {
       const info = p.imageinfo?.[0];
@@ -329,10 +350,10 @@ export async function categoryFiles(category: string): Promise<CategoryFile[]> {
   const out = new Map<string, CategoryFile>();
   let cont: Record<string, string> = {};
   for (;;) {
-    const r = await api<{
+    const r = await archivesApi<{
       query?: { pages: { title: string; imageinfo?: { width: number; height: number }[]; categories?: { title: string }[] }[] };
       continue?: Record<string, string>;
-    }>(ARCHIVES, {
+    }>({
       action: "query",
       generator: "categorymembers",
       gcmtitle: `Category:${category}`,
@@ -343,6 +364,7 @@ export async function categoryFiles(category: string): Promise<CategoryFile[]> {
       cllimit: "max",
       ...cont,
     });
+    if (!r) return [...out.values()];
     for (const p of r.query?.pages ?? []) {
       const name = p.title.replace(/^File:/, "").replace(/ /g, "_");
       const file = out.get(name) ?? { name, width: 0, height: 0, categories: [] };
@@ -394,10 +416,11 @@ export async function archiveFiles(prefix: string): Promise<{ name: string; widt
   const out: { name: string; width: number; height: number }[] = [];
   let cont: Record<string, string> = {};
   for (;;) {
-    const r = await api<{
+    const r = await archivesApi<{
       query: { allimages: { name: string; width: number; height: number }[] };
       continue?: { aicontinue: string };
-    }>(ARCHIVES, { action: "query", list: "allimages", aiprefix: prefix, ailimit: "500", aiprop: "size", ...cont });
+    }>({ action: "query", list: "allimages", aiprefix: prefix, ailimit: "500", aiprop: "size", ...cont });
+    if (!r) return out;
     out.push(...r.query.allimages);
     if (!r.continue) return out;
     cont = { aicontinue: r.continue.aicontinue };

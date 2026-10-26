@@ -5,6 +5,7 @@ import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   Check,
+  Copy,
   Compass,
   Flame,
   Globe2,
@@ -40,7 +41,9 @@ import { dailyNumber } from "@/lib/daily";
 import { useToday } from "@/lib/use-today";
 import { recordGeoGame, useProgress, type BadgeDef } from "@/lib/progress";
 import { play, unlockAudio } from "@/lib/sound";
-import { guessrShareText, guessrSquare, shareOrCopy, shareUrl, type GuessrShareResult } from "@/lib/share";
+import { copyText, guessrShareText, guessrSquare, shareOrCopy, shareUrl, type GuessrShareResult } from "@/lib/share";
+import { GEO_DIFFICULTY_NAMES, type GeoDifficulty } from "@/lib/geo-difficulty";
+import { COMPARE_MAX, COMPARE_MIN_PLAYERS, bucketOf, percentBeaten, type GeoDailyStats } from "@/lib/geo-compare";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { BadgeMedal } from "@/components/game/BadgeMedal";
@@ -54,7 +57,7 @@ import { GeoHowTo, HowToHelpButton } from "./GeoHowTo";
 import { ShotCarousel, shotFit } from "./ShotCarousel";
 import { GameShell, dockClass } from "./GameShell";
 import { roundViewsOf } from "@/lib/geo-look";
-import { GeoSettingsButton, RoundsPicker } from "./GeoSettings";
+import { DifficultyPicker, GeoSettingsButton, RoundsPicker } from "./GeoSettings";
 import {
   DEFAULT_GEO_SETTINGS,
   GEO_ZOOM,
@@ -85,6 +88,8 @@ interface Game {
   /** The game filter it was started with (the daily: every game). */
   filter: FilterChoice;
   guessGame: boolean;
+  /** Easy or Hard (practice); Normal when unset. */
+  difficulty?: "easy" | "hard";
   /** No move, Zoomed and the round timer, as set when the game started. */
   settings: GeoPlaySettings;
   token: string;
@@ -100,8 +105,10 @@ interface Played {
 }
 
 /** The personal-best and leaderboard board of a game: its map, kind and era (hand-picked games keep a best of their own). */
-const boardOf = (game: Pick<Game, "region" | "kind" | "filter"> & { rounds?: number }) =>
-  `${geoBoardKey({ region: game.region.id, kind: game.kind, era: game.filter.era, rounds: game.rounds })}${game.filter.families.length ? ":custom" : ""}`;
+const boardOf = (game: Pick<Game, "region" | "kind" | "filter" | "difficulty"> & { rounds?: number }) =>
+  `${geoBoardKey({ region: game.region.id, kind: game.kind, era: game.filter.era, rounds: game.rounds })}${game.filter.families.length ? ":custom" : ""}${
+    game.difficulty ? `:${game.difficulty}` : ""
+  }`;
 
 interface Reward {
   xp: number;
@@ -198,7 +205,7 @@ export interface GeoGameProps {
   /** Every map: the world and each region. */
   regions: GeoRegionInfo[];
   /** Set on /guessr/c/<token>: a friend's game to replay. */
-  challenge?: GeoChallenge & { token: string; region: string; era?: GeoEra; families?: GeoFamilyId[] };
+  challenge?: GeoChallenge & { token: string; region: string; era?: GeoEra; families?: GeoFamilyId[]; difficulty?: "easy" | "hard" };
 }
 
 export function GeoGame(props: GeoGameProps) {
@@ -234,6 +241,8 @@ function GeoGameInner({ regions: allRegions, challenge }: GeoGameProps) {
   const [filter, setFilter] = useState<FilterChoice>({ era: undefined, families: [] });
   const [gamePick, setGamePick] = useState<string | null>(null);
   const [rounds, setRounds] = useState<GeoRounds>(5);
+  const [difficulty, setDifficulty] = useState<GeoDifficulty>("normal");
+  const chosenMode = difficulty === "normal" ? undefined : difficulty;
 
   const region = byId(regionId) ?? regions[0];
   const places = filterPlaces(region, filter);
@@ -284,11 +293,22 @@ function GeoGameInner({ regions: allRegions, challenge }: GeoGameProps) {
     try {
       const bonus: { guessGame?: boolean } = {};
       const picked = { era: filter.era, families: filter.families.length ? filter.families : undefined };
+      // Free play takes the picked difficulty; a challenge plays its own, the Daily always Normal.
+      const mode = opts.challenge ? challenge?.difficulty : opts.daily ? undefined : chosenMode;
       const body = opts.challenge
         ? { challenge: opts.challenge, name: progress?.name || undefined, ...bonus }
         : opts.daily
           ? { daily: opts.daily, name: progress?.name || undefined, ...bonus }
-          : { region: region.id, kind: opts.kind, ...(opts.kind === "game" ? { rounds: playRounds } : {}), ...picked, name: progress?.name || undefined, recent: readRecent(), ...bonus };
+          : {
+              region: region.id,
+              kind: opts.kind,
+              ...(opts.kind === "game" ? { rounds: playRounds } : {}),
+              ...picked,
+              ...(mode ? { difficulty: mode } : {}),
+              name: progress?.name || undefined,
+              recent: readRecent(),
+              ...bonus,
+            };
       const res = await post<GeoStartResponse>("/api/geo", body);
       const map = byId(res.region) ?? allRegions.find((r) => r.id === res.region);
       if (!map) throw new Error("That map isn't available right now.");
@@ -306,6 +326,7 @@ function GeoGameInner({ regions: allRegions, challenge }: GeoGameProps) {
         practice: res.practice,
         filter: played,
         guessGame: !!bonus.guessGame,
+        ...(mode ? { difficulty: mode } : {}),
         settings,
         token: res.token,
         round: res.round,
@@ -427,8 +448,8 @@ function GeoGameInner({ regions: allRegions, challenge }: GeoGameProps) {
   if (phase === "setup" || phase === "loading" || (phase === "error" && !game)) {
     const dailyDone = today ? progress?.best[`geo-daily:${today}`] : undefined;
     const dailyMap = today ? byId(geoDailyRegion(today, playable(byId(WORLD_REGION)))) : undefined;
-    const bestGame = progress?.best[`geo:${boardOf({ region, kind: "game", filter, rounds: playRounds })}`];
-    const bestStreak = progress?.best[`geo:${boardOf({ region, kind: "streak", filter })}`];
+    const bestGame = progress?.best[`geo:${boardOf({ region, kind: "game", filter, rounds: playRounds, difficulty: chosenMode })}`];
+    const bestStreak = progress?.best[`geo:${boardOf({ region, kind: "streak", filter, difficulty: chosenMode })}`];
     const challengeMap = challenge ? byId(challenge.region) : undefined;
     const loading = phase === "loading";
     const isWorld = isWorldwide(region.id);
@@ -582,7 +603,10 @@ function GeoGameInner({ regions: allRegions, challenge }: GeoGameProps) {
             </p>
           )}
 
-          <RoundsPicker value={playRounds} onChange={setRounds} max={places} label="Rounds in a game" />
+          <div className="grid gap-4 sm:grid-cols-[auto_1fr] sm:gap-8">
+            <RoundsPicker value={playRounds} onChange={setRounds} max={places} label="Rounds in a game" />
+            <DifficultyPicker value={difficulty} onChange={setDifficulty} />
+          </div>
 
           <div className="grid gap-4 sm:grid-cols-2">
             <ModeCard
@@ -695,6 +719,7 @@ function GeoGameInner({ regions: allRegions, challenge }: GeoGameProps) {
           {game.region.name}
           {game.filter.families.length ? " · Picked games" : game.filter.era ? ` · ${GEO_ERA_NAMES[game.filter.era]}` : ""}
           {game.daily ? ` · Daily #${dailyNumber(game.daily)}` : isStreak ? " · Streak" : ""}
+          {game.difficulty ? ` · ${GEO_DIFFICULTY_NAMES[game.difficulty]}` : ""}
         </div>
       </div>
       <div className="flex shrink-0 items-center gap-6 text-right">
@@ -987,6 +1012,11 @@ function GeoSummary({
   };
   const challengeUrl = challengeToken ? `${origin}/guessr/c/${encodeURIComponent(challengeToken)}` : null;
   const canRank = !game.practice && !!resultToken;
+  const modeName = game.difficulty ? GEO_DIFFICULTY_NAMES[game.difficulty] : undefined;
+  const shareTextFull = guessrShareText(shareResult, region.name, shareUrl(shareResult), { mode: modeName });
+  // The card to copy: the result, then the challenge link (same places) when there is one, else the result page.
+  const shareBody = guessrShareText(shareResult, region.name, undefined, { mode: modeName });
+  const shareLink = challengeUrl ?? shareUrl(shareResult);
 
   async function shareChallenge() {
     if (!challengeUrl) return;
@@ -1043,6 +1073,8 @@ function GeoSummary({
           </div>
         )}
       </div>
+
+      {game.daily && !isStreak && <DailyCompare date={game.daily} score={total} />}
 
       {outcome && challenge && (
         <Card className={cn(outcome === "win" ? "border-success/50" : outcome === "lose" ? "border-destructive/40" : "")}>
@@ -1108,6 +1140,8 @@ function GeoSummary({
             ))}
           </ol>
 
+          <ShareCard body={shareBody} link={shareLink} challenge={!!challengeUrl} />
+
           <div className="grid gap-2 sm:grid-cols-2">
             {challengeUrl && (
               <Button className="sm:col-span-2" size="lg" variant="success" onClick={() => void shareChallenge()}>
@@ -1115,7 +1149,7 @@ function GeoSummary({
                 {shared === "done" ? "Challenge link copied!" : "Challenge a friend"}
               </Button>
             )}
-            <ShareButton size="lg" kind="guessr" getText={() => guessrShareText(shareResult, region.name, shareUrl(shareResult))} />
+            <ShareButton size="lg" variant="outline" kind="guessr" label="Share…" getText={() => shareTextFull} />
             <Button size="lg" variant="secondary" onClick={onRestart}>
               <RotateCcw className="h-4 w-4" aria-hidden /> Play again
             </Button>
@@ -1157,6 +1191,8 @@ function GeoSummary({
             <p className="text-xs text-muted-foreground">Challenge games aren&apos;t ranked, since the places were shared.</p>
           ) : game.practice === "filtered" ? (
             <p className="text-xs text-muted-foreground">Games on hand-picked games are practice: play All games, Classic 2D or Modern 3D to rank.</p>
+          ) : game.practice === "difficulty" ? (
+            <p className="text-xs text-muted-foreground">Easy and Hard games are practice: play Normal to get on the leaderboard.</p>
           ) : null}
 
           <Link
@@ -1172,5 +1208,99 @@ function GeoSummary({
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+/**
+ * The Wordle-style result card: the share text as it'll paste (a square per
+ * round by how close the pin landed, each round's points, the total), with a
+ * Copy button. The link copied under it is the challenge link when there is
+ * one (the same places for a friend), else the result page.
+ */
+function ShareCard({ body, link, challenge }: { body: string; link: string; challenge: boolean }) {
+  const [state, setState] = useState<"idle" | "copied" | "failed">("idle");
+  const timer = useRef<number | undefined>(undefined);
+  useEffect(() => () => window.clearTimeout(timer.current), []);
+  const full = `${body}\n${link}`;
+  async function copy() {
+    const ok = await copyText(full);
+    setState(ok ? "copied" : "failed");
+    window.clearTimeout(timer.current);
+    if (ok) timer.current = window.setTimeout(() => setState("idle"), 2200);
+  }
+  return (
+    <div className="space-y-2 rounded-md border bg-shade/20 p-3" data-testid="geo-share-card">
+      <div className="flex items-center justify-between gap-3">
+        <p className="hud-label">Your result card</p>
+        <Button size="sm" variant={state === "copied" ? "success" : "secondary"} onClick={() => void copy()} data-testid="geo-copy-result">
+          {state === "copied" ? <Check className="h-4 w-4" aria-hidden /> : <Copy className="h-4 w-4" aria-hidden />}
+          {state === "copied" ? "Copied!" : "Copy"}
+        </Button>
+      </div>
+      <pre className="whitespace-pre-wrap break-words font-sans text-sm leading-relaxed" data-testid="geo-share-preview">
+        {body}
+      </pre>
+      <p className="truncate text-xs text-muted-foreground">
+        {challenge ? "+ your challenge link: friends play the same places" : "+ a link to your result"}
+      </p>
+      {state === "failed" && <CopyFallback text={full} />}
+    </div>
+  );
+}
+
+/**
+ * The Daily's "how you compared": the day's ranked scores in ten bars, yours
+ * lit, and the share of players you beat. Shown only with enough players
+ * (geo_runs: games saved to the daily leaderboard); otherwise nothing.
+ */
+function DailyCompare({ date, score }: { date: string; score: number }) {
+  const [stats, setStats] = useState<GeoDailyStats | null>(null);
+  useEffect(() => {
+    let off = false;
+    fetch(`/api/geo/daily-stats?date=${encodeURIComponent(date)}&score=${score}`)
+      .then((r) => (r.ok ? (r.json() as Promise<GeoDailyStats>) : null))
+      .then((s) => !off && setStats(s))
+      .catch(() => undefined);
+    return () => {
+      off = true;
+    };
+  }, [date, score]);
+  if (!stats || stats.players < COMPARE_MIN_PLAYERS) return null;
+  const beaten = percentBeaten(stats);
+  const mine = bucketOf(score);
+  const tallest = Math.max(1, ...stats.buckets);
+  return (
+    <Card data-testid="geo-daily-compare">
+      <CardContent className="space-y-3 p-5">
+        <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+          <p className="hud-label text-warning">How you compared</p>
+          <p className="text-sm text-muted-foreground">
+            {fmt(stats.players)} ranked players today{stats.median !== undefined ? ` · median ${fmt(stats.median)}` : ""}
+          </p>
+        </div>
+        {beaten !== null && (
+          <p className="font-display text-2xl font-bold uppercase" data-testid="geo-daily-percent">
+            Better than {beaten}% of players
+          </p>
+        )}
+        <div className="flex h-28 items-end gap-1" role="img" aria-label={`Score spread for the day, your score in bar ${mine + 1} of ${stats.buckets.length}`}>
+          {stats.buckets.map((n, i) => (
+            <div key={i} className="flex h-full min-w-0 flex-1 flex-col justify-end">
+              <motion.div
+                className={cn("rounded-t-sm", i === mine ? "bg-primary" : "bg-muted-foreground/30")}
+                initial={{ height: 0 }}
+                animate={{ height: `${Math.max(n ? 6 : 2, (n / tallest) * 100)}%` }}
+                transition={{ duration: 0.6, delay: i * 0.03 }}
+              />
+            </div>
+          ))}
+        </div>
+        <div className="flex justify-between font-pixel text-[10px] text-muted-foreground">
+          <span>0</span>
+          <span>{fmt(COMPARE_MAX / 2)}</span>
+          <span>{fmt(COMPARE_MAX)}</span>
+        </div>
+      </CardContent>
+    </Card>
   );
 }

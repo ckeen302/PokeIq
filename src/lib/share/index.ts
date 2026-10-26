@@ -84,11 +84,37 @@ export async function shareOrCopy(text: string, url?: string): Promise<ShareOutc
       // Not allowed here (no user gesture, a permissions policy): copy instead.
     }
   }
+  return (await copyText(full)) ? "copied" : "failed";
+}
+
+/**
+ * Copies text: the Clipboard API, else the old select-and-copy (older
+ * browsers, http pages, an embedded frame without clipboard rights). False
+ * when neither worked: show the text for copying by hand.
+ */
+export async function copyText(text: string): Promise<boolean> {
   try {
-    await navigator.clipboard.writeText(full);
-    return "copied";
+    if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(text);
+      return true;
+    }
   } catch {
-    return "failed";
+    // Fall through to the old way.
+  }
+  try {
+    const area = document.createElement("textarea");
+    area.value = text;
+    area.setAttribute("readonly", "");
+    area.style.position = "fixed";
+    area.style.opacity = "0";
+    area.style.pointerEvents = "none";
+    document.body.appendChild(area);
+    area.select();
+    const ok = document.execCommand("copy");
+    area.remove();
+    return ok;
+  } catch {
+    return false;
   }
 }
 
