@@ -12,7 +12,7 @@ export type PdkDifficulty = "easy" | "normal" | "expert";
 export type PdkSlot = PdkDifficulty | "weekly";
 export const PDK_DIFFICULTIES: PdkDifficulty[] = ["easy", "normal", "expert"];
 /** Fewest valid answers any cell must have, per difficulty. */
-export const PDK_MIN_ANSWERS: Record<PdkDifficulty, number> = { easy: 8, normal: 3, expert: 1 };
+export const PDK_MIN_ANSWERS: Record<PdkDifficulty, number> = { easy: 8, normal: 3, expert: 2 };
 
 export type PdkFamily = "types" | "regions" | "evolution" | "moves" | "abilities" | "other";
 export const PDK_FAMILIES: PdkFamily[] = ["types", "regions", "evolution", "moves", "abilities", "other"];
@@ -64,7 +64,8 @@ export const PDK_RULES = [
   "A regional form counts for the region it debuted in: Alolan Raichu is from Alola, Galarian Meowth from Galar, Paldean Wooper from Paldea, Hisuian Growlithe from Hisui. A Mega or Gigantamax form counts for its species' region.",
   "No reuse: a form and its species are the same Pokémon. Once you use Charizard, Mega Charizard X is taken too, and the other way round. (Stricter than PokeDoku, where forms can repeat.)",
   "A species counts for 'Has an Alolan form' (and its forms of other regions); a type category needs just one of the Pokémon's types to match.",
-  "Move categories use the Scarlet & Violet learnset of the species; stat categories use base stats.",
+  "Move categories use the species' learnset from the latest main game it is in (Scarlet & Violet for most); stat categories use base stats.",
+  "Evolution methods count from either side of the step: Pikachu (evolves with a Thunder Stone) and Raichu (evolved with one) both fit 'Stone evolution'.",
 ];
 
 const FORMS_OWN = "Forms are their own picks with their own types, stats and abilities.";
@@ -83,14 +84,35 @@ export function categoryHint(id: string): string {
       return `Counts the Pokémon's own types, so a form can differ from its species: Charizard is dual-typed, and so is Mega Charizard X. ${FORMS_OWN}`;
     case "region":
       return a === "hisui"
-        ? "Only Hisuian forms: their debut region is Hisui (Pokémon Legends: Arceus). Species count for the region they debuted in; Megas and Gigantamax forms count for their species' region."
-        : "A species counts for the region it debuted in. A regional form counts for the region it debuted in (Alolan Raichu is Alola, Raichu is Kanto). Megas and Gigantamax forms count for their species' region.";
+        ? "Debuted in Pokémon Legends: Arceus: the Hisuian forms (Hisuian Growlithe) and the seven new species (Wyrdeer, Kleavor, Ursaluna, Basculegion, Sneasler, Overqwil, Enamorus)."
+        : "The generation a species debuted in (Gen 8 is Galar, Legends: Arceus newcomers like Kleavor included). A regional form counts for the region it debuted in (Alolan Raichu is Alola, Raichu is Kanto). Megas and Gigantamax forms count for their species' region.";
     case "form":
       return "The species has a regional form from that region, so the species and each of its forms count (Raichu and Alolan Raichu both match 'Has an Alolan form').";
     case "evo":
-      return `Judged by the evolution line. ${FORMS_FOLLOW} Alolan Raichu is a second stage, like Raichu; Mega Charizard X is a fully evolved Charmander line member.`;
+      switch (a) {
+        case "basic":
+        case "stage2":
+        case "stage3":
+          return `Its place in its evolution line. A baby is optional: Pikachu counts as Basic and as a second stage (after Pichu), Raichu as a second or third stage. ${FORMS_FOLLOW}`;
+        case "item":
+          return `Takes part in an evolution that uses or holds an item, from either side: stones, apples, held items (Onix and Steelix with a Metal Coat). Using a move 20 times is not an item. ${FORMS_FOLLOW}`;
+        case "stone":
+          return `Takes part in an evolution with one of the ten evolution stones, from either side: Pikachu and Raichu, Eevee and Vaporeon. The held Oval Stone doesn't count. ${FORMS_FOLLOW}`;
+        case "trade":
+        case "friend":
+        case "level":
+          return `Takes part in an evolution of this kind, from either side: the Pokémon that evolves and the one it becomes. ${a === "level" ? "Level means reaching a set level (Charmander at 16). " : ""}${FORMS_FOLLOW}`;
+        case "branch":
+          return `Its family splits somewhere: Eevee and every Eeveelution, the Oddish line (Vileplume or Bellossom), Scyther (Scizor or Kleavor). ${FORMS_FOLLOW}`;
+        case "three":
+          return `Its family reaches a third stage (Charmander's, or Pichu's with the baby). Eevee's family has nine species but only two stages. ${FORMS_FOLLOW}`;
+        case "none":
+          return `Doesn't evolve and doesn't evolve from anything (Tauros, Ditto). ${FORMS_FOLLOW}`;
+        default:
+          return `Judged by the evolution line. ${FORMS_FOLLOW} Alolan Raichu is fully evolved, like Raichu; Mega Charizard X is a fully evolved Charmander line member.`;
+      }
     case "move":
-      return "Needs the move in the Scarlet & Violet learnset of the species. Forms use their species' moves.";
+      return "Needs the move in the species' learnset from the latest main game it is in (Scarlet & Violet for most), by level, TM, egg or tutor. Forms use their species' moves.";
     case "ability":
       return id === "ability:hidden"
         ? "Has an ability marked hidden. Abilities belong to the form picked: Mega Charizard X has only Tough Claws, so it has no hidden ability."
@@ -102,8 +124,9 @@ export function categoryHint(id: string): string {
   }
   switch (id) {
     case "other:mega":
+      return "The species has a Mega Evolution, so the species and each of its forms count (Charizard and Mega Charizard X). Includes the Megas new in Legends: Z-A, like Dragonite and Greninja.";
     case "other:gmax":
-      return "The species has this form, so the species and each of its forms count (Charizard and Mega Charizard X both match 'Has a Mega Evolution').";
+      return "The species has a Gigantamax form, so the species and each of its forms count (Pikachu and Gigantamax Pikachu).";
     case "other:paradox":
       return "Hand-kept list of the official Paradox Pokémon (Great Tusk to Iron Crown). Forms follow their species.";
     case "other:ultrabeast":
@@ -111,7 +134,7 @@ export function categoryHint(id: string): string {
     case "other:partner":
       return "Any Pokémon in the evolution line of a main-series starter from Kanto to Paldea. " + FORMS_FOLLOW;
     case "other:ou":
-      return `Appears in the Gen 9 OU usage data. ${FORMS_FOLLOW}`;
+      return "Appears in the Gen 9 OU usage data (Smogon). A regional form counts only when it is the one used: Galarian Slowking is OU, Slowking is not. Other forms follow their species.";
     default:
       return `Legendary, Mythical, fossil and baby status belong to the species. ${FORMS_FOLLOW}`;
   }

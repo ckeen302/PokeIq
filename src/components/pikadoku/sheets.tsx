@@ -11,7 +11,7 @@ import { PikadokuDemo } from "@/components/howto/PikadokuDemo";
 const KINDS: [PdkFamily, string][] = [
   ["types", "Fighting, Dual-type, Monotype (one matching type is enough)"],
   ["regions", "Kanto to Paldea, by where a Pokémon debuted (a regional form counts for the region it debuted in)"],
-  ["evolution", "No evolution line, Evolved by item, Not fully evolved"],
+  ["evolution", "No evolution line, Stone or Item evolution, Not fully evolved (an evolution counts from either side: Pikachu and Raichu are both a Stone evolution)"],
   ["moves", "A few famous moves, such as Surf or Earthquake (Expert adds deeper learnsets)"],
   ["abilities", "Expert only: well-known and obscure abilities"],
   ["other", "Legendary, Mythical, Paradox, Ultra-Beast, First Partner, Fossil, Baby, Mega, GMax (Expert adds stat thresholds)"],

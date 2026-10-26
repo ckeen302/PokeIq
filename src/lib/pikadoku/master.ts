@@ -24,7 +24,10 @@ export interface MasterCheck {
   solvable: boolean;
 }
 
-/** Checks six category ids with the same solvability and matching test the generator uses. Single-answer cells are fine. */
+/** Fewest valid answers a Master cell may have: every daily cell has more than one answer. */
+export const MASTER_MIN_ANSWERS = 2;
+
+/** Checks six category ids with the same solvability and matching test the generator uses. Every cell needs at least two answers. */
 export function checkMaster(rows: readonly string[], cols: readonly string[]): MasterCheck {
   const errors: string[] = [];
   if (rows.length !== PDK_SIZE || cols.length !== PDK_SIZE) errors.push(`Pick ${PDK_SIZE} row categories and ${PDK_SIZE} column categories.`);
@@ -41,6 +44,8 @@ export function checkMaster(rows: readonly string[], cols: readonly string[]): M
   const counts = answers.map((a) => a.length);
   const empty = counts.map((n, i) => (n === 0 ? i : -1)).filter((i) => i >= 0);
   if (empty.length) errors.push(`Cell${empty.length > 1 ? "s" : ""} ${empty.map((i) => i + 1).join(", ")} ${empty.length > 1 ? "have" : "has"} no valid Pokémon.`);
+  const single = counts.map((n, i) => (n === 1 ? i : -1)).filter((i) => i >= 0);
+  if (single.length) errors.push(`Cell${single.length > 1 ? "s" : ""} ${single.map((i) => i + 1).join(", ")} ${single.length > 1 ? "have" : "has"} only one valid Pokémon: every cell needs at least ${MASTER_MIN_ANSWERS}.`);
   const solvable = counts.length === PDK_CELLS && isSolvable(answers, 1);
   if (!empty.length && !solvable) errors.push("No way to fill the grid with nine different Pokémon.");
   return { ok: errors.length === 0, errors, counts, solvable };

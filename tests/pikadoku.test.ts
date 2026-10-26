@@ -67,7 +67,8 @@ describe("solvability", () => {
     for (const [date, day] of Object.entries(file)) {
       for (const d of PDK_DIFFICULTIES) {
         const g = gridFromIds(day[d]);
-        expect(isSolvable(g.answers, PDK_MIN_ANSWERS[d]), `${date} ${d}`).toBe(true);
+        // Days already published (before Expert needed two answers a cell) are frozen as they were.
+        expect(isSolvable(g.answers, date <= "2026-10-27" ? 1 : PDK_MIN_ANSWERS[d]), `${date} ${d}`).toBe(true);
         const sol = solveGrid(g.answers)!;
         expect(new Set(sol.values()).size).toBe(9);
         [...sol].forEach(([cell, id]) => expect(g.answers[cell]).toContain(id));

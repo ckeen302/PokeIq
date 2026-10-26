@@ -69,7 +69,7 @@ function savePrefs(p: Prefs) {
 
 const newSeed = () => Math.random().toString(36).slice(2, 10).padEnd(8, "0");
 const DIFF_LABEL: Record<PdkDifficulty, string> = { easy: "Easy", normal: "Normal", expert: "Expert" };
-const DIFF_HINT: Record<PdkDifficulty, string> = { easy: "Broad categories, plenty of answers", normal: "The main grid: the leaderboard and score", expert: "Harder categories, as few as one answer a cell" };
+const DIFF_HINT: Record<PdkDifficulty, string> = { easy: "Broad categories, plenty of answers", normal: "The main grid: the leaderboard and score", expert: "Harder categories, as few as two answers a cell" };
 const clockText = (ms: number) => `${Math.floor(ms / 60000)}:${String(Math.floor(ms / 1000) % 60).padStart(2, "0")}`;
 
 interface Locked {
