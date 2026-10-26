@@ -8,6 +8,11 @@ export const BATTLE_FORMAT_IDS = [
   "gen9ou",
   "gen9ubers",
   "gen9uu",
+  "gen9ru",
+  "gen9nu",
+  "gen9pu",
+  "gen9lc",
+  "gen9monotype",
   "gen9doublesou",
   "gen9vgc2025regi",
   "gen9nationaldex",
@@ -34,6 +39,8 @@ export interface BattleFormat {
   paldeaOnly: boolean;
   /** The random-battle generator behind "Random team". */
   random: string;
+  /** Same Type Clause: every Pokémon shares a type (random teams are drawn one type at a time). */
+  monotype?: boolean;
   blurb: string;
 }
 
@@ -76,6 +83,72 @@ export const BATTLE_FORMATS: Record<BattleFormatId, BattleFormat> = {
     paldeaOnly: false,
     random: "gen9randombattle",
     blurb: "The tier below OU: no OU or UUBL Pokémon.",
+  },
+  gen9ru: {
+    id: "gen9ru",
+    name: "[Gen 9] RU",
+    gen: 9,
+    gameType: "singles",
+    level: 100,
+    tier: "tier",
+    homeTier: "RU",
+    natDex: false,
+    paldeaOnly: false,
+    random: "gen9randombattle",
+    blurb: "The tier below UU: no UU or RUBL Pokémon.",
+  },
+  gen9nu: {
+    id: "gen9nu",
+    name: "[Gen 9] NU",
+    gen: 9,
+    gameType: "singles",
+    level: 100,
+    tier: "tier",
+    homeTier: "NU",
+    natDex: false,
+    paldeaOnly: false,
+    random: "gen9randombattle",
+    blurb: "The tier below RU: no RU or NUBL Pokémon.",
+  },
+  gen9pu: {
+    id: "gen9pu",
+    name: "[Gen 9] PU",
+    gen: 9,
+    gameType: "singles",
+    level: 100,
+    tier: "tier",
+    homeTier: "PU",
+    natDex: false,
+    paldeaOnly: false,
+    random: "gen9randombattle",
+    blurb: "The tier below NU: no NU or PUBL Pokémon.",
+  },
+  gen9lc: {
+    id: "gen9lc",
+    name: "[Gen 9] LC",
+    gen: 9,
+    gameType: "singles",
+    level: 5,
+    tier: "tier",
+    homeTier: "LC",
+    natDex: false,
+    paldeaOnly: false,
+    random: "gen9babyrandombattle",
+    blurb: "Little Cup: first-stage Pokémon that can evolve, at level 5.",
+  },
+  gen9monotype: {
+    id: "gen9monotype",
+    name: "[Gen 9] Monotype",
+    gen: 9,
+    gameType: "singles",
+    level: 100,
+    tier: "tier",
+    homeTier: "OU",
+    natDex: false,
+    paldeaOnly: false,
+    random: "gen9randombattle",
+    monotype: true,
+    blurb: "Every Pokémon on a team shares a type. No Terastallizing.",
   },
   gen9doublesou: {
     id: "gen9doublesou",
@@ -151,7 +224,7 @@ export function isBattleFormatId(id: unknown): id is BattleFormatId {
 }
 
 /** Gen 9 formats whose rules include Showdown's Terastal Clause (no Terastallizing). */
-const TERASTAL_CLAUSE = new Set<string>(["gen9nationaldex"]);
+const TERASTAL_CLAUSE = new Set<string>(["gen9nationaldex", "gen9monotype"]);
 
 /** Tera types only exist from Gen 9, and not where the Terastal Clause bans them. */
 export function hasTera(format: { gen: number; id: string }): boolean {

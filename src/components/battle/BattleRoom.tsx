@@ -215,7 +215,7 @@ function LiveLobby({ code, view, battle }: { code: string; view: BattleView; bat
             label: "Turn timer",
             text: timer ? (
               <>
-                {timer.bank / 1000} s in the bank{timer.perTurn ? `, +${timer.perTurn / 1000} s a turn` : ""}, {timer.cap / 1000} s at most per turn. Run out twice and you lose.
+                {timer.bank / 1000} s in the bank{timer.perTurn ? `, +${timer.perTurn / 1000} s a turn` : ""}, {timer.cap / 1000} s at most per turn. {view.timeoutLoses ? "Run out once and you lose." : "Run out twice and you lose."}
               </>
             ) : (
               <>Off: take your time. Either of you can start it mid-battle.</>

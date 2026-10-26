@@ -348,7 +348,9 @@ export function QuizDuel({ code }: { code: string }) {
     const pressed = view.next?.pressed[me] ?? false;
     const nextIn = view.next ? seconds(view.next.at - now) : 0;
     const mine = last.picks[me];
-    const verdict = mine?.correct ? `Correct! It's ${last.answer}!` : mine ? `Not quite… it was ${last.answer}.` : `Time's up! It was ${last.answer}.`;
+    // Picture questions grade by a card id, which means nothing to read out.
+    const answerText = last.question.cards?.length ? "the one marked in green" : last.answer;
+    const verdict = mine?.correct ? (last.question.cards?.length ? "Correct! That's the one!" : `Correct! It's ${answerText}!`) : mine ? `Not quite… it was ${answerText}.` : `Time's up! It was ${answerText}.`;
     return (
       <div className="mx-auto max-w-2xl space-y-4">
         {notice}

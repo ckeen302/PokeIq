@@ -38,7 +38,26 @@ export function checkTeam(format: BattleFormatId, sets: TeamSet[]): TeamCheck {
  */
 export function randomTeam(format: BattleFormatId): TeamSet[] {
   const info = BATTLE_FORMATS[format];
+  if (info.monotype) return monotypeTeam(format);
   return legalRandomTeam({ generator: info.random, gen: info.gen, level: info.level, validator: validator(format) });
+}
+
+/** Monotype (Same Type Clause): one type at a time, in random order, until a full legal team comes out. */
+function monotypeTeam(format: BattleFormatId): TeamSet[] {
+  const info = BATTLE_FORMATS[format];
+  const dex = Dex.forGen(info.gen);
+  const types = dex.types
+    .all()
+    .filter((t) => t.isNonstandard !== "Future" && t.name !== "???" && t.name !== "Stellar")
+    .map((t) => t.name)
+    .sort(() => Math.random() - 0.5);
+  let best: TeamSet[] = [];
+  for (const type of types) {
+    const team = legalRandomTeam({ generator: info.random, gen: info.gen, level: info.level, validator: validator(format), tries: 2, draws: 40, keep: (s) => dex.species.get(s).types.includes(type) });
+    if (team.length === TEAM_SIZE && !validator(format).validateTeam(copy(team))) return team;
+    if (team.length > best.length) best = team;
+  }
+  return best;
 }
 
 /**
@@ -47,7 +66,7 @@ export function randomTeam(format: BattleFormatId): TeamSet[] {
  * teams for any ruleset (custom rules, the Battle Tower). May come back
  * short if the generator rarely makes legal sets.
  */
-export function legalRandomTeam(opts: { generator: string; gen: number; level: number; validator: TeamValidator; size?: number; tries?: number }): TeamSet[] {
+export function legalRandomTeam(opts: { generator: string; gen: number; level: number; validator: TeamValidator; size?: number; tries?: number; draws?: number; keep?: (species: string) => boolean }): TeamSet[] {
   const size = opts.size ?? TEAM_SIZE;
   const generator = Teams.getGenerator(opts.generator);
   const dex = Dex.forGen(opts.gen);
@@ -57,7 +76,7 @@ export function legalRandomTeam(opts: { generator: string; gen: number; level: n
     const team: TeamSet[] = [];
     const species = new Set<number>();
     const items = new Set<string>();
-    for (let draw = 0; draw < 12 && team.length < size; draw++) {
+    for (let draw = 0; draw < (opts.draws ?? 12) && team.length < size; draw++) {
       for (const raw of generator.getTeam()) {
         if (team.length >= size) break;
         const set = completeSet({
@@ -74,6 +93,7 @@ export function legalRandomTeam(opts: { generator: string; gen: number; level: n
           shiny: raw.shiny,
           teraType: opts.gen >= 9 ? raw.teraType : undefined,
         });
+        if (opts.keep && !opts.keep(set.species)) continue;
         const num = dex.species.get(set.species).num;
         if (species.has(num) || (set.item && items.has(set.item))) continue;
         if (v.validateSet(copy(set), {})) continue;

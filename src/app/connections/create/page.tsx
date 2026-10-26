@@ -1,3 +1,4 @@
+import { BackButton } from "@/components/ui/BackButton";
 import type { Metadata } from "next";
 import { pageMetadata } from "@/lib/seo";
 import { CreatePuzzle } from "@/components/connections/CreatePuzzle";
@@ -9,5 +10,10 @@ export const metadata: Metadata = pageMetadata({
 });
 
 export default function CreateConnectionsPage() {
-  return <CreatePuzzle />;
+  return (
+    <div className="mx-auto max-w-3xl space-y-4">
+      <BackButton href="/connections/community" label="Back to community" />
+      <CreatePuzzle />
+    </div>
+  );
 }

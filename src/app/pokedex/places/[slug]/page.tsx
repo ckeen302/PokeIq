@@ -45,7 +45,7 @@ export default async function PlacePage({ params }: PageProps) {
 
   return (
     <article className="mx-auto max-w-6xl space-y-10">
-      <DetailNav tab="places" label="All places" />
+      <DetailNav tab="places" label="Back to all places" />
       <DetailHero kicker={`Place · ${place.type} · ${place.region}`} title={place.name}>
         <div className="space-y-3">
           {parent && (

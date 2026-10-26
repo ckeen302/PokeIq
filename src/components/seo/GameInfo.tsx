@@ -46,9 +46,11 @@ interface Props {
   description: string;
   /** Show a button that opens the game's live how-to pop-up instead of the steps as text. */
   howToButton?: boolean;
+  /** Self-explanatory pages: keep the search data, show nothing. */
+  hidden?: boolean;
 }
 
-export function GameInfo({ path, name, intro, steps, faqs, description, howToButton }: Props) {
+export function GameInfo({ path, name, intro, steps, faqs, description, howToButton, hidden }: Props) {
   const app = {
     "@context": "https://schema.org",
     "@type": "WebApplication",
@@ -65,6 +67,7 @@ export function GameInfo({ path, name, intro, steps, faqs, description, howToBut
     "@type": "FAQPage",
     mainEntity: faqs.map((f) => ({ "@type": "Question", name: f.q, acceptedAnswer: { "@type": "Answer", text: f.a } })),
   };
+  if (hidden) return <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(app) }} />;
   return (
     <section className="mx-auto max-w-3xl space-y-6" aria-label={`About ${name}`}>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(app) }} />

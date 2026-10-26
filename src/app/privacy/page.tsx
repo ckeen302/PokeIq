@@ -1,3 +1,4 @@
+import { BackButton } from "@/components/ui/BackButton";
 import type { Metadata } from "next";
 import Link from "next/link";
 
@@ -21,6 +22,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 export default function PrivacyPage() {
   return (
     <article className="mx-auto max-w-2xl space-y-8">
+    <BackButton href="/" />
       <header className="space-y-2">
         <p className="hud-label text-screen">The short version</p>
         <h1 className="font-display text-4xl font-bold uppercase tracking-tight">Privacy policy</h1>

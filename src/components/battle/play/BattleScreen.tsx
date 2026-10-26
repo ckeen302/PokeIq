@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { MusicControl, trackFor, useBattleMusic } from "./MusicControl";
-import { Eye, FastForward, Gauge, Loader2, ScrollText, SkipForward, Sparkles, Timer } from "lucide-react";
+import { AlertTriangle, Eye, FastForward, Gauge, Loader2, ScrollText, SkipForward, Sparkles, Timer } from "lucide-react";
 import { CPU_LEVEL_INFO, PLAY_FORMAT_INFO, type BattleRequestPokemon, type BattleView } from "@/lib/battle/play";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
@@ -12,6 +12,8 @@ import { preloadSprite } from "./sprites";
 import { loadAnims, playStep, type PopupTone, type StageHandle } from "./player";
 import { Stage, type Popup } from "./Stage";
 import { Controls } from "./Controls";
+import { HotkeyHelp, useHotkeyHelp } from "./hotkeys";
+import { TIMER_WARNINGS, timerWarning } from "@/lib/battle/timer-warning";
 import type { Ball } from "./Hud";
 import { Avatar } from "@/components/avatar/Avatar";
 
@@ -341,6 +343,9 @@ export default function BattleScreen({ view, log, offset, busy, error, onChoose,
   const won = ended && view.end!.winner !== null && view.end!.winner === view.you;
   const result = ended ? endText(view, snap.turn) : null;
   useBattleMusic(trackFor(view, ended, won));
+  const help = useHotkeyHelp();
+  const myLeft = view.clocks && view.status === "playing" && view.clocks.you.deadline && !view.waiting && view.request ? view.clocks.you.deadline - now : null;
+  const warning = timerWarning(myLeft);
 
   return (
     <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_300px]">
@@ -396,6 +401,7 @@ export default function BattleScreen({ view, log, offset, busy, error, onChoose,
             </div>
           )}
           <MusicControl />
+          {!replay && !watching && <HotkeyHelp open={help.open} onToggle={help.toggle} />}
           <div className="flex items-center gap-1" role="group" aria-label="Battle log options: text speed and animations" title="Text speed">
             <Gauge className="h-3.5 w-3.5 text-muted-foreground" aria-hidden />
             {SPEEDS.map((s) => (
@@ -437,6 +443,19 @@ export default function BattleScreen({ view, log, offset, busy, error, onChoose,
           {message ? <RichText text={message} /> : <span>The battle is about to begin…</span>}
         </div>
 
+        {warning && (
+          <p
+            role="alert"
+            data-testid="timer-warning"
+            className={cn(
+              "flex items-center gap-2 rounded-md border px-3 py-2 text-sm font-semibold",
+              myLeft! <= TIMER_WARNINGS[1] ? "animate-pulse border-destructive bg-destructive/15 text-destructive" : "border-warning/60 bg-warning/10 text-warning"
+            )}
+          >
+            <AlertTriangle className="h-4 w-4 shrink-0" aria-hidden /> {warning} {view.timeoutLoses ? "Run out and you lose the battle." : "Run out and the timer picks for you."}
+          </p>
+        )}
+
         {error && (
           <p role="alert" className="text-sm text-destructive">
             {error}
@@ -446,7 +465,7 @@ export default function BattleScreen({ view, log, offset, busy, error, onChoose,
         <Card>
           <CardContent className="p-4">
             {showControls ? (
-              <Controls key={view.request!.rqid} request={view.request!.data} snap={snap} me={me} doubles={doubles} busy={busy} format={view.format} onChoose={(choice) => onChoose(view.request!.rqid, choice)} />
+              <Controls key={view.request!.rqid} request={view.request!.data} snap={snap} me={me} doubles={doubles} busy={busy} format={view.format} onChoose={(choice) => onChoose(view.request!.rqid, choice)} onHelp={help.toggle} />
             ) : ended ? (
               <div className="space-y-3 text-center" data-testid="battle-result">
                 <p className={cn("font-display text-3xl font-bold uppercase", result!.tone === "win" ? "text-success" : result!.tone === "draw" ? "text-foreground" : "text-destructive")}>

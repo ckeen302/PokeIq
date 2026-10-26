@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Clapperboard, Swords, Trophy } from "lucide-react";
 import type { BattleProfile } from "@/lib/battle/profile";
-import { TierBadge } from "@/components/pokedle/Ranked";
+import { GlickoBadge } from "./GlickoBadge";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 
@@ -31,7 +31,7 @@ export function BattleProfileView({ profile, now, empty }: { profile: BattleProf
                 </span>
                 <span className="text-xs text-muted-foreground">{played ? `${Math.round((f.wins / played) * 100)}% wins` : "ranked only"}</span>
               </p>
-              {f.rating !== undefined && <TierBadge rating={f.rating} games={f.ratedGames} size="sm" />}
+              {f.rating !== undefined && <GlickoBadge rating={f.rating} rd={f.rd} gxe={f.gxe} size="sm" />}
             </div>
           );
         })}

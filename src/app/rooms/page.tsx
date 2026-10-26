@@ -1,3 +1,4 @@
+import { BackButton } from "@/components/ui/BackButton";
 import type { Metadata } from "next";
 import { pageMetadata } from "@/lib/seo";
 import { RoomList } from "@/components/rooms/RoomList";
@@ -11,6 +12,7 @@ export const metadata: Metadata = pageMetadata({
 export default function RoomsPage() {
   return (
     <div className="mx-auto max-w-4xl space-y-6">
+    <BackButton href="/" />
       <div className="space-y-2">
         <p className="hud-label">Community</p>
         <h1 className="font-display text-4xl font-bold uppercase tracking-tight">

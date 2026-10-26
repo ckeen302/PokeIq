@@ -61,6 +61,7 @@ export default function PlayPage() {
         </div>
       </section>
       <GameInfo
+        hidden
         path="/play"
         name={`the Pokémon quizzes`}
         description={`Free Pokémon quizzes including the Who's That Pokémon quiz, a cry quiz and type matchups, in Classic, Survival and Blitz formats.`}

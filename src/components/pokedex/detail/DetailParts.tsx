@@ -1,6 +1,6 @@
 /* eslint-disable @next/next/no-img-element -- thumbnails come pre-sized from /api/art */
 import Link from "next/link";
-import { ChevronLeft } from "lucide-react";
+import { BackButton } from "@/components/ui/BackButton";
 import { artUrl } from "@/lib/pokemon/art";
 import { typeColor } from "@/lib/pokemon/type-colors";
 import { TypeBadge } from "../TypeBadge";
@@ -8,10 +8,8 @@ import { TypeBadge } from "../TypeBadge";
 /** Breadcrumb row shared by the move / ability / item pages. */
 export function DetailNav({ tab, label }: { tab: string; label: string }) {
   return (
-    <nav className="flex items-center justify-between text-sm text-muted-foreground">
-      <Link href={`/pokedex/${tab}`} className="flex items-center gap-1 hover:text-foreground">
-        <ChevronLeft className="h-4 w-4" /> {label}
-      </Link>
+    <nav className="flex flex-wrap items-center justify-between gap-2 text-sm text-muted-foreground">
+      <BackButton href={`/pokedex/${tab}`} label={label} />
       <Link href="/pokedex" className="hover:text-foreground">
         Pokédex
       </Link>
@@ -95,6 +93,9 @@ export function SpeciesGrid({ list }: { list: SpeciesChip[] }) {
 export function ListHeader({ kicker, title, accent, blurb }: { kicker: string; title: string; accent: string; blurb: string }) {
   return (
     <div className="space-y-2 text-center">
+      <div className="text-left">
+        <BackButton href="/pokedex" />
+      </div>
       <p className="hud-label text-screen">{kicker}</p>
       <h1 className="font-display text-4xl font-bold uppercase tracking-tight sm:text-5xl">
         {title}

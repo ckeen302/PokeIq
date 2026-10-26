@@ -17,7 +17,7 @@ import { useAccount } from "@/lib/account";
 import { openFriends } from "@/lib/friends-client";
 import { unlockAudio } from "@/lib/sound";
 import type { LiveCounts } from "@/lib/community";
-import { TierBadge } from "@/components/pokedle/Ranked";
+import { GlickoBadge } from "./GlickoBadge";
 import { Button } from "@/components/ui/button";
 import { clock } from "@/components/duel/DuelParts";
 import { useMatchmaking } from "@/components/duel/use-matchmaking";
@@ -359,7 +359,7 @@ export function BattleHome({ news }: { news: NewsItem[] }) {
                 <label className={cn("flex cursor-pointer items-center gap-2 text-sm", ladder.status === "off" && "cursor-not-allowed opacity-50")}>
                   <input type="checkbox" checked={rankedOn} onChange={(e) => setRanked(e.target.checked)} disabled={searching || ladder.status === "off"} data-testid="ranked-toggle" />
                   Ranked
-                  {rankedOn && ladder.status === "ready" && (ladder.you && ladder.you.games > 0 ? <TierBadge rating={ladder.you.rating} games={ladder.you.games} size="sm" /> : <span className="text-xs text-muted-foreground">starts at 1,000</span>)}
+                  {rankedOn && ladder.status === "ready" && (ladder.you && ladder.you.games > 0 ? <GlickoBadge rating={ladder.you.rating} rd={ladder.you.rd} gxe={ladder.you.gxe} size="sm" /> : <span className="text-xs text-muted-foreground">starts at 1500</span>)}
                 </label>
               )}
 

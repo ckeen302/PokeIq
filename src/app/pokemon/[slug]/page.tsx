@@ -1,3 +1,4 @@
+import { BackButton } from "@/components/ui/BackButton";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -48,6 +49,7 @@ export default async function PokemonPage({ params }: PageProps) {
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(pageLd) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(dexBreadcrumbs(p)) }} />
+      <BackButton href="/pokedex" label="Back to Pokédex" className="mb-4" />
       <DexEntry key={p.id} data={data} />
       <PokemonCards key={`cards-${p.id}`} dex={p.id} name={p.name} />
       <section className="mx-auto mt-10 max-w-3xl space-y-3 text-sm text-muted-foreground" aria-label={`About ${p.name}`}>

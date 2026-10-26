@@ -379,14 +379,18 @@ export function QuizController({ request, challenger, onRestart }: QuizControlle
   const secondsLeft = Math.ceil((questionMsLeft ?? runMsLeft ?? 0) / 1000);
   const isEntry = question.module === "dex" && question.detail?.startsWith("“");
 
+  // Picture questions grade by a card id, which means nothing to read out.
+  const answerText = graded ? (isCards ? "the one marked in green" : graded.answer) : "";
   const verdict = graded
-    ? graded.correct
+    ? graded.correct && isCards
+      ? streak >= 3 ? `Correct! That's ${streak} in a row!` : "Correct! That's the one!"
+      : graded.correct
       ? streak >= 3
         ? `Correct! That's ${streak} in a row!`
-        : `Correct! It's ${graded.answer}!`
+        : `Correct! It's ${answerText}!`
       : selected === null
-        ? `Time's up! It was ${graded.answer}.`
-        : `Not quite… it was ${graded.answer}.`
+        ? `Time's up! It was ${answerText}.`
+        : `Not quite… it was ${answerText}.`
     : "";
 
   return (

@@ -106,6 +106,8 @@ export interface BattleMeta {
   watchers?: Record<string, number>;
   /** Live battles: the timer is off until a player starts it. */
   timerOff?: boolean;
+  /** Loss on timeout (Showdown-style): running out the clock once loses, instead of the timer choosing for you. */
+  timeoutLoses?: boolean;
   /** After the end: what was recorded (ratings, history, the replay). */
   settled?: BattleSettled;
   /** The saved replay's id. */
