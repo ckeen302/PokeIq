@@ -1,10 +1,10 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Eye, Flag, Loader2, RotateCcw, Settings2, Swords, WifiOff } from "lucide-react";
+import { Download, Eye, Flag, History, Loader2, RotateCcw, Settings2, Swords, WifiOff } from "lucide-react";
 import { BATTLE_AWAY_MS, BATTLE_QUIET_MS, BATTLE_TIMER, PLAY_FORMAT_INFO, battleHref, type BattleView } from "@/lib/battle/play";
 import { DuelLobby, MatchedNote } from "@/components/duel/DuelParts";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -18,21 +18,74 @@ import { useBattle, type BattleHandle } from "./use-battle";
 import { ChatBox } from "@/components/chat/ChatBox";
 import { BattleAfter } from "./BattleAfter";
 import { AddFriendAfterGame } from "@/components/community/AddFriend";
+import { lastTurn, type ReplayData } from "@/lib/battle/replay";
+import { downloadReplay } from "./replay-download";
 
 /** A live battle's chat: the two players talk; anyone else watching reads along. */
+const IGNORE_KEY = "pokeiq:battle:ignored";
+
+function readIgnored(): string[] {
+  try {
+    const raw = JSON.parse(window.localStorage.getItem(IGNORE_KEY) ?? "[]");
+    return Array.isArray(raw) ? raw.filter((n): n is string => typeof n === "string").slice(-200) : [];
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * The battle's chat, with Showdown's /ignore: a spectator can ignore either
+ * trainer (remembered on this device, by name); players mute the opponent in
+ * the chat box.
+ * The game's own lines always show.
+ */
 function BattleChat({ view, battle, collapsible, className }: { view: BattleView; battle: BattleHandle; collapsible?: boolean; className?: string }) {
+  const [ignored, setIgnored] = useState<string[]>([]);
+  useEffect(() => setIgnored(readIgnored()), []);
+  const toggle = (name: string) => {
+    const next = ignored.includes(name) ? ignored.filter((n) => n !== name) : [...ignored, name];
+    setIgnored(next);
+    try {
+      window.localStorage.setItem(IGNORE_KEY, JSON.stringify(next));
+    } catch {
+      // not remembered
+    }
+  };
+  // Players mute the opponent from the chat box itself; spectators can ignore either trainer here.
+  const others = view.you === null ? view.players.map((p) => p.name) : [];
+  const lines = view.chat?.filter((l) => l.seat === null || !l.name || !ignored.includes(l.name) || l.seat === view.you);
+  const hidden = (view.chat?.length ?? 0) - (lines?.length ?? 0);
   return (
-    <ChatBox
-      lines={view.chat}
-      you={view.you}
-      players={view.players}
-      code={view.code}
-      game="Live battle"
-      onSend={battle.chat}
-      closed={view.rematch ? "A rematch is open: press Rematch to keep chatting there." : undefined}
-      collapsible={collapsible}
-      className={className}
-    />
+    <div className="space-y-1.5">
+      {others.length > 0 && (
+        <div className="flex flex-wrap items-center justify-end gap-1.5 text-[11px] text-muted-foreground" data-testid="chat-ignore">
+          {others.map((name) => (
+            <button
+              key={name}
+              type="button"
+              onClick={() => toggle(name)}
+              aria-pressed={ignored.includes(name)}
+              className={cn("rounded-sm border px-1.5 py-0.5 hover:text-foreground", ignored.includes(name) ? "border-warning/60 text-warning" : "border-border")}
+              title={ignored.includes(name) ? `Show ${name}'s messages again` : `Hide ${name}'s messages (Showdown's /ignore)`}
+            >
+              {ignored.includes(name) ? `Unignore ${name}` : `Ignore ${name}`}
+            </button>
+          ))}
+          {hidden > 0 && <span>({hidden} hidden)</span>}
+        </div>
+      )}
+      <ChatBox
+        lines={lines}
+        you={view.you}
+        players={view.players}
+        code={view.code}
+        game="Live battle"
+        onSend={battle.chat}
+        closed={view.rematch ? "A rematch is open: press Rematch to keep chatting there." : undefined}
+        collapsible={collapsible}
+        className={className}
+      />
+    </div>
   );
 }
 
@@ -48,6 +101,29 @@ const BattleScreen = dynamic(() => import("./play/BattleScreen"), {
   ssr: false,
   loading: () => <ScreenLoading />,
 });
+
+const ReplayViewer = dynamic(() => import("./ReplayViewer").then((m) => m.ReplayViewer), {
+  ssr: false,
+  loading: () => <ScreenLoading />,
+});
+
+/** The battle so far as a replay (your own view of it): Showdown's instant replay, and the file to download. */
+function replayOf(view: BattleView, log: readonly string[]): ReplayData {
+  const players = [view.players[0]?.name ?? "Player 1", view.players[1]?.name ?? "Player 2"] as [string, string];
+  return {
+    id: view.code,
+    format: view.format,
+    formatName: view.formatName ?? PLAY_FORMAT_INFO[view.format].name,
+    players,
+    winner: view.end?.winner ?? null,
+    reason: view.end?.reason ?? "normal",
+    turns: lastTurn(log),
+    ranked: !!view.ranked,
+    public: false,
+    uploadedAt: 0,
+    log: [...log],
+  };
+}
 
 function ScreenLoading() {
   return (
@@ -215,7 +291,13 @@ function LiveLobby({ code, view, battle }: { code: string; view: BattleView; bat
             label: "Turn timer",
             text: timer ? (
               <>
-                {timer.bank / 1000} s in the bank{timer.perTurn ? `, +${timer.perTurn / 1000} s a turn` : ""}, {timer.cap / 1000} s at most per turn. {view.timeoutLoses ? "Run out once and you lose." : "Run out twice and you lose."}
+                Showdown&apos;s timer: {(timer.refill ?? timer.bank) / 1000} s{timer.refill && timer.refill < timer.bank ? ` plus ${(timer.bank - timer.refill) / 1000} s grace` : ""}
+                {timer.perTurn ? `, +${timer.perTurn / 1000} s a turn` : ""}, {timer.cap / 1000} s at most per turn.{" "}
+                {view.timeoutLoses
+                  ? timer.autoChoose
+                    ? "Run out on a turn and a default move is made; run out of time altogether and you lose."
+                    : "Run out and you lose."
+                  : "Run out and the timer picks a move for you; a second time in a row loses."}
               </>
             ) : (
               <>Off: take your time. Either of you can start it mid-battle.</>
@@ -259,6 +341,8 @@ function LiveLobby({ code, view, battle }: { code: string; view: BattleView; bat
 export function BattleRoom({ code }: { code: string }) {
   const battle = useBattle(code);
   const { view, gone, offline } = battle;
+  /** Showdown's instant replay: the battle so far, from the start, while it goes on. */
+  const [instant, setInstant] = useState(false);
 
   if (gone) return <BattleGone message={gone} />;
   if (!view) return <ScreenLoading />;
@@ -316,6 +400,30 @@ export function BattleRoom({ code }: { code: string }) {
   }
 
   const foe = view.players[view.you === 0 ? 1 : 0];
+  if (instant) {
+    return <ReplayViewer replay={replayOf(view, battle.log.lines)} instant={{ onClose: () => setInstant(false), timed: !!view.clocks }} />;
+  }
+  const canReplay = view.turn >= 2 || view.status === "finished";
+  const replayTools = (
+    <>
+        {canReplay && (
+          <Button size="sm" variant="ghost" onClick={() => setInstant(true)} title="Watch the battle so far from the start (Showdown's instant replay)" data-testid="instant-replay-open">
+            <History className="h-3.5 w-3.5" aria-hidden /> Instant replay
+          </Button>
+        )}
+        {view.status === "finished" && (
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => void downloadReplay({ ...replayOf(view, battle.log.lines) })}
+            title="Showdown's replay file: opens in any browser and plays in Showdown's replay player"
+            data-testid="battle-download-replay"
+          >
+            <Download className="h-3.5 w-3.5" aria-hidden /> Download replay
+          </Button>
+        )}
+    </>
+  );
   return (
     <div className="space-y-3">
       {/* Matchmaking opened this battle (its link carries ?matched): "Matched! You vs Blue" for a few seconds. */}
@@ -338,13 +446,18 @@ export function BattleRoom({ code }: { code: string }) {
         error={battle.error}
         onChoose={(rqid, choice) => void battle.choose(rqid, choice)}
         onStartTimer={() => void battle.startTimer()}
+        onStopTimer={() => void battle.startTimer(false)}
         onUndo={(rqid) => void battle.undo(rqid)}
         endActions={
           view.frontier ? (
-            <FrontierAfter view={view} />
+            <div className="space-y-3">
+              <FrontierAfter view={view} />
+              <div className="flex flex-wrap justify-center gap-1">{replayTools}</div>
+            </div>
           ) : (
             <div className="space-y-3">
               <BattleAfter view={view} battle={battle} />
+              <div className="flex flex-wrap justify-center gap-1">{replayTools}</div>
               {view.kind === "pvp" && view.you !== null && <AddFriendAfterGame kind="battle" code={view.code} />}
               {view.kind === "cpu" ? <CpuAgain /> : <LiveAgain view={view} battle={battle} />}
             </div>
@@ -352,7 +465,10 @@ export function BattleRoom({ code }: { code: string }) {
         }
         side={view.kind === "pvp" ? <BattleChat view={view} battle={battle} collapsible /> : undefined}
       />
-      {view.status === "playing" && <ForfeitButton busy={battle.busy} onForfeit={() => void battle.act({ action: "forfeit" })} />}
+      <div className="flex flex-wrap items-center justify-end gap-1">
+        {view.status !== "finished" && replayTools}
+        {view.status === "playing" && <ForfeitButton busy={battle.busy} onForfeit={() => void battle.act({ action: "forfeit" })} />}
+      </div>
     </div>
   );
 }

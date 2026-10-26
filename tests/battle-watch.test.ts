@@ -221,7 +221,8 @@ describe("the turn timer", () => {
     if (!out.ok) throw new Error(out.error);
     expect(out.view.timerStartable).toBeUndefined();
     expect(out.view.clocks?.you.deadline).toBeGreaterThan(Date.now());
-    expect(out.view.chat?.some((l) => l.text === "Blue started the timer.")).toBe(true);
+    // Showdown's message, in the battle log.
+    expect((await loadBattle(b.code))!.rec.logs.spectator).toContain("|inactive|Battle timer is ON: inactive players will automatically lose when time's up. (requested by Blue)");
   });
 
   it("friend battles keep the timer on by default", async () => {

@@ -106,6 +106,14 @@ export interface BattleMeta {
   watchers?: Record<string, number>;
   /** Live battles: the timer is off until a player starts it. */
   timerOff?: boolean;
+  /** Live battles: the seats that asked for the timer (Showdown's timer requesters: only they can turn it off). */
+  timerRequesters?: number[];
+  /** Who last turned the timer off, and when (Showdown's 20 s cooldown before they can turn it on again). */
+  timerOffBy?: { seat: number; at: number };
+  /** The turn the clocks were last topped up for (undefined: the timer hasn't seen a request yet). */
+  timerTurn?: number;
+  /** The pending requests are the first since the timer started (Showdown's maxFirstTurn applies). */
+  timerFirst?: boolean;
   /** Loss on timeout (Showdown-style): running out the clock once loses, instead of the timer choosing for you. */
   timeoutLoses?: boolean;
   /** After the end: what was recorded (ratings, history, the replay). */
