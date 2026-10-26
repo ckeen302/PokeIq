@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { pageMetadata } from "@/lib/seo";
-import { Swords } from "lucide-react";
+import { ChevronRight, ListChecks, Swords } from "lucide-react";
 import { ModeGrid } from "@/components/home/ModeGrid";
 import { QuizDuelCard } from "@/components/quiz/QuizDuelCard";
 import { GameInfo } from "@/components/seo/GameInfo";
@@ -28,6 +28,27 @@ export default function PlayPage() {
         <p className="text-muted-foreground">Pick a mode, then choose a format, difficulty and generations.</p>
       </div>
       <ModeGrid />
+      <Link
+        href="/quiz/name-em-all"
+        className="menu-item group relative flex items-center gap-4 overflow-hidden rounded-lg border bg-card p-4 hover:border-screen/50 hover:bg-accent/40"
+        aria-label="Play Name 'em All"
+        data-testid="play-name-em-all"
+      >
+        <span className="absolute inset-y-0 left-0 w-1 bg-[hsl(170_80%_45%)]" aria-hidden />
+        <span className="screen flex h-14 w-14 shrink-0 items-center justify-center rounded-md text-[hsl(170_80%_55%)]">
+          <ListChecks className="relative z-[3] h-6 w-6" aria-hidden />
+        </span>
+        <span className="min-w-0 flex-1">
+          <span className="flex items-center gap-2">
+            <span className="hud-label text-screen">New</span>
+            <span className="truncate font-display text-lg font-bold uppercase tracking-wide">Name &apos;em All</span>
+          </span>
+          <span className="mt-0.5 block text-sm text-muted-foreground">
+            Type every Pokémon you can remember: all 1,025, a generation, a type, Legendaries, Megas or a regional dex. Daily, races and leaderboards.
+          </span>
+        </span>
+        <ChevronRight className="h-5 w-5 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-1 group-hover:text-foreground" aria-hidden />
+      </Link>
       <nav aria-label="More to play" className="flex flex-wrap justify-center gap-3">
         {MORE.map(({ href, label }) => (
           <Link key={href} href={href} className="rounded-md border bg-card px-4 py-2 text-sm font-semibold transition hover:border-primary/50">

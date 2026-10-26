@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
-import { Baby, BarChart3, Bone, Circle, Crown, Dna, GitBranch, Handshake, Info, Layers, type LucideIcon, Maximize2, MapPin, Orbit, Rocket, Search, Sparkle, Sparkles, Swords, Trophy, Zap } from "lucide-react";
+import { Baby, BarChart3, Bone, Circle, Crown, Dna, GitBranch, Handshake, Info, Layers, Loader2, type LucideIcon, Maximize2, MapPin, Orbit, Rocket, Search, Sparkle, Sparkles, Swords, Trophy, Zap } from "lucide-react";
 import { TypeBadge } from "@/components/pokedex/TypeBadge";
 import { Sheet } from "@/components/pokedle/sheets";
 import { spriteUrl } from "@/lib/pokemon/art";
+import { indexEntries, searchEntries } from "@/lib/pikadoku/search";
 import { PDK_FAMILY_LABELS, categoryHint, type PdkCategoryView, type PdkFamily, type PdkGridView } from "@/lib/pikadoku/types";
 import { cn } from "@/lib/utils";
 
@@ -14,25 +15,31 @@ import { cn } from "@/lib/utils";
 export interface DexName {
   id: number;
   name: string;
-  slug: string;
   /** The species (a form's own species id; equal to `id` for a species). */
   base: number;
-  form?: boolean;
 }
 
 let dexPromise: Promise<DexName[]> | null = null;
-/** The Pokémon names for the picker (no answers in them), fetched once. */
+/** Starts loading the picker's names (no answers in them) once per page; a failure is retried on the next call. */
+export function loadDex(): Promise<DexName[]> {
+  dexPromise ??= fetch("/api/pikadoku/dex")
+    .then((r) => {
+      if (!r.ok) throw new Error(String(r.status));
+      return r.json() as Promise<{ i: number; n: string; b?: number }[]>;
+    })
+    .then((rows) => rows.map((x) => ({ id: x.i, name: x.n, base: x.b ?? x.i })))
+    .catch(() => {
+      dexPromise = null;
+      return [];
+    });
+  return dexPromise;
+}
+/** The Pokémon names for the picker, fetched once (and cached by the browser for a day). */
 export function useDex(): DexName[] {
   const [dex, setDex] = useState<DexName[]>([]);
   useEffect(() => {
-    dexPromise ??= fetch("/api/pikadoku/dex")
-      .then((r) => (r.ok ? (r.json() as Promise<DexName[]>) : []))
-      .catch(() => {
-        dexPromise = null;
-        return [];
-      });
     let live = true;
-    void dexPromise.then((d) => live && setDex(d));
+    void loadDex().then((d) => live && setDex(d));
     return () => {
       live = false;
     };
@@ -73,6 +80,52 @@ function CategoryIcon({ cat }: { cat: PdkCategoryView }) {
   return <Icon className="h-3.5 w-3.5 shrink-0 opacity-80 sm:h-4 sm:w-4" aria-hidden />;
 }
 
+/**
+ * A category label that always fits its header whole: it wraps only between
+ * words (never inside one) and shrinks its font, down to 7px, until its longest
+ * word fits the cell ("NO EVOLUTION LINE", "FLAMETHROWER" at 390px).
+ */
+function FitLabel({ text }: { text: string }) {
+  const ref = useRef<HTMLSpanElement | null>(null);
+  useLayoutEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    let width = -1;
+    const fit = () => {
+      if (el.clientWidth === width) return;
+      width = el.clientWidth;
+      el.style.fontSize = "";
+      el.style.letterSpacing = "";
+      let size = parseFloat(getComputedStyle(el).fontSize);
+      let tight = false;
+      // Shrink to 8px, then drop the wide letter-spacing, then shrink to 6.5px at most (PROTOSYNTHESIS on a 360px phone).
+      while (el.scrollWidth > el.clientWidth + 0.5) {
+        if (size > 8) size -= 0.5;
+        else if (!tight) tight = true;
+        else if (size > 6.5) size -= 0.5;
+        else break;
+        el.style.fontSize = `${size}px`;
+        if (tight) el.style.letterSpacing = "-0.01em";
+      }
+    };
+    fit();
+    const ro = new ResizeObserver(fit);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [text]);
+  return (
+    <span ref={ref} data-fit-label className="block w-full [hyphens:none] [overflow-wrap:normal] [word-break:normal]">
+      {/* Each word (hyphenated ones too: SELF-DESTRUCT) stays on one line; lines break only at spaces. */}
+      {text.split(" ").map((w, i) => (
+        <span key={i}>
+          {i > 0 && " "}
+          <span className="whitespace-nowrap">{w}</span>
+        </span>
+      ))}
+    </span>
+  );
+}
+
 function Header({ cat, testId }: { cat: PdkCategoryView | undefined; testId: string }) {
   const [open, setOpen] = useState(false);
   const tipId = `${testId}-tip`;
@@ -80,16 +133,15 @@ function Header({ cat, testId }: { cat: PdkCategoryView | undefined; testId: str
     <div
       data-testid={testId}
       title={cat ? PDK_FAMILY_LABELS[cat.family] : undefined}
-      className={cn("relative flex min-h-14 items-center justify-center rounded-md border px-1.5 py-1 text-center text-[11px] font-bold leading-tight sm:text-sm", cat ? FAMILY_TINT[cat.family] : "border-foreground/10")}
+      className={cn("relative flex min-h-14 items-center justify-center rounded-md border px-1 py-1 sm:px-1.5 text-center text-[11px] font-bold leading-tight sm:text-sm", cat ? FAMILY_TINT[cat.family] : "border-foreground/10")}
       onMouseLeave={() => setOpen(false)}
     >
       {cat?.id.startsWith("type:") ? (
         <TypeBadge type={cat.id.slice(5)} size="md" className="max-w-full" />
       ) : (
-        <span className={cn("flex min-w-0 max-w-full flex-col items-center gap-0.5 font-display font-bold uppercase tracking-wide", cat && "pr-3")}>
+        <span className="flex w-full min-w-0 flex-col items-center gap-0.5 font-display font-bold uppercase tracking-wide">
           {cat && <CategoryIcon cat={cat} />}
-          {/* Long one-word labels (FLAMETHROWER) shrink to stay inside the header. */}
-          <span className={cn("max-w-full whitespace-nowrap", (cat?.label.length ?? 0) > 10 && "text-[9px] tracking-tight sm:text-[11px]")}>{cat?.label ?? "…"}</span>
+          {cat ? <FitLabel text={cat.label} /> : <span>…</span>}
         </span>
       )}
       {cat && (
@@ -127,6 +179,8 @@ export interface BoardCell {
   pct?: number | null;
   /** Briefly flagged after a wrong guess. */
   miss?: boolean;
+  /** Briefly flagged after a right guess locks in. */
+  hit?: boolean;
   highlight?: boolean;
 }
 
@@ -180,7 +234,8 @@ export function PdkBoard({
                       ? "border-sky-400 bg-sky-400/15"
                       : "border-primary/60 bg-primary/10"
                   : "border-dashed border-foreground/25 bg-card hover:border-primary hover:bg-primary/5 disabled:hover:border-foreground/25 disabled:hover:bg-card",
-                cell.miss && "animate-pulse border-destructive bg-destructive/15",
+                cell.miss && "animate-pulse border-solid border-destructive bg-destructive/15",
+                cell.hit && "border-success bg-success/20 ring-2 ring-success/60",
                 cell.highlight && "ring-2 ring-warning"
               )}
             >
@@ -208,65 +263,97 @@ export function PdkBoard({
   );
 }
 
-/** The searchable Pokémon picker for one cell. */
-export function PdkPicker({ dex, used, title, busy, onPick, onClose }: { dex: DexName[]; used: ReadonlySet<number>; title: string; busy?: boolean; onPick: (p: DexName) => void; onClose: () => void }) {
+/** The searchable Pokémon picker for one cell: forgiving search (accents, punctuation, typos, dex numbers), arrow keys and Enter. */
+export function PdkPicker({ dex: given, used, title, busy, onPick, onClose }: { dex: DexName[]; used: ReadonlySet<number>; title: string; busy?: boolean; onPick: (p: DexName) => void; onClose: () => void }) {
+  // If the names failed to load with the page, try again now.
+  const [retried, setRetried] = useState<DexName[]>([]);
+  useEffect(() => {
+    if (!given.length) void loadDex().then(setRetried);
+  }, [given.length]);
+  const dex = given.length ? given : retried;
   const [q, setQ] = useState("");
+  const [active, setActive] = useState(0);
   const input = useRef<HTMLInputElement | null>(null);
   useEffect(() => input.current?.focus(), []);
-  const matches = useMemo(() => {
-    const s = q.trim().toLowerCase();
-    if (!s) return [];
-    const starts: DexName[] = [];
-    const inside: DexName[] = [];
-    // A form and its species are one Pokémon: using either rules out both.
-    const usedBase = new Set(dex.filter((p) => used.has(p.id)).map((p) => p.base));
-    for (const p of dex) {
-      if (used.has(p.id) || usedBase.has(p.base)) continue;
-      const n = p.name.toLowerCase();
-      if (n.startsWith(s)) starts.push(p);
-      else if (n.includes(s)) inside.push(p);
-    }
-    return [...starts, ...inside].slice(0, 8);
-  }, [q, dex, used]);
+  const index = useMemo(() => indexEntries(dex), [dex]);
+  // A form and its species are one Pokémon: using either rules out both.
+  const usedBase = useMemo(() => new Set(dex.filter((p) => used.has(p.id)).map((p) => p.base)), [dex, used]);
+  const isUsed = (p: DexName) => used.has(p.id) || usedBase.has(p.base);
+  const matches = useMemo(() => searchEntries(index, q, 8), [index, q]);
+  const pickable = matches.filter((p) => !isUsed(p));
+  const activeId = pickable[Math.min(active, pickable.length - 1)]?.id;
+  const loading = !dex.length;
   return (
     <Sheet title={title} onClose={onClose}>
       <form
         className="space-y-3"
         onSubmit={(e) => {
           e.preventDefault();
-          if (matches[0] && !busy) onPick(matches[0]);
+          const p = pickable.find((x) => x.id === activeId);
+          if (p && !busy) onPick(p);
         }}
       >
-        <label className="flex items-center gap-2 rounded-md border border-foreground/20 bg-card px-3 py-2">
-          <Search className="h-4 w-4 text-muted-foreground" aria-hidden />
+        <label className="flex items-center gap-2 rounded-md border-2 border-foreground/20 bg-card px-3 py-2 focus-within:border-primary">
+          {busy ? <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" aria-hidden /> : <Search className="h-4 w-4 text-muted-foreground" aria-hidden />}
           <input
             ref={input}
             value={q}
-            onChange={(e) => setQ(e.target.value)}
-            placeholder="Search for a Pokémon"
+            onChange={(e) => {
+              setQ(e.target.value);
+              setActive(0);
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+                e.preventDefault();
+                const n = pickable.length;
+                if (n) setActive((a) => (Math.min(a, n - 1) + (e.key === "ArrowDown" ? 1 : n - 1)) % n);
+              }
+            }}
+            placeholder={loading ? "Loading Pokémon…" : "Type a Pokémon's name"}
             aria-label="Search for a Pokémon"
+            aria-controls="pdk-options"
+            aria-activedescendant={activeId ? `pdk-opt-${activeId}` : undefined}
             data-testid="pdk-search"
             autoComplete="off"
+            autoCorrect="off"
+            autoCapitalize="off"
+            spellCheck={false}
+            enterKeyHint="go"
             className="min-w-0 flex-1 bg-transparent text-base outline-none"
           />
         </label>
-        <ul className="space-y-1" aria-label="Matching Pokémon">
-          {matches.map((p) => (
-            <li key={p.id}>
-              <button
-                type="button"
-                disabled={busy}
-                data-testid={`pdk-option-${p.id}`}
-                onClick={() => onPick(p)}
-                className="flex w-full items-center gap-3 rounded-md border border-foreground/10 px-2 py-1 text-left hover:border-primary hover:bg-primary/5 disabled:opacity-50"
-              >
-                <Image src={spriteUrl(p.id)} alt="" width={40} height={40} unoptimized className="h-10 w-10" style={{ imageRendering: "pixelated" }} />
-                <span className="font-semibold">{p.name}</span>
-                <span className="ml-auto text-xs text-muted-foreground">#{p.id}</span>
-              </button>
+        {/* A fixed height for eight rows, so the sheet doesn't jump while typing. */}
+        <ul id="pdk-options" role="listbox" className="min-h-[22rem] space-y-1" aria-label="Matching Pokémon">
+          {matches.map((p) => {
+            const taken = isUsed(p);
+            const on = p.id === activeId;
+            return (
+              <li key={p.id} id={`pdk-opt-${p.id}`} role="option" aria-selected={on} aria-disabled={taken}>
+                <button
+                  type="button"
+                  disabled={busy || taken}
+                  data-testid={`pdk-option-${p.id}`}
+                  onClick={() => onPick(p)}
+                  onMouseEnter={() => !taken && setActive(pickable.indexOf(p))}
+                  className={cn(
+                    "flex h-10 w-full items-center gap-3 rounded-md border px-2 text-left transition-colors disabled:cursor-not-allowed",
+                    on ? "border-primary bg-primary/10" : "border-foreground/10 hover:border-primary hover:bg-primary/5",
+                    taken && "opacity-45"
+                  )}
+                >
+                  <Image src={spriteUrl(p.id)} alt="" width={40} height={40} unoptimized className="h-10 w-10 shrink-0" style={{ imageRendering: "pixelated" }} />
+                  <span className="min-w-0 truncate font-semibold">{p.name}</span>
+                  <span className="ml-auto shrink-0 text-xs text-muted-foreground">{taken ? "Used" : p.base === p.id ? `#${p.id}` : "Form"}</span>
+                </button>
+              </li>
+            );
+          })}
+          {!q.trim() && (
+            <li className="px-2 py-3 text-sm text-muted-foreground" data-testid="pdk-search-tip">
+              Start typing: spelling doesn&apos;t have to be perfect. Forms like Alolan Raichu or Mega Charizard X are their own picks. Enter picks the highlighted one.
             </li>
-          ))}
-          {q.trim() && !matches.length && <li className="px-2 py-3 text-sm text-muted-foreground">No unused Pokémon match that.</li>}
+          )}
+          {q.trim() && !matches.length && <li className="px-2 py-3 text-sm text-muted-foreground">{loading ? "Loading Pokémon…" : "No Pokémon match that."}</li>}
         </ul>
       </form>
     </Sheet>

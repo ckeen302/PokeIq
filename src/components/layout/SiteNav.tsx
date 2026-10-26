@@ -120,7 +120,7 @@ export function DesktopNav() {
             {account.user?.username ?? (progress?.name || "Trainer")}
           </span>
           {progress && progress.xp > 0 && (
-            <span className="hidden font-pixel text-[10px] text-screen min-[400px]:inline">
+            <span className="hidden font-pixel text-[10px] text-screen sm:inline">
               Lv{levelInfo(progress.xp).level}
             </span>
           )}

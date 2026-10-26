@@ -572,7 +572,8 @@ step("pikadoku: a full daily (9 PP, one wrong guess), the score and the answers 
     await page.getByTestId("pdk-search").fill(name);
     await page.getByTestId(`pdk-option-${id}`).click();
   };
-  await play(solved.wrong.cell, solved.wrong.name, solved.wrong.id);
+  // The search forgives case and punctuation: the wrong guess is typed loosely.
+  await play(solved.wrong.cell, solved.wrong.name.toLowerCase().replace(/[^a-z0-9]/g, ""), solved.wrong.id);
   await page.getByTestId("pdk-toast").filter({ hasText: "doesn't fit" }).waitFor();
   if (!/8/.test(await page.getByTestId("pdk-pp").innerText())) errors.push("a wrong Pikadoku guess didn't use a PP");
   // 9 PP and one is spent: eight right answers end the game at 8 of 9.
@@ -583,6 +584,14 @@ step("pikadoku: a full daily (9 PP, one wrong guess), the score and the answers 
   await page.getByTestId("pdk-reveal").waitFor();
   if ((await page.getByTestId("pdk-misses").count()) !== 1) errors.push("Pikadoku's reveal doesn't explain the miss");
   if (!(await page.getByTestId("pdk-reveal-0").innerText()).includes("valid")) errors.push("Pikadoku's reveal doesn't list the cell's answers");
+  if (!(await page.getByTestId("pdk-countdown").isVisible())) errors.push("Pikadoku's result has no next-puzzle countdown");
+  if ((await page.getByTestId("pdk-rarity-preview").count()) !== 1) errors.push("Pikadoku's result doesn't preview the share colours");
+  await page.context().grantPermissions(["clipboard-read", "clipboard-write"]);
+  await page.getByTestId("pdk-result").getByTestId("share-result").click();
+  await page.getByTestId("share-toast").waitFor();
+  const pdkShare = await page.evaluate(() => navigator.clipboard.readText()).catch(() => "");
+  if (!/^PokéIQ Pikadoku #\d+ 8\/9\n/.test(pdkShare) || !/\/s\/pdk\./.test(pdkShare)) errors.push(`Pikadoku's share text is off: ${JSON.stringify(pdkShare)}`);
+  await page.screenshot({ path: `${OUT}/pikadoku-result.png`, fullPage: true });
   // The server plays the guesses again: a forged, unfinished game gets no reveal.
   const early = await page.request.post(`${BASE}/api/pikadoku/result`, { data: { date: today, difficulty: "normal", player: "e2e-pdk-forged-player-1", guesses: [] } });
   if (early.status() !== 409) errors.push(`Pikadoku revealed answers for an unfinished game (${early.status()})`);
@@ -2558,6 +2567,113 @@ if (me.enabled) {
     }
   }
   for (const p of tp) await p.context().close();
+}
+
+step("mobile: Pikadoku's whole grid fits a 390px phone without sideways scrolling");
+{
+  const phone = await newPage({ width: 390, height: 844 });
+  await phone.goto(`${BASE}/pikadoku`, { waitUntil: "networkidle" });
+  await closeHowTo(phone);
+  await phone.getByTestId("pdk-row-0").filter({ hasNotText: "…" }).waitFor();
+  const fit = await phone.evaluate(() => {
+    const last = document.querySelector("[data-testid=pdk-cell-8]").getBoundingClientRect();
+    const nav = [...document.querySelectorAll("nav")].map((n) => n.getBoundingClientRect()).filter((r) => r.top > window.innerHeight / 2)[0];
+    return { bottom: last.bottom, limit: nav ? nav.top : window.innerHeight, wide: document.documentElement.scrollWidth - window.innerWidth };
+  });
+  if (fit.bottom > fit.limit) errors.push(`Pikadoku's grid runs under the fold on a phone (${Math.round(fit.bottom)} > ${Math.round(fit.limit)})`);
+  if (fit.wide > 0) errors.push(`Pikadoku scrolls sideways on a phone by ${fit.wide}px`);
+  await phone.screenshot({ path: `${OUT}/pikadoku-mobile.png` });
+  await phone.context().close();
+}
+
+step("name 'em all: hub, a Gen 1 run (aliases, wrong category, pause, give up), share, a ranked clear, the daily, a race");
+{
+  const np = await newPage({ width: 1280, height: 900 });
+  await np.goto(`${BASE}/play`, { waitUntil: "networkidle" });
+  await np.getByTestId("play-name-em-all").click();
+  await np.waitForURL(/\/quiz\/name-em-all$/);
+  await np.getByTestId("nea-categories").waitFor();
+  await np.getByTestId("nea-cat-gen-1").click();
+  await np.waitForURL(/\/quiz\/name-em-all\/gen-1$/);
+  await np.getByTestId("nea-start").click();
+  const box = np.getByTestId("nea-input");
+  await box.waitFor();
+  // Names count the moment they're spelled right, however they're written; Mew keeps its text so Mewtwo can follow.
+  for (const n of ["bulbasaur", "MR. MIME", "nidoran f", "farfetchd", "mew"]) await box.pressSequentially(n, { delay: 10 });
+  if ((await box.inputValue()) !== "mew") errors.push(`name 'em all: "mew" should stay in the box for Mewtwo, got "${await box.inputValue()}"`);
+  await box.pressSequentially("two", { delay: 10 });
+  if (await box.inputValue()) errors.push("name 'em all: the box didn't clear after Mewtwo");
+  const counted = await np.getByTestId("nea-count").filter({ hasText: /^6\s*\/\s*151$/ }).waitFor({ timeout: 5_000 }).then(() => true, () => false);
+  if (!counted) errors.push(`name 'em all: expected 6 / 151, saw ${await np.getByTestId("nea-count").textContent()}`);
+  await box.pressSequentially("chikorita", { delay: 10 });
+  await np.getByText("Chikorita isn't in Gen 1.").waitFor({ timeout: 3_000 }).catch(() => errors.push("name 'em all: no 'not in this category' note"));
+  await box.fill("");
+  await np.getByTestId("nea-pause").click();
+  await np.getByTestId("nea-paused").waitFor();
+  if (!(await box.isDisabled())) errors.push("name 'em all: the box stays usable while paused");
+  await np.getByTestId("nea-resume").click();
+  await np.screenshot({ path: `${OUT}/name-em-all-playing.png` });
+  await np.getByTestId("nea-giveup").click();
+  await np.getByTestId("nea-giveup-confirm").click();
+  await np.getByTestId("nea-results").waitFor();
+  if ((await np.getByTestId("nea-final").textContent())?.trim() !== "6/151") errors.push("name 'em all: the result isn't 6/151");
+  const missed = await np.getByTestId("nea-missed").count();
+  if (missed !== 145) errors.push(`name 'em all: expected 145 missed slots linked, got ${missed}`);
+  if ((await np.getByTestId("nea-missed").first().getAttribute("href")) !== "/pokemon/ivysaur") errors.push("name 'em all: a missed slot doesn't link to its Pokédex page");
+  await np.context().grantPermissions(["clipboard-read", "clipboard-write"]);
+  await np.getByTestId("nea-share").click();
+  await np.getByText(/Copied!|Couldn.t copy/).first().waitFor({ timeout: 5_000 });
+  await np.screenshot({ path: `${OUT}/name-em-all-results.png` });
+
+  // A ranked run: Ultra Beasts in Regular mode, no hints, cleared, posted under a name.
+  const ub = ["nihilego", "buzzwole", "pheromosa", "xurkitree", "celesteela", "kartana", "guzzlord", "poipole", "naganadel", "stakataka", "blacephalon"];
+  await np.goto(`${BASE}/quiz/name-em-all/ultra-beasts`, { waitUntil: "networkidle" });
+  await np.getByTestId("nea-start").click();
+  for (const n of ub) {
+    await np.getByTestId("nea-input").pressSequentially(n, { delay: 40 });
+    await np.waitForTimeout(150);
+  }
+  await np.getByTestId("nea-results").waitFor();
+  const post = np.getByTestId("nea-post");
+  if (await post.waitFor({ timeout: 8_000 }).then(() => true, () => false)) {
+    await np.getByTestId("nea-results").getByLabel("Your trainer name").fill("Red");
+    await post.click();
+  }
+  await np.getByTestId("nea-placed").waitFor({ timeout: 8_000 }).catch(() => errors.push("name 'em all: a clean clear wasn't ranked"));
+  await np.getByTestId("nea-board-row").first().waitFor({ timeout: 8_000 }).catch(() => errors.push("name 'em all: the leaderboard didn't show the run"));
+
+  await np.goto(`${BASE}/quiz/name-em-all/daily`, { waitUntil: "networkidle" });
+  await np.getByTestId("nea-setup").waitFor({ timeout: 10_000 });
+
+  // Race: two trainers; the host names all eleven Ultra Beasts and wins.
+  const guestRace = await newPage({ width: 390, height: 844 });
+  await np.goto(`${BASE}/quiz/name-em-all`, { waitUntil: "networkidle" });
+  await np.getByLabel("Race category").selectOption("ultra-beasts");
+  await np.getByLabel("Race length").selectOption("3");
+  await clickUntilUrl(np, np.getByTestId("nea-race-start"), /\/quiz\/name-em-all\/race\//);
+  await np.getByTestId("nea-race-lobby").waitFor();
+  await guestRace.goto(np.url(), { waitUntil: "networkidle" });
+  await guestRace.getByLabel("Your trainer name").fill("Blue");
+  await guestRace.getByTestId("nea-race-join").click();
+  await guestRace.getByTestId("nea-race-ready").click();
+  await np.locator("[data-testid=nea-race-begin]:enabled").waitFor({ timeout: 15_000 });
+  await np.getByTestId("nea-race-begin").click();
+  await np.getByTestId("nea-race").waitFor({ timeout: 15_000 });
+  await guestRace.getByTestId("nea-race").waitFor({ timeout: 15_000 });
+  await guestRace.getByTestId("nea-input").pressSequentially("kartana", { delay: 30 });
+  await guestRace.waitForTimeout(1_500);
+  for (const n of ub) {
+    await np.getByTestId("nea-input").pressSequentially(n, { delay: 40 });
+    await np.waitForTimeout(200);
+  }
+  await np.getByTestId("nea-race-result").waitFor({ timeout: 15_000 });
+  await guestRace.getByTestId("nea-race-result").waitFor({ timeout: 15_000 });
+  if (!(await guestRace.getByText("Red wins!").isVisible())) errors.push("name 'em all race: the guest doesn't see Red win");
+  const guestBar = guestRace.getByTestId("nea-race-bar").filter({ hasText: "Blue" });
+  if (!/1\/11/.test((await guestBar.textContent()) ?? "")) errors.push("name 'em all race: the guest's name didn't reach the race");
+  await guestRace.screenshot({ path: `${OUT}/name-em-all-race-result.png` });
+  await guestRace.context().close();
+  await np.context().close();
 }
 
 step("mobile: home + daily");

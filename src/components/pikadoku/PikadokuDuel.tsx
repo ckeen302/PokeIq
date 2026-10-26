@@ -170,7 +170,7 @@ export function PikadokuDuel({ code }: { code: string }) {
           tag={tag}
           title={
             <>
-              Pikadoku <span className="text-primary">Tic Tac Toe</span>
+              Pikadoku <span className="whitespace-nowrap text-primary">Tic Tac Toe</span>
             </>
           }
           invite={(host) => `${host} challenges you to Pikadoku Tic Tac Toe! Take turns claiming cells with a Pokémon that fits: three in a row wins.`}

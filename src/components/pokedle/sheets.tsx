@@ -4,10 +4,10 @@ import { useEffect, useRef } from "react";
 import { X } from "lucide-react";
 import { dailyNumber, LAUNCH_DATE, previousDate } from "@/lib/daily";
 import { DLE_FREEZE_EVERY, DLE_MAX_FREEZES, type DleResultLike, type DleStats } from "@/lib/dle-stats";
-import { DLE_GUESS_COST, DLE_HINT_COST, DLE_HINT_EMOJI, DLE_HINT_KINDS, DLE_HINT_LABEL, DLE_MAX_GUESSES, DLE_MIN_SOLVE_POINTS, dleBasePoints, type DleRow } from "@/lib/dle-types";
+import { DLE_COLUMNS, DLE_GUESS_COST, DLE_HINT_COST, DLE_HINT_EMOJI, DLE_HINT_KINDS, DLE_HINT_LABEL, DLE_MAX_GUESSES, DLE_MIN_SOLVE_POINTS, dleBasePoints } from "@/lib/dle-types";
 import { DLE_COLUMN_BONUS, DLE_MAX_BONUS, DLE_STRICT_BONUS, dailyRules, rulesBonus } from "@/lib/dle-format";
-import { Button } from "@/components/ui/button";
 import { Board } from "./parts";
+import { DLE_EXAMPLE_MONS, exampleRow } from "./examples";
 import { DLE_ASSISTS, DLE_ASSIST_INFO, multiplierText } from "@/lib/dle-assist";
 import { cn } from "@/lib/utils";
 import { HowToActions, HowToCards } from "@/components/howto/shared";
@@ -51,21 +51,7 @@ export function Sheet({ title, onClose, children, wide }: { title: string; onClo
 }
 
 /** Pikachu guessed when the answer is Raichu. */
-const EXAMPLE: DleRow = {
-  id: 25,
-  name: "Pikachu",
-  imageUrl: "",
-  solved: false,
-  cells: {
-    gen: { value: "1", status: "match" },
-    type1: { value: "Electric", status: "match" },
-    type2: { value: "None", status: "match" },
-    height: { value: "0.4 m", status: "higher" },
-    weight: { value: "6 kg", status: "higher" },
-    color: { value: "Yellow", status: "miss" },
-    stage: { value: "1", status: "close-higher" },
-  },
-};
+const EXAMPLE = exampleRow(DLE_EXAMPLE_MONS.pikachu, DLE_EXAMPLE_MONS.raichu, DLE_COLUMNS.map((c) => c.key));
 
 export function HowToSheet({ onClose, onNever }: { onClose: () => void; onNever?: () => void }) {
   return (
@@ -178,7 +164,20 @@ export function HowToSheet({ onClose, onNever }: { onClose: () => void; onNever?
   );
 }
 
-export function StatsSheet({ stats, todayGuesses, onClose, title = "Statistics" }: { stats: DleStats; todayGuesses: number | null; onClose: () => void; title?: string }) {
+export function StatsSheet({
+  stats,
+  todayGuesses,
+  onClose,
+  title = "Statistics",
+  footer,
+}: {
+  stats: DleStats;
+  todayGuesses: number | null;
+  onClose: () => void;
+  title?: string;
+  /** Today's daily is done: its share button and the countdown to the next one. */
+  footer?: React.ReactNode;
+}) {
   const tiles = [
     { label: "Played", value: stats.played },
     { label: "Win %", value: stats.winPct },
@@ -223,6 +222,7 @@ export function StatsSheet({ stats, todayGuesses, onClose, title = "Statistics" 
         </div>
         {stats.hardWins > 0 && <p className="text-muted-foreground">Hard-mode wins: {stats.hardWins}</p>}
         <p className="text-xs text-muted-foreground">Only dailies count. Practice and archive games never change your stats or streaks.</p>
+        {footer && <div className="space-y-3 border-t pt-4">{footer}</div>}
       </div>
     </Sheet>
   );
