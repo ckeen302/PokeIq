@@ -3,12 +3,13 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import { ChevronLeft, ChevronRight, ChevronsRight, Loader2, Pause, Play, RotateCcw, Swords } from "lucide-react";
+import { ChevronLeft, ChevronRight, ChevronsRight, Download, Loader2, Pause, Play, RotateCcw, Swords, X } from "lucide-react";
 import type { BattleView } from "@/lib/battle/play";
 import { lastTurn, linesThrough, replayResult, type ReplayData } from "@/lib/battle/replay";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { ShareReplay } from "./BattleAfter";
+import { downloadReplay } from "./replay-download";
 
 const BattleScreen = dynamic(() => import("./play/BattleScreen"), {
   ssr: false,
@@ -31,7 +32,7 @@ const BETWEEN_TURNS_MS = 450;
  * the screen's own speed control (0.5× to 4×). Going forward animates the
  * turn; going back or jumping shows the battle as it stood at once.
  */
-export function ReplayViewer({ replay }: { replay: ReplayData }) {
+export function ReplayViewer({ replay, instant }: { replay: ReplayData; instant?: { onClose: () => void } }) {
   const last = useMemo(() => lastTurn(replay.log), [replay.log]);
   /** The turn whose start is on screen (0: nothing yet; last + 1: the end). */
   const [turn, setTurn] = useState(0);
@@ -177,6 +178,51 @@ export function ReplayViewer({ replay }: { replay: ReplayData }) {
     </div>
   );
 
+  const download = (kind: "html" | "log") =>
+    void downloadReplay({ id: replay.id, format: replay.format, formatName: replay.formatName, players: replay.players, log: replay.log }, kind);
+  const downloads = (
+    <div className="flex flex-wrap items-center gap-2" data-testid="replay-downloads">
+      <button type="button" className={button} onClick={() => download("html")} title="Showdown's replay file: opens in any browser and plays in Showdown's replay player" data-testid="replay-download">
+        <Download className="h-4 w-4" aria-hidden /> Download replay
+      </button>
+      <button type="button" className={button} onClick={() => download("log")} title="The raw battle log (Showdown's protocol), one line per event" data-testid="replay-download-log">
+        <Download className="h-4 w-4" aria-hidden /> Log
+      </button>
+    </div>
+  );
+
+  if (instant) {
+    return (
+      <div className="space-y-3" data-testid="instant-replay">
+        <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-warning/50 bg-warning/10 px-3 py-2 text-sm">
+          <span>
+            <strong>Instant replay</strong> of this battle so far. The battle goes on meanwhile: your turn timer keeps running.
+          </span>
+          <button type="button" className={cn(button, "border-primary bg-primary text-primary-foreground")} onClick={instant.onClose} data-testid="instant-replay-close">
+            <X className="h-4 w-4" aria-hidden /> Back to the battle
+          </button>
+        </div>
+        <BattleScreen
+          view={view}
+          log={shown}
+          offset={0}
+          busy={false}
+          error={null}
+          onChoose={() => {}}
+          replay
+          onIdle={onIdle}
+          toolbar={toolbar}
+          endActions={
+            <button type="button" className={cn(button, "mx-auto border-primary bg-primary text-primary-foreground")} onClick={instant.onClose}>
+              <X className="h-4 w-4" aria-hidden /> Back to the battle
+            </button>
+          }
+        />
+        <div className="flex justify-end">{downloads}</div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-3">
       <BattleScreen
@@ -201,7 +247,8 @@ export function ReplayViewer({ replay }: { replay: ReplayData }) {
           </div>
         }
       />
-      <div className="flex justify-end">
+      <div className="flex flex-wrap items-center justify-end gap-2">
+        {downloads}
         <ShareReplay id={replay.id} result={replayResult(replay)} formatName={replay.formatName} />
       </div>
       <ReplayAnalysis replay={replay} />

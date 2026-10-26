@@ -4,7 +4,7 @@ import { useCallback, useMemo, useState } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Eye, Flag, Loader2, RotateCcw, Settings2, Swords, WifiOff } from "lucide-react";
+import { Download, Eye, Flag, History, Loader2, RotateCcw, Settings2, Swords, WifiOff } from "lucide-react";
 import { BATTLE_AWAY_MS, BATTLE_QUIET_MS, BATTLE_TIMER, PLAY_FORMAT_INFO, battleHref, type BattleView } from "@/lib/battle/play";
 import { DuelLobby, MatchedNote } from "@/components/duel/DuelParts";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -18,6 +18,8 @@ import { useBattle, type BattleHandle } from "./use-battle";
 import { ChatBox } from "@/components/chat/ChatBox";
 import { BattleAfter } from "./BattleAfter";
 import { AddFriendAfterGame } from "@/components/community/AddFriend";
+import { lastTurn, type ReplayData } from "@/lib/battle/replay";
+import { downloadReplay } from "./replay-download";
 
 /** A live battle's chat: the two players talk; anyone else watching reads along. */
 function BattleChat({ view, battle, collapsible, className }: { view: BattleView; battle: BattleHandle; collapsible?: boolean; className?: string }) {
@@ -48,6 +50,29 @@ const BattleScreen = dynamic(() => import("./play/BattleScreen"), {
   ssr: false,
   loading: () => <ScreenLoading />,
 });
+
+const ReplayViewer = dynamic(() => import("./ReplayViewer").then((m) => m.ReplayViewer), {
+  ssr: false,
+  loading: () => <ScreenLoading />,
+});
+
+/** The battle so far as a replay (your own view of it): Showdown's instant replay, and the file to download. */
+function replayOf(view: BattleView, log: readonly string[]): ReplayData {
+  const players = [view.players[0]?.name ?? "Player 1", view.players[1]?.name ?? "Player 2"] as [string, string];
+  return {
+    id: view.code,
+    format: view.format,
+    formatName: view.formatName ?? PLAY_FORMAT_INFO[view.format].name,
+    players,
+    winner: view.end?.winner ?? null,
+    reason: view.end?.reason ?? "normal",
+    turns: lastTurn(log),
+    ranked: !!view.ranked,
+    public: false,
+    uploadedAt: 0,
+    log: [...log],
+  };
+}
 
 function ScreenLoading() {
   return (
@@ -265,6 +290,8 @@ function LiveLobby({ code, view, battle }: { code: string; view: BattleView; bat
 export function BattleRoom({ code }: { code: string }) {
   const battle = useBattle(code);
   const { view, gone, offline } = battle;
+  /** Showdown's instant replay: the battle so far, from the start, while it goes on. */
+  const [instant, setInstant] = useState(false);
 
   if (gone) return <BattleGone message={gone} />;
   if (!view) return <ScreenLoading />;
@@ -322,6 +349,10 @@ export function BattleRoom({ code }: { code: string }) {
   }
 
   const foe = view.players[view.you === 0 ? 1 : 0];
+  if (instant) {
+    return <ReplayViewer replay={replayOf(view, battle.log.lines)} instant={{ onClose: () => setInstant(false) }} />;
+  }
+  const canReplay = view.turn >= 2 || view.status === "finished";
   return (
     <div className="space-y-3">
       {/* Matchmaking opened this battle (its link carries ?matched): "Matched! You vs Blue" for a few seconds. */}
@@ -359,7 +390,25 @@ export function BattleRoom({ code }: { code: string }) {
         }
         side={view.kind === "pvp" ? <BattleChat view={view} battle={battle} collapsible /> : undefined}
       />
-      {view.status === "playing" && <ForfeitButton busy={battle.busy} onForfeit={() => void battle.act({ action: "forfeit" })} />}
+      <div className="flex flex-wrap items-center justify-end gap-1">
+        {canReplay && (
+          <Button size="sm" variant="ghost" onClick={() => setInstant(true)} title="Watch the battle so far from the start (Showdown's instant replay)" data-testid="instant-replay-open">
+            <History className="h-3.5 w-3.5" aria-hidden /> Instant replay
+          </Button>
+        )}
+        {view.status === "finished" && (
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => void downloadReplay({ ...replayOf(view, battle.log.lines) })}
+            title="Showdown's replay file: opens in any browser and plays in Showdown's replay player"
+            data-testid="battle-download-replay"
+          >
+            <Download className="h-3.5 w-3.5" aria-hidden /> Download replay
+          </Button>
+        )}
+        {view.status === "playing" && <ForfeitButton busy={battle.busy} onForfeit={() => void battle.act({ action: "forfeit" })} />}
+      </div>
     </div>
   );
 }
