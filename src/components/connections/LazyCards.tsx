@@ -25,8 +25,17 @@ function WhenNear({ id, minH, children }: { id: string; minH: string; children: 
     const onHash = () => window.location.hash === `#${id}` && setNear(true);
     window.addEventListener("hashchange", onHash);
     const io = new IntersectionObserver((entries) => entries.some((e) => e.isIntersecting) && setNear(true), { rootMargin: "100% 0px" });
-    if (ref.current) io.observe(ref.current);
+    // Not before the board is in (or three seconds): the tiles and their sprites go first.
+    const started = Date.now();
+    let timer = 0;
+    const watch = () => {
+      const boardIn = document.querySelector('[data-testid="conn-tile"] img, [data-testid="conn-group"]');
+      if (!boardIn && Date.now() - started < 3000) return void (timer = window.setTimeout(watch, 150));
+      if (ref.current) io.observe(ref.current);
+    };
+    watch();
     return () => {
+      window.clearTimeout(timer);
       io.disconnect();
       window.removeEventListener("hashchange", onHash);
     };

@@ -751,6 +751,8 @@ export function Connections({ customId }: { customId?: string } = {}) {
           {announce}
         </div>
 
+        {/* While the tiles load, hold the controls' space so nothing below the board jumps when they arrive. */}
+        {!puzzle && !error && <div aria-hidden className="h-[4.5rem] sm:h-[6.875rem]" />}
         {!over && puzzle && (
           <div className="space-y-3 sm:space-y-4">
             <MistakeDots left={mistakesLeft} max={connMaxMistakes(size)} />
