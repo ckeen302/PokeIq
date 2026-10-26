@@ -947,18 +947,25 @@ function RoundReveal({
                 : `No game named: no bonus (worth ${fmt(GEO_GAME_BONUS)})`}
           </p>
         )}
-        <p className="text-muted-foreground">
-          It was <span className="font-semibold text-foreground">{placeName(graded.answer, game.region)}</span>
-          <span className="text-sm"> · Pokémon {graded.answer.game}</span>
-          <br />
-          <span className="text-sm" data-testid="geo-distance">{graded.timedOut ? "Time's up: no pin down" : distanceText(graded.answer.squares)}</span>
-          <span className="text-sm">
-            {" · "}
-            <Link href={atlasHref(graded.answer)} target="_blank" className="underline underline-offset-2 hover:text-foreground">
-              See it on the atlas
+        <div className="space-y-2 text-muted-foreground">
+          <p>
+            It was <span className="font-semibold text-foreground" data-testid="geo-answer-place">{placeName(graded.answer, game.region)}</span>
+          </p>
+          <p className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1.5 text-sm">
+            <span className="rounded-sm border px-2 py-0.5 text-xs text-foreground" data-testid="geo-answer-game">
+              Pokémon {graded.answer.game}
+            </span>
+            <span data-testid="geo-distance">{graded.timedOut ? "Time's up: no pin down" : distanceText(graded.answer.squares)}</span>
+            <Link
+              href={atlasHref(graded.answer)}
+              target="_blank"
+              className="inline-flex items-center gap-1 underline underline-offset-2 hover:text-foreground"
+              data-testid="geo-atlas-link"
+            >
+              <MapIcon className="h-3.5 w-3.5" aria-hidden /> See it on the World Atlas
             </Link>
-          </span>
-        </p>
+          </p>
+        </div>
         <Button size="lg" className="w-full max-w-xs" onClick={onNext}>
           {graded.done ? (isStreak ? "See results" : "View summary") : "Next round"} ▶
         </Button>
@@ -1285,11 +1292,12 @@ function DailyCompare({ date, score }: { date: string; score: number }) {
         )}
         <div className="flex h-28 items-end gap-1" role="img" aria-label={`Score spread for the day, your score in bar ${mine + 1} of ${stats.buckets.length}`}>
           {stats.buckets.map((n, i) => (
-            <div key={i} className="flex h-full min-w-0 flex-1 flex-col justify-end">
+            <div key={i} className="flex h-full min-w-0 flex-1 flex-col items-stretch justify-end">
+              {i === mine && <span className="mb-1 text-center font-pixel text-[9px] uppercase text-primary">You</span>}
               <motion.div
                 className={cn("rounded-t-sm", i === mine ? "bg-primary" : "bg-muted-foreground/30")}
                 initial={{ height: 0 }}
-                animate={{ height: `${Math.max(n ? 6 : 2, (n / tallest) * 100)}%` }}
+                animate={{ height: `${Math.max(n ? 6 : 2, (n / tallest) * 82)}%` }}
                 transition={{ duration: 0.6, delay: i * 0.03 }}
               />
             </div>
