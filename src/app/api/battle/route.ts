@@ -35,7 +35,7 @@ const rankedId = z.string().max(200).optional();
 
 const bodySchema = z.discriminatedUnion("mode", [
   z.object({ mode: z.literal("cpu"), name: duelNameSchema, format, level: z.enum(CPU_LEVELS).default("normal"), team, rules, rankedId }),
-  z.object({ mode: z.literal("pvp"), name: duelNameSchema, format, team, rules, rankedId, public: z.boolean().default(false), hidden: z.boolean().default(false), timer: z.boolean().default(true), timeoutLoses: z.boolean().default(false) }),
+  z.object({ mode: z.literal("pvp"), name: duelNameSchema, format, team, rules, rankedId, public: z.boolean().default(false), hidden: z.boolean().default(false), timer: z.boolean().default(true), timeoutLoses: z.boolean().default(true) }),
 ]);
 
 export async function POST(request: NextRequest) {

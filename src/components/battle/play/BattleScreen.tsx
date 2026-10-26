@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { MusicControl, trackFor, useBattleMusic } from "./MusicControl";
 import { AlertTriangle, Eye, Undo2, FastForward, Gauge, Loader2, ScrollText, SkipForward, Sparkles, Timer } from "lucide-react";
-import { CPU_LEVEL_INFO, PLAY_FORMAT_INFO, type BattleRequestPokemon, type BattleView } from "@/lib/battle/play";
+import { CPU_LEVEL_INFO, PLAY_FORMAT_INFO, timerNagMarks, type BattleRequestPokemon, type BattleView } from "@/lib/battle/play";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { Dex } from "@pkmn/dex";
@@ -42,6 +42,8 @@ export interface BattleScreenProps {
   onUndo?: (rqid: number) => void;
   /** A live battle with the timer off: start it. */
   onStartTimer?: () => void;
+  /** Turn the timer off again (only for a player who asked for it). */
+  onStopTimer?: () => void;
   /** Under the header: a replay's playback controls. */
   toolbar?: React.ReactNode;
   /** A replay: no clocks, waiting or controls, just the battle. */
@@ -91,6 +93,19 @@ interface Entry {
   id: number;
   turn?: number;
   text: string;
+  /** Seconds since the epoch, when known. */
+  at?: number;
+}
+
+const LOG_OPTS_KEY = "pokeiq:battle:log-options";
+/** The longest one step of the battle may animate before it's cut short. */
+const STEP_WATCHDOG_MS = 8_000;
+/** "(The opposing Pikachu lost 45% of its health!)": the lines "Hide HP %" leaves out. */
+const PERCENT_LINE = /^\(.*\d+(?:\.\d+)?% of (?:its|their) health!?\)$/;
+
+function stamp(at: number): string {
+  const d = new Date(at * 1000);
+  return `[${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}:${String(d.getSeconds()).padStart(2, "0")}]`;
 }
 
 const SPEEDS = [0.5, 1, 2, 4] as const;
@@ -135,7 +150,7 @@ function useTick(active: boolean) {
   return now;
 }
 
-export default function BattleScreen({ view, log, offset, busy, error, onChoose, endActions, side, onUndo, onStartTimer, toolbar, replay, onIdle }: BattleScreenProps) {
+export default function BattleScreen({ view, log, offset, busy, error, onChoose, endActions, side, onUndo, onStartTimer, onStopTimer, toolbar, replay, onIdle }: BattleScreenProps) {
   const watching = view.you === null;
   const idle = useRef(onIdle);
   idle.current = onIdle;
@@ -177,6 +192,26 @@ export default function BattleScreen({ view, log, offset, busy, error, onChoose,
   const [showLog, setShowLog] = useState(false);
   const logEnd = useRef<HTMLDivElement>(null);
   const logBox = useRef<HTMLDivElement>(null);
+  /** Log options (Showdown's): timestamps on each line, and hiding the "lost N% of its health" lines. Remembered on this device. */
+  const [logOpts, setLogOpts] = useState<{ time: boolean; hidePct: boolean }>({ time: false, hidePct: false });
+  useEffect(() => {
+    try {
+      const saved = JSON.parse(window.localStorage.getItem(LOG_OPTS_KEY) ?? "{}");
+      setLogOpts({ time: saved.time === true, hidePct: saved.hidePct === true });
+    } catch {
+      // defaults
+    }
+  }, []);
+  const changeLogOpts = (next: Partial<typeof logOpts>) =>
+    setLogOpts((o) => {
+      const merged = { ...o, ...next };
+      try {
+        window.localStorage.setItem(LOG_OPTS_KEY, JSON.stringify(merged));
+      } catch {
+        // not remembered
+      }
+      return merged;
+    });
   /** Whether the log was scrolled to its end before the newest lines came in (as on Showdown, reading back stops the autoscroll). */
   const logAtEnd = useRef(true);
 
@@ -219,7 +254,7 @@ export default function BattleScreen({ view, log, offset, busy, error, onChoose,
     const text = step.text.trim();
     if (!text) return;
     const id = ++entryId.current;
-    setEntries((list) => [...list.slice(-600), step.cmd === "turn" ? { id, turn: Number(step.args[1]), text } : { id, text }]);
+    setEntries((list) => [...list.slice(-600), step.cmd === "turn" ? { id, turn: Number(step.args[1]), text, at: step.at } : { id, text, at: step.at }]);
   }, []);
 
   const popup = useCallback((ref: Step["who"], text: string, tone: PopupTone) => {
@@ -248,11 +283,16 @@ export default function BattleScreen({ view, log, offset, busy, error, onChoose,
       }
       const controller = new AbortController();
       abort.current = controller;
+      // A watchdog: no step may hold the battle up (an animation frame that never comes in a background tab, a broken animation).
+      const watchdog = window.setTimeout(() => controller.abort(), STEP_WATCHDOG_MS);
       try {
         await playStep(step, { stage: stage.current, commit, popup, speed: speedRef.current, signal: controller.signal, reducedMotion: !!reducedMotion });
+        if (controller.signal.aborted && step.snap && !skipping.current) commit(step.snap);
       } catch (err) {
         console.error("[battle] step failed:", err);
         if (step.snap) commit(step.snap);
+      } finally {
+        window.clearTimeout(watchdog);
       }
     }
     skipping.current = false;
@@ -354,6 +394,48 @@ export default function BattleScreen({ view, log, offset, busy, error, onChoose,
   const myLeft = view.clocks && view.status === "playing" && view.clocks.you.deadline && !view.waiting && view.request ? view.clocks.you.deadline - now : null;
   const warning = timerWarning(myLeft);
 
+  // Phones: when it's your move, bring the move buttons into thumb reach (above the tab bar), as Showdown's mobile layout keeps them.
+  const controlsCard = useRef<HTMLDivElement>(null);
+  const requestId = showControls ? view.request?.rqid : undefined;
+  useEffect(() => {
+    if (requestId === undefined || replay || window.innerWidth >= 1024) return;
+    const el = controlsCard.current;
+    if (!el) return;
+    const box = el.getBoundingClientRect();
+    // The latest line of text stays in view just above the buttons.
+    if (box.top > window.innerHeight * 0.6 || box.bottom < 0) window.scrollTo({ top: window.scrollY + box.top - 150, behavior: "smooth" });
+  }, [requestId, replay]);
+
+  // Showdown's inactivity messages in the log as either player's turn time runs down ("Red has 20 seconds left.").
+  const nagged = useRef(new Map<string, Set<number>>());
+  useEffect(() => {
+    if (!view.clocks || view.status !== "playing" || replay) return;
+    const names = { you: youName, foe: foeName };
+    const lines: string[] = [];
+    for (const who of ["you", "foe"] as const) {
+      const c = view.clocks[who];
+      if (!c.deadline || !c.startedAt) continue;
+      const key = `${who}:${c.deadline}`;
+      const marks = timerNagMarks(Math.round((c.deadline - c.startedAt) / 1000));
+      const left = (c.deadline - now) / 1000;
+      let done = nagged.current.get(key);
+      if (!done) {
+        // A page opened mid-turn doesn't replay the messages it missed.
+        done = new Set(marks.filter((m) => left < m - 1));
+        nagged.current.set(key, done);
+      }
+      for (const m of marks) {
+        if (left <= m && !done.has(m)) {
+          done.add(m);
+          lines.push(`${names[who]} has ${m} seconds left.`);
+        }
+      }
+    }
+    if (!lines.length) return;
+    const at = Math.floor(Date.now() / 1000);
+    setEntries((list) => [...list.slice(-600), ...lines.map((text) => ({ id: ++entryId.current, text, at }))]);
+  }, [now, view.clocks, view.status, replay, youName, foeName]);
+
   return (
     <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_300px]">
       <div className="min-w-0 space-y-3">
@@ -391,6 +473,18 @@ export default function BattleScreen({ view, log, offset, busy, error, onChoose,
               data-testid="start-timer"
             >
               <Timer className="h-3 w-3" aria-hidden /> Start timer
+            </button>
+          )}
+          {view.timerStoppable && onStopTimer && !watching && (
+            <button
+              type="button"
+              onClick={onStopTimer}
+              disabled={busy}
+              className="flex items-center gap-1 rounded-sm border border-border px-2 py-0.5 font-pixel text-[10px] uppercase text-muted-foreground hover:bg-muted disabled:opacity-50"
+              title="You asked for the timer: turn it off again (it stays on if your opponent asked for it too)"
+              data-testid="stop-timer"
+            >
+              <Timer className="h-3 w-3" aria-hidden /> Stop timer
             </button>
           )}
           {view.frontier && (
@@ -459,7 +553,7 @@ export default function BattleScreen({ view, log, offset, busy, error, onChoose,
               myLeft! <= TIMER_WARNINGS[1] ? "animate-pulse border-destructive bg-destructive/15 text-destructive" : "border-warning/60 bg-warning/10 text-warning"
             )}
           >
-            <AlertTriangle className="h-4 w-4 shrink-0" aria-hidden /> {warning} {view.timeoutLoses ? "Run out and you lose the battle." : "Run out and the timer picks for you."}
+            <AlertTriangle className="h-4 w-4 shrink-0" aria-hidden /> {warning} {view.timeoutLoses ? (view.timer?.autoChoose && view.clocks && view.clocks.you.bank > (myLeft ?? 0) ? "Run out and a default move is made for you." : "Run out and you lose the battle.") : "Run out and the timer picks for you."}
           </p>
         )}
 
@@ -469,7 +563,7 @@ export default function BattleScreen({ view, log, offset, busy, error, onChoose,
           </p>
         )}
 
-        <Card>
+        <Card ref={controlsCard}>
           <CardContent className="p-4">
             {showControls ? (
               <Controls key={view.request!.rqid} request={view.request!.data} snap={snap} me={me} doubles={doubles} busy={busy} format={view.format} onChoose={(choice) => onChoose(view.request!.rqid, choice)} onHelp={help.toggle} />
@@ -517,9 +611,31 @@ export default function BattleScreen({ view, log, offset, busy, error, onChoose,
       <aside className="min-w-0 space-y-3 lg:sticky lg:top-20 lg:self-start">
         <Card className={cn("lg:block", showLog ? "block" : "hidden")} aria-label="Battle log">
           <CardContent className="p-0">
-            <p className="hud-label flex items-center gap-1.5 border-b px-4 py-3">
-              <ScrollText className="h-3 w-3" aria-hidden /> Battle log
-            </p>
+            <div className="flex items-center gap-1.5 border-b px-4 py-2">
+              <p className="hud-label flex flex-1 items-center gap-1.5 py-1">
+                <ScrollText className="h-3 w-3" aria-hidden /> Battle log
+              </p>
+              <button
+                type="button"
+                onClick={() => changeLogOpts({ time: !logOpts.time })}
+                aria-pressed={logOpts.time}
+                className={cn("rounded-sm px-1.5 py-1 font-pixel text-[10px] uppercase", logOpts.time ? "bg-screen text-black" : "text-muted-foreground hover:text-foreground")}
+                title="Show the time of each line"
+                data-testid="log-timestamps"
+              >
+                Time
+              </button>
+              <button
+                type="button"
+                onClick={() => changeLogOpts({ hidePct: !logOpts.hidePct })}
+                aria-pressed={logOpts.hidePct}
+                className={cn("rounded-sm px-1.5 py-1 font-pixel text-[10px] uppercase", logOpts.hidePct ? "bg-screen text-black" : "text-muted-foreground hover:text-foreground")}
+                title='Hide the "(lost N% of its health)" lines'
+                data-testid="log-hide-percent"
+              >
+                Hide HP %
+              </button>
+            </div>
             <div
               className={cn(
                 "max-h-[28rem] space-y-1 overflow-y-auto px-4 py-3 text-xs leading-relaxed text-muted-foreground",
@@ -535,11 +651,15 @@ export default function BattleScreen({ view, log, offset, busy, error, onChoose,
               {entries.map((e) =>
                 e.turn !== undefined ? (
                   <p key={e.id} className="hud-label pt-2 text-screen">
+                    {logOpts.time && e.at ? <span className="mr-1.5 font-mono normal-case text-muted-foreground">{stamp(e.at)}</span> : null}
                     Turn {e.turn}
                   </p>
-                ) : (
-                  <div key={e.id}>
-                    <RichText text={e.text} />
+                ) : logOpts.hidePct && PERCENT_LINE.test(e.text) ? null : (
+                  <div key={e.id} className={cn(logOpts.time && e.at && "flex gap-1.5")}>
+                    {logOpts.time && e.at ? <span className="shrink-0 font-mono text-[10px] text-muted-foreground/70">{stamp(e.at)}</span> : null}
+                    <div className="min-w-0">
+                      <RichText text={e.text} />
+                    </div>
                   </div>
                 )
               )}

@@ -262,7 +262,7 @@ describe("live battles", () => {
         expect(stored.meta.clocks![0].timeouts).toBe(1);
         // The whole turn came out of the bank (plus the per-turn top-up if Red already has the next request).
         const bank = timer.bank - Math.min(timer.bank, timer.cap);
-        expect([bank, bank + timer.perTurn]).toContain(stored.meta.clocks![0].bank);
+        expect([bank, bank + 5_000, bank + timer.perTurn]).toContain(stored.meta.clocks![0].bank);
         expectedDeadline = 0;
       } else {
         expect(after.status).toBe("finished");

@@ -235,6 +235,9 @@ export interface SceneLayers {
 /** What the animation tables need to look up an effect by name (the effects table, loaded with them). */
 export type EffectTable = Record<string, SpriteData>;
 
+/** The longest a single animation may run (Showdown's longest are around 3 s). */
+const MAX_SCENE_MS = 6_000;
+
 /** One animation's worth of scene: build it, let a table animate it, then `play()`. */
 export class BattleScene {
   timeOffset = 0;
@@ -387,13 +390,17 @@ export class BattleScene {
    * up and the sprites put back.
    */
   play(speed = 1, signal?: AbortSignal): Promise<void> {
-    const total = this.duration;
+    // A broken animation (NaN times) or a runaway one can't hold the battle up.
+    const total = Number.isFinite(this.duration) ? Math.min(this.duration, MAX_SCENE_MS) : 0;
     const tracks = [...this.tracks];
     return new Promise((resolve) => {
       const started = performance.now();
       let frame = 0;
+      // Animation frames stop in a background tab: a timer finishes the scene anyway.
+      let fallback = 0;
       const finish = () => {
         cancelAnimationFrame(frame);
+        window.clearTimeout(fallback);
         for (const el of this.created) el.remove();
         for (const track of tracks) track.reset();
         signal?.removeEventListener("abort", finish);
@@ -404,6 +411,7 @@ export class BattleScene {
         return;
       }
       signal?.addEventListener("abort", finish);
+      fallback = window.setTimeout(finish, total / speed + 1_000);
       const tick = (now: number) => {
         const time = (now - started) * speed;
         for (const track of tracks) track.apply(Math.min(time, total));

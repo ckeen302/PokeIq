@@ -141,6 +141,20 @@ export function CalcPanel({
             </Toggle>
           </div>
         )}
+        {gen.num === 7 && (
+          <div className="flex items-end">
+            <Toggle pressed={!!side.zMove} onChange={(zMove) => update({ zMove })} className="h-9 w-full justify-center">
+              Z-Move
+            </Toggle>
+          </div>
+        )}
+        {gen.num === 8 && (
+          <div className="flex items-end">
+            <Toggle pressed={!!side.dynamaxed} onChange={(dynamaxed) => update({ dynamaxed })} className="h-9 w-full justify-center">
+              Dynamax
+            </Toggle>
+          </div>
+        )}
       </div>
 
       {/* Current HP */}

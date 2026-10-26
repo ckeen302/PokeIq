@@ -99,10 +99,10 @@ export default function HomePage() {
           href={COFFEE_URL}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-2 rounded-md border border-[#ffdd00]/40 bg-[#ffdd00] px-5 py-2.5 font-display text-sm font-bold uppercase tracking-wider text-black transition-transform hover:-translate-y-0.5"
+          className="group inline-flex items-center gap-2 rounded-md border bg-card px-5 py-2.5 font-display text-sm font-bold uppercase tracking-wider text-foreground transition-all hover:-translate-y-0.5 hover:border-primary/60 hover:shadow-[0_0_16px_hsl(var(--primary)/0.25)]"
           data-testid="coffee-button"
         >
-          <Coffee className="h-4 w-4" aria-hidden />
+          <Coffee className="h-4 w-4 text-primary" aria-hidden />
           Buy me a coffee
         </a>
       </div>

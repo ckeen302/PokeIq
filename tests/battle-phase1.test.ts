@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { Dex, TeamValidator, Teams } from "pokemon-showdown";
 import { actOnBattle, battleToken, createCpuBattle, createLiveBattle, pollBattle, readBattleToken } from "@/lib/server/battle-engine/service";
 import { cpuTeam } from "@/lib/server/battle-engine/teams";
+import { firstChoice } from "@/lib/server/battle-engine/choices";
 import { randomTeam } from "@/lib/server/battle";
 import { BATTLE_FORMATS, hasTera } from "@/lib/battle/formats";
 import { PLAY_FORMATS, PLAY_FORMAT_INFO } from "@/lib/battle/play";
@@ -83,6 +84,8 @@ describe("Loss on timeout", () => {
     // Blue chooses; Red sits on their turn (polling, so never "disconnected") until the clock runs out.
     const b = await pollBattle(made.code, blue, 0);
     if (!b.ok || !b.view.request) throw new Error("blue has no request");
+    const chose = await actOnBattle(made.code, joined.playerId, { action: "choose", rqid: b.view.request.rqid, choice: firstChoice(b.view.request.data, false) }, 0);
+    if (!chose.ok) throw new Error(chose.error);
     const r0 = await pollBattle(made.code, made.token, 0);
     if (!r0.ok) throw new Error(r0.error);
     const deadline = r0.view.clocks!.you.deadline!;

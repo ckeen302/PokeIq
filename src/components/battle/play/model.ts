@@ -84,6 +84,8 @@ export interface Step {
   /** The mon that was in `who`'s slot before a switch. */
   replaced?: string;
   snap?: Snap;
+  /** When it happened (the simulator's |t:| seconds), if known. */
+  at?: number;
 }
 
 /** "p2a: Name" → p2, slot 0. */
@@ -202,6 +204,8 @@ export class BattleModel {
   readonly battle: Battle;
   readonly me: SideId;
   private readonly formatter: LogFormatter;
+  /** The simulator's last |t:| timestamp (seconds), for the log's timestamps. */
+  private time: number | undefined;
 
   constructor(me: SideId) {
     this.me = me;
@@ -219,6 +223,7 @@ export class BattleModel {
     }
     const { args, kwArgs } = parsed;
     const cmd = args[0] ?? "";
+    if (cmd === "t:") this.time = Number(args[1]) || this.time;
     let text = "";
     try {
       // The formatter reads the state before the line is applied.
@@ -226,7 +231,10 @@ export class BattleModel {
     } catch {
       text = "";
     }
+    // Showdown's timer messages ("Battle timer is ON…", "Red has 20 seconds left.") are plain text.
+    if (cmd === "inactive" || cmd === "inactiveoff") text = args[1] ?? "";
     const step: Step = { cmd, args, kw: kwArgs, text };
+    if (this.time) step.at = this.time;
     const who = slotOf(args[1]);
     if (who) step.who = who;
     if (cmd === "move") {

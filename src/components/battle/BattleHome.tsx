@@ -388,6 +388,11 @@ export function BattleHome({ news }: { news: NewsItem[] }) {
                   <Swords className="h-6 w-6" aria-hidden /> Battle!
                 </Button>
               )}
+              {!searching && !ready && (
+                <p className="text-center text-xs text-muted-foreground" data-testid="battle-why-disabled">
+                  {!trainer ? "Enter a trainer name to battle." : needsTeam && !team ? "Pick a team, or a quick one, to battle." : "Fix the rules above to battle."}
+                </p>
+              )}
               {!searching && (
                 <div className="grid grid-cols-2 gap-2">
                   {format === "factory" ? (

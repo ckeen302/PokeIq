@@ -136,7 +136,7 @@ export function BattleSetup({ initial = "cpu", challenge }: { initial?: Opponent
   /** Friend battles: the turn timer runs from the start (off: either player can start it). */
   const [timerOn, setTimerOn] = useState(true);
   /** Friend battles: Showdown's rule, running out the clock once loses (off: the timer moves for you; twice loses). */
-  const [timeoutLoses, setTimeoutLoses] = useState(false);
+  const [timeoutLoses, setTimeoutLoses] = useState(true);
   /** Find an opponent: the format's ranked queue (paired by rating) instead of the casual one. */
   const [ranked, setRanked] = useState(false);
   const ladder = useLadderStanding(opponent === "match" && isLadderFormat(format) ? (format as StandardFormatId) : null);
@@ -375,7 +375,7 @@ export function BattleSetup({ initial = "cpu", challenge }: { initial?: Opponent
                 checked={timeoutLoses}
                 onChange={setTimeoutLoses}
                 label="Lose on timeout"
-                hint="As on Showdown: run out of time once and you lose. Off: the timer picks a move for you, and a second timeout loses."
+                hint="On, as on Showdown: run out of time and you lose (VGC-timer formats make a default move while you still have time in the bank). Off: the timer picks a move for you, and a second timeout in a row loses."
                 testId="timeout-loses"
               />
             </div>
@@ -406,6 +406,11 @@ export function BattleSetup({ initial = "cpu", challenge }: { initial?: Opponent
               )}
               {opponent === "cpu" ? "Start battle" : opponent === "match" ? "Find an opponent" : challenge ? `Challenge ${challenge}` : "Create battle"}
             </Button>
+          )}
+          {!searching && !busy && (!name.trim() || (needsTeam && !team)) && (
+            <p className="text-center text-xs text-muted-foreground" data-testid="setup-why-disabled">
+              {!name.trim() ? "Enter a trainer name to start." : "Pick a team, or a quick one, to start."}
+            </p>
           )}
           {opponent === "match" && !searching && <p className="text-center text-xs text-muted-foreground">Leaving this page or closing the tab ends the search.</p>}
         </CardContent>
