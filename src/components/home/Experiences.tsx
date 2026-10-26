@@ -1,8 +1,6 @@
 import Link from "next/link";
-import { ArrowRight, Brain, CalendarDays, Compass, FlaskConical, Search, Swords, type LucideIcon } from "lucide-react";
+import { ArrowRight, Compass, FlaskConical, Search, Swords, type LucideIcon } from "lucide-react";
 import { HpBar } from "@/components/game/HpBar";
-import { ModeIcon } from "@/components/game/ModeIcon";
-import { MODULE_INFO, PLAY_MODULES, moduleHref } from "@/lib/modes";
 import { cn } from "@/lib/utils";
 
 interface Experience {
@@ -85,11 +83,6 @@ const EXPERIENCES: Experience[] = [
 ];
 
 /** Short quiz names for the chips (the full titles are on the quiz pages). */
-const QUIZZES: { href: string; label: string; icon: React.ReactNode }[] = [
-  ...PLAY_MODULES.map((m) => ({ href: moduleHref(m), label: MODULE_INFO[m].title, icon: <ModeIcon module={m} className="h-3.5 w-3.5" /> })),
-  { href: "/iq-test", label: "PokéIQ Test", icon: <Brain className="h-3.5 w-3.5" aria-hidden /> },
-  { href: "/daily", label: "Daily Challenge", icon: <CalendarDays className="h-3.5 w-3.5" aria-hidden /> },
-];
 
 /** The four headline games, then every quiz, right under the title screen. */
 export function Experiences() {
@@ -123,23 +116,6 @@ export function Experiences() {
           </li>
         ))}
       </ul>
-
-      <nav aria-label="Quizzes" className="flex items-center gap-3">
-        <span className="hud-label shrink-0 text-screen">Quizzes</span>
-        <ul className="-mr-4 flex gap-2 overflow-x-auto pb-1 pr-4 [scrollbar-width:none] sm:mr-0 sm:flex-wrap sm:overflow-visible sm:pr-0">
-          {QUIZZES.map(({ href, label, icon }) => (
-            <li key={href} className="shrink-0">
-              <Link
-                href={href}
-                className="inline-flex h-9 items-center gap-1.5 rounded-md border bg-card px-3 text-[13px] font-medium text-foreground/90 transition-colors hover:border-screen/60 hover:text-foreground"
-              >
-                <span className="text-screen">{icon}</span>
-                {label}
-              </Link>
-            </li>
-          ))}
-        </ul>
-      </nav>
     </section>
   );
 }
