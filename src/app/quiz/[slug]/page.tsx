@@ -108,6 +108,7 @@ export default async function QuizPage({ params }: PageProps) {
         </p>
       </section>
       <GameInfo
+        hidden
         path={`/quiz/${preset.slug}`}
         name={`${preset.h1}`}
         description={`${preset.description}`}
