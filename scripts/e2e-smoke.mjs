@@ -1650,12 +1650,33 @@ step("battle vs computer: a random battle, played until it ends or turn 10");
 watchBattle(page, "p1", "cpu battle");
 await page.goto(`${BASE}/battle/play`, { waitUntil: "networkidle" });
 await page.screenshot({ path: `${OUT}/battle-setup.png`, fullPage: true });
+// Phase 1 formats: Showdown's own tiers below UU, Little Cup, Monotype and National Dex.
+for (const name of ["[Gen 9] RU", "[Gen 9] NU", "[Gen 9] PU", "[Gen 9] LC", "[Gen 9] Monotype", "[Gen 9] National Dex", "[Gen 9] Doubles OU"]) {
+  if (!(await page.locator("label").filter({ hasText: name }).count())) errors.push(`battle setup: format ${name} is missing`);
+}
+await page.screenshot({ path: `${OUT}/battle-p1-formats.png`, fullPage: true });
 await page.locator("label").filter({ hasText: "[Gen 9] Random Battle" }).first().click();
 await page.getByLabel("Your trainer name").fill("Red");
 await page.getByRole("button", { name: /Start battle/ }).click();
 await page.waitForURL(/\/battle\/play\/[a-z2-9]{8}$/);
 await page.locator("[data-testid=move-button]").first().waitFor({ timeout: 60_000 });
 await page.screenshot({ path: `${OUT}/battle-cpu.png` });
+
+step("battle hotkeys: ? shows the list, 1 uses the first move");
+await page.keyboard.press("Shift+Slash");
+await page.getByTestId("hotkeys-help").waitFor({ timeout: 5_000 });
+if (!/Shift \+ 1 – 6/.test(await page.getByTestId("hotkeys-help").innerText())) errors.push("hotkey help is missing the switch keys");
+await page.screenshot({ path: `${OUT}/battle-p1-hotkeys.png` });
+await page.keyboard.press("Shift+Slash");
+await page.getByTestId("hotkeys-help").waitFor({ state: "detached", timeout: 5_000 });
+{
+  const firstMove = page.locator("[data-testid=move-button]").first();
+  if (await firstMove.isEnabled()) {
+    await page.keyboard.press("Digit1");
+    await page.getByTestId("battle-log").getByText(/^Turn 2$/).first().waitFor({ timeout: 30_000 });
+    console.log("  hotkey 1 played turn 1");
+  }
+}
 await page.getByRole("button", { name: "4x" }).click();
 const cpuTurns = await playBattle(page, 10, "battle-cpu-turn");
 console.log(`  stopped at turn ${cpuTurns}`);
@@ -1695,7 +1716,6 @@ if (!/L50/.test(await page.getByTestId("battle-log").innerText().catch(() => "")
 
 step("battle music: plays after a click, toggles off and stays off");
 await page.getByTestId("music-control").waitFor();
-await page.mouse.click(5, 5);
 await page.waitForTimeout(1500);
 const tracks = await page.evaluate(() => performance.getEntriesByType("resource").map((e) => e.name).filter((n) => /\/audio\/battle\/.+\.(ogg|mp3)$/.test(n)));
 if (!tracks.length && !musicRequests.length) errors.push("battle music never loaded");
@@ -1773,7 +1793,9 @@ watchBattle(liveBlue, "p2", "live battle (Blue)");
 await liveRed.goto(`${BASE}/battle/play?vs=friend`, { waitUntil: "networkidle" });
 await liveRed.locator("label").filter({ hasText: "[Gen 9] Random Battle" }).first().click();
 await liveRed.getByLabel("Your trainer name").fill("Red");
-await clickUntilUrl(liveRed, liveRed.getByRole("button", { name: /Create battle/ }), /\/battle\/live\/[a-z2-9]{8}$/);
+await liveRed.getByTestId("timeout-loses").check({ force: true });
+await liveRed.screenshot({ path: `${OUT}/battle-p1-timer-setup.png`, fullPage: true });
+await clickUntilUrl(liveRed, liveRed.getByRole("button", { name: /Create battle/ }), /\/battle\/live\/[a-z2-9]{8}$/, () => liveRed.getByTestId("timeout-loses").check({ force: true }).catch(() => {}));
 const liveUrl = liveRed.url();
 await liveRed.getByLabel("Battle link").waitFor();
 await liveRed.screenshot({ path: `${OUT}/battle-live-lobby.png` });
@@ -1790,6 +1812,11 @@ step("live battle: both choose moves for a couple of turns");
 await Promise.all([liveRed, liveBlue].map((p) => p.locator("[data-testid=move-button]").first().waitFor({ timeout: 60_000 })));
 for (const p of [liveRed, liveBlue]) await p.getByRole("button", { name: "4x" }).click();
 if (!(await liveRed.getByTestId("battle-clocks").count())) errors.push("the live battle shows no turn timer");
+// The timer warns as the turn's time runs low (30 s left of a 90 s turn), and says running out loses.
+step("live battle: the turn timer warns at 30 seconds left, with loss on timeout");
+await liveRed.getByTestId("timer-warning").waitFor({ timeout: 80_000 });
+if (!/lose the battle/.test(await liveRed.getByTestId("timer-warning").innerText())) errors.push("the timer warning doesn't say running out loses");
+await liveRed.screenshot({ path: `${OUT}/battle-p1-timer-warning.png` });
 // Chat beside the battle log: both ways; a link is refused.
 await chatTo(liveRed, liveBlue, "good luck!");
 await chatTo(liveBlue, liveRed, "have fun");
@@ -1964,6 +1991,39 @@ await mmRed.screenshot({ path: `${OUT}/battle-replays.png`, fullPage: true });
 await mmRed.goto(`${BASE}/battle/ladder`, { waitUntil: "networkidle" });
 await mmRed.screenshot({ path: `${OUT}/battle-ladder.png`, fullPage: true });
 for (const p of [mmRed, mmBlue, watcher]) await p.context().close();
+
+step("ranked Random Battle: matched by rating, a forfeit moves both Glicko-2 ratings, the ladder shows GXE");
+const rkRed = await newPage({ width: 1280, height: 900 });
+const rkBlue = await newPage({ width: 1280, height: 900 });
+for (const [p, name] of [
+  [rkRed, "Rory"],
+  [rkBlue, "Bea"],
+]) {
+  await p.goto(`${BASE}/battle/play?vs=anyone`, { waitUntil: "networkidle" });
+  await p.locator("label").filter({ hasText: "[Gen 9] Random Battle" }).first().click();
+  await p.getByLabel("Your trainer name").fill(name);
+  await p.getByTestId("ranked-toggle").check({ force: true });
+  await p.getByText(/Unrated: you start at 1500|GXE/).first().waitFor({ timeout: 15_000 });
+}
+await rkRed.screenshot({ path: `${OUT}/battle-p1-ranked-setup.png`, fullPage: true });
+await rkRed.getByRole("button", { name: /Find an opponent/ }).click();
+await rkRed.getByText("Searching for a ranked rival…").waitFor();
+await rkBlue.getByRole("button", { name: /Find an opponent/ }).click();
+await Promise.all([rkRed.waitForURL(matchedPath, { timeout: 30_000 }), rkBlue.waitForURL(matchedPath, { timeout: 30_000 })]);
+await Promise.all([rkRed, rkBlue].map((p) => p.locator("[data-testid=move-button]").first().waitFor({ timeout: 60_000 })));
+await rkBlue.getByRole("button", { name: "Forfeit", exact: true }).click();
+await rkBlue.getByRole("button", { name: "Forfeit", exact: true }).click();
+await rkRed.getByTestId("rating-change").waitFor({ timeout: 45_000 });
+const rkChange = await rkRed.getByTestId("rating-change").innerText();
+console.log(`  ${rkChange.replace(/\s+/g, " ")}`);
+if (!/1500 → 1[6-9]\d\d/.test(rkChange)) errors.push(`ranked: unexpected Glicko-2 change for the winner: ${rkChange}`);
+await rkRed.screenshot({ path: `${OUT}/battle-p1-ranked-result.png` });
+await rkRed.goto(`${BASE}/battle/ladder?format=gen9randombattle`, { waitUntil: "networkidle" });
+await rkRed.getByTestId("ladder-table").getByText("Rory").waitFor({ timeout: 15_000 });
+if (!(await rkRed.getByTestId("ladder-table").getByTestId("glicko-badge").count())) errors.push("ladder: no Glicko-2 badge");
+if (!/GXE \d+\.\d%/.test(await rkRed.getByTestId("your-standing").innerText())) errors.push("ladder: your standing shows no GXE");
+await rkRed.screenshot({ path: `${OUT}/battle-p1-ladder.png`, fullPage: true });
+for (const p of [rkRed, rkBlue]) await p.context().close();
 
 // The Battle Lab runs Showdown's simulator in Web Workers, in this browser.
 step("battle lab: a quick 1v1, 200 battles, a win % with its confidence interval, a sample replay");

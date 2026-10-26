@@ -9,8 +9,7 @@ import { battleShareText, replayShareText, shareUrl, type BattleShareResult } fr
 import { ShareButton } from "@/components/share/ShareButton";
 import { Button, buttonVariants } from "@/components/ui/button";
 import type { BattleHandle } from "./use-battle";
-import { RatingChange } from "@/components/pokedle/Ranked";
-import { isProvisional } from "@/lib/ranked";
+import { cn } from "@/lib/utils";
 
 /** Shares a replay's link (the system share sheet, or the clipboard): `result` is "Red beat Blue". */
 export function ShareReplay({ id, result, formatName, size = "sm" }: { id: string; result: string; formatName: string; size?: "sm" | "default" }) {
@@ -69,7 +68,6 @@ export function BattleAfter({ view, battle }: { view: BattleView; battle: Battle
   if (view.you === null) return null;
   const players = view.players.map((p) => p.name).join(" vs ");
   const mine = view.ratings?.[view.you];
-  const games = view.players[view.you]?.games;
   const win = battleShareResult(view);
   return (
     <div className="space-y-3">
@@ -81,7 +79,7 @@ export function BattleAfter({ view, battle }: { view: BattleView; battle: Battle
       {view.ranked &&
         (mine ? (
           <div className="mx-auto max-w-sm text-left" data-testid="rating-change">
-            <RatingChange before={mine.before} after={mine.after} provisional={games !== undefined && isProvisional(games)} />
+            <BattleRatingChange before={mine.before} after={mine.after} />
           </div>
         ) : !view.settled ? (
           <p className="hud-label flex items-center justify-center gap-1.5">
@@ -140,6 +138,28 @@ function ReplayButtons({
           {saving ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : <Save className="h-4 w-4" aria-hidden />} Save replay
         </Button>
       )}
+    </div>
+  );
+}
+
+/** A ranked battle's Glicko-2 rating change: the new rating and the points won or lost. */
+function BattleRatingChange({ before, after }: { before: number; after: number }) {
+  const delta = after - before;
+  return (
+    <div className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-warning/40 bg-warning/[0.05] p-4">
+      <span className="space-y-0.5">
+        <span className="hud-label block">Glicko-2 rating</span>
+        <span className="font-display text-2xl font-bold tabular-nums">
+          {before} → {after}
+        </span>
+      </span>
+      <span
+        className={cn("font-display text-4xl font-bold tabular-nums", delta > 0 ? "text-success" : delta < 0 ? "text-destructive" : "text-muted-foreground")}
+        aria-label={`Rating ${delta >= 0 ? "+" : ""}${delta}, now ${after}`}
+      >
+        {delta > 0 ? "+" : ""}
+        {delta}
+      </span>
     </div>
   );
 }

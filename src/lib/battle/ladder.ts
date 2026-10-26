@@ -4,13 +4,12 @@ import type { PvpEndReason } from "@/lib/pvp-types";
 import { PLAY_FORMATS, type StandardFormatId } from "./play";
 
 /**
- * The battle ladder: one Elo rating per trainer per format, with the same
- * maths and tiers as ranked Pokédle (lib/ranked.ts): everyone starts at
- * 1,000, the first ten games are provisional (a larger K), a forfeit, a
- * timeout or leaving is a loss, and each battle counts once.
+ * The battle ladder: one Glicko-2 rating per trainer per format (glicko.ts),
+ * shown with GXE as on Pokémon Showdown: everyone starts at 1500 ± 350, a
+ * forfeit, a timeout or leaving is a loss, and each battle counts once.
  */
 
-/** Ranked queues: Random Battle, Random Doubles, OU, UU, Ubers and Doubles OU. */
+/** Ranked queues: every current format, Random Battle and Random Doubles included. */
 export const LADDER_FORMATS: readonly StandardFormatId[] = PLAY_FORMATS;
 export const isLadderFormat = (f: unknown): f is StandardFormatId => typeof f === "string" && (LADDER_FORMATS as readonly string[]).includes(f);
 

@@ -8,9 +8,8 @@ import { battlesEnabled } from "@/lib/server/battle-engine/store";
 import { cancelBattleSearch, searchBattle, searchRankedBattle } from "@/lib/server/battle-engine/matchmaking";
 import { hideBattle, readBattleToken } from "@/lib/server/battle-engine/service";
 import { battlePlayerKey } from "@/lib/server/battle-engine/identity";
-import { ladderStore } from "@/lib/server/battle-engine/ladder";
+import { ladderStore, pairingRating } from "@/lib/server/battle-engine/ladder";
 import { RankedUnavailable } from "@/lib/server/ranked";
-import { RANKED_START } from "@/lib/ranked";
 import { isLadderFormat } from "@/lib/battle/ladder";
 import { ALL_FORMATS, BATTLE_TEAM_MAX, type StandardFormatId } from "@/lib/battle/play";
 
@@ -84,7 +83,7 @@ export async function POST(request: NextRequest) {
       if (!store) return NextResponse.json({ error: "Ranked battles aren't open on this server yet." }, { status: 503, headers: NO_STORE });
       if (!player) return NextResponse.json({ error: "Reload the page to get your ranked card." }, { status: 400, headers: NO_STORE });
       try {
-        out = await searchRankedBattle(format, body.name, body.ticket ?? newTicket(), player, async () => (await store.rating(player, format)) ?? { rating: RANKED_START, games: 0 }, body.team);
+        out = await searchRankedBattle(format, body.name, body.ticket ?? newTicket(), player, async () => pairingRating(await store.rating(player, format)), body.team);
       } catch (err) {
         if (err instanceof RankedUnavailable) return NextResponse.json({ error: "Ranked battles open soon. Casual battles are on." }, { status: 409, headers: NO_STORE });
         throw err;
