@@ -28,7 +28,6 @@ export default function GuessrPage() {
           "A new daily game is available every day.",
         ]}
         faqs={[
-          { q: `Which regions are included?`, a: `The Pokémon world from Kanto to Paldea.` },
           { q: `How is it scored?`, a: `The closer your pin is to the real location, the higher your score, up to 25,000 points.` },
         ]}
       />
