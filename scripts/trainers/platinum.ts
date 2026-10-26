@@ -170,6 +170,7 @@ export function importPlatinum(root: string): RawTeam[] {
       ...(t.name && !isRival ? { name: titleName(t.name) } : {}),
       places,
       tag,
+      group: id.replace(/^TRAINER_/, "").replace(/_REMATCH(_\d+)?$/, "").replace(/_(TURTWIG|CHIMCHAR|PIPLUP)$/, ""),
       double: t.double_battle,
       items: t.items.filter((i) => i && i !== "ITEM_NONE").map((i) => itemRef(i)),
       team,

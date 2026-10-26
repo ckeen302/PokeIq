@@ -312,6 +312,8 @@ export function importGen1(root: string, game: "red-blue" | "yellow"): Gen1Out {
       clsConst,
       cls: gen1ClassName(names[p.cls - 1], clsConst),
       ...(named ? { name: "Jessie & James" } : {}),
+      // The three starter variants of one rival battle sit in one comment block.
+      ...(isRival ? { group: `${clsConst}-b${p.block}` } : {}),
       places: labels.map((l) => ({ ...gen1Place(l), region: "Kanto" })),
       tag,
       team: mons.map((m) => ({ s: speciesId(m.species), lv: m.level, m: m.moves.filter(Boolean), ...(m.custom ? {} : { d: 1 as const }) })),

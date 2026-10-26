@@ -1537,6 +1537,39 @@ step("pokédex TCG tab: sets, a set gallery (sort + filter), a card page, search
   }
 }
 
+step("pokédex Trainers tab: search, notable filter, a game by route, an area's teams, a notable trainer");
+{
+  await page.goto(`${BASE}/pokedex`, { waitUntil: "networkidle" });
+  await page.getByTestId("dex-tab-trainers").click();
+  await page.waitForURL(/\/pokedex\/trainers$/);
+  await page.getByTestId("trainers-game-card").first().waitFor();
+  if ((await page.getByTestId("trainers-game-card").count()) !== 9) errors.push("trainers: expected 9 game cards");
+  // Search loads the full index on demand; Joey is on Route 30 in the Johto games.
+  await page.getByTestId("trainers-search").fill("joey");
+  await page.getByTestId("trainers-result").first().waitFor({ timeout: 30_000 });
+  if (!(await page.getByTestId("trainers-results").getByText("Route 30").count())) errors.push("trainers: searching Joey didn't find Route 30");
+  await page.screenshot({ path: `${OUT}/trainers-search.png` });
+  await page.getByTestId("trainers-search").fill("");
+  await page.getByTestId("trainers-notable-toggle").click();
+  await page.getByTestId("trainers-notable-hit").first().waitFor();
+  await page.goto(`${BASE}/pokedex/trainers/crystal`, { waitUntil: "networkidle" });
+  await page.getByTestId("trainers-area-link").filter({ hasText: "Route 30" }).click();
+  await page.waitForURL(/\/pokedex\/trainers\/crystal\/route-30$/);
+  const joey = page.getByTestId("trainer-card").filter({ hasText: "Joey" });
+  await joey.waitFor();
+  // Joey's rematches are tabs on one card.
+  const tabs = joey.getByTestId("trainer-team-tab");
+  if ((await tabs.count()) !== 5) errors.push(`trainers: Joey has ${await tabs.count()} battle tabs, expected 5`);
+  await tabs.nth(4).click();
+  await joey.getByRole("tabpanel").filter({ hasText: "Raticate" }).waitFor();
+  await page.screenshot({ path: `${OUT}/trainers-area.png`, fullPage: true });
+  await page.goto(`${BASE}/pokedex/trainers/notable/brock`, { waitUntil: "networkidle" });
+  await page.getByTestId("notable-blurb").waitFor();
+  if ((await page.getByTestId("notable-game").count()) < 6) errors.push("trainers: Brock should have teams in 6 games");
+  await page.getByTestId("trainer-mon").filter({ hasText: "Onix" }).first().getByRole("link", { name: "Bide" }).click();
+  await page.waitForURL(/\/pokedex\/moves\/bide$/);
+}
+
 step("trainer, leaderboard, pokémon page");
 for (const path of ["/trainer", "/leaderboard?board=iq", "/pokemon/eevee", "/pokedex?type=ghost&sort=spe"]) {
   await page.goto(`${BASE}${path}`, { waitUntil: "networkidle" });

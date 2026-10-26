@@ -241,7 +241,7 @@ export function importGen2(root: string, game: "gold-silver" | "crystal"): RawTe
     if (/^RIVAL/.test(cls)) {
       const starter = /_(CHIKORITA|CYNDAQUIL|TOTODILE)$/.exec(cname)?.[1];
       if (starter) tag = RIVAL_TAG[starter];
-    } else if (rematch && Number(rematch[2]) > 1 && constName.get(`${cls}:${p.no - 1}`) === `${rematch[1]}${Number(rematch[2]) - 1}`) {
+    } else if (rematch && Number(rematch[2]) > 1 && partyNo.has(`${cls}:${rematch[1]}1`)) {
       tag = `Rematch ${Number(rematch[2]) - 1}`;
     }
     const printed = classNames[ci];
@@ -252,6 +252,7 @@ export function importGen2(root: string, game: "gold-silver" | "crystal"): RawTe
       ...(p.name && p.name !== "?" ? { name: titleName(p.name) } : {}),
       places,
       tag,
+      group: `${cls}-${cname.replace(/_(CHIKORITA|CYNDAQUIL|TOTODILE)$/, "").replace(/^([A-Z]+)\d$/, "$1")}`,
       team,
     });
   }

@@ -16,6 +16,8 @@ export interface RawTeam {
   name?: string;
   places: RawPlace[];
   tag?: string;
+  /** Group key shared by one trainer's battles (rematches, rival variants). */
+  group?: string;
   ver?: string[];
   double?: boolean;
   items?: string[];
@@ -52,6 +54,7 @@ export function assemble(game: string, source: TrainerGameFile["source"], raw: R
       cls: t.cls,
       ...(t.name ? { name: t.name } : {}),
       at,
+      ...(t.group && t.group !== t.id ? { g: t.group } : {}),
       ...(t.tag ? { tag: t.tag } : {}),
       ...(t.ver?.length ? { ver: t.ver } : {}),
       ...(t.double ? { double: 1 as const } : {}),

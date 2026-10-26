@@ -36,6 +36,8 @@ export interface TrainerTeam {
   name?: string;
   /** Where the trainer is fought. Empty when the decompilation doesn't tie the party to a map. */
   at: TrainerSpot[];
+  /** Battles of one trainer (first battle, rematches, rival variants) share this key; absent = the team's own id. */
+  g?: string;
   /** "Rematch 2", "If you chose Charmander", … */
   tag?: string;
   /** Versions this team appears in when it isn't every version the file covers. */

@@ -335,7 +335,7 @@ export function importGen3(root: string, game: Game3): RawTeam[] {
     const ver = isRuby && vers.size === 1 ? [...vers] : undefined;
     let tag: string | undefined = rm ? `Rematch ${rm.n}` : /_REMATCH(_|$)|^TRAINER_ELITE_FOUR_\w+_2$|^TRAINER_CHAMPION_REMATCH/.test(t.id) ? "Rematch" : undefined;
     const starter = /_(TREECKO|TORCHIC|MUDKIP|BULBASAUR|CHARMANDER|SQUIRTLE)$/.exec(t.id)?.[1];
-    if (starter) tag = STARTERS[starter];
+    if (starter) tag = [tag, STARTERS[starter]].filter(Boolean).join(" · ");
     const clsName = classNames.get(t.cls) ?? titleConstant(t.cls.replace(/^TRAINER_CLASS_/, ""));
     out.push({
       id: t.id.replace(/^TRAINER_/, ""),
@@ -345,6 +345,13 @@ export function importGen3(root: string, game: Game3): RawTeam[] {
       ...(t.name && !(isFrlg && /^TRAINER_(RIVAL|CHAMPION)_/.test(t.id)) ? { name: titleName(t.name) } : {}),
       places: places.map((p) => p.place),
       tag,
+      group: (rm ? rm.base : t.id)
+        .replace(/^TRAINER_/, "")
+        .replace(/_(TREECKO|TORCHIC|MUDKIP|BULBASAUR|CHARMANDER|SQUIRTLE)$/, "")
+        .replace(/^CHAMPION_(FIRST|REMATCH)$/, "CHAMPION")
+        .replace(/_REMATCH$/, "")
+        .replace(/^(ELITE_FOUR_\w+)_2$/, "$1")
+        .replace(/_1$/, ""),
       ver,
       double: t.double,
       items: t.items.map((i) => itemRef(i)),

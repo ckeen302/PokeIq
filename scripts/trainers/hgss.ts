@@ -177,6 +177,8 @@ export function importHgss(root: string): RawTeam[] {
       ...(name && !isRival && name !== "-" ? { name: titleName(name) } : {}),
       places,
       tag,
+      // Rival starter variants are separate ids fought in one spot: group them by place.
+      group: isRival ? `RIVAL@${places.map((p) => `${p.area}/${p.section ?? ""}`).join("|")}` : rm && tag?.startsWith("Rematch") ? rm[1].replace(/^TRAINER_/, "") : id.replace(/^TRAINER_/, ""),
       double: Boolean(t.double),
       items: t.items.filter((i) => i && i !== "ITEM_NONE").map((i) => itemRef(i)),
       team,
