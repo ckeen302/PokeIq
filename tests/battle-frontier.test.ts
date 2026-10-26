@@ -110,8 +110,10 @@ describe("a Factory run", () => {
     expect(result.run.offer).toHaveLength(6);
 
     // A trade that keeps Species Clause.
-    const mine = result.run.team.map((m) => m.species);
-    const take = result.run.offer!.findIndex((m) => !mine.includes(m.species));
+    // Compared by base species, as the clause is (Slowbro and Slowbro-Galar clash).
+    const baseOf = (name: string) => Dex.species.get(name).baseSpecies;
+    const mine = result.run.team.slice(1).map((m) => baseOf(m.species));
+    const take = result.run.offer!.findIndex((m) => !mine.includes(baseOf(m.species)));
     const swapped = swapRun(result.run.token, 0, take);
     if (!swapped.ok) throw new Error(swapped.error);
     expect(swapped.run.team[0].species).toBe(result.run.offer![take].species);
