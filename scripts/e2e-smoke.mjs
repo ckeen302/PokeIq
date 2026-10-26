@@ -1543,7 +1543,7 @@ step("pokédex Trainers tab: search, notable filter, a game by route, an area's 
   await page.getByTestId("dex-tab-trainers").click();
   await page.waitForURL(/\/pokedex\/trainers$/);
   await page.getByTestId("trainers-game-card").first().waitFor();
-  if ((await page.getByTestId("trainers-game-card").count()) !== 9) errors.push("trainers: expected 9 game cards");
+  if ((await page.getByTestId("trainers-game-card").count()) !== 10) errors.push("trainers: expected 10 game cards");
   // Search loads the full index on demand; Joey is on Route 30 in the Johto games.
   await page.getByTestId("trainers-search").fill("joey");
   await page.getByTestId("trainers-result").first().waitFor({ timeout: 30_000 });

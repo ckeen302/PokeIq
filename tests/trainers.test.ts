@@ -6,6 +6,7 @@ import { parseGen1Parties } from "../scripts/trainers/gen1";
 import { parseGen2Parties } from "../scripts/trainers/gen2";
 import { parseGen3Parties, parseScriptBlocks, gen3Section } from "../scripts/trainers/gen3";
 import { headerSection } from "../scripts/trainers/platinum";
+import { scriptedOpponents } from "../scripts/trainers/diamond-pearl";
 import { TRAINER_GAMES } from "@/lib/trainers/games";
 import { NOTABLE } from "@/lib/trainers/notable";
 import { MOVES, ITEMS } from "@/lib/dex/data";
@@ -117,6 +118,16 @@ describe("committed trainer data", () => {
     expect(get("crystal", "FALKNER-FALKNER1").team[1]).toMatchObject({ s: 17, lv: 9, m: ["tackle", "mud-slap", "gust"] });
     expect(get("heartgold-soulsilver", "PKMN_TRAINER_RED_RED").team[0]).toMatchObject({ s: 25, lv: 88, i: "light-ball" });
     expect(get("emerald", "ROXANNE_2").tag).toBe("Rematch 1");
+    // Diamond & Pearl: Cynthia's original team, Fantina found in her (headerless) script file.
+    expect(get("diamond-pearl", "CHAMPION_CYNTHIA").team.map((m) => [m.s, m.lv])).toEqual([[442, 61], [407, 60], [423, 60], [448, 63], [350, 63], [445, 66]]);
+    expect(get("diamond-pearl", "LEADER_FANTINA_FANTINA").team.map((m) => m.s)).toEqual([426, 94, 429]);
+  });
+
+  it("finds Diamond & Pearl scripted battles only before a battle-result check", () => {
+    const buf = (...h: number[]) => Buffer.from(Uint16Array.from(h).buffer);
+    const all = () => true;
+    expect(scriptedOpponents(buf(0x00e5, 246, 0, 0x00ec), all).ids).toEqual([246]);
+    expect(scriptedOpponents(buf(0x0042, 0x00e5, 0x0042, 0x01e4, 0x0043), all).ids).toEqual([]);
   });
 
   it("gives every notable at least one team", () => {

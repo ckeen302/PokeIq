@@ -9,6 +9,7 @@
  *   git clone --depth 1 https://github.com/pret/pokeruby     $PRET/pokeruby
  *   git clone --depth 1 https://github.com/pret/pokeemerald  $PRET/pokeemerald
  *   git clone --depth 1 https://github.com/pret/pokefirered  $PRET/pokefirered
+ *   git clone --depth 1 https://github.com/pret/pokediamond  $PRET/pokediamond
  *   git clone --depth 1 https://github.com/pret/pokeplatinum $PRET/pokeplatinum
  *   git clone --depth 1 https://github.com/pret/pokeheartgold $PRET/pokeheartgold
  *   PRET=$PRET npx tsx scripts/trainers/import.ts [game…]
@@ -26,6 +27,7 @@ import { importGen1 } from "./gen1";
 import { importGen2 } from "./gen2";
 import { importGen3 } from "./gen3";
 import { importPlatinum } from "./platinum";
+import { importDiamondPearl } from "./diamond-pearl";
 import { importHgss } from "./hgss";
 
 const PRET = process.env.PRET ?? "/home/user/pret";
@@ -51,6 +53,9 @@ for (const g of TRAINER_GAMES) {
     case "emerald":
     case "firered-leafgreen":
       raw = importGen3(repoDir, g.key);
+      break;
+    case "diamond-pearl":
+      raw = importDiamondPearl(repoDir);
       break;
     case "platinum":
       raw = importPlatinum(repoDir);
