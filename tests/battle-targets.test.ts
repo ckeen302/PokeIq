@@ -14,7 +14,7 @@ describe("doubles targets (Showdown's target locations)", () => {
   it("the simulator accepts Pollen Puff aimed at the partner", () => {
     const team = (a: string, b: string) =>
       [a, b].map((s) => `${s}|||NoAbility|pollenpuff,tackle||||||50|`).join("]");
-    const battle = new Battle({ formatid: "gen9doublescustomgame" as never, seed: [1, 2, 3, 4] });
+    const battle = new Battle({ formatid: "gen9doublescustomgame" as never, seed: "1,2,3,4" as never });
     battle.setPlayer("p1", { name: "A", team: team("Ribombee", "Pikachu") });
     battle.setPlayer("p2", { name: "B", team: team("Pikachu", "Eevee") });
     battle.choose("p1", "team 12");

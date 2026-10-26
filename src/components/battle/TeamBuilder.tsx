@@ -218,6 +218,11 @@ function NewFromImport({ onCreate }: { onCreate: (team: BattleTeam) => void }) {
       <ImportPanel
         confirmLabel="Import team"
         onImport={(sets, meta) => onCreate(createTeam(meta.format ?? format, meta.name ?? "Imported team", sets))}
+        onImportMany={(teams) => {
+          // Saved last to first, so the backup's order is the list's order; then the first one opens.
+          const made = [...teams].reverse().map((t) => createTeam(t.format ?? format, t.name ?? "Imported team", t.sets));
+          onCreate(made[made.length - 1]);
+        }}
       />
     </div>
   );

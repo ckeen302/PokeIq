@@ -179,6 +179,24 @@ export function importShowdown(input: string): ImportedTeam | null {
   };
 }
 
+/**
+ * Every team in a Showdown teambuilder backup ("Backup all teams": one
+ * "=== [format] Name ===" header per team). Text without headers is one team.
+ */
+export function importShowdownTeams(input: string): ImportedTeam[] {
+  const text = input.replace(/\r\n?/g, "\n");
+  if ((text.match(/^===.*===\s*$/gm) ?? []).length < 2) {
+    const one = importShowdown(text);
+    return one ? [one] : [];
+  }
+  return Teams.importTeams(text)
+    .map((team) => {
+      const sets = team.team.filter((s) => s.species).map((s) => completeSet({ ...s, species: s.species! }));
+      return { sets: sets.slice(0, TEAM_SIZE), name: team.name || undefined, format: team.format || undefined, dropped: Math.max(0, sets.length - TEAM_SIZE) };
+    })
+    .filter((t) => t.sets.length > 0);
+}
+
 /** Showdown's export text: each set's lines end in two spaces, with a blank line after each set. */
 export function exportShowdown(sets: readonly TeamSet[]): string {
   return sets.map((s) => Sets.exportSet(s)).join("");
