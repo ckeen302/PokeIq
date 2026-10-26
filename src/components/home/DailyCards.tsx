@@ -24,8 +24,9 @@ export function DailyCards() {
   const pdk = today ? progress?.pdk?.results[today] : undefined;
 
   return (
-    <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-5">
+    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-6 2xl:grid-cols-5">
       <DailyCard
+        className="lg:col-span-2 2xl:col-span-1"
         href="/daily"
         icon={<CalendarDays className="h-5 w-5" />}
         title="Daily Challenge"
@@ -37,6 +38,7 @@ export function DailyCards() {
         accent="340 86% 60%"
       />
       <DailyCard
+        className="lg:col-span-2 2xl:col-span-1"
         href="/pokedle"
         icon={<Search className="h-5 w-5" />}
         title="Pokédle"
@@ -48,6 +50,7 @@ export function DailyCards() {
         accent="258 94% 74%"
       />
       <DailyCard
+        className="lg:col-span-2 2xl:col-span-1"
         href="/guessr"
         icon={<Compass className="h-5 w-5" />}
         title="PokéGuessr"
@@ -59,6 +62,7 @@ export function DailyCards() {
         accent="154 68% 46%"
       />
       <DailyCard
+        className="lg:col-span-3 2xl:col-span-1"
         href="/connections"
         icon={<LayoutGrid className="h-5 w-5" />}
         title="PokéConnections"
@@ -70,6 +74,7 @@ export function DailyCards() {
         accent="42 98% 60%"
       />
       <DailyCard
+        className="md:col-span-2 lg:col-span-3 2xl:col-span-1"
         href="/pikadoku"
         icon={<Grid3x3 className="h-5 w-5" />}
         title="Pikadoku"
@@ -85,6 +90,7 @@ export function DailyCards() {
 }
 
 interface DailyCardProps {
+  className?: string;
   href: string;
   icon: React.ReactNode;
   title: string;
@@ -97,50 +103,48 @@ interface DailyCardProps {
   accent: string;
 }
 
-function DailyCard({ href, icon, title, number, description, status, cleared, streak, accent }: DailyCardProps) {
+function DailyCard({ className, href, icon, title, number, description, status, cleared, streak, accent }: DailyCardProps) {
   return (
-    <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
+    <motion.div className={cn("h-full", className)} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
       <Link href={href} className="group block h-full">
-        <div className="hud relative h-full overflow-hidden rounded-lg border bg-card p-5 transition-colors group-hover:border-screen/50">
+        <div className="hud relative flex h-full flex-col overflow-hidden rounded-lg border bg-card p-5 transition-colors group-hover:border-screen/50">
           <div className="absolute inset-x-0 top-0 h-[3px]" style={{ background: `hsl(${accent})`, boxShadow: `0 0 14px hsl(${accent})` }} aria-hidden />
-          <div className="flex items-start justify-between gap-3">
-            <div className="flex items-center gap-3">
-              <span className="screen flex h-11 w-11 items-center justify-center rounded-md" style={{ color: `hsl(${accent})` }}>
-                <span className="relative z-[3]">{icon}</span>
-              </span>
-              <div>
-                <h3 className="font-display text-xl font-bold uppercase tracking-wide">{title}</h3>
-                <p className="hud-label">{number ? `No.${String(number).padStart(3, "0")}` : " "}</p>
-              </div>
-            </div>
-            <div className="flex flex-col items-end gap-1.5">
-              <span className={cn("hud-label flex items-center gap-1.5", cleared ? "text-success" : status ? "text-warning" : "text-primary")}>
+          <div className="flex items-center justify-between gap-2">
+            <span className="screen flex h-10 w-10 shrink-0 items-center justify-center rounded-md" style={{ color: `hsl(${accent})` }}>
+              <span className="relative z-[3]">{icon}</span>
+            </span>
+            <div className="flex flex-col items-end gap-1">
+              <span className={cn("hud-label flex items-center gap-1.5 whitespace-nowrap", cleared ? "text-success" : status ? "text-warning" : "text-primary")}>
                 <span className={cn("led h-1.5 w-1.5", cleared ? "text-success" : status ? "text-warning" : "animate-blink text-primary")} />
                 {cleared ? "Cleared" : status ? "In progress" : "New"}
               </span>
               {streak > 0 && (
-                <span className="flex items-center gap-1 font-pixel text-[10px] text-warning">
+                <span className="flex items-center gap-1 whitespace-nowrap font-pixel text-[10px] text-warning">
                   <Flame className="h-3 w-3" /> {streak} day{streak === 1 ? "" : "s"}
                 </span>
               )}
             </div>
           </div>
-          <p className="mt-4 text-sm text-muted-foreground">{description}</p>
-          <div className="mt-5 flex items-center justify-between">
-            {status ? (
-              <span className={cn("text-sm font-medium", cleared ? "text-success" : "text-warning")}>{status}</span>
-            ) : (
-              <span className="flex items-center gap-1 font-display text-sm font-bold uppercase tracking-wider" style={{ color: `hsl(${accent})` }}>
-                ▶ Play today&apos;s
-              </span>
-            )}
-            <ChevronRight className="h-5 w-5 text-muted-foreground transition-transform group-hover:translate-x-1" />
-          </div>
-          {cleared && (
-            <div className="mt-3 border-t border-foreground/[0.06] pt-3">
-              <NextDailyCountdown />
+          <h3 className="mt-4 font-display text-lg font-bold uppercase leading-tight tracking-wide 2xl:text-base 2xl:tracking-normal">{title}</h3>
+          <p className="hud-label mt-1">{number ? `No.${String(number).padStart(3, "0")}` : "\u00a0"}</p>
+          <p className="mt-3 text-sm text-muted-foreground">{description}</p>
+          <div className="mt-auto pt-5">
+            <div className="flex items-center justify-between gap-2">
+              {status ? (
+                <span className={cn("text-sm font-medium", cleared ? "text-success" : "text-warning")}>{status}</span>
+              ) : (
+                <span className="flex items-center gap-1 whitespace-nowrap font-display text-sm font-bold uppercase tracking-wider" style={{ color: `hsl(${accent})` }}>
+                  ▶ Play today&apos;s
+                </span>
+              )}
+              <ChevronRight className="h-5 w-5 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-1" />
             </div>
-          )}
+            {cleared && (
+              <div className="mt-3 whitespace-nowrap border-t border-foreground/[0.06] pt-3 [&_*]:text-xs">
+                <NextDailyCountdown />
+              </div>
+            )}
+          </div>
         </div>
       </Link>
     </motion.div>
