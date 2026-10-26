@@ -1,5 +1,6 @@
 "use client";
 
+import { BackButton } from "@/components/ui/BackButton";
 import { useState } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
@@ -35,6 +36,9 @@ export function ChallengeLanding({ card, token, runLabel }: { card: ShareCard; t
 
   return (
     <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
+      <div className="mx-auto mb-4 max-w-xl">
+        <BackButton href="/play" label="Back to games" />
+      </div>
       <Card className="mx-auto max-w-xl overflow-hidden">
         <div className="bg-gradient-to-br from-primary/20 via-transparent to-transparent p-6 text-center">
           <Swords className="mx-auto h-10 w-10 text-primary" aria-hidden />

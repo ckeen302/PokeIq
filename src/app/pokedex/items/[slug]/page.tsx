@@ -47,7 +47,7 @@ export default async function ItemPage({ params }: PageProps) {
 
   return (
     <article className="mx-auto max-w-6xl space-y-10">
-      <DetailNav tab="items" label="All items" />
+      <DetailNav tab="items" label="Back to all items" />
       <DetailHero
         kicker={`Item · ${item.category}`}
         title={item.name}

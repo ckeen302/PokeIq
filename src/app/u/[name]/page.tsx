@@ -1,3 +1,4 @@
+import { BackButton } from "@/components/ui/BackButton";
 import type { Metadata } from "next";
 import { cache } from "react";
 import Link from "next/link";
@@ -92,6 +93,7 @@ export default async function UserProfilePage({ params }: PageProps) {
   const rated = found.battles?.formats.filter((f) => f.rating !== undefined) ?? [];
   return (
     <div className="mx-auto max-w-4xl space-y-6">
+      <BackButton href="/users" label="Back to trainers" />
       <nav aria-label="Breadcrumb" className="hud-label flex items-center gap-1.5">
         <Link href="/users" className="flex items-center gap-1 text-screen hover:text-foreground">
           <Search className="h-3 w-3" aria-hidden /> Find a trainer

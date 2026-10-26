@@ -42,7 +42,7 @@ export default async function ReplayPage({ params }: PageProps) {
   if (!replay) notFound();
   return (
     <div className="mx-auto max-w-7xl space-y-6">
-      <BattleHeader crumb="Replay" title={`${replay.players[0]} vs`} accent={replay.players[1]}>
+      <BattleHeader back="/battle/replays" crumb="Replay" title={`${replay.players[0]} vs`} accent={replay.players[1]}>
         {replay.ranked ? "Ranked · " : ""}
         {replay.formatName} · {replayResult(replay)} in {replay.turns} turn{replay.turns === 1 ? "" : "s"}.
       </BattleHeader>

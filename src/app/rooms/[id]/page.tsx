@@ -1,3 +1,4 @@
+import { BackButton } from "@/components/ui/BackButton";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -24,6 +25,7 @@ export default async function RoomPage({ params }: PageProps) {
   if (!room) notFound();
   return (
     <div className="mx-auto max-w-6xl space-y-4">
+    <BackButton href="/rooms" label="Back to rooms" />
       <nav aria-label="Breadcrumb" className="hud-label flex items-center gap-1.5">
         <Link href="/rooms" className="text-screen hover:text-foreground">
           Rooms

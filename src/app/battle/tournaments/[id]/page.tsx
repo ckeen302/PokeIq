@@ -1,3 +1,4 @@
+import { BackButton } from "@/components/ui/BackButton";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -19,6 +20,7 @@ export default async function TournamentPage({ params }: PageProps) {
   if (!/^[a-z0-9-]{8,24}$/.test(id)) notFound();
   return (
     <div className="mx-auto max-w-6xl space-y-4">
+    <BackButton href="/battle/tournaments" label="Back to tournaments" />
       <nav aria-label="Breadcrumb" className="hud-label flex items-center gap-1.5">
         <Link href="/battle" className="text-screen hover:text-foreground">
           Battle
