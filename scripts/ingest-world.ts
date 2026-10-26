@@ -97,8 +97,8 @@ const SOURCES: Source[] = [
   { regions: ["Hoenn"], wiki: "Hoenn", games: ["RS", "RSE", "SE", "E", "ORAS", "OR", "AS"], screens: { "240x160": "RSE", "400x240": "ORAS" } },
   { regions: ["Sinnoh"], wiki: "Sinnoh", games: ["DP", "Pt", "DPPt", "BDSP"], screens: { "256x192": "DPPt" } },
   { regions: ["Unova"], wiki: "Unova", games: ["BW", "B", "W", "B2W2", "B2", "W2", "BWB2W2"], screens: { "256x192": "BWB2W2" } },
-  // Legends: Z-A is set in Lumiose City; X/Y's own location images are mostly guidebook maps.
-  { regions: ["Kalos"], wiki: "Kalos", games: ["XY", "ZA"], screens: { "400x240": "XY" } },
+  // X / Y only: Legends: Z-A (and Legends: Arceus) are not played in PokéGuessr.
+  { regions: ["Kalos"], wiki: "Kalos", games: ["XY"], screens: { "400x240": "XY" } },
   { regions: ["Alola"], wiki: "Alola", games: ["SM", "USUM", "SMUSUM"], screens: { "400x240": "SMUSUM" } },
   { regions: ["Galar", "Isle of Armor", "Crown Tundra"], wiki: "Galar", games: ["SwSh"] },
   { regions: ["Paldea"], wiki: "Paldea", games: ["SV"] },
@@ -127,7 +127,6 @@ const GAME_CATEGORIES: Record<string, string> = {
   SwSh: "Sword and Shield maps",
   BDSP: "Brilliant Diamond and Shining Pearl maps",
   SV: "Scarlet and Violet maps",
-  ZA: "Legends: Z-A maps",
 };
 /** Archives categories of files that aren't a plain view: guide and Town Map maps, models, sprites, art, look-alike Pokémon Center interiors. */
 const NOT_A_VIEW_CATEGORY =
