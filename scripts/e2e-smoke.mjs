@@ -1495,6 +1495,48 @@ step("pokédex: types, natures, names, form switcher");
   if (!(await page.locator("#stats").innerText()).includes("130")) errors.push("Mega Charizard X stats didn't switch (Attack 130)");
 }
 
+step("pokédex TCG tab: sets, a set gallery (sort + filter), a card page, search, a Pokémon's cards");
+{
+  // CI serves a captured slice of real API data (POKEIQ_TCG_FIXTURE=1); against the live API, an outage shows a notice instead.
+  await page.goto(`${BASE}/pokedex`, { waitUntil: "networkidle" });
+  await page.getByTestId("dex-tab-tcg").click();
+  await page.waitForURL(/\/pokedex\/tcg$/);
+  const firstSet = page.getByTestId("tcg-set").first();
+  if (!(await firstSet.waitFor({ timeout: 30_000 }).then(() => true, () => false))) {
+    if (!(await page.getByTestId("tcg-unavailable").count())) errors.push("tcg: no sets and no unavailable notice");
+    console.log("  TCG API unavailable: rest of the TCG step skipped");
+  } else {
+    await page.screenshot({ path: `${OUT}/tcg-sets.png` });
+    // Base Set is in every snapshot (fixture and live).
+    await page.goto(`${BASE}/pokedex/tcg/base1`, { waitUntil: "networkidle" });
+    await page.getByTestId("tcg-card").first().waitFor();
+    const total = await page.getByTestId("tcg-card").count();
+    await page.getByTestId("tcg-sort").selectOption("price-desc");
+    await page.getByTestId("tcg-type").selectOption("Fire");
+    const fire = await page.getByTestId("tcg-card").count();
+    if (!(fire > 0 && fire < total)) errors.push(`tcg: the Fire filter showed ${fire} of ${total} cards`);
+    await page.screenshot({ path: `${OUT}/tcg-set.png` });
+    await page.getByTestId("tcg-card").first().click();
+    await page.waitForURL(/\/pokedex\/tcg\/card\//);
+    await page.getByTestId("tcg-card-image").waitFor();
+    await page.getByTestId("tcg-prices").waitFor();
+    // Fire Pokémon cards link to their Pokédex entry.
+    await page.getByTestId("tcg-dex-link").first().waitFor();
+    await page.screenshot({ path: `${OUT}/tcg-card.png`, fullPage: true });
+    await page.goto(`${BASE}/pokedex/tcg`, { waitUntil: "networkidle" });
+    await page.getByTestId("tcg-search").getByRole("searchbox").fill("Pikachu");
+    await page.getByTestId("tcg-search").getByRole("button", { name: "Search" }).click();
+    await page.waitForURL(/[?&]q=Pikachu/);
+    await page.getByTestId("tcg-results").getByTestId("tcg-card").first().waitFor();
+    await page.goto(`${BASE}/pokemon/pikachu`, { waitUntil: "networkidle" });
+    await page.evaluate(() => document.getElementById("cards")?.scrollIntoView());
+    await page.getByTestId("pokemon-cards").getByTestId("tcg-card").first().waitFor({ timeout: 30_000 });
+    await page.getByTestId("pokemon-cards-all").click();
+    await page.waitForURL(/\/pokedex\/tcg\?dex=25$/);
+    await page.getByTestId("tcg-results").getByTestId("tcg-card").first().waitFor();
+  }
+}
+
 step("trainer, leaderboard, pokémon page");
 for (const path of ["/trainer", "/leaderboard?board=iq", "/pokemon/eevee", "/pokedex?type=ghost&sort=spe"]) {
   await page.goto(`${BASE}${path}`, { waitUntil: "networkidle" });
@@ -2173,8 +2215,16 @@ if (me.enabled) {
     await pickMon("best-eeveelution", 134);
     await ap.getByTestId("about-game-favorite-game").selectOption("emerald");
     await ap.getByTestId("about-game-best-region").selectOption("kanto");
+    // Favorite Card: search the TCG (fixture in CI) and pick the first hit. Tolerated when the TCG API is unreachable.
+    await ap.getByTestId("about-slot-favorite-card").click();
+    await ap.getByTestId("about-card-search").fill("Charizard");
+    const cardOption = ap.getByTestId("about-card-option").first();
+    const pickedCard = await cardOption.waitFor({ timeout: 30_000 }).then(() => true, () => false);
+    if (pickedCard) await cardOption.click();
+    else console.log("  TCG search unavailable: favorite card skipped");
     await ap.getByTestId("about-save").click();
-    await ap.getByTestId("about-pokemon-best-mega").waitFor({ timeout: 15_000 });
+    await ap.getByTestId("about-pokemon-best-mega").waitFor({ timeout: 30_000 });
+    if (pickedCard && !(await ap.getByTestId("about-card-favorite-card").count())) errors.push("about me: the favorite card didn't show after saving");
     // A bad pick is refused by the server.
     const bad = await ap.request.put(`${BASE}/api/profile/about`, { data: { pokemon: { "best-mega": { id: 25, shiny: false } } }, headers: { Origin: BASE } });
     if (bad.status() !== 400) errors.push(`about me: an invalid Mega pick got ${bad.status()}, not 400`);
@@ -2182,7 +2232,8 @@ if (me.enabled) {
     // A visitor (signed out) sees the same, with no edit button.
     const visitor = await newPage({ width: 1280, height: 1100 });
     await visitor.goto(`${BASE}/u/${aboutName}`, { waitUntil: "domcontentloaded", timeout: 60_000 });
-    for (const t of ["about-pokemon-favorite", "about-pokemon-best-mega", "about-pokemon-best-eeveelution", "about-game-view-favorite-game", "about-game-view-best-region"]) await visitor.getByTestId(t).waitFor();
+    for (const t of ["about-pokemon-favorite", "about-pokemon-best-mega", "about-pokemon-best-eeveelution", "about-game-view-favorite-game", "about-game-view-best-region", ...(pickedCard ? ["about-card-favorite-card"] : [])]) await visitor.getByTestId(t).waitFor();
+    if (pickedCard && !/\/pokedex\/tcg\/card\//.test((await visitor.getByTestId("about-card-favorite-card").locator("a").getAttribute("href")) ?? "")) errors.push("about me: the favorite card doesn't link to its card page");
     if (await visitor.getByTestId("about-pokemon-pet").count()) errors.push("about me: an empty slot shows to viewers");
     if (await visitor.getByTestId("about-edit").count()) errors.push("about me: a visitor sees the edit button");
     await visitor.getByTestId("profile-about").screenshot({ path: `${SCRATCH}/about-me.png` });
@@ -2193,6 +2244,7 @@ if (me.enabled) {
     const full = {
       pokemon: { favorite: { id: 25 }, "second-favorite": { id: 6 }, "least-favorite": { id: 129 }, underrated: { id: 213 }, overrated: { id: 150 }, "best-starter": { id: 390 }, "best-dynamax": { id: 10196 }, "best-mega": { id: 10034 }, "best-regional": { id: 10103 }, "best-eeveelution": { id: 196 }, pet: { id: 143 }, "best-shiny": { id: 6 }, "idk-why": { id: 39, shiny: true }, "personal-story": { id: 94 }, nostalgic: { id: 150, shiny: true } },
       games: { "favorite-game": "emerald", "least-favorite-game": "sword", "first-game": "red", "nostalgic-game": "heartgold", "best-region": "kanto", "best-soundtrack": "black-2", "underrated-game": "platinum", "gym-leader": "cynthia", rival: "silver", professor: "professor-oak", "villain-team": "team-galactic" },
+      cards: { "favorite-card": { id: "base1-4", name: "x" }, "dream-card": { id: "base1-2", name: "x" }, "best-owned-card": { id: "sv1-15", name: "x" }, "overrated-card": { id: "base1-1", name: "x" }, "underrated-card": { id: "base1-3", name: "x" } },
     };
     const fullRes = await ap.request.put(`${BASE}/api/profile/about`, { data: full, headers: { Origin: BASE } });
     if (!fullRes.ok()) errors.push(`about me: full save ${fullRes.status()}`);

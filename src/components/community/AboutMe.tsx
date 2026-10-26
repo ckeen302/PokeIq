@@ -5,7 +5,9 @@ import { useRouter } from "next/navigation";
 import { Check, Loader2, Pencil, Search, Share2, Sparkles, X } from "lucide-react";
 import { useAccount } from "@/lib/account";
 import { artUrl } from "@/lib/pokemon/art";
-import { GAME_SLOTS, POKEMON_SLOTS, RULE_HINT, aboutIsEmpty, choiceLabel, type AboutData, type PokemonSlot } from "@/lib/about-data";
+import Link from "next/link";
+import { CARD_SLOTS, GAME_SLOTS, POKEMON_SLOTS, RULE_HINT, aboutIsEmpty, choiceLabel, type AboutCard, type AboutData, type PokemonSlot } from "@/lib/about-data";
+import type { CardTile } from "@/lib/tcg/types";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
@@ -48,6 +50,7 @@ export function AboutMe({ username, initial, names }: { username: string; initia
 
   const shown = POKEMON_SLOTS.filter((s) => about.pokemon[s.id]);
   const gamesShown = GAME_SLOTS.filter((s) => about.games[s.id]);
+  const cardsShown = CARD_SLOTS.filter((s) => about.cards?.[s.id]);
 
   async function save() {
     setSaving(true);
@@ -168,7 +171,7 @@ export function AboutMe({ username, initial, names }: { username: string; initia
                   );
                 })}
               </div>
-              {open && (
+              {open && POKEMON_SLOTS.some((s) => s.id === open) && (
                 <Picker
                   key={open}
                   slot={POKEMON_SLOTS.find((s) => s.id === open)!}
@@ -180,6 +183,49 @@ export function AboutMe({ username, initial, names }: { username: string; initia
                     else delete pokemon[open];
                     setDraft({ ...draft, pokemon });
                     if (pick) setOpen(null);
+                  }}
+                />
+              )}
+            </section>
+            <section className="space-y-3">
+              <p className="hud-label">My TCG cards</p>
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-5">
+                {CARD_SLOTS.map((s) => {
+                  const pick = draft.cards?.[s.id];
+                  return (
+                    <button
+                      key={s.id}
+                      type="button"
+                      onClick={() => setOpen(open === s.id ? null : s.id)}
+                      aria-expanded={open === s.id}
+                      className={cn("flex flex-col items-center rounded-md border bg-shade/20 p-2 text-center hover:border-screen/60", open === s.id && "border-screen")}
+                      data-testid={`about-slot-${s.id}`}
+                    >
+                      <span className="text-[11px] text-muted-foreground">{s.label}</span>
+                      {pick?.image ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={pick.image} alt="" width={46} height={64} className="h-16 w-auto rounded-[3px] object-contain" />
+                      ) : (
+                        <span className="flex h-16 w-16 items-center justify-center text-2xl text-muted-foreground" aria-hidden>
+                          +
+                        </span>
+                      )}
+                      <span className="w-full truncate text-xs font-semibold">{pick?.name ?? "Empty"}</span>
+                    </button>
+                  );
+                })}
+              </div>
+              {open && CARD_SLOTS.some((s) => s.id === open) && (
+                <CardPicker
+                  key={open}
+                  label={CARD_SLOTS.find((s) => s.id === open)!.label}
+                  current={draft.cards?.[open]}
+                  onPick={(card) => {
+                    const cards = { ...draft.cards };
+                    if (card) cards[open] = card;
+                    else delete cards[open];
+                    setDraft({ ...draft, cards });
+                    if (card) setOpen(null);
                   }}
                 />
               )}
@@ -228,7 +274,7 @@ export function AboutMe({ username, initial, names }: { username: string; initia
           </div>
         ) : (
           <>
-            {empty && <p className="text-sm text-muted-foreground">Pick your favorite Pokémon and games to show on your profile.</p>}
+            {empty && <p className="text-sm text-muted-foreground">Pick your favorite Pokémon, TCG cards and games to show on your profile.</p>}
             {shown.length > 0 && (
               <section className="space-y-3">
                 <p className="hud-label">My Pokémon</p>
@@ -244,6 +290,29 @@ export function AboutMe({ username, initial, names }: { username: string; initia
                           {pick.shiny && <span aria-label="Shiny">✨ </span>}
                           {labels[s.id]}
                         </span>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </section>
+            )}
+            {cardsShown.length > 0 && (
+              <section className="space-y-3">
+                <p className="hud-label">My TCG cards</p>
+                <ul className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-5" data-testid="about-cards">
+                  {cardsShown.map((s) => {
+                    const c = about.cards![s.id];
+                    return (
+                      <li key={s.id} className="rounded-md border bg-shade/20 text-center" data-testid={`about-card-${s.id}`}>
+                        <Link href={`/pokedex/tcg/card/${c.id}`} className="group flex h-full flex-col items-center gap-1 p-2" title={c.set ? `${c.name} · ${c.set}` : c.name}>
+                          <span className="text-[11px] text-muted-foreground">{s.label}</span>
+                          {c.image && (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img src={c.image} alt={`${c.name} card`} width={86} height={120} loading="lazy" className="h-[120px] w-auto rounded-[4px] object-contain shadow-md shadow-black/40 transition-transform group-hover:scale-105" />
+                          )}
+                          <span className="w-full truncate text-sm font-semibold group-hover:text-screen">{c.name}</span>
+                          {c.set && <span className="-mt-1 w-full truncate text-[11px] text-muted-foreground">{c.set}</span>}
+                        </Link>
                       </li>
                     );
                   })}
@@ -335,6 +404,80 @@ function Picker({ slot, v, current, onPick }: { slot: PokemonSlot; v: Validate |
             </Button>
           )}
         </>
+      )}
+    </div>
+  );
+}
+
+/** A TCG card slot: search the Pokémon TCG by name, in the same style as the Pokémon picker. */
+function CardPicker({ label, current, onPick }: { label: string; current?: AboutCard; onPick: (c: AboutCard | null) => void }) {
+  const [query, setQuery] = useState("");
+  const [results, setResults] = useState<CardTile[] | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [failed, setFailed] = useState(false);
+
+  useEffect(() => {
+    const term = query.trim();
+    if (term.length < 2) {
+      setResults(null);
+      return;
+    }
+    let live = true;
+    const t = setTimeout(() => {
+      setLoading(true);
+      setFailed(false);
+      fetch(`/api/tcg/search?q=${encodeURIComponent(term)}`)
+        .then((r) => (r.ok ? r.json() : Promise.reject(new Error(String(r.status)))))
+        .then((d: { cards: CardTile[] }) => live && setResults(d.cards))
+        .catch(() => live && setFailed(true))
+        .finally(() => live && setLoading(false));
+    }, 300);
+    return () => {
+      live = false;
+      clearTimeout(t);
+    };
+  }, [query]);
+
+  return (
+    <div className="space-y-3 rounded-lg border bg-card p-3" data-testid="about-card-picker">
+      <div className="flex flex-wrap items-center gap-3">
+        <p className="text-sm font-semibold">
+          {label} <span className="text-xs font-normal text-muted-foreground">· Any Pokémon TCG card</span>
+        </p>
+        <label className="relative">
+          <Search className="pointer-events-none absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" aria-hidden />
+          <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search cards by name" aria-label="Search cards by name" className={cn(FIELD, "w-56 pl-8")} data-testid="about-card-search" />
+        </label>
+        {current && (
+          <Button size="sm" variant="ghost" onClick={() => onPick(null)} data-testid="about-card-clear">
+            Clear
+          </Button>
+        )}
+      </div>
+      {loading && <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" aria-label="Searching cards" />}
+      {failed && <p className="text-sm text-muted-foreground">Card search is unavailable right now.</p>}
+      {!results && !loading && <p className="text-sm text-muted-foreground">Type at least two letters.</p>}
+      {results && results.length === 0 && <p className="text-sm text-muted-foreground">No match.</p>}
+      {results && results.length > 0 && (
+        <div className="grid max-h-80 grid-cols-4 gap-2 overflow-y-auto pr-1 sm:grid-cols-6 lg:grid-cols-8" role="listbox" aria-label="Cards">
+          {results.map((c) => (
+            <button
+              key={c.id}
+              type="button"
+              role="option"
+              aria-selected={c.id === current?.id}
+              title={`${c.name}${c.setName ? ` · ${c.setName}` : ""}${c.number ? ` #${c.number}` : ""}`}
+              onClick={() => onPick({ id: c.id, name: c.name, image: c.image, set: c.setName })}
+              className={cn("flex flex-col items-center rounded-md border p-1 text-[10px] hover:border-screen/60", c.id === current?.id ? "border-screen bg-screen/10" : "border-border")}
+              data-testid="about-card-option"
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              {c.image && <img src={c.image} alt="" loading="lazy" decoding="async" width={57} height={80} className="h-20 w-auto rounded-[3px] object-contain" />}
+              <span className="w-full truncate text-center">{c.name}</span>
+              {c.setName && <span className="w-full truncate text-center text-muted-foreground">{c.setName}</span>}
+            </button>
+          ))}
+        </div>
       )}
     </div>
   );

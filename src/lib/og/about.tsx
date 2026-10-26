@@ -2,7 +2,7 @@
 import "server-only";
 import sharp from "sharp";
 import { ImageResponse } from "next/og";
-import { GAME_SLOTS, POKEMON_SLOTS, choiceLabel, type AboutData } from "@/lib/about-data";
+import { CARD_SLOTS, GAME_SLOTS, POKEMON_SLOTS, choiceLabel, type AboutData } from "@/lib/about-data";
 import { pokemonName } from "@/lib/about-validate";
 import { artworkUrl } from "@/lib/pokemon/pokedex";
 import { C, HOST, LOGO, loadFonts, ogCard } from "./card";
@@ -32,6 +32,27 @@ function sprite(id: number, shiny: boolean): Promise<string | null> {
       });
     if (sprites.size > 400) sprites.delete(sprites.keys().next().value!);
     sprites.set(key, p);
+  }
+  return p;
+}
+
+const scans = new Map<string, Promise<string | null>>();
+
+/** A TCG card scan (its stored, host-checked API image URL) as a PNG data URI. */
+function scan(url: string | null): Promise<string | null> {
+  if (!url) return Promise.resolve(null);
+  let p = scans.get(url);
+  if (!p) {
+    p = fetch(url, { signal: AbortSignal.timeout(6000) })
+      .then((r) => (r.ok ? r.arrayBuffer() : Promise.reject(new Error(String(r.status)))))
+      .then((b) => sharp(Buffer.from(b)).resize(150, 209, { fit: "contain", background: { r: 0, g: 0, b: 0, alpha: 0 } }).png().toBuffer())
+      .then((png) => `data:image/png;base64,${png.toString("base64")}`)
+      .catch(() => {
+        scans.delete(url);
+        return null;
+      });
+    if (scans.size > 200) scans.delete(scans.keys().next().value!);
+    scans.set(url, p);
   }
   return p;
 }
@@ -77,6 +98,9 @@ export async function aboutGrid(username: string, about: AboutData, headers?: Re
   const picks = POKEMON_SLOTS.filter((s) => about.pokemon[s.id]).map((s) => ({ slot: s, pick: about.pokemon[s.id] }));
   const art = await Promise.all(picks.map((p) => sprite(p.pick.id, p.pick.shiny)));
   const games = GAME_SLOTS.filter((s) => about.games[s.id]).map((s) => ({ label: s.label, value: choiceLabel(s.id, about.games[s.id]) ?? "" }));
+  const cards = CARD_SLOTS.filter((s) => about.cards?.[s.id]).map((s) => ({ slot: s, card: about.cards![s.id] }));
+  const cardArt = await Promise.all(cards.map((c) => scan(c.card.image)));
+  const cardH = 330;
   const W = 1200;
   const PAD = 40;
   const GAP = 16;
@@ -88,7 +112,7 @@ export async function aboutGrid(username: string, about: AboutData, headers?: Re
   const gameRows = Math.ceil(games.length / 3);
   const head = 150;
   const height =
-    PAD + head + (pokeRows ? pokeRows * tileH + (pokeRows - 1) * GAP + 30 : 0) + (gameRows ? 56 + gameRows * chipH + (gameRows - 1) * GAP + 20 : 0) + 70 + PAD;
+    PAD + head + (pokeRows ? pokeRows * tileH + (pokeRows - 1) * GAP + 30 : 0) + (cards.length ? 56 + cardH + 30 : 0) + (gameRows ? 56 + gameRows * chipH + (gameRows - 1) * GAP + 20 : 0) + 70 + PAD;
   const h = Math.max(height, 420);
   return new ImageResponse(
     (
@@ -128,6 +152,23 @@ export async function aboutGrid(username: string, about: AboutData, headers?: Re
             ))}
           </div>
         )}
+        {cards.length > 0 && (
+          <div style={{ display: "flex", flexDirection: "column", marginTop: 30 }}>
+            <div style={{ display: "flex", fontFamily: "Silkscreen", fontSize: 22, color: C.violet, letterSpacing: 2, textTransform: "uppercase", marginBottom: 14 }}>My TCG Cards</div>
+            <div style={{ display: "flex", gap: GAP }}>
+              {cards.map((c, i) => (
+                <div
+                  key={c.slot.id}
+                  style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "space-between", width: tileW, height: cardH, padding: "14px 8px", borderRadius: 16, background: C.panel, border: `3px solid ${C.edge}` }}
+                >
+                  {cardArt[i] ? <img src={cardArt[i]!} width={150} height={209} /> : <div style={{ display: "flex", width: 150, height: 209 }} />}
+                  <div style={{ display: "flex", justifyContent: "center", fontFamily: "Chakra Petch", fontSize: c.card.name.length > 16 ? 16 : c.card.name.length > 11 ? 20 : 24, color: C.text, whiteSpace: "nowrap" }}>{c.card.name}</div>
+                  <div style={{ display: "flex", justifyContent: "center", fontFamily: "Silkscreen", fontSize: 14, color: C.violet, textAlign: "center", textTransform: "uppercase", height: 34 }}>{c.slot.label}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
         {games.length > 0 && (
           <div style={{ display: "flex", flexDirection: "column", marginTop: 30 }}>
             <div style={{ display: "flex", fontFamily: "Silkscreen", fontSize: 22, color: C.violet, letterSpacing: 2, textTransform: "uppercase", marginBottom: 14 }}>My Pokémon Games</div>
@@ -141,7 +182,7 @@ export async function aboutGrid(username: string, about: AboutData, headers?: Re
             </div>
           </div>
         )}
-        {picks.length === 0 && games.length === 0 && <div style={{ display: "flex", marginTop: 40, fontSize: 28, color: C.muted }}>Nothing picked yet.</div>}
+        {picks.length === 0 && games.length === 0 && cards.length === 0 && <div style={{ display: "flex", marginTop: 40, fontSize: 28, color: C.muted }}>Nothing picked yet.</div>}
         <div style={{ display: "flex", marginTop: "auto", paddingTop: 24, fontFamily: "Chakra Petch", fontSize: 28, color: C.violet, letterSpacing: 1, textTransform: "uppercase" }}>Make yours on PokéIQ →</div>
       </div>
     ),

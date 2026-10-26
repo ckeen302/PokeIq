@@ -31,6 +31,8 @@ jobs:
         env:
           POKEIQ_SECRET: ci-only-secret-not-used-anywhere-else
           POKEIQ_LOCAL_ACCOUNTS: "1"
+          # TCG pages read a captured slice of real Pokémon TCG API data instead of the live API.
+          POKEIQ_TCG_FIXTURE: "1"
       - uses: actions/upload-artifact@v4
         if: always()
         with:

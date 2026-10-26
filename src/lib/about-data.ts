@@ -182,10 +182,29 @@ export interface AboutPick {
   shiny: boolean;
 }
 
+/** A Pokémon TCG card (Pokémon TCG API id). The server stores the API's own name, image and set, never the browser's. */
+export interface AboutCard {
+  id: string;
+  name: string;
+  image: string | null;
+  set: string | null;
+}
+
 export interface AboutData {
   pokemon: Record<string, AboutPick>;
   games: Record<string, string>;
+  /** TCG card picks by CARD_SLOTS id; left out when none are picked. */
+  cards?: Record<string, AboutCard>;
 }
 
+/** The TCG group: card picks only, chosen from the Pokémon TCG API's card list. */
+export const CARD_SLOTS: readonly { id: string; label: string }[] = [
+  { id: "favorite-card", label: "Favorite Card" },
+  { id: "dream-card", label: "Dream Card" },
+  { id: "best-owned-card", label: "Best Card I Own" },
+  { id: "overrated-card", label: "Most Overrated Card" },
+  { id: "underrated-card", label: "Most Underrated Card" },
+];
+
 export const EMPTY_ABOUT: AboutData = { pokemon: {}, games: {} };
-export const aboutIsEmpty = (a: AboutData) => !Object.keys(a.pokemon).length && !Object.keys(a.games).length;
+export const aboutIsEmpty = (a: AboutData) => !Object.keys(a.pokemon).length && !Object.keys(a.games).length && !Object.keys(a.cards ?? {}).length;

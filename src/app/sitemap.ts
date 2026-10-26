@@ -4,9 +4,14 @@ import { QUIZ_PRESETS } from "@/lib/modes";
 import { ABILITIES, ITEMS, MOVES } from "@/lib/dex/data";
 import { SITE_URL } from "@/lib/site";
 import { PLACES } from "@/lib/dex/places-data";
+import { getSets } from "@/lib/tcg/api";
 
-export default function sitemap(): MetadataRoute.Sitemap {
+// TCG sets come from the Pokémon TCG API: refresh daily; without the API the sitemap simply omits them.
+export const revalidate = 86400;
+
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date();
+  const sets = (await getSets()) ?? [];
   return [
     { url: SITE_URL, lastModified: now, changeFrequency: "daily", priority: 1 },
     { url: `${SITE_URL}/daily`, lastModified: now, changeFrequency: "daily", priority: 0.9 },
@@ -27,6 +32,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${SITE_URL}/pokedex/places`, changeFrequency: "monthly", priority: 0.7 },
     { url: `${SITE_URL}/pokedex/types`, changeFrequency: "monthly", priority: 0.7 },
     { url: `${SITE_URL}/pokedex/natures`, changeFrequency: "monthly", priority: 0.6 },
+    { url: `${SITE_URL}/pokedex/tcg`, changeFrequency: "weekly", priority: 0.7 },
     { url: `${SITE_URL}/leaderboard`, changeFrequency: "hourly", priority: 0.5 },
     { url: `${SITE_URL}/battle`, changeFrequency: "weekly", priority: 0.8 },
     { url: `${SITE_URL}/battle/play`, changeFrequency: "monthly", priority: 0.8 },
@@ -44,5 +50,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
     ...ABILITIES.map((a) => ({ url: `${SITE_URL}/pokedex/abilities/${a.slug}`, changeFrequency: "monthly" as const, priority: 0.4 })),
     ...ITEMS.map((i) => ({ url: `${SITE_URL}/pokedex/items/${i.slug}`, changeFrequency: "monthly" as const, priority: 0.3 })),
     ...PLACES.map((p) => ({ url: `${SITE_URL}/pokedex/places/${p.slug}`, changeFrequency: "monthly" as const, priority: 0.3 })),
+    ...sets.map((s) => ({ url: `${SITE_URL}/pokedex/tcg/${s.id}`, changeFrequency: "weekly" as const, priority: 0.4 })),
   ];
 }
