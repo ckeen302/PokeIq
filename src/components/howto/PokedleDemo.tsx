@@ -1,36 +1,14 @@
 "use client";
 
 import { useMemo } from "react";
-import { compareTraits, stageLabel, type DleTraits } from "@/lib/dle-compare";
-import type { DleRow } from "@/lib/dle-types";
-import { formatHeight, formatWeight } from "@/lib/pokemon/constants";
 import { Board } from "@/components/pokedle/parts";
+import { DLE_EXAMPLE_MONS, exampleRow } from "@/components/pokedle/examples";
 import { DemoFrame, useDemoFrame } from "./shared";
 
-/** Real Pokédex values (height in dm, weight in hg), run through the game's own clue code. */
-const MON: { id: number; name: string; t: DleTraits }[] = [
-  { id: 179, name: "Mareep", t: { gen: 2, type1: "electric", type2: null, height: 6, weight: 78, color: "white", stage: 1 } },
-  { id: 25, name: "Pikachu", t: { gen: 1, type1: "electric", type2: null, height: 4, weight: 60, color: "yellow", stage: 2 } },
-  { id: 26, name: "Raichu", t: { gen: 1, type1: "electric", type2: null, height: 8, weight: 300, color: "yellow", stage: 3 } },
-];
+/** Mareep, then Pikachu, then Raichu (the answer), through the game's own clue code. */
+const MON = [DLE_EXAMPLE_MONS.mareep, DLE_EXAMPLE_MONS.pikachu, DLE_EXAMPLE_MONS.raichu];
 const ANSWER = MON[2];
 const COLUMNS = ["gen", "type1", "height", "weight", "color", "stage"] as const;
-
-const cap = (s: string) => s[0].toUpperCase() + s.slice(1);
-
-function toRow(m: (typeof MON)[number]): DleRow {
-  const s = compareTraits(m.t, ANSWER.t);
-  const value = {
-    gen: String(m.t.gen),
-    type1: cap(m.t.type1),
-    height: formatHeight(m.t.height),
-    weight: formatWeight(m.t.weight),
-    color: cap(m.t.color),
-    stage: stageLabel(m.t.stage),
-  };
-  const cells = Object.fromEntries(COLUMNS.map((c) => [c, { value: value[c], status: s[c]! }])) as DleRow["cells"];
-  return { id: m.id, name: m.name, imageUrl: "", solved: m.id === ANSWER.id, cells };
-}
 
 const FRAMES = (() => {
   const f: { typed: string; rows: number; ms: number }[] = [{ typed: "", rows: 0, ms: 700 }];
@@ -44,7 +22,7 @@ const MS = FRAMES.map((f) => f.ms);
 
 export function PokedleDemo() {
   const frame = FRAMES[useDemoFrame(MS)];
-  const rows = useMemo(() => MON.map(toRow), []);
+  const rows = useMemo(() => MON.map((m) => exampleRow(m, ANSWER, COLUMNS)), []);
   const solved = frame.rows === MON.length;
   return (
     <DemoFrame label="Demo: guessing Mareep, then Pikachu, then Raichu, with the clue tiles flipping after each guess">
@@ -60,7 +38,7 @@ export function PokedleDemo() {
           )}
         </div>
         <div className="min-h-[13.5rem]">{frame.rows > 0 && <Board rows={rows.slice(0, frame.rows)} columns={COLUMNS} />}</div>
-        <p className="h-5 text-center text-sm font-semibold">{solved ? "Solved in 3 guesses!" : frame.rows === 1 ? "Closer: ≈ is one generation or stage away" : ""}</p>
+        <p className="min-h-5 text-center text-sm font-semibold">{solved ? "Solved in 3 guesses!" : frame.rows === 1 ? "Closer: ≈ is one generation or stage away" : ""}</p>
       </div>
     </DemoFrame>
   );

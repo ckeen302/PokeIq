@@ -2,6 +2,7 @@
 
 /* eslint-disable @next/next/no-img-element -- tiny sprites/silhouettes; next/image adds nothing here */
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import dynamic from "next/dynamic";
 import { motion } from "framer-motion";
 import { track } from "@vercel/analytics";
 import { BarChart3, CalendarDays, CircleHelp, Dices, Lightbulb, RefreshCw, Settings, Timer, X } from "lucide-react";
@@ -31,14 +32,21 @@ import { Popover } from "@/components/ui/popover";
 import { InfoTip } from "@/components/ui/tooltip";
 import { NextDailyCountdown } from "@/components/NextDailyCountdown";
 import { ShareButton } from "@/components/share/ShareButton";
-import { Board, GuessInput, clueText, type NameEntry } from "./parts";
-import { DexPanel, type DexPick } from "./DexPanel";
+import { Board, CELL_STYLES, ClueLegend, GuessInput, clueText, type NameEntry } from "./parts";
+import type { DexPick } from "./DexPanel";
 import { AssistPicker } from "./AssistPicker";
-import { RulesChip, SettingsPanel } from "./SettingsPanel";
 import { dexClues } from "@/lib/dle-dex";
 import { DLE_ASSIST_INFO, dleAssistOf, multiplierText, type DleAssist } from "@/lib/dle-assist";
-import { ArchiveSheet, HowToSheet, StatsSheet } from "./sheets";
 import { cn } from "@/lib/utils";
+
+// Loaded when first needed, not with the page: the Pokédex (off by default),
+// the settings (behind the gear), and the pop-up sheets.
+const DexPanel = dynamic(() => import("./DexPanel").then((m) => m.DexPanel), { ssr: false });
+const RulesChip = dynamic(() => import("./SettingsPanel").then((m) => m.RulesChip), { ssr: false });
+const SettingsPanel = dynamic(() => import("./SettingsPanel").then((m) => m.SettingsPanel), { ssr: false });
+const HowToSheet = dynamic(() => import("./sheets").then((m) => m.HowToSheet), { ssr: false });
+const StatsSheet = dynamic(() => import("./sheets").then((m) => m.StatsSheet), { ssr: false });
+const ArchiveSheet = dynamic(() => import("./sheets").then((m) => m.ArchiveSheet), { ssr: false });
 
 /** The daily (in a format), a past Classic daily from the archive (never counted), or a practice puzzle under the player's settings. */
 type Target = { kind: "daily"; date: string; format: DleDailyFormat } | { kind: "archive"; date: string } | { kind: "practice"; seed: string; settings: DleSettings };
@@ -121,6 +129,13 @@ export function Pokedle({
   const [fill, setFill] = useState<{ name: string; n: number } | null>(null);
   /** A clue clicked on the board, for the Full Pokédex's filters. */
   const [pick, setPick] = useState<(DexPick & { n: number }) | null>(null);
+  /** The guess on its way to the server, shown on the board at once. */
+  const [pendingId, setPendingId] = useState<number | null>(null);
+  /** A game just won or lost: the result waits while the last row's tiles flip. */
+  const [holdResult, setHoldResult] = useState(false);
+  const holdTimer = useRef<number | undefined>(undefined);
+  useEffect(() => () => window.clearTimeout(holdTimer.current), []);
+  const nameOf = useMemo(() => new Map(names.map((e) => [e[0], e[1]])), [names]);
 
   // A practice game not yet started follows the player's settings.
   const settings = practiceSettings ?? prefs?.settings ?? null;
@@ -181,6 +196,12 @@ export function Pokedle({
             setAnnounce(`Guess ${result.rows.length}, ${row.name}: ${clues}.${end}`);
           }
           play(result.solved ? "fanfare" : result.over ? "wrong" : "click");
+          if (result.over && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+            // As long as the last row takes to flip (parts.tsx: 0.12 s a tile, 0.4 s each, then a bounce for a solve).
+            setHoldResult(true);
+            window.clearTimeout(holdTimer.current);
+            holdTimer.current = window.setTimeout(() => setHoldResult(false), result.rules.columns.length * 120 + 400 + (result.solved ? 500 : 150));
+          }
         }
         guessedRef.current = false;
       } catch (err) {
@@ -194,7 +215,10 @@ export function Pokedle({
           if (name) setFill((f) => ({ name, n: (f?.n ?? 0) + 1 }));
         }
       } finally {
-        if (id === reqRef.current) setLoading(false);
+        if (id === reqRef.current) {
+          setLoading(false);
+          setPendingId(null);
+        }
       }
     },
     []
@@ -212,7 +236,9 @@ export function Pokedle({
       setState(null);
       setLoading(false);
       setError(null);
-        setClockStart(null);
+      setClockStart(null);
+      setPendingId(null);
+      setHoldResult(false);
       // An archive game picks up from the daily if that was played (it's saved apart from then on).
       const saved = kind === "daily" ? resultsOf(f)[d] : (getArchiveRecord(d) ?? resultsOf("classic")[d]);
       const list = saved?.guesses ?? [];
@@ -232,6 +258,8 @@ export function Pokedle({
   const guessedIds = useMemo(() => new Set(guesses), [guesses]);
   const panelClues = useMemo(() => dexClues(state?.rows ?? []), [state]);
   const over = state?.over ?? false;
+  /** Over, and the last row has finished flipping: time for the result. */
+  const showOver = over && !holdResult;
   const statsFormat: DleDailyFormat = mode === "daily" ? format : "classic";
   const stats = useMemo(
     () => (progress && today ? dleStats(dleBlock(progress, statsFormat).results, today, dailyRules(statsFormat).maxGuesses) : null),
@@ -249,6 +277,17 @@ export function Pokedle({
     else if (mode === "daily" && (guesses.length === 0 || over)) loadDate(today, "daily", format);
   }, [today, progress, mode, format, guesses.length, over, loadDate]);
 
+  // Once the page is idle, fetch the pop-ups and settings ahead of the first tap on them.
+  useEffect(() => {
+    const warm = () => void Promise.all([import("./sheets"), import("./SettingsPanel")]).catch(() => {});
+    if (typeof window.requestIdleCallback === "function") {
+      const id = window.requestIdleCallback(warm, { timeout: 4000 });
+      return () => window.cancelIdleCallback(id);
+    }
+    const id = window.setTimeout(warm, 2000);
+    return () => window.clearTimeout(id);
+  }, []);
+
   // How to play, on a first visit.
   useEffect(() => {
     const open = () => setSheet("howto");
@@ -259,7 +298,9 @@ export function Pokedle({
   useEffect(() => {
     if (!prefs || howToShown.current) return;
     howToShown.current = true;
-    if (!prefs.seenHowToDemo) setSheet("howto");
+    // Only for a new player: anyone who has played a daily on this device knows the game.
+    const played = (["classic", "squirdle"] as const).some((f) => Object.keys(resultsOf(f)).length > 0);
+    if (!prefs.seenHowToDemo && !played) setSheet("howto");
   }, [prefs]);
 
   // A timed practice game: the clock runs from the first guess; when it runs out, the game is over.
@@ -281,6 +322,7 @@ export function Pokedle({
     if (over || loading || !target) return false;
     if (timerMs && clockStart !== null && clockLeft <= 0) return false;
     guessedRef.current = true;
+    setPendingId(entry[0]);
     const next = [...guesses, entry[0]];
     setGuesses(next);
     if (target.kind === "practice" && !practiceSettings) setPracticeSettings(target.settings);
@@ -338,6 +380,8 @@ export function Pokedle({
     setLoading(false);
     setError(null);
     setClockStart(null);
+    setPendingId(null);
+    setHoldResult(false);
     if (openSettings) setSettingsOpen(true);
     else setTimeout(() => inputRef.current?.focus(), 50);
   }
@@ -415,7 +459,7 @@ export function Pokedle({
         <div className="space-y-4 text-center">
           <div className="space-y-2">
             <p className="hud-label text-screen">{title}</p>
-            <h1 className="font-display text-4xl font-bold uppercase tracking-tight">Guess the mystery Pokémon</h1>
+            <h1 className="font-display text-3xl font-bold uppercase tracking-tight sm:text-4xl">Guess the mystery Pokémon</h1>
           </div>
           <div className="flex justify-center">
             <div className="flex rounded-md border border-foreground/15 bg-card p-0.5" role="radiogroup" aria-label="Daily format">
@@ -476,7 +520,12 @@ export function Pokedle({
                   {settingsBadge}
                 </span>
               )}
-              <Popover open={settingsOpen} onClose={closeSettings} label="Pokédle settings" className={cn("space-y-4", mode === "practice" && !locked ? "w-[38rem]" : "w-[28rem]")}>
+              <Popover open={settingsOpen} onClose={closeSettings} label="Pokédle settings" className={cn(
+                  "space-y-4",
+                  // A phone: the full width of the screen, under the header, wherever the gear is.
+                  "max-sm:fixed max-sm:inset-x-3 max-sm:top-20 max-sm:mt-0 max-sm:w-auto max-sm:translate-x-0",
+                  mode === "practice" && !locked ? "sm:w-[38rem]" : "sm:w-[28rem]"
+                )}>
                 <div className="flex items-start justify-between gap-3">
                   <div className="space-y-1.5">
                     <p className="hud-label">This game</p>
@@ -546,7 +595,7 @@ export function Pokedle({
           </p>
         )}
 
-        {!over && (
+        {!showOver && (
           <div className="space-y-3">
             <GuessInput
               // A new puzzle starts with an empty box.
@@ -554,14 +603,15 @@ export function Pokedle({
               inputRef={inputRef}
               names={names}
               exclude={guessedIds}
-              disabled={!target || timeUp}
+              disabled={!target || timeUp || over}
               placeholder={timeUp ? "Time's up" : `Guess ${guesses.length + 1} of ${rules.maxGuesses}: type a Pokémon…`}
               onGuess={submitGuess}
               fill={fill}
             />
-            {guesses.length > 0 && rules.hints && (
+            {/* Always there (greyed out until the first guess), so nothing jumps when they unlock. */}
+            {rules.hints && (
               <div className="flex flex-wrap items-center justify-center gap-2" data-testid="hints">
-                <span className="hud-label flex items-center gap-1">
+                <span className="hud-label hidden items-center gap-1 sm:flex">
                   <Lightbulb className="h-3.5 w-3.5 text-primary" aria-hidden /> Hints
                 </span>
                 {DLE_HINT_KINDS.map((h) =>
@@ -578,14 +628,18 @@ export function Pokedle({
                       key={h}
                       type="button"
                       onClick={() => takeHint(h)}
-                      disabled={loading}
+                      disabled={loading || guesses.length === 0 || over}
+                      title={guesses.length === 0 ? "Hints unlock after your first guess" : undefined}
                       className="rounded-full border border-foreground/15 bg-card px-3 py-1 text-xs font-semibold text-muted-foreground transition-colors hover:border-screen/50 hover:text-foreground disabled:opacity-50"
                     >
                       {DLE_HINT_EMOJI[h]} {DLE_HINT_LABEL[h]} <span className="tabular-nums text-destructive/80">−{DLE_HINT_COST[h]}</span>
                     </button>
                   )
                 )}
-                <InfoTip label="About hints">Hints are optional: each costs the points shown, and shows on your result and your share.</InfoTip>
+                {/* Not on a phone: its pop-up would hang off the screen's edge there (the how-to explains hints). */}
+                <span className="hidden sm:inline-flex">
+                  <InfoTip label="About hints">Hints are optional and unlock after your first guess: each costs the points shown, and shows on your result and your share.</InfoTip>
+                </span>
               </div>
             )}
           </div>
@@ -601,11 +655,11 @@ export function Pokedle({
           {announce}
         </div>
         {/* The finished state: the result, sharing, what's next, and room for a community panel. */}
-        {over && state?.answer && (
+        {showOver && state?.answer && (
           <motion.section aria-label="Result" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="space-y-4">
             <Card className={cn("mx-auto max-w-md", state.solved ? "border-success/50" : "border-destructive/40")}>
               <CardContent className="space-y-4 p-6 text-center">
-                <img src={state.answer.imageUrl} alt={state.answer.name} className="mx-auto h-36 w-36 object-contain" />
+                <img src={state.answer.imageUrl} alt={state.answer.name} width={144} height={144} className="mx-auto h-28 w-28 object-contain sm:h-36 sm:w-36" />
                 <div>
                   <div className="text-2xl font-bold">{state.solved ? `Got it in ${state.rows.length}!` : state.timedOut ? "Time's up!" : "So close!"}</div>
                   <div className="text-muted-foreground">
@@ -627,6 +681,13 @@ export function Pokedle({
                       Hints used: {hints.map((h) => `${DLE_HINT_EMOJI[h]} ${DLE_HINT_LABEL[h]} −${DLE_HINT_COST[h]}`).join(", ")}
                     </div>
                   )}
+                </div>
+                <div className="flex flex-col items-center gap-[3px]" aria-hidden data-testid="result-grid">
+                  {state.rows.map((r) => (
+                    <div key={r.id} className="flex gap-[3px]">
+                      {rules.columns.map((c) => (r.cells[c] ? <span key={c} className={cn("h-3.5 w-3.5 rounded-[3px] border", CELL_STYLES[r.cells[c]!.status])} /> : null))}
+                    </div>
+                  ))}
                 </div>
                 <div className="grid gap-2 sm:grid-cols-2">
                   <ShareButton getText={shareTextNow} label="Share" kind="pokedle" />
@@ -657,14 +718,18 @@ export function Pokedle({
           </motion.section>
         )}
 
-        {state && state.rows.length > 0 && (
+        {/* The board from the start: a place for every guess, so nothing below it moves as you play. */}
+        <div className="space-y-3">
           <Board
-            rows={state.rows}
+            rows={state?.rows ?? []}
             columns={rules.columns}
             close={rules.close}
+            slots={over ? undefined : rules.maxGuesses}
+            pending={pendingId !== null ? { id: pendingId, name: nameOf.get(pendingId) ?? "" } : null}
             onClue={assist === "full" ? (column, guessId, cell) => setPick((p) => ({ column, guessId, status: cell.status, value: cell.value, n: (p?.n ?? 0) + 1 })) : undefined}
           />
-        )}
+          <ClueLegend close={rules.close} />
+        </div>
       </div>
       {/* A new puzzle (the day's, a past one or another practice one) starts with every filter cleared. Pokédex off: no Pokédex. */}
       {/* Only once the game (and its level) is known, so a lighter level never loads a heavier Pokédex first. */}
@@ -692,6 +757,14 @@ export function Pokedle({
             return r?.over ? (r.solved ? r.guesses.length : 0) : null;
           })()}
           onClose={closeSheet}
+          footer={
+            mode === "daily" && showOver && date === today ? (
+              <>
+                <NextDailyCountdown label="Next Pokédle in" />
+                <ShareButton getText={shareTextNow} label="Share result" kind="pokedle" className="w-full" />
+              </>
+            ) : undefined
+          }
         />
       )}
       {sheet === "archive" && today && progress && (
