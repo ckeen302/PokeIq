@@ -13,7 +13,7 @@ import { TrainerAvatar } from "@/components/trainers/TrainerAvatar";
 import { trainerGame } from "@/lib/trainers/games";
 import { notable } from "@/lib/trainers/notable";
 import { notableDirectory, notableTeams } from "@/lib/trainers/data";
-import { levelRange, teamTitle } from "@/lib/trainers/format";
+import { teamTitle } from "@/lib/trainers/format";
 
 export const dynamicParams = false;
 
@@ -101,7 +101,7 @@ export default async function NotableTrainerPage({ params }: PageProps) {
                 const label = (t: (typeof list)[number], i: number) => t.tag ?? (i === 0 ? "First battle" : `Battle ${i + 1}`);
                 return (
                   <article key={first.id} className="hud space-y-3 rounded-lg border bg-card p-3 sm:p-4" data-testid="notable-battle">
-                    <header className="flex flex-wrap items-start justify-between gap-2">
+                    <header>
                       <div className="min-w-0">
                         <h3 className="font-display text-base font-bold uppercase tracking-wide">{teamTitle(first)}</h3>
                         <p className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
@@ -116,7 +116,6 @@ export default async function NotableTrainerPage({ params }: PageProps) {
                           {list.length === 1 && first.tag && <span className="text-primary">· {first.tag}</span>}
                         </p>
                       </div>
-                      <span className="font-mono text-xs tabular-nums text-muted-foreground">{levelRange(list.flatMap((t) => t.team))}</span>
                     </header>
                     {list.length === 1 ? (
                       <TeamGrid team={first} />
