@@ -9,6 +9,7 @@ const TABS = [
   { id: "places", label: "Places", href: "/pokedex/places" },
   { id: "types", label: "Types", href: "/pokedex/types" },
   { id: "natures", label: "Natures", href: "/pokedex/natures" },
+  { id: "tcg", label: "TCG", href: "/pokedex/tcg" },
 ] as const;
 
 export type DexTabId = (typeof TABS)[number]["id"];

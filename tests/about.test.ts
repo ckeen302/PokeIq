@@ -1,5 +1,5 @@
-import { beforeEach, describe, expect, it } from "vitest";
-import { GAME_SLOTS, POKEMON_SLOTS, STARTER_BASES } from "@/lib/about-data";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { CARD_SLOTS, GAME_SLOTS, POKEMON_SLOTS, STARTER_BASES } from "@/lib/about-data";
 import { allowedFor, checkAbout, optionsFor, pokemonName, readAbout } from "@/lib/about-validate";
 import { clearMemoryAbout, memoryAboutStore, saveAbout, aboutFor } from "@/lib/server/about";
 
@@ -117,5 +117,40 @@ describe("about me: store", () => {
     const out = await saveAbout("u1", { pokemon: { "best-mega": { id: 25, shiny: false } } }, store);
     expect(out).toMatchObject({ ok: false, status: 400 });
     expect(await aboutFor("u1", store)).toEqual({ pokemon: {}, games: {} });
+  });
+});
+
+describe("about me: TCG card picks", () => {
+  beforeEach(() => {
+    clearMemoryAbout();
+    process.env.POKEIQ_TCG_FIXTURE = "1";
+  });
+  afterEach(() => {
+    delete process.env.POKEIQ_TCG_FIXTURE;
+  });
+  it("has the five card slots", () => {
+    expect(CARD_SLOTS.map((s) => s.label)).toEqual(["Favorite Card", "Dream Card", "Best Card I Own", "Most Overrated Card", "Most Underrated Card"]);
+  });
+  it("stores the TCG API's own card record, not the browser's", async () => {
+    const store = memoryAboutStore();
+    const out = await saveAbout("u1", { pokemon: {}, games: {}, cards: { "dream-card": { id: "base1-4", name: "Totally Real", image: null, set: "Fake" }, "favorite-card": null } }, store);
+    expect(out.ok).toBe(true);
+    const cards = (await aboutFor("u1", store)).cards;
+    expect(Object.keys(cards ?? {})).toEqual(["dream-card"]);
+    expect(cards?.["dream-card"]).toMatchObject({ id: "base1-4", name: "Charizard", set: "Base" });
+    expect(cards?.["dream-card"].image).toMatch(/^https:\/\/images\.pokemontcg\.io\//);
+  });
+  it("rejects unknown slots, unknown cards and malformed cards", async () => {
+    const store = memoryAboutStore();
+    expect((await saveAbout("u1", { cards: { "dream-card": { id: "nope-999", name: "X" } } }, store)).ok).toBe(false);
+    expect(checkAbout({ cards: { bogus: { id: "base1-4", name: "X" } } }).ok).toBe(false);
+    expect(checkAbout({ cards: "base1-4" }).ok).toBe(false);
+    for (const card of [{ id: "a b", name: "X" }, { id: "x-1", name: "" }, { id: "x-1", name: "X", image: "https://evil.example/a.png" }, "base1-4"]) {
+      expect(checkAbout({ cards: { "favorite-card": card } }).ok).toBe(false);
+    }
+  });
+  it("drops a malformed stored card and keeps the rest", () => {
+    const ok = { id: "base1-4", name: "Charizard", image: null, set: "Base" };
+    expect(readAbout({ pokemon: {}, games: { rival: "blue" }, cards: { "favorite-card": { id: "x", name: 3 }, "dream-card": ok } })).toEqual({ pokemon: {}, games: { rival: "blue" }, cards: { "dream-card": ok } });
   });
 });

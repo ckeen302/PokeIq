@@ -1,7 +1,8 @@
 import "server-only";
 import { getServiceSupabase } from "@/lib/supabase";
-import { checkAbout, readAbout } from "@/lib/about-validate";
-import type { AboutData } from "@/lib/about-data";
+import { checkAbout, checkCard, readAbout } from "@/lib/about-validate";
+import { getCard } from "@/lib/tcg/api";
+import { CARD_SLOTS, type AboutData } from "@/lib/about-data";
 
 /**
  * Trainers' "About me" (migration 0036: profile_about). Everyone can read
@@ -78,6 +79,23 @@ export async function saveAbout(userId: string, raw: unknown, store = aboutStore
   if (!store) return { ok: false, status: 503, error: "About me opens soon." };
   const checked = checkAbout(raw);
   if (!checked.ok) return { ok: false, status: 400, error: checked.error };
+  const cards = checked.about.cards;
+  if (cards) {
+    // Only the TCG API's own record is stored: name, image and set never come from the browser.
+    const prior = (await aboutFor(userId, store)).cards ?? {};
+    for (const [slotId, pick] of Object.entries(cards)) {
+      // An unchanged pick keeps what's stored, so the API being down never blocks saving the rest.
+      if (prior[slotId]?.id === pick.id) {
+        cards[slotId] = prior[slotId];
+        continue;
+      }
+      const found = await getCard(pick.id);
+      const card = found && checkCard({ id: found.id, name: found.name, image: found.images?.small ?? null, set: found.set?.name ?? null });
+      const label = CARD_SLOTS.find((s) => s.id === slotId)?.label ?? "Card";
+      if (!card) return { ok: false, status: 400, error: `${label}: couldn't find that card. Try again in a moment.` };
+      cards[slotId] = card;
+    }
+  }
   try {
     await store.save(userId, checked.about);
   } catch (err) {

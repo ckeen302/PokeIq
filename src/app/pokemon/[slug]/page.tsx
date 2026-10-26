@@ -7,6 +7,7 @@ import { dexBreadcrumbs, dexDescription, dexSummary, dexTitle } from "@/lib/poke
 import { POKEDEX, artworkUrl, getPokemonBySlug } from "@/lib/pokemon/pokedex";
 import { getDexEntry } from "@/lib/pokemon/details";
 import { DexEntry } from "@/components/pokedex/entry/DexEntry";
+import { PokemonCards } from "@/components/tcg/PokemonCards";
 
 /** Static, crawlable study page for every species (1,025 pages at build time). */
 
@@ -50,6 +51,7 @@ export default async function PokemonPage({ params }: PageProps) {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(dexBreadcrumbs(p)) }} />
       <BackButton href="/pokedex" label="Back to Pokédex" className="mb-4" />
       <DexEntry key={p.id} data={data} />
+      <PokemonCards key={`cards-${p.id}`} dex={p.id} name={p.name} />
       <section className="mx-auto mt-10 max-w-3xl space-y-3 text-sm text-muted-foreground" aria-label={`About ${p.name}`}>
         <h2 className="font-display text-base font-bold uppercase tracking-wider text-foreground">{p.name} summary</h2>
         <p>{dexSummary(p)}</p>
