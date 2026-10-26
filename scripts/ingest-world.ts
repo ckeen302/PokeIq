@@ -22,6 +22,7 @@
  *   … npm run ingest:world -- --crops --thin Hoenn     # only for places with a single shot (from smaller maps too)
  *   … npm run ingest:world -- --expand Galar           # new Bulbapedia and other-wiki shots of places already on the map → the same
  *   … npm run ingest:world -- --accept=reviewed.json   # adds reviewed candidates to the data (near-copies are skipped)
+ *   … npm run ingest:world -- --expand --whole Kalos   # the same, with other wikis' 3D shots kept whole (banner or text box and all)
  */
 import { existsSync, mkdirSync, readFileSync, rmdirSync, writeFileSync } from "node:fs";
 import { randomBytes } from "node:crypto";
@@ -73,6 +74,8 @@ const LOCK = path.join(process.cwd(), ".data", "ingest-world.lock");
 /** New shots waiting for review (--crops, --expand), unless --out= says otherwise. */
 const CANDIDATES = path.join(process.cwd(), ".data", "geo-candidates.json");
 
+/** --whole: other wikis' 3D shots kept whole, not trimmed of their banner or text box (a trimmed strip can't fill a 16:9 frame). */
+const WHOLE = process.argv.includes("--whole");
 const MAX_SHOTS = 24;
 /** 3D screenshots a place gets from other wikis, counting the ones Bulbapedia already gave it. */
 const WIKI_SHOTS = 10;
@@ -899,8 +902,9 @@ async function wikiShots(place: PlaceIn, source: Source, games: string[], store:
       if (threeD && wiki.lang !== "en") {
         const trim = overlayTrim(wiki, f.file, plainTitle, source.wiki, resolved);
         if (!trim) return false;
-        if (trim.top) trimTop[f.file] = trim.top;
-        if (trim.bottom) trimBottom[f.file] = trim.bottom;
+        // --whole: the full screen, banner or text box and all (signs and text are fair clues), so it fills a 16:9 frame.
+        if (!WHOLE && trim.top) trimTop[f.file] = trim.top;
+        if (!WHOLE && trim.bottom) trimBottom[f.file] = trim.bottom;
       }
       gameOf.set(f.file, GAME_CODES[resolved]);
       return true;
