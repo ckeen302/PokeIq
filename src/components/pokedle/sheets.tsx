@@ -164,7 +164,20 @@ export function HowToSheet({ onClose, onNever }: { onClose: () => void; onNever?
   );
 }
 
-export function StatsSheet({ stats, todayGuesses, onClose, title = "Statistics" }: { stats: DleStats; todayGuesses: number | null; onClose: () => void; title?: string }) {
+export function StatsSheet({
+  stats,
+  todayGuesses,
+  onClose,
+  title = "Statistics",
+  footer,
+}: {
+  stats: DleStats;
+  todayGuesses: number | null;
+  onClose: () => void;
+  title?: string;
+  /** Today's daily is done: its share button and the countdown to the next one. */
+  footer?: React.ReactNode;
+}) {
   const tiles = [
     { label: "Played", value: stats.played },
     { label: "Win %", value: stats.winPct },
@@ -209,6 +222,7 @@ export function StatsSheet({ stats, todayGuesses, onClose, title = "Statistics" 
         </div>
         {stats.hardWins > 0 && <p className="text-muted-foreground">Hard-mode wins: {stats.hardWins}</p>}
         <p className="text-xs text-muted-foreground">Only dailies count. Practice and archive games never change your stats or streaks.</p>
+        {footer && <div className="space-y-3 border-t pt-4">{footer}</div>}
       </div>
     </Sheet>
   );
