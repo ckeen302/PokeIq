@@ -1,3 +1,4 @@
+import { BackButton } from "@/components/ui/BackButton";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { CUSTOM_ID_RE } from "@/lib/connections/custom";
@@ -17,6 +18,7 @@ export default async function CommunityPuzzlePage({ params }: { params: Promise<
   // The tiles and every guess go through /api/connections (practice=custom-<id>); the groups never reach the page.
   return (
     <div className="space-y-6">
+      <BackButton href="/connections/community" label="Back to community" />
       <CommunityBar id={id} />
       <Connections customId={id} />
     </div>

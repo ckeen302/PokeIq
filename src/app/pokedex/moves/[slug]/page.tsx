@@ -38,7 +38,7 @@ export default async function MovePage({ params }: PageProps) {
 
   return (
     <article className="mx-auto max-w-6xl space-y-10">
-      <DetailNav tab="moves" label="All moves" />
+      <DetailNav tab="moves" label="Back to all moves" />
       <DetailHero kicker={`Move · Gen ${m.gen}`} title={m.name}>
         <div className="flex flex-wrap items-center gap-2">
           <TypeBadge type={m.type} size="lg" />

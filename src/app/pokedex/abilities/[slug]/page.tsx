@@ -39,7 +39,7 @@ export default async function AbilityPage({ params }: PageProps) {
 
   return (
     <article className="mx-auto max-w-6xl space-y-10">
-      <DetailNav tab="abilities" label="All abilities" />
+      <DetailNav tab="abilities" label="Back to all abilities" />
       <DetailHero kicker="Ability" title={a.name}>
         <p className="max-w-2xl text-foreground/90">{a.effect || "No effect description available."}</p>
       </DetailHero>

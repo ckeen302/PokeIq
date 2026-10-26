@@ -1,3 +1,4 @@
+import { BackButton } from "@/components/ui/BackButton";
 import type { Metadata } from "next";
 import { pageMetadata } from "@/lib/seo";
 import { UserSearch } from "@/components/community/UserSearch";
@@ -12,6 +13,7 @@ export default async function UsersPage({ searchParams }: { searchParams: Promis
   const { q } = await searchParams;
   return (
     <div className="mx-auto max-w-2xl space-y-6">
+    <BackButton href="/" />
       <div className="space-y-2">
         <p className="hud-label text-screen">Community</p>
         <h1 className="font-display text-4xl font-bold uppercase tracking-tight sm:text-5xl">

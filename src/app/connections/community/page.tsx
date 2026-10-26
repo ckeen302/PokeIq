@@ -1,3 +1,4 @@
+import { BackButton } from "@/components/ui/BackButton";
 import type { Metadata } from "next";
 import { pageMetadata } from "@/lib/seo";
 import { CommunityList } from "@/components/connections/CommunityList";
@@ -9,5 +10,10 @@ export const metadata: Metadata = pageMetadata({
 });
 
 export default function CommunityConnectionsPage() {
-  return <CommunityList />;
+  return (
+    <div className="mx-auto max-w-3xl space-y-4">
+      <BackButton href="/connections" label="Back to PokéConnections" />
+      <CommunityList />
+    </div>
+  );
 }

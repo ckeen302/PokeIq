@@ -1,3 +1,4 @@
+import { BackButton } from "@/components/ui/BackButton";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ThumbsDown, ThumbsUp } from "lucide-react";
@@ -22,6 +23,7 @@ export default async function CreatorPage({ params }: { params: Promise<{ name: 
   if (!page) notFound();
   return (
     <div className="mx-auto max-w-3xl space-y-6">
+    <BackButton href="/connections/community" label="Back to community" />
       <div className="space-y-1">
         <p className="hud-label">PokéConnections creator</p>
         <h1 className="font-display text-4xl font-bold uppercase tracking-tight" data-testid="creator-name">

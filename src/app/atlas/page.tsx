@@ -1,3 +1,4 @@
+import { BackButton } from "@/components/ui/BackButton";
 import type { Metadata } from "next";
 import { SHARE_IMAGES, pageMetadata } from "@/lib/seo";
 import { WorldAtlas } from "@/components/atlas/WorldAtlas";
@@ -11,5 +12,10 @@ export const metadata: Metadata = pageMetadata({
 });
 
 export default function AtlasPage() {
-  return <WorldAtlas src="/geo/maps/world.webp" />;
+  return (
+    <div className="space-y-4">
+      <BackButton href="/" />
+      <WorldAtlas src="/geo/maps/world.webp" />
+    </div>
+  );
 }

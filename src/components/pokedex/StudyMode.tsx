@@ -1,6 +1,7 @@
 "use client";
 
 /* eslint-disable @next/next/no-img-element -- pre-sized art */
+import { BackButton } from "@/components/ui/BackButton";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { AnimatePresence, motion, useMotionValue, useTransform, type PanInfo } from "framer-motion";
@@ -166,6 +167,7 @@ export function StudyMode({ cards }: { cards: StudyCard[] }) {
   if (!queue) {
     return (
       <div className="mx-auto max-w-2xl space-y-6">
+        <BackButton href="/pokedex" label="Back to Pokédex" />
         <div className="space-y-2 text-center">
           <GraduationCap className="mx-auto h-10 w-10 text-primary" />
           <h1 className="font-display text-4xl font-bold uppercase tracking-tight sm:text-5xl">Study mode</h1>

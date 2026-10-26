@@ -1,10 +1,12 @@
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
+import { BackButton } from "@/components/ui/BackButton";
 
 /** Title block for the Battle pages: "Battle › Team Builder" crumb, title, blurb. */
-export function BattleHeader({ crumb, title, accent, children }: { crumb: string; title: string; accent: string; children: React.ReactNode }) {
+export function BattleHeader({ crumb, title, accent, back = "/battle", children }: { back?: string; crumb: string; title: string; accent: string; children: React.ReactNode }) {
   return (
     <div className="space-y-2">
+      <BackButton href={back} className="mb-1" />
       <nav aria-label="Breadcrumb" className="hud-label flex items-center gap-1.5">
         <Link href="/battle" className="text-screen hover:text-foreground">
           Battle
