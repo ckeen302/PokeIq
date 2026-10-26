@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import dynamic from "next/dynamic";
 import { MotionConfig } from "framer-motion";
 import { Archive, BarChart3, ChevronDown, CircleHelp, Dices, Flag, Loader2, Settings, Swords, X } from "lucide-react";
 import { getProgress, pdkBlock, recordPdkGame, savePdk, savePdkArchive, setTrainerName, useProgress, type BadgeDef } from "@/lib/progress";
@@ -35,7 +36,11 @@ import { Popover } from "@/components/ui/popover";
 import { ShareButton } from "@/components/share/ShareButton";
 import { NewBadges, StreakFlame, useCelebration } from "@/components/connections/results";
 import { PdkBoard, PdkPicker, SettingToggle, iconButton, useDex, type BoardCell, type DexName } from "./parts";
-import { PdkArchiveSheet, PdkHowToSheet, PdkStatsSheet } from "./sheets";
+// The sheets (with the how-to's animated demo) load only when one opens.
+const PdkArchiveSheet = dynamic(() => import("./sheets").then((m) => m.PdkArchiveSheet), { ssr: false });
+const PdkHowToSheet = dynamic(() => import("./sheets").then((m) => m.PdkHowToSheet), { ssr: false });
+const PdkStatsSheet = dynamic(() => import("./sheets").then((m) => m.PdkStatsSheet), { ssr: false });
+import { GuessToast, NextPuzzleCountdown, PpPips, RarityPreview, RevealGrid } from "./results";
 import { cn } from "@/lib/utils";
 
 type Mode = "daily" | "weekly" | "practice" | "archive";
@@ -99,7 +104,8 @@ export function Pikadoku() {
   const [missCell, setMissCell] = useState<number | null>(null);
   const [picking, setPicking] = useState<number | null>(null);
   const [busy, setBusy] = useState(false);
-  const [toast, setToast] = useState<string | null>(null);
+  const [toast, setToast] = useState<{ text: string; kind: "hit" | "miss" | "info" } | null>(null);
+  const [hitCell, setHitCell] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<PdkResultResponse | null>(null);
   const [badges, setBadges] = useState<BadgeDef[]>([]);
@@ -117,8 +123,10 @@ export function Pikadoku() {
   useEffect(() => {
     const p = loadPrefs();
     setPrefs(p);
-    // How to play, on a first visit (a shared challenge link goes straight to its grid).
-    if (!p.seenHowTo && !new URLSearchParams(window.location.search).get("c")) setSheet("howto");
+    // How to play, on a first visit only: until the first game is played or "Don't show again" (a shared challenge link goes straight to its grid).
+    const pr = getProgress();
+    const played = (pr.pdkPlay?.games ?? 0) > 0 || Object.keys(pdkBlock(pr).results).length > 0;
+    if (!p.seenHowTo && !played && !new URLSearchParams(window.location.search).get("c")) setSheet("howto");
   }, []);
   useEffect(() => {
     const open = () => setSheet("howto");
@@ -161,10 +169,10 @@ export function Pikadoku() {
   );
   const targetKey = target ? JSON.stringify(target) : null;
 
-  const showToast = useCallback((text: string) => {
+  const showToast = useCallback((text: string, kind: "hit" | "miss" | "info" = "info") => {
     window.clearTimeout(toastTimer.current);
-    setToast(text);
-    toastTimer.current = window.setTimeout(() => setToast(null), 2200);
+    setToast({ text, kind });
+    toastTimer.current = window.setTimeout(() => setToast(null), kind === "hit" ? 1600 : 2600);
   }, []);
 
   const post = useCallback(
@@ -287,7 +295,7 @@ export function Pikadoku() {
   /** PokeDoku's UNIQ: 100 per unfilled cell, a locked pick counts its rarity (lower is better). Without rarity data, the cell count. */
   const lockedList = Object.values(locked);
   const rarityKnown = lockedList.every((l) => l.pct !== null);
-  const uniq = rarityKnown ? lockedList.reduce((a, l) => a + (l.pct ?? 100), 0) + (9 - lockedList.length) * 100 : null;
+  const uniq = rarityKnown && lockedList.length ? lockedList.reduce((a, l) => a + (l.pct ?? 100), 0) + (9 - lockedList.length) * 100 : null;
   const tapRank = () => {
     if (result) setShowRank(true);
     document.getElementById("pdk-board")?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -302,22 +310,28 @@ export function Pikadoku() {
       const out = (await post("/api/pikadoku", { guesses, next: { cell, id: p.id } })) as { valid: boolean; softlock?: boolean; pct: number | null };
       setPicking(null);
       if (out.softlock) {
-        showToast("That would leave the grid unsolvable. Try another Pokémon.");
+        showToast("That would leave the grid unsolvable. Try another Pokémon.", "info");
         return;
       }
       const list = [...guesses, { cell, id: p.id }];
       setGuesses(list);
       const nextLocked = out.valid ? { ...locked, [cell]: { id: p.id, pct: out.pct } } : locked;
+      const done = Object.keys(nextLocked).length === 9 || (pp > 0 && list.length >= pp);
+      const ppLeft = pp > 0 ? Math.max(0, pp - list.length) : null;
+      // The last guess ends the game: the results say the rest.
+      const ppNote = ppLeft === null || done ? "" : ` ${ppLeft} PP left.`;
       if (out.valid) {
         setLocked(nextLocked);
+        setHitCell(cell);
+        window.setTimeout(() => setHitCell(null), 900);
+        showToast(`${p.name} fits!${out.pct !== null ? ` ${out.pct}% picked it.` : ""}${ppNote}`, "hit");
         play("correct");
       } else {
         setMissCell(cell);
-        window.setTimeout(() => setMissCell(null), 700);
-        showToast(`${p.name} doesn't fit there.`);
+        window.setTimeout(() => setMissCell(null), 900);
+        showToast(`${p.name} doesn't fit there.${ppNote}`, "miss");
         play("wrong");
       }
-      const done = Object.keys(nextLocked).length === 9 || (pp > 0 && list.length >= pp);
       if (mode === "daily" && storeKey) savePdk(storeKey, { guesses: list, won: false, over: false, solved: Object.keys(nextLocked).length, score: null });
       else if ((mode === "archive" || mode === "weekly") && storeKey) savePdkArchiveLocal(storeKey, { guesses: list, won: false, over: false, solved: Object.keys(nextLocked).length, score: null });
       if (done) await finish(list, false);
@@ -362,7 +376,7 @@ export function Pikadoku() {
   }, [today, mode, difficulty, boardScope, result]);
 
   const [nameDraft, setNameDraft] = useState("");
-  const cells: BoardCell[] = Array.from({ length: 9 }, (_, i) => ({ id: locked[i]?.id ?? null, pct: locked[i]?.pct ?? null, miss: missCell === i }));
+  const cells: BoardCell[] = Array.from({ length: 9 }, (_, i) => ({ id: locked[i]?.id ?? null, pct: locked[i]?.pct ?? null, miss: missCell === i, hit: hitCell === i }));
   const block = pdkBlock(progress ?? getProgress());
   /** The rarity-coloured result: colours only, never a Pokémon. */
   const shareResult = (): PikadokuShareResult => ({
@@ -392,62 +406,31 @@ export function Pikadoku() {
   return (
     <MotionConfig reducedMotion="user">
       <div className="mx-auto max-w-3xl space-y-5">
-        <div className="space-y-4 text-center">
-          <div className="space-y-2">
+        <div className="space-y-3 text-center sm:space-y-4">
+          <div className="space-y-1 sm:space-y-2">
             <p className="hud-label text-screen" data-testid="pdk-title">
               {heading}
             </p>
-            <h1 className="font-display text-4xl font-bold uppercase tracking-tight">Pikadoku</h1>
-            <p className="text-sm text-muted-foreground">Pokémon Sudoku: one Pokémon for each cell, matching its row and its column.</p>
-          </div>
-          <div className="flex justify-center">
-            <div className="flex flex-wrap justify-center rounded-md border border-foreground/15 bg-card p-0.5" role="radiogroup" aria-label="Pikadoku mode">
-              {(
-                [
-                  { id: "daily", label: "Daily Puzzle", title: "Today's grid, the same for everyone", on: () => setMode("daily") },
-                  { id: "practice", label: "Unlimited", title: "A fresh grid every time", on: () => (seed ? setMode("practice") : newPractice()) },
-                ] as const
-              ).map((m) => (
-                <button
-                  key={m.id}
-                  type="button"
-                  role="radio"
-                  aria-checked={m.id === "daily" ? mode !== "practice" : mode === m.id}
-                  title={m.title}
-                  onClick={m.on}
-                  data-testid={`pdk-mode-${m.id}`}
-                  className={cn(
-                    "min-w-[5.5rem] rounded px-3 py-1.5 font-display text-sm font-semibold uppercase tracking-wider transition-colors sm:min-w-24 sm:px-4",
-                    (m.id === "daily" ? mode !== "practice" : mode === m.id) ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
-                  )}
-                >
-                  {m.label}
+            {/* The title between the tools, as in Wordle: it keeps the grid above the fold on a phone. */}
+            <div className="flex items-center justify-between gap-1 sm:justify-center sm:gap-4" role="toolbar" aria-label="Pikadoku options">
+              <div className="flex gap-0.5">
+                <button type="button" className={iconButton} onClick={() => setSheet("howto")} aria-label="How to play" title="How to play">
+                  <CircleHelp className="h-5 w-5" />
                 </button>
-              ))}
-              <a
-                href="#pdk-duel"
-                title="Tic Tac Toe: take turns claiming cells against a friend or a stranger"
-                className="flex min-w-[5.5rem] items-center justify-center gap-1.5 rounded px-3 py-1.5 font-display text-sm font-semibold uppercase tracking-wider text-muted-foreground transition-colors hover:text-foreground sm:min-w-24 sm:px-4"
-              >
-                <Swords className="h-3.5 w-3.5" aria-hidden /> Tic Tac Toe
-              </a>
-            </div>
-          </div>
-          <div className="flex items-center justify-center gap-1" role="toolbar" aria-label="Pikadoku options">
-            <button type="button" className={iconButton} onClick={() => setSheet("howto")} aria-label="How to play" title="How to play">
-              <CircleHelp className="h-5 w-5" />
-            </button>
-            <button type="button" className={iconButton} onClick={() => setSheet("stats")} aria-label="Statistics" title="Statistics">
-              <BarChart3 className="h-5 w-5" />
-            </button>
-            <button type="button" className={cn(iconButton, mode === "practice" && "text-screen")} onClick={newPractice} aria-pressed={mode === "practice"} aria-label="New Unlimited grid" title="New Unlimited grid">
-              <Dices className="h-5 w-5" />
-            </button>
-            <div className="relative flex items-center">
-              <button type="button" className={cn(iconButton, settingsOpen && "bg-screen/10 text-foreground")} onClick={() => setSettingsOpen((o) => !o)} aria-expanded={settingsOpen} aria-haspopup="dialog" aria-label="Settings" title="Settings">
-                <Settings className="h-5 w-5" />
-              </button>
-              <Popover open={settingsOpen} onClose={() => setSettingsOpen(false)} label="Pikadoku settings" className="w-[24rem] max-w-[calc(100vw-2rem)] space-y-4">
+                <button type="button" className={iconButton} onClick={() => setSheet("stats")} aria-label="Statistics" title="Statistics">
+                  <BarChart3 className="h-5 w-5" />
+                </button>
+              </div>
+              <h1 className="font-display text-3xl font-bold uppercase tracking-tight sm:text-4xl">Pikadoku</h1>
+              <div className="flex gap-0.5">
+                <button type="button" className={cn(iconButton, mode === "practice" && "text-screen")} onClick={newPractice} aria-pressed={mode === "practice"} aria-label="New Unlimited grid" title="New Unlimited grid">
+                  <Dices className="h-5 w-5" />
+                </button>
+                <div className="relative flex items-center">
+                  <button type="button" className={cn(iconButton, settingsOpen && "bg-screen/10 text-foreground")} onClick={() => setSettingsOpen((o) => !o)} aria-expanded={settingsOpen} aria-haspopup="dialog" aria-label="Settings" title="Settings">
+                    <Settings className="h-5 w-5" />
+                  </button>
+              <Popover open={settingsOpen} onClose={() => setSettingsOpen(false)} label="Pikadoku settings" align="end" className="w-[24rem] max-w-[calc(100vw-2rem)] space-y-4">
                 <div className="flex items-start justify-between gap-3">
                   <p className="hud-label pt-1">Unlimited settings</p>
                   <button type="button" onClick={() => setSettingsOpen(false)} aria-label="Close settings" className="rounded-md p-1 text-muted-foreground hover:text-foreground">
@@ -486,6 +469,42 @@ export function Pikadoku() {
                   New Unlimited grid
                 </Button>
               </Popover>
+                </div>
+              </div>
+            </div>
+            <p className="hidden text-sm text-muted-foreground sm:block">Pokémon Sudoku: one Pokémon for each cell, matching its row and its column.</p>
+          </div>
+          <div className="flex justify-center">
+            <div className="flex justify-center rounded-md border border-foreground/15 bg-card p-0.5" role="radiogroup" aria-label="Pikadoku mode">
+              {(
+                [
+                  { id: "daily", label: "Daily Puzzle", title: "Today's grid, the same for everyone", on: () => setMode("daily") },
+                  { id: "practice", label: "Unlimited", title: "A fresh grid every time", on: () => (seed ? setMode("practice") : newPractice()) },
+                ] as const
+              ).map((m) => (
+                <button
+                  key={m.id}
+                  type="button"
+                  role="radio"
+                  aria-checked={m.id === "daily" ? mode !== "practice" : mode === m.id}
+                  title={m.title}
+                  onClick={m.on}
+                  data-testid={`pdk-mode-${m.id}`}
+                  className={cn(
+                    "rounded px-2.5 py-1.5 font-display text-xs sm:min-w-24 sm:px-4 sm:text-sm font-semibold uppercase tracking-wider transition-colors sm:min-w-24 sm:px-4",
+                    (m.id === "daily" ? mode !== "practice" : mode === m.id) ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
+                  )}
+                >
+                  {m.label}
+                </button>
+              ))}
+              <a
+                href="#pdk-duel"
+                title="Tic Tac Toe: take turns claiming cells against a friend or a stranger"
+                className="flex items-center justify-center gap-1.5 rounded px-2.5 py-1.5 font-display text-xs sm:text-sm font-semibold uppercase tracking-wider text-muted-foreground transition-colors hover:text-foreground sm:min-w-24 sm:px-4"
+              >
+                <Swords className="h-3.5 w-3.5" aria-hidden /> Tic Tac Toe
+              </a>
             </div>
           </div>
         </div>
@@ -518,21 +537,24 @@ export function Pikadoku() {
         )}
 
         <div className="mx-auto grid max-w-xl grid-cols-4 items-center gap-2 rounded-md border border-foreground/15 bg-card px-2 py-2 text-center" aria-live="polite" data-testid="pdk-stats-bar">
-          <button type="button" onClick={tapRank} disabled={mode !== "daily" && mode !== "weekly"} className="rounded px-1 hover:bg-primary/5 disabled:pointer-events-none" data-testid="pdk-uniq" aria-label="Uniqueness score, tap for rank">
-            <span className="hud-label block">UNIQ</span>
-            <b className="block font-display text-xl tabular-nums leading-tight">{uniq ?? `${lockedCount}/9`}</b>
-            {(mode === "daily" || mode === "weekly") && <span className="block text-[10px] text-muted-foreground">tap for rank</span>}
+          <button type="button" onClick={tapRank} disabled={mode !== "daily" && mode !== "weekly"} className="rounded px-1 hover:bg-primary/5 disabled:pointer-events-none" data-testid="pdk-uniq" aria-label="Rarity score (lower is rarer), tap for the board" title="Rarity score: the share of players who picked your answers, added up (an empty cell counts 100). Lower is rarer.">
+            <span className="hud-label block">Rarity</span>
+            <b className="block font-display text-xl tabular-nums leading-tight">{uniq ?? "–"}</b>
           </button>
           <span data-testid="pdk-filled">
-            <span className="hud-label block">PTS</span>
-            <b className="block font-display text-xl tabular-nums leading-tight">{lockedCount}</b>
-          </span>
-          <span data-testid="pdk-pp">
-            <span className="hud-label block">PP</span>
+            <span className="hud-label block">Filled</span>
             <b className="block font-display text-xl tabular-nums leading-tight">
+              {lockedCount}
+              <span className="text-sm font-semibold text-muted-foreground">/9</span>
+            </b>
+          </span>
+          <span data-testid="pdk-pp" aria-label={left === null ? "Unlimited guesses" : `${left} of ${pp} guesses left`} title="PP: your guesses. A wrong guess uses one too.">
+            <span className="hud-label block">PP</span>
+            <b className={cn("block font-display text-xl tabular-nums leading-tight", left !== null && left <= 2 && !over && "text-destructive")}>
               {left === null ? "∞" : left}
               {left !== null && <span className="text-sm font-semibold text-muted-foreground">/{pp}</span>}
             </b>
+            {left !== null && pp <= 12 && <PpPips left={left} total={pp} />}
           </span>
           <Button type="button" variant="outline" size="sm" onClick={() => void giveUp()} disabled={busy || over || !grid} data-testid="pdk-giveup">
             <Flag className="h-4 w-4" aria-hidden /> Give up
@@ -545,11 +567,7 @@ export function Pikadoku() {
           </p>
         )}
         <PdkBoard grid={grid} cells={cells} names={names} onCell={(c) => setPicking(c)} disabled={over || busy} />
-        {toast && (
-          <p className="text-center text-sm font-semibold" role="status" data-testid="pdk-toast">
-            {toast}
-          </p>
-        )}
+        <GuessToast toast={toast} />
         {error && grid && (
           <p className="text-center text-sm text-destructive" role="alert">
             {error}
@@ -597,11 +615,16 @@ export function Pikadoku() {
         {result && (
           <Card data-testid="pdk-result">
             <CardContent className="space-y-4 p-6 text-center">
-              <p className="hud-label text-screen">{result.won ? "Grid complete" : `${result.solved} of 9 cells`}</p>
+              <p className="hud-label text-screen">{result.won ? "Grid complete · 9 of 9 cells" : `${result.solved} of 9 cells`}</p>
               <p className="font-display text-3xl font-bold" data-testid="pdk-score">
-                {result.score === null ? "Score hidden" : `Score ${result.score}`}
+                {result.score === null ? `${result.solved}/9` : `Rarity score ${result.score}`}
               </p>
-              <p className="text-xs text-muted-foreground">Uniqueness score: the sum of the share of players who picked your answers. Lower is better.{result.score === null && " Rarity is off for now."}</p>
+              <p className="mx-auto max-w-sm text-xs text-muted-foreground">
+                {result.score === null
+                  ? "Rarity is off for now, so this game has no rarity score."
+                  : "Each cell adds the share of players who picked the same Pokémon there (an empty cell adds 100). Lower means rarer picks: 900 is the most common result, under 100 is legendary."}
+              </p>
+              <RarityPreview grid={shareResult().grid} />
               {(mode === "daily" || mode === "weekly") && result.counted && (
                 <div>
                   <Button type="button" variant="outline" size="sm" onClick={() => setShowRank((s) => !s)} data-testid="pdk-rank-btn">
@@ -640,7 +663,7 @@ export function Pikadoku() {
                 </p>
               )}
               <div className="flex flex-wrap justify-center gap-2">
-                <ShareButton getText={shareText} kind="pikadoku" label="Share result" />
+                <ShareButton getText={shareText} kind="pikadoku" label="Share result" size="lg" />
                 {mode === "practice" && <ShareButton getText={challengeText} kind="pikadoku-challenge" label="Share this grid" variant="outline" data-testid="pdk-share-grid" />}
                 {mode === "practice" && (
                   <Button type="button" onClick={newPractice}>
@@ -648,42 +671,22 @@ export function Pikadoku() {
                   </Button>
                 )}
               </div>
+              {mode === "daily" && <NextPuzzleCountdown />}
+              {mode !== "practice" && (
+                <Button type="button" variant="ghost" size="sm" onClick={newPractice}>
+                  <Dices className="h-4 w-4" aria-hidden /> Can&apos;t wait? Play an Unlimited grid
+                </Button>
+              )}
             </CardContent>
           </Card>
         )}
 
-        {result && (
-          <section className="space-y-3" aria-label="Answers" data-testid="pdk-reveal">
-            <h2 className="font-display text-xl font-bold uppercase">All the answers</h2>
-            {result.reveal.misses.length > 0 && (
-              <ul className="space-y-1 rounded-md border border-destructive/30 bg-destructive/5 p-3 text-sm" data-testid="pdk-misses">
-                {result.reveal.misses.map((m, i) => (
-                  <li key={i}>{m.reason}</li>
-                ))}
-              </ul>
-            )}
-            {result.reveal.cells.map((c, i) => (
-              <details key={i} className="rounded-md border border-foreground/10 p-3" data-testid={`pdk-reveal-${i}`}>
-                <summary className="cursor-pointer text-sm font-semibold">
-                  {grid?.rows[Math.floor(i / 3)].label} × {grid?.cols[i % 3].label} <span className="text-muted-foreground">({c.total} valid)</span>
-                </summary>
-                <ul className="mt-2 flex flex-wrap gap-1.5 text-xs">
-                  {c.answers.map((a) => (
-                    <li key={a.id} className={cn("rounded border px-2 py-0.5", locked[i]?.id === a.id ? "border-primary bg-primary/15 font-bold" : "border-foreground/15")}>
-                      {a.name}
-                      {a.pct !== null && <span className="ml-1 tabular-nums text-muted-foreground">{a.pct}%</span>}
-                    </li>
-                  ))}
-                </ul>
-              </details>
-            ))}
-          </section>
-        )}
+        {result && <RevealGrid reveal={result.reveal} grid={grid} locked={locked} />}
 
         {(mode === "daily" || mode === "weekly") && (
           <section id="pdk-board" className="space-y-2" aria-label="Leaderboard" data-testid="pdk-board">
             <div className="flex items-center justify-between">
-              <h2 className="font-display text-xl font-bold uppercase">{mode === "weekly" ? `This week's board · ${weeklyInfo?.theme ?? "Weekly"}` : `Today's board · ${DIFF_LABEL[difficulty]}`}</h2>
+              <h2 className="font-display text-lg font-bold uppercase sm:text-xl">{mode === "weekly" ? `This week's board · ${weeklyInfo?.theme ?? "Weekly"}` : `Today's board · ${DIFF_LABEL[difficulty]}`}</h2>
               <div className="flex gap-1" role="tablist" aria-label="Leaderboard scope">
                 {(["all", "friends"] as const).map((s) => (
                   <button key={s} type="button" role="tab" aria-selected={boardScope === s} onClick={() => setBoardScope(s)} className={cn("rounded border px-2.5 py-1 text-xs font-semibold uppercase", boardScope === s ? "border-primary bg-primary/15" : "border-foreground/15 text-muted-foreground")}>
@@ -741,7 +744,7 @@ export function Pikadoku() {
         />
       )}
       {sheet === "howto" && <PdkHowToSheet onClose={closeSheet} onNever={() => (patchPrefs({ seenHowTo: true }), closeSheet())} />}
-      {sheet === "stats" && <PdkStatsSheet streak={block.streak} best={block.best} play={{ ...EMPTY_PDK_PLAY, ...progress?.pdkPlay }} onClose={() => setSheet(null)} />}
+      {sheet === "stats" && <PdkStatsSheet streak={block.streak} best={block.best} play={{ ...EMPTY_PDK_PLAY, ...progress?.pdkPlay }} results={block.results} onClose={() => setSheet(null)} />}
     </MotionConfig>
   );
 }

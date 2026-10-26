@@ -29,7 +29,7 @@ export default function PikadokuPage() {
           "Read the three row and three column categories: types, regions, evolution, moves, abilities, stats and more.",
           "Tap a cell and search for a Pokémon that fits both its row and its column. It locks in if it is right.",
           "You have 9 guesses (PP) in a daily, and a wrong guess still uses one. Each Pokémon can be used once.",
-          "Your uniqueness score is the sum of the share of players who picked the same answers: lower is better.",
+          "Your rarity score is the sum of the share of players who picked the same answers: lower is rarer, and better.",
           "When the game ends, see every valid answer for every cell and why your misses did not fit.",
         ]}
         faqs={[

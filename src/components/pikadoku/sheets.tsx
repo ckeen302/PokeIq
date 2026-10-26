@@ -7,6 +7,7 @@ import { archiveDates, archiveKey } from "@/lib/pikadoku/archive";
 import { connNumber } from "@/lib/connections/types";
 import { HowToActions, HowToCards } from "@/components/howto/shared";
 import { PikadokuDemo } from "@/components/howto/PikadokuDemo";
+import { NextPuzzleCountdown } from "./results";
 
 const KINDS: [PdkFamily, string][] = [
   ["types", "Fighting, Dual-type, Monotype (one matching type is enough)"],
@@ -32,7 +33,7 @@ export function PdkHowToSheet({ onClose, onNever }: { onClose: () => void; onNev
           cards={[
             { title: "The goal", body: <p>Fill all 9 boxes of the grid, each with a Pokémon that fits both its row and its column.</p> },
             { title: "Core rules", body: <p>You get {PDK_PP} guesses (PP), and a wrong guess uses one too. Each Pokémon can be used once.</p> },
-            { title: "Scoring", body: <p>UNIQ starts at 900 and rarer picks pull it down: lower is better. PTS is the number of boxes you filled.</p> },
+            { title: "Scoring", body: <p>Fill as many boxes as you can. Your rarity score adds up the share of players who picked each of your answers: rarer picks, lower score.</p> },
           ]}
         />
         <details className="rounded-md border bg-shade/30 p-3">
@@ -53,10 +54,10 @@ export function PdkHowToSheet({ onClose, onNever }: { onClose: () => void; onNev
               You get <b>{PDK_PP} guesses (PP)</b>, and a wrong guess uses one too. Correct answers lock in.
             </li>
             <li>
-              <b>UNIQ</b> starts at 900 (100 for every empty box). Each pick counts the share of players who chose it, so rarer picks pull it down. <b>Lower is better.</b>
+              Your <b>rarity score</b> starts at 900 (100 for every empty box). Each pick counts the share of players who chose it in that box, so rarer picks pull it down. <b>Lower is better.</b> Your share card colours each box: 🟪 under 1%, 🟦 under 10%, 🟩 under 25%, 🟨 25% or more.
             </li>
             <li>
-              <b>PTS</b> is the number of boxes you have filled. Tap <b>UNIQ</b> to see your rank on the board.
+              <b>Filled</b> counts your boxes. Tap <b>Rarity</b> to see the day&apos;s board.
             </li>
             <li>
               Tap the <b>i</b> on any category to see exactly what counts. When the game ends you see <b>every valid answer</b> for every box, and why each miss didn&apos;t fit.
@@ -107,22 +108,53 @@ export function PdkHowToSheet({ onClose, onNever }: { onClose: () => void; onNev
   );
 }
 
-export function PdkStatsSheet({ streak, best, play, onClose }: { streak: number; best: number; play: PdkPlay; onClose: () => void }) {
+/** Streak, totals, how full your daily grids get, your rarest daily and when the next one lands. */
+export function PdkStatsSheet({ streak, best, play, results, onClose }: { streak: number; best: number; play: PdkPlay; results: Readonly<Record<string, PdkRecord>>; onClose: () => void }) {
   const cell = (label: string, value: number | string) => (
     <div className="rounded-md border border-foreground/10 p-3 text-center">
       <p className="font-display text-2xl font-bold tabular-nums">{value}</p>
       <p className="hud-label">{label}</p>
     </div>
   );
+  // Daily games finished on this device (Normal and the other difficulties).
+  const done = Object.values(results).filter((r) => r.over);
+  const dist = Array.from({ length: 10 }, (_, n) => done.filter((r) => r.solved === n).length);
+  const top = Math.max(1, ...dist);
+  const scores = done.map((r) => r.score).filter((x): x is number => x !== null && x !== undefined);
+  const rarest = scores.length ? Math.min(...scores) : null;
   return (
     <Sheet title="Statistics" onClose={onClose}>
-      <div className="grid grid-cols-2 gap-2" data-testid="pdk-stats">
-        {cell("Current streak", streak)}
-        {cell("Best streak", best)}
-        {cell("Played", play.games)}
-        {cell("Perfect 9/9", play.wins)}
-        {cell("Duel wins", play.duelWins)}
-        {cell("Duel losses", play.duelLosses)}
+      <div className="space-y-4" data-testid="pdk-stats">
+        <div className="grid grid-cols-3 gap-2">
+          {cell("Played", play.games)}
+          {cell("Perfect %", play.games ? Math.round((play.wins / play.games) * 100) : 0)}
+          {cell("Rarest daily", rarest ?? "–")}
+          {cell("Current streak", streak)}
+          {cell("Best streak", best)}
+          {cell("Duels won", `${play.duelWins}–${play.duelLosses}`)}
+        </div>
+        <div>
+          <p className="hud-label mb-1.5">Cells filled in your dailies</p>
+          {done.length === 0 ? (
+            <p className="text-sm text-muted-foreground">Finish a daily to see how full your grids get.</p>
+          ) : (
+            <ol className="space-y-1" data-testid="pdk-distribution">
+              {dist
+                .map((n, solved) => ({ n, solved }))
+                .reverse()
+                .filter(({ solved, n }) => solved >= 1 || n > 0)
+                .map(({ n, solved }) => (
+                  <li key={solved} className="flex items-center gap-2 text-xs">
+                    <span className="w-7 shrink-0 text-right font-semibold tabular-nums">{solved}/9</span>
+                    <span className="h-4 rounded-sm bg-primary/70 px-1 text-right font-bold leading-4 text-primary-foreground" style={{ width: `${Math.max(8, (n / top) * 100)}%` }}>
+                      {n}
+                    </span>
+                  </li>
+                ))}
+            </ol>
+          )}
+        </div>
+        <NextPuzzleCountdown className="text-center" />
       </div>
     </Sheet>
   );
