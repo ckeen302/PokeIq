@@ -119,7 +119,8 @@ export default async function CardPage({ params }: PageProps) {
 
           <section className="space-y-3" aria-labelledby="prices-title" data-testid="tcg-prices">
             <HudHeading id="prices-title" title="Prices" aside={tcgDate || cmDate ? `prices as of ${tcgDate ?? cmDate}` : undefined} />
-            {tcg.length === 0 && cm.length === 0 && <p className="text-sm text-muted-foreground">No market prices are listed for this card.</p>}
+            {card.pricesUnavailable && <p className="text-sm text-muted-foreground" data-testid="tcg-price-note">Prices unavailable right now.</p>}
+            {!card.pricesUnavailable && tcg.length === 0 && cm.length === 0 && <p className="text-sm text-muted-foreground">No market prices are listed for this card.</p>}
             {tcg.length > 0 && (
               <div className="hud overflow-x-auto rounded-lg border bg-card">
                 <table className="w-full min-w-[26rem] text-left text-sm">

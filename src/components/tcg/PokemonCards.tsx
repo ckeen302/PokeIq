@@ -52,7 +52,8 @@ export function PokemonCards({ dex, name }: { dex: number; name: string }) {
           />
           <CardGrid tiles={data.cards} showSet />
           <p className="text-center text-xs text-muted-foreground">
-            {name}&apos;s newest Pokémon TCG cards. Prices: TCGplayer market (USD), else Cardmarket trend (EUR).
+            {name}&apos;s newest Pokémon TCG cards.{" "}
+            {data.cards.some((t) => t.pricesUnavailable) ? "Prices unavailable right now." : "Prices: TCGplayer market (USD), else Cardmarket trend (EUR)."}
           </p>
         </>
       )}

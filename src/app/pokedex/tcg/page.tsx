@@ -83,7 +83,10 @@ export default async function TcgPage({ searchParams }: PageProps) {
           {results === null ? (
             <TcgUnavailable />
           ) : results.length ? (
-            <CardGrid tiles={results.map(toTile)} showSet />
+            <>
+              <CardGrid tiles={results.map(toTile)} showSet />
+              {results.some((c) => c.pricesUnavailable) && <p className="text-center text-xs text-muted-foreground" data-testid="tcg-price-note">Prices unavailable right now.</p>}
+            </>
           ) : (
             <p className="py-6 text-center text-sm text-muted-foreground">No cards found.</p>
           )}

@@ -1,5 +1,6 @@
 import "server-only";
 import type { TcgCard, TcgSet } from "./types";
+import { fallbackCard, fallbackForDex, fallbackSearch, fallbackSet, fallbackSetCards, fallbackSets } from "./fallback";
 
 /**
  * Pokémon TCG API client (https://api.pokemontcg.io/v2). Works without a key;
@@ -8,6 +9,9 @@ import type { TcgCard, TcgSet } from "./types";
  * Every response goes through Next's data cache: sets for a week, cards (and
  * so their prices, which the API refreshes about daily) for a day. A failed
  * call is never cached; callers get `null` and show an "unavailable" note.
+ *
+ * When the API errors or takes over ~4s, everything falls back to the static
+ * pokemon-tcg-data dataset (see ./fallback): same data, no prices.
  *
  * POKEIQ_TCG_FIXTURE=1 serves a small captured slice of real API data instead
  * (tests, offline e2e).
@@ -30,21 +34,30 @@ interface Page<T> {
   totalCount?: number;
 }
 
-async function get<T>(path: string, revalidate: number): Promise<Page<T> | null> {
+/** After a failed API call, skip straight to the static fallback for a while. */
+const API_COOLDOWN_MS = 60_000;
+let apiDownUntil = 0;
+export function resetApiHealth() {
+  apiDownUntil = 0;
+}
+
+/**
+ * One short attempt (~4s) against the API. `undefined` = the API is down or
+ * erroring (use the fallback); `null` = a definite 404.
+ */
+async function get<T>(path: string, revalidate: number): Promise<Page<T> | null | undefined> {
+  if (Date.now() < apiDownUntil) return undefined;
   const headers: Record<string, string> = { Accept: "application/json" };
   if (process.env.POKEMONTCG_API_KEY) headers["X-Api-Key"] = process.env.POKEMONTCG_API_KEY;
-  // The API answers with the odd 500/502 under load: try a few times.
-  for (let attempt = 0; attempt < 4; attempt++) {
-    try {
-      const res = await fetch(`${BASE}${path}`, { headers, next: { revalidate, tags: ["tcg"] }, signal: AbortSignal.timeout(20_000) });
-      if (res.status === 404) return null;
-      if (res.ok) return (await res.json()) as Page<T>;
-    } catch {
-      // Network error or timeout: retry.
-    }
-    await new Promise((r) => setTimeout(r, 400 * (attempt + 1)));
+  try {
+    const res = await fetch(`${BASE}${path}`, { headers, next: { revalidate, tags: ["tcg"] }, signal: AbortSignal.timeout(4_000) });
+    if (res.status === 404) return null;
+    if (res.ok) return (await res.json()) as Page<T>;
+  } catch {
+    // Network error or timeout.
   }
-  return null;
+  apiDownUntil = Date.now() + API_COOLDOWN_MS;
+  return undefined;
 }
 
 /** Strip everything but name characters, so a search can't inject query syntax. */
@@ -60,14 +73,14 @@ export function cleanSearch(q: string): string {
 export async function getSets(): Promise<TcgSet[] | null> {
   if (fixtureMode()) return (await fixture()).sets;
   const res = await get<TcgSet[]>("/sets?orderBy=-releaseDate&pageSize=250", SETS_REVALIDATE);
-  return res?.data ?? null;
+  return res ? res.data : fallbackSets();
 }
 
 export async function getSet(id: string): Promise<TcgSet | null> {
   if (fixtureMode()) return (await fixture()).sets.find((s) => s.id === id) ?? null;
   if (!/^[a-z0-9.-]+$/i.test(id)) return null;
   const res = await get<TcgSet>(`/sets/${encodeURIComponent(id)}`, SETS_REVALIDATE);
-  return res?.data ?? null;
+  return res ? res.data : fallbackSet(id);
 }
 
 /** Every card in a set (the API pages at 250). */
@@ -77,6 +90,7 @@ export async function getSetCards(setId: string): Promise<TcgCard[] | null> {
   const all: TcgCard[] = [];
   for (let page = 1; page <= 10; page++) {
     const res = await get<TcgCard[]>(`/cards?q=set.id:${encodeURIComponent(setId)}&orderBy=number&pageSize=250&page=${page}&select=${LIST_FIELDS}`, CARDS_REVALIDATE);
+    if (res === undefined) return fallbackSetCards(setId);
     if (!res) return all.length ? all : null;
     all.push(...res.data);
     if (res.data.length < 250 || all.length >= (res.totalCount ?? 0)) break;
@@ -88,6 +102,7 @@ export async function getCard(id: string): Promise<TcgCard | null> {
   if (fixtureMode()) return (await fixture()).cards.find((c) => c.id === id) ?? null;
   if (!/^[a-z0-9.-]+$/i.test(id)) return null;
   const res = await get<TcgCard>(`/cards/${encodeURIComponent(id)}`, CARDS_REVALIDATE);
+  if (res === undefined) return fallbackCard(id);
   return res?.data ?? null;
 }
 
@@ -103,7 +118,8 @@ export async function searchCards(q: string, limit = 60): Promise<TcgCard[] | nu
   }
   const query = encodeURIComponent(`name:"${term}*"`);
   const res = await get<TcgCard[]>(`/cards?q=${query}&orderBy=-set.releaseDate&pageSize=${limit}&select=${LIST_FIELDS}`, CARDS_REVALIDATE);
-  return res?.data ?? null;
+  if (res === undefined) return fallbackSearch(term, limit);
+  return res?.data ?? [];
 }
 
 /** A species' cards by National Pokédex number, newest first, with the total count. */
@@ -114,5 +130,6 @@ export async function cardsForDex(dex: number, limit: number): Promise<{ cards: 
     return { cards: cards.slice(0, limit), total: cards.length };
   }
   const res = await get<TcgCard[]>(`/cards?q=nationalPokedexNumbers:${dex}&orderBy=-set.releaseDate&pageSize=${limit}&select=${LIST_FIELDS}`, CARDS_REVALIDATE);
+  if (res === undefined) return fallbackForDex(dex, limit);
   return res ? { cards: res.data, total: res.totalCount ?? res.data.length } : null;
 }

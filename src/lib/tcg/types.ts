@@ -57,6 +57,8 @@ export interface TcgCard {
   images?: { small?: string; large?: string };
   tcgplayer?: { url?: string; updatedAt?: string; prices?: Record<string, TcgPriceRow | undefined> };
   cardmarket?: { url?: string; updatedAt?: string; prices?: Record<string, number | null | undefined> };
+  /** Set on cards served from the static fallback dataset: prices are unknown, not absent. */
+  pricesUnavailable?: boolean;
 }
 
 /** What a gallery tile needs: small enough to hand to the browser for a whole set. */
@@ -71,4 +73,6 @@ export interface CardTile {
   setName: string | null;
   releaseDate: string | null;
   price: { value: number; currency: "USD" | "EUR"; label: string } | null;
+  /** True when the card came from the static fallback (no price data at all). */
+  pricesUnavailable?: boolean;
 }

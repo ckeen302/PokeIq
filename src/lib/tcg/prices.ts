@@ -160,6 +160,7 @@ export function toTile(card: TcgCard): CardTile {
     setName: card.set?.name ?? null,
     releaseDate: card.set?.releaseDate ?? null,
     price: headlinePrice(card),
+    ...(card.pricesUnavailable && { pricesUnavailable: true }),
   };
 }
 

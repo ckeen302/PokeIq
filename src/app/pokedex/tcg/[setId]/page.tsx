@@ -67,7 +67,9 @@ export default async function SetPage({ params }: PageProps) {
         </div>
       </DetailHero>
       {cards === null ? <TcgUnavailable what="This set's cards" /> : <SetGallery tiles={tiles} />}
-      <p className="text-center text-xs text-muted-foreground">Prices: TCGplayer market (USD) where listed, else Cardmarket trend (EUR). Updated about daily.</p>
+      <p className="text-center text-xs text-muted-foreground" data-testid="tcg-price-note">
+        {cards?.some((c) => c.pricesUnavailable) ? "Prices unavailable right now." : "Prices: TCGplayer market (USD) where listed, else Cardmarket trend (EUR). Updated about daily."}
+      </p>
     </article>
   );
 }
