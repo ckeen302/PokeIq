@@ -230,7 +230,9 @@ export function NameEmAll({ category, targets, outsiders, daily }: NameEmAllProp
             .catch(() => null)
         : null;
     requestAnimationFrame(() => {
-      hudRef.current?.scrollIntoView({ block: "start", behavior: "smooth" });
+      // The sticky bar counts as in view wherever it is: scroll the game's own top under the site header instead.
+      const game = document.querySelector<HTMLElement>('[data-testid="nea-game"]');
+      if (game) window.scrollTo({ top: Math.max(0, game.getBoundingClientRect().top + window.scrollY - 64) });
       inputRef.current?.focus({ preventScroll: true });
     });
   }
@@ -301,6 +303,18 @@ export function NameEmAll({ category, targets, outsiders, daily }: NameEmAllProp
     [targets, groups, stateOf, spriteStyle, settings.shiny, fresh]
   );
 
+  // The end: bring the result into view (the player may be deep in the grid).
+  useEffect(() => {
+    if (phase !== "over") return;
+    requestAnimationFrame(() => {
+      const el = document.querySelector<HTMLElement>('[data-testid="nea-results"]');
+      if (!el) return;
+      // Below the site header and the game's sticky bar (scrollIntoView can move the visual viewport on phones instead).
+      const bar = (hudRef.current?.offsetHeight ?? 0) + 56 + 12;
+      window.scrollTo({ top: Math.max(0, el.getBoundingClientRect().top + window.scrollY - bar), behavior: "smooth" });
+    });
+  }, [phase]);
+
   // Keep the asked-for slot in view in Chaos and Dex order.
   useEffect(() => {
     if (current === null || phase !== "playing") return;
@@ -308,7 +322,7 @@ export function NameEmAll({ category, targets, outsiders, daily }: NameEmAllProp
     if (!el) return;
     const r = el.getBoundingClientRect();
     const hud = hudRef.current?.getBoundingClientRect().bottom ?? 0;
-    if (r.top < hud || r.bottom > window.innerHeight) el.scrollIntoView({ block: "center", behavior: "smooth" });
+    if (r.top < hud || r.bottom > window.innerHeight) window.scrollTo({ top: Math.max(0, r.top + window.scrollY - (window.innerHeight + hud) / 2 + r.height / 2), behavior: "smooth" });
   }, [current, phase]);
 
   const count = named.length;
@@ -428,7 +442,7 @@ export function NameEmAll({ category, targets, outsiders, daily }: NameEmAllProp
           <div className="mt-1.5 flex h-5 items-center gap-2 overflow-hidden text-xs" aria-live="polite">
             {input.suggestion !== null ? (
               <button type="button" onClick={input.acceptSuggestion} className="truncate font-semibold text-warning underline-offset-2 hover:underline" data-testid="nea-suggestion">
-                Did you mean {targets[input.suggestion].name}? Press Enter
+                Did you mean {targets[input.suggestion].name}? Tap or press Enter
               </button>
             ) : input.feedback ? (
               <span key={input.feedback.n} className={cn("truncate font-semibold animate-in fade-in", input.feedback.kind === "dup" ? "text-muted-foreground" : "text-destructive")}>
@@ -580,7 +594,7 @@ function Setup({
       <div className="space-y-5 rounded-lg border bg-card p-4 sm:p-6">
         <fieldset className="space-y-2">
           <legend className="hud-label mb-2">Mode</legend>
-          <div className="grid gap-2 sm:grid-cols-3">
+          <div className="grid grid-cols-3 gap-2">
             {NEA_MODES.map((m) => (
               <button
                 key={m.id}
@@ -595,7 +609,7 @@ function Setup({
                 data-testid={`nea-mode-${m.id}`}
               >
                 <span className="block font-display text-sm font-bold uppercase tracking-wide">{m.label}</span>
-                <span className="block text-xs text-muted-foreground">{m.blurb}</span>
+                <span className="hidden text-xs sm:block text-muted-foreground">{m.blurb}</span>
               </button>
             ))}
           </div>
@@ -634,11 +648,11 @@ function Setup({
 
         <fieldset className="space-y-2">
           <legend className="hud-label mb-2">Options</legend>
-          <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid grid-cols-2 gap-2 lg:grid-cols-4">
             <Toggle label="Shiny sprites" checked={settings.shiny} onChange={(v) => set("shiny", v)} />
             <Toggle label="Cycle sprites" hint="Pixel ↔ artwork" checked={settings.cycleSprites} onChange={(v) => set("cycleSprites", v)} />
             <Toggle label="Sound" checked={settings.sound} onChange={(v) => set("sound", v)} />
-            <Toggle label="Save progress" hint="Resume on this device" checked={settings.save} onChange={(v) => set("save", v)} />
+            <Toggle label="Save progress" hint="On this device" checked={settings.save} onChange={(v) => set("save", v)} />
           </div>
         </fieldset>
 
@@ -704,7 +718,7 @@ function Results({
     <section className="space-y-4 rounded-lg border bg-card p-4 text-center sm:p-6" data-testid="nea-results">
       <div className="space-y-1">
         <p className="hud-label text-screen">{label}</p>
-        <h2 className="flex items-center justify-center gap-2 font-display text-3xl font-bold uppercase sm:text-4xl">
+        <h2 className="flex items-center justify-center gap-2 font-display text-2xl font-bold uppercase sm:text-4xl">
           {reason === "clear" && <Sparkles className="h-7 w-7 text-warning" aria-hidden />}
           {headline}
         </h2>

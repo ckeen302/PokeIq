@@ -230,15 +230,26 @@ function RaceBoard({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mineKey]);
 
+  // `send` is a new function on every render (the clock ticks four times a second):
+  // read the latest from a ref so the flush timer isn't reset before it fires.
+  const sendRef = useRef(send);
+  sendRef.current = send;
+  const sending = useRef(false);
   const flush = useCallback(async () => {
-    if (!pending.current.length) return;
+    if (!pending.current.length || sending.current) return;
+    sending.current = true;
     const slots = pending.current.splice(0, 200);
-    const err = await send({ action: "name", slots });
+    let err: string | null;
+    try {
+      err = await sendRef.current({ action: "name", slots });
+    } finally {
+      sending.current = false;
+    }
     if (err) {
-      if (/faster|Slow down/i.test(err)) pending.current.unshift(...slots);
+      if (/faster|Slow down|busy|hiccup/i.test(err)) pending.current.unshift(...slots);
       setWarn(err);
     } else setWarn(null);
-  }, [send]);
+  }, []);
   useEffect(() => {
     if (over) return;
     const id = window.setInterval(() => void flush(), FLUSH_MS);

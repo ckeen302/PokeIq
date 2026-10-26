@@ -17,7 +17,7 @@ export function neaSpriteUrl(id: number, style: SpriteStyle, shiny: boolean): st
 }
 
 /** A fixed-size sprite: lazy, async, and never shifts the layout (falls back to the artwork if a pixel sprite is missing). */
-export function Sprite({ id, style, shiny, size, className, silhouette }: { id: number; style: SpriteStyle; shiny: boolean; size: number; className?: string; silhouette?: boolean }) {
+export function Sprite({ id, style, shiny, size, className, silhouette, fluid }: { id: number; style: SpriteStyle; shiny: boolean; size: number; className?: string; silhouette?: boolean; fluid?: boolean }) {
   const [failed, setFailed] = useState<string | null>(null);
   const src = neaSpriteUrl(id, style, shiny);
   const use = failed === src ? neaSpriteUrl(id, "art", shiny) : src;
@@ -32,8 +32,8 @@ export function Sprite({ id, style, shiny, size, className, silhouette }: { id: 
       decoding="async"
       draggable={false}
       onError={() => setFailed(src)}
-      className={cn("select-none object-contain", style === "pixel" && use === src && "[image-rendering:pixelated]", silhouette && "brightness-0 dark:invert-[0.15]", className)}
-      style={{ width: size, height: size }}
+      className={cn("select-none object-contain", style === "pixel" && use === src && "[image-rendering:pixelated]", silhouette && "opacity-90 brightness-0 invert", className)}
+      style={fluid ? undefined : { width: size, height: size }}
     />
   );
 }
@@ -48,14 +48,14 @@ export const Slot = memo(function Slot({ target, state, style, shiny, digits, fr
   const body = (
     <>
       <span className={cn("hud-label absolute left-1 top-1 text-[9px]", state === "current" && "text-screen")}>{pad(target.num, digits)}</span>
-      <span className="flex h-12 w-12 items-center justify-center">
-        {shown ? <Sprite id={target.id} style={style} shiny={shiny} size={48} className={cn(state === "missed" && "opacity-60 grayscale")} /> : <span className={cn("font-display text-lg font-bold text-muted-foreground/40", state === "current" && "animate-pulse text-screen")}>?</span>}
+      <span className="flex h-12 w-12 items-center justify-center sm:h-16 sm:w-16">
+        {shown ? <Sprite id={target.id} style={style} shiny={shiny} size={64} fluid className={cn("h-full w-full", state === "missed" && "opacity-60 grayscale")} /> : <span className={cn("font-display text-lg font-bold text-muted-foreground/40", state === "current" && "animate-pulse text-screen")}>?</span>}
       </span>
       <span className={cn("block w-full truncate px-0.5 text-center text-[10px] font-semibold leading-tight", state === "missed" ? "text-destructive" : "text-foreground/90", !shown && "invisible")}>{shown ? target.name : "·"}</span>
     </>
   );
   const cls = cn(
-    "relative flex h-[84px] flex-col items-center justify-end overflow-hidden rounded-md border pb-1.5 pt-3 transition-colors",
+    "relative flex h-[78px] flex-col items-center justify-end overflow-hidden rounded-md border pb-1.5 pt-2.5 transition-colors sm:h-[96px]",
     state === "named" && "border-success/40 bg-success/[0.08]",
     state === "missed" && "border-destructive/40 bg-destructive/[0.07] hover:border-destructive",
     state === "open" && "border-border/70 bg-card/60",
@@ -129,7 +129,7 @@ export function SlotGrid({
                 </span>
               </h2>
             )}
-            <div className="grid grid-cols-[repeat(auto-fill,minmax(64px,1fr))] gap-1.5 sm:grid-cols-[repeat(auto-fill,minmax(76px,1fr))] sm:gap-2">
+            <div className="grid grid-cols-[repeat(auto-fill,minmax(54px,1fr))] gap-1 sm:grid-cols-[repeat(auto-fill,minmax(76px,1fr))] sm:gap-2">
               {g.slots.map((s) => (
                 <Slot key={targets[s].id} target={targets[s]} state={stateOf(s)} style={style} shiny={shiny} digits={digits} fresh={fresh === s} />
               ))}
