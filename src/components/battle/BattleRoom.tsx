@@ -215,7 +215,13 @@ function LiveLobby({ code, view, battle }: { code: string; view: BattleView; bat
             label: "Turn timer",
             text: timer ? (
               <>
-                {timer.bank / 1000} s in the bank{timer.perTurn ? `, +${timer.perTurn / 1000} s a turn` : ""}, {timer.cap / 1000} s at most per turn. {view.timeoutLoses ? "Run out once and you lose." : "Run out twice and you lose."}
+                Showdown&apos;s timer: {(timer.refill ?? timer.bank) / 1000} s{timer.refill && timer.refill < timer.bank ? ` plus ${(timer.bank - timer.refill) / 1000} s grace` : ""}
+                {timer.perTurn ? `, +${timer.perTurn / 1000} s a turn` : ""}, {timer.cap / 1000} s at most per turn.{" "}
+                {view.timeoutLoses
+                  ? timer.autoChoose
+                    ? "Run out on a turn and a default move is made; run out of time altogether and you lose."
+                    : "Run out and you lose."
+                  : "Run out and the timer picks a move for you; a second time in a row loses."}
               </>
             ) : (
               <>Off: take your time. Either of you can start it mid-battle.</>
@@ -338,6 +344,7 @@ export function BattleRoom({ code }: { code: string }) {
         error={battle.error}
         onChoose={(rqid, choice) => void battle.choose(rqid, choice)}
         onStartTimer={() => void battle.startTimer()}
+        onStopTimer={() => void battle.startTimer(false)}
         onUndo={(rqid) => void battle.undo(rqid)}
         endActions={
           view.frontier ? (

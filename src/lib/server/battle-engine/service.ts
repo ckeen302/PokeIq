@@ -10,6 +10,9 @@ import {
   BATTLE_QUIET_MS,
   BATTLE_TIMEOUTS_TO_LOSE,
   BATTLE_TIMER,
+  showdownTimer,
+  turnTopUp,
+  type BattleTimer,
   type BattleEndReason,
   type PlayFormatId,
   type BattleRequest,
@@ -22,7 +25,7 @@ import { chooseCpu, seededRandom } from "./cpu";
 import { randomChoice } from "./choices";
 import { cpuTeam, factoryTeam, pickFactoryTier, prepareTeam, seatTeam } from "./teams";
 import { checkRules, customCpuTeam, prepareCustomTeam } from "./custom";
-import { Teams } from "pokemon-showdown";
+import { Dex, Teams } from "pokemon-showdown";
 import { customName, customTimer, type CustomRules } from "@/lib/battle/custom-rules";
 import {
   insertBattle,
@@ -176,6 +179,15 @@ class Work {
     }
   }
 
+  /** A line for everyone's log that isn't the simulator's (Showdown's |inactive| timer messages). */
+  note(line: string) {
+    for (const channel of ["p1", "p2", "spectator"] as const) {
+      this.rec.logs[channel].push(line);
+      this.meta.lines[channel] = this.rec.logs[channel].length;
+      this.logsChanged.add(channel);
+    }
+  }
+
   /** A battle that's just starting. */
   begin(session: SimSession) {
     this.sim = { session, before: [null, null] };
@@ -203,6 +215,7 @@ class Work {
       meta.lines[channel] = this.rec.logs[channel].length;
       this.logsChanged.add(channel);
     }
+    const started: number[] = [];
     SIDES.forEach((side, seat) => {
       const pending = session.pending(side);
       const object = session.requestObject(side);
@@ -217,8 +230,20 @@ class Work {
       if (!clock) return;
       if (!pending) stopClock(clock, now);
       // The simulator updated the same request (a move turned out to be disabled): the clock keeps running.
-      else if (!(pending.update && wasPending && clock.deadline !== null)) startClock(clock, now, !!pending.teamPreview, timerOf(meta));
+      else if (!(pending.update && wasPending && clock.deadline !== null)) started.push(seat);
     });
+    if (started.length && meta.clocks) {
+      const timer = timerOf(meta);
+      if (timer) {
+        topUp(meta, meta.clocks, timer, started.length, meta.requests.filter(Boolean).length);
+        for (const seat of started) startClock(meta.clocks[seat], now, !!meta.requests[seat]?.teamPreview, timer, !!meta.timerFirst);
+        for (const seat of started) {
+          const left = Math.ceil((meta.clocks[seat].deadline! - now) / 1000);
+          // Showdown: "Red has 25 seconds left this turn." when a request comes in with 30 s or less.
+          if (left <= 30 && left * 1000 < (timer.refill ?? timer.bank)) this.note(`|inactive|${meta.seats[seat].name} has ${left} seconds left this turn.`);
+        }
+      }
+    }
     if (res.ended && !meta.end) {
       endBattle(meta, this.reason ?? "normal", res.winner ? seatOfSide(res.winner) : null, now);
     }
@@ -240,34 +265,70 @@ function endBattle(meta: BattleMeta, reason: BattleEndReason, winner: 0 | 1 | nu
 // The clocks
 // ---------------------------------------------------------------------------
 
-type Timer = { bank: number; perTurn: number; cap: number };
+type Timer = BattleTimer;
 
-/** A battle's turn timer: its ruleset's (null: no timer), else the format's. */
-export function timerOf(meta: Pick<BattleMeta, "format" | "rules">): Timer | null {
+const showdownTimers = new Map<string, BattleTimer>();
+
+/** A battle's turn timer: its ruleset's (null: no timer), else Showdown's timer for the Showdown format it plays (the VGC Timer where the format has it). */
+export function timerOf(meta: Pick<BattleMeta, "format" | "rules"> & { formatid?: string }): Timer | null {
   if (meta.rules) return customTimer(meta.rules);
-  return BATTLE_TIMER[PLAY_FORMAT_INFO[meta.format].gameType];
+  const gameType = PLAY_FORMAT_INFO[meta.format].gameType;
+  const id = meta.formatid ?? SHOWDOWN_FORMAT[meta.format] ?? meta.format;
+  let timer = showdownTimers.get(id);
+  if (!timer) {
+    try {
+      const rule = Dex.formats.getRuleTable(Dex.formats.get(id, true)).timer?.[0] ?? null;
+      timer = showdownTimer(gameType, rule as Parameters<typeof showdownTimer>[1]);
+    } catch {
+      timer = BATTLE_TIMER[gameType];
+    }
+    showdownTimers.set(id, timer);
+  }
+  return timer;
 }
 
 export function newClock(timer: Timer): SideClock {
   return { bank: timer.bank, startedAt: null, deadline: null, preview: false, timeouts: 0 };
 }
 
-/** A new request: the bank grows a little and this turn's deadline is set (team preview has its own limit). */
-export function startClock(clock: SideClock, now: number, preview: boolean, timer: Timer | null) {
+/**
+ * Showdown's top-ups when requests come in: a new turn adds the turn's time
+ * to every bank (never past the starting time); a request in the middle of
+ * a turn for one player (a switch after a KO, U-turn) adds up to 5 s to
+ * every bank. The first request after the timer starts adds nothing.
+ */
+function topUp(meta: BattleMeta, clocks: [SideClock, SideClock], timer: Timer, freshCount: number, pendingCount: number) {
+  if (meta.timerTurn === undefined) {
+    meta.timerTurn = meta.turn;
+    meta.timerFirst = true;
+    return;
+  }
+  if (meta.turn > meta.timerTurn) {
+    meta.timerTurn = meta.turn;
+    meta.timerFirst = false;
+    const add = turnTopUp(timer, meta.turn);
+    for (const c of clocks) c.bank = Math.min(c.bank + add, timer.refill ?? timer.bank);
+    return;
+  }
+  if (freshCount === 1 && pendingCount <= 1) {
+    meta.timerFirst = false;
+    const add = Math.min(timer.perTurn, 5_000);
+    for (const c of clocks) c.bank += add;
+  }
+}
+
+/** A new request: this turn's deadline, at most the turn cap (the first request's cap on the battle's first) and never past the bank. */
+export function startClock(clock: SideClock, now: number, preview: boolean, timer: Timer | null, first = false) {
   if (!timer) return;
   clock.startedAt = now;
   clock.preview = preview;
-  if (preview) {
-    clock.deadline = now + BATTLE_TIMER.preview;
-    return;
-  }
-  clock.bank = Math.min(timer.bank, clock.bank + timer.perTurn);
-  clock.deadline = now + Math.min(clock.bank, timer.cap);
+  const cap = first ? (timer.firstCap ?? timer.cap) : timer.cap;
+  clock.deadline = now + Math.max(0, Math.min(clock.bank, cap));
 }
 
 /** A choice is in: the time it took comes out of the bank. */
 export function stopClock(clock: SideClock, now: number) {
-  if (clock.startedAt !== null && !clock.preview) clock.bank = Math.max(0, clock.bank - Math.max(0, now - clock.startedAt));
+  if (clock.startedAt !== null) clock.bank = Math.max(0, clock.bank - Math.max(0, now - clock.startedAt));
   if (clock.startedAt !== null) clock.timeouts = 0;
   clock.startedAt = null;
   clock.deadline = null;
@@ -303,11 +364,23 @@ function catchUp(work: Work, now: number) {
       .sort((a, b) => a.clock.deadline! - b.clock.deadline!)[0];
     if (!late) return;
     const { clock, seat } = late;
-    if (!clock.preview) clock.bank = Math.max(0, clock.bank - (clock.deadline! - clock.startedAt!));
+    const timer = timerOf(meta);
+    // Both players out of time together: Showdown calls it a tie.
+    const other = meta.clocks![1 - seat];
+    if (meta.timeoutLoses && !timer?.autoChoose && other.deadline !== null && other.deadline <= now) {
+      work.note("|-message|All players are inactive.");
+      if (!forceTie(work, now)) return;
+      continue;
+    }
+    clock.bank = Math.max(0, clock.bank - (clock.deadline! - clock.startedAt!));
     clock.timeouts += 1;
     clock.startedAt = null;
     clock.deadline = null;
-    if (meta.timeoutLoses || clock.timeouts >= BATTLE_TIMEOUTS_TO_LOSE || (clock.bank <= 0 && !clock.preview)) {
+    // Showdown's rules: out of time loses, except under the VGC Timer, which makes a default choice while there's time in the bank.
+    // Ours, with "lose on timeout" off: the timer plays a move for you, and a second timeout in a row (or an empty bank) loses.
+    const strict = meta.timeoutLoses;
+    if (strict ? !(timer?.autoChoose && clock.bank > 0) : clock.timeouts >= BATTLE_TIMEOUTS_TO_LOSE || clock.bank <= 0) {
+      work.note(`|-message|${meta.seats[seat].name} lost due to inactivity.`);
       if (!forceLose(work, seat, "timeout", now)) return;
       continue;
     }
@@ -316,7 +389,13 @@ function catchUp(work: Work, now: number) {
     if (!session) return;
     const side = sideOf(seat);
     const request = session.pending(side);
-    if (request) {
+    if (request && strict) {
+      // Showdown's VGC Timer: ">p1 default".
+      if (!session.choose(side, "default").ok) {
+        if (!forceLose(work, seat, "timeout", now)) return;
+        continue;
+      }
+    } else if (request) {
       const doubles = PLAY_FORMAT_INFO[meta.format].gameType === "doubles";
       const rand = seededRandom(`${meta.seed}:timer:${session.battle.inputLog.length}`);
       let choice = chooseCpu(session.battle, session.battle[side], "easy", rand);
@@ -330,6 +409,17 @@ function catchUp(work: Work, now: number) {
     }
     work.absorb(now);
   }
+}
+
+/** Nobody wins (Showdown's tie when every player has run out of time). */
+function forceTie(work: Work, now: number): boolean {
+  const session = work.session(now);
+  if (!session) return false;
+  work.reason = "timeout";
+  session.tie();
+  work.absorb(now);
+  if (!work.meta.end) endBattle(work.meta, "timeout", null, now);
+  return true;
 }
 
 /** `seat` loses (forfeit, timeout, disconnect). */
@@ -717,7 +807,7 @@ export type BattleAction =
   | { action: "team"; team: string }
   | { action: "choose"; rqid: number; choice: string }
   | { action: "forfeit" }
-  | { action: "timer" }
+  | { action: "timer"; on?: boolean }
   | { action: "undo"; rqid: number };
 
 /** An action by a player. `join` has no seat yet; everything else needs `playerId`. */
@@ -778,7 +868,7 @@ export async function actOnBattle(
       case "choose":
         return choose(work, seat, body.rqid, body.choice, now);
       case "timer":
-        return startTimer(work, seat, now);
+        return setTimer(work, seat, body.on !== false, now);
       case "undo":
         return undoChoice(work, seat, body.rqid, now);
     }
@@ -790,18 +880,58 @@ export async function actOnBattle(
   return { ok: true, view, playerId: me, rejected: out.rejected };
 }
 
-/** "Start timer" in a live battle that began with the timer off: both clocks start, as on Showdown. */
-function startTimer(work: Work, seat: number, now: number): Outcome<{ rejected?: string }> {
+/** Showdown won't let a player turn the timer back on this soon after turning it off. */
+const TIMER_COOLDOWN_MS = 20_000;
+
+/**
+ * Showdown's /timer on and /timer off. A battle can start with the timer on
+ * (the host's setting: it then stays on) or off, for either player to ask
+ * for it. Asking turns it on for both ("Battle timer is ON..."); a second
+ * ask is noted; only the players who asked can turn it off again, and it
+ * stays on while anyone still wants it.
+ */
+function setTimer(work: Work, seat: number, on: boolean, now: number): Outcome<{ rejected?: string }> {
   const meta = work.meta;
   if (meta.kind !== "pvp" || meta.status !== "playing") return fail(409, "The timer only runs while a live battle is under way.");
   const timer = timerOf(meta);
-  if (!meta.timerOff || !timer) return { ok: true };
-  meta.timerOff = false;
-  meta.clocks = [newClock(timer), newClock(timer)];
-  meta.requests.forEach((request, s) => {
-    if (request) startClock(meta.clocks![s], now, !!request.teamPreview, timer);
-  });
-  meta.chat = systemLine(meta.chat, `${meta.seats[seat].name} started the timer.`, now);
+  if (!timer) return { ok: true };
+  const name = meta.seats[seat].name;
+  const requesters = meta.timerRequesters ?? [];
+  if (on) {
+    if (requesters.includes(seat)) return { ok: true };
+    if (!meta.timerOff) {
+      if (requesters.length) {
+        meta.timerRequesters = [...requesters, seat];
+        work.note(`|inactive|${name} also wants the timer to be on.`);
+      }
+      return { ok: true };
+    }
+    const off = meta.timerOffBy;
+    if (off && off.seat === seat && now - off.at < TIMER_COOLDOWN_MS) {
+      return { ok: true, rejected: `The timer can't be re-enabled so soon after disabling it (${Math.ceil((off.at + TIMER_COOLDOWN_MS - now) / 1000)} seconds remaining).` };
+    }
+    meta.timerOff = false;
+    meta.timerRequesters = [seat];
+    meta.timerTurn = undefined;
+    meta.timerFirst = undefined;
+    meta.clocks = [newClock(timer), newClock(timer)];
+    work.note(`|inactive|Battle timer is ON: inactive players will automatically lose when time's up. (requested by ${name})`);
+    const pending = meta.requests.map((r, s: number) => (r ? s : -1)).filter((s) => s >= 0);
+    if (pending.length) topUp(meta, meta.clocks, timer, pending.length, pending.length);
+    for (const s of pending) startClock(meta.clocks[s], now, !!meta.requests[s]!.teamPreview, timer, !!meta.timerFirst);
+    return { ok: true };
+  }
+  if (meta.timerOff || !requesters.includes(seat)) return { ok: true, rejected: "Only a player who asked for the timer can turn it off." };
+  const rest = requesters.filter((s) => s !== seat);
+  meta.timerRequesters = rest;
+  meta.timerOffBy = { seat, at: now };
+  if (rest.length) {
+    work.note(`|inactive|${name} no longer wants the timer on, but the timer is staying on because ${rest.map((s: number) => meta.seats[s].name).join(", ")} still does.`);
+    return { ok: true };
+  }
+  meta.timerOff = true;
+  delete meta.clocks;
+  work.note("|inactiveoff|Battle timer is now OFF.");
   return { ok: true };
 }
 
@@ -965,7 +1095,7 @@ export function battleView(meta: BattleMeta, playerId: string | null, log: strin
   if (you !== null && !request && meta.kind === "pvp" && meta.status === "playing" && meta.chosen?.[you === 0 ? "p1" : "p2"]) view.cancel = { rqid: meta.rqid[you] };
   if (meta.cpu) view.cpu = { level: meta.cpu.level };
   if (meta.clocks && you !== null) {
-    const clock = (c: SideClock) => ({ bank: c.bank, deadline: c.deadline });
+    const clock = (c: SideClock) => ({ bank: c.bank, deadline: c.deadline, startedAt: c.startedAt });
     view.clocks = { you: clock(meta.clocks[you]), foe: clock(meta.clocks[1 - you]) };
   }
   if (meta.end) view.end = meta.end;
@@ -979,6 +1109,7 @@ export function battleView(meta: BattleMeta, playerId: string | null, log: strin
     view.timer = meta.timerOff ? null : timerOf(meta);
     if (meta.timeoutLoses) view.timeoutLoses = true;
     if (meta.timerOff && meta.status === "playing" && timerOf(meta)) view.timerStartable = true;
+    if (!meta.timerOff && you !== null && meta.status === "playing" && meta.timerRequesters?.includes(you)) view.timerStoppable = true;
     view.spectators = spectatorCount(meta, now);
     if (meta.public) view.public = true;
     if (meta.ranked) view.ranked = true;

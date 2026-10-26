@@ -163,16 +163,81 @@ export const CPU_LEVEL_INFO: Record<CpuLevel, { name: string; blurb: string }> =
 // ---------------------------------------------------------------------------
 
 /**
- * Turn timer, after Pokémon Showdown's ladder timer: a bank of time that
- * grows a little every turn, and a cap on any single turn. Doubles uses the
- * VGC timer: one larger "your time" bank and a shorter cap per turn.
+ * A live battle's turn timer, as Pokémon Showdown's battle timer
+ * (server/room-battle.ts, MIT) runs it. Times in ms.
  */
+export interface BattleTimer {
+  /** What each player starts with (Showdown's starting time plus its grace time). */
+  bank: number;
+  /** Added at every new turn; the bank never refills past `refill` this way. */
+  perTurn: number;
+  /** The most any one request may take (Showdown's maxPerTurn). */
+  cap: number;
+  /** Showdown's starting time: the turn top-ups stop at this (the grace time is a one-off). Default: `bank`. */
+  refill?: number;
+  /** The cap on the first request (team preview, or turn 1). Default: `cap`. */
+  firstCap?: number;
+  /** Showdown's timeoutAutoChoose (the VGC Timer): out of time this turn with time still in the bank, a default choice is made instead of losing. */
+  autoChoose?: boolean;
+  /** Showdown's ladder timer speeds up in long battles: after turn 100 a turn adds 5 s less. */
+  accelerate?: boolean;
+}
+
+/**
+ * The battle timer from Showdown's settings (seconds): its defaults
+ * (150 s, 60 s grace, +10 s a turn, or +25 s outside singles, 150 s a turn
+ * at most) overridden by a format's own `timer` rule (the VGC Timer:
+ * 7 minutes, 90 s grace, nothing added, 55 s a turn, 90 s for the first).
+ */
+export function showdownTimer(
+  gameType: "singles" | "doubles",
+  rule?: { starting?: number; grace?: number; addPerTurn?: number; maxPerTurn?: number; maxFirstTurn?: number; timeoutAutoChoose?: boolean } | null
+): BattleTimer {
+  const s = { starting: 150, grace: 60, addPerTurn: gameType === "singles" ? 10 : 25, maxPerTurn: 150, maxFirstTurn: 150, timeoutAutoChoose: false, ...rule };
+  const out: BattleTimer = {
+    bank: (s.starting + s.grace) * 1000,
+    refill: s.starting * 1000,
+    perTurn: s.addPerTurn * 1000,
+    cap: (s.maxPerTurn > 0 ? s.maxPerTurn : 24 * 3600) * 1000,
+    firstCap: (s.maxFirstTurn || s.maxPerTurn || 24 * 3600) * 1000,
+  };
+  if (s.timeoutAutoChoose) out.autoChoose = true;
+  if (!rule) out.accelerate = true;
+  return out;
+}
+
+/** Showdown's VGC Timer rule (the BSS, BSS Factory, Battle Tower and VGC formats). */
+export const VGC_TIMER = { starting: 7 * 60, grace: 90, addPerTurn: 0, maxPerTurn: 55, maxFirstTurn: 90, timeoutAutoChoose: true } as const;
+
+/** The default timers: Showdown's ladder timer for singles and for doubles. */
 export const BATTLE_TIMER = {
-  singles: { bank: 150_000, perTurn: 10_000, cap: 90_000 },
-  doubles: { bank: 420_000, perTurn: 0, cap: 60_000 },
-  /** Team preview (choosing the lead) has its own limit and doesn't draw on the bank. */
-  preview: 90_000,
+  singles: showdownTimer("singles"),
+  doubles: showdownTimer("doubles"),
 } as const;
+
+/** What a turn adds to a bank at `turn` (Showdown's acceleration after turn 100 and 200). */
+export function turnTopUp(timer: BattleTimer, turn: number): number {
+  let add = timer.perTurn;
+  if (timer.accelerate && add) {
+    if (turn > 100 && add > 5_000) add -= 5_000;
+    // After turn 200 Showdown adds time only on every other turn.
+    if (turn > 200 && turn % 2) add = 0;
+  }
+  return add;
+}
+
+/**
+ * Showdown's inactivity messages as a player's turn time runs down: one when
+ * the request comes in with 30 s or less ("has N seconds left this turn."),
+ * then every 30 s and every 5 s from 20 s ("has N seconds left."). Returns
+ * the second marks at which the latter appear for a turn of `turnSeconds`.
+ */
+export function timerNagMarks(turnSeconds: number): number[] {
+  const marks: number[] = [];
+  // Showdown ticks every 5 s from the request, so the marks fall 5 s apart from the turn's own time.
+  for (let s = turnSeconds - 5; s > 0; s -= 5) if (s % 30 === 0 || s <= 20) marks.push(s);
+  return marks;
+}
 
 /** Running out the clock this many turns in a row loses the battle (as does an empty bank). */
 export const BATTLE_TIMEOUTS_TO_LOSE = 2;
@@ -267,6 +332,8 @@ export interface BattleClockView {
   bank: number;
   /** Server time this turn's choice is due, while one is owed. */
   deadline: number | null;
+  /** Server time the owed choice was asked for (the timer's messages count from it). */
+  startedAt?: number | null;
 }
 
 export interface BattlePlayerView extends DuelPlayerView {
@@ -319,11 +386,13 @@ export interface BattleView {
   /** A Battle Frontier run's battle: where the run stands. */
   frontier?: FrontierBattleInfo;
   /** Live battles: the turn timer (null: off). */
-  timer?: { bank: number; perTurn: number; cap: number } | null;
+  timer?: BattleTimer | null;
   /** Live battles: running out the clock once loses (else the timer moves for you, and a second timeout loses). */
   timeoutLoses?: boolean;
   /** Live battles with the timer off: either player may start it. */
   timerStartable?: boolean;
+  /** Live battles: you asked for the timer, and may turn it off again (Showdown's /timer off). */
+  timerStoppable?: boolean;
   /** Live battles: how many spectators are watching right now. */
   spectators?: number;
   /** Live battles: listed in the Watch lobby. */

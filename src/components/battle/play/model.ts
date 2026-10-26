@@ -226,6 +226,8 @@ export class BattleModel {
     } catch {
       text = "";
     }
+    // Showdown's timer messages ("Battle timer is ON…", "Red has 20 seconds left.") are plain text.
+    if (cmd === "inactive" || cmd === "inactiveoff") text = args[1] ?? "";
     const step: Step = { cmd, args, kw: kwArgs, text };
     const who = slotOf(args[1]);
     if (who) step.who = who;

@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { MusicControl, trackFor, useBattleMusic } from "./MusicControl";
 import { AlertTriangle, Eye, Undo2, FastForward, Gauge, Loader2, ScrollText, SkipForward, Sparkles, Timer } from "lucide-react";
-import { CPU_LEVEL_INFO, PLAY_FORMAT_INFO, type BattleRequestPokemon, type BattleView } from "@/lib/battle/play";
+import { CPU_LEVEL_INFO, PLAY_FORMAT_INFO, timerNagMarks, type BattleRequestPokemon, type BattleView } from "@/lib/battle/play";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { Dex } from "@pkmn/dex";
@@ -42,6 +42,8 @@ export interface BattleScreenProps {
   onUndo?: (rqid: number) => void;
   /** A live battle with the timer off: start it. */
   onStartTimer?: () => void;
+  /** Turn the timer off again (only for a player who asked for it). */
+  onStopTimer?: () => void;
   /** Under the header: a replay's playback controls. */
   toolbar?: React.ReactNode;
   /** A replay: no clocks, waiting or controls, just the battle. */
@@ -135,7 +137,7 @@ function useTick(active: boolean) {
   return now;
 }
 
-export default function BattleScreen({ view, log, offset, busy, error, onChoose, endActions, side, onUndo, onStartTimer, toolbar, replay, onIdle }: BattleScreenProps) {
+export default function BattleScreen({ view, log, offset, busy, error, onChoose, endActions, side, onUndo, onStartTimer, onStopTimer, toolbar, replay, onIdle }: BattleScreenProps) {
   const watching = view.you === null;
   const idle = useRef(onIdle);
   idle.current = onIdle;
@@ -354,6 +356,35 @@ export default function BattleScreen({ view, log, offset, busy, error, onChoose,
   const myLeft = view.clocks && view.status === "playing" && view.clocks.you.deadline && !view.waiting && view.request ? view.clocks.you.deadline - now : null;
   const warning = timerWarning(myLeft);
 
+  // Showdown's inactivity messages in the log as either player's turn time runs down ("Red has 20 seconds left.").
+  const nagged = useRef(new Map<string, Set<number>>());
+  useEffect(() => {
+    if (!view.clocks || view.status !== "playing" || replay) return;
+    const names = { you: youName, foe: foeName };
+    const lines: string[] = [];
+    for (const who of ["you", "foe"] as const) {
+      const c = view.clocks[who];
+      if (!c.deadline || !c.startedAt) continue;
+      const key = `${who}:${c.deadline}`;
+      const marks = timerNagMarks(Math.round((c.deadline - c.startedAt) / 1000));
+      const left = (c.deadline - now) / 1000;
+      let done = nagged.current.get(key);
+      if (!done) {
+        // A page opened mid-turn doesn't replay the messages it missed.
+        done = new Set(marks.filter((m) => left < m - 1));
+        nagged.current.set(key, done);
+      }
+      for (const m of marks) {
+        if (left <= m && !done.has(m)) {
+          done.add(m);
+          lines.push(`${names[who]} has ${m} seconds left.`);
+        }
+      }
+    }
+    if (!lines.length) return;
+    setEntries((list) => [...list.slice(-600), ...lines.map((text) => ({ id: ++entryId.current, text }))]);
+  }, [now, view.clocks, view.status, replay, youName, foeName]);
+
   return (
     <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_300px]">
       <div className="min-w-0 space-y-3">
@@ -391,6 +422,18 @@ export default function BattleScreen({ view, log, offset, busy, error, onChoose,
               data-testid="start-timer"
             >
               <Timer className="h-3 w-3" aria-hidden /> Start timer
+            </button>
+          )}
+          {view.timerStoppable && onStopTimer && !watching && (
+            <button
+              type="button"
+              onClick={onStopTimer}
+              disabled={busy}
+              className="flex items-center gap-1 rounded-sm border border-border px-2 py-0.5 font-pixel text-[10px] uppercase text-muted-foreground hover:bg-muted disabled:opacity-50"
+              title="You asked for the timer: turn it off again (it stays on if your opponent asked for it too)"
+              data-testid="stop-timer"
+            >
+              <Timer className="h-3 w-3" aria-hidden /> Stop timer
             </button>
           )}
           {view.frontier && (
@@ -459,7 +502,7 @@ export default function BattleScreen({ view, log, offset, busy, error, onChoose,
               myLeft! <= TIMER_WARNINGS[1] ? "animate-pulse border-destructive bg-destructive/15 text-destructive" : "border-warning/60 bg-warning/10 text-warning"
             )}
           >
-            <AlertTriangle className="h-4 w-4 shrink-0" aria-hidden /> {warning} {view.timeoutLoses ? "Run out and you lose the battle." : "Run out and the timer picks for you."}
+            <AlertTriangle className="h-4 w-4 shrink-0" aria-hidden /> {warning} {view.timeoutLoses ? (view.timer?.autoChoose && view.clocks && view.clocks.you.bank > (myLeft ?? 0) ? "Run out and a default move is made for you." : "Run out and you lose the battle.") : "Run out and the timer picks for you."}
           </p>
         )}
 

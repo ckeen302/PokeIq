@@ -176,7 +176,8 @@ export function useBattle(code: string) {
   );
 
   const choose = useCallback((rqid: number, choice: string) => act({ action: "choose", rqid, choice }), [act]);
-  const startTimer = useCallback(() => act({ action: "timer" }), [act]);
+  /** Showdown's /timer on (and /timer off, for a player who asked for it). */
+  const startTimer = useCallback((on = true) => act({ action: "timer", on }), [act]);
   /** Cancel: take back the choice you sent (only while the opponent is still choosing). */
   const undo = useCallback((rqid: number) => act({ action: "undo", rqid }), [act]);
 
