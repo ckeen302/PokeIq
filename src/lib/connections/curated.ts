@@ -120,6 +120,32 @@ export const FOOD_NAMES: CuratedEntry[] = [
   ["Milcery", "milk"],
   ["Alcremie", "cream (à la crème)"],
   ["Exeggcute", "egg"],
+  ["Exeggutor", "egg"],
+  ["Dipplin", "apple (a candied, dipped apple)"],
+  ["Hydrapple", "apple"],
+  ["Pecharunt", "peach"],
+];
+
+/*
+ * The guards: Pokémon a fan could argue into a list, so they never sit in
+ * ANOTHER group beside it (a player who picks one isn't wrong, just not
+ * what the list says). They are never in the group either.
+ */
+
+/** Other Gym Leaders' aces, shared aces and version or remake differences (Johto, Kanto in GSC, Hoenn, Sinnoh, Unova, Kalos, Paldea). */
+export const GYM_ACE_GUARD = [
+  "Pidgeotto", "Pidgeot", "Scyther", "Scizor", "Poliwrath", "Steelix", "Piloswine", "Mamoswine", "Kingdra", "Raichu", "Vileplume", "Victreebel", "Bellossom",
+  "Tangela", "Weezing", "Muk", "Venomoth", "Arcanine", "Rapidash", "Magcargo", "Ninetales", "Rhydon", "Nidoking", "Persian", "Gyarados", "Exeggutor",
+  "Kabutops", "Omastar", "Golem", "Hariyama", "Medicham", "Slaking", "Pelipper", "Swellow", "Solrock", "Lunatone", "Whiscash", "Magneton", "Rampardos",
+  "Lucario", "Floatzel", "Drifblim", "Electivire", "Froslass", "Simisage", "Simisear", "Simipour", "Watchog", "Stoutland", "Scolipede", "Jellicent",
+  "Haxorus", "Gigalith", "Vivillon", "Tyrunt", "Amaura", "Gogoat", "Heliolisk", "Meowstic", "Avalugg", "Teddiursa", "Ursaring", "Dudunsparce", "Florges",
+  "Tinkaton", "Kilowattrel", "Klawf", "Rabsca", "Gholdengo",
+];
+
+/** Names with a food in them that the list leaves out as less plain (milk, pork, sweets, salt, honey, chilli...). */
+export const FOOD_GUARD = [
+  "Miltank", "Lechonk", "Oinkologne", "Slurpuff", "Swirlix", "Capsakid", "Scovillain", "Bounsweet", "Steenee", "Tsareena", "Nacli", "Naclstack",
+  "Garganacl", "Munchlax", "Snorlax", "Sunkern", "Sunflora", "Combee", "Vespiquen", "Shuckle", "Tropius", "Farfetch’d", "Sirfetch’d",
 ];
 
 // Sources: PokémonDB's move pages list every Pokémon that learns each move,
@@ -212,18 +238,21 @@ export function signatureMoveIds(): Map<number, string> {
   return out;
 }
 
-function listCategory(id: string, label: string, rule: string, difficulty: number, list: readonly CuratedEntry[]): Category {
+function listCategory(id: string, label: string, rule: string, difficulty: number, list: readonly CuratedEntry[], guard?: readonly string[] | ((f: Facts) => boolean)): Category {
   const entries = resolveEntries(list);
-  return { id, family: "lore", label, rule, difficulty, test: (f) => entries.has(f.id), why: (f) => entries.get(f.id)! };
+  const near = Array.isArray(guard) ? resolveEntries(guard.map((n) => [n, ""] as const)) : null;
+  const guardFn = typeof guard === "function" ? guard : near ? (f: Facts) => near.has(f.id) : undefined;
+  return { id, family: "lore", label, rule, difficulty, test: (f) => entries.has(f.id), why: (f) => entries.get(f.id)!, ...(guardFn && { guard: guardFn }) };
 }
 
 export function curatedCategories(): Category[] {
   const moves = signatureMoveIds();
   const signature = (f: Facts) => [...moves].filter(([id]) => f.learnable.has(id)).map(([, name]) => name);
   return [
-    listCategory("lore:ace", "Gym Leaders' aces", "Each is the final, strongest Pokémon of a Gym Leader in the main games.", 3.0, GYM_ACES),
-    listCategory("lore:box", "Box-art legendaries", "Each is the legendary Pokémon on the cover of a main-series game.", 2.95, BOX_LEGENDARIES),
-    listCategory("lore:food", "Named after food", "Each name is built from a food: apple, cherry, vanilla, pumpkin, chestnut, dough, olive, tea...", 3.05, FOOD_NAMES),
+    listCategory("lore:ace", "Gym Leaders' aces", "Each is the final, strongest Pokémon of a Gym Leader in the main games.", 3.0, GYM_ACES, GYM_ACE_GUARD),
+    // Any Legendary or Mythical (or a cover star like Pikachu, Eevee or a Kanto starter) could be argued onto some box.
+    listCategory("lore:box", "Box-art legendaries", "Each is the legendary Pokémon on the cover of a main-series game.", 2.95, BOX_LEGENDARIES, (f) => f.legendary || f.mythical || [3, 6, 9, 25, 133].includes(f.id)),
+    listCategory("lore:food", "Named after food", "Each name is built from a food: apple, cherry, vanilla, pumpkin, chestnut, dough, olive, tea, egg, peach...", 3.05, FOOD_NAMES, FOOD_GUARD),
     {
       id: "lore:move",
       family: "lore",
