@@ -241,3 +241,34 @@ describe("a Factory run", () => {
     });
   });
 });
+
+describe("Factory rules are Showdown's", () => {
+  const table = (id: string) => Dex.formats.getRuleTable(Dex.formats.get(id, true));
+  it("the Battle Factory plays every rule of [Gen 9] Battle Factory, with its limits", async () => {
+    const { SHOWDOWN_FORMAT } = await import("@/lib/server/battle-engine/service");
+    const ours = table(SHOWDOWN_FORMAT.factory!);
+    const theirs = table("gen9battlefactory");
+    for (const rule of theirs.keys()) expect(ours.has(rule), rule).toBe(true);
+    // Custom game's own extras are only its limits, set back to the Factory's.
+    expect([...ours.keys()].filter((k) => !theirs.has(k)).sort()).toEqual(["defaultlevel", "maxlevel", "maxmovecount", "maxteamsize"]);
+    expect([ours.maxTeamSize, ours.maxMoveCount, ours.maxLevel, ours.pickedTeamSize]).toEqual([theirs.maxTeamSize, theirs.maxMoveCount, theirs.maxLevel, theirs.pickedTeamSize]);
+  });
+
+  it("the BSS Factory is Showdown's format: Flat Rules, level 50, bring six pick three", () => {
+    const t = table("gen9bssfactory");
+    expect(t.has("flatrules")).toBe(true);
+    expect([t.adjustLevelDown, t.pickedTeamSize]).toEqual([50, 3]);
+    expect(factoryTeam("bss", "")).toHaveLength(6);
+  });
+
+  it("open Factory rentals are six sets from the run's tier, exactly as Showdown's generator deals them", () => {
+    for (const tier of ["Uber", "OU", "UU", "RU", "NU", "PU"]) {
+      const team = factoryTeam("open", tier, "1,2,3,4");
+      expect(team).toHaveLength(6);
+      for (const set of team) expect(set.level || 100).toBe(100);
+      const gen = Teams.getGenerator("gen9battlefactory", "1,2,3,4" as never) as unknown as { factoryTier: string; randomFactoryTeam: (s: object) => unknown };
+      gen.factoryTier = tier;
+      expect(team).toEqual(gen.randomFactoryTeam({ name: "p1" }));
+    }
+  });
+});

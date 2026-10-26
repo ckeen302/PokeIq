@@ -442,7 +442,7 @@ export function checkTeam(format: PlayFormatId, team: string | undefined, rules?
  * formats as they are (Flat Rules).
  */
 export const SHOWDOWN_FORMAT: Partial<Record<PlayFormatId, string>> = {
-  factory: "gen9customgame@@@Standard",
+  factory: "gen9customgame@@@Standard,!! Max Team Size = 6,!! Max Move Count = 4,!! Max Level = 100",
   bssfactory: "gen9bssfactory",
   tower: "gen9bssregi",
 };
