@@ -22,6 +22,7 @@
  *   … npm run ingest:world -- --crops --thin Hoenn     # only for places with a single shot (from smaller maps too)
  *   … npm run ingest:world -- --expand Galar           # new Bulbapedia and other-wiki shots of places already on the map → the same
  *   … npm run ingest:world -- --accept=reviewed.json   # adds reviewed candidates to the data (near-copies are skipped)
+ *   … npm run ingest:world -- --expand --whole Kalos   # the same, with other wikis' 3D shots kept whole (banner or text box and all)
  */
 import { existsSync, mkdirSync, readFileSync, rmdirSync, writeFileSync } from "node:fs";
 import { randomBytes } from "node:crypto";
@@ -73,9 +74,11 @@ const LOCK = path.join(process.cwd(), ".data", "ingest-world.lock");
 /** New shots waiting for review (--crops, --expand), unless --out= says otherwise. */
 const CANDIDATES = path.join(process.cwd(), ".data", "geo-candidates.json");
 
-const MAX_SHOTS = 14;
+/** --whole: other wikis' 3D shots kept whole, not trimmed of their banner or text box (a trimmed strip can't fill a 16:9 frame). */
+const WHOLE = process.argv.includes("--whole");
+const MAX_SHOTS = 24;
 /** 3D screenshots a place gets from other wikis, counting the ones Bulbapedia already gave it. */
-const WIKI_SHOTS = 6;
+const WIKI_SHOTS = 10;
 const MAX_BUILDING_SHOTS = 10;
 /** Space around each region's crop, as a share of its size. */
 const CROP_MARGIN = 0.04;
@@ -97,8 +100,8 @@ const SOURCES: Source[] = [
   { regions: ["Hoenn"], wiki: "Hoenn", games: ["RS", "RSE", "SE", "E", "ORAS", "OR", "AS"], screens: { "240x160": "RSE", "400x240": "ORAS" } },
   { regions: ["Sinnoh"], wiki: "Sinnoh", games: ["DP", "Pt", "DPPt", "BDSP"], screens: { "256x192": "DPPt" } },
   { regions: ["Unova"], wiki: "Unova", games: ["BW", "B", "W", "B2W2", "B2", "W2", "BWB2W2"], screens: { "256x192": "BWB2W2" } },
-  // Legends: Z-A is set in Lumiose City; X/Y's own location images are mostly guidebook maps.
-  { regions: ["Kalos"], wiki: "Kalos", games: ["XY", "ZA"], screens: { "400x240": "XY" } },
+  // X / Y only: Legends: Z-A (and Legends: Arceus) are not played in PokéGuessr.
+  { regions: ["Kalos"], wiki: "Kalos", games: ["XY"], screens: { "400x240": "XY" } },
   { regions: ["Alola"], wiki: "Alola", games: ["SM", "USUM", "SMUSUM"], screens: { "400x240": "SMUSUM" } },
   { regions: ["Galar", "Isle of Armor", "Crown Tundra"], wiki: "Galar", games: ["SwSh"] },
   { regions: ["Paldea"], wiki: "Paldea", games: ["SV"] },
@@ -127,7 +130,6 @@ const GAME_CATEGORIES: Record<string, string> = {
   SwSh: "Sword and Shield maps",
   BDSP: "Brilliant Diamond and Shining Pearl maps",
   SV: "Scarlet and Violet maps",
-  ZA: "Legends: Z-A maps",
 };
 /** Archives categories of files that aren't a plain view: guide and Town Map maps, models, sprites, art, look-alike Pokémon Center interiors. */
 const NOT_A_VIEW_CATEGORY =
@@ -900,8 +902,9 @@ async function wikiShots(place: PlaceIn, source: Source, games: string[], store:
       if (threeD && wiki.lang !== "en") {
         const trim = overlayTrim(wiki, f.file, plainTitle, source.wiki, resolved);
         if (!trim) return false;
-        if (trim.top) trimTop[f.file] = trim.top;
-        if (trim.bottom) trimBottom[f.file] = trim.bottom;
+        // --whole: the full screen, banner or text box and all (signs and text are fair clues), so it fills a 16:9 frame.
+        if (!WHOLE && trim.top) trimTop[f.file] = trim.top;
+        if (!WHOLE && trim.bottom) trimBottom[f.file] = trim.bottom;
       }
       gameOf.set(f.file, GAME_CODES[resolved]);
       return true;

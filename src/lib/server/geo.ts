@@ -1,6 +1,16 @@
 import "server-only";
 import data from "@/data/geo.json";
 import themeTags from "@/data/geo-themes.json";
+import shotMeta from "@/data/geo-shot-meta.json";
+import {
+  DEFAULT_DIFFICULTY,
+  fitsMode,
+  rampOrder,
+  scoredDifficulty,
+  shotWeight,
+  type GeoDifficulty,
+  type ShotMetaFile,
+} from "@/lib/geo-difficulty";
 import { GEO_THEMES, isWorldwide, themeMapId, themeOf } from "@/lib/geo-themes";
 import { Rng } from "@/lib/rng";
 import { publicName } from "@/lib/name-filter";
@@ -192,8 +202,46 @@ export function setHiddenShots(ids: Iterable<string>) {
 }
 export const hiddenShots = (): ReadonlySet<string> => HIDDEN;
 
-/** What a game deals from: a map, and optionally an era or some game families. */
-type DealSpec = Pick<GeoSpec, "region" | "era" | "families">;
+// ---------------------------------------------------------------------------
+// The screenshot audit: quality flags and difficulty (scripts/geo/audit-shots.ts)
+// ---------------------------------------------------------------------------
+
+const META = (shotMeta as unknown as ShotMetaFile).shots;
+/** A shot's audit flags (0: clean, or not audited yet). */
+const flagsOf = (id: string) => META[id]?.[2] ?? 0;
+/** The audit's own rating: fixed, so the Daily plans the same for everyone all day. */
+export const heuristicDifficultyOf = (id: string) => (META[id] ? META[id][3] / 10 : DEFAULT_DIFFICULTY);
+/** Ratings moved by players' scores (geo-round-scores.ts keeps them fresh). */
+let SCORED: ReadonlyMap<string, number> = new Map();
+/** A shot's difficulty for Easy and Hard: players' scores once there are enough, else the audit's. */
+export const difficultyOf = (id: string) => SCORED.get(id) ?? heuristicDifficultyOf(id);
+
+/** Players' average score per shot (and rounds logged): replaces the ratings they move. */
+export function setShotScores(rows: Iterable<{ id: string; avg: number; rounds: number }>) {
+  const next = new Map<string, number>();
+  for (const r of rows) {
+    if (!KNOWN_SHOTS.has(r.id)) continue;
+    const d = scoredDifficulty(heuristicDifficultyOf(r.id), r.avg, r.rounds);
+    if (d !== heuristicDifficultyOf(r.id)) next.set(r.id, d);
+  }
+  SCORED = next;
+  FILTERED.clear();
+}
+
+/** One of the items, each as likely as its weight (one draw, like Rng.pick). */
+function weightedPick<T>(rng: Rng, items: readonly T[], weight: (item: T) => number): T {
+  const weights = items.map(weight);
+  const total = weights.reduce((s, w) => s + w, 0);
+  let r = rng.next() * total;
+  for (let i = 0; i < items.length; i++) {
+    r -= weights[i];
+    if (r < 0) return items[i];
+  }
+  return items[items.length - 1];
+}
+
+/** What a game deals from: a map, optionally an era or some game families, and Easy or Hard. */
+type DealSpec = Pick<GeoSpec, "region" | "era" | "families" | "difficulty">;
 const filtered = (spec: Omit<DealSpec, "region">) => !!spec.era || !!spec.families?.length;
 
 /** A place's shots a game can deal: in the filter's families, and not hidden. */
@@ -223,18 +271,31 @@ const AREAS = new Map(
   })
 );
 
+/** Easy or Hard keeps only the areas with a shot that fits it, when that leaves at least this many. */
+const MODE_MIN_AREAS = 20;
+const modeOf = (spec: Pick<GeoSpec, "difficulty">): GeoDifficulty => spec.difficulty ?? "normal";
+/** A place's shots that fit Easy or Hard (all of them in Normal). */
+const fitting = (location: Location, allowed: ReadonlySet<GeoFamilyId>, mode: GeoDifficulty) =>
+  usableShots(location, allowed).filter((s) => fitsMode(difficultyOf(s.id), mode));
+
 /** A map's areas a filter can deal, cut down to the places with usable shots (cached until the hidden shots change). */
 const FILTERED = new Map<string, Area[]>();
 function areasOf(spec: DealSpec): Area[] {
   const allowed = allowedFamilies(spec);
-  const key = `${spec.region}|${[...allowed].join(",")}`;
+  const mode = modeOf(spec);
+  const key = `${spec.region}|${[...allowed].join(",")}|${mode}`;
   const cached = FILTERED.get(key);
   if (cached) return cached;
-  const areas = (AREAS.get(spec.region) ?? []).flatMap((a): Area[] => {
-    const place = a.place && usableShots(a.place, allowed).length ? a.place : undefined;
-    const buildings = a.buildings.filter((b) => usableShots(b, allowed).length);
-    return place || buildings.length ? [{ ...a, place, buildings }] : [];
-  });
+  const cut = (has: (l: Location) => boolean) =>
+    (AREAS.get(spec.region) ?? []).flatMap((a): Area[] => {
+      const place = a.place && has(a.place) ? a.place : undefined;
+      const buildings = a.buildings.filter(has);
+      return place || buildings.length ? [{ ...a, place, buildings }] : [];
+    });
+  const all = cut((l) => usableShots(l, allowed).length > 0);
+  // Easy and Hard: only areas with a shot that fits, unless that leaves too few (then every area, leaning by weight).
+  const moded = mode === "normal" ? all : cut((l) => fitting(l, allowed, mode).length > 0);
+  const areas = moded.length >= Math.min(MODE_MIN_AREAS, all.length) ? moded : all;
   FILTERED.set(key, areas);
   return areas;
 }
@@ -348,13 +409,26 @@ interface PlannedRound {
  * families, and a screenshot from it (so Emerald's and Ruby's shots don't
  * crowd out the remakes).
  */
-function pickRound(rng: Rng, area: Area, allowed: ReadonlySet<GeoFamilyId>): PlannedRound {
-  const location = area.place && (!area.buildings.length || rng.chance(0.5)) ? area.place : rng.pick(area.buildings);
-  const shots = usableShots(location, allowed);
+function pickRound(rng: Rng, area: Area, allowed: ReadonlySet<GeoFamilyId>, mode: GeoDifficulty = "normal", weighted = true): PlannedRound {
+  // Easy and Hard: the town or a building that has a shot fitting the mode, when one does.
+  const has = (l: Location) => fitting(l, allowed, mode).length > 0;
+  const buildings = mode === "normal" || !area.buildings.some(has) ? area.buildings : area.buildings.filter(has);
+  const place = area.place && (mode === "normal" || has(area.place) || !buildings.some(has)) ? area.place : undefined;
+  const location = place && (!buildings.length || rng.chance(0.5)) ? place : buildings.length ? rng.pick(buildings) : area.place!;
+  const fits = fitting(location, allowed, mode);
+  const shots = fits.length ? fits : usableShots(location, allowed);
   const family = rng.pick([...new Set(shots.map((s) => s.family))]);
-  const shot = rng.pick(shots.filter((s) => s.family === family));
+  // Low-quality shots (the audit's flags) come up a quarter as often; Easy and Hard lean to their end.
+  const shot = weightedPick(
+    rng,
+    shots.filter((s) => s.family === family),
+    (s) => (weighted ? shotWeight(mode === "normal" ? DEFAULT_DIFFICULTY : difficultyOf(s.id), flagsOf(s.id), mode) : 1)
+  );
   return { location: location.name, region: location.region, shot: shot.id, game: shot.game };
 }
+
+/** From this date the Daily ramps from an easier first round to a harder last one (earlier dailies keep their order). */
+export const DAILY_RAMP_FROM = "2026-10-28";
 
 /**
  * The game's rounds: five for a standard game, every place for a streak.
@@ -363,7 +437,7 @@ function pickRound(rng: Rng, area: Area, allowed: ReadonlySet<GeoFamilyId>): Pla
  * A five-round world game visits five different regions. `limit` stops early
  * (the first rounds don't depend on it). A filter deals only its games' shots.
  */
-export function planRounds(spec: Pick<GeoSpec, "region" | "kind" | "rounds"> & Omit<DealSpec, "region">, seed: string, limit = Infinity): PlannedRound[] {
+export function planRounds(spec: Pick<GeoSpec, "region" | "kind" | "rounds" | "daily"> & Omit<DealSpec, "region">, seed: string, limit = Infinity): PlannedRound[] {
   const rng = new Rng(deriveSeed("geo", seed));
   const allowed = allowedFamilies(spec);
   const areas = rng.shuffle(areasOf(spec));
@@ -372,12 +446,16 @@ export function planRounds(spec: Pick<GeoSpec, "region" | "kind" | "rounds"> & O
   const oneEach = isWorldwide(spec.region) && spec.kind === "game" && new Set(areas.map((a) => a.group)).size >= count;
   const groups = new Set<string>();
   const rounds: PlannedRound[] = [];
+  // Dailies before the ramp keep the plain draw they were played with.
+  const weighted = !spec.daily || spec.daily >= DAILY_RAMP_FROM;
   for (const area of areas) {
     if (rounds.length >= max) break;
     if (oneEach && groups.has(area.group)) continue;
     groups.add(area.group);
-    rounds.push(pickRound(rng, area, allowed));
+    rounds.push(pickRound(rng, area, allowed, modeOf(spec), weighted));
   }
+  // The Daily: easiest first, by the audit's fixed rating, so it's the same five in the same order all day.
+  if (spec.daily && spec.daily >= DAILY_RAMP_FROM) return rampOrder(rounds.map((r) => ({ r, difficulty: heuristicDifficultyOf(r.shot) }))).map((x) => x.r);
   return rounds;
 }
 
@@ -521,15 +599,18 @@ interface ChallengeCard {
   /** The friend's game filter: era and picked families. */
   e?: GeoEra;
   f?: GeoFamilyId[];
+  /** Easy or Hard (practice). */
+  d?: "easy" | "hard";
 }
 
 export function readGeoChallenge(
   token: unknown
-): (GeoChallenge & { seed: string; region: string; plan?: string; era?: GeoEra; families?: GeoFamilyId[] }) | null {
+): (GeoChallenge & { seed: string; region: string; plan?: string; era?: GeoEra; families?: GeoFamilyId[]; difficulty?: "easy" | "hard" }) | null {
   const card = verifyToken<ChallengeCard>("geo-challenge", token);
   if (!card || card.y !== undefined || !regionOf(card.r)) return null;
   // Links signed before names were checked: shown without the name.
-  return { seed: card.s, region: card.r, name: publicName(card.n, ""), score: card.t, rounds: card.p, plan: card.l, ...geoFilter(card.e, card.f) };
+  const difficulty = card.d === "easy" || card.d === "hard" ? card.d : undefined;
+  return { seed: card.s, region: card.r, name: publicName(card.n, ""), score: card.t, rounds: card.p, plan: card.l, ...geoFilter(card.e, card.f), ...(difficulty ? { difficulty } : {}) };
 }
 
 /**
@@ -568,7 +649,7 @@ export function readGeo(token: unknown): GeoState | null {
 }
 
 export type GeoGuessOutcome =
-  | { ok: true; claimKey: string; body: GeoGuessResponse }
+  | { ok: true; claimKey: string; body: GeoGuessResponse; /** The round's screenshot (for the per-shot score log; never sent). */ shot: string }
   | { ok: false; status: number; error: string };
 
 /**
@@ -615,12 +696,14 @@ export function gradeGeo(state: GeoState, guess: { x: number; y: number; family?
       const card: ChallengeCard = { s: state.seed, r: spec.region, n: state.name ?? "", t: total, p: next.log, l: state.plan };
       if (spec.era) card.e = spec.era;
       if (spec.families) card.f = spec.families;
+      if (spec.difficulty) card.d = spec.difficulty;
       challengeToken = signToken("geo-challenge", card);
     }
   }
   return {
     ok: true,
     claimKey: `geo:${state.sid}:${index}`,
+    shot: round.shot,
     body: {
       score,
       hit,

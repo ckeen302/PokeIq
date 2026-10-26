@@ -48,6 +48,7 @@ export default async function GeoChallengePage({ params }: PageProps) {
         rounds: challenge.rounds,
         era: challenge.era,
         families: challenge.families,
+        ...(challenge.difficulty ? { difficulty: challenge.difficulty } : {}),
       }}
     />
   );

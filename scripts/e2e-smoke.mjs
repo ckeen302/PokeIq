@@ -598,7 +598,13 @@ async function playGeoRounds(rounds) {
     await page.getByRole("button", { name: /^Guess$/ }).click();
     const next = page.getByRole("button", { name: /Next round|View summary|See results/ });
     await next.waitFor();
-    if (i === 0) await page.screenshot({ path: `${OUT}/guessr-reveal.png` });
+    if (i === 0) {
+      // The real spot: its name, its game, and a link to it on the World Atlas.
+      if (!(await page.getByTestId("geo-answer-place").innerText()).trim()) throw new Error("the reveal names no place");
+      if (!/Pokémon /.test(await page.getByTestId("geo-answer-game").innerText())) throw new Error("the reveal names no game");
+      if (!/^\/atlas\?q=/.test((await page.getByTestId("geo-atlas-link").getAttribute("href")) ?? "")) throw new Error("no World Atlas link on the reveal");
+      await page.screenshot({ path: `${OUT}/guessr-reveal.png` });
+    }
     const label = await next.innerText();
     await next.click();
     if (/summary|results/i.test(label)) return;
@@ -716,6 +722,29 @@ page.off("response", countGuess);
 if (geoPlayed !== 3) throw new Error(`a 3-round game took ${geoPlayed} guesses`);
 await page.getByText(/out of 15,000/).waitFor();
 await page.screenshot({ path: `${OUT}/guessr-3-round-summary.png`, fullPage: true });
+
+step("pokéguessr: Hard game is practice, with a Wordle-style result card to copy");
+await page.goto(`${BASE}/guessr`, { waitUntil: "networkidle" });
+if ((await page.getByTestId("geo-difficulty-normal").getAttribute("aria-checked")) !== "true") throw new Error("Normal should be the default difficulty");
+await page.getByTestId("geo-difficulty-hard").click();
+await page.getByTestId("geo-difficulty-blurb").filter({ hasText: "Practice" }).waitFor();
+let hardStart = null;
+const readStart = async (res) => {
+  if (res.url().endsWith("/api/geo") && res.request().method() === "POST" && res.ok()) hardStart = await res.json().catch(() => null);
+};
+page.on("response", readStart);
+await page.getByRole("button", { name: /5-round game/ }).click();
+await page.getByText(/· Hard/).first().waitFor();
+await playGeoRounds(5);
+page.off("response", readStart);
+if (hardStart?.practice !== "difficulty") throw new Error(`a Hard game should be practice, got ${hardStart?.practice}`);
+await page.getByText("Survey complete").waitFor();
+await page.getByText(/Easy and Hard games are practice/).waitFor();
+const geoCard = await page.getByTestId("geo-share-preview").innerText();
+if (!/PokéGuessr .*· Hard/.test(geoCard) || !/[🟩🟨🟧🟥]{5}/u.test(geoCard)) throw new Error(`result card looks wrong: ${geoCard}`);
+await page.getByTestId("geo-copy-result").click();
+await page.getByTestId("geo-share-card").filter({ hasText: /Copied!|Couldn.t copy/ }).waitFor();
+await page.screenshot({ path: `${OUT}/guessr-hard-summary.png`, fullPage: true });
 
 step("pokéguessr: world globe card opens the 3D globe (canvas, or the no-WebGL fallback)");
 await page.goto(`${BASE}/guessr`, { waitUntil: "networkidle" });

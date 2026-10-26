@@ -5054,6 +5054,135 @@
    "from": "Black / White / Black 2 / White 2",
    "to": "Black / Black 2",
    "reason": "wrong-game: this Opelucid Gym front is Black's and Black 2's (White's and White 2's is the old-fashioned one)"
+  },
+  {
+   "id": "0akcxneixOiH",
+   "action": "remove",
+   "at": {
+    "region": "Kalos",
+    "name": "Lumiose City"
+   },
+   "reason": "owner decision: no Legends: Z-A content in PokéGuessr"
+  },
+  {
+   "id": "8Y0Jz8ofdQQg",
+   "action": "remove",
+   "at": {
+    "region": "Kalos",
+    "name": "Académie Étoile",
+    "parent": "Lumiose City"
+   },
+   "reason": "owner decision: no Legends: Z-A content in PokéGuessr"
+  },
+  {
+   "id": "xxZeRhEsvPZf",
+   "action": "remove",
+   "at": {
+    "region": "Kalos",
+    "name": "Autumnal Avenue",
+    "parent": "Lumiose City"
+   },
+   "reason": "owner decision: no Legends: Z-A content in PokéGuessr"
+  },
+  {
+   "id": "zuSJgNfsU2bT",
+   "action": "remove",
+   "at": {
+    "region": "Kalos",
+    "name": "Estival Avenue",
+    "parent": "Lumiose City"
+   },
+   "reason": "owner decision: no Legends: Z-A content in PokéGuessr"
+  },
+  {
+   "id": "6SUZSyxLaDDC",
+   "action": "remove",
+   "at": {
+    "region": "Kalos",
+    "name": "Hibernal Avenue",
+    "parent": "Lumiose City"
+   },
+   "reason": "owner decision: no Legends: Z-A content in PokéGuessr"
+  },
+  {
+   "id": "FPLt3Ud3pbkX",
+   "action": "remove",
+   "at": {
+    "region": "Kalos",
+    "name": "Hotel Richissime",
+    "parent": "Lumiose City"
+   },
+   "reason": "owner decision: no Legends: Z-A content in PokéGuessr"
+  },
+  {
+   "id": "BiAdPDwZd4A2",
+   "action": "remove",
+   "at": {
+    "region": "Kalos",
+    "name": "Lumiose Museum",
+    "parent": "Lumiose City"
+   },
+   "reason": "owner decision: no Legends: Z-A content in PokéGuessr"
+  },
+  {
+   "id": "-YLzxlM7eMtG",
+   "action": "remove",
+   "at": {
+    "region": "Kalos",
+    "name": "Lumiose Museum",
+    "parent": "Lumiose City"
+   },
+   "reason": "owner decision: no Legends: Z-A content in PokéGuessr"
+  },
+  {
+   "id": "Cu48L7HfvdKx",
+   "action": "remove",
+   "at": {
+    "region": "Kalos",
+    "name": "Lumiose Museum",
+    "parent": "Lumiose City"
+   },
+   "reason": "owner decision: no Legends: Z-A content in PokéGuessr"
+  },
+  {
+   "id": "iSavEI0hIYJZ",
+   "action": "remove",
+   "at": {
+    "region": "Kalos",
+    "name": "Lumiose Museum",
+    "parent": "Lumiose City"
+   },
+   "reason": "owner decision: no Legends: Z-A content in PokéGuessr"
+  },
+  {
+   "id": "O1gheH17lHtv",
+   "action": "remove",
+   "at": {
+    "region": "Kalos",
+    "name": "Lumiose Museum",
+    "parent": "Lumiose City"
+   },
+   "reason": "owner decision: no Legends: Z-A content in PokéGuessr"
+  },
+  {
+   "id": "46QiapW6xwAi",
+   "action": "remove",
+   "at": {
+    "region": "Kalos",
+    "name": "Saison Canal",
+    "parent": "Lumiose City"
+   },
+   "reason": "owner decision: no Legends: Z-A content in PokéGuessr"
+  },
+  {
+   "id": "Utv-G8TfxuHM",
+   "action": "remove",
+   "at": {
+    "region": "Kalos",
+    "name": "Vernal Avenue",
+    "parent": "Lumiose City"
+   },
+   "reason": "owner decision: no Legends: Z-A content in PokéGuessr"
   }
  ],
  "added": [
@@ -7738,6 +7867,30 @@
    "name": "Route 23",
    "game": "Let's Go, Pikachu! / Eevee!",
    "source": "https://www.pokepedia.fr/Fichier:Route_23_Baie_Nanana_dorée_LGPE.png"
+  },
+  {
+   "id": "uvzc6eXzh1RD",
+   "region": "Sinnoh",
+   "name": "Great Marsh",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Grand_Marais_DEPS.png",
+   "checked": "Poképédia's file for Grand Marais (the Great Marsh); the Great Marsh entrance building; uploaded whole (1280x720), not trimmed"
+  },
+  {
+   "id": "PQaT-synlfvn",
+   "region": "Sinnoh",
+   "name": "Lake Acuity",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Lac_Savoir_DEPS.png",
+   "checked": "Poképédia's file for Lac Savoir (Lake Acuity); the cavern islet in the lake; uploaded whole (1280x720), not trimmed"
+  },
+  {
+   "id": "f3pk4qpYPcgW",
+   "region": "Sinnoh",
+   "name": "Pokémon League",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Ligue_Pokémon_DEPS.png",
+   "checked": "Poképédia's file for the Sinnoh Pokémon League (DEPS = BDSP); the League building; uploaded whole (1280x720), not trimmed"
   }
  ]
 }

@@ -198,8 +198,8 @@ export function guessrTitle(r: Pick<GuessrShareResult, "daily" | "region" | "str
  * Five rounds: total out of 25,000, a square per round and each round's
  * points. Streak mode: how many places in a row. Never a place's name.
  */
-export function guessrShareText(r: GuessrShareResult, regionName: string, url?: string): string {
-  const title = guessrTitle(r, regionName);
+export function guessrShareText(r: GuessrShareResult, regionName: string, url?: string, opts: { mode?: string } = {}): string {
+  const title = `${guessrTitle(r, regionName)}${opts.mode ? ` · ${opts.mode}` : ""}`;
   if (r.streak !== undefined) {
     return composeShare({ title, score: `🔥${r.streak} in a row`, lines: [`${"✅".repeat(Math.min(r.streak, 20))}${r.streak > 20 ? "…" : ""}❌`], url });
   }

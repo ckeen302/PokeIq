@@ -5,6 +5,7 @@ import { Settings, X } from "lucide-react";
 import { Popover } from "@/components/ui/popover";
 import { GEO_ROUND_OPTIONS, type GeoRounds } from "@/lib/geo-types";
 import { GEO_TIMERS, geoSettingsBadge, type GeoPlaySettings } from "@/lib/geo-settings";
+import { GEO_DIFFICULTIES, GEO_DIFFICULTY_BLURBS, GEO_DIFFICULTY_NAMES, type GeoDifficulty } from "@/lib/geo-difficulty";
 import { cn } from "@/lib/utils";
 
 /**
@@ -141,6 +142,40 @@ export function RoundsPicker({
           </button>
         ))}
       </div>
+    </div>
+  );
+}
+
+/**
+ * Easy / Normal / Hard: which screenshots a free-play game leans to (the
+ * audit's ratings, moved by players' scores). Easy and Hard are practice.
+ */
+export function DifficultyPicker({ value, onChange }: { value: GeoDifficulty; onChange: (next: GeoDifficulty) => void }) {
+  return (
+    <div className="space-y-1.5">
+      <p className="hud-label">Difficulty</p>
+      <div className="flex gap-1.5" role="radiogroup" aria-label="Difficulty">
+        {GEO_DIFFICULTIES.map((d) => (
+          <button
+            key={d}
+            type="button"
+            role="radio"
+            aria-checked={value === d}
+            onClick={() => onChange(d)}
+            data-testid={`geo-difficulty-${d}`}
+            className={cn(
+              "min-w-16 rounded-md border px-3 py-1.5 font-display text-xs font-semibold uppercase tracking-wider transition-colors",
+              value === d ? "border-screen bg-screen/15 text-foreground" : "bg-card text-muted-foreground hover:border-screen/50 hover:text-foreground"
+            )}
+          >
+            {GEO_DIFFICULTY_NAMES[d]}
+          </button>
+        ))}
+      </div>
+      <p className="text-xs text-muted-foreground" data-testid="geo-difficulty-blurb">
+        {GEO_DIFFICULTY_BLURBS[value]}
+        {value !== "normal" ? " Practice: Normal keeps the leaderboards." : ""}
+      </p>
     </div>
   );
 }
