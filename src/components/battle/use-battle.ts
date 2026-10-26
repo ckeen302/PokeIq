@@ -177,6 +177,8 @@ export function useBattle(code: string) {
 
   const choose = useCallback((rqid: number, choice: string) => act({ action: "choose", rqid, choice }), [act]);
   const startTimer = useCallback(() => act({ action: "timer" }), [act]);
+  /** Cancel: take back the choice you sent (only while the opponent is still choosing). */
+  const undo = useCallback((rqid: number) => act({ action: "undo", rqid }), [act]);
 
   /** A chat message: never blocks play (no busy state); a refusal comes back as its message. */
   const chat = useCallback(
@@ -232,7 +234,7 @@ export function useBattle(code: string) {
     }
   }
 
-  return { view, log, offset, gone, offline, error, setError, busy, act, choose, startTimer, chat, join, rematch };
+  return { view, log, offset, gone, offline, error, setError, busy, act, choose, startTimer, undo, chat, join, rematch };
 }
 
 export type BattleHandle = ReturnType<typeof useBattle>;

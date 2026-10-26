@@ -72,6 +72,62 @@ function Floating({ rect, place, children }: { rect: DOMRect; place: "top" | "bo
   );
 }
 
+/**
+ * Touch screens have no hover: a tap toggles the tooltip instead, and a tap
+ * anywhere else closes it (Showdown's long-press, made a plain tap).
+ */
+export function TapTip({ content, children, place = "top" }: { content: () => React.ReactNode; children: React.ReactNode; place?: "top" | "bottom" }) {
+  const anchor = useRef<HTMLButtonElement>(null);
+  const [rect, setRect] = useState<DOMRect | null>(null);
+  useEffect(() => {
+    if (!rect) return;
+    const close = (e: Event) => {
+      if (!anchor.current?.contains(e.target as Node)) setRect(null);
+    };
+    window.addEventListener("pointerdown", close);
+    window.addEventListener("scroll", close);
+    return () => {
+      window.removeEventListener("pointerdown", close);
+      window.removeEventListener("scroll", close);
+    };
+  }, [rect]);
+  return (
+    <button
+      ref={anchor}
+      type="button"
+      className="block w-full text-left"
+      aria-expanded={!!rect}
+      onClick={() => setRect((r) => (r ? null : (anchor.current?.getBoundingClientRect() ?? null)))}
+      data-testid="tap-tip"
+    >
+      {children}
+      {rect && typeof document !== "undefined" && createPortal(<Floating rect={rect} place={place}>{content()}</Floating>, document.body)}
+    </button>
+  );
+}
+
+/** A field or side condition: what it does (the move or ability's own description) and how long it has left. */
+export function ConditionTip({ id, name, turns, level, gen = 9 }: { id: string; name: string; turns?: [number, number]; level?: number; gen?: number }) {
+  const dex = Dex.forGen(Math.min(9, Math.max(1, gen)));
+  const source = dex.moves.get(id);
+  const ability = source.exists ? null : dex.abilities.get(id);
+  const desc = source.exists ? source.shortDesc || source.desc : ability?.exists ? ability.shortDesc || ability.desc : "";
+  return (
+    <div className="space-y-1.5" data-testid="condition-tooltip">
+      <p className="font-display text-sm font-bold uppercase tracking-wide text-white">
+        {name}
+        {level && level > 1 ? <span className="ml-1 text-white/70">×{level}</span> : null}
+      </p>
+      {desc && <p className="text-white/80">{desc}</p>}
+      {turns ? (
+        <p className="font-pixel text-[10px] uppercase text-warning">
+          {turns[0] === turns[1] ? turns[0] : `${turns[0]} to ${turns[1]}`} turn{turns[1] === 1 ? "" : "s"} left
+        </p>
+      ) : null}
+    </div>
+  );
+}
+
 function TypeBadge({ type }: { type: string }) {
   return (
     <span className="rounded-sm px-1.5 py-0.5 font-pixel text-[9px] uppercase" style={{ background: typeColor(type.toLowerCase()), color: typeTextColor(type.toLowerCase()) }}>

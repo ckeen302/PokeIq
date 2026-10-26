@@ -717,7 +717,8 @@ export type BattleAction =
   | { action: "team"; team: string }
   | { action: "choose"; rqid: number; choice: string }
   | { action: "forfeit" }
-  | { action: "timer" };
+  | { action: "timer" }
+  | { action: "undo"; rqid: number };
 
 /** An action by a player. `join` has no seat yet; everything else needs `playerId`. */
 export async function actOnBattle(
@@ -778,6 +779,8 @@ export async function actOnBattle(
         return choose(work, seat, body.rqid, body.choice, now);
       case "timer":
         return startTimer(work, seat, now);
+      case "undo":
+        return undoChoice(work, seat, body.rqid, now);
     }
   });
   if (!out.ok) return out;
@@ -814,6 +817,33 @@ function choose(work: Work, seat: number, rqid: number, choice: string, now: num
   const result = session.choose(side, choice);
   if (result.ok) playCpu(work, session);
   work.absorb(now);
+  return result.ok ? { ok: true } : { ok: true, rejected: result.error };
+}
+
+/**
+ * Cancel: takes back a choice the opponent hasn't answered yet (Showdown's
+ * /undo). `rqid` is the request the choice answered, so a cancel that
+ * arrives after the turn has moved on is refused. The clock picks up where
+ * it stopped: no fresh turn allowance for cancelling.
+ */
+function undoChoice(work: Work, seat: number, rqid: number, now: number): Outcome<{ rejected?: string }> {
+  const meta = work.meta;
+  if (meta.kind !== "pvp" || meta.status !== "playing") return fail(409, "There's nothing to cancel.");
+  const side: SideID = sideOf(seat);
+  if (meta.requests[seat] || !meta.chosen?.[side]) return fail(409, "There's nothing to cancel.");
+  if (rqid !== meta.rqid[seat]) return fail(409, "Too late to cancel: the next turn has already started.");
+  const clock = meta.clocks?.[seat];
+  const bank = clock?.bank;
+  const session = work.session(now);
+  if (!session) return fail(409, "This battle couldn't continue.");
+  const result = session.undo(side);
+  work.absorb(now);
+  const timer = timerOf(meta);
+  if (clock && bank !== undefined && timer && meta.requests[seat] && !clock.preview) {
+    clock.bank = bank;
+    clock.startedAt = now;
+    clock.deadline = now + Math.min(bank, timer.cap);
+  }
   return result.ok ? { ok: true } : { ok: true, rejected: result.error };
 }
 
@@ -931,6 +961,8 @@ export function battleView(meta: BattleMeta, playerId: string | null, log: strin
     request,
     waiting: you !== null && meta.status === "playing" && !request,
   };
+  // Chosen, and the opponent hasn't: the choice can still be taken back (live battles; the computer answers at once).
+  if (you !== null && !request && meta.kind === "pvp" && meta.status === "playing" && meta.chosen?.[you === 0 ? "p1" : "p2"]) view.cancel = { rqid: meta.rqid[you] };
   if (meta.cpu) view.cpu = { level: meta.cpu.level };
   if (meta.clocks && you !== null) {
     const clock = (c: SideClock) => ({ bank: c.bank, deadline: c.deadline });

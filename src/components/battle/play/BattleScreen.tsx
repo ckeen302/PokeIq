@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { MusicControl, trackFor, useBattleMusic } from "./MusicControl";
-import { AlertTriangle, Eye, FastForward, Gauge, Loader2, ScrollText, SkipForward, Sparkles, Timer } from "lucide-react";
+import { AlertTriangle, Eye, Undo2, FastForward, Gauge, Loader2, ScrollText, SkipForward, Sparkles, Timer } from "lucide-react";
 import { CPU_LEVEL_INFO, PLAY_FORMAT_INFO, type BattleRequestPokemon, type BattleView } from "@/lib/battle/play";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
@@ -38,6 +38,8 @@ export interface BattleScreenProps {
   endActions?: React.ReactNode;
   /** Under the battle log: the players' chat in a live battle. */
   side?: React.ReactNode;
+  /** A live battle: take back the choice you sent while the opponent is still choosing. */
+  onUndo?: (rqid: number) => void;
   /** A live battle with the timer off: start it. */
   onStartTimer?: () => void;
   /** Under the header: a replay's playback controls. */
@@ -133,7 +135,7 @@ function useTick(active: boolean) {
   return now;
 }
 
-export default function BattleScreen({ view, log, offset, busy, error, onChoose, endActions, side, onStartTimer, toolbar, replay, onIdle }: BattleScreenProps) {
+export default function BattleScreen({ view, log, offset, busy, error, onChoose, endActions, side, onUndo, onStartTimer, toolbar, replay, onIdle }: BattleScreenProps) {
   const watching = view.you === null;
   const idle = useRef(onIdle);
   idle.current = onIdle;
@@ -174,6 +176,9 @@ export default function BattleScreen({ view, log, offset, busy, error, onChoose,
   const speedRef = useRef(1);
   const [showLog, setShowLog] = useState(false);
   const logEnd = useRef<HTMLDivElement>(null);
+  const logBox = useRef<HTMLDivElement>(null);
+  /** Whether the log was scrolled to its end before the newest lines came in (as on Showdown, reading back stops the autoscroll). */
+  const logAtEnd = useRef(true);
 
   useEffect(() => {
     try {
@@ -325,7 +330,9 @@ export default function BattleScreen({ view, log, offset, busy, error, onChoose,
   }, [myTeam, snap, me]);
 
   useEffect(() => {
-    logEnd.current?.scrollIntoView({ block: "nearest" });
+    const box = logBox.current;
+    // Scrolls the log box itself, never the page around it.
+    if (box && logAtEnd.current) box.scrollTop = box.scrollHeight;
   }, [entries.length, showLog]);
 
   const skip = () => {
@@ -402,7 +409,7 @@ export default function BattleScreen({ view, log, offset, busy, error, onChoose,
           )}
           <MusicControl />
           {!replay && !watching && <HotkeyHelp open={help.open} onToggle={help.toggle} />}
-          <div className="flex items-center gap-1" role="group" aria-label="Battle log options: text speed and animations" title="Text speed">
+          <div className="flex flex-wrap items-center gap-1" role="group" aria-label="Battle log options: text speed and animations" title="Text speed">
             <Gauge className="h-3.5 w-3.5 text-muted-foreground" aria-hidden />
             {SPEEDS.map((s) => (
               <button
@@ -422,7 +429,7 @@ export default function BattleScreen({ view, log, offset, busy, error, onChoose,
               type="button"
               onClick={() => toggleAnimations(!animationsOn)}
               aria-pressed={animationsOn}
-              className="ml-1 flex items-center gap-1 rounded-sm px-1.5 py-0.5 font-pixel text-[10px] text-muted-foreground hover:text-foreground"
+              className="ml-1 flex items-center whitespace-nowrap gap-1 rounded-sm px-1.5 py-0.5 font-pixel text-[10px] text-muted-foreground hover:text-foreground"
               title="Battle log option: animate each step, or show it at once"
               data-testid="animations-toggle"
             >
@@ -487,6 +494,17 @@ export default function BattleScreen({ view, log, offset, busy, error, onChoose,
                 ) : (
                   <>
                     <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> {busy ? "Sending…" : view.cpu ? "The computer is thinking…" : watching ? "The trainers are choosing…" : `Waiting for ${foeName}…`}
+                    {view.cancel && onUndo && !busy && (
+                      <button
+                        type="button"
+                        onClick={() => onUndo(view.cancel!.rqid)}
+                        className="ml-2 flex items-center gap-1 rounded-sm border border-border px-2 py-0.5 font-pixel text-[10px] uppercase text-foreground hover:bg-muted"
+                        title="Take back your choice before your opponent makes theirs"
+                        data-testid="cancel-choice"
+                      >
+                        <Undo2 className="h-3 w-3" aria-hidden /> Cancel
+                      </button>
+                    )}
                   </>
                 )}
               </p>
@@ -508,6 +526,11 @@ export default function BattleScreen({ view, log, offset, busy, error, onChoose,
                 side ? "lg:max-h-[calc(100vh-30rem)] lg:min-h-[10rem]" : "lg:max-h-[calc(100vh-12rem)]"
               )}
               data-testid="battle-log"
+              ref={logBox}
+              onScroll={(e) => {
+                const box = e.currentTarget;
+                logAtEnd.current = box.scrollHeight - box.scrollTop - box.clientHeight < 24;
+              }}
             >
               {entries.map((e) =>
                 e.turn !== undefined ? (

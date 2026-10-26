@@ -301,6 +301,8 @@ export interface BattleView {
   log: { from: number; total: number; lines: string[] };
   /** The choice the simulator wants from you now, with the counter that must come back with it. */
   request: { rqid: number; data: BattleRequest } | null;
+  /** Your choice is in and the opponent's isn't: it can still be cancelled (send `undo` with this rqid). */
+  cancel?: { rqid: number };
   /** You've chosen; the opponent hasn't yet. */
   waiting: boolean;
   /** Live battles: both clocks (yours first). */

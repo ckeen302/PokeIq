@@ -88,6 +88,7 @@ export function targetChoices(target: string | undefined, slot: number): number[
   const ally = -(2 - slot);
   if (target === "adjacentAlly") return [ally];
   if (target === "adjacentAllyOrSelf") return [self, ally];
-  // normal, any, adjacentFoe: either foe (aiming "any" at your partner is legal but never wanted).
-  return [1, 2];
+  if (target === "adjacentFoe") return [1, 2];
+  // normal and any: either foe or your partner, as on Showdown (Pollen Puff, Heal Pulse, Skill Swap or Beat Up on an ally).
+  return [1, 2, ally];
 }

@@ -395,12 +395,16 @@ export function Controls({ request, snap, me, doubles, busy, onChoose, format, o
   if (aiming) {
     keys.digit = (n) => {
       const t = aiming.targets[n - 1];
-      if (t !== undefined && !busy) add(`move ${aiming.index} ${t}${suffix()}`);
+      const mon = t === undefined ? null : t > 0 ? foeSide.active[t - 1] : mySide.active[-t - 1];
+      if (t !== undefined && !busy && mon && !mon.fainted) add(`move ${aiming.index} ${t}${suffix()}`);
     };
     keys.back = () => setAiming(null);
-    const label = (t: number) => {
-      if (t > 0) return foeSide.active[t - 1]?.name ?? "Empty spot";
-      return mySide.active[-t - 1]?.name ?? "Empty spot";
+    const at = (t: number) => (t > 0 ? foeSide.active[t - 1] : mySide.active[-t - 1]);
+    const label = (t: number) => at(t)?.name ?? "Empty spot";
+    // Showdown greys out spots with no Pokémon in them (the simulator would retarget anyway).
+    const empty = (t: number) => {
+      const mon = at(t);
+      return !mon || mon.fainted;
     };
     return (
       <div className="space-y-3">
@@ -417,13 +421,13 @@ export function Controls({ request, snap, me, doubles, busy, onChoose, format, o
               type="button"
               data-testid="target-button"
               aria-keyshortcuts={String(ti + 1)}
-              disabled={busy}
+              disabled={busy || empty(t)}
               onClick={() => add(`move ${aiming.index} ${t}${suffix()}`)}
-              className={cn("menu-item flex items-center gap-2 rounded-md border bg-card px-3 py-2 text-left hover:border-screen/60", t < 0 && "border-dashed")}
+              className={cn("menu-item flex items-center gap-2 rounded-md border bg-card px-3 py-2 text-left hover:border-screen/60 disabled:opacity-40", t < 0 && "border-dashed")}
             >
               <Crosshair className="h-4 w-4 text-primary" aria-hidden />
               <span className="font-display font-bold uppercase">{label(t)}</span>
-              <span className="hud-label ml-auto">{t > 0 ? "Foe" : "Ally"}</span>
+              <span className="hud-label ml-auto">{t > 0 ? "Foe" : t === -(slot + 1) ? "Self" : "Ally"}</span>
             </button>
           ))}
         </div>

@@ -1859,6 +1859,12 @@ step("live battle: the turn timer warns at 30 seconds left, with loss on timeout
 await liveRed.getByTestId("timer-warning").waitFor({ timeout: 80_000 });
 if (!/lose the battle/.test(await liveRed.getByTestId("timer-warning").innerText())) errors.push("the timer warning doesn't say running out loses");
 await liveRed.screenshot({ path: `${OUT}/battle-p1-timer-warning.png` });
+// Cancel (Showdown's undo): Red picks a move, takes it back while Blue is still choosing, and gets the menu again.
+step("live battle: cancel a choice before the opponent chooses");
+await liveRed.locator("[data-testid=move-button]").first().click();
+await liveRed.getByTestId("cancel-choice").click({ timeout: 15_000 });
+await liveRed.locator("[data-testid=move-button]").first().waitFor({ timeout: 15_000 });
+await liveRed.screenshot({ path: `${OUT}/battle-p1-cancelled.png` });
 // Chat beside the battle log: both ways; a link is refused.
 await chatTo(liveRed, liveBlue, "good luck!");
 await chatTo(liveBlue, liveRed, "have fun");

@@ -5,7 +5,7 @@ import { Check, ClipboardCopy, CopyPlus, FileInput, FileOutput, Link2, LoaderCir
 import { Button } from "@/components/ui/button";
 import { BATTLE_FORMATS, BATTLE_FORMAT_IDS, isBattleFormatId, type BattleFormatId } from "@/lib/battle/formats";
 import { pokepasteId } from "@/lib/battle/pokepaste";
-import { exportShowdown, importShowdown, TEAM_SIZE, type ImportedTeam, type TeamSet } from "@/lib/battle/sets";
+import { exportShowdown, importShowdown, importShowdownTeams, TEAM_SIZE, type ImportedTeam, type TeamSet } from "@/lib/battle/sets";
 import { saveTeam, type BattleTeam } from "@/lib/battle/teams";
 import { cn } from "@/lib/utils";
 import { BattleSprite } from "./BattleSprite";
@@ -246,9 +246,12 @@ function Verdict({ state, formatName }: { state: CheckState; formatName: string 
 export function ImportPanel({
   confirmLabel,
   onImport,
+  onImportMany,
 }: {
   confirmLabel: string;
   onImport: (sets: TeamSet[], meta: { name?: string; format?: BattleFormatId }) => void;
+  /** A teambuilder backup with several teams: all of them, in order (without this, only the first is imported). */
+  onImportMany?: (teams: { sets: TeamSet[]; name?: string; format?: BattleFormatId }[]) => void;
 }) {
   const [text, setText] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -315,6 +318,11 @@ export function ImportPanel({
         <Button
           size="sm"
           onClick={() => {
+            if (onImportMany) {
+              const teams = importShowdownTeams(text);
+              if (teams.length > 1)
+                return onImportMany(teams.map((t) => ({ sets: t.sets, name: t.name?.slice(0, 60), format: isBattleFormatId(t.format) ? t.format : undefined })));
+            }
             const imported = importShowdown(text);
             if (!imported) return setError("No Pokémon found. Paste a team exported from Showdown's teambuilder.");
             onImport(imported.sets, {

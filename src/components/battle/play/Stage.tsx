@@ -9,7 +9,7 @@ import { battleSpriteCandidates, spriteData } from "./sprites";
 import type { PopupTone, StageHandle, StageSprite } from "./player";
 import { Hud, TeamBalls, type Ball } from "./Hud";
 import { Backdrop } from "./Backdrop";
-import { MonTip, Tip, tipFromRequest, tipFromSnap } from "./Tooltips";
+import { ConditionTip, MonTip, TapTip, Tip, tipFromRequest, tipFromSnap } from "./Tooltips";
 import type { BattleRequestPokemon } from "@/lib/battle/play";
 import { cn } from "@/lib/utils";
 
@@ -220,9 +220,9 @@ export function Stage({ snap, me, doubles, popups, onHandle, myBalls, format = "
   const tint = TERRAIN_TINT[snap.terrain];
   const trickRoom = snap.pseudo.includes("trickroom");
   const fieldChips: Chip[] = [];
-  if (snap.weather) fieldChips.push({ label: snap.weather, turns: snap.turns?.weather });
-  if (snap.terrain) fieldChips.push({ label: `${snap.terrain} Terrain`, turns: snap.turns?.terrain });
-  for (const p of snap.pseudo) if (PSEUDO[p]) fieldChips.push({ label: PSEUDO[p], turns: snap.turns?.[p] });
+  if (snap.weather) fieldChips.push({ id: WEATHER_ID[snap.weather] ?? snap.weather, label: snap.weather, turns: snap.turns?.weather });
+  if (snap.terrain) fieldChips.push({ id: `${snap.terrain.toLowerCase()}terrain`, label: `${snap.terrain} Terrain`, turns: snap.turns?.terrain });
+  for (const p of snap.pseudo) if (PSEUDO[p]) fieldChips.push({ id: p, label: PSEUDO[p], turns: snap.turns?.[p] });
 
   return (
     <div className="relative">
@@ -248,14 +248,16 @@ export function Stage({ snap, me, doubles, popups, onHandle, myBalls, format = "
 
         {/* Overlays in screen space. */}
         <div className="pointer-events-none absolute inset-0 z-10">
-          <span className="hud-label absolute left-1/2 top-2 -translate-x-1/2 rounded-sm bg-black/55 px-2 py-1 text-white/80">Turn {Math.max(1, snap.turn)}</span>
+          <span className="hud-label absolute left-2 top-2 rounded-sm sm:left-1/2 sm:-translate-x-1/2 bg-black/55 px-2 py-1 text-white/80">Turn {Math.max(1, snap.turn)}</span>
           {fieldChips.length > 0 && (
             <div className="absolute right-2 top-2 flex flex-col items-end gap-1" data-testid="field-conditions">
               {fieldChips.map((chip) => (
-                <span key={chip.label} className="hud-label flex items-center gap-1.5 rounded-sm bg-black/60 px-2 py-1 text-white/90">
-                  {chip.label}
-                  {chip.turns && <TurnsLeft turns={chip.turns} />}
-                </span>
+                <Tip key={chip.label} place="bottom" content={() => <ConditionTip id={chip.id} name={chip.label} turns={chip.turns} gen={snap.gen} />}>
+                  <span tabIndex={0} className="hud-label pointer-events-auto flex cursor-help items-center gap-1.5 rounded-sm bg-black/60 px-2 py-1 text-white/90">
+                    {chip.label}
+                    {chip.turns && <TurnsLeft turns={chip.turns} />}
+                  </span>
+                </Tip>
               ))}
             </div>
           )}
@@ -300,18 +302,53 @@ export function Stage({ snap, me, doubles, popups, onHandle, myBalls, format = "
 
       {/* Phones: the HUDs sit around the field instead of over it. */}
       <div className="mt-2 grid gap-1.5 sm:hidden">
-        <div className="grid grid-cols-1 gap-1.5">
-          {snap.sides[foe].active.map((mon, i) => (mon ? <Hud key={i} mon={mon} mine={false} compact={doubles} /> : null))}
+        <div className="grid grid-cols-1 gap-1.5" data-testid="phone-foe">
+          <div className="flex flex-wrap items-center justify-between gap-1.5">
+            <TeamBalls side={snap.sides[foe]} />
+            <SideConditions side={snap.sides[foe]} align="end" />
+          </div>
+          {snap.sides[foe].active.map((mon, i) =>
+            mon ? (
+              <TapTip key={i} content={() => <MonTip mon={tipFromSnap(mon)} mine={false} gen={snap.gen} format={format} />}>
+                <Hud mon={mon} mine={false} compact={doubles} />
+              </TapTip>
+            ) : null
+          )}
         </div>
-        <div className="grid grid-cols-1 gap-1.5">
-          {snap.sides[me].active.map((mon, i) => (mon ? <Hud key={i} mon={mon} mine compact={doubles} /> : null))}
+        <div className="grid grid-cols-1 gap-1.5" data-testid="phone-mine">
+          {snap.sides[me].active.map((mon, i) => {
+            if (!mon) return null;
+            const own = myRequest?.find((p) => p.ident === mon.key);
+            return (
+              <TapTip key={i} content={() => <MonTip mon={own ? tipFromRequest(own, mon) : tipFromSnap(mon)} mine={!watching} gen={snap.gen} format={format} />}>
+                <Hud mon={mon} mine={!watching} compact={doubles} />
+              </TapTip>
+            );
+          })}
+          <div className="flex flex-wrap items-center justify-between gap-1.5">
+            <TeamBalls side={snap.sides[me]} balls={myBalls} />
+            <SideConditions side={snap.sides[me]} align="end" />
+          </div>
         </div>
       </div>
     </div>
   );
 }
 
+/** @pkmn/client's weather names, back to the moves and abilities that set them. */
+const WEATHER_ID: Record<string, string> = {
+  Sand: "sandstorm",
+  Sun: "sunnyday",
+  Rain: "raindance",
+  Hail: "hail",
+  Snow: "snowscape",
+  "Harsh Sunshine": "desolateland",
+  "Heavy Rain": "primordialsea",
+  "Strong Winds": "deltastream",
+};
+
 interface Chip {
+  id: string;
   label: string;
   turns?: [number, number];
 }
@@ -345,10 +382,11 @@ function SideConditions({ side, align = "start" }: { side: SideSnap; align?: "st
   return (
     <div className={cn("flex flex-wrap gap-1", align === "end" && "justify-end")} data-testid={`side-conditions-${side.id}`}>
       {side.conditions.map((c) => (
+        <Tip key={c.id} content={() => <ConditionTip id={c.id} name={c.name} turns={c.turns} level={c.level} />}>
         <span
-          key={c.id}
+          tabIndex={0}
           className={cn(
-            "hud-label flex items-center gap-1 rounded-sm px-1.5 py-0.5 text-[9px]",
+            "hud-label pointer-events-auto flex cursor-help items-center gap-1 rounded-sm px-1.5 py-0.5 text-[9px]",
             SIDE_KIND[c.id] === "hazard" ? "bg-amber-500/80 text-black" : SIDE_KIND[c.id] === "screen" ? "bg-sky-400/80 text-black" : "bg-black/60 text-white/90"
           )}
         >
@@ -356,12 +394,15 @@ function SideConditions({ side, align = "start" }: { side: SideSnap; align?: "st
           {c.level > 1 && <span>×{c.level}</span>}
           {c.turns && <TurnsLeft turns={c.turns} />}
         </span>
+        </Tip>
       ))}
     </div>
   );
 }
 
 const PSEUDO: Record<string, string> = {
+  mudsport: "Mud Sport",
+  watersport: "Water Sport",
   trickroom: "Trick Room",
   gravity: "Gravity",
   magicroom: "Magic Room",

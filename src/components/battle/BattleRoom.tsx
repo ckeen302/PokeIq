@@ -338,6 +338,7 @@ export function BattleRoom({ code }: { code: string }) {
         error={battle.error}
         onChoose={(rqid, choice) => void battle.choose(rqid, choice)}
         onStartTimer={() => void battle.startTimer()}
+        onUndo={(rqid) => void battle.undo(rqid)}
         endActions={
           view.frontier ? (
             <FrontierAfter view={view} />

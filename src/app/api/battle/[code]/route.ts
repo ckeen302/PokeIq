@@ -25,6 +25,7 @@ import { BATTLE_CHOICE_RE, BATTLE_TEAM_MAX, type BattleSeatResponse } from "@/li
  *   { action: "team", token, team }               in the lobby: bring (or replace) your team
  *   { action: "choose", token, rqid, choice }     answer request `rqid` ("move 1", "switch 3", "team 213456"...)
  *   { action: "forfeit", token }                  leave the lobby, or forfeit the battle
+ *   { action: "undo", token, rqid }               take back your choice before the opponent makes theirs (Cancel)
  *   { action: "timer", token }                    start the turn timer (a live battle that began with it off)
  *   { action: "rematch", token }                  a new live battle with the same players
  *   { action: "chat", token, text }               live battles: a chat message (see server/chat.ts)
@@ -53,6 +54,7 @@ const bodySchema = z.discriminatedUnion("action", [
   }),
   z.object({ action: z.literal("forfeit"), token, since }),
   z.object({ action: z.literal("timer"), token, since }),
+  z.object({ action: z.literal("undo"), token, rqid: z.number().int().min(0).max(1_000_000), since }),
   z.object({ action: z.literal("rematch"), token }),
   z.object({ action: z.literal("chat"), token, text: z.string().max(CHAT_BODY_MAX, "Keep it under 200 characters."), since }),
 ]);

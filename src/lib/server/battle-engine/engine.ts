@@ -158,6 +158,21 @@ export class SimSession {
     return { ok: false, error: this.errors[side].join(" ") || "That choice isn't possible right now." };
   }
 
+  /**
+   * Takes back `side`'s choice while the other side is still choosing
+   * (Showdown's Cancel, under the format's Cancel Mod). Choices only reach
+   * the input log once both sides have chosen, so nothing is logged.
+   */
+  undo(side: SideID): { ok: true } | { ok: false; error: string } {
+    if (this.battle.ended) return { ok: false, error: "The battle is over." };
+    const s = this.battle[side];
+    if (!s.activeRequest || s.activeRequest.wait || !s.isChoiceDone()) return { ok: false, error: "There's nothing to cancel." };
+    this.errors[side] = [];
+    this.battle.undoChoice(side);
+    if (s.isChoiceDone()) return { ok: false, error: this.errors[side].join(" ").replace(/^\[[^\]]*\]\s*/, "") || "That choice can't be cancelled." };
+    return { ok: true };
+  }
+
   /** A forfeit, a timeout or a disconnect: `side` loses. */
   lose(side: SideID): void {
     if (this.battle.ended) return;
