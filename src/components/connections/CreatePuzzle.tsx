@@ -273,7 +273,7 @@ export function CreatePuzzle() {
             setLink(null);
             setSuggestion(null);
           }}
-          placeholder="A link: an ability, type, move, colour… (try “levitate”)"
+          placeholder="Try “levitate”, “fire”, “stone”…"
           autoComplete="off"
           className="h-10 w-full rounded-md border border-foreground/15 bg-card px-3 text-sm"
           data-testid="create-link-input"

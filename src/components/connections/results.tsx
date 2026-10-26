@@ -2,7 +2,6 @@
 
 import { useEffect, useId, useState } from "react";
 import Link from "next/link";
-import confetti from "canvas-confetti";
 import { motion } from "framer-motion";
 import { Loader2, Medal, Trophy } from "lucide-react";
 import { CONN_LEVELS, CONN_MAX_MISTAKES, type ConnBoardRow, type ConnBoardStanding } from "@/lib/connections/types";
@@ -24,13 +23,22 @@ const COLOURS = CONN_LEVELS.map((l) => l.hex);
 export function useCelebration(kind: "perfect" | "solved" | null) {
   useEffect(() => {
     if (!kind || reduced()) return;
-    confetti({ particleCount: kind === "perfect" ? 110 : 60, spread: 80, origin: { y: 0.35 }, colors: COLOURS, disableForReducedMotion: true });
-    if (kind !== "perfect") return;
-    const t = window.setTimeout(() => {
-      confetti({ particleCount: 70, angle: 60, spread: 65, origin: { x: 0, y: 0.6 }, colors: COLOURS, disableForReducedMotion: true });
-      confetti({ particleCount: 70, angle: 120, spread: 65, origin: { x: 1, y: 0.6 }, colors: COLOURS, disableForReducedMotion: true });
-    }, 380);
-    return () => window.clearTimeout(t);
+    let t: number | undefined;
+    let live = true;
+    // Loaded on the win itself: the board doesn't wait for it.
+    void import("canvas-confetti").then(({ default: confetti }) => {
+      if (!live) return;
+      confetti({ particleCount: kind === "perfect" ? 110 : 60, spread: 80, origin: { y: 0.35 }, colors: COLOURS, disableForReducedMotion: true });
+      if (kind !== "perfect") return;
+      t = window.setTimeout(() => {
+        confetti({ particleCount: 70, angle: 60, spread: 65, origin: { x: 0, y: 0.6 }, colors: COLOURS, disableForReducedMotion: true });
+        confetti({ particleCount: 70, angle: 120, spread: 65, origin: { x: 1, y: 0.6 }, colors: COLOURS, disableForReducedMotion: true });
+      }, 380);
+    });
+    return () => {
+      live = false;
+      window.clearTimeout(t);
+    };
   }, [kind]);
 }
 

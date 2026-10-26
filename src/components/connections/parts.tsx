@@ -26,7 +26,8 @@ export function LevelMark({ level, className }: { level: ConnLevel; className?: 
  * or a type, an icon for an ability. `size` is the box in pixels.
  */
 export function TileArt({ tile, size, className }: { tile: ConnTile; size: number; className?: string }) {
-  if (!tile.kind) return <img src={artUrl(tile.id, size <= 48 ? 96 : 160)} alt="" draggable={false} className={className} />;
+  // width/height reserve the box before the sprite arrives (no layout shift); 160px art stays crisp on a 3x phone at the grid's size.
+  if (!tile.kind) return <img src={artUrl(tile.id, size <= 48 ? 96 : 160)} alt="" width={size} height={size} decoding="async" draggable={false} className={className} />;
   const small = size <= 48;
   if (tile.kind === "ability") {
     return (
@@ -53,6 +54,10 @@ export const tileKindLabel = (tile: ConnTile) => (tile.kind === "move" ? "Move" 
 
 export type TileMotion = "jump" | "shake" | null;
 
+/** A tile's (and a found group's bar's) height: the whole 4×4 board and its buttons fit a 390×844 phone and a 1440×900 laptop without scrolling. */
+export const TILE_H4 = "h-[5.75rem] sm:h-[7rem]";
+export const TILE_H5 = "h-[4.75rem] sm:h-[6rem]";
+
 /** One Pokémon on the grid: its sprite and name, selectable. */
 export const GridTile = forwardRef<
   HTMLButtonElement,
@@ -72,7 +77,8 @@ export const GridTile = forwardRef<
     compact?: boolean;
   }
 >(function GridTile({ tile, index, selected, disabled, motionKind, order, onToggle, onKeyDown, hinted, compact }, ref) {
-  const long = tile.name.length > 9;
+  // The name always fits on one line: its size shrinks with its length against the tile's width (a container query).
+  const fit = { "--conn-chars": Math.max(tile.name.length, 6) } as React.CSSProperties;
   return (
     <motion.button
       ref={ref}
@@ -97,9 +103,9 @@ export const GridTile = forwardRef<
       }
       whileTap={disabled ? undefined : { scale: 0.96 }}
       className={cn(
-        "group relative flex min-w-0 select-none flex-col items-center justify-center gap-0.5 rounded-lg border px-1.5 pb-2 pt-1 text-center",
+        "group relative flex min-w-0 select-none flex-col items-center justify-center gap-0.5 rounded-lg border px-1 pb-1.5 pt-1 text-center [container-type:inline-size] [-webkit-tap-highlight-color:transparent] sm:px-1.5 sm:pb-2",
         "transition-[background-color,border-color,color,box-shadow] duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
-        compact ? "h-[5.5rem] sm:h-[6.75rem]" : "h-[7.25rem] sm:h-[8.25rem]",
+        compact ? TILE_H5 : TILE_H4,
         selected
           ? "border-screen bg-screen text-background shadow-[0_3px_0_hsl(var(--screen)/0.45)]"
           : "border-foreground/10 bg-card text-foreground shadow-[0_3px_0_hsl(var(--border))] hover:border-screen/60 hover:bg-screen/[0.07]",
@@ -115,9 +121,19 @@ export const GridTile = forwardRef<
       <TileArt
         tile={tile}
         size={76}
-        className={cn(compact ? "h-10 w-10 sm:h-14 sm:w-14" : "h-16 w-16 sm:h-[4.75rem] sm:w-[4.75rem]", "object-contain transition-transform duration-150", !selected && "group-hover:scale-105")}
+        className={cn(compact ? "h-10 w-10 sm:h-14 sm:w-14" : "h-14 w-14 sm:h-[4.25rem] sm:w-[4.25rem]", "pointer-events-none object-contain transition-transform duration-150", !selected && "group-hover:scale-105")}
       />
-      <span className={cn("block w-full font-display font-bold uppercase leading-tight [overflow-wrap:anywhere] sm:truncate sm:tracking-wide", compact ? (long ? "text-[8px] sm:text-[11px]" : "text-[9px] sm:text-xs") : long ? "text-[9px] sm:text-xs" : "text-[10px] sm:text-sm")}>{tile.name}</span>
+      <span
+        style={fit}
+        className={cn(
+          "block w-full overflow-hidden whitespace-nowrap font-display font-bold uppercase leading-tight",
+          compact
+            ? "text-[min(10px,calc(100cqw/(var(--conn-chars)*0.68)))] sm:text-[min(12px,calc(100cqw/(var(--conn-chars)*0.68)))]"
+            : "text-[min(11px,calc(100cqw/(var(--conn-chars)*0.68)))] sm:text-[min(14px,calc(100cqw/(var(--conn-chars)*0.68)))] sm:tracking-wide"
+        )}
+      >
+        {tile.name}
+      </span>
     </motion.button>
   );
 });
@@ -127,12 +143,12 @@ export function GroupBar({ group, symbols, revealed, compact }: { group: ConnGro
   return (
     <motion.div
       layout
-      initial={{ opacity: 0, scale: 0.92 }}
-      animate={{ opacity: 1, scale: 1 }}
-      transition={{ type: "spring", stiffness: 380, damping: 28 }}
+      initial={{ opacity: 0, scale: 0.9, y: 6 }}
+      animate={{ opacity: 1, scale: 1, y: 0 }}
+      transition={{ type: "spring", stiffness: 420, damping: 24 }}
       className={cn(
         "relative flex flex-col items-center justify-center gap-1 overflow-hidden rounded-lg px-4 text-center shadow-[0_3px_0_rgb(0_0_0/0.25)]",
-        compact ? "h-[5.5rem] sm:h-[6.75rem]" : "h-[7.25rem] sm:h-[8.25rem]"
+        compact ? TILE_H5 : TILE_H4
       )}
       style={levelStyle(group.level)}
       data-testid="conn-group"
@@ -140,15 +156,24 @@ export function GroupBar({ group, symbols, revealed, compact }: { group: ConnGro
       role="group"
       aria-label={`${CONN_LEVELS[group.level].name} group${revealed ? " (revealed)" : ""}: ${group.label}: ${group.members.map((m) => m.name).join(", ")}`}
     >
-      <p className="flex items-center gap-2 font-display text-base font-bold uppercase tracking-wide sm:text-lg">
+      {!revealed && (
+        <motion.span
+          aria-hidden
+          className="pointer-events-none absolute inset-y-0 left-0 w-1/3 bg-gradient-to-r from-transparent via-white/50 to-transparent"
+          initial={{ x: "-120%" }}
+          animate={{ x: "420%" }}
+          transition={{ duration: 0.7, delay: 0.12, ease: "easeOut" }}
+        />
+      )}
+      <p className="flex items-center gap-2 font-display text-sm font-bold uppercase leading-tight tracking-wide sm:text-lg">
         {symbols && <LevelMark level={group.level} className="text-sm opacity-70" />}
         {group.label}
         {symbols && <LevelMark level={group.level} className="text-sm opacity-70" />}
       </p>
-      <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-0.5">
+      <div className="flex flex-wrap items-center justify-center gap-x-2.5 gap-y-0 sm:gap-x-3 sm:gap-y-0.5">
         {group.members.map((m) => (
-          <span key={m.id} className="flex items-center gap-1 text-sm font-semibold">
-            <TileArt tile={m} size={32} className="h-8 w-8 shrink-0 object-contain" />
+          <span key={m.id} className="flex items-center gap-0.5 text-xs font-semibold sm:gap-1 sm:text-sm">
+            <TileArt tile={m} size={32} className="h-6 w-6 shrink-0 object-contain sm:h-8 sm:w-8" />
             {m.name}
           </span>
         ))}
@@ -157,18 +182,20 @@ export function GroupBar({ group, symbols, revealed, compact }: { group: ConnGro
   );
 }
 
-/** Mistakes left, as dots. */
+/** Mistakes left, as dots: a lost one pops and turns into an empty ring; the last one left turns red. */
 export function MistakeDots({ left, max }: { left: number; max: number }) {
+  const last = left === 1;
   return (
-    <div className="flex items-center justify-center gap-3 text-sm text-muted-foreground" data-testid="conn-mistakes" aria-label={`${left} of ${max} mistakes left`}>
-      Mistakes remaining:
+    <div className={cn("flex items-center justify-center gap-3 text-sm transition-colors", last ? "font-semibold text-destructive" : "text-muted-foreground")} data-testid="conn-mistakes" data-left={left} aria-label={`${left} of ${max} mistakes left`}>
+      {last ? "Last chance:" : "Mistakes remaining:"}
       <span className="flex gap-1.5" aria-hidden>
         {Array.from({ length: max }, (_, i) => (
           <motion.span
             key={i}
             initial={false}
-            animate={{ scale: i < left ? 1 : 0.4, opacity: i < left ? 1 : 0.25 }}
-            className="h-3 w-3 rounded-full bg-foreground/80"
+            animate={i < left ? { scale: 1, opacity: 1 } : { scale: [1, 1.6, 0.85], opacity: [1, 1, 0.55] }}
+            transition={{ duration: 0.35 }}
+            className={cn("h-3.5 w-3.5 rounded-full border-2", i < left ? (last ? "border-destructive bg-destructive" : "border-foreground/80 bg-foreground/80") : "border-foreground/30 bg-transparent")}
           />
         ))}
       </span>

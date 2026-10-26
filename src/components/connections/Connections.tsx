@@ -1,9 +1,10 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import dynamic from "next/dynamic";
 import { AnimatePresence, LayoutGroup, MotionConfig, motion } from "framer-motion";
 import { track } from "@vercel/analytics";
-import { BarChart3, CalendarDays, CircleHelp, Dices, Infinity as InfinityIcon, Lightbulb, PencilLine, RefreshCw, Settings, Shuffle, Swords, Timer, X } from "lucide-react";
+import { BarChart3, CircleHelp, Infinity as InfinityIcon, Lightbulb, PencilLine, RefreshCw, Settings, Shuffle, Swords, Timer, X } from "lucide-react";
 import { connBlock, getProgress, recordConnGame, saveConn, setTrainerName, useProgress, type BadgeDef, type ConnRecord } from "@/lib/progress";
 import { parsePracticeSeed } from "@/lib/connections/pack-seed";
 import { useToday } from "@/lib/use-today";
@@ -33,8 +34,11 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Popover } from "@/components/ui/popover";
 import { ShareButton } from "@/components/share/ShareButton";
-import { GridTile, GroupBar, GuessHistory, MistakeDots, WhyPanel, type TileMotion } from "./parts";
-import { ConnArchiveSheet, ConnHowToSheet, ConnStatsSheet } from "./sheets";
+import { GridTile, GroupBar, GuessHistory, MistakeDots, TILE_H4, TILE_H5, WhyPanel, type TileMotion } from "./parts";
+// The pop-ups (how to play with its demo, stats, the archive) load when first opened, not with the board.
+const ConnHowToSheet = dynamic(() => import("./sheets").then((m) => m.ConnHowToSheet), { ssr: false });
+const ConnStatsSheet = dynamic(() => import("./sheets").then((m) => m.ConnStatsSheet), { ssr: false });
+const ConnArchiveSheet = dynamic(() => import("./sheets").then((m) => m.ConnArchiveSheet), { ssr: false });
 import { ChallengeBanner, ChallengeResult, FeedbackPanel, GroupStats } from "./social";
 import { ComeBackTomorrow, DailyLeaderboard, KeyHints, NewBadges, PerfectBanner, StreakFlame, useCelebration } from "./results";
 import { cn } from "@/lib/utils";
@@ -110,6 +114,9 @@ export function Connections({ customId }: { customId?: string } = {}) {
   const seenTodayRef = useRef<string | null>(null);
   const loadedRef = useRef(false);
   const tileRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  const resultRef = useRef<HTMLElement | null>(null);
+  /** The game ended in this visit (not restored on a reload): bring the result into view once it's in. */
+  const endedHereRef = useRef(false);
   const toastTimer = useRef<number | undefined>(undefined);
   const closeSettings = useCallback(() => setSettingsOpen(false), []);
 
@@ -215,7 +222,8 @@ export function Connections({ customId }: { customId?: string } = {}) {
     if (prev === today) return;
     seenTodayRef.current = today;
     if (prev === null && customId) void load({ kind: "practice", seed: customSeed(customId) });
-    else if (prev === null || (mode === "daily" && (guesses.length === 0 || over))) void load({ kind: "daily", date: today });
+    // The first daily never replaces a puzzle the player already asked for (Unlimited tapped before the page was ready).
+    else if (prev === null ? reqRef.current === 0 : mode === "daily" && (guesses.length === 0 || over)) void load({ kind: "daily", date: today });
   }, [today, progress, mode, guesses.length, over, load, customId]);
 
   // How to play, on a first visit.
@@ -247,6 +255,14 @@ export function Connections({ customId }: { customId?: string } = {}) {
       pause();
     };
   }, [puzzle, over, started]);
+
+  // The result sits below the board: once it's in, scroll to it (a phone would otherwise show only the coloured bars).
+  useEffect(() => {
+    if (!revealDone || !endedHereRef.current) return;
+    endedHereRef.current = false;
+    const t = window.setTimeout(() => resultRef.current?.scrollIntoView({ behavior: reducedMotion() ? "auto" : "smooth", block: "start" }), 900);
+    return () => window.clearTimeout(t);
+  }, [revealDone]);
 
   // After a loss, reveal the missing groups one by one, easiest first.
   useEffect(() => {
@@ -380,6 +396,7 @@ export function Connections({ customId }: { customId?: string } = {}) {
       const earned = save(target, { guesses: next, solved: result.won, over: result.over, mistakes: result.mistakes, ms: Math.round(elapsedMs), ...(usedHint && { hinted: true }) });
       setGuesses(next);
       if (result.over && !state?.over) {
+        endedHereRef.current = true;
         // Unlimited and the archive count toward the tallies and badges too (never the streak).
         const badges = target.kind === "daily" ? earned : recordConnGame(result.won, result.mistakes, target.kind === "practice" && parsePracticeSeed(target.seed).difficulty === "hard");
         setFresh(badges);
@@ -453,8 +470,10 @@ export function Connections({ customId }: { customId?: string } = {}) {
   }
 
   const closeSheet = useCallback(() => {
+    // Seen once is enough: the first-visit pop-up never opens by itself again (the ? button still does).
+    if (sheet === "howto" && !getConnPrefs().seenHowToDemo) setConnPrefs({ seenHowTo: true, seenHowToDemo: true });
     setSheet(null);
-  }, []);
+  }, [sheet]);
   /** "Don't show again": the first-visit pop-up stays closed on this device. */
   const closeHowToForever = useCallback(() => {
     setConnPrefs({ seenHowTo: true, seenHowToDemo: true });
@@ -500,19 +519,19 @@ export function Connections({ customId }: { customId?: string } = {}) {
 
   return (
     <MotionConfig reducedMotion="user">
-      <div className="mx-auto max-w-3xl space-y-5">
-        <div className="space-y-4 text-center">
-          <div className="space-y-2">
+      <div className="mx-auto max-w-3xl space-y-4 sm:space-y-5">
+        <div className="space-y-3 text-center sm:space-y-4">
+          <div className="space-y-1 sm:space-y-2">
             <p className="hud-label text-screen" data-testid="conn-title">
               {title}
             </p>
-            <h1 className="font-display text-4xl font-bold uppercase tracking-tight">Find the {SIZE_WORDS[size]} groups</h1>
-            <p className="text-sm text-muted-foreground">
+            <h1 className="font-display text-2xl font-bold uppercase tracking-tight sm:text-4xl">Find the {SIZE_WORDS[size]} groups</h1>
+            <p className="hidden text-sm text-muted-foreground sm:block">
               {SIZE_SQUARES[size]} Pokémon, {SIZE_WORDS[size]} hidden links. Every Pokémon fits exactly one.
             </p>
           </div>
-          <div className="flex justify-center">
-            <div className="flex flex-wrap justify-center rounded-md border border-foreground/15 bg-card p-0.5" role="radiogroup" aria-label="PokéConnections mode">
+          <div className="flex flex-col items-center justify-center gap-2 sm:flex-row sm:gap-3">
+            <div className="flex justify-center rounded-md border border-foreground/15 bg-card p-0.5" role="radiogroup" aria-label="PokéConnections mode">
               {(
                 [
                   { id: "daily", label: "Daily", title: "Today's puzzle, the same for everyone", on: backToDaily, disabled: !today },
@@ -529,43 +548,27 @@ export function Connections({ customId }: { customId?: string } = {}) {
                   onClick={m.on}
                   disabled={"disabled" in m && m.disabled}
                   className={cn(
-                    "min-w-[5.5rem] rounded px-3 py-1.5 font-display text-sm font-semibold uppercase tracking-wider transition-colors sm:min-w-24 sm:px-4",
+                    "min-w-[4.75rem] rounded px-3 py-1.5 font-display text-[13px] font-semibold uppercase tracking-wider transition-colors sm:min-w-24 sm:px-4 sm:text-sm",
                     mode === m.id ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
                   )}
                 >
                   {m.label}
                 </button>
               ))}
-              <a
-                href="#duel"
-                title="Race a friend or a stranger to the four groups"
-                className="flex min-w-[5.5rem] items-center justify-center gap-1.5 rounded px-3 py-1.5 font-display text-sm font-semibold uppercase tracking-wider text-muted-foreground transition-colors hover:text-foreground sm:min-w-24 sm:px-4"
-              >
-                <Swords className="h-3.5 w-3.5" aria-hidden /> Duel
-              </a>
-              <a
-                href="/connections/create"
-                title="Build your own puzzle and share a link"
-                data-testid="conn-create-link"
-                className="flex min-w-[5.5rem] items-center justify-center gap-1.5 rounded px-3 py-1.5 font-display text-sm font-semibold uppercase tracking-wider text-muted-foreground transition-colors hover:text-foreground sm:min-w-24 sm:px-4"
-              >
-                <PencilLine className="h-3.5 w-3.5" aria-hidden /> Create
-              </a>
             </div>
-          </div>
-          <div className="flex items-center justify-center gap-1" role="toolbar" aria-label="PokéConnections options">
-            <button type="button" className={iconButton} onClick={() => setSheet("howto")} aria-label="How to play" title="How to play">
-              <CircleHelp className="h-5 w-5" />
-            </button>
-            <button type="button" className={iconButton} onClick={() => setSheet("stats")} aria-label="Statistics" title="Statistics" disabled={!stats}>
-              <BarChart3 className="h-5 w-5" />
-            </button>
-            <button type="button" className={iconButton} onClick={() => setSheet("archive")} aria-label="Archive of past dailies" title="Archive of past dailies" disabled={!today}>
-              <CalendarDays className="h-5 w-5" />
-            </button>
-            <button type="button" className={cn(iconButton, mode === "practice" && "text-screen")} onClick={() => newPractice()} aria-pressed={mode === "practice"} aria-label="New practice puzzle" title="New practice puzzle (unlimited)">
-              <Dices className="h-5 w-5" />
-            </button>
+            <div className="flex items-center justify-center gap-0.5" role="toolbar" aria-label="PokéConnections options">
+              <button type="button" className={iconButton} onClick={() => setSheet("howto")} aria-label="How to play" title="How to play">
+                <CircleHelp className="h-5 w-5" />
+              </button>
+              <button type="button" className={iconButton} onClick={() => setSheet("stats")} aria-label="Statistics" title="Statistics" disabled={!stats}>
+                <BarChart3 className="h-5 w-5" />
+              </button>
+              <a href="#duel" title="Race a friend or a stranger to the four groups" className={cn(iconButton, "flex items-center gap-1.5 font-display text-xs font-semibold uppercase tracking-wider")}>
+                <Swords className="h-[1.125rem] w-[1.125rem]" aria-hidden /> Duel
+              </a>
+              <a href="/connections/create" title="Build your own puzzle and share a link" data-testid="conn-create-link" className={cn(iconButton, "flex items-center gap-1.5 font-display text-xs font-semibold uppercase tracking-wider")}>
+                <PencilLine className="h-[1.125rem] w-[1.125rem]" aria-hidden /> Create
+              </a>
             <div className="relative flex items-center">
               <button
                 type="button"
@@ -594,6 +597,7 @@ export function Connections({ customId }: { customId?: string } = {}) {
                 <SettingToggle label="Show the clock" description="A running timer above the grid. Your time is on your result either way." checked={prefs?.showTimer ?? false} onChange={() => setConnPrefs({ showTimer: !getConnPrefs().showTimer })} />
               </Popover>
             </div>
+            </div>
           </div>
         </div>
 
@@ -614,8 +618,9 @@ export function Connections({ customId }: { customId?: string } = {}) {
           </p>
         )}
         {mode === "practice" && !isCustom && (
-          <div className="mx-auto max-w-md space-y-2 rounded-md border border-screen/40 bg-screen/[0.06] px-3 py-2.5 text-center text-sm" data-testid="conn-unlimited">
-            <p>Unlimited: a fresh puzzle every time, never counted toward your streak.</p>
+          <div className="mx-auto max-w-lg space-y-2 rounded-md border border-screen/40 bg-screen/[0.06] px-3 py-2 text-center text-sm" data-testid="conn-unlimited">
+            <p className="text-xs sm:text-sm">Unlimited: a fresh puzzle every time, never counted toward your streak.</p>
+            <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2">
             <div className="flex items-center justify-center gap-2">
               <span className="hud-label">Difficulty</span>
               <div className="flex gap-1" role="radiogroup" aria-label="Unlimited difficulty">
@@ -669,6 +674,7 @@ export function Connections({ customId }: { customId?: string } = {}) {
                 ))}
               </div>
             </div>
+            </div>
             {guesses.length > 0 && !over && <p className="text-xs text-muted-foreground">A new difficulty or board size starts with your next puzzle.</p>}
           </div>
         )}
@@ -687,7 +693,7 @@ export function Connections({ customId }: { customId?: string } = {}) {
                 initial={{ opacity: 0, y: -6 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0 }}
-                className="pointer-events-none absolute inset-x-0 top-[40%] z-20 flex justify-center"
+                className="pointer-events-none fixed inset-x-0 top-[28%] z-40 flex justify-center"
                 role="status"
                 aria-live="assertive"
                 data-testid="conn-toast"
@@ -700,7 +706,7 @@ export function Connections({ customId }: { customId?: string } = {}) {
           {!puzzle ? (
             <div className={cn("grid gap-2 sm:gap-2.5", size === 5 ? "grid-cols-5" : "grid-cols-4")} aria-busy="true" aria-label="Loading the puzzle">
               {Array.from({ length: size * size }, (_, i) => (
-                <div key={i} className={cn("animate-pulse rounded-lg border bg-card", size === 5 ? "h-[5.5rem] sm:h-[6.75rem]" : "h-[7.25rem] sm:h-[8.25rem]")} />
+                <div key={i} className={cn("animate-pulse rounded-lg border bg-card", size === 5 ? TILE_H5 : TILE_H4)} />
               ))}
             </div>
           ) : (
@@ -746,16 +752,16 @@ export function Connections({ customId }: { customId?: string } = {}) {
         </div>
 
         {!over && puzzle && (
-          <div className="space-y-4">
+          <div className="space-y-3 sm:space-y-4">
             <MistakeDots left={mistakesLeft} max={connMaxMistakes(size)} />
-            <div className="flex flex-wrap items-center justify-center gap-2.5">
-              <Button variant="outline" onClick={shuffle} disabled={busy} className="rounded-full sm:min-w-28">
-                <Shuffle className="h-4 w-4" aria-hidden /> Shuffle
+            <div className="flex flex-wrap items-center justify-center gap-1.5 sm:gap-2.5">
+              <Button variant="outline" onClick={shuffle} disabled={busy} className="rounded-full px-3 sm:min-w-28 sm:px-4" data-testid="conn-shuffle">
+                <Shuffle className="hidden h-4 w-4 min-[400px]:inline sm:inline" aria-hidden /> Shuffle
               </Button>
-              <Button variant="outline" onClick={() => setSelected([])} disabled={busy || selected.length === 0} className="rounded-full sm:min-w-28">
-                Deselect all
+              <Button variant="outline" onClick={() => setSelected([])} disabled={busy || selected.length === 0} className="rounded-full px-3 sm:min-w-28 sm:px-4" data-testid="conn-deselect">
+                Deselect<span className="hidden sm:inline">&nbsp;all</span>
               </Button>
-              <Button onClick={() => void submit()} disabled={busy || selected.length !== size} className="rounded-full sm:min-w-28" data-testid="conn-submit">
+              <Button onClick={() => void submit()} disabled={busy || selected.length !== size} className="min-w-[5.25rem] rounded-full px-3.5 sm:min-w-28 sm:px-4" data-testid="conn-submit">
                 Submit
               </Button>
               {mode === "daily" && (
@@ -763,11 +769,12 @@ export function Connections({ customId }: { customId?: string } = {}) {
                   variant="outline"
                   onClick={() => void takeHint()}
                   disabled={busy || hintBusy || usedHint}
-                  className="rounded-full sm:min-w-28"
+                  className="w-10 rounded-full px-0 sm:w-auto sm:min-w-28 sm:px-4"
                   title="Reveals one Pokémon from the easiest group left. Once per puzzle, and you rank below everyone who played without it."
+                  aria-label={usedHint ? "Hint used" : "Hint"}
                   data-testid="conn-hint"
                 >
-                  <Lightbulb className="h-4 w-4" aria-hidden /> {usedHint ? "Hint used" : "Hint"}
+                  <Lightbulb className="h-4 w-4" aria-hidden /> <span className="hidden sm:inline">{usedHint ? "Hint used" : "Hint"}</span>
                 </Button>
               )}
             </div>
@@ -783,7 +790,7 @@ export function Connections({ customId }: { customId?: string } = {}) {
 
         {/* The finished game: result, history, sharing, what's next, and why. */}
         {revealDone && state?.reveal && (
-          <motion.section aria-label="Result" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="space-y-6 pt-2" data-testid="conn-result">
+          <motion.section ref={resultRef} aria-label="Result" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="scroll-mt-20 space-y-6 pt-2" data-testid="conn-result">
             <Card className={cn("mx-auto max-w-md", won ? "border-success/50" : "border-destructive/40")}>
               <CardContent className="space-y-5 p-6 text-center">
                 <div>
@@ -796,8 +803,6 @@ export function Connections({ customId }: { customId?: string } = {}) {
                     {won ? (state.mistakes === 0 ? `All ${SIZE_WORDS[size]} groups, not a single mistake.` : `You found all ${SIZE_WORDS[size]} groups.`) : `You found ${state.found.length} of ${size} groups.`}
                   </p>
                 </div>
-                {mode === "daily" && stats && <StreakFlame streak={streak} best={Math.max(stats.bestPlayStreak, streak)} />}
-                <NewBadges badges={fresh} />
                 <GuessHistory rows={historyRows} symbols={symbols} />
                 <dl className="grid grid-cols-3 gap-2 text-center">
                   <div>
@@ -817,21 +822,6 @@ export function Connections({ customId }: { customId?: string } = {}) {
                     </dd>
                   </div>
                 </dl>
-                {usedHint && mode === "daily" && (
-                  <p className="rounded-md border border-warning/40 bg-warning/[0.08] px-3 py-2 text-sm" data-testid="conn-hinted">
-                    <Lightbulb className="mr-1 inline h-4 w-4" aria-hidden /> You used the hint. Hinted games rank below every hint-free game on the leaderboard.
-                  </p>
-                )}
-                {mode === "daily" && <GroupStats stats={groupStats} />}
-                {mode === "daily" && challenge && daily && challenge.date === daily.date && (
-                  <ChallengeResult challenge={challenge} mine={mine ?? (won ? { mistakes: state.mistakes, ms, hinted: usedHint } : null)} />
-                )}
-                {mode === "daily" && summary && summary.players > 0 && (
-                  <p className="rounded-md border bg-shade/30 px-3 py-2 text-sm" data-testid="conn-community">
-                    <b>{Math.round((100 * summary.solved) / summary.players)}%</b> of {summary.players.toLocaleString("en-US")} trainer{summary.players === 1 ? "" : "s"} solved today&apos;s ·{" "}
-                    <b>{Math.round((100 * summary.perfect) / summary.players)}%</b> got it perfect
-                  </p>
-                )}
                 {mode === "practice" ? (
                   <div className="space-y-2">
                     <Button size="lg" className="h-14 w-full text-base" onClick={() => newPractice()} data-testid="conn-next">
@@ -852,6 +842,24 @@ export function Connections({ customId }: { customId?: string } = {}) {
                     </div>
                   </div>
                 )}
+                {mode === "daily" && daily && <ComeBackTomorrow next={connNumber(daily.date) + 1} />}
+                {mode === "daily" && stats && <StreakFlame streak={streak} best={Math.max(stats.bestPlayStreak, streak)} />}
+                <NewBadges badges={fresh} />
+                {usedHint && mode === "daily" && (
+                  <p className="rounded-md border border-warning/40 bg-warning/[0.08] px-3 py-2 text-sm" data-testid="conn-hinted">
+                    <Lightbulb className="mr-1 inline h-4 w-4" aria-hidden /> You used the hint. Hinted games rank below every hint-free game on the leaderboard.
+                  </p>
+                )}
+                {mode === "daily" && <GroupStats stats={groupStats} />}
+                {mode === "daily" && challenge && daily && challenge.date === daily.date && (
+                  <ChallengeResult challenge={challenge} mine={mine ?? (won ? { mistakes: state.mistakes, ms, hinted: usedHint } : null)} />
+                )}
+                {mode === "daily" && summary && summary.players > 0 && (
+                  <p className="rounded-md border bg-shade/30 px-3 py-2 text-sm" data-testid="conn-community">
+                    <b>{Math.round((100 * summary.solved) / summary.players)}%</b> of {summary.players.toLocaleString("en-US")} trainer{summary.players === 1 ? "" : "s"} solved today&apos;s ·{" "}
+                    <b>{Math.round((100 * summary.perfect) / summary.players)}%</b> got it perfect
+                  </p>
+                )}
                 {mode !== "daily" && today && !todayRecord?.over && (
                   <Button className="w-full" onClick={backToDaily}>
                     Play today&apos;s PokéConnections
@@ -859,7 +867,6 @@ export function Connections({ customId }: { customId?: string } = {}) {
                 )}
                 {mode === "daily" && daily && <DailyLeaderboard date={daily.date} standing={board} rows={boardRows} you={rankName} onName={rankAs} />}
                 {daily && <FeedbackPanel date={daily.date} guesses={guesses} groups={state.reveal} />}
-                {mode === "daily" && daily && <ComeBackTomorrow next={connNumber(daily.date) + 1} />}
                 {mode !== "daily" && <p className="text-xs text-muted-foreground">{mode === "archive" ? "Archive" : "Practice"} games don&apos;t count toward streaks or stats.</p>}
               </CardContent>
             </Card>
