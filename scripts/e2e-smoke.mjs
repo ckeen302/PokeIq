@@ -1609,7 +1609,7 @@ step("pokédex Trainers tab: search, notable filter, a game by route, an area's 
   await page.getByTestId("dex-tab-trainers").click();
   await page.waitForURL(/\/pokedex\/trainers$/);
   await page.getByTestId("trainers-game-card").first().waitFor();
-  if ((await page.getByTestId("trainers-game-card").count()) !== 10) errors.push("trainers: expected 10 game cards");
+  if ((await page.getByTestId("trainers-game-card").count()) !== 20) errors.push("trainers: expected 20 game cards (Gen I–IX)");
   // Search loads the full index on demand; Joey is on Route 30 in the Johto games.
   await page.getByTestId("trainers-search").fill("joey");
   await page.getByTestId("trainers-result").first().waitFor({ timeout: 30_000 });
@@ -1634,6 +1634,15 @@ step("pokédex Trainers tab: search, notable filter, a game by route, an area's 
   if ((await page.getByTestId("notable-game").count()) < 6) errors.push("trainers: Brock should have teams in 6 games");
   await page.getByTestId("trainer-mon").filter({ hasText: "Onix" }).first().getByRole("link", { name: "Bide" }).click();
   await page.waitForURL(/\/pokedex\/moves\/bide$/);
+  // Gen IX (Bulbapedia import): a Gym with Tera Types, then Katy's notable page.
+  await page.goto(`${BASE}/pokedex/trainers/scarlet-violet`, { waitUntil: "networkidle" });
+  await page.getByTestId("trainers-area-link").filter({ hasText: "Cortondo Gym" }).click();
+  await page.waitForURL(/\/pokedex\/trainers\/scarlet-violet\/cortondo-gym$/);
+  const katy = page.getByTestId("trainer-card").filter({ hasText: "Katy" }).first();
+  await katy.waitFor();
+  if (!(await katy.getByTestId("trainer-mon-tera").count())) errors.push("trainers: Katy's Teddiursa should show its Tera Type");
+  await page.goto(`${BASE}/pokedex/trainers/notable/katy`, { waitUntil: "networkidle" });
+  await page.getByTestId("notable-blurb").waitFor();
 }
 
 step("trainer, leaderboard, pokémon page");
