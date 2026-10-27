@@ -85,18 +85,18 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <footer className="mb-[calc(4rem+env(safe-area-inset-bottom))] border-t border-foreground/[0.06] py-8 text-center text-xs text-muted-foreground lg:mb-0">
           <div className="container space-y-2">
             <nav className="flex flex-wrap justify-center gap-x-5 gap-y-2 font-pixel text-[10px] uppercase tracking-wider">
-              <Link href="/play" className="hover:text-foreground">Game modes</Link>
-              <Link href="/pokedex" className="hover:text-foreground">Pokédex</Link>
-              <Link href="/pokedex/study" className="hover:text-foreground">Study mode</Link>
-              <Link href="/atlas" className="hover:text-foreground">World atlas</Link>
-              <Link href="/leaderboard" className="hover:text-foreground">Leaderboard</Link>
-              <Link href="/battle/teams" className="hover:text-foreground">Team builder</Link>
-              <Link href="/battle/calc" className="hover:text-foreground">Damage calc</Link>
-              <Link href="/battle/lab" className="hover:text-foreground">Battle Lab</Link>
-              <Link href="/quiz/gen-1-pokemon-quiz" className="hover:text-foreground">Gen 1 quiz</Link>
-              <Link href="/quiz/pokemon-type-quiz" className="hover:text-foreground">Type chart quiz</Link>
-              <Link href="/trainer" className="hover:text-foreground">Trainer card</Link>
-              <Link href="/privacy" className="hover:text-foreground">Privacy</Link>
+              <Link href="/play" prefetch={false} className="hover:text-foreground">Game modes</Link>
+              <Link href="/pokedex" prefetch={false} className="hover:text-foreground">Pokédex</Link>
+              <Link href="/pokedex/study" prefetch={false} className="hover:text-foreground">Study mode</Link>
+              <Link href="/atlas" prefetch={false} className="hover:text-foreground">World atlas</Link>
+              <Link href="/leaderboard" prefetch={false} className="hover:text-foreground">Leaderboard</Link>
+              <Link href="/battle/teams" prefetch={false} className="hover:text-foreground">Team builder</Link>
+              <Link href="/battle/calc" prefetch={false} className="hover:text-foreground">Damage calc</Link>
+              <Link href="/battle/lab" prefetch={false} className="hover:text-foreground">Battle Lab</Link>
+              <Link href="/quiz/gen-1-pokemon-quiz" prefetch={false} className="hover:text-foreground">Gen 1 quiz</Link>
+              <Link href="/quiz/pokemon-type-quiz" prefetch={false} className="hover:text-foreground">Type chart quiz</Link>
+              <Link href="/trainer" prefetch={false} className="hover:text-foreground">Trainer card</Link>
+              <Link href="/privacy" prefetch={false} className="hover:text-foreground">Privacy</Link>
               <ReportProblem />
             </nav>
             <p className="mx-auto max-w-3xl pt-2 text-[11px] leading-relaxed text-muted-foreground/70">
