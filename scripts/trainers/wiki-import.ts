@@ -17,12 +17,15 @@
  *     block belongs to; a {{Party}}'s own `game` code wins over them.
  *     {{trainerdiv}} labels give version splits ("Black 2"), rematches and
  *     sub-areas.
- *  3. Rows that list no moves get, for Generation V–VII, the level-up
- *     default moveset those games build (the last four level-up moves at or
- *     below the level), from PokeAPI's per-version-group learnsets
- *     (.data/pokeapi/pokemon_moves.csv). Let's Go and the Generation VIII–IX
- *     games store explicit movesets for every trainer that the wiki doesn't
- *     list, so those rows keep no moves rather than a guess.
+ *  3. Rows that list no moves get, for Black/White and Black 2/White 2 only,
+ *     the level-up default moveset those games build (the last four level-up
+ *     moves at or below the level), from PokeAPI's per-version-group
+ *     learnsets (.data/pokeapi/pokemon_moves.csv, from
+ *     github.com/PokeAPI/pokeapi data/v2/csv). The Serebii cross-check agrees
+ *     with ~95% of those teams (the rest are trainers with hidden custom sets,
+ *     mostly Veterans). For Gen VI–IX the wiki's rows omit moves the games do
+ *     set explicitly (Serebii shows 2–3-move custom sets for many Gen VII
+ *     trainers), so those rows keep no moves rather than a guess.
  *  4. The same battle listed on two pages (a Gym page and its city page) is
  *     merged. Every species, move and item is resolved against our Pokédex;
  *     anything unknown is reported and the import fails.
@@ -62,10 +65,10 @@ interface WikiGame {
 export const WIKI_GAMES: WikiGame[] = [
   { key: "black-white", gameCat: "Black and White locations", gen: 5, vg: 11, cats: [["Unova locations", "Unova"]], codes: { BW: [], BWB2W2: [], Bl: ["black"], B: ["black"], W: ["white"] }, versions: ["black", "white"] },
   { key: "black-2-white-2", gameCat: "Black 2 and White 2 locations", gen: 5, vg: 14, cats: [["Unova locations", "Unova"]], codes: { B2W2: [], BWB2W2: [], B2: ["black-2"], W2: ["white-2"], "Black 2 and White 2": [] }, versions: ["black-2", "white-2"] },
-  { key: "x-y", gameCat: "X and Y locations", gen: 6, vg: 15, cats: [["Kalos locations", "Kalos"]], codes: { XY: [], XYORAS: [], X: ["x"], Y: ["y"] }, versions: ["x", "y"] },
-  { key: "omega-ruby-alpha-sapphire", gameCat: "Omega Ruby and Alpha Sapphire locations", gen: 6, vg: 16, cats: [["Hoenn locations", "Hoenn"]], codes: { ORAS: [], XYORAS: [], OR: ["omega-ruby"], AS: ["alpha-sapphire"] }, versions: ["omega-ruby", "alpha-sapphire"] },
-  { key: "sun-moon", gameCat: "Sun and Moon locations", gen: 7, vg: 17, cats: [["Alola locations", "Alola"]], codes: { SM: [], SMUSUM: [], Su: ["sun"], S: ["sun"], M: ["moon"], Mo: ["moon"] }, versions: ["sun", "moon"] },
-  { key: "ultra-sun-ultra-moon", gameCat: "Ultra Sun and Ultra Moon locations", gen: 7, vg: 18, cats: [["Alola locations", "Alola"]], codes: { USUM: [], SMUSUM: [], US: ["ultra-sun"], UM: ["ultra-moon"] }, versions: ["ultra-sun", "ultra-moon"] },
+  { key: "x-y", gameCat: "X and Y locations", gen: 6, cats: [["Kalos locations", "Kalos"]], codes: { XY: [], XYORAS: [], X: ["x"], Y: ["y"] }, versions: ["x", "y"] },
+  { key: "omega-ruby-alpha-sapphire", gameCat: "Omega Ruby and Alpha Sapphire locations", gen: 6, cats: [["Hoenn locations", "Hoenn"]], codes: { ORAS: [], XYORAS: [], OR: ["omega-ruby"], AS: ["alpha-sapphire"] }, versions: ["omega-ruby", "alpha-sapphire"] },
+  { key: "sun-moon", gameCat: "Sun and Moon locations", gen: 7, cats: [["Alola locations", "Alola"]], codes: { SM: [], SMUSUM: [], Su: ["sun"], S: ["sun"], M: ["moon"], Mo: ["moon"] }, versions: ["sun", "moon"] },
+  { key: "ultra-sun-ultra-moon", gameCat: "Ultra Sun and Ultra Moon locations", gen: 7, cats: [["Alola locations", "Alola"]], codes: { USUM: [], SMUSUM: [], US: ["ultra-sun"], UM: ["ultra-moon"] }, versions: ["ultra-sun", "ultra-moon"] },
   { key: "lets-go-pikachu-eevee", gameCat: "Let's Go, Pikachu! and Let's Go, Eevee! locations", gen: 7, cats: [["Kanto locations", "Kanto"]], codes: { PE: [], LGPE: [], LGP: ["lets-go-pikachu"], LGE: ["lets-go-eevee"] }, versions: ["lets-go-pikachu", "lets-go-eevee"] },
   {
     key: "sword-shield",
@@ -94,13 +97,18 @@ export const WIKI_GAMES: WikiGame[] = [
   },
 ];
 const GAME = new Map(WIKI_GAMES.map((g) => [g.key, g]));
+/** Pages with battles that the location categories don't list (filed under the parent page's area). */
+const EXTRA_PAGES: Record<string, [string, string][]> = {
+  "sun-moon": [["Pokémon League (Alola)/Title Defense", "Alola"]],
+  "ultra-sun-ultra-moon": [["Pokémon League (Alola)/Title Defense", "Alola"]],
+};
 /** Regions whose location pages also describe Gen I–IV games. */
 const OLD_REGIONS = new Set(["Kanto", "Hoenn", "Sinnoh"]);
 
 /** Facility pages whose opponents are drawn at random (not fixed trainers). */
 const SKIP_PAGE = /^(Battle (Subway|Maison|Tree|Tower|Chateau|Royal Dome|Agency|Hall|Frontier|Tent|Castle|Arcade|Factory|Palace|Pike|Pyramid|Dome|Institute|Company|Café|Zone)|Pokémon World Tournament|Join Avenue|Wild Area News|Pokémon Den|Max Lair|Battle Stadium|Pokémon Stadium|Global Link|Festival Plaza|Restricted Sparring|Ten Sights of Paldea|Titan Pokémon|Team Star)\b/;
 /** Sections that aren't the core games (anime, manga, spin-offs…). */
-const SKIP_HEAD = /anime|animation|manga|spin-off|side series|Masters|TCG|Trading Card|Stadium|Ranger|Mystery Dungeon|Pokémon GO|Trivia|Horizons|Battle Revolution|Colosseum|\bXD\b|Related articles|In other languages|Name origin|Japanese versions|Korean|Chinese|Special Demo|Legends|Z-A|Café Mix|Sleep|Unite|Conquest|Rumble|Pinball|Snap|Picross|Shuffle|Battle Trozei|Dream Radar/i;
+const SKIP_HEAD = /anime|animation|manga|spin-off|side series|Masters|TCG|Trading Card|Stadium|Ranger|Mystery Dungeon|Pokémon GO|Trivia|Horizons|Battle Revolution|Colosseum|\bXD\b|Related articles|In other languages|Name origin|Japanese versions|Korean|Chinese|Special Demo|Legends|Z-A|Café Mix|Sleep|Unite|Conquest|Rumble|Pinball|Snap|Picross|Shuffle|Battle Trozei|Dream Radar|\bpartners?\b/i;
 
 interface HeadInfo {
   /** Game keys (wiki games) or "old" for Gen I–IV / other games; null when the heading names no game. */
@@ -156,7 +164,7 @@ export function headInfo(text: string): HeadInfo {
 /** Heading words that only structure the page. */
 const STRUCTURAL = /^(Trainers|In the games|In the core series games|In the core series|Additional Trainers|International versions|Trainer list|Gym Leaders and Elite Four|Battles|Opponents|Gym Trainers|All versions|Default|Easy Mode\/Normal Mode|Normal Mode|Story|Main story)$/i;
 /** Headings and div labels that describe when a battle happens rather than where. */
-const WHEN = /^(Post|Pre|After|Before|During|Once|Upon|First visit|Second visit|First battle|Second battle|Third battle|Final battle|Rematch|Delta Episode|Episode RR|Requires|Accessed|Accessible|Only|If |When|Sunday|Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Weekdays|Weekends|Non-winter|Winter|Spring|Summer|Autumn|Day|Night|Morning|Evening)/i;
+const WHEN = /^(Post|Pre|After|Before|During|Once|Upon|Initial battle|First visit|Second visit|First battle|Second battle|Third battle|Final battle|Rematch|Delta Episode|Episode RR|Requires|Accessed|Accessible|Only|If |When|Sunday|Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Weekdays|Weekends|Non-winter|Winter|Spring|Summer|Autumn|Day|Night|Morning|Evening)/i;
 
 // ---------------------------------------------------------------------------
 // Pokédex lookups
@@ -338,40 +346,54 @@ export function pageTrainers(title: string, text: string): Found[] {
     party = null;
   };
 
+  let prevEnd = 0;
   for (const e of ev) {
+    const myEnd = e.kind === "tpl" ? e.end : e.at;
+    // Inline templates inside prose ({{p|Kecleon}}) don't end the prose gap.
+    const isBlock = e.kind === "h" || /^(Party|Pokémon|Trainer|trainer)/i.test(e.name);
+    try {
+      walk(e);
+    } finally {
+      if (isBlock) prevEnd = myEnd;
+    }
+  }
+  closeParty();
+  return out;
+
+  function walk(e: WikiEvent): void {
     if (e.kind === "h") {
       closeParty();
       div = {};
-      if (skipBelow && e.level > skipBelow) continue;
+      if (skipBelow && e.level > skipBelow) return;
       skipBelow = 0;
       while (stack.length && stack[stack.length - 1].level >= e.level) stack.pop();
       // B2W2 Gyms list the Easy and Challenge Mode parties too: keep only Normal Mode.
       if ((SKIP_HEAD.test(e.text) && !/^(Pokémon )?(Sun|Moon|Ultra)/.test(e.text)) || /^(Challenge|Easy) Mode$/i.test(e.text)) {
         skipBelow = e.level;
-        continue;
+        return;
       }
       stack.push({ level: e.level, text: e.text, info: headInfo(e.text) });
-      continue;
+      return;
     }
-    if (skipBelow) continue;
+    if (skipBelow) return;
     const n = e.name;
     if (/^Trainerheader$/i.test(n) || /^Trainerfooter$/i.test(n)) {
       div = {};
-      continue;
+      return;
     }
     if (/^Trainerdiv$/i.test(n)) {
       const l = divLabel(e);
-      if (!l) continue;
+      if (!l) return;
       const hi = headInfo(l);
       if (hi.games) div = { ver: hi.ver, ...(hi.games[0] === "old" ? { tag: "old" } : {}) };
       else if (/^Rematch/i.test(l) || WHEN.test(l)) div = { ...div, tag: l, section: undefined };
       else div = { section: l };
-      continue;
+      return;
     }
     const c = ctx();
     if (/^Trainerentry(\/suffix)?$/i.test(n) || /^Trainerentry\/master$/i.test(n)) {
       closeParty();
-      if (div.tag === "old" || c.games?.[0] === "old") continue;
+      if (div.tag === "old" || c.games?.[0] === "old") return;
       const master = /master/i.test(n);
       const p = e.pos;
       const cls = cleanName(plain(p[1] ?? ""));
@@ -405,7 +427,7 @@ export function pageTrainers(title: string, text: string): Found[] {
           team.push(mon);
         }
       }
-      if (!team.length) continue;
+      if (!team.length) return;
       const gen = Number(e.named.game) || undefined;
       const blob = `${p[3] ?? ""} ${e.named.notes ?? ""}`;
       out.push({
@@ -422,11 +444,21 @@ export function pageTrainers(title: string, text: string): Found[] {
         custom: master,
         team,
       });
-      continue;
+      return;
     }
     if (/^Party(\/2)?$/.test(n) || /^Party\/(Single|Double|Multi|Tag)$/.test(n)) {
       closeParty();
       const a = e.named;
+      // Partners who fight beside the player aren't opponents: drawn from
+      // behind ("… Back.png"), or introduced as a partner right above the box.
+      // Character-link templates ("{{Steven}} will work as the player's partner") name the partner.
+      const gap = plain(text.slice(prevEnd, e.at).replace(/\{\{([A-Z][^|{}]*)\}\}/g, "$1"));
+      const who = cleanName(plain(a.name ?? ""));
+      if (/\bBack\b/i.test(a.sprite ?? "") || (who && gap.includes(who) && /\bpartner\b|teams? up with|joins? (the player|you)|on the player's side/i.test(gap))) {
+        party = [];
+        prevEnd = e.end;
+        return;
+      }
       const code = plain(a.game ?? "");
       let games: string[] | null = c.games;
       let ver = div.ver ?? c.ver;
@@ -435,7 +467,7 @@ export function pageTrainers(title: string, text: string): Found[] {
         if (!codeGames.length) {
           // A code for a game we don't import (RGB, Pt, ZA…): skip the block.
           party = [];
-          continue;
+          return;
         }
         games = codeGames.map((g) => g.key);
         const vs = codeGames.flatMap((g) => g.codes[code]);
@@ -443,7 +475,7 @@ export function pageTrainers(title: string, text: string): Found[] {
       }
       if (c.games?.[0] === "old" && !codeGames.length) {
         party = [];
-        continue;
+        return;
       }
       const cap = a.caption ?? "";
       const capInfo = headInfo(plain(cap).replace(/'/g, ""));
@@ -475,18 +507,18 @@ export function pageTrainers(title: string, text: string): Found[] {
         partyCounts.push(Number(firstValue(a.pokemon2)) || 6);
       }
       partyIdx = 0;
-      continue;
+      return;
     }
     if (n === "Party/2/div") {
       partyIdx = 1;
-      continue;
+      return;
     }
     if (/^Party(\/2)?\/end$/.test(n) || n === "Party/footer") {
       closeParty();
-      continue;
+      return;
     }
     if (n === "Pokémon" && party) {
-      if (!party.length) continue;
+      if (!party.length) return;
       const cur = party[Math.min(partyIdx, party.length - 1)];
       if (party.length > 1 && partyIdx === 0 && cur.team.length >= partyCounts[0]) partyIdx = 1;
       const tgt = party[Math.min(partyIdx, party.length - 1)];
@@ -494,7 +526,7 @@ export function pageTrainers(title: string, text: string): Found[] {
       const where = `${title}: ${tgt.cls} ${tgt.name ?? ""}`;
       const s = wikiSpecies(a.ndex ?? "", a.pokemon ?? "", where);
       const lv = Number(firstValue(a.level).replace(/[^0-9]/g, ""));
-      if (!s || !lv) continue;
+      if (!s || !lv) return;
       const moves: string[] = [];
       for (const k of ["move1", "move2", "move3", "move4"]) {
         const mv = a[k] ? wikiMove(a[k], where) : undefined;
@@ -512,11 +544,9 @@ export function pageTrainers(title: string, text: string): Found[] {
       const capV = headInfo(plain(a.caption ?? "").replace(/'/g, ""));
       if (capV.ver) mon.onlyVer = capV.ver;
       tgt.team.push(mon);
-      continue;
+      return;
     }
   }
-  closeParty();
-  return out;
 }
 
 const DEX_FORMS: Record<string, string> = { A: "Alolan Form", G: "Galarian Form", H: "Hisuian Form", P: "Paldean Form" };
@@ -531,6 +561,7 @@ function dexFormName(species: number, letter: string): string | undefined {
 /** Page title -> in-game area name ("Unova Route 4" -> "Route 4", "Pokémon League (Paldea)" -> "Pokémon League"). */
 export function areaName(title: string): string {
   return title
+    .replace(/\/.*$/, "")
     .replace(/^(Unova|Kalos|Hoenn|Alola|Kanto|Galar|Sinnoh|Paldea|Johto) (Route \d+.*)$/, "$2")
     .replace(/ \((Unova|Kalos|Hoenn|Alola|Kanto|Galar|Sinnoh|Paldea|Kitakami|Blueberry Academy|Isle of Armor|Crown Tundra|location|place|Sevii Islands|game|anime|[^)]*\b(Black|White|X and Y|Sun|Moon|Sword|Shield|Scarlet|Violet|Diamond|Pearl|Ruby|Sapphire|Let's Go)\b[^)]*)\)$/, "")
     .trim();
@@ -559,6 +590,8 @@ export async function importWikiGame(key: string): Promise<{ raw: RawTeam[]; pag
     for (const p of pages) if (!regionOf.has(p)) regionOf.set(p, region);
   }
   for (const p of [...regionOf.keys()]) if (SKIP_PAGE.test(p) || /\/Dens$|\/\d{4}$/.test(p)) regionOf.delete(p);
+  // Subpages that hold battles but sit outside the categories.
+  for (const [p, region] of EXTRA_PAGES[key] ?? []) regionOf.set(p, region);
   const texts = await wikitextMany([...regionOf.keys()]);
   // Which of the region's games each page belongs to, by Bulbapedia's per-game categories.
   const regionGames = (region: string) => WIKI_GAMES.filter((x) => x.cats.some(([, r]) => r === region)).map((x) => x.key);
@@ -592,7 +625,7 @@ export async function importWikiGame(key: string): Promise<{ raw: RawTeam[]; pag
         skipped++;
         if (process.env.WIKI_DEBUG) console.error(`shared row: ${page.title}: ${f.cls} ${f.name ?? ""}`);
       }
-      found.push({ ...f, region });
+      found.push({ ...f, region, ...(/\/Title Defense$/.test(page.title) ? { section: "Title defense" } : {}) });
     }
   }
 
@@ -643,16 +676,39 @@ export async function importWikiGame(key: string): Promise<{ raw: RawTeam[]; pag
       cls: f.cls,
       name: f.name,
       places,
-      tag: f.tag?.replace(/^Rematches$/i, "Rematch").replace(/^First battles$/i, "First battle").replace(/^Pre–Hall of Fame$/, "Before the Hall of Fame").replace(/^Post–Hall of Fame$/, "After the Hall of Fame"),
+      tag: f.tag?.replace(/^Rematches$/i, "Rematch").replace(/^First battles$/i, "First battle").replace(/^Pre–Hall of Fame$/, "Before the Hall of Fame").replace(/^Post–Hall of Fame$/, "After the Hall of Fame").replace(/^If you chose dark$/, "If you chose the Tower of Darkness").replace(/^If you chose water$/, "If you chose the Tower of Waters"),
       group: genericName ? undefined : `${idPart(areaName(f.page))}-${idPart(f.cls)}_${idPart(f.name!)}`,
       ver: f.ver ? [f.ver] : undefined,
       double: f.double,
       team,
     });
   }
-  // Rematches: number them in page order when one trainer has several.
   const byGroup = new Map<string, RawTeam[]>();
   for (const t of raw) if (t.group) byGroup.set(t.group, [...(byGroup.get(t.group) ?? []), t]);
+  // The wiki captions only the first of a side-by-side pair of starter
+  // variants ("If you chose Snivy" over Bianca, none over Cheren beside her):
+  // read the missing ones off the species each variant uses elsewhere.
+  const choiceBySpecies = new Map<string, Map<number, Set<string>>>();
+  for (const t of raw) {
+    if (!t.tag?.startsWith("If you chose") || !t.name) continue;
+    const k = `${t.cls}|${t.name}`;
+    if (!choiceBySpecies.has(k)) choiceBySpecies.set(k, new Map());
+    for (const m of t.team) {
+      const set = choiceBySpecies.get(k)!.get(m.s) ?? new Set<string>();
+      set.add(t.tag);
+      choiceBySpecies.get(k)!.set(m.s, set);
+    }
+  }
+  for (const list of byGroup.values()) {
+    if (list.length < 2) continue;
+    for (const t of list) {
+      if (t.tag) continue;
+      const map = choiceBySpecies.get(`${t.cls}|${t.name}`);
+      const tags = new Set(t.team.flatMap((m) => (map?.get(m.s)?.size === 1 ? [...map.get(m.s)!] : [])));
+      if (tags.size === 1) t.tag = [...tags][0];
+    }
+  }
+  // Rematches: number them in page order when one trainer has several.
   for (const list of byGroup.values()) {
     const re = list.filter((t) => t.tag && /^Rematch$/i.test(t.tag));
     if (re.length > 1) re.forEach((t, i) => (t.tag = `Rematch ${i + 1}`));

@@ -17,6 +17,8 @@ export interface Tpl {
   named: Record<string, string>;
   /** Offset in the page. */
   at: number;
+  /** Offset just past the closing braces. */
+  end: number;
 }
 
 export interface Heading {
@@ -95,7 +97,7 @@ export function parseTemplate(src: string, at = 0): Tpl {
     if (m) named[m[1].trim()] = m[2].trim();
     else pos.push(p.trim());
   }
-  return { kind: "tpl", name, pos, named, at };
+  return { kind: "tpl", name, pos, named, at, end: at + src.length };
 }
 
 /** Headings and top-level templates of a page, in order (comments skipped). */
@@ -205,7 +207,10 @@ export function plain(s: string): string {
 /** "{{tt|21|19 in Easy Mode, 23 in Challenge Mode}}" -> "21"; plain values pass through. */
 export function firstValue(s: string | undefined): string {
   if (!s) return "";
-  const tt = /^\s*\{\{\s*tt\s*\|([^|}]*)/i.exec(s);
+  // B2W2 Gyms: "{{tt|10|Easy Mode}}/{{tt|11|Normal Mode}}" -> the Normal Mode value.
+  const normal = /\{\{\s*tt\s*\|([^|}]*)\|\s*Normal Mode\s*\}\}/i.exec(s);
+  if (normal) return normal[1].trim();
+  const tt =/^\s*\{\{\s*tt\s*\|([^|}]*)/i.exec(s);
   if (tt) return tt[1].trim();
   return plain(s);
 }

@@ -30,7 +30,7 @@ function ItemRef({ refId, className }: { refId: string; className?: string }) {
 
 function MonCard({ m }: { m: TrainerMon }) {
   const s = speciesOf(m.s);
-  const form = formName(m.s, m.f);
+  const form = m.fn ?? formName(m.s, m.f);
   return (
     <li className="relative overflow-hidden rounded-md border border-foreground/10 bg-shade/20" data-testid="trainer-mon">
       <div className="flex h-[3px]" aria-hidden>
@@ -51,11 +51,17 @@ function MonCard({ m }: { m: TrainerMon }) {
             <span className="shrink-0 font-mono text-xs tabular-nums text-muted-foreground">Lv {m.lv}</span>
           </div>
           {form && <div className="text-[11px] text-muted-foreground">{form}</div>}
-          <div className="flex flex-wrap gap-1">
+          <div className="flex flex-wrap items-center gap-1">
             {s?.types.map((t) => (
               <TypeBadge key={t} type={t} size="sm" />
             ))}
+            {m.tt && (
+              <span className="inline-flex items-center gap-1 text-[10px] text-muted-foreground" data-testid="trainer-mon-tera">
+                Tera <TypeBadge type={m.tt.toLowerCase()} size="sm" />
+              </span>
+            )}
           </div>
+          {m.ab && <div className="text-[11px] text-muted-foreground">{m.ab}</div>}
           {m.i && (
             <div className="text-xs">
               <span className="sr-only">Held item: </span>
@@ -76,7 +82,7 @@ function MonCard({ m }: { m: TrainerMon }) {
             ))}
           </ul>
           {m.d && (
-            <p className="mt-1.5 text-[10px] text-muted-foreground" title="The party data lists no moves, so the game gives this Pokémon the last moves it learns by level up.">
+            <p className="mt-1.5 text-[10px] text-muted-foreground" title="The source lists no moves for this Pokémon, so these are the last moves it learns by level up: the moveset the game gives a trainer's Pokémon that has no set moves.">
               Level-up moveset
             </p>
           )}
