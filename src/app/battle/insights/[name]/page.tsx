@@ -152,7 +152,7 @@ function Body({ insights, record, name }: { insights: Insights; record: BattleFo
         </ul>
       </Section>
 
-      <Section title="Toughest opponents" icon={<ShieldAlert className="h-3.5 w-3.5" aria-hidden />} testid="insights-threats" aside={`The foes that knocked out ${name}'s Pokémon most`}>
+      <Section title="Toughest opponents" icon={<ShieldAlert className="h-3.5 w-3.5" aria-hidden />} testid="insights-threats" aside={`Foes with a KO or a win against ${name}: most KOs, then most wins`}>
         {insights.threats.length ? (
           <ol className="divide-y rounded-md border">
             {insights.threats.map((t, i) => (
@@ -162,7 +162,7 @@ function Body({ insights, record, name }: { insights: Insights; record: BattleFo
                 <span className="min-w-0 flex-1">
                   <span className="block truncate text-sm font-semibold">{t.species}</span>
                   <span className="text-[11px] text-muted-foreground">
-                    Beat {name} {t.losses} of {t.games} time{t.games === 1 ? "" : "s"}
+                    {t.games} battle{t.games === 1 ? "" : "s"} · {t.losses} win{t.losses === 1 ? "" : "s"} against {name}
                   </span>
                 </span>
                 <span className="shrink-0 text-right">

@@ -14,7 +14,7 @@ const row = (over: Partial<BattleSummary>): BattleSummary => ({ code: "aaaaaaaa"
 describe("insight sums", () => {
   it("counts leads, win rate per Pokémon and the foes that beat a trainer", () => {
     const rows = [
-      row({ code: "a", result: "win", lead: "Garchomp", team: ["Garchomp", "Heatran"], foes: ["Kingambit", "Dragonite"], koBy: ["Kingambit"], at: 3 }),
+      row({ code: "a", result: "win", lead: "Garchomp", team: ["Garchomp", "Heatran"], foes: ["Kingambit", "Dragonite", "Glalie"], koBy: ["Kingambit"], at: 3 }),
       row({ code: "b", result: "loss", lead: "Garchomp", team: ["Garchomp", "Corviknight"], foes: ["Kingambit"], koBy: ["Kingambit", "Kingambit"], at: 2 }),
       row({ code: "c", result: "loss", lead: "Heatran", team: ["Heatran"], foes: ["Dragonite"], koBy: [], at: 1 }),
       row({ code: "d", result: "win", hasReplay: false, at: 4 }),
@@ -29,6 +29,8 @@ describe("insight sums", () => {
     expect(t.mons.find((m) => m.species === "Heatran")).toEqual({ species: "Heatran", games: 2, wins: 1 });
     expect(t.threats[0]).toEqual({ species: "Kingambit", games: 2, losses: 1, kos: 3 });
     expect(t.threats[1]).toEqual({ species: "Dragonite", games: 2, losses: 1, kos: 0 });
+    // Glalie was only in a battle the trainer won, and knocked nothing out: not a threat.
+    expect(t.threats.map((x) => x.species)).toEqual(["Kingambit", "Dragonite"]);
     expect(aggregateInsights(rows, 1).battles).toBe(1);
     expect(winRate(2, 3)).toBe("67%");
     expect(winRate(0, 0)).toBe("—");
