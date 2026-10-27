@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { REGION_ORIGINS } from "@/lib/region-origins";
 import Link from "next/link";
 import * as THREE from "three";
 
@@ -339,6 +340,7 @@ export function WorldGlobe() {
         <div>
           <p className="mb-1 font-pixel text-[10px] uppercase tracking-[0.14em] text-screen">Detail: {tier}</p>
           <p className="min-h-[1.3em] font-display text-base font-bold uppercase tracking-[0.14em] sm:text-2xl">{focus}</p>
+          {REGION_ORIGINS[focus] && <p className="mb-1 max-w-md text-sm text-foreground/85" data-testid="globe-region-origin">{REGION_ORIGINS[focus]}</p>}
           <p className="max-w-md text-xs text-muted-foreground">Drag to spin · scroll or pinch to zoom in on towns, routes and landmarks · tap a region to fly there</p>
         </div>
         <div className="flex flex-wrap gap-2">
