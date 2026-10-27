@@ -109,6 +109,7 @@ export function DesktopNav() {
         )}
         <Link
           href="/trainer"
+          aria-label="Your trainer profile"
           className={cn(
             "ml-1 flex items-center gap-2 rounded-md border bg-card px-2 py-1.5 sm:px-3 text-sm text-muted-foreground transition-colors hover:border-screen/60 hover:text-foreground",
             isActive(pathname, "/trainer") &&
@@ -116,7 +117,7 @@ export function DesktopNav() {
           )}
         >
           <Avatar avatar={account.user?.avatar} size={22} />
-          <span className="max-w-[4rem] truncate font-display font-semibold sm:max-w-[9rem] lg:hidden 2xl:inline">
+          <span className="hidden max-w-[4rem] truncate font-display font-semibold min-[380px]:inline sm:max-w-[9rem] lg:hidden 2xl:inline">
             {account.user?.username ?? (progress?.name || "Trainer")}
           </span>
           {progress && progress.xp > 0 && (
