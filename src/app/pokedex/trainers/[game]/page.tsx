@@ -6,7 +6,7 @@ import { BackButton } from "@/components/ui/BackButton";
 import { DetailHero } from "@/components/pokedex/detail/DetailParts";
 import { Section } from "@/components/pokedex/entry/Reveal";
 import { TrainerAvatar } from "@/components/trainers/TrainerAvatar";
-import { TRAINER_GAMES, trainerGame } from "@/lib/trainers/games";
+import { ROMAN, TRAINER_GAMES, sourceUrl, trainerGame } from "@/lib/trainers/games";
 import { NOTABLE, ROLE_ORDER, notable } from "@/lib/trainers/notable";
 import { gameAreas, gameFile } from "@/lib/trainers/data";
 
@@ -50,7 +50,7 @@ export default async function TrainerGamePage({ params }: PageProps) {
           Pokédex
         </Link>
       </nav>
-      <DetailHero kicker={`Trainers · Gen ${["", "I", "II", "III", "IV"][g.gen]} · ${g.regions.join(" & ")}`} title={`Pokémon ${g.name}`}>
+      <DetailHero kicker={`Trainers · Gen ${ROMAN[g.gen]} ·${g.regions.join(" & ")}`} title={`Pokémon ${g.name}`}>
         <p className="max-w-2xl text-foreground/90">
           {f.teams.length.toLocaleString("en-US")} trainer teams across {places} places. Pick a route, town or dungeon to see everyone you can battle there and the exact Pokémon they use.
         </p>
@@ -107,10 +107,10 @@ export default async function TrainerGamePage({ params }: PageProps) {
       ))}
       <p className="text-center text-xs text-muted-foreground">
         Imported from{" "}
-        <a href={`https://github.com/${g.repo}`} className="underline-offset-2 hover:underline" rel="noopener" target="_blank">
+        <a href={sourceUrl(g)} className="underline-offset-2 hover:underline" rel="noopener" target="_blank">
           {g.repo}
         </a>
-        .
+        {g.repo === "Bulbapedia" ? "'s location pages and spot-checked against Serebii. Battle facilities with random opponents aren't listed." : "."}
       </p>
     </article>
   );

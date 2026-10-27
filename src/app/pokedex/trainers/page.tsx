@@ -8,20 +8,22 @@ import { HudHeading } from "@/components/game/HudHeading";
 import { TypeBadge } from "@/components/pokedex/TypeBadge";
 import { TrainerExplorer } from "@/components/trainers/TrainerExplorer";
 import { TrainerAvatar } from "@/components/trainers/TrainerAvatar";
-import { TRAINER_GAMES, TRAINER_REGIONS } from "@/lib/trainers/games";
+import { ROMAN, TRAINER_GAMES, TRAINER_REGIONS } from "@/lib/trainers/games";
 import { ROLE_ORDER } from "@/lib/trainers/notable";
 import { gameFile, notableDirectory } from "@/lib/trainers/data";
 
 export const metadata: Metadata = pageMetadata({
-  title: "Pokémon Trainers — Every Trainer, Team & Location (Gen I–IV)",
+  title: "Pokémon Trainers — Every Trainer, Team & Location (Gen I–IX)",
   description:
-    "Every trainer in Pokémon Red, Blue, Yellow, Gold, Silver, Crystal, Ruby, Sapphire, Emerald, FireRed, LeafGreen, Platinum, HeartGold and SoulSilver: where they stand and their exact teams, moves and held items, rematches included.",
+    "Every trainer from Pokémon Red and Blue to Scarlet and Violet: where they stand and their exact teams, levels, moves and held items, from Gym Leaders and the Elite Four to rivals and rematches.",
   path: "/pokedex/trainers",
 });
 
 const ROLE_HEADINGS: Record<string, string> = {
   "Gym Leader": "Gym Leaders",
   "Elite Four": "Elite Four",
+  "Trial Captain": "Trial Captains",
+  Kahuna: "Island Kahunas",
   Champion: "Champions",
   Rival: "Rivals",
   Trainer: "Legends",
@@ -46,7 +48,7 @@ export default function TrainersPage() {
         kicker={`Trainer database · ${total.toLocaleString("en-US")} teams`}
         title="Poké"
         accent="dex"
-        blurb="Every trainer in the Generation I–IV games: where to find them and the exact team they use, from the first Youngster to the Champion — rematches included."
+        blurb="Every trainer from Generation I to IX: where to find them and the exact team they use, from the first Youngster to the Champion — rematches and DLC included."
       />
       <DexTabs active="trainers" />
       <TrainerExplorer
@@ -71,7 +73,7 @@ export default function TrainersPage() {
                       <span className="min-w-0 flex-1">
                         <span className="block font-display text-lg font-bold uppercase leading-tight tracking-wide group-hover:text-screen">{g.name}</span>
                         <span className="mt-1 block text-xs text-muted-foreground">
-                          Gen {["", "I", "II", "III", "IV"][g.gen]} · {g.regions.join(" & ")}
+                          Gen {ROMAN[g.gen]} · {g.regions.join(" & ")}
                         </span>
                         <span className="mt-2 block font-mono text-xs tabular-nums text-foreground/80">
                           {g.teams.toLocaleString("en-US")} teams · {g.areas} places
@@ -113,11 +115,15 @@ export default function TrainersPage() {
         </div>
       </TrainerExplorer>
       <p className="pt-6 text-center text-xs text-muted-foreground">
-        Teams, moves and locations are read from the{" "}
+        Generation I–IV teams, moves and locations are read from the{" "}
         <a href="https://github.com/pret" className="underline-offset-2 hover:underline" rel="noopener" target="_blank">
           pret
         </a>{" "}
-        decompilations of each game. Generation V and later aren&apos;t covered yet.
+        decompilations of each game; Generation V–IX teams come from{" "}
+        <a href="https://bulbapedia.bulbagarden.net/" className="underline-offset-2 hover:underline" rel="noopener" target="_blank">
+          Bulbapedia
+        </a>
+        &apos;s location pages, spot-checked against Serebii. Battle facilities with random opponents aren&apos;t listed.
       </p>
     </div>
   );
