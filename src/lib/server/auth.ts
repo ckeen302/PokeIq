@@ -98,6 +98,11 @@ export function sessionTokenHash(request: NextRequest): string | null {
   return token && /^[0-9a-f]{64}$/.test(token) ? sha256(token) : null;
 }
 
+/** The signed-in trainer for a session cookie's value (a server component's `cookies()`), if any. */
+export async function userFromSessionToken(token: string | undefined): Promise<PublicUser | null> {
+  return token && /^[0-9a-f]{64}$/.test(token) ? getSessionUser(sha256(token)) : null;
+}
+
 /** The signed-in trainer for this request, if any. */
 export async function userFromRequest(request: NextRequest): Promise<PublicUser | null> {
   const tokenHash = sessionTokenHash(request);

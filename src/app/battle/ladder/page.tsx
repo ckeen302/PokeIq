@@ -10,6 +10,7 @@ import { PLAY_FORMAT_INFO, type StandardFormatId } from "@/lib/battle/play";
 import { GLICKO_START, GXE_RD_SHOWN } from "@/lib/battle/glicko";
 import { ladderTop } from "@/lib/server/battle-engine/ladder";
 import { avatarsByNames } from "@/lib/server/avatars";
+import { insightsAvailable } from "@/lib/server/battle-engine/insights";
 
 export const metadata: Metadata = pageMetadata({
   title: "Pokémon Battle Ladder — Ranked Ratings by Format",
@@ -24,7 +25,7 @@ export default async function LadderPage({ searchParams }: { searchParams: Promi
   const { format: raw } = await searchParams;
   const format: StandardFormatId = isLadderFormat(raw) ? raw : "gen9randombattle";
   const rows = await ladderTop(format);
-  const avatars = await avatarsByNames((rows ?? []).map((r) => r.name));
+  const [avatars, insights] = await Promise.all([avatarsByNames((rows ?? []).map((r) => r.name)), insightsAvailable().catch(() => false)]);
   return (
     <div className="mx-auto max-w-4xl space-y-6">
       <BattleHeader crumb="Ladder" title="Battle" accent="ladder">
@@ -32,9 +33,16 @@ export default async function LadderPage({ searchParams }: { searchParams: Promi
       </BattleHeader>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <LadderTabs format={format} hrefBase="/battle/ladder?format=" />
-        <Link href="/battle/play?vs=anyone" className={buttonVariants({ size: "sm" })}>
-          Play ranked
-        </Link>
+        <div className="flex flex-wrap gap-2">
+          {insights && (
+            <Link href={`/battle/insights?format=${format}`} className={buttonVariants({ size: "sm", variant: "outline" })} data-testid="ladder-insights">
+              Your insights
+            </Link>
+          )}
+          <Link href="/battle/play?vs=anyone" className={buttonVariants({ size: "sm" })}>
+            Play ranked
+          </Link>
+        </div>
       </div>
       {rows === null ? (
         <Card>

@@ -64,7 +64,13 @@ function causeText(stats: BattleStats, viewer: StatsSide, n: TurnNote, notes: re
       return `${whose(stats, viewer, foe, n.target ?? "")} being ${STATUS_WORDS[n.detail ?? ""] ?? "statused"}${how}${odds}`;
     }
     case "proc":
-      return `${n.move}'s side effect (it ${n.detail}${n.chance ? `, ${pct(n.chance)} chance` : ""})`;
+    {
+      // "lowered Drifblim's Sp. Def" → "lowering your Drifblim's Sp. Def".
+      let what = n.detail ?? "";
+      if (n.target) what = what.replace(`${n.target}'s`, `${whose(stats, viewer, foe, n.target)}'s`).replace(/^confused (.+)$/, () => `confusing ${whose(stats, viewer, foe, n.target!)}`);
+      what = what.replace(/^lowered /, "lowering ").replace(/^raised /, "raising ");
+      return `${whose(stats, viewer, n.side, n.mon)}'s ${n.move} ${what}${n.chance ? ` (${pct(n.chance)} chance)` : ""}`;
+    }
     case "hazard":
       return `${n.side === viewer ? "you" : stats.players[n.side]} setting up ${n.detail}`;
     case "weather":
@@ -165,9 +171,11 @@ export function workLine(m: MonStats): string {
 export function shareHeadline(stats: BattleStats, viewer: StatsSide): string {
   const l = stats.luck[viewer];
   const crits = l.critsReceived.observed;
+  // As shown (one decimal), so "Luck −1.0" never reads as "about even".
+  const score = Math.round(l.score * 10) / 10;
   const result = stats.winner === null ? "draw" : stats.winner === viewer ? "win" : "loss";
-  const lucky = l.score >= 1;
-  const unlucky = l.score <= -1;
+  const lucky = score >= 1;
+  const unlucky = score <= -1;
   if (result === "loss" && unlucky && crits >= 2) return `Lost to ${crits} crits 😤`;
   if (result === "loss" && unlucky) return "Lost to bad luck 😤";
   if (result === "loss" && lucky) return "Lost despite the luck 😅";

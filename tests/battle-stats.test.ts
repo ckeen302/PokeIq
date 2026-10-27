@@ -407,6 +407,12 @@ describe("turning points, luck and the share card", () => {
     expect(tp.ended).toBe(true);
   });
 
+  it("names a side effect with whose move it was and whose Pokémon it hit", () => {
+    const notes: TurnNote[] = [{ kind: "proc", side: 1, mon: "Espeon", move: "Shadow Ball", target: "Drifblim", chance: 0.2, detail: "lowered Drifblim's Sp. Def" }];
+    const [tp] = turningPoints([pt(8, 0.94), pt(9, 0.15), pt(10, 0.15)], withNotes({ 8: notes }), 0);
+    expect(tp.text).toBe("Blue's Espeon's Shadow Ball lowering your Drifblim's Sp. Def (20% chance) on turn 8 dropped your odds from 94% to 15%.");
+  });
+
   it("keeps at most three turning points, and none inside the noise", () => {
     const pts = [pt(1, 0.5), pt(2, 0.3), pt(3, 0.6), pt(4, 0.2), pt(5, 0.7), pt(6, 0.71), pt(7, 1, 0)];
     expect(turningPoints(pts, base, 0)).toHaveLength(3);

@@ -85,7 +85,7 @@ export function BattleStatsPanel({ load, viewer, replay, turning }: { load: Load
       <div data-testid="battle-stats" className="space-y-5">
         {load.status === "done" ? (
           <>
-            <div className="grid gap-4 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
+            <div className="grid items-start gap-4 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
               <LuckMeter stats={load.stats} viewer={viewer} />
               <ShareCard stats={load.stats} viewer={viewer} replay={replay} turning={turning} />
             </div>
@@ -246,7 +246,7 @@ function LuckTable({ luck: l }: { luck: SideLuck }) {
   ];
   return (
     <div className="overflow-hidden rounded-md border">
-      <table className="w-full text-sm" data-testid="luck-table">
+      <table className="w-full text-xs sm:text-sm" data-testid="luck-table">
         <thead className="bg-shade/20 text-left">
           <tr>
             <th className="px-2.5 py-1.5 font-normal">
@@ -268,7 +268,7 @@ function LuckTable({ luck: l }: { luck: SideLuck }) {
             <tr key={r.label}>
               <td className="px-2.5 py-1.5">
                 {r.label}
-                <span className="ml-1 text-[11px] text-muted-foreground">({r.chances})</span>
+                <span className="ml-1 hidden text-[11px] text-muted-foreground sm:inline" title="Chances">({r.chances})</span>
               </td>
               <td className="px-2 py-1.5 text-right font-mono tabular-nums">{r.observed}</td>
               <td className="px-2 py-1.5 text-right font-mono tabular-nums text-muted-foreground">{r.expected}</td>
@@ -325,7 +325,7 @@ function ShareCard({ stats, viewer, replay, turning }: { stats: BattleStats; vie
       <pre className="whitespace-pre-wrap break-words font-sans text-sm leading-relaxed" data-testid="stats-share-preview">
         {body}
       </pre>
-      <p className="mt-auto truncate text-xs text-muted-foreground">+ a link to this analysis</p>
+      <p className="truncate text-xs text-muted-foreground">+ a link to this analysis</p>
       {state === "failed" && <CopyFallback text={full} />}
     </section>
   );
@@ -373,7 +373,7 @@ function WhoDidTheWork({ stats, viewer }: { stats: BattleStats; viewer: StatsSid
 function MonRow({ m, mvp, most, color }: { m: MonStats; mvp: boolean; most: number; color: string }) {
   const indirect = (Object.entries(m.takenIndirect) as [IndirectKind, number][]).filter(([, v]) => v >= 0.5);
   const lostIndirect = indirect.reduce((a, [, v]) => a + v, 0);
-  const hp = (p: number) => (m.maxHp ? ` (≈${Math.round((p * m.maxHp) / 100)} HP)` : "");
+  const hp = (p: number) => (m.maxHp && p >= 0.5 ? ` (≈${Math.round((p * m.maxHp) / 100)} HP)` : "");
   return (
     <li className={cn("flex items-center gap-2.5 px-2.5 py-2", mvp && "bg-warning/10")} data-testid={mvp ? "mvp" : undefined}>
       <BattleSprite species={m.sprite} size={40} animated={false} className={cn("shrink-0", m.fainted && "opacity-50 grayscale")} />

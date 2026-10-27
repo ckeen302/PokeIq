@@ -2112,7 +2112,7 @@ await mmRed.getByTestId("replay-end").click();
 await mmRed.getByTestId("battle-result").waitFor({ timeout: 30_000 });
 console.log(`  replay at: ${await turnLabel()}`);
 
-step("replay analysis: the after-battle link, win chance by turn, key moments");
+step("replay analysis: the after-battle link, win chance by turn, key moments, turning points, luck, damage, share card");
 await mmRed.goto(`${BASE}/battle/live/${mmCode}`, { waitUntil: "networkidle" });
 await mmRed.getByTestId("analyse-battle").click();
 await mmRed.waitForURL(new RegExp(`/battle/replay/${mmCode}\\?analysis=1&side=[01]`));
@@ -2130,6 +2130,32 @@ for (const line of (await analysis.getByTestId("key-moments").locator("li").allI
 }
 console.log(`  analysis took ${analysisSecs} s`);
 await analysis.screenshot({ path: `${OUT}/battle-replay-analysis.png` });
+// The battle's stats, from its log on the server: asked for only now, after the battle.
+const statsPanel = mmRed.getByTestId("battle-stats");
+await statsPanel.getByTestId("luck-meter").waitFor({ timeout: 30_000 });
+const luckScore = (await statsPanel.getByTestId("luck-score").innerText()).trim();
+if (!/^([+−]\d+\.\d|0\.0)$/.test(luckScore)) errors.push(`stats: odd luck score "${luckScore}"`);
+if ((await statsPanel.getByTestId("luck-table").locator("tbody tr").count()) !== 7) errors.push("stats: the luck table should have seven rows");
+if (!/estimates/.test(await statsPanel.getByTestId("luck-explained").innerText())) errors.push("stats: the luck explanation doesn't say it's an estimate");
+for (const side of [0, 1]) if (!(await statsPanel.getByTestId(`damage-side-${side}`).locator("li").count())) errors.push(`stats: no Pokémon in the damage summary for side ${side}`);
+if (!(await statsPanel.getByTestId("mvp").count())) errors.push("stats: no MVP");
+const turningText = await analysis.getByTestId("turning-points").innerText();
+for (const line of await analysis.getByTestId("turning-points").locator("li").allInnerTexts()) {
+  if (!/turn \d+ .*(dropped|raised|took) your odds from \d+% to (\d+%|the win|the loss|a draw)\.$/i.test(line.replace(/\s+/g, " "))) errors.push(`stats: odd turning point "${line}"`);
+  else console.log(`  turning point: ${line.replace(/^[+−]\d+\s*/, "").replace(/\s+/g, " ")}`);
+}
+if (!turningText.trim()) errors.push("stats: no turning points section");
+const statsCard = await statsPanel.getByTestId("stats-share-preview").innerText();
+if (!/Luck [+−]?\d+\.\d/.test(statsCard) || !/turns?/.test(statsCard)) errors.push(`stats: odd share card "${statsCard}"`);
+console.log(`  share card: ${statsCard.split("\n")[0]}`);
+await mmRed.context().grantPermissions(["clipboard-read", "clipboard-write"], { origin: BASE });
+await statsPanel.getByTestId("stats-copy").click();
+await statsPanel.getByTestId("stats-copy").filter({ hasText: "Copied!" }).waitFor({ timeout: 5_000 }).catch(() => errors.push("stats: Copy didn't say Copied!"));
+const copied = await mmRed.evaluate(() => navigator.clipboard.readText()).catch(() => "");
+if (copied && !copied.includes(`/battle/replay/${mmCode}?analysis=1`)) errors.push("stats: the copied card has no link to the analysis");
+await statsPanel.screenshot({ path: `${OUT}/battle-replay-stats.png` });
+const statsRes = await mmRed.request.get(`${BASE}/api/battle/analysis/stats/${mmCode}?v=1`);
+if (statsRes.status() !== 200 || !/max-age/.test(statsRes.headers()["cache-control"] ?? "")) errors.push(`stats API: ${statsRes.status()} ${statsRes.headers()["cache-control"]}`);
 // Cached in this browser: a reload shows it at once.
 await mmRed.reload({ waitUntil: "networkidle" });
 await mmRed.getByTestId("replay-analysis").getByTestId("key-moments").waitFor({ timeout: 10_000 });
@@ -2175,6 +2201,12 @@ await rkRed.getByTestId("ladder-table").getByText("Rory").waitFor({ timeout: 15_
 if (!(await rkRed.getByTestId("ladder-table").getByTestId("glicko-badge").count())) errors.push("ladder: no Glicko-2 badge");
 if (!/GXE \d+\.\d%/.test(await rkRed.getByTestId("your-standing").innerText())) errors.push("ladder: your standing shows no GXE");
 await rkRed.screenshot({ path: `${OUT}/battle-p1-ladder.png`, fullPage: true });
+// Team insights follow an account: from the ladder, a guest is asked to sign in.
+if (await rkRed.getByTestId("ladder-insights").count()) {
+  await rkRed.getByTestId("ladder-insights").click();
+  await rkRed.waitForURL(/\/battle\/insights/);
+  await rkRed.getByRole("link", { name: "Sign in" }).last().waitFor({ timeout: 15_000 });
+} else errors.push("ladder: no link to your insights");
 for (const p of [rkRed, rkBlue]) await p.context().close();
 
 // The Battle Lab runs Showdown's simulator in Web Workers, in this browser.
@@ -2355,6 +2387,8 @@ if (me.enabled) {
     await fa.waitForURL(new RegExp(`/u/${nameB}$`));
     await fa.getByTestId("friend-status-badge").waitFor({ timeout: 15_000 });
     await fa.screenshot({ path: `${OUT}/profile.png`, fullPage: true });
+    const insightsPage = await fa.request.get(`${BASE}/battle/insights/${nameB}`);
+    if (insightsPage.status() !== 200 || !/insights/i.test(await insightsPage.text())) errors.push(`team insights page returned ${insightsPage.status()}`);
     const old = await fa.request.get(`${BASE}/battle/player/${nameB}`, { maxRedirects: 0 });
     if (![307, 308].includes(old.status())) errors.push(`/battle/player/<name> didn't redirect (${old.status()})`);
   }
