@@ -779,7 +779,7 @@ async function fetchRegion(region: string) {
   const have = new Map<string, number>();
   for (const s of shots) have.set(`${s.area}|${s.family}`, (have.get(`${s.area}|${s.family}`) ?? 0) + 1);
   const rank = (c: Candidate) => (have.get(`${areaKey(c)}|${famOf(c.code)}`) ?? 0) * 10 + (c.via === "page" ? 0 : 1);
-  cands.sort((a, b) => rank(a) - rank(b) || areaKey(a).localeCompare(areaKey(b)) || a.file.length - b.file.length);
+  cands.sort((a, b) => plainness(a) - plainness(b) || rank(a) - rank(b) || areaKey(a).localeCompare(areaKey(b)) || a.file.length - b.file.length);
   const kept: Candidate[] = [];
   let n = 0;
   for (const c of cands) {
@@ -1077,7 +1077,13 @@ async function accept(region: string, reviewFile: string) {
       ledger[k] = { decision: "rejected", reason: review.reject[tag] };
       continue;
     }
-    const raw = await httpGet(c.url);
+    // A truncated download fails to decode: fetch it once more, then leave it for the next run.
+    let raw = await httpGet(c.url);
+    if (!(await sharp(raw).stats().then(() => true, () => false))) raw = await httpGet(c.url);
+    if (!(await sharp(raw).stats().then(() => true, () => false))) {
+      console.log(`  ! ${k}: can't decode the download`);
+      continue;
+    }
     const meta = await sharp(raw).metadata();
     let [w, h] = [meta.width ?? 0, meta.height ?? 0];
     let box = { left: 0, top: 0, width: w, height: h };
