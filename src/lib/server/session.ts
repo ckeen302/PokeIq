@@ -7,13 +7,13 @@ import {
   DIFFICULTIES,
   FORMATS,
   MODULES,
-  type MediaRef,
   type Question,
 } from "@/engines/types";
 import { artworkUrl, getPokemon } from "@/lib/pokemon/pokedex";
 import { itemInformation, performanceRating, ratingStandardError, ratingToIQ, type AnsweredItem } from "@/lib/rating";
-import { deriveSeed, encryptJson, randomId, signToken, verifyToken } from "./crypto";
+import { deriveSeed, randomId, signToken, verifyToken } from "./crypto";
 import { itemRating } from "./calibration";
+import { mediaUrl } from "./media-url";
 import type {
   AnswerResponse,
   NextResponse,
@@ -82,7 +82,6 @@ const MAX_QUESTIONS = 250;
 const MAX_STREAMS = 200;
 const MAX_ADAPTIVE_STEPS = 3000;
 const SESSION_TTL_MS = 2 * 60 * 60 * 1000;
-const MEDIA_TTL_MS = 30 * 60 * 1000;
 
 const BASE_POINTS = 100;
 const MAX_SPEED_BONUS = 50;
@@ -222,9 +221,7 @@ function adaptiveQuestionAt(spec: SessionSpec, index: number, log: readonly LogE
 // Public projections (what the browser is allowed to see)
 // ---------------------------------------------------------------------------
 
-export function mediaUrl(ref: MediaRef): string {
-  return `/api/media/${encryptJson({ k: ref.kind, id: ref.pokemonId, x: Date.now() + MEDIA_TTL_MS })}`;
-}
+export { mediaUrl };
 
 export function toPublic(q: Question, index: number, rules: FormatRules): PublicQuestion {
   return {

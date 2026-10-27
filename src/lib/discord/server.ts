@@ -3,11 +3,6 @@ import { z } from "zod";
 import { SITE_URL } from "@/lib/site";
 import { duelNameSchema } from "@/lib/server/duel-core";
 import { duelsEnabled, insertDuel, newDuelCode, pvpStore } from "@/lib/server/duel-store";
-import { createDuel } from "@/lib/server/duel";
-import { createPokedleDuel } from "@/lib/server/pokedle-duel";
-import { createQuizDuel } from "@/lib/server/quiz-duel";
-import { createConnectionsDuel } from "@/lib/server/connections-duel";
-import { createPikadokuDuel } from "@/lib/server/pikadoku-duel";
 import { WORLD_REGION } from "@/lib/geo-types";
 import { syncHiddenShots } from "@/lib/server/geo-reports";
 import { fetchBoard } from "@/lib/server/leaderboard";
@@ -18,6 +13,28 @@ import { PINK, VIOLET, GAME_LABELS, duelEmbed, duelName, errorEmbed, todayUtc, t
 
 export const gameSchema = z.enum(["pokedle", "connections", "pikadoku", "guessr", "quiz"]);
 
+/**
+ * A game's duel creator, loaded on use: the game engines are heavy, and
+ * Discord gives an interaction's first reply 3 seconds, cold start included.
+ * Duels are only created after that reply (the route's after()).
+ */
+async function duelCreator(game: DuelGame) {
+  switch (game) {
+    case "guessr":
+      return { kind: "guessr", fn: (await import("@/lib/server/duel")).createDuel } as const;
+    case "pokedle":
+      return { kind: "pvp", fn: (await import("@/lib/server/pokedle-duel")).createPokedleDuel } as const;
+    case "quiz": {
+      const { createQuizDuel } = await import("@/lib/server/quiz-duel");
+      return { kind: "pvp", fn: (name: string, code: string, now: number) => createQuizDuel("mixed", "medium", name, code, now) } as const;
+    }
+    case "pikadoku":
+      return { kind: "pvp", fn: (await import("@/lib/server/pikadoku-duel")).createPikadokuDuel } as const;
+    default:
+      return { kind: "pvp", fn: (await import("@/lib/server/connections-duel")).createConnectionsDuel } as const;
+  }
+}
+
 /** Opens a casual duel through the server-side creators (no HTTP self-call) and returns the join embed. */
 export async function createDuelEmbed(game: DuelGame, displayName: string | undefined): Promise<Embed> {
   if (!duelsEnabled()) return errorEmbed("Duels aren't enabled on this server yet.");
@@ -25,21 +42,15 @@ export async function createDuelEmbed(game: DuelGame, displayName: string | unde
   const name = parsed.success ? parsed.data : "Trainer";
   try {
     if (game === "guessr") await syncHiddenShots();
+    const create = await duelCreator(game);
     for (let attempt = 0; attempt < 4; attempt++) {
       const now = Date.now();
       const code = newDuelCode();
-      if (game === "guessr") {
-        const { duel } = createDuel(WORLD_REGION, name, code, now);
+      if (create.kind === "guessr") {
+        const { duel } = create.fn(WORLD_REGION, name, code, now);
         if (!(await insertDuel(duel))) continue;
       } else {
-        const { duel } =
-          game === "pokedle"
-            ? createPokedleDuel(name, code, now)
-            : game === "quiz"
-              ? createQuizDuel("mixed", "medium", name, code, now)
-              : game === "pikadoku"
-                ? createPikadokuDuel(name, code, now)
-                : createConnectionsDuel(name, code, now);
+        const { duel } = create.fn(name, code, now);
         if (!(await pvpStore.insert(duel))) continue;
       }
       return duelEmbed(game, code);

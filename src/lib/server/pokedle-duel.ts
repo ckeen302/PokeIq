@@ -24,7 +24,7 @@ import { deriveSeed } from "./crypto";
 import type { RankedMatch } from "./ranked";
 import { answerFor, compare, dailyPuzzleOf, puzzlePool } from "./pokedle";
 import { stillPossible } from "./pokedle-candidates";
-import { mediaUrl } from "./session";
+import { mediaUrl } from "./media-url";
 import {
   baseView,
   fail,
