@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { preload } from "react-dom";
 import { pageMetadata } from "@/lib/seo";
 import { GeoGame } from "@/components/geo/GeoGame";
 import { GameInfo } from "@/components/seo/GameInfo";
@@ -12,6 +13,8 @@ export const metadata: Metadata = pageMetadata({
 });
 
 export default function GuessrPage() {
+  // The world map is the page's biggest download: start it with the HTML, not after the game's code has loaded.
+  preload("/geo/maps/world.webp", { as: "image" });
   return (
     <div className="space-y-10">
       <GeoGame regions={geoRegions()} />
