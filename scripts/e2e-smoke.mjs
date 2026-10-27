@@ -1581,6 +1581,8 @@ step("pokédex TCG tab: sets, a set gallery (sort + filter), a card page, search
     await page.getByTestId("tcg-type").selectOption("Fire");
     const fire = await page.getByTestId("tcg-card").count();
     if (!(fire > 0 && fire < total)) errors.push(`tcg: the Fire filter showed ${fire} of ${total} cards`);
+    const setNote = await page.getByTestId("tcg-price-note").innerText();
+    if (process.env.POKEIQ_TCG_FIXTURE === "1" && !/^Prices: TCGplayer market \(USD\).* as of /.test(setNote)) errors.push(`tcg: the set's price note has no source/date: "${setNote}"`);
     await page.screenshot({ path: `${OUT}/tcg-set.png` });
     await page.getByTestId("tcg-card").first().click();
     await page.waitForURL(/\/pokedex\/tcg\/card\//);
@@ -1588,7 +1590,15 @@ step("pokédex TCG tab: sets, a set gallery (sort + filter), a card page, search
     await page.getByTestId("tcg-prices").waitFor();
     // Fire Pokémon cards link to their Pokédex entry.
     await page.getByTestId("tcg-dex-link").first().waitFor();
+    // Every price block names its source and date.
+    for (const s of await page.getByTestId("tcg-price-source").allInnerTexts()) if (!/ as of /i.test(s)) errors.push(`tcg: a price block without a date: "${s}"`);
     await page.screenshot({ path: `${OUT}/tcg-card.png`, fullPage: true });
+    // A card the Pokémon TCG API has no prices for: TCGplayer via TCGCSV (fixture: captured TCGCSV data).
+    await page.goto(`${BASE}/pokedex/tcg/card/me55-150`, { waitUntil: "networkidle" });
+    await page.getByTestId("tcg-prices").waitFor();
+    const sources = await page.getByTestId("tcg-price-source").allInnerTexts();
+    if (process.env.POKEIQ_TCG_FIXTURE === "1" && !sources.some((s) => /^TCGplayer via TCGCSV · as of \w{3} \d{1,2}, \d{4}/i.test(s))) errors.push(`tcg: me55-150 has no TCGCSV price (${sources.join(" | ") || "none"})`);
+    if (!sources.length && !(await page.getByTestId("tcg-price-note").count())) errors.push("tcg: me55-150 shows neither prices nor an 'unavailable' note");
     await page.goto(`${BASE}/pokedex/tcg`, { waitUntil: "networkidle" });
     await page.getByTestId("tcg-search").getByRole("searchbox").fill("Pikachu");
     await page.getByTestId("tcg-search").getByRole("button", { name: "Search" }).click();

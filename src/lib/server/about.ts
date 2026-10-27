@@ -1,7 +1,7 @@
 import "server-only";
 import { getServiceSupabase } from "@/lib/supabase";
 import { checkAbout, checkCard, readAbout } from "@/lib/about-validate";
-import { getCard } from "@/lib/tcg/api";
+import { getCardInfo } from "@/lib/tcg/api";
 import { CARD_SLOTS, type AboutData } from "@/lib/about-data";
 
 /**
@@ -89,7 +89,7 @@ export async function saveAbout(userId: string, raw: unknown, store = aboutStore
         cards[slotId] = prior[slotId];
         continue;
       }
-      const found = await getCard(pick.id);
+      const found = await getCardInfo(pick.id);
       const card = found && checkCard({ id: found.id, name: found.name, image: found.images?.small ?? null, set: found.set?.name ?? null });
       const label = CARD_SLOTS.find((s) => s.id === slotId)?.label ?? "Card";
       if (!card) return { ok: false, status: 400, error: `${label}: couldn't find that card. Try again in a moment.` };

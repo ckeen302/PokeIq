@@ -28,3 +28,6 @@ e2e-screenshots/
 
 # local account store used in development
 .data/
+
+# TCG price-map build cache
+.tcg-cache/
