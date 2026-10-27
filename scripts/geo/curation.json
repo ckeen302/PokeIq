@@ -10990,6 +10990,2389 @@
    "game": "Sword / Shield",
    "source": "https://www.pokepedia.fr/Fichier:Winscor_Vitesse_+_EB.png",
    "checked": "shown on Poképédia's page \"Winscor\"; SwSh in its name or category; cropped (bottom 12%); reviewed on a contact sheet"
+  },
+  {
+   "id": "mp8PTw_kOks0",
+   "region": "Sinnoh",
+   "name": "Battle Park",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://archives.bulbagarden.net/wiki/File:Exchange_Service_Corner_BDSP.png",
+   "checked": "shown on Bulbapedia's page \"Battle Park (Sinnoh)\"; BDSP in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "UdrGOyKe8BYi",
+   "region": "Sinnoh",
+   "name": "Battle Park",
+   "game": "Diamond / Pearl",
+   "source": "https://archives.bulbagarden.net/wiki/File:Exchange_Service_Corner_DP.png",
+   "checked": "shown on Bulbapedia's page \"Battle Park (Sinnoh)\"; DP in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "FLCYgCI4szrS",
+   "region": "Sinnoh",
+   "name": "Battle Park",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Parc_des_Combats_Croc_Rasoir_DEPS.png",
+   "checked": "shown on Poképédia's page \"Parc des Combats\"; BDSP in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "GGsQJjFu0ihJ",
+   "region": "Sinnoh",
+   "name": "Battle Park",
+   "game": "Diamond / Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Parc_des_Combats_Croc_Rasoir_DP.png",
+   "checked": "shown on Poképédia's page \"Parc des Combats\"; DP in its name or category; cropped (bottom 28%); reviewed on a contact sheet"
+  },
+  {
+   "id": "tM1ZlYmQy7Ig",
+   "region": "Sinnoh",
+   "name": "Canalave City",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Joliberges_Perle_DEPS.png",
+   "checked": "shown on Poképédia's page \"Joliberges\"; BDSP in its name or category; cropped (bottom 25%); reviewed on a contact sheet"
+  },
+  {
+   "id": "THJW7yKSiewK",
+   "region": "Sinnoh",
+   "name": "Canalave City",
+   "game": "Diamond / Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Joliberges_Perle_DP.png",
+   "checked": "shown on Poképédia's page \"Joliberges\"; DP in its name or category; cropped (bottom 28%); reviewed on a contact sheet"
+  },
+  {
+   "id": "rJlYqx0YKyEX",
+   "region": "Sinnoh",
+   "name": "Celestic Town",
+   "game": "Platinum",
+   "source": "https://www.pokepedia.fr/Fichier:Célestia_Croc_Dragon_Pt.png",
+   "checked": "shown on Poképédia's page \"Célestia\"; Pt in its name or category; cropped (bottom 28%); reviewed on a contact sheet"
+  },
+  {
+   "id": "hovA_CzeZDMB",
+   "region": "Sinnoh",
+   "name": "Celestic Town",
+   "game": "Platinum",
+   "source": "https://www.pokepedia.fr/Fichier:Célestia_Roche_Royale_Pt.png",
+   "checked": "shown on Poképédia's page \"Célestia\"; Pt in its name or category; cropped (bottom 28%); reviewed on a contact sheet"
+  },
+  {
+   "id": "FoMX_1kx3x0h",
+   "region": "Sinnoh",
+   "name": "Eterna City",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://archives.bulbagarden.net/wiki/File:Ancient_statue_BDSP.png",
+   "checked": "shown on Bulbapedia's page \"Eterna City\"; BDSP in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "c6GxkyeKW7rs",
+   "region": "Sinnoh",
+   "name": "Eterna Forest",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://archives.bulbagarden.net/wiki/File:Eterna_Forest_BDSP.png",
+   "checked": "shown on Bulbapedia's page \"Eterna Forest\"; BDSP in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "d7z2qpOMUlW6",
+   "region": "Sinnoh",
+   "name": "Eterna Forest",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Forêt_de_Vestigion_Anti-Para_DEPS.png",
+   "checked": "shown on Poképédia's page \"Forêt de Vestigion\"; BDSP in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "CKzLkkRBIomq",
+   "region": "Sinnoh",
+   "name": "Eterna Forest",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Forêt_de_Vestigion_Arbres_à_Baies_DEPS.png",
+   "checked": "shown on Poképédia's page \"Forêt de Vestigion\"; BDSP in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "Ch0NlC2LEyXJ",
+   "region": "Sinnoh",
+   "name": "Eterna Forest",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Forêt_de_Vestigion_Huile_DEPS.png",
+   "checked": "shown on Poképédia's page \"Forêt de Vestigion\"; BDSP in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "P-TF8VxX8zUH",
+   "region": "Sinnoh",
+   "name": "Eterna Forest",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Forêt_de_Vestigion_Poudre_Argentée_DEPS.png",
+   "checked": "shown on Poképédia's page \"Forêt de Vestigion\"; BDSP in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "xQcMyuFLPDY8",
+   "region": "Sinnoh",
+   "name": "Eterna Forest",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://archives.bulbagarden.net/wiki/File:Moss_Rock_BDSP.png",
+   "checked": "shown on Bulbapedia's page \"Eterna Forest\"; BDSP in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "5hCZrmF8Af9q",
+   "region": "Sinnoh",
+   "name": "Floaroma Meadow",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Pré_de_Floraville_Anti-Para_DEPS.png",
+   "checked": "shown on Poképédia's page \"Pré de Floraville\"; BDSP in its name or category; cropped (bottom 25%); reviewed on a contact sheet"
+  },
+  {
+   "id": "zcxynMMWMFyS",
+   "region": "Sinnoh",
+   "name": "Floaroma Meadow",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Pré_de_Floraville_DEPS.png",
+   "checked": "shown on Poképédia's page \"Pré de Floraville\"; BDSP in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "w_ZeNAuSP_bb",
+   "region": "Sinnoh",
+   "name": "Floaroma Meadow",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Pré_de_Floraville_Hyper_Potion_DEPS.png",
+   "checked": "shown on Poképédia's page \"Pré de Floraville\"; BDSP in its name or category; cropped (bottom 25%); reviewed on a contact sheet"
+  },
+  {
+   "id": "LnmThBfevzje",
+   "region": "Sinnoh",
+   "name": "Floaroma Meadow",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Pré_de_Floraville_Miel_1_DEPS.png",
+   "checked": "shown on Poképédia's page \"Pré de Floraville\"; BDSP in its name or category; cropped (bottom 25%); reviewed on a contact sheet"
+  },
+  {
+   "id": "z3ctVI08Su5S",
+   "region": "Sinnoh",
+   "name": "Floaroma Meadow",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Pré_de_Floraville_Pierre_Plante_DEPS.png",
+   "checked": "shown on Poképédia's page \"Pré de Floraville\"; BDSP in its name or category; cropped (bottom 25%); reviewed on a contact sheet"
+  },
+  {
+   "id": "RaxIBQdah5Z1",
+   "region": "Sinnoh",
+   "name": "Floaroma Meadow",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Pré_de_Floraville_Rappel_2_DEPS.png",
+   "checked": "shown on Poképédia's page \"Pré de Floraville\"; BDSP in its name or category; cropped (bottom 25%); reviewed on a contact sheet"
+  },
+  {
+   "id": "w2r_8l4aBEmO",
+   "region": "Sinnoh",
+   "name": "Floaroma Town",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Floraville_Arbre_à_Baies_1_DEPS.png",
+   "checked": "shown on Poképédia's page \"Floraville\"; BDSP in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "XiLB2I68af9l",
+   "region": "Sinnoh",
+   "name": "Floaroma Town",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Floraville_DEPS.png",
+   "checked": "shown on Poképédia's page \"Floraville\"; BDSP in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "1KizY8odgWlQ",
+   "region": "Sinnoh",
+   "name": "Floaroma Town",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Floraville_Gracidée_DEPS.png",
+   "checked": "shown on Poképédia's page \"Floraville\"; BDSP in its name or category; cropped (bottom 25%); reviewed on a contact sheet"
+  },
+  {
+   "id": "NIULAmbG6OS9",
+   "region": "Sinnoh",
+   "name": "Floaroma Town",
+   "game": "Platinum",
+   "source": "https://www.pokepedia.fr/Fichier:Floraville_Gracidée_Pt.png",
+   "checked": "shown on Poképédia's page \"Floraville\"; Pt in its name or category; cropped (bottom 28%); reviewed on a contact sheet"
+  },
+  {
+   "id": "UdbhfZzuvTAw",
+   "region": "Sinnoh",
+   "name": "Flower Paradise",
+   "game": "Diamond / Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Paradis_Fleuri.png",
+   "checked": "shown on Poképédia's page \"Paradis Fleuri\"; DP in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "8x5HslB9ZGx7",
+   "region": "Sinnoh",
+   "name": "Fuego Ironworks",
+   "game": "Platinum",
+   "source": "https://www.pokepedia.fr/Fichier:Forge_Fuego_Encens_Roc_Pt.png",
+   "checked": "shown on Poképédia's page \"Forge Fuego\"; Pt in its name or category; cropped (bottom 28%); reviewed on a contact sheet"
+  },
+  {
+   "id": "qqyGaDK_qW_j",
+   "region": "Sinnoh",
+   "name": "Fuego Ironworks",
+   "game": "Platinum",
+   "source": "https://www.pokepedia.fr/Fichier:Forge_Fuego_Gros_Champi_Pt.png",
+   "checked": "shown on Poképédia's page \"Forge Fuego\"; Pt in its name or category; cropped (bottom 28%); reviewed on a contact sheet"
+  },
+  {
+   "id": "zNETOJEBX1KI",
+   "region": "Sinnoh",
+   "name": "Fuego Ironworks",
+   "game": "Platinum",
+   "source": "https://www.pokepedia.fr/Fichier:Forge_Fuego_Hyper_Ball_Pt.png",
+   "checked": "shown on Poképédia's page \"Forge Fuego\"; Pt in its name or category; cropped (bottom 28%); reviewed on a contact sheet"
+  },
+  {
+   "id": "mt5hdwMgJxzr",
+   "region": "Sinnoh",
+   "name": "Fuego Ironworks",
+   "game": "Platinum",
+   "source": "https://www.pokepedia.fr/Fichier:Forge_Fuego_Morc._Etoile_Pt.png",
+   "checked": "shown on Poképédia's page \"Forge Fuego\"; Pt in its name or category; cropped (bottom 28%); reviewed on a contact sheet"
+  },
+  {
+   "id": "Blp176HtTXG0",
+   "region": "Sinnoh",
+   "name": "Fuego Ironworks",
+   "game": "Diamond / Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Forge_Fuego_Potion_Max_DP.png",
+   "checked": "shown on Poképédia's page \"Forge Fuego\"; DP in its name or category; cropped (bottom 28%); reviewed on a contact sheet"
+  },
+  {
+   "id": "bmDMua7kzp9F",
+   "region": "Sinnoh",
+   "name": "Fullmoon Island",
+   "game": "Diamond / Pearl",
+   "source": "https://pokemon.fandom.com/wiki/File:Fullmoon_Island_Cresselia_DP.png",
+   "checked": "shown on the Pokémon Wiki's page \"Fullmoon Island\"; DP in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "KDwNvlfKZuZB",
+   "region": "Sinnoh",
+   "name": "Fullmoon Island",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Île_Pleine_Lune_DEPS.png",
+   "checked": "shown on Poképédia's page \"Île Pleine Lune\"; BDSP in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "jZY5wf_6d47g",
+   "region": "Sinnoh",
+   "name": "Fullmoon Island",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Île_Pleine_Lune_Plume_Lune_DEPS.png",
+   "checked": "shown on Poképédia's page \"Île Pleine Lune\"; BDSP in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "cQQ6e1tLzBr7",
+   "region": "Sinnoh",
+   "name": "Great Marsh",
+   "game": "Platinum",
+   "source": "https://www.pokepedia.fr/Fichier:Grand_Marais_-_Platine.png",
+   "checked": "shown on Poképédia's page \"Grand Marais\"; Pt in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "mOi_UUDaTA7M",
+   "region": "Sinnoh",
+   "name": "Great Marsh",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Grand_Marais_Anti-Para_DEPS.png",
+   "checked": "shown on Poképédia's page \"Grand Marais\"; BDSP in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "64hqhKo4aqBV",
+   "region": "Sinnoh",
+   "name": "Great Marsh",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Grand_Marais_Antidote_DEPS.png",
+   "checked": "shown on Poképédia's page \"Grand Marais\"; BDSP in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "6wG27XYxGHva",
+   "region": "Sinnoh",
+   "name": "Great Marsh",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Grand_Marais_Miel_DEPS.png",
+   "checked": "shown on Poképédia's page \"Grand Marais\"; BDSP in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "1PtpzdVO-Ekw",
+   "region": "Sinnoh",
+   "name": "Great Marsh",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Grand_Marais_Poké_Ball_DEPS.png",
+   "checked": "shown on Poképédia's page \"Grand Marais\"; BDSP in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "bAajj4tNq9FQ",
+   "region": "Sinnoh",
+   "name": "Great Marsh",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Grand_Marais_Potion_DEPS.png",
+   "checked": "shown on Poképédia's page \"Grand Marais\"; BDSP in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "bjKANHS5z2DD",
+   "region": "Sinnoh",
+   "name": "Hearthome City",
+   "game": "Diamond / Pearl / Platinum",
+   "source": "https://archives.bulbagarden.net/wiki/File:Foreign_Building_DPPt.png",
+   "checked": "shown on Bulbapedia's page \"Hearthome City\"; DPPt in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "QhPFo5TdJhsK",
+   "region": "Sinnoh",
+   "name": "Iron Island",
+   "game": "Diamond / Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Île_de_Fer_Aimant_DP.png",
+   "checked": "shown on Poképédia's page \"Île de Fer\"; DP in its name or category; cropped (bottom 28%); reviewed on a contact sheet"
+  },
+  {
+   "id": "2cG6T69q4pPp",
+   "region": "Sinnoh",
+   "name": "Iron Island",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Île_de_Fer_Balle_Fer_DEPS.png",
+   "checked": "shown on Poképédia's page \"Île de Fer\"; BDSP in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "U92gGWRPdUpf",
+   "region": "Sinnoh",
+   "name": "Iron Island",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Île_de_Fer_DEPS.png",
+   "checked": "shown on Poképédia's page \"Île de Fer\"; BDSP in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "OcmPdm8TYqUD",
+   "region": "Sinnoh",
+   "name": "Iron Island",
+   "game": "Platinum",
+   "source": "https://www.pokepedia.fr/Fichier:Île_de_Fer_Huile_Max_Pt.png",
+   "checked": "shown on Poképédia's page \"Île de Fer\"; Pt in its name or category; cropped (bottom 28%); reviewed on a contact sheet"
+  },
+  {
+   "id": "MJcMW9zj96dM",
+   "region": "Sinnoh",
+   "name": "Iron Island",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Île_de_Fer_Hyper_Ball_DEPS.png",
+   "checked": "shown on Poképédia's page \"Île de Fer\"; BDSP in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "oLlUEqIvVR60",
+   "region": "Sinnoh",
+   "name": "Iron Island",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Île_de_Fer_PV_Plus_DEPS.png",
+   "checked": "shown on Poképédia's page \"Île de Fer\"; BDSP in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "3C1DXy96u3b6",
+   "region": "Sinnoh",
+   "name": "Iron Island",
+   "game": "Platinum",
+   "source": "https://www.pokepedia.fr/Fichier:Île_de_Fer_PV_Plus_Pt.png",
+   "checked": "shown on Poképédia's page \"Île de Fer\"; Pt in its name or category; cropped (bottom 28%); reviewed on a contact sheet"
+  },
+  {
+   "id": "HUzMrRhY_nh1",
+   "region": "Sinnoh",
+   "name": "Iron Island",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Île_de_Fer_Rappel_DEPS.png",
+   "checked": "shown on Poképédia's page \"Île de Fer\"; BDSP in its name or category; cropped (bottom 25%); reviewed on a contact sheet"
+  },
+  {
+   "id": "IHB5IKB1062W",
+   "region": "Sinnoh",
+   "name": "Iron Island",
+   "game": "Diamond / Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Île_de_Fer_Rappel_DP.png",
+   "checked": "shown on Poképédia's page \"Île de Fer\"; DP in its name or category; cropped (bottom 28%); reviewed on a contact sheet"
+  },
+  {
+   "id": "faGFG9U0Lziu",
+   "region": "Sinnoh",
+   "name": "Jubilife City",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Féli-Cité_DEPS.png",
+   "checked": "shown on Poképédia's page \"Féli-Cité\"; BDSP in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "kO8Kj92Oqw-W",
+   "region": "Sinnoh",
+   "name": "Jubilife City",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://archives.bulbagarden.net/wiki/File:Jubilife_City_BDSP.png",
+   "checked": "shown on Bulbapedia's page \"Jubilife City\"; BDSP in its name or category; cropped (bottom 25%); reviewed on a contact sheet"
+  },
+  {
+   "id": "ZTjdOAY58-9k",
+   "region": "Sinnoh",
+   "name": "Global Terminal",
+   "parent": "Jubilife City",
+   "game": "Diamond / Pearl",
+   "source": "https://archives.bulbagarden.net/wiki/File:GTS_exterior_DP.png",
+   "checked": "shown on Bulbapedia's page \"Global Terminal\"; DP in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "nkB6EIPxkHHo",
+   "region": "Sinnoh",
+   "name": "Global Wonder Station",
+   "parent": "Jubilife City",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://archives.bulbagarden.net/wiki/File:GWS_interior_BDSP.png",
+   "checked": "shown on Bulbapedia's page \"Global Wonder Station\"; BDSP in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "4mr6iloJ9o1d",
+   "region": "Sinnoh",
+   "name": "Lake Acuity",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Rive_du_Lac_Savoir_DEPS.png",
+   "checked": "in pokepedia's category \"Capture d'écran de Pokémon Diamant Étincelant et Perle Scintillante\", named after the place; BDSP in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "GmRD_StrFYfi",
+   "region": "Sinnoh",
+   "name": "Lake Valor",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Attaque_du_lac_Courage_DEPS.png",
+   "checked": "shown on Poképédia's page \"Lac Courage\"; BDSP in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "aDrhV19APoRo",
+   "region": "Sinnoh",
+   "name": "Lake Valor",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://archives.bulbagarden.net/wiki/File:Lake_Valor_BDSP.png",
+   "checked": "shown on Bulbapedia's page \"Lake Valor\"; BDSP in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "XHlKWtpvxBNg",
+   "region": "Sinnoh",
+   "name": "Lake Verity",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Rive_du_Lac_Vérité_DEPS.png",
+   "checked": "in pokepedia's category \"Capture d'écran de Pokémon Diamant Étincelant et Perle Scintillante\", named after the place; BDSP in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "P3BY5oISHptK",
+   "region": "Sinnoh",
+   "name": "Lost Tower",
+   "game": "Diamond / Pearl / Platinum",
+   "source": "https://www.pokepedia.fr/Fichier:Tour_Perdue_Extérieur_DPP.png",
+   "checked": "shown on Poképédia's page \"Tour Perdue\"; DPPt in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "J8GwmiIR9ZQ4",
+   "region": "Sinnoh",
+   "name": "Lost Tower",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Tour_Perdue_Pierre_Ovale_DEPS.png",
+   "checked": "shown on Poképédia's page \"Tour Perdue\"; BDSP in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "COtaaxCAB-8y",
+   "region": "Sinnoh",
+   "name": "Lost Tower",
+   "game": "Platinum",
+   "source": "https://www.pokepedia.fr/Fichier:Tour_Perdue_Pierre_Ovale_Pt.png",
+   "checked": "shown on Poképédia's page \"Tour Perdue\"; Pt in its name or category; cropped (bottom 28%); reviewed on a contact sheet"
+  },
+  {
+   "id": "YUv8IF9Rrk1m",
+   "region": "Sinnoh",
+   "name": "Lost Tower",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Tour_Perdue_Rune_Purifiante_DEPS.png",
+   "checked": "shown on Poképédia's page \"Tour Perdue\"; BDSP in its name or category; cropped (bottom 25%); reviewed on a contact sheet"
+  },
+  {
+   "id": "iyIIW6tXjht2",
+   "region": "Sinnoh",
+   "name": "Lost Tower",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Tour_Perdue_Super_Ball_DEPS.png",
+   "checked": "shown on Poképédia's page \"Tour Perdue\"; BDSP in its name or category; cropped (bottom 25%); reviewed on a contact sheet"
+  },
+  {
+   "id": "hYKsw6y19YAC",
+   "region": "Sinnoh",
+   "name": "Lost Tower",
+   "game": "Diamond / Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Tour_Perdue_Super_Ball_DP.png",
+   "checked": "shown on Poképédia's page \"Tour Perdue\"; DP in its name or category; cropped (bottom 28%); reviewed on a contact sheet"
+  },
+  {
+   "id": "HlUj-zo2PPdk",
+   "region": "Sinnoh",
+   "name": "Mt. Coronet",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Mont_Couronné_Huile_2_DEPS.png",
+   "checked": "shown on Poképédia's page \"Mont Couronné\"; BDSP in its name or category; cropped (bottom 25%); reviewed on a contact sheet"
+  },
+  {
+   "id": "41VQmh2VVQe1",
+   "region": "Sinnoh",
+   "name": "Mt. Coronet",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Mont_Couronné_Huile_DEPS.png",
+   "checked": "shown on Poképédia's page \"Mont Couronné\"; BDSP in its name or category; cropped (bottom 25%); reviewed on a contact sheet"
+  },
+  {
+   "id": "SpDBjC-gUEcq",
+   "region": "Sinnoh",
+   "name": "Mt. Coronet",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Mont_Couronné_Pépite_3_DEPS.png",
+   "checked": "shown on Poképédia's page \"Mont Couronné\"; BDSP in its name or category; cropped (bottom 25%); reviewed on a contact sheet"
+  },
+  {
+   "id": "Xap1JLr1d0Ve",
+   "region": "Sinnoh",
+   "name": "Newmoon Island",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Île_Nouvellune_DEPS.png",
+   "checked": "shown on Poképédia's page \"Île Nouvellune\"; BDSP in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "XWnjAjX2SYFy",
+   "region": "Sinnoh",
+   "name": "Newmoon Island",
+   "game": "Diamond / Pearl",
+   "source": "https://pokemon.fandom.com/wiki/File:Newmoon_Island_DP.png",
+   "checked": "shown on the Pokémon Wiki's page \"Newmoon Island\"; DP in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "HZOnJ_OySqEt",
+   "region": "Sinnoh",
+   "name": "Old Chateau",
+   "game": "Diamond / Pearl",
+   "source": "https://www.pokewiki.de/Datei:DP_Alte_Villa_1.png",
+   "checked": "shown on PokéWiki's page \"Alte Villa\"; DP in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "8hIHTslgSky-",
+   "region": "Sinnoh",
+   "name": "Old Chateau",
+   "game": "Diamond / Pearl",
+   "source": "https://www.pokewiki.de/Datei:DP_Alte_Villa_2.png",
+   "checked": "shown on PokéWiki's page \"Alte Villa\"; DP in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "Prl8NFlfMSht",
+   "region": "Sinnoh",
+   "name": "Old Chateau",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Vieux_Château_Antidote_DEPS.png",
+   "checked": "shown on Poképédia's page \"Vieux Château\"; BDSP in its name or category; cropped (bottom 25%); reviewed on a contact sheet"
+  },
+  {
+   "id": "aVmJjr40VxZL",
+   "region": "Sinnoh",
+   "name": "Old Chateau",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Vieux_Château_Plaque_Ombre_DEPS.png",
+   "checked": "shown on Poképédia's page \"Vieux Château\"; BDSP in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "FCCr4XaBBtqQ",
+   "region": "Sinnoh",
+   "name": "Oreburgh City",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Charbourg_DEPS.png",
+   "checked": "shown on Poképédia's page \"Charbourg\"; BDSP in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "OYG_MPxFd8gq",
+   "region": "Sinnoh",
+   "name": "Oreburgh City",
+   "game": "Platinum",
+   "source": "https://www.pokepedia.fr/Fichier:Charbourg_Écaillecœur_Pt.png",
+   "checked": "shown on Poképédia's page \"Charbourg\"; Pt in its name or category; cropped (bottom 28%); reviewed on a contact sheet"
+  },
+  {
+   "id": "wX3R_4i_j6ll",
+   "region": "Sinnoh",
+   "name": "Oreburgh City",
+   "game": "Platinum",
+   "source": "https://www.pokepedia.fr/Fichier:Charbourg_Perle_Pt.png",
+   "checked": "shown on Poképédia's page \"Charbourg\"; Pt in its name or category; cropped (bottom 28%); reviewed on a contact sheet"
+  },
+  {
+   "id": "0pXN9GZzdNRp",
+   "region": "Sinnoh",
+   "name": "Oreburgh Mine",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Mine_de_Charbourg_DEPS.png",
+   "checked": "shown on Poképédia's page \"Mine de Charbourg\"; BDSP in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "GXRZfnfAZ6np",
+   "region": "Sinnoh",
+   "name": "Pal Park",
+   "game": "Diamond / Pearl",
+   "source": "https://www.pokewiki.de/Datei:DP_Park_der_Freunde.png",
+   "checked": "shown on PokéWiki's page \"Park der Freunde\"; DP in its name or category; cropped (bottom 28%); reviewed on a contact sheet"
+  },
+  {
+   "id": "cUbQVvFf45we",
+   "region": "Sinnoh",
+   "name": "Pal Park",
+   "game": "Platinum",
+   "source": "https://archives.bulbagarden.net/wiki/File:Pal_Park_outside_Pt.png",
+   "checked": "shown on Bulbapedia's page \"Pal Park\"; Pt in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "DRv99AIz0Ez5",
+   "region": "Sinnoh",
+   "name": "Pastoria City",
+   "game": "Platinum",
+   "source": "https://www.pokepedia.fr/Fichier:Verchamps_Baie_Kika_&_Baie_Nanab_Pt.png",
+   "checked": "shown on Poképédia's page \"Verchamps\"; Pt in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "NJRayJVTEPu3",
+   "region": "Sinnoh",
+   "name": "Pastoria City",
+   "game": "Platinum",
+   "source": "https://www.pokepedia.fr/Fichier:Verchamps_Eau_Mystique_Pt.png",
+   "checked": "shown on Poképédia's page \"Verchamps\"; Pt in its name or category; cropped (bottom 28%); reviewed on a contact sheet"
+  },
+  {
+   "id": "l8Gtp_aP38OZ",
+   "region": "Sinnoh",
+   "name": "Pastoria City",
+   "game": "Platinum",
+   "source": "https://www.pokepedia.fr/Fichier:Verchamps_Mask_Ouisticram_Pt.png",
+   "checked": "shown on Poképédia's page \"Verchamps\"; Pt in its name or category; cropped (bottom 28%); reviewed on a contact sheet"
+  },
+  {
+   "id": "FO64tGSZ-6H5",
+   "region": "Sinnoh",
+   "name": "Pastoria City",
+   "game": "Platinum",
+   "source": "https://www.pokepedia.fr/Fichier:Verchamps_Zinc_Pt.png",
+   "checked": "shown on Poképédia's page \"Verchamps\"; Pt in its name or category; cropped (bottom 28%); reviewed on a contact sheet"
+  },
+  {
+   "id": "C6xKin9DUe2s",
+   "region": "Sinnoh",
+   "name": "Pokémon League",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://archives.bulbagarden.net/wiki/File:Aaron_room_BDSP.png",
+   "checked": "shown on Bulbapedia's page \"Pokémon League (Sinnoh)\"; BDSP in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "sQsBFFAPwOo2",
+   "region": "Sinnoh",
+   "name": "Pokémon League",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://archives.bulbagarden.net/wiki/File:Bertha_room_BDSP.png",
+   "checked": "shown on Bulbapedia's page \"Pokémon League (Sinnoh)\"; BDSP in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "qyyLeg-OEXB7",
+   "region": "Sinnoh",
+   "name": "Pokémon League",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://archives.bulbagarden.net/wiki/File:Cynthia_room_BDSP.png",
+   "checked": "shown on Bulbapedia's page \"Pokémon League (Sinnoh)\"; BDSP in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "dzxds201On-n",
+   "region": "Sinnoh",
+   "name": "Pokémon League",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://archives.bulbagarden.net/wiki/File:Flint_room_BDSP.png",
+   "checked": "shown on Bulbapedia's page \"Pokémon League (Sinnoh)\"; BDSP in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "EeZDz4qBfkus",
+   "region": "Sinnoh",
+   "name": "Pokémon League",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Ligue_Pokémon_Plaque_Ciel_DEPS.png",
+   "checked": "shown on Poképédia's page \"Ligue Pokémon (Sinnoh)\"; BDSP in its name or category; cropped (bottom 25%); reviewed on a contact sheet"
+  },
+  {
+   "id": "bCfXlsYCVeQJ",
+   "region": "Sinnoh",
+   "name": "Pokémon League",
+   "game": "Platinum",
+   "source": "https://www.pokepedia.fr/Fichier:Ligue_Pokémon_Plaque_Ciel_Pt.png",
+   "checked": "shown on Poképédia's page \"Ligue Pokémon (Sinnoh)\"; Pt in its name or category; cropped (bottom 28%); reviewed on a contact sheet"
+  },
+  {
+   "id": "ZA2Om5QsPUmd",
+   "region": "Sinnoh",
+   "name": "Pokémon League",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://archives.bulbagarden.net/wiki/File:Lucian_room_BDSP.png",
+   "checked": "shown on Bulbapedia's page \"Pokémon League (Sinnoh)\"; BDSP in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "q5yEnBdVC9Sp",
+   "region": "Sinnoh",
+   "name": "Pokémon Mansion",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Jardin_Trophée_DEPS.png",
+   "checked": "shown on Poképédia's page \"Manoir Pokémon (Sinnoh)\"; BDSP in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "DPUFUPHXwlTl",
+   "region": "Sinnoh",
+   "name": "Ravaged Path",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Chemin_Rocheux_Antidote_DEPS.png",
+   "checked": "shown on Poképédia's page \"Chemin Rocheux (Sinnoh)\"; BDSP in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "xjEkeRRLUpk2",
+   "region": "Sinnoh",
+   "name": "Ravaged Path",
+   "game": "Platinum",
+   "source": "https://www.pokepedia.fr/Fichier:Chemin_Rocheux_Encens_Veine_Pt.png",
+   "checked": "shown on Poképédia's page \"Chemin Rocheux (Sinnoh)\"; Pt in its name or category; cropped (bottom 28%); reviewed on a contact sheet"
+  },
+  {
+   "id": "7gFgr6_kOrIF",
+   "region": "Sinnoh",
+   "name": "Resort Area",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Aire_de_Détente_Arbres_à_Baies_DEPS.png",
+   "checked": "shown on Poképédia's page \"Aire de Détente\"; BDSP in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "4Sn88l1OltJk",
+   "region": "Sinnoh",
+   "name": "Resort Area",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Aire_de_Détente_Pépite_2_DEPS.png",
+   "checked": "shown on Poképédia's page \"Aire de Détente\"; BDSP in its name or category; cropped (bottom 25%); reviewed on a contact sheet"
+  },
+  {
+   "id": "MPGcwnMPcgA2",
+   "region": "Sinnoh",
+   "name": "Resort Area",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Aire_de_Détente_Pépite_DEPS.png",
+   "checked": "shown on Poképédia's page \"Aire de Détente\"; BDSP in its name or category; cropped (bottom 25%); reviewed on a contact sheet"
+  },
+  {
+   "id": "aVP0iRsjqVRb",
+   "region": "Sinnoh",
+   "name": "Ribbon Syndicate",
+   "parent": "Resort Area",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Club_Ruban_DEPS.png",
+   "checked": "shown on Poképédia's page \"Club Ruban\"; BDSP in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "DbFoERbsV2jj",
+   "region": "Sinnoh",
+   "name": "Ribbon Syndicate",
+   "parent": "Resort Area",
+   "game": "Platinum",
+   "source": "https://www.pokepedia.fr/Fichier:Club_Ruban_Pt.png",
+   "checked": "shown on Poképédia's page \"Club Ruban\"; Pt in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "49kPAIa0Dkwb",
+   "region": "Sinnoh",
+   "name": "Villa",
+   "parent": "Resort Area",
+   "game": "Platinum",
+   "source": "https://www.pokepedia.fr/Fichier:Villa.png",
+   "checked": "shown on Poképédia's page \"Aire de Détente\"; Pt in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "8WltqHzcocEf",
+   "region": "Sinnoh",
+   "name": "Route 201",
+   "game": "Diamond / Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Cap_ecran_route_201_2_dp.png",
+   "checked": "shown on Poképédia's page \"Route 201\"; DP in its name or category; cropped (bottom 28%); reviewed on a contact sheet"
+  },
+  {
+   "id": "eL1EAMQ-MKkd",
+   "region": "Sinnoh",
+   "name": "Route 201",
+   "game": "Platinum",
+   "source": "https://www.pokepedia.fr/Fichier:Cap_ecran_route_201_2_Platine.png",
+   "checked": "shown on Poképédia's page \"Route 201\"; Pt in its name or category; cropped (bottom 28%); reviewed on a contact sheet"
+  },
+  {
+   "id": "o2quF5ehuLTF",
+   "region": "Sinnoh",
+   "name": "Route 201",
+   "game": "Diamond / Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Cap_ecran_route_201_dp.png",
+   "checked": "shown on Poképédia's page \"Route 201\"; DP in its name or category; cropped (bottom 28%); reviewed on a contact sheet"
+  },
+  {
+   "id": "N8npb1qlN28Q",
+   "region": "Sinnoh",
+   "name": "Route 201",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Route_201_Potion_DEPS.png",
+   "checked": "shown on Poképédia's page \"Route 201\"; BDSP in its name or category; cropped (bottom 25%); reviewed on a contact sheet"
+  },
+  {
+   "id": "wBTTM9Bt4rro",
+   "region": "Sinnoh",
+   "name": "Route 201",
+   "game": "Platinum",
+   "source": "https://www.pokepedia.fr/Fichier:Route_201_Potion_Pt.png",
+   "checked": "shown on Poképédia's page \"Route 201\"; Pt in its name or category; cropped (bottom 28%); reviewed on a contact sheet"
+  },
+  {
+   "id": "AxqkF6q8NllM",
+   "region": "Sinnoh",
+   "name": "Route 202",
+   "game": "Platinum",
+   "source": "https://www.pokepedia.fr/Fichier:Route_202_Poké_Ball_Pt.png",
+   "checked": "shown on Poképédia's page \"Route 202\"; Pt in its name or category; cropped (bottom 28%); reviewed on a contact sheet"
+  },
+  {
+   "id": "EEnewucmXRHe",
+   "region": "Sinnoh",
+   "name": "Route 203",
+   "game": "Platinum",
+   "source": "https://www.pokepedia.fr/Fichier:Route_203_Défense_+_Pt.png",
+   "checked": "shown on Poképédia's page \"Route 203\"; Pt in its name or category; cropped (bottom 28%); reviewed on a contact sheet"
+  },
+  {
+   "id": "a7TU1hCzHMya",
+   "region": "Sinnoh",
+   "name": "Route 203",
+   "game": "Platinum",
+   "source": "https://www.pokepedia.fr/Fichier:Route_203_Poké_Ball_Pt.png",
+   "checked": "shown on Poképédia's page \"Route 203\"; Pt in its name or category; cropped (bottom 28%); reviewed on a contact sheet"
+  },
+  {
+   "id": "FbbYOfRqqcOV",
+   "region": "Sinnoh",
+   "name": "Route 203",
+   "game": "Platinum",
+   "source": "https://www.pokepedia.fr/Fichier:Route_203_Repousse_Pt.png",
+   "checked": "shown on Poképédia's page \"Route 203\"; Pt in its name or category; cropped (bottom 28%); reviewed on a contact sheet"
+  },
+  {
+   "id": "oash2kJCtTzO",
+   "region": "Sinnoh",
+   "name": "Route 204",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Route_204_Anti-Para_DEPS.png",
+   "checked": "shown on Poképédia's page \"Route 204\"; BDSP in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "rkt2rxGHQ-7d",
+   "region": "Sinnoh",
+   "name": "Route 204",
+   "game": "Platinum",
+   "source": "https://www.pokepedia.fr/Fichier:Route_204_Anti-Para_Pt.png",
+   "checked": "shown on Poképédia's page \"Route 204\"; Pt in its name or category; cropped (bottom 28%); reviewed on a contact sheet"
+  },
+  {
+   "id": "qgkHHK2evlmy",
+   "region": "Sinnoh",
+   "name": "Route 204",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Route_204_Encens_Mer_DEPS.png",
+   "checked": "shown on Poképédia's page \"Route 204\"; BDSP in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "TgNQ82lJQHAv",
+   "region": "Sinnoh",
+   "name": "Route 204",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Route_204_PV_Plus_DEPS.png",
+   "checked": "shown on Poképédia's page \"Route 204\"; BDSP in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "wqHHYEjqW3GP",
+   "region": "Sinnoh",
+   "name": "Route 204",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Route_204_Réveil_DEPS.png",
+   "checked": "shown on Poképédia's page \"Route 204\"; BDSP in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "LrY0F1Xdco1L",
+   "region": "Sinnoh",
+   "name": "Route 204",
+   "game": "Platinum",
+   "source": "https://www.pokepedia.fr/Fichier:Route_204_Réveil_Pt.png",
+   "checked": "shown on Poképédia's page \"Route 204\"; Pt in its name or category; cropped (bottom 28%); reviewed on a contact sheet"
+  },
+  {
+   "id": "wDTcFAxL5Jqw",
+   "region": "Sinnoh",
+   "name": "Route 205",
+   "game": "Diamond / Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Route_205_Antidote_DP.png",
+   "checked": "shown on Poképédia's page \"Route 205\"; DP in its name or category; cropped (bottom 28%); reviewed on a contact sheet"
+  },
+  {
+   "id": "CwsXC96kXVwn",
+   "region": "Sinnoh",
+   "name": "Route 205",
+   "game": "Platinum",
+   "source": "https://www.pokepedia.fr/Fichier:Route_205_Baie_Ceriz_&_Baie_Pêcha_&_Baies_Oran_Pt.png",
+   "checked": "shown on Poképédia's page \"Route 205\"; Pt in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "PywTTCkvD8Y9",
+   "region": "Sinnoh",
+   "name": "Route 205",
+   "game": "Platinum",
+   "source": "https://www.pokepedia.fr/Fichier:Route_205_Baie_Maron_&_Baie_Pêcha_Pt.png",
+   "checked": "shown on Poképédia's page \"Route 205\"; Pt in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "B2jx5VIUGvQd",
+   "region": "Sinnoh",
+   "name": "Route 205",
+   "game": "Platinum",
+   "source": "https://www.pokepedia.fr/Fichier:Route_205_Baie_Oran_&_Baie_Pêcha_Pt.png",
+   "checked": "shown on Poképédia's page \"Route 205\"; Pt in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "97XI7zdsn-__",
+   "region": "Sinnoh",
+   "name": "Route 205",
+   "game": "Platinum",
+   "source": "https://www.pokepedia.fr/Fichier:Route_205_Défense_Spéc_Pt.png",
+   "checked": "shown on Poképédia's page \"Route 205\"; Pt in its name or category; cropped (bottom 28%); reviewed on a contact sheet"
+  },
+  {
+   "id": "U64HJO2rKZJ7",
+   "region": "Sinnoh",
+   "name": "Route 205",
+   "game": "Diamond / Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Route_205_Miel_DP.png",
+   "checked": "shown on Poképédia's page \"Route 205\"; DP in its name or category; cropped (bottom 28%); reviewed on a contact sheet"
+  },
+  {
+   "id": "r5NnEKxkXqp2",
+   "region": "Sinnoh",
+   "name": "Route 205",
+   "game": "Diamond / Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Route_205_Poké_Ball_DP.png",
+   "checked": "shown on Poképédia's page \"Route 205\"; DP in its name or category; cropped (bottom 28%); reviewed on a contact sheet"
+  },
+  {
+   "id": "RrBltRVcUI0X",
+   "region": "Sinnoh",
+   "name": "Route 206",
+   "game": "Platinum",
+   "source": "https://www.pokepedia.fr/Fichier:Route_206_Anti-Brûle_Pt.png",
+   "checked": "shown on Poképédia's page \"Route 206\"; Pt in its name or category; cropped (bottom 28%); reviewed on a contact sheet"
+  },
+  {
+   "id": "X-XpbpJuAROR",
+   "region": "Sinnoh",
+   "name": "Route 206",
+   "game": "Platinum",
+   "source": "https://www.pokepedia.fr/Fichier:Route_206_Baie_Fraive_Pt.png",
+   "checked": "shown on Poképédia's page \"Route 206\"; Pt in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "_SdoV8md8Z3_",
+   "region": "Sinnoh",
+   "name": "Route 206",
+   "game": "Platinum",
+   "source": "https://www.pokepedia.fr/Fichier:Route_206_Baie_Framby_Pt.png",
+   "checked": "shown on Poképédia's page \"Route 206\"; Pt in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "g8sMmCp9OIaf",
+   "region": "Sinnoh",
+   "name": "Route 206",
+   "game": "Diamond / Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Route_206_Elixir_DP.png",
+   "checked": "shown on Poképédia's page \"Route 206\"; DP in its name or category; cropped (bottom 28%); reviewed on a contact sheet"
+  },
+  {
+   "id": "wt4y2pS0X2Ik",
+   "region": "Sinnoh",
+   "name": "Route 206",
+   "game": "Platinum",
+   "source": "https://www.pokepedia.fr/Fichier:Route_206_Pic_Venin_Pt.png",
+   "checked": "shown on Poképédia's page \"Route 206\"; Pt in its name or category; cropped (bottom 28%); reviewed on a contact sheet"
+  },
+  {
+   "id": "A-EYj2mtYjDj",
+   "region": "Sinnoh",
+   "name": "Route 206",
+   "game": "Platinum",
+   "source": "https://www.pokepedia.fr/Fichier:Route_206_PP_Plus_Pt.png",
+   "checked": "shown on Poképédia's page \"Route 206\"; Pt in its name or category; cropped (bottom 28%); reviewed on a contact sheet"
+  },
+  {
+   "id": "Hex0sDDnU-Ys",
+   "region": "Sinnoh",
+   "name": "Route 207",
+   "game": "Diamond / Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Route_207_Muscle_+_DP.png",
+   "checked": "shown on Poképédia's page \"Route 207\"; DP in its name or category; cropped (bottom 28%); reviewed on a contact sheet"
+  },
+  {
+   "id": "XjXJrV3BsUp-",
+   "region": "Sinnoh",
+   "name": "Route 207",
+   "game": "Platinum",
+   "source": "https://www.pokepedia.fr/Fichier:Route_207_Poké_Ball_2_Pt.png",
+   "checked": "shown on Poképédia's page \"Route 207\"; Pt in its name or category; cropped (bottom 28%); reviewed on a contact sheet"
+  },
+  {
+   "id": "UpwJqWwjoE3j",
+   "region": "Sinnoh",
+   "name": "Route 207",
+   "game": "Diamond / Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Route_207_Radar_à_Objet_DP.png",
+   "checked": "shown on Poképédia's page \"Route 207\"; DP in its name or category; cropped (bottom 28%); reviewed on a contact sheet"
+  },
+  {
+   "id": "j93-ocpNVguz",
+   "region": "Sinnoh",
+   "name": "Route 207",
+   "game": "Platinum",
+   "source": "https://www.pokepedia.fr/Fichier:Route_207_Rappel_Pt.png",
+   "checked": "shown on Poképédia's page \"Route 207\"; Pt in its name or category; cropped (bottom 28%); reviewed on a contact sheet"
+  },
+  {
+   "id": "H4L-64B-aTuB",
+   "region": "Sinnoh",
+   "name": "Route 208",
+   "game": "Platinum",
+   "source": "https://www.pokepedia.fr/Fichier:Route_208_Baie_Nanab_&_Baie_Framby_&_Baie_Remu_&_Baie_Nanana_Pt.png",
+   "checked": "shown on Poképédia's page \"Route 208\"; Pt in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "z9qo-UhiiAy2",
+   "region": "Sinnoh",
+   "name": "Route 208",
+   "game": "Platinum",
+   "source": "https://www.pokepedia.fr/Fichier:Route_208_Carbone_Pt.png",
+   "checked": "shown on Poképédia's page \"Route 208\"; Pt in its name or category; cropped (bottom 28%); reviewed on a contact sheet"
+  },
+  {
+   "id": "G5fNMvayIlRl",
+   "region": "Sinnoh",
+   "name": "Route 208",
+   "game": "Platinum",
+   "source": "https://www.pokepedia.fr/Fichier:Route_208_Clé_de_Voûte_Pt.png",
+   "checked": "shown on Poképédia's page \"Route 208\"; Pt in its name or category; cropped (bottom 28%); reviewed on a contact sheet"
+  },
+  {
+   "id": "3qgnDgan7_rH",
+   "region": "Sinnoh",
+   "name": "Route 208",
+   "game": "Platinum",
+   "source": "https://www.pokepedia.fr/Fichier:Route_208_Huile_Pt.png",
+   "checked": "shown on Poképédia's page \"Route 208\"; Pt in its name or category; cropped (bottom 28%); reviewed on a contact sheet"
+  },
+  {
+   "id": "VsyaoW-MZK0g",
+   "region": "Sinnoh",
+   "name": "Route 208",
+   "game": "Platinum",
+   "source": "https://www.pokepedia.fr/Fichier:Route_208_Petit_Champi_Pt.png",
+   "checked": "shown on Poképédia's page \"Route 208\"; Pt in its name or category; cropped (bottom 28%); reviewed on a contact sheet"
+  },
+  {
+   "id": "ygE1SOWonCTx",
+   "region": "Sinnoh",
+   "name": "Route 208",
+   "game": "Diamond / Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Route_208_Poké_Ball_DP.png",
+   "checked": "shown on Poképédia's page \"Route 208\"; DP in its name or category; cropped (bottom 28%); reviewed on a contact sheet"
+  },
+  {
+   "id": "CD-dthHacKre",
+   "region": "Sinnoh",
+   "name": "Route 208",
+   "game": "Platinum",
+   "source": "https://www.pokepedia.fr/Fichier:Route_208_Super_Ball_Pt.png",
+   "checked": "shown on Poképédia's page \"Route 208\"; Pt in its name or category; cropped (bottom 28%); reviewed on a contact sheet"
+  },
+  {
+   "id": "GinjV5MBDFIt",
+   "region": "Sinnoh",
+   "name": "Route 209",
+   "game": "Platinum",
+   "source": "https://www.pokepedia.fr/Fichier:Route_209_Baies_Framby_Pt.png",
+   "checked": "shown on Poképédia's page \"Route 209\"; Pt in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "zEfOpUD6mtlG",
+   "region": "Sinnoh",
+   "name": "Route 209",
+   "game": "Platinum",
+   "source": "https://www.pokepedia.fr/Fichier:Route_209_Calcium_Pt.png",
+   "checked": "shown on Poképédia's page \"Route 209\"; Pt in its name or category; cropped (bottom 28%); reviewed on a contact sheet"
+  },
+  {
+   "id": "4j69McmBQbiF",
+   "region": "Sinnoh",
+   "name": "Route 209",
+   "game": "Platinum",
+   "source": "https://www.pokepedia.fr/Fichier:Route_209_Hyper_Potion_Pt.png",
+   "checked": "shown on Poképédia's page \"Route 209\"; Pt in its name or category; cropped (bottom 28%); reviewed on a contact sheet"
+  },
+  {
+   "id": "ICR8y-6gvgfN",
+   "region": "Sinnoh",
+   "name": "Route 209",
+   "game": "Platinum",
+   "source": "https://www.pokepedia.fr/Fichier:Route_209_Pouss.Étoile_Pt.png",
+   "checked": "shown on Poképédia's page \"Route 209\"; Pt in its name or category; cropped (bottom 28%); reviewed on a contact sheet"
+  },
+  {
+   "id": "oqb6XAENpk-b",
+   "region": "Sinnoh",
+   "name": "Route 209",
+   "game": "Platinum",
+   "source": "https://www.pokepedia.fr/Fichier:Route_209_Super_Canne_Pt.png",
+   "checked": "shown on Poképédia's page \"Route 209\"; Pt in its name or category; cropped (bottom 28%); reviewed on a contact sheet"
+  },
+  {
+   "id": "r6oXSk4CeB3P",
+   "region": "Sinnoh",
+   "name": "Hallowed Tower",
+   "parent": "Route 209",
+   "game": "Platinum",
+   "source": "https://archives.bulbagarden.net/wiki/File:Hallowed_Tower_Pt.png",
+   "checked": "shown on Bulbapedia's page \"Hallowed Tower\"; Pt in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "7vnju9tABi_1",
+   "region": "Sinnoh",
+   "name": "Café Cabin",
+   "parent": "Route 210",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Café_Cabane_DEPS.png",
+   "checked": "shown on Poképédia's page \"Café Cabane\"; BDSP in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "DeH-oGkwtPAu",
+   "region": "Sinnoh",
+   "name": "Route 211",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Route_211_DEPS.png",
+   "checked": "shown on Poképédia's page \"Route 211\"; BDSP in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "D83A-26K4kE5",
+   "region": "Sinnoh",
+   "name": "Route 212",
+   "game": "Diamond / Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Route_212_Antidote_DP.png",
+   "checked": "shown on Poképédia's page \"Route 212\"; DP in its name or category; cropped (bottom 28%); reviewed on a contact sheet"
+  },
+  {
+   "id": "hywwj3xhY-Fl",
+   "region": "Sinnoh",
+   "name": "Route 212",
+   "game": "Platinum",
+   "source": "https://www.pokepedia.fr/Fichier:Route_212_Fer_Pt.png",
+   "checked": "shown on Poképédia's page \"Route 212\"; Pt in its name or category; cropped (bottom 28%); reviewed on a contact sheet"
+  },
+  {
+   "id": "rADzYW6qWi7R",
+   "region": "Sinnoh",
+   "name": "Route 212",
+   "game": "Platinum",
+   "source": "https://www.pokepedia.fr/Fichier:Route_212_Huile_Max_Pt.png",
+   "checked": "shown on Poképédia's page \"Route 212\"; Pt in its name or category; cropped (bottom 28%); reviewed on a contact sheet"
+  },
+  {
+   "id": "CK_SPEywy-ei",
+   "region": "Sinnoh",
+   "name": "Route 212",
+   "game": "Platinum",
+   "source": "https://www.pokepedia.fr/Fichier:Route_212_Hyper_Ball_Pt.png",
+   "checked": "shown on Poképédia's page \"Route 212\"; Pt in its name or category; cropped (bottom 28%); reviewed on a contact sheet"
+  },
+  {
+   "id": "0DJtSc72pKLH",
+   "region": "Sinnoh",
+   "name": "Route 212",
+   "game": "Platinum",
+   "source": "https://www.pokepedia.fr/Fichier:Route_212_Perle_Pt.png",
+   "checked": "shown on Poképédia's page \"Route 212\"; Pt in its name or category; cropped (bottom 28%); reviewed on a contact sheet"
+  },
+  {
+   "id": "PX7l1NM2k119",
+   "region": "Sinnoh",
+   "name": "Route 212",
+   "game": "Platinum",
+   "source": "https://www.pokepedia.fr/Fichier:Route_212_Rappel_2_Pt.png",
+   "checked": "shown on Poképédia's page \"Route 212\"; Pt in its name or category; cropped (bottom 28%); reviewed on a contact sheet"
+  },
+  {
+   "id": "o3xWssVgUVD7",
+   "region": "Sinnoh",
+   "name": "Route 213",
+   "game": "Diamond / Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Route_213_Calcium_DP.png",
+   "checked": "shown on Poképédia's page \"Route 213\"; DP in its name or category; cropped (bottom 28%); reviewed on a contact sheet"
+  },
+  {
+   "id": "6ekA6Ni4y_ZS",
+   "region": "Sinnoh",
+   "name": "Route 213",
+   "game": "Diamond / Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Route_213_Perle_2_DP.png",
+   "checked": "shown on Poképédia's page \"Route 213\"; DP in its name or category; cropped (bottom 28%); reviewed on a contact sheet"
+  },
+  {
+   "id": "iewD3PS1tAM2",
+   "region": "Sinnoh",
+   "name": "Route 213",
+   "game": "Diamond / Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Route_213_Perle_DP.png",
+   "checked": "shown on Poképédia's page \"Route 213\"; DP in its name or category; cropped (bottom 28%); reviewed on a contact sheet"
+  },
+  {
+   "id": "2GtDEQcjaTpT",
+   "region": "Sinnoh",
+   "name": "Route 213",
+   "game": "Platinum",
+   "source": "https://www.pokepedia.fr/Fichier:Route_213_Pierre_Eau_Pt.png",
+   "checked": "shown on Poképédia's page \"Route 213\"; Pt in its name or category; cropped (bottom 28%); reviewed on a contact sheet"
+  },
+  {
+   "id": "XYNuyORholKD",
+   "region": "Sinnoh",
+   "name": "Route 214",
+   "game": "Platinum",
+   "source": "https://www.pokepedia.fr/Fichier:Route_214_Baie_Ceriz_&_Baie_Sitrus_&_Baie_Maron_&_Baie_Grena_Pt.png",
+   "checked": "shown on Poképédia's page \"Route 214\"; Pt in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "HR12fym3Y6cr",
+   "region": "Sinnoh",
+   "name": "Route 214",
+   "game": "Platinum",
+   "source": "https://www.pokepedia.fr/Fichier:Route_214_Carbone_Pt.png",
+   "checked": "shown on Poképédia's page \"Route 214\"; Pt in its name or category; cropped (bottom 28%); reviewed on a contact sheet"
+  },
+  {
+   "id": "yheCEkqhg1nO",
+   "region": "Sinnoh",
+   "name": "Route 214",
+   "game": "Platinum",
+   "source": "https://www.pokepedia.fr/Fichier:Route_214_Croc_Rasoir_Pt.png",
+   "checked": "shown on Poképédia's page \"Route 214\"; Pt in its name or category; cropped (bottom 28%); reviewed on a contact sheet"
+  },
+  {
+   "id": "YhwnjH3NznH5",
+   "region": "Sinnoh",
+   "name": "Route 214",
+   "game": "Diamond / Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Route_214_Déf._Spé._+_DP.png",
+   "checked": "shown on Poképédia's page \"Route 214\"; DP in its name or category; cropped (bottom 28%); reviewed on a contact sheet"
+  },
+  {
+   "id": "c6JKZuoxjG1e",
+   "region": "Sinnoh",
+   "name": "Route 214",
+   "game": "Diamond / Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Route_214_Écaillecoeur_DP.png",
+   "checked": "shown on Poképédia's page \"Route 214\"; DP in its name or category; cropped (bottom 28%); reviewed on a contact sheet"
+  },
+  {
+   "id": "887neePCOHK8",
+   "region": "Sinnoh",
+   "name": "Route 215",
+   "game": "Platinum",
+   "source": "https://www.pokepedia.fr/Fichier:Route_215_Baie_Wiki_&_Baie_Mago_Pt.png",
+   "checked": "shown on Poképédia's page \"Route 215\"; Pt in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "8ChMKMkU935v",
+   "region": "Sinnoh",
+   "name": "Route 215",
+   "game": "Diamond / Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Route_215_Défense_Spéciale_DP.png",
+   "checked": "shown on Poképédia's page \"Route 215\"; DP in its name or category; cropped (bottom 28%); reviewed on a contact sheet"
+  },
+  {
+   "id": "AQ6kTnAgMOKW",
+   "region": "Sinnoh",
+   "name": "Route 215",
+   "game": "Platinum",
+   "source": "https://www.pokepedia.fr/Fichier:Route_215_Huile_Max_Pt.png",
+   "checked": "shown on Poképédia's page \"Route 215\"; Pt in its name or category; cropped (bottom 28%); reviewed on a contact sheet"
+  },
+  {
+   "id": "MjF_p3tUlyxK",
+   "region": "Sinnoh",
+   "name": "Route 215",
+   "game": "Platinum",
+   "source": "https://www.pokepedia.fr/Fichier:Route_215_Hyper_Potion_Pt.png",
+   "checked": "shown on Poképédia's page \"Route 215\"; Pt in its name or category; cropped (bottom 28%); reviewed on a contact sheet"
+  },
+  {
+   "id": "gzwGVQ8bwcqO",
+   "region": "Sinnoh",
+   "name": "Route 215",
+   "game": "Diamond / Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Route_215_Miel_DP.png",
+   "checked": "shown on Poképédia's page \"Route 215\"; DP in its name or category; cropped (bottom 28%); reviewed on a contact sheet"
+  },
+  {
+   "id": "-VA83WbsIJ_W",
+   "region": "Sinnoh",
+   "name": "Route 216",
+   "game": "Platinum",
+   "source": "https://www.pokepedia.fr/Fichier:Route_216_Herbe_Mental_Pt.png",
+   "checked": "shown on Poképédia's page \"Route 216\"; Pt in its name or category; cropped (bottom 28%); reviewed on a contact sheet"
+  },
+  {
+   "id": "PxveAALC680U",
+   "region": "Sinnoh",
+   "name": "Route 216",
+   "game": "Platinum",
+   "source": "https://www.pokepedia.fr/Fichier:Route_216_PP_Plus_Pt.png",
+   "checked": "shown on Poképédia's page \"Route 216\"; Pt in its name or category; cropped (bottom 28%); reviewed on a contact sheet"
+  },
+  {
+   "id": "1eEkEtFy_IAA",
+   "region": "Sinnoh",
+   "name": "Route 216",
+   "game": "Platinum",
+   "source": "https://www.pokepedia.fr/Fichier:Route_216_Total_Soin_Pt.png",
+   "checked": "shown on Poképédia's page \"Route 216\"; Pt in its name or category; cropped (bottom 28%); reviewed on a contact sheet"
+  },
+  {
+   "id": "_TdNc6L4w5zk",
+   "region": "Sinnoh",
+   "name": "Route 217",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Route_217_Calcium_DEPS.png",
+   "checked": "shown on Poképédia's page \"Route 217\"; BDSP in its name or category; cropped (bottom 25%); reviewed on a contact sheet"
+  },
+  {
+   "id": "c8eM3xfpKePQ",
+   "region": "Sinnoh",
+   "name": "Route 217",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Route_217_Potion_Max_DEPS.png",
+   "checked": "shown on Poképédia's page \"Route 217\"; BDSP in its name or category; cropped (bottom 25%); reviewed on a contact sheet"
+  },
+  {
+   "id": "O1MVsQDMEQcz",
+   "region": "Sinnoh",
+   "name": "Route 217",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://archives.bulbagarden.net/wiki/File:Sinnoh_Route_217_BDSP.png",
+   "checked": "shown on Bulbapedia's page \"Sinnoh Route 217\"; BDSP in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "mZQs0-kvXR2Q",
+   "region": "Sinnoh",
+   "name": "Route 218",
+   "game": "Platinum",
+   "source": "https://www.pokepedia.fr/Fichier:Route_218_Baie_Fraive_&_Baie_Kika_&_Baie_Figuy_&_Baie_Nanana_Pt.png",
+   "checked": "shown on Poképédia's page \"Route 218\"; Pt in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "JUIJL86--xYi",
+   "region": "Sinnoh",
+   "name": "Route 218",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Route_218_DEPS.png",
+   "checked": "shown on Poképédia's page \"Route 218\"; BDSP in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "G6vwG6mtAAgw",
+   "region": "Sinnoh",
+   "name": "Route 218",
+   "game": "Diamond / Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Route_218_Miel_DP.png",
+   "checked": "shown on Poképédia's page \"Route 218\"; DP in its name or category; cropped (bottom 28%); reviewed on a contact sheet"
+  },
+  {
+   "id": "UqhY7AzR74KR",
+   "region": "Sinnoh",
+   "name": "Route 218",
+   "game": "Platinum",
+   "source": "https://www.pokepedia.fr/Fichier:Route_218_Précision_+_Pt.png",
+   "checked": "shown on Poképédia's page \"Route 218\"; Pt in its name or category; cropped (bottom 28%); reviewed on a contact sheet"
+  },
+  {
+   "id": "A0h6e6xjKyOT",
+   "region": "Sinnoh",
+   "name": "Route 218",
+   "game": "Platinum",
+   "source": "https://www.pokepedia.fr/Fichier:Route_218_Super_Bonbon_Pt.png",
+   "checked": "shown on Poképédia's page \"Route 218\"; Pt in its name or category; cropped (bottom 28%); reviewed on a contact sheet"
+  },
+  {
+   "id": "YSDblmdcVH7H",
+   "region": "Sinnoh",
+   "name": "Route 219",
+   "game": "Platinum",
+   "source": "https://www.pokepedia.fr/Fichier:Route_219_Antidote_Pt.png",
+   "checked": "shown on Poképédia's page \"Route 219\"; Pt in its name or category; cropped (bottom 28%); reviewed on a contact sheet"
+  },
+  {
+   "id": "4s3tHwEQxnS6",
+   "region": "Sinnoh",
+   "name": "Route 219",
+   "game": "Platinum",
+   "source": "https://www.pokepedia.fr/Fichier:Route_219_Zinc_Pt.png",
+   "checked": "shown on Poképédia's page \"Route 219\"; Pt in its name or category; cropped (bottom 28%); reviewed on a contact sheet"
+  },
+  {
+   "id": "7oygasDPpoQ8",
+   "region": "Sinnoh",
+   "name": "Route 220",
+   "game": "Platinum",
+   "source": "https://www.pokepedia.fr/Fichier:Chenal_220_Carbone_Pt.png",
+   "checked": "shown on Poképédia's page \"Chenal 220\"; Pt in its name or category; cropped (bottom 28%); reviewed on a contact sheet"
+  },
+  {
+   "id": "mQvwnfPZxfrL",
+   "region": "Sinnoh",
+   "name": "Route 220",
+   "game": "Platinum",
+   "source": "https://www.pokepedia.fr/Fichier:Chenal_220_Grande_Perle_Pt.png",
+   "checked": "shown on Poképédia's page \"Chenal 220\"; Pt in its name or category; cropped (bottom 28%); reviewed on a contact sheet"
+  },
+  {
+   "id": "fW3zLhzMUkgz",
+   "region": "Sinnoh",
+   "name": "Route 220",
+   "game": "Platinum",
+   "source": "https://www.pokepedia.fr/Fichier:Chenal_220_Plaque_Hydro_Pt.png",
+   "checked": "shown on Poképédia's page \"Chenal 220\"; Pt in its name or category; cropped (bottom 28%); reviewed on a contact sheet"
+  },
+  {
+   "id": "qcaMaA4P_JSe",
+   "region": "Sinnoh",
+   "name": "Route 221",
+   "game": "Diamond / Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Route_221_Carbone_DP.png",
+   "checked": "shown on Poképédia's page \"Route 221\"; DP in its name or category; cropped (bottom 28%); reviewed on a contact sheet"
+  },
+  {
+   "id": "eCA97PJiXu1H",
+   "region": "Sinnoh",
+   "name": "Route 221",
+   "game": "Platinum",
+   "source": "https://www.pokepedia.fr/Fichier:Route_221_Gros_Champi_Pt.png",
+   "checked": "shown on Poképédia's page \"Route 221\"; Pt in its name or category; cropped (bottom 28%); reviewed on a contact sheet"
+  },
+  {
+   "id": "jaVVyHroiVgn",
+   "region": "Sinnoh",
+   "name": "Route 221",
+   "game": "Platinum",
+   "source": "https://www.pokepedia.fr/Fichier:Route_221_Hyper_Ball_2_Pt.png",
+   "checked": "shown on Poképédia's page \"Route 221\"; Pt in its name or category; cropped (bottom 28%); reviewed on a contact sheet"
+  },
+  {
+   "id": "OEokQHX6MSxV",
+   "region": "Sinnoh",
+   "name": "Route 221",
+   "game": "Platinum",
+   "source": "https://www.pokepedia.fr/Fichier:Route_221_Protéine_Pt.png",
+   "checked": "shown on Poképédia's page \"Route 221\"; Pt in its name or category; cropped (bottom 28%); reviewed on a contact sheet"
+  },
+  {
+   "id": "fxM5y5Ajzpb8",
+   "region": "Sinnoh",
+   "name": "Ramanas Park",
+   "parent": "Route 221",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://archives.bulbagarden.net/wiki/File:Discovery_Room_BDSP.png",
+   "checked": "shown on Bulbapedia's page \"Ramanas Park\"; BDSP in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "I2ezBQwiaQQG",
+   "region": "Sinnoh",
+   "name": "Ramanas Park",
+   "parent": "Route 221",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://archives.bulbagarden.net/wiki/File:Distortion_Room_BDSP.png",
+   "checked": "shown on Bulbapedia's page \"Ramanas Park\"; BDSP in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "6ZRZAjWWiMkb",
+   "region": "Sinnoh",
+   "name": "Ramanas Park",
+   "parent": "Route 221",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://archives.bulbagarden.net/wiki/File:Genome_Room_BDSP.png",
+   "checked": "shown on Bulbapedia's page \"Ramanas Park\"; BDSP in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "vPH_0OYSqR0A",
+   "region": "Sinnoh",
+   "name": "Ramanas Park",
+   "parent": "Route 221",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://archives.bulbagarden.net/wiki/File:Johto_Room_BDSP.png",
+   "checked": "shown on Bulbapedia's page \"Ramanas Park\"; BDSP in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "m2U8jyL7Lx4S",
+   "region": "Sinnoh",
+   "name": "Ramanas Park",
+   "parent": "Route 221",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://archives.bulbagarden.net/wiki/File:Kanto_Room_BDSP.png",
+   "checked": "shown on Bulbapedia's page \"Ramanas Park\"; BDSP in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "j_xtcpaDyXmY",
+   "region": "Sinnoh",
+   "name": "Ramanas Park",
+   "parent": "Route 221",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://archives.bulbagarden.net/wiki/File:Oceanic_Room_BDSP.png",
+   "checked": "shown on Bulbapedia's page \"Ramanas Park\"; BDSP in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "9TjX-H_5L5v5",
+   "region": "Sinnoh",
+   "name": "Ramanas Park",
+   "parent": "Route 221",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://archives.bulbagarden.net/wiki/File:Rainbow_Room_BDSP.png",
+   "checked": "shown on Bulbapedia's page \"Ramanas Park\"; BDSP in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "70i3kT7rI2FZ",
+   "region": "Sinnoh",
+   "name": "Ramanas Park",
+   "parent": "Route 221",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://archives.bulbagarden.net/wiki/File:Soul_Room_BDSP.png",
+   "checked": "shown on Bulbapedia's page \"Ramanas Park\"; BDSP in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "YXZEO5F2Iq8n",
+   "region": "Sinnoh",
+   "name": "Ramanas Park",
+   "parent": "Route 221",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://archives.bulbagarden.net/wiki/File:Squall_Room_BDSP.png",
+   "checked": "shown on Bulbapedia's page \"Ramanas Park\"; BDSP in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "YbrNHZNKV2_P",
+   "region": "Sinnoh",
+   "name": "Ramanas Park",
+   "parent": "Route 221",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://archives.bulbagarden.net/wiki/File:Tectonic_Room_BDSP.png",
+   "checked": "shown on Bulbapedia's page \"Ramanas Park\"; BDSP in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "ftFW_TRqmLAj",
+   "region": "Sinnoh",
+   "name": "Route 222",
+   "game": "Platinum",
+   "source": "https://www.pokepedia.fr/Fichier:Route_222_Carbone_Pt.png",
+   "checked": "shown on Poképédia's page \"Route 222\"; Pt in its name or category; cropped (bottom 28%); reviewed on a contact sheet"
+  },
+  {
+   "id": "gfLyZdL-Hwei",
+   "region": "Sinnoh",
+   "name": "Route 222",
+   "game": "Platinum",
+   "source": "https://www.pokepedia.fr/Fichier:Route_222_Écaillecoeur_Pt.png",
+   "checked": "shown on Poképédia's page \"Route 222\"; Pt in its name or category; cropped (bottom 28%); reviewed on a contact sheet"
+  },
+  {
+   "id": "x45UN5eW9I9n",
+   "region": "Sinnoh",
+   "name": "Route 222",
+   "game": "Platinum",
+   "source": "https://www.pokepedia.fr/Fichier:Route_222_Guérison_Pt.png",
+   "checked": "shown on Poképédia's page \"Route 222\"; Pt in its name or category; cropped (bottom 28%); reviewed on a contact sheet"
+  },
+  {
+   "id": "FUC7mqBGv6uB",
+   "region": "Sinnoh",
+   "name": "Route 222",
+   "game": "Diamond / Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Route_222_Miel_DP.png",
+   "checked": "shown on Poképédia's page \"Route 222\"; DP in its name or category; cropped (bottom 28%); reviewed on a contact sheet"
+  },
+  {
+   "id": "qqhP3JAtHbrQ",
+   "region": "Sinnoh",
+   "name": "Route 222",
+   "game": "Platinum",
+   "source": "https://www.pokepedia.fr/Fichier:Route_222_PP_Plus_2_Pt.png",
+   "checked": "shown on Poképédia's page \"Route 222\"; Pt in its name or category; cropped (bottom 28%); reviewed on a contact sheet"
+  },
+  {
+   "id": "L818Y_wWEIJ9",
+   "region": "Sinnoh",
+   "name": "Route 224",
+   "game": "Platinum",
+   "source": "https://www.pokepedia.fr/Fichier:Route_224_Améliorator_Pt.png",
+   "checked": "shown on Poképédia's page \"Route 224\"; Pt in its name or category; cropped (bottom 28%); reviewed on a contact sheet"
+  },
+  {
+   "id": "TraOkpjhWgKK",
+   "region": "Sinnoh",
+   "name": "Route 224",
+   "game": "Platinum",
+   "source": "https://www.pokepedia.fr/Fichier:Route_224_Bis_Ball_Pt.png",
+   "checked": "shown on Poképédia's page \"Route 224\"; Pt in its name or category; cropped (bottom 28%); reviewed on a contact sheet"
+  },
+  {
+   "id": "z8VVW__9g71t",
+   "region": "Sinnoh",
+   "name": "Route 224",
+   "game": "Platinum",
+   "source": "https://www.pokepedia.fr/Fichier:Route_224_Écaillecœur_Pt.png",
+   "checked": "shown on Poképédia's page \"Route 224\"; Pt in its name or category; cropped (bottom 28%); reviewed on a contact sheet"
+  },
+  {
+   "id": "5XG0mO8_IXbd",
+   "region": "Sinnoh",
+   "name": "Route 224",
+   "game": "Diamond / Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Route_224_Grande_Perle_DP.png",
+   "checked": "shown on Poképédia's page \"Route 224\"; DP in its name or category; cropped (bottom 28%); reviewed on a contact sheet"
+  },
+  {
+   "id": "ZeK9gjox6Qxi",
+   "region": "Sinnoh",
+   "name": "Route 224",
+   "game": "Platinum",
+   "source": "https://www.pokepedia.fr/Fichier:Route_224_Grif._Rasoir_Pt.png",
+   "checked": "shown on Poképédia's page \"Route 224\"; Pt in its name or category; cropped (bottom 28%); reviewed on a contact sheet"
+  },
+  {
+   "id": "sOUJ8rHcHVLu",
+   "region": "Sinnoh",
+   "name": "Route 224",
+   "game": "Platinum",
+   "source": "https://www.pokepedia.fr/Fichier:Route_224_Hyper_Ball_Pt.png",
+   "checked": "shown on Poképédia's page \"Route 224\"; Pt in its name or category; cropped (bottom 28%); reviewed on a contact sheet"
+  },
+  {
+   "id": "utZRhz1cFRE7",
+   "region": "Sinnoh",
+   "name": "Route 224",
+   "game": "Platinum",
+   "source": "https://www.pokepedia.fr/Fichier:Route_224_PP_Max_Pt.png",
+   "checked": "shown on Poképédia's page \"Route 224\"; Pt in its name or category; cropped (bottom 28%); reviewed on a contact sheet"
+  },
+  {
+   "id": "70iDKwAwOcTa",
+   "region": "Sinnoh",
+   "name": "Route 225",
+   "game": "Platinum",
+   "source": "https://www.pokepedia.fr/Fichier:Route_225_CD_Douteux_Pt.png",
+   "checked": "shown on Poképédia's page \"Route 225\"; Pt in its name or category; cropped (bottom 28%); reviewed on a contact sheet"
+  },
+  {
+   "id": "-F7qPfEhqa3t",
+   "region": "Sinnoh",
+   "name": "Route 225",
+   "game": "Platinum",
+   "source": "https://www.pokepedia.fr/Fichier:Route_225_Croc_Rasoir_Pt.png",
+   "checked": "shown on Poképédia's page \"Route 225\"; Pt in its name or category; cropped (bottom 28%); reviewed on a contact sheet"
+  },
+  {
+   "id": "1eNyOHDxiKHW",
+   "region": "Sinnoh",
+   "name": "Route 225",
+   "game": "Platinum",
+   "source": "https://www.pokepedia.fr/Fichier:Route_225_Encens_Doux_Pt.png",
+   "checked": "shown on Poképédia's page \"Route 225\"; Pt in its name or category; cropped (bottom 28%); reviewed on a contact sheet"
+  },
+  {
+   "id": "hCb_EulwzRmF",
+   "region": "Sinnoh",
+   "name": "Route 225",
+   "game": "Platinum",
+   "source": "https://www.pokepedia.fr/Fichier:Route_225_Gros_Champi_Pt.png",
+   "checked": "shown on Poképédia's page \"Route 225\"; Pt in its name or category; cropped (bottom 28%); reviewed on a contact sheet"
+  },
+  {
+   "id": "91oS8GkFC44c",
+   "region": "Sinnoh",
+   "name": "Route 225",
+   "game": "Diamond / Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Route_225_Hyper_Ball_2_DP.png",
+   "checked": "shown on Poképédia's page \"Route 225\"; DP in its name or category; cropped (bottom 28%); reviewed on a contact sheet"
+  },
+  {
+   "id": "PKpybPXIHYgd",
+   "region": "Sinnoh",
+   "name": "Route 225",
+   "game": "Diamond / Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Route_225_Hyper_Ball_DP.png",
+   "checked": "shown on Poképédia's page \"Route 225\"; DP in its name or category; cropped (bottom 28%); reviewed on a contact sheet"
+  },
+  {
+   "id": "2OqGpQsoe0FK",
+   "region": "Sinnoh",
+   "name": "Route 225",
+   "game": "Diamond / Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Route_225_Hyper_Potion_DP.png",
+   "checked": "shown on Poképédia's page \"Route 225\"; DP in its name or category; cropped (bottom 28%); reviewed on a contact sheet"
+  },
+  {
+   "id": "kdosiVhJuxO9",
+   "region": "Sinnoh",
+   "name": "Route 226",
+   "game": "Platinum",
+   "source": "https://www.pokepedia.fr/Fichier:Chenal_226_Baie_Qualot_&_Baie_Grena_Pt.png",
+   "checked": "shown on Poképédia's page \"Chenal 226\"; Pt in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "zTTPBqkfXGSV",
+   "region": "Sinnoh",
+   "name": "Route 226",
+   "game": "Platinum",
+   "source": "https://www.pokepedia.fr/Fichier:Chenal_226_Ecaillecoeur_Pt.png",
+   "checked": "shown on Poképédia's page \"Chenal 226\"; Pt in its name or category; cropped (bottom 28%); reviewed on a contact sheet"
+  },
+  {
+   "id": "hJPoJ2j9U0M7",
+   "region": "Sinnoh",
+   "name": "Route 226",
+   "game": "Diamond / Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Chenal_226_Grande_Perle_DP.png",
+   "checked": "shown on Poképédia's page \"Chenal 226\"; DP in its name or category; cropped (bottom 28%); reviewed on a contact sheet"
+  },
+  {
+   "id": "-bsAPFSL9H3Y",
+   "region": "Sinnoh",
+   "name": "Route 226",
+   "game": "Diamond / Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Chenal_226_Gros_Champi_DP.png",
+   "checked": "shown on Poképédia's page \"Chenal 226\"; DP in its name or category; cropped (bottom 28%); reviewed on a contact sheet"
+  },
+  {
+   "id": "0KslHmsR6Lex",
+   "region": "Sinnoh",
+   "name": "Route 226",
+   "game": "Diamond / Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Chenal_226_PP_Plus_DP.png",
+   "checked": "shown on Poképédia's page \"Chenal 226\"; DP in its name or category; cropped (bottom 28%); reviewed on a contact sheet"
+  },
+  {
+   "id": "5O36hq4e_aDu",
+   "region": "Sinnoh",
+   "name": "Route 226",
+   "game": "Platinum",
+   "source": "https://www.pokepedia.fr/Fichier:Chenal_226_Super_Bonbon_Pt.png",
+   "checked": "shown on Poképédia's page \"Chenal 226\"; Pt in its name or category; cropped (bottom 28%); reviewed on a contact sheet"
+  },
+  {
+   "id": "qIsY-QZ5VfH3",
+   "region": "Sinnoh",
+   "name": "Route 227",
+   "game": "Platinum",
+   "source": "https://www.pokepedia.fr/Fichier:Route_227_Charbon_Pt.png",
+   "checked": "shown on Poképédia's page \"Route 227\"; Pt in its name or category; cropped (bottom 28%); reviewed on a contact sheet"
+  },
+  {
+   "id": "SxWrGMsaIa0D",
+   "region": "Sinnoh",
+   "name": "Route 227",
+   "game": "Diamond / Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Route_227_Protéine_DP.png",
+   "checked": "shown on Poképédia's page \"Route 227\"; DP in its name or category; cropped (bottom 28%); reviewed on a contact sheet"
+  },
+  {
+   "id": "smpdlt-8pEKC",
+   "region": "Sinnoh",
+   "name": "Route 227",
+   "game": "Diamond / Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Route_227_Total_Soin_DP.png",
+   "checked": "shown on Poképédia's page \"Route 227\"; DP in its name or category; cropped (bottom 28%); reviewed on a contact sheet"
+  },
+  {
+   "id": "nq3_bt9ld9c7",
+   "region": "Sinnoh",
+   "name": "Route 228",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Route_228_Arbres_à_Baies_DEPS.png",
+   "checked": "shown on Poképédia's page \"Route 228\"; BDSP in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "kAEN4_4GqadO",
+   "region": "Sinnoh",
+   "name": "Route 228",
+   "game": "Diamond / Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Route_228_Calcium_DP.png",
+   "checked": "shown on Poképédia's page \"Route 228\"; DP in its name or category; cropped (bottom 28%); reviewed on a contact sheet"
+  },
+  {
+   "id": "06tqZC-1hlsT",
+   "region": "Sinnoh",
+   "name": "Route 228",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Route_228_Fer_DEPS.png",
+   "checked": "shown on Poképédia's page \"Route 228\"; BDSP in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "pCBfUnkcJWht",
+   "region": "Sinnoh",
+   "name": "Route 228",
+   "game": "Diamond / Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Route_228_Guérison_DP.png",
+   "checked": "shown on Poképédia's page \"Route 228\"; DP in its name or category; cropped (bottom 28%); reviewed on a contact sheet"
+  },
+  {
+   "id": "Piju2tRRbeHC",
+   "region": "Sinnoh",
+   "name": "Route 228",
+   "game": "Diamond / Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Route_228_Hyper_Ball_DP.png",
+   "checked": "shown on Poképédia's page \"Route 228\"; DP in its name or category; cropped (bottom 28%); reviewed on a contact sheet"
+  },
+  {
+   "id": "no37ZV0n9Buv",
+   "region": "Sinnoh",
+   "name": "Route 228",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Route_228_Protecteur_DEPS.png",
+   "checked": "shown on Poképédia's page \"Route 228\"; BDSP in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "JNZQrLU_Fwo5",
+   "region": "Sinnoh",
+   "name": "Route 228",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://archives.bulbagarden.net/wiki/File:Sinnoh_Route_228_BDSP.png",
+   "checked": "shown on Bulbapedia's page \"Sinnoh Route 228\"; BDSP in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "rbNStraBhVUk",
+   "region": "Sinnoh",
+   "name": "Route 229",
+   "game": "Platinum",
+   "source": "https://www.pokepedia.fr/Fichier:Route_229_Baie_Qualot_&_Baie_Résin_Pt.png",
+   "checked": "shown on Poképédia's page \"Route 229\"; Pt in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "AcrZ7b_BHExU",
+   "region": "Sinnoh",
+   "name": "Route 229",
+   "game": "Diamond / Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Route_229_Gros_Champi_DP.png",
+   "checked": "shown on Poképédia's page \"Route 229\"; DP in its name or category; cropped (bottom 28%); reviewed on a contact sheet"
+  },
+  {
+   "id": "I1GTr9hzxHGx",
+   "region": "Sinnoh",
+   "name": "Route 229",
+   "game": "Platinum",
+   "source": "https://www.pokepedia.fr/Fichier:Route_229_Pépite_Pt.png",
+   "checked": "shown on Poképédia's page \"Route 229\"; Pt in its name or category; cropped (bottom 28%); reviewed on a contact sheet"
+  },
+  {
+   "id": "blpllTJacHUU",
+   "region": "Sinnoh",
+   "name": "Route 229",
+   "game": "Platinum",
+   "source": "https://www.pokepedia.fr/Fichier:Route_229_Pierrefoudre_Pt.png",
+   "checked": "shown on Poképédia's page \"Route 229\"; Pt in its name or category; cropped (bottom 28%); reviewed on a contact sheet"
+  },
+  {
+   "id": "3ReCCLw49kDE",
+   "region": "Sinnoh",
+   "name": "Route 230",
+   "game": "Platinum",
+   "source": "https://www.pokepedia.fr/Fichier:Chenal_230_Baie_Alga_&_Baie_Résin_Pt.png",
+   "checked": "shown on Poképédia's page \"Chenal 230\"; Pt in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "kd0to_P3C-1z",
+   "region": "Sinnoh",
+   "name": "Route 230",
+   "game": "Diamond / Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Chenal_230_Carbone_DP.png",
+   "checked": "shown on Poképédia's page \"Chenal 230\"; DP in its name or category; cropped (bottom 28%); reviewed on a contact sheet"
+  },
+  {
+   "id": "uYPtrhVWBlcg",
+   "region": "Sinnoh",
+   "name": "Route 230",
+   "game": "Platinum",
+   "source": "https://www.pokepedia.fr/Fichier:Chenal_230_Pierre_Eau_Pt.png",
+   "checked": "shown on Poképédia's page \"Chenal 230\"; Pt in its name or category; cropped (bottom 28%); reviewed on a contact sheet"
+  },
+  {
+   "id": "CXdBCjC3Ekad",
+   "region": "Sinnoh",
+   "name": "Sandgem Town",
+   "game": "Diamond / Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Cap_ecran_Littorella_dp.png",
+   "checked": "shown on Poképédia's page \"Littorella\"; DP in its name or category; cropped (bottom 28%); reviewed on a contact sheet"
+  },
+  {
+   "id": "VUSoXrTrXNvV",
+   "region": "Sinnoh",
+   "name": "Sandgem Town",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://archives.bulbagarden.net/wiki/File:Rowan_Lab_BDSP.png",
+   "checked": "shown on Bulbapedia's page \"Sandgem Town\"; BDSP in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "cWs-ze-bTvjJ",
+   "region": "Sinnoh",
+   "name": "Sendoff Spring",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Source_des_Adieux_DEPS.png",
+   "checked": "shown on Poképédia's page \"Source des Adieux\"; BDSP in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "SDfH28CE0P0n",
+   "region": "Sinnoh",
+   "name": "Snowpoint City",
+   "game": "Platinum",
+   "source": "https://www.pokepedia.fr/Fichier:Temple_Frimapic_Pt.png",
+   "checked": "in pokepedia's category \"Capture d'écran de Pokémon Platine\", named after the place; Pt in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "LFr0JOWV4zN9",
+   "region": "Sinnoh",
+   "name": "Snowpoint Temple",
+   "game": "Diamond / Pearl / Platinum",
+   "source": "https://pokemon.fandom.com/wiki/File:Snowpoint_Temple_DPPt.png",
+   "checked": "shown on the Pokémon Wiki's page \"Snowpoint Temple\"; DPPt in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "bLde42Twcy5H",
+   "region": "Sinnoh",
+   "name": "Snowpoint Temple",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Temple_de_Frimapic_DEPS.png",
+   "checked": "shown on Poképédia's page \"Temple de Frimapic\"; BDSP in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "C3Aua9Zdlm0T",
+   "region": "Sinnoh",
+   "name": "Snowpoint Temple",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Temple_de_Frimapic_Guérison_DEPS.png",
+   "checked": "shown on Poképédia's page \"Temple de Frimapic\"; BDSP in its name or category; cropped (bottom 25%); reviewed on a contact sheet"
+  },
+  {
+   "id": "SoxAJ3btOTxr",
+   "region": "Sinnoh",
+   "name": "Solaceon Town",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Bonville_Miel_DEPS.png",
+   "checked": "shown on Poképédia's page \"Bonville\"; BDSP in its name or category; cropped (bottom 25%); reviewed on a contact sheet"
+  },
+  {
+   "id": "dFdMugFm9PIo",
+   "region": "Sinnoh",
+   "name": "Solaceon Town",
+   "game": "Diamond / Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Bonville_Miel_DP.png",
+   "checked": "shown on Poképédia's page \"Bonville\"; DP in its name or category; cropped (bottom 28%); reviewed on a contact sheet"
+  },
+  {
+   "id": "AMwHXJ3Jrbzj",
+   "region": "Sinnoh",
+   "name": "Spear Pillar",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Colonnes_Lances_DEPS.png",
+   "checked": "shown on Poképédia's page \"Colonnes Lances\"; BDSP in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "uV7OVEv-kZp4",
+   "region": "Sinnoh",
+   "name": "Spear Pillar",
+   "game": "Platinum",
+   "source": "https://www.pokepedia.fr/Fichier:Portail_colonnes_lances.png",
+   "checked": "shown on Poképédia's page \"Colonnes Lances\"; Pt in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "sH1zbuBQAX1O",
+   "region": "Sinnoh",
+   "name": "Hall of Origin",
+   "parent": "Spear Pillar",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Salle_Originelle_DEPS.png",
+   "checked": "shown on Poképédia's page \"Salle Originelle\"; BDSP in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "DpJrVT62GSSN",
+   "region": "Sinnoh",
+   "name": "Stark Mountain",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Mont_Abrupt_Fer_DEPS.png",
+   "checked": "shown on Poképédia's page \"Mont Abrupt\"; BDSP in its name or category; cropped (bottom 25%); reviewed on a contact sheet"
+  },
+  {
+   "id": "7c6QhchQnAHk",
+   "region": "Sinnoh",
+   "name": "Stark Mountain",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Mont_Abrupt_Huile_DEPS.png",
+   "checked": "shown on Poképédia's page \"Mont Abrupt\"; BDSP in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "OzyBvCyeBow8",
+   "region": "Sinnoh",
+   "name": "Stark Mountain",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Mont_Abrupt_Orbe_Vie_DEPS.png",
+   "checked": "shown on Poképédia's page \"Mont Abrupt\"; BDSP in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "bqMjC8Foprlu",
+   "region": "Sinnoh",
+   "name": "Stark Mountain",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Mont_Abrupt_Rappel_Max_DEPS.png",
+   "checked": "shown on Poképédia's page \"Mont Abrupt\"; BDSP in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "pej0zFgJlFjG",
+   "region": "Sinnoh",
+   "name": "Sunyshore City",
+   "game": "Platinum",
+   "source": "https://www.pokepedia.fr/Fichier:Adrien-Rivamar.png",
+   "checked": "in pokepedia's category \"Capture d'écran de Pokémon Platine\", named after the place; Pt in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "C3EW9qvos8px",
+   "region": "Sinnoh",
+   "name": "Sunyshore City",
+   "game": "Platinum",
+   "source": "https://www.pokepedia.fr/Fichier:Rivamar_Carbone_Pt.png",
+   "checked": "shown on Poképédia's page \"Rivamar\"; Pt in its name or category; cropped (bottom 28%); reviewed on a contact sheet"
+  },
+  {
+   "id": "xbIorx4jGYQX",
+   "region": "Sinnoh",
+   "name": "Sunyshore City",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Rivamar_Perle_DEPS.png",
+   "checked": "shown on Poképédia's page \"Rivamar\"; BDSP in its name or category; cropped (bottom 25%); reviewed on a contact sheet"
+  },
+  {
+   "id": "hl8YknkGiP9p",
+   "region": "Sinnoh",
+   "name": "Sunyshore City",
+   "game": "Platinum",
+   "source": "https://www.pokepedia.fr/Fichier:Rivamar_Pierrefoudre_Pt.png",
+   "checked": "shown on Poképédia's page \"Rivamar\"; Pt in its name or category; cropped (bottom 28%); reviewed on a contact sheet"
+  },
+  {
+   "id": "gmqGxnJTonmH",
+   "region": "Sinnoh",
+   "name": "Sunyshore Market",
+   "parent": "Sunyshore City",
+   "game": "Platinum",
+   "source": "https://archives.bulbagarden.net/wiki/File:Sunyshore_Market_Pt.png",
+   "checked": "shown on Bulbapedia's page \"Sunyshore Market\"; Pt in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "Sble2_lkJ37Y",
+   "region": "Sinnoh",
+   "name": "Vista Lighthouse",
+   "parent": "Sunyshore City",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Phare_Panorama_DEPS.png",
+   "checked": "shown on Poképédia's page \"Phare Panorama\"; BDSP in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "QLg9HjT2lxsk",
+   "region": "Sinnoh",
+   "name": "Vista Lighthouse",
+   "parent": "Sunyshore City",
+   "game": "Diamond / Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Phare_Panorama_DP.png",
+   "checked": "shown on Poképédia's page \"Phare Panorama\"; DP in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "p_LSHX7ZNHgG",
+   "region": "Sinnoh",
+   "name": "Turnback Cave",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Grotte_du_Retour_DEPS.png",
+   "checked": "shown on Poképédia's page \"Grotte du Retour\"; BDSP in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "5-weLdQGgId9",
+   "region": "Sinnoh",
+   "name": "Turnback Cave",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Grotte_du_Retour_Tissu_Fauche_DEPS.png",
+   "checked": "shown on Poképédia's page \"Grotte du Retour\"; BDSP in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "ProZEW0Vqx1N",
+   "region": "Sinnoh",
+   "name": "Twinleaf Town",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Bonaugure_Clé_de_Voûte_DEPS.png",
+   "checked": "shown on Poképédia's page \"Bonaugure\"; BDSP in its name or category; cropped (bottom 25%); reviewed on a contact sheet"
+  },
+  {
+   "id": "-73_9InafJgO",
+   "region": "Sinnoh",
+   "name": "Twinleaf Town",
+   "game": "Platinum",
+   "source": "https://www.pokepedia.fr/Fichier:Bonaugure_Clé_de_Voûte_Pt.png",
+   "checked": "shown on Poképédia's page \"Bonaugure\"; Pt in its name or category; cropped (bottom 28%); reviewed on a contact sheet"
+  },
+  {
+   "id": "3yoN_078s8oo",
+   "region": "Sinnoh",
+   "name": "Twinleaf Town",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://archives.bulbagarden.net/wiki/File:Player_House_1F_BDSP.png",
+   "checked": "shown on Bulbapedia's page \"Twinleaf Town\"; BDSP in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "TpTJIsQ9GK98",
+   "region": "Sinnoh",
+   "name": "Valley Windworks",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Parc_Éolien_DEPS.png",
+   "checked": "shown on Poképédia's page \"Parc Éolien\"; BDSP in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "8XLfdEvzJ1vg",
+   "region": "Sinnoh",
+   "name": "Valley Windworks",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Parc_Éolien_Élixir_Max_DEPS.png",
+   "checked": "shown on Poképédia's page \"Parc Éolien\"; BDSP in its name or category; cropped (bottom 25%); reviewed on a contact sheet"
+  },
+  {
+   "id": "rOKipns3jRPR",
+   "region": "Sinnoh",
+   "name": "Valley Windworks",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Parc_Éolien_Potion_DEPS.png",
+   "checked": "shown on Poképédia's page \"Parc Éolien\"; BDSP in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "D5qqJJD6W42h",
+   "region": "Sinnoh",
+   "name": "Veilstone City",
+   "game": "Platinum",
+   "source": "https://www.pokepedia.fr/Fichier:Voilaroc_Calcium_Pt.png",
+   "checked": "shown on Poképédia's page \"Voilaroc\"; Pt in its name or category; cropped (bottom 28%); reviewed on a contact sheet"
+  },
+  {
+   "id": "ncsXy6PTQfYp",
+   "region": "Sinnoh",
+   "name": "Veilstone City",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Voilaroc_Loupe_DEPS.png",
+   "checked": "shown on Poképédia's page \"Voilaroc\"; BDSP in its name or category; cropped (bottom 25%); reviewed on a contact sheet"
+  },
+  {
+   "id": "_GSeH3T04AIU",
+   "region": "Sinnoh",
+   "name": "Veilstone City",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Voilaroc_Métronome_DEPS.png",
+   "checked": "shown on Poképédia's page \"Voilaroc\"; BDSP in its name or category; cropped (bottom 25%); reviewed on a contact sheet"
+  },
+  {
+   "id": "7L0V1TDOE-FO",
+   "region": "Sinnoh",
+   "name": "Veilstone City",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Voilaroc_Rappel_DEPS.png",
+   "checked": "shown on Poképédia's page \"Voilaroc\"; BDSP in its name or category; cropped (bottom 25%); reviewed on a contact sheet"
+  },
+  {
+   "id": "9mLYDbPh3v59",
+   "region": "Sinnoh",
+   "name": "Veilstone City",
+   "game": "Diamond / Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Voilaroc_Rappel_DP.png",
+   "checked": "shown on Poképédia's page \"Voilaroc\"; DP in its name or category; cropped (bottom 28%); reviewed on a contact sheet"
+  },
+  {
+   "id": "zMyp3v9Ey80C",
+   "region": "Sinnoh",
+   "name": "Team Galactic HQ",
+   "parent": "Veilstone City",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://archives.bulbagarden.net/wiki/File:Galactic_Warehouse_BDSP.png",
+   "checked": "shown on Bulbapedia's page \"Team Galactic HQ\"; BDSP in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "D09Eyv3dezrC",
+   "region": "Sinnoh",
+   "name": "Team Galactic HQ",
+   "parent": "Veilstone City",
+   "game": "Platinum",
+   "source": "https://www.pokepedia.fr/Fichier:QG_Galaxie_Pt.png",
+   "checked": "shown on Poképédia's page \"Centre Galaxie de Voilaroc\"; Pt in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "zS6ZKovBW7r2",
+   "region": "Sinnoh",
+   "name": "Victory Road",
+   "game": "Platinum",
+   "source": "https://www.pokepedia.fr/Fichier:Route_Victoire_(Sinnoh).png",
+   "checked": "shown on Poképédia's page \"Route Victoire (Sinnoh)\"; Pt in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "LsN2coFwgtqP",
+   "region": "Sinnoh",
+   "name": "Victory Road",
+   "game": "Platinum",
+   "source": "https://www.pokepedia.fr/Fichier:Route_Victoire_Calcium_Pt.png",
+   "checked": "shown on Poképédia's page \"Route Victoire (Sinnoh)\"; Pt in its name or category; cropped (bottom 28%); reviewed on a contact sheet"
+  },
+  {
+   "id": "fzPZIqyH_bhT",
+   "region": "Sinnoh",
+   "name": "Victory Road",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Route_Victoire_Élixir_DEPS.png",
+   "checked": "shown on Poképédia's page \"Route Victoire (Sinnoh)\"; BDSP in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "8a6uJynZ1gvd",
+   "region": "Sinnoh",
+   "name": "Victory Road",
+   "game": "Diamond / Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Route_Victoire_Elixir_DP.png",
+   "checked": "shown on Poképédia's page \"Route Victoire (Sinnoh)\"; DP in its name or category; cropped (bottom 28%); reviewed on a contact sheet"
+  },
+  {
+   "id": "uc7skR3c3fXR",
+   "region": "Sinnoh",
+   "name": "Victory Road",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Route_Victoire_Élixir_Max_DEPS.png",
+   "checked": "shown on Poképédia's page \"Route Victoire (Sinnoh)\"; BDSP in its name or category; cropped (bottom 25%); reviewed on a contact sheet"
+  },
+  {
+   "id": "fXmqPHPPizDA",
+   "region": "Sinnoh",
+   "name": "Victory Road",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Route_Victoire_Guérison_1_DEPS.png",
+   "checked": "shown on Poképédia's page \"Route Victoire (Sinnoh)\"; BDSP in its name or category; cropped (bottom 25%); reviewed on a contact sheet"
+  },
+  {
+   "id": "3vsdWy47zcm-",
+   "region": "Sinnoh",
+   "name": "Victory Road",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Route_Victoire_Pépite_DEPS.png",
+   "checked": "shown on Poképédia's page \"Route Victoire (Sinnoh)\"; BDSP in its name or category; cropped (bottom 25%); reviewed on a contact sheet"
+  },
+  {
+   "id": "z1EyTHvO0E-_",
+   "region": "Sinnoh",
+   "name": "Victory Road",
+   "game": "Diamond / Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Route_Victoire_Pépite_DP.png",
+   "checked": "shown on Poképédia's page \"Route Victoire (Sinnoh)\"; DP in its name or category; cropped (bottom 28%); reviewed on a contact sheet"
+  },
+  {
+   "id": "T9QnaX65od_t",
+   "region": "Sinnoh",
+   "name": "Victory Road",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Route_Victoire_Perle_DEPS.png",
+   "checked": "shown on Poképédia's page \"Route Victoire (Sinnoh)\"; BDSP in its name or category; cropped (bottom 25%); reviewed on a contact sheet"
+  },
+  {
+   "id": "bOKo5959nMg9",
+   "region": "Sinnoh",
+   "name": "Victory Road",
+   "game": "Diamond / Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Route_Victoire_Perle_DP.png",
+   "checked": "shown on Poképédia's page \"Route Victoire (Sinnoh)\"; DP in its name or category; cropped (bottom 28%); reviewed on a contact sheet"
+  },
+  {
+   "id": "MWnS0PxnDxx-",
+   "region": "Sinnoh",
+   "name": "Victory Road",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Route_Victoire_Pierre_Nuit_DEPS.png",
+   "checked": "shown on Poképédia's page \"Route Victoire (Sinnoh)\"; BDSP in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "IZJZI_ANbEsW",
+   "region": "Sinnoh",
+   "name": "Victory Road",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Route_Victoire_Restes_DEPS.png",
+   "checked": "shown on Poképédia's page \"Route Victoire (Sinnoh)\"; BDSP in its name or category; cropped (bottom 25%); reviewed on a contact sheet"
+  },
+  {
+   "id": "o1ltgcF1p95Q",
+   "region": "Sinnoh",
+   "name": "Victory Road",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Route_Victoire_Total_Soin_DEPS.png",
+   "checked": "shown on Poképédia's page \"Route Victoire (Sinnoh)\"; BDSP in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "4Q_bJEO3F9eA",
+   "region": "Sinnoh",
+   "name": "Victory Road",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Route_Victoire_Zinc_DEPS.png",
+   "checked": "shown on Poképédia's page \"Route Victoire (Sinnoh)\"; BDSP in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "QptGiQ3sARDW",
+   "region": "Sinnoh",
+   "name": "Wayward Cave",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Grotte_des_Égarés_Accro_Griffe_DEPS.png",
+   "checked": "shown on Poképédia's page \"Grotte des Égarés\"; BDSP in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "3tqjV3qA5xCA",
+   "region": "Sinnoh",
+   "name": "Wayward Cave",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Grotte_des_Égarés_Huile_Max_DEPS.png",
+   "checked": "shown on Poképédia's page \"Grotte des Égarés\"; BDSP in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "8CvrA7yHcof-",
+   "region": "Sinnoh",
+   "name": "Wayward Cave",
+   "game": "Brilliant Diamond / Shining Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Grotte_des_Égarés_Rappel_1_DEPS.png",
+   "checked": "shown on Poképédia's page \"Grotte des Égarés\"; BDSP in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "JbHN6NUh1NDQ",
+   "region": "Sinnoh",
+   "name": "Wayward Cave",
+   "game": "Platinum",
+   "source": "https://www.pokepedia.fr/Fichier:Grotte_Revêche_Huile_Max_Pt.png",
+   "checked": "shown on Poképédia's page \"Grotte des Égarés\"; Pt in its name or category; cropped (bottom 28%); reviewed on a contact sheet"
+  },
+  {
+   "id": "VeRrdcQFJ0od",
+   "region": "Sinnoh",
+   "name": "Wayward Cave",
+   "game": "Diamond / Pearl",
+   "source": "https://www.pokepedia.fr/Fichier:Grotte_Revêche_Rappel_DP.png",
+   "checked": "shown on Poképédia's page \"Grotte des Égarés\"; DP in its name or category; cropped (bottom 28%); reviewed on a contact sheet"
   }
  ]
 }
