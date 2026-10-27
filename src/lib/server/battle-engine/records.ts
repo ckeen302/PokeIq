@@ -37,6 +37,8 @@ export interface RecordStore {
   record(entries: ResultEntry[]): Promise<void>;
   /** Wins, losses and draws per format, and the latest `limit` battles. */
   profile(key: string, limit: number): Promise<{ formats: BattleFormatRecord[]; recent: BattleRecentEntry[] }>;
+  /** The trainer's latest `limit` battles (in `format`, or all), newest first: for their insights. */
+  battles(key: string, format: string | null, limit: number): Promise<ResultEntry[]>;
 }
 
 /** The records a finished live battle makes: one per seat the server knows (none for a no contest). */
@@ -95,6 +97,13 @@ export function memoryRecordStore(): RecordStore {
       const replays = memoryReplayStore();
       const recent = await Promise.all(mine.slice(0, limit).map(async (e) => recentOf(e, !!(await replays.get(e.code)))));
       return { formats: [...byFormat.values()], recent };
+    },
+    async battles(key, format, limit) {
+      return [...db.values()]
+        .filter((e) => e.key === key && (!format || e.format === format))
+        .sort((a, b) => b.at - a.at)
+        .slice(0, limit)
+        .map((e) => ({ ...e }));
     },
   };
 }
@@ -173,6 +182,32 @@ export function supabaseRecordStore(sb: NonNullable<ReturnType<typeof getService
           return entry;
         }),
       };
+    },
+    async battles(key, format, limit) {
+      guard();
+      let q = sb
+        .from("battle_results")
+        .select("battle_code, format, format_name, name, opponent, result, ranked, rating_before, rating_after, created_at")
+        .eq("player_key", key);
+      if (format) q = q.eq("format", format);
+      const { data, error } = await q.order("created_at", { ascending: false }).limit(limit);
+      check(error);
+      return ((data ?? []) as Record<string, unknown>[]).map((r) => {
+        const e: ResultEntry = {
+          code: String(r.battle_code),
+          key,
+          format: String(r.format) as ResultEntry["format"],
+          formatName: String(r.format_name),
+          name: String(r.name),
+          opponent: String(r.opponent),
+          result: String(r.result) as BattleOutcome,
+          ranked: !!r.ranked,
+          at: Date.parse(String(r.created_at)),
+        };
+        if (r.rating_before !== null && r.rating_before !== undefined) e.ratingBefore = Number(r.rating_before);
+        if (r.rating_after !== null && r.rating_after !== undefined) e.ratingAfter = Number(r.rating_after);
+        return e;
+      });
     },
   };
 }

@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { cache } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { CalendarDays, Clapperboard, Search, Swords } from "lucide-react";
+import { BarChart3, CalendarDays, Clapperboard, Search, Swords } from "lucide-react";
 import { pageMetadata } from "@/lib/seo";
 import { USERNAME_RE } from "@/lib/server/auth";
 import { findUserByName, progressDigests } from "@/lib/server/accounts";
@@ -11,6 +11,7 @@ import { connDigest } from "@/lib/server/friends";
 import { battleKey } from "@/lib/server/battle-engine/identity";
 import { battleProfile } from "@/lib/server/battle-engine/records";
 import { replayStore } from "@/lib/server/battle-engine/replays";
+import { insightsAvailable } from "@/lib/server/battle-engine/insights";
 import { rankedKey, rankedStore } from "@/lib/server/ranked";
 import { avatarsByIds } from "@/lib/server/avatars";
 import { aboutFor } from "@/lib/server/about";
@@ -53,13 +54,14 @@ const findProfile = cache(async (raw: string) => {
   const key = battleKey(`u:${user.id}`);
   const replays = replayStore();
   const ranked = rankedStore();
-  const [digest, battles, pokedle, mine, avatars, about] = await Promise.all([
+  const [digest, battles, pokedle, mine, avatars, about, insights] = await Promise.all([
     quietly("progress", progressDigests([user.id]).then((m) => m.get(user.id) ?? null), null),
     quietly("battles", battleProfile(key), null),
     quietly<RankedStanding | null>("pokedle", ranked?.standing(rankedKey(`u:${user.id}`)), null),
     quietly<ReplaySummary[]>("replays", replays?.mine(key, [], 30), []),
     avatarsByIds([user.id]),
     aboutFor(user.id),
+    quietly("insights", insightsAvailable(), false),
   ]);
   return {
     username: user.username,
@@ -73,6 +75,8 @@ const findProfile = cache(async (raw: string) => {
     about,
     aboutNames: Object.fromEntries(Object.entries(about.pokemon).map(([slot, p]) => [slot, pokemonName(p.id) ?? ""])),
     replays: mine.filter((r) => r.public).slice(0, 6),
+    // Team insights: linked once they're available here (migration 0041) and there are battles to read.
+    insights: insights && !!battles?.recent.length,
   };
 });
 
@@ -186,9 +190,16 @@ export default async function UserProfilePage({ params }: PageProps) {
 
       <Card>
         <CardContent className="space-y-4 p-5">
-          <p className="hud-label flex items-center gap-1.5 text-screen">
-            <Swords className="h-3.5 w-3.5" aria-hidden /> Battle record
-          </p>
+          <div className="flex items-center justify-between gap-2">
+            <p className="hud-label flex items-center gap-1.5 text-screen">
+              <Swords className="h-3.5 w-3.5" aria-hidden /> Battle record
+            </p>
+            {found.insights && (
+              <Link href={`/battle/insights/${encodeURIComponent(found.username)}`} className="hud-label flex items-center gap-1 hover:text-foreground" data-testid="profile-insights">
+                <BarChart3 className="h-3.5 w-3.5" aria-hidden /> Team insights →
+              </Link>
+            )}
+          </div>
           {found.battles ? (
             <BattleProfileView profile={{ ...found.battles, name: found.username }} now={now} empty={`${found.username} hasn't played a live battle yet.`} />
           ) : (

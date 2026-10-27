@@ -69,10 +69,10 @@ describe("weekly play on the server", () => {
   const base = { week: MONDAY, difficulty: "normal" as const, settings: DEFAULT_PDK_SETTINGS, identity: "d:bbbbbbbbbbbbbbbbbbbb", name: "Misty" };
 
   it("is dealt like a daily: nine PP, nothing practice-only", () => {
-    const found = resolveGrid({ week: MONDAY, difficulty: "normal" });
+    const found = resolveGrid({ week: MONDAY, difficulty: "normal" }, NOW);
     expect("grid" in found && found.daily).toBe(true);
     expect("grid" in found && found.weekly?.theme).toBe("Kanto week");
-    expect("error" in resolveGrid({ week: "2026-10-21", difficulty: "normal" })).toBe(true);
+    expect("error" in resolveGrid({ week: "2026-10-21", difficulty: "normal" }, NOW)).toBe(true);
   });
   it("has its own board, separate from the day's", async () => {
     const store = memoryPdkStore();

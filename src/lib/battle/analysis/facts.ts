@@ -50,7 +50,7 @@ const WEATHER: Record<string, string> = { sunnyday: "Sun", desolateland: "Harsh 
 const TERRAIN: Record<string, string> = { electricterrain: "Electric", grassyterrain: "Grassy", psychicterrain: "Psychic", mistyterrain: "Misty" };
 const STATUSES = new Set(["brn", "par", "psn", "tox", "slp", "frz"]);
 
-function calcSide(mon: MonState, assumed: AssumedSet, conditions: Record<string, number>, hpOverride?: number): CalcSide {
+export function calcSide(mon: MonState, assumed: AssumedSet, conditions: Record<string, number>, hpOverride?: number): CalcSide {
   const side = sideFromSet({ ...assumed.set, item: mon.item === null ? assumed.set.item : mon.item, teraType: mon.terastallized || assumed.set.teraType });
   side.hpPercent = Math.max(1, Math.min(100, hpOverride ?? mon.hp));
   side.status = (STATUSES.has(mon.status) ? mon.status : "") as StatusId;
@@ -61,7 +61,7 @@ function calcSide(mon: MonState, assumed: AssumedSet, conditions: Record<string,
   return side;
 }
 
-function fieldOf(state: TurnState): CalcField {
+export function fieldOf(state: TurnState): CalcField {
   return { ...emptyField(), weather: WEATHER[state.weather] ?? "", terrain: TERRAIN[state.terrain] ?? "" };
 }
 
