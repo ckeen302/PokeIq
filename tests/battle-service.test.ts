@@ -85,7 +85,8 @@ describe("battles against the computer", () => {
     const loads = vi.spyOn(store, "loadBattle");
     const first = await choose(made.code, made.token, made.view);
     expect(loads).not.toHaveBeenCalled();
-    expect(first.turn).toBe(2);
+    // The choice was played (a KO can ask for a switch before turn 2 starts).
+    expect(first.log.total).toBeGreaterThan(made.view.log.total);
     // Another instance (a direct save) changes the record behind this one's back: a forfeit.
     const stored = (await store.loadBattle(made.code))!;
     const meta = structuredClone(stored.rec.meta);
