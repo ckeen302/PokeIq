@@ -12,7 +12,7 @@ import { CardGrid } from "./CardGrid";
  * Hidden when the species has no cards or the API is unreachable.
  */
 export function PokemonCards({ dex, name }: { dex: number; name: string }) {
-  const [data, setData] = useState<{ cards: CardTile[]; total: number } | null>(null);
+  const [data, setData] = useState<{ cards: CardTile[]; total: number; priceNote?: string } | null>(null);
   const [el, setEl] = useState<HTMLElement | null>(null);
 
   useEffect(() => {
@@ -52,8 +52,7 @@ export function PokemonCards({ dex, name }: { dex: number; name: string }) {
           />
           <CardGrid tiles={data.cards} showSet />
           <p className="text-center text-xs text-muted-foreground">
-            {name}&apos;s newest Pokémon TCG cards.{" "}
-            {data.cards.some((t) => t.pricesUnavailable) ? "Prices unavailable right now." : "Prices: TCGplayer market (USD), else Cardmarket trend (EUR)."}
+            {name}&apos;s newest Pokémon TCG cards. {data.priceNote}
           </p>
         </>
       )}

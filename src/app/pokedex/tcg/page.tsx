@@ -8,7 +8,7 @@ import { ListHeader } from "@/components/pokedex/detail/DetailParts";
 import { HudHeading } from "@/components/game/HudHeading";
 import { CardGrid, TcgUnavailable } from "@/components/tcg/CardGrid";
 import { cardsForDex, cleanSearch, getSets, searchCards } from "@/lib/tcg/api";
-import { formatApiDate, groupSetsBySeries, toTile } from "@/lib/tcg/prices";
+import { formatApiDate, groupSetsBySeries, tilePriceNote, toTile } from "@/lib/tcg/prices";
 import { getPokemon } from "@/lib/pokemon/pokedex";
 
 // Rendered per request from Next's data cache (sets: weekly, cards: daily), so a deploy never needs the API.
@@ -38,6 +38,8 @@ export default async function TcgPage({ searchParams }: PageProps) {
     species ? cardsForDex(species.id, 250).then((r) => r?.cards ?? null) : term ? searchCards(term) : Promise.resolve(undefined),
   ]);
   const groups = sets ? groupSetsBySeries(sets) : [];
+  const resultTiles = results ? results.map(toTile) : [];
+  const resultNote = tilePriceNote(resultTiles);
 
   return (
     <div className="mx-auto max-w-6xl space-y-8">
@@ -84,8 +86,8 @@ export default async function TcgPage({ searchParams }: PageProps) {
             <TcgUnavailable />
           ) : results.length ? (
             <>
-              <CardGrid tiles={results.map(toTile)} showSet />
-              {results.some((c) => c.pricesUnavailable) && <p className="text-center text-xs text-muted-foreground" data-testid="tcg-price-note">Prices unavailable right now.</p>}
+              <CardGrid tiles={resultTiles} showSet />
+              {resultNote && <p className="text-center text-xs text-muted-foreground" data-testid="tcg-price-note">{resultNote}</p>}
             </>
           ) : (
             <p className="py-6 text-center text-sm text-muted-foreground">No cards found.</p>
@@ -138,9 +140,17 @@ export default async function TcgPage({ searchParams }: PageProps) {
         ))
       )}
       <p className="text-center text-xs text-muted-foreground">
-        Card data, images and prices from the{" "}
+        Card data and images from the{" "}
         <a href="https://pokemontcg.io" className="underline-offset-2 hover:underline" rel="noopener" target="_blank">
           Pokémon TCG API
+        </a>
+        ; prices from it, or TCGplayer via{" "}
+        <a href="https://tcgcsv.com" className="underline-offset-2 hover:underline" rel="noopener" target="_blank">
+          TCGCSV
+        </a>{" "}
+        and Cardmarket via{" "}
+        <a href="https://tcgdex.dev" className="underline-offset-2 hover:underline" rel="noopener" target="_blank">
+          TCGdex
         </a>
         . Not affiliated with The Pokémon Company.
       </p>

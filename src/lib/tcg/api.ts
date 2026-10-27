@@ -1,6 +1,7 @@
 import "server-only";
 import type { TcgCard, TcgSet } from "./types";
 import { fallbackCard, fallbackForDex, fallbackSearch, fallbackSet, fallbackSetCards, fallbackSets } from "./fallback";
+import { withCardPrices, withPrices } from "./price-provider";
 
 /**
  * Pokémon TCG API client (https://api.pokemontcg.io/v2). Works without a key;
@@ -13,6 +14,10 @@ import { fallbackCard, fallbackForDex, fallbackSearch, fallbackSet, fallbackSetC
  * When the API errors or takes over ~4s, everything falls back to the static
  * pokemon-tcg-data dataset (see ./fallback): same data, no prices.
  *
+ * Cards without API prices get them from ./price-provider (TCGplayer via
+ * TCGCSV, Cardmarket via TCGdex on card pages). Lists that span many sets
+ * wait at most LIST_PRICE_BUDGET_MS for those.
+ *
  * POKEIQ_TCG_FIXTURE=1 serves a small captured slice of real API data instead
  * (tests, offline e2e).
  */
@@ -24,6 +29,9 @@ export const CARDS_REVALIDATE = DAY;
 const LIST_FIELDS = "id,name,number,rarity,types,supertype,images,set,tcgplayer,cardmarket,nationalPokedexNumbers";
 
 const fixtureMode = () => process.env.POKEIQ_TCG_FIXTURE === "1";
+const LIST_PRICE_BUDGET_MS = 2_500;
+const priced = (cards: TcgCard[] | null) => (cards ? withPrices(cards) : null);
+const pricedList = (cards: TcgCard[] | null) => (cards ? withPrices(cards, { budgetMs: LIST_PRICE_BUDGET_MS }) : null);
 
 async function fixture(): Promise<{ sets: TcgSet[]; cards: TcgCard[] }> {
   return (await import("./fixture.json")).default as unknown as { sets: TcgSet[]; cards: TcgCard[] };
@@ -85,6 +93,10 @@ export async function getSet(id: string): Promise<TcgSet | null> {
 
 /** Every card in a set (the API pages at 250). */
 export async function getSetCards(setId: string): Promise<TcgCard[] | null> {
+  return priced(await setCards(setId));
+}
+
+async function setCards(setId: string): Promise<TcgCard[] | null> {
   if (fixtureMode()) return (await fixture()).cards.filter((c) => c.set?.id === setId);
   if (!/^[a-z0-9.-]+$/i.test(setId)) return null;
   const all: TcgCard[] = [];
@@ -99,6 +111,12 @@ export async function getSetCards(setId: string): Promise<TcgCard[] | null> {
 }
 
 export async function getCard(id: string): Promise<TcgCard | null> {
+  const card = await getCardInfo(id);
+  return card ? withCardPrices(card) : null;
+}
+
+/** A card without the price lookups (for callers that only need its name, set and image). */
+export async function getCardInfo(id: string): Promise<TcgCard | null> {
   if (fixtureMode()) return (await fixture()).cards.find((c) => c.id === id) ?? null;
   if (!/^[a-z0-9.-]+$/i.test(id)) return null;
   const res = await get<TcgCard>(`/cards/${encodeURIComponent(id)}`, CARDS_REVALIDATE);
@@ -110,6 +128,10 @@ const newestFirst = (a: TcgCard, b: TcgCard) => (b.set?.releaseDate ?? "").local
 
 /** Cards whose name starts with (each word of) `q`, newest first. */
 export async function searchCards(q: string, limit = 60): Promise<TcgCard[] | null> {
+  return pricedList(await findCards(q, limit));
+}
+
+async function findCards(q: string, limit: number): Promise<TcgCard[] | null> {
   const term = cleanSearch(q);
   if (!term) return [];
   if (fixtureMode()) {
@@ -124,6 +146,11 @@ export async function searchCards(q: string, limit = 60): Promise<TcgCard[] | nu
 
 /** A species' cards by National Pokédex number, newest first, with the total count. */
 export async function cardsForDex(dex: number, limit: number): Promise<{ cards: TcgCard[]; total: number } | null> {
+  const res = await dexCards(dex, limit);
+  return res && { cards: (await pricedList(res.cards))!, total: res.total };
+}
+
+async function dexCards(dex: number, limit: number): Promise<{ cards: TcgCard[]; total: number } | null> {
   if (!Number.isInteger(dex) || dex < 1 || dex > 2000) return null;
   if (fixtureMode()) {
     const cards = (await fixture()).cards.filter((c) => c.nationalPokedexNumbers?.includes(dex)).sort(newestFirst);

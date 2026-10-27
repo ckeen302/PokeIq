@@ -59,7 +59,12 @@ export interface TcgCard {
   cardmarket?: { url?: string; updatedAt?: string; prices?: Record<string, number | null | undefined> };
   /** Set on cards served from the static fallback dataset: prices are unknown, not absent. */
   pricesUnavailable?: boolean;
+  /** Where `tcgplayer` / `cardmarket` came from (see price-provider.ts). Absent = no prices of that kind. */
+  priceSources?: { tcgplayer?: PriceSource; cardmarket?: PriceSource };
 }
+
+/** "pokemontcg" = the Pokémon TCG API itself; "tcgcsv" = TCGplayer via tcgcsv.com; "tcgdex" = Cardmarket via TCGdex. */
+export type PriceSource = "pokemontcg" | "tcgcsv" | "tcgdex";
 
 /** What a gallery tile needs: small enough to hand to the browser for a whole set. */
 export interface CardTile {
@@ -72,7 +77,7 @@ export interface CardTile {
   image: string | null;
   setName: string | null;
   releaseDate: string | null;
-  price: { value: number; currency: "USD" | "EUR"; label: string } | null;
+  price: { value: number; currency: "USD" | "EUR"; label: string; source?: PriceSource; asOf?: string } | null;
   /** True when the card came from the static fallback (no price data at all). */
   pricesUnavailable?: boolean;
 }

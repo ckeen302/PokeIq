@@ -8,7 +8,7 @@ import { DetailNav, StatBox } from "@/components/pokedex/detail/DetailParts";
 import { HudHeading } from "@/components/game/HudHeading";
 import { EnergyChip } from "@/components/tcg/EnergyChip";
 import { getCard } from "@/lib/tcg/api";
-import { cardmarketRows, formatApiDate, formatPrice, headlinePrice, tcgplayerRows } from "@/lib/tcg/prices";
+import { cardmarketRows, formatApiDate, formatPrice, headlinePrice, PRICE_SOURCES, priceSourceLine, tcgplayerRows } from "@/lib/tcg/prices";
 import { getPokemon } from "@/lib/pokemon/pokedex";
 
 export const dynamic = "force-dynamic";
@@ -24,7 +24,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const where = [card.set?.name, card.number && `#${card.number}`].filter(Boolean).join(" ");
   return pageMetadata({
     title: `${card.name}${where ? ` — ${where}` : ""} · Pokémon Card Price`,
-    description: `${card.name} from the ${card.set?.name ?? "Pokémon TCG"} set${card.rarity ? ` (${card.rarity})` : ""}${card.artist ? `, illustrated by ${card.artist}` : ""}.${price ? ` Market price ${formatPrice(price.value, price.currency)}.` : ""} TCGplayer and Cardmarket prices.`,
+    description: `${card.name} from the ${card.set?.name ?? "Pokémon TCG"} set${card.rarity ? ` (${card.rarity})` : ""}${card.artist ? `, illustrated by ${card.artist}` : ""}.${price ? ` Market price ${formatPrice(price.value, price.currency)}${formatApiDate(price.asOf) ? ` as of ${formatApiDate(price.asOf)}` : ""}.` : ""} TCGplayer and Cardmarket prices.`,
     path: `/pokedex/tcg/card/${card.id}`,
     socialTitle: `${card.name} · PokéIQ TCG`,
   });
@@ -45,6 +45,9 @@ export default async function CardPage({ params }: PageProps) {
   const tcgDate = formatApiDate(card.tcgplayer?.updatedAt);
   const cmDate = formatApiDate(card.cardmarket?.updatedAt);
   const price = headlinePrice(card);
+  const tcgSource = priceSourceLine("TCGplayer", card.priceSources?.tcgplayer, card.tcgplayer?.updatedAt);
+  const cmSource = priceSourceLine("Cardmarket", card.priceSources?.cardmarket, card.cardmarket?.updatedAt);
+  const relays = [card.priceSources?.tcgplayer, card.priceSources?.cardmarket].filter((s, i, a): s is NonNullable<typeof s> => !!s && s !== "pokemontcg" && a.indexOf(s) === i);
 
   const ld = {
     "@context": "https://schema.org",
@@ -125,7 +128,7 @@ export default async function CardPage({ params }: PageProps) {
               <div className="hud overflow-x-auto rounded-lg border bg-card">
                 <table className="w-full min-w-[26rem] text-left text-sm">
                   <caption className="px-3 pt-3 text-left">
-                    <span className="font-pixel text-[10px] uppercase tracking-wider text-muted-foreground">TCGplayer · USD{tcgDate ? ` · as of ${tcgDate}` : ""}</span>
+                    <span className="font-pixel text-[10px] uppercase tracking-wider text-muted-foreground" data-testid="tcg-price-source">{tcgSource} · USD</span>
                   </caption>
                   <thead className="text-xs uppercase tracking-wider text-muted-foreground">
                     <tr>
@@ -152,7 +155,7 @@ export default async function CardPage({ params }: PageProps) {
             )}
             {cm.length > 0 && (
               <div className="hud rounded-lg border bg-card p-3">
-                <div className="mb-2 font-pixel text-[10px] uppercase tracking-wider text-muted-foreground">Cardmarket · EUR{cmDate ? ` · as of ${cmDate}` : ""}</div>
+                <div className="mb-2 font-pixel text-[10px] uppercase tracking-wider text-muted-foreground" data-testid="tcg-price-source">{cmSource} · EUR</div>
                 <dl className="grid grid-cols-2 gap-2 sm:grid-cols-3">
                   {cm.map((r) => (
                     <div key={r.key} className="rounded-md border border-foreground/10 bg-shade/30 px-3 py-2">
@@ -219,7 +222,20 @@ export default async function CardPage({ params }: PageProps) {
           {card.flavorText && <p className="border-l-2 border-screen/50 pl-3 text-sm italic text-muted-foreground">{card.flavorText}</p>}
         </div>
       </div>
-      <p className="text-center text-xs text-muted-foreground">Card data, image and prices from the Pokémon TCG API. Prices change daily; check the marketplace before buying.</p>
+      <p className="text-center text-xs text-muted-foreground">
+        Card data and image from the Pokémon TCG API.
+        {relays.map((s) => (
+          <span key={s}>
+            {" "}
+            {s === "tcgcsv" ? "TCGplayer prices" : "Cardmarket prices"} courtesy of{" "}
+            <a href={PRICE_SOURCES[s].url} target="_blank" rel="noopener" className="underline underline-offset-2 hover:text-foreground">
+              {PRICE_SOURCES[s].name}
+            </a>
+            .
+          </span>
+        ))}{" "}
+        Prices change daily; check the marketplace before buying.
+      </p>
     </article>
   );
 }

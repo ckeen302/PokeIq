@@ -1,4 +1,4 @@
-import type { CardTile, TcgCard, TcgSet } from "./types";
+import type { CardTile, PriceSource, TcgCard, TcgSet } from "./types";
 
 /** TCGplayer's variant keys, in the order a collector reads them. */
 const TCGPLAYER_VARIANTS: Record<string, string> = {
@@ -66,14 +66,51 @@ export function cardmarketRows(card: TcgCard): { key: string; label: string; val
 /**
  * One headline price for a list: TCGplayer market (else mid) of the first
  * variant that has one, else Cardmarket's trend in EUR. Null when neither exists.
+ * Carries its source and "as of" date (API format) when known.
  */
 export function headlinePrice(card: TcgCard): CardTile["price"] {
   for (const r of tcgplayerRows(card)) {
     const v = r.market ?? r.mid;
-    if (v !== null) return { value: v, currency: "USD", label: r.label };
+    if (v !== null) return withProvenance({ value: v, currency: "USD", label: r.label }, card.priceSources?.tcgplayer, card.tcgplayer?.updatedAt);
   }
   const trend = num(card.cardmarket?.prices?.trendPrice) ?? num(card.cardmarket?.prices?.averageSellPrice);
-  return trend !== null && trend > 0 ? { value: trend, currency: "EUR", label: "Cardmarket trend" } : null;
+  return trend !== null && trend > 0 ? withProvenance({ value: trend, currency: "EUR", label: "Cardmarket trend" }, card.priceSources?.cardmarket, card.cardmarket?.updatedAt) : null;
+}
+
+function withProvenance(p: NonNullable<CardTile["price"]>, source: PriceSource | undefined, updatedAt: string | undefined): CardTile["price"] {
+  return { ...p, ...(source && { source }), ...(updatedAt && { asOf: updatedAt.slice(0, 10) }) };
+}
+
+/** Who relayed a price to us, for the source line under every price block. */
+export const PRICE_SOURCES: Record<PriceSource, { name: string; url: string }> = {
+  pokemontcg: { name: "Pokémon TCG API", url: "https://pokemontcg.io" },
+  tcgcsv: { name: "TCGCSV", url: "https://tcgcsv.com" },
+  tcgdex: { name: "TCGdex", url: "https://tcgdex.dev" },
+};
+
+/** "TCGplayer via TCGCSV · as of Oct 26, 2026": the market, who relayed it, and when. */
+export function priceSourceLine(market: "TCGplayer" | "Cardmarket", source: PriceSource | undefined, updatedAt: string | undefined | null): string {
+  const date = formatApiDate(updatedAt);
+  return [`${market}${source ? ` via ${PRICE_SOURCES[source].name}` : ""}`, date && `as of ${date}`].filter(Boolean).join(" · ");
+}
+
+/**
+ * The note under a list of tiles: where its prices came from and the latest
+ * date, or that prices are unknown right now. Empty when there's nothing to say.
+ */
+export function tilePriceNote(tiles: CardTile[]): string {
+  const priced = tiles.flatMap((t) => (t.price ? [t.price] : []));
+  const unknown = tiles.some((t) => t.pricesUnavailable && !t.price);
+  if (!priced.length) return unknown ? "Prices unavailable right now." : "";
+  const latest = new Map<string, string>();
+  for (const p of priced) {
+    const market = p.currency === "USD" ? "TCGplayer market (USD)" : "Cardmarket trend (EUR)";
+    const key = `${market}${p.source ? ` via ${PRICE_SOURCES[p.source].name}` : ""}`;
+    const prev = latest.get(key);
+    if (prev === undefined || (p.asOf ?? "") > prev) latest.set(key, p.asOf ?? "");
+  }
+  const parts = [...latest.entries()].map(([k, d]) => (formatApiDate(d) ? `${k}, as of ${formatApiDate(d)}` : k));
+  return `Prices: ${parts.join("; ")}.${unknown ? " Some prices are unavailable right now." : ""}`;
 }
 
 export function formatPrice(value: number, currency: "USD" | "EUR"): string {

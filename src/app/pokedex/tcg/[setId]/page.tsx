@@ -6,7 +6,7 @@ import { DetailHero, DetailNav, StatBox } from "@/components/pokedex/detail/Deta
 import { SetGallery } from "@/components/tcg/SetGallery";
 import { TcgUnavailable } from "@/components/tcg/CardGrid";
 import { getSet, getSetCards } from "@/lib/tcg/api";
-import { formatApiDate, formatPrice, headlinePrice, toTile } from "@/lib/tcg/prices";
+import { formatApiDate, formatPrice, headlinePrice, tilePriceNote, toTile } from "@/lib/tcg/prices";
 
 export const dynamic = "force-dynamic";
 
@@ -68,7 +68,7 @@ export default async function SetPage({ params }: PageProps) {
       </DetailHero>
       {cards === null ? <TcgUnavailable what="This set's cards" /> : <SetGallery tiles={tiles} />}
       <p className="text-center text-xs text-muted-foreground" data-testid="tcg-price-note">
-        {cards?.some((c) => c.pricesUnavailable) ? "Prices unavailable right now." : "Prices: TCGplayer market (USD) where listed, else Cardmarket trend (EUR). Updated about daily."}
+        {tilePriceNote(tiles) || "No market prices are listed for this set yet."} Updated about daily.
       </p>
     </article>
   );
