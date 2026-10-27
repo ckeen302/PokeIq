@@ -12,7 +12,8 @@ export interface WatchEntry {
   format: PlayFormatId;
   /** The format's name as the players see it. */
   formatName: string;
-  players: { name: string; rating?: number }[];
+  /** Each trainer, with (ranked) the Glicko-2 rating and Elo they brought. */
+  players: { name: string; rating?: number; elo?: number }[];
   ranked: boolean;
   turn: number;
   spectators: number;

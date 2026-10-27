@@ -24,6 +24,8 @@ export interface RatingState {
   rating: number;
   /** Ranked games finished before this one. */
   games: number;
+  /** Battle ladders: the trainer's Elo (the number the battle shows), paired by `rating` (Glicko-2). */
+  elo?: number;
 }
 
 export interface RatingChange {
@@ -126,6 +128,8 @@ export interface RankedStanding {
   /** Glicko-2 ladders (battles): the rating deviation and GXE. */
   rd?: number;
   gxe?: number;
+  /** Battle ladders: the trainer's Elo, the headline rating and the ladder's order (lib/rating/elo.ts). */
+  elo?: number;
 }
 
 export interface RankedLeaderRow {
@@ -138,6 +142,8 @@ export interface RankedLeaderRow {
   /** Glicko-2 ladders (battles): the rating deviation and GXE. */
   rd?: number;
   gxe?: number;
+  /** Battle ladders: the trainer's Elo, the headline rating and the ladder's order. */
+  elo?: number;
 }
 
 export type RankedResponse =

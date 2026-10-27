@@ -18,7 +18,7 @@ export function watchEntry(meta: BattleMeta, now: number): WatchEntry | null {
     code: meta.code,
     format: meta.format,
     formatName: meta.rules ? customName(meta.rules) : meta.factoryTier ? `${info.name} · ${meta.factoryTier}` : info.name,
-    players: meta.seats.map((s) => (meta.ranked && s.rating ? { name: s.name, rating: s.rating.rating } : { name: s.name })),
+    players: meta.seats.map((s) => (meta.ranked && s.rating ? { name: s.name, rating: s.rating.rating, ...(s.rating.elo !== undefined ? { elo: s.rating.elo } : {}) } : { name: s.name })),
     ranked: !!meta.ranked,
     turn: meta.turn,
     spectators: spectatorCount(meta, now),

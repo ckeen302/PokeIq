@@ -1,7 +1,7 @@
 import "server-only";
 import { getServiceSupabase } from "@/lib/supabase";
 import { DUEL_CODE_RE } from "@/lib/duel-types";
-import type { BattleEnd, PlayFormatId, BattleKind, BattleRequest, CpuLevel } from "@/lib/battle/play";
+import type { BattleEnd, PlayFormatId, BattleKind, BattleRatings, BattleRequest, CpuLevel } from "@/lib/battle/play";
 import type { DuelStatus } from "@/lib/duel-types";
 import type { ChatLine } from "@/lib/chat";
 import type { CustomRules } from "@/lib/battle/custom-rules";
@@ -38,8 +38,8 @@ export interface BattleSeat {
   team?: string;
   /** The trainer's ladder key (an HMAC of their account or signed anonymous id). Server-side only. */
   player?: string;
-  /** Ranked battles: the rating and ranked games this trainer had when matched. */
-  rating?: { rating: number; games: number };
+  /** Ranked battles: the Glicko-2 rating, ranked games and Elo this trainer had when matched. */
+  rating?: { rating: number; games: number; elo?: number };
   /** Tournament battles: when this trainer first opened the battle (absent: they never showed). */
   arrived?: number;
 }
@@ -124,8 +124,8 @@ export interface BattleMeta {
 
 export interface BattleSettled {
   at: number;
-  /** Ranked: each seat's rating before and after. */
-  ratings?: [{ before: number; after: number }, { before: number; after: number }];
+  /** Ranked: each seat's ratings (Glicko-2, and Elo) before and after. */
+  ratings?: BattleRatings;
 }
 
 export interface BattleRecord {

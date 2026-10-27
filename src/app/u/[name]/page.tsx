@@ -19,6 +19,7 @@ import { pokemonName } from "@/lib/about-validate";
 import { AboutMe } from "@/components/community/AboutMe";
 import { Avatar } from "@/components/avatar/Avatar";
 import { BattleProfileView } from "@/components/battle/BattleProfileView";
+import { GlickoBadge } from "@/components/battle/GlickoBadge";
 import { ReplayRow } from "@/components/battle/ReplayLists";
 import { TierBadge } from "@/components/pokedle/Ranked";
 import { ProfileActions } from "@/components/community/ProfileActions";
@@ -152,9 +153,13 @@ export default async function UserProfilePage({ params }: PageProps) {
             {rated.length ? (
               <ul className="space-y-2">
                 {rated.slice(0, 4).map((f) => (
-                  <li key={f.format} className="flex items-center justify-between gap-3">
+                  <li key={f.format} className="flex items-center justify-between gap-3" data-testid="profile-ladder-format">
                     <span className="truncate text-sm font-semibold">{f.formatName}</span>
-                    <TierBadge rating={f.rating!} games={f.ratedGames} size="sm" />
+                    <span className="flex flex-col items-end gap-0.5">
+                      {/* Elo leads (the ladder's rating, on the same scale as ranked Pokédle's tiers); GXE and Glicko-2 follow. */}
+                      <TierBadge rating={f.elo ?? f.rating!} games={f.elo === undefined ? f.ratedGames : undefined} size="sm" />
+                      <GlickoBadge rating={f.rating!} rd={f.rd} gxe={f.gxe} elo={f.elo} headline={false} size="sm" />
+                    </span>
                   </li>
                 ))}
               </ul>

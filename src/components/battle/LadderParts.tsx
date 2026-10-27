@@ -60,7 +60,12 @@ export function LadderTable({ rows, format, avatars }: { rows: RankedLeaderRow[]
             <tr className="border-b text-left text-xs uppercase text-muted-foreground">
               <th className="p-3">#</th>
               <th className="p-3">Trainer</th>
-              <th className="p-3">Rating</th>
+              <th className="p-3" title="Elo: the ladder's rating, as on Pokémon Showdown">
+                Elo
+              </th>
+              <th className="p-3" title="GXE (the chance of beating a random trainer here) and the Glicko-2 rating ± deviation">
+                GXE · Glicko
+              </th>
               <th className="hidden p-3 text-right sm:table-cell">W–L</th>
             </tr>
           </thead>
@@ -76,8 +81,11 @@ export function LadderTable({ rows, format, avatars }: { rows: RankedLeaderRow[]
                     <span className="truncate">{row.name}</span>
                   </span>
                 </td>
+                <td className="p-3 font-display text-base font-bold tabular-nums" data-testid="ladder-elo">
+                  {row.elo !== undefined ? Math.round(row.elo) : "–"}
+                </td>
                 <td className="p-3">
-                  <GlickoBadge rating={row.rating} rd={row.rd} gxe={row.gxe} size="sm" />
+                  <GlickoBadge rating={row.rating} rd={row.rd} gxe={row.gxe} elo={row.elo} headline={false} size="sm" />
                 </td>
                 <td className="hidden p-3 text-right tabular-nums sm:table-cell">
                   {row.wins}–{row.losses}
@@ -91,7 +99,7 @@ export function LadderTable({ rows, format, avatars }: { rows: RankedLeaderRow[]
   );
 }
 
-/** Your own standing in a format: Glicko-2 rating, GXE, place and record. */
+/** Your own standing in a format: Elo, GXE and Glicko-2 rating, place and record. */
 export function YourBattleStanding({ format }: { format: StandardFormatId }) {
   const state = useLadderStanding(format);
   if (state.status === "loading") return <Loader2 className="mx-auto h-5 w-5 animate-spin text-screen" aria-label="Loading your standing" />;
@@ -106,7 +114,7 @@ export function YourBattleStanding({ format }: { format: StandardFormatId }) {
         {you && you.games > 0 ? (
           <>
             <div className="flex flex-wrap items-center justify-between gap-3">
-              <GlickoBadge rating={you.rating} rd={you.rd} gxe={you.gxe} size="lg" />
+              <GlickoBadge rating={you.rating} rd={you.rd} gxe={you.gxe} elo={you.elo} size="lg" />
               <div className="flex gap-5 text-right font-pixel text-xs tabular-nums">
                 <span>
                   <span className="block text-base text-foreground">#{you.position ?? "–"}</span>
@@ -131,7 +139,7 @@ export function YourBattleStanding({ format }: { format: StandardFormatId }) {
           </>
         ) : (
           <p className="text-sm text-muted-foreground">
-            No ranked battles in this format yet. Everyone starts at 1500 ± 350 (Glicko-2); while your rating deviation is high, each battle moves it a lot.{" "}
+            No ranked battles in this format yet. Everyone starts at 1000 Elo (and 1500 ± 350 Glicko-2); your first wins pay the most, and a new rating moves a lot.{" "}
             <Link href="/battle/play?vs=anyone" className="font-semibold text-foreground underline-offset-2 hover:underline">
               Find a ranked battle
             </Link>

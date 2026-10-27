@@ -85,7 +85,7 @@ export async function searchRankedBattle(
       if (!PLAY_FORMAT_INFO[format].random && players.some((p) => !p.team)) return null;
       const opened = await createMatchedBattle(
         format,
-        players.map((p) => ({ name: p.name, team: p.team, player: p.player, rating: { rating: p.rating, games: p.games } })) as [MatchedPlayer, MatchedPlayer],
+        players.map((p) => ({ name: p.name, team: p.team, player: p.player, rating: { rating: p.rating, games: p.games, ...(p.elo !== undefined ? { elo: p.elo } : {}) } })) as [MatchedPlayer, MatchedPlayer],
         now,
         { ranked: true }
       );

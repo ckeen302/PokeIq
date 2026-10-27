@@ -38,6 +38,8 @@ export interface RankedWaiter {
   rating: number;
   /** Ranked games played, for the provisional badge. */
   games: number;
+  /** Battle ladders: the Elo they queued with (shown in the battle; pairing goes by `rating`). */
+  elo?: number;
   since: number;
   seenAt: number;
   /** A battle team, packed and checked (bring-your-own formats). Server-side only. */
@@ -98,12 +100,14 @@ const live = (row: RankedQueueRow, now: number) => ({
 export function withRankedWaiter(row: RankedQueueRow, me: RankedSearcher, rating: RatingState, now: number): RankedQueueRow {
   const { pool, matched } = live(row, now);
   const mine = row.pool.find((w) => w.ticket === me.ticket);
+  const elo = mine ? mine.elo : rating.elo;
   const waiter: RankedWaiter = {
     ticket: me.ticket,
     name: me.name,
     player: me.player,
     rating: mine?.rating ?? rating.rating,
     games: mine?.games ?? rating.games,
+    ...(elo !== undefined ? { elo } : {}),
     since: mine?.since ?? now,
     seenAt: now,
     ...(me.team ?? mine?.team ? { team: me.team ?? mine?.team } : {}),
@@ -174,8 +178,8 @@ export async function searchRankedQueue(
     const [a, b] = seatNames(plan.opponent.name, me.name);
     const game = await open(
       [
-        { name: a, player: plan.opponent.player, rating: plan.opponent.rating, games: plan.opponent.games, ...(plan.opponent.team ? { team: plan.opponent.team } : {}) },
-        { name: b, player: me.player, rating: myRating.rating, games: myRating.games, ...(me.team ? { team: me.team } : {}) },
+        { name: a, player: plan.opponent.player, rating: plan.opponent.rating, games: plan.opponent.games, ...(plan.opponent.elo !== undefined ? { elo: plan.opponent.elo } : {}), ...(plan.opponent.team ? { team: plan.opponent.team } : {}) },
+        { name: b, player: me.player, rating: myRating.rating, games: myRating.games, ...(myRating.elo !== undefined ? { elo: myRating.elo } : {}), ...(me.team ? { team: me.team } : {}) },
       ],
       now
     );

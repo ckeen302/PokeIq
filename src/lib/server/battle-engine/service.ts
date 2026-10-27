@@ -645,8 +645,8 @@ export interface MatchedPlayer {
   team?: string;
   /** Ladder key (server-side only). */
   player?: string;
-  /** Ranked: the rating they queued with. */
-  rating?: { rating: number; games: number };
+  /** Ranked: the rating they queued with (Glicko-2, with their Elo). */
+  rating?: { rating: number; games: number; elo?: number };
 }
 
 export async function createMatchedBattle(
@@ -662,7 +662,7 @@ export async function createMatchedBattle(
     const seats = players.map((p) => {
       const seat: BattleSeat = { id: randomId(), name: p.name, ready: true, seenAt, team: p.team };
       if (p.player) seat.player = p.player;
-      if (opts.ranked && p.rating) seat.rating = { rating: p.rating.rating, games: p.rating.games };
+      if (opts.ranked && p.rating) seat.rating = { rating: p.rating.rating, games: p.rating.games, ...(p.rating.elo !== undefined ? { elo: p.rating.elo } : {}) };
       return seat;
     }) as [BattleSeat, BattleSeat];
     const work = new Work(blankRecord(newMeta(code, "pvp", format, seats, now)));
@@ -1084,7 +1084,7 @@ export function battleView(meta: BattleMeta, playerId: string | null, log: strin
       ready: s.ready,
       quiet: meta.kind === "pvp" && meta.status !== "finished" && now - s.seenAt > (meta.status === "lobby" ? 10_000 : BATTLE_QUIET_MS),
       hasTeam: PLAY_FORMAT_INFO[meta.format].random || !!s.team,
-      ...(meta.ranked && s.rating ? { rating: s.rating.rating, games: s.rating.games } : {}),
+      ...(meta.ranked && s.rating ? { rating: s.rating.rating, games: s.rating.games, ...(s.rating.elo !== undefined ? { elo: s.rating.elo } : {}) } : {}),
     })),
     turn: meta.turn,
     log: { from, total, lines: visible.slice(from) },

@@ -359,7 +359,7 @@ export function BattleSetup({ initial = "cpu", challenge }: { initial?: Opponent
               />
               {rankedOn && ladder.status === "ready" && (
                 <p className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-                  {ladder.you && ladder.you.games > 0 ? <GlickoBadge rating={ladder.you.rating} rd={ladder.you.rd} gxe={ladder.you.gxe} size="sm" /> : <span>Unrated: you start at 1500 ± 350.</span>}
+                  {ladder.you && ladder.you.games > 0 ? <GlickoBadge rating={ladder.you.rating} rd={ladder.you.rd} gxe={ladder.you.gxe} elo={ladder.you.elo} size="sm" /> : <span>Unrated: you start at 1000 Elo (1500 ± 350 Glicko-2).</span>}
                   <Link href={`/battle/ladder?format=${format}`} className="underline-offset-2 hover:text-foreground hover:underline">
                     Ladder
                   </Link>

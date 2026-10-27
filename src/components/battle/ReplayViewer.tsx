@@ -112,7 +112,7 @@ export function ReplayViewer({ replay, instant }: { replay: ReplayData; instant?
       now: 0,
       rev: 0,
       you: null,
-      players: replay.players.map((name, i) => ({ name, ready: true, quiet: false, hasTeam: true, ...(replay.ratings ? { rating: replay.ratings[i] } : {}) })),
+      players: replay.players.map((name, i) => ({ name, ready: true, quiet: false, hasTeam: true, ...(replay.ratings ? { rating: replay.ratings[i] } : {}), ...(replay.elos ? { elo: replay.elos[i] } : {}) })),
       turn: Math.min(turn, last),
       log: { from: 0, total: 0, lines: [] },
       request: null,

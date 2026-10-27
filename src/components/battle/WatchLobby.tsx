@@ -37,7 +37,7 @@ function BattleCard({ b, now, avatars }: { b: WatchEntry; now: number; avatars?:
           <span key={i} className={cn("min-w-0", i === 1 && "order-3 text-right")}>
             <NameAvatar name={p.name} avatars={avatars} size={28} className={cn("mb-1", i === 1 && "ml-auto")} />
             <span className={cn("block truncate", i === 0 ? "text-primary" : "text-screen")}>{p.name}</span>
-            {p.rating !== undefined && <span className="block font-pixel text-[10px] font-normal tabular-nums text-muted-foreground">{p.rating}</span>}
+            {p.rating !== undefined && <span className="block font-pixel text-[10px] font-normal tabular-nums text-muted-foreground">{p.elo ?? p.rating}</span>}
           </span>
         ))}
         <span className="order-2 font-pixel text-[11px] text-muted-foreground">VS</span>
