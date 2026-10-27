@@ -162,7 +162,7 @@ export function headInfo(text: string): HeadInfo {
 }
 
 /** Heading words that only structure the page. */
-const STRUCTURAL = /^(Trainers|In the games|In the core series games|In the core series|Additional Trainers|International versions|Trainer list|Gym Leaders and Elite Four|Battles|Opponents|Gym Trainers|All versions|Default|Easy Mode\/Normal Mode|Normal Mode|Story|Main story)$/i;
+const STRUCTURAL = /^(Trainers|In the games|In the core series games|In the core series|Additional Trainers|International versions|Trainer list|Gym Leaders and Elite Four|Battles|Opponents|Gym Trainers|All versions|Default|Easy Mode\/Normal Mode|Normal Mode|Story|Main story|Gym battle|Gym Leader battle|Gym Challenge|Structure|Places of interest)$/i;
 /** Headings and div labels that describe when a battle happens rather than where. */
 const WHEN = /^(Post|Pre|After|Before|During|Once|Upon|Initial battle|First visit|Second visit|First battle|Second battle|Third battle|Final battle|Rematch|Delta Episode|Episode RR|Requires|Accessed|Accessible|Only|If |When|Sunday|Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Weekdays|Weekends|Non-winter|Winter|Spring|Summer|Autumn|Day|Night|Morning|Evening)/i;
 
