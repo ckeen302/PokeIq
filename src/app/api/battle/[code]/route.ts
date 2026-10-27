@@ -74,6 +74,8 @@ async function codeFrom(context: Context): Promise<string | null> {
 }
 
 export async function GET(request: NextRequest, context: Context) {
+  // The setup page's warm-up: no such battle, but this function is now awake for the one about to start.
+  if ((await context.params).code === "warm-up") return NextResponse.json({ ok: true }, { headers: NO_STORE });
   // Two players poll about once a second, often from one address.
   if (!rateLimit(`battle:${clientIp(request)}`, 40, 6)) {
     return NextResponse.json({ error: "Slow down, trainer." }, { status: 429, headers: NO_STORE });
