@@ -76,6 +76,8 @@ export function legalRandomTeam(opts: { generator: string; gen: number; level: n
     const team: TeamSet[] = [];
     const species = new Set<number>();
     const items = new Set<string>();
+    // Sets turned away only for repeating an item: they can still fill the last slots without one.
+    const spares: TeamSet[] = [];
     for (let draw = 0; draw < (opts.draws ?? 12) && team.length < size; draw++) {
       for (const raw of generator.getTeam()) {
         if (team.length >= size) break;
@@ -95,12 +97,23 @@ export function legalRandomTeam(opts: { generator: string; gen: number; level: n
         });
         if (opts.keep && !opts.keep(set.species)) continue;
         const num = dex.species.get(set.species).num;
-        if (species.has(num) || (set.item && items.has(set.item))) continue;
+        if (species.has(num)) continue;
+        if (set.item && items.has(set.item)) {
+          spares.push({ ...set, item: "" });
+          continue;
+        }
         if (v.validateSet(copy(set), {})) continue;
         team.push(set);
         species.add(num);
         if (set.item) items.add(set.item);
       }
+    }
+    for (const set of spares) {
+      if (team.length >= size) break;
+      const num = dex.species.get(set.species).num;
+      if (species.has(num) || v.validateSet(copy(set), {})) continue;
+      team.push(set);
+      species.add(num);
     }
     if (team.length > best.length) best = team;
     if (team.length === size && !v.validateTeam(copy(team))) return team;
