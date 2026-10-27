@@ -4,8 +4,6 @@ import { clientIp, rateLimit, tooManyRequests } from "@/lib/server/rate-limit";
 import { connBoardStore } from "@/lib/server/connections-board";
 import { friendStore } from "@/lib/server/friends-store";
 import { sessionTokenHash, userFromRequest } from "@/lib/server/auth";
-import { connPlayerKey } from "@/lib/server/connections-results";
-import { friendsBoard } from "@/lib/server/connections-social";
 import type { ConnFriendsBoardResponse } from "@/lib/connections/social";
 
 /**
@@ -47,6 +45,8 @@ async function friends(request: NextRequest, date: string) {
   try {
     const board = connBoardStore();
     const fs = friendStore();
+    // The puzzle engine behind these loads only for the friends board, keeping the public board's cold start light.
+    const [{ connPlayerKey }, { friendsBoard }] = await Promise.all([import("@/lib/server/connections-results"), import("@/lib/server/connections-social")]);
     const rows = board && fs ? await friendsBoard(date, user, fs, board, connPlayerKey) : null;
     return NextResponse.json({ date, rows, signedIn: true } satisfies ConnFriendsBoardResponse, { headers });
   } catch (err) {

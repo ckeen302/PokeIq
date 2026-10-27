@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { clientIp, rateLimit, tooManyRequests } from "@/lib/server/rate-limit";
 import { sessionTokenHash, userFromRequest } from "@/lib/server/auth";
 import { neaPlayerKey, neaStore } from "@/lib/server/name-em-all-board";
-import { parseScope } from "@/lib/server/name-em-all";
+import { scopeCategory } from "@/lib/server/name-em-all-scope";
 import type { NeaBoard, NeaBoardResponse } from "@/lib/name-em-all/types";
 
 /**
@@ -14,7 +14,7 @@ import type { NeaBoard, NeaBoardResponse } from "@/lib/name-em-all/types";
 export async function GET(request: NextRequest) {
   if (!rateLimit(`nea-board:${clientIp(request)}`, 60, 2)) return tooManyRequests();
   const p = request.nextUrl.searchParams;
-  const scope = parseScope(p.get("scope"));
+  const scope = scopeCategory(p.get("scope"));
   const board = p.get("board") as NeaBoard;
   if (!scope || (board !== "clear" && board !== "count")) return NextResponse.json({ error: "No such board." }, { status: 400, headers: { "Cache-Control": "no-store" } });
   const player = p.get("player");

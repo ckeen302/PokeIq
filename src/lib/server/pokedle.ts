@@ -3,7 +3,7 @@ import { artworkUrl, formatHeight, formatWeight, getPokemon, poolFor, type Pokem
 import { capitalize } from "@/lib/pokemon/type-matrix";
 import { deriveSeed } from "./crypto";
 import { hashString } from "@/lib/rng";
-import { mediaUrl } from "./session";
+import { mediaUrl } from "./media-url";
 import { dailyAnswerId } from "./pokedle-schedule";
 import { DLE_COLUMNS, dleScore, type DleColumn, type DleHint, type DleResponse, type DleRow } from "@/lib/dle-types";
 import { CLASSIC_RULES, dailyRules, rulesBonus, type DleDailyFormat, type DleRules } from "@/lib/dle-format";
