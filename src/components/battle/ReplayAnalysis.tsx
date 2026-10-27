@@ -1,14 +1,16 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Activity, AlertTriangle, Crosshair, Info, Loader2, RotateCcw, Square } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AnalysisUnsupported, analyseReplay, BUDGET_MS, cachedAnalysis, sourceText, unsupportedReason, type AnalysisProgress, type AnalysisResult } from "@/lib/battle/analysis/run";
 import { pct, type WinPoint } from "@/lib/battle/analysis/maths";
 import type { SideIndex } from "@/lib/battle/analysis/parse";
+import { turningPoints, type TurningPoint } from "@/lib/battle/analysis/stats-text";
 import { LabPool } from "@/lib/battle/lab/pool";
 import type { ReplayData } from "@/lib/battle/replay";
 import { cn } from "@/lib/utils";
+import { BattleStatsPanel, TurningPoints, useBattleStats } from "./BattleStats";
 import { CardSection, SIDE_COLOR, TableView, Tooltip, useWidth } from "./lab/charts";
 
 /**
@@ -16,6 +18,9 @@ import { CardSection, SIDE_COLOR, TableView, Tooltip, useWidth } from "./lab/cha
  * turn from one player's side (rollouts on the Battle Lab's simulator, in
  * this browser), the turns that swung it most, and missed KOs and risky
  * switch-ins from the damage calc. Run on demand; kept in this browser.
+ * Under it, the battle's stats from its log (luck, damage per Pokémon, a
+ * share card), asked of the server once the section nears the screen; with
+ * the win chance, they name the turning points.
  */
 
 type State =
@@ -36,6 +41,11 @@ export function ReplayAnalysis({ replay }: { replay: ReplayData }) {
   const pool = useRef<LabPool | null>(null);
   const runId = useRef(0);
   const section = useRef<HTMLDivElement | null>(null);
+  const statsLoad = useBattleStats(replay.id, section);
+  const turning = useMemo<TurningPoint[]>(
+    () => (state.status === "done" && statsLoad.status === "done" ? turningPoints(state.result.points, statsLoad.stats, state.result.viewer) : []),
+    [state, statsLoad]
+  );
 
   const start = useCallback(
     async (side: SideIndex) => {
@@ -90,7 +100,7 @@ export function ReplayAnalysis({ replay }: { replay: ReplayData }) {
   };
 
   return (
-    <div ref={section} id="analysis" className="scroll-mt-20">
+    <div ref={section} id="analysis" className="scroll-mt-20 space-y-4">
       <CardSection
         title="Analysis"
         aside={state.status === "done" ? `${state.result.rollouts.toLocaleString("en-US")} simulated battles · ${(state.result.ms / 1000).toFixed(1)} s` : "Win chance, turn by turn"}
@@ -148,11 +158,13 @@ export function ReplayAnalysis({ replay }: { replay: ReplayData }) {
               {(state.status === "running" || state.status === "done") && (
                 <WinChart points={state.status === "done" ? state.result.points : state.progress.points} last={replay.turns} name={replay.players[viewer]} keyTurns={state.status === "done" ? state.result.keyMoments.map((k) => k.turn) : []} />
               )}
+              {state.status === "done" && statsLoad.status === "done" && <TurningPoints points={turning} />}
               {state.status === "done" && <Findings result={state.result} />}
             </>
           )}
         </div>
       </CardSection>
+      <BattleStatsPanel load={statsLoad} viewer={viewer} replay={replay} turning={state.status === "done" && state.result.viewer === viewer ? turning : []} />
     </div>
   );
 }
