@@ -84,8 +84,14 @@ function causeText(stats: BattleStats, viewer: StatsSide, n: TurnNote, notes: re
   }
 }
 
-/** "you used Earthquake and Blue switched to Corviknight": the turn's plain choices. */
+/** "you used Earthquake and Blue switched to Corviknight", then any KOs: the turn as it happened, with no cause claimed. */
 export function plainTurn(stats: BattleStats, viewer: StatsSide, notes: readonly TurnNote[]): string {
+  const choices = plainChoices(stats, viewer, notes);
+  const kos = notes.filter((n) => n.kind === "ko").map((n) => causeText(stats, viewer, n, notes).replace(" knocking out ", " knocked out ").replace(/ going down to /, " went down to ").replace(/ fainting$/, " fainted"));
+  return [choices, ...kos].filter(Boolean).join(", and ");
+}
+
+function plainChoices(stats: BattleStats, viewer: StatsSide, notes: readonly TurnNote[]): string {
   const part = (side: StatsSide) => {
     const who = side === viewer ? "you" : stats.players[side];
     const first = notes.find((n) => n.side === side && (n.kind === "move" || n.kind === "switch"));
@@ -126,7 +132,8 @@ export function turningPoints(points: readonly WinPoint[], stats: BattleStats, v
     if (cause) text = `${capital(causeText(stats, viewer, cause, notes))} on turn ${s.turn} ${odds}.`;
     else {
       const plain = plainTurn(stats, viewer, notes);
-      text = plain ? `On turn ${s.turn} ${plain}: nothing went against the odds, but it ${odds}.` : `Turn ${s.turn} ${odds}.`;
+      const end = s.after.n ? pct(s.after.p) : s.after.p === 1 ? "the win" : s.after.p === 0 ? "the loss" : "a draw";
+      text = plain ? `On turn ${s.turn} ${plain}; your odds went from ${pct(s.before.p)} to ${end}.` : `Turn ${s.turn} ${odds}.`;
     }
     return { turn: s.turn, delta: s.delta, before: s.before.p, after: s.after.p, ended: !s.after.n, text, caused: !!cause };
   });

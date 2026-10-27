@@ -2136,12 +2136,12 @@ await statsPanel.getByTestId("luck-meter").waitFor({ timeout: 30_000 });
 const luckScore = (await statsPanel.getByTestId("luck-score").innerText()).trim();
 if (!/^([+−]\d+\.\d|0\.0)$/.test(luckScore)) errors.push(`stats: odd luck score "${luckScore}"`);
 if ((await statsPanel.getByTestId("luck-table").locator("tbody tr").count()) !== 7) errors.push("stats: the luck table should have seven rows");
-if (!/estimates/.test(await statsPanel.getByTestId("luck-explained").innerText())) errors.push("stats: the luck explanation doesn't say it's an estimate");
+if (!/estimates/.test(await statsPanel.getByTestId("luck-explained").textContent())) errors.push("stats: the luck explanation doesn't say it's an estimate");
 for (const side of [0, 1]) if (!(await statsPanel.getByTestId(`damage-side-${side}`).locator("li").count())) errors.push(`stats: no Pokémon in the damage summary for side ${side}`);
 if (!(await statsPanel.getByTestId("mvp").count())) errors.push("stats: no MVP");
 const turningText = await analysis.getByTestId("turning-points").innerText();
 for (const line of await analysis.getByTestId("turning-points").locator("li").allInnerTexts()) {
-  if (!/turn \d+ .*(dropped|raised|took) your odds from \d+% to (\d+%|the win|the loss|a draw)\.$/i.test(line.replace(/\s+/g, " "))) errors.push(`stats: odd turning point "${line}"`);
+  if (!/turn \d+ .*((dropped|raised|took) your odds|your odds went) from \d+% to (\d+%|the win|the loss|a draw)\.$/i.test(line.replace(/\s+/g, " "))) errors.push(`stats: odd turning point "${line}"`);
   else console.log(`  turning point: ${line.replace(/^[+−]\d+\s*/, "").replace(/\s+/g, " ")}`);
 }
 if (!turningText.trim()) errors.push("stats: no turning points section");

@@ -159,7 +159,7 @@ function LuckMeter({ stats, viewer }: { stats: BattleStats; viewer: StatsSide })
       <div className="flex flex-wrap items-end justify-between gap-x-3 gap-y-1">
         <div>
           <p className="hud-label flex items-center gap-1.5">
-            <Dices className="h-3.5 w-3.5" aria-hidden /> Luck meter · {name}
+            <Dices className="h-3.5 w-3.5" aria-hidden /> Luck meter · {name} · estimate
           </p>
           <p className={cn("mt-1 font-display text-3xl font-bold tabular-nums", tone)} data-testid="luck-score">
             {signed(l.score)}

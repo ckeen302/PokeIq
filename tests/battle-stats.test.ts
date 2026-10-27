@@ -396,7 +396,17 @@ describe("turning points, luck and the share card", () => {
     // The swing went against Red; Red's own crit can't be why.
     const [tp] = turningPoints([pt(3, 0.6), pt(4, 0.35), pt(5, 0.35)], stats, 0);
     expect(tp.caused).toBe(false);
-    expect(tp.text).toBe("On turn 3 you used Earth Power and Blue switched to Corviknight: nothing went against the odds, but it dropped your odds from 60% to 35%.");
+    expect(tp.text).toBe("On turn 3 you used Earth Power and Blue switched to Corviknight; your odds went from 60% to 35%.");
+  });
+
+  it("never pins a swing on a KO that went the other way, but still says it happened", () => {
+    const notes: TurnNote[] = [
+      { kind: "move", side: 1, mon: "Ambipom", move: "Double-Edge", target: "Dragonite" },
+      { kind: "ko", side: 1, mon: "Ambipom", target: "Dragonite" },
+    ];
+    const [tp] = turningPoints([pt(2, 0.2), pt(3, 0.9), pt(4, 0.9)], withNotes({ 2: notes }), 0);
+    expect(tp.caused).toBe(false);
+    expect(tp.text).toBe("On turn 2 Blue used Double-Edge, and Blue's Ambipom knocked out your Dragonite; your odds went from 20% to 90%.");
   });
 
   it("explains misses with their odds and a battle's last turn with its result", () => {
