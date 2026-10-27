@@ -590,6 +590,20 @@ function denylist(): Set<string> {
   return out;
 }
 
+/** Every Pokémon's name in English, French and German, as file-name words. */
+function speciesNames(): Set<string> {
+  const dex = JSON.parse(readFileSync(path.join(ROOT, "src/data/pokedex.json"), "utf8")) as { name: string; names?: Record<string, string> }[];
+  return new Set(dex.flatMap((p) => [p.name, p.names?.fr, p.names?.de].filter((n): n is string => !!n).map((n) => words(n).join(""))));
+}
+/** A file named after a Pokémon alone ("Moltres SV.png"): its encounter, the Pokémon filling the frame. */
+function onlyAPokemon(wiki: WikiDef, file: string, species: Set<string>): boolean {
+  const rest = file
+    .replace(/\.[a-z0-9]+$/i, "")
+    .split(/[ _]+/)
+    .filter((t) => !wiki.codes[t] && !GAME_CODES[t] && !/^\d+$/.test(t));
+  return rest.length > 0 && species.has(words(rest.join(" ")).join(""));
+}
+
 async function list(regions: string[]) {
   const index = readJson<PageIndex>(PAGES, {});
   if (!Object.keys(index).length) throw new Error("run `harvest.ts pages` first");
@@ -597,6 +611,7 @@ async function list(regions: string[]) {
   const names = namer(index, locs);
   const { used, dropped, tried } = usedFiles();
   const denied = denylist();
+  const species = speciesNames();
   for (const region of regions) {
     const here = locs.filter((l) => l.region === region);
     const games = REGIONS[region].games;
@@ -610,6 +625,7 @@ async function list(regions: string[]) {
       if (!/\.(png|jpe?g|webp)$/i.test(f)) return skip("not a picture");
       if (NOT_A_VIEW.test(f.replace(/_/g, " ")) || FLOOR_MAP.test(f.replace(/_/g, " "))) return skip("not a view (by name)");
       if (denied.has(f)) return skip("denylisted");
+      if (onlyAPokemon(wiki, f, species)) return skip("a Pokémon's picture");
       const code = gameOfFile(wiki, f, meta.cats);
       if (!code || !labelOf(code)) return skip("no game");
       if (!gamesOf(at).includes(code)) return skip("other game");
