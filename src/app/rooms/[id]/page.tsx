@@ -1,10 +1,10 @@
 import { BackButton } from "@/components/ui/BackButton";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import { ChevronRight, ShieldCheck } from "lucide-react";
 import { pageMetadata } from "@/lib/seo";
-import { ROOMS, SITE_RULES, roomById } from "@/lib/rooms";
+import { ROOMS, ROOM_MOVED, SITE_RULES, roomById } from "@/lib/rooms";
 import { RoomChat } from "@/components/rooms/RoomChat";
 
 interface PageProps {
@@ -21,7 +21,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 }
 
 export default async function RoomPage({ params }: PageProps) {
-  const room = roomById((await params).id);
+  const { id } = await params;
+  if (ROOM_MOVED[id]) permanentRedirect(`/rooms/${ROOM_MOVED[id]}`);
+  const room = roomById(id);
   if (!room) notFound();
   return (
     <div className="mx-auto max-w-6xl space-y-4">

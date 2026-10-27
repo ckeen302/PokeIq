@@ -29,46 +29,35 @@ export const SITE_RULES = [
 export const ROOMS: RoomInfo[] = [
   {
     id: "lobby",
-    name: "Lobby",
-    description: "Say hi! The main room for everything PokéIQ.",
-    rules: ["Keep it friendly and on topic: Pokémon and PokéIQ."],
+    name: "Main Lobby",
+    description: "Say hi! The main room for everything PokéIQ. Stuck or new? Ask here and other trainers will help.",
+    rules: ["Keep it friendly and on topic: Pokémon and PokéIQ.", "Beginners welcome: answer questions patiently, never make fun of one."],
     links: [
-      { label: "Battle!", href: "/battle" },
+      { label: "All game modes", href: "/play" },
       { label: "Daily Challenge", href: "/daily" },
-      { label: "Tournaments", href: "/battle/tournaments" },
+      { label: "Send feedback", href: "/feedback" },
     ],
   },
   {
-    id: "randombattles",
-    name: "Random Battles",
-    description: "Six random Pokémon each: talk sets, lucky crits and big comebacks.",
-    rules: ["No asking for or arranging wins: play every battle for real."],
-    links: [
-      { label: "Battle! (Random Battle)", href: "/battle?format=gen9randombattle" },
-      { label: "Random Doubles", href: "/battle?format=gen9randomdoublesbattle" },
-      { label: "Hourly tournament", href: "/battle/tournaments" },
-    ],
+    id: "pokedle",
+    name: "Pokédle",
+    description: "The daily Pokémon guessing game: share your score, not the answer.",
+    rules: ["No spoilers: never post today's answer or big hints."],
+    links: [{ label: "Play Pokédle", href: "/pokedle" }],
   },
   {
-    id: "overused",
-    name: "OverUsed",
-    description: "Gen 9 OU: teams, threats and the metagame.",
-    rules: ["Rate teams kindly: say what works, then what you'd change."],
-    links: [
-      { label: "Battle! (OU)", href: "/battle?format=gen9ou" },
-      { label: "Team Builder", href: "/battle/teams" },
-      { label: "Damage calc", href: "/battle/calc" },
-    ],
+    id: "connections",
+    name: "Connections",
+    description: "Four hidden groups, sixteen Pokémon: share your grid and talk about the tricky ones.",
+    rules: ["No spoilers: never post today's groups."],
+    links: [{ label: "Play Connections", href: "/connections" }],
   },
   {
-    id: "littlecup",
-    name: "Little Cup",
-    description: "Level 5 baby Pokémon battling it out. Small Pokémon, big plays.",
-    rules: ["Little Cup only: first-stage Pokémon that can evolve."],
-    links: [
-      { label: "Custom rules battle", href: "/battle?format=custom" },
-      { label: "Pokédex", href: "/pokedex" },
-    ],
+    id: "pikadoku",
+    name: "Pikadoku",
+    description: "Pokémon Sudoku: compare rare picks and brag about your rarity score.",
+    rules: ["No spoilers: never post today's answers."],
+    links: [{ label: "Play Pikadoku", href: "/pikadoku" }],
   },
   {
     id: "pokeguessr",
@@ -81,34 +70,37 @@ export const ROOMS: RoomInfo[] = [
     ],
   },
   {
-    id: "pokedle",
-    name: "Pokédle",
-    description: "The daily Pokémon guessing game: share your score, not the answer.",
-    rules: ["No spoilers: never post today's answer or big hints."],
-    links: [{ label: "Play Pokédle", href: "/pokedle" }],
-  },
-  {
-    id: "help",
-    name: "Help",
-    description: "Stuck, or something not working? Ask here and other trainers can help.",
-    rules: ["Found a bug? Send it with the feedback form so it reaches us."],
+    id: "battle",
+    name: "Battle",
+    description: "Random Battles, OU, Little Cup and every format: teams, sets, big plays and comebacks.",
+    rules: ["No asking for or arranging wins: play every battle for real.", "Rate teams kindly: say what works, then what you'd change."],
     links: [
-      { label: "Send feedback", href: "/feedback" },
-      { label: "All game modes", href: "/play" },
+      { label: "Battle!", href: "/battle" },
+      { label: "Team Builder", href: "/battle/teams" },
+      { label: "Damage calc", href: "/battle/calc" },
+      { label: "Tournaments", href: "/battle/tournaments" },
     ],
   },
   {
-    id: "academy",
-    name: "Trainer Academy",
-    description: "New to battling? Ask anything: type matchups, team building, what moves do. No question is silly.",
-    rules: ["Beginners welcome: answer questions patiently, never make fun of one."],
+    id: "quizzes",
+    name: "Quizzes",
+    description: "Who's That Pokémon, Name 'em All and every quiz: share scores and challenge each other.",
+    rules: ["No posting answers to a quiz someone is playing."],
     links: [
-      { label: "Type chart quiz", href: "/quiz/pokemon-type-quiz" },
-      { label: "Study mode", href: "/pokedex/study" },
-      { label: "Battle the computer", href: "/battle/play" },
+      { label: "All quizzes", href: "/play" },
+      { label: "Name 'em All", href: "/quiz/name-em-all" },
     ],
   },
 ];
+
+/** Rooms that were merged into another: old links go to the new room. */
+export const ROOM_MOVED: Record<string, string> = {
+  randombattles: "battle",
+  overused: "battle",
+  littlecup: "battle",
+  help: "lobby",
+  academy: "lobby",
+};
 
 export const ROOM_IDS = ROOMS.map((r) => r.id) as [string, ...string[]];
 export const roomById = (id: string): RoomInfo | undefined => ROOMS.find((r) => r.id === id);
