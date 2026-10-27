@@ -344,7 +344,7 @@ describe("price provider (fixture data)", () => {
   it("adds Cardmarket from TCGdex on card pages when TCGdex agrees it's the same card", async () => {
     const card = await withCardPrices(base({}));
     expect(card.priceSources).toEqual({ tcgplayer: "tcgcsv", cardmarket: "tcgdex" });
-    expect(card.cardmarket?.url).toBe("https://www.cardmarket.com/en/Pokemon/Products?idProduct=273699");
+    expect(card.cardmarket?.url).toBe("https://www.cardmarket.com/en/Pokemon/Products/Search?searchString=Charizard");
     expect(card.cardmarket?.prices?.trendPrice).toBeGreaterThan(0);
     expect(card.cardmarket?.updatedAt).toMatch(/^\d{4}\/\d{2}\/\d{2}$/);
   });

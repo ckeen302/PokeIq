@@ -123,7 +123,7 @@ export default async function CardPage({ params }: PageProps) {
           <section className="space-y-3" aria-labelledby="prices-title" data-testid="tcg-prices">
             <HudHeading id="prices-title" title="Prices" aside={tcgDate || cmDate ? `prices as of ${tcgDate ?? cmDate}` : undefined} />
             {card.pricesUnavailable && <p className="text-sm text-muted-foreground" data-testid="tcg-price-note">Prices unavailable right now.</p>}
-            {!card.pricesUnavailable && tcg.length === 0 && cm.length === 0 && <p className="text-sm text-muted-foreground">No market prices are listed for this card.</p>}
+            {!card.pricesUnavailable && tcg.length === 0 && cm.length === 0 && <p className="text-sm text-muted-foreground" data-testid="tcg-price-note">No market prices are listed for this card.</p>}
             {tcg.length > 0 && (
               <div className="hud overflow-x-auto rounded-lg border bg-card">
                 <table className="w-full min-w-[26rem] text-left text-sm">
@@ -174,7 +174,7 @@ export default async function CardPage({ params }: PageProps) {
               )}
               {card.cardmarket?.url && (
                 <a href={card.cardmarket.url} target="_blank" rel="noopener nofollow" className="inline-flex items-center gap-1.5 rounded-md border border-foreground/15 bg-card px-3 py-2 text-sm hover:border-screen/60">
-                  Cardmarket <ExternalLink className="h-3.5 w-3.5" />
+                  {card.cardmarket.url.includes("/Products/Search?") ? "Find on Cardmarket" : "Cardmarket"} <ExternalLink className="h-3.5 w-3.5" />
                 </a>
               )}
             </div>

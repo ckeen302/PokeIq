@@ -23,8 +23,11 @@ const setIdOf = (cardId: string) => cardId.slice(0, Math.max(0, cardId.lastIndex
 
 /** TCGplayer's product page; its /product/<id> URL redirects to the canonical slug. */
 export const tcgplayerProductUrl = (productId: number) => `https://www.tcgplayer.com/product/${productId}`;
-/** Cardmarket resolves a bare product id to the product page. */
-export const cardmarketProductUrl = (idProduct: number) => `https://www.cardmarket.com/en/Pokemon/Products?idProduct=${idProduct}`;
+/**
+ * Cardmarket pages are keyed by slugs TCGdex doesn't give us (only a numeric
+ * idProduct), so the link is a Cardmarket search for the card instead.
+ */
+export const cardmarketSearchUrl = (name: string) => `https://www.cardmarket.com/en/Pokemon/Products/Search?searchString=${encodeURIComponent(name)}`;
 
 function tagApiPrices(card: TcgCard): TcgCard {
   const tcg = tcgplayerRows(card).length > 0;
@@ -79,7 +82,7 @@ async function applyTcgdex(card: TcgCard): Promise<TcgCard> {
   return {
     ...card,
     cardmarket: {
-      ...(dex.cardmarket.idProduct && { url: cardmarketProductUrl(dex.cardmarket.idProduct) }),
+      url: cardmarketSearchUrl(card.name),
       ...(dex.cardmarket.updatedAt && { updatedAt: dex.cardmarket.updatedAt }),
       prices: dex.cardmarket.prices,
     },
