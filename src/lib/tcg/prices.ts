@@ -26,6 +26,7 @@ export interface TcgplayerRow {
   low: number | null;
   mid: number | null;
   high: number | null;
+  directLow: number | null;
 }
 
 /** TCGplayer prices per variant (USD), known variants first; rows with no price at all are left out. */
@@ -35,7 +36,7 @@ export function tcgplayerRows(card: TcgCard): TcgplayerRow[] {
   return Object.entries(prices)
     .flatMap(([variant, p]) => {
       if (!p) return [];
-      const row = { variant, label: variantLabel(variant), market: num(p.market), low: num(p.low), mid: num(p.mid), high: num(p.high) };
+      const row = { variant, label: variantLabel(variant), market: num(p.market), low: num(p.low), mid: num(p.mid), high: num(p.high), directLow: num(p.directLow) };
       return row.market === null && row.low === null && row.mid === null && row.high === null ? [] : [row];
     })
     .sort((a, b) => (order.indexOf(a.variant) + 1 || 99) - (order.indexOf(b.variant) + 1 || 99));

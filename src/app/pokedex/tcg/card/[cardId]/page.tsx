@@ -63,7 +63,7 @@ export default async function CardPage({ params }: PageProps) {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(ld) }} />
       {set ? <DetailNav tab={`tcg/${set.id}`} label={set.name} /> : <DetailNav tab="tcg" label="All sets" />}
 
-      <div className="grid gap-8 md:grid-cols-[minmax(0,22rem)_1fr] lg:grid-cols-[minmax(0,26rem)_1fr]">
+      <div className="grid grid-cols-1 gap-8 md:grid-cols-[minmax(0,22rem)_1fr] lg:grid-cols-[minmax(0,26rem)_1fr]">
         <div className="mx-auto w-full max-w-sm md:sticky md:top-24 md:max-w-none md:self-start">
           {card.images?.large || card.images?.small ? (
             <a href={card.images.large ?? card.images.small} target="_blank" rel="noopener" className="block">
@@ -125,40 +125,69 @@ export default async function CardPage({ params }: PageProps) {
             {card.pricesUnavailable && <p className="text-sm text-muted-foreground" data-testid="tcg-price-note">Prices unavailable right now.</p>}
             {!card.pricesUnavailable && tcg.length === 0 && cm.length === 0 && <p className="text-sm text-muted-foreground" data-testid="tcg-price-note">No market prices are listed for this card.</p>}
             {tcg.length > 0 && (
-              <div className="hud overflow-x-auto rounded-lg border bg-card">
-                <table className="w-full min-w-[26rem] text-left text-sm">
-                  <caption className="px-3 pt-3 text-left">
-                    <span className="font-pixel text-[10px] uppercase tracking-wider text-muted-foreground" data-testid="tcg-price-source">{tcgSource} · USD</span>
-                  </caption>
+              <div className="hud rounded-lg border bg-card p-3">
+                <div className="mb-2 break-words font-pixel text-[10px] uppercase tracking-wider text-muted-foreground" data-testid="tcg-price-source">
+                  {tcgSource} · USD
+                </div>
+                {/* Wide screens: one row per printing. */}
+                <table className="hidden w-full text-left text-sm sm:table">
                   <thead className="text-xs uppercase tracking-wider text-muted-foreground">
                     <tr>
-                      <th className="p-3">Variant</th>
-                      <th className="p-3 text-right">Market</th>
-                      <th className="p-3 text-right">Low</th>
-                      <th className="p-3 text-right">Mid</th>
-                      <th className="p-3 text-right">High</th>
+                      <th className="px-2 py-2">Variant</th>
+                      <th className="px-2 py-2 text-right">Market</th>
+                      <th className="px-2 py-2 text-right">Low</th>
+                      <th className="px-2 py-2 text-right">Mid</th>
+                      <th className="px-2 py-2 text-right">High</th>
                     </tr>
                   </thead>
                   <tbody className="font-mono tabular-nums">
                     {tcg.map((r) => (
                       <tr key={r.variant} className="border-t border-foreground/10">
-                        <th scope="row" className="p-3 font-sans font-semibold">{r.label}</th>
-                        <td className="p-3 text-right font-semibold text-screen">{cell(r.market)}</td>
-                        <td className="p-3 text-right">{cell(r.low)}</td>
-                        <td className="p-3 text-right">{cell(r.mid)}</td>
-                        <td className="p-3 text-right">{cell(r.high)}</td>
+                        <th scope="row" className="px-2 py-3 font-sans font-semibold">{r.label}</th>
+                        <td className="px-2 py-3 text-right font-semibold text-screen">{cell(r.market)}</td>
+                        <td className="px-2 py-3 text-right">{cell(r.low)}</td>
+                        <td className="px-2 py-3 text-right">{cell(r.mid)}</td>
+                        <td className="px-2 py-3 text-right">{cell(r.high)}</td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
+                {/* Phones: labelled tiles per printing, like Cardmarket's, so nothing scrolls sideways. */}
+                <div className="space-y-3 sm:hidden" data-testid="tcg-price-tiles">
+                  {tcg.map((r) => (
+                    <div key={r.variant}>
+                      <div className="mb-1.5 text-sm font-semibold">{r.label}</div>
+                      <dl className="grid grid-cols-2 gap-2">
+                        {(
+                          [
+                            ["Market", r.market],
+                            ["Low", r.low],
+                            ["Mid", r.mid],
+                            ["High", r.high],
+                            ["Direct low", r.directLow],
+                          ] as const
+                        )
+                          .filter(([label, v]) => v !== null || label !== "Direct low")
+                          .map(([label, v]) => (
+                            <div key={label} className="min-w-0 rounded-md border border-foreground/10 bg-shade/30 px-3 py-2">
+                              <dt className="font-pixel text-[9px] uppercase tracking-wider text-muted-foreground">{label}</dt>
+                              <dd className={`break-words font-mono text-base tabular-nums${label === "Market" ? " font-semibold text-screen" : ""}`}>{cell(v)}</dd>
+                            </div>
+                          ))}
+                      </dl>
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
             {cm.length > 0 && (
               <div className="hud rounded-lg border bg-card p-3">
-                <div className="mb-2 font-pixel text-[10px] uppercase tracking-wider text-muted-foreground" data-testid="tcg-price-source">{cmSource} · EUR</div>
+                <div className="mb-2 break-words font-pixel text-[10px] uppercase tracking-wider text-muted-foreground" data-testid="tcg-price-source">
+                  {cmSource} · EUR
+                </div>
                 <dl className="grid grid-cols-2 gap-2 sm:grid-cols-3">
                   {cm.map((r) => (
-                    <div key={r.key} className="rounded-md border border-foreground/10 bg-shade/30 px-3 py-2">
+                    <div key={r.key} className="min-w-0 rounded-md border border-foreground/10 bg-shade/30 px-3 py-2">
                       <dt className="font-pixel text-[9px] uppercase tracking-wider text-muted-foreground">{r.label}</dt>
                       <dd className="font-mono text-base tabular-nums">{formatPrice(r.value, "EUR")}</dd>
                     </div>
