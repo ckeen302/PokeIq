@@ -641,6 +641,8 @@ async function list(regions: string[]) {
       }
       const three = isThreeD(code);
       if (three ? !fits3d(meta.width, meta.height) : !oneScreen(code, meta.width, meta.height)) return skip(three ? "too small or not 16:9-ish" : "not one screen");
+      // A 3DS game's capture is the 5:3 top screen; its big images of other shapes are renders and stitched overhead maps.
+      if (["xy", "oras", "sm"].includes(famOf(code)!) && Math.abs(meta.width / meta.height - 5 / 3) > 0.03) return skip("3DS image that isn't a 5:3 screen");
       found.set(key, {
         region: loc.region,
         name: loc.name,
