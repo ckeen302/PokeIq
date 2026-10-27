@@ -157,10 +157,11 @@ function sourceOfKey(key: string): string {
   const bare = key.replace(/@v\d+$/, "").replace(/#(top|bottom)[\d.]+/g, "");
   const crop = bare.match(/^crop:(.+)#(\d+,\d+,\d+,\d+)$/);
   if (crop) return `https://archives.bulbagarden.net/wiki/File:${crop[1]} (view cut at ${crop[2]})`;
-  const wiki = bare.match(/^(fandom|pokepedia|pokewiki):(.+)$/);
+  const wiki = bare.match(/^(fandom|pokepedia|pokewiki|wikidex):(.+)$/);
   if (wiki) {
     const [, site, file] = wiki;
     if (site === "fandom") return `https://pokemon.fandom.com/wiki/File:${file}`;
+    if (site === "wikidex") return `https://www.wikidex.net/wiki/Archivo:${file}`;
     if (site === "pokepedia") return `https://www.pokepedia.fr/Fichier:${file}`;
     return `https://www.pokewiki.de/Datei:${file}`;
   }

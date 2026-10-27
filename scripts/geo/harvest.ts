@@ -95,11 +95,11 @@ const TITLES: Record<string, string> = {
 /** Places that share their page with another version of themselves: only their own game's shots. */
 const ONLY_GAMES: Record<string, string[]> = { "Unova|Victory Road (B2W2)": ["B2W2", "B2", "W2"] };
 
-type WikiId = "bulbapedia" | "pokepedia" | "pokewiki" | "fandom";
+type WikiId = "bulbapedia" | "pokepedia" | "pokewiki" | "fandom" | "wikidex";
 interface WikiDef {
   id: WikiId;
   api: string;
-  lang: "en" | "fr" | "de";
+  lang: "en" | "fr" | "de" | "es";
   /** The prefix of its files' keys in the upload cache (Bulbapedia's are bare: the Archives' names). */
   key: string;
   filePage: (file: string) => string;
@@ -186,6 +186,35 @@ const WIKIS: Record<WikiId, WikiDef> = {
     codes: {},
     gameCats: {},
   },
+  wikidex: {
+    id: "wikidex",
+    api: "https://www.wikidex.net/api.php",
+    lang: "es",
+    key: "wikidex:",
+    filePage: (f) => `https://www.wikidex.net/wiki/Archivo:${f}`,
+    codes: {
+      EP: "SV", EpEc: "SwSh", DBPR: "BDSP", LGPE: "LGPE", XY: "XY", ROZA: "ORAS", SL: "SM", USUL: "USUM", RFVH: "FRLG", RfVh: "FRLG",
+      HGSS: "HGSS", NB: "BW", N2B2: "B2W2", DP: "DP", Pt: "Pt", E: "E", RZ: "RS", OPC: "GSC", OP: "GS", C: "C", RA: "RB", Am: "Y",
+    },
+    gameCats: {
+      "Capturas de Pokémon Escarlata y Pokémon Púrpura": "SV",
+      "Capturas de Pokémon Espada y Pokémon Escudo": "SwSh",
+      "Capturas de Pokémon Diamante Brillante y Pokémon Perla Reluciente": "BDSP",
+      "Capturas de Pokémon Let's Go, Pikachu! y Pokémon Let's Go, Eevee!": "LGPE",
+      "Capturas de Pokémon X y Pokémon Y": "XY",
+      "Capturas de Pokémon Rubí Omega y Pokémon Zafiro Alfa": "ORAS",
+      "Capturas de Pokémon Sol y Pokémon Luna": "SM",
+      "Capturas de Pokémon Ultrasol y Pokémon Ultraluna": "USUM",
+      "Capturas de Pokémon Rojo Fuego y Pokémon Verde Hoja": "FRLG",
+      "Capturas de Pokémon Oro HeartGold y Pokémon Plata SoulSilver": "HGSS",
+      "Capturas de Pokémon Negro y Pokémon Blanco": "BW",
+      "Capturas de Pokémon Negro 2 y Pokémon Blanco 2": "B2W2",
+      "Capturas de Pokémon Diamante y Pokémon Perla": "DP",
+      "Capturas de Pokémon Platino": "Pt",
+      "Capturas de Pokémon Esmeralda": "E",
+      "Capturas de Pokémon Oro, Pokémon Plata y Pokémon Cristal": "GSC",
+    },
+  },
 };
 const WIKI_IDS = Object.keys(WIKIS) as WikiId[];
 
@@ -198,7 +227,7 @@ const famOf = (code: string) => familyOfGame(labelOf(code) ?? "") as GeoFamilyId
 
 /** Words in file names that mean "not a view of the place" (anime, manga, art, maps, sprites, menus, battles…). */
 const NOT_A_VIEW =
-  /(^|[ _(-])(map\d*|maps|karte|carte|localisation|icon|icône|icone|concept|konzeptzeichnung|art|artwork|anime|animé|manga|pms|adventures|tcg|sprite|foodsprite|sticker|symbol|logo|menu|trailer|prerelease|pre-release|storyboard|dessin|vs|battle|combat|affrontement|kampf|smash|ssbu|citydex|vote|disambig|wikipedia|platzhalter|stub|miniature|spielmechanik|picknick|picnic|kamera-app|livestream|cutscene|cinématique|zwischensequenz|generationen|generations|horizons|(lh|lv|vp|pg|pe|ep|ag|hz|sl|xy|bw|dp|dt|ss|jn|pm)\d{2,4})(?=[ _.)-]|$)/i;
+  /(^|[ _(-])(map\d*|maps|mapa|karte|carte|icono|emblema|cartel|guía|localisation|icon|icône|icone|concept|konzeptzeichnung|art|artwork|anime|animé|manga|pms|adventures|tcg|sprite|foodsprite|sticker|symbol|logo|menu|trailer|prerelease|pre-release|storyboard|dessin|vs|battle|combat|affrontement|kampf|smash|ssbu|citydex|vote|disambig|wikipedia|platzhalter|stub|miniature|spielmechanik|picknick|picnic|kamera-app|livestream|cutscene|cinématique|zwischensequenz|generationen|generations|horizons|(lh|lv|vp|pg|pe|ep|ag|hz|sl|xy|bw|dp|dt|ss|jn|pm)\d{2,4})(?=[ _.)-]|$)/i;
 /** PokéWiki's floor maps ("Seeschauminseln EG", "… UG1"): guide maps with item markers. */
 const FLOOR_MAP = /[ _(-](EG|UG\d*|OG\d*)[ _.)-]/;
 
@@ -358,7 +387,7 @@ function allLocations(): Loc[] {
 
 /** Each place's page title on each wiki (null: none found), and its names on the other-language wikis. */
 interface PageIndex {
-  [locKey: string]: { bulbapedia: string | null; pokepedia: string | null; pokewiki: string | null; fandom: string | null };
+  [locKey: string]: { bulbapedia: string | null; pokepedia: string | null; pokewiki: string | null; fandom: string | null; wikidex?: string | null };
 }
 const PAGES = path.join(DIR, "pages.json");
 
@@ -409,11 +438,11 @@ async function findPages(): Promise<PageIndex> {
     const fandom = fandomTry.get(locKey(l))!.map(r3).find((x) => fpages.get(x) && !fpages.get(x)!.missing && !fpages.get(x)!.invalid) ?? null;
     // A link to a section of another page (a market on its town's page) isn't the place's own page.
     const own = (lang: string) => ll.find((x) => x.lang === lang && !x.title.includes("#"))?.title ?? null;
-    index[locKey(l)] = { bulbapedia: t, pokepedia: own("fr"), pokewiki: own("de"), fandom };
+    index[locKey(l)] = { bulbapedia: t, pokepedia: own("fr"), pokewiki: own("de"), fandom, wikidex: own("es") };
   }
   writeJson(PAGES, index);
   const found = (w: WikiId) => Object.values(index).filter((p) => p[w]).length;
-  console.log(`${locs.length} places: Bulbapedia ${found("bulbapedia")}, Poképédia ${found("pokepedia")}, PokéWiki ${found("pokewiki")}, Pokémon Wiki ${found("fandom")}`);
+  console.log(`${locs.length} places: Bulbapedia ${found("bulbapedia")}, Poképédia ${found("pokepedia")}, PokéWiki ${found("pokewiki")}, Pokémon Wiki ${found("fandom")}, WikiDex ${found("wikidex")}`);
   return index;
 }
 
@@ -571,7 +600,7 @@ function usedFiles() {
   for (const a of curation.added) {
     const m = a.source.match(/(?:File|Fichier|Datei):(.+)$/);
     if (!m) continue;
-    const prefix = a.source.includes("pokepedia") ? "pokepedia:" : a.source.includes("pokewiki") ? "pokewiki:" : a.source.includes("fandom") ? "fandom:" : "";
+    const prefix = a.source.includes("pokepedia") ? "pokepedia:" : a.source.includes("pokewiki") ? "pokewiki:" : a.source.includes("fandom") ? "fandom:" : a.source.includes("wikidex") ? "wikidex:" : "";
     const b = prefix + decodeURIComponent(m[1]).replace(/ /g, "_");
     (live.has(a.id) ? used : dropped).add(b);
   }
@@ -884,7 +913,7 @@ async function cropCandidates(region: string, target: number) {
     for (const sh of l.shots) {
       const fam = (sh.family ?? familyOfGame(sh.game)) as GeoFamilyId;
       const k = keyOf.get(sh.id);
-      if (!k || familyEra(fam) !== "2d" || /^(crop|pokepedia|pokewiki|fandom):/.test(k)) continue;
+      if (!k || familyEra(fam) !== "2d" || /^(crop|pokepedia|pokewiki|fandom|wikidex):/.test(k)) continue;
       const file = k.replace(/@v\d+$/, "").replace(/#.*$/, "");
       if (!srcs.some((x) => x.file === file && x.loc === l)) srcs.push({ loc: l, game: sh.game, fam, file });
     }
@@ -1131,7 +1160,7 @@ async function accept(region: string, reviewFile: string) {
     const where = c.box
       ? `a view cut at native pixels from the place's own area map (the map ${c.page ? `Bulbapedia's page "${c.page}" shows` : "one of its shots was made from"})`
       : c.via === "page"
-        ? `shown on ${c.wiki === "bulbapedia" ? "Bulbapedia" : c.wiki === "pokepedia" ? "Poképédia" : c.wiki === "pokewiki" ? "PokéWiki" : "the Pokémon Wiki"}'s page "${c.page}"`
+        ? `shown on ${c.wiki === "bulbapedia" ? "Bulbapedia" : c.wiki === "pokepedia" ? "Poképédia" : c.wiki === "pokewiki" ? "PokéWiki" : c.wiki === "wikidex" ? "WikiDex" : "the Pokémon Wiki"}'s page "${c.page}"`
         : `in ${c.wiki}'s category "${c.category}", named after the place`;
     const addition: Addition = {
       id,
