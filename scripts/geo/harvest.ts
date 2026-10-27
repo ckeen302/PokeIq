@@ -40,9 +40,12 @@ import {
   hashDistance,
   imageHash,
   pixelScale,
+  viewCrop,
   words,
+  fileInfo,
 } from "./bulbapedia";
 import { httpGet, wikiApi } from "./http";
+import { AREA_PER_VIEW, AREA_PER_VIEW_THIN, genericTiles, nativePixels, pickViews, tileFamily, tileGrid, type Box, type TileGrid } from "./map-crops";
 import { familyOfGame, familyEra, type GeoFamilyId } from "../../src/lib/geo-families";
 import type { Addition, Curation } from "./curate";
 
@@ -459,19 +462,27 @@ function namer(index: PageIndex, locs: Loc[]) {
     }
     byWiki.set(w, list);
   }
-  /** The place a file names, among places whose region plays `code`; null when none. */
+  /**
+   * The place a file names, among places whose region plays `code`: null when
+   * none, AMBIGUOUS when it names two places neither of whose names holds the
+   * other ("Route 9 (Circhester Bay)"; but "Galar Mine No. 2" is that, not
+   * the Galar Mine).
+   */
   return (wiki: WikiId, file: string, code: string): Loc | null => {
     const fw = fileWords(file);
-    let best: Loc | null = null;
-    let longest = 0;
+    const hits: { loc: Loc; key: string }[] = [];
     for (const { loc, words: w } of byWiki.get(wiki)!) {
-      if (!gamesOf(loc).includes(code)) continue;
-      const n = w.join("").length;
-      if (n > longest && spells(fw, w)) [best, longest] = [loc, n];
+      if (gamesOf(loc).includes(code) && spells(fw, w)) hits.push({ loc, key: w.join("") });
     }
-    return best;
+    if (!hits.length) return null;
+    hits.sort((a, b) => b.key.length - a.key.length);
+    const best = hits[0];
+    for (const h of hits.slice(1)) if (locKey(h.loc) !== locKey(best.loc) && !best.key.includes(h.key)) return AMBIGUOUS;
+    return best.loc;
   };
 }
+/** A file that names two different places: it can't be checked against either. */
+const AMBIGUOUS: Loc = { region: "", name: "(ambiguous)" };
 const gamesOf = (l: Loc) => ONLY_GAMES[`${l.region}|${l.name}`] ?? ONLY_GAMES[`${l.region}|${l.parent}`] ?? REGIONS[l.region].games;
 
 /** The game a wiki file is from, as a Bulbapedia code: its name's abbreviation (first or last word, or in brackets), else its per-game category. Null when they disagree or neither says. */
@@ -508,6 +519,8 @@ interface Candidate {
   category?: string;
   /** Uploaded once before and not in the data (re-reviewed). */
   prev?: boolean;
+  /** A view cut from a sprite game's area map: the part of `file` (in its native pixels). */
+  box?: Box;
   /** After fetch: staged webp, its hash, measurements. */
   staged?: string;
   hash?: string;
@@ -521,6 +534,8 @@ interface Candidate {
 }
 
 const isThreeD = (code: string) => familyEra(famOf(code)!) === "3d";
+/** A candidate's key in the upload cache (a view cut from a map: its map and box, as ingest-world.ts's --crops keys them). */
+const candKey = (c: Candidate) => (c.box ? `crop:${c.file}#${c.box.left},${c.box.top},${c.box.width},${c.box.height}` : WIKIS[c.wiki].key + c.file);
 
 /** A 3D shot fills a 16:9 frame: at least 960 × 540, from 4:3 to 2.1:1. */
 const fits3d = (w: number, h: number) => w >= 960 && h >= 540 && w / h >= 4 / 3 - 0.01 && w / h <= 2.1;
@@ -602,6 +617,7 @@ async function list(regions: string[]) {
       if (dropped.has(key)) return skip("dropped in an earlier review");
       // A file that names another place isn't a view of this one; one that names a building of this place (or the place of this building) goes there.
       const named = names(wiki.id, f, code);
+      if (named === AMBIGUOUS) return skip("names two places");
       let loc = at;
       if (named && locKey(named) !== locKey(at)) {
         if (areaKey(named) !== areaKey(at)) return skip("names another place");
@@ -638,7 +654,15 @@ async function list(regions: string[]) {
       for (const [t] of titles) perPage.set(t, (pages.get(resolve(t))?.images ?? []).map((i) => fileName(i.title)));
       const allFiles = [...new Set([...perPage.values()].flat())].filter((f) => /\.(png|jpe?g|webp)$/i.test(f) && !NOT_A_VIEW.test(f.replace(/_/g, " ")));
       const meta = await fileMeta(wiki, allFiles);
-      for (const [t, l] of titles) for (const f of perPage.get(t)!) if (meta.has(f)) consider(wiki, meta.get(f)!, l, "page", t);
+      // A file several places' pages show (a shop chain's front, a Pokémon Center) says nothing about which one it is.
+      const shownAt = new Map<string, Set<string>>();
+      for (const [t, l] of titles) for (const f of perPage.get(t)!) shownAt.set(f, (shownAt.get(f) ?? new Set()).add(areaKey(l)));
+      for (const [t, l] of titles)
+        for (const f of perPage.get(t)!) {
+          if (!meta.has(f)) continue;
+          if (shownAt.get(f)!.size > 1) skip("on two places' pages");
+          else consider(wiki, meta.get(f)!, l, "page", t);
+        }
       // Rule 2: in a per-game screenshot category, and named after the place.
       for (const [cat, code] of Object.entries(wiki.gameCats)) {
         if (!games.includes(code)) continue;
@@ -650,8 +674,19 @@ async function list(regions: string[]) {
         for (const { m, loc } of named) consider(wiki, full.get(m.file) ?? m, loc, "category", cat);
       }
     }
-    const out = [...found.values()];
-    writeJson(path.join(DIR, region, "list.json"), out);
+    // A re-run keeps what was fetched (and the views cut from maps); what's no longer listed goes, staged file and all.
+    const listFile = path.join(DIR, region, "list.json");
+    const before = new Map(readJson<Candidate[]>(listFile, []).map((c) => [candKey(c), c]));
+    const out = [...found.values()].map((c) => {
+      const old = before.get(candKey(c));
+      before.delete(candKey(c));
+      return old ? { ...c, ...Object.fromEntries((["staged", "hash", "w", "h", "luma", "detail", "flat", "drop"] as const).filter((k) => old[k] !== undefined).map((k) => [k, old[k]])) } : c;
+    });
+    for (const [, old] of before) {
+      if (old.box) out.push(old);
+      else if (old.staged) rmSync(old.staged, { force: true });
+    }
+    writeJson(listFile, out);
     const byFam = new Map<string, number>();
     for (const c of out) byFam.set(famOf(c.code)!, (byFam.get(famOf(c.code)!) ?? 0) + 1);
     const byWiki = new Map<string, number>();
@@ -714,7 +749,7 @@ function frameOf(code: string, w: number, h: number) {
   return { left: 0, top: 0, width: w, height: h };
 }
 
-const stagedPath = (region: string, c: Candidate) => path.join(DIR, region, "staged", `${createHash("sha1").update(c.wiki + c.file).digest("hex").slice(0, 16)}.webp`);
+const stagedPath = (region: string, c: Candidate) => path.join(DIR, region, "staged", `${createHash("sha1").update(candKey(c)).digest("hex").slice(0, 16)}.webp`);
 
 async function fetchRegion(region: string) {
   const file = path.join(DIR, region, "list.json");
@@ -731,10 +766,12 @@ async function fetchRegion(region: string) {
   let n = 0;
   for (const c of cands) {
     n++;
+    if (c.drop && !c.drop.startsWith("fetch failed")) continue;
     if (c.staged && existsSync(c.staged) && c.hash) {
       if (!c.drop) kept.push(c);
       continue;
     }
+    delete c.drop;
     try {
       const raw = await httpGet(c.url);
       const meta = await sharp(raw).metadata();
@@ -744,10 +781,13 @@ async function fetchRegion(region: string) {
       let frame = frameOf(c.code, w, h);
       if (!three && !c.drop) {
         const k = await pixelScale(raw);
-        const [sw, sh] = screenOfFam(famOf(c.code)!);
-        if (w / k < sw || h / k < sh * 0.83) c.drop = `smaller than the screen (${w / k}×${h / k} native)`;
-        if (h > w) c.drop = `portrait (${w}×${h})`;
-        frame = frameOf(c.code, Math.floor(w / k) * k, Math.floor(h / k) * k);
+        if (c.box) frame = { left: c.box.left * k, top: c.box.top * k, width: c.box.width * k, height: c.box.height * k };
+        else {
+          const [sw, sh] = screenOfFam(famOf(c.code)!);
+          if (w / k < sw || h / k < sh * 0.83) c.drop = `smaller than the screen (${w / k}×${h / k} native)`;
+          if (h > w) c.drop = `portrait (${w}×${h})`;
+          frame = frameOf(c.code, Math.floor(w / k) * k, Math.floor(h / k) * k);
+        }
       }
       if (!c.drop) {
         const webp = await encodeShot(raw, c.game, frame);
@@ -780,7 +820,7 @@ async function fetchRegion(region: string) {
           const d = hashDistance(c.hash!, k.hash!);
           return areaKey(k) === area ? d <= SAME_PICTURE || (d <= SAME_GAME_PICTURE && famOf(k.code) === fam) : d <= LOOK_ALIKE;
         });
-      if (copy) c.drop = `near-copy of ${"id" in copy ? `shot ${copy.id} (${copy.area})` : `${copy.wiki}:${copy.file}`}`;
+      if (copy) c.drop = `near-copy of ${"id" in copy ? `shot ${copy.id} (${copy.area})` : candKey(copy)}`;
     }
     if (c.drop && c.staged) {
       rmSync(c.staged, { force: true });
@@ -799,6 +839,109 @@ async function fetchRegion(region: string) {
 }
 
 // ---------------------------------------------------------------------------
+// Views cut from the sprite games' area maps
+// ---------------------------------------------------------------------------
+
+/** 16:9-ish views of an area map: pickViews takes 1.5 of these "screens" across and down, tile-aligned (Game Boy 256 × 144, GBA 384 × 224, DS 416 × 240). */
+const WIDE_SCREENS: Record<string, [number, number]> = { gb: [171, 96], gba: [256, 150], ds: [277, 160] };
+const wideScreen = (f: GeoFamilyId): [number, number] => (f === "rby" || f === "gsc" ? WIDE_SCREENS.gb : f === "rse" || f === "frlg" ? WIDE_SCREENS.gba : WIDE_SCREENS.ds);
+const codeOfLabel = (label: string) => Object.keys(GAME_CODES).find((c) => GAME_CODES[c] === label) ?? null;
+
+/**
+ * New views of the region's sprite-game places, cut from the area maps their
+ * shots were made from (the Archives' rips of the game's own map, shown on the
+ * place's Bulbapedia page): a place gets views until it has `target` shots of
+ * that game. Views go where the map has landmarks, not plain ground, and not
+ * where earlier views (kept or not) were cut. They join the region's list.
+ */
+async function cropCandidates(region: string, target: number) {
+  const geo = loadGeo();
+  const cache = readJson<Record<string, string>>(SHOT_CACHE, {});
+  const keyOf = new Map(Object.entries(cache).map(([k, id]) => [id, k]));
+  const here = geo.filter((l) => l.region === region);
+  const count = new Map<string, number>();
+  for (const l of here) for (const s of l.shots) count.set(`${areaKey(l)}|${s.family}`, (count.get(`${areaKey(l)}|${s.family}`) ?? 0) + 1);
+  const srcs: { loc: StoredLocation; game: string; fam: GeoFamilyId; file: string }[] = [];
+  for (const l of here) {
+    for (const sh of l.shots) {
+      const fam = (sh.family ?? familyOfGame(sh.game)) as GeoFamilyId;
+      const k = keyOf.get(sh.id);
+      if (!k || familyEra(fam) !== "2d" || /^(crop|pokepedia|pokewiki|fandom):/.test(k)) continue;
+      const file = k.replace(/@v\d+$/, "").replace(/#.*$/, "");
+      if (!srcs.some((x) => x.file === file && x.loc === l)) srcs.push({ loc: l, game: sh.game, fam, file });
+    }
+  }
+  const info = await fileInfo([...new Set(srcs.map((x) => x.file))]);
+  const maps = new Map<string, { k: number; grid: TileGrid; w: number; h: number }>();
+  const mapDir = path.join(DIR, "maps");
+  mkdirSync(mapDir, { recursive: true });
+  for (const { file } of srcs) {
+    const meta = info.get(file);
+    if (!meta || maps.has(file)) continue;
+    try {
+      const local = path.join(mapDir, createHash("sha1").update(file).digest("hex").slice(0, 16));
+      const raw = existsSync(local) ? readFileSync(local) : await httpGet(meta.url);
+      if (!existsSync(local)) writeFileSync(local, raw);
+      const k = await pixelScale(raw);
+      const { rgba, width, height } = await nativePixels(raw, k);
+      maps.set(file, { k, grid: tileGrid(rgba, width, height), w: width, h: height });
+    } catch (err) {
+      console.log(`  ! ${file}: ${(err as Error).message}`);
+    }
+  }
+  const generic = new Map<string, Set<string>>();
+  for (const fam of new Set(srcs.map((x) => tileFamily(x.game)))) {
+    generic.set(fam, genericTiles([...new Set(srcs.filter((x) => tileFamily(x.game) === fam).map((x) => x.file))].flatMap((f) => maps.get(f)?.grid ?? [])));
+  }
+  const cut = new Map<string, Box[]>();
+  for (const key of Object.keys(cache)) {
+    const m = key.match(/^crop:(.+)#(\d+),(\d+),(\d+),(\d+)@/);
+    if (m) cut.set(m[1], [...(cut.get(m[1]) ?? []), { left: +m[2], top: +m[3], width: +m[4], height: +m[5] }]);
+  }
+  const listFile = path.join(DIR, region, "list.json");
+  const cands = readJson<Candidate[]>(listFile, []);
+  for (const c of cands) if (c.box) cut.set(c.file, [...(cut.get(c.file) ?? []), c.box]);
+  let added = 0;
+  const pairs = new Map<string, typeof srcs>();
+  for (const x of srcs) pairs.set(`${areaKey(x.loc)}|${x.fam}`, [...(pairs.get(`${areaKey(x.loc)}|${x.fam}`) ?? []), x]);
+  for (const [pair, list] of pairs) {
+    const have = count.get(pair) ?? 0;
+    const room = target - have - cands.filter((c) => c.box && `${areaKey(c)}|${famOf(c.code)}` === pair).length;
+    if (room <= 0) continue;
+    let got = 0;
+    for (const x of list) {
+      const map = maps.get(x.file);
+      const code = codeOf(x.file) ?? codeOfLabel(x.game);
+      if (!map || !code || got >= room) continue;
+      const max = Math.min(room - got, Math.ceil(room / list.length));
+      const views = pickViews(map.grid, wideScreen(x.fam), max, viewCrop(map.w, map.h), generic.get(tileFamily(x.game)), cut.get(x.file) ?? [], have <= 1 ? AREA_PER_VIEW_THIN : AREA_PER_VIEW);
+      for (const v of views) {
+        if (v.width / v.height < 4 / 3 - 0.01 || v.width / v.height > 2.1 || v.height < 120) continue;
+        cut.set(x.file, [...(cut.get(x.file) ?? []), v]);
+        cands.push({
+          region,
+          name: x.loc.name,
+          ...(x.loc.parent ? { parent: x.loc.parent } : {}),
+          wiki: "bulbapedia",
+          file: x.file,
+          url: info.get(x.file)!.url,
+          width: info.get(x.file)!.width,
+          height: info.get(x.file)!.height,
+          code,
+          game: x.game,
+          via: "page",
+          box: v,
+        });
+        got++;
+        added++;
+      }
+    }
+  }
+  writeJson(listFile, cands);
+  console.log(`${region}: ${added} views cut from ${maps.size} area maps (target ${target} shots per place and game)`);
+}
+
+// ---------------------------------------------------------------------------
 // Contact sheets
 // ---------------------------------------------------------------------------
 
@@ -809,8 +952,42 @@ const COLS = 4;
 const ROWS = 5;
 const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
-async function sheets(region: string) {
-  const cands = readJson<Candidate[]>(path.join(DIR, region, "list.json"), []).filter((c) => !c.drop && c.staged && existsSync(c.staged));
+/** How plain a view a file's name says it is: the place alone first, then weather and views, items, then dens, stakes and hidden items. */
+function plainness(c: Candidate): number {
+  const f = c.file.replace(/_/g, " ");
+  if (/nest|tanière|objet caché|versteckt|pfahl|pieu|zygarde|ct\d|tm\d|tr\d|dt\d|vm\d|cs\d/i.test(f)) return 3;
+  if (c.box) return 1;
+  return f.replace(/\.[a-z]+$/i, "").split(/[ _()-]+/).length <= 3 ? 0 : 2;
+}
+
+/**
+ * Contact sheets of the staged candidates, by place. Each place and game gets
+ * at most `cap` shots in all (its shots in the data count): the plainest views
+ * first, each wiki in turn, so a place's sheet isn't thirty hidden items.
+ */
+async function sheets(region: string, cap = 15) {
+  const listFile = path.join(DIR, region, "list.json");
+  const decided = readJson<Record<string, unknown>>(path.join(DIR, region, "decisions.json"), {});
+  const staged = readJson<Candidate[]>(listFile, []).filter((c) => !c.drop && c.staged && existsSync(c.staged) && !decided[candKey(c)]);
+  const geo = loadGeo();
+  const have = new Map<string, number>();
+  for (const l of geo) for (const sh of l.shots) have.set(`${areaKey(l)}|${sh.family}`, (have.get(`${areaKey(l)}|${sh.family}`) ?? 0) + 1);
+  const groups = new Map<string, Candidate[]>();
+  for (const c of staged) groups.set(`${areaKey(c)}|${famOf(c.code)}`, [...(groups.get(`${areaKey(c)}|${famOf(c.code)}`) ?? []), c]);
+  const cands: Candidate[] = [];
+  for (const [pair, list] of groups) {
+    const room = Math.max(0, cap - (have.get(pair) ?? 0));
+    const byWiki = new Map<string, Candidate[]>();
+    for (const c of [...list].sort((a, b) => plainness(a) - plainness(b) || a.file.length - b.file.length)) byWiki.set(c.wiki, [...(byWiki.get(c.wiki) ?? []), c]);
+    const queues = [...byWiki.values()];
+    const picked: Candidate[] = [];
+    // The plainest of each wiki in turn.
+    while (picked.length < room && queues.some((q) => q.length)) {
+      const best = queues.filter((q) => q.length).sort((a, b) => plainness(a[0]) - plainness(b[0]))[0];
+      picked.push(best.shift()!);
+    }
+    cands.push(...picked);
+  }
   cands.sort((a, b) => areaKey(a).localeCompare(areaKey(b)) || locKey(a).localeCompare(locKey(b)) || a.file.localeCompare(b.file));
   const outDir = path.join(DIR, region, "sheets");
   rmSync(outDir, { recursive: true, force: true });
@@ -826,10 +1003,10 @@ async function sheets(region: string) {
       const img = await sharp(c.staged!).resize(TILE_W, TILE_H, { fit: "contain", background: "#222" }).png().toBuffer();
       const where = c.parent ? `${c.name} · ${c.parent}` : c.name;
       const l1 = `${s}.${i} ${where}`.slice(0, 56);
-      const l2 = `${c.code} ${c.wiki.slice(0, 4)} ${c.via === "page" ? "pg" : "cat"}${c.prev ? "*" : ""} ${c.file}`.slice(0, 56);
+      const l2 = `${c.code} ${c.box ? "crop" : `${c.wiki.slice(0, 4)} ${c.via === "page" ? "pg" : "cat"}`}${c.prev ? "*" : ""} ${c.file}`.slice(0, 56);
       const svg = `<svg width="${TILE_W}" height="${LABEL_H}" xmlns="http://www.w3.org/2000/svg"><rect width="100%" height="100%" fill="#fff"/><text x="3" y="14" font-family="DejaVu Sans Mono, monospace" font-size="12">${esc(l1)}</text><text x="3" y="29" font-family="DejaVu Sans Mono, monospace" font-size="12">${esc(l2)}</text></svg>`;
       comps.push({ input: Buffer.from(svg), left: x, top: y }, { input: img, left: x, top: y + LABEL_H });
-      index.push({ sheet: s, tile: i, key: WIKIS[c.wiki].key + c.file });
+      index.push({ sheet: s, tile: i, key: candKey(c) });
     }
     const rows = Math.ceil(batch.length / COLS);
     await sharp({ create: { width: COLS * (TILE_W + 6), height: rows * (TILE_H + LABEL_H + 6), channels: 3, background: "#666" } })
@@ -838,7 +1015,7 @@ async function sheets(region: string) {
       .toFile(path.join(outDir, `${String(s).padStart(3, "0")}.png`));
   }
   writeJson(path.join(outDir, "index.json"), index);
-  console.log(`${region}: ${cands.length} candidates on ${Math.ceil(cands.length / per)} sheets in ${outDir}`);
+  console.log(`${region}: ${cands.length} of ${staged.length} staged candidates (at most ${cap} shots per place and game) on ${Math.ceil(cands.length / per)} sheets in ${outDir}`);
 }
 
 // ---------------------------------------------------------------------------
@@ -864,7 +1041,7 @@ async function accept(region: string, reviewFile: string) {
   const review = JSON.parse(readFileSync(reviewFile, "utf8")) as Review;
   const listFile = path.join(DIR, region, "list.json");
   const cands = readJson<Candidate[]>(listFile, []);
-  const byKey = new Map(cands.map((c) => [WIKIS[c.wiki].key + c.file, c]));
+  const byKey = new Map(cands.map((c) => [candKey(c), c]));
   const index = readJson<{ sheet: number; tile: number; key: string }[]>(path.join(DIR, region, "sheets", "index.json"), []);
   const curation = readJson<Curation>(CURATION, { audit: [], added: [] });
   const cache = readJson<Record<string, string>>(SHOT_CACHE, {});
@@ -890,7 +1067,7 @@ async function accept(region: string, reviewFile: string) {
     if (!three) {
       const kk = await pixelScale(raw);
       [w, h] = [Math.floor(w / kk) * kk, Math.floor(h / kk) * kk];
-      box = frameOf(c.code, w, h);
+      box = c.box ? { left: c.box.left * kk, top: c.box.top * kk, width: c.box.width * kk, height: c.box.height * kk } : frameOf(c.code, w, h);
     }
     const cut = review.crop?.[tag];
     if (cut) {
@@ -927,18 +1104,22 @@ async function accept(region: string, reviewFile: string) {
       console.log(`  ! ${k}: ${error.message}`);
       continue;
     }
-    const where = c.via === "page" ? `shown on ${c.wiki === "bulbapedia" ? "Bulbapedia" : c.wiki === "pokepedia" ? "Poképédia" : c.wiki === "pokewiki" ? "PokéWiki" : "the Pokémon Wiki"}'s page "${c.page}"` : `in ${c.wiki}'s category "${c.category}", named after the place`;
+    const where = c.box
+      ? `a view cut at native pixels from the place's own area map (the map ${c.page ? `Bulbapedia's page "${c.page}" shows` : "one of its shots was made from"})`
+      : c.via === "page"
+        ? `shown on ${c.wiki === "bulbapedia" ? "Bulbapedia" : c.wiki === "pokepedia" ? "Poképédia" : c.wiki === "pokewiki" ? "PokéWiki" : "the Pokémon Wiki"}'s page "${c.page}"`
+        : `in ${c.wiki}'s category "${c.category}", named after the place`;
     const addition: Addition = {
       id,
       region: c.region,
       name: c.name,
       ...(c.parent ? { parent: c.parent } : {}),
       game: c.game,
-      source: WIKIS[c.wiki].filePage(c.file),
+      source: c.box ? `${WIKIS.bulbapedia.filePage(c.file)} (view cut at ${c.box.left},${c.box.top},${c.box.width},${c.box.height})` : WIKIS[c.wiki].filePage(c.file),
       checked: `${where}; ${c.code} in its name or category${cut ? `; cropped (${Object.entries(cut).map(([s, v]) => `${s} ${Math.round(v * 100)}%`).join(", ")})` : ""}; reviewed on a contact sheet`,
     };
     curation.added.push(addition);
-    cache[`${WIKIS[c.wiki].key}${c.file}${cut ? `#crop${Object.entries(cut).map(([s, v]) => `${s}${v}`).join("")}` : ""}@${ENCODING}`] = id;
+    cache[`${candKey(c)}${cut ? `#crop${Object.entries(cut).map(([s, v]) => `${s}${v}`).join("")}` : ""}@${ENCODING}`] = id;
     hashes[id] = hash;
     shots.push({ id, area, family: fam });
     liveHashes[id] = hash;
@@ -967,7 +1148,8 @@ async function main() {
   if (cmd === "pages") await findPages();
   else if (cmd === "list") await list(regions.length ? regions : Object.keys(REGIONS));
   else if (cmd === "fetch") for (const r of regions) await fetchRegion(r);
-  else if (cmd === "sheets") for (const r of regions) await sheets(r);
+  else if (cmd === "crops") for (const r of regions) await cropCandidates(r, Number(args.find((a) => /^\d+$/.test(a)) ?? 3));
+  else if (cmd === "sheets") for (const r of regions) await sheets(r, Number(args.find((a) => /^\d+$/.test(a)) ?? 15));
   else if (cmd === "accept") await accept(args[0], args[1]);
   else if (cmd === "clean") for (const r of regions) clean(r);
   else if (cmd === "dirs") console.log(readdirSync(DIR).join("\n"));

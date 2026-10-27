@@ -7891,6 +7891,662 @@
    "game": "Brilliant Diamond / Shining Pearl",
    "source": "https://www.pokepedia.fr/Fichier:Ligue_Pokémon_DEPS.png",
    "checked": "Poképédia's file for the Sinnoh Pokémon League (DEPS = BDSP); the League building; uploaded whole (1280x720), not trimmed"
+  },
+  {
+   "id": "pLCqa5t9aSp5",
+   "region": "Paldea",
+   "name": "Alfornada",
+   "game": "Scarlet / Violet",
+   "source": "https://www.pokepedia.fr/Fichier:Alforneira_Déf._Spé._+_EV.png",
+   "checked": "shown on Poképédia's page \"Alforneira\"; SV in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "p8sjDGJ0Z44x",
+   "region": "Paldea",
+   "name": "Alfornada",
+   "game": "Scarlet / Violet",
+   "source": "https://www.pokepedia.fr/Fichier:Alforneira_Hyper_Ball_EV.png",
+   "checked": "shown on Poképédia's page \"Alforneira\"; SV in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "rklahYbV1eyj",
+   "region": "Paldea",
+   "name": "Alfornada",
+   "game": "Scarlet / Violet",
+   "source": "https://www.pokepedia.fr/Fichier:Alforneira_Lumargile_EV.png",
+   "checked": "shown on Poképédia's page \"Alforneira\"; SV in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "tgfYVsVKC2o0",
+   "region": "Paldea",
+   "name": "Alfornada",
+   "game": "Scarlet / Violet",
+   "source": "https://www.pokepedia.fr/Fichier:Alforneira_Réveil_EV.png",
+   "checked": "shown on Poképédia's page \"Alforneira\"; SV in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "RMJqpd6fkMYc",
+   "region": "Paldea",
+   "name": "Alfornada Gym",
+   "parent": "Alfornada",
+   "game": "Scarlet / Violet",
+   "source": "https://www.pokepedia.fr/Fichier:Arène_d'Alforneira_EV.png",
+   "checked": "shown on Poképédia's page \"Arène d'Alforneira\"; SV in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "ax9K7yDbC1OV",
+   "region": "Paldea",
+   "name": "Artazon",
+   "game": "Scarlet / Violet",
+   "source": "https://www.pokepedia.fr/Fichier:Héliatronc_Cuencia_4_EV.png",
+   "checked": "shown on Poképédia's page \"Arène de Cuencia\"; SV in its name or category; cropped (top 11%); reviewed on a contact sheet"
+  },
+  {
+   "id": "m28PoU2hRoZX",
+   "region": "Paldea",
+   "name": "Artazon",
+   "game": "Scarlet / Violet",
+   "source": "https://www.pokepedia.fr/Fichier:Héliatronc_Cuencia_5_EV.png",
+   "checked": "shown on Poképédia's page \"Arène de Cuencia\"; SV in its name or category; cropped (top 11%); reviewed on a contact sheet"
+  },
+  {
+   "id": "nP-CHlL8RTxZ",
+   "region": "Paldea",
+   "name": "Artazon",
+   "game": "Scarlet / Violet",
+   "source": "https://www.pokepedia.fr/Fichier:Héliatronc_Cuencia_6_EV.png",
+   "checked": "shown on Poképédia's page \"Arène de Cuencia\"; SV in its name or category; cropped (top 11%); reviewed on a contact sheet"
+  },
+  {
+   "id": "YphmC_oEn8nX",
+   "region": "Paldea",
+   "name": "Artazon Gym",
+   "parent": "Artazon",
+   "game": "Scarlet / Violet",
+   "source": "https://www.pokepedia.fr/Fichier:Arène_de_Cuencia_EV.png",
+   "checked": "shown on Poképédia's page \"Arène de Cuencia\"; SV in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "PNvIUWxSvecK",
+   "region": "Paldea",
+   "name": "Asado Desert",
+   "game": "Scarlet / Violet",
+   "source": "https://www.pokepedia.fr/Fichier:Désert_Rôtissable_EV.png",
+   "checked": "shown on Poképédia's page \"Désert Rôtissable\"; SV in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "KhNXfXHn-Tfc",
+   "region": "Paldea",
+   "name": "Cabo Poco",
+   "game": "Scarlet / Violet",
+   "source": "https://www.pokepedia.fr/Fichier:Cuchalaga_Potion_2_EV.png",
+   "checked": "shown on Poképédia's page \"Cuchalaga\"; SV in its name or category; cropped (right 18%); reviewed on a contact sheet"
+  },
+  {
+   "id": "_W7f02wDa59Z",
+   "region": "Paldea",
+   "name": "Cabo Poco",
+   "game": "Scarlet / Violet",
+   "source": "https://www.pokepedia.fr/Fichier:Cuchalaga_Potion_EV.png",
+   "checked": "shown on Poképédia's page \"Cuchalaga\"; SV in its name or category; cropped (right 18%); reviewed on a contact sheet"
+  },
+  {
+   "id": "mdTOv_OHMHjj",
+   "region": "Paldea",
+   "name": "Cabo Poco",
+   "game": "Scarlet / Violet",
+   "source": "https://www.pokewiki.de/Datei:Haus_von_Nemila_KAPU.jpg",
+   "checked": "shown on PokéWiki's page \"Cucharico\"; SV in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "u7QLAuLFbAPH",
+   "region": "Paldea",
+   "name": "Cabo Poco",
+   "game": "Scarlet / Violet",
+   "source": "https://www.pokewiki.de/Datei:KAPU_Cucharico.png",
+   "checked": "shown on PokéWiki's page \"Cucharico\"; SV in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "xrHrd_0KYlRj",
+   "region": "Paldea",
+   "name": "Cascarrafa",
+   "game": "Scarlet / Violet",
+   "source": "https://www.pokepedia.fr/Fichier:Arène_de_Jarramanca_EV.png",
+   "checked": "in pokepedia's category \"Capture d'écran de Pokémon Écarlate et Violet\", named after the place; SV in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "NoZoB-HVlBej",
+   "region": "Paldea",
+   "name": "Cascarrafa",
+   "game": "Scarlet / Violet",
+   "source": "https://www.pokepedia.fr/Fichier:Jarramanca_CT054_EV.png",
+   "checked": "shown on Poképédia's page \"Jarramanca\"; SV in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "JHUWF3vYN8On",
+   "region": "Paldea",
+   "name": "Cascarrafa",
+   "game": "Scarlet / Violet",
+   "source": "https://www.pokewiki.de/Datei:KAPU_Garrafosa_City.png",
+   "checked": "shown on PokéWiki's page \"Garrafosa City\"; SV in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "YtZUhs1gy8oq",
+   "region": "Paldea",
+   "name": "Cascarrafa",
+   "game": "Scarlet / Violet",
+   "source": "https://www.pokewiki.de/Datei:KAPU_Garrafosa-Arena.png",
+   "checked": "in pokewiki's category \"KAPU-Screenshot\", named after the place; SV in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "zHnofXo3nVeH",
+   "region": "Paldea",
+   "name": "Casseroya Lake",
+   "game": "Scarlet / Violet",
+   "source": "https://www.pokewiki.de/Datei:KAPU_Caldero-See.jpg",
+   "checked": "shown on PokéWiki's page \"Caldero-See\"; SV in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "adqkQNLVRZp7",
+   "region": "Paldea",
+   "name": "Casseroya Lake",
+   "game": "Scarlet / Violet",
+   "source": "https://www.pokewiki.de/Datei:KAPU_Fundort_Onea_und_Billy_5.jpg",
+   "checked": "shown on PokéWiki's page \"Caldero-See\"; SV in its name or category; cropped (right 18%); reviewed on a contact sheet"
+  },
+  {
+   "id": "Q8DMgQTYDjzY",
+   "region": "Paldea",
+   "name": "Casseroya Lake",
+   "game": "Scarlet / Violet",
+   "source": "https://www.pokewiki.de/Datei:KAPU_Pfahl_-_Dinglu_(Grüne_Pfähle)_3.jpg",
+   "checked": "shown on PokéWiki's page \"Caldero-See\"; SV in its name or category; cropped (right 18%); reviewed on a contact sheet"
+  },
+  {
+   "id": "bdMBD8NJpeI9",
+   "region": "Paldea",
+   "name": "Casseroya Lake",
+   "game": "Scarlet / Violet",
+   "source": "https://www.pokewiki.de/Datei:KAPU_Pfahl_-_Dinglu_(Grüne_Pfähle)_5.jpg",
+   "checked": "shown on PokéWiki's page \"Caldero-See\"; SV in its name or category; cropped (right 18%); reviewed on a contact sheet"
+  },
+  {
+   "id": "c6EhuIIBcTst",
+   "region": "Paldea",
+   "name": "Casseroya Lake",
+   "game": "Scarlet / Violet",
+   "source": "https://www.pokewiki.de/Datei:KAPU_Pfahl_-_Dinglu_(Grüne_Pfähle)_6.jpg",
+   "checked": "shown on PokéWiki's page \"Caldero-See\"; SV in its name or category; cropped (right 18%); reviewed on a contact sheet"
+  },
+  {
+   "id": "MquMe9IkyPfT",
+   "region": "Paldea",
+   "name": "Cortondo",
+   "game": "Scarlet / Violet",
+   "source": "https://www.pokepedia.fr/Fichier:Arène_de_Sevaro_EV.png",
+   "checked": "in pokepedia's category \"Capture d'écran de Pokémon Écarlate et Violet\", named after the place; SV in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "a8JOD2gi60tN",
+   "region": "Paldea",
+   "name": "Cortondo",
+   "game": "Scarlet / Violet",
+   "source": "https://www.pokepedia.fr/Fichier:Arène_de_Sevaro_Examen_EV.png",
+   "checked": "in pokepedia's category \"Capture d'écran de Pokémon Écarlate et Violet\", named after the place; SV in its name or category; cropped (right 18%); reviewed on a contact sheet"
+  },
+  {
+   "id": "cTLut4sQX44t",
+   "region": "Paldea",
+   "name": "Cortondo",
+   "game": "Scarlet / Violet",
+   "source": "https://www.pokepedia.fr/Fichier:Sevaro_Grosse_Racine_EV.png",
+   "checked": "shown on Poképédia's page \"Sevaro\"; SV in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "icss5Vhj6ect",
+   "region": "Paldea",
+   "name": "Dalizapa Passage",
+   "game": "Scarlet / Violet",
+   "source": "https://archives.bulbagarden.net/wiki/File:Dalizapa_Passage_SV.png",
+   "checked": "shown on Bulbapedia's page \"Dalizapa Passage\"; SV in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "MAeW_brJIyu0",
+   "region": "Paldea",
+   "name": "Dalizapa Passage",
+   "game": "Scarlet / Violet",
+   "source": "https://www.pokepedia.fr/Fichier:Tunnel_Mezcla-Pincho_EV.png",
+   "checked": "shown on Poképédia's page \"Tunnel Mezcla-Pincho\"; SV in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "r1M47vFA7f6t",
+   "region": "Paldea",
+   "name": "East Province (Area One)",
+   "game": "Scarlet / Violet",
+   "source": "https://www.pokepedia.fr/Fichier:Zone_Est_n°_1_EV.png",
+   "checked": "shown on Poképédia's page \"Zone Est n° 1\"; SV in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "8d4DJOtQ4Fj5",
+   "region": "Paldea",
+   "name": "East Province (Area Two)",
+   "game": "Scarlet / Violet",
+   "source": "https://www.pokewiki.de/Datei:KAPU_Pfahl_-_Yuyu_(Blaue_Pfähle)_8.jpg",
+   "checked": "shown on PokéWiki's page \"Östliche Zone 2\"; SV in its name or category; cropped (right 18%); reviewed on a contact sheet"
+  },
+  {
+   "id": "KRkhG2S_yaXl",
+   "region": "Paldea",
+   "name": "Glaseado Mountain",
+   "game": "Scarlet / Violet",
+   "source": "https://www.pokewiki.de/Datei:KAPU_Fundort_Onea_und_Billy_6.jpg",
+   "checked": "shown on PokéWiki's page \"Montanata\"; SV in its name or category; cropped (right 18%); reviewed on a contact sheet"
+  },
+  {
+   "id": "oZx7lIYK0bQC",
+   "region": "Paldea",
+   "name": "Glaseado Gym",
+   "parent": "Glaseado Mountain",
+   "game": "Scarlet / Violet",
+   "source": "https://www.pokepedia.fr/Fichier:Arène_du_Mont_Nappé_EV.png",
+   "checked": "shown on Poképédia's page \"Arène du Mont Nappé\"; SV in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "J5ejtxLqwEdv",
+   "region": "Paldea",
+   "name": "Glaseado Gym",
+   "parent": "Glaseado Mountain",
+   "game": "Scarlet / Violet",
+   "source": "https://www.pokepedia.fr/Fichier:Arène_du_Mont_Nappé_Examen_EV.png",
+   "checked": "shown on Poképédia's page \"Arène du Mont Nappé\"; SV in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "Q79z24i5w763",
+   "region": "Paldea",
+   "name": "Glaseado Gym",
+   "parent": "Glaseado Mountain",
+   "game": "Scarlet / Violet",
+   "source": "https://www.pokewiki.de/Datei:KAPU_Montanata-Arena_Kampffeld.jpg",
+   "checked": "shown on PokéWiki's page \"Montanata-Arena\"; SV in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "FQooCsA7fm9_",
+   "region": "Paldea",
+   "name": "Glaseado Gym",
+   "parent": "Glaseado Mountain",
+   "game": "Scarlet / Violet",
+   "source": "https://www.pokewiki.de/Datei:KAPU_Montanata-Arena.png",
+   "checked": "shown on PokéWiki's page \"Montanata-Arena\"; SV in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "Wj0Ue3S88KZp",
+   "region": "Paldea",
+   "name": "Great Crater of Paldea",
+   "game": "Scarlet / Violet",
+   "source": "https://www.pokepedia.fr/Fichier:Portail_Zéro_EV.png",
+   "checked": "shown on Poképédia's page \"Cratère de Paldea\"; SV in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "k3FcAqbTXtT8",
+   "region": "Paldea",
+   "name": "Area Zero",
+   "parent": "Great Crater of Paldea",
+   "game": "Scarlet / Violet",
+   "source": "https://www.pokepedia.fr/Fichier:Poste_d'Observation_EV.png",
+   "checked": "shown on Poképédia's page \"Zone Zéro\"; SV in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "bs3MMC56j-MP",
+   "region": "Paldea",
+   "name": "Area Zero",
+   "parent": "Great Crater of Paldea",
+   "game": "Scarlet / Violet",
+   "source": "https://www.pokepedia.fr/Fichier:Zone_Zéro_EV.png",
+   "checked": "shown on Poképédia's page \"Zone Zéro\"; SV in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "32-yuQZyYlcY",
+   "region": "Paldea",
+   "name": "Levincia",
+   "game": "Scarlet / Violet",
+   "source": "https://www.pokewiki.de/Datei:KAPU_Fermanca_City.png",
+   "checked": "shown on PokéWiki's page \"Fermanca City\"; SV in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "I_gz2F4hswl4",
+   "region": "Paldea",
+   "name": "Levincia Gym",
+   "parent": "Levincia",
+   "game": "Scarlet / Violet",
+   "source": "https://www.pokepedia.fr/Fichier:Arène_de_Levalendura_EV.png",
+   "checked": "shown on Poképédia's page \"Arène de Levalendura\"; SV in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "h7Xci7G7Lncy",
+   "region": "Paldea",
+   "name": "Medali",
+   "game": "Scarlet / Violet",
+   "source": "https://www.pokepedia.fr/Fichier:Trésor_Culinaire_EV.png",
+   "checked": "shown on Poképédia's page \"Mezclamora\"; SV in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "CabDwTu_76AM",
+   "region": "Paldea",
+   "name": "Medali Gym",
+   "parent": "Medali",
+   "game": "Scarlet / Violet",
+   "source": "https://www.pokepedia.fr/Fichier:Arène_de_Mezclamora_EV.png",
+   "checked": "shown on Poképédia's page \"Arène de Mezclamora\"; SV in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "UVVa0VJqoDoA",
+   "region": "Paldea",
+   "name": "Medali Gym",
+   "parent": "Medali",
+   "game": "Scarlet / Violet",
+   "source": "https://www.pokepedia.fr/Fichier:Arène_de_Mezclamora_Examen_EV.png",
+   "checked": "shown on Poképédia's page \"Arène de Mezclamora\"; SV in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "qypKoKq9EnuV",
+   "region": "Paldea",
+   "name": "Mesagoza",
+   "game": "Scarlet / Violet",
+   "source": "https://www.pokewiki.de/Datei:KAPU_Mesalona_City.png",
+   "checked": "shown on PokéWiki's page \"Mesalona City\"; SV in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "Dc_W27iUXFRx",
+   "region": "Paldea",
+   "name": "Mesagoza",
+   "game": "Scarlet / Violet",
+   "source": "https://www.pokepedia.fr/Fichier:Mesaledo_CT010_EV.png",
+   "checked": "shown on Poképédia's page \"Mesaledo\"; SV in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "v87kF7N7dFzL",
+   "region": "Paldea",
+   "name": "Mesagoza",
+   "game": "Scarlet / Violet",
+   "source": "https://www.pokepedia.fr/Fichier:Mesaledo_CT081_EV.png",
+   "checked": "shown on Poképédia's page \"Mesaledo\"; SV in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "g1SAxkcHeA8L",
+   "region": "Paldea",
+   "name": "Mesagoza",
+   "game": "Scarlet / Violet",
+   "source": "https://www.pokepedia.fr/Fichier:Mesaledo_EV.png",
+   "checked": "shown on Poképédia's page \"Mesaledo\"; SV in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "Xzhrgp_vTd75",
+   "region": "Paldea",
+   "name": "Montenevera",
+   "game": "Scarlet / Violet",
+   "source": "https://www.pokepedia.fr/Fichier:Frigao_CT136_EV.png",
+   "checked": "shown on Poképédia's page \"Frigao\"; SV in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "rIyZLhirqFC2",
+   "region": "Paldea",
+   "name": "Montenevera",
+   "game": "Scarlet / Violet",
+   "source": "https://www.pokewiki.de/Datei:KAPU_Frigomonta.png",
+   "checked": "shown on PokéWiki's page \"Frigomonta\"; SV in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "l5KTo5IqXBiA",
+   "region": "Paldea",
+   "name": "Montenevera Gym",
+   "parent": "Montenevera",
+   "game": "Scarlet / Violet",
+   "source": "https://www.pokepedia.fr/Fichier:Arène_de_Frigao_EV.png",
+   "checked": "shown on Poképédia's page \"Arène de Frigao\"; SV in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "qfBE5OofpkOj",
+   "region": "Paldea",
+   "name": "Montenevera Gym",
+   "parent": "Montenevera",
+   "game": "Scarlet / Violet",
+   "source": "https://www.pokepedia.fr/Fichier:Arène_de_Frigao_Examen_EV.png",
+   "checked": "shown on Poképédia's page \"Arène de Frigao\"; SV in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "FDfgpKBeNifK",
+   "region": "Paldea",
+   "name": "Naranja and Uva Academy",
+   "game": "Scarlet / Violet",
+   "source": "https://www.pokepedia.fr/Fichier:Académie_de_Paldea_EV.png",
+   "checked": "shown on Poképédia's page \"Académie de Paldea\"; SV in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "3F2M3tOICM92",
+   "region": "Paldea",
+   "name": "North Province (Area One)",
+   "game": "Scarlet / Violet",
+   "source": "https://www.pokewiki.de/Datei:KAPU_Nördliche_Zone_1.jpg",
+   "checked": "shown on PokéWiki's page \"Nördliche Zone 1\"; SV in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "dvlSz3MvGjk5",
+   "region": "Paldea",
+   "name": "North Province (Area One)",
+   "game": "Scarlet / Violet",
+   "source": "https://www.pokewiki.de/Datei:KAPU_Pfahl_-_Yuyu_(Blaue_Pfähle)_2.jpg",
+   "checked": "shown on PokéWiki's page \"Nördliche Zone 1\"; SV in its name or category; cropped (right 18%); reviewed on a contact sheet"
+  },
+  {
+   "id": "_InjeKG53JF9",
+   "region": "Paldea",
+   "name": "North Province (Area One)",
+   "game": "Scarlet / Violet",
+   "source": "https://www.pokewiki.de/Datei:KAPU_Pfahl_-_Yuyu_(Blaue_Pfähle)_4.jpg",
+   "checked": "shown on PokéWiki's page \"Nördliche Zone 1\"; SV in its name or category; cropped (right 18%); reviewed on a contact sheet"
+  },
+  {
+   "id": "FZZI0LmCN8sL",
+   "region": "Paldea",
+   "name": "North Province (Area Two)",
+   "game": "Scarlet / Violet",
+   "source": "https://www.pokewiki.de/Datei:KAPU_Fundort_Onea_und_Billy_2.jpg",
+   "checked": "shown on PokéWiki's page \"Nördliche Zone 2\"; SV in its name or category; cropped (right 18%); reviewed on a contact sheet"
+  },
+  {
+   "id": "P1mBvT6B3Rup",
+   "region": "Paldea",
+   "name": "North Province (Area Two)",
+   "game": "Scarlet / Violet",
+   "source": "https://www.pokewiki.de/Datei:KAPU_Nördliche_Zone_2.jpg",
+   "checked": "shown on PokéWiki's page \"Nördliche Zone 2\"; SV in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "s7rEdHK9Lkcl",
+   "region": "Paldea",
+   "name": "Poco Path",
+   "game": "Scarlet / Violet",
+   "source": "https://www.pokewiki.de/Datei:Leuchtturm_am_Cucharico-Pfad_KAPU.jpg",
+   "checked": "shown on PokéWiki's page \"Cucharico-Pfad\"; SV in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "91K8BcRYaG41",
+   "region": "Paldea",
+   "name": "Pokémon League",
+   "game": "Scarlet / Violet",
+   "source": "https://archives.bulbagarden.net/wiki/File:Pokémon_League_SV.png",
+   "checked": "shown on Bulbapedia's page \"Pokémon League (Paldea)\"; SV in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "-ureEOnkllBx",
+   "region": "Paldea",
+   "name": "Porto Marinada",
+   "game": "Scarlet / Violet",
+   "source": "https://www.pokewiki.de/Datei:KAPU_Puerto_Marinedo.png",
+   "checked": "shown on PokéWiki's page \"Puerto Marinedo\"; SV in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "mWqo3J13u-a3",
+   "region": "Paldea",
+   "name": "Porto Marinada",
+   "game": "Scarlet / Violet",
+   "source": "https://www.pokepedia.fr/Fichier:Porto_Marinada_Huile_EV.png",
+   "checked": "shown on Poképédia's page \"Porto Marinada\"; SV in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "t_h8S8Sb9bJt",
+   "region": "Paldea",
+   "name": "Porto Marinada Market",
+   "parent": "Porto Marinada",
+   "game": "Scarlet / Violet",
+   "source": "https://www.pokewiki.de/Datei:KAPU_Markt_von_Puerto_Marinedo.png",
+   "checked": "shown on PokéWiki's page \"Markt von Puerto Marinedo\"; SV in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "fV1omaiofDAp",
+   "region": "Paldea",
+   "name": "South Province (Area Five)",
+   "game": "Scarlet / Violet",
+   "source": "https://www.pokewiki.de/Datei:KAPU_Fundort_Onea_und_Billy_3.jpg",
+   "checked": "shown on PokéWiki's page \"Südliche Zone 5\"; SV in its name or category; cropped (right 18%); reviewed on a contact sheet"
+  },
+  {
+   "id": "VDzq2i8iIiPU",
+   "region": "Paldea",
+   "name": "South Province (Area Five)",
+   "game": "Scarlet / Violet",
+   "source": "https://www.pokewiki.de/Datei:KAPU_Pfahl_-_Chongjian_(Rosa_Pfähle)_2.jpg",
+   "checked": "shown on PokéWiki's page \"Südliche Zone 5\"; SV in its name or category; cropped (right 18%); reviewed on a contact sheet"
+  },
+  {
+   "id": "q8GqXUfigs17",
+   "region": "Paldea",
+   "name": "South Province (Area Five)",
+   "game": "Scarlet / Violet",
+   "source": "https://www.pokewiki.de/Datei:KAPU_Pfahl_-_Chongjian_(Rosa_Pfähle)_3.jpg",
+   "checked": "shown on PokéWiki's page \"Südliche Zone 5\"; SV in its name or category; cropped (right 18%); reviewed on a contact sheet"
+  },
+  {
+   "id": "WJwU52YNtsOA",
+   "region": "Paldea",
+   "name": "South Province (Area Five)",
+   "game": "Scarlet / Violet",
+   "source": "https://www.pokewiki.de/Datei:KAPU_Südliche_Zone_5.jpg",
+   "checked": "shown on PokéWiki's page \"Südliche Zone 5\"; SV in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "yiFFZExLyvZ5",
+   "region": "Paldea",
+   "name": "South Province (Area Four)",
+   "game": "Scarlet / Violet",
+   "source": "https://www.pokewiki.de/Datei:KAPU_Pfahl_-_Chongjian_(Rosa_Pfähle)_1.jpg",
+   "checked": "shown on PokéWiki's page \"Südliche Zone 4\"; SV in its name or category; cropped (right 18%); reviewed on a contact sheet"
+  },
+  {
+   "id": "TDrxycTP2SGW",
+   "region": "Paldea",
+   "name": "South Province (Area Four)",
+   "game": "Scarlet / Violet",
+   "source": "https://www.pokewiki.de/Datei:KAPU_Südliche_Zone_4.jpg",
+   "checked": "shown on PokéWiki's page \"Südliche Zone 4\"; SV in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "Xg32yKAAHnxj",
+   "region": "Paldea",
+   "name": "South Province (Area One)",
+   "game": "Scarlet / Violet",
+   "source": "https://www.pokewiki.de/Datei:KAPU_Pfahl_-_Chongjian_(Rosa_Pfähle)_4.jpg",
+   "checked": "shown on PokéWiki's page \"Südliche Zone 1\"; SV in its name or category; cropped (right 18%); reviewed on a contact sheet"
+  },
+  {
+   "id": "ntmgypGcwbY5",
+   "region": "Paldea",
+   "name": "South Province (Area Six)",
+   "game": "Scarlet / Violet",
+   "source": "https://www.pokepedia.fr/Fichier:Zone_Sud_n°_6_EV.png",
+   "checked": "shown on Poképédia's page \"Zone Sud n° 6\"; SV in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "JyH24ZlTBkca",
+   "region": "Paldea",
+   "name": "South Province (Area Three)",
+   "game": "Scarlet / Violet",
+   "source": "https://www.pokewiki.de/Datei:KAPU_Fundort_Onea_und_Billy_7.jpg",
+   "checked": "shown on PokéWiki's page \"Südliche Zone 3\"; SV in its name or category; cropped (right 18%); reviewed on a contact sheet"
+  },
+  {
+   "id": "0Z7tRLe7zzKL",
+   "region": "Paldea",
+   "name": "South Province (Area Three)",
+   "game": "Scarlet / Violet",
+   "source": "https://www.pokewiki.de/Datei:KAPU_Pfahl_-_Chongjian_(Rosa_Pfähle)_5.jpg",
+   "checked": "shown on PokéWiki's page \"Südliche Zone 3\"; SV in its name or category; cropped (right 18%); reviewed on a contact sheet"
+  },
+  {
+   "id": "HfKZlOMNwUOD",
+   "region": "Paldea",
+   "name": "South Province (Area Three)",
+   "game": "Scarlet / Violet",
+   "source": "https://www.pokewiki.de/Datei:KAPU_Südliche_Zone_3.jpg",
+   "checked": "shown on PokéWiki's page \"Südliche Zone 3\"; SV in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "WRNeXncVuX7S",
+   "region": "Paldea",
+   "name": "Navi Squad's Base",
+   "parent": "Tagtree Thicket",
+   "game": "Scarlet / Violet",
+   "source": "https://www.pokewiki.de/Datei:KAPU_Versteck_der_Gift-Mitglieder.png",
+   "checked": "shown on PokéWiki's page \"Versteck der Gift-Mitglieder\"; SV in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "awFSozVmMils",
+   "region": "Paldea",
+   "name": "Navi Squad's Base",
+   "parent": "Tagtree Thicket",
+   "game": "Scarlet / Violet",
+   "source": "https://www.pokepedia.fr/Fichier:Repaire_du_Groupe_Tsih_EV.png",
+   "checked": "shown on Poképédia's page \"Repaire du Groupe Tsih\"; SV in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "2rVe3w7TObwe",
+   "region": "Paldea",
+   "name": "West Province (Area One)",
+   "game": "Scarlet / Violet",
+   "source": "https://www.pokewiki.de/Datei:KAPU_Pfahl_-_Baojian_(Gelbe_Pfähle)_4.jpg",
+   "checked": "shown on PokéWiki's page \"Westliche Zone 1\"; SV in its name or category; cropped (right 18%); reviewed on a contact sheet"
+  },
+  {
+   "id": "ILJk6rSK8Fgw",
+   "region": "Paldea",
+   "name": "West Province (Area One)",
+   "game": "Scarlet / Violet",
+   "source": "https://www.pokewiki.de/Datei:KAPU_Westliche_Zone_1_Terrakium.jpg",
+   "checked": "in pokewiki's category \"KAPU-Screenshot\", named after the place; SV in its name or category; cropped (right 18%); reviewed on a contact sheet"
+  },
+  {
+   "id": "798Z3hEOvm4F",
+   "region": "Paldea",
+   "name": "West Province (Area One)",
+   "game": "Scarlet / Violet",
+   "source": "https://www.pokewiki.de/Datei:KAPU_Westliche_Zone_1.jpg",
+   "checked": "shown on PokéWiki's page \"Westliche Zone 1\"; SV in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "wo9TXoRLjCmR",
+   "region": "Paldea",
+   "name": "West Province (Area Three)",
+   "game": "Scarlet / Violet",
+   "source": "https://www.pokewiki.de/Datei:KAPU_Pfahl_-_Dinglu_(Grüne_Pfähle)_7.jpg",
+   "checked": "shown on PokéWiki's page \"Westliche Zone 3\"; SV in its name or category; cropped (right 18%); reviewed on a contact sheet"
+  },
+  {
+   "id": "OJA7Ww7QfRnQ",
+   "region": "Paldea",
+   "name": "West Province (Area Two)",
+   "game": "Scarlet / Violet",
+   "source": "https://www.pokewiki.de/Datei:KAPU_Pfahl_-_Dinglu_(Grüne_Pfähle)_1.jpg",
+   "checked": "shown on PokéWiki's page \"Westliche Zone 2\"; SV in its name or category; cropped (right 18%); reviewed on a contact sheet"
   }
  ]
 }
