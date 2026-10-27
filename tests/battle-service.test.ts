@@ -9,6 +9,7 @@ import {
   updateBattle,
 } from "@/lib/server/battle-engine/service";
 import { loadBattle, saveBattle } from "@/lib/server/battle-engine/store";
+import * as store from "@/lib/server/battle-engine/store";
 import { firstChoice } from "@/lib/server/battle-engine/choices";
 import { SIM_VERSION } from "@/lib/server/battle-engine/engine";
 import { BATTLE_TIMER, type BattleView } from "@/lib/battle/play";
@@ -74,6 +75,29 @@ describe("battles against the computer", () => {
     // The input log has explicit choices only (no "default").
     const stored = await loadBattle(made.code);
     expect(stored!.rec.inputLog.some((l) => /default/.test(l))).toBe(false);
+  });
+
+  it("starts a turn from the record it remembers, and from the store once another instance moved on", async () => {
+    const made = await createCpuBattle({ name: "Red", format: "gen9randombattle", level: "easy" });
+    if (!made.ok) throw new Error(made.error);
+    const seat = readBattleToken(made.token, made.code)!;
+    // Remembered from the insert: the first turn needs no read (the store is spied on).
+    const loads = vi.spyOn(store, "loadBattle");
+    const first = await choose(made.code, made.token, made.view);
+    expect(loads).not.toHaveBeenCalled();
+    expect(first.turn).toBe(2);
+    // Another instance (a direct save) changes the record behind this one's back: a forfeit.
+    const stored = (await store.loadBattle(made.code))!;
+    const meta = structuredClone(stored.rec.meta);
+    meta.status = "finished";
+    meta.end = { at: Date.now(), winner: 1, reason: "forfeit" };
+    expect(await saveBattle(made.code, stored.version, { meta })).toBe(true);
+    // The remembered copy is stale: the compare-and-swap fails, the store is read, and the choice is refused.
+    const out = await actOnBattle(made.code, seat.playerId, { action: "choose", rqid: first.request!.rqid, choice: "move 1" }, first.log.total);
+    expect(loads).toHaveBeenCalled();
+    expect(out.ok).toBe(false);
+    if (!out.ok) expect(out.status).toBe(409);
+    loads.mockRestore();
   });
 
   it("rejects stale and duplicate choices", async () => {

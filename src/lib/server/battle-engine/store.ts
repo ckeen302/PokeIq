@@ -235,8 +235,8 @@ export async function loadBattle(code: string): Promise<{ rec: BattleRecord; ver
 export async function insertBattle(rec: BattleRecord): Promise<boolean> {
   const sb = remote();
   if (sb) {
-    // Opportunistic cleanup keeps the table small without a cron job.
-    await sb.from(TABLE).delete().lt("expires_at", new Date().toISOString());
+    // Opportunistic cleanup keeps the table small without a cron job: one insert in ten sweeps expired rows.
+    if (Math.random() < 0.1) await sb.from(TABLE).delete().lt("expires_at", new Date().toISOString());
     const { error } = await sb.from(TABLE).insert({
       code: rec.meta.code,
       kind: rec.meta.kind,
