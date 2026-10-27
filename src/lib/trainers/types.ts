@@ -1,6 +1,7 @@
 /**
  * Shapes of the committed trainer data (src/data/trainers/<game>.json), built by
- * scripts/trainers/import.ts from the pret decompilation projects. Client safe.
+ * scripts/trainers/import.ts from the pret decompilation projects (Gen I–IV)
+ * and scripts/trainers/wiki-import.ts from Bulbapedia (Gen V–IX). Client safe.
  */
 
 /** One Pokémon on a trainer's team, exactly as the game's party data builds it. */
@@ -17,6 +18,12 @@ export interface TrainerMon {
   i?: string;
   /** Form index when it isn't the base form. */
   f?: number;
+  /** Form name when the source names it rather than numbering it ("Alolan Form", "Gigantamax"). */
+  fn?: string;
+  /** Ability, when the source lists it (Gen V+ full sets). */
+  ab?: string;
+  /** Tera Type (Scarlet & Violet). */
+  tt?: string;
 }
 
 /** A place a trainer stands: an area (route, town, dungeon) and, inside it, the map. */
