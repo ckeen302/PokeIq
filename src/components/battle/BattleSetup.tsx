@@ -169,7 +169,8 @@ export function BattleSetup({ initial = "cpu", challenge }: { initial?: Opponent
   useEffect(() => {
     void ensureBattleId();
     const id = window.setTimeout(() => {
-      for (const url of ["/api/battle", "/api/battle/warm-up"]) void fetch(url, { cache: "no-store" }).catch(() => undefined);
+      // The bodies are read so the browser closes the requests (an unread body keeps one open).
+      for (const url of ["/api/battle", "/api/battle/warm-up"]) void fetch(url, { cache: "no-store" }).then((r) => r.text()).catch(() => undefined);
     }, 300);
     return () => window.clearTimeout(id);
   }, []);
