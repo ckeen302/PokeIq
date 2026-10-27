@@ -6,8 +6,10 @@
 import { randomBytes } from "node:crypto";
 import sharp from "sharp";
 import { createClient } from "@supabase/supabase-js";
+import { httpGet, wikiApi } from "./http";
 
-export const UA = "PokeIQ-ingest/1.0 (https://pokeiq.vercel.app; cadenkeen@gmail.com)";
+export { UA } from "./http";
+
 export const ARCHIVES = "https://archives.bulbagarden.net/w/api.php";
 export const WIKI = "https://bulbapedia.bulbagarden.net/w/api.php";
 export const BUCKET = "geo";
@@ -85,25 +87,10 @@ export function geoStorage() {
 export type GeoStorage = ReturnType<typeof geoStorage>;
 
 // ---------------------------------------------------------------------------
-// HTTP helpers (polite: sequential, small delay, retries)
+// HTTP helpers (polite: through curl, a gap between requests to a host, retries; see ./http)
 // ---------------------------------------------------------------------------
 
 export const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
-
-async function fetchRetry(url: string): Promise<Response> {
-  for (let attempt = 0; ; attempt++) {
-    try {
-      const res = await fetch(url, { headers: { "User-Agent": UA }, signal: AbortSignal.timeout(30_000) });
-      if (res.ok) return res;
-      // 403: a rate limiter in front of the wiki as often as a real refusal, so it is retried too.
-      if (res.status !== 429 && res.status !== 403 && res.status < 500) throw new Error(`${res.status} ${url}`);
-      if (attempt >= 4) throw new Error(`${res.status} ${url}`);
-    } catch (err) {
-      if (attempt >= 3) throw err;
-    }
-    await sleep(2000 * 2 ** attempt);
-  }
-}
 
 /**
  * The Archives' own API sits behind a browser check from some networks. Its
@@ -125,14 +112,11 @@ export async function archivesApi<T>(params: Record<string, string>): Promise<T 
 }
 
 export async function api<T>(base: string, params: Record<string, string>): Promise<T> {
-  await sleep(150);
-  const res = await fetchRetry(`${base}?${new URLSearchParams({ ...params, format: "json", formatversion: "2" })}`);
-  return (await res.json()) as T;
+  return wikiApi<T>(base, params);
 }
 
 export async function download(url: string): Promise<Buffer> {
-  await sleep(100);
-  return Buffer.from(await (await fetchRetry(url)).arrayBuffer());
+  return httpGet(url);
 }
 
 /** Resolves File: names to their upload URLs, 50 at a time. */
@@ -580,3 +564,33 @@ export async function collectShots(files: string[], max: number, store: ShotStor
   }
   return shots;
 }
+
+// ---------------------------------------------------------------------------
+// Near-copies
+// ---------------------------------------------------------------------------
+
+/** A difference hash of a screenshot (borders trimmed, 17 × 16 grey): 256 bits, as a string of 0s and 1s. */
+export async function imageHash(buf: Buffer): Promise<string> {
+  let img = sharp(buf).flatten({ background: "#000" });
+  try {
+    img = sharp(await img.trim({ threshold: 30 }).toBuffer());
+  } catch {
+    // Nothing to trim.
+  }
+  const px = await img.resize(17, 16, { fit: "fill" }).greyscale().raw().toBuffer();
+  let bits = "";
+  for (let y = 0; y < 16; y++) for (let x = 0; x < 16; x++) bits += px[y * 17 + x] < px[y * 17 + x + 1] ? "1" : "0";
+  return bits;
+}
+
+export function hashDistance(a: string, b: string): number {
+  let d = 0;
+  for (let i = 0; i < a.length; i++) if (a[i] !== b[i]) d++;
+  return d;
+}
+
+/** Hash distance under which two shots of one place are copies: of any game, or of the same game (seasons, Sword's and Shield's, a wiki's copy). */
+export const SAME_PICTURE = 10;
+export const SAME_GAME_PICTURE = 24;
+/** Two places whose shots are this alike (two Regi chambers, two open-sea routes) can't be told apart. */
+export const LOOK_ALIKE = 18;
