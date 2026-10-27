@@ -5,7 +5,7 @@ import { RoomList } from "@/components/rooms/RoomList";
 
 export const metadata: Metadata = pageMetadata({
   title: "Chat rooms",
-  description: "Chat with other trainers on PokéIQ: the Lobby, Random Battles, OverUsed, Little Cup, PokéGuessr, Pokédle, Help and the Trainer Academy for beginners.",
+  description: "Chat with other trainers on PokéIQ: the Main Lobby, Pokédle, Connections, Pikadoku, PokéGuessr, Battle and Quizzes rooms.",
   path: "/rooms",
 });
 

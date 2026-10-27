@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import { ROOM_MOVED } from "./src/lib/rooms";
 
 /**
  * Only PokéAPI's sprite CDN (GitHub raw) is allowed as a remote image source.
@@ -42,9 +43,12 @@ const nextConfig: NextConfig = {
     ),
     "/**/opengraph-image*": ["./src/assets/fonts/*.ttf"],
   },
-  // Battle profiles became the trainer's profile.
+  // Battle profiles became the trainer's profile; merged chat rooms point to their new room.
   async redirects() {
-    return [{ source: "/battle/player/:name", destination: "/u/:name", permanent: true }];
+    return [
+      { source: "/battle/player/:name", destination: "/u/:name", permanent: true },
+      ...Object.entries(ROOM_MOVED).map(([from, to]) => ({ source: `/rooms/${from}`, destination: `/rooms/${to}`, permanent: true })),
+    ];
   },
   async headers() {
     return [

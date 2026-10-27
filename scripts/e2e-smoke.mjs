@@ -1842,7 +1842,7 @@ await page.getByTestId("hotkeys-help").waitFor({ state: "detached", timeout: 5_0
     console.log("  hotkey 1 played turn 1");
   }
 }
-await page.getByRole("button", { name: "4x" }).click();
+await page.getByRole("button", { name: "4x", exact: true }).click();
 const cpuTurns = await playBattle(page, 10, "battle-cpu-turn");
 console.log(`  stopped at turn ${cpuTurns}`);
 if (cpuTurns < 3) errors.push(`the battle against the computer only reached turn ${cpuTurns}`);
@@ -1874,7 +1874,7 @@ await page.getByLabel("Your trainer name").fill("Red");
 await page.getByRole("button", { name: /Start battle/ }).click();
 await page.waitForURL(/\/battle\/play\/[a-z2-9]{8}$/);
 await page.getByText(/\[Gen 4\] Custom · Lv 50/).first().waitFor({ timeout: 60_000 });
-await page.getByRole("button", { name: "4x" }).click();
+await page.getByRole("button", { name: "4x", exact: true }).click();
 const customTurns = await playBattle(page, 4, "battle-custom-turn");
 if (customTurns < 3) errors.push(`the Gen 4 custom battle only reached turn ${customTurns}`);
 if (!/L50/.test(await page.getByTestId("battle-log").innerText().catch(() => ""))) console.log("  (level shown in sprites only)");
@@ -1905,7 +1905,7 @@ for (let attempt = 0; attempt < 4 && !factoryWon; attempt++) {
   await page.getByTestId("frontier-next").click();
   await page.waitForURL(/\/battle\/play\/[a-z2-9]{8}$/);
   await page.getByTestId("battle-streak").waitFor({ timeout: 60_000 });
-  await page.getByRole("button", { name: "4x" }).click();
+  await page.getByRole("button", { name: "4x", exact: true }).click();
   await playBattle(page, 200, attempt === 0 ? "battle-factory-turn" : undefined);
   await page.getByTestId("frontier-after").waitFor({ timeout: 30_000 });
   factoryWon = (await page.getByTestId("frontier-continue").count()) > 0;
@@ -1975,7 +1975,7 @@ await liveBlue.getByRole("button", { name: "Ready", exact: true }).click();
 
 step("live battle: both choose moves for a couple of turns");
 await Promise.all([liveRed, liveBlue].map((p) => p.locator("[data-testid=move-button]").first().waitFor({ timeout: 60_000 })));
-for (const p of [liveRed, liveBlue]) await p.getByRole("button", { name: "4x" }).click();
+for (const p of [liveRed, liveBlue]) await p.getByRole("button", { name: "4x", exact: true }).click();
 if (!(await liveRed.getByTestId("battle-clocks").count())) errors.push("the live battle shows no turn timer");
 // The timer warns as the turn's time runs low (30 s left of Showdown's 150 s first turn), and says running out loses.
 step("live battle: the turn timer warns at 30 seconds left, with loss on timeout");
@@ -2044,7 +2044,7 @@ await mmBlue.getByText("Matched! You vs Red").waitFor();
 // No lobby: both have a move to make at once.
 await Promise.all([mmRed, mmBlue].map((p) => p.locator("[data-testid=move-button]").first().waitFor({ timeout: 60_000 })));
 await mmBlue.screenshot({ path: `${OUT}/battle-matched.png` });
-for (const p of [mmRed, mmBlue]) await p.getByRole("button", { name: "4x" }).click();
+for (const p of [mmRed, mmBlue]) await p.getByRole("button", { name: "4x", exact: true }).click();
 const [mmTurn] = await Promise.all([playBattle(mmRed, 1, null), playBattle(mmBlue, 1, null)]);
 if (mmTurn < 2) errors.push(`the matched battle didn't get past turn ${mmTurn}`);
 
@@ -2122,7 +2122,7 @@ await mmRed.getByTestId("replay-back").click();
 await mmRed.getByTestId("replay-turn").filter({ hasText: /^Leads \// }).waitFor();
 await mmRed.getByTestId("battle-log").getByText(/sent out/).first().waitFor();
 await mmRed.getByRole("button", { name: "0.5x" }).click();
-await mmRed.getByRole("button", { name: "4x" }).click();
+await mmRed.getByRole("button", { name: "4x", exact: true }).click();
 await mmRed.getByTestId("replay-play").click();
 await mmRed.getByTestId("replay-turn").filter({ hasText: /^Turn [3-9]/ }).waitFor({ timeout: 60_000 });
 await mmRed.getByTestId("replay-pause").click();

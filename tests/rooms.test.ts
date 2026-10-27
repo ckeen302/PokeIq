@@ -73,8 +73,8 @@ describe("posting in rooms", () => {
   });
 
   it("keeps the last 100 messages", async () => {
-    for (let i = 0; i < 105; i++) await postToRoom(store, i % 2 ? red : blue, "help", `message ${i}`, T + i * 60_000);
-    const kept = await store.messages("help");
+    for (let i = 0; i < 105; i++) await postToRoom(store, i % 2 ? red : blue, "battle", `message ${i}`, T + i * 60_000);
+    const kept = await store.messages("battle");
     expect(kept).toHaveLength(100);
     expect(kept[0].text).toBe("message 5");
   });
