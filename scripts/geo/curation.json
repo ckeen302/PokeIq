@@ -13373,6 +13373,812 @@
    "game": "Diamond / Pearl",
    "source": "https://www.pokepedia.fr/Fichier:Grotte_Revêche_Rappel_DP.png",
    "checked": "shown on Poképédia's page \"Grotte des Égarés\"; DP in its name or category; cropped (bottom 28%); reviewed on a contact sheet"
+  },
+  {
+   "id": "QLCalvyPPEJF",
+   "region": "Alola",
+   "name": "Team Rocket's Castle",
+   "parent": "Aether Paradise",
+   "game": "Ultra Sun / Ultra Moon",
+   "source": "https://www.pokewiki.de/Datei:USUM_Rocket-Schloss_Nordwestflügel_Raum_F.png",
+   "checked": "shown on PokéWiki's page \"Rocket-Schloss\"; USUM in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "Up9N7G9CzenU",
+   "region": "Alola",
+   "name": "Team Rocket's Castle",
+   "parent": "Aether Paradise",
+   "game": "Ultra Sun / Ultra Moon",
+   "source": "https://www.pokewiki.de/Datei:USUM_Rocket-Schloss_Südwestflügel_Raum_F.png",
+   "checked": "shown on PokéWiki's page \"Rocket-Schloss\"; USUM in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "YhCQ9enAaKK8",
+   "region": "Alola",
+   "name": "Hau'oli City",
+   "game": "Sun / Moon",
+   "source": "https://www.pokepedia.fr/Fichier:Ekaeka_SL.png",
+   "checked": "shown on Poképédia's page \"Ekaeka\"; SM in its name or category; cropped (bottom 20%); reviewed on a contact sheet"
+  },
+  {
+   "id": "eJw_F1waQ13Y",
+   "region": "Alola",
+   "name": "Route 1",
+   "game": "Sun / Moon",
+   "source": "https://www.pokepedia.fr/Fichier:Route_1_SL.png",
+   "checked": "shown on Poképédia's page \"Route 1 (Alola)\"; SM in its name or category; cropped (bottom 20%); reviewed on a contact sheet"
+  },
+  {
+   "id": "nua6uE9Vcn-y",
+   "region": "Hoenn",
+   "name": "Desert Ruins",
+   "game": "Ruby / Sapphire",
+   "source": "https://archives.bulbagarden.net/wiki/File:Desert_Ruins_RS.png",
+   "checked": "shown on Bulbapedia's page \"Desert Ruins\"; RS in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "OMj2-65GB_F5",
+   "region": "Hoenn",
+   "name": "Fallarbor Town",
+   "game": "Emerald",
+   "source": "https://www.pokepedia.fr/Fichier:Autéquia_Pépite_E.png",
+   "checked": "shown on Poképédia's page \"Autéquia\"; E in its name or category; cropped (bottom 32%); reviewed on a contact sheet"
+  },
+  {
+   "id": "XxA25mJNeJms",
+   "region": "Hoenn",
+   "name": "Fiery Path",
+   "game": "Emerald",
+   "source": "https://www.pokepedia.fr/Fichier:Chemin_Ardent_Pierre_Feu_E.png",
+   "checked": "shown on Poképédia's page \"Chemin Ardent\"; E in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "Dcx5Qxbw96AJ",
+   "region": "Hoenn",
+   "name": "Granite Cave",
+   "game": "Ruby / Sapphire",
+   "source": "https://archives.bulbagarden.net/wiki/File:Granite_Cave_RS.png",
+   "checked": "shown on Bulbapedia's page \"Granite Cave\"; RS in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "thm0LWVbGHJr",
+   "region": "Hoenn",
+   "name": "Granite Cave",
+   "game": "Emerald",
+   "source": "https://www.pokepedia.fr/Fichier:Grotte_Granite_Corde_Sortie_E.png",
+   "checked": "shown on Poképédia's page \"Grotte Granite\"; E in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "NNwtAHq9Cf5o",
+   "region": "Hoenn",
+   "name": "Lavaridge Town",
+   "game": "Emerald",
+   "source": "https://www.pokepedia.fr/Fichier:Vermilava_Antigel_E.png",
+   "checked": "shown on Poképédia's page \"Vermilava\"; E in its name or category; cropped (bottom 32%); reviewed on a contact sheet"
+  },
+  {
+   "id": "ZH2mnOTyoJZd",
+   "region": "Hoenn",
+   "name": "Lilycove City",
+   "game": "Emerald",
+   "source": "https://www.pokepedia.fr/Fichier:Nénucrique_Écailleœur_E.png",
+   "checked": "shown on Poképédia's page \"Nénucrique\"; E in its name or category; cropped (bottom 32%); reviewed on a contact sheet"
+  },
+  {
+   "id": "JkKotXNArBij",
+   "region": "Hoenn",
+   "name": "Littleroot Town",
+   "game": "Emerald",
+   "source": "https://www.pokepedia.fr/Fichier:Bourg-en-Vol_Chaussures_de_Sport_E.png",
+   "checked": "shown on Poképédia's page \"Bourg-en-Vol\"; E in its name or category; cropped (bottom 32%); reviewed on a contact sheet"
+  },
+  {
+   "id": "DsVcfX10lDxp",
+   "region": "Hoenn",
+   "name": "Littleroot Town",
+   "game": "Ruby / Sapphire",
+   "source": "https://pokemon.fandom.com/wiki/File:Littleroot_Town_moving_in_RS.png",
+   "checked": "shown on the Pokémon Wiki's page \"Littleroot Town\"; RS in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "DQSh5A-jzDIg",
+   "region": "Hoenn",
+   "name": "Mauville City",
+   "game": "Ruby / Sapphire",
+   "source": "https://archives.bulbagarden.net/wiki/File:Rydel_Cycles_RS.png",
+   "checked": "shown on Bulbapedia's page \"Mauville City\"; RS in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "bLHtsqXga8L0",
+   "region": "Hoenn",
+   "name": "Mirage Tower",
+   "game": "Emerald",
+   "source": "https://www.pokepedia.fr/Fichier:Tour_Mirage_Foss._Griffe_E.png",
+   "checked": "shown on Poképédia's page \"Tour Mirage\"; E in its name or category; cropped (bottom 32%); reviewed on a contact sheet"
+  },
+  {
+   "id": "vzT82PbeIh0M",
+   "region": "Hoenn",
+   "name": "Oldale Town",
+   "game": "Emerald",
+   "source": "https://www.pokepedia.fr/Fichier:Rosyères_Potion_E.png",
+   "checked": "shown on Poképédia's page \"Rosyères\"; E in its name or category; cropped (bottom 32%); reviewed on a contact sheet"
+  },
+  {
+   "id": "46zXJg3JIbpT",
+   "region": "Hoenn",
+   "name": "Petalburg Woods",
+   "game": "Emerald",
+   "source": "https://www.pokepedia.fr/Fichier:Bois_Clémenti_Anti-Para_E.png",
+   "checked": "shown on Poképédia's page \"Bois Clémenti\"; E in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "MNT0Y1pmh7Sn",
+   "region": "Hoenn",
+   "name": "Petalburg Woods",
+   "game": "Emerald",
+   "source": "https://www.pokepedia.fr/Fichier:Bois_Clémenti_Huile_E.png",
+   "checked": "shown on Poképédia's page \"Bois Clémenti\"; E in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "jfu3dJEPAWLC",
+   "region": "Hoenn",
+   "name": "Petalburg Woods",
+   "game": "Emerald",
+   "source": "https://www.pokepedia.fr/Fichier:Bois_Clémenti_Potion_E.png",
+   "checked": "shown on Poképédia's page \"Bois Clémenti\"; E in its name or category; cropped (bottom 32%); reviewed on a contact sheet"
+  },
+  {
+   "id": "KaLzLe0Cw1Wm",
+   "region": "Hoenn",
+   "name": "Route 102",
+   "game": "Emerald",
+   "source": "https://www.pokepedia.fr/Fichier:Route_102_Baie_Oran_&_Baie_Pêcha_E.png",
+   "checked": "shown on Poképédia's page \"Route 102\"; E in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "QYnfcuWrJ1xw",
+   "region": "Hoenn",
+   "name": "Route 103",
+   "game": "Emerald",
+   "source": "https://www.pokepedia.fr/Fichier:Route_103_Baie_Mepo_&_Baie_Ceriz_E.png",
+   "checked": "shown on Poképédia's page \"Route 103\"; E in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "aVjR2p4078km",
+   "region": "Hoenn",
+   "name": "Route 103",
+   "game": "Ruby / Sapphire",
+   "source": "https://www.pokepedia.fr/Fichier:Route_103_Défense_Spéc_RS.png",
+   "checked": "shown on Poképédia's page \"Route 103\"; RS in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "6EFavqAdfn6R",
+   "region": "Hoenn",
+   "name": "Route 105",
+   "game": "Emerald",
+   "source": "https://www.pokepedia.fr/Fichier:Chenal_105_Grande_Perle_E.png",
+   "checked": "shown on Poképédia's page \"Chenal 105\"; E in its name or category; cropped (bottom 32%); reviewed on a contact sheet"
+  },
+  {
+   "id": "lOcqi1VEpsoU",
+   "region": "Hoenn",
+   "name": "Route 106",
+   "game": "Emerald",
+   "source": "https://www.pokepedia.fr/Fichier:Chenal_106_Pouss.Étoile_E.png",
+   "checked": "shown on Poképédia's page \"Chenal 106\"; E in its name or category; cropped (bottom 32%); reviewed on a contact sheet"
+  },
+  {
+   "id": "wydEJYreVG_T",
+   "region": "Hoenn",
+   "name": "Route 108",
+   "game": "Emerald",
+   "source": "https://www.pokepedia.fr/Fichier:Chenal_108_Morc._Étoile_E.png",
+   "checked": "shown on Poképédia's page \"Chenal 108\"; E in its name or category; cropped (bottom 32%); reviewed on a contact sheet"
+  },
+  {
+   "id": "w4LbtiGUHBxM",
+   "region": "Hoenn",
+   "name": "Route 115",
+   "game": "Emerald",
+   "source": "https://www.pokepedia.fr/Fichier:Route_115_Baie_Remu_E.png",
+   "checked": "shown on Poképédia's page \"Route 115\"; E in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "Y3rnKOTDyI9q",
+   "region": "Hoenn",
+   "name": "Route 115",
+   "game": "Emerald",
+   "source": "https://www.pokepedia.fr/Fichier:Route_115_Baies_Alga_E.png",
+   "checked": "shown on Poképédia's page \"Route 115\"; E in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "-FQ0mjsL9BXs",
+   "region": "Hoenn",
+   "name": "Route 115",
+   "game": "Emerald",
+   "source": "https://www.pokepedia.fr/Fichier:Route_115_Poudre_Soin_E.png",
+   "checked": "shown on Poképédia's page \"Route 115\"; E in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "Wwa9BSnARsY3",
+   "region": "Hoenn",
+   "name": "Route 116",
+   "game": "Emerald",
+   "source": "https://www.pokepedia.fr/Fichier:Route_116_Huile_E.png",
+   "checked": "shown on Poképédia's page \"Route 116\"; E in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "6ow5-7maz6Z2",
+   "region": "Hoenn",
+   "name": "Route 116",
+   "game": "Emerald",
+   "source": "https://www.pokepedia.fr/Fichier:Route_116_Potion_E.png",
+   "checked": "shown on Poképédia's page \"Route 116\"; E in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "OKx9LkwIM_Bd",
+   "region": "Hoenn",
+   "name": "Route 125",
+   "game": "Emerald",
+   "source": "https://www.pokepedia.fr/Fichier:Chenal_125_Grande_Perle_E.png",
+   "checked": "shown on Poképédia's page \"Chenal 125\"; E in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "IXOY8qc5qMaF",
+   "region": "Hoenn",
+   "name": "Route 127",
+   "game": "Emerald",
+   "source": "https://www.pokepedia.fr/Fichier:Chenal_127_Super_Bonbon_E.png",
+   "checked": "shown on Poképédia's page \"Chenal 127\"; E in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "eREPNEx5L-iN",
+   "region": "Hoenn",
+   "name": "Route 132",
+   "game": "Emerald",
+   "source": "https://www.pokepedia.fr/Fichier:Chenal_132_Protéine_E.png",
+   "checked": "shown on Poképédia's page \"Chenal 132\"; E in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "XJleuBiaJzQS",
+   "region": "Hoenn",
+   "name": "Route 132",
+   "game": "Emerald",
+   "source": "https://www.pokepedia.fr/Fichier:Chenal_132_Super_Bonbon_E.png",
+   "checked": "shown on Poképédia's page \"Chenal 132\"; E in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "TBzAVRYi1mPb",
+   "region": "Hoenn",
+   "name": "Route 133",
+   "game": "Emerald",
+   "source": "https://www.pokepedia.fr/Fichier:Chenal_133_Grande_Perle_E.png",
+   "checked": "shown on Poképédia's page \"Chenal 133\"; E in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "dXQ5ON5T8ziQ",
+   "region": "Hoenn",
+   "name": "Route 133",
+   "game": "Emerald",
+   "source": "https://www.pokepedia.fr/Fichier:Chenal_133_Morc._Étoile_E.png",
+   "checked": "shown on Poképédia's page \"Chenal 133\"; E in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "g8XjkKXZlnIZ",
+   "region": "Hoenn",
+   "name": "Route 134",
+   "game": "Emerald",
+   "source": "https://www.pokepedia.fr/Fichier:Chenal_134_Carbone_E.png",
+   "checked": "shown on Poképédia's page \"Chenal 134\"; E in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "S3ChGidHOI7T",
+   "region": "Hoenn",
+   "name": "Sealed Chamber",
+   "game": "Omega Ruby / Alpha Sapphire",
+   "source": "https://www.pokewiki.de/Datei:Siegelkammer_ORAS.png",
+   "checked": "shown on PokéWiki's page \"Siegelkammer\"; ORAS in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "7VkGDFEtxtBJ",
+   "region": "Hoenn",
+   "name": "Slateport City",
+   "game": "Emerald",
+   "source": "https://www.pokepedia.fr/Fichier:Poivressel_Écailleocéan_E.png",
+   "checked": "shown on Poképédia's page \"Poivressel\"; E in its name or category; cropped (bottom 32%); reviewed on a contact sheet"
+  },
+  {
+   "id": "Cu9WhyXXpDuP",
+   "region": "Hoenn",
+   "name": "Oceanic Museum",
+   "parent": "Slateport City",
+   "game": "Ruby / Sapphire",
+   "source": "https://www.pokepedia.fr/Fichier:Attaque_Musée_Océanographique.png",
+   "checked": "in pokepedia's category \"Capture d'écran de Pokémon Rubis et Saphir\", named after the place; RS in its name or category; cropped (bottom 32%); reviewed on a contact sheet"
+  },
+  {
+   "id": "CDfc0ulXq9jq",
+   "region": "Hoenn",
+   "name": "Southern Island",
+   "game": "Ruby / Sapphire",
+   "source": "https://pokemon.fandom.com/wiki/File:Southern_Island_RS.png",
+   "checked": "shown on the Pokémon Wiki's page \"Southern Island\"; RS in its name or category; cropped (top 15%); reviewed on a contact sheet"
+  },
+  {
+   "id": "m2GIFCLzA_7a",
+   "region": "Unova",
+   "name": "Accumula Town",
+   "game": "Black / White",
+   "source": "https://www.pokepedia.fr/Fichier:TeamPlasmaSanyou.png",
+   "checked": "shown on Poképédia's page \"Arabelle\"; BW in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "VZ75PGYibdQx",
+   "region": "Unova",
+   "name": "Anville Town",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokepedia.fr/Fichier:Rotombourg_Poudreclaire_N2B2.png",
+   "checked": "shown on Poképédia's page \"Rotombourg\"; B2W2 in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "9rqJW82MMtGY",
+   "region": "Unova",
+   "name": "Black City / White Forest",
+   "game": "Black 2 / White 2",
+   "source": "https://pokemon.fandom.com/wiki/File:Black_City_B2W2.png",
+   "checked": "shown on the Pokémon Wiki's page \"Black City\"; B2W2 in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "aNNiQRIuQnqc",
+   "region": "Unova",
+   "name": "Black City / White Forest",
+   "game": "Black / White",
+   "source": "https://www.pokepedia.fr/Fichier:Ville_Noire_1.png",
+   "checked": "shown on Poképédia's page \"Ville Noire\"; BW in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "Lhxl8TpK9X5r",
+   "region": "Unova",
+   "name": "Black City / White Forest",
+   "game": "Black / White",
+   "source": "https://www.pokepedia.fr/Fichier:Ville_Noire_2.png",
+   "checked": "shown on Poképédia's page \"Ville Noire\"; BW in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "SJ9IvN1hRqrX",
+   "region": "Unova",
+   "name": "Black Tower",
+   "parent": "Black City / White Forest",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokepedia.fr/Fichier:Gratte-Ciel_Noir.png",
+   "checked": "shown on Poképédia's page \"Gratte-Ciel Noir\"; B2W2 in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "mao_6c1i-Z8h",
+   "region": "Unova",
+   "name": "Royal Unova",
+   "parent": "Castelia City",
+   "game": "Black / White",
+   "source": "https://www.pokewiki.de/Datei:Einall_Royal_Deck.png",
+   "checked": "shown on PokéWiki's page \"MS Einall Royal\"; BW in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "XL8uZF859gXG",
+   "region": "Unova",
+   "name": "Celestial Tower",
+   "game": "Black / White",
+   "source": "https://www.pokepedia.fr/Fichier:Tour_des_Cieux.png",
+   "checked": "shown on Poképédia's page \"Tour des Cieux\"; BW in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "grliafQ4_wDZ",
+   "region": "Unova",
+   "name": "Clay Tunnel",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokepedia.fr/Fichier:Route_Bardane-N2B2.png",
+   "checked": "in pokepedia's category \"Capture d'écran de Pokémon Noir 2 et Blanc 2\", named after the place; B2W2 in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "0yMQ3Wxi9SvL",
+   "region": "Unova",
+   "name": "Desert Resort",
+   "game": "Black / White",
+   "source": "https://www.pokepedia.fr/Fichier:Désert_Délassant_Bonbon_Rage_NB.png",
+   "checked": "shown on Poképédia's page \"Désert Délassant\"; BW in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "wDrYSJx3IURm",
+   "region": "Unova",
+   "name": "Desert Resort",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokepedia.fr/Fichier:Désert_Délassant_Pépite_N2B2.png",
+   "checked": "shown on Poképédia's page \"Désert Délassant\"; B2W2 in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "SHBW9DfdHBHT",
+   "region": "Unova",
+   "name": "Desert Resort",
+   "game": "Black / White",
+   "source": "https://www.pokepedia.fr/Fichier:Désert_Délassant_Pierre_Feu_NB.png",
+   "checked": "shown on Poképédia's page \"Désert Délassant\"; BW in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "sXsdHiaCHXTE",
+   "region": "Unova",
+   "name": "Driftveil City",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokepedia.fr/Fichier:Vokit_Port_Yoneuve.png",
+   "checked": "in pokepedia's category \"Capture d'écran de Pokémon Noir 2 et Blanc 2\", named after the place; B2W2 in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "nalzRN1KTM-T",
+   "region": "Unova",
+   "name": "Driftveil Drawbridge",
+   "game": "Black / White",
+   "source": "https://www.pokepedia.fr/Fichier:Pont_Yoneuve.png",
+   "checked": "shown on Poképédia's page \"Pont Yoneuve\"; BW in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "DaNY69KE5OVR",
+   "region": "Unova",
+   "name": "Giant Chasm",
+   "game": "Black / White",
+   "source": "https://www.pokewiki.de/Datei:Riesengrotte.png",
+   "checked": "shown on PokéWiki's page \"Riesengrotte\"; BW in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "ceKnkpfTiqur",
+   "region": "Unova",
+   "name": "Humilau City",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokepedia.fr/Fichier:Papeloa_Protéine_N2B2.png",
+   "checked": "shown on Poképédia's page \"Papeloa\"; B2W2 in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "-V5mOdrEAQrh",
+   "region": "Unova",
+   "name": "Lacunosa Town",
+   "game": "Black / White",
+   "source": "https://www.pokepedia.fr/Fichier:Entrelasque_Élixir_NB.png",
+   "checked": "shown on Poképédia's page \"Entrelasque\"; BW in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "Kl56JSufqMY1",
+   "region": "Unova",
+   "name": "Lentimas Town",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokepedia.fr/Fichier:Vokit_Arpentieres.png",
+   "checked": "in pokepedia's category \"Capture d'écran de Pokémon Noir 2 et Blanc 2\", named after the place; B2W2 in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "tbyDNNEKFkzK",
+   "region": "Unova",
+   "name": "Marvelous Bridge",
+   "game": "Black / White",
+   "source": "https://www.pokepedia.fr/Fichier:Pont_de_l'Inconnu.png",
+   "checked": "shown on Poképédia's page \"Pont de l'Inconnu\"; BW in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "YMO-0qLXM0O_",
+   "region": "Unova",
+   "name": "Marvelous Bridge",
+   "game": "Black / White",
+   "source": "https://www.pokewiki.de/Datei:Wunderbrücke.png",
+   "checked": "shown on PokéWiki's page \"Wunderbrücke\"; BW in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "AnkUwXrUJAg5",
+   "region": "Unova",
+   "name": "Mistralton City",
+   "game": "Black / White",
+   "source": "https://www.pokepedia.fr/Fichier:Parsemille_Repousse_NB.png",
+   "checked": "shown on Poképédia's page \"Parsemille\"; BW in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "foumlTxSivzL",
+   "region": "Unova",
+   "name": "N's Castle",
+   "game": "Black / White",
+   "source": "https://www.pokewiki.de/Datei:Schloss_von_N.png",
+   "checked": "shown on PokéWiki's page \"Schloss von N\"; BW in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "bHCuXulol5Tp",
+   "region": "Unova",
+   "name": "Nacrene City",
+   "game": "Black / White",
+   "source": "https://www.pokepedia.fr/Fichier:Maillard_Cherch'Objet_NB.png",
+   "checked": "shown on Poképédia's page \"Maillard\"; BW in its name or category; cropped (top 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "oEpwc9kaFNJV",
+   "region": "Unova",
+   "name": "Nacrene City",
+   "game": "Black / White",
+   "source": "https://www.pokepedia.fr/Fichier:Maillard_Rappel_NB.png",
+   "checked": "shown on Poképédia's page \"Maillard\"; BW in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "kS-OB0DzeZ59",
+   "region": "Unova",
+   "name": "Nacrene City",
+   "game": "Black / White",
+   "source": "https://www.pokepedia.fr/Fichier:NB_image_12.png",
+   "checked": "shown on Poképédia's page \"Maillard\"; BW in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "-TEkElmcBhrj",
+   "region": "Unova",
+   "name": "Nimbasa City",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokepedia.fr/Fichier:Méanville_Pierrefoudre_N2B2.png",
+   "checked": "shown on Poképédia's page \"Méanville\"; B2W2 in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "eg1M6K_F4aIW",
+   "region": "Unova",
+   "name": "Nimbasa City",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokepedia.fr/Fichier:Méanville_Rappel_N2B2.png",
+   "checked": "shown on Poképédia's page \"Méanville\"; B2W2 in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "W8y0zVle1Hoj",
+   "region": "Unova",
+   "name": "Nimbasa City",
+   "game": "Black / White",
+   "source": "https://www.pokepedia.fr/Fichier:Méanville_Superepousse_NB.png",
+   "checked": "shown on Poképédia's page \"Méanville\"; BW in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "U3aQvw4sWX3u",
+   "region": "Unova",
+   "name": "Nimbasa City",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokepedia.fr/Fichier:Vokit_Méanville.png",
+   "checked": "in pokepedia's category \"Capture d'écran de Pokémon Noir 2 et Blanc 2\", named after the place; B2W2 in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "rUvGRYjSgfxa",
+   "region": "Unova",
+   "name": "Nuvema Town",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokepedia.fr/Fichier:Renouet_Zinc_N2B2.png",
+   "checked": "shown on Poképédia's page \"Renouet\"; B2W2 in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "DcgM4eBdF5OG",
+   "region": "Unova",
+   "name": "Pinwheel Forest",
+   "game": "Black / White",
+   "source": "https://www.pokepedia.fr/Fichier:Forêt_d'Empoigne.png",
+   "checked": "in pokepedia's category \"Capture d'écran de Pokémon Noir et Blanc\", named after the place; BW in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "O-QmljQwQ9Ts",
+   "region": "Unova",
+   "name": "Pinwheel Forest",
+   "game": "Black / White",
+   "source": "https://pokemon.fandom.com/wiki/File:Rumination_Field_BW.png",
+   "checked": "shown on the Pokémon Wiki's page \"Pinwheel Forest\"; BW in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "1aQX82L8tVot",
+   "region": "Unova",
+   "name": "Plasma Frigate",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokepedia.fr/Fichier:Frégate_Plasma.png",
+   "checked": "shown on Poképédia's page \"Frégate Plasma\"; B2W2 in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "QtndAvlPUoxz",
+   "region": "Unova",
+   "name": "Pokémon World Tournament",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokepedia.fr/Fichier:PWT_Huile_N2B2.png",
+   "checked": "shown on Poképédia's page \"Pokémon World Tournament\"; B2W2 in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "zwojm279bbYe",
+   "region": "Unova",
+   "name": "Pokémon World Tournament",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokepedia.fr/Fichier:PWT_Zinc_N2B2.png",
+   "checked": "shown on Poképédia's page \"Pokémon World Tournament\"; B2W2 in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "0GDi0fmAambY",
+   "region": "Unova",
+   "name": "Route 11",
+   "game": "Black / White",
+   "source": "https://www.pokepedia.fr/Fichier:Route_11_NB.png",
+   "checked": "shown on Poképédia's page \"Route 11 (Unys)\"; BW in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "gxelP_a9ZnZ4",
+   "region": "Unova",
+   "name": "Route 11",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokepedia.fr/Fichier:Vokit_Route_11.png",
+   "checked": "in pokepedia's category \"Capture d'écran de Pokémon Noir 2 et Blanc 2\", named after the place; B2W2 in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "AMqQJ47ECx-A",
+   "region": "Unova",
+   "name": "Route 12",
+   "game": "Black / White",
+   "source": "https://www.pokepedia.fr/Fichier:Route_12_NB.png",
+   "checked": "shown on Poképédia's page \"Route 12 (Unys)\"; BW in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "yms6w8x9fjZj",
+   "region": "Unova",
+   "name": "Route 13",
+   "game": "Black / White",
+   "source": "https://www.pokepedia.fr/Fichier:Route_13_NB.png",
+   "checked": "shown on Poképédia's page \"Route 13 (Unys)\"; BW in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "N2GwnUVPp7C3",
+   "region": "Unova",
+   "name": "Route 14",
+   "game": "Black / White",
+   "source": "https://www.pokepedia.fr/Fichier:Route_14_NB.png",
+   "checked": "shown on Poképédia's page \"Route 14 (Unys)\"; BW in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "HpIsVp9a094N",
+   "region": "Unova",
+   "name": "Route 15",
+   "game": "Black / White",
+   "source": "https://www.pokepedia.fr/Fichier:Route_15_NB.png",
+   "checked": "shown on Poképédia's page \"Route 15 (Unys)\"; BW in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "WW_6N1Pl_wM_",
+   "region": "Unova",
+   "name": "Route 16",
+   "game": "Black / White",
+   "source": "https://www.pokepedia.fr/Fichier:Route_16_NB.png",
+   "checked": "shown on Poképédia's page \"Route 16 (Unys)\"; BW in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "AOIE-OBEVac4",
+   "region": "Unova",
+   "name": "Route 2",
+   "game": "Black / White",
+   "source": "https://www.pokepedia.fr/Fichier:Route_2_NB.png",
+   "checked": "shown on Poképédia's page \"Route 2 (Unys)\"; BW in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "m_PbRiSOXX0a",
+   "region": "Unova",
+   "name": "Route 4",
+   "game": "Black / White",
+   "source": "https://www.pokepedia.fr/Fichier:Route_4_NB.png",
+   "checked": "shown on Poképédia's page \"Route 4 (Unys)\"; BW in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "2cUoI1UPVeNB",
+   "region": "Unova",
+   "name": "Route 5",
+   "game": "Black / White",
+   "source": "https://www.pokepedia.fr/Fichier:Route_5_NB.png",
+   "checked": "shown on Poképédia's page \"Route 5 (Unys)\"; BW in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "0GlraCJI6WFZ",
+   "region": "Unova",
+   "name": "Route 6",
+   "game": "Black / White",
+   "source": "https://www.pokepedia.fr/Fichier:Route_6_NB.png",
+   "checked": "shown on Poképédia's page \"Route 6 (Unys)\"; BW in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "HNe08mnafUJ-",
+   "region": "Unova",
+   "name": "Route 8",
+   "game": "Black / White",
+   "source": "https://www.pokepedia.fr/Fichier:Route_8_NB.png",
+   "checked": "shown on Poképédia's page \"Route 8 (Unys)\"; BW in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "gHnaPJPQZ-D-",
+   "region": "Unova",
+   "name": "Route 9",
+   "game": "Black / White",
+   "source": "https://www.pokepedia.fr/Fichier:Route_9_NB.png",
+   "checked": "shown on Poképédia's page \"Route 9 (Unys)\"; BW in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "Xymq8oCBUBYS",
+   "region": "Unova",
+   "name": "Skyarrow Bridge",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokewiki.de/Datei:Himmelspfeilbrücke_(S2W2).png",
+   "checked": "shown on PokéWiki's page \"Himmelspfeilbrücke\"; B2W2 in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "7Mg9fsCw--G_",
+   "region": "Unova",
+   "name": "Skyarrow Bridge",
+   "game": "Black / White",
+   "source": "https://www.pokepedia.fr/Fichier:Pont_Sagiciel.png",
+   "checked": "shown on Poképédia's page \"Pont Sagiciel\"; BW in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "yJk6HKAzHPJ7",
+   "region": "Unova",
+   "name": "Strange House",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokepedia.fr/Fichier:Manoir-etrange.png",
+   "checked": "shown on Poképédia's page \"Manoir de l'Étrange\"; B2W2 in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "dhi0BsmqcmOF",
+   "region": "Unova",
+   "name": "Striaton City",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokepedia.fr/Fichier:Ogoesse_Guérison_N2B2.png",
+   "checked": "shown on Poképédia's page \"Ogoesse\"; B2W2 in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "ha3_Ednc4iFs",
+   "region": "Unova",
+   "name": "Striaton City",
+   "game": "Black / White",
+   "source": "https://www.pokepedia.fr/Fichier:Ogoesse_Zinc_NB.png",
+   "checked": "shown on Poképédia's page \"Ogoesse\"; BW in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "SSW_0nLjJf8w",
+   "region": "Unova",
+   "name": "Striaton City",
+   "game": "Black / White",
+   "source": "https://www.pokepedia.fr/Fichier:Ogoesse.png",
+   "checked": "shown on Poképédia's page \"Ogoesse\"; BW in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "As0evJSxNGR5",
+   "region": "Unova",
+   "name": "Striaton Gym",
+   "parent": "Striaton City",
+   "game": "Black / White",
+   "source": "https://www.pokepedia.fr/Fichier:Trois_Champions.png",
+   "checked": "shown on Poképédia's page \"Arène d'Ogoesse\"; BW in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "NsmSikxN4rhX",
+   "region": "Unova",
+   "name": "Tubeline Bridge",
+   "game": "Black / White",
+   "source": "https://www.pokepedia.fr/Fichier:Pont_Ferroviaire.png",
+   "checked": "shown on Poképédia's page \"Pont Ferroviaire\"; BW in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "Pi516eeWm-2R",
+   "region": "Unova",
+   "name": "Twist Mountain",
+   "game": "Black / White",
+   "source": "https://www.pokepedia.fr/Fichier:Mont_Foré.png",
+   "checked": "in pokepedia's category \"Capture d'écran de Pokémon Noir et Blanc\", named after the place; BW in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "rWeTSiQyZGJY",
+   "region": "Unova",
+   "name": "Undella Town",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokepedia.fr/Fichier:Vokit_Vaguelone.png",
+   "checked": "in pokepedia's category \"Capture d'écran de Pokémon Noir 2 et Blanc 2\", named after the place; B2W2 in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "OJHt2fg7_BNr",
+   "region": "Unova",
+   "name": "Village Bridge",
+   "game": "Black / White",
+   "source": "https://www.pokepedia.fr/Fichier:Pont_du_Hameau.png",
+   "checked": "shown on Poképédia's page \"Pont du Hameau\"; BW in its name or category; reviewed on a contact sheet"
   }
  ]
 }
