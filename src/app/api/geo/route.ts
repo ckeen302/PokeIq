@@ -8,6 +8,7 @@ import { syncHiddenShots } from "@/lib/server/geo-reports";
 import { syncShotScores } from "@/lib/server/geo-round-scores";
 import { GEO_FILTER_MIN_PLACES, GEO_KINDS, GEO_ROUND_OPTIONS, WORLD_REGION, geoDailyRegion, isGeoRounds, type GeoRounds, type GeoSpec } from "@/lib/geo-types";
 import { GEO_ERAS, GEO_FAMILY_IDS } from "@/lib/geo-families";
+import { GEO_TIMERS } from "@/lib/geo-settings";
 
 /**
  * POST /api/geo — start a PokéGuessr game.
@@ -21,6 +22,7 @@ import { GEO_ERAS, GEO_FAMILY_IDS } from "@/lib/geo-families";
  * `guessGame: true` adds "guess the game too" (five-round games): bonus points
  * for naming each screenshot's game, kept apart from the ranked score.
  * An optional `name` is shown to friends on the challenge link (left off if it isn't fit to show).
+ * `timer` is the Timer setting (seconds per round): the server then scores nothing for a late pin.
  */
 
 const DAILY_COOKIE = "piq_geo_daily";
@@ -38,6 +40,7 @@ const bodySchema = z.object({
   daily: z.string().optional(),
   challenge: z.string().max(2048).optional(),
   recent: z.array(z.string().max(100)).max(200).optional(),
+  timer: z.number().refine((n) => (GEO_TIMERS as readonly number[]).includes(n), "Unknown timer.").optional(),
   name: z.string().trim().max(24).optional(),
 });
 
@@ -96,7 +99,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error }, { status: 400 });
   }
 
-  const game = startGeo(spec, { seed, plan, name: optionalName(body.name), recent: body.recent });
+  const game = startGeo(spec, { seed, plan, name: optionalName(body.name), recent: body.recent, timer: body.timer });
   const response = NextResponse.json({ ...game, region: spec.region, practice: spec.practice }, { headers: { "Cache-Control": "no-store" } });
   if (spec.daily && !spec.practice) {
     response.cookies.set(DAILY_COOKIE, [spec.daily, ...started].slice(0, 4).join(","), {

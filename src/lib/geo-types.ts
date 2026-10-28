@@ -150,6 +150,8 @@ export interface GeoGuessResponse {
   score: number;
   /** The round's clock ran out with no pin down (the Timer setting): no points. */
   timedOut?: boolean;
+  /** The pin arrived after the round's clock (plus a grace) had run out: graded as a timeout. */
+  late?: boolean;
   gameGuess?: GeoGameGuess;
   /** "Guess the game too": the bonus so far. */
   bonusTotal?: number;

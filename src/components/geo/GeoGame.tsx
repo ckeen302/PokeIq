@@ -329,7 +329,8 @@ function GeoGameInner({ regions: allRegions, challenge }: GeoGameProps) {
               recent: readRecent(),
               ...bonus,
             };
-      const res = await post<GeoStartResponse>("/api/geo", body);
+      // The Timer setting goes to the server too, so a late pin scores nothing there as well.
+      const res = await post<GeoStartResponse>("/api/geo", { ...body, ...(settings.timer ? { timer: settings.timer } : {}) });
       const map = byId(res.region) ?? allRegions.find((r) => r.id === res.region);
       if (!map) throw new Error("That map isn't available right now.");
       // A friend's challenge plays on their filter, the daily on every game.

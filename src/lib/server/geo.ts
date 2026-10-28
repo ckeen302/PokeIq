@@ -14,6 +14,7 @@ import {
 } from "@/lib/geo-difficulty";
 import { GEO_THEMES, isWorldwide, themeMapId, themeOf } from "@/lib/geo-themes";
 import { Rng } from "@/lib/rng";
+import { isValidDailyDate } from "@/lib/daily";
 import { publicName } from "@/lib/name-filter";
 import { decryptJson, deriveSeed, encryptJson, hmac, randomId, signToken, verifyToken } from "./crypto";
 import {
@@ -97,6 +98,12 @@ const DATA = data as unknown as { storageBase?: string; world: WorldData };
 const STORAGE_BASE =
   DATA.storageBase ?? `${process.env.SUPABASE_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/geo`;
 const STATE_TTL_MS = 3 * 60 * 60 * 1000;
+/**
+ * The Timer setting is kept on the server too: a guess this long after the
+ * round's clock has run out scores nothing. The grace covers the picture
+ * loading (the browser's clock starts once it's decoded) and the network.
+ */
+export const GEO_TIMER_GRACE_MS = 10_000;
 /** GeoGuessr's curve: 5000 · e^(−10 · d / D), with D the map diagonal. */
 const FALLOFF = GEO_FALLOFF;
 /** Streak mode on a region's map: a pin this close to the place keeps the streak alive. */
@@ -560,7 +567,9 @@ export function measureGuess(spec: Pick<GeoSpec, "region">, round: PlannedRound,
   const score = perfect ? GEO_MAX_ROUND_SCORE : Math.round(GEO_MAX_ROUND_SCORE * Math.exp((-FALLOFF * px) / diagonal));
   // Themed maps share the world map, so a pin's region is read from every place on it, not just the theme's.
   const hit = isWorldwide(region.id) ? regionAt(regionOf(WORLD_REGION)!, x, y) === groupOf(location.region) : px / diagonal <= STREAK_RADIUS;
-  return { score, hit, squares: perfect ? 0 : Math.round((px / region.squarePx) * 10) / 10 };
+  // For the behaviour flags: how close to the place itself (its pin or its area's edge) the guess was, in map pixels.
+  const toPin = Math.hypot((x - location.pin[0]) * width, (y - location.pin[1]) * height);
+  return { score, hit, squares: perfect ? 0 : Math.round((px / region.squarePx) * 10) / 10, px: Math.round(Math.min(px, toPin) * 10) / 10 };
 }
 
 export function answerFor(spec: Pick<GeoSpec, "region">, round: PlannedRound, squares = 0): GeoAnswer {
@@ -623,6 +632,10 @@ export interface GeoState {
    * places or screenshots (the seed alone would plan other rounds).
    */
   plan?: string;
+  /** The Timer setting (seconds per round) the game started with, so a late guess scores nothing. */
+  timer?: number;
+  /** When the current round was dealt (the start, or the last guess's grading). */
+  roundAt?: number;
 }
 
 /** What a challenge link carries: the seed (so the same places come up) and the friend's result. */
@@ -659,7 +672,7 @@ export function readGeoChallenge(
  */
 export function startGeo(
   spec: GeoSpec,
-  opts: { seed?: string; name?: string; recent?: string[]; plan?: string } = {}
+  opts: { seed?: string; name?: string; recent?: string[]; plan?: string; timer?: number } = {}
 ): { token: string; round: GeoRoundPublic } {
   let seed = opts.seed ?? (spec.daily ? `geo-daily:${spec.daily}` : randomId());
   if (!opts.seed && !spec.daily && opts.recent?.length) {
@@ -678,7 +691,9 @@ export function startGeo(
   const want = geoRoundsOf(spec);
   const rounds = given?.length === want ? given : planRounds(spec, seed, spec.kind === "game" ? want : 1);
   const plan = given?.length === want ? opts.plan : seal(rounds);
-  const state: GeoState = { v: 4, sid: randomId(), spec, seed, startedAt: Date.now(), name: opts.name, log: [], plan };
+  const now = Date.now();
+  const state: GeoState = { v: 4, sid: randomId(), spec, seed, startedAt: now, name: opts.name, log: [], plan, roundAt: now };
+  if (opts.timer && opts.timer > 0) state.timer = opts.timer;
   return { token: signToken("geo", state), round: publicRound(spec, 0, rounds[0]) };
 }
 
@@ -689,16 +704,28 @@ export function readGeo(token: unknown): GeoState | null {
 }
 
 export type GeoGuessOutcome =
-  | { ok: true; claimKey: string; body: GeoGuessResponse; /** The round's screenshot (for the per-shot score log; never sent). */ shot: string }
+  | {
+      ok: true;
+      claimKey: string;
+      body: GeoGuessResponse;
+      /** The round's screenshot (for the per-shot score log; never sent). */
+      shot: string;
+      /** How the round was played, for the behaviour flags (never sent): pixels from the place, time since it was dealt. */
+      played: { px: number; elapsedMs: number; perfect: boolean };
+    }
   | { ok: false; status: number; error: string };
 
 /**
  * Grades a guess. `timeout`: the round's clock ran out before a pin went down
- * (the Timer setting), which scores nothing and ends a streak.
+ * (the Timer setting), which scores nothing and ends a streak. With a timer, a
+ * pin sent after the clock plus GEO_TIMER_GRACE_MS is graded the same way. A
+ * daily is only graded while its day is current, so its answers come out
+ * only after a guess and only on the day.
  */
-export function gradeGeo(state: GeoState, guess: { x: number; y: number; family?: string; timeout?: boolean }): GeoGuessOutcome {
+export function gradeGeo(state: GeoState, guess: { x: number; y: number; family?: string; timeout?: boolean }, now = Date.now()): GeoGuessOutcome {
   const { spec } = state;
   const streak = spec.kind === "streak";
+  if (spec.daily && !isValidDailyDate(spec.daily, now)) return { ok: false, status: 409, error: "That daily game is over. Today's is waiting." };
   const sealed = unseal(state.plan);
   // A game plays the rounds it started with; a streak its current round, then the next as planned now.
   const rounds = !streak && sealed ? sealed : planRounds(spec, state.seed);
@@ -709,16 +736,18 @@ export function gradeGeo(state: GeoState, guess: { x: number; y: number; family?
   const round = (streak ? sealed?.[0] : undefined) ?? rounds[index];
   if (!findLocation(spec, round)) return { ok: false, status: 409, error: "PokéGuessr was just updated. Start a new game." };
   const measured = measureGuess(spec, round, guess.x, guess.y);
-  const { score, hit, squares } = guess.timeout ? { score: 0, hit: false, squares: measured.squares } : measured;
+  const elapsedMs = Math.max(0, now - (state.roundAt ?? state.startedAt));
+  const late = !!state.timer && !guess.timeout && elapsedMs > state.timer * 1000 + GEO_TIMER_GRACE_MS;
+  const timedOut = !!guess.timeout || late;
+  const { score, hit, squares } = timedOut ? { score: 0, hit: false, squares: measured.squares } : measured;
   const answer = answerFor(spec, round, squares);
-  const gameGuess = spec.guessGame ? gradeGameGuess(answer, guess.family) : undefined;
-  const next: GeoState = { ...state, log: [...state.log, streak ? (hit ? 1 : 0) : score] };
+  const gameGuess = spec.guessGame ? gradeGameGuess(answer, late ? undefined : guess.family) : undefined;
+  const next: GeoState = { ...state, log: [...state.log, streak ? (hit ? 1 : 0) : score], roundAt: now };
   if (gameGuess) next.bonus = [...(state.bonus ?? []), gameGuess.bonus];
   if (streak && rounds[index + 1]) next.plan = seal([rounds[index + 1]]);
   const total = next.log.reduce((s, x) => s + x, 0);
   const bonusTotal = next.bonus?.reduce((s, x) => s + x, 0);
   const done = streak ? !hit || next.log.length >= rounds.length : next.log.length >= rounds.length;
-  const now = Date.now();
 
   let result: GeoResult | undefined;
   let challengeToken: string | undefined;
@@ -744,10 +773,12 @@ export function gradeGeo(state: GeoState, guess: { x: number; y: number; family?
     ok: true,
     claimKey: `geo:${state.sid}:${index}`,
     shot: round.shot,
+    played: { px: measured.px, elapsedMs, perfect: !timedOut && measured.score === GEO_MAX_ROUND_SCORE },
     body: {
       score,
       hit,
-      ...(guess.timeout ? { timedOut: true } : {}),
+      ...(timedOut ? { timedOut: true } : {}),
+      ...(late ? { late: true } : {}),
       answer,
       ...(gameGuess ? { gameGuess, bonusTotal } : {}),
       token: signToken("geo", next),
