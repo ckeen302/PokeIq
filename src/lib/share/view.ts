@@ -49,6 +49,13 @@ export interface ShareView {
 
 const fmt = (n: number) => n.toLocaleString("en-US");
 
+/** 88 -> "88th". */
+function ordinalOf(n: number): string {
+  const v = Math.round(n);
+  const m = v % 100;
+  return `${v}${m >= 11 && m <= 13 ? "th" : v % 10 === 1 ? "st" : v % 10 === 2 ? "nd" : v % 10 === 3 ? "rd" : "th"}`;
+}
+
 const DLE_TILE: Record<string, ShareTile> = { g: "hit", c: "hit", y: "near", p: "near", b: "miss", x: "miss", u: "up", d: "down", m: "mask" };
 
 /** "kanto" -> "Kanto". */
@@ -145,6 +152,24 @@ export function describeShare(r: ShareResult): ShareView {
         description: daily
           ? "Ten Pokémon questions, the same for every trainer, every day. Keep your streak going on PokéIQ."
           : "How well do you know Pokémon? Free quizzes on all 1,025 Pokémon, no sign-up. Can you beat this score?",
+      };
+    }
+    case "cognitive": {
+      const headline = `Cognitive PokéIQ ${r.score}`;
+      const detail = `${ordinalOf(r.percentile)} percentile of trainers`;
+      const chips = [`Reasoning ${r.fluid}`, `Memory ${r.memory}`, `Speed ${r.speed}`, `Spatial ${r.spatial}`, ...(r.knowledge !== undefined ? [`Knowledge ${r.knowledge}`] : [])];
+      return {
+        game: "Cognitive PokéIQ",
+        label: "The PokéIQ Test · cognitive",
+        headline,
+        detail,
+        chips,
+        tiles: [],
+        accent: "violet",
+        playHref: "/iq-test",
+        playLabel: "Take the PokéIQ Test",
+        title: `${headline} (${detail})`,
+        description: "Reasoning, memory, speed and spatial skills, tested with Pokémon and scored against other trainers. Not a clinical IQ test. Where do you land?",
       };
     }
     case "connections": {

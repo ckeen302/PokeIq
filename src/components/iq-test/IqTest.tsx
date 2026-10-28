@@ -2,73 +2,69 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Brain, Crosshair, Gauge, Play } from "lucide-react";
-import { QuizController } from "@/components/quiz/QuizController";
+import { Play } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { DOMAIN_INFO, DOMAINS } from "@/lib/cognitive/types";
+import { ordinal } from "@/lib/cognitive/scoring";
 import { iqTitle, ratingToIQ } from "@/lib/rating";
 import { useProgress } from "@/lib/progress";
+import { CognitiveTest } from "./CognitiveTest";
 
-const STEPS = [
-  { icon: Crosshair, title: "It adapts to you", text: "Get one right and the next is harder; miss and it eases off. Every question is chosen to be the most informative one for your level." },
-  { icon: Gauge, title: "Measured, not counted", text: "Your PokéIQ comes from which questions you answered, not just how many — with an honest 90% confidence range." },
-  { icon: Brain, title: "Everything is fair game", text: "Silhouettes, Pokédex entries, type matchups and stat battles from every generation. 20 questions, 20 seconds each." },
-];
-
+/** /iq-test: the landing, then the five-section test (CognitiveTest). */
 export function IqTest() {
   const progress = useProgress();
   const [round, setRound] = useState(0);
   const [playing, setPlaying] = useState(false);
-  const current = progress?.rating != null ? ratingToIQ(progress.rating) : null;
+  const knowledge = progress?.rating != null ? ratingToIQ(progress.rating) : null;
+  const cognitive = progress?.cognitive ?? null;
 
   return (
     <div className="space-y-8">
       <div className="mx-auto max-w-2xl space-y-3 text-center">
         <p className="hud-label text-screen">The PokéIQ Test</p>
         <h1 className="font-display text-4xl font-bold uppercase tracking-tight sm:text-5xl">
-          How much do you <span className="text-primary">really</span> know?
+          A cognitive test <span className="text-primary">made of Pokémon</span>
         </h1>
-        <p className="text-muted-foreground">
-          An adaptive test — the same technique the GRE and GMAT use — that homes in on your level in 20 questions.
-        </p>
+        {!playing && (
+          <p className="text-muted-foreground">
+            Five timed sections, about 20 minutes: reasoning, memory, speed and spatial skills, then Pokémon knowledge. Scored against other trainers; not a clinical IQ test.
+          </p>
+        )}
       </div>
 
       {playing ? (
-        <QuizController
-          key={round}
-          request={{ module: "mixed", format: "adaptive", difficulty: "medium" }}
-          onRestart={() => setRound((r) => r + 1)}
-        />
+        <CognitiveTest key={round} onRetake={() => setRound((r) => r + 1)} />
       ) : (
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
           <Card className="mx-auto max-w-2xl">
             <CardContent className="space-y-6 p-6">
-              <div className="grid gap-4 sm:grid-cols-3">
-                {STEPS.map(({ icon: Icon, title, text }, i) => (
-                  <motion.div
-                    key={title}
-                    className="space-y-2 rounded-md border bg-muted/30 p-4"
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.1 + i * 0.08 }}
-                  >
-                    <Icon className="h-5 w-5 text-primary" />
-                    <div className="text-sm font-semibold">{title}</div>
-                    <p className="text-xs text-muted-foreground">{text}</p>
-                  </motion.div>
+              <ol className="grid gap-2 sm:grid-cols-5" aria-label="The five sections">
+                {DOMAINS.map((d, i) => (
+                  <li key={d} className="rounded-md border bg-muted/30 px-3 py-2.5 text-center">
+                    <div className="font-pixel text-[10px] text-muted-foreground">{i + 1}</div>
+                    <div className="text-sm font-semibold">{DOMAIN_INFO[d].short}</div>
+                  </li>
                 ))}
-              </div>
-              {current !== null && (
-                <p className="text-center text-sm text-muted-foreground">
-                  Your current PokéIQ: <b className="text-foreground">{current}</b> ({iqTitle(current)}). Retaking refines it.
+              </ol>
+              {(cognitive || knowledge !== null) && (
+                <p className="text-center text-sm text-muted-foreground" data-testid="iq-current">
+                  {cognitive && (
+                    <>
+                      Your Cognitive PokéIQ: <b className="text-foreground">{cognitive.score}</b> ({ordinal(cognitive.percentile)} percentile).{" "}
+                    </>
+                  )}
+                  {knowledge !== null && (
+                    <>
+                      Knowledge PokéIQ: <b className="text-foreground">{knowledge}</b> ({iqTitle(knowledge)}).
+                    </>
+                  )}
                 </p>
               )}
-              <Button size="lg" className="w-full text-base" onClick={() => setPlaying(true)}>
-                <Play className="h-5 w-5" /> Start the test
+              <Button size="lg" className="h-14 w-full text-base" onClick={() => setPlaying(true)} data-testid="iq-start">
+                <Play className="h-5 w-5" aria-hidden /> Start the test
               </Button>
-              <p className="text-center text-xs text-muted-foreground">
-                Expect to get roughly 60–75% right — that&apos;s the test working, not you failing.
-              </p>
+              <p className="text-center text-xs text-muted-foreground">Keys 1–6 pick an option. Every retake draws fresh items.</p>
             </CardContent>
           </Card>
         </motion.div>

@@ -10,6 +10,7 @@ import { connStats } from "@/lib/connections/local";
 import { localDateString } from "@/lib/daily";
 import { dleStats } from "@/lib/dle-stats";
 import { iqTitle, ratingToIQ } from "@/lib/rating";
+import { ordinal } from "@/lib/cognitive/scoring";
 import { MODULE_INFO, PLAY_MODULES, PLAYABLE_FORMATS as FORMATS } from "@/lib/modes";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -104,10 +105,19 @@ export function TrainerCard() {
                   </p>
                 </div>
               </div>
-              <div className="text-right">
-                <div className="hud-label">PokéIQ</div>
-                <div className="font-display text-5xl font-bold tabular-nums text-screen [text-shadow:0_0_18px_hsl(var(--screen)/0.5)]">{iq ?? "--"}</div>
-                <div className="text-xs text-muted-foreground">{iq !== null ? iqTitle(iq) : "Play a run to get rated"}</div>
+              <div className="flex gap-5 text-right">
+                <div>
+                  <div className="hud-label">PokéIQ</div>
+                  <div className="font-display text-5xl font-bold tabular-nums text-screen [text-shadow:0_0_18px_hsl(var(--screen)/0.5)]">{iq ?? "--"}</div>
+                  <div className="text-xs text-muted-foreground">{iq !== null ? iqTitle(iq) : "Play a run to get rated"}</div>
+                </div>
+                <div data-testid="trainer-cognitive">
+                  <div className="hud-label">Cognitive</div>
+                  <div className="font-display text-5xl font-bold tabular-nums text-primary">{progress.cognitive?.score ?? "--"}</div>
+                  <div className="text-xs text-muted-foreground">
+                    {progress.cognitive ? `${ordinal(progress.cognitive.percentile)} percentile` : <Link href="/iq-test" className="hover:underline">Take the test</Link>}
+                  </div>
+                </div>
               </div>
             </div>
           </div>

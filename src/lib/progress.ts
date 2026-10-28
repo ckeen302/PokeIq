@@ -10,6 +10,8 @@ import { EMPTY_CONN_PLAY, type ConnPlay } from "./connections/play";
 import { EMPTY_PDK_PLAY, type PdkPlay, type PdkRecord } from "./pikadoku/play";
 export type { ConnPlay, PdkPlay, PdkRecord };
 import type { RunResult } from "./session-types";
+import type { CognitiveRecord } from "./cognitive/result";
+export type { CognitiveRecord };
 
 /**
  * Local-first player progress: XP, levels, daily streaks, PokéIQ rating and
@@ -77,6 +79,8 @@ export interface Progress {
   badges: Record<string, number>;
   /** Per-skill tallies for the coach: tag -> [correct, answered]. */
   skills: Record<string, [number, number]>;
+  /** The latest Cognitive PokéIQ test (absent until one is finished). */
+  cognitive?: CognitiveRecord;
 }
 
 const KEY = "pokeiq:progress:v1";
@@ -377,6 +381,14 @@ export function recordGeoGame(
   const newBadges = award(p, earned, Date.now());
   write(p);
   return { xp, best, newBadges };
+}
+
+/** Keeps the latest Cognitive PokéIQ test; a little XP for finishing one. */
+export function recordCognitive(record: CognitiveRecord): void {
+  const p: Progress = structuredClone(read());
+  p.cognitive = record;
+  p.xp += 40;
+  write(p);
 }
 
 /** Tally one graded answer against its skill tags (gen, type, mode, stat). */

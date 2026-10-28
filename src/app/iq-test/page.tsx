@@ -3,9 +3,9 @@ import { pageMetadata } from "@/lib/seo";
 import { IqTest } from "@/components/iq-test/IqTest";
 
 export const metadata: Metadata = pageMetadata({
-  title: "The PokéIQ Test — Adaptive Pokémon Knowledge Test",
+  title: "The PokéIQ Test — A Cognitive Test Made of Pokémon",
   description:
-    "20 adaptive questions that home in on exactly how much you know about Pokémon — like the GRE, but for Pokémon. Get your PokéIQ with a confidence range.",
+    "Five timed sections — reasoning, memory, speed, spatial and Pokémon knowledge — scored against other trainers. Get your Cognitive PokéIQ and a five-domain profile in about 20 minutes.",
   path: "/iq-test",
 });
 
