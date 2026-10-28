@@ -4,6 +4,7 @@ import { pageMetadata } from "@/lib/seo";
 import { ChevronRight, ListChecks, Swords } from "lucide-react";
 import { ModeGrid } from "@/components/home/ModeGrid";
 import { QuizDuelCard } from "@/components/quiz/QuizDuelCard";
+import { WhichPokemonCard } from "@/components/which-pokemon/WhichPokemonCard";
 import { GameInfo } from "@/components/seo/GameInfo";
 import { FORMAT_INFO, PLAYABLE_FORMATS, QUIZ_PRESETS } from "@/lib/modes";
 
@@ -49,6 +50,7 @@ export default function PlayPage() {
         </span>
         <ChevronRight className="h-5 w-5 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-1 group-hover:text-foreground" aria-hidden />
       </Link>
+      <WhichPokemonCard />
       <nav aria-label="More to play" className="flex flex-wrap justify-center gap-3">
         {MORE.map(({ href, label }) => (
           <Link key={href} href={href} className="rounded-md border bg-card px-4 py-2 text-sm font-semibold transition hover:border-primary/50">
