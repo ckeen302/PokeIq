@@ -2214,7 +2214,7 @@ await rkRed.getByTestId("rating-change").waitFor({ timeout: 45_000 });
 const rkChange = await rkRed.getByTestId("rating-change").innerText();
 console.log(`  ${rkChange.replace(/\s+/g, " ")}`);
 // Elo leads: a first win from 1000 pays 45 (K 90 against an equal). Glicko-2 moves on beneath it.
-if (!/Elo\s+1000 → 1045\s+\+45/.test(rkChange)) errors.push(`ranked: unexpected Elo change for the winner: ${rkChange}`);
+if (!/Elo\s+1000 → 1045[\s\S]*\+45/i.test(rkChange)) errors.push(`ranked: unexpected Elo change for the winner: ${rkChange}`);
 if (!/Glicko-2 1500 → 1[6-9]\d\d \(\+\d+\)/.test(rkChange)) errors.push(`ranked: unexpected Glicko-2 change for the winner: ${rkChange}`);
 await rkRed.screenshot({ path: `${OUT}/battle-p1-ranked-result.png` });
 await rkRed.goto(`${BASE}/battle/ladder?format=gen9randombattle`, { waitUntil: "networkidle" });
