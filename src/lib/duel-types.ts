@@ -9,6 +9,7 @@ import type { GeoAnswer, GeoRounds } from "./geo-types";
 import type { GeoDuelRankedView } from "./geo-ranked";
 import type { PvpEmoteView } from "./pvp-types";
 import type { ChatLine } from "./chat";
+import type { DuelLiveConfig } from "./geo-duel-live";
 
 import { DUEL_COUNTDOWN_MS, DUEL_HP, DUEL_TURBO_CAP_MS, rampMultiplier } from "./geo-duel-rules";
 
@@ -144,6 +145,8 @@ export interface DuelView {
   emotes?: PvpEmoteView[];
   /** Chat, oldest first: open in the lobby and after the end. */
   chat?: ChatLine[];
+  /** Where the page subscribes for pushes (lib/geo-duel-live.ts); null or missing: it polls every second. */
+  live?: DuelLiveConfig | null;
 }
 
 /** Creating, joining or rematching a duel: its code, your seat's token and the duel. */
