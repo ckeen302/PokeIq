@@ -8,7 +8,7 @@ import { track } from "@vercel/analytics";
 import { Check, Link2, Loader2, RotateCcw, Swords, Trophy } from "lucide-react";
 import type { PracticeReason, RunResult, ShareCard } from "@/lib/session-types";
 import { iqInterval, iqTitle } from "@/lib/rating";
-import { currentStreak, levelInfo, recordRun, setTrainerName, useProgress, type RunReward } from "@/lib/progress";
+import { currentStreak, recordRun, setTrainerName, useProgress, type RunReward } from "@/lib/progress";
 import { challengeUrl, resultShareText, shareOrCopy, shareText } from "@/lib/share";
 import { ShareButton } from "@/components/share/ShareButton";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -244,8 +244,6 @@ export function QuizResults({ result, resultToken, shareToken, challenger, onRes
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.6 }}
             >
-              <Badge variant="secondary">+{reward.xp} XP</Badge>
-              {reward.levelAfter > reward.levelBefore && <Badge>Level up! Lv {reward.levelAfter}</Badge>}
               {reward.dailyStreak !== undefined && <Badge variant="success">🔥 {reward.dailyStreak}-day streak</Badge>}
               {reward.newBadges.map((b) => (
                 <Badge key={b.id} variant="outline" className="border-warning/60 text-warning">
@@ -269,22 +267,6 @@ export function QuizResults({ result, resultToken, shareToken, challenger, onRes
               </Link>
             ) : null;
           })()}
-          {progress && (
-            <div className="space-y-1">
-              <div className="hud-label flex justify-between">
-                <span>Trainer level {levelInfo(progress.xp).level}</span>
-                <span>{levelInfo(progress.xp).toNext} XP to next</span>
-              </div>
-              <div className="meter">
-                <motion.div
-                  className="h-full bg-screen shadow-[0_0_8px_hsl(var(--screen))]"
-                  initial={{ width: 0 }}
-                  animate={{ width: `${levelInfo(progress.xp).progress * 100}%` }}
-                  transition={{ duration: 0.8, delay: 0.4 }}
-                />
-              </div>
-            </div>
-          )}
 
           <div className="grid gap-2 sm:grid-cols-2">
             <ShareButton size="lg" kind={isDaily ? "daily" : isAdaptive ? "iq-test" : "run"} getText={shareTextNow} />

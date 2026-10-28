@@ -13,7 +13,7 @@ import {
   Search,
   Swords,
 } from "lucide-react";
-import { levelInfo, useProgress } from "@/lib/progress";
+import { useProgress } from "@/lib/progress";
 import { useAccount } from "@/lib/account";
 import { Avatar } from "@/components/avatar/Avatar";
 import { cn } from "@/lib/utils";
@@ -120,11 +120,6 @@ export function DesktopNav() {
           <span className="hidden max-w-[4rem] truncate font-display font-semibold min-[380px]:inline sm:max-w-[9rem] lg:hidden 2xl:inline">
             {account.user?.username ?? (progress?.name || "Trainer")}
           </span>
-          {progress && progress.xp > 0 && (
-            <span className="hidden font-pixel text-[10px] text-screen sm:inline">
-              Lv{levelInfo(progress.xp).level}
-            </span>
-          )}
         </Link>
       </div>
     </nav>
