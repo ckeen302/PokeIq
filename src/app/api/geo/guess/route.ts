@@ -2,9 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { clientIp, rateLimit } from "@/lib/server/rate-limit";
 import { claimOnce, recallResponse, rememberResponse, requestFingerprint } from "@/lib/server/replay-guard";
-import { gradeGeo, readGeo } from "@/lib/server/geo";
+import { gradeGeo, readGeo, regionGroupOf } from "@/lib/server/geo";
 import { syncHiddenShots } from "@/lib/server/geo-reports";
-import { logRoundScore } from "@/lib/server/geo-round-scores";
+import { geoStatsKey, logRoundScore } from "@/lib/server/geo-round-scores";
+import { sessionTokenHash, userFromRequest } from "@/lib/server/auth";
 import { GEO_FAMILY_IDS } from "@/lib/geo-families";
 
 /**
@@ -44,9 +45,22 @@ export async function POST(request: NextRequest) {
   }
   rememberResponse(outcome.claimKey, fingerprint, outcome.body);
   // Each shot's real difficulty: how players score on it (a timed-out round says nothing about the shot).
+  // Signed-in trainers' rounds also carry who, where and what, for their profile's stats.
   if (!outcome.body.timedOut) {
     const spec = state.spec;
-    void logRoundScore({ shot: outcome.shot, score: outcome.body.score, mode: spec.daily ? "daily" : spec.practice === "challenge" ? "challenge" : "solo" });
+    const user = sessionTokenHash(request) ? await userFromRequest(request).catch(() => null) : null;
+    const region = regionGroupOf(outcome.body.answer.region);
+    void logRoundScore({
+      shot: outcome.shot,
+      score: outcome.body.score,
+      mode: spec.daily ? "daily" : spec.practice === "challenge" ? "challenge" : "solo",
+      kind: spec.kind === "streak" ? "streak" : spec.daily ? "daily" : spec.practice === "challenge" ? "challenge" : "game",
+      run: state.sid,
+      family: outcome.body.answer.family,
+      ...(region ? { region } : {}),
+      ...(user ? { player: geoStatsKey(`u:${user.id}`) } : {}),
+      ...(spec.kind === "streak" ? { hit: outcome.body.hit } : {}),
+    });
   }
   return NextResponse.json(outcome.body, { headers: { "Cache-Control": "no-store" } });
 }

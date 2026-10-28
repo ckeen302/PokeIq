@@ -49,6 +49,9 @@ import { BadgeMedal } from "@/components/game/BadgeMedal";
 import { CopyFallback } from "@/components/quiz/CopyFallback";
 import { ShareButton } from "@/components/share/ShareButton";
 import { GeoMap, LINE_DRAW_MS, mapAspect, type MapPin } from "./GeoMap";
+import { GeoResults } from "./GeoResults";
+import { LearnCard } from "./LearnCard";
+import { RegionStreakCard } from "./RegionStreakCard";
 import { useAccount } from "@/lib/account";
 import { avatarSrc } from "@/lib/avatar";
 import { DuelCard } from "./DuelCard";
@@ -165,9 +168,6 @@ function rememberArea(answer: { name: string; parent?: string; region?: string }
   }
 }
 
-/** The answer on the world atlas (Kanto's own map predates the world data, so its places carry no region). */
-const atlasHref = (answer: { name: string; parent?: string; region?: string }) =>
-  `/atlas?q=${encodeURIComponent(`${clean(answer.parent ?? answer.name)} · ${answer.region ?? "Kanto"}`)}`;
 
 function distanceText(squares: number): string {
   if (squares === 0) return "Right on it!";
@@ -660,6 +660,8 @@ function GeoGameInner({ regions: allRegions, challenge }: GeoGameProps) {
           </div>
         </div>
 
+        <RegionStreakCard />
+
         {/* Duels play an era when the map has enough of it (hand-picked games are practice), else every game. */}
         <DuelCard region={region} places={places} era={filter.era && filterPlaces(region, { era: filter.era, families: [] }) >= GEO_FILTER_MIN_PLACES ? filter.era : undefined} />
 
@@ -719,15 +721,18 @@ function GeoGameInner({ regions: allRegions, challenge }: GeoGameProps) {
   if (phase === "results") {
     const last = played[played.length - 1]?.graded;
     return (
-      <GeoSummary
-        game={game}
-        played={played}
-        resultToken={last?.resultToken}
-        challengeToken={last?.challengeToken}
-        challenge={isChallenge ? challenge : undefined}
-        reward={reward}
-        onRestart={() => setPhase("setup")}
-      />
+      <GeoResults game={game} played={played} pinImage={pinImage} shareToken={last?.resultToken} onRestart={() => setPhase("setup")}>
+        <GeoSummary
+          game={game}
+          played={played}
+          resultToken={last?.resultToken}
+          challengeToken={last?.challengeToken}
+          challenge={isChallenge ? challenge : undefined}
+          reward={reward}
+          onRestart={() => setPhase("setup")}
+          compact
+        />
+      </GeoResults>
     );
   }
 
@@ -1001,25 +1006,8 @@ function RoundReveal({
               <MapPinIcon className="h-4 w-4" aria-hidden />
               {graded.timedOut ? "Time's up: no pin down" : distanceText(graded.answer.squares)}
             </span>
-            <div className="flex min-w-0 items-center gap-3">
-              {/* The game's artwork: the round's own screenshot. */}
-              {/* eslint-disable-next-line @next/next/no-img-element -- the same cached screenshot, as a thumbnail */}
-              <img src={current.shot} alt="" className="h-12 w-16 shrink-0 rounded border border-white/20 object-cover" />
-              <div className="min-w-0">
-                <p className="truncate font-display text-base font-bold uppercase leading-tight" data-testid="geo-answer-place">
-                  {placeName(graded.answer, game.region)}
-                </p>
-                <p className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-white/70">
-                  {graded.answer.region && <span>{graded.answer.region}</span>}
-                  <span className="rounded-sm border border-white/30 px-1.5 py-0.5 text-[11px] text-white" data-testid="geo-answer-game">
-                    Pokémon {graded.answer.game}
-                  </span>
-                  <Link href={atlasHref(graded.answer)} target="_blank" className="inline-flex items-center gap-1 underline underline-offset-2 hover:text-white" data-testid="geo-atlas-link">
-                    <MapIcon className="h-3 w-3" aria-hidden /> Atlas
-                  </Link>
-                </p>
-              </div>
-            </div>
+            {/* The learn card: the place, its game, one fact from the Pokédex's place data, and where to read more. */}
+            <LearnCard answer={graded.answer} shot={current.shot} map={game.region} />
           </motion.div>
 
           {/* Next, with its hotkey, and the report link. */}
@@ -1043,7 +1031,8 @@ function RoundReveal({
   );
 }
 
-function GeoSummary({
+/** The end-of-game summary; `compact` leaves the headline, map and round list to the results map it sits under. */
+export function GeoSummary({
   game,
   played,
   resultToken,
@@ -1051,14 +1040,16 @@ function GeoSummary({
   challenge,
   reward,
   onRestart,
+  compact,
 }: {
-  game: Game;
+  game: Pick<Game, "region" | "kind" | "rounds" | "daily" | "practice" | "filter" | "guessGame" | "difficulty">;
   played: Played[];
   resultToken?: string;
   challengeToken?: string;
   challenge?: GeoChallenge;
   reward: Reward | null;
   onRestart: () => void;
+  compact?: boolean;
 }) {
   const progress = useProgress();
   const { region } = game;
@@ -1120,21 +1111,21 @@ function GeoSummary({
   const outcome = challenge ? (total > theirs ? "win" : total < theirs ? "lose" : "tie") : null;
 
   return (
-    <div className="mx-auto max-w-4xl space-y-6">
+    <div className={cn("mx-auto max-w-4xl space-y-6", compact && "space-y-4")}>
       <div className="space-y-2 text-center">
-        <p className="hud-label text-screen">{isStreak ? "Streak over" : "Survey complete"}</p>
-        <div className="font-display text-6xl font-bold tabular-nums text-screen [text-shadow:0_0_18px_hsl(var(--screen)/0.5)]">
+        <p className={cn("hud-label text-screen", compact && "hidden")}>{isStreak ? "Streak over" : "Survey complete"}</p>
+        <div className={cn("font-display text-6xl font-bold tabular-nums text-screen [text-shadow:0_0_18px_hsl(var(--screen)/0.5)]", compact && "hidden")}>
           {isStreak ? `${headline} in a row` : fmt(headline)}
         </div>
         {!isStreak && (
           <>
-            <div className="text-sm text-muted-foreground">out of {fmt(maxTotal(game.rounds))}</div>
+            <div className={cn("text-sm text-muted-foreground", compact && "hidden")}>out of {fmt(maxTotal(game.rounds))}</div>
             {bonus !== null && (
               <div className="text-sm font-semibold text-success" data-testid="geo-bonus-total">
                 +{fmt(bonus)} game bonus · {fmt(total + bonus)} with the bonus (the leaderboard counts the map score)
               </div>
             )}
-            <div className="meter mx-auto max-w-xl">
+            <div className={cn("meter mx-auto max-w-xl", compact && "hidden")}>
               <motion.div className="h-full bg-primary" initial={{ width: 0 }} animate={{ width: `${(total / maxTotal(game.rounds)) * 100}%` }} transition={{ duration: 1.1 }} />
             </div>
           </>
@@ -1177,7 +1168,7 @@ function GeoSummary({
         </Card>
       )}
 
-      {!isStreak && (
+      {!isStreak && !compact && (
         <GeoMap region={region} revealed={played.map((p, i) => ({ guess: p.guess, answer: p.graded.answer, label: String(i + 1) }))} />
       )}
 
@@ -1197,7 +1188,7 @@ function GeoSummary({
             </div>
           )}
 
-          <ol className="space-y-2">
+          <ol className={cn("space-y-2", compact && "hidden")}>
             {played.map((p, i) => (
               <li key={i} className="flex items-center gap-3 rounded-md border bg-shade/20 px-3 py-2">
                 <span className="font-pixel text-xs text-muted-foreground">{i + 1}</span>
