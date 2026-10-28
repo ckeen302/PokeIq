@@ -2,6 +2,7 @@ import "server-only";
 import data from "@/data/geo.json";
 import themeTags from "@/data/geo-themes.json";
 import shotMeta from "@/data/geo-shot-meta.json";
+import geoRetired from "@/data/geo-retired.json";
 import {
   DEFAULT_DIFFICULTY,
   fitsMode,
@@ -190,12 +191,19 @@ const areaOf = (location: Pick<Location, "region" | "name" | "parent">) => `${lo
 // Shots out of rotation (players' reports), and the game filters
 // ---------------------------------------------------------------------------
 
-/** Shots players reported enough (or a moderator removed): kept for games already under way, never dealt again. */
-let HIDDEN: ReadonlySet<string> = new Set();
+/**
+ * Shots retired by review (src/data/geo-retired.json): area maps cut from a
+ * full-map image with black around them, and the like. They stay in the data
+ * (every shot is protected) but are never dealt.
+ */
+const RETIRED: ReadonlySet<string> = new Set(geoRetired as string[]);
 
-/** Replaces the hidden shots (geo-reports.ts keeps them fresh). */
+/** Shots out of play: retired by review, reported enough by players, or removed by a moderator. Kept for games already under way, never dealt again. */
+let HIDDEN: ReadonlySet<string> = RETIRED;
+
+/** Replaces the reported/removed shots (geo-reports.ts keeps them fresh); the retired ones always stay out. */
 export function setHiddenShots(ids: Iterable<string>) {
-  const next = new Set(ids);
+  const next = new Set([...RETIRED, ...ids]);
   if (next.size === HIDDEN.size && [...next].every((id) => HIDDEN.has(id))) return;
   HIDDEN = next;
   FILTERED.clear();

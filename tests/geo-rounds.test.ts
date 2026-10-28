@@ -56,7 +56,8 @@ describe("PokéGuessr rounds", () => {
     for (const rounds of GEO_ROUND_OPTIONS) {
       const plan = planRounds({ region: WORLD_REGION, kind: "game", rounds }, "seed-a");
       expect(plan).toHaveLength(rounds);
-      expect(new Set(plan.map((r) => r.location)).size).toBe(rounds);
+      // Distinct places: a Route 4 in Kanto and one in Unova are two places.
+      expect(new Set(plan.map((r) => `${r.region}|${r.location}`)).size).toBe(rounds);
     }
     expect(planRounds({ region: WORLD_REGION, kind: "game" }, "seed-a")).toHaveLength(5);
   });
