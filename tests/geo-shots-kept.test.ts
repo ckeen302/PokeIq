@@ -10,23 +10,29 @@ import { describe, expect, it } from "vitest";
 // the data is added to the protected list too.
 // The one exception, by the owner's decision: the 13 Legends: Z-A shots
 // (geo-shot-ids-za-removed.json), since Z-A isn't played in PokéGuessr.
+// A shot may be re-cut (geo-shot-ids-replaced.json: old id → new id), as the
+// 73 area maps with black around them were, by the owner's decision: the same
+// picture, cropped or with the black filled, under a new id so caches move on.
 const root = process.cwd();
 const read = <T>(file: string) => JSON.parse(readFileSync(path.join(root, file), "utf8")) as T;
 const geo = read<{ world: { locations: { shots: { id: string; game: string; family?: string }[] }[] } }>("src/data/geo.json");
 const removed = new Set(read<string[]>("tests/fixtures/geo-shot-ids-za-removed.json"));
 const baseline = read<string[]>("tests/fixtures/geo-shot-ids-baseline.json").filter((id) => !removed.has(id));
+const replaced = read<Record<string, string>>("tests/fixtures/geo-shot-ids-replaced.json");
 const protectedIds = read<string[]>("tests/fixtures/geo-shot-ids-protected.json");
 const shots = geo.world.locations.flatMap((l) => l.shots);
 const ids = new Set(shots.map((s) => s.id));
+/** The id a shot goes by now: itself, or its re-cut version. */
+const current = (id: string) => (replaced[id] && !ids.has(id) ? replaced[id] : id);
 
 describe("geo shots are only ever added", () => {
   it("keeps every baseline shot", () => {
-    expect(baseline.filter((id) => !ids.has(id))).toEqual([]);
+    expect(baseline.filter((id) => !ids.has(current(id)))).toEqual([]);
   });
   it("keeps every protected shot", () => {
     expect(protectedIds.length).toBeGreaterThanOrEqual(2308);
     expect(new Set(protectedIds).size).toBe(protectedIds.length);
-    expect(protectedIds.filter((id) => !ids.has(id))).toEqual([]);
+    expect(protectedIds.filter((id) => !ids.has(current(id)))).toEqual([]);
   });
   it("protects every shot in the data", () => {
     const guarded = new Set(protectedIds);
