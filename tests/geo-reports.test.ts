@@ -1,3 +1,4 @@
+import retired from "../src/data/geo-retired.json";
 import { afterEach, describe, expect, it } from "vitest";
 import { GEO_HIDE_THRESHOLD, distinctReporters, groupShotReports, hiddenShotIds, type GeoShotReport } from "@/lib/geo-reports";
 import { clearMemoryShotReports, memoryShotReportStore, reportShot, reviewShot, shotReviewQueue, syncHiddenShots } from "@/lib/server/geo-reports";
@@ -95,7 +96,8 @@ describe("PokéGuessr screenshot reports", () => {
     };
     expect(await reportShot({ shot: "aaaaaaaaaaaa", reason: "other", note: null, mode: "solo", reporter: "d:1", ipHash: null }, Date.now(), broken)).toMatchObject({ ok: true, stored: false });
     await syncHiddenShots(Date.now() + 10 * 60_000, broken);
-    expect(hiddenShots().size).toBe(0);
+    // Only the shots retired by review stay out (src/data/geo-retired.json); nothing from the broken store.
+    expect(hiddenShots().size).toBe(retired.length);
     expect(geoRegions().find((r) => r.id === "kanto")!.locations).toBeGreaterThan(40);
   });
 });

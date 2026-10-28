@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it } from "vitest";
 import data from "@/data/geo.json";
-import { GEO_MAX_VIEWS, gradeGeo, planRounds, readGeo, roundViews, setHiddenShots, startGeo } from "@/lib/server/geo";
+import { GEO_MAX_VIEWS, gradeGeo, planRounds, readGeo, roundViews, setHiddenShots, startGeo, hiddenShots } from "@/lib/server/geo";
 import { roundViewsOf, stepView, viewKeyStep, viewLabel } from "@/lib/geo-look";
 import { WORLD_REGION, type GeoSpec } from "@/lib/geo-types";
 import { allowedFamilies } from "@/lib/geo-families";
@@ -48,7 +48,8 @@ describe("look around: a round's views", () => {
       expect(views[0]).toBe(round.shot);
       expect(new Set(views).size).toBe(views.length);
       for (const id of views) expect(place.shots.some((s) => s.id === id)).toBe(true);
-      expect(views.length).toBe(Math.min(place.shots.length, GEO_MAX_VIEWS));
+      // Retired shots (src/data/geo-retired.json) are never shown as a view.
+      expect(views.length).toBe(Math.min(place.shots.filter((s) => !hiddenShots().has(s.id)).length, GEO_MAX_VIEWS));
     }
   });
 
