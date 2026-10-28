@@ -21,8 +21,10 @@ type Fit = ReturnType<typeof shotFit>;
 
 /**
  * Look around: a round's screenshots as a flip-through, like moving in Street
- * View: arrows on the picture, ← / → on the keyboard, and thumbnails below.
- * A place with one screenshot shows just that one, with no controls.
+ * View: arrows on the picture, ← / → on the keyboard, and a slim bottom-left
+ * strip (GeoGuessr's cam-hud) with the thumbnails, the view count and the
+ * whole-screenshot button, kept clear of the map dock on the right. A place
+ * with one screenshot shows just that one, with no arrows. Rounds cross-fade.
  */
 export function ShotCarousel({
   views,
@@ -100,21 +102,12 @@ export function ShotCarousel({
           alt="Where is this?"
           ref={imgRef}
           onLoad={(e) => measure(e.currentTarget)}
-          className={cn("absolute inset-0 h-full w-full transition-opacity duration-300", fit?.className ?? "object-cover object-center", fit ? "opacity-100" : "opacity-0")}
+          className={cn("absolute inset-0 h-full w-full transition-opacity duration-[350ms]", fit?.className ?? "object-cover object-center", fit ? "opacity-100" : "opacity-0")}
           style={{ imageRendering: fit?.pixelated ? "pixelated" : "auto", ...zoomStyle(src) }}
           data-testid="geo-shot"
           data-fit={fit?.tall ? "tall" : undefined}
           data-zoomed={zoom?.(src) ? "true" : undefined}
         />
-        <button
-          type="button"
-          onClick={onZoom}
-          className="absolute left-3 top-3 z-[3] flex h-9 w-9 items-center justify-center rounded-md bg-black/55 text-white backdrop-blur transition-colors hover:bg-black/75"
-          aria-label="View the whole screenshot"
-          title="Whole screenshot"
-        >
-          <Expand className="h-4 w-4" />
-        </button>
         {onFullscreen && <FullscreenButton fs={fs} onClick={onFullscreen} />}
         {many && (
           <>
@@ -124,13 +117,26 @@ export function ShotCarousel({
             <button type="button" className={cn(arrow, "right-3")} onClick={() => onIndex(stepView(index, 1, count))} aria-label="Next view" title="Next view (→)">
               <ChevronRight className="h-6 w-6" />
             </button>
-            <div className="hud-label absolute right-14 top-3 z-[3] rounded-md bg-black/55 px-2 py-1 tabular-nums text-white backdrop-blur" aria-live="polite" data-testid="geo-view-count">
-              {index + 1} / {count}
-            </div>
           </>
         )}
-        {many && (
-          <div className="absolute bottom-3 left-3 z-[3] flex max-w-[calc(100%-1.5rem)] gap-1.5 overflow-x-auto rounded-md bg-black/40 p-1 backdrop-blur lg:max-w-[calc(100%-27rem)]" role="tablist" aria-label="Views of this place">
+        {/* The bottom-left strip: whole screenshot, the view count and the thumbnails. On phones it sits above the Guess pill. */}
+        <div className={cn("absolute left-3 z-[3] flex max-w-[calc(100%-1.5rem)] items-end gap-1.5 md:max-w-[calc(100%-21rem)]", fs ? "bottom-[5.5rem] md:bottom-3" : "bottom-3")} data-testid="geo-cam-hud">
+          <button
+            type="button"
+            onClick={onZoom}
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-black/55 text-white backdrop-blur transition-colors hover:bg-black/75"
+            aria-label="View the whole screenshot"
+            title="Whole screenshot"
+          >
+            <Expand className="h-4 w-4" />
+          </button>
+          {many && (
+            <div className="hud-label flex h-9 shrink-0 items-center rounded-md bg-black/55 px-2 tabular-nums !text-white backdrop-blur" aria-live="polite" data-testid="geo-view-count">
+              {index + 1} / {count}
+            </div>
+          )}
+          {many && (
+          <div className="flex min-w-0 gap-1.5 overflow-x-auto rounded-md bg-black/40 p-1 backdrop-blur" role="tablist" aria-label="Views of this place">
             {views.map((v, i) => (
               <button
                 key={v}
@@ -149,7 +155,8 @@ export function ShotCarousel({
               </button>
             ))}
           </div>
-        )}
+          )}
+        </div>
       </div>
     </div>
   );

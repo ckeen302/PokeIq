@@ -70,8 +70,8 @@ export interface AtlasOptions {
 
 export interface AtlasEngine {
   flyTo: (x: number, y: number, zoom: "region" | "place" | "world") => Promise<void>;
-  /** Zoom to show a box of the world, never closer than `min` world pixels across. */
-  fitBox: (box: Box, min?: number) => Promise<void>;
+  /** Zoom to show a box of the world, never closer than `min` world pixels across; `duration` (ms) eases out instead of the default glide. */
+  fitBox: (box: Box, min?: number, duration?: number) => Promise<void>;
   /** Back to the whole map (the world, or the region's box). */
   reset: () => void;
   zoomBy: (factor: number) => void;
@@ -395,8 +395,8 @@ export function createAtlas(canvas: HTMLCanvasElement, stage: HTMLElement, atlas
     else anim = requestAnimationFrame(zoomStep);
   }
 
-  /** Glide to show world point (wx, wy) at scale s2. */
-  function glide(wx: number, wy: number, s2: number): Promise<void> {
+  /** Glide to show world point (wx, wy) at scale s2: 520 ms in and out, or `dur` ms easing out. */
+  function glide(wx: number, wy: number, s2: number, dur = 520, easeOut = false): Promise<void> {
     cancelAnimationFrame(anim);
     zoomGoal = null;
     s2 = Math.min(MAX_SCALE, Math.max(minS, s2));
@@ -412,13 +412,12 @@ export function createAtlas(canvas: HTMLCanvasElement, stage: HTMLElement, atlas
         return;
       }
       const t0 = performance.now();
-      const dur = 520;
       const fx = (W / 2 - from.tx) / from.s;
       const fy = (H / 2 - from.ty) / from.s;
       const step = (now: number) => {
         if (!alive) return done();
         const t = Math.min(1, (now - t0) / dur);
-        const e = t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+        const e = easeOut ? 1 - Math.pow(1 - t, 3) : t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
         view.s = Math.exp(Math.log(from.s) + (Math.log(s2) - Math.log(from.s)) * e);
         view.tx = W / 2 - (fx + (wx - fx) * e) * view.s;
         view.ty = H / 2 - (fy + (wy - fy) * e) * view.s;
@@ -437,9 +436,9 @@ export function createAtlas(canvas: HTMLCanvasElement, stage: HTMLElement, atlas
     return glide(wx, wy, zoom === "world" ? fit : zoom === "region" ? fit * 5 : fit * 9);
   }
 
-  function fitBox(box: Box, min = 0): Promise<void> {
+  function fitBox(box: Box, min = 0, duration?: number): Promise<void> {
     if (!W || !H) {
-      pending = () => void fitBox(box, min);
+      pending = () => void fitBox(box, min, duration);
       return Promise.resolve();
     }
     touched = true;
@@ -449,7 +448,7 @@ export function createAtlas(canvas: HTMLCanvasElement, stage: HTMLElement, atlas
     const cx = (x0 + x1) / 2;
     const cy = (y0 + y1) / 2;
     const target = fitTo([cx - w / 2, cy - h / 2, cx + w / 2, cy + h / 2], 1.5);
-    return glide(cx, cy, target.s);
+    return duration === undefined ? glide(cx, cy, target.s) : glide(cx, cy, target.s, duration, true);
   }
 
   function pick(sx: number, sy: number) {

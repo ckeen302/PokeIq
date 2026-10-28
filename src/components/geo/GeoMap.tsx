@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { Loader2, Maximize2, Minus, Plus } from "lucide-react";
 import { WORLD_REGION, type GeoRegionInfo } from "@/lib/geo-types";
 import { createAtlas, loadAtlas, type AtlasData, type AtlasEngine, type AtlasView, type Box } from "@/components/atlas/atlas-engine";
@@ -16,31 +16,51 @@ export interface RevealedRound {
   answer: { pin: [number, number]; mask: [number, number][] };
   /** Round number shown on the markers in the end-of-game summary. */
   label?: string;
-  /** Duels: the trainer's colour for their ball and line. */
+  /** Duels: the trainer's colour for their pin and line. */
   color?: string;
+  /** The trainer's avatar, shown inside the pin. */
+  image?: string;
+}
+
+export interface FitTiming {
+  /** Wait this long (ms) before the camera moves, so the line can draw first. */
+  delay?: number;
+  /** The camera's move, in ms (eased out). */
+  duration?: number;
 }
 
 interface Props {
   region: GeoRegionInfo;
   /** The pin being placed this round. */
   pick?: MapPin | null;
+  /** The player's avatar in their pin. */
+  pinImage?: string;
   /** Rounds to reveal: the true area, its flag, and a line from the guess. */
   revealed?: RevealedRound[];
+  /** When a reveal's camera moves (default: at once, the engine's glide). */
+  fit?: FitTiming;
   onPick?: (pin: MapPin) => void;
+  /** Hide the zoom buttons (a dock adds its own cluster). */
+  controls?: boolean;
   className?: string;
+  /** Fill the parent instead of keeping the map's aspect ratio. */
+  fill?: boolean;
 }
 
 const WORLD_MAP = "/geo/maps/world.webp";
 /** A reveal never zooms closer than this many world pixels across (a handful of towns). */
 const REVEAL_MIN_BOX = 260;
+/** The line draws itself over this long before the camera moves. */
+export const LINE_DRAW_MS = 600;
 
 /**
  * The guess map is the world atlas, labels and all: the whole world, or framed
  * on one region (the rest dimmed). Scroll or the buttons to zoom, drag to pan,
  * click to drop the pin. Pins are normalised to the map's box; a revealed
- * round zooms to fit the guess and the answer.
+ * round draws a dashed line from the guess to the answer, then zooms to fit
+ * them both.
  */
-export function GeoMap({ region, pick, revealed = [], onPick, className }: Props) {
+export function GeoMap({ region, pick, pinImage, revealed = [], fit, onPick, controls = true, className, fill }: Props) {
   const stageRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const engine = useRef<AtlasEngine | null>(null);
@@ -88,15 +108,20 @@ export function GeoMap({ region, pick, revealed = [], onPick, className }: Props
     };
   }, [atlas, region.id, x0, y0, x1, y1]);
 
-  // A revealed round zooms to show the guess and the answer together.
+  // A revealed round zooms to show the guess and the answer together, once the line has drawn.
   const revealKey = revealed.map((r) => `${r.guess?.x},${r.guess?.y},${r.answer.pin}`).join("|");
+  const fitDelay = fit?.delay ?? 0;
+  const fitDuration = fit?.duration;
   useEffect(() => {
     const e = engine.current;
     if (!e || !revealed.length) return;
     const pts = revealed.flatMap((r) => [toWorld(...r.answer.pin), ...(r.guess ? [toWorld(r.guess.x, r.guess.y)] : [])]);
     const xs = pts.map((p) => p[0]);
     const ys = pts.map((p) => p[1]);
-    void e.fitBox([Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys)], REVEAL_MIN_BOX);
+    const box: Box = [Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys)];
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const id = window.setTimeout(() => void engine.current?.fitBox(box, REVEAL_MIN_BOX, fitDuration), reduced ? 0 : fitDelay);
+    return () => window.clearTimeout(id);
     // eslint-disable-next-line react-hooks/exhaustive-deps -- refit only when the revealed rounds or the map change
   }, [revealKey, atlas]);
 
@@ -106,18 +131,21 @@ export function GeoMap({ region, pick, revealed = [], onPick, className }: Props
   };
   // The answer's area: a dot of radius 6 world px on every area point (8 px apart), so they join into one patch at any zoom.
   const areaR = view ? Math.max(3, 6 * view.s) : 3;
+  const maskId = useId();
 
   return (
     <div
       ref={stageRef}
       className={cn(
-        "relative w-full touch-none select-none overflow-hidden rounded-md border-2 border-foreground/20 bg-[#165c96]",
+        "relative w-full touch-none select-none overflow-hidden bg-[#165c96]",
+        fill ? "h-full" : "rounded-md border-2 border-foreground/20",
         onPick ? "cursor-crosshair" : "cursor-grab",
         className
       )}
-      style={{ aspectRatio: `${aspect}` }}
+      style={fill ? undefined : { aspectRatio: `${aspect}` }}
       role={onPick ? "application" : "img"}
       aria-label={onPick ? `Map of ${region.name}: click where you think this is. Scroll to zoom, drag to move.` : `Map of ${region.name}`}
+      data-testid="geo-map"
     >
       <canvas ref={canvasRef} className="absolute inset-0 h-full w-full" />
       {!atlas && (
@@ -132,6 +160,7 @@ export function GeoMap({ region, pick, revealed = [], onPick, className }: Props
             const g = r.guess ? toScreen(r.guess.x, r.guess.y) : null;
             // Duels reveal each trainer's guess as its own round on one shared answer: draw its area once.
             const again = i > 0 && revealed[i - 1].answer === r.answer;
+            const mask = `${maskId}-${i}`;
             return (
               <g key={i}>
                 <g className="geo-area" display={again ? "none" : undefined}>
@@ -143,49 +172,78 @@ export function GeoMap({ region, pick, revealed = [], onPick, className }: Props
                     })}
                   </g>
                 </g>
-                {g && <line className="geo-line" pathLength={1} x1={g[0]} y1={g[1]} x2={ax} y2={ay} strokeWidth={2.5} strokeLinecap="round" stroke={r.color ?? "#120f24"} />}
+                {g && (
+                  <>
+                    {/* The dashed line is revealed by a solid line drawing itself underneath it. */}
+                    <mask id={mask} maskUnits="userSpaceOnUse" x="0" y="0" width="100%" height="100%">
+                      <line className="geo-line" pathLength={1} x1={g[0]} y1={g[1]} x2={ax} y2={ay} stroke="#fff" strokeWidth={6} strokeLinecap="round" style={{ animationDelay: `${0.1 + i * 0.12}s` }} />
+                    </mask>
+                    <line mask={`url(#${mask})`} x1={g[0]} y1={g[1]} x2={ax} y2={ay} strokeWidth={2.5} strokeDasharray="5 5" strokeLinecap="round" stroke={r.color ?? "#120f24"} data-testid="geo-reveal-line" />
+                  </>
+                )}
                 <Flag x={ax} y={ay} />
-                {g && <Ball x={g[0]} y={g[1]} label={r.label} color={r.color} />}
+                {g && <GuessPin x={g[0]} y={g[1]} label={r.label} color={r.color} image={r.image} delay={0.12 * i} />}
               </g>
             );
           })}
           {/* Keyed by position so every new pin replays the drop. */}
-          {pick && <Ball key={`${pick.x},${pick.y}`} x={toScreen(pick.x, pick.y)[0]} y={toScreen(pick.x, pick.y)[1]} />}
+          {pick && <GuessPin key={`${pick.x},${pick.y}`} x={toScreen(pick.x, pick.y)[0]} y={toScreen(pick.x, pick.y)[1]} image={pinImage} />}
         </svg>
       )}
-      <div className="absolute right-1.5 top-1.5 flex flex-col gap-1">
-        {[
-          { label: "Zoom in", icon: <Plus className="h-3.5 w-3.5" />, act: () => engine.current?.zoomBy(1.6) },
-          { label: "Zoom out", icon: <Minus className="h-3.5 w-3.5" />, act: () => engine.current?.zoomBy(1 / 1.6) },
-          { label: "Show the whole map", icon: <Maximize2 className="h-3 w-3" />, act: () => engine.current?.reset() },
-        ].map((b) => (
-          <button
-            key={b.label}
-            type="button"
-            onClick={b.act}
-            aria-label={b.label}
-            title={b.label}
-            className="flex h-7 w-7 items-center justify-center rounded bg-black/55 text-white backdrop-blur transition-colors hover:bg-black/75"
-          >
-            {b.icon}
-          </button>
-        ))}
-      </div>
+      {controls && (
+        <div className="absolute right-1.5 top-1.5 z-[2] flex flex-col gap-1">
+          {[
+            { label: "Zoom in", icon: <Plus className="h-3.5 w-3.5" />, act: () => engine.current?.zoomBy(1.6) },
+            { label: "Zoom out", icon: <Minus className="h-3.5 w-3.5" />, act: () => engine.current?.zoomBy(1 / 1.6) },
+            { label: "Show the whole map", icon: <Maximize2 className="h-3 w-3" />, act: () => engine.current?.reset() },
+          ].map((b) => (
+            <button
+              key={b.label}
+              type="button"
+              onClick={b.act}
+              aria-label={b.label}
+              title={b.label}
+              className="flex h-7 w-7 items-center justify-center rounded bg-black/55 text-white backdrop-blur transition-colors hover:bg-black/75"
+            >
+              {b.icon}
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
 
-/** The guess marker: a tiny Poké Ball that drops in. */
-function Ball({ x, y, label, color = "#e2306f" }: { x: number; y: number; label?: string; color?: string }) {
-  const r = 8;
+/**
+ * The guess marker: a teardrop pin (GeoGuessr's) with the trainer's avatar
+ * inside, or a Poké Ball for a guest, dropping in. The tip is the guess.
+ */
+function GuessPin({ x, y, label, color = "#3a8dde", image, delay = 0 }: { x: number; y: number; label?: string; color?: string; image?: string; delay?: number }) {
+  const r = 11;
+  const id = useId();
   return (
     <g transform={`translate(${x} ${y})`}>
-      <g className="geo-drop">
-        <circle r={r} fill="#fff" stroke="#120f24" strokeWidth={2} />
-        <path d={`M${-r} 0a${r} ${r} 0 0 1 ${2 * r} 0z`} fill={color} stroke="#120f24" strokeWidth={2} />
-        <circle r={2.6} fill="#fff" stroke="#120f24" strokeWidth={1.4} />
+      <g className="geo-drop" style={{ animationDelay: `${delay}s` }}>
+        <ellipse cy={1} rx={5} ry={2} fill="rgba(0,0,0,0.35)" />
+        {/* The teardrop: a circle at the top and a point at the origin. */}
+        <path d={`M0 0 L${-r * 0.82} ${-r * 1.35} A${r} ${r} 0 1 1 ${r * 0.82} ${-r * 1.35} Z`} fill={color} stroke="#120f24" strokeWidth={2} strokeLinejoin="round" />
+        <circle cy={-r * 1.75} r={r * 0.72} fill="#fff" />
+        {image ? (
+          <>
+            <clipPath id={id}>
+              <circle cy={-r * 1.75} r={r * 0.66} />
+            </clipPath>
+            <image href={image} x={-r * 0.66} y={-r * 1.75 - r * 0.66} width={r * 1.32} height={r * 1.32} clipPath={`url(#${id})`} preserveAspectRatio="xMidYMid slice" />
+          </>
+        ) : (
+          <g transform={`translate(0 ${-r * 1.75})`}>
+            <circle r={r * 0.55} fill="#fff" stroke="#120f24" strokeWidth={1.4} />
+            <path d={`M${-r * 0.55} 0a${r * 0.55} ${r * 0.55} 0 0 1 ${r * 1.1} 0z`} fill="#e2306f" stroke="#120f24" strokeWidth={1.4} />
+            <circle r={2} fill="#fff" stroke="#120f24" strokeWidth={1} />
+          </g>
+        )}
         {label && (
-          <text y={-r - 4} textAnchor="middle" fontSize={13} fontWeight={700} fill="#fff" stroke="#120f24" strokeWidth={3} paintOrder="stroke">
+          <text y={-r * 2.75 - 3} textAnchor="middle" fontSize={13} fontWeight={700} fill="#fff" stroke="#120f24" strokeWidth={3} paintOrder="stroke">
             {label}
           </text>
         )}
@@ -194,14 +252,14 @@ function Ball({ x, y, label, color = "#e2306f" }: { x: number; y: number; label?
   );
 }
 
-/** The true location: a green flag that pops up after the line draws. */
+/** The true location: a black disc with a white ring and a yellow flag, popping in after the line draws. */
 function Flag({ x, y }: { x: number; y: number }) {
   return (
     <g transform={`translate(${x} ${y})`}>
       <g className="geo-flag">
-        <circle r={4} fill="#120f24" />
-        <path d="M0 0V-20" stroke="#120f24" strokeWidth={2.4} />
-        <path d="M0 -20l13 4.6l-13 4.6z" className="fill-success" stroke="#120f24" strokeWidth={1.4} />
+        <circle r={13} fill="#120f24" stroke="#fff" strokeWidth={2} />
+        <path d="M-4 7V-7" stroke="#fff" strokeWidth={2} strokeLinecap="round" />
+        <path d="M-3 -7h10l-2.5 3.2L7 -0.6h-10z" fill="#ffd23c" />
       </g>
     </g>
   );

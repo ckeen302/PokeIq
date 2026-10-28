@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import {
   Check,
   Copy,
@@ -15,7 +15,6 @@ import {
   MapPin as MapPinIcon,
   RotateCcw,
   Swords,
-  Timer,
   Trophy,
   X,
   Map as MapIcon,
@@ -49,13 +48,15 @@ import { Card, CardContent } from "@/components/ui/card";
 import { BadgeMedal } from "@/components/game/BadgeMedal";
 import { CopyFallback } from "@/components/quiz/CopyFallback";
 import { ShareButton } from "@/components/share/ShareButton";
-import { GeoMap, type MapPin } from "./GeoMap";
+import { GeoMap, LINE_DRAW_MS, type MapPin } from "./GeoMap";
+import { useAccount } from "@/lib/account";
+import { avatarSrc } from "@/lib/avatar";
 import { DuelCard } from "./DuelCard";
 import { GlobePreview } from "@/components/globe/GlobePreview";
 import { ReportShot } from "./ReportShot";
 import { GeoHowTo, HowToHelpButton } from "./GeoHowTo";
 import { ShotCarousel, shotFit } from "./ShotCarousel";
-import { GameShell, dockClass } from "./GameShell";
+import { CountdownPill, ExitButton, FullscreenButton, GameShell, GuessButton, MapDock, Notch } from "./GameShell";
 import { roundViewsOf } from "@/lib/geo-look";
 import { DifficultyPicker, GeoSettingsButton, RoundsPicker } from "./GeoSettings";
 import {
@@ -180,24 +181,41 @@ async function post<T>(url: string, body: unknown): Promise<T> {
   return data as T;
 }
 
-/** Counts up to `value` (eased) whenever it changes. */
-function useCountUp(value: number, ms = 700): number {
+/** Counts up to `value` (eased) whenever it changes, after `delay` ms; instant under reduced motion. A tally tick sounds as it counts. */
+function useCountUp(value: number, ms = 700, delay = 0, tally = false): number {
+  const reduced = useReducedMotion();
   const [shown, setShown] = useState(0);
   const from = useRef(0);
   useEffect(() => {
-    const start = performance.now();
+    if (reduced) {
+      setShown(value);
+      from.current = value;
+      return;
+    }
     const origin = from.current;
     let raf = 0;
+    let start = 0;
+    let lastTick = 0;
     const tick = (now: number) => {
+      start ||= now;
       const t = Math.min(1, (now - start) / ms);
       const v = Math.round(origin + (value - origin) * (1 - (1 - t) ** 3));
       setShown(v);
+      if (tally && v !== origin && now - lastTick > 90 && t < 1) {
+        lastTick = now;
+        play("tally");
+      }
       if (t < 1) raf = requestAnimationFrame(tick);
       else from.current = value;
     };
-    raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
-  }, [value, ms]);
+    const id = window.setTimeout(() => {
+      raf = requestAnimationFrame(tick);
+    }, delay);
+    return () => {
+      window.clearTimeout(id);
+      cancelAnimationFrame(raf);
+    };
+  }, [value, ms, delay, tally, reduced]);
   return shown;
 }
 
@@ -220,6 +238,8 @@ export function GeoGame(props: GeoGameProps) {
 function GeoGameInner({ regions: allRegions, challenge }: GeoGameProps) {
   const today = useToday();
   const progress = useProgress();
+  const account = useAccount();
+  const pinImage = account.user?.avatar ? avatarSrc(account.user.avatar) : undefined;
   const regions = [...allRegions].filter((r) => playable(r)).sort((a, b) => geoMapRank(a.id) - geoMapRank(b.id));
   const byId = (id: string) => regions.find((r) => r.id === id);
   const [phase, setPhase] = useState<Phase>("setup");
@@ -352,6 +372,7 @@ function GeoGameInner({ regions: allRegions, challenge }: GeoGameProps) {
     setPhase("submitting");
     try {
       const at = pick ?? { x: 0, y: 0, timeout: true };
+      if (!timeUp) play("guess");
       const graded = await post<GeoGuessResponse>("/api/geo/guess", { token: game.token, ...at, ...(game.guessGame && gamePick ? { family: gamePick } : {}) });
       const nextPlayed = [...played, { guess: pick, graded, shot: game.round.shot }];
       setPlayed(nextPlayed);
@@ -419,6 +440,7 @@ function GeoGameInner({ regions: allRegions, challenge }: GeoGameProps) {
   }, [timer, shotReady, phase, roundStartedAt]);
   useEffect(() => {
     if (timeLeft === 0 && phase === "guessing") void guess(true);
+    else if (timeLeft !== null && timeLeft <= 5 && phase === "guessing") play("countdown");
     // eslint-disable-next-line react-hooks/exhaustive-deps -- fires once, when the clock hits zero
   }, [timeLeft, phase]);
 
@@ -711,67 +733,54 @@ function GeoGameInner({ regions: allRegions, challenge }: GeoGameProps) {
 
   const isStreak = game.kind === "streak";
   const roundNumber = played.length + (phase === "revealed" ? 0 : 1);
-  const hud = (
-    <div className="flex items-stretch justify-between gap-3 rounded-md border bg-card/90 px-4 py-2 backdrop-blur">
-      <div className="min-w-0">
-        <div className="hud-label">Map</div>
-        <div className="truncate font-display font-bold uppercase">
-          {game.region.name}
-          {game.filter.families.length ? " · Picked games" : game.filter.era ? ` · ${GEO_ERA_NAMES[game.filter.era]}` : ""}
-          {game.daily ? ` · Daily #${dailyNumber(game.daily)}` : isStreak ? " · Streak" : ""}
-          {game.difficulty ? ` · ${GEO_DIFFICULTY_NAMES[game.difficulty]}` : ""}
+  const modeLine = [
+    game.region.name,
+    game.filter.families.length ? "Picked games" : game.filter.era ? GEO_ERA_NAMES[game.filter.era] : null,
+    game.daily ? `Daily #${dailyNumber(game.daily)}` : null,
+    game.difficulty ? GEO_DIFFICULTY_NAMES[game.difficulty] : null,
+  ]
+    .filter(Boolean)
+    .join(" · ");
+  /** The top-centre notch: the round (or the streak), the map and mode; the countdown pill hangs under it. */
+  const notch = (
+    <Notch
+      below={timeLeft !== null ? <CountdownPill ms={timeLeft * 1000} totalMs={timer * 1000} urgentMs={10_000} testId="geo-time-left" /> : undefined}
+    >
+      <div className="min-w-0 text-center">
+        <div className="font-display text-xl font-bold uppercase italic leading-none tracking-wide sm:text-2xl" data-testid="geo-round">
+          {isStreak ? (
+            <span className="inline-flex items-center gap-1.5">
+              <Flame className="h-5 w-5 text-warning" aria-hidden /> Streak {streak}
+            </span>
+          ) : (
+            <>
+              Round {Math.min(roundNumber, game.rounds)}
+              <span className="text-white/50">/{game.rounds}</span>
+            </>
+          )}
         </div>
+        <div className="mt-0.5 truncate font-display text-[11px] font-semibold uppercase tracking-[0.14em] text-[#c8bfff]">{modeLine}</div>
       </div>
-      <div className="flex shrink-0 items-center gap-6 text-right">
-        <HowToHelpButton />
-        {timeLeft !== null && (
-          <div>
-            <div className="hud-label">Time</div>
-            <div
-              className={cn("flex items-center justify-end gap-1 font-pixel tabular-nums", timeLeft <= 10 ? "text-destructive" : "text-foreground")}
-              data-testid="geo-time-left"
-              aria-live={timeLeft <= 10 ? "polite" : "off"}
-            >
-              <Timer className="h-3.5 w-3.5" aria-hidden />
-              {timeLeft}
-            </div>
-          </div>
-        )}
-        {isStreak ? (
-          <div>
-            <div className="hud-label">Streak</div>
-            <div className="flex items-center justify-end gap-1 font-pixel tabular-nums text-warning">
-              <Flame className="h-3.5 w-3.5" aria-hidden />
-              {streak}
-            </div>
-          </div>
-        ) : (
-          <>
-            <div>
-              <div className="hud-label">Round</div>
-              <div className="font-pixel tabular-nums">
-                {Math.min(roundNumber, game.rounds)}/{game.rounds}
-              </div>
-            </div>
-            <div>
-              <div className="hud-label">Score</div>
-              <div className="font-pixel tabular-nums text-screen">{fmt(total)}</div>
-            </div>
-          </>
-        )}
-      </div>
+    </Notch>
+  );
+  /** Top-right: the score so far (or the streak), and the help button. */
+  const chips = (
+    <div className="absolute right-3 top-3 z-20 flex items-center gap-2">
+      {!isStreak && (
+        <div className="flex h-9 items-center gap-2 rounded-md bg-black/55 px-3 backdrop-blur" data-testid="geo-score-chip">
+          <span className="hud-label !text-white/60">Score</span>
+          <span className="font-display text-base font-bold tabular-nums text-[#9be15d]">{fmt(total)}</span>
+        </div>
+      )}
+      <HowToHelpButton className="hud-btn !p-0 !text-white hover:!bg-black/75 hover:!text-white" />
     </div>
   );
 
   // ---- round result ------------------------------------------------------------
   if (phase === "revealed" && current) {
     return (
-      <GameShell>
-        {({ fs }) => (
-          <div className={fs ? "mx-auto max-w-6xl p-4" : undefined}>
-            <RoundReveal game={game} current={current} streak={streak} hud={hud} onNext={next} />
-          </div>
-        )}
+      <GameShell onExit={() => setPhase("setup")}>
+        {() => <RoundReveal game={game} current={current} round={roundNumber} streak={streak} pinImage={pinImage} onNext={next} onExit={() => setPhase("setup")} />}
       </GameShell>
     );
   }
@@ -781,34 +790,37 @@ function GeoGameInner({ regions: allRegions, challenge }: GeoGameProps) {
   const zoom = game.settings.zoomed ? (src: string) => ({ scale: GEO_ZOOM, origin: zoomOrigin(src) }) : undefined;
   const zoomedView = zoom?.(views[viewIndex] ?? game.round.shot);
   return (
-    <GameShell>
+    <GameShell onExit={() => setPhase("setup")}>
       {({ fs, toggle }) => (
-    <div className={fs ? "relative h-full" : "mx-auto max-w-6xl space-y-3"}>
-      {fs ? <div className="absolute left-14 right-14 top-3 z-20">{hud}</div> : hud}
-      <div className={fs ? "absolute inset-0" : "relative"}>
-        <ShotCarousel views={views} index={viewIndex} onIndex={setViewIndex} onZoom={() => setZoomed(true)} zoom={zoom} fs={fs} onFullscreen={toggle} />
-
-        {/* GeoGuessr-style mini-map (the atlas): docked bottom-right on desktop, grows on hover. */}
-        <div className={dockClass(fs)}>
-          <div className="rounded-md lg:opacity-80 lg:shadow-2xl lg:transition-opacity lg:group-hover:opacity-100">
-            <GeoMap
-              region={game.region}
-              pick={pick}
-              onPick={(p) => {
-                setPick(p);
-                play("click");
-              }}
-            />
-          </div>
-          {game.guessGame && pick && (
-            <GameGuessPicker options={gameGuessOptions(game.region, game.filter)} value={gamePick} onChange={setGamePick} />
-          )}
-          <Button className="w-full" size="lg" disabled={!pick || phase === "submitting"} onClick={() => void guess()}>
-            {phase === "submitting" ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : <MapPinIcon className="h-4 w-4" aria-hidden />}
-            {pick ? "Guess" : "Place your pin on the map"}
-          </Button>
-        </div>
+    <div className="relative h-full">
+      <div className="absolute inset-0">
+        <ShotCarousel views={views} index={viewIndex} onIndex={setViewIndex} onZoom={() => setZoomed(true)} zoom={zoom} fs />
       </div>
+      <div className="absolute left-3 top-3 z-20 flex items-center gap-2">
+        <ExitButton onClick={() => setPhase("setup")} />
+        <FullscreenButton fs={fs} onClick={toggle} />
+      </div>
+      {notch}
+      {chips}
+
+      {/* GeoGuessr-style mini-map (the atlas): docked bottom-right, grows on hover; a bottom sheet on phones. */}
+      <MapDock
+        hasPin={!!pick}
+        map={({ fill }) => (
+          <GeoMap
+            region={game.region}
+            pick={pick}
+            pinImage={pinImage}
+            fill={fill}
+            onPick={(p) => {
+              setPick(p);
+              play("pin");
+            }}
+          />
+        )}
+        extra={game.guessGame && pick ? <GameGuessPicker options={gameGuessOptions(game.region, game.filter)} value={gamePick} onChange={setGamePick} /> : undefined}
+        button={<GuessButton hasPin={!!pick} busy={phase === "submitting"} disabled={phase === "submitting"} onClick={() => void guess()} />}
+      />
 
       <AnimatePresence>
         {zoomed && (
@@ -890,87 +902,141 @@ function ModeCard({
   );
 }
 
+/** The camera fits the guess and the answer this long (ms), after the line has drawn. */
+const FIT_MS = 800;
+/** The score counts up over this long once the camera has settled. */
+const SCORE_COUNT_MS = 1000;
+
+/**
+ * The round result, GeoGuessr's October 2026 classic layout: a full-bleed
+ * result map (the line draws, then the camera fits both points), with a
+ * bottom bar holding the score counting up over its 0–5,000 bar, the
+ * distance pill, the place (name, region and game with the round's own
+ * screenshot as its artwork) and Next.
+ */
 function RoundReveal({
   game,
   current,
+  round,
   streak,
-  hud,
+  pinImage,
   onNext,
+  onExit,
 }: {
   game: Game;
   current: Played;
+  round: number;
   streak: number;
-  hud: React.ReactNode;
+  pinImage?: string;
   onNext: () => void;
+  onExit: () => void;
 }) {
   const { graded, guess: g } = current;
-  const shown = useCountUp(graded.score);
+  const reduced = useReducedMotion();
+  const countDelay = reduced ? 0 : LINE_DRAW_MS + FIT_MS * 0.6;
+  const shown = useCountUp(graded.score, SCORE_COUNT_MS, countDelay, true);
   const isStreak = game.kind === "streak";
   const isWorld = isWorldwide(game.region.id);
+  const roundNumber = Math.min(game.rounds, round);
+  const bar = { initial: { width: 0 }, animate: { width: `${(graded.score / GEO_MAX_ROUND_SCORE) * 100}%` }, transition: { duration: reduced ? 0 : SCORE_COUNT_MS / 1000, delay: reduced ? 0 : countDelay / 1000, ease: "easeOut" as const } };
+  const rise = (delay: number) => ({ initial: reduced ? false : { opacity: 0, y: 12 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0.35, delay: reduced ? 0 : delay, ease: [0.2, 0.8, 0.2, 1] as const } });
   return (
-    <div className="mx-auto max-w-4xl space-y-4">
-      {hud}
-      <GeoMap region={game.region} revealed={[{ guess: g, answer: graded.answer }]} />
-      <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="space-y-4 text-center">
-        {isStreak ? (
-          <div>
-            <p className={cn("hud-label", graded.hit ? "text-success" : "text-destructive")}>
-              {graded.hit ? (isWorld ? "Right region!" : "Correct!") : isWorld ? "Wrong region. Streak over" : "Streak over"}
-            </p>
-            <p className="flex items-center justify-center gap-2 font-display text-4xl font-bold">
-              {graded.hit ? <Check className="h-8 w-8 text-success" aria-hidden /> : <X className="h-8 w-8 text-destructive" aria-hidden />}
-              {graded.hit ? `${streak} in a row` : `Final streak: ${streak}`}
-            </p>
-          </div>
-        ) : (
-          <>
-            <div>
-              <p className="hud-label text-screen">{verdict(graded.score)}</p>
-              <p className="font-display text-4xl font-bold tabular-nums">{fmt(shown)} points</p>
-            </div>
-            <div className="meter mx-auto max-w-xl">
-              <motion.div
-                className="h-full bg-success"
-                initial={{ width: 0 }}
-                animate={{ width: `${(graded.score / GEO_MAX_ROUND_SCORE) * 100}%` }}
-                transition={{ duration: 0.7 }}
-              />
-            </div>
-          </>
-        )}
-        {graded.gameGuess && (
-          <p className={cn("text-sm font-semibold", graded.gameGuess.correct ? "text-success" : "text-muted-foreground")} data-testid="geo-game-bonus">
-            {graded.gameGuess.correct
-              ? `Right game! +${fmt(graded.gameGuess.bonus)} bonus`
-              : graded.gameGuess.guessed
-                ? `Not ${geoFamily(graded.gameGuess.guessed).name}: no bonus`
-                : `No game named: no bonus (worth ${fmt(GEO_GAME_BONUS)})`}
-          </p>
-        )}
-        <div className="space-y-2 text-muted-foreground">
-          <p>
-            It was <span className="font-semibold text-foreground" data-testid="geo-answer-place">{placeName(graded.answer, game.region)}</span>
-          </p>
-          <p className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1.5 text-sm">
-            <span className="rounded-sm border px-2 py-0.5 text-xs text-foreground" data-testid="geo-answer-game">
-              Pokémon {graded.answer.game}
-            </span>
-            <span data-testid="geo-distance">{graded.timedOut ? "Time's up: no pin down" : distanceText(graded.answer.squares)}</span>
-            <Link
-              href={atlasHref(graded.answer)}
-              target="_blank"
-              className="inline-flex items-center gap-1 underline underline-offset-2 hover:text-foreground"
-              data-testid="geo-atlas-link"
-            >
-              <MapIcon className="h-3.5 w-3.5" aria-hidden /> See it on the World Atlas
-            </Link>
-          </p>
+    <div className="relative h-full" data-testid="geo-reveal">
+      <div className="absolute inset-0">
+        <GeoMap region={game.region} revealed={[{ guess: g, answer: graded.answer, image: pinImage }]} fit={{ delay: LINE_DRAW_MS, duration: FIT_MS }} fill controls={false} />
+      </div>
+      <div className="absolute left-3 top-3 z-20">
+        <ExitButton onClick={onExit} />
+      </div>
+      <Notch>
+        <div className="text-center">
+          <div className="font-display text-xl font-bold uppercase italic leading-none tracking-wide sm:text-2xl">{isStreak ? `Streak ${streak}` : `Round ${roundNumber}`}</div>
+          <div className="mt-0.5 font-display text-[11px] font-semibold uppercase tracking-[0.14em] text-[#c8bfff]">{game.region.name}</div>
         </div>
-        <Button size="lg" className="w-full max-w-xs" onClick={onNext}>
-          {graded.done ? (isStreak ? "See results" : "View summary") : "Next round"} ▶
-        </Button>
-        <div>
-          <ReportShot key={current.shot} shot={current.shot} mode={game.daily ? "daily" : "solo"} />
+      </Notch>
+
+      {/* The bottom bar. */}
+      <motion.div {...rise(0.15)} className="absolute inset-x-0 bottom-0 z-20 border-t-4 border-[#a99cff] bg-[#1e1a3f]/95 text-white shadow-[0_-12px_40px_rgba(0,0,0,0.5)] backdrop-blur">
+        <div className="mx-auto grid max-w-6xl items-center gap-3 px-4 py-3 sm:gap-6 sm:px-6 md:grid-cols-[1fr_auto_1fr]">
+          {/* The score (or the streak) and its bar. */}
+          <div className="min-w-0 text-center md:text-left">
+            {isStreak ? (
+              <>
+                <p className={cn("hud-label", graded.hit ? "!text-[#9be15d]" : "!text-[#ff5a5a]")}>
+                  {graded.hit ? (isWorld ? "Right region!" : "Correct!") : isWorld ? "Wrong region. Streak over" : "Streak over"}
+                </p>
+                <p className="flex items-center justify-center gap-2 font-display text-4xl font-bold italic md:justify-start">
+                  {graded.hit ? <Check className="h-8 w-8 text-[#9be15d]" aria-hidden /> : <X className="h-8 w-8 text-[#ff5a5a]" aria-hidden />}
+                  {graded.hit ? `${streak} in a row` : `Final streak: ${streak}`}
+                </p>
+              </>
+            ) : (
+              <>
+                <p className="hud-label !text-[#c8bfff]">{verdict(graded.score)}</p>
+                <p className="geo-glow font-display text-4xl font-bold italic tabular-nums sm:text-5xl" data-testid="geo-round-score">
+                  {fmt(shown)} <span className="text-lg not-italic text-white/60">pts</span>
+                </p>
+                <div className="mt-1.5 flex items-center gap-2">
+                  <div className="meter h-2 flex-1 !bg-black/40">
+                    <motion.div className="h-full bg-[#9be15d]" {...bar} />
+                  </div>
+                  <span className="font-pixel text-[9px] text-white/50">{fmt(GEO_MAX_ROUND_SCORE)}</span>
+                </div>
+              </>
+            )}
+            {graded.gameGuess && (
+              <p className={cn("mt-1 text-sm font-semibold", graded.gameGuess.correct ? "text-[#9be15d]" : "text-white/60")} data-testid="geo-game-bonus">
+                {graded.gameGuess.correct
+                  ? `Right game! +${fmt(graded.gameGuess.bonus)} bonus`
+                  : graded.gameGuess.guessed
+                    ? `Not ${geoFamily(graded.gameGuess.guessed).name}: no bonus`
+                    : `No game named: no bonus (worth ${fmt(GEO_GAME_BONUS)})`}
+              </p>
+            )}
+          </div>
+
+          {/* The distance pill and the place. */}
+          <motion.div {...rise(reduced ? 0 : (LINE_DRAW_MS + FIT_MS) / 1000)} className="flex min-w-0 flex-col items-center gap-2">
+            <span className="inline-flex items-center gap-2 rounded-full border-2 border-[#a99cff] bg-[#4cbb17] px-4 py-1.5 font-display text-sm font-bold uppercase italic tracking-wide text-white shadow-lg" data-testid="geo-distance">
+              <MapPinIcon className="h-4 w-4" aria-hidden />
+              {graded.timedOut ? "Time's up: no pin down" : distanceText(graded.answer.squares)}
+            </span>
+            <div className="flex min-w-0 items-center gap-3">
+              {/* The game's artwork: the round's own screenshot. */}
+              {/* eslint-disable-next-line @next/next/no-img-element -- the same cached screenshot, as a thumbnail */}
+              <img src={current.shot} alt="" className="h-12 w-16 shrink-0 rounded border border-white/20 object-cover" />
+              <div className="min-w-0">
+                <p className="truncate font-display text-base font-bold uppercase leading-tight" data-testid="geo-answer-place">
+                  {placeName(graded.answer, game.region)}
+                </p>
+                <p className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-white/70">
+                  {graded.answer.region && <span>{graded.answer.region}</span>}
+                  <span className="rounded-sm border border-white/30 px-1.5 py-0.5 text-[11px] text-white" data-testid="geo-answer-game">
+                    Pokémon {graded.answer.game}
+                  </span>
+                  <Link href={atlasHref(graded.answer)} target="_blank" className="inline-flex items-center gap-1 underline underline-offset-2 hover:text-white" data-testid="geo-atlas-link">
+                    <MapIcon className="h-3 w-3" aria-hidden /> Atlas
+                  </Link>
+                </p>
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Next, with its hotkey, and the report link. */}
+          <div className="flex flex-col items-center gap-1.5 md:items-end">
+            <button
+              type="button"
+              onClick={onNext}
+              data-testid="geo-next"
+              className="flex h-12 w-full max-w-xs items-center justify-center gap-2 rounded-md bg-[#4cbb17] px-6 font-display text-base font-bold uppercase tracking-wider text-white shadow-lg transition-[background-color,transform] hover:bg-[#58d01c] active:scale-[0.98]"
+            >
+              {graded.done ? (isStreak ? "See results" : "View summary") : "Next round"} ▶
+              <kbd aria-hidden className="ml-1 hidden rounded border border-white/40 px-1.5 text-[10px] font-normal normal-case sm:inline">Space</kbd>
+            </button>
+            <div className="text-white/60 [&_button]:text-white/60 [&_button:hover]:text-white">
+              <ReportShot key={current.shot} shot={current.shot} mode={game.daily ? "daily" : "solo"} />
+            </div>
+          </div>
         </div>
       </motion.div>
     </div>
