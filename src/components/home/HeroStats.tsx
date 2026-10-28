@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { ratingToIQ, iqTitle } from "@/lib/rating";
-import { currentStreak, levelInfo, useProgress } from "@/lib/progress";
+import { currentStreak, useProgress } from "@/lib/progress";
 import { useToday } from "@/lib/use-today";
 
 /** A trainer readout on the title screen, for players who've been here before. */
@@ -18,7 +18,7 @@ export function HeroStats() {
       className="grid w-fit grid-cols-3 divide-x divide-foreground/10 rounded-md border bg-card/80 text-center backdrop-blur transition-colors duration-300 animate-in fade-in hover:border-screen/50 motion-reduce:animate-none"
     >
       <Readout label="PokéIQ" value={iq !== null ? String(iq) : "—"} sub={iq !== null ? iqTitle(iq) : "Unrated"} />
-      <Readout label="Level" value={String(levelInfo(progress.xp).level)} sub={`${progress.xp} XP`} />
+      <Readout label="Badges" value={String(Object.keys(progress.badges).length)} sub="earned" />
       <Readout label="Streak" value={String(today ? currentStreak(progress.daily.last, progress.daily.streak, today) : 0)} sub="days" />
     </Link>
   );

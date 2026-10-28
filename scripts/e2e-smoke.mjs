@@ -1680,8 +1680,8 @@ step("pokédex TCG tab: sets, a set gallery (sort + filter), a card page, search
     const setNote = await page.getByTestId("tcg-price-note").innerText();
     if (process.env.POKEIQ_TCG_FIXTURE === "1" && !/^Prices: TCGplayer market \(USD\).* as of /.test(setNote)) errors.push(`tcg: the set's price note has no source/date: "${setNote}"`);
     await page.screenshot({ path: `${OUT}/tcg-set.png` });
-    await page.getByTestId("tcg-card").first().click();
-    await page.waitForURL(/\/pokedex\/tcg\/card\//);
+    // The gallery re-renders after the filter: click again if the first click landed on a card that was replaced.
+    await clickUntilUrl(page, page.getByTestId("tcg-card").first(), /\/pokedex\/tcg\/card\//);
     await page.getByTestId("tcg-card-image").waitFor();
     await page.getByTestId("tcg-prices").waitFor();
     // Fire Pokémon cards link to their Pokédex entry.

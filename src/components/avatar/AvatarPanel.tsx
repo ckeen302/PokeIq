@@ -27,8 +27,8 @@ import { Avatar } from "./Avatar";
 
 /**
  * The avatar picker on the trainer card (accounts only): any Pokémon, by
- * name, generation or type; shiny from level 10; frames from level
- * milestones and ranked tiers. Locked choices say how to unlock them. The
+ * name, generation or type; shiny and frames are earned by playing or by
+ * ranked tiers. Locked choices say how to unlock them. The
  * server checks every pick again. Or their own picture, which nobody else
  * sees until a moderator approves it; frames apply to it too.
  */

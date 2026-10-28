@@ -166,7 +166,7 @@ export function AuthForm({ next = "/trainer" }: { next?: string }) {
           </Button>
         </form>
         <p className="text-center text-xs text-muted-foreground">
-          Signing in saves your XP, badges, streaks and PokéIQ to your account so they follow you to any device.
+          Signing in saves your badges, streaks, ratings and PokéIQ to your account so they follow you to any device.
         </p>
       </CardContent>
     </Card>

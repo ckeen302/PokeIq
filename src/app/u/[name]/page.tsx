@@ -35,8 +35,6 @@ interface PageProps {
 
 export const dynamic = "force-dynamic";
 
-/** Trainer level from XP (the same curve as levelInfo in lib/progress). */
-const levelOf = (xp: number) => Math.floor(Math.sqrt(Math.max(0, xp) / 50)) + 1;
 
 const quietly = <T,>(label: string, p: Promise<T> | undefined | null, fallback: T): Promise<T> =>
   (p ?? Promise.resolve(fallback)).catch((err) => {
@@ -45,7 +43,7 @@ const quietly = <T,>(label: string, p: Promise<T> | undefined | null, fallback: 
   });
 
 /**
- * A trainer's public profile: everything here is public (level, ratings,
+ * A trainer's public profile: everything here is public (ratings,
  * records, public replays). Online status and what they're playing are not:
  * those show to their friends only, through the friends panel.
  */
@@ -71,8 +69,6 @@ const findProfile = cache(async (raw: string) => {
     username: user.username,
     joined: user.createdAt,
     avatar: avatars.get(user.id) ?? null,
-    level: levelOf(digest?.xp ?? 0),
-    xp: digest?.xp ?? 0,
     battles,
     pokedle,
     guessr,
@@ -90,7 +86,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   if (!found) return pageMetadata({ title: "Trainer not found", description: "No such trainer on PokéIQ.", noindex: true });
   return pageMetadata({
     title: `${found.username} · Trainer profile`,
-    description: `${found.username} on PokéIQ: trainer level, Pokédle, PokéGuessr and battle ratings, battle records and recent replays.`,
+    description: `${found.username} on PokéIQ: Pokédle, PokéGuessr and battle ratings, battle records and recent replays.`,
     path: `/u/${encodeURIComponent(found.username)}`,
   });
 }
@@ -112,10 +108,6 @@ export default async function UserProfilePage({ params }: PageProps) {
       <section className="hud relative overflow-hidden rounded-xl border bg-card p-6">
         <div className="flex flex-wrap items-start gap-5">
           <Avatar avatar={found.avatar} size={80} />
-          <span className="screen flex h-20 w-20 shrink-0 flex-col items-center justify-center rounded-lg text-screen">
-            <span className="relative z-[3] font-pixel text-[10px]">LV</span>
-            <span className="relative z-[3] font-display text-3xl font-bold">{found.level}</span>
-          </span>
           <div className="min-w-0 flex-1 space-y-3">
             <div>
               <h1 className="truncate font-display text-4xl font-bold tracking-tight" data-testid="profile-name">
@@ -123,7 +115,6 @@ export default async function UserProfilePage({ params }: PageProps) {
               </h1>
               <p className="flex items-center gap-1.5 text-sm text-muted-foreground">
                 <CalendarDays className="h-3.5 w-3.5" aria-hidden /> Trainer since {new Date(found.joined).toLocaleDateString("en-US", { month: "long", year: "numeric" })}
-                <span aria-hidden>·</span> {found.xp.toLocaleString("en-US")} XP
               </p>
             </div>
             <ProfileActions username={found.username} />

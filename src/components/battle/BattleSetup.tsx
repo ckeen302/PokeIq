@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Bot, Loader2, Radio, Swords, UserSearch, X } from "lucide-react";
 import { CPU_LEVEL_INFO, CPU_LEVELS, PLAY_FORMAT_INFO, PLAY_FORMATS, battleHref, type BattleSeatResponse, type CpuLevel, type PlayFormatId, type StandardFormatId } from "@/lib/battle/play";
-import { saveBattleSeat } from "@/lib/battle/seat";
+import { saveBattleSeat, saveBattleSeed } from "@/lib/battle/seat";
 import { ensureBattleId } from "@/lib/battle/replay-client";
 import { isLadderFormat } from "@/lib/battle/ladder";
 import { useLadderStanding } from "@/lib/battle/ladder-client";
@@ -78,10 +78,12 @@ export async function startBattle(
   body: { mode: "cpu" | "pvp" } & Omit<CpuSetup, "level"> & { level?: CpuLevel; public?: boolean; hidden?: boolean; timer?: boolean; timeoutLoses?: boolean }
 ): Promise<string> {
   const rankedId = (await ensureBattleId()) ?? undefined;
+  const sentAt = Date.now();
   const res = await fetch("/api/battle", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...body, rankedId }) });
   const data = (await res.json().catch(() => ({}))) as Partial<BattleSeatResponse> & { error?: string };
   if (!res.ok || !data.code || !data.token) throw new Error(data.error ?? `Request failed (${res.status})`);
   saveBattleSeat(data.code, data.token);
+  if (data.view) saveBattleSeed(data.code, data.view, sentAt);
   if (body.rules) rememberCustomRules(body.rules);
   if (body.mode === "cpu") rememberCpuSetup({ name: body.name, format: body.format, level: body.level ?? "normal", team: body.team, rules: body.rules });
   return battleHref(body.mode, data.code);
@@ -162,6 +164,16 @@ export function BattleSetup({ initial = "cpu", challenge }: { initial?: Opponent
 
   // The last custom ruleset, remembered on this device.
   useEffect(() => setRules(lastCustomRules()), []);
+  // While the trainer picks a format: fetch the battle id, and wake the battle
+  // functions (a code that can't exist is a cheap 404) so Start isn't a cold start.
+  useEffect(() => {
+    void ensureBattleId();
+    const id = window.setTimeout(() => {
+      // The bodies are read so the browser closes the requests (an unread body keeps one open).
+      for (const url of ["/api/battle", "/api/battle/warm-up"]) void fetch(url, { cache: "no-store" }).then((r) => r.text()).catch(() => undefined);
+    }, 300);
+    return () => window.clearTimeout(id);
+  }, []);
   // Matchmaking keeps to the standard formats (and the Factory); Factory runs vs the computer have their own page.
   useEffect(() => {
     if ((opponent === "match" && format === "custom") || (opponent === "cpu" && format === "factory")) setFormat("gen9randombattle");

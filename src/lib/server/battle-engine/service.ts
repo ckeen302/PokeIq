@@ -29,6 +29,7 @@ import { Dex, Teams } from "pokemon-showdown";
 import { customName, customTimer, type CustomRules } from "@/lib/battle/custom-rules";
 import {
   insertBattle,
+  jsonbOrder,
   loadBattle,
   loadBattleMeta,
   saveBattle,
@@ -574,6 +575,7 @@ export async function createCpuBattle(opts: { name: string; format: PlayFormatId
     const work = new Work(blankRecord(meta));
     start(work, now);
     if (!(await insertBattle(work.rec))) continue;
+    remember(code, work.rec, 0);
     return { ok: true as const, code, token: battleToken(code, me.id, 0), view: battleView(work.rec.meta, me.id, work.rec.logs.p1, 0, now, 0) };
   }
   return fail(503, "Couldn't start a battle. Try again.");
@@ -598,6 +600,7 @@ export async function createRunBattle(
     const work = new Work(blankRecord(meta));
     start(work, now);
     if (!(await insertBattle(work.rec))) continue;
+    remember(code, work.rec, 0);
     return { ok: true as const, code, token: battleToken(code, me.id, 0) };
   }
   return fail(503, "Couldn't start a battle. Try again.");
@@ -692,16 +695,62 @@ export async function updateBattle<T extends object>(
   change: (work: Work, now: number) => Outcome<T>
 ): Promise<Outcome<T & { rec: BattleRecord; now: number; rev: number }>> {
   for (let attempt = 0; attempt < MAX_TRIES; attempt++) {
-    const loaded = await loadBattle(code);
+    const loaded = (attempt === 0 && recalled(code)) || (await loadBattle(code));
     if (!loaded) return fail(404, "This battle has ended or never existed.");
     const now = Date.now();
     const work = new Work(loaded.rec);
     const out = change(work, now);
     if (!out.ok) return out;
     if (!work.changed) return { ...out, rec: work.rec, now, rev: loaded.version };
-    if (await saveBattle(code, loaded.version, work.patch())) return { ...out, rec: work.rec, now, rev: loaded.version + 1 };
+    if (await saveBattle(code, loaded.version, work.patch())) {
+      remember(code, work.rec, loaded.version + 1);
+      return { ...out, rec: work.rec, now, rev: loaded.version + 1 };
+    }
+    // Someone else saved first (or this copy was stale): start over from the store.
+    recent.delete(code);
   }
   return fail(503, "The battle is busy. Try again.");
+}
+
+/**
+ * The record as this server instance last saved it, by code. The next change
+ * that lands here (most of a battle's turns do) starts from it instead of
+ * reading the store; the compare-and-swap in saveBattle catches a copy that
+ * another instance has moved past, and the read happens then. Kept as JSON
+ * with the store's key order, as the in-memory store does, so a recalled
+ * record is exactly what a read would give.
+ */
+const recent = new Map<string, { json: string; version: number; at: number }>();
+const RECENT_MS = 10 * 60_000;
+const RECENT_MAX = 100;
+
+function remember(code: string, rec: BattleRecord, version: number) {
+  recent.delete(code);
+  if (recent.size >= RECENT_MAX) recent.delete(recent.keys().next().value as string);
+  recent.set(code, { json: JSON.stringify({ ...rec, meta: jsonbOrder(rec.meta) }), version, at: Date.now() });
+}
+
+/** A poll's light save (meta only) keeps the remembered record current, so the next turn can still start from it. */
+function rememberMeta(code: string, version: number, meta: BattleMeta) {
+  const kept = recent.get(code);
+  if (!kept || kept.version !== version) return;
+  const rec = JSON.parse(kept.json) as BattleRecord;
+  remember(code, { ...rec, meta }, version + 1);
+}
+
+function recalled(code: string): { rec: BattleRecord; version: number } | null {
+  const kept = recent.get(code);
+  if (!kept) return null;
+  if (Date.now() - kept.at > RECENT_MS) {
+    recent.delete(code);
+    return null;
+  }
+  return { rec: JSON.parse(kept.json) as BattleRecord, version: kept.version };
+}
+
+/** Tests: forget every remembered record, so a test starts from the store. */
+export function forgetRecentBattles() {
+  recent.clear();
 }
 
 /** A poll: marks the player as here, catches the battle up and returns their view from line `since`. */
@@ -738,12 +787,16 @@ export async function pollBattle(code: string, token: unknown, since: number, vi
     if (seat < 0) {
       // A spectator: counted with one try (a clash waits for their next poll), never blocking the players.
       if (touchWatcher(meta, viewer, now) && (await saveBattle(code, lite.version, { meta }))) {
+        rememberMeta(code, lite.version, meta);
         return { ok: true, view: battleView(meta, playerId, lite.log, since, now, lite.version + 1) };
       }
       return { ok: true, view: battleView(lite.meta, playerId, lite.log, since, now, lite.version) };
     }
     if (!touch(meta, playerId, now)) return { ok: true, view: battleView(meta, playerId, lite.log, since, now, lite.version) };
-    if (await saveBattle(code, lite.version, { meta })) return { ok: true, view: battleView(meta, playerId, lite.log, since, now, lite.version + 1) };
+    if (await saveBattle(code, lite.version, { meta })) {
+      rememberMeta(code, lite.version, meta);
+      return { ok: true, view: battleView(meta, playerId, lite.log, since, now, lite.version + 1) };
+    }
   }
   return fail(503, "The battle is busy. Try again.");
 }
@@ -768,6 +821,7 @@ export async function chatBattle(code: string, playerId: string, text: string, s
     meta.chat = out.chat;
     touch(meta, playerId, now);
     if (await saveBattle(code, lite.version, { meta })) {
+      rememberMeta(code, lite.version, meta);
       const mine = await loadBattleMeta(code, channelOf(seat));
       return { ok: true, view: battleView(meta, playerId, mine?.log ?? [], since, now, lite.version + 1) };
     }
