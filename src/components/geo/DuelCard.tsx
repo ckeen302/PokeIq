@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Swords, Trophy } from "lucide-react";
-import { DUEL_HP, type DuelMode } from "@/lib/duel-types";
+import { Swords, Trophy, Zap } from "lucide-react";
+import { DUEL_HP, DUEL_TURBO_CAP_MS, type DuelMode } from "@/lib/duel-types";
 import type { GeoRegionInfo, GeoRounds } from "@/lib/geo-types";
 import { GEO_ERA_NAMES, type GeoEra } from "@/lib/geo-families";
 import { NewDuelCard } from "@/components/duel/NewDuelCard";
@@ -34,6 +34,7 @@ export function DuelCard({ region, era, places = Infinity }: { region: GeoRegion
   }, []);
   const [mode, setMode] = useState<DuelMode>("hp");
   const [rounds, setRounds] = useState<GeoRounds>(5);
+  const [turbo, setTurbo] = useState(false);
   const games = era ? ` · ${GEO_ERA_NAMES[era]}` : "";
   const race = mode === "race";
   const raceRounds: GeoRounds = rounds <= places ? rounds : 5;
@@ -69,7 +70,7 @@ export function DuelCard({ region, era, places = Infinity }: { region: GeoRegion
       ) : (
         <NewDuelCard
           endpoint="/api/geo/duel"
-          body={{ region: region.id, ...(era ? { era } : {}), mode, ...(race ? { rounds: raceRounds } : {}) }}
+          body={{ region: region.id, ...(era ? { era } : {}), mode, ...(race ? { rounds: raceRounds } : {}), ...(turbo ? { turbo: true } : {}) }}
           // Quick matching pairs HP battles only.
           match={race ? undefined : { game: "geo", region: region.id, ...(era ? { era } : {}) }}
           href={(code) => `/guessr/duel/${code}`}
@@ -103,6 +104,24 @@ export function DuelCard({ region, era, places = Infinity }: { region: GeoRegion
               </div>
             </div>
             {race && <RoundsPicker value={raceRounds} onChange={setRounds} max={places} testId="geo-duel-rounds" label="Rounds in the race" />}
+            <div className="space-y-1.5">
+              <p className="hud-label">Party settings</p>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={turbo}
+                onClick={() => setTurbo((t) => !t)}
+                data-testid="geo-duel-turbo"
+                className={cn(
+                  "flex items-center gap-1.5 rounded-md border px-3 py-1.5 font-display text-xs font-semibold uppercase tracking-wider transition-colors",
+                  turbo ? "border-warning bg-warning/15 text-foreground" : "bg-card text-muted-foreground hover:border-warning/50 hover:text-foreground"
+                )}
+              >
+                <Zap className="h-3.5 w-3.5" aria-hidden />
+                Turbo {turbo ? "on" : "off"}
+              </button>
+              <p className="text-xs text-muted-foreground">Turbo: once one of you guesses, the other has {DUEL_TURBO_CAP_MS / 1000} seconds instead of 15.</p>
+            </div>
           </div>
         </NewDuelCard>
       )}

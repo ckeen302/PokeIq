@@ -58,8 +58,34 @@ interface PvpViewBase {
 
 /** The preset reactions duellists can send each other: no free text. */
 export const DUEL_EMOTES = ["gg", "fire", "wow", "sweat", "clap"] as const;
-export type DuelEmote = (typeof DUEL_EMOTES)[number];
-export const EMOTE_TEXT: Record<DuelEmote, string> = { gg: "GG", fire: "🔥", wow: "😮", sweat: "😅", clap: "👏" };
+/**
+ * PokéGuessr's eight Pokémon reactions: a sprite that pops up by the sender's
+ * avatar. Sent through the same channel as the text reactions.
+ */
+export const GEO_EMOTES = [
+  { id: "pika", pokemonId: 25, label: "Pika!" },
+  { id: "huh", pokemonId: 54, label: "Huh?" },
+  { id: "zzz", pokemonId: 143, label: "Zzz…" },
+  { id: "splash", pokemonId: 129, label: "Splash!" },
+  { id: "heh", pokemonId: 94, label: "Heh heh" },
+  { id: "cute", pokemonId: 133, label: "Aww" },
+  { id: "flame", pokemonId: 6, label: "Fired up" },
+  { id: "counter", pokemonId: 202, label: "Counter!" },
+] as const;
+export type GeoEmoteId = (typeof GEO_EMOTES)[number]["id"];
+export const GEO_EMOTE_IDS = GEO_EMOTES.map((e) => e.id) as [GeoEmoteId, ...GeoEmoteId[]];
+/** Every reaction a duel may carry (PokéGuessr's route accepts them all; the other duels only the text ones). */
+export const ALL_DUEL_EMOTES = [...DUEL_EMOTES, ...GEO_EMOTE_IDS] as [DuelEmote, ...DuelEmote[]];
+export type DuelEmote = (typeof DUEL_EMOTES)[number] | GeoEmoteId;
+export const EMOTE_TEXT: Record<DuelEmote, string> = {
+  gg: "GG",
+  fire: "🔥",
+  wow: "😮",
+  sweat: "😅",
+  clap: "👏",
+  ...(Object.fromEntries(GEO_EMOTES.map((e) => [e.id, e.label])) as Record<GeoEmoteId, string>),
+};
+export const geoEmote = (id: DuelEmote) => GEO_EMOTES.find((e) => e.id === id);
 /** A trainer may send a reaction at most this often, and at most EMOTE_BURST in any EMOTE_WINDOW_MS. */
 export const EMOTE_GAP_MS = 1_500;
 export const EMOTE_BURST = 3;

@@ -8,9 +8,9 @@ import { answerFor, isGeoSpec, mapSize, measureGuess, planRounds } from "./geo";
 import { Rng } from "@/lib/rng";
 import { GEO_BOT_DELAY_MS, GEO_BOT_REACT_MS, GEO_BOT_SIGMA, botPin, geoBotName, geoDivisionFloor, geoDivisionOf, type GeoDivisionId, type GeoDuelRankedView } from "@/lib/geo-ranked";
 import type { GeoRankedMatch } from "./geo-ranked";
+import { closesAfterGuess, hpAfter, hpBefore, rampMultiplier, roundDamage, seatMultipliers } from "@/lib/geo-duel-rules";
 import {
   DUEL_AWAY_MS,
-  DUEL_COUNTDOWN_MS,
   DUEL_HP,
   DUEL_IDLE_ROUNDS,
   DUEL_LEAD_MS,
@@ -18,7 +18,6 @@ import {
   DUEL_QUIET_MS,
   DUEL_REVEAL_MS,
   DUEL_ROUND_MS,
-  duelMultiplier,
   type DuelEnd,
   type DuelMode,
   type DuelSettings,
@@ -72,8 +71,8 @@ interface DuelRound {
   guesses: ({ x: number; y: number; at: number } | null)[];
   /** Trainers who pressed Next during the reveal. */
   skip: boolean[];
-  /** Set by the reveal. */
-  result?: { at: number; scores: number[]; squares: number[]; damage: number; hurt: number | null; hp: number[]; nextAt: number };
+  /** Set by the reveal. `multipliers` (each seat's own) and `winner` are stamped since Turbo; older duels are read without them. */
+  result?: { at: number; scores: number[]; squares: number[]; damage: number; hurt: number | null; winner?: number | null; multipliers?: number[]; hp: number[]; nextAt: number };
 }
 
 export interface Duel {
@@ -84,6 +83,8 @@ export interface Duel {
   era?: GeoEra;
   /** "race": a set number of rounds, highest total wins (unset = HP battle). */
   mode?: DuelMode;
+  /** Turbo: a guess caps the opponent's remaining time at 10 s. */
+  turbo?: boolean;
   seed: string;
   createdAt: number;
   status: DuelStatus;
@@ -132,26 +133,28 @@ const planDuel = (region: string, seed: string, count: number, era?: GeoEra) => 
 /** The winner of a points race by total points: a seat, or null for a draw. */
 export const raceWinner = (totals: number[]) => (totals[0] === totals[1] ? null : totals[0] > totals[1] ? 0 : 1);
 const raceTotals = (d: Duel) => d.players.map((_, seat) => d.rounds.reduce((sum, r) => sum + (r.result?.scores[seat] ?? 0), 0));
-/** Parses a duel's requested settings: HP by default, a race only with 3, 5 or 10 rounds. */
-export function parseDuelSettings(mode: unknown, rounds: unknown): DuelSettings | null {
-  if (mode === undefined || mode === "hp") return rounds === undefined ? { mode: "hp" } : null;
+/** Parses a duel's requested settings: HP by default, a race only with 3, 5 or 10 rounds, Turbo on request. */
+export function parseDuelSettings(mode: unknown, rounds: unknown, turbo?: unknown): DuelSettings | null {
+  const extra = turbo === true ? { turbo: true } : {};
+  if (mode === undefined || mode === "hp") return rounds === undefined ? { mode: "hp", ...extra } : null;
   if (mode !== "race") return null;
-  if (rounds === undefined) return { mode: "race", rounds: GEO_ROUNDS };
-  return isGeoRounds(rounds) ? { mode: "race", rounds } : null;
+  if (rounds === undefined) return { mode: "race", rounds: GEO_ROUNDS, ...extra };
+  return isGeoRounds(rounds) ? { mode: "race", rounds, ...extra } : null;
 }
 
 export const isDuelMap = (region: string, era?: GeoEra) => isGeoSpec({ ...geoSpec(region), ...(era ? { era } : {}) });
 
 /** Same route as the single-player game; screenshot ids are random, so the URL gives nothing away. */
 const shotUrl = (round: PlannedRound) => `/api/geo/shot/${round.shot}`;
-const multiplierOf = (d: Pick<Duel, "mode">, index: number) => (d.mode === "race" ? 1 : duelMultiplier(index));
+/** Each seat's own multiplier for a round (a points race has none). */
+const multipliersOf = (d: Pick<Duel, "mode" | "players">, index: number) => (d.mode === "race" ? d.players.map(() => 1) : seatMultipliers(index, d.players.length));
 const seatOf = (duel: Duel, playerId: string | null) => (playerId ? duel.players.findIndex((p) => p.id === playerId) : -1);
 const leader = (hp: number[]) => (hp[0] === hp[1] ? null : hp[0] > hp[1] ? 0 : 1);
 
-/** When guessing closes: 90 s after the start, or 15 s after the first guess. */
-function closesAt(round: DuelRound): number {
+/** When guessing closes: 90 s after the start, or 15 s after the first guess (10 s in Turbo). */
+function closesAt(d: Pick<Duel, "turbo">, round: DuelRound): number {
   const first = Math.min(...round.guesses.map((g) => g?.at ?? Infinity));
-  return Math.min(round.startsAt + DUEL_ROUND_MS, first + DUEL_COUNTDOWN_MS);
+  return closesAfterGuess(round.startsAt, DUEL_ROUND_MS, Number.isFinite(first) ? first : null, !!d.turbo);
 }
 
 // ---------------------------------------------------------------------------
@@ -174,7 +177,21 @@ export function readDuelToken(token: unknown, code: string): string | null {
 function blankDuel(region: string, code: string, players: DuelPlayer[], now: number, seed = randomId(), era?: GeoEra, settings?: DuelSettings): Duel {
   const race = settings?.mode === "race";
   const maxRounds = planDuel(region, seed, race ? (settings.rounds ?? GEO_ROUNDS) : DUEL_MAX_ROUNDS, era).length;
-  return { v: 1, code, region, ...(era ? { era } : {}), ...(race ? { mode: "race" as const } : {}), seed, createdAt: now, status: "lobby", players, maxRounds, hp: [DUEL_HP, DUEL_HP], rounds: [] };
+  return {
+    v: 1,
+    code,
+    region,
+    ...(era ? { era } : {}),
+    ...(race ? { mode: "race" as const } : {}),
+    ...(settings?.turbo ? { turbo: true } : {}),
+    seed,
+    createdAt: now,
+    status: "lobby",
+    players,
+    maxRounds,
+    hp: [DUEL_HP, DUEL_HP],
+    rounds: [],
+  };
 }
 
 export function createDuel(region: string, name: string, code: string, now: number, seed?: string, era?: GeoEra, settings?: DuelSettings, ranked?: GeoDuelRanked): { duel: Duel; playerId: string } {
@@ -232,7 +249,9 @@ export function joinDuel(duel: Duel, name: string, now: number): { ok: true; due
 /** A rematch: the same map and trainers (same seats), new places, the chat so far. Both start un-ready, as if just seen (the bot stays ready). A rematch is never ranked. */
 export function rematchOf(old: Duel, code: string, now: number, seed?: string): Duel {
   const players = old.players.map((p): DuelPlayer => ({ id: p.id, name: p.name, ready: !!p.bot, seenAt: now, ...(p.bot ? { bot: p.bot } : {}) }));
-  const next = blankDuel(old.region, code, players, now, seed, old.era, old.mode === "race" && isGeoRounds(old.maxRounds) ? { mode: "race", rounds: old.maxRounds } : undefined);
+  const settings: DuelSettings = old.mode === "race" && isGeoRounds(old.maxRounds) ? { mode: "race", rounds: old.maxRounds } : { mode: "hp" };
+  if (old.turbo) settings.turbo = true;
+  const next = blankDuel(old.region, code, players, now, seed, old.era, settings);
   return old.chat?.length ? { ...next, chat: old.chat } : next;
 }
 
@@ -307,7 +326,7 @@ function step(d: Duel, now: number): boolean {
   const round = d.rounds[d.rounds.length - 1];
   if (!round.result) {
     if (botGuess(d, round, now)) return true;
-    const close = closesAt(round);
+    const close = closesAt(d, round);
     const all = round.guesses.every(Boolean);
     if (!all && now <= close + GRACE_MS) return false;
     reveal(d, round, all ? Math.max(...round.guesses.map((g) => g!.at)) : close + GRACE_MS);
@@ -347,16 +366,18 @@ function newRound(d: Duel, startsAt: number): DuelRound {
   return { plan, startsAt, guesses: d.players.map(() => null), skip: d.players.map(() => false) };
 }
 
-/** Scores the round. The lower score loses the difference times the round's multiplier. */
+/** Scores the round. The lower score loses the gap times the winner's own multiplier, stamped on the result in full (a race deals no damage). */
 function reveal(d: Duel, round: DuelRound, at: number) {
   const index = d.rounds.indexOf(round);
   const measured = round.guesses.map((g) => (g ? measureGuess(geoSpec(d.region), round.plan, g.x, g.y) : null));
   const scores = measured.map((m) => m?.score ?? 0);
   const race = d.mode === "race";
-  const hurt = race || scores[0] === scores[1] ? null : scores[0] < scores[1] ? 0 : 1;
-  const damage = hurt === null ? 0 : Math.round(Math.abs(scores[0] - scores[1]) * duelMultiplier(index));
-  const hp = d.hp.map((h, seat) => (seat === hurt ? Math.max(0, h - damage) : h));
-  round.result = { at, scores, squares: measured.map((m) => m?.squares ?? 0), damage, hurt, hp, nextAt: at + DUEL_REVEAL_MS };
+  const multipliers = multipliersOf(d, index);
+  const { winner, hurt: loser, damage: dealt } = roundDamage(scores, multipliers);
+  const hurt = race ? null : loser;
+  const damage = race ? 0 : dealt;
+  const hp = hpAfter(d.hp, hurt, damage);
+  round.result = { at, scores, squares: measured.map((m) => m?.squares ?? 0), damage, hurt, winner, multipliers, hp, nextAt: at + DUEL_REVEAL_MS };
   d.hp = hp;
   // The bot is always ready for the next round: the reveal ends as soon as the trainer presses Next.
   const bot = botSeat(d);
@@ -477,15 +498,21 @@ export function duelView(duel: Duel, playerId: string | null, now: number, rev: 
   const revealed = duel.rounds.flatMap((r, index): DuelRoundResult[] => {
     if (!r.result) return [];
     const { scores, squares, damage, hurt, hp } = r.result;
+    // Duels revealed before multipliers were stamped: the ramp's values.
+    const multipliers = r.result.multipliers ?? multipliersOf(duel, index);
+    const winner = r.result.winner ?? (scores[0] === scores[1] ? null : scores[0] > scores[1] ? 0 : 1);
     return [
       {
         index,
-        multiplier: multiplierOf(duel, index),
+        multiplier: winner === null ? 1 : multipliers[winner],
+        multipliers,
         shot: shotUrl(r.plan),
         answer: roundAnswer(duel, index),
         guesses: r.guesses.map((g, k) => (g ? { x: g.x, y: g.y, score: scores[k], squares: squares[k] } : null)),
         damage,
         hurt,
+        winner,
+        hpBefore: hpBefore(duel.rounds.slice(0, index).map((p) => ({ hp: p.result?.hp ?? duel.hp })), index),
         hp,
       },
     ];
@@ -499,6 +526,7 @@ export function duelView(duel: Duel, playerId: string | null, now: number, rev: 
     ...(duel.era ? { era: duel.era } : {}),
     mode: duel.mode ?? "hp",
     ...(duel.mode === "race" ? { totals: raceTotals(duel) } : {}),
+    ...(duel.turbo ? { turbo: true } : {}),
     status: duel.status,
     now,
     rev,
@@ -508,10 +536,11 @@ export function duelView(duel: Duel, playerId: string | null, now: number, rev: 
     maxRounds: duel.maxRounds,
     round: live && {
       index: duel.rounds.length - 1,
-      multiplier: multiplierOf(duel, duel.rounds.length - 1),
+      multiplier: duel.mode === "race" ? 1 : rampMultiplier(duel.rounds.length - 1),
+      multipliers: multipliersOf(duel, duel.rounds.length - 1),
       startsAt: live.startsAt,
       shot: now >= live.startsAt ? shotUrl(live.plan) : undefined,
-      endsAt: closesAt(live),
+      endsAt: closesAt(duel, live),
       countdown: live.guesses.some(Boolean),
       guessed: live.guesses.map(Boolean),
       yours: mine ? { x: mine.x, y: mine.y } : undefined,
