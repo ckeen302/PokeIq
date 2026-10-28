@@ -1,7 +1,7 @@
 import { Battle, Dex, Teams, extractChannelMessages, type PokemonSet, type PRNGSeed } from "@pkmn/sim";
 import { randomChoice, teamChoice } from "@/lib/battle/choices";
 import type { BattleRequest } from "@/lib/battle/play";
-import { makeChooser, originalSlot } from "./policies";
+import { makeChooser, originalSlot, type Chooser } from "./policies";
 import { battleSeed, strategyRandom } from "./seed";
 import { addRecord, emptyTotals, type BattleRecord, type LabTotals, type Outcome, type Pair } from "./stats";
 import { labFormatId, SIDE_NAMES, TURN_LIMIT, type LabSetup } from "./types";
@@ -337,8 +337,14 @@ export interface LabBattle {
 /** Lines no reader needs. */
 const DROPPED = /^\|(t:|debug|request)\|/;
 
+export interface LabBattleOptions {
+  log?: boolean;
+  /** Each side's chooser in place of the setup's strategies (the CPU benchmark pits policies against each other). */
+  choosers?: (rands: [() => number, () => number], record: BattleRecord) => [Chooser, Chooser];
+}
+
 /** Battle `index` of the run with master seed `master`. The same arguments always play the same battle. */
-export function runLabBattle(prep: PreparedLab, master: string, index: number, opts: { log?: boolean } = {}): LabBattle {
+export function runLabBattle(prep: PreparedLab, master: string, index: number, opts: LabBattleOptions = {}): LabBattle {
   const { setup } = prep;
   const record = emptyRecord(prep);
   const battle = new Battle({ formatid: prep.formatid as never, seed: battleSeed(master, index) as PRNGSeed });
@@ -350,8 +356,8 @@ export function runLabBattle(prep: PreparedLab, master: string, index: number, o
     // "[Unavailable choice]" is the simulator revealing something the side couldn't know (a trap, a disable): not a mistake.
     if (err >= 0 && !text.startsWith("[Unavailable choice]", err + 7)) refusedBy.push(text.slice(err + 7));
   };
-  const rands = [strategyRandom(master, index, 0), strategyRandom(master, index, 1)];
-  const choosers = ([0, 1] as const).map((s) =>
+  const rands: [() => number, () => number] = [strategyRandom(master, index, 0), strategyRandom(master, index, 1)];
+  const choosers = opts.choosers?.(rands, record) ?? ([0, 1] as const).map((s) =>
     makeChooser({
       strategy: setup.sides[s].strategy,
       rand: rands[s],
