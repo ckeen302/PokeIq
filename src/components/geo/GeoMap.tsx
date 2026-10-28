@@ -53,6 +53,12 @@ const REVEAL_MIN_BOX = 260;
 /** The line draws itself over this long before the camera moves. */
 export const LINE_DRAW_MS = 600;
 
+/** A map's width over its height as drawn (very tall or wide maps sit in a box of sensible proportions). */
+export function mapAspect(region: Pick<GeoRegionInfo, "map">): number {
+  const [x0, y0, x1, y1] = region.map.box;
+  return Math.min(2.4, Math.max(1, (x1 - x0) / (y1 - y0)));
+}
+
 /**
  * The guess map is the world atlas, labels and all: the whole world, or framed
  * on one region (the rest dimmed). Scroll or the buttons to zoom, drag to pan,
@@ -72,7 +78,7 @@ export function GeoMap({ region, pick, pinImage, revealed = [], fit, onPick, con
   const bw = x1 - x0;
   const bh = y1 - y0;
   // Very tall or wide maps sit in a box of sensible proportions.
-  const aspect = Math.min(2.4, Math.max(1, bw / bh));
+  const aspect = mapAspect(region);
   const toWorld = (x: number, y: number): [number, number] => [x0 + x * bw, y0 + y * bh];
 
   useEffect(() => {

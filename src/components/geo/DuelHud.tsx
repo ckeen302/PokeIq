@@ -292,7 +292,7 @@ function Fighter({
   const [light, dark] = HP_COLOR_HEX[tone];
   const avatar = compact ? 40 : 56;
   return (
-    <div className={cn("absolute top-2 flex w-[46%] flex-col sm:top-3 sm:w-[30%]", right ? "right-0 items-end pr-2 sm:pr-4" : "left-0 items-start pl-2 sm:pl-4")} data-testid={`geo-fighter-${seat}`} data-hp-color={tone}>
+    <div className={cn("absolute top-2 flex w-[37%] flex-col sm:top-3 sm:w-[30%]", right ? "right-0 items-end pr-2 sm:pr-4" : "left-0 items-start pl-2 sm:pl-4")} data-testid={`geo-fighter-${seat}`} data-hp-color={tone}>
       <div className={cn("flex w-full items-center gap-1.5 sm:gap-2", right && "flex-row-reverse")}>
         {/* The avatar overlaps the bar's outer end. */}
         <div className={cn("relative z-[2] shrink-0 rounded-full ring-[3px] ring-[#a99cff] shadow-lg transition-opacity", shaking && "geo-shake", dim && "opacity-70")} data-testid={`geo-avatar-${seat}`} data-shaking={shaking ? "true" : undefined}>
@@ -453,7 +453,7 @@ export function EmoteButton({ onEmote, className }: { onEmote: (e: DuelEmote) =>
             animate={{ opacity: 1, x: 0, scale: 1 }}
             exit={{ opacity: 0, x: -8, scale: 0.9 }}
             transition={{ duration: 0.18 }}
-            className="absolute left-12 top-1/2 grid -translate-y-1/2 grid-cols-4 gap-1 rounded-xl bg-[#1e1a3f]/95 p-2 shadow-2xl ring-2 ring-[#a99cff]/50 backdrop-blur"
+            className="absolute left-12 top-1/2 grid -translate-y-1/2 grid-cols-[repeat(4,3rem)] gap-1 rounded-xl bg-[#1e1a3f]/95 p-2 shadow-2xl ring-2 ring-[#a99cff]/50 backdrop-blur"
             role="menu"
             aria-label="Reactions"
           >
@@ -471,7 +471,7 @@ export function EmoteButton({ onEmote, className }: { onEmote: (e: DuelEmote) =>
                 data-testid={`geo-emote-${e.id}`}
                 title={e.label}
                 aria-label={`Send ${e.label}`}
-                className="flex h-12 w-12 flex-col items-center justify-center rounded-lg transition-[background-color,transform] hover:scale-110 hover:bg-white/10 disabled:opacity-50"
+                className="flex h-12 w-12 flex-col items-center justify-center rounded-lg transition-[background-color,transform] hover:scale-105 hover:bg-white/10 disabled:opacity-50"
               >
                 {/* eslint-disable-next-line @next/next/no-img-element -- the Pokémon's artwork, cached */}
                 <img src={artUrl(e.pokemonId, 96)} alt="" className="h-9 w-9 object-contain" loading="lazy" />
@@ -485,15 +485,19 @@ export function EmoteButton({ onEmote, className }: { onEmote: (e: DuelEmote) =>
   );
 }
 
+/** The last reaction shown per duel and seat, so a reaction doesn't pop again when the next screen mounts a fresh band. */
+const seenEmotes = new Map<string, number>();
+
 /** Reactions popping by a seat's avatar: the Pokémon (or the text) with its label. */
 function GeoEmotePops({ view, seat }: { view: DuelView; seat: number }) {
   const [shown, setShown] = useState<PvpEmoteView[]>([]);
-  const seen = useRef(0);
   const timers = useRef<number[]>([]);
   useEffect(() => {
-    const fresh = (view.emotes ?? []).filter((e) => e.n > seen.current);
+    const key = `${view.code}:${seat}`;
+    const seen = seenEmotes.get(key) ?? 0;
+    const fresh = (view.emotes ?? []).filter((e) => e.n > seen);
     if (!fresh.length) return;
-    seen.current = Math.max(...fresh.map((e) => e.n));
+    seenEmotes.set(key, Math.max(...fresh.map((e) => e.n)));
     const mine = fresh.filter((e) => e.seat === seat);
     if (!mine.length) return;
     if (seat !== view.you) play("ping");
@@ -544,7 +548,7 @@ export function VersusIntro({ view, me, round, secondsLeft, mapName }: { view: D
     const p = view.players[seat];
     return (
       <motion.div
-        key={seat}
+        key={`card-${seat}`}
         initial={reduced ? false : { opacity: 0, x: seat === 0 ? -40 : 40 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.4, ease: [0.2, 0.8, 0.2, 1] }}
@@ -587,7 +591,7 @@ export function VersusIntro({ view, me, round, secondsLeft, mapName }: { view: D
             VS
           </motion.span>
         ) : (
-          <span key={secondsLeft} className="geo-digit font-display text-[7rem] font-extrabold leading-none sm:text-[11rem]" data-testid="geo-intro-digit">
+          <span key={`digit-${secondsLeft}`} className="geo-digit font-display text-[7rem] font-extrabold leading-none sm:text-[11rem]" data-testid="geo-intro-digit">
             {secondsLeft}
           </span>
         )}

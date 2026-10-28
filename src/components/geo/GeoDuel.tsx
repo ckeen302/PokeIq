@@ -14,7 +14,7 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { useDuel } from "@/components/duel/use-duel";
 import { DuelGone, DuelLoading, DuelLobby, DuelNotice, DuelVisitor, MatchedNote, SEAT_COLORS, SeatDot, seconds } from "@/components/duel/DuelParts";
 import { DuelChat, DuelTools, EmoteFeed } from "@/components/duel/DuelReactions";
-import { GeoMap, LINE_DRAW_MS, type MapPin, type RevealedRound } from "./GeoMap";
+import { GeoMap, LINE_DRAW_MS, mapAspect, type MapPin, type RevealedRound } from "./GeoMap";
 import { ReportShot } from "./ReportShot";
 import { shotFit } from "./ShotCarousel";
 import { CountdownPill, FullscreenButton, GameShell, GuessButton, MapDock } from "./GameShell";
@@ -334,7 +334,7 @@ export function GeoDuel({ code, regions }: GeoDuelProps) {
                   </button>
                 </div>
                 {emoteButton}
-                <MapDock
+                <MapDock aspect={mapAspect(map)}
                   hasPin={!!pick && !locked}
                   map={({ fill }) => (
                     <GeoMap
@@ -474,7 +474,7 @@ function DuelReveal({
     <div className="relative flex h-full flex-col" data-testid="geo-duel-reveal">
       <DuelBand view={view} me={me} round={result.index + 1} hp={seq.hp} multiplier={result.winner === null ? duelMultiplier(result.index) : result.multiplier} multipliers={result.multipliers} result={result} seq={seq} />
       <div className="relative min-h-0 flex-1">
-        <div className="absolute inset-0">
+        <div className="absolute inset-x-0 top-0 bottom-[8rem] md:bottom-[5.75rem]">
           <GeoMap region={map} revealed={revealed} fit={{ delay: LINE_DRAW_MS, duration: FIT_MS }} fill controls={false} />
         </div>
         {notice && <div className="absolute inset-x-0 top-16 z-30 px-4">{notice}</div>}

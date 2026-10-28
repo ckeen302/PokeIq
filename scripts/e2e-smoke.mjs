@@ -719,7 +719,9 @@ await page.waitForFunction(() => {
 });
 if ((await page.getByTestId("geo-shot").getAttribute("data-zoomed")) !== "true") throw new Error("the screenshot isn't zoomed");
 {
-  const left = Number(await page.getByTestId("geo-time-left").innerText());
+  // The countdown pill reads m:ss.
+  const [, m, s] = (await page.getByTestId("geo-time-left").innerText()).match(/(\d+):(\d\d)/) ?? [];
+  const left = Number(m) * 60 + Number(s);
   if (!(left > 20 && left <= 30)) throw new Error(`timer shows ${left}`);
 }
 await page.screenshot({ path: `${OUT}/geo-mode-zoom-timer.png` });

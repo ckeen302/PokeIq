@@ -46,7 +46,9 @@ export function GameShell({ children, onExit, className }: { children: (api: Ful
       if (e.key !== "Escape") return;
       if (document.fullscreenElement) return;
       const t = e.target as HTMLElement | null;
-      if (t?.closest("input, textarea, select, [role=dialog]")) return;
+      if (t?.closest("input, textarea, select")) return;
+      // An open dialog (the zoomed screenshot, the phone's map sheet) takes Escape first.
+      if (document.querySelector('[role="dialog"]:not([aria-hidden="true"])')) return;
       exitRef.current?.();
     };
     document.addEventListener("fullscreenchange", onChange);
@@ -108,7 +110,7 @@ export function ExitButton({ onClick, label = "Back to PokéGuessr", testId = "g
 export function Notch({ children, below, className, wide }: { children: React.ReactNode; below?: React.ReactNode; className?: string; wide?: boolean }) {
   return (
     <div className={cn("pointer-events-none absolute left-1/2 top-0 z-20 flex -translate-x-1/2 flex-col items-center", className)}>
-      <div className={cn("geo-notch pointer-events-auto flex min-h-[3.4rem] items-center justify-center gap-3 px-8 pb-2 pt-1.5 sm:min-h-[3.9rem]", wide ? "min-w-[min(28rem,92vw)]" : "min-w-[min(21rem,88vw)]")} data-testid="geo-notch">
+      <div className={cn("geo-notch pointer-events-auto flex min-h-[3.4rem] items-center justify-center gap-3 px-8 pb-2 pt-1.5 sm:min-h-[3.9rem]", wide ? "min-w-[min(28rem,92vw)]" : "min-w-[min(21rem,56vw)]")} data-testid="geo-notch">
         {children}
       </div>
       {below && <div className="pointer-events-auto mt-2">{below}</div>}
@@ -148,7 +150,6 @@ export function CountdownPill({ ms, totalMs, urgentMs = 10_000, testId, classNam
           strokeDasharray="1"
           strokeDashoffset={1 - frac}
           className="transition-[stroke-dashoffset] duration-300 ease-linear"
-          style={{ transform: "rotate(-90deg)", transformOrigin: "center", transformBox: "fill-box" }}
         />
       </svg>
       <span className={cn("font-display text-[1.35rem] font-bold tabular-nums", urgent && "text-[#ff5a5a]")} data-testid={testId}>
@@ -165,7 +166,10 @@ export function CountdownPill({ ms, totalMs, urgentMs = 10_000, testId, classNam
 export const MAP_SIZES = ["s", "m", "l", "xl"] as const;
 export type MapSize = (typeof MAP_SIZES)[number];
 /** Each step's width; the map's own aspect gives the height. XL is a share of the window. */
-const SIZE_WIDTH: Record<MapSize, string> = { s: "17.5rem", m: "26.25rem", l: "37.5rem", xl: "45vw" };
+const SIZE_HEIGHT: Record<MapSize, number> = { s: 200, m: 300, l: 430, xl: 0 };
+/** The dock's width for a size step and the map's aspect ratio: S 280×200 on a 1.4 map, wider for the world; XL is a share of the window. */
+export const dockWidth = (size: MapSize, aspect: number): string =>
+  size === "xl" ? `min(60vw, calc(49vh * ${aspect}), calc(100% - 2rem))` : `min(${Math.round(SIZE_HEIGHT[size] * aspect)}px, calc(100% - 2rem))`;
 const SIZE_KEY = "pokeiq:geo-map-size";
 const STICKY_KEY = "pokeiq:geo-map-sticky";
 /** The map shrinks back this long after the pointer leaves (unless pinned). */
@@ -220,10 +224,13 @@ export function MapDock({
   button,
   extra,
   hasPin,
+  aspect = 1.4,
   testId = "geo-dock",
 }: {
   /** The map; `fill` asks it to fill the phone sheet instead of keeping its aspect. */
   map: (o: { fill: boolean }) => React.ReactNode;
+  /** The map's width over its height: each size step keeps its height, so wide maps get a wider dock. */
+  aspect?: number;
   /** The Guess button (full width). */
   button: React.ReactNode;
   /** Anything between the map and the button (the game picker). */
@@ -276,8 +283,8 @@ export function MapDock({
       data-open={open ? "true" : undefined}
       data-sticky={sticky ? "true" : undefined}
       className={cn("geo-dock absolute bottom-4 right-4 z-10 flex flex-col gap-2 transition-[width,opacity] duration-[250ms] ease-out", open ? "opacity-100" : "opacity-50 hover:opacity-100")}
-      style={{ width: `min(${SIZE_WIDTH[shown]}, calc(100% - 2rem))` }}
-      onPointerEnter={warm}
+      style={{ width: dockWidth(shown, aspect) }}
+      onPointerOver={warm}
       onPointerLeave={cool}
       onFocusCapture={warm}
       onBlurCapture={cool}

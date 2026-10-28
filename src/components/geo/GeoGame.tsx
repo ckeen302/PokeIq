@@ -48,7 +48,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { BadgeMedal } from "@/components/game/BadgeMedal";
 import { CopyFallback } from "@/components/quiz/CopyFallback";
 import { ShareButton } from "@/components/share/ShareButton";
-import { GeoMap, LINE_DRAW_MS, type MapPin } from "./GeoMap";
+import { GeoMap, LINE_DRAW_MS, mapAspect, type MapPin } from "./GeoMap";
 import { useAccount } from "@/lib/account";
 import { avatarSrc } from "@/lib/avatar";
 import { DuelCard } from "./DuelCard";
@@ -768,11 +768,11 @@ function GeoGameInner({ regions: allRegions, challenge }: GeoGameProps) {
     <div className="absolute right-3 top-3 z-20 flex items-center gap-2">
       {!isStreak && (
         <div className="flex h-9 items-center gap-2 rounded-md bg-black/55 px-3 backdrop-blur" data-testid="geo-score-chip">
-          <span className="hud-label !text-white/60">Score</span>
+          <span className="hud-label hidden !text-white/60 sm:inline">Score</span>
           <span className="font-display text-base font-bold tabular-nums text-[#9be15d]">{fmt(total)}</span>
         </div>
       )}
-      <HowToHelpButton className="hud-btn !p-0 !text-white hover:!bg-black/75 hover:!text-white" />
+      <HowToHelpButton className="hud-btn !hidden !p-0 !text-white hover:!bg-black/75 hover:!text-white sm:!flex" />
     </div>
   );
 
@@ -804,7 +804,7 @@ function GeoGameInner({ regions: allRegions, challenge }: GeoGameProps) {
       {chips}
 
       {/* GeoGuessr-style mini-map (the atlas): docked bottom-right, grows on hover; a bottom sheet on phones. */}
-      <MapDock
+      <MapDock aspect={mapAspect(game.region)}
         hasPin={!!pick}
         map={({ fill }) => (
           <GeoMap
@@ -942,7 +942,7 @@ function RoundReveal({
   const rise = (delay: number) => ({ initial: reduced ? false : { opacity: 0, y: 12 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0.35, delay: reduced ? 0 : delay, ease: [0.2, 0.8, 0.2, 1] as const } });
   return (
     <div className="relative h-full" data-testid="geo-reveal">
-      <div className="absolute inset-0">
+      <div className="absolute inset-x-0 top-0 bottom-[8.5rem] md:bottom-[6.75rem]">
         <GeoMap region={game.region} revealed={[{ guess: g, answer: graded.answer, image: pinImage }]} fit={{ delay: LINE_DRAW_MS, duration: FIT_MS }} fill controls={false} />
       </div>
       <div className="absolute left-3 top-3 z-20">
