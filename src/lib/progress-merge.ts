@@ -1,6 +1,6 @@
 import { DLE_HINT_KINDS } from "./dle-types";
 import { isDleAssist } from "./dle-assist";
-import type { ConnRecord, DailyRecord, DleRecord, Progress } from "./progress";
+import type { CognitiveRecord, ConnRecord, DailyRecord, DleRecord, Progress } from "./progress";
 import { EMPTY_CONN_PLAY, type ConnPlay } from "./connections/play";
 import { EMPTY_PDK_PLAY, PDK_COUNTERS, type PdkPlay, type PdkRecord } from "./pikadoku/play";
 
@@ -128,6 +128,29 @@ function mergeConnPlay(a: ConnPlay | undefined, b: ConnPlay | undefined): ConnPl
   return out;
 }
 
+const COG_SECTIONS = ["fluid", "memory", "speed", "spatial"] as const;
+
+/** A Cognitive PokéIQ record, or null when any part of it is off. */
+function cognitiveOf(v: unknown): CognitiveRecord | null {
+  const o = obj(v);
+  if (o.v !== 1 || typeof o.at !== "number" || !Number.isFinite(o.at) || typeof o.score !== "number" || typeof o.percentile !== "number") return null;
+  const sections = {} as CognitiveRecord["sections"];
+  const secs = obj(o.sections);
+  for (const k of COG_SECTIONS) {
+    const s = obj(secs[k]);
+    if (typeof s.raw !== "number" || typeof s.percentile !== "number" || typeof s.scaled !== "number") return null;
+    sections[k] = { raw: Math.round(num(s.raw)), percentile: Math.min(100, num(s.percentile)), scaled: Math.min(200, Math.round(num(s.scaled))) };
+  }
+  return {
+    v: 1,
+    at: Math.round(num(o.at)),
+    score: Math.min(200, Math.round(num(o.score))),
+    percentile: Math.min(100, num(o.percentile)),
+    sections,
+    ...(typeof o.knowledge === "number" && Number.isFinite(o.knowledge) && { knowledge: Math.min(300, Math.round(num(o.knowledge))) }),
+  };
+}
+
 /** Coerces untrusted JSON into a well-formed Progress, or null if it isn't one. */
 export function normalizeProgress(raw: unknown): Progress | null {
   const o = obj(raw);
@@ -163,6 +186,7 @@ export function normalizeProgress(raw: unknown): Progress | null {
     ...(o.pdkPlay !== undefined && { pdkPlay: pdkPlayOf(o.pdkPlay) }),
     badges: numberMap(o.badges),
     skills,
+    ...(cognitiveOf(o.cognitive) && { cognitive: cognitiveOf(o.cognitive)! }),
   };
 }
 
@@ -222,5 +246,7 @@ export function mergeProgress(local: Progress, remote: Progress): Progress {
     ...((local.connPlay || remote.connPlay) && { connPlay: mergeConnPlay(local.connPlay, remote.connPlay) }),
     badges,
     skills,
+    // The most recent Cognitive PokéIQ test, whichever device it was taken on.
+    ...((local.cognitive || remote.cognitive) && { cognitive: (local.cognitive?.at ?? -1) >= (remote.cognitive?.at ?? -1) ? local.cognitive : remote.cognitive }),
   };
 }

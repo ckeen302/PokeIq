@@ -11,6 +11,7 @@
 import { chromium } from "playwright";
 import fs from "fs";
 import { execFileSync } from "child_process";
+import { runIqTest } from "./e2e-iq-test.mjs";
 
 const BASE = process.argv[2] ?? "http://localhost:3000";
 // Each game opens its how-to pop-up (with a live demo) on a first visit. "Don't show again" dismisses it for good on this device.
@@ -597,19 +598,8 @@ step("pikadoku: a full daily (9 PP, one wrong guess), the score and the answers 
   if (early.status() !== 409) errors.push(`Pikadoku revealed answers for an unfinished game (${early.status()})`);
 }
 
-step("adaptive PokéIQ test (20 questions)");
-await page.goto(`${BASE}/iq-test`, { waitUntil: "networkidle" });
-await page.getByRole("button", { name: /Start the test/ }).click();
-for (let i = 0; i < 20; i++) {
-  await page.waitForSelector("h2");
-  await page.locator("main button:not([disabled])").first().click();
-  const next = page.getByRole("button", { name: /Next question|See results/ });
-  await next.waitFor({ timeout: 10_000 });
-  await next.click();
-}
-await page.getByText("How your PokéIQ was measured").waitFor();
-await page.waitForTimeout(1800);
-await page.screenshot({ path: `${OUT}/iq-test-results.png`, fullPage: true });
+step("the PokéIQ Test: five sections end to end, desktop and phone");
+await runIqTest({ newPage, BASE, OUT, errors });
 
 async function playGeoRounds(rounds) {
   for (let i = 0; i < rounds; i++) {

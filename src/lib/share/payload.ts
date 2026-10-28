@@ -129,7 +129,23 @@ export interface PikadokuShareResult {
   streak?: number;
 }
 
-export type ShareResult = PokedleShareResult | GuessrShareResult | QuizShareResult | BattleShareResult | ConnectionsShareResult | PikadokuShareResult;
+/**
+ * A Cognitive PokéIQ test: the composite (mean 100, SD 15), its percentile
+ * and the four section scores on the same scale, plus the knowledge
+ * PokéIQ when that section was taken. Numbers only.
+ */
+export interface CognitiveShareResult {
+  game: "cognitive";
+  score: number;
+  percentile: number;
+  fluid: number;
+  memory: number;
+  speed: number;
+  spatial: number;
+  knowledge?: number;
+}
+
+export type ShareResult = PokedleShareResult | GuessrShareResult | QuizShareResult | BattleShareResult | ConnectionsShareResult | PikadokuShareResult | CognitiveShareResult;
 export type ShareGame = ShareResult["game"];
 
 /** Longest payload accepted (and produced). */
@@ -139,7 +155,7 @@ const DLE_MAX_ROWS = 12;
 const DLE_MAX_COLUMNS = 7;
 export const SHARE_QUIZ_GRID = 60;
 
-const GAME_CODES: Record<ShareGame, string> = { pokedle: "dle", guessr: "geo", quiz: "quiz", battle: "bat", connections: "con", pikadoku: "pdk" };
+const GAME_CODES: Record<ShareGame, string> = { pokedle: "dle", guessr: "geo", quiz: "quiz", battle: "bat", connections: "con", pikadoku: "pdk", cognitive: "cog" };
 /** A PokéConnections game's most guesses: every group and every mistake, less the one that ends it (4×4: 7; 5×5: 9). */
 const connMaxRows = (size: number) => 2 * size - 1;
 const DLE_FORMAT_CODES: Record<DleFormat, string> = { classic: "c", squirdle: "s", custom: "x" };
@@ -223,6 +239,17 @@ export function encodeShare(result: ShareResult): string {
         ["k", result.streak || undefined]
       );
       break;
+    case "cognitive":
+      fields.push(
+        ["s", result.score],
+        ["p", Math.round(result.percentile)],
+        ["f", result.fluid],
+        ["m", result.memory],
+        ["e", result.speed],
+        ["a", result.spatial],
+        ["k", result.knowledge]
+      );
+      break;
   }
   const parts = [GAME_CODES[result.game]];
   for (const [key, value] of fields) {
@@ -281,7 +308,21 @@ export function decodeShare(raw: unknown): ShareResult | null {
       return decodeConnections(f);
     case "pikadoku":
       return decodePikadoku(f);
+    case "cognitive":
+      return decodeCognitive(f);
   }
+}
+
+function decodeCognitive(f: Record<string, string>): CognitiveShareResult | null {
+  const score = num(f.s, 40, 160);
+  const percentile = num(f.p, 0, 100);
+  const fluid = num(f.f, 40, 160);
+  const memory = num(f.m, 40, 160);
+  const speed = num(f.e, 40, 160);
+  const spatial = num(f.a, 40, 160);
+  if (score === undefined || percentile === undefined || fluid === undefined || memory === undefined || speed === undefined || spatial === undefined) return null;
+  const knowledge = num(f.k, 0, 300);
+  return { game: "cognitive", score, percentile, fluid, memory, speed, spatial, ...(knowledge !== undefined && { knowledge }) };
 }
 
 function decodePikadoku(f: Record<string, string>): PikadokuShareResult | null {

@@ -7,7 +7,7 @@ import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
 import { track } from "@vercel/analytics";
 import { CheckCircle2, Flame, Heart, RotateCcw, XCircle } from "lucide-react";
-import type { AnswerResponse, NextResponse, PublicQuestion, ShareCard, StartResponse } from "@/lib/session-types";
+import type { AnswerResponse, NextResponse, PublicQuestion, RunResult, ShareCard, StartResponse } from "@/lib/session-types";
 import type { Difficulty, ModuleId, QuizFormat } from "@/engines/types";
 import { getProgress, recordAnswer } from "@/lib/progress";
 import { play, unlockAudio, vibrate } from "@/lib/sound";
@@ -44,6 +44,13 @@ interface QuizControllerProps {
   /** Challenger's card, for the head-to-head results screen. */
   challenger?: ShareCard;
   onRestart?: () => void;
+  /** Every answer: how many are in so far. */
+  onAnswered?: (answered: number) => void;
+  /**
+   * When set, the run is one section of a bigger test: the result goes to
+   * the caller (who records it) instead of the results screen.
+   */
+  onComplete?: (result: RunResult, tokens: { resultToken: string; shareToken: string }) => void;
 }
 
 const BLITZ_FLASH_MS = 450;
@@ -60,7 +67,7 @@ function isOtherControl(target: EventTarget | null): boolean {
   return button !== null && !button.hasAttribute("data-answer-tile");
 }
 
-export function QuizController({ request, challenger, onRestart }: QuizControllerProps) {
+export function QuizController({ request, challenger, onRestart, onAnswered, onComplete }: QuizControllerProps) {
   const [phase, setPhase] = useState<Phase>("loading");
   const [error, setError] = useState<string | null>(null);
   const [rules, setRules] = useState<StartResponse["rules"] | null>(null);
@@ -185,6 +192,7 @@ export function QuizController({ request, challenger, onRestart }: QuizControlle
       setStreak(result.streak);
       setLives(result.lives);
       setAnswered(result.answered);
+      onAnswered?.(result.answered);
       // Blitz: start loading the next question's assets during the flash.
       if (result.next) void preloadAssets(questionAssets(result.next));
 
@@ -201,8 +209,16 @@ export function QuizController({ request, challenger, onRestart }: QuizControlle
         }
       }
     },
-    [isBlitz]
+    [isBlitz, onAnswered]
   );
+
+  // A section of a bigger test: hand the graded run over once.
+  const completedRef = useRef(false);
+  useEffect(() => {
+    if (phase !== "complete" || !graded?.result || !onComplete || completedRef.current) return;
+    completedRef.current = true;
+    onComplete(graded.result, { resultToken: graded.resultToken!, shareToken: graded.shareToken! });
+  }, [phase, graded, onComplete]);
 
   const showQuestion = useCallback(
     (next: PublicQuestion) => {
@@ -353,6 +369,16 @@ export function QuizController({ request, challenger, onRestart }: QuizControlle
           <Button onClick={onRestart ?? (() => setAttempt((a) => a + 1))}>
             <RotateCcw className="h-4 w-4" aria-hidden /> Play again
           </Button>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (phase === "complete" && graded?.result && onComplete) {
+    return (
+      <Card className="mx-auto w-full max-w-2xl">
+        <CardContent className="p-6 text-center">
+          <span className="hud-label animate-pulse text-muted-foreground">Section complete…</span>
         </CardContent>
       </Card>
     );

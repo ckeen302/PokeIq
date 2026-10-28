@@ -5,7 +5,7 @@ import { FORMAT_INFO, MODULE_INFO } from "@/lib/modes";
 import { GEO_MAX_ROUND_SCORE, GEO_ROUNDS, WORLD_REGION } from "@/lib/geo-types";
 import { PLAY_FORMAT_INFO } from "@/lib/battle/play";
 import { rarityLines } from "@/lib/pikadoku/share";
-import type { BattleShareResult, ConnectionsShareResult, GuessrShareResult, PikadokuShareResult, PokedleShareResult, QuizShareResult } from "./payload";
+import type { BattleShareResult, CognitiveShareResult, ConnectionsShareResult, GuessrShareResult, PikadokuShareResult, PokedleShareResult, QuizShareResult } from "./payload";
 
 /**
  * Every game's share text, built the same way (`composeShare`):
@@ -332,4 +332,21 @@ export function battleShareText(r: BattleShareResult, url?: string, formatName?:
 /** A saved replay: who beat whom (names already on the replay's public page) and where. */
 export function replayShareText(result: string, formatName: string, url?: string): string {
   return composeShare({ title: "Battle replay", lines: [`${result} · ${formatName}`, "▶️ Watch it play out:"], url });
+}
+
+// ---------------------------------------------------------------------------
+// Cognitive PokéIQ
+// ---------------------------------------------------------------------------
+
+/** "PokéIQ Cognitive test 118 (88th percentile)" and a line per domain. */
+export function cognitiveShareText(r: CognitiveShareResult, url?: string): string {
+  const p = Math.round(r.percentile);
+  const suffix = p % 100 >= 11 && p % 100 <= 13 ? "th" : p % 10 === 1 ? "st" : p % 10 === 2 ? "nd" : p % 10 === 3 ? "rd" : "th";
+  return composeShare({
+    title: "Cognitive test",
+    score: `${r.score}`,
+    badges: [`(${p}${suffix} percentile)`],
+    lines: [`🧩 Reasoning ${r.fluid} · 🧠 Memory ${r.memory}`, `⚡ Speed ${r.speed} · 🧭 Spatial ${r.spatial}${r.knowledge !== undefined ? ` · 📖 Knowledge ${r.knowledge}` : ""}`],
+    url,
+  });
 }
