@@ -1,6 +1,7 @@
 import type { Battle, Pokemon, Side } from "@pkmn/sim";
 import { forcedSwitchSlots, moveSlotOptions, randomChoice, type SlotOption } from "@/lib/battle/choices";
-import { alive, calcGen, chooseCpu, field, hit, toCalc } from "@/lib/battle/cpu-policy";
+import { alive, calcGen, field, hit, toCalc } from "@/lib/battle/cpu-policy";
+import { chooseCpuLegacy } from "@/lib/battle/cpu-policy-legacy";
 import type { BattleRequest } from "@/lib/battle/play";
 import type { LabStrategy } from "./types";
 
@@ -9,7 +10,8 @@ import type { LabStrategy } from "./types";
  * to one side's next choice. Every choice is built from the simulator's own
  * request, so it's explicit and legal:
  *
- * - smart: the computer opponent's Hard level (src/lib/battle/cpu-policy.ts).
+ * - smart: the one-turn heuristic the computer opponent used as Hard before the lookahead
+ *   (src/lib/battle/cpu-policy-legacy.ts): the lookahead is too slow for thousands of rollouts.
  * - greedy: the move with the highest expected damage on the foe it can see
  *   (average roll, capped at the foe's HP, times accuracy), with full
  *   knowledge of the foe's set. No voluntary switches, no Tera.
@@ -52,7 +54,7 @@ export function makeChooser(opts: StrategyOptions): Chooser {
     let choice: string;
     switch (opts.strategy) {
       case "smart":
-        choice = chooseCpu(battle, side, "hard", opts.rand, opts.onFallback ?? (() => undefined));
+        choice = chooseCpuLegacy(battle, side, "hard", opts.rand, opts.onFallback ?? (() => undefined));
         break;
       case "greedy":
         choice = chooseGreedy(battle, side, request, doubles);
