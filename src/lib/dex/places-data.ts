@@ -6,6 +6,7 @@ import themes from "@/data/geo-themes.json";
 import gymData from "@/data/quiz/games/gyms.json";
 import placesData from "@/data/places.json";
 import { geoFamily, isGeoFamily, familyRank } from "@/lib/geo-families";
+import { previewUrl } from "@/lib/server/geo";
 import { VERSION_BY_KEY, versionOrder, type EncGen } from "@/lib/pokemon/encounter-types";
 import { invertEncounters, mostRecentShot, versionRegions, placeKey, placeSlug, placeType, type PlaceEncounter, type PlaceType, type ShotRef } from "./places";
 
@@ -18,7 +19,8 @@ export interface PlaceRecord {
   type: PlaceType;
   /** Game family names the place has PokéGuessr screenshots from, in release order. */
   games: string[];
-  shot: ShotRef | null;
+  /** The most recent game's screenshot: its game, and its picture under a preview name (never the id a round uses). */
+  shot: { game: string; family: string; preview: string } | null;
   /** On the World Atlas (has a map pin; screenshot when PokéGuessr has one). */
   atlas: boolean;
   /** Floors, areas and sectors (PokéAPI areas, encounter labels). */
@@ -67,6 +69,7 @@ const ATLAS_PLACES: PlaceRecord[] = (geo as unknown as { world: { locations: Sto
   const shots = l.shots.filter((s) => isGeoFamily(s.family));
   const fams = [...new Set(shots.map((s) => s.family))].sort((a, b) => familyRank(a) - familyRank(b));
   const key = placeKey(l);
+  const shot = mostRecentShot(shots);
   return {
     slug: placeSlug(l),
     key,
@@ -75,7 +78,7 @@ const ATLAS_PLACES: PlaceRecord[] = (geo as unknown as { world: { locations: Sto
     ...(l.parent ? { parent: l.parent } : {}),
     type: placeType(l, tags),
     games: fams.map((f) => (isGeoFamily(f) ? geoFamily(f).name : f)),
-    shot: mostRecentShot(shots),
+    shot: shot ? { game: shot.game, family: shot.family, preview: previewUrl(shot.id) } : null,
     atlas: true,
     sections: PD.sections[key] ?? [],
   };

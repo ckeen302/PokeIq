@@ -15,7 +15,7 @@ import {
 import { GEO_THEMES, isWorldwide, themeMapId, themeOf } from "@/lib/geo-themes";
 import { Rng } from "@/lib/rng";
 import { publicName } from "@/lib/name-filter";
-import { decryptJson, deriveSeed, encryptJson, randomId, signToken, verifyToken } from "./crypto";
+import { decryptJson, deriveSeed, encryptJson, hmac, randomId, signToken, verifyToken } from "./crypto";
 import {
   GEO_FILTER_MIN_PLACES,
   GEO_KINDS,
@@ -183,6 +183,31 @@ const REGIONS: Region[] = (() => {
 })();
 
 const shotUrl = (id: string) => `/api/geo/shot/${id}`;
+
+// ---------------------------------------------------------------------------
+// Previews outside a game (the Atlas, the map picker, the how-to demo)
+// ---------------------------------------------------------------------------
+
+/**
+ * A round's image id must never be matched to a place from outside a live
+ * round, so every picture shown elsewhere is served under a separate name:
+ * an HMAC of the id under the server secret. The map from preview names back
+ * to ids is built once, and `/api/geo/preview/<name>` resolves it server-side.
+ */
+export const GEO_PREVIEW_RE = /^[A-Za-z0-9_-]{4,32}$/;
+export const previewToken = (id: string) => hmac("geo-preview", id).subarray(0, 12).toString("base64url");
+export const previewUrl = (id: string) => `/api/geo/preview/${previewToken(id)}`;
+/** Fixed preview names (the PokéGuessr how-to's demo round, so the client needs no token). */
+const PREVIEW_ALIASES: Record<string, string> = { demo: "uV4ANtrw-q6M" };
+let PREVIEWS: Map<string, string> | null = null;
+/** The screenshot a preview name stands for, or null. */
+export function previewShot(name: string): string | null {
+  if (!GEO_PREVIEW_RE.test(name)) return null;
+  if (PREVIEW_ALIASES[name]) return PREVIEW_ALIASES[name];
+  PREVIEWS ??= new Map([...KNOWN_SHOTS].map((id) => [previewToken(id), id]));
+  return PREVIEWS.get(name) ?? null;
+}
+
 const regionOf = (id: string) => REGIONS.find((r) => r.id === id);
 /** A town or route with its buildings: one pin, so at most one round. */
 const areaOf = (location: Pick<Location, "region" | "name" | "parent">) => `${location.region}|${location.parent ?? location.name}`;
@@ -349,7 +374,7 @@ export function geoRegions(): GeoRegionInfo[] {
       games: families.map((f) => geoFamily(f).name),
       families,
       combos,
-      preview: shot ? shotUrl(shot.id) : null,
+      preview: shot ? previewUrl(shot.id) : null,
       ...(themeOf(r.id) ? { theme: true } : {}),
     };
   });
