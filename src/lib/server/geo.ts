@@ -311,6 +311,13 @@ function familyCombos(region: string): FamilyCombos {
   return combos;
 }
 
+/** A map's size in pixels (the Gym Leader bot's aim scales with it). */
+export function mapSize(region: string): { width: number; height: number } {
+  const r = regionOf(region);
+  if (!r) throw new Error(`Unknown map ${region}`);
+  return { width: r.map.width, height: r.map.height };
+}
+
 export function geoRegions(): GeoRegionInfo[] {
   return REGIONS.map((r) => {
     const areas = areasOf({ region: r.id });

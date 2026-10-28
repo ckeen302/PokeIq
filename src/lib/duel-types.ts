@@ -6,6 +6,7 @@ import type { GeoEra } from "./geo-families";
  */
 
 import type { GeoAnswer, GeoRounds } from "./geo-types";
+import type { GeoDuelRankedView } from "./geo-ranked";
 import type { PvpEmoteView } from "./pvp-types";
 import type { ChatLine } from "./chat";
 
@@ -63,6 +64,8 @@ export interface DuelPlayerView {
   ready: boolean;
   /** Not heard from for a while (closed the tab, lost the connection). */
   quiet: boolean;
+  /** The Gym Leader bot (PokéGuessr ranked matchmaking when no trainer turns up). Never a human. */
+  bot?: boolean;
 }
 
 export interface DuelRoundResult {
@@ -122,6 +125,8 @@ export interface DuelView {
   end?: DuelEnd;
   /** Once either trainer asks for a rematch: the new duel's code. */
   rematch?: string;
+  /** A ranked duel: each seat's Elo going in and, once counted, how it moved. */
+  ranked?: GeoDuelRankedView;
   /** Reactions sent in the last few seconds, oldest first. */
   emotes?: PvpEmoteView[];
   /** Chat, oldest first: open in the lobby and after the end. */
