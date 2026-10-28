@@ -7,6 +7,7 @@ import { ModeGrid } from "@/components/home/ModeGrid";
 import { HeroDevice } from "@/components/home/HeroDevice";
 import { Hero } from "@/components/home/Hero";
 import { Experiences } from "@/components/home/Experiences";
+import { WhichPokemonCard } from "@/components/which-pokemon/WhichPokemonCard";
 import { HudHeading } from "@/components/game/HudHeading";
 import { SITE_NAME } from "@/lib/site";
 import { SITE_DESCRIPTION, SITE_TAGLINE, pageMetadata } from "@/lib/seo";
@@ -54,6 +55,7 @@ export default function HomePage() {
           </div>
           <ModeGrid />
         </div>
+        <WhichPokemonCard />
       </section>
 
       <section className="space-y-5" aria-labelledby="tools-heading">

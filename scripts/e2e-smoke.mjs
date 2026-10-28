@@ -104,6 +104,12 @@ const page = await newPage({ width: 1280, height: 900 });
 const musicRequests = [];
 page.on("request", (r) => /\/audio\/battle\/.+\.(ogg|mp3)$/.test(r.url()) && musicRequests.push(r.url()));
 
+// E2E_ONLY=which-pokemon runs just that step (no Supabase, no second browser), then exits.
+if (process.env.E2E_ONLY === "which-pokemon") {
+  await whichPokemonStep();
+  await finish();
+}
+
 /** One Classic run of a trivia quiz: ten answers, a source link on every reveal, no early answers. */
 async function playTriviaRun(p, slug) {
   const leaks = [];
@@ -2861,6 +2867,67 @@ step("name 'em all: hub, a Gen 1 run (aliases, wrong category, pause, give up), 
   await np.context().close();
 }
 
+/** Which Pokémon Are You?: the quiz end to end at 1440 and 390, the result page, the story share card and a compare link. */
+async function whichPokemonStep() {
+  step("which pokémon are you: quiz, result, share card, compare (1440 and 390)");
+  const payloads = [];
+  for (const [width, height, tag] of [
+    [1440, 900, "1440"],
+    [390, 844, "390"],
+  ]) {
+    const p = await newPage({ width, height });
+    await p.context().grantPermissions(["clipboard-read", "clipboard-write"]);
+    await p.goto(`${BASE}/quiz/which-pokemon`, { waitUntil: "networkidle" });
+    if (await p.locator("main").getByText(/how it works|FAQ|how to play/i).count()) errors.push("which pokémon: the quiz page shows how-to text");
+    await p.getByTestId("wp-start").click();
+    await p.getByTestId("wp-question").waitFor();
+    await p.waitForTimeout(400);
+    await p.screenshot({ path: `${OUT}/which-pokemon-question-${tag}.png` });
+    for (let i = 0; i < 20; i++) {
+      const answers = p.getByTestId("wp-answer");
+      if (!(await answers.count())) break;
+      const box = await answers.first().boundingBox();
+      if (box && box.height < 44) errors.push(`which pokémon: answer buttons are ${box.height}px tall at ${tag}`);
+      await answers.nth(tag === "390" ? (i * 3) % 5 : (i * 2 + 1) % 5).click();
+      if (/\/quiz\/which-pokemon\/[a-z0-9-]+#r=/.test(p.url())) break;
+      await p.waitForTimeout(60);
+    }
+    await p.waitForURL(/\/quiz\/which-pokemon\/[a-z0-9-]+#r=/, { timeout: 15_000 });
+    await p.getByTestId("wp-result").waitFor({ timeout: 15_000 });
+    payloads.push(p.url().split("#r=")[1]);
+    if ((await p.getByTestId("wp-runner-up").count()) !== 2) errors.push("which pokémon: expected two runners-up");
+    for (const id of ["wp-deep-cut", "wp-partner", "wp-rival", "wp-traits", "wp-blurb"]) {
+      if (!(await p.getByTestId(id).count())) errors.push(`which pokémon: the result has no ${id}`);
+    }
+    await p.waitForTimeout(600);
+    await p.screenshot({ path: `${OUT}/which-pokemon-result-${tag}.png`, fullPage: true });
+    await p.getByTestId("share-result").click();
+    await p.getByText(/Copied!|Shared!|Couldn.t copy/).first().waitFor({ timeout: 5_000 }).catch(() => errors.push("which pokémon: the share button didn't copy"));
+    await p.getByTestId("wp-compare").click();
+    await p.getByText("Link copied!").waitFor({ timeout: 5_000 }).catch(() => errors.push("which pokémon: the compare link didn't copy"));
+    const cardUrl = await p.getByTestId("wp-card").getAttribute("href");
+    const card = await p.goto(`${BASE}${cardUrl}`);
+    if (!card || card.status() !== 200 || !/image\/png/.test(card.headers()["content-type"] ?? "")) errors.push(`which pokémon: the share card returned ${card?.status()}`);
+    await p.screenshot({ path: `${OUT}/which-pokemon-card-${tag}.png` });
+    await p.context().close();
+  }
+  // The compare link: one result invites a friend; two show side by side with a compatibility score.
+  const p = await newPage({ width: 1440, height: 900 });
+  await p.goto(`${BASE}/quiz/which-pokemon/compare#a=${payloads[0]}`, { waitUntil: "networkidle" });
+  await p.getByTestId("wp-compare-invite").waitFor({ timeout: 10_000 }).catch(() => errors.push("which pokémon: a one-sided compare link doesn't invite"));
+  await p.goto(`${BASE}/quiz/which-pokemon/compare#a=${payloads[0]}&b=${payloads[1]}`, { waitUntil: "networkidle" });
+  await p.getByTestId("wp-compare-result").waitFor({ timeout: 10_000 });
+  const pct = ((await p.getByTestId("wp-compat").textContent()) ?? "").trim();
+  if (!/^\d{1,3}%$/.test(pct)) errors.push(`which pokémon: compatibility reads "${pct}"`);
+  await p.waitForTimeout(400);
+  await p.screenshot({ path: `${OUT}/which-pokemon-compare-1440.png`, fullPage: true });
+  await p.setViewportSize({ width: 390, height: 844 });
+  await p.waitForTimeout(300);
+  await p.screenshot({ path: `${OUT}/which-pokemon-compare-390.png`, fullPage: true });
+  await p.context().close();
+}
+await whichPokemonStep();
+
 step("mobile: home + daily");
 const mobile = await newPage({ width: 393, height: 852 });
 await mobile.goto(BASE, { waitUntil: "networkidle" });
@@ -2878,11 +2945,15 @@ step("discord: unsigned interaction is rejected");
 const unsigned = await fetch(`${BASE}/api/discord`, { method: "POST", body: JSON.stringify({ type: 1 }) });
 if (unsigned.status !== 401) errors.push(`POST /api/discord without signature returned ${unsigned.status}, expected 401`);
 
-await browser.close();
+await finish();
 
-if (errors.length > 0) {
-  console.error(`✗ ${errors.length} error(s):`);
-  errors.forEach((e) => console.error("  ", e));
-  process.exit(1);
+async function finish() {
+  await browser.close();
+  if (errors.length > 0) {
+    console.error(`✗ ${errors.length} error(s):`);
+    errors.forEach((e) => console.error("  ", e));
+    process.exit(1);
+  }
+  console.log(`✓ smoke test passed — screenshots in ${OUT}/`);
+  process.exit(0);
 }
-console.log(`✓ smoke test passed — screenshots in ${OUT}/`);

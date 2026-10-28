@@ -7,6 +7,8 @@ import { SITE_URL } from "@/lib/site";
 import { PLACES } from "@/lib/dex/places-data";
 import { getSets } from "@/lib/tcg/api";
 import { trainerSitemapPaths } from "@/lib/trainers/data";
+import { POOL as WHICH_POKEMON_POOL } from "@/lib/which-pokemon/pool";
+import { QUIZ_PATH as WHICH_POKEMON_PATH } from "@/lib/which-pokemon/match";
 
 // TCG sets come from the Pokémon TCG API: refresh daily; without the API the sitemap simply omits them.
 export const revalidate = 86400;
@@ -48,6 +50,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${SITE_URL}/battle/replays`, changeFrequency: "daily", priority: 0.6 },
     { url: `${SITE_URL}/battle/ladder`, changeFrequency: "daily", priority: 0.6 },
     ...QUIZ_PRESETS.map((p) => ({ url: `${SITE_URL}/quiz/${p.slug}`, changeFrequency: "weekly" as const, priority: 0.8 })),
+    { url: `${SITE_URL}${WHICH_POKEMON_PATH}`, changeFrequency: "monthly", priority: 0.8 },
+    ...WHICH_POKEMON_POOL.map((p) => ({ url: `${SITE_URL}${WHICH_POKEMON_PATH}/${p.slug}`, changeFrequency: "monthly" as const, priority: 0.5 })),
     { url: `${SITE_URL}${NEA_PATH}`, changeFrequency: "weekly", priority: 0.8 },
     { url: `${SITE_URL}${NEA_PATH}/daily`, lastModified: now, changeFrequency: "daily", priority: 0.7 },
     ...NEA_CATEGORIES.map((c) => ({ url: `${SITE_URL}${NEA_PATH}/${c.id}`, changeFrequency: "monthly" as const, priority: 0.6 })),
