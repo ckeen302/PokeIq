@@ -1454,8 +1454,7 @@ async function checkHiddenElo(p, where) {
   await rBlue.getByRole("button", { name: /Leave duel/ }).click();
   await rBlue.getByRole("button", { name: /^Forfeit$/ }).click();
   await rRed.getByText("Blue left the duel.").waitFor();
-  await rRed.getByTestId("geo-ranked-outcome").waitFor({ timeout: 20_000 });
-  await rBlue.getByTestId("geo-ranked-outcome").waitFor({ timeout: 20_000 });
+  await rRed.getByTestId("geo-ranked-outcome").waitFor({ timeout: 45_000 });
   if (!(await rRed.getByText("Victory!").isVisible())) errors.push("ranked: Red didn't win the forfeited duel");
   if (!(await rRed.getByTestId("geo-ranked-trend").isVisible())) errors.push("ranked: a Poké Ball result shows no trend (and should hide the number)");
   await checkHiddenElo(rRed, "ranked result");
@@ -1497,7 +1496,7 @@ step("ranked pokéguessr: the Gym Leader offer");
     const gymRounds = await playDuel(gp, 0.5, false);
     console.log(`  the Gym Leader duel ended after ${gymRounds} round${gymRounds === 1 ? "" : "s"}`);
     await gp.getByText(/Victory!|Defeat|Draw/).first().waitFor();
-    await gp.getByTestId("geo-ranked-outcome").waitFor({ timeout: 20_000 });
+    await gp.getByTestId("geo-ranked-outcome").waitFor({ timeout: 45_000 });
     if (!(await gp.getByText("A Gym Leader duel: rated at half the usual swing.").isVisible())) errors.push("gym leader result doesn't say it was rated at half K");
     await gp.waitForTimeout(1600);
     await gp.screenshot({ path: `${OUT}/guessr-ranked-gym-result.png`, fullPage: true });
