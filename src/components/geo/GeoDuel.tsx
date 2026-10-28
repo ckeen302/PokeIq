@@ -293,11 +293,12 @@ export function GeoDuel({ code, regions }: GeoDuelProps) {
 
   // ---- guessing --------------------------------------------------------------------------
   if (live) {
-    const left = live.endsAt - now;
+    const totalMs = live.countdown ? countdownMs : DUEL_ROUND_MS;
+    // A pushed countdown lands within a few ms of the guess, while the page's clock ticks every 250 ms: never more than the countdown.
+    const left = Math.min(live.endsAt - now, totalMs);
     const locked = live.yours ?? null;
     const theyGuessed = live.guessed[1 - me];
     const timeUp = left <= 0;
-    const totalMs = live.countdown ? countdownMs : DUEL_ROUND_MS;
     return (
       <GameShell>
         {({ fs, toggle }) => (

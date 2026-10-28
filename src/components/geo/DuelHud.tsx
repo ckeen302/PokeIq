@@ -357,7 +357,9 @@ function Fighter({
 // ---------------------------------------------------------------------------
 
 /** Under the band once the opponent has locked in: "Opponent guessed", a draining bar, red and flashing for the last seconds. */
-export function OpponentGuessedBar({ name, leftMs, totalMs, mine }: { name: string; leftMs: number; totalMs: number; mine: boolean }) {
+export function OpponentGuessedBar({ name, leftMs: rawLeftMs, totalMs, mine }: { name: string; leftMs: number; totalMs: number; mine: boolean }) {
+  // A push lands within a few ms of the guess, while the page's clock ticks every 250 ms: never show more than the countdown.
+  const leftMs = Math.min(rawLeftMs, totalMs);
   const frac = totalMs > 0 ? Math.max(0, Math.min(1, leftMs / totalMs)) : 0;
   const urgent = leftMs <= DUEL_COUNTDOWN_FLASH_MS;
   return (
