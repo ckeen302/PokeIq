@@ -102,7 +102,7 @@ afterEach(() => {
 
 describe("duel rules", () => {
   it("raises the damage multiplier as the duel goes on", () => {
-    expect([...Array(12)].map((_, i) => duelMultiplier(i))).toEqual([1, 1, 1, 1.5, 1.5, 2, 2, 2.5, 2.5, 3, 3, 3]);
+    expect([...Array(12)].map((_, i) => duelMultiplier(i))).toEqual([1, 1, 1, 1.5, 1.5, 1.5, 2, 2, 2, 2.5, 2.5, 2.5]);
   });
 
   it("plays every map, and gives both trainers the same rounds from one seed", () => {

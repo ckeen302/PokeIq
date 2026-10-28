@@ -10,7 +10,7 @@ import { syncHiddenShots } from "@/lib/server/geo-reports";
 import type { DuelSeatResponse } from "@/lib/duel-types";
 
 /**
- * POST /api/geo/duel — { region, era?, name, mode?, rounds? }: open a PokéGuessr duel on a map
+ * POST /api/geo/duel — { region, era?, name, mode?, rounds?, turbo? }: open a PokéGuessr duel on a map
  * (the world or a region), on every game's screenshots or an era's. Returns its code, the creator's player token and
  * the lobby; the friend joins at /guessr/duel/<code>.
  */
@@ -23,6 +23,8 @@ const bodySchema = z.object({
   mode: z.string().max(10).optional(),
   /** Race only: 3, 5 or 10. */
   rounds: z.number().optional(),
+  /** Turbo: a guess caps the opponent's remaining time at 10 s. */
+  turbo: z.boolean().optional(),
 });
 
 export async function POST(request: NextRequest) {
@@ -35,7 +37,7 @@ export async function POST(request: NextRequest) {
   const parsed = bodySchema.safeParse(await request.json().catch(() => ({})));
   if (!parsed.success) return NextResponse.json({ error: parsed.error.issues[0].message }, { status: 400 });
   const { region, era, name } = parsed.data;
-  const settings = parseDuelSettings(parsed.data.mode, parsed.data.rounds);
+  const settings = parseDuelSettings(parsed.data.mode, parsed.data.rounds, parsed.data.turbo);
   if (!settings) return NextResponse.json({ error: "Pick HP battle, or a points race of 3, 5 or 10 rounds." }, { status: 400 });
   const blocked = await gate(request, "play");
   if (blocked) return blocked;

@@ -3,43 +3,36 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { AnimatePresence, motion } from "framer-motion";
-import { Crown, Expand, Loader2, MapPin as MapPinIcon, RotateCcw, Swords, Timer, Trophy, WifiOff, X } from "lucide-react";
-import {
-  DUEL_COUNTDOWN_MS,
-  DUEL_HP,
-  DUEL_IDLE_ROUNDS,
-  DUEL_ROUND_MS,
-  duelMultiplier,
-  type DuelRoundResult,
-  type DuelView,
-} from "@/lib/duel-types";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { Crown, Loader2, RotateCcw, Swords, Trophy, X } from "lucide-react";
+import { DUEL_HP, DUEL_IDLE_ROUNDS, DUEL_ROUND_MS, duelMultiplier, type DuelRoundResult, type DuelView } from "@/lib/duel-types";
+import type { DuelEmote } from "@/lib/pvp-types";
+import { DUEL_COUNTDOWN_FLASH_MS, countdownAfterGuess } from "@/lib/geo-duel-rules";
 import type { GeoAnswer, GeoRegionInfo } from "@/lib/geo-types";
 import { play, unlockAudio } from "@/lib/sound";
 import { Button, buttonVariants } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { HpBar } from "@/components/game/HpBar";
 import { useDuel } from "@/components/duel/use-duel";
-import { DuelGone, DuelLoading, DuelLobby, DuelNotice, DuelVisitor, LeaveButton, MatchedNote, SEAT_COLORS, SeatDot, clock, seconds } from "@/components/duel/DuelParts";
+import { DuelGone, DuelLoading, DuelLobby, DuelNotice, DuelVisitor, MatchedNote, SEAT_COLORS, SeatDot, seconds } from "@/components/duel/DuelParts";
 import { DuelChat, DuelTools, EmoteFeed } from "@/components/duel/DuelReactions";
-import { GeoMap, type MapPin, type RevealedRound } from "./GeoMap";
+import { GeoMap, LINE_DRAW_MS, mapAspect, type MapPin, type RevealedRound } from "./GeoMap";
 import { ReportShot } from "./ReportShot";
 import { shotFit } from "./ShotCarousel";
-import { FullscreenButton, GameShell, dockClass } from "./GameShell";
+import { CountdownPill, FullscreenButton, GameShell, GuessButton, MapDock } from "./GameShell";
+import { DuelBand, DuelLeave, EmoteButton, HpTimeline, OpponentGuessedBar, THEM_COLOR, VersusIntro, YOU_COLOR, seatImage, useRevealSequence } from "./DuelHud";
 import { GEO_ERA_NAMES } from "@/lib/geo-families";
 import { cn } from "@/lib/utils";
 import { AddFriendAfterGame } from "@/components/community/AddFriend";
-import { Avatar } from "@/components/avatar/Avatar";
 import { useMatchmaking } from "@/components/duel/use-matchmaking";
 import { rankedExtra } from "@/components/pokedle/Ranked";
 import { GEO_RANKED_MATCH } from "@/lib/geo-ranked";
-import { GeoDivisionBadge, GeoRankedOutcome, GymLeaderAvatar, GymLeaderTag } from "./GeoRanked";
+import { GeoRankedOutcome } from "./GeoRanked";
 
 /**
- * A PokéGuessr duel at /guessr/duel/<code>: the lobby, the rounds, the reveals
- * and the result. The server runs the duel; useDuel polls its state (every
- * second in play) and sends the trainer's actions. Timers count down on the
- * server's clock, corrected for this device's.
+ * A PokéGuessr duel at /guessr/duel/<code>: the lobby, the versus intro, the
+ * rounds, the reveals and the end screen. The server runs the duel; useDuel
+ * polls its state (every second in play) and sends the trainer's actions.
+ * Timers count down on the server's clock, corrected for this device's. In
+ * play the duel takes the whole window (GameShell), GeoGuessr style.
  */
 
 const fmt = (n: number) => n.toLocaleString("en-US");
@@ -53,10 +46,8 @@ function placeName(answer: GeoAnswer, map: GeoRegionInfo): string {
   return answer.region && answer.region !== map.name ? `${name}, ${answer.region}` : name;
 }
 
-function distanceText(squares: number): string {
-  if (squares === 0) return "Right on it!";
-  return `${squares.toFixed(1)} map square${squares === 1 ? "" : "s"} away`;
-}
+/** The camera fits both pins and the answer this long (ms), after the lines have drawn. */
+const FIT_MS = 800;
 
 export interface GeoDuelProps {
   code: string;
@@ -70,7 +61,7 @@ export function GeoDuel({ code, regions }: GeoDuelProps) {
   const [pick, setPick] = useState<MapPin | null>(null);
   const [zoomed, setZoomed] = useState(false);
   const [summary, setSummary] = useState(false);
-  const heard = useRef({ revealed: -1, theirGuess: false, end: false });
+  const heard = useRef({ theirGuess: false, end: false, tick: -1 });
 
   // A new round: a fresh pin.
   const roundIndex = view?.round?.index;
@@ -80,23 +71,15 @@ export function GeoDuel({ code, regions }: GeoDuelProps) {
     setError(null);
   }, [roundIndex, setError]);
 
-  // Each new screen (lobby, a round, a reveal, the result) starts at the top.
-  const screen = !view ? "" : view.status === "lobby" ? "lobby" : view.round ? `round ${view.round.index}` : `reveal ${view.revealed.length} ${summary}`;
-  useEffect(() => {
-    if (screen) window.scrollTo({ top: 0, behavior: "smooth" });
-  }, [screen]);
-
-  // Sounds: the opponent locking in, and each reveal (did you win the round?).
+  // Sounds: the opponent locking in, the countdown's last seconds, and a forfeit's result.
   useEffect(() => {
     if (!view || view.you === null) return;
     const h = heard.current;
     const theirGuess = !!view.round?.guessed[1 - view.you];
-    if (theirGuess && !h.theirGuess && !view.round?.yours) play("click");
+    if (theirGuess && !h.theirGuess && !view.round?.yours) play("ping");
     h.theirGuess = theirGuess;
-    if (h.revealed >= 0 && view.revealed.length > h.revealed) play(view.revealed[view.revealed.length - 1].hurt === view.you ? "wrong" : "correct");
-    h.revealed = view.revealed.length;
     // A forfeit skips the last reveal, so its result sounds straight away.
-    if (view.end?.reason === "left" && !h.end && sawPlay && view.end.winner === view.you) play("fanfare");
+    if (view.end?.reason === "left" && !h.end && sawPlay) play(view.end.winner === view.you ? "matchwin" : "matchlose");
     h.end = !!view.end;
   }, [view, sawPlay]);
 
@@ -113,9 +96,20 @@ export function GeoDuel({ code, regions }: GeoDuelProps) {
   const last = view?.revealed[view.revealed.length - 1];
   const revealing = !!view && view.status === "playing" && !view.round && !!last;
 
+  // The last five seconds tick.
+  const leftS = live ? seconds(live.endsAt - now) : -1;
+  useEffect(() => {
+    if (!live || live.yours || leftS < 0 || leftS > DUEL_COUNTDOWN_FLASH_MS / 1000) return;
+    if (heard.current.tick === leftS) return;
+    heard.current.tick = leftS;
+    if (leftS > 0) play("countdown");
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- once per second
+  }, [leftS]);
+
   async function guess() {
     if (!live || !pick || live.yours || busy) return;
     unlockAudio();
+    play("guess");
     await act({ action: "guess", round: live.index, ...pick });
   }
 
@@ -126,7 +120,7 @@ export function GeoDuel({ code, regions }: GeoDuelProps) {
   }
 
   function showResults() {
-    if (view?.end) play(view.end.winner === view.you ? "fanfare" : view.end.winner === null ? "streak" : "wrong");
+    if (view?.end) play(view.end.winner === view.you ? "matchwin" : view.end.winner === null ? "streak" : "matchlose");
     setSummary(true);
   }
 
@@ -163,27 +157,25 @@ export function GeoDuel({ code, regions }: GeoDuelProps) {
     <>
       <MatchedNote view={view} />
       <DuelNotice error={error} offline={offline} />
-      <EmoteFeed view={view} />
     </>
   );
-  const tools = view.you !== null && (
-    <DuelTools
-      onEmote={(e) => {
-        unlockAudio();
-        return send({ action: "emote", emote: e });
-      }}
-    />
-  );
+  const sendEmote = (e: DuelEmote) => {
+    unlockAudio();
+    return send({ action: "emote", emote: e });
+  };
+  const tools = view.you !== null && <DuelTools onEmote={sendEmote} />;
   const chat = <DuelChat view={view} game="PokéGuessr duel" onSend={(text) => send({ action: "chat", text })} />;
+  const countdownMs = countdownAfterGuess(!!view.turbo);
 
   if (view.status === "lobby") {
     return (
       <>
         {notice}
+        <EmoteFeed view={view} />
         <DuelLobby
           view={view}
           path={`/guessr/duel/${view.code}`}
-          tag={`${race ? `Points race · ${view.maxRounds} rounds` : "HP battle"} · ${map.name}${view.era ? ` · ${GEO_ERA_NAMES[view.era]}` : ""}`}
+          tag={`${race ? `Points race · ${view.maxRounds} rounds` : "HP battle"}${view.turbo ? " · Turbo" : ""} · ${map.name}${view.era ? ` · ${GEO_ERA_NAMES[view.era]}` : ""}`}
           title={
             <>
               Poké<span className="text-primary">Guessr</span> Duel
@@ -199,13 +191,13 @@ export function GeoDuel({ code, regions }: GeoDuelProps) {
           rules={[
             {
               label: "Rounds",
-              text: `The same screenshot for both of you. Once one of you guesses, the other has ${DUEL_COUNTDOWN_MS / 1000} seconds (${DUEL_ROUND_MS / 1000} s a round at most).`,
+              text: `The same screenshot for both of you. Once one of you guesses, the other has ${countdownMs / 1000} seconds${view.turbo ? " (Turbo)" : ""} (${DUEL_ROUND_MS / 1000} s a round at most).`,
             },
             race
               ? { label: "Scoring", text: `Every round is worth up to ${fmt(5000)} points, no damage and no multipliers. ${view.maxRounds} rounds, and your points add up.` }
               : {
                   label: "Damage",
-                  text: `${fmt(DUEL_HP)} HP each. The lower score loses the difference: 1× at first, ×1.5 from round 4, ×2 from round 6, up to ×3.`,
+                  text: `${fmt(DUEL_HP)} HP each. The lower score loses the difference times the round winner's multiplier: ×1 for rounds 1–3, ×1.5 for 4–6, ×2 for 7–9, ×2.5 in round 10. Damage lands in full.`,
                 },
             {
               label: "Winning",
@@ -249,49 +241,41 @@ export function GeoDuel({ code, regions }: GeoDuelProps) {
 
   if (view.status === "finished" && (summary || !sawPlay || view.end?.reason === "left" || !last)) {
     return (
-      <>
-        {notice}
-        <DuelSummary view={view} map={map} busy={busy} onRematch={() => void rematch()} />
-        <div className="mx-auto mt-4 max-w-3xl space-y-4">
-          {view.you !== null && <AddFriendAfterGame kind="guessr" code={view.code} />}
-          {tools}
-          {chat}
-        </div>
-      </>
+      <GameShell onExit={() => router.push("/guessr")}>
+        {() => (
+          <div className="h-full overflow-y-auto">
+            {notice}
+            <EmoteFeed view={view} />
+            <DuelEnd view={view} map={map} busy={busy} onRematch={() => void rematch()} />
+            <div className="mx-auto max-w-3xl space-y-4 px-4 pb-10 text-foreground">
+              {view.you !== null && <AddFriendAfterGame kind="guessr" code={view.code} />}
+              <div className="rounded-md bg-card p-3">{tools}</div>
+              {chat}
+            </div>
+          </div>
+        )}
+      </GameShell>
     );
   }
 
-  const leaveButton = <LeaveButton busy={busy} onLeave={() => void leave()} />;
+  const emoteButton = <EmoteButton onEmote={sendEmote} />;
 
-  // ---- lead-in: "Round 2" ----------------------------------------------------------
+  // ---- lead-in: the versus intro, then "Round N" with the countdown digit ----------
   if (view.round && !live) {
     const { index, startsAt } = view.round;
-    const mult = duelMultiplier(index);
     return (
-      <div className="mx-auto max-w-4xl space-y-4">
-        {notice}
-        <DuelHud view={view} center={<div className="hud-label">Get ready</div>} />
-        <Card>
-          <CardContent className="space-y-3 p-10 text-center">
-            <p className="hud-label text-screen">
-              Round {index + 1} of {view.maxRounds}
-            </p>
-            <motion.p
-              key={seconds(startsAt - now)}
-              initial={{ scale: 1.4, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              className="font-display text-7xl font-bold tabular-nums"
-            >
-              {Math.max(1, seconds(startsAt - now))}
-            </motion.p>
-            <p className={cn("text-sm", mult > 1 ? "font-semibold text-warning" : "text-muted-foreground")}>
-              {mult > 1 ? `Damage ×${mult} this round` : `${fmt(DUEL_HP)} HP each. The lower score loses the difference.`}
-            </p>
-          </CardContent>
-        </Card>
-        {tools}
-        {leaveButton}
-      </div>
+      <GameShell>
+        {() => (
+          <>
+            {notice}
+            <VersusIntro view={view} me={me} round={index + 1} secondsLeft={Math.max(1, seconds(startsAt - now))} mapName={`${map.name}${view.era ? ` · ${GEO_ERA_NAMES[view.era]}` : ""}`} />
+            {emoteButton}
+            <div className="absolute left-3 top-3 z-30">
+              <DuelLeave busy={busy} onLeave={() => void leave()} />
+            </div>
+          </>
+        )}
+      </GameShell>
     );
   }
 
@@ -301,118 +285,106 @@ export function GeoDuel({ code, regions }: GeoDuelProps) {
     const locked = live.yours ?? null;
     const theyGuessed = live.guessed[1 - me];
     const timeUp = left <= 0;
+    const totalMs = live.countdown ? countdownMs : DUEL_ROUND_MS;
     return (
       <GameShell>
         {({ fs, toggle }) => (
-      <div className={fs ? "relative h-full" : "mx-auto max-w-6xl space-y-3"}>
-        <div className={fs ? "absolute left-14 right-14 top-3 z-20 space-y-2" : "contents"}>
-        {notice}
-        <DuelHud
-          view={view}
-          center={
-            <>
-              <div className="hud-label">
-                Round {live.index + 1}/{view.maxRounds}
-                {live.multiplier > 1 ? ` · ×${live.multiplier}` : ""}
-              </div>
-              <div className={cn("flex items-center justify-center gap-1 font-pixel text-lg tabular-nums", live.countdown ? "text-destructive" : "text-screen")}>
-                <Timer className="h-4 w-4" aria-hidden />
-                {clock(left)}
-              </div>
-            </>
-          }
-        />
-        <AnimatePresence>
-          {(theyGuessed || locked) && (
-            <motion.p
-              initial={{ opacity: 0, y: -6 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0 }}
-              role="status"
-              className={cn(
-                "rounded-md border px-4 py-2 text-center font-display text-sm font-semibold uppercase tracking-wider",
-                locked ? "border-screen/40 text-screen" : "border-warning/50 bg-warning/[0.08] text-warning"
-              )}
-            >
-              {locked ? `Locked in. Waiting for ${them}…` : `${them} has guessed! ${seconds(left)} s left`}
-            </motion.p>
-          )}
-        </AnimatePresence>
-        </div>
-        <div className={fs ? "absolute inset-0" : "relative"}>
-          <div className={cn("screen relative w-full overflow-hidden", fs ? "h-full rounded-none" : "aspect-[16/9] rounded-lg")}>
-            {live.shot && (
-              // eslint-disable-next-line @next/next/no-img-element -- server-proxied, CDN-cached screenshot
-              <img key={live.shot} src={live.shot} alt="Where is this?"
-                data-testid="geo-shot"
-                onLoad={(e) => {
-                  e.currentTarget.style.imageRendering = shotFit(e.currentTarget).pixelated ? "pixelated" : "auto";
-                }}
-                className="absolute inset-0 h-full w-full object-cover object-center"
-              />
-            )}
-            <button
-              type="button"
-              onClick={() => setZoomed(true)}
-              className="absolute left-3 top-3 z-[3] flex h-9 w-9 items-center justify-center rounded-md bg-black/55 text-white backdrop-blur transition-colors hover:bg-black/75"
-              aria-label="View the whole screenshot"
-              title="Whole screenshot"
-            >
-              <Expand className="h-4 w-4" />
-            </button>
-            <FullscreenButton fs={fs} onClick={toggle} />
-          </div>
-
-          <div className={dockClass(fs)}>
-            <div className="rounded-md lg:opacity-80 lg:shadow-2xl lg:transition-opacity lg:group-hover:opacity-100">
-              <GeoMap
-                region={map}
-                pick={locked ?? pick}
-                onPick={
-                  locked || timeUp
-                    ? undefined
-                    : (p) => {
-                        setPick(p);
-                        play("click");
+          <div className="relative flex h-full flex-col">
+            <DuelBand
+              view={view}
+              me={me}
+              round={live.index + 1}
+              hp={view.hp}
+              multiplier={live.multiplier}
+              multipliers={live.multipliers}
+              compact
+              below={<CountdownPill ms={left} totalMs={totalMs} urgentMs={live.countdown ? DUEL_COUNTDOWN_FLASH_MS : 10_000} testId="geo-duel-clock" />}
+            />
+            <div className="relative min-h-0 flex-1">
+              <AnimatePresence>
+                {(theyGuessed || locked) && !timeUp && <OpponentGuessedBar name={them} leftMs={left} totalMs={countdownMs} mine={!!locked && !theyGuessed} />}
+              </AnimatePresence>
+              <div className="absolute inset-0">
+                {notice && <div className="absolute inset-x-0 top-12 z-30 px-4">{notice}</div>}
+                <div className="screen relative h-full w-full overflow-hidden rounded-none">
+                  {live.shot && (
+                    // eslint-disable-next-line @next/next/no-img-element -- server-proxied, CDN-cached screenshot
+                    <img
+                      key={live.shot}
+                      src={live.shot}
+                      alt="Where is this?"
+                      data-testid="geo-shot"
+                      onLoad={(e) => {
+                        e.currentTarget.style.imageRendering = shotFit(e.currentTarget).pixelated ? "pixelated" : "auto";
+                        e.currentTarget.style.opacity = "1";
+                      }}
+                      className="absolute inset-0 h-full w-full object-cover object-center opacity-0 transition-opacity duration-[350ms]"
+                    />
+                  )}
+                </div>
+                <div className="absolute left-3 top-3 z-20 flex items-center gap-2">
+                  <DuelLeave busy={busy} onLeave={() => void leave()} />
+                  <FullscreenButton fs={fs} onClick={toggle} />
+                </div>
+                <div className="absolute bottom-[5.5rem] left-3 z-[3] md:bottom-3">
+                  <button type="button" onClick={() => setZoomed(true)} className="hud-btn" aria-label="View the whole screenshot" title="Whole screenshot">
+                    <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                      <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7" />
+                    </svg>
+                  </button>
+                </div>
+                {emoteButton}
+                <MapDock aspect={mapAspect(map)}
+                  hasPin={!!pick && !locked}
+                  map={({ fill }) => (
+                    <GeoMap
+                      region={map}
+                      pick={locked ?? pick}
+                      pinImage={seatImage(view, me)}
+                      fill={fill}
+                      onPick={
+                        locked || timeUp
+                          ? undefined
+                          : (p) => {
+                              setPick(p);
+                              play("pin");
+                            }
                       }
-                }
-              />
+                    />
+                  )}
+                  button={
+                    <GuessButton
+                      hasPin={!!pick}
+                      busy={busy}
+                      disabled={!!locked || busy || timeUp}
+                      label={locked ? `Waiting for ${them}…` : timeUp ? "Time's up" : undefined}
+                      onClick={() => void guess()}
+                    />
+                  }
+                />
+              </div>
             </div>
-            <Button className="w-full" size="lg" disabled={!pick || !!locked || busy || timeUp} onClick={() => void guess()}>
-              {busy ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : <MapPinIcon className="h-4 w-4" aria-hidden />}
-              {locked ? `Waiting for ${them}…` : timeUp ? "Time's up" : pick ? "Guess" : "Place your pin on the map"}
-            </Button>
-          </div>
-        </div>
-        <div className={fs ? "absolute bottom-4 left-4 z-20 max-w-[min(24rem,50%)] space-y-2" : "contents"}>
-          {tools}
-          {leaveButton}
-        </div>
 
-        <AnimatePresence>
-          {zoomed && live.shot && (
-            <motion.div
-              className="fixed inset-0 z-[70] flex items-center justify-center bg-black/90 p-4"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setZoomed(false)}
-              role="dialog"
-              aria-label="Screenshot, full screen"
-            >
-              {/* eslint-disable-next-line @next/next/no-img-element -- same cached screenshot, full size */}
-              <img src={live.shot} alt="Where is this?" className="max-h-full max-w-full rounded-md object-contain" />
-              <button
-                type="button"
-                className="absolute right-4 top-4 flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20"
-                aria-label="Close"
-              >
-                <X className="h-5 w-5" />
-              </button>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
+            <AnimatePresence>
+              {zoomed && live.shot && (
+                <motion.div
+                  className="fixed inset-0 z-[70] flex items-center justify-center bg-black/90 p-4"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  onClick={() => setZoomed(false)}
+                  role="dialog"
+                  aria-label="Screenshot, full screen"
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element -- same cached screenshot, full size */}
+                  <img src={live.shot} alt="Where is this?" className="max-h-full max-w-full rounded-md object-contain" />
+                  <button type="button" className="absolute right-4 top-4 flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20" aria-label="Close">
+                    <X className="h-5 w-5" />
+                  </button>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
         )}
       </GameShell>
     );
@@ -425,27 +397,26 @@ export function GeoDuel({ code, regions }: GeoDuelProps) {
     const nextIn = view.next ? seconds(view.next.at - now) : 0;
     return (
       <GameShell>
-        {({ fs }) => (
-      <div className={cn("mx-auto max-w-4xl space-y-4", fs && "p-4")}>
-        {notice}
-        <DuelHud
-          view={view}
-          hit={last}
-          center={
-            <div className="hud-label">
-              Round {last.index + 1}/{view.maxRounds}
-              {last.multiplier > 1 ? ` · ×${last.multiplier}` : ""}
-            </div>
-          }
-        />
-        <DuelReveal view={view} map={map} result={last}>
-          <Button size="lg" className="w-full" disabled={!final && (pressed || busy)} onClick={() => (final ? showResults() : void nextRound())}>
-            {final ? "See results ▶" : pressed ? `Waiting for ${them}… (${nextIn})` : `Next round (${nextIn}) ▶`}
-          </Button>
-        </DuelReveal>
-        {tools}
-        {!final && leaveButton}
-      </div>
+        {() => (
+          <DuelReveal view={view} map={map} result={last} me={me} notice={notice} emoteButton={emoteButton}>
+            <button
+              type="button"
+              disabled={!final && (pressed || busy)}
+              onClick={() => (final ? showResults() : void nextRound())}
+              data-testid="geo-duel-next"
+              className={cn(
+                "flex h-12 w-full items-center justify-center gap-2 rounded-md px-6 font-display text-base font-bold uppercase tracking-wider text-white shadow-lg transition-[background-color,transform]",
+                !final && (pressed || busy) ? "cursor-wait bg-black/60" : "bg-[#4cbb17] hover:bg-[#58d01c] active:scale-[0.98]"
+              )}
+            >
+              {final ? "See results ▶" : pressed ? `Waiting for ${them}… (${nextIn})` : `Next round (${nextIn}) ▶`}
+            </button>
+            {!final && (
+              <div className="mt-2 flex justify-center">
+                <DuelLeave busy={busy} onLeave={() => void leave()} />
+              </div>
+            )}
+          </DuelReveal>
         )}
       </GameShell>
     );
@@ -458,112 +429,97 @@ export function GeoDuel({ code, regions }: GeoDuelProps) {
 // Pieces
 // ---------------------------------------------------------------------------
 
-/** Both trainers' names and HP bars, facing each other, with the round in the middle. */
-function DuelHud({ view, center, hit }: { view: DuelView; center: React.ReactNode; hit?: DuelRoundResult }) {
-  return (
-    <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-4 rounded-md border bg-card/90 px-4 py-2 backdrop-blur">
-      <Fighter view={view} seat={0} damage={hit?.hurt === 0 ? hit.damage : 0} />
-      <div className="text-center">{center}</div>
-      <Fighter view={view} seat={1} damage={hit?.hurt === 1 ? hit.damage : 0} right />
-    </div>
-  );
-}
-
-function Fighter({ view, seat, damage, right }: { view: DuelView; seat: number; damage: number; right?: boolean }) {
-  const player = view.players[seat];
-  const hp = view.hp[seat];
-  const race = view.mode === "race";
-  return (
-    <div className={cn("min-w-0 space-y-1", right && "text-right")}>
-      <div className={cn("flex items-center gap-1.5", right && "flex-row-reverse")}>
-        <SeatDot seat={seat} />
-        {player && (player.bot ? <GymLeaderAvatar name={player.name} size={24} /> : <Avatar avatar={player.avatar} size={24} />)}
-        <span className="truncate font-display font-bold uppercase">{player?.name ?? "—"}</span>
-        {view.you === seat && <span className="hud-label">You</span>}
-        {player?.bot && <GymLeaderTag />}
-        {player?.quiet && view.status === "playing" && <WifiOff className="h-3.5 w-3.5 shrink-0 text-warning" aria-label="Connection lost" />}
-      </div>
-      {view.ranked && (
-        <div className={cn("flex", right && "justify-end")}>
-          <GeoDivisionBadge elo={view.ranked.elos[seat]} size="sm" />
-        </div>
-      )}
-      {/* The right-hand bar drains towards its own edge. */}
-      {!race && (
-        <div className={cn(right && "-scale-x-100")}>
-          <HpBar value={hp / DUEL_HP} />
-        </div>
-      )}
-      <div className={cn("flex items-center gap-2 font-pixel text-xs tabular-nums", right && "flex-row-reverse")}>
-        <span data-testid={race ? `geo-duel-total-${seat}` : undefined}>{race ? `${fmt(view.totals?.[seat] ?? 0)} pts` : `${fmt(hp)} HP`}</span>
-        {damage > 0 && (
-          <motion.span key={damage} initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} className="text-destructive">
-            −{fmt(damage)}
-          </motion.span>
-        )}
-      </div>
-    </div>
-  );
-}
-
-/** A revealed round: both scores and the damage (with the button to go on), then the place and both pins on the map. */
-function DuelReveal({ view, map, result, children }: { view: DuelView; map: GeoRegionInfo; result: DuelRoundResult; children: React.ReactNode }) {
-  const me = view.you;
-  const name = (seat: number) => (seat === me ? "You" : (view.players[seat]?.name ?? "They"));
+/**
+ * A revealed round: the band with both scores and the distance pill, the
+ * full-bleed result map (both avatar pins, dashed lines to the answer, then
+ * the camera fits them), the damage sequence, and at the bottom the place and
+ * the button to go on.
+ */
+function DuelReveal({
+  view,
+  map,
+  result,
+  me,
+  notice,
+  emoteButton,
+  children,
+}: {
+  view: DuelView;
+  map: GeoRegionInfo;
+  result: DuelRoundResult;
+  me: number;
+  notice: React.ReactNode;
+  emoteButton: React.ReactNode;
+  children: React.ReactNode;
+}) {
+  const reduced = useReducedMotion();
+  const seq = useRevealSequence(result, me);
   const revealed: RevealedRound[] = result.guesses.map((g, seat) => ({
     guess: g && { x: g.x, y: g.y },
     answer: result.answer,
     label: view.players[seat]?.name,
-    color: SEAT_COLORS[seat],
+    color: seat === me ? YOU_COLOR : THEM_COLOR,
+    image: seatImage(view, seat),
   }));
-  const score = (seat: number) => {
-    const g = result.guesses[seat];
-    return (
-      <div className={cn("rounded-md border bg-shade/20 p-3 text-center", result.hurt !== null && result.hurt !== seat && "border-success/50")}>
-        <p className="hud-label flex items-center justify-center gap-1.5">
-          <SeatDot seat={seat} /> {view.players[seat]?.name}
-        </p>
-        <p className="font-display text-3xl font-bold tabular-nums">{g ? fmt(g.score) : "No guess"}</p>
-        <p className="text-xs text-muted-foreground">{g ? distanceText(g.squares) : "Out of time: 0 points"}</p>
-      </div>
-    );
-  };
+  const name = (seat: number) => (seat === me ? "You" : (view.players[seat]?.name ?? "They"));
+  const headline =
+    view.mode === "race"
+      ? result.winner === null
+        ? "Even round"
+        : `${name(result.winner)} won the round`
+      : result.hurt === null
+        ? "Even round: no damage"
+        : `${name(result.hurt)} ${result.hurt === me ? "take" : "takes"} ${fmt(result.damage)} damage`;
   return (
-    <>
-      <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="grid grid-cols-[1fr_minmax(0,18rem)_1fr] items-center gap-3">
-        {score(0)}
-        <div className="space-y-2 text-center">
-          <p className="font-display text-lg font-bold uppercase leading-tight">
-            {view.mode === "race"
-              ? result.guesses[0]?.score === result.guesses[1]?.score
-                ? "Even round"
-                : `${name((result.guesses[0]?.score ?? 0) > (result.guesses[1]?.score ?? 0) ? 0 : 1)} won the round`
-              : result.hurt === null
-              ? "Even round: no damage"
-              : `${name(result.hurt)} ${result.hurt === me ? "take" : "takes"} ${fmt(result.damage)} damage`}
-            {result.hurt !== null && result.multiplier > 1 && <span className="text-warning"> (×{result.multiplier})</span>}
-          </p>
-          {children}
+    <div className="relative flex h-full flex-col" data-testid="geo-duel-reveal">
+      <DuelBand view={view} me={me} round={result.index + 1} hp={seq.hp} multiplier={result.winner === null ? duelMultiplier(result.index) : result.multiplier} multipliers={result.multipliers} result={result} seq={seq} />
+      <div className="relative min-h-0 flex-1">
+        <div className="absolute inset-x-0 top-0 bottom-[8rem] md:bottom-[5.75rem]">
+          <GeoMap region={map} revealed={revealed} fit={{ delay: LINE_DRAW_MS, duration: FIT_MS }} fill controls={false} />
         </div>
-        {score(1)}
-      </motion.div>
-      <GeoMap region={map} revealed={revealed} />
-      <p className="text-center text-muted-foreground">
-        It was <span className="font-semibold text-foreground">{placeName(result.answer, map)}</span>
-        <span className="text-sm"> · Pokémon {result.answer.game}</span>
-      </p>
-      {me !== null && (
-        <div className="text-center">
-          <ReportShot key={result.shot} shot={result.shot} mode="duel" />
-        </div>
-      )}
-    </>
+        {notice && <div className="absolute inset-x-0 top-16 z-30 px-4">{notice}</div>}
+        {emoteButton}
+        {/* The bottom bar: the round's verdict, the place and Next. */}
+        <motion.div
+          initial={reduced ? false : { opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.35, delay: reduced ? 0 : 0.2, ease: [0.2, 0.8, 0.2, 1] }}
+          className="absolute inset-x-0 bottom-0 z-20 border-t-4 border-[#a99cff] bg-[#1e1a3f]/95 text-white shadow-[0_-12px_40px_rgba(0,0,0,0.5)] backdrop-blur"
+        >
+          <div className="mx-auto grid max-w-5xl items-center gap-3 px-4 py-3 sm:gap-6 sm:px-6 md:grid-cols-[1fr_auto]">
+            <div className="flex min-w-0 items-center gap-3">
+              {/* eslint-disable-next-line @next/next/no-img-element -- the same cached screenshot, as a thumbnail */}
+              <img src={result.shot} alt="" className="hidden h-12 w-16 shrink-0 rounded border border-white/20 object-cover sm:block" />
+              <div className="min-w-0">
+                <p className="font-display text-base font-extrabold uppercase italic leading-tight sm:text-lg" data-testid="geo-duel-headline">
+                  {headline}
+                  {result.hurt !== null && result.multiplier > 1 && <span className="text-[#ffd23c]"> (×{result.multiplier})</span>}
+                </p>
+                <p className="truncate text-sm text-white/80">
+                  It was <span className="font-semibold text-white">{placeName(result.answer, map)}</span>
+                  <span className="text-white/60"> · Pokémon {result.answer.game}</span>
+                </p>
+                <div className="text-xs text-white/60 [&_button]:text-white/60 [&_button:hover]:text-white">
+                  <ReportShot key={result.shot} shot={result.shot} mode="duel" />
+                </div>
+              </div>
+            </div>
+            <div className="w-full md:w-72">{children}</div>
+          </div>
+        </motion.div>
+      </div>
+    </div>
   );
 }
 
-function DuelSummary({ view, map, busy, onRematch }: { view: DuelView; map: GeoRegionInfo; busy: boolean; onRematch: () => void }) {
+/**
+ * The end screen: the result word, the final band, the per-round damage
+ * table, the HP timeline, the rating change (ranked) and what to do next.
+ */
+function DuelEnd({ view, map, busy, onRematch }: { view: DuelView; map: GeoRegionInfo; busy: boolean; onRematch: () => void }) {
   const me = view.you!;
   const end = view.end!;
+  const reduced = useReducedMotion();
   const them = view.players[1 - me]?.name ?? "Your opponent";
   const ranked = !!view.ranked;
   const finder = useMatchmaking(ranked ? GEO_RANKED_MATCH : undefined);
@@ -585,111 +541,156 @@ function DuelSummary({ view, map, busy, onRematch }: { view: DuelView; map: GeoR
         : `You didn't guess for ${DUEL_IDLE_ROUNDS} rounds.`,
   }[end.reason];
   const allRounds: RevealedRound[] = view.revealed.flatMap((r) =>
-    r.guesses.map((g, seat) => ({ guess: g && { x: g.x, y: g.y }, answer: r.answer, label: String(r.index + 1), color: SEAT_COLORS[seat] }))
+    r.guesses.map((g, seat) => ({ guess: g && { x: g.x, y: g.y }, answer: r.answer, label: String(r.index + 1), color: seat === me ? YOU_COLOR : THEM_COLOR, image: seatImage(view, seat) }))
   );
+  const lastIndex = view.revealed.length - 1;
+  const totalDamage = (seat: number) => view.revealed.reduce((s, r) => s + (r.winner === seat ? r.damage : 0), 0);
 
   return (
-    <div className="mx-auto max-w-4xl space-y-6">
-      <div className="space-y-2 text-center">
-        <p className="hud-label text-screen">Duel over · {map.name}</p>
-        <div
-          className={cn(
-            "flex items-center justify-center gap-3 font-display text-6xl font-bold uppercase",
-            won ? "text-success" : draw ? "text-screen" : "text-destructive"
-          )}
+    <div className="text-white" data-testid="geo-duel-end">
+      <div className="geo-split relative overflow-hidden px-4 pb-6 pt-8 text-center sm:pt-12">
+        <p className="font-display text-xs font-bold uppercase tracking-[0.2em] text-white/70">Duel over · {map.name}{view.turbo ? " · Turbo" : ""}</p>
+        <motion.div
+          initial={reduced ? false : { scale: 0.6, opacity: 0, y: 20 }}
+          animate={{ scale: 1, opacity: 1, y: 0 }}
+          transition={{ type: "spring", stiffness: 220, damping: 14 }}
+          className={cn("geo-glow mt-1 flex items-center justify-center gap-3 font-display text-6xl font-extrabold uppercase italic sm:text-8xl", won ? "text-[#9be15d]" : draw ? "text-[#c8bfff]" : "text-[#ff5a5a]")}
+          data-testid="geo-duel-result"
         >
-          {won && <Crown className="h-12 w-12" aria-hidden />}
+          {won && <Crown className="h-12 w-12 sm:h-16 sm:w-16" aria-hidden />}
           {draw ? "Draw" : won ? "Victory!" : "Defeat"}
-        </div>
-        <p className="text-muted-foreground">{reason}</p>
+        </motion.div>
+        <p className="mt-1 text-white/80">{reason}</p>
       </div>
 
-      <DuelHud view={view} center={<div className="hud-label">Final</div>} />
+      <DuelBand
+        view={view}
+        me={me}
+        round={Math.max(1, rounds)}
+        hp={view.hp}
+        multiplier={lastIndex >= 0 ? duelMultiplier(lastIndex) : 1}
+        multipliers={lastIndex >= 0 ? view.revealed[lastIndex].multipliers : [1, 1]}
+        compact
+      />
 
-      {ranked && <GeoRankedOutcome view={view} />}
+      <div className="mx-auto max-w-4xl space-y-5 px-4 py-5">
+        {ranked && (
+          <div className="rounded-md bg-card text-foreground">
+            <GeoRankedOutcome view={view} />
+          </div>
+        )}
 
-      {allRounds.length > 0 && <GeoMap region={map} revealed={allRounds} />}
-
-      <Card>
-        <CardContent className="space-y-5 p-5">
-          {finder.error && (
-            <p role="alert" className="text-sm text-destructive">
-              {finder.error}
+        {finder.error && (
+          <p role="alert" className="text-sm text-[#ff5a5a]">
+            {finder.error}
+          </p>
+        )}
+        {finder.searching ? (
+          <div className="space-y-2 rounded-md border border-[#a99cff]/40 bg-white/5 p-3 text-center" role="status">
+            <p className="flex items-center justify-center gap-2 font-display text-sm font-semibold uppercase tracking-wider text-[#c8bfff]">
+              <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> Searching for a ranked rival…
             </p>
-          )}
-          {rounds > 0 && (
-            <div className={cn("grid items-center gap-x-4 gap-y-1.5 text-sm", view.mode === "race" ? "grid-cols-[auto_1fr_auto_auto]" : "grid-cols-[auto_1fr_auto_auto_auto]")}>
+            <Button type="button" size="sm" variant="ghost" className="text-white hover:bg-white/10 hover:text-white" onClick={finder.cancel}>
+              <X className="h-3.5 w-3.5" aria-hidden /> Cancel
+            </Button>
+          </div>
+        ) : (
+          <div className={cn("grid gap-2", ranked ? "sm:grid-cols-3" : "sm:grid-cols-2")}>
+            {ranked && (
+              <Button size="lg" variant="success" disabled={busy || !myName} onClick={() => void finder.search(myName, rankedExtra())} data-testid="geo-ranked-again">
+                <Trophy className="h-4 w-4" aria-hidden /> Queue ranked
+              </Button>
+            )}
+            <Button size="lg" variant={ranked ? "secondary" : "success"} disabled={busy} onClick={onRematch}>
+              {busy ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : <RotateCcw className="h-4 w-4" aria-hidden />}
+              {view.rematch ? "Accept rematch" : ranked ? "Casual rematch" : "Rematch"}
+            </Button>
+            <Link href="/guessr" className={cn(buttonVariants({ variant: "outline", size: "lg" }), "border-white/30 bg-transparent text-white hover:bg-white/10 hover:text-white")}>
+              <Swords className="h-4 w-4" aria-hidden /> Back to PokéGuessr
+            </Link>
+          </div>
+        )}
+        {view.rematch && (
+          <p role="status" className="text-center font-display text-sm font-semibold uppercase tracking-wider text-[#ffd23c]">
+            Rematch requested!
+          </p>
+        )}
+
+        {rounds > 0 && (
+          <div className="grid gap-4 md:grid-cols-[1fr_minmax(0,20rem)]">
+            {/* The per-round table. */}
+            <div className={cn("grid items-center gap-x-3 gap-y-1.5 rounded-md bg-white/5 p-3 text-sm", view.mode === "race" ? "grid-cols-[auto_1fr_auto_auto]" : "grid-cols-[auto_1fr_auto_auto_auto]")} data-testid="geo-duel-table">
               <span />
-              <span className="hud-label">Place</span>
+              <span className="hud-label !text-white/60">Place</span>
               {[0, 1].map((seat) => (
-                <span key={seat} className="hud-label flex items-center justify-end gap-1.5">
-                  <SeatDot seat={seat} />
+                <span key={seat} className="hud-label flex items-center justify-end gap-1.5 !text-white/60">
+                  <span className="inline-block h-2.5 w-2.5 rounded-full" style={{ background: seat === me ? YOU_COLOR : THEM_COLOR }} aria-hidden />
                   {view.players[seat]?.name}
                 </span>
               ))}
-              {view.mode !== "race" && <span className="hud-label text-right">Damage</span>}
+              {view.mode !== "race" && <span className="hud-label text-right !text-white/60">Damage</span>}
               {view.revealed.map((r) => (
                 <div key={r.index} className="contents">
-                  <span className="font-pixel text-xs text-muted-foreground">
+                  <span className="font-pixel text-xs text-white/60">
                     R{r.index + 1}
                     {r.multiplier > 1 ? ` ×${r.multiplier}` : ""}
                   </span>
                   <span className="min-w-0 truncate">
                     <span className="font-semibold">{placeName(r.answer, map)}</span>
-                    <span className="text-muted-foreground"> · {r.answer.game}</span>
+                    <span className="text-white/60"> · {r.answer.game}</span>
                   </span>
                   {r.guesses.map((g, seat) => (
-                    <span key={seat} className={cn("text-right tabular-nums", r.hurt !== null && r.hurt !== seat && "font-bold text-success")}>
+                    <span key={seat} className={cn("text-right tabular-nums", r.winner === seat && "font-bold text-[#9be15d]")}>
                       {g ? fmt(g.score) : "—"}
                     </span>
                   ))}
                   {view.mode !== "race" && (
-                    <span className="text-right font-pixel text-xs tabular-nums" style={r.hurt === null ? undefined : { color: SEAT_COLORS[r.hurt] }}>
+                    <span className="text-right font-pixel text-xs tabular-nums" style={r.hurt === null ? undefined : { color: r.hurt === me ? "#ff5a5a" : "#9be15d" }}>
                       {r.hurt === null ? "0" : `−${fmt(r.damage)}`}
                     </span>
                   )}
                 </div>
               ))}
-            </div>
-          )}
-
-          {view.rematch && (
-            <p role="status" className="text-center font-display text-sm font-semibold uppercase tracking-wider text-warning">
-              Rematch requested!
-            </p>
-          )}
-          {finder.searching ? (
-            <div className="space-y-2 rounded-md border border-screen/40 bg-screen/[0.06] p-3 text-center" role="status">
-              <p className="flex items-center justify-center gap-2 font-display text-sm font-semibold uppercase tracking-wider text-screen">
-                <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> Searching for a ranked rival…
-              </p>
-              <Button type="button" size="sm" variant="ghost" onClick={finder.cancel}>
-                <X className="h-3.5 w-3.5" aria-hidden /> Cancel
-              </Button>
-            </div>
-          ) : (
-            <div className={cn("grid gap-2", ranked ? "sm:grid-cols-3" : "sm:grid-cols-2")}>
-              {ranked && (
-                <Button size="lg" variant="success" disabled={busy || !myName} onClick={() => void finder.search(myName, rankedExtra())} data-testid="geo-ranked-again">
-                  <Trophy className="h-4 w-4" aria-hidden /> Queue ranked
-                </Button>
+              {view.mode !== "race" && (
+                <>
+                  <span className="font-pixel text-xs text-white/60">Total</span>
+                  <span className="text-white/60">damage dealt</span>
+                  {[0, 1].map((seat) => (
+                    <span key={seat} className="text-right font-bold tabular-nums">
+                      {fmt(totalDamage(seat))}
+                    </span>
+                  ))}
+                  <span />
+                </>
               )}
-              <Button size="lg" variant={ranked ? "secondary" : "success"} disabled={busy} onClick={onRematch}>
-                {busy ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : <RotateCcw className="h-4 w-4" aria-hidden />}
-                {view.rematch ? "Accept rematch" : ranked ? "Casual rematch" : "Rematch"}
-              </Button>
-              <Link href="/guessr" className={cn(buttonVariants({ variant: "outline", size: "lg" }))}>
-                <Swords className="h-4 w-4" aria-hidden /> Back to PokéGuessr
-              </Link>
             </div>
-          )}
-          <p className="text-center text-xs text-muted-foreground">
-            {ranked
-              ? "A rematch is casual: the same opponent and map with new places, and no rating on the line. It starts when you both press it."
-              : "A rematch keeps the map and the trainers, with new places. It starts when you both press it."}
-          </p>
-        </CardContent>
-      </Card>
+            {view.mode !== "race" && (
+              <div className="rounded-md bg-white/5 p-3">
+                <p className="hud-label mb-1 !text-white/60">HP over the duel</p>
+                <HpTimeline view={view} me={me} />
+                <p className="mt-1 flex justify-between text-[11px] text-white/60">
+                  <span style={{ color: YOU_COLOR }}>You</span>
+                  <span style={{ color: THEM_COLOR }}>{them}</span>
+                </p>
+              </div>
+            )}
+          </div>
+        )}
+
+        {allRounds.length > 0 && (
+          <div className="overflow-hidden rounded-md">
+            <GeoMap region={map} revealed={allRounds} />
+          </div>
+        )}
+
+        <p className="text-center text-xs text-white/60">
+          {ranked
+            ? "A rematch is casual: the same opponent and map with new places, and no rating on the line. It starts when you both press it."
+            : "A rematch keeps the map and the trainers, with new places. It starts when you both press it."}
+        </p>
+      </div>
     </div>
   );
 }
+
+export { SEAT_COLORS, SeatDot };

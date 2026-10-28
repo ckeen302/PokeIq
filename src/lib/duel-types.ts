@@ -10,17 +10,16 @@ import type { GeoDuelRankedView } from "./geo-ranked";
 import type { PvpEmoteView } from "./pvp-types";
 import type { ChatLine } from "./chat";
 
-/** Each trainer starts with this much HP. */
-export const DUEL_HP = 6000;
+import { DUEL_COUNTDOWN_MS, DUEL_HP, DUEL_TURBO_CAP_MS, rampMultiplier } from "./geo-duel-rules";
+
+export { DUEL_COUNTDOWN_MS, DUEL_HP, DUEL_TURBO_CAP_MS };
 /** A duel lasts this many rounds at most; then the trainer with more HP wins. */
 export const DUEL_MAX_ROUNDS = 10;
-/** The lower score loses the difference times the round's multiplier: 1× at first, rising from round 4. */
-const MULTIPLIERS = [1, 1, 1, 1.5, 1.5, 2, 2, 2.5, 2.5, 3];
-export const duelMultiplier = (index: number) => MULTIPLIERS[Math.min(index, MULTIPLIERS.length - 1)];
+/** The ramp's multiplier for a round (geo-duel-rules.ts): ×1 for rounds 1–3, ×1.5 for 4–6, ×2 for 7–9, then +0.5 every three. */
+export const duelMultiplier = rampMultiplier;
 
-/** A round is open for 90 s at most; once one trainer guesses, the other has 15 s. */
+/** A round is open for 90 s at most; once one trainer guesses, the other has 15 s (10 s in Turbo). */
 export const DUEL_ROUND_MS = 90_000;
-export const DUEL_COUNTDOWN_MS = 15_000;
 /** "Round 2" shows for a moment before the screenshot, so both trainers start together. */
 export const DUEL_LEAD_MS = 3_000;
 /** The reveal stays up this long, unless both trainers press Next sooner. */
@@ -44,6 +43,8 @@ export const DUEL_MODES: readonly DuelMode[] = ["hp", "race"];
 export interface DuelSettings {
   mode: DuelMode;
   rounds?: GeoRounds;
+  /** Turbo: a guess caps the opponent's remaining time at 10 s instead of 15. */
+  turbo?: boolean;
 }
 
 export type DuelStatus = "lobby" | "playing" | "finished";
@@ -70,28 +71,38 @@ export interface DuelPlayerView {
 
 export interface DuelRoundResult {
   index: number;
+  /** The multiplier that applied: the round winner's own (1 on a tie). */
   multiplier: number;
+  /** Each seat's own multiplier for the round. */
+  multipliers: number[];
   shot: string;
   answer: GeoAnswer;
   /** One per seat: the pin, its score and distance, or null (no guess in time: 0 points). */
   guesses: ({ x: number; y: number; score: number; squares: number } | null)[];
+  /** The score gap times the winner's multiplier, in full: it can exceed the loser's remaining HP. */
   damage: number;
   /** The seat that took the damage; null when the scores tie. */
   hurt: number | null;
-  /** HP after the round. */
+  /** The seat that won the round; null when the scores tie. */
+  winner: number | null;
+  /** HP before and after the round. */
+  hpBefore: number[];
   hp: number[];
 }
 
 export interface DuelLiveRound {
   index: number;
+  /** The ramp's multiplier for the round. */
   multiplier: number;
+  /** Each seat's own multiplier for the round (the winner's applies). */
+  multipliers: number[];
   /** Server time the screenshot appears. */
   startsAt: number;
   /** Sent once the round has started. */
   shot?: string;
-  /** When guessing closes: 90 s after the start, or 15 s after the first guess. */
+  /** When guessing closes: 90 s after the start, or 15 s (Turbo: 10 s) after the first guess. */
   endsAt: number;
-  /** Someone has guessed, so the 15 s countdown is on. */
+  /** Someone has guessed, so the countdown is on. */
   countdown: boolean;
   guessed: boolean[];
   /** Your own pin, once locked in. The opponent's is never sent before the reveal. */
@@ -107,6 +118,8 @@ export interface DuelView {
   /** "race": a set number of rounds, highest total wins (with `totals` per seat). */
   mode: DuelMode;
   totals?: number[];
+  /** Turbo: a guess caps the opponent's remaining time at 10 s. */
+  turbo?: boolean;
   status: DuelStatus;
   /** Server clock, so timers agree whatever the device's clock says. */
   now: number;

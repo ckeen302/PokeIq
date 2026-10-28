@@ -5,7 +5,7 @@ import { gate } from "@/lib/server/moderation";
 import { syncHiddenShots } from "@/lib/server/geo-reports";
 import { chatRateLimit, clientIp, rateLimit } from "@/lib/server/rate-limit";
 import { CHAT_BODY_MAX } from "@/lib/server/chat";
-import { DUEL_EMOTES } from "@/lib/pvp-types";
+import { ALL_DUEL_EMOTES } from "@/lib/pvp-types";
 import {
   chatDuel,
   duelNameSchema,
@@ -54,7 +54,7 @@ const bodySchema = z.discriminatedUnion("action", [
   z.object({ action: z.literal("next"), token, round }),
   z.object({ action: z.literal("leave"), token }),
   z.object({ action: z.literal("rematch"), token }),
-  z.object({ action: z.literal("emote"), token, emote: z.enum(DUEL_EMOTES) }),
+  z.object({ action: z.literal("emote"), token, emote: z.enum(ALL_DUEL_EMOTES) }),
   z.object({ action: z.literal("chat"), token, text: z.string().max(CHAT_BODY_MAX, "Keep it under 200 characters.") }),
 ]);
 

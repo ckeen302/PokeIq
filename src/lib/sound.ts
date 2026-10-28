@@ -1,10 +1,34 @@
 /**
- * Tiny WebAudio synth — zero audio assets. All effects are short envelopes
- * on oscillators. Muting is persisted; everything no-ops on the server or
- * when AudioContext is unavailable.
+ * Tiny WebAudio synth — zero audio assets (nothing to license: every effect
+ * is synthesised here). All effects are short envelopes on oscillators.
+ * Muting is persisted; everything no-ops on the server or when AudioContext
+ * is unavailable.
+ *
+ * PokéGuessr's set: pin (dropping a pin), guess (locking it in), tally (one
+ * tick of a score counting up), countdown (the last seconds), hit (damage
+ * landing), super (a super-effective hit), roundwin / roundlose and
+ * matchwin / matchlose.
  */
 
-type SoundKind = "correct" | "wrong" | "streak" | "fanfare" | "click" | "tick" | "close" | "ping";
+export type SoundKind =
+  | "correct"
+  | "wrong"
+  | "streak"
+  | "fanfare"
+  | "click"
+  | "tick"
+  | "close"
+  | "ping"
+  | "pin"
+  | "guess"
+  | "tally"
+  | "countdown"
+  | "hit"
+  | "super"
+  | "roundwin"
+  | "roundlose"
+  | "matchwin"
+  | "matchlose";
 
 const MUTE_KEY = "pokeiq-muted";
 
@@ -91,6 +115,40 @@ function tone(
   osc.stop(startAt + duration + 0.02);
 }
 
+/** A tone whose pitch slides from `from` to `to` over its length. */
+function sweep(audio: AudioContext, from: number, to: number, startAt: number, duration: number, type: OscillatorType = "sine", peak = 0.08): void {
+  const osc = audio.createOscillator();
+  const gain = audio.createGain();
+  osc.type = type;
+  osc.frequency.setValueAtTime(from, startAt);
+  osc.frequency.exponentialRampToValueAtTime(Math.max(1, to), startAt + duration);
+  gain.gain.setValueAtTime(0, startAt);
+  gain.gain.linearRampToValueAtTime(peak, startAt + 0.01);
+  gain.gain.exponentialRampToValueAtTime(0.0001, startAt + duration);
+  osc.connect(gain).connect(audio.destination);
+  osc.start(startAt);
+  osc.stop(startAt + duration + 0.02);
+}
+
+/** A burst of noise (a thud's body, a whoosh's air). */
+function noise(audio: AudioContext, startAt: number, duration: number, peak = 0.06, lowpass = 800): void {
+  const frames = Math.max(1, Math.floor(audio.sampleRate * duration));
+  const buffer = audio.createBuffer(1, frames, audio.sampleRate);
+  const data = buffer.getChannelData(0);
+  for (let i = 0; i < frames; i++) data[i] = (Math.random() * 2 - 1) * (1 - i / frames);
+  const src = audio.createBufferSource();
+  src.buffer = buffer;
+  const filter = audio.createBiquadFilter();
+  filter.type = "lowpass";
+  filter.frequency.value = lowpass;
+  const gain = audio.createGain();
+  gain.gain.setValueAtTime(peak, startAt);
+  gain.gain.exponentialRampToValueAtTime(0.0001, startAt + duration);
+  src.connect(filter).connect(gain).connect(audio.destination);
+  src.start(startAt);
+  src.stop(startAt + duration + 0.02);
+}
+
 export function play(kind: SoundKind): void {
   try {
     playUnsafe(kind);
@@ -136,6 +194,58 @@ function playUnsafe(kind: SoundKind): void {
       break;
     case "ping":
       tone(audio, 988, now, 0.06, "sine", 0.04);
+      break;
+    case "pin":
+      // A pin dropping: a quick downward plop.
+      sweep(audio, 900, 420, now, 0.09, "sine", 0.06);
+      break;
+    case "guess":
+      // Locking in: a rising whoosh with a soft confirm.
+      noise(audio, now, 0.16, 0.035, 2400);
+      sweep(audio, 320, 960, now, 0.16, "triangle", 0.035);
+      tone(audio, 1046, now + 0.14, 0.1, "sine", 0.04);
+      break;
+    case "tally":
+      tone(audio, 1760, now, 0.02, "square", 0.012);
+      break;
+    case "countdown":
+      tone(audio, 880, now, 0.07, "square", 0.035);
+      break;
+    case "hit":
+      // Damage landing: a low thud.
+      noise(audio, now, 0.14, 0.09, 500);
+      sweep(audio, 160, 50, now, 0.22, "sawtooth", 0.07);
+      break;
+    case "super":
+      // "It's super effective!": a crunch, then a bright rising triad.
+      noise(audio, now, 0.12, 0.08, 1200);
+      sweep(audio, 220, 60, now, 0.2, "sawtooth", 0.07);
+      tone(audio, 659, now + 0.12, 0.09, "triangle", 0.06);
+      tone(audio, 830, now + 0.2, 0.09, "triangle", 0.06);
+      tone(audio, 1046, now + 0.28, 0.2, "triangle", 0.07);
+      break;
+    case "roundwin":
+      tone(audio, 784, now, 0.1, "triangle", 0.06);
+      tone(audio, 1046, now + 0.09, 0.18, "triangle", 0.06);
+      break;
+    case "roundlose":
+      tone(audio, 330, now, 0.14, "sawtooth", 0.04);
+      tone(audio, 262, now + 0.12, 0.22, "sawtooth", 0.04);
+      break;
+    case "matchwin":
+      tone(audio, 523, now, 0.12);
+      tone(audio, 659, now + 0.1, 0.12);
+      tone(audio, 784, now + 0.2, 0.12);
+      tone(audio, 1046, now + 0.3, 0.16);
+      tone(audio, 784, now + 0.46, 0.1);
+      tone(audio, 1046, now + 0.56, 0.4);
+      tone(audio, 1318, now + 0.56, 0.4, "triangle", 0.05);
+      break;
+    case "matchlose":
+      tone(audio, 392, now, 0.16, "sawtooth", 0.04);
+      tone(audio, 330, now + 0.15, 0.16, "sawtooth", 0.04);
+      tone(audio, 262, now + 0.3, 0.16, "sawtooth", 0.04);
+      tone(audio, 196, now + 0.45, 0.4, "sawtooth", 0.04);
       break;
   }
 }
