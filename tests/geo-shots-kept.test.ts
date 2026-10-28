@@ -3,9 +3,11 @@ import path from "node:path";
 import { describe, expect, it } from "vitest";
 
 // PokéGuessr's screenshots only grow. Every shot in the data when the 3D-games
-// additions were made (geo-shot-ids-baseline.json) and every shot there was
-// before the 5,000-shot expansion (geo-shot-ids-protected.json) is still
-// there, so additions never quietly replace or drop an existing shot.
+// additions were made (geo-shot-ids-baseline.json) and every shot in the data
+// since (geo-shot-ids-protected.json: the 2,308 there were before the
+// 5,000-shot expansion, and every shot added after) is still there, so
+// additions never quietly replace or drop an existing shot. A shot added to
+// the data is added to the protected list too.
 // The one exception, by the owner's decision: the 13 Legends: Z-A shots
 // (geo-shot-ids-za-removed.json), since Z-A isn't played in PokéGuessr.
 const root = process.cwd();
@@ -21,12 +23,18 @@ describe("geo shots are only ever added", () => {
   it("keeps every baseline shot", () => {
     expect(baseline.filter((id) => !ids.has(id))).toEqual([]);
   });
-  it("keeps every shot from before the expansion", () => {
-    expect(protectedIds.length).toBe(2025);
+  it("keeps every protected shot", () => {
+    expect(protectedIds.length).toBeGreaterThanOrEqual(2308);
+    expect(new Set(protectedIds).size).toBe(protectedIds.length);
     expect(protectedIds.filter((id) => !ids.has(id))).toEqual([]);
   });
-  it("has at least as many shots as before", () => {
-    expect(ids.size).toBeGreaterThanOrEqual(protectedIds.length);
+  it("protects every shot in the data", () => {
+    const guarded = new Set(protectedIds);
+    expect([...ids].filter((id) => !guarded.has(id))).toEqual([]);
+    expect(ids.size).toBe(protectedIds.length);
+  });
+  it("lists each shot once", () => {
+    expect(shots.length).toBe(ids.size);
   });
   it("has no Legends: Z-A or Legends: Arceus shots", () => {
     expect(removed.size).toBe(13);
