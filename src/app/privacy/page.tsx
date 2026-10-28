@@ -47,7 +47,7 @@ export default function PrivacyPage() {
             service gives us. It is private: never shown to other players.
           </li>
           <li>
-            <strong className="text-foreground">Game results and progress</strong> — scores, XP, badges, streaks, ratings and battle
+            <strong className="text-foreground">Game results and progress</strong> — scores, badges, streaks, ratings and battle
             records.
           </li>
           <li>
