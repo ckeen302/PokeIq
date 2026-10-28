@@ -13,6 +13,9 @@ import { battleProfile } from "@/lib/server/battle-engine/records";
 import { replayStore } from "@/lib/server/battle-engine/replays";
 import { insightsAvailable } from "@/lib/server/battle-engine/insights";
 import { rankedKey, rankedStore } from "@/lib/server/ranked";
+import { geoRankedKey, geoRankedStandingOf } from "@/lib/server/geo-ranked";
+import { utcDay, type GeoRankedStanding } from "@/lib/geo-ranked";
+import { GeoDivisionBadge } from "@/components/geo/GeoRanked";
 import { avatarsByIds } from "@/lib/server/avatars";
 import { aboutFor } from "@/lib/server/about";
 import { pokemonName } from "@/lib/about-validate";
@@ -54,10 +57,11 @@ const findProfile = cache(async (raw: string) => {
   const key = battleKey(`u:${user.id}`);
   const replays = replayStore();
   const ranked = rankedStore();
-  const [digest, battles, pokedle, mine, avatars, about, insights] = await Promise.all([
+  const [digest, battles, pokedle, guessr, mine, avatars, about, insights] = await Promise.all([
     quietly("progress", progressDigests([user.id]).then((m) => m.get(user.id) ?? null), null),
     quietly("battles", battleProfile(key), null),
     quietly<RankedStanding | null>("pokedle", ranked?.standing(rankedKey(`u:${user.id}`)), null),
+    quietly<GeoRankedStanding | null>("guessr", geoRankedStandingOf(geoRankedKey(`u:${user.id}`), utcDay(Date.now())), null),
     quietly<ReplaySummary[]>("replays", replays?.mine(key, [], 30), []),
     avatarsByIds([user.id]),
     aboutFor(user.id),
@@ -71,6 +75,7 @@ const findProfile = cache(async (raw: string) => {
     xp: digest?.xp ?? 0,
     battles,
     pokedle,
+    guessr,
     connections: connDigest(digest),
     about,
     aboutNames: Object.fromEntries(Object.entries(about.pokemon).map(([slot, p]) => [slot, pokemonName(p.id) ?? ""])),
@@ -85,7 +90,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   if (!found) return pageMetadata({ title: "Trainer not found", description: "No such trainer on PokéIQ.", noindex: true });
   return pageMetadata({
     title: `${found.username} · Trainer profile`,
-    description: `${found.username} on PokéIQ: trainer level, Pokédle and battle ratings, battle records and recent replays.`,
+    description: `${found.username} on PokéIQ: trainer level, Pokédle, PokéGuessr and battle ratings, battle records and recent replays.`,
     path: `/u/${encodeURIComponent(found.username)}`,
   });
 }
@@ -143,6 +148,24 @@ export default async function UserProfilePage({ params }: PageProps) {
               </div>
             ) : (
               <p className="text-sm text-muted-foreground">No ranked Pokédle duels yet.</p>
+            )}
+          </CardContent>
+        </Card>
+        <Card data-testid="profile-guessr">
+          <CardContent className="space-y-3 p-5">
+            <p className="hud-label text-screen">Ranked PokéGuessr</p>
+            {found.guessr && found.guessr.games > 0 ? (
+              <div className="space-y-2">
+                <GeoDivisionBadge elo={found.guessr.elo} />
+                <p className="text-sm text-muted-foreground">
+                  {found.guessr.wins}–{found.guessr.losses}
+                  {found.guessr.draws ? `–${found.guessr.draws}` : ""} in {found.guessr.games} ranked duels
+                  {found.guessr.position ? ` · #${found.guessr.position} of ${found.guessr.players}` : ""}
+                  {found.guessr.bestScore > 0 ? ` · best ${found.guessr.bestScore.toLocaleString("en-US")} pts` : ""}
+                </p>
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground">No ranked PokéGuessr duels yet.</p>
             )}
           </CardContent>
         </Card>

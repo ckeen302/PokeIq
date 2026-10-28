@@ -4,7 +4,10 @@ import { chatClosed, duelNameSchema, emoteBlocked, readSeatToken, seatToken } fr
 import { postChat, systemLine } from "./chat";
 import type { ChatLine } from "@/lib/chat";
 import { EMOTE_SHOW_MS, EMOTE_WINDOW_MS, type DuelEmote, type PvpEmoteView } from "@/lib/pvp-types";
-import { answerFor, isGeoSpec, measureGuess, planRounds } from "./geo";
+import { answerFor, isGeoSpec, mapSize, measureGuess, planRounds } from "./geo";
+import { Rng } from "@/lib/rng";
+import { GEO_BOT_DELAY_MS, GEO_BOT_REACT_MS, GEO_BOT_SIGMA, botPin, geoBotName, geoDivisionFloor, geoDivisionOf, type GeoDivisionId, type GeoDuelRankedView } from "@/lib/geo-ranked";
+import type { GeoRankedMatch } from "./geo-ranked";
 import {
   DUEL_AWAY_MS,
   DUEL_COUNTDOWN_MS,
@@ -47,6 +50,19 @@ interface DuelPlayer {
   ready: boolean;
   /** The trainer's last request (kept to the nearest few seconds, to spare writes). */
   seenAt: number;
+  /** The Gym Leader bot (ranked matchmaking when no trainer turns up): plays server-side, never leaves, never rated. */
+  bot?: { division: GeoDivisionId };
+}
+
+/** A ranked duel's trainers as the ladder knows them (seat 1 may be the bot), and once counted, how it moved them. */
+export interface GeoDuelRanked {
+  /** Each seat's rating key (an HMAC); null for the bot. Server-side only. */
+  keys: [string, string | null];
+  /** Each seat's Elo and ranked games going in (the bot's: its division floor, no games). */
+  elos: [number, number];
+  games: [number, number];
+  /** Set once the duel has been counted. */
+  result?: { before: [number, number]; after: [number, number] };
 }
 
 interface DuelRound {
@@ -77,6 +93,8 @@ export interface Duel {
   rounds: DuelRound[];
   end?: DuelEnd;
   rematch?: string;
+  /** A ranked duel (matched in the ranked queue): rated once it's over. A rematch is always casual. */
+  ranked?: GeoDuelRanked;
   /** Recent reactions, and how many the duel has had. */
   emotes?: PvpEmoteView[];
   emoteCount?: number;
@@ -159,9 +177,43 @@ function blankDuel(region: string, code: string, players: DuelPlayer[], now: num
   return { v: 1, code, region, ...(era ? { era } : {}), ...(race ? { mode: "race" as const } : {}), seed, createdAt: now, status: "lobby", players, maxRounds, hp: [DUEL_HP, DUEL_HP], rounds: [] };
 }
 
-export function createDuel(region: string, name: string, code: string, now: number, seed?: string, era?: GeoEra, settings?: DuelSettings): { duel: Duel; playerId: string } {
+export function createDuel(region: string, name: string, code: string, now: number, seed?: string, era?: GeoEra, settings?: DuelSettings, ranked?: GeoDuelRanked): { duel: Duel; playerId: string } {
   const playerId = randomId();
-  return { duel: blankDuel(region, code, [{ id: playerId, name, ready: false, seenAt: now }], now, seed, era, settings), playerId };
+  const duel = blankDuel(region, code, [{ id: playerId, name, ready: false, seenAt: now }], now, seed, era, settings);
+  return { duel: ranked ? { ...duel, ranked } : duel, playerId };
+}
+
+/** The Gym Leader bot takes the free seat, ready: a ranked seeker nobody turned up for plays it. It aims as its division does (lib/geo-ranked.ts). */
+export function joinBot(duel: Duel, leader: string, division: GeoDivisionId, now: number): DuelOutcome {
+  const d = advanceDuel(duel, now);
+  if (d.status !== "lobby") return fail(409, "This duel has already started.");
+  if (d.players.length >= 2) return fail(409, "This duel is full.");
+  d.players.push({ id: randomId(), name: geoBotName(leader), ready: true, seenAt: now, bot: { division } });
+  return { ok: true, duel: d };
+}
+
+/** The seat the bot sits in, or -1. */
+export const botSeat = (duel: Pick<Duel, "players">) => duel.players.findIndex((p) => p.bot);
+
+/** A finished ranked duel that hasn't been counted yet: what counting it needs. Null otherwise. */
+export function geoRankedMatchOf(duel: Duel): GeoRankedMatch | null {
+  if (!duel.ranked || duel.ranked.result || duel.status !== "finished" || !duel.end || duel.players.length !== 2) return null;
+  const bot = duel.ranked.keys[1] === null;
+  return {
+    code: duel.code,
+    keys: duel.ranked.keys,
+    names: [duel.players[0].name, duel.players[1].name],
+    winner: duel.end.winner,
+    at: duel.end.at,
+    points: raceTotals(duel) as [number, number],
+    ...(bot ? { botElo: duel.ranked.elos[1] } : {}),
+  };
+}
+
+/** Records how a ranked duel was counted (once: a later call changes nothing). */
+export function withGeoRankedResult(duel: Duel, result: { before: [number, number]; after: [number, number] }): Duel {
+  if (!duel.ranked || duel.ranked.result) return duel;
+  return { ...duel, ranked: { ...duel.ranked, result } };
 }
 
 export function joinDuel(duel: Duel, name: string, now: number): { ok: true; duel: Duel; playerId: string } | DuelFailure {
@@ -177,9 +229,10 @@ export function joinDuel(duel: Duel, name: string, now: number): { ok: true; due
   return { ok: true, duel: d, playerId };
 }
 
-/** A rematch: the same map and trainers (same seats), new places, the chat so far. Both start un-ready, as if just seen. */
+/** A rematch: the same map and trainers (same seats), new places, the chat so far. Both start un-ready, as if just seen (the bot stays ready). A rematch is never ranked. */
 export function rematchOf(old: Duel, code: string, now: number, seed?: string): Duel {
-  const next = blankDuel(old.region, code, old.players.map((p) => ({ id: p.id, name: p.name, ready: false, seenAt: now })), now, seed, old.era, old.mode === "race" && isGeoRounds(old.maxRounds) ? { mode: "race", rounds: old.maxRounds } : undefined);
+  const players = old.players.map((p): DuelPlayer => ({ id: p.id, name: p.name, ready: !!p.bot, seenAt: now, ...(p.bot ? { bot: p.bot } : {}) }));
+  const next = blankDuel(old.region, code, players, now, seed, old.era, old.mode === "race" && isGeoRounds(old.maxRounds) ? { mode: "race", rounds: old.maxRounds } : undefined);
   return old.chat?.length ? { ...next, chat: old.chat } : next;
 }
 
@@ -227,8 +280,8 @@ export function advanceDuel(duel: Duel, now: number): Duel {
 function step(d: Duel, now: number): boolean {
   if (d.status === "finished") return false;
   if (d.status === "lobby") {
-    // Trainers who left the lobby free their seat for someone else.
-    const here = d.players.filter((p) => now - p.seenAt <= DUEL_AWAY_MS);
+    // Trainers who left the lobby free their seat for someone else (the bot never leaves).
+    const here = d.players.filter((p) => p.bot || now - p.seenAt <= DUEL_AWAY_MS);
     if (here.length < d.players.length) {
       d.players = here;
       return true;
@@ -241,10 +294,10 @@ function step(d: Duel, now: number): boolean {
     return false;
   }
 
-  // A trainer who stopped responding forfeits (if both did, the one gone longer).
+  // A trainer who stopped responding forfeits (if both did, the one gone longer). The bot is always here.
   const gone = d.players
-    .map((p, seat) => ({ seat, at: p.seenAt + DUEL_AWAY_MS }))
-    .filter((p) => p.at < now)
+    .map((p, seat) => ({ seat, at: p.seenAt + DUEL_AWAY_MS, bot: !!p.bot }))
+    .filter((p) => !p.bot && p.at < now)
     .sort((a, b) => a.at - b.at)[0];
   if (gone) {
     finish(d, "left", 1 - gone.seat, gone.at);
@@ -253,6 +306,7 @@ function step(d: Duel, now: number): boolean {
 
   const round = d.rounds[d.rounds.length - 1];
   if (!round.result) {
+    if (botGuess(d, round, now)) return true;
     const close = closesAt(round);
     const all = round.guesses.every(Boolean);
     if (!all && now <= close + GRACE_MS) return false;
@@ -261,6 +315,30 @@ function step(d: Duel, now: number): boolean {
   }
   if (now < round.result.nextAt) return false;
   d.rounds.push(newRound(d, round.result.nextAt + DUEL_LEAD_MS));
+  return true;
+}
+
+/**
+ * The Gym Leader's turn: it guesses a human-like while into the round (sooner
+ * in higher divisions), or a few seconds after the trainer does, and pins
+ * the place with its division's aim. Everything comes from the duel's seed
+ * and the round, so the same duel always plays out the same way, whenever
+ * it is caught up.
+ */
+function botGuess(d: Duel, round: DuelRound, now: number): boolean {
+  const seat = botSeat(d);
+  const bot = seat >= 0 ? d.players[seat].bot : undefined;
+  if (!bot || round.guesses[seat]) return false;
+  const index = d.rounds.indexOf(round);
+  const rng = new Rng(`${d.seed}:bot:${index}`);
+  const division = geoDivisionOf(geoDivisionFloor(bot.division)).index;
+  const delay = (GEO_BOT_DELAY_MS[0] + rng.next() * (GEO_BOT_DELAY_MS[1] - GEO_BOT_DELAY_MS[0])) * (1 - 0.1 * division);
+  const react = GEO_BOT_REACT_MS[0] + rng.next() * (GEO_BOT_REACT_MS[1] - GEO_BOT_REACT_MS[0]);
+  const theirs = round.guesses[1 - seat];
+  const at = Math.round(Math.min(round.startsAt + delay, theirs ? theirs.at + react : Infinity));
+  if (now < at) return false;
+  const pin = botPin(answerFor(geoSpec(d.region), round.plan).pin, mapSize(d.region), GEO_BOT_SIGMA[bot.division], () => rng.next());
+  round.guesses[seat] = { x: pin.x, y: pin.y, at };
   return true;
 }
 
@@ -280,6 +358,9 @@ function reveal(d: Duel, round: DuelRound, at: number) {
   const hp = d.hp.map((h, seat) => (seat === hurt ? Math.max(0, h - damage) : h));
   round.result = { at, scores, squares: measured.map((m) => m?.squares ?? 0), damage, hurt, hp, nextAt: at + DUEL_REVEAL_MS };
   d.hp = hp;
+  // The bot is always ready for the next round: the reveal ends as soon as the trainer presses Next.
+  const bot = botSeat(d);
+  if (bot >= 0) round.skip[bot] = true;
 
   const idle = d.players.map((_, seat) => d.rounds.length >= DUEL_IDLE_ROUNDS && d.rounds.slice(-DUEL_IDLE_ROUNDS).every((r) => !r.guesses[seat]));
   if (race) {
@@ -422,7 +503,7 @@ export function duelView(duel: Duel, playerId: string | null, now: number, rev: 
     now,
     rev,
     you: seat >= 0 ? seat : null,
-    players: duel.players.map((p) => ({ name: p.name, ready: p.ready, quiet: now - p.seenAt > DUEL_QUIET_MS })),
+    players: duel.players.map((p) => ({ name: p.name, ready: p.ready, quiet: !p.bot && now - p.seenAt > DUEL_QUIET_MS, ...(p.bot ? { bot: true } : {}) })),
     hp: duel.hp,
     maxRounds: duel.maxRounds,
     round: live && {
@@ -439,7 +520,11 @@ export function duelView(duel: Duel, playerId: string | null, now: number, rev: 
     next: duel.status === "playing" && last?.result ? { at: last.result.nextAt, pressed: last.skip } : undefined,
     end: duel.end,
     rematch: duel.rematch,
+    // Ratings, never the keys behind them.
+    ...(duel.ranked ? { ranked: rankedView(duel.ranked) } : {}),
     emotes: (duel.emotes ?? []).filter((e) => now - e.at < EMOTE_SHOW_MS),
     ...(duel.chat?.length ? { chat: duel.chat } : {}),
   };
 }
+
+const rankedView = (r: GeoDuelRanked): GeoDuelRankedView => ({ elos: r.elos, bot: r.keys[1] === null, ...(r.result ? { result: r.result } : {}) });

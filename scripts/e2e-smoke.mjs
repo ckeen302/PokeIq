@@ -1410,6 +1410,103 @@ await findOpponent("/connections", (p) => p.getByTestId("conn-tile").first().wai
 step("matchmaking: pokéguessr world");
 await findOpponent("/guessr", shotLoaded);
 
+// Ranked PokéGuessr: two new trainers (1,000 Elo each) queue ranked and are paired at once into one rated duel on the
+// world map, with division badges in the HUD. Blue forfeits: the duel is counted and Red's result shows the division
+// (Poké Ball hides the number). The ladder tab lists both.
+step("ranked pokéguessr: two trainers matched by Elo, counted after a forfeit");
+/** Opens /guessr on the ranked queue as `name`, ready to queue. */
+async function rankedPanel(p, name) {
+  await p.goto(`${BASE}/guessr`, { waitUntil: "networkidle" });
+  await closeHowTo(p);
+  await p.getByTestId("geo-duel-queue-ranked").click();
+  await p.getByTestId("geo-ranked-card").waitFor();
+  await p.getByTestId("geo-ranked-queue").waitFor({ timeout: 15_000 });
+  await p.getByTestId("geo-ranked-name").fill(name);
+}
+const rankedDuelPath = /\/guessr\/duel\/[a-z2-9]{8}\?matched=1$/;
+/** Division badges never show a number in Poké or Great Ball. */
+async function checkHiddenElo(p, where) {
+  for (const text of await p.getByTestId("geo-division-badge").allInnerTexts()) {
+    if (/\d/.test(text) && /Poké Ball|Great Ball/i.test(text)) errors.push(`${where}: a low division shows its Elo: "${text}"`);
+  }
+}
+{
+  const rRed = await newPage({ width: 1280, height: 900 });
+  const rBlue = await newPage({ width: 1280, height: 900 });
+  await rankedPanel(rRed, "Red");
+  await rankedPanel(rBlue, "Blue");
+  if (!(await rRed.getByTestId("geo-division-badge").first().isVisible())) errors.push("ranked panel shows no division badge");
+  await checkHiddenElo(rRed, "ranked panel");
+  await rRed.screenshot({ path: `${OUT}/guessr-ranked-panel.png` });
+  await rRed.getByTestId("geo-ranked-queue").click();
+  await rRed.getByTestId("geo-ranked-searching").waitFor();
+  await rRed.waitForTimeout(1500);
+  await rRed.screenshot({ path: `${OUT}/guessr-ranked-searching.png` });
+  await rBlue.getByTestId("geo-ranked-queue").click();
+  await Promise.all([rRed.waitForURL(rankedDuelPath), rBlue.waitForURL(rankedDuelPath)]);
+  if (rRed.url() !== rBlue.url()) errors.push(`ranked: matched into different duels: ${rRed.url()} vs ${rBlue.url()}`);
+  await rRed.getByText("Matched! You vs Blue").waitFor();
+  await Promise.all([shotLoaded(rRed), shotLoaded(rBlue)]);
+  if ((await rRed.getByTestId("geo-division-badge").count()) < 2) errors.push("ranked duel: no division badges in the HUD");
+  await checkHiddenElo(rRed, "ranked duel");
+  if (await rRed.getByTestId("geo-gym-leader-badge").count()) errors.push("ranked duel between trainers shows a Gym Leader badge");
+  await rRed.screenshot({ path: `${OUT}/guessr-ranked-duel.png` });
+  await rBlue.getByRole("button", { name: /Leave duel/ }).click();
+  await rBlue.getByRole("button", { name: /^Forfeit$/ }).click();
+  await rRed.getByText("Blue left the duel.").waitFor();
+  await rRed.getByTestId("geo-ranked-outcome").waitFor({ timeout: 20_000 });
+  await rBlue.getByTestId("geo-ranked-outcome").waitFor({ timeout: 20_000 });
+  if (!(await rRed.getByText("Victory!").isVisible())) errors.push("ranked: Red didn't win the forfeited duel");
+  if (!(await rRed.getByTestId("geo-ranked-trend").isVisible())) errors.push("ranked: a Poké Ball result shows no trend (and should hide the number)");
+  await checkHiddenElo(rRed, "ranked result");
+  if (!(await rRed.getByTestId("geo-ranked-again").isVisible())) errors.push("ranked result has no Queue ranked button");
+  if (!(await rRed.getByRole("button", { name: /Casual rematch/ }).isVisible())) errors.push("ranked result has no casual rematch");
+  await rRed.waitForTimeout(1600);
+  await rRed.screenshot({ path: `${OUT}/guessr-ranked-result.png`, fullPage: true });
+
+  await rRed.goto(`${BASE}/leaderboard?board=geo-ranked`, { waitUntil: "networkidle" });
+  await rRed.getByTestId("leaderboard-geo-ranked").waitFor();
+  const ladderNames = await rRed.locator("table tbody td:nth-child(2)").allInnerTexts();
+  for (const who of ["Red", "Blue"]) if (!ladderNames.some((n) => n.trim() === who)) errors.push(`ranked ladder doesn't list ${who}: ${JSON.stringify(ladderNames)}`);
+  if (ladderNames.some((n) => /Gym Leader/.test(n))) errors.push("ranked ladder lists a Gym Leader");
+  await checkHiddenElo(rRed, "ranked ladder");
+  await rRed.screenshot({ path: `${OUT}/guessr-ranked-ladder.png`, fullPage: true });
+  await rRed.context().close();
+  await rBlue.context().close();
+}
+
+// The Gym Leader: with the server set to offer the bot quickly (POKEIQ_GEO_RANKED_BOT_AFTER_S), a lone ranked seeker is
+// offered a clearly labelled computer opponent, which plays every round server-side to the end, and the duel is rated.
+step("ranked pokéguessr: the Gym Leader offer");
+{
+  const info = await fetch(`${BASE}/api/geo/ranked`).then((r) => r.json()).catch(() => null);
+  if (info?.available && info.botAfterS > 0 && info.botAfterS <= 15) {
+    const gp = await newPage({ width: 1280, height: 900 });
+    await rankedPanel(gp, "Red");
+    await gp.getByTestId("geo-ranked-queue").click();
+    await gp.getByTestId("geo-ranked-bot-offer").waitFor({ timeout: (info.botAfterS + 15) * 1000 });
+    await gp.getByText("No trainer found yet. Battle a Gym Leader?").waitFor();
+    await gp.screenshot({ path: `${OUT}/guessr-ranked-gym-offer.png` });
+    await gp.getByTestId("geo-ranked-bot").click();
+    await gp.waitForURL(rankedDuelPath);
+    await gp.getByText(/Matched! You vs Gym Leader/).waitFor();
+    await shotLoaded(gp);
+    await gp.getByTestId("geo-gym-leader-badge").first().waitFor();
+    if (!(await gp.getByTestId("geo-gym-leader-avatar").first().isVisible())) errors.push("gym leader duel: no trainer-class avatar");
+    await gp.screenshot({ path: `${OUT}/guessr-ranked-gym-duel.png` });
+    const gymRounds = await playDuel(gp, 0.5, false);
+    console.log(`  the Gym Leader duel ended after ${gymRounds} round${gymRounds === 1 ? "" : "s"}`);
+    await gp.getByText(/Victory!|Defeat|Draw/).first().waitFor();
+    await gp.getByTestId("geo-ranked-outcome").waitFor({ timeout: 20_000 });
+    if (!(await gp.getByText("A Gym Leader duel: rated at half the usual swing.").isVisible())) errors.push("gym leader result doesn't say it was rated at half K");
+    await gp.waitForTimeout(1600);
+    await gp.screenshot({ path: `${OUT}/guessr-ranked-gym-result.png`, fullPage: true });
+    await gp.context().close();
+  } else {
+    console.log(`  skipped: the server offers the Gym Leader after ${info?.botAfterS ?? "?"} s (set POKEIQ_GEO_RANKED_BOT_AFTER_S to 15 or less to test it)`);
+  }
+}
+
 step("world atlas: search, place card, link into PokéGuessr");
 await page.goto(`${BASE}/atlas`, { waitUntil: "networkidle" });
 await page.getByLabel("Search the map").fill("Saffron City");

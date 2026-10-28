@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
-import { Crown, Expand, Loader2, MapPin as MapPinIcon, RotateCcw, Swords, Timer, WifiOff, X } from "lucide-react";
+import { Crown, Expand, Loader2, MapPin as MapPinIcon, RotateCcw, Swords, Timer, Trophy, WifiOff, X } from "lucide-react";
 import {
   DUEL_COUNTDOWN_MS,
   DUEL_HP,
@@ -30,6 +30,10 @@ import { GEO_ERA_NAMES } from "@/lib/geo-families";
 import { cn } from "@/lib/utils";
 import { AddFriendAfterGame } from "@/components/community/AddFriend";
 import { Avatar } from "@/components/avatar/Avatar";
+import { useMatchmaking } from "@/components/duel/use-matchmaking";
+import { rankedExtra } from "@/components/pokedle/Ranked";
+import { GEO_RANKED_MATCH } from "@/lib/geo-ranked";
+import { GeoDivisionBadge, GeoRankedOutcome, GymLeaderAvatar, GymLeaderTag } from "./GeoRanked";
 
 /**
  * A PokéGuessr duel at /guessr/duel/<code>: the lobby, the rounds, the reveals
@@ -473,11 +477,17 @@ function Fighter({ view, seat, damage, right }: { view: DuelView; seat: number; 
     <div className={cn("min-w-0 space-y-1", right && "text-right")}>
       <div className={cn("flex items-center gap-1.5", right && "flex-row-reverse")}>
         <SeatDot seat={seat} />
-        {player && <Avatar avatar={player.avatar} size={24} />}
+        {player && (player.bot ? <GymLeaderAvatar name={player.name} size={24} /> : <Avatar avatar={player.avatar} size={24} />)}
         <span className="truncate font-display font-bold uppercase">{player?.name ?? "—"}</span>
         {view.you === seat && <span className="hud-label">You</span>}
+        {player?.bot && <GymLeaderTag />}
         {player?.quiet && view.status === "playing" && <WifiOff className="h-3.5 w-3.5 shrink-0 text-warning" aria-label="Connection lost" />}
       </div>
+      {view.ranked && (
+        <div className={cn("flex", right && "justify-end")}>
+          <GeoDivisionBadge elo={view.ranked.elos[seat]} size="sm" />
+        </div>
+      )}
       {/* The right-hand bar drains towards its own edge. */}
       {!race && (
         <div className={cn(right && "-scale-x-100")}>
@@ -555,6 +565,9 @@ function DuelSummary({ view, map, busy, onRematch }: { view: DuelView; map: GeoR
   const me = view.you!;
   const end = view.end!;
   const them = view.players[1 - me]?.name ?? "Your opponent";
+  const ranked = !!view.ranked;
+  const finder = useMatchmaking(ranked ? GEO_RANKED_MATCH : undefined);
+  const myName = view.players[me]?.name ?? "";
   const won = end.winner === me;
   const draw = end.winner === null;
   const rounds = view.revealed.length;
@@ -593,10 +606,17 @@ function DuelSummary({ view, map, busy, onRematch }: { view: DuelView; map: GeoR
 
       <DuelHud view={view} center={<div className="hud-label">Final</div>} />
 
+      {ranked && <GeoRankedOutcome view={view} />}
+
       {allRounds.length > 0 && <GeoMap region={map} revealed={allRounds} />}
 
       <Card>
         <CardContent className="space-y-5 p-5">
+          {finder.error && (
+            <p role="alert" className="text-sm text-destructive">
+              {finder.error}
+            </p>
+          )}
           {rounds > 0 && (
             <div className={cn("grid items-center gap-x-4 gap-y-1.5 text-sm", view.mode === "race" ? "grid-cols-[auto_1fr_auto_auto]" : "grid-cols-[auto_1fr_auto_auto_auto]")}>
               <span />
@@ -638,16 +658,36 @@ function DuelSummary({ view, map, busy, onRematch }: { view: DuelView; map: GeoR
               Rematch requested!
             </p>
           )}
-          <div className="grid gap-2 sm:grid-cols-2">
-            <Button size="lg" variant="success" disabled={busy} onClick={onRematch}>
-              {busy ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : <RotateCcw className="h-4 w-4" aria-hidden />}
-              {view.rematch ? "Accept rematch" : "Rematch"}
-            </Button>
-            <Link href="/guessr" className={cn(buttonVariants({ variant: "outline", size: "lg" }))}>
-              <Swords className="h-4 w-4" aria-hidden /> Back to PokéGuessr
-            </Link>
-          </div>
-          <p className="text-center text-xs text-muted-foreground">A rematch keeps the map and the trainers, with new places. It starts when you both press it.</p>
+          {finder.searching ? (
+            <div className="space-y-2 rounded-md border border-screen/40 bg-screen/[0.06] p-3 text-center" role="status">
+              <p className="flex items-center justify-center gap-2 font-display text-sm font-semibold uppercase tracking-wider text-screen">
+                <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> Searching for a ranked rival…
+              </p>
+              <Button type="button" size="sm" variant="ghost" onClick={finder.cancel}>
+                <X className="h-3.5 w-3.5" aria-hidden /> Cancel
+              </Button>
+            </div>
+          ) : (
+            <div className={cn("grid gap-2", ranked ? "sm:grid-cols-3" : "sm:grid-cols-2")}>
+              {ranked && (
+                <Button size="lg" variant="success" disabled={busy || !myName} onClick={() => void finder.search(myName, rankedExtra())} data-testid="geo-ranked-again">
+                  <Trophy className="h-4 w-4" aria-hidden /> Queue ranked
+                </Button>
+              )}
+              <Button size="lg" variant={ranked ? "secondary" : "success"} disabled={busy} onClick={onRematch}>
+                {busy ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : <RotateCcw className="h-4 w-4" aria-hidden />}
+                {view.rematch ? "Accept rematch" : ranked ? "Casual rematch" : "Rematch"}
+              </Button>
+              <Link href="/guessr" className={cn(buttonVariants({ variant: "outline", size: "lg" }))}>
+                <Swords className="h-4 w-4" aria-hidden /> Back to PokéGuessr
+              </Link>
+            </div>
+          )}
+          <p className="text-center text-xs text-muted-foreground">
+            {ranked
+              ? "A rematch is casual: the same opponent and map with new places, and no rating on the line. It starts when you both press it."
+              : "A rematch keeps the map and the trainers, with new places. It starts when you both press it."}
+          </p>
         </CardContent>
       </Card>
     </div>
