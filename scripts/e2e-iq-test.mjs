@@ -19,20 +19,21 @@ async function playSection(page) {
     if (await page.getByTestId("cog-results").isVisible()) return "results";
     const option = page.locator('[data-testid="cog-option"]:not([disabled])').first();
     if (await option.isVisible()) {
-      await option.click();
+      // A tap can land as the item re-renders (adaptive step): a detached element just means try the next one.
+      await option.click({ timeout: 3000 }).catch(() => {});
       await page.waitForTimeout(700);
       continue;
     }
     const cell = page.locator('[data-testid="cog-span-cell"]:not([disabled])').first();
     if (await cell.isVisible()) {
       // The recall clock's bar slides in above the grid as it appears: skip the stability wait.
-      await cell.click({ force: true });
+      await cell.click({ force: true, timeout: 3000 }).catch(() => {});
       await page.waitForTimeout(80);
       continue;
     }
     const speedCell = page.locator('[data-testid="cog-speed-cell"]').first();
     if (await speedCell.isVisible()) {
-      await speedCell.click({ force: true });
+      await speedCell.click({ force: true, timeout: 3000 }).catch(() => {});
       await page.waitForTimeout(150);
       continue;
     }
