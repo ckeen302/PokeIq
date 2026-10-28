@@ -1075,7 +1075,6 @@ function GeoSummary({
         )}
         {reward && (
           <div className="flex flex-wrap justify-center gap-2 pt-1">
-            {reward.xp > 0 && <span className="rounded-sm bg-secondary px-2 py-1 font-pixel text-[10px]">+{reward.xp} XP</span>}
             {reward.best && <span className="rounded-sm border border-warning/50 px-2 py-1 font-pixel text-[10px] text-warning">New best</span>}
           </div>
         )}

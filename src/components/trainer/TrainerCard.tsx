@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { Pencil } from "lucide-react";
-import { BADGES, connBlock, currentStreak, levelInfo, setTrainerName, useProgress, type Progress } from "@/lib/progress";
+import { BADGES, connBlock, currentStreak, setTrainerName, useProgress, type Progress } from "@/lib/progress";
 import { EMPTY_CONN_PLAY } from "@/lib/connections/play";
 import { connStats } from "@/lib/connections/local";
 import { localDateString } from "@/lib/daily";
@@ -24,7 +24,7 @@ import { useAccount } from "@/lib/account";
 import { Avatar } from "@/components/avatar/Avatar";
 import { AvatarPanel } from "@/components/avatar/AvatarPanel";
 
-/** Local-first trainer profile: level, PokéIQ, streaks, bests and badges. */
+/** Local-first trainer profile: PokéIQ, streaks, bests and badges. */
 export function TrainerCard() {
   const progress = useProgress();
   const account = useAccount();
@@ -40,7 +40,6 @@ export function TrainerCard() {
 
   // Safe here: progress (and so this branch) only exists after mount.
   const today = localDateString();
-  const lvl = levelInfo(progress.xp);
   const iq = progress.rating !== null ? ratingToIQ(progress.rating) : null;
   const accuracy = progress.answered ? Math.round((progress.correct / progress.answered) * 100) : 0;
   const dailyDays = Object.keys(progress.daily.results).length;
@@ -101,7 +100,7 @@ export function TrainerCard() {
                     </button>
                   )}
                   <p className="text-sm text-muted-foreground">
-                    Level {lvl.level} · {progress.xp.toLocaleString()} XP · {lvl.toNext} XP to level {lvl.level + 1}
+                    {progress.answered.toLocaleString()} questions answered · {dailyDays} daily {dailyDays === 1 ? "day" : "days"} played
                   </p>
                 </div>
               </div>
@@ -110,9 +109,6 @@ export function TrainerCard() {
                 <div className="font-display text-5xl font-bold tabular-nums text-screen [text-shadow:0_0_18px_hsl(var(--screen)/0.5)]">{iq ?? "--"}</div>
                 <div className="text-xs text-muted-foreground">{iq !== null ? iqTitle(iq) : "Play a run to get rated"}</div>
               </div>
-            </div>
-            <div className="mt-4 meter">
-              <motion.div className="h-full bg-primary" initial={{ width: 0 }} animate={{ width: `${lvl.progress * 100}%` }} transition={{ duration: 0.8 }} />
             </div>
           </div>
           <CardContent className="grid grid-cols-2 gap-3 p-6 sm:grid-cols-4">

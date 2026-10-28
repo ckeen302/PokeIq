@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { BattleSeatResponse, BattleView } from "@/lib/battle/play";
-import { loadBattleSeat, saveBattleSeat } from "@/lib/battle/seat";
+import { loadBattleSeat, saveBattleSeat, takeBattleSeed } from "@/lib/battle/seat";
 import { setTrainerName, useProgress } from "@/lib/progress";
 import { battleHiddenDelay, battlePollDelay, fingerprint, startPoller } from "@/lib/polling";
 import { unlockAudio } from "@/lib/sound";
@@ -105,6 +105,9 @@ export function useBattle(code: string) {
 
   useEffect(() => {
     token.current = loadBattleSeat(code);
+    // The view that came back when this tab started the battle: drawn at once; the first poll confirms it.
+    const seed = takeBattleSeed(code);
+    if (seed) receive(seed.view, seed.sentAt);
     let stopped = false;
     let throttledUntil = 0;
     const poller = startPoller({

@@ -29,7 +29,7 @@ export function AccountPanel() {
         <CardContent className="flex flex-wrap items-center justify-between gap-3 p-5">
           <div>
             <p className="font-display text-lg font-bold uppercase">Save your progress</p>
-            <p className="text-sm text-muted-foreground">Create a free account to keep your XP, badges and streaks on any device.</p>
+            <p className="text-sm text-muted-foreground">Create a free account to keep your badges, ratings and streaks on any device.</p>
           </div>
           <Link href="/login" className={cn(buttonVariants({ size: "lg" }))}>
             <UserPlus className="h-4 w-4" aria-hidden /> Sign in

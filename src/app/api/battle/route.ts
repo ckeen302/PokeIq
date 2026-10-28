@@ -38,6 +38,15 @@ const bodySchema = z.discriminatedUnion("mode", [
   z.object({ mode: z.literal("pvp"), name: duelNameSchema, format, team, rules, rankedId, public: z.boolean().default(false), hidden: z.boolean().default(false), timer: z.boolean().default(true), timeoutLoses: z.boolean().default(true) }),
 ]);
 
+/**
+ * GET /api/battle: whether battles are on. The setup page sends one while the
+ * trainer is still picking a format, so this function (the simulator is a
+ * heavy import) is awake by the time they press Start.
+ */
+export async function GET() {
+  return NextResponse.json({ enabled: battlesEnabled() }, { headers: NO_STORE });
+}
+
 export async function POST(request: NextRequest) {
   if (!rateLimit(`battle-new:${clientIp(request)}`, 10, 0.2)) {
     return NextResponse.json({ error: "Too many battles started. Take a breather." }, { status: 429, headers: NO_STORE });

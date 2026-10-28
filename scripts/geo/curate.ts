@@ -34,6 +34,7 @@ const DATA = path.join(ROOT, "src/data/geo.json");
 const CURATION = path.join(ROOT, "scripts/geo/curation.json");
 const SOURCES = path.join(ROOT, "scripts/geo/shot-sources.json");
 const SHOT_CACHE = path.join(ROOT, ".data/geo-shot-cache.json");
+const WORLD_PLACES = path.join(ROOT, "scripts/geo/world-places.json");
 
 export interface Shot {
   id: string;
@@ -86,6 +87,17 @@ export function familyFor(game: string, where: string): GeoFamilyId {
   return family;
 }
 
+let worldPlaces: { W: number; H: number; places: { name: string; region: string; x: number; y: number; mask: [number, number][] }[] } | null = null;
+/** An atlas place's pin and area, normalised to the world map (as ingest-world.ts's placeArea). */
+function atlasArea(p: Place): { pin: [number, number]; mask: [number, number][] } | null {
+  worldPlaces ??= JSON.parse(readFileSync(WORLD_PLACES, "utf8"));
+  const world = worldPlaces!;
+  const place = world.places.find((x) => x.region === p.region && x.name === p.name);
+  if (!place) return null;
+  const norm = (v: number, size: number) => Math.round((v / size) * 100000) / 100000;
+  return { pin: [norm(place.x, world.W), norm(place.y, world.H)], mask: place.mask.map(([x, y]) => [norm(x, world.W), norm(y, world.H)] as [number, number]) };
+}
+
 /** Applies the curation to the locations in place; returns what it changed. */
 export function applyCuration(locations: Location[], curation: Curation): string[] {
   const log: string[] = [];
@@ -122,6 +134,14 @@ export function applyCuration(locations: Location[], curation: Curation): string
       dest = { name: a.name, region: a.region, parent: a.parent, shots: [] };
       locations.push(dest);
     }
+    // A place on the atlas that had no shot yet: its pin and area as world-places.json has them.
+    if (!dest && !a.parent) {
+      const area = atlasArea(a);
+      if (area) {
+        dest = { name: a.name, region: a.region, ...area, shots: [] };
+        locations.push(dest);
+      }
+    }
     if (!dest) throw new Error(`add ${a.id}: no place ${label(a)}`);
     dest.shots.push({ id: a.id, game: a.game, family: familyFor(a.game, a.id) });
     log.push(`+ ${label(dest)}: ${a.id} (${a.game})`);
@@ -137,10 +157,11 @@ function sourceOfKey(key: string): string {
   const bare = key.replace(/@v\d+$/, "").replace(/#(top|bottom)[\d.]+/g, "");
   const crop = bare.match(/^crop:(.+)#(\d+,\d+,\d+,\d+)$/);
   if (crop) return `https://archives.bulbagarden.net/wiki/File:${crop[1]} (view cut at ${crop[2]})`;
-  const wiki = bare.match(/^(fandom|pokepedia|pokewiki):(.+)$/);
+  const wiki = bare.match(/^(fandom|pokepedia|pokewiki|wikidex):(.+)$/);
   if (wiki) {
     const [, site, file] = wiki;
     if (site === "fandom") return `https://pokemon.fandom.com/wiki/File:${file}`;
+    if (site === "wikidex") return `https://www.wikidex.net/wiki/Archivo:${file}`;
     if (site === "pokepedia") return `https://www.pokepedia.fr/Fichier:${file}`;
     return `https://www.pokewiki.de/Datei:${file}`;
   }

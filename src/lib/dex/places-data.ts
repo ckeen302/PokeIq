@@ -135,7 +135,23 @@ const EXTRA_PLACES: PlaceRecord[] = PD.places.map((p) => {
   };
 });
 
-export const PLACES: PlaceRecord[] = [...ATLAS_PLACES, ...EXTRA_PLACES].sort((a, b) => a.region.localeCompare(b.region) || a.name.localeCompare(b.name, "en", { numeric: true }));
+/** A place in both lists (the atlas gained a pin and screenshots for it) is one page: the atlas record, with the parent and sections the extra data knows. */
+function mergePlaces(atlas: PlaceRecord[], extra: PlaceRecord[]): PlaceRecord[] {
+  const bySlug = new Map(atlas.map((p) => [p.slug, p]));
+  const out = [...atlas];
+  for (const e of extra) {
+    const a = bySlug.get(e.slug);
+    if (!a) {
+      out.push(e);
+      continue;
+    }
+    if (!a.parent && e.parent) a.parent = e.parent;
+    if (!a.sections.length && e.sections.length) a.sections = e.sections;
+  }
+  return out;
+}
+
+export const PLACES: PlaceRecord[] = mergePlaces(ATLAS_PLACES, EXTRA_PLACES).sort((a, b) => a.region.localeCompare(b.region) || a.name.localeCompare(b.name, "en", { numeric: true }));
 
 const BY_SLUG = new Map(PLACES.map((p) => [p.slug, p]));
 export const getPlace = (slug: string) => BY_SLUG.get(slug);

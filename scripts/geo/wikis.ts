@@ -5,6 +5,7 @@
  * gives each place's French and German name.
  */
 import { WIKI, api, codeOf } from "./bulbapedia";
+import { httpGet } from "./http";
 
 export interface Wiki {
   id: string;
@@ -97,9 +98,9 @@ const slug = (s: string) =>
 export async function localNames(name: string, region: string): Promise<Partial<Record<"fr" | "de", string>>> {
   let found: Partial<Record<"fr" | "de", string>> = {};
   for (const s of [`${slug(region)}-${slug(name)}`, slug(name)]) {
-    const res = await fetch(`${POKEAPI}/${s}/`, { signal: AbortSignal.timeout(20_000) }).catch(() => null);
-    if (!res?.ok) continue;
-    const j = (await res.json()) as { region?: { name: string }; names: { name: string; language: { name: string } }[] };
+    const body = await httpGet(`${POKEAPI}/${s}/`).catch(() => null);
+    if (!body) continue;
+    const j = JSON.parse(body.toString("utf8")) as { region?: { name: string }; names: { name: string; language: { name: string } }[] };
     if (j.region && j.region.name !== slug(region)) continue;
     const names = Object.fromEntries(j.names.map((n) => [n.language.name, n.name]));
     found = Object.fromEntries(Object.entries({ fr: names.fr, de: names.de }).filter(([, v]) => v));

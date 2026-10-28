@@ -2,8 +2,8 @@ import { RANKED_TIERS, type RankedTierId } from "./ranked";
 import { artUrl } from "./pokemon/art";
 
 /**
- * Profile pictures: any Pokémon (shiny from trainer level 10) in a frame
- * earned by level milestones or ranked tiers, or a picture of their own
+ * Profile pictures: any Pokémon (shiny once you have played a while) in a
+ * frame earned by playing or by ranked tiers, or a picture of their own
  * once a moderator has approved it. Shared by the server, which checks
  * every choice against what the account has unlocked, and the pages.
  */
@@ -36,13 +36,13 @@ export interface PublicAvatar extends Avatar {
   picture?: string;
 }
 
-/** What the account has earned: its trainer level and best ranked tier (Pokédle or the battle ladder). */
+/** What the account has earned: how much it has played (an activity level from its synced play, never shown) and its best ranked tier. */
 export interface AvatarUnlocks {
   level: number;
   tier: RankedTierId | null;
 }
 
-/** Trainer level from XP: the same curve as levelInfo in lib/progress (which is client-only). */
+/** Activity level from synced play (the old XP curve, kept so nobody loses an unlock). */
 export const levelFromXp = (xp: number) => Math.floor(Math.sqrt(Math.max(0, xp) / 50)) + 1;
 
 const tierRank = (tier: RankedTierId | null) => (tier ? RANKED_TIERS.findIndex((t) => t.id === tier) : -1);
@@ -64,15 +64,15 @@ export function frameUnlocked(frame: AvatarFrame, u: AvatarUnlocks): boolean {
   return true;
 }
 
-/** How to unlock a frame ("Reach trainer level 15"). */
+/** How to unlock a frame. */
 export function frameHint(frame: AvatarFrame): string {
   const f = AVATAR_FRAMES.find((x) => x.id === frame)!;
-  if ("level" in f) return `Reach trainer level ${f.level}`;
+  if ("level" in f) return `Keep playing to earn the ${f.name} frame`;
   if ("tier" in f) return `Reach ${f.name} in ranked Pokédle or the battle ladder`;
   return "";
 }
 
-export const SHINY_HINT = `Reach trainer level ${SHINY_LEVEL}`;
+export const SHINY_HINT = "Keep playing to unlock shiny Pokémon";
 
 /** A well-formed avatar (any frame), or null. */
 export function parseAvatar(raw: unknown): Avatar | null {

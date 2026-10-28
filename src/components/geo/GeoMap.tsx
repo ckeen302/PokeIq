@@ -60,6 +60,8 @@ export function GeoMap({ region, pick, revealed = [], onPick, className }: Props
   });
 
   useEffect(() => {
+    // The world map is the biggest download: start it now, alongside the atlas, not after it.
+    new window.Image().src = WORLD_MAP;
     loadAtlas()
       .then(setAtlas)
       .catch(() => setFailed(true));

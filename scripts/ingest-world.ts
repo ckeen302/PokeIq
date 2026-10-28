@@ -59,6 +59,11 @@ import {
   encodeShot,
   pixelScale,
   viewCrop,
+  imageHash,
+  hashDistance,
+  SAME_PICTURE,
+  SAME_GAME_PICTURE,
+  LOOK_ALIKE,
 } from "./geo/bulbapedia";
 import { AREA_PER_VIEW, AREA_PER_VIEW_THIN, genericTiles, nativePixels, pickViews, screenOf, tileFamily, tileGrid, type Box, type TileGrid } from "./geo/map-crops";
 import { WIKIS, localNames, wikiCode, wikiImages, wikiPage, type Wiki } from "./geo/wikis";
@@ -1079,31 +1084,12 @@ function keepOnce(locations: WorldLocation[], store: ShotStore): WorldLocation[]
   return locations.filter((l) => !l.parent || l.shots.length);
 }
 
-/** A difference hash of a screenshot (borders trimmed, 17 × 16 grey): 256 bits, as a string of 0s and 1s. */
+/** A published screenshot's difference hash (see imageHash), or null when it can't be read. */
 async function shotHash(id: string): Promise<string | null> {
   const res = await fetch(`${storage.baseUrl}/${id}.webp`).catch(() => null);
   if (!res?.ok) return null;
-  let img = sharp(Buffer.from(await res.arrayBuffer())).flatten({ background: "#000" });
-  try {
-    img = sharp(await img.trim({ threshold: 30 }).toBuffer());
-  } catch {
-    // Nothing to trim.
-  }
-  const px = await img.resize(17, 16, { fit: "fill" }).greyscale().raw().toBuffer();
-  let bits = "";
-  for (let y = 0; y < 16; y++) for (let x = 0; x < 16; x++) bits += px[y * 17 + x] < px[y * 17 + x + 1] ? "1" : "0";
-  return bits;
+  return imageHash(Buffer.from(await res.arrayBuffer()));
 }
-function hashDistance(a: string, b: string): number {
-  let d = 0;
-  for (let i = 0; i < a.length; i++) if (a[i] !== b[i]) d++;
-  return d;
-}
-/** Hash distance under which two shots of one place are copies: of any game, or of the same game (seasons, Sword's and Shield's, a wiki's copy). */
-const SAME_PICTURE = 10;
-const SAME_GAME_PICTURE = 24;
-/** Two places whose shots are this alike (two Regi chambers, two open-sea routes) can't be told apart. */
-const LOOK_ALIKE = 18;
 
 /**
  * Each place's screenshots, once: a town doesn't repeat its stadium's shot,
