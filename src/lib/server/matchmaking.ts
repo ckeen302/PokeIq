@@ -1,6 +1,6 @@
 import "server-only";
 import { z } from "zod";
-import { createDuel, duelToken, isDuelMap, joinDuel as joinGeoDuel, readyDuel as readyGeoDuel } from "./duel";
+import { createDuel, duelToken, isDuelMap, joinBot, joinDuel as joinGeoDuel, readyDuel as readyGeoDuel, type GeoDuelRanked } from "./duel";
 import { pvpToken, type PvpFailure } from "./duel-core";
 import { deleteDuel, insertDuel, newDuelCode, pvpStore } from "./duel-store";
 import { joinDuel, readyDuel } from "./duels";
@@ -9,8 +9,11 @@ import { createConnectionsDuel } from "./connections-duel";
 import { createPikadokuDuel } from "./pikadoku-duel";
 import { cancelQueue, searchQueue, type OpenedGame } from "./match-queue";
 import { CONN_RANKED_QUEUE_KEY, connSeasonOf } from "@/lib/connections/ranked";
-import { RANKED_QUEUE_KEY, cancelRankedQueue, searchRankedQueue, type RankedSeat } from "./ranked-queue";
+import { RANKED_QUEUE_KEY, cancelRankedQueue, claimRankedWaiter, searchRankedQueue, type Pairable, type RankedSeat } from "./ranked-queue";
 import type { RatingState } from "@/lib/ranked";
+import { GEO_GYM_LEADERS, GEO_RANKED_QUEUE_KEY, GEO_RANKED_REGION, geoDivisionFloor, geoDivisionOf, geoPairable } from "@/lib/geo-ranked";
+import type { GeoRankedConfig } from "./geo-ranked";
+import { Rng } from "@/lib/rng";
 import { pvpHref } from "@/lib/pvp-types";
 import { DLE_ASSISTS, DLE_DEFAULT_ASSIST } from "@/lib/dle-assist";
 import { DLE_DAILY_FORMATS } from "@/lib/dle-format";
@@ -48,19 +51,20 @@ export {
  */
 export const matchSettingsSchema = z
   .discriminatedUnion("game", [
-    z.object({ game: z.literal("geo"), region: z.string().max(20), era: z.enum(GEO_ERAS).optional() }),
+    z.object({ game: z.literal("geo"), region: z.string().max(20), era: z.enum(GEO_ERAS).optional(), ranked: z.boolean().optional() }),
     z.object({ game: z.literal("pokedle"), ranked: z.boolean().optional(), assist: z.enum(DLE_ASSISTS).optional(), format: z.enum(DLE_DAILY_FORMATS).optional() }),
     z.object({ game: z.literal("connections"), ranked: z.boolean().optional() }),
     z.object({ game: z.literal("pikadoku"), steals: z.boolean().optional() }),
   ])
   .superRefine((s, ctx) => {
-    if (s.game === "geo" && !isDuelMap(s.region, s.era)) ctx.addIssue({ code: z.ZodIssueCode.custom, message: s.era ? "That map has too few places for those games." : "Unknown map." });
+    // Ranked PokéGuessr is one queue: the world map, every game (the map and era sent are ignored).
+    if (s.game === "geo" && !s.ranked && !isDuelMap(s.region, s.era)) ctx.addIssue({ code: z.ZodIssueCode.custom, message: s.era ? "That map has too few places for those games." : "Unknown map." });
   });
 export type MatchSettings = z.infer<typeof matchSettingsSchema>;
 
 /** The queue a search waits in. Classic with the Notebook keeps the queue Pokédle had before levels and formats. */
 export function queueKey(s: MatchSettings): string {
-  if (s.game === "geo") return `geo:${s.region}${s.era ? `:${s.era}` : ""}`;
+  if (s.game === "geo") return s.ranked ? GEO_RANKED_QUEUE_KEY : `geo:${s.region}${s.era ? `:${s.era}` : ""}`;
   if (s.game === "connections") return s.ranked ? CONN_RANKED_QUEUE_KEY : "connections";
   if (s.game === "pikadoku") return s.steals ? "pikadoku:steals" : "pikadoku";
   if (s.ranked) return RANKED_QUEUE_KEY;
@@ -70,7 +74,8 @@ export function queueKey(s: MatchSettings): string {
 }
 
 export type SearchResult =
-  | { ok: true; status: "waiting"; ticket: string; since: number }
+  /** `botAfterMs`: ranked PokéGuessr offers the Gym Leader bot after this long in the queue. */
+  | { ok: true; status: "waiting"; ticket: string; since: number; botAfterMs?: number }
   | { ok: true; status: "matched"; code: string; token: string; href: string };
 
 const must = <T extends { ok: boolean }>(out: T | PvpFailure): Extract<T, { ok: true }> => {
@@ -131,6 +136,7 @@ export async function searchMatch(settings: MatchSettings, name: string, ticket:
 /** Gives up a search. */
 export function cancelMatch(settings: MatchSettings, ticket: string): Promise<void> {
   if (settings.game === "connections" && settings.ranked) return cancelRankedQueue(ticket, CONN_RANKED_QUEUE_KEY);
+  if (settings.game === "geo" && settings.ranked) return cancelRankedQueue(ticket, GEO_RANKED_QUEUE_KEY);
   return settings.game === "pokedle" && settings.ranked ? cancelRankedQueue(ticket) : cancelQueue(queueKey(settings), ticket);
 }
 
@@ -189,4 +195,65 @@ export async function searchRankedConnections(name: string, ticket: string, play
   const out = await searchRankedQueue({ ticket, name, player }, rating, openRankedConnectionsDuel, CONN_RANKED_QUEUE_KEY);
   if (!out.ok || out.status === "waiting") return out;
   return seat({ game: "connections", ranked: true }, out.code, out.playerId);
+}
+
+// ---------------------------------------------------------------------------
+// Ranked PokéGuessr
+// ---------------------------------------------------------------------------
+
+/** A ranked PokéGuessr duel for two matched trainers (the world map, HP battle), stored and under way. Seat 0 is the trainer who was waiting. */
+async function openGeoRankedDuel(players: [RankedSeat, RankedSeat], now: number): Promise<OpenedGame | null> {
+  const ranked: GeoDuelRanked = {
+    keys: [players[0].player, players[1].player],
+    elos: [players[0].rating, players[1].rating],
+    games: [players[0].games, players[1].games],
+  };
+  for (let attempt = 0; attempt < 4; attempt++) {
+    const code = newDuelCode();
+    const { duel, playerId: a } = createDuel(GEO_RANKED_REGION, players[0].name, code, now, undefined, undefined, undefined, ranked);
+    const { duel: joined, playerId: b } = must(joinGeoDuel(duel, players[1].name, now));
+    const ready = must(readyGeoDuel(must(readyGeoDuel(joined, a, true, now)).duel, b, true, now)).duel;
+    if (await insertDuel(ready)) return { code, ids: [a, b], remove: () => deleteDuel(code) };
+  }
+  return null;
+}
+
+/**
+ * A ranked PokéGuessr search (or its next poll) by the trainer whose rating
+ * key is `player`: paired by Elo within the bracket their wait (and the
+ * other trainer's) allows, or waiting. `rating` reads their Elo when it's
+ * needed. While waiting, the result says when the Gym Leader may be called.
+ */
+export async function searchGeoRanked(name: string, ticket: string, player: string, rating: () => Promise<RatingState>, config: GeoRankedConfig): Promise<SearchResult | PvpFailure> {
+  const pairable: Pairable = (gap, waits) => geoPairable(gap, waits, config.maxDiff);
+  const out = await searchRankedQueue({ ticket, name, player }, rating, openGeoRankedDuel, GEO_RANKED_QUEUE_KEY, pairable);
+  if (!out.ok) return out;
+  if (out.status === "waiting") return config.botAfterS > 0 ? { ...out, botAfterMs: config.botAfterS * 1000 } : out;
+  return seat({ game: "geo", region: GEO_RANKED_REGION, ranked: true }, out.code, out.playerId);
+}
+
+/** A little slack on the bot's wait, since the browser's clock started before the server's. */
+const BOT_SLACK_MS = 1_500;
+
+/**
+ * "Battle a Gym Leader": a ranked seeker who has waited long enough with no
+ * trainer found leaves the queue for a rated duel against the bot, which
+ * plays at their division's floor. Their seat, or why not (not waiting any
+ * more: a match may be waiting for the ticket's next poll; or too soon).
+ */
+export async function geoBotMatch(ticket: string, config: GeoRankedConfig): Promise<SearchResult | PvpFailure> {
+  if (config.botAfterS <= 0) return { ok: false, status: 409, error: "The Gym Leaders aren't taking challengers here." };
+  const waiter = await claimRankedWaiter(ticket, GEO_RANKED_QUEUE_KEY, Math.max(0, config.botAfterS * 1000 - BOT_SLACK_MS));
+  if (!waiter) return { ok: false, status: 409, error: "Keep searching: the Gym Leader steps in once you've waited long enough." };
+  const division = geoDivisionOf(waiter.rating).id;
+  const leader = new Rng(`gym:${waiter.ticket}`).pick(GEO_GYM_LEADERS).name;
+  const ranked: GeoDuelRanked = { keys: [waiter.player, null], elos: [waiter.rating, geoDivisionFloor(division)], games: [waiter.games, 0] };
+  for (let attempt = 0; attempt < 4; attempt++) {
+    const code = newDuelCode();
+    const now = Date.now();
+    const { duel, playerId } = createDuel(GEO_RANKED_REGION, waiter.name, code, now, undefined, undefined, undefined, ranked);
+    const ready = must(readyGeoDuel(must(joinBot(duel, leader, division, now)).duel, playerId, true, now)).duel;
+    if (await insertDuel(ready)) return seat({ game: "geo", region: GEO_RANKED_REGION, ranked: true }, code, playerId);
+  }
+  return { ok: false, status: 503, error: "Couldn't open the gym. Try again." };
 }

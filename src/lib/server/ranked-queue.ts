@@ -68,13 +68,20 @@ export type RankedPlan =
   | { kind: "pair"; opponent: RankedWaiter }
   | { kind: "wait" };
 
+/** Whether a rating gap allows a pair, given how long the searcher and the waiter have each waited (ms). */
+export type Pairable = (gap: number, waits: [number, number]) => boolean;
+
+/** Pokédle's rule: the gap must be within what the longer wait of the two allows. */
+export const longestWaitPairable: Pairable = (gap, waits) => gap <= allowedGap(Math.max(waits[0], waits[1]));
+
 /**
  * What a search should do. `rating` is the searcher's rating (what they
- * queued at, if they're already waiting). A pair is allowed when the gap is
- * within what the longer wait of the two allows; of those, the closest
- * rating wins, then whoever has waited longest.
+ * queued at, if they're already waiting). A pair is allowed when `pairable`
+ * says so (by default, when the gap is within what the longer wait of the
+ * two allows); of those, the closest rating wins, then whoever has waited
+ * longest.
  */
-export function planRanked(row: RankedQueueRow, me: RankedSearcher, rating: number, now: number): RankedPlan {
+export function planRanked(row: RankedQueueRow, me: RankedSearcher, rating: number, now: number, pairable: Pairable = longestWaitPairable): RankedPlan {
   // `rating` is ignored once the searcher is in the pool: they keep the rating they queued at.
   const match = row.matched[me.ticket];
   if (match) return { kind: "matched", code: match.code, playerId: match.playerId };
@@ -83,8 +90,8 @@ export function planRanked(row: RankedQueueRow, me: RankedSearcher, rating: numb
   const myRating = mine?.rating ?? rating;
   const best = row.pool
     .filter((w) => w.ticket !== me.ticket && w.player !== me.player && now - w.seenAt <= MATCH_FRESH_MS)
-    .map((w) => ({ w, gap: Math.abs(w.rating - myRating), allowed: allowedGap(now - Math.min(w.since, mySince)) }))
-    .filter((c) => c.gap <= c.allowed)
+    .map((w) => ({ w, gap: Math.abs(w.rating - myRating) }))
+    .filter((c) => pairable(c.gap, [now - mySince, now - c.w.since]))
     .sort((a, b) => a.gap - b.gap || a.w.since - b.w.since)[0];
   if (best) return { kind: "pair", opponent: best.w };
   if (mine) return { kind: "waiting", refresh: now - mine.seenAt >= SEEN_STEP_MS };
@@ -151,7 +158,8 @@ export async function searchRankedQueue(
   me: RankedSearcher,
   rating: () => Promise<RatingState>,
   open: (players: [RankedSeat, RankedSeat], now: number) => Promise<OpenedGame | null>,
-  key = RANKED_QUEUE_KEY
+  key = RANKED_QUEUE_KEY,
+  pairable: Pairable = longestWaitPairable
 ): Promise<RankedQueueResult | PvpFailure> {
   let mine: RatingState | null = null;
   for (let attempt = 0; attempt < MAX_TRIES; attempt++) {
@@ -162,7 +170,7 @@ export async function searchRankedQueue(
     if (!queued && !row.matched[me.ticket] && mine === null) mine = await rating();
     const myRating: RatingState = queued ?? mine ?? { rating: 0, games: 0 };
     const now = Date.now();
-    const plan = planRanked(row, me, myRating.rating, now);
+    const plan = planRanked(row, me, myRating.rating, now, pairable);
 
     if (plan.kind === "matched") return { ok: true, status: "matched", code: plan.code, playerId: plan.playerId, seat: 0 };
     if (plan.kind === "waiting") {
@@ -191,6 +199,24 @@ export async function searchRankedQueue(
     return { ok: true, status: "matched", code: game.code, playerId: game.ids[1], seat: 1 };
   }
   return busy;
+}
+
+/**
+ * A waiting trainer leaves the pool to play something else (the Gym Leader
+ * bot): their waiter record, once they have waited at least `minWaitMs`,
+ * else null (not waiting, matched already, or too soon). The row is
+ * compare-and-swapped, so a search pairing them at the same moment wins or
+ * loses cleanly: never both.
+ */
+export async function claimRankedWaiter(ticket: string, key: string, minWaitMs: number): Promise<RankedWaiter | null> {
+  for (let attempt = 0; attempt < MAX_TRIES; attempt++) {
+    const stored = await rankedQueueStore.load(key);
+    const waiter = stored?.duel.pool.find((w) => w.ticket === ticket);
+    if (!stored || !waiter || stored.duel.matched[ticket]) return null;
+    if (Date.now() - waiter.since < minWaitMs) return null;
+    if (await rankedQueueStore.save(withoutRankedTicket(stored.duel, ticket), stored.version)) return waiter;
+  }
+  return null;
 }
 
 export async function cancelRankedQueue(ticket: string, key = RANKED_QUEUE_KEY): Promise<void> {

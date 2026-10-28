@@ -19,6 +19,9 @@ import { LocalDateRedirect } from "./local-date-redirect";
 import { RankedUnavailable, rankedStore } from "@/lib/server/ranked";
 import type { RankedLeaderRow } from "@/lib/ranked";
 import { TierBadge, YourLadderSpot } from "@/components/pokedle/Ranked";
+import { GeoDivisionBadge, YourGeoLadderSpot } from "@/components/geo/GeoRanked";
+import { geoRankedTop } from "@/lib/server/geo-ranked";
+import { utcDay } from "@/lib/geo-ranked";
 import { LadderTable, LadderTabs, YourBattleStanding } from "@/components/battle/LadderParts";
 import { isLadderFormat } from "@/lib/battle/ladder";
 import type { StandardFormatId } from "@/lib/battle/play";
@@ -46,6 +49,7 @@ export default async function LeaderboardPage({ searchParams }: PageProps) {
     params.board === "daily" ||
     params.board === "iq" ||
     params.board === "geo" ||
+    params.board === "geo-ranked" ||
     params.board === "pokedle" ||
     params.board === "connections-ranked" ||
     params.board === "connections" ||
@@ -64,6 +68,7 @@ export default async function LeaderboardPage({ searchParams }: PageProps) {
     { id: "daily", label: "Daily" },
     { id: "iq", label: "PokéIQ Test" },
     { id: "geo", label: "PokéGuessr" },
+    { id: "geo-ranked", label: "PokéGuessr Ranked" },
     { id: "pokedle", label: "Pokédle Ranked" },
     { id: "connections", label: "PokéConnections" },
     { id: "connections-ranked", label: "Connections Ranked" },
@@ -109,6 +114,74 @@ export default async function LeaderboardPage({ searchParams }: PageProps) {
           <>
             <YourBattleStanding format={battleFormat} />
             <LadderTable rows={rows} format={battleFormat} avatars={avatars} />
+          </>
+        )}
+      </div>
+    );
+  }
+
+  if (board === "geo-ranked") {
+    const ladder = await geoRankedTop(utcDay(Date.now()));
+    const avatars = await avatarsByNames((ladder ?? []).map((r) => r.name));
+    return (
+      <div className="mx-auto max-w-3xl space-y-6" data-testid="leaderboard-geo-ranked">
+        <div className="space-y-4 text-center">
+          <h1 className="font-display text-4xl font-bold uppercase tracking-tight sm:text-5xl">Leaderboard</h1>
+          {tabRow}
+          <p className="text-sm text-muted-foreground">Ranked PokéGuessr duels: the top 100 by Elo. Poké Ball and Great Ball show the division only; the number shows from Ultra Ball up.</p>
+        </div>
+        {ladder === null ? (
+          <Card>
+            <CardContent className="py-10 text-center text-muted-foreground">Ranked PokéGuessr opens soon.</CardContent>
+          </Card>
+        ) : (
+          <>
+            <YourGeoLadderSpot />
+            {ladder.length === 0 ? (
+              <Card>
+                <CardContent className="py-10 text-center text-muted-foreground">
+                  Nobody is ranked yet.{" "}
+                  <Link href="/guessr#ranked" className="text-primary underline-offset-2 hover:underline">
+                    Queue a ranked duel
+                  </Link>{" "}
+                  and be the first!
+                </CardContent>
+              </Card>
+            ) : (
+              <Card>
+                <CardContent className="p-0">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b text-left text-xs uppercase text-muted-foreground">
+                        <th className="p-3">#</th>
+                        <th className="p-3">Trainer</th>
+                        <th className="p-3">Division</th>
+                        <th className="hidden p-3 text-right sm:table-cell">W–L</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {ladder.map((row) => (
+                        <tr key={row.position} className="border-b last:border-0">
+                          <td className="p-3 font-mono tabular-nums text-muted-foreground">{row.position}</td>
+                          <td className="max-w-[10rem] truncate p-3 font-semibold">
+                            <span className="flex items-center gap-2">
+                              <NameAvatar name={row.name} avatars={avatars} />
+                              <span className="truncate">{row.name}</span>
+                            </span>
+                          </td>
+                          <td className="p-3">
+                            <GeoDivisionBadge elo={row.elo} division={row.division} size="sm" />
+                          </td>
+                          <td className="hidden p-3 text-right tabular-nums sm:table-cell">
+                            {row.wins}–{row.losses}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </CardContent>
+              </Card>
+            )}
           </>
         )}
       </div>

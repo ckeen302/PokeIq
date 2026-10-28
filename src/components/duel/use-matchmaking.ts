@@ -19,6 +19,10 @@ import { unlockAudio } from "@/lib/sound";
  *
  * Duels use /api/duel/match; battles pass their own endpoint, where to keep
  * the seat, and (per search) the team they bring.
+ *
+ * Ranked PokéGuessr: while the search waits, the server says after how long
+ * the Gym Leader bot may be called (`botAfterMs`); `takeBot` asks for that
+ * duel instead, and the search carries on if the server says not yet.
  */
 
 /** The server passes over a search not heard from in 8 s. */
@@ -60,6 +64,9 @@ export function useMatchmaking(settings: Record<string, unknown> | undefined, { 
   /** When this search began (device time), while one is on. */
   const [since, setSince] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
+  /** Ranked PokéGuessr: how long into the search the Gym Leader may be called, once the server has said. */
+  const [botAfterMs, setBotAfterMs] = useState<number | null>(null);
+  const [takingBot, setTakingBot] = useState(false);
   const ticket = useRef<string | null>(null);
   /** Each search's number: a cancelled search's loop sees a newer one and stops. */
   const run = useRef(0);
@@ -93,6 +100,7 @@ export function useMatchmaking(settings: Record<string, unknown> | undefined, { 
     const id = ++run.current;
     ticket.current = null;
     setSince(Date.now());
+    setBotAfterMs(null);
     if (!progress?.name) setTrainerName(name);
     while (run.current === id) {
       let wait = POLL_MS;
@@ -102,7 +110,7 @@ export function useMatchmaking(settings: Record<string, unknown> | undefined, { 
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ ...extra, action: "search", settings: settingsRef.current, name, ticket: ticket.current ?? undefined }),
         });
-        const data = (await res.json().catch(() => ({}))) as Partial<Matched> & { status?: string; ticket?: string; error?: string };
+        const data = (await res.json().catch(() => ({}))) as Partial<Matched> & { status?: string; ticket?: string; error?: string; botAfterMs?: number };
         if (run.current !== id) return;
         if (res.ok && data.status === "matched" && data.code && data.token && data.href) {
           run.current++;
@@ -111,7 +119,10 @@ export function useMatchmaking(settings: Record<string, unknown> | undefined, { 
           router.push(`${data.href}?matched=1`);
           return;
         }
-        if (res.ok && data.ticket) ticket.current = data.ticket;
+        if (res.ok && data.ticket) {
+          ticket.current = data.ticket;
+          setBotAfterMs(typeof data.botAfterMs === "number" ? data.botAfterMs : null);
+        }
         else if (res.status === 429) wait = THROTTLED_MS;
         else if (res.status < 500) {
           // A request the server won't take (a bad name, a team that breaks the rules): stop and say why. Busy or offline: keep trying.
@@ -134,7 +145,37 @@ export function useMatchmaking(settings: Record<string, unknown> | undefined, { 
   function cancel() {
     run.current++;
     setSince(null);
+    setBotAfterMs(null);
     giveUp();
+  }
+
+  /** "Battle a Gym Leader": leaves the queue for a duel against the bot. False (and the search goes on) if the server says not yet. */
+  async function takeBot(): Promise<boolean> {
+    const t = ticket.current;
+    if (!t || !settingsRef.current || takingBot) return false;
+    setTakingBot(true);
+    try {
+      const res = await fetch(endpointRef.current, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "bot", settings: settingsRef.current, ticket: t }),
+      });
+      const data = (await res.json().catch(() => ({}))) as Partial<Matched> & { error?: string };
+      if (ticket.current !== t) return false;
+      if (res.ok && data.status === "matched" && data.code && data.token && data.href) {
+        run.current++;
+        ticket.current = null;
+        save(data.code, data.token);
+        router.push(`${data.href}?matched=1`);
+        return true;
+      }
+      // Not yet (or a match came through meanwhile): the search's next poll sorts it out.
+      return false;
+    } catch {
+      return false;
+    } finally {
+      setTakingBot(false);
+    }
   }
 
   // Leaving the page (or closing the tab) ends the search.
@@ -154,5 +195,5 @@ export function useMatchmaking(settings: Record<string, unknown> | undefined, { 
     };
   }, [giveUp]);
 
-  return { searching, since, error, search, cancel };
+  return { searching, since, error, search, cancel, botAfterMs, takeBot, takingBot };
 }
