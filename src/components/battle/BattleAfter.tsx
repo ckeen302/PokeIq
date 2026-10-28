@@ -79,7 +79,7 @@ export function BattleAfter({ view, battle }: { view: BattleView; battle: Battle
       {view.ranked &&
         (mine ? (
           <div className="mx-auto max-w-sm text-left" data-testid="rating-change">
-            <BattleRatingChange before={mine.before} after={mine.after} />
+            <BattleRatingChange before={mine.before} after={mine.after} elo={mine.elo} />
           </div>
         ) : !view.settled ? (
           <p className="hud-label flex items-center justify-center gap-1.5">
@@ -142,20 +142,32 @@ function ReplayButtons({
   );
 }
 
-/** A ranked battle's Glicko-2 rating change: the new rating and the points won or lost. */
-function BattleRatingChange({ before, after }: { before: number; after: number }) {
-  const delta = after - before;
+/**
+ * A ranked battle's rating change: the Elo (the ladder's rating) and the
+ * points won or lost, with the Glicko-2 change beneath. A battle counted
+ * before the ladder had Elo shows its Glicko-2 change alone.
+ */
+function BattleRatingChange({ before, after, elo }: { before: number; after: number; elo?: { before: number; after: number } }) {
+  const head = elo ?? { before, after };
+  const delta = head.after - head.before;
+  const glickoDelta = after - before;
   return (
     <div className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-warning/40 bg-warning/[0.05] p-4">
       <span className="space-y-0.5">
-        <span className="hud-label block">Glicko-2 rating</span>
-        <span className="font-display text-2xl font-bold tabular-nums">
-          {before} → {after}
+        <span className="hud-label block">{elo ? "Elo" : "Glicko-2 rating"}</span>
+        <span className="font-display text-2xl font-bold tabular-nums" data-testid="rating-headline">
+          {head.before} → {head.after}
         </span>
+        {elo && (
+          <span className="block font-pixel text-[10px] tabular-nums text-muted-foreground" data-testid="rating-glicko">
+            Glicko-2 {before} → {after} ({glickoDelta > 0 ? "+" : ""}
+            {glickoDelta})
+          </span>
+        )}
       </span>
       <span
         className={cn("font-display text-4xl font-bold tabular-nums", delta > 0 ? "text-success" : delta < 0 ? "text-destructive" : "text-muted-foreground")}
-        aria-label={`Rating ${delta >= 0 ? "+" : ""}${delta}, now ${after}`}
+        aria-label={`${elo ? "Elo" : "Rating"} ${delta >= 0 ? "+" : ""}${delta}, now ${head.after}`}
       >
         {delta > 0 ? "+" : ""}
         {delta}

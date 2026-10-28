@@ -28,8 +28,12 @@ export interface ResultEntry {
   opponent: string;
   result: BattleOutcome;
   ranked: boolean;
+  /** Ranked: the Glicko-2 rating before and after. */
   ratingBefore?: number;
   ratingAfter?: number;
+  /** Ranked: the Elo before and after (whole numbers; battles since the ladder had Elo). */
+  eloBefore?: number;
+  eloAfter?: number;
   at: number;
 }
 
@@ -64,6 +68,11 @@ export function resultsOf(meta: BattleMeta, ratings: BattleRatings | undefined, 
     if (ratings) {
       entry.ratingBefore = ratings[seat].before;
       entry.ratingAfter = ratings[seat].after;
+      const elo = ratings[seat].elo;
+      if (elo) {
+        entry.eloBefore = elo.before;
+        entry.eloAfter = elo.after;
+      }
     }
     return [entry];
   });
@@ -73,8 +82,13 @@ const recentOf = (e: ResultEntry, replay: boolean): BattleRecentEntry => {
   const r: BattleRecentEntry = { code: e.code, format: e.format, formatName: e.formatName, name: e.name, opponent: e.opponent, result: e.result, ranked: e.ranked, replay, at: e.at };
   if (e.ratingBefore !== undefined) r.ratingBefore = e.ratingBefore;
   if (e.ratingAfter !== undefined) r.ratingAfter = e.ratingAfter;
+  if (e.eloBefore !== undefined) r.eloBefore = e.eloBefore;
+  if (e.eloAfter !== undefined) r.eloAfter = e.eloAfter;
   return r;
 };
+
+/** A number column that may be null (a battle before the column was there). */
+const numberOr = (v: unknown): number | undefined => (v === null || v === undefined ? undefined : Number(v));
 
 // ---- memory -------------------------------------------------------------------
 
@@ -147,6 +161,8 @@ export function supabaseRecordStore(sb: NonNullable<ReturnType<typeof getService
           ranked: e.ranked,
           rating_before: e.ratingBefore ?? null,
           rating_after: e.ratingAfter ?? null,
+          elo_before: e.eloBefore ?? null,
+          elo_after: e.eloAfter ?? null,
         })),
         { onConflict: "battle_code,player_key", ignoreDuplicates: true }
       );
@@ -177,8 +193,14 @@ export function supabaseRecordStore(sb: NonNullable<ReturnType<typeof getService
             replay: !!r.replay,
             at: Date.parse(String(r.created_at)),
           };
-          if (r.rating_before !== null && r.rating_before !== undefined) entry.ratingBefore = Number(r.rating_before);
-          if (r.rating_after !== null && r.rating_after !== undefined) entry.ratingAfter = Number(r.rating_after);
+          const ratingBefore = numberOr(r.rating_before);
+          const ratingAfter = numberOr(r.rating_after);
+          const eloBefore = numberOr(r.elo_before);
+          const eloAfter = numberOr(r.elo_after);
+          if (ratingBefore !== undefined) entry.ratingBefore = ratingBefore;
+          if (ratingAfter !== undefined) entry.ratingAfter = ratingAfter;
+          if (eloBefore !== undefined) entry.eloBefore = eloBefore;
+          if (eloAfter !== undefined) entry.eloAfter = eloAfter;
           return entry;
         }),
       };
@@ -187,7 +209,7 @@ export function supabaseRecordStore(sb: NonNullable<ReturnType<typeof getService
       guard();
       let q = sb
         .from("battle_results")
-        .select("battle_code, format, format_name, name, opponent, result, ranked, rating_before, rating_after, created_at")
+        .select("battle_code, format, format_name, name, opponent, result, ranked, rating_before, rating_after, elo_before, elo_after, created_at")
         .eq("player_key", key);
       if (format) q = q.eq("format", format);
       const { data, error } = await q.order("created_at", { ascending: false }).limit(limit);
@@ -204,8 +226,14 @@ export function supabaseRecordStore(sb: NonNullable<ReturnType<typeof getService
           ranked: !!r.ranked,
           at: Date.parse(String(r.created_at)),
         };
-        if (r.rating_before !== null && r.rating_before !== undefined) e.ratingBefore = Number(r.rating_before);
-        if (r.rating_after !== null && r.rating_after !== undefined) e.ratingAfter = Number(r.rating_after);
+        const ratingBefore = numberOr(r.rating_before);
+        const ratingAfter = numberOr(r.rating_after);
+        const eloBefore = numberOr(r.elo_before);
+        const eloAfter = numberOr(r.elo_after);
+        if (ratingBefore !== undefined) e.ratingBefore = ratingBefore;
+        if (ratingAfter !== undefined) e.ratingAfter = ratingAfter;
+        if (eloBefore !== undefined) e.eloBefore = eloBefore;
+        if (eloAfter !== undefined) e.eloAfter = eloAfter;
         return e;
       });
     },
@@ -250,6 +278,7 @@ export async function battleProfile(key: string, limit = 20): Promise<BattleProf
       f.ratedGames = standing.games;
       if (standing.rd !== undefined) f.rd = standing.rd;
       if (standing.gxe !== undefined) f.gxe = standing.gxe;
+      if (standing.elo !== undefined) f.elo = standing.elo;
       f.position = standing.position;
     }
   } catch (err) {

@@ -339,13 +339,22 @@ export interface BattleClockView {
 export interface BattlePlayerView extends DuelPlayerView {
   /** In the lobby of a bring-your-own-team format: whether a team is in. */
   hasTeam: boolean;
-  /** Ranked battles: the rating (and ranked games) this trainer brought. */
+  /** Ranked battles: the Glicko-2 rating (and ranked games) this trainer brought. */
   rating?: number;
   games?: number;
+  /** Ranked battles: the Elo this trainer brought (the number shown beside their name). */
+  elo?: number;
 }
 
-/** A finished ranked battle: each seat's rating before and after. */
-export type BattleRatings = [{ before: number; after: number }, { before: number; after: number }];
+/** One seat's ratings before and after a ranked battle: Glicko-2, and Elo (whole numbers) once the ladder has it. */
+export interface BattleRatingChange {
+  before: number;
+  after: number;
+  elo?: { before: number; after: number };
+}
+
+/** A finished ranked battle: each seat's ratings before and after. */
+export type BattleRatings = [BattleRatingChange, BattleRatingChange];
 
 export interface BattleView {
   code: string;

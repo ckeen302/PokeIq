@@ -127,7 +127,7 @@ function Body({ insights, record, name }: { insights: Insights; record: BattleFo
 
       <div className="grid gap-4 md:grid-cols-2">
         <Section title="Rating over time" icon={<TrendingUp className="h-3.5 w-3.5" aria-hidden />} testid="insights-trend">
-          {record?.rating !== undefined && <GlickoBadge rating={record.rating} rd={record.rd} gxe={record.gxe} size="sm" />}
+          {record?.rating !== undefined && <GlickoBadge rating={record.rating} rd={record.rd} gxe={record.gxe} elo={record.elo} size="sm" />}
           <RatingTrend points={insights.trend} />
         </Section>
         <Section title="Most common leads" icon={<Flag className="h-3.5 w-3.5" aria-hidden />} testid="insights-leads">

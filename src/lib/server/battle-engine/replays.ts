@@ -55,8 +55,14 @@ export function replayFromRecord(rec: BattleRecord, listed: boolean, now = Date.
     keys: meta.seats.map((s) => s.player).filter((k): k is string => !!k),
   };
   const r = meta.settled?.ratings;
-  if (r) replay.ratings = [r[0].before, r[1].before];
-  else if (meta.ranked && meta.seats[0]?.rating && meta.seats[1]?.rating) replay.ratings = [meta.seats[0].rating.rating, meta.seats[1].rating.rating];
+  const brought = meta.ranked && meta.seats[0]?.rating && meta.seats[1]?.rating ? [meta.seats[0].rating, meta.seats[1].rating] : null;
+  if (r) {
+    replay.ratings = [r[0].before, r[1].before];
+    if (r[0].elo && r[1].elo) replay.elos = [r[0].elo.before, r[1].elo.before];
+  } else if (brought) {
+    replay.ratings = [brought[0].rating, brought[1].rating];
+    if (brought[0].elo !== undefined && brought[1].elo !== undefined) replay.elos = [brought[0].elo, brought[1].elo];
+  }
   return replay;
 }
 
@@ -128,6 +134,7 @@ interface Row {
   format_name: string;
   players: string[];
   ratings: number[] | null;
+  elos?: number[] | null;
   winner: number | null;
   end_reason: string;
   turns: number;
@@ -137,7 +144,7 @@ interface Row {
   log?: string;
 }
 
-const SUMMARY_COLUMNS = "id, format, format_name, players, ratings, winner, end_reason, turns, ranked, public, created_at";
+const SUMMARY_COLUMNS = "id, format, format_name, players, ratings, elos, winner, end_reason, turns, ranked, public, created_at";
 const REASONS = new Set(["normal", "forfeit", "timeout", "left", "nocontest"]);
 
 function fromRow(row: Row): ReplaySummary {
@@ -154,6 +161,7 @@ function fromRow(row: Row): ReplaySummary {
     uploadedAt: Date.parse(row.created_at),
   };
   if (row.ratings?.length === 2) s.ratings = [row.ratings[0], row.ratings[1]];
+  if (row.elos?.length === 2) s.elos = [row.elos[0], row.elos[1]];
   return s;
 }
 
@@ -171,6 +179,7 @@ export function supabaseReplayStore(sb: NonNullable<ReturnType<typeof getService
           format_name: r.formatName,
           players: r.players,
           ratings: r.ratings ?? null,
+          elos: r.elos ?? null,
           winner: r.winner,
           end_reason: r.reason,
           turns: r.turns,

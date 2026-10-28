@@ -15,7 +15,8 @@ export default async function Image({ params }: { params: Promise<{ id: string }
   if (!replay) {
     return ogCard({ eyebrow: "Battle replay", title: ["Pokémon", ["battle replay", C.pink]], accent: C.pink, footer: "Pokémon Showdown's engine · watch it turn by turn →" });
   }
-  const chips = [`${replay.turns} turns`, replay.ranked ? "Ranked" : null, replay.ratings ? `${replay.ratings[0]} vs ${replay.ratings[1]}` : null].filter((c): c is string => !!c);
+  const shown = replay.elos ?? replay.ratings;
+  const chips = [`${replay.turns} turns`, replay.ranked ? "Ranked" : null, shown ? `${shown[0]} vs ${shown[1]}` : null].filter((c): c is string => !!c);
   return ogCard(
     {
       eyebrow: `Replay · ${replay.formatName}`,

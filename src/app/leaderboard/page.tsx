@@ -97,7 +97,7 @@ export default async function LeaderboardPage({ searchParams }: PageProps) {
           <h1 className="font-display text-4xl font-bold uppercase tracking-tight sm:text-5xl">Leaderboard</h1>
           {tabRow}
           <p className="text-sm text-muted-foreground">
-            The ranked battle ladder: the top 100 by rating in each format.{" "}
+            The ranked battle ladder: the top 100 by Elo in each format, with GXE and Glicko-2 as on Pokémon Showdown.{" "}
             <Link href={`/battle/ladder?format=${battleFormat}`} className="text-primary underline-offset-2 hover:underline">
               Full ladder
             </Link>

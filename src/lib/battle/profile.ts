@@ -14,12 +14,14 @@ export interface BattleFormatRecord {
   wins: number;
   losses: number;
   draws: number;
-  /** On the ladder: the rating and ranked games in this format. */
+  /** On the ladder: the Glicko-2 rating and ranked games in this format. */
   rating?: number;
   ratedGames?: number;
   /** Glicko-2: the rating deviation and GXE. */
   rd?: number;
   gxe?: number;
+  /** On the ladder: the Elo, the headline rating (lib/rating/elo.ts). */
+  elo?: number;
   /** Place on the format's ladder. */
   position?: number | null;
 }
@@ -32,8 +34,12 @@ export interface BattleRecentEntry {
   opponent: string;
   result: BattleOutcome;
   ranked: boolean;
+  /** Ranked: the Glicko-2 rating before and after. */
   ratingBefore?: number;
   ratingAfter?: number;
+  /** Ranked: the Elo before and after (battles since the ladder had Elo). */
+  eloBefore?: number;
+  eloAfter?: number;
   /** A replay was saved: it's at /battle/replay/<code>. */
   replay: boolean;
   at: number;

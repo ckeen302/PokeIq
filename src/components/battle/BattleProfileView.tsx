@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
 const RESULT_STYLE = { win: "text-success", loss: "text-destructive", draw: "text-muted-foreground" } as const;
 const RESULT_LABEL = { win: "Won", loss: "Lost", draw: "Drew" } as const;
 
-/** A battle record: per format (wins, losses, rating), then the latest battles with their replays. */
+/** A battle record: per format (wins, losses, ratings), then the latest battles (each with its Elo change, or its Glicko-2 change before the ladder had Elo) and their replays. */
 export function BattleProfileView({ profile, now, empty }: { profile: BattleProfile; now: number; empty?: React.ReactNode }) {
   if (!profile.formats.length && !profile.recent.length) {
     return <div className="text-sm text-muted-foreground">{empty ?? "No live battles yet."}</div>;
@@ -31,7 +31,7 @@ export function BattleProfileView({ profile, now, empty }: { profile: BattleProf
                 </span>
                 <span className="text-xs text-muted-foreground">{played ? `${Math.round((f.wins / played) * 100)}% wins` : "ranked only"}</span>
               </p>
-              {f.rating !== undefined && <GlickoBadge rating={f.rating} rd={f.rd} gxe={f.gxe} size="sm" />}
+              {f.rating !== undefined && <GlickoBadge rating={f.rating} rd={f.rd} gxe={f.gxe} elo={f.elo} size="sm" />}
             </div>
           );
         })}
@@ -41,7 +41,7 @@ export function BattleProfileView({ profile, now, empty }: { profile: BattleProf
           <p className="hud-label">Recent battles</p>
           <ul className="divide-y rounded-md border">
             {profile.recent.map((b) => {
-              const delta = b.ratingAfter !== undefined && b.ratingBefore !== undefined ? b.ratingAfter - b.ratingBefore : null;
+              const delta = b.eloAfter !== undefined && b.eloBefore !== undefined ? b.eloAfter - b.eloBefore : b.ratingAfter !== undefined && b.ratingBefore !== undefined ? b.ratingAfter - b.ratingBefore : null;
               const days = Math.floor((now - b.at) / 86_400_000);
               return (
                 <li key={b.code} className="flex flex-wrap items-center gap-x-3 gap-y-1 px-3 py-2 text-sm">

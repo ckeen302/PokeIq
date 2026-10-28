@@ -15,8 +15,10 @@ export interface ReplaySummary {
   format: PlayFormatId;
   formatName: string;
   players: [string, string];
-  /** Ranked: each trainer's rating before the battle. */
+  /** Ranked: each trainer's Glicko-2 rating before the battle. */
   ratings?: [number, number];
+  /** Ranked: each trainer's Elo before the battle (the number shown), for battles since the ladder had Elo. */
+  elos?: [number, number];
   /** The winner's seat (0 played p1), or null for a draw. */
   winner: 0 | 1 | null;
   /** How it ended (a forfeit, the clock, a disconnect, or played out). */

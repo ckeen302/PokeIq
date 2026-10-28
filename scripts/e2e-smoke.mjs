@@ -2285,7 +2285,7 @@ await mmRed.goto(`${BASE}/battle/ladder`, { waitUntil: "networkidle" });
 await mmRed.screenshot({ path: `${OUT}/battle-ladder.png`, fullPage: true });
 for (const p of [mmRed, mmBlue, watcher]) await p.context().close();
 
-step("ranked Random Battle: matched by rating, a forfeit moves both Glicko-2 ratings, the ladder shows GXE");
+step("ranked Random Battle: matched by rating, a forfeit moves Elo and both Glicko-2 ratings, the ladder shows Elo and GXE");
 const rkRed = await newPage({ width: 1280, height: 900 });
 const rkBlue = await newPage({ width: 1280, height: 900 });
 for (const [p, name] of [
@@ -2296,7 +2296,7 @@ for (const [p, name] of [
   await p.locator("label").filter({ hasText: "[Gen 9] Random Battle" }).first().click();
   await p.getByLabel("Your trainer name").fill(name);
   await p.getByTestId("ranked-toggle").check({ force: true });
-  await p.getByText(/Unrated: you start at 1500|GXE/).first().waitFor({ timeout: 15_000 });
+  await p.getByText(/Unrated: you start at 1000 Elo|GXE/).first().waitFor({ timeout: 15_000 });
 }
 await rkRed.screenshot({ path: `${OUT}/battle-p1-ranked-setup.png`, fullPage: true });
 await rkRed.getByRole("button", { name: /Find an opponent/ }).click();
@@ -2309,12 +2309,19 @@ await rkBlue.getByRole("button", { name: "Forfeit", exact: true }).click();
 await rkRed.getByTestId("rating-change").waitFor({ timeout: 45_000 });
 const rkChange = await rkRed.getByTestId("rating-change").innerText();
 console.log(`  ${rkChange.replace(/\s+/g, " ")}`);
-if (!/1500 → 1[6-9]\d\d/.test(rkChange)) errors.push(`ranked: unexpected Glicko-2 change for the winner: ${rkChange}`);
+// Elo leads: a first win from 1000 pays 45 (K 90 against an equal). Glicko-2 moves on beneath it.
+if (!/Elo\s+1000 → 1045[\s\S]*\+45/i.test(rkChange)) errors.push(`ranked: unexpected Elo change for the winner: ${rkChange}`);
+if (!/Glicko-2 1500 → 1[6-9]\d\d \(\+\d+\)/.test(rkChange)) errors.push(`ranked: unexpected Glicko-2 change for the winner: ${rkChange}`);
 await rkRed.screenshot({ path: `${OUT}/battle-p1-ranked-result.png` });
 await rkRed.goto(`${BASE}/battle/ladder?format=gen9randombattle`, { waitUntil: "networkidle" });
 await rkRed.getByTestId("ladder-table").getByText("Rory").waitFor({ timeout: 15_000 });
 if (!(await rkRed.getByTestId("ladder-table").getByTestId("glicko-badge").count())) errors.push("ladder: no Glicko-2 badge");
-if (!/GXE \d+\.\d%/.test(await rkRed.getByTestId("your-standing").innerText())) errors.push("ladder: your standing shows no GXE");
+// The ladder is ordered by Elo: the winner (1045) sits above the loser (1000, the floor).
+const rkElos = await rkRed.getByTestId("ladder-table").getByTestId("ladder-elo").allInnerTexts();
+if (rkElos[0] !== "1045" || !rkElos.includes("1000")) errors.push(`ladder: unexpected Elo column: ${rkElos.join(", ")}`);
+const rkStanding = await rkRed.getByTestId("your-standing").innerText();
+if (!/GXE \d+\.\d%/.test(rkStanding)) errors.push("ladder: your standing shows no GXE");
+if (!/1045/.test(rkStanding) || !/1[6-9]\d\d ± \d+/.test(rkStanding)) errors.push(`ladder: your standing shows no Elo or Glicko-2: ${rkStanding}`);
 await rkRed.screenshot({ path: `${OUT}/battle-p1-ladder.png`, fullPage: true });
 // Team insights follow an account: from the ladder, a guest is asked to sign in.
 if (await rkRed.getByTestId("ladder-insights").count()) {

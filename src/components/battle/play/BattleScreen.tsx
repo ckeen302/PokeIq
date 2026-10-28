@@ -445,14 +445,14 @@ export default function BattleScreen({ view, log, offset, busy, error, onChoose,
             <Avatar avatar={view.players[view.you ?? 0]?.avatar} size={24} />
             <span className="truncate text-primary">
               {youName}
-              {view.players[view.you ?? 0]?.rating !== undefined && <span className="hud-label ml-1.5 tabular-nums">{view.players[view.you ?? 0].rating}</span>}
+              {view.players[view.you ?? 0]?.rating !== undefined && <span className="hud-label ml-1.5 tabular-nums">{view.players[view.you ?? 0].elo ?? view.players[view.you ?? 0].rating}</span>}
             </span>
             <span className="hud-label">vs</span>
             <Avatar avatar={view.cpu ? null : view.players[view.you === 1 ? 0 : 1]?.avatar} size={24} />
             <span className="truncate text-screen">
               {foeName}
               {cpu && <span className="hud-label ml-1.5">{cpu}</span>}
-              {view.players[view.you === 1 ? 0 : 1]?.rating !== undefined && <span className="hud-label ml-1.5 tabular-nums">{view.players[view.you === 1 ? 0 : 1].rating}</span>}
+              {view.players[view.you === 1 ? 0 : 1]?.rating !== undefined && <span className="hud-label ml-1.5 tabular-nums">{view.players[view.you === 1 ? 0 : 1].elo ?? view.players[view.you === 1 ? 0 : 1].rating}</span>}
             </span>
             <span className="hud-label ml-2 hidden sm:inline">
               {view.ranked ? "Ranked · " : ""}
