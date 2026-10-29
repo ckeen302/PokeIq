@@ -32,6 +32,7 @@ import {
   TRAINER_FIELDS,
   WRISTWEAR,
   lockedItems,
+  lowerFirst,
   unlockHint,
   unlocked,
   type Preset,
@@ -409,7 +410,7 @@ export function TrainerCreator() {
           {settings && !settings.available && <p className="w-full text-sm text-muted-foreground">Saving trainers opens soon.</p>}
           {(locked.length > 0 || shinyLocked) && (
             <p className="flex w-full items-center gap-1.5 text-sm text-muted-foreground" data-testid="trainer-locked">
-              <Lock className="h-3.5 w-3.5 shrink-0" aria-hidden /> {locked.length ? `${locked[0].item.name}: ${unlockHint(locked[0].item).toLowerCase()} to save it.` : `${SHINY_HINT}.`}
+              <Lock className="h-3.5 w-3.5 shrink-0" aria-hidden /> {locked.length ? `${locked[0].item.name}: ${lowerFirst(unlockHint(locked[0].item))} to save it.` : `${SHINY_HINT}.`}
             </p>
           )}
           {message && (
@@ -535,7 +536,7 @@ function Swatches<F extends TrainerField>({ label, field, list, draft, u, set, h
               key={c.id}
               type="button"
               aria-pressed={on}
-              aria-label={lock ? `${c.name} (${unlockHint(c).toLowerCase()})` : c.name}
+              aria-label={lock ? `${c.name} (${lowerFirst(unlockHint(c))})` : c.name}
               title={lock ? `${c.name}: ${unlockHint(c)}` : c.name}
               onClick={() => set(field, c.id as TrainerConfig[F])}
               className={cn("relative h-8 w-8 rounded-full border border-foreground/15 shadow-inner transition-transform hover:scale-110", on && "ring-2 ring-screen ring-offset-2 ring-offset-card")}

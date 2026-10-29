@@ -1,12 +1,11 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useReducedMotion } from "framer-motion";
 import { Eye, EyeOff, Lock } from "lucide-react";
 import type { AvatarUnlocks } from "@/lib/avatar";
 import type { DuelPlayerView } from "@/lib/duel-types";
 import type { PvpEmoteView } from "@/lib/pvp-types";
-import { seededTrainer, unlockHint } from "@/lib/trainer/config";
+import { lowerFirst, seededTrainer, unlockHint } from "@/lib/trainer/config";
 import { TAUNTS, TAUNT_GAP_MS, isTaunt, tauntBlocked, tauntOf, type TauntId } from "@/lib/trainer/taunts";
 import type { TrainerSettings } from "@/lib/trainer/client";
 import { useAccount } from "@/lib/account";
@@ -18,7 +17,8 @@ import { VersusCharacter } from "./VersusCharacter";
  * of dances and emotes. What one trainer plays animates on their trainer on
  * both screens (sent as a duel reaction, so it arrives by the live channel
  * or the next poll). Preset moves only; one every few seconds; either
- * trainer can mute the other's. Trainers without a 3D trainer get one
+ * trainer can mute the other's. Under reduced motion a move shows as its
+ * key pose, held, with its name. Trainers without a 3D trainer get one
  * picked from their name.
  */
 
@@ -47,7 +47,6 @@ function readMute(): boolean {
 export function TauntStage({ view, onTaunt }: { view: TauntView; onTaunt: (id: TauntId) => Promise<string | null> }) {
   const me = view.you ?? 0;
   const them = 1 - me;
-  const reduced = useReducedMotion();
   const [playing, setPlaying] = useState<[Playing, Playing]>([null, null]);
   const [muted, setMuted] = useState(false);
   const [coolUntil, setCoolUntil] = useState(0);
@@ -144,7 +143,6 @@ export function TauntStage({ view, onTaunt }: { view: TauntView; onTaunt: (id: T
                   data-testid={`taunt-label-${seat === me ? "you" : "them"}`}
                 >
                   {tauntOf(now.id)?.name}
-                  {reduced ? " (still)" : ""}
                 </span>
               )}
             </div>
@@ -167,7 +165,7 @@ export function TauntStage({ view, onTaunt }: { view: TauntView; onTaunt: (id: T
                       disabled={locked || cooling}
                       onClick={() => void send(t.id)}
                       title={locked ? `${t.name}: ${unlockHint(t)}` : t.name}
-                      aria-label={locked ? `${t.name} (locked: ${unlockHint(t).toLowerCase()})` : `Play ${t.name}`}
+                      aria-label={locked ? `${t.name} (locked: ${lowerFirst(unlockHint(t))})` : `Play ${t.name}`}
                       className={cn(
                         "flex h-8 items-center gap-1 rounded-full border px-3 font-display text-[11px] font-bold uppercase tracking-wide transition-[background-color,transform,opacity] sm:text-xs",
                         locked ? "cursor-not-allowed border-white/10 text-white/40" : "border-white/25 text-white hover:scale-105 hover:bg-white/10 disabled:opacity-50 disabled:hover:scale-100",

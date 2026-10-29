@@ -544,6 +544,9 @@ export function unlocked(item: Unlock & { name: string }, u: AvatarUnlocks): boo
   return true;
 }
 
+/** "Reach Great Ball…" → "reach Great Ball…" (names keep their capitals). */
+export const lowerFirst = (text: string) => text && text[0].toLowerCase() + text.slice(1);
+
 /** How to unlock an item, for the lock's tooltip. */
 export function unlockHint(item: Unlock & { name: string }): string {
   const parts: string[] = [];
@@ -645,7 +648,7 @@ export function checkTrainer(raw: unknown, u: AvatarUnlocks): { ok: true; traine
   if (!t) return { ok: false, error: "That trainer isn't one the creator can make." };
   if (t.shiny && !shinyUnlocked(u)) return { ok: false, error: "Keep playing to unlock shiny Pokémon." };
   const locked = lockedItems(t, u)[0];
-  if (locked) return { ok: false, error: `${locked.item.name} is locked: ${unlockHint(locked.item).toLowerCase()}.` };
+  if (locked) return { ok: false, error: `${locked.item.name} is locked: ${lowerFirst(unlockHint(locked.item))}.` };
   return { ok: true, trainer: t };
 }
 

@@ -266,8 +266,8 @@ function buildBall(kit: Kit, kind: TrainerConfig["ball"], r = 0.12, outline = tr
       break;
     case "love":
       // A heart on the top half, over the button.
-      for (const s of [-1, 1]) spot(0.62, s * 0.2, 0.2, "#e8336f");
-      kit.mesh(new THREE.ConeGeometry(r * 0.24, r * 0.3, 14), kit.mat("#e8336f"), ball, [0, r * 0.42, r * 0.86], [Math.PI - 0.5, 0, 0], [1, 1, 0.4], bare);
+      for (const s of [-1, 1]) spot(0.5, s * 0.24, 0.24, "#e8336f");
+      kit.mesh(new THREE.ConeGeometry(r * 0.36, r * 0.38, 3), kit.mat("#e8336f"), ball, [0, r * 0.6, r * 0.78], [Math.PI - 0.9, 0, 0], [1, 1, 0.35], bare);
       break;
     case "safari":
       for (const [pol, az, size] of [[0.4, 0.3, 0.3], [0.9, 2.2, 0.32], [1.05, -1.6, 0.3], [0.3, 3.6, 0.26], [1.15, 0.7, 0.22], [1.0, 4.4, 0.24]] as const) spot(pol, az, size, "#4e6b2a");

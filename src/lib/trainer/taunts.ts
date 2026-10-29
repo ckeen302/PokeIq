@@ -1,5 +1,5 @@
 import type { AvatarUnlocks } from "../avatar";
-import { unlockHint, unlocked, type Unlock } from "./config";
+import { lowerFirst, unlockHint, unlocked, type Unlock } from "./config";
 
 /**
  * Post-game taunts: dances and emotes a 3D trainer plays on the duel result
@@ -59,6 +59,6 @@ export function tauntBlocked(id: string, u: AvatarUnlocks | null): string | null
   const t = tauntOf(id);
   if (!t) return "That isn't a move.";
   if (tauntFree(t)) return null;
-  if (!u) return `Sign in and ${unlockHint(t).toLowerCase()} to unlock ${t.name}.`;
-  return unlocked(t, u) ? null : `${t.name} is locked: ${unlockHint(t).toLowerCase()}.`;
+  if (!u) return `Sign in and ${lowerFirst(unlockHint(t))} to unlock ${t.name}.`;
+  return unlocked(t, u) ? null : `${t.name} is locked: ${lowerFirst(unlockHint(t))}.`;
 }

@@ -79,19 +79,19 @@ export const MOVES: Record<TauntId, Move> = {
       twist: -0.28 * u,
       by: 0.05 * u,
       drop: -0.05,
-      rsX: -0.3 - 0.95 * u,
-      rsZ: 0.18,
-      reX: -0.15,
-      lsX: 0.15 + 0.7 * u,
-      lsZ: 0.3,
-      leX: -1.5,
-      llX: -0.85 * u,
-      lfX: 0.35 * u,
+      rsX: -0.4 - 1.15 * u,
+      rsZ: 0.3,
+      reX: -0.1,
+      lsX: 0.2 + 0.8 * u,
+      lsZ: 0.35,
+      leX: -1.6,
+      llX: -1.0 * u,
+      lfX: 0.4 * u,
       rlX: 0.08,
     };
     if (floor(b) % 2) return punch;
     const m = clean(mirror(punch));
-    return { ...m, llX: 0.08, lfX: 0, rlX: -0.85 * u, rfX: 0.35 * u };
+    return { ...m, llX: 0.08, lfX: 0, rlX: -1.0 * u, rfX: 0.4 * u };
   },
 
   /** Straight arms swinging side to side, in front then behind, the hips going the other way. */
@@ -99,7 +99,7 @@ export const MOVES: Record<TauntId, Move> = {
     const w = t * TAU * 1.15;
     const a = sin(w);
     const fb = cos(w) > 0 ? -0.45 : 0.45;
-    return { lsZ: 0.3 + 0.6 * a, rsZ: -0.3 + 0.6 * a, lsX: fb, rsX: fb, leX: 0, reX: 0, sway: -0.16 * a, bx: 0.07 * a, twist: 0.1 * a, headTilt: 0.08 * a, by: 0.02 * abs(cos(w)) };
+    return { lsZ: 0.35 + 0.85 * a, rsZ: -0.35 + 0.85 * a, lsX: fb, rsX: fb, leX: 0, reX: 0, sway: -0.22 * a, bx: 0.09 * a, twist: 0.12 * a, headTilt: 0.1 * a, by: 0.02 * abs(cos(w)) };
   },
 
   /** Head into one elbow, the other arm out straight; then the other side. */
@@ -234,11 +234,11 @@ export const MOVES: Record<TauntId, Move> = {
   flex: (t) => {
     const u = 0.5 + 0.5 * sin(t * 7);
     const on = ramp(t, 0, 0.25);
-    return { lsZ: 1.45 * on + 0.14, leZ: (1.7 + 0.35 * u) * on, leX: 0, rsZ: -1.45 * on - 0.14, reZ: -(1.7 + 0.35 * u) * on, reX: 0, rsX: 0, lean: -0.08, nod: -0.1, by: 0.015 * u, legZ: 0.16 };
+    return { lsX: -0.55 * on, lsZ: 1.15 * on + 0.14, leZ: (1.5 + 0.35 * u) * on, leX: -0.3 * on, rsX: -0.55 * on, rsZ: -1.15 * on - 0.14, reZ: -(1.5 + 0.35 * u) * on, reX: -0.3 * on, lean: -0.1, nod: -0.08, by: 0.015 * u, legZ: 0.18 };
   },
 
   /** The held ball spun on a fingertip. */
-  ballspin: (t) => ({ rsX: -0.95, rsZ: -0.05, reX: -1.5, reZ: 0, lsZ: 0.75, lsX: 0.2, leZ: -1.5, leX: -0.2, nod: -0.16, headTilt: 0.1, sway: 0.04 * sin(t * 2), twist: 0.15 }),
+  ballspin: (t) => ({ rsX: -0.7, rsZ: -0.75, reX: -1.5, reZ: 0, lsZ: 0.75, lsX: 0.2, leZ: -1.5, leX: -0.2, nod: -0.16, headTilt: 0.1, sway: 0.04 * sin(t * 2), twist: 0.15 }),
 
   /** "Too easy": a shrug, palms up, head tilting. */
   tooeasy: (t) => {
@@ -279,6 +279,6 @@ export const MOVES: Record<TauntId, Move> = {
   /** Standing tall, a hand snapped to the brow. */
   salute: (t) => {
     const on = ramp(t, 0.05, 0.25);
-    return { lsX: -0.75 * on, lsZ: 0.14 + 1.15 * on, leX: -0.25 - 2.0 * on, leZ: 0, by: 0.02, legZ: 0.0, nod: -0.06, headTilt: -0.05 * on, rsZ: -0.08, reX: -0.3 };
+    return { lsX: -1.0 * on, lsZ: 0.14 + 1.45 * on, leX: -0.25 - 2.2 * on, leZ: 0, by: 0.02, legZ: 0.0, nod: -0.06, headTilt: -0.05 * on, rsZ: -0.08, reX: -0.3 };
   },
 };

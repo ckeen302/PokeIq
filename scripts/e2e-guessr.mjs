@@ -1,7 +1,8 @@
 /**
  * PokéGuessr's in-game UI, end to end against a running build: a solo round
  * (map docked and hovered), its result and summary, then a duel (versus intro,
- * round, the reveal with its damage sequence, Turbo, an emote, the end screen),
+ * round, the reveal with its damage sequence, Turbo, an emote, the end screen
+ * and its post-game dances),
  * at a desktop and a phone size, with a screenshot of each screen. Fails on
  * any console or page error.
  *
@@ -250,6 +251,17 @@ async function duel(width, height, { turbo }) {
   await red.waitForTimeout(900);
   await red.screenshot({ path: `${OUT}/duel-end-${tag}.png`, fullPage: true });
   await blue.getByTestId("geo-duel-end").waitFor({ timeout: 15_000 });
+  // Post-game taunts: Red dances, and Blue sees it on Red's trainer.
+  await red.getByTestId("taunt-stage").waitFor();
+  if ((await red.locator("[data-testid=taunt-stage] [data-testid=versus-character]").count()) !== 2) errors.push("the end screen doesn't show both trainers");
+  if ((await red.getByTestId("avatar-3d-partner").count()) !== 0) errors.push("the end screen shows a partner sprite");
+  await red.getByTestId("taunt-dab").click();
+  await blue
+    .locator('[data-testid="taunt-trainer-them"][data-playing="dab"]')
+    .waitFor({ timeout: 15_000 })
+    .catch(() => errors.push("Blue never saw Red's dance"));
+  if (!(await red.getByTestId("taunt-heeltap").isDisabled())) errors.push("a locked dance is usable by a guest");
+  await red.screenshot({ path: `${OUT}/duel-taunt-${tag}.png` });
   await red.context().close();
   await blue.context().close();
 }
