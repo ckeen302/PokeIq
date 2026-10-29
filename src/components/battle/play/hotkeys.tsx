@@ -5,7 +5,8 @@ import { Keyboard } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 /**
- * Battle hotkeys, after Pokémon Showdown's: 1-4 pick a move, Shift+1-6
+ * Battle hotkeys, after Pokémon Showdown's: 1-4 pick a move, 5-9 switch to
+ * the first to fifth Pokémon on the bench, Shift+1-6
  * switch to that Pokémon (plain 1-6 when a switch is the only choice, or to
  * pick leads at team preview), T toggles Terastallization, M toggles Mega
  * Evolution / Z-Move / Dynamax, Esc goes back, ? shows the list.
@@ -70,6 +71,7 @@ export function useBattleKeys(keys: BattleKeys, onHelp: () => void) {
 
 const ROWS: [string, string][] = [
   ["1 – 4", "Use that move (or pick a target)"],
+  ["5 – 9", "Switch to the 1st – 5th Pokémon on the bench"],
   ["Shift + 1 – 6", "Switch to that Pokémon"],
   ["1 – 6", "Pick leads at team preview; send one out after a faint"],
   ["T", "Toggle Terastallize"],

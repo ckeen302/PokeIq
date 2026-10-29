@@ -2,12 +2,12 @@
 
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { MusicControl, trackFor, useBattleMusic } from "./MusicControl";
-import { AlertTriangle, Eye, Undo2, FastForward, Gauge, Loader2, ScrollText, SkipForward, Sparkles, Timer } from "lucide-react";
+import { AlertTriangle, ChevronDown, Eye, Undo2, FastForward, Gauge, Loader2, ScrollText, SkipForward, Sparkles, Timer } from "lucide-react";
 import { CPU_LEVEL_INFO, PLAY_FORMAT_INFO, timerNagMarks, type BattleRequestPokemon, type BattleView } from "@/lib/battle/play";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { Dex } from "@pkmn/dex";
-import { BattleModel, textLines, type SideId, type Snap, type Step } from "./model";
+import { BattleModel, endNote, textLines, type SideId, type Snap, type Step } from "./model";
 import { preloadSprite } from "./sprites";
 import { loadAnims, playStep, type PopupTone, type StageHandle } from "./player";
 import { Stage, type Popup } from "./Stage";
@@ -95,6 +95,21 @@ interface Entry {
   text: string;
   /** Seconds since the epoch, when known. */
   at?: number;
+  /** The battle's header (format and rules), or a note of how it ended: set apart from the play-by-play. */
+  note?: boolean;
+}
+
+/** Lines for the log alone, never the text box: turn headers and the battle's format and rules. */
+const LOG_ONLY = new Set(["turn", "tier", "rule"]);
+
+function entryOf(step: Step, id: number, view: Pick<BattleView, "end" | "players">): Entry[] {
+  const text = step.text.trim();
+  if (!text) return [];
+  if (step.cmd === "turn") return [{ id, turn: Number(step.args[1]), text, at: step.at }];
+  const entry: Entry = { id, text, at: step.at };
+  if (step.cmd === "tier" || step.cmd === "rule") entry.note = true;
+  const why = step.cmd === "win" ? endNote(view) : null;
+  return why ? [{ id: id - 0.5, text: why, at: step.at, note: true }, entry] : [entry];
 }
 
 const LOG_OPTS_KEY = "pokeiq:battle:log-options";
@@ -152,6 +167,9 @@ function useTick(active: boolean) {
 
 export default function BattleScreen({ view, log, offset, busy, error, onChoose, endActions, side, onUndo, onStartTimer, onStopTimer, toolbar, replay, onIdle }: BattleScreenProps) {
   const watching = view.you === null;
+  /** The latest view, for the log's end-of-battle note (read as steps play, after the render that brought them). */
+  const viewRef = useRef(view);
+  viewRef.current = view;
   const idle = useRef(onIdle);
   idle.current = onIdle;
   /** Counts resets, so a step still animating from before one doesn't commit its state. */
@@ -193,11 +211,11 @@ export default function BattleScreen({ view, log, offset, busy, error, onChoose,
   const logEnd = useRef<HTMLDivElement>(null);
   const logBox = useRef<HTMLDivElement>(null);
   /** Log options (Showdown's): timestamps on each line, and hiding the "lost N% of its health" lines. Remembered on this device. */
-  const [logOpts, setLogOpts] = useState<{ time: boolean; hidePct: boolean }>({ time: false, hidePct: false });
+  const [logOpts, setLogOpts] = useState<{ time: boolean; hidePct: boolean; collapsed: boolean }>({ time: false, hidePct: false, collapsed: false });
   useEffect(() => {
     try {
       const saved = JSON.parse(window.localStorage.getItem(LOG_OPTS_KEY) ?? "{}");
-      setLogOpts({ time: saved.time === true, hidePct: saved.hidePct === true });
+      setLogOpts({ time: saved.time === true, hidePct: saved.hidePct === true, collapsed: saved.collapsed === true });
     } catch {
       // defaults
     }
@@ -214,6 +232,8 @@ export default function BattleScreen({ view, log, offset, busy, error, onChoose,
     });
   /** Whether the log was scrolled to its end before the newest lines came in (as on Showdown, reading back stops the autoscroll). */
   const logAtEnd = useRef(true);
+  /** Scrolled back while new lines came in: offer a jump to the latest. */
+  const [logBehind, setLogBehind] = useState(false);
 
   useEffect(() => {
     try {
@@ -251,10 +271,8 @@ export default function BattleScreen({ view, log, offset, busy, error, onChoose,
   }, []);
 
   const addEntry = useCallback((step: Step) => {
-    const text = step.text.trim();
-    if (!text) return;
-    const id = ++entryId.current;
-    setEntries((list) => [...list.slice(-600), step.cmd === "turn" ? { id, turn: Number(step.args[1]), text, at: step.at } : { id, text, at: step.at }]);
+    const added = entryOf(step, ++entryId.current, viewRef.current);
+    if (added.length) setEntries((list) => [...list.slice(-600), ...added]);
   }, []);
 
   const popup = useCallback((ref: Step["who"], text: string, tone: PopupTone) => {
@@ -276,7 +294,7 @@ export default function BattleScreen({ view, log, offset, busy, error, onChoose,
         if (g === generation.current) setSnap(s);
       };
       addEntry(step);
-      if (step.text.trim() && step.cmd !== "turn") setMessage(step.text);
+      if (step.text.trim() && !LOG_ONLY.has(step.cmd)) setMessage(step.text);
       if (skipping.current || !stage.current || !animations.current) {
         if (!queue.current.length && step.snap) commit(step.snap);
         continue;
@@ -330,12 +348,11 @@ export default function BattleScreen({ view, log, offset, busy, error, onChoose,
       const caught: Entry[] = [];
       for (const line of fresh) {
         const step = m.feed(line);
-        const text = step?.text.trim();
-        if (step && text) caught.push(step.cmd === "turn" ? { id: ++entryId.current, turn: Number(step.args[1]), text } : { id: ++entryId.current, text });
+        if (step) caught.push(...entryOf(step, ++entryId.current, viewRef.current).map((e) => ({ ...e, at: undefined })));
       }
       setEntries(caught.slice(-600));
       setSnap(m.snapshot());
-      const last = [...caught].reverse().find((e) => e.turn === undefined);
+      const last = [...caught].reverse().find((e) => e.turn === undefined && !e.note);
       setMessage(last?.text ?? "");
       window.setTimeout(() => idle.current?.(), 0);
       return;
@@ -373,7 +390,14 @@ export default function BattleScreen({ view, log, offset, busy, error, onChoose,
     const box = logBox.current;
     // Scrolls the log box itself, never the page around it.
     if (box && logAtEnd.current) box.scrollTop = box.scrollHeight;
-  }, [entries.length, showLog]);
+    else if (box) setLogBehind(true);
+  }, [entries.length, showLog, logOpts.collapsed]);
+  const toLatest = () => {
+    const box = logBox.current;
+    if (box) box.scrollTop = box.scrollHeight;
+    logAtEnd.current = true;
+    setLogBehind(false);
+  };
 
   const skip = () => {
     skipping.current = true;
@@ -635,8 +659,22 @@ export default function BattleScreen({ view, log, offset, busy, error, onChoose,
               >
                 Hide HP %
               </button>
+              <button
+                type="button"
+                onClick={() => changeLogOpts({ collapsed: !logOpts.collapsed })}
+                aria-expanded={!logOpts.collapsed}
+                aria-controls="battle-log-body"
+                className="rounded-sm p-1 text-muted-foreground hover:text-foreground"
+                title={logOpts.collapsed ? "Show the battle log" : "Collapse the battle log"}
+                aria-label={logOpts.collapsed ? "Show the battle log" : "Collapse the battle log"}
+                data-testid="log-collapse"
+              >
+                <ChevronDown className={cn("h-3.5 w-3.5 transition-transform", logOpts.collapsed && "-rotate-90")} aria-hidden />
+              </button>
             </div>
+            <div className={cn("relative", logOpts.collapsed && "hidden")}>
             <div
+              id="battle-log-body"
               className={cn(
                 "max-h-[28rem] space-y-1 overflow-y-auto px-4 py-3 text-xs leading-relaxed text-muted-foreground",
                 side ? "lg:max-h-[calc(100vh-30rem)] lg:min-h-[10rem]" : "lg:max-h-[calc(100vh-12rem)]"
@@ -646,6 +684,7 @@ export default function BattleScreen({ view, log, offset, busy, error, onChoose,
               onScroll={(e) => {
                 const box = e.currentTarget;
                 logAtEnd.current = box.scrollHeight - box.scrollTop - box.clientHeight < 24;
+                if (logAtEnd.current) setLogBehind(false);
               }}
             >
               {entries.map((e) =>
@@ -655,7 +694,7 @@ export default function BattleScreen({ view, log, offset, busy, error, onChoose,
                     Turn {e.turn}
                   </p>
                 ) : logOpts.hidePct && PERCENT_LINE.test(e.text) ? null : (
-                  <div key={e.id} className={cn(logOpts.time && e.at && "flex gap-1.5")}>
+                  <div key={e.id} className={cn(logOpts.time && e.at && "flex gap-1.5", e.note && "text-[11px] italic text-muted-foreground/80")} data-note={e.note || undefined}>
                     {logOpts.time && e.at ? <span className="shrink-0 font-mono text-[10px] text-muted-foreground/70">{stamp(e.at)}</span> : null}
                     <div className="min-w-0">
                       <RichText text={e.text} />
@@ -664,6 +703,17 @@ export default function BattleScreen({ view, log, offset, busy, error, onChoose,
                 )
               )}
               <div ref={logEnd} />
+            </div>
+            {logBehind && (
+              <button
+                type="button"
+                onClick={toLatest}
+                className="absolute bottom-2 left-1/2 flex -translate-x-1/2 items-center gap-1 rounded-full border border-screen/50 bg-card px-2.5 py-1 font-pixel text-[10px] uppercase text-screen shadow-md hover:bg-muted"
+                data-testid="log-latest"
+              >
+                <ChevronDown className="h-3 w-3" aria-hidden /> Latest
+              </button>
+            )}
             </div>
           </CardContent>
         </Card>

@@ -200,6 +200,42 @@ function sideSnap(side: Side): SideSnap {
 /** Lines that need no step at all. */
 const QUIET = new Set(["", "t:", "gametype", "player", "gen", "tier", "rule", "teamsize", "upkeep", "inactive", "inactiveoff", "timer", "request", "debug", "seed", "split", "rated", "clearpoke", "teampreview", "j", "l", "n", "c", "chat", "raw", "html", "uhtml", "bigerror", "message"]);
 
+/**
+ * Protocol commands Showdown's own log writes nothing for: setup and
+ * bookkeeping, animation cues, and state the screen shows instead (a
+ * recharge turn, whether the foe can Dynamax).
+ */
+export const SILENT = new Set<string>([
+  "", "t:", "gametype", "player", "gen", "teamsize", "upkeep", "request", "debug", "seed", "split", "rated", "clearpoke", "poke",
+  "teampreview", "j", "l", "n", "c", "chat", "raw", "html", "uhtml", "bigerror", "timer", "done", "sentchoice", "updatepoke",
+  "-anim", "-mustrecharge", "-candynamax",
+  // A forme change the next line names ("… has Mega Evolved into …!"), or the sprite simply shows.
+  "detailschange",
+]);
+
+/**
+ * Effects Showdown has no text for on these commands (its text table has no
+ * entry, so its log shows nothing): Roost's grounding, a Pokémon's own
+ * "this turn" markers and the like.
+ */
+const SILENT_EFFECTS: Record<string, Set<string>> = {
+  "-singleturn": new Set(["roost"]),
+};
+
+/**
+ * Whether Showdown's log shows nothing for this line, so an empty text is
+ * right (anything else empty is a gap in the battle log).
+ */
+export function isSilentLine(args: readonly string[], kw: Record<string, unknown>, gen: number): boolean {
+  const cmd = args[0] ?? "";
+  if (SILENT.has(cmd) || kw.silent) return true;
+  const effect = (args[2] ?? "").replace(/^(move|ability|item): /, "").toLowerCase().replace(/[^a-z0-9]/g, "");
+  if (SILENT_EFFECTS[cmd]?.has(effect)) return true;
+  // Gen 1's single Special stat: the simulator moves Sp. Def along with Sp. Atk; Showdown reports it once.
+  if (gen === 1 && (cmd === "-boost" || cmd === "-unboost" || cmd === "-setboost") && args[2] === "spd") return true;
+  return false;
+}
+
 export class BattleModel {
   readonly battle: Battle;
   readonly me: SideId;
@@ -233,11 +269,19 @@ export class BattleModel {
     }
     // Showdown's timer messages ("Battle timer is ON…", "Red has 20 seconds left.") are plain text.
     if (cmd === "inactive" || cmd === "inactiveoff") text = args[1] ?? "";
+    // The battle's header, as Showdown's log opens: the format, then its rules.
+    if (cmd === "tier" && args[1]) text = `Format: **${args[1]}**`;
+    if (cmd === "rule" && args[1]) text = args[1];
+    // A Pokémon coming in hurt or statused: its HP and status, as competitive players read the log for them.
+    if ((cmd === "switch" || cmd === "drag" || cmd === "replace") && text.trim()) {
+      const note = hpNote(args[3]);
+      if (note) text = text.replace(/!(\n*)$/, `! (${note})$1`);
+    }
     const step: Step = { cmd, args, kw: kwArgs, text };
     if (this.time) step.at = this.time;
     const who = slotOf(args[1]);
     if (who) step.who = who;
-    if (cmd === "move") {
+    if (cmd === "move" || cmd === "-anim") {
       step.moveId = Dex.moves.get(args[2] ?? "").id;
       const target = slotOf(args[3]);
       step.targets = target ? [target] : [];
@@ -267,6 +311,30 @@ export class BattleModel {
       turns: fieldTurns(b),
     };
   }
+}
+
+/** Party indices (0-based) of the Pokémon not in battle, in party order: what Showdown's 5-9 hotkeys switch to. */
+export function benchOrder(pokemon: { active?: boolean }[]): number[] {
+  return pokemon.flatMap((p, i) => (p.active ? [] : [i]));
+}
+
+/** Showdown's log says how a battle ended early ("Red forfeited.") before naming the winner. */
+export function endNote(view: { end?: { winner: number | null; reason?: string } | null; players: { name: string }[] }): string | null {
+  const end = view.end;
+  if (!end || end.winner === null || end.reason !== "forfeit") return null;
+  const loser = view.players[1 - end.winner]?.name;
+  return loser ? `${loser} forfeited.` : null;
+}
+
+/** "54/100 par" → "54% · PAR"; nothing for a Pokémon at full health with no status. */
+export function hpNote(hpStatus: string | undefined): string {
+  const m = /^(\d+)\/(\d+)(?:\s+(\w+))?/.exec(hpStatus ?? "");
+  if (!m) return "";
+  const [hp, max] = [Number(m[1]), Number(m[2])];
+  const status = m[3] && m[3] !== "fnt" ? m[3].toUpperCase() : "";
+  if (hp >= max && !status) return "";
+  const pct = max ? Math.max(hp > 0 ? 1 : 0, Math.round((hp / max) * 100)) : 0;
+  return status ? `${pct}% · ${status}` : `${pct}%`;
 }
 
 /** Turns left for the weather ("weather"), the terrain ("terrain") and each pseudo-weather, where Showdown's client knows them. */
