@@ -94,6 +94,40 @@ const TITLES: Record<string, string> = {
 };
 /** Places that share their page with another version of themselves: only their own game's shots. */
 const ONLY_GAMES: Record<string, string[]> = { "Unova|Victory Road (B2W2)": ["B2W2", "B2", "W2"] };
+/**
+ * Parts of the atlas's places that have their own page on Bulbapedia (a tower,
+ * a district, a shrine, the other version of a pair) and aren't in the data
+ * yet: their shots go to the place, as a building's do. Each is listed under
+ * the place its page says it is in ("|location=" in its infobox).
+ */
+const EXTRA_PARTS: Record<string, string[]> = {
+  "Alola|Lake of the Sunne / Moone": ["Lake of the Moone"],
+  "Alola|Altar of the Sunne / Moone": ["Altar of the Moone"],
+  "Galar|Wyndon": ["Wyndon Stadium", "Rose Tower"],
+  "Galar|Hammerlocke": ["Energy Plant", "Tower summit"],
+  "Galar|Watchtower Ruins": ["Watchtower Lair"],
+  "Crown Tundra|Giant's Bed": ["Rock Peak Ruins (Galar)"],
+  "Crown Tundra|Snowslide Slope": ["Iceberg Ruins (Galar)"],
+  "Kalos|Lumiose City": ["Prism Tower", "Lumiose Gym", "Lumiose Museum", "Lysandre Labs", "Battle Institute", "Autumnal Avenue", "Estival Avenue", "Hibernal Avenue", "Vernal Avenue", "North Boulevard", "South Boulevard"],
+  "Kalos|Geosenge Town": ["Team Flare Secret HQ"],
+  "Kalos|Route 7": ["Battle Chateau"],
+  "Kalos|Camphrier Town": ["Shabboneau Castle"],
+  "Kalos|Ambrette Town": ["Pokémon Fossil Research Lab"],
+  "Kalos|Pokémon Village": ["Unknown Dungeon (Kalos)"],
+  "Kalos|Kiloude City": ["Friend Safari"],
+  "Paldea|Great Crater of Paldea": ["Area Zero Underdepths", "Zero Lab"],
+  "Paldea|Naranja and Uva Academy": ["Uva Academy"],
+  "Paldea|South Province (Area One)": ["Grasswither Shrine"],
+  "Paldea|West Province (Area One)": ["Icerend Shrine", "Segin Squad's Base"],
+  "Paldea|Socarrat Trail": ["Groundblight Shrine"],
+  "Paldea|North Province (Area Two)": ["Firescourge Shrine", "Caph Squad's Base"],
+  "Paldea|North Province (Area Three)": ["Ruchbah Squad's Base"],
+  "Paldea|East Province (Area One)": ["Schedar Squad's Base"],
+  "Kitakami|Mossui Town": ["Kitakami Hall"],
+  "Unova|Nimbasa City": ["Battle Subway"],
+  "Unova|Black City / White Forest": ["White Forest", "White Treehollow"],
+  "Blueberry Academy|Blueberry Academy": ["League Club Room", "Blueberry Academy Cafeteria", "Central Plaza"],
+};
 
 type WikiId = "bulbapedia" | "pokepedia" | "pokewiki" | "fandom" | "wikidex";
 interface WikiDef {
@@ -174,6 +208,7 @@ const WIKIS: Record<WikiId, WikiDef> = {
       "FRBG-Screenshot": "FRLG",
       "HGSS-Screenshot": "HGSS",
       "SW-Screenshot": "BW",
+      "S2W2-Screenshot": "B2W2",
       "GSK-Screenshot": "GSC",
     },
   },
@@ -382,6 +417,10 @@ function allLocations(): Loc[] {
   const out: Loc[] = geo.map((l) => ({ region: l.region, name: l.name, ...(l.parent ? { parent: l.parent } : {}) }));
   const world = JSON.parse(readFileSync(PLACES, "utf8")) as { places: { name: string; region: string }[] };
   for (const p of world.places) if (!out.some((l) => !l.parent && l.region === p.region && l.name === p.name)) out.push({ region: p.region, name: p.name });
+  for (const [place, parts] of Object.entries(EXTRA_PARTS)) {
+    const [region, parent] = place.split("|");
+    for (const name of parts) if (!out.some((l) => l.region === region && l.parent === parent && l.name === name)) out.push({ region, name, parent });
+  }
   return out;
 }
 
