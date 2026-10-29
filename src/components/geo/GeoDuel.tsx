@@ -27,6 +27,7 @@ import { useMatchmaking } from "@/components/duel/use-matchmaking";
 import { rankedExtra } from "@/components/pokedle/Ranked";
 import { GEO_RANKED_MATCH } from "@/lib/geo-ranked";
 import { GeoRankedOutcome } from "./GeoRanked";
+import { GeoVersus } from "./GeoVersus";
 import { ShareResultLink } from "./ShareResultLink";
 
 /**
@@ -280,7 +281,11 @@ export function GeoDuel({ code, regions }: GeoDuelProps) {
         {() => (
           <>
             {notice}
-            <VersusIntro view={view} me={me} round={index + 1} secondsLeft={Math.max(1, seconds(startsAt - now))} mapName={`${map.name}${view.era ? ` · ${GEO_ERA_NAMES[view.era]}` : ""}`} />
+            {index === 0 ? (
+              <GeoVersus view={view} me={me} secondsLeft={Math.max(1, seconds(startsAt - now))} mapName={`${map.name}${view.era ? ` · ${GEO_ERA_NAMES[view.era]}` : ""}`} />
+            ) : (
+              <VersusIntro view={view} me={me} round={index + 1} secondsLeft={Math.max(1, seconds(startsAt - now))} mapName={`${map.name}${view.era ? ` · ${GEO_ERA_NAMES[view.era]}` : ""}`} />
+            )}
             {emoteButton}
             <div className="absolute left-3 top-3 z-30 flex items-center gap-2">
               <DuelLeave busy={busy} onLeave={() => void leave()} />
