@@ -31,14 +31,18 @@ import { STATUS_STYLE } from "./Hud";
 export function Tip({ content, children, className, place = "top" }: { content: () => React.ReactNode; children: React.ReactNode; className?: string; place?: "top" | "bottom" }) {
   const anchor = useRef<HTMLSpanElement>(null);
   const [rect, setRect] = useState<DOMRect | null>(null);
+  // A tap fires mouseenter and focus too, and a move button disabled after the tap never blurs:
+  // the tooltip would stay over the log for the rest of the turn. Touch gets TapTip instead.
+  const touch = useRef(false);
   // The wrapper has no box of its own (display: contents): measure what it wraps.
   const show = () => {
+    if (touch.current) return;
     const el = anchor.current?.firstElementChild ?? anchor.current;
     if (el) setRect(el.getBoundingClientRect());
   };
   const hide = () => setRect(null);
   return (
-    <span ref={anchor} className={cn("contents", className)} onMouseEnter={show} onMouseLeave={hide} onFocus={show} onBlur={hide}>
+    <span ref={anchor} className={cn("contents", className)} onPointerDown={(e) => (touch.current = e.pointerType === "touch")} onMouseEnter={show} onMouseLeave={hide} onFocus={show} onBlur={hide}>
       {children}
       {rect && typeof document !== "undefined" && createPortal(<Floating rect={rect} place={place}>{content()}</Floating>, document.body)}
     </span>

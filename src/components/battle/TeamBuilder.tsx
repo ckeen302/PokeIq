@@ -110,7 +110,7 @@ export function TeamBuilder() {
           </p>
         )}
         {!teams || !view ? (
-          <p className="flex items-center gap-2 py-16 text-sm text-muted-foreground">
+          <p className="flex min-h-[60vh] items-center gap-2 py-16 text-sm text-muted-foreground">
             <LoaderCircle className="h-4 w-4 animate-spin" aria-hidden /> Loading your teams…
           </p>
         ) : current ? (

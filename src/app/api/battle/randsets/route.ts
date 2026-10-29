@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { clientIp, rateLimit, tooManyRequests } from "@/lib/server/rate-limit";
-import { Dex } from "pokemon-showdown";
+import { Dex, toID } from "pokemon-showdown";
 import randsets from "@/data/battle/randsets.json";
 import type { RandSetsInfo } from "@/lib/battle/tooltip-calc";
 
@@ -32,7 +32,9 @@ export async function GET(request: NextRequest) {
   if (!query.success) return NextResponse.json({ error: "Bad request." }, { status: 400 });
   const species = Dex.species.get(query.data.species);
   if (!species.exists) return NextResponse.json({ error: "Unknown Pokémon." }, { status: 404 });
-  const info = tables[query.data.format][species.id];
+  // A cosmetic form (Florges-Yellow, Gastrodon-East) battles with its base species' sets.
+  const table = tables[query.data.format];
+  const info = table[species.id] ?? (species.isCosmeticForme ? table[toID(species.baseSpecies)] : undefined);
   if (!info) return NextResponse.json({ error: "Not in this format." }, { status: 404 });
   // The same for every battle on this engine version: browsers and the CDN may keep it.
   return NextResponse.json(info, { headers: { "Cache-Control": "public, max-age=86400, s-maxage=86400" } });

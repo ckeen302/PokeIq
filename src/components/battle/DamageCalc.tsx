@@ -102,7 +102,7 @@ export function DamageCalc() {
   }
   if (!lib || !lists || !results) {
     return (
-      <p className="flex items-center justify-center gap-2 py-24 text-sm text-muted-foreground">
+      <p className="flex min-h-[75vh] items-center justify-center gap-2 py-24 text-sm text-muted-foreground">
         <LoaderCircle className="h-4 w-4 animate-spin" aria-hidden /> Loading the damage calculator…
       </p>
     );
