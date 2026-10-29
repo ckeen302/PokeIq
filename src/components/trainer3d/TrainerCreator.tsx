@@ -2,25 +2,36 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { Check, Dices, Hand, Loader2, Lock, RotateCcw, Shirt, Sparkles, Swords, Trash2, User } from "lucide-react";
+import { Brain, Check, Dices, Hand, Loader2, Lock, RotateCcw, Shirt, Swords, Trash2, Trophy, User, Zap } from "lucide-react";
 import {
   BALLS,
+  BANGS,
   BODIES,
   BOTTOMS,
+  CAPES,
   COLORS,
+  EARRINGS,
+  EMBLEMS,
+  EXPRESSIONS,
   EYES,
+  EYEWEAR,
+  EYE_COLORS,
   GLOVES,
   HAIRS,
+  HAIR_ACCESSORIES,
   HAIR_COLORS,
   HATS,
+  LEGWEAR,
+  NECKWEAR,
   PACKS,
   SHOES,
   SKINS,
+  STAGES,
   TOPS,
   TRAINER_FIELD_KEYS,
   TRAINER_FIELDS,
+  WRISTWEAR,
   lockedItems,
-  starterTrainer,
   unlockHint,
   unlocked,
   type Preset,
@@ -29,39 +40,50 @@ import {
   type TrainerField,
   type TrainerPose,
 } from "@/lib/trainer/config";
+import { TRAINER_PRESETS, matchPreset, presetTrainer } from "@/lib/trainer/presets";
 import { SHINY_HINT, shinyUnlocked, type AvatarUnlocks, type PublicAvatar } from "@/lib/avatar";
 import { forgetTrainer, type TrainerSettings } from "@/lib/trainer/client";
 import { setAccountAvatar, useAccount } from "@/lib/account";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { TrainerPortrait } from "@/components/avatar/TrainerPortrait";
-import { MonGrid } from "@/components/avatar/AvatarPanel";
 import { cn } from "@/lib/utils";
-import { Avatar3D } from "./Avatar3D";
+import { Avatar3D, stageStyle } from "./Avatar3D";
 
 /**
- * The trainer creator: a live 3D preview beside every preset (body, skin,
- * hair, hat, clothes, bag, Poké Ball, partner Pokémon). Locked items say how
- * to unlock them; the server checks every choice again on save. Guests can
- * play with it; saving needs an account.
+ * The trainer creator: a live 3D preview beside every option (ready-made
+ * looks, body and face, hair, hat, outfit, gear and accessories, Poké Ball
+ * and backdrop). Locked items say how to unlock them; the server checks
+ * every choice again on save. Guests can play with it; saving needs an
+ * account.
  */
 
 const NOBODY: AvatarUnlocks = { level: 1, tier: null, badges: 0 };
 
-type Tab = "body" | "hair" | "hat" | "outfit" | "gear" | "partner";
+type Tab = "looks" | "body" | "hair" | "hat" | "outfit" | "gear" | "stage";
 const TABS: { id: Tab; name: string }[] = [
-  { id: "body", name: "Body" },
+  { id: "looks", name: "Looks" },
+  { id: "body", name: "Face" },
   { id: "hair", name: "Hair" },
   { id: "hat", name: "Hat" },
   { id: "outfit", name: "Outfit" },
   { id: "gear", name: "Gear" },
+  { id: "stage", name: "Stage" },
 ];
 
 const POSES: { id: TrainerPose; name: string; icon: typeof User }[] = [
   { id: "idle", name: "Idle", icon: User },
   { id: "wave", name: "Wave", icon: Hand },
   { id: "fight", name: "Battle", icon: Swords },
+  { id: "throw", name: "Throw", icon: Zap },
+  { id: "victory", name: "Victory", icon: Trophy },
+  { id: "think", name: "Think", icon: Brain },
 ];
+
+/** Tops that can be worn open or done up. */
+const OPENABLE = new Set<TrainerConfig["top"]>(["jacket", "vest", "shirt", "suit", "labcoat", "longcoat", "coat"]);
+/** Tops that show an emblem. */
+const EMBLEM_TOPS = new Set<TrainerConfig["top"]>(["tee", "longtee", "tank", "croptop", "uniform", "dress"]);
 
 const BALL_TOP: Record<string, string> = { poke: "#e3262f", great: "#2f6fe0", ultra: "#24252b", master: "#7b3fc6" };
 
@@ -69,8 +91,8 @@ export function TrainerCreator() {
   const account = useAccount();
   const user = account.user;
   const [settings, setSettings] = useState<TrainerSettings | null>(null);
-  const [draft, setDraft] = useState<TrainerConfig>(() => starterTrainer(25));
-  const [tab, setTab] = useState<Tab>("body");
+  const [draft, setDraft] = useState<TrainerConfig>(() => presetTrainer(TRAINER_PRESETS[0], 25));
+  const [tab, setTab] = useState<Tab>("looks");
   const [pose, setPose] = useState<TrainerPose>("idle");
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(null);
@@ -83,7 +105,7 @@ export function TrainerCreator() {
       .then((s) => {
         if (!live || !s) return;
         setSettings(s);
-        setDraft(s.trainer ?? starterTrainer(s.avatar.pokemonId, s.avatar.shiny && shinyUnlocked(s.unlocks)));
+        setDraft(s.trainer ?? presetTrainer(TRAINER_PRESETS[0], s.avatar.pokemonId, s.avatar.shiny && shinyUnlocked(s.unlocks)));
       })
       .catch(() => undefined);
     return () => {
@@ -96,6 +118,7 @@ export function TrainerCreator() {
   const changed = JSON.stringify(draft) !== JSON.stringify(saved);
   const locked = useMemo(() => lockedItems(draft, u), [draft, u]);
   const shinyLocked = draft.shiny && !shinyUnlocked(u);
+  const current = useMemo(() => matchPreset(draft), [draft]);
 
   const set = <K extends keyof TrainerConfig>(key: K, value: TrainerConfig[K]) => {
     setMessage(null);
@@ -104,12 +127,20 @@ export function TrainerCreator() {
 
   function surprise() {
     const next = { ...draft };
-    for (const key of TRAINER_FIELD_KEYS) {
-      const options = (TRAINER_FIELDS[key] as readonly Preset[]).filter((p) => unlocked(p, u));
-      (next as Record<string, unknown>)[key] = options[Math.floor(Math.random() * options.length)].id;
-    }
-    // Keep the outfit readable: tops and accents differ, bottoms lean dark.
+    const pick = <T extends Preset>(list: readonly T[]) => {
+      const options = list.filter((p) => unlocked(p, u));
+      return options[Math.floor(Math.random() * options.length)].id;
+    };
+    for (const key of TRAINER_FIELD_KEYS) (next as Record<string, unknown>)[key] = pick(TRAINER_FIELDS[key] as readonly Preset[]);
+    // Keep it wearable: most trainers go without a cape or eyewear, bottoms lean dark, the backdrop stays.
+    if (Math.random() < 0.75) next.cape = "none";
+    if (Math.random() < 0.7) next.eyewear = "none";
+    if (Math.random() < 0.5) next.hairAcc = "none";
+    if (Math.random() < 0.6) next.ears = "none";
     if (next.accent === next.topColor) next.accent = next.topColor === "white" ? "navy" : "white";
+    next.bangs = "auto";
+    next.closed = Math.random() < 0.4;
+    next.stage = draft.stage;
     setMessage(null);
     setDraft(next);
   }
@@ -133,42 +164,42 @@ export function TrainerCreator() {
   }
 
   const canSave = !!user && !!settings?.available && changed && !locked.length && !shinyLocked;
+  const p = { draft, u, set };
+  const backdrop = stageStyle(draft.stage);
 
   return (
     <div className="grid gap-5 lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)] lg:items-start">
       {/* Stage */}
       <div className="space-y-3 lg:sticky lg:top-20">
-        <div className="hud relative h-[360px] overflow-hidden rounded-xl border bg-card sm:h-[460px] lg:h-[540px]" data-testid="trainer-stage">
-          <div aria-hidden className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_35%,hsl(var(--screen)/0.16),transparent_62%)]" />
-          <div aria-hidden className="absolute inset-x-[8%] bottom-[5%] h-[16%] rounded-[50%] bg-[radial-gradient(ellipse_at_center,hsl(var(--foreground)/0.09),transparent_70%)]" />
-          <Avatar3D config={draft} pose={pose} label={user ? `${user.username}'s trainer` : "Your trainer"} />
-          <div className="absolute left-3 top-3 flex items-center gap-2">
+        <div className="hud relative h-[380px] overflow-hidden rounded-xl border bg-card sm:h-[480px] lg:h-[560px]" data-testid="trainer-stage">
+          {!backdrop && <div aria-hidden className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_35%,hsl(var(--screen)/0.16),transparent_62%)]" />}
+          {!backdrop && <div aria-hidden className="absolute inset-x-[8%] bottom-[5%] h-[16%] rounded-[50%] bg-[radial-gradient(ellipse_at_center,hsl(var(--foreground)/0.09),transparent_70%)]" />}
+          <Avatar3D config={draft} pose={pose} stage label={user ? `${user.username}'s trainer` : "Your trainer"} />
+          <Button variant="outline" size="sm" onClick={surprise} className="absolute right-3 top-3 bg-background/80 backdrop-blur-sm" aria-label="Surprise me" title="Surprise me" data-testid="trainer-surprise">
+            <Dices className="h-4 w-4" aria-hidden /> <span className="hidden sm:inline">Surprise me</span>
+          </Button>
+          <div className={cn("absolute left-3 top-3 flex items-center gap-2 rounded-full pr-3", backdrop && "bg-background/75 backdrop-blur-sm")}>
             <TrainerPortrait trainer={draft} size={36} className="rounded-full ring-1 ring-border" />
             <div className="leading-tight">
-              <p className="hud-label text-screen">Trainer</p>
+              <p className="hud-label text-screen">{current ? current.name : "Trainer"}</p>
               <p className="font-display text-sm font-bold uppercase tracking-wide">{user?.username ?? "You"}</p>
             </div>
           </div>
         </div>
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <div role="radiogroup" aria-label="Pose" className="inline-flex rounded-lg border bg-card p-1">
-            {POSES.map((p) => (
-              <button
-                key={p.id}
-                type="button"
-                role="radio"
-                aria-checked={pose === p.id}
-                onClick={() => setPose(p.id)}
-                className={cn("flex items-center gap-1.5 rounded-md px-2.5 py-1.5 sm:px-3 text-xs font-semibold uppercase tracking-wide transition-colors", pose === p.id ? "bg-screen/15 text-foreground" : "text-muted-foreground hover:text-foreground")}
-                data-testid={`trainer-pose-${p.id}`}
-              >
-                <p.icon className="h-3.5 w-3.5" aria-hidden /> {p.name}
-              </button>
-            ))}
-          </div>
-          <Button variant="outline" size="sm" onClick={surprise} aria-label="Surprise me" title="Surprise me" data-testid="trainer-surprise">
-            <Dices className="h-4 w-4" aria-hidden /> <span className="hidden sm:inline">Surprise me</span>
-          </Button>
+        <div role="radiogroup" aria-label="Pose" className="grid grid-cols-3 gap-1 rounded-lg border bg-card p-1 sm:grid-cols-6">
+          {POSES.map((po) => (
+            <button
+              key={po.id}
+              type="button"
+              role="radio"
+              aria-checked={pose === po.id}
+              onClick={() => setPose(po.id)}
+              className={cn("flex min-w-0 items-center justify-center gap-1 rounded-md px-1.5 py-1.5 text-[11px] font-semibold uppercase tracking-wide transition-colors", pose === po.id ? "bg-screen/15 text-foreground" : "text-muted-foreground hover:text-foreground")}
+              data-testid={`trainer-pose-${po.id}`}
+            >
+              <po.icon className="h-3.5 w-3.5 shrink-0" aria-hidden /> <span className="truncate">{po.name}</span>
+            </button>
+          ))}
         </div>
       </div>
 
@@ -182,7 +213,7 @@ export function TrainerCreator() {
               role="tab"
               aria-selected={tab === t.id}
               onClick={() => setTab(t.id)}
-              className={cn("-mb-px shrink-0 border-b-2 px-3 pb-2.5 pt-1 font-display text-sm font-semibold uppercase tracking-wide transition-colors", tab === t.id ? "border-screen text-foreground" : "border-transparent text-muted-foreground hover:text-foreground")}
+              className={cn("-mb-px shrink-0 border-b-2 px-2.5 pb-2.5 pt-1 font-display text-sm font-semibold uppercase tracking-wide transition-colors sm:px-3", tab === t.id ? "border-screen text-foreground" : "border-transparent text-muted-foreground hover:text-foreground")}
               data-testid={`trainer-tab-${t.id}`}
             >
               {t.name}
@@ -190,41 +221,117 @@ export function TrainerCreator() {
           ))}
         </div>
         <CardContent className="space-y-5 p-4 sm:p-5" role="tabpanel">
+          {tab === "looks" && (
+            <Group label="Start from a look" hint="Every part can be changed after">
+              <div className="grid grid-cols-3 gap-2 sm:grid-cols-5">
+                {TRAINER_PRESETS.map((preset) => {
+                  const on = current?.id === preset.id;
+                  const look = presetTrainer(preset, draft.partner, draft.shiny);
+                  return (
+                    <button
+                      key={preset.id}
+                      type="button"
+                      aria-pressed={on}
+                      onClick={() => {
+                        setMessage(null);
+                        setDraft({ ...look, stage: draft.stage });
+                      }}
+                      className={cn(
+                        "group relative flex flex-col items-center gap-1 rounded-lg border p-1.5 text-[11px] font-semibold transition-colors",
+                        on ? "border-screen bg-screen/10 text-foreground" : "border-border text-muted-foreground hover:border-screen/50 hover:text-foreground",
+                      )}
+                      data-testid={`trainer-preset-${preset.id}`}
+                    >
+                      <span className="block aspect-square w-full overflow-hidden rounded-md">
+                        <TrainerPortrait trainer={look} size={88} className="h-full w-full transition-transform group-hover:scale-105" />
+                      </span>
+                      <span className="w-full text-center leading-tight">{preset.name}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </Group>
+          )}
           {tab === "body" && (
             <>
-              <Chips label="Build" field="body" list={BODIES} draft={draft} u={u} set={set} />
-              <Swatches label="Skin tone" field="skin" list={SKINS} draft={draft} u={u} set={set} />
-              <Tiles label="Eyes" field="eyes" list={EYES} draft={draft} u={u} set={set} zoom />
+              <Chips label="Build" field="body" list={BODIES} {...p} />
+              <Swatches label="Skin tone" field="skin" list={SKINS} {...p} />
+              <Tiles label="Eyes" field="eyes" list={EYES} {...p} zoom />
+              <Swatches label="Eye colour" field="eyeColor" list={EYE_COLORS} {...p} />
+              <Tiles label="Expression" field="expr" list={EXPRESSIONS} {...p} zoom />
             </>
           )}
           {tab === "hair" && (
             <>
-              <Tiles label="Style" field="hair" list={HAIRS} draft={draft} u={u} set={set} preview={(d) => ({ ...d, hat: "none" })} />
-              <Swatches label="Colour" field="hairColor" list={HAIR_COLORS} draft={draft} u={u} set={set} />
+              <Tiles label="Style" field="hair" list={HAIRS} {...p} preview={(d) => ({ ...d, hat: "none" })} />
+              <Swatches label="Colour" field="hairColor" list={HAIR_COLORS} {...p} />
+              <Chips label="Fringe" field="bangs" list={BANGS} {...p} />
+              <Chips label="Hair accessory" field="hairAcc" list={HAIR_ACCESSORIES} {...p} />
+              {draft.hairAcc !== "none" && <Swatches label="Accessory colour" field="accColor" list={COLORS} {...p} hint="Shared by all accessories" />}
             </>
           )}
           {tab === "hat" && (
             <>
-              <Tiles label="Hat" field="hat" list={HATS} draft={draft} u={u} set={set} />
-              {draft.hat !== "none" && <Swatches label="Hat colour" field="hatColor" list={COLORS} draft={draft} u={u} set={set} />}
+              <Tiles label="Hat" field="hat" list={HATS} {...p} />
+              {draft.hat !== "none" && (
+                <>
+                  <Swatches label="Hat colour" field="hatColor" list={COLORS} {...p} />
+                  <Swatches label="Trim" field="hatTrim" list={COLORS} {...p} hint="Logo, band, brim or pom" />
+                </>
+              )}
             </>
           )}
           {tab === "outfit" && (
             <>
-              <Tiles label="Top" field="top" list={TOPS} draft={draft} u={u} set={set} icon={Shirt} />
-              <Swatches label="Top colour" field="topColor" list={COLORS} draft={draft} u={u} set={set} />
-              <Swatches label="Accent colour" field="accent" list={COLORS} draft={draft} u={u} set={set} hint="Shirt under jackets, stripes, gloves, trims" />
-              <Chips label="Bottoms" field="bottoms" list={BOTTOMS} draft={draft} u={u} set={set} />
-              <Swatches label="Bottoms colour" field="bottomsColor" list={COLORS} draft={draft} u={u} set={set} />
-              <Chips label="Shoes" field="shoes" list={SHOES} draft={draft} u={u} set={set} />
-              <Swatches label="Shoes colour" field="shoesColor" list={COLORS} draft={draft} u={u} set={set} />
-              <Chips label="Gloves" field="gloves" list={GLOVES} draft={draft} u={u} set={set} />
+              <Tiles label="Top" field="top" list={TOPS} {...p} icon={Shirt} />
+              {OPENABLE.has(draft.top) && (
+                <Group label="Wear it">
+                  <div className="flex flex-wrap gap-2">
+                    <Option selected={!draft.closed} locked={false} hint="" onClick={() => set("closed", false)} testid="trainer-closed-open">
+                      Open
+                    </Option>
+                    <Option selected={draft.closed} locked={false} hint="" onClick={() => set("closed", true)} testid="trainer-closed-closed">
+                      Done up
+                    </Option>
+                  </div>
+                </Group>
+              )}
+              <Swatches label="Top colour" field="topColor" list={COLORS} {...p} />
+              <Swatches label="Trim" field="topTrim" list={COLORS} {...p} hint="Collar, cuffs, lapel pins and emblem" />
+              <Swatches label="Under colour" field="accent" list={COLORS} {...p} hint="The shirt under jackets and coats, stripes" />
+              {EMBLEM_TOPS.has(draft.top) && <Chips label="Emblem" field="emblem" list={EMBLEMS} {...p} />}
+              <Chips label="Bottoms" field="bottoms" list={BOTTOMS} {...p} />
+              <Swatches label="Bottoms colour" field="bottomsColor" list={COLORS} {...p} />
+              <Chips label="Socks and tights" field="legwear" list={LEGWEAR} {...p} />
+              <Swatches label="Bottoms trim" field="bottomsTrim" list={COLORS} {...p} hint="Suspenders, stripes, socks and tights" />
+              <Chips label="Shoes" field="shoes" list={SHOES} {...p} />
+              <Swatches label="Shoes colour" field="shoesColor" list={COLORS} {...p} />
+              <Swatches label="Shoes trim" field="shoesTrim" list={COLORS} {...p} hint="Soles, laces and bands" />
             </>
           )}
           {tab === "gear" && (
             <>
-              <Tiles label="Bag" field="pack" list={PACKS} draft={draft} u={u} set={set} />
-              {draft.pack !== "none" && <Swatches label="Bag colour" field="packColor" list={COLORS} draft={draft} u={u} set={set} />}
+              <Chips label="Gloves" field="gloves" list={GLOVES} {...p} />
+              {draft.gloves !== "none" && <Swatches label="Gloves colour" field="glovesColor" list={COLORS} {...p} />}
+              <Chips label="Bag" field="pack" list={PACKS} {...p} />
+              {draft.pack !== "none" && (
+                <>
+                  <Swatches label="Bag colour" field="packColor" list={COLORS} {...p} />
+                  <Swatches label="Bag trim" field="packTrim" list={COLORS} {...p} hint="Flap and straps" />
+                </>
+              )}
+              <Chips label="Cape" field="cape" list={CAPES} {...p} />
+              {draft.cape !== "none" && (
+                <>
+                  <Swatches label="Cape colour" field="capeColor" list={COLORS} {...p} />
+                  <Swatches label="Lining" field="capeTrim" list={COLORS} {...p} hint={draft.cape === "royal" ? "Fur trim" : undefined} />
+                </>
+              )}
+              <Chips label="Eyewear" field="eyewear" list={EYEWEAR} {...p} />
+              <Chips label="Neck" field="neck" list={NECKWEAR} {...p} />
+              <Chips label="Wrists" field="wrist" list={WRISTWEAR} {...p} />
+              <Chips label="Earrings" field="ears" list={EARRINGS} {...p} />
+              <Swatches label="Accessory colour" field="accColor" list={COLORS} {...p} hint="Frames, scarves, pendants, bands and earrings" />
               <Group label="Poké Ball">
                 <div className="flex flex-wrap gap-2">
                   {BALLS.map((b) => {
@@ -240,21 +347,38 @@ export function TrainerCreator() {
               </Group>
             </>
           )}
-          {tab === "partner" && (
-            <>
-              <Group label="Shiny">
-                <label className={cn("inline-flex items-center gap-2 text-sm", !shinyUnlocked(u) && "opacity-60")} title={shinyUnlocked(u) ? undefined : SHINY_HINT}>
-                  <input type="checkbox" checked={draft.shiny} disabled={!shinyUnlocked(u)} onChange={(e) => set("shiny", e.target.checked)} data-testid="trainer-shiny" />
-                  <Sparkles className="h-4 w-4 text-[#f2c14e]" aria-hidden /> Shiny partner
-                  {!shinyUnlocked(u) && (
-                    <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                      <Lock className="h-3 w-3" aria-hidden /> {SHINY_HINT}
-                    </span>
-                  )}
-                </label>
-              </Group>
-              <MonGrid selected={draft.partner} shiny={draft.shiny} onPick={(id) => set("partner", id)} />
-            </>
+          {tab === "stage" && (
+            <Group label="Backdrop" hint="Shown behind your trainer here and on your profile">
+              <div className="grid grid-cols-3 gap-2 sm:grid-cols-5">
+                {STAGES.map((s) => {
+                  const lock = !unlocked(s, u);
+                  const style = stageStyle(s.id);
+                  return (
+                    <button
+                      key={s.id}
+                      type="button"
+                      aria-pressed={draft.stage === s.id}
+                      title={lock ? unlockHint(s) : s.name}
+                      onClick={() => set("stage", s.id)}
+                      className={cn(
+                        "relative flex flex-col items-center gap-1 rounded-lg border p-1.5 text-[11px] font-semibold transition-colors",
+                        draft.stage === s.id ? "border-screen bg-screen/10 text-foreground" : "border-border text-muted-foreground hover:border-screen/50 hover:text-foreground",
+                      )}
+                      data-testid={`trainer-stage-${s.id}`}
+                      data-locked={lock || undefined}
+                    >
+                      <span className={cn("block aspect-[4/3] w-full rounded-md border border-foreground/10", !style && "bg-[radial-gradient(ellipse_at_50%_35%,hsl(var(--screen)/0.16),transparent_62%)]", lock && "opacity-60")} style={style ?? undefined} />
+                      <span className="w-full truncate text-center leading-tight">{s.name}</span>
+                      {lock && (
+                        <span className="absolute right-1 top-1 rounded-full bg-background/90 p-1 shadow-sm">
+                          <Lock className="h-3 w-3" aria-label={unlockHint(s)} />
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            </Group>
           )}
         </CardContent>
         <div className="flex flex-wrap items-center gap-2 border-t p-4 sm:px-5">
