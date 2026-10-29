@@ -195,6 +195,7 @@ const WIKIS: Record<WikiId, WikiDef> = {
     codes: {
       KAPU: "SV", KP: "SV", SWSH: "SwSh", SDLP: "BDSP", LGPE: "LGPE", XY: "XY", ORAS: "ORAS", SoMo: "SM", USUM: "USUM",
       FRBG: "FRLG", HGSS: "HGSS", SW: "BW", SW2: "B2W2", S2W2: "B2W2", GSK: "GSC", DP: "DP", Pt: "Pt", DPPt: "DPPt",
+      RBG: "RBY", RSS: "RSE", DPPT: "DPPt",
     },
     gameCats: {
       "KAPU-Screenshot": "SV",
@@ -210,6 +211,10 @@ const WIKIS: Record<WikiId, WikiDef> = {
       "SW-Screenshot": "BW",
       "S2W2-Screenshot": "B2W2",
       "GSK-Screenshot": "GSC",
+      // Rot/Blau/Gelb, Rubin/Saphir/Smaragd and Diamant/Perl/Platin: the Game Boy, GBA and DS originals.
+      "RBG-Screenshot": "RBY",
+      "RSS-Screenshot": "RSE",
+      "DPPT-Screenshot": "DPPt",
     },
   },
   fandom: {
@@ -230,8 +235,14 @@ const WIKIS: Record<WikiId, WikiDef> = {
     codes: {
       EP: "SV", EpEc: "SwSh", DBPR: "BDSP", LGPE: "LGPE", XY: "XY", ROZA: "ORAS", SL: "SM", USUL: "USUM", RFVH: "FRLG", RfVh: "FRLG",
       HGSS: "HGSS", NB: "BW", N2B2: "B2W2", DP: "DP", Pt: "Pt", E: "E", RZ: "RS", OPC: "GSC", OP: "GS", C: "C", RA: "RB", Am: "Y",
+      RAAm: "RBY", RZE: "RSE",
     },
     gameCats: {
+      // Rojo/Azul, Amarillo, Rojo/Verde/Azul and Rubí/Zafiro/Esmeralda: the Game Boy and GBA originals.
+      "Capturas de Pokémon Rojo y Pokémon Azul": "RB",
+      "Capturas de Pokémon Amarillo": "Y",
+      "Capturas de Pokémon Rojo, Pokémon Verde y Pokémon Azul": "RGBY",
+      "Capturas de Pokémon Rubí, Pokémon Zafiro y Pokémon Esmeralda": "RSE",
       "Capturas de Pokémon Escarlata y Pokémon Púrpura": "SV",
       "Capturas de Pokémon Espada y Pokémon Escudo": "SwSh",
       "Capturas de Pokémon Diamante Brillante y Pokémon Perla Reluciente": "BDSP",

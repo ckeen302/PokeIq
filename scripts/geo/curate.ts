@@ -253,6 +253,10 @@ function main() {
   const locations: Location[] = data.world.locations;
   const curation = readCuration();
   for (const a of curation.added) if (!isGeoFamily(familyOfGame(a.game))) throw new Error(`add ${a.id}: unknown game ${a.game}`);
+  // A shot re-cut under a new id (tests/fixtures/geo-shot-ids-replaced.json) stays out under its old one.
+  const replacedFile = path.join(ROOT, "tests/fixtures/geo-shot-ids-replaced.json");
+  const replaced = existsSync(replacedFile) ? (JSON.parse(readFileSync(replacedFile, "utf8")) as Record<string, string>) : {};
+  curation.added = curation.added.filter((a) => !replaced[a.id]);
   if (process.argv.includes("--report")) {
     applyCuration(locations, curation);
     report(locations);
