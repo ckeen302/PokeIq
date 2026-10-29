@@ -31,6 +31,7 @@ import { geoWeekOf, geoWeeklyBoard, geoWeeklyLeft, geoWeeklyMap, geoWeeklyNumber
  * and the reveal's extras, the results and the summary, fetched once a game is on its way.
  */
 // The duel and ranked card sits below the fold: rendered on the server as before, its code loads alongside.
+const PartyCard = dynamic(() => import("./PartyCard").then((m) => m.PartyCard), { loading: () => null });
 const DuelCard = dynamic(() => import("./DuelCard").then((m) => m.DuelCard), { loading: () => null });
 const loadResults = () => import("./GeoResults");
 const loadSummary = () => import("./GeoSummary");
@@ -829,16 +830,15 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
             />
             <HubTile
               testId="geo-party-card"
-              tone="muted"
-              disabled
+              tone="primary"
               icon={<Users className="h-5 w-5" />}
-              label="Friends"
+              label="Friends · up to 16"
               title="Party"
-              badge={<TileFlag tone="warning">Coming soon</TileFlag>}
-              blurb="A lobby for a group of friends, all on the same places."
+              badge={<TileFlag tone="success">New</TileFlag>}
+              blurb="A private room for your group: Battle Royale on lives, or 2v2 team duels."
               action={
-                <Button variant="outline" className="w-full" disabled data-testid="geo-party-soon">
-                  Coming soon
+                <Button variant="outline" className="w-full" onClick={() => scrollTo("party")} data-testid="geo-open-party">
+                  <Users className="h-4 w-4" aria-hidden /> Open party
                 </Button>
               }
             />
@@ -852,6 +852,10 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
               queue={duelQueue}
               onQueue={setDuelQueue}
             />
+          </div>
+          <div id="party" className="scroll-mt-24 space-y-3">
+            <h3 className="font-display text-xl font-bold uppercase">Party</h3>
+            <PartyCard region={region} />
           </div>
         </HubSection>
 
