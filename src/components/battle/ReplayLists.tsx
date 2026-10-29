@@ -1,8 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import dynamic from "next/dynamic";
 import Link from "next/link";
-import { Clapperboard, Loader2, Trophy } from "lucide-react";
+import { Clapperboard, FileUp, Loader2, Play, Trophy } from "lucide-react";
+import { IMPORT_MAX_BYTES, parseShowdownReplay } from "@/lib/battle/replay-file";
+import type { ReplayData } from "@/lib/battle/replay";
+import { Button } from "@/components/ui/button";
 import { PLAY_FORMAT_INFO, PLAY_FORMATS, type PlayFormatId } from "@/lib/battle/play";
 import { replayResult, type ReplayListResponse, type ReplaySummary } from "@/lib/battle/replay";
 import { battleIdHeaders, ensureBattleId, rememberedReplays } from "@/lib/battle/replay-client";
@@ -123,5 +127,89 @@ export function ReplayLists() {
         </Card>
       </section>
     </div>
+  );
+}
+
+const ReplayViewer = dynamic(() => import("./ReplayViewer").then((m) => m.ReplayViewer), { ssr: false });
+
+/**
+ * Watch a Showdown battle in our viewer: paste its log, or open a replay
+ * file Showdown saved (.html) or a raw log (.log, .txt, .json). Read in the
+ * browser only: nothing is uploaded.
+ */
+export function ReplayImport() {
+  const [text, setText] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [replay, setReplay] = useState<ReplayData | null>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  const load = (input: string) => {
+    const res = parseShowdownReplay(input, PLAY_FORMAT_INFO);
+    if (res.ok) {
+      setError(null);
+      setReplay(res.replay);
+      window.scrollTo({ top: 0 });
+    } else setError(res.error);
+  };
+
+  if (replay) {
+    return (
+      <div className="space-y-3">
+        <p className="text-sm text-muted-foreground" data-testid="import-summary">
+          <strong className="text-foreground">
+            {replay.players[0]} vs {replay.players[1]}
+          </strong>{" "}
+          · {replay.formatName} · {replay.turns} turn{replay.turns === 1 ? "" : "s"}
+        </p>
+        <ReplayViewer replay={replay} imported={{ onReset: () => setReplay(null) }} />
+      </div>
+    );
+  }
+
+  return (
+    <Card>
+      <CardContent className="space-y-4 p-4 sm:p-6">
+        <label className="block space-y-2">
+          <span className="hud-label">Battle log</span>
+          <textarea
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            rows={12}
+            spellCheck={false}
+            placeholder={"|player|p1|Red|\n|player|p2|Blue|\n|tier|[Gen 9] OU\n|start\n|switch|p1a: Garchomp|Garchomp, M|100/100\n..."}
+            className="w-full resize-y rounded-md border bg-background p-3 font-mono text-xs leading-relaxed focus:border-screen focus:outline-none"
+            data-testid="import-text"
+          />
+        </label>
+        {error && (
+          <p role="alert" className="text-sm text-destructive" data-testid="import-error">
+            {error}
+          </p>
+        )}
+        <div className="flex flex-wrap items-center gap-2">
+          <Button type="button" onClick={() => load(text)} disabled={!text.trim()} data-testid="import-watch">
+            <Play className="h-4 w-4" aria-hidden /> Watch
+          </Button>
+          <Button type="button" variant="outline" onClick={() => fileRef.current?.click()} data-testid="import-file-button">
+            <FileUp className="h-4 w-4" aria-hidden /> Open a replay file
+          </Button>
+          <input
+            ref={fileRef}
+            type="file"
+            accept=".html,.htm,.log,.txt,.json,text/html,text/plain,application/json"
+            className="hidden"
+            data-testid="import-file"
+            onChange={async (e) => {
+              const file = e.target.files?.[0];
+              e.target.value = "";
+              if (!file) return;
+              if (file.size > IMPORT_MAX_BYTES) return setError("That file is too big to be a battle replay.");
+              load(await file.text());
+            }}
+          />
+          <span className="text-xs text-muted-foreground">Showdown&apos;s saved replays (.html) and battle logs (.log). Read on your device, never uploaded.</span>
+        </div>
+      </CardContent>
+    </Card>
   );
 }
