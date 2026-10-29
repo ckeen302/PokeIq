@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { adminFromCookies } from "@/lib/server/moderation";
 import { AdminPanel } from "@/components/admin/AdminPanel";
@@ -17,6 +18,11 @@ export default async function AdminPage() {
         <h1 className="font-display text-4xl font-bold uppercase tracking-tight">
           Moderation <span className="text-primary">desk</span>
         </h1>
+        <p className="text-sm text-muted-foreground">
+          <Link href="/admin/geo-flags" className="underline-offset-2 hover:underline" data-testid="admin-geo-flags-link">
+            PokéGuessr flags
+          </Link>
+        </p>
       </div>
       <AdminPanel />
     </div>

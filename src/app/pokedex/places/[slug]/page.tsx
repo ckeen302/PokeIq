@@ -76,7 +76,7 @@ export default async function PlacePage({ params }: PageProps) {
         <Section id="screenshot" index={++idx} title="Screenshot" subtitle={place.shot.game}>
           <figure className="hud overflow-hidden rounded-lg border bg-card">
             <img
-              src={`/api/geo/shot/${place.shot.id}`}
+              src={place.shot.preview}
               alt={`${place.name} in Pokémon ${place.shot.game}`}
               data-testid="place-shot"
               loading="lazy"

@@ -11,7 +11,7 @@ describe("GET /api/warm", () => {
     const body = (await res.json()) as { ok: boolean; ms: Record<string, number>; failed?: string[] };
     expect(body.failed, "modules that failed to load").toBeUndefined();
     expect(body.ok).toBe(true);
-    expect(Object.keys(body.ms).sort()).toEqual(["accounts", "battle", "connections", "geo", "pikadoku", "pokedle", "ranked", "tcg"]);
+    expect(Object.keys(body.ms).sort()).toEqual(["accounts", "battle", "connections", "geo", "geoGuess", "pikadoku", "pokedle", "ranked", "tcg"]);
     expect(res.headers.get("cache-control")).toBe("no-store");
   }, 120_000);
 });

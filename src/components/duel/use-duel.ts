@@ -16,6 +16,11 @@ import { unlockAudio } from "@/lib/sound";
  * waiting for a challenger and after the end (for a rematch). A hidden tab
  * only sends a heartbeat while its trainer is seated, so they aren't counted
  * as gone, and catches up at once when it's shown again.
+ *
+ * A duel whose changes are pushed to the page (PokéGuessr over Realtime)
+ * calls `refresh(rev)` as each push arrives, which polls at once unless the
+ * page already has that revision, and `setLive(true)` while the channel is
+ * up, which eases the polls off to a slow safety net.
  */
 
 /** After a 429, polls slow to at least this for a while. */
@@ -67,6 +72,9 @@ export function useDuel<V extends DuelPace>(api: string, code: string, wakeAt?: 
   const lastSeen = useRef("");
   const throttledUntil = useRef(0);
   const touch = useRef<() => void>(() => {});
+  const kick = useRef<() => void>(() => {});
+  /** Changes are being pushed to the page, so polls can ease off. */
+  const live = useRef(false);
   const wakeRef = useRef(wakeAt);
   wakeRef.current = wakeAt;
   /** `offset`, for timers that shouldn't restart each time it moves a little. */
@@ -116,18 +124,31 @@ export function useDuel<V extends DuelPace>(api: string, code: string, wakeAt?: 
         if (stopped) return null;
         const view = current.current;
         const wake = view && wakeRef.current ? wakeRef.current(view) : undefined;
-        const wait = duelPollDelay(view, quiet.current, Date.now() + skew.current, wake);
+        const wait = duelPollDelay(view, quiet.current, Date.now() + skew.current, wake, live.current);
         return wait !== null && Date.now() < throttledUntil.current ? Math.max(wait, THROTTLED_MS) : wait;
       },
       hiddenDelay: () => (stopped ? null : duelHiddenDelay(current.current)),
     });
     touch.current = poller.touch;
+    kick.current = poller.kick;
     return () => {
       stopped = true;
       touch.current = () => {};
+      kick.current = () => {};
       poller.stop();
     };
   }, [api, code, receive]);
+
+  /** Polls now (a push said the duel changed): skipped if the page already has revision `rev`. */
+  const refresh = useCallback((at?: number) => {
+    if (at !== undefined && at <= rev.current) return;
+    kick.current();
+  }, []);
+
+  /** Whether changes are being pushed to the page: while they are, polls ease off (lib/polling). */
+  const setLive = useCallback((on: boolean) => {
+    live.current = on;
+  }, []);
 
   /** A response to an action: as good as a poll, so the next poll waits its turn. */
   const settle = useCallback(
@@ -199,5 +220,5 @@ export function useDuel<V extends DuelPace>(api: string, code: string, wakeAt?: 
     }
   }
 
-  return { view, now, gone, offline, error, setError, busy, sawPlay, act, send, join, rematch };
+  return { view, now, gone, offline, error, setError, busy, sawPlay, act, send, join, rematch, refresh, setLive };
 }

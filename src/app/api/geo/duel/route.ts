@@ -7,6 +7,7 @@ import { duelsEnabled, insertDuel, newDuelCode } from "@/lib/server/duel-store";
 import { WORLD_REGION } from "@/lib/geo-types";
 import { GEO_ERAS } from "@/lib/geo-families";
 import { syncHiddenShots } from "@/lib/server/geo-reports";
+import { realtimeClientConfig } from "@/lib/server/realtime";
 import type { DuelSeatResponse } from "@/lib/duel-types";
 
 /**
@@ -52,7 +53,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: `That map has too few places for a ${settings.rounds}-round race.` }, { status: 400 });
       }
       if (!(await insertDuel(duel))) continue; // code taken: roll another
-      const body: DuelSeatResponse = { code: duel.code, token: duelToken(duel.code, playerId), view: duelView(duel, playerId, now, 0) };
+      const body: DuelSeatResponse = { code: duel.code, token: duelToken(duel.code, playerId), view: { ...duelView(duel, playerId, now, 0), live: realtimeClientConfig() } };
       return NextResponse.json(body, { headers: { "Cache-Control": "no-store" } });
     }
     return NextResponse.json({ error: "Couldn't open a duel. Try again." }, { status: 503 });

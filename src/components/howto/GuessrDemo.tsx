@@ -7,7 +7,7 @@ import { GEO_FALLOFF, GEO_MAX_ROUND_SCORE } from "@/lib/geo-types";
 import { DemoFrame, useDemoFrame } from "./shared";
 
 /** A real Scarlet / Violet screenshot (Levincia) and the Paldea map crop, scored with the game's own curve. */
-const SHOT = "/api/geo/shot/uV4ANtrw-q6M";
+const SHOT = "/api/geo/preview/demo";
 const MAP = { src: "/geo/maps/paldea.webp", w: 614, h: 564, squarePx: 28 };
 /** Levincia on the crop (world pin 0.41402, 0.53333 on the 5850 x 2565 map, less the crop's origin at 1907, 1068). */
 const ANSWER = { x: 0.41402 * 5850 - 1907, y: 0.53333 * 2565 - 1068 };

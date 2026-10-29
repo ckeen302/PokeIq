@@ -26,12 +26,20 @@ import {
 } from "@/lib/server/duel";
 import { deleteDuel, duelsEnabled, insertDuel, loadDuel, newDuelCode, updateDuel } from "@/lib/server/duel-store";
 import { settleGeoRankedDuel } from "@/lib/server/geo-ranked-duels";
-import { DUEL_CODE_RE, DUEL_MAX_ROUNDS, type DuelSeatResponse } from "@/lib/duel-types";
+import { publishIfChanged } from "@/lib/server/geo-duel-live";
+import { realtimeClientConfig } from "@/lib/server/realtime";
+import type { Duel } from "@/lib/server/duel";
+import { DUEL_CODE_RE, DUEL_MAX_ROUNDS, type DuelSeatResponse, type DuelView } from "@/lib/duel-types";
 
 /**
  * GET  /api/geo/duel/:code — the duel as you may see it (header x-duel-token:
  *      your player token; without one you're a visitor). Clients poll this; it
- *      also tells the server you're still here.
+ *      also tells the server you're still here. `live` says where to subscribe
+ *      for pushes instead (null: not set up here, so pages poll every second).
+ *
+ * Every write that changes what a page shows is published on the duel's
+ * channel (server/geo-duel-live.ts), so the other trainer's page fetches at
+ * once rather than at its next poll.
  * POST /api/geo/duel/:code — an action:
  *   { action: "join", name }                  take the free seat (returns your token)
  *   { action: "ready", token, ready }         in the lobby; the duel starts when both are ready
@@ -62,6 +70,11 @@ type Context = { params: Promise<{ code: string }> };
 
 const failure = (out: DuelFailure) => NextResponse.json({ error: out.error }, { status: out.status, headers: NO_STORE });
 
+/** The view as the page gets it, with where to subscribe for pushes. */
+async function viewOf(duel: Duel, playerId: string | null, now: number, rev: number): Promise<DuelView> {
+  return { ...(await seatAvatars(duelView(duel, playerId, now, rev))), live: realtimeClientConfig() };
+}
+
 function storeError(err: unknown) {
   console.error("[geo-duel]", err);
   return NextResponse.json({ error: "The duel server hiccupped. Try again." }, { status: 503, headers: NO_STORE });
@@ -83,11 +96,17 @@ export async function GET(request: NextRequest, context: Context) {
   await syncHiddenShots();
   const playerId = readDuelToken(request.headers.get("x-duel-token"), code);
   try {
-    const out = await updateDuel(code, (duel, now) => ({ ok: true as const, duel: touchDuel(duel, playerId, now) }));
+    let before: Duel | undefined;
+    const out = await updateDuel(code, (duel, now) => {
+      before = duel;
+      return { ok: true as const, duel: touchDuel(duel, playerId, now) };
+    });
     if (!out.ok) return failure(out);
+    // A poll that moved the duel on (a round's clock ran out, the next one started): tell the other page.
+    publishIfChanged(code, before, out.duel, out.rev);
     // A ranked duel that just ended: count it (once), so the view carries the rating change.
     const settled = await settleGeoRankedDuel(out.duel, out.rev);
-    return NextResponse.json(await seatAvatars(duelView(settled.duel, playerId, out.now, settled.rev)), { headers: NO_STORE });
+    return NextResponse.json(await viewOf(settled.duel, playerId, out.now, settled.rev), { headers: NO_STORE });
   } catch (err) {
     return storeError(err);
   }
@@ -114,9 +133,14 @@ export async function POST(request: NextRequest, context: Context) {
 
   try {
     if (body.action === "join") {
-      const out = await updateDuel(code, (duel, now) => joinDuel(duel, body.name, now));
+      let before: Duel | undefined;
+      const out = await updateDuel(code, (duel, now) => {
+        before = duel;
+        return joinDuel(duel, body.name, now);
+      });
       if (!out.ok) return failure(out);
-      const seat: DuelSeatResponse = { code, token: duelToken(code, out.playerId), view: await seatAvatars(duelView(out.duel, out.playerId, out.now, out.rev)) };
+      publishIfChanged(code, before, out.duel, out.rev);
+      const seat: DuelSeatResponse = { code, token: duelToken(code, out.playerId), view: await viewOf(out.duel, out.playerId, out.now, out.rev) };
       return NextResponse.json(seat, { headers: NO_STORE });
     }
 
@@ -132,7 +156,9 @@ export async function POST(request: NextRequest, context: Context) {
       if (limited) return limited;
     }
 
+    let before: Duel | undefined;
     const out = await updateDuel(code, (duel, now) => {
+      before = duel;
       switch (body.action) {
         case "ready":
           return readyDuel(duel, playerId, body.ready, now);
@@ -149,8 +175,9 @@ export async function POST(request: NextRequest, context: Context) {
       }
     });
     if (!out.ok) return failure(out);
+    publishIfChanged(code, before, out.duel, out.rev);
     const settled = await settleGeoRankedDuel(out.duel, out.rev);
-    return NextResponse.json(await seatAvatars(duelView(settled.duel, playerId, out.now, settled.rev)), { headers: NO_STORE });
+    return NextResponse.json(await viewOf(settled.duel, playerId, out.now, settled.rev), { headers: NO_STORE });
   } catch (err) {
     return storeError(err);
   }
@@ -176,15 +203,26 @@ async function rematch(code: string, playerId: string) {
       if (await insertDuel(fresh)) opened = fresh.code;
     }
     if (!opened) return NextResponse.json({ error: "Couldn't open a rematch. Try again." }, { status: 503 });
-    const linked = await updateDuel(code, (duel) => linkRematch(duel, opened));
+    let before: Duel | undefined;
+    const linked = await updateDuel(code, (duel) => {
+      before = duel;
+      return linkRematch(duel, opened);
+    });
     if (!linked.ok) return failure(linked);
+    // The other trainer's end screen says "Rematch requested!" at once.
+    publishIfChanged(code, before, linked.duel, linked.rev);
     next = linked.duel.rematch!;
     // Both asked at once and the other request linked its rematch first.
     if (next !== opened) await deleteDuel(opened);
   }
 
-  const out = await updateDuel(next, (duel, now) => takeRematchSeat(duel, playerId, me.name, now));
+  let seated: Duel | undefined;
+  const out = await updateDuel(next, (duel, now) => {
+    seated = duel;
+    return takeRematchSeat(duel, playerId, me.name, now);
+  });
   if (!out.ok) return failure(out);
-  const seat: DuelSeatResponse = { code: next, token: duelToken(next, playerId), view: await seatAvatars(duelView(out.duel, playerId, out.now, out.rev)) };
+  publishIfChanged(next, seated, out.duel, out.rev);
+  const seat: DuelSeatResponse = { code: next, token: duelToken(next, playerId), view: await viewOf(out.duel, playerId, out.now, out.rev) };
   return NextResponse.json(seat, { headers: NO_STORE });
 }

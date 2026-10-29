@@ -4,6 +4,7 @@ import { useEffect, useId, useRef, useState } from "react";
 import { Loader2, Maximize2, Minus, Plus } from "lucide-react";
 import { WORLD_REGION, type GeoRegionInfo } from "@/lib/geo-types";
 import { createAtlas, loadAtlas, type AtlasData, type AtlasEngine, type AtlasView, type Box } from "@/components/atlas/atlas-engine";
+import { preloadImage } from "@/lib/preload";
 import { cn } from "@/lib/utils";
 
 export interface MapPin {
@@ -48,6 +49,14 @@ interface Props {
 }
 
 const WORLD_MAP = "/geo/maps/world.webp";
+/** A small copy of the whole world, shown while the big map loads on the world map itself. */
+const WORLD_THUMB = "/geo/maps/world-thumb.webp";
+/** The world map has been decoded on this page (every map after the first draws it at once). */
+let worldMapReady = false;
+/** How long the first paint waits for the region's crop before the map goes on without it. */
+const CROP_WAIT_MS = 1500;
+/** The engine frames a locked region with this much room around it (atlas-engine's home view). */
+const LOCKED_ROOM = 1.04;
 /** A reveal never zooms closer than this many world pixels across (a handful of towns). */
 const REVEAL_MIN_BOX = 260;
 /** The line draws itself over this long before the camera moves. */
@@ -80,23 +89,44 @@ export function GeoMap({ region, pick, pinImage, revealed = [], fit, onPick, con
   // Very tall or wide maps sit in a box of sensible proportions.
   const aspect = mapAspect(region);
   const toWorld = (x: number, y: number): [number, number] => [x0 + x * bw, y0 + y * bh];
+  const locked = region.id !== WORLD_REGION;
+  /**
+   * First paint: the region's own crop of the map (a few dozen KB), or a small
+   * copy of the world, drawn over the canvas until the 760 KB world map has
+   * been decoded; then it fades out over the same pixels, with no jump. Once
+   * the world map is in, later maps on the page skip all this.
+   */
+  const crop = locked ? region.map.src : WORLD_THUMB;
+  const [cover, setCover] = useState<"shown" | "fading" | "gone">(() => (worldMapReady ? "gone" : "shown"));
+  const [cropPainted, setCropPainted] = useState(worldMapReady);
 
   useEffect(() => {
     pickRef.current = onPick;
   });
 
   useEffect(() => {
-    // The world map is the biggest download: start it now, alongside the atlas, not after it.
-    new window.Image().src = WORLD_MAP;
     loadAtlas()
       .then(setAtlas)
       .catch(() => setFailed(true));
   }, []);
 
   useEffect(() => {
+    if (worldMapReady) return;
+    let off = false;
+    // The crop is decoded and given a frame to paint before the world map is asked for.
+    const painted = preloadImage(crop).then(() => new Promise<void>((r) => requestAnimationFrame(() => r())));
+    void Promise.race([painted, new Promise<void>((r) => setTimeout(r, CROP_WAIT_MS))]).then(() => {
+      if (!off) setCropPainted(true);
+    });
+    return () => {
+      off = true;
+    };
+  }, [crop]);
+
+  useEffect(() => {
     const canvas = canvasRef.current;
     const stage = stageRef.current;
-    if (!atlas || !canvas || !stage) return;
+    if (!atlas || !canvas || !stage || !cropPainted) return;
     const box: Box = [x0, y0, x1, y1];
     const e = createAtlas(canvas, stage, atlas, WORLD_MAP, {
       bounds: region.id === WORLD_REGION ? undefined : box,
@@ -108,11 +138,28 @@ export function GeoMap({ region, pick, pinImage, revealed = [], fit, onPick, con
       onView: setView,
     });
     engine.current = e;
+    // The engine is loading the world map now; once it's decoded and drawn, the crop fades out over it.
+    let off = false;
+    let fade = 0;
+    if (!worldMapReady) {
+      void preloadImage(WORLD_MAP).then(() => {
+        worldMapReady = true;
+        requestAnimationFrame(() =>
+          requestAnimationFrame(() => {
+            if (off) return;
+            setCover("fading");
+            fade = window.setTimeout(() => !off && setCover("gone"), 350);
+          })
+        );
+      });
+    }
     return () => {
+      off = true;
+      window.clearTimeout(fade);
       e.destroy();
       engine.current = null;
     };
-  }, [atlas, region.id, x0, y0, x1, y1]);
+  }, [atlas, cropPainted, region.id, x0, y0, x1, y1]);
 
   // A revealed round zooms to show the guess and the answer together, once the line has drawn.
   const revealKey = revealed.map((r) => `${r.guess?.x},${r.guess?.y},${r.answer.pin}`).join("|");
@@ -154,6 +201,18 @@ export function GeoMap({ region, pick, pinImage, revealed = [], fit, onPick, con
       data-testid="geo-map"
     >
       <canvas ref={canvasRef} className="absolute inset-0 h-full w-full" />
+      {cover !== "gone" && (
+        // Before the engine reports a view, the crop sits where the engine will frame the region (centred, with its room around it).
+        <div
+          className={cn("pointer-events-none absolute transition-opacity duration-300", cover === "fading" ? "opacity-0" : "opacity-100")}
+          style={view ? { left: x0 * view.s + view.tx, top: y0 * view.s + view.ty, width: bw * view.s, height: bh * view.s } : { inset: locked ? `${((1 - 1 / LOCKED_ROOM) / 2) * 100}%` : 0 }}
+          data-testid="geo-map-cover"
+          aria-hidden
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element -- the region's crop of the world map, first paint */}
+          <img src={crop} alt="" className={cn("h-full w-full", view ? "max-w-none" : "object-contain")} draggable={false} />
+        </div>
+      )}
       {!atlas && (
         <div className="absolute inset-0 flex items-center justify-center text-sm text-white/80">
           {failed ? "Couldn't load the map. Try reloading." : <Loader2 className="h-5 w-5 animate-spin" aria-label="Loading the map" />}
