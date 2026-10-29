@@ -207,7 +207,8 @@ export function BattleHome({ news }: { news: NewsItem[] }) {
 
   const custom = format === "custom";
   const info = PLAY_FORMAT_INFO[format];
-  const needsTeam = !info.random;
+  // A random Showdown format (custom rules, "Showdown format") deals the teams itself.
+  const needsTeam = !info.random && !(custom && rules.baseRandom);
   const ladderable = isLadderFormat(format);
   const ladder = useLadderStanding(ladderable ? (format as StandardFormatId) : null);
   const rankedOn = ranked && ladderable && ladder.status !== "off";
@@ -259,7 +260,7 @@ export function BattleHome({ news }: { news: NewsItem[] }) {
         mode,
         name: trainer,
         format,
-        team: needsTeam ? team : undefined,
+        team: needsTeam ? team : custom ? "random" : undefined,
         rules: custom ? rules : undefined,
         ...(mode === "pvp" ? { hidden } : {}),
       });
@@ -310,7 +311,7 @@ export function BattleHome({ news }: { news: NewsItem[] }) {
                 {needsTeam ? (
                   <fieldset disabled={searching} className={cn("rounded-lg border bg-background/60 p-3", searching && "opacity-60")}>
                     <TeamPick
-                      key={custom ? `custom:${rules.gen}:${rules.level}:${rules.levelMode}:${rules.teamSize}` : format}
+                      key={custom ? `custom:${rules.base ?? ""}:${rules.gen}:${rules.level}:${rules.levelMode}:${rules.teamSize}` : format}
                       format={format}
                       onChange={onTeam}
                       idPrefix={id}

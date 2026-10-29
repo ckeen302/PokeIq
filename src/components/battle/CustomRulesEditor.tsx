@@ -16,10 +16,13 @@ import {
   normalizeRules,
   type CustomRules,
 } from "@/lib/battle/custom-rules";
+import { PLAYABLE_FORMATS, type CatalogueFormat } from "@/lib/battle/format-catalogue";
 import { cn } from "@/lib/utils";
+import { FormatPicker } from "./FormatPicker";
 
 /**
- * The custom ruleset: generation, level, gimmicks, clauses, team size, team
+ * The custom ruleset: one of Showdown's own formats (the whole catalogue,
+ * see FormatPicker), or the trainer's own: generation, level, gimmicks, clauses, team size, team
  * preview and (live battles) the turn timer. Every change is checked by
  * Pokémon Showdown on the server (/api/battle/rules), along with the team
  * picked, and Showdown's own messages are shown.
@@ -36,9 +39,70 @@ const chip = (on: boolean) =>
 export function CustomRulesEditor({ rules, onChange, live }: { rules: CustomRules; onChange: (rules: CustomRules) => void; live: boolean }) {
   const set = (patch: Partial<CustomRules>) => onChange(normalizeRules({ ...rules, ...patch }));
   const gimmicks = GIMMICKS.filter((g) => gimmickAllowed(g, rules.gen));
+  const showdown = !!rules.base;
+  // The format picked last, kept while the trainer looks at their own rules.
+  const [lastBase, setLastBase] = useState<CatalogueFormat | null>(null);
+  const chooseFormat = (f: CatalogueFormat) => {
+    setLastBase(f);
+    set({ base: f.id, baseName: f.name, baseRandom: f.random, gen: f.gen as CustomRules["gen"] });
+  };
+  const fallback = PLAYABLE_FORMATS.find((f) => f.id === "gen9ou") ?? PLAYABLE_FORMATS[0];
+
+  const modes = (
+    <div className="flex flex-wrap gap-1.5" role="radiogroup" aria-label="Rules">
+      <button type="button" role="radio" aria-checked={showdown} className={chip(showdown)} data-testid="rules-mode-showdown" onClick={() => !showdown && chooseFormat(lastBase ?? fallback)}>
+        Showdown format · {PLAYABLE_FORMATS.length}
+      </button>
+      <button type="button" role="radio" aria-checked={!showdown} className={chip(!showdown)} data-testid="rules-mode-own" onClick={() => showdown && set({ base: null })}>
+        Your own rules
+      </button>
+    </div>
+  );
+  const timer = live && (
+    <div className="space-y-1.5">
+      <span className="hud-label">Turn timer</span>
+      <div className="flex flex-wrap items-center gap-2 text-sm">
+        <button type="button" className={chip(rules.timer)} aria-pressed={rules.timer} onClick={() => set({ timer: !rules.timer })}>
+          {rules.timer ? "On" : "Off"}
+        </button>
+        {rules.timer && (
+          <label className="flex items-center gap-1.5">
+            <input
+              type="number"
+              min={TIMER_MIN}
+              max={TIMER_MAX}
+              step={10}
+              value={rules.timerSeconds}
+              onChange={(e) => set({ timerSeconds: Number(e.target.value) })}
+              className="h-9 w-20 rounded-md border border-input bg-background px-2"
+              aria-label="Seconds per turn"
+            />
+            seconds at most per turn
+          </label>
+        )}
+      </div>
+    </div>
+  );
+
+  if (showdown)
+    return (
+      <div className="space-y-4" data-testid="custom-rules">
+        {modes}
+        <p className="text-sm">
+          <span className="hud-label mr-2">Playing</span>
+          <span className="font-display font-bold uppercase" data-testid="picked-format">
+            {rules.baseName ?? rules.base}
+          </span>
+          <span className="text-muted-foreground"> · {rules.baseRandom ? "random teams, dealt by the engine" : "bring a team that's legal in it"}</span>
+        </p>
+        <FormatPicker value={rules.base} onPick={chooseFormat} />
+        {timer}
+      </div>
+    );
 
   return (
     <div className="space-y-4" data-testid="custom-rules">
+      {modes}
       <div className="space-y-1.5">
         <span className="hud-label">Generation · mechanics, type chart, Pokémon and moves</span>
         <div className="flex flex-wrap gap-1.5" role="radiogroup" aria-label="Generation">
@@ -152,31 +216,7 @@ export function CustomRulesEditor({ rules, onChange, live }: { rules: CustomRule
         </div>
       </div>
 
-      {live && (
-        <div className="space-y-1.5">
-          <span className="hud-label">Turn timer</span>
-          <div className="flex flex-wrap items-center gap-2 text-sm">
-            <button type="button" className={chip(rules.timer)} aria-pressed={rules.timer} onClick={() => set({ timer: !rules.timer })}>
-              {rules.timer ? "On" : "Off"}
-            </button>
-            {rules.timer && (
-              <label className="flex items-center gap-1.5">
-                <input
-                  type="number"
-                  min={TIMER_MIN}
-                  max={TIMER_MAX}
-                  step={10}
-                  value={rules.timerSeconds}
-                  onChange={(e) => set({ timerSeconds: Number(e.target.value) })}
-                  className="h-9 w-20 rounded-md border border-input bg-background px-2"
-                  aria-label="Seconds per turn"
-                />
-                seconds at most per turn
-              </label>
-            )}
-          </div>
-        </div>
-      )}
+      {timer}
     </div>
   );
 }

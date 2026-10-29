@@ -145,7 +145,8 @@ export function BattleSetup({ initial = "cpu", challenge }: { initial?: Opponent
   const custom = format === "custom";
   const info = PLAY_FORMAT_INFO[format];
   const formatName = custom ? customName(rules) : info.name;
-  const needsTeam = !info.random;
+  // A random Showdown format (custom rules, "Showdown format") deals the teams itself.
+  const needsTeam = !info.random && !(custom && rules.baseRandom);
   const verdict = useRulesCheck(custom ? rules : null, custom ? team : "");
   const rulesBroken = verdict?.state === "bad" && verdict.errors.length > 0;
   const teamSource = useMemo<TeamSource | undefined>(
@@ -208,7 +209,7 @@ export function BattleSetup({ initial = "cpu", challenge }: { initial?: Opponent
         name: name.trim(),
         format,
         level: opponent === "cpu" ? level : undefined,
-        team: needsTeam ? team : undefined,
+        team: needsTeam ? team : custom ? "random" : undefined,
         rules: custom ? rules : undefined,
         ...(opponent === "pvp" ? { public: watchable, timer: timerOn, timeoutLoses } : {}),
       });
@@ -322,7 +323,7 @@ export function BattleSetup({ initial = "cpu", challenge }: { initial?: Opponent
           <fieldset disabled={searching} className={cn(searching && "opacity-60")}>
             <Card>
               <CardContent className="p-4">
-                <TeamPick key={custom ? `custom:${rules.gen}:${rules.level}:${rules.levelMode}:${rules.teamSize}` : format} format={format} onChange={onTeam} idPrefix={id} source={teamSource} />
+                <TeamPick key={custom ? `custom:${rules.base ?? ""}:${rules.gen}:${rules.level}:${rules.levelMode}:${rules.teamSize}` : format} format={format} onChange={onTeam} idPrefix={id} source={teamSource} />
               </CardContent>
             </Card>
           </fieldset>
