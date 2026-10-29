@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
-import { pageMetadata } from "@/lib/seo";
+import { jsonLd, pageMetadata } from "@/lib/seo";
+import { breadcrumbList, itemList } from "@/lib/structured-data";
+import { TYPES, capitalize } from "@/lib/pokemon/type-matrix";
 import { DexTabs } from "@/components/pokedex/DexTabs";
 import { TypeChart } from "@/components/pokedex/TypeChart";
 import { ListHeader } from "@/components/pokedex/detail/DetailParts";
@@ -13,6 +15,8 @@ export const metadata: Metadata = pageMetadata({
 export default function TypesPage() {
   return (
     <div className="mx-auto max-w-7xl space-y-4">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(breadcrumbList([{ name: "Pokédex", path: "/pokedex" }, { name: "Types", path: "/pokedex/types" }])) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(itemList("Pokémon types", TYPES.map((t) => ({ name: `${capitalize(t)} type`, path: `/pokedex/types/${t}` })))) }} />
       <ListHeader kicker="Type chart · 18 types" title="Poké" accent="dex" blurb="Every attacking type against every defending type. For a dual-typed Pokémon, multiply the two columns." />
       <DexTabs active="types" />
       <TypeChart />

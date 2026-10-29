@@ -3,6 +3,8 @@
 // per-species Cards section when api.pokemontcg.io is down.
 // Row: [id, name, number, rarity | 0, types (or [supertype]), dex numbers | 0, smallImage?]
 // smallImage is only stored when it differs from images.pokemontcg.io/<set>/<number>.png.
+// Also writes src/lib/tcg/set-names.json (set id -> [name, release date]) for
+// server-rendered card links and the card sitemap.
 // Run: node scripts/build-tcg-index.mjs
 import { writeFileSync } from "node:fs";
 
@@ -34,4 +36,9 @@ async function worker() {
 await Promise.all(Array.from({ length: 12 }, worker));
 out.sort((a, b) => (a[0] < b[0] ? -1 : 1));
 writeFileSync(new URL("../src/lib/tcg/fallback-index.json", import.meta.url), JSON.stringify({ cards: out }));
+const names = Object.fromEntries(sets.map((s) => [s.id, [s.name, s.releaseDate]]));
+writeFileSync(
+  new URL("../src/lib/tcg/set-names.json", import.meta.url),
+  JSON.stringify({ note: "Set id -> [name, release date] from PokemonTCG/pokemon-tcg-data sets/en.json. Rebuilt by scripts/build-tcg-index.mjs.", sets: names })
+);
 console.log(sets.length, "sets", out.length, "cards");

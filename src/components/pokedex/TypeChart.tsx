@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { TYPES, effectiveness, capitalize } from "@/lib/pokemon/type-matrix";
 import { typeColor, typeTextColor } from "@/lib/pokemon/type-colors";
 import { cn } from "@/lib/utils";
@@ -32,12 +33,14 @@ export function TypeChart() {
               <td className="p-0" />
               {TYPES.map((d) => (
                 <th key={d} scope="col" className="p-0" title={`Defending: ${capitalize(d)}`}>
-                  <span
+                  <Link
+                    href={`/pokedex/types/${d}`}
+                    aria-label={`${capitalize(d)} type`}
                     className="mx-auto flex h-6 w-8 items-center justify-center rounded-[3px] text-[9px] font-bold uppercase"
                     style={{ background: typeColor(d), color: typeTextColor(d) }}
                   >
                     {d.slice(0, 3)}
-                  </span>
+                  </Link>
                 </th>
               ))}
             </tr>
@@ -46,12 +49,13 @@ export function TypeChart() {
             {TYPES.map((a) => (
               <tr key={a}>
                 <th scope="row" className="p-0 pr-1" title={`Attacking: ${capitalize(a)}`}>
-                  <span
+                  <Link
+                    href={`/pokedex/types/${a}`}
                     className="flex h-8 w-14 items-center justify-center rounded-[3px] text-[9px] font-bold uppercase"
                     style={{ background: typeColor(a), color: typeTextColor(a) }}
                   >
                     {capitalize(a)}
-                  </span>
+                  </Link>
                 </th>
                 {TYPES.map((d) => {
                   const m = String(effectiveness(a, [d]));

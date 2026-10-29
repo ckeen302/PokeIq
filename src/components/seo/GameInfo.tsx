@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { HowToButton } from "./HowToButton";
-import { SITE_URL } from "@/lib/site";
+import { webGame } from "@/lib/structured-data";
 import { jsonLd } from "@/lib/seo";
 
 /** Static SEO copy under a game: intro, how to play, FAQ (collapsed), more-games links and JSON-LD. */
@@ -51,17 +51,7 @@ interface Props {
 }
 
 export function GameInfo({ path, name, intro, steps, faqs, description, howToButton, hidden }: Props) {
-  const app = {
-    "@context": "https://schema.org",
-    "@type": "WebApplication",
-    name,
-    url: `${SITE_URL}${path}`,
-    description,
-    applicationCategory: "GameApplication",
-    operatingSystem: "Any (web browser)",
-    isAccessibleForFree: true,
-    offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
-  };
+  const app = webGame({ name, path, description });
   const faq = {
     "@context": "https://schema.org",
     "@type": "FAQPage",

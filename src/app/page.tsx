@@ -10,7 +10,8 @@ import { Experiences } from "@/components/home/Experiences";
 import { WhichPokemonCard } from "@/components/which-pokemon/WhichPokemonCard";
 import { HudHeading } from "@/components/game/HudHeading";
 import { SITE_NAME } from "@/lib/site";
-import { SITE_DESCRIPTION, SITE_TAGLINE, pageMetadata } from "@/lib/seo";
+import { SITE_DESCRIPTION, SITE_TAGLINE, jsonLd, pageMetadata } from "@/lib/seo";
+import { websiteWithSearch } from "@/lib/structured-data";
 
 export const metadata: Metadata = {
   ...pageMetadata({
@@ -28,6 +29,7 @@ export const metadata: Metadata = {
 export default function HomePage() {
   return (
     <div className="mx-auto -mt-4 max-w-6xl space-y-14 sm:mt-0 sm:space-y-16">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(websiteWithSearch()) }} />
       <div className="space-y-4 sm:space-y-6">
         <Hero />
         <Experiences />
