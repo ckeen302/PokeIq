@@ -92,14 +92,16 @@ export function Avatar3DScene({ config, pose = "idle", facing = "front", partner
 
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(26, 1, 0.1, 50);
-    scene.add(new THREE.HemisphereLight(0xfff8f0, 0x8a7f99, 1.9));
-    const key = new THREE.DirectionalLight(0xffffff, 2.4);
+    // Toon-lit stage: a warm key from the front right, a cool fill, and a
+    // strong back light that rims the silhouette.
+    scene.add(new THREE.HemisphereLight(0xfff6ec, 0x8c87a8, 1.6));
+    const key = new THREE.DirectionalLight(0xfff1df, 2.6);
     key.position.set(2.5, 4, 5);
     scene.add(key);
-    const fill = new THREE.DirectionalLight(0xdfe8ff, 0.8);
+    const fill = new THREE.DirectionalLight(0xd9e4ff, 0.7);
     fill.position.set(-4, 2, 3);
     scene.add(fill);
-    const rim = new THREE.DirectionalLight(0xffffff, 1.6);
+    const rim = new THREE.DirectionalLight(0xffffff, 1.4);
     rim.position.set(-1.5, 3, -4);
     scene.add(rim);
 
@@ -108,9 +110,15 @@ export function Avatar3DScene({ config, pose = "idle", facing = "front", partner
     const shadowGeo = new THREE.PlaneGeometry(1, 1);
     const shadow = new THREE.Mesh(shadowGeo, shadowMat);
     shadow.rotation.x = -Math.PI / 2;
-    shadow.scale.set(1.25, 1.0, 1);
+    shadow.scale.set(1.4, 1.1, 1);
     shadow.position.y = 0.002;
     scene.add(shadow);
+    // A tighter, darker contact shadow right under the feet.
+    const contact = new THREE.Mesh(shadowGeo, shadowMat);
+    contact.rotation.x = -Math.PI / 2;
+    contact.scale.set(0.62, 0.42, 1);
+    contact.position.set(0, 0.003, 0.02);
+    scene.add(contact);
     const partnerShadow = new THREE.Mesh(shadowGeo, shadowMat);
     partnerShadow.rotation.x = -Math.PI / 2;
     partnerShadow.position.y = 0.002;
@@ -136,18 +144,18 @@ export function Avatar3DScene({ config, pose = "idle", facing = "front", partner
       const pb = partnerBox();
       const side = Math.sign(spot.x);
       const px = spot.x + side * pb.shift;
-      const minX = Math.min(-0.62, withPartner ? px - pb.wide / 2 - 0.05 : 0);
-      const maxX = Math.max(0.62, withPartner ? px + pb.wide / 2 + 0.05 : 0);
+      const minX = Math.min(-0.66, withPartner ? px - pb.wide / 2 - 0.05 : 0);
+      const maxX = Math.max(0.66, withPartner ? px + pb.wide / 2 + 0.05 : 0);
       const boxW = maxX - minX;
-      const boxH = 2.3;
+      const boxH = 2.5;
       const fov = THREE.MathUtils.degToRad(camera.fov);
       const fitH = boxH / 2 / Math.tan(fov / 2);
       const fitW = boxW / 2 / Math.tan(fov / 2) / aspect;
       const dist = Math.max(fitH, fitW) * 1.08;
       const cx = (minX + maxX) / 2;
       // A little above the trainer's eye line, looking slightly down.
-      camera.position.set(cx, 1.85, dist + 0.3);
-      camera.lookAt(cx, 1.08, 0);
+      camera.position.set(cx, 1.98, dist + 0.3);
+      camera.lookAt(cx, 1.18, 0);
       camera.updateProjectionMatrix();
       partnerShadow.position.set(px, 0.002, spot.z);
       partnerShadow.visible = withPartner;

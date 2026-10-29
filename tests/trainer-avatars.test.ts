@@ -1,7 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
 import type { PublicUser } from "@/lib/server/accounts";
-import { TRAINER_FIELDS, TRAINER_FIELD_KEYS, checkTrainer, lockedItems, parseTrainer, seededTrainer, starterTrainer, unlocked, type TrainerConfig } from "@/lib/trainer/config";
+import { TRAINER_FIELDS, TRAINER_FIELD_KEYS, V1_FIELDS, checkTrainer, jsonbBytes, lockedItems, parseTrainer, seededTrainer, starterTrainer, unlocked, type TrainerConfig } from "@/lib/trainer/config";
+import { TRAINER_PRESETS, matchPreset, presetTrainer } from "@/lib/trainer/presets";
 
 process.env.POKEIQ_LOCAL_ACCOUNTS = "1";
 
@@ -29,7 +30,7 @@ vi.mock("@/lib/server/accounts", async (orig) => {
   };
 });
 
-const { clearMemoryAvatars, avatarsByNames } = await import("@/lib/server/avatars");
+const { clearMemoryAvatars, avatarsByNames, avatarStore } = await import("@/lib/server/avatars");
 const route = await import("@/app/api/avatar/trainer/route");
 
 let ip = 0;
@@ -58,14 +59,59 @@ describe("trainer configs", () => {
     expect(parseTrainer({ ...t, partner: 0 })).toBeNull();
     expect(parseTrainer({ ...t, partner: 1026 })).toBeNull();
     expect(parseTrainer({ ...t, partner: 25.5 })).toBeNull();
-    expect(parseTrainer({ ...t, v: 2 })).toBeNull();
+    expect(parseTrainer({ ...t, v: 3 })).toBeNull();
+    expect(parseTrainer({ ...t, cape: "jetpack" })).toBeNull();
+    expect(parseTrainer({ ...t, closed: "yes" })).toBeNull();
     const noSkin: Partial<TrainerConfig> = { ...t };
     delete noSkin.skin;
     expect(parseTrainer(noSkin)).toBeNull();
     expect(parseTrainer(null)).toBeNull();
     expect(parseTrainer([t])).toBeNull();
-    // Small enough for the column's check.
-    expect(JSON.stringify(t).length).toBeLessThan(512);
+    // Small enough for the column's check (jsonb, at most 1024 bytes), even with the longest id in every field.
+    expect(jsonbBytes(t)).toBeLessThan(1000);
+    const worst = { ...t } as Record<string, unknown>;
+    for (const key of TRAINER_FIELD_KEYS) worst[key] = [...TRAINER_FIELDS[key]].map((p) => p.id).sort((a, b) => b.length - a.length)[0];
+    expect(parseTrainer(worst)).not.toBeNull();
+    expect(jsonbBytes(worst as unknown as TrainerConfig)).toBeLessThan(1000);
+  });
+
+  it("still loads trainers saved by the first creator (v1), with the same look", () => {
+    const v1 = { v: 1, body: "slim", skin: "s3", eyes: "focused", hair: "ponytail", hairColor: "auburn", hat: "beanie", hatColor: "navy", top: "tee", topColor: "teal", accent: "yellow", bottoms: "skirt", bottomsColor: "black", shoes: "boots", shoesColor: "brown", gloves: "full", pack: "satchel", packColor: "orange", ball: "poke", partner: 133, shiny: false };
+    const t = parseTrainer(v1)!;
+    expect(t).not.toBeNull();
+    expect(t.v).toBe(2);
+    for (const key of V1_FIELDS) expect(t[key]).toBe(v1[key]);
+    expect(t).toMatchObject({ partner: 133, shiny: false, expr: "determined", hatTrim: "yellow", topTrim: "yellow", glovesColor: "yellow", accColor: "yellow", packTrim: "orange", bottomsTrim: "black", emblem: "badge", closed: false, cape: "none", stage: "plain", eyewear: "none" });
+    // v1 rows never carried the new fields: anything extra on a v1 row is ignored.
+    expect(parseTrainer({ ...v1, cape: "royal", closed: true })).toEqual(t);
+    // Parsing the upgraded trainer again changes nothing.
+    expect(parseTrainer(t)).toEqual(t);
+    expect(checkTrainer(v1, NONE).ok).toBe(true);
+    // A v2 trainer missing a newer field gets its default; a wrong one is refused.
+    const partial: Record<string, unknown> = { ...t };
+    delete partial.stage;
+    delete partial.closed;
+    expect(parseTrainer(partial)).toEqual(t);
+    expect(parseTrainer({ ...t, stage: "moon" })).toBeNull();
+  });
+
+  it("offers the ready-made looks, labelled by look, all free to save", () => {
+    expect(TRAINER_PRESETS).toHaveLength(15);
+    expect(new Set(TRAINER_PRESETS.map((p) => p.id)).size).toBe(15);
+    expect(new Set(TRAINER_PRESETS.map((p) => p.name)).size).toBe(15);
+    const names = /\b(ash|red|misty|brock|gary|blue|cynthia|jessie|n|leon|dawn|oak|steven|serena|lance|marnie)\b/i;
+    for (const preset of TRAINER_PRESETS) {
+      expect(preset.name).not.toMatch(names);
+      const t = presetTrainer(preset, 6);
+      expect(parseTrainer(t)).toEqual(t);
+      expect(lockedItems(t, NONE)).toEqual([]);
+      expect(jsonbBytes(t)).toBeLessThan(1000);
+      expect(matchPreset(t)?.id).toBe(preset.id);
+      expect(matchPreset({ ...t, stage: "kanto" })?.id).toBe(preset.id);
+    }
+    // Every look is different.
+    expect(new Set(TRAINER_PRESETS.map((p) => JSON.stringify(p.look))).size).toBe(15);
+    expect(matchPreset(starterTrainer())).toBeUndefined();
   });
 
   it("seeds a free-item trainer from a name, the same every time", () => {
@@ -87,6 +133,10 @@ describe("trainer configs", () => {
     expect(checkTrainer({ ...t, top: "track" }, { ...NONE, badges: 3 }).ok).toBe(true);
     expect(checkTrainer({ ...t, ball: "ultra" }, { ...NONE, tier: "great" }).ok).toBe(false);
     expect(checkTrainer({ ...t, topColor: "gold" }, { ...NONE, badges: 12 }).ok).toBe(true);
+    expect(checkTrainer({ ...t, capeTrim: "gold" }, { ...NONE, badges: 11 }).ok).toBe(false);
+    expect(checkTrainer({ ...t, stage: "hall" }, { ...NONE, badges: 9 }).ok).toBe(false);
+    expect(checkTrainer({ ...t, stage: "hall" }, { ...NONE, badges: 10 }).ok).toBe(true);
+    expect(checkTrainer({ ...t, stage: "kanto", cape: "royal", top: "longcoat", hat: "crown" }, NONE).ok).toBe(true);
     const shiny = checkTrainer({ ...t, shiny: true }, NONE);
     expect(shiny.ok).toBe(false);
     if (!shiny.ok) expect(shiny.error).not.toMatch(/level/i);
@@ -120,11 +170,24 @@ describe("/api/avatar/trainer", () => {
     expect((await avatarsByNames(["ash"])).ash.trainer).toBeUndefined();
   });
 
+  it("serves a trainer saved before v2 as v2", async () => {
+    const v1 = { v: 1, body: "sturdy", skin: "s2", eyes: "round", hair: "spiky", hairColor: "black", hat: "cap", hatColor: "red", top: "jacket", topColor: "blue", accent: "white", bottoms: "pants", bottomsColor: "navy", shoes: "sneakers", shoesColor: "red", gloves: "fingerless", pack: "classic", packColor: "green", ball: "poke", partner: 25, shiny: false };
+    await avatarStore()!.saveTrainer(ash.id, v1 as unknown as TrainerConfig);
+    const pub = await (await route.GET(req(null, { query: "?name=ash" }))).json();
+    expect(pub.trainer).toEqual(starterTrainer(25));
+    const own = await (await route.GET(req("ash"))).json();
+    expect(own.trainer.v).toBe(2);
+    // Saving it back stores v2.
+    expect((await put("ash", own.trainer)).status).toBe(200);
+    expect((await avatarsByNames(["ash"])).ash.trainer?.v).toBe(2);
+  });
+
   it("refuses locked items, junk and guests", async () => {
     expect((await put("ash", { ...starterTrainer(), hat: "ace" })).status).toBe(403);
     badges.set(ash.id, 5);
     expect((await put("ash", { ...starterTrainer(), hat: "safari" })).status).toBe(200);
     expect((await put("ash", { ...starterTrainer(), hat: "fedora" })).status).toBe(403);
+    expect((await put("ash", { ...starterTrainer(), stage: "space" })).status).toBe(403);
     expect((await put("ash", null)).status).toBe(400);
     expect((await put(null, starterTrainer())).status).toBe(401);
     expect((await avatarsByNames(["ash"])).ash.trainer?.hat).toBe("safari");
