@@ -14,6 +14,9 @@ import { replayStore } from "@/lib/server/battle-engine/replays";
 import { insightsAvailable } from "@/lib/server/battle-engine/insights";
 import { rankedKey, rankedStore } from "@/lib/server/ranked";
 import { geoRankedKey, geoRankedStandingOf } from "@/lib/server/geo-ranked";
+import { geoStatsKey, playerGeoStats } from "@/lib/server/geo-round-scores";
+import { bestStreakOf } from "@/lib/server/geo-streak";
+import { GeoProfileStats } from "@/components/geo/GeoProfileStats";
 import { utcDay, type GeoRankedStanding } from "@/lib/geo-ranked";
 import { GeoDivisionBadge } from "@/components/geo/GeoRanked";
 import { avatarsByIds } from "@/lib/server/avatars";
@@ -56,7 +59,7 @@ const findProfile = cache(async (raw: string) => {
   const key = battleKey(`u:${user.id}`);
   const replays = replayStore();
   const ranked = rankedStore();
-  const [digest, battles, pokedle, guessr, mine, avatars, about, insights] = await Promise.all([
+  const [digest, battles, pokedle, guessr, mine, avatars, about, insights, geoStats, geoStreak] = await Promise.all([
     quietly("progress", progressDigests([user.id]).then((m) => m.get(user.id) ?? null), null),
     quietly("battles", battleProfile(key), null),
     quietly<RankedStanding | null>("pokedle", ranked?.standing(rankedKey(`u:${user.id}`)), null),
@@ -65,6 +68,8 @@ const findProfile = cache(async (raw: string) => {
     avatarsByIds([user.id]),
     aboutFor(user.id),
     quietly("insights", insightsAvailable(), false),
+    quietly("geo-stats", playerGeoStats(geoStatsKey(`u:${user.id}`)), null),
+    quietly("geo-streak", bestStreakOf(geoStatsKey(`u:${user.id}`)), null),
   ]);
   return {
     username: user.username,
@@ -73,6 +78,8 @@ const findProfile = cache(async (raw: string) => {
     battles,
     pokedle,
     guessr,
+    geoStats,
+    geoStreak,
     connections: connDigest(digest),
     about,
     aboutNames: Object.fromEntries(Object.entries(about.pokemon).map(([slot, p]) => [slot, pokemonName(p.id) ?? ""])),
@@ -206,6 +213,8 @@ export default async function UserProfilePage({ params }: PageProps) {
           </CardContent>
         </Card>
       </div>
+
+      <GeoProfileStats stats={found.geoStats} streak={found.geoStreak} />
 
       <Card>
         <CardContent className="space-y-4 p-5">

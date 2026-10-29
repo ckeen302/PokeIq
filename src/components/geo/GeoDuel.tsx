@@ -27,6 +27,7 @@ import { useMatchmaking } from "@/components/duel/use-matchmaking";
 import { rankedExtra } from "@/components/pokedle/Ranked";
 import { GEO_RANKED_MATCH } from "@/lib/geo-ranked";
 import { GeoRankedOutcome } from "./GeoRanked";
+import { ShareResultLink } from "./ShareResultLink";
 
 /**
  * A PokéGuessr duel at /guessr/duel/<code>: the lobby, the versus intro, the
@@ -632,6 +633,8 @@ function DuelEnd({ view, map, busy, onRematch }: { view: DuelView; map: GeoRegio
             Rematch requested!
           </p>
         )}
+        {/* The duel's result page and preview card (both trainers, HP and rounds), by its code. */}
+        <ShareResultLink token={`duel:${view.code}`} text="Our PokéGuessr duel" className="[&_button]:border-white/30 [&_button]:bg-transparent [&_button]:text-white [&_button:hover]:bg-white/10 [&_button:hover]:text-white" />
 
         {rounds > 0 && (
           <div className="grid gap-4 md:grid-cols-[1fr_minmax(0,20rem)]">

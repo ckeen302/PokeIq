@@ -7,7 +7,8 @@ import { connSeasonLabel, connSeasonOf } from "@/lib/connections/ranked";
 import { fetchBoard } from "@/lib/server/leaderboard";
 import { fetchGeoBoard } from "@/lib/server/geo-leaderboard";
 import { geoRegions, isGeoSpec } from "@/lib/server/geo";
-import { GEO_ROUND_OPTIONS, geoBoardKey, geoMapRank } from "@/lib/geo-types";
+import { GEO_ROUND_OPTIONS, WORLD_REGION, geoBoardKey, geoMapRank } from "@/lib/geo-types";
+import { GEO_REGION_STREAK_BOARD } from "@/lib/geo-streak-types";
 import { GEO_ERA_NAMES, type GeoEra } from "@/lib/geo-families";
 import { dailyNumber, isValidDailyDate } from "@/lib/daily";
 import { FORMAT_INFO, MODULE_INFO, PLAY_MODULES, PLAYABLE_FORMATS } from "@/lib/modes";
@@ -341,6 +342,8 @@ export default async function LeaderboardPage({ searchParams }: PageProps) {
             }))
         ),
       }))
+      // Region Streak (name the region from one screenshot) is played on the world map.
+      .map((r) => (r.id === WORLD_REGION ? { ...r, boards: [...r.boards, { id: GEO_REGION_STREAK_BOARD, name: "Region Streak" }] } : r))
       .filter((r) => r.boards.length)
       .sort((a, b) => geoMapRank(a.id) - geoMapRank(b.id));
     const map = maps.find((r) => r.boards.some((b) => b.id === params.format));
@@ -427,7 +430,7 @@ export default async function LeaderboardPage({ searchParams }: PageProps) {
                         </span>
                       </td>
                       <td className="p-3 text-right font-mono tabular-nums">
-                        {mode?.endsWith(":streak") ? `${row.score} in a row` : `${row.score.toLocaleString("en-US")} / 25,000`}
+                        {mode && /streak$/.test(mode) ? `${row.score} in a row` : `${row.score.toLocaleString("en-US")} / 25,000`}
                       </td>
                       <td className="hidden p-3 text-right tabular-nums sm:table-cell">{Math.round(row.duration_ms / 1000)}s</td>
                     </tr>

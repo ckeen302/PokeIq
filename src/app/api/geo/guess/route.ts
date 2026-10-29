@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { clientIp, rateLimit } from "@/lib/server/rate-limit";
 import { claimOnce, recallResponse, rememberResponse, requestFingerprint } from "@/lib/server/replay-guard";
-import { gradeGeo, readGeo } from "@/lib/server/geo";
+import { gradeGeo, readGeo, regionGroupOf } from "@/lib/server/geo";
 import { syncHiddenShots } from "@/lib/server/geo-reports";
 import { logRoundScore, roundFlag } from "@/lib/server/geo-round-scores";
 import { deriveSeed, randomId } from "@/lib/server/crypto";
@@ -70,6 +70,7 @@ export async function POST(request: NextRequest) {
   // Each shot's real difficulty (how players score on it) and the behaviour flags; a timed-out round says nothing about the shot.
   if (!outcome.body.timedOut) {
     const spec = state.spec;
+    const region = regionGroupOf(outcome.body.answer.region);
     void playerOf(request, device).then((player) =>
       logRoundScore({
         shot: outcome.shot,
@@ -79,6 +80,11 @@ export async function POST(request: NextRequest) {
         game: state.sid,
         elapsedMs: outcome.played.elapsedMs,
         flag: roundFlag(outcome.played),
+        kind: spec.kind === "streak" ? "streak" : spec.daily ? "daily" : spec.practice === "challenge" ? "challenge" : "game",
+        run: state.sid,
+        family: outcome.body.answer.family,
+        ...(region ? { region } : {}),
+        ...(spec.kind === "streak" ? { hit: outcome.body.hit } : {}),
       })
     );
   }

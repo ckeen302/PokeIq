@@ -113,6 +113,8 @@ const PERFECT_SQUARES = 0.5;
 /** Parts of a region that count as it in world games and streaks: DLC areas, and the Sevii Islands (Kanto's). */
 const REGION_GROUP: Record<string, string> = { "Isle of Armor": "Galar", "Crown Tundra": "Galar", "Blueberry Academy": "Unova", "Sevii Islands": "Kanto" };
 const groupOf = (region?: string) => (region ? (REGION_GROUP[region] ?? region) : "");
+/** The region a place counts as in a region streak (Region Streak mode reads it). */
+export const regionGroupOf = groupOf;
 /** A starting town per region, for the setup screen's preview picture. */
 const HOME: Record<string, string> = {
   kanto: "Pallet Town",

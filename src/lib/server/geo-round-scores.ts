@@ -1,12 +1,17 @@
 import "server-only";
 import { getServiceSupabase } from "@/lib/supabase";
+import { GEO_MAX_ROUND_SCORE } from "@/lib/geo-types";
+import { geoFamily, isGeoFamily } from "@/lib/geo-families";
+import { GEO_STREAK_REGIONS } from "@/lib/geo-streak-types";
+import { deriveSeed } from "./crypto";
 import { setShotScores } from "./geo";
 
 /**
  * Players' round scores per screenshot (migration 0040, `geo_round_scores`),
  * so each shot's difficulty follows how players really do on it, and (with
  * migration 0045) who played each round and how, for the behaviour flags
- * that moderators read on /admin/geo-flags.
+ * that moderators read on /admin/geo-flags; with migration 0046 also where
+ * and in what, so a profile can show accuracy by region and game.
  *
  * Everything here fails open: until the table exists (or without Supabase)
  * nothing is logged and the audit's heuristic ratings stand, so the game
@@ -15,7 +20,10 @@ import { setShotScores } from "./geo";
  * and in development without Supabase, rounds live in memory.
  */
 
-export type RoundMode = "solo" | "daily" | "challenge" | "duel" | "ranked";
+/** The `mode` column: which pool a round was graded in. */
+export type RoundMode = "solo" | "daily" | "challenge" | "duel" | "ranked" | "region-streak";
+/** What was being played (migration 0046's `kind` column): finer than `mode`. */
+export type RoundKind = "game" | "daily" | "challenge" | "streak" | "region-streak" | "duel";
 export interface ShotScoreStat {
   id: string;
   avg: number;
@@ -48,12 +56,37 @@ export interface RoundScoreRow {
   score: number;
   mode: RoundMode;
   /** The trainer (an HMAC of their account or device), and their name when signed in. */
-  player?: { key: string; name: string | null } | null;
+  player?: { key: string; name: string | null } | string | null;
   /** The game the round belongs to (flags that repeat across games weigh more). */
   game?: string;
   elapsedMs?: number;
   flag?: RoundFlag;
+  /** Migration 0046: the place's region, the shot's game family, what was played, the run, and (streaks) whether the pick was right. */
+  region?: string;
+  family?: string;
+  kind?: RoundKind;
+  run?: string;
+  hit?: boolean;
 }
+/** Back-compat name. */
+export type RoundLog = RoundScoreRow;
+export interface PlayerRoundRow {
+  region: string | null;
+  family: string | null;
+  kind: RoundKind | null;
+  score: number;
+  hit: boolean | null;
+  run: string | null;
+}
+const playerKeyOf = (p: RoundScoreRow["player"]) => (typeof p === "string" ? p : p?.key ?? null);
+const playerNameOf = (p: RoundScoreRow["player"]) => (typeof p === "string" ? null : p?.name ?? null);
+
+/** The key a trainer's rounds are logged under (an HMAC of `u:<account id>` or `d:<device>`), never the id itself. */
+export const geoStatsKey = (identity: string) => deriveSeed("geo-player", identity);
+/** Pin rounds only feed the per-shot difficulty: a region pick's right/wrong says nothing about how hard a pin is. */
+const ratesShot = (row: Pick<RoundScoreRow, "mode">) => row.mode !== "region-streak";
+/** How many of a trainer's latest rounds their stats are read from. */
+const PLAYER_ROWS = 4000;
 
 /** One trainer's flagged play, as the moderation desk lists it. */
 export interface FlaggedPlayer {
@@ -74,6 +107,8 @@ export interface RoundScoreStore {
   stats(): Promise<ShotScoreStat[]>;
   /** Trainers with flagged rounds, most flagged first. */
   flagged(): Promise<FlaggedPlayer[]>;
+  /** A trainer's logged rounds, newest first (at most `limit`). */
+  ofPlayer(key: string, limit?: number): Promise<PlayerRoundRow[]>;
 }
 
 export class RoundScoresUnavailable extends Error {}
@@ -93,17 +128,19 @@ export function clearMemoryRoundScores() {
 export function flaggedFrom(rows: Iterable<MemoryRow>): FlaggedPlayer[] {
   const by = new Map<string, FlaggedPlayer & { gameIds: Set<string> }>();
   for (const r of rows) {
-    if (!r.player) continue;
-    const p = by.get(r.player.key) ?? { key: r.player.key, name: null, flagged: 0, fast: 0, games: 0, rounds: 0, lastAt: 0, gameIds: new Set<string>() };
+    const key = playerKeyOf(r.player);
+    if (!key) continue;
+    const p = by.get(key) ?? { key, name: null, flagged: 0, fast: 0, games: 0, rounds: 0, lastAt: 0, gameIds: new Set<string>() };
     p.rounds++;
-    if (r.player.name) p.name = r.player.name;
+    const name = playerNameOf(r.player);
+    if (name) p.name = name;
     if ((r.flag ?? 0) >= 1) {
       p.fast++;
       p.lastAt = Math.max(p.lastAt, r.at);
       if (r.game) p.gameIds.add(r.game);
     }
     if ((r.flag ?? 0) >= 2) p.flagged++;
-    by.set(r.player.key, p);
+    by.set(key, p);
   }
   return [...by.values()]
     .filter((p) => p.fast > 0)
@@ -118,7 +155,7 @@ export function memoryRoundScoreStore(): RoundScoreStore {
     },
     async stats() {
       const by = new Map<string, { sum: number; n: number }>();
-      for (const r of mem()) {
+      for (const r of mem().filter(ratesShot)) {
         const s = by.get(r.shot) ?? { sum: 0, n: 0 };
         s.sum += r.score;
         s.n++;
@@ -128,6 +165,13 @@ export function memoryRoundScoreStore(): RoundScoreStore {
     },
     async flagged() {
       return flaggedFrom(mem());
+    },
+    async ofPlayer(key, limit = PLAYER_ROWS) {
+      return mem()
+        .filter((r) => playerKeyOf(r.player) === key)
+        .reverse()
+        .slice(0, limit)
+        .map((r) => ({ region: r.region ?? null, family: r.family ?? null, kind: r.kind ?? null, score: r.score, hit: r.hit ?? null, run: r.run ?? null }));
     },
   };
 }
@@ -158,19 +202,26 @@ export function supabaseRoundScoreStore(sb: Sb): RoundScoreStore {
       if (Date.now() >= plainUntil) {
         const full = {
           ...base,
-          player_key: row.player?.key ?? null,
-          player_name: row.player?.name ?? null,
+          player_key: playerKeyOf(row.player),
+          player_name: playerNameOf(row.player),
           game_id: row.game ?? null,
           elapsed_ms: row.elapsedMs === undefined ? null : Math.min(Math.round(row.elapsedMs), 86_400_000),
           flag: row.flag ?? 0,
+          region: row.region ?? null,
+          family: row.family ?? null,
+          kind: row.kind ?? null,
+          run_id: row.run ?? null,
+          hit: row.hit ?? null,
         };
         const { error } = await sb.from("geo_round_scores").insert(full);
         if (!error) return;
-        if (!NO_COLUMN.has(error.code ?? "")) check(error);
-        // Before migration 0045: the row without the player and flag columns.
-        if (Date.now() >= plainUntil) console.warn("[geo-round-scores] player and flag columns need migration 0045_geo_flags.sql:", error.message);
+        // 23514: a mode the check constraint doesn't know yet (region-streak before 0046).
+        if (!NO_COLUMN.has(error.code ?? "") && error.code !== "23514") check(error);
+        // Before migrations 0045/0046: the row without the newer columns.
+        if (Date.now() >= plainUntil) console.warn("[geo-round-scores] newer columns need migrations 0045_geo_flags.sql and 0046_geo_streak.sql:", error.message);
         plainUntil = Date.now() + RECHECK_MS;
       }
+      if (!ratesShot(row)) throw new Unavailable("region streak rounds need migration 0046_geo_streak.sql");
       const { error } = await sb.from("geo_round_scores").insert(base);
       check(error);
     },
@@ -190,6 +241,18 @@ export function supabaseRoundScoreStore(sb: Sb): RoundScoreStore {
         games: Number(r.games),
         rounds: Number(r.rounds),
         lastAt: r.last_at ? Date.parse(String(r.last_at)) : 0,
+      }));
+    },
+    async ofPlayer(key, limit = PLAYER_ROWS) {
+      const { data, error } = await sb.from("geo_round_scores").select("region, family, kind, score, hit, run_id").eq("player_key", key).order("created_at", { ascending: false }).limit(limit);
+      check(error);
+      return ((data ?? []) as { region: string | null; family: string | null; kind: RoundKind | null; score: number; hit: boolean | null; run_id: string | null }[]).map((r) => ({
+        region: r.region,
+        family: r.family,
+        kind: r.kind,
+        score: Number(r.score),
+        hit: r.hit,
+        run: r.run_id,
       }));
     },
   };
@@ -242,4 +305,98 @@ export async function syncShotScores(now = Date.now(), store = roundScoreStore()
     }
   })();
   await Promise.race([loading, new Promise((r) => setTimeout(r, 1_500))]);
+}
+
+// ---------------------------------------------------------------------------
+// A trainer's PokéGuessr stats (profile pages)
+// ---------------------------------------------------------------------------
+
+export interface GeoStatRow {
+  /** A region's name, or a game family's. */
+  key: string;
+  /** Pin rounds (games, dailies, challenges, pin streaks, duels). */
+  rounds: number;
+  /** Mean round score as a share of 5,000, in percent. */
+  accuracy: number;
+  /** The best single round. */
+  best: number;
+  /** Region streak picks here, and how many were right. */
+  streakPicks: number;
+  streakHits: number;
+}
+export interface GeoPlayerStats {
+  /** Pin rounds logged. */
+  rounds: number;
+  /** Games (runs) those rounds came from. */
+  games: number;
+  /** Region streak picks and how many were right. */
+  streakPicks: number;
+  streakHits: number;
+  byRegion: GeoStatRow[];
+  byGame: GeoStatRow[];
+}
+
+const REGION_ORDER: readonly string[] = GEO_STREAK_REGIONS;
+
+/** Accuracy and best score by region and by game, and the games played, from a trainer's logged rounds. */
+export function aggregateGeoStats(rows: readonly PlayerRoundRow[]): GeoPlayerStats {
+  const byRegion = new Map<string, GeoStatRow>();
+  const byGame = new Map<string, GeoStatRow>();
+  const sums = new Map<GeoStatRow, number>();
+  const runs = new Set<string>();
+  let rounds = 0;
+  let streakPicks = 0;
+  let streakHits = 0;
+  const row = (map: Map<string, GeoStatRow>, key: string) => {
+    let r = map.get(key);
+    if (!r) {
+      r = { key, rounds: 0, accuracy: 0, best: 0, streakPicks: 0, streakHits: 0 };
+      map.set(key, r);
+    }
+    return r;
+  };
+  const add = (r: GeoStatRow, x: PlayerRoundRow) => {
+    if (x.kind === "region-streak") {
+      r.streakPicks++;
+      if (x.hit) r.streakHits++;
+      return;
+    }
+    r.rounds++;
+    r.best = Math.max(r.best, x.score);
+    sums.set(r, (sums.get(r) ?? 0) + x.score);
+  };
+  for (const x of rows) {
+    if (x.kind === "region-streak") {
+      streakPicks++;
+      if (x.hit) streakHits++;
+    } else {
+      rounds++;
+      if (x.run) runs.add(x.run);
+    }
+    if (x.region) add(row(byRegion, x.region), x);
+    if (x.family && isGeoFamily(x.family)) add(row(byGame, geoFamily(x.family).name), x);
+  }
+  const finish = (map: Map<string, GeoStatRow>, order: (a: GeoStatRow, b: GeoStatRow) => number) =>
+    [...map.values()]
+      .map((r) => ({ ...r, accuracy: r.rounds ? Math.round(((sums.get(r) ?? 0) / r.rounds / GEO_MAX_ROUND_SCORE) * 100) : 0 }))
+      .sort(order);
+  return {
+    rounds,
+    games: runs.size,
+    streakPicks,
+    streakHits,
+    byRegion: finish(byRegion, (a, b) => REGION_ORDER.indexOf(a.key) - REGION_ORDER.indexOf(b.key) || a.key.localeCompare(b.key)),
+    byGame: finish(byGame, (a, b) => b.rounds + b.streakPicks - (a.rounds + a.streakPicks)),
+  };
+}
+
+/** A trainer's stats, or null without a store or before migration 0046. Never throws. */
+export async function playerGeoStats(key: string, store = roundScoreStore()): Promise<GeoPlayerStats | null> {
+  if (!store) return null;
+  try {
+    return aggregateGeoStats(await store.ofPlayer(key));
+  } catch (err) {
+    if (!(err instanceof Unavailable)) console.error("[geo-round-scores] stats not read:", err);
+    return null;
+  }
 }
