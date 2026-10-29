@@ -103,7 +103,7 @@ describe("the default avatar", () => {
     expect(res.status).toBe(200);
     const body = await res.json();
     expect(body.avatar).toEqual(defaultAvatar("Ash"));
-    expect(body.unlocks).toEqual({ level: 1, tier: null, badges: 0 });
+    expect(body.unlocks).toEqual({ level: 1, tier: null, badges: 0, wins: 0, streak: 0 });
     expect((await route.GET(req(null))).status).toBe(401);
     const map = await avatarsByNames(["Ash", "SomeGuest"]);
     expect(map.ash).toEqual(defaultAvatar("Ash"));

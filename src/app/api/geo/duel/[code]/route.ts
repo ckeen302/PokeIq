@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { seatAvatars } from "@/lib/server/avatars";
+import { avatarUnlocks, seatAvatars } from "@/lib/server/avatars";
+import { TAUNT_IDS, isTaunt, tauntBlocked, tauntFree, tauntOf } from "@/lib/trainer/taunts";
 import { z } from "zod";
 import { gate } from "@/lib/server/moderation";
 import { syncHiddenShots } from "@/lib/server/geo-reports";
@@ -49,7 +50,8 @@ import { DUEL_CODE_RE, DUEL_MAX_ROUNDS, type DuelSeatResponse, type DuelView } f
  *   { action: "next", token, round }          end the reveal early (once both press it)
  *   { action: "leave", token }                leave the lobby, or forfeit
  *   { action: "rematch", token }              a new duel with the same map and trainers
- *   { action: "emote", token, emote }         a preset reaction, during play or after the end
+ *   { action: "emote", token, emote }         a preset reaction, during play or after the end;
+ *                                             or a taunt (a dance or emote on the 3D trainer) after the end
  *   { action: "chat", token, text }           a chat message, in the lobby or after the end (see server/chat.ts)
  */
 
@@ -64,7 +66,7 @@ const bodySchema = z.discriminatedUnion("action", [
   z.object({ action: z.literal("next"), token, round }),
   z.object({ action: z.literal("leave"), token }),
   z.object({ action: z.literal("rematch"), token }),
-  z.object({ action: z.literal("emote"), token, emote: z.enum(ALL_DUEL_EMOTES) }),
+  z.object({ action: z.literal("emote"), token, emote: z.enum([...ALL_DUEL_EMOTES, ...TAUNT_IDS]) }),
   z.object({ action: z.literal("chat"), token, text: z.string().max(CHAT_BODY_MAX, "Keep it under 200 characters.") }),
 ]);
 
@@ -153,6 +155,12 @@ export async function POST(request: NextRequest, context: Context) {
     // Reactions and chat have their own, tighter limits (the duel also allows only a few at a time per trainer).
     if (body.action === "emote" && !rateLimit(`duel-emote:${clientIp(request)}`, 6, 0.5)) {
       return NextResponse.json({ error: "Easy on the reactions." }, { status: 429, headers: NO_STORE });
+    }
+    // A taunt the trainer hasn't earned (guests: the free ones only).
+    if (body.action === "emote" && isTaunt(body.emote) && !tauntFree(tauntOf(body.emote)!)) {
+      const user = sessionTokenHash(request) ? await userFromRequest(request).catch(() => null) : null;
+      const locked = tauntBlocked(body.emote, user ? await avatarUnlocks(user.id) : null);
+      if (locked) return NextResponse.json({ error: locked }, { status: 403, headers: NO_STORE });
     }
     if (body.action === "chat") {
       const limited = chatRateLimit(clientIp(request), playerId);

@@ -13,6 +13,7 @@ import type { DleRules } from "./dle-format";
 import type { ChatLine } from "./chat";
 import type { PdkGridView } from "./pikadoku/types";
 import type { ConnDuelRanked } from "./connections/ranked";
+import type { TauntId } from "./trainer/taunts";
 import type { ConnGroupExplained, ConnGroupReveal, ConnGuessKind, ConnLevel, ConnTile } from "./connections/types";
 
 export const PVP_KINDS = ["pokedle", "quiz", "connections", "pikadoku"] as const;
@@ -97,9 +98,14 @@ export interface PvpEmoteView {
   /** Counts up with every reaction in the duel: each is shown once. */
   n: number;
   seat: number;
-  emote: DuelEmote;
+  /** A reaction, or a post-game taunt (a dance or emote the trainer's 3D avatar plays: lib/trainer/taunts). */
+  emote: DuelEmote | TauntId;
   at: number;
 }
+
+const REACTION_IDS = new Set<string>(ALL_DUEL_EMOTES);
+/** A reaction (shown as a bubble), not a taunt (played on the trainer). */
+export const isReaction = (e: PvpEmoteView): e is PvpEmoteView & { emote: DuelEmote } => REACTION_IDS.has(e.emote);
 
 /** A series is best of three: the first trainer to win two games takes it. */
 export const PVP_SERIES_BEST_OF = 3;

@@ -3,6 +3,7 @@
 import dynamic from "next/dynamic";
 import type { CSSProperties } from "react";
 import { stageOf, type StageId, type TrainerConfig, type TrainerFacing, type TrainerPose } from "@/lib/trainer/config";
+import type { TauntId } from "@/lib/trainer/taunts";
 import { cn } from "@/lib/utils";
 
 /**
@@ -19,6 +20,8 @@ import { cn } from "@/lib/utils";
  * stage: true draws the trainer's chosen backdrop behind them (creator and profile).
  * partner: true shows the partner Pokémon sprite beside them (off by default: the flat sprite clashes with the 3D trainer).
  * still: true draws one frame and stops (also the case under reduced motion).
+ * taunt: plays a dance or emote once (lib/trainer/taunts); a new `n` plays it
+ *       again. Under reduced motion the trainer holds the move's key pose.
  */
 export interface Avatar3DProps {
   config: TrainerConfig;
@@ -26,6 +29,7 @@ export interface Avatar3DProps {
   facing?: TrainerFacing;
   partner?: boolean;
   still?: boolean;
+  taunt?: { id: TauntId; n: number } | null;
   stage?: boolean;
   className?: string;
   /** Accessible name, e.g. "Red's trainer". */
@@ -41,7 +45,7 @@ const Scene = dynamic(() => import("./Avatar3DScene").then((m) => m.Avatar3DScen
 
 export function Avatar3D({ className, label = "Trainer avatar", stage, ...props }: Avatar3DProps) {
   return (
-    <div role="img" aria-label={label} className={cn("relative h-full min-h-0 w-full select-none", className)} data-testid="avatar-3d" data-pose={props.pose ?? "idle"}>
+    <div role="img" aria-label={label} className={cn("relative h-full min-h-0 w-full select-none", className)} data-testid="avatar-3d" data-pose={props.pose ?? "idle"} data-taunt={props.taunt?.id}>
       {stage && <StageBackdrop stage={props.config.stage} />}
       <Scene {...props} />
     </div>

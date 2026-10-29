@@ -18,10 +18,15 @@ import { AVATAR_MAX_ID, shinyUnlocked, type AvatarUnlocks } from "../avatar";
 // Presets
 // ---------------------------------------------------------------------------
 
-/** What it takes to unlock an item: a number of badges, or a ranked tier. Nothing: free. */
+/**
+ * What it takes to unlock an item: a number of badges, a ranked tier,
+ * ranked wins, or a ranked win streak (the best one). Nothing: free.
+ */
 export interface Unlock {
   badges?: number;
   tier?: RankedTierId;
+  wins?: number;
+  streak?: number;
 }
 
 export interface Preset<Id extends string = string> extends Unlock {
@@ -307,12 +312,23 @@ export const EARRINGS = [
   { id: "hoops", name: "Hoops" },
 ] as const satisfies readonly Preset[];
 
+/** The ball in hand: `top` and `bottom` are its two halves' colours (the model adds each ball's markings). */
 export const BALLS = [
-  { id: "poke", name: "Poké Ball" },
-  { id: "great", name: "Great Ball", tier: "great" },
-  { id: "ultra", name: "Ultra Ball", tier: "ultra" },
-  { id: "master", name: "Master Ball", tier: "master" },
-] as const satisfies readonly Preset[];
+  { id: "poke", name: "Poké Ball", top: "#e3262f", bottom: "#f6f6f2" },
+  { id: "great", name: "Great Ball", top: "#2f6fe0", bottom: "#f6f6f2", tier: "great" },
+  { id: "ultra", name: "Ultra Ball", top: "#24252b", bottom: "#f6f6f2", tier: "ultra" },
+  { id: "master", name: "Master Ball", top: "#7b3fc6", bottom: "#f6f6f2", tier: "master" },
+  { id: "premier", name: "Premier Ball", top: "#f6f6f2", bottom: "#f6f6f2", badges: 1 },
+  { id: "heal", name: "Heal Ball", top: "#f27fb2", bottom: "#f6f6f2", badges: 2 },
+  { id: "quick", name: "Quick Ball", top: "#3a7fd8", bottom: "#f6f6f2", wins: 3 },
+  { id: "timer", name: "Timer Ball", top: "#f6f6f2", bottom: "#f6f6f2", badges: 4 },
+  { id: "dusk", name: "Dusk Ball", top: "#26292b", bottom: "#26292b", badges: 6 },
+  { id: "luxury", name: "Luxury Ball", top: "#24252b", bottom: "#24252b", wins: 10 },
+  { id: "love", name: "Love Ball", top: "#f07fb4", bottom: "#f6f6f2", badges: 8 },
+  { id: "safari", name: "Safari Ball", top: "#7fa34a", bottom: "#e8dcb0", streak: 3 },
+  { id: "beast", name: "Beast Ball", top: "#2d55c8", bottom: "#2d55c8", tier: "ultra", wins: 5 },
+  { id: "cherish", name: "Cherish Ball", top: "#d3242c", bottom: "#2a2224", streak: 6 },
+] as const satisfies readonly (Preset & { top: string; bottom: string })[];
 
 /**
  * Backdrops behind the trainer (creator and profile): CSS only, no images.
@@ -520,17 +536,26 @@ export const HAIR_BANGS: Record<HairId, Exclude<BangsId, "auto">> = {
 
 const tierRank = (tier: RankedTierId | null | undefined) => (tier ? RANKED_TIERS.findIndex((t) => t.id === tier) : -1);
 
-export function unlocked(item: Preset, u: AvatarUnlocks): boolean {
+export function unlocked(item: Unlock & { name: string }, u: AvatarUnlocks): boolean {
   if (item.badges !== undefined && (u.badges ?? 0) < item.badges) return false;
   if (item.tier !== undefined && tierRank(u.tier) < tierRank(item.tier)) return false;
+  if (item.wins !== undefined && (u.wins ?? 0) < item.wins) return false;
+  if (item.streak !== undefined && (u.streak ?? 0) < item.streak) return false;
   return true;
 }
 
+/** "Reach Great Ball…" → "reach Great Ball…" (names keep their capitals). */
+export const lowerFirst = (text: string) => text && text[0].toLowerCase() + text.slice(1);
+
 /** How to unlock an item, for the lock's tooltip. */
-export function unlockHint(item: Preset): string {
-  if (item.badges !== undefined) return `Earn ${item.badges} badges`;
-  if (item.tier !== undefined) return `Reach ${RANKED_TIERS.find((t) => t.id === item.tier)!.name} in a ranked mode`;
-  return "";
+export function unlockHint(item: Unlock & { name: string }): string {
+  const parts: string[] = [];
+  if (item.badges !== undefined) parts.push(`earn ${item.badges} ${item.badges === 1 ? "badge" : "badges"}`);
+  if (item.tier !== undefined) parts.push(`reach ${RANKED_TIERS.find((t) => t.id === item.tier)!.name} in a ranked mode`);
+  if (item.wins !== undefined) parts.push(`win ${item.wins} ranked ${item.wins === 1 ? "game" : "games"}`);
+  if (item.streak !== undefined) parts.push(`win ${item.streak} ranked games in a row`);
+  const text = parts.join(" and ");
+  return text && text[0].toUpperCase() + text.slice(1);
 }
 
 // ---------------------------------------------------------------------------
@@ -623,7 +648,7 @@ export function checkTrainer(raw: unknown, u: AvatarUnlocks): { ok: true; traine
   if (!t) return { ok: false, error: "That trainer isn't one the creator can make." };
   if (t.shiny && !shinyUnlocked(u)) return { ok: false, error: "Keep playing to unlock shiny Pokémon." };
   const locked = lockedItems(t, u)[0];
-  if (locked) return { ok: false, error: `${locked.item.name} is locked: ${unlockHint(locked.item).toLowerCase()}.` };
+  if (locked) return { ok: false, error: `${locked.item.name} is locked: ${lowerFirst(unlockHint(locked.item))}.` };
   return { ok: true, trainer: t };
 }
 
@@ -640,7 +665,7 @@ function hash(text: string): number {
   return h;
 }
 
-const free = <T extends readonly Preset[]>(list: T): T[number][] => list.filter((p) => p.badges === undefined && p.tier === undefined);
+const free = <T extends readonly Preset[]>(list: T): T[number][] => list.filter((p) => p.badges === undefined && p.tier === undefined && !("wins" in p) && !("streak" in p));
 
 /** A trainer picked from a seed (a name): the same seed always gets the same free-item trainer. */
 export function seededTrainer(seed: string, partner = 25, shiny = false): TrainerConfig {
