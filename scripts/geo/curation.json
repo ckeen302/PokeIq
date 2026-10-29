@@ -19849,6 +19849,4017 @@
    "checked": "shown on Poképédia's page \"Plage Trésor\"; FRLG in its name or category; cropped (bottom 29%); reviewed on a contact sheet"
   },
   {
+   "id": "8VSDERdhrApe",
+   "region": "Kitakami",
+   "name": "Apple Hills",
+   "game": "Scarlet / Violet",
+   "source": "https://www.wikidex.net/wiki/Archivo:Colina_Manzanar_EP.jpg",
+   "checked": "shown on WikiDex's page \"Colina Manzanar\"; SV in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "up1B58iMHUzG",
+   "region": "Kitakami",
+   "name": "Fellhorn Gorge",
+   "game": "Scarlet / Violet",
+   "source": "https://www.wikidex.net/wiki/Archivo:Desfiladero_del_Cuerno_EP.jpg",
+   "checked": "shown on WikiDex's page \"Cañón del Cuerno/Desfiladero del Cuerno\"; SV in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "U7fqF5KD6K2k",
+   "region": "Kitakami",
+   "name": "Kitakami Road",
+   "game": "Scarlet / Violet",
+   "source": "https://www.wikidex.net/wiki/Archivo:Carretera_de_Noroteo_EP.jpg",
+   "checked": "shown on WikiDex's page \"Carretera de Noroteo\"; SV in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "gvxbodElEsZ3",
+   "region": "Kitakami",
+   "name": "Kitakami Wilds",
+   "game": "Scarlet / Violet",
+   "source": "https://www.wikidex.net/wiki/Archivo:Campos_Prístinos_de_Noroteo_EP.jpg",
+   "checked": "shown on WikiDex's page \"Campos Prístinos de Noroteo\"; SV in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "B6hNT0zMdMQA",
+   "region": "Kitakami",
+   "name": "Mossfell Confluence",
+   "game": "Scarlet / Violet",
+   "source": "https://www.wikidex.net/wiki/Archivo:Ribera_Confluencia_EP.jpg",
+   "checked": "shown on WikiDex's page \"Ribera Confluencia\"; SV in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "EcKCLVuUjNXC",
+   "region": "Kitakami",
+   "name": "Kitakami Hall",
+   "parent": "Mossui Town",
+   "game": "Scarlet / Violet",
+   "source": "https://www.pokewiki.de/Datei:KAPU_Kitakami-Kulturzentrum.jpg",
+   "checked": "shown on PokéWiki's page \"Kitakami-Kulturzentrum\"; SV in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "GeiLG6r4T4RW",
+   "region": "Kitakami",
+   "name": "Kitakami Hall",
+   "parent": "Mossui Town",
+   "game": "Scarlet / Violet",
+   "source": "https://archives.bulbagarden.net/wiki/File:Kitakami_Hall_SV.png",
+   "checked": "shown on Bulbapedia's page \"Kitakami Hall\"; SV in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "lw0hDl_Wn4Vf",
+   "region": "Kitakami",
+   "name": "Kitakami Hall",
+   "parent": "Mossui Town",
+   "game": "Scarlet / Violet",
+   "source": "https://www.pokepedia.fr/Fichier:Stand_de_masques_EV.png",
+   "checked": "shown on Poképédia's page \"Septemplion\"; SV in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "pAmbN8k4wqjU",
+   "region": "Kitakami",
+   "name": "Kitakami Hall",
+   "parent": "Mossui Town",
+   "game": "Scarlet / Violet",
+   "source": "https://www.pokepedia.fr/Fichier:Stand_de_nouilles_EV.png",
+   "checked": "shown on Poképédia's page \"Septemplion\"; SV in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "aaCEND31cxqU",
+   "region": "Kitakami",
+   "name": "Dreaded Den",
+   "parent": "Oni Mountain",
+   "game": "Scarlet / Violet",
+   "source": "https://www.wikidex.net/wiki/Archivo:Gruta_del_Pavor_EP.jpg",
+   "checked": "shown on WikiDex's page \"Gruta del Pavor\"; SV in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "TrWVQqtSQY6x",
+   "region": "Kitakami",
+   "name": "Oni's Maw",
+   "game": "Scarlet / Violet",
+   "source": "https://www.wikidex.net/wiki/Archivo:Fauces_del_Ogro_EP.jpg",
+   "checked": "shown on WikiDex's page \"Fauces del Ogro\"; SV in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "jOaKx-wB0xvx",
+   "region": "Kitakami",
+   "name": "Paradise Barrens",
+   "game": "Scarlet / Violet",
+   "source": "https://www.wikidex.net/wiki/Archivo:Elíseo_Baldío_EP.jpg",
+   "checked": "shown on WikiDex's page \"Páramo Paraíso/Elíseo Baldío\"; SV in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "KOUGqB6V8rAB",
+   "region": "Kitakami",
+   "name": "Reveler's Road",
+   "game": "Scarlet / Violet",
+   "source": "https://www.wikidex.net/wiki/Archivo:Senda_Jarana_EP.jpg",
+   "checked": "shown on WikiDex's page \"Senda Parranda/Senda Jarana\"; SV in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "bINV4U99DSkw",
+   "region": "Kitakami",
+   "name": "Timeless Woods",
+   "game": "Scarlet / Violet",
+   "source": "https://www.wikidex.net/wiki/Archivo:Soto_Sempiterno_EP.jpg",
+   "checked": "shown on WikiDex's page \"Bosque Perpetuo/Soto Sempiterno\"; SV in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "sMmjDGzRWFdx",
+   "region": "Kitakami",
+   "name": "Wistful Fields",
+   "game": "Scarlet / Violet",
+   "source": "https://www.wikidex.net/wiki/Archivo:Pradera_Glicina_EP.jpg",
+   "checked": "shown on WikiDex's page \"Pradera Glicina\"; SV in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "h1Rg4W4QfVl4",
+   "region": "Blueberry Academy",
+   "name": "Central Plaza",
+   "parent": "Blueberry Academy",
+   "game": "Scarlet / Violet",
+   "source": "https://www.wikidex.net/wiki/Archivo:Plaza_Cúbica_EP.jpg",
+   "checked": "shown on WikiDex's page \"Plaza Cúbica\"; SV in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "PTaAlObQ2Kcg",
+   "region": "Blueberry Academy",
+   "name": "League Club Room",
+   "parent": "Blueberry Academy",
+   "game": "Scarlet / Violet",
+   "source": "https://www.pokewiki.de/Datei:KAPU_Liga-AG.jpg",
+   "checked": "shown on PokéWiki's page \"Liga-AG\"; SV in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "8UCYCjRb4vM1",
+   "region": "Blueberry Academy",
+   "name": "Canyon Biome",
+   "game": "Scarlet / Violet",
+   "source": "https://www.wikidex.net/wiki/Archivo:Área_Escarpada_EP.jpg",
+   "checked": "shown on WikiDex's page \"Área Escarpada\"; SV in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "azpJs3Z_gBXb",
+   "region": "Blueberry Academy",
+   "name": "Canyon Biome",
+   "game": "Scarlet / Violet",
+   "source": "https://www.wikidex.net/wiki/Archivo:Zona_de_descanso_del_Área_Escarpada_EP.jpg",
+   "checked": "shown on WikiDex's page \"Área Escarpada\"; SV in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "VKzVdfKjok3r",
+   "region": "Blueberry Academy",
+   "name": "Canyon Plaza",
+   "parent": "Canyon Biome",
+   "game": "Scarlet / Violet",
+   "source": "https://www.wikidex.net/wiki/Archivo:Plaza_Costera_EP.jpg",
+   "checked": "shown on WikiDex's page \"Plaza Costera\"; SV in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "j35F-5Qfo4pf",
+   "region": "Blueberry Academy",
+   "name": "Coastal Biome",
+   "game": "Scarlet / Violet",
+   "source": "https://www.wikidex.net/wiki/Archivo:Área_Costera_EP.jpg",
+   "checked": "shown on WikiDex's page \"Área Costera\"; SV in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "VJDUyYV3jYAk",
+   "region": "Blueberry Academy",
+   "name": "Polar Biome",
+   "game": "Scarlet / Violet",
+   "source": "https://www.wikidex.net/wiki/Archivo:Área_Polar_EP.jpg",
+   "checked": "shown on WikiDex's page \"Área Polar\"; SV in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "Sio5gbWJLs6a",
+   "region": "Blueberry Academy",
+   "name": "Polar Biome",
+   "game": "Scarlet / Violet",
+   "source": "https://www.wikidex.net/wiki/Archivo:Aula_exterior_2_del_Área_Polar_EP.jpg",
+   "checked": "shown on WikiDex's page \"Área Polar\"; SV in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "UFo9TtxN7Ryt",
+   "region": "Blueberry Academy",
+   "name": "Polar Biome",
+   "game": "Scarlet / Violet",
+   "source": "https://www.wikidex.net/wiki/Archivo:Zona_de_descanso_del_Área_Polar_EP.jpg",
+   "checked": "shown on WikiDex's page \"Área Polar\"; SV in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "JLPXH-x3jz8y",
+   "region": "Blueberry Academy",
+   "name": "Savanna Biome",
+   "game": "Scarlet / Violet",
+   "source": "https://www.wikidex.net/wiki/Archivo:Área_Árida_EP.jpg",
+   "checked": "shown on WikiDex's page \"Área Árida\"; SV in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "7lhvSwRsCJrq",
+   "region": "Blueberry Academy",
+   "name": "Savanna Biome",
+   "game": "Scarlet / Violet",
+   "source": "https://www.wikidex.net/wiki/Archivo:Zona_de_descanso_1_del_Área_Árida_EP.jpg",
+   "checked": "shown on WikiDex's page \"Área Árida\"; SV in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "hPEvEL9zC9KY",
+   "region": "Kitakami",
+   "name": "Mossui Town",
+   "game": "Scarlet / Violet",
+   "source": "https://www.wikidex.net/wiki/Archivo:Casa_de_los_abuelos_de_Cass.jpg",
+   "checked": "shown on WikiDex's page \"Villa Versui\"; SV in its name or category; cropped (right 19%); reviewed on a contact sheet"
+  },
+  {
+   "id": "lCOnsIJMX_ky",
+   "region": "Kitakami",
+   "name": "Mossui Town",
+   "game": "Scarlet / Violet",
+   "source": "https://archives.bulbagarden.net/wiki/File:SV_Mossui_Town_Community_Center_Inside.jpg",
+   "checked": "shown on Bulbapedia's page \"Mossui Town\"; SV in its name or category; cropped (right 20%); reviewed on a contact sheet"
+  },
+  {
+   "id": "KpgnfXm9JnVA",
+   "region": "Kitakami",
+   "name": "Kitakami Hall",
+   "parent": "Mossui Town",
+   "game": "Scarlet / Violet",
+   "source": "https://www.wikidex.net/wiki/Archivo:Centro_cultural_de_Noroteo_EP.jpg",
+   "checked": "shown on WikiDex's page \"Centro cultural de Noroteo\"; SV in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "FORjsXal6Mwp",
+   "region": "Kitakami",
+   "name": "Kitakami Hall",
+   "parent": "Mossui Town",
+   "game": "Scarlet / Violet",
+   "source": "https://www.wikidex.net/wiki/Archivo:Centro_cultural_de_Noroteo.jpg",
+   "checked": "in wikidex's category \"Capturas de Pokémon Escarlata y Pokémon Púrpura\", named after the place; SV in its name or category; cropped (right 23%); reviewed on a contact sheet"
+  },
+  {
+   "id": "G9bp96dDSiOP",
+   "region": "Blueberry Academy",
+   "name": "Central Plaza",
+   "parent": "Blueberry Academy",
+   "game": "Scarlet / Violet",
+   "source": "https://archives.bulbagarden.net/wiki/File:Central_Plaza_SV.png",
+   "checked": "shown on Bulbapedia's page \"Central Plaza\"; SV in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "MPLWPcMqxyJr",
+   "region": "Kalos",
+   "name": "Anistar Gym",
+   "parent": "Anistar City",
+   "game": "X / Y",
+   "source": "https://pokemon.fandom.com/wiki/File:Anistar_City_Gym.png",
+   "checked": "in fandom's category \"XY Images (Pokémon Wiki), named after the gym\", named after the place; XY in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "ysQbjQDn1jX2",
+   "region": "Kalos",
+   "name": "Laverre Gym",
+   "parent": "Laverre City",
+   "game": "X / Y",
+   "source": "https://pokemon.fandom.com/wiki/File:Laverre_City_Gym.png",
+   "checked": "in fandom's category \"XY Images (Pokémon Wiki), named after the gym\", named after the place; XY in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "fjWrcJe-hkov",
+   "region": "Kalos",
+   "name": "Lumiose Gym",
+   "parent": "Lumiose City",
+   "game": "X / Y",
+   "source": "https://pokemon.fandom.com/wiki/File:Lumiose_City_Gym.png",
+   "checked": "shown on the Pokémon Wiki's page \"Prism Tower\"; XY in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "EOhrk0Jf0fC9",
+   "region": "Kalos",
+   "name": "Santalune City",
+   "game": "X / Y",
+   "source": "https://pokemon.fandom.com/wiki/File:SantaluneCity.png",
+   "checked": "shown on the Pokémon Wiki's page \"Santalune City\"; XY in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "N0WfeZVzThqT",
+   "region": "Alola",
+   "name": "Iki Town",
+   "game": "Sun / Moon",
+   "source": "https://pokemon.fandom.com/wiki/File:Iki_Town.png",
+   "checked": "shown on the Pokémon Wiki's page \"Iki Town\"; SM in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "WkmW7lGPTACt",
+   "region": "Paldea",
+   "name": "Cascarrafa",
+   "game": "Scarlet / Violet",
+   "source": "https://www.wikidex.net/wiki/Archivo:Cancha_de_Ciudad_Cántara_EP.jpg",
+   "checked": "shown on WikiDex's page \"Ciudad Cántara\"; SV in its name or category; cropped (right 18%); reviewed on a contact sheet"
+  },
+  {
+   "id": "0Kuzgph8XuUg",
+   "region": "Paldea",
+   "name": "Schedar Squad's Base",
+   "parent": "East Province (Area One)",
+   "game": "Scarlet / Violet",
+   "source": "https://www.wikidex.net/wiki/Archivo:Base_del_escuadrón_Schedar.jpg",
+   "checked": "shown on WikiDex's page \"Base del Escuadrón Schedar\"; SV in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "qFh1WS-RYy2Y",
+   "region": "Paldea",
+   "name": "Schedar Squad's Base",
+   "parent": "East Province (Area One)",
+   "game": "Scarlet / Violet",
+   "source": "https://www.pokewiki.de/Datei:KAPU_Versteck_der_Feuer-Mitglieder.png",
+   "checked": "shown on PokéWiki's page \"Versteck der Feuer-Mitglieder\"; SV in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "5Nb3I5vXGA8R",
+   "region": "Paldea",
+   "name": "Schedar Squad's Base",
+   "parent": "East Province (Area One)",
+   "game": "Scarlet / Violet",
+   "source": "https://www.pokepedia.fr/Fichier:Repaire_du_Groupe_Schedar_EV.png",
+   "checked": "shown on Poképédia's page \"Repaire du Groupe Schedar\"; SV in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "e1isCWdRlQn3",
+   "region": "Paldea",
+   "name": "Ruchbah Squad's Base",
+   "parent": "North Province (Area Three)",
+   "game": "Scarlet / Violet",
+   "source": "https://www.pokewiki.de/Datei:KAPU_Versteck_der_Feen-Mitglieder.png",
+   "checked": "shown on PokéWiki's page \"Versteck der Feen-Mitglieder\"; SV in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "gAOGdHTOJgIw",
+   "region": "Paldea",
+   "name": "Caph Squad's Base",
+   "parent": "North Province (Area Two)",
+   "game": "Scarlet / Violet",
+   "source": "https://www.wikidex.net/wiki/Archivo:Base_del_escuadrón_Caph.jpg",
+   "checked": "shown on WikiDex's page \"Base del Escuadrón Caph\"; SV in its name or category; cropped (right 20%); reviewed on a contact sheet"
+  },
+  {
+   "id": "zYwWRJ_U54_3",
+   "region": "Unova",
+   "name": "Abundant Shrine",
+   "game": "Black / White",
+   "source": "https://www.wikidex.net/wiki/Archivo:Santuario_Abundancia.png",
+   "checked": "shown on WikiDex's page \"Santuario de la Abundancia/Santuario Abundancia\"; BW in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "Yl6bwZjmh_ug",
+   "region": "Unova",
+   "name": "Abundant Shrine",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokepedia.fr/Fichier:Trouée_Cachée_Autel_Abondance.png",
+   "checked": "shown on Poképédia's page \"Autel Abondance\"; B2W2 in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "ZSc-FOgaDGdZ",
+   "region": "Unova",
+   "name": "Aspertia City",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokewiki.de/Datei:B2W2_Screenshot_1.png",
+   "checked": "shown on PokéWiki's page \"Eventura City\"; B2W2 in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "zFkJcRc5Ohb4",
+   "region": "Unova",
+   "name": "Aspertia City",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokewiki.de/Datei:B2W2_Screenshot_2.png",
+   "checked": "shown on PokéWiki's page \"Eventura City\"; B2W2 in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "KS_HqOnuPSrV",
+   "region": "Unova",
+   "name": "Aspertia City",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokewiki.de/Datei:B2W2_Screenshot_3.png",
+   "checked": "shown on PokéWiki's page \"Eventura City\"; B2W2 in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "-PC3WSPFoM-a",
+   "region": "Unova",
+   "name": "Aspertia City",
+   "game": "Black 2 / White 2",
+   "source": "https://www.wikidex.net/wiki/Archivo:Mirador_de_ciudad_engobe.png",
+   "checked": "shown on WikiDex's page \"Ciudad Engobe\"; B2W2 in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "QyNN7xrmkmCb",
+   "region": "Unova",
+   "name": "White Forest",
+   "parent": "Black City / White Forest",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokewiki.de/Datei:Weißer_Wald_W2.png",
+   "checked": "shown on PokéWiki's page \"Weißer Wald\"; B2W2 in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "2AolgsQSoAVg",
+   "region": "Unova",
+   "name": "White Forest",
+   "parent": "Black City / White Forest",
+   "game": "Black / White",
+   "source": "https://pokemon.fandom.com/wiki/File:White_Forest_BW.png",
+   "checked": "shown on the Pokémon Wiki's page \"White Forest\"; BW in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "vkSQyQfIqjLW",
+   "region": "Unova",
+   "name": "Castelia Sewers",
+   "game": "Black 2 / White 2",
+   "source": "https://www.wikidex.net/wiki/Archivo:Entrada_a_Alcantarillas_N2B2.png",
+   "checked": "shown on WikiDex's page \"Cloacas Porcelana\"; B2W2 in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "MDtSvY_FuxRS",
+   "region": "Unova",
+   "name": "Cave of Being",
+   "game": "Black 2 / White 2",
+   "source": "https://www.wikidex.net/wiki/Archivo:Azelf_ruta_23.png",
+   "checked": "shown on WikiDex's page \"Cueva Psique\"; B2W2 in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "iiz-XQHos8GF",
+   "region": "Unova",
+   "name": "Abundant Shrine",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokepedia.fr/Fichier:Trouée_Cachée_Autel_Abondance_(2).png",
+   "checked": "shown on Poképédia's page \"Autel Abondance\"; B2W2 in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "zOG55XB6BiZ7",
+   "region": "Unova",
+   "name": "Aspertia City",
+   "game": "Black 2 / White 2",
+   "source": "https://www.wikidex.net/wiki/Archivo:Escuela_Pokémon_de_la_Ciudad_Engobe_N2B2.png",
+   "checked": "in wikidex's category \"Capturas de Pokémon Negro 2 y Pokémon Blanco 2\", named after the place; B2W2 in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "MZCwSYBx7H2i",
+   "region": "Unova",
+   "name": "Aspertia Gym",
+   "parent": "Aspertia City",
+   "game": "Black 2 / White 2",
+   "source": "https://www.wikidex.net/wiki/Archivo:Campo_batalla_de_Cheren_N2B2.png",
+   "checked": "shown on WikiDex's page \"Gimnasio Pokémon de Ciudad Engobe\"; B2W2 in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "mD_ujHSt1ue4",
+   "region": "Unova",
+   "name": "Castelia City",
+   "game": "Black 2 / White 2",
+   "source": "https://www.wikidex.net/wiki/Archivo:Calle_de_la_moda_N2B2.png",
+   "checked": "shown on WikiDex's page \"Ciudad Porcelana\"; B2W2 in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "9LNmGPjc3UHO",
+   "region": "Unova",
+   "name": "Castelia City",
+   "game": "Black 2 / White 2",
+   "source": "https://www.wikidex.net/wiki/Archivo:Calle_principal_de_Porcelana.png",
+   "checked": "shown on WikiDex's page \"Ciudad Porcelana\"; B2W2 in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "Nxhi0I9G9wxR",
+   "region": "Unova",
+   "name": "Castelia City",
+   "game": "Black 2 / White 2",
+   "source": "https://archives.bulbagarden.net/wiki/File:Castelia_City_Summer_B2W2.png",
+   "checked": "shown on Bulbapedia's page \"Castelia City\"; B2W2 in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "0Wn_PKJ-L8kt",
+   "region": "Unova",
+   "name": "Castelia City",
+   "game": "Black 2 / White 2",
+   "source": "https://www.wikidex.net/wiki/Archivo:Centro_de_Estadística.png",
+   "checked": "shown on WikiDex's page \"Ciudad Porcelana\"; B2W2 in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "ev_xl78M7wiR",
+   "region": "Unova",
+   "name": "Castelia City",
+   "game": "Black 2 / White 2",
+   "source": "https://www.wikidex.net/wiki/Archivo:Gimnasio_Ciudad_Porcelana_N2B2.png",
+   "checked": "in wikidex's category \"Capturas de Pokémon Negro 2 y Pokémon Blanco 2\", named after the place; B2W2 in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "hl5Y3BctnE9T",
+   "region": "Unova",
+   "name": "Castelia City",
+   "game": "Black / White",
+   "source": "https://www.wikidex.net/wiki/Archivo:Muelle_Marítimo_Ciudad_Porcelana.png",
+   "checked": "in wikidex's category \"Capturas de Pokémon Negro y Pokémon Blanco\", named after the place; BW in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "IEisq9oz-HqT",
+   "region": "Unova",
+   "name": "Castelia City",
+   "game": "Black 2 / White 2",
+   "source": "https://www.wikidex.net/wiki/Archivo:Parque_Porcelana_N2B2.png",
+   "checked": "shown on WikiDex's page \"Ciudad Porcelana\"; B2W2 in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "Kv1hKXfIVlqU",
+   "region": "Unova",
+   "name": "Castelia City",
+   "game": "Black / White",
+   "source": "https://www.pokewiki.de/Datei:Stratos_City_-_Zentraler_Platz.png",
+   "checked": "shown on PokéWiki's page \"Stratos City\"; BW in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "modPXZbABUC-",
+   "region": "Unova",
+   "name": "Castelia City",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokewiki.de/Datei:Stratos_City_(Slim_Street,_S2W2).png",
+   "checked": "shown on PokéWiki's page \"Stratos City\"; B2W2 in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "IeQYdxh2yN7D",
+   "region": "Unova",
+   "name": "Castelia City",
+   "game": "Black 2 / White 2",
+   "source": "https://www.wikidex.net/wiki/Archivo:Suburbios_de_Castelia.png",
+   "checked": "shown on WikiDex's page \"Ciudad Porcelana\"; B2W2 in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "K7ZzL4fHsuri",
+   "region": "Unova",
+   "name": "Castelia Gym",
+   "parent": "Castelia City",
+   "game": "Black 2 / White 2",
+   "source": "https://www.wikidex.net/wiki/Archivo:Interior_del_Gimnasio_Porcelana_N2B2.png",
+   "checked": "shown on WikiDex's page \"Gimnasio Pokémon de Ciudad Porcelana\"; B2W2 in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "tGHEKxrCyq8a",
+   "region": "Unova",
+   "name": "Chargestone Cave",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokewiki.de/Datei:Elektrolithhöhle.png",
+   "checked": "shown on PokéWiki's page \"Elektrolithhöhle\"; B2W2 in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "7antIi9T9pYO",
+   "region": "Unova",
+   "name": "Clay Tunnel",
+   "game": "Black / White",
+   "source": "https://www.wikidex.net/wiki/Archivo:Túnel_Yakón.png",
+   "checked": "shown on WikiDex's page \"Túnel Clay/Túnel Yakón\"; BW in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "FaueMP9WR_2z",
+   "region": "Unova",
+   "name": "Underground Ruins",
+   "parent": "Clay Tunnel",
+   "game": "Black 2 / White 2",
+   "source": "https://www.wikidex.net/wiki/Archivo:Sala_de_regice.jpg",
+   "checked": "shown on WikiDex's page \"Ruinas Subterráneas\"; B2W2 in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "8PzUUt6qBtSE",
+   "region": "Unova",
+   "name": "Cold Storage",
+   "game": "Black / White",
+   "source": "https://www.wikidex.net/wiki/Archivo:Almacenes_Frigorificos_BN.png",
+   "checked": "shown on WikiDex's page \"Almacenes Frigoríficos\"; BW in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "qsI-HNgRgh_7",
+   "region": "Unova",
+   "name": "Desert Resort",
+   "game": "Black / White",
+   "source": "https://www.pokewiki.de/Datei:Flampivian_(Wüstenresort).png",
+   "checked": "in pokewiki's category \"SW-Screenshot\", named after the place; BW in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "EjsVd7e2TGBT",
+   "region": "Unova",
+   "name": "Dragonspiral Tower",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokewiki.de/Datei:Drachenstiege.png",
+   "checked": "shown on PokéWiki's page \"Drachenstiege\"; B2W2 in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "h5KxRnXXe-mp",
+   "region": "Unova",
+   "name": "Dragonspiral Tower",
+   "game": "Black 2 / White 2",
+   "source": "https://www.wikidex.net/wiki/Archivo:Torre_Duodraco_N2B2.png",
+   "checked": "shown on WikiDex's page \"Torre Dracoespiral/Torre Duodraco\"; B2W2 in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "mI6CVLq44qIg",
+   "region": "Unova",
+   "name": "Dreamyard",
+   "game": "Black 2 / White 2",
+   "source": "https://www.wikidex.net/wiki/Archivo:Latias_en_el_Solar_de_los_Sueños.jpg",
+   "checked": "shown on WikiDex's page \"Jardín Ensueño/Solar de los Sueños\"; B2W2 in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "uB1ZYv1EciMs",
+   "region": "Unova",
+   "name": "Driftveil City",
+   "game": "Black / White",
+   "source": "https://www.wikidex.net/wiki/Archivo:Ciudad_Fayenza_Gimnasio.png",
+   "checked": "in wikidex's category \"Capturas de Pokémon Negro y Pokémon Blanco\", named after the place; BW in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "-ZM523loIrkD",
+   "region": "Unova",
+   "name": "Driftveil City",
+   "game": "Black 2 / White 2",
+   "source": "https://www.wikidex.net/wiki/Archivo:Gimnasio_Ciudad_Fayenza_N2B2.png",
+   "checked": "in wikidex's category \"Capturas de Pokémon Negro 2 y Pokémon Blanco 2\", named after the place; B2W2 in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "kgQNMItPueiS",
+   "region": "Unova",
+   "name": "Driftveil Drawbridge",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokewiki.de/Datei:Marea-Zugbrücke.png",
+   "checked": "shown on PokéWiki's page \"Marea-Zugbrücke\"; B2W2 in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "gYYoHu64HljT",
+   "region": "Unova",
+   "name": "Driftveil Drawbridge",
+   "game": "Black / White",
+   "source": "https://www.wikidex.net/wiki/Archivo:Puente_de_Fayenza_BN.png",
+   "checked": "shown on WikiDex's page \"Puente de Fayenza\"; BW in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "81D8GFxvcvkK",
+   "region": "Unova",
+   "name": "Entralink",
+   "game": "Black / White",
+   "source": "https://www.wikidex.net/wiki/Archivo:Zona_Nexo_2.jpg",
+   "checked": "in wikidex's category \"Capturas de Pokémon Negro y Pokémon Blanco\", named after the place; BW in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "4XI9SwtmFwLg",
+   "region": "Unova",
+   "name": "Floccesy Ranch",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokepedia.fr/Fichier:Trouée_Cachée_Ranch_d'Amaillide.png",
+   "checked": "in pokepedia's category \"Capture d'écran de Pokémon Noir 2 et Blanc 2\", named after the place; B2W2 in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "uYRjbys0U65N",
+   "region": "Unova",
+   "name": "Pledge Grove",
+   "parent": "Floccesy Town",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokepedia.fr/Fichier:Bois_du_Serment_N2B2.png",
+   "checked": "in pokepedia's category \"Capture d'écran de Pokémon Noir 2 et Blanc 2\", named after the place; B2W2 in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "oEzzzuELS4Rt",
+   "region": "Unova",
+   "name": "Pledge Grove",
+   "parent": "Floccesy Town",
+   "game": "Black 2 / White 2",
+   "source": "https://www.wikidex.net/wiki/Archivo:Entrada_a_la_Arboleda_Promesa_N2B2.png",
+   "checked": "shown on WikiDex's page \"Arboleda Promesa\"; B2W2 in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "8IYn3Obgb0MJ",
+   "region": "Unova",
+   "name": "Giant Chasm",
+   "game": "Black / White",
+   "source": "https://www.wikidex.net/wiki/Archivo:Kyurem_en_el_Boquete_Gigante.png",
+   "checked": "shown on WikiDex's page \"Cuenca Gigante/Boquete Gigante\"; BW in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "fi_dCNbCFt2d",
+   "region": "Unova",
+   "name": "Giant Chasm",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokepedia.fr/Fichier:Trouée_Cachée_Grotte_Cyclopéenne.png",
+   "checked": "in pokepedia's category \"Capture d'écran de Pokémon Noir 2 et Blanc 2\", named after the place; B2W2 in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "NqMffBns6AEB",
+   "region": "Unova",
+   "name": "Humilau Gym",
+   "parent": "Humilau City",
+   "game": "Black 2 / White 2",
+   "source": "https://www.wikidex.net/wiki/Archivo:Gimnasio_Ciprián_interior.png",
+   "checked": "shown on WikiDex's page \"Gimnasio Pokémon de Ciudad Marga\"; B2W2 in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "NGm02jsP7Qd6",
+   "region": "Unova",
+   "name": "Icirrus City",
+   "game": "Black / White",
+   "source": "https://www.wikidex.net/wiki/Archivo:Gimnasio_Teja.png",
+   "checked": "shown on WikiDex's page \"Ciudad Teja\"; BW in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "oZJVhIQGLyUE",
+   "region": "Unova",
+   "name": "Join Avenue",
+   "game": "Black 2 / White 2",
+   "source": "https://www.wikidex.net/wiki/Archivo:Avenida_Unión_vacía.png",
+   "checked": "shown on WikiDex's page \"Pasaje Unión/Galería Unión\"; B2W2 in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "3m3WxtLEcMO1",
+   "region": "Unova",
+   "name": "Join Avenue",
+   "game": "Black 2 / White 2",
+   "source": "https://www.wikidex.net/wiki/Archivo:GU_Cafetería.png",
+   "checked": "shown on WikiDex's page \"Pasaje Unión/Galería Unión\"; B2W2 in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "tF_KnAPhHk3k",
+   "region": "Unova",
+   "name": "Join Avenue",
+   "game": "Black 2 / White 2",
+   "source": "https://www.wikidex.net/wiki/Archivo:Ingreso_Avenida_Unión_N2B2.png",
+   "checked": "shown on WikiDex's page \"Pasaje Unión/Galería Unión\"; B2W2 in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "WQnp_qJ1_qag",
+   "region": "Unova",
+   "name": "Join Avenue",
+   "game": "Black 2 / White 2",
+   "source": "https://archives.bulbagarden.net/wiki/File:Join_Avenue_entrance_W2.png",
+   "checked": "shown on Bulbapedia's page \"Join Avenue\"; W2 in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "A1BzHPej-2Xx",
+   "region": "Unova",
+   "name": "Join Avenue",
+   "game": "Black 2 / White 2",
+   "source": "https://www.wikidex.net/wiki/Archivo:Oficina_Avenida_Unión_N2B2.png",
+   "checked": "shown on WikiDex's page \"Pasaje Unión/Galería Unión\"; B2W2 in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "WQQttNQm8i2k",
+   "region": "Unova",
+   "name": "Lacunosa Town",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokewiki.de/Datei:Fundsache_Tessera.png",
+   "checked": "in pokewiki's category \"S2W2-Screenshot\", named after the place; B2W2 in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "RMoBg-gasiWu",
+   "region": "Unova",
+   "name": "Liberty Garden",
+   "game": "Black / White",
+   "source": "https://www.wikidex.net/wiki/Archivo:Cuarto_de_Victini.png",
+   "checked": "shown on WikiDex's page \"Isla Libertad\"; BW in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "5xSKPp5u-M2S",
+   "region": "Unova",
+   "name": "Lostlorn Forest",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokepedia.fr/Fichier:Trouée_Cachée_Bois_des_Illusions.png",
+   "checked": "in pokepedia's category \"Capture d'écran de Pokémon Noir 2 et Blanc 2\", named after the place; B2W2 in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "0lRhwh-CThAS",
+   "region": "Unova",
+   "name": "Marine Tube",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokepedia.fr/Fichier:Aquatube.png",
+   "checked": "shown on Poképédia's page \"Aquatube\"; B2W2 in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "cYFrFEUDJSug",
+   "region": "Unova",
+   "name": "Marine Tube",
+   "game": "Black 2 / White 2",
+   "source": "https://www.wikidex.net/wiki/Archivo:Entrada_túnel_submarino.png",
+   "checked": "shown on WikiDex's page \"Acuatúnel\"; B2W2 in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "iRkfuvfUCHnQ",
+   "region": "Unova",
+   "name": "Marine Tube",
+   "game": "Black / White",
+   "source": "https://www.wikidex.net/wiki/Archivo:Pasaje_Túnel_Arenisca.png",
+   "checked": "shown on WikiDex's page \"Acuatúnel\"; BW in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "Ct1YXpXwllv0",
+   "region": "Unova",
+   "name": "Marine Tube",
+   "game": "Black / White",
+   "source": "https://www.wikidex.net/wiki/Archivo:Tunel_Submarino_Arenisca.png",
+   "checked": "shown on WikiDex's page \"Acuatúnel\"; BW in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "8KiY5pPR2HBc",
+   "region": "Unova",
+   "name": "Marine Tube",
+   "game": "Black / White",
+   "source": "https://www.wikidex.net/wiki/Archivo:Tunel_Submarino_Seigaiha.png",
+   "checked": "shown on WikiDex's page \"Acuatúnel\"; BW in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "TjWp4mKPeVgt",
+   "region": "Unova",
+   "name": "Marvelous Bridge",
+   "game": "Black 2 / White 2",
+   "source": "https://www.wikidex.net/wiki/Archivo:Cresselia_en_el_Puente_Progreso.jpg",
+   "checked": "shown on WikiDex's page \"Puente Maravilla/Puente Progreso\"; B2W2 in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "soOML_vSzi3V",
+   "region": "Unova",
+   "name": "Marvelous Bridge",
+   "game": "Black / White",
+   "source": "https://www.wikidex.net/wiki/Archivo:Puente_Progreso_NB.png",
+   "checked": "shown on WikiDex's page \"Puente Maravilla/Puente Progreso\"; BW in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "-2Ke1-i85AzW",
+   "region": "Unova",
+   "name": "Mistralton City",
+   "game": "Black / White",
+   "source": "https://www.wikidex.net/wiki/Archivo:Ciudad_Loza_Gimnasio.png",
+   "checked": "shown on WikiDex's page \"Gimnasio Pokémon de Ciudad Loza\"; BW in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "Vlplc5STBfRe",
+   "region": "Unova",
+   "name": "Mistralton City",
+   "game": "Black 2 / White 2",
+   "source": "https://www.wikidex.net/wiki/Archivo:Gerania_en_el_Gimnasio_de_Ciudad_Loza_N2B2.png",
+   "checked": "shown on WikiDex's page \"Gimnasio Pokémon de Ciudad Loza\"; B2W2 in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "eskpJgGUqm19",
+   "region": "Unova",
+   "name": "Mistralton City",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokepedia.fr/Fichier:Vokit_Parsemille.png",
+   "checked": "in pokepedia's category \"Capture d'écran de Pokémon Noir 2 et Blanc 2\", named after the place; B2W2 in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "V08IIosBZbBU",
+   "region": "Unova",
+   "name": "Moor of Icirrus",
+   "game": "Black / White",
+   "source": "https://archives.bulbagarden.net/wiki/File:Moor_of_Icirrus_Keldeo_event_BW.png",
+   "checked": "shown on Bulbapedia's page \"Moor of Icirrus\"; BW in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "nxM6jVzgcnYj",
+   "region": "Unova",
+   "name": "Moor of Icirrus",
+   "game": "Black / White",
+   "source": "https://www.pokewiki.de/Datei:Screenshot_BW_Sekka_no_Shitsugen.png",
+   "checked": "shown on PokéWiki's page \"Moor von Nevaio\"; BW in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "3iZ2MPHC9aWy",
+   "region": "Unova",
+   "name": "N's Castle",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokewiki.de/Datei:Ns_Kinderzimmer_(S2W2).png",
+   "checked": "shown on PokéWiki's page \"Schloss von N\"; B2W2 in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "O2eLPc6jfPEO",
+   "region": "Unova",
+   "name": "N's Castle",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokewiki.de/Datei:Schloss_von_N_(S2W2).png",
+   "checked": "shown on PokéWiki's page \"Schloss von N\"; B2W2 in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "KxeepP4MNxAZ",
+   "region": "Unova",
+   "name": "N's Castle",
+   "game": "Black / White",
+   "source": "https://www.pokewiki.de/Datei:Zekrom-Beschwörung.png",
+   "checked": "shown on PokéWiki's page \"Schloss von N\"; BW in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "-6018Nb2k6eW",
+   "region": "Unova",
+   "name": "Nacrene City",
+   "game": "Black 2 / White 2",
+   "source": "https://www.wikidex.net/wiki/Archivo:Café_alma_(interior)_N2B2.png",
+   "checked": "shown on WikiDex's page \"Ciudad Esmalte\"; B2W2 in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "1KGV1yCd6Gn2",
+   "region": "Unova",
+   "name": "Nacrene City",
+   "game": "Black / White",
+   "source": "https://www.wikidex.net/wiki/Archivo:Ciudad_Esmalte_Gimnasio.png",
+   "checked": "shown on WikiDex's page \"Gimnasio Pokémon de Ciudad Esmalte\"; BW in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "ZCA5MkBePNA-",
+   "region": "Unova",
+   "name": "Nacrene City",
+   "game": "Black / White",
+   "source": "https://www.wikidex.net/wiki/Archivo:Terraza.png",
+   "checked": "shown on WikiDex's page \"Ciudad Esmalte\"; BW in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "mx-_EcG7AvOw",
+   "region": "Unova",
+   "name": "Nacrene City",
+   "game": "Black 2 / White 2",
+   "source": "https://www.wikidex.net/wiki/Archivo:Uxie_Ciudad_Esmalte.png",
+   "checked": "in wikidex's category \"Capturas de Pokémon Negro 2 y Pokémon Blanco 2\", named after the place; B2W2 in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "lndKYNNgHC4r",
+   "region": "Unova",
+   "name": "Nimbasa City",
+   "game": "Black / White",
+   "source": "https://www.wikidex.net/wiki/Archivo:Gimnasio_Ciudad_Mayólica.png",
+   "checked": "shown on WikiDex's page \"Gimnasio Pokémon de Ciudad Mayólica\"; BW in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "_cj4hK1p11C3",
+   "region": "Unova",
+   "name": "Nimbasa City",
+   "game": "Black / White",
+   "source": "https://www.wikidex.net/wiki/Archivo:Metro_de_Batalla_Vista_por_fuera.png",
+   "checked": "shown on WikiDex's page \"Ciudad Mayólica\"; BW in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "bw34iyBiCoeM",
+   "region": "Unova",
+   "name": "Big Stadium and Small Court",
+   "parent": "Nimbasa City",
+   "game": "Black / White",
+   "source": "https://pokemon.fandom.com/wiki/File:Big_Stadium_and_Small_Court_exterior_screenshot_BW.png",
+   "checked": "shown on the Pokémon Wiki's page \"Big Stadium and Small Court\"; BW in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "Cz7cMvoreCpN",
+   "region": "Unova",
+   "name": "Nuvema Town",
+   "game": "Black / White",
+   "source": "https://www.pokepedia.fr/Fichier:Renouet_-_vol_de_Chovsourir.png",
+   "checked": "shown on Poképédia's page \"Renouet\"; BW in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "0AvR2QqCoax1",
+   "region": "Unova",
+   "name": "Opelucid City",
+   "game": "Black / White",
+   "source": "https://www.wikidex.net/wiki/Archivo:Ciudad_Caolín_(Blanco).png",
+   "checked": "shown on WikiDex's page \"Ciudad Caolín\"; BW in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "n_RspkBhb1Lu",
+   "region": "Unova",
+   "name": "Opelucid City",
+   "game": "Black / White",
+   "source": "https://www.wikidex.net/wiki/Archivo:Ciudad_Caolín_(Negro).png",
+   "checked": "shown on WikiDex's page \"Ciudad Caolín\"; BW in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "c-0mr-kooN4B",
+   "region": "Unova",
+   "name": "Opelucid City",
+   "game": "Black 2 / White 2",
+   "source": "https://www.wikidex.net/wiki/Archivo:Menek_Ciudad_Caolín_B2N2.jpg",
+   "checked": "in wikidex's category \"Capturas de Pokémon Negro 2 y Pokémon Blanco 2\", named after the place; B2W2 in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "LuVJmdx8Hvjd",
+   "region": "Unova",
+   "name": "Pinwheel Forest",
+   "game": "Black / White",
+   "source": "https://www.pokepedia.fr/Fichier:Forêt_d'Empoigne_Petit_Champi_1_NB.png",
+   "checked": "shown on Poképédia's page \"Forêt d'Empoigne\"; BW in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "L5kerXMxqbFT",
+   "region": "Unova",
+   "name": "Pinwheel Forest",
+   "game": "Black / White",
+   "source": "https://www.wikidex.net/wiki/Archivo:Hueco_Bosque_Azulejo_1.png",
+   "checked": "in wikidex's category \"Capturas de Pokémon Negro y Pokémon Blanco\", named after the place; BW in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "P7oBn5PU9S6z",
+   "region": "Unova",
+   "name": "Pinwheel Forest",
+   "game": "Black 2 / White 2",
+   "source": "https://www.wikidex.net/wiki/Archivo:Hueco_Bosque_Azulejo_2.png",
+   "checked": "in wikidex's category \"Capturas de Pokémon Negro 2 y Pokémon Blanco 2\", named after the place; B2W2 in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "IVuJdCgGL-YH",
+   "region": "Unova",
+   "name": "Pinwheel Forest",
+   "game": "Black / White",
+   "source": "https://www.wikidex.net/wiki/Archivo:Roca_musgo_bosque_azulejo.png",
+   "checked": "in wikidex's category \"Capturas de Pokémon Negro y Pokémon Blanco\", named after the place; BW in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "hZslgwDpDuY-",
+   "region": "Unova",
+   "name": "Plasma Frigate",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokewiki.de/Datei:Plasma-Fregatte_(1).png",
+   "checked": "shown on PokéWiki's page \"Plasma-Fregatte\"; B2W2 in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "oEQO_aKqp2_x",
+   "region": "Unova",
+   "name": "Plasma Frigate",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokewiki.de/Datei:Plasma-Fregatte_(2).png",
+   "checked": "shown on PokéWiki's page \"Plasma-Fregatte\"; B2W2 in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "nKJnk4HmXG7a",
+   "region": "Unova",
+   "name": "Poké Transfer Lab",
+   "game": "Black 2 / White 2",
+   "source": "https://www.wikidex.net/wiki/Archivo:Poketransfer_N2B2.png",
+   "checked": "in wikidex's category \"Capturas de Pokémon Negro 2 y Pokémon Blanco 2\", named after the place; B2W2 in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "kRJutkpTTxF8",
+   "region": "Unova",
+   "name": "Pokémon League",
+   "game": "Black / White",
+   "source": "https://www.pokewiki.de/Datei:Pokémon_Liga_SW_Screen.png",
+   "checked": "in pokewiki's category \"SW-Screenshot\", named after the place; BW in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "IFl4MouBnbh-",
+   "region": "Unova",
+   "name": "Pokémon League",
+   "game": "Black / White",
+   "source": "https://www.wikidex.net/wiki/Archivo:Sala_central_de_la_liga_Teselia.png",
+   "checked": "shown on WikiDex's page \"Liga Pokémon (Teselia)\"; BW in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "IAVTnNWZQxl6",
+   "region": "Unova",
+   "name": "Pokémon League",
+   "game": "Black / White",
+   "source": "https://www.wikidex.net/wiki/Archivo:Sala_de_Catleya.png",
+   "checked": "shown on WikiDex's page \"Liga Pokémon (Teselia)\"; BW in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "e6LpjGQ8CF72",
+   "region": "Unova",
+   "name": "Pokémon League",
+   "game": "Black / White",
+   "source": "https://www.wikidex.net/wiki/Archivo:Sala_de_Lotto.png",
+   "checked": "shown on WikiDex's page \"Liga Pokémon (Teselia)\"; BW in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "06C0S28KKHpX",
+   "region": "Unova",
+   "name": "Pokémon League",
+   "game": "Black / White",
+   "source": "https://www.wikidex.net/wiki/Archivo:Sala_de_Mirto.png",
+   "checked": "shown on WikiDex's page \"Liga Pokémon (Teselia)\"; BW in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "eynjXYh6WmuQ",
+   "region": "Unova",
+   "name": "Pokémon World Tournament",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokewiki.de/Datei:PWT_Außen.png",
+   "checked": "shown on PokéWiki's page \"Pokémon World Tournament\"; B2W2 in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "q9VDnITEXIGA",
+   "region": "Unova",
+   "name": "Pokémon World Tournament",
+   "game": "Black 2 / White 2",
+   "source": "https://www.wikidex.net/wiki/Archivo:Quita-movimientos_N2B2.png",
+   "checked": "shown on WikiDex's page \"Pokémon World Tournament\"; B2W2 in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "EGPuSf96VkLv",
+   "region": "Unova",
+   "name": "Pokémon World Tournament",
+   "game": "Black 2 / White 2",
+   "source": "https://www.wikidex.net/wiki/Archivo:Torneo_Mundial_Pokémon_N2B2.png",
+   "checked": "shown on WikiDex's page \"Pokémon World Tournament\"; B2W2 in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "0mczPS1cB60y",
+   "region": "Unova",
+   "name": "Pokémon World Tournament",
+   "game": "Black 2 / White 2",
+   "source": "https://www.wikidex.net/wiki/Archivo:Torneos_derecha.png",
+   "checked": "shown on WikiDex's page \"Pokémon World Tournament\"; B2W2 in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "6V41xBuOnvGp",
+   "region": "Unova",
+   "name": "Relic Castle",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokewiki.de/Datei:Alter_Palast.png",
+   "checked": "shown on PokéWiki's page \"Alter Palast\"; B2W2 in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "Gx6aMgwF5alb",
+   "region": "Unova",
+   "name": "Relic Castle",
+   "game": "Black / White",
+   "source": "https://www.wikidex.net/wiki/Archivo:Ancient_Castle.png",
+   "checked": "shown on WikiDex's page \"Castillo Ancestral\"; BW in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "quXF1P8P_VGW",
+   "region": "Unova",
+   "name": "Route 10",
+   "game": "Black / White",
+   "source": "https://www.pokepedia.fr/Fichier:Point_de_contrôle_des_Badges.png",
+   "checked": "shown on Poképédia's page \"Route 10 (Unys)\"; BW in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "VNDwxH9RtnCy",
+   "region": "Unova",
+   "name": "Route 12",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokepedia.fr/Fichier:Vokit_Route_12.png",
+   "checked": "in pokepedia's category \"Capture d'écran de Pokémon Noir 2 et Blanc 2\", named after the place; B2W2 in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "A9_M5BbE2YKe",
+   "region": "Unova",
+   "name": "Route 13",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokewiki.de/Datei:Fundsache_Route_13.png",
+   "checked": "in pokewiki's category \"S2W2-Screenshot\", named after the place; B2W2 in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "SXNMWodGZSOH",
+   "region": "Unova",
+   "name": "Route 13",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokepedia.fr/Fichier:Trouée_Cachée_Route_13_(2).png",
+   "checked": "in pokepedia's category \"Capture d'écran de Pokémon Noir 2 et Blanc 2\", named after the place; B2W2 in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "R__IB_MmQ70P",
+   "region": "Unova",
+   "name": "Route 13",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokepedia.fr/Fichier:Trouée_Cachée_Route_13.png",
+   "checked": "in pokepedia's category \"Capture d'écran de Pokémon Noir 2 et Blanc 2\", named after the place; B2W2 in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "6RpO2jYOW0pJ",
+   "region": "Unova",
+   "name": "Route 14",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokewiki.de/Datei:Fundsache_Route_14.png",
+   "checked": "in pokewiki's category \"S2W2-Screenshot\", named after the place; B2W2 in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "pgn-AtJWDZ6N",
+   "region": "Unova",
+   "name": "Route 16",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokewiki.de/Datei:Fundsache_Route_16.png",
+   "checked": "in pokewiki's category \"S2W2-Screenshot\", named after the place; B2W2 in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "nr7Izhhteose",
+   "region": "Unova",
+   "name": "Route 18",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokepedia.fr/Fichier:Trouée_Cachée_Route_18.png",
+   "checked": "in pokepedia's category \"Capture d'écran de Pokémon Noir 2 et Blanc 2\", named after the place; B2W2 in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "nE9AQI8rlqAU",
+   "region": "Unova",
+   "name": "Route 2",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokepedia.fr/Fichier:Trouée_Cachée_Route_2.png",
+   "checked": "in pokepedia's category \"Capture d'écran de Pokémon Noir 2 et Blanc 2\", named after the place; B2W2 in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "da5GWc7RroCI",
+   "region": "Unova",
+   "name": "Route 22",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokepedia.fr/Fichier:Trouée_Cachée_Route_22.png",
+   "checked": "in pokepedia's category \"Capture d'écran de Pokémon Noir 2 et Blanc 2\", named after the place; B2W2 in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "rWn_Gz7QfHNF",
+   "region": "Unova",
+   "name": "Route 23",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokepedia.fr/Fichier:Trouée_Cachée_Route_23.png",
+   "checked": "in pokepedia's category \"Capture d'écran de Pokémon Noir 2 et Blanc 2\", named after the place; B2W2 in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "gJzktmVAgICV",
+   "region": "Unova",
+   "name": "Route 3",
+   "game": "Black / White",
+   "source": "https://www.pokepedia.fr/Fichier:Maternelle_Route_3_(Extérieur)_NB.png",
+   "checked": "in pokepedia's category \"Capture d'écran de Pokémon Noir et Blanc\", named after the place; BW in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "adP7iFtQK-7s",
+   "region": "Unova",
+   "name": "Route 3",
+   "game": "Black / White",
+   "source": "https://www.pokepedia.fr/Fichier:Maternelle_Route_3_(Intérieur)_NB.png",
+   "checked": "in pokepedia's category \"Capture d'écran de Pokémon Noir et Blanc\", named after the place; BW in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "4m7WSixyKctV",
+   "region": "Unova",
+   "name": "Route 3",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokepedia.fr/Fichier:Trouée_Cachée_Route_3_(2).png",
+   "checked": "in pokepedia's category \"Capture d'écran de Pokémon Noir 2 et Blanc 2\", named after the place; B2W2 in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "DyQpcOg5Ij7V",
+   "region": "Unova",
+   "name": "Route 3",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokepedia.fr/Fichier:Trouée_Cachée_Route_3.png",
+   "checked": "in pokepedia's category \"Capture d'écran de Pokémon Noir 2 et Blanc 2\", named after the place; B2W2 in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "Kw0ULCA-wXLg",
+   "region": "Unova",
+   "name": "Route 5",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokewiki.de/Datei:Fundsache_Route_5.png",
+   "checked": "in pokewiki's category \"S2W2-Screenshot\", named after the place; B2W2 in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "vP6P2wBzHJH_",
+   "region": "Unova",
+   "name": "Route 5",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokepedia.fr/Fichier:Trouée_Cachée_Route_5.png",
+   "checked": "in pokepedia's category \"Capture d'écran de Pokémon Noir 2 et Blanc 2\", named after the place; B2W2 in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "mSQ45STuiW9o",
+   "region": "Unova",
+   "name": "Route 6",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokewiki.de/Datei:Fundsache_Route_6.png",
+   "checked": "in pokewiki's category \"S2W2-Screenshot\", named after the place; B2W2 in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "0TIwgD-hXzlQ",
+   "region": "Unova",
+   "name": "Route 6",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokepedia.fr/Fichier:Trouée_Cachée_Route_6_(2).png",
+   "checked": "in pokepedia's category \"Capture d'écran de Pokémon Noir 2 et Blanc 2\", named after the place; B2W2 in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "8DGBMCO2J0Mu",
+   "region": "Unova",
+   "name": "Route 6",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokepedia.fr/Fichier:Trouée_Cachée_Route_6.png",
+   "checked": "in pokepedia's category \"Capture d'écran de Pokémon Noir 2 et Blanc 2\", named after the place; B2W2 in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "0DUo77Po6lkl",
+   "region": "Unova",
+   "name": "Route 7",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokewiki.de/Datei:Fundsache_Route_7.png",
+   "checked": "in pokewiki's category \"S2W2-Screenshot\", named after the place; B2W2 in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "_3CdmO6ssUu_",
+   "region": "Unova",
+   "name": "Route 7",
+   "game": "Black / White",
+   "source": "https://www.wikidex.net/wiki/Archivo:Thundurus_en_la_ruta_7.png",
+   "checked": "shown on WikiDex's page \"Ruta 7 (Teselia)\"; BW in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "VZ3ZR6pV7kda",
+   "region": "Unova",
+   "name": "Route 8",
+   "game": "Black / White",
+   "source": "https://www.pokewiki.de/Datei:Route_8_(Einall).png",
+   "checked": "in pokewiki's category \"SW-Screenshot\", named after the place; BW in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "egzYhs9pF5rL",
+   "region": "Unova",
+   "name": "Route 9",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokewiki.de/Datei:Fundsache_Route_9.png",
+   "checked": "in pokewiki's category \"S2W2-Screenshot\", named after the place; B2W2 in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "I7DxQ14atFQX",
+   "region": "Unova",
+   "name": "Route 9",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokepedia.fr/Fichier:Trouée_Cachée_Route_9.png",
+   "checked": "in pokepedia's category \"Capture d'écran de Pokémon Noir 2 et Blanc 2\", named after the place; B2W2 in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "0JGbI4Xf_SM5",
+   "region": "Unova",
+   "name": "Shopping Mall Nine",
+   "parent": "Route 9",
+   "game": "Black / White",
+   "source": "https://www.wikidex.net/wiki/Archivo:Centro_comercial_R9.png",
+   "checked": "shown on WikiDex's page \"Centro Comercial R9\"; BW in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "sO1FG3j-mVuB",
+   "region": "Unova",
+   "name": "Skyarrow Bridge",
+   "game": "Black / White",
+   "source": "https://www.wikidex.net/wiki/Archivo:Puente_Saeta_desde_lado_BN.png",
+   "checked": "shown on WikiDex's page \"Puente Flechacielo/Puente Saeta\"; BW in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "m2mP1GOtbUbb",
+   "region": "Unova",
+   "name": "Skyarrow Bridge",
+   "game": "Black / White",
+   "source": "https://www.wikidex.net/wiki/Archivo:Puente_Saeta_punta_central_BN.png",
+   "checked": "shown on WikiDex's page \"Puente Flechacielo/Puente Saeta\"; BW in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "ejDUr18HlJUi",
+   "region": "Unova",
+   "name": "Skyarrow Bridge",
+   "game": "Black / White",
+   "source": "https://www.wikidex.net/wiki/Archivo:Puente_Saeta_vista_completa_BN.png",
+   "checked": "shown on WikiDex's page \"Puente Flechacielo/Puente Saeta\"; BW in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "GfWaF-xJpVzB",
+   "region": "Unova",
+   "name": "Strange House",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokewiki.de/Datei:Bizarro-Haus.png",
+   "checked": "shown on PokéWiki's page \"Bizarro-Haus\"; B2W2 in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "nE5S4iWYNGfs",
+   "region": "Unova",
+   "name": "Striaton City",
+   "game": "Black / White",
+   "source": "https://www.wikidex.net/wiki/Archivo:Ciudad_Gres_Gimnasio.png",
+   "checked": "shown on WikiDex's page \"Gimnasio Pokémon de Ciudad Gres\"; BW in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "HSy7cs9cVzYQ",
+   "region": "Unova",
+   "name": "Striaton City",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokewiki.de/Datei:Flunschlik_in_Orion_City.png",
+   "checked": "shown on PokéWiki's page \"Orion City\"; B2W2 in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "Cb-wAlq1VYNP",
+   "region": "Unova",
+   "name": "Striaton City",
+   "game": "Black 2 / White 2",
+   "source": "https://www.wikidex.net/wiki/Archivo:Gimnasio_Pokémon_de_la_Ciudad_Gres_N2B2.png",
+   "checked": "shown on WikiDex's page \"Ciudad Gres\"; B2W2 in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "6qY5f3v9DvlK",
+   "region": "Unova",
+   "name": "Striaton City",
+   "game": "Black 2 / White 2",
+   "source": "https://www.wikidex.net/wiki/Archivo:Restaurante_Gres.png",
+   "checked": "shown on WikiDex's page \"Ciudad Gres\"; B2W2 in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "PbzU_TVvD5Yu",
+   "region": "Unova",
+   "name": "Tubeline Bridge",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokewiki.de/Datei:Zylinderbrücke.png",
+   "checked": "shown on PokéWiki's page \"Zylinderbrücke\"; B2W2 in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "MsaTuAxKV8QA",
+   "region": "Unova",
+   "name": "Twist Mountain",
+   "game": "Black 2 / White 2",
+   "source": "https://www.wikidex.net/wiki/Archivo:Regigigas_Monte_Tuerca.png",
+   "checked": "shown on WikiDex's page \"Montaña Torcida/Monte Tuerca\"; B2W2 in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "m0lKWMPyHl2I",
+   "region": "Unova",
+   "name": "Undella Bay",
+   "game": "Black / White",
+   "source": "https://www.pokepedia.fr/Fichier:Baie_Vaguelone.png",
+   "checked": "in pokepedia's category \"Capture d'écran de Pokémon Noir et Blanc\", named after the place; BW in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "DWYPa5Vt-l2k",
+   "region": "Unova",
+   "name": "Village Bridge",
+   "game": "Black 2 / White 2",
+   "source": "https://www.wikidex.net/wiki/Archivo:Puente_villa_centro.png",
+   "checked": "shown on WikiDex's page \"Puente Aldea/Puente Villa\"; B2W2 in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "b_bNJ6Hq4KEg",
+   "region": "Unova",
+   "name": "Virbank City",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokepedia.fr/Fichier:Arène_Ondes-sur-Mer.png",
+   "checked": "in pokepedia's category \"Capture d'écran de Pokémon Noir 2 et Blanc 2\", named after the place; B2W2 in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "_4R5Ef-IDUTs",
+   "region": "Unova",
+   "name": "Virbank Gym",
+   "parent": "Virbank City",
+   "game": "Black 2 / White 2",
+   "source": "https://www.wikidex.net/wiki/Archivo:Gimnasio_Hormigón_N2B2.png",
+   "checked": "shown on WikiDex's page \"Gimnasio Pokémon de Ciudad Hormigón\"; B2W2 in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "MGEnCwDFY7K3",
+   "region": "Unova",
+   "name": "Wellspring Cave",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokewiki.de/Datei:Grundwassersenke.png",
+   "checked": "shown on PokéWiki's page \"Grundwassersenke\"; B2W2 in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "-0BD3_3wb9ym",
+   "region": "Galar",
+   "name": "Circhester Stadium",
+   "parent": "Circhester",
+   "game": "Sword / Shield",
+   "source": "https://www.pokepedia.fr/Fichier:Stade_de_Ludester_Mission_(Glace)_EB.png",
+   "checked": "shown on Poképédia's page \"Stade de Ludester\"; SwSh in its name or category; cropped (bottom 9%); reviewed on a contact sheet"
+  },
+  {
+   "id": "OAMuEvHWdCJW",
+   "region": "Galar",
+   "name": "Circhester Stadium",
+   "parent": "Circhester",
+   "game": "Sword / Shield",
+   "source": "https://www.pokepedia.fr/Fichier:Stade_de_Ludester_Mission_(Roche)_EB.png",
+   "checked": "shown on Poképédia's page \"Stade de Ludester\"; SwSh in its name or category; cropped (bottom 9%); reviewed on a contact sheet"
+  },
+  {
+   "id": "Z9wStKOzYh1r",
+   "region": "Galar",
+   "name": "Hammerlocke",
+   "game": "Sword / Shield",
+   "source": "https://www.pokepedia.fr/Fichier:Kickenham_Bandeau_Muscle_EB.png",
+   "checked": "shown on Poképédia's page \"Kickenham\"; SwSh in its name or category; cropped (bottom 24%); reviewed on a contact sheet"
+  },
+  {
+   "id": "F_1N83xK1vnb",
+   "region": "Galar",
+   "name": "Hammerlocke",
+   "game": "Sword / Shield",
+   "source": "https://www.pokepedia.fr/Fichier:Kickenham_Lettre_Jaunie_EB.png",
+   "checked": "shown on Poképédia's page \"Kickenham\"; SwSh in its name or category; cropped (bottom 24%); reviewed on a contact sheet"
+  },
+  {
+   "id": "5F7gksujDlFf",
+   "region": "Galar",
+   "name": "Energy Plant",
+   "parent": "Hammerlocke",
+   "game": "Sword / Shield",
+   "source": "https://www.pokewiki.de/Datei:SWSH_Energiewerk.jpg",
+   "checked": "shown on PokéWiki's page \"Energiewerk\"; SwSh in its name or category; cropped (bottom 9%); reviewed on a contact sheet"
+  },
+  {
+   "id": "IEt2QQPoaUlw",
+   "region": "Galar",
+   "name": "Tower summit",
+   "parent": "Hammerlocke",
+   "game": "Sword / Shield",
+   "source": "https://www.pokewiki.de/Datei:SWSH_Turmspitze.jpg",
+   "checked": "shown on PokéWiki's page \"Turmspitze\"; SwSh in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "t2Y6WPLG-E-V",
+   "region": "Galar",
+   "name": "Hulbury",
+   "game": "Sword / Shield",
+   "source": "https://www.pokepedia.fr/Fichier:Skifford_Déf._Spé._+_EB.png",
+   "checked": "shown on Poképédia's page \"Skifford\"; SwSh in its name or category; cropped (bottom 24%); reviewed on a contact sheet"
+  },
+  {
+   "id": "GEU8Kw56p8oG",
+   "region": "Galar",
+   "name": "Hulbury",
+   "game": "Sword / Shield",
+   "source": "https://www.pokepedia.fr/Fichier:Skifford_Filet_Ball_EB.jpg",
+   "checked": "shown on Poképédia's page \"Skifford\"; SwSh in its name or category; cropped (bottom 24%); reviewed on a contact sheet"
+  },
+  {
+   "id": "l0zX552Wm89f",
+   "region": "Galar",
+   "name": "Hulbury",
+   "game": "Sword / Shield",
+   "source": "https://www.pokepedia.fr/Fichier:Skifford_Total_Soin_EB.jpg",
+   "checked": "shown on Poképédia's page \"Skifford\"; SwSh in its name or category; cropped (bottom 24%); reviewed on a contact sheet"
+  },
+  {
+   "id": "HqUoNexaQnoC",
+   "region": "Galar",
+   "name": "Motostoke",
+   "game": "Sword / Shield",
+   "source": "https://www.pokepedia.fr/Fichier:Motorby_Poké_Ball_2_EB.png",
+   "checked": "shown on Poképédia's page \"Motorby\"; SwSh in its name or category; cropped (bottom 24%); reviewed on a contact sheet"
+  },
+  {
+   "id": "PmXymLsewiY9",
+   "region": "Galar",
+   "name": "Motostoke",
+   "game": "Sword / Shield",
+   "source": "https://www.pokepedia.fr/Fichier:Motorby_Précision_+_EB.png",
+   "checked": "shown on Poképédia's page \"Motorby\"; SwSh in its name or category; cropped (bottom 24%); reviewed on a contact sheet"
+  },
+  {
+   "id": "CcYSZfaEHvQE",
+   "region": "Galar",
+   "name": "Motostoke",
+   "game": "Sword / Shield",
+   "source": "https://www.pokepedia.fr/Fichier:Motorby_Spray_Gorge_EB.png",
+   "checked": "shown on Poképédia's page \"Motorby\"; SwSh in its name or category; cropped (bottom 24%); reviewed on a contact sheet"
+  },
+  {
+   "id": "pE4CmdeDrIKB",
+   "region": "Galar",
+   "name": "Route 2",
+   "game": "Sword / Shield",
+   "source": "https://www.pokepedia.fr/Fichier:Route_2_Bel'Écaille_EB.png",
+   "checked": "shown on Poképédia's page \"Route 2 (Galar)\"; SwSh in its name or category; cropped (bottom 24%); reviewed on a contact sheet"
+  },
+  {
+   "id": "lgjHqnOcWRnl",
+   "region": "Galar",
+   "name": "Route 2",
+   "game": "Sword / Shield",
+   "source": "https://www.pokepedia.fr/Fichier:Route_2_Étoile_Voeu_EB.png",
+   "checked": "shown on Poképédia's page \"Route 2 (Galar)\"; SwSh in its name or category; cropped (bottom 24%); reviewed on a contact sheet"
+  },
+  {
+   "id": "MGmgdWKvDNkC",
+   "region": "Galar",
+   "name": "Route 2",
+   "game": "Sword / Shield",
+   "source": "https://www.pokepedia.fr/Fichier:Route_2_Huile_Max_EB.png",
+   "checked": "shown on Poképédia's page \"Route 2 (Galar)\"; SwSh in its name or category; cropped (bottom 24%); reviewed on a contact sheet"
+  },
+  {
+   "id": "QVegaUCR8Vk8",
+   "region": "Galar",
+   "name": "Route 2",
+   "game": "Sword / Shield",
+   "source": "https://www.pokepedia.fr/Fichier:Route_2_Pierre_Eau_EB.png",
+   "checked": "shown on Poképédia's page \"Route 2 (Galar)\"; SwSh in its name or category; cropped (bottom 24%); reviewed on a contact sheet"
+  },
+  {
+   "id": "4-Tt00MdH-pI",
+   "region": "Galar",
+   "name": "Route 2",
+   "game": "Sword / Shield",
+   "source": "https://www.pokepedia.fr/Fichier:Route_2_Super_Bonbon_EB.png",
+   "checked": "shown on Poképédia's page \"Route 2 (Galar)\"; SwSh in its name or category; cropped (bottom 24%); reviewed on a contact sheet"
+  },
+  {
+   "id": "kBqL-G9nIVBs",
+   "region": "Galar",
+   "name": "Route 3",
+   "game": "Sword / Shield",
+   "source": "https://www.pokepedia.fr/Fichier:Route_3_Super_Potion_EB.png",
+   "checked": "shown on Poképédia's page \"Route 3 (Galar)\"; SwSh in its name or category; cropped (left 7%, bottom 9%); reviewed on a contact sheet"
+  },
+  {
+   "id": "aZFKrHQR26wS",
+   "region": "Galar",
+   "name": "Route 4",
+   "game": "Sword / Shield",
+   "source": "https://www.pokepedia.fr/Fichier:Route_4_Poudre_Argentée_EB.png",
+   "checked": "shown on Poképédia's page \"Route 4 (Galar)\"; SwSh in its name or category; cropped (bottom 9%); reviewed on a contact sheet"
+  },
+  {
+   "id": "uOlqM_rObfdt",
+   "region": "Galar",
+   "name": "Route 8",
+   "game": "Sword / Shield",
+   "source": "https://www.pokepedia.fr/Fichier:Route_8_Plaque_Pixie_EB.png",
+   "checked": "shown on Poképédia's page \"Route 8 (Galar)\"; SwSh in its name or category; cropped (bottom 9%); reviewed on a contact sheet"
+  },
+  {
+   "id": "kSprkThJeb9N",
+   "region": "Galar",
+   "name": "Route 9",
+   "game": "Sword / Shield",
+   "source": "https://www.pokepedia.fr/Fichier:Route_9_Perle_1_EB.png",
+   "checked": "shown on Poképédia's page \"Route 9 (Galar)\"; SwSh in its name or category; cropped (bottom 9%); reviewed on a contact sheet"
+  },
+  {
+   "id": "xV8Vc6KbmI4p",
+   "region": "Galar",
+   "name": "Route 9",
+   "game": "Sword / Shield",
+   "source": "https://www.pokepedia.fr/Fichier:Route_9_Rappel_Max_EB.png",
+   "checked": "shown on Poképédia's page \"Route 9 (Galar)\"; SwSh in its name or category; cropped (bottom 9%); reviewed on a contact sheet"
+  },
+  {
+   "id": "5KKEJC0-sSRL",
+   "region": "Galar",
+   "name": "Stow-on-Side",
+   "game": "Sword / Shield",
+   "source": "https://www.pokepedia.fr/Fichier:Old_Chister_Pierre_Nuit_EB.png",
+   "checked": "shown on Poképédia's page \"Old Chister\"; SwSh in its name or category; cropped (bottom 9%); reviewed on a contact sheet"
+  },
+  {
+   "id": "u2HT8z5hIcs4",
+   "region": "Galar",
+   "name": "Stow-on-Side",
+   "game": "Sword / Shield",
+   "source": "https://www.wikidex.net/wiki/Archivo:Pueblo_Ladera_Calle_EpEc.png",
+   "checked": "shown on WikiDex's page \"Pueblo Ladera\"; SwSh in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "YfQ8-ORzg5U_",
+   "region": "Galar",
+   "name": "Stow-on-Side",
+   "game": "Sword / Shield",
+   "source": "https://www.pokewiki.de/Datei:SWSH_Verborgene_Statue_in_Passbeck.jpg",
+   "checked": "in pokewiki's category \"SWSH-Screenshot\", named after the place; SwSh in its name or category; cropped (bottom 9%); reviewed on a contact sheet"
+  },
+  {
+   "id": "qLPUTDFnUUMN",
+   "region": "Galar",
+   "name": "Turffield",
+   "game": "Sword / Shield",
+   "source": "https://www.pokepedia.fr/Fichier:Greenbury_Ceinture_Pro_EB.png",
+   "checked": "shown on Poképédia's page \"Greenbury\"; SwSh in its name or category; cropped (bottom 24%); reviewed on a contact sheet"
+  },
+  {
+   "id": "A0Vi6xVy3UcF",
+   "region": "Galar",
+   "name": "Turffield",
+   "game": "Sword / Shield",
+   "source": "https://www.pokepedia.fr/Fichier:Greenbury_Racinénergie_EB.png",
+   "checked": "shown on Poképédia's page \"Greenbury\"; SwSh in its name or category; cropped (bottom 9%); reviewed on a contact sheet"
+  },
+  {
+   "id": "rxzr-gPhrUI0",
+   "region": "Galar",
+   "name": "Wedgehurst",
+   "game": "Sword / Shield",
+   "source": "https://www.pokewiki.de/Datei:SWSH_Brassbury-Bahnhof_innen.jpg",
+   "checked": "in pokewiki's category \"SWSH-Screenshot\", named after the place; SwSh in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "zzwvgxDPdEJT",
+   "region": "Galar",
+   "name": "Wyndon",
+   "game": "Sword / Shield",
+   "source": "https://www.wikidex.net/wiki/Archivo:Ciudad_Puntera_EpEc.png",
+   "checked": "shown on WikiDex's page \"Ciudad Puntera\"; SwSh in its name or category; cropped (bottom 9%); reviewed on a contact sheet"
+  },
+  {
+   "id": "xvLBny-CFlOH",
+   "region": "Galar",
+   "name": "Rose Tower",
+   "parent": "Wyndon",
+   "game": "Sword / Shield",
+   "source": "https://www.pokepedia.fr/Fichier:Shehroz_Tower_EB.jpg",
+   "checked": "shown on Poképédia's page \"Shehroz Tower\"; SwSh in its name or category; cropped (bottom 9%); reviewed on a contact sheet"
+  },
+  {
+   "id": "qnFYA6t0oOQ7",
+   "region": "Galar",
+   "name": "Rose Tower",
+   "parent": "Wyndon",
+   "game": "Sword / Shield",
+   "source": "https://www.pokewiki.de/Datei:SWSH_Rose_Tower.jpg",
+   "checked": "shown on PokéWiki's page \"Rose Tower\"; SwSh in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "ZRJFUGEa6lct",
+   "region": "Galar",
+   "name": "Wyndon Stadium",
+   "parent": "Wyndon",
+   "game": "Sword / Shield",
+   "source": "https://www.pokewiki.de/Datei:SWSH_Liga-Hauptquartier.jpg",
+   "checked": "shown on PokéWiki's page \"Score-Stadion\"; SwSh in its name or category; cropped (bottom 9%); reviewed on a contact sheet"
+  },
+  {
+   "id": "BUpxe3OYxEw8",
+   "region": "Isle of Armor",
+   "name": "Tower of Waters",
+   "parent": "Challenge Beach",
+   "game": "Sword / Shield",
+   "source": "https://www.wikidex.net/wiki/Archivo:Interior_de_la_Torre_de_las_Aguas_(1)_EpEc.jpg",
+   "checked": "shown on WikiDex's page \"Torre de las Aguas\"; SwSh in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "CH5LBcu8wabu",
+   "region": "Isle of Armor",
+   "name": "Challenge Road",
+   "game": "Sword / Shield",
+   "source": "https://www.wikidex.net/wiki/Archivo:Ruta_Desafío_EpEc.png",
+   "checked": "shown on WikiDex's page \"Ruta Desafío\"; SwSh in its name or category; cropped (left 7%, bottom 9%); reviewed on a contact sheet"
+  },
+  {
+   "id": "eL87khyuNCbi",
+   "region": "Isle of Armor",
+   "name": "Tower of Darkness",
+   "parent": "Challenge Road",
+   "game": "Sword / Shield",
+   "source": "https://www.wikidex.net/wiki/Archivo:Interior_de_la_Torre_de_las_Sombras_(2)_EpEc.jpg",
+   "checked": "shown on WikiDex's page \"Torre de las Sombras\"; SwSh in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "u87vW_u_ofBh",
+   "region": "Isle of Armor",
+   "name": "Forest of Focus",
+   "game": "Sword / Shield",
+   "source": "https://www.pokewiki.de/Datei:Regine_Fokusforst_2.jpg",
+   "checked": "in pokewiki's category \"SWSH-Screenshot\", named after the place; SwSh in its name or category; cropped (bottom 9%); reviewed on a contact sheet"
+  },
+  {
+   "id": "vY7rCs0UVINE",
+   "region": "Isle of Armor",
+   "name": "Forest of Focus",
+   "game": "Sword / Shield",
+   "source": "https://www.pokewiki.de/Datei:SWSH_Mrs_Buddel_-_Fokusforst.jpg",
+   "checked": "in pokewiki's category \"SWSH-Screenshot\", named after the place; SwSh in its name or category; cropped (bottom 9%); reviewed on a contact sheet"
+  },
+  {
+   "id": "30kKapFW2zEb",
+   "region": "Isle of Armor",
+   "name": "Honeycalm Island",
+   "game": "Sword / Shield",
+   "source": "https://www.wikidex.net/wiki/Archivo:Isla_Melosa_EpEc.png",
+   "checked": "shown on WikiDex's page \"Isla Melosa\"; SwSh in its name or category; cropped (bottom 9%); reviewed on a contact sheet"
+  },
+  {
+   "id": "aNaa1S3opOqN",
+   "region": "Isle of Armor",
+   "name": "Loop Lagoon",
+   "game": "Sword / Shield",
+   "source": "https://www.wikidex.net/wiki/Archivo:Bahía_Circular_EpEc.png",
+   "checked": "shown on WikiDex's page \"Bahía Circular\"; SwSh in its name or category; cropped (bottom 9%); reviewed on a contact sheet"
+  },
+  {
+   "id": "QCZLfo41jGw2",
+   "region": "Isle of Armor",
+   "name": "Loop Lagoon",
+   "game": "Sword / Shield",
+   "source": "https://www.wikidex.net/wiki/Archivo:Nido_131_y_151.jpg",
+   "checked": "shown on WikiDex's page \"Bahía Circular\"; SwSh in its name or category; cropped (bottom 9%); reviewed on a contact sheet"
+  },
+  {
+   "id": "RU0hSD7hwmm4",
+   "region": "Isle of Armor",
+   "name": "Soothing Wetlands",
+   "game": "Sword / Shield",
+   "source": "https://www.wikidex.net/wiki/Archivo:Humedal_Frescor_EpEc.png",
+   "checked": "shown on WikiDex's page \"Ciénaga Fresca/Humedal Frescor\"; SwSh in its name or category; cropped (bottom 9%); reviewed on a contact sheet"
+  },
+  {
+   "id": "dlfkMQ7c12pI",
+   "region": "Isle of Armor",
+   "name": "Soothing Wetlands",
+   "game": "Sword / Shield",
+   "source": "https://www.pokewiki.de/Datei:Regine_Balsamsumpf_2.jpg",
+   "checked": "in pokewiki's category \"SWSH-Screenshot\", named after the place; SwSh in its name or category; cropped (bottom 9%); reviewed on a contact sheet"
+  },
+  {
+   "id": "sN5-Gh1HJPTJ",
+   "region": "Isle of Armor",
+   "name": "Soothing Wetlands",
+   "game": "Sword / Shield",
+   "source": "https://www.pokewiki.de/Datei:Regine_Balsamsumpf_5.jpg",
+   "checked": "in pokewiki's category \"SWSH-Screenshot\", named after the place; SwSh in its name or category; cropped (bottom 9%); reviewed on a contact sheet"
+  },
+  {
+   "id": "OQkaqI_zDB6X",
+   "region": "Isle of Armor",
+   "name": "Stepping-Stone Sea",
+   "game": "Sword / Shield",
+   "source": "https://www.pokewiki.de/Datei:Regine_Inselkettenmeer_1.jpg",
+   "checked": "in pokewiki's category \"SWSH-Screenshot\", named after the place; SwSh in its name or category; cropped (left 7%, bottom 9%); reviewed on a contact sheet"
+  },
+  {
+   "id": "EkCBQBxgiBku",
+   "region": "Isle of Armor",
+   "name": "Training Lowlands",
+   "game": "Sword / Shield",
+   "source": "https://www.wikidex.net/wiki/Archivo:Llano_Entrenamiento_EpEc.png",
+   "checked": "shown on WikiDex's page \"Llanura Entrenamiento/Llano Entrenamiento\"; SwSh in its name or category; cropped (bottom 9%); reviewed on a contact sheet"
+  },
+  {
+   "id": "cp1LQ9NxpU2v",
+   "region": "Isle of Armor",
+   "name": "Training Lowlands",
+   "game": "Sword / Shield",
+   "source": "https://www.pokewiki.de/Datei:SWSH_Digda-Suche_-_Fleißebene_3.jpg",
+   "checked": "shown on PokéWiki's page \"Fleißebene\"; SwSh in its name or category; cropped (bottom 9%); reviewed on a contact sheet"
+  },
+  {
+   "id": "0ByTvPbgwG6s",
+   "region": "Isle of Armor",
+   "name": "Workout Sea",
+   "game": "Sword / Shield",
+   "source": "https://www.pokewiki.de/Datei:Regine_Fitnessmeer_2.jpg",
+   "checked": "in pokewiki's category \"SWSH-Screenshot\", named after the place; SwSh in its name or category; cropped (bottom 9%); reviewed on a contact sheet"
+  },
+  {
+   "id": "NXgMruydYi36",
+   "region": "Isle of Armor",
+   "name": "Workout Sea",
+   "game": "Sword / Shield",
+   "source": "https://www.pokewiki.de/Datei:SWSH_Fitnessmeer.jpg",
+   "checked": "shown on PokéWiki's page \"Fitnessmeer\"; SwSh in its name or category; cropped (bottom 9%); reviewed on a contact sheet"
+  },
+  {
+   "id": "tEyQXnumbsqZ",
+   "region": "Paldea",
+   "name": "Alfornada",
+   "game": "Scarlet / Violet",
+   "source": "https://www.wikidex.net/wiki/Archivo:Fuente_de_pueblo_alforno.jpg",
+   "checked": "shown on WikiDex's page \"Pueblo Alforno\"; SV in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "qI6mzlANfLpW",
+   "region": "Paldea",
+   "name": "Alfornada",
+   "game": "Scarlet / Violet",
+   "source": "https://www.wikidex.net/wiki/Archivo:Sprites_viejos_en_pueblo_alforno_EP.jpg",
+   "checked": "shown on WikiDex's page \"Pueblo Alforno\"; SV in its name or category; cropped (right 17%); reviewed on a contact sheet"
+  },
+  {
+   "id": "V8MwbE3IAdtv",
+   "region": "Paldea",
+   "name": "Alfornada Gym",
+   "parent": "Alfornada",
+   "game": "Scarlet / Violet",
+   "source": "https://www.wikidex.net/wiki/Archivo:Campo_de_batalla_del_gimnasio_de_Pueblo_Alforno_EP.jpg",
+   "checked": "shown on WikiDex's page \"Gimnasio de Pueblo Alforno\"; SV in its name or category; cropped (right 17%); reviewed on a contact sheet"
+  },
+  {
+   "id": "sLD4ZqfRTU-v",
+   "region": "Paldea",
+   "name": "Cabo Poco",
+   "game": "Scarlet / Violet",
+   "source": "https://www.pokewiki.de/Datei:Erkundung_des_Cucharico-Pfads_KAPU.jpg",
+   "checked": "in pokewiki's category \"KAPU-Screenshot\", named after the place; SV in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "Xoq2v7oiUKWb",
+   "region": "Paldea",
+   "name": "Cascarrafa",
+   "game": "Scarlet / Violet",
+   "source": "https://www.wikidex.net/wiki/Archivo:Gimnasio_Pokémon_de_Ciudad_Cántara_EP.jpg",
+   "checked": "in wikidex's category \"Capturas de Pokémon Escarlata y Pokémon Púrpura\", named after the place; SV in its name or category; cropped (right 17%); reviewed on a contact sheet"
+  },
+  {
+   "id": "_8PDsIzED-cH",
+   "region": "Paldea",
+   "name": "Glaseado Mountain",
+   "game": "Scarlet / Violet",
+   "source": "https://www.wikidex.net/wiki/Archivo:Gimnasio_Pokémon_de_Sierra_Napada_EP.jpg",
+   "checked": "in wikidex's category \"Capturas de Pokémon Escarlata y Pokémon Púrpura\", named after the place; SV in its name or category; cropped (right 17%); reviewed on a contact sheet"
+  },
+  {
+   "id": "UU-A4Ql5ha9e",
+   "region": "Paldea",
+   "name": "Glaseado Gym",
+   "parent": "Glaseado Mountain",
+   "game": "Scarlet / Violet",
+   "source": "https://www.wikidex.net/wiki/Archivo:Interior_del_Gimnasio_de_Sierra_Napada_EP.jpg",
+   "checked": "shown on WikiDex's page \"Gimnasio de Sierra Napada\"; SV in its name or category; cropped (right 17%); reviewed on a contact sheet"
+  },
+  {
+   "id": "Ic8fV1C0ERem",
+   "region": "Paldea",
+   "name": "Zero Lab",
+   "parent": "Great Crater of Paldea",
+   "game": "Scarlet / Violet",
+   "source": "https://www.wikidex.net/wiki/Archivo:Laboratorio_Cero_EP.jpg",
+   "checked": "shown on WikiDex's page \"Laboratorio Cero\"; SV in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "hkQgQMOkayv4",
+   "region": "Paldea",
+   "name": "Medali",
+   "game": "Scarlet / Violet",
+   "source": "https://www.wikidex.net/wiki/Archivo:Gimnasio_Pokémon_de_Pueblo_Mestura_EP.jpg",
+   "checked": "in wikidex's category \"Capturas de Pokémon Escarlata y Pokémon Púrpura\", named after the place; SV in its name or category; cropped (right 17%); reviewed on a contact sheet"
+  },
+  {
+   "id": "FZcd9Tv2WbEP",
+   "region": "Paldea",
+   "name": "Medali",
+   "game": "Scarlet / Violet",
+   "source": "https://www.wikidex.net/wiki/Archivo:Pueblo_Mestura_vista_aérea_EP.png",
+   "checked": "shown on WikiDex's page \"Pueblo Mestura\"; SV in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "XyagV0o_u3nP",
+   "region": "Paldea",
+   "name": "Medali Gym",
+   "parent": "Medali",
+   "game": "Scarlet / Violet",
+   "source": "https://www.wikidex.net/wiki/Archivo:Campo_de_gimnasio_normal_EP.jpg",
+   "checked": "shown on WikiDex's page \"Gimnasio de Pueblo Mestura\"; SV in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "Z1RAbZiEhX4S",
+   "region": "Paldea",
+   "name": "Montenevera Gym",
+   "parent": "Montenevera",
+   "game": "Scarlet / Violet",
+   "source": "https://www.wikidex.net/wiki/Archivo:Estadio_del_Gimnasio_de_Pueblo_Hozkailu_EP.jpg",
+   "checked": "shown on WikiDex's page \"Pueblo Hozkailu\"; SV in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "6jZiOCwKkL0x",
+   "region": "Paldea",
+   "name": "Caph Squad's Base",
+   "parent": "North Province (Area Two)",
+   "game": "Scarlet / Violet",
+   "source": "https://www.pokepedia.fr/Fichier:Repaire_du_Groupe_Caph_EV.png",
+   "checked": "shown on Poképédia's page \"Repaire du Groupe Caph\"; SV in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "ugBaFHj58GJP",
+   "region": "Paldea",
+   "name": "Segin Squad's Base",
+   "parent": "West Province (Area One)",
+   "game": "Scarlet / Violet",
+   "source": "https://www.wikidex.net/wiki/Archivo:Base_del_escuadrón_Segin.jpg",
+   "checked": "shown on WikiDex's page \"Base del Escuadrón Segin\"; SV in its name or category; cropped (right 17%); reviewed on a contact sheet"
+  },
+  {
+   "id": "JuTWK94WSJsq",
+   "region": "Paldea",
+   "name": "Segin Squad's Base",
+   "parent": "West Province (Area One)",
+   "game": "Scarlet / Violet",
+   "source": "https://www.pokewiki.de/Datei:KAPU_Versteck_der_Unlicht-Mitglieder.png",
+   "checked": "shown on PokéWiki's page \"Versteck der Unlicht-Mitglieder\"; SV in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "8otO1Zc-9n46",
+   "region": "Paldea",
+   "name": "Segin Squad's Base",
+   "parent": "West Province (Area One)",
+   "game": "Scarlet / Violet",
+   "source": "https://www.pokepedia.fr/Fichier:Repaire_du_Groupe_Segin_EV.png",
+   "checked": "shown on Poképédia's page \"Repaire du Groupe Segin\"; SV in its name or category; reviewed on a contact sheet"
+  },
+  {
+   "id": "w2yabgGqTteo",
+   "region": "Unova",
+   "name": "Abundant Shrine",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokepedia.fr/Fichier:Autel_Abondance_Calcium_N2B2.png",
+   "checked": "shown on Poképédia's page \"Autel Abondance\"; B2W2 in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "aJWc0Jas0LZD",
+   "region": "Unova",
+   "name": "Abundant Shrine",
+   "game": "Black / White",
+   "source": "https://www.pokepedia.fr/Fichier:Autel_Abondance_Petit_Champi_2_NB.png",
+   "checked": "shown on Poképédia's page \"Autel Abondance\"; BW in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "WJxx8DOYdSQZ",
+   "region": "Unova",
+   "name": "Abundant Shrine",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokepedia.fr/Fichier:Autel_Abondance_Super_Bonbon_N2B2.png",
+   "checked": "shown on Poképédia's page \"Autel Abondance\"; B2W2 in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "9-5c6jghdDmG",
+   "region": "Unova",
+   "name": "Abundant Shrine",
+   "game": "Black / White",
+   "source": "https://www.pokepedia.fr/Fichier:Autel_Abondance_Super_Bonbon_NB.png",
+   "checked": "shown on Poképédia's page \"Autel Abondance\"; BW in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "3RWsmWuz_-Yb",
+   "region": "Unova",
+   "name": "Anville Town",
+   "game": "Black / White",
+   "source": "https://www.pokepedia.fr/Fichier:Rotombourg_Hyper_Ball_NB.png",
+   "checked": "shown on Poképédia's page \"Rotombourg\"; BW in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "Te49AabcrLti",
+   "region": "Unova",
+   "name": "Aspertia City",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokepedia.fr/Fichier:Pavonnay_CT53_N2B2.png",
+   "checked": "shown on Poképédia's page \"Pavonnay\"; B2W2 in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "jSEvMBoqT7hQ",
+   "region": "Unova",
+   "name": "Aspertia Gym",
+   "parent": "Aspertia City",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokepedia.fr/Fichier:Arène_de_Pavonnay_Eau_Fraîche_N2B2.png",
+   "checked": "shown on Poképédia's page \"Arène de Pavonnay\"; B2W2 in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "L-Mf_J_yFlPJ",
+   "region": "Unova",
+   "name": "Castelia City",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokepedia.fr/Fichier:Volucité_Écaillecœur_N2B2.png",
+   "checked": "shown on Poképédia's page \"Volucité\"; B2W2 in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "09oIW9LlaRJU",
+   "region": "Unova",
+   "name": "Castelia City",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokepedia.fr/Fichier:Volucité_Glace_Volute_N2B2.png",
+   "checked": "shown on Poképédia's page \"Volucité\"; B2W2 in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "BZ33iuy5AyGd",
+   "region": "Unova",
+   "name": "Castelia City",
+   "game": "Black / White",
+   "source": "https://www.pokepedia.fr/Fichier:Volucité_Glace_Volute_NB.png",
+   "checked": "shown on Poképédia's page \"Volucité\"; BW in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "f7D-poA6ZsEF",
+   "region": "Unova",
+   "name": "Castelia City",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokepedia.fr/Fichier:Volucité_Grain_Miracl_N2B2.png",
+   "checked": "shown on Poképédia's page \"Volucité\"; B2W2 in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "hbdcj1rvBkC4",
+   "region": "Unova",
+   "name": "Castelia City",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokepedia.fr/Fichier:Volucité_Nœud_Destin_N2B2.png",
+   "checked": "shown on Poképédia's page \"Volucité\"; B2W2 in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "1RJVnYa6FT3f",
+   "region": "Unova",
+   "name": "Castelia City",
+   "game": "Black / White",
+   "source": "https://www.pokepedia.fr/Fichier:Volucité_Pierre_Eau_NB.png",
+   "checked": "shown on Poképédia's page \"Volucité\"; BW in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "j7c8B3RwXAIv",
+   "region": "Unova",
+   "name": "Celestial Tower",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokepedia.fr/Fichier:Tour_des_Cieux_Rappel_N2B2.png",
+   "checked": "shown on Poképédia's page \"Tour des Cieux\"; B2W2 in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "KOuCdTzAY-Zr",
+   "region": "Unova",
+   "name": "Chargestone Cave",
+   "game": "Black / White",
+   "source": "https://www.pokepedia.fr/Fichier:Grotte_Électrolithe_Aimant_NB.png",
+   "checked": "shown on Poképédia's page \"Grotte Électrolithe\"; BW in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "j44tsqIp7HTt",
+   "region": "Unova",
+   "name": "Chargestone Cave",
+   "game": "Black / White",
+   "source": "https://www.pokepedia.fr/Fichier:Grotte_Électrolithe_CT78_NB.png",
+   "checked": "shown on Poképédia's page \"Grotte Électrolithe\"; BW in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "08nnCnNEH4Pi",
+   "region": "Unova",
+   "name": "Chargestone Cave",
+   "game": "Black / White",
+   "source": "https://www.pokepedia.fr/Fichier:Grotte_Électrolithe_Morc._Étoile_NB.png",
+   "checked": "shown on Poképédia's page \"Grotte Électrolithe\"; BW in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "sZu_qYmvmaxb",
+   "region": "Unova",
+   "name": "Chargestone Cave",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokepedia.fr/Fichier:Grotte_Électrolithe_Pierrefoudre_N2B2.png",
+   "checked": "shown on Poképédia's page \"Grotte Électrolithe\"; B2W2 in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "yZ5HfHdwsf46",
+   "region": "Unova",
+   "name": "Chargestone Cave",
+   "game": "Black / White",
+   "source": "https://www.pokepedia.fr/Fichier:Grotte_Électrolithe_Rappel_1_NB.png",
+   "checked": "shown on Poképédia's page \"Grotte Électrolithe\"; BW in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "Fdwhl9ZjK-SJ",
+   "region": "Unova",
+   "name": "Chargestone Cave",
+   "game": "Black / White",
+   "source": "https://www.pokepedia.fr/Fichier:Grotte_Électrolithe_Super_Bonbon_NB.png",
+   "checked": "shown on Poképédia's page \"Grotte Électrolithe\"; BW in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "ZoUJ1XEpBi9g",
+   "region": "Unova",
+   "name": "Clay Tunnel",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokepedia.fr/Fichier:Route_Bardane_Joyau_Acier_N2B2.png",
+   "checked": "shown on Poképédia's page \"Route Bardane\"; B2W2 in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "gozCwfBcjd0i",
+   "region": "Unova",
+   "name": "Clay Tunnel",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokepedia.fr/Fichier:Route_Bardane_Pierre_Eau_N2B2.png",
+   "checked": "shown on Poképédia's page \"Route Bardane\"; B2W2 in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "wmxN0DJjMKhK",
+   "region": "Unova",
+   "name": "Clay Tunnel",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokepedia.fr/Fichier:Route_Bardane_Tesson_Vert_N2B2.png",
+   "checked": "shown on Poképédia's page \"Route Bardane\"; B2W2 in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "bl9LfNYJbB_n",
+   "region": "Unova",
+   "name": "Cold Storage",
+   "game": "Black / White",
+   "source": "https://www.pokepedia.fr/Fichier:Hangar_Frigorifique_Casque_Brut_NB.png",
+   "checked": "shown on Poképédia's page \"Hangar Frigorifique\"; BW in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "y2IRErjidg8p",
+   "region": "Unova",
+   "name": "Cold Storage",
+   "game": "Black / White",
+   "source": "https://www.pokepedia.fr/Fichier:Hangar_Frigorifique_Écaillecœur_NB.png",
+   "checked": "shown on Poképédia's page \"Hangar Frigorifique\"; BW in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "CwyNMzk28dwA",
+   "region": "Unova",
+   "name": "Cold Storage",
+   "game": "Black / White",
+   "source": "https://www.pokepedia.fr/Fichier:Hangar_Frigorifique_Glacéternel_NB.png",
+   "checked": "shown on Poképédia's page \"Hangar Frigorifique\"; BW in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "fmzgFrkoLspE",
+   "region": "Unova",
+   "name": "Cold Storage",
+   "game": "Black / White",
+   "source": "https://www.pokepedia.fr/Fichier:Hangar_Frigorifique_Hyper_Potion_1_NB.png",
+   "checked": "shown on Poképédia's page \"Hangar Frigorifique\"; BW in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "uzPqRASjsMzC",
+   "region": "Unova",
+   "name": "Cold Storage",
+   "game": "Black / White",
+   "source": "https://www.pokepedia.fr/Fichier:Hangar_Frigorifique_Scuba_Ball_NB.png",
+   "checked": "shown on Poképédia's page \"Hangar Frigorifique\"; BW in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "YqQzRxjOur5z",
+   "region": "Unova",
+   "name": "Desert Resort",
+   "game": "Black / White",
+   "source": "https://www.pokepedia.fr/Fichier:Désert_Délassant_Baie_Fraive_1_NB.png",
+   "checked": "shown on Poképédia's page \"Désert Délassant\"; BW in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "pyUYEgrUca45",
+   "region": "Unova",
+   "name": "Desert Resort",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokepedia.fr/Fichier:Désert_Délassant_Tesson_Vert_N2B2.png",
+   "checked": "shown on Poképédia's page \"Désert Délassant\"; B2W2 in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "4kyfvIhWY8wy",
+   "region": "Unova",
+   "name": "Dragonspiral Tower",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokepedia.fr/Fichier:Tour_Dragospire_Carbone_N2B2.png",
+   "checked": "shown on Poképédia's page \"Tour Dragospire\"; B2W2 in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "RzyUt727qi_P",
+   "region": "Unova",
+   "name": "Dragonspiral Tower",
+   "game": "Black / White",
+   "source": "https://www.pokepedia.fr/Fichier:Tour_Dragospire_Écaillecœur_NB.png",
+   "checked": "shown on Poképédia's page \"Tour Dragospire\"; BW in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "Id0s6LdJskeW",
+   "region": "Unova",
+   "name": "Dragonspiral Tower",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokepedia.fr/Fichier:Tour_Dragospire_Élixir_N2B2.png",
+   "checked": "shown on Poképédia's page \"Tour Dragospire\"; B2W2 in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "L-2xBFhSVpc2",
+   "region": "Unova",
+   "name": "Dragonspiral Tower",
+   "game": "Black / White",
+   "source": "https://www.pokepedia.fr/Fichier:Tour_Dragospire_Morc._Étoile_NB.png",
+   "checked": "shown on Poképédia's page \"Tour Dragospire\"; BW in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "6efPyKY-_BJ0",
+   "region": "Unova",
+   "name": "Dragonspiral Tower",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokepedia.fr/Fichier:Tour_Dragospire_Pierre_Éclat_N2B2.png",
+   "checked": "shown on Poképédia's page \"Tour Dragospire\"; B2W2 in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "5mt8yMdv1jtq",
+   "region": "Unova",
+   "name": "Dragonspiral Tower",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokepedia.fr/Fichier:Tour_Dragospire_Tesson_Rouge_N2B2.png",
+   "checked": "shown on Poképédia's page \"Tour Dragospire\"; B2W2 in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "0dvLuQzyjX0m",
+   "region": "Unova",
+   "name": "Dreamyard",
+   "game": "Black / White",
+   "source": "https://www.pokepedia.fr/Fichier:Vestiges_du_Rêve_Hyper_Ball_NB.png",
+   "checked": "shown on Poképédia's page \"Vestiges du Rêve\"; BW in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "79m5Tqm_UlPV",
+   "region": "Unova",
+   "name": "Dreamyard",
+   "game": "Black / White",
+   "source": "https://www.pokepedia.fr/Fichier:Vestiges_du_Rêve_Poké_Ball_NB.png",
+   "checked": "shown on Poképédia's page \"Vestiges du Rêve\"; BW in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "it2aRVZSxAUt",
+   "region": "Unova",
+   "name": "Dreamyard",
+   "game": "Black / White",
+   "source": "https://www.pokepedia.fr/Fichier:Vestiges_du_Rêve_Repousse_NB.png",
+   "checked": "shown on Poképédia's page \"Vestiges du Rêve\"; BW in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "7J_FC3JMr4P0",
+   "region": "Unova",
+   "name": "Dreamyard",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokepedia.fr/Fichier:Vestiges_du_Rêve_Super_Bonbon_N2B2.png",
+   "checked": "shown on Poképédia's page \"Vestiges du Rêve\"; B2W2 in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "jeUDn91m5RXq",
+   "region": "Unova",
+   "name": "Driftveil City",
+   "game": "Black / White",
+   "source": "https://www.pokepedia.fr/Fichier:Arène_Port_Yoneuve_Eau_Fraîche_NB.png",
+   "checked": "shown on Poképédia's page \"Arène de Port Yoneuve\"; BW in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "NNFqd9t_zdcJ",
+   "region": "Unova",
+   "name": "Driftveil City",
+   "game": "Black / White",
+   "source": "https://www.pokepedia.fr/Fichier:Port_Yoneuve_CS02_NB.png",
+   "checked": "shown on Poképédia's page \"Port Yoneuve\"; BW in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "RYDRvk1eT0il",
+   "region": "Unova",
+   "name": "Driftveil City",
+   "game": "Black / White",
+   "source": "https://www.pokepedia.fr/Fichier:Port_Yoneuve_Écaillecœur_2_NB.png",
+   "checked": "shown on Poképédia's page \"Port Yoneuve\"; BW in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "syVmw7Saz9jv",
+   "region": "Unova",
+   "name": "Driftveil City",
+   "game": "Black / White",
+   "source": "https://www.pokepedia.fr/Fichier:Port_Yoneuve_Pierre_Eau_NB.png",
+   "checked": "shown on Poképédia's page \"Port Yoneuve\"; BW in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "xZ71pJmKj6Fh",
+   "region": "Unova",
+   "name": "Floccesy Ranch",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokepedia.fr/Fichier:Ranch_d'Amaillide_Anti-Para_N2B2.png",
+   "checked": "shown on Poképédia's page \"Ranch d'Amaillide\"; B2W2 in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "AyrP54NwrsT1",
+   "region": "Unova",
+   "name": "Floccesy Ranch",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokepedia.fr/Fichier:Ranch_d'Amaillide_Attaque_+_N2B2.png",
+   "checked": "shown on Poképédia's page \"Ranch d'Amaillide\"; B2W2 in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "GFpoBz8lDRZt",
+   "region": "Unova",
+   "name": "Floccesy Town",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokepedia.fr/Fichier:Amaillide_Potion_1_N2B2.png",
+   "checked": "shown on Poképédia's page \"Amaillide\"; B2W2 in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "Ks5mXcMsELmg",
+   "region": "Unova",
+   "name": "Giant Chasm",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokepedia.fr/Fichier:Grotte_Cyclopéenne_Carbone_N2B2.png",
+   "checked": "shown on Poképédia's page \"Grotte Cyclopéenne\"; B2W2 in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "BVnevLl1_J76",
+   "region": "Unova",
+   "name": "Giant Chasm",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokepedia.fr/Fichier:Grotte_Cyclopéenne_Grif._Rasoir_N2B2.png",
+   "checked": "shown on Poképédia's page \"Grotte Cyclopéenne\"; B2W2 in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "DT2cQ3ABbrAI",
+   "region": "Unova",
+   "name": "Giant Chasm",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokepedia.fr/Fichier:Grotte_Cyclopéenne_Morc._Étoile_3_N2B2.png",
+   "checked": "shown on Poképédia's page \"Grotte Cyclopéenne\"; B2W2 in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "fhoVodQpb0bD",
+   "region": "Unova",
+   "name": "Giant Chasm",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokepedia.fr/Fichier:Grotte_Cyclopéenne_Pointeau_ADN_N2B2.png",
+   "checked": "shown on Poképédia's page \"Grotte Cyclopéenne\"; B2W2 in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "t4FF4lyEczH3",
+   "region": "Unova",
+   "name": "Giant Chasm",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokepedia.fr/Fichier:Grotte_Cyclopéenne_Tesson_Jaune_N2B2.png",
+   "checked": "shown on Poképédia's page \"Grotte Cyclopéenne\"; B2W2 in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "LnaoovFN2ssM",
+   "region": "Unova",
+   "name": "Humilau City",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokepedia.fr/Fichier:Papeloa_Écaillecœur_1_N2B2.png",
+   "checked": "shown on Poképédia's page \"Papeloa\"; B2W2 in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "Iya0g4UOK0ia",
+   "region": "Unova",
+   "name": "Humilau City",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokepedia.fr/Fichier:Papeloa_Grelot_Coque_N2B2.png",
+   "checked": "shown on Poképédia's page \"Papeloa\"; B2W2 in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "OF8bjFmviFf0",
+   "region": "Unova",
+   "name": "Icirrus City",
+   "game": "Black / White",
+   "source": "https://www.pokepedia.fr/Fichier:Flocombe_Chrono_Ball_NB.png",
+   "checked": "shown on Poképédia's page \"Flocombe\"; BW in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "FQFsKXN6sHhF",
+   "region": "Unova",
+   "name": "Icirrus City",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokepedia.fr/Fichier:Flocombe_Max_Élixir_N2B2.png",
+   "checked": "shown on Poképédia's page \"Flocombe\"; B2W2 in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "rOx8-QKqX7Ru",
+   "region": "Unova",
+   "name": "Icirrus City",
+   "game": "Black / White",
+   "source": "https://www.pokepedia.fr/Fichier:Flocombe_Super_Bonbon_NB.png",
+   "checked": "shown on Poképédia's page \"Flocombe\"; BW in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "HzqIkVRnUCHg",
+   "region": "Unova",
+   "name": "Join Avenue",
+   "game": "Black 2 / White 2",
+   "source": "https://www.wikidex.net/wiki/Archivo:Subiendo_Nivel_2_Avenida_Unión_N2B2.png",
+   "checked": "shown on WikiDex's page \"Pasaje Unión/Galería Unión\"; B2W2 in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "Kgnv4NQliSVT",
+   "region": "Unova",
+   "name": "Lacunosa Town",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokepedia.fr/Fichier:Entrelasque_Total_Soin_N2B2.png",
+   "checked": "shown on Poképédia's page \"Entrelasque\"; B2W2 in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "3aJRsY2-7Piu",
+   "region": "Unova",
+   "name": "Lentimas Town",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokepedia.fr/Fichier:Arpentières_Pierre_Feu_N2B2.png",
+   "checked": "shown on Poképédia's page \"Arpentières\"; B2W2 in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "3Jkzjvq6mUOr",
+   "region": "Unova",
+   "name": "Lostlorn Forest",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokepedia.fr/Fichier:Bois_des_Illusions_Baie_Ceriz_N2B2.png",
+   "checked": "shown on Poképédia's page \"Bois des Illusions\"; B2W2 in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "nyMc8PCKFoHA",
+   "region": "Unova",
+   "name": "Lostlorn Forest",
+   "game": "Black / White",
+   "source": "https://www.pokepedia.fr/Fichier:Bois_des_Illusions_Gros_Champi_NB.png",
+   "checked": "shown on Poképédia's page \"Bois des Illusions\"; BW in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "wbfM1JaVNE2m",
+   "region": "Unova",
+   "name": "Lostlorn Forest",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokepedia.fr/Fichier:Bois_des_Illusions_Super_Bonbon_N2B2.png",
+   "checked": "shown on Poképédia's page \"Bois des Illusions\"; B2W2 in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "AZQ1-29dd7Aa",
+   "region": "Unova",
+   "name": "Mistralton Cave",
+   "game": "Black / White",
+   "source": "https://www.pokepedia.fr/Fichier:Grotte_Parsemille_Carbone_NB.png",
+   "checked": "shown on Poképédia's page \"Grotte Parsemille\"; BW in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "dIZCPOJxWTTO",
+   "region": "Unova",
+   "name": "Mistralton Cave",
+   "game": "Black / White",
+   "source": "https://www.pokepedia.fr/Fichier:Grotte_Parsemille_Rappel_NB.png",
+   "checked": "shown on Poképédia's page \"Grotte Parsemille\"; BW in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "LROyUbdDgW8C",
+   "region": "Unova",
+   "name": "Mistralton City",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokepedia.fr/Fichier:Parsemille_CT58_N2B2.png",
+   "checked": "shown on Poképédia's page \"Parsemille\"; B2W2 in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "25lmMdM5AK7V",
+   "region": "Unova",
+   "name": "Mistralton City",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokepedia.fr/Fichier:Parsemille_Joyau_Vol_N2B2.png",
+   "checked": "shown on Poképédia's page \"Parsemille\"; B2W2 in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "Uc1BX7usiWAQ",
+   "region": "Unova",
+   "name": "Moor of Icirrus",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokepedia.fr/Fichier:Tourbière_Flocombe_Baie_Prine_1_N2B2.png",
+   "checked": "shown on Poképédia's page \"Tourbière Flocombe\"; B2W2 in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "97obRLmQBC0O",
+   "region": "Unova",
+   "name": "Moor of Icirrus",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokepedia.fr/Fichier:Tourbière_Flocombe_Écaillecœur_N2B2.png",
+   "checked": "shown on Poképédia's page \"Tourbière Flocombe\"; B2W2 in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "bI74w_4gbStb",
+   "region": "Unova",
+   "name": "Moor of Icirrus",
+   "game": "Black / White",
+   "source": "https://www.pokepedia.fr/Fichier:Tourbière_Flocombe_Hyper_Ball_NB.png",
+   "checked": "shown on Poképédia's page \"Tourbière Flocombe\"; BW in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "UBzrmcMYA_TH",
+   "region": "Unova",
+   "name": "Moor of Icirrus",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokepedia.fr/Fichier:Tourbière_Flocombe_Total_Soin_N2B2.png",
+   "checked": "shown on Poképédia's page \"Tourbière Flocombe\"; B2W2 in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "NhbM_uydODwL",
+   "region": "Unova",
+   "name": "N's Castle",
+   "game": "Black / White",
+   "source": "https://www.pokepedia.fr/Fichier:Palais_de_N_Super_Bonbon_NB.png",
+   "checked": "shown on Poképédia's page \"Palais de N\"; BW in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "AGWoChwQlsJu",
+   "region": "Unova",
+   "name": "Nacrene City",
+   "game": "Black / White",
+   "source": "https://www.pokepedia.fr/Fichier:Maillard_Galet_Noir_NB.png",
+   "checked": "shown on Poképédia's page \"Maillard\"; BW in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "6FKMu2xyLfiv",
+   "region": "Unova",
+   "name": "Nimbasa City",
+   "game": "Black / White",
+   "source": "https://www.pokepedia.fr/Fichier:Méanville_Attaque_+_NB.png",
+   "checked": "shown on Poképédia's page \"Méanville\"; BW in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "pmYc4-Dh063i",
+   "region": "Unova",
+   "name": "Opelucid Gym",
+   "parent": "Opelucid City",
+   "game": "Black / White",
+   "source": "https://www.pokepedia.fr/Fichier:Arène_de_Janusia_Eau_Fraîche_NB.png",
+   "checked": "shown on Poképédia's page \"Arène de Janusia\"; BW in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "SIgLdZhoP1K8",
+   "region": "Unova",
+   "name": "P2 Laboratory",
+   "game": "Black / White",
+   "source": "https://www.pokepedia.fr/Fichier:Labo_P2_CT24_NB.png",
+   "checked": "shown on Poképédia's page \"Labo P2\"; BW in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "vFqICSTgkYBy",
+   "region": "Unova",
+   "name": "Pinwheel Forest",
+   "game": "Black / White",
+   "source": "https://www.pokepedia.fr/Fichier:Forêt_d'Empoigne_Anti-Para_NB.png",
+   "checked": "shown on Poképédia's page \"Forêt d'Empoigne\"; BW in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "0iwk8iA_ZLTO",
+   "region": "Unova",
+   "name": "Pinwheel Forest",
+   "game": "Black / White",
+   "source": "https://www.pokepedia.fr/Fichier:Forêt_d'Empoigne_Filet_Ball_NB.png",
+   "checked": "shown on Poképédia's page \"Forêt d'Empoigne\"; BW in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "YDdfDgNDvCZu",
+   "region": "Unova",
+   "name": "Pinwheel Forest",
+   "game": "Black / White",
+   "source": "https://www.pokepedia.fr/Fichier:Forêt_d'Empoigne_Huile_1_NB.png",
+   "checked": "shown on Poképédia's page \"Forêt d'Empoigne\"; BW in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "meSKOQMTMPyv",
+   "region": "Unova",
+   "name": "Pinwheel Forest",
+   "game": "Black / White",
+   "source": "https://www.pokepedia.fr/Fichier:Forêt_d'Empoigne_Huile_2_NB.png",
+   "checked": "shown on Poképédia's page \"Forêt d'Empoigne\"; BW in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "RF290_Fqnjna",
+   "region": "Unova",
+   "name": "Pinwheel Forest",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokepedia.fr/Fichier:Forêt_d'Empoigne_Max_Élixir_N2B2.png",
+   "checked": "shown on Poképédia's page \"Forêt d'Empoigne\"; B2W2 in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "fhJpsNpNfzw_",
+   "region": "Unova",
+   "name": "Pinwheel Forest",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokepedia.fr/Fichier:Forêt_d'Empoigne_Rappel_Max_N2B2.png",
+   "checked": "shown on Poképédia's page \"Forêt d'Empoigne\"; B2W2 in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "EJT0DbFlyt7a",
+   "region": "Unova",
+   "name": "Plasma Frigate",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokepedia.fr/Fichier:Frégate_Plasma_CT67_N2B2.png",
+   "checked": "shown on Poképédia's page \"Frégate Plasma\"; B2W2 in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "anEXeJf6j0rv",
+   "region": "Unova",
+   "name": "Pokémon World Tournament",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokepedia.fr/Fichier:PWT_PP_Plus_N2B2.png",
+   "checked": "shown on Poképédia's page \"Pokémon World Tournament\"; B2W2 in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "0DLeYOvRvDw5",
+   "region": "Unova",
+   "name": "Relic Castle",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokepedia.fr/Fichier:Château_Enfoui_Pierresoleil_N2B2.png",
+   "checked": "shown on Poképédia's page \"Château Enfoui\"; B2W2 in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "8wBWDBLNtkCZ",
+   "region": "Unova",
+   "name": "Reversal Mountain",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokepedia.fr/Fichier:Mont_Renenvers_CT30_N2B2.png",
+   "checked": "shown on Poképédia's page \"Mont Renenvers\"; B2W2 in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "VzavH2vjmwwG",
+   "region": "Unova",
+   "name": "Reversal Mountain",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokepedia.fr/Fichier:Mont_Renenvers_Total_Soin_N2B2.png",
+   "checked": "shown on Poképédia's page \"Mont Renenvers\"; B2W2 in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "LysS2JYwThAt",
+   "region": "Unova",
+   "name": "Route 1",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokepedia.fr/Fichier:Route_1_Bel'Écaille_N2B2.png",
+   "checked": "shown on Poképédia's page \"Route 1 (Unys)\"; B2W2 in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "hEMFtDsPqb6s",
+   "region": "Unova",
+   "name": "Route 1",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokepedia.fr/Fichier:Route_1_Hyper_Ball_N2B2.png",
+   "checked": "shown on Poképédia's page \"Route 1 (Unys)\"; B2W2 in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "jEMZh1eMfzJP",
+   "region": "Unova",
+   "name": "Route 10",
+   "game": "Black / White",
+   "source": "https://www.pokepedia.fr/Fichier:Route_10_Guérison_NB.png",
+   "checked": "shown on Poképédia's page \"Route 10 (Unys)\"; BW in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "-5sI1bboHPyF",
+   "region": "Unova",
+   "name": "Route 10",
+   "game": "Black / White",
+   "source": "https://www.pokepedia.fr/Fichier:Route_10_Pierre_Aube_NB.png",
+   "checked": "shown on Poképédia's page \"Route 10 (Unys)\"; BW in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "uX4J30bjd8xt",
+   "region": "Unova",
+   "name": "Route 10",
+   "game": "Black / White",
+   "source": "https://www.pokepedia.fr/Fichier:Route_10_Rappel_Max_NB.png",
+   "checked": "shown on Poképédia's page \"Route 10 (Unys)\"; BW in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "zBzPuXnDUPK2",
+   "region": "Unova",
+   "name": "Route 11",
+   "game": "Black / White",
+   "source": "https://www.pokepedia.fr/Fichier:Route_11_Baie_Mepo_1_NB.png",
+   "checked": "shown on Poképédia's page \"Route 11 (Unys)\"; BW in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "tZCyIC7n9uVf",
+   "region": "Unova",
+   "name": "Route 11",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokepedia.fr/Fichier:Route_11_Croc_Rasoir_N2B2.png",
+   "checked": "shown on Poképédia's page \"Route 11 (Unys)\"; B2W2 in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "wnteblydoWIq",
+   "region": "Unova",
+   "name": "Route 11",
+   "game": "Black / White",
+   "source": "https://www.pokepedia.fr/Fichier:Route_11_CT50_NB.png",
+   "checked": "shown on Poképédia's page \"Route 11 (Unys)\"; BW in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "s5vLSNtInm3m",
+   "region": "Unova",
+   "name": "Route 12",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokepedia.fr/Fichier:Route_12_Tesson_Vert_N2B2.png",
+   "checked": "shown on Poképédia's page \"Route 12 (Unys)\"; B2W2 in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "qim5zHuloT-E",
+   "region": "Unova",
+   "name": "Route 13",
+   "game": "Black / White",
+   "source": "https://www.pokepedia.fr/Fichier:Route_13_Bel'Écaille_NB.png",
+   "checked": "shown on Poképédia's page \"Route 13 (Unys)\"; BW in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "PTXmBdzfnzGt",
+   "region": "Unova",
+   "name": "Route 13",
+   "game": "Black / White",
+   "source": "https://www.pokepedia.fr/Fichier:Route_13_CT29_NB.png",
+   "checked": "shown on Poképédia's page \"Route 13 (Unys)\"; BW in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "kMjfVkagOUDH",
+   "region": "Unova",
+   "name": "Route 13",
+   "game": "Black / White",
+   "source": "https://www.pokepedia.fr/Fichier:Route_13_Écaillecœur_NB.png",
+   "checked": "shown on Poképédia's page \"Route 13 (Unys)\"; BW in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "I8YJVapkFnBK",
+   "region": "Unova",
+   "name": "Route 13",
+   "game": "Black / White",
+   "source": "https://www.pokepedia.fr/Fichier:Route_13_Grif._Rasoir_NB.png",
+   "checked": "shown on Poképédia's page \"Route 13 (Unys)\"; BW in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "KUV6_ZDUeB5e",
+   "region": "Unova",
+   "name": "Route 14",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokepedia.fr/Fichier:Route_14_Écaillecœur_N2B2.png",
+   "checked": "shown on Poképédia's page \"Route 14 (Unys)\"; B2W2 in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "YQJiMHFDxh0C",
+   "region": "Unova",
+   "name": "Route 14",
+   "game": "Black / White",
+   "source": "https://www.pokepedia.fr/Fichier:Route_14_Max_Élixir_NB.png",
+   "checked": "shown on Poképédia's page \"Route 14 (Unys)\"; BW in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "SEVezhD7PnmS",
+   "region": "Unova",
+   "name": "Route 15",
+   "game": "Black / White",
+   "source": "https://www.pokepedia.fr/Fichier:Route_15_Baie_Sitrus_2_NB.png",
+   "checked": "shown on Poképédia's page \"Route 15 (Unys)\"; BW in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "7yeOPGTQLeM-",
+   "region": "Unova",
+   "name": "Route 15",
+   "game": "Black / White",
+   "source": "https://www.pokepedia.fr/Fichier:Route_15_Rappel_Max_NB.png",
+   "checked": "shown on Poképédia's page \"Route 15 (Unys)\"; BW in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "mdDfrq3Kx6yk",
+   "region": "Unova",
+   "name": "Route 16",
+   "game": "Black / White",
+   "source": "https://www.pokepedia.fr/Fichier:Route_16_CT66_NB.png",
+   "checked": "shown on Poképédia's page \"Route 16 (Unys)\"; BW in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "aQA6P16gQ-8Y",
+   "region": "Unova",
+   "name": "Route 18",
+   "game": "Black / White",
+   "source": "https://www.pokepedia.fr/Fichier:Route_18_CS05_NB.png",
+   "checked": "shown on Poképédia's page \"Route 18 (Unys)\"; BW in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "BOGyNfMQsvhJ",
+   "region": "Unova",
+   "name": "Route 18",
+   "game": "Black / White",
+   "source": "https://www.pokepedia.fr/Fichier:Route_18_CT32_NB.png",
+   "checked": "shown on Poképédia's page \"Route 18 (Unys)\"; BW in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "QwuDOfPvZPL_",
+   "region": "Unova",
+   "name": "Route 18",
+   "game": "Black / White",
+   "source": "https://www.pokepedia.fr/Fichier:Route_18_Écailledraco_NB.png",
+   "checked": "shown on Poképédia's page \"Route 18 (Unys)\"; BW in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "Ffb1iNH5eXGz",
+   "region": "Unova",
+   "name": "Route 18",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokepedia.fr/Fichier:Route_18_PP_Max_1_N2B2.png",
+   "checked": "shown on Poképédia's page \"Route 18 (Unys)\"; B2W2 in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "gBibkI0gmTiT",
+   "region": "Unova",
+   "name": "Route 19",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokepedia.fr/Fichier:Route_19_Faiblo_Ball_N2B2.png",
+   "checked": "shown on Poképédia's page \"Route 19 (Unys)\"; B2W2 in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "1MiAnJJP2_1z",
+   "region": "Unova",
+   "name": "Route 19",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokepedia.fr/Fichier:Route_19_Pierre_Eau_N2B2.png",
+   "checked": "shown on Poképédia's page \"Route 19 (Unys)\"; B2W2 in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "mDw2KuWleiGt",
+   "region": "Unova",
+   "name": "Route 2",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokepedia.fr/Fichier:Route_2_Calcium_N2B2.png",
+   "checked": "shown on Poképédia's page \"Route 2 (Unys)\"; B2W2 in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "FN8a0HK-VxqG",
+   "region": "Unova",
+   "name": "Route 2",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokepedia.fr/Fichier:Route_2_Hyper_Ball_N2B2.png",
+   "checked": "shown on Poképédia's page \"Route 2 (Unys)\"; B2W2 in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "idv_VEZ-WlML",
+   "region": "Unova",
+   "name": "Route 2",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokepedia.fr/Fichier:Route_2_Rappel_Max_2_N2B2.png",
+   "checked": "shown on Poképédia's page \"Route 2 (Unys)\"; B2W2 in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "x2pUU8le2DEb",
+   "region": "Unova",
+   "name": "Route 20",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokepedia.fr/Fichier:Route_20_Anti-Para_N2B2.png",
+   "checked": "shown on Poképédia's page \"Route 20 (Unys)\"; B2W2 in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "1owUJ5R_Y5EP",
+   "region": "Unova",
+   "name": "Route 20",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokepedia.fr/Fichier:Route_20_Antidote_N2B2.png",
+   "checked": "shown on Poképédia's page \"Route 20 (Unys)\"; B2W2 in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "Giy2jnbC_s7v",
+   "region": "Unova",
+   "name": "Route 20",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokepedia.fr/Fichier:Route_20_Baie_Mepo_2_N2B2.png",
+   "checked": "shown on Poképédia's page \"Route 20 (Unys)\"; B2W2 in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "Es92jad_0JQJ",
+   "region": "Unova",
+   "name": "Route 20",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokepedia.fr/Fichier:Route_20_Baie_Sitrus_2_N2B2.png",
+   "checked": "shown on Poképédia's page \"Route 20 (Unys)\"; B2W2 in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "btrBKajnaI93",
+   "region": "Unova",
+   "name": "Route 20",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokepedia.fr/Fichier:Route_20_Écaillecœur_N2B2.png",
+   "checked": "shown on Poképédia's page \"Route 20 (Unys)\"; B2W2 in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "PkqIrjxz5dX0",
+   "region": "Unova",
+   "name": "Route 21",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokepedia.fr/Fichier:Chenal_21_Grande_Perle_N2B2.png",
+   "checked": "shown on Poképédia's page \"Chenal 21 (Unys)\"; B2W2 in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "QnBiTbjd70lt",
+   "region": "Unova",
+   "name": "Route 21",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokepedia.fr/Fichier:Chenal_21_PP_Plus_N2B2.png",
+   "checked": "shown on Poképédia's page \"Chenal 21 (Unys)\"; B2W2 in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "lTNqvzxqgFnW",
+   "region": "Unova",
+   "name": "Route 22",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokepedia.fr/Fichier:Route_22_Calcium_N2B2.png",
+   "checked": "shown on Poképédia's page \"Route 22 (Unys)\"; B2W2 in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "LuMZbJe4Z87n",
+   "region": "Unova",
+   "name": "Route 22",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokepedia.fr/Fichier:Route_22_Pic_Venin_N2B2.png",
+   "checked": "shown on Poképédia's page \"Route 22 (Unys)\"; B2W2 in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "mQxe-4T-Y3zV",
+   "region": "Unova",
+   "name": "Route 22",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokepedia.fr/Fichier:Route_22_Tesson_Rouge_N2B2.png",
+   "checked": "shown on Poképédia's page \"Route 22 (Unys)\"; B2W2 in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "HV0zMrwyNu2O",
+   "region": "Unova",
+   "name": "Route 23",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokepedia.fr/Fichier:Route_23_Baie_Sitrus_1_N2B2.png",
+   "checked": "shown on Poképédia's page \"Route 23 (Unys)\"; B2W2 in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "cZf9xOf8n0qg",
+   "region": "Unova",
+   "name": "Route 23",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokepedia.fr/Fichier:Route_23_Tesson_Jaune_N2B2.png",
+   "checked": "shown on Poképédia's page \"Route 23 (Unys)\"; B2W2 in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "QbtjQmaGnGCX",
+   "region": "Unova",
+   "name": "Route 3",
+   "game": "Black / White",
+   "source": "https://www.pokepedia.fr/Fichier:Route_3_Baie_Oran_NB.png",
+   "checked": "shown on Poképédia's page \"Route 3 (Unys)\"; BW in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "nlCF-zsdcqQh",
+   "region": "Unova",
+   "name": "Route 3",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokepedia.fr/Fichier:Route_3_Scuba_Balls_N2B2.png",
+   "checked": "shown on Poképédia's page \"Route 3 (Unys)\"; B2W2 in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "pqnX35TLen5T",
+   "region": "Unova",
+   "name": "Route 3",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokepedia.fr/Fichier:Route_3_Super_Bonbon_2_N2B2.png",
+   "checked": "shown on Poképédia's page \"Route 3 (Unys)\"; B2W2 in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "mQnH2mzWEufu",
+   "region": "Unova",
+   "name": "Route 4",
+   "game": "Black / White",
+   "source": "https://www.pokepedia.fr/Fichier:Route_4_Anti-Brûle_1_NB.png",
+   "checked": "shown on Poképédia's page \"Route 4 (Unys)\"; BW in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "Ez6EQwx3fDOX",
+   "region": "Unova",
+   "name": "Route 4",
+   "game": "Black / White",
+   "source": "https://www.pokepedia.fr/Fichier:Route_4_CT41_NB.png",
+   "checked": "shown on Poképédia's page \"Route 4 (Unys)\"; BW in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "usqBLjApKl0n",
+   "region": "Unova",
+   "name": "Route 4",
+   "game": "Black / White",
+   "source": "https://www.pokepedia.fr/Fichier:Route_4_Super_Ball_NB.png",
+   "checked": "shown on Poképédia's page \"Route 4 (Unys)\"; BW in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "sUAnu8FBcgIj",
+   "region": "Unova",
+   "name": "Route 5",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokepedia.fr/Fichier:Route_5_Hyper_Potion_2_N2B2.png",
+   "checked": "shown on Poképédia's page \"Route 5 (Unys)\"; B2W2 in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "qaHY1YV25PS6",
+   "region": "Unova",
+   "name": "Route 5",
+   "game": "Black / White",
+   "source": "https://www.pokepedia.fr/Fichier:Route_5_Zinc_NB.png",
+   "checked": "shown on Poképédia's page \"Route 5 (Unys)\"; BW in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "oeIQLZdgTqVV",
+   "region": "Unova",
+   "name": "Route 6",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokepedia.fr/Fichier:Route_6_CT56_N2B2.png",
+   "checked": "shown on Poképédia's page \"Route 6 (Unys)\"; B2W2 in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "Z6bHyP8bMy5I",
+   "region": "Unova",
+   "name": "Route 6",
+   "game": "Black / White",
+   "source": "https://www.pokepedia.fr/Fichier:Route_6_Élixir_NB.png",
+   "checked": "shown on Poképédia's page \"Route 6 (Unys)\"; BW in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "ioec5cKxiLSQ",
+   "region": "Unova",
+   "name": "Route 6",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokepedia.fr/Fichier:Route_6_Hyper_Ball_N2B2.png",
+   "checked": "shown on Poképédia's page \"Route 6 (Unys)\"; B2W2 in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "vCguBA9K52-z",
+   "region": "Unova",
+   "name": "Route 7",
+   "game": "Black / White",
+   "source": "https://www.pokepedia.fr/Fichier:Route_7_Baie_Willia_1_NB.png",
+   "checked": "shown on Poképédia's page \"Route 7 (Unys)\"; BW in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "TwPRn-krRf84",
+   "region": "Unova",
+   "name": "Route 7",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokepedia.fr/Fichier:Route_7_Petit_Champi_N2B2.png",
+   "checked": "shown on Poképédia's page \"Route 7 (Unys)\"; B2W2 in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "uCwPXghAxhMi",
+   "region": "Unova",
+   "name": "Route 8",
+   "game": "Black / White",
+   "source": "https://www.pokepedia.fr/Fichier:Route_8_Baie_Pêcha_1_NB.png",
+   "checked": "shown on Poképédia's page \"Route 8 (Unys)\"; BW in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "EGkByXsNrAks",
+   "region": "Unova",
+   "name": "Route 8",
+   "game": "Black / White",
+   "source": "https://www.pokepedia.fr/Fichier:Route_8_Guérison_1_NB.png",
+   "checked": "shown on Poképédia's page \"Route 8 (Unys)\"; BW in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "zVhP8UjMu4u9",
+   "region": "Unova",
+   "name": "Route 9",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokepedia.fr/Fichier:Route_9_Fer_N2B2.png",
+   "checked": "shown on Poképédia's page \"Route 9 (Unys)\"; B2W2 in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "xxg5UR584BUP",
+   "region": "Unova",
+   "name": "Route 9",
+   "game": "Black / White",
+   "source": "https://www.pokepedia.fr/Fichier:Route_9_Limonade_NB.png",
+   "checked": "shown on Poképédia's page \"Route 9 (Unys)\"; BW in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "9fAWqzdXc-v3",
+   "region": "Unova",
+   "name": "Seaside Cave",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokepedia.fr/Fichier:Grotte_Littorale_Écaillecœur_N2B2.png",
+   "checked": "shown on Poképédia's page \"Grotte Littorale (Unys)\"; B2W2 in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "DDBxwEC-LYft",
+   "region": "Unova",
+   "name": "Seaside Cave",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokepedia.fr/Fichier:Grotte_Littorale_Super_Bonbon_N2B2.png",
+   "checked": "shown on Poképédia's page \"Grotte Littorale (Unys)\"; B2W2 in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "VgdHVZbaf2V_",
+   "region": "Unova",
+   "name": "Skyarrow Bridge",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokepedia.fr/Fichier:Pont_Sagiciel_Eau_Fraîche_N2B2.png",
+   "checked": "shown on Poképédia's page \"Pont Sagiciel\"; B2W2 in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "oqT66LATW5GI",
+   "region": "Unova",
+   "name": "Strange House",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokepedia.fr/Fichier:Manoir_de_l'Étrange_Lun'Aile_N2B2.png",
+   "checked": "shown on Poképédia's page \"Manoir de l'Étrange\"; B2W2 in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "3lveYyGk62vV",
+   "region": "Unova",
+   "name": "Striaton City",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokepedia.fr/Fichier:Ogoesse_Sombre_Balls_N2B2.png",
+   "checked": "shown on Poképédia's page \"Ogoesse\"; B2W2 in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "nyRg-rrv-IDE",
+   "region": "Unova",
+   "name": "Tubeline Bridge",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokepedia.fr/Fichier:Pont_Ferroviaire_CT43_N2B2.png",
+   "checked": "shown on Poképédia's page \"Pont Ferroviaire\"; B2W2 in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "TfUjX-7fKFvZ",
+   "region": "Unova",
+   "name": "Twist Mountain",
+   "game": "Black / White",
+   "source": "https://www.pokepedia.fr/Fichier:Mont_Foré_Huile_NB.png",
+   "checked": "shown on Poképédia's page \"Mont Foré\"; BW in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "i0i4nxQnYotP",
+   "region": "Unova",
+   "name": "Twist Mountain",
+   "game": "Black / White",
+   "source": "https://www.pokepedia.fr/Fichier:Mont_Foré_Total_Soin_NB.png",
+   "checked": "shown on Poképédia's page \"Mont Foré\"; BW in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "R82cECZi_W3T",
+   "region": "Unova",
+   "name": "Undella Bay",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokepedia.fr/Fichier:Baie_Vaguelone_Écaillecœur_N2B2.png",
+   "checked": "shown on Poképédia's page \"Baie Vaguelone\"; B2W2 in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "zASVSnAiF_nx",
+   "region": "Unova",
+   "name": "Undella Bay",
+   "game": "Black / White",
+   "source": "https://www.pokepedia.fr/Fichier:Baie_Vaguelone_Écaillecœur_NB.png",
+   "checked": "shown on Poképédia's page \"Baie Vaguelone\"; BW in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "SKvp4bAA5Q_T",
+   "region": "Unova",
+   "name": "Undella Bay",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokepedia.fr/Fichier:Baie_Vaguelone_Plaque_Draco_N2B2.png",
+   "checked": "shown on Poképédia's page \"Baie Vaguelone\"; B2W2 in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "TXje32uR2mGw",
+   "region": "Unova",
+   "name": "Undella Town",
+   "game": "Black / White",
+   "source": "https://www.pokepedia.fr/Fichier:Vaguelone_Maxi_Pépite_NB.png",
+   "checked": "shown on Poképédia's page \"Vaguelone\"; BW in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "FqsFdC58gzQF",
+   "region": "Unova",
+   "name": "Victory Road (B2W2)",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokepedia.fr/Fichier:Route_Victoire_Corde_Sortie_N2B2.png",
+   "checked": "shown on Poképédia's page \"Route Victoire (Noir 2 et Blanc 2)\"; B2W2 in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "kSLjB1Tfh6yF",
+   "region": "Unova",
+   "name": "Victory Road (B2W2)",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokepedia.fr/Fichier:Route_Victoire_CT24_N2B2.png",
+   "checked": "shown on Poképédia's page \"Route Victoire (Noir 2 et Blanc 2)\"; B2W2 in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "tdJdBeCNNX7F",
+   "region": "Unova",
+   "name": "Victory Road (B2W2)",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokepedia.fr/Fichier:Route_Victoire_Hyper_Ball_N2B2.png",
+   "checked": "shown on Poképédia's page \"Route Victoire (Noir 2 et Blanc 2)\"; B2W2 in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "D1X3abP7mErI",
+   "region": "Unova",
+   "name": "Victory Road (B2W2)",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokepedia.fr/Fichier:Route_Victoire_Morc._Étoile_N2B2.png",
+   "checked": "shown on Poképédia's page \"Route Victoire (Noir 2 et Blanc 2)\"; B2W2 in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "N_FWnt165Emz",
+   "region": "Unova",
+   "name": "Village Bridge",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokepedia.fr/Fichier:Pont_du_Hameau_Baies_Sitrus_N2B2.png",
+   "checked": "shown on Poképédia's page \"Pont du Hameau\"; B2W2 in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "z23LacFYOCTM",
+   "region": "Unova",
+   "name": "Village Bridge",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokepedia.fr/Fichier:Pont_du_Hameau_Écaillecœur_N2B2.png",
+   "checked": "shown on Poképédia's page \"Pont du Hameau\"; B2W2 in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "AkuDmHUMgX1-",
+   "region": "Unova",
+   "name": "Village Bridge",
+   "game": "Black / White",
+   "source": "https://www.pokepedia.fr/Fichier:Pont_du_Hameau_PV_Plus_NB.png",
+   "checked": "shown on Poképédia's page \"Pont du Hameau\"; BW in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "giQwR0yzh37n",
+   "region": "Unova",
+   "name": "Virbank City",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokepedia.fr/Fichier:Ondes-sur-Mer_CS01_N2B2.png",
+   "checked": "shown on Poképédia's page \"Ondes-sur-Mer\"; B2W2 in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "nqYe_msCKW7D",
+   "region": "Unova",
+   "name": "Virbank City",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokepedia.fr/Fichier:Ondes-sur-Mer_Poké_Balls_N2B2.png",
+   "checked": "shown on Poképédia's page \"Ondes-sur-Mer\"; B2W2 in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "9g9Ody1hsmTP",
+   "region": "Unova",
+   "name": "Virbank Complex",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokepedia.fr/Fichier:Z.I._d'Ondes-sur-Mer_CT46_N2B2.png",
+   "checked": "shown on Poképédia's page \"Z.I. d'Ondes-sur-Mer\"; B2W2 in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "zN-hh5KuoSgl",
+   "region": "Unova",
+   "name": "Virbank Complex",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokepedia.fr/Fichier:Z.I._d'Ondes-sur-Mer_Petit_Champi_N2B2.png",
+   "checked": "shown on Poképédia's page \"Z.I. d'Ondes-sur-Mer\"; B2W2 in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "DclSMSJdNy15",
+   "region": "Unova",
+   "name": "Virbank Complex",
+   "game": "Black 2 / White 2",
+   "source": "https://www.pokepedia.fr/Fichier:Z.I._d'Ondes-sur-Mer_Super_Ball_3_N2B2.png",
+   "checked": "shown on Poképédia's page \"Z.I. d'Ondes-sur-Mer\"; B2W2 in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "puup_uAts8O5",
+   "region": "Unova",
+   "name": "Wellspring Cave",
+   "game": "Black / White",
+   "source": "https://www.pokepedia.fr/Fichier:Veine_Souterraine_Corde_Sortie_NB.png",
+   "checked": "shown on Poképédia's page \"Veine Souterraine\"; BW in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "JS6Xg_kylWoH",
+   "region": "Unova",
+   "name": "Wellspring Cave",
+   "game": "Black / White",
+   "source": "https://www.pokepedia.fr/Fichier:Veine_Souterraine_PP_Plus_NB.png",
+   "checked": "shown on Poképédia's page \"Veine Souterraine\"; BW in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
+  },
+  {
+   "id": "N1RCqEUVgm86",
+   "region": "Galar",
+   "name": "Bridge Field",
+   "game": "Sword / Shield",
+   "source": "https://www.pokepedia.fr/Fichier:Prairie_Entre-Ponts_Objet_Caché_13_EB.png",
+   "checked": "shown on Poképédia's page \"Prairie Entre-Ponts\"; SwSh in its name or category; cropped (bottom 8%); reviewed on a contact sheet"
+  },
+  {
+   "id": "USUet1uJYYNI",
+   "region": "Galar",
+   "name": "Bridge Field",
+   "game": "Sword / Shield",
+   "source": "https://www.pokewiki.de/Datei:SWSH_Pokémon-Nest_055_(Brückental).png",
+   "checked": "in pokewiki's category \"SWSH-Screenshot\", named after the place; SwSh in its name or category; cropped (bottom 8%); reviewed on a contact sheet"
+  },
+  {
+   "id": "i7YN_gSCiv0Z",
+   "region": "Galar",
+   "name": "Dusty Bowl",
+   "game": "Sword / Shield",
+   "source": "https://www.pokepedia.fr/Fichier:Fosse_des_Sables_Objet_Caché_23_EB.png",
+   "checked": "shown on Poképédia's page \"Fosse des Sables\"; SwSh in its name or category; cropped (bottom 8%); reviewed on a contact sheet"
+  },
+  {
+   "id": "J2iZDOBiUNxe",
+   "region": "Galar",
+   "name": "Dusty Bowl",
+   "game": "Sword / Shield",
+   "source": "https://www.pokewiki.de/Datei:SWSH_Pokémon-Nest_091_(Sandsturmkessel).png",
+   "checked": "in pokewiki's category \"SWSH-Screenshot\", named after the place; SwSh in its name or category; cropped (bottom 8%); reviewed on a contact sheet"
+  },
+  {
+   "id": "is5gHEzfYYV4",
+   "region": "Galar",
+   "name": "Dusty Bowl",
+   "game": "Sword / Shield",
+   "source": "https://www.pokewiki.de/Datei:SWSH_Pokémon-Nest_093_(Sandsturmkessel).png",
+   "checked": "in pokewiki's category \"SWSH-Screenshot\", named after the place; SwSh in its name or category; cropped (bottom 8%); reviewed on a contact sheet"
+  },
+  {
+   "id": "nHTWcox4zI0S",
+   "region": "Galar",
+   "name": "Dusty Bowl",
+   "game": "Sword / Shield",
+   "source": "https://www.pokewiki.de/Datei:SWSH_Pokémon-Nest_099_(Sandsturmkessel).png",
+   "checked": "in pokewiki's category \"SWSH-Screenshot\", named after the place; SwSh in its name or category; cropped (bottom 8%); reviewed on a contact sheet"
+  },
+  {
+   "id": "-88teuFFKKtJ",
+   "region": "Galar",
+   "name": "East Lake Axewell",
+   "game": "Sword / Shield",
+   "source": "https://www.pokepedia.fr/Fichier:Lac_Coupenotte_Est_Perle_ou_Grande_Perle_ou_Perle_Triple_2_EB.png",
+   "checked": "shown on Poképédia's page \"Lac Coupenotte Est\"; SwSh in its name or category; cropped (bottom 8%); reviewed on a contact sheet"
+  },
+  {
+   "id": "j31ZtHIjcTCR",
+   "region": "Galar",
+   "name": "East Lake Axewell",
+   "game": "Sword / Shield",
+   "source": "https://www.pokepedia.fr/Fichier:Lac_Coupenotte_Est_Tubercule_x2_EB.png",
+   "checked": "shown on Poképédia's page \"Lac Coupenotte Est\"; SwSh in its name or category; cropped (bottom 8%); reviewed on a contact sheet"
+  },
+  {
+   "id": "mhH6cgIygqrG",
+   "region": "Galar",
+   "name": "Hammerlocke",
+   "game": "Sword / Shield",
+   "source": "https://www.wikidex.net/wiki/Archivo:Ciudad_artejo_casas_EpEc.jpg",
+   "checked": "shown on WikiDex's page \"Ciudad Artejo\"; SwSh in its name or category; cropped (bottom 8%); reviewed on a contact sheet"
+  },
+  {
+   "id": "GyCUhyXr3TSH",
+   "region": "Galar",
+   "name": "Hammerlocke Hills",
+   "game": "Sword / Shield",
+   "source": "https://www.pokewiki.de/Datei:SWSH_Pokémon-Nest_081_(Claw-Plateau).png",
+   "checked": "in pokewiki's category \"SWSH-Screenshot\", named after the place; SwSh in its name or category; cropped (bottom 8%); reviewed on a contact sheet"
+  },
+  {
+   "id": "2m3TJHiieUyZ",
+   "region": "Galar",
+   "name": "Motostoke",
+   "game": "Sword / Shield",
+   "source": "https://www.pokewiki.de/Datei:SWSH_Engine_City_(Screenshot).jpg",
+   "checked": "shown on PokéWiki's page \"Engine City\"; SwSh in its name or category; cropped (bottom 8%); reviewed on a contact sheet"
+  },
+  {
+   "id": "1q_KNwVkAHOa",
+   "region": "Galar",
+   "name": "Motostoke",
+   "game": "Sword / Shield",
+   "source": "https://www.pokewiki.de/Datei:SWSH_Engine-City-Bahnhof.jpg",
+   "checked": "in pokewiki's category \"SWSH-Screenshot\", named after the place; SwSh in its name or category; cropped (bottom 8%); reviewed on a contact sheet"
+  },
+  {
+   "id": "gdvpELTRbsBO",
+   "region": "Galar",
+   "name": "North Lake Miloch",
+   "game": "Sword / Shield",
+   "source": "https://www.pokepedia.fr/Fichier:Lac_Milobellus_Nord_Perle_ou_Grande_Perle_EB.png",
+   "checked": "shown on Poképédia's page \"Lac Milobellus Nord\"; SwSh in its name or category; cropped (bottom 8%); reviewed on a contact sheet"
+  },
+  {
+   "id": "5uaH7e5jaCpU",
+   "region": "Galar",
+   "name": "Rolling Fields",
+   "game": "Sword / Shield",
+   "source": "https://www.pokewiki.de/Datei:SWSH_Pokémon-Nest_004_(Wonnewiesen).jpg",
+   "checked": "shown on PokéWiki's page \"Wonnewiesen\"; SwSh in its name or category; cropped (bottom 8%, left 7%); reviewed on a contact sheet"
+  },
+  {
+   "id": "BiEcpV7l2RN0",
+   "region": "Galar",
+   "name": "Rolling Fields",
+   "game": "Sword / Shield",
+   "source": "https://www.pokewiki.de/Datei:SWSH_Pokémon-Nest_005_(Wonnewiesen).jpg",
+   "checked": "shown on PokéWiki's page \"Wonnewiesen\"; SwSh in its name or category; cropped (bottom 8%, left 7%); reviewed on a contact sheet"
+  },
+  {
+   "id": "7fvV1YqSRdsl",
+   "region": "Galar",
+   "name": "Rolling Fields",
+   "game": "Sword / Shield",
+   "source": "https://www.pokewiki.de/Datei:SWSH_Pokémon-Nest_027_(Wonnewiesen).jpg",
+   "checked": "shown on PokéWiki's page \"Wonnewiesen\"; SwSh in its name or category; cropped (bottom 8%); reviewed on a contact sheet"
+  },
+  {
+   "id": "GsDhR6T0XZU_",
+   "region": "Galar",
+   "name": "Route 2",
+   "game": "Sword / Shield",
+   "source": "https://www.pokepedia.fr/Fichier:Route_2_(Route_principale)_EB.png",
+   "checked": "shown on Poképédia's page \"Route 2 (Galar)\"; SwSh in its name or category; cropped (bottom 8%); reviewed on a contact sheet"
+  },
+  {
+   "id": "0PH8QG__Su9J",
+   "region": "Galar",
+   "name": "Route 9",
+   "game": "Sword / Shield",
+   "source": "https://www.pokepedia.fr/Fichier:Route_9_CT22_EB.png",
+   "checked": "shown on Poképédia's page \"Route 9 (Galar)\"; SwSh in its name or category; cropped (bottom 8%); reviewed on a contact sheet"
+  },
+  {
+   "id": "BBhqzJTopbyB",
+   "region": "Galar",
+   "name": "Stony Wilderness",
+   "game": "Sword / Shield",
+   "source": "https://www.wikidex.net/wiki/Archivo:Nido_Llanura_Pétrea_8.jpg",
+   "checked": "shown on WikiDex's page \"Llanura Pétrea\"; SwSh in its name or category; cropped (bottom 8%); reviewed on a contact sheet"
+  },
+  {
+   "id": "GwA06p786FO-",
+   "region": "Galar",
+   "name": "Stony Wilderness",
+   "game": "Sword / Shield",
+   "source": "https://www.pokewiki.de/Datei:SWSH_Pokémon-Nest_062_(Megalithen-Ebene).png",
+   "checked": "in pokewiki's category \"SWSH-Screenshot\", named after the place; SwSh in its name or category; cropped (bottom 8%); reviewed on a contact sheet"
+  },
+  {
+   "id": "i4RPbq5tk08o",
+   "region": "Galar",
+   "name": "Stony Wilderness",
+   "game": "Sword / Shield",
+   "source": "https://www.pokewiki.de/Datei:SWSH_Pokémon-Nest_067_(Megalithen-Ebene).png",
+   "checked": "in pokewiki's category \"SWSH-Screenshot\", named after the place; SwSh in its name or category; cropped (bottom 8%); reviewed on a contact sheet"
+  },
+  {
+   "id": "byZ0qUDGby4G",
+   "region": "Galar",
+   "name": "Stony Wilderness",
+   "game": "Sword / Shield",
+   "source": "https://www.pokewiki.de/Datei:SWSH_Pokémon-Nest_069_(Megalithen-Ebene).png",
+   "checked": "in pokewiki's category \"SWSH-Screenshot\", named after the place; SwSh in its name or category; cropped (bottom 8%); reviewed on a contact sheet"
+  },
+  {
+   "id": "uyBBzUGgld_T",
+   "region": "Galar",
+   "name": "Turffield Stadium",
+   "parent": "Turffield",
+   "game": "Sword / Shield",
+   "source": "https://www.wikidex.net/wiki/Archivo:Prueba_del_Estadio_de_Hoyuelo_(2).png",
+   "checked": "shown on WikiDex's page \"Estadio de Hoyuelo\"; SwSh in its name or category; cropped (bottom 8%); reviewed on a contact sheet"
+  },
+  {
+   "id": "n3C6AogzDz1z",
+   "region": "Galar",
+   "name": "Wyndon",
+   "game": "Sword / Shield",
+   "source": "https://www.pokepedia.fr/Fichier:Winscor_CT93_EB.png",
+   "checked": "shown on Poképédia's page \"Winscor\"; SwSh in its name or category; cropped (bottom 8%); reviewed on a contact sheet"
+  },
+  {
+   "id": "X7Uvi-nZvxOs",
+   "region": "Galar",
+   "name": "Wyndon",
+   "game": "Sword / Shield",
+   "source": "https://www.pokepedia.fr/Fichier:Winscor_PP_Plus_EB.png",
+   "checked": "shown on Poképédia's page \"Winscor\"; SwSh in its name or category; cropped (bottom 8%); reviewed on a contact sheet"
+  },
+  {
+   "id": "kvyI9LwFVRGD",
+   "region": "Isle of Armor",
+   "name": "Challenge Beach",
+   "game": "Sword / Shield",
+   "source": "https://www.pokepedia.fr/Fichier:Plage_de_l'Épreuve_Arbre_à_Baies_2_EB.png",
+   "checked": "shown on Poképédia's page \"Plage de l'Épreuve\"; SwSh in its name or category; cropped (bottom 8%); reviewed on a contact sheet"
+  },
+  {
+   "id": "i969S1j0-OK9",
+   "region": "Isle of Armor",
+   "name": "Challenge Beach",
+   "game": "Sword / Shield",
+   "source": "https://www.pokepedia.fr/Fichier:Plage_de_l'Épreuve_Objet_Caché_1_EB.png",
+   "checked": "shown on Poképédia's page \"Plage de l'Épreuve\"; SwSh in its name or category; cropped (bottom 8%); reviewed on a contact sheet"
+  },
+  {
+   "id": "9KDcvo5F9KuM",
+   "region": "Isle of Armor",
+   "name": "Challenge Beach",
+   "game": "Sword / Shield",
+   "source": "https://www.pokepedia.fr/Fichier:Plage_de_l'Épreuve_Objet_Caché_7_EB.png",
+   "checked": "shown on Poképédia's page \"Plage de l'Épreuve\"; SwSh in its name or category; cropped (bottom 8%); reviewed on a contact sheet"
+  },
+  {
+   "id": "Z9fzEfUpJakb",
+   "region": "Isle of Armor",
+   "name": "Challenge Beach",
+   "game": "Sword / Shield",
+   "source": "https://www.pokepedia.fr/Fichier:Taupiqueur_d'Alola_Plage_de_l'Épreuve_2_EB.png",
+   "checked": "shown on Poképédia's page \"Plage de l'Épreuve\"; SwSh in its name or category; cropped (bottom 8%); reviewed on a contact sheet"
+  },
+  {
+   "id": "P_GnCyQH6NFS",
+   "region": "Isle of Armor",
+   "name": "Challenge Beach",
+   "game": "Sword / Shield",
+   "source": "https://www.pokepedia.fr/Fichier:Taupiqueur_d'Alola_Plage_de_l'Épreuve_6_EB.png",
+   "checked": "shown on Poképédia's page \"Plage de l'Épreuve\"; SwSh in its name or category; cropped (bottom 8%); reviewed on a contact sheet"
+  },
+  {
+   "id": "m3-2sSPGg738",
+   "region": "Isle of Armor",
+   "name": "Challenge Beach",
+   "game": "Sword / Shield",
+   "source": "https://www.pokepedia.fr/Fichier:Taupiqueur_d'Alola_Plage_de_l'Épreuve_9_EB.png",
+   "checked": "shown on Poképédia's page \"Plage de l'Épreuve\"; SwSh in its name or category; cropped (bottom 8%); reviewed on a contact sheet"
+  },
+  {
+   "id": "zOnUVhuKw45X",
+   "region": "Isle of Armor",
+   "name": "Challenge Road",
+   "game": "Sword / Shield",
+   "source": "https://www.pokepedia.fr/Fichier:Route_de_l'Épreuve_Objet_Caché_1_EB.png",
+   "checked": "shown on Poképédia's page \"Route de l'Épreuve\"; SwSh in its name or category; cropped (bottom 8%); reviewed on a contact sheet"
+  },
+  {
+   "id": "B6s7PNB03aPP",
+   "region": "Isle of Armor",
+   "name": "Challenge Road",
+   "game": "Sword / Shield",
+   "source": "https://www.pokepedia.fr/Fichier:Route_de_l'Épreuve_Objet_Caché_3_EB.png",
+   "checked": "shown on Poképédia's page \"Route de l'Épreuve\"; SwSh in its name or category; cropped (bottom 8%); reviewed on a contact sheet"
+  },
+  {
+   "id": "bHLzK4o2Vx58",
+   "region": "Isle of Armor",
+   "name": "Challenge Road",
+   "game": "Sword / Shield",
+   "source": "https://www.pokewiki.de/Datei:SWSH_Digda-Suche_-_Pfad_der_Prüfung_2.jpg",
+   "checked": "shown on PokéWiki's page \"Pfad der Prüfung\"; SwSh in its name or category; cropped (bottom 8%); reviewed on a contact sheet"
+  },
+  {
+   "id": "VC0DuCCdbdhy",
+   "region": "Isle of Armor",
+   "name": "Challenge Road",
+   "game": "Sword / Shield",
+   "source": "https://www.pokewiki.de/Datei:SWSH_Digda-Suche_-_Pfad_der_Prüfung_5.jpg",
+   "checked": "shown on PokéWiki's page \"Pfad der Prüfung\"; SwSh in its name or category; cropped (bottom 8%); reviewed on a contact sheet"
+  },
+  {
+   "id": "bg8g1T7q9Cdl",
+   "region": "Isle of Armor",
+   "name": "Challenge Road",
+   "game": "Sword / Shield",
+   "source": "https://www.pokewiki.de/Datei:SWSH_Digda-Suche_-_Pfad_der_Prüfung_8.jpg",
+   "checked": "shown on PokéWiki's page \"Pfad der Prüfung\"; SwSh in its name or category; cropped (bottom 8%); reviewed on a contact sheet"
+  },
+  {
+   "id": "z4IbOJwaMy6p",
+   "region": "Isle of Armor",
+   "name": "Challenge Road",
+   "game": "Sword / Shield",
+   "source": "https://www.pokewiki.de/Datei:SWSH_Pokémon-Nest_137_(Pfad_der_Prüfung).png",
+   "checked": "in pokewiki's category \"SWSH-Screenshot\", named after the place; SwSh in its name or category; cropped (bottom 8%); reviewed on a contact sheet"
+  },
+  {
+   "id": "djFoOwCks6EV",
+   "region": "Isle of Armor",
+   "name": "Challenge Road",
+   "game": "Sword / Shield",
+   "source": "https://www.pokepedia.fr/Fichier:Taupiqueur_d'Alola_Route_de_l'Épreuve_8_EB.png",
+   "checked": "shown on Poképédia's page \"Route de l'Épreuve\"; SwSh in its name or category; cropped (bottom 8%); reviewed on a contact sheet"
+  },
+  {
+   "id": "SNYeOG_7cAwN",
+   "region": "Isle of Armor",
+   "name": "Courageous Cavern",
+   "game": "Sword / Shield",
+   "source": "https://www.pokepedia.fr/Fichier:Caverne_Pugnacité_Objet_Caché_10_EB.png",
+   "checked": "shown on Poképédia's page \"Caverne Pugnacité\"; SwSh in its name or category; cropped (bottom 8%); reviewed on a contact sheet"
+  },
+  {
+   "id": "GGkHTfCqhI9Q",
+   "region": "Isle of Armor",
+   "name": "Courageous Cavern",
+   "game": "Sword / Shield",
+   "source": "https://www.pokepedia.fr/Fichier:Caverne_Pugnacité_Objet_Caché_7_EB.png",
+   "checked": "shown on Poképédia's page \"Caverne Pugnacité\"; SwSh in its name or category; cropped (bottom 8%); reviewed on a contact sheet"
+  },
+  {
+   "id": "NTlSdAM-kswD",
+   "region": "Isle of Armor",
+   "name": "Courageous Cavern",
+   "game": "Sword / Shield",
+   "source": "https://www.pokewiki.de/Datei:SWSH_Pokémon-Nest_144_(Tapferkeitshöhle).png",
+   "checked": "in pokewiki's category \"SWSH-Screenshot\", named after the place; SwSh in its name or category; cropped (bottom 8%); reviewed on a contact sheet"
+  },
+  {
+   "id": "kOoLEowqHfqH",
+   "region": "Isle of Armor",
+   "name": "Fields of Honor",
+   "game": "Sword / Shield",
+   "source": "https://www.wikidex.net/wiki/Archivo:Diglett_de_Alola_en_el_Prado_Reverencia_(18)_EpEc.jpg",
+   "checked": "shown on WikiDex's page \"Pradera Reverencia/Prado Reverencia\"; SwSh in its name or category; cropped (bottom 8%); reviewed on a contact sheet"
+  },
+  {
+   "id": "6LxyVdyQ4TXE",
+   "region": "Isle of Armor",
+   "name": "Fields of Honor",
+   "game": "Sword / Shield",
+   "source": "https://www.wikidex.net/wiki/Archivo:Diglett_de_Alola_en_el_Prado_Reverencia_(5)_EpEc.jpg",
+   "checked": "shown on WikiDex's page \"Pradera Reverencia/Prado Reverencia\"; SwSh in its name or category; cropped (bottom 8%); reviewed on a contact sheet"
+  },
+  {
+   "id": "2QzRICEUFlx5",
+   "region": "Isle of Armor",
+   "name": "Fields of Honor",
+   "game": "Sword / Shield",
+   "source": "https://www.wikidex.net/wiki/Archivo:Diglett_de_Alola_en_el_Prado_Reverencia_(8)_EpEc.jpg",
+   "checked": "shown on WikiDex's page \"Pradera Reverencia/Prado Reverencia\"; SwSh in its name or category; cropped (bottom 8%); reviewed on a contact sheet"
+  },
+  {
+   "id": "8ytut9yMPUnu",
+   "region": "Isle of Armor",
+   "name": "Fields of Honor",
+   "game": "Sword / Shield",
+   "source": "https://www.wikidex.net/wiki/Archivo:Diglett_de_Alola_en_el_Prado_Reverencia_(9)_EpEc.jpg",
+   "checked": "shown on WikiDex's page \"Pradera Reverencia/Prado Reverencia\"; SwSh in its name or category; cropped (bottom 8%); reviewed on a contact sheet"
+  },
+  {
+   "id": "8CscvtuyimZu",
+   "region": "Isle of Armor",
+   "name": "Forest of Focus",
+   "game": "Sword / Shield",
+   "source": "https://www.pokepedia.fr/Fichier:Forêt_Flexion_Arbre_à_Baies_3_EB.png",
+   "checked": "shown on Poképédia's page \"Forêt Flexion\"; SwSh in its name or category; cropped (bottom 8%); reviewed on a contact sheet"
+  },
+  {
+   "id": "Ionw0gCG4YZ5",
+   "region": "Isle of Armor",
+   "name": "Forest of Focus",
+   "game": "Sword / Shield",
+   "source": "https://www.pokepedia.fr/Fichier:Forêt_Flexion_Arbre_à_Baies_6_et_Maxi_Champi_EB.png",
+   "checked": "shown on Poképédia's page \"Forêt Flexion\"; SwSh in its name or category; cropped (bottom 8%); reviewed on a contact sheet"
+  },
+  {
+   "id": "zIH7pCeXKgY0",
+   "region": "Isle of Armor",
+   "name": "Forest of Focus",
+   "game": "Sword / Shield",
+   "source": "https://www.pokewiki.de/Datei:SWSH_Digda-Suche_-_Fokusforst_8.jpg",
+   "checked": "shown on PokéWiki's page \"Fokusforst\"; SwSh in its name or category; cropped (bottom 8%); reviewed on a contact sheet"
+  },
+  {
+   "id": "h_QZz8oTQJ59",
+   "region": "Isle of Armor",
+   "name": "Forest of Focus",
+   "game": "Sword / Shield",
+   "source": "https://www.pokepedia.fr/Fichier:Taupiqueur_d'Alola_Forêt_Flexion_1_EB.png",
+   "checked": "shown on Poképédia's page \"Forêt Flexion\"; SwSh in its name or category; cropped (bottom 8%); reviewed on a contact sheet"
+  },
+  {
+   "id": "BXxjiymvMcBW",
+   "region": "Isle of Armor",
+   "name": "Forest of Focus",
+   "game": "Sword / Shield",
+   "source": "https://www.pokepedia.fr/Fichier:Taupiqueur_d'Alola_Forêt_Flexion_7_EB.png",
+   "checked": "shown on Poképédia's page \"Forêt Flexion\"; SwSh in its name or category; cropped (bottom 8%); reviewed on a contact sheet"
+  },
+  {
+   "id": "bgK_xeTSofv1",
+   "region": "Isle of Armor",
+   "name": "Honeycalm Island",
+   "game": "Sword / Shield",
+   "source": "https://www.pokepedia.fr/Fichier:Îlot_Calméole_Bonbon_Exp._S_ou_Bonbon_Exp._L_EB.png",
+   "checked": "shown on Poképédia's page \"Îlot Calméole\"; SwSh in its name or category; cropped (bottom 8%); reviewed on a contact sheet"
+  },
+  {
+   "id": "5rDqjuz74TnU",
+   "region": "Isle of Armor",
+   "name": "Honeycalm Island",
+   "game": "Sword / Shield",
+   "source": "https://www.pokepedia.fr/Fichier:Îlot_Calméole_Bonbon_Exp._S_ou_Bonbon_Exp._M_2_EB.png",
+   "checked": "shown on Poképédia's page \"Îlot Calméole\"; SwSh in its name or category; cropped (bottom 8%); reviewed on a contact sheet"
+  },
+  {
+   "id": "u80_VM4iD0K0",
+   "region": "Isle of Armor",
+   "name": "Honeycalm Island",
+   "game": "Sword / Shield",
+   "source": "https://www.pokepedia.fr/Fichier:Îlot_Calméole_Miel_ou_Bonbon_Exp._M_EB.png",
+   "checked": "shown on Poképédia's page \"Îlot Calméole\"; SwSh in its name or category; cropped (bottom 8%); reviewed on a contact sheet"
+  },
+  {
+   "id": "A4tzPLgfxwuc",
+   "region": "Isle of Armor",
+   "name": "Honeycalm Island",
+   "game": "Sword / Shield",
+   "source": "https://www.pokepedia.fr/Fichier:Taupiqueur_d'Alola_Îlot_Calméole_8_EB.png",
+   "checked": "shown on Poképédia's page \"Îlot Calméole\"; SwSh in its name or category; cropped (bottom 8%); reviewed on a contact sheet"
+  },
+  {
+   "id": "P2xsKMg4WKLM",
+   "region": "Isle of Armor",
+   "name": "Honeycalm Sea",
+   "game": "Sword / Shield",
+   "source": "https://www.pokepedia.fr/Fichier:Mer_Calméole_Objet_Caché_2_EB.png",
+   "checked": "shown on Poképédia's page \"Mer Calméole\"; SwSh in its name or category; cropped (bottom 8%); reviewed on a contact sheet"
+  },
+  {
+   "id": "PWNLBuidiKep",
+   "region": "Isle of Armor",
+   "name": "Insular Sea",
+   "game": "Sword / Shield",
+   "source": "https://archives.bulbagarden.net/wiki/File:Galar_Insular_Sea_SwSh.png",
+   "checked": "shown on Bulbapedia's page \"Insular Sea\"; SwSh in its name or category; cropped (bottom 8%); reviewed on a contact sheet"
+  },
+  {
+   "id": "y1-72s91ap9T",
+   "region": "Isle of Armor",
+   "name": "Insular Sea",
+   "game": "Sword / Shield",
+   "source": "https://www.pokepedia.fr/Fichier:Mer_Isol'Îlots_Objet_Caché_3_EB.png",
+   "checked": "shown on Poképédia's page \"Mer Isol'Îlots\"; SwSh in its name or category; cropped (bottom 8%); reviewed on a contact sheet"
+  },
+  {
+   "id": "s2MpgzLvl1iP",
+   "region": "Isle of Armor",
+   "name": "Loop Lagoon",
+   "game": "Sword / Shield",
+   "source": "https://www.wikidex.net/wiki/Archivo:Diglett_de_Bahía_circular_5_EpEc.jpg",
+   "checked": "shown on WikiDex's page \"Bahía Circular\"; SwSh in its name or category; cropped (bottom 8%); reviewed on a contact sheet"
+  },
+  {
+   "id": "EER9UTr_EYcP",
+   "region": "Isle of Armor",
+   "name": "Loop Lagoon",
+   "game": "Sword / Shield",
+   "source": "https://www.pokepedia.fr/Fichier:Lagune_Circulaire_Objet_Caché_2_EB.png",
+   "checked": "shown on Poképédia's page \"Lagune Circulaire\"; SwSh in its name or category; cropped (bottom 8%); reviewed on a contact sheet"
+  },
+  {
+   "id": "Z3IyKCGych-J",
+   "region": "Isle of Armor",
+   "name": "Loop Lagoon",
+   "game": "Sword / Shield",
+   "source": "https://www.pokepedia.fr/Fichier:Lagune_Circulaire_Objet_Caché_5_EB.png",
+   "checked": "shown on Poképédia's page \"Lagune Circulaire\"; SwSh in its name or category; cropped (bottom 8%); reviewed on a contact sheet"
+  },
+  {
+   "id": "z43ptBsN7nxv",
+   "region": "Isle of Armor",
+   "name": "Loop Lagoon",
+   "game": "Sword / Shield",
+   "source": "https://www.pokewiki.de/Datei:SWSH_Pokémon-Nest_146_(Ringbucht).png",
+   "checked": "in pokewiki's category \"SWSH-Screenshot\", named after the place; SwSh in its name or category; cropped (bottom 8%); reviewed on a contact sheet"
+  },
+  {
+   "id": "jDe2lIdCJCgL",
+   "region": "Isle of Armor",
+   "name": "Loop Lagoon",
+   "game": "Sword / Shield",
+   "source": "https://www.pokewiki.de/Datei:SWSH_Pokémon-Nest_148_(Ringbucht).png",
+   "checked": "in pokewiki's category \"SWSH-Screenshot\", named after the place; SwSh in its name or category; cropped (bottom 8%); reviewed on a contact sheet"
+  },
+  {
+   "id": "Zm5rto-1k80h",
+   "region": "Isle of Armor",
+   "name": "Potbottom Desert",
+   "game": "Sword / Shield",
+   "source": "https://www.pokepedia.fr/Fichier:Sables_de_Kudsac_Objet_Caché_1_EB.png",
+   "checked": "shown on Poképédia's page \"Sables de Kudsac\"; SwSh in its name or category; cropped (bottom 8%); reviewed on a contact sheet"
+  },
+  {
+   "id": "x2ESgfZXgK8j",
+   "region": "Isle of Armor",
+   "name": "Potbottom Desert",
+   "game": "Sword / Shield",
+   "source": "https://www.pokewiki.de/Datei:SWSH_Digda-Suche_-_Wüstensenke_9.jpg",
+   "checked": "shown on PokéWiki's page \"Wüstensenke\"; SwSh in its name or category; cropped (bottom 8%); reviewed on a contact sheet"
+  },
+  {
+   "id": "VaWv4zb74Idr",
+   "region": "Isle of Armor",
+   "name": "Potbottom Desert",
+   "game": "Sword / Shield",
+   "source": "https://www.pokepedia.fr/Fichier:Taupiqueur_d'Alola_Sables_de_Kudsac_5_EB.png",
+   "checked": "shown on Poképédia's page \"Sables de Kudsac\"; SwSh in its name or category; cropped (bottom 8%); reviewed on a contact sheet"
+  },
+  {
+   "id": "UOC7s-GyoZez",
+   "region": "Isle of Armor",
+   "name": "Soothing Wetlands",
+   "game": "Sword / Shield",
+   "source": "https://www.pokepedia.fr/Fichier:Lande_Boldair_Aromate_au_Hasard_EB.png",
+   "checked": "shown on Poképédia's page \"Lande Boldair\"; SwSh in its name or category; cropped (bottom 8%); reviewed on a contact sheet"
+  },
+  {
+   "id": "EJi2xqBP8iA1",
+   "region": "Isle of Armor",
+   "name": "Soothing Wetlands",
+   "game": "Sword / Shield",
+   "source": "https://www.pokewiki.de/Datei:SWSH_Digda-Suche_-_Balsamsumpf_10.jpg",
+   "checked": "shown on PokéWiki's page \"Balsamsumpf\"; SwSh in its name or category; cropped (bottom 8%); reviewed on a contact sheet"
+  },
+  {
+   "id": "CuCzvmqXWWkH",
+   "region": "Isle of Armor",
+   "name": "Soothing Wetlands",
+   "game": "Sword / Shield",
+   "source": "https://www.pokewiki.de/Datei:SWSH_Digda-Suche_-_Balsamsumpf_19.jpg",
+   "checked": "shown on PokéWiki's page \"Balsamsumpf\"; SwSh in its name or category; cropped (bottom 8%); reviewed on a contact sheet"
+  },
+  {
+   "id": "pOEE0SqYWo5R",
+   "region": "Isle of Armor",
+   "name": "Soothing Wetlands",
+   "game": "Sword / Shield",
+   "source": "https://www.pokewiki.de/Datei:SWSH_Digda-Suche_-_Balsamsumpf_20.jpg",
+   "checked": "shown on PokéWiki's page \"Balsamsumpf\"; SwSh in its name or category; cropped (bottom 8%); reviewed on a contact sheet"
+  },
+  {
+   "id": "rAHiY-LMzEMX",
+   "region": "Isle of Armor",
+   "name": "Soothing Wetlands",
+   "game": "Sword / Shield",
+   "source": "https://www.pokewiki.de/Datei:SWSH_Digda-Suche_-_Balsamsumpf_6.jpg",
+   "checked": "shown on PokéWiki's page \"Balsamsumpf\"; SwSh in its name or category; cropped (bottom 8%); reviewed on a contact sheet"
+  },
+  {
+   "id": "Ro4IAm3JRn7I",
+   "region": "Isle of Armor",
+   "name": "Stepping-Stone Sea",
+   "game": "Sword / Shield",
+   "source": "https://www.pokepedia.fr/Fichier:Mer_Align'Îlots_Objet_Caché_14_EB.png",
+   "checked": "shown on Poképédia's page \"Mer Align'Îlots\"; SwSh in its name or category; cropped (bottom 8%); reviewed on a contact sheet"
+  },
+  {
+   "id": "rdJ18N2g83Ws",
+   "region": "Isle of Armor",
+   "name": "Stepping-Stone Sea",
+   "game": "Sword / Shield",
+   "source": "https://www.pokepedia.fr/Fichier:Mer_Align'Îlots_Objet_Caché_22_EB.png",
+   "checked": "shown on Poképédia's page \"Mer Align'Îlots\"; SwSh in its name or category; cropped (bottom 8%); reviewed on a contact sheet"
+  },
+  {
+   "id": "pzyPTKwfuVB4",
+   "region": "Isle of Armor",
+   "name": "Stepping-Stone Sea",
+   "game": "Sword / Shield",
+   "source": "https://www.pokepedia.fr/Fichier:Mer_Align'Îlots_Objet_Caché_24_EB.png",
+   "checked": "shown on Poképédia's page \"Mer Align'Îlots\"; SwSh in its name or category; cropped (bottom 8%); reviewed on a contact sheet"
+  },
+  {
+   "id": "tFR7dcvjdwER",
+   "region": "Isle of Armor",
+   "name": "Training Lowlands",
+   "game": "Sword / Shield",
+   "source": "https://www.pokewiki.de/Datei:SWSH_Digda-Suche_-_Fleißebene_5.jpg",
+   "checked": "shown on PokéWiki's page \"Fleißebene\"; SwSh in its name or category; cropped (bottom 8%); reviewed on a contact sheet"
+  },
+  {
+   "id": "tc8-NQXc6kZa",
+   "region": "Isle of Armor",
+   "name": "Training Lowlands",
+   "game": "Sword / Shield",
+   "source": "https://www.pokewiki.de/Datei:SWSH_Digda-Suche_-_Fleißebene_9.jpg",
+   "checked": "shown on PokéWiki's page \"Fleißebene\"; SwSh in its name or category; cropped (bottom 8%); reviewed on a contact sheet"
+  },
+  {
+   "id": "c6NI_Fi0JJ1C",
+   "region": "Isle of Armor",
+   "name": "Training Lowlands",
+   "game": "Sword / Shield",
+   "source": "https://www.pokepedia.fr/Fichier:Taupiqueur_d'Alola_Plaine_des_Efforts_11_EB.png",
+   "checked": "shown on Poképédia's page \"Plaine des Efforts\"; SwSh in its name or category; cropped (bottom 8%); reviewed on a contact sheet"
+  },
+  {
+   "id": "QTSRWa9JgzSN",
+   "region": "Isle of Armor",
+   "name": "Training Lowlands",
+   "game": "Sword / Shield",
+   "source": "https://www.pokepedia.fr/Fichier:Taupiqueur_d'Alola_Plaine_des_Efforts_3_EB.png",
+   "checked": "shown on Poképédia's page \"Plaine des Efforts\"; SwSh in its name or category; cropped (bottom 8%); reviewed on a contact sheet"
+  },
+  {
+   "id": "ay27ABGycMJM",
+   "region": "Isle of Armor",
+   "name": "Training Lowlands",
+   "game": "Sword / Shield",
+   "source": "https://www.pokepedia.fr/Fichier:Taupiqueur_d'Alola_Plaine_des_Efforts_9_EB.png",
+   "checked": "shown on Poképédia's page \"Plaine des Efforts\"; SwSh in its name or category; cropped (bottom 8%); reviewed on a contact sheet"
+  },
+  {
+   "id": "m4_rjGqoF9JF",
+   "region": "Isle of Armor",
+   "name": "Workout Sea",
+   "game": "Sword / Shield",
+   "source": "https://www.pokepedia.fr/Fichier:Mer_Eau-Hisse_EB.png",
+   "checked": "shown on Poképédia's page \"Mer Eau-Hisse\"; SwSh in its name or category; cropped (bottom 8%); reviewed on a contact sheet"
+  },
+  {
+   "id": "bk4qr-Lqfh5z",
+   "region": "Isle of Armor",
+   "name": "Workout Sea",
+   "game": "Sword / Shield",
+   "source": "https://www.pokepedia.fr/Fichier:Mer_Eau-Hisse_Nœud_Destin_&_Baie_Tamato_EB.png",
+   "checked": "shown on Poképédia's page \"Mer Eau-Hisse\"; SwSh in its name or category; cropped (bottom 8%); reviewed on a contact sheet"
+  },
+  {
+   "id": "Djwg0SKKChfq",
+   "region": "Isle of Armor",
+   "name": "Workout Sea",
+   "game": "Sword / Shield",
+   "source": "https://www.pokewiki.de/Datei:SWSH_Digda-Suche_-_Fitnessmeer_3.jpg",
+   "checked": "shown on PokéWiki's page \"Fitnessmeer\"; SwSh in its name or category; cropped (bottom 8%); reviewed on a contact sheet"
+  },
+  {
+   "id": "bHsXo9z0wq8_",
+   "region": "Isle of Armor",
+   "name": "Workout Sea",
+   "game": "Sword / Shield",
+   "source": "https://www.pokepedia.fr/Fichier:Taupiqueur_d'Alola_Mer_Eau-Hisse_1_EB.png",
+   "checked": "shown on Poképédia's page \"Mer Eau-Hisse\"; SwSh in its name or category; cropped (bottom 8%); reviewed on a contact sheet"
+  },
+  {
+   "id": "hSjL6Ek4SOyU",
+   "region": "Isle of Armor",
+   "name": "Workout Sea",
+   "game": "Sword / Shield",
+   "source": "https://www.pokepedia.fr/Fichier:Taupiqueur_d'Alola_Mer_Eau-Hisse_4_EB.png",
+   "checked": "shown on Poképédia's page \"Mer Eau-Hisse\"; SwSh in its name or category; cropped (bottom 8%); reviewed on a contact sheet"
+  },
+  {
    "id": "nWXkAvBlLEJn",
    "region": "Sevii Islands",
    "name": "Four Island",

@@ -1,5 +1,6 @@
 import "server-only";
 import { dailyNumber } from "@/lib/daily";
+import { geoWeeklyNumber, isGeoWeek } from "@/lib/geo-weekly";
 import { DUEL_CODE_RE, DUEL_HP } from "@/lib/duel-types";
 import { GEO_MAX_ROUND_SCORE, WORLD_REGION, type GeoResult } from "@/lib/geo-types";
 import { GEO_ERA_NAMES } from "@/lib/geo-families";
@@ -72,10 +73,11 @@ function gameView(result: GeoResult): GeoShareView | null {
   const total = result.score;
   const max = rounds.length * GEO_MAX_ROUND_SCORE;
   const daily = spec.daily ? dailyNumber(spec.daily) : undefined;
-  const eyebrow = daily !== undefined ? `PokéGuessr · Daily #${daily}` : `PokéGuessr · ${map.name}`;
+  const weekly = spec.weekly && isGeoWeek(spec.weekly) ? geoWeeklyNumber(spec.weekly) : undefined;
+  const eyebrow = daily !== undefined ? `PokéGuessr · Daily #${daily}` : weekly !== undefined ? `PokéGuessr · Weekly #${weekly}` : `PokéGuessr · ${map.name}`;
   const chips = [
     map.name,
-    daily !== undefined ? `Daily #${daily}` : `${rounds.length} rounds`,
+    daily !== undefined ? `Daily #${daily}` : weekly !== undefined ? `Weekly #${weekly}` : `${rounds.length} rounds`,
     ...(spec.era ? [GEO_ERA_NAMES[spec.era]] : []),
     ...(spec.difficulty ? [GEO_DIFFICULTY_NAMES[spec.difficulty]] : []),
     ...(result.bonus ? [`+${fmt(result.bonus)} game bonus`] : []),
@@ -90,8 +92,8 @@ function gameView(result: GeoResult): GeoShareView | null {
     total,
     max,
     chips,
-    playHref: daily !== undefined ? "/guessr" : `/guessr?region=${map.id}`,
-    playLabel: daily !== undefined ? "Play today's daily" : "Play PokéGuessr",
+    playHref: daily !== undefined || weekly !== undefined ? "/guessr" : `/guessr?region=${map.id}`,
+    playLabel: daily !== undefined ? "Play today's daily" : weekly !== undefined ? "Play this week's challenge" : "Play PokéGuessr",
     title: `${fmt(total)} points in ${eyebrow.replace("PokéGuessr · ", "PokéGuessr ")}`,
   };
 }

@@ -32,6 +32,7 @@ import {
   TRAINER_FIELDS,
   WRISTWEAR,
   lockedItems,
+  lowerFirst,
   unlockHint,
   unlocked,
   type Preset,
@@ -49,6 +50,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { TrainerPortrait } from "@/components/avatar/TrainerPortrait";
 import { cn } from "@/lib/utils";
 import { Avatar3D, stageStyle } from "./Avatar3D";
+import { TAUNTS, type TauntId } from "@/lib/trainer/taunts";
 
 /**
  * The trainer creator: a live 3D preview beside every option (ready-made
@@ -85,7 +87,6 @@ const OPENABLE = new Set<TrainerConfig["top"]>(["jacket", "vest", "shirt", "suit
 /** Tops that show an emblem. */
 const EMBLEM_TOPS = new Set<TrainerConfig["top"]>(["tee", "longtee", "tank", "croptop", "uniform", "dress"]);
 
-const BALL_TOP: Record<string, string> = { poke: "#e3262f", great: "#2f6fe0", ultra: "#24252b", master: "#7b3fc6" };
 
 export function TrainerCreator() {
   const account = useAccount();
@@ -94,6 +95,7 @@ export function TrainerCreator() {
   const [draft, setDraft] = useState<TrainerConfig>(() => presetTrainer(TRAINER_PRESETS[0], 25));
   const [tab, setTab] = useState<Tab>("looks");
   const [pose, setPose] = useState<TrainerPose>("idle");
+  const [taunt, setTaunt] = useState<{ id: TauntId; n: number } | null>(null);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(null);
 
@@ -174,7 +176,7 @@ export function TrainerCreator() {
         <div className="hud relative h-[380px] overflow-hidden rounded-xl border bg-card sm:h-[480px] lg:h-[560px]" data-testid="trainer-stage">
           {!backdrop && <div aria-hidden className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_35%,hsl(var(--screen)/0.16),transparent_62%)]" />}
           {!backdrop && <div aria-hidden className="absolute inset-x-[8%] bottom-[5%] h-[16%] rounded-[50%] bg-[radial-gradient(ellipse_at_center,hsl(var(--foreground)/0.09),transparent_70%)]" />}
-          <Avatar3D config={draft} pose={pose} stage label={user ? `${user.username}'s trainer` : "Your trainer"} />
+          <Avatar3D config={draft} pose={pose} taunt={taunt} stage label={user ? `${user.username}'s trainer` : "Your trainer"} />
           <Button variant="outline" size="sm" onClick={surprise} className="absolute right-3 top-3 bg-background/80 backdrop-blur-sm" aria-label="Surprise me" title="Surprise me" data-testid="trainer-surprise">
             <Dices className="h-4 w-4" aria-hidden /> <span className="hidden sm:inline">Surprise me</span>
           </Button>
@@ -201,6 +203,7 @@ export function TrainerCreator() {
             </button>
           ))}
         </div>
+        <TauntPreview u={u} onPlay={(id) => setTaunt((t) => ({ id, n: (t?.n ?? 0) + 1 }))} />
       </div>
 
       {/* Options */}
@@ -338,7 +341,7 @@ export function TrainerCreator() {
                     const lock = !unlocked(b, u);
                     return (
                       <Option key={b.id} selected={draft.ball === b.id} locked={lock} hint={unlockHint(b)} onClick={() => set("ball", b.id)} testid={`trainer-ball-${b.id}`}>
-                        <BallIcon top={BALL_TOP[b.id]} />
+                        <BallIcon top={b.top} bottom={b.bottom} />
                         {b.name}
                       </Option>
                     );
@@ -407,7 +410,7 @@ export function TrainerCreator() {
           {settings && !settings.available && <p className="w-full text-sm text-muted-foreground">Saving trainers opens soon.</p>}
           {(locked.length > 0 || shinyLocked) && (
             <p className="flex w-full items-center gap-1.5 text-sm text-muted-foreground" data-testid="trainer-locked">
-              <Lock className="h-3.5 w-3.5 shrink-0" aria-hidden /> {locked.length ? `${locked[0].item.name}: ${unlockHint(locked[0].item).toLowerCase()} to save it.` : `${SHINY_HINT}.`}
+              <Lock className="h-3.5 w-3.5 shrink-0" aria-hidden /> {locked.length ? `${locked[0].item.name}: ${lowerFirst(unlockHint(locked[0].item))} to save it.` : `${SHINY_HINT}.`}
             </p>
           )}
           {message && (
@@ -533,7 +536,7 @@ function Swatches<F extends TrainerField>({ label, field, list, draft, u, set, h
               key={c.id}
               type="button"
               aria-pressed={on}
-              aria-label={lock ? `${c.name} (${unlockHint(c).toLowerCase()})` : c.name}
+              aria-label={lock ? `${c.name} (${lowerFirst(unlockHint(c))})` : c.name}
               title={lock ? `${c.name}: ${unlockHint(c)}` : c.name}
               onClick={() => set(field, c.id as TrainerConfig[F])}
               className={cn("relative h-8 w-8 rounded-full border border-foreground/15 shadow-inner transition-transform hover:scale-110", on && "ring-2 ring-screen ring-offset-2 ring-offset-card")}
@@ -555,14 +558,46 @@ function Swatches<F extends TrainerField>({ label, field, list, draft, u, set, h
   );
 }
 
-function BallIcon({ top }: { top: string }) {
+function BallIcon({ top, bottom }: { top: string; bottom: string }) {
   return (
     <svg viewBox="0 0 20 20" className="h-4 w-4" aria-hidden>
       <path d="M1.5 10 A8.5 8.5 0 0 1 18.5 10 Z" fill={top} />
-      <path d="M1.5 10 A8.5 8.5 0 0 0 18.5 10 Z" fill="#f6f6f2" />
+      <path d="M1.5 10 A8.5 8.5 0 0 0 18.5 10 Z" fill={bottom} />
       <path d="M1.5 10 H18.5" stroke="#1b1b1f" strokeWidth="1.6" />
       <circle cx="10" cy="10" r="3" fill="#f6f6f2" stroke="#1b1b1f" strokeWidth="1.6" />
       <circle cx="10" cy="10" r="8.5" fill="none" stroke="#1b1b1f" strokeWidth="1.2" />
     </svg>
+  );
+}
+
+/** The dances and emotes trainers play after a duel: a tap previews one here (locked ones too, with how to earn them). */
+function TauntPreview({ u, onPlay }: { u: AvatarUnlocks; onPlay: (id: TauntId) => void }) {
+  return (
+    <div className="space-y-1.5 rounded-lg border bg-card p-2" data-testid="trainer-taunts">
+      {(["dance", "emote"] as const).map((kind) => (
+        <div key={kind} className="flex items-start gap-2">
+          <p className="hud-label w-14 shrink-0 pt-1.5">{kind === "dance" ? "Dances" : "Emotes"}</p>
+          <div className="flex min-w-0 flex-wrap gap-1">
+            {TAUNTS.filter((t) => t.kind === kind).map((t) => {
+              const lock = !unlocked(t, u);
+              return (
+                <button
+                  key={t.id}
+                  type="button"
+                  onClick={() => onPlay(t.id)}
+                  title={lock ? `${t.name}: ${unlockHint(t)} to use it after duels` : `Preview ${t.name}`}
+                  className={cn("flex items-center gap-1 rounded-md border px-2 py-1 text-[11px] font-semibold uppercase tracking-normal text-muted-foreground transition-colors hover:border-screen/50 hover:text-foreground", lock && "opacity-75")}
+                  data-testid={`trainer-taunt-${t.id}`}
+                  data-locked={lock || undefined}
+                >
+                  {t.name}
+                  {lock && <Lock className="h-3 w-3 shrink-0" aria-label={unlockHint(t)} />}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      ))}
+    </div>
   );
 }

@@ -53,6 +53,8 @@ export interface PokedleShareResult {
 export interface GuessrShareResult {
   game: "guessr";
   daily?: number;
+  /** The Weekly Challenge's number. */
+  weekly?: number;
   /** A map id from GEO_MAP_ORDER ("world", "kanto", …). */
   region: string;
   /** Five-round game: each round's points. */
@@ -197,7 +199,7 @@ export function encodeShare(result: ShareResult): string {
       );
       break;
     case "guessr":
-      fields.push(["n", result.daily], ["z", result.region], ["s", result.streak], ["r", result.rounds?.map(int).join("-")]);
+      fields.push(["n", result.daily], ["w", result.weekly], ["z", result.region], ["s", result.streak], ["r", result.rounds?.map(int).join("-")]);
       break;
     case "quiz":
       fields.push(
@@ -416,13 +418,14 @@ function decodeGuessr(f: Record<string, string>): GuessrShareResult | null {
   const region = oneOf(GEO_MAP_ORDER, f.z);
   if (!region) return null;
   const daily = num(f.n, 1, DAILY_MAX);
+  const weekly = daily === undefined ? num(f.w, 1, DAILY_MAX) : undefined;
   if (f.s !== undefined) {
     const streak = num(f.s, 0, 10_000);
     return streak === undefined ? null : { game: "guessr", ...(daily !== undefined && { daily }), region, streak };
   }
   const rounds = (f.r ?? "").split("-").map((r) => num(r, 0, GEO_MAX_ROUND_SCORE));
   if (!isGeoRounds(rounds.length) || rounds.some((r) => r === undefined)) return null;
-  return { game: "guessr", ...(daily !== undefined && { daily }), region, rounds: rounds as number[] };
+  return { game: "guessr", ...(daily !== undefined && { daily }), ...(weekly !== undefined && { weekly }), region, rounds: rounds as number[] };
 }
 
 function decodeQuiz(f: Record<string, string>): QuizShareResult | null {

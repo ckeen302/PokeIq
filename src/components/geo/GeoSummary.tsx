@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { Check, Copy, Link2, RotateCcw, Trophy } from "lucide-react";
 import { geoBoardKey, type GeoChallenge } from "@/lib/geo-types";
 import { dailyNumber } from "@/lib/daily";
+import { geoWeeklyBoard, geoWeeklyNumber } from "@/lib/geo-weekly";
 import { useProgress } from "@/lib/progress";
 import { copyText, guessrShareText, shareOrCopy, shareUrl, type GuessrShareResult } from "@/lib/share";
 import { GEO_DIFFICULTY_NAMES } from "@/lib/geo-difficulty";
@@ -30,7 +31,7 @@ export function GeoSummary({
   onRestart,
   compact,
 }: {
-  game: Pick<Game, "region" | "kind" | "rounds" | "daily" | "practice" | "filter" | "guessGame" | "difficulty">;
+  game: Pick<Game, "region" | "kind" | "rounds" | "daily" | "weekly" | "practice" | "filter" | "guessGame" | "difficulty">;
   played: Played[];
   resultToken?: string;
   challengeToken?: string;
@@ -58,7 +59,7 @@ export function GeoSummary({
   const origin = typeof window !== "undefined" ? window.location.origin : "";
   const shareResult: GuessrShareResult = {
     game: "guessr",
-    ...(game.daily ? { daily: dailyNumber(game.daily) } : {}),
+    ...(game.daily ? { daily: dailyNumber(game.daily) } : game.weekly ? { weekly: geoWeeklyNumber(game.weekly) } : {}),
     region: region.id,
     ...(isStreak ? { streak } : { rounds: played.map((p) => p.graded.score) }),
   };
@@ -245,6 +246,8 @@ export function GeoSummary({
             </form>
           ) : game.practice === "repeat-daily" ? (
             <p className="text-xs text-muted-foreground">Only your first daily game of the day goes on the leaderboard.</p>
+          ) : game.practice === "repeat-weekly" ? (
+            <p className="text-xs text-muted-foreground">Only your first Weekly Challenge of the week goes on the leaderboard.</p>
           ) : game.practice === "challenge" ? (
             <p className="text-xs text-muted-foreground">Challenge games aren&apos;t ranked, since the places were shared.</p>
           ) : game.practice === "filtered" ? (
@@ -257,7 +260,9 @@ export function GeoSummary({
             href={
               game.daily
                 ? `/leaderboard?board=geo&date=${game.daily}`
-                : `/leaderboard?board=geo&format=${geoBoardKey({ region: region.id, kind: game.kind, era: game.filter.era, rounds: game.rounds })}`
+                : game.weekly
+                  ? `/leaderboard?board=geo&format=${geoWeeklyBoard(game.weekly)}`
+                  : `/leaderboard?board=geo&format=${geoBoardKey({ region: region.id, kind: game.kind, era: game.filter.era, rounds: game.rounds })}`
             }
             className={cn(buttonVariants({ variant: "outline", size: "lg" }), "w-full")}
           >

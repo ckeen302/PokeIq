@@ -29,6 +29,8 @@ import { GEO_RANKED_MATCH } from "@/lib/geo-ranked";
 import { GeoRankedOutcome } from "./GeoRanked";
 import { GeoVersus } from "./GeoVersus";
 import { ShareResultLink } from "./ShareResultLink";
+import { TauntStage } from "@/components/duel/TauntStage";
+import type { TauntId } from "@/lib/trainer/taunts";
 
 /**
  * A PokéGuessr duel at /guessr/duel/<code>: the lobby, the versus intro, the
@@ -259,7 +261,7 @@ export function GeoDuel({ code, regions }: GeoDuelProps) {
             {notice}
             {liveStatus === "down" && <div className="flex justify-center pt-3">{livePill}</div>}
             <EmoteFeed view={view} />
-            <DuelEnd view={view} map={map} busy={busy} onRematch={() => void rematch()} />
+            <DuelEnd view={view} map={map} busy={busy} onRematch={() => void rematch()} onTaunt={(id) => send({ action: "emote", emote: id })} />
             <div className="mx-auto max-w-3xl space-y-4 px-4 pb-10 text-foreground">
               {view.you !== null && <AddFriendAfterGame kind="guessr" code={view.code} />}
               <div className="rounded-md bg-card p-3">{tools}</div>
@@ -545,7 +547,7 @@ function DuelReveal({
  * The end screen: the result word, the final band, the per-round damage
  * table, the HP timeline, the rating change (ranked) and what to do next.
  */
-function DuelEnd({ view, map, busy, onRematch }: { view: DuelView; map: GeoRegionInfo; busy: boolean; onRematch: () => void }) {
+function DuelEnd({ view, map, busy, onRematch, onTaunt }: { view: DuelView; map: GeoRegionInfo; busy: boolean; onRematch: () => void; onTaunt: (id: TauntId) => Promise<string | null> }) {
   const me = view.you!;
   const end = view.end!;
   const reduced = useReducedMotion();
@@ -590,6 +592,10 @@ function DuelEnd({ view, map, busy, onRematch }: { view: DuelView; map: GeoRegio
           {draw ? "Draw" : won ? "Victory!" : "Defeat"}
         </motion.div>
         <p className="mt-1 text-white/80">{reason}</p>
+        {/* Both trainers, and the dances and emotes either can play for the other to see. */}
+        <div className="mt-4 sm:mt-6">
+          <TauntStage view={view} onTaunt={onTaunt} />
+        </div>
       </div>
 
       <DuelBand
@@ -646,6 +652,9 @@ function DuelEnd({ view, map, busy, onRematch }: { view: DuelView; map: GeoRegio
         )}
         {/* The duel's result page and preview card (both trainers, HP and rounds), by its code. */}
         <ShareResultLink token={`duel:${view.code}`} text="Our PokéGuessr duel" className="[&_button]:border-white/30 [&_button]:bg-transparent [&_button]:text-white [&_button:hover]:bg-white/10 [&_button:hover]:text-white" />
+        <Link href="/guessr/history" className="block text-center text-xs font-semibold text-white/70 underline-offset-2 hover:text-white hover:underline" data-testid="geo-duel-history-link">
+          Duel history and replays
+        </Link>
 
         {rounds > 0 && (
           <div className="grid gap-4 md:grid-cols-[1fr_minmax(0,20rem)]">

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { seatAvatars } from "@/lib/server/avatars";
+import { avatarUnlocks, seatAvatars } from "@/lib/server/avatars";
+import { TAUNT_IDS, isTaunt, tauntBlocked, tauntFree, tauntOf } from "@/lib/trainer/taunts";
 import { z } from "zod";
 import { gate } from "@/lib/server/moderation";
 import { syncHiddenShots } from "@/lib/server/geo-reports";
@@ -28,6 +29,9 @@ import { deleteDuel, duelsEnabled, insertDuel, loadDuel, newDuelCode, updateDuel
 import { settleGeoRankedDuel } from "@/lib/server/geo-ranked-duels";
 import { publishIfChanged } from "@/lib/server/geo-duel-live";
 import { logFinishedDuel, stampStatsKey } from "@/lib/server/geo-duel-stats";
+import { keepFinishedDuel, stampHistoryKey } from "@/lib/server/geo-duel-history";
+import { geoRankedKey } from "@/lib/server/geo-ranked";
+import { readAnonId } from "@/lib/server/ranked";
 import { sessionTokenHash, userFromRequest } from "@/lib/server/auth";
 import { realtimeClientConfig } from "@/lib/server/realtime";
 import type { Duel } from "@/lib/server/duel";
@@ -49,7 +53,8 @@ import { DUEL_CODE_RE, DUEL_MAX_ROUNDS, type DuelSeatResponse, type DuelView } f
  *   { action: "next", token, round }          end the reveal early (once both press it)
  *   { action: "leave", token }                leave the lobby, or forfeit
  *   { action: "rematch", token }              a new duel with the same map and trainers
- *   { action: "emote", token, emote }         a preset reaction, during play or after the end
+ *   { action: "emote", token, emote }         a preset reaction, during play or after the end;
+ *                                             or a taunt (a dance or emote on the 3D trainer) after the end
  *   { action: "chat", token, text }           a chat message, in the lobby or after the end (see server/chat.ts)
  */
 
@@ -64,7 +69,7 @@ const bodySchema = z.discriminatedUnion("action", [
   z.object({ action: z.literal("next"), token, round }),
   z.object({ action: z.literal("leave"), token }),
   z.object({ action: z.literal("rematch"), token }),
-  z.object({ action: z.literal("emote"), token, emote: z.enum(ALL_DUEL_EMOTES) }),
+  z.object({ action: z.literal("emote"), token, emote: z.enum([...ALL_DUEL_EMOTES, ...TAUNT_IDS]) }),
   z.object({ action: z.literal("chat"), token, text: z.string().max(CHAT_BODY_MAX, "Keep it under 200 characters.") }),
 ]);
 
@@ -109,6 +114,8 @@ export async function GET(request: NextRequest, context: Context) {
     void logFinishedDuel(before, out.duel);
     // A ranked duel that just ended: count it (once), so the view carries the rating change.
     const settled = await settleGeoRankedDuel(out.duel, out.rev);
+    // Over (and counted, if ranked): kept for its trainers' duel history.
+    void keepFinishedDuel(before, settled.duel);
     return NextResponse.json(await viewOf(settled.duel, playerId, out.now, settled.rev), { headers: NO_STORE });
   } catch (err) {
     return storeError(err);
@@ -154,6 +161,12 @@ export async function POST(request: NextRequest, context: Context) {
     if (body.action === "emote" && !rateLimit(`duel-emote:${clientIp(request)}`, 6, 0.5)) {
       return NextResponse.json({ error: "Easy on the reactions." }, { status: 429, headers: NO_STORE });
     }
+    // A taunt the trainer hasn't earned (guests: the free ones only).
+    if (body.action === "emote" && isTaunt(body.emote) && !tauntFree(tauntOf(body.emote)!)) {
+      const user = sessionTokenHash(request) ? await userFromRequest(request).catch(() => null) : null;
+      const locked = tauntBlocked(body.emote, user ? await avatarUnlocks(user.id) : null);
+      if (locked) return NextResponse.json({ error: locked }, { status: 403, headers: NO_STORE });
+    }
     if (body.action === "chat") {
       const limited = chatRateLimit(clientIp(request), playerId);
       if (limited) return limited;
@@ -161,6 +174,9 @@ export async function POST(request: NextRequest, context: Context) {
 
     // A signed-in trainer playing under their own name: their rounds go on their PokéGuessr record when the duel ends.
     const account = (body.action === "guess" || body.action === "ready") && sessionTokenHash(request) ? await userFromRequest(request).catch(() => null) : null;
+    // Whoever holds the seat (their account, or the signed id their browser sends): the duel goes in their history when it ends.
+    const anon = body.action === "guess" || body.action === "ready" ? readAnonId(request.headers.get("x-ranked-id")) : null;
+    const historyKey = account ? geoRankedKey(`u:${account.id}`) : anon ? geoRankedKey(`a:${anon}`) : null;
     const act = (duel: Duel, now: number) => {
       switch (body.action) {
         case "ready":
@@ -181,12 +197,13 @@ export async function POST(request: NextRequest, context: Context) {
     const out = await updateDuel(code, (duel, now) => {
       before = duel;
       const acted = act(duel, now);
-      return acted.ok ? { ...acted, duel: stampStatsKey(acted.duel, playerId, account) } : acted;
+      return acted.ok ? { ...acted, duel: stampHistoryKey(stampStatsKey(acted.duel, playerId, account), playerId, historyKey) } : acted;
     });
     if (!out.ok) return failure(out);
     publishIfChanged(code, before, out.duel, out.rev);
     void logFinishedDuel(before, out.duel);
     const settled = await settleGeoRankedDuel(out.duel, out.rev);
+    void keepFinishedDuel(before, settled.duel);
     return NextResponse.json(await viewOf(settled.duel, playerId, out.now, settled.rev), { headers: NO_STORE });
   } catch (err) {
     return storeError(err);

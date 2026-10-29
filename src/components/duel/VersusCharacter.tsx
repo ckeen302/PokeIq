@@ -2,6 +2,8 @@ import { pictureSrc, type PublicAvatar } from "@/lib/avatar";
 import { artUrl } from "@/lib/pokemon/art";
 import { cn } from "@/lib/utils";
 import { Avatar3D } from "@/components/trainer3d/Avatar3D";
+import type { TrainerConfig, TrainerPose } from "@/lib/trainer/config";
+import type { TauntId } from "@/lib/trainer/taunts";
 
 /**
  * A trainer's character on the versus screen, facing their opponent.
@@ -20,9 +22,15 @@ export interface VersusCharacterProps {
   /** A computer opponent's own figure (the Gym Leader), drawn in place of an avatar. */
   figure?: React.ReactNode;
   className?: string;
+  /** The 3D trainer's pose (default: battle stance). */
+  pose?: TrainerPose;
+  /** A dance or emote to play (post-game taunts). */
+  taunt?: { id: TauntId; n: number } | null;
+  /** A 3D trainer to show when they haven't made one (so everyone can taunt), in place of the art or silhouette. */
+  fallback?: TrainerConfig;
 }
 
-export function VersusCharacter({ avatar, facing, figure, className }: VersusCharacterProps) {
+export function VersusCharacter({ avatar, facing, figure, className, pose = "fight", taunt, fallback }: VersusCharacterProps) {
   // Official art mostly faces the viewer's left: mirrored for the trainer who faces right.
   const flip = facing === "right" ? "-scale-x-100" : "";
   const box = cn("relative flex aspect-square items-end justify-center", className);
@@ -33,17 +41,18 @@ export function VersusCharacter({ avatar, facing, figure, className }: VersusCha
       </div>
     );
   }
+  const trainer = avatar?.trainer ?? fallback;
+  if (trainer && !figure) {
+    return (
+      <div className={box} data-testid="versus-character" data-kind="trainer">
+        <Avatar3D config={trainer} pose={pose} taunt={taunt} facing={facing} label={pose === "fight" ? "Trainer, ready to battle" : "Trainer"} />
+      </div>
+    );
+  }
   if (!avatar) {
     return (
       <div className={box} data-testid="versus-character" data-kind="silhouette">
         <Silhouette className={cn("h-[92%] w-auto text-black/55 drop-shadow-[0_0_18px_rgba(169,156,255,0.35)]", flip)} />
-      </div>
-    );
-  }
-  if (avatar.trainer) {
-    return (
-      <div className={box} data-testid="versus-character" data-kind="trainer">
-        <Avatar3D config={avatar.trainer} pose="fight" facing={facing} label="Trainer, ready to battle" />
       </div>
     );
   }
