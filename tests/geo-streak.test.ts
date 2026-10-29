@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from "vitest";
-import { answerFor, planRounds, regionGroupOf } from "@/lib/server/geo";
+import { answerFor, planRounds } from "@/lib/server/geo";
 import {
   bestStreakOf,
   clearMemoryStreaks,
@@ -58,7 +58,7 @@ describe("Region Streak", () => {
     expect(one.body.resultToken).toBeUndefined();
     // The answer arrives only now, with the grade.
     expect(one.body.answer.name).toBeTruthy();
-    expect(regionGroupOf(one.body.answer.region)).toBe(right);
+    expect(streakRegionOf(one.body.answer)).toBe(right);
 
     const second = regionOfRound(one.body.token, 1);
     const two = gradeStreak(readStreak(one.body.token)!, { region: wrong(second) });

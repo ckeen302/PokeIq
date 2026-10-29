@@ -55,7 +55,6 @@ const TABS: { id: Tab; name: string }[] = [
   { id: "hat", name: "Hat" },
   { id: "outfit", name: "Outfit" },
   { id: "gear", name: "Gear" },
-  { id: "partner", name: "Partner" },
 ];
 
 const POSES: { id: TrainerPose; name: string; icon: typeof User }[] = [

@@ -5,7 +5,7 @@ import { pageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = pageMetadata({
   title: "Trainer creator",
-  description: "Make your 3D PokéIQ trainer: hair, hats, outfits, bags, your Poké Ball and a partner Pokémon at your side.",
+  description: "Make your 3D PokéIQ trainer: hair, hats, outfits, bags and your Poké Ball.",
   path: "/trainer/avatar",
 });
 

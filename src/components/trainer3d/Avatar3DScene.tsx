@@ -41,7 +41,7 @@ function shadowTexture(): THREE.Texture {
   return tex;
 }
 
-export function Avatar3DScene({ config, pose = "idle", facing = "front", partner = true, still = false }: Avatar3DSceneProps) {
+export function Avatar3DScene({ config, pose = "idle", facing = "front", partner = false, still = false }: Avatar3DSceneProps) {
   const host = useRef<HTMLDivElement>(null);
   const sprite = useRef<HTMLImageElement>(null);
   const state = useRef<{
