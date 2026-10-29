@@ -72,7 +72,7 @@ export function TeamBuilder() {
   const current = view?.kind === "team" ? teams?.find((t) => t.id === view.id) : undefined;
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[260px_minmax(0,1fr)]">
+    <div className="grid grid-cols-1 gap-6 lg:grid-cols-[260px_minmax(0,1fr)]">
       <aside className="space-y-3">
         <div className="grid grid-cols-2 gap-2">
           <Button size="sm" onClick={() => openOther("new")} variant={view?.kind === "new" ? "default" : "secondary"}>

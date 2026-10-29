@@ -189,6 +189,12 @@ export function SearchSelect<T>({
     if (listRef.current) listRef.current.scrollTop = 0;
   }, [results]);
 
+  // An opened list near the bottom of the window scrolls the page so it all shows.
+  const panelRef = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    if (open) panelRef.current?.scrollIntoView({ block: "nearest" });
+  }, [open]);
+
   // Keep the highlighted row in view.
   useEffect(() => {
     const list = listRef.current;
@@ -286,8 +292,9 @@ export function SearchSelect<T>({
       )}
       {open && (
         <div
+          ref={panelRef}
           className={cn(
-            "absolute left-0 top-full z-40 mt-1 w-full min-w-[16rem] max-w-[calc(100vw-2rem)] overflow-hidden rounded-md border-2 border-foreground/15 bg-card shadow-2xl",
+            "absolute left-0 top-full z-40 mt-1 w-full min-w-[min(20rem,calc(100vw-2rem))] max-w-[calc(100vw-2rem)] overflow-hidden rounded-md border-2 border-foreground/15 bg-card shadow-2xl",
             listClassName
           )}
         >

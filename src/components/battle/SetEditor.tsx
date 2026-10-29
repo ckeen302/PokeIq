@@ -136,7 +136,7 @@ export function SetEditor({
         </ul>
       )}
 
-      <div className="grid gap-5 lg:grid-cols-[200px_minmax(0,1fr)]">
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-[200px_minmax(0,1fr)]">
         {/* Identity */}
         <div className="space-y-3">
           <div className="screen relative flex h-40 items-center justify-center rounded-lg">

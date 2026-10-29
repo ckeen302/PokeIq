@@ -323,7 +323,7 @@ export function ItemSelect({
   );
 }
 
-const MOVE_GRID = "grid grid-cols-[minmax(0,1fr)_64px_44px_32px_32px_24px_40px] items-center gap-1.5";
+const MOVE_GRID = "grid grid-cols-[minmax(0,1fr)_64px_40px_30px] sm:grid-cols-[minmax(0,1fr)_64px_44px_32px_32px_24px_40px] items-center gap-1.5";
 const CATEGORIES = ["Physical", "Special", "Status"] as const;
 
 export function MoveSelect({
@@ -407,9 +407,9 @@ export function MoveSelect({
           <span>Type</span>
           <span>Cat</span>
           <span className="text-right">Pow</span>
-          <span className="text-right">Acc</span>
-          <span className="text-right">PP</span>
-          <span className="text-right">{used.size ? "Use" : ""}</span>
+          <span className="hidden text-right sm:block">Acc</span>
+          <span className="hidden text-right sm:block">PP</span>
+          <span className="hidden text-right sm:block">{used.size ? "Use" : ""}</span>
         </div>
       }
       render={(m) => {
@@ -424,9 +424,9 @@ export function MoveSelect({
             <BattleType type={m.type} />
             <CategoryTag category={m.category} />
             <span className="text-right font-mono text-xs tabular-nums">{m.basePower || "—"}</span>
-            <span className="text-right font-mono text-xs tabular-nums">{m.accuracy === true ? "—" : m.accuracy}</span>
-            <span className="text-right font-mono text-xs tabular-nums">{m.pp}</span>
-            <span className="text-right font-mono text-[11px] tabular-nums text-screen">{share ? pct(share) : ""}</span>
+            <span className="hidden text-right font-mono sm:block text-xs tabular-nums">{m.accuracy === true ? "—" : m.accuracy}</span>
+            <span className="hidden text-right font-mono sm:block text-xs tabular-nums">{m.pp}</span>
+            <span className="hidden text-right font-mono sm:block text-[11px] tabular-nums text-screen">{share ? pct(share) : ""}</span>
           </span>
         );
       }}

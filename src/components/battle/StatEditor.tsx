@@ -136,13 +136,14 @@ export function StatEditor({
                 onChange={(v) => setIv(s, v)}
               />
             )}
-            <span className="relative text-right font-mono font-bold tabular-nums" data-testid={`stat-${s}`}>
-              <span
-                aria-hidden
-                className="absolute inset-y-0.5 right-0 -z-0 rounded-sm opacity-25"
-                style={{ width: `${Math.min(100, (value / (s === "hp" ? 600 : 450)) * 100)}%`, background: `hsl(${hue} 85% 50%)` }}
-              />
-              <span className={cn("relative", plus && "text-success", minus && "text-destructive")}>{value}</span>
+            <span className="flex flex-col items-end gap-0.5" data-testid={`stat-${s}`}>
+              <span className={cn("font-mono font-bold leading-none tabular-nums", plus && "text-success", minus && "text-destructive")}>{value}</span>
+              <span aria-hidden className="h-[3px] w-full overflow-hidden rounded-full bg-foreground/10">
+                <span
+                  className="block h-full rounded-full"
+                  style={{ width: `${Math.min(100, (value / (s === "hp" ? 600 : 450)) * 100)}%`, background: `hsl(${hue} 80% 50%)` }}
+                />
+              </span>
             </span>
           </div>
         );
