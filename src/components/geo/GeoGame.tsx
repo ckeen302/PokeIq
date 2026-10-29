@@ -631,7 +631,7 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
             <HubTile
               testId="geo-daily-card"
               tone="warning"
-              image={dailyMap?.preview ?? dailyMap?.map.src ?? WORLD_MAP_SRC}
+              image={dailyMap?.map.src ?? WORLD_MAP_SRC}
               icon={<Compass className="h-5 w-5" />}
               label={`Daily ${today ? `#${dailyNumber(today)}` : ""}${dailyMap ? ` · ${dailyMap.name}` : ""}`}
               title="Daily game"
@@ -1120,7 +1120,7 @@ function MapTile({ map, selected, onPick }: { map: GeoRegionInfo; selected: bool
         <span className="absolute inset-x-0 bottom-0 space-y-0.5 p-2.5">
           <span className="flex items-center gap-1.5 font-display text-base font-bold uppercase leading-tight text-white sm:text-lg">
             {map.id === WORLD_REGION ? <Globe2 className="h-4 w-4 shrink-0" aria-hidden /> : map.theme ? <Shapes className="h-4 w-4 shrink-0" aria-hidden /> : null}
-            <span className="truncate">{map.name}</span>
+            <span className="min-w-0 break-words">{map.name}</span>
           </span>
           <span className="block font-pixel text-[9px] uppercase tracking-wider text-white/75">{fmt(map.locations)} places</span>
         </span>

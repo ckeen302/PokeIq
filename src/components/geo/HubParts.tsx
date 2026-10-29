@@ -61,7 +61,7 @@ export function HubTile({
   badge,
 }: {
   tone?: TileTone;
-  /** A picture for the banner (a CDN-cached preview); a tinted banner with the icon without one. */
+  /** A picture for the banner (a CDN-cached preview; null: a tinted banner while it's worked out); no banner at all when left out. */
   image?: string | null;
   icon: React.ReactNode;
   label: string;
@@ -87,19 +87,36 @@ export function HubTile({
       data-testid={testId}
       aria-disabled={disabled || undefined}
     >
-      <div className={cn("relative aspect-[16/7] overflow-hidden bg-gradient-to-br to-transparent", t.wash)}>
-        {image && (
-          // eslint-disable-next-line @next/next/no-img-element -- CDN-cached preview
-          <img src={image} alt="" loading="lazy" decoding="async" className="absolute inset-0 h-full w-full object-cover opacity-80 transition-[opacity,transform] duration-300 group-hover:scale-[1.03] group-hover:opacity-100" />
-        )}
-        <div className="absolute inset-0 bg-gradient-to-t from-card via-card/30 to-transparent" aria-hidden />
-        <span className={cn("absolute bottom-2 left-3 flex h-9 w-9 items-center justify-center rounded-md border bg-card/90 backdrop-blur", t.label)} aria-hidden>
-          {icon}
-        </span>
-        {badge && <span className="absolute right-2 top-2">{badge}</span>}
-      </div>
+      {image !== undefined ? (
+        <div className={cn("relative aspect-[16/6] overflow-hidden bg-gradient-to-br to-transparent sm:aspect-[16/7]", t.wash)}>
+          {image && (
+            // eslint-disable-next-line @next/next/no-img-element -- CDN-cached preview
+            <img src={image} alt="" decoding="async" className="absolute inset-0 h-full w-full object-cover opacity-80 transition-[opacity,transform] duration-300 group-hover:scale-[1.03] group-hover:opacity-100" />
+          )}
+          <div className="absolute inset-0 bg-gradient-to-t from-card via-card/30 to-transparent" aria-hidden />
+          <span className={cn("absolute bottom-2 left-3 flex h-9 w-9 items-center justify-center rounded-md border bg-card/90 backdrop-blur", t.label)} aria-hidden>
+            {icon}
+          </span>
+          {badge && <span className="absolute right-2 top-2">{badge}</span>}
+        </div>
+      ) : (
+        // No picture: a tinted strip, the icon beside the label.
+        <div className={cn("h-1.5 bg-gradient-to-r to-transparent", t.wash)} aria-hidden />
+      )}
       <div className="flex flex-1 flex-col gap-2 p-4 pt-3">
-        <p className={cn("hud-label", t.label)}>{label}</p>
+        {image === undefined ? (
+          <div className="flex items-center justify-between gap-2">
+            <p className={cn("hud-label flex items-center gap-2", t.label)}>
+              <span className="flex h-8 w-8 items-center justify-center rounded-md border bg-shade/30" aria-hidden>
+                {icon}
+              </span>
+              {label}
+            </p>
+            {badge}
+          </div>
+        ) : (
+          <p className={cn("hud-label", t.label)}>{label}</p>
+        )}
         <p className="font-display text-xl font-bold uppercase leading-tight">{title}</p>
         <div className="text-sm text-muted-foreground">{blurb}</div>
         {stat && <div className="hud-label text-warning">{stat}</div>}
