@@ -1216,10 +1216,13 @@ export function GeoSummary({
                 {shared === "done" ? "Challenge link copied!" : "Challenge a friend"}
               </Button>
             )}
-            <ShareButton size="lg" variant="outline" kind="guessr" label="Share…" getText={() => shareTextFull} />
-            <Button size="lg" variant="secondary" onClick={onRestart}>
-              <RotateCcw className="h-4 w-4" aria-hidden /> Play again
-            </Button>
+            <ShareButton size="lg" variant="outline" kind="guessr" label="Share…" getText={() => shareTextFull} className={cn(compact && "sm:col-span-2")} />
+            {/* The results map above has its own Play again. */}
+            {!compact && (
+              <Button size="lg" variant="secondary" onClick={onRestart}>
+                <RotateCcw className="h-4 w-4" aria-hidden /> Play again
+              </Button>
+            )}
           </div>
           {shared === "failed" && challengeUrl && <CopyFallback text={challengeUrl} />}
 
