@@ -1,4 +1,5 @@
 import "server-only";
+import { TAUNT_GAP_MS, isTaunt } from "@/lib/trainer/taunts";
 import { z } from "zod";
 import { randomId, signToken, verifyToken } from "./crypto";
 import { DUEL_NAME_RE, type DuelPlayerView, type DuelStatus } from "@/lib/duel-types";
@@ -358,10 +359,15 @@ export function chatPvp<D extends PvpBase>(rules: PvpRules<D>, duel: D, playerId
 const EMOTES_KEPT = 12;
 
 /** Why `seat` can't send a reaction at `now` (too many, too fast), or null if it can. */
-export function emoteBlocked(emotes: readonly PvpEmoteView[], seat: number, now: number): string | null {
+export function emoteBlocked(emotes: readonly PvpEmoteView[], seat: number, now: number, emote?: string): string | null {
   const mine = emotes.filter((e) => e.seat === seat);
   const last = mine[mine.length - 1];
   if (last && now - last.at < EMOTE_GAP_MS) return "One reaction at a time.";
+  // Taunts (post-game dances and emotes) take a few seconds each: one at a time.
+  if (emote && isTaunt(emote)) {
+    const lastTaunt = mine.filter((e) => isTaunt(e.emote)).pop();
+    if (lastTaunt && now - lastTaunt.at < TAUNT_GAP_MS) return "One move at a time.";
+  }
   if (mine.filter((e) => now - e.at < EMOTE_WINDOW_MS).length >= EMOTE_BURST) return "Easy on the reactions.";
   return null;
 }

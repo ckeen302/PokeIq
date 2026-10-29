@@ -6,6 +6,7 @@ import type { ChatLine } from "@/lib/chat";
 import { EMOTE_SHOW_MS, EMOTE_WINDOW_MS, type DuelEmote, type PvpEmoteView } from "@/lib/pvp-types";
 import { answerFor, isGeoSpec, mapSize, measureGuess, planRounds } from "./geo";
 import { Rng } from "@/lib/rng";
+import { isTaunt, type TauntId } from "@/lib/trainer/taunts";
 import { GEO_BOT_DELAY_MS, GEO_BOT_REACT_MS, GEO_BOT_SIGMA, botPin, geoBotName, geoDivisionFloor, geoDivisionOf, type GeoDivisionId, type GeoDuelRankedView } from "@/lib/geo-ranked";
 import type { GeoRankedMatch } from "./geo-ranked";
 import { closesAfterGuess, hpAfter, hpBefore, rampMultiplier, roundDamage, seatMultipliers } from "@/lib/geo-duel-rules";
@@ -418,12 +419,17 @@ function seated(duel: Duel, playerId: string, now: number, act: (d: Duel, seat: 
   return out.ok ? { ok: true, duel: advanceDuel(out.duel, now) } : out;
 }
 
-/** A preset reaction to the opponent: during play or after the end, a few at a time (as in the other duels). */
-export function emoteDuel(duel: Duel, playerId: string, emote: DuelEmote, now: number): DuelOutcome {
+/**
+ * A preset reaction to the opponent: during play or after the end, a few at a
+ * time (as in the other duels). Taunts (a dance or emote on the trainer's 3D
+ * avatar) only once the duel is over; the route checks they're unlocked.
+ */
+export function emoteDuel(duel: Duel, playerId: string, emote: DuelEmote | TauntId, now: number): DuelOutcome {
   return seated(duel, playerId, now, (d, seat) => {
     if (d.status === "lobby" || d.players.length < 2) return fail(409, "Reactions open once the duel starts.");
+    if (isTaunt(emote) && d.status !== "finished") return fail(409, "Dances and emotes open once the duel is over.");
     const emotes = (d.emotes ?? []).filter((e) => now - e.at < Math.max(EMOTE_WINDOW_MS, EMOTE_SHOW_MS));
-    const blocked = emoteBlocked(emotes, seat, now);
+    const blocked = emoteBlocked(emotes, seat, now, emote);
     if (blocked) return fail(429, blocked);
     const n = (d.emoteCount ?? 0) + 1;
     d.emotes = [...emotes, { n, seat, emote, at: now }].slice(-EMOTES_KEPT);

@@ -5,7 +5,7 @@ import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { LogOut, Smile, Swords, WifiOff } from "lucide-react";
 import { DUEL_HP, type DuelRoundResult, type DuelView } from "@/lib/duel-types";
 import { DUEL_COUNTDOWN_FLASH_MS, HP_COLOR_HEX, countValue, hpColor, revealTimeline, type RevealTimeline } from "@/lib/geo-duel-rules";
-import { GEO_EMOTES, geoEmote, type DuelEmote, type GeoEmoteId, type PvpEmoteView } from "@/lib/pvp-types";
+import { GEO_EMOTES, geoEmote, isReaction, type DuelEmote, type GeoEmoteId, type PvpEmoteView } from "@/lib/pvp-types";
 import { avatarSrc } from "@/lib/avatar";
 import { artUrl } from "@/lib/pokemon/art";
 import { play } from "@/lib/sound";
@@ -519,7 +519,7 @@ const seenEmotes = new Map<string, number>();
 
 /** Reactions popping by a seat's avatar: the Pokémon (or the text) with its label. */
 function GeoEmotePops({ view, seat }: { view: DuelView; seat: number }) {
-  const [shown, setShown] = useState<PvpEmoteView[]>([]);
+  const [shown, setShown] = useState<(PvpEmoteView & { emote: DuelEmote })[]>([]);
   const timers = useRef<number[]>([]);
   useEffect(() => {
     const key = `${view.code}:${seat}`;
@@ -527,7 +527,7 @@ function GeoEmotePops({ view, seat }: { view: DuelView; seat: number }) {
     const fresh = (view.emotes ?? []).filter((e) => e.n > seen);
     if (!fresh.length) return;
     seenEmotes.set(key, Math.max(...fresh.map((e) => e.n)));
-    const mine = fresh.filter((e) => e.seat === seat);
+    const mine = fresh.filter(isReaction).filter((e) => e.seat === seat);
     if (!mine.length) return;
     if (seat !== view.you) play("ping");
     setShown((s) => [...s, ...mine].slice(-3));
