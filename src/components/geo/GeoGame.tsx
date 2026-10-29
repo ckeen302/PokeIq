@@ -20,12 +20,13 @@ import { useAccount } from "@/lib/account";
 import { avatarSrc } from "@/lib/avatar";
 import { GlobePreview } from "@/components/globe/GlobePreview";
 import { GeoHowToLoader, HowToHelpButton } from "./GeoHowToButton";
-import { DuelCard } from "./DuelCard";
 
 /**
- * What a solo round doesn't need is split off the first load: the reveal's
- * extras, the results and the summary, fetched once a game is on its way.
+ * What a solo round doesn't need is split off the first load: the duel card,
+ * and the reveal's extras, the results and the summary, fetched once a game is on its way.
  */
+// The duel and ranked card sits below the fold: rendered on the server as before, its code loads alongside.
+const DuelCard = dynamic(() => import("./DuelCard").then((m) => m.DuelCard), { loading: () => null });
 const loadResults = () => import("./GeoResults");
 const loadSummary = () => import("./GeoSummary");
 const loadLearn = () => import("./LearnCard");

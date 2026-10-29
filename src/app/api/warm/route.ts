@@ -22,7 +22,7 @@ const parts: Record<string, () => Promise<unknown>> = {
   pokedle: () => import("@/lib/server/pokedle"),
   connections: () => import("@/lib/server/connections"),
   geo: () => import("@/lib/server/geo"),
-  // PokéGuessr's game start: its route module here, and the route itself (below), so a Play click never waits on a cold start.
+  // PokéGuessr's game start (the route, with its request checks), so a Play click never waits on a cold start.
   geoStart: () => import("@/app/api/geo/route"),
   // What a guess goes through besides the engine (the replay guard, the shot reports and the round log).
   geoGuess: () => Promise.all([import("@/lib/server/replay-guard"), import("@/lib/server/geo-reports"), import("@/lib/server/geo-round-scores")]),
@@ -35,15 +35,8 @@ export async function GET(request: NextRequest) {
   if (!rateLimit(`warm:${clientIp(request)}`, 6, 0.1)) return tooManyRequests();
   const ms: Record<string, number> = {};
   const failed: string[] = [];
-  // The game-start route is its own function: a throwaway free-play start (nothing is recorded until a guess) wakes it.
-  const routes: Record<string, () => Promise<unknown>> = {
-    geoStartRoute: () =>
-      fetch(new URL("/api/geo", request.url), { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}", signal: AbortSignal.timeout(10_000) }).then((r) => {
-        if (!r.ok) throw new Error(`HTTP ${r.status}`);
-      }),
-  };
   await Promise.all(
-    Object.entries({ ...parts, ...routes }).map(async ([name, load]) => {
+    Object.entries(parts).map(async ([name, load]) => {
       const t0 = Date.now();
       try {
         await load();
