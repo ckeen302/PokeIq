@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from "react";
 import Image from "next/image";
 import { Baby, BarChart3, Bone, Circle, Crown, Dna, GitBranch, Handshake, Info, Layers, Loader2, type LucideIcon, Maximize2, MapPin, Orbit, Rocket, Search, Sparkle, Sparkles, Swords, Trophy, Zap } from "lucide-react";
 import { TypeBadge } from "@/components/pokedex/TypeBadge";
@@ -34,14 +34,37 @@ export function loadDex(): Promise<DexName[]> {
     });
   return dexPromise;
 }
-/** The Pokémon names for the picker, fetched once (and cached by the browser for a day). */
+/**
+ * The Pokémon names for the picker, fetched once (and cached by the browser for
+ * a day). The fetch waits for the browser to go idle, so it never competes with
+ * the board's first paint, and is still in hand well before the first search
+ * (opening the picker starts it at once if it hasn't begun).
+ */
 export function useDex(): DexName[] {
   const [dex, setDex] = useState<DexName[]>([]);
   useEffect(() => {
     let live = true;
-    void loadDex().then((d) => live && setDex(d));
+    const go = () => void loadDex().then((d) => live && setDex(d));
+    const w = window as Window & { requestIdleCallback?: (cb: () => void, o?: { timeout: number }) => number; cancelIdleCallback?: (id: number) => void };
+    if (dexPromise || !w.requestIdleCallback) {
+      go();
+      return () => {
+        live = false;
+      };
+    }
+    const id = w.requestIdleCallback(go, { timeout: 1500 });
+    // Pointing at or focusing a cell is a strong hint a search is next.
+    const early = () => {
+      w.cancelIdleCallback?.(id);
+      go();
+    };
+    window.addEventListener("pointerdown", early, { once: true, capture: true });
+    window.addEventListener("keydown", early, { once: true, capture: true });
     return () => {
       live = false;
+      w.cancelIdleCallback?.(id);
+      window.removeEventListener("pointerdown", early, { capture: true });
+      window.removeEventListener("keydown", early, { capture: true });
     };
   }, []);
   return dex;
@@ -192,19 +215,44 @@ export function PdkBoard({
   onCell,
   disabled,
   stealable,
+  onType,
   testPrefix = "pdk",
 }: {
   grid: PdkGridView | null;
   cells: BoardCell[];
   names: Map<number, string>;
   onCell?: (cell: number) => void;
+  /** A letter or digit typed on a focused cell: open its search with that text. */
+  onType?: (cell: number, text: string) => void;
   disabled?: boolean;
   /** Filled cells that can still be played (Steals mode: the opponent's). */
   stealable?: (cell: number) => boolean;
   testPrefix?: string;
 }) {
+  const refs = useRef<(HTMLButtonElement | null)[]>([]);
+  // Arrow keys move between the playable cells (skipping filled ones); typing on a cell searches for it.
+  const onKeyDown = (e: ReactKeyboardEvent<HTMLDivElement>) => {
+    const from = refs.current.indexOf(e.target as HTMLButtonElement);
+    if (from < 0 || e.altKey || e.ctrlKey || e.metaKey) return;
+    const step = { ArrowLeft: [0, -1], ArrowRight: [0, 1], ArrowUp: [-1, 0], ArrowDown: [1, 0] }[e.key];
+    if (step) {
+      e.preventDefault();
+      let [r, c] = [Math.floor(from / 3), from % 3];
+      for (;;) {
+        r += step[0];
+        c += step[1];
+        if (r < 0 || r > 2 || c < 0 || c > 2) return;
+        const el = refs.current[r * 3 + c];
+        if (el && !el.disabled) return el.focus();
+      }
+    }
+    if (onType && e.key.length === 1 && /[\p{L}\p{N}]/u.test(e.key) && !refs.current[from]?.disabled) {
+      e.preventDefault();
+      onType(from, e.key);
+    }
+  };
   return (
-    <div className="mx-auto grid max-w-xl grid-cols-[minmax(4.5rem,0.8fr)_repeat(3,minmax(0,1fr))] gap-1.5" role="grid" aria-label="Pikadoku grid">
+    <div className="mx-auto grid max-w-xl grid-cols-[minmax(4.5rem,0.8fr)_repeat(3,minmax(0,1fr))] gap-1.5" role="grid" aria-label="Pikadoku grid" onKeyDown={onKeyDown}>
       <div />
       {[0, 1, 2].map((c) => (
         <Header key={c} cat={grid?.cols[c]} testId={`${testPrefix}-col-${c}`} />
@@ -219,6 +267,9 @@ export function PdkBoard({
           return (
             <button
               key={i}
+              ref={(el) => {
+                refs.current[i] = el;
+              }}
               type="button"
               role="gridcell"
               data-testid={`${testPrefix}-cell-${i}`}
@@ -264,17 +315,23 @@ export function PdkBoard({
 }
 
 /** The searchable Pokémon picker for one cell: forgiving search (accents, punctuation, typos, dex numbers), arrow keys and Enter. */
-export function PdkPicker({ dex: given, used, title, busy, onPick, onClose }: { dex: DexName[]; used: ReadonlySet<number>; title: string; busy?: boolean; onPick: (p: DexName) => void; onClose: () => void }) {
+export function PdkPicker({ dex: given, used, title, busy, initialQuery = "", onPick, onClose }: { dex: DexName[]; used: ReadonlySet<number>; title: string; busy?: boolean; /** What was typed on the cell to open it. */ initialQuery?: string; onPick: (p: DexName) => void; onClose: () => void }) {
   // If the names failed to load with the page, try again now.
   const [retried, setRetried] = useState<DexName[]>([]);
   useEffect(() => {
     if (!given.length) void loadDex().then(setRetried);
   }, [given.length]);
   const dex = given.length ? given : retried;
-  const [q, setQ] = useState("");
+  const [q, setQ] = useState(initialQuery);
   const [active, setActive] = useState(0);
   const input = useRef<HTMLInputElement | null>(null);
-  useEffect(() => input.current?.focus(), []);
+  useEffect(() => {
+    const el = input.current;
+    if (!el) return;
+    el.focus();
+    // Typing started on the cell: keep going after what was typed.
+    el.setSelectionRange(el.value.length, el.value.length);
+  }, []);
   const index = useMemo(() => indexEntries(dex), [dex]);
   // A form and its species are one Pokémon: using either rules out both.
   const usedBase = useMemo(() => new Set(dex.filter((p) => used.has(p.id)).map((p) => p.base)), [dex, used]);

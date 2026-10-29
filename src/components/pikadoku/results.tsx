@@ -2,9 +2,11 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
-import { Check, X } from "lucide-react";
+import { Check, Gem, RotateCw, WifiOff, X } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { spriteUrl } from "@/lib/pokemon/art";
 import { RARITY_EMOJI, RARITY_LABEL, type RarityLetter } from "@/lib/pikadoku/share";
+import type { PdkRecord } from "@/lib/pikadoku/play";
 import type { PdkGridView, PdkReveal } from "@/lib/pikadoku/types";
 import { cn } from "@/lib/utils";
 
@@ -59,6 +61,35 @@ export function RarityPreview({ grid }: { grid: string }) {
 
 const SHOWN = 12;
 
+/**
+ * The rarest answer a cell had, from the day's recorded picks: only when
+ * there is real data for the cell (rarity off or a game with no records shows
+ * nothing). Answers arrive rarest first.
+ */
+function RarestLine({ answers, mine, cell }: { answers: PdkReveal["cells"][number]["answers"]; mine: number | null; cell: number }) {
+  const top = answers[0];
+  if (!top || top.pct === null || answers.every((a) => !a.pct)) return null;
+  const unpicked = answers.filter((a) => a.pct === 0).length;
+  const yours = mine !== null && (mine === top.id || (top.pct === 0 && answers.find((a) => a.id === mine)?.pct === 0));
+  return (
+    <p className="mb-2 flex items-start gap-1.5 text-xs" data-testid={`pdk-rarest-${cell}`}>
+      <Gem className="mt-px h-3.5 w-3.5 shrink-0 text-violet-500" aria-hidden />
+      <span className="min-w-0">
+        {yours ? (
+          <b>You found the rarest pick.</b>
+        ) : (
+          <>
+            Rarest possible: <b>{top.name}</b>{" "}
+            <span className="tabular-nums text-muted-foreground">
+              {top.pct === 0 ? (unpicked > 1 ? `(nobody picked it, nor ${unpicked - 1} other${unpicked > 2 ? "s" : ""})` : "(nobody picked it)") : `(${top.pct}%)`}
+            </span>
+          </>
+        )}
+      </span>
+    </p>
+  );
+}
+
 /** Every valid answer per cell, rarest first when the stats are on, your pick marked; misses explained. */
 export function RevealGrid({ reveal, grid, locked }: { reveal: PdkReveal; grid: PdkGridView | null; locked: Record<number, { id: number; pct: number | null } | undefined> }) {
   const [open, setOpen] = useState<Set<number>>(new Set());
@@ -99,6 +130,7 @@ export function RevealGrid({ reveal, grid, locked }: { reveal: PdkReveal; grid: 
               ) : (
                 <p className="mb-2 rounded border border-dashed border-foreground/20 px-2 py-1 text-sm text-muted-foreground">Not filled</p>
               )}
+              <RarestLine answers={c.answers} mine={mine?.id ?? null} cell={i} />
               <ul className="flex flex-wrap gap-1 text-xs">
                 {answers.map((a) => (
                   <li key={a.id} className={cn("rounded border px-1.5 py-0.5", mine?.id === a.id ? "border-primary bg-primary/15 font-bold" : "border-foreground/15")}>
@@ -149,5 +181,87 @@ export function PpPips({ left, total }: { left: number; total: number }) {
         <span key={i} className={cn("h-1.5 w-1.5 rounded-full", i < left ? (left <= 2 ? "bg-destructive" : "bg-primary") : "bg-foreground/15")} />
       ))}
     </span>
+  );
+}
+
+/** Whether the browser says it is online (true until mounted, so the HTML never shows the banner). */
+export function useOnline(): boolean {
+  const [online, setOnline] = useState(true);
+  useEffect(() => {
+    const sync = () => setOnline(navigator.onLine !== false);
+    sync();
+    window.addEventListener("online", sync);
+    window.addEventListener("offline", sync);
+    return () => {
+      window.removeEventListener("online", sync);
+      window.removeEventListener("offline", sync);
+    };
+  }, []);
+  return online;
+}
+
+/** Offline, a failed load (with a retry) and a new daily that arrived while this one was open. */
+export function PdkStatusBanners({ offline, newPuzzle, onNewPuzzle, failed, onRetry }: { offline: boolean; newPuzzle: boolean; onNewPuzzle: () => void; failed: string | null; onRetry: () => void }) {
+  return (
+    <>
+      {offline && (
+        <p role="status" data-testid="pdk-offline" className="mx-auto flex max-w-md items-center justify-center gap-2 rounded-md border border-warning/50 bg-warning/10 px-3 py-2 text-center text-sm font-semibold">
+          <WifiOff className="h-4 w-4 shrink-0" aria-hidden /> You&apos;re offline. Guesses are checked once you&apos;re back.
+        </p>
+      )}
+      {newPuzzle && (
+        <div role="status" data-testid="pdk-new-puzzle" className="mx-auto flex max-w-md flex-wrap items-center justify-center gap-x-3 gap-y-1 rounded-md border border-screen/40 bg-screen/[0.06] px-3 py-2 text-sm">
+          <span className="font-semibold">A new daily puzzle is out.</span>
+          <Button type="button" size="sm" onClick={onNewPuzzle} data-testid="pdk-new-puzzle-btn">
+            Play it
+          </Button>
+        </div>
+      )}
+      {failed && (
+        <div role="alert" data-testid="pdk-load-error" className="mx-auto flex max-w-md flex-wrap items-center justify-center gap-x-3 gap-y-2 rounded-md border border-destructive/40 bg-destructive/5 px-3 py-2 text-center text-sm">
+          <span>{failed}</span>
+          <Button type="button" size="sm" variant="outline" onClick={onRetry} data-testid="pdk-retry">
+            <RotateCw className="h-4 w-4" aria-hidden /> Try again
+          </Button>
+        </div>
+      )}
+    </>
+  );
+}
+
+const average = (xs: number[]) => (xs.length ? Math.round(xs.reduce((a, b) => a + b, 0) / xs.length) : null);
+
+/**
+ * Your dailies at a glance: the streak, your best (lowest) rarity score and
+ * today's score against your average. Scores are the server's, from this
+ * device's finished dailies; with no scored games yet those tiles stay blank.
+ */
+export function PdkDailyStatsCard({ streak, best, results, todayKey }: { streak: number; best: number; results: Readonly<Record<string, PdkRecord>>; todayKey: string | null }) {
+  const done = Object.entries(results).filter(([, r]) => r.over);
+  if (!done.length) return null;
+  const scored = (list: [string, PdkRecord][]) => list.map(([, r]) => r.score).filter((x): x is number => typeof x === "number");
+  const allScores = scored(done);
+  const today = todayKey ? results[todayKey] : undefined;
+  const todayScore = today?.over && typeof today.score === "number" ? today.score : null;
+  const avg = average(scored(done.filter(([k]) => k !== todayKey)));
+  const bestScore = allScores.length ? Math.min(...allScores) : null;
+  const diff = todayScore !== null && avg !== null ? todayScore - avg : null;
+  const todayNote = diff === null ? (avg === null ? "No average yet" : `Your average: ${avg}`) : diff === 0 ? `Level with your ${avg} average` : `${Math.abs(diff)} ${diff < 0 ? "rarer" : "more common"} than your ${avg} average`;
+  const tile = (label: string, value: string | number, testId: string, note: string) => (
+    <div className="min-w-0 rounded-md border border-foreground/10 px-2 py-2 text-center" data-testid={testId}>
+      <p className="hud-label truncate">{label}</p>
+      <p className="font-display text-xl font-bold tabular-nums leading-tight sm:text-2xl">{value}</p>
+      <p className="text-[11px] leading-tight text-muted-foreground">{note}</p>
+    </div>
+  );
+  return (
+    <section className="rounded-md border border-foreground/15 bg-card p-3" aria-label="Your daily stats" data-testid="pdk-stats-card">
+      <p className="hud-label mb-2 text-center">Your dailies</p>
+      <div className="grid grid-cols-3 gap-2">
+        {tile("Streak", streak, "pdk-sc-streak", `Best ${best}`)}
+        {tile("Best rarity", bestScore ?? "–", "pdk-sc-best", "Lower is rarer")}
+        {tile("Today", todayScore ?? (today?.over ? `${today.solved}/9` : "–"), "pdk-sc-today", todayNote)}
+      </div>
+    </section>
   );
 }

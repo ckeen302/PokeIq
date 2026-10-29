@@ -11,6 +11,7 @@ import {
   type PdkDifficulty,
   type PdkFamily,
   type PdkGridView,
+  type PdkPublicDays,
   type PdkGuess,
   type PdkReveal,
   type PdkSettings,
@@ -143,3 +144,19 @@ export function revealFor(g: PdkGrid, wrong: PdkGuess[], pct?: (cell: number, id
 
 /** Rules for a daily: nine guesses; Unlimited may lift the cap. */
 export const ppFor = (daily: boolean, settings: PdkSettings): number | null => (daily ? PDK_PP : settings.unlimitedPP ? null : PDK_PP);
+
+/** The public daily grids (categories only, never answers) around a moment: yesterday, today and tomorrow in UTC, so every time zone's local "today" is covered. */
+export function publicDailies(now = Date.now()): PdkPublicDays {
+  const day = 86_400_000;
+  const days: PdkPublicDays["days"] = {};
+  for (const off of [-1, 0, 1]) {
+    const date = new Date(now + off * day).toISOString().slice(0, 10);
+    days[date] = Object.fromEntries(
+      (["easy", "normal", "expert"] as const).map((d) => {
+        const by = d === "normal" ? masterFor(date)?.by : undefined;
+        return [d, { grid: gridView(dailyGrid(date, d)), ...(by && { master: by }) }];
+      })
+    ) as PdkPublicDays["days"][string];
+  }
+  return { serverDate: new Date(now).toISOString().slice(0, 10), days };
+}

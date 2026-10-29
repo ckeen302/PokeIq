@@ -3,6 +3,16 @@ import { pageMetadata } from "@/lib/seo";
 import { Pikadoku } from "@/components/pikadoku/Pikadoku";
 import { PikadokuDuelCard } from "@/components/pikadoku/PikadokuDuel";
 import { GameInfo } from "@/components/seo/GameInfo";
+import { publicDailies } from "@/lib/server/pikadoku";
+import { ensureMaster } from "@/lib/server/pikadoku-master";
+
+/**
+ * Regenerated hourly (ISR): the HTML carries the public daily grids for
+ * yesterday, today and tomorrow (UTC), so whatever the player's local date the
+ * board paints with the page. Only categories, never answers; the player's own
+ * game state and the start token stay a separate, uncached request.
+ */
+export const revalidate = 3600;
 
 export const metadata: Metadata = pageMetadata({
   title: "Pikadoku: the Daily Pokémon Sudoku and Pokémon Grid Game",
@@ -11,11 +21,12 @@ export const metadata: Metadata = pageMetadata({
   path: "/pikadoku",
 });
 
-export default function PikadokuPage() {
-  // The categories come from /api/pikadoku once the player's local date is known; the answers never reach the page.
+export default async function PikadokuPage() {
+  // Admin-scheduled Master grids too (the client still swaps to the API's grid if the page's ever differs).
+  await ensureMaster();
   return (
     <div className="space-y-10">
-      <Pikadoku />
+      <Pikadoku initial={publicDailies()} />
       <div id="pdk-duel" className="mx-auto max-w-3xl scroll-mt-24">
         <PikadokuDuelCard />
       </div>
