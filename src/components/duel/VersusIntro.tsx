@@ -77,7 +77,7 @@ export function VersusIntro({ left, right, title, subtitle, detail, icon, countd
         initial={reduced ? false : { opacity: 0, y: -24 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, ease: EASE }}
-        className="relative z-10 flex flex-col items-center gap-0.5 px-4 pt-14 text-center sm:pt-8"
+        className="relative z-10 flex flex-col items-center gap-0.5 px-4 pt-14 text-center sm:pt-10"
       >
         {icon}
         <h2 className="font-display text-4xl font-extrabold uppercase italic leading-none drop-shadow-[0_3px_0_rgba(0,0,0,0.45)] sm:text-6xl">{title}</h2>
@@ -91,14 +91,14 @@ export function VersusIntro({ left, right, title, subtitle, detail, icon, countd
             key="stage"
             exit={reduced ? { opacity: 0 } : { opacity: 0, scale: 0.96 }}
             transition={{ duration: 0.2 }}
-            className="relative z-10 grid min-h-0 flex-1 grid-cols-[1fr_auto_1fr] items-center gap-1 px-3 sm:gap-4 sm:px-8"
+            className="relative z-10 grid min-h-0 flex-1 grid-cols-[1fr_auto_1fr] content-center items-start gap-1 px-3 sm:gap-4 sm:px-8 lg:items-center lg:px-16"
           >
             <Side side={left} align="left" motionProps={from(-80)} cardMotion={from(-40, 0.15)} />
             <motion.span
               initial={reduced ? false : { scale: 0.3, opacity: 0, rotate: -14 }}
               animate={{ scale: 1, opacity: 1, rotate: -6 }}
               transition={{ type: "spring", stiffness: 260, damping: 12, delay: 0.3 }}
-              className="geo-glow self-start pt-14 font-display text-4xl font-extrabold italic sm:pt-24 sm:text-6xl lg:self-center lg:pt-0 lg:text-8xl"
+              className="geo-glow mt-[calc(min(18vw,4.75rem)-1.5rem)] font-display text-4xl font-extrabold italic sm:mt-[calc(min(15vw,7.5rem)-2.5rem)] sm:text-6xl lg:mt-0 lg:text-8xl"
               aria-label="versus"
             >
               VS
@@ -185,7 +185,7 @@ function Regions({ label, regions, dash, tone }: { label: string; regions: strin
   return (
     <div className="min-w-0">
       <p className="font-pixel text-[8px] uppercase text-white/55 sm:text-[9px]">{label} regions</p>
-      <p className={cn("truncate font-display text-xs font-bold sm:text-sm", regions?.length ? tone : "text-white/60")} title={regions?.join(", ")}>
+      <p className={cn("font-display text-xs font-bold leading-snug sm:text-sm", regions?.length ? tone : "text-white/60")}>
         {regions?.length ? regions.join(" · ") : dash}
       </p>
     </div>

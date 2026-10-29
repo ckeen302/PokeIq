@@ -280,13 +280,19 @@ export function GeoDuel({ code, regions }: GeoDuelProps) {
       <GameShell>
         {() => (
           <>
-            {notice}
             {index === 0 ? (
-              <GeoVersus view={view} me={me} secondsLeft={Math.max(1, seconds(startsAt - now))} mapName={`${map.name}${view.era ? ` · ${GEO_ERA_NAMES[view.era]}` : ""}`} />
+              <>
+                <GeoVersus view={view} me={me} secondsLeft={Math.max(1, seconds(startsAt - now))} mapName={`${map.name}${view.era ? ` · ${GEO_ERA_NAMES[view.era]}` : ""}`} />
+                <div className="absolute inset-x-0 top-0 z-20">{notice}</div>
+                <EmoteButton onEmote={sendEmote} className="max-lg:bottom-4 max-lg:top-auto max-lg:translate-y-0" />
+              </>
             ) : (
-              <VersusIntro view={view} me={me} round={index + 1} secondsLeft={Math.max(1, seconds(startsAt - now))} mapName={`${map.name}${view.era ? ` · ${GEO_ERA_NAMES[view.era]}` : ""}`} />
+              <>
+                {notice}
+                <VersusIntro view={view} me={me} round={index + 1} secondsLeft={Math.max(1, seconds(startsAt - now))} mapName={`${map.name}${view.era ? ` · ${GEO_ERA_NAMES[view.era]}` : ""}`} />
+                {emoteButton}
+              </>
             )}
-            {emoteButton}
             <div className="absolute left-3 top-3 z-30 flex items-center gap-2">
               <DuelLeave busy={busy} onLeave={() => void leave()} />
               {livePill}
