@@ -20981,14 +20981,6 @@
    "checked": "shown on WikiDex's page \"Castillo Ancestral\"; BW in its name or category; reviewed on a contact sheet"
   },
   {
-   "id": "fpa2vlQPUocF",
-   "region": "Unova",
-   "name": "Reversal Mountain",
-   "game": "Black 2 / White 2",
-   "source": "https://www.wikidex.net/wiki/Archivo:Heatran_Monte_Renacer.png",
-   "checked": "shown on WikiDex's page \"Montaña Reversia\"; B2W2 in its name or category; reviewed on a contact sheet"
-  },
-  {
    "id": "quXF1P8P_VGW",
    "region": "Unova",
    "name": "Route 10",
@@ -21353,14 +21345,6 @@
    "checked": "shown on Poképédia's page \"Kickenham\"; SwSh in its name or category; cropped (bottom 24%); reviewed on a contact sheet"
   },
   {
-   "id": "Twq4YGvoMWX2",
-   "region": "Galar",
-   "name": "Hammerlocke",
-   "game": "Sword / Shield",
-   "source": "https://www.pokewiki.de/Datei:SWSH_Claw-City-Bahnhof_innen.jpg",
-   "checked": "in pokewiki's category \"SWSH-Screenshot\", named after the place; SwSh in its name or category; reviewed on a contact sheet"
-  },
-  {
    "id": "5F7gksujDlFf",
    "region": "Galar",
    "name": "Energy Plant",
@@ -21704,22 +21688,6 @@
    "checked": "shown on PokéWiki's page \"Fleißebene\"; SwSh in its name or category; cropped (bottom 9%); reviewed on a contact sheet"
   },
   {
-   "id": "guS6Odgcvht2",
-   "region": "Isle of Armor",
-   "name": "Warm-Up Tunnel",
-   "game": "Sword / Shield",
-   "source": "https://www.wikidex.net/wiki/Archivo:Gruta_Calentamiento_EpEc.png",
-   "checked": "shown on WikiDex's page \"Túnel Precalentamiento/Gruta Calentamiento\"; SwSh in its name or category; cropped (left 7%, bottom 9%); reviewed on a contact sheet"
-  },
-  {
-   "id": "nvqKYoPXE3M5",
-   "region": "Isle of Armor",
-   "name": "Warm-Up Tunnel",
-   "game": "Sword / Shield",
-   "source": "https://www.pokewiki.de/Datei:SWSH_Mrs_Buddel_-_Aufwärmtunnel.jpg",
-   "checked": "in pokewiki's category \"SWSH-Screenshot\", named after the place; SwSh in its name or category; cropped (bottom 9%); reviewed on a contact sheet"
-  },
-  {
    "id": "0ByTvPbgwG6s",
    "region": "Isle of Armor",
    "name": "Workout Sea",
@@ -21794,24 +21762,6 @@
    "checked": "shown on WikiDex's page \"Gimnasio de Sierra Napada\"; SV in its name or category; cropped (right 17%); reviewed on a contact sheet"
   },
   {
-   "id": "kgxoa_KExG9N",
-   "region": "Paldea",
-   "name": "Area Zero Underdepths",
-   "parent": "Great Crater of Paldea",
-   "game": "Scarlet / Violet",
-   "source": "https://www.pokepedia.fr/Fichier:Abîme_Zéro_EV.png",
-   "checked": "shown on Poképédia's page \"Abîme Zéro\"; SV in its name or category; reviewed on a contact sheet"
-  },
-  {
-   "id": "BrB-sOHMn-fQ",
-   "region": "Paldea",
-   "name": "Area Zero Underdepths",
-   "parent": "Great Crater of Paldea",
-   "game": "Scarlet / Violet",
-   "source": "https://www.pokewiki.de/Datei:KAPU_Höhlensystem_Null.jpg",
-   "checked": "shown on PokéWiki's page \"Höhlensystem Null\"; SV in its name or category; reviewed on a contact sheet"
-  },
-  {
    "id": "Ic8fV1C0ERem",
    "region": "Paldea",
    "name": "Zero Lab",
@@ -21819,24 +21769,6 @@
    "game": "Scarlet / Violet",
    "source": "https://www.wikidex.net/wiki/Archivo:Laboratorio_Cero_EP.jpg",
    "checked": "shown on WikiDex's page \"Laboratorio Cero\"; SV in its name or category; reviewed on a contact sheet"
-  },
-  {
-   "id": "FrafxuVYbw-k",
-   "region": "Paldea",
-   "name": "Zero Lab",
-   "parent": "Great Crater of Paldea",
-   "game": "Scarlet / Violet",
-   "source": "https://archives.bulbagarden.net/wiki/File:SV_Time_Machine.png",
-   "checked": "shown on Bulbapedia's page \"Zero Lab\"; SV in its name or category; cropped (right 17%); reviewed on a contact sheet"
-  },
-  {
-   "id": "DZ1yxSJv1aC8",
-   "region": "Paldea",
-   "name": "Zero Lab",
-   "parent": "Great Crater of Paldea",
-   "game": "Scarlet / Violet",
-   "source": "https://archives.bulbagarden.net/wiki/File:SV_Zero_Lab.png",
-   "checked": "shown on Bulbapedia's page \"Zero Lab\"; SV in its name or category; cropped (right 17%); reviewed on a contact sheet"
   },
   {
    "id": "hkQgQMOkayv4",
@@ -23404,14 +23336,6 @@
    "name": "Route 9",
    "game": "Sword / Shield",
    "source": "https://www.pokepedia.fr/Fichier:Route_9_CT22_EB.png",
-   "checked": "shown on Poképédia's page \"Route 9 (Galar)\"; SwSh in its name or category; cropped (bottom 8%); reviewed on a contact sheet"
-  },
-  {
-   "id": "Q1MslGl5LgUU",
-   "region": "Galar",
-   "name": "Route 9",
-   "game": "Sword / Shield",
-   "source": "https://www.pokepedia.fr/Fichier:Route_9_Lentilscope_EB.png",
    "checked": "shown on Poképédia's page \"Route 9 (Galar)\"; SwSh in its name or category; cropped (bottom 8%); reviewed on a contact sheet"
   },
   {
