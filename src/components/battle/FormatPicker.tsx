@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { ChevronDown, Info, Loader2, Search, X } from "lucide-react";
 import { PLAYABLE_FORMATS, POPULAR_FORMAT_IDS, catalogueFormat, type CatalogueFormat, type FormatRules } from "@/lib/battle/format-catalogue";
 import { cn } from "@/lib/utils";
@@ -227,8 +228,9 @@ export function RulesDrawer({ format, selected, onClose, onPick }: { format: Cat
     ...(format.level ? [{ label: "Level", text: `${format.level}` }] : []),
   ];
 
-  return (
-    <div className="fixed inset-0 z-50 flex justify-end" role="dialog" aria-modal="true" aria-label={`${format.name} rules`} data-testid="rules-drawer">
+  // Portalled to the body: an animated ancestor would otherwise pin "fixed" to itself, and the phone tab bar sits above z-50.
+  return createPortal(
+    <div className="fixed inset-0 z-[100] flex justify-end" role="dialog" aria-modal="true" aria-label={`${format.name} rules`} data-testid="rules-drawer">
       <button type="button" className="absolute inset-0 bg-black/50" aria-label="Close" onClick={onClose} tabIndex={-1} />
       <div className="relative flex h-full w-full max-w-md flex-col border-l bg-card shadow-xl">
         <div className="flex items-start justify-between gap-3 border-b p-4">
@@ -277,6 +279,7 @@ export function RulesDrawer({ format, selected, onClose, onPick }: { format: Cat
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
