@@ -27,6 +27,16 @@ export interface CustomRules {
   /** Live battles: the turn timer, and the most one turn may take. */
   timer: boolean;
   timerSeconds: number;
+  /**
+   * One of Showdown's own formats from the catalogue (format-catalogue.ts),
+   * played exactly as Showdown runs it: the gen, level, clause and gimmick
+   * settings above are then the format's, not these. Null: the Custom Game.
+   */
+  base?: string | null;
+  /** The base format's name (the server sets it from the catalogue). */
+  baseName?: string;
+  /** The base format deals random teams. */
+  baseRandom?: boolean;
 }
 
 /** The generations each gimmick exists in (Showdown's own data agrees: a test checks). */
@@ -100,6 +110,9 @@ export function normalizeRules(raw: unknown): CustomRules {
     pick,
     timer: typeof r.timer === "boolean" ? r.timer : d.timer,
     timerSeconds: int(r.timerSeconds, TIMER_MIN, TIMER_MAX, d.timerSeconds),
+    ...(typeof r.base === "string" && /^[a-z0-9]{3,80}$/.test(r.base)
+      ? { base: r.base, baseName: typeof r.baseName === "string" ? r.baseName.slice(0, 80) : r.base, baseRandom: r.baseRandom === true }
+      : {}),
   };
 }
 
@@ -122,10 +135,11 @@ export function ruleStrings(rules: CustomRules): string[] {
 }
 
 /** The Showdown format id: `gen4customgame@@@Obtainable,Adjust Level = 50,...`. */
-export const customFormatId = (rules: CustomRules) => `gen${rules.gen}customgame@@@${ruleStrings(rules).join(",")}`;
+export const customFormatId = (rules: CustomRules) => rules.base ?? `gen${rules.gen}customgame@@@${ruleStrings(rules).join(",")}`;
 
 /** The ruleset as players read it, one line each. */
 export function describeRules(rules: CustomRules): { label: string; text: string }[] {
+  if (rules.base) return [{ label: "Format", text: `${rules.baseName ?? rules.base}, on Showdown's own rules${rules.baseRandom ? " with random teams" : ""}` }];
   const gimmicks = GIMMICKS.filter((g) => gimmickAllowed(g, rules.gen));
   const clauses = CLAUSES.filter((c) => rules.clauses[c]).map((c) => CLAUSE_INFO[c].name);
   const out = [
@@ -142,7 +156,7 @@ export function describeRules(rules: CustomRules): { label: string; text: string
 }
 
 /** A short name: "Gen 4 Custom · Lv 50". */
-export const customName = (rules: CustomRules) => `[Gen ${rules.gen}] Custom · Lv ${rules.levelMode === "cap" ? "≤" : ""}${rules.level}`;
+export const customName = (rules: CustomRules) => (rules.base ? (rules.baseName ?? rules.base) : `[Gen ${rules.gen}] Custom · Lv ${rules.levelMode === "cap" ? "≤" : ""}${rules.level}`);
 
 /** The turn timer a ruleset sets for live battles; null with the timer off. */
 export function customTimer(rules: CustomRules): { bank: number; perTurn: number; cap: number } | null {
