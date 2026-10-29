@@ -1,15 +1,14 @@
 import { pictureSrc, type PublicAvatar } from "@/lib/avatar";
 import { artUrl } from "@/lib/pokemon/art";
 import { cn } from "@/lib/utils";
+import { Avatar3D } from "@/components/trainer3d/Avatar3D";
 
 /**
  * A trainer's character on the versus screen, facing their opponent.
  *
- * For now it's their profile avatar drawn large (the Pokémon's official art,
- * or their approved picture in a round frame); guests and unknown trainers
- * get a silhouette. Everything that draws the character is in this one
- * component, so a posed 3D trainer can replace the art here without the
- * versus screen changing.
+ * Their 3D trainer in a battle stance when they made one; otherwise their
+ * profile avatar drawn large (the Pokémon's official art, or their approved
+ * picture in a round frame). Guests and unknown trainers get a silhouette.
  */
 
 export type VersusFacing = "left" | "right";
@@ -38,6 +37,13 @@ export function VersusCharacter({ avatar, facing, figure, className }: VersusCha
     return (
       <div className={box} data-testid="versus-character" data-kind="silhouette">
         <Silhouette className={cn("h-[92%] w-auto text-black/55 drop-shadow-[0_0_18px_rgba(169,156,255,0.35)]", flip)} />
+      </div>
+    );
+  }
+  if (avatar.trainer) {
+    return (
+      <div className={box} data-testid="versus-character" data-kind="trainer">
+        <Avatar3D config={avatar.trainer} pose="fight" facing={facing} label="Trainer, ready to battle" />
       </div>
     );
   }
