@@ -2,87 +2,70 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import {
-  Check,
-  Copy,
-  Compass,
-  Flame,
-  Globe2,
-  Link2,
-  Loader2,
-  Shapes,
-  MapPin as MapPinIcon,
-  RotateCcw,
-  Swords,
-  Trophy,
-  X,
-  Map as MapIcon,
-} from "lucide-react";
-import {
-  GEO_FILTER_MIN_PLACES,
-  GEO_MAX_ROUND_SCORE,
-  GEO_ROUNDS,
-  WORLD_REGION,
-  isGeoRounds,
-  type GeoRounds,
-  geoBoardKey,
-  geoDailyRegion,
-  geoMapRank,
-  type GeoChallenge,
-  type GeoGuessResponse,
-  type GeoKind,
-  type GeoRegionInfo,
-  type GeoRoundPublic,
-  type GeoStartResponse,
-} from "@/lib/geo-types";
+import { Check, Compass, Flame, Globe2, Loader2, Shapes, MapPin as MapPinIcon, Swords, X, Map as MapIcon } from "lucide-react";
+import { GEO_FILTER_MIN_PLACES, GEO_MAX_ROUND_SCORE, GEO_ROUNDS, WORLD_REGION, isGeoRounds, type GeoRounds, geoBoardKey, geoDailyRegion, geoMapRank, type GeoChallenge, type GeoGuessResponse, type GeoKind, type GeoRegionInfo, type GeoRoundPublic, type GeoStartResponse } from "@/lib/geo-types";
 import { dailyNumber } from "@/lib/daily";
 import { useToday } from "@/lib/use-today";
 import { recordGeoGame, useProgress, type BadgeDef } from "@/lib/progress";
 import { play, unlockAudio } from "@/lib/sound";
-import { copyText, guessrShareText, guessrSquare, shareOrCopy, shareUrl, type GuessrShareResult } from "@/lib/share";
+import { guessrSquare } from "@/lib/share";
 import { GEO_DIFFICULTY_NAMES, type GeoDifficulty } from "@/lib/geo-difficulty";
-import { COMPARE_MAX, COMPARE_MIN_PLAYERS, bucketOf, percentBeaten, type GeoDailyStats } from "@/lib/geo-compare";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { BadgeMedal } from "@/components/game/BadgeMedal";
-import { CopyFallback } from "@/components/quiz/CopyFallback";
-import { ShareButton } from "@/components/share/ShareButton";
-import { GeoMap, LINE_DRAW_MS, mapAspect, type MapPin } from "./GeoMap";
-import { GeoResults } from "./GeoResults";
-import { LearnCard } from "./LearnCard";
+import { GeoMap, LINE_DRAW_MS, WORLD_MAP as WORLD_MAP_SRC, mapAspect, type MapPin } from "./GeoMap";
 import { RegionStreakCard } from "./RegionStreakCard";
 import { useAccount } from "@/lib/account";
 import { avatarSrc } from "@/lib/avatar";
-import { DuelCard } from "./DuelCard";
 import { GlobePreview } from "@/components/globe/GlobePreview";
-import { ReportShot } from "./ReportShot";
-import { GeoHowTo, HowToHelpButton } from "./GeoHowTo";
+import { GeoHowToLoader, HowToHelpButton } from "./GeoHowToButton";
+
+/**
+ * What a solo round doesn't need is split off the first load: the duel card,
+ * and the reveal's extras, the results and the summary, fetched once a game is on its way.
+ */
+// The duel and ranked card sits below the fold: rendered on the server as before, its code loads alongside.
+const DuelCard = dynamic(() => import("./DuelCard").then((m) => m.DuelCard), { loading: () => null });
+const loadResults = () => import("./GeoResults");
+const loadSummary = () => import("./GeoSummary");
+const loadLearn = () => import("./LearnCard");
+const loadReport = () => import("./ReportShot");
+const LazyResults = dynamic(() => loadResults().then((m) => m.GeoResults), { ssr: false });
+const LazySummary = dynamic(() => loadSummary().then((m) => m.GeoSummary), { ssr: false });
+const LazyLearn = dynamic(() => loadLearn().then((m) => m.LearnCard), { ssr: false });
+const LazyReport = dynamic(() => loadReport().then((m) => m.ReportShot), { ssr: false });
+/** The parts once fetched: rendered directly, so they show in the same frame as before (no lazy hand-off). */
+let loaded: Partial<{
+  GeoResults: typeof import("./GeoResults").GeoResults;
+  GeoSummary: typeof import("./GeoSummary").GeoSummary;
+  LearnCard: typeof import("./LearnCard").LearnCard;
+  ReportShot: typeof import("./ReportShot").ReportShot;
+}> = {};
+/** Fetches the after-the-round code ahead, so the reveal and the results show at once. */
+const preloadAfterRound = () =>
+  void Promise.all([loadResults(), loadSummary(), loadLearn(), loadReport()])
+    .then(([r, s, l, rep]) => {
+      loaded = { GeoResults: r.GeoResults, GeoSummary: s.GeoSummary, LearnCard: l.LearnCard, ReportShot: rep.ReportShot };
+    })
+    .catch(() => undefined);
+/** A game got ready on hover is used for a click this soon after. */
+const PREFETCH_TTL_MS = 60_000;
 import { ShotCarousel, shotFit } from "./ShotCarousel";
 import { CountdownPill, ExitButton, FullscreenButton, GameShell, GuessButton, MapDock, Notch } from "./GameShell";
 import { roundViewsOf } from "@/lib/geo-look";
 import { DifficultyPicker, GeoSettingsButton, RoundsPicker } from "./GeoSettings";
-import {
-  DEFAULT_GEO_SETTINGS,
-  GEO_ZOOM,
-  readGeoSettings,
-  rememberGeoSettings,
-  secondsLeft,
-  visibleViews,
-  zoomOrigin,
-  type GeoPlaySettings,
-} from "@/lib/geo-settings";
+import { DEFAULT_GEO_SETTINGS, GEO_ZOOM, readGeoSettings, rememberGeoSettings, secondsLeft, visibleViews, zoomOrigin, type GeoPlaySettings } from "@/lib/geo-settings";
 import { GameFilter, GameGuessPicker, type FilterChoice, filterPlaces, gameGuessOptions } from "./GameFilter";
 import { GEO_ERA_NAMES, GEO_GAME_BONUS, geoFamily, type GeoEra, type GeoFamilyId } from "@/lib/geo-families";
 import { cn } from "@/lib/utils";
 import { preloadImage } from "@/lib/preload";
 import { readSeenShots, rememberSeenShot } from "@/lib/geo-seen";
 import { isWorldwide, themeOf } from "@/lib/geo-themes";
-import { NAME_REJECTED, isCleanName } from "@/lib/name-filter";
 
 type Phase = "setup" | "loading" | "guessing" | "submitting" | "revealed" | "results" | "error";
 
-interface Game {
+export interface Game {
   /** The map being played (a daily or a challenge picks its own). */
   region: GeoRegionInfo;
   kind: GeoKind;
@@ -101,7 +84,7 @@ interface Game {
   round: GeoRoundPublic;
 }
 
-interface Played {
+export interface Played {
   /** Null when the round's clock ran out with no pin down. */
   guess: MapPin | null;
   graded: GeoGuessResponse;
@@ -115,16 +98,16 @@ const boardOf = (game: Pick<Game, "region" | "kind" | "filter" | "difficulty"> &
     game.difficulty ? `:${game.difficulty}` : ""
   }`;
 
-interface Reward {
+export interface Reward {
   xp: number;
   best: boolean;
   newBadges: BadgeDef[];
 }
 
-const fmt = (n: number) => n.toLocaleString("en-US");
-const maxTotal = (rounds: number) => rounds * GEO_MAX_ROUND_SCORE;
+export const fmt = (n: number) => n.toLocaleString("en-US");
+export const maxTotal = (rounds: number) => rounds * GEO_MAX_ROUND_SCORE;
 
-const emoji = guessrSquare;
+export const emoji = guessrSquare;
 
 function verdict(score: number): string {
   if (score >= GEO_MAX_ROUND_SCORE) return "Spot on!";
@@ -144,7 +127,7 @@ const where = (region: GeoRegionInfo) => (region.id === WORLD_REGION ? "the Pok�
 const clean = (s: string) => s.replace(/^(Kanto|Johto|Hoenn|Sinnoh|Unova|Kalos|Alola|Galar|Paldea) (?=Route)/, "");
 /** The in-game name, without the wiki's disambiguation ("Iron Ruins (Sinnoh)", "Battle Tower (Generation III)", "Victory Road (BW)"). */
 const shown = (s: string) => clean(s).replace(/ \((Kanto|Johto|Hoenn|Sinnoh|Unova|Kalos|Alola|Galar|Paldea|Generation [IVX]+|BW|B2W2|Jagged Pass)\)$/, "");
-function placeName(answer: { name: string; parent?: string; region?: string }, map?: GeoRegionInfo): string {
+export function placeName(answer: { name: string; parent?: string; region?: string }, map?: GeoRegionInfo): string {
   const name = answer.parent ? `${shown(answer.name)} · ${shown(answer.parent)}` : shown(answer.name);
   return answer.region && map && answer.region !== map.name ? `${name}, ${answer.region}` : name;
 }
@@ -175,7 +158,7 @@ function distanceText(squares: number): string {
   return `${squares.toFixed(1)} map square${squares === 1 ? "" : "s"} away`;
 }
 
-async function post<T>(url: string, body: unknown): Promise<T> {
+export async function post<T>(url: string, body: unknown): Promise<T> {
   const res = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
   const data = await res.json().catch(() => ({}));
   if (!res.ok) throw new Error((data as { error?: string }).error ?? `Request failed (${res.status})`);
@@ -183,7 +166,7 @@ async function post<T>(url: string, body: unknown): Promise<T> {
 }
 
 /** Counts up to `value` (eased) whenever it changes, after `delay` ms; instant under reduced motion. A tally tick sounds as it counts. */
-function useCountUp(value: number, ms = 700, delay = 0, tally = false): number {
+export function useCountUp(value: number, ms = 700, delay = 0, tally = false): number {
   const reduced = useReducedMotion();
   const [shown, setShown] = useState(0);
   const from = useRef(0);
@@ -231,7 +214,7 @@ export function GeoGame(props: GeoGameProps) {
   return (
     <>
       <GeoGameInner {...props} />
-      {!props.challenge && <GeoHowTo />}
+      {!props.challenge && <GeoHowToLoader />}
     </>
   );
 }
@@ -307,32 +290,65 @@ function GeoGameInner({ regions: allRegions, challenge }: GeoGameProps) {
   const total = played.reduce((s, p) => s + p.graded.score, 0);
   const streak = played.filter((p) => p.graded.hit).length;
 
-  async function start(opts: { kind: GeoKind; daily?: string; challenge?: string }) {
+  type StartOpts = { kind: GeoKind; daily?: string; challenge?: string };
+  function startBody(opts: StartOpts) {
+    const bonus: { guessGame?: boolean } = {};
+    const picked = { era: filter.era, families: filter.families.length ? filter.families : undefined };
+    // Free play takes the picked difficulty; a challenge plays its own, the Daily always Normal.
+    const mode = opts.challenge ? challenge?.difficulty : opts.daily ? undefined : chosenMode;
+    const body = opts.challenge
+      ? { challenge: opts.challenge, name: progress?.name || undefined, ...bonus }
+      : opts.daily
+        ? { daily: opts.daily, name: progress?.name || undefined, ...bonus }
+        : {
+            region: region.id,
+            kind: opts.kind,
+            ...(opts.kind === "game" ? { rounds: playRounds } : {}),
+            ...picked,
+            ...(mode ? { difficulty: mode } : {}),
+            name: progress?.name || undefined,
+            recent: readRecent(),
+            seen: readSeenShots(),
+            ...bonus,
+          };
+    // The Timer setting goes to the server too, so a late pin scores nothing there as well.
+    return { mode, bonus, body: { ...body, ...(settings.timer ? { timer: settings.timer } : {}) } };
+  }
+
+  /**
+   * Hovering or focusing a Play button gets the game ready: the code and the
+   * world map the round needs, and (for free play and challenges) the game
+   * itself and round 1's picture, so the click shows the round at once. The
+   * Daily isn't started ahead (starting it is what counts it as played), nor a
+   * timed game (its clock is the server's). A ready game is used only if the
+   * click asks for exactly the same game, within a minute.
+   */
+  const ahead = useRef<{ key: string; at: number; res: Promise<GeoStartResponse> } | null>(null);
+  function prefetch(opts: StartOpts) {
+    if (phase !== "setup") return;
+    preloadAfterRound();
+    void preloadImage(WORLD_MAP_SRC);
+    if (opts.daily || settings.timer) return;
+    const { body } = startBody(opts);
+    const key = JSON.stringify(body);
+    if (ahead.current?.key === key && Date.now() - ahead.current.at < PREFETCH_TTL_MS) return;
+    const res = post<GeoStartResponse>("/api/geo", body);
+    res.then((r) => preloadImage(r.round.shot)).catch(() => undefined);
+    ahead.current = { key, at: Date.now(), res };
+  }
+  const warmProps = (opts: StartOpts) => ({ onPointerEnter: () => prefetch(opts), onFocus: () => prefetch(opts) });
+
+  async function start(opts: StartOpts) {
     unlockAudio();
     setPhase("loading");
     setError(null);
+    preloadAfterRound();
     try {
-      const bonus: { guessGame?: boolean } = {};
-      const picked = { era: filter.era, families: filter.families.length ? filter.families : undefined };
-      // Free play takes the picked difficulty; a challenge plays its own, the Daily always Normal.
-      const mode = opts.challenge ? challenge?.difficulty : opts.daily ? undefined : chosenMode;
-      const body = opts.challenge
-        ? { challenge: opts.challenge, name: progress?.name || undefined, ...bonus }
-        : opts.daily
-          ? { daily: opts.daily, name: progress?.name || undefined, ...bonus }
-          : {
-              region: region.id,
-              kind: opts.kind,
-              ...(opts.kind === "game" ? { rounds: playRounds } : {}),
-              ...picked,
-              ...(mode ? { difficulty: mode } : {}),
-              name: progress?.name || undefined,
-              recent: readRecent(),
-              seen: readSeenShots(),
-              ...bonus,
-            };
-      // The Timer setting goes to the server too, so a late pin scores nothing there as well.
-      const res = await post<GeoStartResponse>("/api/geo", { ...body, ...(settings.timer ? { timer: settings.timer } : {}) });
+      const { mode, bonus, body } = startBody(opts);
+      const key = JSON.stringify(body);
+      const ready = ahead.current?.key === key && Date.now() - ahead.current.at < PREFETCH_TTL_MS ? ahead.current.res : null;
+      ahead.current = null;
+      const res = (ready ? await ready.catch(() => null) : null) ?? (await post<GeoStartResponse>("/api/geo", body));
       const map = byId(res.region) ?? allRegions.find((r) => r.id === res.region);
       if (!map) throw new Error("That map isn't available right now.");
       // A friend's challenge plays on their filter, the daily on every game.
@@ -528,6 +544,7 @@ function GeoGameInner({ regions: allRegions, challenge }: GeoGameProps) {
                   className="w-full md:w-auto"
                   disabled={loading}
                   onClick={() => void start({ kind: "game", challenge: challenge.token })}
+                  {...warmProps({ kind: "game", challenge: challenge.token })}
                 >
                   {loading ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : <Swords className="h-4 w-4" aria-hidden />}
                   Accept challenge
@@ -557,6 +574,7 @@ function GeoGameInner({ regions: allRegions, challenge }: GeoGameProps) {
                 className="w-full md:w-auto"
                 disabled={!today || loading}
                 onClick={() => today && void start({ kind: "game", daily: today })}
+                {...warmProps({ kind: "game", daily: today || "today" })}
               >
                 {loading ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : <Compass className="h-4 w-4" aria-hidden />}
                 {dailyDone !== undefined ? "Play again" : "Play today's"}
@@ -651,6 +669,7 @@ function GeoGameInner({ regions: allRegions, challenge }: GeoGameProps) {
               stat={bestGame ? `Best ${fmt(bestGame)}` : null}
               disabled={loading || !filterOk}
               onClick={() => void start({ kind: "game" })}
+              warm={warmProps({ kind: "game" })}
             />
             <ModeCard
               preview={region.map.src}
@@ -664,6 +683,7 @@ function GeoGameInner({ regions: allRegions, challenge }: GeoGameProps) {
               stat={bestStreak ? `Best ${bestStreak} in a row` : null}
               disabled={loading || !filterOk}
               onClick={() => void start({ kind: "streak" })}
+              warm={warmProps({ kind: "streak" })}
             />
           </div>
         </div>
@@ -728,6 +748,8 @@ function GeoGameInner({ regions: allRegions, challenge }: GeoGameProps) {
 
   if (phase === "results") {
     const last = played[played.length - 1]?.graded;
+    const GeoResults = loaded.GeoResults ?? LazyResults;
+    const GeoSummary = loaded.GeoSummary ?? LazySummary;
     return (
       <GeoResults game={game} played={played} pinImage={pinImage} shareToken={last?.resultToken} onRestart={() => setPhase("setup")}>
         <GeoSummary
@@ -807,7 +829,7 @@ function GeoGameInner({ regions: allRegions, challenge }: GeoGameProps) {
       {({ fs, toggle }) => (
     <div className="relative h-full">
       <div className="absolute inset-0">
-        <ShotCarousel views={views} index={viewIndex} onIndex={setViewIndex} onZoom={() => setZoomed(true)} zoom={zoom} fs />
+        <ShotCarousel views={views} index={viewIndex} onIndex={setViewIndex} onZoom={() => setZoomed(true)} zoom={zoom} fs blur={game.round.blur} />
       </div>
       <div className="absolute left-3 top-3 z-20 flex items-center gap-2">
         <ExitButton onClick={() => setPhase("setup")} />
@@ -883,6 +905,7 @@ function ModeCard({
   stat,
   disabled,
   onClick,
+  warm,
 }: {
   preview: string;
   icon: React.ReactNode;
@@ -891,12 +914,15 @@ function ModeCard({
   stat: string | null;
   disabled: boolean;
   onClick: () => void;
+  /** Hover / focus handlers that get the game ready ahead of the click. */
+  warm?: { onPointerEnter: () => void; onFocus: () => void };
 }) {
   return (
     <button
       type="button"
       disabled={disabled}
       onClick={onClick}
+      {...warm}
       className="menu-item group flex flex-col gap-3 overflow-hidden rounded-lg border bg-card p-4 text-left transition-colors hover:border-screen/60"
     >
       {/* eslint-disable-next-line @next/next/no-img-element -- CDN-cached preview */}
@@ -946,6 +972,8 @@ function RoundReveal({
 }) {
   const { graded, guess: g } = current;
   const reduced = useReducedMotion();
+  const LearnCard = loaded.LearnCard ?? LazyLearn;
+  const ReportShot = loaded.ReportShot ?? LazyReport;
   const countDelay = reduced ? 0 : LINE_DRAW_MS + FIT_MS * 0.6;
   const shown = useCountUp(graded.score, SCORE_COUNT_MS, countDelay, true);
   const isStreak = game.kind === "streak";
@@ -1036,350 +1064,5 @@ function RoundReveal({
         </div>
       </motion.div>
     </div>
-  );
-}
-
-/** The end-of-game summary; `compact` leaves the headline, map and round list to the results map it sits under. */
-export function GeoSummary({
-  game,
-  played,
-  resultToken,
-  challengeToken,
-  challenge,
-  reward,
-  onRestart,
-  compact,
-}: {
-  game: Pick<Game, "region" | "kind" | "rounds" | "daily" | "practice" | "filter" | "guessGame" | "difficulty">;
-  played: Played[];
-  resultToken?: string;
-  challengeToken?: string;
-  challenge?: GeoChallenge;
-  reward: Reward | null;
-  onRestart: () => void;
-  compact?: boolean;
-}) {
-  const progress = useProgress();
-  const { region } = game;
-  const isStreak = game.kind === "streak";
-  const total = played.reduce((s, p) => s + p.graded.score, 0);
-  const bonus = game.guessGame ? (played.at(-1)?.graded.bonusTotal ?? 0) : null;
-  const streak = played.filter((p) => p.graded.hit).length;
-  const headline = useCountUp(isStreak ? streak : total, 1100);
-  const [name, setName] = useState("");
-  const [save, setSave] = useState<"idle" | "saving" | "saved" | "error">("idle");
-  const [saveError, setSaveError] = useState<string | null>(null);
-  const [shared, setShared] = useState<"done" | "failed" | null>(null);
-
-  useEffect(() => {
-    if (progress?.name && !name) setName(progress.name);
-  }, [progress?.name, name]);
-
-  const origin = typeof window !== "undefined" ? window.location.origin : "";
-  const shareResult: GuessrShareResult = {
-    game: "guessr",
-    ...(game.daily ? { daily: dailyNumber(game.daily) } : {}),
-    region: region.id,
-    ...(isStreak ? { streak } : { rounds: played.map((p) => p.graded.score) }),
-  };
-  const challengeUrl = challengeToken ? `${origin}/guessr/c/${encodeURIComponent(challengeToken)}` : null;
-  const canRank = !game.practice && !!resultToken;
-  const modeName = game.difficulty ? GEO_DIFFICULTY_NAMES[game.difficulty] : undefined;
-  const shareTextFull = guessrShareText(shareResult, region.name, shareUrl(shareResult), { mode: modeName });
-  // The card to copy: the result, then the challenge link (same places) when there is one, else the result page.
-  const shareBody = guessrShareText(shareResult, region.name, undefined, { mode: modeName });
-  const shareLink = challengeUrl ?? shareUrl(shareResult);
-
-  async function shareChallenge() {
-    if (!challengeUrl) return;
-    const outcome = await shareOrCopy(`I scored ${fmt(total)} in PokéGuessr. Same ${played.length || 5} places, can you beat me?`, challengeUrl);
-    if (outcome === "failed") setShared("failed");
-    else if (outcome !== "cancelled") setShared("done");
-  }
-
-  async function submit(e: React.FormEvent) {
-    e.preventDefault();
-    if (!isCleanName(name)) {
-      setSaveError(NAME_REJECTED);
-      setSave("error");
-      return;
-    }
-    setSave("saving");
-    setSaveError(null);
-    try {
-      await post("/api/geo/leaderboard", { resultToken, playerName: name });
-      setSave("saved");
-    } catch (err) {
-      setSaveError(err instanceof Error ? err.message : "Couldn't save.");
-      setSave("error");
-    }
-  }
-
-  const theirs = challenge?.score ?? 0;
-  const outcome = challenge ? (total > theirs ? "win" : total < theirs ? "lose" : "tie") : null;
-
-  return (
-    <div className={cn("mx-auto max-w-4xl space-y-6", compact && "space-y-4")}>
-      <div className="space-y-2 text-center">
-        {!compact && <p className="hud-label text-screen">{isStreak ? "Streak over" : "Survey complete"}</p>}
-        {!compact && (
-          <div className="font-display text-6xl font-bold tabular-nums text-screen [text-shadow:0_0_18px_hsl(var(--screen)/0.5)]">
-            {isStreak ? `${headline} in a row` : fmt(headline)}
-          </div>
-        )}
-        {!isStreak && (
-          <>
-            {!compact && <div className="text-sm text-muted-foreground">out of {fmt(maxTotal(game.rounds))}</div>}
-            {bonus !== null && (
-              <div className="text-sm font-semibold text-success" data-testid="geo-bonus-total">
-                +{fmt(bonus)} game bonus · {fmt(total + bonus)} with the bonus (the leaderboard counts the map score)
-              </div>
-            )}
-            {!compact && (
-              <div className="meter mx-auto max-w-xl">
-                <motion.div className="h-full bg-primary" initial={{ width: 0 }} animate={{ width: `${(total / maxTotal(game.rounds)) * 100}%` }} transition={{ duration: 1.1 }} />
-              </div>
-            )}
-          </>
-        )}
-        {reward && (
-          <div className="flex flex-wrap justify-center gap-2 pt-1">
-            {reward.best && <span className="rounded-sm border border-warning/50 px-2 py-1 font-pixel text-[10px] text-warning">New best</span>}
-          </div>
-        )}
-      </div>
-
-      {game.daily && !isStreak && <DailyCompare date={game.daily} score={total} />}
-
-      {outcome && challenge && (
-        <Card className={cn(outcome === "win" ? "border-success/50" : outcome === "lose" ? "border-destructive/40" : "")}>
-          <CardContent className="space-y-3 p-5">
-            <p className="text-center font-display text-2xl font-bold uppercase">
-              {outcome === "win" ? `You beat ${challenge.name || "them"}!` : outcome === "lose" ? `${challenge.name || "They"} wins this one` : "Dead heat!"}
-            </p>
-            <div className="grid grid-cols-[auto_1fr_1fr] gap-x-4 gap-y-1 text-sm">
-              <span />
-              <span className="hud-label text-right">You</span>
-              <span className="hud-label text-right">{challenge.name || "Them"}</span>
-              {played.map((p, i) => (
-                <div key={i} className="contents">
-                  <span className="font-pixel text-xs text-muted-foreground">R{i + 1}</span>
-                  <span className={cn("text-right tabular-nums", p.graded.score >= (challenge.rounds[i] ?? 0) && "font-bold text-success")}>
-                    {fmt(p.graded.score)}
-                  </span>
-                  <span className={cn("text-right tabular-nums", (challenge.rounds[i] ?? 0) > p.graded.score && "font-bold text-success")}>
-                    {fmt(challenge.rounds[i] ?? 0)}
-                  </span>
-                </div>
-              ))}
-              <span className="font-pixel text-xs">Total</span>
-              <span className="text-right font-bold tabular-nums">{fmt(total)}</span>
-              <span className="text-right font-bold tabular-nums">{fmt(theirs)}</span>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {!isStreak && !compact && (
-        <GeoMap region={region} revealed={played.map((p, i) => ({ guess: p.guess, answer: p.graded.answer, label: String(i + 1) }))} />
-      )}
-
-      <Card>
-        <CardContent className="space-y-5 p-5">
-          {reward && reward.newBadges.length > 0 && (
-            <div className="flex flex-wrap items-center justify-center gap-3 rounded-md border border-warning/40 bg-warning/[0.06] p-3">
-              {reward.newBadges.map((b) => (
-                <span key={b.id} className="flex items-center gap-2 text-sm">
-                  <BadgeMedal id={b.id} size="md" />
-                  <span>
-                    <span className="block font-semibold">Badge unlocked: {b.name}</span>
-                    <span className="text-xs text-muted-foreground">{b.description}</span>
-                  </span>
-                </span>
-              ))}
-            </div>
-          )}
-
-          <ol className={cn("space-y-2", compact && "hidden")} aria-hidden={compact || undefined}>
-            {played.map((p, i) => (
-              <li key={i} className="flex items-center gap-3 rounded-md border bg-shade/20 px-3 py-2">
-                <span className="font-pixel text-xs text-muted-foreground">{i + 1}</span>
-                <span aria-hidden>{isStreak ? (p.graded.hit ? "✅" : "❌") : emoji(p.graded.score)}</span>
-                <span className="min-w-0 flex-1 truncate text-sm">
-                  <span className="font-semibold">{placeName(p.graded.answer, region)}</span>
-                  <span className="text-muted-foreground"> · {p.graded.answer.game}</span>
-                  {p.graded.gameGuess?.correct && <span className="text-success"> · +{fmt(p.graded.gameGuess.bonus)}</span>}
-                </span>
-                {!isStreak && <span className="font-pixel text-xs tabular-nums">{fmt(p.graded.score)}</span>}
-              </li>
-            ))}
-          </ol>
-
-          <ShareCard body={shareBody} link={shareLink} challenge={!!challengeUrl} />
-
-          <div className="grid gap-2 sm:grid-cols-2">
-            {challengeUrl && (
-              <Button className="sm:col-span-2" size="lg" variant="success" onClick={() => void shareChallenge()}>
-                <Link2 className="h-4 w-4" aria-hidden />
-                {shared === "done" ? "Challenge link copied!" : "Challenge a friend"}
-              </Button>
-            )}
-            <ShareButton size="lg" variant="outline" kind="guessr" label="Share…" getText={() => shareTextFull} className={cn(compact && "sm:col-span-2")} />
-            {/* The results map above has its own Play again. */}
-            {!compact && (
-              <Button size="lg" variant="secondary" onClick={onRestart}>
-                <RotateCcw className="h-4 w-4" aria-hidden /> Play again
-              </Button>
-            )}
-          </div>
-          {shared === "failed" && challengeUrl && <CopyFallback text={challengeUrl} />}
-
-          {canRank ? (
-            <form className="space-y-2" onSubmit={submit}>
-              <label htmlFor="geo-name" className="hud-label">
-                Save to the leaderboard
-              </label>
-              <div className="flex gap-2">
-                <input
-                  id="geo-name"
-                  value={name}
-                  onChange={(e) => {
-                    setName(e.target.value);
-                    setSaveError(null);
-                  }}
-                  maxLength={24}
-                  required
-                  placeholder="Trainer name"
-                  disabled={save === "saved"}
-                  className="h-10 min-w-0 flex-1 rounded-md border border-input bg-background px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50"
-                />
-                <Button type="submit" disabled={save === "saving" || save === "saved" || !name.trim()}>
-                  {save === "saved" ? "Saved" : "Submit"}
-                </Button>
-              </div>
-              {saveError && (
-                <p role="alert" className="text-sm text-destructive">
-                  {saveError}
-                </p>
-              )}
-            </form>
-          ) : game.practice === "repeat-daily" ? (
-            <p className="text-xs text-muted-foreground">Only your first daily game of the day goes on the leaderboard.</p>
-          ) : game.practice === "challenge" ? (
-            <p className="text-xs text-muted-foreground">Challenge games aren&apos;t ranked, since the places were shared.</p>
-          ) : game.practice === "filtered" ? (
-            <p className="text-xs text-muted-foreground">Games on hand-picked games are practice: play All games, Classic 2D or Modern 3D to rank.</p>
-          ) : game.practice === "difficulty" ? (
-            <p className="text-xs text-muted-foreground">Easy and Hard games are practice: play Normal to get on the leaderboard.</p>
-          ) : null}
-
-          <Link
-            href={
-              game.daily
-                ? `/leaderboard?board=geo&date=${game.daily}`
-                : `/leaderboard?board=geo&format=${geoBoardKey({ region: region.id, kind: game.kind, era: game.filter.era, rounds: game.rounds })}`
-            }
-            className={cn(buttonVariants({ variant: "outline", size: "lg" }), "w-full")}
-          >
-            <Trophy className="h-4 w-4" aria-hidden /> Leaderboard
-          </Link>
-        </CardContent>
-      </Card>
-    </div>
-  );
-}
-
-/**
- * The Wordle-style result card: the share text as it'll paste (a square per
- * round by how close the pin landed, each round's points, the total), with a
- * Copy button. The link copied under it is the challenge link when there is
- * one (the same places for a friend), else the result page.
- */
-function ShareCard({ body, link, challenge }: { body: string; link: string; challenge: boolean }) {
-  const [state, setState] = useState<"idle" | "copied" | "failed">("idle");
-  const timer = useRef<number | undefined>(undefined);
-  useEffect(() => () => window.clearTimeout(timer.current), []);
-  const full = `${body}\n${link}`;
-  async function copy() {
-    const ok = await copyText(full);
-    setState(ok ? "copied" : "failed");
-    window.clearTimeout(timer.current);
-    if (ok) timer.current = window.setTimeout(() => setState("idle"), 2200);
-  }
-  return (
-    <div className="space-y-2 rounded-md border bg-shade/20 p-3" data-testid="geo-share-card">
-      <div className="flex items-center justify-between gap-3">
-        <p className="hud-label">Your result card</p>
-        <Button size="sm" variant={state === "copied" ? "success" : "secondary"} onClick={() => void copy()} data-testid="geo-copy-result">
-          {state === "copied" ? <Check className="h-4 w-4" aria-hidden /> : <Copy className="h-4 w-4" aria-hidden />}
-          {state === "copied" ? "Copied!" : "Copy"}
-        </Button>
-      </div>
-      <pre className="whitespace-pre-wrap break-words font-sans text-sm leading-relaxed" data-testid="geo-share-preview">
-        {body}
-      </pre>
-      <p className="truncate text-xs text-muted-foreground">
-        {challenge ? "+ your challenge link: friends play the same places" : "+ a link to your result"}
-      </p>
-      {state === "failed" && <CopyFallback text={full} />}
-    </div>
-  );
-}
-
-/**
- * The Daily's "how you compared": the day's ranked scores in ten bars, yours
- * lit, and the share of players you beat. Shown only with enough players
- * (geo_runs: games saved to the daily leaderboard); otherwise nothing.
- */
-function DailyCompare({ date, score }: { date: string; score: number }) {
-  const [stats, setStats] = useState<GeoDailyStats | null>(null);
-  useEffect(() => {
-    let off = false;
-    fetch(`/api/geo/daily-stats?date=${encodeURIComponent(date)}&score=${score}`)
-      .then((r) => (r.ok ? (r.json() as Promise<GeoDailyStats>) : null))
-      .then((s) => !off && setStats(s))
-      .catch(() => undefined);
-    return () => {
-      off = true;
-    };
-  }, [date, score]);
-  if (!stats || stats.players < COMPARE_MIN_PLAYERS) return null;
-  const beaten = percentBeaten(stats);
-  const mine = bucketOf(score);
-  const tallest = Math.max(1, ...stats.buckets);
-  return (
-    <Card data-testid="geo-daily-compare">
-      <CardContent className="space-y-3 p-5">
-        <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-          <p className="hud-label text-warning">How you compared</p>
-          <p className="text-sm text-muted-foreground">
-            {fmt(stats.players)} ranked players today{stats.median !== undefined ? ` · median ${fmt(stats.median)}` : ""}
-          </p>
-        </div>
-        {beaten !== null && (
-          <p className="font-display text-2xl font-bold uppercase" data-testid="geo-daily-percent">
-            Better than {beaten}% of players
-          </p>
-        )}
-        <div className="flex h-28 items-end gap-1" role="img" aria-label={`Score spread for the day, your score in bar ${mine + 1} of ${stats.buckets.length}`}>
-          {stats.buckets.map((n, i) => (
-            <div key={i} className="flex h-full min-w-0 flex-1 flex-col items-stretch justify-end">
-              {i === mine && <span className="mb-1 text-center font-pixel text-[9px] uppercase text-primary">You</span>}
-              <motion.div
-                className={cn("rounded-t-sm", i === mine ? "bg-primary" : "bg-muted-foreground/30")}
-                initial={{ height: 0 }}
-                animate={{ height: `${Math.max(n ? 6 : 2, (n / tallest) * 82)}%` }}
-                transition={{ duration: 0.6, delay: i * 0.03 }}
-              />
-            </div>
-          ))}
-        </div>
-        <div className="flex justify-between font-pixel text-[10px] text-muted-foreground">
-          <span>0</span>
-          <span>{fmt(COMPARE_MAX / 2)}</span>
-          <span>{fmt(COMPARE_MAX)}</span>
-        </div>
-      </CardContent>
-    </Card>
   );
 }
