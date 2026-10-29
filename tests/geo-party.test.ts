@@ -24,7 +24,6 @@ import {
   PARTY_AWAY_MS,
   PARTY_FIRST_LEAD_MS,
   PARTY_MAX_PLAYERS,
-  PARTY_REVEAL_MS,
   PARTY_TEAM_HP,
   defaultPartySettings,
   livesAfter,

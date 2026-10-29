@@ -298,6 +298,17 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
     chooseRegion(id);
     toSolo();
   }
+  /** The Party tile (or /guessr#party): opens the party form, so the hub's other forms are the only ones on the page until then. */
+  const [partyOpen, setPartyOpen] = useState(false);
+  useEffect(() => {
+    if (window.location.hash !== "#party") return;
+    setPartyOpen(true);
+    window.setTimeout(() => document.getElementById("party")?.scrollIntoView({ block: "start" }), 300);
+  }, []);
+  function openParty() {
+    setPartyOpen(true);
+    window.setTimeout(() => scrollTo("party"), 50);
+  }
   /** The Duels and Ranked tiles: the duel panel, on that queue. */
   function openDuels(queue: DuelQueue) {
     setDuelQueue(queue);
@@ -837,7 +848,7 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
               badge={<TileFlag tone="success">New</TileFlag>}
               blurb="A private room for your group: Battle Royale on lives, or 2v2 team duels."
               action={
-                <Button variant="outline" className="w-full" onClick={() => scrollTo("party")} data-testid="geo-open-party">
+                <Button variant="outline" className="w-full" onClick={openParty} data-testid="geo-open-party">
                   <Users className="h-4 w-4" aria-hidden /> Open party
                 </Button>
               }
@@ -853,10 +864,12 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
               onQueue={setDuelQueue}
             />
           </div>
-          <div id="party" className="scroll-mt-24 space-y-3">
-            <h3 className="font-display text-xl font-bold uppercase">Party</h3>
-            <PartyCard region={region} />
-          </div>
+          {partyOpen && (
+            <div id="party" className="scroll-mt-24 space-y-3">
+              <h3 className="font-display text-xl font-bold uppercase">Party</h3>
+              <PartyCard region={region} />
+            </div>
+          )}
         </HubSection>
 
         {/* ---- Maps ---- */}

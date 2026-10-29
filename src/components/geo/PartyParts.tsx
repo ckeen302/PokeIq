@@ -129,7 +129,9 @@ export function PartyTrainer({
           <VersusCharacter avatar={p.avatar} fallback={fallback} facing="right" pose={pose} taunt={taunt} className="relative mx-auto w-full" />
         ) : (
           <div className="relative flex aspect-square w-full items-center justify-center">
-            <Avatar avatar={p.avatar} size={64} className="ring-2 ring-white/40" />
+            <span className="rounded-full p-1" style={{ background: seatColor(view, seat) }}>
+              <Avatar avatar={p.avatar} size={60} className="ring-2 ring-[#14112b]" />
+            </span>
           </div>
         )}
         {taunt && (
