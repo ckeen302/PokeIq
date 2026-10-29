@@ -93,6 +93,8 @@ export const geoBoardKey = (spec: Pick<GeoSpec, "region" | "kind"> & { era?: Geo
 export interface GeoRoundPublic {
   index: number;
   shot: string;
+  /** The next round's picture URL, to fetch ahead (nothing else about it; left out with a round timer). */
+  preload?: string;
   /** Look around: every view of the place this game can show, the dealt shot first (only when there's more than one). */
   views?: string[];
 }
@@ -150,6 +152,8 @@ export interface GeoGuessResponse {
   score: number;
   /** The round's clock ran out with no pin down (the Timer setting): no points. */
   timedOut?: boolean;
+  /** The pin arrived after the round's clock (plus a grace) had run out: graded as a timeout. */
+  late?: boolean;
   gameGuess?: GeoGameGuess;
   /** "Guess the game too": the bonus so far. */
   bonusTotal?: number;

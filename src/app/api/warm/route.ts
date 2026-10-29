@@ -22,6 +22,8 @@ const parts: Record<string, () => Promise<unknown>> = {
   pokedle: () => import("@/lib/server/pokedle"),
   connections: () => import("@/lib/server/connections"),
   geo: () => import("@/lib/server/geo"),
+  // What a guess goes through besides the engine (the replay guard, the shot reports and the round log).
+  geoGuess: () => Promise.all([import("@/lib/server/replay-guard"), import("@/lib/server/geo-reports"), import("@/lib/server/geo-round-scores")]),
   accounts: () => import("@/lib/server/auth"),
   ranked: () => import("@/lib/server/ranked"),
   tcg: () => import("@/lib/tcg/api").then((m) => m.getSets()),
