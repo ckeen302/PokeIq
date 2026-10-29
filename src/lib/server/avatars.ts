@@ -6,6 +6,7 @@ import { rankedKey, rankedStore } from "./ranked";
 import { battleKey } from "./battle-engine/identity";
 import { ladderStore } from "./battle-engine/ladder";
 import type { DuelPlayerView } from "@/lib/duel-types";
+import { checkTrainer, parseTrainer, type TrainerConfig } from "@/lib/trainer/config";
 
 /**
  * Trainers' avatars (migration 0021: profiles.avatar). Before the migration
@@ -15,6 +16,9 @@ import type { DuelPlayerView } from "@/lib/duel-types";
  *
  * Views that list trainers get every avatar in one lookup (no request per
  * row), cached for a minute per server instance.
+ *
+ * 3D trainers (migration 0047: profiles.trainer) ride along on the same
+ * rows. Before that migration nobody has one and the creator can't save.
  */
 
 export class AvatarsUnavailable extends Error {}
@@ -33,6 +37,8 @@ export interface Row {
   id: string;
   username: string;
   avatar: unknown;
+  /** profiles.trainer (absent before migration 0047). */
+  trainer?: unknown;
 }
 
 export interface AvatarStore {
@@ -40,29 +46,46 @@ export interface AvatarStore {
   save(userId: string, avatar: StoredAvatar): Promise<void>;
   /** Choices can be saved (the column is there). */
   saves(): boolean;
+  /** Saves (or, with null, removes) the account's 3D trainer. */
+  saveTrainer(userId: string, trainer: TrainerConfig | null): Promise<void>;
+  /** Trainers can be saved (migration 0047 is applied). */
+  savesTrainer(): boolean;
 }
 
 // ---- memory --------------------------------------------------------------------
 
-const globalStore = globalThis as unknown as { __pokeiqAvatars?: Map<string, unknown> };
+const globalStore = globalThis as unknown as { __pokeiqAvatars?: Map<string, unknown>; __pokeiqTrainers?: Map<string, unknown> };
 const mem = () => (globalStore.__pokeiqAvatars ??= new Map());
+const memTrainers = () => (globalStore.__pokeiqTrainers ??= new Map());
 
 export function clearMemoryAvatars() {
   globalStore.__pokeiqAvatars = new Map();
+  globalStore.__pokeiqTrainers = new Map();
   byId.clear();
   byName.clear();
 }
 
-const accountRows = async (by: "id" | "name", keys: string[], avatarOf: (id: string) => unknown): Promise<Row[]> =>
-  (await (by === "id" ? usersByIds(keys) : usersByNames(keys))).map((u) => ({ id: u.id, username: u.username, avatar: avatarOf(u.id) }));
+const accountRows = async (by: "id" | "name", keys: string[], avatarOf: (id: string) => unknown, trainerOf: (id: string) => unknown = () => null): Promise<Row[]> =>
+  (await (by === "id" ? usersByIds(keys) : usersByNames(keys))).map((u) => ({ id: u.id, username: u.username, avatar: avatarOf(u.id), trainer: trainerOf(u.id) }));
 
 export function memoryAvatarStore(): AvatarStore {
   return {
-    rows: (by, keys) => accountRows(by, keys, (id) => mem().get(id) ?? null),
+    rows: (by, keys) =>
+      accountRows(
+        by,
+        keys,
+        (id) => mem().get(id) ?? null,
+        (id) => memTrainers().get(id) ?? null,
+      ),
     async save(userId, avatar) {
       mem().set(userId, { ...avatar });
     },
     saves: () => true,
+    async saveTrainer(userId, trainer) {
+      if (trainer) memTrainers().set(userId, { ...trainer });
+      else memTrainers().delete(userId);
+    },
+    savesTrainer: () => true,
   };
 }
 
@@ -80,15 +103,35 @@ function missing(error: { code?: string; message?: string }): boolean {
   return true;
 }
 
+let trainersMissingUntil = 0;
+
+/** profiles.trainer isn't there (migration 0047 hasn't been applied). */
+function trainersMissing(error: { code?: string; message?: string }): boolean {
+  if (!/trainer/i.test(error.message ?? "") || (!MISSING.has(error.code ?? "") && !/does not exist|could not find/i.test(error.message ?? ""))) return false;
+  if (Date.now() >= trainersMissingUntil) console.warn("[avatars] 3D trainers are off until migration 0047_trainer_avatars.sql is applied:", error.message);
+  trainersMissingUntil = Date.now() + RECHECK_MS;
+  return true;
+}
+
 export function supabaseAvatarStore(sb: NonNullable<ReturnType<typeof getServiceSupabase>>): AvatarStore {
   return {
     async rows(by, keys) {
       if (Date.now() >= missingUntil) {
-        const { data, error } = await sb
-          .from("profiles")
-          .select("id, username, avatar")
-          .in(by === "id" ? "id" : "username_lower", by === "id" ? keys : keys.map((k) => k.toLowerCase()));
-        if (!error) return (data ?? []) as Row[];
+        const select = (columns: string) =>
+          sb
+            .from("profiles")
+            .select(columns)
+            .in(by === "id" ? "id" : "username_lower", by === "id" ? keys : keys.map((k) => k.toLowerCase()));
+        if (Date.now() >= trainersMissingUntil) {
+          const { data, error } = await select("id, username, avatar, trainer");
+          if (!error) return (data ?? []) as unknown as Row[];
+          if (!trainersMissing(error)) {
+            if (!missing(error)) throw new Error(error.message);
+            return accountRows(by, keys, () => null);
+          }
+        }
+        const { data, error } = await select("id, username, avatar");
+        if (!error) return (data ?? []) as unknown as Row[];
         if (!missing(error)) throw new Error(error.message);
       }
       return accountRows(by, keys, () => null);
@@ -100,6 +143,13 @@ export function supabaseAvatarStore(sb: NonNullable<ReturnType<typeof getService
       if (error) throw new Error(error.message);
     },
     saves: () => Date.now() >= missingUntil,
+    async saveTrainer(userId, trainer) {
+      if (Date.now() < trainersMissingUntil) throw new AvatarsUnavailable("migration 0047 not applied");
+      const { error } = await sb.from("profiles").update({ trainer }).eq("id", userId);
+      if (error && trainersMissing(error)) throw new AvatarsUnavailable(error.message);
+      if (error) throw new Error(error.message);
+    },
+    savesTrainer: () => Date.now() >= trainersMissingUntil,
   };
 }
 
@@ -122,10 +172,15 @@ export function storedAvatar(row: Row): StoredAvatar {
   return { ...avatar, usePicture: raw.usePicture === true, picture };
 }
 
-/** What everyone sees for an account: its pick (or default), or its approved picture when it chose to show it. */
+/**
+ * What everyone sees for an account: its pick (or default), or its approved
+ * picture when it chose to show it, and its 3D trainer when it made one.
+ */
 export function publicAvatar(row: Row): PublicAvatar {
   const s = storedAvatar(row);
   const out: PublicAvatar = { pokemonId: s.pokemonId, shiny: s.shiny, frame: s.frame };
+  const trainer = parseTrainer(row.trainer);
+  if (trainer) out.trainer = trainer;
   return s.usePicture && s.picture ? { ...out, picture: s.picture } : out;
 }
 
@@ -193,7 +248,7 @@ export function forget(userId: string, username: string) {
 
 const quietly = <T>(p: Promise<T> | undefined, fallback: T): Promise<T> => (p ?? Promise.resolve(fallback)).catch(() => fallback);
 
-/** What an account has unlocked: its level (synced XP) and best rating in ranked Pokédle or any ladder. */
+/** What an account has unlocked: its level (synced XP, for shiny), its badges and best rating in ranked Pokédle or any ladder. */
 export async function avatarUnlocks(userId: string): Promise<AvatarUnlocks> {
   const [digests, pokedle, ladder] = await Promise.all([
     quietly(progressDigests([userId]), new Map()),
@@ -201,7 +256,8 @@ export async function avatarUnlocks(userId: string): Promise<AvatarUnlocks> {
     quietly(ladderStore()?.standings(battleKey(`u:${userId}`)), []),
   ]);
   const ratings = [...(pokedle && pokedle.games > 0 ? [pokedle.rating] : []), ...ladder.filter((l) => l.standing.games > 0).map((l) => l.standing.rating)];
-  return { level: levelFromXp(digests.get(userId)?.xp ?? 0), tier: bestTier(ratings) };
+  const digest = digests.get(userId);
+  return { level: levelFromXp(digest?.xp ?? 0), tier: bestTier(ratings), badges: digest?.badges ?? 0 };
 }
 
 /** The account's own stored avatar (its choice or default). */
@@ -213,8 +269,9 @@ export async function ownStoredAvatar(user: { id: string; username: string }): P
 
 /** The account's own avatar, as everyone sees it. */
 export async function ownAvatar(user: { id: string; username: string }): Promise<PublicAvatar> {
-  const s = await ownStoredAvatar(user);
-  return publicAvatar({ id: user.id, username: user.username, avatar: s });
+  const store = avatarStore();
+  const row = store ? (await store.rows("id", [user.id]).catch(() => []))[0] : undefined;
+  return publicAvatar(row ?? { id: user.id, username: user.username, avatar: null });
 }
 
 /** Changes what's stored (the moderation flow setting or clearing the approved picture). */
@@ -248,4 +305,50 @@ export async function chooseAvatar(user: { id: string; username: string }, raw: 
   }
   forget(user.id, user.username);
   return { ok: true, avatar: publicAvatar({ id: user.id, username: user.username, avatar: next }), usePicture };
+}
+
+// ---------------------------------------------------------------------------
+// 3D trainers
+// ---------------------------------------------------------------------------
+
+/** The account's own 3D trainer, or null (none made, or before migration 0047). */
+export async function ownTrainer(user: { id: string }): Promise<TrainerConfig | null> {
+  const store = avatarStore();
+  const row = store ? (await store.rows("id", [user.id]).catch(() => []))[0] : undefined;
+  return parseTrainer(row?.trainer);
+}
+
+/** Anyone's public trainer and small avatar by name (null: no such account). */
+export async function publicTrainerByName(name: string): Promise<{ username: string; trainer: TrainerConfig | null; avatar: PublicAvatar } | null> {
+  const store = avatarStore();
+  if (!store) return null;
+  const row = (await store.rows("name", [name]))[0];
+  if (!row) return null;
+  const avatar = publicAvatar(row);
+  return { username: row.username, trainer: avatar.trainer ?? null, avatar };
+}
+
+export type SaveTrainer = { ok: true; avatar: PublicAvatar; trainer: TrainerConfig | null } | { ok: false; status: number; error: string };
+
+/**
+ * Saves a trainer's 3D avatar after checking every choice against what the
+ * account has unlocked; null removes it (small avatars go back to the Pokémon).
+ */
+export async function chooseTrainer(user: { id: string; username: string }, raw: unknown): Promise<SaveTrainer> {
+  const store = avatarStore();
+  if (!store?.savesTrainer()) return { ok: false, status: 503, error: "Trainer avatars open soon." };
+  let trainer: TrainerConfig | null = null;
+  if (raw !== null) {
+    const checked = checkTrainer(raw, await avatarUnlocks(user.id));
+    if (!checked.ok) return { ok: false, status: 403, error: checked.error };
+    trainer = checked.trainer;
+  }
+  try {
+    await store.saveTrainer(user.id, trainer);
+  } catch (err) {
+    if (err instanceof AvatarsUnavailable) return { ok: false, status: 503, error: "Trainer avatars open soon." };
+    throw err;
+  }
+  forget(user.id, user.username);
+  return { ok: true, avatar: await ownAvatar(user), trainer };
 }
