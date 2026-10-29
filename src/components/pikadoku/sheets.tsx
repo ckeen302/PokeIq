@@ -1,10 +1,14 @@
 "use client";
 
+import { useState } from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Sheet } from "@/components/pokedle/sheets";
+import { cn } from "@/lib/utils";
+import { iconButton } from "./parts";
 import { PDK_FAMILY_LABELS, PDK_PP, PDK_RULES, type PdkDifficulty, type PdkFamily } from "@/lib/pikadoku/types";
 import type { PdkPlay, PdkRecord } from "@/lib/pikadoku/play";
-import { archiveDates, archiveKey } from "@/lib/pikadoku/archive";
-import { connNumber } from "@/lib/connections/types";
+import { archiveDates, archiveKey, archiveMonths, monthGrid } from "@/lib/pikadoku/archive";
+import { CONN_LAUNCH_DATE, connNumber } from "@/lib/connections/types";
 import { HowToActions, HowToCards } from "@/components/howto/shared";
 import { PikadokuDemo } from "@/components/howto/PikadokuDemo";
 import { NextPuzzleCountdown } from "./results";
@@ -165,42 +169,110 @@ const ARCHIVE_DIFFS: { id: PdkDifficulty; label: string }[] = [
   { id: "normal", label: "Normal" },
   { id: "expert", label: "Expert" },
 ];
+const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+const monthName = (month: string) => new Date(`${month}-01T12:00:00Z`).toLocaleDateString("en-US", { month: "long", year: "numeric", timeZone: "UTC" });
+const status = (r: PdkRecord | undefined) => (!r ? "" : r.over ? `${r.solved}/9` : r.guesses.length ? "…" : "");
 
-/** Every past daily, all three difficulties. Archive games never reach the board, the streak or the daily results. */
-export function PdkArchiveSheet({ today, archive, onPlay, onClose }: { today: string; archive: Readonly<Record<string, PdkRecord>>; onPlay: (date: string, difficulty: PdkDifficulty) => void; onClose: () => void }) {
-  const dates = archiveDates(today);
-  const status = (r: PdkRecord | undefined) => (!r ? "" : r.over ? (r.won ? "9/9" : `${r.solved}/9`) : r.guesses.length ? "…" : "");
+/**
+ * Every daily as a calendar, with how you did on each (your daily result
+ * where you played it on the day, else your archive game). Pick a day, then a
+ * difficulty. Archive games never reach the board, the streak or the daily results.
+ */
+export function PdkArchiveSheet({
+  today,
+  archive,
+  results,
+  onPlay,
+  onToday,
+  onClose,
+}: {
+  today: string;
+  archive: Readonly<Record<string, PdkRecord>>;
+  /** This device's dailies, played on the day (Normal keyed by date, others "date:difficulty"). */
+  results: Readonly<Record<string, PdkRecord>>;
+  onPlay: (date: string, difficulty: PdkDifficulty) => void;
+  onToday: (difficulty: PdkDifficulty) => void;
+  onClose: () => void;
+}) {
+  const months = archiveMonths(today);
+  const [month, setMonth] = useState(months[months.length - 1]);
+  const past = archiveDates(today);
+  const [picked, setPicked] = useState<string>(past[0] ?? today);
+  const recordFor = (date: string, d: PdkDifficulty) => results[d === "normal" ? date : `${date}:${d}`] ?? archive[archiveKey(date, d)];
+  const mi = months.indexOf(month);
+  const playable = (d: string) => d >= CONN_LAUNCH_DATE && d <= today;
   return (
     <Sheet title="Archive" onClose={onClose}>
       <p className="mb-3 text-sm text-muted-foreground">Play any past daily at any difficulty. Archive games are just for fun: they never count toward the daily board or your streak.</p>
-      {dates.length === 0 ? (
-        <p className="py-6 text-center text-sm text-muted-foreground" data-testid="pdk-archive-empty">
-          No past dailies yet. Come back tomorrow.
-        </p>
-      ) : (
-        <ul className="max-h-[60vh] space-y-1 overflow-y-auto" data-testid="pdk-archive-list">
-          {dates.map((d) => (
-            <li key={d} className="flex flex-wrap items-center justify-between gap-2 rounded-md border px-3 py-2 text-sm">
-              <span className="font-semibold">
-                #{connNumber(d)} <span className="font-normal text-muted-foreground">· {d}</span>
-              </span>
-              <span className="flex gap-1">
-                {ARCHIVE_DIFFS.map(({ id, label }) => (
-                  <button
-                    key={id}
-                    type="button"
-                    onClick={() => onPlay(d, id)}
-                    data-testid={`pdk-archive-${d}-${id}`}
-                    className="rounded border border-foreground/15 px-2 py-1 text-xs font-semibold hover:border-primary hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                  >
-                    {label} <span className="tabular-nums text-muted-foreground">{status(archive[archiveKey(d, id)])}</span>
-                  </button>
-                ))}
-              </span>
-            </li>
+      <div className="space-y-3" data-testid="pdk-archive-calendar">
+        <div className="flex items-center justify-between">
+          <button type="button" className={iconButton} onClick={() => setMonth(months[mi - 1])} disabled={mi <= 0} aria-label="Previous month">
+            <ChevronLeft className="h-5 w-5" />
+          </button>
+          <p className="font-display text-lg font-bold uppercase" aria-live="polite">
+            {monthName(month)}
+          </p>
+          <button type="button" className={iconButton} onClick={() => setMonth(months[mi + 1])} disabled={mi >= months.length - 1} aria-label="Next month">
+            <ChevronRight className="h-5 w-5" />
+          </button>
+        </div>
+        <div className="grid grid-cols-7 gap-1 text-center" role="grid" aria-label={`Dailies in ${monthName(month)}`}>
+          {WEEKDAYS.map((w) => (
+            <span key={w} className="hud-label py-1" aria-hidden>
+              {w}
+            </span>
           ))}
-        </ul>
-      )}
+          {monthGrid(month).map((d, i) => {
+            if (!d) return <span key={i} />;
+            const open = playable(d);
+            const r = recordFor(d, "normal");
+            const s = status(r);
+            return (
+              <button
+                key={d}
+                type="button"
+                role="gridcell"
+                disabled={!open}
+                aria-selected={picked === d}
+                aria-label={`${d}${d === today ? " (today)" : ""}${s ? `: ${s === "…" ? "in progress" : `${s} cells`}` : ""}`}
+                onClick={() => setPicked(d)}
+                data-testid={`pdk-cal-${d}`}
+                className={cn(
+                  "flex aspect-square min-w-0 flex-col items-center justify-center rounded-md border text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:border-transparent disabled:text-muted-foreground/40",
+                  picked === d ? "border-primary bg-primary/15" : "border-foreground/10 hover:border-primary",
+                  r?.over && r.won && picked !== d && "border-success/60 bg-success/15",
+                  d === today && "font-bold"
+                )}
+              >
+                <span className="tabular-nums leading-none">{Number(d.slice(8))}</span>
+                <span className="mt-0.5 h-3 text-[10px] font-semibold leading-3 tabular-nums text-muted-foreground">{s}</span>
+              </button>
+            );
+          })}
+        </div>
+        <div className="rounded-md border border-foreground/15 p-3" data-testid="pdk-archive-day">
+          <p className="mb-2 text-sm font-semibold">
+            #{connNumber(picked)} <span className="font-normal text-muted-foreground">· {picked}{picked === today ? " · today's daily" : ""}</span>
+          </p>
+          <div className="grid grid-cols-3 gap-1.5">
+            {ARCHIVE_DIFFS.map(({ id, label }) => {
+              const r = recordFor(picked, id);
+              return (
+                <button
+                  key={id}
+                  type="button"
+                  onClick={() => (picked === today ? onToday(id) : onPlay(picked, id))}
+                  data-testid={`pdk-archive-${picked}-${id}`}
+                  className="rounded border border-foreground/15 px-2 py-1.5 text-xs font-semibold hover:border-primary hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  {label}
+                  <span className="block tabular-nums font-normal text-muted-foreground">{r?.over ? `${r.solved}/9${typeof r.score === "number" ? ` · ${r.score}` : ""}` : r?.guesses.length ? "In progress" : "Play"}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </div>
     </Sheet>
   );
 }

@@ -4,6 +4,7 @@ import { Connections } from "@/components/connections/Connections";
 import { PuzzleOfTheDay } from "@/components/connections/PuzzleOfTheDay";
 import { GameInfo } from "@/components/seo/GameInfo";
 import { ConnectionsLazyCards } from "@/components/connections/LazyCards";
+import { connDailyViews } from "@/lib/server/connections-today";
 
 export const metadata: Metadata = pageMetadata({
   title: "PokéConnections: the Daily Pokémon Connections Puzzle",
@@ -12,11 +13,25 @@ export const metadata: Metadata = pageMetadata({
   path: "/connections",
 });
 
-export default function ConnectionsPage() {
-  // The tiles come from /api/connections once the player's local date is known; the groups never reach the page.
+/**
+ * Today's tiles ride in the page (never the groups), so the board paints with
+ * the HTML. Regenerated hourly: the page carries yesterday's, today's and
+ * tomorrow's (UTC), which covers every time zone, so a page dealt shortly
+ * before midnight UTC still holds everyone's daily until it's renewed.
+ */
+export const revalidate = 3600;
+
+/** Runs before the board is parsed: marks the player's local date, so the right one of the pre-rendered boards shows. */
+const LOCAL_DAY_SCRIPT = `try{var d=new Date();document.documentElement.dataset.connDay=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}catch(e){}`;
+
+export default async function ConnectionsPage() {
+  // Per-player state (saved guesses, streaks, results) stays on the device and in its own requests; guesses are checked by /api/connections.
+  const initial = await connDailyViews();
   return (
+    <>
+    <script dangerouslySetInnerHTML={{ __html: LOCAL_DAY_SCRIPT }} />
     <div className="space-y-10">
-      <Connections />
+      <Connections initial={initial} />
       <PuzzleOfTheDay />
       <ConnectionsLazyCards />
       <GameInfo
@@ -37,5 +52,6 @@ export default function ConnectionsPage() {
         ]}
       />
     </div>
+    </>
   );
 }

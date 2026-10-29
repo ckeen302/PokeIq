@@ -9,7 +9,6 @@ import { useToday } from "@/lib/use-today";
 import { dlePlayerId } from "@/lib/dle-player";
 import { play } from "@/lib/sound";
 import { pikadokuShareText, shareUrl, type PikadokuShareResult } from "@/lib/share";
-import { rarityGrid } from "@/lib/pikadoku/share";
 import { archiveKey, loadPdkArchive, savePdkArchiveLocal } from "@/lib/pikadoku/archive";
 import { weekNumber, weekStart } from "@/lib/pikadoku/weeks";
 import { challengeLabel, decodeChallenge, encodeChallenge, judgeChallenge } from "@/lib/pikadoku/challenge";
@@ -26,6 +25,7 @@ import {
   type PdkDifficulty,
   type PdkFamily,
   type PdkGridView,
+  type PdkPublicDays,
   type PdkGuess,
   type PdkResultResponse,
   type PdkSettings,
@@ -40,7 +40,8 @@ import { PdkBoard, PdkPicker, SettingToggle, iconButton, useDex, type BoardCell,
 const PdkArchiveSheet = dynamic(() => import("./sheets").then((m) => m.PdkArchiveSheet), { ssr: false });
 const PdkHowToSheet = dynamic(() => import("./sheets").then((m) => m.PdkHowToSheet), { ssr: false });
 const PdkStatsSheet = dynamic(() => import("./sheets").then((m) => m.PdkStatsSheet), { ssr: false });
-import { GuessToast, NextPuzzleCountdown, PpPips, RarityPreview, RevealGrid } from "./results";
+import { GuessToast, NextPuzzleCountdown, PdkDailyStatsCard, PdkStatusBanners, PpPips, RarityPreview, RevealGrid, useOnline } from "./results";
+import { RARITY_EMOJI, rarityGrid, rarityLetter } from "@/lib/pikadoku/share";
 import { cn } from "@/lib/utils";
 
 type Mode = "daily" | "weekly" | "practice" | "archive";
@@ -82,7 +83,13 @@ interface Locked {
   pct: number | null;
 }
 
-export function Pikadoku() {
+/** A daily's public grid baked into the page, when the page carries that date. */
+function embeddedFor(initial: PdkPublicDays | undefined, t: Target | null) {
+  return initial && t && "date" in t ? (initial.days[t.date]?.[t.difficulty] ?? null) : null;
+}
+
+export function Pikadoku({ initial }: { initial?: PdkPublicDays }) {
+  const firstDay = initial ? initial.days[initial.serverDate]?.normal : undefined;
   const today = useToday();
   const progress = useProgress();
   const dex = useDex();
@@ -93,10 +100,16 @@ export function Pikadoku() {
   /** Settings that came with a challenge link (they win over this device's until the next grid), and the result to beat. */
   const [linkSettings, setLinkSettings] = useState<PdkSettings | null>(null);
   const [challenge, setChallenge] = useState<{ solved: number; guesses: number } | null>(null);
-  const [grid, setGrid] = useState<PdkGridView | null>(null);
+  // The page's own grid paints with the HTML; the request below only adds the start token and this device's game.
+  const [grid, setGrid] = useState<PdkGridView | null>(firstDay?.grid ?? null);
+  /** Replaying this device's saved guesses: the board waits so a cell already filled can't be picked twice. */
+  const [restoring, setRestoring] = useState(false);
+  /** The last grid request failed (offline, a server error): the board shows a retry card. */
+  const [loadFailed, setLoadFailed] = useState(false);
+  const [reloadTick, setReloadTick] = useState(0);
   const [pp, setPp] = useState<number>(PDK_PP);
   const [start, setStart] = useState<string | undefined>();
-  const [master, setMaster] = useState<string | null>(null);
+  const [master, setMaster] = useState<string | null>(firstDay?.master ?? null);
   /** The live weekly grid's theme, from the server. */
   const [weeklyInfo, setWeeklyInfo] = useState<{ week: number; theme: string; blurb: string; monday: string; sunday: string } | null>(null);
   const [guesses, setGuesses] = useState<PdkGuess[]>([]);
@@ -159,13 +172,21 @@ export function Pikadoku() {
   const difficulty = prefs?.difficulty ?? "normal";
   const settings = linkSettings ?? prefs?.settings ?? DEFAULT_PDK_SETTINGS;
   const week = today ? weekStart(today) : null;
+  /** The daily being played: pinned when the page opens, so midnight never swaps the grid out from under a game. */
+  const [dailyDate, setDailyDate] = useState<string | null>(null);
+  const untouched = guesses.length === 0 && !result;
+  useEffect(() => {
+    // An untouched daily simply moves on to the new day; a game in progress gets the "new puzzle" banner.
+    if (today && (!dailyDate || (today !== dailyDate && untouched))) setDailyDate(today);
+  }, [today, dailyDate, untouched]);
+  const newPuzzle = mode === "daily" && !!today && !!dailyDate && today > dailyDate;
   /** Archive and weekly games are kept on this device apart from the daily results (and never move the streak). */
-  const storeKey = mode === "weekly" ? (week ? `weekly:${week}` : null) : mode === "archive" ? (archive ? archiveKey(archive.date, archive.difficulty) : null) : today ? (difficulty === "normal" ? today : `${today}:${difficulty}`) : null;
+  const storeKey = mode === "weekly" ? (week ? `weekly:${week}` : null) : mode === "archive" ? (archive ? archiveKey(archive.date, archive.difficulty) : null) : dailyDate ? (difficulty === "normal" ? dailyDate : `${dailyDate}:${difficulty}`) : null;
 
   /** The request fields that name this grid. */
   const target = useMemo<Target | null>(
-    () => (mode === "weekly" ? (week ? { week, difficulty: "normal" } : null) : mode === "archive" ? (archive ? { date: archive.date, difficulty: archive.difficulty, archive: true } : null) : mode === "daily" ? (today ? { date: today, difficulty } : null) : seed ? { practice: seed, difficulty: "normal", settings } : null),
-    [mode, today, difficulty, seed, settings, archive, week]
+    () => (mode === "weekly" ? (week ? { week, difficulty: "normal" } : null) : mode === "archive" ? (archive ? { date: archive.date, difficulty: archive.difficulty, archive: true } : null) : mode === "daily" ? (dailyDate ? { date: dailyDate, difficulty } : null) : seed ? { practice: seed, difficulty: "normal", settings } : null),
+    [mode, dailyDate, difficulty, seed, settings, archive, week]
   );
   const targetKey = target ? JSON.stringify(target) : null;
 
@@ -224,7 +245,11 @@ export function Pikadoku() {
   useEffect(() => {
     if (!target || !targetKey) return;
     let live = true;
-    setGrid(null);
+    const pre = embeddedFor(initial, target);
+    setGrid(pre?.grid ?? null);
+    if (pre) setMaster(pre.master ?? null);
+    setLoadFailed(false);
+    setRestoring(false);
     setResult(null);
     setLocked({});
     setGuesses([]);
@@ -234,6 +259,7 @@ export function Pikadoku() {
     setElapsed(0);
     finishing.current = false;
     startedAt.current = Date.now();
+    const saved = mode === "daily" && storeKey ? pdkBlock(getProgress()).results[storeKey] : (mode === "archive" || mode === "weekly") && storeKey ? loadPdkArchive()[storeKey] : undefined;
     (async () => {
       try {
         const qs = new URLSearchParams();
@@ -250,34 +276,51 @@ export function Pikadoku() {
           qs.set("date", target.date);
           qs.set("difficulty", target.difficulty);
         }
+        // The grid request and this device's replay go out together; neither waits on the other.
+        const replay = saved?.guesses.length
+          ? (setGuesses(saved.guesses), setRestoring(true), fetch("/api/pikadoku", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...target, guesses: saved.guesses }) }).catch(() => null))
+          : null;
         const res = await fetch(`/api/pikadoku?${qs}`, { cache: "no-store" });
-        const data = (await res.json()) as { grid?: PdkGridView; pp?: number; start?: string; error?: string; master?: { by: string }; weekly?: { week: number; theme: string; blurb: string; monday: string; sunday: string } };
+        const data = (await res.json().catch(() => ({}))) as { grid?: PdkGridView; pp?: number; start?: string; error?: string; master?: { by: string }; weekly?: { week: number; theme: string; blurb: string; monday: string; sunday: string } };
         if (!live) return;
-        if (!res.ok || !data.grid) return setError(data.error ?? "Couldn't load the grid.");
-        setGrid(data.grid);
+        if (!res.ok || !data.grid) {
+          // A 4xx is a real answer (that daily isn't available); anything else can be retried.
+          if (res.status >= 500 || res.status === 429 || !res.status) setLoadFailed(true);
+          setRestoring(false);
+          return setError(data.error ?? "Couldn't load the grid.");
+        }
+        // Keep the page's own grid object when it matches, so nothing re-renders.
+        setGrid((g) => (g && JSON.stringify(g) === JSON.stringify(data.grid) ? g : data.grid!));
         setPp(data.pp ?? 0);
         setStart(data.start);
         setMaster(data.master?.by ?? null);
         setWeeklyInfo(data.weekly ?? null);
-        const saved = mode === "daily" && storeKey ? pdkBlock(getProgress()).results[storeKey] : (mode === "archive" || mode === "weekly") && storeKey ? loadPdkArchive()[storeKey] : undefined;
-        if (saved?.guesses.length) {
-          setGuesses(saved.guesses);
-          const r = await fetch("/api/pikadoku", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...target, guesses: saved.guesses }) });
-          const rep = (await r.json()) as { locked?: Record<number, number>; over?: boolean };
-          if (!live || !r.ok || !rep.locked) return;
+        if (replay && saved) {
+          const r = await replay;
+          const rep = r ? ((await r.json().catch(() => ({}))) as { locked?: Record<number, number>; over?: boolean }) : {};
+          if (!live) return;
+          setRestoring(false);
+          if (!r) {
+            setLoadFailed(true);
+            return setError("Couldn't load your game. Check your connection.");
+          }
+          if (!r.ok || !rep.locked) return;
           setLocked(Object.fromEntries(Object.entries(rep.locked).map(([c, id]) => [Number(c), { id, pct: null }])));
           if (rep.over || saved.over) void finishRef.current(saved.guesses, false);
         }
       } catch {
-        if (live) setError("Couldn't load the grid. Check your connection.");
+        if (!live) return;
+        setRestoring(false);
+        setLoadFailed(true);
+        setError(navigator.onLine === false ? "You're offline. The grid will load when you're back online." : "Couldn't load the grid. Check your connection.");
       }
     })();
     return () => {
       live = false;
     };
-    // The grid reloads when the target changes, nothing else.
+    // The grid reloads when the target changes (or a retry), nothing else.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [targetKey]);
+  }, [targetKey, reloadTick]);
   const finishRef = useRef(finish);
   useEffect(() => {
     finishRef.current = finish;
@@ -311,7 +354,7 @@ export function Pikadoku() {
     setError(null);
     try {
       const out = (await post("/api/pikadoku", { guesses, next: { cell, id: p.id } })) as { valid: boolean; softlock?: boolean; pct: number | null };
-      setPicking(null);
+      closePicker();
       if (out.softlock) {
         showToast("That would leave the grid unsolvable. Try another Pokémon.", "info");
         return;
@@ -328,7 +371,8 @@ export function Pikadoku() {
         setHitCell(cell);
         window.setTimeout(() => setHitCell(null), 900);
         // The last guess hands over to the result card instead of a toast.
-        if (!done) showToast(`${p.name} fits!${out.pct !== null ? ` ${out.pct}% picked it.` : ""}${ppNote}`, "hit");
+        // The pick's rarity right away (from recorded answers; nothing when rarity is off).
+        if (!done) showToast(`${p.name} fits!${out.pct !== null ? ` ${RARITY_EMOJI[rarityLetter(out.pct, true)]} ${out.pct}% of players picked it.` : ""}${ppNote}`, "hit");
         play("correct");
       } else {
         setMissCell(cell);
@@ -367,9 +411,9 @@ export function Pikadoku() {
   const [boardScope, setBoardScope] = useState<"all" | "friends">("all");
   const [board, setBoard] = useState<PdkBoardResponse | null>(null);
   useEffect(() => {
-    if (!today || (mode !== "daily" && mode !== "weekly")) return;
+    if (!today || (mode !== "daily" && mode !== "weekly") || (mode === "daily" && !dailyDate)) return;
     let live = true;
-    const which = mode === "weekly" ? `week=${weekStart(today)}` : `date=${today}&difficulty=${difficulty}`;
+    const which = mode === "weekly" ? `week=${weekStart(today)}` : `date=${dailyDate ?? today}&difficulty=${difficulty}`;
     fetch(`/api/pikadoku/leaderboard?${which}${boardScope === "friends" ? "&scope=friends" : ""}`)
       .then((r) => (r.ok ? (r.json() as Promise<PdkBoardResponse>) : null))
       .then((b) => live && setBoard(b))
@@ -377,15 +421,68 @@ export function Pikadoku() {
     return () => {
       live = false;
     };
-  }, [today, mode, difficulty, boardScope, result]);
+  }, [today, dailyDate, mode, difficulty, boardScope, result]);
+
+  const online = useOnline();
+  // Keyboard play: typing on a cell (or anywhere on the page) opens its search with what was typed; the cell gets focus back after.
+  const [pickQuery, setPickQuery] = useState("");
+  const lastCell = useRef<number | null>(null);
+  const openCell = (cell: number, text = "") => {
+    lastCell.current = cell;
+    setPickQuery(text);
+    setPicking(cell);
+  };
+  const typeToSearch = (cell: number, text: string) => openCell(cell, text);
+  /** Whether the player is on the keyboard: only then does focus go back to the board (no stray focus ring after a tap). */
+  const keyboarding = useRef(false);
+  useEffect(() => {
+    const key = (e: KeyboardEvent) => void (e.key !== "Shift" && (keyboarding.current = true));
+    const point = () => void (keyboarding.current = false);
+    window.addEventListener("keydown", key, true);
+    window.addEventListener("pointerdown", point, true);
+    return () => {
+      window.removeEventListener("keydown", key, true);
+      window.removeEventListener("pointerdown", point, true);
+    };
+  }, []);
+  const closePicker = () => {
+    setPicking(null);
+    if (!keyboarding.current) return;
+    const c = lastCell.current;
+    window.requestAnimationFrame(() => {
+      const cells = [...document.querySelectorAll<HTMLButtonElement>('[role="grid"][aria-label="Pikadoku grid"] [data-testid^="pdk-cell-"]')];
+      const el = (c !== null && !cells[c]?.disabled ? cells[c] : null) ?? cells.find((b) => !b.disabled);
+      el?.focus({ preventScroll: true });
+    });
+  };
+  const canType = !!grid && !over && !busy && !restoring && picking === null && sheet === null;
+  useEffect(() => {
+    if (!canType) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.defaultPrevented || e.altKey || e.ctrlKey || e.metaKey || e.key.length !== 1 || !/[\p{L}\p{N}]/u.test(e.key)) return;
+      const t = e.target as HTMLElement | null;
+      if (t && (t.closest("input, textarea, select, [contenteditable=true], [role=dialog]") || t.closest('[role="grid"]'))) return;
+      const first = Array.from({ length: 9 }, (_, i) => i).find((i) => !locked[i]);
+      if (first === undefined) return;
+      e.preventDefault();
+      openCell(lastCell.current !== null && !locked[lastCell.current] ? lastCell.current : first, e.key);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [canType, locked]);
 
   const [nameDraft, setNameDraft] = useState("");
   const cells: BoardCell[] = Array.from({ length: 9 }, (_, i) => ({ id: locked[i]?.id ?? null, pct: locked[i]?.pct ?? null, miss: missCell === i, hit: hitCell === i }));
   const block = pdkBlock(progress ?? getProgress());
+  /** This difficulty's dailies (Normal's are keyed by the bare date, the others by "date:difficulty"). */
+  const sameDifficulty = useMemo(
+    () => Object.fromEntries(Object.entries(block.results).filter(([k]) => (difficulty === "normal" ? k.length === 10 : k.endsWith(`:${difficulty}`)))),
+    [block.results, difficulty]
+  );
   /** The rarity-coloured result: colours only, never a Pokémon. */
   const shareResult = (): PikadokuShareResult => ({
     game: "pikadoku",
-    ...(mode === "weekly" && week ? { weekly: weekNumber(week) } : mode === "daily" && today ? { daily: connNumber(today) } : mode === "archive" && archive ? { daily: connNumber(archive.date), archive: true as const } : {}),
+    ...(mode === "weekly" && week ? { weekly: weekNumber(week) } : mode === "daily" && dailyDate ? { daily: connNumber(dailyDate) } : mode === "archive" && archive ? { daily: connNumber(archive.date), archive: true as const } : {}),
     difficulty: mode === "daily" ? difficulty : mode === "archive" && archive ? archive.difficulty : "normal",
     grid: rarityGrid((i) => !!locked[i], result?.pcts ?? Array.from({ length: 9 }, (_, i) => locked[i]?.pct ?? null)),
     ...(result?.score != null && { score: result.score }),
@@ -405,7 +502,7 @@ export function Pikadoku() {
   const verdict = result && challenge && mode === "practice" ? judgeChallenge({ solved: result.solved, guesses: guesses.length }, challenge) : null;
 
   const rankName = progress?.name ?? "";
-  const heading = mode === "weekly" && week ? `Weekly #${weekNumber(week)}${weeklyInfo ? ` · ${weeklyInfo.theme}` : ""}` : mode === "archive" && archive ? `Archive #${connNumber(archive.date)} · ${DIFF_LABEL[archive.difficulty]}` : mode === "daily" && today ? `Daily #${connNumber(today)} · ${DIFF_LABEL[difficulty]}` : "Unlimited";
+  const heading = mode === "weekly" && week ? `Weekly #${weekNumber(week)}${weeklyInfo ? ` · ${weeklyInfo.theme}` : ""}` : mode === "archive" && archive ? `Archive #${connNumber(archive.date)} · ${DIFF_LABEL[archive.difficulty]}` : mode === "daily" && (dailyDate ?? initial?.serverDate) ? `Daily #${connNumber((dailyDate ?? initial?.serverDate)!)} · ${DIFF_LABEL[difficulty]}` : "Unlimited";
 
   return (
     <MotionConfig reducedMotion="user">
@@ -565,14 +662,21 @@ export function Pikadoku() {
           </Button>
         </div>
 
-        {error && !grid && (
+        <PdkStatusBanners
+          offline={!online}
+          newPuzzle={newPuzzle}
+          onNewPuzzle={() => today && setDailyDate(today)}
+          failed={loadFailed ? (error ?? "Couldn't load the grid.") : null}
+          onRetry={() => (setError(null), setReloadTick((n) => n + 1))}
+        />
+        {error && !grid && !loadFailed && (
           <p className="text-center text-sm text-destructive" role="alert">
             {error}
           </p>
         )}
-        <PdkBoard grid={grid} cells={cells} names={names} onCell={(c) => setPicking(c)} disabled={over || busy} />
+        <PdkBoard grid={grid} cells={cells} names={names} onCell={openCell} onType={typeToSearch} disabled={over || busy || restoring || (loadFailed && guesses.length > 0)} />
         <GuessToast toast={toast} />
-        {error && grid && (
+        {error && grid && !loadFailed && (
           <p className="text-center text-sm text-destructive" role="alert">
             {error}
           </p>
@@ -685,6 +789,9 @@ export function Pikadoku() {
           </Card>
         )}
 
+        {/* Only once this device's progress is read (never in the HTML, so hydration matches). */}
+        {mode === "daily" && progress && <PdkDailyStatsCard streak={block.streak} best={block.best} results={sameDifficulty} todayKey={storeKey} />}
+
         {result && <RevealGrid reveal={result.reveal} grid={grid} locked={locked} />}
 
         {(mode === "daily" || mode === "weekly") && (
@@ -731,18 +838,25 @@ export function Pikadoku() {
           used={used}
           busy={busy}
           title={`${grid.rows[Math.floor(picking / 3)].label} × ${grid.cols[picking % 3].label}`}
+          initialQuery={pickQuery}
           onPick={(p) => void pick(p)}
-          onClose={() => setPicking(null)}
+          onClose={closePicker}
         />
       )}
       {sheet === "archive" && today && (
         <PdkArchiveSheet
           today={today}
           archive={loadPdkArchive()}
+          results={block.results}
           onPlay={(date, d) => {
             setSheet(null);
             setArchive({ date, difficulty: d });
             setMode("archive");
+          }}
+          onToday={(d) => {
+            setSheet(null);
+            patchPrefs({ difficulty: d });
+            setMode("daily");
           }}
           onClose={() => setSheet(null)}
         />

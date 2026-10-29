@@ -170,3 +170,10 @@ export interface PdkBoardResponse {
   rows: PdkBoardRowView[] | null;
   signedIn?: boolean;
 }
+
+/** Daily grids baked into the page (categories only): by date, then difficulty. */
+export interface PdkPublicDays {
+  /** The UTC date the page was rendered on: the grid shown before the player's local date is known. */
+  serverDate: string;
+  days: Record<string, Record<PdkDifficulty, { grid: PdkGridView; master?: string }>>;
+}
