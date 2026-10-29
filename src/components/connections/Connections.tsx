@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import { AnimatePresence, LayoutGroup, MotionConfig, motion } from "framer-motion";
 import { track } from "@vercel/analytics";
-import { BarChart3, CircleHelp, Infinity as InfinityIcon, Lightbulb, PencilLine, RefreshCw, Settings, Shuffle, Swords, Timer, X } from "lucide-react";
+import { BarChart3, CircleHelp, Infinity as InfinityIcon, Lightbulb, PencilLine, RefreshCw, Settings, Shuffle, Swords, Timer, WifiOff, X } from "lucide-react";
 import { connBlock, getProgress, recordConnGame, saveConn, setTrainerName, useProgress, type BadgeDef, type ConnRecord } from "@/lib/progress";
 import { parsePracticeSeed } from "@/lib/connections/pack-seed";
 import { useToday } from "@/lib/use-today";
@@ -34,11 +34,13 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Popover } from "@/components/ui/popover";
 import { ShareButton } from "@/components/share/ShareButton";
-import { GridTile, GroupBar, GuessHistory, MistakeDots, TILE_H4, TILE_H5, WhyPanel, type TileMotion } from "./parts";
+import { GridTile, GroupBar, GuessHistory, LevelLegend, MistakeDots, TILE_H4, TILE_H5, WhyPanel, type TileMotion } from "./parts";
 // The pop-ups (how to play with its demo, stats, the archive) load when first opened, not with the board.
 const ConnHowToSheet = dynamic(() => import("./sheets").then((m) => m.ConnHowToSheet), { ssr: false });
 const ConnStatsSheet = dynamic(() => import("./sheets").then((m) => m.ConnStatsSheet), { ssr: false });
 const ConnArchiveSheet = dynamic(() => import("./sheets").then((m) => m.ConnArchiveSheet), { ssr: false });
+// The stats card shows only on a finished daily.
+const ConnStatsCard = dynamic(() => import("./stats").then((m) => m.ConnStatsCard), { ssr: false, loading: () => <div className="mx-auto h-[19rem] max-w-md animate-pulse rounded-lg border bg-card/60" aria-hidden /> });
 import { ChallengeBanner, ChallengeResult, FeedbackPanel, GroupStats } from "./social";
 import { ComeBackTomorrow, DailyLeaderboard, KeyHints, NewBadges, PerfectBanner, StreakFlame, useCelebration } from "./results";
 import { cn } from "@/lib/utils";
@@ -66,12 +68,33 @@ const REVEAL_MS = 750;
 
 const query = (t: Target): Record<string, string> => (t.kind === "practice" ? { practice: t.seed } : { date: t.date });
 
+/** A puzzle's tiles from the server (a past daily, practice, a community puzzle, or a daily the page didn't carry). */
+async function fetchPuzzle(t: Target): Promise<ConnPuzzleResponse> {
+  const res = await fetch(`/api/connections?${new URLSearchParams(query(t))}`);
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(body.error ?? "Couldn't load the puzzle.");
+  return body as ConnPuzzleResponse;
+}
+
+/** An error's words for the player: a dropped connection says so. */
+function errorText(err: unknown, fallback: string): string {
+  if (typeof navigator !== "undefined" && !navigator.onLine) return "You're offline. Check your connection and try again.";
+  if (err instanceof TypeError) return "Couldn't reach the server. Check your connection and try again.";
+  return err instanceof Error ? err.message : fallback;
+}
+
+/** How long the four tiles of a right guess take to slide into their row before they become a bar. */
+const SLIDE_MS = 380;
+
 function reducedMotion(): boolean {
   return typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 }
 
-/** `customId`: a community puzzle (/connections/c/<id>) to open first instead of the daily. */
-export function Connections({ customId }: { customId?: string } = {}) {
+/**
+ * `customId`: a community puzzle (/connections/c/<id>) to open first instead of the daily.
+ * `initial`: the dailies the page was rendered with (tiles only, by date), so today's board paints with the HTML.
+ */
+export function Connections({ customId, initial }: { customId?: string; initial?: Readonly<Record<string, ConnPuzzleResponse>> } = {}) {
   const progress = useProgress();
   const prefs = useConnPrefs();
   const today = useToday();
@@ -86,6 +109,8 @@ export function Connections({ customId }: { customId?: string } = {}) {
   const [revealed, setRevealed] = useState(0);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  /** What a Retry button does about the error: load the puzzle again, or send the guess again. */
+  const [failed, setFailed] = useState<"load" | "guess" | null>(null);
   const [toast, setToast] = useState<{ text: string; n: number } | null>(null);
   const [tileMotion, setTileMotion] = useState<{ kind: Exclude<TileMotion, null>; ids: number[]; n: number } | null>(null);
   const [sheet, setSheet] = useState<"howto" | "stats" | "archive" | null>(null);
@@ -168,6 +193,7 @@ export function Connections({ customId }: { customId?: string } = {}) {
     setState(null);
     setRevealed(0);
     setError(null);
+    setFailed(null);
     setSummary(null);
     setBoard(null);
     setBoardRows(null);
@@ -185,15 +211,28 @@ export function Connections({ customId }: { customId?: string } = {}) {
     setUsedHint(!!saved?.hinted);
     setElapsed({ banked: saved?.ms ?? 0, since: null });
     try {
-      const res = await fetch(`/api/connections?${new URLSearchParams(query(t))}`);
-      const body = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(body.error ?? "Couldn't load the puzzle. Try again.");
+      // Today's tiles came with the page: no wait. Only the start token (which times the game for the leaderboard) is fetched, in the background.
+      const dailyDate = t.kind === "daily" ? t.date : null;
+      const pre = dailyDate ? initial?.[dailyDate] : undefined;
+      if (pre && dailyDate) {
+        setPuzzle(pre);
+        setOrder(pre.tiles.map((x) => x.id));
+        if (!list.length) setBusy(false);
+        if (!startFor(dailyDate)) {
+          void fetch(`/api/connections?${new URLSearchParams(query(t))}`)
+            .then((r) => (r.ok ? (r.json() as Promise<ConnPuzzleResponse>) : null))
+            .then((p) => p && rememberStart(dailyDate, p.start))
+            .catch(() => undefined);
+        }
+      }
+      const p = pre ?? (await fetchPuzzle(t));
       if (id !== reqRef.current) return;
-      const p = body as ConnPuzzleResponse;
-      // The first deal of the day times the game for the leaderboard (a reload doesn't restart the clock).
-      if (t.kind === "daily") rememberStart(t.date, p.start);
-      setPuzzle(p);
-      setOrder(p.tiles.map((x) => x.id));
+      if (!pre) {
+        // The first deal of the day times the game for the leaderboard (a reload doesn't restart the clock).
+        if (t.kind === "daily") rememberStart(t.date, p.start);
+        setPuzzle(p);
+        setOrder(p.tiles.map((x) => x.id));
+      }
       if (list.length) {
         const r = await fetch("/api/connections", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...query(t), guesses: list }) });
         const restored = await r.json();
@@ -209,11 +248,14 @@ export function Connections({ customId }: { customId?: string } = {}) {
         if (id === reqRef.current && hb?.available) setHint(hb.hint);
       }
     } catch (err) {
-      if (id === reqRef.current) setError(err instanceof Error ? err.message : "Something went wrong.");
+      if (id === reqRef.current) {
+        setError(errorText(err, "Couldn't load the puzzle."));
+        setFailed("load");
+      }
     } finally {
       if (id === reqRef.current) setBusy(false);
     }
-  }, []);
+  }, [initial]);
 
   // Today's daily once local storage is ready; roll over at midnight unless mid-game.
   useEffect(() => {
@@ -223,8 +265,22 @@ export function Connections({ customId }: { customId?: string } = {}) {
     seenTodayRef.current = today;
     if (prev === null && customId) void load({ kind: "practice", seed: customSeed(customId) });
     // The first daily never replaces a puzzle the player already asked for (Unlimited tapped before the page was ready).
-    else if (prev === null ? reqRef.current === 0 : mode === "daily" && (guesses.length === 0 || over)) void load({ kind: "daily", date: today });
-  }, [today, progress, mode, guesses.length, over, load, customId]);
+    // At midnight an untouched daily rolls over by itself; a started or finished one stays, with a "new puzzle" banner.
+    else if (prev === null ? reqRef.current === 0 : mode === "daily" && guesses.length === 0) void load({ kind: "daily", date: today });
+  }, [today, progress, mode, guesses.length, load, customId]);
+
+  // Offline: the board stays playable to look at; guesses wait for the connection.
+  const [online, setOnline] = useState(true);
+  useEffect(() => {
+    const sync = () => setOnline(navigator.onLine);
+    sync();
+    window.addEventListener("online", sync);
+    window.addEventListener("offline", sync);
+    return () => {
+      window.removeEventListener("online", sync);
+      window.removeEventListener("offline", sync);
+    };
+  }, []);
 
   // How to play, on a first visit.
   useEffect(() => {
@@ -385,6 +441,7 @@ export function Connections({ customId }: { customId?: string } = {}) {
     const id = ++reqRef.current;
     setBusy(true);
     setError(null);
+    setFailed(null);
     try {
       const res = await fetch("/api/connections", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...query(target), guesses: next }) });
       const body = await res.json();
@@ -412,6 +469,12 @@ export function Connections({ customId }: { customId?: string } = {}) {
         await new Promise((r) => setTimeout(r, reduced ? 0 : JUMP_MS));
         if (id !== reqRef.current) return;
         setTileMotion(null);
+        if (!reduced) {
+          // The four slide into the next row (the tiles animate their layout), then that row becomes the bar.
+          setOrder((o) => [...pick, ...o.filter((x) => !pick.includes(x))]);
+          await new Promise((r) => setTimeout(r, SLIDE_MS));
+          if (id !== reqRef.current) return;
+        }
         setSelected([]);
         setState(result);
         if (result.won) play("fanfare");
@@ -427,7 +490,10 @@ export function Connections({ customId }: { customId?: string } = {}) {
         window.setTimeout(() => setTileMotion((m) => (m?.kind === "shake" ? null : m)), 450);
       }
     } catch (err) {
-      if (id === reqRef.current) setError(err instanceof Error ? err.message : "Something went wrong.");
+      if (id === reqRef.current) {
+        setError(errorText(err, "Couldn't check that guess."));
+        setFailed("guess");
+      }
     } finally {
       if (id === reqRef.current) setBusy(false);
     }
@@ -516,6 +582,9 @@ export function Connections({ customId }: { customId?: string } = {}) {
     "relative rounded-md p-2 text-muted-foreground transition-colors hover:bg-screen/10 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-40";
   const motionFor = (id: number): TileMotion => (tileMotion?.ids.includes(id) ? tileMotion.kind : null);
   const todayRecord = today && progress ? connBlock(progress).results[today] : undefined;
+  const todayMistakes = todayRecord?.over ? (todayRecord.solved ? todayRecord.mistakes : CONN_MAX_MISTAKES) : null;
+  /** The day rolled over while yesterday's daily stayed open (started or finished). */
+  const newDay = target?.kind === "daily" && !!today && target.date < today;
 
   return (
     <MotionConfig reducedMotion="user">
@@ -684,6 +753,22 @@ export function Connections({ customId }: { customId?: string } = {}) {
           </p>
         )}
 
+        {!online && (
+          <p className="mx-auto flex max-w-md items-center justify-center gap-2 rounded-md border border-warning/50 bg-warning/[0.08] px-3 py-2 text-center text-sm" role="status" data-testid="conn-offline">
+            <WifiOff className="h-4 w-4 shrink-0 text-warning" aria-hidden /> You&apos;re offline. Your game is saved; guesses are checked once you&apos;re back.
+          </p>
+        )}
+        {newDay && (
+          <div className="mx-auto flex max-w-md flex-wrap items-center justify-center gap-x-3 gap-y-1.5 rounded-md border border-success/50 bg-success/[0.08] px-3 py-2 text-center text-sm" role="status" data-testid="conn-new-day">
+            <span>
+              <b>New puzzle available:</b> PokéConnections #{connNumber(today!)} is out.
+            </span>
+            <Button size="sm" variant="success" className="h-7 rounded-full px-3" onClick={backToDaily}>
+              Play it
+            </Button>
+          </div>
+        )}
+
         {/* The board: found groups as bars on top, the tiles still in play below. */}
         <div className="relative">
           <AnimatePresence>
@@ -703,12 +788,12 @@ export function Connections({ customId }: { customId?: string } = {}) {
             )}
           </AnimatePresence>
 
-          {!puzzle ? (
-            <div className={cn("grid gap-2 sm:gap-2.5", size === 5 ? "grid-cols-5" : "grid-cols-4")} aria-busy="true" aria-label="Loading the puzzle">
-              {Array.from({ length: size * size }, (_, i) => (
-                <div key={i} className={cn("animate-pulse rounded-lg border bg-card", size === 5 ? TILE_H5 : TILE_H4)} />
-              ))}
-            </div>
+          {!puzzle && failed === "load" ? (
+            <RetryCard size={size} message={error ?? "Couldn't load the puzzle."} onRetry={() => target && void load(target)} />
+          ) : !puzzle && !target && initial ? (
+            <PreBoard initial={initial} />
+          ) : !puzzle ? (
+            <BoardSkeleton size={size} />
           ) : (
             <LayoutGroup>
               <div className="space-y-2 sm:space-y-2.5">
@@ -742,22 +827,26 @@ export function Connections({ customId }: { customId?: string } = {}) {
           )}
         </div>
 
-        {error && (
-          <p className="text-center text-sm text-destructive" role="alert">
-            {error}
-          </p>
+        {error && !(failed === "load" && !puzzle) && (
+          <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-center text-sm text-destructive" role="alert" data-testid="conn-error">
+            <span>{error}</span>
+            {failed && (
+              <Button size="sm" variant="outline" className="h-7 rounded-full px-3" onClick={() => (failed === "guess" ? void submit() : target && void load(target))}>
+                <RefreshCw className="h-3.5 w-3.5" aria-hidden /> Try again
+              </Button>
+            )}
+          </div>
         )}
         <div className="sr-only" aria-live="polite" role="status">
           {announce}
         </div>
 
-        {/* While the tiles load, hold the controls' space so nothing below the board jumps when they arrive. */}
-        {!puzzle && !error && <div aria-hidden className="h-[4.5rem] sm:h-[6.875rem]" />}
-        {!over && puzzle && (
+        {/* The controls show (disabled) while the tiles load too, so nothing below the board jumps when they arrive. */}
+        {!over && (puzzle || !error) && (
           <div className="space-y-3 sm:space-y-4">
             <MistakeDots left={mistakesLeft} max={connMaxMistakes(size)} />
             <div className="flex flex-wrap items-center justify-center gap-1.5 sm:gap-2.5">
-              <Button variant="outline" onClick={shuffle} disabled={busy} className="rounded-full px-3 sm:min-w-28 sm:px-4" data-testid="conn-shuffle">
+              <Button variant="outline" onClick={shuffle} disabled={busy || !puzzle} className="rounded-full px-3 sm:min-w-28 sm:px-4" data-testid="conn-shuffle">
                 <Shuffle className="hidden h-4 w-4 min-[400px]:inline sm:inline" aria-hidden /> Shuffle
               </Button>
               <Button variant="outline" onClick={() => setSelected([])} disabled={busy || selected.length === 0} className="rounded-full px-3 sm:min-w-28 sm:px-4" data-testid="conn-deselect">
@@ -770,7 +859,7 @@ export function Connections({ customId }: { customId?: string } = {}) {
                 <Button
                   variant="outline"
                   onClick={() => void takeHint()}
-                  disabled={busy || hintBusy || usedHint}
+                  disabled={busy || hintBusy || usedHint || !puzzle}
                   className="w-10 rounded-full px-0 sm:w-auto sm:min-w-28 sm:px-4"
                   title="Reveals one Pokémon from the easiest group left. Once per puzzle, and you rank below everyone who played without it."
                   aria-label={usedHint ? "Hint used" : "Hint"}
@@ -782,6 +871,7 @@ export function Connections({ customId }: { customId?: string } = {}) {
             </div>
             {challenge && daily?.kind === "daily" && challenge.date === daily.date && <ChallengeBanner challenge={challenge} />}
             <KeyHints />
+            <LevelLegend size={size} symbols={symbols} />
             {prefs?.showTimer && (
               <p className="flex items-center justify-center gap-1.5 font-mono text-sm tabular-nums text-muted-foreground" role="timer" aria-label="Time">
                 <Timer className="h-4 w-4" aria-hidden /> {clock(ms / 1000)}
@@ -872,13 +962,14 @@ export function Connections({ customId }: { customId?: string } = {}) {
                 {mode !== "daily" && <p className="text-xs text-muted-foreground">{mode === "archive" ? "Archive" : "Practice"} games don&apos;t count toward streaks or stats.</p>}
               </CardContent>
             </Card>
+            {mode === "daily" && stats && <ConnStatsCard stats={stats} todayMistakes={todayMistakes} />}
             <WhyPanel groups={state.reveal} symbols={symbols} />
           </motion.section>
         )}
       </div>
 
       {sheet === "howto" && <ConnHowToSheet onClose={closeSheet} onNever={closeHowToForever} />}
-      {sheet === "stats" && stats && <ConnStatsSheet stats={stats} todayMistakes={todayRecord?.over ? (todayRecord.solved ? todayRecord.mistakes : CONN_MAX_MISTAKES) : null} onClose={closeSheet} />}
+      {sheet === "stats" && stats && <ConnStatsSheet stats={stats} todayMistakes={todayMistakes} onClose={closeSheet} />}
       {sheet === "archive" && today && progress && (
         <ConnArchiveSheet
           today={today}
@@ -888,10 +979,75 @@ export function Connections({ customId }: { customId?: string } = {}) {
             setSheet(null);
             void load({ kind: "archive", date: d });
           }}
+          onToday={() => {
+            setSheet(null);
+            backToDaily();
+          }}
           onClose={closeSheet}
         />
       )}
     </MotionConfig>
+  );
+}
+
+const gridCols = (size: ConnSize) => (size === 5 ? "grid-cols-5" : "grid-cols-4");
+
+/** The board's exact shape while the tiles load. */
+function BoardSkeleton({ size, className }: { size: ConnSize; className?: string }) {
+  return (
+    <div className={cn("grid gap-2 sm:gap-2.5", gridCols(size), className)} aria-busy="true" aria-label="Loading the puzzle" data-testid="conn-skeleton">
+      {Array.from({ length: size * size }, (_, i) => (
+        <div key={i} className={cn("animate-pulse rounded-lg border bg-card", size === 5 ? TILE_H5 : TILE_H4)} />
+      ))}
+    </div>
+  );
+}
+
+/**
+ * The boards that came with the page, painted before any JavaScript runs:
+ * one per date a player anywhere could be on, and only the player's own
+ * shows (the page's inline script marks the local date on <html>). A date
+ * the page didn't carry shows the skeleton until the game loads it.
+ */
+function PreBoard({ initial }: { initial: Readonly<Record<string, ConnPuzzleResponse>> }) {
+  const dates = Object.keys(initial).filter((d) => /^\d{4}-\d{2}-\d{2}$/.test(d));
+  const css = dates.map((d) => `html[data-conn-day="${d}"] .conn-pre[data-date="${d}"]{display:grid}html[data-conn-day="${d}"] .conn-pre-skel{display:none}`).join("");
+  return (
+    <>
+      <style dangerouslySetInnerHTML={{ __html: css }} />
+      {dates.map((d) => (
+        <div key={d} className="conn-pre hidden grid-cols-4 gap-2 sm:gap-2.5" data-date={d} aria-hidden>
+          {initial[d].tiles.map((t, i) => (
+            <GridTile key={t.id} tile={t} index={i} selected={false} disabled={false} motionKind={null} order={0} onToggle={() => undefined} onKeyDown={() => undefined} pre />
+          ))}
+        </div>
+      ))}
+      <BoardSkeleton size={4} className="conn-pre-skel" />
+    </>
+  );
+}
+
+/** The puzzle couldn't load: the board's space, with what went wrong and a retry. */
+function RetryCard({ size, message, onRetry }: { size: ConnSize; message: string; onRetry: () => void }) {
+  return (
+    <div className="relative" data-testid="conn-retry">
+      <div className={cn("grid gap-2 opacity-40 sm:gap-2.5", gridCols(size))} aria-hidden>
+        {Array.from({ length: size * size }, (_, i) => (
+          <div key={i} className={cn("rounded-lg border bg-card", size === 5 ? TILE_H5 : TILE_H4)} />
+        ))}
+      </div>
+      <div className="absolute inset-0 flex items-center justify-center p-4">
+        <Card className="w-full max-w-sm border-destructive/40 shadow-[0_10px_30px_rgb(0_0_0/0.35)]" role="alert">
+          <CardContent className="space-y-3 p-5 text-center">
+            <p className="font-display text-xl font-bold uppercase tracking-tight">Puzzle didn&apos;t load</p>
+            <p className="text-sm text-muted-foreground">{message}</p>
+            <Button onClick={onRetry} className="rounded-full px-5" data-testid="conn-retry-button">
+              <RefreshCw className="h-4 w-4" aria-hidden /> Try again
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
   );
 }
 
