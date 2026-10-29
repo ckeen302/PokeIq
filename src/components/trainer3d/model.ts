@@ -292,6 +292,8 @@ interface LockOpts {
   tip?: number;
   /** How much of the length narrows to the tip (1: all of it; less keeps it full-width longer). */
   end?: number;
+  /** How much of the length it takes to swell from the root to full width. */
+  root?: number;
   seg?: number;
   radial?: number;
   /** Which way the lock's back faces at a point (default: away from the head, or from the body's axis below it). */
@@ -310,6 +312,7 @@ function strand(points: THREE.Vector3[], w: number, th: number, opts: LockOpts =
   const radial = opts.radial ?? 12;
   const tip = opts.tip ?? 0.85;
   const end = opts.end ?? 1;
+  const root = opts.root ?? 0.08;
   const curve = new THREE.CatmullRomCurve3(points, false, "centripetal");
   const pos = new Float32Array((seg + 1) * radial * 3);
   const index: number[] = [];
@@ -325,7 +328,7 @@ function strand(points: THREE.Vector3[], w: number, th: number, opts: LockOpts =
     else out.set(c.x, Math.max(c.y, 0), c.z);
     side.crossVectors(tan, out).normalize();
     out.crossVectors(side, tan).normalize();
-    const size = Math.max(0.002, Math.sqrt(Math.min(1, t / 0.08)) * (1 + 0.18 * Math.sin(Math.PI * Math.min(1, t * 1.6))) * Math.pow(Math.min(1, (1 - t) / end), tip));
+    const size = Math.max(0.002, Math.sqrt(Math.min(1, t / root)) * (1 + 0.18 * Math.sin(Math.PI * Math.min(1, t * 1.6))) * Math.pow(Math.min(1, (1 - t) / end), tip));
     for (let j = 0; j < radial; j++) {
       const a = (j / radial) * TAU;
       const u = Math.cos(a);
@@ -1103,7 +1106,7 @@ function onHead(polar: number, azimuth: number, lift = 0): THREE.Vector3 {
 }
 
 /** How far the hair's crown sits back from the top of the head (the hairline rises at the front). */
-const HAIR_TILT = -0.45;
+const HAIR_TILT = -0.52;
 const axisX = v3(1, 0, 0);
 /** A point on the tilted hair cap: polar from its crown, azimuth from the front. */
 const onCap = (polar: number, az: number, r = HEAD_R * 1.05) => onHead(polar, az, r - HEAD_R).applyAxisAngle(axisX, HAIR_TILT);
@@ -1122,17 +1125,18 @@ function buildHair(kit: Kit, head: THREE.Group, cfg: TrainerConfig, m: THREE.Mat
 
   // The cap of hair (thin for a buzz cut), then locks from the crown over it.
   const buzz = cfg.hair === "buzz";
-  kit.mesh(new THREE.SphereGeometry(buzz ? R * 1.02 : R * 1.045, 40, 24, 0, TAU, 0, buzz ? 1.7 : 1.86), m, hairGroup, [0, 0.0, 0], [HAIR_TILT, 0, 0], [1, 0.97, 0.98]);
+  kit.mesh(new THREE.SphereGeometry(buzz ? R * 1.02 : R * 1.045, 40, 24, 0, TAU, 0, buzz ? 1.65 : 1.82), m, hairGroup, [0, 0.0, 0], [HAIR_TILT, 0, 0], [1, 0.97, 0.98]);
   /** Locks from the crown down over the cap, ending at polar `end(az)` with the tips flicking out. */
   const crown = (count: number, end: (az: number) => number, flick = 0.05, w = 0.13) => {
     for (const i of n(count)) {
       const az = ((i + 0.5) / count) * TAU;
       const e = end(az);
       if (e <= 0) continue;
-      const tipOut = onCap(e + 0.12, az + 0.06, hatCover >= 1 ? R * 1.01 : R * 1.05 + flick);
+      // The tips flick out, least at the front where they lie on the brow.
+      const tipOut = onCap(e + 0.12, az + 0.06, hatCover >= 1 ? R * 1.01 : R * 1.05 + flick * (0.6 - 0.4 * Math.cos(az)));
       // Under a hat only the ends show: start them lower and keep them in close.
       const pts = hatCover >= 1 ? [onCap(e * 0.55, az, R * 0.96), onCap(e * 0.8, az + 0.03, R * 1.03)] : [onCap(0.02, az, R * 0.98), onCap(e * 0.35, az, R * 1.06), onCap(e * 0.72, az + 0.03, R * 1.07)];
-      lock([...pts, onCap(e, az + 0.05, hatCover >= 1 ? R * 1.02 : R * 1.06), tipOut], w, 0.055, { tip: 0.9 });
+      lock([...pts, onCap(e, az + 0.05, hatCover >= 1 ? R * 1.02 : R * 1.06), tipOut], w, 0.055, { tip: 0.9, root: 0.4 });
     }
   };
   /** Cap edge: low at the back and sides, up at the hairline in front. */
@@ -1182,9 +1186,11 @@ function buildHair(kit: Kit, head: THREE.Group, cfg: TrainerConfig, m: THREE.Mat
     }
   };
   /** Chunky spikes: [polar, azimuth, length] on the head, leaning towards `lean`. */
-  const spikesFrom = (list: [number, number, number][], lean: THREE.Vector3, w = 0.11, curl = 0.05) => {
+  const spikesFrom = (list: [number, number, number][], tilt: THREE.Vector3, w = 0.11, curl = 0.05) => {
+    // Under a hat they poke out below it, pointing down.
+    const lean = hatCover >= 1 ? v3(tilt.x, Math.min(tilt.y, -0.3), tilt.z) : tilt;
     for (const [polar, az, len] of list) {
-      if (hatCover >= 1 && polar < 1.05) continue;
+      if (hatCover >= 1 && polar < 1.3) continue;
       const p = onHead(polar, az, -0.06);
       const d = p.clone().normalize().add(lean).normalize();
       const bend = v3(0, -1, 0).addScaledVector(d, d.y).normalize().multiplyScalar(curl);
@@ -1334,7 +1340,7 @@ function buildHair(kit: Kit, head: THREE.Group, cfg: TrainerConfig, m: THREE.Mat
       for (const s of [-1, 1]) {
         const g = group(hairGroup, [s * R * 0.9, 0.08, -0.1], [0, 0, s * 0.2]);
         kit.mesh(new THREE.TorusGeometry(0.05, 0.024, 10, 18), kit.mat(colorHex(cfg.accColor)), g, [0, 0, 0], [0, Math.PI / 2, 0]);
-        tail(g, [-1, 0, 1].map((k) => [v3(0, 0, k * 0.02), v3(s * 0.1, -0.12, -0.04 + k * 0.04), v3(s * 0.12, -0.4, -0.04 + k * 0.05), v3(s * 0.08, -0.62, k * 0.03)]), 0.065, v3(s, 0, 0));
+        tail(g, [-1, 0, 1].map((k) => [v3(0, 0, k * 0.02), v3(s * 0.1, -0.12, -0.04 + k * 0.04), v3(s * 0.12, -0.4, -0.04 + k * 0.05), v3(s * 0.08, -0.62, k * 0.03)]), 0.085, v3(s, 0, 0));
         swing(g, 0.6, s);
       }
       break;
@@ -1389,19 +1395,21 @@ function buildBangs(kit: Kit, g: THREE.Group, cfg: TrainerConfig, m: THREE.Mater
   const R = HEAD_R;
   const bangs = cfg.bangs === "auto" ? HAIR_BANGS[cfg.hair] : cfg.bangs;
   const hatted = hatCover > 0;
+  // Under a hat (or visor) the fringe starts below the brim.
+  const top = hatted ? 0.32 : 0.72;
   /** A point on the head's front: x across, y up (unit sphere), pushed out by `lift`. */
   const at = (x: number, y: number, lift = 0.03) => {
-    const z = Math.sqrt(Math.max(0, 1 - x * x - y * y));
-    return v3(x, y, z).multiplyScalar(R + lift);
+    const yy = Math.min(y, top + 0.04);
+    const z = Math.sqrt(Math.max(0, 1 - x * x - yy * yy));
+    return v3(x, yy, z).multiplyScalar(R + lift);
   };
   const lock = (pts: THREE.Vector3[], w: number, th: number, tip = 0.9, end = 1) => kit.mesh(strand(pts, w, th, { tip, end }), m, g);
-  const top = hatted ? 0.45 : 0.72;
   switch (bangs) {
     case "tufts": {
       const count = cfg.hair === "curly" ? 5 : 4;
       for (let i = 0; i < count; i++) {
         const x = (i / (count - 1) - 0.5) * 0.7;
-        lock([at(x * 0.8, top, 0.0), at(x * 0.95, top - 0.12, 0.05), at(x * 1.05 + 0.03, 0.34, 0.05), at(x * 1.1 + 0.05, hatted ? 0.22 : 0.24, 0.03)], 0.1, 0.05, 1.1);
+        lock([at(x * 0.8, top, 0.0), at(x * 0.95, top - 0.06, 0.05), at(x * 1.05 + 0.03, hatted ? 0.24 : 0.34, 0.05), at(x * 1.1 + 0.05, hatted ? 0.16 : 0.24, 0.03)], 0.1, 0.05, 1.1);
       }
       return;
     }
@@ -1427,7 +1435,7 @@ function buildBangs(kit: Kit, g: THREE.Group, cfg: TrainerConfig, m: THREE.Mater
       return;
     case "spiky":
       for (const x of [-0.22, 0.02, 0.24]) {
-        const a = at(x, hatted ? 0.4 : 0.48, 0.0);
+        const a = at(x, 0.48, 0.0);
         const b = at(x * 1.15 + 0.03, hatted ? 0.1 : 0.12, 0.06);
         lock([a, a.clone().lerp(b, 0.5).add(v3(0, 0, 0.04)), b], 0.085, 0.05, 1.2);
       }
