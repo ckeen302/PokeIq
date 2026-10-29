@@ -303,11 +303,12 @@ function Hat({ t }: { t: TrainerConfig }) {
     case "ballcap":
     case "twotone":
     case "crown": {
-      const panel = t.hat === "champion" ? "#1d1e22" : t.hat === "twotone" ? trim : t.hat === "ballcap" || t.hat === "crown" ? null : "#f6f6f2";
+      const panel = t.hat === "champion" ? "#1d1e22" : t.hat === "ballcap" || t.hat === "crown" || t.hat === "twotone" ? null : "#f6f6f2";
       return (
         <g>
           <path d={dome} fill={color} />
           {t.hat === "ace" && <path d="M30.5 8.6 h3 V25.5 h-3 Z" fill={trim} />}
+          {t.hat === "twotone" && <path d="M14.6 25.5 h34.8 v-3 h-34.8 Z" fill={trim} />}
           {panel && <path d="M23 25 C23 17.5, 27 14, 32 14 C37 14, 41 17.5, 41 25 Z" fill={panel} />}
           {t.hat === "league" && <path d="M29.6 21.5 A2.6 2.6 0 1 1 34.4 21.5" fill="none" stroke={trim} strokeWidth="1.6" strokeLinecap="round" />}
           {t.hat === "ballcap" && (
@@ -317,7 +318,7 @@ function Hat({ t }: { t: TrainerConfig }) {
             </g>
           )}
           {t.hat === "crown" && <path d="M19 19 L22.5 14 L26 18.5 L32 12.5 L38 18.5 L41.5 14 L45 19" fill="none" stroke={trim} strokeWidth="1.3" strokeLinejoin="round" />}
-          {(t.hat === "cap" || t.hat === "ace" || t.hat === "champion" || t.hat === "twotone") && <circle cx="32" cy="20.5" r="2.6" fill={t.hat === "champion" ? gold : t.hat === "twotone" ? color : trim} />}
+          {(t.hat === "cap" || t.hat === "ace" || t.hat === "champion") && <circle cx="32" cy="20.5" r="2.6" fill={t.hat === "champion" ? gold : trim} />}
           <path d={brim} fill={t.hat === "ace" || t.hat === "twotone" ? trim : darker(color, t.hat === "champion" ? 0.15 : 0.08)} />
           {t.hat === "champion" && <path d="M12 26.5 C14 29, 50 29, 52 26.5" fill="none" stroke={gold} strokeWidth="1.2" />}
           <circle cx="32" cy="9" r="1.6" fill={t.hat === "champion" ? gold : darker(color, 0.1)} />

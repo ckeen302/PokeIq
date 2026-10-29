@@ -62,6 +62,7 @@ class Kit {
   private lines = new Map<string, THREE.ShaderMaterial>();
   private geos: THREE.BufferGeometry[] = [];
   private texs: THREE.Texture[] = [];
+  private extra: THREE.Material[] = [];
 
   mat(hex: string, extra?: THREE.MeshToonMaterialParameters & { key?: string }): THREE.MeshToonMaterial {
     const key = `${hex}:${extra?.key ?? ""}:${extra?.side ?? ""}:${extra?.transparent ?? ""}`;
@@ -97,6 +98,12 @@ class Kit {
     return t;
   }
 
+  /** A one-off material, disposed with the rest. */
+  own<M extends THREE.Material>(m: M): M {
+    this.extra.push(m);
+    return m;
+  }
+
   mesh(g: THREE.BufferGeometry, m: THREE.Material, parent: THREE.Object3D, pos?: V3, rot?: V3, scale?: V3 | number, opts?: MeshOpts): THREE.Mesh {
     const mesh = new THREE.Mesh(this.geo(g), m);
     if (pos) mesh.position.set(...pos);
@@ -114,6 +121,7 @@ class Kit {
     for (const m of this.mats.values()) m.dispose();
     for (const m of this.lines.values()) m.dispose();
     for (const t of this.texs) t.dispose();
+    for (const m of this.extra) m.dispose();
   }
 }
 
@@ -360,8 +368,8 @@ export function buildTrainer(cfg: TrainerConfig): TrainerModel {
   const front = (x: number) => ({ x, z: Math.sqrt(Math.max(0, (0.28 * w) ** 2 - x * x)) * 0.82 + 0.01 });
   if (cfg.top === "longtee" && topTrim !== top)
     for (const s of [-1, 1]) {
-      kit.mesh(new THREE.BoxGeometry(0.018, 0.4, 0.018), mTopTrim, torso, [s * 0.1, 0.25, front(0.1).z - 0.012], [-0.08, 0, s * 0.12], undefined, { bare: true });
-      kit.mesh(new THREE.BoxGeometry(0.15, 0.018, 0.018), mTopTrim, torso, [s * 0.18, 0.42, front(0.18).z - 0.06], [0, s * -0.6, s * -0.35], undefined, { bare: true });
+      kit.mesh(new THREE.BoxGeometry(0.018, 0.4, 0.018), mTopTrim, torso, [s * 0.1, 0.25, front(0.1).z + 0.012], [-0.1, 0, s * 0.12], undefined, { bare: true });
+      kit.mesh(new THREE.BoxGeometry(0.15, 0.018, 0.018), mTopTrim, torso, [s * 0.17, 0.43, front(0.17).z - 0.03], [-0.5, s * -0.55, s * -0.35], undefined, { bare: true });
     }
   if (cfg.top === "hoodie") kit.mesh(new RoundedBoxGeometry(0.3, 0.12, 0.06, 3, 0.03), kit.mat(shade(top, -0.06)), torso, [0, 0.12, 0.215], [0.12, 0, 0]);
   if (cfg.top === "track") kit.mesh(new THREE.BoxGeometry(0.018, 0.4, 0.02), mAccent, torso, [0, 0.24, 0.232], [-0.06, 0, 0], undefined, { bare: true });
@@ -756,7 +764,7 @@ function buildFace(kit: Kit, head: THREE.Group, cfg: TrainerConfig, skin: string
   tex.colorSpace = THREE.SRGBColorSpace;
   tex.anisotropy = 4;
   const geo = new THREE.SphereGeometry(HEAD_R * 1.004, 48, 32, Math.PI / 2 - FACE_SPAN.x, FACE_SPAN.x * 2, FACE_SPAN.top, FACE_SPAN.h);
-  kit.mesh(geo, new THREE.MeshBasicMaterial({ map: tex, transparent: true, depthWrite: false }), head, [0, HEAD_Y, 0], undefined, [1, 0.95, 0.96], { bare: true }).renderOrder = 1;
+  kit.mesh(geo, kit.own(new THREE.MeshBasicMaterial({ map: tex, transparent: true, depthWrite: false })), head, [0, HEAD_Y, 0], undefined, [1, 0.95, 0.96], { bare: true }).renderOrder = 1;
   // Eyewear (unless the sunglasses are up on a sun hat).
   if (cfg.eyewear !== "none" && !(cfg.eyewear === "sunglasses" && cfg.hat === "sunhat")) buildGlasses(kit, head, cfg, [0, HEAD_Y - 0.06, HEAD_R * 0.98]);
 }
@@ -774,7 +782,7 @@ function buildGlasses(kit: Kit, parent: THREE.Object3D, cfg: TrainerConfig, at: 
     lens.scale.set(round ? 1 : 1.18, round ? 1 : 0.84, 1);
     kit.mesh(new THREE.TorusGeometry(0.085, sun ? 0.016 : 0.011, 6, 24), frame, lens, undefined, undefined, undefined, { bare: true });
     if (sun) kit.mesh(new THREE.CircleGeometry(0.084, 24), kit.mat("#1d2230"), lens, [0, 0, -0.003], undefined, undefined, { bare: true });
-    else kit.mesh(new THREE.CircleGeometry(0.084, 24), new THREE.MeshBasicMaterial({ color: "#dff2ff", transparent: true, opacity: 0.18, depthWrite: false }), lens, undefined, undefined, undefined, { bare: true });
+    else kit.mesh(new THREE.CircleGeometry(0.084, 24), kit.own(new THREE.MeshBasicMaterial({ color: "#dff2ff", transparent: true, opacity: 0.18, depthWrite: false })), lens, undefined, undefined, undefined, { bare: true });
     // Arm back to the ear.
     kit.mesh(new THREE.BoxGeometry(0.012, 0.012, 0.3), frame, g, [s * 0.245, 0.02, -0.17], [0, s * 0.35, 0], undefined, { bare: true });
   }
@@ -970,11 +978,11 @@ function buildHair(kit: Kit, head: THREE.Group, cfg: TrainerConfig, m: THREE.Mat
       }
       if (cfg.hair === "long") {
         back(0.95, 0.78);
-        frontLocks(0.5, 0.065);
+        frontLocks(0.5, 0.05);
       }
       if (cfg.hair === "flowing") {
         back(1.3, 1.05, 0.42);
-        frontLocks(0.62, 0.06);
+        frontLocks(0.62, 0.045);
       }
       break;
     }
@@ -1126,7 +1134,9 @@ function buildHat(kit: Kit, head: THREE.Group, cfg: TrainerConfig) {
     kit.mesh(new THREE.CylinderGeometry(0.3, 0.3, 0.03, 36), brimMat, cap, [0, 0.1, R * 0.92], [0.22, 0, 0], [1, 1, 0.78]);
     if (kind === "champion") kit.mesh(new THREE.TorusGeometry(0.3, 0.016, 8, 40, Math.PI), gold, cap, [0, 0.1, R * 0.92], [Math.PI / 2 + 0.22, 0, 0], [1, 0.78, 1], { bare: true });
     // Front panel.
-    const panelMat = kind === "champion" ? kit.mat("#1d1e22") : kind === "twotone" ? trim : kind === "ballcap" || kind === "crown" ? null : white;
+    const panelMat = kind === "champion" ? kit.mat("#1d1e22") : kind === "ballcap" || kind === "crown" || kind === "twotone" ? null : white;
+    // Two-tone: a band of the trim colour round the crown, matching the brim.
+    if (kind === "twotone") kit.mesh(new THREE.TorusGeometry(R * 0.985, 0.045, 8, 40), trim, cap, [0, 0.1, -0.02], [Math.PI / 2 - 0.22, 0, 0]);
     if (panelMat) {
       const panel = kit.mesh(new THREE.SphereGeometry(0.17, 24, 16), panelMat, cap, [frontDir.x * R * 0.95, 0.08 + frontDir.y * R * 0.85, frontDir.z * R * 0.95 - 0.02]);
       panel.quaternion.setFromUnitVectors(v3(0, 0, 1), frontDir);
@@ -1240,7 +1250,7 @@ function buildHeadExtras(kit: Kit, head: THREE.Group, cfg: TrainerConfig, m: THR
         const base = onHead(0.62, s * 0.75, -0.03);
         const tip = base.clone().add(v3(s * 0.12, 0.26, -0.04));
         kit.mesh(taper([base, base.clone().lerp(tip, 0.5).add(v3(s * 0.03, 0, 0)), tip], spike(0.09, 0.15), { radial: 8 }), hairM, g);
-        const bow = group(g, [base.x * 1.08, base.y * 1.05, base.z * 1.05]);
+        const bow = group(g, [base.x * 1.2, base.y * 1.14, base.z * 1.12]);
         bow.lookAt(base.clone().multiplyScalar(3).add(g.position));
         for (const t of [-1, 1]) kit.mesh(new THREE.SphereGeometry(0.05, 12, 8), m, bow, [t * 0.05, 0, 0], [0, 0, t * 0.3], [1.1, 0.6, 0.4]);
         kit.mesh(taper([v3(0, 0, 0), v3(s * 0.03, -0.1, -0.02), v3(s * 0.01, -0.22, -0.03)], () => 0.018, { flat: 0.4, from: v3(0, 0, -1) }), m, bow);

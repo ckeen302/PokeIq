@@ -194,7 +194,7 @@ export function TrainerCreator() {
               role="radio"
               aria-checked={pose === po.id}
               onClick={() => setPose(po.id)}
-              className={cn("flex min-w-0 items-center justify-center gap-1 rounded-md px-1.5 py-1.5 text-[11px] font-semibold uppercase tracking-wide transition-colors", pose === po.id ? "bg-screen/15 text-foreground" : "text-muted-foreground hover:text-foreground")}
+              className={cn("flex min-w-0 items-center justify-center gap-1 rounded-md px-1 py-1.5 text-[11px] font-semibold uppercase tracking-normal transition-colors", pose === po.id ? "bg-screen/15 text-foreground" : "text-muted-foreground hover:text-foreground")}
               data-testid={`trainer-pose-${po.id}`}
             >
               <po.icon className="h-3.5 w-3.5 shrink-0" aria-hidden /> <span className="truncate">{po.name}</span>
