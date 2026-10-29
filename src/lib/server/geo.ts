@@ -14,6 +14,7 @@ import {
 } from "@/lib/geo-difficulty";
 import { GEO_THEMES, isWorldwide, themeMapId, themeOf } from "@/lib/geo-themes";
 import { Rng } from "@/lib/rng";
+import { shotBlur } from "./geo-blur";
 import { isValidDailyDate } from "@/lib/daily";
 import { publicName } from "@/lib/name-filter";
 import { decryptJson, deriveSeed, encryptJson, hmac, randomId, signToken, verifyToken } from "./crypto";
@@ -668,7 +669,8 @@ function publicRound(spec: GeoSpec, index: number, round: PlannedRound, next?: P
   // One screenshot per round, like GeoGuessr's single view; the place's other shots come up in other games.
   void spec;
   // The next round's picture URL (a random id: it says nothing about the place) so the browser can fetch it ahead.
-  return { index, shot: shotUrl(round.shot), ...(next ? { preload: shotUrl(next.shot) } : {}) };
+  const blur = shotBlur(round.shot);
+  return { index, shot: shotUrl(round.shot), ...(blur ? { blur } : {}), ...(next ? { preload: shotUrl(next.shot) } : {}) };
 }
 
 /** "Guess the game too": the bonus for naming the screenshot's family. */

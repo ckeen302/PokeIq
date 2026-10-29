@@ -22,6 +22,8 @@ const parts: Record<string, () => Promise<unknown>> = {
   pokedle: () => import("@/lib/server/pokedle"),
   connections: () => import("@/lib/server/connections"),
   geo: () => import("@/lib/server/geo"),
+  // PokéGuessr's game start (the route, with its request checks), so a Play click never waits on a cold start.
+  geoStart: () => import("@/app/api/geo/route"),
   // What a guess goes through besides the engine (the replay guard, the shot reports and the round log).
   geoGuess: () => Promise.all([import("@/lib/server/replay-guard"), import("@/lib/server/geo-reports"), import("@/lib/server/geo-round-scores")]),
   accounts: () => import("@/lib/server/auth"),
