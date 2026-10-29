@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { BookOpen, MapPin } from "lucide-react";
-import { pageMetadata } from "@/lib/seo";
+import { SHARE_IMAGES, pageMetadata } from "@/lib/seo";
 import { BackButton } from "@/components/ui/BackButton";
 import { DetailHero } from "@/components/pokedex/detail/DetailParts";
 import { HudHeading } from "@/components/game/HudHeading";
@@ -34,6 +34,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     title: `${data.area.name} Trainers — Pokémon ${g.name}`,
     description: `All ${n} trainer${n === 1 ? "" : "s"} on ${data.area.name} in Pokémon ${g.name}, with their Pokémon, levels, moves, held items and rematch teams.`,
     path: `/pokedex/trainers/${g.key}/${area}`,
+    image: SHARE_IMAGES.pokedex,
     socialTitle: `${data.area.name} · ${g.name} trainers`,
   });
 }

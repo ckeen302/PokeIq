@@ -8,6 +8,8 @@ import { POKEDEX, artworkUrl, getPokemonBySlug } from "@/lib/pokemon/pokedex";
 import { getDexEntry } from "@/lib/pokemon/details";
 import { DexEntry } from "@/components/pokedex/entry/DexEntry";
 import { PokemonCards } from "@/components/tcg/PokemonCards";
+import { cardLinksForDex } from "@/lib/tcg/card-index";
+import { capitalize } from "@/lib/pokemon/type-matrix";
 
 /** Static, crawlable study page for every species (1,025 pages at build time). */
 
@@ -36,6 +38,7 @@ export default async function PokemonPage({ params }: PageProps) {
   const p = getPokemonBySlug((await params).slug);
   if (!p) notFound();
   const data = getDexEntry(p);
+  const cards = await cardLinksForDex(p.id, 6);
 
   const pageLd = {
     "@context": "https://schema.org",
@@ -61,6 +64,28 @@ export default async function PokemonPage({ params }: PageProps) {
           <Link href="/battle/calc" className="underline-offset-2 hover:text-foreground hover:underline">Pokémon damage calculator</Link>
           <Link href="/pokedex" className="underline-offset-2 hover:text-foreground hover:underline">Full Pokédex</Link>
         </p>
+        <p className="flex flex-wrap gap-x-4 gap-y-1">
+          {p.types.map((t) => (
+            <Link key={t} href={`/pokedex/types/${t}`} className="underline-offset-2 hover:text-foreground hover:underline" data-testid="dex-type-link">
+              {capitalize(t)}-type Pokémon
+            </Link>
+          ))}
+        </p>
+        {cards.total > 0 && (
+          <p className="flex flex-wrap gap-x-4 gap-y-1" data-testid="dex-card-links">
+            <span className="text-foreground">{p.name} cards:</span>
+            {cards.cards.map((c) => (
+              <Link key={c.id} href={`/pokedex/tcg/card/${c.id}`} prefetch={false} className="underline-offset-2 hover:text-foreground hover:underline">
+                {c.name} ({c.setName} {c.number})
+              </Link>
+            ))}
+            {cards.total > cards.cards.length && (
+              <Link href={`/pokedex/tcg?dex=${p.id}`} prefetch={false} className="underline-offset-2 hover:text-foreground hover:underline">
+                All {cards.total} →
+              </Link>
+            )}
+          </p>
+        )}
       </section>
     </>
   );

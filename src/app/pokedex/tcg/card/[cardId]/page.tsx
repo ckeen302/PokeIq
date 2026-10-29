@@ -3,7 +3,8 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ExternalLink } from "lucide-react";
-import { jsonLd, pageMetadata } from "@/lib/seo";
+import { SHARE_IMAGES, jsonLd, pageMetadata } from "@/lib/seo";
+import { breadcrumbList } from "@/lib/structured-data";
 import { DetailNav, StatBox } from "@/components/pokedex/detail/DetailParts";
 import { HudHeading } from "@/components/game/HudHeading";
 import { EnergyChip } from "@/components/tcg/EnergyChip";
@@ -27,6 +28,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     description: `${card.name} from the ${card.set?.name ?? "Pokémon TCG"} set${card.rarity ? ` (${card.rarity})` : ""}${card.artist ? `, illustrated by ${card.artist}` : ""}.${price ? ` Market price ${formatPrice(price.value, price.currency)}${formatApiDate(price.asOf) ? ` as of ${formatApiDate(price.asOf)}` : ""}.` : ""} TCGplayer and Cardmarket prices.`,
     path: `/pokedex/tcg/card/${card.id}`,
     socialTitle: `${card.name} · PokéIQ TCG`,
+    image: card.images?.large
+      ? { url: card.images.large, alt: `${card.name} card${card.set ? ` from ${card.set.name}` : ""}`, width: 734, height: 1024 }
+      : SHARE_IMAGES.pokedex,
   });
 }
 
@@ -58,9 +62,17 @@ export default async function CardPage({ params }: PageProps) {
     ...(price?.currency === "USD" && { offers: { "@type": "AggregateOffer", priceCurrency: "USD", lowPrice: tcg[0]?.low ?? price.value, offerCount: 1, url: card.tcgplayer?.url } }),
   };
 
+  const crumbs = breadcrumbList([
+    { name: "Pokédex", path: "/pokedex" },
+    { name: "Pokémon TCG", path: "/pokedex/tcg" },
+    ...(set ? [{ name: set.name, path: `/pokedex/tcg/${set.id}` }] : []),
+    { name: card.name, path: `/pokedex/tcg/card/${card.id}` },
+  ]);
+
   return (
     <article className="mx-auto max-w-6xl space-y-8">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(ld) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(crumbs) }} />
       {set ? <DetailNav tab={`tcg/${set.id}`} label={set.name} /> : <DetailNav tab="tcg" label="All sets" />}
 
       <div className="grid grid-cols-1 gap-8 md:grid-cols-[minmax(0,22rem)_1fr] lg:grid-cols-[minmax(0,26rem)_1fr]">

@@ -12,7 +12,7 @@ import type { TcgCard, TcgSet } from "./types";
 
 const RAW = "https://raw.githubusercontent.com/PokemonTCG/pokemon-tcg-data/master";
 const DAY = 60 * 60 * 24;
-const SAFE_ID = /^[a-z0-9.-]+$/i;
+const SAFE_ID = /^[a-z0-9._-]+$/i;
 
 /** [id, name, number, rarity | 0, kinds, dex numbers | 0, smallImage?] */
 export type IndexRow = [string, string, string, string | 0, string[], number[] | 0, string?];

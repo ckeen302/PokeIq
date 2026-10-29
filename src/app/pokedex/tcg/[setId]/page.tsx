@@ -1,7 +1,8 @@
 /* eslint-disable @next/next/no-img-element -- set logos are hot-linked from the TCG API's image CDN */
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { pageMetadata } from "@/lib/seo";
+import { SHARE_IMAGES, jsonLd, pageMetadata } from "@/lib/seo";
+import { breadcrumbList, itemList } from "@/lib/structured-data";
 import { DetailHero, DetailNav, StatBox } from "@/components/pokedex/detail/DetailParts";
 import { SetGallery } from "@/components/tcg/SetGallery";
 import { TcgUnavailable } from "@/components/tcg/CardGrid";
@@ -23,6 +24,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     description: `Every card in the ${set.name} Pokémon TCG set (${set.series} series${date ? `, released ${date}` : ""}${set.total ? `, ${set.total} cards` : ""}), sortable by number, rarity and current market price.`,
     path: `/pokedex/tcg/${set.id}`,
     socialTitle: `${set.name} · PokéIQ TCG`,
+    image: set.images?.logo ? { url: set.images.logo, alt: `${set.name} logo` } : SHARE_IMAGES.pokedex,
   });
 }
 
@@ -40,8 +42,20 @@ export default async function SetPage({ params }: PageProps) {
     .sort((a, b) => b.p!.value - a.p!.value)[0];
   const date = formatApiDate(set.releaseDate);
 
+  const crumbs = breadcrumbList([
+    { name: "Pokédex", path: "/pokedex" },
+    { name: "Pokémon TCG", path: "/pokedex/tcg" },
+    { name: set.name, path: `/pokedex/tcg/${set.id}` },
+  ]);
+  const list = itemList(
+    `${set.name} card list`,
+    (cards ?? []).map((c) => ({ name: `${c.name}${c.number ? ` #${c.number}` : ""}`, path: `/pokedex/tcg/card/${c.id}` }))
+  );
+
   return (
     <article className="mx-auto max-w-6xl space-y-8">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(crumbs) }} />
+      {cards && cards.length > 0 && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(list) }} />}
       <DetailNav tab="tcg" label="All sets" />
       <DetailHero
         kicker={`TCG set · ${set.series}`}

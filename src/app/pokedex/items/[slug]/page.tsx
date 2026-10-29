@@ -2,7 +2,7 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { pageMetadata } from "@/lib/seo";
+import { SHARE_IMAGES, pageMetadata } from "@/lib/seo";
 import { ITEMS, getItem, moveFromApiSlug, speciesBySlug } from "@/lib/dex/data";
 import { itemSpriteUrl, versionGroupLabel, versionLabel } from "@/lib/dex/build";
 import { Section } from "@/components/pokedex/entry/Reveal";
@@ -26,6 +26,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     title: `${i.name} — Pokémon Item`,
     description: `${i.name} (${i.category}): ${i.effect} See which wild Pokémon hold it and which games it appears in.`,
     path: `/pokedex/items/${i.slug}`,
+    image: SHARE_IMAGES.pokedex,
     socialTitle: `${i.name} · PokéIQ Pokédex`,
   });
 }

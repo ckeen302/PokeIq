@@ -14,6 +14,7 @@
     "ingest": "tsx scripts/ingest-pokedex.ts && tsx scripts/ingest-details.ts",
     "ingest:world": "tsx scripts/ingest-world.ts",
     "verify:e2e": "node scripts/e2e-smoke.mjs",
+    "indexnow": "node scripts/indexnow.mjs",
     "connections:dailies": "tsx scripts/connections-dailies.ts",
     "pikadoku:dailies": "tsx scripts/pikadoku-dailies.ts",
     "lookalikes": "tsx scripts/silhouette-lookalikes.ts",

@@ -2,7 +2,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Search } from "lucide-react";
-import { pageMetadata } from "@/lib/seo";
+import { SHARE_IMAGES, pageMetadata } from "@/lib/seo";
 import { DexTabs } from "@/components/pokedex/DexTabs";
 import { ListHeader } from "@/components/pokedex/detail/DetailParts";
 import { HudHeading } from "@/components/game/HudHeading";
@@ -24,6 +24,7 @@ export async function generateMetadata({ searchParams }: PageProps): Promise<Met
     title: "Pokémon TCG — Every Set, Every Card, Card Prices",
     description: "Every Pokémon Trading Card Game set from Base Set to today, grouped by era, with every card, its rarity and artist, and recent TCGplayer and Cardmarket prices.",
     path: "/pokedex/tcg",
+    image: SHARE_IMAGES.pokedex,
     noindex: Boolean(q || dex),
   });
 }

@@ -31,7 +31,7 @@ interface PageMetadata {
    * `opengraph-image` of its own (a segment's own image file is picked up
    * automatically and must not be overridden here).
    */
-  image?: { url: string; alt: string };
+  image?: { url: string; alt: string; width?: number; height?: number };
   /** Keep the page out of search results (it can still be shared). */
   noindex?: boolean;
 }
@@ -44,7 +44,14 @@ interface PageMetadata {
 export function pageMetadata({ title, description, path, socialTitle, socialDescription, image, noindex }: PageMetadata): Metadata {
   const shareTitle = socialTitle ?? `${title} · ${SITE_NAME}`;
   const shareDescription = socialDescription ?? description;
-  const images = image ? [{ url: image.url, width: 1200, height: 630, alt: image.alt, type: "image/png" }] : undefined;
+  // Site cards are 1200x630 PNGs; an external image (a card scan, a set logo) carries its own size, if known.
+  const images = image
+    ? [
+        image.url.startsWith("/")
+          ? { url: image.url, width: 1200, height: 630, alt: image.alt, type: "image/png" }
+          : { url: image.url, alt: image.alt, ...(image.width && image.height && { width: image.width, height: image.height }) },
+      ]
+    : undefined;
   return {
     title,
     description,

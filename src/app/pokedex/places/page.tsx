@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { pageMetadata } from "@/lib/seo";
+import { SHARE_IMAGES, pageMetadata } from "@/lib/seo";
 import { PLACES } from "@/lib/dex/places-data";
 import { DexListExplorer } from "@/components/pokedex/DexListExplorer";
 import { DexTabs } from "@/components/pokedex/DexTabs";
@@ -9,6 +9,7 @@ export const metadata: Metadata = pageMetadata({
   title: "Pokémon Places — Towns, Routes, Caves & Gyms",
   description: "Every town, route, cave and Gym in every main-series Pokémon region: the wild Pokémon found there in each game, screenshots and Gym Leaders.",
   path: "/pokedex/places",
+  image: SHARE_IMAGES.pokedex,
 });
 
 export default function PlacesPage() {

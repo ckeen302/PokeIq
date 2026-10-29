@@ -118,7 +118,8 @@ export async function getCard(id: string): Promise<TcgCard | null> {
 /** A card without the price lookups (for callers that only need its name, set and image). */
 export async function getCardInfo(id: string): Promise<TcgCard | null> {
   if (fixtureMode()) return (await fixture()).cards.find((c) => c.id === id) ?? null;
-  if (!/^[a-z0-9.-]+$/i.test(id)) return null;
+  // Card ids may carry an underscore (Celebrations Classic Collection: "cel25c-15_A1").
+  if (!/^[a-z0-9._-]+$/i.test(id)) return null;
   const res = await get<TcgCard>(`/cards/${encodeURIComponent(id)}`, CARDS_REVALIDATE);
   if (res === undefined) return fallbackCard(id);
   return res?.data ?? null;
