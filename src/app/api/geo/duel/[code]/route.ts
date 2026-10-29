@@ -27,6 +27,8 @@ import {
 import { deleteDuel, duelsEnabled, insertDuel, loadDuel, newDuelCode, updateDuel } from "@/lib/server/duel-store";
 import { settleGeoRankedDuel } from "@/lib/server/geo-ranked-duels";
 import { publishIfChanged } from "@/lib/server/geo-duel-live";
+import { logFinishedDuel, stampStatsKey } from "@/lib/server/geo-duel-stats";
+import { sessionTokenHash, userFromRequest } from "@/lib/server/auth";
 import { realtimeClientConfig } from "@/lib/server/realtime";
 import type { Duel } from "@/lib/server/duel";
 import { DUEL_CODE_RE, DUEL_MAX_ROUNDS, type DuelSeatResponse, type DuelView } from "@/lib/duel-types";
@@ -104,6 +106,7 @@ export async function GET(request: NextRequest, context: Context) {
     if (!out.ok) return failure(out);
     // A poll that moved the duel on (a round's clock ran out, the next one started): tell the other page.
     publishIfChanged(code, before, out.duel, out.rev);
+    void logFinishedDuel(before, out.duel);
     // A ranked duel that just ended: count it (once), so the view carries the rating change.
     const settled = await settleGeoRankedDuel(out.duel, out.rev);
     return NextResponse.json(await viewOf(settled.duel, playerId, out.now, settled.rev), { headers: NO_STORE });
@@ -156,9 +159,9 @@ export async function POST(request: NextRequest, context: Context) {
       if (limited) return limited;
     }
 
-    let before: Duel | undefined;
-    const out = await updateDuel(code, (duel, now) => {
-      before = duel;
+    // A signed-in trainer playing under their own name: their rounds go on their PokéGuessr record when the duel ends.
+    const account = (body.action === "guess" || body.action === "ready") && sessionTokenHash(request) ? await userFromRequest(request).catch(() => null) : null;
+    const act = (duel: Duel, now: number) => {
       switch (body.action) {
         case "ready":
           return readyDuel(duel, playerId, body.ready, now);
@@ -173,9 +176,16 @@ export async function POST(request: NextRequest, context: Context) {
         case "chat":
           return chatDuel(duel, playerId, body.text, now);
       }
+    };
+    let before: Duel | undefined;
+    const out = await updateDuel(code, (duel, now) => {
+      before = duel;
+      const acted = act(duel, now);
+      return acted.ok ? { ...acted, duel: stampStatsKey(acted.duel, playerId, account) } : acted;
     });
     if (!out.ok) return failure(out);
     publishIfChanged(code, before, out.duel, out.rev);
+    void logFinishedDuel(before, out.duel);
     const settled = await settleGeoRankedDuel(out.duel, out.rev);
     return NextResponse.json(await viewOf(settled.duel, playerId, out.now, settled.rev), { headers: NO_STORE });
   } catch (err) {

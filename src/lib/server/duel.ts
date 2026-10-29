@@ -51,6 +51,8 @@ interface DuelPlayer {
   seenAt: number;
   /** The Gym Leader bot (ranked matchmaking when no trainer turns up): plays server-side, never leaves, never rated. */
   bot?: { division: GeoDivisionId };
+  /** The key this trainer's rounds go on their PokéGuessr record under (signed in as the seat's name; stamped by the route). Server-side only. */
+  statsKey?: string;
 }
 
 /** A ranked duel's trainers as the ladder knows them (seat 1 may be the bot), and once counted, how it moved them. */
