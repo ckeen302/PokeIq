@@ -1,10 +1,12 @@
 import { User } from "lucide-react";
 import { avatarSrc, type AvatarFrame, type AvatarMap, type PublicAvatar } from "@/lib/avatar";
 import { cn } from "@/lib/utils";
+import { TrainerPortrait } from "./TrainerPortrait";
 
 /**
- * A trainer's avatar: their Pokémon (or approved picture) in a round frame.
- * Guests and unknown names get a plain trainer icon. Images load lazily.
+ * A trainer's avatar: their 3D trainer's portrait, their approved picture or
+ * their Pokémon, in a round frame. Guests and unknown names get a plain
+ * trainer icon. Images load lazily; portraits are inline SVG.
  */
 
 const FRAME_RING: Record<AvatarFrame, string> = {
@@ -24,6 +26,13 @@ export function Avatar({ avatar, size = 20, large, className }: { avatar?: Publi
     return (
       <span style={box} className={cn("inline-flex shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground ring-1 ring-border", className)} aria-hidden data-testid="avatar-guest">
         <User style={{ width: size * 0.6, height: size * 0.6 }} />
+      </span>
+    );
+  }
+  if (avatar.trainer && !avatar.picture) {
+    return (
+      <span style={box} className={cn("inline-flex shrink-0 overflow-hidden rounded-full bg-muted", FRAME_RING[avatar.frame], className)} data-testid="avatar" data-avatar={`${avatar.pokemonId}${avatar.shiny ? "s" : ""}`} data-trainer="">
+        <TrainerPortrait trainer={avatar.trainer} size={size} className="h-full w-full" />
       </span>
     );
   }

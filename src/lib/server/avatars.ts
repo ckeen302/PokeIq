@@ -304,7 +304,8 @@ export async function chooseAvatar(user: { id: string; username: string }, raw: 
     throw err;
   }
   forget(user.id, user.username);
-  return { ok: true, avatar: publicAvatar({ id: user.id, username: user.username, avatar: next }), usePicture };
+  // With their 3D trainer (if they have one), so the header keeps showing it.
+  return { ok: true, avatar: await ownAvatar(user), usePicture };
 }
 
 // ---------------------------------------------------------------------------

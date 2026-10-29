@@ -24,6 +24,7 @@ import { aboutFor } from "@/lib/server/about";
 import { pokemonName } from "@/lib/about-validate";
 import { AboutMe } from "@/components/community/AboutMe";
 import { Avatar } from "@/components/avatar/Avatar";
+import { Avatar3D } from "@/components/trainer3d/Avatar3D";
 import { BattleProfileView } from "@/components/battle/BattleProfileView";
 import { GlickoBadge } from "@/components/battle/GlickoBadge";
 import { ReplayRow } from "@/components/battle/ReplayLists";
@@ -127,6 +128,12 @@ export default async function UserProfilePage({ params }: PageProps) {
             </div>
             <ProfileActions username={found.username} />
           </div>
+          {found.avatar?.trainer && (
+            // Their 3D trainer (three.js loads only on profiles that have one).
+            <div className="-mb-6 h-56 w-full sm:-my-6 sm:h-72 sm:w-96" data-testid="profile-trainer">
+              <Avatar3D config={found.avatar.trainer} pose="wave" label={`${found.username}'s trainer`} />
+            </div>
+          )}
         </div>
       </section>
 
