@@ -3,7 +3,8 @@ import { after } from "next/server";
 import { canonicalJson } from "./canonical-json";
 import { broadcast } from "./realtime";
 import { DUEL_LIVE_EVENT, duelTopic, type DuelLiveEvent } from "@/lib/geo-duel-live";
-import type { Duel } from "./duel";
+/** Anything kept like a duel: its trainers carry a heartbeat (PokéGuessr duels and parties). */
+type Heartbeats = { players: { seenAt: number }[] };
 
 /**
  * Tells a duel's pages that it changed: after a write to the duel (a guess,
@@ -18,10 +19,10 @@ import type { Duel } from "./duel";
  */
 
 /** The duel as its pages see it: everything but when each trainer was last heard from. */
-export const duelFingerprint = (duel: Duel): string => canonicalJson({ ...duel, players: duel.players.map((p) => ({ ...p, seenAt: 0 })) });
+export const duelFingerprint = (duel: Heartbeats): string => canonicalJson({ ...duel, players: duel.players.map((p) => ({ ...p, seenAt: 0 })) });
 
 /** Whether anything a page shows changed between `before` and `duel`. */
-export const duelChanged = (before: Duel | undefined, duel: Duel): boolean => !before || duelFingerprint(before) !== duelFingerprint(duel);
+export const duelChanged = (before: Heartbeats | undefined, duel: Heartbeats): boolean => !before || duelFingerprint(before) !== duelFingerprint(duel);
 
 /** Publishes the duel's new revision. Never throws. */
 export const publishDuel = (code: string, rev: number): Promise<void> => broadcast(duelTopic(code), DUEL_LIVE_EVENT, { code, rev, at: Date.now() } satisfies DuelLiveEvent, "geo-duel");
@@ -32,7 +33,7 @@ export const publishDuel = (code: string, rev: number): Promise<void> => broadca
  * (`after`), so the trainer who acted isn't kept waiting on it; outside a
  * request (tests) it goes out at once.
  */
-export function publishIfChanged(code: string, before: Duel | undefined, duel: Duel, rev: number): void {
+export function publishIfChanged(code: string, before: Heartbeats | undefined, duel: Heartbeats, rev: number): void {
   if (!duelChanged(before, duel)) return;
   const send = () => publishDuel(code, rev);
   try {
