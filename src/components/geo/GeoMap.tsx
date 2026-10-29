@@ -48,7 +48,7 @@ interface Props {
   fill?: boolean;
 }
 
-const WORLD_MAP = "/geo/maps/world.webp";
+export const WORLD_MAP = "/geo/maps/world.webp";
 /** A small copy of the whole world, shown while the big map loads on the world map itself. */
 const WORLD_THUMB = "/geo/maps/world-thumb.webp";
 /** The world map has been decoded on this page (every map after the first draws it at once). */
@@ -92,7 +92,7 @@ export function GeoMap({ region, pick, pinImage, revealed = [], fit, onPick, con
   const locked = region.id !== WORLD_REGION;
   /**
    * First paint: the region's own crop of the map (a few dozen KB), or a small
-   * copy of the world, drawn over the canvas until the 760 KB world map has
+   * copy of the world, drawn over the canvas until the 580 KB world map has
    * been decoded; then it fades out over the same pixels, with no jump. Once
    * the world map is in, later maps on the page skip all this.
    */
