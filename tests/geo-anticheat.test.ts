@@ -156,7 +156,7 @@ describe("PokéGuessr behaviour flags", () => {
     expect(far.played.px).toBeGreaterThan(50);
     expect(roundFlag(far.played)).toBe(0);
     // Nothing about the flags reaches the player.
-    expect(JSON.stringify(quick.body)).not.toMatch(/px|elapsed|flag|suspicious/);
+    expect(JSON.stringify(quick.body)).not.toMatch(/"px"|elapsedMs|"flag"|suspicious|played/);
   });
 
   it("lists flagged trainers with counts across games, most flagged first", async () => {

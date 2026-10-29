@@ -73,6 +73,7 @@ import { GameFilter, GameGuessPicker, type FilterChoice, filterPlaces, gameGuess
 import { GEO_ERA_NAMES, GEO_GAME_BONUS, geoFamily, type GeoEra, type GeoFamilyId } from "@/lib/geo-families";
 import { cn } from "@/lib/utils";
 import { preloadImage } from "@/lib/preload";
+import { readSeenShots, rememberSeenShot } from "@/lib/geo-seen";
 import { isWorldwide, themeOf } from "@/lib/geo-themes";
 import { NAME_REJECTED, isCleanName } from "@/lib/name-filter";
 
@@ -327,6 +328,7 @@ function GeoGameInner({ regions: allRegions, challenge }: GeoGameProps) {
               ...(mode ? { difficulty: mode } : {}),
               name: progress?.name || undefined,
               recent: readRecent(),
+              seen: readSeenShots(),
               ...bonus,
             };
       // The Timer setting goes to the server too, so a late pin scores nothing there as well.
@@ -379,9 +381,11 @@ function GeoGameInner({ regions: allRegions, challenge }: GeoGameProps) {
       setPlayed(nextPlayed);
       setGame({ ...game, token: graded.token });
       rememberArea(graded.answer);
+      rememberSeenShot(game.round.shot);
       const good = game.kind === "streak" ? graded.hit : graded.score >= 2500;
       play(good ? (game.kind === "streak" && graded.hit && nextPlayed.length % 5 === 0 ? "streak" : "correct") : "wrong");
-      if (graded.next) new window.Image().src = graded.next.shot;
+      // The next round's picture is fetched and decoded now, so Next shows it at once.
+      if (graded.next) void preloadImage(graded.next.shot);
       if (graded.done && graded.result) {
         setReward(
           recordGeoGame(boardOf(game), {
@@ -419,6 +423,7 @@ function GeoGameInner({ regions: allRegions, challenge }: GeoGameProps) {
   // The Timer setting: a clock per round; at zero the pin is guessed where it is (no pin: no points).
   const timer = game?.settings.timer ?? 0;
   const roundShot = game?.round.shot;
+  const nextShot = game?.round.preload;
   useEffect(() => {
     if (!roundShot) return;
     let off = false;
@@ -427,11 +432,13 @@ function GeoGameInner({ regions: allRegions, challenge }: GeoGameProps) {
       if (off) return;
       setRoundStartedAt(Date.now());
       setShotReady(true);
+      // Then the next round's picture, fetched and decoded while this one is being looked at.
+      if (nextShot) void preloadImage(nextShot);
     });
     return () => {
       off = true;
     };
-  }, [roundShot]);
+  }, [roundShot, nextShot]);
   const timeLeft = timer && shotReady && (phase === "guessing" || phase === "submitting") ? secondsLeft(roundStartedAt, now || roundStartedAt, timer) : null;
   useEffect(() => {
     if (!timer || !shotReady || phase !== "guessing") return;
