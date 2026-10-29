@@ -172,6 +172,12 @@ export async function playStep(step: Step, deps: PlayDeps): Promise<void> {
   const from = typeof step.kw.from === "string" ? step.kw.from.replace(/^(item|ability|move): /, "") : "";
 
   switch (step.cmd) {
+    // The battle's header (format and rules): straight into the log, no pause.
+    case "tier":
+    case "rule":
+      commit(snap);
+      return;
+    case "-anim":
     case "move": {
       if (!step.kw.still && !step.kw.notarget && sprite && step.moveId) {
         const targets = step.targets ?? [];

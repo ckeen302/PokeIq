@@ -14,6 +14,7 @@ import { teraColor } from "./player";
 import { MonTip, MoveTip, Tip, isRandomFormat, tipFromRequest, tipFromSnap } from "./Tooltips";
 import type { FieldMon, FieldState } from "@/lib/battle/tooltip-calc";
 import { useBattleKeys, type BattleKeys } from "./hotkeys";
+import { benchOrder } from "./model";
 
 /**
  * What the player can do now, built from their request: pick a lead (team
@@ -173,13 +174,17 @@ function SwitchGrid({
   onPick,
   label,
   tipInfo,
+  benchKeys,
 }: {
   pokemon: BattleRequestPokemon[];
   allowed: (p: BattleRequestPokemon, i: number) => boolean;
   onPick: (index: number) => void;
   label: string;
   tipInfo?: TipInfo;
+  /** Show Showdown's 5-9 hotkeys on the Pokémon on the bench (the move menu). */
+  benchKeys?: boolean;
 }) {
+  const bench = benchOrder(pokemon);
   return (
     <div className="space-y-2">
       <p className="hud-label flex items-center gap-1.5">
@@ -190,6 +195,8 @@ function SwitchGrid({
           const [hp, max, status] = hpOf(p);
           const ok = allowed(p, i);
           const species = speciesOf(p);
+          const key = benchKeys ? bench.indexOf(i) : -1;
+          const keyName = key >= 0 && key < 5 ? String(key + 5) : null;
           return (
             <Tip key={p.ident} content={() => <MonTip mon={tipFromRequest(p, tipInfo?.seen.find((m) => m.key === p.ident))} mine gen={tipInfo?.gen ?? 9} format={tipInfo?.format ?? ""} />}>
             <button
@@ -197,10 +204,11 @@ function SwitchGrid({
               disabled={!ok}
               onClick={() => onPick(i + 1)}
               data-testid="switch-button"
-              aria-keyshortcuts={`Shift+${i + 1}`}
-              title={`Shift+${i + 1}`}
-              className="menu-item flex items-center gap-2 rounded-md border bg-card px-2 py-1.5 text-left hover:border-screen/60 disabled:cursor-not-allowed disabled:opacity-40"
+              aria-keyshortcuts={keyName ? `${keyName} Shift+${i + 1}` : `Shift+${i + 1}`}
+              title={keyName ? `${keyName} or Shift+${i + 1}` : `Shift+${i + 1}`}
+              className="menu-item relative flex items-center gap-2 rounded-md border bg-card px-2 py-1.5 text-left hover:border-screen/60 disabled:cursor-not-allowed disabled:opacity-40"
             >
+              {keyName && ok && <kbd className="pointer-events-none absolute right-1 top-1 hidden rounded border bg-muted px-1 font-mono text-[9px] leading-3 text-muted-foreground lg:block">{keyName}</kbd>}
               <BattleSprite species={speciesKey(species)} animated={false} size={40} className="shrink-0" />
               <span className="min-w-0 flex-1">
                 <span className="flex items-center gap-1">
@@ -441,7 +449,14 @@ export function Controls({ request, snap, me, doubles, busy, onChoose, format, o
     else add(`move ${index}${targets[0] ? ` ${targets[0]}` : ""}${suffix()}`);
   };
   const canSwitchTo = (p: BattleRequestPokemon | undefined, i: number) => !!p && !busy && !trapped && !p.active && !fainted(p) && !switchingIn.includes(i + 1);
+  const bench = benchOrder(request.side.pokemon);
   keys.digit = (n) => {
+    // 5-9: switch to the first to fifth Pokémon on the bench (Showdown's keys).
+    if (n >= 5) {
+      const i = bench[n - 5];
+      if (i !== undefined && canSwitchTo(request.side.pokemon[i], i)) add(`switch ${i + 1}`);
+      return;
+    }
     const move = active.moves[n - 1];
     if (!move || busy || move.disabled || (extra === "zmove" && !active.canZMove?.[n - 1])) return;
     pickMove(n, move);
@@ -515,6 +530,7 @@ export function Controls({ request, snap, me, doubles, busy, onChoose, format, o
         tipInfo={{ gen: snap.gen, format, seen: mySide.team }}
         pokemon={request.side.pokemon}
         label={trapped ? "Can't switch: trapped" : "Switch"}
+        benchKeys
         allowed={(p, i) => canSwitchTo(p, i)}
         onPick={(n) => add(`switch ${n}`)}
       />
