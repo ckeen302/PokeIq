@@ -32,8 +32,8 @@ function mix(hex: string, toward: string, k: number): string {
 
 /** Eye geometry, from the eye shape and the expression. */
 function eyeShape(eyes: EyesId, expr: ExpressionId) {
-  let w = 27;
-  let h = 35;
+  let w = 29;
+  let h = 37;
   // The upper lid as a line: its height at the inner and outer corners (from the centre, up is negative).
   let lidIn = -h;
   let lidOut = -h;
@@ -43,8 +43,8 @@ function eyeShape(eyes: EyesId, expr: ExpressionId) {
     lidIn = lidOut = -h * 0.55;
     arc = false;
   } else if (eyes === "sharp") {
-    w = 29;
-    h = 29;
+    w = 31;
+    h = 30;
     lidIn = -h * 0.35;
     lidOut = -h * 0.85;
     arc = false;
@@ -61,17 +61,24 @@ function eyeShape(eyes: EyesId, expr: ExpressionId) {
 function drawEye(g: CanvasRenderingContext2D, cx: number, cy: number, s: number, f: FaceSpec) {
   g.lineCap = "round";
   g.lineJoin = "round";
+  g.strokeStyle = INK;
+  g.fillStyle = INK;
   if (f.eyes === "happy" || f.eyes === "squint") {
-    g.strokeStyle = INK;
-    g.lineWidth = 9;
+    // Closed: a thick lash line with a flick at the outer end.
+    g.lineWidth = 10;
     g.beginPath();
     if (f.eyes === "happy") {
-      g.moveTo(cx - 25, cy + 8);
-      g.quadraticCurveTo(cx, cy - 24, cx + 25, cy + 8);
+      g.moveTo(cx - 26, cy + 8);
+      g.quadraticCurveTo(cx, cy - 26, cx + 26, cy + 8);
     } else {
-      g.moveTo(cx - 27, cy + 2);
-      g.quadraticCurveTo(cx, cy - 5, cx + 27, cy + 2);
+      g.moveTo(cx - 28, cy + 2);
+      g.quadraticCurveTo(cx, cy - 6, cx + 28, cy + 2);
     }
+    g.stroke();
+    g.lineWidth = 5;
+    g.beginPath();
+    g.moveTo(cx + s * 24, cy + (f.eyes === "happy" ? 4 : 1));
+    g.lineTo(cx + s * 36, cy - 6);
     g.stroke();
     return;
   }
@@ -82,29 +89,43 @@ function drawEye(g: CanvasRenderingContext2D, cx: number, cy: number, s: number,
   g.beginPath();
   g.ellipse(cx, cy, e.w, e.h, 0, 0, Math.PI * 2);
   g.clip();
-  // White, then the iris (darker at the top), pupil and two highlights.
   g.fillStyle = "#ffffff";
   g.fillRect(cx - e.w - 2, cy - e.h - 2, e.w * 2 + 4, e.h * 2 + 4);
-  const ir = e.small ? 0.66 : 0.86;
-  const ix = cx - s * 2;
-  const grad = g.createLinearGradient(0, cy - e.h, 0, cy + e.h);
-  grad.addColorStop(0, mix(f.iris, "#000000", 0.55));
-  grad.addColorStop(0.55, f.iris);
-  grad.addColorStop(1, mix(f.iris, "#ffffff", 0.35));
+  // A big glossy iris: dark at the top, glowing lighter at the bottom, a dark rim and pupil.
+  const ir = e.small ? 0.64 : 0.9;
+  const ix = cx - s * 1.5;
+  const iy = cy + 2;
+  const rx = e.w * ir;
+  const ry = e.h * ir;
+  const grad = g.createLinearGradient(0, iy - ry, 0, iy + ry);
+  grad.addColorStop(0, mix(f.iris, "#000000", 0.62));
+  grad.addColorStop(0.42, f.iris);
+  grad.addColorStop(0.8, mix(f.iris, "#ffffff", 0.28));
+  grad.addColorStop(1, mix(f.iris, "#ffffff", 0.45));
   g.fillStyle = grad;
   g.beginPath();
-  g.ellipse(ix, cy + 1, e.w * ir, e.h * ir * 0.98, 0, 0, Math.PI * 2);
+  g.ellipse(ix, iy, rx, ry, 0, 0, Math.PI * 2);
   g.fill();
-  g.fillStyle = mix(f.iris, "#000000", 0.75);
+  g.strokeStyle = mix(f.iris, "#000000", 0.6);
+  g.lineWidth = 2.5;
+  g.stroke();
+  g.fillStyle = mix(f.iris, "#000000", 0.8);
   g.beginPath();
-  g.ellipse(ix, cy + 2, e.w * ir * 0.45, e.h * ir * 0.5, 0, 0, Math.PI * 2);
+  g.ellipse(ix, iy - 2, rx * 0.44, ry * 0.5, 0, 0, Math.PI * 2);
   g.fill();
+  // The lid's shadow over the top of the eye.
+  const lidShade = g.createLinearGradient(0, cy - e.h, 0, cy - e.h * 0.2);
+  lidShade.addColorStop(0, "rgba(40,20,40,0.45)");
+  lidShade.addColorStop(1, "rgba(40,20,40,0)");
+  g.fillStyle = lidShade;
+  g.fillRect(cx - e.w - 2, cy - e.h - 2, e.w * 2 + 4, e.h);
+  // Two highlights.
   g.fillStyle = "#ffffff";
   g.beginPath();
-  g.ellipse(ix - 8, cy - e.h * 0.32, 7.5, 9.5, -0.3, 0, Math.PI * 2);
+  g.ellipse(ix - 8, cy - e.h * 0.34, 8.5, 11, -0.35, 0, Math.PI * 2);
   g.fill();
   g.beginPath();
-  g.arc(ix + 8, cy + e.h * 0.38, 3.8, 0, Math.PI * 2);
+  g.ellipse(ix + 8, cy + e.h * 0.36, 4.5, 4, 0, 0, Math.PI * 2);
   g.fill();
   // The upper lid (skin) for heavy-lidded and narrowed looks.
   if (!e.arc) {
@@ -118,40 +139,47 @@ function drawEye(g: CanvasRenderingContext2D, cx: number, cy: number, s: number,
     g.fill();
   }
   g.restore();
-  // Lash line.
+  // The upper lash line, heavier towards the outer corner, ending in a flick.
   g.strokeStyle = INK;
   g.fillStyle = INK;
-  g.lineWidth = f.eyes === "lashes" ? 10 : 8;
-  g.beginPath();
-  if (e.arc) {
-    g.ellipse(cx, cy, e.w + 1, e.h + 1, 0, Math.PI * 1.08, Math.PI * 1.92);
-  } else {
-    const yIn = cy + e.lidIn;
-    const yOut = cy + e.lidOut;
-    g.moveTo(inner, yIn + 3);
-    g.lineTo(outer + s * 3, yOut);
-  }
-  g.stroke();
-  // A flick at the outer corner (and lashes).
-  const yOuter = e.arc ? cy - e.h * 0.35 : cy + e.lidOut;
-  g.lineWidth = 6;
-  g.beginPath();
-  g.moveTo(outer, yOuter + 2);
-  g.lineTo(outer + s * 11, yOuter - 6);
-  g.stroke();
-  if (f.eyes === "lashes") {
-    g.lineWidth = 5;
+  const lash = (from: number, to: number, width: number) => {
+    g.lineWidth = width;
     g.beginPath();
-    g.moveTo(outer - s * 3, yOuter - 8);
-    g.lineTo(outer + s * 9, yOuter - 19);
+    if (e.arc) {
+      // Angles along the top of the ellipse, inner corner to outer.
+      const a = (k: number) => (s > 0 ? Math.PI * (1 + k) : Math.PI * (2 - k));
+      g.ellipse(cx, cy, e.w + 1, e.h + 1, 0, Math.min(a(from), a(to)), Math.max(a(from), a(to)));
+    } else {
+      const y = (k: number) => cy + e.lidIn + (e.lidOut - e.lidIn) * k + 3 * (1 - k);
+      g.moveTo(cx + s * (-e.w + 2 * e.w * from), y(from));
+      g.lineTo(cx + s * (-e.w + 2 * e.w * to + (to === 1 ? 3 : 0)), y(to));
+    }
     g.stroke();
-  }
-  // Lower lid, a short soft line.
-  g.strokeStyle = mix(INK, f.skin, 0.45);
-  g.lineWidth = 3;
+  };
+  lash(0.06, 1, f.eyes === "lashes" ? 9 : 7.5);
+  lash(0.5, 1, f.eyes === "lashes" ? 14 : 12);
+  const yOuter = e.arc ? cy - e.h * 0.2 : cy + e.lidOut;
   g.beginPath();
-  g.moveTo(cx - e.w * 0.45, cy + e.h + 1);
-  g.lineTo(cx + e.w * 0.45, cy + e.h + 1);
+  g.moveTo(outer - s * 6, yOuter - 7);
+  g.lineTo(outer + s * 13, yOuter - 9);
+  g.lineTo(outer + s * 2, yOuter + 8);
+  g.closePath();
+  g.fill();
+  if (f.eyes === "lashes") {
+    g.lineWidth = 4.5;
+    for (const k of [0, 1]) {
+      g.beginPath();
+      g.moveTo(outer - s * (2 + k * 9), yOuter - 6 - k * 6);
+      g.lineTo(outer + s * (10 - k * 6), yOuter - 19 - k * 8);
+      g.stroke();
+    }
+  }
+  // A short lower lash at the outer corner.
+  g.strokeStyle = mix(INK, f.skin, 0.25);
+  g.lineWidth = 3.5;
+  g.beginPath();
+  const b0 = s > 0 ? 0.08 * Math.PI : 0.62 * Math.PI;
+  g.ellipse(cx, cy, e.w + 0.5, e.h + 0.5, 0, b0, b0 + 0.3 * Math.PI);
   g.stroke();
 }
 
@@ -172,12 +200,21 @@ function drawBrow(g: CanvasRenderingContext2D, cx: number, cy: number, s: number
     yi += 4;
     yo -= 2;
   }
+  // A slim brow, fuller at the inner end and tapering out.
+  const x0 = cx - s * 20;
+  const x1 = cx + s * 27;
+  const xc = cx + s * 3;
+  const yc = cy + Math.min(yi, yo) + arch;
+  g.fillStyle = f.brow;
   g.strokeStyle = f.brow;
-  g.lineCap = "round";
-  g.lineWidth = 9;
+  g.lineWidth = 2;
+  g.lineJoin = "round";
   g.beginPath();
-  g.moveTo(cx - s * 20, cy + yi);
-  g.quadraticCurveTo(cx + s * 3, cy + Math.min(yi, yo) + arch, cx + s * 26, cy + yo);
+  g.moveTo(x0, cy + yi - 3.5);
+  g.quadraticCurveTo(xc, yc - 3, x1, cy + yo - 0.5);
+  g.quadraticCurveTo(xc, yc + 2.5, x0, cy + yi + 3.5);
+  g.closePath();
+  g.fill();
   g.stroke();
 }
 
@@ -185,7 +222,7 @@ function drawMouth(g: CanvasRenderingContext2D, cx: number, cy: number, f: FaceS
   const lip = "#6e2a2c";
   g.save();
   g.translate(cx, cy);
-  g.scale(1.35, 1.35);
+  g.scale(1.15, 1.15);
   g.translate(-cx, -cy);
   drawMouthShape(g, cx, cy, f, lip);
   g.restore();
@@ -253,9 +290,10 @@ function drawMouthShape(g: CanvasRenderingContext2D, cx: number, cy: number, f: 
 /** The face canvas: eyes, brows, a hint of a nose, mouth and blush. */
 export function faceTexture(f: FaceSpec): HTMLCanvasElement {
   const c = document.createElement("canvas");
-  c.width = W;
-  c.height = H;
+  c.width = W * 2;
+  c.height = H * 2;
   const g = c.getContext("2d")!;
+  g.scale(2, 2);
   const eyeY = EQ + 28;
   for (const s of [-1, 1]) {
     const cx = W / 2 + s * 90;

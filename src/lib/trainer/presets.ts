@@ -201,7 +201,7 @@ export const TRAINER_PRESETS: readonly TrainerPreset[] = [
     // side-swept fringe over one eye, big black hair ornaments on both
     // sides; grey eyes, calm. Long black coat [#2b2d2f] fastened at the top,
     // open below the waist, with black fur collar and cuffs; black flared
-    // trousers and black heels.
+    // trousers and black heels with a gold stripe.
     id: "sinnoh-champion",
     name: "Sinnoh Champion",
     look: look({
@@ -222,7 +222,7 @@ export const TRAINER_PRESETS: readonly TrainerPreset[] = [
       bottomsColor: "black",
       shoes: "formal",
       shoesColor: "black",
-      shoesTrim: "black",
+      shoesTrim: "mustard",
       hairAcc: "ornaments",
       accColor: "black",
     }),

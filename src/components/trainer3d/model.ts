@@ -1,5 +1,6 @@
 import * as THREE from "three";
 import { RoundedBoxGeometry } from "three/examples/jsm/geometries/RoundedBoxGeometry.js";
+import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
 import { BALLS, HAIR_BANGS, colorHex, eyeHex, hairHex, skinHex, type TrainerConfig, type TrainerFacing, type TrainerPose } from "@/lib/trainer/config";
 import { drawEmblem, faceTexture } from "./faces";
 import { MOVES } from "./moves";
@@ -9,9 +10,11 @@ import type { TauntId } from "@/lib/trainer/taunts";
  * The chibi trainer, built from three.js primitives (no downloaded models,
  * so nothing to license and nothing to load): a big round head with a
  * drawn face, a small body, swappable hair, hats, clothes, capes, bags and
- * accessories, and our own Poké Ball in the right hand. Toon shading with
- * soft outlines (an inverted hull pushed out in view space). Poses are
- * joint angles blended every frame.
+ * accessories, and our own Poké Ball in the right hand. Styled like a
+ * soft vinyl figure: no outlines, smooth physically lit plastic and cloth
+ * (generated fabric and knit normal maps), hair sculpted as chunky
+ * tapered locks, jagged fur trims, soft self-shadows. Poses are joint
+ * angles blended every frame.
  *
  * Units: the trainer is about 2.2 tall, feet on y = 0, facing +z.
  */
@@ -38,63 +41,147 @@ const TAU = Math.PI * 2;
 type V3 = [number, number, number];
 
 // ---------------------------------------------------------------------------
+// The stage: soft warm key with shadows, cool fill, rim, and a room-like environment
+// ---------------------------------------------------------------------------
+
+/**
+ * Lights a trainer's scene and sets up the renderer for it. Returns what
+ * to dispose with the scene.
+ */
+export function lightStage(scene: THREE.Scene, renderer: THREE.WebGLRenderer): { dispose(): void } {
+  renderer.toneMapping = THREE.NeutralToneMapping;
+  renderer.toneMappingExposure = 1.08;
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  const pmrem = new THREE.PMREMGenerator(renderer);
+  const room = new RoomEnvironment();
+  const env = pmrem.fromScene(room, 0.04).texture;
+  room.dispose();
+  pmrem.dispose();
+  scene.environment = env;
+  scene.environmentIntensity = 0.55;
+  scene.add(new THREE.HemisphereLight(0xfff4e6, 0x9a8c8c, 1.45));
+  const key = new THREE.DirectionalLight(0xfff0dc, 2.3);
+  key.position.set(1.6, 5.2, 3.6);
+  key.castShadow = true;
+  key.shadow.mapSize.set(1024, 1024);
+  key.shadow.radius = 5;
+  key.shadow.bias = -0.002;
+  key.shadow.normalBias = 0.045;
+  Object.assign(key.shadow.camera, { left: -1.6, right: 1.6, top: 1.8, bottom: -1.4, near: 1, far: 12 });
+  key.target.position.set(0, 1, 0);
+  scene.add(key, key.target);
+  const fill = new THREE.DirectionalLight(0xdfe8ff, 0.55);
+  fill.position.set(-4, 2, 3);
+  scene.add(fill);
+  const rim = new THREE.DirectionalLight(0xfff8f0, 1.5);
+  rim.position.set(-1.5, 3.2, -4);
+  scene.add(rim);
+  // The floor takes the trainer's soft shadow (and nothing else).
+  const floorMat = new THREE.ShadowMaterial({ opacity: 0.16 });
+  const floorGeo = new THREE.PlaneGeometry(6, 6);
+  const floor = new THREE.Mesh(floorGeo, floorMat);
+  floor.rotation.x = -Math.PI / 2;
+  floor.receiveShadow = true;
+  scene.add(floor);
+  return {
+    dispose() {
+      env.dispose();
+      floorGeo.dispose();
+      floorMat.dispose();
+    },
+  };
+}
+
+// ---------------------------------------------------------------------------
 // Materials and helpers
 // ---------------------------------------------------------------------------
 
-let toonRamp: THREE.DataTexture | null = null;
-/** Three soft bands of light (shared by every trainer, never disposed). */
-function ramp(): THREE.DataTexture {
-  if (toonRamp) return toonRamp;
-  const data = new Uint8Array([120, 120, 120, 255, 196, 196, 196, 255, 255, 255, 255, 255]);
-  toonRamp = new THREE.DataTexture(data, 3, 1, THREE.RGBAFormat);
-  toonRamp.minFilter = toonRamp.magFilter = THREE.NearestFilter;
-  toonRamp.generateMipmaps = false;
-  toonRamp.needsUpdate = true;
-  return toonRamp;
-}
+/**
+ * How a surface catches the light: smooth moulded plastic, matte cloth, soft skin, glossy hair
+ * with a sheen, fluffy fur, chunky knit, shiny plastic, leather, metal.
+ */
+type Finish = "plain" | "cloth" | "skin" | "hair" | "fur" | "knit" | "gloss" | "leather" | "metal";
 
-const OUTLINE_VS = `uniform float width;
-void main() {
-  vec3 n = normalize(normalMatrix * normal);
-  vec4 mv = modelViewMatrix * vec4(position, 1.0);
-  mv.xyz += n * width * -mv.z;
-  gl_Position = projectionMatrix * mv;
-}`;
-const OUTLINE_FS = `uniform vec3 color;
-void main() { gl_FragColor = vec4(color, 1.0); }`;
+const FINISH: Record<Finish, THREE.MeshPhysicalMaterialParameters> = {
+  plain: { roughness: 0.6, sheen: 0.2, sheenRoughness: 0.5 },
+  cloth: { roughness: 0.78, sheen: 0.35, sheenRoughness: 0.6 },
+  skin: { roughness: 0.55, sheen: 0.25, sheenRoughness: 0.5 },
+  hair: { roughness: 0.42, clearcoat: 0.35, clearcoatRoughness: 0.35 },
+  fur: { roughness: 0.95, sheen: 0.8, sheenRoughness: 0.4 },
+  knit: { roughness: 0.92, sheen: 0.5, sheenRoughness: 0.7 },
+  gloss: { roughness: 0.28, clearcoat: 0.6, clearcoatRoughness: 0.15 },
+  leather: { roughness: 0.45, clearcoat: 0.3, clearcoatRoughness: 0.3 },
+  metal: { roughness: 0.32, metalness: 0.75 },
+};
+
+/** Tileable normal maps drawn from height functions (shared, never disposed). */
+const bumps = new Map<string, THREE.DataTexture>();
+function bump(id: "cloth" | "knit", size: number, height: (x: number, y: number) => number, strength: number): THREE.DataTexture {
+  let tex = bumps.get(id);
+  if (tex) return tex;
+  const h = new Float32Array(size * size);
+  for (let y = 0; y < size; y++) for (let x = 0; x < size; x++) h[y * size + x] = height(x / size, y / size);
+  const data = new Uint8Array(size * size * 4);
+  const at = (x: number, y: number) => h[((y + size) % size) * size + ((x + size) % size)];
+  for (let y = 0; y < size; y++)
+    for (let x = 0; x < size; x++) {
+      const dx = (at(x + 1, y) - at(x - 1, y)) * strength;
+      const dy = (at(x, y + 1) - at(x, y - 1)) * strength;
+      const l = Math.hypot(dx, dy, 1);
+      const i = (y * size + x) * 4;
+      data[i] = ((-dx / l) * 0.5 + 0.5) * 255;
+      data[i + 1] = ((-dy / l) * 0.5 + 0.5) * 255;
+      data[i + 2] = ((1 / l) * 0.5 + 0.5) * 255;
+      data[i + 3] = 255;
+    }
+  tex = new THREE.DataTexture(data, size, size, THREE.RGBAFormat);
+  tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+  tex.magFilter = THREE.LinearFilter;
+  tex.minFilter = THREE.LinearMipmapLinearFilter;
+  tex.generateMipmaps = true;
+  tex.needsUpdate = true;
+  bumps.set(id, tex);
+  return tex;
+}
+const S = (x: number) => Math.sin(x * TAU);
+/** Soft vertical folds and a fine weave. */
+const clothMap = () => bump("cloth", 128, (x, y) => 0.55 * S(x * 3 + 0.12 * S(y)) + 0.3 * S(x * 7 + 0.3 * S(y * 2) + 0.2) + 0.04 * S(x * 64) * S(y * 64), 2.2);
+/** Ribbed knit: soft rounded columns. */
+const knitMap = () => bump("knit", 128, (x) => Math.abs(Math.sin(x * 16 * Math.PI)), 2.5);
 
 interface MeshOpts {
-  /** Skip the outline (tiny parts, open shells, decals). */
+  /** A tiny part: casts no shadow. */
   bare?: boolean;
 }
 
+type MatOpts = THREE.MeshPhysicalMaterialParameters & { key?: string; finish?: Finish };
+
 class Kit {
   private mats = new Map<string, THREE.Material>();
-  private lines = new Map<string, THREE.ShaderMaterial>();
   private geos: THREE.BufferGeometry[] = [];
   private texs: THREE.Texture[] = [];
   private extra: THREE.Material[] = [];
 
-  mat(hex: string, extra?: THREE.MeshToonMaterialParameters & { key?: string }): THREE.MeshToonMaterial {
-    const key = `${hex}:${extra?.key ?? ""}:${extra?.side ?? ""}:${extra?.transparent ?? ""}`;
-    let m = this.mats.get(key) as THREE.MeshToonMaterial | undefined;
+  mat(hex: string, extra?: MatOpts): THREE.MeshPhysicalMaterial {
+    const finish = extra?.finish ?? "cloth";
+    const key = `${hex}:${finish}:${extra?.key ?? ""}:${extra?.side ?? ""}:${extra?.transparent ?? ""}`;
+    let m = this.mats.get(key) as THREE.MeshPhysicalMaterial | undefined;
     if (!m) {
-      const { key: _k, ...params } = extra ?? {};
+      const { key: _k, finish: _f, ...params } = extra ?? {};
       void _k;
-      m = new THREE.MeshToonMaterial({ color: new THREE.Color(hex), gradientMap: ramp(), ...params });
+      void _f;
+      const base = FINISH[finish];
+      m = new THREE.MeshPhysicalMaterial({ color: new THREE.Color(hex), ...base, ...params });
+      if (base.sheen) m.sheenColor.set(hex).lerp(new THREE.Color("#ffffff"), 0.5);
+      // Skin glows a little from within, like soft vinyl.
+      if (finish === "skin") m.emissive.set(hex).multiplyScalar(0.14);
+      if (finish === "cloth" || finish === "knit") {
+        m.normalMap = finish === "knit" ? knitMap() : clothMap();
+        m.normalScale.setScalar(finish === "knit" ? 0.6 : 0.35);
+      }
       m.userData.hex = hex;
       this.mats.set(key, m);
-    }
-    return m;
-  }
-
-  /** A soft outline: the part's own colour, much darker. */
-  line(hex: string): THREE.ShaderMaterial {
-    let m = this.lines.get(hex);
-    if (!m) {
-      const c = new THREE.Color(hex).lerp(new THREE.Color("#140d18"), 0.72);
-      m = new THREE.ShaderMaterial({ uniforms: { color: { value: c }, width: { value: 0.0026 } }, vertexShader: OUTLINE_VS, fragmentShader: OUTLINE_FS, side: THREE.BackSide });
-      this.lines.set(hex, m);
     }
     return m;
   }
@@ -121,16 +208,15 @@ class Kit {
     if (rot) mesh.rotation.set(...rot);
     if (typeof scale === "number") mesh.scale.setScalar(scale);
     else if (scale) mesh.scale.set(...scale);
+    mesh.castShadow = !opts?.bare && !m.transparent;
+    mesh.receiveShadow = true;
     parent.add(mesh);
-    const hex = m.userData.hex as string | undefined;
-    if (hex && !opts?.bare && m.side !== THREE.DoubleSide && !m.transparent) mesh.add(new THREE.Mesh(g, this.line(hex)));
     return mesh;
   }
 
   dispose() {
     for (const g of this.geos) g.dispose();
     for (const m of this.mats.values()) m.dispose();
-    for (const m of this.lines.values()) m.dispose();
     for (const t of this.texs) t.dispose();
     for (const m of this.extra) m.dispose();
   }
@@ -156,7 +242,7 @@ function shade(hex: string, amount: number): string {
 const v3 = (x: number, y: number, z: number) => new THREE.Vector3(x, y, z);
 
 // Lathe profiles: [radius, y] from the bottom up.
-const lathe = (points: [number, number][], phiStart = 0, phiLength = TAU, segments = 40) =>
+const lathe = (points: [number, number][], phiStart = 0, phiLength = TAU, segments = 48) =>
   new THREE.LatheGeometry(
     points.map(([r, y]) => new THREE.Vector2(r, y)),
     segments,
@@ -166,8 +252,8 @@ const lathe = (points: [number, number][], phiStart = 0, phiLength = TAU, segmen
 
 /**
  * A tube along a smooth curve whose thickness follows `radius(t)` (t from
- * 0 at the root to 1 at the tip): hair locks, spikes, tails and ribbons.
- * `flat` squashes it towards `from` (locks lie flat on the head).
+ * 0 at the root to 1 at the tip): tails, straps and ribbons. `flat`
+ * squashes it towards `from`.
  */
 function taper(points: THREE.Vector3[], radius: (t: number) => number, opts: { flat?: number; from?: THREE.Vector3; seg?: number; radial?: number } = {}): THREE.BufferGeometry {
   const seg = opts.seg ?? 18;
@@ -201,47 +287,133 @@ function taper(points: THREE.Vector3[], radius: (t: number) => number, opts: { f
   return geo;
 }
 
+interface LockOpts {
+  /** How fast it narrows to the tip (higher: sooner; low: a blunt cut). */
+  tip?: number;
+  /** How much of the length narrows to the tip (1: all of it; less keeps it full-width longer). */
+  end?: number;
+  seg?: number;
+  radial?: number;
+  /** Which way the lock's back faces at a point (default: away from the head, or from the body's axis below it). */
+  out?: (p: THREE.Vector3) => THREE.Vector3;
+}
+
+/**
+ * A sculpted lock of hair: a closed, lens-shaped ribbon along a smooth
+ * curve, `w` wide and `th` thick at its fullest, rounded at the root,
+ * swelling a little and tapering to a point. It lies with its flat side
+ * on the head (or round the body below it), rounder on the outside, so
+ * a row of them reads as chunky moulded hair with grooves between.
+ */
+function strand(points: THREE.Vector3[], w: number, th: number, opts: LockOpts = {}): THREE.BufferGeometry {
+  const seg = opts.seg ?? 22;
+  const radial = opts.radial ?? 12;
+  const tip = opts.tip ?? 0.85;
+  const end = opts.end ?? 1;
+  const curve = new THREE.CatmullRomCurve3(points, false, "centripetal");
+  const pos = new Float32Array((seg + 1) * radial * 3);
+  const index: number[] = [];
+  const c = new THREE.Vector3();
+  const tan = new THREE.Vector3();
+  const out = new THREE.Vector3();
+  const side = new THREE.Vector3();
+  for (let i = 0; i <= seg; i++) {
+    const t = i / seg;
+    curve.getPointAt(t, c);
+    curve.getTangentAt(t, tan);
+    if (opts.out) out.copy(opts.out(c));
+    else out.set(c.x, Math.max(c.y, 0), c.z);
+    side.crossVectors(tan, out).normalize();
+    out.crossVectors(side, tan).normalize();
+    const size = Math.max(0.002, Math.sqrt(Math.min(1, t / 0.08)) * (1 + 0.18 * Math.sin(Math.PI * Math.min(1, t * 1.6))) * Math.pow(Math.min(1, (1 - t) / end), tip));
+    for (let j = 0; j < radial; j++) {
+      const a = (j / radial) * TAU;
+      const u = Math.cos(a);
+      const s = Math.sin(a);
+      // Lens-shaped section: thin edges, a rounded back, a flatter belly.
+      const v = s * (0.45 + 0.55 * Math.abs(s)) * (s > 0 ? 1 : 0.6);
+      const k = (i * radial + j) * 3;
+      pos[k] = c.x + (side.x * u * w + out.x * v * th) * size;
+      pos[k + 1] = c.y + (side.y * u * w + out.y * v * th) * size;
+      pos[k + 2] = c.z + (side.z * u * w + out.z * v * th) * size;
+      if (i < seg) {
+        const a0 = i * radial + j;
+        const a1 = i * radial + ((j + 1) % radial);
+        index.push(a0, a0 + radial, a1, a1, a0 + radial, a1 + radial);
+      }
+    }
+  }
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute("position", new THREE.BufferAttribute(pos, 3));
+  geo.setIndex(index);
+  geo.computeVertexNormals();
+  return geo;
+}
+
+/**
+ * A ring (or arc) of fur: a torus pulled out into jagged, uneven tufts,
+ * like the moulded fur trims on a figure.
+ */
+function fur(radius: number, tube: number, arc = TAU, tufts = 26): THREE.BufferGeometry {
+  const geo = new THREE.TorusGeometry(radius, tube, 9, tufts * 4, arc);
+  const pos = geo.attributes.position;
+  const p = new THREE.Vector3();
+  const c = new THREE.Vector3();
+  for (let i = 0; i < pos.count; i++) {
+    p.fromBufferAttribute(pos, i);
+    const a = Math.atan2(p.y, p.x);
+    c.set(Math.cos(a) * radius, Math.sin(a) * radius, 0);
+    const d = p.clone().sub(c);
+    const saw = 1 - Math.abs(((((a / TAU) * tufts) % 1) + 1) % 1 - 0.5) * 2;
+    const wob = 0.75 + 0.25 * Math.sin(a * 7.3 + i * 0.37);
+    d.multiplyScalar(0.72 + 0.62 * saw * saw * wob);
+    p.copy(c).add(d);
+    pos.setXYZ(i, p.x, p.y, p.z);
+  }
+  geo.computeVertexNormals();
+  return geo;
+}
+
 /** Thick at the root, a point at the tip. */
 const spike = (r0: number, tip = 0.05) => (t: number) => r0 * (1 - t * (1 - tip)) * (t < 0.15 ? 0.75 + (t / 0.15) * 0.25 : 1);
-/** A lock that swells a little then thins to a point. */
-const lockR = (r0: number) => (t: number) => r0 * Math.sin(Math.min(1, 0.25 + t * 0.95) * Math.PI) * (1 - t * 0.35) + 0.004;
 
 // ---------------------------------------------------------------------------
 // The Poké Ball (ours: red and white halves, black band, button)
 // ---------------------------------------------------------------------------
 
-function buildBall(kit: Kit, kind: TrainerConfig["ball"], r = 0.12, outline = true): THREE.Group {
+function buildBall(kit: Kit, kind: TrainerConfig["ball"], r = 0.12, shadow = true): THREE.Group {
   const ball = new THREE.Group();
+  const gloss = (hex: string) => kit.mat(hex, { finish: "gloss" });
   const look = BALLS.find((b) => b.id === kind) ?? BALLS[0];
-  const o = { bare: !outline };
+  const o = { bare: !shadow };
   const bare = { bare: true };
   const premier = kind === "premier";
   const band = premier ? "#d8262f" : kind === "luxury" ? "#e0b33a" : "#1b1b1f";
-  kit.mesh(new THREE.SphereGeometry(r, 28, 14, 0, TAU, 0, Math.PI / 2), kit.mat(look.top), ball, undefined, undefined, undefined, o);
-  kit.mesh(new THREE.SphereGeometry(r, 28, 14, 0, TAU, Math.PI / 2, Math.PI / 2), kit.mat(look.bottom), ball, undefined, undefined, undefined, o);
-  kit.mesh(new THREE.CylinderGeometry(r * 1.012, r * 1.012, r * 0.16, 28), kit.mat(band), ball, undefined, undefined, undefined, bare);
+  kit.mesh(new THREE.SphereGeometry(r, 28, 14, 0, TAU, 0, Math.PI / 2), gloss(look.top), ball, undefined, undefined, undefined, o);
+  kit.mesh(new THREE.SphereGeometry(r, 28, 14, 0, TAU, Math.PI / 2, Math.PI / 2), gloss(look.bottom), ball, undefined, undefined, undefined, o);
+  kit.mesh(new THREE.CylinderGeometry(r * 1.012, r * 1.012, r * 0.16, 28), gloss(band), ball, undefined, undefined, undefined, bare);
   // The button faces +z.
-  kit.mesh(new THREE.CylinderGeometry(r * 0.34, r * 0.34, r * 0.16, 20), kit.mat(premier ? "#d8262f" : kind === "luxury" ? "#e0b33a" : "#1b1b1f"), ball, [0, 0, r * 0.96], [Math.PI / 2, 0, 0], undefined, bare);
-  kit.mesh(new THREE.CylinderGeometry(r * 0.22, r * 0.22, r * 0.2, 20), kit.mat("#ffffff"), ball, [0, 0, r * 1.0], [Math.PI / 2, 0, 0], undefined, bare);
+  kit.mesh(new THREE.CylinderGeometry(r * 0.34, r * 0.34, r * 0.16, 20), gloss(premier ? "#d8262f" : kind === "luxury" ? "#e0b33a" : "#1b1b1f"), ball, [0, 0, r * 0.96], [Math.PI / 2, 0, 0], undefined, bare);
+  kit.mesh(new THREE.CylinderGeometry(r * 0.22, r * 0.22, r * 0.2, 20), gloss("#ffffff"), ball, [0, 0, r * 1.0], [Math.PI / 2, 0, 0], undefined, bare);
   /** A ring round the ball at height y (a fraction of r). */
-  const ring = (y: number, hex: string, w = 0.07) => kit.mesh(new THREE.TorusGeometry(r * Math.sqrt(1 - y * y) * 1.005, r * w, 6, 32), kit.mat(hex), ball, [0, r * y, 0], [Math.PI / 2, 0, 0], undefined, bare);
+  const ring = (y: number, hex: string, w = 0.07) => kit.mesh(new THREE.TorusGeometry(r * Math.sqrt(1 - y * y) * 1.005, r * w, 6, 32), gloss(hex), ball, [0, r * y, 0], [Math.PI / 2, 0, 0], undefined, bare);
   /** An arc over the top, from the band up and down the other side, turned by `yaw`. */
-  const arc = (yaw: number, hex: string, w = 0.08, span = Math.PI) => kit.mesh(new THREE.TorusGeometry(r * 1.004, r * w, 6, 28, span), kit.mat(hex), ball, undefined, [0, yaw, (Math.PI - span) / 2], undefined, bare);
+  const arc = (yaw: number, hex: string, w = 0.08, span = Math.PI) => kit.mesh(new THREE.TorusGeometry(r * 1.004, r * w, 6, 28, span), gloss(hex), ball, undefined, [0, yaw, (Math.PI - span) / 2], undefined, bare);
   /** A flat spot on the surface, at polar angle `pol` from the top and azimuth `az` from the button. */
   const spot = (pol: number, az: number, size: number, hex: string) => {
-    const m = kit.mesh(new THREE.SphereGeometry(r * size, 12, 8), kit.mat(hex), ball, [r * Math.sin(pol) * Math.sin(az) * 0.93, r * Math.cos(pol) * 0.93, r * Math.sin(pol) * Math.cos(az) * 0.93], undefined, [1, 0.32, 1], bare);
+    const m = kit.mesh(new THREE.SphereGeometry(r * size, 12, 8), gloss(hex), ball, [r * Math.sin(pol) * Math.sin(az) * 0.93, r * Math.cos(pol) * 0.93, r * Math.sin(pol) * Math.cos(az) * 0.93], undefined, [1, 0.32, 1], bare);
     m.rotation.set(pol, az, 0, "YXZ");
   };
   switch (kind) {
     case "great":
-      for (const s of [-1, 1]) kit.mesh(new THREE.SphereGeometry(r * 0.42, 14, 8), kit.mat("#e3262f"), ball, [s * r * 0.62, r * 0.55, 0], [0, 0, s * 0.9], [0.55, 0.35, 1], bare);
+      for (const s of [-1, 1]) kit.mesh(new THREE.SphereGeometry(r * 0.42, 14, 8), gloss("#e3262f"), ball, [s * r * 0.62, r * 0.55, 0], [0, 0, s * 0.9], [0.55, 0.35, 1], bare);
       break;
     case "ultra":
-      for (const s of [-1, 1]) kit.mesh(new THREE.TorusGeometry(r * 1.0, r * 0.1, 8, 24, Math.PI / 2.3), kit.mat("#f2c230"), ball, [s * r * 0.45, 0, 0], [0, Math.PI / 2, Math.PI / 2 - 0.2 + (s > 0 ? 0.4 : 0)], undefined, bare);
+      for (const s of [-1, 1]) kit.mesh(new THREE.TorusGeometry(r * 1.0, r * 0.1, 8, 24, Math.PI / 2.3), gloss("#f2c230"), ball, [s * r * 0.45, 0, 0], [0, Math.PI / 2, Math.PI / 2 - 0.2 + (s > 0 ? 0.4 : 0)], undefined, bare);
       break;
     case "master":
-      for (const s of [-1, 1]) kit.mesh(new THREE.SphereGeometry(r * 0.26, 14, 8), kit.mat("#ef6fb0"), ball, [s * r * 0.62, r * 0.66, r * 0.25], undefined, undefined, bare);
-      kit.mesh(new THREE.TorusGeometry(r * 0.22, r * 0.05, 6, 16, Math.PI), kit.mat("#ffffff"), ball, [0, r * 0.6, r * 0.8], [-0.6, 0, 0], undefined, bare);
+      for (const s of [-1, 1]) kit.mesh(new THREE.SphereGeometry(r * 0.26, 14, 8), gloss("#ef6fb0"), ball, [s * r * 0.62, r * 0.66, r * 0.25], undefined, undefined, bare);
+      kit.mesh(new THREE.TorusGeometry(r * 0.22, r * 0.05, 6, 16, Math.PI), gloss("#ffffff"), ball, [0, r * 0.6, r * 0.8], [-0.6, 0, 0], undefined, bare);
       break;
     case "heal":
       ring(0.5, "#ffd0e4", 0.09);
@@ -267,7 +439,7 @@ function buildBall(kit: Kit, kind: TrainerConfig["ball"], r = 0.12, outline = tr
     case "love":
       // A heart on the top half, over the button.
       for (const s of [-1, 1]) spot(0.5, s * 0.24, 0.24, "#e8336f");
-      kit.mesh(new THREE.ConeGeometry(r * 0.36, r * 0.38, 3), kit.mat("#e8336f"), ball, [0, r * 0.6, r * 0.78], [Math.PI - 0.9, 0, 0], [1, 1, 0.35], bare);
+      kit.mesh(new THREE.ConeGeometry(r * 0.36, r * 0.38, 3), gloss("#e8336f"), ball, [0, r * 0.6, r * 0.78], [Math.PI - 0.9, 0, 0], [1, 1, 0.35], bare);
       break;
     case "safari":
       for (const [pol, az, size] of [[0.4, 0.3, 0.3], [0.9, 2.2, 0.32], [1.05, -1.6, 0.3], [0.3, 3.6, 0.26], [1.15, 0.7, 0.22], [1.0, 4.4, 0.24]] as const) spot(pol, az, size, "#4e6b2a");
@@ -323,15 +495,15 @@ export function buildTrainer(cfg: TrainerConfig): TrainerModel {
   const accC = colorHex(cfg.accColor);
   const slim = cfg.body === "slim";
 
-  const mSkin = kit.mat(skin);
-  const mHair = kit.mat(hairC);
+  const mSkin = kit.mat(skin, { finish: "skin" });
+  const mHair = kit.mat(hairC, { finish: "hair" });
   const mTop = kit.mat(top);
   const mTopTrim = kit.mat(topTrim);
   const mAccent = kit.mat(accent);
   const mBottoms = kit.mat(bottomsC);
   const mDark = kit.mat("#2b2a30");
-  const mGold = kit.mat("#d9b54a");
-  const mAcc = kit.mat(accC);
+  const mGold = kit.mat("#d9b54a", { finish: "metal" });
+  const mAcc = kit.mat(accC, { finish: "plain" });
 
   const root = new THREE.Group();
   const body = group(root);
@@ -379,7 +551,7 @@ export function buildTrainer(cfg: TrainerConfig): TrainerModel {
         TAU - g * 2,
       );
       kit.mesh(tail, shellMat, torso, undefined, undefined, [1, 1, 0.84]);
-      if (cfg.top === "longcoat") kit.mesh(new THREE.TorusGeometry(0.31 + flare, 0.035, 8, 40, TAU - g * 2), mTopTrim, torso, [0, -extend, 0], [Math.PI / 2, 0, Math.PI / 2 - (TAU - g * 2) / 2 + Math.PI], [1, 0.84, 1]);
+      if (cfg.top === "longcoat") kit.mesh(fur(0.31 + flare, 0.05, TAU - g * 2, 34), kit.mat(topTrim, { finish: "fur" }), torso, [0, -extend, 0], [Math.PI / 2, 0, Math.PI / 2 - (TAU - g * 2) / 2 + Math.PI], [1, 0.84, 1]);
     }
     if (!open || cfg.top === "suit") {
       // Done up: a zip or a row of buttons down the front.
@@ -420,7 +592,7 @@ export function buildTrainer(cfg: TrainerConfig): TrainerModel {
       break;
     }
     case "fur":
-      kit.mesh(new THREE.TorusGeometry(0.16, 0.06, 10, 26), mTopTrim, torso, [0, 0.45, -0.005], [Math.PI / 2 - 0.25, 0, 0], [1, 0.84, 1]);
+      kit.mesh(fur(0.165, 0.07, TAU, 22), kit.mat(topTrim, { finish: "fur" }), torso, [0, 0.45, -0.005], [Math.PI / 2 - 0.25, 0, 0], [1, 0.84, 1]);
       // The V of the neckline.
       kit.mesh(new THREE.ConeGeometry(0.07, 0.16, 3), mAccent, torso, [0, 0.38, 0.215], [Math.PI, 0, 0], [1, 1, 0.3], { bare: true });
       break;
@@ -501,6 +673,7 @@ export function buildTrainer(cfg: TrainerConfig): TrainerModel {
     kit.mesh(new THREE.CapsuleGeometry(0.062, 0.1, 6, 14), forearm, elbow, [0, -0.08, 0]);
     if (cfg.top === "track") kit.mesh(new THREE.BoxGeometry(0.02, 0.15, 0.03), mAccent, elbow, [s * 0.062, -0.07, 0], undefined, undefined, { bare: true });
     if (cfg.gloves === "long") kit.mesh(new THREE.CylinderGeometry(0.074, 0.07, 0.05, 16), kit.mat(shade(glovesC, 0.06)), elbow, [0, 0.0, 0]);
+    else if (cfg.top === "longcoat") kit.mesh(fur(0.074, 0.04, TAU, 12), kit.mat(topTrim, { finish: "fur" }), elbow, [0, -0.15, 0], [Math.PI / 2, 0, 0]);
     else if (spec.sleeves === "long") kit.mesh(new THREE.CylinderGeometry(0.072, 0.072, 0.045, 16), kit.mat(spec.cuff ?? spec.sleeve), elbow, [0, -0.16, 0]);
     const hand = group(elbow, [0, -0.215, 0]);
     // A mitten with a thumb.
@@ -573,20 +746,21 @@ export function buildTrainer(cfg: TrainerConfig): TrainerModel {
   }
 
   // ---- bags ----
-  const packDark = kit.mat(shade(packTrim, -0.06));
-  const mPack = kit.mat(packC);
+  const plain = { finish: "plain" } as const;
+  const packDark = kit.mat(shade(packTrim, -0.06), plain);
+  const mPack = kit.mat(packC, plain);
   if (cfg.pack === "classic" || cfg.pack === "explorer") {
     const big = cfg.pack === "explorer";
     const pack = group(torso, [0, 0.24, -0.27]);
     kit.mesh(new RoundedBoxGeometry(big ? 0.46 : 0.4, big ? 0.48 : 0.42, big ? 0.24 : 0.18, 4, 0.07), mPack, pack, [0, 0, -0.05]);
     kit.mesh(new RoundedBoxGeometry(big ? 0.44 : 0.38, 0.17, big ? 0.25 : 0.19, 3, 0.06), packDark, pack, [0, 0.14, -0.05]);
-    kit.mesh(new RoundedBoxGeometry(0.24, 0.13, 0.06, 3, 0.03), kit.mat(shade(packC, 0.06)), pack, [0, -0.1, big ? -0.19 : -0.16]);
+    kit.mesh(new RoundedBoxGeometry(0.24, 0.13, 0.06, 3, 0.03), kit.mat(shade(packC, 0.06), plain), pack, [0, -0.1, big ? -0.19 : -0.16]);
     kit.mesh(new THREE.CylinderGeometry(0.018, 0.018, 0.06, 10), mGold, pack, [0, 0.06, big ? -0.18 : -0.15], [Math.PI / 2, 0, 0], undefined, { bare: true });
     if (big) {
       kit.mesh(new THREE.CylinderGeometry(0.095, 0.095, 0.52, 20), mAccent, pack, [0, 0.29, -0.06], [0, 0, Math.PI / 2]);
       for (const s of [-1, 1]) kit.mesh(new THREE.TorusGeometry(0.098, 0.012, 6, 20), mDark, pack, [s * 0.15, 0.29, -0.06], [0, Math.PI / 2, 0], undefined, { bare: true });
     }
-    const strap = kit.mat(shade(packTrim, -0.15));
+    const strap = kit.mat(shade(packTrim, -0.15), { finish: "leather" });
     for (const s of [-1, 1]) {
       kit.mesh(new RoundedBoxGeometry(0.06, 0.36, 0.03, 2, 0.012), strap, torso, [s * 0.155, 0.27, 0.242 * w], [-0.2, 0, 0]);
       kit.mesh(new RoundedBoxGeometry(0.06, 0.03, 0.42, 2, 0.012), strap, torso, [s * 0.155, 0.46, 0.0], [0, 0, 0]);
@@ -594,13 +768,13 @@ export function buildTrainer(cfg: TrainerConfig): TrainerModel {
     }
   } else if (cfg.pack === "satchel" || cfg.pack === "shoulder") {
     const round = cfg.pack === "shoulder";
-    kit.mesh(new THREE.TorusGeometry(0.3, 0.018, 8, 48), kit.mat(shade(packTrim, -0.15)), torso, [0, 0.24, 0], [Math.PI / 2, 0.75, 0], [0.98, 0.82, 1]);
+    kit.mesh(new THREE.TorusGeometry(0.3, 0.018, 8, 48), kit.mat(shade(packTrim, -0.15), { finish: "leather" }), torso, [0, 0.24, 0], [Math.PI / 2, 0.75, 0], [0.98, 0.82, 1]);
     const bag = group(torso, [-0.31, -0.06, 0.06]);
     bag.rotation.y = -1.1;
     if (round) {
       kit.mesh(new THREE.CylinderGeometry(0.12, 0.12, 0.13, 24), mPack, bag, [0, 0, 0], [0, 0, Math.PI / 2]);
       for (const s of [-1, 1]) kit.mesh(new THREE.TorusGeometry(0.12, 0.014, 6, 24), packDark, bag, [s * 0.066, 0, 0], [0, Math.PI / 2, 0], undefined, { bare: true });
-      kit.mesh(new THREE.CylinderGeometry(0.04, 0.04, 0.14, 14), kit.mat(shade(packC, 0.12)), bag, [0, 0, 0], [0, 0, Math.PI / 2], undefined, { bare: true });
+      kit.mesh(new THREE.CylinderGeometry(0.04, 0.04, 0.14, 14), kit.mat(shade(packC, 0.12), plain), bag, [0, 0, 0], [0, 0, Math.PI / 2], undefined, { bare: true });
     } else {
       kit.mesh(new RoundedBoxGeometry(0.27, 0.21, 0.1, 3, 0.04), mPack, bag);
       kit.mesh(new RoundedBoxGeometry(0.27, 0.12, 0.105, 3, 0.04), packDark, bag, [0, 0.05, 0.004]);
@@ -764,19 +938,23 @@ function topSpec(cfg: TrainerConfig, top: string, trim: string, accent: string, 
 // ---------------------------------------------------------------------------
 
 function buildShoe(kit: Kit, foot: THREE.Group, cfg: TrainerConfig, main: string, trim: string) {
-  const m = kit.mat(main);
-  const t = kit.mat(trim);
-  const sole = kit.mat(cfg.shoes === "boots" || cfg.shoes === "tallboots" ? shade(main, -0.22) : trim);
+  const mat = (hex: string, o?: MatOpts) => kit.mat(hex, { finish: "leather", ...o });
+  const m = mat(main);
+  const t = mat(trim);
+  const sole = mat(cfg.shoes === "boots" || cfg.shoes === "tallboots" ? shade(main, -0.22) : trim);
+  /** A trim stripe round the shoe at height y. */
+  const stripe = (y: number, sx: number, sz: number, z = 0.04) => kit.mesh(new THREE.TorusGeometry(1, 0.1, 6, 32), t, foot, [0, y, z], [Math.PI / 2, 0, 0], [sx, sz, 0.12], { bare: true });
   switch (cfg.shoes) {
     case "formal":
       kit.mesh(new THREE.SphereGeometry(1, 20, 14), m, foot, [0, -0.02, 0.04], undefined, [0.1, 0.07, 0.165]);
-      kit.mesh(new THREE.CylinderGeometry(1, 1, 1, 22), kit.mat(shade(main, -0.15)), foot, [0, -0.065, 0.04], undefined, [0.104, 0.03, 0.168], { bare: true });
+      kit.mesh(new THREE.CylinderGeometry(1, 1, 1, 22), mat(shade(main, -0.15)), foot, [0, -0.065, 0.04], undefined, [0.104, 0.03, 0.168], { bare: true });
+      stripe(-0.035, 0.101, 0.166);
       return;
     case "boots":
     case "tallboots": {
       const h = cfg.shoes === "tallboots" ? 0.26 : 0.16;
       kit.mesh(new THREE.CylinderGeometry(0.106, 0.11, h, 18), m, foot, [0, h / 2 - 0.04, 0]);
-      kit.mesh(new THREE.TorusGeometry(0.106, 0.02, 8, 20), cfg.shoes === "tallboots" ? t : kit.mat(shade(main, -0.12)), foot, [0, h - 0.04, 0], [Math.PI / 2, 0, 0], undefined, { bare: true });
+      kit.mesh(new THREE.TorusGeometry(0.106, 0.02, 8, 20), cfg.shoes === "tallboots" ? t : mat(shade(main, -0.12)), foot, [0, h - 0.04, 0], [Math.PI / 2, 0, 0], undefined, { bare: true });
       kit.mesh(new THREE.SphereGeometry(1, 20, 14), m, foot, [0, -0.01, 0.045], undefined, [0.112, 0.085, 0.165]);
       kit.mesh(new THREE.CylinderGeometry(1, 1, 1, 22), sole, foot, [0, -0.065, 0.04], undefined, [0.118, 0.035, 0.172], { bare: true });
       return;
@@ -789,6 +967,7 @@ function buildShoe(kit: Kit, foot: THREE.Group, cfg: TrainerConfig, main: string
       kit.mesh(new THREE.SphereGeometry(1, 20, 14), m, foot, [0, -0.005, 0.04], undefined, [0.114, 0.088, 0.168]);
       kit.mesh(new THREE.CylinderGeometry(1, 1, 1, 22), sole, foot, [0, -0.06, 0.04], undefined, [0.12, 0.042, 0.175], { bare: true });
       kit.mesh(new THREE.SphereGeometry(1, 14, 10), sole, foot, [0, -0.032, 0.155], undefined, [0.075, 0.045, 0.055], { bare: true });
+      stripe(-0.012, 0.113, 0.168);
       // Laces.
       for (const z of [0.07, 0.11]) kit.mesh(new THREE.BoxGeometry(0.07, 0.012, 0.016), t, foot, [0, 0.06 - (z - 0.07) * 0.6, z], [0.5, 0, 0], undefined, { bare: true });
     }
@@ -826,7 +1005,7 @@ function buildCape(kit: Kit, torso: THREE.Group, cfg: TrainerConfig, overPack: b
   kit.mesh(geo(), lining, cape, [0, -len / 2, 0], undefined, [0.995, 1, 0.795], { bare: true });
   if (kind === "royal") {
     // Fur collar and hems.
-    kit.mesh(new THREE.TorusGeometry(0.26, 0.085, 10, 30), kit.mat(trim), cape, [0, 0.0, 0.02], [Math.PI / 2 - 0.15, 0, 0], [1, 0.85, 1]);
+    kit.mesh(fur(0.26, 0.09, TAU, 24), kit.mat(trim, { finish: "fur" }), cape, [0, 0.0, 0.02], [Math.PI / 2 - 0.15, 0, 0], [1, 0.85, 1]);
     for (const s of [-1, 1]) {
       const edge = taper([v3(s * r0 * 0.99, 0, -0.1), v3(s * r1 * 0.85, -len * 0.5, -0.12), v3(s * r1 * 0.99, -len, -0.08)], () => 0.035);
       kit.mesh(edge, kit.mat(trim), cape, [0, 0, 0], undefined, [1, 1, 0.8]);
@@ -852,7 +1031,7 @@ function buildFace(kit: Kit, head: THREE.Group, cfg: TrainerConfig, skin: string
   tex.colorSpace = THREE.SRGBColorSpace;
   tex.anisotropy = 4;
   const geo = new THREE.SphereGeometry(HEAD_R * 1.004, 48, 32, Math.PI / 2 - FACE_SPAN.x, FACE_SPAN.x * 2, FACE_SPAN.top, FACE_SPAN.h);
-  kit.mesh(geo, kit.own(new THREE.MeshBasicMaterial({ map: tex, transparent: true, depthWrite: false })), head, [0, HEAD_Y, 0], undefined, [1, 0.95, 0.96], { bare: true }).renderOrder = 1;
+  kit.mesh(geo, kit.own(new THREE.MeshPhysicalMaterial({ map: tex, transparent: true, depthWrite: false, ...FINISH.skin, emissive: "#ffffff", emissiveMap: tex, emissiveIntensity: 0.14 })), head, [0, HEAD_Y, 0], undefined, [1, 0.95, 0.96], { bare: true }).renderOrder = 1;
   // Eyewear (unless the sunglasses are up on a sun hat).
   if (cfg.eyewear !== "none" && !(cfg.eyewear === "sunglasses" && cfg.hat === "sunhat")) buildGlasses(kit, head, cfg, [0, HEAD_Y - 0.06, HEAD_R * 0.98]);
 }
@@ -860,16 +1039,17 @@ function buildFace(kit: Kit, head: THREE.Group, cfg: TrainerConfig, skin: string
 const FACE_SPAN = { x: 1.0, top: 0.95, h: 1.3 };
 
 function buildGlasses(kit: Kit, parent: THREE.Object3D, cfg: TrainerConfig, at: V3, scale = 1): THREE.Group {
+  const mat = (hex: string, o?: MatOpts) => kit.mat(hex, { finish: "gloss", ...o });
   const g = group(parent, at);
   g.scale.setScalar(scale);
-  const frame = kit.mat(colorHex(cfg.accColor));
+  const frame = mat(colorHex(cfg.accColor));
   const sun = cfg.eyewear === "sunglasses";
   const round = cfg.eyewear === "round";
   for (const s of [-1, 1]) {
     const lens = group(g, [s * 0.15, 0, 0], [0, s * 0.32, 0]);
     lens.scale.set(round ? 1 : 1.18, round ? 1 : 0.84, 1);
     kit.mesh(new THREE.TorusGeometry(0.085, sun ? 0.016 : 0.011, 6, 24), frame, lens, undefined, undefined, undefined, { bare: true });
-    if (sun) kit.mesh(new THREE.CircleGeometry(0.084, 24), kit.mat("#1d2230"), lens, [0, 0, -0.003], undefined, undefined, { bare: true });
+    if (sun) kit.mesh(new THREE.CircleGeometry(0.084, 24), mat("#1d2230"), lens, [0, 0, -0.003], undefined, undefined, { bare: true });
     else kit.mesh(new THREE.CircleGeometry(0.084, 24), kit.own(new THREE.MeshBasicMaterial({ color: "#dff2ff", transparent: true, opacity: 0.18, depthWrite: false })), lens, undefined, undefined, undefined, { bare: true });
     // Arm back to the ear.
     kit.mesh(new THREE.BoxGeometry(0.012, 0.012, 0.3), frame, g, [s * 0.245, 0.02, -0.17], [0, s * 0.35, 0], undefined, { bare: true });
@@ -882,10 +1062,10 @@ function buildNeck(kit: Kit, torso: THREE.Group, cfg: TrainerConfig, m: THREE.Ma
   const at = (y: number) => 0.5 - y;
   switch (cfg.neck) {
     case "scarf": {
-      kit.mesh(new THREE.TorusGeometry(0.135, 0.06, 10, 24), m, torso, [0, at(0.0), 0.0], [Math.PI / 2 - 0.15, 0, 0], [1, 0.9, 1]);
+      kit.mesh(new THREE.TorusGeometry(0.14, 0.075, 12, 28), kit.mat(hex, { finish: "knit" }), torso, [0, at(0.0), 0.0], [Math.PI / 2 - 0.15, 0, 0], [1, 0.9, 1]);
       const from = v3(0, 0.3, 0);
-      kit.mesh(taper([v3(0.06, at(0.02), 0.15), v3(0.14, at(0.12), 0.24), v3(0.2, at(0.3), 0.27), v3(0.22, at(0.42), 0.26)], () => 0.05, { flat: 0.35, from }), m, torso);
-      kit.mesh(taper([v3(-0.02, at(0.02), -0.15), v3(-0.12, at(0.1), -0.27), v3(-0.18, at(0.34), -0.32), v3(-0.2, at(0.56), -0.32)], () => 0.05, { flat: 0.35, from }), m, torso);
+      kit.mesh(taper([v3(0.06, at(0.02), 0.15), v3(0.14, at(0.12), 0.24), v3(0.2, at(0.3), 0.27), v3(0.22, at(0.42), 0.26)], () => 0.055, { flat: 0.4, from }), kit.mat(hex, { finish: "knit" }), torso);
+      kit.mesh(taper([v3(-0.02, at(0.02), -0.15), v3(-0.12, at(0.1), -0.27), v3(-0.18, at(0.34), -0.32), v3(-0.2, at(0.56), -0.32)], () => 0.055, { flat: 0.4, from }), kit.mat(hex, { finish: "knit" }), torso);
       return;
     }
     case "pendant":
@@ -922,6 +1102,14 @@ function onHead(polar: number, azimuth: number, lift = 0): THREE.Vector3 {
   return d.multiplyScalar(HEAD_R + lift);
 }
 
+/** How far the hair's crown sits back from the top of the head (the hairline rises at the front). */
+const HAIR_TILT = -0.45;
+const axisX = v3(1, 0, 0);
+/** A point on the tilted hair cap: polar from its crown, azimuth from the front. */
+const onCap = (polar: number, az: number, r = HEAD_R * 1.05) => onHead(polar, az, r - HEAD_R).applyAxisAngle(axisX, HAIR_TILT);
+/** Straight out from the head's axis at azimuth `az`, at height y. */
+const around = (az: number, r: number, y: number) => v3(Math.sin(az) * r, y, Math.cos(az) * r);
+
 /** Returns the parts that sway (tails, long hair). */
 function buildHair(kit: Kit, head: THREE.Group, cfg: TrainerConfig, m: THREE.Material, hatCover: number): Sway[] {
   const hairGroup = group(head, [0, HEAD_Y, 0]);
@@ -929,54 +1117,92 @@ function buildHair(kit: Kit, head: THREE.Group, cfg: TrainerConfig, m: THREE.Mat
   const sway: Sway[] = [];
   const hatted = hatCover > 0;
   const swing = (node: THREE.Object3D, amount: number, phase = 0) => sway.push({ node, rest: node.rotation.clone(), amount, phase });
-  const centre = v3(0, 0, 0);
-  const lock = (pts: THREE.Vector3[], r: number | ((t: number) => number), flat = 1, parent: THREE.Object3D = hairGroup) =>
-    kit.mesh(taper(pts, typeof r === "number" ? lockR(r) : r, { flat, from: centre }), m, parent);
+  const lock = (pts: THREE.Vector3[], w: number, th: number, opts?: LockOpts, parent: THREE.Object3D = hairGroup) => kit.mesh(strand(pts, w, th, opts), m, parent);
+  const n = (k: number) => Array.from({ length: k }, (_, i) => i);
 
-  // The cap of hair (thin for a buzz cut).
+  // The cap of hair (thin for a buzz cut), then locks from the crown over it.
   const buzz = cfg.hair === "buzz";
-  kit.mesh(new THREE.SphereGeometry(buzz ? R * 1.025 : R * 1.06, 40, 24, 0, TAU, 0, buzz ? 1.65 : 1.82), m, hairGroup, [0, 0.01, 0], [-0.52, 0, 0], [1, 0.97, 0.98]);
-
-  const sides = (low: number, size = 0.12) => {
-    for (const s of [-1, 1]) kit.mesh(new THREE.SphereGeometry(size, 16, 12), m, hairGroup, [s * R * 0.9, -low, 0.05], undefined, [0.45, 1.1, 0.75]);
+  kit.mesh(new THREE.SphereGeometry(buzz ? R * 1.02 : R * 1.045, 40, 24, 0, TAU, 0, buzz ? 1.7 : 1.86), m, hairGroup, [0, 0.0, 0], [HAIR_TILT, 0, 0], [1, 0.97, 0.98]);
+  /** Locks from the crown down over the cap, ending at polar `end(az)` with the tips flicking out. */
+  const crown = (count: number, end: (az: number) => number, flick = 0.05, w = 0.13) => {
+    for (const i of n(count)) {
+      const az = ((i + 0.5) / count) * TAU;
+      const e = end(az);
+      if (e <= 0) continue;
+      const tipOut = onCap(e + 0.12, az + 0.06, R * 1.05 + flick);
+      lock([onCap(0.02, az, R * 0.98), onCap(e * 0.35, az, R * 1.06), onCap(e * 0.72, az + 0.03, R * 1.07), onCap(e, az + 0.05, R * 1.06), tipOut], w, 0.055, { tip: 0.9 });
+    }
   };
-  /** A sheet of hair down the back, from the crown to `low` below the head centre. */
-  const back = (low: number, width: number, depth = 0.25) => {
-    const g = group(hairGroup, [0, 0.05, -R * 0.55]);
-    const n = 5;
-    for (let i = 0; i < n; i++) {
-      const x = (i / (n - 1) - 0.5) * width;
-      lock([v3(x * 0.45, 0.18, 0.1), v3(x * 0.8, -0.15, -depth * 0.55), v3(x * 1.0, -low * 0.6, -depth * 0.7), v3(x * 1.05, -low, -depth * 0.55)], (t) => 0.14 * (1 - t * 0.65) + 0.02, 0.6, g);
+  /** Cap edge: low at the back and sides, up at the hairline in front. */
+  const capEdge = (back: number, front = 1.25) => (az: number) => front + (back - front) * (1 - Math.cos(az)) * 0.5;
+  /** Locks in front of the ears. */
+  const sides = (low: number, w = 0.075) => {
+    for (const s of [-1, 1]) lock([onCap(1.15, s * 1.25, R * 1.03), around(s * 1.32, R * 1.07, 0.02), around(s * 1.3, R * 1.04, -low * 0.6), around(s * 1.22, R * 0.98, -low)], w, 0.045, { tip: 1.1 });
+  };
+  /**
+   * A sheet of locks down the back and round the sides (`from`: how far
+   * round, radians), over a solid mass of hair, swaying from the crown.
+   * `hook` curls the tips outwards and up into crescents.
+   */
+  const back = (low: number, from: number, opts: { spread?: number; hook?: number; w?: number; count?: number } = {}) => {
+    const off = v3(0, 0.05, -R * 0.3);
+    const g = group(hairGroup, [off.x, off.y, off.z]);
+    const { spread = 0, hook = 0, w = 0.15, count = 9 } = opts;
+    const r0 = R * 1.06;
+    kit.mesh(lathe([[R * 0.6, 0.38], [R * 0.98, 0.2], [r0, -0.06], [r0 + spread * 0.5, -low * 0.45], [r0 + spread * 0.6 - 0.06, -low * 0.78]], Math.PI - from, from * 2, 32), kit.mat((m as THREE.MeshPhysicalMaterial).userData.hex, { finish: "hair", side: THREE.DoubleSide }), g, [-off.x, -off.y, -off.z]);
+    for (const i of n(count)) {
+      const az = Math.PI + (i / (count - 1) - 0.5) * 2 * (from + 0.08);
+      const side = Math.sign(Math.sin(az)) || 1;
+      const r1 = R * 1.1 + spread * 0.5;
+      const len = low * (1 - Math.abs(Math.sin(az)) * 0.1) * (1 + 0.06 * Math.sin(i * 2.7));
+      const pts = [onCap(1.05, az, R * 1.0), around(az, r1, -0.06), around(az, r1 + spread * 0.5, -len * 0.45), around(az, r1 + spread - 0.03, -len * (hook ? 0.75 : 0.82))];
+      if (hook) pts.push(around(az + side * 0.06, r1 + spread + 0.04, -len * 0.95), around(az + side * 0.14, r1 + spread + 0.17, -len * 0.84));
+      else pts.push(around(az, r1 + spread - 0.05, -len));
+      lock(pts.map((p) => p.sub(off)), w, 0.08, { tip: 0.9, end: hook ? 0.3 : 0.45, out: (p) => v3(p.x, 0, p.z + off.z) }, g);
     }
     swing(g, 0.6);
     return g;
   };
-  /** Locks falling down in front of the shoulders. */
-  const frontLocks = (low: number, r = 0.075) => {
+  /** Locks falling in front of the shoulders, framing the face (two a side when `pair`). */
+  const frontLocks = (low: number, w = 0.08, hook = 0, pair = false) => {
     for (const s of [-1, 1]) {
-      const g = group(hairGroup, [s * R * 0.8, -0.05, 0.08]);
-      lock([v3(0, 0.15, -0.02), v3(s * 0.06, -0.15, 0.02), v3(s * 0.07, -low * 0.7, 0.06), v3(s * 0.04, -low, 0.07)], (t) => r * (1 - t * 0.6) + 0.012, 0.65, g);
+      const o = v3(s * R * 0.85, -0.02, 0.06);
+      const g = group(hairGroup, [o.x, o.y, o.z]);
+      for (const k of pair ? [0, 1] : [0]) {
+        const a = s * (1.12 + k * 0.32);
+        const l = low * (1 - k * 0.15);
+        const pts = [onCap(1.2, a - s * 0.1, R * 1.02), around(a, R * 1.09, -0.04), around(a + s * 0.06, R * 1.06, -l * 0.5), around(a + s * 0.12, R * 1.02 + hook * 0.04, -l * 0.85)];
+        if (hook) pts.push(around(a + s * 0.2, R * 1.08 + hook * 0.06, -l * 1.0), around(a + s * 0.32, R * 1.12 + hook * 0.17, -l * 0.9));
+        else pts.push(around(a + s * 0.15, R * 1.02, -l));
+        lock(pts.map((p) => p.sub(o)), w, 0.065, { tip: 0.9, end: hook ? 0.32 : 0.5, out: (p) => v3(p.x + o.x, 0, p.z + o.z) }, g);
+      }
       swing(g, 0.3, s);
     }
   };
-  const spikesFrom = (list: [number, number, number][], lean: THREE.Vector3, r = 0.1, minPolar = 0) => {
+  /** Chunky spikes: [polar, azimuth, length] on the head, leaning towards `lean`. */
+  const spikesFrom = (list: [number, number, number][], lean: THREE.Vector3, w = 0.11, curl = 0.05) => {
     for (const [polar, az, len] of list) {
       if (hatCover >= 1 && polar < 1.05) continue;
-      if (polar < minPolar) continue;
-      const p = onHead(polar, az, -0.05);
+      const p = onHead(polar, az, -0.06);
       const d = p.clone().normalize().add(lean).normalize();
-      const side = v3(-d.z, 0, d.x).multiplyScalar(0.04);
-      kit.mesh(taper([p, p.clone().addScaledVector(d, len * 0.5).add(side), p.clone().addScaledVector(d, len).addScaledVector(lean, len * 0.25)], spike(r), { radial: 8, seg: 10 }), m, hairGroup);
+      const bend = v3(0, -1, 0).addScaledVector(d, d.y).normalize().multiplyScalar(curl);
+      lock([p, p.clone().addScaledVector(d, len * 0.45), p.clone().addScaledVector(d, len * 0.8).add(bend), p.clone().addScaledVector(d, len).addScaledVector(lean, len * 0.2).addScaledVector(bend, 2)], w, w * 0.55, { tip: 1.05, seg: 14, radial: 10, out: () => v3(-d.z, 0, d.x).cross(d).normalize().negate() });
     }
+  };
+  /** A bunch of locks from one tie point `at` (in `g`), fanning along `dirs`. */
+  const tail = (g: THREE.Object3D, paths: THREE.Vector3[][], w: number, out: THREE.Vector3) => {
+    for (const pts of paths) lock(pts, w, w * 0.55, { tip: 0.9, out: () => out }, g);
   };
 
   switch (cfg.hair) {
     case "short":
-      sides(0.05);
+      crown(14, capEdge(1.7));
+      sides(0.1);
       break;
     case "buzz":
       break;
     case "spiky":
+      crown(12, capEdge(1.55), 0.02);
       spikesFrom(
         [
           [0.35, 0.2, 0.3],
@@ -995,9 +1221,10 @@ function buildHair(kit: Kit, head: THREE.Group, cfg: TrainerConfig, m: THREE.Mat
         v3(0, -0.25, -0.55),
         0.11,
       );
-      sides(0.06);
+      sides(0.1);
       break;
     case "spikyup":
+      crown(12, capEdge(1.5), 0.02);
       spikesFrom(
         [
           [0.15, 0, 0.36],
@@ -1018,19 +1245,18 @@ function buildHair(kit: Kit, head: THREE.Group, cfg: TrainerConfig, m: THREE.Mat
         ],
         v3(0, 0.4, -0.5),
         0.12,
+        -0.04,
       );
-      sides(0.04, 0.1);
+      sides(0.08, 0.065);
       break;
     case "quiff": {
+      crown(12, capEdge(1.55), 0.03);
       // Volume rising off the forehead and swept back over the crown into points.
       if (!hatted)
-        for (const [x, lift, flare] of [
-          [0, 0.16, 0],
-          [0.24, 0.08, 0.1],
-          [-0.24, 0.08, -0.1],
-        ] as const) {
-          const pts = [v3(x * 0.85, R * 0.48, R * 0.8), v3(x, R * 1.0 + lift, R * 0.42), v3(x * 1.1 + flare, R * 1.02 + lift * 0.8, -R * 0.35), v3(x * 1.25 + flare * 2.2, R * 0.8 + lift, -R * 1.05)];
-          kit.mesh(taper(pts, spike(0.19, 0.06), { flat: 0.62, from: v3(0, -0.1, 0), radial: 12, seg: 22 }), m, hairGroup);
+        for (const x of [-0.3, -0.15, 0, 0.15, 0.3]) {
+          const lift = 0.15 - Math.abs(x) * 0.3;
+          const flare = x * 0.4;
+          lock([v3(x * 0.8, R * 0.52, R * 0.8), v3(x, R * 1.0 + lift, R * 0.45), v3(x * 1.1 + flare, R * 1.04 + lift * 0.8, -R * 0.3), v3(x * 1.2 + flare * 2, R * 0.82 + lift, -R * 1.0), v3(x * 1.25 + flare * 2.4, R * 0.95 + lift, -R * 1.25)], 0.12, 0.075, { tip: 1, end: 0.55, seg: 24 });
         }
       spikesFrom(
         [
@@ -1043,155 +1269,165 @@ function buildHair(kit: Kit, head: THREE.Group, cfg: TrainerConfig, m: THREE.Mat
         v3(0, 0.15, -0.75),
         0.11,
       );
-      sides(0.04, 0.1);
+      sides(0.08, 0.065);
       break;
     }
     case "swept": {
-      const sp = v3(0.12, 0.42, 0.9).normalize().multiplyScalar(R * 0.98);
-      const swoop = kit.mesh(new THREE.SphereGeometry(0.22, 24, 16), m, hairGroup, [sp.x, sp.y, sp.z], undefined, [1.45, 0.55, 0.6]);
-      swoop.quaternion.setFromUnitVectors(v3(0, 0, 1), sp.clone().normalize());
-      swoop.rotateZ(-0.35);
-      sides(0.05);
-      if (!hatted) kit.mesh(new THREE.SphereGeometry(0.18, 16, 12), m, hairGroup, [0.05, R * 0.98, -0.05], [0.3, 0, -0.4], [1.3, 0.6, 1.2]);
+      crown(14, capEdge(1.7));
+      // One big lock swooping over the brow to the side.
+      lock([onCap(0.2, 0.4), onCap(0.8, 0.25, R * 1.12), onCap(1.25, -0.1, R * 1.12), onCap(1.5, -0.65, R * 1.07), onCap(1.6, -1.05, R * 1.08)], 0.2, 0.09, { tip: 1 });
+      sides(0.1);
       break;
     }
     case "bob":
     case "long":
     case "flowing": {
-      const g = 0.82;
-      const lower = cfg.hair === "bob" ? 2.25 : 2.5;
-      kit.mesh(new THREE.SphereGeometry(R * 1.1, 40, 24, Math.PI / 2 + g, TAU - 2 * g, 0.25, lower - 0.25), kit.mat((m as THREE.MeshToonMaterial).userData.hex, { side: THREE.DoubleSide }), hairGroup, [0, 0, -0.01]);
-      if (cfg.hair === "bob") {
-        for (const s of [-1, 1]) lock([v3(s * R * 0.92, 0.05, 0.12), v3(s * R * 0.98, -0.2, 0.14), v3(s * R * 0.9, -0.36, 0.12)], 0.085, 0.6);
-      }
-      if (cfg.hair === "long") {
-        back(0.95, 0.78);
-        frontLocks(0.5, 0.05);
-      }
-      if (cfg.hair === "flowing") {
-        back(1.3, 1.05, 0.42);
-        frontLocks(0.62, 0.045);
+      const bob = cfg.hair === "bob";
+      crown(16, capEdge(bob ? 1.75 : 1.95), 0.02);
+      if (bob) {
+        // Locks round the sides and back to the jaw, the tips curling under.
+        for (const i of n(13)) {
+          const az = 0.95 + (i / 12) * (TAU - 1.9);
+          lock([onCap(1.0, az, R * 1.02), around(az, R * 1.13, -0.02), around(az, R * 1.12, -0.24), around(az, R * 0.98, -0.36)], 0.12, 0.07, { tip: 0.55 });
+        }
+      } else {
+        const flowing = cfg.hair === "flowing";
+        back(flowing ? 1.25 : 0.95, flowing ? 1.45 : 1.3, { spread: flowing ? 0.13 : 0.04, hook: flowing ? 1 : 0, w: flowing ? 0.17 : 0.15, count: flowing ? 9 : 10 });
+        frontLocks(flowing ? 0.66 : 0.5, flowing ? 0.1 : 0.08, flowing ? 1 : 0, flowing);
       }
       break;
     }
     case "ponytail": {
-      sides(0.04);
-      const tail = group(hairGroup, [0, 0.12, -R * 0.98], [-0.35, 0, 0]);
-      kit.mesh(new THREE.TorusGeometry(0.06, 0.025, 8, 16), kit.mat(colorHex(cfg.accColor)), tail, [0, 0, -0.02], [0.3, 0, 0]);
-      lock([v3(0, 0, -0.02), v3(0, -0.1, -0.16), v3(0, -0.32, -0.2), v3(0, -0.5, -0.14)], 0.12, 0.85, tail);
-      swing(tail, 1);
+      crown(14, capEdge(1.7));
+      sides(0.08);
+      const g = group(hairGroup, [0, 0.12, -R * 0.98], [-0.35, 0, 0]);
+      kit.mesh(new THREE.TorusGeometry(0.06, 0.028, 10, 18), kit.mat(colorHex(cfg.accColor)), g, [0, 0, -0.02], [0.3, 0, 0]);
+      tail(g, [-1, 0, 1].map((k) => [v3(k * 0.02, 0, -0.02), v3(k * 0.05, -0.1, -0.17), v3(k * 0.07, -0.32, -0.21), v3(k * 0.04, -0.52, -0.14)]), 0.075, v3(0, 0, -1));
+      swing(g, 1);
       break;
     }
     case "sidetail": {
-      sides(0.05);
+      crown(14, capEdge(1.7));
+      sides(0.08);
       // A spiky tail high on the left side, flicking up and out.
-      const tail = group(hairGroup, [R * 0.66, R * 0.6, -R * 0.35], [0, 0, -0.35]);
-      tail.scale.setScalar(1.45);
-      kit.mesh(new THREE.TorusGeometry(0.05, 0.022, 8, 16), kit.mat(colorHex(cfg.accColor)), tail, [0, 0, 0], [0, Math.PI / 2, 0.5]);
-      for (const [dx, dy, dz, len] of [
+      const g = group(hairGroup, [R * 0.66, R * 0.6, -R * 0.35], [0, 0, -0.35]);
+      g.scale.setScalar(1.45);
+      kit.mesh(new THREE.TorusGeometry(0.05, 0.024, 10, 18), kit.mat(colorHex(cfg.accColor)), g, [0, 0, 0], [0, Math.PI / 2, 0.5]);
+      const flicks: [number, number, number, number][] = [
         [0.9, 0.7, -0.1, 0.36],
         [1.0, 0.25, -0.15, 0.34],
         [0.7, 0.95, -0.35, 0.3],
         [0.95, -0.05, 0.1, 0.28],
-      ] as const) {
+      ];
+      tail(g, flicks.map(([dx, dy, dz, len]) => {
         const d = v3(dx, dy, dz).normalize();
-        kit.mesh(taper([v3(0, 0, 0), d.clone().multiplyScalar(len * 0.5).add(v3(0, 0.05, 0)), d.clone().multiplyScalar(len).add(v3(0.04, -0.06, 0))], spike(0.07), { radial: 8 }), m, tail);
-      }
-      swing(tail, 0.5);
+        return [v3(0, 0, 0), d.clone().multiplyScalar(len * 0.5).add(v3(0, 0.05, 0)), d.clone().multiplyScalar(len).add(v3(0.04, -0.07, 0))];
+      }), 0.06, v3(0, 0, -1));
+      swing(g, 0.5);
       break;
     }
     case "twintails": {
-      sides(0.04);
+      crown(14, capEdge(1.7));
+      sides(0.08);
       for (const s of [-1, 1]) {
-        const tail = group(hairGroup, [s * R * 0.9, 0.08, -0.1], [0, 0, s * 0.2]);
-        kit.mesh(new THREE.TorusGeometry(0.05, 0.022, 8, 16), kit.mat(colorHex(cfg.accColor)), tail, [0, 0, 0], [0, Math.PI / 2, 0]);
-        lock([v3(0, 0, 0), v3(s * 0.1, -0.12, -0.04), v3(s * 0.12, -0.4, -0.04), v3(s * 0.08, -0.62, 0)], 0.1, 0.8, tail);
-        swing(tail, 0.6, s);
+        const g = group(hairGroup, [s * R * 0.9, 0.08, -0.1], [0, 0, s * 0.2]);
+        kit.mesh(new THREE.TorusGeometry(0.05, 0.024, 10, 18), kit.mat(colorHex(cfg.accColor)), g, [0, 0, 0], [0, Math.PI / 2, 0]);
+        tail(g, [-1, 0, 1].map((k) => [v3(0, 0, k * 0.02), v3(s * 0.1, -0.12, -0.04 + k * 0.04), v3(s * 0.12, -0.4, -0.04 + k * 0.05), v3(s * 0.08, -0.62, k * 0.03)]), 0.065, v3(s, 0, 0));
+        swing(g, 0.6, s);
       }
       break;
     }
     case "volume": {
       // A huge mane swept back and out to one side, ending in a hook.
-      kit.mesh(new THREE.SphereGeometry(R * 1.14, 32, 20), m, hairGroup, [0.03, 0.12, -0.2], [-0.3, 0, 0], [1.1, 0.95, 1.0]);
+      crown(14, capEdge(1.8), 0.04);
+      kit.mesh(new THREE.SphereGeometry(R * 1.12, 32, 20), m, hairGroup, [0.03, 0.12, -0.2], [-0.3, 0, 0], [1.1, 0.95, 1.0]);
       const mane = group(hairGroup, [0, 0.0, 0]);
-      kit.mesh(
-        taper([v3(0.0, 0.32, 0.0), v3(0.4, 0.38, -0.32), v3(0.78, 0.12, -0.5), v3(0.95, -0.38, -0.48), v3(0.78, -0.86, -0.36), v3(0.5, -0.9, -0.3), v3(0.4, -0.7, -0.3), v3(0.5, -0.6, -0.3)], (t) => 0.42 * (1 - t) ** 0.9 + 0.022, { radial: 14, seg: 48 }),
-        m,
-        mane,
-      );
-      lock([v3(-0.2, 0.3, -0.1), v3(-0.45, 0.2, -0.4), v3(-0.5, -0.15, -0.55), v3(-0.35, -0.4, -0.6)], 0.2, 0.8);
-      for (const s of [-1, 1]) lock([v3(s * R * 0.9, 0.1, 0.0), v3(s * R * 1.05, -0.15, -0.15), v3(s * R * 0.9, -0.42, -0.25)], 0.12, 0.7);
+      const hook = [v3(0.0, 0.32, 0.0), v3(0.4, 0.38, -0.32), v3(0.78, 0.12, -0.5), v3(0.95, -0.38, -0.48), v3(0.78, -0.86, -0.36), v3(0.5, -0.9, -0.3), v3(0.4, -0.7, -0.3)];
+      lock(hook, 0.36, 0.3, { tip: 0.75, seg: 48, radial: 14, out: (p) => v3(p.x - 0.55, p.y + 0.3, 0).normalize() }, mane);
+      lock(hook.map((p, i) => p.clone().add(v3(-0.05, 0.02 + i * 0.01, -0.12))), 0.28, 0.22, { tip: 0.9, seg: 40, out: (p) => v3(p.x - 0.55, p.y + 0.3, -0.5).normalize() }, mane);
+      lock([v3(-0.2, 0.3, -0.1), v3(-0.45, 0.2, -0.4), v3(-0.5, -0.15, -0.55), v3(-0.35, -0.4, -0.6)], 0.17, 0.12, { tip: 0.9 });
+      for (const s of [-1, 1]) lock([v3(s * R * 0.9, 0.1, 0.0), v3(s * R * 1.05, -0.15, -0.15), v3(s * R * 0.9, -0.42, -0.25)], 0.1, 0.07);
       swing(mane, 0.25);
       break;
     }
     case "buns": {
-      sides(0.05);
+      crown(14, capEdge(1.7));
+      sides(0.08);
       if (hatCover < 1) {
         for (const s of [-1, 1]) {
           const p = onHead(0.62, s * 1.25, 0.06);
-          kit.mesh(new THREE.SphereGeometry(0.16, 20, 16), m, hairGroup, [p.x, p.y, p.z - 0.05]);
+          const bun = group(hairGroup, [p.x, p.y, p.z - 0.05]);
+          kit.mesh(new THREE.SphereGeometry(0.15, 20, 16), m, bun);
+          // Wound locks round the bun.
+          for (const k of [0, 2.1, 4.2]) lock(n(6).map((i) => v3(Math.cos(k + i * 0.9) * 0.15, 0.1 - i * 0.04, Math.sin(k + i * 0.9) * 0.15)), 0.06, 0.035, { tip: 1, out: (q) => v3(q.x, 0, q.z) }, bun);
           kit.mesh(new THREE.TorusGeometry(0.1, 0.025, 8, 16), kit.mat(colorHex(cfg.accColor)), hairGroup, [p.x * 0.88, p.y * 0.88, p.z * 0.88 - 0.05], [Math.PI / 2 + 0.6, s * 0.6, 0], undefined, { bare: true });
         }
       }
       break;
     }
     case "curly": {
-      const n = 46;
-      for (let i = 0; i < n; i++) {
-        const polar = Math.acos(1 - ((i + 0.5) / n) * 1.45);
+      const count = 46;
+      for (const i of n(count)) {
+        const polar = Math.acos(1 - ((i + 0.5) / count) * 1.45);
         const az = i * 2.39996;
         if (Math.cos(az) > 0.35 && polar > 1.05) continue;
         if (hatted && polar < 1.1) continue;
-        const p = onHead(polar, az, 0).applyAxisAngle(v3(1, 0, 0), -0.3);
-        kit.mesh(new THREE.SphereGeometry(0.11, 12, 10), m, hairGroup, [p.x, p.y, p.z], undefined, undefined, { bare: i % 2 === 1 });
+        const p = onHead(polar, az, 0).applyAxisAngle(axisX, -0.3);
+        kit.mesh(new THREE.SphereGeometry(0.11, 14, 10), m, hairGroup, [p.x, p.y, p.z], undefined, undefined, { bare: i % 2 === 1 });
       }
       break;
     }
   }
 
-  buildBangs(kit, hairGroup, cfg, m, hatCover, lock);
+  buildBangs(kit, hairGroup, cfg, m, hatCover);
   return sway;
 }
 
-function buildBangs(kit: Kit, g: THREE.Group, cfg: TrainerConfig, m: THREE.Material, hatCover: number, lock: (pts: THREE.Vector3[], r: number | ((t: number) => number), flat?: number) => THREE.Mesh) {
+function buildBangs(kit: Kit, g: THREE.Group, cfg: TrainerConfig, m: THREE.Material, hatCover: number) {
   const R = HEAD_R;
   const bangs = cfg.bangs === "auto" ? HAIR_BANGS[cfg.hair] : cfg.bangs;
   const hatted = hatCover > 0;
   /** A point on the head's front: x across, y up (unit sphere), pushed out by `lift`. */
-  const at = (x: number, y: number, lift = 0.02) => {
+  const at = (x: number, y: number, lift = 0.03) => {
     const z = Math.sqrt(Math.max(0, 1 - x * x - y * y));
     return v3(x, y, z).multiplyScalar(R + lift);
   };
+  const lock = (pts: THREE.Vector3[], w: number, th: number, tip = 0.9, end = 1) => kit.mesh(strand(pts, w, th, { tip, end }), m, g);
+  const top = hatted ? 0.45 : 0.72;
   switch (bangs) {
     case "tufts": {
       const count = cfg.hair === "curly" ? 5 : 4;
-      const y = hatted ? 0.25 : 0.27;
       for (let i = 0; i < count; i++) {
-        const x = (i / (count - 1) - 0.5) * 0.72;
-        const sp = v3(x, y, Math.sqrt(Math.max(0, 1 - x * x - y * y))).normalize().multiplyScalar(R);
-        const tuft = kit.mesh(new THREE.SphereGeometry(hatted ? 0.11 : 0.13, 16, 12), m, g, [sp.x, sp.y, sp.z], undefined, [1, hatted ? 0.7 : 0.8, 0.55]);
-        tuft.quaternion.setFromUnitVectors(v3(0, 0, 1), sp.clone().normalize());
-        tuft.rotateZ(x * 1.2);
+        const x = (i / (count - 1) - 0.5) * 0.7;
+        lock([at(x * 0.8, top, 0.0), at(x * 0.95, top - 0.12, 0.05), at(x * 1.05 + 0.03, 0.34, 0.05), at(x * 1.1 + 0.05, hatted ? 0.22 : 0.24, 0.03)], 0.1, 0.05, 1.1);
       }
       return;
     }
     case "blunt":
-      // A straight-cut fringe: a band of the cap down to the brows.
-      kit.mesh(new THREE.SphereGeometry(R * 1.075, 36, 10, Math.PI / 2 - 1.0, 2.0, 0.45, 0.82), kit.mat((m as THREE.MeshToonMaterial).userData.hex, { side: THREE.DoubleSide }), g, [0, 0.0, 0.0], [-0.08, 0, 0], [1, 0.95, 1]);
-      kit.mesh(new THREE.TorusGeometry(R * 1.0, 0.022, 6, 36, 2.0), m, g, [0, 0.12, 0.0], [Math.PI / 2 - 0.12, 0, Math.PI / 2 - 1.0 + Math.PI], [1.07, 1.03, 1], { bare: true });
+      // A straight-cut fringe down to the brows: flat locks with pointed ends.
+      for (let i = 0; i < 8; i++) {
+        const x = (i / 7 - 0.5) * 1.12;
+        const len = 0.25 + (i % 2) * 0.035;
+        lock([at(x * 0.55, top + 0.02, 0.0), at(x * 0.82, top - 0.08, 0.055), at(x * 0.96, len + 0.08, 0.055), at(x * 0.98, len - 0.02, 0.04)], 0.085, 0.032, 0.8, 0.35);
+      }
       return;
     case "side":
-      lock([at(0.25, 0.55), at(-0.05, 0.42, 0.04), at(-0.38, 0.12, 0.05), at(-0.52, -0.2, 0.03), at(-0.5, -0.42, 0.0)], (t) => 0.12 * (1 - t * 0.75) + 0.01, 0.42);
-      lock([at(0.1, 0.55), at(0.35, 0.35, 0.03), at(0.55, 0.1, 0.02)], (t) => 0.08 * (1 - t * 0.7) + 0.01, 0.45);
+      // One big lock swept across, over an eye, and a short one the other way.
+      lock([at(0.3, top + 0.04, 0), at(0.05, 0.52, 0.06), at(-0.3, 0.2, 0.07), at(-0.48, -0.12, 0.06), at(-0.52, -0.38, 0.04), at(-0.42, -0.52, 0.05)], 0.16, 0.07, 0.9);
+      lock([at(-0.05, top, 0), at(-0.25, 0.5, 0.05), at(-0.55, 0.22, 0.05), at(-0.66, 0.0, 0.03)], 0.1, 0.05, 1);
+      lock([at(0.15, top, 0), at(0.36, 0.42, 0.04), at(0.55, 0.15, 0.03), at(0.62, -0.02, 0.02)], 0.08, 0.045, 1);
       return;
     case "parted":
-      for (const s of [-1, 1]) lock([at(s * 0.04, 0.62), at(s * 0.25, 0.46, 0.04), at(s * 0.52, 0.22, 0.04), at(s * 0.66, -0.02, 0.02)], (t) => 0.1 * (1 - t * 0.7) + 0.012, 0.45);
+      for (const s of [-1, 1]) {
+        lock([at(s * 0.04, top, 0), at(s * 0.25, 0.5, 0.05), at(s * 0.5, 0.26, 0.05), at(s * 0.64, 0.0, 0.03)], 0.1, 0.05, 1);
+        lock([at(s * 0.2, top, 0), at(s * 0.42, 0.48, 0.04), at(s * 0.62, 0.22, 0.04), at(s * 0.72, -0.05, 0.02)], 0.08, 0.045, 1);
+      }
       return;
     case "spiky":
       for (const x of [-0.22, 0.02, 0.24]) {
-        const a = at(x, hatted ? 0.36 : 0.42, 0.0);
-        const b = at(x * 1.15 + 0.03, hatted ? 0.1 : 0.12, 0.05);
-        kit.mesh(taper([a, a.clone().lerp(b, 0.5).add(v3(0, 0, 0.03)), b], spike(0.08), { radial: 8, seg: 8 }), m, g);
+        const a = at(x, hatted ? 0.4 : 0.48, 0.0);
+        const b = at(x * 1.15 + 0.03, hatted ? 0.1 : 0.12, 0.06);
+        lock([a, a.clone().lerp(b, 0.5).add(v3(0, 0, 0.04)), b], 0.085, 0.05, 1.2);
       }
       return;
     case "open":
@@ -1200,16 +1436,17 @@ function buildBangs(kit: Kit, g: THREE.Group, cfg: TrainerConfig, m: THREE.Mater
 }
 
 function buildHat(kit: Kit, head: THREE.Group, cfg: TrainerConfig) {
+  const mat = (hex: string, o?: MatOpts) => kit.mat(hex, { finish: "plain", ...o });
   // Hats sit high on the big head so the brim stays clear of the eyes.
   const hat = group(head, [0, HEAD_Y + 0.07, 0]);
   const R = HEAD_R * 1.1;
   const kind = cfg.hat;
   const mainHex = colorHex(cfg.hatColor);
   const trimHex = colorHex(cfg.hatTrim);
-  const m = kit.mat(mainHex);
-  const trim = kit.mat(trimHex);
-  const gold = kit.mat("#e9b526");
-  const white = kit.mat("#f6f6f2");
+  const m = mat(mainHex);
+  const trim = mat(trimHex);
+  const gold = mat("#e9b526");
+  const white = mat("#f6f6f2");
   const crownGeo = () => new THREE.SphereGeometry(R, 40, 20, 0, TAU, 0, Math.PI / 2);
   const frontDir = v3(0, 0.55, 0.83).normalize();
   const onFront = (lift: number, up = 0) => v3(0, 0.08 + frontDir.y * R * 0.9 + up, frontDir.z * R + lift);
@@ -1218,11 +1455,11 @@ function buildHat(kit: Kit, head: THREE.Group, cfg: TrainerConfig) {
     const cap = group(hat);
     if (kind === "backcap") cap.rotation.y = Math.PI;
     kit.mesh(crownGeo(), m, cap, [0, 0.08, -0.02], [-0.22, 0, 0], [1, 0.9, 1]);
-    const brimMat = kind === "ace" ? trim : kind === "champion" ? kit.mat(shade(mainHex, -0.1)) : kind === "twotone" ? trim : m;
+    const brimMat = kind === "ace" ? trim : kind === "champion" ? mat(shade(mainHex, -0.1)) : kind === "twotone" ? trim : m;
     kit.mesh(new THREE.CylinderGeometry(0.3, 0.3, 0.03, 36), brimMat, cap, [0, 0.1, R * 0.92], [0.22, 0, 0], [1, 1, 0.78]);
     if (kind === "champion") kit.mesh(new THREE.TorusGeometry(0.3, 0.016, 8, 40, Math.PI), gold, cap, [0, 0.1, R * 0.92], [Math.PI / 2 + 0.22, 0, 0], [1, 0.78, 1], { bare: true });
     // Front panel.
-    const panelMat = kind === "champion" ? kit.mat("#1d1e22") : kind === "ballcap" || kind === "crown" || kind === "twotone" ? null : white;
+    const panelMat = kind === "champion" ? mat("#1d1e22") : kind === "ballcap" || kind === "crown" || kind === "twotone" ? null : white;
     // Two-tone: a band of the trim colour round the crown, matching the brim.
     if (kind === "twotone") kit.mesh(new THREE.TorusGeometry(R * 0.985, 0.045, 8, 40), trim, cap, [0, 0.1, -0.02], [Math.PI / 2 - 0.22, 0, 0]);
     if (panelMat) {
@@ -1259,8 +1496,10 @@ function buildHat(kit: Kit, head: THREE.Group, cfg: TrainerConfig) {
   }
   switch (kind) {
     case "beanie": {
-      kit.mesh(new THREE.SphereGeometry(R, 40, 20, 0, TAU, 0, Math.PI / 2 + 0.05), m, hat, [0, 0.08, -0.02], [-0.22, 0, 0], [1, 1.08, 1]);
-      kit.mesh(new THREE.TorusGeometry(R * 0.98, 0.07, 12, 40), kit.mat(shade(mainHex, -0.06)), hat, [0, 0.07, -0.02], [Math.PI / 2 - 0.22, 0, 0]);
+      // Chunky knit: a tall soft crown over a fat rolled band.
+      const knit = mat(mainHex, { finish: "knit" });
+      kit.mesh(new THREE.SphereGeometry(R * 1.01, 48, 24, 0, TAU, 0, Math.PI / 2 + 0.05), knit, hat, [0, 0.08, -0.02], [-0.22, 0, 0], [1, 1.16, 1]);
+      kit.mesh(new THREE.TorusGeometry(R * 0.98, 0.1, 16, 48), mat(shade(mainHex, -0.03), { finish: "knit" }), hat, [0, 0.06, -0.02], [Math.PI / 2 - 0.22, 0, 0]);
       kit.mesh(new THREE.SphereGeometry(0.1, 16, 12), trim, hat, [0, 0.1 + R * 1.05, -0.16]);
       // A half-ball mark on the side of the crown.
       const mark = group(hat, [R * 0.55, 0.32, R * 0.62]);
@@ -1278,15 +1517,15 @@ function buildHat(kit: Kit, head: THREE.Group, cfg: TrainerConfig) {
       kit.mesh(new THREE.CylinderGeometry(R * 0.86, R * 0.98, 0.26, 36), m, hat, [0, 0.24, -0.04], [-0.2, 0, 0]);
       kit.mesh(new THREE.SphereGeometry(R * 0.86, 36, 10, 0, TAU, 0, Math.PI / 2), m, hat, [0, 0.37, -0.065], [-0.2, 0, 0], [1, 0.3, 1]);
       kit.mesh(new THREE.CylinderGeometry(R * 1.0, R * 1.0, 0.07, 36), trim, hat, [0, 0.15, -0.025], [-0.2, 0, 0]);
-      kit.mesh(new THREE.CylinderGeometry(R * 1.0, R * 1.42, 0.07, 44, 1, true), kit.mat(mainHex, { side: THREE.DoubleSide }), hat, [0, 0.09, -0.01], [-0.2, 0, 0]);
-      kit.mesh(new THREE.TorusGeometry(R * 1.42, 0.018, 6, 48), kit.mat(shade(mainHex, -0.08)), hat, [0, 0.055, -0.0], [Math.PI / 2 - 0.2, 0, 0], undefined, { bare: true });
+      kit.mesh(new THREE.CylinderGeometry(R * 1.0, R * 1.42, 0.07, 44, 1, true), mat(mainHex, { side: THREE.DoubleSide }), hat, [0, 0.09, -0.01], [-0.2, 0, 0]);
+      kit.mesh(new THREE.TorusGeometry(R * 1.42, 0.018, 6, 48), mat(shade(mainHex, -0.08)), hat, [0, 0.055, -0.0], [Math.PI / 2 - 0.2, 0, 0], undefined, { bare: true });
       if (cfg.eyewear !== "none") buildGlasses(kit, hat, cfg, [0, 0.26, R * 0.95], 0.75).rotation.x = -0.35;
       return;
     }
     case "bucket":
       kit.mesh(new THREE.SphereGeometry(R, 40, 20, 0, TAU, 0, Math.PI / 2), m, hat, [0, 0.08, -0.02], [-0.22, 0, 0], [1, 0.85, 1]);
-      kit.mesh(new THREE.CylinderGeometry(R * 0.98, R * 1.4, 0.12, 40, 1, true), kit.mat(mainHex, { side: THREE.DoubleSide }), hat, [0, 0.05, -0.02], [-0.22, 0, 0]);
-      kit.mesh(new THREE.CylinderGeometry(R * 1.0, R * 1.0, 0.06, 40, 1, true), kit.mat(trimHex, { side: THREE.DoubleSide }), hat, [0, 0.14, -0.035], [-0.22, 0, 0]);
+      kit.mesh(new THREE.CylinderGeometry(R * 0.98, R * 1.4, 0.12, 40, 1, true), mat(mainHex, { side: THREE.DoubleSide }), hat, [0, 0.05, -0.02], [-0.22, 0, 0]);
+      kit.mesh(new THREE.CylinderGeometry(R * 1.0, R * 1.0, 0.06, 40, 1, true), mat(trimHex, { side: THREE.DoubleSide }), hat, [0, 0.14, -0.035], [-0.22, 0, 0]);
       return;
     case "visor":
       kit.mesh(new THREE.TorusGeometry(R * 0.95, 0.045, 10, 40), m, hat, [0, 0.18, -0.03], [Math.PI / 2 - 0.22, 0, 0]);
@@ -1301,13 +1540,14 @@ function buildHat(kit: Kit, head: THREE.Group, cfg: TrainerConfig) {
       kit.mesh(new THREE.CylinderGeometry(R * 0.82, R * 1.0, 0.3, 36), m, hat, [0, 0.24, -0.04], [-0.2, 0, 0]);
       kit.mesh(new THREE.SphereGeometry(R * 0.82, 36, 12, 0, TAU, 0, Math.PI / 2), m, hat, [0, 0.39, -0.07], [-0.2, 0, 0], [1, 0.45, 1]);
       kit.mesh(new THREE.CylinderGeometry(R * 1.02, R * 1.02, 0.07, 36), trim, hat, [0, 0.14, -0.02], [-0.2, 0, 0]);
-      kit.mesh(new THREE.CylinderGeometry(R * 1.6, R * 1.6, 0.03, 48), kit.mat(shade(mainHex, -0.06)), hat, [0, 0.1, -0.02], [-0.2, 0, 0]);
+      kit.mesh(new THREE.CylinderGeometry(R * 1.6, R * 1.6, 0.03, 48), mat(shade(mainHex, -0.06)), hat, [0, 0.1, -0.02], [-0.2, 0, 0]);
       return;
   }
 }
 
 /** Earrings and hair accessories. */
 function buildHeadExtras(kit: Kit, head: THREE.Group, cfg: TrainerConfig, m: THREE.Material, hex: string) {
+  const mat = (hex: string, o?: MatOpts) => kit.mat(hex, { finish: "plain", ...o });
   const g = group(head, [0, HEAD_Y, 0]);
   const R = HEAD_R;
   if (cfg.ears !== "none")
@@ -1315,7 +1555,7 @@ function buildHeadExtras(kit: Kit, head: THREE.Group, cfg: TrainerConfig, m: THR
       const at = v3(s * R * 1.0, -0.12, 0.0);
       if (cfg.ears === "studs") kit.mesh(new THREE.SphereGeometry(0.022, 10, 8), m, g, [at.x, at.y, at.z], undefined, undefined, { bare: true });
       if (cfg.ears === "drops") {
-        kit.mesh(new THREE.CylinderGeometry(0.006, 0.006, 0.05, 6), kit.mat("#c9cbd2"), g, [at.x, at.y - 0.03, at.z], undefined, undefined, { bare: true });
+        kit.mesh(new THREE.CylinderGeometry(0.006, 0.006, 0.05, 6), mat("#c9cbd2"), g, [at.x, at.y - 0.03, at.z], undefined, undefined, { bare: true });
         kit.mesh(new THREE.SphereGeometry(0.045, 14, 10), m, g, [at.x, at.y - 0.085, at.z]);
       }
       if (cfg.ears === "hoops") kit.mesh(new THREE.TorusGeometry(0.045, 0.008, 6, 20), m, g, [at.x, at.y - 0.05, at.z], [0, Math.PI / 2, 0], undefined, { bare: true });
@@ -1329,11 +1569,11 @@ function buildHeadExtras(kit: Kit, head: THREE.Group, cfg: TrainerConfig, m: THR
         const o = group(g, [s * R * 1.14, R * 0.42, -0.06], [0, 0, s * -0.3]);
         kit.mesh(new THREE.SphereGeometry(0.15, 18, 14), m, o, [s * 0.03, 0, 0], undefined, [0.55, 1, 1.05]);
         kit.mesh(new THREE.SphereGeometry(0.1, 14, 10), m, o, [s * 0.05, 0.15, -0.06], undefined, [0.5, 0.9, 1.3]);
-        kit.mesh(new THREE.TorusGeometry(0.1, 0.016, 6, 18), kit.mat(shade(hex, 0.3)), o, [s * 0.09, 0, 0], [0, Math.PI / 2, 0], undefined, { bare: true });
+        kit.mesh(new THREE.TorusGeometry(0.1, 0.016, 6, 18), mat(shade(hex, 0.3)), o, [s * 0.09, 0, 0], [0, Math.PI / 2, 0], undefined, { bare: true });
       }
       return;
     case "ribbons": {
-      const hairM = kit.mat(hairHex(cfg.hairColor));
+      const hairM = kit.mat(hairHex(cfg.hairColor), { finish: "hair" });
       for (const s of [-1, 1]) {
         const base = onHead(0.62, s * 0.75, -0.03);
         const tip = base.clone().add(v3(s * 0.12, 0.26, -0.04));
@@ -1349,7 +1589,7 @@ function buildHeadExtras(kit: Kit, head: THREE.Group, cfg: TrainerConfig, m: THR
       const bow = group(g, [0, R * 0.55, -R * 0.82]);
       bow.rotation.x = -0.5;
       for (const t of [-1, 1]) kit.mesh(new THREE.SphereGeometry(0.1, 14, 10), m, bow, [t * 0.1, 0, 0], [0, 0, t * 0.3], [1.1, 0.65, 0.45]);
-      kit.mesh(new THREE.SphereGeometry(0.04, 10, 8), kit.mat(shade(hex, -0.15)), bow);
+      kit.mesh(new THREE.SphereGeometry(0.04, 10, 8), mat(shade(hex, -0.15)), bow);
       return;
     }
     case "flower": {
@@ -1359,7 +1599,7 @@ function buildHeadExtras(kit: Kit, head: THREE.Group, cfg: TrainerConfig, m: THR
         const a = (i / 5) * TAU;
         kit.mesh(new THREE.SphereGeometry(0.04, 10, 8), m, f, [Math.cos(a) * 0.045, Math.sin(a) * 0.045, 0], undefined, [1, 1, 0.5], { bare: true });
       }
-      kit.mesh(new THREE.SphereGeometry(0.03, 10, 8), kit.mat("#f6d24a"), f, [0, 0, 0.015], undefined, undefined, { bare: true });
+      kit.mesh(new THREE.SphereGeometry(0.03, 10, 8), mat("#f6d24a"), f, [0, 0, 0.015], undefined, undefined, { bare: true });
       return;
     }
   }
