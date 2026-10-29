@@ -31,6 +31,9 @@
  * THE SOFTWARE.
  */
 
+import type { PlayFormatId } from "./play";
+import type { ReplayData } from "./replay";
+
 export function escapeHTML(text: string): string {
   return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&apos;");
 }
@@ -104,4 +107,104 @@ export function logLineHtml(text: string, turn?: number): string {
 /** A file name for the replay: "gen9randombattle-red-vs-blue-abcd2345.html". */
 export function replayFileName(formatId: string, players: [string, string], id: string, ext = "html"): string {
   return `${toID(formatId)}-${toID(players[0]) || "p1"}-vs-${toID(players[1]) || "p2"}-${id}.${ext}`;
+}
+
+// ---------------------------------------------------------------------------
+// Importing: a Showdown replay file (.html), a raw battle log (.log, or
+// pasted text) or a replay's .json, read back into our replay model.
+
+/** The largest replay file or paste we read (Showdown's longest battles are well under this). */
+export const IMPORT_MAX_BYTES = 2_000_000;
+
+export type ImportResult = { ok: true; replay: ReplayData } | { ok: false; error: string };
+
+const unescapeHtml = (s: string) =>
+  s.replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"').replace(/&apos;|&#39;/g, "'").replace(/&amp;/g, "&");
+
+/** Spectator chatter and room lines: not part of the battle. */
+const ROOM_LINE = /^\|(?:c|chat|c:|j|J|l|L|n|N|raw|html|uhtml|uhtmlchange|inactive|inactiveoff|t:|chatmsg|chatmsg-raw|join|leave|name)\|/;
+
+/** The protocol text inside whatever was given: the replay file's log block, a .json's `log`, or the text itself. */
+function protocolText(input: string): string {
+  const text = input.replace(/^﻿/, "");
+  // Replay files: <script type="text/plain" class="battle-log-data"> (older ones: class="log").
+  const block = /<script[^>]*class="(?:battle-log-data|log)"[^>]*>([\s\S]*?)<\/script>/i.exec(text);
+  if (block) return block[1].replace(/\\\//g, "/");
+  const trimmed = text.trim();
+  if (trimmed.startsWith("{")) {
+    try {
+      const json = JSON.parse(trimmed) as { log?: unknown };
+      if (typeof json.log === "string") return json.log;
+    } catch {
+      // Not JSON after all: read it as a log.
+    }
+  }
+  // A log copied out of an HTML page may still carry entities.
+  return /&(?:lt|gt|amp|quot);/.test(text) && !text.includes("<") ? unescapeHtml(text) : text;
+}
+
+/**
+ * Reads a Showdown battle log, replay file or replay .json into a replay
+ * (id "imported"). Only public lines are kept: a |split| block keeps its
+ * spectator half and |request| lines are dropped, so nothing hidden shows.
+ * `formats` is our format table (the screen needs one of ours for its layout).
+ */
+export function parseShowdownReplay(input: string, formats: Partial<Record<PlayFormatId, { name: string }>>): ImportResult {
+  if (!input.trim()) return { ok: false, error: "Paste a battle log or choose a replay file." };
+  if (input.length > IMPORT_MAX_BYTES) return { ok: false, error: "That file is too big to be a battle replay." };
+  const raw = protocolText(input)
+    .split(/\r?\n/)
+    .map((l) => l.trimEnd())
+    .filter((l) => l.startsWith("|"));
+  const log = replayLogData(raw).filter((l) => l !== "" && !ROOM_LINE.test(l));
+  const names: [string, string] = ["", ""];
+  let tier = "";
+  let gameType: "singles" | "doubles" | "other" = "singles";
+  let winnerName: string | null | undefined;
+  let turns = 0;
+  for (const line of log) {
+    const parts = line.split("|");
+    if (parts[1] === "player" && (parts[2] === "p1" || parts[2] === "p2") && parts[3]) names[parts[2] === "p1" ? 0 : 1] = parts[3];
+    else if (parts[1] === "tier") tier = parts[2] ?? "";
+    else if (parts[1] === "gametype") gameType = parts[2] === "doubles" ? "doubles" : parts[2] === "singles" ? "singles" : "other";
+    else if (parts[1] === "win") winnerName = parts[2] ?? "";
+    else if (parts[1] === "tie") winnerName = null;
+    else if (parts[1] === "turn") turns = Math.max(turns, Number(parts[2]) || 0);
+  }
+  if (!names[0] || !names[1] || !log.some((l) => /^\|(?:switch|drag)\|/.test(l))) {
+    return { ok: false, error: "That doesn't look like a Showdown battle log: no players or Pokémon found." };
+  }
+  if (gameType === "other") return { ok: false, error: "Only singles and doubles battles can be watched here." };
+  const formatId = toID(tier.replace(/^\[Gen (\d+)\]/i, "gen$1"));
+  const format: PlayFormatId = formatId in formats ? (formatId as PlayFormatId) : gameType === "doubles" ? "gen9doublesou" : "custom";
+  const winner = winnerName == null ? null : winnerName === names[0] ? 0 : winnerName === names[1] ? 1 : null;
+  return {
+    ok: true,
+    replay: {
+      id: "imported",
+      format,
+      formatName: tier || "Imported battle",
+      players: names,
+      winner,
+      reason: winnerName === undefined ? "nocontest" : "normal",
+      turns,
+      ranked: false,
+      public: false,
+      uploadedAt: 0,
+      log,
+    },
+  };
+}
+
+/** Where each faint happens: the turn steps (as the viewer counts them) whose turn saw a Pokémon faint. */
+export function koSteps(log: readonly string[]): number[] {
+  const steps = new Set<number>();
+  let turn = 0;
+  for (const line of log) {
+    const m = /^\|turn\|(\d+)/.exec(line);
+    if (m) turn = Number(m[1]);
+    // A faint during turn t shows once step t + 1 (the next turn's start) is on screen.
+    else if (line.startsWith("|faint|")) steps.add(turn + 1);
+  }
+  return [...steps].sort((a, b) => a - b);
 }

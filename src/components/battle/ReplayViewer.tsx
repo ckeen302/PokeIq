@@ -3,13 +3,14 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import { ChevronLeft, ChevronRight, ChevronsRight, Download, Loader2, Pause, Play, RotateCcw, Swords, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, ChevronsRight, Download, Skull, Upload, Loader2, Pause, Play, RotateCcw, Swords, X } from "lucide-react";
 import type { BattleView } from "@/lib/battle/play";
 import { lastTurn, linesThrough, replayResult, type ReplayData } from "@/lib/battle/replay";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { ShareReplay } from "./BattleAfter";
 import { downloadReplay } from "./replay-download";
+import { koSteps } from "@/lib/battle/replay-file";
 
 const BattleScreen = dynamic(() => import("./play/BattleScreen"), {
   ssr: false,
@@ -32,8 +33,18 @@ const BETWEEN_TURNS_MS = 450;
  * the screen's own speed control (0.5× to 4×). Going forward animates the
  * turn; going back or jumping shows the battle as it stood at once.
  */
-export function ReplayViewer({ replay, instant }: { replay: ReplayData; instant?: { onClose: () => void; timed?: boolean } }) {
+export function ReplayViewer({
+  replay,
+  instant,
+  imported,
+}: {
+  replay: ReplayData;
+  instant?: { onClose: () => void; timed?: boolean };
+  /** A log the viewer brought in themselves: nothing to share or analyse, and a way to load another. */
+  imported?: { onReset: () => void };
+}) {
   const last = useMemo(() => lastTurn(replay.log), [replay.log]);
+  const kos = useMemo(() => koSteps(replay.log), [replay.log]);
   /** The turn whose start is on screen (0: nothing yet; last + 1: the end). */
   const [turn, setTurn] = useState(0);
   const [shown, setShown] = useState<{ lines: string[]; reset: number; instant?: boolean }>({ lines: [], reset: 0 });
@@ -123,6 +134,7 @@ export function ReplayViewer({ replay, instant }: { replay: ReplayData; instant?
     [replay, atEnd, turn, last]
   );
 
+  const nextKo = kos.find((s) => s > turn);
   const button = "flex h-9 items-center gap-1.5 rounded-md border bg-card px-3 font-display text-xs font-bold uppercase tracking-wider hover:border-screen/60 disabled:opacity-40";
   const toolbar = (
     <div className="flex flex-wrap items-center gap-2 rounded-lg border bg-card/60 p-2" data-testid="replay-controls">
@@ -152,6 +164,19 @@ export function ReplayViewer({ replay, instant }: { replay: ReplayData; instant?
         data-testid="replay-forward"
       >
         Turn <ChevronRight className="h-4 w-4" aria-hidden />
+      </button>
+      <button
+        type="button"
+        className={button}
+        onClick={() => {
+          pause();
+          if (nextKo !== undefined) jump(nextKo);
+        }}
+        disabled={nextKo === undefined}
+        title="Jump to the next turn a Pokémon faints"
+        data-testid="replay-next-ko"
+      >
+        <Skull className="h-4 w-4" aria-hidden /> Next KO
       </button>
       <button type="button" className={button} onClick={() => jump(end)} disabled={atEnd} data-testid="replay-end">
         End <ChevronsRight className="h-4 w-4" aria-hidden />
@@ -219,6 +244,34 @@ export function ReplayViewer({ replay, instant }: { replay: ReplayData; instant?
           }
         />
         <div className="flex justify-end">{downloads}</div>
+      </div>
+    );
+  }
+
+  if (imported) {
+    return (
+      <div className="space-y-3" data-testid="imported-replay">
+        <BattleScreen
+          view={view}
+          log={shown}
+          offset={0}
+          busy={false}
+          error={null}
+          onChoose={() => {}}
+          replay
+          onIdle={onIdle}
+          toolbar={toolbar}
+          endActions={
+            <div className="flex flex-wrap justify-center gap-2">
+              <button type="button" className={buttonVariants({ variant: "outline" })} onClick={imported.onReset}>
+                <Upload className="h-4 w-4" aria-hidden /> Watch another
+              </button>
+              <Link href="/battle/play" className={buttonVariants()}>
+                <Swords className="h-4 w-4" aria-hidden /> Battle
+              </Link>
+            </div>
+          }
+        />
       </div>
     );
   }
