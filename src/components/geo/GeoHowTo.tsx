@@ -1,47 +1,23 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { CircleHelp } from "lucide-react";
 import { Sheet } from "@/components/pokedle/sheets";
 import { HowToActions, HowToCards } from "@/components/howto/shared";
 import { GuessrDemo } from "@/components/howto/GuessrDemo";
 import { GEO_MAX_ROUND_SCORE, GEO_ROUND_OPTIONS, GEO_ROUNDS } from "@/lib/geo-types";
 import { DUEL_HP } from "@/lib/duel-types";
-import { cn } from "@/lib/utils";
+import { PREFS_KEY, seenDemo } from "./GeoHowToButton";
 
-const PREFS_KEY = "pokeiq:guessr-prefs:v1";
+export { HowToHelpButton } from "./GeoHowToButton";
+
 const fmt = (n: number) => n.toLocaleString("en-US");
 
-function seenDemo(): boolean {
-  try {
-    return !!(JSON.parse(localStorage.getItem(PREFS_KEY) ?? "{}") as { seenHowToDemo?: boolean }).seenHowToDemo;
-  } catch {
-    return false;
-  }
-}
-
-/** The "?" icon button: asks the pop-up (GeoHowTo) to open. */
-export function HowToHelpButton({ className }: { className?: string }) {
-  return (
-    <button
-      type="button"
-      onClick={() => window.dispatchEvent(new Event("pokeiq:howto"))}
-      aria-label="How to play"
-      title="How to play"
-      data-testid="geo-howto-open"
-      className={cn(
-        "rounded-md p-2 text-muted-foreground transition-colors hover:bg-screen/10 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-        className,
-      )}
-    >
-      <CircleHelp className="h-5 w-5" />
-    </button>
-  );
-}
-
-/** PokéGuessr's "How to play" pop-up: opens by itself once per visit until "Don't show again", and on the `pokeiq:howto` event. */
-export function GeoHowTo() {
-  const [open, setOpen] = useState(false);
+/**
+ * PokéGuessr's "How to play" pop-up: opens by itself once per visit until "Don't show again", and on the `pokeiq:howto` event.
+ * Loaded on demand by GeoHowToLoader, which opens it at once (`defaultOpen`).
+ */
+export function GeoHowTo({ defaultOpen = false }: { defaultOpen?: boolean } = {}) {
+  const [open, setOpen] = useState(defaultOpen);
   useEffect(() => {
     const show = () => setOpen(true);
     window.addEventListener("pokeiq:howto", show);
