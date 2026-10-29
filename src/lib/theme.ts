@@ -11,8 +11,15 @@ const THEME_COLORS: Record<Theme, string> = { dark: "#08071a", light: "#f6f5fc" 
 /** Inline <head> script: runs before paint so a light-mode user never sees a dark flash. */
 export const THEME_INIT_SCRIPT = `try{if(localStorage.getItem("${THEME_KEY}")==="light"){document.documentElement.classList.add("light");document.querySelector('meta[name="theme-color"]')?.setAttribute("content","${THEME_COLORS.light}")}}catch(e){}`;
 
-/** Inline <head> script: show the boot splash only on the first page load of a session. */
-export const SPLASH_INIT_SCRIPT = `try{if(sessionStorage.getItem("pokeiq-splash")){document.documentElement.classList.add("no-splash")}else{sessionStorage.setItem("pokeiq-splash","1")}}catch(e){document.documentElement.classList.add("no-splash")}`;
+/** Game pages paint their board with the HTML, so they never show the splash. */
+export const SPLASH_SKIP_PATHS = ["/pokedle", "/connections", "/pikadoku", "/guessr", "/battle", "/quiz"] as const;
+
+/**
+ * Inline <head> script: show the boot splash only on the first page load of a
+ * session, and never on a game page. Where it shows, it's a brief fade (see
+ * `.boot-splash` in globals.css), cut short once the page has content.
+ */
+export const SPLASH_INIT_SCRIPT = `try{var p=location.pathname;if(${JSON.stringify(SPLASH_SKIP_PATHS)}.some(function(g){return p===g||p.indexOf(g+"/")===0})||sessionStorage.getItem("pokeiq-splash")){document.documentElement.classList.add("no-splash")}sessionStorage.setItem("pokeiq-splash","1")}catch(e){document.documentElement.classList.add("no-splash")}`;
 
 export function getTheme(): Theme {
   if (typeof document === "undefined") return "dark";
