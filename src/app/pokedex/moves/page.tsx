@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { pageMetadata } from "@/lib/seo";
+import { SHARE_IMAGES, pageMetadata } from "@/lib/seo";
 import { MOVES } from "@/lib/dex/data";
 import { DexListExplorer } from "@/components/pokedex/DexListExplorer";
 import { DexTabs } from "@/components/pokedex/DexTabs";
@@ -9,6 +9,7 @@ export const metadata: Metadata = pageMetadata({
   title: "Pokémon Moves — Power, Accuracy, PP & Who Learns Them",
   description: "Every Pokémon move with type, category, power, accuracy and PP. Filter by type and category, then see which Pokémon learn each one.",
   path: "/pokedex/moves",
+  image: SHARE_IMAGES.pokedex,
 });
 
 export default function MovesPage() {

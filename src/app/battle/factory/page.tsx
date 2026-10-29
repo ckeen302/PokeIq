@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { pageMetadata } from "@/lib/seo";
+import { SHARE_IMAGES, pageMetadata } from "@/lib/seo";
 import { GameJsonLd } from "@/components/seo/GameJsonLd";
 import { BattleHeader } from "@/components/battle/BattleHeader";
 import { FrontierHub } from "@/components/battle/Frontier";
@@ -11,6 +11,7 @@ export const metadata: Metadata = pageMetadata({
   title: "Battle Factory — Rent a Team, Build a Streak",
   description: DESCRIPTION,
   path: "/battle/factory",
+  image: SHARE_IMAGES.battle,
 });
 
 export default function BattleFactoryPage() {

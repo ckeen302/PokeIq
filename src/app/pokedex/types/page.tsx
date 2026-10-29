@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { jsonLd, pageMetadata } from "@/lib/seo";
+import { SHARE_IMAGES, jsonLd, pageMetadata } from "@/lib/seo";
 import { breadcrumbList, itemList } from "@/lib/structured-data";
 import { TYPES, capitalize } from "@/lib/pokemon/type-matrix";
 import { DexTabs } from "@/components/pokedex/DexTabs";
@@ -10,6 +10,7 @@ export const metadata: Metadata = pageMetadata({
   title: "Pokémon Type Chart — Every Type Matchup",
   description: "The full 18-type Pokémon effectiveness chart: which attacking types are super effective, not very effective, or have no effect on each defending type.",
   path: "/pokedex/types",
+  image: SHARE_IMAGES.pokedex,
 });
 
 export default function TypesPage() {

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { pageMetadata } from "@/lib/seo";
+import { SHARE_IMAGES, pageMetadata } from "@/lib/seo";
 import { ITEMS } from "@/lib/dex/data";
 import { DexListExplorer } from "@/components/pokedex/DexListExplorer";
 import { DexTabs } from "@/components/pokedex/DexTabs";
@@ -9,6 +9,7 @@ export const metadata: Metadata = pageMetadata({
   title: "Pokémon Items — Effects, Held Items & TMs",
   description: "Every item from the main Pokémon games: effects, categories, wild Pokémon that hold them, and the moves TMs, TRs and HMs teach.",
   path: "/pokedex/items",
+  image: SHARE_IMAGES.pokedex,
 });
 
 export default function ItemsPage() {

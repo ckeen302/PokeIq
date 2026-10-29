@@ -70,7 +70,9 @@ async function text(url) {
 /** Every sitemap robots.txt lists (falls back to /sitemap.xml), following sitemap indexes. */
 async function readSitemaps(site) {
   const robots = await text(`${site}/robots.txt`).catch(() => "");
-  const queue = [...robots.matchAll(/^sitemap:\s*(\S+)/gim)].map((m) => m[1]);
+  // Read every sitemap from `site` itself (robots.txt names the canonical host, which may not be deployed yet).
+  const local = (u) => `${site}${new URL(u, site).pathname}`;
+  const queue = [...robots.matchAll(/^sitemap:\s*(\S+)/gim)].map((m) => local(m[1]));
   if (!queue.length) queue.push(`${site}/sitemap.xml`);
   const urls = new Map();
   const seen = new Set();
@@ -79,7 +81,7 @@ async function readSitemaps(site) {
     if (seen.has(next)) continue;
     seen.add(next);
     const xml = await text(next);
-    for (const [, loc] of xml.matchAll(/<sitemap>[\s\S]*?<loc>\s*([^<]+?)\s*<\/loc>[\s\S]*?<\/sitemap>/g)) queue.push(decode(loc));
+    for (const [, loc] of xml.matchAll(/<sitemap>[\s\S]*?<loc>\s*([^<]+?)\s*<\/loc>[\s\S]*?<\/sitemap>/g)) queue.push(local(decode(loc)));
     for (const [u, m] of parseSitemap(xml)) urls.set(u, m);
     console.log(`  ${next}`);
   }

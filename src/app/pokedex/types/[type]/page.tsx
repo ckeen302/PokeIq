@@ -71,8 +71,8 @@ function MoveList({ moves }: { moves: MoveRecord[] }) {
           <Link href={`/pokedex/moves/${m.slug}`} className="group flex items-center gap-3 px-3 py-2.5">
             <span className="min-w-0 flex-1 truncate font-display font-bold uppercase tracking-wide group-hover:text-screen">{m.name}</span>
             <span className="hidden font-pixel text-[9px] uppercase tracking-wider text-muted-foreground sm:inline">{m.cls}</span>
-            <span className="w-16 text-right font-mono text-sm tabular-nums">{m.power ?? "—"} <span className="text-[10px] text-muted-foreground">PWR</span></span>
-            <span className="w-20 text-right font-mono text-sm tabular-nums">
+            <span className="w-16 shrink-0 text-right font-mono text-sm tabular-nums">{m.power ?? "—"} <span className="text-[10px] text-muted-foreground">PWR</span></span>
+            <span className="w-20 shrink-0 text-right font-mono text-sm tabular-nums">
               {m.learners.length} <span className="text-[10px] text-muted-foreground">MONS</span>
             </span>
           </Link>
@@ -142,13 +142,13 @@ export default async function TypePage({ params }: PageProps) {
         </div>
         <div className="grid gap-6 lg:grid-cols-2">
           {moves.strongest.length > 0 && (
-            <div className="space-y-2">
+            <div className="min-w-0 space-y-2">
               <h3 className="font-pixel text-[10px] uppercase tracking-wider text-muted-foreground">Highest base power</h3>
               <MoveList moves={moves.strongest} />
             </div>
           )}
           {moves.common.length > 0 && (
-            <div className="space-y-2">
+            <div className="min-w-0 space-y-2">
               <h3 className="font-pixel text-[10px] uppercase tracking-wider text-muted-foreground">Learned by the most Pokémon</h3>
               <MoveList moves={moves.common} />
             </div>

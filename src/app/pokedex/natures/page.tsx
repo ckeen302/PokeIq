@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { pageMetadata } from "@/lib/seo";
+import { SHARE_IMAGES, pageMetadata } from "@/lib/seo";
 import { DexTabs } from "@/components/pokedex/DexTabs";
 import { ListHeader } from "@/components/pokedex/detail/DetailParts";
 import { NATURE_STATS, natureRows } from "@/lib/dex/natures";
@@ -8,6 +8,7 @@ export const metadata: Metadata = pageMetadata({
   title: "Pokémon Natures — Stat Boosts & Flavor Preferences",
   description: "All 25 Pokémon natures: the stat each one raises by 10% and the stat it lowers, plus the berry flavor a Pokémon likes or dislikes.",
   path: "/pokedex/natures",
+  image: SHARE_IMAGES.pokedex,
 });
 
 const label = (k: string | null) => (k ? NATURE_STATS.find((s) => s.key === k)!.label : "—");

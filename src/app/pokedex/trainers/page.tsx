@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
-import { pageMetadata } from "@/lib/seo";
+import { SHARE_IMAGES, pageMetadata } from "@/lib/seo";
 import { DexTabs } from "@/components/pokedex/DexTabs";
 import { ListHeader } from "@/components/pokedex/detail/DetailParts";
 import { HudHeading } from "@/components/game/HudHeading";
@@ -17,6 +17,7 @@ export const metadata: Metadata = pageMetadata({
   description:
     "Every trainer from Pokémon Red and Blue to Scarlet and Violet: where they stand and their exact teams, levels, moves and held items, from Gym Leaders and the Elite Four to rivals and rematches.",
   path: "/pokedex/trainers",
+  image: SHARE_IMAGES.pokedex,
 });
 
 const ROLE_HEADINGS: Record<string, string> = {

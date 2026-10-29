@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { MapPin } from "lucide-react";
-import { pageMetadata } from "@/lib/seo";
+import { SHARE_IMAGES, pageMetadata } from "@/lib/seo";
 import { species } from "@/lib/dex/data";
 import { PLACES, getPlace, gymsFor, placesIn, wildAt } from "@/lib/dex/places-data";
 import { groupByGame } from "@/lib/dex/places";
@@ -30,6 +30,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     title: `${p.name} (${p.region}) — Pokémon ${p.type}`,
     description: `${p.name} in ${p.region}: the wild Pokémon found there in each game${p.games.length ? `, and how it looks in ${p.games.at(-1)}` : ""}.`,
     path: `/pokedex/places/${p.slug}`,
+    image: SHARE_IMAGES.pokedex,
     socialTitle: `${p.name} · PokéIQ Pokédex`,
   });
 }

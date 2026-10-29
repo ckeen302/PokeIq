@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { pageMetadata } from "@/lib/seo";
+import { SHARE_IMAGES, pageMetadata } from "@/lib/seo";
 import { ABILITIES, getAbility, species } from "@/lib/dex/data";
 import { Section } from "@/components/pokedex/entry/Reveal";
 import { DetailHero, DetailNav, SpeciesGrid } from "@/components/pokedex/detail/DetailParts";
@@ -22,6 +22,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     title: `${a.name} — Pokémon Ability`,
     description: `${a.effect} See every Pokémon with ${a.name} as a normal or hidden ability.`,
     path: `/pokedex/abilities/${a.slug}`,
+    image: SHARE_IMAGES.pokedex,
     socialTitle: `${a.name} · PokéIQ Pokédex`,
   });
 }

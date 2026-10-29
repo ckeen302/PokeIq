@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { MapPin } from "lucide-react";
-import { pageMetadata, jsonLd } from "@/lib/seo";
+import { SHARE_IMAGES, pageMetadata, jsonLd } from "@/lib/seo";
 import { SITE_URL } from "@/lib/site";
 import { BackButton } from "@/components/ui/BackButton";
 import { HudHeading } from "@/components/game/HudHeading";
@@ -33,6 +33,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     title: `${n.name} — ${n.role}${n.type ? ` (${n.type} type)` : ""} Teams & Locations`,
     description: `${n.blurb.split(". ")[0]}. Every team ${n.name} uses in ${games.join(", ")}, with levels, moves and held items, and where to battle them.`,
     path: `/pokedex/trainers/notable/${n.slug}`,
+    image: SHARE_IMAGES.pokedex,
     socialTitle: `${n.name} · PokéIQ Trainers`,
   });
 }

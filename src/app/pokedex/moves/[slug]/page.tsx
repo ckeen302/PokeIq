@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { pageMetadata } from "@/lib/seo";
+import { SHARE_IMAGES, pageMetadata } from "@/lib/seo";
 import { MOVES, getMove, species } from "@/lib/dex/data";
 import { capitalize } from "@/lib/pokemon/type-matrix";
 import { Section } from "@/components/pokedex/entry/Reveal";
@@ -24,6 +24,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     title: `${m.name} — Pokémon Move`,
     description: `${m.name} is a ${capitalize(m.type)}-type ${m.cls} move. ${m.effect} See its power, accuracy, PP and every Pokémon that learns it.`,
     path: `/pokedex/moves/${m.slug}`,
+    image: SHARE_IMAGES.pokedex,
     socialTitle: `${m.name} · PokéIQ Pokédex`,
   });
 }

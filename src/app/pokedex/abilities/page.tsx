@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { pageMetadata } from "@/lib/seo";
+import { SHARE_IMAGES, pageMetadata } from "@/lib/seo";
 import { ABILITIES } from "@/lib/dex/data";
 import { DexListExplorer } from "@/components/pokedex/DexListExplorer";
 import { DexTabs } from "@/components/pokedex/DexTabs";
@@ -9,6 +9,7 @@ export const metadata: Metadata = pageMetadata({
   title: "Pokémon Abilities — Effects & Which Pokémon Have Them",
   description: "Browse every Pokémon ability with its in-battle effect, and see which Pokémon have it as a normal or hidden ability.",
   path: "/pokedex/abilities",
+  image: SHARE_IMAGES.pokedex,
 });
 
 export default function AbilitiesPage() {

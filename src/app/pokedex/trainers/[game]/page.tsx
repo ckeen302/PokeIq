@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { pageMetadata } from "@/lib/seo";
+import { SHARE_IMAGES, pageMetadata } from "@/lib/seo";
 import { BackButton } from "@/components/ui/BackButton";
 import { DetailHero } from "@/components/pokedex/detail/DetailParts";
 import { Section } from "@/components/pokedex/entry/Reveal";
@@ -27,6 +27,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     title: `Every Trainer in Pokémon ${g.name} — Teams by Location`,
     description: `All ${gameFile(g.key)!.teams.length} trainer teams in Pokémon ${g.name}, route by route: Gym Leaders, the Elite Four, rivals and every generic trainer with their Pokémon, levels, moves and held items.`,
     path: `/pokedex/trainers/${g.key}`,
+    image: SHARE_IMAGES.pokedex,
     socialTitle: `${g.name} trainers · PokéIQ Pokédex`,
   });
 }
