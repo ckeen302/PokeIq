@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
 import type { PublicUser } from "@/lib/server/accounts";
-import { AVATAR_MAX_ID, bestTier, checkAvatar, defaultAvatar, frameUnlocked, levelFromXp, shinyUnlocked } from "@/lib/avatar";
+import { AVATAR_MAX_ID, bestTier, checkAvatar, defaultAvatar, frameHint, frameUnlocked, levelFromXp, shinyUnlocked } from "@/lib/avatar";
 import { levelInfo } from "@/lib/progress";
 
 process.env.POKEIQ_LOCAL_ACCOUNTS = "1";
@@ -11,6 +11,7 @@ const ash = user(1, "Ash");
 const misty = user(2, "Misty");
 const users = new Map([ash, misty].map((u) => [u.username.toLowerCase(), u]));
 const xp = new Map<string, number>();
+const badges = new Map<string, number>();
 
 vi.mock("@/lib/server/auth", async (orig) => {
   const real = await orig<typeof import("@/lib/server/auth")>();
@@ -27,7 +28,7 @@ vi.mock("@/lib/server/accounts", async (orig) => {
     accountsEnabled: () => true,
     usersByIds: async (ids: string[]) => [...users.values()].filter((u) => ids.includes(u.id)),
     usersByNames: async (names: string[]) => [...users.values()].filter((u) => names.map((n) => n.toLowerCase()).includes(u.username.toLowerCase())),
-    progressDigests: async (ids: string[]) => new Map(ids.map((id) => [id, { xp: xp.get(id) ?? 0, daily: null, dle: null }])),
+    progressDigests: async (ids: string[]) => new Map(ids.map((id) => [id, { xp: xp.get(id) ?? 0, daily: null, dle: null, badges: badges.get(id) ?? 0 }])),
   };
 });
 
@@ -47,23 +48,27 @@ beforeEach(() => {
   clearMemoryAvatars();
   clearMemoryRanked();
   xp.clear();
+  badges.clear();
 });
 
 describe("avatar unlocks", () => {
-  it("unlocks shiny at level 10 and frames at their milestones", () => {
-    expect(shinyUnlocked({ level: 9, tier: null })).toBe(false);
-    expect(shinyUnlocked({ level: 10, tier: null })).toBe(true);
-    expect(frameUnlocked("none", { level: 1, tier: null })).toBe(true);
-    expect(frameUnlocked("lv5", { level: 4, tier: null })).toBe(false);
-    expect(frameUnlocked("lv5", { level: 5, tier: null })).toBe(true);
-    expect(frameUnlocked("lv50", { level: 49, tier: null })).toBe(false);
-    expect(frameUnlocked("great", { level: 99, tier: null })).toBe(false);
-    expect(frameUnlocked("great", { level: 1, tier: "ultra" })).toBe(true);
-    expect(frameUnlocked("master", { level: 1, tier: "ultra" })).toBe(false);
+  it("unlocks shiny by playing, and frames with badges or ranked tiers (never levels)", () => {
+    expect(shinyUnlocked({ level: 9, tier: null, badges: 0 })).toBe(false);
+    expect(shinyUnlocked({ level: 10, tier: null, badges: 0 })).toBe(true);
+    expect(frameUnlocked("none", { level: 1, tier: null, badges: 0 })).toBe(true);
+    expect(frameUnlocked("lv5", { level: 99, tier: null, badges: 2 })).toBe(false);
+    expect(frameUnlocked("lv5", { level: 1, tier: null, badges: 3 })).toBe(true);
+    expect(frameUnlocked("lv15", { level: 1, tier: null, badges: 8 })).toBe(true);
+    expect(frameUnlocked("lv50", { level: 99, tier: null, badges: 23 })).toBe(false);
+    expect(frameUnlocked("lv50", { level: 1, tier: null, badges: 24 })).toBe(true);
+    expect(frameUnlocked("great", { level: 99, tier: null, badges: 31 })).toBe(false);
+    expect(frameUnlocked("great", { level: 1, tier: "ultra", badges: 0 })).toBe(true);
+    expect(frameUnlocked("master", { level: 1, tier: "ultra", badges: 0 })).toBe(false);
+    expect(frameHint("lv30")).not.toMatch(/level/i);
   });
 
   it("checks the Pokémon is in range", () => {
-    const u = { level: 1, tier: null };
+    const u = { level: 1, tier: null, badges: 0 };
     expect(checkAvatar({ pokemonId: 25, shiny: false, frame: "none" }, u).ok).toBe(true);
     for (const pokemonId of [0, AVATAR_MAX_ID + 1, 1.5, "25"]) expect(checkAvatar({ pokemonId, shiny: false, frame: "none" }, u).ok).toBe(false);
     expect(checkAvatar({ pokemonId: 25, shiny: false, frame: "gold-plated" }, u).ok).toBe(false);
@@ -98,7 +103,7 @@ describe("the default avatar", () => {
     expect(res.status).toBe(200);
     const body = await res.json();
     expect(body.avatar).toEqual(defaultAvatar("Ash"));
-    expect(body.unlocks).toEqual({ level: 1, tier: null });
+    expect(body.unlocks).toEqual({ level: 1, tier: null, badges: 0 });
     expect((await route.GET(req(null))).status).toBe(401);
     const map = await avatarsByNames(["Ash", "SomeGuest"]);
     expect(map.ash).toEqual(defaultAvatar("Ash"));
@@ -117,7 +122,7 @@ describe("saving an avatar", () => {
   it("refuses a locked shiny or frame, and anything out of range", async () => {
     let res = await put("ash", { pokemonId: 25, shiny: true, frame: "none" });
     expect(res.status).toBe(403);
-    expect((await res.json()).error).toMatch(/level 10/);
+    expect((await res.json()).error).toMatch(/keep playing/i);
     res = await put("ash", { pokemonId: 25, shiny: false, frame: "lv15" });
     expect(res.status).toBe(403);
     res = await put("ash", { pokemonId: 25, shiny: false, frame: "great" });
@@ -129,8 +134,10 @@ describe("saving an avatar", () => {
     expect((await route.PUT(req(null, { pokemonId: 25, shiny: false, frame: "none" }))).status).toBe(401);
   });
 
-  it("unlocks shiny and level frames with XP, and tier frames with a ranked rating", async () => {
-    xp.set(ash.id, 50 * 14 ** 2); // level 15
+  it("unlocks shiny with play, badge frames with badges, and tier frames with a ranked rating", async () => {
+    xp.set(ash.id, 50 * 14 ** 2); // activity level 15
+    expect((await put("ash", { pokemonId: 6, shiny: true, frame: "lv15" })).status).toBe(403);
+    badges.set(ash.id, 8);
     expect((await put("ash", { pokemonId: 6, shiny: true, frame: "lv15" })).status).toBe(200);
     expect((await put("ash", { pokemonId: 6, shiny: true, frame: "lv30" })).status).toBe(403);
     expect((await put("ash", { pokemonId: 6, shiny: true, frame: "great" })).status).toBe(403);

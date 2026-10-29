@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Clock, Loader2, Lock, Search, Sparkles, Trash2, Upload } from "lucide-react";
+import Link from "next/link";
+import { Clock, Loader2, Lock, Search, Sparkles, Trash2, Upload, UserRound } from "lucide-react";
 import {
   AVATAR_FRAMES,
   PICTURE_MAX_BYTES,
@@ -20,7 +21,7 @@ import { setAccountAvatar, useAccount } from "@/lib/account";
 import { artUrl } from "@/lib/pokemon/art";
 import { TYPE_COLORS } from "@/lib/pokemon/type-colors";
 import type { Pokemon } from "@/lib/pokemon/pokedex";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { Avatar } from "./Avatar";
@@ -72,7 +73,9 @@ export function AvatarPanel() {
   const u = settings.unlocks;
   const changed = JSON.stringify(draft) !== JSON.stringify(settings.avatar) || usePicture !== settings.usePicture;
   const approved = settings.pictures.approved;
-  const preview: PublicAvatar = usePicture && approved ? { ...draft, picture: approved } : draft;
+  // Their 3D trainer (made in the creator) shows instead of the Pokémon, unless their picture does.
+  const trainer = account.user.avatar?.trainer;
+  const preview: PublicAvatar = usePicture && approved ? { ...draft, picture: approved } : trainer ? { ...draft, trainer } : draft;
   /** After an upload or a delete: the header shows what everyone now sees, and the settings reload. */
   const refreshed = (avatar?: PublicAvatar) => {
     if (avatar) setAccountAvatar(avatar);
@@ -102,13 +105,18 @@ export function AvatarPanel() {
     <Card data-testid="avatar-panel">
       <CardHeader className="flex-row items-center justify-between space-y-0">
         <CardTitle className="text-lg">Avatar</CardTitle>
-        {settings.available ? (
-          <Button size="sm" variant="outline" onClick={() => setOpen((o) => !o)} data-testid="avatar-change">
-            {open ? "Close" : "Change avatar"}
-          </Button>
-        ) : (
-          <span className="text-sm text-muted-foreground">Picking an avatar opens soon.</span>
-        )}
+        <div className="flex flex-wrap justify-end gap-2">
+          <Link href="/trainer/avatar" className={buttonVariants({ size: "sm", variant: "outline" })} data-testid="avatar-trainer-link">
+            <UserRound className="h-4 w-4" aria-hidden /> {trainer ? "Edit 3D trainer" : "Make a 3D trainer"}
+          </Link>
+          {settings.available ? (
+            <Button size="sm" variant="outline" onClick={() => setOpen((o) => !o)} data-testid="avatar-change">
+              {open ? "Close" : "Change avatar"}
+            </Button>
+          ) : (
+            <span className="self-center text-sm text-muted-foreground">Picking an avatar opens soon.</span>
+          )}
+        </div>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="flex items-center gap-4">
@@ -116,6 +124,7 @@ export function AvatarPanel() {
           <div className="space-y-1 text-sm">
             <p className="text-muted-foreground">
               Shown next to your name in the header, chats, lobbies, friends and leaderboards.
+              {trainer && !(usePicture && approved) && " Your 3D trainer shows; your Pokémon is the fallback."}
               {saved && !changed && <span className="ml-1 text-success">Saved!</span>}
             </p>
             {error && (
@@ -324,7 +333,7 @@ function LockedToggle({ locked, hint, children }: { locked: boolean; hint: strin
   );
 }
 
-function MonGrid({ selected, shiny, onPick }: { selected: number; shiny: boolean; onPick: (id: number) => void }) {
+export function MonGrid({ selected, shiny, onPick }: { selected: number; shiny: boolean; onPick: (id: number) => void }) {
   const [dex, setDex] = useState<Mon[] | null>(null);
   const [query, setQuery] = useState("");
   const [gen, setGen] = useState(0);
