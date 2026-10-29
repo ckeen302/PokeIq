@@ -21450,14 +21450,6 @@
    "checked": "shown on Poképédia's page \"Lac Colère\"; GS in its name or category; cropped (bottom 35%); reviewed on a contact sheet"
   },
   {
-   "id": "xfAAKTKuMXXe",
-   "region": "Johto",
-   "name": "Lake of Rage",
-   "game": "Gold / Silver",
-   "source": "https://www.pokepedia.fr/Fichier:Lac_Colère_Écaillerouge_OA.png",
-   "checked": "shown on Poképédia's page \"Lac Colère\"; GS in its name or category; cropped (bottom 35%); reviewed on a contact sheet"
-  },
-  {
    "id": "pfIx5WnSb7nw",
    "region": "Johto",
    "name": "National Park",
@@ -21829,14 +21821,6 @@
    "checked": "shown on PokéWiki's page \"Leuchtturm\"; HGSS in its name or category; reviewed on a contact sheet"
   },
   {
-   "id": "aQBbZhv81p4k",
-   "region": "Johto",
-   "name": "Olivine Lighthouse",
-   "game": "HeartGold / SoulSilver",
-   "source": "https://www.pokepedia.fr/Fichier:Phare_Super_Bonbon_HGSS.png",
-   "checked": "shown on Poképédia's page \"Phare (Johto)\"; HGSS in its name or category; cropped (bottom 26%); reviewed on a contact sheet"
-  },
-  {
    "id": "odH1iHnkPcRc",
    "region": "Johto",
    "name": "Embedded Tower",
@@ -22037,15 +22021,6 @@
    "game": "Gold / Silver",
    "source": "https://www.pokepedia.fr/Fichier:Doublonville_Huile_OA.png",
    "checked": "shown on Poképédia's page \"Centre Commercial de Doublonville\"; GS in its name or category; cropped (bottom 32%); reviewed on a contact sheet"
-  },
-  {
-   "id": "nmbuJnYgq9R4",
-   "region": "Johto",
-   "name": "Goldenrod Tunnel",
-   "parent": "Goldenrod City",
-   "game": "Gold / Silver",
-   "source": "https://www.pokepedia.fr/Fichier:Doublon-Tunnel_Rappel_OA.png",
-   "checked": "shown on Poképédia's page \"Doublon-Tunnel\"; GS in its name or category; cropped (bottom 32%); reviewed on a contact sheet"
   },
   {
    "id": "90Cb6YGDq4bd",
@@ -24343,22 +24318,6 @@
    "checked": "shown on Poképédia's page \"Aire de repos du Mont Sélénite\"; C in its name or category; cropped (bottom 35%); reviewed on a contact sheet"
   },
   {
-   "id": "8B5gq64qVEmM",
-   "region": "Kanto",
-   "name": "Mt. Moon",
-   "game": "Let's Go, Pikachu! / Eevee!",
-   "source": "https://www.pokepedia.fr/Fichier:Mont_Sélénite_Huile_LGPE.png",
-   "checked": "shown on Poképédia's page \"Mont Sélénite\"; LGPE in its name or category; cropped (bottom 6%); reviewed on a contact sheet"
-  },
-  {
-   "id": "evUs8MX4b7gq",
-   "region": "Kanto",
-   "name": "Mt. Moon",
-   "game": "Let's Go, Pikachu! / Eevee!",
-   "source": "https://www.pokepedia.fr/Fichier:Mont_Sélénite_Potion_LGPE.png",
-   "checked": "shown on Poképédia's page \"Mont Sélénite\"; LGPE in its name or category; cropped (bottom 6%); reviewed on a contact sheet"
-  },
-  {
    "id": "bEDlZNCbtu8N",
    "region": "Kanto",
    "name": "Mt. Moon",
@@ -24422,14 +24381,6 @@
    "game": "FireRed / LeafGreen",
    "source": "https://www.pokepedia.fr/Fichier:Route_Victoire_Super_Bonbon_&_CT02_RFVF.png",
    "checked": "shown on Poképédia's page \"Route Victoire (Kanto)\"; FRLG in its name or category; reviewed on a contact sheet"
-  },
-  {
-   "id": "KLm9qU8xXbQF",
-   "region": "Kanto",
-   "name": "Victory Road",
-   "game": "Let's Go, Pikachu! / Eevee!",
-   "source": "https://www.pokepedia.fr/Fichier:Route_Victoire_Hyper_Ball_LGPE.png",
-   "checked": "shown on Poképédia's page \"Route Victoire (Kanto)\"; LGPE in its name or category; cropped (bottom 6%); reviewed on a contact sheet"
   },
   {
    "id": "_RzKkGmSeft4",
@@ -25647,14 +25598,6 @@
    "checked": "shown on WikiDex's page \"Zona Sobrevivir\"; Pt in its name or category; reviewed on a contact sheet"
   },
   {
-   "id": "PCgcZDv45gkH",
-   "region": "Sinnoh",
-   "name": "Turnback Cave",
-   "game": "Diamond / Pearl",
-   "source": "https://www.wikidex.net/wiki/Archivo:Cueva_retorno_Giratina.png",
-   "checked": "shown on WikiDex's page \"Cueva Regreso/Cueva Retorno\"; DP in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
-  },
-  {
    "id": "dkizs_oXIPDj",
    "region": "Sinnoh",
    "name": "Distortion World",
@@ -26245,14 +26188,6 @@
    "game": "Diamond / Pearl",
    "source": "https://www.pokepedia.fr/Fichier:Mont_Abrupt_Fer_DP.png",
    "checked": "shown on Poképédia's page \"Mont Abrupt\"; DP in its name or category; cropped (bottom 27%); reviewed on a contact sheet"
-  },
-  {
-   "id": "RCjBRq-KK_kH",
-   "region": "Sinnoh",
-   "name": "Stark Mountain",
-   "game": "Platinum",
-   "source": "https://www.pokepedia.fr/Fichier:Mont_Abrupt_Fer_Pt.png",
-   "checked": "shown on Poképédia's page \"Mont Abrupt\"; Pt in its name or category; cropped (bottom 26%); reviewed on a contact sheet"
   },
   {
    "id": "oXaIvxKWg9Yd",
@@ -26861,14 +26796,6 @@
    "checked": "shown on Poképédia's page \"Chenal 226\"; BDSP in its name or category; reviewed on a contact sheet"
   },
   {
-   "id": "PuMJ6O22msU5",
-   "region": "Sinnoh",
-   "name": "Route 226",
-   "game": "Platinum",
-   "source": "https://www.pokepedia.fr/Fichier:Chenal_226_PP_Max_Pt.png",
-   "checked": "shown on Poképédia's page \"Chenal 226\"; Pt in its name or category; cropped (bottom 26%); reviewed on a contact sheet"
-  },
-  {
    "id": "oPFE3XxZaQQq",
    "region": "Sinnoh",
    "name": "Great Marsh",
@@ -27097,14 +27024,6 @@
    "game": "Platinum",
    "source": "https://www.pokepedia.fr/Fichier:Joliberges_Grande_Perle_Pt.png",
    "checked": "shown on Poképédia's page \"Joliberges\"; Pt in its name or category; cropped (bottom 26%); reviewed on a contact sheet"
-  },
-  {
-   "id": "cyGQg3Aqfzv6",
-   "region": "Sinnoh",
-   "name": "Iron Island",
-   "game": "Platinum",
-   "source": "https://www.wikidex.net/wiki/Archivo:Ruinas_Hierro_Pt.png",
-   "checked": "shown on WikiDex's page \"Isla Hierro\"; Pt in its name or category; reviewed on a contact sheet"
   },
   {
    "id": "_Eiy4LY4T4KI",
@@ -27339,14 +27258,6 @@
    "game": "Brilliant Diamond / Shining Pearl",
    "source": "https://archives.bulbagarden.net/wiki/File:Oreburgh_Gym_Exterior_BDSP.png",
    "checked": "shown on Bulbapedia's page \"Oreburgh Gym\"; BDSP in its name or category; reviewed on a contact sheet"
-  },
-  {
-   "id": "yHgdXwRzjnjj",
-   "region": "Sinnoh",
-   "name": "Victory Road",
-   "game": "Platinum",
-   "source": "https://www.pokepedia.fr/Fichier:Route_Victoire_Pépite_Pt.png",
-   "checked": "shown on Poképédia's page \"Route Victoire (Sinnoh)\"; Pt in its name or category; cropped (bottom 26%); reviewed on a contact sheet"
   },
   {
    "id": "FMrCEoS_s_49",
