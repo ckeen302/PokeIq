@@ -10,8 +10,10 @@ const fmt = (n: number) => n.toLocaleString("en-US");
 /** One row of the by-region / by-game table: accuracy as a bar, the best round, and streak picks where there are any. */
 function StatRow({ r }: { r: GeoStatRow }) {
   return (
-    <li className="grid grid-cols-[6.5rem_1fr_auto] items-center gap-2 text-sm sm:grid-cols-[7.5rem_1fr_auto]" data-testid="profile-geo-row">
-      <span className="truncate font-semibold">{r.key}</span>
+    <li className="grid grid-cols-[6.5rem_1fr_auto] items-center gap-2 text-sm sm:grid-cols-[9.5rem_1fr_auto]" data-testid="profile-geo-row">
+      <span className="truncate font-semibold" title={r.key}>
+        {r.key}
+      </span>
       {r.rounds ? (
         <span className="flex items-center gap-2" title={`${r.accuracy}% average accuracy over ${fmt(r.rounds)} round${r.rounds === 1 ? "" : "s"}`}>
           <span className="meter h-2 flex-1">
@@ -55,7 +57,7 @@ export function GeoProfileStats({ stats, streak }: { stats: GeoPlayerStats | nul
                 ["Rounds", stats ? fmt(stats.rounds) : "0"],
                 ["Accuracy", avg === null ? "–" : `${avg}%`],
                 ["Best round", bestRound ? fmt(bestRound) : "–"],
-                ["Best streak", streak?.best ? `🔥${streak.best}` : stats?.streakPicks ? `${stats.streakHits}/${stats.streakPicks}` : "–"],
+                ["Best streak", streak ? `🔥${streak.best}` : "–"],
               ].map(([label, value]) => (
                 <div key={label} className="flex flex-col-reverse rounded-md border bg-shade/20 p-2">
                   <dt className="text-[11px] text-muted-foreground">{label}</dt>

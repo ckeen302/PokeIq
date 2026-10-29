@@ -1113,21 +1113,25 @@ export function GeoSummary({
   return (
     <div className={cn("mx-auto max-w-4xl space-y-6", compact && "space-y-4")}>
       <div className="space-y-2 text-center">
-        <p className={cn("hud-label text-screen", compact && "hidden")}>{isStreak ? "Streak over" : "Survey complete"}</p>
-        <div className={cn("font-display text-6xl font-bold tabular-nums text-screen [text-shadow:0_0_18px_hsl(var(--screen)/0.5)]", compact && "hidden")}>
-          {isStreak ? `${headline} in a row` : fmt(headline)}
-        </div>
+        {!compact && <p className="hud-label text-screen">{isStreak ? "Streak over" : "Survey complete"}</p>}
+        {!compact && (
+          <div className="font-display text-6xl font-bold tabular-nums text-screen [text-shadow:0_0_18px_hsl(var(--screen)/0.5)]">
+            {isStreak ? `${headline} in a row` : fmt(headline)}
+          </div>
+        )}
         {!isStreak && (
           <>
-            <div className={cn("text-sm text-muted-foreground", compact && "hidden")}>out of {fmt(maxTotal(game.rounds))}</div>
+            {!compact && <div className="text-sm text-muted-foreground">out of {fmt(maxTotal(game.rounds))}</div>}
             {bonus !== null && (
               <div className="text-sm font-semibold text-success" data-testid="geo-bonus-total">
                 +{fmt(bonus)} game bonus · {fmt(total + bonus)} with the bonus (the leaderboard counts the map score)
               </div>
             )}
-            <div className={cn("meter mx-auto max-w-xl", compact && "hidden")}>
-              <motion.div className="h-full bg-primary" initial={{ width: 0 }} animate={{ width: `${(total / maxTotal(game.rounds)) * 100}%` }} transition={{ duration: 1.1 }} />
-            </div>
+            {!compact && (
+              <div className="meter mx-auto max-w-xl">
+                <motion.div className="h-full bg-primary" initial={{ width: 0 }} animate={{ width: `${(total / maxTotal(game.rounds)) * 100}%` }} transition={{ duration: 1.1 }} />
+              </div>
+            )}
           </>
         )}
         {reward && (
@@ -1188,7 +1192,7 @@ export function GeoSummary({
             </div>
           )}
 
-          <ol className={cn("space-y-2", compact && "hidden")}>
+          <ol className={cn("space-y-2", compact && "hidden")} aria-hidden={compact || undefined}>
             {played.map((p, i) => (
               <li key={i} className="flex items-center gap-3 rounded-md border bg-shade/20 px-3 py-2">
                 <span className="font-pixel text-xs text-muted-foreground">{i + 1}</span>

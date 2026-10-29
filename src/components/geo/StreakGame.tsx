@@ -105,6 +105,7 @@ export function StreakGame({ world }: { world: GeoRegionInfo }) {
         if (graded.best) setBest(graded.best.best);
       }
       setPhase("revealed");
+      window.scrollTo({ top: 0 });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Couldn't grade that pick.");
       setPhase("error");

@@ -53,7 +53,7 @@ export function LearnCard({ answer, shot, map, className }: { answer: GeoAnswer;
         </p>
         <p className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-white/70">
           {answer.region && <span>{answer.region}</span>}
-          {learn?.type && <span>{learn.type}</span>}
+          {learn?.type && learn.type !== "Other" && learn.type !== "Building" && <span className="text-white/50">· {learn.type}</span>}
           <span className="rounded-sm border border-white/30 px-1.5 py-0.5 text-[11px] text-white" data-testid="geo-answer-game">
             Pokémon {answer.game}
           </span>
@@ -67,7 +67,7 @@ export function LearnCard({ answer, shot, map, className }: { answer: GeoAnswer;
           )}
         </p>
         {learn?.fact && (
-          <p className="mt-1 max-w-md text-xs leading-snug text-[#c8bfff]" data-testid="geo-learn-fact">
+          <p className="mt-1 line-clamp-2 max-w-md text-xs leading-snug text-[#c8bfff] md:line-clamp-none" data-testid="geo-learn-fact">
             {learn.fact}
           </p>
         )}
