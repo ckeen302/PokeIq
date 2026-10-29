@@ -130,7 +130,7 @@ async function playTriviaRun(p, slug) {
     if (path.endsWith("/answer") && /^https:\/\/bulbapedia\.bulbagarden\.net\/wiki\//.test(body?.sourceUrl ?? "")) sources++;
   };
   p.on("response", watch);
-  await p.goto(`${BASE}/quiz/${slug}`, { waitUntil: "networkidle" });
+  await gotoSettled(p, `${BASE}/quiz/${slug}`);
   await p.getByRole("button", { name: /^Start/ }).click();
   await p.waitForSelector("h2");
   for (let i = 0; i < 10; i++) {
@@ -152,11 +152,11 @@ async function playTriviaRun(p, slug) {
 }
 
 step("home");
-await page.goto(BASE, { waitUntil: "networkidle" });
+await gotoSettled(page, BASE);
 await page.screenshot({ path: `${OUT}/home.png`, fullPage: true });
 
 step("pokédex entry: Where to find it");
-await page.goto(`${BASE}/pokemon/starly`, { waitUntil: "networkidle" });
+await gotoSettled(page, `${BASE}/pokemon/starly`);
 {
   const sec = page.locator("#encounters");
   await sec.waitFor();
@@ -180,7 +180,7 @@ page.on("response", async (res) => {
     if (body?.shareToken) shareToken = body.shareToken;
   }
 });
-await page.goto(`${BASE}/quiz/whos-that-pokemon`, { waitUntil: "networkidle" });
+await gotoSettled(page, `${BASE}/quiz/whos-that-pokemon`);
 await page.screenshot({ path: `${OUT}/setup.png` });
 await page.getByRole("button", { name: /^Start/ }).click();
 await page.waitForSelector("h2");
@@ -203,7 +203,7 @@ if (!shareToken) errors.push("No shareToken returned at the end of a run");
 
 step("challenge link");
 if (shareToken) {
-  await page.goto(`${BASE}/c/${shareToken}`, { waitUntil: "networkidle" });
+  await gotoSettled(page, `${BASE}/c/${shareToken}`);
   await page.getByRole("button", { name: /Accept challenge/ }).waitFor();
   await page.screenshot({ path: `${OUT}/challenge.png` });
   const og = await page.request.get(`${BASE}/c/${shareToken}/opengraph-image`);
@@ -213,7 +213,7 @@ if (shareToken) {
 
 for (const slug of ["pokemon-higher-or-lower", "pokemon-type-quiz", "pokedex-entry-quiz", "pokemon-cry-quiz"]) {
   step(slug);
-  await page.goto(`${BASE}/quiz/${slug}`, { waitUntil: "networkidle" });
+  await gotoSettled(page, `${BASE}/quiz/${slug}`);
   await page.getByRole("button", { name: /^Start/ }).click();
   await page.waitForSelector("h2");
   await page.waitForTimeout(900);
@@ -243,7 +243,7 @@ step("real shiny quiz: three questions");
     }
   };
   page.on("response", watch);
-  await page.goto(`${BASE}/quiz/real-shiny-quiz`, { waitUntil: "networkidle" });
+  await gotoSettled(page, `${BASE}/quiz/real-shiny-quiz`);
   await page.getByRole("button", { name: /^Start/ }).click();
   await page.waitForSelector("h2");
   for (let i = 0; i < 3; i++) {
@@ -265,7 +265,7 @@ step("real shiny quiz: three questions");
 }
 
 step("blitz format");
-await page.goto(`${BASE}/quiz/pokemon-trivia-quiz?format=blitz`, { waitUntil: "networkidle" });
+await gotoSettled(page, `${BASE}/quiz/pokemon-trivia-quiz?format=blitz`);
 await page.getByRole("button", { name: /^Start/ }).click();
 await page.waitForSelector("h2");
 for (let i = 0; i < 3; i++) {
@@ -275,7 +275,7 @@ for (let i = 0; i < 3; i++) {
 await page.screenshot({ path: `${OUT}/blitz.png` });
 
 step("pokédle");
-await page.goto(`${BASE}/pokedle`, { waitUntil: "networkidle" });
+await gotoSettled(page, `${BASE}/pokedle`);
 await checkFirstVisitHowTo(page, "Pokédle");
 await closeHowTo(page);
 // The Pokédex beside the board gets only what its assist level shows: names, generations and types for the Notebook (the default).
@@ -377,7 +377,7 @@ step("pokéconnections: a full daily, one wrong guess then a solve");
   const groups = dailies.puzzles[day].g.map(([, ...members]) => members);
   const tilesRes = await (await page.request.get(`${BASE}/api/connections?date=${today}`)).text();
   if (/label|members|category|reveal/.test(tilesRes)) errors.push("PokéConnections' tiles came with the groups");
-  await page.goto(`${BASE}/connections`, { waitUntil: "networkidle" });
+  await gotoSettled(page, `${BASE}/connections`);
   // PokéConnections' how-to opens by itself once: closing it any way ("Let's play!" too) keeps it closed on the next visit.
   {
     const sheet = page.locator(HOWTO).first();
@@ -461,7 +461,8 @@ step("pokéconnections: a full daily, one wrong guess then a solve");
   await page.screenshot({ path: `${OUT}/connections.png`, fullPage: true });
   await board.screenshot({ path: `${OUT}/conn-board.png` });
   // A reload restores the finished game.
-  await page.reload({ waitUntil: "networkidle" });
+  await page.reload({ waitUntil: "load" });
+  await page.waitForLoadState("networkidle", { timeout: 8_000 }).catch(() => {});
   await page.getByTestId("conn-result").waitFor();
 
   // Unlimited, straight from the daily's result: a Hard puzzle, solved from the Pokédex data alone, then the next one.
@@ -551,10 +552,10 @@ step("pokéconnections: a full daily, one wrong guess then a solve");
   await back4;
 
   // The board on /leaderboard, and PokéConnections on the trainer card.
-  await page.goto(`${BASE}/leaderboard?board=connections&date=${today}`, { waitUntil: "networkidle" });
+  await gotoSettled(page, `${BASE}/leaderboard?board=connections&date=${today}`);
   await page.getByTestId("leaderboard-connections").getByText(rankedAs ?? boardName, { exact: true }).waitFor();
   await page.screenshot({ path: `${OUT}/conn-leaderboard.png` });
-  await page.goto(`${BASE}/trainer`, { waitUntil: "networkidle" });
+  await gotoSettled(page, `${BASE}/trainer`);
   const card = page.getByTestId("trainer-connections");
   await card.waitFor();
   if (!/Games won/.test(await card.innerText())) errors.push("the trainer card has no PokéConnections games won");
@@ -572,7 +573,7 @@ step("pikadoku: a full daily (9 PP, one wrong guess), the score and the answers 
   const solved = JSON.parse(execFileSync("npx", ["tsx", "scripts/pikadoku-solve.ts", today, "normal"], { encoding: "utf8", cwd: new URL("..", import.meta.url).pathname }));
   const gridRes = await (await page.request.get(`${BASE}/api/pikadoku?date=${today}&difficulty=normal`)).text();
   if (/answers|members|"ids"/.test(gridRes)) errors.push("Pikadoku's grid came with answers");
-  await page.goto(`${BASE}/pikadoku`, { waitUntil: "networkidle" });
+  await gotoSettled(page, `${BASE}/pikadoku`);
   await checkFirstVisitHowTo(page, "Pikadoku");
   await closeHowTo(page);
   await page.getByTestId("pdk-row-0").waitFor();
@@ -809,7 +810,7 @@ await page.getByRole("button", { name: /5-round game/ }).click();
 await page.getByText("Towns and Cities").first().waitFor();
 await playGeoRounds(5);
 await page.getByText("Survey complete").waitFor();
-await page.goto(`${BASE}/leaderboard?board=geo&format=theme-towns`, { waitUntil: "networkidle" });
+await gotoSettled(page, `${BASE}/leaderboard?board=geo&format=theme-towns`);
 await page.getByText("Towns and Cities 5 rounds").waitFor();
 await page.getByText("Towns and Cities Streak").waitFor();
 
@@ -881,7 +882,7 @@ const duelOg = await red.request.get(`${duelUrl}/opengraph-image`);
 if (duelOg.status() !== 200) errors.push(`duel OG image returned ${duelOg.status()}`);
 else fs.writeFileSync(`${OUT}/duel-og.png`, await duelOg.body());
 
-await blue.goto(duelUrl, { waitUntil: "networkidle" });
+await gotoSettled(blue, duelUrl);
 await blue.getByText("Red challenges you!").waitFor();
 await blue.getByLabel("Your trainer name").fill("Blue");
 await blue.getByRole("button", { name: /Join duel/ }).click();
@@ -941,7 +942,7 @@ await red.getByLabel("Your trainer name").fill("Red");
 await clickUntilUrl(red, red.getByRole("button", { name: /Create duel/ }), /\/guessr\/duel\/[a-z2-9]{8}$/);
 const raceUrl = red.url();
 await red.getByText("Waiting for a challenger").waitFor();
-await blue.goto(raceUrl, { waitUntil: "networkidle" });
+await gotoSettled(blue, raceUrl);
 // The joiner sees the mode and rounds before accepting.
 await blue.getByText(/Red challenges you to a 3-round points race/).waitFor();
 await blue.getByLabel("Your trainer name").fill("Blue");
@@ -1011,7 +1012,7 @@ for (const name of ["Red", "Blue"]) {
   dle.push({ p, name, seen });
 }
 const [dleRed, dleBlue] = dle;
-await dleRed.p.goto(`${BASE}/pokedle`, { waitUntil: "networkidle" });
+await gotoSettled(dleRed.p, `${BASE}/pokedle`);
 await closeHowTo(dleRed.p);
 await dleRed.p.getByLabel("Your trainer name").fill("Red");
 await clickUntilUrl(dleRed.p, dleRed.p.getByRole("button", { name: /Create duel/ }), /\/pokedle\/duel\/[a-z2-9]{8}$/);
@@ -1031,7 +1032,7 @@ const dleOg = await dleRed.p.request.get(`${dleUrl}/opengraph-image`);
 if (dleOg.status() !== 200) errors.push(`pokédle duel OG image returned ${dleOg.status()}`);
 else fs.writeFileSync(`${OUT}/pokedle-duel-og.png`, await dleOg.body());
 
-await dleBlue.p.goto(dleUrl, { waitUntil: "networkidle" });
+await gotoSettled(dleBlue.p, dleUrl);
 await dleBlue.p.getByText("Red challenges you!").waitFor();
 await dleBlue.p.getByText("Gen 1", { exact: true }).waitFor();
 // The guest sees the host's format and settings, and can't change them.
@@ -1156,7 +1157,7 @@ step("pokéconnections duel: create, join, race to the end");
     race.push(p);
   }
   const [red, blue] = race;
-  await red.goto(`${BASE}/connections`, { waitUntil: "networkidle" });
+  await gotoSettled(red, `${BASE}/connections`);
   await closeHowTo(red);
   await red.getByText("Head to head · PokéConnections").waitFor();
   await red.locator("#duel").getByLabel("Your trainer name").fill("Red");
@@ -1168,7 +1169,7 @@ step("pokéconnections duel: create, join, race to the end");
   if (og.status() !== 200) errors.push(`PokéConnections duel OG image returned ${og.status()}`);
   else fs.writeFileSync(`${OUT}/conn-duel-og.png`, await og.body());
 
-  await blue.goto(raceUrl, { waitUntil: "networkidle" });
+  await gotoSettled(blue, raceUrl);
   await blue.getByText("Red challenges you!").waitFor();
   await blue.getByLabel("Your trainer name").fill("Blue");
   await blue.getByRole("button", { name: /Join duel/ }).click();
@@ -1245,7 +1246,7 @@ step("pokéconnections 5×5 duel: create, join, race, rematch");
   const race = [];
   for (const name of ["Red", "Blue"]) race.push(await newPage({ width: 1280, height: 900 }));
   const [red, blue] = race;
-  await red.goto(`${BASE}/connections`, { waitUntil: "networkidle" });
+  await gotoSettled(red, `${BASE}/connections`);
   await closeHowTo(red);
   await red.getByText("Head to head · PokéConnections").waitFor();
   await red.getByTestId("conn-duel-size-5").click();
@@ -1257,7 +1258,7 @@ step("pokéconnections 5×5 duel: create, join, race, rematch");
   await red.waitForURL(/\/connections\/duel\/[a-z2-9]{8}$/);
   const raceUrl = red.url();
   await red.getByText("Waiting for a challenger").waitFor();
-  await blue.goto(raceUrl, { waitUntil: "networkidle" });
+  await gotoSettled(blue, raceUrl);
   await blue.getByText("Red challenges you to a 5×5 board!").waitFor();
   await blue.getByLabel("Your trainer name").fill("Blue");
   await blue.getByRole("button", { name: /Join duel/ }).click();
@@ -1313,7 +1314,7 @@ for (const name of ["Red", "Blue"]) {
   quiz.push({ p, name, seen });
 }
 const [quizRed, quizBlue] = quiz;
-await quizRed.p.goto(`${BASE}/quiz/pokemon-games-quiz`, { waitUntil: "networkidle" });
+await gotoSettled(quizRed.p, `${BASE}/quiz/pokemon-games-quiz`);
 await quizRed.p.getByRole("button", { name: "easy", exact: true }).last().click();
 await quizRed.p.getByLabel("Your trainer name").fill("Red");
 await clickUntilUrl(quizRed.p, quizRed.p.getByRole("button", { name: /Create duel/ }), /\/quiz\/duel\/[a-z2-9]{8}$/);
@@ -1324,7 +1325,7 @@ const quizOg = await quizRed.p.request.get(`${quizUrl}/opengraph-image`);
 if (quizOg.status() !== 200) errors.push(`quiz duel OG image returned ${quizOg.status()}`);
 else fs.writeFileSync(`${OUT}/quiz-duel-og.png`, await quizOg.body());
 // A quiz duel's link on the Pokédle duel route goes to the right page.
-await quizBlue.p.goto(quizUrl.replace("/quiz/duel/", "/pokedle/duel/"), { waitUntil: "networkidle" });
+await gotoSettled(quizBlue.p, quizUrl.replace("/quiz/duel/", "/pokedle/duel/"));
 await quizBlue.p.waitForURL(quizUrl);
 await quizBlue.p.getByText("Red challenges you!").waitFor();
 await quizBlue.p.getByText("Easy", { exact: true }).waitFor();
@@ -1384,7 +1385,7 @@ async function findOpponent(path, ready) {
     [mRed, "Red"],
     [mBlue, "Blue"],
   ]) {
-    await p.goto(`${BASE}${path}`, { waitUntil: "networkidle" });
+    await gotoSettled(p, `${BASE}${path}`);
     await closeHowTo(p);
     await p.getByLabel("Your trainer name").first().fill(name);
   }
@@ -1466,7 +1467,7 @@ async function checkHiddenElo(p, where) {
   await rRed.waitForTimeout(1600);
   await rRed.screenshot({ path: `${OUT}/guessr-ranked-result.png`, fullPage: true });
 
-  await rRed.goto(`${BASE}/leaderboard?board=geo-ranked`, { waitUntil: "networkidle" });
+  await gotoSettled(rRed, `${BASE}/leaderboard?board=geo-ranked`);
   await rRed.getByTestId("leaderboard-geo-ranked").waitFor();
   const ladderNames = await rRed.locator("table tbody td:nth-child(2)").allInnerTexts();
   for (const who of ["Red", "Blue"]) if (!ladderNames.some((n) => n.trim() === who)) errors.push(`ranked ladder doesn't list ${who}: ${JSON.stringify(ladderNames)}`);
@@ -1510,7 +1511,7 @@ step("ranked pokéguessr: the Gym Leader offer");
 }
 
 step("world atlas: search, place card, link into PokéGuessr");
-await page.goto(`${BASE}/atlas`, { waitUntil: "networkidle" });
+await gotoSettled(page, `${BASE}/atlas`);
 await page.getByLabel("Search the map").fill("Saffron City");
 await page.getByRole("button", { name: "Go" }).click();
 await page.getByRole("heading", { name: "Saffron City" }).waitFor();
@@ -1521,7 +1522,7 @@ await page.waitForURL(/\/guessr\?region=kanto/);
 await page.getByText("Field survey · Kanto").waitFor();
 
 step("pokédex explorer");
-await page.goto(`${BASE}/pokedex`, { waitUntil: "networkidle" });
+await gotoSettled(page, `${BASE}/pokedex`);
 await page.getByLabel("Search Pokémon").fill("char");
 await page.getByRole("link", { name: /Charizard/ }).first().click();
 await page.waitForURL(/\/pokemon\/charizard/);
@@ -1535,7 +1536,7 @@ await page.waitForTimeout(600);
 await page.screenshot({ path: `${OUT}/pokedex-entry.png` });
 
 step("study mode");
-await page.goto(`${BASE}/pokedex/study?gen=1`, { waitUntil: "networkidle" });
+await gotoSettled(page, `${BASE}/pokedex/study?gen=1`);
 await page.getByRole("button", { name: "Start studying" }).click();
 for (let i = 0; i < 3; i++) {
   await page.keyboard.press(" ");
@@ -1549,7 +1550,7 @@ step("pokédex tabs: moves, abilities, items, places");
 {
   const SHOTS = process.env.DEX_SHOTS ?? OUT;
   fs.mkdirSync(SHOTS, { recursive: true });
-  await page.goto(`${BASE}/pokedex`, { waitUntil: "networkidle" });
+  await gotoSettled(page, `${BASE}/pokedex`);
   for (const tab of ["moves", "abilities", "items", "places", "pokemon"]) {
     await page.getByTestId(`dex-tab-${tab}`).click();
     await page.waitForURL(tab === "pokemon" ? /\/pokedex$/ : new RegExp(`/pokedex/${tab}$`));
@@ -1563,13 +1564,13 @@ step("pokédex tabs: moves, abilities, items, places");
   await page.waitForURL(/\/pokedex\/moves\/flamethrower$/);
   await page.getByRole("link", { name: /Charizard/ }).first().waitFor();
   // Abilities: search, open Blaze and see Charizard.
-  await page.goto(`${BASE}/pokedex/abilities`, { waitUntil: "networkidle" });
+  await gotoSettled(page, `${BASE}/pokedex/abilities`);
   await page.getByLabel("Search abilities").fill("blaze");
   await page.getByRole("link", { name: /^Blaze/ }).first().click();
   await page.waitForURL(/\/pokedex\/abilities\/blaze$/);
   await page.getByRole("link", { name: /Charizard/ }).first().waitFor();
   // Items: category filter + search, screenshot the list.
-  await page.goto(`${BASE}/pokedex/items`, { waitUntil: "networkidle" });
+  await gotoSettled(page, `${BASE}/pokedex/items`);
   await page.getByLabel("Search items").fill("left");
   await page.getByRole("link", { name: /Leftovers/ }).first().waitFor();
   await page.screenshot({ path: `${SHOTS}/dex-items.png` });
@@ -1584,10 +1585,10 @@ step("pokédex tabs: moves, abilities, items, places");
   if (!spriteOk) throw new Error("Leftovers sprite did not load");
   await page.screenshot({ path: `${SHOTS}/dex-leftovers.png`, fullPage: true });
   // A TM shows the move it teaches.
-  await page.goto(`${BASE}/pokedex/items/tm01`, { waitUntil: "networkidle" });
+  await gotoSettled(page, `${BASE}/pokedex/items/tm01`);
   await page.getByRole("link", { name: "Focus Punch" }).first().waitFor();
   // Move page links back from the Pokémon entry's Moves section.
-  await page.goto(`${BASE}/pokemon/charizard`, { waitUntil: "networkidle" });
+  await gotoSettled(page, `${BASE}/pokemon/charizard`);
   await page.locator('a[href^="/pokedex/moves/"]').first().waitFor({ state: "attached" });
   await page.locator('a[href="/pokedex/abilities/blaze"]').first().waitFor();
   // Places: search + region filter, open Route 1 (Kanto), then a Gym.
@@ -1599,7 +1600,7 @@ step("pokédex tabs: moves, abilities, items, places");
     await page.evaluate(() => window.scrollTo(0, 0));
     await page.waitForTimeout(400);
   };
-  await page.goto(`${BASE}/pokedex/places`, { waitUntil: "networkidle" });
+  await gotoSettled(page, `${BASE}/pokedex/places`);
   await page.getByLabel("Search places").fill("route 1");
   await page.getByLabel("Region").selectOption("Kanto");
   await page.locator('a[href="/pokedex/places/route-1-kanto"]').waitFor();
@@ -1614,11 +1615,11 @@ step("pokédex tabs: moves, abilities, items, places");
   if (!shotOk) throw new Error("Route 1 screenshot did not load");
   await revealAll();
   await page.screenshot({ path: `${SHOTS}/dex-route1.png`, fullPage: true });
-  await page.goto(`${BASE}/pokedex/places/pewter-gym-kanto`, { waitUntil: "networkidle" });
+  await gotoSettled(page, `${BASE}/pokedex/places/pewter-gym-kanto`);
   await page.getByTestId("place-gyms").filter({ hasText: "Brock" }).waitFor({ state: "attached" });
   // Places beyond the atlas: Hisui (Legends: Arceus) and Hoenn's Route 134.
   for (const [q, slug, mon] of [["Jubilife Village", "jubilife-village-hisui", null], ["Route 134", "route-134-hoenn", "Tentacool"]]) {
-    await page.goto(`${BASE}/pokedex/places`, { waitUntil: "networkidle" });
+    await gotoSettled(page, `${BASE}/pokedex/places`);
     await page.getByLabel("Search places").fill(q);
     await page.locator(`a[href="/pokedex/places/${slug}"]`).click();
     await page.waitForURL(new RegExp(`/pokedex/places/${slug}$`));
@@ -1626,10 +1627,10 @@ step("pokédex tabs: moves, abilities, items, places");
     if (mon) await page.getByTestId("place-wild-row").filter({ hasText: mon }).first().waitFor({ state: "attached" });
   }
   // Pokémon entry links its places to the Places tab.
-  await page.goto(`${BASE}/pokemon/wooper`, { waitUntil: "networkidle" });
+  await gotoSettled(page, `${BASE}/pokemon/wooper`);
   await page.locator('a[href="/pokedex/places/glaseado-mountain-paldea"]').first().waitFor({ state: "attached" });
   // ...including places beyond the atlas.
-  await page.goto(`${BASE}/pokemon/magikarp`, { waitUntil: "networkidle" });
+  await gotoSettled(page, `${BASE}/pokemon/magikarp`);
   await page.locator('a[href="/pokedex/places/south-paldean-sea-paldea"]').first().waitFor({ state: "attached" });
 }
 
@@ -1637,7 +1638,7 @@ step("pokédex: types, natures, names, form switcher");
 {
   const SHOTS = process.env.DEX_SHOTS ?? OUT;
   fs.mkdirSync(SHOTS, { recursive: true });
-  await page.goto(`${BASE}/pokedex`, { waitUntil: "networkidle" });
+  await gotoSettled(page, `${BASE}/pokedex`);
   await page.getByTestId("dex-tab-types").click();
   await page.waitForURL(/\/pokedex\/types$/);
   await page.getByTestId("type-chart").waitFor();
@@ -1651,7 +1652,7 @@ step("pokédex: types, natures, names, form switcher");
   const adamant = await page.getByTestId("nature-adamant").innerText();
   if (!/Attack/.test(adamant) || !/Sp\. Atk/.test(adamant)) errors.push(`Adamant row wrong: ${adamant}`);
   await page.screenshot({ path: `${SHOTS}/dex-natures.png` });
-  await page.goto(`${BASE}/pokemon/charizard`, { waitUntil: "networkidle" });
+  await gotoSettled(page, `${BASE}/pokemon/charizard`);
   const names = await page.getByTestId("dex-names").innerText();
   if (!names.includes("リザードン") || !names.includes("Dracaufeu")) errors.push("charizard names section missing Japanese/French names");
   await page.getByTestId("dex-names").scrollIntoViewIfNeeded();
@@ -1663,7 +1664,7 @@ step("pokédex: types, natures, names, form switcher");
 step("pokédex TCG tab: sets, a set gallery (sort + filter), a card page, search, a Pokémon's cards");
 {
   // CI serves a captured slice of real API data (POKEIQ_TCG_FIXTURE=1); against the live API, an outage shows a notice instead.
-  await page.goto(`${BASE}/pokedex`, { waitUntil: "networkidle" });
+  await gotoSettled(page, `${BASE}/pokedex`);
   await page.getByTestId("dex-tab-tcg").click();
   await page.waitForURL(/\/pokedex\/tcg$/);
   const firstSet = page.getByTestId("tcg-set").first();
@@ -1673,7 +1674,7 @@ step("pokédex TCG tab: sets, a set gallery (sort + filter), a card page, search
   } else {
     await page.screenshot({ path: `${OUT}/tcg-sets.png` });
     // Base Set is in every snapshot (fixture and live).
-    await page.goto(`${BASE}/pokedex/tcg/base1`, { waitUntil: "networkidle" });
+    await gotoSettled(page, `${BASE}/pokedex/tcg/base1`);
     await page.getByTestId("tcg-card").first().waitFor();
     const total = await page.getByTestId("tcg-card").count();
     await page.getByTestId("tcg-sort").selectOption("price-desc");
@@ -1693,17 +1694,17 @@ step("pokédex TCG tab: sets, a set gallery (sort + filter), a card page, search
     for (const s of await page.getByTestId("tcg-price-source").allInnerTexts()) if (!/ as of /i.test(s)) errors.push(`tcg: a price block without a date: "${s}"`);
     await page.screenshot({ path: `${OUT}/tcg-card.png`, fullPage: true });
     // A card the Pokémon TCG API has no prices for: TCGplayer via TCGCSV (fixture: captured TCGCSV data).
-    await page.goto(`${BASE}/pokedex/tcg/card/me55-150`, { waitUntil: "networkidle" });
+    await gotoSettled(page, `${BASE}/pokedex/tcg/card/me55-150`);
     await page.getByTestId("tcg-prices").waitFor();
     const sources = await page.getByTestId("tcg-price-source").allInnerTexts();
     if (process.env.POKEIQ_TCG_FIXTURE === "1" && !sources.some((s) => /^TCGplayer via TCGCSV · as of \w{3} \d{1,2}, \d{4}/i.test(s))) errors.push(`tcg: me55-150 has no TCGCSV price (${sources.join(" | ") || "none"})`);
     if (!sources.length && !(await page.getByTestId("tcg-price-note").count())) errors.push("tcg: me55-150 shows neither prices nor an 'unavailable' note");
-    await page.goto(`${BASE}/pokedex/tcg`, { waitUntil: "networkidle" });
+    await gotoSettled(page, `${BASE}/pokedex/tcg`);
     await page.getByTestId("tcg-search").getByRole("searchbox").fill("Pikachu");
     await page.getByTestId("tcg-search").getByRole("button", { name: "Search" }).click();
     await page.waitForURL(/[?&]q=Pikachu/);
     await page.getByTestId("tcg-results").getByTestId("tcg-card").first().waitFor();
-    await page.goto(`${BASE}/pokemon/pikachu`, { waitUntil: "networkidle" });
+    await gotoSettled(page, `${BASE}/pokemon/pikachu`);
     await page.evaluate(() => document.getElementById("cards")?.scrollIntoView());
     await page.getByTestId("pokemon-cards").getByTestId("tcg-card").first().waitFor({ timeout: 30_000 });
     await page.getByTestId("pokemon-cards-all").click();
@@ -1714,7 +1715,7 @@ step("pokédex TCG tab: sets, a set gallery (sort + filter), a card page, search
 
 step("pokédex Trainers tab: search, notable filter, a game by route, an area's teams, a notable trainer");
 {
-  await page.goto(`${BASE}/pokedex`, { waitUntil: "networkidle" });
+  await gotoSettled(page, `${BASE}/pokedex`);
   await page.getByTestId("dex-tab-trainers").click();
   await page.waitForURL(/\/pokedex\/trainers$/);
   await page.getByTestId("trainers-game-card").first().waitFor();
@@ -1727,7 +1728,7 @@ step("pokédex Trainers tab: search, notable filter, a game by route, an area's 
   await page.getByTestId("trainers-search").fill("");
   await page.getByTestId("trainers-notable-toggle").click();
   await page.getByTestId("trainers-notable-hit").first().waitFor();
-  await page.goto(`${BASE}/pokedex/trainers/crystal`, { waitUntil: "networkidle" });
+  await gotoSettled(page, `${BASE}/pokedex/trainers/crystal`);
   await page.getByTestId("trainers-area-link").filter({ hasText: "Route 30" }).click();
   await page.waitForURL(/\/pokedex\/trainers\/crystal\/route-30$/);
   const joey = page.getByTestId("trainer-card").filter({ hasText: "Joey" });
@@ -1738,19 +1739,19 @@ step("pokédex Trainers tab: search, notable filter, a game by route, an area's 
   await tabs.nth(4).click();
   await joey.getByRole("tabpanel").filter({ hasText: "Raticate" }).waitFor();
   await page.screenshot({ path: `${OUT}/trainers-area.png`, fullPage: true });
-  await page.goto(`${BASE}/pokedex/trainers/notable/brock`, { waitUntil: "networkidle" });
+  await gotoSettled(page, `${BASE}/pokedex/trainers/notable/brock`);
   await page.getByTestId("notable-blurb").waitFor();
   if ((await page.getByTestId("notable-game").count()) < 6) errors.push("trainers: Brock should have teams in 6 games");
   await page.getByTestId("trainer-mon").filter({ hasText: "Onix" }).first().getByRole("link", { name: "Bide" }).click();
   await page.waitForURL(/\/pokedex\/moves\/bide$/);
   // Gen IX (Bulbapedia import): a Gym with Tera Types, then Katy's notable page.
-  await page.goto(`${BASE}/pokedex/trainers/scarlet-violet`, { waitUntil: "networkidle" });
+  await gotoSettled(page, `${BASE}/pokedex/trainers/scarlet-violet`);
   await page.getByTestId("trainers-area-link").filter({ hasText: "Cortondo Gym" }).click();
   await page.waitForURL(/\/pokedex\/trainers\/scarlet-violet\/cortondo-gym$/);
   const katy = page.getByTestId("trainer-card").filter({ hasText: "Katy" }).first();
   await katy.waitFor();
   if (!(await katy.getByTestId("trainer-mon-tera").count())) errors.push("trainers: Katy's Teddiursa should show its Tera Type");
-  await page.goto(`${BASE}/pokedex/trainers/notable/katy`, { waitUntil: "networkidle" });
+  await gotoSettled(page, `${BASE}/pokedex/trainers/notable/katy`);
   await page.getByTestId("notable-blurb").waitFor();
 }
 
@@ -1823,7 +1824,7 @@ IVs: 0 Atk
 - Haze
 - Surf
 `;
-await page.goto(`${BASE}/battle`, { waitUntil: "networkidle" });
+await gotoSettled(page, `${BASE}/battle`);
 await page.screenshot({ path: `${OUT}/battle-hub.png`, fullPage: true });
 await page.getByRole("link", { name: /Team Builder/ }).first().click();
 await page.waitForURL(/\/battle\/teams/);
@@ -1857,7 +1858,7 @@ console.log(`  EV goal: ${(await page.getByTestId("ev-result").innerText()).spli
 // Pokepaste links: anything but a pokepast.es paste is refused before a request is made.
 const badPaste = await page.request.get(`${BASE}/api/battle/pokepaste?url=${encodeURIComponent("https://example.com/0123456789abcdef")}`);
 if (badPaste.status() !== 400) errors.push(`pokepaste route accepted another host (${badPaste.status()})`);
-await page.goto(`${BASE}/battle/calc`, { waitUntil: "networkidle" });
+await gotoSettled(page, `${BASE}/battle/calc`);
 await page.getByText(/Garchomp Earthquake vs\. .*Heatran: \d+-\d+ \(/).waitFor({ timeout: 30_000 });
 // The saved team feeds the calc.
 await page.getByRole("button", { name: /Load from my team/ }).first().click();
@@ -1907,7 +1908,7 @@ async function playBattle(p, maxTurn, shoot) {
 
 step("battle vs computer: a random battle, played until it ends or turn 10");
 watchBattle(page, "p1", "cpu battle");
-await page.goto(`${BASE}/battle/play`, { waitUntil: "networkidle" });
+await gotoSettled(page, `${BASE}/battle/play`);
 await page.screenshot({ path: `${OUT}/battle-setup.png`, fullPage: true });
 // Phase 1 formats: Showdown's own tiers below UU, Little Cup, Monotype and National Dex.
 for (const name of ["[Gen 9] RU", "[Gen 9] NU", "[Gen 9] PU", "[Gen 9] LC", "[Gen 9] Monotype", "[Gen 9] National Dex", "[Gen 9] Doubles OU"]) {
@@ -1949,7 +1950,7 @@ await page.screenshot({ path: `${OUT}/battle-cpu-later.png`, fullPage: true });
 if ((await page.getByTestId("battle-log").innerText()).length < 200) errors.push("the battle log stayed empty");
 
 step("battle vs computer: Gen 9 OU with the team saved in the team builder");
-await page.goto(`${BASE}/battle/play`, { waitUntil: "networkidle" });
+await gotoSettled(page, `${BASE}/battle/play`);
 await page.locator("label").filter({ hasText: "[Gen 9] OU" }).first().click();
 await page.getByRole("radiogroup", { name: "Saved team" }).getByRole("radio", { checked: true }).waitFor();
 await page.getByLabel("Your trainer name").fill("Red");
@@ -1962,7 +1963,7 @@ await page.locator("[data-testid=move-button]").first().waitFor({ timeout: 60_00
 await page.getByText("What will Garchomp do?").waitFor();
 
 step("battle vs computer: custom rules, Gen 4 at level 50 with Sleep Clause");
-await page.goto(`${BASE}/battle/play`, { waitUntil: "networkidle" });
+await gotoSettled(page, `${BASE}/battle/play`);
 await page.getByTestId("format-custom").click();
 await page.getByTestId("gen-4").click();
 await page.locator("#custom-level").fill("50");
@@ -1986,16 +1987,17 @@ if (!tracks.length && !musicRequests.length) errors.push("battle music never loa
 else console.log(`  loaded ${(tracks.length ? tracks : musicRequests).map((t) => t.split("/").pop()).join(", ")}`);
 await page.getByTestId("music-toggle").click();
 if ((await page.getByTestId("music-toggle").getAttribute("aria-pressed")) !== "false") errors.push("the music toggle didn't turn off");
-await page.reload({ waitUntil: "networkidle" });
+await page.reload({ waitUntil: "load" });
+  await page.waitForLoadState("networkidle", { timeout: 8_000 }).catch(() => {});
 await page.getByTestId("music-toggle").waitFor();
 if ((await page.getByTestId("music-toggle").getAttribute("aria-pressed")) !== "false") errors.push("music off wasn't remembered");
 await page.getByTestId("music-toggle").click();
 
 step("Battle Factory: rent a team, battle, and trade after a win");
-await page.goto(`${BASE}/battle/factory`, { waitUntil: "networkidle" });
+await gotoSettled(page, `${BASE}/battle/factory`);
 let factoryWon = false;
 for (let attempt = 0; attempt < 4 && !factoryWon; attempt++) {
-  await page.goto(`${BASE}/battle/factory`, { waitUntil: "networkidle" });
+  await gotoSettled(page, `${BASE}/battle/factory`);
   if (await page.getByRole("button", { name: /Give up this run/ }).count()) await page.getByRole("button", { name: /Give up this run/ }).click();
   await page.locator("#frontier-name").fill("Red");
   await page.getByTestId("frontier-start").click();
@@ -2034,7 +2036,7 @@ if (factoryWon) {
 } else console.log("  no win in 4 tries: the trade wasn't exercised");
 
 step("Battle Tower: enter with a quick team, pick three at team preview");
-await page.goto(`${BASE}/battle/tower`, { waitUntil: "networkidle" });
+await gotoSettled(page, `${BASE}/battle/tower`);
 if (await page.getByRole("button", { name: /Give up this run/ }).count()) await page.getByRole("button", { name: /Give up this run/ }).click();
 await page.locator("#frontier-name").fill("Red");
 await page.getByRole("button", { name: /Quick team/ }).click();
@@ -2054,7 +2056,7 @@ const liveRed = await newPage({ width: 1280, height: 900 });
 const liveBlue = await newPage({ width: 1280, height: 900 });
 watchBattle(liveRed, "p1", "live battle (Red)");
 watchBattle(liveBlue, "p2", "live battle (Blue)");
-await liveRed.goto(`${BASE}/battle/play?vs=friend`, { waitUntil: "networkidle" });
+await gotoSettled(liveRed, `${BASE}/battle/play?vs=friend`);
 await liveRed.locator("label").filter({ hasText: "[Gen 9] Random Battle" }).first().click();
 await liveRed.getByLabel("Your trainer name").fill("Red");
 await liveRed.getByTestId("timeout-loses").check({ force: true });
@@ -2066,7 +2068,7 @@ await liveRed.screenshot({ path: `${OUT}/battle-live-lobby.png` });
 const liveOg = await liveRed.request.get(`${liveUrl}/opengraph-image`);
 if (liveOg.status() !== 200) errors.push(`live battle OG image returned ${liveOg.status()}`);
 else fs.writeFileSync(`${OUT}/battle-live-og.png`, await liveOg.body());
-await liveBlue.goto(liveUrl, { waitUntil: "networkidle" });
+await gotoSettled(liveBlue, liveUrl);
 await liveBlue.getByLabel("Your trainer name").fill("Blue");
 await liveBlue.getByRole("button", { name: /Join battle/ }).click();
 await liveRed.getByRole("button", { name: "Ready", exact: true }).click();
@@ -2126,7 +2128,7 @@ for (const [p, name] of [
   [mmRed, "Red"],
   [mmBlue, "Blue"],
 ]) {
-  await p.goto(`${BASE}/battle/play?vs=anyone`, { waitUntil: "networkidle" });
+  await gotoSettled(p, `${BASE}/battle/play?vs=anyone`);
   await p.locator("label").filter({ hasText: "[Gen 9] Random Battle" }).first().click();
   await p.getByLabel("Your trainer name").fill(name);
 }
@@ -2156,7 +2158,7 @@ watcher.on("response", async (res) => {
   const text = await res.text().catch(() => "");
   if (/"(state|inputLog|seed|input_log|requests|watchers|player)"|\|request\||\|split\||"side":\{"name"/.test(text)) errors.push(`spectator: hidden battle data leaked: ${text.slice(0, 200)}`);
 });
-await watcher.goto(`${BASE}/battle/watch`, { waitUntil: "networkidle" });
+await gotoSettled(watcher, `${BASE}/battle/watch`);
 const card = watcher.locator(`a[href="/battle/live/${mmCode}"]`);
 await card.waitFor({ timeout: 20_000 });
 if (!/Turn \d+/i.test(await card.innerText()) || !/Red/i.test(await card.innerText()) || !/watching/i.test(await card.innerText())) errors.push(`watch lobby card is missing facts: ${await card.innerText()}`);
@@ -2231,7 +2233,7 @@ await mmRed.getByTestId("battle-result").waitFor({ timeout: 30_000 });
 console.log(`  replay at: ${await turnLabel()}`);
 
 step("replay analysis: the after-battle link, win chance by turn, key moments, turning points, luck, damage, share card");
-await mmRed.goto(`${BASE}/battle/live/${mmCode}`, { waitUntil: "networkidle" });
+await gotoSettled(mmRed, `${BASE}/battle/live/${mmCode}`);
 await mmRed.getByTestId("analyse-battle").click();
 await mmRed.waitForURL(new RegExp(`/battle/replay/${mmCode}\\?analysis=1&side=[01]`));
 const analysis = mmRed.getByTestId("replay-analysis");
@@ -2275,16 +2277,17 @@ await statsPanel.screenshot({ path: `${OUT}/battle-replay-stats.png` });
 const statsRes = await mmRed.request.get(`${BASE}/api/battle/analysis/stats/${mmCode}?v=1`);
 if (statsRes.status() !== 200 || !/max-age/.test(statsRes.headers()["cache-control"] ?? "")) errors.push(`stats API: ${statsRes.status()} ${statsRes.headers()["cache-control"]}`);
 // Cached in this browser: a reload shows it at once.
-await mmRed.reload({ waitUntil: "networkidle" });
+await mmRed.reload({ waitUntil: "load" });
+  await mmRed.waitForLoadState("networkidle", { timeout: 8_000 }).catch(() => {});
 await mmRed.getByTestId("replay-analysis").getByTestId("key-moments").waitFor({ timeout: 10_000 });
 const replayOg = await mmRed.request.get(`${BASE}/battle/replay/${mmCode}/opengraph-image`);
 if (replayOg.status() !== 200) errors.push(`replay OG image returned ${replayOg.status()}`);
 else fs.writeFileSync(`${OUT}/battle-replay-og.png`, await replayOg.body());
-await mmRed.goto(`${BASE}/battle/replays`, { waitUntil: "networkidle" });
+await gotoSettled(mmRed, `${BASE}/battle/replays`);
 await mmRed.getByTestId("recent-replays").locator(`a[href="/battle/replay/${mmCode}"]`).waitFor({ timeout: 15_000 });
 await mmRed.getByTestId("my-replays").locator(`a[href="/battle/replay/${mmCode}"]`).waitFor({ timeout: 15_000 });
 await mmRed.screenshot({ path: `${OUT}/battle-replays.png`, fullPage: true });
-await mmRed.goto(`${BASE}/battle/ladder`, { waitUntil: "networkidle" });
+await gotoSettled(mmRed, `${BASE}/battle/ladder`);
 await mmRed.screenshot({ path: `${OUT}/battle-ladder.png`, fullPage: true });
 for (const p of [mmRed, mmBlue, watcher]) await p.context().close();
 
@@ -2295,7 +2298,7 @@ for (const [p, name] of [
   [rkRed, "Rory"],
   [rkBlue, "Bea"],
 ]) {
-  await p.goto(`${BASE}/battle/play?vs=anyone`, { waitUntil: "networkidle" });
+  await gotoSettled(p, `${BASE}/battle/play?vs=anyone`);
   await p.locator("label").filter({ hasText: "[Gen 9] Random Battle" }).first().click();
   await p.getByLabel("Your trainer name").fill(name);
   await p.getByTestId("ranked-toggle").check({ force: true });
@@ -2316,7 +2319,7 @@ console.log(`  ${rkChange.replace(/\s+/g, " ")}`);
 if (!/Elo\s+1000 → 1045[\s\S]*\+45/i.test(rkChange)) errors.push(`ranked: unexpected Elo change for the winner: ${rkChange}`);
 if (!/Glicko-2 1500 → 1[6-9]\d\d \(\+\d+\)/.test(rkChange)) errors.push(`ranked: unexpected Glicko-2 change for the winner: ${rkChange}`);
 await rkRed.screenshot({ path: `${OUT}/battle-p1-ranked-result.png` });
-await rkRed.goto(`${BASE}/battle/ladder?format=gen9randombattle`, { waitUntil: "networkidle" });
+await gotoSettled(rkRed, `${BASE}/battle/ladder?format=gen9randombattle`);
 await rkRed.getByTestId("ladder-table").getByText("Rory").waitFor({ timeout: 15_000 });
 if (!(await rkRed.getByTestId("ladder-table").getByTestId("glicko-badge").count())) errors.push("ladder: no Glicko-2 badge");
 // The ladder is ordered by Elo: the winner (1045) sits above the loser (1000, the floor).
@@ -2336,7 +2339,7 @@ for (const p of [rkRed, rkBlue]) await p.context().close();
 
 // The Battle Lab runs Showdown's simulator in Web Workers, in this browser.
 step("battle lab: a quick 1v1, 200 battles, a win % with its confidence interval, a sample replay");
-await page.goto(`${BASE}/battle/lab`, { waitUntil: "networkidle" });
+await gotoSettled(page, `${BASE}/battle/lab`);
 for (const [side, text] of [
   ["Side A", "Pikachu @ Light Ball\nLevel: 50\n- Thunderbolt\n- Quick Attack"],
   ["Side B", "Bulbasaur\nLevel: 50\n- Vine Whip\n- Tackle"],
@@ -2426,7 +2429,7 @@ for (const [p, name] of [
   [homeRed, "Red"],
   [homeBlue, "Blue"],
 ]) {
-  await p.goto(`${BASE}/battle`, { waitUntil: "networkidle" });
+  await gotoSettled(p, `${BASE}/battle`);
   await p.getByTestId("live-counts").waitFor();
   const trainer = p.getByLabel("Your trainer name");
   if (!(await trainer.isVisible().catch(() => false))) await p.getByRole("button", { name: /change/ }).click();
@@ -2457,7 +2460,7 @@ if (me.enabled) {
     [fa, nameA],
     [fb, nameB],
   ]) {
-    await p.goto(BASE, { waitUntil: "networkidle" });
+    await gotoSettled(p, BASE);
     const res = await p.request.post(`${BASE}/api/auth/register`, { data: { username: name, password: "correct horse battery" }, headers: { Origin: BASE } });
     if (!res.ok()) throw new Error(`register ${name}: ${res.status()}`);
     await p.reload({ waitUntil: "load" });
@@ -2473,14 +2476,16 @@ if (me.enabled) {
     await fa.getByRole("button", { name: /Send/ }).click();
     await fa.getByText(`Request sent to ${nameB}.`).waitFor();
     await fa.keyboard.press("Escape");
-    await fb.reload({ waitUntil: "networkidle" });
+    await fb.reload({ waitUntil: "load" });
+  await fb.waitForLoadState("networkidle", { timeout: 8_000 }).catch(() => {});
     await fb.getByTestId("friends-badge").waitFor({ timeout: 15_000 });
     await fb.getByTestId("friends-button").click();
     await fb.getByTestId("incoming-request").filter({ hasText: nameA }).getByRole("button", { name: /Accept/ }).click();
     await fb.getByRole("tab", { name: /Friends/ }).click();
     await fb.getByTestId("friend-row").filter({ hasText: nameA }).waitFor();
     await fb.keyboard.press("Escape");
-    await fa.reload({ waitUntil: "networkidle" });
+    await fa.reload({ waitUntil: "load" });
+  await fa.waitForLoadState("networkidle", { timeout: 8_000 }).catch(() => {});
     await fa.getByTestId("friends-button").click();
     const row = fa.getByTestId("friend-row").filter({ hasText: nameB });
     await row.waitFor();
@@ -2506,7 +2511,7 @@ if (me.enabled) {
     await Promise.all([fa, fb].map((p) => p.locator("[data-testid=move-button]").first().waitFor({ timeout: 60_000 })));
 
     step("find a user: search, then the profile");
-    await fa.goto(`${BASE}/users`, { waitUntil: "networkidle" });
+    await gotoSettled(fa, `${BASE}/users`);
     await fa.getByTestId("user-search").fill(nameB.slice(0, 7));
     await fa.getByTestId("user-results").getByRole("link", { name: nameB }).click();
     await fa.waitForURL(new RegExp(`/u/${nameB}$`));
@@ -2526,10 +2531,10 @@ if (me.enabled) {
   const SCRATCH = "/tmp/claude-0/-home-user-PokeIq/ae145c40-09f4-5dce-9dff-1efa4a6ff4bb/scratchpad";
   const aboutName = `ab${Date.now().toString(36).slice(-7)}`;
   const ap = await newPage({ width: 1280, height: 1100 });
-  await ap.goto(BASE, { waitUntil: "networkidle" });
+  await gotoSettled(ap, BASE);
   const reg = await ap.request.post(`${BASE}/api/auth/register`, { data: { username: aboutName, password: "correct horse battery" }, headers: { Origin: BASE } });
   if (!reg.ok()) throw new Error(`register ${aboutName}: ${reg.status()}`);
-  await ap.goto(`${BASE}/u/${aboutName}`, { waitUntil: "networkidle" });
+  await gotoSettled(ap, `${BASE}/u/${aboutName}`);
   const aboutAvail = (await (await ap.request.get(`${BASE}/api/profile/about`)).json()).available;
   if (!aboutAvail) console.log("  about me is off on this server: skipped");
   else {
@@ -2596,7 +2601,7 @@ if (me.enabled) {
   const tp = [];
   for (const name of names) {
     const p = await newPage({ width: 1280, height: 900 });
-    await p.goto(BASE, { waitUntil: "networkidle" });
+    await gotoSettled(p, BASE);
     const res = await p.request.post(`${BASE}/api/auth/register`, { data: { username: name, password: "correct horse battery" }, headers: { Origin: BASE } });
     if (!res.ok()) throw new Error(`register ${name}: ${res.status()}`);
     tp.push(p);
@@ -2605,7 +2610,7 @@ if (me.enabled) {
   if (!tourOn) console.log("  tournaments are off on this server (migration 0020): skipped");
   else {
     const host = tp[0];
-    await host.goto(`${BASE}/battle/tournaments`, { waitUntil: "networkidle" });
+    await gotoSettled(host, `${BASE}/battle/tournaments`);
     await host.getByTestId("tournament-create").waitFor();
     await host.getByLabel("Max players").selectOption("4");
     await host.screenshot({ path: `${OUT}/tournaments-lobby.png` });
@@ -2614,7 +2619,7 @@ if (me.enabled) {
     const tourUrl = host.url();
     const tourApi = tourUrl.replace("/battle/tournaments/", "/api/tournaments/");
     for (const p of tp) {
-      if (p !== host) await p.goto(tourUrl, { waitUntil: "networkidle" });
+      if (p !== host) await gotoSettled(p, tourUrl);
       await p.getByTestId("join-tournament").click();
       await p.getByTestId("leave-tournament").or(p.locator("[data-testid=tournament][data-status=running]")).first().waitFor({ timeout: 15_000 });
     }
@@ -2647,12 +2652,12 @@ if (me.enabled) {
       for (const [i, { p }] of players.entries()) {
         if (round === 2 && i === 0) {
           // The friend-challenge toast: "Your match is ready" on any page.
-          await p.goto(`${BASE}/battle`, { waitUntil: "networkidle" });
+          await gotoSettled(p, `${BASE}/battle`);
           await p.getByTestId("match-toast").waitFor({ timeout: 30_000 });
           await p.screenshot({ path: `${OUT}/tournament-toast.png` });
           await p.getByTestId("match-toast").getByRole("button", { name: /Play now/ }).click();
         } else {
-          await p.goto(tourUrl, { waitUntil: "networkidle" });
+          await gotoSettled(p, tourUrl);
           await p.getByTestId("play-match").click({ timeout: 20_000 });
         }
         await p.waitForURL(/\/battle\/live\/[a-z2-9]{8}/);
@@ -2668,16 +2673,16 @@ if (me.enabled) {
         await p.waitForURL(tourUrl);
       }
     }
-    await host.goto(tourUrl, { waitUntil: "networkidle" });
+    await gotoSettled(host, tourUrl);
     await host.getByTestId("tournament-winner").waitFor({ timeout: 30_000 });
     await host.screenshot({ path: `${OUT}/tournament-winner.png`, fullPage: true });
-    await host.goto(`${BASE}/battle/tournaments`, { waitUntil: "networkidle" });
+    await gotoSettled(host, `${BASE}/battle/tournaments`);
     await host.getByTestId("tournament-history").filter({ hasText: names[0] }).waitFor({ timeout: 15_000 });
   }
 
   step("chat rooms: two trainers talk in the Lobby; a swear is masked; a report");
   const [ra, rb] = [tp[1], tp[2]];
-  for (const p of [ra, rb]) await p.goto(`${BASE}/rooms/lobby`, { waitUntil: "networkidle" });
+  for (const p of [ra, rb]) await gotoSettled(p, `${BASE}/rooms/lobby`);
   const roomsOn = await ra.getByTestId("room-chat").isVisible().catch(() => false);
   if (!roomsOn) console.log("  chat rooms are off on this server (migration 0020): skipped");
   else {
@@ -2703,7 +2708,7 @@ if (me.enabled) {
 
     step("feedback: an idea about tournaments, from /feedback; the footer opens the same form");
     const fp = tp[3];
-    await fp.goto(`${BASE}/feedback`, { waitUntil: "networkidle" });
+    await gotoSettled(fp, `${BASE}/feedback`);
     await fp.getByRole("button", { name: "Idea" }).click();
     await fp.getByLabel("Which part of PokéIQ").selectOption("tournaments");
     const idea = `E2E idea ${stamp}: a Little Cup tournament every evening`;
@@ -2716,14 +2721,14 @@ if (me.enabled) {
     await fp.keyboard.press("Escape");
 
     // Not an admin: the page is a 404 and so is its API.
-    await ra.goto(`${BASE}/admin`, { waitUntil: "networkidle" });
+    await gotoSettled(ra, `${BASE}/admin`);
     if (!(await ra.getByText("A wild 404 appeared!").isVisible()) || (await ra.getByText("Moderation desk").count())) errors.push("/admin isn't hidden from a trainer who isn't an admin");
     if ((await ra.request.get(`${BASE}/api/admin?tab=audit`)).status() !== 404) errors.push("/api/admin answered a trainer who isn't an admin");
     if (!admin) console.log("  E2E_ADMIN not set: moderation steps skipped");
     else {
       step("moderation: an admin mutes a trainer, who then can't post");
       const desk = tp[0];
-      await desk.goto(`${BASE}/admin`, { waitUntil: "networkidle" });
+      await gotoSettled(desk, `${BASE}/admin`);
       await desk.getByTestId("admin-reports").waitFor();
       await desk.getByTestId("admin-report").filter({ hasText: "what the •••" }).first().waitFor({ timeout: 15_000 });
       await desk.getByTestId("admin-tab-users").click();
@@ -2760,7 +2765,7 @@ if (me.enabled) {
 step("mobile: Pikadoku's whole grid fits a 390px phone without sideways scrolling");
 {
   const phone = await newPage({ width: 390, height: 844 });
-  await phone.goto(`${BASE}/pikadoku`, { waitUntil: "networkidle" });
+  await gotoSettled(phone, `${BASE}/pikadoku`);
   await closeHowTo(phone);
   await phone.getByTestId("pdk-row-0").filter({ hasNotText: "…" }).waitFor();
   const fit = await phone.evaluate(() => {
@@ -2777,7 +2782,7 @@ step("mobile: Pikadoku's whole grid fits a 390px phone without sideways scrollin
 step("name 'em all: hub, a Gen 1 run (aliases, wrong category, pause, give up), share, a ranked clear, the daily, a race");
 {
   const np = await newPage({ width: 1280, height: 900 });
-  await np.goto(`${BASE}/play`, { waitUntil: "networkidle" });
+  await gotoSettled(np, `${BASE}/play`);
   await np.getByTestId("play-name-em-all").click();
   await np.waitForURL(/\/quiz\/name-em-all$/);
   await np.getByTestId("nea-categories").waitFor();
@@ -2815,7 +2820,7 @@ step("name 'em all: hub, a Gen 1 run (aliases, wrong category, pause, give up), 
 
   // A ranked run: Ultra Beasts in Regular mode, no hints, cleared, posted under a name.
   const ub = ["nihilego", "buzzwole", "pheromosa", "xurkitree", "celesteela", "kartana", "guzzlord", "poipole", "naganadel", "stakataka", "blacephalon"];
-  await np.goto(`${BASE}/quiz/name-em-all/ultra-beasts`, { waitUntil: "networkidle" });
+  await gotoSettled(np, `${BASE}/quiz/name-em-all/ultra-beasts`);
   await np.getByTestId("nea-start").click();
   for (const n of ub) {
     await np.getByTestId("nea-input").pressSequentially(n, { delay: 40 });
@@ -2830,17 +2835,17 @@ step("name 'em all: hub, a Gen 1 run (aliases, wrong category, pause, give up), 
   await np.getByTestId("nea-placed").waitFor({ timeout: 8_000 }).catch(() => errors.push("name 'em all: a clean clear wasn't ranked"));
   await np.getByTestId("nea-board-row").first().waitFor({ timeout: 8_000 }).catch(() => errors.push("name 'em all: the leaderboard didn't show the run"));
 
-  await np.goto(`${BASE}/quiz/name-em-all/daily`, { waitUntil: "networkidle" });
+  await gotoSettled(np, `${BASE}/quiz/name-em-all/daily`);
   await np.getByTestId("nea-setup").waitFor({ timeout: 10_000 });
 
   // Race: two trainers; the host names all eleven Ultra Beasts and wins.
   const guestRace = await newPage({ width: 390, height: 844 });
-  await np.goto(`${BASE}/quiz/name-em-all`, { waitUntil: "networkidle" });
+  await gotoSettled(np, `${BASE}/quiz/name-em-all`);
   await np.getByLabel("Race category").selectOption("ultra-beasts");
   await np.getByLabel("Race length").selectOption("3");
   await clickUntilUrl(np, np.getByTestId("nea-race-start"), /\/quiz\/name-em-all\/race\//);
   await np.getByTestId("nea-race-lobby").waitFor();
-  await guestRace.goto(np.url(), { waitUntil: "networkidle" });
+  await gotoSettled(guestRace, np.url());
   await guestRace.getByLabel("Your trainer name").fill("Blue");
   await guestRace.getByTestId("nea-race-join").click();
   await guestRace.getByTestId("nea-race-ready").click();
@@ -2874,7 +2879,7 @@ async function whichPokemonStep() {
   ]) {
     const p = await newPage({ width, height });
     await p.context().grantPermissions(["clipboard-read", "clipboard-write"]);
-    await p.goto(`${BASE}/quiz/which-pokemon`, { waitUntil: "networkidle" });
+    await gotoSettled(p, `${BASE}/quiz/which-pokemon`);
     if (await p.locator("main").getByText(/how it works|FAQ|how to play/i).count()) errors.push("which pokémon: the quiz page shows how-to text");
     await p.getByTestId("wp-start").click();
     await p.getByTestId("wp-question").waitFor();
@@ -2910,9 +2915,9 @@ async function whichPokemonStep() {
   }
   // The compare link: one result invites a friend; two show side by side with a compatibility score.
   const p = await newPage({ width: 1440, height: 900 });
-  await p.goto(`${BASE}/quiz/which-pokemon/compare#a=${payloads[0]}`, { waitUntil: "networkidle" });
+  await gotoSettled(p, `${BASE}/quiz/which-pokemon/compare#a=${payloads[0]}`);
   await p.getByTestId("wp-compare-invite").waitFor({ timeout: 10_000 }).catch(() => errors.push("which pokémon: a one-sided compare link doesn't invite"));
-  await p.goto(`${BASE}/quiz/which-pokemon/compare#a=${payloads[0]}&b=${payloads[1]}`, { waitUntil: "networkidle" });
+  await gotoSettled(p, `${BASE}/quiz/which-pokemon/compare#a=${payloads[0]}&b=${payloads[1]}`);
   await p.getByTestId("wp-compare-result").waitFor({ timeout: 10_000 });
   const pct = ((await p.getByTestId("wp-compat").textContent()) ?? "").trim();
   if (!/^\d{1,3}%$/.test(pct)) errors.push(`which pokémon: compatibility reads "${pct}"`);
@@ -2927,14 +2932,14 @@ await whichPokemonStep();
 
 step("mobile: home + daily");
 const mobile = await newPage({ width: 393, height: 852 });
-await mobile.goto(BASE, { waitUntil: "networkidle" });
+await gotoSettled(mobile, BASE);
 await mobile.screenshot({ path: `${OUT}/mobile-home.png` });
-await mobile.goto(`${BASE}/daily`, { waitUntil: "networkidle" });
+await gotoSettled(mobile, `${BASE}/daily`);
 await mobile.getByRole("button", { name: /Start Daily/ }).click();
 await mobile.waitForSelector("h2");
 await mobile.waitForTimeout(900);
 await mobile.screenshot({ path: `${OUT}/mobile-daily.png` });
-await mobile.goto(`${BASE}/pokedle`, { waitUntil: "networkidle" });
+await gotoSettled(mobile, `${BASE}/pokedle`);
 await closeHowTo(mobile);
 await mobile.screenshot({ path: `${OUT}/mobile-pokedle.png` });
 
