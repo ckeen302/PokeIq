@@ -397,7 +397,8 @@ function Cell({ cell, label, delay, onClick }: { cell: DleCell; label: string; d
   );
   const body = (
     <>
-      <span className="max-w-full truncate">{cell.value}</span>
+      {/* "Fighting" and "Electric" don't fit a phone's seven-column row at 10px. */}
+      <span className={cn("max-w-full truncate", cell.value.length > 7 && "text-[9px] tracking-tight sm:text-[11px] sm:tracking-normal")}>{cell.value}</span>
       <CellGlyph status={cell.status} />
     </>
   );

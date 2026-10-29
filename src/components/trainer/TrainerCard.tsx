@@ -37,7 +37,7 @@ export function TrainerCard() {
     if (progress) setName(progress.name);
   }, [progress]);
 
-  if (!progress) return <Skeleton className="mx-auto h-96 max-w-3xl" />;
+  if (!progress) return <Skeleton className="mx-auto h-[75vh] min-h-96 max-w-3xl" />;
 
   // Safe here: progress (and so this branch) only exists after mount.
   const today = localDateString();
