@@ -2095,7 +2095,7 @@ step("live battle: Blue forfeits, then a rematch");
 if (!(await liveBlue.getByTestId("battle-result").count())) {
   await liveBlue.getByRole("button", { name: "Forfeit", exact: true }).click();
   await liveBlue.getByRole("button", { name: "Forfeit", exact: true }).click();
-  await liveRed.getByText("Blue forfeited.").waitFor({ timeout: 30_000 });
+  await liveRed.getByTestId("battle-result").getByText("Blue forfeited.").waitFor({ timeout: 30_000 });
   await liveBlue.getByText("You forfeited.").waitFor({ timeout: 30_000 });
 }
 await liveRed.screenshot({ path: `${OUT}/battle-live-result.png` });
