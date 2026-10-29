@@ -62,9 +62,12 @@ describe("PokéGuessr answer leak", () => {
   it("a round's payload names its image only: no place, pin, area or region", () => {
     for (const spec of [kanto, { region: WORLD_REGION, kind: "game" } as GeoSpec, { region: WORLD_REGION, kind: "streak" } as GeoSpec]) {
       const start = startGeo(spec);
-      const round = JSON.stringify(start.round);
+      // The blurred placeholder is the picture itself, a few pixels wide (random base64, so it's left out of the text check).
+      const { blur, ...rest } = start.round;
+      expect(blur).toMatch(/^data:image\/webp;base64,[A-Za-z0-9+/=]{20,300}$/);
+      const round = JSON.stringify(rest);
       // The next round's picture URL may come along (to fetch ahead): a random id, nothing else.
-      expect(Object.keys(start.round).sort()).toEqual(["index", "preload", "shot"]);
+      expect(Object.keys(start.round).sort()).toEqual(["blur", "index", "preload", "shot"]);
       expect(start.round.preload).toMatch(/^\/api\/geo\/shot\/[A-Za-z0-9_-]{8,24}$/);
       expect(start.round.preload).not.toBe(start.round.shot);
       expect(round).not.toMatch(/pin|mask|name|region|Route|City|Town/);
@@ -78,7 +81,7 @@ describe("PokéGuessr answer leak", () => {
       // The next round, when it arrives with a reveal, is the same shape.
       const out = gradeGeo(state, { x: 0.5, y: 0.5 });
       if (!out.ok) throw new Error(out.error);
-      if (out.body.next) expect(Object.keys(out.body.next).sort()).toEqual(["index", "preload", "shot"]);
+      if (out.body.next) expect(Object.keys(out.body.next).sort()).toEqual(["blur", "index", "preload", "shot"]);
     }
   });
 

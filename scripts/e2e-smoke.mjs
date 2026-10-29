@@ -33,6 +33,11 @@ async function clickUntilUrl(p, button, urlRe, refill) {
   }
   await p.waitForURL(urlRe);
 }
+/** Loads a page and waits for its network to settle, but not forever: slow third-party image fetches on CI runners can keep a page from ever going fully idle. */
+async function gotoSettled(p, url) {
+  await p.goto(url, { waitUntil: "load" });
+  await p.waitForLoadState("networkidle", { timeout: 8_000 }).catch(() => {});
+}
 async function closeHowTo(p) {
   const sheet = p.locator(HOWTO).first();
   if (await sheet.waitFor({ state: "visible", timeout: 2500 }).then(() => true, () => false)) {
@@ -643,7 +648,7 @@ page.on("response", async (res) => {
     if (body?.challengeToken) geoChallenge = body.challengeToken;
   }
 });
-await page.goto(`${BASE}/guessr`, { waitUntil: "networkidle" });
+await gotoSettled(page, `${BASE}/guessr`);
 await checkFirstVisitHowTo(page, "PokéGuessr");
 await closeHowTo(page);
 await page.screenshot({ path: `${OUT}/guessr-setup.png`, fullPage: true });
@@ -655,7 +660,7 @@ await page.screenshot({ path: `${OUT}/guessr-summary.png`, fullPage: true });
 if (!geoChallenge) throw new Error("no PokéGuessr challenge token");
 
 step("pokéguessr: one screenshot per round (no flipping between views)");
-await page.goto(`${BASE}/guessr`, { waitUntil: "networkidle" });
+await gotoSettled(page, `${BASE}/guessr`);
 await page.getByRole("button", { name: /5-round game/ }).click();
 for (let i = 0; i < 5; i++) {
   await page.waitForFunction(() => {
@@ -696,7 +701,7 @@ for (let i = 0; i < 5; i++) {
 }
 
 step("pokéguessr: zoomed, 30s timer (time runs out with no pin)");
-await page.goto(`${BASE}/guessr`, { waitUntil: "networkidle" });
+await gotoSettled(page, `${BASE}/guessr`);
 await page.getByTestId("geo-settings").click();
 await page.getByTestId("geo-zoomed").click();
 await page.getByTestId("geo-timer-30").click();
@@ -718,7 +723,7 @@ await page.screenshot({ path: `${OUT}/geo-mode-zoom-timer.png` });
 await page.getByTestId("geo-distance").filter({ hasText: "Time's up" }).waitFor({ timeout: 40_000 });
 await page.screenshot({ path: `${OUT}/geo-mode-timer-up.png` });
 // Back to the defaults, so the steps after this play the usual way.
-await page.goto(`${BASE}/guessr`, { waitUntil: "networkidle" });
+await gotoSettled(page, `${BASE}/guessr`);
 await page.getByTestId("geo-settings").click();
 await page.getByTestId("geo-zoomed").click();
 await page.getByTestId("geo-timer-0").click();
@@ -726,14 +731,14 @@ if (await page.getByTestId("geo-settings-badge").count()) throw new Error("setti
 await page.keyboard.press("Escape");
 
 step("pokéguessr: friend accepts the challenge");
-await page.goto(`${BASE}/guessr/c/${encodeURIComponent(geoChallenge)}`, { waitUntil: "networkidle" });
+await gotoSettled(page, `${BASE}/guessr/c/${encodeURIComponent(geoChallenge)}`);
 await page.getByRole("button", { name: /Accept challenge/ }).click();
 await playGeoRounds(5);
 await page.getByText(/You beat|wins this one|Dead heat/).waitFor();
 await page.screenshot({ path: `${OUT}/guessr-challenge-result.png`, fullPage: true });
 
 step("pokéguessr: 3-round game (picked rounds)");
-await page.goto(`${BASE}/guessr`, { waitUntil: "networkidle" });
+await gotoSettled(page, `${BASE}/guessr`);
 if ((await page.getByTestId("geo-rounds-5").getAttribute("aria-checked")) !== "true") throw new Error("5 rounds should be the default");
 await page.getByTestId("geo-rounds-3").click();
 await page.getByRole("button", { name: /3-round game/ }).click();
@@ -750,7 +755,7 @@ await page.getByText(/out of 15,000/).waitFor();
 await page.screenshot({ path: `${OUT}/guessr-3-round-summary.png`, fullPage: true });
 
 step("pokéguessr: Hard game is practice, with a Wordle-style result card to copy");
-await page.goto(`${BASE}/guessr`, { waitUntil: "networkidle" });
+await gotoSettled(page, `${BASE}/guessr`);
 if ((await page.getByTestId("geo-difficulty-normal").getAttribute("aria-checked")) !== "true") throw new Error("Normal should be the default difficulty");
 await page.getByTestId("geo-difficulty-hard").click();
 await page.getByTestId("geo-difficulty-blurb").filter({ hasText: "Practice" }).waitFor();
@@ -773,7 +778,7 @@ await page.getByTestId("geo-share-card").filter({ hasText: /Copied!|Couldn.t cop
 await page.screenshot({ path: `${OUT}/guessr-hard-summary.png`, fullPage: true });
 
 step("pokéguessr: world globe card opens the 3D globe (canvas, or the no-WebGL fallback)");
-await page.goto(`${BASE}/guessr`, { waitUntil: "networkidle" });
+await gotoSettled(page, `${BASE}/guessr`);
 await page.getByTestId("globe-card").getByRole("link", { name: "Open the globe" }).click();
 await page.waitForURL(/\/guessr\/globe$/);
 await page.getByTestId("world-globe").waitFor();
@@ -782,20 +787,20 @@ await page.waitForTimeout(1500);
 await page.screenshot({ path: `${OUT}/guessr-globe.png` });
 
 step("pokéguessr: streak");
-await page.goto(`${BASE}/guessr`, { waitUntil: "networkidle" });
+await gotoSettled(page, `${BASE}/guessr`);
 await page.getByRole("button", { name: /Streak/ }).click();
 await playGeoRounds(60);
 await page.getByText("Streak over").first().waitFor();
 
 step("pokéguessr: a region's own map");
-await page.goto(`${BASE}/guessr?region=johto`, { waitUntil: "networkidle" });
+await gotoSettled(page, `${BASE}/guessr?region=johto`);
 await page.getByRole("radio", { name: "Johto", checked: true }).waitFor();
 await page.getByRole("button", { name: /5-round game/ }).click();
 await playGeoRounds(5);
 await page.getByText("Survey complete").waitFor();
 
 step("pokéguessr: a themed map (Towns and Cities), its own leaderboard");
-await page.goto(`${BASE}/guessr`, { waitUntil: "networkidle" });
+await gotoSettled(page, `${BASE}/guessr`);
 await page.getByRole("radiogroup", { name: "Themed map" }).getByRole("radio", { name: "Towns and Cities" }).click();
 await page.getByTestId("geo-theme-blurb").filter({ hasText: "Every town and city" }).waitFor();
 if (!page.url().includes("region=theme-towns")) throw new Error(`themed map not in the URL: ${page.url()}`);
@@ -809,10 +814,10 @@ await page.getByText("Towns and Cities 5 rounds").waitFor();
 await page.getByText("Towns and Cities Streak").waitFor();
 
 step("pokéguessr: Classic 2D, report a screenshot");
-await page.goto(`${BASE}/guessr?region=kalos`, { waitUntil: "networkidle" });
+await gotoSettled(page, `${BASE}/guessr?region=kalos`);
 // Kalos has no sprite games: Classic 2D is off there, and says why.
 if (!(await page.getByTestId("geo-era-2d").isDisabled())) throw new Error("Classic 2D should be off on the Kalos map");
-await page.goto(`${BASE}/guessr?region=kanto`, { waitUntil: "networkidle" });
+await gotoSettled(page, `${BASE}/guessr?region=kanto`);
 await page.getByTestId("geo-era-2d").click();
 await page.getByRole("button", { name: /5-round game/ }).click();
 for (let i = 0; i < 5; i++) {
@@ -865,7 +870,7 @@ const shotLoaded = (p) =>
     null,
     { timeout: 30_000 }
   );
-await red.goto(`${BASE}/guessr?region=kanto`, { waitUntil: "networkidle" });
+await gotoSettled(red, `${BASE}/guessr?region=kanto`);
 await closeHowTo(red);
 await red.getByLabel("Your trainer name").fill("Red");
 await clickUntilUrl(red, red.getByRole("button", { name: /Create duel/ }), /\/guessr\/duel\/[a-z2-9]{8}$/);
@@ -928,7 +933,7 @@ await blue.getByText("Victory!").waitFor();
 await blue.screenshot({ path: `${OUT}/duel-forfeit.png` });
 
 step("pokéguessr duel: 3-round points race to the end, rematch keeps the settings");
-await red.goto(`${BASE}/guessr?region=kanto`, { waitUntil: "networkidle" });
+await gotoSettled(red, `${BASE}/guessr?region=kanto`);
 await closeHowTo(red);
 await red.getByTestId("geo-duel-mode-race").click();
 await red.getByTestId("geo-duel-rounds-3").click();
@@ -1414,7 +1419,7 @@ await findOpponent("/guessr", shotLoaded);
 step("ranked pokéguessr: two trainers matched by Elo, counted after a forfeit");
 /** Opens /guessr on the ranked queue as `name`, ready to queue. */
 async function rankedPanel(p, name) {
-  await p.goto(`${BASE}/guessr`, { waitUntil: "networkidle" });
+  await gotoSettled(p, `${BASE}/guessr`);
   await closeHowTo(p);
   await p.getByTestId("geo-duel-queue-ranked").click();
   await p.getByTestId("geo-ranked-card").waitFor();
@@ -1751,7 +1756,7 @@ step("pokédex Trainers tab: search, notable filter, a game by route, an area's 
 
 step("trainer, leaderboard, pokémon page");
 for (const path of ["/trainer", "/leaderboard?board=iq", "/pokemon/eevee", "/pokedex?type=ghost&sort=spe"]) {
-  await page.goto(`${BASE}${path}`, { waitUntil: "networkidle" });
+  await gotoSettled(page, `${BASE}${path}`);
   await page.screenshot({ path: `${OUT}/${path.slice(1).replace(/[^a-z0-9]+/gi, "_")}.png` });
 }
 

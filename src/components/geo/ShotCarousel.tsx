@@ -35,6 +35,7 @@ export function ShotCarousel({
   zoom,
   fs = false,
   onFullscreen,
+  blur,
 }: {
   views: string[];
   index: number;
@@ -44,6 +45,8 @@ export function ShotCarousel({
   zoom?: (src: string) => { scale: number; origin: [number, number] } | null;
   fs?: boolean;
   onFullscreen?: () => void;
+  /** The first view's tiny placeholder (a data URI), shown blurred until the picture has decoded. */
+  blur?: string;
 }) {
   const [fits, setFits] = useState<Record<string, Fit>>({});
   const count = views.length;
@@ -98,6 +101,11 @@ export function ShotCarousel({
     <div className={fs ? "h-full" : undefined}>
       <div className={cn("screen relative w-full overflow-hidden", fs ? "h-full rounded-none" : "aspect-[16/9] rounded-lg")} aria-roledescription={many ? "carousel" : undefined}>
         {!fit && <div className="absolute inset-0 animate-pulse bg-foreground/5" aria-hidden />}
+        {/* A round that wasn't fetched ahead: its blurred placeholder until the picture fades in over it (a tall shot's own blurred fill takes over). */}
+        {blur && src === views[0] && !instant.current.has(src) && !fit?.tall && (
+          // eslint-disable-next-line @next/next/no-img-element -- inline placeholder, a few dozen bytes
+          <img src={blur} alt="" aria-hidden className="absolute inset-0 h-full w-full scale-110 object-cover blur-xl" style={zoomStyle(src)} data-testid="geo-shot-blur" />
+        )}
         {fit?.tall && (
           // eslint-disable-next-line @next/next/no-img-element -- blurred fill behind a tall shot
           <img src={src} alt="" aria-hidden className="absolute inset-0 h-full w-full scale-110 object-cover opacity-70 blur-xl" />
