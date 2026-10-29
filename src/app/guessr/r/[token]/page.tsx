@@ -46,7 +46,7 @@ export default async function GeoResultPage({ params }: PageProps) {
     <div className="mx-auto max-w-xl space-y-6 py-4">
       <Card className="overflow-hidden" data-testid="geo-result-page">
         <div className="relative">
-          <img src={view.map.src} alt={`Map of ${view.map.name}`} className="h-48 w-full object-cover opacity-80" />
+          <img src={view.map.thumb} alt={`Map of ${view.map.name}`} className="h-48 w-full object-cover opacity-80" />
           <div className="absolute inset-0 bg-gradient-to-t from-card via-card/40 to-transparent" />
           <div className="absolute inset-x-0 bottom-0 p-6 text-center">
             <p className="hud-label text-screen">A trainer shared their result</p>

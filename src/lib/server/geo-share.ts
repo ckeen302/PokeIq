@@ -26,7 +26,8 @@ export interface GeoShareView {
   /** "18,240", "7 in a row", "Red wins". */
   headline: string;
   detail: string;
-  map: { id: string; name: string; src: string };
+  /** The map played: its picture for the preview card, and a small one for the page (the world map is 760 KB). */
+  map: { id: string; name: string; src: string; thumb: string };
   /** A game's round scores (a streak: 1 per place named, 0 for the miss). */
   rounds: number[];
   total: number;
@@ -43,7 +44,7 @@ export interface GeoShareView {
 const fmt = (n: number) => n.toLocaleString("en-US");
 const mapOf = (id: string) => {
   const r = geoRegions().find((x) => x.id === id);
-  return r ? { id: r.id, name: r.id === WORLD_REGION ? "World" : r.name, src: r.map.src } : null;
+  return r ? { id: r.id, name: r.id === WORLD_REGION ? "World" : r.name, src: r.map.src, thumb: r.map.src === "/geo/maps/world.webp" ? "/geo/maps/world-thumb.webp" : r.map.src } : null;
 };
 
 function gameView(result: GeoResult): GeoShareView | null {
