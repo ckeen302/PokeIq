@@ -696,8 +696,18 @@ async function list(regions: string[]) {
     const games = REGIONS[region].games;
     const found = new Map<string, Candidate>();
     const skipped: Record<string, number> = {};
-    const skip = (why: string) => (skipped[why] = (skipped[why] ?? 0) + 1);
+    const skippedFiles: { wiki: WikiId; file: string; url: string; width: number; height: number; place: string; why: string }[] = [];
+    let current: { wiki: WikiDef; meta: FileMeta; at: Loc } | null = null;
+    const skip = (why: string) => {
+      skipped[why] = (skipped[why] ?? 0) + 1;
+      // What was passed over, for a person to look through (skipped.json): big pictures only.
+      if (current && current.meta.width >= 960) {
+        const { wiki, meta, at } = current;
+        skippedFiles.push({ wiki: wiki.id, file: meta.file, url: meta.url, width: meta.width, height: meta.height, place: locKey(at), why });
+      }
+    };
     const consider = (wiki: WikiDef, meta: FileMeta, at: Loc, via: Candidate["via"], where: string) => {
+      current = { wiki, meta, at };
       const f = meta.file;
       const key = wiki.key + f;
       if (found.has(key)) return;
@@ -757,7 +767,10 @@ async function list(regions: string[]) {
       for (const [t, l] of titles)
         for (const f of perPage.get(t)!) {
           if (!meta.has(f)) continue;
-          if (shownAt.get(f)!.size > 1) skip("on two places' pages");
+          if (shownAt.get(f)!.size > 1) {
+            current = { wiki, meta: meta.get(f)!, at: l };
+            skip("on two places' pages");
+          }
           else consider(wiki, meta.get(f)!, l, "page", t);
         }
       // Rule 2: in a per-game screenshot category, and named after the place.
@@ -784,6 +797,7 @@ async function list(regions: string[]) {
       else if (old.staged) rmSync(old.staged, { force: true });
     }
     writeJson(listFile, out);
+    writeJson(path.join(DIR, region, "skipped.json"), skippedFiles);
     const byFam = new Map<string, number>();
     for (const c of out) byFam.set(famOf(c.code)!, (byFam.get(famOf(c.code)!) ?? 0) + 1);
     const byWiki = new Map<string, number>();
@@ -814,6 +828,35 @@ async function existingHashes(): Promise<{ hashes: Record<string, string | null>
   if (fetched) writeFileSync(SHOT_HASHES, JSON.stringify(hashes));
   return { hashes, shots };
 }
+
+const RETIRED_HASHES = path.join(ROOT, ".data/geo-retired-hashes.json");
+/**
+ * The pictures taken out of the game (re-cut originals, the Legends: Z-A shots,
+ * retired shots): a new shot must not be one of them again. Their hashes,
+ * fetched from storage once and kept in .data.
+ */
+async function retiredHashes(): Promise<Record<string, string>> {
+  const geo = JSON.parse(readFileSync(DATA, "utf8")) as { storageBase: string };
+  const ids = new Set<string>([
+    ...Object.keys(readJson<Record<string, string>>(path.join(ROOT, "tests/fixtures/geo-shot-ids-replaced.json"), {})),
+    ...readJson<string[]>(path.join(ROOT, "tests/fixtures/geo-shot-ids-za-removed.json"), []),
+    ...readJson<string[]>(path.join(ROOT, "src/data/geo-retired.json"), []),
+  ]);
+  const out = readJson<Record<string, string>>(RETIRED_HASHES, {});
+  let fetched = 0;
+  for (const id of ids) {
+    if (out[id]) continue;
+    const res = await fetch(`${geo.storageBase}/${id}.webp`).catch(() => null);
+    if (res?.ok) {
+      out[id] = await imageHash(Buffer.from(await res.arrayBuffer()));
+      fetched++;
+    }
+  }
+  if (fetched) writeJson(RETIRED_HASHES, out);
+  return out;
+}
+/** The retired picture a hash looks like, if any. */
+const retiredLookAlike = (hash: string, retired: Record<string, string>) => Object.keys(retired).find((id) => hashDistance(hash, retired[id]) <= LOOK_ALIKE) ?? null;
 
 /** Brightness, detail (Laplacian spread) and the share of the most common colour, as the audit measures them. */
 async function measure(buf: Buffer) {
@@ -852,6 +895,7 @@ async function fetchRegion(region: string) {
   const file = path.join(DIR, region, "list.json");
   const cands = readJson<Candidate[]>(file, []);
   const { hashes, shots } = await existingHashes();
+  const retired = await retiredHashes();
   const staged = path.join(DIR, region, "staged");
   mkdirSync(staged, { recursive: true });
   // Thin places first, and each place's own-page files before the categories'.
@@ -864,12 +908,11 @@ async function fetchRegion(region: string) {
   for (const c of cands) {
     n++;
     if (c.drop && !c.drop.startsWith("fetch failed")) continue;
-    if (c.staged && existsSync(c.staged) && c.hash) {
-      if (!c.drop) kept.push(c);
-      continue;
-    }
-    delete c.drop;
-    try {
+    // Staged by an earlier run: no download again, but checked again against the shots in the data now.
+    const restaged = !!(c.staged && existsSync(c.staged) && c.hash);
+    if (restaged && c.drop) continue;
+    if (!restaged) delete c.drop;
+    if (!restaged) try {
       const raw = await httpGet(c.url);
       const meta = await sharp(raw).metadata();
       let [w, h] = [meta.width ?? 0, meta.height ?? 0];
@@ -918,6 +961,10 @@ async function fetchRegion(region: string) {
           return areaKey(k) === area ? d <= SAME_PICTURE || (d <= SAME_GAME_PICTURE && famOf(k.code) === fam) : d <= LOOK_ALIKE;
         });
       if (copy) c.drop = `near-copy of ${"id" in copy ? `shot ${copy.id} (${copy.area})` : candKey(copy)}`;
+      else {
+        const old = retiredLookAlike(c.hash, retired);
+        if (old) c.drop = `near-copy of retired shot ${old}`;
+      }
     }
     if (c.drop && c.staged) {
       rmSync(c.staged, { force: true });
@@ -1146,6 +1193,7 @@ async function accept(region: string, reviewFile: string) {
   const ledgerFile = path.join(DIR, region, "decisions.json");
   const ledger = readJson<Record<string, { decision: string; id?: string; reason?: string }>>(ledgerFile, {});
   const { hashes: liveHashes, shots } = await existingHashes();
+  const retired = await retiredHashes();
   let added = 0;
   for (const { sheet, tile, key: k } of index) {
     if (!review.sheets.includes(sheet)) continue;
@@ -1199,6 +1247,11 @@ async function accept(region: string, reviewFile: string) {
     });
     if (copy) {
       ledger[k] = { decision: "rejected", reason: `near-copy of ${copy.id}` };
+      continue;
+    }
+    const old = retiredLookAlike(hash, retired);
+    if (old) {
+      ledger[k] = { decision: "rejected", reason: `near-copy of retired shot ${old}` };
       continue;
     }
     const id = randomBytes(9).toString("base64url");
