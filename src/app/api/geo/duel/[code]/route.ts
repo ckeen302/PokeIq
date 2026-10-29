@@ -29,6 +29,9 @@ import { deleteDuel, duelsEnabled, insertDuel, loadDuel, newDuelCode, updateDuel
 import { settleGeoRankedDuel } from "@/lib/server/geo-ranked-duels";
 import { publishIfChanged } from "@/lib/server/geo-duel-live";
 import { logFinishedDuel, stampStatsKey } from "@/lib/server/geo-duel-stats";
+import { keepFinishedDuel, stampHistoryKey } from "@/lib/server/geo-duel-history";
+import { geoRankedKey } from "@/lib/server/geo-ranked";
+import { readAnonId } from "@/lib/server/ranked";
 import { sessionTokenHash, userFromRequest } from "@/lib/server/auth";
 import { realtimeClientConfig } from "@/lib/server/realtime";
 import type { Duel } from "@/lib/server/duel";
@@ -111,6 +114,8 @@ export async function GET(request: NextRequest, context: Context) {
     void logFinishedDuel(before, out.duel);
     // A ranked duel that just ended: count it (once), so the view carries the rating change.
     const settled = await settleGeoRankedDuel(out.duel, out.rev);
+    // Over (and counted, if ranked): kept for its trainers' duel history.
+    void keepFinishedDuel(before, settled.duel);
     return NextResponse.json(await viewOf(settled.duel, playerId, out.now, settled.rev), { headers: NO_STORE });
   } catch (err) {
     return storeError(err);
@@ -169,6 +174,9 @@ export async function POST(request: NextRequest, context: Context) {
 
     // A signed-in trainer playing under their own name: their rounds go on their PokéGuessr record when the duel ends.
     const account = (body.action === "guess" || body.action === "ready") && sessionTokenHash(request) ? await userFromRequest(request).catch(() => null) : null;
+    // Whoever holds the seat (their account, or the signed id their browser sends): the duel goes in their history when it ends.
+    const anon = body.action === "guess" || body.action === "ready" ? readAnonId(request.headers.get("x-ranked-id")) : null;
+    const historyKey = account ? geoRankedKey(`u:${account.id}`) : anon ? geoRankedKey(`a:${anon}`) : null;
     const act = (duel: Duel, now: number) => {
       switch (body.action) {
         case "ready":
@@ -189,12 +197,13 @@ export async function POST(request: NextRequest, context: Context) {
     const out = await updateDuel(code, (duel, now) => {
       before = duel;
       const acted = act(duel, now);
-      return acted.ok ? { ...acted, duel: stampStatsKey(acted.duel, playerId, account) } : acted;
+      return acted.ok ? { ...acted, duel: stampHistoryKey(stampStatsKey(acted.duel, playerId, account), playerId, historyKey) } : acted;
     });
     if (!out.ok) return failure(out);
     publishIfChanged(code, before, out.duel, out.rev);
     void logFinishedDuel(before, out.duel);
     const settled = await settleGeoRankedDuel(out.duel, out.rev);
+    void keepFinishedDuel(before, settled.duel);
     return NextResponse.json(await viewOf(settled.duel, playerId, out.now, settled.rev), { headers: NO_STORE });
   } catch (err) {
     return storeError(err);

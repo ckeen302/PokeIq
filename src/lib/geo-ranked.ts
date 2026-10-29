@@ -11,6 +11,7 @@
 
 import { ELO_FLOOR, ELO_START, eloDecayDays, eloExpected, eloK } from "./rating/elo";
 import { WORLD_REGION } from "./geo-types";
+import type { GeoSeasonView } from "./geo-seasons";
 
 // ---------------------------------------------------------------------------
 // Divisions
@@ -315,6 +316,8 @@ export type GeoRankedResponse =
       top?: GeoRankedLeaderRow[];
       /** The Gym Leader is offered after this many seconds in the queue (0: never). */
       botAfterS: number;
+      /** The season running now (null before the first), with your season so far and your finished seasons where they're stored. */
+      season?: GeoSeasonView | null;
     };
 
 /** A ranked duel as its trainers see it: each seat's Elo going in and, once counted, before and after. Seat 1 may be the bot. */

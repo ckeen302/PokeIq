@@ -26,6 +26,7 @@ import { clock } from "@/components/duel/DuelParts";
 import { HowItWorks } from "@/components/duel/HowItWorks";
 import { BallIcon, rankedExtra } from "@/components/pokedle/Ranked";
 import { cn } from "@/lib/utils";
+import { DuelHistoryLink, GeoSeasonStrip } from "./GeoSeason";
 
 /**
  * Ranked PokéGuessr in the browser: the division badge (Poké Ball to Beast
@@ -245,12 +246,16 @@ export function GeoRankedCard() {
               <p className="text-sm text-muted-foreground">Head to head on the world map. Climb from Poké Ball to Beast Ball against trainers near your Elo.</p>
             </>
           )}
+          {state.status === "ready" && state.season && <GeoSeasonStrip season={state.season} elo={you && you.games > 0 ? you.elo : null} />}
           {state.status !== "off" && (
             <HowItWorks
               extra={
-                <Link href="/leaderboard?board=geo-ranked" className="font-semibold text-muted-foreground underline-offset-2 hover:text-foreground hover:underline">
-                  Ranked ladder
-                </Link>
+                <>
+                  <Link href="/leaderboard?board=geo-ranked" className="font-semibold text-muted-foreground underline-offset-2 hover:text-foreground hover:underline">
+                    Ranked ladder
+                  </Link>
+                  <DuelHistoryLink />
+                </>
               }
             >
               <p>
@@ -263,6 +268,10 @@ export function GeoRankedCard() {
               <p>
                 You&apos;re matched with trainers near your Elo, further apart the longer you wait. If nobody turns up in {state.status === "ready" && state.botAfterS > 0 ? `${state.botAfterS} seconds` : "a while"}, you can battle a Gym Leader
                 instead: a clearly labelled computer opponent that plays at your division, rated at half the usual swing.
+              </p>
+              <p>
+                Ranked runs in eight-week seasons. Your highest division in a season earns its rewards (a season badge, and cosmetics for every division up to it) when the season ends. Then
+                every rating resets halfway toward 1,000, down one division at most, so the climb starts again close to where you finished.
               </p>
             </HowItWorks>
           )}

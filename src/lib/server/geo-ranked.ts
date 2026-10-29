@@ -9,10 +9,26 @@ import {
   geoDivisionOf,
   geoMatchScores,
   geoRateDuel,
+  utcDay,
+  GEO_DIVISIONS,
   type GeoRankedLeaderRow,
   type GeoRankedStanding,
   type GeoRatingRules,
 } from "@/lib/geo-ranked";
+import {
+  GEO_SEASON_KEEP,
+  geoSeason,
+  geoSeasonAt,
+  geoSeasonName,
+  geoSeasonReset,
+  geoSeasonRewards,
+  geoSeasonStarts,
+  geoSeasonUnlocks,
+  type GeoSeason,
+  type GeoSeasonProgress,
+  type GeoSeasonRecord,
+  type GeoSeasonView,
+} from "@/lib/geo-seasons";
 import { deriveSeed } from "./crypto";
 import { RankedUnavailable } from "./ranked";
 
@@ -107,7 +123,21 @@ export interface GeoRankedStore {
   /** The top of the ladder as of `today`, hidden Elos blanked. */
   top(limit: number, today: string): Promise<GeoRankedLeaderRow[]>;
   apply(input: GeoApplyInput): Promise<GeoApplyOutcome>;
+  /**
+   * Seasons (lib/geo-seasons.ts): brings every rating into `season`. Each
+   * trainer whose rating belongs to an earlier season has that season
+   * archived (if they played in it) and is softly reset. Idempotent; returns
+   * how many were reset. Throws SeasonsUnavailable before migration 0049.
+   */
+  rollSeason(season: number, today: string): Promise<number>;
+  /** A trainer's record in a season so far (null for an unknown trainer). */
+  seasonProgress(key: string, season: GeoSeason): Promise<GeoSeasonProgress | null>;
+  /** A trainer's finished seasons, newest first. */
+  seasonHistory(key: string): Promise<GeoSeasonRecord[]>;
 }
+
+/** Season records aren't stored here yet (migration 0049 hasn't been applied): ranked carries on without them. */
+export class SeasonsUnavailable extends Error {}
 
 const LADDER_MAX = 100;
 
@@ -129,16 +159,48 @@ interface MemoryPlayer {
   bestScore: number;
   day: string | null;
   gamesToday: number;
+  /** The UTC day the row was made, and the season its rating belongs to (unset: the one it was made in). */
+  created: string;
+  season?: number;
+}
+
+interface MemoryMatch {
+  keys: [string, string | null];
+  before: [number, number];
+  after: [number, number];
+  scores: [number, number];
+  day: string;
 }
 
 interface MemoryDb {
   players: Map<string, MemoryPlayer>;
-  matches: Map<string, { keys: [string, string | null]; before: [number, number]; after: [number, number] }>;
+  matches: Map<string, MemoryMatch>;
+  seasons: Map<string, GeoSeasonRecord[]>;
 }
 
 const globalStore = globalThis as unknown as { __pokeiqGeoRanked?: MemoryDb };
 
-const blankPlayer = (name: string): MemoryPlayer => ({ name, elo: GEO_ELO_START, games: 0, wins: 0, losses: 0, draws: 0, bestScore: 0, day: null, gamesToday: 0 });
+const blankPlayer = (name: string, today: string): MemoryPlayer => ({ name, elo: GEO_ELO_START, games: 0, wins: 0, losses: 0, draws: 0, bestScore: 0, day: null, gamesToday: 0, created: today });
+
+/** The season a UTC day falls in (0 before the first). */
+const seasonOfDay = (day: string) => geoSeasonAt(Date.parse(`${day}T00:00:00Z`))?.number ?? 0;
+
+/** A trainer's games, record and peak between two UTC days (from inclusive, to exclusive). */
+function progressFrom(matches: Iterable<MemoryMatch>, key: string, from: string, to: string): GeoSeasonProgress {
+  const out: GeoSeasonProgress = { games: 0, wins: 0, losses: 0, draws: 0, peakElo: null };
+  for (const m of matches) {
+    const seat: 0 | 1 | -1 = m.keys[0] === key ? 0 : m.keys[1] === key ? 1 : -1;
+    if (seat === -1) continue;
+    if (m.day < from || m.day >= to) continue;
+    out.games++;
+    const s = m.scores[seat];
+    if (s === 1) out.wins++;
+    else if (s === 0) out.losses++;
+    else out.draws++;
+    out.peakElo = Math.max(out.peakElo ?? 0, m.after[seat]);
+  }
+  return out;
+}
 
 /** Brings a player's row to `today`: the decay since their last game applied, that day closed. */
 function catchUp(p: MemoryPlayer, today: string): MemoryPlayer {
@@ -147,13 +209,13 @@ function catchUp(p: MemoryPlayer, today: string): MemoryPlayer {
 }
 
 export function memoryGeoRankedStore(): GeoRankedStore {
-  const db = (globalStore.__pokeiqGeoRanked ??= { players: new Map(), matches: new Map() });
+  const db = (globalStore.__pokeiqGeoRanked ??= { players: new Map(), matches: new Map(), seasons: new Map() });
   const ladder = (today: string) =>
     [...db.players.values()]
       .filter((p) => p.games > 0)
       .map((p) => catchUp(p, today))
       .sort((a, b) => b.elo - a.elo || b.games - a.games || a.name.localeCompare(b.name));
-  const current = (key: string, name: string, today: string): MemoryPlayer => catchUp(db.players.get(key) ?? blankPlayer(name), today);
+  const current = (key: string, name: string, today: string): MemoryPlayer => catchUp(db.players.get(key) ?? blankPlayer(name, today), today);
   return {
     async rating(key, today) {
       const p = db.players.get(key);
@@ -205,8 +267,49 @@ export function memoryGeoRankedStore(): GeoRankedStore {
         db.players.set(input.keys[i]!, p);
       });
       const match = { keys: input.keys, before: [now[0].elo, now[1].elo] as [number, number], after: bot ? ([input.after[0], now[1].elo] as [number, number]) : input.after };
-      db.matches.set(input.code, match);
+      db.matches.set(input.code, { ...match, scores: input.scores, day: input.today });
       return { status: "applied", ...match };
+    },
+    async rollSeason(season, today) {
+      let reset = 0;
+      for (const [key, p] of db.players) {
+        const was = Math.min(season, p.season ?? (p.created ? seasonOfDay(p.created) : season));
+        if (was >= season) {
+          p.season = season;
+          continue;
+        }
+        if (was >= 1) {
+          const s = geoSeason(was);
+          const stats = progressFrom(db.matches.values(), key, s.start, s.end);
+          const list: GeoSeasonRecord[] = db.seasons.get(key) ?? [];
+          if (stats.games > 0 && stats.peakElo !== null && !list.some((r) => r.season === was)) {
+            const peakDivision = geoDivisionOf(stats.peakElo).id;
+            list.push({
+              season: was,
+              name: geoSeasonName(was),
+              games: stats.games,
+              wins: stats.wins,
+              losses: stats.losses,
+              draws: stats.draws,
+              finalElo: p.day && p.day < s.end ? geoDecayedElo(p, s.end) : p.elo,
+              peakElo: stats.peakElo,
+              peakDivision,
+              rewards: geoSeasonRewards(was, peakDivision),
+            });
+            db.seasons.set(key, list);
+          }
+        }
+        db.players.set(key, { ...p, elo: geoSeasonReset(catchUp(p, today).elo), day: null, gamesToday: 0, season });
+        reset++;
+      }
+      return reset;
+    },
+    async seasonProgress(key, season) {
+      if (!db.players.has(key)) return null;
+      return progressFrom(db.matches.values(), key, season.start, season.end);
+    },
+    async seasonHistory(key) {
+      return [...(db.seasons.get(key) ?? [])].sort((a, b) => b.season - a.season);
     },
   };
 }
@@ -214,6 +317,7 @@ export function memoryGeoRankedStore(): GeoRankedStore {
 /** Forgets every rating in memory (tests). */
 export function clearMemoryGeoRanked() {
   globalStore.__pokeiqGeoRanked = undefined;
+  clearGeoSeasonRoll();
 }
 
 // ---- Supabase -------------------------------------------------------------------
@@ -230,6 +334,19 @@ function check(error: { code?: string; message?: string } | null) {
     if (Date.now() >= missingUntil) console.warn("[geo-ranked] ranked PokéGuessr is off until migration 0043_geo_ranked.sql is applied:", error.message);
     missingUntil = Date.now() + RECHECK_MS;
     throw new RankedUnavailable(error.message);
+  }
+  throw new Error(error.message);
+}
+
+/** The season table or functions aren't there yet (migration 0049), or the season column isn't (42703). */
+const SEASON_MISSING = new Set([...MISSING, "42703"]);
+let seasonsMissingLogged = false;
+function seasonCheck(error: { code?: string; message?: string } | null) {
+  if (!error) return;
+  if (SEASON_MISSING.has(error.code ?? "")) {
+    if (!seasonsMissingLogged) console.warn("[geo-ranked] season records are off until migration 0049_geo_seasons_history.sql is applied:", error.message);
+    seasonsMissingLogged = true;
+    throw new SeasonsUnavailable(error.message);
   }
   throw new Error(error.message);
 }
@@ -274,6 +391,56 @@ export function supabaseGeoRankedStore(sb: NonNullable<ReturnType<typeof getServ
       const rows = ((await call("top", { p_limit: Math.min(limit, LADDER_MAX), p_today: today })) ?? []) as Record<string, unknown>[];
       return rows.map((r, i) => leaderRow(i + 1, { name: String(r.name), elo: num(r.elo), games: num(r.games), wins: num(r.wins), losses: num(r.losses) }));
     },
+    async rollSeason(season, today) {
+      const { data, error } = await sb.rpc("geo_ranked_season_roll", {
+        p_season: season,
+        p_starts: geoSeasonStarts(season),
+        p_today: today,
+        p_keep: GEO_SEASON_KEEP,
+        p_floors: GEO_DIVISIONS.map((d) => d.from),
+        p_divisions: GEO_DIVISIONS.map((d) => d.id),
+      });
+      seasonCheck(error);
+      return Number(data ?? 0);
+    },
+    async seasonProgress(key, season) {
+      const { data, error } = await sb.rpc("geo_ranked_season_stats", { p_key: key, p_from: season.start, p_to: season.end });
+      seasonCheck(error);
+      const r = (data ?? {}) as Record<string, unknown>;
+      return {
+        games: num(r.games ?? 0),
+        wins: num(r.wins ?? 0),
+        losses: num(r.losses ?? 0),
+        draws: num(r.draws ?? 0),
+        peakElo: r.peak === null || r.peak === undefined ? null : num(r.peak),
+      };
+    },
+    async seasonHistory(key) {
+      const { data, error } = await sb
+        .from("geo_ranked_seasons")
+        .select("season, games, wins, losses, draws, final_elo, peak_elo, peak_division")
+        .eq("player_key", key)
+        .order("season", { ascending: false })
+        .limit(100);
+      seasonCheck(error);
+      return ((data ?? []) as Record<string, unknown>[]).map((r) => {
+        const season = num(r.season);
+        const id = String(r.peak_division);
+        const peakDivision = GEO_DIVISIONS.find((d) => d.id === id)?.id ?? geoDivisionOf(num(r.peak_elo)).id;
+        return {
+          season,
+          name: geoSeasonName(season),
+          games: num(r.games),
+          wins: num(r.wins),
+          losses: num(r.losses),
+          draws: num(r.draws),
+          finalElo: num(r.final_elo),
+          peakElo: num(r.peak_elo),
+          peakDivision,
+          rewards: geoSeasonRewards(season, peakDivision),
+        };
+      });
+    },
     async apply(input) {
       const r = (await call("apply", {
         p_code: input.code,
@@ -305,11 +472,80 @@ export function geoRankedStore(): GeoRankedStore | null {
   return process.env.NODE_ENV !== "production" ? memoryGeoRankedStore() : null;
 }
 
+// ---------------------------------------------------------------------------
+// Seasons, rolled over lazily
+// ---------------------------------------------------------------------------
+
+const rolled = globalThis as unknown as { __pokeiqGeoSeasonRolled?: { season: number; retryAt: number } };
+const SEASON_RETRY_MS = 60_000;
+
+/**
+ * Brings the ladder into the season running at `now`: the first ranked
+ * action after a boundary (a standing read, the ladder, matchmaking or a
+ * duel being counted) archives the season just ended and softly resets
+ * every rating, in one idempotent database call. Each server instance asks
+ * once per season. Never throws: without migration 0049 seasons are only a
+ * name and a countdown, and ranked carries on as before.
+ */
+export async function ensureGeoSeason(store: GeoRankedStore, now = Date.now()): Promise<GeoSeason | null> {
+  const season = geoSeasonAt(now);
+  if (!season) return null;
+  const state = rolled.__pokeiqGeoSeasonRolled;
+  if (state && (state.season >= season.number || now < state.retryAt)) return season;
+  try {
+    await store.rollSeason(season.number, utcDay(now));
+    rolled.__pokeiqGeoSeasonRolled = { season: season.number, retryAt: 0 };
+  } catch (err) {
+    if (!(err instanceof SeasonsUnavailable) && !(err instanceof RankedUnavailable)) console.error("[geo-ranked] season roll-over failed:", err);
+    rolled.__pokeiqGeoSeasonRolled = { season: state?.season ?? 0, retryAt: now + SEASON_RETRY_MS };
+  }
+  return season;
+}
+
+/** Forgets that this instance has rolled the season over (tests). */
+export function clearGeoSeasonRoll() {
+  rolled.__pokeiqGeoSeasonRolled = undefined;
+}
+
+/** The season running now, and with `key`, that trainer's season so far and their finished seasons (left out while season records are off). Never throws. */
+export async function geoSeasonViewOf(store: GeoRankedStore, key: string | null, now = Date.now()): Promise<GeoSeasonView | null> {
+  const season = await ensureGeoSeason(store, now);
+  if (!season) return null;
+  const view: GeoSeasonView = { number: season.number, name: season.name, startsAt: season.startsAt, endsAt: season.endsAt };
+  if (!key) return view;
+  try {
+    const [you, history] = await Promise.all([store.seasonProgress(key, season), store.seasonHistory(key)]);
+    return { ...view, you, history };
+  } catch (err) {
+    if (!(err instanceof SeasonsUnavailable) && !(err instanceof RankedUnavailable)) console.error("[geo-ranked] season read failed:", err);
+    return view;
+  }
+}
+
+/** A trainer's finished seasons (newest first), or [] while season records are off. For profiles. */
+export async function geoSeasonHistoryOf(key: string): Promise<GeoSeasonRecord[]> {
+  const store = geoRankedStore();
+  if (!store) return [];
+  try {
+    await ensureGeoSeason(store);
+    return await store.seasonHistory(key);
+  } catch (err) {
+    if (!(err instanceof SeasonsUnavailable) && !(err instanceof RankedUnavailable)) console.error("[geo-ranked] season history failed:", err);
+    return [];
+  }
+}
+
+/** Every cosmetic and badge a trainer has unlocked from ranked PokéGuessr seasons (lib/geo-seasons.ts geoSeasonRewards). [] while season records are off. */
+export async function geoSeasonUnlocksOf(key: string): Promise<string[]> {
+  return geoSeasonUnlocks(await geoSeasonHistoryOf(key));
+}
+
 /** The top of the ladder (at most 100), or null while ranked PokéGuessr is off. */
 export async function geoRankedTop(today: string, limit = LADDER_MAX): Promise<GeoRankedLeaderRow[] | null> {
   const store = geoRankedStore();
   if (!store) return null;
   try {
+    await ensureGeoSeason(store);
     return await store.top(limit, today);
   } catch (err) {
     if (!(err instanceof RankedUnavailable)) console.error("[geo-ranked] ladder failed:", err);
@@ -322,6 +558,7 @@ export async function geoRankedStandingOf(key: string, today: string): Promise<G
   const store = geoRankedStore();
   if (!store) return null;
   try {
+    await ensureGeoSeason(store);
     return await store.standing(key, today);
   } catch (err) {
     if (!(err instanceof RankedUnavailable)) console.error("[geo-ranked] standing failed:", err);
@@ -359,6 +596,8 @@ const MAX_TRIES = 5;
 export async function settleGeoRanked(match: GeoRankedMatch, store: GeoRankedStore, config: GeoRatingRules = geoRankedConfig()): Promise<{ before: [number, number]; after: [number, number] }> {
   const scores = geoMatchScores(match.winner);
   const today = new Date(match.at).toISOString().slice(0, 10);
+  // A duel that ends after a season boundary is counted from the reset ratings.
+  await ensureGeoSeason(store);
   const bot = match.keys[1] === null;
   const fresh = async (key: string): Promise<GeoRatingState> => (await store.rating(key, today)) ?? { elo: GEO_ELO_START, games: 0 };
   let current: [GeoRatingState, GeoRatingState] = [await fresh(match.keys[0]), bot ? { elo: match.botElo ?? GEO_ELO_START, games: 0 } : await fresh(match.keys[1]!)];
