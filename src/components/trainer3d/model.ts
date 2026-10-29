@@ -663,18 +663,18 @@ export function buildTrainer(cfg: TrainerConfig): TrainerModel {
   const sleeveMat = kit.mat(spec.sleeve);
   const arms = ([1, -1] as const).map((s) => {
     const shoulder = group(torso, [s * (slim ? 0.27 : 0.285), 0.4, 0]);
-    kit.mesh(new THREE.SphereGeometry(0.085, 16, 12), spec.sleeves === "none" ? mSkin : sleeveMat, shoulder);
-    kit.mesh(new THREE.CapsuleGeometry(0.068, 0.11, 6, 14), spec.sleeves === "long" ? sleeveMat : mSkin, shoulder, [0, -0.11, 0]);
-    if (spec.sleeves === "short") kit.mesh(new THREE.CylinderGeometry(0.088, 0.096, 0.13, 16), sleeveMat, shoulder, [0, -0.05, 0]);
+    kit.mesh(new THREE.SphereGeometry(0.08, 20, 14), spec.sleeves === "none" ? mSkin : sleeveMat, shoulder, undefined, undefined, [1, 0.95, 0.94]);
+    kit.mesh(new THREE.CapsuleGeometry(0.074, 0.11, 8, 16), spec.sleeves === "long" ? sleeveMat : mSkin, shoulder, [0, -0.11, 0]);
+    if (spec.sleeves === "short") kit.mesh(new THREE.CylinderGeometry(0.09, 0.1, 0.13, 20), sleeveMat, shoulder, [0, -0.05, 0]);
     if (spec.sleeves === "none" && cfg.top !== "croptop" && cfg.top !== "dress") kit.mesh(new THREE.TorusGeometry(0.075, 0.018, 6, 16), kit.mat(spec.inner), shoulder, [0, 0.0, 0], [0, 0, Math.PI / 2], [1, 1.1, 1], { bare: true });
     if (cfg.top === "track") kit.mesh(new THREE.BoxGeometry(0.02, 0.2, 0.03), mAccent, shoulder, [s * 0.068, -0.1, 0], undefined, undefined, { bare: true });
     const elbow = group(shoulder, [0, -0.2, 0]);
     const forearm = cfg.gloves === "long" ? kit.mat(glovesC) : spec.sleeves === "long" ? sleeveMat : mSkin;
-    kit.mesh(new THREE.CapsuleGeometry(0.062, 0.1, 6, 14), forearm, elbow, [0, -0.08, 0]);
+    kit.mesh(new THREE.CapsuleGeometry(0.068, 0.1, 8, 16), forearm, elbow, [0, -0.08, 0]);
     if (cfg.top === "track") kit.mesh(new THREE.BoxGeometry(0.02, 0.15, 0.03), mAccent, elbow, [s * 0.062, -0.07, 0], undefined, undefined, { bare: true });
-    if (cfg.gloves === "long") kit.mesh(new THREE.CylinderGeometry(0.074, 0.07, 0.05, 16), kit.mat(shade(glovesC, 0.06)), elbow, [0, 0.0, 0]);
-    else if (cfg.top === "longcoat") kit.mesh(fur(0.074, 0.04, TAU, 12), kit.mat(topTrim, { finish: "fur" }), elbow, [0, -0.15, 0], [Math.PI / 2, 0, 0]);
-    else if (spec.sleeves === "long") kit.mesh(new THREE.CylinderGeometry(0.072, 0.072, 0.045, 16), kit.mat(spec.cuff ?? spec.sleeve), elbow, [0, -0.16, 0]);
+    if (cfg.gloves === "long") kit.mesh(new THREE.CylinderGeometry(0.079, 0.075, 0.05, 20), kit.mat(shade(glovesC, 0.06)), elbow, [0, 0.0, 0]);
+    else if (cfg.top === "longcoat") kit.mesh(fur(0.078, 0.042, TAU, 12), kit.mat(topTrim, { finish: "fur" }), elbow, [0, -0.15, 0], [Math.PI / 2, 0, 0]);
+    else if (spec.sleeves === "long") kit.mesh(new THREE.CylinderGeometry(0.077, 0.077, 0.045, 20), kit.mat(spec.cuff ?? spec.sleeve), elbow, [0, -0.16, 0]);
     const hand = group(elbow, [0, -0.215, 0]);
     // A mitten with a thumb.
     kit.mesh(new THREE.SphereGeometry(0.08, 18, 14), handMat, hand, [0, -0.012, 0.004], undefined, [0.86, 1.08, 0.74]);
@@ -685,11 +685,11 @@ export function buildTrainer(cfg: TrainerConfig): TrainerModel {
     }
     if (cfg.gloves === "full") kit.mesh(new THREE.CylinderGeometry(0.075, 0.08, 0.045, 16), kit.mat(shade(glovesC, -0.08)), hand, [0, 0.07, 0]);
     if (cfg.wrist !== "none" && cfg.gloves !== "long") {
-      if (cfg.wrist === "bands") kit.mesh(new THREE.CylinderGeometry(0.074, 0.074, 0.07, 16), mAcc, elbow, [0, -0.16, 0]);
-      if (cfg.wrist === "bracelets") for (const y of [-0.15, -0.12]) kit.mesh(new THREE.TorusGeometry(0.068, 0.014, 6, 18), mAcc, elbow, [0, y, 0], [Math.PI / 2, 0, 0], undefined, { bare: true });
+      if (cfg.wrist === "bands") kit.mesh(new THREE.CylinderGeometry(0.079, 0.079, 0.07, 20), mAcc, elbow, [0, -0.16, 0]);
+      if (cfg.wrist === "bracelets") for (const y of [-0.15, -0.12]) kit.mesh(new THREE.TorusGeometry(0.073, 0.014, 6, 18), mAcc, elbow, [0, y, 0], [Math.PI / 2, 0, 0], undefined, { bare: true });
       if (cfg.wrist === "watch" && s > 0) {
-        kit.mesh(new THREE.CylinderGeometry(0.068, 0.068, 0.04, 16), mDark, elbow, [0, -0.16, 0], undefined, undefined, { bare: true });
-        kit.mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.02, 14), mAcc, elbow, [0, -0.16, 0.066], [Math.PI / 2, 0, 0]);
+        kit.mesh(new THREE.CylinderGeometry(0.073, 0.073, 0.04, 16), mDark, elbow, [0, -0.16, 0], undefined, undefined, { bare: true });
+        kit.mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.02, 14), mAcc, elbow, [0, -0.16, 0.071], [Math.PI / 2, 0, 0]);
       }
     }
     return { shoulder, elbow, hand };
@@ -1129,8 +1129,10 @@ function buildHair(kit: Kit, head: THREE.Group, cfg: TrainerConfig, m: THREE.Mat
       const az = ((i + 0.5) / count) * TAU;
       const e = end(az);
       if (e <= 0) continue;
-      const tipOut = onCap(e + 0.12, az + 0.06, R * 1.05 + flick);
-      lock([onCap(0.02, az, R * 0.98), onCap(e * 0.35, az, R * 1.06), onCap(e * 0.72, az + 0.03, R * 1.07), onCap(e, az + 0.05, R * 1.06), tipOut], w, 0.055, { tip: 0.9 });
+      const tipOut = onCap(e + 0.12, az + 0.06, hatCover >= 1 ? R * 1.01 : R * 1.05 + flick);
+      // Under a hat only the ends show: start them lower and keep them in close.
+      const pts = hatCover >= 1 ? [onCap(e * 0.55, az, R * 0.96), onCap(e * 0.8, az + 0.03, R * 1.03)] : [onCap(0.02, az, R * 0.98), onCap(e * 0.35, az, R * 1.06), onCap(e * 0.72, az + 0.03, R * 1.07)];
+      lock([...pts, onCap(e, az + 0.05, hatCover >= 1 ? R * 1.02 : R * 1.06), tipOut], w, 0.055, { tip: 0.9 });
     }
   };
   /** Cap edge: low at the back and sides, up at the hairline in front. */
@@ -1149,7 +1151,7 @@ function buildHair(kit: Kit, head: THREE.Group, cfg: TrainerConfig, m: THREE.Mat
     const g = group(hairGroup, [off.x, off.y, off.z]);
     const { spread = 0, hook = 0, w = 0.15, count = 9 } = opts;
     const r0 = R * 1.06;
-    kit.mesh(lathe([[R * 0.6, 0.38], [R * 0.98, 0.2], [r0, -0.06], [r0 + spread * 0.5, -low * 0.45], [r0 + spread * 0.6 - 0.06, -low * 0.78]], Math.PI - from, from * 2, 32), kit.mat((m as THREE.MeshPhysicalMaterial).userData.hex, { finish: "hair", side: THREE.DoubleSide }), g, [-off.x, -off.y, -off.z]);
+    kit.mesh(lathe([[R * 0.5, 0.3], [R * 0.9, 0.16], [r0, -0.06], [r0 + spread * 0.5, -low * 0.45], [r0 + spread * 0.6 - 0.06, -low * 0.78]], Math.PI - from, from * 2, 32), kit.mat((m as THREE.MeshPhysicalMaterial).userData.hex, { finish: "hair", side: THREE.DoubleSide }), g, [-off.x, -off.y, -off.z]);
     for (const i of n(count)) {
       const az = Math.PI + (i / (count - 1) - 0.5) * 2 * (from + 0.08);
       const side = Math.sign(Math.sin(az)) || 1;
