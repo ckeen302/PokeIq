@@ -21,6 +21,12 @@ export type PartialSet = Omit<Partial<TeamSet>, "evs" | "ivs"> & {
 export const STATS: StatKey[] = ["hp", "atk", "def", "spa", "spd", "spe"];
 export const TEAM_SIZE = 6;
 export const MAX_TOTAL_EVS = 510;
+/**
+ * The editor's cap: every 4 EVs is one stat point at level 100, so the last
+ * 2 of the 510 the validator allows can never do anything (Showdown's own
+ * teambuilder counts down from 508 as well).
+ */
+export const USEFUL_TOTAL_EVS = 508;
 export const MAX_EVS = 252;
 export const MAX_IV = 31;
 
@@ -138,6 +144,29 @@ export function newSet(species: string, format: Pick<BattleFormat, "level"> & { 
   const set = completeSet({ species, level: format.level });
   if (format.gen !== undefined && hasDVs(format.gen)) set.evs = fill(MAX_EVS);
   return set;
+}
+
+/**
+ * The nature you get by clicking a stat's name in the stat editor, as in
+ * Showdown: a stat goes neutral -> + -> − -> neutral. A + with no − yet takes
+ * the usual partner (−SpA, or −Atk for a SpA boost); a + turned − moves the
+ * + to Atk (or SpA when Atk is the one lowered).
+ */
+export function natureFor<N extends { name: string; plus?: string; minus?: string }>(natures: readonly N[], current: N | undefined, stat: StatKey): N | undefined {
+  const partner = (s: string) => (s === "atk" ? "spa" : "atk");
+  const neutral = () => natures.find((n) => n.name === "Serious");
+  let plus = current?.plus && current.plus !== current.minus ? current.plus : null;
+  let minus = plus ? (current?.minus ?? null) : null;
+  if (minus === stat) return neutral();
+  if (plus === stat) {
+    minus = stat;
+    plus = partner(stat);
+  } else {
+    plus = stat;
+    if (!minus || minus === stat) minus = stat === "spa" ? "atk" : "spa";
+  }
+  if (plus === minus) return neutral();
+  return natures.find((n) => n.plus === plus && n.minus === minus);
 }
 
 export function evTotal(set: TeamSet): number {

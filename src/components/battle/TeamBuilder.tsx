@@ -1,14 +1,16 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { FileInput, LoaderCircle, Plus, Shuffle } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Check, ChevronRight, ClipboardCopy, FileInput, Folder, LoaderCircle, Plus, Search, Shuffle, Undo2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { BATTLE_FORMATS, BATTLE_FORMAT_IDS, DEFAULT_FORMAT, type BattleFormatId } from "@/lib/battle/formats";
 import type { TeamSet } from "@/lib/battle/sets";
-import { createTeam, deleteTeam, duplicateTeam, useTeams, type BattleTeam } from "@/lib/battle/teams";
+import { createTeam, deleteTeam, duplicateTeam, restoreTeam, teamsBackupText, useTeams, type BattleTeam } from "@/lib/battle/teams";
+import { normalize } from "@/lib/battle/search";
 import { cn } from "@/lib/utils";
 import { BattleSprite } from "./BattleSprite";
 import { useSpriteLookup } from "./hooks";
+import { inputClass } from "./controls";
 import { ImportPanel, TeamEditor } from "./TeamEditor";
 
 type View = { kind: "team"; id: string } | { kind: "new" } | { kind: "import" };
@@ -29,6 +31,9 @@ export function TeamBuilder() {
   const teams = useTeams();
   const [view, setView] = useState<View | null>(null);
   const [random, setRandom] = useState<{ busy: boolean; error: string | null }>({ busy: false, error: null });
+  const [undo, setUndo] = useState<BattleTeam | null>(null);
+  const undoTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => () => clearTimeout(undoTimer.current ?? undefined), []);
 
   // Open the team from the URL, else the latest one, else the format picker.
   useEffect(() => {
@@ -67,7 +72,7 @@ export function TeamBuilder() {
   const current = view?.kind === "team" ? teams?.find((t) => t.id === view.id) : undefined;
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[260px_minmax(0,1fr)]">
+    <div className="grid grid-cols-1 gap-6 lg:grid-cols-[260px_minmax(0,1fr)]">
       <aside className="space-y-3">
         <div className="grid grid-cols-2 gap-2">
           <Button size="sm" onClick={() => openOther("new")} variant={view?.kind === "new" ? "default" : "secondary"}>
@@ -81,6 +86,24 @@ export function TeamBuilder() {
       </aside>
 
       <section className="min-w-0">
+        {undo && (
+          <div className="mb-3 flex items-center gap-3 rounded-md border border-foreground/15 bg-card px-3 py-2 text-sm" role="status" data-testid="undo-delete">
+            <span className="min-w-0 flex-1 truncate">
+              Deleted <b className="font-display">{undo.name || "Untitled team"}</b>
+            </span>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => {
+                restoreTeam(undo);
+                openTeam(undo);
+                setUndo(null);
+              }}
+            >
+              <Undo2 className="h-4 w-4" aria-hidden /> Undo
+            </Button>
+          </div>
+        )}
         {random.error && (
           <p className="mb-3 rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2 text-sm text-destructive" role="alert">
             {random.error}
@@ -99,8 +122,12 @@ export function TeamBuilder() {
               if (copy) openTeam(copy);
             }}
             onDelete={() => {
-              deleteTeam(current.id);
-              const next = teams.find((t) => t.id !== current.id);
+              const removed = current;
+              deleteTeam(removed.id);
+              setUndo(removed);
+              clearTimeout(undoTimer.current ?? undefined);
+              undoTimer.current = setTimeout(() => setUndo(null), 10_000);
+              const next = teams.find((t) => t.id !== removed.id);
               if (next) openTeam(next);
               else openOther("new");
             }}
@@ -117,40 +144,104 @@ export function TeamBuilder() {
   );
 }
 
+/** Saved teams in one folder per format (the open team's folder starts open), with a search over names and Pokémon. */
 function TeamList({ teams, activeId, onOpen }: { teams: BattleTeam[] | null; activeId?: string; onOpen: (team: BattleTeam) => void }) {
   const sprite = useSpriteLookup();
+  const [query, setQuery] = useState("");
+  const [closed, setClosed] = useState<Set<string>>(() => new Set());
+  const [copied, setCopied] = useState(false);
+  const q = normalize(query);
+  const folders = useMemo(() => {
+    const matches = (t: BattleTeam) => !q || normalize(t.name).includes(q) || t.sets.some((s) => normalize(s.species).includes(q) || normalize(s.name).includes(q));
+    return BATTLE_FORMAT_IDS.map((format) => ({ format, teams: (teams ?? []).filter((t) => t.format === format && matches(t)) })).filter((f) => f.teams.length > 0);
+  }, [teams, q]);
   if (!teams) return null;
   if (!teams.length) {
     return <p className="rounded-lg border border-dashed border-foreground/15 p-4 text-sm text-muted-foreground">No teams yet. They save on this device as you build.</p>;
   }
+  async function copyAll() {
+    try {
+      await navigator.clipboard.writeText(teamsBackupText(teams ?? []));
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1600);
+    } catch {
+      // No clipboard (insecure context): nothing to do.
+    }
+  }
   return (
-    <div className="space-y-1.5">
-      <p className="hud-label">
-        My teams · {teams.length}
-      </p>
-      <ul className="max-h-[60vh] space-y-1.5 overflow-y-auto pr-1">
-        {teams.map((team) => (
-          <li key={team.id}>
-            <button
-              type="button"
-              onClick={() => onOpen(team)}
-              data-selected={team.id === activeId}
-              className={cn(
-                "menu-item w-full rounded-lg border bg-card px-3 py-2 text-left hover:border-screen/50",
-                team.id === activeId && "border-screen/60 bg-screen/10"
+    <div className="space-y-2">
+      <div className="flex items-center justify-between gap-2">
+        <p className="hud-label">My teams · {teams.length}</p>
+        <button type="button" onClick={copyAll} className="hud-label flex items-center gap-1 hover:text-foreground" title="Copy every team as a Showdown backup">
+          {copied ? <Check className="h-3 w-3 text-success" aria-hidden /> : <ClipboardCopy className="h-3 w-3" aria-hidden />}
+          {copied ? "Copied" : "Backup all"}
+        </button>
+      </div>
+      {teams.length > 3 && (
+        <label className="relative block">
+          <Search className="pointer-events-none absolute left-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" aria-hidden />
+          <input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search teams or Pokémon"
+            aria-label="Search teams"
+            className={cn(inputClass, "h-8 pl-7 text-xs")}
+          />
+        </label>
+      )}
+      <div className="max-h-[70vh] space-y-2 overflow-y-auto pr-1" data-testid="team-folders">
+        {folders.length === 0 && <p className="px-1 text-xs text-muted-foreground">No team matches.</p>}
+        {folders.map(({ format, teams: list }) => {
+          const isOpen = !!q || !closed.has(format);
+          return (
+            <section key={format} aria-label={`${BATTLE_FORMATS[format].name} teams`}>
+              <button
+                type="button"
+                aria-expanded={isOpen}
+                onClick={() =>
+                  setClosed((prev) => {
+                    const next = new Set(prev);
+                    if (next.has(format)) next.delete(format);
+                    else next.add(format);
+                    return next;
+                  })
+                }
+                className="flex w-full items-center gap-1.5 rounded px-1 py-1 text-left hover:bg-foreground/5"
+              >
+                <ChevronRight className={cn("h-3.5 w-3.5 shrink-0 text-muted-foreground transition-transform", isOpen && "rotate-90")} aria-hidden />
+                <Folder className="h-3.5 w-3.5 shrink-0 text-screen" aria-hidden />
+                <span className="min-w-0 flex-1 truncate font-display text-xs font-bold uppercase tracking-wide">{BATTLE_FORMATS[format].name}</span>
+                <span className="hud-label">{list.length}</span>
+              </button>
+              {isOpen && (
+                <ul className="mt-1 space-y-1.5 pl-2">
+                  {list.map((team) => (
+                    <li key={team.id}>
+                      <button
+                        type="button"
+                        onClick={() => onOpen(team)}
+                        data-selected={team.id === activeId}
+                        className={cn(
+                          "menu-item w-full rounded-lg border bg-card px-3 py-2 text-left hover:border-screen/50",
+                          team.id === activeId && "border-screen/60 bg-screen/10"
+                        )}
+                      >
+                        <span className="block truncate font-display text-sm font-bold uppercase tracking-wide">{team.name || "Untitled team"}</span>
+                        <span className="mt-1 flex h-8 items-center">
+                          {team.sets.map((s, i) => (
+                            <BattleSprite key={i} species={sprite?.(s.species)} animated={false} size={32} className="-ml-1 first:ml-0" />
+                          ))}
+                          {team.sets.length === 0 && <span className="hud-label normal-case tracking-wider">Empty</span>}
+                        </span>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
               )}
-            >
-              <span className="block truncate font-display text-sm font-bold uppercase tracking-wide">{team.name || "Untitled team"}</span>
-              <span className="hud-label block normal-case tracking-wider">{BATTLE_FORMATS[team.format].name}</span>
-              <span className="mt-1 flex h-8 items-center">
-                {team.sets.map((s, i) => (
-                  <BattleSprite key={i} species={sprite?.(s.species)} animated={false} size={32} className="-ml-1 first:ml-0" />
-                ))}
-              </span>
-            </button>
-          </li>
-        ))}
-      </ul>
+            </section>
+          );
+        })}
+      </div>
     </div>
   );
 }
