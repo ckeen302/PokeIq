@@ -60,6 +60,32 @@ export interface FormatDex {
   learnable(species: string): Promise<Move[]>;
   /** Any move goes (the Battle Lab's Custom Game): `learnable` lists every move, the species' own first. */
   anyMove?: boolean;
+  /** Ids of every listed species that can learn `move` in this format (for the "learns" search filter). */
+  learners?(move: string): Promise<Set<string>>;
+}
+
+/** What a format bans outright, by id, with Pokémon Showdown's reason (GET /api/battle/validate/legal/:format). */
+export interface FormatBans {
+  species: Record<string, string>;
+  moves: Record<string, string>;
+  items: Record<string, string>;
+  abilities: Record<string, string>;
+}
+
+const bansCache = new Map<string, Promise<FormatBans>>();
+
+/** A format's outright bans, fetched once (a static file built with the site). */
+export function loadFormatBans(format: BattleFormatId): Promise<FormatBans> {
+  let cached = bansCache.get(format);
+  if (!cached) {
+    cached = fetch(`/api/battle/validate/legal/${format}`).then((res) => {
+      if (!res.ok) throw new Error(`Couldn't load ${format} bans`);
+      return res.json() as Promise<FormatBans>;
+    });
+    cached.catch(() => bansCache.delete(format));
+    bansCache.set(format, cached);
+  }
+  return cached;
 }
 
 /** National Dex order, base forms before their formes. */
@@ -85,7 +111,29 @@ async function buildFormatDex(format: BattleFormat): Promise<FormatDex> {
   const gen = gens.get(format.gen);
   const species = [...gen.species].filter((s) => !s.battleOnly && s.num > 0).sort(byDexNumber);
   const learnsets = new Map<string, Promise<Move[]>>();
+  const source = format.paldeaOnly ? "Paldea" : undefined;
+  // move id -> species ids, built on the first "learns" filter.
+  let byMove: Promise<Map<string, Set<string>>> | null = null;
+  const buildByMove = async () => {
+    const map = new Map<string, Set<string>>();
+    const tables = await Promise.all(species.map((s) => gen.learnsets.learnable(s.name, source).catch(() => undefined)));
+    species.forEach((s, i) => {
+      for (const id of Object.keys(tables[i] ?? {})) {
+        let set = map.get(id);
+        if (!set) map.set(id, (set = new Set()));
+        set.add(s.id);
+      }
+    });
+    return map;
+  };
   return {
+    learners(move) {
+      byMove ??= buildByMove();
+      byMove.catch(() => (byMove = null));
+      const id = move.toLowerCase().replace(/[^a-z0-9]/g, "");
+      // Learnsets list one Hidden Power for every typed one.
+      return byMove.then((m) => m.get(id.startsWith("hiddenpower") ? "hiddenpower" : id) ?? new Set());
+    },
     format,
     gen,
     species,
@@ -98,7 +146,7 @@ async function buildFormatDex(format: BattleFormat): Promise<FormatDex> {
       if (!specie) return Promise.resolve([]);
       let moves = learnsets.get(specie.id);
       if (!moves) {
-        moves = gen.learnsets.learnable(specie.name, format.paldeaOnly ? "Paldea" : undefined).then((table) => {
+        moves = gen.learnsets.learnable(specie.name, source).then((table) => {
           const out = Object.keys(table ?? {})
             .map((id) => gen.moves.get(id))
             .filter((m): m is Move => !!m);

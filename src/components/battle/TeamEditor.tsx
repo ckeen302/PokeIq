@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Check, ClipboardCopy, CopyPlus, FileInput, FileOutput, Link2, LoaderCircle, Plus, ShieldAlert, ShieldCheck, Shuffle, Trash2, TriangleAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { BATTLE_FORMATS, BATTLE_FORMAT_IDS, isBattleFormatId, type BattleFormatId } from "@/lib/battle/formats";
@@ -39,7 +39,6 @@ export function TeamEditor({
   const check = useTeamCheck(team.format, team.sets);
   const [slot, setSlot] = useState(0);
   const [panel, setPanel] = useState<Panel>(null);
-  const [confirmDelete, setConfirmDelete] = useState(false);
   const [copied, setCopied] = useState(false);
 
   const save = (patch: Partial<BattleTeam>) => saveTeam({ ...team, ...patch });
@@ -110,17 +109,9 @@ export function TeamEditor({
             <CopyPlus className="h-4 w-4" aria-hidden /> Duplicate
           </Button>
         )}
-        {!onDelete ? null : confirmDelete ? (
-          <span className="flex items-center gap-1.5">
-            <Button size="sm" variant="destructive" onClick={onDelete}>
-              Delete team
-            </Button>
-            <Button size="sm" variant="ghost" onClick={() => setConfirmDelete(false)}>
-              Keep
-            </Button>
-          </span>
-        ) : (
-          <Button size="sm" variant="ghost" onClick={() => setConfirmDelete(true)}>
+        {/* Deleting can be undone (the builder offers Undo), so it doesn't ask first. */}
+        {onDelete && (
+          <Button size="sm" variant="ghost" onClick={onDelete}>
             <Trash2 className="h-4 w-4" aria-hidden /> Delete
           </Button>
         )}
@@ -154,7 +145,8 @@ export function TeamEditor({
         {Array.from({ length: TEAM_SIZE }, (_, i) => {
           const set = team.sets[i];
           const reachable = i <= team.sets.length;
-          const bad = slotProblems(i).length > 0;
+          const problems = slotProblems(i);
+          const bad = problems.length > 0;
           return (
             <button
               key={i}
@@ -168,7 +160,18 @@ export function TeamEditor({
                 slot === i ? "border-screen/70 bg-screen/10 shadow-[0_0_18px_-6px_hsl(var(--screen))]" : "hover:border-screen/40"
               )}
             >
-              {bad && <span className="led absolute right-1.5 top-1.5 h-1.5 w-1.5 text-destructive" aria-label="has problems" />}
+              {bad ? (
+                <span
+                  className="absolute right-1 top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-destructive px-1 font-mono text-[10px] font-bold leading-none text-destructive-foreground"
+                  title={problems.join("\n")}
+                  aria-label={`${problems.length} problem${problems.length === 1 ? "" : "s"}`}
+                  data-testid="slot-problems"
+                >
+                  {problems.length}
+                </span>
+              ) : set && done ? (
+                <ShieldCheck className="absolute right-1 top-1 h-3.5 w-3.5 text-success/80" aria-label="legal" />
+              ) : null}
               {set ? (
                 <>
                   <BattleSprite species={sprite?.(set.species)} shiny={set.shiny} animated={false} size={48} />
@@ -257,6 +260,8 @@ export function ImportPanel({
   const [error, setError] = useState<string | null>(null);
   const [link, setLink] = useState("");
   const [fetching, setFetching] = useState(false);
+  // How many teams the text holds, for the button (a backup has one header per team).
+  const many = useMemo(() => (onImportMany ? (text.match(/^===.*===\s*$/gm) ?? []).length : 0), [text, onImportMany]);
 
   async function importLink() {
     if (!pokepasteId(link)) return setError("That isn't a pokepast.es link. Paste one like https://pokepast.es/1a2b3c4d5e6f7a8b.");
@@ -332,9 +337,11 @@ export function ImportPanel({
           }}
           disabled={!text.trim()}
         >
-          <FileInput className="h-4 w-4" aria-hidden /> {confirmLabel}
+          <FileInput className="h-4 w-4" aria-hidden /> {many > 1 ? `Import ${many} teams` : confirmLabel}
         </Button>
-        <span className="text-xs text-muted-foreground">Up to six Pokémon; anything after the sixth is left out.</span>
+        <span className="text-xs text-muted-foreground">
+          {onImportMany ? "One team, or a whole teambuilder backup (one === [format] Name === header per team)." : "Up to six Pokémon; anything after the sixth is left out."}
+        </span>
       </div>
     </div>
   );
