@@ -16,7 +16,7 @@ import { cn } from "@/lib/utils";
  *       stance, ball ready to throw).
  * facing: "front" (towards the viewer, default), or "left"/"right" (turned
  *       three-quarters that way; the partner stands on that side).
- * partner: false hides the partner Pokémon.
+ * partner: true shows the partner Pokémon sprite beside them (off by default: the flat sprite clashes with the 3D trainer).
  * still: true draws one frame and stops (also the case under reduced motion).
  */
 export interface Avatar3DProps {
