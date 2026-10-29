@@ -16,6 +16,7 @@ import { GEO_THEMES, isWorldwide, themeMapId, themeOf } from "@/lib/geo-themes";
 import { Rng } from "@/lib/rng";
 import { shotBlur } from "./geo-blur";
 import { isValidDailyDate } from "@/lib/daily";
+import { geoWeekOf, geoWeeklyEndsAt, geoWeeklyMap, isGeoWeek } from "@/lib/geo-weekly";
 import { publicName } from "@/lib/name-filter";
 import { decryptJson, deriveSeed, encryptJson, hmac, randomId, signToken, verifyToken } from "./crypto";
 import {
@@ -390,6 +391,32 @@ export function geoRegions(): GeoRegionInfo[] {
   });
 }
 
+/** This week's Weekly Challenge: its week and map (the first playable map in the rotation), or null if none can be played. */
+export function currentGeoWeekly(now = Date.now()): { week: string; region: string } | null {
+  const week = geoWeekOf(now);
+  const region = geoWeeklyMap(week, (id) => isGeoSpec({ region: id, kind: "game" }));
+  return region ? { week, region } : null;
+}
+
+/**
+ * For mastery: every region map's areas (a town or route with its
+ * buildings, as a game deals them), and the area each screenshot belongs to
+ * (hidden shots too: a round played on one still counts).
+ */
+let MASTERY: { regions: { id: string; name: string; areas: ReadonlySet<string> }[]; areaOfShot: ReadonlyMap<string, string> } | null = null;
+export function geoMasteryIndex() {
+  if (MASTERY) return MASTERY;
+  const areaOfShot = new Map<string, string>();
+  for (const l of regionOf(WORLD_REGION)?.locations ?? []) for (const shot of l.shots) areaOfShot.set(shot.id, areaOf(l));
+  const regions = REGIONS.filter((r) => r.id !== WORLD_REGION && !themeOf(r.id)).map((r) => ({
+    id: r.id,
+    name: r.name,
+    areas: new Set((AREAS.get(r.id) ?? []).map((a) => a.key)) as ReadonlySet<string>,
+  }));
+  MASTERY = { regions, areaOfShot };
+  return MASTERY;
+}
+
 /** Headline numbers for the home page and share cards, counted from the data so they stay true. */
 export function geoStats(): { places: number; screenshots: number; games: number } {
   const world = geoRegions().find((r) => r.id === WORLD_REGION);
@@ -548,7 +575,7 @@ export const DAILY_RAMP_FROM = "2026-10-28";
  * how long ago their freshest shot was seen (duels: pass both players' lists
  * as one).
  */
-export function planRounds(spec: Pick<GeoSpec, "region" | "kind" | "rounds" | "daily"> & Omit<DealSpec, "region">, seed: string, limit = Infinity, seen?: SeenShots): PlannedRound[] {
+export function planRounds(spec: Pick<GeoSpec, "region" | "kind" | "rounds" | "daily" | "weekly"> & Omit<DealSpec, "region">, seed: string, limit = Infinity, seen?: SeenShots): PlannedRound[] {
   const rng = new Rng(deriveSeed("geo", seed));
   const allowed = allowedFamilies(spec);
   let areas = rng.shuffle(areasOf(spec));
@@ -569,8 +596,8 @@ export function planRounds(spec: Pick<GeoSpec, "region" | "kind" | "rounds" | "d
     groups.add(area.group);
     rounds.push(pickRound(rng, area, allowed, modeOf(spec), weighted, seen));
   }
-  // The Daily: easiest first, by the audit's fixed rating, so it's the same five in the same order all day.
-  if (spec.daily && spec.daily >= DAILY_RAMP_FROM) return rampOrder(rounds.map((r) => ({ r, difficulty: heuristicDifficultyOf(r.shot) }))).map((x) => x.r);
+  // The Daily (and the Weekly Challenge): easiest first, by the audit's fixed rating, so it's the same five in the same order for everyone.
+  if ((spec.daily && spec.daily >= DAILY_RAMP_FROM) || spec.weekly) return rampOrder(rounds.map((r) => ({ r, difficulty: heuristicDifficultyOf(r.shot) }))).map((x) => x.r);
   return rounds;
 }
 
@@ -749,8 +776,8 @@ export function startGeo(
   spec: GeoSpec,
   opts: { seed?: string; name?: string; recent?: string[]; plan?: string; timer?: number; seen?: string[] } = {}
 ): { token: string; round: GeoRoundPublic } {
-  let seed = opts.seed ?? (spec.daily ? `geo-daily:${spec.daily}` : randomId());
-  const free = !opts.seed && !spec.daily;
+  let seed = opts.seed ?? (spec.daily ? `geo-daily:${spec.daily}` : spec.weekly ? `geo-weekly:${spec.weekly}` : randomId());
+  const free = !opts.seed && !spec.daily && !spec.weekly;
   const streak = spec.kind === "streak";
   let seen: SeenShots | undefined;
   if (free && opts.seen?.length) {
@@ -820,6 +847,10 @@ export function gradeGeo(state: GeoState, guess: { x: number; y: number; family?
   const { spec } = state;
   const streak = spec.kind === "streak";
   if (spec.daily && !isValidDailyDate(spec.daily, now)) return { ok: false, status: 409, error: "That daily game is over. Today's is waiting." };
+  // A Weekly Challenge started before Monday's switch can be finished within a game's lifetime, no later.
+  if (spec.weekly && (!isGeoWeek(spec.weekly) || now > geoWeeklyEndsAt(spec.weekly) + STATE_TTL_MS)) {
+    return { ok: false, status: 409, error: "That weekly challenge is over. This week's is waiting." };
+  }
   const sealed = unseal(state.plan);
   // A game plays the rounds it started with; a streak its current round, then the next as planned now.
   const rounds = roundsOf(state);

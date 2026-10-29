@@ -188,9 +188,10 @@ export function guessrSquare(points: number): string {
 }
 
 /** "PokéGuessr Daily #12 · World", "PokéGuessr Kanto Streak". */
-export function guessrTitle(r: Pick<GuessrShareResult, "daily" | "region" | "streak">, regionName: string): string {
+export function guessrTitle(r: Pick<GuessrShareResult, "daily" | "weekly" | "region" | "streak">, regionName: string): string {
   const map = r.region === WORLD_REGION ? "World" : regionName;
   if (r.daily !== undefined) return `PokéGuessr Daily #${r.daily} · ${map}`;
+  if (r.weekly !== undefined) return `PokéGuessr Weekly #${r.weekly} · ${map}`;
   return `PokéGuessr ${map}${r.streak !== undefined ? " Streak" : ""}`;
 }
 

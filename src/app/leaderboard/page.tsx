@@ -6,7 +6,8 @@ import { connRankedStore } from "@/lib/server/connections-ranked";
 import { connSeasonLabel, connSeasonOf } from "@/lib/connections/ranked";
 import { fetchBoard } from "@/lib/server/leaderboard";
 import { fetchGeoBoard } from "@/lib/server/geo-leaderboard";
-import { geoRegions, isGeoSpec } from "@/lib/server/geo";
+import { currentGeoWeekly, geoRegions, isGeoSpec } from "@/lib/server/geo";
+import { GEO_WEEKLY_BOARD_RE, geoPreviousWeek, geoWeeklyBoard, geoWeeklyMap, geoWeeklyNumber, isGeoWeek } from "@/lib/geo-weekly";
 import { GEO_ROUND_OPTIONS, WORLD_REGION, geoBoardKey, geoMapRank } from "@/lib/geo-types";
 import { GEO_REGION_STREAK_BOARD } from "@/lib/geo-streak-types";
 import { GEO_ERA_NAMES, type GeoEra } from "@/lib/geo-families";
@@ -346,8 +347,14 @@ export default async function LeaderboardPage({ searchParams }: PageProps) {
       .map((r) => (r.id === WORLD_REGION ? { ...r, boards: [...r.boards, { id: GEO_REGION_STREAK_BOARD, name: "Region Streak" }] } : r))
       .filter((r) => r.boards.length)
       .sort((a, b) => geoMapRank(a.id) - geoMapRank(b.id));
-    const map = maps.find((r) => r.boards.some((b) => b.id === params.format));
-    const mode = map ? params.format! : null;
+    // The Weekly Challenge: this week's board, and the weeks before it by their Monday.
+    const thisWeek = currentGeoWeekly();
+    const weekAsked = GEO_WEEKLY_BOARD_RE.exec(params.format ?? "")?.[1];
+    const week = weekAsked && isGeoWeek(weekAsked) && (!thisWeek || weekAsked <= thisWeek.week) ? weekAsked : null;
+    const weekMapName = (w: string) => maps.find((r) => r.id === geoWeeklyMap(w, (id) => isGeoSpec({ region: id, kind: "game" })))?.name ?? "";
+    const lastWeek = thisWeek && isGeoWeek(geoPreviousWeek(thisWeek.week)) ? geoPreviousWeek(thisWeek.week) : null;
+    const map = week ? undefined : maps.find((r) => r.boards.some((b) => b.id === params.format));
+    const mode = week ? geoWeeklyBoard(week) : map ? params.format! : null;
     const geoEntries = mode ? await fetchGeoBoard({ mode }) : await fetchGeoBoard({ daily: date });
     const avatars = await avatarsByNames((geoEntries ?? []).map((r) => r.player_name));
     return (
@@ -362,6 +369,20 @@ export default async function LeaderboardPage({ searchParams }: PageProps) {
                 Daily #{dailyNumber(date)}
               </Badge>
             </Link>
+            {thisWeek && (
+              <Link href={`/leaderboard?board=geo&format=${geoWeeklyBoard(thisWeek.week)}`} data-testid="geo-board-weekly">
+                <Badge variant={week === thisWeek.week ? "secondary" : "outline"} className="border-warning/50 hover:bg-accent">
+                  Weekly #{geoWeeklyNumber(thisWeek.week)} · {weekMapName(thisWeek.week)}
+                </Badge>
+              </Link>
+            )}
+            {lastWeek && (
+              <Link href={`/leaderboard?board=geo&format=${geoWeeklyBoard(lastWeek)}`}>
+                <Badge variant={week === lastWeek ? "secondary" : "outline"} className="hover:bg-accent">
+                  Last week · {weekMapName(lastWeek)}
+                </Badge>
+              </Link>
+            )}
             {maps
               .filter((r) => !r.theme)
               .map((r) => (
@@ -384,6 +405,11 @@ export default async function LeaderboardPage({ searchParams }: PageProps) {
                   </Link>
                 ))}
             </div>
+          )}
+          {week && (
+            <p className="text-sm text-muted-foreground" data-testid="geo-weekly-board-title">
+              Weekly Challenge #{geoWeeklyNumber(week)} · {weekMapName(week)} · week of {week}
+            </p>
           )}
           {map && (
             <div className="flex flex-wrap justify-center gap-2">

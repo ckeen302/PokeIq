@@ -151,6 +151,65 @@ async function solo(width, height) {
 }
 
 // ---------------------------------------------------------------------------
+// The hub's sections, and the Weekly Challenge (one scored try a week)
+// ---------------------------------------------------------------------------
+
+async function weekly(width, height) {
+  const phone = width < 768;
+  const tag = `${width}`;
+  const page = await newPage({ width, height });
+  step(`hub + weekly challenge at ${tag}`);
+  // No start or guess response may name a place before it's guessed.
+  page.on("response", async (res) => {
+    if (!res.url().endsWith("/api/geo") || res.request().method() !== "POST" || !res.ok()) return;
+    const body = await res.json().catch(() => null);
+    if (body && /"(name|pin|mask|location)"/.test(JSON.stringify(body.round ?? {}))) errors.push(`weekly round leaked its place: ${JSON.stringify(body.round)}`);
+  });
+  await page.goto(`${BASE}/guessr`, { waitUntil: "networkidle" });
+  await closeHowTo(page);
+  for (const id of ["play", "multiplayer", "maps", "you"]) await page.getByTestId(`geo-hub-${id}`).waitFor();
+  for (const id of ["geo-solo-card", "geo-daily-card", "geo-weekly-card", "region-streak-card", "geo-duels-card", "geo-ranked-tile", "geo-party-card", "geo-map-gallery", "globe-card", "geo-history-link"]) {
+    if ((await page.getByTestId(id).count()) !== 1) errors.push(`the hub has no ${id}`);
+  }
+  if ((await page.getByTestId("geo-history-link").getAttribute("href")) !== "/guessr/history") errors.push("the duel history link doesn't go to /guessr/history");
+  await page.getByTestId("geo-achievements").waitFor({ timeout: 15_000 });
+  await page.getByTestId("geo-mastery").waitFor();
+  // A map tile picks the map for a solo game.
+  await page.getByTestId("geo-map-tile-johto").click();
+  await page.getByRole("radio", { name: "Johto", checked: true }).waitFor();
+  // The Ranked tile opens the duel panel on the ranked queue.
+  await page.getByTestId("geo-open-ranked").click();
+  await page.getByTestId("geo-ranked-card").waitFor();
+  await page.getByTestId("geo-duel-queue-casual").click();
+  const label = await page.getByTestId("geo-weekly-card").innerText();
+  if (!/Weekly #\d+/i.test(label)) errors.push(`the weekly card has no number: ${label}`);
+  await page.getByTestId("geo-weekly-play").click();
+  await shotLoaded(page);
+  if (!/Weekly #\d+/i.test(await page.getByTestId("geo-notch").innerText())) errors.push("the weekly game's notch doesn't say Weekly");
+  for (let i = 0; i < 5; i++) {
+    await shotLoaded(page);
+    await pinAndGuess(page, phone, 0.3 + i * 0.1);
+    const next = page.getByTestId("geo-next");
+    await next.waitFor();
+    const text = await next.innerText();
+    await next.click();
+    if (/summary|results/i.test(text)) break;
+  }
+  await page.getByTestId("geo-share-card").waitFor();
+  const card = await page.getByTestId("geo-share-preview").innerText();
+  if (!/PokéGuessr Weekly #\d+/.test(card)) errors.push(`the weekly result card is off: ${card}`);
+  await page.waitForTimeout(1300);
+  await page.screenshot({ path: `${OUT}/guessr-weekly-summary-${tag}.png`, fullPage: true });
+  // A second start the same week is practice.
+  const again = await page.request.post(`${BASE}/api/geo`, { data: { weekly: true } });
+  if ((await again.json()).practice !== "repeat-weekly") errors.push("a second weekly start wasn't practice");
+  await page.goto(`${BASE}/leaderboard?board=geo&format=weekly`, { waitUntil: "networkidle" });
+  await page.getByTestId("geo-board-weekly").click();
+  await page.getByTestId("geo-weekly-board-title").waitFor();
+  await page.context().close();
+}
+
+// ---------------------------------------------------------------------------
 // Duels
 // ---------------------------------------------------------------------------
 
@@ -267,9 +326,11 @@ async function duel(width, height, { turbo }) {
 }
 
 /** E2E_ONLY=solo1440,duel1440,solo390,duel390 runs a subset. */
-const only = (process.env.E2E_ONLY ?? "solo1440,duel1440,solo390,duel390").split(",");
+const only = (process.env.E2E_ONLY ?? "solo1440,weekly1440,duel1440,solo390,weekly390,duel390").split(",");
 try {
   if (only.includes("solo1440")) await solo(1440, 900);
+  if (only.includes("weekly1440")) await weekly(1440, 900);
+  if (only.includes("weekly390")) await weekly(390, 844);
   if (only.includes("duel1440")) await duel(1440, 900, { turbo: false });
   if (only.includes("solo390")) await solo(390, 844);
   if (only.includes("duel390")) await duel(390, 844, { turbo: true });

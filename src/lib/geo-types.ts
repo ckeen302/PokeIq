@@ -67,13 +67,15 @@ export interface GeoSpec {
   region: string;
   kind: GeoKind;
   daily?: string;
+  /** The Weekly Challenge: the week's Monday (YYYY-MM-DD, UTC); see geo-weekly.ts. */
+  weekly?: string;
   /** Games: 3, 5 or 10 rounds (unset = 5, as every score before this was). */
   rounds?: GeoRounds;
   /**
    * Not ranked: a repeat start of a daily, a friend's challenge (the places
    * are known), a game on hand-picked game families, or an Easy or Hard game (practice only).
    */
-  practice?: "repeat-daily" | "challenge" | "filtered" | "difficulty";
+  practice?: "repeat-daily" | "repeat-weekly" | "challenge" | "filtered" | "difficulty";
   /** Easy or Hard: shots rated easier or harder by the audit (and players' scores). Practice: Normal keeps the leaderboards. */
   difficulty?: "easy" | "hard";
   /** Only Classic 2D or Modern 3D screenshots (all games when unset). */
@@ -141,6 +143,8 @@ export interface GeoStartResponse {
   region: string;
   round: GeoRoundPublic;
   practice?: GeoSpec["practice"];
+  /** The Weekly Challenge's week, when that's what was started. */
+  weekly?: string;
 }
 
 /** "Guess the game too": what the player named and what it earned. */

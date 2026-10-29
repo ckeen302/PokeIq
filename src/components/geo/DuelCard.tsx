@@ -19,18 +19,48 @@ const QUEUES = [
   { id: "casual", name: "Casual", icon: Swords },
   { id: "ranked", name: "Ranked", icon: Trophy },
 ] as const;
-type Queue = (typeof QUEUES)[number]["id"];
+export type DuelQueue = (typeof QUEUES)[number]["id"];
+type Queue = DuelQueue;
 
 /**
  * Duels on /guessr: Casual opens a duel on the chosen map (and era) for a
  * friend, or finds an opponent for the same; Ranked queues a rated
  * head-to-head on the world map (see GeoRanked.tsx).
  */
-export function DuelCard({ region, era, places = Infinity }: { region: GeoRegionInfo; era?: GeoEra; places?: number }) {
-  const [queue, setQueue] = useState<Queue>("casual");
+export function DuelCard({
+  region,
+  era,
+  places = Infinity,
+  queue: shownQueue,
+  onQueue,
+  heading = "Duels",
+}: {
+  region: GeoRegionInfo;
+  era?: GeoEra;
+  places?: number;
+  /** The queue shown, when the hub's tiles pick it (else the card keeps its own). */
+  queue?: Queue;
+  onQueue?: (q: Queue) => void;
+  heading?: string;
+}) {
+  const [ownQueue, setOwnQueue] = useState<Queue>("casual");
+  const queue = shownQueue ?? ownQueue;
+  const setQueue = (q: Queue) => {
+    setOwnQueue(q);
+    onQueue?.(q);
+  };
   // /guessr#ranked (the ladder's link) opens on the ranked queue.
   useEffect(() => {
-    if (window.location.hash === "#ranked") setQueue("ranked");
+    const read = () => {
+      if (window.location.hash === "#ranked") {
+        setOwnQueue("ranked");
+        onQueue?.("ranked");
+      }
+    };
+    read();
+    window.addEventListener("hashchange", read);
+    return () => window.removeEventListener("hashchange", read);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- reads the hash on load and when it changes
   }, []);
   const [mode, setMode] = useState<DuelMode>("hp");
   const [rounds, setRounds] = useState<GeoRounds>(5);
@@ -62,7 +92,7 @@ export function DuelCard({ region, era, places = Infinity }: { region: GeoRegion
   return (
     <div id="ranked" className="scroll-mt-24 space-y-3">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 className="font-display text-xl font-bold uppercase">Duels</h2>
+        <h3 className="font-display text-xl font-bold uppercase">{heading}</h3>
         {toggle}
       </div>
       {queue === "ranked" ? (

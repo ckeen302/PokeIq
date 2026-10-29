@@ -352,10 +352,12 @@ export function geoDailyStreak(p: Progress, today: string): number {
 /** A finished PokéGuessr game or streak: XP, per-mode best, daily record and badges. */
 export function recordGeoGame(
   board: string,
-  game: { kind: "game" | "streak"; score: number; rounds: number[]; daily?: string }
+  game: { kind: "game" | "streak"; score: number; rounds: number[]; daily?: string; weekly?: string }
 ): { xp: number; best: boolean; newBadges: BadgeDef[] } {
   const p: Progress = structuredClone(read());
-  const key = game.daily ? "geo:daily" : `geo:${board}`;
+  const key = game.daily ? "geo:daily" : game.weekly ? "geo:weekly" : `geo:${board}`;
+  // The Weekly Challenge: the week's first score, kept like the Daily's (YYYY-MM-DD of its Monday).
+  if (game.weekly && p.best[`geo-weekly:${game.weekly}`] === undefined) p.best[`geo-weekly:${game.weekly}`] = game.score;
   const dailyKey = game.daily ? `geo-daily:${game.daily}` : null;
   // Like the other dailies, only the first game of the day earns XP.
   const xp = dailyKey && p.best[dailyKey] !== undefined ? 0 : game.kind === "streak" ? game.score * 10 : Math.round(game.score / 250);

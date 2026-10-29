@@ -16,6 +16,7 @@ import { rankedKey, rankedStore } from "@/lib/server/ranked";
 import { geoRankedKey, geoRankedStandingOf, geoSeasonHistoryOf } from "@/lib/server/geo-ranked";
 import { GeoSeasonHistory } from "@/components/geo/GeoSeason";
 import { geoStatsKey, playerGeoStats } from "@/lib/server/geo-round-scores";
+import { geoProgressFor } from "@/lib/server/geo-progress";
 import { bestStreakOf } from "@/lib/server/geo-streak";
 import { GeoProfileStats } from "@/components/geo/GeoProfileStats";
 import { utcDay, type GeoRankedStanding } from "@/lib/geo-ranked";
@@ -61,7 +62,7 @@ const findProfile = cache(async (raw: string) => {
   const key = battleKey(`u:${user.id}`);
   const replays = replayStore();
   const ranked = rankedStore();
-  const [digest, battles, pokedle, guessr, mine, avatars, about, insights, geoStats, geoStreak, geoSeasons] = await Promise.all([
+  const [digest, battles, pokedle, guessr, mine, avatars, about, insights, geoStats, geoStreak, geoSeasons, geoProgress] = await Promise.all([
     quietly("progress", progressDigests([user.id]).then((m) => m.get(user.id) ?? null), null),
     quietly("battles", battleProfile(key), null),
     quietly<RankedStanding | null>("pokedle", ranked?.standing(rankedKey(`u:${user.id}`)), null),
@@ -73,6 +74,7 @@ const findProfile = cache(async (raw: string) => {
     quietly("geo-stats", playerGeoStats(geoStatsKey(`u:${user.id}`)), null),
     quietly("geo-streak", bestStreakOf(geoStatsKey(`u:${user.id}`)), null),
     quietly("geo-seasons", geoSeasonHistoryOf(geoRankedKey(`u:${user.id}`)), []),
+    quietly("geo-progress", geoProgressFor({ key: geoStatsKey(`u:${user.id}`), userId: user.id, username: user.username }), null),
   ]);
   return {
     username: user.username,
@@ -84,6 +86,7 @@ const findProfile = cache(async (raw: string) => {
     geoStats,
     geoStreak,
     geoSeasons,
+    geoProgress,
     connections: connDigest(digest),
     about,
     aboutNames: Object.fromEntries(Object.entries(about.pokemon).map(([slot, p]) => [slot, pokemonName(p.id) ?? ""])),
@@ -230,7 +233,7 @@ export default async function UserProfilePage({ params }: PageProps) {
         </Card>
       </div>
 
-      <GeoProfileStats stats={found.geoStats} streak={found.geoStreak} />
+      <GeoProfileStats stats={found.geoStats} streak={found.geoStreak} progress={found.geoProgress} />
 
       <Card>
         <CardContent className="space-y-4 p-5">
