@@ -5,6 +5,7 @@ import { NAME_REJECTED, isCleanName } from "@/lib/name-filter";
 import { secretIsSecure, verifyToken } from "@/lib/server/crypto";
 import { clientIp, rateLimit } from "@/lib/server/rate-limit";
 import { geoBoardKey, type GeoResult } from "@/lib/geo-types";
+import { geoWeeklyBoard } from "@/lib/geo-weekly";
 
 /** POST /api/geo/leaderboard — { resultToken, playerName }. The score comes only from the signed result. */
 
@@ -47,20 +48,28 @@ export async function POST(request: NextRequest) {
           ? "Games on hand-picked games are practice: play All games, Classic 2D or Modern 3D to rank."
           : result.spec.practice === "difficulty"
             ? "Easy and Hard games are practice: play Normal to rank."
-            : "Only your first daily game of the day can be ranked.";
+            : result.spec.practice === "repeat-weekly"
+              ? "Only your first Weekly Challenge of the week can be ranked."
+              : "Only your first daily game of the day can be ranked.";
     return NextResponse.json({ error: why }, { status: 403 });
   }
 
+  const mode = result.spec.weekly ? geoWeeklyBoard(result.spec.weekly) : geoBoardKey(result.spec);
+  // The Weekly Challenge: one entry per name per week (migration 0048 makes it a unique index too).
+  if (result.spec.weekly) {
+    const { data: taken } = await supabase.from("geo_runs").select("id").eq("mode", mode).ilike("player_name", parsed.data.playerName.replace(/[%_\\]/g, "\\$&")).limit(1);
+    if (taken?.length) return NextResponse.json({ error: "Already on the board (one entry per name per week)." }, { status: 409 });
+  }
   const { error } = await supabase.from("geo_runs").insert({
     session_id: result.sid,
     player_name: parsed.data.playerName,
-    mode: geoBoardKey(result.spec),
+    mode,
     daily_date: result.spec.daily ?? null,
     score: result.score,
     duration_ms: result.durationMs,
   });
   if (error?.code === "23505") {
-    return NextResponse.json({ error: "Already on the board (one entry per name per daily)." }, { status: 409 });
+    return NextResponse.json({ error: `Already on the board (one entry per name per ${result.spec.weekly ? "week" : "daily"}).` }, { status: 409 });
   }
   if (error) {
     console.error("[geo-leaderboard] insert failed:", error.message);
