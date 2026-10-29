@@ -168,7 +168,7 @@ describe("PokéGuessr", () => {
     const [round] = planRounds(kanto, "score-test");
     const { pin, mask } = answerFor(kanto, round);
     const exact = measureGuess(kanto, round, pin[0], pin[1]);
-    expect(exact).toEqual({ score: GEO_MAX_ROUND_SCORE, hit: true, squares: 0 });
+    expect(exact).toMatchObject({ score: GEO_MAX_ROUND_SCORE, hit: true, squares: 0, px: 0 });
     // A little way past the edge of the place's area.
     const right = Math.max(...mask.map(([x]) => x));
     const left = Math.min(...mask.map(([x]) => x));

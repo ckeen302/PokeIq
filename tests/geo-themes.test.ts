@@ -42,7 +42,7 @@ describe("themed maps: playing them", () => {
       const info = maps.find((m) => m.id === id)!;
       expect(info.theme).toBe(true);
       expect(info.name).toBe(t.name);
-      expect(info.preview).toMatch(/^\/api\/geo\/shot\//);
+      expect(info.preview).toMatch(/^\/api\/geo\/preview\//);
       expect(geoMapRank(id)).toBeGreaterThan(geoMapRank("paldea"));
       expect(themeOf(id)?.id).toBe(t.id);
       expect(isWorldwide(id)).toBe(true);

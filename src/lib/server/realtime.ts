@@ -4,16 +4,20 @@ import { hmac } from "./crypto";
 import { roomTopic, type RoomEvent } from "@/lib/rooms";
 
 /**
- * Room messages over Supabase Realtime, when it's configured (the project
- * URL, the service key, and NEXT_PUBLIC_SUPABASE_ANON_KEY for browsers):
- * after a message is checked and stored, the server sends it to the room's
- * channel through Realtime's REST broadcast endpoint with the service key,
- * and every open room page gets it without asking.
+ * Pushes over Supabase Realtime, when it's configured (the project URL, the
+ * service key, and NEXT_PUBLIC_SUPABASE_ANON_KEY for browsers): after a
+ * write, the server sends an event to a channel through Realtime's REST
+ * broadcast endpoint with the service key (no socket to keep open, so it
+ * works from a serverless function), and every page subscribed to that
+ * channel gets it without asking. Room messages go this way, and so does a
+ * PokéGuessr duel's "something changed" (the duel's new revision: the page
+ * then fetches the state it may see, so nothing hidden ever rides the
+ * channel).
  *
  * A public channel can be written to by anyone holding the anon key, so
  * each broadcast is signed (ECDSA P-256, a key derived from POKEIQ_SECRET)
  * and browsers drop anything whose signature doesn't check out: only
- * messages that went through the server's moderation are ever shown.
+ * messages that went through the server are ever acted on.
  */
 
 const base64url = (b: Buffer) => b.toString("base64url");
@@ -34,11 +38,20 @@ function signingKeys() {
 /** The public key browsers check broadcasts with. */
 export const broadcastKey = (): JsonWebKey => signingKeys().pub;
 
-/** `data` (a JSON string) and its signature, as the channel carries them. */
-export function signEvent(event: RoomEvent): { data: string; sig: string } {
+/** A signed payload as the channel carries it: `data` (a JSON string) and its signature. */
+export interface SignedPayload {
+  data: string;
+  sig: string;
+}
+
+/** Any event, signed. */
+export function signPayload(event: unknown): SignedPayload {
   const data = JSON.stringify(event);
   return { data, sig: base64url(sign("sha256", Buffer.from(data), { key: signingKeys().priv, dsaEncoding: "ieee-p1363" })) };
 }
+
+/** `data` (a JSON string) and its signature, as the channel carries them. */
+export const signEvent = (event: RoomEvent): SignedPayload => signPayload(event);
 
 function config() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL ?? process.env.SUPABASE_URL;
@@ -53,8 +66,15 @@ export function realtimeClientConfig(): { url: string; anon: string; key: JsonWe
   return c ? { url: c.url, anon: c.anon, key: broadcastKey() } : null;
 }
 
-/** Sends a room event to its channel. Never throws: a failed broadcast is caught up by the next page load. */
-export async function broadcastRoom(event: RoomEvent): Promise<void> {
+/** True when broadcasts go out (Realtime is configured). */
+export const realtimeEnabled = (): boolean => config() !== null;
+
+/**
+ * Sends one signed event to a channel. Never throws, and never takes longer
+ * than a moment: a failed broadcast is caught up by the next poll or page
+ * load. `label` names the caller in the log.
+ */
+export async function broadcast(topic: string, event: string, payload: unknown, label: string): Promise<void> {
   const c = config();
   if (!c) return;
   const controller = new AbortController();
@@ -63,13 +83,16 @@ export async function broadcastRoom(event: RoomEvent): Promise<void> {
     const res = await fetch(`${c.url}/realtime/v1/api/broadcast`, {
       method: "POST",
       headers: { "Content-Type": "application/json", apikey: c.service, Authorization: `Bearer ${c.service}` },
-      body: JSON.stringify({ messages: [{ topic: roomTopic(event.room), event: "room", payload: signEvent(event) }] }),
+      body: JSON.stringify({ messages: [{ topic, event, payload: signPayload(payload) }] }),
       signal: controller.signal,
     });
-    if (!res.ok) console.error(`[rooms] broadcast failed: ${res.status}`);
+    if (!res.ok) console.error(`[${label}] broadcast failed: ${res.status}`);
   } catch (err) {
-    console.error("[rooms] broadcast failed:", err instanceof Error ? err.message : err);
+    console.error(`[${label}] broadcast failed:`, err instanceof Error ? err.message : err);
   } finally {
     clearTimeout(timer);
   }
 }
+
+/** Sends a room event to its channel. */
+export const broadcastRoom = (event: RoomEvent): Promise<void> => broadcast(roomTopic(event.room), "room", event, "rooms");

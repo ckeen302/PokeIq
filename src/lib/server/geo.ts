@@ -14,8 +14,9 @@ import {
 } from "@/lib/geo-difficulty";
 import { GEO_THEMES, isWorldwide, themeMapId, themeOf } from "@/lib/geo-themes";
 import { Rng } from "@/lib/rng";
+import { isValidDailyDate } from "@/lib/daily";
 import { publicName } from "@/lib/name-filter";
-import { decryptJson, deriveSeed, encryptJson, randomId, signToken, verifyToken } from "./crypto";
+import { decryptJson, deriveSeed, encryptJson, hmac, randomId, signToken, verifyToken } from "./crypto";
 import {
   GEO_FILTER_MIN_PLACES,
   GEO_KINDS,
@@ -97,6 +98,12 @@ const DATA = data as unknown as { storageBase?: string; world: WorldData };
 const STORAGE_BASE =
   DATA.storageBase ?? `${process.env.SUPABASE_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/geo`;
 const STATE_TTL_MS = 3 * 60 * 60 * 1000;
+/**
+ * The Timer setting is kept on the server too: a guess this long after the
+ * round's clock has run out scores nothing. The grace covers the picture
+ * loading (the browser's clock starts once it's decoded) and the network.
+ */
+export const GEO_TIMER_GRACE_MS = 10_000;
 /** GeoGuessr's curve: 5000 · e^(−10 · d / D), with D the map diagonal. */
 const FALLOFF = GEO_FALLOFF;
 /** Streak mode on a region's map: a pin this close to the place keeps the streak alive. */
@@ -185,6 +192,31 @@ const REGIONS: Region[] = (() => {
 })();
 
 const shotUrl = (id: string) => `/api/geo/shot/${id}`;
+
+// ---------------------------------------------------------------------------
+// Previews outside a game (the Atlas, the map picker, the how-to demo)
+// ---------------------------------------------------------------------------
+
+/**
+ * A round's image id must never be matched to a place from outside a live
+ * round, so every picture shown elsewhere is served under a separate name:
+ * an HMAC of the id under the server secret. The map from preview names back
+ * to ids is built once, and `/api/geo/preview/<name>` resolves it server-side.
+ */
+export const GEO_PREVIEW_RE = /^[A-Za-z0-9_-]{4,32}$/;
+export const previewToken = (id: string) => hmac("geo-preview", id).subarray(0, 12).toString("base64url");
+export const previewUrl = (id: string) => `/api/geo/preview/${previewToken(id)}`;
+/** Fixed preview names (the PokéGuessr how-to's demo round, so the client needs no token). */
+const PREVIEW_ALIASES: Record<string, string> = { demo: "uV4ANtrw-q6M" };
+let PREVIEWS: Map<string, string> | null = null;
+/** The screenshot a preview name stands for, or null. */
+export function previewShot(name: string): string | null {
+  if (!GEO_PREVIEW_RE.test(name)) return null;
+  if (PREVIEW_ALIASES[name]) return PREVIEW_ALIASES[name];
+  PREVIEWS ??= new Map([...KNOWN_SHOTS].map((id) => [previewToken(id), id]));
+  return PREVIEWS.get(name) ?? null;
+}
+
 const regionOf = (id: string) => REGIONS.find((r) => r.id === id);
 /** A town or route with its buildings: one pin, so at most one round. */
 const areaOf = (location: Pick<Location, "region" | "name" | "parent">) => `${location.region}|${location.parent ?? location.name}`;
@@ -351,7 +383,7 @@ export function geoRegions(): GeoRegionInfo[] {
       games: families.map((f) => geoFamily(f).name),
       families,
       combos,
-      preview: shot ? shotUrl(shot.id) : null,
+      preview: shot ? previewUrl(shot.id) : null,
       ...(themeOf(r.id) ? { theme: true } : {}),
     };
   });
@@ -420,20 +452,78 @@ interface PlannedRound {
   game?: string;
 }
 
+// ---------------------------------------------------------------------------
+// No-repeat: the screenshots a player has already been dealt
+// ---------------------------------------------------------------------------
+
+/**
+ * Seen screenshots by recency rank (0: the most recent). An unseen shot is
+ * freshest; among seen ones, the larger the rank the longer ago. A streak
+ * carries its list as a bitset with no ranks (every seen shot ranks 0).
+ */
+export type SeenShots = ReadonlyMap<string, number>;
+const freshness = (seen: SeenShots | undefined, id: string) => (seen ? (seen.get(id) ?? Infinity) : Infinity);
+/** The freshest a list of shots gets: unseen (Infinity), or the oldest seen. */
+const freshest = (seen: SeenShots | undefined, shots: readonly Shot[]) => shots.reduce((best, s) => Math.max(best, freshness(seen, s.id)), -1);
+/** Only the shots as fresh as the freshest one (all of them when nothing was seen). */
+function freshOnly(seen: SeenShots | undefined, shots: Shot[]): Shot[] {
+  if (!seen?.size) return shots;
+  const best = freshest(seen, shots);
+  return shots.filter((s) => freshness(seen, s.id) === best);
+}
+
+/** Every known screenshot, in data order (a streak's seen list is a bitset over it). */
+let KNOWN_LIST: string[] | null = null;
+const knownList = () => (KNOWN_LIST ??= [...KNOWN_SHOTS]);
+/** A seen list as a streak's token carries it: a base64url bitset over the known screenshots (about 600 characters). */
+export function packSeen(seen: SeenShots): string | undefined {
+  if (!seen.size) return undefined;
+  const list = knownList();
+  const index = new Map(list.map((id, i) => [id, i]));
+  const bits = new Uint8Array(Math.ceil(list.length / 8));
+  let any = false;
+  for (const id of seen.keys()) {
+    const i = index.get(id);
+    if (i === undefined) continue;
+    bits[i >> 3] |= 1 << (i & 7);
+    any = true;
+  }
+  return any ? Buffer.from(bits).toString("base64url") : undefined;
+}
+export function unpackSeen(packed: string | undefined): SeenShots | undefined {
+  if (!packed) return undefined;
+  const list = knownList();
+  const bits = Buffer.from(packed, "base64url");
+  const seen = new Map<string, number>();
+  for (let i = 0; i < list.length && i >> 3 < bits.length; i++) if (bits[i >> 3] & (1 << (i & 7))) seen.set(list[i], 0);
+  return seen.size ? seen : undefined;
+}
+/** The seen list a game's state carries (a streak's), for planning its rounds again. */
+export const seenShotsOf = (state: Pick<GeoState, "seen">): SeenShots | undefined => unpackSeen(state.seen);
+
 /**
  * A round in an area: the town or route itself half the time (when it has
  * screenshots), else one of its buildings; then one of the place's game
  * families, and a screenshot from it (so Emerald's and Ruby's shots don't
- * crowd out the remakes).
+ * crowd out the remakes). With a seen list, only the place's freshest shots
+ * are in the draw: unseen ones, else those seen longest ago.
  */
-function pickRound(rng: Rng, area: Area, allowed: ReadonlySet<GeoFamilyId>, mode: GeoDifficulty = "normal", weighted = true): PlannedRound {
+function pickRound(rng: Rng, area: Area, allowed: ReadonlySet<GeoFamilyId>, mode: GeoDifficulty = "normal", weighted = true, seen?: SeenShots): PlannedRound {
   // Easy and Hard: the town or a building that has a shot fitting the mode, when one does.
   const has = (l: Location) => fitting(l, allowed, mode).length > 0;
-  const buildings = mode === "normal" || !area.buildings.some(has) ? area.buildings : area.buildings.filter(has);
-  const place = area.place && (mode === "normal" || has(area.place) || !buildings.some(has)) ? area.place : undefined;
+  let buildings = mode === "normal" || !area.buildings.some(has) ? area.buildings : area.buildings.filter(has);
+  let place = area.place && (mode === "normal" || has(area.place) || !buildings.some(has)) ? area.place : undefined;
+  if (seen?.size) {
+    // Only the places in the area with its freshest shots.
+    const best = freshest(seen, [place, ...buildings].flatMap((l) => (l ? usableShots(l, allowed) : [])));
+    const fresh = (l: Location) => freshest(seen, usableShots(l, allowed)) === best;
+    buildings = buildings.filter(fresh);
+    place = place && fresh(place) ? place : undefined;
+    if (!place && !buildings.length) [place, buildings] = [area.place, area.buildings];
+  }
   const location = place && (!buildings.length || rng.chance(0.5)) ? place : buildings.length ? rng.pick(buildings) : area.place!;
-  const fits = fitting(location, allowed, mode);
-  const shots = fits.length ? fits : usableShots(location, allowed);
+  const fits = freshOnly(seen, fitting(location, allowed, mode));
+  const shots = fits.length ? fits : freshOnly(seen, usableShots(location, allowed));
   const family = rng.pick([...new Set(shots.map((s) => s.family))]);
   // Low-quality shots (the audit's flags) come up a quarter as often; Easy and Hard lean to their end.
   const shot = weightedPick(
@@ -453,11 +543,18 @@ export const DAILY_RAMP_FROM = "2026-10-28";
  * and no two rounds share a town (a building and its town are the same pin).
  * A five-round world game visits five different regions. `limit` stops early
  * (the first rounds don't depend on it). A filter deals only its games' shots.
+ * With a seen list, areas with an unseen shot come first, then the others by
+ * how long ago their freshest shot was seen (duels: pass both players' lists
+ * as one).
  */
-export function planRounds(spec: Pick<GeoSpec, "region" | "kind" | "rounds" | "daily"> & Omit<DealSpec, "region">, seed: string, limit = Infinity): PlannedRound[] {
+export function planRounds(spec: Pick<GeoSpec, "region" | "kind" | "rounds" | "daily"> & Omit<DealSpec, "region">, seed: string, limit = Infinity, seen?: SeenShots): PlannedRound[] {
   const rng = new Rng(deriveSeed("geo", seed));
   const allowed = allowedFamilies(spec);
-  const areas = rng.shuffle(areasOf(spec));
+  let areas = rng.shuffle(areasOf(spec));
+  if (seen?.size) {
+    const fresh = new Map(areas.map((a) => [a.key, freshest(seen, [a.place, ...a.buildings].flatMap((l) => (l ? usableShots(l, allowed) : [])))]));
+    areas = [...areas].sort((a, b) => fresh.get(b.key)! - fresh.get(a.key)!);
+  }
   const count = geoRoundsOf(spec);
   const max = Math.min(limit, spec.kind === "game" ? count : Infinity);
   const oneEach = isWorldwide(spec.region) && spec.kind === "game" && new Set(areas.map((a) => a.group)).size >= count;
@@ -469,7 +566,7 @@ export function planRounds(spec: Pick<GeoSpec, "region" | "kind" | "rounds" | "d
     if (rounds.length >= max) break;
     if (oneEach && groups.has(area.group)) continue;
     groups.add(area.group);
-    rounds.push(pickRound(rng, area, allowed, modeOf(spec), weighted));
+    rounds.push(pickRound(rng, area, allowed, modeOf(spec), weighted, seen));
   }
   // The Daily: easiest first, by the audit's fixed rating, so it's the same five in the same order all day.
   if (spec.daily && spec.daily >= DAILY_RAMP_FROM) return rampOrder(rounds.map((r) => ({ r, difficulty: heuristicDifficultyOf(r.shot) }))).map((x) => x.r);
@@ -537,7 +634,9 @@ export function measureGuess(spec: Pick<GeoSpec, "region">, round: PlannedRound,
   const score = perfect ? GEO_MAX_ROUND_SCORE : Math.round(GEO_MAX_ROUND_SCORE * Math.exp((-FALLOFF * px) / diagonal));
   // Themed maps share the world map, so a pin's region is read from every place on it, not just the theme's.
   const hit = isWorldwide(region.id) ? regionAt(regionOf(WORLD_REGION)!, x, y) === groupOf(location.region) : px / diagonal <= STREAK_RADIUS;
-  return { score, hit, squares: perfect ? 0 : Math.round((px / region.squarePx) * 10) / 10 };
+  // For the behaviour flags: how close to the place itself (its pin or its area's edge) the guess was, in map pixels.
+  const toPin = Math.hypot((x - location.pin[0]) * width, (y - location.pin[1]) * height);
+  return { score, hit, squares: perfect ? 0 : Math.round((px / region.squarePx) * 10) / 10, px: Math.round(Math.min(px, toPin) * 10) / 10 };
 }
 
 export function answerFor(spec: Pick<GeoSpec, "region">, round: PlannedRound, squares = 0): GeoAnswer {
@@ -565,10 +664,11 @@ export function roundViews(spec: DealSpec & Pick<GeoSpec, "guessGame">, round: P
 }
 
 /** A round as the player sees it: the dealt screenshot, and the place's other views when there are any. */
-function publicRound(spec: GeoSpec, index: number, round: PlannedRound): GeoRoundPublic {
+function publicRound(spec: GeoSpec, index: number, round: PlannedRound, next?: PlannedRound): GeoRoundPublic {
   // One screenshot per round, like GeoGuessr's single view; the place's other shots come up in other games.
   void spec;
-  return { index, shot: shotUrl(round.shot) };
+  // The next round's picture URL (a random id: it says nothing about the place) so the browser can fetch it ahead.
+  return { index, shot: shotUrl(round.shot), ...(next ? { preload: shotUrl(next.shot) } : {}) };
 }
 
 /** "Guess the game too": the bonus for naming the screenshot's family. */
@@ -600,6 +700,12 @@ export interface GeoState {
    * places or screenshots (the seed alone would plan other rounds).
    */
   plan?: string;
+  /** The Timer setting (seconds per round) the game started with, so a late guess scores nothing. */
+  timer?: number;
+  /** When the current round was dealt (the start, or the last guess's grading). */
+  roundAt?: number;
+  /** Streaks: the player's seen screenshots (packSeen), so each next round is planned as at the start. */
+  seen?: string;
 }
 
 /** What a challenge link carries: the seed (so the same places come up) and the friend's result. */
@@ -632,31 +738,49 @@ export function readGeoChallenge(
 
 /**
  * Starts a game. Free play takes the player's recently seen areas (most
- * recent first) and, of a few seeds, plays the one that repeats them least.
+ * recent first) and, of a few seeds, plays the one that repeats them least;
+ * and their seen screenshots (most recent first), dealt last (a streak
+ * keeps the list in its token, without the order). The Daily and a friend's
+ * challenge play their own rounds.
  */
 export function startGeo(
   spec: GeoSpec,
-  opts: { seed?: string; name?: string; recent?: string[]; plan?: string } = {}
+  opts: { seed?: string; name?: string; recent?: string[]; plan?: string; timer?: number; seen?: string[] } = {}
 ): { token: string; round: GeoRoundPublic } {
   let seed = opts.seed ?? (spec.daily ? `geo-daily:${spec.daily}` : randomId());
-  if (!opts.seed && !spec.daily && opts.recent?.length) {
+  const free = !opts.seed && !spec.daily;
+  const streak = spec.kind === "streak";
+  let seen: SeenShots | undefined;
+  if (free && opts.seen?.length) {
+    const ranked = new Map<string, number>();
+    opts.seen.forEach((id, i) => {
+      if (KNOWN_SHOTS.has(id) && !ranked.has(id)) ranked.set(id, streak ? 0 : i);
+    });
+    if (ranked.size) seen = ranked;
+  }
+  if (free && opts.recent?.length) {
     // Never more than half the map's areas, so a fresh game is always possible.
     const recent = opts.recent.slice(0, Math.floor(areasOf(spec).length / 2));
     const weights = new Map(recent.map((key, i) => [key, recent.length - i] as const));
-    let best = staleness(spec, planRounds(spec, seed, geoRoundsOf(spec)), weights);
+    let best = staleness(spec, planRounds(spec, seed, geoRoundsOf(spec), seen), weights);
     for (let i = 1; i < SEED_TRIES && best > 0; i++) {
       const next = randomId();
-      const stale = staleness(spec, planRounds(spec, next, geoRoundsOf(spec)), weights);
+      const stale = staleness(spec, planRounds(spec, next, geoRoundsOf(spec), seen), weights);
       if (stale < best) [seed, best] = [next, stale];
     }
   }
   // A challenge's own five rounds when it carries them and they're all still on the map.
   const given = spec.kind === "game" ? unseal(opts.plan)?.filter((r) => findLocation(spec, r)) : undefined;
   const want = geoRoundsOf(spec);
-  const rounds = given?.length === want ? given : planRounds(spec, seed, spec.kind === "game" ? want : 1);
-  const plan = given?.length === want ? opts.plan : seal(rounds);
-  const state: GeoState = { v: 4, sid: randomId(), spec, seed, startedAt: Date.now(), name: opts.name, log: [], plan };
-  return { token: signToken("geo", state), round: publicRound(spec, 0, rounds[0]) };
+  // A streak plans its first two rounds (the second only to be fetched ahead) and seals the first.
+  const rounds = given?.length === want ? given : planRounds(spec, seed, spec.kind === "game" ? want : 2, seen);
+  const plan = given?.length === want ? opts.plan : seal(spec.kind === "game" ? rounds : rounds.slice(0, 1));
+  const now = Date.now();
+  const state: GeoState = { v: 4, sid: randomId(), spec, seed, startedAt: now, name: opts.name, log: [], plan, roundAt: now };
+  if (opts.timer && opts.timer > 0) state.timer = opts.timer;
+  if (streak && seen) state.seen = packSeen(seen);
+  // With a timer, the next picture isn't given out early (it could be studied while the clock runs).
+  return { token: signToken("geo", state), round: publicRound(spec, 0, rounds[0], state.timer ? undefined : rounds[1]) };
 }
 
 export function readGeo(token: unknown): GeoState | null {
@@ -666,19 +790,37 @@ export function readGeo(token: unknown): GeoState | null {
 }
 
 export type GeoGuessOutcome =
-  | { ok: true; claimKey: string; body: GeoGuessResponse; /** The round's screenshot (for the per-shot score log; never sent). */ shot: string }
+  | {
+      ok: true;
+      claimKey: string;
+      body: GeoGuessResponse;
+      /** The round's screenshot (for the per-shot score log; never sent). */
+      shot: string;
+      /** How the round was played, for the behaviour flags (never sent): pixels from the place, time since it was dealt. */
+      played: { px: number; elapsedMs: number; perfect: boolean };
+    }
   | { ok: false; status: number; error: string };
 
 /**
  * Grades a guess. `timeout`: the round's clock ran out before a pin went down
- * (the Timer setting), which scores nothing and ends a streak.
+ * (the Timer setting), which scores nothing and ends a streak. With a timer, a
+ * pin sent after the clock plus GEO_TIMER_GRACE_MS is graded the same way. A
+ * daily is only graded while its day is current, so its answers come out
+ * only after a guess and only on the day.
  */
-export function gradeGeo(state: GeoState, guess: { x: number; y: number; family?: string; timeout?: boolean }): GeoGuessOutcome {
+/** A game's rounds as it plays them: the ones it started with (sealed); a streak's as planned now (with its seen list). */
+export function roundsOf(state: GeoState): PlannedRound[] {
+  const sealed = unseal(state.plan);
+  return state.spec.kind !== "streak" && sealed ? sealed : planRounds(state.spec, state.seed, Infinity, seenShotsOf(state));
+}
+
+export function gradeGeo(state: GeoState, guess: { x: number; y: number; family?: string; timeout?: boolean }, now = Date.now()): GeoGuessOutcome {
   const { spec } = state;
   const streak = spec.kind === "streak";
+  if (spec.daily && !isValidDailyDate(spec.daily, now)) return { ok: false, status: 409, error: "That daily game is over. Today's is waiting." };
   const sealed = unseal(state.plan);
   // A game plays the rounds it started with; a streak its current round, then the next as planned now.
-  const rounds = !streak && sealed ? sealed : planRounds(spec, state.seed);
+  const rounds = roundsOf(state);
   const index = state.log.length;
   const over = streak ? state.log.includes(0) || index >= rounds.length : index >= rounds.length;
   if (over) return { ok: false, status: 409, error: "This game is already over." };
@@ -686,16 +828,18 @@ export function gradeGeo(state: GeoState, guess: { x: number; y: number; family?
   const round = (streak ? sealed?.[0] : undefined) ?? rounds[index];
   if (!findLocation(spec, round)) return { ok: false, status: 409, error: "PokéGuessr was just updated. Start a new game." };
   const measured = measureGuess(spec, round, guess.x, guess.y);
-  const { score, hit, squares } = guess.timeout ? { score: 0, hit: false, squares: measured.squares } : measured;
+  const elapsedMs = Math.max(0, now - (state.roundAt ?? state.startedAt));
+  const late = !!state.timer && !guess.timeout && elapsedMs > state.timer * 1000 + GEO_TIMER_GRACE_MS;
+  const timedOut = !!guess.timeout || late;
+  const { score, hit, squares } = timedOut ? { score: 0, hit: false, squares: measured.squares } : measured;
   const answer = answerFor(spec, round, squares);
-  const gameGuess = spec.guessGame ? gradeGameGuess(answer, guess.family) : undefined;
-  const next: GeoState = { ...state, log: [...state.log, streak ? (hit ? 1 : 0) : score] };
+  const gameGuess = spec.guessGame ? gradeGameGuess(answer, late ? undefined : guess.family) : undefined;
+  const next: GeoState = { ...state, log: [...state.log, streak ? (hit ? 1 : 0) : score], roundAt: now };
   if (gameGuess) next.bonus = [...(state.bonus ?? []), gameGuess.bonus];
   if (streak && rounds[index + 1]) next.plan = seal([rounds[index + 1]]);
   const total = next.log.reduce((s, x) => s + x, 0);
   const bonusTotal = next.bonus?.reduce((s, x) => s + x, 0);
   const done = streak ? !hit || next.log.length >= rounds.length : next.log.length >= rounds.length;
-  const now = Date.now();
 
   let result: GeoResult | undefined;
   let challengeToken: string | undefined;
@@ -721,15 +865,17 @@ export function gradeGeo(state: GeoState, guess: { x: number; y: number; family?
     ok: true,
     claimKey: `geo:${state.sid}:${index}`,
     shot: round.shot,
+    played: { px: measured.px, elapsedMs, perfect: !timedOut && measured.score === GEO_MAX_ROUND_SCORE },
     body: {
       score,
       hit,
-      ...(guess.timeout ? { timedOut: true } : {}),
+      ...(timedOut ? { timedOut: true } : {}),
+      ...(late ? { late: true } : {}),
       answer,
       ...(gameGuess ? { gameGuess, bonusTotal } : {}),
       token: signToken("geo", next),
       total,
-      next: done ? undefined : publicRound(spec, index + 1, rounds[index + 1]),
+      next: done ? undefined : publicRound(spec, index + 1, rounds[index + 1], state.timer ? undefined : rounds[index + 2]),
       done,
       result,
       resultToken: result ? signToken("geo-result", result) : undefined,

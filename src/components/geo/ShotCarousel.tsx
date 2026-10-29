@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight, Expand } from "lucide-react";
 import { stepView, viewKeyStep, viewLabel } from "@/lib/geo-look";
+import { preloadedImage } from "@/lib/preload";
 import { cn } from "@/lib/utils";
 import { FullscreenButton } from "./GameShell";
 
@@ -54,15 +55,21 @@ export function ShotCarousel({
     return z ? { transform: `scale(${z.scale})`, transformOrigin: `${z.origin[0]}% ${z.origin[1]}%` } : {};
   };
   const imgRef = useRef<HTMLImageElement>(null);
-  const measure = (img: HTMLImageElement) => {
+  /** Views that were already decoded when they mounted (preloaded during the round before): shown at once, with no fade. */
+  const instant = useRef(new Set<string>());
+  const measure = (img: HTMLImageElement, key = img.getAttribute("src") ?? "") => {
     const f = shotFit(img);
-    setFits((all) => (all[img.getAttribute("src") ?? ""] ? all : { ...all, [img.getAttribute("src") ?? ""]: f }));
+    setFits((all) => (all[key] ? all : { ...all, [key]: f }));
   };
 
-  // A view already in the cache can finish loading before its load event is listened for.
-  useEffect(() => {
+  // A view preloaded during the round before (or already in the cache) is measured before the first paint, so it shows at once.
+  useLayoutEffect(() => {
     const img = imgRef.current;
-    if (img?.complete && img.naturalWidth > 0) measure(img);
+    const ready = img?.complete && img.naturalWidth > 0 ? img : preloadedImage(src);
+    if (ready) {
+      instant.current.add(src);
+      measure(ready, src);
+    }
   }, [src]);
 
   // ← / → flip through the views (not while typing, or with a modifier held).
@@ -102,7 +109,7 @@ export function ShotCarousel({
           alt="Where is this?"
           ref={imgRef}
           onLoad={(e) => measure(e.currentTarget)}
-          className={cn("absolute inset-0 h-full w-full transition-opacity duration-[350ms]", fit?.className ?? "object-cover object-center", fit ? "opacity-100" : "opacity-0")}
+          className={cn("absolute inset-0 h-full w-full", !instant.current.has(src) && "transition-opacity duration-[350ms]", fit?.className ?? "object-cover object-center", fit ? "opacity-100" : "opacity-0")}
           style={{ imageRendering: fit?.pixelated ? "pixelated" : "auto", ...zoomStyle(src) }}
           data-testid="geo-shot"
           data-fit={fit?.tall ? "tall" : undefined}

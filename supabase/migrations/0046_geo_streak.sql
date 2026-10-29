@@ -40,7 +40,7 @@ alter table public.geo_round_scores add column if not exists run_id text check (
 alter table public.geo_round_scores add column if not exists hit boolean;
 
 alter table public.geo_round_scores drop constraint if exists geo_round_scores_mode_check;
-alter table public.geo_round_scores add constraint geo_round_scores_mode_check check (mode in ('solo', 'daily', 'challenge', 'region-streak'));
+alter table public.geo_round_scores add constraint geo_round_scores_mode_check check (mode in ('solo', 'daily', 'challenge', 'duel', 'ranked', 'region-streak'));
 
 create index if not exists geo_round_scores_player_idx on public.geo_round_scores (player_key, created_at desc) where player_key is not null;
 
@@ -49,7 +49,7 @@ create or replace view public.geo_shot_score_stats
 with (security_invoker = true) as
   select shot_id, count(*)::integer as rounds, avg(score)::real as avg_score
   from public.geo_round_scores
-  where mode in ('solo', 'daily', 'challenge')
+  where mode in ('solo', 'daily', 'challenge', 'duel', 'ranked')
   group by shot_id;
 
 revoke all on public.geo_shot_score_stats from anon, authenticated;

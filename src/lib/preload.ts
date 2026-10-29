@@ -11,11 +11,19 @@
 
 const cache = new Map<string, Promise<void>>();
 const MAX_CACHE = 300;
+/** The decoded images themselves, kept alive so the browser still has them when they're rendered. */
+const images = new Map<string, HTMLImageElement>();
 
 function remember(key: string, p: Promise<void>): Promise<void> {
   cache.set(key, p);
   if (cache.size > MAX_CACHE) cache.delete(cache.keys().next().value!);
   return p;
+}
+
+/** A preloaded, decoded image (its size is known and it can be shown at once), or null. */
+export function preloadedImage(url: string): HTMLImageElement | null {
+  const img = images.get(url);
+  return img && img.complete && img.naturalWidth > 0 ? img : null;
 }
 
 export function preloadImage(url: string): Promise<void> {
@@ -26,6 +34,8 @@ export function preloadImage(url: string): Promise<void> {
   img.decoding = "async";
   const p = new Promise<void>((resolve) => {
     img.onload = () => {
+      images.set(url, img);
+      if (images.size > MAX_CACHE) images.delete(images.keys().next().value!);
       // decode() guarantees the first paint won't stall on decoding.
       if (typeof img.decode === "function") img.decode().then(resolve, () => resolve());
       else resolve();
