@@ -1,10 +1,11 @@
 import { RANKED_TIERS, type RankedTierId } from "./ranked";
 import { artUrl } from "./pokemon/art";
+import type { TrainerConfig } from "./trainer/config";
 
 /**
  * Profile pictures: any Pokémon (shiny once you have played a while) in a
- * frame earned by playing or by ranked tiers, or a picture of their own
- * once a moderator has approved it. Shared by the server, which checks
+ * frame earned with badges or by ranked tiers, or a picture of their own
+ * once a moderator has approved it, or their 3D trainer (lib/trainer). Shared by the server, which checks
  * every choice against what the account has unlocked, and the pages.
  */
 
@@ -13,14 +14,15 @@ export const SHINY_LEVEL = 10;
 
 export const AVATAR_FRAMES = [
   { id: "none", name: "No frame" },
-  { id: "lv5", name: "Bronze", level: 5 },
-  { id: "lv15", name: "Silver", level: 15 },
-  { id: "lv30", name: "Gold", level: 30 },
-  { id: "lv50", name: "Champion", level: 50 },
+  // The ids are kept from when these were earned by level, so saved frames stay valid.
+  { id: "lv5", name: "Bronze", badges: 3 },
+  { id: "lv15", name: "Silver", badges: 8 },
+  { id: "lv30", name: "Gold", badges: 15 },
+  { id: "lv50", name: "Champion", badges: 24 },
   { id: "great", name: "Great Ball", tier: "great" },
   { id: "ultra", name: "Ultra Ball", tier: "ultra" },
   { id: "master", name: "Master Ball", tier: "master" },
-] as const satisfies readonly { id: string; name: string; level?: number; tier?: RankedTierId }[];
+] as const satisfies readonly { id: string; name: string; badges?: number; tier?: RankedTierId }[];
 export type AvatarFrame = (typeof AVATAR_FRAMES)[number]["id"];
 const FRAME_IDS = new Set<string>(AVATAR_FRAMES.map((f) => f.id));
 
@@ -31,15 +33,26 @@ export interface Avatar {
   frame: AvatarFrame;
 }
 
-/** What everyone sees: the Pokémon, or the trainer's approved picture (its id) in the same frame. */
+/**
+ * What everyone sees: the Pokémon, or the trainer's approved picture (its
+ * id) in the same frame. `trainer`: their 3D trainer, when they made one
+ * (small avatars draw its portrait instead of the Pokémon, unless a
+ * picture is shown).
+ */
 export interface PublicAvatar extends Avatar {
   picture?: string;
+  trainer?: TrainerConfig;
 }
 
-/** What the account has earned: how much it has played (an activity level from its synced play, never shown) and its best ranked tier. */
+/**
+ * What the account has earned: how much it has played (an activity level
+ * from its synced play, never shown), its badges and its best ranked tier.
+ */
 export interface AvatarUnlocks {
   level: number;
   tier: RankedTierId | null;
+  /** Badges earned (synced progress). */
+  badges: number;
 }
 
 /** Activity level from synced play (the old XP curve, kept so nobody loses an unlock). */
@@ -59,7 +72,7 @@ export const shinyUnlocked = (u: AvatarUnlocks) => u.level >= SHINY_LEVEL;
 export function frameUnlocked(frame: AvatarFrame, u: AvatarUnlocks): boolean {
   const f = AVATAR_FRAMES.find((x) => x.id === frame);
   if (!f) return false;
-  if ("level" in f) return u.level >= f.level;
+  if ("badges" in f) return (u.badges ?? 0) >= f.badges;
   if ("tier" in f) return tierRank(u.tier) >= tierRank(f.tier);
   return true;
 }
@@ -67,7 +80,7 @@ export function frameUnlocked(frame: AvatarFrame, u: AvatarUnlocks): boolean {
 /** How to unlock a frame. */
 export function frameHint(frame: AvatarFrame): string {
   const f = AVATAR_FRAMES.find((x) => x.id === frame)!;
-  if ("level" in f) return `Keep playing to earn the ${f.name} frame`;
+  if ("badges" in f) return `Earn ${f.badges} badges for the ${f.name} frame`;
   if ("tier" in f) return `Reach ${f.name} in ranked Pokédle or the battle ladder`;
   return "";
 }
@@ -88,7 +101,7 @@ export function parseAvatar(raw: unknown): Avatar | null {
 export function checkAvatar(raw: unknown, u: AvatarUnlocks): { ok: true; avatar: Avatar } | { ok: false; error: string } {
   const a = parseAvatar(raw);
   if (!a) return { ok: false, error: `Pick a Pokémon from #1 to #${AVATAR_MAX_ID}.` };
-  if (a.shiny && !shinyUnlocked(u)) return { ok: false, error: `Shiny avatars unlock at trainer level ${SHINY_LEVEL}.` };
+  if (a.shiny && !shinyUnlocked(u)) return { ok: false, error: `${SHINY_HINT}.` };
   if (!frameUnlocked(a.frame, u)) return { ok: false, error: `That frame is locked: ${frameHint(a.frame).toLowerCase()}.` };
   return { ok: true, avatar: a };
 }
@@ -109,7 +122,7 @@ export const PICTURE_ID_RE = /^[A-Za-z0-9_-]{16,32}$/;
 /** An uploaded picture's image (64 or 256 px). */
 export const pictureSrc = (id: string, large = false) => `/api/avatar/img/${id}?s=${large ? 256 : 64}`;
 
-/** The image to show: the approved picture, else the Pokémon's artwork. */
+/** The image to show: the approved picture, else the Pokémon's artwork (a trainer is drawn by <TrainerPortrait>, not an image). */
 export function avatarSrc(a: PublicAvatar, large = false): string {
   if (a.picture && PICTURE_ID_RE.test(a.picture)) return pictureSrc(a.picture, large);
   return artUrl(a.pokemonId, large ? 256 : 96, a.shiny);
