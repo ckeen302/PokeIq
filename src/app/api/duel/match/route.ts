@@ -7,7 +7,7 @@ import { duelsEnabled } from "@/lib/server/duel-store";
 import { cancelMatch, geoBotMatch, matchSettingsSchema, newTicket, searchGeoRanked, searchMatch, searchRankedConnections, searchRankedMatch } from "@/lib/server/matchmaking";
 import { RankedUnavailable, rankedIdentity, rankedKey, rankedStore } from "@/lib/server/ranked";
 import { connRankedKey, connRankedStore } from "@/lib/server/connections-ranked";
-import { geoRankedConfig, geoRankedKey, geoRankedStore } from "@/lib/server/geo-ranked";
+import { ensureGeoSeason, geoRankedConfig, geoRankedKey, geoRankedStore } from "@/lib/server/geo-ranked";
 import { GEO_BOT_NAME_RE, GEO_ELO_START, utcDay } from "@/lib/geo-ranked";
 import { RANKED_START } from "@/lib/ranked";
 
@@ -79,6 +79,8 @@ export async function POST(request: NextRequest) {
       const identity = await rankedIdentity(request, body.rankedId);
       if (!identity) return NextResponse.json({ error: "Reload the page to get your ranked card." }, { status: 400, headers: NO_STORE });
       const key = geoRankedKey(identity);
+      // The first ranked action after a season boundary rolls the ladder over, so the queue matches on reset ratings.
+      await ensureGeoSeason(store);
       try {
         out = await searchGeoRanked(body.name, body.ticket ?? newTicket(), key, async () => {
           const r = await store.rating(key, utcDay(Date.now()));

@@ -53,6 +53,8 @@ interface DuelPlayer {
   bot?: { division: GeoDivisionId };
   /** The key this trainer's rounds go on their PokéGuessr record under (signed in as the seat's name; stamped by the route). Server-side only. */
   statsKey?: string;
+  /** The key this duel is kept under in the trainer's duel history (geo-duel-history.ts; stamped by the route). Server-side only. */
+  historyKey?: string;
 }
 
 /** A ranked duel's trainers as the ladder knows them (seat 1 may be the bot), and once counted, how it moved them. */

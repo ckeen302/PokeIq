@@ -5,6 +5,7 @@ import { loadSeat, saveSeat } from "@/lib/duel-seat";
 import { setTrainerName, useProgress } from "@/lib/progress";
 import { duelHiddenDelay, duelPollDelay, fingerprint, startPoller, type DuelPace } from "@/lib/polling";
 import { unlockAudio } from "@/lib/sound";
+import { rankedId } from "@/lib/ranked-client";
 
 /**
  * A duel's state as this trainer may see it, kept fresh: polls the server,
@@ -33,7 +34,9 @@ interface SeatLike<V> {
 }
 
 async function post<T>(url: string, body: unknown): Promise<T> {
-  const res = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+  // The browser's signed ranked id, when it has one: PokéGuessr keeps the duel in this trainer's history (/guessr/history).
+  const id = rankedId();
+  const res = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json", ...(id ? { "x-ranked-id": id } : {}) }, body: JSON.stringify(body) });
   const data = await res.json().catch(() => ({}));
   if (!res.ok) throw new Error((data as { error?: string }).error ?? `Request failed (${res.status})`);
   return data as T;

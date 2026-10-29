@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { clientIp, rateLimit, tooManyRequests } from "@/lib/server/rate-limit";
 import { RankedUnavailable, newAnonId, rankedIdentity } from "@/lib/server/ranked";
-import { geoRankedConfig, geoRankedKey, geoRankedStore } from "@/lib/server/geo-ranked";
+import { geoRankedConfig, geoRankedKey, geoRankedStore, geoSeasonViewOf } from "@/lib/server/geo-ranked";
 import { utcDay, type GeoRankedResponse } from "@/lib/geo-ranked";
 
 /**
@@ -35,9 +35,13 @@ export async function GET(request: NextRequest) {
   const store = geoRankedStore();
   if (!store) return NextResponse.json({ available: false, id } satisfies GeoRankedResponse, { headers: NO_STORE });
   try {
-    const today = utcDay(Date.now());
-    const [you, top] = await Promise.all([store.standing(geoRankedKey(identity!), today), query.data.top ? store.top(100, today) : undefined]);
-    return NextResponse.json({ available: true, id, you, top, botAfterS: geoRankedConfig().botAfterS } satisfies GeoRankedResponse, { headers: NO_STORE });
+    const now = Date.now();
+    const today = utcDay(now);
+    const key = geoRankedKey(identity!);
+    // The season first: the first ranked action after a boundary rolls the ladder over (archive, soft reset).
+    const season = await geoSeasonViewOf(store, key, now);
+    const [you, top] = await Promise.all([store.standing(key, today), query.data.top ? store.top(100, today) : undefined]);
+    return NextResponse.json({ available: true, id, you, top, botAfterS: geoRankedConfig().botAfterS, season } satisfies GeoRankedResponse, { headers: NO_STORE });
   } catch (err) {
     if (err instanceof RankedUnavailable) return NextResponse.json({ available: false, id } satisfies GeoRankedResponse, { headers: NO_STORE });
     console.error("[geo-ranked]", err);
