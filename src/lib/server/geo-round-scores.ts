@@ -77,6 +77,9 @@ export interface PlayerRoundRow {
   score: number;
   hit: boolean | null;
   run: string | null;
+  /** The screenshot and when the round was logged (ms): mastery and daily streaks read them. */
+  shot?: string | null;
+  at?: number | null;
 }
 const playerKeyOf = (p: RoundScoreRow["player"]) => (typeof p === "string" ? p : p?.key ?? null);
 const playerNameOf = (p: RoundScoreRow["player"]) => (typeof p === "string" ? null : p?.name ?? null);
@@ -171,7 +174,7 @@ export function memoryRoundScoreStore(): RoundScoreStore {
         .filter((r) => playerKeyOf(r.player) === key)
         .reverse()
         .slice(0, limit)
-        .map((r) => ({ region: r.region ?? null, family: r.family ?? null, kind: r.kind ?? null, score: r.score, hit: r.hit ?? null, run: r.run ?? null }));
+        .map((r) => ({ region: r.region ?? null, family: r.family ?? null, kind: r.kind ?? null, score: r.score, hit: r.hit ?? null, run: r.run ?? null, shot: r.shot, at: r.at }));
     },
   };
 }
@@ -244,9 +247,17 @@ export function supabaseRoundScoreStore(sb: Sb): RoundScoreStore {
       }));
     },
     async ofPlayer(key, limit = PLAYER_ROWS) {
-      const { data, error } = await sb.from("geo_round_scores").select("region, family, kind, score, hit, run_id").eq("player_key", key).order("created_at", { ascending: false }).limit(limit);
+      const { data, error } = await sb
+        .from("geo_round_scores")
+        .select("region, family, kind, score, hit, run_id, shot_id, created_at")
+        .eq("player_key", key)
+        .order("created_at", { ascending: false })
+        .limit(limit);
       check(error);
-      return ((data ?? []) as { region: string | null; family: string | null; kind: RoundKind | null; score: number; hit: boolean | null; run_id: string | null }[]).map((r) => ({
+      type Row = { region: string | null; family: string | null; kind: RoundKind | null; score: number; hit: boolean | null; run_id: string | null; shot_id: string | null; created_at: string | null };
+      return ((data ?? []) as Row[]).map((r) => ({
+        shot: r.shot_id,
+        at: r.created_at ? Date.parse(r.created_at) : null,
         region: r.region,
         family: r.family,
         kind: r.kind,
