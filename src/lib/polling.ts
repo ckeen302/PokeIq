@@ -153,7 +153,12 @@ export interface DuelPace {
   question?: Timed;
   next?: { at: number };
   chat?: ChatLine[];
+  /** Recent reactions and post-game taunts. */
+  emotes?: { at: number }[];
 }
+
+/** A finished duel where someone sent a reaction or a taunt this recently polls like a busy chat. */
+const EMOTE_BUSY_MS = 20_000;
 
 /** A lobby or a finished match whose chat is busy polls every 2 s (and keeps polling), so replies come through quickly. */
 const CHAT_POLL_MS = 2000;
@@ -176,6 +181,7 @@ export function duelPollDelay(view: DuelPace | null, quietPolls: number, serverN
   if (view.status !== "playing" && chatBusy(view.chat, serverNow)) return live ? LIVE_POLL_MS : CHAT_POLL_MS;
   if (view.status === "finished") {
     if (view.end && serverNow - view.end.at > FINISHED_POLL_MS) return null;
+    if (view.emotes?.some((e) => serverNow - e.at < EMOTE_BUSY_MS)) return live ? LIVE_POLL_MS : CHAT_POLL_MS;
     return backoff(live ? 6000 : 4000, 15_000, quietPolls);
   }
   if (view.status === "lobby") {

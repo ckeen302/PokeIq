@@ -53,6 +53,10 @@ export interface AvatarUnlocks {
   tier: RankedTierId | null;
   /** Badges earned (synced progress). */
   badges: number;
+  /** Ranked wins across every ranked mode (absent: none counted). */
+  wins?: number;
+  /** The best ranked win streak in any one mode. */
+  streak?: number;
 }
 
 /** Activity level from synced play (the old XP curve, kept so nobody loses an unlock). */

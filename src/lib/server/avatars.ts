@@ -5,6 +5,8 @@ import { progressDigests, usersByIds, usersByNames } from "./accounts";
 import { rankedKey, rankedStore } from "./ranked";
 import { battleKey } from "./battle-engine/identity";
 import { ladderStore } from "./battle-engine/ladder";
+import { geoRankedKey, geoRankedStandingOf } from "./geo-ranked";
+import { utcDay } from "@/lib/geo-ranked";
 import type { DuelPlayerView } from "@/lib/duel-types";
 import { checkTrainer, parseTrainer, type TrainerConfig } from "@/lib/trainer/config";
 
@@ -250,14 +252,19 @@ const quietly = <T>(p: Promise<T> | undefined, fallback: T): Promise<T> => (p ??
 
 /** What an account has unlocked: its level (synced XP, for shiny), its badges and best rating in ranked Pokédle or any ladder. */
 export async function avatarUnlocks(userId: string): Promise<AvatarUnlocks> {
-  const [digests, pokedle, ladder] = await Promise.all([
+  const [digests, pokedle, ladder, guessr] = await Promise.all([
     quietly(progressDigests([userId]), new Map()),
-    quietly(rankedStore()?.rating(rankedKey(`u:${userId}`)), null),
+    quietly(rankedStore()?.standing(rankedKey(`u:${userId}`)), null),
     quietly(ladderStore()?.standings(battleKey(`u:${userId}`)), []),
+    quietly(geoRankedStandingOf(geoRankedKey(`u:${userId}`), utcDay(Date.now())), null),
   ]);
-  const ratings = [...(pokedle && pokedle.games > 0 ? [pokedle.rating] : []), ...ladder.filter((l) => l.standing.games > 0).map((l) => l.standing.rating)];
+  const standings = [...(pokedle && pokedle.games > 0 ? [pokedle] : []), ...ladder.filter((l) => l.standing.games > 0).map((l) => l.standing)];
+  const ratings = standings.map((s) => s.rating);
   const digest = digests.get(userId);
-  return { level: levelFromXp(digest?.xp ?? 0), tier: bestTier(ratings), badges: digest?.badges ?? 0 };
+  // Ranked wins in every mode (PokéGuessr's ladder counts games, not a streak).
+  const wins = standings.reduce((n, s) => n + (s.wins ?? 0), 0) + (guessr?.wins ?? 0);
+  const streak = Math.max(0, ...standings.map((s) => s.bestStreak ?? 0));
+  return { level: levelFromXp(digest?.xp ?? 0), tier: bestTier(ratings), badges: digest?.badges ?? 0, wins, streak };
 }
 
 /** The account's own stored avatar (its choice or default). */

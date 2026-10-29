@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { Volume2, VolumeX } from "lucide-react";
-import { DUEL_EMOTES, EMOTE_GAP_MS, EMOTE_SHOW_MS, EMOTE_TEXT, type DuelEmote, type PvpEmoteView } from "@/lib/pvp-types";
+import { DUEL_EMOTES, EMOTE_GAP_MS, isReaction, EMOTE_SHOW_MS, EMOTE_TEXT, type DuelEmote, type PvpEmoteView } from "@/lib/pvp-types";
 import type { DuelPlayerView } from "@/lib/duel-types";
 import type { ChatLine } from "@/lib/chat";
 import { setDuelSfx, sfx, useDuelSfx } from "@/lib/duel-sfx";
@@ -103,9 +103,12 @@ export function EmoteFeed({ view }: { view: ReactionsView }) {
   const seen = useRef(0);
   const timers = useRef<number[]>([]);
   useEffect(() => {
-    const fresh = (view.emotes ?? []).filter((e) => e.n > seen.current && view.now - e.at < EMOTE_SHOW_MS);
+    const all = (view.emotes ?? []).filter((e) => e.n > seen.current && view.now - e.at < EMOTE_SHOW_MS);
+    if (!all.length) return;
+    seen.current = Math.max(...all.map((e) => e.n));
+    // Taunts play on the trainers instead (TauntStage).
+    const fresh = all.filter(isReaction);
     if (!fresh.length) return;
-    seen.current = Math.max(...fresh.map((e) => e.n));
     if (fresh.some((e) => e.seat !== view.you)) sfx("ping");
     setShown((s) => [...s, ...fresh.map(({ n, seat, emote }) => ({ n, seat, emote }))].slice(-6));
     const ns = new Set(fresh.map((e) => e.n));

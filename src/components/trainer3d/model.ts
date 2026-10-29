@@ -1,7 +1,9 @@
 import * as THREE from "three";
 import { RoundedBoxGeometry } from "three/examples/jsm/geometries/RoundedBoxGeometry.js";
-import { HAIR_BANGS, colorHex, eyeHex, hairHex, skinHex, type TrainerConfig, type TrainerFacing, type TrainerPose } from "@/lib/trainer/config";
+import { BALLS, HAIR_BANGS, colorHex, eyeHex, hairHex, skinHex, type TrainerConfig, type TrainerFacing, type TrainerPose } from "@/lib/trainer/config";
 import { drawEmblem, faceTexture } from "./faces";
+import { MOVES } from "./moves";
+import type { TauntId } from "@/lib/trainer/taunts";
 
 /**
  * The chibi trainer, built from three.js primitives (no downloaded models,
@@ -16,9 +18,18 @@ import { drawEmblem, faceTexture } from "./faces";
 
 export interface TrainerModel {
   root: THREE.Group;
-  /** Advances the animation to time `t` (seconds), easing towards `pose`. */
-  update(t: number, dt: number, pose: TrainerPose): void;
+  /**
+   * Advances the animation to time `t` (seconds), easing towards `pose`, or
+   * towards a taunt (a dance or emote) `act.t` seconds in.
+   */
+  update(t: number, dt: number, pose: TrainerPose, act?: TauntAct | null): void;
   dispose(): void;
+}
+
+/** A taunt being played: which, and how far in (seconds). */
+export interface TauntAct {
+  id: TauntId;
+  t: number;
 }
 
 const HEAD_R = 0.46;
@@ -201,21 +212,76 @@ const lockR = (r0: number) => (t: number) => r0 * Math.sin(Math.min(1, 0.25 + t 
 
 function buildBall(kit: Kit, kind: TrainerConfig["ball"], r = 0.12, outline = true): THREE.Group {
   const ball = new THREE.Group();
-  const top = { poke: "#e3262f", great: "#2f6fe0", ultra: "#24252b", master: "#7b3fc6" }[kind];
+  const look = BALLS.find((b) => b.id === kind) ?? BALLS[0];
   const o = { bare: !outline };
-  kit.mesh(new THREE.SphereGeometry(r, 28, 14, 0, TAU, 0, Math.PI / 2), kit.mat(top), ball, undefined, undefined, undefined, o);
-  kit.mesh(new THREE.SphereGeometry(r, 28, 14, 0, TAU, Math.PI / 2, Math.PI / 2), kit.mat("#f6f6f2"), ball, undefined, undefined, undefined, o);
-  kit.mesh(new THREE.CylinderGeometry(r * 1.012, r * 1.012, r * 0.16, 28), kit.mat("#1b1b1f"), ball, undefined, undefined, undefined, { bare: true });
+  const bare = { bare: true };
+  const premier = kind === "premier";
+  const band = premier ? "#d8262f" : kind === "luxury" ? "#e0b33a" : "#1b1b1f";
+  kit.mesh(new THREE.SphereGeometry(r, 28, 14, 0, TAU, 0, Math.PI / 2), kit.mat(look.top), ball, undefined, undefined, undefined, o);
+  kit.mesh(new THREE.SphereGeometry(r, 28, 14, 0, TAU, Math.PI / 2, Math.PI / 2), kit.mat(look.bottom), ball, undefined, undefined, undefined, o);
+  kit.mesh(new THREE.CylinderGeometry(r * 1.012, r * 1.012, r * 0.16, 28), kit.mat(band), ball, undefined, undefined, undefined, bare);
   // The button faces +z.
-  kit.mesh(new THREE.CylinderGeometry(r * 0.34, r * 0.34, r * 0.16, 20), kit.mat("#1b1b1f"), ball, [0, 0, r * 0.96], [Math.PI / 2, 0, 0], undefined, { bare: true });
-  kit.mesh(new THREE.CylinderGeometry(r * 0.22, r * 0.22, r * 0.2, 20), kit.mat("#ffffff"), ball, [0, 0, r * 1.0], [Math.PI / 2, 0, 0], undefined, { bare: true });
-  if (kind === "great") {
-    for (const s of [-1, 1]) kit.mesh(new THREE.SphereGeometry(r * 0.42, 14, 8), kit.mat("#e3262f"), ball, [s * r * 0.62, r * 0.55, 0], [0, 0, s * 0.9], [0.55, 0.35, 1], { bare: true });
-  } else if (kind === "ultra") {
-    for (const s of [-1, 1]) kit.mesh(new THREE.TorusGeometry(r * 1.0, r * 0.1, 8, 24, Math.PI / 2.3), kit.mat("#f2c230"), ball, [s * r * 0.45, 0, 0], [0, Math.PI / 2, Math.PI / 2 - 0.2 + (s > 0 ? 0.4 : 0)], undefined, { bare: true });
-  } else if (kind === "master") {
-    for (const s of [-1, 1]) kit.mesh(new THREE.SphereGeometry(r * 0.26, 14, 8), kit.mat("#ef6fb0"), ball, [s * r * 0.62, r * 0.66, r * 0.25], undefined, undefined, { bare: true });
-    kit.mesh(new THREE.TorusGeometry(r * 0.22, r * 0.05, 6, 16, Math.PI), kit.mat("#ffffff"), ball, [0, r * 0.6, r * 0.8], [-0.6, 0, 0], undefined, { bare: true });
+  kit.mesh(new THREE.CylinderGeometry(r * 0.34, r * 0.34, r * 0.16, 20), kit.mat(premier ? "#d8262f" : kind === "luxury" ? "#e0b33a" : "#1b1b1f"), ball, [0, 0, r * 0.96], [Math.PI / 2, 0, 0], undefined, bare);
+  kit.mesh(new THREE.CylinderGeometry(r * 0.22, r * 0.22, r * 0.2, 20), kit.mat("#ffffff"), ball, [0, 0, r * 1.0], [Math.PI / 2, 0, 0], undefined, bare);
+  /** A ring round the ball at height y (a fraction of r). */
+  const ring = (y: number, hex: string, w = 0.07) => kit.mesh(new THREE.TorusGeometry(r * Math.sqrt(1 - y * y) * 1.005, r * w, 6, 32), kit.mat(hex), ball, [0, r * y, 0], [Math.PI / 2, 0, 0], undefined, bare);
+  /** An arc over the top, from the band up and down the other side, turned by `yaw`. */
+  const arc = (yaw: number, hex: string, w = 0.08, span = Math.PI) => kit.mesh(new THREE.TorusGeometry(r * 1.004, r * w, 6, 28, span), kit.mat(hex), ball, undefined, [0, yaw, (Math.PI - span) / 2], undefined, bare);
+  /** A flat spot on the surface, at polar angle `pol` from the top and azimuth `az` from the button. */
+  const spot = (pol: number, az: number, size: number, hex: string) => {
+    const m = kit.mesh(new THREE.SphereGeometry(r * size, 12, 8), kit.mat(hex), ball, [r * Math.sin(pol) * Math.sin(az) * 0.93, r * Math.cos(pol) * 0.93, r * Math.sin(pol) * Math.cos(az) * 0.93], undefined, [1, 0.32, 1], bare);
+    m.rotation.set(pol, az, 0, "YXZ");
+  };
+  switch (kind) {
+    case "great":
+      for (const s of [-1, 1]) kit.mesh(new THREE.SphereGeometry(r * 0.42, 14, 8), kit.mat("#e3262f"), ball, [s * r * 0.62, r * 0.55, 0], [0, 0, s * 0.9], [0.55, 0.35, 1], bare);
+      break;
+    case "ultra":
+      for (const s of [-1, 1]) kit.mesh(new THREE.TorusGeometry(r * 1.0, r * 0.1, 8, 24, Math.PI / 2.3), kit.mat("#f2c230"), ball, [s * r * 0.45, 0, 0], [0, Math.PI / 2, Math.PI / 2 - 0.2 + (s > 0 ? 0.4 : 0)], undefined, bare);
+      break;
+    case "master":
+      for (const s of [-1, 1]) kit.mesh(new THREE.SphereGeometry(r * 0.26, 14, 8), kit.mat("#ef6fb0"), ball, [s * r * 0.62, r * 0.66, r * 0.25], undefined, undefined, bare);
+      kit.mesh(new THREE.TorusGeometry(r * 0.22, r * 0.05, 6, 16, Math.PI), kit.mat("#ffffff"), ball, [0, r * 0.6, r * 0.8], [-0.6, 0, 0], undefined, bare);
+      break;
+    case "heal":
+      ring(0.5, "#ffd0e4", 0.09);
+      break;
+    case "quick":
+      // Yellow bands crossing over the blue top.
+      arc(0, "#f5d132", 0.13);
+      arc(Math.PI / 2, "#f5d132", 0.13);
+      break;
+    case "timer":
+      arc(Math.PI / 4, "#d8262f", 0.1);
+      arc(-Math.PI / 4, "#d8262f", 0.1);
+      ring(0.82, "#1b1b1f", 0.06);
+      break;
+    case "dusk":
+      ring(0.42, "#5bc04d", 0.08);
+      arc(0, "#5bc04d", 0.06);
+      break;
+    case "luxury":
+      ring(0.5, "#d8262f", 0.12);
+      ring(0.24, "#e0b33a", 0.04);
+      break;
+    case "love":
+      // A heart on the top half, over the button.
+      for (const s of [-1, 1]) spot(0.62, s * 0.2, 0.2, "#e8336f");
+      kit.mesh(new THREE.ConeGeometry(r * 0.24, r * 0.3, 14), kit.mat("#e8336f"), ball, [0, r * 0.42, r * 0.86], [Math.PI - 0.5, 0, 0], [1, 1, 0.4], bare);
+      break;
+    case "safari":
+      for (const [pol, az, size] of [[0.4, 0.3, 0.3], [0.9, 2.2, 0.32], [1.05, -1.6, 0.3], [0.3, 3.6, 0.26], [1.15, 0.7, 0.22], [1.0, 4.4, 0.24]] as const) spot(pol, az, size, "#4e6b2a");
+      break;
+    case "beast":
+      ring(0.55, "#f2c230", 0.05);
+      ring(-0.55, "#f2c230", 0.05);
+      arc(Math.PI / 2, "#f2c230", 0.05, TAU);
+      break;
+    case "cherish":
+      ring(0.5, "#f27b7b", 0.06);
+      ring(0.78, "#f27b7b", 0.05);
+      for (const az of [0.9, -0.9, Math.PI]) spot(0.95, az, 0.16, "#f27b7b");
+      break;
   }
   return ball;
 }
@@ -560,18 +626,20 @@ export function buildTrainer(cfg: TrainerConfig): TrainerModel {
   let lastToss = 0;
   const release = new THREE.Vector3();
 
-  function update(t: number, dt: number, pose: TrainerPose) {
-    const target = poseAt(pose, t);
-    const k = 1 - Math.exp(-dt * (pose === "throw" ? 14 : 7));
+  function update(t: number, dt: number, pose: TrainerPose, act?: TauntAct | null) {
+    const target = act ? { ...MOVE_BASE, ...MOVES[act.id](act.t) } : poseAt(pose, t);
+    const k = 1 - Math.exp(-dt * (act ? 20 : pose === "throw" ? 14 : 7));
     for (const key of Object.keys(cur) as (keyof Joints)[]) cur[key] += (target[key] - cur[key]) * k;
+    if (act) pose = "idle";
 
-    const breathe = Math.sin(t * 2.1);
+    const breathe = Math.sin(t * 2.1) * (act ? 0.3 : 1);
     const fight = pose === "fight";
     const wave = pose === "wave";
     const bounce = fight ? Math.abs(Math.sin(t * 4.2)) * 0.035 : wave ? Math.abs(Math.sin(t * 3)) * 0.02 : pose === "victory" ? Math.abs(Math.sin(t * 3.4)) * 0.06 : 0;
 
-    body.position.y = cur.drop + bounce + breathe * 0.004;
-    hips.rotation.y = cur.twist * 0.4;
+    body.position.set(cur.bx, cur.drop + cur.by + bounce + breathe * 0.004, cur.bz);
+    body.rotation.y = cur.spin;
+    hips.rotation.set(0, cur.twist * 0.4, cur.sway);
     torso.rotation.set(cur.lean + breathe * 0.012, cur.twist * 0.6, 0);
     torso.scale.set(1 + breathe * 0.006, 1 + breathe * 0.01, 1 + breathe * 0.006);
     neck.rotation.set(-cur.lean * 0.6 + cur.nod + Math.sin(t * 0.7) * 0.03, -cur.twist + Math.sin(t * 0.45) * 0.08 * (fight ? 0.2 : 1), cur.headTilt + Math.sin(t * 0.9) * 0.035);
@@ -582,10 +650,15 @@ export function buildTrainer(cfg: TrainerConfig): TrainerModel {
     armR.elbow.rotation.set(cur.reX + (fight ? Math.sin(t * 4.2) * 0.06 : 0), 0, cur.reZ);
     armL.hand.rotation.set(0, 0, wave ? 0.2 : 0);
 
-    legL.leg.rotation.set(cur.legX, 0, cur.legZ);
-    legR.leg.rotation.set(-cur.legX * 0.6, 0, -cur.legZ);
-    legL.foot.rotation.set(-cur.legX, 0, -cur.legZ);
-    legR.foot.rotation.set(cur.legX * 0.6, 0, cur.legZ);
+    // Legs stay under the body when the hips sway; feet stay flat unless a move tips them.
+    const lx = cur.legX + cur.llX;
+    const lz = cur.legZ + cur.llZ - cur.sway;
+    const rx = -cur.legX * 0.6 + cur.rlX;
+    const rz = -cur.legZ + cur.rlZ - cur.sway;
+    legL.leg.rotation.set(lx, 0, lz);
+    legR.leg.rotation.set(rx, 0, rz);
+    legL.foot.rotation.set(-lx + cur.lfX, 0, -lz);
+    legR.foot.rotation.set(-rx + cur.rfX, 0, -rz);
 
     for (const s of sway) s.node.rotation.set(s.rest.x + Math.sin(t * 2.2 + s.phase) * 0.06 * s.amount - bounce * 2 * s.amount + cur.lean * 0.5 * s.amount, s.rest.y, s.rest.z + Math.sin(t * 1.6 + s.phase) * 0.05 * s.amount);
     if (cape) cape.rotation.set(-0.05 - cur.lean * 0.6 - bounce * 1.5 - Math.max(0, Math.sin(t * 1.9)) * (fight || pose === "victory" ? 0.1 : 0.035), 0, Math.sin(t * 1.3) * 0.02);
@@ -598,7 +671,22 @@ export function buildTrainer(cfg: TrainerConfig): TrainerModel {
     ball.position.y += 0.08;
     ball.position.z += 0.06;
     ball.scale.setScalar(1);
-    if (pose === "idle") {
+    if (act?.id === "ballspin") {
+      // Balanced on a fingertip, spinning.
+      ball.position.y += 0.1;
+      ball.rotation.set(0.35, act.t * 15, 0);
+      return;
+    }
+    if (act?.id === "balltoss") {
+      const p = (act.t % BALL_TOSS_PERIOD) / BALL_TOSS_PERIOD;
+      if (p < 0.72) {
+        const u = p / 0.72;
+        ball.position.y += Math.sin(u * Math.PI) * 0.95;
+        ball.rotation.set(-u * TAU * 2, 0, 0);
+      }
+      return;
+    }
+    if (pose === "idle" && !act) {
       const period = 3.4;
       const phase = (t % period) / period;
       if (phase < 0.32) {
@@ -1281,7 +1369,7 @@ function buildHeadExtras(kit: Kit, head: THREE.Group, cfg: TrainerConfig, m: THR
 // Poses
 // ---------------------------------------------------------------------------
 
-interface Joints {
+export interface Joints {
   drop: number;
   lean: number;
   twist: number;
@@ -1299,9 +1387,24 @@ interface Joints {
   reZ: number;
   legX: number;
   legZ: number;
+  /** For moves: each leg's own swing (forward is -X, outward is +Z on the left, -Z on the right) and foot tip (+: on the toes). */
+  llX: number;
+  llZ: number;
+  rlX: number;
+  rlZ: number;
+  lfX: number;
+  rfX: number;
+  /** The whole body: slide, hop, turn; and the hips' side sway. */
+  bx: number;
+  by: number;
+  bz: number;
+  spin: number;
+  sway: number;
 }
 
 const THROW_PERIOD = 1.9;
+/** Ball Toss: one toss and catch. */
+export const BALL_TOSS_PERIOD = 1.3;
 
 const IDLE: Joints = {
   drop: 0,
@@ -1321,12 +1424,26 @@ const IDLE: Joints = {
   reZ: 0.1,
   legX: 0,
   legZ: 0.03,
+  llX: 0,
+  llZ: 0,
+  rlX: 0,
+  rlZ: 0,
+  lfX: 0,
+  rfX: 0,
+  bx: 0,
+  by: 0,
+  bz: 0,
+  spin: 0,
+  sway: 0,
 };
+
+/** Where every move starts from: standing tall, arms loose. */
+const MOVE_BASE: Joints = { ...IDLE, lsZ: 0.14, leX: -0.25, rsX: -0.1, rsZ: -0.14, reX: -0.5, reZ: 0, legZ: 0.05 };
 
 const POSES: Record<Exclude<TrainerPose, "throw">, Joints> = {
   idle: IDLE,
   wave: { ...IDLE, headTilt: 0.12, lsX: -0.4, lsZ: 1.7, leX: 0, leZ: 1.25, rsX: -0.15, rsZ: -0.14, reX: -0.9 },
-  fight: { drop: -0.035, lean: 0.16, twist: -0.3, headTilt: -0.04, nod: 0, lsX: -1.45, lsY: 0, lsZ: 0.18, leX: -0.15, leZ: 0, rsX: 0.35, rsY: 0, rsZ: -1.95, reX: 0, reZ: -1.15, legX: 0.05, legZ: 0.3 },
+  fight: { ...IDLE, drop: -0.035, lean: 0.16, twist: -0.3, headTilt: -0.04, nod: 0, lsX: -1.45, lsY: 0, lsZ: 0.18, leX: -0.15, leZ: 0, rsX: 0.35, rsY: 0, rsZ: -1.95, reX: 0, reZ: -1.15, legX: 0.05, legZ: 0.3 },
   victory: { ...IDLE, drop: 0, lean: -0.08, headTilt: -0.06, nod: -0.12, lsX: -0.25, lsZ: 0.75, leX: -2.0, leZ: 0, rsX: -0.35, rsZ: -2.35, reX: -0.2, reZ: -0.25, legZ: 0.12 },
   think: { ...IDLE, headTilt: 0.18, nod: 0.08, lsX: -1.2, lsY: 0, lsZ: -0.55, leX: -2.35, leZ: 0.35, rsX: -0.55, rsZ: 0.32, reX: -1.35, reZ: 0.4, legZ: 0.02 },
 };

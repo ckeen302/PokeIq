@@ -5,7 +5,9 @@ import * as THREE from "three";
 import { spriteCandidates } from "@/lib/battle/sprites";
 import type { TrainerFacing } from "@/lib/trainer/config";
 import type { Avatar3DSceneProps } from "./Avatar3D";
-import { FACING_YAW, buildTrainer, type TrainerModel } from "./model";
+import { tauntOf } from "@/lib/trainer/taunts";
+import { FACING_YAW, buildTrainer, type TauntAct, type TrainerModel } from "./model";
+import { STILL_AT } from "./moves";
 
 /**
  * The three.js scene behind <Avatar3D> (loaded lazily, so pages without a
@@ -41,7 +43,7 @@ function shadowTexture(): THREE.Texture {
   return tex;
 }
 
-export function Avatar3DScene({ config, pose = "idle", facing = "front", partner = false, still = false }: Avatar3DSceneProps) {
+export function Avatar3DScene({ config, pose = "idle", facing = "front", partner = false, still = false, taunt = null }: Avatar3DSceneProps) {
   const host = useRef<HTMLDivElement>(null);
   const sprite = useRef<HTMLImageElement>(null);
   const state = useRef<{
@@ -55,7 +57,7 @@ export function Avatar3DScene({ config, pose = "idle", facing = "front", partner
     frame: () => void;
     layout: () => void;
   } | null>(null);
-  const live = useRef({ pose, facing, partner, still, spriteSize: { w: 0, h: 0 } });
+  const live = useRef({ pose, facing, partner, still, spriteSize: { w: 0, h: 0 }, act: null as { id: TauntAct["id"]; n: number; start: number } | null });
   /** The partner's size in scene units (from its sprite), and how far it steps out so big ones clear the trainer. */
   const partnerBox = () => {
     const { w, h } = live.current.spriteSize;
@@ -195,11 +197,21 @@ export function Avatar3DScene({ config, pose = "idle", facing = "front", partner
     let onScreen = true;
     const reduced = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
     const animating = () => onScreen && !document.hidden && !live.current.still && !reduced;
+    /** The taunt playing now (a still of its key pose when not animating), or null once it's over. */
+    const act = (): TauntAct | null => {
+      const a = live.current.act;
+      if (!a) return null;
+      const secs = tauntOf(a.id)?.secs ?? 0;
+      if (!animating()) return { id: a.id, t: STILL_AT[a.id] ?? secs * 0.4 };
+      if (a.start < 0) a.start = clock;
+      const t = clock - a.start;
+      return t < secs ? { id: a.id, t } : null;
+    };
 
     const render = () => {
       const s = state.current;
       if (!s) return;
-      s.model?.update(clock, 1 / 60, live.current.pose);
+      s.model?.update(clock, 1 / 60, live.current.pose, act());
       const yaw = FACING_YAW[live.current.facing];
       turn.rotation.y += (yaw - turn.rotation.y) * (animating() ? 0.12 : 1);
       placeSprite(clock);
@@ -212,7 +224,8 @@ export function Avatar3DScene({ config, pose = "idle", facing = "front", partner
       if (!animating()) {
         // One settled frame.
         const s = state.current;
-        if (s?.model) for (let i = 0; i < 40; i++) s.model.update(clock, 1 / 30, live.current.pose);
+        const a = act();
+        if (s?.model) for (let i = 0; i < 40; i++) s.model.update(clock, 1 / 30, live.current.pose, a);
         render();
         return;
       }
@@ -220,7 +233,7 @@ export function Avatar3DScene({ config, pose = "idle", facing = "front", partner
         const dt = Math.min(0.05, (now - last) / 1000);
         last = now;
         clock += dt;
-        state.current?.model?.update(clock, dt, live.current.pose);
+        state.current?.model?.update(clock, dt, live.current.pose, act());
         const yaw = FACING_YAW[live.current.facing];
         turn.rotation.y += (yaw - turn.rotation.y) * Math.min(1, dt * 8);
         placeSprite(clock);
@@ -278,6 +291,14 @@ export function Avatar3DScene({ config, pose = "idle", facing = "front", partner
     s.turn.add(model.root);
     s.frame();
   }, [key]);
+
+  // ---- a taunt: each new `n` plays it from the start ----
+  const tauntKey = taunt ? `${taunt.id}:${taunt.n}` : "";
+  useEffect(() => {
+    live.current.act = taunt ? { id: taunt.id, n: taunt.n, start: -1 } : null;
+    state.current?.frame();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- keyed on the taunt's id and count
+  }, [tauntKey]);
 
   // ---- pose, facing, partner ----
   useEffect(() => {
