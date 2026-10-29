@@ -151,6 +151,16 @@ export function deleteTeam(id: string) {
   write(read().teams.filter((t) => t.id !== id));
 }
 
+/** Puts a deleted team back exactly as it was (Undo). */
+export function restoreTeam(team: BattleTeam) {
+  write([team, ...read().teams.filter((t) => t.id !== team.id)]);
+}
+
+/** Every team in Showdown's "Backup all teams" text, one "=== [format] Name ===" header each. */
+export function teamsBackupText(teams: readonly BattleTeam[]): string {
+  return teams.map((t) => `=== [${t.format}] ${t.name || "Untitled team"} ===\n\n${exportShowdown(t.sets)}`).join("\n");
+}
+
 export function duplicateTeam(id: string): BattleTeam | null {
   const team = getTeam(id);
   if (!team) return null;

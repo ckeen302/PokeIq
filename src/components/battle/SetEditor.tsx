@@ -1,17 +1,18 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import type { Move, Specie } from "@pkmn/data";
-import { Sparkles, Trash2, TriangleAlert } from "lucide-react";
+import { Check, ClipboardCopy, Sparkles, Trash2, TriangleAlert } from "lucide-react";
 import type { FormatDex } from "@/lib/battle/dex";
 import { hasTera } from "@/lib/battle/formats";
-import { fitStatsToGen, fromDV, hasDVs, newSet, type TeamSet } from "@/lib/battle/sets";
+import { exportShowdown, fitStatsToGen, fromDV, hasDVs, newSet, type TeamSet } from "@/lib/battle/sets";
+import { findUsage } from "@/lib/battle/usage";
 import { cn } from "@/lib/utils";
 import { BattleSprite } from "./BattleSprite";
 import { Field, inputClass, NumberInput, Toggle } from "./controls";
 import { useLearnable, useUsage } from "./hooks";
 import { EvGoals, PopularSets } from "./SetTools";
-import { BattleType, ItemSelect, MoveSelect, NatureSelect, SpeciesSelect, TypeSelect } from "./pickers";
+import { BattleType, ItemSelect, MoveSelect, NatureSelect, pct, SpeciesSelect, TypeSelect, useFormatBans, usageLookup, type SpeciesFilterSource } from "./pickers";
 import { StatEditor } from "./StatEditor";
 
 type WithTera = Specie & { requiredTeraType?: string };
@@ -34,6 +35,21 @@ export function SetEditor({
   const species = set ? gen.species.get(set.species) : undefined;
   const { moves: learnable, loading } = useLearnable(dex, species?.name);
   const usage = useUsage(format.id);
+  const bans = useFormatBans(format.id);
+  const mon = usage && set ? findUsage(usage, set.species) : undefined;
+  const [copied, setCopied] = useState(false);
+  // The species search's filters: type, ability, a move it learns, legal only; most used first.
+  const filter = useMemo<SpeciesFilterSource>(
+    () => ({
+      types: dex.types,
+      bans: bans?.species,
+      usage: usage?.pokemon.map((m) => [m.species, m.usage] as const),
+      abilities: [...gen.abilities].map((a) => a.name).sort(),
+      moves: [...gen.moves].filter((m) => !m.isZ && !m.isMax).map((m) => m.name).sort(),
+      learners: dex.learners,
+    }),
+    [dex, gen, bans, usage]
+  );
   // Before anything is typed, the search lists the format's own tier.
   const initial = useMemo(() => {
     const own = dex.species.filter((s) => dex.tier(s) === dex.format.homeTier);
@@ -80,7 +96,7 @@ export function SetEditor({
         <p className="hud-label">Slot {slot + 1} · empty</p>
         <p className="text-sm text-muted-foreground">Pick a Pokémon for this slot.</p>
         <div className="mx-auto max-w-sm text-left">
-          <SpeciesSelect species={dex.species} initial={initial} tier={dex.tier} value="" onSelect={pickSpecies} label={`Slot ${slot + 1} species`} />
+          <SpeciesSelect species={dex.species} initial={initial} tier={dex.tier} value="" onSelect={pickSpecies} label={`Slot ${slot + 1} species`} filter={filter} />
         </div>
       </div>
     );
@@ -90,6 +106,22 @@ export function SetEditor({
   const abilities = species ? (Object.values(species.abilities).filter(Boolean) as string[]) : [];
   const nature = gen.natures.get(set.nature);
   const taken = new Set(set.moves);
+  const abilityUse = usageLookup(mon?.abilities);
+  const abilityText = (a: string) => {
+    const id = a.toLowerCase().replace(/[^a-z0-9]/g, "");
+    const share = abilityUse.get(id)?.share;
+    const banned = bans?.abilities[id];
+    return `${a}${species?.abilities.H === a ? " (Hidden)" : ""}${share ? ` · ${pct(share)}` : ""}${banned ? " · banned" : ""}`;
+  };
+  async function copySet() {
+    try {
+      await navigator.clipboard.writeText(exportShowdown([set!]));
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch {
+      // No clipboard access (insecure context): the team's Export panel still has the text.
+    }
+  }
 
   return (
     <div className="space-y-5">
@@ -119,7 +151,7 @@ export function SetEditor({
             {species && <span className="hud-label absolute right-2 top-2 z-[3] text-screen">{dex.tier(species)}</span>}
           </div>
           <Field label="Species">
-            <SpeciesSelect species={dex.species} initial={initial} tier={dex.tier} value={set.species} current={species} shiny={set.shiny} onSelect={pickSpecies} />
+            <SpeciesSelect species={dex.species} initial={initial} tier={dex.tier} value={set.species} current={species} shiny={set.shiny} onSelect={pickSpecies} filter={filter} />
           </Field>
           {!species && <p className="text-xs text-destructive">{set.species} isn&apos;t in {format.name}.</p>}
           {species && <PopularSets dex={dex} usage={usage} set={set} onChange={onChange} />}
@@ -132,13 +164,23 @@ export function SetEditor({
               className={inputClass}
             />
           </Field>
-          <button
-            type="button"
-            onClick={() => onChange(null)}
-            className="flex w-full items-center justify-center gap-1.5 rounded-md border border-foreground/10 py-1.5 text-xs text-muted-foreground transition-colors hover:border-destructive/50 hover:text-destructive"
-          >
-            <Trash2 className="h-3.5 w-3.5" aria-hidden /> Remove from team
-          </button>
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              onClick={copySet}
+              className="flex items-center justify-center gap-1.5 rounded-md border border-foreground/10 py-1.5 text-xs text-muted-foreground transition-colors hover:border-screen/50 hover:text-foreground"
+            >
+              {copied ? <Check className="h-3.5 w-3.5 text-success" aria-hidden /> : <ClipboardCopy className="h-3.5 w-3.5" aria-hidden />}
+              {copied ? "Copied" : "Copy set"}
+            </button>
+            <button
+              type="button"
+              onClick={() => onChange(null)}
+              className="flex items-center justify-center gap-1.5 rounded-md border border-foreground/10 py-1.5 text-xs text-muted-foreground transition-colors hover:border-destructive/50 hover:text-destructive"
+            >
+              <Trash2 className="h-3.5 w-3.5" aria-hidden /> Remove
+            </button>
+          </div>
         </div>
 
         <div className="min-w-0 space-y-5">
@@ -184,8 +226,7 @@ export function SetEditor({
                   {!abilities.includes(set.ability) && <option value={set.ability}>{set.ability || "—"}</option>}
                   {abilities.map((a) => (
                     <option key={a} value={a}>
-                      {a}
-                      {species?.abilities.H === a ? " (Hidden)" : ""}
+                      {abilityText(a)}
                     </option>
                   ))}
                 </select>
@@ -193,7 +234,7 @@ export function SetEditor({
             )}
             {gen.num >= 2 && (
               <Field label="Item" className="col-span-2">
-                <ItemSelect items={dex.items} value={set.item} onSelect={(item) => update({ item: item?.name ?? "" })} />
+                <ItemSelect items={dex.items} value={set.item} usage={mon?.items} bans={bans?.items} onSelect={(item) => update({ item: item?.name ?? "" })} />
               </Field>
             )}
             {gen.num >= 3 && (
@@ -224,6 +265,9 @@ export function SetEditor({
                       loading={loading}
                       value={name}
                       exclude={taken}
+                      usage={mon?.moves}
+                      bans={bans?.moves}
+                      types={dex.types}
                       onSelect={(m) => pickMove(i, m)}
                     />
                     <span className="w-14 shrink-0 text-right">{move && <BattleType type={move.type} />}</span>
@@ -243,6 +287,8 @@ export function SetEditor({
                 ivs={set.ivs}
                 level={set.level}
                 nature={nature}
+                natures={gen.num >= 3 ? dex.natures : undefined}
+                onNature={(n) => update({ nature: n })}
                 onEvs={(evs) => update({ evs })}
                 onIvs={(ivs) => update({ ivs })}
               />
