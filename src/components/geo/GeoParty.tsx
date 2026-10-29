@@ -69,6 +69,15 @@ export function GeoParty({ code, regions }: { code: string; regions: GeoRegionIn
   const { view, now, gone, offline, error, setError, busy, sawPlay, act, send, join, refresh, setLive } = useDuel<PartyView>(`/api/geo/party/${code}`, code);
   const liveStatus = useDuelLive(view?.live, code, refresh);
   useEffect(() => setLive(liveStatus === "up"), [liveStatus, setLive]);
+  // On the standings, taunts and Play again should land quickly even without pushes: a 3 s poll for the first few minutes.
+  const endAt = view?.end?.at;
+  useEffect(() => {
+    if (!endAt || liveStatus === "up") return;
+    const id = window.setInterval(() => {
+      if (Date.now() - endAt < 5 * 60_000) refresh();
+    }, 3_000);
+    return () => window.clearInterval(id);
+  }, [endAt, liveStatus, refresh]);
   const [pick, setPick] = useState<MapPin | null>(null);
   const [summary, setSummary] = useState(false);
   const heard = useRef({ tick: -1, end: false });
@@ -388,7 +397,7 @@ function PartyBand({ view, round, below }: { view: PartyView; round: number; bel
   const alive = view.players.filter((p) => !p.out).length;
   const mult = view.round?.multiplier ?? 1;
   return (
-    <div className="relative z-30 border-b-2 border-[#a99cff]/60 bg-[#1e1a3f]/95 px-3 pb-2 pt-14 text-white shadow-lg backdrop-blur sm:pt-2" data-testid="party-band">
+    <div className="relative z-30 border-b-2 border-[#a99cff]/60 bg-[#1e1a3f]/95 px-3 pb-2 pt-2 text-white shadow-lg backdrop-blur" data-testid="party-band">
       <div className="mx-auto grid max-w-5xl grid-cols-[1fr_auto_1fr] items-center gap-3">
         {team ? (
           <TeamHp team={0} hp={view.hp?.[0] ?? PARTY_TEAM_HP} you={myTeam === 0} />
@@ -951,7 +960,7 @@ function PartyEnd({ view, map, busy, onAgain, onTaunt }: { view: PartyView; map:
           {draw ? "Draw" : won ? "Victory!" : team ? "Defeat" : `${ordinal(place)} place`}
         </motion.div>
         <p className="mt-1 text-white/80">{reason}</p>
-        <div className="mx-auto mt-4 grid max-w-4xl grid-cols-2 items-end gap-2 sm:mt-6 sm:grid-cols-4 sm:gap-4" data-testid="party-podium">
+        <div className="mx-auto mt-4 flex max-w-4xl flex-wrap items-end justify-center gap-x-2 gap-y-4 sm:mt-6 sm:gap-x-6" data-testid="party-podium">
           {podium.map((s) => (
             <PartyTrainer
               key={s}
@@ -960,7 +969,7 @@ function PartyEnd({ view, map, busy, onAgain, onTaunt }: { view: PartyView; map:
               three
               pose={end.places[s] === 1 ? "victory" : "idle"}
               taunt={taunts.playing[s] ?? null}
-              className={cn(end.places[s] === 1 && "sm:-translate-y-4")}
+              className={cn("w-[44%] max-w-[13rem] sm:w-[22%]", end.places[s] === 1 && "sm:-translate-y-4")}
               label={<span className="font-pixel text-[10px] uppercase text-[#ffd23c]">{ordinal(end.places[s])}</span>}
             />
           ))}

@@ -255,7 +255,11 @@ export function GeoMap({ region, pick, pinImage, revealed = [], fit, onPick, con
           })}
           {others.map((o, i) => {
             const [ox, oy] = toScreen(o.x, o.y);
-            return <GuessPin key={`${i}:${o.x},${o.y}`} x={ox} y={oy} color={o.color} image={o.image} label={o.label} />;
+            return (
+              <g key={`${i}:${o.x},${o.y}`} data-testid="geo-other-pin">
+                <GuessPin x={ox} y={oy} color={o.color} image={o.image} label={o.label} />
+              </g>
+            );
           })}
           {/* Keyed by position so every new pin replays the drop. */}
           {pick && <GuessPin key={`${pick.x},${pick.y}`} x={toScreen(pick.x, pick.y)[0]} y={toScreen(pick.x, pick.y)[1]} image={pinImage} />}

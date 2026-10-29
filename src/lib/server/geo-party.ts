@@ -4,7 +4,7 @@ import { randomId, signToken, verifyToken } from "./crypto";
 import { emoteBlocked } from "./duel-core";
 import { duelTable } from "./duel-store";
 import { answerFor, isGeoSpec, measureGuess, planRounds } from "./geo";
-import { EMOTE_SHOW_MS, EMOTE_WINDOW_MS, type DuelEmote, type PvpEmoteView } from "@/lib/pvp-types";
+import { EMOTE_WINDOW_MS, type DuelEmote, type PvpEmoteView } from "@/lib/pvp-types";
 import { isTaunt, type TauntId } from "@/lib/trainer/taunts";
 import { hpAfter, rampMultiplier } from "@/lib/geo-duel-rules";
 import {
@@ -118,6 +118,8 @@ const fail = (status: number, error: string): PartyFailure => ({ ok: false, stat
 const SEEN_STEP_MS = 5_000;
 const MAX_STEPS = 4 * 20 + 2 * PARTY_MAX_PLAYERS + 8;
 const EMOTES_KEPT = 24;
+/** Reactions and taunts stay in the view this long: a finished party polls slowly, and the pages play each one once (by its number). */
+const EMOTE_KEEP_MS = 20_000;
 
 // ---------------------------------------------------------------------------
 // Storage and seats
@@ -533,7 +535,7 @@ export function emoteParty(party: GeoParty, playerId: string, emote: DuelEmote |
   return seated(party, playerId, now, (p, seat) => {
     if (p.status === "lobby") return fail(409, "Reactions open once the game starts.");
     if (isTaunt(emote) && p.status !== "finished") return fail(409, "Dances and emotes open once the game is over.");
-    const emotes = (p.emotes ?? []).filter((e) => now - e.at < Math.max(EMOTE_WINDOW_MS, EMOTE_SHOW_MS));
+    const emotes = (p.emotes ?? []).filter((e) => now - e.at < Math.max(EMOTE_WINDOW_MS, EMOTE_KEEP_MS));
     const blocked = emoteBlocked(emotes, seat, now, emote);
     if (blocked) return fail(429, blocked);
     const n = (p.emoteCount ?? 0) + 1;
@@ -621,6 +623,6 @@ export function partyView(p: GeoParty, playerId: string | null, now: number, rev
     next: p.status === "playing" && last?.result ? { at: last.result.nextAt, pressed: last.skip } : undefined,
     end: p.end,
     totals: totalsOf(p),
-    emotes: (p.emotes ?? []).filter((e) => now - e.at < EMOTE_SHOW_MS),
+    emotes: (p.emotes ?? []).filter((e) => now - e.at < EMOTE_KEEP_MS),
   };
 }

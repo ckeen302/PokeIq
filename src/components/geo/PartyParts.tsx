@@ -50,9 +50,12 @@ export function TeamHp({ team, hp, you, className }: { team: 0 | 1; hp: number; 
   return (
     <div className={cn("min-w-0", className)} data-testid={`party-hp-${team}`}>
       <div className="flex items-baseline justify-between gap-2">
-        <span className="truncate font-display text-xs font-bold uppercase tracking-wide sm:text-sm" style={{ color: TEAM_COLORS[team] }}>
-          {TEAM_NAMES[team]}
-          {you && <span className="ml-1.5 rounded-sm bg-white/15 px-1 font-pixel text-[8px] text-white">You</span>}
+        <span className="flex min-w-0 items-center gap-1.5 font-display text-xs font-bold uppercase tracking-wide sm:text-sm" style={{ color: TEAM_COLORS[team] }}>
+          <span className="truncate">
+            {TEAM_NAMES[team].replace(" team", "")}
+            <span className="max-sm:hidden"> team</span>
+          </span>
+          {you && <span className="shrink-0 rounded-sm bg-white/15 px-1 font-pixel text-[8px] text-white">You</span>}
         </span>
         <span className="font-pixel text-[11px] tabular-nums text-white" data-testid={`party-hp-value-${team}`}>
           {fmt(Math.max(0, hp))}
@@ -276,7 +279,7 @@ export function usePartyTaunts(view: PartyView) {
     const fresh = list.filter((e) => e.n > seen.current);
     if (!fresh.length) return;
     seen.current = Math.max(...fresh.map((e) => e.n));
-    for (const e of fresh) if (e.seat !== view.you) start(e.seat, e.emote as TauntId);
+    for (const e of fresh) if (e.seat !== view.you && view.now - e.at < 15_000) start(e.seat, e.emote as TauntId);
     // eslint-disable-next-line react-hooks/exhaustive-deps -- new taunts only
   }, [view.emotes]);
   return { playing, start };
