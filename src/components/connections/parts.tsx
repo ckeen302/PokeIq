@@ -6,7 +6,7 @@ import { motion } from "framer-motion";
 import { Sparkles } from "lucide-react";
 import { typeColor, typeTextColor } from "@/lib/pokemon/type-colors";
 import { artUrl } from "@/lib/pokemon/art";
-import { CONN_LEVELS, type ConnGroupExplained, type ConnGroupReveal, type ConnLevel, type ConnTile } from "@/lib/connections/types";
+import { CONN_LEVELS, connLevels, type ConnGroupExplained, type ConnGroupReveal, type ConnLevel, type ConnSize, type ConnTile } from "@/lib/connections/types";
 import { cn } from "@/lib/utils";
 
 /** The group colour as a CSS colour, and dark text that reads on it in either theme. */
@@ -25,9 +25,10 @@ export function LevelMark({ level, className }: { level: ConnLevel; className?: 
  * A tile's picture: a sprite for a Pokémon, a type-coloured chip for a move
  * or a type, an icon for an ability. `size` is the box in pixels.
  */
-export function TileArt({ tile, size, className }: { tile: ConnTile; size: number; className?: string }) {
+export function TileArt({ tile, size, className, lazy }: { tile: ConnTile; size: number; className?: string; lazy?: boolean }) {
   // width/height reserve the box before the sprite arrives (no layout shift); 160px art stays crisp on a 3x phone at the grid's size.
-  if (!tile.kind) return <img src={artUrl(tile.id, size <= 48 ? 96 : 160)} alt="" width={size} height={size} decoding="async" draggable={false} className={className} />;
+  if (!tile.kind)
+    return <img src={artUrl(tile.id, size <= 48 ? 96 : 160)} alt="" width={size} height={size} decoding="async" loading={lazy ? "lazy" : undefined} draggable={false} className={className} />;
   const small = size <= 48;
   if (tile.kind === "ability") {
     return (
@@ -75,8 +76,14 @@ export const GridTile = forwardRef<
     hinted?: boolean;
     /** A 5×5 board: smaller tiles, so five fit across. */
     compact?: boolean;
+    /**
+     * One of the boards painted with the page's HTML before the game is
+     * ready (only the player's date shows; the others stay hidden, and so
+     * do their sprites, which load lazily).
+     */
+    pre?: boolean;
   }
->(function GridTile({ tile, index, selected, disabled, motionKind, order, onToggle, onKeyDown, hinted, compact }, ref) {
+>(function GridTile({ tile, index, selected, disabled, motionKind, order, onToggle, onKeyDown, hinted, compact, pre }, ref) {
   // The name always fits on one line: its size shrinks with its length against the tile's width (a container query).
   const fit = { "--conn-chars": Math.max(tile.name.length, 6) } as React.CSSProperties;
   return (
@@ -85,7 +92,8 @@ export const GridTile = forwardRef<
       layout
       type="button"
       data-index={index}
-      data-testid="conn-tile"
+      data-testid={pre ? "conn-pre-tile" : "conn-tile"}
+      tabIndex={pre ? -1 : undefined}
       data-id={tile.id}
       data-hinted={hinted ? "true" : undefined}
       aria-pressed={selected}
@@ -121,6 +129,7 @@ export const GridTile = forwardRef<
       <TileArt
         tile={tile}
         size={76}
+        lazy={pre}
         className={cn(compact ? "h-10 w-10 sm:h-14 sm:w-14" : "h-14 w-14 sm:h-[4.25rem] sm:w-[4.25rem]", "pointer-events-none object-contain transition-transform duration-150", !selected && "group-hover:scale-105")}
       />
       <span
@@ -182,6 +191,32 @@ export function GroupBar({ group, symbols, revealed, compact }: { group: ConnGro
   );
 }
 
+/** The group colours, easiest to trickiest: the board's difficulty key. */
+export function LevelLegend({ size, symbols, className }: { size: ConnSize; symbols: boolean; className?: string }) {
+  const levels = connLevels(size);
+  return (
+    <div
+      className={cn("flex flex-wrap items-center justify-center gap-1 text-[10px] sm:gap-1.5 sm:text-[11px]", className)}
+      role="img"
+      aria-label={`Group colours, easiest to trickiest: ${levels.map((l) => CONN_LEVELS[l].name).join(", ")}`}
+      data-testid="conn-legend"
+    >
+      <span className="mr-0.5 text-muted-foreground" aria-hidden>
+        Easiest
+      </span>
+      {levels.map((l) => (
+        <span key={l} aria-hidden className="flex items-center gap-1 rounded px-1.5 py-0.5 font-bold uppercase tracking-wide sm:px-2" style={levelStyle(l)}>
+          {symbols && <LevelMark level={l} className="opacity-70" />}
+          {CONN_LEVELS[l].name}
+        </span>
+      ))}
+      <span className="ml-0.5 text-muted-foreground" aria-hidden>
+        Trickiest
+      </span>
+    </div>
+  );
+}
+
 /** Mistakes left, as dots: a lost one pops and turns into an empty ring; the last one left turns red. */
 export function MistakeDots({ left, max }: { left: number; max: number }) {
   const last = left === 1;
@@ -230,12 +265,14 @@ export function WhyPanel({ groups, symbols }: { groups: ConnGroupExplained[]; sy
         </h2>
         <p className="hud-label">Every fact is from the Pokédex data</p>
       </div>
+      <LevelLegend size={groups.length === 5 ? 5 : 4} symbols={symbols} className="justify-start" />
       <div className="grid gap-3 md:grid-cols-2">
         {groups.map((g) => (
           <article key={g.level} className="overflow-hidden rounded-lg border bg-card">
             <header className="flex items-center gap-2 px-4 py-2.5" style={levelStyle(g.level)}>
               {symbols && <LevelMark level={g.level} className="text-xs opacity-70" />}
               <h3 className="font-display text-sm font-bold uppercase tracking-wide">{g.label}</h3>
+              <span className="ml-auto shrink-0 text-[10px] font-semibold uppercase tracking-wider opacity-70">{CONN_LEVELS[g.level].name}</span>
             </header>
             <div className="space-y-2.5 p-4">
               <p className="text-sm text-muted-foreground">{g.rule}</p>
