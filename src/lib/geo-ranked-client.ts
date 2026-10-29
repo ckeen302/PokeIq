@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { keepRankedId, rankedId } from "./ranked-client";
 import type { GeoRankedLeaderRow, GeoRankedResponse, GeoRankedStanding } from "./geo-ranked";
+import type { GeoSeasonView } from "./geo-seasons";
 
 /**
  * The browser's side of ranked PokéGuessr: the trainer's standing from
@@ -14,7 +15,7 @@ export type GeoRankedState =
   | { status: "loading" }
   /** Ranked PokéGuessr is off here (or the request failed): casual only. */
   | { status: "off" }
-  | { status: "ready"; you: GeoRankedStanding | null; top?: GeoRankedLeaderRow[]; botAfterS: number };
+  | { status: "ready"; you: GeoRankedStanding | null; top?: GeoRankedLeaderRow[]; botAfterS: number; season: GeoSeasonView | null };
 
 /** The trainer's ranked PokéGuessr standing (and with `top`, the top 100). `reload` fetches it again. */
 export function useGeoRanked({ top = false, enabled = true }: { top?: boolean; enabled?: boolean } = {}) {
@@ -32,7 +33,7 @@ export function useGeoRanked({ top = false, enabled = true }: { top?: boolean; e
         if (!live) return;
         if (data?.id) keepRankedId(data.id);
         if (!res.ok || !data || !data.available) return setState((s) => (s.status === "ready" ? s : { status: "off" }));
-        setState({ status: "ready", you: data.you, top: data.top, botAfterS: data.botAfterS });
+        setState({ status: "ready", you: data.you, top: data.top, botAfterS: data.botAfterS, season: data.season ?? null });
       } catch {
         if (live) setState((s) => (s.status === "ready" ? s : { status: "off" }));
       }

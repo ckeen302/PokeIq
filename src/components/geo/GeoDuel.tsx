@@ -646,6 +646,9 @@ function DuelEnd({ view, map, busy, onRematch }: { view: DuelView; map: GeoRegio
         )}
         {/* The duel's result page and preview card (both trainers, HP and rounds), by its code. */}
         <ShareResultLink token={`duel:${view.code}`} text="Our PokéGuessr duel" className="[&_button]:border-white/30 [&_button]:bg-transparent [&_button]:text-white [&_button:hover]:bg-white/10 [&_button:hover]:text-white" />
+        <Link href="/guessr/history" className="block text-center text-xs font-semibold text-white/70 underline-offset-2 hover:text-white hover:underline" data-testid="geo-duel-history-link">
+          Duel history and replays
+        </Link>
 
         {rounds > 0 && (
           <div className="grid gap-4 md:grid-cols-[1fr_minmax(0,20rem)]">

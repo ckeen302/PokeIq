@@ -169,7 +169,7 @@ export function memoryHistoryStore(): DuelHistoryStore {
         .filter((r) => seatOfKey(r, key) >= 0 && (before === null || r.endedAt < before))
         .sort((a, b) => b.endedAt - a.endedAt)
         .slice(0, limit)
-        .map(({ rounds: _rounds, ...rest }) => rest);
+        .map((r): HistoryListRow => ({ code: r.code, keys: r.keys, ranked: r.ranked, endedAt: r.endedAt, summary: r.summary, public: r.public }));
     },
     async get(code) {
       return read(code);
