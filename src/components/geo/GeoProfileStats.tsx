@@ -3,6 +3,8 @@ import { Flame } from "lucide-react";
 import type { GeoPlayerStats, GeoStatRow } from "@/lib/server/geo-round-scores";
 import type { StreakBest } from "@/lib/server/geo-streak";
 import { Card, CardContent } from "@/components/ui/card";
+import type { GeoProgress } from "@/lib/geo-achievements";
+import { AchievementGrid, GEO_ACHIEVEMENT_TOTAL, MASTERY_BLURB, MasteryList } from "./GeoAchievements";
 import { cn } from "@/lib/utils";
 
 const fmt = (n: number) => n.toLocaleString("en-US");
@@ -36,7 +38,7 @@ function StatRow({ r }: { r: GeoStatRow }) {
  * played, accuracy and best round by region and by game, and their best
  * region streak. Everything comes from the rounds they played signed in.
  */
-export function GeoProfileStats({ stats, streak }: { stats: GeoPlayerStats | null; streak: StreakBest | null }) {
+export function GeoProfileStats({ stats, streak, progress }: { stats: GeoPlayerStats | null; streak: StreakBest | null; progress?: GeoProgress | null }) {
   const played = !!stats && (stats.rounds > 0 || stats.streakPicks > 0);
   const avg = stats && stats.rounds ? Math.round(stats.byRegion.reduce((s, r) => s + r.accuracy * r.rounds, 0) / Math.max(1, stats.byRegion.reduce((s, r) => s + r.rounds, 0))) : null;
   const bestRound = stats ? Math.max(0, ...stats.byRegion.map((r) => r.best)) : 0;
@@ -97,6 +99,24 @@ export function GeoProfileStats({ stats, streak }: { stats: GeoPlayerStats | nul
           </>
         ) : (
           <p className="text-sm text-muted-foreground">No PokéGuessr rounds on record yet: games played signed in count here.</p>
+        )}
+        {progress && (progress.rounds > 0 || progress.achievements.some((a) => a.earned)) && (
+          <div className="grid gap-5 border-t pt-4 lg:grid-cols-[3fr_2fr]" data-testid="profile-geo-progress">
+            <div className="space-y-2">
+              <p className="hud-label flex justify-between gap-2">
+                <span>Achievements</span>
+                <span className="tabular-nums">
+                  {progress.achievements.filter((a) => a.earned).length}/{GEO_ACHIEVEMENT_TOTAL}
+                </span>
+              </p>
+              <AchievementGrid achievements={progress.achievements} limit={4} />
+            </div>
+            <div className="space-y-2">
+              <p className="hud-label">Mastery</p>
+              <p className="text-xs text-muted-foreground">{MASTERY_BLURB}</p>
+              <MasteryList mastery={progress.mastery} />
+            </div>
+          </div>
         )}
       </CardContent>
     </Card>
