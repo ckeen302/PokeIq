@@ -429,9 +429,11 @@
   75%, 100% { content: "..."; }
 }
 
-/* First-visit splash: covers the page for a moment, then fades by itself
-   (CSS only, so it can never get stuck). Skipped on later page loads in the
-   same session and for reduced-motion users. */
+/* First-visit splash: a brief fade while nothing else is painted (CSS only,
+   so it can never get stuck). Gone within 0.6s at most, and fades at once
+   when the page's own content is already there (anything in <main> but the
+   route loading fallback). Skipped on game pages (SPLASH_INIT_SCRIPT), on
+   later page loads in the same session and for reduced-motion users. */
 .boot-splash {
   position: fixed;
   inset: 0;
@@ -439,7 +441,16 @@
   display: grid;
   place-items: center;
   background: hsl(var(--background));
-  animation: boot-out 0.4s ease 0.9s forwards;
+  pointer-events: none;
+  animation: boot-out 0.3s ease 0.3s forwards;
+}
+body:has(main > :not([data-route-loading])) .boot-splash {
+  animation: boot-out 0.25s ease forwards;
+}
+/* While the route loading fallback holds the page, the footer waits: it shows
+   up where the page puts it, rather than painting and then jumping. */
+body:has(main > [data-route-loading]) > footer {
+  visibility: hidden;
 }
 
 /* Splash extras (lid, inside, beam, rays) stay hidden: the splash just wobbles, then fades. */

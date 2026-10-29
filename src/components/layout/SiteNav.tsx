@@ -84,7 +84,7 @@ export function DesktopNav() {
           })}
         </div>
       </div>
-      <div className="flex items-center gap-1 justify-self-end">
+      <div className="flex items-center gap-1 justify-self-end max-[399px]:gap-0">
         <Link
           href="/rooms"
           aria-label="Chat rooms"
