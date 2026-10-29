@@ -6,7 +6,7 @@ import { spriteCandidates } from "@/lib/battle/sprites";
 import type { TrainerFacing } from "@/lib/trainer/config";
 import type { Avatar3DSceneProps } from "./Avatar3D";
 import { tauntOf } from "@/lib/trainer/taunts";
-import { FACING_YAW, buildTrainer, type TauntAct, type TrainerModel } from "./model";
+import { FACING_YAW, buildTrainer, lightStage, type TauntAct, type TrainerModel } from "./model";
 import { STILL_AT } from "./moves";
 
 /**
@@ -86,26 +86,13 @@ export function Avatar3DScene({ config, pose = "idle", facing = "front", partner
     }
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
     renderer.outputColorSpace = THREE.SRGBColorSpace;
-    renderer.toneMapping = THREE.NeutralToneMapping;
-    renderer.toneMappingExposure = 1.05;
     renderer.setClearColor(0x000000, 0);
     renderer.domElement.style.cssText = "position:absolute;inset:0;width:100%;height:100%;display:block";
     el.prepend(renderer.domElement);
 
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(26, 1, 0.1, 50);
-    // Toon-lit stage: a warm key from the front right, a cool fill, and a
-    // strong back light that rims the silhouette.
-    scene.add(new THREE.HemisphereLight(0xfff6ec, 0x8c87a8, 1.6));
-    const key = new THREE.DirectionalLight(0xfff1df, 2.6);
-    key.position.set(2.5, 4, 5);
-    scene.add(key);
-    const fill = new THREE.DirectionalLight(0xd9e4ff, 0.7);
-    fill.position.set(-4, 2, 3);
-    scene.add(fill);
-    const rim = new THREE.DirectionalLight(0xffffff, 1.4);
-    rim.position.set(-1.5, 3, -4);
-    scene.add(rim);
+    const stage = lightStage(scene, renderer);
 
     const tex = shadowTexture();
     const shadowMat = new THREE.MeshBasicMaterial({ map: tex, transparent: true, depthWrite: false });
@@ -272,6 +259,7 @@ export function Avatar3DScene({ config, pose = "idle", facing = "front", partner
       shadowGeo.dispose();
       shadowMat.dispose();
       tex.dispose();
+      stage.dispose();
       renderer.dispose();
       renderer.forceContextLoss();
       renderer.domElement.remove();

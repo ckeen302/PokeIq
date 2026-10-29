@@ -71,7 +71,13 @@ export function TrainerPortrait({ trainer: t, size = 32, className, title }: { t
       <rect x="28" y="40" width="8" height="8" rx="3" fill={darker(skin, 0.1)} />
       <circle cx="16.3" cy="31.5" r="2.6" fill={skin} />
       <circle cx="47.7" cy="31.5" r="2.6" fill={skin} />
-      <circle cx={HEAD.cx} cy={HEAD.cy} r={HEAD.r} fill={skin} />
+      <defs>
+        <radialGradient id={`tp-skin-${skin.slice(1)}`} cx="0.42" cy="0.36" r="0.7">
+          <stop offset="0.55" stopColor={skin} />
+          <stop offset="1" stopColor={darker(skin, 0.1)} />
+        </radialGradient>
+      </defs>
+      <circle cx={HEAD.cx} cy={HEAD.cy} r={HEAD.r} fill={`url(#tp-skin-${skin.slice(1)})`} />
       {t.ears === "drops" && <path d="M15.2 35.5 a1.8 1.8 0 1 0 0.01 0 Z M48.8 35.5 a1.8 1.8 0 1 0 0.01 0 Z" fill={acc} />}
       {(t.ears === "studs" || t.ears === "hoops") && <path d={t.ears === "studs" ? "M15.4 34 a1 1 0 1 0 .01 0 Z M48.6 34 a1 1 0 1 0 .01 0 Z" : "M14 34.5 a1.6 1.6 0 1 0 3 0 M47 34.5 a1.6 1.6 0 1 0 3 0"} fill={t.ears === "studs" ? acc : "none"} stroke={t.ears === "hoops" ? acc : "none"} strokeWidth="0.8" />}
 
@@ -85,6 +91,7 @@ export function TrainerPortrait({ trainer: t, size = 32, className, title }: { t
 
 function Face({ t, skin, hair }: { t: TrainerConfig; skin: string; hair: string }) {
   const iris = eyeHex(t.eyeColor);
+  const irisId = `tp-iris-${iris.slice(1)}`;
   const brow = darker(hair, hair === "#ecc76d" || hair === "#f1e8d2" ? 0.3 : 0.08);
   const e = t.expr;
   // Brows: inner and outer heights (up is negative).
@@ -94,6 +101,13 @@ function Face({ t, skin, hair }: { t: TrainerConfig; skin: string; hair: string 
   const lid = { determined: 1.2, smug: 1.6, sleepy: 2.4, calm: 0.6, happy: 0, surprised: 0 }[e] + (t.eyes === "focused" ? 0.8 : t.eyes === "sharp" ? 1 : 0);
   return (
     <g>
+      <defs>
+        <linearGradient id={irisId} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor={darker(iris, 0.62)} />
+          <stop offset="0.45" stopColor={iris} />
+          <stop offset="1" stopColor={lighter(iris, 0.42)} />
+        </linearGradient>
+      </defs>
       {t.eyes === "happy" || t.eyes === "squint" ? (
         <g fill="none" stroke={INK} strokeWidth="1.7" strokeLinecap="round">
           <path d={t.eyes === "happy" ? "M23.4 33 q2.6 -3.2 5.2 0" : "M23.2 32.6 q2.8 -0.8 5.6 0"} />
@@ -104,13 +118,16 @@ function Face({ t, skin, hair }: { t: TrainerConfig; skin: string; hair: string 
           const s = i ? 1 : -1;
           return (
             <g key={cx}>
-              <ellipse cx={cx} cy="32.5" rx="2.8" ry="3.4" fill="#fff" />
-              <ellipse cx={cx - s * 0.2} cy="32.9" rx="2.4" ry={e === "surprised" ? 2.2 : 2.9} fill={iris} />
-              <ellipse cx={cx - s * 0.2} cy="32.1" rx="2.4" ry="1.6" fill={darker(iris, 0.5)} opacity="0.8" />
-              <circle cx={cx - 0.9} cy="31.4" r="0.9" fill="#fff" />
+              <ellipse cx={cx} cy="32.5" rx="2.9" ry="3.5" fill="#fff" />
+              {/* A big glossy iris (dark at the top, lighter below), pupil and two highlights, like the 3D face. */}
+              <ellipse cx={cx - s * 0.15} cy="32.7" rx="2.6" ry={e === "surprised" ? 2.2 : 3.15} fill={`url(#${irisId})`} stroke={darker(iris, 0.55)} strokeWidth="0.3" />
+              <ellipse cx={cx - s * 0.15} cy="32.5" rx="1.1" ry="1.55" fill={darker(iris, 0.8)} />
+              <ellipse cx={cx - 0.85} cy="31.3" rx="0.8" ry="1.05" fill="#fff" />
+              <circle cx={cx + 0.8} cy="34" r="0.42" fill="#fff" />
               <g transform={s < 0 ? `translate(${2 * cx} 0) scale(-1 1)` : undefined}>
                 {lid > 0 && <path d={`M${cx - 3.2} 28.6 H${cx + 3.2} V${29.1 + lid - sharp} L${cx - 3.2} ${29.1 + lid} Z`} fill={skin} />}
-                <path d={lid > 0 ? `M${cx - 3} ${29.3 + lid} L${cx + 3.2} ${29.1 + lid - sharp}` : `M${cx - 2.9} 31 Q${cx} 28.3 ${cx + 2.9} 31`} stroke={INK} strokeWidth={t.eyes === "lashes" ? 1.5 : 1.2} fill="none" strokeLinecap="round" />
+                <path d={lid > 0 ? `M${cx - 3} ${29.3 + lid} L${cx + 3.2} ${29.1 + lid - sharp}` : `M${cx - 2.9} 31 Q${cx} 28.2 ${cx + 2.9} 31`} stroke={INK} strokeWidth={t.eyes === "lashes" ? 1.6 : 1.35} fill="none" strokeLinecap="round" />
+                <path d={`M${cx + 1.6} ${(lid > 0 ? 29.1 + lid - sharp : 29.4) - 0.6} l2.1 -0.4 l-1.2 1.9 Z`} fill={INK} />
               </g>
               {t.eyes === "lashes" && <path d={`M${cx + s * 2.8} ${30.2 + lid * 0.5} l${s * 1.6} -1.2`} stroke={INK} strokeWidth="1" strokeLinecap="round" />}
             </g>
@@ -251,6 +268,8 @@ function Hair({ t, color, hatted, acc }: { t: TrainerConfig; color: string; hatt
         </g>
       )}
       <path d={cap} />
+      {/* Grooves between the sculpted locks */}
+      {t.hair !== "buzz" && t.hair !== "curly" && <path d="M25 14 C23 17, 22 20, 21.5 23 M32 12.8 C31.6 16, 31.6 19, 32 21.6 M39 14 C41 17, 42 20, 42.5 23" stroke={darker(color, 0.2)} strokeWidth="0.6" fill="none" opacity="0.55" />}
       {/* Side locks */}
       {(t.hair === "bob" || t.hair === "long" || t.hair === "flowing") && <path d="M15.6 30 C15 36, 15.5 40, 17.5 43 L19.5 43 C18.5 38, 18.5 33, 19 28 Z M48.4 30 C49 36, 48.5 40, 46.5 43 L44.5 43 C45.5 38, 45.5 33, 45 28 Z" />}
       <Bangs kind={bangs} curly={t.hair === "curly"} />
