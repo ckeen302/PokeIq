@@ -157,6 +157,8 @@ export interface DuelPace {
 
 /** A lobby or a finished match whose chat is busy polls every 2 s (and keeps polling), so replies come through quickly. */
 const CHAT_POLL_MS = 2000;
+/** While the duel's live channel is up (changes are pushed), polls are only a safety net: this far apart in play. */
+export const LIVE_POLL_MS = 3000;
 
 /**
  * Duels (PokéGuessr, Pokédle, quizzes), while the tab is visible: every
@@ -165,22 +167,27 @@ const CHAT_POLL_MS = 2000;
  * on time; a lobby waiting for a challenger slows from 2 s to 5 s, and a
  * finished duel (watching for a rematch) from 4 s to 15 s, then stops.
  * `serverNow`: the server's clock now; `wake`: one more deadline worth a poll.
+ * `live`: the duel's changes are pushed to this page (PokéGuessr over
+ * Realtime), so polls ease off to 3 s; the deadline polls stay, since the
+ * server only moves a timed phase on when it's asked.
  */
-export function duelPollDelay(view: DuelPace | null, quietPolls: number, serverNow: number, wake?: number): number | null {
+export function duelPollDelay(view: DuelPace | null, quietPolls: number, serverNow: number, wake?: number, live = false): number | null {
   if (!view) return 1000;
-  if (view.status !== "playing" && chatBusy(view.chat, serverNow)) return CHAT_POLL_MS;
+  if (view.status !== "playing" && chatBusy(view.chat, serverNow)) return live ? LIVE_POLL_MS : CHAT_POLL_MS;
   if (view.status === "finished") {
     if (view.end && serverNow - view.end.at > FINISHED_POLL_MS) return null;
-    return backoff(4000, 15_000, quietPolls);
+    return backoff(live ? 6000 : 4000, 15_000, quietPolls);
   }
   if (view.status === "lobby") {
     // Both seats taken: either may press Ready, and play starts 3 s after the second does.
+    if (live) return backoff(LIVE_POLL_MS, 8000, quietPolls);
     return (view.players?.length ?? 0) >= 2 ? 2000 : backoff(2000, 5000, quietPolls);
   }
-  const live = view.round ?? view.question;
-  const deadlines = [live?.startsAt, live?.endsAt, view.next?.at, wake];
+  const round = view.round ?? view.question;
+  const deadlines = [round?.startsAt, round?.endsAt, view.next?.at, wake];
   if (view.you === null || view.you === undefined) return untilNext(backoff(3000, 10_000, quietPolls), serverNow, deadlines);
-  const playing = live !== undefined && live.startsAt <= serverNow && serverNow < live.endsAt;
+  if (live) return untilNext(LIVE_POLL_MS, serverNow, deadlines);
+  const playing = round !== undefined && round.startsAt <= serverNow && serverNow < round.endsAt;
   return untilNext(playing ? 1000 : 2000, serverNow, deadlines);
 }
 

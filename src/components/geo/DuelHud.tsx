@@ -357,7 +357,9 @@ function Fighter({
 // ---------------------------------------------------------------------------
 
 /** Under the band once the opponent has locked in: "Opponent guessed", a draining bar, red and flashing for the last seconds. */
-export function OpponentGuessedBar({ name, leftMs, totalMs, mine }: { name: string; leftMs: number; totalMs: number; mine: boolean }) {
+export function OpponentGuessedBar({ name, leftMs: rawLeftMs, totalMs, mine }: { name: string; leftMs: number; totalMs: number; mine: boolean }) {
+  // A push lands within a few ms of the guess, while the page's clock ticks every 250 ms: never show more than the countdown.
+  const leftMs = Math.min(rawLeftMs, totalMs);
   const frac = totalMs > 0 ? Math.max(0, Math.min(1, leftMs / totalMs)) : 0;
   const urgent = leftMs <= DUEL_COUNTDOWN_FLASH_MS;
   return (
@@ -384,6 +386,33 @@ export function OpponentGuessedBar({ name, leftMs, totalMs, mine }: { name: stri
         <div className={cn("h-full origin-left transition-transform duration-300 ease-linear", urgent ? "bg-[#ff5a5a]" : "bg-[#ffd23c]")} style={{ transform: `scaleX(${frac})` }} />
       </div>
     </motion.div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// The live channel
+// ---------------------------------------------------------------------------
+
+/**
+ * How the duel's pushes are doing (use-duel-live.ts): a green dot and "Live"
+ * while they arrive; an amber pulsing "Reconnecting…" while the channel is
+ * down and the page polls every second instead. Nothing while connecting
+ * for the first time, or where pushes aren't set up.
+ */
+export function LivePill({ status, className }: { status: "off" | "connecting" | "up" | "down"; className?: string }) {
+  if (status === "off" || status === "connecting") return null;
+  const down = status === "down";
+  return (
+    <span
+      role="status"
+      className={cn("hud-btn pointer-events-none !w-auto gap-1.5 px-2.5 text-xs font-semibold", down ? "text-[#ffd23c]" : "text-white/80", className)}
+      data-testid="geo-duel-live"
+      data-live={status}
+      title={down ? "Lost the live connection: updates come every second until it's back" : "Live: your opponent's moves show at once"}
+    >
+      <span className={cn("inline-block h-2 w-2 rounded-full", down ? "animate-pulse bg-[#ffd23c]" : "bg-[#9be15d] shadow-[0_0_6px_#9be15d]")} aria-hidden />
+      {down ? "Reconnecting…" : "Live"}
+    </span>
   );
 }
 

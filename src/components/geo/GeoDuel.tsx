@@ -18,7 +18,8 @@ import { GeoMap, LINE_DRAW_MS, mapAspect, type MapPin, type RevealedRound } from
 import { ReportShot } from "./ReportShot";
 import { shotFit } from "./ShotCarousel";
 import { CountdownPill, FullscreenButton, GameShell, GuessButton, MapDock } from "./GameShell";
-import { DuelBand, DuelLeave, EmoteButton, HpTimeline, OpponentGuessedBar, THEM_COLOR, VersusIntro, YOU_COLOR, seatImage, useRevealSequence } from "./DuelHud";
+import { DuelBand, DuelLeave, EmoteButton, HpTimeline, LivePill, OpponentGuessedBar, THEM_COLOR, VersusIntro, YOU_COLOR, seatImage, useRevealSequence } from "./DuelHud";
+import { useDuelLive } from "./use-duel-live";
 import { GEO_ERA_NAMES } from "@/lib/geo-families";
 import { cn } from "@/lib/utils";
 import { AddFriendAfterGame } from "@/components/community/AddFriend";
@@ -30,9 +31,13 @@ import { GeoRankedOutcome } from "./GeoRanked";
 /**
  * A PokéGuessr duel at /guessr/duel/<code>: the lobby, the versus intro, the
  * rounds, the reveals and the end screen. The server runs the duel; useDuel
- * polls its state (every second in play) and sends the trainer's actions.
- * Timers count down on the server's clock, corrected for this device's. In
- * play the duel takes the whole window (GameShell), GeoGuessr style.
+ * polls its state and sends the trainer's actions, and where Supabase
+ * Realtime is set up (use-duel-live.ts) the server's pushes fetch the state
+ * the moment it changes, with the polls eased off to a 3 s safety net (back
+ * to every second while the channel is down, with "Reconnecting…" in the
+ * HUD). Timers count down on the server's clock, corrected for this
+ * device's. In play the duel takes the whole window (GameShell), GeoGuessr
+ * style.
  */
 
 const fmt = (n: number) => n.toLocaleString("en-US");
@@ -57,7 +62,10 @@ export interface GeoDuelProps {
 
 export function GeoDuel({ code, regions }: GeoDuelProps) {
   const router = useRouter();
-  const { view, now, gone, offline, error, setError, busy, sawPlay, act, send, join, rematch: takeRematch } = useDuel<DuelView>(`/api/geo/duel/${code}`, code);
+  const { view, now, gone, offline, error, setError, busy, sawPlay, act, send, join, rematch: takeRematch, refresh, setLive } = useDuel<DuelView>(`/api/geo/duel/${code}`, code);
+  // Pushed changes: fetch at once; while they arrive, polls ease off.
+  const liveStatus = useDuelLive(view?.live, code, refresh);
+  useEffect(() => setLive(liveStatus === "up"), [liveStatus, setLive]);
   const [pick, setPick] = useState<MapPin | null>(null);
   const [zoomed, setZoomed] = useState(false);
   const [summary, setSummary] = useState(false);
@@ -159,6 +167,7 @@ export function GeoDuel({ code, regions }: GeoDuelProps) {
       <DuelNotice error={error} offline={offline} />
     </>
   );
+  const livePill = <LivePill status={liveStatus} />;
   const sendEmote = (e: DuelEmote) => {
     unlockAudio();
     return send({ action: "emote", emote: e });
@@ -171,6 +180,7 @@ export function GeoDuel({ code, regions }: GeoDuelProps) {
     return (
       <>
         {notice}
+        {liveStatus === "down" && <div className="mb-3 flex justify-center">{livePill}</div>}
         <EmoteFeed view={view} />
         <DuelLobby
           view={view}
@@ -245,6 +255,7 @@ export function GeoDuel({ code, regions }: GeoDuelProps) {
         {() => (
           <div className="h-full overflow-y-auto">
             {notice}
+            {liveStatus === "down" && <div className="flex justify-center pt-3">{livePill}</div>}
             <EmoteFeed view={view} />
             <DuelEnd view={view} map={map} busy={busy} onRematch={() => void rematch()} />
             <div className="mx-auto max-w-3xl space-y-4 px-4 pb-10 text-foreground">
@@ -270,8 +281,9 @@ export function GeoDuel({ code, regions }: GeoDuelProps) {
             {notice}
             <VersusIntro view={view} me={me} round={index + 1} secondsLeft={Math.max(1, seconds(startsAt - now))} mapName={`${map.name}${view.era ? ` · ${GEO_ERA_NAMES[view.era]}` : ""}`} />
             {emoteButton}
-            <div className="absolute left-3 top-3 z-30">
+            <div className="absolute left-3 top-3 z-30 flex items-center gap-2">
               <DuelLeave busy={busy} onLeave={() => void leave()} />
+              {livePill}
             </div>
           </>
         )}
@@ -281,11 +293,12 @@ export function GeoDuel({ code, regions }: GeoDuelProps) {
 
   // ---- guessing --------------------------------------------------------------------------
   if (live) {
-    const left = live.endsAt - now;
+    const totalMs = live.countdown ? countdownMs : DUEL_ROUND_MS;
+    // A pushed countdown lands within a few ms of the guess, while the page's clock ticks every 250 ms: never more than the countdown.
+    const left = Math.min(live.endsAt - now, totalMs);
     const locked = live.yours ?? null;
     const theyGuessed = live.guessed[1 - me];
     const timeUp = left <= 0;
-    const totalMs = live.countdown ? countdownMs : DUEL_ROUND_MS;
     return (
       <GameShell>
         {({ fs, toggle }) => (
@@ -325,6 +338,7 @@ export function GeoDuel({ code, regions }: GeoDuelProps) {
                 <div className="absolute left-3 top-3 z-20 flex items-center gap-2">
                   <DuelLeave busy={busy} onLeave={() => void leave()} />
                   <FullscreenButton fs={fs} onClick={toggle} />
+                  {livePill}
                 </div>
                 <div className="absolute bottom-[5.5rem] left-3 z-[3] md:bottom-3">
                   <button type="button" onClick={() => setZoomed(true)} className="hud-btn" aria-label="View the whole screenshot" title="Whole screenshot">
@@ -398,7 +412,7 @@ export function GeoDuel({ code, regions }: GeoDuelProps) {
     return (
       <GameShell>
         {() => (
-          <DuelReveal view={view} map={map} result={last} me={me} notice={notice} emoteButton={emoteButton}>
+          <DuelReveal view={view} map={map} result={last} me={me} notice={notice} emoteButton={emoteButton} livePill={livePill}>
             <button
               type="button"
               disabled={!final && (pressed || busy)}
@@ -442,6 +456,7 @@ function DuelReveal({
   me,
   notice,
   emoteButton,
+  livePill,
   children,
 }: {
   view: DuelView;
@@ -450,6 +465,7 @@ function DuelReveal({
   me: number;
   notice: React.ReactNode;
   emoteButton: React.ReactNode;
+  livePill?: React.ReactNode;
   children: React.ReactNode;
 }) {
   const reduced = useReducedMotion();
@@ -478,6 +494,7 @@ function DuelReveal({
           <GeoMap region={map} revealed={revealed} fit={{ delay: LINE_DRAW_MS, duration: FIT_MS }} fill controls={false} />
         </div>
         {notice && <div className="absolute inset-x-0 top-16 z-30 px-4">{notice}</div>}
+        {livePill && <div className="absolute left-3 top-3 z-20">{livePill}</div>}
         {emoteButton}
         {/* The bottom bar: the round's verdict, the place and Next. */}
         <motion.div
