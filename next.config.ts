@@ -42,6 +42,10 @@ const nextConfig: NextConfig = {
       ["/api/battle/**", "/battle/**", "/api/friends/**", "/api/presence", "/api/live", "/u/**"].map((route) => [route, ["./node_modules/pokemon-showdown/dist/{config,data,lib,sim}/**/*.{js,json}"]])
     ),
     "/**/opengraph-image*": ["./src/assets/fonts/*.ttf"],
+    // A shared PokéGuessr result's card draws the map that was played, by a computed path.
+    "/guessr/r/**": ["./public/geo/maps/*.webp"],
+    // The learn card's facts come from the Pokédex's places, which read the encounter tables from disk.
+    "/api/geo/learn": ["./src/data/encounters/*.json"],
   },
   // Battle profiles became the trainer's profile; merged chat rooms point to their new room.
   async redirects() {
