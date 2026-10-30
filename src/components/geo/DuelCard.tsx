@@ -8,11 +8,15 @@ import { GEO_ERA_NAMES, type GeoEra } from "@/lib/geo-families";
 import { NewDuelCard } from "@/components/duel/NewDuelCard";
 import { cn } from "@/lib/utils";
 import { RoundsPicker } from "./GeoSettings";
+import { PARTY_TEAM_HP, partyPath } from "@/lib/geo-party";
 import { GeoRankedCard } from "./GeoRanked";
 
-const MODES: { id: DuelMode; name: string }[] = [
+/** A team duel (2v2) is a party room in team mode: it opens at /guessr/party/<code>. */
+type CardMode = DuelMode | "team";
+const MODES: { id: CardMode; name: string }[] = [
   { id: "hp", name: "HP battle" },
   { id: "race", name: "Points race" },
+  { id: "team", name: "Teams 2v2" },
 ];
 
 const QUEUES = [
@@ -62,11 +66,12 @@ export function DuelCard({
     return () => window.removeEventListener("hashchange", read);
     // eslint-disable-next-line react-hooks/exhaustive-deps -- reads the hash on load and when it changes
   }, []);
-  const [mode, setMode] = useState<DuelMode>("hp");
+  const [mode, setMode] = useState<CardMode>("hp");
   const [rounds, setRounds] = useState<GeoRounds>(5);
   const [turbo, setTurbo] = useState(false);
   const games = era ? ` · ${GEO_ERA_NAMES[era]}` : "";
   const race = mode === "race";
+  const team = mode === "team";
   const raceRounds: GeoRounds = rounds <= places ? rounds : 5;
   const toggle = (
     <div className="flex gap-1.5" role="radiogroup" aria-label="Duel queue">
@@ -99,14 +104,16 @@ export function DuelCard({
         <GeoRankedCard />
       ) : (
         <NewDuelCard
-          endpoint="/api/geo/duel"
-          body={{ region: region.id, ...(era ? { era } : {}), mode, ...(race ? { rounds: raceRounds } : {}), ...(turbo ? { turbo: true } : {}) }}
+          endpoint={team ? "/api/geo/party" : "/api/geo/duel"}
+          body={team ? { region: region.id, mode: "team" } : { region: region.id, ...(era ? { era } : {}), mode, ...(race ? { rounds: raceRounds } : {}), ...(turbo ? { turbo: true } : {}) }}
           // Quick matching pairs HP battles only.
-          match={race ? undefined : { game: "geo", region: region.id, ...(era ? { era } : {}) }}
-          href={(code) => `/guessr/duel/${code}`}
-          heading={`Head to head · ${region.name}${games}`}
+          match={race || team ? undefined : { game: "geo", region: region.id, ...(era ? { era } : {}) }}
+          href={(code) => (team ? partyPath(code) : `/guessr/duel/${code}`)}
+          heading={team ? `Team duel · ${region.name}` : `Head to head · ${region.name}${games}`}
           blurb={
-            race
+            team
+              ? `Two teams of two (up to four a side) on the same places, ${PARTY_TEAM_HP.toLocaleString("en-US")} HP per team. Each round your team scores its best pin, and teammates see each other's pins as they go. Send the room code to three friends.`
+              : race
               ? `The same ${raceRounds} places for both of you, on the map${era ? " and games" : ""} picked above. Whoever scores the most points over ${raceRounds} rounds wins. Send your friend the link and press Ready.`
               : `The same places for both of you, on the map${era ? " and games" : ""} picked above. ${DUEL_HP.toLocaleString("en-US")} HP each: every round, the lower score loses the difference. Send your friend the link and press Ready.`
           }
@@ -134,7 +141,7 @@ export function DuelCard({
               </div>
             </div>
             {race && <RoundsPicker value={raceRounds} onChange={setRounds} max={places} testId="geo-duel-rounds" label="Rounds in the race" />}
-            <div className="space-y-1.5">
+            {!team && <div className="space-y-1.5">
               <p className="hud-label">Party settings</p>
               <button
                 type="button"
@@ -151,7 +158,7 @@ export function DuelCard({
                 Turbo {turbo ? "on" : "off"}
               </button>
               <p className="text-xs text-muted-foreground">Turbo: once one of you guesses, the other has {DUEL_TURBO_CAP_MS / 1000} seconds instead of 15.</p>
-            </div>
+            </div>}
           </div>
         </NewDuelCard>
       )}

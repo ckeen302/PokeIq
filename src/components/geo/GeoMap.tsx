@@ -46,6 +46,8 @@ interface Props {
   className?: string;
   /** Fill the parent instead of keeping the map's aspect ratio. */
   fill?: boolean;
+  /** Other trainers' pins shown live (a team duel's teammates): their colour, avatar and name. */
+  others?: (MapPin & { color?: string; image?: string; label?: string })[];
 }
 
 export const WORLD_MAP = "/geo/maps/world.webp";
@@ -75,7 +77,7 @@ export function mapAspect(region: Pick<GeoRegionInfo, "map">): number {
  * round draws a dashed line from the guess to the answer, then zooms to fit
  * them both.
  */
-export function GeoMap({ region, pick, pinImage, revealed = [], fit, onPick, controls = true, className, fill }: Props) {
+export function GeoMap({ region, pick, pinImage, revealed = [], fit, onPick, controls = true, className, fill, others = [] }: Props) {
   const stageRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const engine = useRef<AtlasEngine | null>(null);
@@ -248,6 +250,14 @@ export function GeoMap({ region, pick, pinImage, revealed = [], fit, onPick, con
                 )}
                 <Flag x={ax} y={ay} />
                 {g && <GuessPin x={g[0]} y={g[1]} label={r.label} color={r.color} image={r.image} delay={0.12 * i} />}
+              </g>
+            );
+          })}
+          {others.map((o, i) => {
+            const [ox, oy] = toScreen(o.x, o.y);
+            return (
+              <g key={`${i}:${o.x},${o.y}`} data-testid="geo-other-pin">
+                <GuessPin x={ox} y={oy} color={o.color} image={o.image} label={o.label} />
               </g>
             );
           })}

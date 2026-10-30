@@ -21,8 +21,8 @@ fs.mkdirSync(OUT, { recursive: true });
 const errors = [];
 const browser = await chromium.launch(process.env.CHROMIUM_PATH ? { executablePath: process.env.CHROMIUM_PATH } : {});
 
-async function newPage(viewport) {
-  const context = await browser.newContext({ viewport, hasTouch: viewport.width < 768, isMobile: viewport.width < 768 });
+async function newPage(viewport, extra = {}) {
+  const context = await browser.newContext({ viewport, hasTouch: viewport.width < 768, isMobile: viewport.width < 768, ...extra });
   await context.addInitScript(() => sessionStorage.setItem("pokeiq-splash", "1"));
   const page = await context.newPage();
   page.on("console", (msg) => {
@@ -325,8 +325,233 @@ async function duel(width, height, { turbo }) {
   await blue.context().close();
 }
 
-/** E2E_ONLY=solo1440,duel1440,solo390,duel390 runs a subset. */
-const only = (process.env.E2E_ONLY ?? "solo1440,weekly1440,duel1440,solo390,weekly390,duel390").split(",");
+// ---------------------------------------------------------------------------
+// Parties
+// ---------------------------------------------------------------------------
+
+/** Joins a party's lobby by its link as `name`. */
+async function joinParty(p, url, name) {
+  await p.goto(url, { waitUntil: "networkidle" });
+  await p.getByTestId("party-lobby").waitFor().catch(async (e) => { await p.screenshot({ path: `${OUT}/fail-lobby-${name}.png` }); console.log(await p.evaluate(() => document.body.innerText.slice(0, 400))); throw e; });
+  await p.getByLabel("Your trainer name").fill(name, { timeout: 20_000 }).catch(async (e) => { await p.screenshot({ path: `${OUT}/fail-join-${name}.png`, fullPage: true }); throw e; });
+  await p.getByTestId("party-join").click();
+  await p.getByTestId("party-leave").waitFor({ timeout: 15_000 });
+}
+
+/** Presses Next on every page whose trainer is still in. */
+async function pressNext(pages) {
+  await Promise.all(
+    pages.map(async (p) => {
+      const next = p.getByTestId("party-next");
+      if (!(await next.isVisible().catch(() => false))) return;
+      if (await next.isEnabled().catch(() => false)) await next.click().catch(() => {});
+    })
+  );
+}
+
+/** What a page shows now: a round, a reveal or the standings (waits through intros). */
+async function phaseOf(p) {
+  for (let i = 0; i < 120; i++) {
+    if (await p.getByTestId("party-end").isVisible().catch(() => false)) return "end";
+    if (await p.getByTestId("party-reveal").isVisible().catch(() => false)) return "reveal";
+    if (await p.getByTestId("party-band").isVisible().catch(() => false)) return "round";
+    await p.waitForTimeout(500);
+  }
+  throw new Error("the party never moved on");
+}
+
+async function royale(width, height) {
+  const phone = width < 768;
+  const tag = `${width}`;
+  const [red, blue, green] = await Promise.all([0, 1, 2].map((i) => newPage({ width, height }, i ? { reducedMotion: "reduce" } : {})));
+  step(`party: Battle Royale at ${tag}`);
+  await red.goto(`${BASE}/guessr?region=kanto`, { waitUntil: "networkidle" });
+  await closeHowTo(red);
+  const card = red.getByTestId("geo-party-card");
+  await card.waitFor();
+  if (await card.getAttribute("aria-disabled")) errors.push("the hub's Party card is still disabled");
+  await red.getByTestId("geo-open-party").click();
+  await red.getByTestId("geo-party-new").waitFor();
+  await red.waitForTimeout(800);
+  await red.screenshot({ path: `${OUT}/party-hub-${tag}.png` });
+  await red.getByTestId("geo-party-name").fill("Red");
+  await red.getByTestId("geo-party-create").click();
+  await red.waitForURL(/\/guessr\/party\/[a-z2-9]{6}$/, { timeout: 20_000 });
+  const url = red.url();
+  await red.getByTestId("party-lobby").waitFor();
+  // The host sets up a quick game: one life, a 30 s round, 10 s after the first pin.
+  for (const id of ["party-set-lives-1", "party-set-timer-30", "party-set-countdown-10"]) {
+    await red.getByTestId(id).click();
+    await red.locator(`[data-testid=${id}][aria-checked=true]`).waitFor({ timeout: 8_000 });
+  }
+  await joinParty(blue, url, "Blue");
+  await joinParty(green, url, "Green");
+  await red.getByTestId("party-seat-2").waitFor({ timeout: 15_000 });
+  if (await blue.getByTestId("party-start").count()) errors.push("a guest sees the host's Start button");
+  // A trainer who reloads keeps their seat.
+  await green.reload({ waitUntil: "networkidle" });
+  await green.getByTestId("party-leave").waitFor({ timeout: 30_000 }).catch(async () => { await green.screenshot({ path: `${OUT}/fail-reload.png`, fullPage: true }); throw new Error("Green lost the seat on reload"); });
+  await red.waitForTimeout(1500);
+  await red.screenshot({ path: `${OUT}/party-lobby-${tag}.png`, fullPage: true });
+  await blue.screenshot({ path: `${OUT}/party-lobby-guest-${tag}.png`, fullPage: true });
+  await red.getByTestId("party-start").click();
+
+  await red.getByTestId("party-lineup").waitFor({ timeout: 15_000 });
+  await red.waitForTimeout(1500);
+  await red.screenshot({ path: `${OUT}/party-lineup-${tag}.png` });
+
+  // Round 1: Red and Blue guess, Green doesn't (and, on one life, goes out unless everyone ties).
+  await Promise.all([shotLoaded(red), shotLoaded(blue), shotLoaded(green)]);
+  await red.getByTestId("party-band").waitFor();
+  await red.waitForTimeout(400);
+  await red.screenshot({ path: `${OUT}/party-round-${tag}.png` });
+  await red.getByTestId("geo-emote-button").click();
+  await red.getByTestId("geo-emote-pika").click();
+  await blue.getByTestId("party-emote-0").waitFor({ timeout: 8_000 }).catch(() => errors.push("Blue never saw Red's emote"));
+  await pinAndGuess(red, phone, 0.5);
+  await pinAndGuess(blue, phone, 0.35);
+  await red.locator("[data-testid=party-roster-1][data-guessed=true]").waitFor({ timeout: 8_000 }).catch(() => errors.push("the roster doesn't tick off Blue's guess"));
+  await red.getByTestId("party-reveal").waitFor({ timeout: 30_000 });
+  await red.waitForTimeout(2200);
+  await red.screenshot({ path: `${OUT}/party-reveal-${tag}.png` });
+  const headline = await red.getByTestId("party-headline").innerText();
+  if (!/out|life|Even/i.test(headline)) errors.push(`the reveal's headline reads "${headline}"`);
+
+  // On to the end: Red always guesses, Blue in odd rounds; whoever is out watches.
+  let sawSpectator = false;
+  for (let i = 0; i < 12; i++) {
+    const phase = await phaseOf(red);
+    if (phase === "end") break;
+    if (phase === "reveal") {
+      if (/See standings/.test(await red.getByTestId("party-next").innerText())) {
+        await red.getByTestId("party-next").click();
+        break;
+      }
+      await pressNext([red, blue, green]);
+      await red.getByTestId("party-reveal").waitFor({ state: "hidden", timeout: 30_000 });
+      continue;
+    }
+    await shotLoaded(red);
+    if (!sawSpectator && (await green.getByTestId("party-spectating").isVisible().catch(() => false))) {
+      sawSpectator = true;
+      await green.waitForTimeout(400);
+      await green.screenshot({ path: `${OUT}/party-spectating-${tag}.png` });
+    }
+    await pinAndGuess(red, phone, 0.5);
+    if (i % 2 === 1 && (await blue.getByTestId("geo-dock").isVisible().catch(() => false))) await pinAndGuess(blue, phone, 0.4).catch(() => {});
+    await red.getByTestId("party-reveal").waitFor({ timeout: 40_000 });
+  }
+  await red.getByTestId("party-end").waitFor({ timeout: 30_000 });
+  if (!sawSpectator) errors.push("the trainer who went out never watched a round");
+  await red.getByTestId("party-result").waitFor();
+  if ((await red.locator("[data-testid^=party-standing-]").count()) !== 3) errors.push("the standings don't list all three trainers");
+  await blue.getByTestId("party-next").click().catch(() => {});
+  await blue.getByTestId("party-end").waitFor({ timeout: 20_000 });
+  // Post-game taunts reach the others.
+  await red.getByTestId("party-taunt-dab").click();
+  await blue
+    .locator('[data-testid="party-trainer-0"][data-playing="dab"]')
+    .waitFor({ timeout: 15_000 })
+    .catch(() => errors.push("Blue never saw Red's dance"));
+  await red.waitForTimeout(800);
+  await red.screenshot({ path: `${OUT}/party-end-${tag}.png`, fullPage: true });
+  // Play again: back to the lobby for everyone.
+  await red.getByTestId("party-again").click();
+  await blue.getByTestId("party-lobby").waitFor({ timeout: 20_000 }).catch(() => errors.push("Play again didn't bring Blue back to the lobby"));
+  for (const p of [red, blue, green]) await p.context().close();
+}
+
+async function teamDuel(width, height) {
+  const phone = width < 768;
+  const tag = `${width}`;
+  // Four pages of 3D trainers drawn in software are a lot for one test machine: they hold still (reduced motion).
+  const pages = await Promise.all([0, 1, 2, 3].map((i) => newPage({ width, height }, i ? { reducedMotion: "reduce" } : {})));
+  const [red, blue, green, gold] = pages;
+  step(`party: team duel 2v2 at ${tag}`);
+  await red.goto(`${BASE}/guessr?region=kanto`, { waitUntil: "networkidle" });
+  await closeHowTo(red);
+  await red.getByTestId("geo-open-duels").click();
+  await red.getByTestId("geo-duel-mode-team").click();
+  await red.getByLabel("Your trainer name").first().fill("Red");
+  await red.getByRole("button", { name: /Create duel/ }).click();
+  await red.waitForURL(/\/guessr\/party\/[a-z2-9]{6}$/, { timeout: 20_000 });
+  const url = red.url();
+  await red.locator("[data-testid=party-set-mode-team][aria-checked=true]").waitFor();
+  for (const id of ["party-set-rounds-5", "party-set-timer-30", "party-set-countdown-10"]) {
+    await red.getByTestId(id).click();
+    await red.locator(`[data-testid=${id}][aria-checked=true]`).waitFor({ timeout: 8_000 });
+  }
+  await joinParty(blue, url, "Blue");
+  await joinParty(green, url, "Green");
+  await joinParty(gold, url, "Gold");
+  // Seats alternate teams: Red and Green on red, Blue and Gold on blue.
+  await red.locator("[data-testid=party-team-1] [data-testid=party-seat-3]").waitFor({ timeout: 15_000 });
+  if ((await red.locator("[data-testid=party-team-0] [data-testid^=party-seat-]").count()) !== 2) errors.push("the red team doesn't have two trainers");
+  await red.waitForTimeout(1500);
+  await red.screenshot({ path: `${OUT}/party-team-lobby-${tag}.png`, fullPage: true });
+  await red.getByTestId("party-start").click();
+  await red.getByTestId("party-lineup").waitFor({ timeout: 15_000 });
+  await red.waitForTimeout(1500);
+  await red.screenshot({ path: `${OUT}/party-team-lineup-${tag}.png` });
+
+  for (let i = 0; i < 12; i++) {
+    const phase = await phaseOf(red);
+    if (phase === "end") break;
+    if (phase === "reveal") {
+      if (i === 1) {
+        await red.waitForTimeout(2000);
+        await red.screenshot({ path: `${OUT}/party-team-reveal-${tag}.png` });
+      }
+      if (/See standings/.test(await red.getByTestId("party-next").innerText())) {
+        await red.getByTestId("party-next").click();
+        break;
+      }
+      await pressNext(pages);
+      await red.getByTestId("party-reveal").waitFor({ state: "hidden", timeout: 30_000 });
+      continue;
+    }
+    await Promise.all(pages.map((p) => shotLoaded(p)));
+    if (i === 0) {
+      // Green drops a pin: teammate Red sees it before anyone locks in; Blue (the other team) doesn't.
+      if (phone) {
+        await green.getByTestId("geo-map-pill").click();
+        await green.locator("[data-testid=geo-dock][data-open=true]").waitFor();
+        await green.waitForTimeout(350);
+      } else {
+        const dock = await green.getByTestId("geo-dock").boundingBox();
+        await green.mouse.move(dock.x + dock.width / 2, dock.y + dock.height / 2, { steps: 4 });
+        await green.waitForTimeout(700);
+      }
+      const map = green.locator("[role=application]");
+      const box = await map.boundingBox();
+      await map.click({ position: { x: box.width * 0.45, y: box.height * 0.5 } });
+      await red.locator("[data-testid=geo-other-pin]").first().waitFor({ state: "attached", timeout: 10_000 }).catch(() => errors.push("Red never saw teammate Green's pin"));
+      if ((await blue.locator("[data-testid=geo-other-pin]").count()) > 0) errors.push("Blue sees the other team's pin before the reveal");
+      if (!phone) {
+        const dock = await red.getByTestId("geo-dock").boundingBox();
+        await red.mouse.move(dock.x + dock.width / 2, dock.y + dock.height / 2, { steps: 4 });
+        await red.waitForTimeout(900);
+      }
+      await red.screenshot({ path: `${OUT}/party-team-round-${tag}.png` });
+      await green.getByTestId("geo-guess").click();
+    } else {
+      await pinAndGuess(green, phone, 0.45);
+    }
+    await pinAndGuess(red, phone, 0.5);
+    await pinAndGuess(blue, phone, 0.1);
+    await pinAndGuess(gold, phone, 0.15);
+    await red.getByTestId("party-reveal").waitFor({ timeout: 40_000 });
+  }
+  await red.getByTestId("party-end").waitFor({ timeout: 30_000 });
+  await red.getByTestId("party-result").filter({ hasText: /Victory!|Defeat|Draw/ }).waitFor();
+  if ((await red.locator("[data-testid^=party-standing-]").count()) !== 4) errors.push("the team standings don't list all four trainers");
+  await red.waitForTimeout(900);
+  await red.screenshot({ path: `${OUT}/party-team-end-${tag}.png`, fullPage: true });
+  for (const p of pages) await p.context().close();
+}
+
+/** E2E_ONLY=solo1440,weekly1440,duel1440,solo390,weekly390,duel390,royale1440,team1440,royale390,team390 runs a subset. */
+const only = (process.env.E2E_ONLY ?? "solo1440,weekly1440,duel1440,solo390,weekly390,duel390,royale1440,team1440,royale390,team390").split(",");
 try {
   if (only.includes("solo1440")) await solo(1440, 900);
   if (only.includes("weekly1440")) await weekly(1440, 900);
@@ -334,6 +559,10 @@ try {
   if (only.includes("duel1440")) await duel(1440, 900, { turbo: false });
   if (only.includes("solo390")) await solo(390, 844);
   if (only.includes("duel390")) await duel(390, 844, { turbo: true });
+  if (only.includes("royale1440")) await royale(1440, 900);
+  if (only.includes("team1440")) await teamDuel(1440, 900);
+  if (only.includes("royale390")) await royale(390, 844);
+  if (only.includes("team390")) await teamDuel(390, 844);
 } catch (err) {
   errors.push(`FAILED: ${err?.stack ?? err}`);
 } finally {

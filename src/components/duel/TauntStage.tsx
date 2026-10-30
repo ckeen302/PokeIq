@@ -203,7 +203,7 @@ export function TauntStage({ view, onTaunt }: { view: TauntView; onTaunt: (id: T
 }
 
 /** The signed-in trainer's unlocks (guests: the free moves). */
-function useUnlocks(): AvatarUnlocks {
+export function useUnlocks(): AvatarUnlocks {
   const { user } = useAccount();
   const [u, setU] = useState<AvatarUnlocks>(GUEST);
   useEffect(() => {
