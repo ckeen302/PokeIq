@@ -347,6 +347,16 @@
   ],
   "evidence": "Flower patches and the tree line match Route 30 tile for tile (the view hangs past its east edge); the rival Dark Cave peaks lie in that cave's unlit, dithered void, which has nothing to match."
  },
+ "E8TtCAh6E34J": {
+  "verdict": "pick",
+  "method": "inv2d",
+  "rip": "archives.bulbagarden.net|Shoal_Cave_ice_room_E.png",
+  "spot": [
+   136.0,
+   408.0
+  ],
+  "evidence": "The ice floor, the ice boulders and the item ball at the top match Shoal Cave's ice room (Emerald) at this point, 0.98 / 0.99."
+ },
  "EEnewucmXRHe": {
   "verdict": "pick",
   "method": "cam3d",
@@ -374,6 +384,16 @@
    133.1
   ],
   "evidence": "The pond below, the tree clumps and the wooden fence on the right match Route 203 at this point (the Diamond/Pearl rip agrees)."
+ },
+ "FyHroqNt3haU": {
+  "verdict": "pick",
+  "method": "inv2d",
+  "rip": "archives.bulbagarden.net|Bond_Bridge_FRLG.png",
+  "spot": [
+   728.0,
+   200.0
+  ],
+  "evidence": "The end of the wooden bridge, the sand and the stairs at the top match Bond Bridge at this point (0.73); the text box hides the lower part, which lowers the score, and the other peaks (0.46 and below) don't show the stairs."
  },
  "G1UG8AJGlhq7": {
   "verdict": "pick",
@@ -652,6 +672,16 @@
  "X5iwGNjjZF0D": {
   "verdict": "unscored",
   "reason": "Route 23's badge-check gates are identical: the gate and tree line match at two points equally (0.98 each)."
+ },
+ "XXyhbS_IFxav": {
+  "verdict": "pick",
+  "method": "inv2d",
+  "rip": "archives.bulbagarden.net|Kanto_Route_23_FRLG.png",
+  "spot": [
+   56.0,
+   2049.5
+  ],
+  "evidence": "The badge-check gate with the trees on its left matches Route 23 at this point (0.96 / 1.00); the next gate along scores only 0.75, since its surroundings differ."
  },
  "XYNuyORholKD": {
   "verdict": "pick",
