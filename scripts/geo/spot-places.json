@@ -1,0 +1,2222 @@
+{
+ "Hoenn|Abandoned Ship": {
+  "drawn": false,
+  "kind": "icon",
+  "why": "a cave, forest, tower, building or interior: our map shows where it is, not its inside or floors",
+  "atlas": "own path 0px, own sea line 42px, mask 26px across"
+ },
+ "Hoenn|Altering Cave": {
+  "drawn": false,
+  "kind": "icon",
+  "why": "a cave, forest, tower, building or interior: our map shows where it is, not its inside or floors",
+  "atlas": "own path 6px, own sea line 37px, mask 28px across"
+ },
+ "Hoenn|Ancient Tomb": {
+  "drawn": false,
+  "kind": "icon",
+  "why": "a cave, forest, tower, building or interior: our map shows where it is, not its inside or floors",
+  "atlas": "own path 0px, own sea line 0px, mask 25px across"
+ },
+ "Hoenn|Battle Frontier": {
+  "drawn": false,
+  "kind": "undrawn",
+  "why": "a small islet; the Frontier's facilities and paths are not drawn",
+  "atlas": "own path 0px, own sea line 16px, mask 21px across"
+ },
+ "Hoenn|Desert Ruins": {
+  "drawn": false,
+  "kind": "icon",
+  "why": "a cave, forest, tower, building or interior: our map shows where it is, not its inside or floors",
+  "atlas": "own path 0px, own sea line 0px, mask 21px across"
+ },
+ "Hoenn|Dewford Town": {
+  "drawn": false,
+  "kind": "town",
+  "why": "a town block: our map draws the town as one block, not its streets",
+  "atlas": "own path 6px, own sea line 37px, mask 21px across"
+ },
+ "Hoenn|Ever Grande City": {
+  "drawn": false,
+  "kind": "town",
+  "why": "a town block: our map draws the town as one block, not its streets",
+  "atlas": "own path 9px, own sea line 18px, mask 42px across"
+ },
+ "Hoenn|Fallarbor Town": {
+  "drawn": false,
+  "kind": "town",
+  "why": "a town block: our map draws the town as one block, not its streets",
+  "atlas": "own path 0px, own sea line 0px, mask 21px across"
+ },
+ "Hoenn|Fiery Path": {
+  "drawn": false,
+  "kind": "icon",
+  "why": "a cave, forest, tower, building or interior: our map shows where it is, not its inside or floors",
+  "atlas": "own path 0px, own sea line 0px, mask 54px across"
+ },
+ "Hoenn|Fortree City": {
+  "drawn": false,
+  "kind": "town",
+  "why": "a town block: our map draws the town as one block, not its streets",
+  "atlas": "own path 13px, own sea line 3px, mask 21px across"
+ },
+ "Hoenn|Granite Cave": {
+  "drawn": false,
+  "kind": "icon",
+  "why": "a cave, forest, tower, building or interior: our map shows where it is, not its inside or floors",
+  "atlas": "own path 0px, own sea line 24px, mask 28px across"
+ },
+ "Hoenn|Island Cave": {
+  "drawn": false,
+  "kind": "icon",
+  "why": "a cave, forest, tower, building or interior: our map shows where it is, not its inside or floors",
+  "atlas": "own path 0px, own sea line 0px, mask 25px across"
+ },
+ "Hoenn|Jagged Pass": {
+  "drawn": false,
+  "kind": "undrawn",
+  "why": "a short east–west stub of path; the pass's north–south switchbacks are not drawn",
+  "atlas": "own path 4px, own sea line 0px, mask 28px across"
+ },
+ "Hoenn|Lavaridge Town": {
+  "drawn": false,
+  "kind": "town",
+  "why": "a town block: our map draws the town as one block, not its streets",
+  "atlas": "own path 0px, own sea line 0px, mask 20px across"
+ },
+ "Hoenn|Lilycove City": {
+  "drawn": false,
+  "kind": "town",
+  "why": "a town block: our map draws the town as one block, not its streets",
+  "atlas": "own path 14px, own sea line 12px, mask 39px across"
+ },
+ "Hoenn|Littleroot Town": {
+  "drawn": false,
+  "kind": "town",
+  "why": "a town block: our map draws the town as one block, not its streets",
+  "atlas": "own path 0px, own sea line 11px, mask 19px across"
+ },
+ "Hoenn|Mauville City": {
+  "drawn": false,
+  "kind": "town",
+  "why": "a town block: our map draws the town as one block, not its streets",
+  "atlas": "own path 39px, own sea line 37px, mask 42px across"
+ },
+ "Hoenn|Meteor Falls": {
+  "drawn": false,
+  "kind": "icon",
+  "why": "a cave, forest, tower, building or interior: our map shows where it is, not its inside or floors",
+  "atlas": "own path 3px, own sea line 0px, mask 26px across"
+ },
+ "Hoenn|Mirage Island": {
+  "drawn": false,
+  "kind": "town",
+  "why": "a town block: our map draws the town as one block, not its streets",
+  "atlas": "own path 0px, own sea line 0px, mask 27px across"
+ },
+ "Hoenn|Mirage Tower": {
+  "drawn": false,
+  "kind": "icon",
+  "why": "a cave, forest, tower, building or interior: our map shows where it is, not its inside or floors",
+  "atlas": "own path 0px, own sea line 0px, mask 0px across"
+ },
+ "Hoenn|Mossdeep City": {
+  "drawn": false,
+  "kind": "town",
+  "why": "a town block: our map draws the town as one block, not its streets",
+  "atlas": "own path 0px, own sea line 0px, mask 46px across"
+ },
+ "Hoenn|Mt. Chimney": {
+  "drawn": false,
+  "kind": "undrawn",
+  "why": "the summit is not drawn: plain grass beside paths",
+  "atlas": "own path 0px, own sea line 0px, mask 25px across"
+ },
+ "Hoenn|Mt. Pyre": {
+  "drawn": false,
+  "kind": "icon",
+  "why": "a cave, forest, tower, building or interior: our map shows where it is, not its inside or floors",
+  "atlas": "own path 0px, own sea line 0px, mask 26px across"
+ },
+ "Hoenn|New Mauville": {
+  "drawn": false,
+  "kind": "icon",
+  "why": "a cave, forest, tower, building or interior: our map shows where it is, not its inside or floors",
+  "atlas": "own path 4px, own sea line 23px, mask 27px across"
+ },
+ "Hoenn|Oldale Town": {
+  "drawn": false,
+  "kind": "town",
+  "why": "a town block: our map draws the town as one block, not its streets",
+  "atlas": "own path 23px, own sea line 11px, mask 30px across"
+ },
+ "Hoenn|Pacifidlog Town": {
+  "drawn": false,
+  "kind": "town",
+  "why": "a town block: our map draws the town as one block, not its streets",
+  "atlas": "own path 0px, own sea line 40px, mask 16px across"
+ },
+ "Hoenn|Petalburg City": {
+  "drawn": false,
+  "kind": "town",
+  "why": "a town block: our map draws the town as one block, not its streets",
+  "atlas": "own path 17px, own sea line 32px, mask 30px across"
+ },
+ "Hoenn|Petalburg Woods": {
+  "drawn": false,
+  "kind": "icon",
+  "why": "a cave, forest, tower, building or interior: our map shows where it is, not its inside or floors",
+  "atlas": "own path 0px, own sea line 0px, mask 28px across"
+ },
+ "Hoenn|Pretty Petal Flower Shop": {
+  "drawn": false,
+  "kind": "icon",
+  "why": "a cave, forest, tower, building or interior: our map shows where it is, not its inside or floors",
+  "atlas": "own path 0px, own sea line 4px, mask 24px across"
+ },
+ "Hoenn|Route 101": {
+  "drawn": true,
+  "kind": "path",
+  "why": "a route drawn as its own cream path",
+  "atlas": "own path 23px, own sea line 0px, mask 23px across"
+ },
+ "Hoenn|Route 102": {
+  "drawn": true,
+  "kind": "path",
+  "why": "a route drawn as its own cream path",
+  "atlas": "own path 63px, own sea line 24px, mask 54px across"
+ },
+ "Hoenn|Route 103": {
+  "drawn": true,
+  "kind": "path",
+  "why": "a route drawn as its own cream path",
+  "atlas": "own path 96px, own sea line 68px, mask 97px across"
+ },
+ "Hoenn|Route 104": {
+  "drawn": true,
+  "kind": "path",
+  "why": "a route drawn as its own cream path",
+  "atlas": "own path 44px, own sea line 42px, mask 86px across"
+ },
+ "Hoenn|Route 105": {
+  "drawn": false,
+  "kind": "undrawn",
+  "why": "open sea: our map draws no line or shore inside the route, only water",
+  "atlas": "own path 0px, own sea line 0px, mask 63px across"
+ },
+ "Hoenn|Route 106": {
+  "drawn": true,
+  "kind": "sea",
+  "why": "a sea route along its own drawn sea line",
+  "atlas": "own path 6px, own sea line 88px, mask 79px across"
+ },
+ "Hoenn|Route 108": {
+  "drawn": true,
+  "kind": "sea",
+  "why": "a sea route along its own drawn sea line",
+  "atlas": "own path 0px, own sea line 53px, mask 54px across"
+ },
+ "Hoenn|Route 109": {
+  "drawn": true,
+  "kind": "sea",
+  "why": "a sea route along its own drawn sea line",
+  "atlas": "own path 0px, own sea line 97px, mask 79px across"
+ },
+ "Hoenn|Route 110": {
+  "drawn": true,
+  "kind": "path",
+  "why": "a route drawn as its own cream path",
+  "atlas": "own path 95px, own sea line 90px, mask 89px across"
+ },
+ "Hoenn|Route 111": {
+  "drawn": true,
+  "kind": "path",
+  "why": "a route drawn as its own cream path",
+  "atlas": "own path 73px, own sea line 22px, mask 156px across"
+ },
+ "Hoenn|Route 112": {
+  "drawn": true,
+  "kind": "path",
+  "why": "a route drawn as its own cream path",
+  "atlas": "own path 61px, own sea line 0px, mask 54px across"
+ },
+ "Hoenn|Route 113": {
+  "drawn": true,
+  "kind": "path",
+  "why": "a route drawn as its own cream path",
+  "atlas": "own path 103px, own sea line 22px, mask 103px across"
+ },
+ "Hoenn|Route 114": {
+  "drawn": true,
+  "kind": "path",
+  "why": "a route drawn as its own cream path",
+  "atlas": "own path 67px, own sea line 82px, mask 83px across"
+ },
+ "Hoenn|Route 115": {
+  "drawn": true,
+  "kind": "path",
+  "why": "a route drawn as its own cream path",
+  "atlas": "own path 74px, own sea line 101px, mask 86px across"
+ },
+ "Hoenn|Route 116": {
+  "drawn": true,
+  "kind": "path",
+  "why": "a route drawn as its own cream path",
+  "atlas": "own path 95px, own sea line 0px, mask 105px across"
+ },
+ "Hoenn|Route 117": {
+  "drawn": true,
+  "kind": "path",
+  "why": "a route drawn as its own cream path",
+  "atlas": "own path 36px, own sea line 46px, mask 79px across"
+ },
+ "Hoenn|Route 118": {
+  "drawn": true,
+  "kind": "path",
+  "why": "a route drawn as its own cream path",
+  "atlas": "own path 42px, own sea line 53px, mask 59px across"
+ },
+ "Hoenn|Route 119": {
+  "drawn": true,
+  "kind": "path",
+  "why": "a route drawn as its own cream path",
+  "atlas": "own path 142px, own sea line 54px, mask 156px across"
+ },
+ "Hoenn|Route 120": {
+  "drawn": true,
+  "kind": "path",
+  "why": "a route drawn as its own cream path",
+  "atlas": "own path 54px, own sea line 54px, mask 106px across"
+ },
+ "Hoenn|Route 121": {
+  "drawn": true,
+  "kind": "path",
+  "why": "a route drawn as its own cream path",
+  "atlas": "own path 111px, own sea line 97px, mask 104px across"
+ },
+ "Hoenn|Route 122": {
+  "drawn": true,
+  "kind": "path",
+  "why": "a route drawn as its own cream path",
+  "atlas": "own path 61px, own sea line 52px, mask 58px across"
+ },
+ "Hoenn|Route 123": {
+  "drawn": true,
+  "kind": "path",
+  "why": "a route drawn as its own cream path",
+  "atlas": "own path 11px, own sea line 133px, mask 131px across"
+ },
+ "Hoenn|Route 124": {
+  "drawn": false,
+  "kind": "undrawn",
+  "why": "open sea: a single diagonal sea line crosses a wide block of water; the route's islands and deep-water patches are not drawn",
+  "atlas": "own path 0px, own sea line 91px, mask 104px across"
+ },
+ "Hoenn|Route 125": {
+  "drawn": false,
+  "kind": "undrawn",
+  "why": "open sea: nothing drawn inside the route, only water",
+  "atlas": "own path 0px, own sea line 0px, mask 57px across"
+ },
+ "Hoenn|Route 126": {
+  "drawn": false,
+  "kind": "undrawn",
+  "why": "open sea around Sootopolis: only a stretch of sea line on the edge of the area",
+  "atlas": "own path 0px, own sea line 19px, mask 80px across"
+ },
+ "Hoenn|Route 127": {
+  "drawn": false,
+  "kind": "undrawn",
+  "why": "open sea: one sea line crosses a wide block of water",
+  "atlas": "own path 0px, own sea line 98px, mask 83px across"
+ },
+ "Hoenn|Route 128": {
+  "drawn": false,
+  "kind": "undrawn",
+  "why": "open sea: a sea line and two islets; the route's reefs and water are not drawn",
+  "atlas": "own path 23px, own sea line 90px, mask 108px across"
+ },
+ "Hoenn|Route 130": {
+  "drawn": false,
+  "kind": "undrawn",
+  "why": "open sea: a sea line on the edge of a wide block of water (Mirage Island area)",
+  "atlas": "own path 0px, own sea line 75px, mask 76px across"
+ },
+ "Hoenn|Route 132": {
+  "drawn": true,
+  "kind": "sea",
+  "why": "a sea route along its own drawn sea line",
+  "atlas": "own path 0px, own sea line 59px, mask 54px across"
+ },
+ "Hoenn|Route 133": {
+  "drawn": true,
+  "kind": "sea",
+  "why": "a sea route along its own drawn sea line",
+  "atlas": "own path 0px, own sea line 85px, mask 83px across"
+ },
+ "Hoenn|Route 134": {
+  "drawn": true,
+  "kind": "sea",
+  "why": "a sea route along its own drawn sea line",
+  "atlas": "own path 9px, own sea line 85px, mask 83px across"
+ },
+ "Hoenn|Rustboro City": {
+  "drawn": false,
+  "kind": "town",
+  "why": "a town block: our map draws the town as one block, not its streets",
+  "atlas": "own path 41px, own sea line 5px, mask 45px across"
+ },
+ "Hoenn|Rusturf Tunnel": {
+  "drawn": false,
+  "kind": "icon",
+  "why": "a cave, forest, tower, building or interior: our map shows where it is, not its inside or floors",
+  "atlas": "own path 63px, own sea line 0px, mask 54px across"
+ },
+ "Hoenn|Safari Zone": {
+  "drawn": false,
+  "kind": "undrawn",
+  "why": "the mask covers a path junction; the zone's areas are not drawn",
+  "atlas": "own path 32px, own sea line 0px, mask 26px across"
+ },
+ "Hoenn|Scorched Slab": {
+  "drawn": false,
+  "kind": "icon",
+  "why": "a cave, forest, tower, building or interior: our map shows where it is, not its inside or floors",
+  "atlas": "own path 19px, own sea line 22px, mask 24px across"
+ },
+ "Hoenn|Seafloor Cavern": {
+  "drawn": false,
+  "kind": "icon",
+  "why": "a cave, forest, tower, building or interior: our map shows where it is, not its inside or floors",
+  "atlas": "own path 0px, own sea line 0px, mask 27px across"
+ },
+ "Hoenn|Sealed Chamber": {
+  "drawn": false,
+  "kind": "icon",
+  "why": "a cave, forest, tower, building or interior: our map shows where it is, not its inside or floors",
+  "atlas": "own path 0px, own sea line 4px, mask 27px across"
+ },
+ "Hoenn|Shoal Cave": {
+  "drawn": false,
+  "kind": "icon",
+  "why": "a cave, forest, tower, building or interior: our map shows where it is, not its inside or floors",
+  "atlas": "own path 0px, own sea line 0px, mask 28px across"
+ },
+ "Hoenn|Sky Pillar": {
+  "drawn": false,
+  "kind": "icon",
+  "why": "a cave, forest, tower, building or interior: our map shows where it is, not its inside or floors",
+  "atlas": "own path 0px, own sea line 50px, mask 28px across"
+ },
+ "Hoenn|Slateport City": {
+  "drawn": false,
+  "kind": "town",
+  "why": "a town block: our map draws the town as one block, not its streets",
+  "atlas": "own path 10px, own sea line 26px, mask 40px across"
+ },
+ "Hoenn|Sootopolis City": {
+  "drawn": false,
+  "kind": "town",
+  "why": "a town block: our map draws the town as one block, not its streets",
+  "atlas": "own path 0px, own sea line 0px, mask 21px across"
+ },
+ "Hoenn|Southern Island": {
+  "drawn": false,
+  "kind": "town",
+  "why": "a town block: our map draws the town as one block, not its streets",
+  "atlas": "own path 0px, own sea line 8px, mask 24px across"
+ },
+ "Hoenn|Team Aqua Hideout": {
+  "drawn": false,
+  "kind": "icon",
+  "why": "a cave, forest, tower, building or interior: our map shows where it is, not its inside or floors",
+  "atlas": "own path 25px, own sea line 44px, mask 21px across"
+ },
+ "Hoenn|Trainer Hill": {
+  "drawn": false,
+  "kind": "icon",
+  "why": "a cave, forest, tower, building or interior: our map shows where it is, not its inside or floors",
+  "atlas": "own path 0px, own sea line 0px, mask 25px across"
+ },
+ "Hoenn|Trick House": {
+  "drawn": false,
+  "kind": "icon",
+  "why": "a cave, forest, tower, building or interior: our map shows where it is, not its inside or floors",
+  "atlas": "own path 5px, own sea line 4px, mask 27px across"
+ },
+ "Hoenn|Verdanturf Town": {
+  "drawn": false,
+  "kind": "town",
+  "why": "a town block: our map draws the town as one block, not its streets",
+  "atlas": "own path 8px, own sea line 0px, mask 21px across"
+ },
+ "Hoenn|Victory Road": {
+  "drawn": false,
+  "kind": "icon",
+  "why": "a cave, forest, tower, building or interior: our map shows where it is, not its inside or floors",
+  "atlas": "own path 17px, own sea line 52px, mask 37px across"
+ },
+ "Hoenn|Weather Institute": {
+  "drawn": false,
+  "kind": "icon",
+  "why": "a cave, forest, tower, building or interior: our map shows where it is, not its inside or floors",
+  "atlas": "own path 30px, own sea line 0px, mask 28px across"
+ },
+ "Johto|Azalea Town": {
+  "drawn": false,
+  "kind": "town",
+  "why": "a town block: our map draws the town as one block, not its streets",
+  "atlas": "own path 61px, own sea line 0px, mask 62px across"
+ },
+ "Johto|Bell Tower": {
+  "drawn": false,
+  "kind": "icon",
+  "why": "a cave, forest, tower, building or interior: our map shows where it is, not its inside or floors",
+  "atlas": "own path 3px, own sea line 0px, mask 21px across"
+ },
+ "Johto|Blackthorn City": {
+  "drawn": false,
+  "kind": "town",
+  "why": "a town block: our map draws the town as one block, not its streets",
+  "atlas": "own path 32px, own sea line 0px, mask 66px across"
+ },
+ "Johto|Burned Tower": {
+  "drawn": false,
+  "kind": "icon",
+  "why": "a cave, forest, tower, building or interior: our map shows where it is, not its inside or floors",
+  "atlas": "own path 0px, own sea line 0px, mask 24px across"
+ },
+ "Johto|Cherrygrove City": {
+  "drawn": false,
+  "kind": "town",
+  "why": "a town block: our map draws the town as one block, not its streets",
+  "atlas": "own path 41px, own sea line 77px, mask 63px across"
+ },
+ "Johto|Cianwood City": {
+  "drawn": false,
+  "kind": "town",
+  "why": "a town block: our map draws the town as one block, not its streets",
+  "atlas": "own path 33px, own sea line 79px, mask 65px across"
+ },
+ "Johto|Dark Cave": {
+  "drawn": false,
+  "kind": "icon",
+  "why": "a cave, forest, tower, building or interior: our map shows where it is, not its inside or floors",
+  "atlas": "own path 88px, own sea line 0px, mask 133px across"
+ },
+ "Johto|Dragon's Den": {
+  "drawn": false,
+  "kind": "icon",
+  "why": "a cave, forest, tower, building or interior: our map shows where it is, not its inside or floors",
+  "atlas": "own path 0px, own sea line 0px, mask 23px across"
+ },
+ "Johto|Ecruteak City": {
+  "drawn": false,
+  "kind": "town",
+  "why": "a town block: our map draws the town as one block, not its streets",
+  "atlas": "own path 68px, own sea line 0px, mask 66px across"
+ },
+ "Johto|Frontier Access": {
+  "drawn": false,
+  "kind": "undrawn",
+  "why": "plain grass between paths; its layout is not drawn",
+  "atlas": "own path 0px, own sea line 16px, mask 38px across"
+ },
+ "Johto|Goldenrod City": {
+  "drawn": false,
+  "kind": "town",
+  "why": "a town block: our map draws the town as one block, not its streets",
+  "atlas": "own path 69px, own sea line 84px, mask 94px across"
+ },
+ "Johto|Ice Path": {
+  "drawn": false,
+  "kind": "icon",
+  "why": "a cave, forest, tower, building or interior: our map shows where it is, not its inside or floors",
+  "atlas": "own path 0px, own sea line 0px, mask 16px across"
+ },
+ "Johto|Ilex Forest": {
+  "drawn": false,
+  "kind": "icon",
+  "why": "a cave, forest, tower, building or interior: our map shows where it is, not its inside or floors",
+  "atlas": "own path 0px, own sea line 0px, mask 24px across"
+ },
+ "Johto|Lake of Rage": {
+  "drawn": false,
+  "kind": "undrawn",
+  "why": "drawn as a stylised ring of water around grass, which does not follow the lake's shore",
+  "atlas": "own path 0px, own sea line 115px, mask 94px across"
+ },
+ "Johto|Mahogany Town": {
+  "drawn": false,
+  "kind": "town",
+  "why": "a town block: our map draws the town as one block, not its streets",
+  "atlas": "own path 38px, own sea line 0px, mask 39px across"
+ },
+ "Johto|Mt. Mortar": {
+  "drawn": false,
+  "kind": "icon",
+  "why": "a cave, forest, tower, building or interior: our map shows where it is, not its inside or floors",
+  "atlas": "own path 0px, own sea line 0px, mask 21px across"
+ },
+ "Johto|Mt. Silver": {
+  "drawn": false,
+  "kind": "icon",
+  "why": "a cave, forest, tower, building or interior: our map shows where it is, not its inside or floors",
+  "atlas": "own path 0px, own sea line 27px, mask 23px across"
+ },
+ "Johto|National Park": {
+  "drawn": false,
+  "kind": "undrawn",
+  "why": "a plain green patch between paths; the park's lawns, paths and fountain are not drawn",
+  "atlas": "own path 0px, own sea line 0px, mask 38px across"
+ },
+ "Johto|New Bark Town": {
+  "drawn": false,
+  "kind": "town",
+  "why": "a town block: our map draws the town as one block, not its streets",
+  "atlas": "own path 42px, own sea line 0px, mask 38px across"
+ },
+ "Johto|Olivine City": {
+  "drawn": false,
+  "kind": "town",
+  "why": "a town block: our map draws the town as one block, not its streets",
+  "atlas": "own path 56px, own sea line 24px, mask 66px across"
+ },
+ "Johto|Olivine Lighthouse": {
+  "drawn": false,
+  "kind": "icon",
+  "why": "a cave, forest, tower, building or interior: our map shows where it is, not its inside or floors",
+  "atlas": "own path 0px, own sea line 0px, mask 23px across"
+ },
+ "Johto|Route 29": {
+  "drawn": true,
+  "kind": "path",
+  "why": "a route drawn as its own cream path",
+  "atlas": "own path 70px, own sea line 0px, mask 66px across"
+ },
+ "Johto|Route 30": {
+  "drawn": true,
+  "kind": "path",
+  "why": "a route drawn as its own cream path",
+  "atlas": "own path 76px, own sea line 0px, mask 69px across"
+ },
+ "Johto|Route 31": {
+  "drawn": true,
+  "kind": "path",
+  "why": "a route drawn as its own cream path",
+  "atlas": "own path 17px, own sea line 0px, mask 21px across"
+ },
+ "Johto|Route 32": {
+  "drawn": true,
+  "kind": "path",
+  "why": "a route drawn as its own cream path",
+  "atlas": "own path 88px, own sea line 29px, mask 95px across"
+ },
+ "Johto|Route 33": {
+  "drawn": true,
+  "kind": "path",
+  "why": "a route drawn as its own cream path",
+  "atlas": "own path 3px, own sea line 8px, mask 20px across"
+ },
+ "Johto|Route 34": {
+  "drawn": true,
+  "kind": "path",
+  "why": "a route drawn as its own cream path",
+  "atlas": "own path 49px, own sea line 0px, mask 45px across"
+ },
+ "Johto|Route 35": {
+  "drawn": true,
+  "kind": "path",
+  "why": "a route drawn as its own cream path",
+  "atlas": "own path 42px, own sea line 0px, mask 44px across"
+ },
+ "Johto|Route 36": {
+  "drawn": true,
+  "kind": "path",
+  "why": "a route drawn as its own cream path",
+  "atlas": "own path 61px, own sea line 0px, mask 73px across"
+ },
+ "Johto|Route 37": {
+  "drawn": true,
+  "kind": "path",
+  "why": "a route drawn as its own cream path",
+  "atlas": "own path 20px, own sea line 0px, mask 21px across"
+ },
+ "Johto|Route 38": {
+  "drawn": true,
+  "kind": "path",
+  "why": "a route drawn as its own cream path",
+  "atlas": "own path 49px, own sea line 0px, mask 44px across"
+ },
+ "Johto|Route 39": {
+  "drawn": true,
+  "kind": "path",
+  "why": "a route drawn as its own cream path",
+  "atlas": "own path 36px, own sea line 0px, mask 38px across"
+ },
+ "Johto|Route 40": {
+  "drawn": true,
+  "kind": "sea",
+  "why": "a sea route along its own drawn sea line",
+  "atlas": "own path 4px, own sea line 41px, mask 51px across"
+ },
+ "Johto|Route 41": {
+  "drawn": false,
+  "kind": "undrawn",
+  "why": "open sea around the Whirl Islands: the islands are drawn as stylised arcs that do not follow the route's layout",
+  "atlas": "own path 45px, own sea line 43px, mask 52px across"
+ },
+ "Johto|Route 42": {
+  "drawn": true,
+  "kind": "path",
+  "why": "a route drawn as its own cream path",
+  "atlas": "own path 72px, own sea line 0px, mask 65px across"
+ },
+ "Johto|Route 43": {
+  "drawn": true,
+  "kind": "path",
+  "why": "a route drawn as its own cream path",
+  "atlas": "own path 23px, own sea line 41px, mask 30px across"
+ },
+ "Johto|Route 44": {
+  "drawn": true,
+  "kind": "path",
+  "why": "a route drawn as its own cream path",
+  "atlas": "own path 72px, own sea line 0px, mask 65px across"
+ },
+ "Johto|Route 45": {
+  "drawn": true,
+  "kind": "path",
+  "why": "a route drawn as its own cream path",
+  "atlas": "own path 85px, own sea line 0px, mask 102px across"
+ },
+ "Johto|Route 46": {
+  "drawn": true,
+  "kind": "path",
+  "why": "a route drawn as its own cream path",
+  "atlas": "own path 41px, own sea line 0px, mask 37px across"
+ },
+ "Johto|Route 47": {
+  "drawn": true,
+  "kind": "path",
+  "why": "a route drawn as its own cream path",
+  "atlas": "own path 43px, own sea line 93px, mask 76px across"
+ },
+ "Johto|Route 48": {
+  "drawn": false,
+  "kind": "undrawn",
+  "why": "no path in the area: the mask sits on grass and rock beside Route 47's path",
+  "atlas": "own path 0px, own sea line 28px, mask 48px across"
+ },
+ "Johto|Ruins of Alph": {
+  "drawn": false,
+  "kind": "icon",
+  "why": "a cave, forest, tower, building or interior: our map shows where it is, not its inside or floors",
+  "atlas": "own path 3px, own sea line 0px, mask 66px across"
+ },
+ "Johto|Safari Zone": {
+  "drawn": false,
+  "kind": "undrawn",
+  "why": "a plain green plateau; the zone's areas are not drawn",
+  "atlas": "own path 0px, own sea line 75px, mask 51px across"
+ },
+ "Johto|Slowpoke Well": {
+  "drawn": false,
+  "kind": "icon",
+  "why": "a cave, forest, tower, building or interior: our map shows where it is, not its inside or floors",
+  "atlas": "own path 30px, own sea line 0px, mask 23px across"
+ },
+ "Johto|Sprout Tower": {
+  "drawn": false,
+  "kind": "icon",
+  "why": "a cave, forest, tower, building or interior: our map shows where it is, not its inside or floors",
+  "atlas": "own path 0px, own sea line 0px, mask 23px across"
+ },
+ "Johto|Union Cave": {
+  "drawn": false,
+  "kind": "icon",
+  "why": "a cave, forest, tower, building or interior: our map shows where it is, not its inside or floors",
+  "atlas": "own path 0px, own sea line 3px, mask 21px across"
+ },
+ "Johto|Violet City": {
+  "drawn": false,
+  "kind": "town",
+  "why": "a town block: our map draws the town as one block, not its streets",
+  "atlas": "own path 68px, own sea line 0px, mask 66px across"
+ },
+ "Johto|Whirl Islands": {
+  "drawn": false,
+  "kind": "icon",
+  "why": "a cave, forest, tower, building or interior: our map shows where it is, not its inside or floors",
+  "atlas": "own path 0px, own sea line 20px, mask 23px across"
+ },
+ "Kanto|Celadon City": {
+  "drawn": false,
+  "kind": "town",
+  "why": "a town block: our map draws the town as one block, not its streets",
+  "atlas": "own path 68px, own sea line 64px, mask 66px across"
+ },
+ "Kanto|Cerulean Cave": {
+  "drawn": false,
+  "kind": "icon",
+  "why": "a cave, forest, tower, building or interior: our map shows where it is, not its inside or floors",
+  "atlas": "own path 16px, own sea line 0px, mask 21px across"
+ },
+ "Kanto|Cerulean City": {
+  "drawn": false,
+  "kind": "town",
+  "why": "a town block: our map draws the town as one block, not its streets",
+  "atlas": "own path 73px, own sea line 0px, mask 66px across"
+ },
+ "Kanto|Cinnabar Island": {
+  "drawn": false,
+  "kind": "town",
+  "why": "a town block: our map draws the town as one block, not its streets",
+  "atlas": "own path 23px, own sea line 51px, mask 38px across"
+ },
+ "Kanto|Diglett's Cave": {
+  "drawn": false,
+  "kind": "icon",
+  "why": "a cave, forest, tower, building or interior: our map shows where it is, not its inside or floors",
+  "atlas": "own path 0px, own sea line 0px, mask 300px across"
+ },
+ "Kanto|Fuchsia City": {
+  "drawn": false,
+  "kind": "town",
+  "why": "a town block: our map draws the town as one block, not its streets",
+  "atlas": "own path 68px, own sea line 80px, mask 65px across"
+ },
+ "Kanto|Indigo Plateau": {
+  "drawn": false,
+  "kind": "town",
+  "why": "a town block: our map draws the town as one block, not its streets",
+  "atlas": "own path 0px, own sea line 0px, mask 21px across"
+ },
+ "Kanto|Lavender Town": {
+  "drawn": false,
+  "kind": "town",
+  "why": "a town block: our map draws the town as one block, not its streets",
+  "atlas": "own path 44px, own sea line 0px, mask 38px across"
+ },
+ "Kanto|Mt. Moon": {
+  "drawn": false,
+  "kind": "icon",
+  "why": "a cave, forest, tower, building or interior: our map shows where it is, not its inside or floors",
+  "atlas": "own path 0px, own sea line 0px, mask 21px across"
+ },
+ "Kanto|Pallet Town": {
+  "drawn": false,
+  "kind": "town",
+  "why": "a town block: our map draws the town as one block, not its streets",
+  "atlas": "own path 43px, own sea line 57px, mask 37px across"
+ },
+ "Kanto|Pewter City": {
+  "drawn": false,
+  "kind": "town",
+  "why": "a town block: our map draws the town as one block, not its streets",
+  "atlas": "own path 35px, own sea line 0px, mask 67px across"
+ },
+ "Kanto|Power Plant": {
+  "drawn": false,
+  "kind": "icon",
+  "why": "a cave, forest, tower, building or interior: our map shows where it is, not its inside or floors",
+  "atlas": "own path 0px, own sea line 22px, mask 21px across"
+ },
+ "Kanto|Rock Tunnel": {
+  "drawn": false,
+  "kind": "icon",
+  "why": "a cave, forest, tower, building or interior: our map shows where it is, not its inside or floors",
+  "atlas": "own path 0px, own sea line 34px, mask 21px across"
+ },
+ "Kanto|Route 1": {
+  "drawn": true,
+  "kind": "path",
+  "why": "a route drawn as its own cream path",
+  "atlas": "own path 38px, own sea line 0px, mask 32px across"
+ },
+ "Kanto|Route 10": {
+  "drawn": false,
+  "kind": "undrawn",
+  "why": "no path in the area: the mask sits on rock and river; the route's north–south course is not drawn",
+  "atlas": "own path 11px, own sea line 20px, mask 21px across"
+ },
+ "Kanto|Route 11": {
+  "drawn": true,
+  "kind": "path",
+  "why": "a route drawn as its own cream path",
+  "atlas": "own path 13px, own sea line 21px, mask 23px across"
+ },
+ "Kanto|Route 12": {
+  "drawn": true,
+  "kind": "path",
+  "why": "a route drawn as its own cream path",
+  "atlas": "own path 76px, own sea line 62px, mask 69px across"
+ },
+ "Kanto|Route 13": {
+  "drawn": true,
+  "kind": "path",
+  "why": "a route drawn as its own cream path",
+  "atlas": "own path 59px, own sea line 0px, mask 76px across"
+ },
+ "Kanto|Route 14": {
+  "drawn": true,
+  "kind": "path",
+  "why": "a route drawn as its own cream path",
+  "atlas": "own path 40px, own sea line 0px, mask 52px across"
+ },
+ "Kanto|Route 15": {
+  "drawn": true,
+  "kind": "path",
+  "why": "a route drawn as its own cream path",
+  "atlas": "own path 79px, own sea line 0px, mask 73px across"
+ },
+ "Kanto|Route 16": {
+  "drawn": true,
+  "kind": "path",
+  "why": "a route drawn as its own cream path",
+  "atlas": "own path 58px, own sea line 0px, mask 45px across"
+ },
+ "Kanto|Route 17": {
+  "drawn": true,
+  "kind": "path",
+  "why": "a route drawn as its own cream path",
+  "atlas": "own path 111px, own sea line 106px, mask 101px across"
+ },
+ "Kanto|Route 18": {
+  "drawn": true,
+  "kind": "path",
+  "why": "a route drawn as its own cream path",
+  "atlas": "own path 39px, own sea line 22px, mask 45px across"
+ },
+ "Kanto|Route 19": {
+  "drawn": true,
+  "kind": "sea",
+  "why": "a sea route along its own drawn sea line",
+  "atlas": "own path 0px, own sea line 50px, mask 44px across"
+ },
+ "Kanto|Route 2": {
+  "drawn": true,
+  "kind": "path",
+  "why": "a route drawn as its own cream path",
+  "atlas": "own path 27px, own sea line 0px, mask 24px across"
+ },
+ "Kanto|Route 20": {
+  "drawn": true,
+  "kind": "sea",
+  "why": "a sea route along its own drawn sea line",
+  "atlas": "own path 84px, own sea line 105px, mask 100px across"
+ },
+ "Kanto|Route 21": {
+  "drawn": true,
+  "kind": "sea",
+  "why": "a sea route along its own drawn sea line",
+  "atlas": "own path 0px, own sea line 62px, mask 63px across"
+ },
+ "Kanto|Route 22": {
+  "drawn": true,
+  "kind": "path",
+  "why": "a route drawn as its own cream path",
+  "atlas": "own path 34px, own sea line 0px, mask 44px across"
+ },
+ "Kanto|Route 23": {
+  "drawn": false,
+  "kind": "undrawn",
+  "why": "no path of its own: the mask covers terrain at a junction of other paths",
+  "atlas": "own path 24px, own sea line 0px, mask 25px across"
+ },
+ "Kanto|Route 24": {
+  "drawn": true,
+  "kind": "path",
+  "why": "a route drawn as its own cream path",
+  "atlas": "own path 24px, own sea line 0px, mask 24px across"
+ },
+ "Kanto|Route 25": {
+  "drawn": true,
+  "kind": "path",
+  "why": "a route drawn as its own cream path",
+  "atlas": "own path 83px, own sea line 64px, mask 107px across"
+ },
+ "Kanto|Route 26": {
+  "drawn": true,
+  "kind": "path",
+  "why": "a route drawn as its own cream path",
+  "atlas": "own path 66px, own sea line 75px, mask 87px across"
+ },
+ "Kanto|Route 27": {
+  "drawn": true,
+  "kind": "path",
+  "why": "a route drawn as its own cream path",
+  "atlas": "own path 127px, own sea line 131px, mask 139px across"
+ },
+ "Kanto|Route 28": {
+  "drawn": true,
+  "kind": "path",
+  "why": "a route drawn as its own cream path",
+  "atlas": "own path 8px, own sea line 0px, mask 31px across"
+ },
+ "Kanto|Route 3": {
+  "drawn": true,
+  "kind": "path",
+  "why": "a route drawn as its own cream path",
+  "atlas": "own path 37px, own sea line 0px, mask 49px across"
+ },
+ "Kanto|Route 4": {
+  "drawn": true,
+  "kind": "path",
+  "why": "a route drawn as its own cream path",
+  "atlas": "own path 71px, own sea line 0px, mask 73px across"
+ },
+ "Kanto|Route 5": {
+  "drawn": true,
+  "kind": "path",
+  "why": "a route drawn as its own cream path",
+  "atlas": "own path 0px, own sea line 0px, mask 21px across"
+ },
+ "Kanto|Route 6": {
+  "drawn": true,
+  "kind": "path",
+  "why": "a route drawn as its own cream path",
+  "atlas": "own path 0px, own sea line 0px, mask 21px across"
+ },
+ "Kanto|Route 7": {
+  "drawn": true,
+  "kind": "path",
+  "why": "a route drawn as its own cream path",
+  "atlas": "own path 16px, own sea line 0px, mask 21px across"
+ },
+ "Kanto|Route 8": {
+  "drawn": true,
+  "kind": "path",
+  "why": "a route drawn as its own cream path",
+  "atlas": "own path 43px, own sea line 0px, mask 37px across"
+ },
+ "Kanto|Route 9": {
+  "drawn": true,
+  "kind": "path",
+  "why": "a route drawn as its own cream path",
+  "atlas": "own path 34px, own sea line 0px, mask 44px across"
+ },
+ "Kanto|Safari Zone / Pal Park": {
+  "drawn": false,
+  "kind": "undrawn",
+  "why": "a plain forest patch; the zone's areas are not drawn",
+  "atlas": "own path 0px, own sea line 0px, mask 23px across"
+ },
+ "Kanto|Saffron City": {
+  "drawn": false,
+  "kind": "town",
+  "why": "a town block: our map draws the town as one block, not its streets",
+  "atlas": "own path 70px, own sea line 0px, mask 66px across"
+ },
+ "Kanto|Seafoam Islands": {
+  "drawn": false,
+  "kind": "icon",
+  "why": "a cave, forest, tower, building or interior: our map shows where it is, not its inside or floors",
+  "atlas": "own path 0px, own sea line 25px, mask 24px across"
+ },
+ "Kanto|Tohjo Falls": {
+  "drawn": false,
+  "kind": "icon",
+  "why": "a cave, forest, tower, building or interior: our map shows where it is, not its inside or floors",
+  "atlas": "own path 20px, own sea line 7px, mask 23px across"
+ },
+ "Kanto|Underground Path 5-6": {
+  "drawn": false,
+  "kind": "icon",
+  "why": "a cave, forest, tower, building or interior: our map shows where it is, not its inside or floors",
+  "atlas": "own path 94px, own sea line 0px, mask 88px across"
+ },
+ "Kanto|Vermilion City": {
+  "drawn": false,
+  "kind": "town",
+  "why": "a town block: our map draws the town as one block, not its streets",
+  "atlas": "own path 70px, own sea line 61px, mask 65px across"
+ },
+ "Kanto|Victory Road": {
+  "drawn": false,
+  "kind": "icon",
+  "why": "a cave, forest, tower, building or interior: our map shows where it is, not its inside or floors",
+  "atlas": "own path 0px, own sea line 0px, mask 21px across"
+ },
+ "Kanto|Viridian City": {
+  "drawn": false,
+  "kind": "town",
+  "why": "a town block: our map draws the town as one block, not its streets",
+  "atlas": "own path 73px, own sea line 0px, mask 66px across"
+ },
+ "Kanto|Viridian Forest": {
+  "drawn": false,
+  "kind": "icon",
+  "why": "a cave, forest, tower, building or interior: our map shows where it is, not its inside or floors",
+  "atlas": "own path 4px, own sea line 0px, mask 21px across"
+ },
+ "Sevii Islands|Altering Cave": {
+  "drawn": false,
+  "kind": "icon",
+  "why": "a cave, forest, tower, building or interior: our map shows where it is, not its inside or floors",
+  "atlas": "own path 0px, own sea line 46px, mask 74px across"
+ },
+ "Sevii Islands|Berry Forest": {
+  "drawn": false,
+  "kind": "icon",
+  "why": "a cave, forest, tower, building or interior: our map shows where it is, not its inside or floors",
+  "atlas": "own path 0px, own sea line 0px, mask 27px across"
+ },
+ "Sevii Islands|Birth Island": {
+  "drawn": false,
+  "kind": "town",
+  "why": "a town block: our map draws the town as one block, not its streets",
+  "atlas": "own path 0px, own sea line 42px, mask 26px across"
+ },
+ "Sevii Islands|Bond Bridge": {
+  "drawn": false,
+  "kind": "undrawn",
+  "why": "no bridge drawn: islets and sea only",
+  "atlas": "own path 2px, own sea line 114px, mask 95px across"
+ },
+ "Sevii Islands|Canyon Entrance": {
+  "drawn": true,
+  "kind": "island",
+  "why": "the north end of Seven Island's rocky strip",
+  "atlas": "own path 0px, own sea line 42px, mask 27px across"
+ },
+ "Sevii Islands|Cape Brink": {
+  "drawn": true,
+  "kind": "island",
+  "why": "the north part of Two Island, drawn with its rocky top and grassy rim",
+  "atlas": "own path 2px, own sea line 54px, mask 47px across"
+ },
+ "Sevii Islands|Dotted Hole": {
+  "drawn": false,
+  "kind": "icon",
+  "why": "a cave, forest, tower, building or interior: our map shows where it is, not its inside or floors",
+  "atlas": "own path 3px, own sea line 35px, mask 27px across"
+ },
+ "Sevii Islands|Five Island": {
+  "drawn": false,
+  "kind": "town",
+  "why": "a town block: our map draws the town as one block, not its streets",
+  "atlas": "own path 0px, own sea line 17px, mask 14px across"
+ },
+ "Sevii Islands|Five Isle Meadow": {
+  "drawn": true,
+  "kind": "island",
+  "why": "its own small island, drawn with the meadow's sand and rock",
+  "atlas": "own path 0px, own sea line 48px, mask 48px across"
+ },
+ "Sevii Islands|Four Island": {
+  "drawn": false,
+  "kind": "town",
+  "why": "a town block: our map draws the town as one block, not its streets",
+  "atlas": "own path 0px, own sea line 0px, mask 14px across"
+ },
+ "Sevii Islands|Green Path": {
+  "drawn": false,
+  "kind": "undrawn",
+  "why": "sea and the edge of Six Island; the path is not drawn",
+  "atlas": "own path 0px, own sea line 60px, mask 70px across"
+ },
+ "Sevii Islands|Kindle Road": {
+  "drawn": true,
+  "kind": "island",
+  "why": "the long north–south island strip is the road itself",
+  "atlas": "own path 0px, own sea line 113px, mask 118px across"
+ },
+ "Sevii Islands|Lost Cave": {
+  "drawn": false,
+  "kind": "icon",
+  "why": "a cave, forest, tower, building or interior: our map shows where it is, not its inside or floors",
+  "atlas": "own path 0px, own sea line 5px, mask 26px across"
+ },
+ "Sevii Islands|Memorial Pillar": {
+  "drawn": false,
+  "kind": "undrawn",
+  "why": "two islets; the pillar's coastal path is not drawn",
+  "atlas": "own path 0px, own sea line 67px, mask 74px across"
+ },
+ "Sevii Islands|Mt. Ember": {
+  "drawn": false,
+  "kind": "icon",
+  "why": "a cave, forest, tower, building or interior: our map shows where it is, not its inside or floors",
+  "atlas": "own path 0px, own sea line 27px, mask 24px across"
+ },
+ "Sevii Islands|Navel Rock": {
+  "drawn": false,
+  "kind": "icon",
+  "why": "a cave, forest, tower, building or interior: our map shows where it is, not its inside or floors",
+  "atlas": "own path 0px, own sea line 33px, mask 26px across"
+ },
+ "Sevii Islands|One Island": {
+  "drawn": false,
+  "kind": "town",
+  "why": "a town block: our map draws the town as one block, not its streets",
+  "atlas": "own path 0px, own sea line 25px, mask 14px across"
+ },
+ "Sevii Islands|Pattern Bush": {
+  "drawn": false,
+  "kind": "undrawn",
+  "why": "the bush is not drawn: a corner of Six Island and sea",
+  "atlas": "own path 0px, own sea line 34px, mask 27px across"
+ },
+ "Sevii Islands|Resort Gorgeous": {
+  "drawn": false,
+  "kind": "undrawn",
+  "why": "two islets in open sea; the resort's strip of land is not drawn",
+  "atlas": "own path 0px, own sea line 34px, mask 74px across"
+ },
+ "Sevii Islands|Rocket Warehouse": {
+  "drawn": false,
+  "kind": "icon",
+  "why": "a cave, forest, tower, building or interior: our map shows where it is, not its inside or floors",
+  "atlas": "own path 0px, own sea line 27px, mask 26px across"
+ },
+ "Sevii Islands|Ruin Valley": {
+  "drawn": true,
+  "kind": "island",
+  "why": "the south part of Six Island, drawn with its valley rock",
+  "atlas": "own path 2px, own sea line 60px, mask 47px across"
+ },
+ "Sevii Islands|Sevault Canyon": {
+  "drawn": true,
+  "kind": "island",
+  "why": "the long rocky strip of Seven Island",
+  "atlas": "own path 13px, own sea line 74px, mask 75px across"
+ },
+ "Sevii Islands|Seven Island": {
+  "drawn": false,
+  "kind": "town",
+  "why": "a town block: our map draws the town as one block, not its streets",
+  "atlas": "own path 0px, own sea line 7px, mask 15px across"
+ },
+ "Sevii Islands|Six Island": {
+  "drawn": false,
+  "kind": "town",
+  "why": "a town block: our map draws the town as one block, not its streets",
+  "atlas": "own path 0px, own sea line 31px, mask 15px across"
+ },
+ "Sevii Islands|Tanoby Key": {
+  "drawn": false,
+  "kind": "undrawn",
+  "why": "a few px of rock on Seven Island; the key is not drawn",
+  "atlas": "own path 1px, own sea line 34px, mask 27px across"
+ },
+ "Sevii Islands|Tanoby Ruins": {
+  "drawn": false,
+  "kind": "undrawn",
+  "why": "islets in open sea; the ruins' chambers are interiors",
+  "atlas": "own path 0px, own sea line 123px, mask 169px across"
+ },
+ "Sevii Islands|Three Island": {
+  "drawn": false,
+  "kind": "town",
+  "why": "a town block: our map draws the town as one block, not its streets",
+  "atlas": "own path 0px, own sea line 22px, mask 15px across"
+ },
+ "Sevii Islands|Three Isle Port": {
+  "drawn": false,
+  "kind": "undrawn",
+  "why": "a corner of Three Island; the port is not drawn",
+  "atlas": "own path 13px, own sea line 63px, mask 46px across"
+ },
+ "Sevii Islands|Trainer Tower": {
+  "drawn": false,
+  "kind": "icon",
+  "why": "a cave, forest, tower, building or interior: our map shows where it is, not its inside or floors",
+  "atlas": "own path 0px, own sea line 60px, mask 49px across"
+ },
+ "Sevii Islands|Treasure Beach": {
+  "drawn": true,
+  "kind": "island",
+  "why": "the south end of One Island, drawn as its own sandy tip",
+  "atlas": "own path 0px, own sea line 66px, mask 48px across"
+ },
+ "Sevii Islands|Two Island": {
+  "drawn": false,
+  "kind": "town",
+  "why": "a town block: our map draws the town as one block, not its streets",
+  "atlas": "own path 0px, own sea line 12px, mask 15px across"
+ },
+ "Sevii Islands|Water Labyrinth": {
+  "drawn": false,
+  "kind": "undrawn",
+  "why": "an islet in open sea; the maze of rocks is not drawn",
+  "atlas": "own path 3px, own sea line 75px, mask 74px across"
+ },
+ "Sevii Islands|Water Path": {
+  "drawn": true,
+  "kind": "island",
+  "why": "the east strip of Six Island and the water beside it, drawn as an island edge",
+  "atlas": "own path 4px, own sea line 128px, mask 118px across"
+ },
+ "Sinnoh|Battle Park": {
+  "drawn": false,
+  "kind": "icon",
+  "why": "a cave, forest, tower, building or interior: our map shows where it is, not its inside or floors",
+  "atlas": "own path 0px, own sea line 35px, mask 22px across"
+ },
+ "Sinnoh|Canalave City": {
+  "drawn": false,
+  "kind": "town",
+  "why": "a town block: our map draws the town as one block, not its streets",
+  "atlas": "own path 24px, own sea line 54px, mask 53px across"
+ },
+ "Sinnoh|Celestic Town": {
+  "drawn": false,
+  "kind": "town",
+  "why": "a town block: our map draws the town as one block, not its streets",
+  "atlas": "own path 28px, own sea line 0px, mask 23px across"
+ },
+ "Sinnoh|Distortion World": {
+  "drawn": false,
+  "kind": "icon",
+  "why": "a cave, forest, tower, building or interior: our map shows where it is, not its inside or floors",
+  "atlas": "own path 0px, own sea line 0px, mask 354px across"
+ },
+ "Sinnoh|Eterna City": {
+  "drawn": false,
+  "kind": "town",
+  "why": "a town block: our map draws the town as one block, not its streets",
+  "atlas": "own path 59px, own sea line 0px, mask 53px across"
+ },
+ "Sinnoh|Eterna Forest": {
+  "drawn": false,
+  "kind": "icon",
+  "why": "a cave, forest, tower, building or interior: our map shows where it is, not its inside or floors",
+  "atlas": "own path 0px, own sea line 26px, mask 61px across"
+ },
+ "Sinnoh|Fight Area": {
+  "drawn": false,
+  "kind": "town",
+  "why": "a town block: our map draws the town as one block, not its streets",
+  "atlas": "own path 35px, own sea line 38px, mask 53px across"
+ },
+ "Sinnoh|Floaroma Meadow": {
+  "drawn": false,
+  "kind": "undrawn",
+  "why": "one mask point on plain grass; the meadow is not drawn",
+  "atlas": "own path 0px, own sea line 0px, mask 0px across"
+ },
+ "Sinnoh|Floaroma Town": {
+  "drawn": false,
+  "kind": "town",
+  "why": "a town block: our map draws the town as one block, not its streets",
+  "atlas": "own path 2px, own sea line 11px, mask 52px across"
+ },
+ "Sinnoh|Flower Paradise": {
+  "drawn": false,
+  "kind": "undrawn",
+  "why": "a plain sandy headland; the flower field is not drawn",
+  "atlas": "own path 0px, own sea line 49px, mask 34px across"
+ },
+ "Sinnoh|Fuego Ironworks": {
+  "drawn": false,
+  "kind": "icon",
+  "why": "a cave, forest, tower, building or interior: our map shows where it is, not its inside or floors",
+  "atlas": "own path 0px, own sea line 0px, mask 22px across"
+ },
+ "Sinnoh|Fullmoon Island": {
+  "drawn": false,
+  "kind": "town",
+  "why": "a town block: our map draws the town as one block, not its streets",
+  "atlas": "own path 0px, own sea line 36px, mask 33px across"
+ },
+ "Sinnoh|Great Marsh": {
+  "drawn": false,
+  "kind": "undrawn",
+  "why": "one mask point on plain grass; the marsh is not drawn",
+  "atlas": "own path 0px, own sea line 0px, mask 0px across"
+ },
+ "Sinnoh|Hearthome City": {
+  "drawn": false,
+  "kind": "town",
+  "why": "a town block: our map draws the town as one block, not its streets",
+  "atlas": "own path 36px, own sea line 0px, mask 46px across"
+ },
+ "Sinnoh|Hotel Grand Lake": {
+  "drawn": false,
+  "kind": "undrawn",
+  "why": "the resort's houses and paths are not drawn (the area is generic shore and lake)",
+  "atlas": "own path 0px, own sea line 14px, mask 61px across"
+ },
+ "Sinnoh|Iron Island": {
+  "drawn": false,
+  "kind": "town",
+  "why": "a town block: our map draws the town as one block, not its streets",
+  "atlas": "own path 0px, own sea line 42px, mask 33px across"
+ },
+ "Sinnoh|Jubilife City": {
+  "drawn": false,
+  "kind": "town",
+  "why": "a town block: our map draws the town as one block, not its streets",
+  "atlas": "own path 57px, own sea line 0px, mask 53px across"
+ },
+ "Sinnoh|Lake Acuity": {
+  "drawn": true,
+  "kind": "lake",
+  "why": "the lake is drawn as its own water with the snowy rim around it",
+  "atlas": "own path 42px, own sea line 73px, mask 61px across"
+ },
+ "Sinnoh|Lake Valor": {
+  "drawn": true,
+  "kind": "lake",
+  "why": "the lake is drawn as its own water with the rim around it",
+  "atlas": "own path 50px, own sea line 32px, mask 57px across"
+ },
+ "Sinnoh|Lake Verity": {
+  "drawn": true,
+  "kind": "lake",
+  "why": "the lake is drawn as its own water with the shore around it",
+  "atlas": "own path 15px, own sea line 85px, mask 60px across"
+ },
+ "Sinnoh|Lost Tower": {
+  "drawn": false,
+  "kind": "icon",
+  "why": "a cave, forest, tower, building or interior: our map shows where it is, not its inside or floors",
+  "atlas": "own path 7px, own sea line 0px, mask 0px across"
+ },
+ "Sinnoh|Mt. Coronet": {
+  "drawn": false,
+  "kind": "icon",
+  "why": "a cave, forest, tower, building or interior: our map shows where it is, not its inside or floors",
+  "atlas": "own path 0px, own sea line 0px, mask 302px across"
+ },
+ "Sinnoh|Newmoon Island": {
+  "drawn": false,
+  "kind": "town",
+  "why": "a town block: our map draws the town as one block, not its streets",
+  "atlas": "own path 0px, own sea line 57px, mask 33px across"
+ },
+ "Sinnoh|Old Chateau": {
+  "drawn": false,
+  "kind": "icon",
+  "why": "a cave, forest, tower, building or interior: our map shows where it is, not its inside or floors",
+  "atlas": "own path 0px, own sea line 0px, mask 0px across"
+ },
+ "Sinnoh|Oreburgh City": {
+  "drawn": false,
+  "kind": "town",
+  "why": "a town block: our map draws the town as one block, not its streets",
+  "atlas": "own path 35px, own sea line 0px, mask 52px across"
+ },
+ "Sinnoh|Oreburgh Mine": {
+  "drawn": false,
+  "kind": "icon",
+  "why": "a cave, forest, tower, building or interior: our map shows where it is, not its inside or floors",
+  "atlas": "own path 2px, own sea line 0px, mask 0px across"
+ },
+ "Sinnoh|Pal Park": {
+  "drawn": false,
+  "kind": "undrawn",
+  "why": "a plain peninsula; the park is not drawn",
+  "atlas": "own path 0px, own sea line 23px, mask 22px across"
+ },
+ "Sinnoh|Pastoria City": {
+  "drawn": false,
+  "kind": "town",
+  "why": "a town block: our map draws the town as one block, not its streets",
+  "atlas": "own path 57px, own sea line 46px, mask 53px across"
+ },
+ "Sinnoh|Pokémon League": {
+  "drawn": false,
+  "kind": "icon",
+  "why": "a cave, forest, tower, building or interior: our map shows where it is, not its inside or floors",
+  "atlas": "own path 145px, own sea line 171px, mask 156px across"
+ },
+ "Sinnoh|Pokémon Mansion": {
+  "drawn": false,
+  "kind": "icon",
+  "why": "a cave, forest, tower, building or interior: our map shows where it is, not its inside or floors",
+  "atlas": "own path 7px, own sea line 0px, mask 0px across"
+ },
+ "Sinnoh|Ravaged Path": {
+  "drawn": false,
+  "kind": "icon",
+  "why": "a cave, forest, tower, building or interior: our map shows where it is, not its inside or floors",
+  "atlas": "own path 3px, own sea line 0px, mask 0px across"
+ },
+ "Sinnoh|Resort Area": {
+  "drawn": false,
+  "kind": "town",
+  "why": "a town block: our map draws the town as one block, not its streets",
+  "atlas": "own path 3px, own sea line 41px, mask 26px across"
+ },
+ "Sinnoh|Route 201": {
+  "drawn": true,
+  "kind": "path",
+  "why": "a route drawn as its own cream path",
+  "atlas": "own path 49px, own sea line 26px, mask 52px across"
+ },
+ "Sinnoh|Route 202": {
+  "drawn": true,
+  "kind": "path",
+  "why": "a route drawn as its own cream path",
+  "atlas": "own path 22px, own sea line 0px, mask 30px across"
+ },
+ "Sinnoh|Route 203": {
+  "drawn": true,
+  "kind": "path",
+  "why": "a route drawn as its own cream path",
+  "atlas": "own path 53px, own sea line 0px, mask 49px across"
+ },
+ "Sinnoh|Route 204": {
+  "drawn": true,
+  "kind": "path",
+  "why": "a route drawn as its own cream path",
+  "atlas": "own path 32px, own sea line 15px, mask 46px across"
+ },
+ "Sinnoh|Route 205": {
+  "drawn": true,
+  "kind": "path",
+  "why": "a route drawn as its own cream path",
+  "atlas": "own path 98px, own sea line 0px, mask 136px across"
+ },
+ "Sinnoh|Route 206": {
+  "drawn": true,
+  "kind": "path",
+  "why": "a route drawn as its own cream path",
+  "atlas": "own path 98px, own sea line 0px, mask 102px across"
+ },
+ "Sinnoh|Route 207": {
+  "drawn": true,
+  "kind": "path",
+  "why": "a route drawn as its own cream path",
+  "atlas": "own path 24px, own sea line 0px, mask 53px across"
+ },
+ "Sinnoh|Route 208": {
+  "drawn": true,
+  "kind": "path",
+  "why": "a route drawn as its own cream path",
+  "atlas": "own path 32px, own sea line 0px, mask 50px across"
+ },
+ "Sinnoh|Route 209": {
+  "drawn": true,
+  "kind": "path",
+  "why": "a route drawn as its own cream path",
+  "atlas": "own path 29px, own sea line 0px, mask 54px across"
+ },
+ "Sinnoh|Route 210": {
+  "drawn": true,
+  "kind": "path",
+  "why": "a route drawn as its own cream path",
+  "atlas": "own path 95px, own sea line 0px, mask 107px across"
+ },
+ "Sinnoh|Route 211": {
+  "drawn": true,
+  "kind": "path",
+  "why": "a route drawn as its own cream path",
+  "atlas": "own path 79px, own sea line 0px, mask 76px across"
+ },
+ "Sinnoh|Route 212": {
+  "drawn": true,
+  "kind": "path",
+  "why": "a route drawn as its own cream path",
+  "atlas": "own path 95px, own sea line 0px, mask 106px across"
+ },
+ "Sinnoh|Route 213": {
+  "drawn": true,
+  "kind": "path",
+  "why": "a route drawn as its own cream path",
+  "atlas": "own path 79px, own sea line 81px, mask 75px across"
+ },
+ "Sinnoh|Route 214": {
+  "drawn": true,
+  "kind": "path",
+  "why": "a route drawn as its own cream path",
+  "atlas": "own path 1px, own sea line 0px, mask 76px across"
+ },
+ "Sinnoh|Route 215": {
+  "drawn": true,
+  "kind": "path",
+  "why": "a route drawn as its own cream path",
+  "atlas": "own path 81px, own sea line 20px, mask 76px across"
+ },
+ "Sinnoh|Route 216": {
+  "drawn": true,
+  "kind": "path",
+  "why": "a route drawn as its own cream path",
+  "atlas": "own path 29px, own sea line 0px, mask 79px across"
+ },
+ "Sinnoh|Route 217": {
+  "drawn": true,
+  "kind": "path",
+  "why": "a route drawn as its own cream path",
+  "atlas": "own path 74px, own sea line 0px, mask 99px across"
+ },
+ "Sinnoh|Route 218": {
+  "drawn": true,
+  "kind": "path",
+  "why": "a route drawn as its own cream path",
+  "atlas": "own path 50px, own sea line 30px, mask 46px across"
+ },
+ "Sinnoh|Route 219": {
+  "drawn": true,
+  "kind": "path",
+  "why": "a route drawn as its own cream path",
+  "atlas": "own path 15px, own sea line 13px, mask 30px across"
+ },
+ "Sinnoh|Route 220": {
+  "drawn": false,
+  "kind": "undrawn",
+  "why": "open sea: no sea line; the mask covers water and the end of Route 219's path",
+  "atlas": "own path 18px, own sea line 61px, mask 45px across"
+ },
+ "Sinnoh|Route 221": {
+  "drawn": false,
+  "kind": "undrawn",
+  "why": "a plain peninsula with no path: the route's paths and tree maze are not drawn",
+  "atlas": "own path 0px, own sea line 54px, mask 46px across"
+ },
+ "Sinnoh|Route 222": {
+  "drawn": true,
+  "kind": "path",
+  "why": "a route drawn as its own cream path",
+  "atlas": "own path 80px, own sea line 11px, mask 72px across"
+ },
+ "Sinnoh|Route 224": {
+  "drawn": true,
+  "kind": "path",
+  "why": "a route drawn as its own cream path",
+  "atlas": "own path 51px, own sea line 85px, mask 88px across"
+ },
+ "Sinnoh|Route 225": {
+  "drawn": true,
+  "kind": "path",
+  "why": "a route drawn as its own cream path",
+  "atlas": "own path 75px, own sea line 75px, mask 80px across"
+ },
+ "Sinnoh|Route 226": {
+  "drawn": true,
+  "kind": "path",
+  "why": "a route drawn as its own cream path",
+  "atlas": "own path 75px, own sea line 19px, mask 76px across"
+ },
+ "Sinnoh|Route 227": {
+  "drawn": true,
+  "kind": "path",
+  "why": "a route drawn as its own cream path",
+  "atlas": "own path 26px, own sea line 0px, mask 45px across"
+ },
+ "Sinnoh|Route 228": {
+  "drawn": true,
+  "kind": "path",
+  "why": "a route drawn as its own cream path",
+  "atlas": "own path 65px, own sea line 84px, mask 91px across"
+ },
+ "Sinnoh|Route 229": {
+  "drawn": true,
+  "kind": "path",
+  "why": "a route drawn as its own cream path",
+  "atlas": "own path 36px, own sea line 65px, mask 53px across"
+ },
+ "Sinnoh|Route 230": {
+  "drawn": true,
+  "kind": "path",
+  "why": "a route drawn as its own cream path",
+  "atlas": "own path 3px, own sea line 3px, mask 80px across"
+ },
+ "Sinnoh|Sandgem Town": {
+  "drawn": false,
+  "kind": "town",
+  "why": "a town block: our map draws the town as one block, not its streets",
+  "atlas": "own path 29px, own sea line 11px, mask 26px across"
+ },
+ "Sinnoh|Seabreak Path": {
+  "drawn": true,
+  "kind": "island",
+  "why": "the long north–south sand strip is the path itself",
+  "atlas": "own path 0px, own sea line 224px, mask 221px across"
+ },
+ "Sinnoh|Sendoff Spring": {
+  "drawn": false,
+  "kind": "icon",
+  "why": "a cave, forest, tower, building or interior: our map shows where it is, not its inside or floors",
+  "atlas": "own path 0px, own sea line 25px, mask 61px across"
+ },
+ "Sinnoh|Snowpoint City": {
+  "drawn": false,
+  "kind": "town",
+  "why": "a town block: our map draws the town as one block, not its streets",
+  "atlas": "own path 14px, own sea line 45px, mask 48px across"
+ },
+ "Sinnoh|Snowpoint Temple": {
+  "drawn": false,
+  "kind": "icon",
+  "why": "a cave, forest, tower, building or interior: our map shows where it is, not its inside or floors",
+  "atlas": "own path 0px, own sea line 4px, mask 0px across"
+ },
+ "Sinnoh|Solaceon Town": {
+  "drawn": false,
+  "kind": "town",
+  "why": "a town block: our map draws the town as one block, not its streets",
+  "atlas": "own path 29px, own sea line 0px, mask 45px across"
+ },
+ "Sinnoh|Spear Pillar": {
+  "drawn": false,
+  "kind": "icon",
+  "why": "a cave, forest, tower, building or interior: our map shows where it is, not its inside or floors",
+  "atlas": "own path 0px, own sea line 0px, mask 35px across"
+ },
+ "Sinnoh|Stark Mountain": {
+  "drawn": false,
+  "kind": "icon",
+  "why": "a cave, forest, tower, building or interior: our map shows where it is, not its inside or floors",
+  "atlas": "own path 1px, own sea line 54px, mask 33px across"
+ },
+ "Sinnoh|Sunyshore City": {
+  "drawn": false,
+  "kind": "town",
+  "why": "a town block: our map draws the town as one block, not its streets",
+  "atlas": "own path 40px, own sea line 65px, mask 52px across"
+ },
+ "Sinnoh|Survival Area": {
+  "drawn": false,
+  "kind": "town",
+  "why": "a town block: our map draws the town as one block, not its streets",
+  "atlas": "own path 28px, own sea line 3px, mask 26px across"
+ },
+ "Sinnoh|Turnback Cave": {
+  "drawn": false,
+  "kind": "icon",
+  "why": "a cave, forest, tower, building or interior: our map shows where it is, not its inside or floors",
+  "atlas": "own path 0px, own sea line 40px, mask 44px across"
+ },
+ "Sinnoh|Twinleaf Town": {
+  "drawn": false,
+  "kind": "town",
+  "why": "a town block: our map draws the town as one block, not its streets",
+  "atlas": "own path 6px, own sea line 11px, mask 23px across"
+ },
+ "Sinnoh|Valley Windworks": {
+  "drawn": false,
+  "kind": "undrawn",
+  "why": "a plain hill; the windworks and its paths are not drawn",
+  "atlas": "own path 0px, own sea line 0px, mask 33px across"
+ },
+ "Sinnoh|Veilstone City": {
+  "drawn": false,
+  "kind": "town",
+  "why": "a town block: our map draws the town as one block, not its streets",
+  "atlas": "own path 40px, own sea line 61px, mask 53px across"
+ },
+ "Sinnoh|Victory Road": {
+  "drawn": false,
+  "kind": "icon",
+  "why": "a cave, forest, tower, building or interior: our map shows where it is, not its inside or floors",
+  "atlas": "own path 7px, own sea line 0px, mask 0px across"
+ },
+ "Sinnoh|Wayward Cave": {
+  "drawn": false,
+  "kind": "icon",
+  "why": "a cave, forest, tower, building or interior: our map shows where it is, not its inside or floors",
+  "atlas": "own path 0px, own sea line 0px, mask 0px across"
+ },
+ "Unova|Abundant Shrine": {
+  "drawn": false,
+  "kind": "undrawn",
+  "why": "a corner of forest and water; the shrine area is not drawn",
+  "atlas": "own path 0px, own sea line 31px, mask 12px across"
+ },
+ "Unova|Abyssal Ruins": {
+  "drawn": false,
+  "kind": "icon",
+  "why": "a cave, forest, tower, building or interior: our map shows where it is, not its inside or floors",
+  "atlas": "own path 29px, own sea line 13px, mask 14px across"
+ },
+ "Unova|Accumula Town": {
+  "drawn": false,
+  "kind": "town",
+  "why": "a town block: our map draws the town as one block, not its streets",
+  "atlas": "own path 29px, own sea line 0px, mask 18px across"
+ },
+ "Unova|Anville Town": {
+  "drawn": false,
+  "kind": "town",
+  "why": "a town block: our map draws the town as one block, not its streets",
+  "atlas": "own path 0px, own sea line 39px, mask 13px across"
+ },
+ "Unova|Aspertia City": {
+  "drawn": false,
+  "kind": "town",
+  "why": "a town block: our map draws the town as one block, not its streets",
+  "atlas": "own path 5px, own sea line 0px, mask 22px across"
+ },
+ "Unova|Black City / White Forest": {
+  "drawn": false,
+  "kind": "undrawn",
+  "why": "a town-sized block",
+  "atlas": "own path 25px, own sea line 17px, mask 21px across"
+ },
+ "Unova|Castelia City": {
+  "drawn": false,
+  "kind": "town",
+  "why": "a town block: our map draws the town as one block, not its streets",
+  "atlas": "own path 43px, own sea line 0px, mask 21px across"
+ },
+ "Unova|Castelia Sewers": {
+  "drawn": false,
+  "kind": "icon",
+  "why": "a cave, forest, tower, building or interior: our map shows where it is, not its inside or floors",
+  "atlas": "own path 3px, own sea line 38px, mask 15px across"
+ },
+ "Unova|Cave of Being": {
+  "drawn": false,
+  "kind": "icon",
+  "why": "a cave, forest, tower, building or interior: our map shows where it is, not its inside or floors",
+  "atlas": "own path 0px, own sea line 0px, mask 16px across"
+ },
+ "Unova|Celestial Tower": {
+  "drawn": false,
+  "kind": "icon",
+  "why": "a cave, forest, tower, building or interior: our map shows where it is, not its inside or floors",
+  "atlas": "own path 0px, own sea line 19px, mask 15px across"
+ },
+ "Unova|Challenger's Cave": {
+  "drawn": false,
+  "kind": "icon",
+  "why": "a cave, forest, tower, building or interior: our map shows where it is, not its inside or floors",
+  "atlas": "own path 0px, own sea line 14px, mask 6px across"
+ },
+ "Unova|Chargestone Cave": {
+  "drawn": false,
+  "kind": "icon",
+  "why": "a cave, forest, tower, building or interior: our map shows where it is, not its inside or floors",
+  "atlas": "own path 0px, own sea line 0px, mask 15px across"
+ },
+ "Unova|Clay Tunnel": {
+  "drawn": false,
+  "kind": "icon",
+  "why": "a cave, forest, tower, building or interior: our map shows where it is, not its inside or floors",
+  "atlas": "own path 3px, own sea line 0px, mask 12px across"
+ },
+ "Unova|Cold Storage": {
+  "drawn": false,
+  "kind": "icon",
+  "why": "a cave, forest, tower, building or interior: our map shows where it is, not its inside or floors",
+  "atlas": "own path 0px, own sea line 0px, mask 9px across"
+ },
+ "Unova|Desert Resort": {
+  "drawn": false,
+  "kind": "undrawn",
+  "why": "the mask is a line on a path stub; the desert's dunes and ruins are not drawn",
+  "atlas": "own path 30px, own sea line 0px, mask 27px across"
+ },
+ "Unova|Dragonspiral Tower": {
+  "drawn": false,
+  "kind": "icon",
+  "why": "a cave, forest, tower, building or interior: our map shows where it is, not its inside or floors",
+  "atlas": "own path 0px, own sea line 26px, mask 16px across"
+ },
+ "Unova|Dreamyard": {
+  "drawn": false,
+  "kind": "icon",
+  "why": "a cave, forest, tower, building or interior: our map shows where it is, not its inside or floors",
+  "atlas": "own path 0px, own sea line 32px, mask 12px across"
+ },
+ "Unova|Driftveil City": {
+  "drawn": false,
+  "kind": "town",
+  "why": "a town block: our map draws the town as one block, not its streets",
+  "atlas": "own path 36px, own sea line 22px, mask 18px across"
+ },
+ "Unova|Driftveil Drawbridge": {
+  "drawn": true,
+  "kind": "path",
+  "why": "the drawbridge is drawn as its own path across the water",
+  "atlas": "own path 62px, own sea line 27px, mask 42px across"
+ },
+ "Unova|Entralink": {
+  "drawn": false,
+  "kind": "icon",
+  "why": "a cave, forest, tower, building or interior: our map shows where it is, not its inside or floors",
+  "atlas": "own path 0px, own sea line 0px, mask 12px across"
+ },
+ "Unova|Floccesy Ranch": {
+  "drawn": false,
+  "kind": "undrawn",
+  "why": "plain forest; the ranch is not drawn",
+  "atlas": "own path 0px, own sea line 0px, mask 12px across"
+ },
+ "Unova|Floccesy Town": {
+  "drawn": false,
+  "kind": "town",
+  "why": "a town block: our map draws the town as one block, not its streets",
+  "atlas": "own path 30px, own sea line 0px, mask 22px across"
+ },
+ "Unova|Giant Chasm": {
+  "drawn": false,
+  "kind": "icon",
+  "why": "a cave, forest, tower, building or interior: our map shows where it is, not its inside or floors",
+  "atlas": "own path 0px, own sea line 0px, mask 14px across"
+ },
+ "Unova|Humilau City": {
+  "drawn": false,
+  "kind": "town",
+  "why": "a town block: our map draws the town as one block, not its streets",
+  "atlas": "own path 35px, own sea line 36px, mask 17px across"
+ },
+ "Unova|Icirrus City": {
+  "drawn": false,
+  "kind": "town",
+  "why": "a town block: our map draws the town as one block, not its streets",
+  "atlas": "own path 19px, own sea line 1px, mask 22px across"
+ },
+ "Unova|Join Avenue": {
+  "drawn": false,
+  "kind": "undrawn",
+  "why": "a street block at a path junction",
+  "atlas": "own path 29px, own sea line 0px, mask 9px across"
+ },
+ "Unova|Lacunosa Town": {
+  "drawn": false,
+  "kind": "town",
+  "why": "a town block: our map draws the town as one block, not its streets",
+  "atlas": "own path 22px, own sea line 9px, mask 22px across"
+ },
+ "Unova|Lentimas Town": {
+  "drawn": false,
+  "kind": "town",
+  "why": "a town block: our map draws the town as one block, not its streets",
+  "atlas": "own path 13px, own sea line 27px, mask 21px across"
+ },
+ "Unova|Liberty Garden": {
+  "drawn": false,
+  "kind": "undrawn",
+  "why": "an islet; the garden and lighthouse are not drawn",
+  "atlas": "own path 0px, own sea line 27px, mask 15px across"
+ },
+ "Unova|Lostlorn Forest": {
+  "drawn": false,
+  "kind": "icon",
+  "why": "a cave, forest, tower, building or interior: our map shows where it is, not its inside or floors",
+  "atlas": "own path 0px, own sea line 0px, mask 15px across"
+ },
+ "Unova|Marine Tube": {
+  "drawn": false,
+  "kind": "icon",
+  "why": "a cave, forest, tower, building or interior: our map shows where it is, not its inside or floors",
+  "atlas": "own path 98px, own sea line 0px, mask 86px across"
+ },
+ "Unova|Marvelous Bridge": {
+  "drawn": true,
+  "kind": "path",
+  "why": "the bridge is drawn as its own path across the water",
+  "atlas": "own path 54px, own sea line 25px, mask 45px across"
+ },
+ "Unova|Mistralton Cave": {
+  "drawn": false,
+  "kind": "icon",
+  "why": "a cave, forest, tower, building or interior: our map shows where it is, not its inside or floors",
+  "atlas": "own path 0px, own sea line 0px, mask 13px across"
+ },
+ "Unova|Mistralton City": {
+  "drawn": false,
+  "kind": "town",
+  "why": "a town block: our map draws the town as one block, not its streets",
+  "atlas": "own path 17px, own sea line 0px, mask 21px across"
+ },
+ "Unova|Moor of Icirrus": {
+  "drawn": false,
+  "kind": "undrawn",
+  "why": "an islet; the marsh is not drawn",
+  "atlas": "own path 0px, own sea line 28px, mask 14px across"
+ },
+ "Unova|N's Castle": {
+  "drawn": false,
+  "kind": "icon",
+  "why": "a cave, forest, tower, building or interior: our map shows where it is, not its inside or floors",
+  "atlas": "own path 0px, own sea line 13px, mask 12px across"
+ },
+ "Unova|Nacrene City": {
+  "drawn": false,
+  "kind": "town",
+  "why": "a town block: our map draws the town as one block, not its streets",
+  "atlas": "own path 40px, own sea line 24px, mask 21px across"
+ },
+ "Unova|Nimbasa City": {
+  "drawn": false,
+  "kind": "town",
+  "why": "a town block: our map draws the town as one block, not its streets",
+  "atlas": "own path 30px, own sea line 0px, mask 21px across"
+ },
+ "Unova|Nuvema Town": {
+  "drawn": false,
+  "kind": "town",
+  "why": "a town block: our map draws the town as one block, not its streets",
+  "atlas": "own path 16px, own sea line 28px, mask 20px across"
+ },
+ "Unova|Opelucid City": {
+  "drawn": false,
+  "kind": "town",
+  "why": "a town block: our map draws the town as one block, not its streets",
+  "atlas": "own path 27px, own sea line 0px, mask 22px across"
+ },
+ "Unova|P2 Laboratory": {
+  "drawn": false,
+  "kind": "icon",
+  "why": "a cave, forest, tower, building or interior: our map shows where it is, not its inside or floors",
+  "atlas": "own path 35px, own sea line 30px, mask 40px across"
+ },
+ "Unova|Pinwheel Forest": {
+  "drawn": false,
+  "kind": "icon",
+  "why": "a cave, forest, tower, building or interior: our map shows where it is, not its inside or floors",
+  "atlas": "own path 6px, own sea line 36px, mask 16px across"
+ },
+ "Unova|Plasma Frigate": {
+  "drawn": false,
+  "kind": "icon",
+  "why": "a cave, forest, tower, building or interior: our map shows where it is, not its inside or floors",
+  "atlas": "own path 21px, own sea line 388px, mask 495px across"
+ },
+ "Unova|Poké Transfer Lab": {
+  "drawn": false,
+  "kind": "icon",
+  "why": "a cave, forest, tower, building or interior: our map shows where it is, not its inside or floors",
+  "atlas": "own path 0px, own sea line 30px, mask 13px across"
+ },
+ "Unova|Pokémon League": {
+  "drawn": false,
+  "kind": "icon",
+  "why": "a cave, forest, tower, building or interior: our map shows where it is, not its inside or floors",
+  "atlas": "own path 0px, own sea line 42px, mask 42px across"
+ },
+ "Unova|Pokémon World Tournament": {
+  "drawn": false,
+  "kind": "icon",
+  "why": "a cave, forest, tower, building or interior: our map shows where it is, not its inside or floors",
+  "atlas": "own path 29px, own sea line 0px, mask 9px across"
+ },
+ "Unova|Pokéstar Studios": {
+  "drawn": false,
+  "kind": "icon",
+  "why": "a cave, forest, tower, building or interior: our map shows where it is, not its inside or floors",
+  "atlas": "own path 17px, own sea line 0px, mask 6px across"
+ },
+ "Unova|Relic Castle": {
+  "drawn": false,
+  "kind": "icon",
+  "why": "a cave, forest, tower, building or interior: our map shows where it is, not its inside or floors",
+  "atlas": "own path 1px, own sea line 63px, mask 54px across"
+ },
+ "Unova|Reversal Mountain": {
+  "drawn": false,
+  "kind": "icon",
+  "why": "a cave, forest, tower, building or interior: our map shows where it is, not its inside or floors",
+  "atlas": "own path 41px, own sea line 0px, mask 14px across"
+ },
+ "Unova|Route 1": {
+  "drawn": true,
+  "kind": "path",
+  "why": "a route drawn as its own cream path",
+  "atlas": "own path 28px, own sea line 0px, mask 15px across"
+ },
+ "Unova|Route 10": {
+  "drawn": true,
+  "kind": "path",
+  "why": "a route drawn as its own cream path",
+  "atlas": "own path 61px, own sea line 35px, mask 55px across"
+ },
+ "Unova|Route 11": {
+  "drawn": true,
+  "kind": "path",
+  "why": "a route drawn as its own cream path",
+  "atlas": "own path 0px, own sea line 7px, mask 33px across"
+ },
+ "Unova|Route 12": {
+  "drawn": true,
+  "kind": "path",
+  "why": "a route drawn as its own cream path",
+  "atlas": "own path 2px, own sea line 12px, mask 37px across"
+ },
+ "Unova|Route 13": {
+  "drawn": true,
+  "kind": "path",
+  "why": "a route drawn as its own cream path",
+  "atlas": "own path 79px, own sea line 0px, mask 70px across"
+ },
+ "Unova|Route 14": {
+  "drawn": true,
+  "kind": "path",
+  "why": "a route drawn as its own cream path",
+  "atlas": "own path 71px, own sea line 58px, mask 70px across"
+ },
+ "Unova|Route 15": {
+  "drawn": true,
+  "kind": "path",
+  "why": "a route drawn as its own cream path",
+  "atlas": "own path 44px, own sea line 24px, mask 37px across"
+ },
+ "Unova|Route 16": {
+  "drawn": true,
+  "kind": "path",
+  "why": "a route drawn as its own cream path",
+  "atlas": "own path 42px, own sea line 0px, mask 33px across"
+ },
+ "Unova|Route 18": {
+  "drawn": true,
+  "kind": "path",
+  "why": "a route drawn as its own cream path",
+  "atlas": "own path 32px, own sea line 0px, mask 33px across"
+ },
+ "Unova|Route 19": {
+  "drawn": true,
+  "kind": "path",
+  "why": "a route drawn as its own cream path",
+  "atlas": "own path 60px, own sea line 0px, mask 54px across"
+ },
+ "Unova|Route 2": {
+  "drawn": true,
+  "kind": "path",
+  "why": "a route drawn as its own cream path",
+  "atlas": "own path 30px, own sea line 0px, mask 21px across"
+ },
+ "Unova|Route 20": {
+  "drawn": true,
+  "kind": "path",
+  "why": "a route drawn as its own cream path",
+  "atlas": "own path 79px, own sea line 0px, mask 71px across"
+ },
+ "Unova|Route 21": {
+  "drawn": true,
+  "kind": "path",
+  "why": "a route drawn as its own cream path",
+  "atlas": "own path 0px, own sea line 0px, mask 22px across"
+ },
+ "Unova|Route 22": {
+  "drawn": true,
+  "kind": "path",
+  "why": "a route drawn as its own cream path",
+  "atlas": "own path 58px, own sea line 33px, mask 52px across"
+ },
+ "Unova|Route 23": {
+  "drawn": true,
+  "kind": "path",
+  "why": "a route drawn as its own cream path",
+  "atlas": "own path 35px, own sea line 66px, mask 65px across"
+ },
+ "Unova|Route 3": {
+  "drawn": true,
+  "kind": "path",
+  "why": "a route drawn as its own cream path",
+  "atlas": "own path 46px, own sea line 0px, mask 35px across"
+ },
+ "Unova|Route 4": {
+  "drawn": true,
+  "kind": "path",
+  "why": "a route drawn as its own cream path",
+  "atlas": "own path 53px, own sea line 0px, mask 39px across"
+ },
+ "Unova|Route 5": {
+  "drawn": true,
+  "kind": "path",
+  "why": "a route drawn as its own cream path",
+  "atlas": "own path 42px, own sea line 0px, mask 30px across"
+ },
+ "Unova|Route 6": {
+  "drawn": true,
+  "kind": "path",
+  "why": "a route drawn as its own cream path",
+  "atlas": "own path 82px, own sea line 0px, mask 71px across"
+ },
+ "Unova|Route 7": {
+  "drawn": true,
+  "kind": "path",
+  "why": "a route drawn as its own cream path",
+  "atlas": "own path 73px, own sea line 45px, mask 71px across"
+ },
+ "Unova|Route 8": {
+  "drawn": true,
+  "kind": "path",
+  "why": "a route drawn as its own cream path",
+  "atlas": "own path 7px, own sea line 40px, mask 37px across"
+ },
+ "Unova|Route 9": {
+  "drawn": true,
+  "kind": "path",
+  "why": "a route drawn as its own cream path",
+  "atlas": "own path 0px, own sea line 6px, mask 30px across"
+ },
+ "Unova|Seaside Cave": {
+  "drawn": false,
+  "kind": "icon",
+  "why": "a cave, forest, tower, building or interior: our map shows where it is, not its inside or floors",
+  "atlas": "own path 2px, own sea line 0px, mask 16px across"
+ },
+ "Unova|Skyarrow Bridge": {
+  "drawn": true,
+  "kind": "path",
+  "why": "the bridge is drawn as its own path across the bay",
+  "atlas": "own path 92px, own sea line 32px, mask 68px across"
+ },
+ "Unova|Strange House": {
+  "drawn": false,
+  "kind": "icon",
+  "why": "a cave, forest, tower, building or interior: our map shows where it is, not its inside or floors",
+  "atlas": "own path 13px, own sea line 0px, mask 15px across"
+ },
+ "Unova|Striaton City": {
+  "drawn": false,
+  "kind": "town",
+  "why": "a town block: our map draws the town as one block, not its streets",
+  "atlas": "own path 22px, own sea line 28px, mask 21px across"
+ },
+ "Unova|Tubeline Bridge": {
+  "drawn": true,
+  "kind": "path",
+  "why": "the bridge is drawn as its own path across the water",
+  "atlas": "own path 55px, own sea line 28px, mask 42px across"
+ },
+ "Unova|Twist Mountain": {
+  "drawn": false,
+  "kind": "icon",
+  "why": "a cave, forest, tower, building or interior: our map shows where it is, not its inside or floors",
+  "atlas": "own path 4px, own sea line 34px, mask 16px across"
+ },
+ "Unova|Undella Bay": {
+  "drawn": false,
+  "kind": "undrawn",
+  "why": "a coastline; the bay's water area is not drawn",
+  "atlas": "own path 28px, own sea line 0px, mask 23px across"
+ },
+ "Unova|Undella Town": {
+  "drawn": false,
+  "kind": "town",
+  "why": "a town block: our map draws the town as one block, not its streets",
+  "atlas": "own path 46px, own sea line 28px, mask 21px across"
+ },
+ "Unova|Unity Tower": {
+  "drawn": false,
+  "kind": "icon",
+  "why": "a cave, forest, tower, building or interior: our map shows where it is, not its inside or floors",
+  "atlas": "own path 0px, own sea line 0px, mask 6px across"
+ },
+ "Unova|Victory Road (B2W2)": {
+  "drawn": false,
+  "kind": "icon",
+  "why": "a cave, forest, tower, building or interior: our map shows where it is, not its inside or floors",
+  "atlas": "own path 2px, own sea line 11px, mask 9px across"
+ },
+ "Unova|Village Bridge": {
+  "drawn": true,
+  "kind": "path",
+  "why": "the bridge is drawn as its own path across the river",
+  "atlas": "own path 47px, own sea line 26px, mask 45px across"
+ },
+ "Unova|Virbank City": {
+  "drawn": false,
+  "kind": "town",
+  "why": "a town block: our map draws the town as one block, not its streets",
+  "atlas": "own path 15px, own sea line 33px, mask 22px across"
+ },
+ "Unova|Virbank Complex": {
+  "drawn": false,
+  "kind": "icon",
+  "why": "a cave, forest, tower, building or interior: our map shows where it is, not its inside or floors",
+  "atlas": "own path 0px, own sea line 40px, mask 16px across"
+ },
+ "Unova|Wellspring Cave": {
+  "drawn": false,
+  "kind": "icon",
+  "why": "a cave, forest, tower, building or interior: our map shows where it is, not its inside or floors",
+  "atlas": "own path 0px, own sea line 0px, mask 12px across"
+ }
+}
