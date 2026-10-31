@@ -14,7 +14,8 @@ export interface MapPin {
 
 export interface RevealedRound {
   guess: MapPin | null;
-  answer: { pin: [number, number]; mask: [number, number][] };
+  /** The place's area and pin; a spot-scored shot also has the exact point it was taken, where the flag goes. */
+  answer: { pin: [number, number]; mask: [number, number][]; spot?: [number, number] };
   /** Round number shown on the markers in the end-of-game summary. */
   label?: string;
   /** Duels: the trainer's colour for their pin and line. */
@@ -63,6 +64,9 @@ const LOCKED_ROOM = 1.04;
 const REVEAL_MIN_BOX = 260;
 /** The line draws itself over this long before the camera moves. */
 export const LINE_DRAW_MS = 600;
+
+/** Where a revealed round's flag stands: the exact spot when the shot has one, else the place's pin. */
+const flagAt = (answer: RevealedRound["answer"]): [number, number] => answer.spot ?? answer.pin;
 
 /** A map's width over its height as drawn (very tall or wide maps sit in a box of sensible proportions). */
 export function mapAspect(region: Pick<GeoRegionInfo, "map">): number {
@@ -164,13 +168,13 @@ export function GeoMap({ region, pick, pinImage, revealed = [], fit, onPick, con
   }, [atlas, cropPainted, region.id, x0, y0, x1, y1]);
 
   // A revealed round zooms to show the guess and the answer together, once the line has drawn.
-  const revealKey = revealed.map((r) => `${r.guess?.x},${r.guess?.y},${r.answer.pin}`).join("|");
+  const revealKey = revealed.map((r) => `${r.guess?.x},${r.guess?.y},${flagAt(r.answer)}`).join("|");
   const fitDelay = fit?.delay ?? 0;
   const fitDuration = fit?.duration;
   useEffect(() => {
     const e = engine.current;
     if (!e || !revealed.length) return;
-    const pts = revealed.flatMap((r) => [toWorld(...r.answer.pin), ...(r.guess ? [toWorld(r.guess.x, r.guess.y)] : [])]);
+    const pts = revealed.flatMap((r) => [toWorld(...flagAt(r.answer)),...(r.guess ? [toWorld(r.guess.x, r.guess.y)] : [])]);
     const xs = pts.map((p) => p[0]);
     const ys = pts.map((p) => p[1]);
     const box: Box = [Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys)];
@@ -223,7 +227,7 @@ export function GeoMap({ region, pick, pinImage, revealed = [], fit, onPick, con
       {view && (
         <svg className="pointer-events-none absolute inset-0 h-full w-full" aria-hidden>
           {revealed.map((r, i) => {
-            const [ax, ay] = toScreen(r.answer.pin[0], r.answer.pin[1]);
+            const [ax, ay] = toScreen(...flagAt(r.answer));
             const g = r.guess ? toScreen(r.guess.x, r.guess.y) : null;
             // Duels reveal each trainer's guess as its own round on one shared answer: draw its area once.
             const again = i > 0 && revealed[i - 1].answer === r.answer;

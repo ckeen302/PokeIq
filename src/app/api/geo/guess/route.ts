@@ -83,6 +83,7 @@ export async function POST(request: NextRequest) {
         kind: spec.kind === "streak" ? "streak" : spec.daily ? "daily" : spec.practice === "challenge" ? "challenge" : "game",
         run: state.sid,
         family: outcome.body.answer.family,
+        pin: outcome.played.pin,
         ...(region ? { region } : {}),
         ...(spec.kind === "streak" ? { hit: outcome.body.hit } : {}),
       })

@@ -116,6 +116,8 @@ export interface GeoAnswer {
   squares: number;
   /** World games: the region the place is in. */
   region?: string;
+  /** The exact point the screenshot was taken, when it's verified and scores the round (sent only with the graded answer). */
+  spot?: [number, number];
 }
 
 /** A friend's finished game, carried in a challenge link. */
