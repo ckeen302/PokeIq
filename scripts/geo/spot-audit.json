@@ -1,4 +1,9 @@
 {
+ "-5sI1bboHPyF": {
+  "verdict": "unscored",
+  "reason": "by eye (proportional placement): the rip spot is below the cliffs in the west part of Route 10; ours lands on the drawn bridge over the river, which nothing in the rip view ties it to",
+  "rip": "archives.bulbagarden.net|Unova_Route_10_Summer_BW.png"
+ },
  "-AoUK5hgvH1Z": {
   "verdict": "unscored",
   "reason": "placed by proportion only (no verified fit) in a stretch of the route that our map draws as an icon or block (a gate, cave mouth or building on it)",
@@ -34,6 +39,11 @@
   "reason": "placed by proportion only (no verified fit) inside Bell Tower, which our map draws as an icon, on one floor of it",
   "rip": "archives.bulbagarden.net|Bell_Tower_8F_HGSS.png"
  },
+ "0DUo77Po6lkl": {
+  "verdict": "unscored",
+  "reason": "by eye (proportional placement): Route 7's rip is an L with an empty corner; ours is on a featureless stretch of the drawn diagonal, and the barn by the rip spot isn't drawn",
+  "rip": "archives.bulbagarden.net|Unova_Route_7_Spring_B2W2.png"
+ },
  "0Im_uMcmqSRF": {
   "verdict": "unscored",
   "reason": "placed by proportion only (no verified fit) inside Mt. Ember, which our map draws as an icon",
@@ -49,10 +59,30 @@
   "reason": "placed by proportion only (no verified fit) inside Victory Road, which our map draws as an icon, on one floor of it",
   "rip": "archives.bulbagarden.net|Victory_Road_1F_RBY.png"
  },
+ "1qHVvPEs28RN": {
+  "verdict": "unscored",
+  "reason": "by eye (proportional placement): on a featureless stretch of Route 118's drawn path: our map doesn't draw the river crossing the rip spot is beside",
+  "rip": "archives.bulbagarden.net|Hoenn_Route_118_E.png"
+ },
  "1qXzdaDO9wrX": {
   "verdict": "unscored",
   "reason": "placed by proportion only (no verified fit) inside Bell Tower, which our map draws as an icon, on one floor of it",
   "rip": "archives.bulbagarden.net|Tin_Tower_6F_GSC.png"
+ },
+ "27bYELYGKEuy": {
+  "verdict": "unscored",
+  "reason": "by eye (proportional placement): Route 114's drawn L-shaped path along the coast doesn't follow the route's ponds, ledges and cliffs; the spot can't be tied to a point of it",
+  "rip": "archives.bulbagarden.net|Hoenn_Route_114_E.png"
+ },
+ "2BBbavtjBbfa": {
+  "verdict": "unscored",
+  "reason": "by eye (proportional placement): the rip spot is in the sea north of the house; ours lands on the island's rocky top",
+  "rip": "archives.bulbagarden.net|Cape_Brink_FRLG.png"
+ },
+ "2KPUaL4qN0r6": {
+  "verdict": "unscored",
+  "reason": "by eye (proportional placement): a featureless stretch of Route 212's north–south path (the rip spot is in the Pokémon Mansion's garden, not drawn)",
+  "rip": "archives.bulbagarden.net|Sinnoh_Route_212_Pt.png"
  },
  "2WjpvBTbrzbi": {
   "verdict": "unscored",
@@ -63,6 +93,16 @@
   "verdict": "unscored",
   "reason": "placed by proportion only (no verified fit) inside Rocket Warehouse, which our map draws as an icon",
   "rip": "archives.bulbagarden.net|Five_Isle_Meadow.png"
+ },
+ "30svwbWZEtA5": {
+  "verdict": "unscored",
+  "reason": "by eye (proportional placement): our Five Isle Meadow is a rock-and-sand islet; the rip's wooded meadow, house and paths aren't drawn, so the spot can't be tied to a point of it",
+  "rip": "archives.bulbagarden.net|Five_Isle_Meadow.png"
+ },
+ "34RJ2-YKhFHR": {
+  "verdict": "unscored",
+  "reason": "by eye (proportional placement): our Route 46 is a Y-shaped path; the rip spot on the grass west of the ledges can't be tied to a point of the fork",
+  "rip": "archives.bulbagarden.net|Johto_Route_46_GSC.png"
  },
  "3Jkzjvq6mUOr": {
   "verdict": "unscored",
@@ -78,6 +118,11 @@
   "verdict": "unscored",
   "reason": "placed by proportion only (no verified fit) inside Cerulean Cave, which our map draws as an icon, on one floor of it",
   "rip": "archives.bulbagarden.net|Unknown_Dungeon_2F_Y.png"
+ },
+ "3UQkcQ5Gijzn": {
+  "verdict": "unscored",
+  "reason": "by eye (proportional placement): our Five Isle Meadow is a rock-and-sand islet; the rip's wooded meadow, house and paths aren't drawn, so the spot can't be tied to a point of it",
+  "rip": "archives.bulbagarden.net|Five_Isle_Meadow.png"
  },
  "3kKhOYbpTFP0": {
   "verdict": "unscored",
@@ -124,10 +169,20 @@
   "reason": "placed by proportion only (no verified fit) inside Victory Road, which our map draws as an icon, on one floor of it",
   "rip": "archives.bulbagarden.net|Victory_Road_2F_FRLG.png"
  },
+ "5MYZtmzoyMUv": {
+  "verdict": "unscored",
+  "reason": "by eye (proportional placement): in the forest north of Route 123's drawn path; nothing drawn there to match the rip's clearing",
+  "rip": "archives.bulbagarden.net|Hoenn_Route_123_E.png"
+ },
  "5SFZ2DLfFx5l": {
   "verdict": "unscored",
   "reason": "placed by proportion only (no verified fit) inside Mt. Moon, which our map draws as an icon, on one floor of it",
   "rip": "archives.bulbagarden.net|Mt_Moon_B2F_RBY.png"
+ },
+ "5XG0mO8_IXbd": {
+  "verdict": "unscored",
+  "reason": "by eye (proportional placement): the rip spot is up on the rocky peak; ours lands in the water beside the drawn stub",
+  "rip": "archives.bulbagarden.net|Sinnoh_Route_224_DP.png"
  },
  "5_TWNC010YsS": {
   "verdict": "unscored",
@@ -199,6 +254,20 @@
   "reason": "placed by proportion only (no verified fit) inside Safari Zone / Pal Park, which our map draws as nothing walkable",
   "rip": "archives.bulbagarden.net|Safari_Zone_area_1_RBY.png"
  },
+ "87yasGTJx2GW": {
+  "verdict": "ok",
+  "at": [
+   0.51883,
+   0.72892
+  ],
+  "rip": "archives.bulbagarden.net|Hoenn_Route_118_E.png",
+  "note": "by eye (proportional placement): the rip spot is at the foot of the cliff by the exit north to Route 119; ours sits on the junction where the path north leaves Route 118's path"
+ },
+ "8M2FDZyNga_1": {
+  "verdict": "unscored",
+  "reason": "by eye (proportional placement): the rip spot is on Water Path's east shore; ours is on the drawn island's east coast at a proportional height, with no drawn feature to tie it to",
+  "rip": "archives.bulbagarden.net|Water_Path_FRLG.png"
+ },
  "8Sxt9RAKyDjP": {
   "verdict": "unscored",
   "reason": "placed by proportion only (no verified fit) inside Safari Zone / Pal Park, which our map draws as nothing walkable",
@@ -213,6 +282,11 @@
   "verdict": "unscored",
   "reason": "placed by proportion only (no verified fit) inside Ilex Forest, which our map draws as an icon",
   "rip": "archives.bulbagarden.net|Ilex_Forest_GSC.png"
+ },
+ "97XI7zdsn-__": {
+  "verdict": "unscored",
+  "reason": "by eye (proportional placement): Route 205's rip is two separate stretches laid side by side (south of Eterna Forest and north of it), so a proportional placement doesn't follow the route; ours lands on rock or grass with no drawn feature to match",
+  "rip": "archives.bulbagarden.net|Sinnoh_Route_205_Pt.png"
  },
  "9G86Nfj98myk": {
   "verdict": "unscored",
@@ -234,6 +308,21 @@
   "reason": "placed by proportion only (no verified fit) inside Ice Path, which our map draws as an icon, on one floor of it",
   "rip": "archives.bulbagarden.net|Ice_Path_1F_HGSS.png"
  },
+ "A9_M5BbE2YKe": {
+  "verdict": "unscored",
+  "reason": "by eye (proportional placement): the rip spot is on the beach near Route 13's south-east end; ours is beside the drawn diagonal near a junction, about 4–6px off, with nothing drawn to confirm it",
+  "rip": "archives.bulbagarden.net|Unova_Route_13_Summer_B2W2.png"
+ },
+ "AMqQJ47ECx-A": {
+  "verdict": "unscored",
+  "reason": "by eye (proportional placement): a featureless stretch of Route 12's drawn path (the rip spot is mid-route on the grass terraces)",
+  "rip": "archives.bulbagarden.net|Unova_Route_12_Spring_BW.png"
+ },
+ "ATHx-uvDIzc_": {
+  "verdict": "unscored",
+  "reason": "by eye (proportional placement): our Route 47 is a rocky headland with a path that doesn't follow the route's waterfalls and cliffs; the spot can't be tied to a point of it",
+  "rip": "archives.bulbagarden.net|Johto_Route_47_HGSS.png"
+ },
  "AZQ1-29dd7Aa": {
   "verdict": "unscored",
   "reason": "placed by proportion only (no verified fit) inside Mistralton Cave, which our map draws as an icon, on one floor of it",
@@ -243,6 +332,11 @@
   "verdict": "unscored",
   "reason": "placed by proportion only (no verified fit) inside Power Plant, which our map draws as an icon, on one floor of it",
   "rip": "archives.bulbagarden.net|Power_Plant_interior_RBY.png"
+ },
+ "B2jx5VIUGvQd": {
+  "verdict": "unscored",
+  "reason": "by eye (proportional placement): Route 205's rip is two separate stretches laid side by side (south of Eterna Forest and north of it), so a proportional placement doesn't follow the route; ours lands on rock or grass with no drawn feature to match",
+  "rip": "archives.bulbagarden.net|Sinnoh_Route_205_Pt.png"
  },
  "B581JIMkacPG": {
   "verdict": "unscored",
@@ -259,6 +353,11 @@
   "reason": "placed by proportion only (no verified fit) inside Mt. Ember, which our map draws as an icon",
   "rip": "archives.bulbagarden.net|Mt_Ember_FRLG.png"
  },
+ "BVkXsQbkqsq9": {
+  "verdict": "unscored",
+  "reason": "by eye (proportional placement): our Route 13 is one diagonal path; the rip's coves, islets and stairs aren't drawn, so the spot can't be tied to a point of it",
+  "rip": "archives.bulbagarden.net|Unova_Route_13_Summer_B2W2.png"
+ },
  "CFKzTnBTXBll": {
   "verdict": "unscored",
   "reason": "placed by proportion only (no verified fit) inside Trainer Tower, which our map draws as an icon, on one floor of it",
@@ -268,6 +367,20 @@
   "verdict": "unscored",
   "reason": "placed by proportion only (no verified fit) inside Memorial Pillar, which our map draws as nothing walkable",
   "rip": "archives.bulbagarden.net|Memorial_Pillar.png"
+ },
+ "CK_SPEywy-ei": {
+  "verdict": "unscored",
+  "reason": "by eye (proportional placement): a featureless stretch of Route 212's north–south path (the rip spot is in the Pokémon Mansion's garden, not drawn)",
+  "rip": "archives.bulbagarden.net|Sinnoh_Route_212_Pt.png"
+ },
+ "CZCwtL1ItgLY": {
+  "verdict": "ok",
+  "at": [
+   0.63219,
+   0.71631
+  ],
+  "rip": "archives.bulbagarden.net|TreasureBeach.png",
+  "note": "by eye (proportional placement): the rip spot is on Treasure Beach's north shore where the sand meets the sea; ours is on the drawn island's north shore"
  },
  "CdLObt_RBRkG": {
   "verdict": "unscored",
@@ -284,10 +397,25 @@
   "reason": "placed by proportion only (no verified fit) inside Olivine Lighthouse, which our map draws as an icon, on one floor of it",
   "rip": "archives.bulbagarden.net|Glitter_Lighthouse_6F_HGSS.png"
  },
+ "Cp0d-OfWjsCw": {
+  "verdict": "unscored",
+  "reason": "by eye (proportional placement): the rip spot is among the houses at Water Path's north end; ours is on a small drawn islet that nothing ties to that spot",
+  "rip": "archives.bulbagarden.net|Water_Path_FRLG.png"
+ },
+ "CwsXC96kXVwn": {
+  "verdict": "unscored",
+  "reason": "by eye (proportional placement): Route 205's rip is two separate stretches laid side by side (south of Eterna Forest and north of it), so a proportional placement doesn't follow the route; ours lands on rock or grass with no drawn feature to match",
+  "rip": "archives.bulbagarden.net|Sinnoh_Route_205_Pt.png"
+ },
  "D2cvKDsfViE2": {
   "verdict": "unscored",
   "reason": "placed by proportion only (no verified fit) inside Ilex Forest, which our map draws as an icon",
   "rip": "archives.bulbagarden.net|Ilex_Forest_HGSS.png"
+ },
+ "D8elUlNDecjI": {
+  "verdict": "unscored",
+  "reason": "by eye (proportional placement): our Route 13 is one diagonal path; the rip's coves, islets and stairs aren't drawn, so the spot can't be tied to a point of it",
+  "rip": "archives.bulbagarden.net|Unova_Route_13_Spring_BW.png"
  },
  "DA7BrlOhnQZa": {
   "verdict": "unscored",
@@ -323,6 +451,21 @@
   "verdict": "unscored",
   "reason": "placed by proportion only (no verified fit) inside Seafoam Islands, which our map draws as an icon, on one floor of it",
   "rip": "archives.bulbagarden.net|Seafoam_Islands_B4F_FRLG.png"
+ },
+ "EYhlIDDmGLKS": {
+  "verdict": "unscored",
+  "reason": "by eye (proportional placement): on the straight east part of Route 27's drawn path; the rip spot (by the water among the trees) has no drawn feature to match",
+  "rip": "archives.bulbagarden.net|Kanto_Route_27_GSC.png"
+ },
+ "F2JdkVAdS-cB": {
+  "verdict": "unscored",
+  "reason": "by eye (proportional placement): the rip spot is a third of the way along Route 25; ours is near the path's west bend, a different stretch",
+  "rip": "archives.bulbagarden.net|Kanto_Route_25_RBY.png"
+ },
+ "F_fqF0qx-dWt": {
+  "verdict": "unscored",
+  "reason": "by eye (proportional placement): our Five Isle Meadow is a rock-and-sand islet; the rip's wooded meadow, house and paths aren't drawn, so the spot can't be tied to a point of it",
+  "rip": "archives.bulbagarden.net|Five_Isle_Meadow.png"
  },
  "FwNAL12CwUeU": {
   "verdict": "unscored",
@@ -374,6 +517,11 @@
   "reason": "placed by proportion only (no verified fit) inside Berry Forest, which our map draws as an icon",
   "rip": "archives.bulbagarden.net|Berry_Forest.png"
  },
+ "IS_jyN99F3jf": {
+  "verdict": "unscored",
+  "reason": "by eye (proportional placement): near the top of Route 46 by the cave mouth; ours sits near the tip of the fork's left branch, but nothing drawn shows which branch is which",
+  "rip": "archives.bulbagarden.net|Johto_Route_46_GSC.png"
+ },
  "IShj-0J88o6b": {
   "verdict": "unscored",
   "reason": "placed by proportion only (no verified fit) inside Mt. Coronet, which our map draws as an icon, on one floor of it",
@@ -404,6 +552,11 @@
   "reason": "placed by proportion only (no verified fit) inside Trainer Tower, which our map draws as an icon",
   "rip": "archives.bulbagarden.net|Trainer_Tower_FRLG.png"
  },
+ "IlLiRRTQOHqA": {
+  "verdict": "unscored",
+  "reason": "by eye (proportional placement): our Cape Brink is the island's outline with a rocky top; the rip spot by the pond below the house (not drawn) can't be tied to a point of it",
+  "rip": "archives.bulbagarden.net|Cape_Brink_FRLG.png"
+ },
  "JGaQMPHo0sLj": {
   "verdict": "unscored",
   "reason": "placed by proportion only (no verified fit) inside Battle Frontier, which our map draws as nothing walkable",
@@ -419,6 +572,11 @@
   "reason": "placed by proportion only (no verified fit) inside Wayward Cave, which our map draws as an icon, on one floor of it",
   "rip": "archives.bulbagarden.net|Wayward_Cave_B1F_DPPt.png"
  },
+ "Jcdd7i647iGM": {
+  "verdict": "unscored",
+  "reason": "by eye (proportional placement): Route 205's rip is two separate stretches laid side by side (south of Eterna Forest and north of it), so a proportional placement doesn't follow the route; ours lands on rock or grass with no drawn feature to match",
+  "rip": "archives.bulbagarden.net|Sinnoh_Route_205_DP.png"
+ },
  "JwXpKIt5xnp7": {
   "verdict": "unscored",
   "reason": "placed by proportion only (no verified fit) inside Mt. Silver, which our map draws as an icon",
@@ -428,6 +586,11 @@
   "verdict": "unscored",
   "reason": "placed by proportion only (no verified fit) inside Viridian Forest, which our map draws as an icon",
   "rip": "archives.bulbagarden.net|Viridian_Forest_RBY.png"
+ },
+ "K9DiWmtIf1LM": {
+  "verdict": "unscored",
+  "reason": "by eye (proportional placement): beside Route 16's gate house, which our map doesn't draw; ours is on a featureless stretch of the path",
+  "rip": "archives.bulbagarden.net|Kanto_Route_16_FRLG.png"
  },
  "KCo6PXV9zRRM": {
   "verdict": "unscored",
@@ -489,6 +652,34 @@
   "reason": "placed by proportion only (no verified fit) in a stretch of the route that our map draws as an icon or block (a gate, cave mouth or building on it)",
   "rip": "archives.bulbagarden.net|Kanto_Route_2_GSC.png"
  },
+ "LENsa5Dn_SHZ": {
+  "verdict": "ok",
+  "at": [
+   0.63152,
+   0.71553
+  ],
+  "rip": "archives.bulbagarden.net|TreasureBeach.png",
+  "note": "by eye (proportional placement): the rip spot is on Treasure Beach's north shore where the sand meets the sea; ours is on the drawn island's north shore"
+ },
+ "LIxCjkANvOP0": {
+  "verdict": "unscored",
+  "reason": "by eye (proportional placement): Route 205's rip is two separate stretches laid side by side (south of Eterna Forest and north of it), so a proportional placement doesn't follow the route; ours lands on rock or grass with no drawn feature to match",
+  "rip": "archives.bulbagarden.net|Sinnoh_Route_205_Pt.png"
+ },
+ "L_iAIoea9Zyq": {
+  "verdict": "unscored",
+  "reason": "by eye (proportional placement): lands on plain grass inside Route 114's box, away from the drawn path; the rip spot is by a pond and house our map doesn't draw",
+  "rip": "archives.bulbagarden.net|Hoenn_Route_114_RS.png"
+ },
+ "MBoFj_G0aIpe": {
+  "verdict": "ok",
+  "at": [
+   0.63087,
+   0.71582
+  ],
+  "rip": "archives.bulbagarden.net|TreasureBeach.png",
+  "note": "by eye (proportional placement): the rip spot is on Treasure Beach's north shore where the sand meets the sea; ours is on the drawn island's north shore"
+ },
  "MGEnCwDFY7K3": {
   "verdict": "unscored",
   "reason": "placed by proportion only (no verified fit) inside Wellspring Cave, which our map draws as an icon, on one floor of it",
@@ -504,10 +695,20 @@
   "reason": "placed by proportion only (no verified fit) inside Victory Road, which our map draws as an icon, on one floor of it",
   "rip": "archives.bulbagarden.net|Victory_Road_2F_FRLG.png"
  },
+ "MzbmgSNf_pwN": {
+  "verdict": "unscored",
+  "reason": "by eye (proportional placement): a featureless stretch of Route 210's north–south path (the rip spot is in tall grass)",
+  "rip": "archives.bulbagarden.net|Sinnoh_Route_210_DP.png"
+ },
  "N6E7aVLlTY93": {
   "verdict": "unscored",
   "reason": "placed by proportion only (no verified fit) inside Memorial Pillar, which our map draws as nothing walkable",
   "rip": "archives.bulbagarden.net|Memorial_Pillar.png"
+ },
+ "NDC_PBDuSqlg": {
+  "verdict": "unscored",
+  "reason": "by eye (proportional placement): on a featureless stretch of Route 123's drawn path; the rip spot (by the Berry Master's house / the trainers' grass) has no drawn feature to match",
+  "rip": "archives.bulbagarden.net|Hoenn_Route_123_E.png"
  },
  "NWdRP0gcinoF": {
   "verdict": "unscored",
@@ -519,6 +720,11 @@
   "reason": "placed by proportion only (no verified fit) inside Seafoam Islands, which our map draws as an icon, on one floor of it",
   "rip": "archives.bulbagarden.net|Seafoam_Islands_B2F_FRLG.png"
  },
+ "No8cPqxWJcrN": {
+  "verdict": "unscored",
+  "reason": "by eye (proportional placement): the rip spot is in the rocks at the south end; ours lands on the drawn island's green south part, which isn't those rocks",
+  "rip": "archives.bulbagarden.net|TreasureBeach.png"
+ },
  "Ntm4X0bjpCpj": {
   "verdict": "unscored",
   "reason": "placed by proportion only (no verified fit) inside Power Plant, which our map draws as an icon, on one floor of it",
@@ -529,10 +735,20 @@
   "reason": "placed by proportion only (no verified fit) inside Distortion World, which our map draws as an icon, on one floor of it",
   "rip": "archives.bulbagarden.net|Distortion_World_B4F_lower_Pt.png"
  },
+ "OEMoHvxJyB26": {
+  "verdict": "unscored",
+  "reason": "by eye (proportional placement): the rip spot is at Route 13's west end; ours lands on the north–south path below the junction, which is Route 14's",
+  "rip": "archives.bulbagarden.net|Kanto_Route_13_RBY.png"
+ },
  "OGvGAYPAJBxo": {
   "verdict": "unscored",
   "reason": "placed by proportion only (no verified fit) inside Burned Tower, which our map draws as an icon, on one floor of it",
   "rip": "archives.bulbagarden.net|Burned_Tower_B1F_HGSS.png"
+ },
+ "OJQRAhlj-3Vg": {
+  "verdict": "unscored",
+  "reason": "by eye (proportional placement): Route 114's drawn L-shaped path along the coast doesn't follow the route's ponds, ledges and cliffs; the spot can't be tied to a point of it",
+  "rip": "archives.bulbagarden.net|Hoenn_Route_114_E.png"
  },
  "OW5k-S4XI8yl": {
   "verdict": "unscored",
@@ -548,6 +764,25 @@
   "verdict": "unscored",
   "reason": "placed by proportion only (no verified fit) inside Ilex Forest, which our map draws as an icon",
   "rip": "archives.bulbagarden.net|Ilex_Forest_GSC.png"
+ },
+ "PX7l1NM2k119": {
+  "verdict": "unscored",
+  "reason": "by eye (proportional placement): off the drawn path on grass below Route 212's east–west stretch; nothing drawn ties it to the rip's marsh",
+  "rip": "archives.bulbagarden.net|Sinnoh_Route_212_DP.png"
+ },
+ "PbjqkF10mfLf": {
+  "verdict": "ok",
+  "at": [
+   0.70767,
+   0.58736
+  ],
+  "rip": "archives.bulbagarden.net|Kanto_Route_19_HGSS.png",
+  "note": "by eye (proportional placement): the rip spot is on the beach at Route 19's north end where the land from Fuchsia meets the sea; ours is on the sea line right where Fuchsia's drawn path ends at the water"
+ },
+ "PywTTCkvD8Y9": {
+  "verdict": "unscored",
+  "reason": "by eye (proportional placement): Route 205's rip is two separate stretches laid side by side (south of Eterna Forest and north of it), so a proportional placement doesn't follow the route; ours lands on rock or grass with no drawn feature to match",
+  "rip": "archives.bulbagarden.net|Sinnoh_Route_205_Pt.png"
  },
  "Q87JGWI6wLBG": {
   "verdict": "unscored",
@@ -568,6 +803,21 @@
   "verdict": "unscored",
   "reason": "placed by proportion only (no verified fit) inside Mt. Moon, which our map draws as an icon, on one floor of it",
   "rip": "archives.bulbagarden.net|Mt_Moon_1F_FRLG.png"
+ },
+ "QLsNYoeegytP": {
+  "verdict": "unscored",
+  "reason": "by eye (proportional placement): on the straight east part of Route 27's drawn path; the rip spot (by the water among the trees) has no drawn feature to match",
+  "rip": "archives.bulbagarden.net|Kanto_Route_27_GSC.png"
+ },
+ "QOyPcnme0rNc": {
+  "verdict": "unscored",
+  "reason": "by eye (proportional placement): Route 114's drawn L-shaped path along the coast doesn't follow the route's ponds, ledges and cliffs; the spot can't be tied to a point of it",
+  "rip": "archives.bulbagarden.net|Hoenn_Route_114_RS.png"
+ },
+ "QavkMfxLJhXX": {
+  "verdict": "unscored",
+  "reason": "by eye (proportional placement): lands on grass off the drawn path, outside the bend; the rip spot is on the route's east lane by the water",
+  "rip": "archives.bulbagarden.net|Kanto_Route_14_FRLG.png"
  },
  "QeKqRDG3n1iu": {
   "verdict": "unscored",
@@ -598,6 +848,11 @@
   "verdict": "unscored",
   "reason": "placed by proportion only (no verified fit) inside Rock Tunnel, which our map draws as an icon, on one floor of it",
   "rip": "archives.bulbagarden.net|Rock_Tunnel_B1F_FRLG.png"
+ },
+ "ROgWoCc9DIbG": {
+  "verdict": "unscored",
+  "reason": "by eye (proportional placement): lands on plain grass inside Route 114's box, away from the drawn path; the rip spot is by a pond and house our map doesn't draw",
+  "rip": "archives.bulbagarden.net|Hoenn_Route_114_E.png"
  },
  "RaK4skYQA7CU": {
   "verdict": "unscored",
@@ -639,6 +894,11 @@
   "reason": "placed by proportion only (no verified fit) in a stretch of the route that our map draws as an icon or block (a gate, cave mouth or building on it)",
   "rip": "archives.bulbagarden.net|Kanto_Route_26_HGSS.png"
  },
+ "THwETahg3cXj": {
+  "verdict": "unscored",
+  "reason": "by eye (proportional placement): our Route 46 is a Y-shaped path; the rip spot on the grass west of the ledges can't be tied to a point of the fork",
+  "rip": "archives.bulbagarden.net|Johto_Route_46_GSC.png"
+ },
  "TQkbuypB3YqI": {
   "verdict": "unscored",
   "reason": "placed by proportion only (no verified fit) inside Safari Zone / Pal Park, which our map draws as nothing walkable",
@@ -659,10 +919,20 @@
   "reason": "placed by proportion only (no verified fit) inside Safari Zone / Pal Park, which our map draws as nothing walkable",
   "rip": "archives.bulbagarden.net|Safari_Zone_area_2_FRLG.png"
  },
+ "Tu4J3h6fU0SO": {
+  "verdict": "unscored",
+  "reason": "by eye (proportional placement): our Route 47 is a rocky headland with a path that doesn't follow the route's cliffs, beaches and stairs; the spot lands off the path on generic rock",
+  "rip": "archives.bulbagarden.net|Johto_Route_47_HGSS.png"
+ },
  "U1NuLFgdXNZp": {
   "verdict": "unscored",
   "reason": "placed by proportion only (no verified fit) in a stretch of the route that our map draws as an icon or block (a gate, cave mouth or building on it)",
   "rip": "archives.bulbagarden.net|Kanto_Route_2_HGSS.png"
+ },
+ "U64HJO2rKZJ7": {
+  "verdict": "unscored",
+  "reason": "by eye (proportional placement): Route 205's rip is two separate stretches laid side by side (south of Eterna Forest and north of it), so a proportional placement doesn't follow the route; ours lands on rock or grass with no drawn feature to match",
+  "rip": "archives.bulbagarden.net|Sinnoh_Route_205_DP.png"
  },
  "U6D3snzyMnHj": {
   "verdict": "unscored",
@@ -689,10 +959,24 @@
   "reason": "placed by proportion only (no verified fit) inside Dragon's Den, which our map draws as an icon",
   "rip": "archives.bulbagarden.net|Dragons_Den_HGSS.png"
  },
+ "UqOJsHTmrbUV": {
+  "verdict": "unscored",
+  "reason": "by eye (proportional placement): our Route 14 is one diagonal path; the rip's waterfalls and terraces aren't drawn, so the spot can't be tied to a point of it",
+  "rip": "archives.bulbagarden.net|Unova_Route_14_Summer_B2W2.png"
+ },
  "V9UlQ8csZfqL": {
   "verdict": "unscored",
   "reason": "placed by proportion only (no verified fit) inside Memorial Pillar, which our map draws as nothing walkable",
   "rip": "archives.bulbagarden.net|Memorial_Pillar.png"
+ },
+ "VZ3ZR6pV7kda": {
+  "verdict": "ok",
+  "at": [
+   0.06783,
+   0.47716
+  ],
+  "rip": "archives.bulbagarden.net|Unova_Route_8_Spring_BW.png",
+  "note": "by eye (proportional placement): the rip spot is in the marsh pond in Route 8's west half; ours is where the drawn path crosses the drawn water in the west half"
  },
  "VeRrdcQFJ0od": {
   "verdict": "unscored",
@@ -713,6 +997,16 @@
   "verdict": "unscored",
   "reason": "placed by proportion only (no verified fit) inside Dragon's Den, which our map draws as an icon",
   "rip": "archives.bulbagarden.net|Dragons_Den_HGSS.png"
+ },
+ "WlN2jaY0kk4x": {
+  "verdict": "unscored",
+  "reason": "by eye (proportional placement): the rip spot is by the Season Research Lab near Route 6's bridge; ours is on a featureless stretch of the drawn diagonal",
+  "rip": "archives.bulbagarden.net|Unova_Route_6_Spring_B2W2.png"
+ },
+ "WsVmeFaPX0Gx": {
+  "verdict": "unscored",
+  "reason": "by eye (proportional placement): our Cape Brink is the island's outline with a rocky top; the rip spot by the pond below the house (not drawn) can't be tied to a point of it",
+  "rip": "archives.bulbagarden.net|Cape_Brink_FRLG.png"
  },
  "XQAf2hGv_i4x": {
   "verdict": "unscored",
@@ -739,6 +1033,11 @@
   "reason": "placed by proportion only (no verified fit) inside Pokéstar Studios, which our map draws as an icon",
   "rip": "archives.bulbagarden.net|Pokéstar_Studios_Summer_B2W2.png"
  },
+ "YWadse1fm8ss": {
+  "verdict": "unscored",
+  "reason": "by eye (proportional placement): on a featureless stretch of Route 123's drawn path; the rip spot (by the Berry Master's house / the trainers' grass) has no drawn feature to match",
+  "rip": "archives.bulbagarden.net|Hoenn_Route_123_E.png"
+ },
  "Y_L08UN1wiPj": {
   "verdict": "unscored",
   "reason": "placed by proportion only (no verified fit) inside Memorial Pillar, which our map draws as nothing walkable",
@@ -759,6 +1058,11 @@
   "reason": "placed by proportion only (no verified fit) inside Snowpoint Temple, which our map draws as an icon, on one floor of it",
   "rip": "archives.bulbagarden.net|Snowpoint_Temple_B5F_DPPt.png"
  },
+ "ZTdnSkfWmI8B": {
+  "verdict": "unscored",
+  "reason": "by eye (proportional placement): the rip spot is in the water at Route 27's east end; ours lands on land past the path's tip",
+  "rip": "archives.bulbagarden.net|Kanto_Route_27_HGSS.png"
+ },
  "Z_3jo7WR7SZw": {
   "verdict": "unscored",
   "reason": "placed by proportion only (no verified fit) inside Mt. Moon, which our map draws as an icon, on one floor of it",
@@ -773,6 +1077,11 @@
   "verdict": "unscored",
   "reason": "placed by proportion only (no verified fit) inside Dreamyard, which our map draws as an icon",
   "rip": "archives.bulbagarden.net|Dreamyard_Ruins_Summer_BW.png"
+ },
+ "ZilqMHZ22OCr": {
+  "verdict": "unscored",
+  "reason": "by eye (proportional placement): Route 210's rip is an L with an empty corner, so the proportional box puts this west-stretch spot halfway along our path and off it on the grass",
+  "rip": "archives.bulbagarden.net|Sinnoh_Route_210_DP.png"
  },
  "Zr9dL168QoL_": {
   "verdict": "unscored",
@@ -804,15 +1113,39 @@
   "reason": "placed by proportion only (no verified fit) inside Victory Road, which our map draws as an icon, on one floor of it",
   "rip": "archives.bulbagarden.net|Victory_Road_2F_RBY.png"
  },
+ "aLs77jNDCn2P": {
+  "verdict": "unscored",
+  "reason": "by eye (proportional placement): beside Route 16's gate house, which our map doesn't draw; ours is on a featureless stretch of the path",
+  "rip": "archives.bulbagarden.net|Kanto_Route_16_FRLG.png"
+ },
+ "aVjR2p4078km": {
+  "verdict": "unscored",
+  "reason": "by eye (proportional placement): Route 103's east end: the rip spot is on land east of the water, but our drawn path there has no feature to tie it to (it could be any point of the last stretch)",
+  "rip": "archives.bulbagarden.net|Hoenn_Route_103_RS.png"
+ },
  "amwaMkLnL8iq": {
   "verdict": "unscored",
   "reason": "placed by proportion only (no verified fit) inside Seafoam Islands, which our map draws as an icon, on one floor of it",
   "rip": "archives.bulbagarden.net|Seafoam_Islands_B4F_RBY.png"
  },
+ "appqC5hzb4_e": {
+  "verdict": "unscored",
+  "reason": "by eye (proportional placement): the rip spot is among the houses at Water Path's north end; ours is on a small drawn islet that nothing ties to that spot",
+  "rip": "archives.bulbagarden.net|Water_Path_FRLG.png"
+ },
  "b6EmjoucdbIR": {
   "verdict": "unscored",
   "reason": "placed by proportion only (no verified fit) inside Victory Road, which our map draws as an icon, on one floor of it",
   "rip": "archives.bulbagarden.net|Victory_Road_1F_E.png"
+ },
+ "bC9akE1H8Ghh": {
+  "verdict": "ok",
+  "at": [
+   0.74027,
+   0.44058
+  ],
+  "rip": "archives.bulbagarden.net|Kanto_Route_25_HGSS.png",
+  "note": "by eye (proportional placement): the rip spot is in the garden at Route 25's east end by the Sea Cottage; ours is at the east tip of the drawn path"
  },
  "bIDtXOb-Zc_r": {
   "verdict": "unscored",
@@ -829,10 +1162,34 @@
   "reason": "placed by proportion only (no verified fit) inside Victory Road, which our map draws as an icon, on one floor of it",
   "rip": "archives.bulbagarden.net|Victory_Road_1F_E.png"
  },
+ "bdWBtMb8Wlte": {
+  "verdict": "unscored",
+  "reason": "by eye (proportional placement): mid-route on Route 25's grass; ours is on a featureless stretch of the drawn path",
+  "rip": "archives.bulbagarden.net|Kanto_Route_25_FRLG.png"
+ },
+ "bjeWsnfDn15u": {
+  "verdict": "ok",
+  "at": [
+   0.70674,
+   0.5875
+  ],
+  "rip": "archives.bulbagarden.net|Kanto_Route_19_HGSS.png",
+  "note": "by eye (proportional placement): the rip spot is on the beach at Route 19's north end where the land from Fuchsia meets the sea; ours is on the sea line right where Fuchsia's drawn path ends at the water"
+ },
+ "bs_ZOwMA0Fij": {
+  "verdict": "unscored",
+  "reason": "by eye (proportional placement): the rip spot is up on Route 27's cliff ledges; ours is on the drawn path below the lake, and the ledges aren't drawn",
+  "rip": "archives.bulbagarden.net|Kanto_Route_27_HGSS.png"
+ },
  "bx-G7o0VPupu": {
   "verdict": "unscored",
   "reason": "placed by proportion only (no verified fit) inside Cerulean Cave, which our map draws as an icon, on one floor of it",
   "rip": "archives.bulbagarden.net|Unknown_Dungeon_1F_RB.png"
+ },
+ "c268NEjuoeXe": {
+  "verdict": "unscored",
+  "reason": "by eye (proportional placement): our Cape Brink is the island's outline; the rip spot beside the stream below the pond can't be tied to a point of it",
+  "rip": "archives.bulbagarden.net|Cape_Brink_FRLG.png"
  },
  "c8-_QMBYhSYJ": {
   "verdict": "unscored",
@@ -844,6 +1201,11 @@
   "reason": "placed by proportion only (no verified fit) inside Rocket Warehouse, which our map draws as an icon",
   "rip": "pokemon.fandom.com|Rocket_Warehouse_FRLG.png"
  },
+ "coj5sYFlLRhw": {
+  "verdict": "unscored",
+  "reason": "by eye (proportional placement): our Route 14 is one diagonal path; the rip's waterfalls and terraces aren't drawn, so the spot can't be tied to a point of it",
+  "rip": "archives.bulbagarden.net|Unova_Route_14_Summer_B2W2.png"
+ },
  "d33QFH3H2NDT": {
   "verdict": "unscored",
   "reason": "placed by proportion only (no verified fit) inside Celestial Tower, which our map draws as an icon",
@@ -853,6 +1215,11 @@
   "verdict": "unscored",
   "reason": "placed by proportion only (no verified fit) inside Seafoam Islands, which our map draws as an icon, on one floor of it",
   "rip": "archives.bulbagarden.net|Seafoam_Islands_B1F_HGSS.png"
+ },
+ "d_72a0H61i4u": {
+  "verdict": "unscored",
+  "reason": "by eye (proportional placement): our Route 13 is one diagonal path; the rip's coves, islets and stairs aren't drawn, so the spot can't be tied to a point of it",
+  "rip": "archives.bulbagarden.net|Unova_Route_13_Spring_BW.png"
  },
  "dblD7T3addgd": {
   "verdict": "unscored",
@@ -904,15 +1271,40 @@
   "reason": "placed by proportion only (no verified fit) inside Viridian Forest, which our map draws as an icon",
   "rip": "archives.bulbagarden.net|Viridian_Forest_RBY.png"
  },
+ "euW6P-gCt-8M": {
+  "verdict": "unscored",
+  "reason": "by eye (proportional placement): our Route 47 is a rocky headland with a path that doesn't follow the route's cliffs, beaches and stairs; the spot lands off the path on generic rock",
+  "rip": "archives.bulbagarden.net|Johto_Route_47_HGSS.png"
+ },
+ "f2RlzBUXVUpG": {
+  "verdict": "unscored",
+  "reason": "by eye (proportional placement): lands in the water west of Route 114's path; the rip spot is on the route's top ledges",
+  "rip": "archives.bulbagarden.net|Hoenn_Route_114_RS.png"
+ },
+ "fZjyAJdOIrA9": {
+  "verdict": "unscored",
+  "reason": "by eye (proportional placement): the rip spot is in the forest at Route 212's south-west turn; ours is on the sand about 5px below the drawn corner, not on it",
+  "rip": "archives.bulbagarden.net|Sinnoh_Route_212_Pt.png"
+ },
  "faCEQKN892T-": {
   "verdict": "unscored",
   "reason": "placed by proportion only (no verified fit) inside Fuego Ironworks, which our map draws as an icon, on one floor of it",
   "rip": "archives.bulbagarden.net|Fuego_Ironworks_interior_DPPt.png"
  },
+ "fl96mFnAQOjh": {
+  "verdict": "unscored",
+  "reason": "by eye (proportional placement): the rip spot is on land by the houses at Water Path's north end; ours lands in the sea off a drawn islet",
+  "rip": "archives.bulbagarden.net|Water_Path_FRLG.png"
+ },
  "fz78TB-JOqOq": {
   "verdict": "unscored",
   "reason": "placed by proportion only (no verified fit) inside Victory Road, which our map draws as an icon, on one floor of it",
   "rip": "archives.bulbagarden.net|Victory_Road_1F_E.png"
+ },
+ "gENhrpRhWDgC": {
+  "verdict": "unscored",
+  "reason": "by eye (proportional placement): our Five Isle Meadow is a rock-and-sand islet; the rip's wooded meadow, house and paths aren't drawn, so the spot can't be tied to a point of it",
+  "rip": "archives.bulbagarden.net|Five_Isle_Meadow.png"
  },
  "gHnaPJPQZ-D-": {
   "verdict": "unscored",
@@ -934,10 +1326,30 @@
   "reason": "placed by proportion only (no verified fit) inside Safari Zone / Pal Park, which our map draws as nothing walkable",
   "rip": "archives.bulbagarden.net|Safari_Zone_area_3_RBY.png"
  },
+ "gvv-z0rSgqzo": {
+  "verdict": "unscored",
+  "reason": "by eye (proportional placement): on one of the drawn forks near Tohjo Falls; the rip spot is mid-route among trees and water, which our drawing doesn't follow",
+  "rip": "archives.bulbagarden.net|Kanto_Route_27_HGSS.png"
+ },
+ "gxppDaEyrXZ_": {
+  "verdict": "unscored",
+  "reason": "by eye (proportional placement): the rip spot is by the rocks in the south-east; ours lands mid-island on the drawn rock",
+  "rip": "archives.bulbagarden.net|TreasureBeach.png"
+ },
  "hF7Z5jKpY82J": {
   "verdict": "unscored",
   "reason": "placed by proportion only (no verified fit) inside Virbank Complex, which our map draws as an icon, on one floor of it",
   "rip": "archives.bulbagarden.net|Virbank_Complex_interior_Summer_B2W2.png"
+ },
+ "hO7-H0mmv2nZ": {
+  "verdict": "unscored",
+  "reason": "by eye (proportional placement): on a featureless stretch of Route 118's drawn path: our map doesn't draw the river crossing the rip spot is beside",
+  "rip": "archives.bulbagarden.net|Hoenn_Route_118_E.png"
+ },
+ "hO8eYJf4BLfF": {
+  "verdict": "unscored",
+  "reason": "by eye (proportional placement): our Route 47 is a rocky headland with a path that doesn't follow the route's cliffs, beaches and stairs; the spot lands off the path on generic rock",
+  "rip": "archives.bulbagarden.net|Johto_Route_47_HGSS.png"
  },
  "hXivFCHd-kwh": {
   "verdict": "unscored",
@@ -954,6 +1366,21 @@
   "reason": "placed by proportion only (no verified fit) inside Seafoam Islands, which our map draws as an icon, on one floor of it",
   "rip": "archives.bulbagarden.net|Seafoam_Islands_B1F_HGSS.png"
  },
+ "hywwj3xhY-Fl": {
+  "verdict": "unscored",
+  "reason": "by eye (proportional placement): a featureless stretch of Route 212's north–south path (the rip spot is by the Pokémon Mansion's pond, not drawn)",
+  "rip": "archives.bulbagarden.net|Sinnoh_Route_212_Pt.png"
+ },
+ "iW3hD2DzUNbn": {
+  "verdict": "unscored",
+  "reason": "by eye (proportional placement): our Route 47 is a rocky headland with a path that doesn't follow the route's cliffs, beaches and stairs; the spot lands off the path on generic rock",
+  "rip": "archives.bulbagarden.net|Johto_Route_47_HGSS.png"
+ },
+ "iqCK36XShbIN": {
+  "verdict": "unscored",
+  "reason": "by eye (proportional placement): a featureless stretch of Route 14's north–south path: no drawn feature ties the spot to a point of it",
+  "rip": "archives.bulbagarden.net|Kanto_Route_14_FRLG.png"
+ },
  "isohgmEfr0k2": {
   "verdict": "unscored",
   "reason": "placed by an affine fit inside Slowpoke Well, which our map draws as an icon, on one floor of it",
@@ -969,6 +1396,15 @@
   "reason": "placed by proportion only (no verified fit) inside Chargestone Cave, which our map draws as an icon",
   "rip": "archives.bulbagarden.net|Chargestone_Cave_exterior_Summer_BW.png"
  },
+ "jEMZh1eMfzJP": {
+  "verdict": "ok",
+  "at": [
+   0.10414,
+   0.46394
+  ],
+  "rip": "archives.bulbagarden.net|Unova_Route_10_Summer_BW.png",
+  "note": "by eye (proportional placement): the rip spot is on the path at Route 10's east end by the Badge Check gates; ours is at the east tip of the drawn path"
+ },
  "jOaA637KoQhz": {
   "verdict": "unscored",
   "reason": "placed by proportion only (no verified fit) inside Lostlorn Forest, which our map draws as an icon",
@@ -983,6 +1419,11 @@
   "verdict": "unscored",
   "reason": "placed by proportion only (no verified fit) inside Mt. Mortar, which our map draws as an icon",
   "rip": "archives.bulbagarden.net|Mt_Mortar_Lower_Cave_HGSS.png"
+ },
+ "jtPCcRvuRgj6": {
+  "verdict": "unscored",
+  "reason": "by eye (proportional placement): on a featureless stretch of Route 123's drawn path; the rip spot by the Berry Master's house has no drawn feature to match",
+  "rip": "archives.bulbagarden.net|Hoenn_Route_123_RS.png"
  },
  "k6Sb4GZH6VSD": {
   "verdict": "unscored",
@@ -1004,6 +1445,11 @@
   "reason": "placed by proportion only (no verified fit) inside Tanoby Ruins, which our map draws as nothing walkable",
   "rip": "archives.bulbagarden.net|Tanoby_Ruins_FRLG.png"
  },
+ "klUCQuA37qwh": {
+  "verdict": "unscored",
+  "reason": "by eye (proportional placement): on a featureless stretch of Route 118's drawn path: our map doesn't draw the river crossing the rip spot is beside",
+  "rip": "archives.bulbagarden.net|Hoenn_Route_118_E.png"
+ },
  "knfX0RHDlnYr": {
   "verdict": "unscored",
   "reason": "placed by proportion only (no verified fit) inside Cerulean Cave, which our map draws as an icon, on one floor of it",
@@ -1019,10 +1465,30 @@
   "reason": "placed by proportion only (no verified fit) inside Safari Zone, which our map draws as nothing walkable",
   "rip": "archives.bulbagarden.net|Hoenn_Safari_Zone_E.png"
  },
+ "kzdb_-9CoUek": {
+  "verdict": "unscored",
+  "reason": "by eye (proportional placement): the rip spot is up on Route 27's cliff ledges; ours is on the drawn path below the lake, and the ledges aren't drawn",
+  "rip": "archives.bulbagarden.net|Kanto_Route_27_HGSS.png"
+ },
+ "l-5ewqjkuZ5b": {
+  "verdict": "unscored",
+  "reason": "by eye (proportional placement): mid-island in Treasure Beach's grass; nothing drawn inside the island to match",
+  "rip": "archives.bulbagarden.net|TreasureBeach.png"
+ },
  "l4akdwV_Ww0a": {
   "verdict": "unscored",
   "reason": "placed by proportion only (no verified fit) in a stretch of the route that our map draws as an icon or block (a gate, cave mouth or building on it)",
   "rip": "archives.bulbagarden.net|Kanto_Route_2_GSC.png"
+ },
+ "lO5DQDcnqcAS": {
+  "verdict": "unscored",
+  "reason": "by eye (proportional placement): the rip spot is on Water Path's east shore; ours is on the drawn island's east coast at a proportional height, with no drawn feature to tie it to",
+  "rip": "archives.bulbagarden.net|Water_Path_FRLG.png"
+ },
+ "lOcqi1VEpsoU": {
+  "verdict": "unscored",
+  "reason": "by eye (proportional placement): open sea: the rip spot is on Route 106's beach; our map draws only a sea line here, so its spot near the line's bend can't be matched to the beach",
+  "rip": "archives.bulbagarden.net|Hoenn_Route_106_E.png"
  },
  "lkbmwYfTfA-d": {
   "verdict": "unscored",
@@ -1073,6 +1539,11 @@
   "verdict": "unscored",
   "reason": "placed by proportion only (no verified fit) inside Viridian Forest, which our map draws as an icon",
   "rip": "archives.bulbagarden.net|Viridian_Forest_FRLG.png"
+ },
+ "mmY67aHY9RRJ": {
+  "verdict": "unscored",
+  "reason": "by eye (proportional placement): mid-route on Route 13's fence maze; ours sits off the drawn path on plain grass by the bay, with no drawn feature to match",
+  "rip": "archives.bulbagarden.net|Kanto_Route_13_GSC.png"
  },
  "mt5hdwMgJxzr": {
   "verdict": "unscored",
@@ -1184,6 +1655,25 @@
   "reason": "placed by proportion only (no verified fit) inside Power Plant, which our map draws as an icon, on one floor of it",
   "rip": "archives.bulbagarden.net|Power_Plant_interior_HGSS.png"
  },
+ "r5NnEKxkXqp2": {
+  "verdict": "unscored",
+  "reason": "by eye (proportional placement): Route 205's rip is two separate stretches laid side by side (south of Eterna Forest and north of it), so a proportional placement doesn't follow the route; ours lands on rock or grass with no drawn feature to match",
+  "rip": "archives.bulbagarden.net|Sinnoh_Route_205_DP.png"
+ },
+ "rJT1zJ1BdMcp": {
+  "verdict": "unscored",
+  "reason": "by eye (proportional placement): on one of the drawn forks; the rip spot is mid-route among trees and water, which our drawing doesn't follow",
+  "rip": "archives.bulbagarden.net|Kanto_Route_27_HGSS.png"
+ },
+ "rR95M1t5HSFJ": {
+  "verdict": "ok",
+  "at": [
+   0.739,
+   0.10034
+  ],
+  "rip": "archives.bulbagarden.net|Seabreak_Path_DP.png",
+  "note": "by eye (proportional placement): Seabreak Path is one straight strip in both the rip and our drawing, end to end; the spot sits the same share of the way along it"
+ },
  "roceaEx7fjOs": {
   "verdict": "unscored",
   "reason": "placed by proportion only (no verified fit) in a stretch of the route that our map draws as an icon or block (a gate, cave mouth or building on it)",
@@ -1194,10 +1684,24 @@
   "reason": "placed by proportion only (no verified fit) inside Cerulean Cave, which our map draws as an icon, on one floor of it",
   "rip": "archives.bulbagarden.net|Unknown_Dungeon_1F_RB.png"
  },
+ "s5vLSNtInm3m": {
+  "verdict": "unscored",
+  "reason": "by eye (proportional placement): a featureless stretch of Route 12's drawn path (the rip spot is mid-route on the grass terraces)",
+  "rip": "archives.bulbagarden.net|Unova_Route_12_Summer_B2W2.png"
+ },
  "sJp6yhkfIZ2e": {
   "verdict": "unscored",
   "reason": "placed by proportion only (no verified fit) inside Trainer Tower, which our map draws as an icon",
   "rip": "archives.bulbagarden.net|Trainer_Tower_FRLG.png"
+ },
+ "sOUJ8rHcHVLu": {
+  "verdict": "ok",
+  "at": [
+   0.73892,
+   0.1672
+  ],
+  "rip": "archives.bulbagarden.net|Sinnoh_Route_224_DP.png",
+  "note": "by eye (proportional placement): the rip spot is on the beach right where the grass path from the north comes down; ours is at the drawn corner where the north stub meets the path running south-west"
  },
  "sZu_qYmvmaxb": {
   "verdict": "unscored",
@@ -1208,6 +1712,11 @@
   "verdict": "unscored",
   "reason": "placed by proportion only (no verified fit) inside Entralink, which our map draws as an icon",
   "rip": "archives.bulbagarden.net|Entralink_B2W2.png"
+ },
+ "stNp77PMiuYc": {
+  "verdict": "unscored",
+  "reason": "by eye (proportional placement): the rip spot is at the Café Cabin on the corner, but ours lands in the forest about 8px past the drawn corner",
+  "rip": "archives.bulbagarden.net|Sinnoh_Route_210_Pt.png"
  },
  "syLGMZF41u9v": {
   "verdict": "unscored",
@@ -1259,10 +1768,24 @@
   "reason": "placed by proportion only (no verified fit) inside Bell Tower, which our map draws as an icon, on one floor of it",
   "rip": "archives.bulbagarden.net|Tin_Tower_8F_GSC.png"
  },
+ "uA8bQOXGF06q": {
+  "verdict": "unscored",
+  "reason": "by eye (proportional placement): the rip spot is on Water Path's east shore; ours is on the drawn island's east coast at a proportional height, with no drawn feature to tie it to",
+  "rip": "archives.bulbagarden.net|Water_Path_FRLG.png"
+ },
  "uFq5-7lhhKns": {
   "verdict": "unscored",
   "reason": "placed by proportion only (no verified fit) inside Burned Tower, which our map draws as an icon, on one floor of it",
   "rip": "archives.bulbagarden.net|Burned_Tower_1F_GS.png"
+ },
+ "uKoVkIo0y71w": {
+  "verdict": "ok",
+  "at": [
+   0.73906,
+   0.11131
+  ],
+  "rip": "archives.bulbagarden.net|Seabreak_Path_DP.png",
+  "note": "by eye (proportional placement): Seabreak Path is one straight strip in both the rip and our drawing, end to end; the spot sits the same share of the way along it"
  },
  "uOUQnMGQlUzS": {
   "verdict": "unscored",
@@ -1279,10 +1802,24 @@
   "reason": "placed by proportion only (no verified fit) inside Safari Zone / Pal Park, which our map draws as nothing walkable",
   "rip": "archives.bulbagarden.net|Safari_Zone_area_3_FRLG.png"
  },
+ "vD_BXArQD1sw": {
+  "verdict": "ok",
+  "at": [
+   0.68975,
+   0.16679
+  ],
+  "rip": "archives.bulbagarden.net|Sinnoh_Route_210_Pt.png",
+  "note": "by eye (proportional placement): the rip spot is just below the Café Cabin at the corner where Route 210 turns from west–east to north–south; ours is at that corner of the drawn path"
+ },
  "vFX62yXulJXp": {
   "verdict": "unscored",
   "reason": "placed by proportion only (no verified fit) inside Mt. Moon, which our map draws as an icon, on one floor of it",
   "rip": "archives.bulbagarden.net|Mt_Moon_1F_FRLG.png"
+ },
+ "vNTuRIfEkzan": {
+  "verdict": "unscored",
+  "reason": "by eye (proportional placement): our Route 47 is a rocky headland with a path that doesn't follow the route's waterfalls and cliffs; the spot can't be tied to a point of it",
+  "rip": "archives.bulbagarden.net|Johto_Route_47_HGSS.png"
  },
  "vbBbKnrZWDUG": {
   "verdict": "unscored",
@@ -1298,6 +1835,11 @@
   "verdict": "unscored",
   "reason": "placed by proportion only (no verified fit) in a stretch of the route that our map draws as an icon or block (a gate, cave mouth or building on it)",
   "rip": "archives.bulbagarden.net|Kanto_Route_2_RBY.png"
+ },
+ "wDTcFAxL5Jqw": {
+  "verdict": "unscored",
+  "reason": "by eye (proportional placement): Route 205's rip is two separate stretches laid side by side (south of Eterna Forest and north of it), so a proportional placement doesn't follow the route; ours lands on rock or grass with no drawn feature to match",
+  "rip": "archives.bulbagarden.net|Sinnoh_Route_205_DP.png"
  },
  "wH_uqunX83uQ": {
   "verdict": "unscored",
@@ -1324,6 +1866,11 @@
   "reason": "placed by proportion only (no verified fit) inside Mt. Moon, which our map draws as an icon, on one floor of it",
   "rip": "archives.bulbagarden.net|Mt_Moon_B2F_FRLG.png"
  },
+ "wydEJYreVG_T": {
+  "verdict": "unscored",
+  "reason": "by eye (proportional placement): open sea: the spot is among Route 108's rocks, 20px off our sea line in plain water",
+  "rip": "archives.bulbagarden.net|Hoenn_Route_108_E.png"
+ },
  "xCHmxOiT_nzA": {
   "verdict": "unscored",
   "reason": "placed by proportion only (no verified fit) inside Berry Forest, which our map draws as an icon",
@@ -1338,6 +1885,15 @@
   "verdict": "unscored",
   "reason": "placed by proportion only (no verified fit) inside Ilex Forest, which our map draws as an icon",
   "rip": "archives.bulbagarden.net|Ilex_Forest_HGSS.png"
+ },
+ "xa7LndOgCXYX": {
+  "verdict": "ok",
+  "at": [
+   0.65692,
+   0.56228
+  ],
+  "rip": "archives.bulbagarden.net|Kanto_Route_27_HGSS.png",
+  "note": "by eye (proportional placement): the rip spot is on the last ledge at Route 27's east end before New Bark; ours is at the east tip of the drawn path"
  },
  "xkZm4YS6O1Nv": {
   "verdict": "unscored",
@@ -1368,6 +1924,15 @@
   "verdict": "unscored",
   "reason": "placed by proportion only (no verified fit) inside Ilex Forest, which our map draws as an icon",
   "rip": "archives.bulbagarden.net|Ilex_Forest_GSC.png"
+ },
+ "z8VVW__9g71t": {
+  "verdict": "ok",
+  "at": [
+   0.73902,
+   0.16916
+  ],
+  "rip": "archives.bulbagarden.net|Sinnoh_Route_224_DP.png",
+  "note": "by eye (proportional placement): the rip spot is on the beach right where the grass path from the north comes down; ours is at the drawn corner where the north stub meets the path running south-west"
  },
  "zASVSnAiF_nx": {
   "verdict": "unscored",
