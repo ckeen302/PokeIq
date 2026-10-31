@@ -1,0 +1,1274 @@
+{
+ "-5sI1bboHPyF": {
+  "verdict": "pick",
+  "method": "cam3d",
+  "rip": "archives.bulbagarden.net|Unova_Route_10_Summer_BW.png",
+  "spot": [
+   573.0,
+   96.3
+  ],
+  "evidence": "The cliff with tall grass below and the item ball match Route 10 at this point; the Spring rip shows the same stretch."
+ },
+ "-bsAPFSL9H3Y": {
+  "verdict": "pick",
+  "method": "cam3d",
+  "rip": "archives.bulbagarden.net|Sinnoh_Route_226_Pt.png",
+  "spot": [
+   760.0,
+   190.7
+  ],
+  "evidence": "The diagonal rock terraces with tall grass below match Route 226 at this point."
+ },
+ "-vBnFtmnIGfq": {
+  "verdict": "pick",
+  "method": "inv2d",
+  "rip": "archives.bulbagarden.net|Hoenn_Route_134_E.png",
+  "spot": [
+   986.0,
+   504.0
+  ],
+  "evidence": "Seen from the surface: the dark diving patch ringed by four rocks is the Sealed Chamber's dive spot on Route 134, matching the Emerald and Ruby/Sapphire Route 134 maps at the same place (Route 133's best is lower and shows no rocks); the place sits under that spot."
+ },
+ "0CCTqJYfK8cf": {
+  "verdict": "pick",
+  "method": "cam3d",
+  "rip": "archives.bulbagarden.net|Bell_Tower_8F_HGSS.png",
+  "spot": [
+   255.0,
+   285.7
+  ],
+  "evidence": "The wooden walkways with their lanterns match Bell Tower 8F at this point; no other place's peak comes close (best 0.15). The tower is drawn as an icon, so the floor maps into it proportionally."
+ },
+ "0DUo77Po6lkl": {
+  "verdict": "pick",
+  "method": "cam3d",
+  "rip": "archives.bulbagarden.net|Unova_Route_7_Spring_B2W2.png",
+  "spot": [
+   176.0,
+   700.0
+  ],
+  "evidence": "The dirt path, the fenced tall grass and the tree line match Route 7 at this point; the Black / White rip agrees on the point."
+ },
+ "0GDi0fmAambY": {
+  "verdict": "pick",
+  "method": "cam3d",
+  "rip": "archives.bulbagarden.net|Unova_Route_11_Spring_BW.png",
+  "spot": [
+   422.0,
+   216.0
+  ],
+  "evidence": "The bridge over the river below a waterfall matches Route 11 at this point; the Black 2 / White 2 rip agrees."
+ },
+ "0K3AOYzQ67hm": {
+  "verdict": "unscored",
+  "reason": "Inside Lost Cave (a maze of identical foggy rooms): no map of it on Bulbapedia, VGMaps or Poképédia, and its rooms look alike anyway."
+ },
+ "14pVBdNnYost": {
+  "verdict": "pick",
+  "method": "cam3d",
+  "rip": "archives.bulbagarden.net|Sinnoh_Route_221_Pt.png",
+  "spot": [
+   1335.0,
+   311.6
+  ],
+  "evidence": "The stairs at the top with people beside them, the flowers and the tall grass match Route 221 at this point (the Diamond/Pearl rip agrees)."
+ },
+ "1owUJ5R_Y5EP": {
+  "verdict": "pick",
+  "method": "cam3d",
+  "rip": "archives.bulbagarden.net|Unova_Route_20_Summer_B2W2.png",
+  "spot": [
+   918.0,
+   410.0
+  ],
+  "evidence": "The stepped ledges with their stairs, the grass and the boulder match Route 20 at this point."
+ },
+ "1vxTENnXhRJz": {
+  "verdict": "unscored",
+  "reason": "Inside Dotted Hole: no FireRed / LeafGreen map of it on Bulbapedia (only a Sapphire picture), VGMaps or Poképédia."
+ },
+ "228wAGrAlGy7": {
+  "verdict": "unscored",
+  "reason": "Rows of trees and tall grass that repeat across Viridian Forest: four places score 0.97 alike."
+ },
+ "2GtDEQcjaTpT": {
+  "verdict": "pick",
+  "method": "cam3d",
+  "rip": "archives.bulbagarden.net|Sinnoh_Route_213_Pt.png",
+  "spot": [
+   1398.0,
+   547.6
+  ],
+  "evidence": "The ring of rocks around the shallow square in the sea matches Route 213 at this point (the Diamond/Pearl rip agrees)."
+ },
+ "2OEBKeBf1cLx": {
+  "verdict": "unscored",
+  "reason": "The shot is the Trick House's whole front room (it is VGMaps' map of the room, 192 × 127, tile for tile), so like a whole-area map it has no spot within the place."
+ },
+ "2cUoI1UPVeNB": {
+  "verdict": "pick",
+  "method": "cam3d",
+  "rip": "archives.bulbagarden.net|Unova_Route_5_Spring_BW.png",
+  "spot": [
+   583.0,
+   309.0
+  ],
+  "evidence": "The road with the parked trailer, the fences and the hedges match Route 5 at this point; no other place comes close (best 0.20)."
+ },
+ "3Ptw9s2Rvda9": {
+  "verdict": "pick",
+  "method": "cam3d",
+  "rip": "archives.bulbagarden.net|Tohjo_Falls_HGSS.png",
+  "spot": [
+   221.0,
+   236.5
+  ],
+  "evidence": "The waterfall between the rock ledges with rocks at its top matches Tohjo Falls at this point."
+ },
+ "3mM265TEjDFs": {
+  "verdict": "unscored",
+  "reason": "Inside the Dragon Shrine, the building in Dragon's Den: no map of the shrine's room among the Dragon's Den rips (the best peaks, 0.09, are unrelated Ice Path corners)."
+ },
+ "3pEa_avc8bWQ": {
+  "verdict": "unscored",
+  "reason": "Inside the Pretty Petal Flower Shop: no map of the room for Ruby, Sapphire or Emerald on Bulbapedia (only Omega Ruby / Alpha Sapphire), VGMaps or Poképédia."
+ },
+ "3qgnDgan7_rH": {
+  "verdict": "pick",
+  "method": "cam3d",
+  "rip": "archives.bulbagarden.net|Sinnoh_Route_208_Pt.png",
+  "spot": [
+   534.0,
+   171.9
+  ],
+  "evidence": "The waterfall at the left, the rock terraces and the bridge at the right match Route 208 at this point (the Diamond/Pearl rip agrees)."
+ },
+ "3tT7KPUR1E61": {
+  "verdict": "unscored",
+  "reason": "Diglett's Cave's two ends look the same: the ladder room matches at (256, 56) and (64, 504) with 1.00 and 0.97."
+ },
+ "47Ebf1GLSwPi": {
+  "verdict": "pick",
+  "method": "inv2d",
+  "rip": "archives.bulbagarden.net|Hoenn_Route_106_E.png",
+  "spot": [
+   777.5,
+   233.5
+  ],
+  "evidence": "The Granite Cave entrance seen from outside: mountain, cave mouth and the tree row match Route 106 at the cave (the Granite Cave exterior rip shows the same spot)."
+ },
+ "49ZpYf9DK6IJ": {
+  "verdict": "unscored",
+  "reason": "A shoal with one rock in open sea: no peak shows it on the Route 128 rips (best 0.23)."
+ },
+ "5XG0mO8_IXbd": {
+  "verdict": "pick",
+  "method": "cam3d",
+  "rip": "archives.bulbagarden.net|Sinnoh_Route_224_DP.png",
+  "spot": [
+   776.0,
+   263.7
+  ],
+  "evidence": "The cliffs, the bridge at the left and the pool with rocks match Route 224 at this point."
+ },
+ "5_TWNC010YsS": {
+  "verdict": "pick",
+  "method": "inv2d",
+  "rip": "archives.bulbagarden.net|Hoenn_Safari_Zone_E.png",
+  "spot": [
+   776.0,
+   104.0
+  ],
+  "evidence": "The rocky ledges, item ball, tall grass and trees match the Safari Zone at the same point on both rips (0.94); the shot is from Emerald, so its spot is on the Emerald rip."
+ },
+ "5xSKPp5u-M2S": {
+  "verdict": "pick",
+  "method": "cam3d",
+  "rip": "archives.bulbagarden.net|Lostlorn_Forest_Summer_B2W2.png",
+  "spot": [
+   416.0,
+   153.0
+  ],
+  "evidence": "The tree stumps, the patches of yellow flowers and the trees match Lostlorn Forest at this point."
+ },
+ "6Qrnu9_5-twd": {
+  "verdict": "pick",
+  "method": "cam3d",
+  "rip": "archives.bulbagarden.net|Sinnoh_Route_211_Pt.png",
+  "spot": [
+   79.0,
+   107.7
+  ],
+  "evidence": "The tall grass in the rocky hollow matches Route 211 at this point (the Diamond/Pearl rips agree)."
+ },
+ "6U1n4F55281u": {
+  "verdict": "unscored",
+  "reason": "Underground Path 5-6's corridor is identical along its length: the view matches at several points equally (0.98 to 1.00)."
+ },
+ "70iDKwAwOcTa": {
+  "verdict": "pick",
+  "method": "cam3d",
+  "rip": "archives.bulbagarden.net|Sinnoh_Route_225_Pt.png",
+  "spot": [
+   39.0,
+   417.7
+  ],
+  "evidence": "The trees, the dark cliff face and the water at the bottom right match Route 225 at this point."
+ },
+ "7antIi9T9pYO": {
+  "verdict": "pick",
+  "method": "cam3d",
+  "rip": "archives.bulbagarden.net|Clay_Tunnel_third_room_B2W2.png",
+  "spot": [
+   388.0,
+   906.0
+  ],
+  "evidence": "The pools of water and the mine-cart tracks between them match Clay Tunnel's third room at this point."
+ },
+ "7oygasDPpoQ8": {
+  "verdict": "pick",
+  "method": "cam3d",
+  "rip": "archives.bulbagarden.net|Sinnoh_Route_220_Pt.png",
+  "spot": [
+   631.0,
+   265.3
+  ],
+  "evidence": "The rocky islets and the shallows between them match Route 220 at this point (the Diamond/Pearl rip agrees)."
+ },
+ "887neePCOHK8": {
+  "verdict": "pick",
+  "method": "cam3d",
+  "rip": "archives.bulbagarden.net|Sinnoh_Route_215_Pt.png",
+  "spot": [
+   1367.0,
+   292.0
+  ],
+  "evidence": "The tree line, the open grass and the fence at the lower left match Route 215 at this point in the rain (the Diamond/Pearl rip agrees on the point)."
+ },
+ "8LlmbzIrcson": {
+  "verdict": "pick",
+  "method": "cam3d",
+  "rip": "archives.bulbagarden.net|Johto_Route_32_HGSS.png",
+  "spot": [
+   160.4,
+   1249.0
+  ],
+  "evidence": "The wooden pier with the fisherman, the water and the tree line match Route 32 at this point."
+ },
+ "90Cb6YGDq4bd": {
+  "verdict": "unscored",
+  "reason": "A small sand islet with three rocks in open sea; the islet isn't on the Route 21 or Route 20 rips at any peak (the best peaks are open water)."
+ },
+ "91oS8GkFC44c": {
+  "verdict": "pick",
+  "method": "cam3d",
+  "rip": "archives.bulbagarden.net|Sinnoh_Route_225_DP.png",
+  "spot": [
+   183.0,
+   1035.7
+  ],
+  "evidence": "The wooden bridges and stairs over the terraces and the tall grass match Route 225 at this point (the Platinum rip agrees)."
+ },
+ "A-EYj2mtYjDj": {
+  "verdict": "pick",
+  "method": "cam3d",
+  "rip": "archives.bulbagarden.net|Sinnoh_Route_206_Pt.png",
+  "spot": [
+   344.0,
+   1393.8
+  ],
+  "evidence": "The Cycling Road at the left, the gatehouse roof at the bottom and the tall grass match Route 206 at this point (the Diamond/Pearl rip agrees)."
+ },
+ "A0gqL713dCy2": {
+  "verdict": "pick",
+  "method": "cam3d",
+  "rip": "archives.bulbagarden.net|Kanto_Route_15_HGSS.png",
+  "spot": [
+   470.0,
+   96.5
+  ],
+  "evidence": "The tree line, the flowers along the sand path and the hedge match Route 15 at this point; the other peaks are open sea at Vermilion's port."
+ },
+ "AZQ1-29dd7Aa": {
+  "verdict": "pick",
+  "method": "cam3d",
+  "rip": "archives.bulbagarden.net|Mistralton_Cave_3F_BW.png",
+  "spot": [
+   165.0,
+   179.3
+  ],
+  "evidence": "The winding ledges and the boulder at the bottom right match Mistralton Cave 3F at this point; the Black 2 / White 2 rip agrees on the point."
+ },
+ "BDTmYb3WCcBu": {
+  "verdict": "pick",
+  "method": "cam3d",
+  "rip": "archives.bulbagarden.net|Pal_Park_DP.png",
+  "spot": [
+   391.0,
+   762.0
+  ],
+  "evidence": "Pal Park's building, its stairs and the trees in front match the Pal Park rip; the Route 221 rip shows the same building at the same point."
+ },
+ "BWJBp9Fz22Nu": {
+  "verdict": "pick",
+  "method": "cam3d",
+  "rip": "archives.bulbagarden.net|Johto_Route_42_HGSS.png",
+  "spot": [
+   844.0,
+   235.8
+  ],
+  "evidence": "Mt. Mortar's cave mouth, the pond with its rocks and the ledges match Route 42 at this point."
+ },
+ "CR6wKI5CWSL1": {
+  "verdict": "unscored",
+  "reason": "A ledge that is identical along Route 4: four points score 0.89 to 0.97 (the item ball and the trainer are sprites, not on the map)."
+ },
+ "CVGzvfOnhHmM": {
+  "verdict": "unscored",
+  "reason": "Rows of tall grass and trees that repeat on Route 16 (the view matches itself moved by whole tiles at 0.91); no peak stands out on the Route 16 map."
+ },
+ "CwsXC96kXVwn": {
+  "verdict": "pick",
+  "method": "cam3d",
+  "rip": "archives.bulbagarden.net|Sinnoh_Route_205_Pt.png",
+  "spot": [
+   889.0,
+   104.0
+  ],
+  "evidence": "The fenced pond, the orange tree and the cliff edge above match Route 205 at this point (the Diamond/Pearl rip agrees)."
+ },
+ "DBBHvv8lSbyi": {
+  "verdict": "pick",
+  "method": "inv2d",
+  "rip": "archives.bulbagarden.net|Johto_Route_30_GSC.png",
+  "spot": [
+   256.0,
+   131.0
+  ],
+  "evidence": "Flower patches and the tree line match Route 30 tile for tile (the view hangs past its east edge); the rival Dark Cave peaks lie in that cave's unlit, dithered void, which has nothing to match."
+ },
+ "E8TtCAh6E34J": {
+  "verdict": "pick",
+  "method": "inv2d",
+  "rip": "archives.bulbagarden.net|Shoal_Cave_ice_room_E.png",
+  "spot": [
+   136.0,
+   408.0
+  ],
+  "evidence": "The ice floor, the ice boulders and the item ball at the top match Shoal Cave's ice room (Emerald) at this point, 0.98 / 0.99."
+ },
+ "EEnewucmXRHe": {
+  "verdict": "pick",
+  "method": "cam3d",
+  "rip": "archives.bulbagarden.net|Sinnoh_Route_203_Pt.png",
+  "spot": [
+   671.0,
+   211.9
+  ],
+  "evidence": "The fenced pond at the left, the tall grass, the sign and the path along the bottom match Route 203 at this point (the Diamond/Pearl rip agrees)."
+ },
+ "EToZ6mYgORjz": {
+  "verdict": "unscored",
+  "reason": "A small shoal with two swimmers in open sea: no peak shows the shoal on the Route 128 rips (best 0.26)."
+ },
+ "Eiko_dRMxQOZ": {
+  "verdict": "unscored",
+  "reason": "Inside a Ruins of Alph chamber: the four chambers' rooms are identical (statues, stairs), so the view matches each equally."
+ },
+ "FbbYOfRqqcOV": {
+  "verdict": "pick",
+  "method": "cam3d",
+  "rip": "archives.bulbagarden.net|Sinnoh_Route_203_Pt.png",
+  "spot": [
+   511.0,
+   133.1
+  ],
+  "evidence": "The pond below, the tree clumps and the wooden fence on the right match Route 203 at this point (the Diamond/Pearl rip agrees)."
+ },
+ "FyHroqNt3haU": {
+  "verdict": "pick",
+  "method": "inv2d",
+  "rip": "archives.bulbagarden.net|Bond_Bridge_FRLG.png",
+  "spot": [
+   728.0,
+   200.0
+  ],
+  "evidence": "The end of the wooden bridge, the sand and the stairs at the top match Bond Bridge at this point (0.73); the text box hides the lower part, which lowers the score, and the other peaks (0.46 and below) don't show the stairs."
+ },
+ "G1UG8AJGlhq7": {
+  "verdict": "pick",
+  "method": "inv2d",
+  "rip": "archives.bulbagarden.net|Hoenn_Route_126_RSE.png",
+  "spot": [
+   216.0,
+   24.0
+  ],
+  "evidence": "The rock in the water, the shallows' stepped outline, the dark current patch and both cliffs match Route 126 exactly; the view hangs past the rip's top edge, which lowers the score."
+ },
+ "G5fNMvayIlRl": {
+  "verdict": "pick",
+  "method": "cam3d",
+  "rip": "archives.bulbagarden.net|Sinnoh_Route_208_Pt.png",
+  "spot": [
+   838.0,
+   423.9
+  ],
+  "evidence": "The orange tree in the tall grass and the tree line match Route 208 at this point (the Diamond/Pearl rip agrees)."
+ },
+ "G6vwG6mtAAgw": {
+  "verdict": "pick",
+  "method": "cam3d",
+  "rip": "archives.bulbagarden.net|Sinnoh_Route_218_DP.png",
+  "spot": [
+   472.0,
+   271.7
+  ],
+  "evidence": "The orange tree, the flower bed, the tall grass and the rocks in the water match Route 218 at this point (the Platinum rip agrees)."
+ },
+ "GNwfB4DKgkju": {
+  "verdict": "pick",
+  "method": "cam3d",
+  "rip": "archives.bulbagarden.net|Sinnoh_Route_209_DP.png",
+  "spot": [
+   231.0,
+   484.3
+  ],
+  "evidence": "The tall grass, the pond's edge and the tree mass match Route 209 at this point; the Pastoria City peaks (0.44) show only a tree line."
+ },
+ "HN8_qVrLCgOy": {
+  "verdict": "pick",
+  "method": "cam3d",
+  "rip": "archives.bulbagarden.net|Sinnoh_Route_211_Pt.png",
+  "spot": [
+   849.0,
+   355.1
+  ],
+  "evidence": "The tall-grass field between the cliffs, the sand patches and the trees match Route 211 at this point (the Diamond/Pearl and a second Platinum rip agree)."
+ },
+ "Hex0sDDnU-Ys": {
+  "verdict": "pick",
+  "method": "cam3d",
+  "rip": "archives.bulbagarden.net|Sinnoh_Route_207_DP.png",
+  "spot": [
+   552.0,
+   327.6
+  ],
+  "evidence": "The stairs up the rock terraces and the ledges match Route 207 at this point (the Platinum rip agrees)."
+ },
+ "IShj-0J88o6b": {
+  "verdict": "pick",
+  "method": "cam3d",
+  "rip": "archives.bulbagarden.net|Mt_Coronet_1F_south_DP.png",
+  "spot": [
+   231.0,
+   276.8
+  ],
+  "evidence": "The rock formations with water channels on both sides match Mt. Coronet 1F (south) at this point; the other peaks are unrelated Distortion World edges."
+ },
+ "IxkvpaszapBZ": {
+  "verdict": "pick",
+  "method": "cam3d",
+  "rip": "archives.bulbagarden.net|Kanto_Route_9_HGSS.png",
+  "spot": [
+   1272.0,
+   191.1
+  ],
+  "evidence": "The cliffs, the river with two rocks and the fence match Route 9 at this point."
+ },
+ "JS6Xg_kylWoH": {
+  "verdict": "pick",
+  "method": "cam3d",
+  "rip": "archives.bulbagarden.net|Wellspring_Cave_1F_BW.png",
+  "spot": [
+   340.0,
+   180.6
+  ],
+  "evidence": "The raised rock floor with its ledges and the water at the left match Wellspring Cave 1F at this point."
+ },
+ "K2qQLcFZFsj0": {
+  "verdict": "unscored",
+  "reason": "Fence and tree rows repeat across National Park: three points score 0.95 to 0.98."
+ },
+ "KGtjueYHJ_pr": {
+  "verdict": "pick",
+  "method": "cam3d",
+  "rip": "archives.bulbagarden.net|Johto_Route_36_HGSS.png",
+  "spot": [
+   173.0,
+   149.0
+  ],
+  "evidence": "The tree rows, the sign and the path match Route 36 at this point; the other peaks are open water in Goldenrod."
+ },
+ "KOuCdTzAY-Zr": {
+  "verdict": "pick",
+  "method": "cam3d",
+  "rip": "archives.bulbagarden.net|Chargestone_Cave_1F_B2W2.png",
+  "spot": [
+   1161.0,
+   392.7
+  ],
+  "evidence": "The rectangular raised floor with crystals at its corners matches Chargestone Cave 1F at this point; the Black / White rip agrees on the point."
+ },
+ "KaoFhrTnXR-6": {
+  "verdict": "pick",
+  "method": "cam3d",
+  "rip": "archives.bulbagarden.net|Johto_Route_45_HGSS.png",
+  "spot": [
+   136.0,
+   652.2
+  ],
+  "evidence": "The wooden bridge over the river, the cliffs and the sand match Route 45 at this point."
+ },
+ "KcE3zcsk4C0M": {
+  "verdict": "unscored",
+  "reason": "The fenced grass enclosure with its ledge matches Route 3 (edge 0.48) and Route 4 (0.46) almost equally; nothing in the view (two trainers, plain grass) tells them apart."
+ },
+ "KuJ4KDbYxJsa": {
+  "verdict": "pick",
+  "method": "inv2d",
+  "rip": "archives.bulbagarden.net|Hoenn_Route_111_E.png",
+  "spot": [
+   496.5,
+   1790.5
+  ],
+  "evidence": "Trainer Hill's building, its door and the cliffs around it match Route 111 (Emerald) exactly; the Trainer Hill exterior rip shows the same spot."
+ },
+ "MGEnCwDFY7K3": {
+  "verdict": "pick",
+  "method": "cam3d",
+  "rip": "archives.bulbagarden.net|Wellspring_Cave_1F_B2W2.png",
+  "spot": [
+   392.0,
+   164.0
+  ],
+  "evidence": "The water along the left and bottom, the raised rock floor and the item ball match Wellspring Cave 1F at this point; the Black / White rip agrees on the point."
+ },
+ "MY9hqzCVcWS8": {
+  "verdict": "unscored",
+  "reason": "The Berry Master's garden on Route 123 with grown berry plants: the plants aren't in the rip, and the only strong peaks are a plain tree line along the rip's top edge, which fits several places."
+ },
+ "OEokQHX6MSxV": {
+  "verdict": "pick",
+  "method": "cam3d",
+  "rip": "archives.bulbagarden.net|Sinnoh_Route_221_Pt.png",
+  "spot": [
+   246.3,
+   188.1
+  ],
+  "evidence": "The rocks in the water and the corner of the tree mass match Route 221 at this point (the Diamond/Pearl rip agrees)."
+ },
+ "Oavh6_PdDdEU": {
+  "verdict": "pick",
+  "method": "cam3d",
+  "rip": "archives.bulbagarden.net|Johto_Route_32_HGSS.png",
+  "spot": [
+   411.0,
+   1974.4
+  ],
+  "evidence": "The sandy clearing with the sign, the tree line and the water at the right match Route 32 near Union Cave at this point."
+ },
+ "P9j7OKRYLdBe": {
+  "verdict": "pick",
+  "method": "cam3d",
+  "rip": "archives.bulbagarden.net|Lake_Acuity_Cavern_Pt.png",
+  "spot": [
+   241.0,
+   169.0
+  ],
+  "evidence": "The cavern lake with its two ring-shaped islets matches the cave under Lake Acuity (Platinum and Diamond/Pearl rips agree on the point)."
+ },
+ "POiEZPppsSnl": {
+  "verdict": "pick",
+  "method": "cam3d",
+  "rip": "archives.bulbagarden.net|Sinnoh_Route_229_Pt.png",
+  "spot": [
+   953.0,
+   281.5
+  ],
+  "evidence": "The L-shaped pond among the palms and tall grass matches Route 229 at this point (the Diamond/Pearl rip agrees)."
+ },
+ "QtndAvlPUoxz": {
+  "verdict": "pick",
+  "method": "cam3d",
+  "rip": "archives.bulbagarden.net|Pokémon_World_Tournament_exterior_Summer_B2W2.png",
+  "spot": [
+   369.0,
+   350.3
+  ],
+  "evidence": "The plaza's stalls, the raised walkway and the steps match the Pokémon World Tournament's grounds at this point."
+ },
+ "RLaFCIQgorxO": {
+  "verdict": "unscored",
+  "reason": "An inner Mt. Ember room with an item on a raised floor and a ladder: not on any Mt. Ember rip found (best 0.37)."
+ },
+ "Srjoa-Pl9CLh": {
+  "verdict": "pick",
+  "method": "cam3d",
+  "rip": "archives.bulbagarden.net|Great_Marsh_Pt.png",
+  "spot": [
+   503.0,
+   973.0
+  ],
+  "evidence": "The marsh tram on its track, the station platforms and the trees match the Great Marsh at this point."
+ },
+ "TrbsPP_nqu1C": {
+  "verdict": "unscored",
+  "reason": "Inside Sky Pillar by a hole in the floor: no peak on any of its six rips (best 0.12), so this floor isn't on any map found (Bulbapedia, VGMaps, Poképédia)."
+ },
+ "Tu4J3h6fU0SO": {
+  "verdict": "pick",
+  "method": "cam3d",
+  "rip": "archives.bulbagarden.net|Johto_Route_47_HGSS.png",
+  "spot": [
+   693.0,
+   704.7
+  ],
+  "evidence": "The cliffs dropping into the sea and the rocks along them match Route 47 at this point."
+ },
+ "U64HJO2rKZJ7": {
+  "verdict": "pick",
+  "method": "cam3d",
+  "rip": "archives.bulbagarden.net|Sinnoh_Route_205_DP.png",
+  "spot": [
+   989.0,
+   116.4
+  ],
+  "evidence": "The pond, the orange tree, the three hikers and the cliff above match Route 205 at this point (the Platinum rip agrees)."
+ },
+ "UN5lJhRXmdvQ": {
+  "verdict": "unscored",
+  "reason": "A ledge over plain grass that runs the length of Route 4: x 192, 352, 384 and 448 all score 0.93 to 0.98."
+ },
+ "UqhY7AzR74KR": {
+  "verdict": "pick",
+  "method": "cam3d",
+  "rip": "archives.bulbagarden.net|Sinnoh_Route_218_Pt.png",
+  "spot": [
+   647.0,
+   164.2
+  ],
+  "evidence": "The wooden pier running into the water matches Route 218 at this point (the Diamond/Pearl rip agrees)."
+ },
+ "VZ3ZR6pV7kda": {
+  "verdict": "pick",
+  "method": "cam3d",
+  "rip": "archives.bulbagarden.net|Unova_Route_8_Spring_BW.png",
+  "spot": [
+   231.0,
+   234.0
+  ],
+  "evidence": "The pond with its stepping stones and the trees around it match Route 8 at this point; the Black 2 / White 2 rip agrees."
+ },
+ "WILQP5e83qz5": {
+  "verdict": "pick",
+  "method": "cam3d",
+  "rip": "archives.bulbagarden.net|Lake_Valor_Dry_DP.png",
+  "spot": [
+   215.0,
+   194.9
+  ],
+  "evidence": "The drained Lake Valor with its pool of flopping Magikarp, the cliff steps and the trainer match the dry-lake rip at this point."
+ },
+ "X5iwGNjjZF0D": {
+  "verdict": "unscored",
+  "reason": "Route 23's badge-check gates are identical: the gate and tree line match at two points equally (0.98 each)."
+ },
+ "XXyhbS_IFxav": {
+  "verdict": "pick",
+  "method": "inv2d",
+  "rip": "archives.bulbagarden.net|Kanto_Route_23_FRLG.png",
+  "spot": [
+   56.0,
+   2049.5
+  ],
+  "evidence": "The badge-check gate with the trees on its left matches Route 23 at this point (0.96 / 1.00); the next gate along scores only 0.75, since its surroundings differ."
+ },
+ "XYNuyORholKD": {
+  "verdict": "pick",
+  "method": "cam3d",
+  "rip": "archives.bulbagarden.net|Sinnoh_Route_214_Pt.png",
+  "spot": [
+   350.0,
+   281.0
+  ],
+  "evidence": "The pond with flowers and visitors at the top and the trees at the right match Route 214 at this point (the Diamond/Pearl rip agrees)."
+ },
+ "XjXJrV3BsUp-": {
+  "verdict": "pick",
+  "method": "cam3d",
+  "rip": "archives.bulbagarden.net|Sinnoh_Route_207_Pt.png",
+  "spot": [
+   71.0,
+   118.8
+  ],
+  "evidence": "The tall grass enclosed by cliffs, the sand to the top right and the trainers above match Route 207 at this point."
+ },
+ "YggeBjYolXFc": {
+  "verdict": "unscored",
+  "reason": "A room in Team Aqua Hideout with a Poké Ball machine and a screen; Bulbapedia's 1F and B2F maps have the same walls and pillars but not this room, so it isn't on any map found (Bulbapedia, VGMaps, Poképédia)."
+ },
+ "YlZgjanC4Ol_": {
+  "verdict": "pick",
+  "method": "cam3d",
+  "rip": "archives.bulbagarden.net|Slowpoke_Well_B1F_HGSS.png",
+  "spot": [
+   351.0,
+   132.5
+  ],
+  "evidence": "The rock floor with the boulder and the water's edge match Slowpoke Well B1F at this point; the next B1F peak (0.23) is much weaker."
+ },
+ "ZKpcg9Wvcncq": {
+  "verdict": "unscored",
+  "reason": "Rows of tall grass and trees on Route 16 with a sign; the Route 16 map gives no clear peak (best 0.20), the strongest peaks are unrelated Celadon and Viridian edges."
+ },
+ "Za7lr8DtvpWp": {
+  "verdict": "pick",
+  "method": "cam3d",
+  "rip": "archives.bulbagarden.net|Sinnoh_Route_204_Pt.png",
+  "spot": [
+   36.0,
+   106.3
+  ],
+  "evidence": "The fenced bed of white flowers among the trees matches Route 204 at this point (the Diamond/Pearl rip agrees)."
+ },
+ "ZsPFD5TQJQEi": {
+  "verdict": "pick",
+  "method": "cam3d",
+  "rip": "archives.bulbagarden.net|Kanto_Route_3_HGSS.png",
+  "spot": [
+   199.0,
+   382.7
+  ],
+  "evidence": "The rock terraces with their stairs and boulders match Route 3 at this point."
+ },
+ "_7iTNs6CU7rh": {
+  "verdict": "unscored",
+  "reason": "Inside Dotted Hole: no FireRed / LeafGreen map of it on Bulbapedia (only a Sapphire picture), VGMaps or Poképédia."
+ },
+ "_Fzt0FhUoq6M": {
+  "verdict": "unscored",
+  "reason": "Inside Dotted Hole: no FireRed / LeafGreen map of it on Bulbapedia (only a Sapphire picture), VGMaps or Poképédia."
+ },
+ "_SdoV8md8Z3_": {
+  "verdict": "pick",
+  "method": "cam3d",
+  "rip": "archives.bulbagarden.net|Sinnoh_Route_206_Pt.png",
+  "spot": [
+   89.0,
+   1546.0
+  ],
+  "evidence": "The gatehouse, the sand path out of it, the flowers and the trees on the left match Route 206 at this point (the Diamond/Pearl rip agrees)."
+ },
+ "amwaMkLnL8iq": {
+  "verdict": "pick",
+  "method": "inv2d",
+  "rip": "archives.bulbagarden.net|Seafoam_Islands_B4F_RBY.png",
+  "spot": [
+   144.0,
+   24.0
+  ],
+  "evidence": "The raised platform, its stairs (bottom left of centre) and the ice-water border match Seafoam Islands B4F; colour is low only because Yellow tints the cave."
+ },
+ "awOPXmolgIOS": {
+  "verdict": "pick",
+  "method": "inv2d",
+  "rip": "archives.bulbagarden.net|Hoenn_Route_119_RS.png",
+  "spot": [
+   95.0,
+   482.0
+  ],
+  "evidence": "The Weather Institute building, its sign and the trees beside it match Route 119 (Ruby / Sapphire) exactly (0.93 / 1.00); the spot is the building's front on our map."
+ },
+ "bC9akE1H8Ghh": {
+  "verdict": "pick",
+  "method": "cam3d",
+  "rip": "archives.bulbagarden.net|Kanto_Route_25_HGSS.png",
+  "spot": [
+   1840.0,
+   103.0
+  ],
+  "evidence": "The fenced lawn, the trees and the flowers match Route 25 at this point (the Cerulean Cape rip shows the same point)."
+ },
+ "bD23FsFpvuQO": {
+  "verdict": "unscored",
+  "reason": "Inside Scorched Slab: no map of it on Bulbapedia, VGMaps or Poképédia (the best peaks, 0.32, are the unrelated Ancient Tomb)."
+ },
+ "bLHtsqXga8L0": {
+  "verdict": "unscored",
+  "reason": "Inside Mirage Tower: no map of it on Bulbapedia, VGMaps or Poképédia (best 0.08)."
+ },
+ "blpllTJacHUU": {
+  "verdict": "pick",
+  "method": "cam3d",
+  "rip": "archives.bulbagarden.net|Sinnoh_Route_229_Pt.png",
+  "spot": [
+   872.7,
+   349.1
+  ],
+  "evidence": "The pond, the palm trees and the purple roof below match Route 229 at this point (the Diamond/Pearl rip agrees)."
+ },
+ "eCA97PJiXu1H": {
+  "verdict": "pick",
+  "method": "cam3d",
+  "rip": "archives.bulbagarden.net|Sinnoh_Route_221_Pt.png",
+  "spot": [
+   647.0,
+   47.8
+  ],
+  "evidence": "The blue-roofed house in the trees with tall grass beside it matches Route 221 at this point (the Diamond/Pearl rip agrees); the other Route 221 peak shows no house."
+ },
+ "eYyU7ALN8Z1I": {
+  "verdict": "pick",
+  "method": "cam3d",
+  "rip": "archives.bulbagarden.net|Moor_of_Icirrus_Spring_BW.png",
+  "spot": [
+   615.0,
+   391.0
+  ],
+  "evidence": "The pond's outline, the tree clumps and the bridge match the Moor of Icirrus at this point (seen in autumn); the Black 2 / White 2 rip agrees on the point."
+ },
+ "ehuWw3cHuKQz": {
+  "verdict": "pick",
+  "method": "inv2d",
+  "rip": "archives.bulbagarden.net|Viridian_Forest_RBY.png",
+  "spot": [
+   240.0,
+   261.0
+  ],
+  "evidence": "The big round tree above the path, the grass on both sides and the small trees at the edges match Viridian Forest at this peak; the two runners-up differ (one has a sign at the bottom, the other a second big tree in the middle)."
+ },
+ "eynjXYh6WmuQ": {
+  "verdict": "pick",
+  "method": "cam3d",
+  "rip": "archives.bulbagarden.net|Pokémon_World_Tournament_exterior_Summer_B2W2.png",
+  "spot": [
+   728.0,
+   296.0
+  ],
+  "evidence": "The tournament building's entrance with the statues on both sides matches the Pokémon World Tournament's grounds at this point."
+ },
+ "fJjF9-mN7WTu": {
+  "verdict": "pick",
+  "method": "inv2d",
+  "rip": "archives.bulbagarden.net|Hoenn_Safari_Zone_RS.png",
+  "spot": [
+   1064.0,
+   760.0
+  ],
+  "evidence": "The fenced ledge with its stairs, the tree clumps and the tall grass match the Ruby / Sapphire Safari Zone rip exactly (1.00); the Emerald rip agrees at the same point, but its extra Emerald area shifts its frame, so the Ruby / Sapphire rip is the shot's own."
+ },
+ "fUgtPiDbl-Mh": {
+  "verdict": "pick",
+  "method": "cam3d",
+  "rip": "archives.bulbagarden.net|Sinnoh_Route_218_Pt.png",
+  "spot": [
+   472.0,
+   271.4
+  ],
+  "evidence": "The flower bed, the tree column and the rocks in the water match Route 218 at this point (the Diamond/Pearl rip agrees)."
+ },
+ "fkwcj_iq0Dn1": {
+  "verdict": "area",
+  "evidence": "The Burned Tower's own front seen from Ecruteak City (matched exactly on Ecruteak's map, on the Gold / Silver rip), but Ecruteak's map has no alignment onto ours; the tower is drawn as an icon, and the view shows that building, so its spot is the icon."
+ },
+ "g8XjkKXZlnIZ": {
+  "verdict": "pick",
+  "method": "inv2d",
+  "rip": "archives.bulbagarden.net|Hoenn_Route_134_E.png",
+  "spot": [
+   816.0,
+   280.0
+  ],
+  "evidence": "The sandbar's outline, the boulder at its east end and the current lines around it match Route 134 (Emerald) exactly; the edge score is low only because the current tiles animate. The other peaks are blank Route 109 beach."
+ },
+ "g8sMmCp9OIaf": {
+  "verdict": "pick",
+  "method": "cam3d",
+  "rip": "archives.bulbagarden.net|Sinnoh_Route_206_DP.png",
+  "spot": [
+   391.0,
+   973.8
+  ],
+  "evidence": "The Cycling Road on its pillars at the left, the tall grass and the round trees match Route 206 at this point."
+ },
+ "gHnaPJPQZ-D-": {
+  "verdict": "pick",
+  "method": "cam3d",
+  "rip": "archives.bulbagarden.net|Unova_Route_9_Spring_BW.png",
+  "spot": [
+   503.0,
+   261.0
+  ],
+  "evidence": "The shopping-mall building, the road and the planters match Route 9 at this point; the Black 2 / White 2 rip agrees."
+ },
+ "gvv-z0rSgqzo": {
+  "verdict": "pick",
+  "method": "cam3d",
+  "rip": "archives.bulbagarden.net|Kanto_Route_27_HGSS.png",
+  "spot": [
+   1311.0,
+   359.2
+  ],
+  "evidence": "The tree-covered islets in the water and the trainers on them match Route 27 at this point (both Route 27 rips agree)."
+ },
+ "hJnjyop-2gH1": {
+  "verdict": "unscored",
+  "reason": "Surfing on the open lake with only a sliver of shore; that shore matches several points around the Lake of Rage about equally (0.49 and below)."
+ },
+ "hLHn-qiJ7hpE": {
+  "verdict": "pick",
+  "method": "inv2d",
+  "rip": "archives.bulbagarden.net|Kanto_Route_20_RBY.png",
+  "spot": [
+   832.0,
+   136.0
+  ],
+  "evidence": "Cave mouth, stairs, sign post, boulder and rock wall match the Seafoam Islands entrance on Route 20's map tile for tile; the text box is the place-name sign shown on entering."
+ },
+ "ht2-uLnEDxyr": {
+  "verdict": "pick",
+  "method": "cam3d",
+  "rip": "archives.bulbagarden.net|Seafoam_Islands_B1F_HGSS.png",
+  "spot": [
+   519.0,
+   156.3
+  ],
+  "evidence": "The ice crystals along the wall and the water channel match Seafoam Islands B1F at this point; the other B1F peak (0.25) is much weaker."
+ },
+ "hywwj3xhY-Fl": {
+  "verdict": "pick",
+  "method": "cam3d",
+  "rip": "archives.bulbagarden.net|Sinnoh_Route_212_Pt.png",
+  "spot": [
+   207.3,
+   451.9
+  ],
+  "evidence": "The fenced pond, the rail fence and the orange-roofed house at the right match Route 212 at this point (the Diamond/Pearl rip agrees)."
+ },
+ "jEMZh1eMfzJP": {
+  "verdict": "pick",
+  "method": "cam3d",
+  "rip": "archives.bulbagarden.net|Unova_Route_10_Summer_BW.png",
+  "spot": [
+   1277.0,
+   421.6
+  ],
+  "evidence": "The sand path between the trees with the gate building above matches Route 10 at this point."
+ },
+ "kwioqX0lz4Y6": {
+  "verdict": "unscored",
+  "reason": "Dark cave floor with boulders that matches Victory Road 2F and 3F equally (0.89 each); nothing in the view tells the floors apart."
+ },
+ "lABAs6LtE1O3": {
+  "verdict": "unscored",
+  "reason": "The entrance building seen from outside with a pond below; no match on the Diglett's Cave, Route 2 or Route 11 maps (the best peak, 0.40, is an unrelated Viridian Forest edge)."
+ },
+ "lOcqi1VEpsoU": {
+  "verdict": "pick",
+  "method": "inv2d",
+  "rip": "archives.bulbagarden.net|Hoenn_Route_106_E.png",
+  "spot": [
+   856.0,
+   158.5
+  ],
+  "evidence": "Beach outline, the boulder, the corner of the Granite Cave mountain and the sign at the right edge match Route 106 exactly (Emerald and Ruby/Sapphire rips agree on the place)."
+ },
+ "mBoiBKKi8p4v": {
+  "verdict": "unscored",
+  "reason": "A cliff top over one row of trees: it repeats every two blocks along Route 28 (x 384 and 416 score 0.98 and 0.87) and also matches Mt. Silver's exterior (0.90)."
+ },
+ "mQvwnfPZxfrL": {
+  "verdict": "pick",
+  "method": "cam3d",
+  "rip": "archives.bulbagarden.net|Sinnoh_Route_220_Pt.png",
+  "spot": [
+   343.0,
+   349.4
+  ],
+  "evidence": "The two rocky islets with sand around them match Route 220 at this point (the Diamond/Pearl rip agrees)."
+ },
+ "mZQs0-kvXR2Q": {
+  "verdict": "pick",
+  "method": "cam3d",
+  "rip": "archives.bulbagarden.net|Sinnoh_Route_218_Pt.png",
+  "spot": [
+   391.0,
+   222.0
+  ],
+  "evidence": "The orange tree, the flower bed, the tall grass and the water's edge on the right match Route 218 at this point (the Diamond/Pearl rip agrees)."
+ },
+ "nSQh9E-_HDeV": {
+  "verdict": "unscored",
+  "reason": "A plain cave wall that repeats along the Mt. Ember (Ruby Path) rip: three positions score 0.62 alike."
+ },
+ "o34mFIX-eI-M": {
+  "verdict": "area",
+  "evidence": "The Burned Tower's own front seen from Ecruteak City (matched exactly on Ecruteak's map, 0.98 on the Crystal rip), but Ecruteak's map has no alignment onto ours; the tower is drawn as an icon, and the view shows that building, so its spot is the icon."
+ },
+ "o8Je6SbIVCqN": {
+  "verdict": "pick",
+  "method": "inv2d",
+  "rip": "archives.bulbagarden.net|Rock_Tunnel_B1F_FRLG.png",
+  "spot": [
+   72.0,
+   600.0
+  ],
+  "evidence": "The wall corners, the small rocks along the top wall and the ridged floor match Rock Tunnel B1F exactly (the view hangs past the map's west edge); 1F's similar corner lacks the rocks."
+ },
+ "oF_7S8-RuU8N": {
+  "verdict": "pick",
+  "method": "cam3d",
+  "rip": "archives.bulbagarden.net|Sinnoh_Route_220_DP.png",
+  "spot": [
+   342.0,
+   180.5
+  ],
+  "evidence": "The sandbar, its rocks and the islet below match Route 220 at this point (the Platinum rip agrees)."
+ },
+ "oRTrLrejUWox": {
+  "verdict": "unscored",
+  "reason": "Trainer Tower's rooftop: not among its rips (the lobby and floors), best 0.09."
+ },
+ "oUnes82CAssF": {
+  "verdict": "pick",
+  "method": "cam3d",
+  "rip": "archives.bulbagarden.net|Mt._Silver_Moltres_HGSS.png",
+  "spot": [
+   176.0,
+   221.0
+  ],
+  "evidence": "The stepped walls of the chamber with Moltres on its pedestal match Mt. Silver's Moltres room."
+ },
+ "qqhP3JAtHbrQ": {
+  "verdict": "pick",
+  "method": "cam3d",
+  "rip": "archives.bulbagarden.net|Sinnoh_Route_222_Pt.png",
+  "spot": [
+   1039.0,
+   266.3
+  ],
+  "evidence": "The two flat-roofed buildings on the beach and the fence behind them match Route 222 at this point."
+ },
+ "r5NnEKxkXqp2": {
+  "verdict": "pick",
+  "method": "cam3d",
+  "rip": "archives.bulbagarden.net|Sinnoh_Route_205_DP.png",
+  "spot": [
+   214.0,
+   968.3
+  ],
+  "evidence": "The wooden stairs climbing the cliff over the water match Route 205 at this point (the Platinum rip agrees)."
+ },
+ "rR95M1t5HSFJ": {
+  "verdict": "pick",
+  "method": "inv2d",
+  "rip": "archives.bulbagarden.net|Seabreak_Path_DP.png",
+  "spot": [
+   128.0,
+   1184.0
+  ],
+  "evidence": "The flower path over the sea repeats, but its run of yellow and pink flowers matches only here, pixel for pixel (1.00 against 0.89 for every other point)."
+ },
+ "rrFwq_6rpklR": {
+  "verdict": "pick",
+  "method": "cam3d",
+  "rip": "archives.bulbagarden.net|Sinnoh_Route_230_Pt.png",
+  "spot": [
+   583.3,
+   158.2
+  ],
+  "evidence": "The fenced grass enclosure with trees, the rocks in the water and its shore match Route 230 at this point (the Diamond/Pearl rip agrees)."
+ },
+ "rrMkLKP8Q8Dl": {
+  "verdict": "pick",
+  "method": "inv2d",
+  "rip": "archives.bulbagarden.net|Johto_Route_37_GSC.png",
+  "spot": [
+   272.0,
+   115.0
+  ],
+  "evidence": "The pairs of pink flowers, the small tree and the tree line match Route 37 at this point (0.89 / 0.92 on both Route 37 rips); the runner-up on Route 42 (0.79) has no flowers."
+ },
+ "rv7-WWLE4c8V": {
+  "verdict": "pick",
+  "method": "inv2d",
+  "rip": "archives.bulbagarden.net|Unknown_Dungeon_1F_RB.png",
+  "spot": [
+   112.0,
+   8.0
+  ],
+  "evidence": "The raised platform with its ladder and the item ball at its top edge match Cerulean Cave 1F (Red / Blue rip) exactly; B1F's similar platform has stairs below and no ball."
+ },
+ "s5ireDoJGyiJ": {
+  "verdict": "unscored",
+  "reason": "Inside the hot-spring cave on Kindle Road: no rip of that room, and no peak on the Kindle Road or Mt. Ember rips (best 0.37)."
+ },
+ "sZu_qYmvmaxb": {
+  "verdict": "pick",
+  "method": "cam3d",
+  "rip": "archives.bulbagarden.net|Chargestone_Cave_B2F_BWB2W2.png",
+  "spot": [
+   440.0,
+   143.7
+  ],
+  "evidence": "The U-shaped wall with blue crystals along it matches Chargestone Cave B2F at this point."
+ },
+ "tFFDV1dCIQhK": {
+  "verdict": "unscored",
+  "reason": "Inside Lost Cave (a maze of identical foggy rooms): no map of it on Bulbapedia, VGMaps or Poképédia, and its rooms look alike anyway."
+ },
+ "tFrS2R8qsoR9": {
+  "verdict": "pick",
+  "method": "cam3d",
+  "rip": "archives.bulbagarden.net|Kanto_Route_5_HGSS.png",
+  "spot": [
+   293.0,
+   189.0
+  ],
+  "evidence": "The blue-roofed house with the stairs and ledges in front matches Route 5 at this point."
+ },
+ "tGHEKxrCyq8a": {
+  "verdict": "pick",
+  "method": "cam3d",
+  "rip": "archives.bulbagarden.net|Chargestone_Cave_1F_BW.png",
+  "spot": [
+   639.0,
+   412.0
+  ],
+  "evidence": "The crystal at the top left, the big crystal at the right and the raised path match Chargestone Cave 1F at this point; the Black 2 / White 2 rip agrees on the point. The cave is drawn as an icon, so the floor maps into it proportionally."
+ },
+ "uKoVkIo0y71w": {
+  "verdict": "pick",
+  "method": "inv2d",
+  "rip": "archives.bulbagarden.net|Seabreak_Path_DP.png",
+  "spot": [
+   128.0,
+   1588.0
+  ],
+  "evidence": "The flower path over the sea repeats, but its run of yellow and pink flowers matches only here, pixel for pixel (1.00 against 0.89 for every other point)."
+ },
+ "wDTcFAxL5Jqw": {
+  "verdict": "pick",
+  "method": "cam3d",
+  "rip": "archives.bulbagarden.net|Sinnoh_Route_205_DP.png",
+  "spot": [
+   327.0,
+   1084.0
+  ],
+  "evidence": "The cliff with its stairs, the rocks and the tall grass to the right match Route 205 at this point."
+ },
+ "wjzZNN7KUVHe": {
+  "verdict": "pick",
+  "method": "cam3d",
+  "rip": "archives.bulbagarden.net|Kanto_Route_3_HGSS.png",
+  "spot": [
+   1208.0,
+   219.0
+  ],
+  "evidence": "The Pokémon Center by Mt. Moon with the rocks and sand in front matches Route 3 at this point."
+ },
+ "wpBFBsNeMNty": {
+  "verdict": "pick",
+  "method": "cam3d",
+  "rip": "archives.bulbagarden.net|Johto_Route_34_HGSS.png",
+  "spot": [
+   315.0,
+   1115.8
+  ],
+  "evidence": "The small pond in the forest clearing with the trainers around it matches Route 34 at this point; the Ilex Forest peaks (0.36) show no pond."
+ },
+ "wqfgZNn71IAi": {
+  "verdict": "pick",
+  "method": "cam3d",
+  "rip": "archives.bulbagarden.net|Johto_Route_46_HGSS.png",
+  "spot": [
+   223.0,
+   145.3
+  ],
+  "evidence": "The cliff, the trees and the narrow grass path match Route 46 at this point; the Route 29 peaks (0.39) are a plain tree line."
+ },
+ "wydEJYreVG_T": {
+  "verdict": "pick",
+  "method": "inv2d",
+  "rip": "archives.bulbagarden.net|Hoenn_Route_108_E.png",
+  "spot": [
+   680.0,
+   62.5
+  ],
+  "evidence": "The shallow shoal's outline, its big boulder and the small rocks around it match Route 108 exactly; the edge score is low only because the sea animates. The other peaks are blank Route 109 sand."
+ },
+ "xXM8MQ1GSTgb": {
+  "verdict": "pick",
+  "method": "cam3d",
+  "rip": "archives.bulbagarden.net|Sinnoh_Route_214_DP.png",
+  "spot": [
+   150.0,
+   1009.2
+  ],
+  "evidence": "The tall grass with its sign and the fence at the top right match Route 214 at this point (the Platinum rip agrees)."
+ },
+ "xa7LndOgCXYX": {
+  "verdict": "pick",
+  "method": "cam3d",
+  "rip": "archives.bulbagarden.net|Kanto_Route_27_HGSS.png",
+  "spot": [
+   2929.0,
+   224.2
+  ],
+  "evidence": "The cliff terraces and the water below (seen at night) match Route 27 at this point (both Route 27 rips agree)."
+ },
+ "xxg5UR584BUP": {
+  "verdict": "pick",
+  "method": "cam3d",
+  "rip": "archives.bulbagarden.net|Unova_Route_9_Spring_BW.png",
+  "spot": [
+   424.0,
+   262.2
+  ],
+  "evidence": "The road, the building with its fence and the planters match Route 9 at this point."
+ },
+ "yRD5xMFb5yCU": {
+  "verdict": "unscored",
+  "reason": "The Cycling Road bridge over water: it is identical all along Route 17, so the view matches many points of it equally (0.93 each)."
+ },
+ "z1EyTHvO0E-_": {
+  "verdict": "pick",
+  "method": "cam3d",
+  "rip": "archives.bulbagarden.net|Victory_Road_B1F_Deep_DP.png",
+  "spot": [
+   369.0,
+   593.2
+  ],
+  "evidence": "The pools of water, the rock floor and the boulder match Victory Road B1F (deep) at this point; the Platinum rip agrees within a tile."
+ },
+ "z23LacFYOCTM": {
+  "verdict": "pick",
+  "method": "cam3d",
+  "rip": "archives.bulbagarden.net|Village_Bridge_Spring_BW.png",
+  "spot": [
+   694.0,
+   492.8
+  ],
+  "evidence": "The stone landing under the bridge and the water around it match Village Bridge at this point."
+ },
+ "zBzPuXnDUPK2": {
+  "verdict": "pick",
+  "method": "cam3d",
+  "rip": "archives.bulbagarden.net|Unova_Route_11_Spring_BW.png",
+  "spot": [
+   439.0,
+   229.4
+  ],
+  "evidence": "The bridge over the river below the waterfall matches Route 11 at this point (the same bridge as the shot before it); Village Bridge's peaks are weaker (0.28)."
+ },
+ "zNETOJEBX1KI": {
+  "verdict": "pick",
+  "method": "cam3d",
+  "rip": "archives.bulbagarden.net|Fuego_Ironworks_Pt.png",
+  "spot": [
+   327.0,
+   290.2
+  ],
+  "evidence": "The tall-grass field, the tree line along the top and the brown tree at the right match Fuego Ironworks' grounds; the Platinum and Diamond/Pearl rips agree on the point. Colour is low only from the lighting."
+ }
+}
