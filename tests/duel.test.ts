@@ -65,8 +65,10 @@ function started(region?: string, seed?: string) {
 /** Both trainers poll at `t` (so neither times out). */
 const both = (duel: Duel, ids: string[], t: number) => ids.reduce((d, id) => touchDuel(d, id, t), duel);
 
+/** The perfect pin: the shot's exact spot when it has one, else the place's pin. */
 const pinOf = (duel: Duel, index: number) => {
-  const [x, y] = roundAnswer(duel, index).pin;
+  const answer = roundAnswer(duel, index);
+  const [x, y] = answer.spot ?? answer.pin;
   return { x, y };
 };
 /** The far corner from the answer: a low score. */

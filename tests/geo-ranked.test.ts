@@ -432,7 +432,8 @@ describe("the ranked flow", () => {
     for (let i = 0; i < 12 && duel.status === "playing"; i++) {
       const index = duel.rounds.length - 1;
       const round = duel.rounds[index];
-      const [x, y] = roundAnswer(duel, index).pin;
+      const { spot, pin } = roundAnswer(duel, index);
+      const [x, y] = spot ?? pin;
       // The bot's guess lands a human-like while in, without Red doing anything; then Red has the usual 15 s.
       duel = touchDuel(duel, me, round.startsAt + 21 * SECOND);
       const botAt = duel.rounds[index].guesses[bot]?.at;

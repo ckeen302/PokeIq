@@ -77,7 +77,8 @@ describe("logging a finished duel", () => {
     let d = must(readyDuel(must(readyDuel(joined.duel, red, true, t)), blue, true, t));
     // Round 1: Red pins the place first, Blue a moment later far away.
     const start = t + DUEL_LEAD_MS;
-    const [x, y] = roundAnswer(d, 0).pin;
+    const { spot, pin } = roundAnswer(d, 0);
+    const [x, y] = spot ?? pin;
     d = touchDuel(touchDuel(d, red, start + SECOND), blue, start + SECOND);
     d = must(guessDuel(d, red, 0, { x, y }, start + 2 * SECOND));
     d = must(guessDuel(d, blue, 0, { x: x > 0.5 ? 0 : 1, y: y > 0.5 ? 0 : 1 }, start + 3 * SECOND));
