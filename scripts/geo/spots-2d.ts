@@ -63,7 +63,7 @@ const WORLD_AGREE_PX = 4;
 /** Known-answer test: a method passes when this share of its known answers land within KNOWN_TOL_PX of the truth. */
 const KNOWN_PASS = 0.98;
 const KNOWN_TOL_PX = 2;
-const TOWN = /\b(City|Town|Village|Island|Plateau)$/;
+const TOWN = /\b(City|Town|Village|Island|Plateau|Area)$/;
 /** Caves, forests, towers and other places our map draws as an icon: area-scored unless the icon has a drawn path to aim at. */
 const ICON = /\b(Cave|Caves|Cavern|Forest|Woods|Tunnel|Tower|Hideout|Well|Den|Chamber|Grotto|Hole|Mansion|Ship|Temple|Plant|Lab|Warehouse|Mine|Mount|Victory Road|Seafoam Islands)\b|^Mt\. /;
 
