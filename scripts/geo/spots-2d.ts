@@ -2036,7 +2036,7 @@ async function sheets(dir: string, beforeFile?: string) {
           .png()
           .toBuffer();
         // The rip around the match, the matched window outlined.
-        const rip = await loadRip(r.rip!);
+        const rip = r.rip ? await loadRip(r.rip) : null;
         let ripPng = await sharp({
           create: { width: W, height: H, channels: 3, background: "#111" },
         })
