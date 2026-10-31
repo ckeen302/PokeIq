@@ -12,6 +12,7 @@
  *   npx tsx scripts/geo/spots-2d.ts world     # the Game Boy / GBA overworld layouts (pret disassemblies) into the cache
  *   npx tsx scripts/geo/spots-2d.ts match     # match, align, known-answer test, write the spots
  *   npx tsx scripts/geo/spots-2d.ts sheets    # overlay review sheets
+ *   npx tsx scripts/geo/spots-2d.ts place <in.json> <out.json>   # carry rip spots onto our atlas (the patch matcher's candidates)
  *
  * SPOTS_CACHE sets the cache folder (default: the system temp folder).
  *
@@ -893,17 +894,11 @@ function piecewiseFit(ctx: NonNullable<ReturnType<typeof worldContext>>, place: 
   };
 }
 
-async function run(items: Item[]) {
-  const files = readJson<FileInfo>(cachePath("fileinfo.json"), {});
-  const atlas = await loadAtlas(ROOT);
-  const candidates = ripCandidates(items, files);
-  const groups = new Map<string, Item[]>();
-  for (const it of items) groups.set(groupKey(it), [...(groups.get(groupKey(it)) ?? []), it]);
-  const results: ShotResult[] = [];
+/** Fits rips onto our atlas, one per area, family and rip (cached), and keeps each fit's record. */
+function fitter(atlas: Atlas) {
   const fits: Record<string, FitRecord> = {};
   const fitCache = new Map<string, Fit | null>();
   const contexts = new Map(FAMILIES.map((f) => [f, worldContext(atlas, f)]));
-  const cameras = loadCameras();
   const areaCache = new Map<string, ReturnType<typeof areaGeometry>>();
   const fitFor = (region: string, name: string, family: Family, rip: Rip): Fit | null => {
     const key = `${region}|${name}|${family}`;
@@ -1003,6 +998,18 @@ async function run(items: Item[]) {
       return fitCache.get(fk)!;
     }
   };
+  return { fitFor, fits };
+}
+
+async function run(items: Item[]) {
+  const files = readJson<FileInfo>(cachePath("fileinfo.json"), {});
+  const atlas = await loadAtlas(ROOT);
+  const candidates = ripCandidates(items, files);
+  const groups = new Map<string, Item[]>();
+  for (const it of items) groups.set(groupKey(it), [...(groups.get(groupKey(it)) ?? []), it]);
+  const results: ShotResult[] = [];
+  const cameras = loadCameras();
+  const { fitFor, fits } = fitter(atlas);
   let g = 0;
   for (const [key, group] of groups) {
     g++;
@@ -1874,6 +1881,20 @@ async function main() {
     );
     const cutErrs = cuts.map((r) => r.errPx!);
     console.log(`cut2d errors (native px): n ${cutErrs.length}, max ${Math.max(0, ...cutErrs)}, over ${KNOWN_TOL_PX}px: ${cutErrs.filter((e) => e > KNOWN_TOL_PX).length}`);
+  } else if (step === "place") {
+    // Carries spots found on rips (a JSON list of { id, region, name, family, rip, at }) onto our atlas through each area's fit.
+    const atlas = await loadAtlas(ROOT);
+    const { fitFor } = fitter(atlas);
+    const jobs = readJson<{ id: string; region: string; name: string; family: Family; rip: string; at: Px }[]>(process.argv[3], []);
+    const out = [];
+    for (const j of jobs) {
+      const rip = await loadRip(j.rip);
+      const fit = rip ? fitFor(j.region, j.name, j.family, rip) : null;
+      const world = fit?.ok ? fit.toWorld(j.at[0], j.at[1]) : null;
+      out.push({ id: j.id, rip: j.rip, at: j.at, align: fit?.kind ?? null, ok: !!fit?.ok, world: world && Number.isFinite(world[0]) ? world : null, onArea: world ? fit!.onArea(world) : false, reasons: fit?.reasons ?? ["no rip"] });
+    }
+    writeFileSync(process.argv[4], JSON.stringify(out, null, 1));
+    console.log(`placed ${out.filter((o) => o.world).length} of ${out.length}`);
   } else if (step === "sheets") {
     await sheets(process.argv[3] ?? cachePath("sheets"), process.argv[4]);
   } else if (step === "report") {
