@@ -1334,7 +1334,7 @@ interface InvPeak {
   cam?: number[];
 }
 /** A shot looked at by eye (scripts/geo/spot-review.json): its spot on a rip with the evidence, or why it stays unscored. */
-type Review = { verdict: "pick"; method: "inv2d" | "cam3d" | "review"; rip: string; spot: Px; evidence: string } | { verdict: "unscored"; reason: string };
+type Review = { verdict: "pick"; method: "inv2d" | "cam3d" | "review"; rip: string; spot: Px; evidence: string } | { verdict: "area"; evidence: string } | { verdict: "unscored"; reason: string };
 interface InvMatch {
   id: string;
   selfsim?: number;
@@ -1447,6 +1447,15 @@ async function invPass(results: ShotResult[], items: Item[], atlas: Atlas, fitFo
       return r;
     }
     if (rv?.verdict === "unscored") return { ...r0, why: `reviewed: ${rv.reason}` };
+    if (rv?.verdict === "area") {
+      // A by-eye look at a building's own front, the building drawn as a small icon: the icon is the spot.
+      const area = areaGeometry(atlas, r0.region, r0.name);
+      if (!area?.mask.length) return { ...r0, why: "reviewed: place not on the atlas" };
+      const c: Px = [area.mask.reduce((a, p) => a + p[0], 0) / area.mask.length, area.mask.reduce((a, p) => a + p[1], 0) / area.mask.length];
+      const w = area.mask.reduce((a, p) => (Math.hypot(p[0] - c[0], p[1] - c[1]) < Math.hypot(a[0] - c[0], a[1] - c[1]) ? p : a));
+      const [nx, ny] = normalised(atlas, w);
+      return { ...r0, kind: "view", method: "review", align: "area", world: w, spot: [nx, ny, 0.8, "review", true], reviewed: rv.evidence, why: undefined };
+    }
     const tries: ["cam3d" | "inv2d", InvPeak[] | undefined][] = [
       ["cam3d", m?.cam],
       ["inv2d", m?.flat],
@@ -1544,7 +1553,8 @@ async function invPass(results: ShotResult[], items: Item[], atlas: Atlas, fitFo
     const offArea = distToArea(atlas, { region: r.region, name: r.name }, world[0], world[1]);
     // Found on a neighbour's map (the place's entrance, seen from outside): it must land at the place on our map, and then goes onto its nearest point.
     if (onNeighbour) {
-      if (offArea > NEIGHBOUR_PX) {
+      // A by-eye pick of a building's or cave's outside (the place drawn as an icon) may sit further off the icon.
+      if (offArea > (method === "review" ? 2 * NEIGHBOUR_PX : NEIGHBOUR_PX)) {
         r.why = `inv: matched on ${placeOf.get(best.rip)!.split("|")[1]}'s map, ${Number.isFinite(offArea) ? `${Math.round(offArea)}px` : "far"} off our ${r.name}${kindOf.get(best) === "prop" ? " (that map has no strict alignment)" : ""}`;
         return r;
       }

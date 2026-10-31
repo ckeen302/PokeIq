@@ -23,7 +23,7 @@
  },
  "2OEBKeBf1cLx": {
   "verdict": "unscored",
-  "reason": "Inside the Trick House: no peak on its one rip (Trick_House_RSE, best 0.12), so this room isn't on any map found (Bulbapedia, VGMaps, Poképédia)."
+  "reason": "The shot is the Trick House's whole front room (it is VGMaps' map of the room, 192 × 127, tile for tile), so like a whole-area map it has no spot within the place."
  },
  "3mM265TEjDFs": {
   "verdict": "unscored",
@@ -33,6 +33,34 @@
   "verdict": "unscored",
   "reason": "Inside the Pretty Petal Flower Shop: no map of the room for Ruby, Sapphire or Emerald on Bulbapedia (only Omega Ruby / Alpha Sapphire), VGMaps or Poképédia."
  },
+ "3tT7KPUR1E61": {
+  "verdict": "unscored",
+  "reason": "Diglett's Cave's two ends look the same: the ladder room matches at (256, 56) and (64, 504) with 1.00 and 0.97."
+ },
+ "47Ebf1GLSwPi": {
+  "verdict": "pick",
+  "method": "inv2d",
+  "rip": "archives.bulbagarden.net|Hoenn_Route_106_E.png",
+  "spot": [
+   777.5,
+   233.5
+  ],
+  "evidence": "The Granite Cave entrance seen from outside: mountain, cave mouth and the tree row match Route 106 at the cave (the Granite Cave exterior rip shows the same spot)."
+ },
+ "49ZpYf9DK6IJ": {
+  "verdict": "unscored",
+  "reason": "A shoal with one rock in open sea: no peak shows it on the Route 128 rips (best 0.23)."
+ },
+ "5_TWNC010YsS": {
+  "verdict": "pick",
+  "method": "inv2d",
+  "rip": "archives.bulbagarden.net|Hoenn_Safari_Zone_E.png",
+  "spot": [
+   776.0,
+   104.0
+  ],
+  "evidence": "The rocky ledges, item ball, tall grass and trees match the Safari Zone at the same point on both rips (0.94); the shot is from Emerald, so its spot is on the Emerald rip."
+ },
  "6U1n4F55281u": {
   "verdict": "unscored",
   "reason": "Underground Path 5-6's corridor is identical along its length: the view matches at several points equally (0.98 to 1.00)."
@@ -41,7 +69,11 @@
   "verdict": "unscored",
   "reason": "A small sand islet with three rocks in open sea; the islet isn't on the Route 21 or Route 20 rips at any peak (the best peaks are open water)."
  },
- "CVGzvf0nhHmM": {
+ "CR6wKI5CWSL1": {
+  "verdict": "unscored",
+  "reason": "A ledge that is identical along Route 4: four points score 0.89 to 0.97 (the item ball and the trainer are sprites, not on the map)."
+ },
+ "CVGzvfOnhHmM": {
   "verdict": "unscored",
   "reason": "Rows of tall grass and trees that repeat on Route 16 (the view matches itself moved by whole tiles at 0.91); no peak stands out on the Route 16 map."
  },
@@ -55,13 +87,49 @@
   ],
   "evidence": "Flower patches and the tree line match Route 30 tile for tile (the view hangs past its east edge); the rival Dark Cave peaks lie in that cave's unlit, dithered void, which has nothing to match."
  },
+ "EToZ6mYgORjz": {
+  "verdict": "unscored",
+  "reason": "A small shoal with two swimmers in open sea: no peak shows the shoal on the Route 128 rips (best 0.26)."
+ },
  "Eiko_dRMxQOZ": {
   "verdict": "unscored",
   "reason": "Inside a Ruins of Alph chamber: the four chambers' rooms are identical (statues, stairs), so the view matches each equally."
  },
+ "G1UG8AJGlhq7": {
+  "verdict": "pick",
+  "method": "inv2d",
+  "rip": "archives.bulbagarden.net|Hoenn_Route_126_RSE.png",
+  "spot": [
+   216.0,
+   24.0
+  ],
+  "evidence": "The rock in the water, the shallows' stepped outline, the dark current patch and both cliffs match Route 126 exactly; the view hangs past the rip's top edge, which lowers the score."
+ },
+ "K2qQLcFZFsj0": {
+  "verdict": "unscored",
+  "reason": "Fence and tree rows repeat across National Park: three points score 0.95 to 0.98."
+ },
  "KcE3zcsk4C0M": {
   "verdict": "unscored",
   "reason": "The fenced grass enclosure with its ledge matches Route 3 (edge 0.48) and Route 4 (0.46) almost equally; nothing in the view (two trainers, plain grass) tells them apart."
+ },
+ "KuJ4KDbYxJsa": {
+  "verdict": "pick",
+  "method": "inv2d",
+  "rip": "archives.bulbagarden.net|Hoenn_Route_111_E.png",
+  "spot": [
+   496.5,
+   1790.5
+  ],
+  "evidence": "Trainer Hill's building, its door and the cliffs around it match Route 111 (Emerald) exactly; the Trainer Hill exterior rip shows the same spot."
+ },
+ "MY9hqzCVcWS8": {
+  "verdict": "unscored",
+  "reason": "The Berry Master's garden on Route 123 with grown berry plants: the plants aren't in the rip, and the only strong peaks are a plain tree line along the rip's top edge, which fits several places."
+ },
+ "RLaFCIQgorxO": {
+  "verdict": "unscored",
+  "reason": "An inner Mt. Ember room with an item on a raised floor and a ladder: not on any Mt. Ember rip found (best 0.37)."
  },
  "TrbsPP_nqu1C": {
   "verdict": "unscored",
@@ -70,6 +138,10 @@
  "UN5lJhRXmdvQ": {
   "verdict": "unscored",
   "reason": "A ledge over plain grass that runs the length of Route 4: x 192, 352, 384 and 448 all score 0.93 to 0.98."
+ },
+ "X5iwGNjjZF0D": {
+  "verdict": "unscored",
+  "reason": "Route 23's badge-check gates are identical: the gate and tree line match at two points equally (0.98 each)."
  },
  "YggeBjYolXFc": {
   "verdict": "unscored",
@@ -97,6 +169,24 @@
   ],
   "evidence": "The raised platform, its stairs (bottom left of centre) and the ice-water border match Seafoam Islands B4F; colour is low only because Yellow tints the cave."
  },
+ "awOPXmolgIOS": {
+  "verdict": "pick",
+  "method": "inv2d",
+  "rip": "archives.bulbagarden.net|Hoenn_Route_119_RS.png",
+  "spot": [
+   95.0,
+   482.0
+  ],
+  "evidence": "The Weather Institute building, its sign and the trees beside it match Route 119 (Ruby / Sapphire) exactly (0.93 / 1.00); the spot is the building's front on our map."
+ },
+ "bD23FsFpvuQO": {
+  "verdict": "unscored",
+  "reason": "Inside Scorched Slab: no map of it on Bulbapedia, VGMaps or Poképédia (the best peaks, 0.32, are the unrelated Ancient Tomb)."
+ },
+ "bLHtsqXga8L0": {
+  "verdict": "unscored",
+  "reason": "Inside Mirage Tower: no map of it on Bulbapedia, VGMaps or Poképédia (best 0.08)."
+ },
  "ehuWw3cHuKQz": {
   "verdict": "pick",
   "method": "inv2d",
@@ -106,6 +196,20 @@
    261.0
   ],
   "evidence": "The big round tree above the path, the grass on both sides and the small trees at the edges match Viridian Forest at this peak; the two runners-up differ (one has a sign at the bottom, the other a second big tree in the middle)."
+ },
+ "fJjF9-mN7WTu": {
+  "verdict": "pick",
+  "method": "inv2d",
+  "rip": "archives.bulbagarden.net|Hoenn_Safari_Zone_RS.png",
+  "spot": [
+   1064.0,
+   760.0
+  ],
+  "evidence": "The fenced ledge with its stairs, the tree clumps and the tall grass match the Ruby / Sapphire Safari Zone rip exactly (1.00); the Emerald rip agrees at the same point, but its extra Emerald area shifts its frame, so the Ruby / Sapphire rip is the shot's own."
+ },
+ "fkwcj_iq0Dn1": {
+  "verdict": "area",
+  "evidence": "The Burned Tower's own front seen from Ecruteak City (matched exactly on Ecruteak's map, on the Gold / Silver rip), but Ecruteak's map has no alignment onto ours; the tower is drawn as an icon, and the view shows that building, so its spot is the icon."
  },
  "g8XjkKXZlnIZ": {
   "verdict": "pick",
@@ -139,9 +243,27 @@
   "verdict": "unscored",
   "reason": "The entrance building seen from outside with a pond below; no match on the Diglett's Cave, Route 2 or Route 11 maps (the best peak, 0.40, is an unrelated Viridian Forest edge)."
  },
+ "lOcqi1VEpsoU": {
+  "verdict": "pick",
+  "method": "inv2d",
+  "rip": "archives.bulbagarden.net|Hoenn_Route_106_E.png",
+  "spot": [
+   856.0,
+   158.5
+  ],
+  "evidence": "Beach outline, the boulder, the corner of the Granite Cave mountain and the sign at the right edge match Route 106 exactly (Emerald and Ruby/Sapphire rips agree on the place)."
+ },
  "mBoiBKKi8p4v": {
   "verdict": "unscored",
   "reason": "A cliff top over one row of trees: it repeats every two blocks along Route 28 (x 384 and 416 score 0.98 and 0.87) and also matches Mt. Silver's exterior (0.90)."
+ },
+ "nSQh9E-_HDeV": {
+  "verdict": "unscored",
+  "reason": "A plain cave wall that repeats along the Mt. Ember (Ruby Path) rip: three positions score 0.62 alike."
+ },
+ "o34mFIX-eI-M": {
+  "verdict": "area",
+  "evidence": "The Burned Tower's own front seen from Ecruteak City (matched exactly on Ecruteak's map, 0.98 on the Crystal rip), but Ecruteak's map has no alignment onto ours; the tower is drawn as an icon, and the view shows that building, so its spot is the icon."
  },
  "o8Je6SbIVCqN": {
   "verdict": "pick",
@@ -153,9 +275,47 @@
   ],
   "evidence": "The wall corners, the small rocks along the top wall and the ridged floor match Rock Tunnel B1F exactly (the view hangs past the map's west edge); 1F's similar corner lacks the rocks."
  },
+ "oRTrLrejUWox": {
+  "verdict": "unscored",
+  "reason": "Trainer Tower's rooftop: not among its rips (the lobby and floors), best 0.09."
+ },
+ "rrMkLKP8Q8Dl": {
+  "verdict": "pick",
+  "method": "inv2d",
+  "rip": "archives.bulbagarden.net|Johto_Route_37_GSC.png",
+  "spot": [
+   272.0,
+   115.0
+  ],
+  "evidence": "The pairs of pink flowers, the small tree and the tree line match Route 37 at this point (0.89 / 0.92 on both Route 37 rips); the runner-up on Route 42 (0.79) has no flowers."
+ },
+ "rv7-WWLE4c8V": {
+  "verdict": "pick",
+  "method": "inv2d",
+  "rip": "archives.bulbagarden.net|Unknown_Dungeon_1F_RB.png",
+  "spot": [
+   112.0,
+   8.0
+  ],
+  "evidence": "The raised platform with its ladder and the item ball at its top edge match Cerulean Cave 1F (Red / Blue rip) exactly; B1F's similar platform has stairs below and no ball."
+ },
+ "s5ireDoJGyiJ": {
+  "verdict": "unscored",
+  "reason": "Inside the hot-spring cave on Kindle Road: no rip of that room, and no peak on the Kindle Road or Mt. Ember rips (best 0.37)."
+ },
  "tFFDV1dCIQhK": {
   "verdict": "unscored",
   "reason": "Inside Lost Cave (a maze of identical foggy rooms): no map of it on Bulbapedia, VGMaps or Poképédia, and its rooms look alike anyway."
+ },
+ "wydEJYreVG_T": {
+  "verdict": "pick",
+  "method": "inv2d",
+  "rip": "archives.bulbagarden.net|Hoenn_Route_108_E.png",
+  "spot": [
+   680.0,
+   62.5
+  ],
+  "evidence": "The shallow shoal's outline, its big boulder and the small rocks around it match Route 108 exactly; the edge score is low only because the sea animates. The other peaks are blank Route 109 sand."
  },
  "yRD5xMFb5yCU": {
   "verdict": "unscored",
