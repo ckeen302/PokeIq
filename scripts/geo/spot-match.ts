@@ -191,7 +191,7 @@ function agreement(t: Gray, m: Gray, x: number, y: number): number {
  * position is scored coarsely, the best few peaks exactly (±COARSE), and the
  * runner-up is the best exact peak at least half the shot's size away.
  */
-export function matchShot(shot: Gray, map: Gray): MatchResult {
+export function matchShot(shot: Gray, map: Gray, gate: Pick<typeof MATCH, "MIN_SCORE" | "MIN_MARGIN" | "MIN_AGREE"> = MATCH): MatchResult {
   const fail = (reason: string): MatchResult => ({ w: shot.w, h: shot.h, best: { x: 0, y: 0, score: 0, agree: 0 }, second: null, ok: false, reason });
   if (shot.w > map.w || shot.h > map.h) return fail("shot larger than the map");
   if (shot.w < 32 || shot.h < 32) return fail("shot too small");
@@ -245,9 +245,9 @@ export function matchShot(shot: Gray, map: Gray): MatchResult {
   const agree = agreement(shot, map, top.x, top.y);
   const best = { ...top, score: round3(top.score), agree: round3(agree) };
   const res: MatchResult = { w: shot.w, h: shot.h, best, second: second ? { ...second, score: round3(second.score) } : null, ok: true };
-  if (top.score < MATCH.MIN_SCORE) return { ...res, ok: false, reason: `best ${best.score} below ${MATCH.MIN_SCORE}` };
-  if (second && top.score - second.score < MATCH.MIN_MARGIN) return { ...res, ok: false, reason: `ambiguous: runner-up ${round3(second.score)} at ${second.x},${second.y}` };
-  if (agree < MATCH.MIN_AGREE) return { ...res, ok: false, reason: `only ${Math.round(agree * 100)}% of pixels agree` };
+  if (top.score < gate.MIN_SCORE) return { ...res, ok: false, reason: `best ${best.score} below ${gate.MIN_SCORE}` };
+  if (second && top.score - second.score < gate.MIN_MARGIN) return { ...res, ok: false, reason: `ambiguous: runner-up ${round3(second.score)} at ${second.x},${second.y}` };
+  if (agree < gate.MIN_AGREE) return { ...res, ok: false, reason: `only ${Math.round(agree * 100)}% of pixels agree` };
   return res;
 }
 
