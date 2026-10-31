@@ -69,12 +69,13 @@ describe("every scored spot passes the rules", () => {
     }
   });
 
-  it("the rule function agrees with the data (place, floor, hand)", () => {
+  it("was checked by eye on our atlas at this very spot, and passes every rule", () => {
+    const bad: string[] = [];
     for (const [id, row] of scored) {
       const l = placeOf.get(id)!;
       const why = spotRuleViolation(places, audit, id, l.region, l.name, [row[0], row[1]]);
-      // A spot that's not checked against the atlas yet is the only allowed reason here (see the audit test).
-      if (why && !why.startsWith("not checked")) expect.fail(`${id}: ${why}`);
+      if (why) bad.push(`${id}: ${why}`);
     }
+    expect(bad).toEqual([]);
   });
 });
