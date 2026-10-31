@@ -1168,7 +1168,7 @@ export interface InvKnownFamily {
     wrong: number;
     maxErr: number;
   };
-  negatives: { n: number; accepted: number };
+  negatives: { n: number; accepted: number; identical: number };
   cuts: { n: number; accepted: number; wrong: number };
   pairs: { n: number; accepted: number; wrong: number; errs: number[] };
 }
@@ -1202,7 +1202,7 @@ async function invKnown(items: Item[], results: ShotResult[]): Promise<Record<st
       pass: false,
       byKind: {},
       total: { n: 0, accepted: 0, right: 0, wrong: 0, maxErr: 0 },
-      negatives: { n: 0, accepted: 0 },
+      negatives: { n: 0, accepted: 0, identical: 0 },
       cuts: { n: 0, accepted: 0, wrong: 0 },
       pairs: { n: 0, accepted: 0, wrong: 0, errs: [] },
     });
@@ -1232,7 +1232,11 @@ async function invKnown(items: Item[], results: ShotResult[]): Promise<Record<st
       const gate = g.ssmax !== undefined && (v.selfsim ?? 0) > g.ssmax ? { why: "repeats" } : invGate(v.peaks, g, samePlace);
       if (!v.truth) {
         st.negatives.n++;
-        if (!("why" in gate)) st.negatives.accepted++;
+        if (!("why" in gate)) {
+          st.negatives.accepted++;
+          // Tile for tile the same scene (Hoenn's three sealed chambers, say): no matcher can tell such places apart, only the shot's own candidates can.
+          if (gate.best.edge >= 0.95 && gate.best.colour >= 0.98) st.negatives.identical++;
+        }
         continue;
       }
       const t = (st.byKind[v.kind] ??= tally());
@@ -1240,7 +1244,8 @@ async function invKnown(items: Item[], results: ShotResult[]): Promise<Record<st
       if ("why" in gate) continue;
       t.accepted++;
       const tol = method === "cam3d" ? CAM_TOL_PX : KNOWN_TOL_PX;
-      const err = placeOfRip.get(gate.best.rip) === v.place ? Math.hypot(gate.best.spot[0] - v.truth[0], gate.best.spot[1] - v.truth[1]) : Infinity;
+      // The view's own rip, or another rip of its place (a rip listed for two places, as Eterna Forest's for the Old Chateau, counts for both).
+      const err = gate.best.rip === v.rip || placeOfRip.get(gate.best.rip) === v.place ? Math.hypot(gate.best.spot[0] - v.truth[0], gate.best.spot[1] - v.truth[1]) : Infinity;
       t.errs.push(Math.round(Math.min(err, 9999) * 10) / 10);
       if (err <= tol) t.right++;
       else t.wrong++;
@@ -1300,7 +1305,7 @@ async function invKnown(items: Item[], results: ShotResult[]): Promise<Record<st
         maxErr: Math.max(0, ...ks.flatMap((k) => k.errs.filter((e) => e < 9999))),
       };
       // No wrong answer anywhere, and enough right ones to say so.
-      st.pass = st.total.accepted >= 30 && st.total.wrong === 0 && st.negatives.accepted === 0 && st.cuts.wrong === 0 && st.pairs.wrong === 0;
+      st.pass = st.total.accepted >= 30 && st.total.wrong === 0 && st.negatives.accepted - st.negatives.identical === 0 && st.cuts.wrong === 0 && st.pairs.wrong === 0;
     }
   return out;
 }
@@ -1442,7 +1447,7 @@ async function invPass(results: ShotResult[], items: Item[], atlas: Atlas, fitFo
     const m = matches.get(r0.id);
     const rv = review[r0.id];
     if (rv?.verdict === "pick") {
-      const r = await oneWith({ ...r0 }, rv.method, [{ rip: rv.rip, x: rv.spot[0], y: rv.spot[1], spot: rv.spot, edge: 1, colour: 1, cover: 1 }], m?.native);
+      const r = await oneWith({ ...r0 }, "review", [{ rip: rv.rip, x: rv.spot[0], y: rv.spot[1], spot: rv.spot, edge: 1, colour: 1, cover: 1 }], m?.native);
       r.reviewed = rv.evidence;
       return r;
     }
@@ -1563,9 +1568,6 @@ async function invPass(results: ShotResult[], items: Item[], atlas: Atlas, fitFo
         const near = own?.mask.reduce((a, b) => (Math.hypot(b[0] - world[0], b[1] - world[1]) < Math.hypot(a[0] - world[0], a[1] - world[1]) ? b : a));
         if (near) r.world = world = [near[0], near[1]];
       }
-    } else if (offArea > WORLD_AGREE_PX && kindOf.get(best) === "prop") {
-      r.why = `inv: lands ${Math.round(offArea)}px off our ${r.name}`;
-      return r;
     }
     const town = TOWN.test(r.name);
     const area = areaGeometry(atlas, r.region, r.name);
@@ -1595,8 +1597,9 @@ async function invPass(results: ShotResult[], items: Item[], atlas: Atlas, fitFo
     const r0 = results[i];
     if (r0.kind !== "view") continue;
     // A shot scored before is only checked: where the invariant matcher puts it (the report lists any disagreement).
-    const recheck = !!r0.spot?.[4];
-    if (r0.spot && !recheck) continue;
+    // A by-eye review decides a shot's spot whatever the template matcher found.
+    const recheck = !!r0.spot?.[4] && !review[r0.id];
+    if (r0.spot && !recheck && !review[r0.id]) continue;
     const r = await one(r0);
     if (!recheck) {
       results[i] = r;

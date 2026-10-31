@@ -2,7 +2,7 @@
   "inv2d": {
     "rby": {
       "a": 0.5,
-      "emin": 0.6,
+      "emin": 0.65,
       "cmin": 0.7,
       "smin": 0.65,
       "margin": 0.1,
