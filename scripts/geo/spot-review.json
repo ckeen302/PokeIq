@@ -1,0 +1,164 @@
+{
+ "-vBnFtmnIGfq": {
+  "verdict": "pick",
+  "method": "inv2d",
+  "rip": "archives.bulbagarden.net|Hoenn_Route_134_E.png",
+  "spot": [
+   986.0,
+   504.0
+  ],
+  "evidence": "Seen from the surface: the dark diving patch ringed by four rocks is the Sealed Chamber's dive spot on Route 134, matching the Emerald and Ruby/Sapphire Route 134 maps at the same place (Route 133's best is lower and shows no rocks); the place sits under that spot."
+ },
+ "0K3AOYzQ67hm": {
+  "verdict": "unscored",
+  "reason": "Inside Lost Cave (a maze of identical foggy rooms): no map of it on Bulbapedia, VGMaps or Poképédia, and its rooms look alike anyway."
+ },
+ "1vxTENnXhRJz": {
+  "verdict": "unscored",
+  "reason": "Inside Dotted Hole: no FireRed / LeafGreen map of it on Bulbapedia (only a Sapphire picture), VGMaps or Poképédia."
+ },
+ "228wAGrAlGy7": {
+  "verdict": "unscored",
+  "reason": "Rows of trees and tall grass that repeat across Viridian Forest: four places score 0.97 alike."
+ },
+ "2OEBKeBf1cLx": {
+  "verdict": "unscored",
+  "reason": "Inside the Trick House: no peak on its one rip (Trick_House_RSE, best 0.12), so this room isn't on any map found (Bulbapedia, VGMaps, Poképédia)."
+ },
+ "3mM265TEjDFs": {
+  "verdict": "unscored",
+  "reason": "Inside the Dragon Shrine, the building in Dragon's Den: no map of the shrine's room among the Dragon's Den rips (the best peaks, 0.09, are unrelated Ice Path corners)."
+ },
+ "3pEa_avc8bWQ": {
+  "verdict": "unscored",
+  "reason": "Inside the Pretty Petal Flower Shop: no map of the room for Ruby, Sapphire or Emerald on Bulbapedia (only Omega Ruby / Alpha Sapphire), VGMaps or Poképédia."
+ },
+ "6U1n4F55281u": {
+  "verdict": "unscored",
+  "reason": "Underground Path 5-6's corridor is identical along its length: the view matches at several points equally (0.98 to 1.00)."
+ },
+ "90Cb6YGDq4bd": {
+  "verdict": "unscored",
+  "reason": "A small sand islet with three rocks in open sea; the islet isn't on the Route 21 or Route 20 rips at any peak (the best peaks are open water)."
+ },
+ "CVGzvf0nhHmM": {
+  "verdict": "unscored",
+  "reason": "Rows of tall grass and trees that repeat on Route 16 (the view matches itself moved by whole tiles at 0.91); no peak stands out on the Route 16 map."
+ },
+ "DBBHvv8lSbyi": {
+  "verdict": "pick",
+  "method": "inv2d",
+  "rip": "archives.bulbagarden.net|Johto_Route_30_GSC.png",
+  "spot": [
+   256.0,
+   131.0
+  ],
+  "evidence": "Flower patches and the tree line match Route 30 tile for tile (the view hangs past its east edge); the rival Dark Cave peaks lie in that cave's unlit, dithered void, which has nothing to match."
+ },
+ "Eiko_dRMxQOZ": {
+  "verdict": "unscored",
+  "reason": "Inside a Ruins of Alph chamber: the four chambers' rooms are identical (statues, stairs), so the view matches each equally."
+ },
+ "KcE3zcsk4C0M": {
+  "verdict": "unscored",
+  "reason": "The fenced grass enclosure with its ledge matches Route 3 (edge 0.48) and Route 4 (0.46) almost equally; nothing in the view (two trainers, plain grass) tells them apart."
+ },
+ "TrbsPP_nqu1C": {
+  "verdict": "unscored",
+  "reason": "Inside Sky Pillar by a hole in the floor: no peak on any of its six rips (best 0.12), so this floor isn't on any map found (Bulbapedia, VGMaps, Poképédia)."
+ },
+ "UN5lJhRXmdvQ": {
+  "verdict": "unscored",
+  "reason": "A ledge over plain grass that runs the length of Route 4: x 192, 352, 384 and 448 all score 0.93 to 0.98."
+ },
+ "YggeBjYolXFc": {
+  "verdict": "unscored",
+  "reason": "A room in Team Aqua Hideout with a Poké Ball machine and a screen; Bulbapedia's 1F and B2F maps have the same walls and pillars but not this room, so it isn't on any map found (Bulbapedia, VGMaps, Poképédia)."
+ },
+ "ZKpcg9Wvcncq": {
+  "verdict": "unscored",
+  "reason": "Rows of tall grass and trees on Route 16 with a sign; the Route 16 map gives no clear peak (best 0.20), the strongest peaks are unrelated Celadon and Viridian edges."
+ },
+ "_7iTNs6CU7rh": {
+  "verdict": "unscored",
+  "reason": "Inside Dotted Hole: no FireRed / LeafGreen map of it on Bulbapedia (only a Sapphire picture), VGMaps or Poképédia."
+ },
+ "_Fzt0FhUoq6M": {
+  "verdict": "unscored",
+  "reason": "Inside Dotted Hole: no FireRed / LeafGreen map of it on Bulbapedia (only a Sapphire picture), VGMaps or Poképédia."
+ },
+ "amwaMkLnL8iq": {
+  "verdict": "pick",
+  "method": "inv2d",
+  "rip": "archives.bulbagarden.net|Seafoam_Islands_B4F_RBY.png",
+  "spot": [
+   144.0,
+   24.0
+  ],
+  "evidence": "The raised platform, its stairs (bottom left of centre) and the ice-water border match Seafoam Islands B4F; colour is low only because Yellow tints the cave."
+ },
+ "ehuWw3cHuKQz": {
+  "verdict": "pick",
+  "method": "inv2d",
+  "rip": "archives.bulbagarden.net|Viridian_Forest_RBY.png",
+  "spot": [
+   240.0,
+   261.0
+  ],
+  "evidence": "The big round tree above the path, the grass on both sides and the small trees at the edges match Viridian Forest at this peak; the two runners-up differ (one has a sign at the bottom, the other a second big tree in the middle)."
+ },
+ "g8XjkKXZlnIZ": {
+  "verdict": "pick",
+  "method": "inv2d",
+  "rip": "archives.bulbagarden.net|Hoenn_Route_134_E.png",
+  "spot": [
+   816.0,
+   280.0
+  ],
+  "evidence": "The sandbar's outline, the boulder at its east end and the current lines around it match Route 134 (Emerald) exactly; the edge score is low only because the current tiles animate. The other peaks are blank Route 109 beach."
+ },
+ "hJnjyop-2gH1": {
+  "verdict": "unscored",
+  "reason": "Surfing on the open lake with only a sliver of shore; that shore matches several points around the Lake of Rage about equally (0.49 and below)."
+ },
+ "hLHn-qiJ7hpE": {
+  "verdict": "pick",
+  "method": "inv2d",
+  "rip": "archives.bulbagarden.net|Kanto_Route_20_RBY.png",
+  "spot": [
+   832.0,
+   136.0
+  ],
+  "evidence": "Cave mouth, stairs, sign post, boulder and rock wall match the Seafoam Islands entrance on Route 20's map tile for tile; the text box is the place-name sign shown on entering."
+ },
+ "kwioqX0lz4Y6": {
+  "verdict": "unscored",
+  "reason": "Dark cave floor with boulders that matches Victory Road 2F and 3F equally (0.89 each); nothing in the view tells the floors apart."
+ },
+ "lABAs6LtE1O3": {
+  "verdict": "unscored",
+  "reason": "The entrance building seen from outside with a pond below; no match on the Diglett's Cave, Route 2 or Route 11 maps (the best peak, 0.40, is an unrelated Viridian Forest edge)."
+ },
+ "mBoiBKKi8p4v": {
+  "verdict": "unscored",
+  "reason": "A cliff top over one row of trees: it repeats every two blocks along Route 28 (x 384 and 416 score 0.98 and 0.87) and also matches Mt. Silver's exterior (0.90)."
+ },
+ "o8Je6SbIVCqN": {
+  "verdict": "pick",
+  "method": "inv2d",
+  "rip": "archives.bulbagarden.net|Rock_Tunnel_B1F_FRLG.png",
+  "spot": [
+   72.0,
+   600.0
+  ],
+  "evidence": "The wall corners, the small rocks along the top wall and the ridged floor match Rock Tunnel B1F exactly (the view hangs past the map's west edge); 1F's similar corner lacks the rocks."
+ },
+ "tFFDV1dCIQhK": {
+  "verdict": "unscored",
+  "reason": "Inside Lost Cave (a maze of identical foggy rooms): no map of it on Bulbapedia, VGMaps or Poképédia, and its rooms look alike anyway."
+ },
+ "yRD5xMFb5yCU": {
+  "verdict": "unscored",
+  "reason": "The Cycling Road bridge over water: it is identical all along Route 17, so the view matches many points of it equally (0.93 each)."
+ }
+}

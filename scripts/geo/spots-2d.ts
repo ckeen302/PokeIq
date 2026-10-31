@@ -55,12 +55,10 @@ const SCREEN: Record<Family, [number, number]> = {
 const MAX_VIEW_SCREENS = 2.3;
 /** A file this many screens big (at its native scale) is a map rip to match against. */
 const MIN_RIP_SCREENS = 2.5;
-/** Scored only when the view covers at most this share of the map along the route. */
-const MAX_FOOTPRINT = 0.4;
-/** Scored only on routes drawn at least this long (px): on a shorter one the area's own perfect radius already covers it. */
-const MIN_ROUTE_PX = 30;
 /** Two matches of a shot (on two rips) farther apart than this on our map make it ambiguous. */
 const WORLD_AGREE_PX = 4;
+/** A spot found on a neighbour's map (a place's entrance seen from outside) may land this far (px) from the place on our map. */
+const NEIGHBOUR_PX = 8;
 /** Known-answer test: a method passes when this share of its known answers land within KNOWN_TOL_PX of the truth. */
 const KNOWN_PASS = 0.98;
 const KNOWN_TOL_PX = 2;
@@ -267,6 +265,16 @@ const PAGE_CODES: Record<Family, string[]> = {
   hgss: ["HGSS"],
   bw: ["BW", "B2W2", "BWB2W2", "B2"],
 };
+/** Bulbapedia's names for a place's maps where they differ from ours (the Japanese-derived or older names). */
+const PAGE_ALIASES: Record<string, string[]> = {
+  "Cerulean Cave": ["Unknown Dungeon"],
+  "Bell Tower": ["Tin Tower"],
+  "Olivine Lighthouse": ["Glitter Lighthouse"],
+  "Diglett's Cave": ["Diglett Cave"],
+  "Safari Zone / Pal Park": ["Kanto Safari Zone"],
+};
+/** A room's map can be small (a tower floor): this many screens is still a map, not a view. */
+const PAGE_MIN_SCREENS = 1.2;
 /** Words that mark a file on a place's page as something other than a map of it. */
 const NOT_A_MAP = /\b(Screenshot|Sprite|Artwork|OD|VS|anime|Dream|menu|Town Map|Map icon|overworld|Gym Leader)\b/i;
 const squash = (s: string) =>
@@ -293,7 +301,8 @@ async function pageRips(items: Item[]) {
   let added = 0;
   for (const [key, it] of groups) {
     if (asked[key]) continue;
-    const titles = [it.name, `${it.region} ${it.name}`, `${it.name} (${it.region})`, ...it.name.split(" / ")];
+    const aka = PAGE_ALIASES[it.name] ?? [];
+    const titles = [it.name, `${it.region} ${it.name}`, `${it.name} (${it.region})`, ...it.name.split(" / "), ...aka];
     const r = await wikiApi<{
       query?: {
         pages: {
@@ -315,11 +324,11 @@ async function pageRips(items: Item[]) {
     });
     if (!r) continue;
     const [sw, sh] = SCREEN[it.family];
-    const heads = [squash(it.name), squash(`${it.region} ${it.name}`), ...it.name.split(" / ").map(squash)];
+    const heads = [squash(it.name), squash(`${it.region} ${it.name}`), ...it.name.split(" / ").map(squash), ...aka.map(squash)];
     const found: string[] = [];
     for (const p of r.query?.pages ?? []) {
       const ii = p.imageinfo?.[0];
-      if (!ii || ii.width * ii.height < MIN_RIP_SCREENS * sw * sh) continue;
+      if (!ii || ii.width * ii.height < PAGE_MIN_SCREENS * sw * sh) continue;
       const file = p.title.replace(/^File:/, "");
       const stem = file.replace(/\.(png|gif)$/i, "");
       if (stem === file || NOT_A_MAP.test(stem)) continue;
@@ -719,7 +728,9 @@ function anchoredFit(atlas: Atlas, region: string, name: string, rip: Rip): Fit 
  * drawn (propFit). A spot that can't be placed says why.
  */
 function placeOnArea(fit: Fit, area: AreaGeometry | null, rip: Rip, at: Px, world: Px, confidence: number): { world: Px; confidence: number; align: Fit["kind"] } | { why: string; align?: Fit["kind"] } {
-  if (fit.ok && fit.kind !== "prop" && Number.isFinite(world[0]) && fit.onArea(world)) return { world, confidence, align: fit.kind };
+  // A place drawn as an icon (a cave, a tower, a forest block without a drawn path): its floors and rooms aren't the overworld's footprint, so it's always proportional.
+  const icon = !!area && ICON.test(area.name) && !area.path.length;
+  if (!icon && fit.ok && fit.kind !== "prop" && Number.isFinite(world[0]) && fit.onArea(world)) return { world, confidence, align: fit.kind };
   if (!area) return { why: "place not on the atlas" };
   const pf = fit.kind === "prop" ? fit : propFit(area, rip);
   if (!("toWorld" in pf) || !pf.ok) return { why: `alignment: ${"reason" in pf ? pf.reason : pf.reasons.join("; ")}`, align: "prop" };
@@ -1188,6 +1199,8 @@ async function invKnown(items: Item[], results: ShotResult[]): Promise<Record<st
       pairs: { n: 0, accepted: 0, wrong: 0, errs: [] },
     });
   const files = ["inv-known-flat.json", "inv-known-cam.json", "inv-known.json"].map((f) => cachePath(f)).filter(existsSync);
+  // A view made twice (two runs over the same family) counts once.
+  const seenViews = new Set<string>();
   for (const file of files) {
     for (const v of readJson<
       {
@@ -1204,6 +1217,9 @@ async function invKnown(items: Item[], results: ShotResult[]): Promise<Record<st
       const method = v.mode === "cam" ? "cam3d" : "inv2d";
       const g = gates[method][v.family];
       if (!g) continue;
+      const vk = `${v.family}|${v.mode}|${v.kind}|${v.place}|${v.rip}|${v.truth?.join(",") ?? ""}|${v.peaks.length}`;
+      if (seenViews.has(vk)) continue;
+      seenViews.add(vk);
       const st = fam(method, v.family);
       const gate = g.ssmax !== undefined && (v.selfsim ?? 0) > g.ssmax ? { why: "repeats" } : invGate(v.peaks, g, samePlace);
       if (!v.truth) {
@@ -1285,6 +1301,9 @@ async function invKnown(items: Item[], results: ShotResult[]): Promise<Record<st
 interface InvGate {
   /** The most a view may match itself moved by whole tiles (open sea, plain grass): above it, it fits too many places. */
   ssmax?: number;
+  /** Below this share of the view on the rip, emin rises by coverSlope per unit missing. */
+  coverFull?: number;
+  coverSlope?: number;
   a: number;
   emin: number;
   cmin: number;
@@ -1316,7 +1335,7 @@ interface InvMatch {
 function loadInvMatches(): Map<string, InvMatch> {
   const out = new Map<string, InvMatch>();
   // Later runs (over more candidate rips) override earlier ones, per pass.
-  for (const f of ["inv-matches.json", "inv-matches-cam.json", "inv-matches-v3.json", "inv-matches-cam-v3.json"])
+  for (const f of ["inv-matches.json", "inv-matches-cam.json", "inv-matches-v3.json", "inv-matches-cam-v3.json", "inv-matches-v4.json", "inv-matches-v5.json", "inv-matches-cam-v4.json", "inv-matches-cam-bw.json"])
     for (const m of readJson<InvMatch[]>(cachePath(f), [])) {
       const was = out.get(m.id);
       out.set(m.id, was ? { ...was, ...Object.fromEntries(Object.entries(m).filter(([, v]) => v !== undefined)), flat: m.flat ?? was.flat, cam: m.cam ?? was.cam } : m);
@@ -1340,7 +1359,9 @@ export function invGate(peaks: InvPeak[], g: InvGate, agree: (p: InvPeak, best: 
   if (!ps.length) return { why: "no peak" };
   const best = ps.reduce((a, b) => (invScore(b, g) > invScore(a, g) ? b : a));
   const sb = invScore(best, g);
-  if (best.edge < g.emin || best.colour < g.cmin || sb < g.smin)
+  // Less of the view on the map (it hangs past the rip's border) needs a stronger match.
+  const emin = g.emin + Math.max(0, (g.coverFull ?? 0) - best.cover) * (g.coverSlope ?? 0);
+  if (best.edge < emin || best.colour < g.cmin || sb < g.smin)
     return {
       why: `inv: best ${best.edge.toFixed(2)} / ${best.colour.toFixed(2)} below the gate`,
     };
@@ -1494,18 +1515,24 @@ async function invPass(results: ShotResult[], items: Item[], atlas: Atlas, fitFo
           r.world = undefined;
         }
     if (r.why === "inv: strong peaks disagree on our map") return r;
-    const world: Px = [worlds.reduce((s, w) => s + w[0], 0) / worlds.length, worlds.reduce((s, w) => s + w[1], 0) / worlds.length];
+    let world: Px = [worlds.reduce((s, w) => s + w[0], 0) / worlds.length, worlds.reduce((s, w) => s + w[1], 0) / worlds.length];
     r.world = world;
     const ownPlace = `${r.region}|${r.name}`;
     const onNeighbour = placeOf.get(best.rip) !== ownPlace;
-    // A spot found only on a neighbour's map needs that map's strict fit (its proportional one can't say where the border is).
-    if (onNeighbour && kindOf.get(best) === "prop") {
-      r.why = `inv: matched only on ${placeOf.get(best.rip)!.split("|")[1]}'s map, which has no strict alignment`;
-      return r;
-    }
     const offArea = distToArea(atlas, { region: r.region, name: r.name }, world[0], world[1]);
-    if (offArea > WORLD_AGREE_PX && (onNeighbour || kindOf.get(best) === "prop")) {
-      r.why = `inv: lands ${Math.round(offArea)}px off our ${r.name}${onNeighbour ? ` (on ${placeOf.get(best.rip)!.split("|")[1]}'s map: possibly mislabelled)` : ""}`;
+    // Found on a neighbour's map (the place's entrance, seen from outside): it must land at the place on our map, and then goes onto its nearest point.
+    if (onNeighbour) {
+      if (offArea > NEIGHBOUR_PX) {
+        r.why = `inv: matched on ${placeOf.get(best.rip)!.split("|")[1]}'s map, ${Number.isFinite(offArea) ? `${Math.round(offArea)}px` : "far"} off our ${r.name}${kindOf.get(best) === "prop" ? " (that map has no strict alignment)" : ""}`;
+        return r;
+      }
+      if (offArea > WORLD_AGREE_PX) {
+        const own = areaGeometry(atlas, r.region, r.name);
+        const near = own?.mask.reduce((a, b) => (Math.hypot(b[0] - world[0], b[1] - world[1]) < Math.hypot(a[0] - world[0], a[1] - world[1]) ? b : a));
+        if (near) r.world = world = [near[0], near[1]];
+      }
+    } else if (offArea > WORLD_AGREE_PX && kindOf.get(best) === "prop") {
+      r.why = `inv: lands ${Math.round(offArea)}px off our ${r.name}`;
       return r;
     }
     const town = TOWN.test(r.name);
@@ -1954,11 +1981,12 @@ async function sheets(dir: string, beforeFile?: string) {
     const spotted = results.filter((r) => r.family === family && r.spot && r.world);
     // With the spots before: every shot scored now and not before (all of them, ten to a page); without: a sample.
     const pick = before
-      ? spotted.filter((r) => now[r.id]?.[4] && !before[r.id]?.[4]).sort((a, b) => a.name.localeCompare(b.name) || hash(a.id) - hash(b.id))
+      ? spotted.filter((r) => (process.env.SHEETS_PLACED ? r.spot![4] : now[r.id]?.[4]) && !before[r.id]?.[4] && (!process.env.SHEETS_FAMILY || process.env.SHEETS_FAMILY.split(",").includes(r.family))).sort((a, b) => a.name.localeCompare(b.name) || hash(a.id) - hash(b.id))
       : [...spotted.filter((r) => r.spot![4]), ...spotted.filter((r) => !r.spot![4])].sort((a, b) => Number(b.spot![4]) - Number(a.spot![4]) || hash(a.id) - hash(b.id)).slice(0, 10);
-    for (let page = 0; page * 10 < pick.length; page++) {
+    const per = Number(process.env.SHEETS_ROWS ?? 10);
+    for (let page = 0; page * per < pick.length; page++) {
       const rows: Buffer[] = [];
-      for (const r of pick.slice(page * 10, page * 10 + 10)) {
+      for (const r of pick.slice(page * per, page * per + per)) {
         const shotPng = await sharp(cachePath("shots", `${r.id}.webp`))
           .resize(W, H, {
             fit: "contain",
@@ -2011,7 +2039,7 @@ async function sheets(dir: string, beforeFile?: string) {
         let svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}">`;
         for (const [mx, my] of area?.mask ?? []) svg += `<circle cx="${(mx * atlas.width - L) * s}" cy="${(my * atlas.height - T) * s}" r="2.5" fill="#1e6bff" fill-opacity="0.7"/>`;
         svg += `<circle cx="${(wx - L) * s}" cy="${(wy - T) * s}" r="${3 * s}" fill="none" stroke="#ff2d55" stroke-width="2.5"/><circle cx="${(wx - L) * s}" cy="${(wy - T) * s}" r="2.5" fill="#ff2d55"/>`;
-        svg += `<text x="6" y="${H - 8}" font-family="sans-serif" font-size="13" fill="#fff" stroke="#000" stroke-width="0.6">${esc(`${r.name} · ${r.game} · ${r.method} · ${now[r.id]?.[4] ? "scored" : "unscored"} · ${r.spot![2]} · ${r.id}`)}</text></svg>`;
+        svg += `<text x="6" y="${H - 8}" font-family="sans-serif" font-size="13" fill="#fff" stroke="#000" stroke-width="0.6">${esc(`${r.name} · ${r.game} · ${r.method}/${r.align ?? ""} · ${now[r.id]?.[4] ? "scored" : "unscored"} · ${r.spot![2]} · ${r.id}`)}</text></svg>`;
         const atlasPng = await sharp(atlas.rgb, {
           raw: { width: atlas.width, height: atlas.height, channels: 3 },
         })

@@ -1,16 +1,106 @@
 {
   "inv2d": {
-    "rby": { "a": 0.5, "emin": 0.45, "cmin": 0.6, "smin": 0.6, "margin": 0.12 },
-    "gsc": { "a": 0.5, "emin": 0.45, "cmin": 0.6, "smin": 0.6, "margin": 0.12 },
-    "rse": { "a": 0.5, "emin": 0.45, "cmin": 0.6, "smin": 0.6, "margin": 0.12 },
-    "frlg": { "a": 0.5, "emin": 0.45, "cmin": 0.6, "smin": 0.6, "margin": 0.12 },
-    "dppt": { "a": 0.5, "emin": 0.45, "cmin": 0.6, "smin": 0.6, "margin": 0.12 },
-    "hgss": { "a": 0.5, "emin": 0.45, "cmin": 0.6, "smin": 0.6, "margin": 0.12 },
-    "bw": { "a": 0.5, "emin": 0.45, "cmin": 0.6, "smin": 0.6, "margin": 0.12 }
+    "rby": {
+      "a": 0.5,
+      "emin": 0.6,
+      "cmin": 0.7,
+      "smin": 0.65,
+      "margin": 0.1,
+      "coverFull": 0.8,
+      "coverSlope": 2.0,
+      "ssmax": 0.9
+    },
+    "gsc": {
+      "a": 0.5,
+      "emin": 0.6,
+      "cmin": 0.7,
+      "smin": 0.65,
+      "margin": 0.1,
+      "coverFull": 0.8,
+      "coverSlope": 2.0,
+      "ssmax": 0.9
+    },
+    "rse": {
+      "a": 0.5,
+      "emin": 0.6,
+      "cmin": 0.7,
+      "smin": 0.65,
+      "margin": 0.1,
+      "coverFull": 0.8,
+      "coverSlope": 2.0,
+      "ssmax": 0.9
+    },
+    "frlg": {
+      "a": 0.5,
+      "emin": 0.6,
+      "cmin": 0.7,
+      "smin": 0.65,
+      "margin": 0.1,
+      "coverFull": 0.8,
+      "coverSlope": 2.0,
+      "ssmax": 0.9
+    },
+    "dppt": {
+      "a": 0.5,
+      "emin": 0.6,
+      "cmin": 0.7,
+      "smin": 0.65,
+      "margin": 0.1,
+      "coverFull": 0.8,
+      "coverSlope": 2.0,
+      "ssmax": 0.9
+    },
+    "hgss": {
+      "a": 0.5,
+      "emin": 0.6,
+      "cmin": 0.7,
+      "smin": 0.65,
+      "margin": 0.1,
+      "coverFull": 0.8,
+      "coverSlope": 2.0,
+      "ssmax": 0.9
+    },
+    "bw": {
+      "a": 0.5,
+      "emin": 0.6,
+      "cmin": 0.7,
+      "smin": 0.65,
+      "margin": 0.1,
+      "coverFull": 0.8,
+      "coverSlope": 2.0,
+      "ssmax": 0.9
+    }
   },
   "cam3d": {
-    "dppt": { "a": 0.5, "emin": 0.35, "cmin": 0.55, "smin": 0.5, "margin": 0.12 },
-    "hgss": { "a": 0.5, "emin": 0.35, "cmin": 0.55, "smin": 0.5, "margin": 0.12 },
-    "bw": { "a": 0.5, "emin": 0.35, "cmin": 0.55, "smin": 0.5, "margin": 0.12 }
+    "dppt": {
+      "a": 0.5,
+      "emin": 0.4,
+      "cmin": 0.6,
+      "smin": 0.5,
+      "margin": 0.1,
+      "coverFull": 0.8,
+      "coverSlope": 1.0,
+      "ssmax": 0.9
+    },
+    "hgss": {
+      "a": 0.5,
+      "emin": 0.4,
+      "cmin": 0.6,
+      "smin": 0.5,
+      "margin": 0.1,
+      "coverFull": 0.8,
+      "coverSlope": 1.0,
+      "ssmax": 0.9
+    },
+    "bw": {
+      "a": 0.5,
+      "emin": 0.4,
+      "cmin": 0.6,
+      "smin": 0.5,
+      "margin": 0.1,
+      "coverFull": 0.8,
+      "coverSlope": 1.0,
+      "ssmax": 0.9
+    }
   }
 }

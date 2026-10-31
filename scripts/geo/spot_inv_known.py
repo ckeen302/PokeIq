@@ -190,7 +190,7 @@ def task(args):
             truth = (tl[0] + w / 2, tl[1] + h / 2)
             peaks = S.match_flat(img, rips)
         else:
-            z, ry, p, _ = S.seeds_for(family, cams)[1]
+            z, ry, p, _ = S.seeds_for(family, cams)[0]
             cam = (z * rnd.uniform(0.9, 1.1), ry * rnd.uniform(0.94, 1.06), p * rnd.uniform(0.6, 1.4), rnd.uniform(-3, 3))
             hh = 192 if rnd.random() < 0.5 else 138
             img, truth = through_camera(rip, filler, rnd, family, kind, cam, 256, hh)

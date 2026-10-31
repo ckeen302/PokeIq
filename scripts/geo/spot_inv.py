@@ -46,6 +46,8 @@ import numpy as np
 
 EDGE_TOL = 24
 MIN_COVER = 0.55
+# A map rip at least this many screens big (a tower floor can be small; the view must still overlap it by MIN_COVER).
+MIN_RIP_SCREENS = 1.2
 PEAKS = 6
 NMS_PX = 10
 # A peak needs at least this share of change pixels in both the shot and the rip window (open sea has nothing to match).
@@ -384,17 +386,46 @@ def drop_pads(rips):
         for k in [k for k in rip if isinstance(k, tuple)]:
             del rip[k]
         rip.pop("es", None)
+        rip.pop("half", None)
 
 
-PAD = 420  # camera templates vary in size (a Black / White view flattens to about 300 x 200): one generous padding for all
+# Camera templates vary in size (a Black / White view flattens to about 300 x 200), and at least MIN_COVER of
+# one must lie on the rip, so it overhangs by at most 45 % of its size: one padding for all.
+PAD = 160
+
+
+def half_padded(rip):
+    """The padded soft change map at half resolution (for the coarse search)."""
+    if "half" not in rip:
+        P, V, _, _ = padded_soft(rip, PAD, PAD)
+        h, w = P.shape[0] // 2, P.shape[1] // 2
+        Ph = np.dstack([cv2.resize(P[:, :, i], (w, h), interpolation=cv2.INTER_AREA) for i in range(2)])
+        Vh = (cv2.resize(V, (w, h), interpolation=cv2.INTER_AREA) > 0.99).astype(np.float32)
+        Ph *= Vh[:, :, None]
+        rip["half"] = (Ph, Vh, np.ascontiguousarray(Ph.sum(2)), np.ascontiguousarray((Ph * Ph).sum(2)))
+    return rip["half"]
 
 
 def cam_global(wv, rip, keep=4):
-    P, V, Ps, P2s = padded_soft(rip, PAD, PAD)
-    if wv["h"] >= PAD or wv["w"] >= PAD or P.shape[0] < wv["h"] or P.shape[1] < wv["w"]:
+    """
+    Where the flattened view fits on the rip: a coarse search at half
+    resolution (a quarter of the work), then each coarse peak re-scored at full
+    resolution within a few px (so scores compare with the refined ones).
+    """
+    Ph, Vh, Psh, P2sh = half_padded(rip)
+    h2, w2 = wv["h"] // 2, wv["w"] // 2
+    if Ph.shape[0] < h2 or Ph.shape[1] < w2 or h2 < 8 or w2 < 8:
         return []
-    ncc, cover = mncc_general(P, V, Ps, P2s, wv["e"], wv["v"])
-    return [(x - PAD, y - PAD, s, float(cover[y, x])) for x, y, s in peaks(ncc, keep, 12)]
+    Th = np.dstack([cv2.resize(wv["e"][: 2 * h2, : 2 * w2, i], (w2, h2), interpolation=cv2.INTER_AREA) for i in range(2)])
+    Mh = (cv2.resize(wv["v"][: 2 * h2, : 2 * w2], (w2, h2), interpolation=cv2.INTER_AREA) > 0.99).astype(np.float32)
+    ncc, _ = mncc_general(Ph, Vh, Psh, P2sh, Th, Mh)
+    out = []
+    for x, y, s in peaks(ncc, keep + 2, 8):
+        r = cam_local(wv, rip, 2 * x - PAD, 2 * y - PAD, 3)
+        if r is not None and r[0] > -0.5:
+            out.append((r[1], r[2], r[0], r[3]))
+    out.sort(key=lambda t: -t[2])
+    return out[:keep]
 
 
 def cam_local(wv, rip, x, y, r=10):
@@ -515,23 +546,24 @@ def match_cam(shot, rips, seeds, top=3):
                         "cam": [round(v, 6) for v in c2],
                     }
                 )
-    drop_pads(rips)
     return out
 
 
 def seeds_for(family, cams):
     if family in cams:
         z, ry, p, _ = seed_params(cams[family])
-    else:
-        z, ry, p = BW_SEED
-    return [(z * f, ry, p, 0.0) for f in CAM_ZOOMS]
+        return [(z * f, ry, p, 0.0) for f in CAM_ZOOMS]
+    # Black / White: no fitted camera. A scan of zoom x foreshortening x perspective on its own route shots
+    # put them at a zoom of about 0.9 on the Black / White rips and 0.78 on the Black 2 / White 2 ones
+    # (those are drawn about 1.16x larger), with a perspective of 0.0015 to 0.003: four seeds, refined per shot.
+    return [(z, 1.0, p, 0.0) for z in BW_ZOOMS for p in BW_PERSPECTIVE]
 
 
 # The seed cameras tried over every rip before refining (the refinement moves the zoom on from there).
 CAM_ZOOMS = tuple(float(v) for v in os.environ.get("INV_CAM_ZOOMS", "1.0").split(","))
 
-# Black / White: no pairs to fit; found by the camera search on its own shots (see `bwseed`).
-BW_SEED = (1.0, 1.0, 0.0015)
+BW_ZOOMS = (0.78, 0.9)
+BW_PERSPECTIVE = (0.0015, 0.003)
 
 
 # --------------------------------------------------------------------------- the run
@@ -560,7 +592,7 @@ def run_place(args):
             if r["rip"] not in rips:
                 rips[r["rip"]] = load_rip(r["file"])
             rp = rips[r["rip"]]
-            if rp is not None and rp["w"] * rp["h"] >= 2.5 * sw * sh:
+            if rp is not None and rp["w"] * rp["h"] >= MIN_RIP_SCREENS * sw * sh:
                 cand.append((r["rip"], rp))
         if not cand:
             res["why"] = "no rip"
@@ -572,6 +604,8 @@ def run_place(args):
         if "cam" in modes and j["family"] in DS and not j["cut"] and w <= sw + 4 and h <= sh + 4:
             res["cam"] = match_cam(shot, cand, seeds_for(j["family"], cams))
         out.append(res)
+    # The padded maps are kept across a place's shots (they share their rips), and dropped with the place.
+    drop_pads([(k, r) for k, r in rips.items()])
     return out
 
 
