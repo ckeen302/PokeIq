@@ -2,7 +2,7 @@ import "server-only";
 import { after } from "next/server";
 import { GEO_MAX_ROUND_SCORE } from "@/lib/geo-types";
 import type { VersusResult, VersusStats } from "@/lib/duel-stats";
-import { answerFor, regionGroupOf } from "./geo";
+import { answerFor, regionGroupOf, worldPointOf } from "./geo";
 import { geoStatsKey, logRoundScore, roundScoreStore, RoundScoresUnavailable, type PlayerRoundRow, type RoundScoreRow, type RoundScoreStore } from "./geo-round-scores";
 import type { Duel } from "./duel";
 
@@ -76,6 +76,7 @@ export function duelRoundRows(duel: Duel): RoundScoreRow[] {
         run: duelRunId(duel.code, result),
         family: answer.family,
         hit: !theirs || mine.at < theirs.at,
+        pin: worldPointOf({ region: duel.region }, mine.x, mine.y),
         ...(region ? { region } : {}),
       });
     }

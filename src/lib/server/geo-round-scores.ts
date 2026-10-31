@@ -11,7 +11,9 @@ import { setShotScores } from "./geo";
  * so each shot's difficulty follows how players really do on it, and (with
  * migration 0045) who played each round and how, for the behaviour flags
  * that moderators read on /admin/geo-flags; with migration 0046 also where
- * and in what, so a profile can show accuracy by region and game.
+ * and in what, so a profile can show accuracy by region and game; with
+ * migration 0050 where the pin went (world map 0–1), so players' pins can
+ * place the shots that have no verified exact spot yet.
  *
  * Everything here fails open: until the table exists (or without Supabase)
  * nothing is logged and the audit's heuristic ratings stand, so the game
@@ -67,6 +69,8 @@ export interface RoundScoreRow {
   kind?: RoundKind;
   run?: string;
   hit?: boolean;
+  /** Migration 0050: where the pin went, on the world map (0–1), so crowd pins can place shots that have no verified spot yet. */
+  pin?: [number, number] | null;
 }
 /** Back-compat name. */
 export type RoundLog = RoundScoreRow;
@@ -196,6 +200,15 @@ function check(error: { code?: string; message?: string } | null): void {
 /** After the flag columns are found missing, rows go without them for this long (so applying 0045 needs no redeploy). */
 const RECHECK_MS = 10 * 60_000;
 let plainUntil = 0;
+/** After migration 0050's pin columns are found missing, rows go without the pin for this long. */
+let pinlessUntil = 0;
+/** A pin worth storing: two finite numbers on the world map, rounded to 5 decimals (about a twentieth of a map pixel). */
+export function validPin(pin: RoundScoreRow["pin"]): [number, number] | null {
+  if (!pin || pin.length !== 2) return null;
+  const [x, y] = pin;
+  if (!Number.isFinite(x) || !Number.isFinite(y) || x < 0 || x > 1 || y < 0 || y > 1) return null;
+  return [Math.round(x * 100000) / 100000, Math.round(y * 100000) / 100000];
+}
 
 type Sb = NonNullable<ReturnType<typeof getServiceSupabase>>;
 export function supabaseRoundScoreStore(sb: Sb): RoundScoreStore {
@@ -216,6 +229,18 @@ export function supabaseRoundScoreStore(sb: Sb): RoundScoreStore {
           run_id: row.run ?? null,
           hit: row.hit ?? null,
         };
+        const pin = validPin(row.pin);
+        // Migration 0050's pin columns, when there's a pin and they're known to be there (or not known missing).
+        if (pin && Date.now() >= pinlessUntil) {
+          const { error } = await sb.from("geo_round_scores").insert({ ...full, pin_x: pin[0], pin_y: pin[1] });
+          if (!error) return;
+          if (!NO_COLUMN.has(error.code ?? "")) {
+            if (error.code !== "23514") check(error);
+          } else {
+            if (Date.now() >= pinlessUntil) console.warn("[geo-round-scores] pins need migration 0050_geo_round_pins.sql:", error.message);
+            pinlessUntil = Date.now() + RECHECK_MS;
+          }
+        }
         const { error } = await sb.from("geo_round_scores").insert(full);
         if (!error) return;
         // 23514: a mode the check constraint doesn't know yet (region-streak before 0046).

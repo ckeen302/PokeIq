@@ -3,6 +3,9 @@ import data from "@/data/geo.json";
 import themeTags from "@/data/geo-themes.json";
 import shotMeta from "@/data/geo-shot-meta.json";
 import geoRetired from "@/data/geo-retired.json";
+import shotSpots2d from "@/data/geo-shot-spots.json";
+import shotSpots3d from "@/data/geo-shot-spots-3d.json";
+import { geoSpotScore } from "@/lib/geo-spot-score";
 import {
   DEFAULT_DIFFICULTY,
   fitsMode,
@@ -628,6 +631,47 @@ function unseal(sealed: string | undefined): PlannedRound[] | null {
   return Array.isArray(rounds) ? rounds.map(([location, region, shot, game]) => ({ location, region: region ?? undefined, shot, game: game ?? undefined })) : null;
 }
 
+// ---------------------------------------------------------------------------
+// Exact spots (scripts/geo/spots-2d.ts and the 3D games' spots): server-only,
+// revealed with the graded answer, never before
+// ---------------------------------------------------------------------------
+
+/** A stored spot: world-map x, y (0–1), the finder's confidence, its method, and whether it's scored. */
+type SpotRow = [x: number, y: number, confidence: number, method: string, scored: boolean];
+/** Shots whose verified spot scores the round (world 0–1). Unscored spots (towns, which the map draws as one block) aren't loaded. */
+const SPOTS: ReadonlyMap<string, [number, number]> = (() => {
+  const out = new Map<string, [number, number]>();
+  for (const file of [shotSpots3d, shotSpots2d] as unknown as Record<string, SpotRow>[]) {
+    for (const [id, row] of Object.entries(file)) {
+      if (!Array.isArray(row) || row[4] !== true || !KNOWN_SHOTS.has(id)) continue;
+      const [x, y] = row;
+      if (Number.isFinite(x) && Number.isFinite(y) && x >= 0 && x <= 1 && y >= 0 && y <= 1) out.set(id, [x, y]);
+    }
+  }
+  return out;
+})();
+/** How many shots have a scored spot (tests and stats). */
+export const scoredSpotCount = () => SPOTS.size;
+
+/** A shot's scored spot on a map, in the map's own 0–1 coordinates, or null. */
+function spotOn(region: Region, shot: string): [number, number] | null {
+  const spot = SPOTS.get(shot);
+  if (!spot) return null;
+  const [x0, y0, x1, y1] = region.map.box;
+  const { width: W, height: H } = DATA.world.map;
+  return [Math.round(((spot[0] * W - x0) / (x1 - x0)) * 100000) / 100000, Math.round(((spot[1] * H - y0) / (y1 - y0)) * 100000) / 100000];
+}
+
+/** A pin on a map (its own 0–1 coordinates) on the world map (0–1), for the pin log. */
+export function worldPointOf(spec: Pick<GeoSpec, "region">, x: number, y: number): [number, number] | null {
+  const region = regionOf(spec.region);
+  if (!region || !Number.isFinite(x) || !Number.isFinite(y)) return null;
+  const [x0, y0, x1, y1] = region.map.box;
+  const { width: W, height: H } = DATA.world.map;
+  const r = (v: number) => Math.round(v * 100000) / 100000;
+  return [r((x0 + x * (x1 - x0)) / W), r((y0 + y * (y1 - y0)) / H)];
+}
+
 /** Distance in map pixels from (x, y) to the nearest point of a location's area. */
 function nearestPx(region: Region, location: Location, x: number, y: number): number {
   const { width, height } = region.map;
@@ -654,22 +698,42 @@ function regionAt(region: Region, x: number, y: number): string {
  * on the place; on the world map, in the right region (like a country streak).
  */
 export function measureGuess(spec: Pick<GeoSpec, "region">, round: PlannedRound, x: number, y: number) {
-  const { region, location } = lookup(spec, round);
+  const { region, location, shot } = lookup(spec, round);
   const { width, height } = region.map;
   const diagonal = Math.hypot(width, height);
   const px = nearestPx(region, location, x, y);
   const perfect = px <= region.perfectPx;
-  const score = perfect ? GEO_MAX_ROUND_SCORE : Math.round(GEO_MAX_ROUND_SCORE * Math.exp((-FALLOFF * px) / diagonal));
+  const areaScore = perfect ? GEO_MAX_ROUND_SCORE : Math.round(GEO_MAX_ROUND_SCORE * Math.exp((-FALLOFF * px) / diagonal));
   // Themed maps share the world map, so a pin's region is read from every place on it, not just the theme's.
   const hit = isWorldwide(region.id) ? regionAt(regionOf(WORLD_REGION)!, x, y) === groupOf(location.region) : px / diagonal <= STREAK_RADIUS;
   // For the behaviour flags: how close to the place itself (its pin or its area's edge) the guess was, in map pixels.
   const toPin = Math.hypot((x - location.pin[0]) * width, (y - location.pin[1]) * height);
-  return { score, hit, squares: perfect ? 0 : Math.round((px / region.squarePx) * 10) / 10, px: Math.round(Math.min(px, toPin) * 10) / 10 };
+  // A shot with a verified spot: graded by distance to the spot, the area's curve as a floor (lib/geo-spot-score).
+  const spot = spotOn(region, shot.id);
+  if (spot) {
+    const toSpot = Math.hypot((x - spot[0]) * width, (y - spot[1]) * height);
+    const score = geoSpotScore(toSpot, areaScore);
+    const squares = score === GEO_MAX_ROUND_SCORE ? 0 : Math.max(0.1, Math.round((toSpot / region.squarePx) * 10) / 10);
+    return { score, hit, squares, px: Math.round(Math.min(toSpot, toPin, px) * 10) / 10 };
+  }
+  return { score: areaScore, hit, squares: perfect ? 0 : Math.round((px / region.squarePx) * 10) / 10, px: Math.round(Math.min(px, toPin) * 10) / 10 };
 }
 
 export function answerFor(spec: Pick<GeoSpec, "region">, round: PlannedRound, squares = 0): GeoAnswer {
-  const { location, shot } = lookup(spec, round);
-  return { name: location.name, parent: location.parent, game: shot.game, family: shot.family, pin: location.pin, mask: location.mask, squares, region: location.region };
+  const { region, location, shot } = lookup(spec, round);
+  // The true point of a spot-scored shot: shown on the results map, only ever sent with the graded answer.
+  const spot = spotOn(region, shot.id);
+  return {
+    name: location.name,
+    parent: location.parent,
+    game: shot.game,
+    family: shot.family,
+    pin: location.pin,
+    mask: location.mask,
+    squares,
+    region: location.region,
+    ...(spot ? { spot } : {}),
+  };
 }
 
 /** Look around: at most this many views of a place per round. */
@@ -826,7 +890,7 @@ export type GeoGuessOutcome =
       /** The round's screenshot (for the per-shot score log; never sent). */
       shot: string;
       /** How the round was played, for the behaviour flags (never sent): pixels from the place, time since it was dealt. */
-      played: { px: number; elapsedMs: number; perfect: boolean };
+      played: { px: number; elapsedMs: number; perfect: boolean; pin: [number, number] | null };
     }
   | { ok: false; status: number; error: string };
 
@@ -898,7 +962,7 @@ export function gradeGeo(state: GeoState, guess: { x: number; y: number; family?
     ok: true,
     claimKey: `geo:${state.sid}:${index}`,
     shot: round.shot,
-    played: { px: measured.px, elapsedMs, perfect: !timedOut && measured.score === GEO_MAX_ROUND_SCORE },
+    played: { px: measured.px, elapsedMs, perfect: !timedOut && measured.score === GEO_MAX_ROUND_SCORE, pin: guess.timeout ? null : worldPointOf(spec, guess.x, guess.y) },
     body: {
       score,
       hit,
