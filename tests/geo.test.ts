@@ -25,6 +25,9 @@ const areaKey = (spec: GeoSpec, round: Parameters<typeof answerFor>[1]) => {
   return `${a.region}|${a.parent ?? a.name}`;
 };
 
+/** Where a round's flag stands: the exact spot of a spot-scored shot, else the place's pin. */
+const flagOf = (a: { pin: [number, number]; spot?: [number, number] }) => a.spot ?? a.pin;
+
 /** Plays a game to the end, pinning every round at (x, y) or on the true pin. */
 function playOut(spec: GeoSpec, at: "pin" | { x: number; y: number }, opts?: Parameters<typeof startGeo>[1]) {
   const start = startGeo(spec, opts);
@@ -32,7 +35,7 @@ function playOut(spec: GeoSpec, at: "pin" | { x: number; y: number }, opts?: Par
   const rounds = planRounds(spec, state.seed);
   const bodies = [];
   for (let i = 0; ; i++) {
-    const pin = at === "pin" ? answerFor(spec, rounds[i]).pin : null;
+    const pin = at === "pin" ? flagOf(answerFor(spec, rounds[i])) : null;
     const outcome = gradeGeo(state, pin ? { x: pin[0], y: pin[1] } : (at as { x: number; y: number }));
     if (!outcome.ok) throw new Error(outcome.error);
     bodies.push(outcome.body);
@@ -105,7 +108,8 @@ describe("PokéGuessr", () => {
           expect(v).toBeGreaterThanOrEqual(0);
           expect(v).toBeLessThanOrEqual(1);
         }
-        expect(measureGuess(spec, round, pin[0], pin[1]).score).toBe(GEO_MAX_ROUND_SCORE);
+        const [fx, fy] = flagOf(answerFor(spec, round));
+        expect(measureGuess(spec, round, fx, fy).score).toBe(GEO_MAX_ROUND_SCORE);
         expect(group(place)).toBe(region === "johto" ? "Johto" : region === "galar" ? "Galar" : "Paldea");
       }
     }
@@ -121,7 +125,7 @@ describe("PokéGuessr", () => {
     expect(near.hit).toBe(true);
     expect(near.score).toBeLessThan(GEO_MAX_ROUND_SCORE);
     expect(measureGuess(worldStreak, rounds[0], elsewhere.pin[0], elsewhere.pin[1]).hit).toBe(false);
-    expect(measureGuess(worldStreak, rounds[0], first.pin[0], first.pin[1])).toMatchObject({ score: GEO_MAX_ROUND_SCORE, hit: true, squares: 0 });
+    expect(measureGuess(worldStreak, rounds[0], flagOf(first)[0], flagOf(first)[1])).toMatchObject({ score: GEO_MAX_ROUND_SCORE, hit: true, squares: 0 });
   });
 
   it("moves the daily game to the world map", () => {
@@ -228,8 +232,10 @@ describe("PokéGuessr", () => {
     const rounds = planRounds(worldStreak, "every-flag");
     expect(rounds.length).toBeGreaterThan(550);
     for (const round of rounds) {
-      const { pin, name } = answerFor(worldStreak, round);
-      expect(measureGuess(worldStreak, round, pin[0], pin[1]).score, name).toBe(GEO_MAX_ROUND_SCORE);
+      // The flag stands on the exact spot when the shot has one, else on the place's pin.
+      const { pin, spot, name } = answerFor(worldStreak, round);
+      const [x, y] = spot ?? pin;
+      expect(measureGuess(worldStreak, round, x, y).score, name).toBe(GEO_MAX_ROUND_SCORE);
     }
   });
 
@@ -307,7 +313,8 @@ describe("PokéGuessr game filters", () => {
       const answer = answerFor(spec, rounds[i]);
       // The right game on even rounds, a wrong one on odd rounds.
       const family = i % 2 === 0 ? answer.family : answer.family === "rby" ? "gsc" : "rby";
-      const out = gradeGeo(state, { x: answer.pin[0], y: answer.pin[1], family });
+      const [fx, fy] = flagOf(answer);
+      const out = gradeGeo(state, { x: fx, y: fy, family });
       if (!out.ok) throw new Error(out.error);
       expect(out.body.gameGuess).toMatchObject({ correct: i % 2 === 0, bonus: i % 2 === 0 ? 1000 : 0 });
       last = out.body;

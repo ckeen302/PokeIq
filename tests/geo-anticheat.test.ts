@@ -25,8 +25,9 @@ const T = Date.parse("2026-10-20T12:00:00Z");
 function firstPin(spec: GeoSpec, token: string) {
   const state = readGeo(token)!;
   const [round] = planRounds(spec, state.seed, 1);
-  const { pin } = answerFor(spec, round);
-  return { state, pin, round };
+  // The flag: the exact spot for a spot-scored shot, else the place's pin.
+  const answer = answerFor(spec, round);
+  return { state, pin: answer.spot ?? answer.pin, round };
 }
 
 const post = (url: string, body: unknown, cookie?: string) =>

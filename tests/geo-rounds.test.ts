@@ -31,7 +31,7 @@ function playSolo(spec: Parameters<typeof startGeo>[0], opts: Parameters<typeof 
     const probe = gradeGeo(state, { x: 0, y: 0 });
     if (!probe.ok) throw new Error(probe.error);
     // Grade again on the true pin.
-    const [px, py] = probe.body.answer.pin;
+    const [px, py] = probe.body.answer.spot ?? probe.body.answer.pin;
     const out = gradeGeo(state, { x: px, y: py });
     if (!out.ok) throw new Error(out.error);
     token = out.body.token;
@@ -112,7 +112,9 @@ function race(rounds: number | undefined, seed = "race-seed") {
   return { duel: ready, ids: [red, joined.playerId], start: t + DUEL_LEAD_MS };
 }
 const pin = (d: Duel, i: number) => {
-  const [x, y] = roundAnswer(d, i).pin;
+  const a = roundAnswer(d, i);
+  // The flag: the exact spot of a spot-scored shot, else the place's pin.
+  const [x, y] = a.spot ?? a.pin;
   return { x, y };
 };
 const far = (d: Duel, i: number) => {

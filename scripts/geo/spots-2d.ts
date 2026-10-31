@@ -38,8 +38,8 @@ const FAMILIES = ["rby", "gsc", "rse", "frlg", "dppt", "hgss", "bw"] as const;
 type Family = (typeof FAMILIES)[number];
 /** Native screens (B2W2 shares Black / White's family). */
 const SCREEN: Record<Family, [number, number]> = { rby: [160, 144], gsc: [160, 144], rse: [240, 160], frlg: [240, 160], dppt: [256, 192], hgss: [256, 192], bw: [256, 192] };
-/** A shot this many screens big or more is a map of the place, not a view: no spot. */
-const MAX_VIEW_SCREENS = 2.2;
+/** A shot this many screens big or more is a map of the place, not a view: no spot (a view cut from a map is 1.5 screens across and down). */
+const MAX_VIEW_SCREENS = 2.3;
 /** A file this many screens big (at its native scale) is a map rip to match against. */
 const MIN_RIP_SCREENS = 2.5;
 /** Scored only when the view covers at most this share of the map along the route. */
@@ -149,9 +149,65 @@ const curl = (url: string, file: string) =>
 /** A group: one place in one game family, with its shots and its candidate rips. */
 const groupKey = (it: Pick<Item, "region" | "name" | "family">) => `${it.region}|${it.name}|${it.family}`;
 
-/** The files of a group big enough to be a map of the place (before their pixel scale is known). */
+/** Bulbapedia's map-rip file codes per family (its full-area maps are named "<Region> Route 3 FRLG.png", "Ilex Forest GSC.png"…). */
+const RIP_CODES: Partial<Record<Family, string[]>> = { rby: ["RBY", "RB", "Y"], gsc: ["GSC", "GS", "C"], rse: ["RSE", "RS", "E"], frlg: ["FRLG"] };
+
+/**
+ * Places with Game Boy / Game Boy Advance views but no map rip among their
+ * shots' sources: Bulbapedia's own full-area map, by its naming pattern
+ * (one API request per 50 names, then a download per rip found).
+ */
+async function guessRips(items: Item[]) {
+  const files = readJson<FileInfo>(cachePath("fileinfo.json"), {});
+  const have = ripCandidates(items, files);
+  const out = cachePath("guessed.json");
+  const guessed = readJson<Record<string, string[]>>(out, {});
+  const names = new Map<string, string>();
+  for (const it of items) {
+    const key = groupKey(it);
+    if (have.has(key) || guessed[key] || !RIP_CODES[it.family]) continue;
+    const base = (/^Route \d+$/.test(it.name) ? `${it.region} ${it.name}` : it.name).replace(/ /g, "_");
+    for (const code of RIP_CODES[it.family]!) names.set(`${base}_${code}.png`, key);
+  }
+  const list = [...names.keys()];
+  for (let i = 0; i < list.length; i += 50) {
+    const batch = list.slice(i, i + 50);
+    const r = await wikiApi<{ query?: { normalized?: { from: string; to: string }[]; pages: { title: string; imageinfo?: { url: string; width: number; height: number }[] }[] } }>(WIKI, {
+      action: "query",
+      titles: batch.map((f) => `File:${f.replace(/_/g, " ")}`).join("|"),
+      prop: "imageinfo",
+      iiprop: "url|size",
+    }).catch(() => null);
+    for (const p of r?.query?.pages ?? []) {
+      const ii = p.imageinfo?.[0];
+      if (!ii) continue;
+      const file = p.title.replace(/^File:/, "").replace(/ /g, "_");
+      const key = names.get(file);
+      if (!key) continue;
+      const fk = fileKey("archives.bulbagarden.net", file);
+      files[fk] = { url: ii.url, width: ii.width, height: ii.height };
+      guessed[key] = [...(guessed[key] ?? []), fk];
+    }
+  }
+  writeFileSync(cachePath("fileinfo.json"), JSON.stringify(files));
+  writeFileSync(out, JSON.stringify(guessed, null, 1));
+  let n = 0;
+  for (const fk of new Set(Object.values(guessed).flat())) {
+    if (existsSync(ripFile(fk))) continue;
+    try {
+      writeFileSync(ripFile(fk), await httpGet(files[fk]!.url));
+      n++;
+    } catch (e) {
+      console.warn(`  ! ${fk}: ${(e as Error).message}`);
+    }
+  }
+  console.log(`guessed rips: ${Object.keys(guessed).length} places, ${n} fetched (${list.length} names asked)`);
+}
+
+/** The files of a group big enough to be a map of the place (before their pixel scale is known), and Bulbapedia rips found by name. */
 function ripCandidates(items: Item[], files: FileInfo): Map<string, Set<string>> {
   const out = new Map<string, Set<string>>();
+  for (const [key, fks] of Object.entries(readJson<Record<string, string[]>>(cachePath("guessed.json"), {}))) out.set(key, new Set(fks));
   for (const it of items) {
     const fi = files[fileKey(it.host, it.file)];
     if (!fi) continue;
@@ -351,10 +407,11 @@ async function run(items: Item[]) {
       const confidence = Math.round(Math.min(1, 0.5 + margin + 0.5 * (best.m.best.agree - MATCH.MIN_AGREE)) * 100) / 100;
       const [nx, ny] = normalised(atlas, world);
       if (town) {
+        // A town is stored unscored: its box and proportions must agree (a town has no route ends to check).
+        const townReasons = fit.reasons.filter((r) => r !== "no control points");
         res.spot = [nx, ny, confidence, res.method!, false];
-        if (!fit.ok) res.why = `town; alignment: ${fit.reasons.join("; ")}`;
-        if (fit.ok) results.push(res);
-        else results.push({ ...res, spot: undefined });
+        res.why = townReasons.length ? `town; alignment: ${townReasons.join("; ")}` : "town (unscored)";
+        results.push(townReasons.length ? { ...res, spot: undefined } : res);
         continue;
       }
       const reasons = [...fit.reasons];
@@ -427,6 +484,7 @@ async function main() {
   console.log(`${items.length} sprite-game shots of pinned places`);
   if (step === "info") await info(items);
   else if (step === "fetch") await fetchAll(items);
+  else if (step === "guess") await guessRips(items);
   else if (step === "match") {
     const known = await knownAnswers(items);
     const { results, fits } = await run(items);
@@ -457,7 +515,17 @@ async function main() {
     }
     const fitList = Object.values(fits).filter((f) => !f.town);
     console.log(`alignment: ${fitList.filter((f) => f.ok).length}/${fitList.length} area fits pass (towns aside)`);
-    console.log("known answers:", JSON.stringify(methods), JSON.stringify(Object.fromEntries(Object.entries(known).map(([f, s]) => [f, { n: s.n, accepted: s.accepted, within: s.within, wrong: s.wrongAccepted }]))));
+    console.log(
+      "known answers:",
+      JSON.stringify(methods),
+      JSON.stringify(
+        Object.fromEntries(
+          Object.entries(known).map(([f, s]) => [f, { n: s.n, accepted: s.accepted, within: s.within, wrong: s.wrongAccepted, maxErr: Math.round(Math.max(0, ...s.errs) * 10) / 10, wrongErrs: s.errs.filter((e) => e > KNOWN_TOL_PX).map((e) => Math.round(e)) }])
+        )
+      )
+    );
+    const cutErrs = cuts.map((r) => r.errPx!);
+    console.log(`cut2d errors (native px): n ${cutErrs.length}, max ${Math.max(0, ...cutErrs)}, over ${KNOWN_TOL_PX}px: ${cutErrs.filter((e) => e > KNOWN_TOL_PX).length}`);
   } else if (step === "sheets") {
     await sheets(process.argv[3] ?? cachePath("sheets"));
   } else {
