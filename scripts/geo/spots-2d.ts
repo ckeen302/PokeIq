@@ -29,7 +29,7 @@ import path from "node:path";
 import sharp from "sharp";
 import { WIKI } from "./bulbapedia";
 import { httpGet, wikiApi } from "./http";
-import { areaGeometry, fitArea, loadAtlas, normalised, shapeOf, type Atlas, type Px } from "./spot-align";
+import { areaGeometry, contentBox, fitArea, loadAtlas, normalised, shapeOf, type Atlas, type Px } from "./spot-align";
 import { MATCH, gray, matchShot, nativeScale, shrink, type Gray, type MatchResult, type Rgb } from "./spot-match";
 import { boundedSides, fitLocal, maskBox, meetingPoint, onMask, type Control, type LocalFit } from "./spot-warp";
 import { fetchPret, loadWorld, mapsForPlace, placeEdges, placeWarps, unionRect, type GameMap, type PretGame } from "./spot-world";
@@ -64,6 +64,8 @@ const WORLD_AGREE_PX = 4;
 const KNOWN_PASS = 0.98;
 const KNOWN_TOL_PX = 2;
 const TOWN = /\b(City|Town|Village|Island|Plateau)$/;
+/** Caves, forests, towers and other places our map draws as an icon: area-scored unless the icon has a drawn path to aim at. */
+const ICON = /\b(Cave|Caves|Cavern|Forest|Woods|Tunnel|Tower|Hideout|Well|Den|Chamber|Grotto|Hole|Mansion|Ship|Temple|Plant|Lab|Warehouse|Mine|Mount|Victory Road|Seafoam Islands)\b|^Mt\. /;
 
 const API: Record<string, string> = {
   "archives.bulbagarden.net": WIKI,
@@ -389,7 +391,7 @@ const PRET: Partial<Record<Family, { game: PretGame; regions: string[] }>> = {
  * places pret's maps don't cover).
  */
 interface Fit {
-  kind: "piecewise" | "affine";
+  kind: "piecewise" | "anchored" | "affine";
   ok: boolean;
   reasons: string[];
   /** Rip px → world px. */
@@ -442,6 +444,7 @@ async function knownFlat(items: Item[], cameras: Map<Family, Camera>) {
   const sets = JSON.parse(readFileSync(path.join(ROOT, "scripts/geo/spot-ds-pairs.json"), "utf8")) as Record<string, PairSet[]>;
   const files = readJson<FileInfo>(cachePath("fileinfo.json"), {});
   const candidates = ripCandidates(items, files);
+  const atlas = await loadAtlas(ROOT);
   const out: Record<
     string,
     {
@@ -485,8 +488,10 @@ async function knownFlat(items: Item[], cameras: Map<Family, Camera>) {
         stat.pairs.errs.push(Math.round(err * 10) / 10);
         if (err <= FLAT_TOL_PX) stat.pairs.within++;
       }
-      // The same screenshot against other places' rips.
-      const others = familyRips.filter((k) => k !== s.rip);
+      // The same screenshot against other places' rips: not its own place's (another version's rip of it) nor a place next to it on our map (a route's rip shows the gate of the place at its end).
+      const it = items.find((q) => q.id === s.id);
+      const near = new Set(it ? [it.name, ...(areaGeometry(atlas, it.region, it.name)?.neighbours.map((n) => n.name) ?? [])] : []);
+      const others = [...new Set([...candidates].filter(([k]) => k.endsWith(`|${family}`) && !near.has(k.split("|")[1])).flatMap(([, q]) => [...q]))].filter((k) => k !== s.rip);
       for (let i = 0; i < 6 && others.length; i++) {
         const other = await loadRip(others[Math.floor(rand() * others.length)]);
         if (!other || other.img.w < flat.img.w || other.img.h < flat.img.h) continue;
@@ -534,6 +539,52 @@ async function knownFlat(items: Item[], cameras: Map<Family, Camera>) {
     }
   }
   return out;
+}
+
+/**
+ * The fit of a rip with no game layout behind it (the DS games, whose map
+ * data pret doesn't have as a layout; a Game Boy / GBA rip of another size
+ * than pret's map): the same piecewise fit (scripts/geo/spot-warp.ts), with
+ * the control points read off our map alone. Every place whose area meets
+ * this one on our map is a neighbour joining it on the side of the area's
+ * box where they meet (within 6 px of that side), so that side of the rip's
+ * content (its map, not the void around it) ends where they meet. Nothing
+ * says where along a side a neighbour joins in the game, so no knots: each
+ * axis runs linearly between its ends, and the gate asks for both ends of
+ * the long axis held by a neighbour (or one held and the other bounded) and
+ * the rip's content on the area's mask.
+ */
+function anchoredFit(atlas: Atlas, region: string, name: string, rip: Rip): Fit | null {
+  const self = atlas.locations.find((l) => l.region === region && l.name === name);
+  if (!self) return null;
+  const toPx = (l: (typeof atlas.locations)[number]) => l.mask.map(([x, y]) => [x * atlas.width, y * atlas.height] as Px);
+  const mask = toPx(self);
+  const box = maskBox(mask);
+  const content = contentBox(shapeOf(rip.rgba, rip.img.w, rip.img.h, 16)) ?? [0, 0, rip.img.w, rip.img.h];
+  const rect: [number, number, number, number] = [content[0], content[1], content[2] - content[0], content[3] - content[1]];
+  const others = atlas.locations.filter((l) => l !== self && l.region === region);
+  const controls: Control[] = [];
+  for (const o of others) {
+    const at = meetingPoint(mask, toPx(o));
+    if (!at) continue;
+    const d = { west: at[0] - box[0], east: box[2] - at[0], north: at[1] - box[1], south: box[3] - at[1] };
+    const side = (Object.keys(d) as (keyof typeof d)[]).reduce((a, b) => (d[b] < d[a] ? b : a));
+    if (d[side] > 6) continue;
+    const ns = side === "north" || side === "south";
+    const edge = side === "west" ? rect[0] : side === "east" ? rect[0] + rect[2] : side === "north" ? rect[1] : rect[1] + rect[3];
+    controls.push({ kind: "edge", label: `${side}: ${o.name}`, side, edge, from: ns ? rect[0] : rect[1], to: ns ? rect[0] + rect[2] : rect[1] + rect[3], world: at });
+  }
+  const f = fitLocal(rect, mask, controls, boundedSides(mask, others.map(toPx)));
+  return {
+    kind: "anchored",
+    ok: f.ok,
+    reasons: f.reasons,
+    toWorld: f.toWorld,
+    onArea: (p) => onMask(mask, p),
+    lengthPx: Math.max(box[2] - box[0], box[3] - box[1]),
+    controls: f.controls,
+    checks: { precision: f.precision, recall: f.recall },
+  };
 }
 
 /** A fit as the report keeps it. */
@@ -660,6 +711,11 @@ async function run(items: Item[]) {
             controls: pw.controls,
             checks: { precision: pw.precision, recall: pw.recall },
           };
+        }
+        // No game layout (the DS games, a rip pret's map doesn't fit): anchored on our map's own neighbours.
+        if ((!fit || !fit.ok) && !(pw && "toWorld" in pw)) {
+          const an = anchoredFit(atlas, region, name, rip);
+          if (an && (!fit || an.ok)) fit = an;
         }
         if ((!fit || !fit.ok) && area) {
           const a = fitArea(atlas, area, shapeOf(rip.rgba, rip.img.w, rip.img.h, 16));
@@ -814,6 +870,7 @@ async function run(items: Item[]) {
       }
       const reasons = [...fit.reasons];
       if (fit.lengthPx === null) reasons.push(area?.pathNote ?? "no drawn path");
+      else if (ICON.test(name) && (!area || area.pathNote === "no drawn path")) reasons.push("drawn as an icon (no path to aim at)");
       else {
         if (fit.lengthPx < MIN_ROUTE_PX) reasons.push(`area drawn ${Math.round(fit.lengthPx)}px long`);
         const tall = best.rip.img.h >= best.rip.img.w;
@@ -900,7 +957,9 @@ async function main() {
   else if (step === "guess") await guessRips(items);
   else if (step === "world") for (const p of Object.values(PRET)) await fetchPret(CACHE, p.game);
   else if (step === "match") {
-    const known = await knownAnswers(items);
+    // SPOTS_REUSE_KNOWN=1 keeps the template matcher's known answers from the last run (they depend only on the rips and the matcher).
+    const cached = process.env.SPOTS_REUSE_KNOWN ? readJson<{ known?: Awaited<ReturnType<typeof knownAnswers>> }>(cachePath("results.json"), {}).known : undefined;
+    const known = cached ?? (await knownAnswers(items));
     const knownFlat3d = await knownFlat(items, loadCameras());
     console.log("known answers (flat3d):", JSON.stringify(knownFlat3d));
     const { results, fits } = await run(items);

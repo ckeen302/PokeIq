@@ -49,6 +49,8 @@ export const WARP_GATE = {
   MIN_RECALL: 0.75,
   /** "On the mask": within this many px of a mask point. */
   MASK_TOL: 5,
+  /** A spot lies on the area within one grid cell of a mask point (the masks are grids of points about 7 px apart). */
+  SPOT_TOL: 7,
   /** A shared edge shorter than this share of the area's side also fixes a point along it. */
   SHORT_EDGE: 0.5,
   /** Two places meet where their mask points are within this many px. */
@@ -315,4 +317,4 @@ export function boundedSides(mask: Px[], others: Px[][]): Set<Side> {
 }
 
 /** Whether a carried-over spot lies on the area's mask. */
-export const onMask = (mask: Px[], [x, y]: Px) => nearest(mask, x, y) <= WARP_GATE.MASK_TOL;
+export const onMask = (mask: Px[], [x, y]: Px) => nearest(mask, x, y) <= WARP_GATE.SPOT_TOL;
