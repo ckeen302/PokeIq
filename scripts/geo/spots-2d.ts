@@ -29,7 +29,7 @@ import path from "node:path";
 import sharp from "sharp";
 import { WIKI } from "./bulbapedia";
 import { httpGet, wikiApi } from "./http";
-import { areaGeometry, contentBox, distToArea, fitArea, loadAtlas, normalised, shapeOf, type Atlas, type Px } from "./spot-align";
+import { areaGeometry, contentBox, distToArea, fitArea, LINE_HALF, loadAtlas, normalised, shapeOf, type AreaGeometry, type Atlas, type Px } from "./spot-align";
 import { MATCH, gray, matchShot, nativeScale, shrink, type Gray, type MatchResult, type Rgb } from "./spot-match";
 import { boundedSides, fitLocal, maskBox, meetingPoint, onMask, type Control, type LocalFit } from "./spot-warp";
 import { fetchPret, loadWorld, mapsForPlace, placeEdges, placeWarps, unionRect, type GameMap, type PretGame } from "./spot-world";
@@ -257,6 +257,104 @@ async function guessRips(items: Item[]) {
   console.log(`guessed rips: ${Object.keys(guessed).length} places, ${n} fetched (${list.length} names asked)`);
 }
 
+/** The file-name codes (the name's last word) that mark a family's map rips on Bulbapedia. */
+const PAGE_CODES: Record<Family, string[]> = {
+  rby: ["RBY", "RB", "Y", "RGBY", "RG", "RGB"],
+  gsc: ["GSC", "GS", "C"],
+  rse: ["RSE", "RS", "E"],
+  frlg: ["FRLG"],
+  dppt: ["DP", "Pt", "DPPt"],
+  hgss: ["HGSS"],
+  bw: ["BW", "B2W2", "BWB2W2", "B2"],
+};
+/** Words that mark a file on a place's page as something other than a map of it. */
+const NOT_A_MAP = /\b(Screenshot|Sprite|Artwork|OD|VS|anime|Dream|menu|Town Map|Map icon|overworld|Gym Leader)\b/i;
+const squash = (s: string) =>
+  s
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, "");
+
+/**
+ * Every map rip on the place's own Bulbapedia page (its floors, its versions,
+ * its seasons): a file whose name ends in one of the family's codes, starts
+ * with the place's name, and is a few screens big. One API call per place
+ * (the page's images with their sizes), politely; the rips are downloaded
+ * into the cache and listed in guessed.json beside the rips found by name.
+ */
+async function pageRips(items: Item[]) {
+  const files = readJson<FileInfo>(cachePath("fileinfo.json"), {});
+  const out = cachePath("guessed.json");
+  const guessed = readJson<Record<string, string[]>>(out, {});
+  const asked = readJson<Record<string, string[]>>(cachePath("pages.json"), {});
+  const groups = new Map<string, Item>();
+  for (const it of items) if (!TOWN.test(it.name) && !groups.has(groupKey(it))) groups.set(groupKey(it), it);
+  let added = 0;
+  for (const [key, it] of groups) {
+    if (asked[key]) continue;
+    const titles = [it.name, `${it.region} ${it.name}`, `${it.name} (${it.region})`, ...it.name.split(" / ")];
+    const r = await wikiApi<{
+      query?: {
+        pages: {
+          title: string;
+          imageinfo?: { url: string; width: number; height: number }[];
+        }[];
+      };
+    }>(WIKI, {
+      action: "query",
+      titles: [...new Set(titles)].join("|"),
+      redirects: "1",
+      generator: "images",
+      gimlimit: "500",
+      prop: "imageinfo",
+      iiprop: "url|size",
+    }).catch((e) => {
+      console.warn(`  ! ${key}: ${(e as Error).message}`);
+      return null;
+    });
+    if (!r) continue;
+    const [sw, sh] = SCREEN[it.family];
+    const heads = [squash(it.name), squash(`${it.region} ${it.name}`), ...it.name.split(" / ").map(squash)];
+    const found: string[] = [];
+    for (const p of r.query?.pages ?? []) {
+      const ii = p.imageinfo?.[0];
+      if (!ii || ii.width * ii.height < MIN_RIP_SCREENS * sw * sh) continue;
+      const file = p.title.replace(/^File:/, "");
+      const stem = file.replace(/\.(png|gif)$/i, "");
+      if (stem === file || NOT_A_MAP.test(stem)) continue;
+      const last = stem.split(/[ _]/).pop()!;
+      if (!PAGE_CODES[it.family].includes(last)) continue;
+      if (!heads.some((h) => h.length >= 3 && squash(stem).startsWith(h))) continue;
+      const fk = fileKey("archives.bulbagarden.net", file.replace(/ /g, "_"));
+      files[fk] = { url: ii.url, width: ii.width, height: ii.height };
+      found.push(fk);
+    }
+    asked[key] = found;
+    const before = new Set(guessed[key] ?? []);
+    const fresh = found.filter((f) => !before.has(f));
+    if (fresh.length) {
+      guessed[key] = [...before, ...fresh];
+      added += fresh.length;
+      console.log(`  ${key}: +${fresh.length} (${fresh.map((f) => f.split("|")[1]).join(", ")})`);
+    }
+    writeFileSync(cachePath("pages.json"), JSON.stringify(asked, null, 1));
+  }
+  writeFileSync(cachePath("fileinfo.json"), JSON.stringify(files));
+  writeFileSync(out, JSON.stringify(guessed, null, 1));
+  let n = 0;
+  for (const fk of new Set(Object.values(guessed).flat())) {
+    if (existsSync(ripFile(fk)) || !files[fk]) continue;
+    try {
+      writeFileSync(ripFile(fk), await httpGet(files[fk]!.url));
+      n++;
+    } catch (e) {
+      console.warn(`  ! ${fk}: ${(e as Error).message}`);
+    }
+  }
+  console.log(`page rips: ${added} new across ${groups.size} places, ${n} downloaded`);
+}
+
 /** The files of a group big enough to be a map of the place (before their pixel scale is known), and Bulbapedia rips found by name. */
 function ripCandidates(items: Item[], files: FileInfo): Map<string, Set<string>> {
   const out = new Map<string, Set<string>>();
@@ -361,7 +459,7 @@ interface ShotResult {
   region: string;
   name: string;
   kind: "map" | "view" | "missing";
-  method?: "cut2d" | "tm2d" | "flat3d" | "inv2d" | "cam3d";
+  method?: "cut2d" | "tm2d" | "flat3d" | "inv2d" | "cam3d" | "review";
   /** The invariant matcher's evidence. */
   inv?: {
     edge: number;
@@ -370,8 +468,12 @@ interface ShotResult {
     margin: number;
     cam?: number[];
   };
+  /** The evidence of a by-eye review that picked this spot. */
+  reviewed?: string;
+  /** Which alignment carried the spot onto our map. */
+  align?: string;
   /** For a shot scored before this matcher: how far (world px) the invariant matcher puts it from its spot. */
-  invCheck?: { px: number; rip: string };
+  invCheck?: { px: number | null; rip: string; why?: string };
   rip?: string;
   match?: MatchResult;
   /** Native rip pixels: the spot (the view's middle). */
@@ -402,7 +504,7 @@ const PRET: Partial<Record<Family, { game: PretGame; regions: string[] }>> = {
  * places pret's maps don't cover).
  */
 interface Fit {
-  kind: "piecewise" | "anchored" | "affine" | "path";
+  kind: "piecewise" | "anchored" | "affine" | "path" | "prop";
   ok: boolean;
   reasons: string[];
   /** Rip px → world px. */
@@ -611,6 +713,81 @@ function anchoredFit(atlas: Atlas, region: string, name: string, rip: Rip): Fit 
   };
 }
 
+/**
+ * Where a matched spot goes on our map: through the area's strict fit when it
+ * passed its gate and lands on the area, else proportionally into the area as
+ * drawn (propFit). A spot that can't be placed says why.
+ */
+function placeOnArea(fit: Fit, area: AreaGeometry | null, rip: Rip, at: Px, world: Px, confidence: number): { world: Px; confidence: number; align: Fit["kind"] } | { why: string; align?: Fit["kind"] } {
+  if (fit.ok && fit.kind !== "prop" && Number.isFinite(world[0]) && fit.onArea(world)) return { world, confidence, align: fit.kind };
+  if (!area) return { why: "place not on the atlas" };
+  const pf = fit.kind === "prop" ? fit : propFit(area, rip);
+  if (!("toWorld" in pf) || !pf.ok) return { why: `alignment: ${"reason" in pf ? pf.reason : pf.reasons.join("; ")}`, align: "prop" };
+  const w = pf.toWorld(at[0], at[1]);
+  return { world: w, confidence: Math.round(confidence * 0.8 * 100) / 100, align: "prop" };
+}
+
+/**
+ * The proportional fallback, for an area the strict fits can't hold (drawn
+ * as an icon, drawn short, no control points, not held at both ends, or a
+ * gate failed): the spot keeps its place in the rip's content box (its
+ * share across and down, so a floor of a cave maps onto the cave as drawn)
+ * inside the area as our atlas draws it: its drawn path's box for a straight
+ * route, its mask's box otherwise, snapped onto the path or the mask. Our
+ * drawing is the area's representation in the game, so that is where its
+ * spot goes. Refused when the two disagree on the area's direction (a tall
+ * map drawn wide, or the other way round).
+ */
+const PROP = {
+  /** A box this much longer one way than the other has a direction. */
+  LONG: 2,
+};
+function propFit(area: AreaGeometry, rip: Rip): Fit | { reason: string } {
+  const cb = contentBox(shapeOf(rip.rgba, rip.img.w, rip.img.h, 16)) ?? [0, 0, rip.img.w, rip.img.h];
+  const usePath = area.path.length >= 8 && !!area.pathBox;
+  const target = usePath ? area.pathBox! : area.maskBox;
+  const pts = usePath ? area.path : area.mask;
+  const [cw, ch] = [Math.max(1, cb[2] - cb[0]), Math.max(1, cb[3] - cb[1])];
+  const [tw, th] = [Math.max(1, target[2] - target[0]), Math.max(1, target[3] - target[1])];
+  const tall = (w: number, h: number) => (h >= PROP.LONG * w ? 1 : w >= PROP.LONG * h ? -1 : 0);
+  if (tall(cw, ch) * tall(tw, th) < 0) return { reason: `the game's map runs ${tall(cw, ch) > 0 ? "north-south" : "east-west"}, our drawing the other way` };
+  const snapTol = usePath ? LINE_HALF : Math.max(2, gridSpacingOf(area.mask) / 2);
+  const toWorld = (x: number, y: number): Px => {
+    const u = Math.min(1, Math.max(0, (x - cb[0]) / cw));
+    const v = Math.min(1, Math.max(0, (y - cb[1]) / ch));
+    const p: Px = [target[0] + u * tw, target[1] + v * th];
+    let best = pts[0];
+    let bd = Infinity;
+    for (const q of pts) {
+      const d = Math.hypot(q[0] - p[0], q[1] - p[1]);
+      if (d < bd) [best, bd] = [q, d];
+    }
+    if (bd <= snapTol || !best) return p;
+    // Onto the drawing: the nearest point of it, pulled back in by the tolerance.
+    const k = (bd - snapTol) / bd;
+    return [p[0] + (best[0] - p[0]) * k, p[1] + (best[1] - p[1]) * k];
+  };
+  return {
+    kind: "prop",
+    ok: true,
+    reasons: [],
+    toWorld,
+    onArea: () => true,
+    lengthPx: Math.max(tw, th),
+    controls: [{ label: `content box ${cb.map(Math.round).join(",")} onto ${usePath ? "the drawn path" : "the mask"} ${target.map(Math.round).join(",")}`, px: 0 }],
+    checks: {},
+  };
+}
+const gridSpacingOf = (mask: Px[]) => {
+  let s = Infinity;
+  for (let i = 0; i < Math.min(mask.length, 200); i++)
+    for (let j = 0; j < mask.length; j++) {
+      const d = Math.hypot(mask[i][0] - mask[j][0], mask[i][1] - mask[j][1]);
+      if (d > 0.5 && d < s) s = d;
+    }
+  return Number.isFinite(s) ? s : 8;
+};
+
 /** A fit as the report keeps it. */
 interface FitRecord {
   kind: Fit["kind"];
@@ -781,6 +958,13 @@ async function run(items: Item[]) {
           }
         }
         if (!fit && pw && "reason" in pw) fit = null;
+        // The last resort: the spot's place in the rip, carried proportionally into the area as drawn (never for a town: it stays area-scored).
+        if ((!fit || !fit.ok) && area && !town) {
+          const pf = propFit(area, rip);
+          if ("toWorld" in pf) fit = { ...pf, reasons: [], controls: [...pf.controls, ...(fit ? [{ label: `strict fit failed: ${fit.reasons.join("; ")}`, px: -1 }] : [])] };
+          else if (fit) fit.reasons.push(pf.reason);
+          else fit = { kind: "prop", ok: false, reasons: [pf.reason], toWorld: () => [NaN, NaN], onArea: () => false, lengthPx: null, controls: [], checks: {} };
+        }
         fitCache.set(fk, fit);
         if (fit)
           fits[fk] = {
@@ -923,21 +1107,15 @@ async function run(items: Item[]) {
         results.push(townReasons.length ? { ...res, spot: undefined } : res);
         continue;
       }
-      const reasons = [...fit.reasons];
-      if (fit.lengthPx === null) reasons.push(area?.pathNote ?? "no drawn path");
-      else if (ICON.test(name) && (!area || area.pathNote === "no drawn path")) reasons.push("drawn as an icon (no path to aim at)");
-      else {
-        if (fit.lengthPx < MIN_ROUTE_PX) reasons.push(`area drawn ${Math.round(fit.lengthPx)}px long`);
-        const tall = best.rip.img.h >= best.rip.img.w;
-        const along = tall ? best.m.h / best.rip.img.h : best.m.w / best.rip.img.w;
-        if (along > MAX_FOOTPRINT) reasons.push(`view covers ${Math.round(along * 100)}% of the area`);
-      }
-      if (fit.ok && !fit.onArea(world)) reasons.push("spot lands off our area");
-      res.spot = [nx, ny, confidence, res.method!, reasons.length === 0];
-      if (reasons.length) {
-        res.why = reasons.join("; ");
-        // Only aligned spots are stored; an area that failed the gate keeps area scoring.
-        if (!fit.ok || reasons.includes("spot lands off our area")) res.spot = undefined;
+      const placed = placeOnArea(fit, area, best.rip, res.at!, world, confidence);
+      res.align = placed.align;
+      if ("why" in placed) {
+        res.why = placed.why;
+        res.spot = undefined;
+      } else {
+        res.world = placed.world;
+        const [px, py] = normalised(atlas, placed.world);
+        res.spot = [px, py, placed.confidence, res.method!, true];
       }
       results.push(res);
     }
@@ -1018,6 +1196,7 @@ async function invKnown(items: Item[], results: ShotResult[]): Promise<Record<st
         kind: string;
         place: string;
         rip: string;
+        selfsim?: number;
         truth: Px | null;
         peaks: InvPeak[];
       }[]
@@ -1026,7 +1205,7 @@ async function invKnown(items: Item[], results: ShotResult[]): Promise<Record<st
       const g = gates[method][v.family];
       if (!g) continue;
       const st = fam(method, v.family);
-      const gate = invGate(v.peaks, g, samePlace);
+      const gate = g.ssmax !== undefined && (v.selfsim ?? 0) > g.ssmax ? { why: "repeats" } : invGate(v.peaks, g, samePlace);
       if (!v.truth) {
         st.negatives.n++;
         if (!("why" in gate)) st.negatives.accepted++;
@@ -1104,6 +1283,8 @@ async function invKnown(items: Item[], results: ShotResult[]): Promise<Record<st
 
 /** The invariant matcher's gate (scripts/geo/spot-inv-gate.json): score = a × edge + (1 − a) × colour. */
 interface InvGate {
+  /** The most a view may match itself moved by whole tiles (open sea, plain grass): above it, it fits too many places. */
+  ssmax?: number;
   a: number;
   emin: number;
   cmin: number;
@@ -1121,8 +1302,11 @@ interface InvPeak {
   colour: number;
   cam?: number[];
 }
+/** A shot looked at by eye (scripts/geo/spot-review.json): its spot on a rip with the evidence, or why it stays unscored. */
+type Review = { verdict: "pick"; method: "inv2d" | "cam3d" | "review"; rip: string; spot: Px; evidence: string } | { verdict: "unscored"; reason: string };
 interface InvMatch {
   id: string;
+  selfsim?: number;
   native?: [number, number];
   why?: string;
   flat?: InvPeak[];
@@ -1131,10 +1315,11 @@ interface InvMatch {
 /** The invariant matcher's peaks: the flat pass and the DS camera pass (two runs of scripts/geo/spot_inv.py), merged by shot. */
 function loadInvMatches(): Map<string, InvMatch> {
   const out = new Map<string, InvMatch>();
-  for (const f of ["inv-matches.json", "inv-matches-cam.json"])
+  // Later runs (over more candidate rips) override earlier ones, per pass.
+  for (const f of ["inv-matches.json", "inv-matches-cam.json", "inv-matches-v3.json", "inv-matches-cam-v3.json"])
     for (const m of readJson<InvMatch[]>(cachePath(f), [])) {
       const was = out.get(m.id);
-      out.set(m.id, was ? { ...was, ...Object.fromEntries(Object.entries(m).filter(([, v]) => v !== undefined)), flat: was.flat ?? m.flat, cam: m.cam ?? was.cam } : m);
+      out.set(m.id, was ? { ...was, ...Object.fromEntries(Object.entries(m).filter(([, v]) => v !== undefined)), flat: m.flat ?? was.flat, cam: m.cam ?? was.cam } : m);
     }
   return out;
 }
@@ -1150,7 +1335,8 @@ const invScore = (p: InvPeak, g: InvGate) => g.a * p.edge + (1 - g.a) * p.colour
  * on the same rip). Returns the best and the agreeing strong peaks.
  */
 export function invGate(peaks: InvPeak[], g: InvGate, agree: (p: InvPeak, best: InvPeak) => boolean): { best: InvPeak; strong: InvPeak[]; margin: number } | { why: string } {
-  const ps = peaks.filter((p) => p.cover >= 0.55);
+  // A correlation above 1 is float rounding on a near-blank window, not a match.
+  const ps = peaks.filter((p) => p.cover >= 0.55 && p.edge <= 1.001);
   if (!ps.length) return { why: "no peak" };
   const best = ps.reduce((a, b) => (invScore(b, g) > invScore(a, g) ? b : a));
   const sb = invScore(best, g);
@@ -1195,6 +1381,7 @@ async function invPass(results: ShotResult[], items: Item[], atlas: Atlas, fitFo
     }>(cachePath("inv-jobs.json"), { jobs: [] }).jobs.map((j) => [j.id, j])
   );
   const gates = loadGates();
+  const selfsims = readJson<Record<string, number | null>>(cachePath("selfsim.json"), {});
   const rips = new Map<string, Rip | null>();
   const ripOf = async (k: string) => {
     if (!rips.has(k)) {
@@ -1204,17 +1391,44 @@ async function invPass(results: ShotResult[], items: Item[], atlas: Atlas, fitFo
     return rips.get(k)!;
   };
   const byId = new Map(items.map((it) => [it.id, it]));
-  const one = async (r: ShotResult): Promise<ShotResult> => {
-    const m = matches.get(r.id);
+  const review = readJson<Record<string, Review>>(path.join(ROOT, "scripts/geo/spot-review.json"), {});
+  // The DS camera search first, then the flat match; a shot reviewed by eye takes its reviewed spot.
+  const one = async (shot: ShotResult): Promise<ShotResult> => {
+    // A fresh start: nothing of an earlier method's answer carries over.
+    const r0: ShotResult = { ...shot, spot: undefined, world: undefined, at: undefined, rip: undefined, match: undefined, align: undefined, why: shot.spot?.[4] ? undefined : shot.why };
+    const m = matches.get(r0.id);
+    const rv = review[r0.id];
+    if (rv?.verdict === "pick") {
+      const r = await oneWith({ ...r0 }, rv.method, [{ rip: rv.rip, x: rv.spot[0], y: rv.spot[1], spot: rv.spot, edge: 1, colour: 1, cover: 1 }], m?.native);
+      r.reviewed = rv.evidence;
+      return r;
+    }
+    if (rv?.verdict === "unscored") return { ...r0, why: `reviewed: ${rv.reason}` };
+    const tries: ["cam3d" | "inv2d", InvPeak[] | undefined][] = [
+      ["cam3d", m?.cam],
+      ["inv2d", m?.flat],
+    ];
+    const whys: string[] = [];
+    let last = r0;
+    for (const [method, peaks] of tries) {
+      if (!peaks?.length) continue;
+      const r = await oneWith({ ...r0, why: undefined }, method, peaks, m?.native);
+      if (r.spot) return r;
+      if (r.why) whys.push(`${method}: ${r.why}`);
+      last = r;
+    }
+    return whys.length ? { ...last, spot: undefined, why: [r0.why, ...whys].filter(Boolean).join("; ") } : r0;
+  };
+  const oneWith = async (r: ShotResult, method: "cam3d" | "inv2d" | "review", peaks: InvPeak[], native?: [number, number]): Promise<ShotResult> => {
     const job = jobs.get(r.id);
     const it = byId.get(r.id);
-    if (!m || !job || !it) return r;
-    const method = m.cam?.length ? "cam3d" : "inv2d";
-    const g = gates[method][r.family];
-    const peaks = (method === "cam3d" ? m.cam : m.flat) ?? [];
+    if (!job || !it) return r;
+    const g: InvGate | null | undefined = method === "review" ? { a: 0.5, emin: 0, cmin: 0, smin: 0, margin: 0 } : gates[method][r.family];
+    const m = { native };
     if (!g || !peaks.length) return r;
     const placeOf = new Map(job.rips.map((q) => [q.rip, q.place]));
     const worldCache = new Map<InvPeak, Px | null>();
+    const kindOf = new Map<InvPeak, Fit["kind"]>();
     const worldOf = async (p: InvPeak): Promise<Px | null> => {
       if (worldCache.has(p)) return worldCache.get(p)!;
       const [region, name] = (placeOf.get(p.rip) ?? "|").split("|");
@@ -1223,6 +1437,7 @@ async function invPass(results: ShotResult[], items: Item[], atlas: Atlas, fitFo
       const t = fit?.ok ? fit.toWorld(p.spot[0], p.spot[1]) : null;
       const w = t && Number.isFinite(t[0]) && Number.isFinite(t[1]) ? t : null;
       worldCache.set(p, w);
+      if (fit) kindOf.set(p, fit.kind);
       return w;
     };
     // Every peak's world spot up front (agree() is synchronous).
@@ -1232,7 +1447,8 @@ async function invPass(results: ShotResult[], items: Item[], atlas: Atlas, fitFo
       const wb = worldCache.get(b);
       return !!wp && !!wb && Math.hypot(wp[0] - wb[0], wp[1] - wb[1]) <= WORLD_AGREE_PX;
     };
-    const gate = invGate(peaks, g, sameWorld);
+    const ss = method === "review" ? undefined : (matches.get(r.id)?.selfsim ?? selfsims[r.id]);
+    const gate = g.ssmax !== undefined && typeof ss === "number" && ss > g.ssmax ? { why: `inv: the view repeats itself (${ss.toFixed(2)} moved by whole tiles), so it fits many places` } : invGate(peaks, g, sameWorld);
     if ("why" in gate) {
       r.why = `${r.why ?? ""}${r.why ? "; " : ""}${gate.why}`;
       return r;
@@ -1281,37 +1497,39 @@ async function invPass(results: ShotResult[], items: Item[], atlas: Atlas, fitFo
     const world: Px = [worlds.reduce((s, w) => s + w[0], 0) / worlds.length, worlds.reduce((s, w) => s + w[1], 0) / worlds.length];
     r.world = world;
     const ownPlace = `${r.region}|${r.name}`;
+    const onNeighbour = placeOf.get(best.rip) !== ownPlace;
+    // A spot found only on a neighbour's map needs that map's strict fit (its proportional one can't say where the border is).
+    if (onNeighbour && kindOf.get(best) === "prop") {
+      r.why = `inv: matched only on ${placeOf.get(best.rip)!.split("|")[1]}'s map, which has no strict alignment`;
+      return r;
+    }
     const offArea = distToArea(atlas, { region: r.region, name: r.name }, world[0], world[1]);
-    if (offArea > WORLD_AGREE_PX) {
-      r.why = `inv: lands ${Math.round(offArea)}px off our ${r.name}${placeOf.get(best.rip) !== ownPlace ? ` (on ${placeOf.get(best.rip)!.split("|")[1]}'s map: possibly mislabelled)` : ""}`;
+    if (offArea > WORLD_AGREE_PX && (onNeighbour || kindOf.get(best) === "prop")) {
+      r.why = `inv: lands ${Math.round(offArea)}px off our ${r.name}${onNeighbour ? ` (on ${placeOf.get(best.rip)!.split("|")[1]}'s map: possibly mislabelled)` : ""}`;
       return r;
     }
     const town = TOWN.test(r.name);
     const area = areaGeometry(atlas, r.region, r.name);
-    const ownFit = rip && placeOf.get(best.rip) === ownPlace ? fitFor(r.region, r.name, r.family, rip) : null;
     const confidence = Math.round(Math.min(1, 0.5 + gate.margin + 0.5 * (best.colour - g.cmin)) * 100) / 100;
-    const [nx, ny] = normalised(atlas, world);
     if (town) {
+      const [nx, ny] = normalised(atlas, world);
       r.spot = [nx, ny, confidence, method, false];
       r.why = "town (unscored)";
       return r;
     }
-    const reasons: string[] = [];
-    const lengthPx =
-      ownFit?.lengthPx ??
-      (area?.pathBox ? Math.max(area.pathBox[3] - area.pathBox[1], area.pathBox[2] - area.pathBox[0]) : area ? Math.max(area.maskBox[2] - area.maskBox[0], area.maskBox[3] - area.maskBox[1]) : null);
-    if (lengthPx === null) reasons.push("no drawn path");
-    else if (ICON.test(r.name) && (!area || area.pathNote === "no drawn path")) reasons.push("drawn as an icon (no path to aim at)");
-    else {
-      if (lengthPx < MIN_ROUTE_PX) reasons.push(`area drawn ${Math.round(lengthPx)}px long`);
-      if (rip && m.native) {
-        const tall = rip.img.h >= rip.img.w;
-        const along = tall ? m.native[1] / rip.img.h : m.native[0] / rip.img.w;
-        if (along > MAX_FOOTPRINT) reasons.push(`view covers ${Math.round(along * 100)}% of the area`);
-      }
+    const ownFit = rip ? fitFor(r.region, r.name, r.family, rip) : null;
+    // Own place: through its strict fit when that lands on the area, else proportionally (placeOnArea). A neighbour's strict fit landed on our area already.
+    const placed = onNeighbour || !ownFit || !rip ? { world, confidence, align: kindOf.get(best) ?? "piecewise" } : placeOnArea(ownFit, area, rip, best.spot, world, confidence);
+    r.align = placed.align;
+    if ("why" in placed) {
+      r.why = placed.why;
+      r.world = undefined;
+      return r;
     }
-    r.spot = [nx, ny, confidence, method, reasons.length === 0];
-    r.why = reasons.length ? reasons.join("; ") : undefined;
+    r.world = placed.world;
+    const [nx, ny] = normalised(atlas, placed.world);
+    r.spot = [nx, ny, placed.confidence, method, true];
+    r.why = undefined;
     return r;
   };
   for (let i = 0; i < results.length; i++) {
@@ -1320,18 +1538,13 @@ async function invPass(results: ShotResult[], items: Item[], atlas: Atlas, fitFo
     // A shot scored before is only checked: where the invariant matcher puts it (the report lists any disagreement).
     const recheck = !!r0.spot?.[4];
     if (r0.spot && !recheck) continue;
-    const r = await one({ ...r0, why: recheck ? undefined : r0.why });
-    if (!recheck) results[i] = r;
-    else if (r.world && r0.world && r.method !== r0.method)
-      r0.invCheck = {
-        px: Math.round(Math.hypot(r.world[0] - r0.world[0], r.world[1] - r0.world[1]) * 10) / 10,
-        rip: r.rip!,
-      };
-    else if (r.world && r0.world)
-      r0.invCheck = {
-        px: Math.round(Math.hypot(r.world[0] - r0.world[0], r.world[1] - r0.world[1]) * 10) / 10,
-        rip: r.rip!,
-      };
+    const r = await one(r0);
+    if (!recheck) {
+      results[i] = r;
+      continue;
+    }
+    // Checked by the invariant matcher: where it puts the shot, or why it can't.
+    r0.invCheck = r.spot && r.world && r0.world ? { px: Math.round(Math.hypot(r.world[0] - r0.world[0], r.world[1] - r0.world[1]) * 10) / 10, rip: r.rip! } : { px: null, rip: r.rip ?? "", why: r.why };
   }
 }
 
@@ -1449,6 +1662,7 @@ async function main() {
   if (step === "info") await info(items);
   else if (step === "fetch") await fetchAll(items);
   else if (step === "guess") await guessRips(items);
+  else if (step === "pages") await pageRips(items);
   else if (step === "jobs") await writeJobs(items);
   else if (step === "world") for (const p of Object.values(PRET)) await fetchPret(CACHE, p.game);
   else if (step === "match") {
@@ -1498,12 +1712,23 @@ async function main() {
     // The invariant matcher: its known answers per method and family (synthetic views, the real cuts, the DS camera pairs); a family passes only with no wrong answer at all.
     const invKnownStats = await invKnown(items, results);
     const invPass = (method: string, family: string) => !!invKnownStats[method]?.[family]?.pass;
+    const placesWrong = (method: "tm2d" | "flat3d", family: Family) => {
+      if (method === "tm2d") return !known[family] || known[family].accepted > known[family].within || known[family].wrongAccepted > 0;
+      const k = knownFlat3d[family];
+      return !k || k.pairs.accepted > k.pairs.within || k.synthetic.accepted > k.synthetic.within || k.wrongRip.accepted > 0;
+    };
     // A union with the spots before: a scored spot is never dropped or moved by this run (only by hand, with the evidence).
     const before = readJson<Record<string, SpotRow>>(OUT, {});
     const spots: Record<string, SpotRow> = {};
     for (const r of results) {
       if (!r.spot) continue;
-      const pass = r.method === "inv2d" || r.method === "cam3d" ? invPass(r.method, r.family) : methods[r.method as "tm2d" | "cut2d" | "flat3d"].pass;
+      // A by-eye review is its own evidence (scripts/geo/spot-review.json); the matchers must pass their known answers.
+      let pass = r.method === "review" || r.reviewed ? true : r.method === "inv2d" || r.method === "cam3d" ? invPass(r.method, r.family) : methods[r.method as "tm2d" | "cut2d" | "flat3d"].pass;
+      // A method that put any known answer of this family in the wrong place scores a new spot only when the invariant matcher puts it in the same place.
+      if (pass && r.spot[4] && !before[r.id]?.[4] && (r.method === "tm2d" || r.method === "flat3d") && placesWrong(r.method, r.family) && !(r.invCheck?.px != null && r.invCheck.px <= WORLD_AGREE_PX)) {
+        pass = false;
+        r.why = `${r.method} places some known answers of ${r.family} wrong, and the invariant matcher ${r.invCheck?.px != null ? `puts it ${r.invCheck.px}px away` : `can't confirm it (${r.invCheck?.why ?? "no match"})`}`;
+      }
       spots[r.id] = pass ? r.spot : [r.spot[0], r.spot[1], r.spot[2], r.spot[3], false];
     }
     const kept: string[] = [];

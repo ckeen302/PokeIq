@@ -197,14 +197,15 @@ def task(args):
             if img is None:
                 continue
             peaks = S.match_cam(img, rips, S.seeds_for(family, cams))
-        out.append({"family": family, "mode": mode, "kind": kind, "place": place, "rip": rk, "truth": [float(truth[0]), float(truth[1])], "peaks": peaks})
+        ss = S.selfsim(img)
+        out.append({"family": family, "mode": mode, "kind": kind, "place": place, "rip": rk, "selfsim": ss, "truth": [float(truth[0]), float(truth[1])], "peaks": peaks})
         # The same view against an unrelated place's rips.
         if other_rips and i % 2 == 0:
             if mode == "flat":
                 wp = S.match_flat(img, other_rips)
             else:
                 wp = S.match_cam(img, other_rips, S.seeds_for(family, cams))
-            out.append({"family": family, "mode": mode, "kind": "wrong", "place": other_place, "rip": rk, "truth": None, "peaks": wp})
+            out.append({"family": family, "mode": mode, "kind": "wrong", "selfsim": ss, "place": other_place, "filler": filler_job["place"] if filler_job else None, "rip": rk, "truth": None, "peaks": wp})
     return out
 
 
@@ -227,9 +228,10 @@ def main(cache, argv):
             others = [q for q in places if q not in near and not ({r["rip"] for r in by[q][0]["rips"]} & mine)]
             seed = zlib.crc32(f"{fam}|{place}".encode())
             other = by[others[seed % len(others)]][0] if others else None
-            filler = by[others[(seed // 7 + 1) % len(others)]][0] if len(others) > 1 else None
-            if filler is other:
-                filler = None
+            # The filler past the border: a third place, neither a neighbour of this one nor of the wrong place (else the wrong place's rips would truly show it).
+            onear = {r["place"] for r in other["rips"]} if other else set()
+            fills = [q for q in others if other is None or (q != other["place"] and q not in onear and not ({r["rip"] for r in by[q][0]["rips"]} & {r["rip"] for r in other["rips"]}))]
+            filler = by[fills[(seed // 7 + 1) % len(fills)]][0] if fills else None
             if "flat" in modes:
                 tasks.append((fam, by[place][0], other, filler, d["cameras"], flat_n, seed, "flat"))
             if fam in S.DS and "cam" in modes:

@@ -176,9 +176,35 @@ def mncc(P, V, Ps, T, Mt, min_cover=MIN_COVER):
     vr = sr - sr * sr / nn
     ncc = cov / np.sqrt(np.maximum(vt * vr, 1e-6))
     cover = n / max(1.0, 2 * Mt.sum())
-    bad = (cover < min_cover) | (st < MIN_DENSITY * nn) | (sr < MIN_DENSITY * nn)
+    # A correlation above 1 is rounding on a near-constant window (float32 sums): no evidence either way.
+    bad = (cover < min_cover) | (st < MIN_DENSITY * nn) | (sr < MIN_DENSITY * nn) | (ncc > 1.001)
     ncc[bad] = -1
     return ncc, cover
+
+
+def selfsim(shot, mask=None, lo=16, hi=64, step=8):
+    """
+    How well the view matches itself moved by a whole number of tiles (lo to hi
+    px either way): a view of open sea, plain grass or a wall of identical trees
+    repeats, so it would fit many places equally well. 1 = a perfect repeat.
+    """
+    T, M = edges(shot, mask)
+    h, w = M.shape
+    best = 0.0
+    for dy in range(-hi, hi + 1, step):
+        for dx in range(-hi, hi + 1, step):
+            if max(abs(dx), abs(dy)) < lo:
+                continue
+            ys, xs = slice(max(0, dy), min(h, h + dy)), slice(max(0, dx), min(w, w + dx))
+            ys2, xs2 = slice(max(0, -dy), min(h, h - dy)), slice(max(0, -dx), min(w, w - dx))
+            if (ys.stop - ys.start) * (xs.stop - xs.start) < 0.4 * h * w:
+                continue
+            m = (M[ys, xs] * M[ys2, xs2]) > 0
+            a, b = T[ys, xs][m].ravel(), T[ys2, xs2][m].ravel()
+            if a.size < 50 or a.std() < 1e-6 or b.std() < 1e-6:
+                continue
+            best = max(best, float(np.corrcoef(a, b)[0, 1]))
+    return round(best, 4)
 
 
 def peaks(ncc, k=PEAKS, r=NMS_PX):
@@ -360,7 +386,7 @@ def drop_pads(rips):
         rip.pop("es", None)
 
 
-PAD = 300  # camera templates vary in size: one generous padding for all
+PAD = 420  # camera templates vary in size (a Black / White view flattens to about 300 x 200): one generous padding for all
 
 
 def cam_global(wv, rip, keep=4):
@@ -524,7 +550,7 @@ def run_place(args):
             continue
         h, w = shot.shape[:2]
         sw, sh = j["screen"]
-        res = {"id": j["id"], "native": [w, h]}
+        res = {"id": j["id"], "native": [w, h], "selfsim": selfsim(shot)}
         if w * h > max_view * sw * sh:
             res["why"] = "map"
             out.append(res)
@@ -576,9 +602,36 @@ def main_match(cache, ids):
     json.dump(list(done.values()), open(out_path, "w"))
 
 
+def _selfsim_one(j):
+    shot = load_shot(j["shot"])
+    if shot is None:
+        return j["id"], None
+    sw, sh = j["screen"]
+    h, w = shot.shape[:2]
+    if w * h > 1.6 * sw * sh:
+        return j["id"], None
+    return j["id"], selfsim(shot)
+
+
+def main_selfsim(cache):
+    """Every view's self-similarity (selfsim.json), for the gate."""
+    d = json.load(open(os.path.join(cache, "inv-jobs.json")))
+    path = os.path.join(cache, "selfsim.json")
+    done = json.load(open(path)) if os.path.exists(path) else {}
+    todo = [j for j in d["jobs"] if j["id"] not in done]
+    with Pool(int(os.environ.get("INV_PROCS", "4"))) as pool:
+        for k, (i, v) in enumerate(pool.imap_unordered(_selfsim_one, todo, chunksize=8)):
+            done[i] = v
+            if k % 200 == 0:
+                json.dump(done, open(path, "w"))
+    json.dump(done, open(path, "w"))
+
+
 if __name__ == "__main__":
     cache, step = sys.argv[1], sys.argv[2]
-    if step == "match":
+    if step == "selfsim":
+        main_selfsim(cache)
+    elif step == "match":
         main_match(cache, set(sys.argv[3:]))
     elif step == "known":
         import spot_inv_known
