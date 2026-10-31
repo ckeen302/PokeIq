@@ -28,7 +28,8 @@
       "margin": 0.1,
       "coverFull": 0.8,
       "coverSlope": 2.0,
-      "ssmax": 0.9
+      "ssmax": 0.9,
+      "dmin": 0.6
     },
     "frlg": {
       "a": 0.5,
@@ -38,7 +39,8 @@
       "margin": 0.1,
       "coverFull": 0.8,
       "coverSlope": 2.0,
-      "ssmax": 0.9
+      "ssmax": 0.9,
+      "dmin": 0.6
     },
     "dppt": {
       "a": 0.5,
@@ -48,7 +50,8 @@
       "margin": 0.1,
       "coverFull": 0.8,
       "coverSlope": 2.0,
-      "ssmax": 0.9
+      "ssmax": 0.9,
+      "dmin": 0.6
     },
     "hgss": {
       "a": 0.5,
@@ -58,7 +61,8 @@
       "margin": 0.1,
       "coverFull": 0.8,
       "coverSlope": 2.0,
-      "ssmax": 0.9
+      "ssmax": 0.9,
+      "dmin": 0.6
     },
     "bw": {
       "a": 0.5,
@@ -68,7 +72,8 @@
       "margin": 0.1,
       "coverFull": 0.8,
       "coverSlope": 2.0,
-      "ssmax": 0.9
+      "ssmax": 0.9,
+      "dmin": 0.6
     }
   },
   "cam3d": {
@@ -80,7 +85,8 @@
       "margin": 0.1,
       "coverFull": 0.8,
       "coverSlope": 1.0,
-      "ssmax": 0.9
+      "ssmax": 0.9,
+      "dmin": 0.5
     },
     "hgss": {
       "a": 0.5,
@@ -90,7 +96,8 @@
       "margin": 0.1,
       "coverFull": 0.8,
       "coverSlope": 1.0,
-      "ssmax": 0.9
+      "ssmax": 0.9,
+      "dmin": 0.5
     },
     "bw": {
       "a": 0.5,
@@ -100,7 +107,8 @@
       "margin": 0.1,
       "coverFull": 0.8,
       "coverSlope": 1.0,
-      "ssmax": 0.9
+      "ssmax": 0.9,
+      "dmin": 0.5
     }
   }
 }

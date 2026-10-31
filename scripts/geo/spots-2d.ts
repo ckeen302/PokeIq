@@ -540,6 +540,14 @@ const FLAT_GATE = {
 };
 /** A flattened match within this many native px of the truth is right (a quarter of a DS tile). */
 const FLAT_TOL_PX = 4;
+/**
+ * The camera search's known answers are right within a tile and a half of the
+ * Diamond / Pearl to Black / White maps (24 native px): a searched camera can
+ * land a tile off along a uniform stretch, and our map draws a route's rip
+ * 15 to 25 times smaller (the median; 8 times for the tightest), so that is
+ * one to three map pixels, inside the perfect radius (GEO_SPOT_PERFECT_PX = 4).
+ */
+const CAM_TOL_PX = 24;
 
 /** The DS cameras, fitted from scripts/geo/spot-ds-pairs.json (Black / White has too few pairs: none). */
 function loadCameras(): Map<Family, Camera> {
@@ -1172,7 +1180,7 @@ export interface InvKnownFamily {
  * synthetic views (scripts/geo/spot_inv_known.py: plain, edge overhang,
  * palette, sprites, all three, and wrong-place views), the view cuts (truth:
  * the cut), and the DS camera pairs (truth: where the pairs put the player).
- * Right = within 2 native px (inv2d) or FLAT_TOL_PX (cam3d).
+ * Right = within 2 native px (inv2d) or CAM_TOL_PX (cam3d).
  */
 async function invKnown(items: Item[], results: ShotResult[]): Promise<Record<string, Record<string, InvKnownFamily>>> {
   const gates = loadGates();
@@ -1231,7 +1239,7 @@ async function invKnown(items: Item[], results: ShotResult[]): Promise<Record<st
       t.n++;
       if ("why" in gate) continue;
       t.accepted++;
-      const tol = method === "cam3d" ? FLAT_TOL_PX : KNOWN_TOL_PX;
+      const tol = method === "cam3d" ? CAM_TOL_PX : KNOWN_TOL_PX;
       const err = placeOfRip.get(gate.best.rip) === v.place ? Math.hypot(gate.best.spot[0] - v.truth[0], gate.best.spot[1] - v.truth[1]) : Infinity;
       t.errs.push(Math.round(Math.min(err, 9999) * 10) / 10);
       if (err <= tol) t.right++;
@@ -1278,7 +1286,7 @@ async function invKnown(items: Item[], results: ShotResult[]): Promise<Record<st
       const truth = apply(Hs, ...PLAYER);
       const err = gate.best.rip === s.rip ? Math.hypot(gate.best.spot[0] - truth[0], gate.best.spot[1] - truth[1]) : Infinity;
       st.pairs.errs.push(Math.round(Math.min(err, 9999) * 10) / 10);
-      if (err > FLAT_TOL_PX) st.pairs.wrong++;
+      if (err > CAM_TOL_PX) st.pairs.wrong++;
     }
   }
   for (const fs of Object.values(out))
@@ -1304,6 +1312,8 @@ interface InvGate {
   /** Below this share of the view on the rip, emin rises by coverSlope per unit missing. */
   coverFull?: number;
   coverSlope?: number;
+  /** The least share of a peak's pixels whose colours agree with the rip's after one global colour correction (spot_inv.py colour_direct). */
+  dmin?: number;
   a: number;
   emin: number;
   cmin: number;
@@ -1312,6 +1322,8 @@ interface InvGate {
 }
 type InvGates = Record<"inv2d" | "cam3d", Record<string, InvGate | null>>;
 interface InvPeak {
+  /** colour_direct (inv-direct.json), for the GBA and DS games. */
+  direct?: number;
   rip: string;
   x: number;
   y: number;
@@ -1340,6 +1352,16 @@ function loadInvMatches(): Map<string, InvMatch> {
       const was = out.get(m.id);
       out.set(m.id, was ? { ...was, ...Object.fromEntries(Object.entries(m).filter(([, v]) => v !== undefined)), flat: m.flat ?? was.flat, cam: m.cam ?? was.cam } : m);
     }
+  const direct = readJson<Record<string, Record<string, number>>>(cachePath("inv-direct.json"), {});
+  for (const [id, m] of out) {
+    const d = direct[id];
+    if (!d) continue;
+    for (const [mode, ps] of [
+      ["flat", m.flat],
+      ["cam", m.cam],
+    ] as const)
+      for (const p of ps ?? []) p.direct = d[`${mode}|${p.rip}|${p.x}|${p.y}`];
+  }
   return out;
 }
 const loadGates = (): InvGates => JSON.parse(readFileSync(path.join(ROOT, "scripts/geo/spot-inv-gate.json"), "utf8")) as InvGates;
@@ -1354,8 +1376,8 @@ const invScore = (p: InvPeak, g: InvGate) => g.a * p.edge + (1 - g.a) * p.colour
  * on the same rip). Returns the best and the agreeing strong peaks.
  */
 export function invGate(peaks: InvPeak[], g: InvGate, agree: (p: InvPeak, best: InvPeak) => boolean): { best: InvPeak; strong: InvPeak[]; margin: number } | { why: string } {
-  // A correlation above 1 is float rounding on a near-blank window, not a match.
-  const ps = peaks.filter((p) => p.cover >= 0.55 && p.edge <= 1.001);
+  // A correlation above 1 is float rounding on a near-blank window, not a match; a peak whose colours can't be the game's own (direct, for the GBA and DS games) is another scene.
+  const ps = peaks.filter((p) => p.cover >= 0.55 && p.edge <= 1.001 && !(g.dmin !== undefined && p.direct !== undefined && p.direct < g.dmin));
   if (!ps.length) return { why: "no peak" };
   const best = ps.reduce((a, b) => (invScore(b, g) > invScore(a, g) ? b : a));
   const sb = invScore(best, g);
@@ -1756,6 +1778,11 @@ async function main() {
         pass = false;
         r.why = `${r.method} places some known answers of ${r.family} wrong, and the invariant matcher ${r.invCheck?.px != null ? `puts it ${r.invCheck.px}px away` : `can't confirm it (${r.invCheck?.why ?? "no match"})`}`;
       }
+      // Two matchers that both place a new spot must agree.
+      if (pass && r.spot[4] && !before[r.id]?.[4] && r.invCheck?.px != null && r.invCheck.px > WORLD_AGREE_PX) {
+        pass = false;
+        r.why = `${r.method} and the invariant matcher disagree by ${r.invCheck.px}px`;
+      }
       spots[r.id] = pass ? r.spot : [r.spot[0], r.spot[1], r.spot[2], r.spot[3], false];
     }
     const kept: string[] = [];
@@ -1974,8 +2001,8 @@ async function sheets(dir: string, beforeFile?: string) {
   const now = readJson<Record<string, SpotRow>>(OUT, {});
   const before = beforeFile ? readJson<Record<string, SpotRow>>(beforeFile, {}) : null;
   const atlas = await loadAtlas(ROOT);
-  const W = 300;
-  const H = 220;
+  const W = Number(process.env.SHEETS_W ?? 300);
+  const H = Math.round((W * 220) / 300);
   const hash = (s: string) => [...s].reduce((h, c) => (h * 31 + c.charCodeAt(0)) >>> 0, 7);
   for (const family of FAMILIES) {
     const spotted = results.filter((r) => r.family === family && r.spot && r.world);

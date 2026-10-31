@@ -162,10 +162,15 @@ def task(args):
     family, j, other_job, filler_job, cams, n, seed, mode = args
     rnd = random.Random(seed)
     place = j["place"]
-    rips = [(r["rip"], S.load_rip(r["file"])) for r in j["rips"]]
     sw, sh = j["screen"]
-    rips = [(k, r) for k, r in rips if r is not None and r["w"] * r["h"] >= 2.5 * sw * sh]
-    own = [(k, r) for k, r in rips if any(q["rip"] == k and q["own"] for q in j["rips"])]
+
+    def big(f):
+        r = S.load_rip(f)
+        return r is not None and r["w"] * r["h"] >= 2.5 * sw * sh
+
+    # Matched by file (loaded one at a time), so a worker holds only a few rips.
+    rips = [(r["rip"], r["file"]) for r in j["rips"] if big(r["file"])]
+    own = [(k, f) for k, f in rips if any(q["rip"] == k and q["own"] for q in j["rips"])]
     if not own:
         return []
     out = []
@@ -173,8 +178,7 @@ def task(args):
     other_rips = []
     if other_job:
         oj = other_job
-        other_rips = [(r["rip"], S.load_rip(r["file"])) for r in oj["rips"]]
-        other_rips = [(k, r) for k, r in other_rips if r is not None and r["w"] * r["h"] >= 2.5 * sw * sh and k not in dict(rips)]
+        other_rips = [(r["rip"], r["file"]) for r in oj["rips"] if r["rip"] not in dict(rips) and big(r["file"])]
     # The next map over, past the border: a third place (not the wrong place a view is also tried on).
     filler = S.load_rip(next((r["file"] for r in filler_job["rips"] if r["own"]), filler_job["rips"][0]["file"])) if filler_job else None
     w, h = VIEW[family]
@@ -182,7 +186,8 @@ def task(args):
         h = rnd.choice((78, 82, 120))
     for i in range(n):
         kind = KINDS[i % len(KINDS)]
-        rk, rip = own[rnd.randrange(len(own))]
+        rk, rf = own[rnd.randrange(len(own))]
+        rip = S.load_rip(rf)
         if mode == "flat":
             img, tl = make_view(rip, filler, rnd, family, kind, w, h)
             if img is None:
@@ -222,7 +227,10 @@ def main(cache, argv):
             if j["family"] == fam and any(r["own"] for r in j["rips"]):
                 by.setdefault(j["place"], []).append(j)
         places = sorted(by)
+        every = int(os.environ.get("KNOWN_EVERY", "1"))
         for i, place in enumerate(places):
+            if i % every:
+                continue
             near = {r["place"] for r in by[place][0]["rips"]}
             mine = {r["rip"] for r in by[place][0]["rips"]}
             others = [q for q in places if q not in near and not ({r["rip"] for r in by[q][0]["rips"]} & mine)]
@@ -237,11 +245,12 @@ def main(cache, argv):
             if fam in S.DS and "cam" in modes:
                 tasks.append((fam, by[place][0], other, filler, d["cameras"], cam_n, seed + 1, "cam"))
     out = []
+    name = os.environ.get("KNOWN_OUT", "inv-known.json")
     with Pool(int(os.environ.get("INV_PROCS", "4"))) as pool:
         for k, res in enumerate(pool.imap_unordered(task, tasks)):
             out.extend(res)
             if (k + 1) % 25 == 0:
                 print(f"  {k + 1}/{len(tasks)}", flush=True)
-    name = os.environ.get("KNOWN_OUT", "inv-known.json")
+                json.dump(out, open(os.path.join(cache, name), "w"))
     json.dump(out, open(os.path.join(cache, name), "w"))
     print(f"{len(out)} known views")

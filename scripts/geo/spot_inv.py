@@ -38,6 +38,7 @@ Needs numpy and opencv-python-headless. Deterministic.
 import json
 import math
 import os
+import re
 import sys
 from multiprocessing import Pool
 
@@ -107,6 +108,8 @@ def edges(img, valid=None, tol=EDGE_TOL):
 
 
 _rip_cache = {}
+# Rips held per worker (a Black / White rip with its maps is a few hundred MB).
+RIP_CACHE = int(os.environ.get("INV_RIP_CACHE", "8"))
 
 
 def load_rip(path):
@@ -121,10 +124,26 @@ def load_rip(path):
     valid = valid[::k, ::k] if k > 1 else valid
     e, v = edges(rgb, valid)
     r = {"rgb": rgb, "valid": valid, "e": e, "v": v, "scale": k, "h": rgb.shape[0], "w": rgb.shape[1]}
-    if len(_rip_cache) > 12:
-        _rip_cache.clear()
+    if len(_rip_cache) >= RIP_CACHE:
+        for old in list(_rip_cache)[: len(_rip_cache) - RIP_CACHE + 1]:
+            del _rip_cache[old]
     _rip_cache[path] = r
     return r
+
+
+def get_rip(r):
+    """A rip given loaded or by its file (loaded through the small cache, so a worker holds only a few at once)."""
+    return load_rip(r) if isinstance(r, str) else r
+
+
+def unpad(rip):
+    """Drops a rip's padded maps (they're rebuilt when needed): bounds a worker's memory."""
+    if rip is None:
+        return
+    for k in [k for k in rip if isinstance(k, tuple)]:
+        del rip[k]
+    rip.pop("es", None)
+    rip.pop("half", None)
 
 
 def load_shot(path):
@@ -252,6 +271,92 @@ def colour_score(shot, mask, rip, x, y):
     return float(agree.mean())
 
 
+def colour_direct(shot, mask, rip, x, y, tol=32):
+    """
+    The share of the overlap whose colours agree within tol after one global
+    colour correction per channel (gain 0.6 to 1.6, offset within 60): for the
+    Game Boy Advance and DS games, whose shots and rips share the game's own
+    palette. Unlike colour_score's free transfer it can't turn sand into sea.
+    """
+    h, w = shot.shape[:2]
+    x0, y0 = max(0, -x), max(0, -y)
+    x1, y1 = min(w, rip["w"] - x), min(h, rip["h"] - y)
+    if x1 - x0 < 8 or y1 - y0 < 8:
+        return 0.0
+    s = shot[y0:y1, x0:x1].reshape(-1, 3).astype(np.float32)
+    r = rip["rgb"][y0 + y : y1 + y, x0 + x : x1 + x].reshape(-1, 3).astype(np.float32)
+    ok = (rip["valid"][y0 + y : y1 + y, x0 + x : x1 + x] & mask[y0:y1, x0:x1]).reshape(-1)
+    if ok.sum() < 100:
+        return 0.0
+    s, r = s[ok], r[ok]
+    fit = np.empty_like(s)
+    for c in range(3):
+        vs = s[:, c].var()
+        g = float(((s[:, c] - s[:, c].mean()) * (r[:, c] - r[:, c].mean())).mean() / vs) if vs > 1 else 1.0
+        g = min(1.6, max(0.6, g))
+        o = min(60.0, max(-60.0, float(r[:, c].mean() - g * s[:, c].mean())))
+        fit[:, c] = g * s[:, c] + o
+    return float((np.abs(fit - r).max(1) <= tol).mean())
+
+
+DIRECT_FAMILIES = ("rse", "frlg", "dppt", "hgss", "bw")
+
+
+def _direct_one(args):
+    j, peaks = args
+    shot = load_shot(j["shot"])
+    if shot is None:
+        return j["id"], {}
+    files = {r["rip"]: r["file"] for r in j["rips"]}
+    out = {}
+    warps = {}
+    for mode, p in peaks:
+        if p["rip"] not in files:
+            continue
+        rip = load_rip(files[p["rip"]])
+        if rip is None:
+            continue
+        if mode == "cam":
+            key = tuple(p["cam"])
+            if key not in warps:
+                warps[key] = warp(shot, key, blur=False)
+            wv = warps[key]
+            if wv is None:
+                continue
+            v = colour_direct(wv["rgb"], wv["mask"], rip, p["x"], p["y"])
+        else:
+            v = colour_direct(shot, np.ones(shot.shape[:2], bool), rip, p["x"], p["y"])
+        out[f'{mode}|{p["rip"]}|{p["x"]}|{p["y"]}'] = round(v, 4)
+    return j["id"], out
+
+
+def main_direct(cache, files):
+    """colour_direct for every peak that could matter (cover >= MIN_COVER, edge >= 0.25) in the given match files: inv-direct.json."""
+    d = json.load(open(os.path.join(cache, "inv-jobs.json")))
+    jobs = {j["id"]: j for j in d["jobs"] if j["family"] in DIRECT_FAMILIES}
+    path = os.path.join(cache, "inv-direct.json")
+    done = json.load(open(path)) if os.path.exists(path) else {}
+    todo = {}
+    for f in files:
+        if not os.path.exists(os.path.join(cache, f)):
+            continue
+        for m in json.load(open(os.path.join(cache, f))):
+            if m["id"] not in jobs:
+                continue
+            for mode in ("flat", "cam"):
+                for p in m.get(mode) or []:
+                    k = f'{mode}|{p["rip"]}|{p["x"]}|{p["y"]}'
+                    if p["cover"] >= MIN_COVER and p["edge"] >= 0.25 and k not in done.get(m["id"], {}):
+                        todo.setdefault(m["id"], []).append((mode, p))
+    with Pool(int(os.environ.get("INV_PROCS", "4"))) as pool:
+        for k, (i, v) in enumerate(pool.imap_unordered(_direct_one, [(jobs[i], ps) for i, ps in todo.items()], chunksize=4)):
+            done.setdefault(i, {}).update(v)
+            if k % 200 == 0:
+                json.dump(done, open(path, "w"))
+    json.dump(done, open(path, "w"))
+    print(f"direct colour: {len(todo)} shots")
+
+
 # --------------------------------------------------------------------------- flat (2D) matching
 
 
@@ -261,6 +366,7 @@ def match_flat(shot, rips, mask=None, keep=PEAKS):
     T, Mt = edges(shot, mask)
     out = []
     for rk, rip in rips:
+        rip = get_rip(rip)
         if rip is None:
             continue
         P, V, Ps = padded(rip, h, w)
@@ -485,15 +591,17 @@ def match_cam(shot, rips, seeds, top=3):
     camera). Spot = the ground under the view's middle.
     """
     cands = []
-    for ci, c in enumerate(seeds):
-        wv = warp(shot, c)
-        if wv is None:
+    views = [(c, warp(shot, c)) for c in seeds]
+    views = [(c, wv) for c, wv in views if wv is not None]
+    # Rip by rip (each loaded and padded once for every seed camera).
+    for rk, rip in rips:
+        rip = get_rip(rip)
+        if rip is None:
             continue
-        for rk, rip in rips:
-            if rip is None:
-                continue
+        for c, wv in views:
             for x, y, s, cov in cam_global(wv, rip):
                 cands.append((s, rk, c, x, y))
+        unpad(rip)
     cands.sort(key=lambda t: -t[0])
     picked = []
     for s, rk, c, x, y in cands:
@@ -506,7 +614,9 @@ def match_cam(shot, rips, seeds, top=3):
     out = []
     refined = []
     for s, rk, c, x, y in picked:
-        r = refine(shot, ripmap[rk], c, x, y)
+        rip = get_rip(ripmap[rk])
+        r = refine(shot, rip, c, x, y)
+        unpad(rip)
         if r is None:
             continue
         sc, c2, sx, sy, cov, wv = r
@@ -522,7 +632,7 @@ def match_cam(shot, rips, seeds, top=3):
                 "spot": [tlx + wv["player"][0], tly + wv["player"][1]],
                 "edge": round(float(sc), 4),
                 "cover": round(cov, 3),
-                "colour": round(colour_score(wv["rgb"], wv["mask"], ripmap[rk], tlx, tly), 4),
+                "colour": round(colour_score(wv["rgb"], wv["mask"], get_rip(ripmap[rk]), tlx, tly), 4),
                 "cam": [round(v, 6) for v in c2],
                 "refined": True,
             }
@@ -531,9 +641,12 @@ def match_cam(shot, rips, seeds, top=3):
         c2 = refined[0][2]
         wv = refined[0][6]
         for rk, rip in rips:
+            rip = get_rip(rip)
             if rip is None:
                 continue
-            for x, y, s, cov in cam_global(wv, rip, PEAKS):
+            found = cam_global(wv, rip, PEAKS)
+            unpad(rip)
+            for x, y, s, cov in found:
                 out.append(
                     {
                         "rip": rk,
@@ -554,16 +667,16 @@ def seeds_for(family, cams):
         z, ry, p, _ = seed_params(cams[family])
         return [(z * f, ry, p, 0.0) for f in CAM_ZOOMS]
     # Black / White: no fitted camera. A scan of zoom x foreshortening x perspective on its own route shots
-    # put them at a zoom of about 0.9 on the Black / White rips and 0.78 on the Black 2 / White 2 ones
-    # (those are drawn about 1.16x larger), with a perspective of 0.0015 to 0.003: four seeds, refined per shot.
+    # found zooms from about 0.7 to 1.1 (the Black / White and Black 2 / White 2 rips are drawn at different
+    # scales) and a perspective of about 0.0015 to 0.003: four seeds, each refined per shot.
     return [(z, 1.0, p, 0.0) for z in BW_ZOOMS for p in BW_PERSPECTIVE]
 
 
 # The seed cameras tried over every rip before refining (the refinement moves the zoom on from there).
 CAM_ZOOMS = tuple(float(v) for v in os.environ.get("INV_CAM_ZOOMS", "1.0").split(","))
 
-BW_ZOOMS = (0.78, 0.9)
-BW_PERSPECTIVE = (0.0015, 0.003)
+BW_ZOOMS = (0.72, 0.84, 0.96, 1.08)
+BW_PERSPECTIVE = (0.0022,)
 
 
 # --------------------------------------------------------------------------- the run
@@ -571,10 +684,16 @@ BW_PERSPECTIVE = (0.0015, 0.003)
 DS = ("dppt", "hgss", "bw")
 
 
+# A town's spot stays area-scored, so INV_SKIP_TOWNS=1 leaves towns out of a (slow) camera pass.
+TOWN = re.compile(r"\b(City|Town|Village|Island|Plateau|Area)$")
+
+
 def run_place(args):
     jobs, cams, max_view = args
     out = []
-    rips = {}
+    sizes = {}
+    if os.environ.get("INV_SKIP_TOWNS") and TOWN.search(jobs[0]["place"].split("|")[1]):
+        return [{"id": j["id"], "why": "town"} for j in jobs]
     for j in jobs:
         shot = load_shot(j["shot"])
         if shot is None:
@@ -582,30 +701,31 @@ def run_place(args):
             continue
         h, w = shot.shape[:2]
         sw, sh = j["screen"]
-        res = {"id": j["id"], "native": [w, h], "selfsim": selfsim(shot)}
+        modes = os.environ.get("INV_MODES", "flat,cam").split(",")
+        res = {"id": j["id"], "native": [w, h]}
+        if "flat" in modes:
+            res["selfsim"] = selfsim(shot)
         if w * h > max_view * sw * sh:
             res["why"] = "map"
             out.append(res)
             continue
         cand = []
         for r in j["rips"]:
-            if r["rip"] not in rips:
-                rips[r["rip"]] = load_rip(r["file"])
-            rp = rips[r["rip"]]
-            if rp is not None and rp["w"] * rp["h"] >= MIN_RIP_SCREENS * sw * sh:
-                cand.append((r["rip"], rp))
+            if r["file"] not in sizes:
+                rp = load_rip(r["file"])
+                sizes[r["file"]] = (rp["w"], rp["h"]) if rp is not None else None
+            sz = sizes[r["file"]]
+            if sz is not None and sz[0] * sz[1] >= MIN_RIP_SCREENS * sw * sh:
+                cand.append((r["rip"], r["file"]))
         if not cand:
             res["why"] = "no rip"
             out.append(res)
             continue
-        modes = os.environ.get("INV_MODES", "flat,cam").split(",")
         if "flat" in modes:
             res["flat"] = match_flat(shot, cand)
         if "cam" in modes and j["family"] in DS and not j["cut"] and w <= sw + 4 and h <= sh + 4:
             res["cam"] = match_cam(shot, cand, seeds_for(j["family"], cams))
         out.append(res)
-    # The padded maps are kept across a place's shots (they share their rips), and dropped with the place.
-    drop_pads([(k, r) for k, r in rips.items()])
     return out
 
 
@@ -665,6 +785,8 @@ if __name__ == "__main__":
     cache, step = sys.argv[1], sys.argv[2]
     if step == "selfsim":
         main_selfsim(cache)
+    elif step == "direct":
+        main_direct(cache, sys.argv[3:])
     elif step == "match":
         main_match(cache, set(sys.argv[3:]))
     elif step == "known":
