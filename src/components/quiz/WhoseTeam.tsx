@@ -16,6 +16,17 @@ import { cn } from "@/lib/utils";
 
 type Card = { label: string; imageUrl: string };
 
+/** One row on desktop for up to six (each tile ~100px), two rows of four for the anime's bigger rosters. */
+const GRID: Record<number, string> = {
+  2: "max-w-[240px] grid-cols-2",
+  3: "max-w-sm grid-cols-3",
+  4: "max-w-md grid-cols-4",
+  5: "grid-cols-3 sm:grid-cols-5 sm:max-w-[540px]",
+  6: "grid-cols-3 sm:grid-cols-6",
+  7: "grid-cols-4 sm:max-w-md",
+  8: "grid-cols-4 sm:max-w-md",
+};
+
 interface TeamBoardProps {
   cards: Card[];
   /** Hard: how many of the team are showing. */
@@ -29,12 +40,11 @@ interface TeamBoardProps {
 export function TeamBoard({ cards, reveal, onReveal, revealing }: TeamBoardProps) {
   const total = reveal?.total ?? cards.length;
   const hidden = Math.max(0, total - cards.length);
-  const many = total > 6;
   const nextFactor = reveal && reveal.shown < reveal.total ? revealFactor(reveal.shown + 1, reveal.total) : null;
   return (
     <div className="space-y-3">
       <ol
-        className={cn("grid gap-2 sm:gap-3", many ? "grid-cols-4" : total <= 3 ? "grid-cols-3" : "grid-cols-3 sm:grid-cols-6")}
+        className={cn("mx-auto grid gap-2 sm:gap-3", GRID[Math.min(total, 8)] ?? GRID[6])}
         aria-label={reveal ? `Team: ${cards.length} of ${total} Pokémon shown` : `Team of ${total} Pokémon`}
       >
         {cards.map((card, i) => (
@@ -115,7 +125,7 @@ export function GuessBox({ options, disabled, onGuess }: GuessBoxProps) {
 
   return (
     <form
-      className="relative"
+      className="relative z-10"
       onSubmit={(e) => {
         e.preventDefault();
         submit();
@@ -167,15 +177,16 @@ export function GuessBox({ options, disabled, onGuess }: GuessBoxProps) {
             )}
           />
           <AnimatePresence>
+            {/* Opens upward: the box sits at the bottom of a card that clips what overflows it. */}
             {open && matches.length > 0 && !disabled && (
               <motion.ul
                 id={listId}
                 role="listbox"
-                initial={{ opacity: 0, y: -4 }}
+                initial={{ opacity: 0, y: 4 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.12 }}
-                className="absolute inset-x-0 top-[calc(100%+4px)] z-20 overflow-hidden rounded-md border-2 border-foreground/15 bg-card shadow-xl"
+                className="absolute inset-x-0 bottom-[calc(100%+4px)] z-30 overflow-hidden rounded-md border-2 border-screen/40 bg-[hsl(var(--card))] shadow-[0_12px_32px_-8px_rgb(0_0_0/0.7)]"
               >
                 {matches.map((m, i) => (
                   <li

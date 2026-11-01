@@ -264,6 +264,62 @@ step("real shiny quiz: three questions");
   if (seenImages.length < 3) errors.push(`real shiny: only ${seenImages.length}/3 questions had four image options`);
 }
 
+// Whose Team Is This?: the team on show, a typed guess from the autocomplete. The question never carries the
+// trainer, the appearance or the source; on Hard only the Pokémon revealed so far reach the browser.
+async function playWhoseTeam(p, hard, shotTag) {
+  const leaks = [];
+  let reveals = 0;
+  let fullTeams = 0;
+  const watch = async (res) => {
+    const path = new URL(res.url()).pathname;
+    if (!/^\/api\/session(\/answer|\/next|\/reveal)?$/.test(path) || !res.ok()) return;
+    const body = await res.json().catch(() => null);
+    for (const q of [body?.question, body?.next]) {
+      if (!q) continue;
+      if (/"answer"|"explanation"|bulbapedia|fandom|appearance/i.test(JSON.stringify({ ...q, options: undefined }))) leaks.push(JSON.stringify(q).slice(0, 200));
+      if (q.input !== "type") leaks.push(`not a typed question: ${JSON.stringify(q).slice(0, 120)}`);
+      if (hard && (q.cards?.length !== 1 || q.reveal?.shown !== 1)) leaks.push(`hard question sent ${q.cards?.length} cards`);
+      if (!hard && (q.reveal || (q.cards?.length ?? 0) < 2)) leaks.push(`normal question sent ${q.cards?.length} cards`);
+    }
+    if (path.endsWith("/reveal")) {
+      reveals++;
+      if (!body?.card || body.reveal?.shown < 2 || /"answer"|bulbapedia/i.test(JSON.stringify(body))) leaks.push(`reveal: ${JSON.stringify(body).slice(0, 200)}`);
+    }
+    if (path.endsWith("/answer") && body?.revealCards?.length >= 2) fullTeams++;
+  };
+  p.on("response", watch);
+  await gotoSettled(p, `${BASE}/quiz/whose-team-is-this${hard ? "?difficulty=hard" : ""}`);
+  await p.getByRole("button", { name: /^Start/ }).click();
+  for (let i = 0; i < 3; i++) {
+    const guess = p.getByTestId("team-guess");
+    await guess.waitFor({ timeout: 15_000 });
+    await p.locator("main ol img").first().waitFor();
+    if (hard) {
+      await p.getByTestId("team-reveal").click();
+      await p.locator("main ol img").nth(1).waitFor({ timeout: 10_000 });
+    }
+    await guess.fill("cyn");
+    await p.getByRole("option", { name: /Cynthia/ }).waitFor();
+    if (i === 0) await p.screenshot({ path: `${OUT}/quiz-whose-team-${shotTag}.png` });
+    await guess.press("Enter");
+    await p.getByTestId("team-answer").waitFor({ timeout: 10_000 });
+    await p.getByRole("link", { name: /Source: Bulbapedia/ }).waitFor({ timeout: 5_000 });
+    if (i === 0) {
+      await p.waitForTimeout(700);
+      await p.screenshot({ path: `${OUT}/quiz-whose-team-${shotTag}-revealed.png` });
+    }
+    await p.getByRole("button", { name: /Next question|See results/ }).click();
+  }
+  p.off("response", watch);
+  if (leaks.length) errors.push(`whose team (${shotTag}): ${leaks[0]}`);
+  if (hard && reveals !== 3) errors.push(`whose team (hard): ${reveals}/3 reveals answered`);
+  if (hard && fullTeams !== 3) errors.push(`whose team (hard): ${fullTeams}/3 answers showed the whole team`);
+}
+step("whose team is this?: three Normal rounds");
+await playWhoseTeam(page, false, "normal");
+step("whose team is this?: three Hard rounds, one reveal each");
+await playWhoseTeam(page, true, "hard");
+
 step("blitz format");
 await gotoSettled(page, `${BASE}/quiz/pokemon-trivia-quiz?format=blitz`);
 await page.getByRole("button", { name: /^Start/ }).click();
@@ -1376,6 +1432,60 @@ await quizBlue.p.getByText(/Victory!|Defeat|Draw/).first().waitFor();
 await quizRed.p.screenshot({ path: `${OUT}/quiz-duel-summary.png`, fullPage: true });
 if (quizRed.seen.view?.revealed?.length !== 10) errors.push(`quiz duel ended after ${quizRed.seen.view?.revealed?.length} questions`);
 for (const { p } of quiz) await p.context().close();
+
+// A Whose Team duel on Hard: each trainer sees only their own reveals. Two questions, then Red forfeits.
+step("whose team duel: hard, two questions, then a forfeit");
+{
+  const team = [];
+  for (const name of ["Red", "Blue"]) {
+    const p = await newPage({ width: 1280, height: 900 });
+    const seen = { rev: -1, view: null };
+    p.on("response", async (res) => {
+      if (!/\/api\/duel(\/|$)/.test(res.url()) || !res.ok()) return;
+      const body = await res.json().catch(() => null);
+      const view = body?.view ?? body;
+      if (!view || typeof view.rev !== "number") return;
+      const q = view.question?.question;
+      if (q && /"(answer|explanation|picks|choice)"|bulbapedia/i.test(JSON.stringify({ ...q, options: undefined }))) errors.push(`whose team duel leaked: ${JSON.stringify(q).slice(0, 200)}`);
+      if (q && q.cards?.length !== q.reveal?.shown) errors.push(`whose team duel sent ${q.cards?.length} cards with ${q.reveal?.shown} revealed`);
+      if (view.rev >= seen.rev) Object.assign(seen, { rev: view.rev, view });
+    });
+    team.push({ p, name, seen });
+  }
+  const [tRed, tBlue] = team;
+  await gotoSettled(tRed.p, `${BASE}/quiz/whose-team-is-this`);
+  await tRed.p.getByRole("button", { name: "Hard", exact: true }).last().click();
+  await tRed.p.getByLabel("Your trainer name").fill("Red");
+  await clickUntilUrl(tRed.p, tRed.p.getByRole("button", { name: /Create duel/ }), /\/quiz\/duel\/[a-z2-9]{8}$/);
+  const teamUrl = tRed.p.url();
+  await gotoSettled(tBlue.p, teamUrl);
+  await tBlue.p.getByText("Red challenges you!").waitFor();
+  await tBlue.p.getByLabel("Your trainer name").fill("Blue");
+  await tBlue.p.getByRole("button", { name: /Join duel/ }).click();
+  await tRed.p.getByText("Blue").first().waitFor();
+  await Promise.all(team.map(({ p }) => p.getByRole("button", { name: /^Ready$/ }).click()));
+  for (let i = 0; i < 2; i++) {
+    await Promise.all(team.map(({ p }) => p.getByTestId("team-guess").waitFor({ timeout: 30_000 })));
+    await tRed.p.getByTestId("team-reveal").click();
+    await tRed.p.locator("main ol img").nth(1).waitFor({ timeout: 10_000 });
+    if ((await tBlue.p.locator("main ol img").count()) !== 1) errors.push("whose team duel: Blue saw Red's reveal");
+    if (i === 0) await tRed.p.screenshot({ path: `${OUT}/quiz-whose-team-duel.png` });
+    for (const { p } of team) {
+      await p.getByTestId("team-guess").fill("Cynthia");
+      await p.getByTestId("team-guess").press("Enter");
+    }
+    const next = tRed.p.getByRole("button", { name: /Next question/ });
+    await next.waitFor({ timeout: 20_000 });
+    await tRed.p.getByTestId("team-answer").waitFor();
+    if (i === 0) await tRed.p.screenshot({ path: `${OUT}/quiz-whose-team-duel-reveal.png`, fullPage: true });
+    await Promise.all(team.map(({ p }) => p.getByRole("button", { name: /Next question/ }).click()));
+  }
+  await tRed.p.getByTestId("team-guess").waitFor({ timeout: 30_000 });
+  await tRed.p.getByRole("button", { name: /Leave duel/ }).click();
+  await tRed.p.getByRole("button", { name: /^Forfeit$/ }).click();
+  await tBlue.p.getByText("Red left the duel.").waitFor();
+  for (const { p } of team) await p.context().close();
+}
 
 // Matchmaking: two trainers press "Find an opponent" for the same game, with no link, and land in one duel
 // that starts on its own. Red searches first (and waits), Blue's search pairs them.
