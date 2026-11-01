@@ -9,6 +9,7 @@ import { higherLower } from "./modules/higher-lower";
 import { anime, games } from "./modules/trivia";
 import { shiny } from "./modules/shiny";
 import { competitive } from "./modules/competitive";
+import { whoseTeam } from "./modules/whose-team";
 
 /** Module registry — adding a game mode is one builder file plus one line here. */
 const BUILDERS: Record<Exclude<ModuleId, "mixed">, QuestionBuilder> = {
@@ -21,6 +22,7 @@ const BUILDERS: Record<Exclude<ModuleId, "mixed">, QuestionBuilder> = {
   anime,
   competitive,
   shiny,
+  "whose-team": whoseTeam,
 };
 
 /** Mixed (Daily Challenge) rotation. Cry is excluded: people play the daily in public. */

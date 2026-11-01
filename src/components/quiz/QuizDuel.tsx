@@ -18,7 +18,7 @@ import {
   type QuizDuelResult,
   type QuizDuelView,
 } from "@/lib/pvp-types";
-import { MODULE_INFO, moduleHref } from "@/lib/modes";
+import { MODULE_INFO, difficultyLabel, moduleHref } from "@/lib/modes";
 import { play, unlockAudio, vibrate } from "@/lib/sound";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -28,6 +28,7 @@ import { useDuel } from "@/components/duel/use-duel";
 import { DuelGone, DuelLoading, DuelLobby, DuelNotice, DuelVisitor, LeaveButton, SEAT_COLORS, SeatDot, seconds } from "@/components/duel/DuelParts";
 import { DuelChat, DuelTools, EmoteFeed } from "@/components/duel/DuelReactions";
 import { CryPlayer, ImageMedia } from "./QuestionMedia";
+import { GuessBox, TeamBoard, TrainerReveal } from "./WhoseTeam";
 import { preloadAssets, questionAssets } from "@/lib/preload";
 import { cn } from "@/lib/utils";
 import { AddFriendAfterGame } from "@/components/community/AddFriend";
@@ -42,7 +43,6 @@ import { Avatar } from "@/components/avatar/Avatar";
  */
 
 const fmt = (n: number) => n.toLocaleString("en-US");
-const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
 /** The first value seen for `key`. Media URLs are re-signed on every poll, and the media shouldn't reload each time. */
 function useFirst<T>(key: number | undefined, value: T | undefined): T | undefined {
@@ -133,7 +133,7 @@ export function QuizDuel({ code }: { code: string }) {
       if (e.metaKey || e.ctrlKey || e.altKey) return;
       const t = e.target as HTMLElement | null;
       if (t?.closest("input, textarea, select, a")) return;
-      if (live?.question && !live.yours && now < live.endsAt) {
+      if (live?.question && !live.question.input && !live.yours && now < live.endsAt) {
         const n = /^[1-9]$/.test(e.key) ? Number(e.key) : 0;
         if (n >= 1 && n <= live.question.options.length) void answer(live.question.options[n - 1]);
       } else if (revealing && (e.key === "Enter" || e.key === " ") && !t?.closest("button")) {
@@ -158,7 +158,7 @@ export function QuizDuel({ code }: { code: string }) {
   if (!view) return <DuelLoading />;
 
   const info = MODULE_INFO[view.module];
-  const tag = `Quiz duel · ${info.title} · ${capitalize(view.difficulty)}`;
+  const tag = `Quiz duel · ${info.title} · ${difficultyLabel(view.module, view.difficulty)}`;
   const notice = (
     <>
       <DuelNotice error={error} offline={offline} />
@@ -193,7 +193,7 @@ export function QuizDuel({ code }: { code: string }) {
           shareText={`Duel me in ${info.title}! Same ${view.total} questions, the most points wins.`}
           settings={
             <p className="text-center text-sm text-muted-foreground">
-              Mode: <b className="text-foreground">{info.title}</b> · Difficulty: <b className="text-foreground">{capitalize(view.difficulty)}</b>
+              Mode: <b className="text-foreground">{info.title}</b> · Difficulty: <b className="text-foreground">{difficultyLabel(view.module, view.difficulty)}</b>
             </p>
           }
           rules={[
@@ -327,11 +327,29 @@ export function QuizDuel({ code }: { code: string }) {
             )}
             <div className={cn("space-y-5", loading && "invisible")} aria-hidden={loading || undefined}>
             <QuestionBody key={live.index} question={live.question} media={media} />
-            <Options
-              question={live.question}
-              onPick={locked || timeUp || busy || loading ? undefined : (choice) => void answer(choice)}
-              mine={locked}
-            />
+            {live.question.input === "type" ? (
+              <>
+                <TeamBoard
+                  cards={live.question.cards ?? []}
+                  reveal={live.question.reveal}
+                  onReveal={locked || timeUp || loading ? undefined : () => void act({ action: "reveal", round: live.index })}
+                  revealing={busy}
+                />
+                {locked ? (
+                  <p className="rounded-md border-2 border-screen/50 bg-screen/10 px-4 py-3 text-center font-display font-semibold tracking-wide" role="status">
+                    Locked in: {locked}
+                  </p>
+                ) : (
+                  <GuessBox key={live.index} options={live.question.options} disabled={timeUp || busy || loading} onGuess={(name) => void answer(name)} />
+                )}
+              </>
+            ) : (
+              <Options
+                question={live.question}
+                onPick={locked || timeUp || busy || loading ? undefined : (choice) => void answer(choice)}
+                mine={locked}
+              />
+            )}
             </div>
             {timeUp && !locked && <p className="text-center text-sm text-muted-foreground">Time&apos;s up! Waiting for the reveal…</p>}
           </CardContent>
@@ -349,8 +367,10 @@ export function QuizDuel({ code }: { code: string }) {
     const nextIn = view.next ? seconds(view.next.at - now) : 0;
     const mine = last.picks[me];
     // Picture questions grade by a card id, which means nothing to read out.
-    const answerText = last.question.cards?.length ? "the one marked in green" : last.answer;
-    const verdict = mine?.correct ? (last.question.cards?.length ? "Correct! That's the one!" : `Correct! It's ${answerText}!`) : mine ? `Not quite… it was ${answerText}.` : `Time's up! It was ${answerText}.`;
+    const typed = last.question.input === "type";
+    const pictures = !!last.question.cards?.length && !typed;
+    const answerText = pictures ? "the one marked in green" : last.answer;
+    const verdict = mine?.correct ? (pictures ? "Correct! That's the one!" : `Correct! It's ${answerText}!`) : mine ? `Not quite… it was ${answerText}.` : `Time's up! It was ${answerText}.`;
     return (
       <div className="mx-auto max-w-2xl space-y-4">
         {notice}
@@ -358,16 +378,23 @@ export function QuizDuel({ code }: { code: string }) {
         <Card className="overflow-hidden">
           <CardContent className="space-y-5 p-4 sm:p-6">
             <QuestionBody key={last.index} question={last.question} media={media} revealUrl={revealArt} answer={last.answer} />
-            <Options question={last.question} result={last} names={view.players.map((p) => p.name)} />
+            {typed ? (
+              <>
+                <TeamBoard cards={last.question.cards ?? []} />
+                <TrainerReveal name={last.answer} appearance={last.explanation} correct={!!mine?.correct} />
+              </>
+            ) : (
+              <Options question={last.question} result={last} names={view.players.map((p) => p.name)} />
+            )}
             <div className="grid grid-cols-2 gap-3">
               {last.picks.map((pick, seat) => (
-                <PickResult key={seat} seat={seat} name={view.players[seat]?.name ?? "—"} pick={pick} />
+                <PickResult key={seat} seat={seat} name={view.players[seat]?.name ?? "—"} pick={pick} said={typed} />
               ))}
             </div>
             <DialogBox text={verdict} speed={10} className={mine?.correct ? "border-success/90" : "border-destructive/90"}>
               {(last.explanation || last.sourceUrl) && (
                 <p className="text-sm text-muted-foreground">
-                  {last.explanation}
+                  {!typed && last.explanation}
                   {last.learnHref && (
                     <>
                       {" "}
@@ -560,7 +587,7 @@ function Options({
 }
 
 /** One trainer's result for a question: right or wrong, how fast, the points. */
-function PickResult({ seat, name, pick }: { seat: number; name: string; pick: QuizDuelPick | null }) {
+function PickResult({ seat, name, pick, said }: { seat: number; name: string; pick: QuizDuelPick | null; said?: boolean }) {
   return (
     <div className={cn("rounded-md border bg-shade/20 p-3 text-center", pick?.correct && "border-success/50")}>
       <p className="hud-label flex items-center justify-center gap-1.5">
@@ -569,7 +596,11 @@ function PickResult({ seat, name, pick }: { seat: number; name: string; pick: Qu
       <p className={cn("flex items-center justify-center gap-1.5 font-display text-2xl font-bold tabular-nums", pick?.correct ? "text-success" : "text-muted-foreground")}>
         {pick?.correct ? <CheckCircle2 className="h-5 w-5" aria-hidden /> : <XCircle className="h-5 w-5" aria-hidden />}+{pick?.points ?? 0}
       </p>
-      <p className="text-xs text-muted-foreground">{pick ? `${pick.correct ? "Right" : "Wrong"} in ${(pick.ms / 1000).toFixed(1)} s` : "No answer in time"}</p>
+      <p className="text-xs text-muted-foreground">
+        {pick ? `${pick.correct ? "Right" : "Wrong"} in ${(pick.ms / 1000).toFixed(1)} s` : "No answer in time"}
+        {pick?.shown !== undefined && ` · saw ${pick.shown}`}
+      </p>
+      {said && pick && !pick.correct && <p className="truncate text-xs text-muted-foreground">Said {pick.choice}</p>}
     </div>
   );
 }
@@ -602,7 +633,7 @@ function DuelSummary({ view, busy, home, onRematch }: { view: QuizDuelView; busy
     <div className="mx-auto max-w-3xl space-y-6">
       <div className="space-y-2 text-center">
         <p className="hud-label text-screen">
-          Duel over · {MODULE_INFO[view.module].title} · {capitalize(view.difficulty)}
+          Duel over · {MODULE_INFO[view.module].title} · {difficultyLabel(view.module, view.difficulty)}
         </p>
         <div className={cn("flex items-center justify-center gap-3 font-display text-6xl font-bold uppercase", won ? "text-success" : draw ? "text-screen" : "text-destructive")}>
           {won && <Crown className="h-12 w-12" aria-hidden />}

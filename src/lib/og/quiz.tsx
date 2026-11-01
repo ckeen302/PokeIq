@@ -13,6 +13,7 @@ const SAMPLES: Record<ModuleId, { question: string; answers: string[]; right: nu
   anime: { question: "Ash's friend in Kalos?", answers: ["Dawn", "Serena", "May", "Iris"], right: 1 },
   competitive: { question: "Type of Moonblast?", answers: ["Fairy", "Psychic", "Dark", "Ghost"], right: 0 },
   shiny: { question: "Which is the real shiny?", answers: ["1", "2", "3", "4"], right: 2 },
+  "whose-team": { question: "Whose team is this?", answers: ["Cynthia", "Steven", "Lance", "Diantha"], right: 0 },
   mixed: { question: "A bit of everything", answers: ["Silhouettes", "Cries", "Dex entries", "Type chart"], right: -1 },
 };
 

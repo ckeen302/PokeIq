@@ -264,7 +264,7 @@ export const quizDuelPoints = (ms: number) =>
   QUIZ_DUEL_POINTS + Math.round(QUIZ_DUEL_SPEED_BONUS * Math.max(0, 1 - ms / QUIZ_DUEL_QUESTION_MS));
 
 /** A question as both trainers see it: the solo quiz's public question, without its timer. */
-export type QuizDuelQuestionView = Pick<PublicQuestion, "module" | "prompt" | "detail" | "options" | "images" | "media" | "cards">;
+export type QuizDuelQuestionView = Pick<PublicQuestion, "module" | "prompt" | "detail" | "options" | "images" | "media" | "cards" | "input" | "reveal">;
 
 export interface QuizDuelLiveQuestion {
   index: number;
@@ -285,6 +285,8 @@ export interface QuizDuelLiveQuestion {
 export interface QuizDuelPick {
   choice: string;
   correct: boolean;
+  /** Revealed questions: how many Pokémon this trainer had seen when they answered. */
+  shown?: number;
   /** Time from the question appearing to the pick. */
   ms: number;
   points: number;

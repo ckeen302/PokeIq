@@ -7,8 +7,8 @@ import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
 import { track } from "@vercel/analytics";
 import { CheckCircle2, Flame, Heart, RotateCcw, XCircle } from "lucide-react";
-import type { AnswerResponse, NextResponse, PublicQuestion, RunResult, ShareCard, StartResponse } from "@/lib/session-types";
-import type { Difficulty, ModuleId, QuizFormat } from "@/engines/types";
+import type { AnswerResponse, NextResponse, PublicQuestion, RevealResponse, RunResult, ShareCard, StartResponse } from "@/lib/session-types";
+import type { Difficulty, ModuleId, QuizFormat, QuizScope } from "@/engines/types";
 import { getProgress, recordAnswer } from "@/lib/progress";
 import { play, unlockAudio, vibrate } from "@/lib/sound";
 import { Button } from "@/components/ui/button";
@@ -18,6 +18,7 @@ import { DialogBox } from "@/components/game/DialogBox";
 import { HpBar } from "@/components/game/HpBar";
 import { CryPlayer, ImageMedia } from "./QuestionMedia";
 import { QuizResults } from "./QuizResults";
+import { GuessBox, TeamBoard, TrainerReveal } from "./WhoseTeam";
 import { cn } from "@/lib/utils";
 import { preloadAssets, questionAssets } from "@/lib/preload";
 
@@ -31,7 +32,7 @@ import { preloadAssets, questionAssets } from "@/lib/preload";
  */
 
 export type StartRequest =
-  | { module: ModuleId; format: QuizFormat; difficulty: Difficulty; gens?: number[] }
+  | { module: ModuleId; format: QuizFormat; difficulty: Difficulty; gens?: number[]; scope?: QuizScope }
   | { daily: string }
   | { challenge: string };
 
@@ -81,6 +82,7 @@ export function QuizController({ request, challenger, onRestart, onAnswered, onC
   const [now, setNow] = useState(() => Date.now());
   const [attempt, setAttempt] = useState(0);
   const [advancing, setAdvancing] = useState(false);
+  const [revealing, setRevealing] = useState(false);
 
   const tokenRef = useRef("");
   const pendingNextRef = useRef<PublicQuestion | null>(null);
@@ -212,6 +214,30 @@ export function QuizController({ request, challenger, onRestart, onAnswered, onC
     [isBlitz, onAnswered]
   );
 
+  // Whose Team on Hard: one more Pokémon (the new token counts it, so a right answer scores less).
+  const revealingRef = useRef(false);
+  const revealMore = useCallback(async () => {
+    if (revealingRef.current || submittingRef.current) return;
+    revealingRef.current = true;
+    setRevealing(true);
+    try {
+      const res = await fetch("/api/session/reveal", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token: tokenRef.current }),
+      });
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) return;
+      const next = body as RevealResponse;
+      tokenRef.current = next.token;
+      play("click");
+      setQuestion((q) => (q ? { ...q, cards: [...(q.cards ?? []), next.card], reveal: next.reveal } : q));
+    } finally {
+      revealingRef.current = false;
+      setRevealing(false);
+    }
+  }, []);
+
   // A section of a bigger test: hand the graded run over once.
   const completedRef = useRef(false);
   useEffect(() => {
@@ -319,7 +345,7 @@ export function QuizController({ request, challenger, onRestart, onAnswered, onC
   useEffect(() => {
     function onKeyDown(e: KeyboardEvent) {
       if (e.metaKey || e.ctrlKey || e.altKey || isOtherControl(e.target)) return;
-      if (phase === "active" && question) {
+      if (phase === "active" && question && !question.input) {
         const twoCards = Boolean(question.cards?.length) && question.options.length === 2;
         const n =
           twoCards && e.key === "ArrowLeft" ? 1 : twoCards && e.key === "ArrowRight" ? 2 : /^[1-9]$/.test(e.key) ? Number(e.key) : 0;
@@ -399,7 +425,9 @@ export function QuizController({ request, challenger, onRestart, onAnswered, onC
   if (!question || !rules) return null;
   const revealed = phase === "revealed";
   const preparing = phase === "preparing";
-  const isCards = Boolean(question.cards?.length);
+  // Typed answers (Whose Team) show cards too, but the answer is a name.
+  const isTeam = question.input === "type";
+  const isCards = Boolean(question.cards?.length) && !isTeam;
   const timeFraction =
     questionMsLeft !== null ? questionMsLeft / rules.questionMs! : runMsLeft !== null ? runMsLeft / rules.runMs! : null;
   const secondsLeft = Math.ceil((questionMsLeft ?? runMsLeft ?? 0) / 1000);
@@ -537,7 +565,21 @@ export function QuizController({ request, challenger, onRestart, onAnswered, onC
               </>
             )}
 
-            {question.images ? (
+            {isTeam ? (
+              <>
+                <TeamBoard
+                  cards={revealed && graded?.revealCards ? graded.revealCards : (question.cards ?? [])}
+                  reveal={revealed ? undefined : question.reveal}
+                  onReveal={phase === "active" ? () => void revealMore() : undefined}
+                  revealing={revealing}
+                />
+                {revealed && graded ? (
+                  <TrainerReveal name={graded.answer} appearance={graded.explanation} correct={graded.correct} />
+                ) : (
+                  <GuessBox key={question.index} options={question.options} disabled={phase !== "active" || revealing} onGuess={(name) => void submit(name)} />
+                )}
+              </>
+            ) : question.images ? (
               <div className="grid grid-cols-2 gap-3">
                 {question.options.map((option, i) => (
                   <AnswerTile key={option} index={i} option={option} phase={phase} selected={selected} graded={graded} onPick={submit} card>
@@ -581,7 +623,8 @@ export function QuizController({ request, challenger, onRestart, onAnswered, onC
                 >
                   {(graded.explanation || graded.sourceUrl) && (
                     <p className="text-sm text-muted-foreground">
-                      {graded.explanation}
+                      {/* Whose Team shows the appearance on the trainer's plate. */}
+                      {!isTeam && graded.explanation}
                       {graded.learnHref && (
                         <>
                           {" "}

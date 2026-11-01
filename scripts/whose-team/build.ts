@@ -327,14 +327,19 @@ function build(): TeamEntry[] {
     }
     return true;
   });
-  return all.map(({ battleLevel: _, ...e }) => e);
+  return all.map((e) => {
+    const out: TeamEntry & { battleLevel?: number } = { ...e };
+    delete out.battleLevel;
+    return out;
+  });
 }
 
 const entries = build();
 if (process.argv.includes("--print")) {
   for (const e of entries) console.log(`${e.trainer.padEnd(16)} ${e.appearance}${e.variant ? ` [${e.variant}]` : ""} :: ${e.team.map((m) => m.species + (m.form ? `(${m.form})` : "")).join(", ")} | ace ${e.ace}`);
 }
-fs.writeFileSync(OUT, JSON.stringify(entries, null, 1) + "\n");
+// One round per line: reviewable diffs, a third of the size of indented JSON.
+fs.writeFileSync(OUT, `[\n${entries.map((e) => JSON.stringify(e)).join(",\n")}\n]\n`);
 const names = [...new Set(entries.map((e) => e.trainer))].sort((a, b) => a.localeCompare(b));
 fs.writeFileSync(
   NAMES_OUT,

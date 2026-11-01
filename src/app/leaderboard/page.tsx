@@ -12,7 +12,7 @@ import { GEO_ROUND_OPTIONS, WORLD_REGION, geoBoardKey, geoMapRank } from "@/lib/
 import { GEO_REGION_STREAK_BOARD } from "@/lib/geo-streak-types";
 import { GEO_ERA_NAMES, type GeoEra } from "@/lib/geo-families";
 import { dailyNumber, isValidDailyDate } from "@/lib/daily";
-import { FORMAT_INFO, MODULE_INFO, PLAY_MODULES, PLAYABLE_FORMATS } from "@/lib/modes";
+import { FORMAT_INFO, MODULE_INFO, PLAY_MODULES, PLAYABLE_FORMATS, difficultiesFor } from "@/lib/modes";
 import { DIFFICULTIES, type Difficulty, type ModuleId, type QuizFormat } from "@/engines/types";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -501,10 +501,10 @@ export default async function LeaderboardPage({ searchParams }: PageProps) {
               ))}
             </div>
             <div className="flex justify-center gap-2">
-              {DIFFICULTIES.map((d) => (
+              {difficultiesFor(board as ModuleId).map(({ id: d, label }) => (
                 <Link key={d} href={`/leaderboard?board=${board}&format=${format}&difficulty=${d}`}>
                   <Badge variant={d === difficulty ? "secondary" : "outline"} className="capitalize hover:bg-accent">
-                    {d}
+                    {label}
                   </Badge>
                 </Link>
               ))}

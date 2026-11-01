@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { DIFFICULTIES, FORMATS, MODULES } from "@/engines/types";
+import { DIFFICULTIES, FORMATS, MODULES, SCOPES } from "@/engines/types";
 import { isValidDailyDate } from "@/lib/daily";
 import { randomId, verifyToken } from "@/lib/server/crypto";
 import { clientIp, rateLimit } from "@/lib/server/rate-limit";
@@ -29,6 +29,8 @@ const bodySchema = z.object({
   format: z.enum(FORMATS).default("classic"),
   difficulty: z.enum(DIFFICULTIES).default("medium"),
   gens: z.array(z.number().int().min(1).max(9)).max(9).optional(),
+  /** Whose Team Is This?: games only or anime only (absent: both). */
+  scope: z.enum(SCOPES).optional(),
   daily: z.string().optional(),
   challenge: z.string().max(4096).optional(),
   name: z.string().trim().max(24).optional(),
@@ -56,14 +58,16 @@ export async function POST(request: NextRequest) {
     const card = verifyToken<ShareCard>("share", body.challenge);
     if (!card) return NextResponse.json({ error: "Invalid challenge link." }, { status: 400 });
     // Same seed => identical questions. Not a daily entry, even if it replays one.
-    spec = { module: card.m, format: card.f, difficulty: card.d, gens: card.g, seed: card.s, practice: "challenge" };
+    spec = { module: card.m, format: card.f, difficulty: card.d, gens: card.g, seed: card.s, practice: "challenge", ...(card.o && { scope: card.o }) };
   } else {
     // Every generation (or anime series) selected is the same as no filter.
     const size = filterFor(body.module).chips.length;
     const unique = [...new Set(body.gens ?? [])].filter((g) => g <= size).sort((a, b) => a - b);
     const gens = unique.length > 0 && unique.length < size ? unique : undefined;
-    spec = { module: body.module, format: body.format, difficulty: body.difficulty, gens, seed: randomId() };
-    if (gens) spec.practice = "filtered";
+    const scope = body.module === "whose-team" ? body.scope : undefined;
+    spec = { module: body.module, format: body.format, difficulty: body.difficulty, gens, seed: randomId(), ...(scope && { scope }) };
+    // Like a generation filter, games-only or anime-only runs aren't ranked against full runs.
+    if (gens || scope) spec.practice = "filtered";
   }
 
   try {
