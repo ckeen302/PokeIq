@@ -1,354 +1,551 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { REGION_ORIGINS } from "@/lib/region-origins";
+/* eslint-disable @next/next/no-img-element -- screenshots come from the preview proxy, artwork from /api/art */
+import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import * as THREE from "three";
-
-type Item = { n: string; lon: number; lat: number; kind: "region" | "city" | "place"; pri: number; min: number; v: THREE.Vector3; el: HTMLDivElement | null; w: number; h: number };
-type Atlas = {
-  W: number;
-  H: number;
-  regions: { name: string; tier: number; x: number; y: number }[];
-  markers: { name: string; region: string; kind: string; x: number; y: number }[];
-  places: { name: string; region: string; x: number; y: number }[];
-};
-
-// Atlas pixel -> degrees (the mask has sea padding top and bottom).
-const lonOf = (x: number, W: number) => (x / W) * 360 - 180;
-const latOf = (y: number, W: number, H: number) => 90 - ((y + (W / 2 - H) / 2) / (W / 2)) * 180;
-
-/** "248 40% 97%" token -> three Color, bypassing colour management so it matches the CSS exactly. */
-function tokenColor(name: string, out: THREE.Color) {
-  const raw = getComputedStyle(document.documentElement).getPropertyValue(name);
-  const [h, s, l] = raw.match(/-?[\d.]+/g)?.map(Number) ?? [0, 0, 50];
-  return out.setHSL(h / 360, s / 100, l / 100);
-}
+import { ChevronLeft, ChevronRight, Pause, Play, Volume2, VolumeX, X } from "lucide-react";
+import { REGION_ORIGINS } from "@/lib/region-origins";
+import { isMuted, onMuteChange, setMuted } from "@/lib/sound";
+import { artUrl } from "@/lib/pokemon/art";
+import { placeSlug } from "@/lib/dex/places";
+import { clampEra, LAST_GEN, ROMAN } from "@/lib/globe/era";
+import { markGlobeIntroSeen, shouldPlayGlobeIntro } from "@/lib/globe/intro";
+import type { GlobeShotIndex } from "@/lib/globe/shots";
+import type { GlobeEra, GlobeRegionCard } from "@/lib/globe/regions";
+import type { HoverInfo, SceneApi } from "./scene";
+import type { GlobeAudio } from "./audio";
 
 const CSS = `
-.gl-lb{position:absolute;left:0;top:0;white-space:nowrap;will-change:transform}
+.gl-lb{position:absolute;left:0;top:0;white-space:nowrap;will-change:transform;transition:color .15s}
 .gl-lb.region{font:700 15px var(--font-display),sans-serif;letter-spacing:.16em;text-transform:uppercase;color:hsl(var(--foreground));padding:3px 9px;background:hsl(var(--card)/.8);border:1px solid hsl(var(--screen));border-radius:2px;backdrop-filter:blur(4px)}
 .gl-lb.city{font:600 12px var(--font-display),sans-serif;letter-spacing:.04em;color:hsl(var(--foreground));text-shadow:0 0 4px hsl(var(--background)),0 0 8px hsl(var(--background))}
 .gl-lb.city::before{content:"";display:inline-block;width:6px;height:6px;border-radius:50%;background:hsl(var(--primary));margin-right:5px;vertical-align:1px;box-shadow:0 0 6px hsl(var(--primary))}
 .gl-lb.place{font:400 10.5px var(--font-body),sans-serif;color:hsl(var(--muted-foreground));text-shadow:0 0 3px hsl(var(--background)),0 0 6px hsl(var(--background))}
 .gl-lb.place::before{content:"";display:inline-block;width:4px;height:4px;border-radius:50%;background:hsl(var(--screen));margin-right:4px;vertical-align:1px}
+.gl-lb.peak{font:600 11px var(--font-display),sans-serif;letter-spacing:.06em;color:hsl(var(--foreground)/.9)}
+.gl-lb.peak::before{content:"▲";width:auto;height:auto;border-radius:0;background:none;color:hsl(var(--screen));font-size:9px;margin-right:4px;vertical-align:0}
+.gl-lb.is-hover{color:hsl(var(--primary))}
+.gl-lb.is-hover::after{content:"";position:absolute;left:10px;right:0;bottom:-3px;height:1px;background:hsl(var(--primary)/.8)}
+@keyframes gl-intro-veil{from{opacity:1}to{opacity:0}}
+@keyframes gl-intro-title{0%{opacity:0;letter-spacing:.6em;filter:blur(6px)}22%{opacity:1;letter-spacing:.24em;filter:blur(0)}72%{opacity:1}100%{opacity:0;letter-spacing:.2em}}
+@keyframes gl-intro-sub{0%,18%{opacity:0;transform:translateY(6px)}34%{opacity:1;transform:none}72%{opacity:1}100%{opacity:0}}
+@keyframes gl-blink{50%{opacity:.35}}
+@keyframes gl-pop{from{opacity:0;transform:translateY(6px) scale(.97)}to{opacity:1;transform:none}}
+@keyframes gl-card{from{opacity:0;transform:translateX(18px)}to{opacity:1;transform:none}}
+@keyframes gl-sheet{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}
+.gl-pop{animation:gl-pop .18s cubic-bezier(.2,.9,.3,1) both}
+@media (prefers-reduced-motion: reduce){.gl-pop,.gl-card-in,.gl-sheet-in{animation:none!important}}
 `;
 
-export function WorldGlobe() {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+type Popup = { info: HoverInfo; pinned: boolean; i: number };
+
+function localStore(): Storage | null {
+  try {
+    return window.localStorage;
+  } catch {
+    return null;
+  }
+}
+
+export function WorldGlobe({ regions, eras }: { regions: GlobeRegionCard[]; eras: GlobeEra[] }) {
+  const hostRef = useRef<HTMLDivElement>(null);
   const layerRef = useRef<HTMLDivElement>(null);
+  const popRef = useRef<HTMLDivElement>(null);
+  const api = useRef<SceneApi | null>(null);
+  const audio = useRef<GlobeAudio | null>(null);
+  const shots = useRef<GlobeShotIndex | null>(null);
+  const shotsLoad = useRef<Promise<GlobeShotIndex | null> | null>(null);
+  const closeTimer = useRef(0);
+  const heldByHover = useRef(false);
   const [state, setState] = useState<"loading" | "ready" | "nogl" | "failed">("loading");
-  const [focus, setFocus] = useState("Kanto");
-  const [tier, setTier] = useState("Regions");
+  const [stats, setStats] = useState({ lon: "0.0°", lat: "0.0°", zoom: "1.0×", tier: "Regions", focus: "Kanto" });
   const [auto, setAuto] = useState(true);
-  const [stats, setStats] = useState({ lon: "0.0°", lat: "0.0°", zoom: "1.0×" });
   const [counts, setCounts] = useState({ r: 0, c: 0, p: 0 });
-  const api = useRef<{ next(): void; out(): void; setAuto(v: boolean): void } | null>(null);
+  const [intro, setIntro] = useState<boolean | null>(null);
+  const [era, setEraState] = useState(LAST_GEN);
+  const [playing, setPlaying] = useState(false);
+  const [card, setCard] = useState<string | null>(null);
+  const [popup, setPopup] = useState<Popup | null>(null);
+  const [shotIndex, setShotIndex] = useState<GlobeShotIndex | null>(null);
+  const [muted, setMutedState] = useState(true);
+  const [narrow, setNarrow] = useState(false);
+  const [quality, setQuality] = useState(3);
+  const popupRef = useRef<Popup | null>(null);
+  /** Decided once per page: React's development double-mount must not see its own "seen" mark. */
+  const introDecision = useRef<boolean | null>(null);
+  popupRef.current = popup;
 
-  useEffect(() => {
-    const canvas = canvasRef.current!;
-    const layer = layerRef.current!;
-    let renderer: THREE.WebGLRenderer;
-    try {
-      renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
-    } catch {
-      setState("nogl");
-      return;
-    }
-    let dead = false;
-    let raf = 0;
-    const disposables: { dispose(): void }[] = [renderer];
-    THREE.ColorManagement.enabled = false;
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
-    renderer.setClearColor(0x000000, 0);
-
-    const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(40, 1, 0.01, 100);
-    const MAXD = 6, MIND = 1.3, HOME = 3.4, R = 1;
-    let dist = HOME;
-    const globe = new THREE.Group();
-    scene.add(globe);
-    const toVec = (lon: number, lat: number, r = R) => {
-      const phi = ((90 - lat) * Math.PI) / 180, th = ((lon + 180) * Math.PI) / 180;
-      return new THREE.Vector3(-r * Math.sin(phi) * Math.cos(th), r * Math.cos(phi), r * Math.sin(phi) * Math.sin(th));
-    };
-
-    const tex = new THREE.TextureLoader().load("/geo/maps/globe-mask.png");
-    tex.anisotropy = renderer.capabilities.getMaxAnisotropy();
-    tex.minFilter = THREE.LinearMipmapLinearFilter;
-    disposables.push(tex);
-
-    const U = { map: { value: tex }, time: { value: 0 }, land: { value: new THREE.Color() }, coast: { value: new THREE.Color() }, grid: { value: new THREE.Color() }, rim: { value: new THREE.Color() }, sea: { value: new THREE.Color() }, light: { value: 0 } };
-    const holo = new THREE.ShaderMaterial({
-      uniforms: U,
-      transparent: true,
-      vertexShader: `varying vec2 vUv; varying vec3 vN; varying vec3 vV;
-        void main(){ vUv=uv; vN=normalize(normalMatrix*normal); vec4 mv=modelViewMatrix*vec4(position,1.); vV=normalize(-mv.xyz); gl_Position=projectionMatrix*mv; }`,
-      fragmentShader: `uniform sampler2D map; uniform float time; uniform vec3 land; uniform vec3 coast; uniform vec3 grid; uniform vec3 rim; uniform vec3 sea; uniform float light;
-        varying vec2 vUv; varying vec3 vN; varying vec3 vV;
-        float gridf(vec2 uv, vec2 n){ vec2 g=abs(fract(uv*n-.5)-.5)/fwidth(uv*n); return 1.-min(min(g.x,g.y),1.); }
-        void main(){
-          float m=texture2D(map,vUv).r;
-          float c=smoothstep(.85,1.,m);
-          float l=step(.04,m);
-          float g=gridf(vUv, vec2(36.,18.))*(1.-l*.6);
-          float f=pow(1.-max(dot(vN,vV),0.),2.2);
-          float band=.96+.04*sin(vUv.y*900.+time*2.);
-          vec3 col=sea;
-          col=mix(col, land*(.55+.75*m)*band, l*.92);
-          col=mix(col, coast, c*.9);
-          col=mix(col, grid, g*.35);
-          col+=rim*f*(light>.5?.35:.9);
-          gl_FragColor=vec4(col,1.);
-        }`,
-    });
-    const sphereGeo = new THREE.SphereGeometry(R, 160, 80);
-    const sphere = new THREE.Mesh(sphereGeo, holo);
-    globe.add(sphere);
-    const haloU = { color: { value: new THREE.Color() }, strength: { value: 1 } };
-    const haloMat = new THREE.ShaderMaterial({
-      uniforms: haloU, transparent: true, depthWrite: false, side: THREE.BackSide,
-      vertexShader: `varying vec3 vN; void main(){ vN=normalize(normalMatrix*normal); gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.); }`,
-      fragmentShader: `uniform vec3 color; uniform float strength; varying vec3 vN; void main(){ float i=pow(max(.7-dot(vN,vec3(0,0,1.)),0.),2.6)*strength; gl_FragColor=vec4(color, i); }`,
-    });
-    const haloGeo = new THREE.SphereGeometry(R * 1.16, 64, 32);
-    scene.add(new THREE.Mesh(haloGeo, haloMat));
-    const ringMat = new THREE.LineBasicMaterial({ transparent: true, opacity: 0.3 });
-    disposables.push(holo, sphereGeo, haloMat, haloGeo, ringMat);
-    [[1.32, 0.45], [1.46, -0.3]].forEach(([r, tilt]) => {
-      const pts: THREE.Vector3[] = [];
-      for (let i = 0; i <= 160; i++) { const a = (i / 160) * Math.PI * 2; pts.push(new THREE.Vector3(Math.cos(a) * r, 0, Math.sin(a) * r)); }
-      const geo = new THREE.BufferGeometry().setFromPoints(pts);
-      disposables.push(geo);
-      const ring = new THREE.LineLoop(geo, ringMat);
-      ring.rotation.x = Math.PI / 2 + tilt; ring.rotation.z = tilt;
-      scene.add(ring);
-    });
-
-    // Theme: the site's tokens, re-read when html.light toggles.
-    function applyTheme() {
-      const dark = !document.documentElement.classList.contains("light");
-      const screen = tokenColor("--screen", new THREE.Color()), primary = tokenColor("--primary", new THREE.Color());
-      U.light.value = dark ? 0 : 1;
-      tokenColor("--card", U.sea.value); U.land.value.copy(screen); tokenColor("--foreground", U.coast.value); tokenColor("--border", U.grid.value);
-      if (dark) U.rim.value.copy(screen); else U.rim.value.set("#ffffff");
-      haloU.color.value.copy(dark ? screen : primary); haloU.strength.value = dark ? 1.4 : 0.55;
-      ringMat.color.copy(screen); ringMat.opacity = dark ? 0.3 : 0.22;
-    }
-    applyTheme();
-    const mo = new MutationObserver(applyTheme);
-    mo.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
-
-    // Labels.
-    let items: Item[] = [];
-    let regionList: [string, number, number][] = [];
-    const pool: Record<string, HTMLDivElement[]> = { region: [], city: [], place: [] };
-    function getEl(it: Item) {
-      if (it.el) return it.el;
-      const el = pool[it.kind].pop() ?? Object.assign(document.createElement("div"), { className: "gl-lb " + it.kind });
-      el.textContent = it.n; layer.appendChild(el); it.el = el; it.w = el.offsetWidth; it.h = el.offsetHeight;
-      return el;
-    }
-    function dropEl(it: Item) { if (!it.el) return; it.el.remove(); pool[it.kind].push(it.el); it.el = null; }
-    const tmp = new THREE.Vector3(), camDir = new THREE.Vector3();
-    function layoutLabels(zoom: number) {
-      const W = window.innerWidth, H = window.innerHeight, boxes: number[][] = [];
-      camDir.copy(camera.position).normalize();
-      const keep = new Set<Item>();
-      for (const it of items.filter((i) => zoom >= i.min).sort((a, b) => a.pri - b.pri)) {
-        tmp.copy(it.v).applyMatrix4(globe.matrixWorld);
-        const facing = tmp.clone().normalize().dot(camDir);
-        if (facing < 0.18) continue;
-        tmp.project(camera);
-        const x = (tmp.x * 0.5 + 0.5) * W, y = (-tmp.y * 0.5 + 0.5) * H;
-        if (x < -40 || x > W + 40 || y < -20 || y > H + 20) continue;
-        const el = getEl(it);
-        const bx = it.kind === "region" ? x - it.w / 2 : x - 4, by = y - it.h / 2;
-        const box = [bx - 3, by - 2, bx + it.w + 3, by + it.h + 2];
-        if (boxes.some((b) => !(box[2] < b[0] || box[0] > b[2] || box[3] < b[1] || box[1] > b[3]))) continue;
-        boxes.push(box); keep.add(it);
-        el.style.transform = `translate(${bx}px, ${by}px)`; el.style.opacity = String(Math.min(1, (facing - 0.18) * 5));
-        if (boxes.length > 140) break;
-      }
-      for (const it of items) if (!keep.has(it)) dropEl(it);
-    }
-
-    // Interaction.
-    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    let rotY = -2.2, rotX = 0.35, velY = 0, velX = 0, autoSpin = !reduce, dragging = false;
-    let last: number[] | null = null, down: number[] | null = null;
-    let fly: { y0: number; x0: number; d0: number; y1: number; x1: number; d1: number; t: number } | null = null;
-    setAuto(autoSpin);
-    const pointers = new Map<number, number[]>();
-    let pinch0: number[] | null = null;
-    const clampD = (d: number) => Math.min(MAXD, Math.max(MIND, d));
-    const zoomOf = () => (HOME - R) / (dist - R);
-    const onDown = (e: PointerEvent) => {
-      canvas.setPointerCapture(e.pointerId); pointers.set(e.pointerId, [e.clientX, e.clientY]);
-      dragging = true; last = [e.clientX, e.clientY]; down = [e.clientX, e.clientY]; fly = null;
-      if (pointers.size === 2) { const [a, b] = [...pointers.values()]; pinch0 = [Math.hypot(a[0] - b[0], a[1] - b[1]), dist]; }
-    };
-    const onMove = (e: PointerEvent) => {
-      if (!pointers.has(e.pointerId) || !last) return;
-      pointers.set(e.pointerId, [e.clientX, e.clientY]);
-      if (pointers.size === 2 && pinch0) { const [a, b] = [...pointers.values()]; dist = clampD((pinch0[1] * pinch0[0]) / Math.hypot(a[0] - b[0], a[1] - b[1])); return; }
-      const dx = e.clientX - last[0], dy = e.clientY - last[1];
-      last = [e.clientX, e.clientY];
-      const k = (0.0045 * (dist - R * 0.98)) / (HOME - R);
-      velY = dx * k; velX = dy * k; rotY += velY; rotX = Math.max(-1.35, Math.min(1.35, rotX + velX));
-    };
-    const onEnd = (e: PointerEvent) => {
-      pointers.delete(e.pointerId); if (pointers.size < 2) pinch0 = null;
-      if (!pointers.size) { dragging = false; if (down && Math.hypot(e.clientX - down[0], e.clientY - down[1]) < 5) pick(e); }
-    };
-    const onWheel = (e: WheelEvent) => { e.preventDefault(); fly = null; dist = clampD(R + (dist - R) * Math.exp(e.deltaY * 0.0015)); };
-    canvas.addEventListener("pointerdown", onDown); canvas.addEventListener("pointermove", onMove);
-    canvas.addEventListener("pointerup", onEnd); canvas.addEventListener("pointercancel", onEnd);
-    canvas.addEventListener("wheel", onWheel, { passive: false });
-
-    const ray = new THREE.Raycaster(), mouse = new THREE.Vector2();
-    const nearest = (lon: number, lat: number) => {
-      let best = "", bd = 1e9;
-      regionList.forEach(([n, a, b]) => { const d = (a - lon) ** 2 + (b - lat) ** 2; if (d < bd) { bd = d; best = n; } });
-      return bd < 400 ? best : "Near " + best;
-    };
-    const lonLatOf = (p: THREE.Vector3) => {
-      const lat = (Math.asin(p.y) * 180) / Math.PI; let lon = (Math.atan2(p.z, -p.x) * 180) / Math.PI - 180; if (lon < -180) lon += 360;
-      return { lon, lat };
-    };
-    function flyTo(lon: number, lat: number, zoom: number, name?: string | null) {
-      autoSpin = false; setAuto(false);
-      let ty = -(((lon + 180) * Math.PI) / 180 - Math.PI / 2) + Math.PI;
-      while (ty - rotY > Math.PI) ty -= Math.PI * 2;
-      while (rotY - ty > Math.PI) ty += Math.PI * 2;
-      fly = { y0: rotY, x0: rotX, d0: dist, y1: ty, x1: (lat * Math.PI) / 180, d1: clampD(R + (HOME - R) / zoom), t: 0 };
-      if (name) setFocus(name);
-    }
-    function pick(e: PointerEvent) {
-      mouse.set((e.clientX / window.innerWidth) * 2 - 1, -(e.clientY / window.innerHeight) * 2 + 1); ray.setFromCamera(mouse, camera);
-      const s = ray.intersectObject(sphere)[0]; if (!s) return;
-      const { lon, lat } = lonLatOf(globe.worldToLocal(s.point.clone()).normalize());
-      if (zoomOf() < 1.7) { const n = nearest(lon, lat); const r = regionList.find((x) => x[0] === n); if (r) return flyTo(r[1], r[2], 2.2, n); }
-      flyTo(lon, lat, Math.max(zoomOf() * 1.6, 2.2));
-    }
-    let ri = 0;
-    api.current = {
-      next() { if (!regionList.length) return; ri = (ri + 1) % regionList.length; const [n, lo, la] = regionList[ri]; flyTo(lo, la, 2.2, n); },
-      out() { const { lon, lat } = lonLatOf(globe.worldToLocal(new THREE.Vector3(0, 0, 5)).normalize()); flyTo(lon, lat, 1); },
-      setAuto(v) { autoSpin = v; setAuto(v); },
-    };
-
-    function resize() { renderer.setSize(window.innerWidth, window.innerHeight, false); camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix(); }
-    window.addEventListener("resize", resize); resize();
-
-    const clock = new THREE.Clock();
-    let hudT = 0;
-    function frame() {
-      raf = requestAnimationFrame(frame);
-      const dt = Math.min(clock.getDelta(), 0.05);
-      if (fly) {
-        fly.t = Math.min(1, fly.t + dt / 1.4);
-        const e = fly.t < 0.5 ? 4 * fly.t ** 3 : 1 - (-2 * fly.t + 2) ** 3 / 2;
-        rotY = fly.y0 + (fly.y1 - fly.y0) * e; rotX = fly.x0 + (fly.x1 - fly.x0) * e; dist = fly.d0 + (fly.d1 - fly.d0) * e;
-        if (fly.t >= 1) fly = null;
-      } else if (!dragging) {
-        velY *= 0.93; velX *= 0.93; rotY += velY + (autoSpin ? dt * 0.1 : 0); rotX = Math.max(-1.35, Math.min(1.35, rotX + velX));
-      }
-      globe.rotation.set(rotX, rotY, 0); globe.updateMatrixWorld();
-      camera.position.set(0, 0, dist); camera.lookAt(0, 0, 0);
-      U.time.value += dt;
-      const z = zoomOf();
-      renderer.render(scene, camera);
-      layoutLabels(z);
-      hudT += dt;
-      if (hudT > 0.08) {
-        hudT = 0;
-        const { lon, lat } = lonLatOf(globe.worldToLocal(new THREE.Vector3(0, 0, 5)).normalize());
-        setStats({ lon: lon.toFixed(1) + "°", lat: lat.toFixed(1) + "°", zoom: z.toFixed(1) + "×" });
-        setTier(z >= 4.2 ? "Every place" : z >= 2.4 ? "Towns and cities" : z >= 1.7 ? "Major cities" : "Regions");
-        if (!fly) setFocus(nearest(lon, lat));
-      }
-    }
-    const onVis = () => { cancelAnimationFrame(raf); if (!document.hidden && !dead && items.length) { clock.getDelta(); frame(); } };
-    document.addEventListener("visibilitychange", onVis);
-
-    fetch("/atlas/atlas.json")
-      .then((r) => { if (!r.ok) throw new Error(String(r.status)); return r.json() as Promise<Atlas>; })
-      .then((a) => {
-        if (dead) return;
-        const { W, H } = a;
-        const mk = (n: string, x: number, y: number, kind: Item["kind"], pri: number, min: number): Item => {
-          const lon = lonOf(x, W), lat = latOf(y, W, H);
-          return { n, lon, lat, kind, pri, min, v: toVec(lon, lat, R * 1.002), el: null, w: 0, h: 0 };
-        };
-        const regs = a.regions.filter((r) => r.tier === 1);
-        const seen = new Set(a.markers.map((m) => m.name + "|" + m.region));
-        const places = a.places.filter((p) => !seen.has(p.name + "|" + p.region));
-        items = [
-          ...regs.map((r) => mk(r.name, r.x, r.y, "region", 0, 0)),
-          ...a.markers.map((m) => mk(m.name, m.x, m.y, "city", m.kind === "city" ? 1 : 2, m.kind === "city" ? 1.7 : 2.4)),
-          ...places.map((p) => mk(p.name, p.x, p.y, "place", 3, 4.2)),
-        ];
-        regionList = items.filter((i) => i.kind === "region").map((i) => [i.n, i.lon, i.lat]);
-        setCounts({ r: regs.length, c: a.markers.length, p: places.length });
-        setState("ready");
-        clock.getDelta();
-        if (!document.hidden) frame();
+  const ensureShots = useCallback(() => {
+    if (shots.current) return Promise.resolve(shots.current);
+    shotsLoad.current ??= fetch("/guessr/globe/shots.json")
+      .then((r) => (r.ok ? (r.json() as Promise<GlobeShotIndex>) : null))
+      .then((idx) => {
+        if (idx) {
+          shots.current = idx;
+          setShotIndex(idx);
+          api.current?.setShots(new Set(Object.keys(idx)));
+        }
+        return idx;
       })
-      .catch(() => !dead && setState("failed"));
+      .catch(() => {
+        shotsLoad.current = null;
+        return null;
+      });
+    return shotsLoad.current;
+  }, []);
+  const preload = useCallback((key: string, all = false) => {
+    void ensureShots().then((idx) => {
+      for (const s of (idx?.[key] ?? []).slice(0, all ? 5 : 1)) {
+        const img = new Image();
+        img.decoding = "async";
+        img.src = s.src;
+      }
+    });
+  }, [ensureShots]);
 
+  // ---- the scene
+  useEffect(() => {
+    const host = hostRef.current!, layer = layerRef.current!;
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const params = new URLSearchParams(window.location.search);
+    const q = params.get("quality");
+    const startEra = params.has("era") ? clampEra(params.get("era")) : LAST_GEN;
+    if (introDecision.current === null) {
+      introDecision.current = shouldPlayGlobeIntro({ store: localStore(), reducedMotion: reduce });
+      if (introDecision.current) markGlobeIntroSeen(localStore());
+    }
+    const playIntro = introDecision.current;
+    setIntro(playIntro);
+    setEraState(startEra);
+    setMutedState(isMuted());
+    const onResize = () => setNarrow(window.innerWidth < 1024);
+    onResize();
+    window.addEventListener("resize", onResize);
+    let alive = true;
+    void import("./scene").then(({ createGlobeScene }) => {
+      if (!alive) return;
+      const s = createGlobeScene(
+        host,
+        layer,
+        {
+          ready(c) { setCounts(c); setState("ready"); },
+          failed() { setIntro(false); setState("failed"); },
+          stats(s) { setStats(s); },
+          hover(h, pinned) {
+            window.clearTimeout(closeTimer.current);
+            if (!h || !pinned) heldByHover.current = heldByHover.current && !!h;
+            if (!h) {
+              // A short grace, so the pointer can travel from the label onto the popup.
+              closeTimer.current = window.setTimeout(() => setPopup(null), pinned ? 0 : 240);
+              return;
+            }
+            preload(h.key, true);
+            setPopup((p) => {
+              if (!p || p.info.key !== h.key) { if (pinned) audio.current?.shot(); else audio.current?.hover(); }
+              return { info: h, pinned, i: p && p.info.key === h.key ? p.i : 0 };
+            });
+          },
+          anchor(x, y, w, h, visible) {
+            const el = popRef.current;
+            if (!el) return;
+            // Phones dock the picture at the bottom of the screen.
+            if (window.innerWidth < 640) { el.style.left = ""; el.style.top = ""; el.style.visibility = "visible"; return; }
+            const W = host.clientWidth, pw = el.offsetWidth, ph = el.offsetHeight;
+            const left = Math.max(12, Math.min(W - pw - 12, x + w / 2 - pw / 2));
+            const top = y - ph - 10 < 64 ? y + h + 10 : y - ph - 10;
+            el.style.left = `${Math.round(left)}px`;
+            el.style.top = `${Math.round(top)}px`;
+            el.style.visibility = visible ? "visible" : "hidden";
+          },
+          intent(key) { preload(key); },
+          region(name) {
+            setCard((was) => {
+              if (name && name !== was) audio.current?.card();
+              return name;
+            });
+          },
+          fly() { audio.current?.fly(); },
+          auto(on) { setAuto(on); },
+          quality(qq) { setQuality(qq); },
+          introDone() { setIntro(false); },
+          firstPointer() { void ensureShots(); },
+        },
+        { intro: playIntro, quality: q !== null && /^[0-3]$/.test(q) ? Number(q) : null, era: startEra },
+      );
+      if (!s) { setIntro(false); return setState("nogl"); }
+      api.current = s;
+      if (shots.current) s.setShots(new Set(Object.keys(shots.current)));
+    });
+    // The pictures index loads once the world is up and the page is idle (or sooner, when the pointer reaches for a label).
+    const idle = window.setTimeout(() => void ensureShots(), 4000);
     return () => {
-      dead = true;
-      cancelAnimationFrame(raf);
-      mo.disconnect();
-      document.removeEventListener("visibilitychange", onVis);
-      window.removeEventListener("resize", resize);
-      canvas.removeEventListener("pointerdown", onDown); canvas.removeEventListener("pointermove", onMove);
-      canvas.removeEventListener("pointerup", onEnd); canvas.removeEventListener("pointercancel", onEnd);
-      canvas.removeEventListener("wheel", onWheel);
-      disposables.forEach((d) => d.dispose());
-      renderer.forceContextLoss();
-      layer.replaceChildren();
+      alive = false;
+      window.clearTimeout(idle);
+      window.removeEventListener("resize", onResize);
+      api.current?.dispose();
+      api.current = null;
+    };
+  }, [ensureShots, preload]);
+
+  // ---- sound: the module loads on the first gesture, and only does anything when the site's sound is on
+  useEffect(() => {
+    let alive = true;
+    const gesture = () => {
+      if (isMuted()) return;
+      if (audio.current) { audio.current.gesture(); return; }
+      void import("./audio").then(({ createGlobeAudio }) => {
+        if (!alive || audio.current) return;
+        audio.current = createGlobeAudio();
+        audio.current.gesture();
+      });
+    };
+    window.addEventListener("pointerdown", gesture, true);
+    window.addEventListener("keydown", gesture, true);
+    const stop = onMuteChange((m) => setMutedState(m));
+    return () => {
+      alive = false;
+      window.removeEventListener("pointerdown", gesture, true);
+      window.removeEventListener("keydown", gesture, true);
+      stop();
+      audio.current?.dispose();
+      audio.current = null;
     };
   }, []);
+  const closePopup = () => {
+    audio.current?.close();
+    heldByHover.current = false;
+    api.current?.unpin();
+    window.clearTimeout(closeTimer.current);
+    setPopup(null);
+  };
+  const toggleSound = () => {
+    const next = !isMuted();
+    setMuted(next);
+    setMutedState(next);
+  };
 
+  // ---- the intro: any key skips it; Escape closes what is open
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (intro) { api.current?.skipIntro(); return; }
+      if (e.key === "Escape") {
+        if (popupRef.current) { api.current?.unpin(); setPopup(null); }
+        else setCard(null);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [intro]);
+
+  // ---- the region card makes room for itself
+  useEffect(() => {
+    const s = api.current;
+    if (!s) return;
+    if (!card) s.setShift(0, 0);
+    else if (narrow) s.setShift(0, -Math.min(window.innerHeight * 0.22, 190));
+    else s.setShift(-190, 0);
+  }, [card, narrow]);
+
+  // ---- era
+  const chooseEra = useCallback((gen: number, sound = true) => {
+    setEraState(gen);
+    api.current?.setEra(gen);
+    if (sound) audio.current?.era(gen);
+    setCard((c) => {
+      const r = regions.find((x) => x.name === c);
+      return r && r.gen > gen ? null : c;
+    });
+    const url = new URL(window.location.href);
+    if (gen === LAST_GEN) url.searchParams.delete("era"); else url.searchParams.set("era", String(gen));
+    window.history.replaceState(null, "", url);
+  }, [regions]);
+  useEffect(() => {
+    if (!playing) return;
+    let gen = era >= LAST_GEN ? 0 : era;
+    const step = () => {
+      gen++;
+      chooseEra(gen);
+      if (gen >= LAST_GEN) setPlaying(false);
+    };
+    if (gen === 0) step();
+    const id = window.setInterval(step, 1300);
+    return () => window.clearInterval(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- runs once per press of play
+  }, [playing]);
+
+  const regionCard = regions.find((r) => r.name === card) ?? null;
+  const shotList = popup ? shotIndex?.[popup.info.key] ?? [] : [];
+  const shot = shotList.length ? shotList[popup!.i % shotList.length] : null;
+  const eraInfo = eras.find((e) => e.gen === era);
   const btn = "pointer-events-auto rounded-md border bg-card/80 px-3 py-2 font-display text-xs font-semibold uppercase tracking-[0.12em] backdrop-blur hover:border-screen focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
+  const ready = state === "ready";
+  const hudOn = ready && intro === false;
+
   return (
-    <div className="fixed inset-0 z-[60] overflow-hidden bg-background text-foreground" data-testid="world-globe" data-state={state}>
+    <div ref={hostRef} className="fixed inset-0 z-[60] overflow-hidden bg-background text-foreground" data-testid="world-globe" data-state={state} data-era={era} data-intro={intro ? "1" : "0"} data-card={card ?? ""}>
       <style>{CSS}</style>
-      <canvas ref={canvasRef} className="absolute inset-0 h-full w-full cursor-grab touch-none active:cursor-grabbing" aria-label="Interactive 3D globe of the Pokémon world. Drag to spin, scroll or pinch to zoom." />
+      {/* A soft glow of space behind the world, under the canvas. */}
+      <div aria-hidden className="pointer-events-none absolute inset-0" style={{ background: "radial-gradient(ellipse at 50% 55%, hsl(var(--screen) / 0.10), transparent 60%)" }} />
       <div ref={layerRef} className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden />
+      {/* Soft scrims keep the HUD readable over a bright, zoomed-in world. */}
+      <div aria-hidden className={"pointer-events-none absolute inset-x-0 top-0 h-40 transition-opacity duration-700 " + (hudOn ? "opacity-100" : "opacity-0")} style={{ background: "linear-gradient(hsl(var(--background) / .72), transparent)" }} />
+      <div aria-hidden className={"pointer-events-none absolute inset-x-0 bottom-0 h-56 transition-opacity duration-700 " + (hudOn ? "opacity-100" : "opacity-0")} style={{ background: "linear-gradient(transparent, hsl(var(--background) / .78))" }} />
       {state === "nogl" && (
         <div className="absolute inset-0 flex items-center justify-center p-6 text-center" data-testid="globe-fallback">
           <p className="font-display text-lg font-semibold uppercase tracking-wider text-muted-foreground">Your browser can&apos;t show 3D graphics</p>
         </div>
       )}
       {state === "failed" && <p className="absolute inset-0 flex items-center justify-center font-display text-muted-foreground">Couldn&apos;t load the atlas. Try reloading.</p>}
-      <div className="pointer-events-none absolute inset-x-0 top-0 flex flex-wrap justify-between gap-4 px-4 pt-[max(1rem,env(safe-area-inset-top))] sm:px-6">
-        <div>
-          <Link href="/guessr" className={btn + " mb-3 inline-block"}>← PokéGuessr</Link>
-          <h1 className="font-display text-xl font-bold uppercase tracking-[0.14em] sm:text-3xl">Poké<span className="text-primary">IQ</span> World</h1>
-          <p className="mt-1.5 font-pixel text-[10px] uppercase tracking-[0.14em] text-screen">
-            {counts.r ? `${counts.r} regions · ${counts.c} towns and cities · ${counts.p} more places` : "Loading the world…"}
-          </p>
+
+      {/* HUD */}
+      <div className={"transition-opacity duration-700 " + (hudOn || state === "nogl" || state === "failed" || intro === false ? "opacity-100" : "opacity-0")}>
+        <div className="pointer-events-none absolute inset-x-0 top-0 flex justify-between gap-3 px-4 pt-[max(1rem,env(safe-area-inset-top))] sm:px-6">
+          <div className="min-w-0">
+            <Link href="/guessr" className={btn + " mb-3 inline-block"}>← PokéGuessr</Link>
+            <h1 className="font-display text-xl font-bold uppercase tracking-[0.14em] sm:text-3xl">Poké<span className="text-primary">IQ</span> World</h1>
+            <p className="mt-1.5 font-pixel text-[10px] uppercase tracking-[0.14em] text-screen">
+              {counts.r ? `${counts.r} regions · ${counts.c} towns and cities · ${counts.p} more places` : "Loading the world…"}
+            </p>
+          </div>
+          <div className="flex shrink-0 flex-col items-end gap-2">
+            <button type="button" onClick={toggleSound} data-testid="globe-sound" aria-pressed={!muted} aria-label={muted ? "Turn sound on" : "Turn sound off"} title={muted ? "Sound off" : "Sound on"} className={btn + " flex h-9 w-9 items-center justify-center !p-0"}>
+              {muted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4 text-primary" />}
+            </button>
+            <div className="hidden text-right font-pixel text-[10px] uppercase leading-[1.9] tracking-[0.12em] tabular-nums text-muted-foreground sm:block">
+              Lon <b className="font-normal text-foreground">{stats.lon}</b><br />Lat <b className="font-normal text-foreground">{stats.lat}</b><br />Zoom <b className="font-normal text-foreground">{stats.zoom}</b>
+            </div>
+          </div>
         </div>
-        <div className="text-right font-pixel text-[10px] uppercase leading-[1.9] tracking-[0.12em] tabular-nums text-muted-foreground">
-          Lon <b className="font-normal text-foreground">{stats.lon}</b><br />Lat <b className="font-normal text-foreground">{stats.lat}</b><br />Zoom <b className="font-normal text-foreground">{stats.zoom}</b>
+
+        <div className={"pointer-events-none absolute inset-x-0 bottom-0 flex flex-col gap-3 px-4 pb-[max(1rem,env(safe-area-inset-bottom))] transition-opacity sm:px-6 " + (card && narrow ? "opacity-0" : "")}>
+          <div className="flex flex-wrap items-end justify-between gap-x-4 gap-y-3">
+            <div className="min-w-0 max-w-md">
+              <p className="mb-1 font-pixel text-[10px] uppercase tracking-[0.14em] text-screen">Detail: {stats.tier}</p>
+              <p className="min-h-[1.3em] font-display text-base font-bold uppercase tracking-[0.14em] sm:text-2xl">{stats.focus}</p>
+              {REGION_ORIGINS[stats.focus] && <p className="mb-1 hidden text-sm text-foreground/85 sm:block" data-testid="globe-region-origin">{REGION_ORIGINS[stats.focus]}</p>}
+              <p className="hidden text-xs text-muted-foreground sm:block">Drag to spin · scroll or pinch to zoom · hover a town to see it · click a region to fly there</p>
+            </div>
+            <div className="flex flex-col items-stretch gap-2 sm:items-end">
+              <EraControl eras={eras} era={era} playing={playing} onEra={(g) => { setPlaying(false); chooseEra(g); }} onPlay={() => setPlaying((p) => !p)} caption={eraInfo} />
+              <div className="flex flex-wrap gap-2 sm:justify-end">
+                <button type="button" aria-pressed={auto} onClick={() => api.current?.setAuto(!auto)} className={btn + (auto ? " border-primary text-primary" : "")}>Auto-spin</button>
+                <button type="button" onClick={() => api.current?.next()} className={btn}>Next region</button>
+                <button type="button" onClick={() => api.current?.out()} className={btn}>Zoom out</button>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 flex flex-wrap items-end justify-between gap-4 px-4 pb-[max(1rem,env(safe-area-inset-bottom))] sm:px-6">
-        <div>
-          <p className="mb-1 font-pixel text-[10px] uppercase tracking-[0.14em] text-screen">Detail: {tier}</p>
-          <p className="min-h-[1.3em] font-display text-base font-bold uppercase tracking-[0.14em] sm:text-2xl">{focus}</p>
-          {REGION_ORIGINS[focus] && <p className="mb-1 max-w-md text-sm text-foreground/85" data-testid="globe-region-origin">{REGION_ORIGINS[focus]}</p>}
-          <p className="max-w-md text-xs text-muted-foreground">Drag to spin · scroll or pinch to zoom in on towns, routes and landmarks · tap a region to fly there</p>
+
+      {/* Hover/tap picture */}
+      {popup && (
+        <div
+          ref={popRef}
+          data-testid="globe-shot-card"
+          onPointerEnter={() => { window.clearTimeout(closeTimer.current); if (!popup.pinned) { heldByHover.current = true; api.current?.pin(popup.info.key); } }}
+          onPointerLeave={(e) => { if (e.pointerType === "mouse" && heldByHover.current) { heldByHover.current = false; api.current?.unpin(); } }}
+          className="gl-pop pointer-events-auto fixed bottom-[max(1rem,env(safe-area-inset-bottom))] left-3 right-3 z-20 overflow-hidden rounded-lg border border-screen/50 bg-card/95 shadow-[0_0_32px_hsl(var(--screen)/0.25)] backdrop-blur sm:absolute sm:bottom-auto sm:left-0 sm:right-auto sm:top-0 sm:w-[320px]"
+          style={{ visibility: "hidden" }}
+        >
+          <ShotFrame shot={shot} name={popup.info.name} loading={!shotIndex} />
+          <div className="flex items-start gap-2 p-3">
+            <div className="min-w-0 flex-1">
+              <p className="truncate font-display text-sm font-bold uppercase tracking-[0.1em]" data-testid="globe-shot-name">{shot?.n ?? popup.info.name}</p>
+              <p className="font-pixel text-[9px] uppercase leading-relaxed tracking-[0.14em] text-screen">
+                {popup.info.region}{shot ? ` · ${shot.g}` : ""}
+              </p>
+              {shot && (
+                <Link href={`/pokedex/places/${placeSlug({ name: shot.n, region: popup.info.region })}`} className="mt-1 inline-block text-[11px] text-muted-foreground underline-offset-2 hover:text-foreground hover:underline">
+                  Open its Pokédex page
+                </Link>
+              )}
+            </div>
+            {shotList.length > 1 && (
+              <div className="flex shrink-0 items-center gap-1">
+                <span className="font-pixel text-[9px] tabular-nums text-muted-foreground">{(popup.i % shotList.length) + 1}/{shotList.length}</span>
+                <button type="button" aria-label="Previous picture" className={btn + " !p-1.5"} onClick={() => { audio.current?.hover(); setPopup((p) => p && { ...p, i: (p.i + shotList.length - 1) % shotList.length }); }}>
+                  <ChevronLeft className="h-3.5 w-3.5" />
+                </button>
+                <button type="button" aria-label="Next picture" data-testid="globe-shot-next" className={btn + " !p-1.5"} onClick={() => { audio.current?.hover(); setPopup((p) => p && { ...p, i: (p.i + 1) % shotList.length }); }}>
+                  <ChevronRight className="h-3.5 w-3.5" />
+                </button>
+              </div>
+            )}
+            {(popup.pinned || narrow) && (
+              <button type="button" aria-label="Close" data-testid="globe-shot-close" className={btn + " !p-1.5"} onClick={closePopup}>
+                <X className="h-3.5 w-3.5" />
+              </button>
+            )}
+          </div>
         </div>
-        <div className="flex flex-wrap gap-2">
-          <button type="button" aria-pressed={auto} onClick={() => api.current?.setAuto(!auto)} className={btn + (auto ? " border-primary text-primary" : "")}>Auto-spin</button>
-          <button type="button" onClick={() => api.current?.next()} className={btn}>Next region</button>
-          <button type="button" onClick={() => api.current?.out()} className={btn}>Zoom out</button>
+      )}
+
+      {/* Region card */}
+      {regionCard && (
+        <RegionCard
+          key={regionCard.name}
+          card={regionCard}
+          narrow={narrow}
+          onClose={() => { audio.current?.close(); setCard(null); }}
+        />
+      )}
+
+      {/* Intro */}
+      {intro && (
+        <button
+          type="button"
+          data-testid="globe-intro"
+          onClick={() => api.current?.skipIntro()}
+          onWheel={() => api.current?.skipIntro()}
+          onTouchStart={() => api.current?.skipIntro()}
+          className="absolute inset-0 z-30 flex cursor-pointer flex-col items-center justify-center text-center outline-none"
+          aria-label="Skip the intro"
+        >
+          {/* Dark until the world is built, then the veil lifts as the camera falls in from space. */}
+          <span aria-hidden className="absolute inset-0 bg-background" style={ready ? { animation: "gl-intro-veil 1.4s ease-out .15s both" } : undefined} />
+          {ready && (
+            <>
+              <span className="relative font-display text-3xl font-bold uppercase text-foreground sm:text-6xl" style={{ animation: "gl-intro-title 3.4s ease-out .2s both", textShadow: "0 0 28px hsl(var(--screen) / .6)" }}>
+                Poké<span className="text-primary">IQ</span> World
+              </span>
+              <span className="relative mt-3 font-pixel text-[10px] uppercase tracking-[0.3em] text-screen sm:text-xs" style={{ animation: "gl-intro-sub 3.4s ease-out .2s both" }}>
+                Every region, on one world
+              </span>
+            </>
+          )}
+          <span data-testid="globe-intro-skip" className="absolute bottom-[max(1.5rem,env(safe-area-inset-bottom))] font-pixel text-[9px] uppercase tracking-[0.3em] text-muted-foreground" style={{ animation: "gl-blink 1.2s steps(2) infinite" }}>
+            Click or press any key to skip
+          </span>
+        </button>
+      )}
+      <span className="sr-only" data-testid="globe-quality">{quality}</span>
+    </div>
+  );
+}
+
+function ShotFrame({ shot, name, loading }: { shot: { src: string; b?: string; n: string; g: string } | null; name: string; loading: boolean }) {
+  const [loaded, setLoaded] = useState<string | null>(null);
+  return (
+    <div className="relative aspect-[16/9] w-full overflow-hidden bg-shade/40">
+      {shot?.b && <img src={shot.b} alt="" aria-hidden className="absolute inset-0 h-full w-full scale-110 object-cover blur-xl" />}
+      {shot ? (
+        <img
+          key={shot.src}
+          src={shot.src}
+          alt={`${shot.n} in Pokémon ${shot.g}`}
+          data-testid="globe-shot-img"
+          decoding="async"
+          onLoad={() => setLoaded(shot.src)}
+          className={"absolute inset-0 h-full w-full object-cover transition-opacity duration-300 " + (loaded === shot.src ? "opacity-100" : "opacity-0")}
+        />
+      ) : (
+        <div className="absolute inset-0 flex items-center justify-center p-4 text-center font-pixel text-[9px] uppercase tracking-[0.14em] text-muted-foreground">
+          {loading ? "Loading…" : `No picture of ${name} yet`}
         </div>
+      )}
+    </div>
+  );
+}
+
+function EraControl({ eras, era, playing, onEra, onPlay, caption }: { eras: GlobeEra[]; era: number; playing: boolean; onEra(g: number): void; onPlay(): void; caption?: GlobeEra }) {
+  return (
+    <div className="pointer-events-auto" data-testid="globe-era">
+      <p className="mb-1.5 font-pixel text-[9px] uppercase tracking-[0.14em] text-muted-foreground sm:text-right" data-testid="globe-era-caption">
+        <span className="text-screen">Era</span> · Gen {ROMAN[era]}{caption?.year ? ` · ${caption.year}` : ""}
+        {caption?.regions.length ? ` · ${era === eras.at(-1)?.gen ? "the whole world" : `adds ${caption.regions.join(", ")}`}` : ""}
+      </p>
+      <div role="group" aria-label="Show the world as it was at a generation" className="flex items-center gap-1 rounded-md border bg-card/80 p-1 backdrop-blur">
+        <button type="button" onClick={onPlay} aria-pressed={playing} data-testid="globe-era-play" aria-label={playing ? "Stop" : "Watch the world grow, generation by generation"} title="Watch the world grow" className="flex h-7 w-7 shrink-0 items-center justify-center rounded-sm text-primary hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+          {playing ? <Pause className="h-3.5 w-3.5" /> : <Play className="h-3.5 w-3.5" />}
+        </button>
+        {eras.map((e) => {
+          const on = e.gen <= era, cur = e.gen === era;
+          return (
+            <button
+              key={e.gen}
+              type="button"
+              data-testid={`globe-era-${e.gen}`}
+              aria-pressed={cur}
+              aria-label={`Generation ${e.gen}${e.year ? `, ${e.year}` : ""}${e.regions.length ? `: ${e.regions.join(", ")}` : ""}`}
+              onClick={() => onEra(e.gen)}
+              className={
+                "h-7 min-w-0 flex-1 rounded-sm px-1 font-pixel text-[9px] tabular-nums transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:w-8 sm:flex-none " +
+                (cur ? "bg-primary text-primary-foreground" : on ? "bg-screen/15 text-foreground hover:bg-screen/25" : "text-muted-foreground hover:bg-accent")
+              }
+            >
+              {ROMAN[e.gen]}
+            </button>
+          );
+        })}
       </div>
     </div>
+  );
+}
+
+function RegionCard({ card, narrow, onClose }: { card: GlobeRegionCard; narrow: boolean; onClose(): void }) {
+  return (
+    <aside
+      data-testid="globe-region-card"
+      aria-label={`${card.name} region`}
+      className={
+        "pointer-events-auto absolute z-20 overflow-y-auto border border-screen/50 bg-card/90 p-5 shadow-[0_0_40px_hsl(var(--screen)/0.22)] backdrop-blur-md " +
+        (narrow
+          ? "inset-x-3 bottom-[max(0.75rem,env(safe-area-inset-bottom))] max-h-[56vh] rounded-xl !p-4"
+          : "right-6 top-[88px] max-h-[calc(100vh-250px)] w-[360px] rounded-xl")
+      }
+      style={{ animation: `${narrow ? "gl-sheet" : "gl-card"} .35s cubic-bezier(.2,.9,.3,1) both` }}
+    >
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="font-pixel text-[10px] uppercase tracking-[0.16em] text-screen" data-testid="globe-region-gen">
+            Generation {ROMAN[card.gen]}{card.year ? ` · ${card.year}` : ""}
+          </p>
+          <h2 className="mt-1 font-display text-3xl font-bold uppercase tracking-[0.14em]">{card.name}</h2>
+        </div>
+        <button type="button" onClick={onClose} aria-label="Close" data-testid="globe-region-close" className="rounded-md border bg-card/80 p-1.5 hover:border-screen focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+          <X className="h-4 w-4" />
+        </button>
+      </div>
+      {card.origin && <p className={"mt-2 leading-snug text-foreground/80 " + (narrow ? "text-xs" : "text-sm")}>{card.origin}</p>}
+      {card.starters.length > 0 && (
+        <div className="mt-4">
+          <p className="mb-2 font-pixel text-[9px] uppercase tracking-[0.14em] text-muted-foreground">{card.starters.length === 1 ? "Partner" : "Starters"}</p>
+          <ul className="grid grid-cols-3 gap-2" data-testid="globe-region-starters">
+            {card.starters.map((s) => (
+              <li key={s.id}>
+                <Link href={`/pokemon/${s.id}`} className="group flex flex-col items-center rounded-lg border bg-background/40 px-1 pb-2 pt-1 hover:border-screen">
+                  <img src={artUrl(s.id, 96)} alt="" width={72} height={72} loading="lazy" decoding="async" className="h-14 w-14 object-contain sm:h-[72px] sm:w-[72px] drop-shadow-[0_4px_8px_hsl(var(--shade)/0.4)] transition-transform group-hover:-translate-y-0.5" />
+                  <span className="mt-1 truncate text-center font-display text-[11px] font-semibold uppercase tracking-wide">{s.name}</span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+      {card.games.length > 0 && (
+        <div className="mt-4">
+          <p className="mb-2 font-pixel text-[9px] uppercase tracking-[0.14em] text-muted-foreground">Games set here</p>
+          <ul className="flex flex-wrap gap-1.5" data-testid="globe-region-games">
+            {card.games.map((g) => (
+              <li key={g.title} className="rounded-sm border px-2 py-1 text-[11px] leading-tight">
+                {g.title} <span className="text-muted-foreground">· {g.year}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+      <div className={"grid gap-2 " + (narrow ? "mt-4 grid-cols-2" : "mt-5")}>
+        {card.guessr && (
+          <Link href={card.guessr} data-testid="globe-region-play" className="inline-flex h-10 items-center justify-center whitespace-nowrap rounded-md bg-primary px-3 font-display text-xs sm:text-sm font-semibold uppercase tracking-wider text-primary-foreground shadow-[0_4px_0_hsl(var(--primary-shadow))] hover:brightness-110 active:translate-y-[2px] active:shadow-[0_2px_0_hsl(var(--primary-shadow))]">
+            Play PokéGuessr here
+          </Link>
+        )}
+        {card.places && (
+          <Link href={card.places} data-testid="globe-region-dex" className="inline-flex h-10 items-center justify-center whitespace-nowrap rounded-md border border-border bg-card px-3 font-display text-xs sm:text-sm font-semibold uppercase tracking-wider shadow-[0_3px_0_hsl(var(--border))] hover:border-screen/60 active:translate-y-[2px]">
+            Open in Pokédex
+          </Link>
+        )}
+      </div>
+    </aside>
   );
 }
