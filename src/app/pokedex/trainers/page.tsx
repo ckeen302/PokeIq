@@ -37,7 +37,6 @@ export default function TrainersPage() {
     const f = gameFile(g.key)!;
     return { ...g, teams: f.teams.length, areas: new Set(f.teams.flatMap((t) => t.at.map((s) => s.a))).size };
   });
-  const total = games.reduce((n, g) => n + g.teams, 0);
   const notables = notableDirectory();
   const classes = [...new Set(TRAINER_GAMES.flatMap((g) => gameFile(g.key)!.teams.map((t) => t.cls)))].sort((a, b) => a.localeCompare(b));
   const byRole = ROLE_ORDER.map((role) => ({ role, list: notables.filter((n) => n.role === role) })).filter((r) => r.list.length);
@@ -46,7 +45,7 @@ export default function TrainersPage() {
   return (
     <div className="mx-auto max-w-7xl space-y-4">
       <ListHeader
-        kicker={`Trainer database · ${total.toLocaleString("en-US")} teams`}
+        kicker="Trainer database"
         title="Poké"
         accent="dex"
         blurb="Every trainer from Generation I to IX: where to find them and the exact team they use, from the first Youngster to the Champion — rematches and DLC included."

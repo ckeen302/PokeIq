@@ -17,7 +17,7 @@ export default function NaturesPage() {
   const rows = natureRows();
   return (
     <div className="mx-auto max-w-4xl space-y-4">
-      <ListHeader kicker="Natures · 25" title="Poké" accent="dex" blurb="A nature raises one stat by 10% and lowers another by 10%. Five natures change nothing." />
+      <ListHeader kicker="Natures" title="Poké" accent="dex" blurb="A nature raises one stat by 10% and lowers another by 10%. Five natures change nothing." />
       <DexTabs active="natures" />
       <div className="hud overflow-x-auto rounded-lg border bg-card">
         <table className="w-full min-w-[34rem] text-left text-sm" data-testid="nature-table">

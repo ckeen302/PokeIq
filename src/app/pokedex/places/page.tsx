@@ -17,10 +17,10 @@ export default function PlacesPage() {
   return (
     <div className="mx-auto max-w-7xl space-y-4">
       <ListHeader
-        kicker={`Place database · ${items.length.toLocaleString("en-US")} entries`}
+        kicker="Place database"
         title="Poké"
         accent="dex"
-        blurb={`${items.length.toLocaleString("en-US")} towns, routes, caves and buildings from every main-series region — the wild Pokémon in each game, plus the World Atlas screenshot and Gym Leaders where there are some.`}
+        blurb={`Towns, routes, caves and buildings from every main-series region — the wild Pokémon in each game, plus the World Atlas screenshot and Gym Leaders where there are some.`}
       />
       <DexTabs active="places" />
       <DexListExplorer kind="places" items={items} />

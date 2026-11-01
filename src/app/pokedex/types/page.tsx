@@ -18,7 +18,7 @@ export default function TypesPage() {
     <div className="mx-auto max-w-7xl space-y-4">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(breadcrumbList([{ name: "Pokédex", path: "/pokedex" }, { name: "Types", path: "/pokedex/types" }])) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(itemList("Pokémon types", TYPES.map((t) => ({ name: `${capitalize(t)} type`, path: `/pokedex/types/${t}` })))) }} />
-      <ListHeader kicker="Type chart · 18 types" title="Poké" accent="dex" blurb="Every attacking type against every defending type. For a dual-typed Pokémon, multiply the two columns." />
+      <ListHeader kicker="Type chart" title="Poké" accent="dex" blurb="Every attacking type against every defending type. For a dual-typed Pokémon, multiply the two columns." />
       <DexTabs active="types" />
       <TypeChart />
     </div>
