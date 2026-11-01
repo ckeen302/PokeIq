@@ -2,19 +2,22 @@
 
 import { useState } from "react";
 import type { Difficulty, ModuleId } from "@/engines/types";
-import { MODULE_INFO, PLAY_MODULES, difficultiesFor } from "@/lib/modes";
+import { MODULE_INFO, PLAY_MODULES, difficultiesFor, playDifficulty } from "@/lib/modes";
 import { QUIZ_DUEL_QUESTIONS, QUIZ_DUEL_QUESTION_MS, ZOOM_DUEL_QUESTION_MS, pvpHref } from "@/lib/pvp-types";
 import { ZOOM_POINTS, ZOOM_STEPS } from "@/lib/zoom-reveal";
 import { NewDuelCard } from "@/components/duel/NewDuelCard";
 import { cn } from "@/lib/utils";
 
-/** "Duel a friend" on a quiz's setup screen (and the /play hub): pick the mode and difficulty, open a quiz duel. */
-export function QuizDuelCard({ module: initial = "whos-that", difficulty: initialDifficulty = "medium" }: { module?: ModuleId; difficulty?: Difficulty }) {
+/**
+ * "Duel a friend" on a quiz's setup screen (and the /play hub): pick the mode
+ * (and the difficulty, for the two modes that have one), open a quiz duel.
+ */
+export function QuizDuelCard({ module: initial = "whos-that", difficulty: initialDifficulty }: { module?: ModuleId; difficulty?: Difficulty }) {
   const [module, setModule] = useState<ModuleId>(initial);
-  const [picked, setDifficulty] = useState<Difficulty>(initialDifficulty);
+  const [picked, setDifficulty] = useState<Difficulty | undefined>(initialDifficulty);
   const choices = difficultiesFor(module);
-  // A mode without the picked level (Whose Team has no Easy) plays its first one.
-  const difficulty = choices.some((c) => c.id === picked) ? picked : choices[0].id;
+  // A mode without the picked level (Whose Team has no Easy) plays its default; most modes have one fixed tuning.
+  const difficulty = playDifficulty(module, picked);
   return (
     <NewDuelCard
       body={{ kind: "quiz", module, difficulty }}
@@ -42,25 +45,27 @@ export function QuizDuelCard({ module: initial = "whos-that", difficulty: initia
             ))}
           </select>
         </label>
-        <div className="space-y-1">
-          <span className="hud-label block">Difficulty</span>
-          <div className="flex gap-1" role="group" aria-label="Duel difficulty">
-            {choices.map(({ id: d, label }) => (
-              <button
-                key={d}
-                type="button"
-                aria-pressed={difficulty === d}
-                onClick={() => setDifficulty(d)}
-                className={cn(
-                  "h-9 rounded-sm border px-2.5 font-pixel text-[10px] uppercase tracking-wider transition-colors",
-                  difficulty === d ? "border-primary bg-primary text-primary-foreground" : "border-foreground/10 bg-shade/20 text-muted-foreground hover:border-primary/50 hover:text-foreground"
-                )}
-              >
-                {label}
-              </button>
-            ))}
+        {choices.length > 0 && (
+          <div className="space-y-1">
+            <span className="hud-label block">Difficulty</span>
+            <div className="flex gap-1" role="group" aria-label="Duel difficulty">
+              {choices.map(({ id: d, label }) => (
+                <button
+                  key={d}
+                  type="button"
+                  aria-pressed={difficulty === d}
+                  onClick={() => setDifficulty(d)}
+                  className={cn(
+                    "h-9 rounded-sm border px-2.5 font-pixel text-[10px] uppercase tracking-wider transition-colors",
+                    difficulty === d ? "border-primary bg-primary text-primary-foreground" : "border-foreground/10 bg-shade/20 text-muted-foreground hover:border-primary/50 hover:text-foreground"
+                  )}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </NewDuelCard>
   );

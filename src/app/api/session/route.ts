@@ -6,12 +6,13 @@ import { randomId, verifyToken } from "@/lib/server/crypto";
 import { clientIp, rateLimit } from "@/lib/server/rate-limit";
 import { startSession } from "@/lib/server/session";
 import { optionalName } from "@/lib/name-filter";
-import { filterFor } from "@/lib/modes";
+import { defaultGens, filterFor, playDifficulty } from "@/lib/modes";
 import type { SessionSpec, ShareCard } from "@/lib/session-types";
 
 /**
  * POST /api/session — start a run.
- *   { module, format, difficulty, gens? }   regular run (fresh random seed)
+ *   { module, format, difficulty?, gens? }  regular run (fresh random seed); difficulty only counts for
+ *                                           Whose Team and Real Shiny, other modes play their fixed tuning
  *   { daily: "YYYY-MM-DD" }                 today's Daily Challenge (shared seed)
  *   { zoomDaily: "YYYY-MM-DD" }             today's one-Pokémon Zoom Reveal (shared seed, unranked)
  *   { challenge: "<share token>" }          replay a friend's exact quiz
@@ -28,7 +29,8 @@ const DAILY_COOKIE = "piq_daily";
 const bodySchema = z.object({
   module: z.enum(MODULES).default("whos-that"),
   format: z.enum(FORMATS).default("classic"),
-  difficulty: z.enum(DIFFICULTIES).default("medium"),
+  // Old links send a difficulty for every mode: tolerated, and mapped by playDifficulty.
+  difficulty: z.enum(DIFFICULTIES).optional().catch(undefined),
   gens: z.array(z.number().int().min(1).max(9)).max(9).optional(),
   /** Whose Team Is This?: games only or anime only (absent: both). */
   scope: z.enum(SCOPES).optional(),
@@ -77,11 +79,15 @@ export async function POST(request: NextRequest) {
     // Every generation (or anime series) selected is the same as no filter.
     const size = filterFor(body.module).chips.length;
     const unique = [...new Set(body.gens ?? [])].filter((g) => g <= size).sort((a, b) => a - b);
-    const gens = unique.length > 0 && unique.length < size ? unique : undefined;
+    const picked = unique.length > 0 && unique.length < size ? unique : undefined;
+    // No filter plays every generation ("All" means all nine), not the old medium cap of Gens 1–5.
+    const gens = picked ?? defaultGens(body.module);
     const scope = body.module === "whose-team" ? body.scope : undefined;
-    spec = { module: body.module, format: body.format, difficulty: body.difficulty, gens, seed: randomId(), ...(scope && { scope }) };
+    // The adaptive test samples every level itself; the rest play the mode's difficulty.
+    const difficulty = body.format === "adaptive" ? (body.difficulty ?? "medium") : playDifficulty(body.module, body.difficulty);
+    spec = { module: body.module, format: body.format, difficulty, gens, seed: randomId(), ...(scope && { scope }) };
     // Like a generation filter, games-only or anime-only runs aren't ranked against full runs.
-    if (gens || scope) spec.practice = "filtered";
+    if (picked || scope) spec.practice = "filtered";
   }
 
   try {

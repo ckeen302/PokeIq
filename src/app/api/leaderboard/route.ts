@@ -5,12 +5,16 @@ import { getServiceSupabase } from "@/lib/supabase";
 import { NAME_REJECTED, isCleanName } from "@/lib/name-filter";
 import { secretIsSecure, verifyToken } from "@/lib/server/crypto";
 import { clientIp, rateLimit } from "@/lib/server/rate-limit";
-import { LEADERBOARD_TAG, fetchBoard, practiceMessage } from "@/lib/server/leaderboard";
+import { LEADERBOARD_TAG, UNRANKED_QUIZ_MESSAGE, fetchBoard, practiceMessage } from "@/lib/server/leaderboard";
 import type { RunResult } from "@/lib/session-types";
 
 /**
- * GET  /api/leaderboard?daily=YYYY-MM-DD | ?iq=1 | ?module=whos-that&format=classic&difficulty=medium
+ * GET  /api/leaderboard?daily=YYYY-MM-DD | ?iq=1
  * POST /api/leaderboard { resultToken, playerName }
+ *
+ * Only the Daily Challenge and the PokéIQ Test have boards. Quiz modes
+ * don't (their personal bests show on trainer profiles): a quiz board asks
+ * for gets an empty list and a quiz run can't be posted.
  *
  * The POST body carries no score at all — only the server-signed result
  * token minted when the run finished. Scores can't be typed in, edited, or
@@ -34,16 +38,10 @@ const RESULT_MAX_AGE_MS = 6 * 60 * 60 * 1000;
 export async function GET(request: NextRequest) {
   const params = request.nextUrl.searchParams;
   const daily = params.get("daily");
-  const entries = daily
-    ? await fetchBoard({ kind: "daily", date: daily })
-    : params.get("iq")
-      ? await fetchBoard({ kind: "iq" })
-      : await fetchBoard({
-          kind: "module",
-          module: params.get("module") ?? "whos-that",
-          format: params.get("format") ?? undefined,
-          difficulty: params.get("difficulty") ?? undefined,
-        });
+  if (!daily && !params.get("iq")) {
+    return NextResponse.json({ entries: [], persistenceEnabled: false, error: UNRANKED_QUIZ_MESSAGE }, { status: 410, headers: { "Cache-Control": "public, max-age=300" } });
+  }
+  const entries = daily ? await fetchBoard({ kind: "daily", date: daily }) : await fetchBoard({ kind: "iq" });
   return NextResponse.json(
     { entries: entries ?? [], persistenceEnabled: entries !== null },
     { headers: { "Cache-Control": "public, max-age=0, s-maxage=30, stale-while-revalidate=60" } }

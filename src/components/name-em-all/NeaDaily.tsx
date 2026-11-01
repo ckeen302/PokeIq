@@ -46,7 +46,7 @@ export function NeaDaily() {
         <h1 className="font-display text-3xl font-bold uppercase tracking-tight sm:text-5xl" data-testid="nea-daily-title">
           {cat ? cat.h1 : "Today's category"}
         </h1>
-        <p className="text-sm text-muted-foreground">One category a day, the same for everyone. One ranked try: Regular mode, the standard time, no hints or pauses.</p>
+        <p className="text-sm text-muted-foreground">One category a day, the same for everyone. One try counts towards your best: Regular mode, the standard time, no hints or pauses.</p>
       </header>
       {error ? (
         <p className="text-center text-destructive">{error}</p>

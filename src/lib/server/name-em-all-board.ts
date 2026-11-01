@@ -36,6 +36,13 @@ export interface NeaStore {
   submit(scope: string, board: NeaBoard, entry: NeaEntry, firstOnly: boolean): Promise<boolean | null>;
   /** The board, best first. */
   board(scope: string, board: NeaBoard): Promise<NeaEntry[] | null>;
+  /** One trainer's entries on every scope and board (their personal bests, for the profile). */
+  mine(player: string): Promise<NeaOwnEntry[] | null>;
+}
+
+export interface NeaOwnEntry extends NeaEntry {
+  scope: string;
+  board: NeaBoard;
 }
 
 export const neaPlayerKey = (identity: string) => deriveSeed("nea-player", identity);
@@ -114,7 +121,7 @@ export function checkRun({ total, limitMs, named, times, ms, wallMs }: NeaRunInp
     if (!Number.isFinite(times[i]) || times[i] < 0 || times[i] > ms + 1000 || (i > 0 && times[i] < times[i - 1])) return { ok: false, reason: "That run doesn't add up." };
   }
   if (ms > wallMs + 5_000) return { ok: false, reason: "That run took longer than it's been going." };
-  if (ms < wallMs - SLACK_MS - wallMs * 0.02) return { ok: false, reason: "Paused runs aren't ranked." };
+  if (ms < wallMs - SLACK_MS - wallMs * 0.02) return { ok: false, reason: "Paused runs don't count as personal bests." };
   if (named.length && times[times.length - 1] < named.length * MIN_MS_PER_NAME) return { ok: false, reason: "That's faster than anyone types." };
   const inTime = times.filter((t) => t <= limitMs).length;
   return {
@@ -148,6 +155,16 @@ export function memoryNeaStore(): NeaStore {
     },
     async board(scope, board) {
       return [...at(scope, board).values()].sort(betterEntry);
+    },
+    async mine(player) {
+      const out: NeaOwnEntry[] = [];
+      for (const [k, b] of boards) {
+        const e = b.get(player);
+        if (!e) continue;
+        const cut = k.lastIndexOf("|");
+        out.push({ ...e, scope: k.slice(0, cut), board: k.slice(cut + 1) as NeaBoard });
+      }
+      return out;
     },
   };
 }
@@ -210,6 +227,16 @@ export function supabaseNeaStore(sb: NonNullable<ReturnType<typeof getServiceSup
         throw new Error(error.message);
       }
       return (data as Row[]).map(toEntry).sort(betterEntry);
+    },
+    async mine(player) {
+      if (Date.now() < missingUntil) return null;
+      // One trainer's rows: a few per category played (indexed by migration 0053).
+      const { data, error } = await table().select("scope, board, player_key, player_name, named, total, duration_ms").eq("player_key", player).limit(500);
+      if (error) {
+        if (missing(error)) return null;
+        throw new Error(error.message);
+      }
+      return (data as (Row & { scope: string; board: NeaBoard })[]).map((r) => ({ ...toEntry(r), scope: r.scope, board: r.board }));
     },
   };
 }

@@ -461,11 +461,13 @@ export interface ProgressDigest {
   connPlay?: unknown;
   /** Badges earned (how many). */
   badges?: number;
+  /** The per-mode best scores ("<module>:<format>" -> score), only when asked for (the profile). Untrusted shape. */
+  best?: unknown;
 }
 
 const badgeCount = (b: unknown) => (b && typeof b === "object" && !Array.isArray(b) ? Object.keys(b).length : 0);
 
-export async function progressDigests(ids: string[]): Promise<Map<string, ProgressDigest>> {
+export async function progressDigests(ids: string[], opts: { bests?: boolean } = {}): Promise<Map<string, ProgressDigest>> {
   const out = new Map<string, ProgressDigest>();
   const unique = [...new Set(ids)];
   if (!unique.length) return out;
@@ -473,11 +475,13 @@ export async function progressDigests(ids: string[]): Promise<Map<string, Progre
   if (sb) {
     const { data, error } = await sb
       .from("user_progress")
-      .select("user_id, xp:progress->xp, daily:progress->daily, dle:progress->dle, connLast:progress->conn->last, connStreak:progress->conn->streak, connBest:progress->conn->best, connPlay:progress->connPlay, badges:progress->badges")
+      .select(
+        `user_id, xp:progress->xp, daily:progress->daily, dle:progress->dle, connLast:progress->conn->last, connStreak:progress->conn->streak, connBest:progress->conn->best, connPlay:progress->connPlay, badges:progress->badges${opts.bests ? ", best:progress->best" : ""}`
+      )
       .in("user_id", unique);
     if (error) throw new Error(error.message);
-    type Row = { user_id: string; xp: unknown; daily: unknown; dle: unknown; connLast: unknown; connStreak: unknown; connBest: unknown; connPlay: unknown; badges: unknown };
-    for (const r of (data ?? []) as Row[]) {
+    type Row = { user_id: string; xp: unknown; daily: unknown; dle: unknown; connLast: unknown; connStreak: unknown; connBest: unknown; connPlay: unknown; badges: unknown; best?: unknown };
+    for (const r of (data ?? []) as unknown as Row[]) {
       out.set(r.user_id, {
         xp: typeof r.xp === "number" ? r.xp : 0,
         daily: r.daily,
@@ -485,12 +489,13 @@ export async function progressDigests(ids: string[]): Promise<Map<string, Progre
         conn: r.connLast === null && r.connStreak === null ? null : { last: r.connLast, streak: r.connStreak, best: r.connBest },
         connPlay: r.connPlay,
         badges: badgeCount(r.badges),
+        ...(opts.bests && { best: r.best }),
       });
     }
     return out;
   }
   for (const id of unique) {
-    const p = fileDb().progress[id] as { xp?: unknown; daily?: unknown; dle?: unknown; conn?: { last?: unknown; streak?: unknown; best?: unknown }; connPlay?: unknown; badges?: unknown } | undefined;
+    const p = fileDb().progress[id] as { xp?: unknown; daily?: unknown; dle?: unknown; conn?: { last?: unknown; streak?: unknown; best?: unknown }; connPlay?: unknown; badges?: unknown; best?: unknown } | undefined;
     if (p) {
       out.set(id, {
         xp: typeof p.xp === "number" ? p.xp : 0,
@@ -499,6 +504,7 @@ export async function progressDigests(ids: string[]): Promise<Map<string, Progre
         conn: p.conn ? { last: p.conn.last, streak: p.conn.streak, best: p.conn.best } : null,
         connPlay: p.connPlay,
         badges: badgeCount(p.badges),
+        ...(opts.bests && { best: p.best }),
       });
     }
   }

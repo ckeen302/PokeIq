@@ -81,3 +81,31 @@ describe("PokéGuessr daily streak", () => {
     expect(first.newBadges.map((b) => b.id)).not.toContain("geo-first");
   });
 });
+
+describe("recordRun personal bests", () => {
+  beforeEach(() => store.clear());
+
+  it("keeps the best per quiz mode and format, and flags a new one", async () => {
+    const { recordRun, getProgress } = await freshProgress();
+    const run = (sid: string, score: number, format: "classic" | "blitz" = "classic"): RunResult => ({
+      ...dailyRun("2026-10-20", sid),
+      spec: { module: "whos-that", format, difficulty: "medium", seed: sid },
+      score,
+    });
+    expect(recordRun(run("a", 900)).personalBest).toEqual({ before: null, isNew: true });
+    expect(recordRun(run("b", 700)).personalBest).toEqual({ before: 900, isNew: false });
+    expect(recordRun(run("c", 1200)).personalBest).toEqual({ before: 900, isNew: true });
+    recordRun(run("d", 3000, "blitz"));
+    expect(getProgress().best).toMatchObject({ "whos-that:classic": 1200, "whos-that:blitz": 3000 });
+  });
+
+  it("leaves the Daily Challenge and the daily Zoom Reveal out of the quiz bests", async () => {
+    const { recordRun, getProgress } = await freshProgress();
+    const daily = recordRun(dailyRun("2026-10-20", "a"));
+    expect(daily.personalBest).toBeUndefined();
+    const zoom: RunResult = { ...dailyRun("2026-10-20", "z"), spec: { module: "zoom-reveal", format: "classic", difficulty: "medium", seed: "zoom-daily:2026-10-20", zoomDaily: "2026-10-20", practice: "zoom-daily" } };
+    expect(recordRun(zoom).personalBest).toBeUndefined();
+    expect(getProgress().best["mixed:classic"]).toBeUndefined();
+    expect(getProgress().best["zoom-reveal:classic"]).toBeUndefined();
+  });
+});

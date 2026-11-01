@@ -154,11 +154,15 @@ describe("share text", () => {
 
   it("gives quizzes the score, time, PokéIQ and a square per answer", () => {
     expect(quizShareText(quiz, URL).split("\n")).toEqual([
-      "PokéIQ Who's That Pokémon? · Blitz · Hard 8/10 ⏱0:42",
+      // Who's That plays one fixed tuning: an old card's difficulty isn't named.
+      "PokéIQ Who's That Pokémon? · Blitz 8/10 ⏱0:42",
       "🧠 PokéIQ 124 · 12,340 pts",
       "🟩🟩🟥🟩🟩🟩🟩🟥🟩🟩",
       URL,
     ]);
+    // The two modes with a difficulty choice name it, in the mode's own words.
+    expect(quizShareText({ ...quiz, module: "shiny", format: "classic" }).split("\n")[0]).toBe("PokéIQ Real Shiny? · Classic · Hard 8/10 ⏱0:42");
+    expect(quizShareText({ ...quiz, module: "whose-team", format: "classic", difficulty: "medium" }).split("\n")[0]).toBe("PokéIQ Whose Team Is This? · Classic · Normal 8/10 ⏱0:42");
     const daily = { ...quiz, daily: 12, streak: 4, difficulty: undefined };
     expect(quizShareText(daily).split("\n")[0]).toBe("PokéIQ Daily #12 8/10 🔥4 ⏱0:42");
     const test = { ...quiz, format: "adaptive" as const, difficulty: undefined, correct: 15, total: 20, pokeiq: 132, grid: "1".repeat(20) };

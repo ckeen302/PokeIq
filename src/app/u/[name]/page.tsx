@@ -33,6 +33,9 @@ import { ReplayRow } from "@/components/battle/ReplayLists";
 import { TierBadge } from "@/components/pokedle/Ranked";
 import { ProfileActions } from "@/components/community/ProfileActions";
 import { Card, CardContent } from "@/components/ui/card";
+import { QuizBests } from "@/components/community/QuizBests";
+import { neaBests, quizBests } from "@/lib/quiz-bests";
+import { neaPlayerKey, neaStore } from "@/lib/server/name-em-all-board";
 import type { RankedStanding } from "@/lib/ranked";
 import type { ReplaySummary } from "@/lib/battle/replay";
 
@@ -62,8 +65,8 @@ const findProfile = cache(async (raw: string) => {
   const key = battleKey(`u:${user.id}`);
   const replays = replayStore();
   const ranked = rankedStore();
-  const [digest, battles, pokedle, guessr, mine, avatars, about, insights, geoStats, geoStreak, geoSeasons, geoProgress] = await Promise.all([
-    quietly("progress", progressDigests([user.id]).then((m) => m.get(user.id) ?? null), null),
+  const [digest, battles, pokedle, guessr, mine, avatars, about, insights, geoStats, geoStreak, geoSeasons, geoProgress, nea] = await Promise.all([
+    quietly("progress", progressDigests([user.id], { bests: true }).then((m) => m.get(user.id) ?? null), null),
     quietly("battles", battleProfile(key), null),
     quietly<RankedStanding | null>("pokedle", ranked?.standing(rankedKey(`u:${user.id}`)), null),
     quietly<GeoRankedStanding | null>("guessr", geoRankedStandingOf(geoRankedKey(`u:${user.id}`), utcDay(Date.now())), null),
@@ -75,6 +78,8 @@ const findProfile = cache(async (raw: string) => {
     quietly("geo-streak", bestStreakOf(geoStatsKey(`u:${user.id}`)), null),
     quietly("geo-seasons", geoSeasonHistoryOf(geoRankedKey(`u:${user.id}`)), []),
     quietly("geo-progress", geoProgressFor({ key: geoStatsKey(`u:${user.id}`), userId: user.id, username: user.username }), null),
+    // Name 'em All's checked runs under their account (one indexed lookup).
+    quietly("name-em-all", neaStore()?.mine(neaPlayerKey(`u:${user.id}`)), null),
   ]);
   return {
     username: user.username,
@@ -88,6 +93,8 @@ const findProfile = cache(async (raw: string) => {
     geoSeasons,
     geoProgress,
     connections: connDigest(digest),
+    quizBests: quizBests(digest?.best),
+    neaBests: neaBests(nea),
     about,
     aboutNames: Object.fromEntries(Object.entries(about.pokemon).map(([slot, p]) => [slot, pokemonName(p.id) ?? ""])),
     replays: mine.filter((r) => r.public).slice(0, 6),
@@ -101,7 +108,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   if (!found) return pageMetadata({ title: "Trainer not found", description: "No such trainer on PokéIQ.", noindex: true });
   return pageMetadata({
     title: `${found.username} · Trainer profile`,
-    description: `${found.username} on PokéIQ: Pokédle, PokéGuessr and battle ratings, battle records and recent replays.`,
+    description: `${found.username} on PokéIQ: Pokédle, PokéGuessr and battle ratings, quiz personal bests, battle records and recent replays.`,
     path: `/u/${encodeURIComponent(found.username)}`,
   });
 }
@@ -232,6 +239,8 @@ export default async function UserProfilePage({ params }: PageProps) {
           </CardContent>
         </Card>
       </div>
+
+      <QuizBests username={found.username} quiz={found.quizBests} nea={found.neaBests} />
 
       <GeoProfileStats stats={found.geoStats} streak={found.geoStreak} progress={found.geoProgress} />
 
