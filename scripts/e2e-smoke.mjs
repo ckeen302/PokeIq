@@ -2003,11 +2003,24 @@ step("pokédex Trainers tab: search, notable filter, a game by route, an area's 
   await page.getByTestId("notable-blurb").waitFor();
 }
 
-step("pokédex Timeline tab: 3D scene, scroll + drag, open an entry, track filters, scrubber, list view");
+step("pokédex Timeline tab: intro (once, skippable), 3D scene, scroll + drag, open an entry, track filters, scrubber, list view");
 {
   await gotoSettled(page, `${BASE}/pokedex`);
   await page.getByTestId("dex-tab-timeline").click();
   await page.waitForURL(/\/pokedex\/timeline$/);
+  // First visit: the intro plays; a click skips it straight away.
+  const intro = page.getByTestId("timeline-intro");
+  if (!(await intro.waitFor({ timeout: 30_000 }).then(() => true, () => false))) errors.push("timeline: the intro didn't play on the first visit");
+  else {
+    await page.waitForTimeout(400);
+    await page.mouse.click(700, 500);
+    if (!(await intro.waitFor({ state: "detached", timeout: 3_000 }).then(() => true, () => false))) errors.push("timeline: clicking didn't skip the intro");
+    // Once per browser: back again, no intro.
+    await gotoSettled(page, `${BASE}/pokedex/timeline`);
+    await page.locator('[data-testid="timeline-stage"][data-ready="1"]').waitFor({ timeout: 60_000 });
+    await page.waitForTimeout(800);
+    if (await intro.count()) errors.push("timeline: the intro played a second time");
+  }
   // The server-rendered list is always in the page (search engines, no WebGL, reduced motion).
   if (!(await page.locator('[data-testid="timeline-list"] #red-green').count())) errors.push("timeline: the server-rendered list is missing Red and Green");
   const stage = page.getByTestId("timeline-stage");
@@ -2072,6 +2085,91 @@ step("pokédex Timeline tab: 3D scene, scroll + drag, open an entry, track filte
     await page.locator('[data-testid="timeline-list"] #scarlet-violet').waitFor();
     await page.getByTestId("timeline-3d-view").waitFor();
   }
+}
+
+step("pokédex Timeline: an entry's own link opens its panel, share copies it, tour starts and stops, sound stays off when muted");
+{
+  // Site sound off; count every AudioContext the page creates.
+  const context = await browser.newContext({ viewport: { width: 1280, height: 900 } });
+  await context.grantPermissions(["clipboard-read", "clipboard-write"], { origin: BASE });
+  await context.addInitScript(() => {
+    sessionStorage.setItem("pokeiq-splash", "1");
+    localStorage.setItem("pokeiq-muted", "1");
+    window.__audioContexts = 0;
+    const Real = window.AudioContext;
+    if (Real) window.AudioContext = class extends Real { constructor(...a) { super(...a); window.__audioContexts++; } };
+  });
+  const tp = await context.newPage();
+  tp.on("pageerror", (err) => errors.push(`[${tp.url()}] PAGEERROR: ${err.message}`));
+  await tp.goto(`${BASE}/pokedex/timeline/pokemon-go`, { waitUntil: "domcontentloaded" });
+  if (!/Pokémon GO/.test(await tp.title())) errors.push(`timeline: an entry's page has a generic title (${await tp.title()})`);
+  if (!(await tp.locator('[data-testid="timeline-stage"][data-ready="1"]').waitFor({ timeout: 60_000 }).then(() => true, () => false))) {
+    errors.push("timeline: the 3D scene never became ready on an entry's link");
+  } else {
+    // A shared link goes straight to the entry: no intro, its panel open.
+    if (await tp.getByTestId("timeline-intro").count()) errors.push("timeline: the intro played on an entry's link");
+    const detail = tp.getByTestId("timeline-detail");
+    if (!(await detail.waitFor({ timeout: 10_000 }).then(() => true, () => false))) errors.push("timeline: an entry's link didn't open its panel");
+    else if (!/Pokémon GO/i.test(await tp.getByTestId("timeline-detail-title").innerText())) errors.push("timeline: the entry's link opened the wrong entry");
+    // The card shows the earliest release (6 Jul 2016 in North America, before Japan's 22 Jul); the panel keeps both.
+    const goDate = await tp.locator('.tl-card[data-entry="pokemon-go"] .tl-card-date').innerText().catch(() => "");
+    if (!/6 Jul 2016/i.test(goDate) || /22 Jul/i.test(goDate)) errors.push(`timeline: the Pokémon GO card shows "${goDate}", not its earliest release`);
+    for (const id of ["timeline-date-japan", "timeline-date-north-america"]) if (!(await detail.getByTestId(id).count())) errors.push(`timeline: the Pokémon GO panel lost ${id}`);
+    // At most one era title in the distance at any time, and none behind the era title card.
+    for (const y of [2003, 2008, 2012]) {
+      const bar = await tp.getByTestId("timeline-scrubber").boundingBox();
+      await tp.mouse.click(bar.x + ((y - 1996) / 30.7) * bar.width, bar.y + bar.height / 2);
+      await tp.waitForTimeout(1200);
+      for (let k = 0; k < 4; k++) {
+        const shown = await tp.evaluate(() => [...document.querySelectorAll(".tl-era")].filter((e) => e.style.display !== "none" && Number(e.style.opacity || 0) > 0.01).length);
+        const flashOn = await tp.getByTestId("timeline-era-flash").count();
+        if (shown > 1 || (flashOn && shown > 0)) { errors.push(`timeline: ${shown} era titles shown at once near ${y}${flashOn ? " (with the title card)" : ""}`); break; }
+        await tp.waitForTimeout(500);
+      }
+    }
+    await tp.getByTestId("timeline-detail").waitFor({ state: "detached", timeout: 5_000 }).catch(() => {});
+    await tp.goto(`${BASE}/pokedex/timeline/pokemon-go`, { waitUntil: "domcontentloaded" });
+    await tp.locator('[data-testid="timeline-stage"][data-ready="1"]').waitFor({ timeout: 60_000 });
+    await detail.waitFor({ timeout: 10_000 });
+    // Share: the panel shows the entry's own link and copies it.
+    await tp.getByTestId("timeline-share").click();
+    await tp.getByTestId("timeline-share-panel").waitFor();
+    if (!/\/pokedex\/timeline\/pokemon-go$/.test(await tp.getByTestId("timeline-share-url").innerText())) errors.push("timeline: the share panel doesn't show the entry's link");
+    await tp.getByTestId("timeline-share-copy").click();
+    await tp.getByTestId("timeline-share-copy").filter({ hasText: "Copied" }).waitFor({ timeout: 5_000 }).catch(() => errors.push("timeline: Copy didn't confirm"));
+    const copied = await tp.evaluate(() => navigator.clipboard.readText()).catch(() => "");
+    if (!copied.endsWith("/pokedex/timeline/pokemon-go")) errors.push(`timeline: Copy put "${copied}" on the clipboard`);
+    await tp.screenshot({ path: `${OUT}/timeline-share.png` });
+    // Its preview card is the entry's own.
+    const og = await tp.request.get(`${BASE}/pokedex/timeline/pokemon-go/opengraph-image`);
+    if (og.status() !== 200 || !/image\/png/.test(og.headers()["content-type"] ?? "")) errors.push(`timeline: the entry's preview card failed (${og.status()})`);
+    // Closing the panel puts the address bar back on the timeline.
+    await tp.getByTestId("timeline-detail-close").click();
+    await detail.waitFor({ state: "hidden" });
+    if (new URL(tp.url()).pathname !== "/pokedex/timeline") errors.push(`timeline: closing the panel left the address at ${tp.url()}`);
+    // Tour: glides forward on its own and pauses on key moments; any key stops it.
+    const tour = tp.getByTestId("timeline-tour");
+    await tp.keyboard.press("Home");
+    await tp.waitForTimeout(1500);
+    await tour.click();
+    if ((await tour.getAttribute("aria-pressed")) !== "true") errors.push("timeline: the tour didn't start");
+    await tp.getByTestId("timeline-tour-caption").waitFor({ timeout: 20_000 }).catch(() => errors.push("timeline: the tour never paused on a moment"));
+    const y0 = Number(await tp.getByTestId("timeline-year").innerText());
+    await tp.waitForFunction((y) => Number(document.querySelector('[data-testid="timeline-year"]').textContent) > y, y0, { timeout: 30_000 }).catch(() => errors.push("timeline: the tour didn't move forward through time"));
+    await tp.keyboard.press("x");
+    await tp.waitForFunction(() => document.querySelector('[data-testid="timeline-tour"]').getAttribute("aria-pressed") === "false", null, { timeout: 5_000 }).catch(() => errors.push("timeline: a key press didn't stop the tour"));
+    // All that clicking with the site's sound off: not one AudioContext.
+    const made = await tp.evaluate(() => window.__audioContexts);
+    if (made !== 0) errors.push(`timeline: ${made} AudioContext(s) started with the site's sound off`);
+    // Sound on: the next press starts the timeline's audio.
+    await tp.evaluate(() => localStorage.setItem("pokeiq-muted", "0"));
+    await tp.mouse.click(640, 450);
+    await tp.waitForFunction(() => window.__audioContexts > 0, null, { timeout: 10_000 }).catch(() => errors.push("timeline: no audio started with the sound on"));
+  }
+  // The list fallback (?view=list) opens on an entry's link too.
+  await tp.goto(`${BASE}/pokedex/timeline/gold-silver?view=list`, { waitUntil: "domcontentloaded" });
+  await tp.locator('[data-testid="timeline-list"] #gold-silver.tl-list-hit').waitFor({ timeout: 15_000 }).catch(() => errors.push("timeline: the list view didn't bring the linked entry into view"));
+  await context.close();
 }
 
 step("trainer, leaderboard, pokémon page");

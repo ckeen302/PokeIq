@@ -10,6 +10,8 @@ import { getSets } from "@/lib/tcg/api";
 import { trainerSitemapPaths } from "@/lib/trainers/data";
 import { POOL as WHICH_POKEMON_POOL } from "@/lib/which-pokemon/pool";
 import { QUIZ_PATH as WHICH_POKEMON_PATH } from "@/lib/which-pokemon/match";
+import { TIMELINE } from "@/lib/timeline/data";
+import { entryPath } from "@/lib/timeline/deeplink";
 
 // Card pages are in /pokedex/tcg/sitemap/<n>.xml (see src/app/pokedex/tcg/sitemap.ts).
 // TCG sets come from the Pokémon TCG API: refresh daily; without the API the sitemap simply omits them.
@@ -37,6 +39,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${SITE_URL}/pokedex/items`, changeFrequency: "monthly", priority: 0.7 },
     { url: `${SITE_URL}/pokedex/places`, changeFrequency: "monthly", priority: 0.7 },
     { url: `${SITE_URL}/pokedex/timeline`, changeFrequency: "monthly", priority: 0.7 },
+    ...TIMELINE.map((e) => ({ url: `${SITE_URL}${entryPath(e.id)}`, changeFrequency: "yearly" as const, priority: 0.4 })),
     { url: `${SITE_URL}/pokedex/types`, changeFrequency: "monthly", priority: 0.7 },
     ...TYPES.map((t) => ({ url: `${SITE_URL}/pokedex/types/${t}`, changeFrequency: "monthly" as const, priority: 0.6 })),
     { url: `${SITE_URL}/pokedex/natures`, changeFrequency: "monthly", priority: 0.6 },
