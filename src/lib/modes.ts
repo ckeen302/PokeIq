@@ -29,8 +29,15 @@ const MIX_NOTE = "Every run mixes easy, medium and hard questions.";
 export const GEN_FILTER: QuizFilter = {
   label: "Generations",
   chips: REGION_TITLES.map((title, i) => ({ label: `Gen ${i + 1}`, title })),
-  note: "Without a filter, Pokémon come from Gens 1–5. Pick generations to play any of the nine.",
 };
+
+/**
+ * The generations a run plays when the player picks no filter: every one, for the
+ * modes that use the generation filter ("All" means all nine); undefined for the rest.
+ */
+export function defaultGens(module: ModuleId): number[] | undefined {
+  return filterFor(module) === GEN_FILTER ? GEN_FILTER.chips.map((_, i) => i + 1) : undefined;
+}
 
 /** Real Shiny? draws from all 1,025 Pokémon without a filter, so its filter needs no note. */
 const SHINY_FILTER: QuizFilter = { label: GEN_FILTER.label, chips: GEN_FILTER.chips };
@@ -82,8 +89,8 @@ const DIFFICULTY_CHOICES: Partial<Record<ModuleId, DifficultyChoice[]>> = {
 };
 
 /**
- * Every other quiz plays one fixed tuning: medium (Gens 1–5 by default,
- * look-alike options, a balanced question mix).
+ * Every other quiz plays one fixed tuning: medium (look-alike options, a balanced
+ * question mix), over every generation unless the player filters (defaultGens).
  */
 export const FIXED_DIFFICULTY: Difficulty = "medium";
 

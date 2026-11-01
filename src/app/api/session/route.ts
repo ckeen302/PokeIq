@@ -6,7 +6,7 @@ import { randomId, verifyToken } from "@/lib/server/crypto";
 import { clientIp, rateLimit } from "@/lib/server/rate-limit";
 import { startSession } from "@/lib/server/session";
 import { optionalName } from "@/lib/name-filter";
-import { filterFor, playDifficulty } from "@/lib/modes";
+import { defaultGens, filterFor, playDifficulty } from "@/lib/modes";
 import type { SessionSpec, ShareCard } from "@/lib/session-types";
 
 /**
@@ -79,13 +79,15 @@ export async function POST(request: NextRequest) {
     // Every generation (or anime series) selected is the same as no filter.
     const size = filterFor(body.module).chips.length;
     const unique = [...new Set(body.gens ?? [])].filter((g) => g <= size).sort((a, b) => a - b);
-    const gens = unique.length > 0 && unique.length < size ? unique : undefined;
+    const picked = unique.length > 0 && unique.length < size ? unique : undefined;
+    // No filter plays every generation ("All" means all nine), not the old medium cap of Gens 1–5.
+    const gens = picked ?? defaultGens(body.module);
     const scope = body.module === "whose-team" ? body.scope : undefined;
     // The adaptive test samples every level itself; the rest play the mode's difficulty.
     const difficulty = body.format === "adaptive" ? (body.difficulty ?? "medium") : playDifficulty(body.module, body.difficulty);
     spec = { module: body.module, format: body.format, difficulty, gens, seed: randomId(), ...(scope && { scope }) };
     // Like a generation filter, games-only or anime-only runs aren't ranked against full runs.
-    if (gens || scope) spec.practice = "filtered";
+    if (picked || scope) spec.practice = "filtered";
   }
 
   try {

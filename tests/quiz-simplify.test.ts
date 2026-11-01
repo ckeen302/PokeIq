@@ -113,7 +113,7 @@ describe("quiz difficulty: one fixed tuning, except Whose Team and Real Shiny", 
       expect(p.description, p.slug).not.toMatch(/three difficulties/i);
     }
     for (const m of FIXED_MODES) expect(MODULE_INFO[m].description, m).not.toMatch(/\b(hard|easy) (mode|fakes)\b/i);
-    expect(GEN_FILTER.note).not.toMatch(/Easy|Hard|Medium/);
+    expect(GEN_FILTER.note ?? "").not.toMatch(/Easy|Hard|Medium/);
     for (const m of PLAY_MODULES) expect(filterFor(m).note ?? "", m).not.toMatch(/\b(Easy|Medium|Hard) uses\b|Every difficulty/);
   });
 });
@@ -132,6 +132,21 @@ describe("old links and invites with a difficulty still start", () => {
     expect((await start({ module: "whose-team", format: "classic", difficulty: "hard" })).difficulty).toBe("hard");
     expect((await start({ module: "shiny", format: "classic", difficulty: "hard" })).difficulty).toBe("hard");
     expect((await start({ module: "shiny", format: "classic", difficulty: "medium" })).difficulty).toBe("easy");
+  });
+
+  it("with no generation filter, a Pokémon quiz plays every generation (All means all nine)", async () => {
+    const start = async (body: unknown) => {
+      const res = await sessionRoute.POST(req("/api/session", body));
+      return readSession(((await res.json()) as { token: string }).token)!.spec;
+    };
+    const all = await start({ module: "whos-that", format: "classic" });
+    expect(all.gens).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9]);
+    expect(all.practice).toBeUndefined();
+    expect((await start({ module: "whos-that", format: "classic", gens: [1, 2, 3, 4, 5, 6, 7, 8, 9] })).gens).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9]);
+    const gen1 = await start({ module: "whos-that", format: "classic", gens: [1] });
+    expect(gen1.gens).toEqual([1]);
+    expect(gen1.practice).toBe("filtered");
+    expect((await start({ module: "games", format: "classic" })).gens).toBeUndefined();
   });
 
   it("POST /api/duel opens a quiz duel at the mode's difficulty", async () => {

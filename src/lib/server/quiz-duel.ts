@@ -16,7 +16,7 @@ import {
 } from "@/lib/pvp-types";
 import { FORMAT_RULES, learnHref, mediaUrl, questionAt, shownCards, toPublic } from "./session";
 import { revealFactor } from "@/lib/whose-team";
-import { playDifficulty } from "@/lib/modes";
+import { defaultGens, playDifficulty } from "@/lib/modes";
 import { guessedSpecies, zoomStepWindow } from "./zoom-reveal";
 import { ZOOM_STEPS, zoomPoints } from "@/lib/zoom-reveal";
 import {
@@ -70,6 +70,8 @@ export interface QuizDuel extends PvpBase {
   kind: "quiz";
   module: ModuleId;
   difficulty: Difficulty;
+  /** Generations the questions come from (set on duels made after "All" became all nine; older duels have none). */
+  gens?: number[];
   /** Points so far. */
   scores: number[];
   questions: QuizDuelQuestion[];
@@ -79,7 +81,7 @@ export interface QuizDuel extends PvpBase {
 const GRACE_MS = 1_000;
 
 /** The duel as a solo session sees it: the same engines and generator, seeded by the duel. */
-const specOf = (d: QuizDuel): SessionSpec => ({ module: d.module, format: "classic", difficulty: d.difficulty, seed: `duel:${d.seed}` });
+const specOf = (d: QuizDuel): SessionSpec => ({ module: d.module, format: "classic", difficulty: d.difficulty, ...(d.gens && { gens: d.gens }), seed: `duel:${d.seed}` });
 
 /** Question `index`, built on the server from the duel's seed: the same for both trainers. */
 export const duelQuestion = (d: QuizDuel, index: number): Question => questionAt(specOf(d), index);
@@ -156,6 +158,7 @@ const blankDuel = (base: PvpBase, module: ModuleId, difficulty: Difficulty): Qui
   kind: "quiz",
   module,
   difficulty,
+  ...(defaultGens(module) && { gens: defaultGens(module) }),
   scores: [0, 0],
   questions: [],
 });
