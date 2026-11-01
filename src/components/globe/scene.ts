@@ -205,7 +205,7 @@ export function createGlobeScene(host: HTMLElement, layer: HTMLDivElement, cb: S
         float day=smoothstep(-.1,.22,ndl);
         vec3 H=normalize(uSun+V); float nh=max(dot(N,H),0.);
         float w=vnoise(vP*38.+vec3(time*.25,time*.18,0.));
-        col+=spec*(pow(nh,90.)*(.3+.9*w*w)*.55+pow(nh,10.)*.04)*(1.-l0)*day;
+        col+=spec*(pow(nh,110.)*(.55+.45*w)*.42+pow(nh,12.)*.035)*(1.-l0)*day;
         col*=mix(nightLevel,1.,day);
         col=mix(col,col*nightTint,(1.-day)*.75);
         col+=dusk*exp(-pow((ndl-.03)/.06,2.))*(light>.5?.025:.05)*(.35+.65*l);
@@ -578,7 +578,7 @@ export function createGlobeScene(host: HTMLElement, layer: HTMLDivElement, cb: S
     U.spec.value.copy(darkTheme ? new THREE.Color(0.85, 0.82, 1) : new THREE.Color(1, 1, 1));
     U.nightLevel.value = darkTheme ? 0.36 : 0.74;
     U.nightTint.value.set(darkTheme ? 0x7f8cff : 0xd2d0ff).multiplyScalar(darkTheme ? 1.25 : 1.05);
-    haloU.color.value.copy(darkTheme ? screen : primary); haloU.strength.value = darkTheme ? 1.2 : 0.5;
+    haloU.color.value.copy(darkTheme ? screen : primary.lerp(screen, 0.6)); haloU.strength.value = darkTheme ? 1.2 : 0.32;
     ringMat.color.copy(screen); ringMat.opacity = darkTheme ? 0.3 : 0.22;
     cloudU.uDay.value.copy(darkTheme ? new THREE.Color(0.93, 0.92, 1) : new THREE.Color(1, 1, 1));
     cloudU.uNight.value.copy(darkTheme ? new THREE.Color(0.22, 0.2, 0.42) : new THREE.Color(0.75, 0.74, 0.9));
@@ -911,25 +911,27 @@ export function createGlobeScene(host: HTMLElement, layer: HTMLDivElement, cb: S
     camera.updateMatrixWorld();
 
     // The sun: fixed in space, up and to the right, swinging slowly so the day/night line moves over the land.
-    const az = 1.3 + Math.sin(t * 0.021) * 0.32, el = 0.32;
+    // Reduced motion: everything ambient (sun, clouds, orbits, twinkle) holds still.
+    const tm = reduce ? 12 : t;
+    const az = 1.3 + Math.sin(tm * 0.021) * 0.32, el = 0.32;
     sunWorld.set(Math.sin(az) * Math.cos(el), Math.sin(el), Math.cos(az) * Math.cos(el));
     qInv.copy(globe.quaternion).invert();
     sunObj.copy(sunWorld).applyQuaternion(qInv);
     camObj.copy(camera.position).applyQuaternion(qInv);
     haloU.uSunV.value.copy(sunWorld).transformDirection(camera.matrixWorldInverse);
-    U.time.value = t;
+    U.time.value = tm;
     // Clouds drift on their own, a little faster than the world turns.
-    clouds.rotation.y = t * 0.006;
+    clouds.rotation.y = tm * 0.006;
     cloudU.uSun.value.copy(sunObj).applyAxisAngle(up, -clouds.rotation.y);
-    cloudU.uTime.value = t;
+    cloudU.uTime.value = tm;
     cloudU.uFade.value = 1 - smooth(2.2, 4.5, z);
-    lightMat.uniforms.uTime.value = t;
+    lightMat.uniforms.uTime.value = tm;
     lightMat.uniforms.uPx.value = renderer.getPixelRatio() * (0.85 + Math.min(z, 4) * 0.15);
-    starU.uTime.value = t;
+    starU.uTime.value = tm;
     starU.uPx.value = renderer.getPixelRatio();
     starU.uFade.value = 1;
     stars.rotation.set(rotX * 0.3, rotY * 0.3, 0);
-    updateLegends(t, dt, intro ? 1 : z, QUALITY[quality].legends);
+    updateLegends(tm, dt, intro ? 1 : z, QUALITY[quality].legends);
 
     renderer.render(scene, camera);
     layoutLabels(z, era);
