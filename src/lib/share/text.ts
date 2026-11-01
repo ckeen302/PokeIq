@@ -1,7 +1,7 @@
 import { DLE_HINT_EMOJI, DLE_HINT_KINDS, DLE_MAX_GUESSES, isNear, type CellStatus, type DleHint } from "@/lib/dle-types";
 import { DLE_ASSIST_INFO, type DleAssist } from "@/lib/dle-assist";
 import type { DleFormat } from "@/lib/dle-format";
-import { FORMAT_INFO, MODULE_INFO } from "@/lib/modes";
+import { FORMAT_INFO, MODULE_INFO, difficultyLabel } from "@/lib/modes";
 import { GEO_MAX_ROUND_SCORE, GEO_ROUNDS, WORLD_REGION } from "@/lib/geo-types";
 import { PLAY_FORMAT_INFO } from "@/lib/battle/play";
 import { rarityLines } from "@/lib/pikadoku/share";
@@ -218,13 +218,11 @@ export function guessrShareText(r: GuessrShareResult, regionName: string, url?: 
 // Quizzes, the Daily Challenge and the PokéIQ Test
 // ---------------------------------------------------------------------------
 
-const DIFFICULTY_LABEL = { easy: "Easy", medium: "Medium", hard: "Hard" } as const;
-
-/** "Daily #12", "Test", "Who's That Pokémon? · Blitz · Hard". */
+/** "Daily #12", "Test", "Who's That Pokémon? · Blitz", "Real Shiny? · Classic · Hard" (only Whose Team and Real Shiny name a difficulty). */
 export function quizTitle(r: Pick<QuizShareResult, "daily" | "format" | "module" | "difficulty">): string {
   if (r.daily !== undefined) return `Daily #${r.daily}`;
   if (r.format === "adaptive") return "Test";
-  return [MODULE_INFO[r.module].title, FORMAT_INFO[r.format].title, r.difficulty && DIFFICULTY_LABEL[r.difficulty]].filter(Boolean).join(" · ");
+  return [MODULE_INFO[r.module].title, FORMAT_INFO[r.format].title, r.difficulty && difficultyLabel(r.module, r.difficulty)].filter(Boolean).join(" · ");
 }
 
 /** Score and time up top, the PokéIQ and points, then a square per answer. */

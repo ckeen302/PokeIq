@@ -10,7 +10,7 @@ import { neaCounts } from "@/lib/name-em-all/targets";
 
 export const metadata: Metadata = pageMetadata({
   title: "Name 'em All: Can You Name Every Pokémon? Recall Quiz",
-  description: "Type every Pokémon you can remember: all 1,025, a generation, a type, Legendaries, Megas, regional forms or a regional Pokédex. Daily quiz, races with friends and leaderboards.",
+  description: "Type every Pokémon you can remember: all 1,025, a generation, a type, Legendaries, Megas, regional forms or a regional Pokédex. Daily quiz, races with friends and personal bests.",
   path: NEA_PATH,
   image: SHARE_IMAGES.site,
 });
@@ -77,9 +77,9 @@ export default function NameEmAllHub() {
           "Give up any time to see the ones you missed, each linked to its Pokédex page.",
         ]}
         faqs={[
-          { q: "Is there a daily?", a: "Yes: one category a day, the same for everyone, with its own board. One ranked try per day." },
+          { q: "Is there a daily?", a: "Yes: one category a day, the same for everyone. One try a day counts." },
           { q: "Can I race my friends?", a: "Start a race, share the link, and up to eight trainers name the same category at once with live progress bars." },
-          { q: "How do I get on the leaderboard?", a: "Play in Regular mode without hints or pausing. Each category ranks the fastest full clear and the most named inside its standard time." },
+          { q: "Where are my best runs?", a: "Sign in and play in Regular mode without hints or pausing: your fastest full clear and the most you named inside the standard time show on your trainer profile." },
         ]}
       />
     </div>

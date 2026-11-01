@@ -238,12 +238,18 @@ describe("quiz duel: security", () => {
 });
 
 describe("quiz duel: rematch", () => {
-  it("keeps the mode and difficulty, with new questions, once both press Rematch", () => {
-    const { duel, red, blue, start } = started("types", "hard");
+  it("keeps the mode (and its fixed difficulty), with new questions, once both press Rematch", () => {
+    // An old invite carried Hard for every mode: its rematch plays Type Master's one fixed tuning.
+    const old = started("types", "hard");
+    const oldOver = must(leaveDuel(old.duel, old.blue, old.start + SECOND));
+    expect(rematchOf(oldOver, "mnpqrstv", old.start + 5 * SECOND)).toMatchObject({ module: "types", difficulty: "medium" });
+
+    // Whose Team keeps its choice.
+    const { duel, red, blue, start } = started("whose-team", "hard");
     const over = must(leaveDuel(duel, blue, start + SECOND));
     const t = start + 5 * SECOND;
     const next = rematchOf(over, "mnpqrstu", t);
-    expect(next).toMatchObject({ kind: "quiz", module: "types", difficulty: "hard", status: "lobby", scores: [0, 0], questions: [] });
+    expect(next).toMatchObject({ kind: "quiz", module: "whose-team", difficulty: "hard", status: "lobby", scores: [0, 0], questions: [] });
     expect(next.seed).not.toBe(over.seed);
     let d = must(takeRematchSeat(next, red, "Red", t));
     d = must(takeRematchSeat(d, blue, "Blue", t + SECOND));

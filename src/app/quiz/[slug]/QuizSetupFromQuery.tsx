@@ -2,17 +2,22 @@
 
 import { useEffect, useState } from "react";
 import { QuizSetup } from "@/components/quiz/QuizSetup";
-import { DIFFICULTIES, type Difficulty, type ModuleId, type QuizFormat } from "@/engines/types";
+import type { ModuleId, QuizFormat } from "@/engines/types";
 import { PLAYABLE_FORMATS } from "@/lib/modes";
 
 interface Defaults {
   format?: QuizFormat;
-  difficulty?: Difficulty;
+  /** Passed through as asked: QuizSetup keeps it only for a mode with a difficulty choice. */
+  difficulty?: string;
   gens?: number[];
 }
 
-/** Applies `?format=&difficulty=&gen=` overrides on top of the preset's defaults. */
-function fromQuery(search: string, preset: Defaults): Defaults {
+/**
+ * Applies `?format=&difficulty=&gen=` overrides on top of the preset's
+ * defaults. Old links still carry `difficulty` for every mode; it only
+ * matters for Whose Team Is This? and Real Shiny? and is ignored elsewhere.
+ */
+export function fromQuery(search: string, preset: Defaults): Defaults {
   const query = new URLSearchParams(search);
   const format = query.get("format") ?? "";
   const difficulty = query.get("difficulty") ?? "";
@@ -22,7 +27,7 @@ function fromQuery(search: string, preset: Defaults): Defaults {
     .filter((g) => Number.isInteger(g) && g >= 1 && g <= 9);
   return {
     format: (PLAYABLE_FORMATS as readonly string[]).includes(format) ? (format as QuizFormat) : preset.format,
-    difficulty: DIFFICULTIES.includes(difficulty as Difficulty) ? (difficulty as Difficulty) : preset.difficulty,
+    difficulty: difficulty || preset.difficulty,
     gens: gens.length ? [...new Set(gens)].sort((a, b) => a - b) : preset.gens,
   };
 }

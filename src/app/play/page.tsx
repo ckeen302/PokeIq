@@ -26,7 +26,7 @@ export default function PlayPage() {
     <div className="mx-auto max-w-5xl space-y-10">
       <div className="space-y-2 text-center">
         <h1 className="font-display text-4xl font-bold uppercase tracking-tight sm:text-5xl">Game modes</h1>
-        <p className="text-muted-foreground">Pick a mode, then choose a format, difficulty and generations.</p>
+        <p className="text-muted-foreground">Pick a mode, then choose a format and the generations to play.</p>
       </div>
       <ModeGrid />
       <Link
@@ -45,7 +45,7 @@ export default function PlayPage() {
             <span className="truncate font-display text-lg font-bold uppercase tracking-wide">Name &apos;em All</span>
           </span>
           <span className="mt-0.5 block text-sm text-muted-foreground">
-            Type every Pokémon you can remember: all 1,025, a generation, a type, Legendaries, Megas or a regional dex. Daily, races and leaderboards.
+            Type every Pokémon you can remember: all 1,025, a generation, a type, Legendaries, Megas or a regional dex. Daily, races and personal bests.
           </span>
         </span>
         <ChevronRight className="h-5 w-5 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-1 group-hover:text-foreground" aria-hidden />

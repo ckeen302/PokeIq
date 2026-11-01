@@ -5,7 +5,7 @@ import Link from "next/link";
 import confetti from "canvas-confetti";
 import { animate, motion, useMotionValue, useTransform } from "framer-motion";
 import { track } from "@vercel/analytics";
-import { Check, Link2, Loader2, RotateCcw, Swords, Trophy } from "lucide-react";
+import { Check, Link2, Loader2, RotateCcw, Swords, Trophy, UserRound } from "lucide-react";
 import type { PracticeReason, RunResult, ShareCard } from "@/lib/session-types";
 import { iqInterval, iqTitle } from "@/lib/rating";
 import { currentStreak, recordRun, setTrainerName, useProgress, type RunReward } from "@/lib/progress";
@@ -23,6 +23,7 @@ import { CopyFallback } from "./CopyFallback";
 import { NextDailyCountdown } from "@/components/NextDailyCountdown";
 import { cn } from "@/lib/utils";
 import { NAME_REJECTED, isCleanName } from "@/lib/name-filter";
+import { useAccount } from "@/lib/account";
 
 interface QuizResultsProps {
   result: RunResult;
@@ -34,11 +35,12 @@ interface QuizResultsProps {
 
 type SaveState = "idle" | "saving" | "saved" | "failed" | "disabled";
 
+/** Why a Daily Challenge or PokéIQ Test run can't go on its board (quiz modes have no boards at all). */
 const PRACTICE_NOTES: Record<PracticeReason, string> = {
   challenge: "Practice run — challenge replays don't go on the leaderboard.",
   "repeat-daily": "Practice run — only your first Daily Challenge of the day goes on the leaderboard.",
   filtered: "Practice run — generation-filtered runs aren't ranked; boards compare all-generation runs.",
-  "zoom-daily": "The daily Zoom Reveal isn't ranked; Classic, Survival and Blitz runs are.",
+  "zoom-daily": "The daily Zoom Reveal isn't ranked.",
 };
 
 /** Runs already credited this page-life (guards against re-mounts double-counting XP). */
@@ -54,6 +56,7 @@ function gradeFor(accuracy: number) {
 
 export function QuizResults({ result, resultToken, shareToken, challenger, onRestart }: QuizResultsProps) {
   const progress = useProgress();
+  const account = useAccount();
   const [reward, setReward] = useState<RunReward | null>(null);
   const [playerName, setPlayerName] = useState("");
   const [saveState, setSaveState] = useState<SaveState>("idle");
@@ -67,6 +70,8 @@ export function QuizResults({ result, resultToken, shareToken, challenger, onRes
   const isDaily = Boolean(result.spec.daily);
   const isAdaptive = result.spec.format === "adaptive";
   const practice = result.practice ?? result.spec.practice;
+  // Only the Daily Challenge and the PokéIQ Test have leaderboards; a quiz-mode run counts towards personal bests.
+  const ranked = isDaily || isAdaptive;
   const interval = isAdaptive && result.se !== undefined ? iqInterval(result.rating, result.se) : null;
 
   // Credit XP / streaks / badges exactly once per run.
@@ -133,7 +138,7 @@ export function QuizResults({ result, resultToken, shareToken, challenger, onRes
 
   async function submitScore() {
     const name = playerName.trim();
-    if (!name || practice || saveState === "saving" || saveState === "saved") return;
+    if (!name || !ranked || practice || saveState === "saving" || saveState === "saved") return;
     if (!isCleanName(name)) {
       setSaveError(NAME_REJECTED);
       setSaveState("failed");
@@ -281,7 +286,13 @@ export function QuizResults({ result, resultToken, shareToken, challenger, onRes
 
           {isDaily && <NextDailyCountdown label="Next Daily Challenge in" />}
 
-          {practice ? (
+          {!ranked ? (
+            result.spec.zoomDaily ? (
+              <p className="rounded-md border border-dashed px-4 py-3 text-center text-xs text-muted-foreground">{PRACTICE_NOTES["zoom-daily"]}</p>
+            ) : (
+              <PersonalBestLine result={result} reward={reward} username={account.user?.username ?? null} />
+            )
+          ) : practice ? (
             <p className="rounded-md border border-dashed px-4 py-3 text-center text-xs text-muted-foreground">{PRACTICE_NOTES[practice]}</p>
           ) : (
             <div className="space-y-2">
@@ -327,21 +338,57 @@ export function QuizResults({ result, resultToken, shareToken, challenger, onRes
                 <RotateCcw className="h-4 w-4" aria-hidden /> Play again
               </Button>
             )}
-            <Link
-              href={
-                isDaily
-                  ? `/leaderboard?board=daily&date=${result.spec.daily}`
-                  : result.spec.format === "adaptive"
-                    ? "/leaderboard?board=iq"
-                    : `/leaderboard?board=${result.spec.module}&format=${result.spec.format}&difficulty=${result.spec.difficulty}`
-              }
-              className={cn(buttonVariants({ variant: "outline", size: "lg" }), "flex-1")}
-            >
-              <Trophy className="h-4 w-4" aria-hidden /> Leaderboard
-            </Link>
+            {ranked && (
+              <Link
+                href={isDaily ? `/leaderboard?board=daily&date=${result.spec.daily}` : "/leaderboard?board=iq"}
+                className={cn(buttonVariants({ variant: "outline", size: "lg" }), "flex-1")}
+              >
+                <Trophy className="h-4 w-4" aria-hidden /> Leaderboard
+              </Link>
+            )}
           </div>
         </CardContent>
       </Card>
     </motion.div>
+  );
+}
+
+/**
+ * A quiz-mode run against the trainer's best for that mode and format. The
+ * bests show on their public profile once they're signed in.
+ */
+function PersonalBestLine({ result, reward, username }: { result: RunResult; reward: RunReward | null; username: string | null }) {
+  const best = reward?.personalBest;
+  if (!best) return null;
+  const format = result.spec.format.charAt(0).toUpperCase() + result.spec.format.slice(1);
+  return (
+    <div className="flex flex-col items-center justify-between gap-2 rounded-md border bg-shade/20 px-4 py-3 text-sm sm:flex-row" data-testid="quiz-personal-best">
+      <span className="flex items-center gap-2">
+        <Trophy className={cn("h-4 w-4 shrink-0", best.isNew ? "text-warning" : "text-muted-foreground")} aria-hidden />
+        {best.isNew ? (
+          <span>
+            <b className="text-foreground">New personal best</b>
+            <span className="text-muted-foreground">
+              {" "}
+              for {format}
+              {best.before ? ` (was ${best.before.toLocaleString()})` : ""}
+            </span>
+          </span>
+        ) : (
+          <span className="text-muted-foreground">
+            Your {format} best: <b className="tabular-nums text-foreground">{best.before?.toLocaleString()}</b>
+          </span>
+        )}
+      </span>
+      {username ? (
+        <Link href={`/u/${encodeURIComponent(username)}#quiz-bests`} className="flex shrink-0 items-center gap-1 text-xs font-semibold text-screen hover:underline">
+          <UserRound className="h-3.5 w-3.5" aria-hidden /> On your profile
+        </Link>
+      ) : (
+        <Link href="/login" className="shrink-0 text-xs font-semibold text-screen hover:underline">
+          Sign in to show it on your profile
+        </Link>
+      )}
+    </div>
   );
 }

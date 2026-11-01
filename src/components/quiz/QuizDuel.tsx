@@ -193,7 +193,9 @@ export function QuizDuel({ code }: { code: string }) {
   const info = MODULE_INFO[view.module];
   const isZoom = view.module === "zoom-reveal";
   const questionMs = isZoom ? ZOOM_DUEL_QUESTION_MS : QUIZ_DUEL_QUESTION_MS;
-  const tag = `Quiz duel · ${info.title} · ${difficultyLabel(view.module, view.difficulty)}`;
+  // Only Whose Team and Real Shiny have a difficulty worth naming; every other mode plays one fixed tuning.
+  const level = difficultyLabel(view.module, view.difficulty);
+  const tag = ["Quiz duel", info.title, level].filter(Boolean).join(" · ");
   const notice = (
     <>
       <DuelNotice error={error} offline={offline} />
@@ -224,11 +226,17 @@ export function QuizDuel({ code }: { code: string }) {
             </>
           }
           invite={(host) => `${host} challenges you! The same ${view.total} questions for both of you, the most points wins.`}
-          about={`Head to head: the same ${view.total} ${info.title} questions for both of you, on ${view.difficulty}. Right and fast scores most.`}
+          about={`Head to head: the same ${view.total} ${info.title} questions for both of you${level ? `, on ${level}` : ""}. Right and fast scores most.`}
           shareText={`Duel me in ${info.title}! Same ${view.total} questions, the most points wins.`}
           settings={
             <p className="text-center text-sm text-muted-foreground">
-              Mode: <b className="text-foreground">{info.title}</b> · Difficulty: <b className="text-foreground">{difficultyLabel(view.module, view.difficulty)}</b>
+              Mode: <b className="text-foreground">{info.title}</b>
+              {level && (
+                <>
+                  {" "}
+                  · Difficulty: <b className="text-foreground">{level}</b>
+                </>
+              )}
             </p>
           }
           rules={isZoom ? [
@@ -731,7 +739,7 @@ function DuelSummary({ view, busy, home, onRematch }: { view: QuizDuelView; busy
     <div className="mx-auto max-w-3xl space-y-6">
       <div className="space-y-2 text-center">
         <p className="hud-label text-screen">
-          Duel over · {MODULE_INFO[view.module].title} · {difficultyLabel(view.module, view.difficulty)}
+          {["Duel over", MODULE_INFO[view.module].title, difficultyLabel(view.module, view.difficulty)].filter(Boolean).join(" · ")}
         </p>
         <div className={cn("flex items-center justify-center gap-3 font-display text-6xl font-bold uppercase", won ? "text-success" : draw ? "text-screen" : "text-destructive")}>
           {won && <Crown className="h-12 w-12" aria-hidden />}
@@ -784,7 +792,7 @@ function DuelSummary({ view, busy, home, onRematch }: { view: QuizDuelView; busy
               <Swords className="h-4 w-4" aria-hidden /> Back to {MODULE_INFO[view.module].title}
             </Link>
           </div>
-          <p className="text-center text-xs text-muted-foreground">A rematch keeps the mode, difficulty and trainers, with new questions. It starts when you both press it.</p>
+          <p className="text-center text-xs text-muted-foreground">A rematch keeps the mode{difficultyLabel(view.module, view.difficulty) ? ", difficulty" : ""} and trainers, with new questions. It starts when you both press it.</p>
         </CardContent>
       </Card>
     </div>

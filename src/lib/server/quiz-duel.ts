@@ -16,6 +16,7 @@ import {
 } from "@/lib/pvp-types";
 import { FORMAT_RULES, learnHref, mediaUrl, questionAt, shownCards, toPublic } from "./session";
 import { revealFactor } from "@/lib/whose-team";
+import { playDifficulty } from "@/lib/modes";
 import { guessedSpecies, zoomStepWindow } from "./zoom-reveal";
 import { ZOOM_STEPS, zoomPoints } from "@/lib/zoom-reveal";
 import {
@@ -175,7 +176,8 @@ export const quizRules: PvpRules<QuizDuel> = {
     d.questions.push(newQuestion(d, q.result.nextAt + PVP_LEAD_MS));
     return true;
   },
-  blank: (base, like) => blankDuel(base, like.module, like.difficulty),
+  // A rematch is a new duel: a mode without a difficulty choice plays its fixed tuning, even after an old invite.
+  blank: (base, like) => blankDuel(base, like.module, playDifficulty(like.module, like.difficulty)),
 };
 
 export function createQuizDuel(

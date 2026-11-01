@@ -53,7 +53,7 @@ export function ChallengeLanding({ card, token, runLabel }: { card: ShareCard; t
         <CardContent className="space-y-6 p-6">
           <ResultGrid grid={card.gr} />
           <p className="text-center text-sm text-muted-foreground">
-            You&apos;ll get the exact same {MODULE_INFO[card.m].title.toLowerCase()} questions, difficulty and format.
+            You&apos;ll get the exact same {MODULE_INFO[card.m].title.toLowerCase()} questions, in the same format.
             Think you know Pokémon better?
           </p>
           <Button size="lg" className="w-full text-base" onClick={() => setPlaying(true)}>

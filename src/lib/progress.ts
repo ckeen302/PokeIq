@@ -246,6 +246,8 @@ export interface RunReward {
   dailyStreak?: number;
   ratingBefore: number | null;
   ratingAfter: number;
+  /** A quiz-mode run (not the Daily Challenge or a daily Zoom Reveal): the mode and format's best before this run, and whether this beat it. */
+  personalBest?: { before: number | null; isNew: boolean };
 }
 
 /**
@@ -289,8 +291,12 @@ export function recordRun(result: RunResult, shareToken?: string): RunReward {
   p.answered += result.total;
   p.correct += result.correct;
   p.bestStreak = Math.max(p.bestStreak, result.bestStreak);
+  // Personal bests per mode and format (shown on the trainer's profile). The Daily Challenge and the daily
+  // Zoom Reveal have their own records, so they don't count towards Mixed Bag or Zoom Reveal bests.
   const bestKey = `${spec.module}:${spec.format}`;
-  p.best[bestKey] = Math.max(p.best[bestKey] ?? 0, result.score);
+  const countsForBest = !spec.daily && !spec.zoomDaily;
+  const bestBefore = p.best[bestKey] ?? null;
+  if (countsForBest) p.best[bestKey] = Math.max(bestBefore ?? 0, result.score);
   if (!p.modulesPlayed.includes(spec.module)) p.modulesPlayed.push(spec.module);
   // The adaptive test is the most precise measurement we have: weight it more.
   p.rating = updatePlayerRating(before.rating, result.rating, spec.format === "adaptive" ? result.total * 1.5 : result.total);
@@ -332,6 +338,7 @@ export function recordRun(result: RunResult, shareToken?: string): RunReward {
     levelAfter: levelInfo(p.xp).level,
     newBadges,
     dailyStreak: spec.daily ? p.daily.streak : undefined,
+    ...(countsForBest && spec.format !== "adaptive" && { personalBest: { before: bestBefore, isNew: result.score > (bestBefore ?? 0) } }),
     ratingBefore: before.rating,
     ratingAfter: p.rating,
   };

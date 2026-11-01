@@ -89,7 +89,7 @@ export default async function NameEmAllCategoryPage({ params }: PageProps) {
         steps={["Pick a mode, a timer and any hints.", "Type names: each one fills its slot as soon as it's spelled right.", "Name them all before time runs out, or give up to see the ones you missed."]}
         faqs={[
           { q: "Do I need to spell names exactly?", a: "Capitals, accents, spaces and punctuation don't matter. Turn on the spelling helper to get a suggestion when you're one or two letters off." },
-          { q: "How do the leaderboards work?", a: `Regular runs without hints or pauses are ranked by the fastest full clear and by the most named inside the standard ${minutes} minutes.` },
+          { q: "What counts as a personal best?", a: `Regular runs without hints or pauses: your fastest full clear and the most you named inside the standard ${minutes} minutes, shown on your trainer profile when you're signed in.` },
         ]}
       />
     </div>

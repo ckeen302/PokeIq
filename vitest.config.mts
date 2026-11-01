@@ -2,6 +2,8 @@ import { defineConfig } from "vitest/config";
 import path from "node:path";
 
 export default defineConfig({
+  // Components render in a few tests (tsconfig keeps JSX for Next.js to compile).
+  oxc: { jsx: { runtime: "automatic" } },
   test: {
     include: ["tests/**/*.test.ts"],
     environment: "node",
