@@ -156,3 +156,20 @@ export function dateRows(e: Pick<TimelineEntry, "date_jp" | "date_na" | "date_eu
 
 /** Timeline span shown by the scrubber. */
 export const T_START = 1996;
+
+/**
+ * Each generation's region, as PokéGuessr's own world-atlas crop
+ * (public/geo/maps): the 3D view lays it faintly on the floor of that
+ * generation's stretch. Pixel sizes are the crops' own.
+ */
+export const REGION_MAPS: Readonly<Record<number, { region: string; src: string; w: number; h: number }>> = {
+  1: { region: "Kanto", src: "/geo/maps/kanto.webp", w: 763, h: 550 },
+  2: { region: "Johto", src: "/geo/maps/johto.webp", w: 803, h: 568 },
+  3: { region: "Hoenn", src: "/geo/maps/hoenn.webp", w: 838, h: 514 },
+  4: { region: "Sinnoh", src: "/geo/maps/sinnoh.webp", w: 890, h: 706 },
+  5: { region: "Unova", src: "/geo/maps/unova.webp", w: 852, h: 580 },
+  6: { region: "Kalos", src: "/geo/maps/kalos.webp", w: 1014, h: 692 },
+  7: { region: "Alola", src: "/geo/maps/alola.webp", w: 1460, h: 826 },
+  8: { region: "Galar", src: "/geo/maps/galar.webp", w: 713, h: 1414 },
+  9: { region: "Paldea", src: "/geo/maps/paldea.webp", w: 614, h: 564 },
+};

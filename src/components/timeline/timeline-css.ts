@@ -62,4 +62,32 @@ html.tl-locked, html.tl-locked body { overflow: hidden; overscroll-behavior: non
 .tl-stage[data-era="switch"] .tl-fx::before { content: ""; position: absolute; inset: 0;
   background: linear-gradient(90deg, rgb(0 195 227 / .2), transparent 9%, transparent 91%, rgb(255 69 84 / .2)); }
 @media (max-width: 640px) { .tl-era-t { font-size: 90px; } }
+
+/* A game's starters and box legendaries, standing on the card's top edge. */
+.tl-card-mons { position: absolute; right: 14px; bottom: calc(100% - 30px); display: flex; align-items: flex-end; pointer-events: none; }
+.tl-mon { display: block; object-fit: contain; opacity: 0; transform: translateY(10px) scale(.9); transition: opacity .45s ease, transform .5s cubic-bezier(.2,.9,.25,1.2);
+  filter: drop-shadow(0 6px 8px rgb(0 0 0 / .55)) drop-shadow(0 0 14px hsl(var(--lane) / .35)); }
+.tl-mon.is-in { opacity: 1; transform: none; }
+.tl-mon + .tl-mon { margin-left: -20px; }
+.tl-mon.is-legend { filter: drop-shadow(0 6px 10px rgb(0 0 0 / .6)) drop-shadow(0 0 22px hsl(var(--lane) / .5)); }
+.tl-mon.is-legend + .tl-mon.is-legend { margin-left: -52px; }
+.tl-mon.is-legend + .tl-mon:not(.is-legend) { margin-left: -8px; }
+.tl-card.has-mons .tl-card-top { padding-right: 0; }
+.tl-card.has-mons .tl-card-title { padding-right: 4px; }
+
+/* Adaptive quality: below the top levels the glows and halos go first. */
+.tl-stage[data-q="1"] .tl-card, .tl-stage[data-q="0"] .tl-card { box-shadow: inset 0 0 0 1px hsl(var(--lane) / .12); }
+.tl-stage[data-q="1"] .tl-card.is-current, .tl-stage[data-q="0"] .tl-card.is-current { box-shadow: 0 0 0 1px hsl(var(--lane) / .6); }
+.tl-stage[data-q="0"] .tl-card::before { box-shadow: none; }
+.tl-stage[data-q="0"] .tl-mon, .tl-stage[data-q="1"] .tl-mon { filter: none; }
+.tl-stage[data-q="0"] .tl-year, .tl-stage[data-q="0"] .tl-era-t, .tl-stage[data-q="0"] .tl-era-k { text-shadow: none; }
+.tl-stage[data-q="0"] .tl-fx::after { display: none; }
+
+/* The intro owns the screen: the controls wait, then fade in. */
+.tl-stage .tl-ui { transition: opacity .7s ease .15s; }
+.tl-stage[data-intro="1"] .tl-ui { opacity: 0; pointer-events: none; transition: none; }
+.tl-tour-bar { background: var(--era-a); box-shadow: 0 0 8px var(--era-a); transition: background-color 1.2s; }
+.tl-tour-btn[aria-pressed="true"] { border-color: color-mix(in srgb, var(--era-a) 60%, transparent); box-shadow: 0 0 16px color-mix(in srgb, var(--era-a) 30%, transparent); }
+.tl-tour-cap { box-shadow: 0 0 0 1px hsl(var(--lane) / .3), 0 10px 40px rgb(0 0 0 / .5), 0 0 30px hsl(var(--lane) / .15); }
+.tl-list-hit > article { box-shadow: 0 0 0 2px hsl(var(--primary) / .7), 0 0 30px hsl(var(--primary) / .2); }
 `;
