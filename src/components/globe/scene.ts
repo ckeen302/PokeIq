@@ -25,7 +25,7 @@ export interface HoverInfo {
   kind: LabelKind;
 }
 export interface SceneCallbacks {
-  ready(counts: { r: number; c: number; p: number }): void;
+  ready(): void;
   failed(): void;
   stats(s: { lon: string; lat: string; zoom: string; tier: string; focus: string }): void;
   /** A label with pictures is hovered (or tapped: pinned), or nothing is. */
@@ -92,9 +92,9 @@ const QUALITY = [
   { pr: 2, stars: 1, clouds: true, legends: true, peaks: 2 },
 ] as const;
 const PEAK_DETAIL = [
+  { rings: 2, segs: 5 },
+  { rings: 3, segs: 6 },
   { rings: 3, segs: 7 },
-  { rings: 4, segs: 9 },
-  { rings: 5, segs: 12 },
 ] as const;
 const FRAME_BUDGET_MS = 1000 / 60;
 const STAR_COUNT = 2600;
@@ -332,89 +332,109 @@ export function createGlobeScene(host: HTMLElement, layer: HTMLDivElement, cb: S
   globe.add(cityLights);
   disposables.push(lightMat, lightGeo);
 
-  // ---- mountains: low-poly peaks raised at their atlas pins, snow on the great ones, a glowing crater on the volcanoes
-  const peakU = { uSun: U.uSun, uEra: U.era, uLand: { value: C() }, uSnow: { value: C() }, nightLevel: U.nightLevel, uHot: { value: new THREE.Color(1, 0.45, 0.15) } };
+  // ---- mountains: slim low-poly peaks raised at their atlas pins, snow caps on the great ones, a faint glow in the volcanoes' craters.
+  // Each peak has its own size factor (uK): it shrinks into its pin whenever its silhouette would cover a label's text.
+  const MAX_PEAKS = 32;
+  const peakU = { uSun: U.uSun, uEra: U.era, uLand: { value: C() }, uSnow: { value: C() }, nightLevel: U.nightLevel, uHot: { value: new THREE.Color(1, 0.5, 0.2) }, uK: { value: new Float32Array(MAX_PEAKS).fill(1) } };
   const peakMat = new THREE.ShaderMaterial({
     uniforms: peakU,
-    vertexShader: `attribute float aGen; attribute float aH; attribute float aSnow; varying vec3 vN; varying vec3 vP; varying float vH; varying float vVis; varying float vSnow; uniform float uEra;
-      void main(){ vVis=clamp(uEra-aGen+1.,0.,1.); vN=normal; vH=aH; vSnow=aSnow;
-        vec3 b=normalize(position); float h=length(position)-1.; vec3 p=b*(1.+h*vVis); vP=p;
+    vertexShader: `attribute float aGen; attribute float aH; attribute float aSnow; attribute float aPeak; attribute vec3 aC; uniform float uK[${MAX_PEAKS}];
+      varying vec3 vN; varying vec3 vP; varying float vH; varying float vVis; varying float vSnow; uniform float uEra;
+      void main(){ float k=uK[int(aPeak)]; vVis=clamp(uEra-aGen+1.,0.,1.)*step(.03,k); vN=normal; vH=aH; vSnow=aSnow;
+        // k shrinks the whole peak (footprint and height) into its own pin.
+        vec3 b=normalize(mix(aC,normalize(position),k)); float h=length(position)-1.; vec3 p=b*(1.+h*vVis*k); vP=p;
         gl_Position=projectionMatrix*modelViewMatrix*vec4(p,1.); }`,
     fragmentShader: `uniform vec3 uSun; uniform vec3 uLand; uniform vec3 uSnow; uniform vec3 uHot; uniform float nightLevel;
       varying vec3 vN; varying vec3 vP; varying float vH; varying float vVis; varying float vSnow;
       void main(){ if(vVis<.02) discard;
         vec3 n=normalize(vN); float ndl=max(dot(n,uSun),0.);
         float day=smoothstep(-.1,.22,dot(normalize(vP),uSun));
-        vec3 base=mix(uLand*.9,uLand*1.3,vH);
-        float snow=step(.6,vH)*max(vSnow,0.);
-        base=mix(base,uSnow,snow*.9);
+        vec3 base=mix(uLand*.82,uLand*1.28,vH);
+        // Snow cap: the top third of the great peaks.
+        float snow=smoothstep(.5,.56,vH)*max(vSnow,0.);
+        base=mix(base,uSnow,snow*.92);
         // Lit against the flat ground around it: faces towards the sun brighter, the far side in shade.
         float ground=max(dot(normalize(vP),uSun),0.);
-        vec3 col=base*clamp(.92+1.25*(ndl-ground),.32,1.7);
+        vec3 col=base*clamp(.92+.85*(ndl-.7*ground),.6,1.5);
         col*=mix(nightLevel,1.,day);
-        col+=uHot*smoothstep(.7,.95,vH)*step(vSnow,-.5)*(.45+.75*(1.-day));
+        // Volcanoes: a faint ember glow in the crater, a little stronger at night.
+        col+=uHot*smoothstep(.68,.92,vH)*step(vSnow,-.5)*(.32+.5*(1.-day));
         gl_FragColor=vec4(col,1.); }`,
   });
+  type PeakMeta = { key: string; gen: number; P: THREE.Vector3; S: THREE.Vector3; ET: THREE.Vector3; EB: THREE.Vector3; k: number; down: number };
   let peaks: THREE.Mesh | null = null;
   let peakList: GlobeMountain[] = [];
+  let peakMeta: PeakMeta[] = [];
+  /** How far each peak's base reaches below its pin on screen, by label key: its own label sits under it. */
+  const peakDown = new Map<string, number>();
   let peakDetail = -1;
   disposables.push(peakMat);
   function buildPeaks(detail: number) {
     if (detail === peakDetail || !peakList.length) return;
     peakDetail = detail;
     const { rings, segs } = PEAK_DETAIL[detail];
-    const pos: number[] = [], aGen: number[] = [], aH: number[] = [], aSnow: number[] = [], idx: number[] = [];
+    const pos: number[] = [], aGen: number[] = [], aH: number[] = [], aSnow: number[] = [], aPeak: number[] = [], aC: number[] = [], idx: number[] = [];
     const P = new THREE.Vector3(), T = new THREE.Vector3(), B = new THREE.Vector3(), v = new THREE.Vector3(), up = new THREE.Vector3(0, 1, 0);
-    peakList.forEach((m, mi) => {
+    const meta: PeakMeta[] = [];
+    peakList.slice(0, MAX_PEAKS).forEach((m, mi) => {
       // A fixed seed per peak, so it keeps its shape when the detail level changes.
       let seed = 1 + mi * 7919;
       const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
       toVec(m.lon, m.lat, R, P);
       T.crossVectors(up, P).normalize();
       B.crossVectors(P, T).normalize();
-      const base = 0.022 + 0.016 * m.scale, H = 0.052 * m.scale;
-      // Mt. Coronet is a range down Sinnoh's middle: drawn long north to south.
-      const sx = m.name === "Mt. Coronet" ? 0.75 : 1, sy = m.name === "Mt. Coronet" ? 2.1 : 1;
-      const volcano = /Chimney|Volcano|Ember/.test(m.name);
-      const snowy = !volcano && m.scale >= 1 ? 1 : 0;
-      const spur = rnd() * Math.PI * 2;
-      const start = pos.length / 3;
-      // Ring 0 is the summit (one point); the last ring sits just under the ground.
-      for (let i = 0; i <= rings; i++) {
-        const r = i / rings;
-        const n = i === 0 ? 1 : segs;
-        for (let j = 0; j < n; j++) {
-          const a = ((j + (i % 2) * 0.5) / segs) * Math.PI * 2;
-          const bell = Math.pow(1 - r, 1.25);
-          const ridges = 1 + 0.28 * Math.cos(3 * a + spur) * Math.sqrt(r) + (rnd() - 0.5) * 0.36 * r;
-          let h = i === 0 ? H * (0.96 + rnd() * 0.08) : H * bell * ridges;
-          if (volcano && i === 1) h = H * 0.9;
-          if (volcano && i === 0) h = H * 0.72;
-          if (i === rings) h = -0.002;
-          const rr = r * (1 + (rnd() - 0.5) * 0.22 * (i < rings ? 1 : 0));
-          const x = Math.cos(a) * rr * base * sx, y = Math.sin(a) * rr * base * sy;
-          v.copy(P).addScaledVector(T, x).addScaledVector(B, y).normalize().multiplyScalar(R + h);
-          pos.push(v.x, v.y, v.z);
-          aGen.push(regionGeneration(m.region) ?? 1);
-          aH.push(Math.max(0, h / H));
-          aSnow.push(volcano ? -1 : snowy);
+      const gen = regionGeneration(m.region) ?? 1;
+      meta.push({
+        key: `${m.name} · ${m.region}`, gen, k: 1, down: 0,
+        P: P.clone(), S: P.clone().multiplyScalar(R + m.height),
+        ET: P.clone().addScaledVector(T, m.radius).normalize().multiplyScalar(R), EB: P.clone().addScaledVector(B, m.radius).normalize().multiplyScalar(R),
+      });
+      {
+        const base = m.radius, H = m.height;
+        const spur = rnd() * Math.PI * 2;
+        const start = pos.length / 3;
+        // Ring 0 is the summit (one point); the last ring sits just under the ground.
+        for (let i = 0; i <= rings; i++) {
+          const r = i / rings;
+          const n = i === 0 ? 1 : segs;
+          for (let j = 0; j < n; j++) {
+            const a = ((j + (i % 2) * 0.5) / segs) * Math.PI * 2;
+            // A concave flank: a sharp summit over a gentle skirt, with a hint of three ridges.
+            const ridges = 1 + 0.12 * Math.cos(3 * a + spur) * Math.sqrt(r) + (rnd() - 0.5) * 0.06 * r;
+            let h = i === 0 ? H : H * Math.pow(1 - r, 1.25) * ridges;
+            if (m.volcano && i === 0) h = H * 0.8;
+            if (m.volcano && i === 1) h = H * 0.92;
+            if (i === rings) h = -0.002;
+            const rr = r * (1 + (rnd() - 0.5) * 0.08 * (i < rings ? 1 : 0)) * (m.volcano && i === 1 ? 0.6 : 1);
+            const x = Math.cos(a) * rr * base, y = Math.sin(a) * rr * base;
+            v.copy(P).addScaledVector(T, x).addScaledVector(B, y).normalize().multiplyScalar(R + h);
+            pos.push(v.x, v.y, v.z);
+            aGen.push(gen);
+            aH.push(Math.max(0, h / m.height));
+            aSnow.push(m.volcano ? -1 : m.snow ? 1 : 0);
+            aPeak.push(mi);
+            aC.push(P.x / R, P.y / R, P.z / R);
+          }
         }
-      }
-      // Fan from the summit, then strips between rings (odd rings are offset half a step: triangles, not quads).
-      for (let j = 0; j < segs; j++) idx.push(start, start + 1 + j, start + 1 + ((j + 1) % segs));
-      for (let i = 1; i < rings; i++) {
-        const o = start + 1 + (i - 1) * segs, o2 = o + segs;
-        for (let j = 0; j < segs; j++) {
-          const a = o + j, b = o + ((j + 1) % segs), c = o2 + j, d = o2 + ((j + 1) % segs);
-          idx.push(a, c, d, a, d, b);
+        // Fan from the summit, then strips between rings (odd rings are offset half a step: triangles, not quads).
+        for (let j = 0; j < segs; j++) idx.push(start, start + 1 + j, start + 1 + ((j + 1) % segs));
+        for (let i = 1; i < rings; i++) {
+          const o = start + 1 + (i - 1) * segs, o2 = o + segs;
+          for (let j = 0; j < segs; j++) {
+            const a = o + j, b = o + ((j + 1) % segs), c = o2 + j, d = o2 + ((j + 1) % segs);
+            idx.push(a, c, d, a, d, b);
+          }
         }
       }
     });
+    if (!peakMeta.length) peakMeta = meta;
     const indexed = new THREE.BufferGeometry();
     indexed.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3));
     indexed.setAttribute("aGen", new THREE.Float32BufferAttribute(aGen, 1));
     indexed.setAttribute("aH", new THREE.Float32BufferAttribute(aH, 1));
     indexed.setAttribute("aSnow", new THREE.Float32BufferAttribute(aSnow, 1));
+    indexed.setAttribute("aPeak", new THREE.Float32BufferAttribute(aPeak, 1));
+    indexed.setAttribute("aC", new THREE.Float32BufferAttribute(aC, 3));
     indexed.setIndex(idx);
     // Every face its own normal: crisp facets.
     const geo = indexed.toNonIndexed();
@@ -422,6 +442,44 @@ export function createGlobeScene(host: HTMLElement, layer: HTMLDivElement, cb: S
     geo.computeVertexNormals();
     if (peaks) { peaks.geometry.dispose(); peaks.geometry = geo; }
     else { peaks = new THREE.Mesh(geo, peakMat); peaks.renderOrder = 1; globe.add(peaks); }
+  }
+  /**
+   * Labels stay readable: each frame, every peak's full-size silhouette is projected to the screen, and a peak
+   * whose silhouette would cover a label's text shrinks away into its pin until it no longer would. The test uses
+   * the full size, so a shrinking peak never pops back up mid-way.
+   */
+  const pA = new THREE.Vector3(), pB = new THREE.Vector3(), pN = new THREE.Vector3();
+  function updatePeaks(dt: number, era: number) {
+    if (!peakMeta.length) return;
+    const W = host.clientWidth, H = host.clientHeight;
+    const scr = (v: THREE.Vector3) => { pA.copy(v).applyMatrix4(globe.matrixWorld).project(camera); return [(pA.x * 0.5 + 0.5) * W, (-pA.y * 0.5 + 0.5) * H]; };
+    const ks = Math.min(1, dt * 7);
+    peakDown.clear();
+    peakMeta.forEach((m, i) => {
+      let target = 1;
+      pB.copy(m.P).applyMatrix4(globe.matrixWorld);
+      const facing = pN.copy(pB).normalize().dot(pA.copy(camera.position).sub(pB).normalize());
+      if (facing > 0 && eraVisibility(m.gen, era) > 0.05) {
+        const [x0, y0] = scr(m.P), [xs, ys] = scr(m.S), [xt, yt] = scr(m.ET), [xb, yb] = scr(m.EB);
+        const half = Math.max(Math.hypot(xt - x0, yt - y0), Math.hypot(xb - x0, yb - y0));
+        const down = Math.max(Math.abs(yt - y0), Math.abs(yb - y0));
+        peakDown.set(m.key, down);
+        // The part that rises off the ground: a triangle from the summit down to the footprint's width at the pin.
+        // A label's text (its box without the padding) clashes when it crosses that triangle where it is widest.
+        const top = Math.min(ys, y0), tall = Math.max(1, y0 - top);
+        for (const it of kept) {
+          const b = it.box;
+          if (!b || it.key === m.key) continue;
+          const l = b[0] + 3, r = b[2] - 3, t = b[1] + 2, btm = b[3] - 2;
+          if (btm < top || t > y0) continue;
+          const y = Math.min(btm, y0), f = (y - top) / tall;
+          const cx = xs + (x0 - xs) * f, hw = half * f;
+          if (r >= cx - hw && l <= cx + hw) { target = 0; break; }
+        }
+      }
+      m.k += (target - m.k) * ks;
+      peakU.uK.value[i] = m.k;
+    });
   }
 
   // ---- the legendaries: camera-facing artwork on gentle orbits (never picked: clicks go to the globe)
@@ -639,7 +697,9 @@ export function createGlobeScene(host: HTMLElement, layer: HTMLDivElement, cb: S
         const x = (tmp.x * 0.5 + 0.5) * W, y = (-tmp.y * 0.5 + 0.5) * H;
         if (x < -40 || x > W + 40 || y < -20 || y > H + 20) continue;
         const el = getEl(it);
-        const bx = it.kind === "region" ? x - it.w / 2 : x - 4, by = y - it.h / 2;
+        // A peak's own label sits centred under its base, like a map caption, so the peak never covers it.
+        const down = it.peak ? peakDown.get(it.key) : undefined;
+        const bx = it.kind === "region" || down !== undefined ? x - it.w / 2 : x - 4, by = down !== undefined ? y + down + 2 : y - it.h / 2;
         const box: [number, number, number, number] = [bx - 3, by - 2, bx + it.w + 3, by + it.h + 2];
         if (boxes.some((b) => !(box[2] < b[0] || box[0] > b[2] || box[3] < b[1] || box[1] > b[3]))) { dropEl(it); continue; }
         boxes.push(box); next.push(it); it.box = box;
@@ -933,6 +993,7 @@ export function createGlobeScene(host: HTMLElement, layer: HTMLDivElement, cb: S
     stars.rotation.set(rotX * 0.3, rotY * 0.3, 0);
     updateLegends(tm, dt, intro ? 1 : z, QUALITY[quality].legends);
 
+    updatePeaks(dt, era);
     renderer.render(scene, camera);
     layoutLabels(z, era);
     // Keeps the popup on its label while the globe turns.
@@ -995,7 +1056,7 @@ export function createGlobeScene(host: HTMLElement, layer: HTMLDivElement, cb: S
       lightGeo.setAttribute("aSeed", new THREE.BufferAttribute(lsd, 1));
       buildPeaks(QUALITY[quality].peaks);
       if (QUALITY[quality].legends) loadLegends();
-      cb.ready({ r: regs.length, c: a.markers.length, p: places.length });
+      cb.ready();
       clock.getDelta();
       if (!document.hidden) frame();
     })

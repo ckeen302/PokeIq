@@ -7,7 +7,7 @@ import geo from "@/data/geo.json";
 import blur from "@/data/geo-shot-blur.json";
 import { clampEra, eraVisibility, LAST_GEN, regionGeneration, regionsAt } from "@/lib/globe/era";
 import { latOf, lonOf, uvOf, type Atlas } from "@/lib/globe/geo";
-import { atlasMountains } from "@/lib/globe/mountains";
+import { arc, atlasMountains, PIN_CLEARANCE } from "@/lib/globe/mountains";
 import { buildGlobeShotIndex, isLegendsShot, publicShotOf, type GlobeLocationInput } from "@/lib/globe/shots";
 import { globeIntroSeen, markGlobeIntroSeen, resetGlobeIntroMemory, shouldPlayGlobeIntro } from "@/lib/globe/intro";
 import { GLOBE_MAIN_REGIONS, globeEras, globeRegionCards } from "@/lib/globe/regions";
@@ -161,6 +161,33 @@ describe("globe mountains", () => {
       expect(m.lon).toBeCloseTo(lonOf(pin.x, atlas.W), 10);
       expect(m.lat).toBeCloseTo(latOf(pin.y, atlas.W, atlas.H), 10);
     }
+  });
+
+  it("never reaches another place's pin: each footprint stops well short of the nearest one", () => {
+    const pins = [...atlas.markers, ...atlas.places];
+    for (const m of peaks) {
+      for (const q of pins) {
+        if (q.name === m.name && q.region === m.region) continue;
+        const d = arc(m.lon, m.lat, lonOf(q.x, atlas.W), latOf(q.y, atlas.W, atlas.H));
+        if (d <= 1e-4) continue; // the same spot: the label layout shows one of the two
+        expect(m.radius, `${m.name} vs ${q.name}`).toBeLessThanOrEqual(d * PIN_CLEARANCE + 1e-12);
+      }
+    }
+  });
+
+  it("draws slim, low peaks: taller than wide, the great ones snow-capped, the volcanoes not", () => {
+    for (const m of peaks) {
+      expect(m.radius).toBeGreaterThan(0);
+      expect(m.height).toBeGreaterThan(m.radius * 1.5);
+      expect(m.height).toBeLessThan(0.04);
+    }
+    const by = (n: string) => peaks.find((m) => m.name === n)!;
+    expect(by("Mt. Silver").snow).toBe(true);
+    expect(by("Mt. Coronet").snow).toBe(true);
+    expect(by("Mt. Chimney").volcano).toBe(true);
+    expect(by("Mt. Chimney").snow).toBe(false);
+    expect(by("Wela Volcano Park").volcano).toBe(true);
+    expect(by("Mt. Moon").snow).toBe(false);
   });
 
   it("includes every atlas place the Pokédex calls a mountain", () => {

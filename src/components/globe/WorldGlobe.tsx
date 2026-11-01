@@ -60,7 +60,6 @@ export function WorldGlobe({ regions, eras }: { regions: GlobeRegionCard[]; eras
   const [state, setState] = useState<"loading" | "ready" | "nogl" | "failed">("loading");
   const [stats, setStats] = useState({ lon: "0.0°", lat: "0.0°", zoom: "1.0×", tier: "Regions", focus: "Kanto" });
   const [auto, setAuto] = useState(true);
-  const [counts, setCounts] = useState({ r: 0, c: 0, p: 0 });
   const [intro, setIntro] = useState<boolean | null>(null);
   const [era, setEraState] = useState(LAST_GEN);
   const [playing, setPlaying] = useState(false);
@@ -128,7 +127,7 @@ export function WorldGlobe({ regions, eras }: { regions: GlobeRegionCard[]; eras
         host,
         layer,
         {
-          ready(c) { setCounts(c); setState("ready"); },
+          ready() { setState("ready"); },
           failed() { setIntro(false); setState("failed"); },
           stats(s) { setStats(s); },
           hover(h, pinned) {
@@ -311,7 +310,7 @@ export function WorldGlobe({ regions, eras }: { regions: GlobeRegionCard[]; eras
             <Link href="/guessr" className={btn + " mb-3 inline-block"}>← PokéGuessr</Link>
             <h1 className="font-display text-xl font-bold uppercase tracking-[0.14em] sm:text-3xl">Poké<span className="text-primary">IQ</span> World</h1>
             <p className="mt-1.5 font-pixel text-[10px] uppercase tracking-[0.14em] text-screen">
-              {counts.r ? `${counts.r} regions · ${counts.c} towns and cities · ${counts.p} more places` : "Loading the world…"}
+              {state === "ready" ? "Every region, on one world" : "Loading the world…"}
             </p>
           </div>
           <div className="flex shrink-0 flex-col items-end gap-2">
