@@ -2,7 +2,7 @@
 import "server-only";
 import { hslHex, localImage, ogCard } from "@/lib/og/card";
 import { artworkUrl } from "@/lib/pokemon/pokedex";
-import { ERAS, ERA_BY_ID, LANE_BY_ID, REGION_MAPS, dateRows, formatDate, type TimelineEntry } from "@/lib/timeline/types";
+import { ERAS, ERA_BY_ID, LANE_BY_ID, REGION_MAPS, firstRelease, formatDate, type TimelineEntry } from "@/lib/timeline/types";
 
 /**
  * Preview cards for /pokedex/timeline and each entry's own page: the time
@@ -58,11 +58,10 @@ export function timelineCard() {
 export async function timelineEntryCard(entry: TimelineEntry) {
   const era = ERA_BY_ID[entry.era];
   const lane = LANE_BY_ID[entry.lane];
-  const first = dateRows(entry)[0];
+  const first = firstRelease(entry);
   const year = first.date.slice(0, 4);
   const len = entry.title.length;
-  const where = first.label === "Worldwide" ? "Worldwide" : first.label === "Japan" ? "Japan" : first.label;
-  const subtitle = `${where}: ${formatDate(first.date)} · ${entry.platform}${entry.region ? ` · ${entry.region}` : ""}`;
+    const subtitle = `${first.label}: ${formatDate(first.date)} · ${entry.platform}${entry.region ? ` · ${entry.region}` : ""}`;
   const map = entry.region ? Object.values(REGION_MAPS).find((m) => m.region === entry.region) : undefined;
   let visual: React.ReactNode;
   if (entry.legendaries.length || entry.starters.length) {

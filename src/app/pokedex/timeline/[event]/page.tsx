@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { pageMetadata } from "@/lib/seo";
 import { TIMELINE } from "@/lib/timeline/data";
 import { entryPath } from "@/lib/timeline/deeplink";
-import { LANE_BY_ID, dateRows, formatDate } from "@/lib/timeline/types";
+import { LANE_BY_ID, dateRows, firstRelease, formatDate } from "@/lib/timeline/types";
 import { TimelinePage } from "@/components/timeline/TimelinePage";
 
 /**
@@ -26,7 +26,7 @@ async function find(params: Promise<{ event: string }>) {
 export async function generateMetadata({ params }: { params: Promise<{ event: string }> }): Promise<Metadata> {
   const e = await find(params);
   if (!e) return {};
-  const first = dateRows(e)[0];
+  const first = firstRelease(e);
   const when = dateRows(e).map((r) => `${r.label} ${formatDate(r.date)}`).join(", ");
   const description = `${e.title} (${LANE_BY_ID[e.lane].label}, ${e.platform}): ${when}.${e.note ? ` ${e.note}` : ""} Fly to it on the 3D Pokémon Timeline.`;
   return pageMetadata({

@@ -154,6 +154,14 @@ export function dateRows(e: Pick<TimelineEntry, "date_jp" | "date_na" | "date_eu
   return rows;
 }
 
+/**
+ * The earliest release (the date an entry sits at on the timeline and shows on
+ * its card), with the region it was in. A tie keeps the first listed (Japan).
+ */
+export function firstRelease(e: Pick<TimelineEntry, "date_jp" | "date_na" | "date_eu" | "worldwide">): { label: string; date: string } {
+  return dateRows(e).reduce((a, b) => (yearFrac(b.date) < yearFrac(a.date) ? b : a));
+}
+
 /** Timeline span shown by the scrubber. */
 export const T_START = 1996;
 

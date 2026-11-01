@@ -72,6 +72,8 @@ export interface SceneApi {
   introSkip(): void;
   /** A short field-of-view punch (era transitions). */
   kick(fov: number): void;
+  /** Hide the distant era titles for `ms` (while the era title card shows). */
+  quietSigns(ms: number): void;
   /** Smoothed frame time (ms) and the quality level it chose. */
   perf(): { ft: number; q: number };
   dispose(): void;
@@ -482,7 +484,7 @@ export function createScene(host: HTMLElement, entries: SceneEntry[], eras: Scen
 
   // Year labels on the floor, and era titles over each portal.
   const eraSigns: CSS3DObject[] = [];
-  type Label = { obj: CSS3DObject; el: HTMLElement; z: number; shown: boolean; kind: "year" | "era" };
+  type Label = { obj: CSS3DObject; el: HTMLElement; z: number; shown: boolean; kind: "year" | "era"; a: number };
   const labels: Label[] = [];
   for (let y = Math.ceil(tMin); y <= Math.floor(tMax); y++) {
     const el = document.createElement("div");
@@ -495,7 +497,7 @@ export function createScene(host: HTMLElement, entries: SceneEntry[], eras: Scen
     obj.position.set(0, -0.2, zOf(y) - 1.2);
     obj.scale.setScalar(0.016);
     cssScene.add(obj);
-    labels.push({ obj, el, z: obj.position.z, shown: false, kind: "year" });
+    labels.push({ obj, el, z: obj.position.z, shown: false, kind: "year", a: 0 });
   }
   eras.forEach((e) => {
     const el = document.createElement("div");
@@ -510,7 +512,7 @@ export function createScene(host: HTMLElement, entries: SceneEntry[], eras: Scen
     eraSigns.push(obj);
     obj.scale.setScalar(0.02);
     cssScene.add(obj);
-    labels.push({ obj, el, z: obj.position.z, shown: false, kind: "era" });
+    labels.push({ obj, el, z: obj.position.z, shown: false, kind: "era", a: 0 });
   });
 
   function placeLaneObjects() {
@@ -646,6 +648,8 @@ export function createScene(host: HTMLElement, entries: SceneEntry[], eras: Scen
   tCur = tTarget - (reduce ? 0 : 1.2);
   // The intro parks the camera in the dark before 1996, then flies it in.
   let parked = !!opts.intro && !reduce;
+  /** While the era title card is on screen, the era signs in the distance stay hidden. */
+  let quietUntil = 0;
   let flight: { from: number; t0: number; dur: number } | null = null;
   if (parked) tCur = tTarget - 7.5;
 
@@ -775,11 +779,27 @@ export function createScene(host: HTMLElement, entries: SceneEntry[], eras: Scen
       m.a = damp(m.a, over ? 1 : 0.22, 1.8, dt);
       m.mat.uniforms.uA.value = m.a * (portrait ? 0.75 : 1);
     }
+    // Era titles: only one at a time, the next era ahead. It shows once the one before it has
+    // faded out (the nearest sign still ahead of its own fade-out point), and none while the
+    // era title card is on screen, so two titles never overlap.
+    const signGone = portrait ? 34 : 28;
+    let nextSign: Label | null = null;
+    for (const l of labels) if (l.kind === "era" && camZ - l.z > signGone && (!nextSign || l.z > nextSign.z)) nextSign = l;
+    // An era change this frame means its title card is coming: quiet the signs before they are drawn.
+    if (lastEra >= 0 && eraIndexAt(tCur + focusOffset() + 0.02) !== lastEra) quietUntil = now + 2700;
+    const signsQuiet = now < quietUntil;
     for (const l of labels) {
       const d = camZ - l.z;
-      const op = d <= (l.kind === "era" ? 2 : 0) || d >= 150 ? 0
-        : l.kind === "era" ? Math.min(1, (125 - d) / 55) * Math.min(1, Math.max(0, (d - (portrait ? 34 : 28)) / 24))
+      let target = d <= (l.kind === "era" ? 2 : 0) || d >= 150 ? 0
+        : l.kind === "era" ? Math.min(1, (125 - d) / 55) * Math.min(1, Math.max(0, (d - signGone) / 24))
         : Math.min(1, (150 - d) / 60) * Math.min(1, d / 6);
+      if (l.kind === "era" && (l !== nextSign || signsQuiet)) target = 0;
+      // Behind the title card they go at once, not over a few frames.
+      if (l.kind === "era" && signsQuiet) l.a = 0;
+      // Year labels follow the camera directly; era titles ease in and out so the hand-over is never a pop.
+      l.a = l.kind === "era" ? (target < l.a ? damp(l.a, target, 9, dt) : damp(l.a, target, 3.5, dt)) : target;
+      if (l.a < 0.01 && target === 0) l.a = 0;
+      const op = l.a;
       // A fully faded label is hidden outright: an invisible era sign still takes part in the 3D
       // sorting, and would cut through the cards on its plane (an era's opener sits right on it).
       const inRange = op > 0.01;
@@ -791,7 +811,8 @@ export function createScene(host: HTMLElement, entries: SceneEntry[], eras: Scen
     // A hair ahead, so settling exactly on an era's opener counts as being in that era.
     const ei = eraIndexAt(ft + 0.02);
     if (ei !== lastEra) {
-      if (lastEra >= 0) { cb.era(ei, ei > lastEra); if (!reduce) fovKick = 9; }
+      // The era title card is about to show: the distant titles step aside on this very frame.
+      if (lastEra >= 0) { quietUntil = performance.now() + 2700; cb.era(ei, ei > lastEra); if (!reduce) fovKick = 9; }
       else cb.era(ei, true);
       lastEra = ei;
     }
@@ -852,6 +873,7 @@ export function createScene(host: HTMLElement, entries: SceneEntry[], eras: Scen
       flight = null;
     },
     kick(fov) { if (!reduce) fovKick = Math.max(fovKick, fov); },
+    quietSigns(ms) { quietUntil = performance.now() + ms; },
     perf: () => ({ ft: ftEma, q: quality }),
     dispose() {
       dead = true;

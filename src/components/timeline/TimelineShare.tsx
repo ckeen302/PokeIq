@@ -6,7 +6,7 @@ import { track } from "@vercel/analytics";
 import { Check, Copy, Share2 } from "lucide-react";
 import { copyText } from "@/lib/share";
 import { entryPath } from "@/lib/timeline/deeplink";
-import { formatDate, dateRows, type TimelineEntry } from "@/lib/timeline/types";
+import { firstRelease, formatDate, type TimelineEntry } from "@/lib/timeline/types";
 
 /**
  * The detail panel's share drawer: the entry's own link (it opens the 3D
@@ -24,7 +24,7 @@ export function TimelineShare({ entry, onShared }: { entry: TimelineEntry; onSha
     return () => window.clearTimeout(timer.current);
   }, [entry.id]);
 
-  const when = formatDate(dateRows(entry)[0].date);
+  const when = formatDate(firstRelease(entry).date);
   const text = `${entry.title} (${when}) on the Pokémon Timeline`;
 
   async function copy() {

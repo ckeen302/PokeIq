@@ -2111,6 +2111,26 @@ step("pokédex Timeline: an entry's own link opens its panel, share copies it, t
     const detail = tp.getByTestId("timeline-detail");
     if (!(await detail.waitFor({ timeout: 10_000 }).then(() => true, () => false))) errors.push("timeline: an entry's link didn't open its panel");
     else if (!/Pokémon GO/i.test(await tp.getByTestId("timeline-detail-title").innerText())) errors.push("timeline: the entry's link opened the wrong entry");
+    // The card shows the earliest release (6 Jul 2016 in North America, before Japan's 22 Jul); the panel keeps both.
+    const goDate = await tp.locator('.tl-card[data-entry="pokemon-go"] .tl-card-date').innerText().catch(() => "");
+    if (!/6 Jul 2016/i.test(goDate) || /22 Jul/i.test(goDate)) errors.push(`timeline: the Pokémon GO card shows "${goDate}", not its earliest release`);
+    for (const id of ["timeline-date-japan", "timeline-date-north-america"]) if (!(await detail.getByTestId(id).count())) errors.push(`timeline: the Pokémon GO panel lost ${id}`);
+    // At most one era title in the distance at any time, and none behind the era title card.
+    for (const y of [2003, 2008, 2012]) {
+      const bar = await tp.getByTestId("timeline-scrubber").boundingBox();
+      await tp.mouse.click(bar.x + ((y - 1996) / 30.7) * bar.width, bar.y + bar.height / 2);
+      await tp.waitForTimeout(1200);
+      for (let k = 0; k < 4; k++) {
+        const shown = await tp.evaluate(() => [...document.querySelectorAll(".tl-era")].filter((e) => e.style.display !== "none" && Number(e.style.opacity || 0) > 0.01).length);
+        const flashOn = await tp.getByTestId("timeline-era-flash").count();
+        if (shown > 1 || (flashOn && shown > 0)) { errors.push(`timeline: ${shown} era titles shown at once near ${y}${flashOn ? " (with the title card)" : ""}`); break; }
+        await tp.waitForTimeout(500);
+      }
+    }
+    await tp.getByTestId("timeline-detail").waitFor({ state: "detached", timeout: 5_000 }).catch(() => {});
+    await tp.goto(`${BASE}/pokedex/timeline/pokemon-go`, { waitUntil: "domcontentloaded" });
+    await tp.locator('[data-testid="timeline-stage"][data-ready="1"]').waitFor({ timeout: 60_000 });
+    await detail.waitFor({ timeout: 10_000 });
     // Share: the panel shows the entry's own link and copies it.
     await tp.getByTestId("timeline-share").click();
     await tp.getByTestId("timeline-share-panel").waitFor();

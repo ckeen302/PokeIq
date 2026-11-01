@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it } from "vitest";
 import { TIMELINE } from "@/lib/timeline/data";
-import { REGION_MAPS, T_START } from "@/lib/timeline/types";
+import { REGION_MAPS, T_START, dateRows, firstRelease, yearFrac } from "@/lib/timeline/types";
 import { entryPath, isEntryId, parseDeepLink, urlFor } from "@/lib/timeline/deeplink";
 import { INTRO_KEY, introSeen, markIntroSeen, resetIntroMemory, shouldPlayIntro } from "@/lib/timeline/intro";
 import { TOUR_STOP_IDS, buildTour, pickTourStops, tourAt } from "@/lib/timeline/tour";
@@ -153,5 +153,28 @@ describe("timeline region maps", () => {
       expect(m.region).toBe(e.region);
       expect(existsSync(join(process.cwd(), "public", m.src)), m.src).toBe(true);
     }
+  });
+});
+
+describe("timeline card dates", () => {
+  it("show the earliest release, which is where the entry sits", () => {
+    for (const e of TIMELINE) {
+      const f = firstRelease(e);
+      for (const r of dateRows(e)) expect(yearFrac(f.date), `${e.id}: ${r.label}`).toBeLessThanOrEqual(yearFrac(r.date));
+      expect(Math.abs(yearFrac(f.date) - e.t), e.id).toBeLessThan(1e-3);
+    }
+  });
+  it("uses another region's date when it came first", () => {
+    const go = TIMELINE.find((e) => e.id === "pokemon-go")!;
+    expect(firstRelease(go)).toEqual({ label: "North America", date: "2016-07-06" });
+    // The panel still lists every region, Japan first.
+    expect(dateRows(go).map((r) => r.label)).toEqual(["Japan", "North America"]);
+  });
+  it("keeps Japan on a same-day tie, and the single date of a worldwide release", () => {
+    expect(firstRelease({ date_jp: "2019-11-15", date_na: "2019-11-15", date_eu: null, worldwide: false }).label).toBe("Japan");
+    expect(firstRelease({ date_jp: "2019-11-15", date_na: null, date_eu: null, worldwide: true }).label).toBe("Worldwide");
+  });
+  it("keeps the entries in time order by that date", () => {
+    for (let i = 1; i < TIMELINE.length; i++) expect(TIMELINE[i].t, TIMELINE[i].id).toBeGreaterThanOrEqual(TIMELINE[i - 1].t);
   });
 });
