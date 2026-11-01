@@ -484,7 +484,8 @@ export function createScene(host: HTMLElement, entries: SceneEntry[], eras: Scen
     el.innerHTML = `<span class="tl-era-k">${esc(String(e.year))} · ${esc(e.device)}</span><span class="tl-era-t">${esc(e.label)}</span>`;
     const obj = new CSS3DObject(el);
     obj.visible = false;
-    obj.position.set(0, AXIS_Y + RING_R * 0.62 - 2.2, zOf(e.start));
+    // Just behind the portal, off the plane of the era's opening card.
+    obj.position.set(0, AXIS_Y + RING_R * 0.62 - 2.2, zOf(e.start) - 0.6);
     eraSigns.push(obj);
     obj.scale.setScalar(0.02);
     cssScene.add(obj);
@@ -508,7 +509,7 @@ export function createScene(host: HTMLElement, entries: SceneEntry[], eras: Scen
   // ---- camera state
   let tTarget = Math.min(tMax, Math.max(tMin, startT)), tCur = tTarget - (reduce ? 0 : 1.2), vel = 0;
   let focusId: string | null = null, panel = false;
-  let fx = 0, fy = 0, px = 0, py = 0, mx = 0, my = 0, fovKick = 0, lastEra = -1, lastCurrent: string | null = null;
+  let fx = 0, fy = 0, px = 0, py = 0, mx = 0, my = 0, lx = 0, fovKick = 0, lastEra = -1, lastCurrent: string | null = null;
   const camBack = () => (portrait ? 12 : 11);
   // The focus plane is 7 units in front of the camera; the camera sits at an earlier moment than it.
   const focusOffset = () => -(camBack() - 7) / YS;
@@ -689,7 +690,10 @@ export function createScene(host: HTMLElement, entries: SceneEntry[], eras: Scen
     // Camera: glide to the focus plane, lean towards an opened card, a little mouse parallax.
     const focusCard = focusId ? cards.find((c) => c.e.id === focusId) : null;
     mid = damp(mid, midTarget, 4, dt);
-    fx = damp(fx, focusCard ? cardX(focusCard) * (portrait ? 0.8 : 0.62) : 0, 3, dt);
+    // With the side panel open (wide screens), the camera moves just right of the card and turns so the
+    // card sits in the middle of the space left of the panel, whichever track it is on.
+    const sidePanel = panel && !portrait && host.clientWidth >= 1024 && !!focusCard;
+    fx = damp(fx, focusCard ? (sidePanel ? cardX(focusCard) + 0.6 : cardX(focusCard) * (portrait ? 0.8 : 0.62)) : 0, 3, dt);
     fy = damp(fy, focusCard ? (cardY(focusCard) - (portrait ? mid : 2)) * 0.55 : 0, 3, dt);
     px = damp(px, reduce ? 0 : mx * 0.9, 2.5, dt);
     py = damp(py, reduce ? 0 : -my * 0.45, 2.5, dt);
@@ -697,9 +701,15 @@ export function createScene(host: HTMLElement, entries: SceneEntry[], eras: Scen
     const camZ = zOf(tCur) + camBack();
     const camY = portrait ? mid + 0.5 : AXIS_Y + 0.4;
     camera.position.set(fx + px, camY + fy + py, camZ);
-    const shift = panel && !portrait ? 2.6 : 0;
+    let lookX = fx * 0.85 + px * 0.3;
+    if (sidePanel) {
+      // Half the panel's width (about 210 px), in world units at the focus plane.
+      const perPx = (2 * 7 * Math.tan((camera.fov * Math.PI) / 360)) / Math.max(1, host.clientHeight);
+      lookX = fx + (20 * (cardX(focusCard!) - fx + 210 * perPx)) / 7 + px * 0.3;
+    }
     // With the phone's bottom sheet open, look lower so the card sits in the space above it.
-    look.set(fx * 0.85 + shift + px * 0.3, (portrait ? mid - 0.2 : 1.2) + fy * 1.1 - (panel && portrait ? 4 : 0), camZ - 20);
+    lx = damp(lx, lookX, 3.5, dt);
+    look.set(lx, (portrait ? mid - 0.2 : 1.2) + fy * 1.1 - (panel && portrait ? 4 : 0), camZ - 20);
     camera.lookAt(look);
     camera.rotateZ(-px * 0.012);
     const baseFov = portrait ? 68 : 55;
@@ -740,13 +750,19 @@ export function createScene(host: HTMLElement, entries: SceneEntry[], eras: Scen
     }
     for (const l of labels) {
       const d = camZ - l.z;
-      const inRange = d > (l.kind === "era" ? 2 : 0) && d < 150;
+      const op = d <= (l.kind === "era" ? 2 : 0) || d >= 150 ? 0
+        : l.kind === "era" ? Math.min(1, (125 - d) / 55) * Math.min(1, Math.max(0, (d - (portrait ? 34 : 28)) / 24))
+        : Math.min(1, (150 - d) / 60) * Math.min(1, d / 6);
+      // A fully faded label is hidden outright: an invisible era sign still takes part in the 3D
+      // sorting, and would cut through the cards on its plane (an era's opener sits right on it).
+      const inRange = op > 0.01;
       if (inRange !== l.shown) { l.obj.visible = inRange; l.shown = inRange; }
-      if (inRange) l.el.style.opacity = (l.kind === "era" ? Math.min(1, (125 - d) / 55) * Math.min(1, Math.max(0, (d - (portrait ? 34 : 28)) / 24)) : Math.min(1, (150 - d) / 60) * Math.min(1, d / 6)).toFixed(3);
+      if (inRange) l.el.style.opacity = op.toFixed(3);
     }
 
     const ft = tCur + focusOffset();
-    const ei = eraIndexAt(ft);
+    // A hair ahead, so settling exactly on an era's opener counts as being in that era.
+    const ei = eraIndexAt(ft + 0.02);
     if (ei !== lastEra) {
       if (lastEra >= 0) { cb.era(ei, ei > lastEra); if (!reduce) fovKick = 9; }
       else cb.era(ei, true);

@@ -93,7 +93,7 @@ export async function timelineEntryCard(entry: TimelineEntry) {
     visual = <TunnelVisual year={year} colors={ERAS.slice(0, ERAS.findIndex((e) => e.id === era.id) + 1).map((e) => e.a)} />;
   }
   return ogCard({
-    eyebrow: `Pokémon Timeline · ${lane.label} · ${year}`,
+    eyebrow: `Timeline · ${year} · ${lane.label}`,
     title: [entry.title],
     titleSize: len > 40 ? 44 : len > 28 ? 52 : len > 18 ? 60 : 70,
     subtitle,

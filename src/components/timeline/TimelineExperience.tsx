@@ -11,13 +11,13 @@ import { buildTour, pickTourStops, tourAt } from "@/lib/timeline/tour";
 import type { SceneApi, SceneEra, SceneRegion } from "./scene";
 import type { TimelineAudio } from "./audio";
 import { TimelineDetail } from "./TimelineDetail";
-import { TimelineShare } from "./TimelineShare";
 import { TIMELINE_CSS } from "./timeline-css";
 import { cn } from "@/lib/utils";
 
 // The intro and the era transitions load only when they are about to play.
 const TimelineIntro = lazy(() => import("./TimelineIntro"));
 const EraTransition = lazy(() => import("./EraTransition"));
+const TimelineShare = lazy(() => import("./TimelineShare").then((m) => ({ default: m.TimelineShare })));
 
 export interface EraStart {
   id: EraId;
@@ -606,7 +606,11 @@ export function TimelineExperience({ entries, eraStarts, initialId = null, child
                     </div>
                   </div>
                   <AnimatePresence initial={false}>
-                    {shareOpen && <TimelineShare key={openEntry.id} entry={openEntry} onShared={() => audioRef.current?.share()} />}
+                    {shareOpen && (
+                      <Suspense key={openEntry.id} fallback={null}>
+                        <TimelineShare entry={openEntry} onShared={() => audioRef.current?.share()} />
+                      </Suspense>
+                    )}
                   </AnimatePresence>
                 </div>
                 <TimelineDetail entry={openEntry} />

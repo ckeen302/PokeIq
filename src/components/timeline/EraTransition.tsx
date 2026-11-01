@@ -24,12 +24,12 @@ const CSS = `
 .tl-tx-gbc .shade { position: absolute; inset: 0; background: #0f380f; mix-blend-mode: multiply; opacity: .55;
   -webkit-mask-image: radial-gradient(circle at 50% 50%, transparent var(--r), #000 calc(var(--r) + 9%)); mask-image: radial-gradient(circle at 50% 50%, transparent var(--r), #000 calc(var(--r) + 9%));
   animation: tl-flood .95s cubic-bezier(.55,.05,.25,1) forwards; }
-.tl-tx-gbc .front { position: absolute; left: 50%; top: 50%; width: 10px; height: 10px; margin: -5px; border-radius: 50%;
-  box-shadow: 0 0 0 3px rgb(255 201 74 / .9), 0 0 0 9px rgb(62 199 194 / .55), 0 0 40px 12px rgb(214 51 108 / .35);
-  animation: tl-front .95s cubic-bezier(.55,.05,.25,1) forwards; }
+.tl-tx-gbc .front { position: absolute; inset: 0; mix-blend-mode: screen;
+  background: radial-gradient(circle at 50% 50%, transparent calc(var(--r) + 3%), rgb(214 51 108 / .28) calc(var(--r) + 5.5%), rgb(255 201 74 / .55) calc(var(--r) + 7.5%), rgb(62 199 194 / .4) calc(var(--r) + 9%), transparent calc(var(--r) + 11%));
+  animation: tl-flood .95s cubic-bezier(.55,.05,.25,1) forwards, tl-front-out .95s ease-in forwards; }
 @property --r { syntax: '<percentage>'; inherits: false; initial-value: 0%; }
-@keyframes tl-flood { from { --r: -10%; } to { --r: 120%; } }
-@keyframes tl-front { from { transform: scale(0); opacity: 1; } 75% { opacity: .9; } to { transform: scale(260); opacity: 0; } }
+@keyframes tl-flood { from { --r: -12%; } to { --r: 120%; } }
+@keyframes tl-front-out { 0%, 70% { opacity: 1; } 100% { opacity: 0; } }
 
 /* III: a widescreen 3:2 frame snaps open from a slit, holds, then opens out past the edges. */
 .tl-tx-gba .frame { position: absolute; left: 50%; top: 50%; height: min(64%, 46vw); aspect-ratio: 3 / 2; transform: translate(-50%, -50%) scaleY(.02);
@@ -53,10 +53,16 @@ const CSS = `
 @keyframes tl-ds-top { 0% { opacity: 0; transform: translateY(2%); } 30% { opacity: 1; transform: translateY(-1.5%); } 70% { opacity: .9; transform: translateY(-1.5%); } 100% { opacity: 0; transform: translateY(0); } }
 @keyframes tl-ds-bot { 0% { opacity: 0; transform: translateY(-2%); } 30% { opacity: 1; transform: translateY(1.5%); } 70% { opacity: .9; transform: translateY(1.5%); } 100% { opacity: 0; transform: translateY(0); } }
 
-/* V: a black-and-white band sweeps across, inverting what it passes. */
-.tl-tx-ds2 .band { position: absolute; top: -10%; bottom: -10%; width: 34%; left: -40%; background: #fff; mix-blend-mode: difference; transform: skewX(-14deg);
-  animation: tl-bw .7s cubic-bezier(.6,0,.3,1) forwards; }
-@keyframes tl-bw { to { left: 110%; } }
+/* V: a black-and-white band sweeps across, draining the colour from what it passes, led by a bright edge. */
+.tl-tx-ds2 .band { position: absolute; top: -10%; bottom: -10%; width: 48%; left: 0; transform: translateX(-110%) skewX(-12deg);
+  backdrop-filter: grayscale(1) contrast(1.35) brightness(1.08);
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 30%, #000 85%, transparent); mask-image: linear-gradient(90deg, transparent, #000 30%, #000 85%, transparent);
+  animation: tl-bw .75s cubic-bezier(.55,0,.35,1) forwards; }
+.tl-tx-ds2 .edge { position: absolute; top: -10%; bottom: -10%; width: 2px; left: 0; background: #fff; box-shadow: 0 0 18px 3px rgb(255 255 255 / .55), 0 0 60px 10px rgb(79 210 255 / .25);
+  transform: translateX(-10vw) skewX(-12deg); animation: tl-bw-edge .75s cubic-bezier(.55,0,.35,1) forwards; }
+@keyframes tl-bw { to { transform: translateX(260%) skewX(-12deg); } }
+@keyframes tl-bw-edge { 0% { transform: translateX(-10vw) skewX(-12deg); opacity: 1; } 90% { opacity: 1; } 100% { transform: translateX(112vw) skewX(-12deg); opacity: 0; } }
+.tl-stage[data-q="0"] .tl-tx-ds2 .band { backdrop-filter: none; background: rgb(255 255 255 / .06); }
 
 /* VI: a stereoscopic depth pop: the view lunges forward and its red/cyan fringes converge. */
 .tl-stage[data-tx="3ds"] .tl-host { animation: tl-pop .8s cubic-bezier(.2,1.4,.35,1) both; }
@@ -109,7 +115,7 @@ export default function EraTransition({ era, onKick }: { era: EraId; onKick?: (f
       {era === "gbc" && (<><div className="shade" /><div className="tint" /><div className="front" /></>)}
       {era === "gba" && <div className="frame" />}
       {era === "ds" && (<><div className="half top" /><div className="half bot" /><div className="hinge" /></>)}
-      {era === "ds2" && <div className="band" />}
+      {era === "ds2" && (<><div className="band" /><div className="edge" /></>)}
       {era === "3ds" && (<><div className="fringe l" /><div className="fringe r" /></>)}
       {era === "switch" && (<><div className="rail lft" /><div className="rail rgt" /><div className="snap a" /><div className="snap b" /></>)}
     </div>
