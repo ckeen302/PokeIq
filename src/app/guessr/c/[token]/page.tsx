@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { preload } from "react-dom";
 import { GeoGame } from "@/components/geo/GeoGame";
-import { geoRegions, readGeoChallenge } from "@/lib/server/geo";
+import { geoChallengeFirstShot, geoRegions, readGeoChallenge } from "@/lib/server/geo";
 import { WORLD_REGION } from "@/lib/geo-types";
 
 interface PageProps {
@@ -37,6 +38,10 @@ export default async function GeoChallengePage({ params }: PageProps) {
   if (!challenge) notFound();
   const regions = geoRegions();
   if (!regions.some((r) => r.id === challenge.region)) notFound();
+  // Round 1's picture starts downloading with the page (the browser gets the game itself ready on load), so Accept shows it at once.
+  // (Links carry their sealed rounds; an old one without them is planned from its seed, as the start does.)
+  const firstShot = geoChallengeFirstShot(decodeURIComponent(token));
+  if (firstShot) preload(firstShot, { as: "image", fetchPriority: "high" });
   return (
     <GeoGame
       regions={regions}

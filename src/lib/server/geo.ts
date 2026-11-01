@@ -836,6 +836,46 @@ export function readGeoChallenge(
   return { seed: card.s, region: card.r, name: publicName(card.n, ""), score: card.t, rounds: card.p, plan: card.l, ...geoFilter(card.e, card.f), ...(difficulty ? { difficulty } : {}) };
 }
 
+/** The game a friend's challenge link starts: their map, length, filter and difficulty (practice, not ranked). */
+export function geoChallengeSpec(challenge: NonNullable<ReturnType<typeof readGeoChallenge>>): GeoSpec {
+  // The link carries the game length: one score per round.
+  const rounds = challenge.rounds.length;
+  return {
+    region: challenge.region,
+    kind: "game",
+    practice: "challenge",
+    ...(rounds !== 5 && isGeoRounds(rounds) ? { rounds } : {}),
+    ...geoFilter(challenge.era, challenge.families),
+    ...(challenge.difficulty ? { difficulty: challenge.difficulty } : {}),
+  };
+}
+
+/**
+ * A game's rounds: a challenge's own sealed rounds when it carries them and
+ * they're all still on the map (`given`), else planned from the seed. A
+ * streak plans its first two (the second only to be fetched ahead).
+ */
+function dealRounds(spec: GeoSpec, seed: string, sealed: string | undefined, seen?: SeenShots): { rounds: PlannedRound[]; given: boolean } {
+  const given = spec.kind === "game" ? unseal(sealed)?.filter((r) => findLocation(spec, r)) : undefined;
+  const want = geoRoundsOf(spec);
+  if (given?.length === want) return { rounds: given, given: true };
+  return { rounds: planRounds(spec, seed, spec.kind === "game" ? want : 2, seen), given: false };
+}
+
+/**
+ * The first screenshot a challenge link deals (the same for everyone who opens
+ * it), so its page can start fetching the picture before the game is started.
+ * Only the picture's URL: a random id that says nothing about the place.
+ */
+export function geoChallengeFirstShot(token: unknown): string | null {
+  const challenge = readGeoChallenge(token);
+  if (!challenge) return null;
+  const spec = geoChallengeSpec(challenge);
+  if (!isGeoSpec(spec)) return null;
+  const first = dealRounds(spec, challenge.seed, challenge.plan).rounds[0];
+  return first ? shotUrl(first.shot) : null;
+}
+
 /**
  * Starts a game. Free play takes the player's recently seen areas (most
  * recent first) and, of a few seeds, plays the one that repeats them least;
@@ -869,12 +909,8 @@ export function startGeo(
       if (stale < best) [seed, best] = [next, stale];
     }
   }
-  // A challenge's own five rounds when it carries them and they're all still on the map.
-  const given = spec.kind === "game" ? unseal(opts.plan)?.filter((r) => findLocation(spec, r)) : undefined;
-  const want = geoRoundsOf(spec);
-  // A streak plans its first two rounds (the second only to be fetched ahead) and seals the first.
-  const rounds = given?.length === want ? given : planRounds(spec, seed, spec.kind === "game" ? want : 2, seen);
-  const plan = given?.length === want ? opts.plan : seal(spec.kind === "game" ? rounds : rounds.slice(0, 1));
+  const { rounds, given } = dealRounds(spec, seed, opts.plan, seen);
+  const plan = given ? opts.plan : seal(spec.kind === "game" ? rounds : rounds.slice(0, 1));
   const now = Date.now();
   const state: GeoState = { v: 4, sid: randomId(), spec, seed, startedAt: now, name: opts.name, log: [], plan, roundAt: now };
   if (opts.timer && opts.timer > 0) state.timer = opts.timer;

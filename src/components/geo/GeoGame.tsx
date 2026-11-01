@@ -379,10 +379,44 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
     const key = JSON.stringify(body);
     if (ahead.current?.key === key && Date.now() - ahead.current.at < PREFETCH_TTL_MS) return;
     const res = post<GeoStartResponse>("/api/geo", body);
-    res.then((r) => preloadImage(r.round.shot)).catch(() => undefined);
+    res.then((r) => preloadImage(r.round.shot, { priority: "high" })).catch(() => undefined);
     ahead.current = { key, at: Date.now(), res };
   }
   const warmProps = (opts: StartOpts) => ({ onPointerEnter: () => prefetch(opts), onFocus: () => prefetch(opts) });
+
+  /**
+   * And once per page view, when the page goes idle: the game the player is
+   * most likely to start (a friend's challenge, else the solo game on the map,
+   * filter and length the page opened with, after the saved settings are read),
+   * so a click within the minute shows round 1 with its picture already in.
+   * Starting a free game or a challenge records nothing (only a guess does),
+   * so a game that's never played costs nothing but the request.
+   */
+  const warmOnLoad = useRef<() => void>(() => undefined);
+  warmOnLoad.current = () => {
+    if (challenge) prefetch({ kind: "game", challenge: challenge.token });
+    else if (filterOk) prefetch({ kind: "game" });
+  };
+  useEffect(() => {
+    let done = false;
+    const run = () => {
+      if (done) return;
+      done = true;
+      warmOnLoad.current();
+    };
+    if (typeof window.requestIdleCallback === "function") {
+      const id = window.requestIdleCallback(run, { timeout: 600 });
+      return () => {
+        done = true;
+        window.cancelIdleCallback(id);
+      };
+    }
+    const id = window.setTimeout(run, 200);
+    return () => {
+      done = true;
+      window.clearTimeout(id);
+    };
+  }, []);
 
   async function start(opts: StartOpts) {
     unlockAudio();
@@ -1042,7 +1076,7 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
       {({ fs, toggle }) => (
     <div className="relative h-full">
       <div className="absolute inset-0">
-        <ShotCarousel views={views} index={viewIndex} onIndex={setViewIndex} onZoom={() => setZoomed(true)} zoom={zoom} fs blur={game.round.blur} />
+        <ShotCarousel views={views} index={viewIndex} onIndex={setViewIndex} onZoom={() => setZoomed(true)} zoom={zoom} fs blur={game.round.blur} priority={game.round.index === 0} />
       </div>
       <div className="absolute left-3 top-3 z-20 flex items-center gap-2">
         <ExitButton onClick={() => setPhase("setup")} />
