@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Play, Settings2 } from "lucide-react";
 import type { Difficulty, ModuleId, QuizFormat, QuizScope } from "@/engines/types";
-import { FORMAT_INFO, MODULE_INFO, PLAYABLE_FORMATS, difficultiesFor, filterFor } from "@/lib/modes";
+import { FORMAT_INFO, MODULE_INFO, PLAYABLE_FORMATS, difficultiesFor, filterFor, playDifficulty } from "@/lib/modes";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { QuizController, type StartRequest } from "./QuizController";
@@ -12,23 +12,26 @@ import { QuizDuelCard } from "./QuizDuelCard";
 import { cn } from "@/lib/utils";
 
 /**
- * Pre-game setup: format, difficulty and generation filter. Starting needs
- * a click on purpose — it's the user gesture that unlocks cry audio.
+ * Pre-game setup: format and generation filter, plus the difficulty for the
+ * two modes where it changes the game (Whose Team Is This? and Real Shiny?;
+ * every other mode plays one fixed tuning). Starting needs a click on
+ * purpose — it's the user gesture that unlocks cry audio.
  */
 
 interface QuizSetupProps {
   module: ModuleId;
   initialFormat?: QuizFormat;
-  initialDifficulty?: Difficulty;
+  /** From an old link or a deep link: kept only where the mode has a choice. */
+  initialDifficulty?: string;
   initialGens?: number[];
 }
 
-export function QuizSetup({ module, initialFormat, initialDifficulty = "medium", initialGens = [] }: QuizSetupProps) {
+export function QuizSetup({ module, initialFormat, initialDifficulty, initialGens = [] }: QuizSetupProps) {
   const info = MODULE_INFO[module];
   const filter = filterFor(module);
   const [format, setFormat] = useState<QuizFormat>(initialFormat ?? info.defaultFormat);
   const choices = difficultiesFor(module);
-  const [difficulty, setDifficulty] = useState<Difficulty>(choices.some((c) => c.id === initialDifficulty) ? initialDifficulty : choices[0].id);
+  const [difficulty, setDifficulty] = useState<Difficulty>(() => playDifficulty(module, initialDifficulty));
   // Whose Team Is This?: game teams, anime teams or both.
   const [scope, setScope] = useState<QuizScope | null>(null);
   const hasScope = module === "whose-team";
@@ -86,18 +89,18 @@ export function QuizSetup({ module, initialFormat, initialDifficulty = "medium",
                 </div>
               </Field>
 
-              <Field label="Difficulty">
-                <div className={cn("grid gap-2", choices.length === 2 ? "grid-cols-2" : "grid-cols-3")}>
-                  {choices.map((d) => (
-                    <Choice key={d.id} active={difficulty === d.id} onClick={() => setDifficulty(d.id)}>
-                      <span className="font-display font-bold uppercase tracking-wider">{d.label}</span>
-                      {hasScope && (
-                        <span className="text-[11px] text-muted-foreground">{d.id === "hard" ? "One Pokémon at a time, ace last" : "The whole team"}</span>
-                      )}
-                    </Choice>
-                  ))}
-                </div>
-              </Field>
+              {choices.length > 0 && (
+                <Field label="Difficulty">
+                  <div className="grid grid-cols-2 gap-2" data-testid="quiz-difficulty">
+                    {choices.map((d) => (
+                      <Choice key={d.id} active={difficulty === d.id} onClick={() => setDifficulty(d.id)}>
+                        <span className="font-display font-bold uppercase tracking-wider">{d.label}</span>
+                        <span className="text-[11px] text-muted-foreground">{d.blurb}</span>
+                      </Choice>
+                    ))}
+                  </div>
+                </Field>
+              )}
 
               {hasScope && (
                 <Field label="Teams from">

@@ -4,10 +4,8 @@ import { getServiceSupabase, type LeaderboardRow } from "@/lib/supabase";
 import { publicName } from "@/lib/name-filter";
 import type { PracticeReason, RunResult } from "@/lib/session-types";
 
-export type BoardFilter =
-  | { kind: "daily"; date: string }
-  | { kind: "iq" }
-  | { kind: "module"; module: string; format?: string; difficulty?: string };
+/** The Daily Challenge and the PokéIQ Test. Quiz modes have no boards: their personal bests show on profiles. */
+export type BoardFilter = { kind: "daily"; date: string } | { kind: "iq" };
 
 /**
  * Top runs for a board, or null when persistence isn't configured. Cached for
@@ -40,13 +38,8 @@ async function readBoard(filter: BoardFilter, limit: number): Promise<Leaderboar
     .limit(limit);
   if (filter.kind === "iq") {
     query = query.eq("format", "adaptive");
-  } else if (filter.kind === "daily") {
-    query = query.eq("daily_date", filter.date);
   } else {
-    // Like-for-like only: all-generation runs at one difficulty.
-    query = query.eq("module", filter.module).is("daily_date", null).is("gens", null);
-    if (filter.format) query = query.eq("format", filter.format);
-    if (filter.difficulty) query = query.eq("difficulty", filter.difficulty);
+    query = query.eq("daily_date", filter.date);
   }
 
   const { data, error } = await query;
@@ -65,8 +58,14 @@ const PRACTICE_MESSAGES: Record<PracticeReason, string> = {
   "zoom-daily": "The daily Zoom Reveal isn't ranked — play Classic, Survival or Blitz to get on the board.",
 };
 
+export const UNRANKED_QUIZ_MESSAGE = "Quiz modes have no leaderboard: your best scores show on your trainer profile.";
+
+/** Whether a result belongs on a board: only the Daily Challenge and the PokéIQ Test have one. */
+export const hasBoard = (spec: Pick<RunResult["spec"], "daily" | "format">) => Boolean(spec.daily) || spec.format === "adaptive";
+
 /** Leaderboard eligibility of a verified result: null when it can be ranked. */
 export function practiceMessage(result: Pick<RunResult, "spec" | "practice">): string | null {
+  if (!hasBoard(result.spec)) return UNRANKED_QUIZ_MESSAGE;
   const reason = result.practice ?? result.spec.practice;
   return reason ? (PRACTICE_MESSAGES[reason] ?? "This run isn't ranked.") : null;
 }

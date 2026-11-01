@@ -60,7 +60,6 @@ const APIS = [
   ["api connections daily", 3, `/api/connections?date=${today}`],
   ["api connections board", 2, `/api/connections/leaderboard?date=${today}`],
   ["api connections potd", 1, "/api/connections/potd"],
-  ["api name-em-all board", 1, `/api/name-em-all/leaderboard?scope=daily:${today}&board=count`],
   ["api pokedle guess", 6, "/api/pokedle", () => json({ date: today, guesses: Array.from({ length: 1 + Math.floor(Math.random() * 5) }, () => 1 + Math.floor(Math.random() * 1000)) })],
   ["api pokedle dex", 1, "/api/pokedle/dex"],
   ["api battle ladder", 1, "/api/battle/ladder?top=1"],

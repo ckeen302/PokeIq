@@ -237,10 +237,20 @@ describe("paused questions (timed formats)", () => {
 
 describe("leaderboard eligibility", () => {
   it("rejects practice runs and accepts ranked ones", () => {
-    expect(practiceMessage({ spec })).toBeNull();
-    expect(practiceMessage({ spec: { ...spec, practice: "challenge" } })).toMatch(/challenge/i);
-    expect(practiceMessage({ spec, practice: "repeat-daily" })).toMatch(/first Daily/i);
-    expect(practiceMessage({ spec: { ...spec, practice: "filtered" } })).toMatch(/generation/i);
+    const daily: SessionSpec = { ...spec, module: "mixed", daily: "2026-11-01" };
+    const test: SessionSpec = { ...spec, module: "mixed", format: "adaptive" };
+    expect(practiceMessage({ spec: daily })).toBeNull();
+    expect(practiceMessage({ spec: test })).toBeNull();
+    expect(practiceMessage({ spec: { ...test, practice: "challenge" } })).toMatch(/challenge/i);
+    expect(practiceMessage({ spec: daily, practice: "repeat-daily" })).toMatch(/first Daily/i);
+    expect(practiceMessage({ spec: { ...test, practice: "filtered" } })).toMatch(/generation/i);
+  });
+
+  it("keeps quiz-mode runs off the leaderboard: their bests go on the profile", () => {
+    for (const format of ["classic", "survival", "blitz"] as const) {
+      expect(practiceMessage({ spec: { ...spec, format } })).toMatch(/no leaderboard.*profile/i);
+    }
+    expect(practiceMessage({ spec: { ...spec, module: "whose-team", difficulty: "hard" } })).toMatch(/no leaderboard/i);
   });
 
   it("carries the practice flag from the signed spec into the result", () => {
