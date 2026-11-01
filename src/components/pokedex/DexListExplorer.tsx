@@ -65,6 +65,16 @@ export function DexListExplorer({ kind, items }: { kind: DexListKind; items: Ite
     () => (kind === "items" ? [...new Set((items as ItemListItem[]).map((i) => i.category))].sort() : []),
     [kind, items]
   );
+  // /pokedex/places?region=Kanto (linked from the timeline) opens filtered to that region.
+  useEffect(() => {
+    if (kind !== "places") return;
+    try {
+      const r = new URLSearchParams(window.location.search).get("region");
+      if (r && (items as PlaceListItem[]).some((i) => i.region === r)) setRegion(r);
+    } catch {
+      // No URL access: keep every region.
+    }
+  }, [kind, items]);
   const regions = useMemo(() => (kind === "places" ? [...new Set((items as PlaceListItem[]).map((i) => i.region))].sort() : []), [kind, items]);
   const placeTypes = useMemo(() => (kind === "places" ? [...new Set((items as PlaceListItem[]).map((i) => i.type))].sort() : []), [kind, items]);
 
