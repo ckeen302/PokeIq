@@ -5,7 +5,7 @@ import type { Metadata } from "next";
 import { pageMetadata } from "@/lib/seo";
 import { GameInfo } from "@/components/seo/GameInfo";
 import { ModeIcon } from "@/components/game/ModeIcon";
-import { MODULE_INFO, QUIZ_PRESETS, presetFor } from "@/lib/modes";
+import { MODULE_INFO, QUIZ_PRESETS, difficultiesFor, presetFor } from "@/lib/modes";
 import { QuizSetupFromQuery } from "./QuizSetupFromQuery";
 import { ZoomDaily } from "@/components/quiz/zoom/ZoomDaily";
 
@@ -65,7 +65,6 @@ export default async function QuizPage({ params }: PageProps) {
         slug={preset.slug}
         module={preset.module}
         format={preset.format}
-        difficulty={preset.difficulty}
         gens={preset.gens}
       />
 
@@ -87,7 +86,7 @@ export default async function QuizPage({ params }: PageProps) {
         ) : preset.module === "shiny" ? (
           <p>
             Each round shows four pictures of one Pokémon: its real shiny and three fakes made by shifting the colours.
-            Easy fakes are far off, Normal ones are close, Hard ones are barely different. Answers are checked on our
+            Easy fakes are far off, Hard ones are barely different. Answers are checked on our
             server, and nothing in the picture addresses says which one is real.
           </p>
         ) : preset.module === "zoom-reveal" ? (
@@ -132,7 +131,9 @@ export default async function QuizPage({ params }: PageProps) {
         description={`${preset.description}`}
         intro={`${preset.h1} is one of our free Pokémon quizzes, like the Who's That Pokémon quiz: ${preset.description}`}
         steps={[
-          "Choose a format and difficulty, and the generations to include.",
+          difficultiesFor(preset.module).length
+            ? "Choose a format and difficulty, and the generations to include."
+            : "Choose a format and the generations to include.",
           "Answer each question before the timer runs out.",
           "Your PokéIQ is calculated from how hard the questions you got right were.",
         ]}

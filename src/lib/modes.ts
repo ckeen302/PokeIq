@@ -24,13 +24,23 @@ export interface QuizFilter {
 }
 
 const REGION_TITLES = ["Kanto", "Johto", "Hoenn", "Sinnoh", "Unova", "Kalos", "Alola", "Galar", "Paldea"];
-const MIX_NOTE = "Every difficulty mixes easy, medium and hard questions; the setting tilts the mix.";
+const MIX_NOTE = "Every run mixes easy, medium and hard questions.";
 
 export const GEN_FILTER: QuizFilter = {
   label: "Generations",
   chips: REGION_TITLES.map((title, i) => ({ label: `Gen ${i + 1}`, title })),
-  note: "Without a filter, Easy uses Gens 1–2, Medium Gens 1–5 and Hard all nine.",
 };
+
+/**
+ * The generations a run plays when the player picks no filter: every one, for the
+ * modes that use the generation filter ("All" means all nine); undefined for the rest.
+ */
+export function defaultGens(module: ModuleId): number[] | undefined {
+  return filterFor(module) === GEN_FILTER ? GEN_FILTER.chips.map((_, i) => i + 1) : undefined;
+}
+
+/** Real Shiny? draws from all 1,025 Pokémon without a filter, so its filter needs no note. */
+const SHINY_FILTER: QuizFilter = { label: GEN_FILTER.label, chips: GEN_FILTER.chips };
 
 /** Same nine values: a game's generation, remakes included (FireRed is Gen 3). */
 const GAMES_FILTER: QuizFilter = { ...GEN_FILTER, note: MIX_NOTE };
@@ -45,7 +55,7 @@ const ANIME_FILTER: QuizFilter = {
 const ITEM_FILTER: QuizFilter = {
   ...GEN_FILTER,
   label: "Introduced in",
-  note: "Without a filter, Easy uses Gens 1–4, Medium Gens 1–7 and Hard all nine.",
+  note: "Without a filter, questions cover Gens 1–7. Pick generations to play any of the nine.",
 };
 
 /** Whose Team Is This?: a game's generation, or the anime series' region (the same nine values). */
@@ -55,16 +65,59 @@ const TEAM_FILTER: QuizFilter = {
   note: "Games count by generation (FireRed is Gen 3); anime teams by the region of the series.",
 };
 
-/** The difficulty choices a mode offers. Whose Team Is This? has two: Normal (the whole team) and Hard (one Pokémon at a time). */
-export function difficultiesFor(module: ModuleId): { id: Difficulty; label: string }[] {
-  if (module === "whose-team") return [{ id: "medium", label: "Normal" }, { id: "hard", label: "Hard" }];
-  return DIFFICULTIES.map((id) => ({ id, label: id }));
+export interface DifficultyChoice {
+  id: Difficulty;
+  label: string;
+  /** What the choice changes, shown under it. */
+  blurb: string;
 }
 
-/** A mode's name for a difficulty ("Normal" for Whose Team's medium). */
-export function difficultyLabel(module: ModuleId, difficulty: Difficulty): string {
-  const label = difficultiesFor(module).find((d) => d.id === difficulty)?.label ?? (module === "whose-team" ? "Normal" : difficulty);
-  return label.charAt(0).toUpperCase() + label.slice(1);
+/**
+ * The only quizzes with a difficulty choice, because it changes the game:
+ * Whose Team Is This? (the whole team, or one Pokémon at a time) and Real
+ * Shiny? (how close the fakes are). Their first choice is the default.
+ */
+const DIFFICULTY_CHOICES: Partial<Record<ModuleId, DifficultyChoice[]>> = {
+  "whose-team": [
+    { id: "medium", label: "Normal", blurb: "The whole team" },
+    { id: "hard", label: "Hard", blurb: "One Pokémon at a time, ace last" },
+  ],
+  shiny: [
+    { id: "easy", label: "Easy", blurb: "The fakes are far off" },
+    { id: "hard", label: "Hard", blurb: "The fakes are barely different" },
+  ],
+};
+
+/**
+ * Every other quiz plays one fixed tuning: medium (look-alike options, a balanced
+ * question mix), over every generation unless the player filters (defaultGens).
+ */
+export const FIXED_DIFFICULTY: Difficulty = "medium";
+
+/** The difficulty choices a mode offers: empty for a mode with one fixed tuning. */
+export function difficultiesFor(module: ModuleId): DifficultyChoice[] {
+  return DIFFICULTY_CHOICES[module] ?? [];
+}
+
+/**
+ * The difficulty a new run or duel of this mode plays. A mode with a choice
+ * keeps a valid one (anything else gets its default); every other mode plays
+ * its fixed tuning, whatever an old link or invite asked for.
+ */
+export function playDifficulty(module: ModuleId, requested?: unknown): Difficulty {
+  const choices = DIFFICULTY_CHOICES[module];
+  if (!choices) return FIXED_DIFFICULTY;
+  return choices.find((c) => c.id === requested)?.id ?? choices[0].id;
+}
+
+/**
+ * A mode's name for a difficulty ("Normal" for Whose Team's medium), or null
+ * for a mode without a choice (its difficulty isn't worth showing).
+ */
+export function difficultyLabel(module: ModuleId, difficulty: Difficulty): string | null {
+  const choices = DIFFICULTY_CHOICES[module];
+  if (!choices) return null;
+  return choices.find((d) => d.id === difficulty)?.label ?? (DIFFICULTIES.includes(difficulty) ? difficulty.charAt(0).toUpperCase() + difficulty.slice(1) : null);
 }
 
 export function filterFor(module: ModuleId): QuizFilter {
@@ -76,7 +129,7 @@ export const MODULE_INFO: Record<ModuleId, ModuleInfo> = {
     id: "whos-that",
     title: "Who's That Pokémon?",
     tagline: "Name the silhouette",
-    description: "Identify Pokémon from their silhouettes — hard mode zooms in on a single detail.",
+    description: "Identify Pokémon from their silhouettes, with look-alikes among the options.",
     emoji: "👤",
     accent: "42 98% 60%",
     defaultFormat: "classic",
@@ -155,6 +208,7 @@ export const MODULE_INFO: Record<ModuleId, ModuleInfo> = {
     emoji: "✨",
     accent: "280 90% 70%",
     defaultFormat: "classic",
+    filter: SHINY_FILTER,
   },
   "zoom-reveal": {
     id: "zoom-reveal",
@@ -203,7 +257,6 @@ export interface QuizPreset {
   module: ModuleId;
   gens?: number[];
   format?: QuizFormat;
-  difficulty?: Difficulty;
   title: string;
   h1: string;
   description: string;
@@ -218,7 +271,7 @@ export const QUIZ_PRESETS: QuizPreset[] = [
     module: "whos-that",
     title: "Who's That Pokémon? Silhouette Quiz",
     h1: "Who's That Pokémon?",
-    description: "Guess the Pokémon from its silhouette. All 1,025 Pokémon, three difficulties, Survival and Blitz modes.",
+    description: "Guess the Pokémon from its silhouette. Pick any of the nine generations, in Classic, Survival and Blitz modes.",
   },
   {
     slug: "pokemon-cry-quiz",
@@ -268,7 +321,7 @@ export const QUIZ_PRESETS: QuizPreset[] = [
     module: "shiny",
     title: "Which Is the Real Shiny? Pokémon Shiny Quiz",
     h1: "Which Is the Real Shiny?",
-    description: "One of four colourings is the real shiny, the rest are fakes. Can you tell? All 1,025 Pokémon, three difficulties.",
+    description: "One of four colourings is the real shiny, the rest are fakes. Can you tell? All 1,025 Pokémon, on Easy or Hard.",
   },
   {
     slug: "pokemon-zoom-quiz",
@@ -302,7 +355,6 @@ export const QUIZ_PRESETS: QuizPreset[] = [
     slug: `gen-${i + 1}-pokemon-quiz`,
     module: "whos-that" as const,
     gens: [i + 1],
-    difficulty: "hard" as const,
     title: `Gen ${i + 1} Pokémon Quiz — ${region} Who's That Pokémon?`,
     h1: `Gen ${i + 1} Pokémon Quiz (${region})`,
     description: `How well do you know the ${region} Pokédex? Name every Gen ${i + 1} Pokémon from its silhouette.`,

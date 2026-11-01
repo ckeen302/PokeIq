@@ -17,7 +17,7 @@ import { DuelGone, DuelLoading, DuelNotice, seconds } from "@/components/duel/Du
 import { SlotGrid, groupSlots, type SlotState } from "./parts";
 import { outsiderMap, useNameInput } from "./use-name-input";
 import { useNeaTargets } from "./NeaDaily";
-import { NeaShareButton } from "./Leaderboard";
+import { NeaShareButton } from "./NeaShare";
 import { cn } from "@/lib/utils";
 
 /**

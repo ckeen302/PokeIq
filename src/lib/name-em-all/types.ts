@@ -41,31 +41,15 @@ export const NEA_MODES: { id: NeaMode; label: string; blurb: string }[] = [
 
 export type NeaBoard = "clear" | "count";
 
-/** One leaderboard line. */
-export interface NeaBoardRow {
-  name: string;
-  named: number;
-  total: number;
-  ms: number;
-  you?: boolean;
-}
-
-export interface NeaBoardResponse {
-  scope: string;
-  board: NeaBoard;
-  /** Null when the leaderboard isn't available on this server. */
-  rows: NeaBoardRow[] | null;
-}
-
 /** POST /api/name-em-all/result's answer. */
 export interface NeaResultResponse {
-  /** False when the run can't be ranked (the reason says why). */
-  ranked: boolean;
+  /** True when the run was kept as the signed-in trainer's personal best record (false: the reason says why). */
+  saved: boolean;
+  /** It beat their stored best on at least one count. */
+  improved?: boolean;
   reason?: string;
   /** Names named inside the category's standard time. */
   counted: number;
-  /** A name is needed to post: send it back with this claim. */
-  claim?: string;
-  /** Where the run placed, per board it was posted to. */
-  places?: Partial<Record<NeaBoard, { position: number; total: number }>>;
+  /** Not signed in: their best can go on a profile once they are. */
+  signIn?: boolean;
 }

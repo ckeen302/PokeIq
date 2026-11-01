@@ -9,12 +9,10 @@ import { DEFAULT_SETTINGS, loadBests, loadSave, loadSettings, recordBest, storeS
 import { neaClock, neaShareText } from "@/lib/name-em-all/share";
 import { NEA_MODES, type NeaMode, type NeaResultResponse, type NeaTarget } from "@/lib/name-em-all/types";
 import { dlePlayerId } from "@/lib/dle-player";
-import { NAME_REJECTED, isCleanName } from "@/lib/name-filter";
-import { setTrainerName, useProgress } from "@/lib/progress";
 import { useAccount } from "@/lib/account";
 import { play, unlockAudio } from "@/lib/sound";
 import { Button } from "@/components/ui/button";
-import { NeaLeaderboard, NeaShareButton } from "./Leaderboard";
+import { NeaShareButton } from "./NeaShare";
 import { SlotGrid, Sprite, Toggle, groupSlots, type SlotState, type SpriteStyle } from "./parts";
 import { outsiderMap, useNameInput } from "./use-name-input";
 import { cn } from "@/lib/utils";
@@ -23,8 +21,8 @@ import { cn } from "@/lib/utils";
  * Name 'em All: type the name of every Pokémon in a category. Each one
  * fills its slot the instant it's spelled right. Setup (mode, timer, hints,
  * options, resume), the game (counter, clock, pause, name box, hints, the
- * grid), and the end (missed ones revealed and linked, share, ranked
- * boards).
+ * grid), and the end (missed ones revealed and linked, share, and the
+ * signed-in trainer's personal best kept for their profile).
  */
 
 export interface NameEmAllProps {
@@ -58,7 +56,6 @@ export function NameEmAll({ category, targets, outsiders, daily }: NameEmAllProp
   const matcher = useMemo(() => buildMatcher(targets), [targets]);
   const outsidersMap = useMemo(() => outsiderMap(outsiders), [outsiders]);
   const groups = useMemo(() => groupSlots(targets), [targets]);
-  const progress = useProgress();
   const account = useAccount();
 
   // ---- settings ---------------------------------------------------------------------
@@ -260,11 +257,6 @@ export function NameEmAll({ category, targets, outsiders, daily }: NameEmAllProp
   // ---- the end --------------------------------------------------------------------------
   const ranked = phase === "over" && settings.mode === "regular" && !flags.current.paused && !flags.current.hints && !flags.current.resumed && startToken.current !== null;
   const [post, setPost] = useState<{ state: "idle" | "posting" | "done" | "error"; res?: NeaResultResponse; error?: string }>({ state: "idle" });
-  const [boardTick, setBoardTick] = useState(0);
-  const [name, setName] = useState("");
-  useEffect(() => {
-    if (progress?.name && !name) setName(progress.name);
-  }, [progress?.name, name]);
 
   const submit = useCallback(
     async (body: Record<string, unknown>) => {
@@ -274,7 +266,6 @@ export function NameEmAll({ category, targets, outsiders, daily }: NameEmAllProp
         const data = (await res.json().catch(() => ({}))) as NeaResultResponse & { error?: string };
         if (!res.ok) throw new Error(data.error ?? "Couldn't post the result.");
         setPost({ state: "done", res: data });
-        setBoardTick((t) => t + 1);
       } catch (err) {
         setPost({ state: "error", error: err instanceof Error ? err.message : "Couldn't post the result." });
       }
@@ -284,13 +275,14 @@ export function NameEmAll({ category, targets, outsiders, daily }: NameEmAllProp
 
   useEffect(() => {
     if (phase !== "over" || !ranked || post.state !== "idle") return;
+    // No leaderboards: a signed-in trainer's checked run goes on their profile as a personal best.
+    if (!account.user) return setPost({ state: "done", res: { saved: false, signIn: true, counted: 0 } });
     void (async () => {
       const token = await startToken.current;
-      if (!token) return setPost({ state: "done", res: { ranked: false, reason: "Couldn't reach the server to time this run.", counted: 0 } });
-      const trainer = account.user ? undefined : progress?.name && isCleanName(progress.name) ? progress.name : undefined;
-      await submit({ scope, token, named, times, ms: Math.round(finalMs), ...(trainer && { name: trainer }) });
+      if (!token) return setPost({ state: "done", res: { saved: false, reason: "Couldn't reach the server to time this run.", counted: 0 } });
+      await submit({ scope, token, named, times, ms: Math.round(finalMs) });
     })();
-  }, [phase, ranked, post.state, submit, scope, named, times, finalMs, account.user, progress?.name]);
+  }, [phase, ranked, post.state, submit, scope, named, times, finalMs, account.user]);
 
   // ---- the grid ---------------------------------------------------------------------------
   const nameSet = useMemo(() => new Set(named), [named]);
@@ -348,14 +340,7 @@ export function NameEmAll({ category, targets, outsiders, daily }: NameEmAllProp
         onResume={() => saved && begin(saved)}
       />
     );
-    return (
-      <div className="space-y-6">
-        {setup}
-        <div className="mx-auto max-w-3xl">
-          <NeaLeaderboard scope={scope} standardLabel={neaClock(standard * 60_000)} daily={!!daily} />
-        </div>
-      </div>
-    );
+    return setup;
   }
 
   const over = phase === "over";
@@ -476,14 +461,7 @@ export function NameEmAll({ category, targets, outsiders, daily }: NameEmAllProp
           ranked={ranked}
           mode={settings.mode}
           post={post}
-          needName={post.state === "done" && !!post.res?.claim}
-          name={name}
-          setName={setName}
-          onPostName={() => {
-            if (!isCleanName(name)) return setPost((p) => ({ ...p, error: NAME_REJECTED }));
-            if (!progress?.name) setTrainerName(name.trim());
-            void submit({ claim: post.res!.claim, name: name.trim() });
-          }}
+          username={account.user?.username ?? null}
           onAgain={() => {
             setPost({ state: "idle" });
             setPhase("setup");
@@ -500,7 +478,7 @@ export function NameEmAll({ category, targets, outsiders, daily }: NameEmAllProp
           <div className="absolute inset-0 z-20 flex items-start justify-center rounded-lg bg-background/80 pt-16 backdrop-blur-md" data-testid="nea-paused">
             <div className="space-y-3 text-center">
               <p className="font-display text-3xl font-bold uppercase">Paused</p>
-              <p className="text-sm text-muted-foreground">The clock is stopped. Paused runs aren&apos;t ranked.</p>
+              <p className="text-sm text-muted-foreground">The clock is stopped. Paused runs don&apos;t count as personal bests.</p>
               <Button size="lg" onClick={resume} data-testid="nea-resume">
                 <Play className="h-4 w-4" aria-hidden /> Resume
               </Button>
@@ -512,7 +490,6 @@ export function NameEmAll({ category, targets, outsiders, daily }: NameEmAllProp
         </div>
       </div>
 
-      {over && <NeaLeaderboard scope={scope} standardLabel={neaClock(standard * 60_000)} daily={!!daily} refresh={boardTick} />}
     </div>
   );
 }
@@ -582,7 +559,7 @@ function Setup({
           <div className="min-w-0 flex-1">
             <p className="font-display text-lg font-bold uppercase">Pick up where you left off?</p>
             <p className="text-sm text-muted-foreground">
-              {saved.named.length}/{total} named in {neaClock(saved.elapsed)} ({NEA_MODES.find((m) => m.id === saved.settings.mode)?.label}). Resumed runs aren&apos;t ranked.
+              {saved.named.length}/{total} named in {neaClock(saved.elapsed)} ({NEA_MODES.find((m) => m.id === saved.settings.mode)?.label}). Resumed runs don&apos;t count as personal bests.
             </p>
           </div>
           <Button size="lg" variant="success" onClick={onResume} data-testid="nea-resume-saved">
@@ -662,7 +639,7 @@ function Setup({
           </Button>
           <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
             <Trophy className="h-3.5 w-3.5 text-warning" aria-hidden />
-            {daily ? "One ranked try a day: no hints, no pausing." : `Ranked runs: Regular mode, no hints, no pausing. The standard time is ${standard}:00.`}
+            {daily ? "One try a day for your best: no hints, no pausing." : `Personal bests: Regular mode, no hints, no pausing. The standard time is ${standard}:00.`}
           </p>
           {best && (
             <p className="hud-label" data-testid="nea-best">
@@ -690,10 +667,7 @@ function Results({
   ranked,
   mode,
   post,
-  needName,
-  name,
-  setName,
-  onPostName,
+  username,
   onAgain,
 }: {
   reason: OverReason;
@@ -706,10 +680,7 @@ function Results({
   ranked: boolean;
   mode: NeaMode;
   post: { state: "idle" | "posting" | "done" | "error"; res?: NeaResultResponse; error?: string };
-  needName: boolean;
-  name: string;
-  setName: (s: string) => void;
-  onPostName: () => void;
+  username: string | null;
   onAgain: () => void;
 }) {
   const missed = total - count;
@@ -745,7 +716,7 @@ function Results({
         {!ranked ? (
           <p className="text-muted-foreground">
             <Eye className="mr-1 inline h-3.5 w-3.5" aria-hidden />
-            Practice run: only Regular runs with no hints, pauses or resumes are ranked.
+            Practice run: only Regular runs with no hints, pauses or resumes count as personal bests.
           </p>
         ) : post.state === "posting" || post.state === "idle" ? (
           <p className="flex items-center justify-center gap-2 text-muted-foreground">
@@ -753,44 +724,24 @@ function Results({
           </p>
         ) : post.state === "error" ? (
           <p className="text-destructive">{post.error}</p>
-        ) : needName ? (
-          <form
-            className="flex flex-wrap items-center justify-center gap-2"
-            onSubmit={(e) => {
-              e.preventDefault();
-              onPostName();
-            }}
-          >
-            <span className="w-full text-muted-foreground">Add a trainer name to post this to the leaderboard:</span>
-            <input
-              aria-label="Your trainer name"
-              value={name}
-              maxLength={24}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Trainer name"
-              className="h-10 min-w-0 flex-1 rounded-md border border-input bg-background px-3 text-sm"
-            />
-            <Button type="submit" disabled={!name.trim()} data-testid="nea-post">
-              Post
-            </Button>
-            {post.error && <span className="w-full text-destructive">{post.error}</span>}
-          </form>
-        ) : post.res?.ranked ? (
-          <p className="text-success" data-testid="nea-placed">
-            Ranked!{" "}
-            {post.res.places?.clear && (
-              <>
-                #{post.res.places.clear.position} of {post.res.places.clear.total} for fastest clear.{" "}
-              </>
-            )}
-            {post.res.places?.count && (
-              <>
-                #{post.res.places.count.position} of {post.res.places.count.total} for most named.
-              </>
+        ) : post.res?.signIn ? (
+          <p className="text-muted-foreground" data-testid="nea-sign-in">
+            <Link href="/login" className="font-semibold text-screen hover:underline">
+              Sign in
+            </Link>{" "}
+            to keep your best on your trainer profile.
+          </p>
+        ) : post.res?.saved ? (
+          <p className="text-success" data-testid="nea-saved">
+            {post.res.improved ? "New best saved to your profile." : "Checked. Your best on your profile still stands."}{" "}
+            {username && (
+              <Link href={`/u/${encodeURIComponent(username)}#quiz-bests`} className="font-semibold text-screen hover:underline">
+                See it
+              </Link>
             )}
           </p>
         ) : (
-          <p className="text-muted-foreground">{post.res?.reason ?? "Not ranked."}</p>
+          <p className="text-muted-foreground">{post.res?.reason ?? "Not saved."}</p>
         )}
       </div>
     </section>
