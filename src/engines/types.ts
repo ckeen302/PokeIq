@@ -9,7 +9,7 @@ import type { Rng } from "@/lib/rng";
  * session seed when grading (see src/lib/server/session.ts).
  */
 
-export const MODULES = ["whos-that", "cry", "dex", "types", "higher-lower", "games", "anime", "competitive", "shiny", "mixed"] as const;
+export const MODULES = ["whos-that", "cry", "dex", "types", "higher-lower", "games", "anime", "competitive", "shiny", "zoom-reveal", "mixed"] as const;
 export type ModuleId = (typeof MODULES)[number];
 
 export const FORMATS = ["classic", "survival", "blitz", "adaptive"] as const;
@@ -19,11 +19,14 @@ export const DIFFICULTIES = ["easy", "medium", "hard"] as const;
 export type Difficulty = (typeof DIFFICULTIES)[number];
 
 /** Media the client may only reach through an opaque, encrypted token. */
-export type MediaKind = "silhouette" | "silhouette-zoom" | "artwork" | "cry";
+export type MediaKind = "silhouette" | "silhouette-zoom" | "artwork" | "cry" | "zoom-reveal";
 
 export interface MediaRef {
   kind: MediaKind;
   pokemonId: number;
+  /** Zoom Reveal: the step (1..6) and which of the Pokémon's start crops. */
+  step?: number;
+  crop?: number;
 }
 
 /** A side-by-side card (Higher or Lower). Names are public, so art is too. */
@@ -52,6 +55,8 @@ export interface Question {
   revealMedia?: MediaRef;
   /** Prior item difficulty on the PokéIQ rating scale (≈ Elo). */
   rating: number;
+  /** "name": answered by typing a Pokémon's name, with no options (Zoom Reveal). */
+  input?: "name";
 }
 
 export interface GenerateOptions {

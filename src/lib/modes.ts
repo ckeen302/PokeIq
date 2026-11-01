@@ -137,6 +137,15 @@ export const MODULE_INFO: Record<ModuleId, ModuleInfo> = {
     accent: "280 90% 70%",
     defaultFormat: "classic",
   },
+  "zoom-reveal": {
+    id: "zoom-reveal",
+    title: "Zoom Reveal",
+    tagline: "Name it from a close-up",
+    description: "An extreme close-up of a Pokémon's official artwork. Every miss zooms out a step; the fewer steps you need, the more points.",
+    emoji: "🔍",
+    accent: "186 84% 52%",
+    defaultFormat: "classic",
+  },
   mixed: {
     id: "mixed",
     title: "Mixed Bag",
@@ -148,7 +157,7 @@ export const MODULE_INFO: Record<ModuleId, ModuleInfo> = {
   },
 };
 
-export const PLAY_MODULES: ModuleId[] = ["whos-that", "cry", "dex", "types", "higher-lower", "games", "anime", "competitive", "shiny", "mixed"];
+export const PLAY_MODULES: ModuleId[] = ["whos-that", "cry", "dex", "types", "higher-lower", "games", "anime", "competitive", "shiny", "zoom-reveal", "mixed"];
 
 export const FORMAT_INFO: Record<QuizFormat, { title: string; description: string }> = {
   classic: { title: "Classic", description: "10 questions · 15s each" },
@@ -231,6 +240,13 @@ export const QUIZ_PRESETS: QuizPreset[] = [
     title: "Which Is the Real Shiny? Pokémon Shiny Quiz",
     h1: "Which Is the Real Shiny?",
     description: "One of four colourings is the real shiny, the rest are fakes. Can you tell? All 1,025 Pokémon, three difficulties.",
+  },
+  {
+    slug: "pokemon-zoom-quiz",
+    module: "zoom-reveal",
+    title: "Pokémon Zoom Quiz — Zoom Reveal",
+    h1: "Zoom Reveal",
+    description: "Name the Pokémon from an extreme close-up of its official artwork. Each miss zooms out one step, six in all, plus a daily one.",
   },
   {
     slug: "pokemon-anime-quiz",

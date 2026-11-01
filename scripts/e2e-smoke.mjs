@@ -264,6 +264,65 @@ step("real shiny quiz: three questions");
   if (seenImages.length < 3) errors.push(`real shiny: only ${seenImages.length}/3 questions had four image options`);
 }
 
+// Zoom Reveal: a close-up that zooms out one step per miss. No payload before the
+// answer names the Pokémon, each step's crop loads, and the round ends on a share line.
+step("zoom reveal: a round, the daily");
+{
+  const leaks = [];
+  const steps = [];
+  const watch = async (res) => {
+    const path = new URL(res.url()).pathname;
+    if (!/^\/api\/session(\/answer|\/next)?$/.test(path) || !res.ok()) return;
+    const body = await res.json().catch(() => null);
+    for (const q of [body?.question, body?.next]) {
+      if (q && /"answer"|"explanation"|official-artwork|githubusercontent|pokemonId/.test(JSON.stringify(q))) leaks.push(JSON.stringify(q).slice(0, 200));
+    }
+    if (body?.zoom) {
+      steps.push(body.zoom.step);
+      if (body.answer || body.revealUrl || body.explanation) leaks.push(`a zoom step carried the answer: ${JSON.stringify(body).slice(0, 200)}`);
+    }
+  };
+  const stageLoaded = (p) =>
+    p.waitForFunction(() => [...document.querySelectorAll('[data-testid="zoom-stage"] img')].some((im) => im.complete && im.naturalWidth > 0), null, { timeout: 15_000 }).then(() => true, () => false);
+  /** Skips until the round is over (a name first, from the suggestions). */
+  async function playZoomRound(p, shoot) {
+    await p.getByTestId("zoom-stage").waitFor();
+    if (!(await stageLoaded(p))) errors.push("zoom reveal: the first crop didn't load");
+    if (shoot) await p.screenshot({ path: `${OUT}/quiz-zoom-start.png` });
+    const box = p.getByRole("combobox", { name: /Guess a Pokémon/ });
+    await box.fill("Magikarp");
+    await p.getByRole("option").first().waitFor();
+    await box.press("Enter");
+    for (let i = 0; i < 12 && !(await p.getByTestId("zoom-share-line").isVisible()); i++) {
+      const skip = p.getByTestId("zoom-skip");
+      if ((await skip.isVisible()) && (await skip.isEnabled())) await skip.click();
+      await p.waitForTimeout(450);
+    }
+    const line = (await p.getByTestId("zoom-share-line").innerText()).trim();
+    if (!/^(🔍){0,5}(✅ [1-6]\/6|❌ X\/6)$/u.test(line)) errors.push(`zoom reveal: odd share line "${line}"`);
+    if (shoot) {
+      await p.waitForTimeout(900);
+      await p.screenshot({ path: `${OUT}/quiz-zoom-solved.png` });
+    }
+  }
+  page.on("response", watch);
+  await gotoSettled(page, `${BASE}/quiz/pokemon-zoom-quiz`);
+  await page.getByTestId("zoom-daily").waitFor();
+  await page.getByRole("button", { name: /^Start/ }).click();
+  await playZoomRound(page, true);
+  if (!steps.length && !(await page.getByText(/on step 1 of 6/).count())) errors.push("zoom reveal: no step ever zoomed out");
+  if (steps.some((s, i) => s !== (steps[i - 1] ?? 1) + 1 && s !== 2)) errors.push(`zoom reveal: steps out of order: ${steps.join(",")}`);
+  // The daily: one Pokémon, then its line stays on the card.
+  await gotoSettled(page, `${BASE}/quiz/pokemon-zoom-quiz`);
+  await page.getByTestId("zoom-daily-start").click();
+  await playZoomRound(page, false);
+  await page.getByRole("button", { name: /See results/ }).click();
+  await page.getByTestId("zoom-daily-line").waitFor();
+  await page.screenshot({ path: `${OUT}/quiz-zoom-daily.png` });
+  page.off("response", watch);
+  if (leaks.length) errors.push(`zoom reveal: ${leaks[0]}`);
+}
+
 step("blitz format");
 await gotoSettled(page, `${BASE}/quiz/pokemon-trivia-quiz?format=blitz`);
 await page.getByRole("button", { name: /^Start/ }).click();
@@ -1376,6 +1435,69 @@ await quizBlue.p.getByText(/Victory!|Defeat|Draw/).first().waitFor();
 await quizRed.p.screenshot({ path: `${OUT}/quiz-duel-summary.png`, fullPage: true });
 if (quizRed.seen.view?.revealed?.length !== 10) errors.push(`quiz duel ended after ${quizRed.seen.view?.revealed?.length} questions`);
 for (const { p } of quiz) await p.context().close();
+
+// A Zoom Reveal duel: each trainer zooms out on their own misses; the live view
+// shows their own step and the other's step number, never the answer.
+step("zoom reveal duel: ten Pokémon to the end");
+{
+  const zoom = [];
+  for (const name of ["Red", "Blue"]) {
+    const p = await newPage({ width: 1280, height: 900 });
+    const seen = { rev: -1, view: null };
+    p.on("response", async (res) => {
+      if (!/\/api\/duel(\/|$)/.test(res.url()) || !res.ok()) return;
+      const body = await res.json().catch(() => null);
+      const view = body?.view ?? body;
+      if (!view || typeof view.rev !== "number") return;
+      if (view.question && /"(answer|explanation|revealUrl|picks|choice|pokemonId)"|official-artwork/.test(JSON.stringify(view.question))) {
+        errors.push(`zoom duel question leaked before the reveal: ${JSON.stringify(view.question).slice(0, 300)}`);
+      }
+      if (view.rev >= seen.rev) Object.assign(seen, { rev: view.rev, view });
+    });
+    zoom.push({ p, name, seen });
+  }
+  const [zRed, zBlue] = zoom;
+  await gotoSettled(zRed.p, `${BASE}/quiz/pokemon-zoom-quiz`);
+  await zRed.p.getByLabel("Your trainer name").fill("Red");
+  await clickUntilUrl(zRed.p, zRed.p.getByRole("button", { name: /Create duel/ }), /\/quiz\/duel\/[a-z2-9]{8}$/);
+  const zUrl = zRed.p.url();
+  await gotoSettled(zBlue.p, zUrl);
+  await zBlue.p.getByLabel("Your trainer name").fill("Blue");
+  await zBlue.p.getByRole("button", { name: /Join duel/ }).click();
+  await zRed.p.getByText("Blue").first().waitFor();
+  await Promise.all(zoom.map(({ p }) => p.getByRole("button", { name: /^Ready$/ }).click()));
+  async function playZoomDuel({ p, name, seen }, shoot) {
+    const next = p.getByRole("button", { name: /Next question|See results/ });
+    for (let i = 0; i < 1500; i++) {
+      if ((await next.isVisible()) && (await next.isEnabled())) {
+        if (shoot) await p.screenshot({ path: `${OUT}/quiz-zoom-duel-reveal.png`, fullPage: true });
+        shoot = false;
+        const label = await next.innerText();
+        await next.click({ timeout: 5_000 }).catch(() => {});
+        if (/results/i.test(label)) return;
+        await p.waitForTimeout(300);
+        continue;
+      }
+      const live = seen.view?.question;
+      const skip = p.getByTestId("zoom-skip");
+      if (live?.question?.zoom && !live.yours && (await skip.isVisible()) && (await skip.isEnabled())) {
+        if (shoot && name === "Red" && live.index === 0 && live.question.zoom.step === 2) await p.screenshot({ path: `${OUT}/quiz-zoom-duel-question.png` });
+        await skip.click({ timeout: 5_000 }).catch(() => {});
+        for (let w = 0; w < 30 && seen.view?.question?.question?.zoom?.step === live.question.zoom.step && !seen.view.question.yours; w++) await p.waitForTimeout(100);
+        continue;
+      }
+      await p.waitForTimeout(150);
+    }
+    throw new Error(`${name}'s zoom duel didn't end`);
+  }
+  await Promise.all([playZoomDuel(zRed, true), playZoomDuel(zBlue, false)]);
+  await zRed.p.getByText(/Victory!|Defeat|Draw/).first().waitFor();
+  await zRed.p.screenshot({ path: `${OUT}/quiz-zoom-duel-summary.png`, fullPage: true });
+  if (zRed.seen.view?.revealed?.length !== 10) errors.push(`zoom duel ended after ${zRed.seen.view?.revealed?.length} questions`);
+  const steps = zRed.seen.view?.revealed?.[0]?.picks?.[0]?.step;
+  if (steps !== 6) errors.push(`zoom duel: Red's first pick should end on step 6, got ${steps}`);
+  for (const { p } of zoom) await p.context().close();
+}
 
 // Matchmaking: two trainers press "Find an opponent" for the same game, with no link, and land in one duel
 // that starts on its own. Red searches first (and waits), Blue's search pairs them.
