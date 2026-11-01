@@ -2649,6 +2649,8 @@ if (me.enabled) {
   const bestRows = await page.getByTestId("profile-quiz-best").count();
   if (bestRows < 1) errors.push(`profile: no quiz personal bests after this run's quizzes (${bestRows} rows)`);
   await page.getByTestId("profile-quiz-bests").screenshot({ path: `${OUT}/profile-quiz-bests.png` });
+  await gotoSettled(page, `${BASE}/trainer`);
+  await page.getByText(`Signed in as`).waitFor();
 
   await page.getByRole("button", { name: "Sign out" }).click();
   await page.getByRole("link", { name: "Sign in" }).first().waitFor();
