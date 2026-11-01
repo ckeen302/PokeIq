@@ -64,7 +64,7 @@ html.tl-locked, html.tl-locked body { overflow: hidden; overscroll-behavior: non
 @media (max-width: 640px) { .tl-era-t { font-size: 90px; } }
 
 /* A game's starters and box legendaries, standing on the card's top edge. */
-.tl-card-mons { position: absolute; right: 14px; bottom: calc(100% - 30px); display: flex; align-items: flex-end; pointer-events: none; }
+.tl-card-mons { display: flex; align-items: flex-end; pointer-events: none; }
 .tl-mon { display: block; object-fit: contain; opacity: 0; transform: translateY(10px) scale(.9); transition: opacity .45s ease, transform .5s cubic-bezier(.2,.9,.25,1.2);
   filter: drop-shadow(0 6px 8px rgb(0 0 0 / .55)) drop-shadow(0 0 14px hsl(var(--lane) / .35)); }
 .tl-mon.is-in { opacity: 1; transform: none; }

@@ -276,8 +276,12 @@ export function TimelineExperience({ entries, eraStarts, initialId = null, child
     };
     raf = requestAnimationFrame(tick);
     const stop = (e: Event) => {
-      if ((e.target as HTMLElement | null)?.closest?.("[data-tour-toggle]")) return;
-      if (e instanceof KeyboardEvent && ["Shift", "Control", "Alt", "Meta"].includes(e.key)) return;
+      // The Tour button toggles it itself (a click, or Enter / Space while it has focus).
+      const onToggle = !!(e.target as HTMLElement | null)?.closest?.("[data-tour-toggle]");
+      if (e instanceof KeyboardEvent) {
+        if (["Shift", "Control", "Alt", "Meta"].includes(e.key)) return;
+        if (onToggle && (e.key === "Enter" || e.key === " ")) return;
+      } else if (onToggle) return;
       setTouring(false);
     };
     const evs = ["pointerdown", "wheel", "keydown", "touchstart"] as const;

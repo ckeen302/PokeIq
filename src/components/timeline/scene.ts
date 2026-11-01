@@ -198,7 +198,9 @@ export function createScene(host: HTMLElement, entries: SceneEntry[], eras: Scen
       void main(){
         vec3 a,b; eraAt(vP.z,a,b);
         float yr=${T0.toFixed(2)}-vP.z/${YS.toFixed(1)};
-        float year=line(yr,1.2), month=line(yr*12.,.8)*.35, col=line(vP.x/1.35,.8)*.22;
+        // The fine grid fades right under the camera, where it would alias into streaks at a grazing angle.
+        float near=smoothstep(3.,11.,distance(vP.xz,cameraPosition.xz));
+        float year=line(yr,1.2), month=line(yr*12.,.8)*.35*near, col=line(vP.x/1.35,.8)*.22*near;
         float edge=smoothstep(22.,15.,abs(vP.x));
         vec3 c=mix(a,b,.5+.5*sin(vP.x*.12+yr*.6))*(year*.9+month*.35+col*.5)*.55;
         for(int i=0;i<${MAX_LANES};i++){
@@ -289,7 +291,7 @@ export function createScene(host: HTMLElement, entries: SceneEntry[], eras: Scen
     uniforms: U, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
     vertexShader: `attribute float aBright; varying vec3 vP; varying float vB; void main(){ vP=(modelMatrix*vec4(position,1.)).xyz; vB=aBright; gl_Position=projectionMatrix*viewMatrix*vec4(vP,1.); }`,
     fragmentShader: `${FADE_GLSL}${ERA_GLSL} varying vec3 vP; varying float vB;
-      void main(){ vec3 a,b; eraAt(vP.z,a,b); float lo=smoothstep(-2.,${AXIS_Y.toFixed(1)}+2.,vP.y); gl_FragColor=vec4(mix(a,b,lo)*vB*fade(vP.z),1.); }`,
+      void main(){ vec3 a,b; eraAt(vP.z,a,b); float lo=smoothstep(-2.,${AXIS_Y.toFixed(1)}+2.,vP.y); gl_FragColor=vec4(mix(a,b,lo)*vB*fade(vP.z)*smoothstep(3.,9.,distance(vP,cameraPosition)),1.); }`,
   });
   {
     const pts: number[] = [], bright: number[] = [];
@@ -420,7 +422,7 @@ export function createScene(host: HTMLElement, entries: SceneEntry[], eras: Scen
       lastT = e.t;
     }
   }
-  type Card = { e: SceneEntry; obj: CSS3DObject; el: HTMLElement; lane: number; level: number; shown: boolean; op: number; sc: number; art: boolean };
+  type Card = { e: SceneEntry; obj: CSS3DObject; el: HTMLElement; lane: number; level: number; shown: boolean; op: number; sc: number; art: boolean; mons: CSS3DObject | null; placed: boolean };
   const artSize = (window.devicePixelRatio || 1) > 1.4 ? 256 : 160;
   const cards: Card[] = entries.map((e) => {
     const el = document.createElement("div");
@@ -432,24 +434,43 @@ export function createScene(host: HTMLElement, entries: SceneEntry[], eras: Scen
     el.style.setProperty("--lane", lanes.find((l) => l.id === e.lane)!.color);
     // A game's starters and box legendaries stand on its card: official artwork, fetched when the card first comes into view.
     const mons = (e.mons ?? []).slice(0, 5);
-    const monsHtml = mons.length
-      ? `<span class="tl-card-mons" aria-hidden="true">${mons
-          .map((m) => `<img class="tl-mon${m.legend ? " is-legend" : ""}" data-src="${artUrl(m.id, artSize)}" alt="" width="${m.legend ? 132 : 104}" height="${m.legend ? 132 : 104}" decoding="async" draggable="false">`)
-          .join("")}</span>`
-      : "";
     if (mons.length) {
       el.classList.add("has-mons");
       el.setAttribute("aria-label", `${e.title}, ${e.date}. ${mons.map((m) => m.name).join(", ")}`);
     }
-    el.innerHTML = `${monsHtml}<span class="tl-card-top"><span class="tl-card-lane">${esc(e.laneLabel)}</span><span class="tl-card-date">${esc(e.date)}</span></span><span class="tl-card-title">${esc(e.title)}</span><span class="tl-card-meta">${esc(e.meta)}</span>`;
+    el.innerHTML = `<span class="tl-card-top"><span class="tl-card-lane">${esc(e.laneLabel)}</span><span class="tl-card-date">${esc(e.date)}</span></span><span class="tl-card-title">${esc(e.title)}</span><span class="tl-card-meta">${esc(e.meta)}</span>`;
     const obj = new CSS3DObject(el);
     obj.visible = false;
     cssScene.add(obj);
-    return { e, obj, el, lane: lanes.findIndex((l) => l.id === e.lane), level: stackOf.get(e.id) ?? 0, shown: false, op: -1, sc: -1, art: !mons.length };
+    // The Pokémon are their own 3D object, a child of the card that stands on its top edge, rather than
+    // overflow of the card's own box (which the browser may clip when the card is near and large).
+    let monsObj: CSS3DObject | null = null;
+    if (mons.length) {
+      const m = document.createElement("div");
+      m.className = "tl-card-mons";
+      m.setAttribute("aria-hidden", "true");
+      m.style.setProperty("--lane", el.style.getPropertyValue("--lane"));
+      m.innerHTML = mons
+        .map((x) => `<img class="tl-mon${x.legend ? " is-legend" : ""}" data-src="${artUrl(x.id, artSize)}" alt="" width="${x.legend ? 132 : 104}" height="${x.legend ? 132 : 104}" decoding="async" draggable="false">`)
+        .join("");
+      monsObj = new CSS3DObject(m);
+      m.style.pointerEvents = "none";
+      obj.add(monsObj);
+    }
+    return { e, obj, el, lane: lanes.findIndex((l) => l.id === e.lane), level: stackOf.get(e.id) ?? 0, shown: false, op: -1, sc: -1, art: !mons.length, mons: monsObj, placed: false };
   });
+  /** Stands the Pokémon on the card's top edge, right-aligned, once both have been laid out. */
+  function placeMons(c: Card) {
+    const m = c.mons!.element;
+    const h = c.el.offsetHeight, w = c.el.offsetWidth, mw = m.offsetWidth, mh = m.offsetHeight;
+    if (!h || !mw) return;
+    // In the card's own pixels: its centre is the origin, y up.
+    c.mons!.position.set(w / 2 - 14 - mw / 2, h / 2 - 30 + mh / 2, 2);
+    c.placed = true;
+  }
   function loadArt(c: Card) {
     c.art = true;
-    c.el.querySelectorAll<HTMLImageElement>("img[data-src]").forEach((img) => {
+    c.mons?.element.querySelectorAll<HTMLImageElement>("img[data-src]").forEach((img) => {
       img.onload = () => img.classList.add("is-in");
       img.src = img.dataset.src!;
       img.removeAttribute("data-src");
@@ -739,7 +760,13 @@ export function createScene(host: HTMLElement, entries: SceneEntry[], eras: Scen
       const sc = cardScale() * (0.62 + 0.38 * nearK);
       if (Math.abs(sc - c.sc) > 1e-6) { c.obj.scale.setScalar(sc); c.sc = sc; }
       const op = Math.min(1, (far - d) / 60) * nearK * la;
-      if (Math.abs(op - c.op) > 0.015) { c.el.style.opacity = op.toFixed(3); c.op = op; c.el.style.pointerEvents = op > 0.3 ? "auto" : "none"; }
+      if (Math.abs(op - c.op) > 0.015) {
+        c.el.style.opacity = op.toFixed(3);
+        if (c.mons) c.mons.element.style.opacity = c.el.style.opacity;
+        c.op = op;
+        c.el.style.pointerEvents = op > 0.3 ? "auto" : "none";
+      }
+      if (c.mons && !c.placed) placeMons(c);
     }
     // Region maps: loaded as they come up, brightest while the camera is over them.
     for (const m of regionMaps) {

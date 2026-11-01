@@ -63,7 +63,7 @@ function FocusHeader({ entry }: { entry: TimelineEntry }) {
       <p className="hud-label text-screen">
         <Link href="/pokedex/timeline" className="hover:text-foreground">Pokémon Timeline</Link> · {lane.label} · {era.device}
       </p>
-      <h1 className="font-display text-3xl font-bold uppercase tracking-tight sm:text-5xl">{entry.title}</h1>
+      <h1 className="break-words font-display text-3xl font-bold uppercase tracking-tight sm:text-5xl">{entry.title}</h1>
       <dl className="flex flex-wrap justify-center gap-x-5 gap-y-1 text-sm">
         {dateRows(entry).map((r) => (
           <div key={r.label} className="flex gap-1.5">
