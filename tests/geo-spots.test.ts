@@ -1,6 +1,6 @@
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import path from "node:path";
-import { describe, expect, it } from "vitest";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { GEO_SPOT_FALL_PX, GEO_SPOT_FLOOR, GEO_SPOT_PERFECT_PX, geoSpotScore } from "@/lib/geo-spot-score";
 import { GEO_MAX_ROUND_SCORE, WORLD_REGION, type GeoSpec } from "@/lib/geo-types";
 import { answerFor, gradeGeo, measureGuess, planRounds, readGeo, scoredSpotCount, startGeo } from "@/lib/server/geo";
@@ -17,6 +17,16 @@ import { matchShot, nativeScale, shrink, type Gray } from "../scripts/geo/spot-m
 type Row = [number, number, number, string, boolean];
 const ROWS = { ...(spots3d as unknown as Record<string, Row>), ...(spots2d as unknown as Record<string, Row>) };
 const world = (geo as unknown as { world: { map: { width: number; height: number }; locations: { name: string; region: string; parent?: string; pin?: [number, number]; mask?: [number, number][]; shots: { id: string; game: string }[] }[] } }).world;
+
+// The spot tests run with exact-spot scoring switched on (it ships off; see geoExactSpotsOn).
+const switchWas = process.env.POKEIQ_GEO_EXACT_SPOTS;
+beforeAll(() => {
+  process.env.POKEIQ_GEO_EXACT_SPOTS = "1";
+});
+afterAll(() => {
+  if (switchWas === undefined) delete process.env.POKEIQ_GEO_EXACT_SPOTS;
+  else process.env.POKEIQ_GEO_EXACT_SPOTS = switchWas;
+});
 
 describe("exact-spot scoring curve", () => {
   it("is perfect only within a few map pixels, then falls fast", () => {
@@ -104,6 +114,22 @@ describe("spots stay server-side until the guess", () => {
     };
     walk(path.join(process.cwd(), "src"));
     expect(offenders).toEqual([]);
+  });
+
+  it.runIf(!!scored)("with the switch off (the default), rounds are graded by area and no spot is revealed", () => {
+    const saved = process.env.POKEIQ_GEO_EXACT_SPOTS;
+    delete process.env.POKEIQ_GEO_EXACT_SPOTS;
+    try {
+      const [id] = scored!;
+      const loc = world.locations.find((l) => l.shots.some((s) => s.id === id))!;
+      const round = { location: loc.name, region: loc.region, shot: id, game: loc.shots.find((s) => s.id === id)!.game };
+      const spec = { region: WORLD_REGION };
+      const answer = answerFor(spec, round);
+      expect(answer.spot).toBeUndefined();
+      expect(measureGuess(spec, round, answer.pin[0], answer.pin[1]).score).toBe(GEO_MAX_ROUND_SCORE);
+    } finally {
+      if (saved !== undefined) process.env.POKEIQ_GEO_EXACT_SPOTS = saved;
+    }
   });
 
   it.runIf(!!scored)("the graded answer reveals the spot, and the pin is scored against it", () => {

@@ -653,8 +653,15 @@ const SPOTS: ReadonlyMap<string, [number, number]> = (() => {
 /** How many shots have a scored spot (tests and stats). */
 export const scoredSpotCount = () => SPOTS.size;
 
-/** A shot's scored spot on a map, in the map's own 0–1 coordinates, or null. */
+/**
+ * Exact-spot scoring is off unless POKEIQ_GEO_EXACT_SPOTS=1 (Vercel env): the spots stay ready,
+ * and every round is graded by area until the switch is flipped.
+ */
+export const geoExactSpotsOn = () => process.env.POKEIQ_GEO_EXACT_SPOTS === "1";
+
+/** A shot's scored spot on a map, in the map's own 0–1 coordinates, or null (always null while the switch is off). */
 function spotOn(region: Region, shot: string): [number, number] | null {
+  if (!geoExactSpotsOn()) return null;
   const spot = SPOTS.get(shot);
   if (!spot) return null;
   const [x0, y0, x1, y1] = region.map.box;
