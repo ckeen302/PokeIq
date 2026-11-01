@@ -68,6 +68,8 @@ export function ZoomDaily() {
             const entry = { step, solved: result.correct > 0 };
             saveResult(playDate, entry);
             setResults((r) => ({ ...r, [playDate]: entry }));
+            // Back to the day's card, which now holds the result.
+            window.requestAnimationFrame(() => document.querySelector('[data-testid="zoom-daily"]')?.scrollIntoView({ block: "center", behavior: "smooth" }));
           }}
         />
       </div>

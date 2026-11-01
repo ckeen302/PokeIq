@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { motion } from "framer-motion";
 import { FastForward, X } from "lucide-react";
 import { GuessInput, type NameEntry } from "@/components/pokedle/parts";
@@ -56,14 +56,21 @@ export function ZoomPlay({
   const line = outcome ? zoomShareLine(outcome.step, outcome.solved) : null;
   const step = outcome ? outcome.step : view.step;
   const last = view.step === ZOOM_STEPS;
+  // The picture and the name box belong on screen together.
+  const root = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    root.current?.scrollIntoView({ block: "nearest", behavior: "smooth" });
+  }, []);
 
   return (
-    <div className="space-y-4">
+    <div ref={root} className="scroll-mb-4 space-y-4 sm:grid sm:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] sm:items-center sm:gap-5 sm:space-y-0">
       <ZoomStage
         view={view}
         reveal={outcome?.revealUrl ? { url: outcome.revealUrl, from: outcome.revealFrom } : null}
         label={outcome?.answer}
+        className="sm:max-w-none"
       />
+      <div className="space-y-4">
       <div className="space-y-1.5">
         <ZoomSteps step={step} steps={view.steps} done={outcome ? (outcome.solved ? "solved" : "missed") : undefined} />
         {!outcome && (
@@ -90,7 +97,7 @@ export function ZoomPlay({
       )}
 
       {outcome && line ? (
-        <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
+        <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col items-center gap-3">
           <p className="font-display text-2xl tracking-wide" data-testid="zoom-share-line" aria-label={outcome.solved ? `Named on step ${outcome.step} of ${ZOOM_STEPS}` : "Not named in six steps"}>
             {line}
           </p>
@@ -107,11 +114,11 @@ export function ZoomPlay({
           {waiting}
         </p>
       ) : names ? (
-        <div className="flex items-start gap-2">
-          <div className="min-w-0 flex-1">
+        <div className="flex items-start gap-2 sm:flex-col sm:items-stretch">
+          <div className="min-w-0 flex-1 sm:flex-none">
             <GuessInput names={names} exclude={exclude} disabled={locked} placeholder="Type a Pokémon…" onGuess={(entry) => (locked ? false : (onGuess(entry), true))} />
           </div>
-          <Button type="button" variant="outline" className="h-12 shrink-0 px-3 sm:px-4" disabled={locked} onClick={onSkip} data-testid="zoom-skip">
+          <Button type="button" variant="outline" className="h-12 shrink-0 px-3 sm:h-10 sm:px-4" disabled={locked} onClick={onSkip} data-testid="zoom-skip">
             <FastForward className="h-4 w-4" aria-hidden />
             {last ? "Give up" : "Skip"}
           </Button>
@@ -119,6 +126,7 @@ export function ZoomPlay({
       ) : (
         <Skeleton className="h-12 w-full" />
       )}
+      </div>
     </div>
   );
 }

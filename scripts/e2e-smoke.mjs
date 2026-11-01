@@ -289,7 +289,7 @@ step("zoom reveal: a round, the daily");
     await p.getByTestId("zoom-stage").waitFor();
     if (!(await stageLoaded(p))) errors.push("zoom reveal: the first crop didn't load");
     if (shoot) await p.screenshot({ path: `${OUT}/quiz-zoom-start.png` });
-    const box = p.getByRole("combobox");
+    const box = p.getByRole("combobox", { name: /Guess a Pokémon/ });
     await box.fill("Magikarp");
     await p.getByRole("option").first().waitFor();
     await box.press("Enter");

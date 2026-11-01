@@ -3,7 +3,8 @@
 import { useState } from "react";
 import { DIFFICULTIES, type Difficulty, type ModuleId } from "@/engines/types";
 import { MODULE_INFO, PLAY_MODULES } from "@/lib/modes";
-import { QUIZ_DUEL_QUESTIONS, QUIZ_DUEL_QUESTION_MS, pvpHref } from "@/lib/pvp-types";
+import { QUIZ_DUEL_QUESTIONS, QUIZ_DUEL_QUESTION_MS, ZOOM_DUEL_QUESTION_MS, pvpHref } from "@/lib/pvp-types";
+import { ZOOM_POINTS, ZOOM_STEPS } from "@/lib/zoom-reveal";
 import { NewDuelCard } from "@/components/duel/NewDuelCard";
 import { cn } from "@/lib/utils";
 
@@ -16,7 +17,11 @@ export function QuizDuelCard({ module: initial = "whos-that", difficulty: initia
       body={{ kind: "quiz", module, difficulty }}
       href={(code) => pvpHref("quiz", code)}
       heading={`Head to head · ${MODULE_INFO[module].title}`}
-      blurb={`The same ${QUIZ_DUEL_QUESTIONS} questions for both of you, ${QUIZ_DUEL_QUESTION_MS / 1000} seconds each. A right answer scores 100, plus up to 50 for speed; the most points wins. Send your friend the link and press Ready.`}
+      blurb={
+        module === "zoom-reveal"
+          ? `The same ${QUIZ_DUEL_QUESTIONS} close-ups for both of you, ${ZOOM_DUEL_QUESTION_MS / 1000} seconds each. Named on step 1 scores ${ZOOM_POINTS[0]}, down to ${ZOOM_POINTS[ZOOM_STEPS - 1]} on step ${ZOOM_STEPS}; the most points wins. Send your friend the link and press Ready.`
+          : `The same ${QUIZ_DUEL_QUESTIONS} questions for both of you, ${QUIZ_DUEL_QUESTION_MS / 1000} seconds each. A right answer scores 100, plus up to 50 for speed; the most points wins. Send your friend the link and press Ready.`
+      }
     >
       <div className="flex flex-wrap items-end gap-3 pt-1">
         <label className="space-y-1">
