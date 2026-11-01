@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { motion, useReducedMotion } from "framer-motion";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { Crown, Eye, Heart, Link2, Loader2, LogOut, Play, RotateCcw, Swords, UserMinus, Users, X } from "lucide-react";
 import type { DuelEmote } from "@/lib/pvp-types";
 import type { TauntId } from "@/lib/trainer/taunts";
@@ -28,6 +28,8 @@ import {
   type PartyView,
 } from "@/lib/geo-party";
 import { play, unlockAudio } from "@/lib/sound";
+import { stopPressure } from "@/lib/guessr-pressure";
+import { useGuessrPressure } from "@/lib/use-guessr-pressure";
 import { shareOrCopy } from "@/lib/share";
 import { useProgress } from "@/lib/progress";
 import { NAME_REJECTED, isCleanName } from "@/lib/name-filter";
@@ -39,7 +41,7 @@ import { DuelGone, DuelLoading, DuelNotice, seconds } from "@/components/duel/Du
 import { CopyFallback } from "@/components/quiz/CopyFallback";
 import { GeoMap, LINE_DRAW_MS, mapAspect, type MapPin, type RevealedRound } from "./GeoMap";
 import { CountdownPill, FullscreenButton, GameShell, GuessButton, MapDock } from "./GameShell";
-import { EmoteButton, LivePill } from "./DuelHud";
+import { EmoteButton, LivePill, OpponentGuessedBar } from "./DuelHud";
 import { useDuelLive } from "./use-duel-live";
 import { shotFit } from "./ShotCarousel";
 import { ReportShot } from "./ReportShot";
@@ -80,7 +82,7 @@ export function GeoParty({ code, regions }: { code: string; regions: GeoRegionIn
   }, [endAt, liveStatus, refresh]);
   const [pick, setPick] = useState<MapPin | null>(null);
   const [summary, setSummary] = useState(false);
-  const heard = useRef({ tick: -1, end: false });
+  const heard = useRef({ end: false });
   const aim = useRef({ at: 0, timer: 0 as number | undefined });
 
   const roundIndex = view?.round?.index;
@@ -98,14 +100,20 @@ export function GeoParty({ code, regions }: { code: string; regions: GeoRegionIn
   const me = view?.you ?? null;
   const playingNow = !!live && me !== null && live.playing[me];
 
-  const leftS = live ? seconds(live.endsAt - now) : -1;
-  useEffect(() => {
-    if (!live || !playingNow || live.yours || leftS < 0 || leftS > DUEL_COUNTDOWN_FLASH_MS / 1000) return;
-    if (heard.current.tick === leftS) return;
-    heard.current.tick = leftS;
-    if (leftS > 0) play("countdown");
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- once per second
-  }, [leftS]);
+  // The pressure: an alarm when the first pin starts the countdown, then a tension bed until you guess
+  // or the round closes. Without a countdown, the round limit's last ten seconds.
+  const pressureMs = live?.countdown ? (view?.settings.countdownSeconds ?? 15) * 1000 : 10_000;
+  const pressureLeft = live ? Math.min(live.endsAt - now, live.countdown ? pressureMs : (view?.settings.roundSeconds ?? 0) * 1000) : 0;
+  useGuessrPressure({
+    active: !!live && playingNow && !live.yours && pressureLeft > 0 && pressureLeft <= pressureMs,
+    leftMs: pressureLeft,
+    totalMs: pressureMs,
+    flashMs: DUEL_COUNTDOWN_FLASH_MS,
+    level: 1,
+    cue: !!live?.countdown,
+    duel: true,
+    round: live?.index,
+  });
 
   useEffect(() => {
     if (!view?.end || heard.current.end || !sawPlay) return;
@@ -116,6 +124,7 @@ export function GeoParty({ code, regions }: { code: string; regions: GeoRegionIn
   async function guess() {
     if (!live || !pick || live.yours || busy || !playingNow) return;
     unlockAudio();
+    stopPressure();
     play("guess");
     await act({ action: "guess", round: live.index, ...pick });
   }
@@ -251,6 +260,9 @@ export function GeoParty({ code, regions }: { code: string; regions: GeoRegionIn
     const locked = live.yours ?? null;
     const timeUp = left <= 0;
     const waiting = live.playing.filter((on, s) => on && !live.guessed[s]).length;
+    // Who started the countdown, for the "they guessed" bar ("2 trainers" once several have).
+    const others = live.guessed.flatMap((g, s) => (g && s !== me ? [s] : []));
+    const firstIn = others.length > 1 ? `${others.length} trainers` : others.length === 1 ? (view.players[others[0]]?.name ?? "A trainer") : undefined;
     const mates = (live.mates ?? []).flatMap((m, s) => (m ? [{ x: m.x, y: m.y, color: seatColor(view, s), image: seatPin(view, s), label: `${view.players[s].name}${m.locked ? " ✓" : ""}` }] : []));
     return (
       <GameShell>
@@ -258,6 +270,7 @@ export function GeoParty({ code, regions }: { code: string; regions: GeoRegionIn
           <div className="relative flex h-full flex-col">
             <PartyBand view={view} round={live.index + 1} below={<CountdownPill ms={left} totalMs={totalMs} urgentMs={live.countdown ? DUEL_COUNTDOWN_FLASH_MS : 10_000} testId="party-clock" />} />
             <div className="relative min-h-0 flex-1">
+              <AnimatePresence>{live.countdown && playingNow && !locked && !timeUp && firstIn !== undefined && <OpponentGuessedBar name={firstIn} leftMs={left} totalMs={totalMs} mine={false} />}</AnimatePresence>
               <div className="absolute inset-0">
                 {notice && <div className="absolute inset-x-0 top-12 z-30 px-4">{notice}</div>}
                 <div className="screen relative h-full w-full overflow-hidden rounded-none">

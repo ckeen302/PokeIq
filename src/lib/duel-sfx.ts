@@ -4,18 +4,22 @@ import { useSyncExternalStore } from "react";
 import { play, unlockAudio } from "./sound";
 
 /**
- * Duel sound effects (a guess, a close guess, a solve, a win, the last ten
- * seconds, the rival's moves): off until the trainer turns them on, and
- * remembered on this device. The site-wide mute still wins.
+ * Duel sound effects (a guess, a close guess, a solve, a win, the
+ * countdown's pressure, the rival's moves): on by default, following the
+ * site's sound toggle. A trainer can still turn them off for duels, and
+ * that choice is remembered on this device. The site-wide mute always wins.
  */
 
 const KEY = "pokeiq-duel-sfx";
 const listeners = new Set<() => void>();
-let fallback = false;
+let fallback = true;
 
-function read(): boolean {
+/** Whether duel sounds are on for this trainer (on unless they turned them off). */
+export function duelSfxOn(): boolean {
+  if (typeof window === "undefined") return true;
   try {
-    return window.localStorage.getItem(KEY) === "1";
+    const stored = window.localStorage.getItem(KEY);
+    return stored === null ? fallback : stored !== "0";
   } catch {
     return fallback;
   }
@@ -40,10 +44,10 @@ function subscribe(listener: () => void) {
 }
 
 export function useDuelSfx(): boolean {
-  return useSyncExternalStore(subscribe, read, () => false);
+  return useSyncExternalStore(subscribe, duelSfxOn, () => true);
 }
 
-/** Plays a duel sound, if the trainer turned them on. */
+/** Plays a duel sound, unless the trainer turned them off (or the site is muted). */
 export function sfx(kind: Parameters<typeof play>[0]) {
-  if (typeof window !== "undefined" && read()) play(kind);
+  if (typeof window !== "undefined" && duelSfxOn()) play(kind);
 }

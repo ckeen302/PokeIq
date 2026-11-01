@@ -10,6 +10,8 @@ import type { DuelEmote } from "@/lib/pvp-types";
 import { DUEL_COUNTDOWN_FLASH_MS, countdownAfterGuess } from "@/lib/geo-duel-rules";
 import type { GeoAnswer, GeoRegionInfo } from "@/lib/geo-types";
 import { play, unlockAudio } from "@/lib/sound";
+import { stopPressure } from "@/lib/guessr-pressure";
+import { useGuessrPressure } from "@/lib/use-guessr-pressure";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { useDuel } from "@/components/duel/use-duel";
 import { DuelGone, DuelLoading, DuelLobby, DuelNotice, DuelVisitor, MatchedNote, SEAT_COLORS, SeatDot, seconds } from "@/components/duel/DuelParts";
@@ -73,7 +75,7 @@ export function GeoDuel({ code, regions }: GeoDuelProps) {
   const [pick, setPick] = useState<MapPin | null>(null);
   const [zoomed, setZoomed] = useState(false);
   const [summary, setSummary] = useState(false);
-  const heard = useRef({ theirGuess: false, end: false, tick: -1 });
+  const heard = useRef({ end: false });
 
   // A new round: a fresh pin.
   const roundIndex = view?.round?.index;
@@ -83,13 +85,10 @@ export function GeoDuel({ code, regions }: GeoDuelProps) {
     setError(null);
   }, [roundIndex, setError]);
 
-  // Sounds: the opponent locking in, the countdown's last seconds, and a forfeit's result.
+  // A forfeit's result. (The opponent locking in sounds the countdown's alarm: see the pressure below.)
   useEffect(() => {
     if (!view || view.you === null) return;
     const h = heard.current;
-    const theirGuess = !!view.round?.guessed[1 - view.you];
-    if (theirGuess && !h.theirGuess && !view.round?.yours) play("ping");
-    h.theirGuess = theirGuess;
     // A forfeit skips the last reveal, so its result sounds straight away.
     if (view.end?.reason === "left" && !h.end && sawPlay) play(view.end.winner === view.you ? "matchwin" : "matchlose");
     h.end = !!view.end;
@@ -108,19 +107,25 @@ export function GeoDuel({ code, regions }: GeoDuelProps) {
   const last = view?.revealed[view.revealed.length - 1];
   const revealing = !!view && view.status === "playing" && !view.round && !!last;
 
-  // The last five seconds tick.
-  const leftS = live ? seconds(live.endsAt - now) : -1;
-  useEffect(() => {
-    if (!live || live.yours || leftS < 0 || leftS > DUEL_COUNTDOWN_FLASH_MS / 1000) return;
-    if (heard.current.tick === leftS) return;
-    heard.current.tick = leftS;
-    if (leftS > 0) play("countdown");
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- once per second
-  }, [leftS]);
+  // The pressure: an alarm the moment the opponent's guess starts the countdown, then a tension bed
+  // until you guess or the round closes. Without a countdown, the round limit's last ten seconds.
+  const pressureMs = live?.countdown ? countdownAfterGuess(!!view?.turbo) : 10_000;
+  const pressureLeft = live ? Math.min(live.endsAt - now, live.countdown ? pressureMs : DUEL_ROUND_MS) : 0;
+  useGuessrPressure({
+    active: !!live && view?.you !== null && !live.yours && pressureLeft > 0 && pressureLeft <= pressureMs,
+    leftMs: pressureLeft,
+    totalMs: pressureMs,
+    flashMs: DUEL_COUNTDOWN_FLASH_MS,
+    level: 1,
+    cue: !!live?.countdown,
+    duel: true,
+    round: live?.index,
+  });
 
   async function guess() {
     if (!live || !pick || live.yours || busy) return;
     unlockAudio();
+    stopPressure();
     play("guess");
     await act({ action: "guess", round: live.index, ...pick });
   }

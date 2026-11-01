@@ -95,6 +95,25 @@ export function unlockAudio(): void {
   }
 }
 
+/**
+ * The running context, for effects that schedule their own nodes (the
+ * PokéGuessr countdown's pressure loop). Null while muted, on the server, or
+ * before the page has had a user gesture: an AudioContext made without one
+ * starts suspended and the browser warns about it.
+ */
+export function liveAudio(): AudioContext | null {
+  if (isMuted()) return null;
+  if (typeof navigator !== "undefined") {
+    const activation = (navigator as Navigator & { userActivation?: { hasBeenActive: boolean } }).userActivation;
+    if (activation && !activation.hasBeenActive) return null;
+  }
+  try {
+    return context();
+  } catch {
+    return null;
+  }
+}
+
 function tone(
   audio: AudioContext,
   frequency: number,

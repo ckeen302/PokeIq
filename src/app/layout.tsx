@@ -108,6 +108,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <a href="/audio/battle/CREDITS.md" className="underline-offset-2 hover:underline">
                 credits
               </a>
+              ). PokéGuessr countdown sounds by bart, yd and pyranostudios via OpenGameArt.org, under CC0 (
+              <a href="/audio/guessr/CREDITS.md" className="underline-offset-2 hover:underline">
+                credits
+              </a>
               ).
             </p>
           </div>

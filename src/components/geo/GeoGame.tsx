@@ -10,6 +10,8 @@ import { dailyNumber } from "@/lib/daily";
 import { useToday } from "@/lib/use-today";
 import { recordGeoGame, useProgress, type BadgeDef } from "@/lib/progress";
 import { play, unlockAudio } from "@/lib/sound";
+import { stopPressure } from "@/lib/guessr-pressure";
+import { useGuessrPressure } from "@/lib/use-guessr-pressure";
 import { guessrSquare } from "@/lib/share";
 import { GEO_DIFFICULTY_NAMES, type GeoDifficulty } from "@/lib/geo-difficulty";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -470,6 +472,7 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
   async function guess(timeUp = false) {
     if (!game || (!pick && !timeUp) || phase !== "guessing") return;
     setPhase("submitting");
+    stopPressure();
     try {
       const at = pick ?? { x: 0, y: 0, timeout: true };
       if (!timeUp) play("guess");
@@ -546,9 +549,20 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
   }, [timer, shotReady, phase, roundStartedAt]);
   useEffect(() => {
     if (timeLeft === 0 && phase === "guessing") void guess(true);
-    else if (timeLeft !== null && timeLeft <= 5 && phase === "guessing") play("countdown");
     // eslint-disable-next-line react-hooks/exhaustive-deps -- fires once, when the clock hits zero
   }, [timeLeft, phase]);
+  // The last ten seconds: the duels' countdown pressure, softer.
+  const soloWindowMs = Math.min(10_000, timer * 1000);
+  const soloLeftMs = timer ? roundStartedAt + timer * 1000 - (now || roundStartedAt) : 0;
+  useGuessrPressure({
+    active: !!timer && shotReady && phase === "guessing" && soloLeftMs > 0 && soloLeftMs <= soloWindowMs,
+    leftMs: soloLeftMs,
+    totalMs: soloWindowMs,
+    flashMs: 5_000,
+    level: 0.55,
+    cue: true,
+    round: played.length,
+  });
 
   // GeoGuessr's shortcuts: Space / Enter to guess, then for the next round. Esc closes the zoomed view.
   useEffect(() => {
