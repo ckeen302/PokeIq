@@ -18,7 +18,6 @@ html.tl-locked, html.tl-locked body { overflow: hidden; overscroll-behavior: non
     radial-gradient(120% 90% at 50% 45%, transparent 55%, rgb(0 0 0 / 0.55) 100%); }
 .tl-fx::after { content: ""; position: absolute; inset: 0; opacity: .5;
   background: repeating-linear-gradient(to bottom, transparent 0 2px, rgb(0 0 0 / 0.16) 2px 3px); }
-.tl-ui { z-index: 5; }
 .tl-accent { color: var(--era-a); text-shadow: 0 0 18px color-mix(in srgb, var(--era-a) 60%, transparent); transition: color 1.2s; }
 .tl-thumb { background: var(--era-a); box-shadow: 0 0 12px var(--era-a), 0 0 2px #fff; }
 .tl-boot { animation: tl-blink 1s steps(2) infinite; }

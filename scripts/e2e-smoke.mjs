@@ -1987,6 +1987,77 @@ step("pokédex Trainers tab: search, notable filter, a game by route, an area's 
   await page.getByTestId("notable-blurb").waitFor();
 }
 
+step("pokédex Timeline tab: 3D scene, scroll + drag, open an entry, track filters, scrubber, list view");
+{
+  await gotoSettled(page, `${BASE}/pokedex`);
+  await page.getByTestId("dex-tab-timeline").click();
+  await page.waitForURL(/\/pokedex\/timeline$/);
+  // The server-rendered list is always in the page (search engines, no WebGL, reduced motion).
+  if (!(await page.locator('[data-testid="timeline-list"] #red-green').count())) errors.push("timeline: the server-rendered list is missing Red and Green");
+  const stage = page.getByTestId("timeline-stage");
+  if (!(await page.locator('[data-testid="timeline-stage"][data-ready="1"]').waitFor({ timeout: 60_000 }).then(() => true, () => false))) {
+    errors.push("timeline: the 3D scene never became ready");
+  } else {
+    const year = async () => Number(await page.getByTestId("timeline-year").innerText());
+    const scene = await page.getByTestId("timeline-scene").boundingBox();
+    const cx = scene.x + scene.width / 2, cy = scene.y + scene.height / 2;
+    await page.waitForTimeout(1500);
+    const y0 = await year();
+    // Scroll forward in time.
+    await page.mouse.move(cx, cy);
+    for (let i = 0; i < 10; i++) { await page.mouse.wheel(0, 240); await page.waitForTimeout(40); }
+    await page.waitForFunction((y) => Number(document.querySelector('[data-testid="timeline-year"]').textContent) >= y + 3, y0, { timeout: 15_000 }).catch(() => errors.push(`timeline: scrolling didn't move forward from ${y0}`));
+    // Drag back towards the start.
+    const y1 = await year();
+    await page.mouse.move(cx, cy);
+    await page.mouse.down();
+    for (let i = 1; i <= 12; i++) await page.mouse.move(cx + i * 30, cy + i * 20);
+    await page.mouse.up();
+    await page.waitForFunction((y) => Number(document.querySelector('[data-testid="timeline-year"]').textContent) < y, y1, { timeout: 15_000 }).catch(() => errors.push(`timeline: dragging didn't move back from ${y1}`));
+    // Jump to the start and open Red and Green by clicking its card.
+    await page.keyboard.press("Home");
+    await page.waitForFunction(() => document.querySelector('[data-testid="timeline-year"]').textContent === "1996", null, { timeout: 15_000 });
+    await page.waitForTimeout(1200);
+    // The card drifts with the mouse parallax, so click where it is rather than waiting for it to be still.
+    const rg = await page.locator('.tl-card[data-entry="red-green"]').boundingBox();
+    if (rg) await page.mouse.click(rg.x + rg.width / 2, rg.y + rg.height / 2);
+    if (!(await page.getByTestId("timeline-detail").waitFor({ timeout: 5000 }).then(() => true, () => false))) {
+      errors.push("timeline: clicking the Red and Green card didn't open it");
+      await page.keyboard.press("Enter");
+    }
+    const detail = page.getByTestId("timeline-detail");
+    await detail.waitFor();
+    if (!/Red and Green/i.test(await page.getByTestId("timeline-detail-title").innerText())) errors.push("timeline: the opened entry isn't Red and Green");
+    // Japanese and Western dates are listed separately.
+    for (const id of ["timeline-date-japan", "timeline-date-north-america", "timeline-date-europe"]) if (!(await detail.getByTestId(id).count())) errors.push(`timeline: Red and Green has no ${id}`);
+    if (!(await detail.locator('a[href="/pokemon/bulbasaur"]').count())) errors.push("timeline: the starters don't link to the Pokédex");
+    if (!(await detail.locator('[data-testid="timeline-region-link"][href="/pokedex/places?region=Kanto"]').count())) errors.push("timeline: no Kanto link to Places");
+    await detail.locator('[data-testid="timeline-gen-strip"] a[href="/pokemon/mew"]').waitFor({ timeout: 15_000 }).catch(() => errors.push("timeline: the Generation I sprite strip didn't load"));
+    await page.screenshot({ path: `${OUT}/timeline-detail.png` });
+    await page.getByTestId("timeline-detail-next").click();
+    await page.waitForFunction(() => !/Red and Green/i.test(document.querySelector('[data-testid="timeline-detail-title"]')?.textContent ?? "Red and Green"), null, { timeout: 5000 }).catch(() => errors.push("timeline: Next didn't move to another entry"));
+    await page.keyboard.press("Escape");
+    await detail.waitFor({ state: "hidden" });
+    // Track filters fade a track out and back in.
+    const anime = page.getByTestId("timeline-lane-anime");
+    if (!(await anime.isVisible())) await page.getByTestId("timeline-filters-toggle").click();
+    await anime.click();
+    if ((await anime.getAttribute("aria-pressed")) !== "false") errors.push("timeline: the Anime filter didn't switch off");
+    await page.waitForFunction(() => getComputedStyle(document.querySelector('.tl-card[data-entry="anime-s01"]')).display === "none", null, { timeout: 5000 }).catch(() => errors.push("timeline: the Anime track didn't fade out"));
+    await anime.click();
+    // The scrubber jumps straight to an era.
+    const bar = await page.getByTestId("timeline-scrubber").boundingBox();
+    await page.mouse.click(bar.x + bar.width * 0.85, bar.y + bar.height / 2);
+    await page.waitForFunction(() => Number(document.querySelector('[data-testid="timeline-year"]').textContent) >= 2019, null, { timeout: 15_000 }).catch(() => errors.push("timeline: the scrubber didn't jump to the Switch era"));
+    await page.screenshot({ path: `${OUT}/timeline-3d.png` });
+    // List view.
+    await page.getByTestId("timeline-list-view").click();
+    await stage.waitFor({ state: "detached" });
+    await page.locator('[data-testid="timeline-list"] #scarlet-violet').waitFor();
+    await page.getByTestId("timeline-3d-view").waitFor();
+  }
+}
+
 step("trainer, leaderboard, pokémon page");
 for (const path of ["/trainer", "/leaderboard?board=iq", "/pokemon/eevee", "/pokedex?type=ghost&sort=spe"]) {
   await gotoSettled(page, `${BASE}${path}`);

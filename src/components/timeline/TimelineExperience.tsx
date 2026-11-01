@@ -74,6 +74,8 @@ export function TimelineExperience({ entries, eraStarts, children }: { entries: 
   // Lock the page behind the full-screen scene.
   useEffect(() => {
     if (mode === "list") return;
+    // A #entry link may have scrolled the list underneath; the scene sits at the top.
+    window.scrollTo(0, 0);
     document.documentElement.classList.add("tl-locked");
     return () => document.documentElement.classList.remove("tl-locked");
   }, [mode]);
@@ -222,7 +224,7 @@ export function TimelineExperience({ entries, eraStarts, children }: { entries: 
           <div className="tl-bg" aria-hidden />
           <div
             ref={hostRef}
-            className="tl-host absolute inset-0 cursor-grab touch-none select-none active:cursor-grabbing"
+            className="tl-host absolute inset-0 isolate z-0 cursor-grab touch-none select-none active:cursor-grabbing"
             data-testid="timeline-scene"
             aria-label="3D timeline of Pokémon history. Scroll, drag or use the arrow keys to travel through time; select a card to open it."
             role="application"
@@ -235,12 +237,25 @@ export function TimelineExperience({ entries, eraStarts, children }: { entries: 
             </div>
           )}
 
-          {/* Era title card on every era change. */}
+          {/* Era change: a flash of the new era's light, then its title card. */}
+          <AnimatePresence>
+            {flash && flash.n > 1 && (
+              <motion.div
+                key={`f${flash.n}`}
+                className="pointer-events-none absolute inset-0 z-[2]"
+                style={{ background: "radial-gradient(60% 50% at 50% 45%, color-mix(in srgb, var(--era-a) 45%, transparent), transparent 70%)" }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: [0, 0.9, 0] }}
+                transition={{ duration: 0.9, times: [0, 0.25, 1], ease: "easeOut" }}
+                aria-hidden
+              />
+            )}
+          </AnimatePresence>
           <AnimatePresence>
             {flash && (
               <motion.div
                 key={flash.n}
-                className="pointer-events-none absolute inset-x-0 top-[22%] flex flex-col items-center text-center"
+                className="pointer-events-none absolute inset-x-0 top-[22%] z-[3] flex flex-col items-center text-center"
                 initial={{ opacity: 0, scale: 1.25, filter: "blur(10px)" }}
                 animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
                 exit={{ opacity: 0, scale: 0.92, filter: "blur(6px)" }}
@@ -254,7 +269,7 @@ export function TimelineExperience({ entries, eraStarts, children }: { entries: 
           </AnimatePresence>
 
           {/* Top bar: back, title, list view; track filters. */}
-          <div className="pointer-events-none absolute inset-x-0 top-0 flex items-start justify-between gap-3 p-3 sm:p-5">
+          <div className="pointer-events-none absolute inset-x-0 top-0 z-10 flex items-start justify-between gap-3 p-3 sm:p-5">
             <div className="min-w-0 space-y-2">
               <div className="flex items-center gap-2">
                 <Link href="/pokedex" className={chip + " text-muted-foreground hover:text-foreground"} data-testid="timeline-back">
@@ -313,7 +328,7 @@ export function TimelineExperience({ entries, eraStarts, children }: { entries: 
           </div>
 
           {/* Bottom: the year scrubber. */}
-          <div className="tl-ui pointer-events-none absolute inset-x-0 bottom-0 px-3 pb-3 sm:px-6 sm:pb-5">
+          <div className="tl-ui pointer-events-none absolute inset-x-0 bottom-0 z-10 px-3 pb-3 sm:px-6 sm:pb-5">
             <div className="mb-2 hidden items-center justify-between font-pixel text-[9px] uppercase tracking-[0.16em] text-muted-foreground sm:flex">
               <span>Scroll, drag or ← → to travel · PgUp / PgDn jumps an era · select a card to open it</span>
               {currentId && byId.get(currentId) && <span className="max-w-[40%] truncate text-foreground/80">{byId.get(currentId)!.title}</span>}

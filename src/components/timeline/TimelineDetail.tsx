@@ -92,12 +92,12 @@ export function TimelineDetail({ entry }: { entry: TimelineEntry }) {
             <dd className="font-display text-base font-semibold tabular-nums">{formatDate(r.date)}</dd>
           </div>
         ))}
-        <div className="bg-card p-3">
+        <div className={!entry.region && (rows.length + 1) % 2 ? "col-span-2 bg-card p-3" : "bg-card p-3"}>
           <dt className={label}>Platform</dt>
           <dd className="font-semibold">{entry.platform}</dd>
         </div>
         {entry.region && (
-          <div className="bg-card p-3">
+          <div className={(rows.length + 2) % 2 ? "col-span-2 bg-card p-3" : "bg-card p-3"}>
             <dt className={label}>Region</dt>
             <dd className="font-semibold">
               {entry.regionHref ? (
@@ -110,7 +110,6 @@ export function TimelineDetail({ entry }: { entry: TimelineEntry }) {
             </dd>
           </div>
         )}
-        {rows.length % 2 === 0 && !entry.region && <div className="bg-card" />}
       </dl>
 
       {entry.starters.length > 0 && (
