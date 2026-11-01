@@ -105,6 +105,8 @@ export function createScene(host: HTMLElement, entries: SceneEntry[], eras: Scen
   function eraIndexAt(t: number) { let k = 0; eras.forEach((e, i) => { if (t >= e.start) k = i; }); return k; }
   const tMin = Math.min(...entries.map((e) => e.t)) - 0.4;
   const tMax = Math.max(...entries.map((e) => e.t)) + 0.3;
+  // The camera trails the focus plane, so it may sit a little before the first entry.
+  const camMin = tMin - 0.6;
   const zNear = zOf(tMin - 1.5), zFar = zOf(tMax + 1.5);
 
   // ---- shared uniforms: eras by depth, camera depth, time
@@ -127,7 +129,7 @@ export function createScene(host: HTMLElement, entries: SceneEntry[], eras: Scen
     vis.forEach((l, i) => {
       const k = lanes.indexOf(l);
       if (portrait) { laneXTarget[k] = 0; laneYTarget[k] = 0.9 + (vis.length - 1 - i) * PORTRAIT_GAP; }
-      else { laneXTarget[k] = (i - (vis.length - 1) / 2) * 5; laneYTarget[k] = floorY(laneXTarget[k]) + 1.75; }
+      else { laneXTarget[k] = (i - (vis.length - 1) / 2) * 4.7; laneYTarget[k] = floorY(laneXTarget[k]) + 1.75; }
     });
     midTarget = portrait ? 0.9 + ((vis.length - 1) * PORTRAIT_GAP) / 2 : 1.2;
     lanes.forEach((l, i) => { laneAlphaTarget[i] = visibleLanes.has(l.id) ? 1 : 0; });
@@ -369,9 +371,9 @@ export function createScene(host: HTMLElement, entries: SceneEntry[], eras: Scen
   let focusId: string | null = null, panel = false;
   let fx = 0, fy = 0, px = 0, py = 0, mx = 0, my = 0, fovKick = 0, lastEra = -1, lastCurrent: string | null = null;
   const camBack = () => (portrait ? 12 : 11);
-  // The focus plane: a few units in front of the camera.
-  const focusOffset = () => (camBack() - 7) / YS;
-  const clampT = (t: number) => Math.min(tMax, Math.max(tMin, t));
+  // The focus plane is 7 units in front of the camera; the camera sits at an earlier moment than it.
+  const focusOffset = () => -(camBack() - 7) / YS;
+  const clampT = (t: number) => Math.min(tMax, Math.max(camMin, t));
   const visibleSorted = () => cards.filter((c) => visibleLanes.has(c.e.lane)).sort((a, b) => a.e.t - b.e.t);
 
   function nearest(t: number) {
@@ -444,7 +446,7 @@ export function createScene(host: HTMLElement, entries: SceneEntry[], eras: Scen
     camera.updateProjectionMatrix();
     ptMat.uniforms.uPx.value = renderer.getPixelRatio() * (h / 900);
     U.uK.value = portrait ? 0.02 : 0.035;
-    U.uGlow.value = portrait ? 0.3 : 1;
+    U.uGlow.value = portrait ? 0.16 : 1;
     for (const c of cards) c.obj.scale.setScalar(cardScale());
     for (const o of eraSigns) { o.position.y = portrait ? 9 : AXIS_Y + RING_R * 0.62 - 2.2; o.scale.setScalar(portrait ? 0.014 : 0.02); }
     if (wasPortrait !== portrait || !laneY.some(Boolean)) {
@@ -458,6 +460,9 @@ export function createScene(host: HTMLElement, entries: SceneEntry[], eras: Scen
   const ro = new ResizeObserver(resize);
   ro.observe(host);
   resize();
+  // Start with the requested moment on the focus plane, gliding in from a little before it.
+  tTarget = clampT(startT - focusOffset());
+  tCur = tTarget - (reduce ? 0 : 1.2);
 
   // ---- frame loop
   const clock = new THREE.Clock();
@@ -480,8 +485,9 @@ export function createScene(host: HTMLElement, entries: SceneEntry[], eras: Scen
       if (Math.abs(nx - laneX[i]) > 1e-3 || Math.abs(ny - laneY[i]) > 1e-3 || Math.abs(na - laneAlpha[i]) > 1e-3) lanesMoving = true;
       laneX[i] = nx; laneY[i] = ny; laneAlpha[i] = na;
       U.uLaneX.value[i] = nx; U.uLaneA.value[i] = na;
-      laneObjs[i].beamMat.opacity = 0.55 * na;
-      laneObjs[i].nodeMat.uniforms.uA.value = na;
+      // On a phone every track runs down the middle, so each one glows less.
+      laneObjs[i].beamMat.opacity = (portrait ? 0.3 : 0.55) * na;
+      laneObjs[i].nodeMat.uniforms.uA.value = (portrait ? 0.35 : 1) * na;
     });
     if (lanesMoving) placeLaneObjects();
 
@@ -498,7 +504,7 @@ export function createScene(host: HTMLElement, entries: SceneEntry[], eras: Scen
     camera.position.set(fx + px, camY + fy + py, camZ);
     const shift = panel && !portrait ? 2.6 : 0;
     // With the phone's bottom sheet open, look lower so the card sits in the space above it.
-    look.set(fx * 0.85 + shift + px * 0.3, (portrait ? mid - 0.2 : 1.2) + fy * 1.1 - (panel && portrait ? 6.5 : 0), camZ - 20);
+    look.set(fx * 0.85 + shift + px * 0.3, (portrait ? mid - 0.2 : 1.2) + fy * 1.1 - (panel && portrait ? 4 : 0), camZ - 20);
     camera.lookAt(look);
     camera.rotateZ(-px * 0.012);
     const baseFov = portrait ? 68 : 55;
@@ -517,14 +523,16 @@ export function createScene(host: HTMLElement, entries: SceneEntry[], eras: Scen
       const x = cardX(c);
       c.obj.position.set(x, cardY(c), z);
       c.obj.rotation.y = portrait ? 0 : -x * 0.028;
-      const op = Math.min(1, (165 - d) / 70) * Math.max(0, Math.min(1, portrait ? (d - 4) / 2.5 : (d - 1.5) / 3.5)) * la;
+      // Outer tracks pass close to the screen edges (and the overlays), so their cards fade out sooner.
+      const near = portrait ? (d - 4) / 2.5 : Math.abs(x) > 6 ? (d - 10) / 5 : (d - 1.5) / 3.5;
+      const op = Math.min(1, (165 - d) / 70) * Math.max(0, Math.min(1, near)) * la;
       if (Math.abs(op - c.op) > 0.015) { c.el.style.opacity = op.toFixed(3); c.op = op; c.el.style.pointerEvents = op > 0.3 ? "auto" : "none"; }
     }
     for (const l of labels) {
       const d = camZ - l.z;
       const inRange = d > (l.kind === "era" ? 2 : 0) && d < 150;
       if (inRange !== l.shown) { l.obj.visible = inRange; l.shown = inRange; }
-      if (inRange) l.el.style.opacity = (l.kind === "era" ? Math.min(1, (125 - d) / 55) * Math.min(1, Math.max(0, (d - (portrait ? 34 : 16)) / 22)) : Math.min(1, (150 - d) / 60) * Math.min(1, d / 6)).toFixed(3);
+      if (inRange) l.el.style.opacity = (l.kind === "era" ? Math.min(1, (125 - d) / 55) * Math.min(1, Math.max(0, (d - (portrait ? 34 : 28)) / 24)) : Math.min(1, (150 - d) / 60) * Math.min(1, d / 6)).toFixed(3);
     }
 
     const ft = tCur + focusOffset();

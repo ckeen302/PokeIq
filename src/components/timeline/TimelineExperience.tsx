@@ -50,6 +50,7 @@ export function TimelineExperience({ entries, eraStarts, children }: { entries: 
   const thumbRef = useRef<HTMLDivElement>(null);
   const fillRef = useRef<HTMLDivElement>(null);
   const openRef = useRef<string | null>(null);
+  const flashCount = useRef(0);
   openRef.current = openId;
 
   const byId = useMemo(() => new Map(entries.map((e) => [e.id, e])), [entries]);
@@ -115,7 +116,8 @@ export function TimelineExperience({ entries, eraStarts, children }: { entries: 
             current: (id) => setCurrentId(id),
             era(i, forward) {
               setEraIdx(i);
-              if (forward || i > 0) setFlash((f) => ({ i, n: (f?.n ?? 0) + 1 }));
+              flashCount.current += 1;
+              if (forward || i > 0) setFlash({ i, n: flashCount.current });
             },
           },
           deep ? deep.t : T_START + 0.1
