@@ -36,6 +36,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${SITE_URL}/pokedex/abilities`, changeFrequency: "monthly", priority: 0.7 },
     { url: `${SITE_URL}/pokedex/items`, changeFrequency: "monthly", priority: 0.7 },
     { url: `${SITE_URL}/pokedex/places`, changeFrequency: "monthly", priority: 0.7 },
+    { url: `${SITE_URL}/pokedex/timeline`, changeFrequency: "monthly", priority: 0.7 },
     { url: `${SITE_URL}/pokedex/types`, changeFrequency: "monthly", priority: 0.7 },
     ...TYPES.map((t) => ({ url: `${SITE_URL}/pokedex/types/${t}`, changeFrequency: "monthly" as const, priority: 0.6 })),
     { url: `${SITE_URL}/pokedex/natures`, changeFrequency: "monthly", priority: 0.6 },

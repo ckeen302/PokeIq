@@ -7,6 +7,7 @@ import { ModeGrid } from "@/components/home/ModeGrid";
 import { HeroDevice } from "@/components/home/HeroDevice";
 import { Hero } from "@/components/home/Hero";
 import { Experiences } from "@/components/home/Experiences";
+import { TimelineCard } from "@/components/home/TimelineCard";
 import { WhichPokemonCard } from "@/components/which-pokemon/WhichPokemonCard";
 import { HudHeading } from "@/components/game/HudHeading";
 import { SITE_NAME } from "@/lib/site";
@@ -82,6 +83,7 @@ export default function HomePage() {
             </Link>
           ))}
         </div>
+        <TimelineCard />
       </section>
 
       <section className="grid gap-px overflow-hidden rounded-lg border bg-border sm:grid-cols-3" aria-label="Why PokéIQ">
