@@ -17,10 +17,10 @@ export default function AbilitiesPage() {
   return (
     <div className="mx-auto max-w-7xl space-y-4">
       <ListHeader
-        kicker={`Ability database · ${items.length.toLocaleString("en-US")} entries`}
+        kicker="Ability database"
         title="Poké"
         accent="dex"
-        blurb={`All ${items.length.toLocaleString("en-US")} abilities — what they do and every Pokémon that has them.`}
+        blurb="What each ability does and every Pokémon that has it."
       />
       <DexTabs active="abilities" />
       <DexListExplorer kind="abilities" items={items} />

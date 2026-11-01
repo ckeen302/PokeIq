@@ -17,10 +17,10 @@ export default function ItemsPage() {
   return (
     <div className="mx-auto max-w-7xl space-y-4">
       <ListHeader
-        kicker={`Item database · ${items.length.toLocaleString("en-US")} entries`}
+        kicker="Item database"
         title="Poké"
         accent="dex"
-        blurb={`${items.length.toLocaleString("en-US")} items from the main games — effects, who holds them in the wild, and which move each TM teaches.`}
+        blurb="Items from the main games: effects, who holds them in the wild, and which move each TM teaches."
       />
       <DexTabs active="items" />
       <DexListExplorer kind="items" items={items} />
