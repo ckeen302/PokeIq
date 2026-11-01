@@ -3111,6 +3111,8 @@ step("name 'em all: hub, a Gen 1 run (aliases, wrong category, pause, give up), 
   await gotoSettled(np, `${BASE}/quiz/name-em-all`);
   await np.getByLabel("Race category").selectOption("ultra-beasts");
   await np.getByLabel("Race length").selectOption("3");
+  // The ranked clear used to name the host; with no leaderboard it's typed here.
+  await np.getByLabel("Your trainer name").first().fill("Red");
   await clickUntilUrl(np, np.getByTestId("nea-race-start"), /\/quiz\/name-em-all\/race\//);
   await np.getByTestId("nea-race-lobby").waitFor();
   await gotoSettled(guestRace, np.url());
