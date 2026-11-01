@@ -114,6 +114,30 @@ export function liveAudio(): AudioContext | null {
   }
 }
 
+/** Sound effects' level (PokéGuessr's Sound effects slider sets it while a PokéGuessr page is open). */
+let sfxScale = 1;
+let bus: { audio: BaseAudioContext; gain: GainNode } | null = null;
+
+export function setSfxScale(scale: number): void {
+  sfxScale = Math.max(0, Math.min(1, scale));
+  if (bus) bus.gain.gain.value = sfxScale;
+}
+
+export function sfxScaleNow(): number {
+  return sfxScale;
+}
+
+/** Where sound effects go: the destination, through the effects level. */
+export function effectsOut(audio: BaseAudioContext): AudioNode {
+  if (!bus || bus.audio !== audio) {
+    const gain = audio.createGain();
+    gain.connect(audio.destination);
+    bus = { audio, gain };
+  }
+  bus.gain.gain.value = sfxScale;
+  return bus.gain;
+}
+
 function tone(
   audio: AudioContext,
   frequency: number,
@@ -129,7 +153,7 @@ function tone(
   gain.gain.setValueAtTime(0, startAt);
   gain.gain.linearRampToValueAtTime(peak, startAt + 0.012);
   gain.gain.exponentialRampToValueAtTime(0.0001, startAt + duration);
-  osc.connect(gain).connect(audio.destination);
+  osc.connect(gain).connect(effectsOut(audio));
   osc.start(startAt);
   osc.stop(startAt + duration + 0.02);
 }
@@ -144,7 +168,7 @@ function sweep(audio: AudioContext, from: number, to: number, startAt: number, d
   gain.gain.setValueAtTime(0, startAt);
   gain.gain.linearRampToValueAtTime(peak, startAt + 0.01);
   gain.gain.exponentialRampToValueAtTime(0.0001, startAt + duration);
-  osc.connect(gain).connect(audio.destination);
+  osc.connect(gain).connect(effectsOut(audio));
   osc.start(startAt);
   osc.stop(startAt + duration + 0.02);
 }
@@ -163,7 +187,7 @@ function noise(audio: AudioContext, startAt: number, duration: number, peak = 0.
   const gain = audio.createGain();
   gain.gain.setValueAtTime(peak, startAt);
   gain.gain.exponentialRampToValueAtTime(0.0001, startAt + duration);
-  src.connect(filter).connect(gain).connect(audio.destination);
+  src.connect(filter).connect(gain).connect(effectsOut(audio));
   src.start(startAt);
   src.stop(startAt + duration + 0.02);
 }
@@ -177,7 +201,7 @@ export function play(kind: SoundKind): void {
 }
 
 function playUnsafe(kind: SoundKind): void {
-  if (isMuted()) return;
+  if (isMuted() || sfxScale === 0) return;
   const audio = context();
   if (!audio) return;
   const now = audio.currentTime;

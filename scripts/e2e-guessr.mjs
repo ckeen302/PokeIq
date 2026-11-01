@@ -173,6 +173,26 @@ async function weekly(width, height) {
   }
   if ((await page.getByTestId("geo-history-link").getAttribute("href")) !== "/guessr/history") errors.push("the duel history link doesn't go to /guessr/history");
   await page.getByTestId("geo-achievements").waitFor({ timeout: 15_000 });
+  if (width >= 768) {
+    // Music: the menu loop after the first tap; the Music toggle in Settings stops it, remembers it, and starts it again.
+    const music = () => page.evaluate(() => document.documentElement.dataset.guessrMusic ?? "none");
+    await page.mouse.click(5, 5);
+    if (!(await page.waitForFunction(() => document.documentElement.dataset.guessrMusic === "lobby", null, { timeout: 10_000 }).then(() => true, () => false))) errors.push(`the hub's music isn't playing (${await music()})`);
+    await page.getByTestId("geo-settings").click();
+    await page.getByTestId("geo-sound-settings").waitFor();
+    await page.getByTestId("geo-sound-settings").scrollIntoViewIfNeeded();
+    await page.screenshot({ path: `${OUT}/hub-sound-settings-${tag}.png` });
+    await page.getByTestId("geo-music").click();
+    if ((await music()) !== "none") errors.push("the Music toggle didn't stop the music");
+    const saved = await page.evaluate(() => JSON.parse(localStorage.getItem("pokeiq:guessr:audio") ?? "{}"));
+    if (saved.music?.on !== false) errors.push(`the Music toggle wasn't remembered (${JSON.stringify(saved)})`);
+    await page.getByTestId("geo-music").click();
+    if (!(await page.waitForFunction(() => document.documentElement.dataset.guessrMusic === "lobby", null, { timeout: 5_000 }).then(() => true, () => false))) errors.push("the Music toggle didn't start the music again");
+    await page.getByTestId("geo-sfx").click();
+    if ((await page.getByTestId("geo-sfx").getAttribute("aria-checked")) !== "false") errors.push("the Sound effects toggle didn't switch off");
+    await page.getByTestId("geo-sfx").click();
+    await page.keyboard.press("Escape");
+  }
   await page.getByTestId("geo-mastery").waitFor();
   // A map tile picks the map for a solo game.
   await page.getByTestId("geo-map-tile-johto").click();
@@ -280,6 +300,9 @@ async function duel(width, height, { turbo }) {
   } else if (!(await blue.waitForFunction(() => document.documentElement.dataset.guessrPressure === "on", null, { timeout: 3_000 }).then(() => true, () => false))) {
     errors.push("the countdown's pressure audio didn't start for Blue (sound on)");
   }
+  // The duel loop plays through the round (Blue, muted, hears nothing).
+  if (!turbo && !(await blue.waitForFunction(() => document.documentElement.dataset.guessrMusic === "duel", null, { timeout: 8_000 }).then(() => true, () => false))) errors.push("the duel's music isn't playing");
+  if (turbo && (await blue.evaluate(() => document.documentElement.dataset.guessrMusic ?? "none")) !== "none") errors.push("music played while muted");
   await pinAndGuess(blue, phone, 0.22);
   if ((await pressure()) !== "off") errors.push("the countdown's pressure audio didn't stop when Blue guessed");
 

@@ -12,6 +12,7 @@ import { recordGeoGame, useProgress, type BadgeDef } from "@/lib/progress";
 import { play, unlockAudio } from "@/lib/sound";
 import { stopPressure } from "@/lib/guessr-pressure";
 import { useGuessrPressure } from "@/lib/use-guessr-pressure";
+import { useGuessrMusic } from "@/lib/use-guessr-music";
 import { guessrSquare } from "@/lib/share";
 import { GEO_DIFFICULTY_NAMES, type GeoDifficulty } from "@/lib/geo-difficulty";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -563,6 +564,10 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
     cue: true,
     round: played.length,
   });
+  // Music: the menu loop on the hub, the calm loop while playing, a sting on the results (a win from 2,500 a round on average).
+  const soloTotal = played.reduce((sum, p) => sum + p.graded.score, 0);
+  const soloWin = game?.kind !== "streak" && played.length > 0 && soloTotal >= played.length * 2500;
+  useGuessrMusic(phase === "results" ? (soloWin ? "win" : "draw") : phase === "guessing" || phase === "submitting" || phase === "revealed" ? "round" : "lobby");
 
   // GeoGuessr's shortcuts: Space / Enter to guess, then for the next round. Esc closes the zoomed view.
   useEffect(() => {

@@ -30,6 +30,7 @@ import {
 import { play, unlockAudio } from "@/lib/sound";
 import { stopPressure } from "@/lib/guessr-pressure";
 import { useGuessrPressure } from "@/lib/use-guessr-pressure";
+import { useGuessrMusic } from "@/lib/use-guessr-music";
 import { shareOrCopy } from "@/lib/share";
 import { useProgress } from "@/lib/progress";
 import { NAME_REJECTED, isCleanName } from "@/lib/name-filter";
@@ -111,9 +112,13 @@ export function GeoParty({ code, regions }: { code: string; regions: GeoRegionIn
     flashMs: DUEL_COUNTDOWN_FLASH_MS,
     level: 1,
     cue: !!live?.countdown,
-    duel: true,
     round: live?.index,
   });
+
+  // Music: the menu loop in the lobby, the duel loop through the rounds, a sting on the standings.
+  const standings = view?.status === "finished" && (summary || !sawPlay || !last || view.end?.reason === "left");
+  const placed = me !== null && view?.end ? (view.end.places[me] === 1 ? "win" : "lose") : "draw";
+  useGuessrMusic(!view ? null : view.status === "lobby" ? "lobby" : standings ? placed : "duel");
 
   useEffect(() => {
     if (!view?.end || heard.current.end || !sawPlay) return;

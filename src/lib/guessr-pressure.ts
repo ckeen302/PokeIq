@@ -14,7 +14,8 @@
  */
 
 import { duelSfxOn } from "./duel-sfx";
-import { isMuted, liveAudio, onMuteChange } from "./sound";
+import { effectsOut, isMuted, liveAudio, onMuteChange, sfxScaleNow } from "./sound";
+import { guessrMusic } from "./guessr-music";
 
 export interface PressureSamples {
   start?: AudioBuffer;
@@ -354,10 +355,7 @@ function decodeFor(audio: BaseAudioContext): void {
 // The live countdown (one at a time)
 // ---------------------------------------------------------------------------
 
-export interface LivePressure extends PressureOptions {
-  /** Duels, ranked and party also follow the trainer's duel-sound toggle. */
-  duel?: boolean;
-}
+export type LivePressure = PressureOptions;
 
 let current: { voice: PressureVoice; timer: ReturnType<typeof setInterval>; unsub: () => void } | null = null;
 
@@ -368,13 +366,13 @@ function mark(state: "on" | "off") {
 /** Starts a countdown's pressure (stopping any other). False when it stays silent: muted, sounds off, or no gesture yet. */
 export function startPressure(opts: LivePressure): boolean {
   stopPressure();
-  if (opts.leftS <= 0 || isMuted() || (opts.duel && !duelSfxOn())) return false;
+  if (opts.leftS <= 0 || isMuted() || !duelSfxOn() || sfxScaleNow() === 0) return false;
   const audio = liveAudio();
   if (!audio) return false;
   try {
     preloadPressure();
     decodeFor(audio);
-    const voice = new PressureVoice(audio, audio.destination, () => decoded, opts);
+    const voice = new PressureVoice(audio, effectsOut(audio), () => decoded, opts);
     const run = () => {
       if (audio.currentTime >= voice.endAt + 0.05) {
         stopPressure();
@@ -385,6 +383,7 @@ export function startPressure(opts: LivePressure): boolean {
     run();
     current = { voice, timer: setInterval(run, 50), unsub: onMuteChange((muted) => muted && stopPressure()) };
     mark("on");
+    guessrMusic.setPressure(true);
     return true;
   } catch {
     // Sound is decoration: never let it break the game.
@@ -406,6 +405,7 @@ export function stopPressure(): void {
     // ignore
   }
   mark("off");
+  guessrMusic.setPressure(false);
 }
 
 export function pressurePlaying(): boolean {

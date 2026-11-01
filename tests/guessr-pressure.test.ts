@@ -94,7 +94,7 @@ async function load() {
   return { ...pressure, ...sound, ...duel };
 }
 
-const COUNTDOWN = { leftS: 15, totalS: 15, flashS: 5, level: 1, cue: true, duel: true };
+const COUNTDOWN = { leftS: 15, totalS: 15, flashS: 5, level: 1, cue: true };
 
 beforeEach(() => {
   started = [];
@@ -192,13 +192,19 @@ describe("PokéGuessr countdown pressure", () => {
     expect(pressurePlaying()).toBe(false);
   });
 
-  it("stays silent when the trainer turned duel sounds off (solo rounds still play)", async () => {
+  it("stays silent when the trainer turned PokéGuessr's sound effects off", async () => {
     store.set("pokeiq-duel-sfx", "0");
-    const { startPressure, stopPressure } = await load();
+    const { startPressure } = await load();
+    expect(startPressure(COUNTDOWN)).toBe(false);
+    expect(startPressure({ ...COUNTDOWN, level: 0.55, leftS: 10, totalS: 10 })).toBe(false);
+    expect(started).toHaveLength(0);
+  });
+
+  it("stays silent with the effects slider at zero", async () => {
+    const { startPressure, setSfxScale } = await load();
+    setSfxScale(0);
     expect(startPressure(COUNTDOWN)).toBe(false);
     expect(started).toHaveLength(0);
-    expect(startPressure({ ...COUNTDOWN, duel: false, level: 0.55, leftS: 10, totalS: 10 })).toBe(true);
-    stopPressure();
   });
 
   it("waits for a user gesture before starting audio", async () => {

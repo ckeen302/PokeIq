@@ -12,6 +12,7 @@ import type { GeoAnswer, GeoRegionInfo } from "@/lib/geo-types";
 import { play, unlockAudio } from "@/lib/sound";
 import { stopPressure } from "@/lib/guessr-pressure";
 import { useGuessrPressure } from "@/lib/use-guessr-pressure";
+import { useGuessrMusic } from "@/lib/use-guessr-music";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { useDuel } from "@/components/duel/use-duel";
 import { DuelGone, DuelLoading, DuelLobby, DuelNotice, DuelVisitor, MatchedNote, SEAT_COLORS, SeatDot, seconds } from "@/components/duel/DuelParts";
@@ -118,9 +119,13 @@ export function GeoDuel({ code, regions }: GeoDuelProps) {
     flashMs: DUEL_COUNTDOWN_FLASH_MS,
     level: 1,
     cue: !!live?.countdown,
-    duel: true,
     round: live?.index,
   });
+
+  // Music: the menu loop in the lobby, the duel loop through the rounds, a sting on the end screen.
+  const endScreen = view?.status === "finished" && (summary || !sawPlay || view.end?.reason === "left" || !last);
+  const outcome = view?.you == null || !view.end || view.end.winner === null ? "draw" : view.end.winner === view.you ? "win" : "lose";
+  useGuessrMusic(!view ? null : view.status === "lobby" ? "lobby" : endScreen ? outcome : "duel");
 
   async function guess() {
     if (!live || !pick || live.yours || busy) return;

@@ -18,21 +18,23 @@ export interface PressureState {
   level: number;
   /** Sound the alarm as the window opens. */
   cue: boolean;
-  /** Follow the trainer's duel-sound toggle too (duels, ranked, party). */
-  duel?: boolean;
   /** Changes for each round, so a new round's window starts afresh. */
   round?: number;
 }
 
 const subscribeMute = (cb: () => void) => onMuteChange(cb);
 
-/** Plays the countdown's pressure while `active`; stops it the moment it isn't (or on unmount). */
-export function useGuessrPressure({ active, leftMs, totalMs, flashMs, level, cue, duel = false, round }: PressureState): void {
+/**
+ * Plays the countdown's pressure while `active`; stops it the moment it isn't
+ * (or on unmount). Silent while the site is muted or PokéGuessr's sound
+ * effects are off.
+ */
+export function useGuessrPressure({ active, leftMs, totalMs, flashMs, level, cue, round }: PressureState): void {
   const muted = useSyncExternalStore(subscribeMute, isMuted, () => true);
-  const duelOn = useDuelSfx();
+  const sfxOn = useDuelSfx();
   const left = useRef(leftMs);
   left.current = leftMs;
-  const on = active && !muted && (!duel || duelOn);
+  const on = active && !muted && sfxOn;
 
   useEffect(() => {
     preloadPressure();
@@ -42,7 +44,7 @@ export function useGuessrPressure({ active, leftMs, totalMs, flashMs, level, cue
     if (!on || left.current <= 0) return;
     // The alarm only while the window is fresh: unmuting mid-countdown picks the bed up quietly.
     const fresh = left.current >= totalMs - 1500;
-    startPressure({ leftS: left.current / 1000, totalS: totalMs / 1000, flashS: flashMs / 1000, level, cue: cue && fresh, duel });
+    startPressure({ leftS: left.current / 1000, totalS: totalMs / 1000, flashS: flashMs / 1000, level, cue: cue && fresh });
     return () => stopPressure();
-  }, [on, totalMs, flashMs, level, cue, duel, round]);
+  }, [on, totalMs, flashMs, level, cue, round]);
 }
