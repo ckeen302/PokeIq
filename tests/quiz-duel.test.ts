@@ -82,7 +82,8 @@ describe("quiz duel: questions", () => {
         const { duel } = started(mode, difficulty, `seed-${mode}-${difficulty}`);
         const prompts = [...Array(QUIZ_DUEL_QUESTIONS)].map((_, i) => duelQuestion(duel, i));
         for (const q of prompts) {
-          expect(q.options).toContain(q.answer);
+          // Typed-name questions (Zoom Reveal) have no options.
+          if (q.input !== "name") expect(q.options).toContain(q.answer);
           if (mode !== "mixed") expect(q.module).toBe(mode);
         }
         // Another duel on the same seed gets the same questions.

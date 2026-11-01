@@ -12,6 +12,7 @@ import {
   QUIZ_DUEL_POINTS,
   QUIZ_DUEL_QUESTION_MS,
   QUIZ_DUEL_SPEED_BONUS,
+  ZOOM_DUEL_QUESTION_MS,
   pvpHref,
   type QuizDuelPick,
   type QuizDuelQuestionView,
@@ -31,6 +32,9 @@ import { CryPlayer, ImageMedia } from "./QuestionMedia";
 import { preloadAssets, questionAssets } from "@/lib/preload";
 import { cn } from "@/lib/utils";
 import { AddFriendAfterGame } from "@/components/community/AddFriend";
+import { ZOOM_POINTS, ZOOM_SKIP, ZOOM_STEPS, zoomShareLine } from "@/lib/zoom-reveal";
+import type { NameEntry } from "@/components/pokedle/parts";
+import { ZoomPlay } from "./zoom/ZoomPlay";
 import { Avatar } from "@/components/avatar/Avatar";
 
 /**
@@ -69,6 +73,28 @@ export function QuizDuel({ code }: { code: string }) {
   // One picture or cry per question, from its start through its reveal.
   const media = useFirst(live?.index ?? last?.index, live ? live.question?.media : last?.question.media);
   const revealArt = useFirst(last?.index, last?.revealUrl);
+  // Zoom Reveal: one crop per step (its URL is re-signed on every poll too).
+  const liveZoom = live?.question?.zoom;
+  const zoomView = useFirst(
+    live ? live.index * 10 + (liveZoom?.step ?? 0) : last ? last.index * 10 + 9 : undefined,
+    live ? liveZoom : last?.question.zoom
+  );
+  // The names this trainer has tried on the live question: a step further out means the last one was wrong.
+  const [tried, setTried] = useState<{ index: number; list: NameEntry[] }>({ index: -1, list: [] });
+  const sentGuess = useRef<{ index: number; step: number; entry: NameEntry | null } | null>(null);
+  const myStep = liveZoom?.step;
+  useEffect(() => {
+    const sent = sentGuess.current;
+    if (!live || myStep === undefined || !sent || sent.index !== live.index || myStep <= sent.step) return;
+    sentGuess.current = null;
+    if (sent.entry) {
+      const entry = sent.entry;
+      setTried((t) => ({ index: live.index, list: t.index === live.index ? [...t.list, entry] : [entry] }));
+    }
+    // Only a new step moves a tried name into the list.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [myStep, live?.index]);
+  const triedNow = live && tried.index === live.index ? tried.list : last && tried.index === last.index ? tried.list : [];
 
   // Each trainer's clock starts once their browser has the question's images
   // and cry loaded (bounded server-side): preload, then tell the server.
@@ -115,6 +141,13 @@ export function QuizDuel({ code }: { code: string }) {
     await act({ action: "answer", round: view.question.index, choice });
   }
 
+  async function zoomGuess(entry: NameEntry | null) {
+    if (!view?.question?.question?.zoom || view.question.yours || busy) return;
+    unlockAudio();
+    sentGuess.current = { index: view.question.index, step: view.question.question.zoom.step, entry };
+    if (!(await act({ action: "zoom", round: view.question.index, choice: entry ? entry[1] : ZOOM_SKIP }))) sentGuess.current = null;
+  }
+
   async function nextQuestion() {
     if (!view || view.you === null || !last || view.next?.pressed[view.you] || busy) return;
     unlockAudio();
@@ -158,6 +191,8 @@ export function QuizDuel({ code }: { code: string }) {
   if (!view) return <DuelLoading />;
 
   const info = MODULE_INFO[view.module];
+  const isZoom = view.module === "zoom-reveal";
+  const questionMs = isZoom ? ZOOM_DUEL_QUESTION_MS : QUIZ_DUEL_QUESTION_MS;
   const tag = `Quiz duel · ${info.title} · ${capitalize(view.difficulty)}`;
   const notice = (
     <>
@@ -196,7 +231,20 @@ export function QuizDuel({ code }: { code: string }) {
               Mode: <b className="text-foreground">{info.title}</b> · Difficulty: <b className="text-foreground">{capitalize(view.difficulty)}</b>
             </p>
           }
-          rules={[
+          rules={isZoom ? [
+            {
+              label: "Pokémon",
+              text: `${view.total} Pokémon, the same close-ups for both of you, ${ZOOM_DUEL_QUESTION_MS / 1000} seconds each. A wrong name or a skip zooms you out one step, six in all.`,
+            },
+            {
+              label: "Points",
+              text: `Named on step 1 scores ${ZOOM_POINTS[0]}, down to ${ZOOM_POINTS[ZOOM_STEPS - 1]} on step ${ZOOM_STEPS}. Not named in time scores nothing.`,
+            },
+            {
+              label: "Winning",
+              text: `The most points after ${view.total} Pokémon wins; level on points, the quicker right names. Leave, or go quiet, and you forfeit.`,
+            },
+          ] : [
             {
               label: "Questions",
               text: `${view.total} questions, the same for both of you, ${QUIZ_DUEL_QUESTION_MS / 1000} seconds each. You see when your opponent locks in, never what they picked.`,
@@ -278,7 +326,9 @@ export function QuizDuel({ code }: { code: string }) {
             >
               {Math.max(1, seconds(view.question.startsAt - now))}
             </motion.p>
-            <p className="text-sm text-muted-foreground">Right and fast: up to {QUIZ_DUEL_POINTS + QUIZ_DUEL_SPEED_BONUS} points.</p>
+            <p className="text-sm text-muted-foreground">
+              {isZoom ? `Fewest steps: up to ${ZOOM_POINTS[0]} points.` : `Right and fast: up to ${QUIZ_DUEL_POINTS + QUIZ_DUEL_SPEED_BONUS} points.`}
+            </p>
           </CardContent>
         </Card>
         {tools}
@@ -290,7 +340,7 @@ export function QuizDuel({ code }: { code: string }) {
   // ---- answering -------------------------------------------------------------------------
   if (live?.question) {
     const loading = live.loaded === false;
-    const left = loading ? QUIZ_DUEL_QUESTION_MS : Math.max(0, live.endsAt - now);
+    const left = loading ? questionMs : Math.max(0, live.endsAt - now);
     const locked = live.yours ?? null;
     const theyLocked = live.answered[1 - me];
     const timeUp = left <= 0;
@@ -310,14 +360,16 @@ export function QuizDuel({ code }: { code: string }) {
                 locked ? "border-screen/40 text-screen" : "border-warning/50 bg-warning/[0.08] text-warning"
               )}
             >
-              {locked ? (theyLocked ? "Both locked in!" : `Locked in. Waiting for ${them}…`) : `${them} has locked in!`}
+              {isZoom
+                ? locked ? (theyLocked ? "Both done!" : `Done. Waiting for ${them}…`) : `${them} is done!`
+                : locked ? (theyLocked ? "Both locked in!" : `Locked in. Waiting for ${them}…`) : `${them} has locked in!`}
             </motion.p>
           )}
         </AnimatePresence>
         <Card className="overflow-hidden">
           <div className="flex items-center gap-3 px-4 pt-4 sm:px-6">
-            <HpBar value={left / QUIZ_DUEL_QUESTION_MS} label="TIME" className="flex-1" />
-            <span className={cn("w-8 text-right font-pixel text-xs tabular-nums", left < QUIZ_DUEL_QUESTION_MS / 4 && "animate-blink text-destructive")}>{seconds(left)}</span>
+            <HpBar value={left / questionMs} label="TIME" className="flex-1" />
+            <span className={cn("w-8 text-right font-pixel text-xs tabular-nums", left < questionMs / 4 && "animate-blink text-destructive")}>{seconds(left)}</span>
           </div>
           <CardContent className="relative space-y-5 p-4 pt-4 sm:p-6 sm:pt-5">
             {loading && (
@@ -326,14 +378,36 @@ export function QuizDuel({ code }: { code: string }) {
               </div>
             )}
             <div className={cn("space-y-5", loading && "invisible")} aria-hidden={loading || undefined}>
-            <QuestionBody key={live.index} question={live.question} media={media} />
-            <Options
-              question={live.question}
-              onPick={locked || timeUp || busy || loading ? undefined : (choice) => void answer(choice)}
-              mine={locked}
-            />
+            {isZoom && zoomView ? (
+              <>
+                <DialogBox as="h2" text={live.question.prompt} speed={12} />
+                <ZoomPlay
+                  key={live.index}
+                  view={zoomView}
+                  wrong={triedNow}
+                  locked={!!locked || timeUp || busy || loading}
+                  onGuess={(entry) => void zoomGuess(entry)}
+                  onSkip={() => void zoomGuess(null)}
+                  waiting={locked ? (theyLocked ? "Both done! Revealing…" : `Waiting for ${them}…`) : timeUp ? "Time's up! Waiting for the reveal…" : undefined}
+                />
+                {live.steps && !theyLocked && (
+                  <p className="text-center font-pixel text-[10px] uppercase tracking-wider text-muted-foreground">
+                    {them}: step {live.steps[1 - me]}/{ZOOM_STEPS}
+                  </p>
+                )}
+              </>
+            ) : (
+              <>
+                <QuestionBody key={live.index} question={live.question} media={media} />
+                <Options
+                  question={live.question}
+                  onPick={locked || timeUp || busy || loading ? undefined : (choice) => void answer(choice)}
+                  mine={locked}
+                />
+              </>
+            )}
             </div>
-            {timeUp && !locked && <p className="text-center text-sm text-muted-foreground">Time&apos;s up! Waiting for the reveal…</p>}
+            {timeUp && !locked && !isZoom && <p className="text-center text-sm text-muted-foreground">Time&apos;s up! Waiting for the reveal…</p>}
           </CardContent>
         </Card>
         {tools}
@@ -350,15 +424,37 @@ export function QuizDuel({ code }: { code: string }) {
     const mine = last.picks[me];
     // Picture questions grade by a card id, which means nothing to read out.
     const answerText = last.question.cards?.length ? "the one marked in green" : last.answer;
-    const verdict = mine?.correct ? (last.question.cards?.length ? "Correct! That's the one!" : `Correct! It's ${answerText}!`) : mine ? `Not quite… it was ${answerText}.` : `Time's up! It was ${answerText}.`;
+    const verdict = isZoom
+      ? mine?.correct
+        ? `Correct! It's ${last.answer}, on step ${mine.step ?? 1} of ${ZOOM_STEPS}.`
+        : `Not this time… it was ${last.answer}.`
+      : mine?.correct ? (last.question.cards?.length ? "Correct! That's the one!" : `Correct! It's ${answerText}!`) : mine ? `Not quite… it was ${answerText}.` : `Time's up! It was ${answerText}.`;
     return (
       <div className="mx-auto max-w-2xl space-y-4">
         {notice}
         <DuelHud view={view} center={<div className="hud-label">Q {last.index + 1}/{view.total}</div>} gained={last.picks.map((p) => p?.points ?? 0)} />
         <Card className="overflow-hidden">
           <CardContent className="space-y-5 p-4 sm:p-6">
-            <QuestionBody key={last.index} question={last.question} media={media} revealUrl={revealArt} answer={last.answer} />
-            <Options question={last.question} result={last} names={view.players.map((p) => p.name)} />
+            {isZoom && zoomView ? (
+              <>
+                <DialogBox as="h2" text={last.question.prompt} speed={0} />
+                <ZoomPlay
+                  key={last.index}
+                  view={zoomView}
+                  wrong={triedNow}
+                  locked
+                  outcome={{ step: mine?.step ?? ZOOM_STEPS, solved: !!mine?.correct, answer: last.answer, revealUrl: revealArt, revealFrom: last.zoomFrom }}
+                  onGuess={() => undefined}
+                  onSkip={() => undefined}
+                  shareTitle={`PokéIQ Zoom Reveal duel · Q${last.index + 1}`}
+                />
+              </>
+            ) : (
+              <>
+                <QuestionBody key={last.index} question={last.question} media={media} revealUrl={revealArt} answer={last.answer} />
+                <Options question={last.question} result={last} names={view.players.map((p) => p.name)} />
+              </>
+            )}
             <div className="grid grid-cols-2 gap-3">
               {last.picks.map((pick, seat) => (
                 <PickResult key={seat} seat={seat} name={view.players[seat]?.name ?? "—"} pick={pick} />
@@ -569,7 +665,11 @@ function PickResult({ seat, name, pick }: { seat: number; name: string; pick: Qu
       <p className={cn("flex items-center justify-center gap-1.5 font-display text-2xl font-bold tabular-nums", pick?.correct ? "text-success" : "text-muted-foreground")}>
         {pick?.correct ? <CheckCircle2 className="h-5 w-5" aria-hidden /> : <XCircle className="h-5 w-5" aria-hidden />}+{pick?.points ?? 0}
       </p>
-      <p className="text-xs text-muted-foreground">{pick ? `${pick.correct ? "Right" : "Wrong"} in ${(pick.ms / 1000).toFixed(1)} s` : "No answer in time"}</p>
+      {pick?.step !== undefined ? (
+        <p className="text-xs text-muted-foreground">{zoomShareLine(pick.step, pick.correct)}</p>
+      ) : (
+        <p className="text-xs text-muted-foreground">{pick ? `${pick.correct ? "Right" : "Wrong"} in ${(pick.ms / 1000).toFixed(1)} s` : "No answer in time"}</p>
+      )}
     </div>
   );
 }
@@ -633,7 +733,7 @@ function DuelSummary({ view, busy, home, onRematch }: { view: QuizDuelView; busy
                   </span>
                   {r.picks.map((p, seat) => (
                     <span key={seat} className={cn("text-right tabular-nums", p?.correct ? "font-bold text-success" : "text-muted-foreground")}>
-                      {p ? `${p.correct ? "✓" : "✗"} +${p.points} · ${(p.ms / 1000).toFixed(1)} s` : "—"}
+                      {p ? `${p.correct ? "✓" : "✗"} +${p.points} · ${p.step !== undefined ? `${p.correct ? p.step : "X"}/${ZOOM_STEPS}` : `${(p.ms / 1000).toFixed(1)} s`}` : "—"}
                     </span>
                   ))}
                 </div>

@@ -38,6 +38,7 @@ const PRACTICE_NOTES: Record<PracticeReason, string> = {
   challenge: "Practice run — challenge replays don't go on the leaderboard.",
   "repeat-daily": "Practice run — only your first Daily Challenge of the day goes on the leaderboard.",
   filtered: "Practice run — generation-filtered runs aren't ranked; boards compare all-generation runs.",
+  "zoom-daily": "The daily Zoom Reveal isn't ranked; Classic, Survival and Blitz runs are.",
 };
 
 /** Runs already credited this page-life (guards against re-mounts double-counting XP). */

@@ -7,6 +7,7 @@ import {
   QUIZ_DUEL_QUESTIONS,
   QUIZ_DUEL_QUESTION_MS,
   QUIZ_DUEL_REVEAL_MS,
+  ZOOM_DUEL_QUESTION_MS,
   quizDuelPoints,
   type QuizDuelPick,
   type QuizDuelQuestionView,
@@ -14,6 +15,8 @@ import {
   type QuizDuelView,
 } from "@/lib/pvp-types";
 import { FORMAT_RULES, learnHref, mediaUrl, questionAt, toPublic } from "./session";
+import { guessedSpecies, zoomStepWindow } from "./zoom-reveal";
+import { ZOOM_STEPS, zoomPoints } from "@/lib/zoom-reveal";
 import {
   baseView,
   fail,
@@ -42,8 +45,12 @@ import {
 
 interface QuizDuelQuestion {
   startsAt: number;
-  /** One per seat, null until that trainer answers. */
-  picks: ({ choice: string; at: number } | null)[];
+  /** One per seat, null until that trainer answers. Zoom Reveal: until they name it or run out of steps. */
+  picks: ({ choice: string; at: number; step?: number; ok?: boolean } | null)[];
+  /** How long the question is open, when not QUIZ_DUEL_QUESTION_MS (Zoom Reveal). */
+  ms?: number;
+  /** Zoom Reveal: steps each trainer has zoomed out so far. */
+  zs?: number[];
   /** Trainers who pressed Next during the reveal. */
   skip: boolean[];
   /**
@@ -85,7 +92,7 @@ export const QUIZ_DUEL_LOAD_CAP_MS = 4_000;
 /** When a trainer's clock started on question `q`. */
 const seatStart = (q: QuizDuelQuestion, seat: number) => q.loaded?.[seat] ?? q.startsAt;
 /** When a trainer's answers close. */
-const seatCloses = (q: QuizDuelQuestion, seat: number) => seatStart(q, seat) + QUIZ_DUEL_QUESTION_MS;
+const seatCloses = (q: QuizDuelQuestion, seat: number) => seatStart(q, seat) + (q.ms ?? QUIZ_DUEL_QUESTION_MS);
 /** When the question closes for everyone. */
 const closesAt = (q: QuizDuelQuestion) => Math.max(...q.picks.map((_, seat) => seatCloses(q, seat)));
 
@@ -93,8 +100,12 @@ function scorePick(d: QuizDuel, index: number, seat: number): QuizDuelPick | nul
   const q = d.questions[index];
   const pick = q.picks[seat];
   if (!pick) return null;
-  const correct = pick.choice === duelQuestion(d, index).answer;
   const ms = Math.max(0, pick.at - seatStart(q, seat));
+  if (pick.step !== undefined) {
+    const ok = !!pick.ok;
+    return { choice: pick.choice, correct: ok, ms, points: ok ? zoomPoints(pick.step) : 0, step: pick.step };
+  }
+  const correct = pick.choice === duelQuestion(d, index).answer;
   return { choice: pick.choice, correct, ms, points: correct ? quizDuelPoints(ms) : 0 };
 }
 
@@ -118,7 +129,7 @@ function reveal(d: QuizDuel, q: QuizDuelQuestion, at: number) {
   d.scores = d.scores.map((s, seat) => s + points[seat]);
 
   const idle = d.players.map(
-    (_, seat) => d.questions.length >= QUIZ_DUEL_IDLE_QUESTIONS && d.questions.slice(-QUIZ_DUEL_IDLE_QUESTIONS).every((x) => !x.picks[seat])
+    (_, seat) => d.questions.length >= QUIZ_DUEL_IDLE_QUESTIONS && d.questions.slice(-QUIZ_DUEL_IDLE_QUESTIONS).every((x) => !x.picks[seat] && !x.zs?.[seat])
   );
   if (idle[0] !== idle[1]) finish(d, "idle", idle[0] ? 1 : 0, at);
   else if (idle[0]) finish(d, "idle", winnerOf(d), at);
@@ -129,6 +140,7 @@ const newQuestion = (d: QuizDuel, startsAt: number): QuizDuelQuestion => ({
   startsAt,
   picks: d.players.map(() => null),
   skip: d.players.map(() => false),
+  ...(d.module === "zoom-reveal" && { ms: ZOOM_DUEL_QUESTION_MS, zs: d.players.map(() => 0) }),
 });
 
 const blankDuel = (base: PvpBase, module: ModuleId, difficulty: Difficulty): QuizDuel => ({
@@ -183,8 +195,32 @@ export function answerQuiz(duel: QuizDuel, playerId: string, index: number, choi
     if (now < q.startsAt) return fail(409, "The question hasn't started yet.");
     if (q.picks[seat]) return fail(409, "You've already answered.");
     if (now > seatCloses(q, seat) + GRACE_MS) return fail(409, "Time's up for that question.");
+    if (duelQuestion(d, index).input === "name") return fail(400, "Type a Pokémon's name.");
     if (!duelQuestion(d, index).options.includes(choice)) return fail(400, "Pick one of the options.");
     q.picks[seat] = { choice, at: now };
+    return { ok: true, duel: d };
+  });
+}
+
+/**
+ * Zoom Reveal: a typed name (or "" to skip). Right, and it's locked in at
+ * this step; wrong, and this trainer zooms out one step, until the last.
+ */
+export function zoomQuiz(duel: QuizDuel, playerId: string, index: number, choice: string, now: number): PvpOutcome<QuizDuel> {
+  return seated(quizRules, duel, playerId, now, (d, seat) => {
+    if (d.status !== "playing") return notPlaying(d);
+    const q = d.questions[d.questions.length - 1];
+    if (index !== d.questions.length - 1 || q.result) return fail(409, "That question is over.");
+    if (now < q.startsAt) return fail(409, "The question hasn't started yet.");
+    if (q.picks[seat]) return fail(409, "You've already answered.");
+    if (now > seatCloses(q, seat) + GRACE_MS) return fail(409, "Time's up for that question.");
+    const question = duelQuestion(d, index);
+    if (question.input !== "name" || !question.media) return fail(400, "Pick one of the options.");
+    q.zs ??= d.players.map(() => 0);
+    const step = q.zs[seat] + 1;
+    const ok = choice !== "" && (choice === question.answer || guessedSpecies(choice) === question.media.pokemonId);
+    if (ok || step >= ZOOM_STEPS) q.picks[seat] = { choice, at: now, step, ok };
+    else q.zs[seat] = step;
     return { ok: true, duel: d };
   });
 }
@@ -221,10 +257,13 @@ export function skipQuizReveal(duel: QuizDuel, playerId: string, index: number, 
 // ---------------------------------------------------------------------------
 
 /** What both trainers see of a question: no answer, no explanation, no reveal art. */
-function questionView(q: Question, index: number): QuizDuelQuestionView {
-  const p = toPublic(q, index, FORMAT_RULES.classic);
-  return { module: p.module, prompt: p.prompt, detail: p.detail, options: p.options, images: p.images, media: p.media, cards: p.cards };
+function questionView(q: Question, index: number, step = 1): QuizDuelQuestionView {
+  const p = toPublic(q, index, FORMAT_RULES.classic, step);
+  return { module: p.module, prompt: p.prompt, detail: p.detail, options: p.options, images: p.images, media: p.media, cards: p.cards, input: p.input, zoom: p.zoom };
 }
+
+/** Zoom Reveal: the step a trainer is on, or ended on. */
+const seatStep = (q: QuizDuelQuestion, seat: number) => q.picks[seat]?.step ?? Math.min(ZOOM_STEPS, (q.zs?.[seat] ?? 0) + 1);
 
 /** What one trainer (or a visitor: null) may see of the duel right now. */
 export function quizView(duel: QuizDuel, playerId: string | null, now: number, rev: number): QuizDuelView {
@@ -236,7 +275,9 @@ export function quizView(duel: QuizDuel, playerId: string | null, now: number, r
     const q = duelQuestion(duel, index);
     x.result.points.forEach((p, k) => (scores[k] += p));
     // The latest reveal is on screen: it gets its media back, and the artwork.
-    const view = questionView(q, index);
+    const mine = seat >= 0 && x.zs ? seatStep(x, seat) : 1;
+    const view = questionView(q, index, mine);
+    const zoomFrom = index === lastRevealed && q.input === "name" && q.media ? zoomStepWindow(q.media.pokemonId, q.media.crop ?? 0, mine) : undefined;
     return [
       {
         index,
@@ -248,6 +289,7 @@ export function quizView(duel: QuizDuel, playerId: string | null, now: number, r
         sourceUrl: q.source,
         picks: x.picks.map((_, k) => scorePick(duel, index, k)),
         scores: [...scores],
+        ...(zoomFrom && { zoomFrom }),
       },
     ];
   });
@@ -267,9 +309,10 @@ export function quizView(duel: QuizDuel, playerId: string | null, now: number, r
       startsAt: live.startsAt,
       endsAt: seat >= 0 ? seatCloses(live, seat) : closesAt(live),
       loaded: seat >= 0 ? live.loaded?.[seat] != null : undefined,
-      question: now >= live.startsAt ? questionView(duelQuestion(duel, index), index) : undefined,
+      question: now >= live.startsAt ? questionView(duelQuestion(duel, index), index, seat >= 0 && live.zs ? seatStep(live, seat) : 1) : undefined,
       answered: live.picks.map(Boolean),
       yours: seat >= 0 ? live.picks[seat]?.choice : undefined,
+      ...(live.zs && { steps: live.picks.map((_, k) => seatStep(live, k)) }),
     },
     revealed,
     next: duel.status === "playing" && last?.result ? { at: last.result.nextAt, pressed: last.skip } : undefined,

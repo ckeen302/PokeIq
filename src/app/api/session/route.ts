@@ -13,6 +13,7 @@ import type { SessionSpec, ShareCard } from "@/lib/session-types";
  * POST /api/session — start a run.
  *   { module, format, difficulty, gens? }   regular run (fresh random seed)
  *   { daily: "YYYY-MM-DD" }                 today's Daily Challenge (shared seed)
+ *   { zoomDaily: "YYYY-MM-DD" }             today's one-Pokémon Zoom Reveal (shared seed, unranked)
  *   { challenge: "<share token>" }          replay a friend's exact quiz
  * An optional `name` goes on the share card (left off if it isn't fit to show).
  *
@@ -30,6 +31,7 @@ const bodySchema = z.object({
   difficulty: z.enum(DIFFICULTIES).default("medium"),
   gens: z.array(z.number().int().min(1).max(9)).max(9).optional(),
   daily: z.string().optional(),
+  zoomDaily: z.string().optional(),
   challenge: z.string().max(4096).optional(),
   name: z.string().trim().max(24).optional(),
 });
@@ -52,6 +54,18 @@ export async function POST(request: NextRequest) {
     }
     spec = { module: "mixed", format: "classic", difficulty: "medium", seed: `daily:${body.daily}`, daily: body.daily };
     if (startedDailies(request).includes(body.daily)) spec.practice = "repeat-daily";
+  } else if (body.zoomDaily !== undefined) {
+    if (!isValidDailyDate(body.zoomDaily)) {
+      return NextResponse.json({ error: "That daily puzzle isn't available." }, { status: 400 });
+    }
+    spec = {
+      module: "zoom-reveal",
+      format: "classic",
+      difficulty: "medium",
+      seed: `zoom-daily:${body.zoomDaily}`,
+      zoomDaily: body.zoomDaily,
+      practice: "zoom-daily",
+    };
   } else if (body.challenge) {
     const card = verifyToken<ShareCard>("share", body.challenge);
     if (!card) return NextResponse.json({ error: "Invalid challenge link." }, { status: 400 });

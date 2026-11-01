@@ -4,6 +4,7 @@ import { decryptJson } from "@/lib/server/crypto";
 import { artworkUrl, cryUrl, getPokemon } from "@/lib/pokemon/pokedex";
 import { hashString } from "@/lib/rng";
 import { ZOOM_PADDING, pickZoomWindow } from "@/lib/server/zoom";
+import { zoomStepWindow } from "@/lib/server/zoom-reveal";
 import type { MediaKind } from "@/engines/types";
 
 /**
@@ -21,6 +22,9 @@ interface MediaToken {
   k: MediaKind;
   id: number;
   x: number;
+  /** Zoom Reveal: step and start crop. */
+  s?: number;
+  c?: number;
 }
 
 interface Rendered {
@@ -50,7 +54,56 @@ async function silhouette(art: Buffer): Promise<ReturnType<typeof sharp>> {
   return sharp(black);
 }
 
-async function render(kind: MediaKind, id: number): Promise<Rendered> {
+/** Zoom Reveal output side: crisp on a 2× screen at the frame's largest size. */
+const ZOOM_PX = 560;
+
+/** The square artwork canvas, decoded once per Pokémon for all of its steps. */
+const squares = new Map<number, Promise<{ data: Buffer; size: number }>>();
+
+function squareArt(id: number) {
+  let hit = squares.get(id);
+  if (!hit) {
+    hit = (async () => {
+      const art = await fetchUpstream(artworkUrl(id));
+      const { width = 475, height = 475 } = await sharp(art).metadata();
+      const size = Math.max(width, height);
+      const data = await sharp(art)
+        .ensureAlpha()
+        .extend({
+          left: Math.floor((size - width) / 2),
+          right: Math.ceil((size - width) / 2),
+          top: Math.floor((size - height) / 2),
+          bottom: Math.ceil((size - height) / 2),
+          background: { r: 0, g: 0, b: 0, alpha: 0 },
+        })
+        .raw()
+        .toBuffer();
+      return { data, size };
+    })();
+    hit.catch(() => squares.delete(id));
+    squares.set(id, hit);
+    if (squares.size > 60) squares.delete(squares.keys().next().value!);
+  }
+  return hit;
+}
+
+/** One step of a Zoom Reveal: that step's window of the artwork, cut here so the rest never leaves the server. */
+async function zoomStep(id: number, step: number, crop: number): Promise<Rendered> {
+  const { data, size } = await squareArt(id);
+  const w = zoomStepWindow(id, crop, step);
+  const side = Math.max(1, Math.min(size, Math.round(w.s * size)));
+  const left = Math.min(size - side, Math.max(0, Math.round(w.x * size)));
+  const top = Math.min(size - side, Math.max(0, Math.round(w.y * size)));
+  const body = await sharp(data, { raw: { width: size, height: size, channels: 4 } })
+    .extract({ left, top, width: side, height: side })
+    .resize(ZOOM_PX, ZOOM_PX, { kernel: "lanczos3" })
+    .webp({ quality: 84 })
+    .toBuffer();
+  return { body, type: "image/webp" };
+}
+
+async function render(kind: MediaKind, id: number, step = 1, crop = 0): Promise<Rendered> {
+  if (kind === "zoom-reveal") return zoomStep(id, step, crop);
   if (kind === "cry") {
     return { body: await fetchUpstream(cryUrl(id)), type: "audio/ogg" };
   }
@@ -82,11 +135,13 @@ export async function GET(_request: NextRequest, context: { params: Promise<{ to
   if (!media || !getPokemon(media.id)) return NextResponse.json({ error: "Not found" }, { status: 404 });
   if (media.x < Date.now()) return NextResponse.json({ error: "Expired" }, { status: 410 });
 
-  const key = `${media.k}:${media.id}`;
+  const step = Math.min(6, Math.max(1, Math.round(media.s ?? 1)));
+  const crop = Math.max(0, Math.round(media.c ?? 0));
+  const key = media.k === "zoom-reveal" ? `${media.k}:${media.id}:${crop}:${step}` : `${media.k}:${media.id}`;
   try {
     let rendered = cache.get(key);
     if (!rendered) {
-      rendered = await render(media.k, media.id);
+      rendered = await render(media.k, media.id, step, crop);
       if (cache.size >= CACHE_LIMIT) cache.delete(cache.keys().next().value!);
       cache.set(key, rendered);
     }

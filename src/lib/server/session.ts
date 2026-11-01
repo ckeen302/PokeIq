@@ -14,6 +14,8 @@ import { itemInformation, performanceRating, ratingStandardError, ratingToIQ, ty
 import { deriveSeed, randomId, signToken, verifyToken } from "./crypto";
 import { itemRating } from "./calibration";
 import { mediaUrl } from "./media-url";
+import { guessedSpecies, zoomStepWindow, zoomView } from "./zoom-reveal";
+import { ZOOM_STEPS, zoomPoints } from "@/lib/zoom-reveal";
 import type {
   AnswerResponse,
   NextResponse,
@@ -45,7 +47,8 @@ export const specSchema = z.object({
   gens: z.array(z.number().int().min(1).max(9)).max(9).optional(),
   seed: z.string().min(4).max(64),
   daily: z.string().optional(),
-  practice: z.enum(["challenge", "repeat-daily", "filtered"]).optional(),
+  practice: z.enum(["challenge", "repeat-daily", "filtered", "zoom-daily"]).optional(),
+  zoomDaily: z.string().optional(),
 });
 
 export interface FormatRules {
@@ -64,6 +67,14 @@ export const FORMAT_RULES: Record<SessionSpec["format"], FormatRules> = {
   blitz: { total: null, lives: null, questionMs: null, runMs: 60_000 },
   adaptive: { total: 20, lives: null, questionMs: 20_000, runMs: null },
 };
+
+/** The daily Zoom Reveal: one Pokémon, as long as you like. */
+const ZOOM_DAILY_RULES: FormatRules = { total: 1, lives: null, questionMs: null, runMs: null };
+
+/** A run's rules: its format's, except the one-Pokémon daily Zoom Reveal. */
+export function rulesFor(spec: SessionSpec): FormatRules {
+  return spec.zoomDaily ? ZOOM_DAILY_RULES : FORMAT_RULES[spec.format];
+}
 
 /** Network latency allowance on top of the visible timer. */
 const GRACE_MS = 2_500;
@@ -106,6 +117,10 @@ export interface SessionState {
   paused?: true;
   /** Blitz: total asset-loading time credited to the run clock so far. */
   lc?: number;
+  /** Zoom Reveal: steps already zoomed out on the current question (wrong names and skips). */
+  zs?: number;
+  /** Zoom Reveal: the step each Pokémon so far was named on, "X" when missed. */
+  zr?: string;
 }
 
 /** Load-time credit for one question: client-reported, clamped server-side. */
@@ -223,7 +238,11 @@ function adaptiveQuestionAt(spec: SessionSpec, index: number, log: readonly LogE
 
 export { mediaUrl };
 
-export function toPublic(q: Question, index: number, rules: FormatRules): PublicQuestion {
+export function toPublic(q: Question, index: number, rules: FormatRules, step = 1): PublicQuestion {
+  // Zoom Reveal: no options and no plain media, just the current step's crop.
+  if (q.input === "name" && q.media) {
+    return { index, module: q.module, prompt: q.prompt, options: [], input: "name", zoom: zoomView(q.media, step), timeLimitMs: rules.questionMs };
+  }
   return {
     index,
     module: q.module,
@@ -267,6 +286,12 @@ function isDone(state: SessionState, rules: FormatRules, now: number): boolean {
   return state.log.length >= MAX_QUESTIONS;
 }
 
+/** A typed guess names the answer: any accepted spelling of the species, or one of its forms. */
+function rightName(q: Question, choice: string): boolean {
+  const id = q.revealMedia?.pokemonId ?? q.media?.pokemonId;
+  return choice === q.answer || (id !== undefined && guessedSpecies(choice) === id);
+}
+
 function buildResult(state: SessionState, now: number): RunResult {
   const correct = state.log.filter((e) => e[0] === 1).length;
   const items = toItems(state.log);
@@ -285,6 +310,7 @@ function buildResult(state: SessionState, now: number): RunResult {
     pokeiq: ratingToIQ(rating),
     finishedAt: now,
     ...(state.spec.practice && { practice: state.spec.practice }),
+    ...(state.zr && { zoom: state.zr }),
     ...(adaptive && {
       se: ratingStandardError(rating, items),
       trajectory: items.map((_, i) => {
@@ -301,7 +327,7 @@ function buildResult(state: SessionState, now: number): RunResult {
 // ---------------------------------------------------------------------------
 
 export function startSession(spec: SessionSpec, name?: string) {
-  const rules = FORMAT_RULES[spec.format];
+  const rules = rulesFor(spec);
   const now = Date.now();
   const state: SessionState = {
     v: 1,
@@ -342,7 +368,8 @@ export type AnswerOutcome =
 
 /** Replay-guard key for grading the session's current question. */
 export function answerClaimKey(state: SessionState): string {
-  return `ans:${state.sid}:${state.log.length}`;
+  // Zoom Reveal grades each step of a question once.
+  return `ans:${state.sid}:${state.log.length}${state.zs ? `.${state.zs}` : ""}`;
 }
 
 export function readSession(token: unknown): SessionState | null {
@@ -354,7 +381,7 @@ export function readSession(token: unknown): SessionState | null {
 
 /** Pure grading step; the route handler performs the replay claim. */
 export function gradeAnswer(state: SessionState, choice: string | null, loadMs?: number): AnswerOutcome {
-  const rules = FORMAT_RULES[state.spec.format];
+  const rules = rulesFor(state.spec);
   const now = Date.now();
   const credit = state.paused ? 0 : loadCredit(loadMs, now - state.servedAt);
   const runCredit = rules.runMs !== null ? (state.lc ?? 0) + credit : 0;
@@ -377,11 +404,46 @@ export function gradeAnswer(state: SessionState, choice: string | null, loadMs?:
   const q = questionAt(state.spec, index, state.log);
   const elapsed = now - state.servedAt - credit;
   const timedOut = rules.questionMs !== null && elapsed > rules.questionMs + GRACE_MS;
-  const correct = !timedOut && !runExpired && choice !== null && choice === q.answer;
+  const zoom = q.input === "name";
+  const step = (state.zs ?? 0) + 1;
+  const correct = !timedOut && !runExpired && choice !== null && (zoom ? rightName(q, choice) : choice === q.answer);
   const rating = itemRating(q.itemKey, q.rating);
 
+  // Zoom Reveal: a wrong name, a skip or the step's clock running out zooms
+  // out one step. The question goes on and nothing about the answer leaves.
+  if (zoom && !correct && !runExpired && step < ZOOM_STEPS) {
+    const stepped: SessionState = { ...state, paused: undefined, servedAt: now, zs: step, ...(runCredit > 0 && { lc: runCredit }) };
+    return {
+      ok: true,
+      response: {
+        correct: false,
+        timedOut,
+        answer: "",
+        tags: [],
+        gained: 0,
+        score: state.score,
+        streak: state.streak,
+        lives: state.lives,
+        answered: state.log.length,
+        token: signToken("session", stepped),
+        done: false,
+        counted: false,
+        awaitNext: false,
+        zoom: zoomView(q.media!, step + 1),
+      },
+      claimKey: answerClaimKey(state),
+      itemKey: q.itemKey,
+      correct: false,
+      rating,
+      record: false,
+      playerRating: performanceRating(toItems(state.log)),
+    };
+  }
+
   let gained = 0;
-  if (correct) {
+  if (zoom && correct) {
+    gained = zoomPoints(step) + STREAK_BONUS * state.streak;
+  } else if (correct) {
     const speed = rules.questionMs
       ? Math.round(MAX_SPEED_BONUS * Math.max(0, 1 - elapsed / rules.questionMs))
       : 0;
@@ -398,6 +460,8 @@ export function gradeAnswer(state: SessionState, choice: string | null, loadMs?:
     best: Math.max(state.best, correct ? state.streak + 1 : 0),
     lives: state.lives !== null && !correct ? state.lives - 1 : state.lives,
     ...(runCredit > 0 && { lc: runCredit }),
+    zs: undefined,
+    ...(zoom && !runExpired && { zr: `${state.zr ?? ""}${correct ? step : "X"}` }),
   };
 
   const done = runExpired || isDone(next, rules, now);
@@ -422,6 +486,7 @@ export function gradeAnswer(state: SessionState, choice: string | null, loadMs?:
     done,
     counted: !runExpired,
     awaitNext,
+    ...(zoom && { step, zoomFrom: zoomStepWindow(q.media!.pokemonId, q.media!.crop ?? 0, step) }),
   };
 
   if (done) {
@@ -455,7 +520,7 @@ export type NextOutcome =
  * can't be restarted by replaying the paused token.
  */
 export function nextQuestion(state: SessionState): NextOutcome {
-  const rules = FORMAT_RULES[state.spec.format];
+  const rules = rulesFor(state.spec);
   if (!state.paused) return { ok: false, status: 409, error: "That question is already in play." };
   const now = Date.now();
   if (isDone(state, rules, now)) return { ok: false, status: 409, error: "This run is already over." };

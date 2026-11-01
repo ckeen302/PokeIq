@@ -1,4 +1,4 @@
-import { ArrowUpDown, AudioLines, BookText, Gamepad2, ScanEye, Shuffle, Sparkles, Swords, Tv, Zap, type LucideIcon } from "lucide-react";
+import { ArrowUpDown, AudioLines, BookText, Gamepad2, ScanEye, Shuffle, Sparkles, Swords, Tv, Zap, ZoomIn, type LucideIcon } from "lucide-react";
 import type { ModuleId } from "@/engines/types";
 
 const ICONS: Record<ModuleId, LucideIcon> = {
@@ -11,6 +11,7 @@ const ICONS: Record<ModuleId, LucideIcon> = {
   anime: Tv,
   competitive: Swords,
   shiny: Sparkles,
+  "zoom-reveal": ZoomIn,
   mixed: Shuffle,
 };
 
