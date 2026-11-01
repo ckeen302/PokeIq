@@ -46,7 +46,7 @@ export default async function TcgPage({ searchParams }: PageProps) {
     <div className="mx-auto max-w-6xl space-y-8">
       <div className="space-y-4">
         <ListHeader
-          kicker={sets ? `Trading Card Game · ${sets.length} sets` : "Trading Card Game"}
+          kicker="Trading Card Game"
           title="Poké"
           accent="dex"
           blurb="Every Pokémon TCG set ever printed, every card in it, and recent market prices from TCGplayer and Cardmarket."

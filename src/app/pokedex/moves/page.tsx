@@ -17,10 +17,10 @@ export default function MovesPage() {
   return (
     <div className="mx-auto max-w-7xl space-y-4">
       <ListHeader
-        kicker={`Move database · ${items.length.toLocaleString("en-US")} entries`}
+        kicker="Move database"
         title="Poké"
         accent="dex"
-        blurb={`All ${items.length.toLocaleString("en-US")} moves — type, category, power, accuracy, PP and the Pokémon that learn them.`}
+        blurb="Type, category, power, accuracy, PP and the Pokémon that learn each move."
       />
       <DexTabs active="moves" />
       <DexListExplorer kind="moves" items={items} />
