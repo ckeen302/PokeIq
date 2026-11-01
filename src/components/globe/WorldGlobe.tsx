@@ -187,6 +187,13 @@ export function WorldGlobe({ regions, eras }: { regions: GlobeRegionCard[]; eras
     };
   }, [ensureShots, preload]);
 
+  // ---- the globe is full screen: the page behind it doesn't scroll (nor show a scrollbar)
+  useEffect(() => {
+    const html = document.documentElement, was = html.style.overflow;
+    html.style.overflow = "hidden";
+    return () => { html.style.overflow = was; };
+  }, []);
+
   // ---- sound: the module loads on the first gesture, and only does anything when the site's sound is on
   useEffect(() => {
     let alive = true;
@@ -317,7 +324,7 @@ export function WorldGlobe({ regions, eras }: { regions: GlobeRegionCard[]; eras
           </div>
         </div>
 
-        <div className={"pointer-events-none absolute inset-x-0 bottom-0 flex flex-col gap-3 px-4 pb-[max(1rem,env(safe-area-inset-bottom))] transition-opacity sm:px-6 " + (card && narrow ? "opacity-0" : "")}>
+        <div className={"pointer-events-none absolute inset-x-0 bottom-0 flex flex-col gap-3 px-4 pb-[max(1rem,env(safe-area-inset-bottom))] transition-opacity sm:px-6 " + (card && narrow ? "invisible opacity-0" : "")}>
           <div className="flex flex-wrap items-end justify-between gap-x-4 gap-y-3">
             <div className="min-w-0 max-w-md">
               <p className="mb-1 font-pixel text-[10px] uppercase tracking-[0.14em] text-screen">Detail: {stats.tier}</p>
@@ -513,7 +520,7 @@ function RegionCard({ card, narrow, onClose }: { card: GlobeRegionCard; narrow: 
           <ul className="grid grid-cols-3 gap-2" data-testid="globe-region-starters">
             {card.starters.map((s) => (
               <li key={s.id}>
-                <Link href={`/pokemon/${s.id}`} className="group flex flex-col items-center rounded-lg border bg-background/40 px-1 pb-2 pt-1 hover:border-screen">
+                <Link href={`/pokemon/${s.slug}`} className="group flex flex-col items-center rounded-lg border bg-background/40 px-1 pb-2 pt-1 hover:border-screen">
                   <img src={artUrl(s.id, 96)} alt="" width={72} height={72} loading="lazy" decoding="async" className="h-14 w-14 object-contain sm:h-[72px] sm:w-[72px] drop-shadow-[0_4px_8px_hsl(var(--shade)/0.4)] transition-transform group-hover:-translate-y-0.5" />
                   <span className="mt-1 truncate text-center font-display text-[11px] font-semibold uppercase tracking-wide">{s.name}</span>
                 </Link>

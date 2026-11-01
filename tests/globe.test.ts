@@ -178,6 +178,7 @@ describe("globe region cards", () => {
     const kanto = cards.find((c) => c.name === "Kanto")!;
     expect(kanto).toMatchObject({ gen: 1, year: 1996, guessr: "/guessr?region=kanto", places: "/pokedex/places?region=Kanto" });
     expect(kanto.starters.map((s) => s.name)).toEqual(["Bulbasaur", "Charmander", "Squirtle"]);
+    expect(kanto.starters.map((s) => s.slug)).toEqual(["bulbasaur", "charmander", "squirtle"]);
     expect(kanto.games[0].title).toBe("Red and Green");
     const paldea = cards.find((c) => c.name === "Paldea")!;
     expect(paldea.starters.map((s) => s.name)).toEqual(["Sprigatito", "Fuecoco", "Quaxly"]);
