@@ -12,6 +12,7 @@
  *   npx tsx scripts/geo/spots-2d.ts world     # the Game Boy / GBA overworld layouts (pret disassemblies) into the cache
  *   npx tsx scripts/geo/spots-2d.ts match     # match, align, known-answer test, write the spots
  *   npx tsx scripts/geo/spots-2d.ts sheets    # overlay review sheets
+ *   npx tsx scripts/geo/spots-2d.ts place <in.json> <out.json>   # carry rip spots onto our atlas (the patch matcher's candidates)
  *
  * SPOTS_CACHE sets the cache folder (default: the system temp folder).
  *
@@ -20,7 +21,10 @@
  * (template match of an in-game screenshot). A spot is scored only when the
  * match is unique, the area passes the alignment gate (scripts/geo/spot-align.ts)
  * and the method passes the known-answer test; towns get their spot with
- * scored false (the map draws a town as one block).
+ * scored false (the map draws a town as one block). Last, every scored spot
+ * must pass scripts/geo/spot-rules.ts: its place drawn on our atlas with its
+ * layout (scripts/geo/spot-places.json), not a floor map, and checked by eye
+ * on our atlas at that very spot (scripts/geo/spot-audit.json).
  */
 import { execFile } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
@@ -35,6 +39,7 @@ import { boundedSides, fitLocal, maskBox, meetingPoint, onMask, type Control, ty
 import { fetchPret, loadWorld, mapsForPlace, placeEdges, placeWarps, unionRect, type GameMap, type PretGame } from "./spot-world";
 import { apply, fitCamera, flatten, homography, PLAYER, type Camera, type PairSet } from "./spot-camera";
 import { fitPath } from "./spot-path";
+import { loadAudit, loadPlaceRules, spotRuleViolation } from "./spot-rules";
 
 const ROOT = process.cwd();
 const CACHE = process.env.SPOTS_CACHE ?? path.join(tmpdir(), "pokeiq-spots");
@@ -889,17 +894,11 @@ function piecewiseFit(ctx: NonNullable<ReturnType<typeof worldContext>>, place: 
   };
 }
 
-async function run(items: Item[]) {
-  const files = readJson<FileInfo>(cachePath("fileinfo.json"), {});
-  const atlas = await loadAtlas(ROOT);
-  const candidates = ripCandidates(items, files);
-  const groups = new Map<string, Item[]>();
-  for (const it of items) groups.set(groupKey(it), [...(groups.get(groupKey(it)) ?? []), it]);
-  const results: ShotResult[] = [];
+/** Fits rips onto our atlas, one per area, family and rip (cached), and keeps each fit's record. */
+function fitter(atlas: Atlas) {
   const fits: Record<string, FitRecord> = {};
   const fitCache = new Map<string, Fit | null>();
   const contexts = new Map(FAMILIES.map((f) => [f, worldContext(atlas, f)]));
-  const cameras = loadCameras();
   const areaCache = new Map<string, ReturnType<typeof areaGeometry>>();
   const fitFor = (region: string, name: string, family: Family, rip: Rip): Fit | null => {
     const key = `${region}|${name}|${family}`;
@@ -999,6 +998,18 @@ async function run(items: Item[]) {
       return fitCache.get(fk)!;
     }
   };
+  return { fitFor, fits };
+}
+
+async function run(items: Item[]) {
+  const files = readJson<FileInfo>(cachePath("fileinfo.json"), {});
+  const atlas = await loadAtlas(ROOT);
+  const candidates = ripCandidates(items, files);
+  const groups = new Map<string, Item[]>();
+  for (const it of items) groups.set(groupKey(it), [...(groups.get(groupKey(it)) ?? []), it]);
+  const results: ShotResult[] = [];
+  const cameras = loadCameras();
+  const { fitFor, fits } = fitter(atlas);
   let g = 0;
   for (const [key, group] of groups) {
     g++;
@@ -1804,6 +1815,11 @@ async function main() {
       if (row[4] || !spots[id]) spots[id] = row;
     }
     if (kept.length) console.log(`kept ${kept.length} scored spots from before that this run didn't reproduce exactly: ${kept.join(", ")}`);
+    // The rules every scored spot must pass, whatever found it (scripts/geo/spot-rules.ts): its place drawn on our
+    // atlas, not a floor map, and checked on our atlas at this very spot. This runs last, so nothing above can re-score
+    // a spot that was taken out by hand.
+    const ruled = enforceRules(spots, results);
+    if (ruled.length) console.log(`rules: ${ruled.length} spots stay area-scored (${[...new Set(ruled.map((r) => r.split(": ")[0]))].length} reasons; see results.json)`);
     // Keep Agent-independent 3D spots out of this file: they live in geo-shot-spots-3d.json.
     const sorted = Object.fromEntries(Object.entries(spots).sort(([a], [b]) => (a < b ? -1 : 1)));
     writeFileSync(
@@ -1865,6 +1881,20 @@ async function main() {
     );
     const cutErrs = cuts.map((r) => r.errPx!);
     console.log(`cut2d errors (native px): n ${cutErrs.length}, max ${Math.max(0, ...cutErrs)}, over ${KNOWN_TOL_PX}px: ${cutErrs.filter((e) => e > KNOWN_TOL_PX).length}`);
+  } else if (step === "place") {
+    // Carries spots found on rips (a JSON list of { id, region, name, family, rip, at }) onto our atlas through each area's fit.
+    const atlas = await loadAtlas(ROOT);
+    const { fitFor } = fitter(atlas);
+    const jobs = readJson<{ id: string; region: string; name: string; family: Family; rip: string; at: Px }[]>(process.argv[3], []);
+    const out = [];
+    for (const j of jobs) {
+      const rip = await loadRip(j.rip);
+      const fit = rip ? fitFor(j.region, j.name, j.family, rip) : null;
+      const world = fit?.ok ? fit.toWorld(j.at[0], j.at[1]) : null;
+      out.push({ id: j.id, rip: j.rip, at: j.at, align: fit?.kind ?? null, ok: !!fit?.ok, world: world && Number.isFinite(world[0]) ? world : null, onArea: world ? fit!.onArea(world) : false, reasons: fit?.reasons ?? ["no rip"] });
+    }
+    writeFileSync(process.argv[4], JSON.stringify(out, null, 1));
+    console.log(`placed ${out.filter((o) => o.world).length} of ${out.length}`);
   } else if (step === "sheets") {
     await sheets(process.argv[3] ?? cachePath("sheets"), process.argv[4]);
   } else if (step === "report") {
@@ -1872,6 +1902,29 @@ async function main() {
   } else {
     console.log("steps: info | fetch | guess | world | match | sheets <dir> [spots before] | report <dir> <results before> <spots before>");
   }
+}
+
+/** Unscores every spot that breaks a rule (scripts/geo/spot-rules.ts); returns "id: why" for each. */
+function enforceRules(spots: Record<string, SpotRow>, results: ShotResult[]): string[] {
+  const places = loadPlaceRules(ROOT);
+  const audit = loadAudit(ROOT);
+  const geo = JSON.parse(readFileSync(path.join(ROOT, "src/data/geo.json"), "utf8")) as { world: { locations: { name: string; region: string; parent?: string; shots: { id: string }[] }[] } };
+  const placeOf = new Map(geo.world.locations.flatMap((l) => l.shots.map((s) => [s.id, l] as const)));
+  const byId = new Map(results.map((r) => [r.id, r]));
+  const out: string[] = [];
+  for (const [id, row] of Object.entries(spots)) {
+    if (!row[4]) continue;
+    const loc = placeOf.get(id);
+    const r = byId.get(id);
+    // The rip this spot came from, when this run's result is the stored spot.
+    const rip = r?.spot && Math.abs(r.spot[0] - row[0]) < 1e-5 && Math.abs(r.spot[1] - row[1]) < 1e-5 ? r.rip : undefined;
+    const why = !loc ? "not a shot of a pinned place" : loc.parent ? "a building's shot (its inside or its door)" : spotRuleViolation(places, audit, id, loc.region, loc.name, [row[0], row[1]], rip);
+    if (!why) continue;
+    spots[id] = [row[0], row[1], row[2], row[3], false];
+    if (r) r.why = `rules: ${why}`;
+    out.push(`${id}: ${why}`);
+  }
+  return out;
 }
 
 type Saved = {

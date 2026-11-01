@@ -1,0 +1,10 @@
+{
+ "note": "Known-answer test of the patch ground matcher (scripts/geo/spot_patch.py) on the 3D shots already solved (their spot on a rip from flat3d, cam3d or a by-eye pick), each matched with its area's camera seeded from the other solved shots there (left out itself). Gate: at least 8 agreeing ground patches and the best model elsewhere at most 0.35 of that. Errors in native rip px; right = within 24 (a tile and a half, 1 to 3 px on our map). Views cut from flat maps aren't 3D and are out of scope (their camera is wrong by design).",
+ "gate": { "minInliers": 8, "maxSecondShare": 0.35, "tolPx": 24 },
+ "byFamily": {
+  "bw": { "known": 42, "placed": 24, "sameRip": 15, "otherRipOfSamePlace": 9, "wrong": 0, "medianErrPx": 1.2, "p90ErrPx": 4.6, "maxErrPx": 6.5 },
+  "dppt": { "known": 134, "placed": 105, "sameRip": 79, "otherRipOfSamePlace": 26, "wrong": 0, "medianErrPx": 0.9, "p90ErrPx": 3.2, "maxErrPx": 5.3 },
+  "hgss": { "known": 139, "placed": 101, "sameRip": 98, "otherRipOfSamePlace": 3, "wrong": 0, "medianErrPx": 0.8, "p90ErrPx": 2.6, "maxErrPx": 7.6 }
+ },
+ "rejectedGate": "At a second-best share of 0.44 one known answer (a repeating flower path on Seabreak Path) was placed 95px off; the gate sits below that."
+}
