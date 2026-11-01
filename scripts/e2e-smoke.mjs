@@ -182,6 +182,9 @@ page.on("response", async (res) => {
 });
 await gotoSettled(page, `${BASE}/quiz/whos-that-pokemon`);
 await page.screenshot({ path: `${OUT}/setup.png` });
+// One fixed tuning: no difficulty picker, on the setup or the duel card.
+if (await page.getByTestId("quiz-difficulty").count()) errors.push("who's that: the setup still offers a difficulty");
+if (await page.getByRole("group", { name: "Duel difficulty" }).count()) errors.push("who's that: the duel card still offers a difficulty");
 await page.getByRole("button", { name: /^Start/ }).click();
 await page.waitForSelector("h2");
 await page.waitForTimeout(800);
@@ -200,6 +203,15 @@ await page.locator("main").getByText("PokéIQ").first().waitFor();
 await page.waitForTimeout(1600);
 await page.screenshot({ path: `${OUT}/results.png`, fullPage: true });
 if (!shareToken) errors.push("No shareToken returned at the end of a run");
+// Quiz modes have no leaderboard: the run is set against the personal best instead.
+await page.getByTestId("quiz-personal-best").waitFor({ timeout: 5_000 }).catch(() => errors.push("who's that: no personal best line on the results"));
+if (await page.getByText("Save to leaderboard").count()) errors.push("who's that: the results still offer the leaderboard");
+
+step("an old link with a difficulty still starts");
+await gotoSettled(page, `${BASE}/quiz/pokemon-type-quiz?difficulty=hard&format=blitz`);
+if (await page.getByTestId("quiz-difficulty").count()) errors.push("type master: an old ?difficulty= link brought the picker back");
+await page.getByRole("button", { name: /^Start/ }).click();
+await page.waitForSelector("h2");
 
 step("challenge link");
 if (shareToken) {
@@ -244,6 +256,9 @@ step("real shiny quiz: three questions");
   };
   page.on("response", watch);
   await gotoSettled(page, `${BASE}/quiz/real-shiny-quiz`);
+  // Real Shiny keeps its Easy / Hard choice.
+  const shinyLevels = (await page.getByTestId("quiz-difficulty").locator("button").allInnerTexts()).map((t) => t.split("\n")[0].trim().toLowerCase());
+  if (shinyLevels.join(",") !== "easy,hard") errors.push(`real shiny: difficulty choices are ${shinyLevels.join(",") || "missing"}, expected easy,hard`);
   await page.getByRole("button", { name: /^Start/ }).click();
   await page.waitForSelector("h2");
   for (let i = 0; i < 3; i++) {
@@ -1430,7 +1445,7 @@ for (const name of ["Red", "Blue"]) {
 }
 const [quizRed, quizBlue] = quiz;
 await gotoSettled(quizRed.p, `${BASE}/quiz/pokemon-games-quiz`);
-await quizRed.p.getByRole("button", { name: "easy", exact: true }).last().click();
+if (await quizRed.p.getByRole("group", { name: "Duel difficulty" }).count()) errors.push("quiz duel: Mainline Games still offers a difficulty");
 await quizRed.p.getByLabel("Your trainer name").fill("Red");
 await clickUntilUrl(quizRed.p, quizRed.p.getByRole("button", { name: /Create duel/ }), /\/quiz\/duel\/[a-z2-9]{8}$/);
 const quizUrl = quizRed.p.url();
@@ -1443,7 +1458,8 @@ else fs.writeFileSync(`${OUT}/quiz-duel-og.png`, await quizOg.body());
 await gotoSettled(quizBlue.p, quizUrl.replace("/quiz/duel/", "/pokedle/duel/"));
 await quizBlue.p.waitForURL(quizUrl);
 await quizBlue.p.getByText("Red challenges you!").waitFor();
-await quizBlue.p.getByText("Easy", { exact: true }).waitFor();
+await quizBlue.p.getByText("Mainline Games", { exact: true }).first().waitFor();
+if (await quizBlue.p.getByText(/Difficulty:/).count()) errors.push("quiz duel: the lobby names a difficulty for a fixed mode");
 await quizBlue.p.getByLabel("Your trainer name").fill("Blue");
 await quizBlue.p.getByRole("button", { name: /Join duel/ }).click();
 await quizRed.p.getByText("Blue").first().waitFor();
@@ -1988,6 +2004,11 @@ step("pokédex Trainers tab: search, notable filter, a game by route, an area's 
 }
 
 step("trainer, leaderboard, pokémon page");
+// Quiz modes are off the leaderboard: an old quiz board link lands on the Daily, with no quiz tabs.
+await gotoSettled(page, `${BASE}/leaderboard?board=whos-that&format=classic&difficulty=medium`);
+await page.getByTestId("leaderboard-tabs").waitFor();
+if (await page.getByTestId("leaderboard-tabs").locator('a[href="/leaderboard?board=whos-that"], a[href="/leaderboard?board=shiny"]').count()) errors.push("leaderboard: quiz-mode tabs are still there");
+await page.getByText(/Daily Challenge #\d+/).first().waitFor();
 for (const path of ["/trainer", "/leaderboard?board=iq", "/pokemon/eevee", "/pokedex?type=ghost&sort=spe"]) {
   await gotoSettled(page, `${BASE}${path}`);
   await page.screenshot({ path: `${OUT}/${path.slice(1).replace(/[^a-z0-9]+/gi, "_")}.png` });
@@ -2622,6 +2643,13 @@ if (me.enabled) {
   if (!synced.progress || synced.progress.xp <= 0) throw new Error("progress didn't sync to the account");
   await page.screenshot({ path: `${OUT}/account-trainer.png` });
 
+  step("profile: quiz personal bests from the runs played earlier");
+  await gotoSettled(page, `${BASE}/u/${username}`);
+  await page.getByTestId("profile-quiz-bests").waitFor();
+  const bestRows = await page.getByTestId("profile-quiz-best").count();
+  if (bestRows < 1) errors.push(`profile: no quiz personal bests after this run's quizzes (${bestRows} rows)`);
+  await page.getByTestId("profile-quiz-bests").screenshot({ path: `${OUT}/profile-quiz-bests.png` });
+
   await page.getByRole("button", { name: "Sign out" }).click();
   await page.getByRole("link", { name: "Sign in" }).first().waitFor();
   const cleared = await page.evaluate(() => JSON.parse(localStorage.getItem("pokeiq:progress:v1") ?? "{}").xp ?? 0);
@@ -3050,22 +3078,28 @@ step("name 'em all: hub, a Gen 1 run (aliases, wrong category, pause, give up), 
   await np.getByText(/Copied!|Couldn.t copy/).first().waitFor({ timeout: 5_000 });
   await np.screenshot({ path: `${OUT}/name-em-all-results.png` });
 
-  // A ranked run: Ultra Beasts in Regular mode, no hints, cleared, posted under a name.
+  // No leaderboard: a clean Ultra Beasts clear (Regular, no hints) by a signed-in trainer is kept as their personal best,
+  // and shows on their profile. Without accounts on this server the result just says to sign in.
+  const neaName = `nea${Date.now().toString(36).slice(-7)}`;
+  const neaSignedIn = me.enabled && (await np.request.post(`${BASE}/api/auth/register`, { data: { username: neaName, password: "correct horse battery" }, headers: { Origin: BASE } })).ok();
   const ub = ["nihilego", "buzzwole", "pheromosa", "xurkitree", "celesteela", "kartana", "guzzlord", "poipole", "naganadel", "stakataka", "blacephalon"];
   await gotoSettled(np, `${BASE}/quiz/name-em-all/ultra-beasts`);
+  if (await np.getByTestId("nea-board").count()) errors.push("name 'em all: the setup still shows a leaderboard");
   await np.getByTestId("nea-start").click();
   for (const n of ub) {
     await np.getByTestId("nea-input").pressSequentially(n, { delay: 40 });
     await np.waitForTimeout(150);
   }
   await np.getByTestId("nea-results").waitFor();
-  const post = np.getByTestId("nea-post");
-  if (await post.waitFor({ timeout: 8_000 }).then(() => true, () => false)) {
-    await np.getByTestId("nea-results").getByLabel("Your trainer name").fill("Red");
-    await post.click();
+  if (neaSignedIn) {
+    await np.getByTestId("nea-saved").waitFor({ timeout: 8_000 }).catch(() => errors.push("name 'em all: a clean clear wasn't kept as a personal best"));
+    await gotoSettled(np, `${BASE}/u/${neaName}`);
+    await np.getByTestId("profile-nea-best").filter({ hasText: "11/11" }).waitFor({ timeout: 8_000 }).catch(() => errors.push("name 'em all: the profile doesn't show the best"));
+    await np.getByTestId("profile-quiz-bests").screenshot({ path: `${OUT}/profile-nea-bests.png` });
+  } else {
+    await np.getByTestId("nea-sign-in").waitFor({ timeout: 8_000 }).catch(() => errors.push("name 'em all: no sign-in note for a personal best"));
   }
-  await np.getByTestId("nea-placed").waitFor({ timeout: 8_000 }).catch(() => errors.push("name 'em all: a clean clear wasn't ranked"));
-  await np.getByTestId("nea-board-row").first().waitFor({ timeout: 8_000 }).catch(() => errors.push("name 'em all: the leaderboard didn't show the run"));
+  if (await np.getByTestId("nea-board").count()) errors.push("name 'em all: a leaderboard is still shown");
 
   await gotoSettled(np, `${BASE}/quiz/name-em-all/daily`);
   await np.getByTestId("nea-setup").waitFor({ timeout: 10_000 });

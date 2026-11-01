@@ -25,36 +25,38 @@ export function QuizBests({ username, quiz, nea }: { username: string; quiz: Qui
         ) : (
           <>
             {quiz.length > 0 && (
-              <div className="-mx-5 overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="border-b text-left text-[11px] uppercase text-muted-foreground">
-                      <th className="px-5 py-2 font-semibold">Mode</th>
-                      {PLAYABLE_FORMATS.map((f) => (
-                        <th key={f} className="px-2 py-2 text-right font-semibold last:pr-5">
-                          {FORMAT_INFO[f].title}
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {quiz.map((row) => (
-                      <tr key={row.module} className="border-b border-border/60 last:border-0" data-testid="profile-quiz-best">
-                        <td className="max-w-0 px-5 py-2">
-                          <Link href={moduleHref(row.module)} className="flex min-w-0 items-center gap-2 font-semibold hover:text-screen">
-                            <ModeIcon module={row.module} className="h-4 w-4 shrink-0 text-muted-foreground" />
-                            <span className="truncate">{MODULE_INFO[row.module].title}</span>
-                          </Link>
-                        </td>
-                        {PLAYABLE_FORMATS.map((f) => (
-                          <td key={f} className="w-[4.5rem] whitespace-nowrap px-2 py-2 text-right font-mono tabular-nums last:pr-5 sm:w-24">
-                            {row.scores[f]?.toLocaleString("en-US") ?? <span className="text-muted-foreground/60">—</span>}
-                          </td>
-                        ))}
-                      </tr>
+              // A grid, not a table: on a phone the mode's name gets its own line above the three scores.
+              <div className="text-sm" role="table" aria-label="Best score per mode and format">
+                <div role="row" className="grid grid-cols-3 border-b pb-2 text-[11px] font-semibold uppercase text-muted-foreground sm:grid-cols-[minmax(0,1fr)_6rem_6rem_6rem]">
+                  <span role="columnheader" className="hidden sm:block">
+                    Mode
+                  </span>
+                  {PLAYABLE_FORMATS.map((f) => (
+                    <span key={f} role="columnheader" className="text-right">
+                      {FORMAT_INFO[f].title}
+                    </span>
+                  ))}
+                </div>
+                {quiz.map((row) => (
+                  <div
+                    key={row.module}
+                    role="row"
+                    className="grid grid-cols-3 items-center gap-y-1 border-b border-border/60 py-2 last:border-0 sm:grid-cols-[minmax(0,1fr)_6rem_6rem_6rem]"
+                    data-testid="profile-quiz-best"
+                  >
+                    <span role="rowheader" className="col-span-3 min-w-0 sm:col-span-1">
+                      <Link href={moduleHref(row.module)} className="flex min-w-0 items-center gap-2 font-semibold hover:text-screen">
+                        <ModeIcon module={row.module} className="h-4 w-4 shrink-0 text-muted-foreground" />
+                        <span className="truncate">{MODULE_INFO[row.module].title}</span>
+                      </Link>
+                    </span>
+                    {PLAYABLE_FORMATS.map((f) => (
+                      <span key={f} role="cell" className="text-right font-mono tabular-nums">
+                        {row.scores[f]?.toLocaleString("en-US") ?? <span className="text-muted-foreground/60">—</span>}
+                      </span>
                     ))}
-                  </tbody>
-                </table>
+                  </div>
+                ))}
               </div>
             )}
             {nea.length > 0 && (
