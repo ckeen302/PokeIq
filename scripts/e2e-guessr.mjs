@@ -219,6 +219,8 @@ async function duel(width, height, { turbo }) {
   const red = await newPage({ width, height });
   const blue = await newPage({ width, height });
   step(`duel at ${tag}${turbo ? " (Turbo)" : ""}`);
+  // The countdown's pressure audio: Blue plays the plain duel with sound on (the default) and the Turbo one muted.
+  if (turbo) await blue.context().addInitScript(() => localStorage.setItem("pokeiq-muted", "1"));
   await red.goto(`${BASE}/guessr?region=kanto`, { waitUntil: "networkidle" });
   await closeHowTo(red);
   if (turbo) {
@@ -272,7 +274,14 @@ async function duel(width, height, { turbo }) {
   const secs = Number(barText.match(/(\d+) s to guess/i)?.[1] ?? NaN);
   if (!(secs > 0 && secs <= (turbo ? 10 : 15))) errors.push(`the opponent-guessed bar reads "${barText}" (turbo: ${turbo})`);
   if (phone) await blue.screenshot({ path: `${OUT}/duel-opponent-guessed-${tag}.png` });
+  const pressure = () => blue.evaluate(() => document.documentElement.dataset.guessrPressure ?? "off");
+  if (turbo) {
+    if ((await pressure()) !== "off") errors.push("the countdown's pressure audio played while muted");
+  } else if (!(await blue.waitForFunction(() => document.documentElement.dataset.guessrPressure === "on", null, { timeout: 3_000 }).then(() => true, () => false))) {
+    errors.push("the countdown's pressure audio didn't start for Blue (sound on)");
+  }
   await pinAndGuess(blue, phone, 0.22);
+  if ((await pressure()) !== "off") errors.push("the countdown's pressure audio didn't stop when Blue guessed");
 
   // The reveal and its damage sequence.
   await red.getByTestId("geo-duel-reveal").waitFor({ timeout: 30_000 });
@@ -409,6 +418,9 @@ async function royale(width, height) {
   await red.getByTestId("geo-emote-pika").click();
   await blue.getByTestId("party-emote-0").waitFor({ timeout: 8_000 }).catch(() => errors.push("Blue never saw Red's emote"));
   await pinAndGuess(red, phone, 0.5);
+  // Red's pin starts the countdown: the others see who guessed.
+  await green.getByTestId("geo-opponent-guessed").filter({ hasText: /Red guessed/ }).waitFor({ timeout: 8_000 }).catch(() => errors.push("Green never saw that Red guessed"));
+  await green.screenshot({ path: `${OUT}/party-guessed-${tag}.png` });
   await pinAndGuess(blue, phone, 0.35);
   await red.locator("[data-testid=party-roster-1][data-guessed=true]").waitFor({ timeout: 8_000 }).catch(() => errors.push("the roster doesn't tick off Blue's guess"));
   await red.getByTestId("party-reveal").waitFor({ timeout: 30_000 });
