@@ -82,6 +82,8 @@ export function TimelineExperience({ entries, eraStarts, initialId = null, child
   const flyRequested = useRef(false);
   const flashCount = useRef(0);
   openRef.current = openId;
+  const flashRef = useRef(flash);
+  flashRef.current = flash;
   introRef.current = intro;
 
   const byId = useMemo(() => new Map(entries.map((e) => [e.id, e])), [entries]);
@@ -246,8 +248,9 @@ export function TimelineExperience({ entries, eraStarts, initialId = null, child
   // Hide the era title card a moment after it plays.
   useEffect(() => {
     if (!flash) return;
-    // The distant era titles wait until the title card has gone, so two titles never overlap.
-    apiRef.current?.quietSigns(2700);
+    // The distant era titles wait until the title card has gone (its exit has finished, however
+    // slow the frames), so two titles never overlap.
+    apiRef.current?.quietSigns(60_000);
     const id = setTimeout(() => setFlash(null), 2300);
     return () => clearTimeout(id);
   }, [flash]);
@@ -426,7 +429,8 @@ export function TimelineExperience({ entries, eraStarts, initialId = null, child
               />
             )}
           </AnimatePresence>
-          <AnimatePresence>
+          {/* The distant titles come back a beat after the card has left the page. */}
+          <AnimatePresence onExitComplete={() => { if (!flashRef.current) apiRef.current?.quietSigns(400); }}>
             {flash && (
               <motion.div
                 key={flash.n}

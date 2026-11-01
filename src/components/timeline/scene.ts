@@ -784,7 +784,7 @@ export function createScene(host: HTMLElement, entries: SceneEntry[], eras: Scen
       const outer = !portrait && Math.abs(x) > 6 && c.e.id !== focusId;
       const n0 = outer ? 10 : 5.75, n1 = outer ? 15 : 6.9;
       // Compact cards only come in within about five years, where they can be read; past that they'd be specks.
-      const cFar = c.mini ? Math.min(far * 0.55, 56) : far;
+      const cFar = c.mini ? Math.min(far * 0.55, 50) : far;
       const inRange = d > n0 && d < cFar && la > 0.02;
       if (inRange !== c.shown) { c.obj.visible = inRange; c.shown = inRange; c.op = -1; }
       if (!inRange) continue;
@@ -819,12 +819,14 @@ export function createScene(host: HTMLElement, entries: SceneEntry[], eras: Scen
     // An era change this frame means its title card is coming: quiet the signs before they are drawn.
     if (lastEra >= 0 && eraIndexAt(tCur + focusOffset() + 0.02) !== lastEra) quietUntil = now + 2700;
     const signsQuiet = now < quietUntil;
+    // The next title waits until any other has faded out completely, however slow the frames are.
+    const otherSignUp = labels.some((l) => l.kind === "era" && l !== nextSign && l.a > 0);
     for (const l of labels) {
       const d = camZ - l.z;
       let target = d <= (l.kind === "era" ? 2 : 0) || d >= 150 ? 0
         : l.kind === "era" ? Math.min(1, (125 - d) / 55) * Math.min(1, Math.max(0, (d - signGone) / 24))
         : Math.min(1, (150 - d) / 60) * Math.min(1, d / 6);
-      if (l.kind === "era" && (l !== nextSign || signsQuiet)) target = 0;
+      if (l.kind === "era" && (l !== nextSign || signsQuiet || otherSignUp)) target = 0;
       // Behind the title card they go at once, not over a few frames.
       if (l.kind === "era" && signsQuiet) l.a = 0;
       // Year labels follow the camera directly; era titles ease in and out so the hand-over is never a pop.
