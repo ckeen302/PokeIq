@@ -14,7 +14,8 @@ import {
   type QuizDuelResult,
   type QuizDuelView,
 } from "@/lib/pvp-types";
-import { FORMAT_RULES, learnHref, mediaUrl, questionAt, toPublic } from "./session";
+import { FORMAT_RULES, learnHref, mediaUrl, questionAt, shownCards, toPublic } from "./session";
+import { revealFactor } from "@/lib/whose-team";
 import { guessedSpecies, zoomStepWindow } from "./zoom-reveal";
 import { ZOOM_STEPS, zoomPoints } from "@/lib/zoom-reveal";
 import {
@@ -58,6 +59,8 @@ interface QuizDuelQuestion {
    * loadedQuiz). That trainer's 15 seconds and speed bonus count from here.
    */
   loaded?: (number | null)[];
+  /** Revealed questions (Whose Team on Hard): extra cards each trainer has asked for. */
+  shown?: number[];
   /** Set by the reveal. */
   result?: { at: number; points: number[]; nextAt: number };
 }
@@ -105,8 +108,12 @@ function scorePick(d: QuizDuel, index: number, seat: number): QuizDuelPick | nul
     const ok = !!pick.ok;
     return { choice: pick.choice, correct: ok, ms, points: ok ? zoomPoints(pick.step) : 0, step: pick.step };
   }
-  const correct = pick.choice === duelQuestion(d, index).answer;
-  return { choice: pick.choice, correct, ms, points: correct ? quizDuelPoints(ms) : 0 };
+  const question = duelQuestion(d, index);
+  const correct = pick.choice === question.answer;
+  // Revealed questions (Whose Team on Hard): fewer Pokémon seen, more points, as in solo play.
+  const seen = question.reveal ? shownCards(question, q.shown?.[seat] ?? 0) : undefined;
+  const factor = seen !== undefined ? revealFactor(seen, question.cards?.length ?? 0) : 1;
+  return { choice: pick.choice, correct, ms, points: correct ? Math.round(quizDuelPoints(ms) * factor) : 0, ...(seen !== undefined && { shown: seen }) };
 }
 
 /** The most points wins; level on points, the quicker right answers. */
@@ -225,6 +232,24 @@ export function zoomQuiz(duel: QuizDuel, playerId: string, index: number, choice
   });
 }
 
+/** Whose Team on Hard: show this trainer one more Pokémon of the current team (the other trainer can't see it). */
+export function revealQuiz(duel: QuizDuel, playerId: string, index: number, now: number): PvpOutcome<QuizDuel> {
+  return seated(quizRules, duel, playerId, now, (d, seat) => {
+    if (d.status !== "playing") return notPlaying(d);
+    const q = d.questions[d.questions.length - 1];
+    if (index !== d.questions.length - 1 || q.result) return fail(409, "That question is over.");
+    if (now < q.startsAt) return fail(409, "The question hasn't started yet.");
+    if (q.picks[seat]) return fail(409, "You've already answered.");
+    if (now > seatCloses(q, seat) + GRACE_MS) return fail(409, "Time's up for that question.");
+    const question = duelQuestion(d, index);
+    if (!question.reveal) return fail(400, "This question has nothing to reveal.");
+    q.shown ??= d.players.map(() => 0);
+    if (shownCards(question, q.shown[seat]) >= (question.cards?.length ?? 0)) return fail(409, "The whole team is already showing.");
+    q.shown[seat] += 1;
+    return { ok: true, duel: d };
+  });
+}
+
 /** The trainer's browser has the question's assets ready: start their clock (once, bounded). */
 export function loadedQuiz(duel: QuizDuel, playerId: string, index: number, now: number): PvpOutcome<QuizDuel> {
   return seated(quizRules, duel, playerId, now, (d, seat) => {
@@ -256,10 +281,15 @@ export function skipQuizReveal(duel: QuizDuel, playerId: string, index: number, 
 // Views
 // ---------------------------------------------------------------------------
 
-/** What both trainers see of a question: no answer, no explanation, no reveal art. */
-function questionView(q: Question, index: number, step = 1): QuizDuelQuestionView {
-  const p = toPublic(q, index, FORMAT_RULES.classic, step);
-  return { module: p.module, prompt: p.prompt, detail: p.detail, options: p.options, images: p.images, media: p.media, cards: p.cards, input: p.input, zoom: p.zoom };
+/**
+ * What a trainer sees of a question: no answer, no explanation, no reveal art.
+ * Zoom Reveal: the crop for that trainer's `step`. A revealed question (Whose
+ * Team on Hard): `extra` more cards than it starts with (that trainer's own
+ * reveals; everything once the question is over).
+ */
+function questionView(q: Question, index: number, step = 1, extra = 0): QuizDuelQuestionView {
+  const p = toPublic(q, index, FORMAT_RULES.classic, step, extra);
+  return { module: p.module, prompt: p.prompt, detail: p.detail, options: p.options, images: p.images, media: p.media, cards: p.cards, input: p.input, zoom: p.zoom, reveal: p.reveal };
 }
 
 /** Zoom Reveal: the step a trainer is on, or ended on. */
@@ -276,7 +306,7 @@ export function quizView(duel: QuizDuel, playerId: string | null, now: number, r
     x.result.points.forEach((p, k) => (scores[k] += p));
     // The latest reveal is on screen: it gets its media back, and the artwork.
     const mine = seat >= 0 && x.zs ? seatStep(x, seat) : 1;
-    const view = questionView(q, index, mine);
+    const view = questionView(q, index, mine, q.cards?.length ?? 0);
     const zoomFrom = index === lastRevealed && q.input === "name" && q.media ? zoomStepWindow(q.media.pokemonId, q.media.crop ?? 0, mine) : undefined;
     return [
       {
@@ -309,7 +339,7 @@ export function quizView(duel: QuizDuel, playerId: string | null, now: number, r
       startsAt: live.startsAt,
       endsAt: seat >= 0 ? seatCloses(live, seat) : closesAt(live),
       loaded: seat >= 0 ? live.loaded?.[seat] != null : undefined,
-      question: now >= live.startsAt ? questionView(duelQuestion(duel, index), index, seat >= 0 && live.zs ? seatStep(live, seat) : 1) : undefined,
+      question: now >= live.startsAt ? questionView(duelQuestion(duel, index), index, seat >= 0 && live.zs ? seatStep(live, seat) : 1, seat >= 0 ? (live.shown?.[seat] ?? 0) : 0) : undefined,
       answered: live.picks.map(Boolean),
       yours: seat >= 0 ? live.picks[seat]?.choice : undefined,
       ...(live.zs && { steps: live.picks.map((_, k) => seatStep(live, k)) }),

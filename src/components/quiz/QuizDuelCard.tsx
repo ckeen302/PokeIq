@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { DIFFICULTIES, type Difficulty, type ModuleId } from "@/engines/types";
-import { MODULE_INFO, PLAY_MODULES } from "@/lib/modes";
+import type { Difficulty, ModuleId } from "@/engines/types";
+import { MODULE_INFO, PLAY_MODULES, difficultiesFor } from "@/lib/modes";
 import { QUIZ_DUEL_QUESTIONS, QUIZ_DUEL_QUESTION_MS, ZOOM_DUEL_QUESTION_MS, pvpHref } from "@/lib/pvp-types";
 import { ZOOM_POINTS, ZOOM_STEPS } from "@/lib/zoom-reveal";
 import { NewDuelCard } from "@/components/duel/NewDuelCard";
@@ -11,7 +11,10 @@ import { cn } from "@/lib/utils";
 /** "Duel a friend" on a quiz's setup screen (and the /play hub): pick the mode and difficulty, open a quiz duel. */
 export function QuizDuelCard({ module: initial = "whos-that", difficulty: initialDifficulty = "medium" }: { module?: ModuleId; difficulty?: Difficulty }) {
   const [module, setModule] = useState<ModuleId>(initial);
-  const [difficulty, setDifficulty] = useState<Difficulty>(initialDifficulty);
+  const [picked, setDifficulty] = useState<Difficulty>(initialDifficulty);
+  const choices = difficultiesFor(module);
+  // A mode without the picked level (Whose Team has no Easy) plays its first one.
+  const difficulty = choices.some((c) => c.id === picked) ? picked : choices[0].id;
   return (
     <NewDuelCard
       body={{ kind: "quiz", module, difficulty }}
@@ -42,7 +45,7 @@ export function QuizDuelCard({ module: initial = "whos-that", difficulty: initia
         <div className="space-y-1">
           <span className="hud-label block">Difficulty</span>
           <div className="flex gap-1" role="group" aria-label="Duel difficulty">
-            {DIFFICULTIES.map((d) => (
+            {choices.map(({ id: d, label }) => (
               <button
                 key={d}
                 type="button"
@@ -53,7 +56,7 @@ export function QuizDuelCard({ module: initial = "whos-that", difficulty: initia
                   difficulty === d ? "border-primary bg-primary text-primary-foreground" : "border-foreground/10 bg-shade/20 text-muted-foreground hover:border-primary/50 hover:text-foreground"
                 )}
               >
-                {d}
+                {label}
               </button>
             ))}
           </div>

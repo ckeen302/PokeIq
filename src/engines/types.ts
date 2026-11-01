@@ -9,7 +9,7 @@ import type { Rng } from "@/lib/rng";
  * session seed when grading (see src/lib/server/session.ts).
  */
 
-export const MODULES = ["whos-that", "cry", "dex", "types", "higher-lower", "games", "anime", "competitive", "shiny", "zoom-reveal", "mixed"] as const;
+export const MODULES = ["whos-that", "cry", "dex", "types", "higher-lower", "games", "anime", "competitive", "shiny", "zoom-reveal", "whose-team", "mixed"] as const;
 export type ModuleId = (typeof MODULES)[number];
 
 export const FORMATS = ["classic", "survival", "blitz", "adaptive"] as const;
@@ -55,8 +55,18 @@ export interface Question {
   revealMedia?: MediaRef;
   /** Prior item difficulty on the PokéIQ rating scale (≈ Elo). */
   rating: number;
-  /** "name": answered by typing a Pokémon's name, with no options (Zoom Reveal). */
-  input?: "name";
+  /**
+   * How the answer is given instead of picking a tile:
+   * - "name": a Pokémon's name, typed, with no options (Zoom Reveal);
+   * - "type": a trainer's name, typed, autocompleting over `options` (Whose Team Is This?).
+   */
+  input?: "name" | "type";
+  /**
+   * Cards revealed one at a time (Whose Team Is This? on Hard): `cards` are in
+   * reveal order and the browser starts with this many; the rest are served
+   * one by one on request (POST /api/session/reveal) and cost points.
+   */
+  reveal?: number;
 }
 
 export interface GenerateOptions {
@@ -64,7 +74,12 @@ export interface GenerateOptions {
   gens?: number[];
   /** Pokémon ids already used this session — engines avoid repeats. */
   used: Set<number>;
+  /** Whose Team Is This?: only game teams or only anime teams. */
+  scope?: QuizScope;
 }
+
+export const SCOPES = ["games", "anime"] as const;
+export type QuizScope = (typeof SCOPES)[number];
 
 /** A module builder returns null when it can't produce an unambiguous question. */
 export type QuestionBuilder = (rng: Rng, opts: GenerateOptions) => Question | null;

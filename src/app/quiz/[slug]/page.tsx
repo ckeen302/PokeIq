@@ -77,6 +77,13 @@ export default async function QuizPage({ params }: PageProps) {
             differ, the question names the game. Answers are checked on our server and your PokéIQ is calculated from how
             hard each question you got right actually was.
           </p>
+        ) : preset.module === "whose-team" ? (
+          <p>
+            Game teams come from the games&apos; own party data (the decompilations for Gens I–IV, Bulbapedia for Gens V–IX,
+            each confirmed by Serebii), anime teams from the Pokémon Wiki&apos;s lists of each trainer&apos;s Pokémon. Every answer names the exact battle
+            or series and links its source. Answers are checked on our server, and on Hard the hidden Pokémon stay there
+            until you reveal them.
+          </p>
         ) : preset.module === "shiny" ? (
           <p>
             Each round shows four pictures of one Pokémon: its real shiny and three fakes made by shifting the colours.

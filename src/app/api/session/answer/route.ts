@@ -47,6 +47,11 @@ export async function POST(request: NextRequest) {
   }
   if (!outcome.ok) return NextResponse.json({ error: outcome.error }, { status: outcome.status });
 
+  // Whose Team on Hard: an older token (fewer Pokémon revealed) can't answer once a newer one revealed more.
+  if (outcome.revealGuard && !(await claimOnce(outcome.revealGuard))) {
+    return NextResponse.json({ error: "You revealed more Pokémon since — answer with your latest token." }, { status: 409 });
+  }
+
   if (!(await claimOnce(outcome.claimKey))) {
     return NextResponse.json({ error: "That question was already answered." }, { status: 409 });
   }

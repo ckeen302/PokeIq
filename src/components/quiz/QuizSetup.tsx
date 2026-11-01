@@ -3,8 +3,8 @@
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Play, Settings2 } from "lucide-react";
-import { DIFFICULTIES, type Difficulty, type ModuleId, type QuizFormat } from "@/engines/types";
-import { FORMAT_INFO, MODULE_INFO, PLAYABLE_FORMATS, filterFor } from "@/lib/modes";
+import type { Difficulty, ModuleId, QuizFormat, QuizScope } from "@/engines/types";
+import { FORMAT_INFO, MODULE_INFO, PLAYABLE_FORMATS, difficultiesFor, filterFor } from "@/lib/modes";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { QuizController, type StartRequest } from "./QuizController";
@@ -27,13 +27,17 @@ export function QuizSetup({ module, initialFormat, initialDifficulty = "medium",
   const info = MODULE_INFO[module];
   const filter = filterFor(module);
   const [format, setFormat] = useState<QuizFormat>(initialFormat ?? info.defaultFormat);
-  const [difficulty, setDifficulty] = useState<Difficulty>(initialDifficulty);
+  const choices = difficultiesFor(module);
+  const [difficulty, setDifficulty] = useState<Difficulty>(choices.some((c) => c.id === initialDifficulty) ? initialDifficulty : choices[0].id);
+  // Whose Team Is This?: game teams, anime teams or both.
+  const [scope, setScope] = useState<QuizScope | null>(null);
+  const hasScope = module === "whose-team";
   const [gens, setGens] = useState<number[]>(initialGens);
   const [request, setRequest] = useState<StartRequest | null>(null);
   const [runKey, setRunKey] = useState(0);
 
   const start = () => {
-    setRequest({ module, format, difficulty, gens: gens.length ? gens : undefined });
+    setRequest({ module, format, difficulty, gens: gens.length ? gens : undefined, ...(hasScope && scope && { scope }) });
     setRunKey((k) => k + 1);
   };
 
@@ -83,14 +87,33 @@ export function QuizSetup({ module, initialFormat, initialDifficulty = "medium",
               </Field>
 
               <Field label="Difficulty">
-                <div className="grid grid-cols-3 gap-2">
-                  {DIFFICULTIES.map((d) => (
-                    <Choice key={d} active={difficulty === d} onClick={() => setDifficulty(d)}>
-                      <span className="font-display font-bold uppercase tracking-wider">{d}</span>
+                <div className={cn("grid gap-2", choices.length === 2 ? "grid-cols-2" : "grid-cols-3")}>
+                  {choices.map((d) => (
+                    <Choice key={d.id} active={difficulty === d.id} onClick={() => setDifficulty(d.id)}>
+                      <span className="font-display font-bold uppercase tracking-wider">{d.label}</span>
+                      {hasScope && (
+                        <span className="text-[11px] text-muted-foreground">{d.id === "hard" ? "One Pokémon at a time, ace last" : "The whole team"}</span>
+                      )}
                     </Choice>
                   ))}
                 </div>
               </Field>
+
+              {hasScope && (
+                <Field label="Teams from">
+                  <div className="flex flex-wrap gap-2">
+                    {([
+                      [null, "Games & anime"],
+                      ["games", "Games"],
+                      ["anime", "Anime"],
+                    ] as const).map(([value, label]) => (
+                      <Chip key={label} active={scope === value} onClick={() => setScope(value)}>
+                        {label}
+                      </Chip>
+                    ))}
+                  </div>
+                </Field>
+              )}
 
               <Field label={gens.length ? `${filter.label} (${gens.length} selected)` : `${filter.label} (all)`}>
                 <div className="flex flex-wrap gap-2">

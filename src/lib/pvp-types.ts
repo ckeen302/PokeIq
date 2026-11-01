@@ -268,7 +268,7 @@ export const quizDuelPoints = (ms: number) =>
 export const ZOOM_DUEL_QUESTION_MS = 40_000;
 
 /** A question as both trainers see it: the solo quiz's public question, without its timer. */
-export type QuizDuelQuestionView = Pick<PublicQuestion, "module" | "prompt" | "detail" | "options" | "images" | "media" | "cards" | "input" | "zoom">;
+export type QuizDuelQuestionView = Pick<PublicQuestion, "module" | "prompt" | "detail" | "options" | "images" | "media" | "cards" | "input" | "zoom" | "reveal">;
 
 export interface QuizDuelLiveQuestion {
   index: number;
@@ -291,6 +291,8 @@ export interface QuizDuelLiveQuestion {
 export interface QuizDuelPick {
   choice: string;
   correct: boolean;
+  /** Revealed questions: how many Pokémon this trainer had seen when they answered. */
+  shown?: number;
   /** Time from the question appearing to the pick. */
   ms: number;
   points: number;

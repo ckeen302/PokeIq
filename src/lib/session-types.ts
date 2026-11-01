@@ -1,4 +1,4 @@
-import type { Difficulty, ModuleId, QuizFormat } from "@/engines/types";
+import type { Difficulty, ModuleId, QuizFormat, QuizScope } from "@/engines/types";
 import type { ZoomView, ZoomWindow } from "@/lib/zoom-reveal";
 
 /** Wire types shared by the session API and the client. No answers in here. */
@@ -20,6 +20,8 @@ export interface SessionSpec {
   gens?: number[];
   /** Public seed id. Question content is HMAC(secret, seed)-derived. */
   seed: string;
+  /** Whose Team Is This?: only game teams or only anime teams (absent: both). */
+  scope?: QuizScope;
   /** Local date (YYYY-MM-DD) for Daily Challenge runs. */
   daily?: string;
   /** Set (and signed) by the server when the run is unranked. */
@@ -39,10 +41,23 @@ export interface PublicQuestion {
   media?: { type: "image" | "audio"; url: string; zoom?: boolean };
   cards?: { label: string; imageUrl: string }[];
   timeLimitMs: number | null;
-  /** "name": no options, the player types a Pokémon's name (Zoom Reveal). */
-  input?: "name";
+  /**
+   * How the answer is given instead of picking a tile: "name", a Pokémon's
+   * name with no options (Zoom Reveal); "type", a trainer's name,
+   * autocompleting over `options` (Whose Team Is This?).
+   */
+  input?: "name" | "type";
   /** Zoom Reveal: the step in play and its crop. */
   zoom?: ZoomView;
+  /** Cards revealed one at a time: `cards` holds the `shown` so far, out of `total`. */
+  reveal?: { shown: number; total: number };
+}
+
+/** POST /api/session/reveal: one more card of the current question. */
+export interface RevealResponse {
+  token: string;
+  card: { label: string; imageUrl: string };
+  reveal: { shown: number; total: number };
 }
 
 export interface RunResult {
@@ -89,6 +104,8 @@ export interface AnswerResponse {
   learnHref?: string;
   /** Trivia modes: the Bulbapedia page the answer was checked against. */
   sourceUrl?: string;
+  /** Revealed questions: the whole set of cards, once answered. */
+  revealCards?: { label: string; imageUrl: string }[];
   /** Skill tags for the weak-spot coach, e.g. ["mod:dex", "gen:3", "type:fire"]. */
   tags: string[];
   gained: number;
@@ -138,6 +155,8 @@ export interface ShareCard {
   d: Difficulty;
   g?: number[];
   s: string;
+  /** Spec scope (Whose Team Is This?). */
+  o?: QuizScope;
   day?: string;
   sc: number;
   c: number;

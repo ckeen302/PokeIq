@@ -1,0 +1,28 @@
+yellow Lt. Surge LT_SURGE-1: only 1 Pokémon
+black-2-white-2 Bianca ROUTE_1-POKEMON_TRAINER_BIANCA: Bulbapedia import not confirmed by Serebii
+black-2-white-2 Hugh DRIFTVEIL_CITY-POKEMON_TRAINER_HUGH: Bulbapedia import not confirmed by Serebii
+x-y Calem KILOUDE_CITY-POKEMON_TRAINER_CALEM: Bulbapedia import not confirmed by Serebii
+x-y Serena KILOUDE_CITY-POKEMON_TRAINER_SERENA: Bulbapedia import not confirmed by Serebii
+lets-go-pikachu-eevee Giovanni SILPH_CO-TEAM_ROCKET_BOSS_GIOVANNI: Bulbapedia import not confirmed by Serebii
+lets-go-pikachu-eevee Trace INDIGO_PLATEAU-CHAMPION_TRACE: Bulbapedia import not confirmed by Serebii
+brilliant-diamond-shining-pearl Roark OREBURGH_GYM-GYM_LEADER_ROARK-2: Bulbapedia import not confirmed by Serebii
+brilliant-diamond-shining-pearl Gardenia ETERNA_GYM-GYM_LEADER_GARDENIA-2: Bulbapedia import not confirmed by Serebii
+brilliant-diamond-shining-pearl Byron CANALAVE_GYM-GYM_LEADER_BYRON-2: Bulbapedia import not confirmed by Serebii
+brilliant-diamond-shining-pearl Candice SNOWPOINT_GYM-GYM_LEADER_CANDICE-2: Bulbapedia import not confirmed by Serebii
+brilliant-diamond-shining-pearl Volkner SUNYSHORE_GYM-GYM_LEADER_VOLKNER-2: Bulbapedia import not confirmed by Serebii
+brilliant-diamond-shining-pearl Lucian POKEMON_LEAGUE-ELITE_FOUR_LUCIAN-3: Bulbapedia import not confirmed by Serebii
+scarlet-violet Katy CORTONDO_GYM-GYM_LEADER_KATY-2: Bulbapedia import not confirmed by Serebii
+scarlet-violet Brassius ARTAZON_GYM-GYM_LEADER_BRASSIUS-2: Bulbapedia import not confirmed by Serebii
+scarlet-violet Iono LEVINCIA_GYM-GYM_LEADER_IONO-2: Bulbapedia import not confirmed by Serebii
+scarlet-violet Kofu CASCARRAFA_GYM-GYM_LEADER_KOFU-2: Bulbapedia import not confirmed by Serebii
+scarlet-violet Larry MEDALI_GYM-GYM_LEADER_LARRY-2: Bulbapedia import not confirmed by Serebii
+scarlet-violet Ryme MONTENEVERA_GYM-GYM_LEADER_RYME-2: Bulbapedia import not confirmed by Serebii
+scarlet-violet Tulip ALFORNADA_GYM-GYM_LEADER_TULIP-2: Bulbapedia import not confirmed by Serebii
+scarlet-violet Kieran BLUEBERRY_ACADEMY-BB_LEAGUE_CHAMPION_KIERAN: Bulbapedia import not confirmed by Serebii
+scarlet-violet Crispin SAVANNA_PLAZA-BB_LEAGUE_ELITE_FOUR_CRISPIN: Bulbapedia import not confirmed by Serebii
+ruby-sapphire:may:may_lilycove_mudkip: same Pokémon as Brendan
+ruby-sapphire:brendan:brendan_lilycove_mudkip: same Pokémon as May
+emerald:may:may_lilycove_mudkip: same Pokémon as Brendan
+emerald:brendan:brendan_lilycove_mudkip: same Pokémon as May
+black-white:drayden:opelucid_gym-leader_drayden: same Pokémon as Iris
+black-white:iris:opelucid_gym-leader_iris: same Pokémon as Drayden

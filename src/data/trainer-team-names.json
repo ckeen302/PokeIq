@@ -1,0 +1,491 @@
+[
+ {
+  "name": "Aaron"
+ },
+ {
+  "name": "Acerola"
+ },
+ {
+  "name": "Agatha"
+ },
+ {
+  "name": "Alain"
+ },
+ {
+  "name": "Alder"
+ },
+ {
+  "name": "Allister"
+ },
+ {
+  "name": "Amarys"
+ },
+ {
+  "name": "Archie"
+ },
+ {
+  "name": "Arven"
+ },
+ {
+  "name": "Ash",
+  "aliases": [
+   "Ash Ketchum",
+   "Satoshi"
+  ],
+  "note": "Satoshi in Japanese"
+ },
+ {
+  "name": "Avery"
+ },
+ {
+  "name": "Barry"
+ },
+ {
+  "name": "Bea"
+ },
+ {
+  "name": "Bede"
+ },
+ {
+  "name": "Bertha"
+ },
+ {
+  "name": "Bianca"
+ },
+ {
+  "name": "Blaine"
+ },
+ {
+  "name": "Blue",
+  "aliases": [
+   "Green"
+  ],
+  "note": "Called Green in the Japanese games"
+ },
+ {
+  "name": "Brassius"
+ },
+ {
+  "name": "Brawly"
+ },
+ {
+  "name": "Brendan"
+ },
+ {
+  "name": "Brock"
+ },
+ {
+  "name": "Bruno"
+ },
+ {
+  "name": "Brycen"
+ },
+ {
+  "name": "Bugsy"
+ },
+ {
+  "name": "Burgh"
+ },
+ {
+  "name": "Byron"
+ },
+ {
+  "name": "Caitlin"
+ },
+ {
+  "name": "Candice"
+ },
+ {
+  "name": "Carmine"
+ },
+ {
+  "name": "Chairman Rose",
+  "aliases": [
+   "Rose"
+  ]
+ },
+ {
+  "name": "Cheren"
+ },
+ {
+  "name": "Chili"
+ },
+ {
+  "name": "Chuck"
+ },
+ {
+  "name": "Cilan"
+ },
+ {
+  "name": "Clair"
+ },
+ {
+  "name": "Clay"
+ },
+ {
+  "name": "Clemont"
+ },
+ {
+  "name": "Crasher Wake",
+  "aliases": [
+   "Wake"
+  ]
+ },
+ {
+  "name": "Cress"
+ },
+ {
+  "name": "Cynthia"
+ },
+ {
+  "name": "Cyrus"
+ },
+ {
+  "name": "Diantha"
+ },
+ {
+  "name": "Drake"
+ },
+ {
+  "name": "Drasna"
+ },
+ {
+  "name": "Drayden"
+ },
+ {
+  "name": "Drayton"
+ },
+ {
+  "name": "Elesa"
+ },
+ {
+  "name": "Erika"
+ },
+ {
+  "name": "Falkner"
+ },
+ {
+  "name": "Fantina"
+ },
+ {
+  "name": "Flannery"
+ },
+ {
+  "name": "Flint"
+ },
+ {
+  "name": "Gardenia"
+ },
+ {
+  "name": "Gary",
+  "aliases": [
+   "Gary Oak",
+   "Shigeru"
+  ],
+  "note": "Shigeru in Japanese"
+ },
+ {
+  "name": "Geeta"
+ },
+ {
+  "name": "Ghetsis"
+ },
+ {
+  "name": "Giovanni"
+ },
+ {
+  "name": "Glacia"
+ },
+ {
+  "name": "Gladion"
+ },
+ {
+  "name": "Gordie"
+ },
+ {
+  "name": "Grant"
+ },
+ {
+  "name": "Grimsley"
+ },
+ {
+  "name": "Grusha"
+ },
+ {
+  "name": "Guzma"
+ },
+ {
+  "name": "Hala"
+ },
+ {
+  "name": "Hapu"
+ },
+ {
+  "name": "Hassel"
+ },
+ {
+  "name": "Hau"
+ },
+ {
+  "name": "Hop"
+ },
+ {
+  "name": "Iono"
+ },
+ {
+  "name": "Iris"
+ },
+ {
+  "name": "Janine"
+ },
+ {
+  "name": "Jasmine"
+ },
+ {
+  "name": "Juan"
+ },
+ {
+  "name": "Kabu"
+ },
+ {
+  "name": "Kahili"
+ },
+ {
+  "name": "Karen"
+ },
+ {
+  "name": "Katy"
+ },
+ {
+  "name": "Klara"
+ },
+ {
+  "name": "Kofu"
+ },
+ {
+  "name": "Koga"
+ },
+ {
+  "name": "Korrina"
+ },
+ {
+  "name": "Lacey"
+ },
+ {
+  "name": "Lance"
+ },
+ {
+  "name": "Larry"
+ },
+ {
+  "name": "Lenora"
+ },
+ {
+  "name": "Leon"
+ },
+ {
+  "name": "Liko"
+ },
+ {
+  "name": "Lorelei"
+ },
+ {
+  "name": "Lt. Surge",
+  "aliases": [
+   "Surge"
+  ]
+ },
+ {
+  "name": "Lucian"
+ },
+ {
+  "name": "Lusamine"
+ },
+ {
+  "name": "Lysandre"
+ },
+ {
+  "name": "Malva"
+ },
+ {
+  "name": "Marlon"
+ },
+ {
+  "name": "Marnie"
+ },
+ {
+  "name": "Marshal"
+ },
+ {
+  "name": "Maxie"
+ },
+ {
+  "name": "May"
+ },
+ {
+  "name": "Maylene"
+ },
+ {
+  "name": "Melony"
+ },
+ {
+  "name": "Milo"
+ },
+ {
+  "name": "Misty"
+ },
+ {
+  "name": "Molayne"
+ },
+ {
+  "name": "Morty"
+ },
+ {
+  "name": "N"
+ },
+ {
+  "name": "Nanu"
+ },
+ {
+  "name": "Nemona"
+ },
+ {
+  "name": "Nessa"
+ },
+ {
+  "name": "Norman"
+ },
+ {
+  "name": "Olivia"
+ },
+ {
+  "name": "Olympia"
+ },
+ {
+  "name": "Opal"
+ },
+ {
+  "name": "Paul"
+ },
+ {
+  "name": "Penny"
+ },
+ {
+  "name": "Phoebe"
+ },
+ {
+  "name": "Piers"
+ },
+ {
+  "name": "Poppy"
+ },
+ {
+  "name": "Professor Kukui",
+  "aliases": [
+   "Kukui"
+  ]
+ },
+ {
+  "name": "Pryce"
+ },
+ {
+  "name": "Raihan"
+ },
+ {
+  "name": "Ramos"
+ },
+ {
+  "name": "Red"
+ },
+ {
+  "name": "Rika"
+ },
+ {
+  "name": "Roark"
+ },
+ {
+  "name": "Roxanne"
+ },
+ {
+  "name": "Roxie"
+ },
+ {
+  "name": "Roy"
+ },
+ {
+  "name": "Ryme"
+ },
+ {
+  "name": "Sabrina"
+ },
+ {
+  "name": "Shauna"
+ },
+ {
+  "name": "Shauntal"
+ },
+ {
+  "name": "Sidney"
+ },
+ {
+  "name": "Siebold"
+ },
+ {
+  "name": "Silver",
+  "note": "The player names him; Silver is the usual name"
+ },
+ {
+  "name": "Skyla"
+ },
+ {
+  "name": "Steven",
+  "aliases": [
+   "Steven Stone"
+  ]
+ },
+ {
+  "name": "Tate & Liza"
+ },
+ {
+  "name": "Tierno"
+ },
+ {
+  "name": "Trevor"
+ },
+ {
+  "name": "Tulip"
+ },
+ {
+  "name": "Valerie"
+ },
+ {
+  "name": "Viola"
+ },
+ {
+  "name": "Volkner"
+ },
+ {
+  "name": "Wallace"
+ },
+ {
+  "name": "Wally"
+ },
+ {
+  "name": "Wattson"
+ },
+ {
+  "name": "Whitney"
+ },
+ {
+  "name": "Wikstrom"
+ },
+ {
+  "name": "Will"
+ },
+ {
+  "name": "Winona"
+ },
+ {
+  "name": "Wulfric"
+ }
+]

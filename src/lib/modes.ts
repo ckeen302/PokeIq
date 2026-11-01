@@ -1,4 +1,4 @@
-import type { Difficulty, ModuleId, QuizFormat } from "@/engines/types";
+import { DIFFICULTIES, type Difficulty, type ModuleId, type QuizFormat } from "@/engines/types";
 
 /** Display metadata for game modes + SEO landing-page presets. */
 
@@ -47,6 +47,25 @@ const ITEM_FILTER: QuizFilter = {
   label: "Introduced in",
   note: "Without a filter, Easy uses Gens 1–4, Medium Gens 1–7 and Hard all nine.",
 };
+
+/** Whose Team Is This?: a game's generation, or the anime series' region (the same nine values). */
+const TEAM_FILTER: QuizFilter = {
+  label: "Generation or region",
+  chips: REGION_TITLES.map((title, i) => ({ label: `Gen ${i + 1}`, title: `${title}: games of Gen ${i + 1}, anime set in ${title}` })),
+  note: "Games count by generation (FireRed is Gen 3); anime teams by the region of the series.",
+};
+
+/** The difficulty choices a mode offers. Whose Team Is This? has two: Normal (the whole team) and Hard (one Pokémon at a time). */
+export function difficultiesFor(module: ModuleId): { id: Difficulty; label: string }[] {
+  if (module === "whose-team") return [{ id: "medium", label: "Normal" }, { id: "hard", label: "Hard" }];
+  return DIFFICULTIES.map((id) => ({ id, label: id }));
+}
+
+/** A mode's name for a difficulty ("Normal" for Whose Team's medium). */
+export function difficultyLabel(module: ModuleId, difficulty: Difficulty): string {
+  const label = difficultiesFor(module).find((d) => d.id === difficulty)?.label ?? (module === "whose-team" ? "Normal" : difficulty);
+  return label.charAt(0).toUpperCase() + label.slice(1);
+}
 
 export function filterFor(module: ModuleId): QuizFilter {
   return MODULE_INFO[module].filter ?? GEN_FILTER;
@@ -146,6 +165,16 @@ export const MODULE_INFO: Record<ModuleId, ModuleInfo> = {
     accent: "186 84% 52%",
     defaultFormat: "classic",
   },
+  "whose-team": {
+    id: "whose-team",
+    title: "Whose Team Is This?",
+    tagline: "Name the trainer from their team",
+    description: "A famous trainer's team, from the games or the anime: name the trainer. Hard reveals one Pokémon at a time, ace last.",
+    emoji: "🧢",
+    accent: "205 90% 60%",
+    defaultFormat: "classic",
+    filter: TEAM_FILTER,
+  },
   mixed: {
     id: "mixed",
     title: "Mixed Bag",
@@ -157,7 +186,7 @@ export const MODULE_INFO: Record<ModuleId, ModuleInfo> = {
   },
 };
 
-export const PLAY_MODULES: ModuleId[] = ["whos-that", "cry", "dex", "types", "higher-lower", "games", "anime", "competitive", "shiny", "zoom-reveal", "mixed"];
+export const PLAY_MODULES: ModuleId[] = ["whos-that", "cry", "dex", "types", "higher-lower", "games", "anime", "competitive", "shiny", "zoom-reveal", "whose-team", "mixed"];
 
 export const FORMAT_INFO: Record<QuizFormat, { title: string; description: string }> = {
   classic: { title: "Classic", description: "10 questions · 15s each" },
@@ -254,6 +283,13 @@ export const QUIZ_PRESETS: QuizPreset[] = [
     title: "Pokémon Anime Quiz — Ash, Team Rocket & Horizons",
     h1: "Pokémon Anime Quiz",
     description: "Ash's Pokémon, his friends and rivals, Team Rocket, league results, the movies and Pokémon Horizons. Every answer checked against Bulbapedia.",
+  },
+  {
+    slug: "whose-team-is-this",
+    module: "whose-team",
+    title: "Whose Team Is This? — Guess the Pokémon Trainer from Their Team",
+    h1: "Whose Team Is This?",
+    description: "Gym Leaders, Elite Four, Champions, rivals and villains from every core game, plus Ash and friends from the anime: name the trainer from their team.",
   },
   {
     slug: "pokemon-trivia-quiz",

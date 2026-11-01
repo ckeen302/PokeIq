@@ -7,8 +7,11 @@ import {
   DIFFICULTIES,
   FORMATS,
   MODULES,
+  SCOPES,
   type Question,
 } from "@/engines/types";
+import { revealFactor } from "@/lib/whose-team";
+import { artUrl } from "@/lib/pokemon/art";
 import { artworkUrl, getPokemon } from "@/lib/pokemon/pokedex";
 import { itemInformation, performanceRating, ratingStandardError, ratingToIQ, type AnsweredItem } from "@/lib/rating";
 import { deriveSeed, randomId, signToken, verifyToken } from "./crypto";
@@ -20,6 +23,7 @@ import type {
   AnswerResponse,
   NextResponse,
   PublicQuestion,
+  RevealResponse,
   RunResult,
   SessionSpec,
   ShareCard,
@@ -49,6 +53,7 @@ export const specSchema = z.object({
   daily: z.string().optional(),
   practice: z.enum(["challenge", "repeat-daily", "filtered", "zoom-daily"]).optional(),
   zoomDaily: z.string().optional(),
+  scope: z.enum(SCOPES).optional(),
 });
 
 export interface FormatRules {
@@ -117,6 +122,8 @@ export interface SessionState {
   paused?: true;
   /** Blitz: total asset-loading time credited to the run clock so far. */
   lc?: number;
+  /** Revealed questions (Whose Team on Hard): cards served beyond the first ones, for the current question. */
+  rv?: number;
   /** Zoom Reveal: steps already zoomed out on the current question (wrong names and skips). */
   zs?: number;
   /** Zoom Reveal: the step each Pokémon so far was named on, "X" when missed. */
@@ -142,7 +149,8 @@ interface Stream {
 const streams = new Map<string, Stream>();
 
 function streamKey(spec: SessionSpec): string {
-  return [spec.seed, spec.module, spec.difficulty, (spec.gens ?? []).join(",")].join("|");
+  // The scope is appended only when set, so every other run keeps its key (and its questions).
+  return [spec.seed, spec.module, spec.difficulty, (spec.gens ?? []).join(","), ...(spec.scope ? [spec.scope] : [])].join("|");
 }
 
 /**
@@ -162,6 +170,7 @@ export function questionAt(spec: SessionSpec, index: number, log: readonly LogEn
         difficulty: spec.difficulty,
         gens: spec.gens,
         used: stream.used,
+        scope: spec.scope,
       })
     );
   }
@@ -217,7 +226,7 @@ function adaptiveQuestionAt(spec: SessionSpec, index: number, log: readonly LogE
     for (const difficulty of ["easy", "medium", "hard"] as const) {
       for (let c = 0; c < ADAPTIVE_CANDIDATES[difficulty]; c++) {
         const scratch = new Set(used);
-        const q = buildQuestion(spec.module, rng, { difficulty, gens: spec.gens, used: scratch });
+        const q = buildQuestion(spec.module, rng, { difficulty, gens: spec.gens, used: scratch, scope: spec.scope });
         const ids = [...scratch].filter((id) => !used.has(id));
         candidates.push({ q, ids, info: itemInformation(theta, q.rating, q.options.length) });
       }
@@ -238,11 +247,25 @@ function adaptiveQuestionAt(spec: SessionSpec, index: number, log: readonly LogE
 
 export { mediaUrl };
 
-export function toPublic(q: Question, index: number, rules: FormatRules, step = 1): PublicQuestion {
+/** How many of a revealed question's cards the player has seen. */
+export const shownCards = (q: Question, extra = 0) => (q.reveal ? Math.min(q.reveal + extra, q.cards?.length ?? 0) : (q.cards?.length ?? 0));
+
+const publicCard = (c: { pokemonId: number; label: string }) => ({ label: c.label, imageUrl: artworkUrl(c.pokemonId) });
+/** Team cards (Whose Team): the Pokédex's small WebP artwork, six at a time. */
+const teamCard = (c: { pokemonId: number; label: string }) => ({ label: c.label, imageUrl: artUrl(c.pokemonId, 160) });
+const cardOf = (q: Question) => (q.input === "type" ? teamCard : publicCard);
+
+/**
+ * What the browser may see of a question. Zoom Reveal: only the crop for
+ * `step`. A revealed question (Whose Team on Hard): only the cards shown so
+ * far (`extra` beyond the first ones); the rest stay on the server.
+ */
+export function toPublic(q: Question, index: number, rules: FormatRules, step = 1, extra = 0): PublicQuestion {
   // Zoom Reveal: no options and no plain media, just the current step's crop.
   if (q.input === "name" && q.media) {
     return { index, module: q.module, prompt: q.prompt, options: [], input: "name", zoom: zoomView(q.media, step), timeLimitMs: rules.questionMs };
   }
+  const cards = q.reveal ? q.cards?.slice(0, shownCards(q, extra)) : q.cards;
   return {
     index,
     module: q.module,
@@ -253,8 +276,10 @@ export function toPublic(q: Question, index: number, rules: FormatRules, step = 
     media: q.media
       ? { type: q.media.kind === "cry" ? "audio" : "image", url: mediaUrl(q.media), zoom: q.media.kind === "silhouette-zoom" }
       : undefined,
-    cards: q.cards?.map((c) => ({ label: c.label, imageUrl: artworkUrl(c.pokemonId) })),
+    cards: cards?.map(cardOf(q)),
     timeLimitMs: rules.questionMs,
+    ...(q.input && { input: q.input }),
+    ...(q.reveal && { reveal: { shown: shownCards(q, extra), total: q.cards?.length ?? 0 } }),
   };
 }
 
@@ -363,6 +388,12 @@ export type AnswerOutcome =
       record: boolean;
       /** Server-side estimate of the player's rating before this answer, for calibration. */
       playerRating: number;
+      /**
+       * Revealed questions: claim this before grading. It is the next card's
+       * reveal claim, so it fails when that card was already revealed with a
+       * newer token (an older token can't be used to answer for more points).
+       */
+      revealGuard?: string;
     }
   | { ok: false; status: number; error: string };
 
@@ -440,6 +471,8 @@ export function gradeAnswer(state: SessionState, choice: string | null, loadMs?:
     };
   }
 
+  const shown = shownCards(q, state.rv ?? 0);
+  const total = q.cards?.length ?? 0;
   let gained = 0;
   if (zoom && correct) {
     gained = zoomPoints(step) + STREAK_BONUS * state.streak;
@@ -447,12 +480,15 @@ export function gradeAnswer(state: SessionState, choice: string | null, loadMs?:
     const speed = rules.questionMs
       ? Math.round(MAX_SPEED_BONUS * Math.max(0, 1 - elapsed / rules.questionMs))
       : 0;
-    gained = BASE_POINTS + speed + STREAK_BONUS * state.streak;
+    // Revealed questions: fewer Pokémon seen, more points (see revealFactor).
+    const factor = q.reveal ? revealFactor(shown, total) : 1;
+    gained = Math.round((BASE_POINTS + speed) * factor) + STREAK_BONUS * state.streak;
   }
 
   const next: SessionState = {
     ...state,
     paused: undefined,
+    rv: undefined,
     servedAt: now,
     log: runExpired ? state.log : [...state.log, [correct ? 1 : 0, elapsed, rating, q.options.length]],
     score: state.score + gained,
@@ -476,6 +512,7 @@ export function gradeAnswer(state: SessionState, choice: string | null, loadMs?:
     revealUrl: q.revealMedia ? mediaUrl(q.revealMedia) : undefined,
     learnHref: learnHref(q),
     sourceUrl: q.source,
+    ...(q.reveal && { revealCards: q.cards?.map(cardOf(q)) }),
     tags: runExpired ? [] : skillTags(q),
     gained,
     score: next.score,
@@ -507,6 +544,45 @@ export function gradeAnswer(state: SessionState, choice: string | null, loadMs?:
     rating,
     record: !runExpired,
     playerRating: performanceRating(toItems(state.log)),
+    ...(q.reveal && shown < total && { revealGuard: revealClaimKey(state, shown + 1) }),
+  };
+}
+
+/** Replay-guard key for revealing card `n` (1-based) of the session's current question. */
+export const revealClaimKey = (state: SessionState, n: number) => `rev:${state.sid}:${state.log.length}:${n}`;
+
+export type RevealOutcome =
+  | { ok: true; response: RevealResponse; claimKey: string }
+  | { ok: false; status: number; error: string };
+
+/**
+ * One more card of the current revealed question (Whose Team on Hard). Each
+ * card can be revealed once per session (the route claims `claimKey`), and
+ * the new token counts it, so the answer is scored on what was seen.
+ */
+export function revealCard(state: SessionState): RevealOutcome {
+  const rules = rulesFor(state.spec);
+  const now = Date.now();
+  if (isDone(state, rules, now)) return { ok: false, status: 409, error: "This run is already over." };
+  if (state.paused) return { ok: false, status: 409, error: "That question hasn't started yet." };
+  const index = state.log.length;
+  const q = questionAt(state.spec, index, state.log);
+  if (!q.reveal || !q.cards) return { ok: false, status: 400, error: "This question has nothing to reveal." };
+  const extra = state.rv ?? 0;
+  const shown = shownCards(q, extra);
+  if (shown >= q.cards.length) return { ok: false, status: 409, error: "The whole team is already showing." };
+  if (rules.questionMs !== null && now - state.servedAt > rules.questionMs + MAX_LOAD_CREDIT_MS + GRACE_MS) {
+    return { ok: false, status: 409, error: "Time's up for that question." };
+  }
+  const next: SessionState = { ...state, rv: extra + 1 };
+  return {
+    ok: true,
+    response: {
+      token: signToken("session", next),
+      card: cardOf(q)(q.cards[shown]),
+      reveal: { shown: shown + 1, total: q.cards.length },
+    },
+    claimKey: revealClaimKey(state, shown + 1),
   };
 }
 
@@ -526,7 +602,7 @@ export function nextQuestion(state: SessionState): NextOutcome {
   if (isDone(state, rules, now)) return { ok: false, status: 409, error: "This run is already over." };
   const index = state.log.length;
   const question = toPublic(questionAt(state.spec, index, state.log), index, rules);
-  const resumed: SessionState = { ...state, paused: undefined, servedAt: now };
+  const resumed: SessionState = { ...state, paused: undefined, rv: undefined, servedAt: now };
   return {
     ok: true,
     response: { token: signToken("session", resumed), question },
@@ -542,6 +618,7 @@ export function toShareCard(result: RunResult, name?: string): ShareCard {
     d: result.spec.difficulty,
     g: result.spec.gens,
     s: result.spec.seed,
+    ...(result.spec.scope && { o: result.spec.scope }),
     day: result.spec.daily,
     sc: result.score,
     c: result.correct,
