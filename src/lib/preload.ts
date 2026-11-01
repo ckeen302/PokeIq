@@ -26,12 +26,14 @@ export function preloadedImage(url: string): HTMLImageElement | null {
   return img && img.complete && img.naturalWidth > 0 ? img : null;
 }
 
-export function preloadImage(url: string): Promise<void> {
+/** `priority: "high"`: fetched ahead of the page's other images (a game's first picture). */
+export function preloadImage(url: string, opts: { priority?: "high" } = {}): Promise<void> {
   if (typeof window === "undefined" || !url) return Promise.resolve();
   const hit = cache.get(url);
   if (hit) return hit;
   const img = new window.Image();
   img.decoding = "async";
+  if (opts.priority) img.fetchPriority = opts.priority;
   const p = new Promise<void>((resolve) => {
     img.onload = () => {
       images.set(url, img);
@@ -78,7 +80,7 @@ export interface AssetList {
  */
 export function preloadAssets(assets: AssetList, capMs = 6000): Promise<void> {
   const jobs = [
-    ...(assets.images ?? []).filter((u): u is string => !!u).map(preloadImage),
+    ...(assets.images ?? []).filter((u): u is string => !!u).map((u) => preloadImage(u)),
     ...(assets.audio ?? []).filter((u): u is string => !!u).map(preloadAudio),
   ];
   if (!jobs.length) return Promise.resolve();

@@ -3,10 +3,10 @@ import { z } from "zod";
 import { isValidDailyDate } from "@/lib/daily";
 import { clientIp, rateLimit } from "@/lib/server/rate-limit";
 import { optionalName } from "@/lib/name-filter";
-import { currentGeoWeekly, geoFilter, isGeoSpec, readGeoChallenge, startGeo } from "@/lib/server/geo";
+import { currentGeoWeekly, geoChallengeSpec, geoFilter, isGeoSpec, readGeoChallenge, startGeo } from "@/lib/server/geo";
 import { syncHiddenShots } from "@/lib/server/geo-reports";
 import { syncShotScores } from "@/lib/server/geo-round-scores";
-import { GEO_FILTER_MIN_PLACES, GEO_KINDS, GEO_ROUND_OPTIONS, WORLD_REGION, geoDailyRegion, isGeoRounds, type GeoRounds, type GeoSpec } from "@/lib/geo-types";
+import { GEO_FILTER_MIN_PLACES, GEO_KINDS, GEO_ROUND_OPTIONS, WORLD_REGION, geoDailyRegion, type GeoRounds, type GeoSpec } from "@/lib/geo-types";
 import { GEO_ERAS, GEO_FAMILY_IDS } from "@/lib/geo-families";
 import { GEO_TIMERS } from "@/lib/geo-settings";
 import { GEO_SEEN_MAX } from "@/lib/geo-seen";
@@ -83,16 +83,7 @@ export async function POST(request: NextRequest) {
   } else if (body.challenge) {
     const challenge = readGeoChallenge(body.challenge);
     if (!challenge) return NextResponse.json({ error: "That challenge link isn't valid." }, { status: 400 });
-    // The link carries the game length: one score per round.
-    const rounds = challenge.rounds.length;
-    spec = {
-      region: challenge.region,
-      kind: "game",
-      practice: "challenge",
-      ...(rounds !== 5 && isGeoRounds(rounds) ? { rounds } : {}),
-      ...geoFilter(challenge.era, challenge.families),
-      ...(challenge.difficulty ? { difficulty: challenge.difficulty } : {}),
-    };
+    spec = geoChallengeSpec(challenge);
     seed = challenge.seed;
     plan = challenge.plan;
   } else {

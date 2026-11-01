@@ -36,6 +36,7 @@ export function ShotCarousel({
   fs = false,
   onFullscreen,
   blur,
+  priority = false,
 }: {
   views: string[];
   index: number;
@@ -47,6 +48,8 @@ export function ShotCarousel({
   onFullscreen?: () => void;
   /** The first view's tiny placeholder (a data URI), shown blurred until the picture has decoded. */
   blur?: string;
+  /** Round 1: its picture is fetched ahead of everything else on the page and decoded straight away. */
+  priority?: boolean;
 }) {
   const [fits, setFits] = useState<Record<string, Fit>>({});
   const count = views.length;
@@ -116,6 +119,8 @@ export function ShotCarousel({
           src={src}
           alt="Where is this?"
           ref={imgRef}
+          fetchPriority={priority && src === views[0] ? "high" : undefined}
+          decoding={priority && src === views[0] ? "sync" : undefined}
           onLoad={(e) => measure(e.currentTarget)}
           className={cn("absolute inset-0 h-full w-full", !instant.current.has(src) && "transition-opacity duration-[350ms]", fit?.className ?? "object-cover object-center", fit ? "opacity-100" : "opacity-0")}
           style={{ imageRendering: fit?.pixelated ? "pixelated" : "auto", ...zoomStyle(src) }}
