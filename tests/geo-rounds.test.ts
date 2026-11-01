@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { gradeGeo, isGeoSpec, planRounds, readGeo, readGeoChallenge, startGeo, answerFor } from "@/lib/server/geo";
+import { gradeGeo, isGeoSpec, planRounds, readGeo, readGeoChallenge, startGeo, answerFor, geoChallengeFirstShot, geoChallengeSpec } from "@/lib/server/geo";
 import {
   advanceDuel,
   createDuel,
@@ -93,6 +93,15 @@ describe("PokéGuessr rounds", () => {
     const again = startGeo({ ...spec, practice: "challenge" }, { seed: card.seed, plan: card.plan });
     expect(readGeo(again.token)!.spec.rounds).toBe(3);
     expect(answerFor(spec, planRounds(spec, card.seed)[0]).name).toBeTruthy();
+  });
+
+  it("knows a challenge link's first picture before the game starts (the one the start deals)", () => {
+    const spec = { region: "kanto", kind: "game" as const };
+    const { last } = playSolo(spec, { seed: "chal-first", name: "Ash" });
+    const card = readGeoChallenge(last.challengeToken)!;
+    const started = startGeo(geoChallengeSpec(card), { seed: card.seed, plan: card.plan });
+    expect(geoChallengeFirstShot(last.challengeToken)).toBe(started.round.shot);
+    expect(geoChallengeFirstShot("not-a-token")).toBeNull();
   });
 });
 
