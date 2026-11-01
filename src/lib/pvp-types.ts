@@ -8,6 +8,7 @@ import { DLE_GUESS_COST, DLE_HINT_COST, DLE_HINT_KINDS, DLE_SOLVE_POINTS, dleBas
 import type { DuelPlayerView, DuelStatus } from "./duel-types";
 import type { Difficulty, ModuleId } from "@/engines/types";
 import type { PublicQuestion } from "./session-types";
+import type { ZoomWindow } from "./zoom-reveal";
 import type { DleAssist } from "./dle-assist";
 import type { DleRules } from "./dle-format";
 import type { ChatLine } from "./chat";
@@ -263,8 +264,11 @@ export const QUIZ_DUEL_SPEED_BONUS = 50;
 export const quizDuelPoints = (ms: number) =>
   QUIZ_DUEL_POINTS + Math.round(QUIZ_DUEL_SPEED_BONUS * Math.max(0, 1 - ms / QUIZ_DUEL_QUESTION_MS));
 
+/** Zoom Reveal duels: each question is open this long (six steps to get through). */
+export const ZOOM_DUEL_QUESTION_MS = 40_000;
+
 /** A question as both trainers see it: the solo quiz's public question, without its timer. */
-export type QuizDuelQuestionView = Pick<PublicQuestion, "module" | "prompt" | "detail" | "options" | "images" | "media" | "cards" | "input" | "reveal">;
+export type QuizDuelQuestionView = Pick<PublicQuestion, "module" | "prompt" | "detail" | "options" | "images" | "media" | "cards" | "input" | "zoom" | "reveal">;
 
 export interface QuizDuelLiveQuestion {
   index: number;
@@ -280,6 +284,8 @@ export interface QuizDuelLiveQuestion {
   answered: boolean[];
   /** Your own pick, once locked in. */
   yours?: string;
+  /** Zoom Reveal: the step each trainer is on (never what they typed). */
+  steps?: number[];
 }
 
 export interface QuizDuelPick {
@@ -290,6 +296,8 @@ export interface QuizDuelPick {
   /** Time from the question appearing to the pick. */
   ms: number;
   points: number;
+  /** Zoom Reveal: the step the trainer named it on (or gave up on). */
+  step?: number;
 }
 
 export interface QuizDuelResult {
@@ -303,6 +311,8 @@ export interface QuizDuelResult {
   sourceUrl?: string;
   /** One per seat: the pick, or null (no answer in time: 0 points). */
   picks: (QuizDuelPick | null)[];
+  /** Zoom Reveal, the latest reveal: where your last crop sits in the whole artwork. */
+  zoomFrom?: ZoomWindow;
   /** Points so far, after this question. */
   scores: number[];
 }

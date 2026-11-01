@@ -93,12 +93,14 @@ export function questionAssets(q: {
   images?: string[];
   media?: { type: "image" | "audio"; url: string };
   cards?: { imageUrl: string }[];
+  zoom?: { url: string };
 }): AssetList {
   return {
     images: [
       ...(q.images ?? []),
       ...(q.cards ?? []).map((c) => c.imageUrl),
       q.media?.type === "image" ? q.media.url : undefined,
+      q.zoom?.url,
     ],
     audio: [q.media?.type === "audio" ? q.media.url : undefined],
   };

@@ -20,7 +20,10 @@ import { CryPlayer, ImageMedia } from "./QuestionMedia";
 import { QuizResults } from "./QuizResults";
 import { GuessBox, TeamBoard, TrainerReveal } from "./WhoseTeam";
 import { cn } from "@/lib/utils";
-import { preloadAssets, questionAssets } from "@/lib/preload";
+import { preloadAssets, preloadImage, questionAssets } from "@/lib/preload";
+import { ZOOM_SKIP, ZOOM_STEPS } from "@/lib/zoom-reveal";
+import type { NameEntry } from "@/components/pokedle/parts";
+import { ZoomPlay } from "./zoom/ZoomPlay";
 
 /**
  * <QuizController /> — the one quiz runtime behind every mode and format.
@@ -34,6 +37,7 @@ import { preloadAssets, questionAssets } from "@/lib/preload";
 export type StartRequest =
   | { module: ModuleId; format: QuizFormat; difficulty: Difficulty; gens?: number[]; scope?: QuizScope }
   | { daily: string }
+  | { zoomDaily: string }
   | { challenge: string };
 
 /** "expired": a Blitz run whose clock ran out before the server could close it. */
@@ -83,6 +87,9 @@ export function QuizController({ request, challenger, onRestart, onAnswered, onC
   const [attempt, setAttempt] = useState(0);
   const [advancing, setAdvancing] = useState(false);
   const [revealing, setRevealing] = useState(false);
+  /** Zoom Reveal: names already tried on the current Pokémon. */
+  const [wrong, setWrong] = useState<NameEntry[]>([]);
+  const guessRef = useRef<NameEntry | null>(null);
 
   const tokenRef = useRef("");
   const pendingNextRef = useRef<PublicQuestion | null>(null);
@@ -126,6 +133,7 @@ export function QuizController({ request, challenger, onRestart, onAnswered, onC
         setAnswered(0);
         setGraded(null);
         setSelected(null);
+        setWrong([]);
         // The clock starts only once every image / cry is ready.
         const seq = ++prepSeqRef.current;
         runStartRef.current = questionStartRef.current = Date.now();
@@ -139,7 +147,7 @@ export function QuizController({ request, challenger, onRestart, onAnswered, onC
         runStartRef.current = questionStartRef.current = Date.now();
         setNow(Date.now());
         setPhase("active");
-        track("quiz_start", { kind: "daily" in req ? "daily" : "challenge" in req ? "challenge" : req.module });
+        track("quiz_start", { kind: "daily" in req ? "daily" : "zoomDaily" in req ? "zoom-daily" : "challenge" in req ? "challenge" : req.module });
       } catch (err) {
         if (!cancelled) {
           setError(err instanceof Error ? err.message : "Couldn't start the quiz.");
@@ -186,6 +194,33 @@ export function QuizController({ request, challenger, onRestart, onAnswered, onC
       }
 
       tokenRef.current = result.token;
+      // Zoom Reveal: a miss before the last step. Same question, one step out;
+      // its clock starts once the wider crop is ready.
+      if (result.zoom) {
+        const view = result.zoom;
+        const tried = guessRef.current;
+        guessRef.current = null;
+        if (tried) setWrong((w) => [...w, tried]);
+        setQuestion((q) => (q ? { ...q, zoom: view } : q));
+        setSelected(null);
+        if (choice !== null) {
+          play("wrong");
+          vibrate(40);
+        }
+        const seq = ++prepSeqRef.current;
+        const t0 = Date.now();
+        void preloadImage(view.url).then(() => {
+          if (seq !== prepSeqRef.current) return;
+          const ready = Date.now();
+          loadMsRef.current = ready - t0;
+          if (isBlitz) runLoadRef.current += Math.min(ready - t0, 6000);
+          questionStartRef.current = ready;
+          setNow(ready);
+          setPhase("active");
+        });
+        return;
+      }
+      guessRef.current = null;
       pendingNextRef.current = result.next ?? null;
       setGraded(result);
       // A Blitz "time's up" ping is not an answer: keep it out of skill stats.
@@ -251,6 +286,7 @@ export function QuizController({ request, challenger, onRestart, onAnswered, onC
       setQuestion(next);
       setSelected(null);
       setGraded(null);
+      setWrong([]);
       const seq = ++prepSeqRef.current;
       const prepStart = Date.now();
       questionStartRef.current = prepStart;
@@ -435,7 +471,15 @@ export function QuizController({ request, challenger, onRestart, onAnswered, onC
 
   // Picture questions grade by a card id, which means nothing to read out.
   const answerText = graded ? (isCards ? "the one marked in green" : graded.answer) : "";
-  const verdict = graded
+  const isZoom = !!question.zoom;
+  const zoomVerdict = graded
+    ? graded.correct
+      ? `Correct! It's ${graded.answer}, on step ${graded.step ?? 1} of ${ZOOM_STEPS}${streak >= 3 ? ` (${streak} in a row!)` : ""}.`
+      : `Not this time… it was ${graded.answer}.`
+    : "";
+  const verdict = isZoom
+    ? zoomVerdict
+    : graded
     ? graded.correct && isCards
       ? streak >= 3 ? `Correct! That's ${streak} in a row!` : "Correct! That's the one!"
       : graded.correct
@@ -545,6 +589,28 @@ export function QuizController({ request, challenger, onRestart, onAnswered, onC
               ) : (
                 <p className="hud-label normal-case tracking-wide text-muted-foreground">{question.detail}</p>
               ))}
+
+            {question.zoom && (
+              <ZoomPlay
+                view={question.zoom}
+                wrong={wrong}
+                locked={phase !== "active"}
+                outcome={
+                  revealed && graded
+                    ? { step: graded.step ?? ZOOM_STEPS, solved: graded.correct, answer: graded.answer, revealUrl: graded.revealUrl, revealFrom: graded.zoomFrom }
+                    : null
+                }
+                onGuess={(entry) => {
+                  guessRef.current = entry;
+                  void submit(entry[1]);
+                }}
+                onSkip={() => {
+                  guessRef.current = null;
+                  void submit(ZOOM_SKIP);
+                }}
+                shareTitle={"zoomDaily" in request ? `PokéIQ Zoom Reveal · ${request.zoomDaily}` : undefined}
+              />
+            )}
 
             {question.media?.type === "image" && (
               <ImageMedia

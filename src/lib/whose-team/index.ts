@@ -9,9 +9,6 @@ import type { TeamEntry, TeamMon } from "./types";
 
 export type { TeamEntry, TeamMon };
 
-/** From this daily on, the Daily Challenge's last question is a Whose Team round (server: whose-team-daily.ts). */
-export const TEAM_DAILY_FROM = "2026-11-08";
-
 export interface TrainerName {
   name: string;
   /** Other names for the same person ("Green" for Blue). They autocomplete to `name`. */

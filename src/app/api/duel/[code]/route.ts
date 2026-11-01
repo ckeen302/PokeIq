@@ -10,7 +10,7 @@ import { CHAT_BODY_MAX } from "@/lib/server/chat";
 import { asKind, chatDuel, duelView, emoteDuel, joinDuel, leaveDuel, linkRematch, readyDuel, rematchOf, skipReveal, takeRematchSeat, touchDuel } from "@/lib/server/duels";
 import { buyPokedleHint, guessPokedle, setPokedleAssist, setPokedleGens, setPokedleSettings } from "@/lib/server/pokedle-duel";
 import { DLE_ASSISTS } from "@/lib/dle-assist";
-import { answerQuiz, loadedQuiz, revealQuiz } from "@/lib/server/quiz-duel";
+import { answerQuiz, loadedQuiz, revealQuiz, zoomQuiz } from "@/lib/server/quiz-duel";
 import { guessConnections } from "@/lib/server/connections-duel";
 import { claimCell } from "@/lib/server/pikadoku-duel";
 import { pdkPickRates } from "@/lib/server/pikadoku-rates";
@@ -32,6 +32,7 @@ import { DLE_DUEL_HINTS, DUEL_EMOTES, QUIZ_DUEL_QUESTIONS, type PvpSeatResponse 
  *   { action: "hint", token, round, hint }        Pokédle: buy a hint ("genus" or "silhouette")
  *   { action: "answer", token, round, choice }    quiz: lock in an answer to question `round`
  *   { action: "loaded", token, round }            quiz: question `round`'s images are loaded; start my clock
+ *   { action: "zoom", token, round, choice }      Zoom Reveal quiz: a typed name ("" skips a step)
  *   { action: "reveal", token, round }            quiz (Whose Team on Hard): show me one more Pokémon
  *   { action: "group", token, pokemon }           PokéConnections: four Pokémon ids that belong together
  *   { action: "claim", token, cell, pokemon }     Pikadoku: a Pokémon for a cell (a miss passes the turn)
@@ -57,6 +58,7 @@ const bodySchema = z.discriminatedUnion("action", [
   z.object({ action: z.literal("hint"), token, round, hint: z.enum(DLE_DUEL_HINTS) }),
   z.object({ action: z.literal("answer"), token, round, choice: z.string().min(1).max(200) }),
   z.object({ action: z.literal("loaded"), token, round }),
+  z.object({ action: z.literal("zoom"), token, round, choice: z.string().max(200) }),
   z.object({ action: z.literal("reveal"), token, round }),
   z.object({ action: z.literal("claim"), token, cell: z.number().int().min(0).max(8), pokemon: z.number().int().positive().max(100_000) }),
   z.object({ action: z.literal("group"), token, pokemon: z.array(z.number().int().positive().max(100_000)).min(CONN_GROUP_SIZE).max(CONN_GROUP_SIZE + 1) }),
@@ -156,6 +158,8 @@ export async function POST(request: NextRequest, context: Context) {
           return asKind(duel, "quiz", (d) => answerQuiz(d, playerId, body.round, body.choice, now));
         case "loaded":
           return asKind(duel, "quiz", (d) => loadedQuiz(d, playerId, body.round, now));
+        case "zoom":
+          return asKind(duel, "quiz", (d) => zoomQuiz(d, playerId, body.round, body.choice, now));
         case "reveal":
           return asKind(duel, "quiz", (d) => revealQuiz(d, playerId, body.round, now));
         case "claim":

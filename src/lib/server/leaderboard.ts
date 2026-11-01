@@ -62,6 +62,7 @@ const PRACTICE_MESSAGES: Record<PracticeReason, string> = {
   challenge: "Challenge replays aren't ranked — start a fresh run to get on the board.",
   "repeat-daily": "Only your first Daily Challenge run of the day can be ranked.",
   filtered: "Leaderboards rank all-generation runs — clear the generation filter to compete.",
+  "zoom-daily": "The daily Zoom Reveal isn't ranked — play Classic, Survival or Blitz to get on the board.",
 };
 
 /** Leaderboard eligibility of a verified result: null when it can be ranked. */

@@ -7,9 +7,8 @@ import { buildQuestion } from "@/engines";
 import { isValidQuestion } from "@/engines/validate";
 import { roundsFor, TEAM_ROUNDS, teamQuestion } from "@/engines/modules/whose-team";
 import { Rng } from "@/lib/rng";
-import { ANSWER_NAMES, monLabel, resolveGuess, revealFactor, revealOrder, suggest, teamKey, TEAM_DAILY_FROM, type TeamEntry } from "@/lib/whose-team";
+import { ANSWER_NAMES, monLabel, resolveGuess, revealFactor, revealOrder, suggest, teamKey, type TeamEntry } from "@/lib/whose-team";
 import { gradeAnswer, questionAt, readSession, revealCard, revealClaimKey, startSession, toPublic, FORMAT_RULES } from "@/lib/server/session";
-import { TEAM_DAILY_INDEX } from "@/lib/server/whose-team-daily";
 import { answerQuiz, createQuizDuel, duelQuestion, quizView, revealQuiz, type QuizDuel } from "@/lib/server/quiz-duel";
 import { joinDuel, readyDuel } from "@/lib/server/duels";
 import type { PvpOutcome } from "@/lib/server/duel-core";
@@ -285,25 +284,10 @@ describe("whose team: grading", () => {
 });
 
 describe("whose team: the Daily Challenge", () => {
-  const daily = (date: string, format: "classic" | "survival" = "classic"): SessionSpec => ({ module: "mixed", format, difficulty: "medium", seed: `daily:${date}`, daily: date });
-
-  it("closes dailies from its launch date with a Normal Whose Team round, leaving questions 1–9 alone", () => {
-    const date = TEAM_DAILY_FROM;
-    const classic = daily(date);
-    // Same stream key (format isn't in it), but only the classic daily gets the team round.
-    const plain = daily(date, "survival");
-    for (let i = 0; i < TEAM_DAILY_INDEX; i++) expect(questionAt(classic, i).itemKey).toBe(questionAt(plain, i).itemKey);
-    const q = questionAt(classic, TEAM_DAILY_INDEX);
-    expect(q.module).toBe("whose-team");
-    expect(q.reveal).toBeUndefined();
-    expect(questionAt(classic, TEAM_DAILY_INDEX).itemKey).toBe(q.itemKey);
-  });
-
-  it("keeps every earlier daily exactly as it was", () => {
-    for (const date of ["2026-10-17", "2026-11-01", "2026-11-07"]) {
-      expect(date < TEAM_DAILY_FROM).toBe(true);
-      expect(questionAt(daily(date), TEAM_DAILY_INDEX).module).not.toBe("whose-team");
-      expect(questionAt(daily(date), TEAM_DAILY_INDEX).itemKey).toBe(questionAt(daily(date, "survival"), TEAM_DAILY_INDEX).itemKey);
+  it("stays out of the daily (not approved yet): every daily question is from the Mixed rotation", () => {
+    for (const date of ["2026-10-17", "2026-11-08", "2026-12-25"]) {
+      const s: SessionSpec = { module: "mixed", format: "classic", difficulty: "medium", seed: `daily:${date}`, daily: date };
+      for (let i = 0; i < 10; i++) expect(questionAt(s, i).module).not.toBe("whose-team");
     }
   });
 });

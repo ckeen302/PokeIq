@@ -1,4 +1,5 @@
 import type { Difficulty, ModuleId, QuizFormat, QuizScope } from "@/engines/types";
+import type { ZoomView, ZoomWindow } from "@/lib/zoom-reveal";
 
 /** Wire types shared by the session API and the client. No answers in here. */
 
@@ -8,8 +9,9 @@ import type { Difficulty, ModuleId, QuizFormat, QuizScope } from "@/engines/type
  * - "challenge":    replays a friend's exact quiz from a share link
  * - "repeat-daily": a second start of a Daily Challenge in the same browser
  * - "filtered":     a generation-filtered run (boards rank all-generation runs)
+ * - "zoom-daily":   the one-Pokémon daily Zoom Reveal (shared, not a ranked run)
  */
-export type PracticeReason = "challenge" | "repeat-daily" | "filtered";
+export type PracticeReason = "challenge" | "repeat-daily" | "filtered" | "zoom-daily";
 
 export interface SessionSpec {
   module: ModuleId;
@@ -24,6 +26,8 @@ export interface SessionSpec {
   daily?: string;
   /** Set (and signed) by the server when the run is unranked. */
   practice?: PracticeReason;
+  /** Local date (YYYY-MM-DD) of a daily Zoom Reveal: one Pokémon, untimed. */
+  zoomDaily?: string;
 }
 
 export interface PublicQuestion {
@@ -37,8 +41,14 @@ export interface PublicQuestion {
   media?: { type: "image" | "audio"; url: string; zoom?: boolean };
   cards?: { label: string; imageUrl: string }[];
   timeLimitMs: number | null;
-  /** Type the answer, autocompleting over `options`, instead of picking a tile. */
-  input?: "type";
+  /**
+   * How the answer is given instead of picking a tile: "name", a Pokémon's
+   * name with no options (Zoom Reveal); "type", a trainer's name,
+   * autocompleting over `options` (Whose Team Is This?).
+   */
+  input?: "name" | "type";
+  /** Zoom Reveal: the step in play and its crop. */
+  zoom?: ZoomView;
   /** Cards revealed one at a time: `cards` holds the `shown` so far, out of `total`. */
   reveal?: { shown: number; total: number };
 }
@@ -65,6 +75,8 @@ export interface RunResult {
   finishedAt: number;
   /** Present when the run can't be submitted to the leaderboard; see PracticeReason. */
   practice?: PracticeReason;
+  /** Zoom Reveal: the step each Pokémon was named on ("1".."6"), "X" for missed. */
+  zoom?: string;
   /** Adaptive test only: rating standard error and per-step [rating, se] estimates. */
   se?: number;
   trajectory?: [number, number][];
@@ -118,6 +130,16 @@ export interface AnswerResponse {
   awaitNext: boolean;
   /** Next question, included only for Blitz (which never pauses). */
   next?: PublicQuestion;
+  /**
+   * Zoom Reveal: a wrong name or a skip before the last step. The question
+   * goes on, one step further out: nothing about the answer is included
+   * (`answer` is empty) and the step's clock starts now.
+   */
+  zoom?: ZoomView;
+  /** Zoom Reveal: the step the Pokémon was named on (or the last step, when missed). */
+  step?: number;
+  /** Zoom Reveal: where that step's crop sits in the whole artwork, for the reveal's zoom-out. */
+  zoomFrom?: ZoomWindow;
   result?: RunResult;
   /** Proof of a server-graded run, required by the leaderboard. */
   resultToken?: string;

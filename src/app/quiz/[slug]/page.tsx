@@ -7,6 +7,7 @@ import { GameInfo } from "@/components/seo/GameInfo";
 import { ModeIcon } from "@/components/game/ModeIcon";
 import { MODULE_INFO, QUIZ_PRESETS, presetFor } from "@/lib/modes";
 import { QuizSetupFromQuery } from "./QuizSetupFromQuery";
+import { ZoomDaily } from "@/components/quiz/zoom/ZoomDaily";
 
 /**
  * One route, every quiz landing page. Each preset (mode × optional
@@ -58,6 +59,8 @@ export default async function QuizPage({ params }: PageProps) {
         <p className="text-muted-foreground">{preset.description}</p>
       </div>
 
+      {preset.module === "zoom-reveal" && <ZoomDaily />}
+
       <QuizSetupFromQuery
         slug={preset.slug}
         module={preset.module}
@@ -86,6 +89,12 @@ export default async function QuizPage({ params }: PageProps) {
             Each round shows four pictures of one Pokémon: its real shiny and three fakes made by shifting the colours.
             Easy fakes are far off, Normal ones are close, Hard ones are barely different. Answers are checked on our
             server, and nothing in the picture addresses says which one is real.
+          </p>
+        ) : preset.module === "zoom-reveal" ? (
+          <p>
+            Each round starts on a close-up of a detailed part of the Pokémon&apos;s official artwork. A wrong name or a
+            skip zooms out one step, six in all, the last showing the whole artwork. In Classic and Survival each step
+            has 15 seconds. Pictures are cut on our server, so nothing reaches your browser before you&apos;ve seen it.
           </p>
         ) : preset.module === "competitive" ? (
           <p>

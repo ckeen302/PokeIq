@@ -5,7 +5,6 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { Flame, Play, Trophy } from "lucide-react";
 import { dailyNumber } from "@/lib/daily";
-import { TEAM_DAILY_FROM } from "@/lib/whose-team";
 import { currentStreak, useProgress } from "@/lib/progress";
 import { quizShareText, shareUrl, type QuizShareResult } from "@/lib/share";
 import { useToday } from "@/lib/use-today";
@@ -123,7 +122,6 @@ export function DailyChallenge() {
                 ["dex", "Pokédex entries"],
                 ["types", "Type matchups"],
                 ["higher-lower", "Stat battles"],
-                ...(date >= TEAM_DAILY_FROM ? [["whose-team", "Whose team? (last question)"] as const] : []),
               ] as const
             ).map(([mod, label]) => (
               <li key={label} className="flex items-center gap-3 rounded-md border bg-shade/20 p-3 font-display font-semibold uppercase tracking-wide">
