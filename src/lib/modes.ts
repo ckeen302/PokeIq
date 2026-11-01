@@ -246,7 +246,7 @@ export const QUIZ_PRESETS: QuizPreset[] = [
     module: "zoom-reveal",
     title: "Pokémon Zoom Quiz — Zoom Reveal",
     h1: "Zoom Reveal",
-    description: "Name the Pokémon from an extreme close-up of its official artwork. Each miss zooms out one step, six in all. All 1,025 Pokémon, plus a daily one.",
+    description: "Name the Pokémon from an extreme close-up of its official artwork. Each miss zooms out one step, six in all, plus a daily one.",
   },
   {
     slug: "pokemon-anime-quiz",
