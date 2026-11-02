@@ -62,7 +62,7 @@ export function RacePage({ preset = DEFAULT_PRESET, vs, distance, seed }: { pres
               kicker="Pokémon race · 3D"
               title="Pokémon "
               accent="Race"
-              blurb="Who is the fastest Pokémon? Watch them race 100, 200 or 400 m under the floodlights of a 3D stadium, with speeds from their stats and real sprint physics. Pick any of them, share the race or make a video."
+              blurb="Who is the fastest Pokémon? Watch them race 100, 200 or 400 m under the floodlights of a 3D stadium, with speeds from their stats and a sprint model from sports science. Pick any of them, share the race or make a video."
             />
           ) : (
             <ListHeader kicker={`Pokémon race · ${spec.distance} m`} title={`${preset.label} `} accent="race" blurb={preset.blurb} />
@@ -85,7 +85,7 @@ export function RacePage({ preset = DEFAULT_PRESET, vs, distance, seed }: { pres
               </p>
               <ol className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-muted-foreground">
                 {field.tournament.rounds.map((r) => (
-                  <li key={r.name}><span className="text-foreground">{r.name}</span>: {r.heats.length === 1 ? "one race" : `${r.heats.length} heats`}{r.byPlace && r.heats.length > 1 ? `, top ${r.byPlace}${r.byTime ? ` + ${r.byTime} fastest losers` : ""}` : ""}</li>
+                  <li key={r.name}><span className="text-foreground">{r.name}</span>: {r.heats.length === 1 ? "one race" : r.byPlace ? `${r.byPlace === 1 ? "each heat's winner" : `the first ${r.byPlace} of each heat`}${r.byTime ? ` and the ${r.byTime} fastest losers` : ""} go through` : "heats"}</li>
                 ))}
               </ol>
             </section>

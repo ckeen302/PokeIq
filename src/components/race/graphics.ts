@@ -197,7 +197,15 @@ export function drawLaneIntro(g: CanvasRenderingContext2D, W: number, H: number,
 }
 
 /** Small name tags over the runners during the race: lane box and name. */
-export function drawNameTags(g: CanvasRenderingContext2D, tags: { lane: number; name: string; x: number; y: number; lead: boolean }[], o: Graphics) {
+export interface Rect { x: number; y: number; w: number; h: number }
+const overlaps = (a: Rect, b: Rect) => a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
+
+/**
+ * Name tags over the runners. A tag that would sit under the top bar (above
+ * `top`) or under another graphic (`avoid`) is left out rather than drawn
+ * behind it.
+ */
+export function drawNameTags(g: CanvasRenderingContext2D, tags: { lane: number; name: string; x: number; y: number; lead: boolean }[], o: Graphics & { top?: number; avoid?: Rect[] }) {
   const s = 15 * o.scale;
   g.save();
   g.textBaseline = "middle";
@@ -217,6 +225,7 @@ export function drawNameTags(g: CanvasRenderingContext2D, tags: { lane: number; 
     const hit = hits(y);
     if (hit) y = hit.y - h - 2;
     if (hit && hits(y)) continue;
+    if (y < (o.top ?? 0) || (o.avoid ?? []).some((r) => overlaps(r, { x, y, w, h }))) continue;
     placed.push({ x, y, w, h });
     shadow(g, 6);
     roundRect(g, x, y, w, h, 4);
@@ -238,8 +247,8 @@ export function drawNameTags(g: CanvasRenderingContext2D, tags: { lane: number; 
   g.restore();
 }
 
-/** The clock bug, top left: race and distance, the running time and the leader's speed. */
-export function drawClockBug(g: CanvasRenderingContext2D, W: number, H: number, o: Graphics & { top: number; title: string; time: string; leader?: { name: string; v: number } | null; live: boolean }) {
+/** The clock bug, top left: race and distance, the running time and the leader's speed. Returns the area it covers. */
+export function drawClockBug(g: CanvasRenderingContext2D, W: number, H: number, o: Graphics & { top: number; title: string; time: string; leader?: { name: string; v: number } | null; live: boolean }): Rect {
   const s = Math.min(W * 0.05, 26) * o.scale;
   const x = Math.max(12, W * 0.02), y = o.top;
   g.save();
@@ -292,6 +301,8 @@ export function drawClockBug(g: CanvasRenderingContext2D, W: number, H: number, 
     g.fillText(`${kmh(o.leader.v).toFixed(1)} km/h`, lx + s * 0.35, cy + s * 1.15);
   }
   g.restore();
+  const right = o.leader && o.leader.v > 0.05 ? x + cw + 4 + s * 6.2 : x + Math.max(cw, tw);
+  return { x: x - 4, y: y - 4, w: right - x + 8, h: cy + s * 1.7 - y + 8 };
 }
 
 /** "On your marks…", "Set…", the gun. */

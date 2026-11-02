@@ -5,6 +5,7 @@ import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } fro
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowLeft, Clapperboard, Flag, Info, List, Minus, Play, Plus, RotateCcw, Share2, SkipForward, Trophy, Volume2, VolumeX, X } from "lucide-react";
 import { isMuted, onMuteChange, setMuted } from "@/lib/sound";
+import { LAB_PATH } from "@/lib/lab";
 import { copyText } from "@/lib/share";
 import { fromRow, type Entrant, type EntrantRow } from "@/lib/race/types";
 import { PRESET_BY_ID, DEFAULT_PRESET } from "@/lib/race/presets";
@@ -18,7 +19,7 @@ import { X0, type Distance } from "@/lib/race/track";
 import type { Quality, RaceScene } from "./scene";
 import { RACE_URLS } from "./urls";
 import type { RaceAudio } from "./audio";
-import { drawClockBug, drawFastForward, drawLaneIntro, drawNameTags, drawPhotoFinish, drawReplayBug, drawStartCall } from "./graphics";
+import { drawClockBug, drawFastForward, drawLaneIntro, drawNameTags, drawPhotoFinish, drawReplayBug, drawStartCall, type Rect } from "./graphics";
 import { RACE_CSS } from "./race-css";
 import { RaceInfo } from "./RaceInfo";
 import { RacePicker } from "./RacePicker";
@@ -117,6 +118,9 @@ export function RaceExperience({ preset, vs = [], distance = null, seed = null, 
   const stageRef = useRef<HTMLDivElement>(null);
   const hostRef = useRef<HTMLDivElement>(null);
   const overlayRef = useRef<HTMLCanvasElement>(null);
+  /** The camera controls (top right): name tags keep out from under them. */
+  const camUiRef = useRef<HTMLDivElement>(null);
+  const camUiRect = useRef<Rect | null>(null);
   const sceneRef = useRef<RaceScene | null>(null);
   const audioRef = useRef<RaceAudio | null>(null);
   const sizeRef = useRef({ w: 1, h: 1 });
@@ -291,6 +295,8 @@ export function RaceExperience({ preset, vs = [], distance = null, seed = null, 
       const w = Math.max(1, host.clientWidth), h = Math.max(1, host.clientHeight);
       sizeRef.current = { w, h };
       sceneRef.current?.resize(w, h);
+      const ui = camUiRef.current?.getBoundingClientRect(), box = host.getBoundingClientRect();
+      camUiRect.current = ui ? { x: ui.left - box.left - 6, y: ui.top - box.top - 6, w: ui.width + 12, h: ui.height + 12 } : null;
       const cv = overlayRef.current;
       if (cv) {
         const dpr = Math.min(2, window.devicePixelRatio || 1);
@@ -320,6 +326,8 @@ export function RaceExperience({ preset, vs = [], distance = null, seed = null, 
     let raf = 0;
     let last = performance.now();
     let ftEma = FRAME_BUDGET_MS, slowFor = 0, fastFor = 0, warm = 0;
+    // A quality asked for in the URL (?q=, for checks and screenshots) stays put.
+    const pinned = qualityParam() !== null;
     const font = getComputedStyle(document.documentElement).getPropertyValue("--font-display").trim() || "sans-serif";
     let lastPhase: UiPhase = "loading";
     const tick = () => {
@@ -442,6 +450,7 @@ export function RaceExperience({ preset, vs = [], distance = null, seed = null, 
       if (ph === "photo" && !s.beep) { s.beep = true; au?.beep(); }
       drawOverlay(ph, t, raceT, shot.rate, shot.lane, font);
       // Adaptive quality, both ways.
+      if (pinned) return;
       if (warm < 30 || raw > 400) warm++;
       else {
         ftEma = ftEma * 0.92 + raw * 0.08;
@@ -522,7 +531,7 @@ export function RaceExperience({ preset, vs = [], distance = null, seed = null, 
         const lead = leaderAt(race, raceT);
         const st = lead.profile ? raceT : 0;
         void st;
-        drawClockBug(g, w, h, { ...o, top, title: raceLabel, time: formatTime(Math.min(raceT, race.first), 2), leader: raceT < race.first ? { name: lead.entrant.name, v: Math.max(0, lead.profile ? spotsAt(race, raceT).find((x) => x.lane === lead.lane)?.v ?? 0 : 0) } : null, live: raceT < race.first });
+        const bug = drawClockBug(g, w, h, { ...o, top, title: raceLabel, time: formatTime(Math.min(raceT, race.first), 2), leader: raceT < race.first ? { name: lead.entrant.name, v: Math.max(0, lead.profile ? spotsAt(race, raceT).find((x) => x.lane === lead.lane)?.v ?? 0 : 0) } : null, live: raceT < race.first });
         if (ph === "fast") {
           const r = race.lanes.find((x) => x.lane === shot.lane);
           const caption = r ? (raceT > race.first ? `Meanwhile, ${r.entrant.name}…` : `${r.entrant.name} leads`) : "";
@@ -535,7 +544,7 @@ export function RaceExperience({ preset, vs = [], distance = null, seed = null, 
             drawNameTags(g, heads.map((a) => {
               const r = race.lanes.find((x) => x.lane === a.lane)!;
               return { lane: a.lane, name: r.entrant.name, x: a.x, y: a.y, lead: r.lane === lead.lane };
-            }), { ...o, scale: phone ? 0.85 : 1 });
+            }), { ...o, scale: phone ? 0.85 : 1, top: phone ? 56 : 60, avoid: camUiRect.current ? [bug, camUiRect.current] : [bug] });
           }
         }
         if (raceT >= race.first && raceT < race.first + 3) {
@@ -586,9 +595,10 @@ export function RaceExperience({ preset, vs = [], distance = null, seed = null, 
   }, []);
 
   useEffect(() => {
-    if (!ready || !hostRef.current) return;
+    if (!ready || !hostRef.current || !stageRef.current) return;
     const host = hostRef.current;
-    const pointers = new Map<number, { x: number; y: number }>();
+    const stage = stageRef.current;
+    const pointers = new Map<number, { x: number; y: number; touch: boolean }>();
     let pinch0 = 0;
     const toFree = () => {
       const s = show.current;
@@ -602,7 +612,7 @@ export function RaceExperience({ preset, vs = [], distance = null, seed = null, 
     };
     const down = (e: PointerEvent) => {
       if (recordingRef.current) return;
-      pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+      pointers.set(e.pointerId, { x: e.clientX, y: e.clientY, touch: e.pointerType === "touch" });
       try { host.setPointerCapture(e.pointerId); } catch { /* a synthetic or already-released pointer */ }
       if (pointers.size === 2) {
         const [a, b] = [...pointers.values()];
@@ -613,7 +623,7 @@ export function RaceExperience({ preset, vs = [], distance = null, seed = null, 
       const p = pointers.get(e.pointerId);
       if (!p) return;
       const dx = e.clientX - p.x, dy = e.clientY - p.y;
-      pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+      pointers.set(e.pointerId, { ...p, x: e.clientX, y: e.clientY });
       if (pointers.size >= 2) {
         const [a, b] = [...pointers.values()];
         const d = Math.hypot(a.x - b.x, a.y - b.y);
@@ -630,35 +640,47 @@ export function RaceExperience({ preset, vs = [], distance = null, seed = null, 
       pointers.delete(e.pointerId);
       if (pointers.size < 2) pinch0 = 0;
     };
+    // The wheel zooms anywhere on the stage (a trackpad pinch arrives as ctrl + wheel in Chrome, Firefox and Edge);
+    // panels and dialogs still scroll, and a pinch over them zooms the scene, never the page.
+    let gs: number | null = null;
     const wheel = (e: WheelEvent) => {
-      if (recordingRef.current) return;
+      if (!e.ctrlKey && (e.target as HTMLElement).closest?.("[data-rc-scroll], [role=dialog]")) return;
       e.preventDefault();
+      if (recordingRef.current || gs !== null) return;
       zoom(wheelFactor(e.deltaY, e.deltaMode, e.ctrlKey));
     };
-    // Safari's trackpad pinch.
-    let gs = 1;
-    const gStart = (e: Event) => { e.preventDefault(); gs = (e as unknown as { scale: number }).scale || 1; };
+    // Safari's trackpad pinch arrives as gesture events. On a touch screen the pointers above already pinch.
+    const gStart = (e: Event) => {
+      e.preventDefault();
+      if (recordingRef.current || [...pointers.values()].some((p) => p.touch)) return;
+      gs = (e as unknown as { scale: number }).scale || 1;
+    };
     const gChange = (e: Event) => {
       e.preventDefault();
+      if (gs === null) return;
       const sc = (e as unknown as { scale: number }).scale || 1;
       zoom(sc / gs);
       gs = sc;
     };
+    const gEnd = (e: Event) => { e.preventDefault(); gs = null; };
+    const opts = { passive: false } as AddEventListenerOptions;
     host.addEventListener("pointerdown", down);
     host.addEventListener("pointermove", move);
     host.addEventListener("pointerup", up);
     host.addEventListener("pointercancel", up);
-    host.addEventListener("wheel", wheel, { passive: false });
-    host.addEventListener("gesturestart", gStart as EventListener, { passive: false } as AddEventListenerOptions);
-    host.addEventListener("gesturechange", gChange as EventListener, { passive: false } as AddEventListenerOptions);
+    stage.addEventListener("wheel", wheel, opts);
+    stage.addEventListener("gesturestart", gStart, opts);
+    stage.addEventListener("gesturechange", gChange, opts);
+    stage.addEventListener("gestureend", gEnd, opts);
     return () => {
       host.removeEventListener("pointerdown", down);
       host.removeEventListener("pointermove", move);
       host.removeEventListener("pointerup", up);
       host.removeEventListener("pointercancel", up);
-      host.removeEventListener("wheel", wheel);
-      host.removeEventListener("gesturestart", gStart as EventListener);
-      host.removeEventListener("gesturechange", gChange as EventListener);
+      stage.removeEventListener("wheel", wheel);
+      stage.removeEventListener("gesturestart", gStart);
+      stage.removeEventListener("gesturechange", gChange);
+      stage.removeEventListener("gestureend", gEnd);
     };
   }, [ready, zoom]);
 
@@ -795,8 +817,8 @@ export function RaceExperience({ preset, vs = [], distance = null, seed = null, 
           {/* Top bar. */}
           <div className="rc-ui pointer-events-none absolute inset-x-0 top-0 z-10 flex items-start justify-between gap-2 p-3 sm:p-4">
             <div className="flex min-w-0 items-center gap-2">
-              <Link href="/pokedex" className={cn(chip, "px-2.5")} aria-label="Back to the Pokédex" data-testid="race-back">
-                <ArrowLeft className="h-4 w-4" aria-hidden />
+              <Link href={LAB_PATH} className={cn(chip, "px-2.5")} aria-label="Back to the 3D Lab" data-testid="race-back">
+                <ArrowLeft className="h-4 w-4" aria-hidden /> <span className="hidden sm:inline">3D Lab</span>
               </Link>
               <button type="button" className={cn(chip, "min-w-0 max-w-[44vw] sm:max-w-none")} onClick={() => setPicker(true)} disabled={!all} data-testid="race-title">
                 <span className="truncate">{title}</span>
@@ -817,7 +839,7 @@ export function RaceExperience({ preset, vs = [], distance = null, seed = null, 
           </div>
 
           {/* Camera: presets and zoom (always available). */}
-          <div className="rc-ui pointer-events-none absolute right-3 top-[3.6rem] z-10 flex flex-col items-end gap-2 sm:right-4 sm:top-[4.1rem]">
+          <div ref={camUiRef} className="rc-ui pointer-events-none absolute right-3 top-[3.6rem] z-10 flex flex-col items-end gap-2 sm:right-4 sm:top-[4.1rem]">
             <div className="rc-seg pointer-events-auto flex overflow-hidden rounded-md border border-white/15 bg-[#0b1226]/75 backdrop-blur-md" role="group" aria-label="Camera">
               {(["broadcast", "headon", "overhead", "free"] as CamMode[]).map((m) => (
                 <button key={m} type="button" aria-pressed={cam === m} onClick={() => setCamMode(m)} className="border-l border-white/10 px-2 py-1.5 font-display text-[10px] font-semibold uppercase tracking-wider text-white/75 first:border-l-0 hover:text-white sm:px-2.5 sm:text-[11px]" data-testid={`race-cam-${m}`}>
@@ -834,7 +856,7 @@ export function RaceExperience({ preset, vs = [], distance = null, seed = null, 
           {/* How it works. */}
           <AnimatePresence>
             {info && (
-              <motion.div className="rc-ui pointer-events-auto absolute left-3 right-3 top-[3.6rem] z-30 max-h-[70%] overflow-y-auto rounded-xl border border-white/15 bg-[#0b1226]/95 p-4 text-white/85 shadow-2xl backdrop-blur-xl sm:left-4 sm:right-auto sm:w-[30rem]" initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} data-testid="race-info-panel">
+              <motion.div className="rc-ui pointer-events-auto absolute left-3 right-3 top-[3.6rem] z-30 max-h-[70%] overflow-y-auto rounded-xl border border-white/15 bg-[#0b1226]/95 p-4 text-white/85 shadow-2xl backdrop-blur-xl sm:left-4 sm:right-auto sm:w-[30rem]" initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} data-testid="race-info-panel" data-rc-scroll>
                 <div className="mb-2 flex items-center justify-between">
                   <h2 className="font-display text-sm font-bold uppercase tracking-wider text-white">How the race works</h2>
                   <button type="button" onClick={() => setInfo(false)} className="rounded p-1 text-white/60 hover:text-white" aria-label="Close"><X className="h-4 w-4" /></button>
@@ -846,7 +868,7 @@ export function RaceExperience({ preset, vs = [], distance = null, seed = null, 
 
           {/* Results. */}
           {after && race && resultsOpen && (
-            <div className="rc-ui pointer-events-auto absolute inset-x-3 bottom-[7.2rem] z-20 max-h-[min(26rem,calc(100%-12rem))] overflow-y-auto rounded-xl border border-white/15 p-3 text-white shadow-2xl backdrop-blur-xl sm:inset-x-auto sm:bottom-24 sm:right-4 sm:w-[27rem] rc-results" data-testid="race-results">
+            <div className="rc-ui pointer-events-auto absolute inset-x-3 bottom-[7.2rem] z-20 max-h-[min(26rem,calc(100%-12rem))] overflow-y-auto rounded-xl border border-white/15 p-3 text-white shadow-2xl backdrop-blur-xl sm:inset-x-auto sm:bottom-24 sm:right-4 sm:w-[27rem] rc-results" data-testid="race-results" data-rc-scroll>
               <div className="mb-1 flex items-center justify-between gap-2">
                 <h2 className="font-display text-sm font-bold uppercase tracking-wider"><Trophy className="mr-1.5 inline h-4 w-4 text-[#ffd84a]" aria-hidden />Results · {spec.distance} m</h2>
                 <button type="button" onClick={() => setResultsOpen(false)} className="rounded p-1 text-white/60 hover:text-white" aria-label="Hide the results" data-testid="race-results-close"><X className="h-4 w-4" /></button>

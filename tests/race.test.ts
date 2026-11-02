@@ -278,6 +278,13 @@ describe("presets", () => {
     expect(PRESET_BY_ID.get("eeveelutions")!.pick(RACE_ENTRANTS, 100).map((e) => e.species)).toEqual([134, 135, 136, 196, 197, 470, 471, 700]);
     const heavy = PRESET_BY_ID.get("heavyweights")!.pick(RACE_ENTRANTS, 100);
     expect(heavy[0].kg).toBeGreaterThanOrEqual(heavy[7].kg);
+    // The blurbs say what the picks are: "800 kg and up", Slowest Eight names Shuckle and Munchlax.
+    expect(heavy.every((e) => e.kg >= 800)).toBe(true);
+    expect(PRESET_BY_ID.get("heavyweights")!.blurb).toMatch(/800 kg and up/);
+    const slow = PRESET_BY_ID.get("slowest-eight")!.pick(RACE_ENTRANTS, 100).map((e) => e.key);
+    expect(slow).toEqual(expect.arrayContaining(["shuckle", "munchlax"]));
+    const starters = PRESET_BY_ID.get("starters")!.pick(RACE_ENTRANTS, 100);
+    expect(starters.every((e) => e.evolved)).toBe(true);
   });
   it("lists the real pseudo-legendaries: non-legendary, fully evolved, 600 base stat total", () => {
     for (const id of PSEUDO_LEGENDARIES) {

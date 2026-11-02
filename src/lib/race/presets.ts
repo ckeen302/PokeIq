@@ -94,7 +94,7 @@ export const PRESETS: RacePreset[] = [
     label: "Starters",
     title: "The fastest starter Pokémon (final evolutions)",
     hook: "Which starter is fastest? 🔥💧🌿",
-    blurb: "The fastest fully evolved starters, from Venusaur to Quaquaval.",
+    blurb: "The fastest fully evolved starters, picked from every starter line from Bulbasaur's to Quaxly's.",
     distance: 100,
     pick: (all, d) => {
       const chains = new Set(species(all).filter((e) => (STARTER_BASES as readonly number[]).includes(e.species)).map((e) => e.chain));
@@ -136,7 +136,7 @@ export const PRESETS: RacePreset[] = [
     label: "Heavyweights",
     title: "The heaviest Pokémon race 100 m",
     hook: "The heaviest Pokémon race 100 m 🏋️",
-    blurb: "The heaviest Pokémon, nearly a tonne each. Mind the ground.",
+    blurb: "The heaviest Pokémon, 800 kg and up. Mind the ground.",
     distance: 100,
     pick: (all) => [...species(all)].sort((a, b) => b.kg - a.kg || a.species - b.species).slice(0, 8),
   },

@@ -186,6 +186,7 @@ function loadImage(src: string): Promise<HTMLImageElement | null> {
   });
 }
 
+/** Breaks at spaces only: no-break spaces keep "100 m" and a closing emoji on their line. */
 function wrap(g: CanvasRenderingContext2D, text: string, maxW: number): string[] {
   const words = text.split(/ +/);
   const lines: string[] = [];
@@ -217,13 +218,13 @@ function drawFrame(g: CanvasRenderingContext2D, W: number, H: number, t: number,
     } else if (shot.phase === "race" || shot.phase === "fast") {
       const lead = leaderAt(race, raceT);
       const v = spotsAt(race, raceT).find((x) => x.lane === lead.lane)?.v ?? 0;
-      drawClockBug(g, W, H, { ...gfx, scale: 2.3, top, title: `${race.distance} m · ${o.title}`, time: formatTime(Math.min(raceT, race.first)), leader: raceT < race.first ? { name: lead.entrant.name, v } : null, live: raceT < race.first });
+      const bug = drawClockBug(g, W, H, { ...gfx, scale: 2.3, top, title: `${race.distance} m · ${o.title}`, time: formatTime(Math.min(raceT, race.first)), leader: raceT < race.first ? { name: lead.entrant.name, v } : null, live: raceT < race.first });
       if (shot.phase === "fast") {
         const r = race.lanes.find((x) => x.lane === shot.lane);
         drawFastForward(g, W, H, shot.rate, r ? (raceT > race.first ? `Meanwhile, ${r.entrant.name}…` : `${r.entrant.name} leads`) : "", { ...gfx, scale: 1.9, top: top + 190 });
       }
       const heads = o.heads.filter((a) => a.visible && a.by - a.y > 30);
-      drawNameTags(g, heads.map((a) => ({ lane: a.lane, name: race.lanes.find((x) => x.lane === a.lane)!.entrant.name, x: a.x, y: a.y, lead: a.lane === lead.lane })), { font, scale: 2.3 });
+      drawNameTags(g, heads.map((a) => ({ lane: a.lane, name: race.lanes.find((x) => x.lane === a.lane)!.entrant.name, x: a.x, y: a.y, lead: a.lane === lead.lane })), { font, scale: 2.3, top: top * 0.6, avoid: [bug] });
       if (raceT >= race.first && raceT < race.first + 3) {
         const w = race.order[0];
         drawStartCall(g, W, H, `${w.entrant.name.toUpperCase()} ${formatTime(w.time)}`, 0.5, { font, scale: 1.3 });
@@ -262,7 +263,7 @@ function drawFrame(g: CanvasRenderingContext2D, W: number, H: number, t: number,
     g.font = `800 ${W * 0.085}px ${font}`;
     g.textAlign = "center";
     g.textBaseline = "middle";
-    const lines = wrap(g, o.hook.replace(/ (\p{Extended_Pictographic}+)$/u, " $1"), W * 0.86);
+    const lines = wrap(g, o.hook.replace(/ (\p{Extended_Pictographic}+)$/u, " $1").replace(/(\d) (m|s)\b/g, "$1 $2"), W * 0.86);
     const lh = W * 0.1;
     const y0 = H * 0.28 - ((lines.length - 1) * lh) / 2;
     const fill = g.createLinearGradient(0, y0 - lh, 0, y0 + lines.length * lh);

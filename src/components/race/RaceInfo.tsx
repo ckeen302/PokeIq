@@ -1,38 +1,42 @@
-import { ACCEL, FADE } from "@/lib/race/model";
+import { ACCEL, FADE, SPEED_PER_POINT } from "@/lib/race/model";
 
 /**
- * "How the race works": the model in plain words, with its sources. Shown
- * in the 3D view's info panel and in the page's server-rendered text.
+ * "How the race works": the model in plain words, what is measured and what
+ * is a choice, with its sources. Shown in the 3D view's info panel and in
+ * the page's server-rendered text.
  */
 export function RaceInfo({ compact = false }: { compact?: boolean }) {
+  const strong = "text-foreground";
+  const v100 = 100 * SPEED_PER_POINT;
   return (
     <div className={compact ? "space-y-3 text-sm leading-relaxed" : "space-y-3 text-sm leading-relaxed text-muted-foreground"} data-testid="race-info">
       <p>
-        <strong className="text-foreground">Pokémon have no official real-world speeds.</strong> So every speed here is scaled from the base Speed stat, with
-        100 Speed set to 10 m/s, a world-class sprinter&apos;s top speed. Regieleki (200 Speed) tops out at 20 m/s; Shuckle (5 Speed) at 0.5 m/s.
+        <strong className={strong}>Pokémon have no official real-world speeds,</strong> so this is a model, not game data. Every speed is scaled from the
+        base Speed stat by one rule we chose: 100 Speed = {v100} m/s ({(v100 * 3.6).toFixed(0)} km/h), about a world-class sprinter&apos;s average
+        speed over 100 m. Regieleki (200 Speed) tops out at 20 m/s; Shuckle (5 Speed) at 0.5 m/s.
       </p>
       <p>
-        <strong className="text-foreground">Getting going:</strong> each runner follows the classic sprint curve of Furusawa, Hill and Parkinson (1927), where speed
-        rises as v(t) = v<sub>max</sub>(1 − e<sup>−t/τ</sup>). The time constant τ comes from power-to-weight: {ACCEL.tau0} s for a 70 kg runner with 100 Attack,
-        a little longer for heavier Pokémon and a little shorter for stronger ones (between {ACCEL.min} s and {ACCEL.max} s). Base Speed decides the race; two Pokémon
-        with the same Speed are split by how fast they get away, often by hundredths.
+        <strong className={strong}>Getting going:</strong> each runner follows the classic sprint curve of Furusawa, Hill and Parkinson (1927), where speed
+        rises as v(t) = v<sub>max</sub>(1 − e<sup>−t/τ</sup>). We set the time constant τ from power-to-weight: {ACCEL.tau0} s, a human sprinter&apos;s,
+        for a 70 kg runner with 100 Attack, a little longer for heavier Pokémon and a little shorter for stronger ones (between {ACCEL.min} s and {ACCEL.max} s).
+        The effect is kept small on purpose: base Speed decides the race, and two Pokémon with the same Speed are split by how fast they get away.
       </p>
       <p>
-        <strong className="text-foreground">Stamina (200 m and 400 m):</strong> base HP is endurance. After {FADE.onset} m, about where sprinters start to tie up, the
-        speed a runner can hold fades, more slowly the more HP it has: with 100 HP it keeps about 96% of its top speed at 200 m and 84% at 400 m, like an elite
-        400 m runner.
+        <strong className={strong}>Stamina (200 m and 400 m only):</strong> we let base HP stand for endurance. After {FADE.onset} m the speed a runner can
+        hold fades towards {Math.round(FADE.floor * 100)}% of its top speed, more slowly the more HP it has: with 100 HP it keeps about 96% at 200 m and 84% at
+        400 m, roughly how much an elite 400 m runner slows.
       </p>
       <p>
-        <strong className="text-foreground">How they move:</strong> stride length and rhythm follow R. McNeill Alexander&apos;s dynamic similarity (Nature, 1976):
-        relative stride λ = 2.3 · (v²/gh)<sup>0.3</sup>, with h the hip height. At the same speed small Pokémon patter and giants lope. Winged Pokémon and
-        Flying types fly low over their lane (wingbeats slow with size), Levitate and floating Ghosts hover, serpents slither, fish flop, balls roll, blobs
-        bounce, quadrupeds gallop. Heavy runners shake the ground.
+        <strong className={strong}>How they move</strong> changes the animation, never the time. Stride length and rhythm follow R. McNeill Alexander&apos;s
+        dynamic similarity (Nature, 1976): relative stride λ = 2.3 · (v²/gh)<sup>0.3</sup>, with h the hip height, so at the same speed small Pokémon patter
+        and giants lope. Winged Pokémon and Flying types fly low over their lane, Levitate and floating Ghosts hover, serpents slither, fish flop, balls
+        roll, blobs bounce and quadrupeds gallop, going by each Pokémon&apos;s body shape, types and abilities.
       </p>
       <p>
-        <strong className="text-foreground">The track:</strong> a regulation 400 m track (84.39 m straights, 36.5 m bends, eight 1.22 m lanes) with staggered
-        starts for 200 m and 400 m. Times are to the hundredth, and to the thousandth when a photo finish needs it.
+        <strong className={strong}>The track:</strong> a regulation 400 m track (84.39 m straights, bends with a 36.5 m inner radius, eight 1.22 m lanes)
+        with staggered starts for 200 m and 400 m. Times are to the hundredth, and to the thousandth when two would otherwise tie.
       </p>
-      {!compact && <p className="text-xs">Stats, heights and weights from the Pokédex (PokéAPI), forms included. A hypothetical race for fun, not game mechanics.</p>}
+      <p className="text-xs">Stats, heights and weights from the Pokédex (PokéAPI), forms included. A what-if race for fun, not game mechanics.</p>
     </div>
   );
 }

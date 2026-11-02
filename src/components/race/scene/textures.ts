@@ -1,7 +1,7 @@
 import * as THREE from "three";
 
 /**
- * Canvas textures drawn by the page itself: the crowd's sprite sheet, the
+ * Canvas textures drawn by the page itself (and the crowd's colours): the
  * LED boards round the track, lane numbers, the glow of a lamp, the
  * trackside clock. Nothing here is taken from any game or brand.
  */
@@ -25,124 +25,10 @@ function canvas(w: number, h: number): [HTMLCanvasElement, CanvasRenderingContex
   return [c, c.getContext("2d")!];
 }
 
-const SKIN = ["#f1c7a5", "#e0ac83", "#c68a62", "#a86f4c", "#7d4f33", "#5c3a26", "#f6d9c1", "#d9a07a"];
-const HAIR = ["#1d1611", "#2f2219", "#4a3324", "#7a5332", "#c99a5b", "#e3c27c", "#9a9a9a", "#d8d2c8", "#8e3a1e", "#111111"];
-const SHIRT = ["#d7263d", "#f46036", "#ffd23f", "#3bceac", "#0ead69", "#2e86ab", "#1b4965", "#ffffff", "#f2f2f2", "#222222", "#6a4c93", "#e76f51", "#fca311", "#14213d", "#e5e5e5", "#ff006e", "#3a86ff", "#8338ec", "#06d6a0", "#ef476f", "#118ab2", "#073b4c", "#ffb703", "#fb8500"];
-const FLAG = [["#d7263d", "#ffffff"], ["#2e86ab", "#ffd23f"], ["#0ead69", "#ffffff"], ["#14213d", "#fca311"], ["#ff006e", "#3a86ff"], ["#ffd23f", "#d7263d"]];
-
-export const CROWD_COLS = 8;
-export const CROWD_ROWS = 4;
-
-/**
- * The crowd's sprite sheet: CROWD_COLS × CROWD_ROWS / 2 cells of spectators
- * (`perCell` side by side, seated, seen from the field), drawn twice: arms
- * down (top half) and the same people cheering, arms up (bottom half).
- */
-export function crowdAtlas(perCell: number): THREE.Texture {
-  const cw = 128, ch = 128;
-  const [c, g] = canvas(cw * CROWD_COLS, ch * CROWD_ROWS);
-  const half = CROWD_ROWS / 2;
-  for (let cell = 0; cell < CROWD_COLS * half; cell++) {
-    const cx = (cell % CROWD_COLS) * cw, cy = Math.floor(cell / CROWD_COLS) * ch;
-    for (const up of [false, true]) {
-      const r = rng(cell * 977 + 13);
-      const oy = cy + (up ? half * ch : 0);
-      const pw = cw / perCell;
-      for (let p = 0; p < perCell; p++) {
-        const skin = SKIN[Math.floor(r() * SKIN.length)];
-        const hair = HAIR[Math.floor(r() * HAIR.length)];
-        const shirt = SHIRT[Math.floor(r() * SHIRT.length)];
-        const px = cx + p * pw + pw / 2 + (r() - 0.5) * pw * 0.12;
-        const scale = (0.86 + r() * 0.18) * Math.min(1, 2.2 / perCell + 0.3);
-        const headR = pw * 0.17 * scale;
-        const shoulderY = oy + ch * (0.58 + (r() - 0.5) * 0.05);
-        const bodyW = pw * 0.62 * scale;
-        const prop = r();
-        // Torso.
-        g.fillStyle = shirt;
-        g.beginPath();
-        g.moveTo(px - bodyW / 2, oy + ch);
-        g.lineTo(px - bodyW / 2, shoulderY + headR * 0.4);
-        g.quadraticCurveTo(px - bodyW / 2, shoulderY, px - bodyW * 0.3, shoulderY);
-        g.lineTo(px + bodyW * 0.3, shoulderY);
-        g.quadraticCurveTo(px + bodyW / 2, shoulderY, px + bodyW / 2, shoulderY + headR * 0.4);
-        g.lineTo(px + bodyW / 2, oy + ch);
-        g.closePath();
-        g.fill();
-        // A darker lower half (lap, seat back) so rows read apart.
-        g.fillStyle = "rgba(0,0,0,0.35)";
-        g.fillRect(px - bodyW / 2, oy + ch * 0.86, bodyW, ch * 0.14);
-        // Arms: down at the sides, or raised (cheering), sometimes waving a flag or holding up a phone.
-        g.strokeStyle = shirt;
-        g.lineCap = "round";
-        g.lineWidth = Math.max(2, pw * 0.11 * scale);
-        if (up) {
-          const reach = ch * (0.3 + r() * 0.1);
-          for (const s of [-1, 1]) {
-            g.beginPath();
-            g.moveTo(px + s * bodyW * 0.42, shoulderY + 2);
-            g.lineTo(px + s * bodyW * (0.55 + r() * 0.25), shoulderY - reach);
-            g.stroke();
-            g.fillStyle = skin;
-            g.beginPath();
-            g.arc(px + s * bodyW * (0.55 + r() * 0.2), shoulderY - reach - 2, g.lineWidth * 0.55, 0, Math.PI * 2);
-            g.fill();
-          }
-          if (prop < 0.22) {
-            const [a, b] = FLAG[Math.floor(r() * FLAG.length)];
-            const fx = px + bodyW * 0.62, fy = shoulderY - reach - pw * 0.05;
-            g.fillStyle = a;
-            g.fillRect(fx, fy - pw * 0.32, pw * 0.42, pw * 0.15);
-            g.fillStyle = b;
-            g.fillRect(fx, fy - pw * 0.17, pw * 0.42, pw * 0.15);
-          }
-        } else {
-          for (const s of [-1, 1]) {
-            g.beginPath();
-            g.moveTo(px + s * bodyW * 0.45, shoulderY + 4);
-            g.lineTo(px + s * bodyW * 0.4, oy + ch * 0.9);
-            g.stroke();
-          }
-        }
-        if (prop > 0.86) {
-          // A phone held up to film: a small bright screen.
-          const hx = px + (r() - 0.5) * bodyW * 0.6, hy = shoulderY - ch * (up ? 0.32 : 0.06);
-          g.fillStyle = "#1c1c1c";
-          g.fillRect(hx - pw * 0.06, hy - pw * 0.1, pw * 0.12, pw * 0.2);
-          g.fillStyle = "#cfe6ff";
-          g.fillRect(hx - pw * 0.045, hy - pw * 0.085, pw * 0.09, pw * 0.15);
-        }
-        // Neck and head.
-        g.fillStyle = skin;
-        g.fillRect(px - headR * 0.35, shoulderY - headR * 0.6, headR * 0.7, headR * 0.8);
-        g.beginPath();
-        g.arc(px, shoulderY - headR * 1.25, headR, 0, Math.PI * 2);
-        g.fill();
-        // Hair, or a cap.
-        if (r() < 0.18) {
-          g.fillStyle = SHIRT[Math.floor(r() * SHIRT.length)];
-          g.beginPath();
-          g.arc(px, shoulderY - headR * 1.35, headR * 1.02, Math.PI, 0);
-          g.fill();
-          g.fillRect(px - headR * 1.3, shoulderY - headR * 1.4, headR * 1.3, headR * 0.25);
-        } else {
-          g.fillStyle = hair;
-          g.beginPath();
-          g.arc(px, shoulderY - headR * 1.4, headR * 0.98, Math.PI * 1.05, Math.PI * 1.95);
-          g.lineTo(px + headR * 0.95, shoulderY - headR * 1.15);
-          g.lineTo(px - headR * 0.95, shoulderY - headR * 1.15);
-          g.fill();
-        }
-      }
-    }
-  }
-  const t = new THREE.CanvasTexture(c);
-  t.colorSpace = THREE.SRGBColorSpace;
-  t.anisotropy = 2;
-  t.generateMipmaps = true;
-  t.minFilter = THREE.LinearMipmapLinearFilter;
-  return t;
-}
+/** The crowd's colours: skin tones, hair, and shirts (caps take a shirt colour). */
+export const CROWD_SKIN = ["#f1c7a5", "#e0ac83", "#c68a62", "#a86f4c", "#7d4f33", "#5c3a26", "#f6d9c1", "#d9a07a"];
+export const CROWD_HAIR = ["#1d1611", "#2f2219", "#4a3324", "#7a5332", "#c99a5b", "#e3c27c", "#9a9a9a", "#d8d2c8", "#8e3a1e", "#111111"];
+export const CROWD_SHIRT = ["#d7263d", "#f46036", "#ffd23f", "#3bceac", "#0ead69", "#2e86ab", "#1b4965", "#ffffff", "#f2f2f2", "#222222", "#6a4c93", "#e76f51", "#fca311", "#14213d", "#e5e5e5", "#ff006e", "#3a86ff", "#8338ec", "#06d6a0", "#ef476f", "#118ab2", "#073b4c", "#ffb703", "#fb8500"];
 
 /** A soft round glow for lamps (additive). */
 export function glowTexture(): THREE.Texture {

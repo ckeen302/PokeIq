@@ -40,7 +40,7 @@ export function RaceBracket({ t, byKey, onClose, onWatchFinal, onRedraw }: { t: 
           <div className="mt-3 flex flex-wrap gap-1.5" role="tablist" aria-label="Rounds">
             {t.rounds.map((x, i) => (
               <button key={x.name} type="button" role="tab" aria-selected={i === round} onClick={() => setRound(i)} className={cn("rounded-md border px-2.5 py-1.5 font-display text-[11px] font-semibold uppercase tracking-wide", i === round ? "border-[#ffd84a] bg-[#ffd84a]/10 text-[#ffd84a]" : "border-white/15 text-white/70 hover:text-white")} data-testid="race-bracket-round">
-                {x.name} <span className="text-white/40">({x.heats.length})</span>
+                {x.name}
               </button>
             ))}
           </div>

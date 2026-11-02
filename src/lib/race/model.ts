@@ -1,10 +1,10 @@
 /**
  * The race model: how fast a Pokémon runs, from its base stats. Pure and
- * unit-tested (tests/race-model.test.ts).
+ * unit-tested (tests/race.test.ts).
  *
  * Pokémon have no official real-world speeds, so every speed here is scaled
- * from the Speed stat, with base 100 Speed set to 10 m/s, a world-class
- * sprinter's top speed:
+ * from the Speed stat, with base 100 Speed set to 10 m/s, about a
+ * world-class sprinter's average speed over 100 m:
  *
  * - Top speed: v_max = 10 m/s × Speed / 100. Regieleki (200) reaches
  *   20 m/s, Shuckle (5) 0.5 m/s.

@@ -24,8 +24,8 @@ interface Spec {
   post: boolean;
   msaa: number;
   bloom: boolean;
-  perSprite: 2 | 3 | 4;
-  rowStep: 1 | 2;
+  /** Share of the seats with a spectator in them. */
+  crowd: number;
   flashes: number;
   beams: boolean;
   /** Feed the big screens every n frames (0: a still card). */
@@ -37,11 +37,11 @@ interface Spec {
 }
 
 export const QUALITY: Record<Quality, Spec> = {
-  draft: { pr: 1, post: false, msaa: 0, bloom: false, perSprite: 4, rowStep: 2, flashes: 150, beams: false, screenEvery: 0, texSize: 256, segments: 40, aniso: 1, pf: { w: 360, h: 200, perFrame: 90 } },
-  low: { pr: 1, post: false, msaa: 0, bloom: false, perSprite: 4, rowStep: 2, flashes: 500, beams: false, screenEvery: 0, texSize: 256, segments: 56, aniso: 2, pf: { w: 480, h: 240, perFrame: 40 } },
-  medium: { pr: 1.25, post: true, msaa: 4, bloom: true, perSprite: 3, rowStep: 1, flashes: 1200, beams: false, screenEvery: 3, texSize: 512, segments: 80, aniso: 4, pf: { w: 640, h: 300, perFrame: 40 } },
-  high: { pr: 1.6, post: true, msaa: 4, bloom: true, perSprite: 2, rowStep: 1, flashes: 2000, beams: false, screenEvery: 2, texSize: 512, segments: 110, aniso: 8, pf: { w: 800, h: 360, perFrame: 60 } },
-  export: { pr: 1, post: true, msaa: 4, bloom: true, perSprite: 2, rowStep: 1, flashes: 2400, beams: false, screenEvery: 1, texSize: 512, segments: 120, aniso: 8, pf: { w: 900, h: 400, perFrame: 900 } },
+  draft: { pr: 1, post: false, msaa: 0, bloom: false, crowd: 0.25, flashes: 150, beams: false, screenEvery: 0, texSize: 256, segments: 40, aniso: 1, pf: { w: 360, h: 200, perFrame: 90 } },
+  low: { pr: 1, post: false, msaa: 0, bloom: false, crowd: 0.4, flashes: 500, beams: false, screenEvery: 0, texSize: 256, segments: 56, aniso: 2, pf: { w: 480, h: 240, perFrame: 40 } },
+  medium: { pr: 1.25, post: true, msaa: 4, bloom: true, crowd: 0.93, flashes: 1200, beams: false, screenEvery: 3, texSize: 512, segments: 80, aniso: 4, pf: { w: 640, h: 300, perFrame: 40 } },
+  high: { pr: 1.6, post: true, msaa: 4, bloom: true, crowd: 0.93, flashes: 2000, beams: false, screenEvery: 2, texSize: 512, segments: 110, aniso: 8, pf: { w: 800, h: 360, perFrame: 60 } },
+  export: { pr: 1, post: true, msaa: 4, bloom: true, crowd: 0.93, flashes: 2400, beams: false, screenEvery: 1, texSize: 512, segments: 120, aniso: 8, pf: { w: 900, h: 400, perFrame: 900 } },
 };
 
 export interface SceneUrls extends RunnerUrls, StadiumUrls {}
@@ -151,7 +151,7 @@ export function createRaceScene(host: HTMLElement, opts: SceneOptions): RaceScen
   scene.environment = stadiumEnvironment(renderer);
   scene.environmentIntensity = 0.9;
 
-  const crowd: Crowd = buildCrowd({ perSprite: Q0.perSprite, rowStep: Q0.rowStep, flashes: Q0.flashes });
+  const crowd: Crowd = buildCrowd({ occupancy: Q0.crowd, flashes: Q0.flashes });
   scene.add(crowd.group);
 
   // ---- Big screens: the live race from their own camera, or a still card.
