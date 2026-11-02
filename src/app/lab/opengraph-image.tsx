@@ -4,7 +4,7 @@ import { liveLabExperiences } from "@/lib/lab";
 
 /** Share card for the 3D Lab: its experiences' screenshots, stacked. */
 
-export const alt = "PokéIQ 3D Lab: the Pokémon Timeline, Pokémon Sizes and the World Globe in 3D";
+export const alt = "PokéIQ 3D Lab: the Pokémon Timeline, Pokémon Sizes, Pokémon Race and the World Globe in 3D";
 export const size = OG_SIZE;
 export const contentType = OG_CONTENT_TYPE;
 
@@ -25,7 +25,7 @@ export default async function Image() {
   return ogCard({
     eyebrow: "PokéIQ · 3D Lab",
     title: [["3D", C.pink], "Lab"],
-    subtitle: "Pokémon history, Pokémon sizes and the whole Pokémon world, in cinematic 3D.",
+    subtitle: "Pokémon history, Pokémon sizes, Pokémon races and the whole Pokémon world, in cinematic 3D.",
     accent: C.violet,
     visual: (
       <div style={{ display: "flex", position: "relative", width: 510, height: 380 }}>
