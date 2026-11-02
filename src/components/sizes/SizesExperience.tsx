@@ -639,7 +639,8 @@ export function SizesExperience({ preset, focus = null, vs = [], compare = false
           ({ target: c.orbitT, vel: c.vOrbit } = coast(c.orbitT, c.vOrbit, FRICTION.orbit, dt));
         }
         c.lzT = Math.max(LZ_MIN, Math.min(LZ_MAX, c.lzT));
-        c.lz = damp(c.lz, c.lzT, RATE.zoom, dt);
+        // Zooming in also waits a moment for the figures it brings close.
+        c.lz = damp(c.lz, c.lzT, RATE.zoom * (c.lzT > c.lz ? Math.max(0.25, c.ease) : 1), dt);
         const zoom = Math.exp(c.lz);
         const h = scene.heightAt(c.x);
         const tiltT = clampTilt(c.tiltT, h, zoom);
