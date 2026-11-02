@@ -27,6 +27,12 @@ export interface SizeItem {
   /** Proportions of the visible figure (art bounding box, or the reference model): width and height in any unit. */
   bw: number;
   bh: number;
+  /** The HOME render's visible box: left and top (px) in an image `bs` px square (0 for references). */
+  bx: number;
+  by: number;
+  bs: number;
+  /** Types in slot order ("fire", "flying"); none for references. */
+  types: string[];
   gen: number;
   legendary: boolean;
   mythical: boolean;
@@ -39,16 +45,21 @@ export interface SizeItem {
 }
 
 /** The compact wire format of /api/sizes (one row per item). */
-export type SizeRow = [key: string, name: string, kind: SizeKind, species: number, art: number, m: number, flags: number, bw: number, bh: number, gen: number, kg: number | null, chain: number];
+export type SizeRow = [key: string, name: string, kind: SizeKind, species: number, art: number, m: number, flags: number, bw: number, bh: number, gen: number, kg: number | null, chain: number, box: [bx: number, by: number, bs: number], types: string, ref: RefKind | 0];
 export const F_LENGTH = 1, F_MIN = 2, F_LEGEND = 4, F_MYTH = 8;
 
 export function toRow(i: SizeItem): SizeRow {
   const flags = (i.length ? F_LENGTH : 0) | (i.min ? F_MIN : 0) | (i.legendary ? F_LEGEND : 0) | (i.mythical ? F_MYTH : 0);
-  return [i.key, i.name, i.kind, i.species, i.art, i.m, flags, i.bw, i.bh, i.gen, i.kg, i.chain];
+  return [i.key, i.name, i.kind, i.species, i.art, i.m, flags, i.bw, i.bh, i.gen, i.kg, i.chain, [i.bx, i.by, i.bs], i.types.join("/"), i.ref?.kind ?? 0];
 }
+/** A row back to an item (a reference's source details stay on the server; the kind is kept for its model). */
 export function fromRow(r: SizeRow): SizeItem {
-  const [key, name, kind, species, art, m, flags, bw, bh, gen, kg, chain] = r;
-  return { key, name, kind, species, art, m, length: !!(flags & F_LENGTH), min: !!(flags & F_MIN), bw, bh, gen, legendary: !!(flags & F_LEGEND), mythical: !!(flags & F_MYTH), kg, chain };
+  const [key, name, kind, species, art, m, flags, bw, bh, gen, kg, chain, [bx, by, bs], types, ref] = r;
+  return {
+    key, name, kind, species, art, m, length: !!(flags & F_LENGTH), min: !!(flags & F_MIN), bw, bh, bx, by, bs, types: types ? types.split("/") : [], gen,
+    legendary: !!(flags & F_LEGEND), mythical: !!(flags & F_MYTH), kg, chain,
+    ...(ref ? { ref: { kind: ref, source: "", url: "", fact: "" } } : {}),
+  };
 }
 
 /**

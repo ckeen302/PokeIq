@@ -62,7 +62,9 @@ export function framer(placed: Placed[], lens: Lens): Framer {
     for (let k = -R; k <= R; k++) {
       const j = i + k;
       if (j < 0 || j >= raw.length) continue;
-      const wt = Math.exp(-(k * k) / 4);
+      // Bilateral: neighbours of a very different size barely pull (a 100 m giant must not loosen the framing of a 14 m one).
+      const dl = raw[j] - raw[i];
+      const wt = Math.exp(-(k * k) / 4) * Math.exp(-(dl * dl) / 0.18);
       s += raw[j] * wt;
       n += wt;
     }

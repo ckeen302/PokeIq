@@ -16,7 +16,7 @@ import { isLength, type RefKind, type SizeItem, type SizeKind } from "./types";
 type Box = [number, number, number, number, number];
 const BOX = ART as unknown as Record<string, Box>;
 
-interface FormRow { id: number; species: number; slug: string; name: string; kind: string; height: number; weight: number; serebii?: number }
+interface FormRow { id: number; species: number; slug: string; name: string; kind: string; height: number; weight: number; types: string[]; serebii?: number }
 export const SIZE_FORMS = (FORMS as { forms: FormRow[] }).forms;
 export const EXCLUDED_FORMS = (FORMS as unknown as { excluded: { slug: string; reason: string }[] }).excluded;
 
@@ -28,10 +28,10 @@ const REF_ASPECT: Record<RefKind, number> = { phone: 71.6 / 147.6, human: 0.3, c
 
 const SPECIES = new Map(POKEDEX.map((p) => [p.id, p]));
 
-function box(id: number): { bw: number; bh: number } {
+function box(id: number): { bw: number; bh: number; bx: number; by: number; bs: number } {
   const b = BOX[String(id)];
   if (!b) throw new Error(`sizes: no HOME render box for ${id}`);
-  return { bw: b[2], bh: b[3] };
+  return { bx: b[0], by: b[1], bw: b[2], bh: b[3], bs: b[4] };
 }
 
 const POKEMON: SizeItem[] = POKEDEX.map((p) => {
@@ -46,6 +46,7 @@ const POKEMON: SizeItem[] = POKEDEX.map((p) => {
     length: isLength(p.shape, b.bw, b.bh),
     min: false,
     ...b,
+    types: [...p.types],
     gen: p.gen,
     legendary: p.legendary,
     mythical: p.mythical,
@@ -70,6 +71,7 @@ const FORM_ITEMS: SizeItem[] = SIZE_FORMS.map((f) => {
     length: isLength(p.shape, b.bw, b.bh),
     min: kind === "gmax",
     ...b,
+    types: [...f.types],
     gen: p.gen,
     legendary: p.legendary,
     mythical: p.mythical,
@@ -91,6 +93,10 @@ const REF_ITEMS: SizeItem[] = SIZE_REFS.map((r) => {
     min: false,
     bw: a >= 1 ? 1000 : Math.round(1000 * a),
     bh: a >= 1 ? Math.round(1000 / a) : 1000,
+    bx: 0,
+    by: 0,
+    bs: 0,
+    types: [],
     gen: 0,
     legendary: false,
     mythical: false,
