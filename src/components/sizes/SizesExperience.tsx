@@ -81,6 +81,15 @@ function initialQuality(): Quality {
   if (window.innerWidth < 1100 || (nav.hardwareConcurrency ?? 8) <= 4 || mem <= 4) return "medium";
   return "high";
 }
+/** A render quality from the address (?q=draft), for automated checks on machines without a GPU. */
+function qualityParam(): Quality | null {
+  try {
+    const q = new URLSearchParams(window.location.search).get("q");
+    return q === "draft" || q === "low" || q === "medium" || q === "high" ? q : null;
+  } catch {
+    return null;
+  }
+}
 const LOWER: Record<Quality, Quality> = { export: "high", high: "medium", medium: "low", low: "low", draft: "draft" };
 const FRAME_BUDGET_MS = 1000 / 50;
 
@@ -321,7 +330,7 @@ export function SizesExperience({ preset, focus = null, vs = [], compare = false
     import("./scene").then(async ({ createSizesScene }) => {
       if (!alive) return;
       try {
-        const q = initialQuality();
+        const q = qualityParam() ?? initialQuality();
         // The human is built when it first comes near the camera: by then the player's own trainer has usually loaded.
         const scene = createSizesScene(host, { quality: q, urls: SCENE_URLS, trainer: () => trainerFigure(trainerRef.current)() });
         sceneRef.current = scene;
