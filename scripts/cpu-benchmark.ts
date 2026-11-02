@@ -8,7 +8,9 @@
  *   npx tsx scripts/cpu-benchmark.ts --games 200 --seed 3 --only hard-vs-legacy
  *
  * Matchups: hard-vs-legacy (the lookahead against the old Hard policy in
- * cpu-policy-legacy.ts), hard-vs-normal, normal-vs-easy.
+ * cpu-policy-legacy.ts), hard-vs-normal, normal-vs-easy, and in Gen 9 Random
+ * Doubles Battles doubles-vs-legacy (cpu-policy-doubles.ts on Hard against
+ * the old heuristic) and doubles-hard-vs-normal.
  */
 import { cpus } from "node:os";
 import { fileURLToPath } from "node:url";
@@ -32,7 +34,10 @@ const MATCHUPS: Record<string, [Policy, Policy]> = {
   "hard-vs-legacy": ["hard", "legacy"],
   "hard-vs-normal": ["hard", "normal"],
   "normal-vs-easy": ["normal", "easy"],
+  "doubles-vs-legacy": ["hard", "legacy"],
+  "doubles-hard-vs-normal": ["hard", "normal"],
 };
+const isDoubles = (matchup: string) => matchup.startsWith("doubles-");
 
 interface Job {
   tune: Record<string, number>;
@@ -55,9 +60,10 @@ interface Result {
 }
 
 const FORMAT = "gen9randombattle";
+const DOUBLES_FORMAT = "gen9randomdoublesbattle";
 
-function team(seed: string): LabMon[] {
-  return Teams.generate(FORMAT, { seed: seed as never }).map((s) => labMon(completeSet({ ...s, species: s.species, nature: s.nature || "" })));
+function team(seed: string, format = FORMAT): LabMon[] {
+  return Teams.generate(format, { seed: seed as never }).map((s) => labMon(completeSet({ ...s, species: s.species, nature: s.nature || "" })));
 }
 
 function policyChooser(policy: Policy, rand: () => number, times: number[], onFallback: () => void): Chooser {
@@ -81,11 +87,13 @@ function runJob(job: Job): Result {
     const swapped = g % 2 === 1;
     const seedA = `${job.seed}-${pairing}-a`;
     const seedB = `${job.seed}-${pairing}-b`;
-    const teams = [team(hashSeed(seedA)), team(hashSeed(seedB))];
-    const setup = { ...defaultSetup(), gen: 9 as const, doubles: false, sides: [{ ...emptySide(), team: teams[swapped ? 1 : 0] }, { ...emptySide(), team: teams[swapped ? 0 : 1] }] as never };
+    const doubles = isDoubles(job.matchup);
+    const format = doubles ? DOUBLES_FORMAT : FORMAT;
+    const teams = [team(hashSeed(seedA), format), team(hashSeed(seedB), format)];
+    const setup = { ...defaultSetup(), gen: 9 as const, doubles, sides: [{ ...emptySide(), team: teams[swapped ? 1 : 0] }, { ...emptySide(), team: teams[swapped ? 0 : 1] }] as never };
     const prep = prepareLab(setup);
     // The random-battle format, so the policies know the sets its generator hands out.
-    prep.formatid = FORMAT;
+    prep.formatid = format;
     const policies: [Policy, Policy] = swapped ? [b, a] : [a, b];
     const { record } = runLabBattle(prep, `${job.seed}:${job.matchup}`, g, {
       choosers: (rands, rec) => [

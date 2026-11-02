@@ -188,6 +188,23 @@ export interface LabMon {
   boosts: Partial<Record<BoostId, number>>;
   /** Starts already Terastallized into its Tera type (the replay analysis, from a battle in progress). */
   terastallized?: boolean;
+  /** A battle in progress (the replay analysis): what else is on it as the turn starts. */
+  progress?: LabMonProgress;
+}
+
+/** The state of a Pokémon in a battle already under way, beyond HP, status and stat stages. */
+export interface LabMonProgress {
+  /** In battle and has used a move since it came in (so Fake Out and First Impression fail). */
+  moved?: boolean;
+  /** Locked into this move (id) by its Choice item. */
+  choiceLock?: string;
+  /** Turns in a row it has just protected itself (the next Protect is likelier to fail). */
+  protectStreak?: number;
+  /** Behind a Substitute (assumed at full strength). */
+  substitute?: boolean;
+  /** Turns slept, or badly poisoned, so far. */
+  sleepTurns?: number;
+  toxicTurns?: number;
 }
 
 export interface LabSide {
@@ -199,6 +216,10 @@ export interface LabSide {
   field: LabSideField;
   /** The side has already Terastallized this battle (the replay analysis): no Tera left. */
   teraUsed?: boolean;
+  /** A battle in progress: turns of Tailwind left (0 or absent for none). */
+  tailwind?: number;
+  /** A battle in progress: turns left of each screen (absent: the usual five). */
+  screenTurns?: Partial<Record<"reflect" | "lightscreen" | "auroraveil", number>>;
 }
 
 export interface LabSetup {
@@ -210,6 +231,14 @@ export interface LabSetup {
   weatherTurns: number;
   terrain: LabTerrain;
   terrainTurns: number;
+  /**
+   * A battle already under way (the replay analysis): the stat stages are
+   * exactly as given (an Intimidate on the way in is undone), weather and
+   * terrain only as given, and each Pokémon's `progress` applies.
+   */
+  inProgress?: boolean;
+  /** A battle in progress: turns of Trick Room left (0 or absent for none). */
+  trickRoom?: number;
 }
 
 export const SIDE_NAMES = ["Side A", "Side B"] as const;

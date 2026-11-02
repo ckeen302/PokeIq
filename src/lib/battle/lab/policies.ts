@@ -1,6 +1,7 @@
 import type { Battle, Pokemon, Side } from "@pkmn/sim";
 import { forcedSwitchSlots, moveSlotOptions, randomChoice, type SlotOption } from "@/lib/battle/choices";
 import { alive, calcGen, field, hit, toCalc } from "@/lib/battle/cpu-policy";
+import { chooseCpuDoubles } from "@/lib/battle/cpu-policy-doubles";
 import { chooseCpuLegacy } from "@/lib/battle/cpu-policy-legacy";
 import type { BattleRequest } from "@/lib/battle/play";
 import type { LabStrategy } from "./types";
@@ -12,6 +13,8 @@ import type { LabStrategy } from "./types";
  *
  * - smart: the one-turn heuristic the computer opponent used as Hard before the lookahead
  *   (src/lib/battle/cpu-policy-legacy.ts): the lookahead is too slow for thousands of rollouts.
+ *   Double battles: the computer's doubles policy on Hard (src/lib/battle/cpu-policy-doubles.ts),
+ *   which picks both Pokémon's moves and targets together.
  * - greedy: the move with the highest expected damage on the foe it can see
  *   (average roll, capped at the foe's HP, times accuracy), with full
  *   knowledge of the foe's set. No voluntary switches, no Tera.
@@ -54,7 +57,9 @@ export function makeChooser(opts: StrategyOptions): Chooser {
     let choice: string;
     switch (opts.strategy) {
       case "smart":
-        choice = chooseCpuLegacy(battle, side, "hard", opts.rand, opts.onFallback ?? (() => undefined));
+        choice = doubles
+          ? chooseCpuDoubles(battle, side, "hard", opts.rand, opts.onFallback ?? (() => undefined))
+          : chooseCpuLegacy(battle, side, "hard", opts.rand, opts.onFallback ?? (() => undefined));
         break;
       case "greedy":
         choice = chooseGreedy(battle, side, request, doubles);

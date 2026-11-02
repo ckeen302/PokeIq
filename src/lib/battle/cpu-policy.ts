@@ -3,14 +3,16 @@ import type { Battle, Pokemon, Side } from "@pkmn/sim";
 import randsets from "@/data/battle/randsets.json";
 import type { BattleRequest, CpuLevel } from "@/lib/battle/play";
 import { forcedSwitchSlots, moveSlotOptions, randomChoice, teamChoice } from "./choices";
+import { chooseCpuDoubles } from "./cpu-policy-doubles";
 import { alive, calcGen, calcName, chooseCpuLegacy, field, hit, seededRandom, toCalc } from "./cpu-policy-legacy";
 
 export { alive, calcGen, field, hit, seededRandom, toCalc };
 
 /**
  * The computer opponent. Hard and Normal are a calc-based lookahead over an
- * approximate model of the position; Easy (and every double battle) is the
- * original greedy heuristic in cpu-policy-legacy.ts.
+ * approximate model of the position; Easy (and triple battles) is the
+ * original greedy heuristic in cpu-policy-legacy.ts, and double battles on
+ * Normal and Hard have their own policy (cpu-policy-doubles.ts).
  *
  * - Set knowledge: in a Gen 9 random battle an unrevealed foe is assumed to
  *   have what Showdown's generator gives its species (src/data/battle/
@@ -1074,6 +1076,7 @@ export function chooseCpu(
 ): string {
   const request = side.activeRequest as unknown as BattleRequest | null;
   if (!request || request.wait) throw new Error("The computer has nothing to choose.");
+  if (level !== "easy" && battle.gameType === "doubles") return chooseCpuDoubles(battle, side, level, rand, onError);
   if (level === "easy" || battle.gameType !== "singles") return chooseCpuLegacy(battle, side, level, rand, onError);
   noteSeen(battle, side);
   try {
