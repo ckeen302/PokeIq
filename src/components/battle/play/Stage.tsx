@@ -180,9 +180,11 @@ export interface StageProps {
   watching?: boolean;
   /** Each side's Poké Ball (from their 3D trainer), for the send-out. */
   balls?: Partial<Record<SideId, BallLook>>;
+  /** The versus intro is up: the 3D arena waits for it to go (see Arena's `hold`). */
+  holdArena?: boolean;
 }
 
-export function Stage({ snap, me, doubles, popups, onHandle, myBalls, format = "", myRequest, watching = false, balls }: StageProps) {
+export function Stage({ snap, me, doubles, popups, onHandle, myBalls, format = "", myRequest, watching = false, balls, holdArena = false }: StageProps) {
   const outer = useRef<HTMLDivElement>(null);
   const stage = useRef<HTMLDivElement>(null);
   const backdrop = useRef<HTMLDivElement>(null);
@@ -260,7 +262,7 @@ export function Stage({ snap, me, doubles, popups, onHandle, myBalls, format = "
         <div ref={stage} className="absolute left-0 top-0 origin-top-left" style={{ width: STAGE_W, height: STAGE_H, transform: `scale(${scale})` }}>
           {/* Backdrop: our own scene (Earthquake shakes it, so it's taller than the stage). */}
           <div ref={backdrop} className="absolute inset-x-0" style={{ top: -90, bottom: 0 }}>
-            <Arena kind={kind} active={active} field={field} scale={scale} tint={tint} trickRoom={trickRoom} onApi={onArena} />
+            <Arena kind={kind} active={active} field={field} scale={scale} tint={tint} trickRoom={trickRoom} onApi={onArena} hold={holdArena} />
           </div>
           <div ref={bgfx} className="pointer-events-none absolute inset-0" style={{ zIndex: 1 }} />
           <SideField side={snap.sides[foe]} near={false} />

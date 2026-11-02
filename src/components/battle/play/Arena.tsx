@@ -24,6 +24,12 @@ export interface ArenaProps {
   trickRoom: boolean;
   /** The arena's handle for the crowd's reactions, or null on the CSS backdrop. */
   onApi?: (api: ArenaApi | null) => void;
+  /**
+   * Hold off on the GL work (the versus intro is up and its two 3D trainers
+   * get the GPU to themselves): three.js still loads meanwhile, so the arena
+   * goes up the moment the hold lifts. The CSS backdrop shows until then.
+   */
+  hold?: boolean;
 }
 
 /** A device this session has seen struggle (or lose its GL context) keeps the CSS backdrop. */
@@ -45,7 +51,7 @@ function cssOnly(): boolean {
   return /[?&]arena=css\b/.test(window.location.search);
 }
 
-export const Arena = memo(function Arena({ kind, active, field, scale, tint, trickRoom, onApi }: ArenaProps) {
+export const Arena = memo(function Arena({ kind, active, field, scale, tint, trickRoom, onApi, hold = false }: ArenaProps) {
   const host = useRef<HTMLDivElement>(null);
   const api = useRef<ArenaApi | null>(null);
   const [mode, setMode] = useState<Mode>("css");
@@ -54,8 +60,13 @@ export const Arena = memo(function Arena({ kind, active, field, scale, tint, tri
   const latest = useRef({ field, scale, onApi });
   latest.current = { field, scale, onApi };
 
+  // Fetch the arena's code while held, so lifting the hold doesn't wait on the network.
   useEffect(() => {
-    if (cssOnly()) return;
+    if (hold && !cssOnly()) void import("./arena/ArenaScene").catch(() => {});
+  }, [hold]);
+
+  useEffect(() => {
+    if (hold || cssOnly()) return;
     let live = true;
     setMode("loading");
     import("./arena/ArenaScene")
@@ -102,7 +113,7 @@ export const Arena = memo(function Arena({ kind, active, field, scale, tint, tri
       api.current = null;
       latest.current.onApi?.(null);
     };
-  }, [kind, active]);
+  }, [kind, active, hold]);
 
   useEffect(() => {
     api.current?.setField(field);

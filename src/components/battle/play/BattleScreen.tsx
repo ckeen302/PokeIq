@@ -18,6 +18,7 @@ import type { Ball } from "./Hud";
 import { Avatar } from "@/components/avatar/Avatar";
 import { ballLook } from "./PokeBall";
 import { BattleVersus, VERSUS_MS } from "./Versus";
+import { preloadAvatar3D } from "@/components/trainer3d/Avatar3D";
 import { BattleVictory } from "./Victory";
 import "./battle-look.css";
 
@@ -235,6 +236,11 @@ export default function BattleScreen({ view, log, offset, busy, error, onChoose,
     intro.current?.end();
     intro.current = null;
   }, [code]);
+  // A live battle's lobby: the versus intro's 3D trainers will be wanted when it starts.
+  useEffect(() => {
+    if (view.status !== "finished" && !replay) preloadAvatar3D();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- once, on arrival
+  }, []);
   useEffect(() => {
     if (!versus) return;
     // However it goes, the battle never waits long for it.
@@ -621,7 +627,7 @@ export default function BattleScreen({ view, log, offset, busy, error, onChoose,
 
         {toolbar}
 
-        <Stage snap={snap} me={me} doubles={doubles} popups={popups} onHandle={onHandle} myBalls={myBalls} format={view.format} myRequest={lastTeam} watching={watching} balls={balls} />
+        <Stage snap={snap} me={me} doubles={doubles} popups={popups} onHandle={onHandle} myBalls={myBalls} format={view.format} myRequest={lastTeam} watching={watching} balls={balls} holdArena={versus} />
 
         {/* The text box: the latest line of the battle. */}
         <div className="dialog-box min-h-[4.25rem] text-sm leading-relaxed text-muted-foreground" data-done={showControls} aria-live="polite" data-testid="battle-message">
