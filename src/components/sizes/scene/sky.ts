@@ -1,18 +1,21 @@
 import * as THREE from "three";
 
 /**
- * A clear summer sky: a deep blue zenith fading to a pale haze at the
- * horizon, the sun's disc and glow, and a few soft fair-weather clouds
- * (procedural noise on a cloud layer). It follows the camera, so it is
- * always at infinity. The haze colour is shared with the scene fog so the
- * city melts into the horizon.
+ * A clear late-morning sky over Lumiose: a deep blue zenith fading to a pale
+ * haze at the horizon, warmer on the sun's side, the sun's disc and glow,
+ * and a few soft fair-weather clouds (procedural noise on a cloud layer)
+ * with warm sunlit edges and cooler undersides. It follows the camera, so it
+ * is always at infinity. The haze colour is shared with the scene fog so the
+ * round city melts into the horizon seen from the finale's height.
  */
 
 export const SKY = {
-  zenith: new THREE.Color("#1f6fd6"),
-  horizon: new THREE.Color("#bcd9f2"),
-  haze: new THREE.Color("#c9def0"),
-  sun: new THREE.Color("#fff3df"),
+  zenith: new THREE.Color("#1d68d2"),
+  horizon: new THREE.Color("#bfdaf1"),
+  haze: new THREE.Color("#cddff0"),
+  sun: new THREE.Color("#fff1da"),
+  /** The horizon towards the sun: a little warmer. */
+  warm: new THREE.Color("#f3e6d2"),
 };
 
 /**
@@ -66,6 +69,7 @@ export function createSky(sunDir: THREE.Vector3): { mesh: THREE.Mesh; update(cam
       horizon: { value: SKY.horizon.clone().convertSRGBToLinear() },
       haze: { value: SKY.haze.clone().convertSRGBToLinear() },
       sunCol: { value: SKY.sun.clone().convertSRGBToLinear() },
+      warm: { value: SKY.warm.clone().convertSRGBToLinear() },
       time: { value: 0 },
     },
     vertexShader: /* glsl */ `
@@ -77,7 +81,7 @@ export function createSky(sunDir: THREE.Vector3): { mesh: THREE.Mesh; update(cam
       }
     `,
     fragmentShader: /* glsl */ `
-      uniform vec3 sunDir, zenith, horizon, haze, sunCol;
+      uniform vec3 sunDir, zenith, horizon, haze, sunCol, warm;
       uniform float time;
       uniform sampler2D noiseTex;
       varying vec3 vDir;
@@ -86,16 +90,21 @@ export function createSky(sunDir: THREE.Vector3): { mesh: THREE.Mesh; update(cam
       void main() {
         vec3 d = normalize(vDir);
         float h = d.y;
-        vec3 col = mix(horizon, zenith, pow(clamp(h, 0.0, 1.0), 0.5));
-        col = mix(col, haze, smoothstep(0.1, -0.03, h));
         float sd = max(dot(d, normalize(sunDir)), 0.0);
+        // Towards the sun the low sky is a little warmer.
+        float sunSide = max(dot(normalize(d.xz + 1e-5), normalize(sunDir.xz + 1e-5)), 0.0);
+        vec3 low = mix(horizon, warm, 0.45 * sunSide * sunSide);
+        vec3 col = mix(low, zenith, pow(clamp(h, 0.0, 1.0), 0.5));
+        col = mix(col, haze, smoothstep(0.1, -0.03, h));
         // Clouds on a layer above: soft cumulus, lit on the sun's side.
         if (h > 0.0) {
           vec2 uv = d.xz / (h + 0.12) * 0.55 + vec2(time * 0.004, 0.0);
           float c = fbm(uv * 1.3);
           float cov = smoothstep(0.57, 0.78, c) * smoothstep(0.0, 0.18, h) * (1.0 - smoothstep(0.55, 0.95, h));
           float lit = 0.82 + 0.25 * pow(sd, 3.0) - 0.18 * smoothstep(0.6, 0.9, fbm(uv * 2.6 + 3.0));
-          col = mix(col, vec3(1.0, 0.99, 0.97) * lit * 1.05, cov * 0.85);
+          // Sunlit edges warm, shaded undersides a touch blue.
+          vec3 cloud = mix(vec3(0.9, 0.93, 1.0), vec3(1.0, 0.98, 0.94), clamp(lit, 0.0, 1.0));
+          col = mix(col, cloud * lit * 1.06, cov * 0.85);
         }
         col += sunCol * (pow(sd, 1600.0) * 40.0 + pow(sd, 90.0) * 0.6 + pow(sd, 8.0) * 0.12);
         gl_FragColor = vec4(col, 1.0);

@@ -235,7 +235,7 @@ export function createSizesScene(host: HTMLElement, opts: SceneOptions): SizesSc
   const sunDir = new THREE.Vector3(Math.sin(az) * Math.cos(SUN_ELEVATION), Math.sin(SUN_ELEVATION), Math.cos(az) * Math.cos(SUN_ELEVATION)).normalize();
   const sky = createSky(sunDir);
   scene.add(sky.mesh);
-  scene.fog = new THREE.FogExp2(SKY.haze.clone().convertSRGBToLinear(), 0.00028);
+  scene.fog = new THREE.FogExp2(SKY.haze.clone().convertSRGBToLinear(), 0.0003);
   const hemi = new THREE.HemisphereLight(0xdcE8ff, 0xc2ab88, 0.38);
   scene.add(hemi);
 

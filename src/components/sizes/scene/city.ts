@@ -499,7 +499,8 @@ function buildGround(plan: WorldPlan, shared: Shared, tex: CityTextures): { mesh
   const R = plan.plaza.r, cx = plan.plaza.cx, cz = plan.plaza.cz;
   const ring = plan.ring;
   const lineIn = ring ? ring.s0 : x1;
-  const far = 2600;
+  // Far enough that the haze has swallowed the ground's edge long before it (no seam against the sky from the finale's height).
+  const far = 7000;
   // Base: the whole city's streets.
   strip("ground-base", asphalt, Math.min(x0, cx - R) - far, cx + R + far, cz - R - far, cz + R + far, -0.05, 3);
   // The boulevard: promenade (a lawn with stone edging) on into the plaza, then per side road and pavement up to the plaza.
