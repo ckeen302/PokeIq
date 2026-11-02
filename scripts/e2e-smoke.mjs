@@ -2542,7 +2542,9 @@ if ((await page.getByTestId("music-toggle").getAttribute("aria-pressed")) !== "f
 await page.reload({ waitUntil: "load" });
   await page.waitForLoadState("networkidle", { timeout: 8_000 }).catch(() => {});
 await page.getByTestId("music-toggle").waitFor();
-if ((await page.getByTestId("music-toggle").getAttribute("aria-pressed")) !== "false") errors.push("music off wasn't remembered");
+// The saved setting is read after hydration: give it a moment to settle before checking.
+const musicOff = await page.locator('[data-testid="music-toggle"][aria-pressed="false"]').waitFor({ timeout: 5_000 }).then(() => true, () => false);
+if (!musicOff) errors.push("music off wasn't remembered");
 await page.getByTestId("music-toggle").click();
 
 step("Battle Factory: rent a team, battle, and trade after a win");
