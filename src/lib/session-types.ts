@@ -94,6 +94,15 @@ export interface StartResponse {
   lives: number | null;
 }
 
+/** A run got ready before Start (POST /api/session with hold): question 1's media only, no clock yet. */
+export interface HeldStartResponse {
+  token: string;
+  sid: string;
+  rules: StartResponse["rules"];
+  lives: number | null;
+  assets: { images: string[]; audio: string[] };
+}
+
 export interface AnswerResponse {
   correct: boolean;
   timedOut: boolean;

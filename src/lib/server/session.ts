@@ -128,6 +128,14 @@ export interface SessionState {
   zs?: number;
   /** Zoom Reveal: the step each Pokémon so far was named on, "X" when missed. */
   zr?: string;
+  /**
+   * Held start (a run got ready before the player pressed Start): question 1
+   * isn't served yet and no clock runs. Serving it (beginHeld) starts both
+   * the question clock and the run clock.
+   */
+  h?: 1;
+  /** Held start: question 1's media link as handed out ahead, served again so the download is reused. */
+  hm?: string;
 }
 
 /** Load-time credit for one question: client-reported, clamped server-side. */
@@ -376,6 +384,70 @@ export function startSession(spec: SessionSpec, name?: string) {
   };
 }
 
+/** How long a held start can wait for its Start click (its media links stay valid well past this). */
+export const HELD_TTL_MS = 10 * 60 * 1000;
+
+/**
+ * A run made ready ahead of the Start click (regular runs only: never a daily,
+ * whose start counts it as played, nor a challenge). Nothing is stored and no
+ * clock runs: the token is paused before question 1, and the browser gets only
+ * what question 1 shows as pictures and sound (no prompt, options or answer),
+ * so it can download them early. A held start that's never begun costs nothing.
+ */
+export function holdSession(spec: SessionSpec, name?: string) {
+  const rules = rulesFor(spec);
+  const now = Date.now();
+  const state: SessionState = {
+    v: 1,
+    sid: randomId(),
+    spec,
+    name: name?.slice(0, 24),
+    startedAt: now,
+    servedAt: now,
+    log: [],
+    score: 0,
+    streak: 0,
+    best: 0,
+    lives: rules.lives,
+    paused: true,
+    h: 1,
+  };
+  const q = toPublic(questionAt(spec, 0), 0, rules);
+  // Media links are sealed afresh each time (random IV): keep this one for beginHeld.
+  const hm = q.zoom?.url ?? q.media?.url;
+  if (hm) state.hm = hm;
+  return {
+    token: signToken("session", state),
+    sid: state.sid,
+    rules,
+    lives: state.lives,
+    assets: heldAssets(q),
+  };
+}
+
+/** The pictures and sound question 1 shows before any answer: nothing the player won't see at once. */
+export function heldAssets(q: PublicQuestion): { images: string[]; audio: string[] } {
+  const images = [...(q.images ?? []), ...(q.cards ?? []).map((c) => c.imageUrl), q.media?.type === "image" ? q.media.url : undefined, q.zoom?.url];
+  const audio = [q.media?.type === "audio" ? q.media.url : undefined];
+  return { images: images.filter((u): u is string => !!u), audio: audio.filter((u): u is string => !!u) };
+}
+
+/**
+ * Serve a held start's question 1. Its question clock and the run clock
+ * (Blitz) start now; the route claims `claimKey`, so a held token begins once.
+ */
+export function beginHeld(state: SessionState): NextOutcome {
+  if (!state.h || !state.paused || state.log.length !== 0) return { ok: false, status: 409, error: "That run has already started." };
+  const now = Date.now();
+  if (now - state.startedAt > HELD_TTL_MS) return { ok: false, status: 409, error: "That run went stale — start a new one." };
+  const rules = rulesFor(state.spec);
+  const question = toPublic(questionAt(state.spec, 0), 0, rules);
+  if (state.hm && question.zoom) question.zoom = { ...question.zoom, url: state.hm };
+  else if (state.hm && question.media) question.media = { ...question.media, url: state.hm };
+  const begun: SessionState = { ...state, h: undefined, hm: undefined, paused: undefined, startedAt: now, servedAt: now };
+  return { ok: true, response: { token: signToken("session", begun), question }, claimKey: `next:${state.sid}:0` };
+}
+
 export type AnswerOutcome =
   | {
       ok: true;
@@ -412,6 +484,8 @@ export function readSession(token: unknown): SessionState | null {
 
 /** Pure grading step; the route handler performs the replay claim. */
 export function gradeAnswer(state: SessionState, choice: string | null, loadMs?: number): AnswerOutcome {
+  // A held start has no question in play (and no clock) until it's begun.
+  if (state.h) return { ok: false, status: 409, error: "That question hasn't started yet." };
   const rules = rulesFor(state.spec);
   const now = Date.now();
   const credit = state.paused ? 0 : loadCredit(loadMs, now - state.servedAt);
@@ -596,6 +670,7 @@ export type NextOutcome =
  * can't be restarted by replaying the paused token.
  */
 export function nextQuestion(state: SessionState): NextOutcome {
+  if (state.h) return beginHeld(state);
   const rules = rulesFor(state.spec);
   if (!state.paused) return { ok: false, status: 409, error: "That question is already in play." };
   const now = Date.now();

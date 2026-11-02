@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { ImageOff, Pause, Play, RotateCcw, Volume2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { preloadedImage } from "@/lib/preload";
 
 /**
  * Question media. Silhouettes sit on the classic "Who's That Pokémon?"
@@ -17,10 +18,13 @@ interface ImageMediaProps {
   silhouette: boolean;
   revealed: boolean;
   label?: string;
+  /** A run's first picture: fetched ahead of the page's other images. */
+  priority?: boolean;
 }
 
-export function ImageMedia({ src, revealSrc, silhouette, revealed, label }: ImageMediaProps) {
-  const [loaded, setLoaded] = useState(false);
+export function ImageMedia({ src, revealSrc, silhouette, revealed, label, priority }: ImageMediaProps) {
+  // Already downloaded and decoded (a run's first picture, got ready ahead): shown without a fade-in.
+  const [loaded, setLoaded] = useState(() => preloadedImage(src) !== null);
   const [failed, setFailed] = useState(false);
   const [retry, setRetry] = useState(0);
   const [revealLoaded, setRevealLoaded] = useState(false);
@@ -52,6 +56,7 @@ export function ImageMedia({ src, revealSrc, silhouette, revealed, label }: Imag
           src={imgSrc}
           alt={silhouette ? "Mystery Pokémon silhouette" : label ?? "Pokémon artwork"}
           draggable={false}
+          fetchPriority={priority ? "high" : undefined}
           onLoad={() => setLoaded(true)}
           onError={() => setFailed(true)}
           className="absolute inset-0 z-[1] h-full w-full select-none object-contain p-4 drop-shadow-[0_6px_12px_rgba(0,0,0,0.35)]"

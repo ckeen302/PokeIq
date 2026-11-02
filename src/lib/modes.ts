@@ -24,7 +24,6 @@ export interface QuizFilter {
 }
 
 const REGION_TITLES = ["Kanto", "Johto", "Hoenn", "Sinnoh", "Unova", "Kalos", "Alola", "Galar", "Paldea"];
-const MIX_NOTE = "Every run mixes easy, medium and hard questions.";
 
 export const GEN_FILTER: QuizFilter = {
   label: "Generations",
@@ -43,12 +42,11 @@ export function defaultGens(module: ModuleId): number[] | undefined {
 const SHINY_FILTER: QuizFilter = { label: GEN_FILTER.label, chips: GEN_FILTER.chips };
 
 /** Same nine values: a game's generation, remakes included (FireRed is Gen 3). */
-const GAMES_FILTER: QuizFilter = { ...GEN_FILTER, note: MIX_NOTE };
+const GAMES_FILTER: QuizFilter = { label: GEN_FILTER.label, chips: GEN_FILTER.chips };
 
 const ANIME_FILTER: QuizFilter = {
   label: "Series",
   chips: ["Original", "Advanced", "Diamond & Pearl", "Black & White", "XY", "Sun & Moon", "Journeys", "Horizons"].map((label) => ({ label })),
-  note: MIX_NOTE,
 };
 
 /** Same nine values: the generation an ability, move or item was introduced in. */

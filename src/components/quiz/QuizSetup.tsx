@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Play, Settings2 } from "lucide-react";
 import type { Difficulty, ModuleId, QuizFormat, QuizScope } from "@/engines/types";
@@ -10,13 +10,41 @@ import { Card, CardContent } from "@/components/ui/card";
 import { QuizController, type StartRequest } from "./QuizController";
 import { QuizDuelCard } from "./QuizDuelCard";
 import { cn } from "@/lib/utils";
+import { getProgress } from "@/lib/progress";
+import { preloadAudio, preloadImage } from "@/lib/preload";
+import { createQuizPrefetcher, type QuizPrefetcher } from "@/lib/quiz-prefetch";
+import type { StartResponse } from "@/lib/session-types";
 
 /**
  * Pre-game setup: format and generation filter, plus the difficulty for the
  * two modes where it changes the game (Whose Team Is This? and Real Shiny?;
  * every other mode plays one fixed tuning). Starting needs a click on
  * purpose — it's the user gesture that unlocks cry audio.
+ *
+ * The run on screen is got ready ahead (see quiz-prefetch.ts): once the page
+ * goes idle, again shortly after a setting changes, and when Start is
+ * hovered or focused. Start then shows question 1 at once, its picture or
+ * cry already downloaded.
  */
+
+/** Wait after a setting changes before getting that run ready (the player may still be choosing). */
+const SETTLE_MS = 700;
+
+async function postSession(body: object): Promise<unknown> {
+  const res = await fetch("/api/session", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  const reply = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(reply.error ?? `Request failed (${res.status})`);
+  return reply;
+}
+
+function preloadHeld(assets: { images: string[]; audio: string[] }) {
+  assets.images.forEach((url) => void preloadImage(url, { priority: "high" }));
+  assets.audio.forEach((url) => void preloadAudio(url));
+}
 
 interface QuizSetupProps {
   module: ModuleId;
@@ -37,12 +65,58 @@ export function QuizSetup({ module, initialFormat, initialDifficulty, initialGen
   const hasScope = module === "whose-team";
   const [gens, setGens] = useState<number[]>(initialGens);
   const [request, setRequest] = useState<StartRequest | null>(null);
+  const [begun, setBegun] = useState<Promise<StartResponse | null> | null>(null);
   const [runKey, setRunKey] = useState(0);
 
+  const settings = (): StartRequest => ({ module, format, difficulty, gens: gens.length ? gens : undefined, ...(hasScope && scope && { scope }) });
+
+  // One per page view: it keeps the run held for the settings on screen.
+  const prefetcher = useRef<QuizPrefetcher | null>(null);
+  const warm = (req: StartRequest) => {
+    prefetcher.current ??= createQuizPrefetcher({ post: postSession, preload: preloadHeld });
+    prefetcher.current.prefetch(req, getProgress().name || undefined);
+  };
+  const latest = useRef(settings);
+  latest.current = settings;
+
   const start = () => {
-    setRequest({ module, format, difficulty, gens: gens.length ? gens : undefined, ...(hasScope && scope && { scope }) });
+    const req = settings();
+    setBegun(prefetcher.current?.take(req) ?? null);
+    setRequest(req);
     setRunKey((k) => k + 1);
   };
+
+  // When the page goes idle: the run as the page opened.
+  const idled = useRef(false);
+  useEffect(() => {
+    let done = false;
+    const run = () => {
+      if (done) return;
+      done = idled.current = true;
+      warm(latest.current());
+    };
+    if (typeof window.requestIdleCallback === "function") {
+      const id = window.requestIdleCallback(run, { timeout: 600 });
+      return () => {
+        done = true;
+        window.cancelIdleCallback(id);
+      };
+    }
+    const id = window.setTimeout(run, 200);
+    return () => {
+      done = true;
+      window.clearTimeout(id);
+    };
+  }, []);
+
+  // After a setting changes (and settles): the run as it now stands. The prefetcher caps the requests.
+  const settingsKey = JSON.stringify([format, difficulty, gens, scope]);
+  useEffect(() => {
+    if (!idled.current || request) return;
+    const id = window.setTimeout(() => warm(latest.current()), SETTLE_MS);
+    return () => window.clearTimeout(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [settingsKey]);
 
   useEffect(() => {
     if (request) return;
@@ -62,8 +136,8 @@ export function QuizSetup({ module, initialFormat, initialDifficulty, initialGen
   return (
     <AnimatePresence mode="wait">
       {request ? (
-        <motion.div key={`run-${runKey}`} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-4">
-          <QuizController request={request} onRestart={start} />
+        <motion.div key={`run-${runKey}`} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }} className="space-y-4">
+          <QuizController request={request} begun={begun} onRestart={start} />
           <div className="text-center">
             <button
               type="button"
@@ -75,7 +149,7 @@ export function QuizSetup({ module, initialFormat, initialDifficulty, initialGen
           </div>
         </motion.div>
       ) : (
-        <motion.div key="setup" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
+        <motion.div key="setup" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10, transition: { duration: 0.12 } }}>
           <Card className="mx-auto max-w-2xl">
             <CardContent className="space-y-6 p-6">
               <Field label="Format">
@@ -130,7 +204,7 @@ export function QuizSetup({ module, initialFormat, initialDifficulty, initialGen
                 {gens.length === 0 && filter.note && <p className="text-xs text-muted-foreground">{filter.note}</p>}
               </Field>
 
-              <Button size="lg" className="w-full" onClick={start}>
+              <Button size="lg" className="w-full" onClick={start} onPointerEnter={() => warm(settings())} onFocus={() => warm(settings())}>
                 <Play className="h-4 w-4 fill-current" /> Start {info.title}
               </Button>
             </CardContent>

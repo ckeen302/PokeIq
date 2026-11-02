@@ -4,7 +4,8 @@ import { DIFFICULTIES, FORMATS, MODULES, SCOPES } from "@/engines/types";
 import { isValidDailyDate } from "@/lib/daily";
 import { randomId, verifyToken } from "@/lib/server/crypto";
 import { clientIp, rateLimit } from "@/lib/server/rate-limit";
-import { startSession } from "@/lib/server/session";
+import { claimOnce, recallResponse, rememberResponse, requestFingerprint } from "@/lib/server/replay-guard";
+import { beginHeld, holdSession, readSession, startSession } from "@/lib/server/session";
 import { optionalName } from "@/lib/name-filter";
 import { defaultGens, filterFor, playDifficulty } from "@/lib/modes";
 import type { SessionSpec, ShareCard } from "@/lib/session-types";
@@ -17,6 +18,14 @@ import type { SessionSpec, ShareCard } from "@/lib/session-types";
  *   { zoomDaily: "YYYY-MM-DD" }             today's one-Pokémon Zoom Reveal (shared seed, unranked)
  *   { challenge: "<share token>" }          replay a friend's exact quiz
  * An optional `name` goes on the share card (left off if it isn't fit to show).
+ *
+ * Getting a regular run ready before the Start click (QuizSetup does it when
+ * the page goes idle, or the Start button is hovered):
+ *   { ...regular run, hold: true }   -> { token, sid, rules, lives, assets }: question 1's
+ *                                       pictures / cry only, no prompt, options or clock
+ *   { begin: "<held token>" }        -> { token, question }: question 1, its clock (and
+ *                                       Blitz's run clock) starting now; once per held token
+ * Nothing is stored for a held run until it's begun, so an unused one costs nothing.
  *
  * Challenge replays, repeat starts of a daily and generation-filtered runs
  * are marked `practice` in the signed spec: they play normally but can't be
@@ -38,18 +47,27 @@ const bodySchema = z.object({
   zoomDaily: z.string().optional(),
   challenge: z.string().max(4096).optional(),
   name: z.string().trim().max(24).optional(),
+  hold: z.boolean().optional(),
+  begin: z.string().min(10).max(16384).optional(),
 });
 
 export async function POST(request: NextRequest) {
-  if (!rateLimit(`session:${clientIp(request)}`, 30, 0.5)) {
+  const parsed = bodySchema.safeParse(await request.json().catch(() => ({})));
+  // Beginning a held run serves a question, like /api/session/next (and shares its limit).
+  const begin = parsed.success ? parsed.data.begin : undefined;
+  const allowed = begin ? rateLimit(`answer:${clientIp(request)}`, 60, 4) : rateLimit(`session:${clientIp(request)}`, 30, 0.5);
+  if (!allowed) {
     return NextResponse.json({ error: "Too many runs started — take a breather." }, { status: 429 });
   }
-
-  const parsed = bodySchema.safeParse(await request.json().catch(() => ({})));
   if (!parsed.success) {
     return NextResponse.json({ error: parsed.error.issues[0].message }, { status: 400 });
   }
   const body = parsed.data;
+  if (begin) return beginRun(begin);
+  // Only a regular run can be held: a daily's start counts it as played, and challenges start as asked.
+  if (body.hold && (body.daily !== undefined || body.zoomDaily !== undefined || body.challenge)) {
+    return NextResponse.json({ error: "Only a regular run can be started ahead." }, { status: 400 });
+  }
 
   let spec: SessionSpec;
   if (body.daily !== undefined) {
@@ -91,7 +109,7 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const response = NextResponse.json(startSession(spec, optionalName(body.name)), {
+    const response = NextResponse.json(body.hold ? holdSession(spec, optionalName(body.name)) : startSession(spec, optionalName(body.name)), {
       headers: { "Cache-Control": "no-store" },
     });
     if (spec.daily && !spec.practice) {
@@ -110,6 +128,28 @@ export async function POST(request: NextRequest) {
     console.error("[api/session]", err);
     return NextResponse.json({ error: "Could not build this quiz." }, { status: 500 });
   }
+}
+
+const NO_STORE = { "Cache-Control": "no-store" };
+
+/** Serve a held run's question 1 and start its clock (see holdSession). */
+function beginRun(token: string) {
+  const state = readSession(token);
+  if (!state) return NextResponse.json({ error: "Session expired or invalid — start a new run." }, { status: 401 });
+  if (!state.h) return NextResponse.json({ error: "That run has already started." }, { status: 409 });
+  const outcome = beginHeld(state);
+  if (!outcome.ok) return NextResponse.json({ error: outcome.error }, { status: outcome.status });
+  return serveOnce(outcome.claimKey, requestFingerprint(token), outcome.response);
+}
+
+async function serveOnce<T>(claimKey: string, fingerprint: string, response: T) {
+  const cached = recallResponse<T>(claimKey, fingerprint);
+  if (cached) return NextResponse.json(cached, { headers: NO_STORE });
+  if (!(await claimOnce(claimKey))) {
+    return NextResponse.json({ error: "That run has already started." }, { status: 409 });
+  }
+  rememberResponse(claimKey, fingerprint, response);
+  return NextResponse.json(response, { headers: NO_STORE });
 }
 
 function startedDailies(request: NextRequest): string[] {

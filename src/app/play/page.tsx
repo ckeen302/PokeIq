@@ -93,7 +93,7 @@ export default function PlayPage() {
           "Pick a quiz mode and the generations to include.",
           "Choose a format: Classic, Survival or Blitz.",
           "Answer before the clock runs out.",
-          "Your PokéIQ is calculated from how hard the questions you got right were.",
+          "Your PokéIQ weighs each right answer by how tricky that question is.",
         ]}
         faqs={[
           { q: `What formats are there?`, a: `Classic is 10 questions with 15 seconds each, Survival is endless with 3 lives and Blitz gives you 60 seconds to answer as many as you can.` },
