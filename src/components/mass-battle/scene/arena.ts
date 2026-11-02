@@ -127,7 +127,12 @@ export function buildArena(id: ArenaId, opts: ArenaOptions): Arena {
         pos.push(x, heightAt(x, z), z);
         uv.push(x / 8, z / 8);
         const v = 0.86 + fbm(x * 0.05 + 7, z * 0.05 - 3) * 0.28;
-        col.push(v, v, v);
+        if (id === "colosseum") {
+          // Sand: lighter in the middle, darker where it's been trampled, a warm hue shift.
+          const n = fbm(x * 0.09 - 2, z * 0.09 + 5);
+          const ring = Math.min(1, r / (R * 1.05));
+          col.push(0.9 + n * 0.12 - ring * 0.06, 0.86 + n * 0.1 - ring * 0.07, 0.8 + n * 0.08 - ring * 0.09);
+        } else col.push(v, v, v);
       }
     }
     for (let s = 0; s < segs; s++) idx.push(0, 1 + ((s + 1) % segs), 1 + s);
@@ -152,8 +157,8 @@ export function buildArena(id: ArenaId, opts: ArenaOptions): Arena {
     } else if (id === "snowfield") {
       gm = new THREE.MeshStandardMaterial({ normalMap: texture("granite_tile", "nor", 0.5, false), normalScale: new THREE.Vector2(0.25, 0.25), roughness: 0.82, vertexColors: true, color: "#f4f8fc" });
     } else {
-      // Packed sand: the granite scan's grain, tinted warm and lightened.
-      gm = new THREE.MeshStandardMaterial({ map: texture("granite_tile", "diff", 0.35, true), normalMap: texture("granite_tile", "nor", 0.35, false), normalScale: new THREE.Vector2(0.5, 0.5), roughness: 0.95, vertexColors: true, color: "#ffe2b0" });
+      // Raked sand: colour from noise (in the vertex colours below), a fine grain from the granite scan's normals.
+      gm = new THREE.MeshStandardMaterial({ normalMap: texture("granite_tile", "nor", 1.6, false), normalScale: new THREE.Vector2(0.35, 0.35), roughness: 0.97, vertexColors: true, color: "#f1d39c" });
     }
     if (id === "volcano") {
       // Lava veins: a glow along the noise's ridges, pulsing slowly.

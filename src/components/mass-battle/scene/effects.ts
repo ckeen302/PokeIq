@@ -21,7 +21,7 @@ export interface TypeLook {
 const look = (c: string, g: string, gravity: number, spin = 4): TypeLook => ({ color: new THREE.Color(c), glow: new THREE.Color(g), gravity, spin });
 
 export const TYPE_LOOK: Record<string, TypeLook> = {
-  Normal: look("#f4f1e8", "#ffffff", -6),
+  Normal: look("#ffd9a0", "#fff1d6", -6),
   Fire: look("#ff7a1a", "#ffd23a", 7, 3),
   Water: look("#2f8cff", "#a8e6ff", -12, 2),
   Electric: look("#ffe23a", "#fff8b0", -2, 9),
@@ -119,7 +119,12 @@ void main() {
   vec3 q = position * s;
   q = vec3(q.x * cos(a) - q.y * sin(a), q.x * sin(a) + q.y * cos(a), q.z);
   q = vec3(q.x, q.y * cos(a * 0.7) - q.z * sin(a * 0.7), q.y * sin(a * 0.7) + q.z * cos(a * 0.7));
-  vColor = aC.rgb * (1.0 + aD.z * (1.0 - k));
+  // Facets catch the light differently, so each crystal reads as a solid.
+  vec3 nrm = normalize(position);
+  nrm = vec3(nrm.x * cos(a) - nrm.y * sin(a), nrm.x * sin(a) + nrm.y * cos(a), nrm.z);
+  nrm = vec3(nrm.x, nrm.y * cos(a * 0.7) - nrm.z * sin(a * 0.7), nrm.y * sin(a * 0.7) + nrm.z * cos(a * 0.7));
+  float facet = 0.35 + 0.65 * abs(dot(nrm, normalize(vec3(0.4, 0.8, 0.45))));
+  vColor = aC.rgb * facet * (0.8 + aD.z * (1.0 - k));
   vAlpha = 1.0 - k * k;
   gl_Position = projectionMatrix * viewMatrix * vec4(p + q, 1.0);
 }`;
@@ -233,7 +238,7 @@ export class Effects {
       const c = this.rand() < 0.35 ? L.glow : L.color;
       this.sparks.set(0, i, x + (this.rand() - 0.5) * size, y + (this.rand() - 0.5) * size, z + (this.rand() - 0.5) * size, at + this.rand() * 0.04);
       this.sparks.set(1, i, Math.cos(a) * sp, up * sp * 0.9, Math.sin(a) * sp, 0.35 + this.rand() * 0.45);
-      this.sparks.set(2, i, c.r, c.g, c.b, size * (0.12 + this.rand() * 0.14));
+      this.sparks.set(2, i, c.r, c.g, c.b, size * (0.05 + this.rand() * 0.06));
       this.sparks.set(3, i, L.gravity, L.spin * (this.rand() - 0.5) * 2, 0.6, 0);
     }
   }

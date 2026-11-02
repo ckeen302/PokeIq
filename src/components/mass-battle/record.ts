@@ -264,7 +264,8 @@ export async function recordBattleVideo(o: RecordOptions): Promise<RecordResult>
       if (h.flags & EV.CRIT && bossSide >= 0 && view.side[h.target] === bossSide) director.offer({ kind: "crit", x: h.tx, z: h.tz, h: ht, power: 0.6 });
       if (h.flags & (EV.MISS | EV.IMMUNE)) return;
       const share = Math.min(1, h.damage / Math.max(1, ready.maxHp[ready.sp[h.target]]));
-      scene.effects.burst(mv.type, h.tx, ht * 0.5, h.tz, 5 + share * 12, 1.5 + share * 5 + ht * 0.6, Math.max(0.25, ht * 0.5), h.t);
+      const size = Math.min(1.6, Math.max(0.3, Math.min(ht, ha * 1.5) * 0.7));
+      scene.effects.burst(mv.type, h.tx, ht * 0.5, h.tz, 4 + share * 12, 1.2 + share * 4 + size, size, h.t);
     };
     director.reset(summarize(view, heights, "deploy", W / H));
     // The battle plays at its own pace when it fits, faster when it doesn't (slow-motion cuts included).

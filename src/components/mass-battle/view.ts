@@ -95,9 +95,10 @@ export class BattleView {
     return s;
   }
 
-  /** Moves the clock on by `dt` battle seconds (never past the newest frame); fires the events passed. */
+  /** Moves the clock on by `dt` battle seconds (never past the newest frame while the battle runs); fires the events passed. */
   advance(dt: number) {
-    this.t = Math.min(this.head, this.t + Math.max(0, dt));
+    // Once the battle is over the clock runs on, so the last recall beams and effects play out.
+    this.t = this.end && this.eventsDone >= this.frames.length ? this.t + Math.max(0, dt) : Math.min(this.head, this.t + Math.max(0, dt));
     // Events of tick k happen during the step that ends at k: fire them once the clock reaches k − ½ tick.
     while (this.frames.length) {
       const f = this.frames[this.eventsDone] ?? null;

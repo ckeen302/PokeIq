@@ -2,7 +2,7 @@
 
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { track } from "@vercel/analytics";
-import { Camera, Clapperboard, Expand, Info, Loader2, Minus, Pause, Play, Plus, RotateCcw, Share2, Swords, Volume2, VolumeX, X } from "lucide-react";
+import { Camera, Clapperboard, Expand, Info, Loader2, Minus, Pause, Play, Plus, RotateCcw, Share2, Swords, Trophy, Volume2, VolumeX, X } from "lucide-react";
 import { Director, type Pose } from "@/lib/mass-battle/director";
 import { EV, SPREAD_REACH } from "@/lib/mass-battle/engine";
 import { armyName, bossDownLine, critLine, fmt, multiKoLine, noAnswerText, possessive, questionText, resultLine, resultTitle, spreadText, winRateText } from "@/lib/mass-battle/copy";
@@ -128,6 +128,8 @@ export function MassBattleExperience({ list, presets, initial }: { list: PickerM
   const battleRef = useRef<BattleDesc | null>(null);
   const feedId = useRef(0);
   const endTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  /** Worker milliseconds per simulation tick (smoothed), for the stats on the stage. */
+  const tickMs = useRef(0);
 
   const [phase, setPhaseState] = useState<Phase>("idle");
   const [battle, setBattle] = useState<BattleDesc | null>(null);
@@ -136,6 +138,7 @@ export function MassBattleExperience({ list, presets, initial }: { list: PickerM
   const [hud, setHud] = useState<Hud | null>(null);
   const [feed, setFeed] = useState<FeedItem[]>([]);
   const [final, setFinal] = useState<Final | null>(null);
+  const [cardHidden, setCardHidden] = useState(false);
   const [cam, setCam] = useState<"director" | "free">("director");
   const [paused, setPaused] = useState(false);
   const [speed, setSpeed] = useState(1);
@@ -262,8 +265,9 @@ export function MassBattleExperience({ list, presets, initial }: { list: PickerM
       }
       if (h.flags & EV.MISS || h.flags & EV.IMMUNE) return;
       const share = Math.min(1, h.damage / Math.max(1, ready.maxHp[sp[h.target]]));
-      fx.burst(mv.type, h.tx, ht * 0.5, h.tz, 5 + share * 12, 1.5 + share * 5 + ht * 0.6, Math.max(0.25, ht * 0.5), h.t);
-      if (h.flags & EV.CRIT) fx.burst("Normal", h.tx, ht * 0.6, h.tz, 8, 4 + ht, Math.max(0.3, ht * 0.6), h.t);
+            const size = Math.min(1.6, Math.max(0.3, Math.min(ht, ha * 1.5) * 0.7));
+      fx.burst(mv.type, h.tx, ht * 0.5, h.tz, 4 + share * 12, 1.2 + share * 4 + size, size, h.t);
+      if (h.flags & EV.CRIT) fx.burst("Normal", h.tx, ht * 0.6, h.tz, 8, 3 + size * 2, size * 1.3, h.t);
       if (share > 0.35 && isBoss) directorRef.current.offer({ kind: "big", x: h.tx, z: h.tz, h: ht, power: share });
     };
   }, [pushFeed]);
@@ -275,6 +279,7 @@ export function MassBattleExperience({ list, presets, initial }: { list: PickerM
     abortRef.current = ac;
     if (endTimer.current) clearTimeout(endTimer.current);
     setFinal(null);
+    setCardHidden(false);
     setFeed([]);
     setError(null);
     setPaused(false);
@@ -300,7 +305,11 @@ export function MassBattleExperience({ list, presets, initial }: { list: PickerM
       viewRef.current = view;
       setDrawn(view.drawn < view.n ? { drawn: view.drawn, total: view.n } : null);
       wireHits(view);
-      sim.onFrames = (frames, end) => viewRef.current === view && view.push(frames, end);
+      sim.onFrames = (frames, end, ms) => {
+        if (viewRef.current !== view) return;
+        view.push(frames, end);
+        if (frames.length) tickMs.current = tickMs.current * 0.9 + (ms / frames.length) * 0.1;
+      };
       sim.onError = (m) => {
         setError(m);
         setPhase("error");
@@ -375,9 +384,12 @@ export function MassBattleExperience({ list, presets, initial }: { list: PickerM
     let ftEma = 1000 / 60, refresh = 1000 / 60, slowFor = 0, calmFor = 0, warm = 0, raisedAt = -1e9, ceiling = LADDER.length - 1;
     let doneAt = -1;
     let wasSlow = false;
+    let frameEma = 16.7, workEma = 2;
     const loop = (now: number) => {
       raf = requestAnimationFrame(loop);
+      const start = performance.now();
       const raw = now - last;
+      frameEma = frameEma * 0.95 + Math.min(250, raw) * 0.05;
       last = now;
       const dt = Math.min(0.1, raw / 1000);
       const scene = sceneRef.current;
@@ -432,6 +444,7 @@ export function MassBattleExperience({ list, presets, initial }: { list: PickerM
         poseRef.current = pose;
         scene.setCamera(pose);
         scene.render(view, dt);
+        workEma = workEma * 0.95 + (performance.now() - start) * 0.05;
         const stage = stageRef.current;
         if (now - hudAt > 120) {
           hudAt = now;
@@ -444,6 +457,9 @@ export function MassBattleExperience({ list, presets, initial }: { list: PickerM
             const st = scene.stats();
             stage.dataset.calls = String(st.calls);
             stage.dataset.instances = String(st.instances);
+            stage.dataset.frameMs = frameEma.toFixed(1);
+            stage.dataset.workMs = workEma.toFixed(2);
+            stage.dataset.tickMs = tickMs.current.toFixed(2);
           }
         }
       } else {
@@ -656,7 +672,7 @@ export function MassBattleExperience({ list, presets, initial }: { list: PickerM
     };
     const down = (e: PointerEvent) => {
       if (!viewRef.current) return;
-      el.setPointerCapture?.(e.pointerId);
+      try { el.setPointerCapture?.(e.pointerId); } catch { /* a synthetic pointer */ }
       pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
       audioRef.current?.gesture();
       if (pts.size === 2) {
@@ -936,7 +952,7 @@ export function MassBattleExperience({ list, presets, initial }: { list: PickerM
         )}
 
         {/* The result. */}
-        {phase === "done" && final && b && (
+        {phase === "done" && final && b && !cardHidden && (
           <div className="absolute inset-0 z-[7] flex items-center justify-center overflow-y-auto bg-[#05070f]/55 p-3 backdrop-blur-[2px] sm:p-4" data-testid="mb-final">
             <div className="my-auto w-full max-w-lg space-y-3 rounded-2xl border border-white/15 bg-[#0b1226]/90 p-4 text-center shadow-2xl sm:space-y-4 sm:p-7">
               {b.answer && b.question ? (
@@ -977,16 +993,21 @@ export function MassBattleExperience({ list, presets, initial }: { list: PickerM
                 <button type="button" onClick={replay} className={chip} data-testid="mb-replay"><RotateCcw className="h-4 w-4" aria-hidden /> Replay</button>
                 <button type="button" onClick={() => setShowVideo(true)} className={chip} data-testid="mb-video-final"><Clapperboard className="h-4 w-4" aria-hidden /> Make a video</button>
                 <button type="button" onClick={share} className={chip} data-testid="mb-share-final"><Share2 className="h-4 w-4" aria-hidden /> Share</button>
-                <button type="button" onClick={() => { setFinal(null); setPhase("ready"); }} className={chip}><Camera className="h-4 w-4" aria-hidden /> Look around</button>
+                <button type="button" onClick={() => { setCardHidden(true); toFree(); }} className={chip} data-testid="mb-look"><Camera className="h-4 w-4" aria-hidden /> Look around</button>
               </div>
             </div>
           </div>
         )}
 
         {/* Controls (the result card has its own). */}
-        {(phase === "ready" || phase === "playing" || (phase === "done" && !final)) && (
+        {(phase === "ready" || phase === "playing" || (phase === "done" && (!final || cardHidden))) && (
           <div className="absolute inset-x-0 bottom-0 z-[6] flex flex-wrap items-end justify-between gap-2 p-3 sm:p-4">
             <div className="flex flex-wrap items-center gap-1.5">
+              {phase === "done" && cardHidden && (
+                <button type="button" onClick={() => setCardHidden(false)} className={cn(chip, "border-[#ffd84a]/60 text-[#ffe680]")} data-testid="mb-show-result">
+                  <Trophy className="h-4 w-4" aria-hidden /> Result
+                </button>
+              )}
               <button type="button" onClick={togglePause} className={chip} aria-label={phase === "ready" ? "Start" : paused ? "Play" : "Pause"} data-testid="mb-play" disabled={phase === "done"}>
                 {phase === "playing" && !paused ? <Pause className="h-4 w-4" aria-hidden /> : <Play className="h-4 w-4" aria-hidden />}
               </button>
