@@ -3,13 +3,14 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Activity, AlertTriangle, Crosshair, Info, Loader2, RotateCcw, Square } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { AnalysisUnsupported, analyseReplay, BUDGET_MS, cachedAnalysis, sourceText, unsupportedReason, type AnalysisProgress, type AnalysisResult } from "@/lib/battle/analysis/run";
+import { AnalysisUnsupported, analyseReplay, BUDGET_MS, cachedAnalysis, sourceText, unsupportedReason, type AnalysisProgress, type AnalysisResult, type BoardMon } from "@/lib/battle/analysis/run";
 import { pct, type WinPoint } from "@/lib/battle/analysis/maths";
 import type { SideIndex } from "@/lib/battle/analysis/parse";
 import { turningPoints, type TurningPoint } from "@/lib/battle/analysis/stats-text";
 import { LabPool } from "@/lib/battle/lab/pool";
 import type { ReplayData } from "@/lib/battle/replay";
 import { cn } from "@/lib/utils";
+import { BattleSprite } from "./BattleSprite";
 import { BattleStatsPanel, TurningPoints, useBattleStats } from "./BattleStats";
 import { CardSection, SIDE_COLOR, TableView, Tooltip, useWidth } from "./lab/charts";
 
@@ -276,6 +277,33 @@ function WinChart({ points, last, name, keyTurns }: { points: WinPoint[]; last: 
   );
 }
 
+/** Who was in battle as a key turn started: the viewer's Pokémon, then the foe's, each with its HP. */
+function Board({ board, viewer, turn }: { board: [BoardMon[], BoardMon[]]; viewer: SideIndex; turn: number }) {
+  const side = (mons: BoardMon[], mine: boolean) => (
+    <span className="flex min-w-0 flex-wrap items-center gap-1">
+      {mons.map((m, i) => (
+        <span
+          key={i}
+          className={cn("inline-flex min-w-0 items-center gap-1 rounded-full border bg-card/60 py-0.5 pl-0.5 pr-2", mine ? "border-primary/30" : "border-foreground/15")}
+          title={`${m.species}, ${m.hp}% HP${m.status ? `, ${m.status}` : ""}`}
+        >
+          <BattleSprite species={m.sprite} size={24} animated={false} className="shrink-0" />
+          <span className="truncate font-semibold">{m.species}</span>
+          <span className="font-mono tabular-nums text-muted-foreground">{m.hp}%</span>
+          {m.status && <span className="font-mono uppercase text-warning">{m.status}</span>}
+        </span>
+      ))}
+    </span>
+  );
+  return (
+    <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs" data-testid="key-moment-board" aria-label={`In battle at the start of turn ${turn}`}>
+      {side(board[viewer], true)}
+      <span className="hud-label">vs</span>
+      {side(board[viewer === 0 ? 1 : 0], false)}
+    </div>
+  );
+}
+
 function Findings({ result }: { result: AnalysisResult }) {
   const viewerName = result.players[result.viewer];
   const foeName = result.players[result.viewer === 0 ? 1 : 0];
@@ -287,8 +315,9 @@ function Findings({ result }: { result: AnalysisResult }) {
         {result.keyMoments.length ? (
           <ol className="space-y-1.5 text-sm" data-testid="key-moments">
             {result.keyMoments.map((k) => (
-              <li key={k.turn} className="rounded-md border border-foreground/10 bg-shade/20 px-3 py-2">
-                {k.text}
+              <li key={k.turn} className="space-y-1.5 rounded-md border border-foreground/10 bg-shade/20 px-3 py-2">
+                {k.board && <Board board={k.board} viewer={result.viewer} turn={k.turn} />}
+                <p data-testid="key-moment-text">{k.text}</p>
               </li>
             ))}
           </ol>
@@ -325,6 +354,8 @@ function Findings({ result }: { result: AnalysisResult }) {
           From {viewerName}&apos;s side, using only what the battle showed: each Pokémon&apos;s HP, status, stat stages, hazards, weather and Tera as they stood at the start of the
           turn. Every turn was played out to the end {Math.round(result.rollouts / Math.max(1, result.points.length - 1))} times on average by the computer&apos;s Hard strategy for both
           sides; the shaded band is the 95% confidence interval (up to ±{pct(widest)}).
+          {result.doubles &&
+            " Double battles play both Pokémon of each side together: targets picked on the damage calc, spread moves at their 75% (and the partner they hit), Protect, Fake Out and shared KOs."}
         </p>
         <p>
           What wasn&apos;t revealed is assumed. {viewerName}: {sourceText(result.sources[result.viewer]) || "nothing"}. {foeName}: {sourceText(result.sources[result.viewer === 0 ? 1 : 0]) || "nothing"}.{" "}

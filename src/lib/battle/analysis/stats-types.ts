@@ -86,6 +86,10 @@ export interface TurnNote {
   chance?: number;
   /** Status id, hazard or weather name, Tera type, the "how" of a KO ("Stealth Rock"). */
   detail?: string;
+  /** A move in a double battle: a spread move's targets (species, and whether each is on the mover's own side). */
+  spread?: { species: string; ally: boolean }[];
+  /** A move in a double battle aimed at the mover's partner (species). */
+  ally?: string;
 }
 
 /** A single lucky (or unlucky) moment, for the luck meter's list. */
@@ -115,6 +119,8 @@ export interface BattleStats {
   leads: [string | null, string | null];
   /** Damage rolls were placed using assumed sets (and how many hits couldn't be). */
   rolls: { placed: number; unplaced: number };
+  /** A double battle. */
+  doubles?: boolean;
 }
 
-export const STATS_VERSION = 1;
+export const STATS_VERSION = 2;

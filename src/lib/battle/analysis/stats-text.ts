@@ -91,7 +91,35 @@ export function plainTurn(stats: BattleStats, viewer: StatsSide, notes: readonly
   return [choices, ...kos].filter(Boolean).join(", and ");
 }
 
+/** Doubles: one move with its targets ("your Garchomp used Earthquake on both foes and your Rotom", "Blue's Amoonguss used Spore on your Garchomp"). */
+function doublesMove(stats: BattleStats, viewer: StatsSide, n: TurnNote): string {
+  const foe = foeOf(n.side);
+  const who = whose(stats, viewer, n.side, n.mon);
+  const partner = (species: string) => (n.side === viewer ? `your ${species}` : `its partner ${species}`);
+  let on = "";
+  if (n.spread?.length) {
+    const foes = n.spread.filter((t) => !t.ally);
+    const allies = n.spread.filter((t) => t.ally);
+    on = foes.length === 2 ? (n.side === viewer ? "both foes" : "both of your Pokémon") : foes.map((t) => whose(stats, viewer, foe, t.species)).join(" and ");
+    if (allies.length) on += `${on ? " and " : ""}${allies.map((t) => partner(t.species)).join(" and ")}`;
+  } else if (n.target) on = whose(stats, viewer, foe, n.target);
+  else if (n.ally) on = partner(n.ally);
+  return `${who} used ${n.move}${on ? ` on ${on}` : ""}`;
+}
+
 function plainChoices(stats: BattleStats, viewer: StatsSide, notes: readonly TurnNote[]): string {
+  if (stats.doubles) {
+    // Both Pokémon of each side, each with its targets.
+    const parts: string[] = [];
+    for (const side of [viewer, foeOf(viewer)]) {
+      for (const n of notes) {
+        if (n.side !== side) continue;
+        if (n.kind === "move") parts.push(doublesMove(stats, viewer, n));
+        else if (n.kind === "switch") parts.push(`${side === viewer ? "you" : stats.players[side]} switched in ${n.mon}`);
+      }
+    }
+    return parts.length > 1 ? `${parts.slice(0, -1).join(", ")} and ${parts[parts.length - 1]}` : (parts[0] ?? "");
+  }
   const part = (side: StatsSide) => {
     const who = side === viewer ? "you" : stats.players[side];
     const first = notes.find((n) => n.side === side && (n.kind === "move" || n.kind === "switch"));
