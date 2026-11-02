@@ -1,17 +1,20 @@
 import * as THREE from "three";
-import { CORNICE_Y, ROOF_Y, STREET, type WorldPlan } from "@/lib/sizes/world";
-import { ATLAS, BALCONY_FLOORS, BAY_M, FLOORS_M, GROUND_M, UPPER_M, awningTexture, facadeAtlas, railingTexture, type FacadeMaps } from "./facade";
+import { CORNICE_Y, DISTRICT_COLORS, ROOF_Y, STREET, boulevardDistricts, boulevardEnd, districtAt, wrap, type District, type WorldPlan } from "@/lib/sizes/world";
+import { ATLAS, AWNING_ROWS, BALCONY_FLOORS, BAY_M, FLOORS_M, GROUND_M, UPPER_M, awningTexture, facadeAtlas, railingTexture, type FacadeMaps } from "./facade";
 import { Buckets, rng, type Geo } from "./geo";
 import { cutaway, groundVariation, lawnStripes, plazaPattern, type Shared } from "./shaders";
 
 /**
  * The Lumiose City tribute: Haussmann street walls in cream and sandstone
- * along the boulevard (shopfronts and café awnings, wrought-iron balconies,
- * cornices, grey slate mansards with dormers and chimneys), city blocks with
- * courtyards behind them for the aerial finale, the central plaza's ring
- * with radial avenues, and the ground (stone promenade, asphalt, pavements,
- * fan-patterned cobbles, lawns). Built once per line as merged meshes in
- * chunks along the boulevard.
+ * along the Grand Boulevard (lit shopfronts and café awnings in their
+ * district's colour, wrought-iron balconies, cornices, grey slate mansards
+ * with dormers and chimneys); the great round plaza with Prism Tower at its
+ * centre, ringed by buildings facing it and opened by the boulevard and four
+ * avenues; the round city of courtyard blocks spreading out from it (seen
+ * whole in the aerial finale), with each district's colour plaza; and the
+ * ground: stone promenade, asphalt, pavements, fan-patterned cobbles, lawns,
+ * the ring promenade the giants stand on round the tower, fountains. Built
+ * once per line as merged meshes in chunks.
  */
 
 const CHUNK = 240;
@@ -34,6 +37,8 @@ interface RowOpts {
   details: boolean;
   awnings: boolean;
   seed: number;
+  /** The district's awning row (see AWNING_ROWS). */
+  style: number;
 }
 
 /** A facade quad from u0 to u1 metres along `dir` and y0 to y1, with an atlas region. */
@@ -69,7 +74,8 @@ function building(B: Buckets, o: THREE.Vector3, dir: THREE.Vector3, n: THREE.Vec
     const shop = opts.shops ? Math.floor(r() * ATLAS.SHOPS) : 2 + 2 * Math.floor(r() * 2);
     facadeQuad(fac, o, dir, k * BAY_M, (k + 1) * BAY_M, 0, GROUND_M, ATLAS.shop(shop), tint);
     facadeQuad(fac, o, dir, k * BAY_M, (k + 1) * BAY_M, GROUND_M, GROUND_M + UPPER_M, ATLAS.upper(r() < 0.5 ? 0 : 1), tint);
-    if (opts.awnings && opts.shops && shop % 3 !== 2 && r() < 0.55) awning(B, o, dir, n, k, Math.floor(r() * 4), cx);
+    // Most awnings wear the district's colour; a few are classic.
+    if (opts.awnings && opts.shops && shop % 3 !== 2 && r() < 0.62) awning(B, o, dir, n, k, r() < 0.78 ? opts.style : 5 + Math.floor(r() * 3), cx);
   }
   // Back (courtyard side): upper bays only, down to the ground.
   for (let k = 0; k < bays; k++) {
@@ -120,7 +126,7 @@ function awning(B: Buckets, o: THREE.Vector3, dir: THREE.Vector3, n: THREE.Vecto
   const u0 = bay * BAY_M + 0.25, u1 = (bay + 1) * BAY_M - 0.25;
   const top = GROUND_M - 0.55, low = GROUND_M - 1.35, out = 1.9;
   const A = (u: number, y: number, k: number) => o.clone().addScaledVector(dir, u).addScaledVector(n, k).setY(y);
-  const v0 = 1 - (style + 1) / 4, v1 = 1 - style / 4;
+  const v0 = 1 - (style + 1) / AWNING_ROWS, v1 = 1 - style / AWNING_ROWS;
   g.quad(A(u0, low, out), A(u1, low, out), A(u1, top, 0.02), A(u0, top, 0.02), [0, v0, 1, v0, 1, v1, 0, v1], WHITE);
   // Valance.
   g.quad(A(u0, low - 0.32, out), A(u1, low - 0.32, out), A(u1, low, out), A(u0, low, out), [0, v0, 1, v0, 1, v1, 0, v1], WHITE);
@@ -283,84 +289,139 @@ function massBlock(M: Buckets, C: { x: number; z: number }, r0: number, r1: numb
   }
 }
 
+/** Flowers seen from afar: a green bed dotted with blooms in a district's colour, white and gold. */
+function flowerTexture(color: string): THREE.CanvasTexture {
+  const cv = document.createElement("canvas");
+  cv.width = cv.height = 128;
+  const g = cv.getContext("2d")!;
+  g.fillStyle = "#4d7a3a";
+  g.fillRect(0, 0, 128, 128);
+  const r = rng(77);
+  for (let i = 0; i < 420; i++) {
+    const k = r();
+    g.fillStyle = k < 0.62 ? color : k < 0.82 ? "#f6f1e4" : "#f2c84b";
+    g.globalAlpha = 0.75 + r() * 0.25;
+    g.beginPath();
+    g.arc(r() * 128, r() * 128, 1.6 + r() * 2.2, 0, Math.PI * 2);
+    g.fill();
+  }
+  g.globalAlpha = 1;
+  const t = new THREE.CanvasTexture(cv);
+  t.colorSpace = THREE.SRGBColorSpace;
+  t.anisotropy = 4;
+  return t;
+}
+
+/** Whether a block (an annular sector round the plaza's centre) would stand in the boulevard's corridor or on a colour plaza. */
+function blocked(plan: WorldPlan, C: { x: number; z: number }, r0: number, r1: number, a0: number, a1: number): boolean {
+  const corridor = STREET.facade + STREET.depth + 14;
+  for (let i = 0; i <= 4; i++) {
+    for (let j = 0; j <= 4; j++) {
+      const r = r0 + ((r1 - r0) * i) / 4, a = a0 + ((a1 - a0) * j) / 4;
+      const x = C.x + Math.cos(a) * r, z = C.z + Math.sin(a) * r;
+      if (Math.abs(z) < corridor && x < plan.plaza.cx + 10 && x > plan.x0 - 40) return true;
+      for (const d of plan.districts) if (Math.hypot(x - d.plaza.x, z - d.plaza.z) < d.plaza.r + 26) return true;
+    }
+  }
+  return false;
+}
+
+const styleOf = (d: District) => Math.max(0, DISTRICT_COLORS.findIndex((c) => c.name === d.name));
+
 export function buildCity(plan: WorldPlan, shared: Shared, tex: CityTextures, quality: { facadeScale: 1 | 2; anisotropy: number; blocks: number }): City {
   const group = new THREE.Group();
   group.name = "city";
   const B = new Buckets(CHUNK);
   const F = STREET.facade, D = STREET.depth;
+  const C = { x: plan.plaza.cx, z: plan.plaza.cz };
+  const sides = boulevardDistricts(plan);
 
-  // ---- The boulevard's two street walls, broken by side streets.
+  // ---- The boulevard's two street walls, broken by side streets, up to the buildings round the plaza.
   const crossEvery = 132;
   const crossW = 16;
-  const sides: [number, number][] = [[1, 1], [-1, 2]];
-  for (const [side, seedBase] of sides) {
+  for (const [side, seedBase] of [[1, 1], [-1, 2]] as const) {
     const z = side * F;
+    const xEnd = boulevardEnd(plan, z, 12) - 3;
     const n = new THREE.Vector3(0, 0, -side);
     let x = plan.x0, k = 0;
-    while (x < plan.x1 - 10) {
-      const xe = Math.min(plan.x1, x + crossEvery - crossW);
+    while (x < xEnd - 10) {
+      const xe = Math.min(xEnd, x + crossEvery - crossW);
       // A facade runs so that its outward normal is dir × up: on the far side (+z, facing -z) towards -x.
       const a = new THREE.Vector3(side > 0 ? xe : x, 0, z), b = new THREE.Vector3(side > 0 ? x : xe, 0, z);
-      if (xe - x > BAY_M * 3) streetWall(B, a, b, n, D, { shops: true, details: true, awnings: side > 0, seed: seedBase * 1000 + k });
+      if (xe - x > BAY_M * 3) streetWall(B, a, b, n, D, { shops: true, details: true, awnings: side > 0, seed: seedBase * 1000 + k, style: styleOf(side > 0 ? sides.far : sides.near) });
       x += crossEvery;
       k++;
     }
   }
 
-  // ---- The plaza's ring of buildings facing the centre, broken by eight radial avenues (one is the boulevard).
-  const C = { x: plan.plaza.cx, z: 0 };
+  // ---- The plaza's ring of buildings facing the tower, open where the boulevard and the four avenues leave.
   const ringR = plan.plaza.r + 12;
-  const AVENUES = 8;
-  const avenueAngle = (i: number) => Math.PI + (i * Math.PI * 2) / AVENUES;
-  const avenueHalf = (i: number) => (i === 0 ? F + 2 : 21);
-  for (let i = 0; i < AVENUES; i++) {
-    const a0 = avenueAngle(i) + Math.asin(Math.min(1, avenueHalf(i) / ringR));
-    const a1 = avenueAngle(i + 1) - Math.asin(Math.min(1, avenueHalf((i + 1) % AVENUES) / ringR));
+  const gaps: [number, number][] = [];
+  {
+    // The boulevard meets the ring off its centre line: open between its two building lines.
+    const half = F + D + 4;
+    const sHi = Math.max(-1, Math.min(1, (half - C.z) / ringR)), sLo = Math.max(-1, Math.min(1, (-half - C.z) / ringR));
+    gaps.push([wrap(Math.PI - Math.asin(sHi)), wrap(Math.PI - Math.asin(sLo))]);
+    for (const av of plan.avenues.slice(1)) { const h = Math.asin(Math.min(1, 21 / ringR)); gaps.push([wrap(av - h), wrap(av + h)]); }
+  }
+  // Walk round from the end of each gap to the start of the next.
+  const sorted = gaps.map(([a, b]) => [a, b < a ? b + Math.PI * 2 : b] as [number, number]).sort((p, q) => p[0] - q[0]);
+  for (let i = 0; i < sorted.length; i++) {
+    const a0 = sorted[i][1];
+    let a1 = sorted[(i + 1) % sorted.length][0];
+    while (a1 <= a0) a1 += Math.PI * 2;
     const segs = Math.max(2, Math.round(((a1 - a0) * ringR) / 26));
     for (let sg = 0; sg < segs; sg++) {
       const t0 = a0 + ((a1 - a0) * sg) / segs, t1 = a0 + ((a1 - a0) * (sg + 1)) / segs;
       // Facing the centre: dir = up × n runs towards increasing angle. Overlap neighbours a little so the joints close.
       const e = 0.6 / ringR;
-      const p0 = new THREE.Vector3(C.x + Math.cos(t0 - e) * ringR, 0, Math.sin(t0 - e) * ringR);
-      const p1 = new THREE.Vector3(C.x + Math.cos(t1 + e) * ringR, 0, Math.sin(t1 + e) * ringR);
+      const p0 = new THREE.Vector3(C.x + Math.cos(t0 - e) * ringR, 0, C.z + Math.sin(t0 - e) * ringR);
+      const p1 = new THREE.Vector3(C.x + Math.cos(t1 + e) * ringR, 0, C.z + Math.sin(t1 + e) * ringR);
       const mid = p0.clone().add(p1).multiplyScalar(0.5);
-      const n = new THREE.Vector3(C.x - mid.x, 0, -mid.z).normalize();
-      streetWall(B, p0, p1, n, D, { shops: true, details: true, awnings: true, seed: 9000 + i * 31 + sg });
+      const n = new THREE.Vector3(C.x - mid.x, 0, C.z - mid.z).normalize();
+      streetWall(B, p0, p1, n, D, { shops: true, details: true, awnings: true, seed: 9000 + i * 31 + sg, style: styleOf(districtAt(plan, mid.x, mid.z)) });
     }
   }
 
-  // ---- Lumiose's rings: city blocks with courtyards round the plaza, out past the boulevard's far end.
+  // ---- The round city: courtyard blocks in rings round the plaza, out past the boulevard's far end, cut by the avenues and the ring streets.
   const M = new Buckets(640);
   const ring0 = ringR + D + 18;
-  const rMax = Math.max(700, Math.hypot(C.x - plan.x0, 0) + 160) * quality.blocks;
+  const rMax = Math.max(700, Math.hypot(C.x - plan.x0, C.z) + 160) * quality.blocks;
+  const dividers = plan.avenues.map((a) => wrap(a)).sort((p, q) => p - q);
   let seed = 1;
   for (let r0 = ring0; r0 < rMax; r0 += 96) {
     const r1 = r0 + 78;
-    for (let i = 0; i < AVENUES; i++) {
+    for (let i = 0; i < dividers.length; i++) {
       // Keep each avenue's corridor clear (its width is constant, so the angle it takes shrinks outwards).
-      const half0 = i === 0 ? F + D + 16 : 30, half1 = (i + 1) % AVENUES === 0 ? F + D + 16 : 30;
-      const s0 = avenueAngle(i) + Math.asin(Math.min(1, half0 / r0));
-      const s1 = avenueAngle(i + 1) - Math.asin(Math.min(1, half1 / r0));
-      if (s1 - s0 < 0.02) continue;
+      const s0 = dividers[i] + Math.asin(Math.min(1, 30 / r0));
+      let s1 = dividers[(i + 1) % dividers.length] - Math.asin(Math.min(1, 30 / r0));
+      while (s1 <= s0) s1 += Math.PI * 2;
       const rm = (r0 + r1) / 2;
       const nb = Math.max(1, Math.round(((s1 - s0) * rm) / 140));
       const street = 16 / rm;
       for (let k = 0; k < nb; k++) {
         const b0 = s0 + ((s1 - s0) * k) / nb + (k ? street / 2 : 0);
         const b1 = s0 + ((s1 - s0) * (k + 1)) / nb - (k < nb - 1 ? street / 2 : 0);
-        massBlock(M, C, r0, r1, b0, b1, seed++);
+        if (!blocked(plan, C, r0, r1, b0, b1)) { massBlock(M, C, r0, r1, b0, b1, seed++); continue; }
+        // Next to the boulevard or a colour plaza: smaller blocks, where they fit.
+        const parts = Math.max(2, Math.round(((b1 - b0) * rm) / 46));
+        for (let q = 0; q < parts; q++) {
+          const c0 = b0 + ((b1 - b0) * q) / parts + (q ? street / 3 : 0), c1 = b0 + ((b1 - b0) * (q + 1)) / parts - (q < parts - 1 ? street / 3 : 0);
+          if (!blocked(plan, C, r0, r1, c0, c1)) massBlock(M, C, r0, r1, c0, c1, seed++);
+          else if (!blocked(plan, C, r0, r0 + 34, c0, c1)) massBlock(M, C, r0, r0 + 34, c0, c1, seed++);
+        }
       }
     }
   }
   // ---- Materials.
   const atlas: FacadeMaps = facadeAtlas(quality.facadeScale, quality.anisotropy);
-  const facade = new THREE.MeshStandardMaterial({ map: atlas.map, normalMap: atlas.normalMap, roughnessMap: atlas.orm, metalnessMap: atlas.orm, aoMap: atlas.orm, aoMapIntensity: 0.6, vertexColors: true, roughness: 1, metalness: 1, normalScale: new THREE.Vector2(1.1, 1.1) });
+  const facade = new THREE.MeshStandardMaterial({ map: atlas.map, normalMap: atlas.normalMap, roughnessMap: atlas.orm, metalnessMap: atlas.orm, aoMap: atlas.orm, aoMapIntensity: 0.6, emissiveMap: atlas.emissive, emissive: "#ffffff", emissiveIntensity: 0.62, vertexColors: true, roughness: 1, metalness: 1, normalScale: new THREE.Vector2(1.1, 1.1) });
   const stone = new THREE.MeshStandardMaterial({ ...tex.pbr("sandstone_blocks_08", 3, { color: "#ffffff" }), vertexColors: true });
-  const roofM = new THREE.MeshStandardMaterial({ ...tex.pbr("roof_slates_03", 3, { color: "#9aa3ad", normalScale: 1.2 }), vertexColors: true, metalness: 0.15 });
+  const roofM = new THREE.MeshStandardMaterial({ ...tex.pbr("roof_slates_03", 3, { color: "#8d98a6", normalScale: 1.2 }), vertexColors: true, metalness: 0.15 });
   const rail = new THREE.MeshStandardMaterial({ map: railingTexture(quality.anisotropy), alphaTest: 0.5, side: THREE.DoubleSide, roughness: 0.5, metalness: 0.6 });
-  const awn = new THREE.MeshStandardMaterial({ map: awningTexture(), side: THREE.DoubleSide, roughness: 0.85 });
+  const awn = new THREE.MeshStandardMaterial({ map: awningTexture(DISTRICT_COLORS.map((d) => d.color)), side: THREE.DoubleSide, roughness: 0.85 });
   const pots = new THREE.MeshStandardMaterial({ color: "#b5643f", roughness: 0.8 });
-  const mass = new THREE.MeshStandardMaterial({ map: atlas.mass.map, normalMap: atlas.mass.normalMap, roughnessMap: atlas.mass.orm, metalnessMap: atlas.mass.orm, aoMap: atlas.mass.orm, aoMapIntensity: 0.6, vertexColors: true, roughness: 1, metalness: 1 });
+  const mass = new THREE.MeshStandardMaterial({ map: atlas.mass.map, normalMap: atlas.mass.normalMap, roughnessMap: atlas.mass.orm, metalnessMap: atlas.mass.orm, aoMap: atlas.mass.orm, aoMapIntensity: 0.6, emissiveMap: atlas.mass.emissive, emissive: "#ffffff", emissiveIntensity: 0.45, vertexColors: true, roughness: 1, metalness: 1 });
   const mats: Record<string, THREE.Material> = { facade, stone, roof: roofM, rail, awning: awn, pots, mass };
   for (const m of Object.values(mats)) cutaway(m as THREE.MeshStandardMaterial, shared);
   const shadowCasters: THREE.Mesh[] = [];
@@ -368,7 +429,8 @@ export function buildCity(plan: WorldPlan, shared: Shared, tex: CityTextures, qu
   for (const mesh of M.meshes(mats)) { group.add(mesh); shadowCasters.push(mesh); }
 
   // ---- Ground.
-  group.add(...ground(plan, shared, tex));
+  const ground = buildGround(plan, shared, tex);
+  group.add(...ground.meshes);
 
   const centre = new THREE.Vector3();
   return {
@@ -387,14 +449,17 @@ export function buildCity(plan: WorldPlan, shared: Shared, tex: CityTextures, qu
       });
       atlas.dispose();
       for (const m of Object.values(mats)) m.dispose();
+      ground.dispose();
     },
   };
 }
 
-/** Flat ground strips with world-scaled UVs. */
-function ground(plan: WorldPlan, shared: Shared, tex: CityTextures): THREE.Mesh[] {
+/** The ground: flat strips and discs with world-scaled UVs, the plaza's pattern, the ring promenade, fountains and the colour plazas. */
+function buildGround(plan: WorldPlan, shared: Shared, tex: CityTextures): { meshes: THREE.Mesh[]; dispose(): void } {
   const out: THREE.Mesh[] = [];
+  const own: THREE.Material[] = [];
   const strip = (name: string, mat: THREE.MeshStandardMaterial, x0: number, x1: number, z0: number, z1: number, y: number, tile: number) => {
+    if (x1 <= x0) return;
     const geo = new THREE.PlaneGeometry(x1 - x0, z1 - z0, 1, 1);
     geo.rotateX(-Math.PI / 2);
     geo.translate((x0 + x1) / 2, y, (z0 + z1) / 2);
@@ -404,13 +469,13 @@ function ground(plan: WorldPlan, shared: Shared, tex: CityTextures): THREE.Mesh[
     const mesh = new THREE.Mesh(geo, mat);
     mesh.name = name;
     mesh.receiveShadow = true;
-    mesh.matrixAutoUpdate = false;
     out.push(mesh);
   };
   const mk = (name: string, tile: number, opts?: { color?: string; normalScale?: number; bright?: number }) => {
     const m = new THREE.MeshStandardMaterial(tex.pbr(name, tile, opts));
     if (opts?.bright) m.color.multiplyScalar(opts.bright);
     groundVariation(m);
+    own.push(m);
     return m;
   };
   const prom = mk("granite_tile", 2.3, { color: "#fbf7ef", bright: 1.6 });
@@ -427,23 +492,28 @@ function ground(plan: WorldPlan, shared: Shared, tex: CityTextures): THREE.Mesh[
   lineLawn.polygonOffsetFactor = -1;
   lineLawn.polygonOffsetUnits = -2;
   const curb = new THREE.MeshStandardMaterial({ color: "#c9c4ba", roughness: 0.8 });
+  own.push(curb);
   const { x0, x1 } = plan;
+  const R = plan.plaza.r, cx = plan.plaza.cx, cz = plan.plaza.cz;
+  const ring = plan.ring;
+  const lineIn = ring ? ring.s0 : x1;
   const far = 2600;
   // Base: the whole city's streets.
-  strip("ground-base", asphalt, x0 - far, plan.plaza.cx + plan.plaza.r + far, -far, far, -0.05, 3);
-  // The boulevard: promenade (a lawn with stone edging), then per side road and pavement.
-  strip("promenade", prom, x0, x1 + 4, -STREET.promenade, STREET.promenade, -0.006, 2.3);
-  strip("lawn", lineLawn, x0, x1 + 2, -STREET.promenade + 1.1, STREET.promenade - 1.1, 0, 0.9);
+  strip("ground-base", asphalt, Math.min(x0, cx - R) - far, cx + R + far, cz - R - far, cz + R + far, -0.05, 3);
+  // The boulevard: promenade (a lawn with stone edging) on into the plaza, then per side road and pavement up to the plaza.
+  strip("promenade", prom, x0, lineIn + 6, -STREET.promenade, STREET.promenade, -0.006, 2.3);
+  strip("lawn", lineLawn, x0, lineIn + (ring ? 0.5 : 4), -STREET.promenade + 1.1, STREET.promenade - 1.1, 0, 0.9);
   for (const s of [1, -1]) {
     const lo = (a: number, b: number) => [Math.min(s * a, s * b), Math.max(s * a, s * b)] as const;
     const [p0, p1] = lo(STREET.roadOut + 0.3, STREET.facade + 0.6);
-    strip("pavement", walk, x0, x1, p0, p1, 0.12, 3);
+    strip("pavement", walk, x0, boulevardEnd(plan, s * STREET.facade), p0, p1, 0.12, 3);
     const [t0, t1] = lo(STREET.promenade, STREET.roadIn);
-    strip("allee", walk, x0, x1, t0, t1, 0.12, 3);
+    strip("allee", walk, x0, boulevardEnd(plan, s * STREET.roadIn), t0, t1, 0.12, 3);
     // Kerbs.
     for (const zk of [STREET.roadIn, STREET.roadOut]) {
-      const geo = new THREE.BoxGeometry(x1 - x0, 0.14, 0.3);
-      geo.translate((x0 + x1) / 2, 0.07, s * zk);
+      const xe = boulevardEnd(plan, s * zk);
+      const geo = new THREE.BoxGeometry(xe - x0, 0.14, 0.3);
+      geo.translate((x0 + xe) / 2, 0.07, s * zk);
       const m = new THREE.Mesh(geo, curb);
       m.receiveShadow = true;
       out.push(m);
@@ -451,19 +521,17 @@ function ground(plan: WorldPlan, shared: Shared, tex: CityTextures): THREE.Mesh[
   }
   // Lane markings.
   const dash = new THREE.MeshStandardMaterial({ color: "#f2f0e8", roughness: 0.6 });
-  const dashes = new THREE.InstancedMesh(new THREE.PlaneGeometry(3, 0.15).rotateX(-Math.PI / 2), dash, Math.ceil((x1 - x0) / 9) * 4);
+  own.push(dash);
+  const dashes = new THREE.InstancedMesh(new THREE.PlaneGeometry(3, 0.15).rotateX(-Math.PI / 2), dash, Math.ceil((x1 - x0) / 9) * 4 + 4);
   let di = 0;
   const m4 = new THREE.Matrix4();
-  for (const s of [1, -1]) for (const lane of [16, 20]) for (let x = x0; x < x1 - 6; x += 9) { m4.makeTranslation(x, 0.01, s * lane); dashes.setMatrixAt(di++, m4); }
+  for (const s of [1, -1]) for (const lane of [16, 20]) for (let x = x0; x < boulevardEnd(plan, s * lane) - 6; x += 9) { m4.makeTranslation(x, 0.01, s * lane); dashes.setMatrixAt(di++, m4); }
   dashes.count = di;
   dashes.receiveShadow = true;
   out.push(dashes);
-  // The plaza: pale stone, fan-patterned cobbles round its rim, eight lawn parterres between the avenues,
-  // a stone apron round the tower and two fountains either side of the line.
-  const R = plan.plaza.r, cx = plan.plaza.cx;
-  const flat = (geo: THREE.BufferGeometry, mat: THREE.Material, y: number, tile: number, at?: { x: number; z: number }) => {
+  const flat = (geo: THREE.BufferGeometry, mat: THREE.Material, y: number, tile: number, at: { x: number; z: number } = { x: cx, z: cz }) => {
     geo.rotateX(-Math.PI / 2);
-    geo.translate(at?.x ?? cx, y, at?.z ?? 0);
+    geo.translate(at.x, y, at.z);
     const uv = geo.attributes.uv as THREE.BufferAttribute;
     const pos = geo.attributes.position as THREE.BufferAttribute;
     for (let i = 0; i < uv.count; i++) uv.setXY(i, pos.getX(i) / tile, -pos.getZ(i) / tile);
@@ -472,43 +540,101 @@ function ground(plan: WorldPlan, shared: Shared, tex: CityTextures): THREE.Mesh[
     out.push(m);
     return m;
   };
-  flat(new THREE.CircleGeometry(R + STREET.facade - 10, 128), cobble, -0.035, 2.5);
+  /** An arc of a ring round the plaza's centre between world angles a0 < a1 (RingGeometry runs the other way once laid flat). */
+  const arc = (r0: number, r1: number, a0: number, a1: number, segs: number) => new THREE.RingGeometry(r0, r1, segs, 1, -a1, a1 - a0);
+  // The plaza: fan-patterned cobbles round its rim, pale stone with a radial pattern inside.
+  flat(new THREE.CircleGeometry(R + STREET.facade - 10, 160), cobble, -0.035, 2.5);
   const plazaStone = mk("granite_tile", 2.3, { color: "#fbf7ef", bright: 1.55 });
-  plazaPattern(plazaStone, new THREE.Vector2(cx, 0), R - 4);
-  flat(new THREE.CircleGeometry(R - 4, 128), plazaStone, -0.022, 2.3);
-  const lawnIn = R * 0.3, lawnOut = R * 0.9;
-  for (let i = 0; i < 8; i++) {
-    const c0 = Math.PI + (i * Math.PI) / 4, c1 = c0 + Math.PI / 4;
-    // Paths: along each avenue's line (the line of giants runs down the boulevard's).
-    const pathHalf = (k: number) => ((k % 8) === 0 || (k % 8) === 4 ? 14 : 9);
-    const t0 = c0 + Math.asin(Math.min(0.9, pathHalf(i) / lawnIn)), t1 = c1 - Math.asin(Math.min(0.9, pathHalf(i + 1) / lawnIn));
-    if (t1 <= t0) continue;
-    const g = new THREE.RingGeometry(lawnIn, lawnOut, 32, 2, -t1, t1 - t0);
-    flat(g, grass, -0.01, 2);
+  plazaPattern(plazaStone, new THREE.Vector2(cx, cz), R - 4);
+  flat(new THREE.CircleGeometry(R - 4, 160), plazaStone, -0.022, 2.3);
+  const rr = ring?.r ?? Math.max(60, R - 120);
+  // The ring promenade the giants stand on: a band of cobbles edged in stone, with the line's lawn running round it.
+  if (ring) {
+    const span = (plan.lineEnd - ring.s0) / ring.r;
+    const a0 = -Math.PI / 2 - 0.08, a1 = -Math.PI / 2 + span + 0.25;
+    flat(arc(rr - 17, rr + 17, a0 - 0.05, a1 + 0.05, 160), prom, -0.012, 2.3);
+    const lawnArc = flat(arc(rr - 10, rr + 10, -Math.PI / 2, a1, 160), lineLawn, 0, 0.9);
+    lawnArc.name = "ring-lawn";
+    // The straight lawn's end joins the ring's start without a seam.
   }
-  // The line's lawn runs on into the plaza, where the giants stand.
-  strip("plaza-lawn", lineLawn, x1, cx + R * 0.86, -16, 16, 0, 0.9);
-  flat(new THREE.CircleGeometry(66, 64), prom, 0.08, 2.3, { x: plan.tower.x, z: plan.tower.z });
-  // Fountains: a stone basin, water and a spray.
+  // Between the ring and the plaza's edge: low parterres, box hedges round flowers in the colour of the district beyond (flat: they never hide a figure).
+  {
+    const flowers = new Map<string, THREE.MeshStandardMaterial>();
+    const hedge = new THREE.MeshStandardMaterial({ color: "#3f6b34", roughness: 0.9 });
+    own.push(hedge);
+    const r0 = rr + 30, r1 = R - 24;
+    if (r1 - r0 > 18) {
+      for (let k = 0; k < 16; k++) {
+        const a0 = (k * Math.PI) / 8 + 0.06, a1 = ((k + 1) * Math.PI) / 8 - 0.06;
+        const am = (a0 + a1) / 2;
+        // Keep the line's way into the plaza open.
+        const px = cx + Math.cos(am) * (r0 + r1) / 2, pz = cz + Math.sin(am) * (r0 + r1) / 2;
+        if (Math.abs(pz) < STREET.facade && px < cx) continue;
+        if (Math.abs(Math.sin(am - Math.atan2(-cz, x1 - cx))) < 0.2 && Math.cos(am - Math.atan2(-cz, x1 - cx)) > 0) continue;
+        const d = districtAt(plan, px, pz);
+        let fm = flowers.get(d.name);
+        if (!fm) {
+          fm = new THREE.MeshStandardMaterial({ map: flowerTexture(d.color), roughness: 0.85 });
+          fm.map!.wrapS = fm.map!.wrapT = THREE.RepeatWrapping;
+          flowers.set(d.name, fm);
+          own.push(fm);
+        }
+        flat(arc(r0, r1, a0, a1, 12), hedge, 0.05, 2);
+        flat(arc(r0 + 1.4, r1 - 1.4, a0 + 1.4 / r0, a1 - 1.4 / r0, 12), fm, 0.09, 3.2);
+      }
+    }
+  }
+  // Inside the ring: lawns between paths that radiate from the tower, a stone apron round its feet, four fountains.
+  const inner = rr - 20;
+  const apron = 58;
+  for (let i = 0; i < 8; i++) {
+    const c0 = (i * Math.PI) / 4 + 0.07, c1 = ((i + 1) * Math.PI) / 4 - 0.07;
+    const pathHalf = 7;
+    const t0 = c0 + Math.asin(Math.min(0.9, pathHalf / apron)), t1 = c1 - Math.asin(Math.min(0.9, pathHalf / apron));
+    if (t1 > t0 && inner > apron + 10) flat(arc(apron + 8, inner, t0, t1, 24), grass, -0.01, 2);
+  }
+  flat(new THREE.CircleGeometry(apron, 64), prom, 0.06, 2.3);
   const basinM = new THREE.MeshStandardMaterial({ color: "#e8e1d3", roughness: 0.7 });
   const water = new THREE.MeshStandardMaterial({ color: "#3d6f8f", roughness: 0.05, metalness: 0.2, envMapIntensity: 1.4 });
-  const spray = new THREE.MeshStandardMaterial({ color: "#eaf6ff", roughness: 0.3, transparent: true, opacity: 0.75, emissive: "#9fd3ff", emissiveIntensity: 0.15 });
-  for (const sz of [1, -1]) {
-    const fx = cx + Math.cos(Math.PI - 0.62) * R * 0.6, fz = sz * Math.sin(0.62) * R * 0.6;
-    flat(new THREE.CircleGeometry(15, 48), prom, 0.07, 2.3, { x: fx, z: fz });
-    const rim = new THREE.Mesh(new THREE.TorusGeometry(9, 0.55, 8, 48).rotateX(Math.PI / 2).translate(fx, 0.55, fz), basinM);
+  const spray = new THREE.MeshStandardMaterial({ color: "#eaf6ff", roughness: 0.3, transparent: true, opacity: 0.72, emissive: "#9fd3ff", emissiveIntensity: 0.18, depthWrite: false });
+  own.push(basinM, water, spray);
+  const fountain = (fx: number, fz: number, size: number) => {
+    flat(new THREE.CircleGeometry(size * 1.6, 48), prom, 0.07, 2.3, { x: fx, z: fz });
+    const rim = new THREE.Mesh(new THREE.TorusGeometry(size, size * 0.06, 8, 48).rotateX(Math.PI / 2).translate(fx, size * 0.06, fz), basinM);
     rim.castShadow = rim.receiveShadow = true;
     out.push(rim);
-    flat(new THREE.CircleGeometry(9, 48), water, 0.5, 4, { x: fx, z: fz });
-    const ped = new THREE.Mesh(new THREE.CylinderGeometry(1.2, 1.8, 2.4, 16).translate(fx, 1.2, fz), basinM);
+    flat(new THREE.CircleGeometry(size, 48), water, size * 0.055, 4, { x: fx, z: fz });
+    const ped = new THREE.Mesh(new THREE.CylinderGeometry(size * 0.13, size * 0.2, size * 0.27, 16).translate(fx, size * 0.135, fz), basinM);
     ped.castShadow = ped.receiveShadow = true;
     out.push(ped);
-    const bowl = new THREE.Mesh(new THREE.SphereGeometry(2.4, 24, 8, 0, Math.PI * 2, Math.PI / 2, Math.PI / 2).translate(fx, 3.3, fz), basinM);
+    const bowl = new THREE.Mesh(new THREE.SphereGeometry(size * 0.27, 24, 8, 0, Math.PI * 2, Math.PI / 2, Math.PI / 2).translate(fx, size * 0.37, fz), basinM);
     bowl.castShadow = true;
     out.push(bowl);
-    const jet = new THREE.Mesh(new THREE.ConeGeometry(1.1, 5.5, 16, 1, true).rotateX(Math.PI).translate(fx, 6.2, fz), spray);
+    const jet = new THREE.Mesh(new THREE.ConeGeometry(size * 0.12, size * 0.6, 16, 1, true).rotateX(Math.PI).translate(fx, size * 0.68, fz), spray);
     out.push(jet);
+  };
+  for (let k = 0; k < 4; k++) {
+    const a = Math.PI / 4 + (k * Math.PI) / 2;
+    const fr = (apron + inner) / 2;
+    if (inner - apron > 30) fountain(cx + Math.cos(a) * fr, cz + Math.sin(a) * fr, 8.5);
+  }
+  // The colour plazas, one per district: a disc of cobbles, a ring of stone in the district's colour, flower beds and a fountain.
+  for (const d of plan.districts) {
+    const p = d.plaza;
+    flat(new THREE.CircleGeometry(p.r + 10, 64), cobble, -0.03, 2.5, p);
+    const tint = mk("granite_tile", 2.3, { color: d.color, bright: 1.15 });
+    flat(new THREE.RingGeometry(p.r * 0.55, p.r * 0.85, 64, 1), tint, -0.02, 2.3, p);
+    const beds = new THREE.MeshStandardMaterial({ color: d.color, roughness: 0.75 });
+    own.push(beds);
+    for (let k = 0; k < 8; k++) {
+      const a = (k / 8) * Math.PI * 2;
+      const bed = new THREE.Mesh(new THREE.CylinderGeometry(2.4, 2.6, 0.7, 20).translate(p.x + Math.cos(a) * p.r * 0.92, 0.35, p.z + Math.sin(a) * p.r * 0.92), beds);
+      bed.castShadow = bed.receiveShadow = true;
+      out.push(bed);
+    }
+    fountain(p.x, p.z, 7);
   }
   for (const m of out) { m.matrixAutoUpdate = false; m.updateMatrix(); }
-  return out;
+  void shared;
+  return { meshes: out, dispose() { for (const m of own) m.dispose(); } };
 }

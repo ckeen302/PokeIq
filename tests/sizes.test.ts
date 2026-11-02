@@ -11,7 +11,7 @@ import { Mp4Muxer, aacConfig, readBoxes, type BoxInfo } from "@/lib/sizes/mp4";
 import { buildGlide, framer, glideAt, type Lens } from "@/lib/sizes/glide";
 import { holdsFor, planPlay, playAt } from "@/lib/sizes/play";
 import { BASE_YAW, MAX_ORBIT, ORBIT_LIMIT, finalePose, pitchFor, poseFor } from "@/lib/sizes/camera";
-import { ROOF_Y, STREET, planWorld } from "@/lib/sizes/world";
+import { DISTRICT_COLORS, RING_M, RING_MAX_TURN, ROOF_Y, STREET, boulevardDistricts, districtAt, inPlaza, planWorld } from "@/lib/sizes/world";
 import { FRICTION, MAX_DISTANCE, RATE, ZOOM_MAX, ZOOM_MIN, ZOOM_STEP_BUTTON, ZOOM_STEP_KEY, angleDelta, badgeBudget, badgeScaleFor, clampOrbit, clampTilt, clampX, clampZoom, coast, damp, effectiveZoom, exploreView, flightAt, flightSeconds, lookPitch, overviewView, pinchZoom, pitchRange, releaseVelocity, stepIndex, wheelPixels, wheelZoom, zoomAnchorShift, zoomFloorAt, zoomPitch, zoomedDistance } from "@/lib/sizes/explore";
 import { compareHook, fold, lineFor, pushCompare, searchItems } from "@/lib/sizes/lineup";
 import { factFor, spanFact } from "@/lib/sizes/facts";
@@ -388,23 +388,71 @@ describe("the camera: Play, Explore and the finale", () => {
     expect(pf.focus).toBe(placed[0].key);
   });
 
-  it("the finale pulls back to just above the roofline, inside the relief-safe angle", () => {
+  it("the finale rises over the rooftops to reveal the city, inside the relief-safe angle", () => {
     const v = { x: 1000, d: 320, h: 100, orbit: 0, pitch: pitchFor(100), rise: 1 };
     const f = finalePose(v);
-    expect(f.position[1]).toBeGreaterThan(ROOF_Y);
-    expect(f.position[1]).toBeLessThan(v.h * 0.6);
+    expect(f.position[1]).toBeGreaterThan(ROOF_Y + 20);
+    expect(f.position[1]).toBeGreaterThan(v.h);
     const yaw = Math.atan2(f.target[0] - f.position[0], f.target[2] - f.position[2]);
     expect(Math.abs(yaw - BASE_YAW)).toBeLessThanOrEqual(MAX_ORBIT);
+    // From above, but still nearly face on: never more than about 20° down onto the relief figures.
+    const horiz = Math.hypot(f.target[0] - f.position[0], f.target[2] - f.position[2]);
+    expect(Math.atan2(f.position[1] - f.target[1], horiz)).toBeLessThan((20 * Math.PI) / 180);
     expect(poseFor(v)).toEqual(f);
     const side = poseFor({ ...v, rise: 0 });
     expect(side.position).not.toEqual(f.position);
+    // A small finale doesn't fly off into the sky.
+    const small = finalePose({ x: 10, d: 4, h: 1.5, orbit: 0, pitch: pitchFor(1.5), rise: 1 });
+    expect(small.position[1]).toBeLessThan(6);
   });
 
-  it("the giants stand in the plaza, Prism Tower behind the line", () => {
+  it("the line walks down the boulevard into the plaza, and the big figures stand round Prism Tower", () => {
     const plan = planWorld(placed);
-    const eternamax = placed[placed.length - 1];
-    expect(Math.abs(eternamax.x - plan.plaza.cx)).toBeLessThan(plan.plaza.r);
+    const ring = plan.ring!;
+    expect(ring).not.toBeNull();
+    // Prism Tower stands at the plaza's centre, behind the line (away from the camera).
+    expect(plan.tower).toEqual({ x: plan.plaza.cx, z: plan.plaza.cz });
     expect(plan.tower.z).toBeGreaterThan(0);
+    // The path is continuous: straight down the boulevard, then on round the ring without a kink.
+    const a = plan.path.at(ring.s0 - 1e-6), b = plan.path.at(ring.s0 + 1e-6);
+    expect(Math.hypot(a.x - b.x, a.z - b.z)).toBeLessThan(1e-4);
+    expect(Math.abs(a.heading - b.heading)).toBeLessThan(1e-4);
+    expect(plan.path.at(ring.s0 - 500)).toEqual({ x: ring.s0 - 500, z: 0, heading: 0 });
+    let walls = 0;
+    for (const p of placed) {
+      const at = plan.path.at(p.x);
+      if (Math.max(p.h, p.w) >= RING_M) {
+        // Every big figure is on the ring round the tower, inside the plaza, and the ring never turns past the sun.
+        expect(Math.abs(Math.hypot(at.x - plan.tower.x, at.z - plan.tower.z) - ring.r)).toBeLessThan(1e-6);
+        expect(inPlaza(plan, at.x, at.z)).toBe(true);
+        expect(at.heading).toBeLessThanOrEqual(RING_MAX_TURN + 1e-9);
+        // Outside the ring the camera has the tower behind the figure.
+        const pose = poseFor({ x: p.x, d: Math.max(5, p.h * 2.5), h: p.h, orbit: 0, pitch: pitchFor(p.h), rise: 0 }, plan.path);
+        const camToTower = Math.hypot(pose.position[0] - plan.tower.x, pose.position[2] - plan.tower.z);
+        expect(camToTower).toBeGreaterThan(ring.r);
+        const fx = pose.target[0] - pose.position[0], fz = pose.target[2] - pose.position[2];
+        expect(fx * (plan.tower.x - pose.position[0]) + fz * (plan.tower.z - pose.position[2])).toBeGreaterThan(0);
+      } else if (at.x < plan.x1) {
+        // The rest stand down the middle of the boulevard.
+        expect(at.z).toBe(0);
+        walls++;
+      }
+    }
+    expect(walls).toBeGreaterThan(placed.length * 0.8);
+    // Five districts round the tower, each with its own colour plaza out in the city, and the boulevard between two of them.
+    expect(plan.districts.map((d) => d.name)).toEqual(DISTRICT_COLORS.map((d) => d.name));
+    for (const d of plan.districts) {
+      expect(inPlaza(plan, d.plaza.x, d.plaza.z)).toBe(false);
+      expect(districtAt(plan, d.plaza.x, d.plaza.z)).toBe(d);
+      expect(Math.abs(d.plaza.z)).toBeGreaterThan(STREET.facade + STREET.depth + d.plaza.r);
+    }
+    const { far, near } = boulevardDistricts(plan);
+    expect(far).not.toBe(near);
+    // Lines without big figures stay straight on the boulevard, the plaza just past their end.
+    const starters = layoutLine(presetLineup(PRESET_BY_ID.get("starters")!, SIZE_ITEMS));
+    const sp = planWorld(starters);
+    expect(sp.ring).toBeNull();
+    expect(sp.x1).toBeGreaterThan(starters[starters.length - 1].x);
   });
 
   it("Explore: flights ease from one figure to the next and stay on the line", () => {

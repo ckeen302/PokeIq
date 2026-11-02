@@ -3,17 +3,21 @@ import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js
 
 /**
  * Prism Tower, our own design in the spirit of Lumiose City's landmark: a
- * wrought-steel lattice on four curved legs joined by arches, two
- * observation decks, a tapering spire and a faceted prism at the crown
- * that glows. The lattice is real geometry at its edges (corner girders)
- * with an alpha-cut bracing pattern on each face. No height is shown
- * anywhere; it is simply the tallest thing in the city.
+ * wrought-steel lattice on four flared legs joined by great arches, two
+ * observation platforms, a tapering shaft and, at the crown, a faceted
+ * crystal prism that glows, ringed by a steel cage. Strings of lights run
+ * up every edge and twinkle; the prism breathes. The lattice is real
+ * geometry at its edges (corner girders) with an alpha-cut bracing pattern
+ * on each face. No height is shown anywhere: it is simply the tallest thing
+ * in the city, standing at the centre of its great round plaza.
  */
 
-export const TOWER_H = 310;
+export const TOWER_H = 232;
+/** Where the legs meet, the platforms, the shaft's top and the prism's middle (m). */
+const MERGE = 74, DECK1 = 46, DECK2 = 112, SHAFT_TOP = 168, PRISM_Y = 190;
 
 /** Half-width of the tower's footprint at height y (an Eiffel-like exponential flare). */
-const profile = (y: number) => 4 + 46 * Math.exp(-y / 62);
+const profile = (y: number) => 3.2 + 40 * Math.exp(-y / 46);
 
 function latticeTexture(): THREE.CanvasTexture {
   const cv = document.createElement("canvas");
@@ -32,23 +36,27 @@ function latticeTexture(): THREE.CanvasTexture {
   }
   g.lineWidth = 6;
   g.beginPath(); g.moveTo(0, 128); g.lineTo(128, 128); g.stroke();
-  // Secondary bracing.
+  // Secondary bracing, and a little scrollwork in each bay.
   g.lineWidth = 2.5;
   for (const y of [64, 192]) { g.beginPath(); g.moveTo(0, y); g.lineTo(128, y); g.stroke(); }
   g.beginPath(); g.moveTo(64, 0); g.lineTo(64, 256); g.stroke();
+  g.lineWidth = 2;
+  for (const y of [32, 96, 160, 224]) { g.beginPath(); g.arc(64, y, 11, 0, Math.PI * 2); g.stroke(); }
   const t = new THREE.CanvasTexture(cv);
   t.wrapS = t.wrapT = THREE.RepeatWrapping;
   t.anisotropy = 4;
   return t;
 }
 
-/** A four-sided lattice tube along a path of square cross-sections (centre, half-size) as quads with lattice UVs. */
-function latticeTube(rings: { c: THREE.Vector3; h: number }[], cellM: number): { faces: THREE.BufferGeometry; girders: THREE.BufferGeometry } {
+type Ring = { c: THREE.Vector3; h: number };
+const corner = (r: Ring, k: number) => {
+  const sx = k === 0 || k === 3 ? -1 : 1, sz = k < 2 ? -1 : 1;
+  return new THREE.Vector3(r.c.x + sx * r.h, r.c.y, r.c.z + sz * r.h);
+};
+
+/** A four-sided lattice tube along a path of square cross-sections (centre, half-size) as quads with lattice UVs, plus its corner girders. */
+function latticeTube(rings: Ring[], cellM: number): { faces: THREE.BufferGeometry; girders: THREE.BufferGeometry } {
   const pos: number[] = [], uv: number[] = [], idx: number[] = [];
-  const corner = (r: { c: THREE.Vector3; h: number }, k: number) => {
-    const sx = k === 0 || k === 3 ? -1 : 1, sz = k < 2 ? -1 : 1;
-    return new THREE.Vector3(r.c.x + sx * r.h, r.c.y, r.c.z + sz * r.h);
-  };
   let v = 0;
   const vAt: number[] = [0];
   for (let i = 1; i < rings.length; i++) vAt.push(vAt[i - 1] + rings[i].c.distanceTo(rings[i - 1].c) / cellM);
@@ -68,13 +76,12 @@ function latticeTube(rings: { c: THREE.Vector3; h: number }[], cellM: number): {
   faces.setAttribute("uv", new THREE.Float32BufferAttribute(uv, 2));
   faces.setIndex(idx);
   faces.computeVertexNormals();
-  // Corner girders: thin boxes between consecutive rings at each corner.
   const parts: THREE.BufferGeometry[] = [];
   for (let k = 0; k < 4; k++) {
     for (let i = 0; i < rings.length - 1; i++) {
       const a = corner(rings[i], k), b = corner(rings[i + 1], k);
       const len = a.distanceTo(b);
-      const w = Math.max(0.5, rings[i].h * 0.09);
+      const w = Math.max(0.45, rings[i].h * 0.1);
       const g = new THREE.BoxGeometry(w, len, w);
       g.translate(0, len / 2, 0);
       g.applyQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), b.clone().sub(a).normalize()));
@@ -87,10 +94,12 @@ function latticeTube(rings: { c: THREE.Vector3; h: number }[], cellM: number): {
 
 export interface Tower {
   group: THREE.Group;
-  /** The prism's material, for the glow and the golden-hour lights. */
+  /** The prism's material, for the glow. */
   glow: THREE.MeshStandardMaterial;
   /** World position of the crown (for the halo). */
   crown: THREE.Vector3;
+  /** The prism breathes and the lights twinkle (t: seconds). */
+  tick(t: number): void;
   dispose(): void;
 }
 
@@ -98,9 +107,9 @@ export function buildTower(x: number, z: number): Tower {
   const group = new THREE.Group();
   group.name = "prism-tower";
   group.position.set(x, 0, z);
-  const steel = new THREE.MeshStandardMaterial({ color: "#d9e0e8", roughness: 0.38, metalness: 0.35 });
+  const steel = new THREE.MeshStandardMaterial({ color: "#c9d2dc", roughness: 0.36, metalness: 0.45 });
   const lattice = latticeTexture();
-  const latticeMat = new THREE.MeshStandardMaterial({ color: "#d4dce5", roughness: 0.42, metalness: 0.32, map: lattice, alphaTest: 0.5, side: THREE.DoubleSide });
+  const latticeMat = new THREE.MeshStandardMaterial({ color: "#c4ced9", roughness: 0.4, metalness: 0.4, map: lattice, alphaTest: 0.5, side: THREE.DoubleSide });
   const geos: THREE.BufferGeometry[] = [];
   const addMesh = (g: THREE.BufferGeometry, m: THREE.Material, cast = true) => {
     const mesh = new THREE.Mesh(g, m);
@@ -108,79 +117,139 @@ export function buildTower(x: number, z: number): Tower {
     mesh.receiveShadow = true;
     group.add(mesh);
     geos.push(g);
+    return mesh;
   };
-  const merge = 112; // the legs join here
+  /** Points along the corner edges, for the strings of lights. */
+  const lights: THREE.Vector3[] = [];
+  const edgeLights = (rings: Ring[], every: number) => {
+    for (let k = 0; k < 4; k++) {
+      let carry = 0;
+      for (let i = 0; i < rings.length - 1; i++) {
+        const a = corner(rings[i], k), b = corner(rings[i + 1], k);
+        const len = a.distanceTo(b);
+        for (let d = carry; d < len; d += every) lights.push(a.clone().lerp(b, d / len).multiplyScalar(1.004));
+        carry = (carry + Math.ceil((len - carry) / every) * every) - len;
+      }
+    }
+  };
   // Four legs, each a lattice tube following the flare from its corner up to the merge.
   for (const [sx, sz] of [[1, 1], [-1, 1], [-1, -1], [1, -1]]) {
-    const rings: { c: THREE.Vector3; h: number }[] = [];
-    const steps = 14;
+    const rings: Ring[] = [];
+    const steps = 12;
     for (let i = 0; i <= steps; i++) {
-      const y = (merge * i) / steps;
+      const y = (MERGE * i) / steps;
       const hw = profile(y);
-      const legHalf = 7.5 - 4.2 * (i / steps);
+      const legHalf = 6.6 - 3.6 * (i / steps);
       const inset = hw - legHalf;
       rings.push({ c: new THREE.Vector3(sx * inset, y, sz * inset), h: legHalf });
     }
-    const { faces, girders } = latticeTube(rings, 6);
+    const { faces, girders } = latticeTube(rings, 5.5);
     addMesh(faces, latticeMat);
     addMesh(girders, steel);
+    edgeLights(rings, 3.6);
   }
   // The shaft above the merge.
+  const shaftRings: Ring[] = [];
   {
-    const rings: { c: THREE.Vector3; h: number }[] = [];
-    const steps = 20;
+    const steps = 18;
     for (let i = 0; i <= steps; i++) {
-      const y = merge + ((262 - merge) * i) / steps;
-      rings.push({ c: new THREE.Vector3(0, y, 0), h: Math.max(2.4, profile(y)) });
+      const y = MERGE + ((SHAFT_TOP - MERGE) * i) / steps;
+      shaftRings.push({ c: new THREE.Vector3(0, y, 0), h: Math.max(2.2, profile(y)) });
     }
-    const { faces, girders } = latticeTube(rings, 5);
+    const { faces, girders } = latticeTube(shaftRings, 4.5);
     addMesh(faces, latticeMat);
     addMesh(girders, steel);
+    edgeLights(shaftRings, 3.2);
   }
-  // Arches between the legs, and the two decks.
+  // Great arches between the legs, the two platforms with their railings, and the cage round the prism.
   {
     const parts: THREE.BufferGeometry[] = [];
-    const arch = new THREE.TorusGeometry(31, 1.3, 6, 32, Math.PI);
+    const archR = profile(16) - 6;
+    const arch = new THREE.TorusGeometry(archR, 1.15, 6, 36, Math.PI);
     for (let k = 0; k < 4; k++) {
       const g = arch.clone();
-      g.translate(0, 9, 0);
-      g.scale(1, 1.15, 1);
-      g.translate(0, 0, profile(42) - 5);
+      g.scale(1, 1.05, 1);
+      g.translate(0, 4, profile(22) - 3.6);
       g.rotateY((k * Math.PI) / 2);
       parts.push(g.toNonIndexed());
     }
-    for (const [y, t] of [[57, 3.2], [114, 2.6], [262, 1.6]]) {
-      const hw = profile(y) + 2.5;
+    for (const [y, t] of [[DECK1, 2.8], [DECK2, 2.2], [SHAFT_TOP, 1.6]]) {
+      const hw = profile(y) + 2.2;
       const deck = new THREE.BoxGeometry(hw * 2, t, hw * 2);
       deck.translate(0, y, 0);
       parts.push(deck.toNonIndexed());
-      // A railing band.
-      const band = new THREE.BoxGeometry(hw * 2 + 0.6, 1.4, hw * 2 + 0.6);
-      band.translate(0, y + t / 2 + 0.7, 0);
+      const band = new THREE.BoxGeometry(hw * 2 + 0.6, 1.3, hw * 2 + 0.6);
+      band.translate(0, y + t / 2 + 0.65, 0);
       parts.push(band.toNonIndexed());
+      for (let k = 0; k < 28; k++) {
+        // Lights round each platform's rail.
+        const a = (k / 28) * Math.PI * 2;
+        const r = hw * 1.02 + 0.4;
+        const sq = Math.max(Math.abs(Math.cos(a)), Math.abs(Math.sin(a)));
+        lights.push(new THREE.Vector3((Math.cos(a) / sq) * r, y + t / 2 + 1.5, (Math.sin(a) / sq) * r));
+      }
     }
-    const spire = new THREE.CylinderGeometry(0.35, 1.3, 26, 8);
-    spire.translate(0, 296, 0);
+    // The cage: eight ribs from the shaft's top round the prism to the spire.
+    for (let k = 0; k < 8; k++) {
+      const a = (k / 8) * Math.PI * 2 + Math.PI / 8;
+      const pts: THREE.Vector3[] = [];
+      for (let i = 0; i <= 10; i++) {
+        const f = i / 10;
+        const y = SHAFT_TOP + 1 + f * (TOWER_H - 18 - SHAFT_TOP);
+        const r = 3.2 + 10.5 * Math.sin(Math.PI * Math.min(1, f * 1.05));
+        pts.push(new THREE.Vector3(Math.cos(a) * r, y, Math.sin(a) * r));
+      }
+      parts.push(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 16, 0.38, 5, false).toNonIndexed());
+      for (const p of pts.slice(1, -1)) lights.push(p.clone().multiplyScalar(1.03));
+    }
+    const ring = new THREE.TorusGeometry(13.4, 0.5, 6, 40);
+    ring.rotateX(Math.PI / 2);
+    ring.translate(0, PRISM_Y, 0);
+    parts.push(ring.toNonIndexed());
+    const spire = new THREE.CylinderGeometry(0.28, 1.2, 20, 8);
+    spire.translate(0, TOWER_H - 10, 0);
     parts.push(spire.toNonIndexed());
-    addMesh(mergeGeometries(parts), steel);
+    for (const p of parts) if (!p.attributes.uv) p.setAttribute("uv", new THREE.Float32BufferAttribute(new Float32Array(p.attributes.position.count * 2), 2));
+    addMesh(mergeGeometries(parts.map((p) => { const q = p.clone(); for (const k of Object.keys(q.attributes)) if (k !== "position" && k !== "normal" && k !== "uv") q.deleteAttribute(k); return q; })), steel);
   }
-  // The prism: a faceted crystal at the crown.
-  const glow = new THREE.MeshStandardMaterial({ color: "#d9f4ff", emissive: "#7fe1ff", emissiveIntensity: 2.6, roughness: 0.15, metalness: 0.1, flatShading: true });
-  const prism = new THREE.OctahedronGeometry(7.5, 0);
-  prism.scale(1, 1.9, 1);
-  prism.translate(0, 276, 0);
+  // The prism: a long faceted crystal (a twelve-sided bipyramid) that glows from within.
+  const glow = new THREE.MeshStandardMaterial({ color: "#e6fbff", emissive: "#6fdcff", emissiveIntensity: 2.4, roughness: 0.12, metalness: 0.15, flatShading: true });
+  const prismPts = [new THREE.Vector2(0, -15), new THREE.Vector2(6.2, -4), new THREE.Vector2(7.2, 3), new THREE.Vector2(0, 19)];
+  const prism = new THREE.LatheGeometry(prismPts, 12);
+  prism.translate(0, PRISM_Y, 0);
   addMesh(prism, glow, false);
-  const crown = new THREE.Vector3(x, 276, z);
+  // Strings of lights: tiny bulbs that bloom, each twinkling on its own beat.
+  const bulbGeo = new THREE.SphereGeometry(0.42, 6, 4);
+  geos.push(bulbGeo);
+  const bulbTime = { value: 0 };
+  const bulbMat = new THREE.MeshBasicMaterial({ color: new THREE.Color("#ffe2a6").multiplyScalar(2.2), toneMapped: true, fog: true });
+  bulbMat.onBeforeCompile = (s) => {
+    s.uniforms.uTwinkle = bulbTime;
+    s.vertexShader = s.vertexShader.replace("#include <common>", "#include <common>\nuniform float uTwinkle;\nvarying float vTw;").replace("#include <begin_vertex>", "#include <begin_vertex>\n  float ph = float(gl_InstanceID) * 2.3999;\n  vTw = 0.55 + 0.45 * smoothstep(-0.2, 1.0, sin(uTwinkle * (1.7 + mod(ph, 1.3)) + ph));");
+    s.fragmentShader = s.fragmentShader.replace("#include <common>", "#include <common>\nvarying float vTw;").replace("#include <opaque_fragment>", "outgoingLight *= vTw;\n#include <opaque_fragment>");
+  };
+  bulbMat.customProgramCacheKey = () => "tower-bulbs";
+  const bulbs = new THREE.InstancedMesh(bulbGeo, bulbMat, lights.length);
+  const m4 = new THREE.Matrix4();
+  lights.forEach((p, i) => bulbs.setMatrixAt(i, m4.makeTranslation(p.x, p.y, p.z)));
+  bulbs.computeBoundingSphere();
+  group.add(bulbs);
+  const crown = new THREE.Vector3(x, PRISM_Y + 2, z);
   return {
     group,
     glow,
     crown,
+    tick(t) {
+      glow.emissiveIntensity = 2.3 + 0.55 * Math.sin(t * 1.3);
+      bulbTime.value = t;
+    },
     dispose() {
       for (const g of geos) g.dispose();
       steel.dispose();
       latticeMat.dispose();
       lattice.dispose();
       glow.dispose();
+      bulbMat.dispose();
     },
   };
 }

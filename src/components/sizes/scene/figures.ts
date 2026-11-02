@@ -15,10 +15,11 @@ import { figureLook } from "./shaders";
  * - Tier 2 (any figure, later): a real 3D model listed in a manifest
  *   (art id → GLB url) replaces the relief figure for that Pokémon.
  *
- * Figures are streamed: built when they come near the camera (a detailed
- * mesh near the focus, a lighter one around it; far ones join the crowd,
- * see crowd.ts), dropped when they leave. Relief meshes are built in a
- * worker, so a figure streaming in never stalls a frame.
+ * Figures are streamed: built well before they come near the camera (a
+ * detailed mesh near the focus, a lighter one around it; far ones are the
+ * crowd's low-detail reliefs, see crowd.ts), dropped when they are far
+ * behind. Relief meshes are built in a worker, so a figure streaming in
+ * never stalls a frame.
  */
 
 export interface SceneItem {
@@ -40,7 +41,7 @@ export interface SceneItem {
   ref?: RefKind;
 }
 
-export type Lod = 0 | 1 | 2; // 0 hero relief, 1 relief, 2 flat cut-out
+export type Lod = 0 | 1 | 2; // 0 hero relief, 1 relief, 2 flat cut-out (kept for other scenes: /pokedex/sizes draws far figures as the crowd's 3D reliefs)
 
 export interface FigureHandle {
   object: THREE.Object3D;
@@ -50,13 +51,20 @@ export interface FigureHandle {
   materials: THREE.Material[];
   /** Its own materials (a model), not the shared relief look: its shaders need compiling. */
   custom?: boolean;
+  /** Relief figures: the dissolve uniform (1 drawn whole; see DITHER_GLSL in shaders.ts). */
+  fade?: { value: number };
   dispose(): void;
+}
+
+/** How soon a figure is needed: "high" ones are fetched ahead of everything else. */
+export interface LoadOptions {
+  priority?: "high" | "low";
 }
 
 export interface FigureProvider {
   /** Whether this provider has a figure for the item. */
   has(item: SceneItem): boolean;
-  load(item: SceneItem, lod: Lod, signal: AbortSignal): Promise<FigureHandle>;
+  load(item: SceneItem, lod: Lod, signal: AbortSignal, opts?: LoadOptions): Promise<FigureHandle>;
 }
 
 export interface FigureUrls {
@@ -68,8 +76,8 @@ export interface FigureUrls {
 
 const SEGMENTS: Record<Lod, number> = { 0: 120, 1: 72, 2: 0 };
 
-async function fetchBitmap(url: string, signal: AbortSignal): Promise<ImageBitmap> {
-  const res = await fetch(url, { signal });
+async function fetchBitmap(url: string, signal: AbortSignal, priority?: "high" | "low"): Promise<ImageBitmap> {
+  const res = await fetch(url, priority ? ({ signal, priority } as RequestInit) : { signal });
   if (!res.ok) throw new Error(`${res.status} ${url}`);
   const blob = await res.blob();
   return createImageBitmap(blob, { colorSpaceConversion: "none", premultiplyAlpha: "none" });
@@ -165,14 +173,15 @@ export class ReliefProvider implements FigureProvider {
   /** A relief figure's mesh and materials (also used to compile their shaders before the first figure arrives). */
   dress(geo: THREE.BufferGeometry, tex: THREE.Texture, texSize: number) {
     const mat = new THREE.MeshStandardMaterial({ map: tex, alphaTest: 0.5, alphaToCoverage: true, roughness: 0.62, metalness: 0, envMapIntensity: 0.8 });
-    figureLook(mat, texSize, this.opts.sharpen);
+    const fade = { value: 1 };
+    figureLook(mat, texSize, this.opts.sharpen, fade);
     const obj = new THREE.Mesh(geo, mat);
     obj.castShadow = true;
     obj.receiveShadow = true;
     obj.customDepthMaterial = new THREE.MeshDepthMaterial({ depthPacking: THREE.RGBADepthPacking, map: tex, alphaTest: 0.5 });
-    return { mat, obj };
+    return { mat, obj, fade };
   }
-  async load(item: SceneItem, lod: Lod, signal: AbortSignal): Promise<FigureHandle> {
+  async load(item: SceneItem, lod: Lod, signal: AbortSignal, opts: LoadOptions = {}): Promise<FigureHandle> {
     const [bx, by, bw, bh, size] = item.box;
     const L = Math.max(bw, bh);
     if (lod === 2) {
@@ -201,7 +210,7 @@ export class ReliefProvider implements FigureProvider {
         dispose() { geo.dispose(); mat.dispose(); tex.dispose(); bmp.close(); (mesh.customDepthMaterial as THREE.Material).dispose(); },
       };
     }
-    const [artBmp, reliefBmp] = await Promise.all([fetchBitmap(this.urls.art(item.art, this.opts.texSize), signal), fetchBitmap(this.urls.relief(item.art), signal)]);
+    const [artBmp, reliefBmp] = await Promise.all([fetchBitmap(this.urls.art(item.art, this.opts.texSize), signal, opts.priority), fetchBitmap(this.urls.relief(item.art), signal, opts.priority)]);
     // UVs address the full render; the texture may be a smaller copy of it (same framing).
     const box = { x: bx, y: by, w: bw, h: bh, size };
     let mesh: MeshArrays | null;
@@ -224,7 +233,7 @@ export class ReliefProvider implements FigureProvider {
     if (mesh.sphere) geo.boundingSphere = new THREE.Sphere(new THREE.Vector3(mesh.sphere[0], mesh.sphere[1], mesh.sphere[2]), mesh.sphere[3]);
     else geo.computeBoundingSphere();
     const tex = textureFrom(artBmp, this.opts.anisotropy);
-    const { mat, obj } = this.dress(geo, tex, artBmp.width);
+    const { mat, obj, fade } = this.dress(geo, tex, artBmp.width);
     const s = item.h / mesh.height;
     obj.scale.setScalar(s);
     return {
@@ -232,6 +241,7 @@ export class ReliefProvider implements FigureProvider {
       depth: (mesh.zMax - mesh.zMin) * s,
       lod,
       materials: [mat],
+      fade,
       dispose() { geo.dispose(); mat.dispose(); tex.dispose(); artBmp.close(); (obj.customDepthMaterial as THREE.Material).dispose(); },
     };
   }

@@ -66,6 +66,8 @@ const nextConfig: NextConfig = {
         headers: staticAssetCache,
       })),
       { source: "/art/:path*", headers: artCache },
+      // The size comparison's figures, relief maps and far atlas never change for a Pokémon either (the atlas's names are hashed).
+      ...["/sizes/art/:path*", "/sizes/depth/:path*", "/sizes/far/:path*", "/sizes/tex/:path*", "/sizes/env/:path*"].map((source) => ({ source, headers: artCache })),
     ];
   },
   images: {

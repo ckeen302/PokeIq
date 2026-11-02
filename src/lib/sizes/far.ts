@@ -26,7 +26,7 @@ export const FAR = {
   art: { cell: 64, pad: 3 } as FarSpec,
   depth: { cell: 32, pad: 1 } as FarSpec,
   /** Grid resolution of a far figure's relief mesh (cells on the box's longest side). */
-  segments: 14,
+  segments: 12,
   /** Where figure number `k` (in art-id order) with a visible box of bw × bh sits on a sheet. */
   rect(k: number, bw: number, bh: number, spec: FarSpec): FarRect {
     const inner = spec.cell - spec.pad * 2;

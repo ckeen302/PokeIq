@@ -1,16 +1,17 @@
 import * as THREE from "three";
 import { RoundedBoxGeometry } from "three/examples/jsm/geometries/RoundedBoxGeometry.js";
 import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
-import { STREET, type WorldPlan } from "@/lib/sizes/world";
+import { STREET, boulevardDistricts, boulevardEnd, wrap, type WorldPlan } from "@/lib/sizes/world";
 import { rng } from "./geo";
 import { cutaway, type Shared } from "./shaders";
 
 /**
- * Street furniture for the boulevard, all instanced (and kept low in
- * triangles: hundreds of cars line the boulevard): London plane trees
- * along the promenade, cast-iron lantern posts, parked and passing cars
- * and buses (plain liveries, no logos) and Morris advertising columns.
- * Original procedural models.
+ * Street furniture for the boulevard and the plaza, all instanced (and kept
+ * low in triangles: hundreds of cars line the boulevard): London plane
+ * trees along the pavements, round the plaza and down the avenues,
+ * cast-iron lantern posts (lit), café terraces with parasols in the
+ * district's colour, parked and passing cars and buses (plain liveries, no
+ * logos) and Morris advertising columns. Original procedural models.
  */
 
 export interface Props {
@@ -165,13 +166,87 @@ function busGeometry(): { body: THREE.BufferGeometry; glass: THREE.BufferGeometr
   return { body, glass, wheels: mergeGeometries(wheelParts) };
 }
 
+/** A district banner: a pennant in the district's colour with a pale prism emblem (original artwork). */
+function bannerTexture(color: string): THREE.CanvasTexture {
+  const cv = document.createElement("canvas");
+  cv.width = 64;
+  cv.height = 160;
+  const g = cv.getContext("2d")!;
+  g.fillStyle = color;
+  g.beginPath();
+  g.moveTo(0, 0);
+  g.lineTo(64, 0);
+  g.lineTo(64, 140);
+  g.lineTo(32, 160);
+  g.lineTo(0, 140);
+  g.closePath();
+  g.fill();
+  const shade = g.createLinearGradient(0, 0, 64, 0);
+  shade.addColorStop(0, "rgba(0,0,0,0.18)");
+  shade.addColorStop(0.5, "rgba(255,255,255,0.08)");
+  shade.addColorStop(1, "rgba(0,0,0,0.18)");
+  g.fillStyle = shade;
+  g.fill();
+  g.fillStyle = "#f6edd6";
+  g.fillRect(0, 8, 64, 5);
+  g.fillRect(0, 122, 64, 4);
+  // A small prism: a tall diamond with a bar across.
+  g.beginPath();
+  g.moveTo(32, 36);
+  g.lineTo(44, 66);
+  g.lineTo(32, 100);
+  g.lineTo(20, 66);
+  g.closePath();
+  g.fill();
+  g.fillStyle = color;
+  g.fillRect(20, 64, 24, 4);
+  const t = new THREE.CanvasTexture(cv);
+  t.colorSpace = THREE.SRGBColorSpace;
+  t.anisotropy = 4;
+  return t;
+}
+
+/** A café table for two: a round marble top on a cast-iron stem, and two bistro chairs. */
+function terraceGeometry(): { iron: THREE.BufferGeometry; top: THREE.BufferGeometry; seats: THREE.BufferGeometry } {
+  const stem = new THREE.CylinderGeometry(0.035, 0.05, 0.72, 6).translate(0, 0.36, 0);
+  const foot = new THREE.CylinderGeometry(0.22, 0.24, 0.03, 10).translate(0, 0.015, 0);
+  const top = new THREE.CylinderGeometry(0.33, 0.33, 0.035, 16).translate(0, 0.74, 0);
+  const iron: THREE.BufferGeometry[] = [stem.toNonIndexed(), foot.toNonIndexed()];
+  const seats: THREE.BufferGeometry[] = [];
+  for (const side of [-1, 1]) {
+    const x = side * 0.62;
+    for (const [lx, lz] of [[-0.17, -0.17], [0.17, -0.17], [-0.17, 0.17], [0.17, 0.17]]) iron.push(new THREE.CylinderGeometry(0.018, 0.018, 0.45, 4).translate(x + lx, 0.225, lz).toNonIndexed());
+    seats.push(new THREE.CylinderGeometry(0.21, 0.21, 0.04, 12).translate(x, 0.47, 0).toNonIndexed());
+    // The back, a woven panel turned to the table.
+    seats.push(new THREE.BoxGeometry(0.04, 0.36, 0.38).translate(x + side * 0.2, 0.68, 0).toNonIndexed());
+  }
+  return { iron: mergeGeometries(iron), top: top.toNonIndexed(), seats: mergeGeometries(seats) };
+}
+
+/** A café parasol: a pole and an eight-sided canopy with a valance. */
+function parasolGeometry(): { pole: THREE.BufferGeometry; canopy: THREE.BufferGeometry } {
+  const pole = new THREE.CylinderGeometry(0.03, 0.03, 2.5, 6).translate(0, 1.25, 0);
+  const cone = new THREE.ConeGeometry(1.45, 0.55, 8, 1, true).translate(0, 2.55, 0);
+  const valance = new THREE.CylinderGeometry(1.45, 1.45, 0.18, 8, 1, true).translate(0, 2.2, 0);
+  return { pole, canopy: mergeGeometries([cone.toNonIndexed(), valance.toNonIndexed()]) };
+}
+
 export function buildProps(plan: WorldPlan, shared: Shared, tex: { bark: THREE.MeshStandardMaterialParameters }, quality: { trees: boolean }): Props {
   const group = new THREE.Group();
   group.name = "props";
   const disposables: { dispose(): void }[] = [];
   const m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), s = new THREE.Vector3(), p = new THREE.Vector3();
   const r = rng(424242);
-  const { x0, x1 } = plan;
+  const { x0 } = plan;
+  /** Where the boulevard's furniture stops on a line |z|, short of the plaza. */
+  const endAt = (z: number) => boulevardEnd(plan, z) - 6;
+  const C = { x: plan.plaza.cx, z: plan.plaza.cz };
+  /** Clear of the ways out of the plaza (the boulevard's mouth and the avenues), at radius rr. */
+  const offWays = (a: number, rr: number, half: number) => {
+    for (const av of plan.avenues.slice(1)) if (Math.abs(wrap(a - av)) < Math.asin(Math.min(1, half / rr))) return false;
+    const z = C.z + Math.sin(a) * rr, x = C.x + Math.cos(a) * rr;
+    return !(Math.abs(z) < STREET.facade + 6 && x < C.x);
+  };
   const add = (geo: THREE.BufferGeometry, mat: THREE.Material, mats: THREE.Matrix4[], colors?: THREE.Color[], cast = true) => {
     if (!mats.length) return;
     const mesh = new THREE.InstancedMesh(geo, mat, mats.length);
@@ -198,28 +273,19 @@ export function buildProps(plan: WorldPlan, shared: Shared, tex: { bark: THREE.M
       canopy[v].push(place(x, 0, z, yaw, sc, sc * (0.9 + r() * 0.2)));
       leafCols[v].push(new THREE.Color().setHSL(0.23 + r() * 0.05, 0.35 + r() * 0.2, 0.62 + r() * 0.12));
     };
-    for (const side of [1, -1]) for (let x = x0 + 4; x < x1 - 6; x += 10.5) tree(x + (r() - 0.5) * 0.6, side * STREET.trees);
-    // A ring of trees round the plaza, leaving the avenues open.
-    const ringR = plan.plaza.r - 8;
-    const count = Math.round((Math.PI * 2 * ringR) / 13);
+    for (const side of [1, -1]) for (let x = x0 + 4; x < endAt(side * STREET.trees); x += 10.5) tree(x + (r() - 0.5) * 0.6, side * STREET.trees);
+    // A ring of trees round the plaza's edge, leaving the ways out open.
+    const ringR = plan.plaza.r - 9;
+    const count = Math.round((Math.PI * 2 * ringR) / 12);
     for (let k = 0; k < count; k++) {
       const a = (k / count) * Math.PI * 2;
-      const nearAvenue = [0, 1, 2, 3, 4, 5, 6, 7].some((i) => {
-        const av = Math.PI + (i * Math.PI) / 4;
-        const d = Math.atan2(Math.sin(a - av), Math.cos(a - av));
-        return Math.abs(d) < Math.asin(Math.min(1, (i === 0 ? 40 : 26) / ringR));
-      });
-      if (nearAvenue) continue;
-      const x = plan.plaza.cx + Math.cos(a) * ringR, z = Math.sin(a) * ringR;
-      if (Math.hypot(x - plan.tower.x, z - plan.tower.z) < 70) continue;
-      tree(x, z);
+      if (offWays(a, ringR, 30)) tree(C.x + Math.cos(a) * ringR, C.z + Math.sin(a) * ringR);
     }
-    // Rows of trees down the other seven avenues.
-    for (let i = 1; i < 8; i++) {
-      const a = Math.PI + (i * Math.PI) / 4;
+    // Rows of trees down the four avenues.
+    for (const a of plan.avenues.slice(1)) {
       const c = Math.cos(a), sn = Math.sin(a);
-      for (let d = plan.plaza.r + 60; d < plan.plaza.r + 700; d += 13) {
-        for (const off of [-14, 14]) tree(plan.plaza.cx + c * d - sn * off, sn * d + c * off);
+      for (let d = plan.plaza.r + 40; d < plan.plaza.r + 700; d += 13) {
+        for (const off of [-14, 14]) tree(C.x + c * d - sn * off, C.z + sn * d + c * off);
       }
     }
     const bark = new THREE.MeshStandardMaterial({ ...tex.bark, color: "#a49a8c" });
@@ -237,27 +303,50 @@ export function buildProps(plan: WorldPlan, shared: Shared, tex: { bark: THREE.M
     }
   }
 
-  // ---- Lantern posts: on both pavements and along the promenade.
+  // ---- Lantern posts: on both pavements, along the promenade, round the plaza's edge and round the giants' ring (behind them).
   {
     const mats: THREE.Matrix4[] = [];
     for (const side of [1, -1]) {
-      for (let x = x0 + 10; x < x1 - 8; x += 26) mats.push(place(x, 0.12, side * (STREET.roadOut + 0.7), 0));
+      for (let x = x0 + 10; x < endAt(side * STREET.roadOut); x += 26) mats.push(place(x, 0.12, side * (STREET.roadOut + 0.7), 0));
       // Along the lawn only on the far side: on the camera's side they would stand right in front of the lens.
-      if (side > 0) for (let x = x0 + 23; x < x1 - 8; x += 26) mats.push(place(x, 0, side * (STREET.promenade - 0.5), 0));
+      if (side > 0) for (let x = x0 + 23; x < (plan.ring ? plan.ring.s0 : endAt(STREET.promenade)) - 4; x += 26) mats.push(place(x, 0, side * (STREET.promenade - 0.5), 0));
+    }
+    const edgeR = plan.plaza.r - 3;
+    const edgeN = Math.round((Math.PI * 2 * edgeR) / 24);
+    for (let k = 0; k < edgeN; k++) {
+      const a = (k / edgeN) * Math.PI * 2;
+      if (offWays(a, edgeR, 24)) mats.push(place(C.x + Math.cos(a) * edgeR, 0, C.z + Math.sin(a) * edgeR, 0));
+    }
+    if (plan.ring) {
+      // On the ring promenade's inner edge: Prism Tower's side of the giants, never between them and the camera.
+      const ir = plan.ring.r - 19;
+      const n = Math.round((Math.PI * 2 * ir) / 22);
+      for (let k = 0; k < n; k++) {
+        const a = (k / n) * Math.PI * 2;
+        mats.push(place(C.x + Math.cos(a) * ir, 0, C.z + Math.sin(a) * ir, 0, 1.25));
+      }
     }
     const { iron, glass } = lanternGeometry();
     const ironM = new THREE.MeshStandardMaterial({ color: "#1f2a26", roughness: 0.45, metalness: 0.7 });
-    const glassM = new THREE.MeshStandardMaterial({ color: "#fff4d8", emissive: "#ffcf7a", emissiveIntensity: 0.15, roughness: 0.15, metalness: 0.1 });
+    const glassM = new THREE.MeshStandardMaterial({ color: "#fff4d8", emissive: "#ffc56a", emissiveIntensity: 0.9, roughness: 0.15, metalness: 0.1 });
     cutaway(ironM, shared);
     cutaway(glassM, shared);
     add(iron, ironM, mats);
     add(glass, glassM, mats, undefined, false);
+    // Banners in the district's colour on the far pavement's lamp posts (the backdrop behind the line), and round the plaza.
+    const bannerMats: THREE.Matrix4[] = [];
+    for (let x = x0 + 10; x < endAt(STREET.roadOut); x += 52) bannerMats.push(place(x + 0.42, 3.1, STREET.roadOut + 0.75, Math.PI));
+    const btex = bannerTexture(boulevardDistricts(plan).far.color);
+    disposables.push(btex);
+    const bmat = new THREE.MeshStandardMaterial({ map: btex, alphaTest: 0.5, side: THREE.DoubleSide, roughness: 0.85 });
+    cutaway(bmat, shared);
+    add(new THREE.PlaneGeometry(0.62, 1.55).translate(0, 0.78, 0), bmat, bannerMats);
   }
 
   // ---- Morris columns on the pavements.
   {
     const mats: THREE.Matrix4[] = [];
-    for (const side of [1, -1]) for (let x = x0 + 60; x < x1 - 20; x += 150 + r() * 60) mats.push(place(x, 0.12, side * (STREET.roadOut + 4.6), r() * 6));
+    for (const side of [1, -1]) for (let x = x0 + 60; x < endAt(side * STREET.roadOut) - 14; x += 150 + r() * 60) mats.push(place(x, 0.12, side * (STREET.roadOut + 4.6), r() * 6));
     const { body, band } = morrisGeometry();
     const green = new THREE.MeshStandardMaterial({ color: "#2c4a37", roughness: 0.5, metalness: 0.35 });
     const poster = new THREE.MeshStandardMaterial({ color: "#efe3c4", roughness: 0.9 });
@@ -265,6 +354,38 @@ export function buildProps(plan: WorldPlan, shared: Shared, tex: { bark: THREE.M
     cutaway(poster, shared);
     add(body, green, mats);
     add(band, poster, mats);
+  }
+
+  // ---- Café terraces on the far pavement (behind the line, under the plane trees): tables for two and parasols in the district's colour.
+  {
+    const tables: THREE.Matrix4[] = [], umbrellas: THREE.Matrix4[] = [];
+    const z0 = STREET.trees + 2.6;
+    for (let x = x0 + 14; x < endAt(z0) - 8; x += 17 + r() * 12) {
+      if (r() < 0.25) continue;
+      const n = 2 + Math.floor(r() * 3);
+      for (let k = 0; k < n; k++) {
+        const tx = x + k * 2.3 + (r() - 0.5) * 0.4, tz = z0 + (k % 2) * 2.1 + (r() - 0.5) * 0.3;
+        tables.push(place(tx, 0.12, tz, r() * 0.6 - 0.3));
+        if (k % 2 === 0) umbrellas.push(place(tx + 0.2, 0.12, tz + 0.9, r() * Math.PI));
+      }
+    }
+    const t = terraceGeometry();
+    const ironT = new THREE.MeshStandardMaterial({ color: "#20221f", roughness: 0.5, metalness: 0.6 });
+    const marble = new THREE.MeshStandardMaterial({ color: "#f1ece2", roughness: 0.35 });
+    const rattan = new THREE.MeshStandardMaterial({ color: "#a7743f", roughness: 0.7 });
+    for (const m of [ironT, marble, rattan]) cutaway(m, shared);
+    add(t.iron, ironT, tables);
+    add(t.top, marble, tables);
+    add(t.seats, rattan, tables);
+    const pg = parasolGeometry();
+    const colour = new THREE.Color(boulevardDistricts(plan).far.color);
+    const cloth = new THREE.MeshStandardMaterial({ color: "#ffffff", roughness: 0.8, side: THREE.DoubleSide });
+    const poleM = new THREE.MeshStandardMaterial({ color: "#d9d4c7", roughness: 0.6 });
+    for (const m of [cloth, poleM]) cutaway(m, shared);
+    // Every other parasol in cream, the rest in the district's colour.
+    const cols = umbrellas.map((_, i) => (i % 3 === 1 ? new THREE.Color("#f2ead8") : colour.clone().offsetHSL(0, 0, (r() - 0.5) * 0.06)));
+    add(pg.pole, poleM, umbrellas);
+    add(pg.canopy, cloth, umbrellas, cols);
   }
 
   // ---- Cars: parked along the kerbs, some driving; a few buses.
@@ -277,14 +398,14 @@ export function buildProps(plan: WorldPlan, shared: Shared, tex: { bark: THREE.M
       for (const lane of [STREET.roadIn + 1.25, STREET.roadOut - 1.25]) {
         // The camera's side keeps its inner kerb clear: parked cars there would sit right in front of the lens.
         if (side < 0 && lane === STREET.roadIn + 1.25) continue;
-        for (let x = x0 + 5; x < x1 - 8; x += 5.6 + r() * 1.4) {
+        for (let x = x0 + 5; x < endAt(side * lane) - 4; x += 5.6 + r() * 1.4) {
           if (r() < 0.32) continue;
           carMats.push(place(x, 0, side * lane, side > 0 ? 0 : Math.PI, 1));
           carCols.push(CAR_COLOURS[Math.floor(r() * CAR_COLOURS.length)]);
         }
       }
       // Traffic: spaced out in the inner lanes, heading the side's way.
-      for (let x = x0 + 30; x < x1 - 30; x += 38 + r() * 70) {
+      for (let x = x0 + 30; x < endAt(side * STREET.roadIn) - 26; x += 38 + r() * 70) {
         const lane = side * (STREET.roadIn + 4 + r() * 3.5);
         if (r() < 0.12) {
           busMats.push(place(x, 0, lane, side > 0 ? 0 : Math.PI));

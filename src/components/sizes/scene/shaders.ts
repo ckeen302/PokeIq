@@ -11,7 +11,25 @@ import * as THREE from "three";
  *   repeat visibly into the distance.
  * - Figure: a light unsharp mask on the HOME render (the source is 512 px)
  *   and a touch of saturation, so figures stay crisp under the tone curve.
+ * - Dissolve: a figure changing detail (the far crowd's low relief growing
+ *   into its own relief mesh, or back) crossfades over a few frames with a
+ *   screen-space dither, the outgoing one drawing exactly the pixels the
+ *   incoming one leaves, so there is never a pop and never a gap.
  */
+
+/**
+ * The dissolve: `fade` 1 is drawn whole; 0 < f < 1 fading in (drawn where
+ * the noise is under f); -1 - f fading out (drawn where the noise is at or
+ * over f): two figures at the same f share every pixel exactly once.
+ */
+export const DITHER_GLSL = /* glsl */ `
+  float sizesNoise(vec2 p) { return fract(52.9829189 * fract(dot(p, vec2(0.06711056, 0.00583715)))); }
+  bool sizesDither(float fade) {
+    if (fade >= 1.0) return false;
+    float n = sizesNoise(gl_FragCoord.xy);
+    return fade >= 0.0 ? n >= fade : n < -fade - 1.0;
+  }
+`;
 
 export interface Shared {
   uniforms: {
@@ -98,11 +116,17 @@ export function groundVariation(m: THREE.Material) {
   });
 }
 
-/** Crisper, slightly richer HOME renders on the figures. */
-export function figureLook(m: THREE.MeshStandardMaterial, texSize: number, sharpen: number) {
-  chain(m, `fig${sharpen.toFixed(2)}`, (s) => {
+/** Crisper, slightly richer HOME renders on the figures; with `fade`, the figure dissolves in and out by that uniform (see DITHER_GLSL). */
+export function figureLook(m: THREE.MeshStandardMaterial, texSize: number, sharpen: number, fade?: { value: number }) {
+  chain(m, `fig${sharpen.toFixed(2)}${fade ? "f" : ""}`, (s) => {
     s.uniforms.uTexel = { value: 1 / texSize };
     s.uniforms.uSharpen = { value: sharpen };
+    if (fade) {
+      s.uniforms.uFade = fade;
+      s.fragmentShader = s.fragmentShader
+        .replace("#include <common>", `#include <common>\nuniform float uFade;\n${DITHER_GLSL}`)
+        .replace("#include <alphatest_fragment>", "#include <alphatest_fragment>\n  if (sizesDither(uFade)) discard;");
+    }
     s.fragmentShader = s.fragmentShader
       .replace("#include <common>", "#include <common>\nuniform float uTexel;\nuniform float uSharpen;")
       .replace(
@@ -135,10 +159,13 @@ export function plazaPattern(m: THREE.Material, centre: THREE.Vector2, radius: n
         float pr = length(pq);
         float pa = atan(pq.y, pq.x);
         float band = 1.0 - smoothstep(0.0, 0.5, abs(fract(pr / 14.0) - 0.5) * 14.0 - 0.6);
-        float spoke = 1.0 - smoothstep(0.4, 1.0, abs(fract(pa / 0.785398 + 0.5) - 0.5) * 0.785398 * pr);
+        float spoke = 1.0 - smoothstep(0.4, 1.0, abs(fract(pa / 0.392699 + 0.5) - 0.5) * 0.392699 * pr);
         float rose = smoothstep(26.0, 24.0, pr) * (0.5 + 0.5 * cos(pa * 16.0));
         float inside = step(pr, uPlazaR);
-        diffuseColor.rgb *= 1.0 + inside * (0.16 * max(band, spoke) + 0.12 * rose);`
+        // Alternate rings of warmer and cooler stone, pale bands and spokes between them, a rosette at the centre.
+        float warm = step(0.5, fract(pr / 28.0));
+        diffuseColor.rgb *= mix(vec3(1.0), mix(vec3(0.95, 0.97, 1.0), vec3(1.05, 1.0, 0.93), warm), inside);
+        diffuseColor.rgb *= 1.0 + inside * (0.2 * max(band, spoke) + 0.14 * rose);`
       );
   });
 }
