@@ -13,13 +13,13 @@ import { speciesById } from "@/lib/mass-battle/page-data";
 const ACCENT = "#ff9a2e";
 
 /** One figure cropped to its visible box, `h` px tall. */
-function Figure({ id, h, flip }: { id: number; h: number; flip?: boolean }) {
+function Figure({ id, h }: { id: number; h: number }) {
   const s = speciesById().get(id);
   if (!s) return null;
   const [bx, by, bw, bh, size] = s.box;
   const k = h / bh;
   return (
-    <div style={{ display: "flex", position: "relative", width: Math.max(4, bw * k), height: h, overflow: "hidden", transform: flip ? "scaleX(-1)" : undefined }}>
+    <div style={{ display: "flex", position: "relative", width: Math.max(4, bw * k), height: h, overflow: "hidden" }}>
       <img src={homeRenderUrl(id)} width={size * k} height={size * k} style={{ position: "absolute", left: -bx * k, top: -by * k }} />
     </div>
   );
@@ -31,24 +31,24 @@ function FaceOff({ left, right, leftCount, rightCount, big }: { left: number[]; 
   const many = leftCount > 3;
   const bossSide = rightCount <= 3;
   return (
-    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", width: 500, height: 400, justifyContent: "flex-end" }}>
-      <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", width: 500 }}>
-        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", width: 230 }}>
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", width: 450, height: 400, justifyContent: "flex-end" }}>
+      <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", width: 450 }}>
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", width: 200, overflow: "hidden" }}>
           {many && (
-            <div style={{ display: "flex", gap: 2, marginBottom: -26, opacity: 0.6 }}>
-              {[0, 1, 2, 3].map((k) => <Figure key={k} id={crowd[k % crowd.length]} h={58} />)}
+            <div style={{ display: "flex", gap: 2, marginBottom: -22, opacity: 0.6 }}>
+              {[0, 1, 2].map((k) => <Figure key={k} id={crowd[k % crowd.length]} h={50} />)}
             </div>
           )}
-          <div style={{ display: "flex", alignItems: "flex-end", gap: 4 }}>
-            {(many ? [0, 1, 2] : [0]).map((k) => <Figure key={k} id={crowd[k % crowd.length]} h={many ? 96 : 150} />)}
+          <div style={{ display: "flex", alignItems: "flex-end", gap: 2 }}>
+            {(many ? [0, 1, 2] : [0]).map((k) => <Figure key={k} id={crowd[k % crowd.length]} h={many ? 78 : 140} />)}
           </div>
         </div>
-        <div style={{ display: "flex", fontFamily: "Chakra Petch", fontSize: 54, color: ACCENT, marginBottom: 60 }}>VS</div>
-        <div style={{ display: "flex", alignItems: "flex-end", gap: 6, width: 200, justifyContent: "center" }}>
-          {right.slice(0, bossSide ? 1 : 2).map((id) => <Figure key={id} id={id} h={bossSide ? 220 : 120} flip />)}
+        <div style={{ display: "flex", fontFamily: "Chakra Petch", fontSize: 46, color: ACCENT, marginBottom: 50, marginLeft: 6, marginRight: 6 }}>VS</div>
+        <div style={{ display: "flex", alignItems: "flex-end", gap: 6, width: 190, justifyContent: "center", overflow: "hidden" }}>
+          {right.slice(0, bossSide ? 1 : 2).map((id) => <Figure key={id} id={id} h={bossSide ? 210 : 110} />)}
         </div>
       </div>
-      <div style={{ display: "flex", height: 4, width: 480, marginTop: 4, borderRadius: 2, background: `linear-gradient(90deg, ${ACCENT}00, ${ACCENT}, ${ACCENT}00)` }} />
+      <div style={{ display: "flex", height: 4, width: 440, marginTop: 4, borderRadius: 2, background: `linear-gradient(90deg, ${ACCENT}00, ${ACCENT}, ${ACCENT}00)` }} />
       {big && (
         <div style={{ display: "flex", marginTop: 14, padding: "6px 18px", borderRadius: 12, background: C.panel, border: `2px solid ${ACCENT}`, fontFamily: "Chakra Petch", fontSize: 40, color: C.text }}>
           {big}

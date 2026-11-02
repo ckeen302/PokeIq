@@ -1,6 +1,6 @@
 import "server-only";
 import { massBattleCard } from "@/lib/og/mass-battle";
-import { armyName, fmt, questionText } from "@/lib/mass-battle/copy";
+import { armyName, fmt } from "@/lib/mass-battle/copy";
 import { prepare, runHeadless } from "@/lib/mass-battle/engine";
 import { buildRoster } from "@/lib/mass-battle/roster-data";
 import { nameOf, presetById } from "@/lib/mass-battle/page-data";
@@ -44,7 +44,7 @@ export function questionCardImage(q: Question) {
   const c = nameOf(q.challenger), b = nameOf(q.boss);
   return massBattleCard({
     title: [`How many ${c}`, [`beat ${b}?`, "#ff9a2e"]],
-    subtitle: questionText(c, b).replace("?", "") + `? Thousands of battles with the real games' damage maths decide it.`,
+    subtitle: "Thousands of battles with the real games' damage maths decide it, then you watch it in 3D.",
     left: [q.challenger],
     right: [q.boss],
     leftCount: 10,

@@ -1,0 +1,196 @@
+/**
+ * Pokémon Mass Battle (/lab/mass-battle), end to end in the browser: a
+ * preset battle played to its result, the "how many?" solver to its answer
+ * (from a shared question link), a shared battle's link, title and preview
+ * cards, the zoom controls (the wheel, a trackpad pinch as ctrl + wheel,
+ * Safari's gesture events, the + and − buttons, the 0 key back to the
+ * director), the sound staying off when the site is muted, the phone
+ * layout, and "Make a video": a 5-second export (?len=5 at the light test
+ * quality and 10 fps, so it runs without a GPU) that must be a valid
+ * 1080 × 1920 MP4 with video and audio tracks. Screenshots at 1440 and 390.
+ *
+ * CI has no GPU: software WebGL draws a frame every few seconds, so the
+ * scene runs at its light test quality (?q=draft), presses on the stage are
+ * dispatched in the page, and each part records a failure instead of
+ * stopping the rest of the smoke test.
+ */
+import fs from "fs";
+import { inspectMp4 } from "./e2e-sizes.mjs";
+
+const press = (page, id) => page.getByTestId(id).dispatchEvent("click", undefined, { timeout: 120_000 });
+const wheel = (page, init) =>
+  page.getByTestId("mb-scene").evaluate((el, i) => {
+    const r = el.getBoundingClientRect();
+    return !el.dispatchEvent(new WheelEvent("wheel", { clientX: r.left + r.width / 2, clientY: r.top + r.height / 2, bubbles: true, cancelable: true, ...i }));
+  }, init, { timeout: 120_000 });
+/** Safari's trackpad pinch: gesturestart, gesturechange (scale), gestureend. */
+const gesture = (page, scale) =>
+  page.getByTestId("mb-scene").evaluate((el, s) => {
+    const ev = (type, k) => {
+      const e = new Event(type, { bubbles: true, cancelable: true });
+      Object.defineProperty(e, "scale", { value: k });
+      return !el.dispatchEvent(e);
+    };
+    const kept = ev("gesturestart", 1);
+    ev("gesturechange", s);
+    ev("gestureend", s);
+    return kept;
+  }, scale, { timeout: 120_000 });
+
+async function part(errors, name, fn) {
+  try {
+    await fn();
+  } catch (e) {
+    errors.push(`mass battle (${name}): ${String(e?.message ?? e).split("\n")[0]}`);
+  }
+}
+
+export async function runMassBattle({ browser, BASE, OUT, errors, step }) {
+  step("3D Lab Mass Battle: a preset battle to its result, the how-many solver, share links and preview cards, zoom, sound off when muted");
+  const context = await browser.newContext({ viewport: { width: 1440, height: 900 }, acceptDownloads: true });
+  await context.addInitScript(() => {
+    sessionStorage.setItem("pokeiq-splash", "1");
+    localStorage.setItem("pokeiq-muted", "1");
+    window.__audioContexts = 0;
+    const Real = window.AudioContext;
+    if (Real) window.AudioContext = class extends Real { constructor(...a) { super(...a); window.__audioContexts++; } };
+  });
+  const page = await context.newPage();
+  page.setDefaultTimeout(120_000);
+  page.on("console", (msg) => {
+    if (msg.type() === "error" && !/Failed to load resource/.test(msg.text())) errors.push(`[${page.url()}] ${msg.text()}`);
+  });
+  page.on("pageerror", (err) => errors.push(`[${page.url()}] PAGEERROR: ${err.message}`));
+  const stage = page.locator('[data-testid="mb-stage"]');
+  const attr = (name) => stage.getAttribute(`data-${name}`);
+  const phaseIs = (phases, ms = 240_000) => page.waitForFunction((ps) => ps.includes(document.querySelector('[data-testid="mb-stage"]')?.dataset.phase), phases, { timeout: ms });
+
+  await part(errors, "preset", async () => {
+    await page.goto(`${BASE}/lab/mass-battle/pikachu-vs-snorlax?q=draft`, { waitUntil: "load" });
+    if (!/100 Pikachu vs 1 Snorlax/.test(await page.title())) errors.push(`mass battle: the preset's title is "${await page.title()}"`);
+    if (!(await page.locator('[data-testid="mb-results"] li').count())) errors.push("mass battle: the server-rendered results are missing");
+    await phaseIs(["ready", "error"]);
+    if ((await attr("phase")) !== "ready") throw new Error("the battle never deployed");
+    await page.screenshot({ path: `${OUT}/mass-battle-ready.png` });
+    if ((await attr("left")) && (await attr("left")) !== "100,1") errors.push(`mass battle: the armies start at ${await attr("left")}`);
+    await press(page, "mb-start");
+    await phaseIs(["playing"], 60_000);
+    await page.waitForTimeout(1500);
+    await page.screenshot({ path: `${OUT}/mass-battle-playing.png` });
+    await phaseIs(["done"], 240_000);
+    const winner = await attr("winner");
+    if (!["0", "1", "2"].includes(winner ?? "")) errors.push(`mass battle: the battle ended without a winner (${winner})`);
+    await page.getByTestId("mb-final").waitFor();
+    if (!(await page.getByTestId("mb-result-title").textContent())?.trim()) errors.push("mass battle: the result card has no title");
+    await page.screenshot({ path: `${OUT}/mass-battle-result.png` });
+    const made = await page.evaluate(() => window.__audioContexts);
+    if (made !== 0) errors.push(`mass battle: ${made} AudioContext(s) started with the site's sound off`);
+  });
+
+  await part(errors, "solver", async () => {
+    await page.goto(`${BASE}/lab/mass-battle?ask=rattata.mewtwo.100.plains&q=draft`, { waitUntil: "load" });
+    if (!/How many Rattata beat Mewtwo\?/.test(await page.title())) errors.push(`mass battle: the question link's title is "${await page.title()}"`);
+    await phaseIs(["solving", "deploying", "ready", "playing", "done", "error"], 60_000);
+    await phaseIs(["playing", "done", "error"], 300_000);
+    if ((await attr("phase")) === "error") throw new Error("the solver stopped with an error");
+    const answer = Number(await attr("answer"));
+    if (!(answer >= 1 && answer <= 200)) errors.push(`mass battle: the solver's answer is ${answer}`);
+    await phaseIs(["done"], 240_000);
+    const text = await page.getByTestId("mb-answer").textContent();
+    if (!new RegExp(`${answer}\\s*Rattata`).test(text ?? "")) errors.push(`mass battle: the answer card reads "${text}"`);
+    if (!/± \d+ over \d+ battles/.test((await page.getByTestId("mb-spread").textContent()) ?? "")) errors.push("mass battle: the answer has no spread");
+    await page.screenshot({ path: `${OUT}/mass-battle-answer.png` });
+  });
+
+  await part(errors, "links", async () => {
+    const code = "1.100.plains.k3f9.swarm.line.rattata*40.mewtwo*1";
+    await page.goto(`${BASE}/lab/mass-battle?b=${code}&q=draft`, { waitUntil: "load" });
+    if (!/40 Rattata vs 1 Mewtwo/.test(await page.title())) errors.push(`mass battle: the battle link's title is "${await page.title()}"`);
+    const og = await page.locator('meta[property="og:image"]').getAttribute("content");
+    if (!og || !og.includes(`/lab/mass-battle/og?b=${code}`)) errors.push(`mass battle: the battle link's preview image is ${og}`);
+    for (const path of [`/lab/mass-battle/og?b=${code}`, "/lab/mass-battle/og?ask=magikarp.arceus.100.colosseum", "/lab/mass-battle/opengraph-image", "/lab/mass-battle/fire-vs-water/opengraph-image"]) {
+      const res = await page.request.get(`${BASE}${path}`);
+      if (res.status() !== 200 || !/image\/png/.test(res.headers()["content-type"] ?? "")) errors.push(`mass battle: preview card ${path} failed (${res.status()})`);
+    }
+    const roster = await page.request.get(`${BASE}/api/mass-battle/roster`);
+    if (roster.status() !== 200) errors.push(`mass battle: the roster returned ${roster.status()}`);
+    if ((await page.request.get(`${BASE}/lab/mass-battle/not-a-preset`)).status() !== 404) errors.push("mass battle: an unknown preset isn't a 404");
+  });
+
+  await part(errors, "zoom", async () => {
+    await phaseIs(["ready"], 240_000);
+    const dist = async () => Number(await attr("dist"));
+    const until = (fn, ms = 60_000) => page.waitForFunction(fn, null, { timeout: ms });
+    await page.waitForTimeout(500);
+    const d0 = await dist();
+    if (!(await wheel(page, { deltaY: -240 }))) errors.push("mass battle: the wheel over the battle wasn't kept from the page");
+    await until(() => document.querySelector('[data-testid="mb-stage"]')?.dataset.cam === "free").catch(() => errors.push("mass battle: the wheel didn't take the free camera"));
+    await page.waitForTimeout(1200);
+    const d1 = await dist();
+    if (!(d1 < d0 * 0.9)) errors.push(`mass battle: the wheel didn't zoom in (${d0} → ${d1})`);
+    if (!(await wheel(page, { deltaY: 40, ctrlKey: true }))) errors.push("mass battle: a pinch (ctrl + wheel) would zoom the page");
+    await page.waitForTimeout(1200);
+    const d2 = await dist();
+    if (!(d2 > d1 * 1.2)) errors.push(`mass battle: a pinch didn't zoom out (${d1} → ${d2})`);
+    if (!(await gesture(page, 2))) errors.push("mass battle: Safari's pinch gesture would zoom the page");
+    await page.waitForTimeout(1200);
+    const d3 = await dist();
+    if (!(d3 < d2 * 0.7)) errors.push(`mass battle: Safari's pinch didn't zoom in (${d2} → ${d3})`);
+    await press(page, "mb-zoom-out");
+    await page.waitForTimeout(1200);
+    const d4 = await dist();
+    if (!(d4 > d3 * 1.2)) errors.push(`mass battle: − didn't zoom out (${d3} → ${d4})`);
+    await press(page, "mb-zoom-in");
+    await press(page, "mb-zoom-in");
+    await page.waitForTimeout(1200);
+    const d5 = await dist();
+    if (!(d5 < d4 * 0.8)) errors.push(`mass battle: + didn't zoom in (${d4} → ${d5})`);
+    await page.screenshot({ path: `${OUT}/mass-battle-free-camera.png` });
+    await page.evaluate(() => window.dispatchEvent(new KeyboardEvent("keydown", { key: "0", bubbles: true })));
+    await until(() => document.querySelector('[data-testid="mb-stage"]')?.dataset.cam === "director").catch(() => errors.push("mass battle: 0 didn't hand the camera back to the director"));
+  });
+
+  step("3D Lab Mass Battle: make a 5 s video (a valid 1080 × 1920 MP4 with sound), phone layout");
+  await part(errors, "video", async () => {
+    await page.goto(`${BASE}/lab/mass-battle/pikachu-vs-snorlax?q=draft&len=5&vq=draft&vfps=10`, { waitUntil: "load" });
+    await phaseIs(["ready"], 240_000);
+    await press(page, "mb-video");
+    await page.getByTestId("mb-video-dialog").waitFor();
+    await press(page, "mb-video-length-5");
+    await press(page, "mb-video-record");
+    const done = await page.getByTestId("mb-video-download").waitFor({ timeout: 20 * 60_000 }).then(() => true, () => false);
+    if (!done) {
+      const err = await page.locator('[data-testid="mb-video-dialog"] [role="alert"]').textContent().catch(() => null);
+      errors.push(`mass battle: the 5 s video never finished${err ? ` (${err})` : ""}`);
+    } else {
+      const [download] = await Promise.all([page.waitForEvent("download"), press(page, "mb-video-download")]);
+      const file = `${OUT}/mass-battle-test-video.mp4`;
+      await download.saveAs(file);
+      if (!/\.mp4$/.test(download.suggestedFilename())) errors.push(`mass battle: the video is named ${download.suggestedFilename()}`);
+      const mp4 = inspectMp4(fs.readFileSync(file));
+      if (mp4.order.join(",") !== "ftyp,moov,mdat" || !mp4.ends) errors.push(`mass battle: the MP4's layout is ${mp4.order.join(",")}`);
+      if (Math.abs(mp4.seconds - 5) > 0.3) errors.push(`mass battle: the video lasts ${mp4.seconds} s, not 5`);
+      const video = mp4.tracks.find((t) => t.kind === "vide");
+      if (!video || video.width !== 1080 || video.height !== 1920) errors.push(`mass battle: the video track is ${video ? `${video.width}×${video.height}` : "missing"}`);
+      else if (video.samples !== 50) errors.push(`mass battle: the video has ${video.samples} frames, expected 50 at 10 fps`);
+      if (!mp4.tracks.some((t) => t.kind === "soun")) errors.push("mass battle: the video has no sound track");
+    }
+    await press(page, "mb-video-close");
+  });
+
+  await part(errors, "phone", async () => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto(`${BASE}/lab/mass-battle/rattata-vs-mewtwo?q=draft`, { waitUntil: "load" });
+    await phaseIs(["ready"], 240_000);
+    const overflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1);
+    if (overflow) errors.push("mass battle: the phone layout scrolls sideways");
+    for (const id of ["mb-play", "mb-restart", "mb-speed", "mb-camera", "mb-zoom-in", "mb-zoom-out", "mb-sound", "mb-how", "mb-share", "mb-video", "mb-start"]) {
+      const box = await page.getByTestId(id).boundingBox();
+      if (!box || box.x < 0 || box.x + box.width > 391) errors.push(`mass battle: ${id} is off a 390 px screen`);
+    }
+    await page.screenshot({ path: `${OUT}/mass-battle-390.png` });
+    await press(page, "mb-how");
+    await page.getByTestId("mb-how-panel").waitFor();
+  });
+  await context.close();
+}

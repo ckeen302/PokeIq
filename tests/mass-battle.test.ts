@@ -446,3 +446,27 @@ describe("mass battle: events", () => {
     expect(kos).toBe(b.start[0] + b.start[1] - out.left[0] - out.left[1]);
   });
 });
+
+describe("mass battle: the presets' precomputed results", () => {
+  it("match the engine (regenerate with scripts/mass-battle-presets.ts after changing the rules)", async () => {
+    const { PRESET_RESULTS } = await import("@/lib/mass-battle/page-data");
+    const { ENGINE_VERSION } = await import("@/lib/mass-battle/preset-results");
+    expect(PRESET_RESULTS.engine).toBe(ENGINE_VERSION);
+    expect(PRESET_RESULTS.roster).toBe(roster.version);
+    for (const p of PRESETS) {
+      const r = resolvePreset(p, roster);
+      const saved = PRESET_RESULTS.results[p.id];
+      expect(saved, p.id).toBeTruthy();
+      // The cheap ones are replayed in full; every one must have a stored outcome.
+      const units = r.spec.sides.reduce((a, s) => a + s.units.reduce((b, u) => b + u.count, 0), 0);
+      if (units <= 1100) expect(runHeadless(prepare(roster, r.spec)).outcome(), p.id).toEqual(saved.outcome);
+      if (p.kind === "howmany") {
+        expect(saved.answer, p.id).not.toBeNull();
+        // The battle the page shows at the answer is one the army wins.
+        const q = r.question!;
+        const shown = runHeadless(prepare(roster, { sides: [{ units: [{ id: q.challenger, count: saved.answer!.n }], formation: "swarm" }, { units: [{ id: q.boss, count: 1 }], formation: "line" }], level: q.level, arena: q.arena, seed: saved.answer!.seed }));
+        expect(shown.winner).toBe(0);
+      }
+    }
+  });
+});

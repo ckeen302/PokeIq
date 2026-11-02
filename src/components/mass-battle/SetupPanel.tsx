@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Plus, Swords, Trash2, Trophy } from "lucide-react";
 import { ARENAS, ARENA_LABEL, FORMATIONS, FORMATION_LABEL, LEVELS, type ArenaId, type BattleLevel, type BattleSpec, type Formation, type Question } from "@/lib/mass-battle/types";
 import { MAX_SIDE, MAX_SPECIES, newSeed } from "@/lib/mass-battle/share";
@@ -40,6 +40,15 @@ export function SetupPanel({ list, presets, busy, current, onAsk, onFight, onPre
     { rows: [{ id: slug(list, "rattata"), count: 1000 }], formation: "swarm" },
     { rows: [{ id: slug(list, "mewtwo"), count: 1 }], formation: "line" },
   ]);
+  // A shared or preset question fills the form in.
+  const q = current?.question ?? current?.bonus?.question ?? null;
+  useEffect(() => {
+    if (!q) return;
+    setChallenger(q.challenger);
+    setBoss(q.boss);
+    setLevel(q.level);
+    setArena(q.arena);
+  }, [q?.challenger, q?.boss, q?.level, q?.arena]); // eslint-disable-line react-hooks/exhaustive-deps
   const name = (id: number) => list.find((p) => p.id === id)?.name ?? "";
   const tabBtn = (on: boolean) => cn("flex-1 rounded-md px-3 py-2 font-display text-xs font-bold uppercase tracking-wider transition-colors sm:flex-none", on ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground");
   const select = "mt-1 h-11 w-full rounded-lg border bg-card px-2 font-display text-sm font-semibold uppercase tracking-wide";
