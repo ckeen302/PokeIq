@@ -2204,8 +2204,11 @@ step("pokédex Timeline: an entry's own link opens its panel, share copies it, t
       await tp.mouse.click(bar.x + ((y - 1996) / 30.7) * bar.width, bar.y + bar.height / 2);
       await tp.waitForTimeout(1200);
       for (let k = 0; k < 4; k++) {
-        const shown = await tp.evaluate(() => [...document.querySelectorAll(".tl-era")].filter((e) => e.style.display !== "none" && Number(e.style.opacity || 0) > 0.01).length);
-        const flashOn = await tp.getByTestId("timeline-era-flash").count();
+        // Both read in the same instant: a title fading out just before an era change and the card that follows aren't an overlap.
+        const { shown, flashOn } = await tp.evaluate(() => ({
+          shown: [...document.querySelectorAll(".tl-era")].filter((e) => e.style.display !== "none" && Number(e.style.opacity || 0) > 0.01).length,
+          flashOn: document.querySelectorAll('[data-testid="timeline-era-flash"]').length,
+        }));
         if (shown > 1 || (flashOn && shown > 0)) { errors.push(`timeline: ${shown} era titles shown at once near ${y}${flashOn ? " (with the title card)" : ""}`); break; }
         await tp.waitForTimeout(500);
       }
