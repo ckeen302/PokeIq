@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Volume2, VolumeX } from "lucide-react";
-import { isMuted, play, setMuted, unlockAudio } from "@/lib/sound";
+import { isMuted, onMuteChange, play, setMuted, unlockAudio } from "@/lib/sound";
 
 /** Sound on/off. `M` toggles from anywhere outside a text field. */
 export function MuteToggle() {
@@ -24,7 +24,10 @@ export function MuteToggle() {
     window.addEventListener("pointerdown", unlock, true);
     window.addEventListener("keydown", unlock, true);
     window.addEventListener("keydown", onKey);
+    // Another sound switch (the full-screen globe has its own) changed it: show the same state here.
+    const stopSync = onMuteChange(setMutedState);
     return () => {
+      stopSync();
       window.removeEventListener("keydown", onKey);
       window.removeEventListener("pointerdown", unlock, true);
       window.removeEventListener("keydown", unlock, true);

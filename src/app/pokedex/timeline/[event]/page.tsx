@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { pageMetadata } from "@/lib/seo";
 import { TIMELINE } from "@/lib/timeline/data";
 import { entryPath } from "@/lib/timeline/deeplink";
-import { LANE_BY_ID, dateRows, firstRelease, formatDate } from "@/lib/timeline/types";
+import { LANE_BY_ID, dateRows, firstRelease, formatDate, isCompact } from "@/lib/timeline/types";
 import { TimelinePage } from "@/components/timeline/TimelinePage";
 
 /**
@@ -12,10 +12,15 @@ import { TimelinePage } from "@/components/timeline/TimelinePage";
  * has its own title, description and preview card.
  */
 
-export const dynamicParams = false;
+/**
+ * Prerendered for every entry with a full card; the TCG lane's compact set
+ * entries render on first request and are cached from then on. An id that
+ * is not an entry is a 404.
+ */
+export const dynamicParams = true;
 
 export function generateStaticParams() {
-  return TIMELINE.map((e) => ({ event: e.id }));
+  return TIMELINE.filter((e) => !isCompact(e)).map((e) => ({ event: e.id }));
 }
 
 async function find(params: Promise<{ event: string }>) {

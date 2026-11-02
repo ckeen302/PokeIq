@@ -42,6 +42,20 @@ async function playSection(page) {
   throw new Error("the PokéIQ Test never reached its next section");
 }
 
+/** Clicks a button that animates in and may re-render once: retries a few times instead of waiting forever for it to sit still. */
+async function clickWhenSettled(locator) {
+  for (let attempt = 0; ; attempt++) {
+    try {
+      await locator.waitFor({ state: "visible", timeout: 15_000 });
+      await locator.click({ timeout: 5_000, force: attempt > 0 });
+      return;
+    } catch (err) {
+      if (attempt >= 4) throw err;
+      await new Promise((r) => setTimeout(r, 400));
+    }
+  }
+}
+
 async function runAt(page, { BASE, OUT, errors, tag }) {
   await page.goto(`${BASE}/iq-test`, { waitUntil: "networkidle" });
   await page.evaluate((key) => localStorage.setItem(key, "1"), "pokeiq:iq-test:fast");
@@ -53,7 +67,7 @@ async function runAt(page, { BASE, OUT, errors, tag }) {
     await page.getByTestId("cog-intro").waitFor({ timeout: 15_000 });
     const intro = await page.getByTestId("cog-intro").innerText();
     if (!intro.toLowerCase().includes(`section ${i + 1} of 5`)) errors.push(`iq-test ${tag}: section ${i + 1}'s intro reads "${intro.slice(0, 40)}"`);
-    await page.getByTestId("cog-begin").click();
+    await clickWhenSettled(page.getByTestId("cog-begin"));
     await page.locator('[data-testid="cog-item"], [data-testid="cog-speed"]').first().waitFor({ timeout: 15_000 });
     await page.waitForTimeout(i === 1 ? 1200 : 500);
     await page.screenshot({ path: `${OUT}/iq-test-${tag}-${i + 1}-${SECTIONS[i]}.png`, fullPage: true });

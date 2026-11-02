@@ -4,7 +4,7 @@ import Link from "next/link";
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowLeft, ChevronLeft, ChevronRight, List, Play, Share2, SlidersHorizontal, Square, X } from "lucide-react";
-import { ERAS, LANES, LANE_BY_ID, REGION_MAPS, ROMAN, T_START, firstRelease, formatDate, type EraId, type LaneId, type TimelineEntry } from "@/lib/timeline/types";
+import { ERAS, LANES, LANE_BY_ID, REGION_MAPS, ROMAN, T_START, firstRelease, formatDate, isCompact, type EraId, type LaneId, type TimelineEntry } from "@/lib/timeline/types";
 import { parseDeepLink, urlFor } from "@/lib/timeline/deeplink";
 import { markIntroSeen, shouldPlayIntro } from "@/lib/timeline/intro";
 import { buildTour, pickTourStops, tourAt } from "@/lib/timeline/tour";
@@ -82,6 +82,8 @@ export function TimelineExperience({ entries, eraStarts, initialId = null, child
   const flyRequested = useRef(false);
   const flashCount = useRef(0);
   openRef.current = openId;
+  const flashRef = useRef(flash);
+  flashRef.current = flash;
   introRef.current = intro;
 
   const byId = useMemo(() => new Map(entries.map((e) => [e.id, e])), [entries]);
@@ -196,6 +198,8 @@ export function TimelineExperience({ entries, eraStarts, initialId = null, child
             date: formatDate(firstRelease(e).date),
             meta: metaOf(e),
             laneLabel: LANE_BY_ID[e.lane].label,
+            compact: isCompact(e),
+            featured: e.featured,
             mons: e.lane === "games" ? [...e.legendaries.map((s) => ({ id: s.id, name: s.name, legend: true })), ...e.starters.map((s) => ({ id: s.id, name: s.name, legend: false }))] : undefined,
           })),
           sceneEras,
@@ -244,8 +248,9 @@ export function TimelineExperience({ entries, eraStarts, initialId = null, child
   // Hide the era title card a moment after it plays.
   useEffect(() => {
     if (!flash) return;
-    // The distant era titles wait until the title card has gone, so two titles never overlap.
-    apiRef.current?.quietSigns(2700);
+    // The distant era titles wait until the title card has gone (its exit has finished, however
+    // slow the frames), so two titles never overlap.
+    apiRef.current?.quietSigns(60_000);
     const id = setTimeout(() => setFlash(null), 2300);
     return () => clearTimeout(id);
   }, [flash]);
@@ -424,7 +429,8 @@ export function TimelineExperience({ entries, eraStarts, initialId = null, child
               />
             )}
           </AnimatePresence>
-          <AnimatePresence>
+          {/* The distant titles come back a beat after the card has left the page. */}
+          <AnimatePresence onExitComplete={() => { if (!flashRef.current) apiRef.current?.quietSigns(400); }}>
             {flash && (
               <motion.div
                 key={flash.n}

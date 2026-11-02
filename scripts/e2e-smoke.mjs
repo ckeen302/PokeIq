@@ -917,6 +917,89 @@ await page.locator('[data-testid="world-globe"] canvas, [data-testid="globe-fall
 await page.waitForTimeout(1500);
 await page.screenshot({ path: `${OUT}/guessr-globe.png` });
 
+step("world globe: skip the intro, the era filter, a region's card, a town's screenshot on hover, sound stays off when muted");
+{
+  // A first visit with the site's sound off; count every AudioContext the page creates.
+  const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+  await context.addInitScript(() => {
+    sessionStorage.setItem("pokeiq-splash", "1");
+    localStorage.setItem("pokeiq-muted", "1");
+    window.__audioContexts = 0;
+    const Real = window.AudioContext;
+    if (Real) window.AudioContext = class extends Real { constructor(...a) { super(...a); window.__audioContexts++; } };
+  });
+  const gp = await context.newPage();
+  gp.on("pageerror", (err) => errors.push(`[${gp.url()}] PAGEERROR: ${err.message}`));
+  await gp.goto(`${BASE}/guessr/globe`, { waitUntil: "domcontentloaded" });
+  await gp.locator('[data-testid="world-globe"][data-state="ready"], [data-testid="globe-fallback"]').first().waitFor({ timeout: 60_000 });
+  if (!(await gp.getByTestId("globe-fallback").count())) {
+    const ok = (p) => p.then(() => true, () => false);
+    // The fly-in from space plays on a first visit; a click skips it.
+    const intro = gp.getByTestId("globe-intro");
+    if (!(await ok(intro.waitFor({ timeout: 10_000 })))) errors.push("globe: the intro didn't play on a first visit");
+    else {
+      await intro.click();
+      if (!(await ok(intro.waitFor({ state: "detached", timeout: 10_000 })))) errors.push("globe: clicking didn't skip the intro");
+    }
+    // Era filter: Generation I is Kanto alone; IX brings the whole world back.
+    await gp.getByTestId("globe-era-1").click();
+    if (!/kanto/i.test(await gp.getByTestId("globe-era-caption").innerText())) errors.push("globe: the Gen I caption doesn't name Kanto");
+    const othersGone = () => gp.waitForFunction(() => [...document.querySelectorAll(".gl-lb.region")].every((e) => e.textContent === "Kanto" || Number(e.style.opacity || 0) < 0.05), null, { timeout: 20_000 });
+    if (!(await ok(othersGone()))) errors.push("globe: regions from later generations still show at Gen I");
+    await gp.screenshot({ path: `${OUT}/globe-gen1.png` });
+    await gp.getByTestId("globe-era-9").click();
+    if ((await gp.getByTestId("world-globe").getAttribute("data-era")) !== "9") errors.push("globe: Gen IX didn't select");
+    // A region's card: Next region flies there and opens it, with its links.
+    await gp.getByRole("button", { name: "Next region" }).click();
+    const card = gp.getByTestId("globe-region-card");
+    if (!(await ok(card.waitFor({ timeout: 15_000 })))) errors.push("globe: flying to a region didn't open its card");
+    else {
+      if (!/^\/guessr\?region=[a-z]+$/.test((await gp.getByTestId("globe-region-play").getAttribute("href")) ?? "")) errors.push("globe: the card's Play link isn't a region's PokéGuessr map");
+      if (!/^\/pokedex\/places\?region=/.test((await gp.getByTestId("globe-region-dex").getAttribute("href")) ?? "")) errors.push("globe: the card's Pokédex link isn't the region's places");
+      if (!(await gp.getByTestId("globe-region-starters").locator("li").count())) errors.push("globe: the card has no starters");
+    }
+    // Hover a town: its screenshot pops up, served under a preview name (never a round's /api/geo/shot/ id).
+    await gp.mouse.move(200, 300);
+    const target = await gp
+      .waitForFunction(() => {
+        const W = window.innerWidth;
+        const el = [...document.querySelectorAll('.gl-lb[data-shot="1"]')].find((e) => {
+          const r = e.getBoundingClientRect();
+          return Number(e.style.opacity || 0) > 0.6 && r.right < W - 420 && r.left > 20 && r.top > 160 && r.bottom < 700;
+        });
+        if (!el) return null;
+        // Only once the flight has settled: the label stays put between two polls.
+        const r = el.getBoundingClientRect();
+        const was = window.__globeLabel;
+        window.__globeLabel = { k: el.dataset.key, x: r.left, y: r.top };
+        if (!was || was.k !== el.dataset.key || Math.abs(was.x - r.left) > 0.5 || Math.abs(was.y - r.top) > 0.5) return null;
+        return { x: r.left + Math.min(r.width / 2, 30), y: r.top + r.height / 2 };
+      }, null, { timeout: 30_000, polling: 400 })
+      .then((h) => h.jsonValue(), () => null);
+    if (!target) errors.push("globe: no town label with a screenshot to hover");
+    else {
+      await gp.mouse.move(target.x, target.y, { steps: 4 });
+      if (!(await ok(gp.getByTestId("globe-shot-card").waitFor({ timeout: 10_000 })))) errors.push("globe: hovering a town didn't show its screenshot");
+      else {
+        const src = (await gp.getByTestId("globe-shot-img").getAttribute("src")) ?? "";
+        if (!/^\/api\/geo\/preview\/[A-Za-z0-9_-]+$/.test(src)) errors.push(`globe: the hover picture isn't a preview (${src})`);
+        await gp.waitForFunction(() => document.querySelector('[data-testid="globe-shot-img"]')?.naturalWidth > 0, null, { timeout: 15_000 }).catch(() => {});
+        await gp.screenshot({ path: `${OUT}/globe-hover.png` });
+      }
+    }
+    // All that with the site's sound off: not one AudioContext.
+    const made = await gp.evaluate(() => window.__audioContexts);
+    if (made !== 0) errors.push(`globe: ${made} AudioContext(s) started with the site's sound off`);
+    // The globe's own switch turns the site's sound on; the next press starts the globe's audio.
+    await gp.getByTestId("globe-sound").click();
+    if ((await gp.evaluate(() => localStorage.getItem("pokeiq-muted"))) !== "0") errors.push("globe: its sound switch didn't turn the site's sound on");
+    await gp.mouse.click(300, 450);
+    if (!(await ok(gp.waitForFunction(() => window.__audioContexts > 0, null, { timeout: 10_000 })))) errors.push("globe: no audio started with the sound on");
+    await gp.getByTestId("globe-sound").click();
+  }
+  await context.close();
+}
+
 step("pokéguessr: streak");
 await gotoSettled(page, `${BASE}/guessr`);
 await page.getByRole("button", { name: /Streak/ }).click();
@@ -2121,8 +2204,11 @@ step("pokédex Timeline: an entry's own link opens its panel, share copies it, t
       await tp.mouse.click(bar.x + ((y - 1996) / 30.7) * bar.width, bar.y + bar.height / 2);
       await tp.waitForTimeout(1200);
       for (let k = 0; k < 4; k++) {
-        const shown = await tp.evaluate(() => [...document.querySelectorAll(".tl-era")].filter((e) => e.style.display !== "none" && Number(e.style.opacity || 0) > 0.01).length);
-        const flashOn = await tp.getByTestId("timeline-era-flash").count();
+        // Both read in the same instant: a title fading out just before an era change and the card that follows aren't an overlap.
+        const { shown, flashOn } = await tp.evaluate(() => ({
+          shown: [...document.querySelectorAll(".tl-era")].filter((e) => e.style.display !== "none" && Number(e.style.opacity || 0) > 0.01).length,
+          flashOn: document.querySelectorAll('[data-testid="timeline-era-flash"]').length,
+        }));
         if (shown > 1 || (flashOn && shown > 0)) { errors.push(`timeline: ${shown} era titles shown at once near ${y}${flashOn ? " (with the title card)" : ""}`); break; }
         await tp.waitForTimeout(500);
       }
@@ -2600,7 +2686,7 @@ if (await mmRed.locator("[data-testid=move-button]:not([disabled])").count()) {
   const tip = mmRed.getByTestId("move-tooltip");
   await tip.waitFor();
   const tipText = await tip.innerText();
-  if (!/Power|Accuracy/i.test(tipText) || !/PP \d+\/\d+/i.test(tipText)) errors.push(`move tooltip is missing details: ${tipText}`);
+  if (!/Power|Accuracy/i.test(tipText) || !/PP (\d+|–)\/(\d+|–)/i.test(tipText)) errors.push(`move tooltip is missing details: ${tipText}`);
   const damaging = await mmRed.getByTestId("move-damage").count();
   if (damaging) {
     await mmRed.getByTestId("damage-range").first().waitFor({ timeout: 15_000 });

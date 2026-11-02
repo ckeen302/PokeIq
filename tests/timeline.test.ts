@@ -6,6 +6,9 @@ import boxData from "@/data/quiz/games/box-art.json";
 import { compareEntries, deriveSpecies, generationAt, type BoxRow, type DexRow, type StarterRow } from "@/lib/timeline/derive";
 import { LANES, dateRows, firstDate, formatDate, isValidDate, yearFrac, type TimelineRaw } from "@/lib/timeline/types";
 import { TIMELINE, speciesOfGen } from "@/lib/timeline/data";
+import setNames from "@/lib/tcg/set-names.json";
+import tcgFixture from "@/lib/tcg/fixture.json";
+import { isCompact } from "@/lib/timeline/types";
 
 const ENTRIES = raw as unknown as TimelineRaw[];
 const DEX = dexData as unknown as DexRow[];
@@ -26,6 +29,8 @@ describe("pokemon-timeline.json", () => {
       expect(Number.isInteger(e.generation) && e.generation >= 1 && e.generation <= 9, `${e.id} generation`).toBe(true);
       expect(e.region === null || typeof e.region === "string", `${e.id} region`).toBe(true);
       for (const k of ["date_jp", "date_na", "date_eu"] as const) expect(e[k] === null || typeof e[k] === "string", `${e.id} ${k}`).toBe(true);
+      if (e.featured !== undefined) expect(e.featured, `${e.id} featured`).toBe(true);
+      if (e.set !== undefined) expect(e.lane, `${e.id}: only TCG entries name a set`).toBe("tcg");
     }
   });
 
@@ -104,5 +109,88 @@ describe("timeline page data", () => {
     expect(speciesOfGen(1)[0].slug).toBe("bulbasaur");
     expect(speciesOfGen(1).at(-1)!.slug).toBe("mew");
     for (const e of TIMELINE) if (e.regionHref) expect(e.regionHref).toMatch(/^\/pokedex\/places\?region=/);
+  });
+});
+
+/** The repo's own English set list (PokemonTCG/pokemon-tcg-data, the data behind /pokedex/tcg). */
+const SETS = (setNames as unknown as { sets: Record<string, [string, string]> }).sets;
+/** Promos, McDonald's and POP packs, trainer kits, the starter set, energies and sub-galleries: not on the timeline. */
+const MINOR = /^(pop\d|mcd\d)/;
+const NOT_A_SET = new Set(["basep", "np", "dpp", "hsp", "bwp", "xyp", "smp", "swshp", "svp", "tk1a", "tk1b", "tk2a", "tk2b", "bp", "ru1", "fut20", "sve", "si1", "xy0", "sma", "swsh45sv", "cel25c", "swsh9tg", "swsh10tg", "swsh11tg", "swsh12tg", "swsh12pt5gg", "me55c"]);
+/** The date the timeline shows for a set: pokemontcg.io gives most 2003–2009 sets as the 1st of their month, kept to the month. */
+const setDate = (d: string) => {
+  const [y, m, day] = d.split("/");
+  return day === "01" && Number(y) >= 2003 && Number(y) <= 2009 ? `${y}-${m}` : `${y}-${m}-${day}`;
+};
+
+describe("timeline TCG lane", () => {
+  const tcg = ENTRIES.filter((e) => e.lane === "tcg");
+  const bySet = new Map(tcg.filter((e) => e.set).map((e) => [e.set!, e]));
+
+  it("names only sets that exist in the repo's TCG set data, once each", () => {
+    const seen = new Set<string>();
+    for (const e of tcg.filter((x) => x.set)) {
+      expect(SETS[e.set!], `${e.id}: no set ${e.set}`).toBeDefined();
+      expect(seen.has(e.set!), `${e.set} twice`).toBe(false);
+      seen.add(e.set!);
+    }
+  });
+
+  it("dates every set from that data, as its North American release", () => {
+    for (const e of tcg.filter((x) => x.set)) {
+      expect(e.date_na, e.id).toBe(setDate(SETS[e.set!][1]));
+      expect(e.date_jp, e.id).toBeNull();
+      expect(e.sources, e.id).toContain(`https://api.pokemontcg.io/v2/sets/${e.set}`);
+    }
+  });
+
+  it("agrees with the captured API fixture the TCG pages run on in tests", () => {
+    for (const s of (tcgFixture as unknown as { sets: { id: string; releaseDate: string }[] }).sets) {
+      const e = bySet.get(s.id);
+      if (e) expect(e.date_na, s.id).toBe(setDate(s.releaseDate));
+    }
+  });
+
+  it("has every main English expansion and special set, and no promos or minor products", () => {
+    for (const id of Object.keys(SETS)) {
+      const minor = MINOR.test(id) || NOT_A_SET.has(id);
+      expect(bySet.has(id), `${id} (${SETS[id][0]})${minor ? " is a minor product" : " is missing"}`).toBe(!minor);
+    }
+    for (const id of ["base1", "base2", "base3", "neo1", "ex1", "dp1", "hgss1", "bw1", "xy1", "sm1", "swsh1", "swsh7", "sv3pt5", "sv1", "sv8pt5", "sm115", "swsh45", "cel25", "swsh12pt5"]) expect(bySet.has(id), id).toBe(true);
+  });
+
+  it("keeps the era entries and the Japanese debut, and features the landmark sets", () => {
+    for (const id of ["tcg-japan", "tcg-base", "tcg-neo", "tcg-bw", "tcg-xy", "tcg-sm", "tcg-swsh", "tcg-sv", "tcg-me"]) expect(tcg.some((e) => e.id === id), id).toBe(true);
+    for (const id of ["base1", "base2", "base3", "neo1", "ex1", "dp1", "hgss1", "bw1", "xy1", "sm1", "swsh1", "swsh7", "sv3pt5", "sv1", "sv8pt5"]) expect(bySet.get(id)?.featured, `${id} featured`).toBe(true);
+    // Featured cards stay rare enough to stand out.
+    expect(tcg.filter((e) => e.featured).length).toBeLessThan(25);
+  });
+
+  it("links each set to its page on /pokedex/tcg, and draws only the non-featured ones compact", () => {
+    for (const e of TIMELINE.filter((x) => x.lane === "tcg")) {
+      const raw = ENTRIES.find((r) => r.id === e.id)!;
+      expect(e.setHref, e.id).toBe(raw.set ? `/pokedex/tcg/${raw.set}` : null);
+      expect(isCompact(e), e.id).toBe(!raw.featured);
+    }
+    for (const e of TIMELINE.filter((x) => x.lane !== "tcg")) {
+      expect(e.setHref, e.id).toBeNull();
+      expect(isCompact(e), e.id).toBe(false);
+    }
+  });
+});
+
+describe("timeline spin-offs and milestones", () => {
+  it("has the well-known spin-offs and milestones", () => {
+    for (const id of ["pinball", "puzzle-league", "puzzle-challenge", "ranger", "rumble", "pokken", "cafe-mix", "masters", "smile", "sleep", "tcg-live", "new-pokemon-snap", "detective-pikachu-game", "quest", "shuffle", "picross", "pokepark", "hey-you-pikachu"]) expect(ENTRIES.find((e) => e.id === id)?.lane, id).toBe("spinoffs");
+    for (const id of ["first-vgc-worlds", "pokemon-center-tokyo", "go-fest-2017", "target-card-pause"]) expect(ENTRIES.find((e) => e.id === id)?.lane, id).toBe("events");
+  });
+  it("cites two different sites for every added spin-off and milestone", () => {
+    const added = ["hey-you-pikachu", "tcg-game-boy", "pinball", "puzzle-challenge", "puzzle-league", "stadium-2", "xd", "ranger", "mystery-dungeon-explorers", "rumble", "pokepark", "conquest", "shuffle", "pokken", "picross", "detective-pikachu-game", "quest", "masters", "smile", "cafe-mix", "tcg-live", "detective-pikachu-returns", "pokemon-center-tokyo", "pokemon-center-new-york", "first-vgc-worlds", "pikachu-outbreak", "go-fest-2017", "target-card-pause"];
+    for (const id of added) {
+      const e = ENTRIES.find((x) => x.id === id)!;
+      expect(e, id).toBeDefined();
+      const hosts = new Set(e.sources.map((u) => new URL(u).hostname.replace(/^(www|en|ja)\./, "")));
+      expect(hosts.size, `${e.id}: ${e.sources.join(" ")}`).toBeGreaterThanOrEqual(2);
+    }
   });
 });

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { ExternalLink, MapPin } from "lucide-react";
+import { ChevronRight, ExternalLink, Layers, MapPin } from "lucide-react";
 import { spriteUrl } from "@/lib/pokemon/art";
 import { ERA_BY_ID, LANE_BY_ID, ROMAN, dateRows, formatDate, type TimelineEntry, type TimelineSpecies } from "@/lib/timeline/types";
 
@@ -78,6 +78,7 @@ export function TimelineDetail({ entry }: { entry: TimelineEntry }) {
         <p className="flex flex-wrap items-center gap-2 font-pixel text-[9px] uppercase tracking-[0.16em]">
           <span className="rounded-sm px-1.5 py-0.5" style={{ background: `hsl(${lane.color} / 0.16)`, color: `hsl(${lane.color})` }}>{lane.label}</span>
           {entry.kind && <span className="text-muted-foreground">{KIND[entry.kind]}</span>}
+          {entry.setHref && entry.featured && <span className="text-foreground/80">Landmark set</span>}
           <span className="text-muted-foreground" style={{ color: era.a }}>{era.device}</span>
         </p>
         <h2 className="font-display text-2xl font-bold uppercase leading-tight tracking-wide" data-testid="timeline-detail-title">{entry.title}</h2>
@@ -111,6 +112,19 @@ export function TimelineDetail({ entry }: { entry: TimelineEntry }) {
           </div>
         )}
       </dl>
+
+      {entry.setHref && (
+        <Link
+          href={entry.setHref}
+          className="flex items-center justify-between gap-3 rounded-lg border bg-shade/30 px-3 py-2.5 text-sm font-semibold transition-colors hover:border-[hsl(var(--lane)/0.7)] hover:text-[hsl(var(--lane))]"
+          data-testid="timeline-set-link"
+        >
+          <span className="inline-flex items-center gap-2">
+            <Layers className="h-4 w-4 text-[hsl(var(--lane))]" aria-hidden /> Browse the set&apos;s cards
+          </span>
+          <ChevronRight className="h-4 w-4 text-muted-foreground" aria-hidden />
+        </Link>
+      )}
 
       {entry.starters.length > 0 && (
         <section>

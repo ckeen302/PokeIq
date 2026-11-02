@@ -42,6 +42,15 @@ html.tl-locked, html.tl-locked body { overflow: hidden; overscroll-behavior: non
 .tl-card-title { font-family: var(--font-display); font-weight: 700; font-size: 31px; line-height: 1.08; letter-spacing: .03em; text-transform: uppercase;
   display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .tl-card-meta { font-family: var(--font-body); font-size: 18px; color: hsl(var(--muted-foreground)); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* Landmarks shine brighter; compact cards (the TCG lane's other sets) are smaller, lighter and glow less. */
+.tl-card.is-featured { border-color: hsl(var(--lane) / .8); box-shadow: inset 0 0 0 1px hsl(var(--lane) / .22), 0 0 48px hsl(var(--lane) / .34); }
+.tl-card.is-featured .tl-card-title { color: #fff; text-shadow: 0 0 22px hsl(var(--lane) / .45); }
+.tl-card.is-mini { width: 360px; padding: 12px 18px 15px; gap: 5px; border-radius: 12px; border-color: hsl(var(--lane) / .38);
+  background: linear-gradient(180deg, hsl(250 40% 10% / .9), hsl(250 45% 6% / .85)); box-shadow: inset 0 0 0 1px hsl(var(--lane) / .1); }
+.tl-card.is-mini::before { left: 14px; right: 14px; height: 3px; box-shadow: none; opacity: .75; }
+.tl-card.is-mini .tl-card-top { font-size: 14px; }
+.tl-card.is-mini .tl-card-title { font-size: 30px; line-height: 1.05; }
+.tl-card.is-mini:hover, .tl-card.is-mini.is-current { border-color: hsl(var(--lane)); box-shadow: inset 0 0 0 1px hsl(var(--lane) / .3), 0 0 36px hsl(var(--lane) / .4); }
 .tl-year { font-family: var(--font-display); font-weight: 700; font-size: 170px; letter-spacing: .08em; line-height: 1; pointer-events: none; color: transparent;
   -webkit-text-stroke: 2px color-mix(in srgb, var(--year-c, #fff) 55%, transparent); text-shadow: 0 0 40px color-mix(in srgb, var(--year-c, #fff) 30%, transparent); }
 .tl-era { pointer-events: none; display: flex; flex-direction: column; align-items: center; text-align: center; white-space: nowrap; }
