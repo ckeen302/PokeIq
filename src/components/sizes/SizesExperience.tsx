@@ -1127,7 +1127,7 @@ export function SizesExperience({ preset, focus = null, vs = [], compare = false
           <div className="sz-shade-top" aria-hidden />
           <div className="sz-shade-bottom" aria-hidden />
 
-          {(!ready || !shown) && (
+          {(!ready || (!shown && !hook)) && (
             <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-3 text-white" aria-hidden data-testid="sizes-loading">
               <Scale className="h-8 w-8 animate-pulse text-[#ffd84a]" />
               <div className="font-pixel text-[10px] uppercase tracking-[0.3em]">{ready ? "Lining them up…" : "Building Lumiose City…"}</div>
@@ -1136,7 +1136,8 @@ export function SizesExperience({ preset, focus = null, vs = [], compare = false
 
           {/* Title card: the lineup's hook, as the glide begins. */}
           <AnimatePresence>
-            {hook && shown && (
+            {/* Shown at once, over the first view being built: the glide (and its clock) starts under it. */}
+            {hook && (
               <motion.div
                 key={hook}
                 className="pointer-events-none absolute inset-x-0 top-[24%] z-[5] flex flex-col items-center px-6 text-center"
