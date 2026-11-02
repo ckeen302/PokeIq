@@ -6,11 +6,8 @@
 
 export const LAB_PATH = "/lab";
 
-/**
- * Pokémon Race (/pokedex/race) shows on /lab only once its page is live.
- * Flip to true when the Race page ships.
- */
-export const RACE_LIVE = false;
+/** Pokémon Race (/pokedex/race) shows on /lab only while its page is live. */
+export const RACE_LIVE = true;
 
 /**
  * Pokémon Mass Battle (/lab/mass-battle) shows on /lab, in the sitemap and
@@ -77,6 +74,7 @@ export const LAB_EXPERIENCES: LabExperience[] = [
     kicker: "Who is fastest?",
     pitch: "Line Pokémon up in a 3D stadium at night and watch them sprint, with speeds from their base stats.",
     tags: ["Photo finish", "Pick your own race", "Make a video"],
+    image: "/lab/race.webp",
     accent: "340 86% 60%",
     live: RACE_LIVE,
   },
