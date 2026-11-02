@@ -43,7 +43,53 @@ function shadowTexture(): THREE.Texture {
   return tex;
 }
 
-export function Avatar3DScene({ config, pose = "idle", facing = "front", partner = false, still = false, taunt = null }: Avatar3DSceneProps) {
+/**
+ * The one WebGL context trainers drawn with `shared` take turns on: each
+ * renders its scene here and copies the frame onto its own 2D canvas (the
+ * copy is made straight after the render, so the buffer needn't be kept).
+ * It goes when the last of them does.
+ */
+let sharedGl: { renderer: THREE.WebGLRenderer; users: number; lost: Set<() => void> } | null = null;
+
+function acquireShared(onLost: () => void): THREE.WebGLRenderer {
+  if (!sharedGl) {
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: "low-power", preserveDrawingBuffer: false });
+    const lost = new Set<() => void>();
+    const gl = { renderer, users: 0, lost };
+    renderer.domElement.addEventListener("webglcontextlost", () => {
+      if (sharedGl === gl) sharedGl = null;
+      for (const f of [...lost]) f();
+    });
+    sharedGl = gl;
+  }
+  sharedGl.users++;
+  sharedGl.lost.add(onLost);
+  return sharedGl.renderer;
+}
+
+function releaseShared(renderer: THREE.WebGLRenderer, onLost: () => void) {
+  const gl = sharedGl;
+  if (!gl || gl.renderer !== renderer) return;
+  gl.lost.delete(onLost);
+  if (--gl.users > 0) return;
+  sharedGl = null;
+  gl.lost.clear();
+  renderer.dispose();
+  renderer.forceContextLoss();
+}
+
+/** Whether a frame has the trainer in it: a few solid pixels in a small copy (the soft shadows are faint, the trainer opaque). */
+function hasSolidPixels(src: HTMLCanvasElement, probe: CanvasRenderingContext2D): boolean {
+  const n = probe.canvas.width;
+  probe.clearRect(0, 0, n, n);
+  probe.drawImage(src, 0, 0, n, n);
+  const d = probe.getImageData(0, 0, n, n).data;
+  let solid = 0;
+  for (let i = 3; i < d.length; i += 4) if (d[i] > 160 && ++solid >= 3) return true;
+  return false;
+}
+
+export function Avatar3DScene({ config, pose = "idle", facing = "front", partner = false, still = false, taunt = null, shared = false, onPaint, onFail }: Avatar3DSceneProps) {
   const host = useRef<HTMLDivElement>(null);
   const sprite = useRef<HTMLImageElement>(null);
   const state = useRef<{
@@ -72,23 +118,49 @@ export function Avatar3DScene({ config, pose = "idle", facing = "front", partner
   live.current.still = still;
   const [failed, setFailed] = useState(false);
   const [candidate, setCandidate] = useState(0);
+  const notify = useRef({ onPaint, onFail });
+  notify.current = { onPaint, onFail };
 
   // ---- renderer, camera, lights (once) ----
   useEffect(() => {
     const el = host.current;
     if (!el) return;
+    let dead = false;
+    let raf = 0;
+    const fail = () => {
+      if (dead) return;
+      dead = true;
+      cancelAnimationFrame(raf);
+      setFailed(true);
+      notify.current.onFail?.();
+    };
     let renderer: THREE.WebGLRenderer;
     try {
-      renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: "low-power", preserveDrawingBuffer: false });
+      renderer = shared ? acquireShared(fail) : new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: "low-power", preserveDrawingBuffer: false });
     } catch {
-      setFailed(true);
+      fail();
       return;
     }
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.setClearColor(0x000000, 0);
-    renderer.domElement.style.cssText = "position:absolute;inset:0;width:100%;height:100%;display:block";
-    el.prepend(renderer.domElement);
+    // Shared: this trainer's own 2D canvas, which each frame is copied onto.
+    const view = shared ? document.createElement("canvas") : renderer.domElement;
+    const view2d = shared ? view.getContext("2d") : null;
+    if (shared && !view2d) {
+      releaseShared(renderer, fail);
+      fail();
+      return;
+    }
+    if (!shared) renderer.domElement.addEventListener("webglcontextlost", fail);
+    view.style.cssText = "position:absolute;inset:0;width:100%;height:100%;display:block";
+    el.prepend(view);
+    // Until the trainer shows up in a frame: a tiny canvas to sample it.
+    let painted = false;
+    let probes = 0;
+    const probeCanvas = document.createElement("canvas");
+    probeCanvas.width = probeCanvas.height = 24;
+    const probe = probeCanvas.getContext("2d", { willReadFrequently: true });
 
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(26, 1, 0.1, 50);
@@ -126,6 +198,10 @@ export function Avatar3DScene({ config, pose = "idle", facing = "front", partner
       height = el.clientHeight;
       if (!width || !height) return;
       renderer.setSize(width, height, false);
+      if (shared) {
+        view.width = renderer.domElement.width;
+        view.height = renderer.domElement.height;
+      }
       const aspect = width / height;
       camera.aspect = aspect;
       const spot = PARTNER_SPOT[live.current.facing];
@@ -178,7 +254,6 @@ export function Avatar3DScene({ config, pose = "idle", facing = "front", partner
       partnerShadow.scale.setScalar(Math.max(0.55, Math.min(1.4, pb.wide * 0.8)));
     };
 
-    let raf = 0;
     let last = performance.now();
     let clock = 0;
     let onScreen = true;
@@ -195,6 +270,30 @@ export function Avatar3DScene({ config, pose = "idle", facing = "front", partner
       return t < secs ? { id: a.id, t } : null;
     };
 
+    /** One frame: on the shared context it's drawn at this trainer's size, then copied over. */
+    const draw = () => {
+      if (dead || !width || !height) return;
+      if (shared) {
+        const buf = renderer.domElement;
+        if (buf.width !== view.width || buf.height !== view.height) renderer.setSize(width, height, false);
+        // Each trainer's scene has the same lighting set-up (lightStage), so the renderer's settings hold.
+        renderer.render(scene, camera);
+        view2d!.clearRect(0, 0, view.width, view.height);
+        view2d!.drawImage(buf, 0, 0);
+      } else {
+        renderer.render(scene, camera);
+      }
+      // A read-back each frame is dear: a few dozen tries, then the caller's own deadline decides.
+      if (!painted && probe && notify.current.onPaint && state.current?.model && probes++ < 60) {
+        try {
+          painted = hasSolidPixels(view, probe);
+        } catch {
+          painted = true; // can't sample: take it as drawn
+        }
+        if (painted) notify.current.onPaint?.();
+      }
+    };
+
     const render = () => {
       const s = state.current;
       if (!s) return;
@@ -202,7 +301,7 @@ export function Avatar3DScene({ config, pose = "idle", facing = "front", partner
       const yaw = FACING_YAW[live.current.facing];
       turn.rotation.y += (yaw - turn.rotation.y) * (animating() ? 0.12 : 1);
       placeSprite(clock);
-      renderer.render(scene, camera);
+      draw();
     };
 
     const frame = () => {
@@ -217,6 +316,7 @@ export function Avatar3DScene({ config, pose = "idle", facing = "front", partner
         return;
       }
       const tick = (now: number) => {
+        if (dead) return;
         const dt = Math.min(0.05, (now - last) / 1000);
         last = now;
         clock += dt;
@@ -224,7 +324,7 @@ export function Avatar3DScene({ config, pose = "idle", facing = "front", partner
         const yaw = FACING_YAW[live.current.facing];
         turn.rotation.y += (yaw - turn.rotation.y) * Math.min(1, dt * 8);
         placeSprite(clock);
-        renderer.render(scene, camera);
+        draw();
         raf = requestAnimationFrame(tick);
       };
       last = performance.now();
@@ -260,11 +360,19 @@ export function Avatar3DScene({ config, pose = "idle", facing = "front", partner
       shadowMat.dispose();
       tex.dispose();
       stage.dispose();
-      renderer.dispose();
-      renderer.forceContextLoss();
-      renderer.domElement.remove();
+      dead = true;
+      if (shared) {
+        releaseShared(renderer, fail);
+        view.remove();
+      } else {
+        renderer.domElement.removeEventListener("webglcontextlost", fail);
+        renderer.dispose();
+        renderer.forceContextLoss();
+        renderer.domElement.remove();
+      }
       state.current = null;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- the context is chosen once
   }, []);
 
   // ---- the trainer (rebuilt when the config changes) ----

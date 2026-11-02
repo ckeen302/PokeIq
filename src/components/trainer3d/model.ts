@@ -44,6 +44,34 @@ type V3 = [number, number, number];
 // The stage: soft warm key with shadows, cool fill, rim, and a room-like environment
 // ---------------------------------------------------------------------------
 
+/** The room-light environment map, made once per renderer (trainers sharing a WebGL context share it too). */
+const rooms = new WeakMap<THREE.WebGLRenderer, { texture: THREE.Texture; users: number }>();
+
+function roomEnvironment(renderer: THREE.WebGLRenderer): { texture: THREE.Texture; release(): void } {
+  let room = rooms.get(renderer);
+  if (!room) {
+    const pmrem = new THREE.PMREMGenerator(renderer);
+    const scene = new RoomEnvironment();
+    room = { texture: pmrem.fromScene(scene, 0.04).texture, users: 0 };
+    scene.dispose();
+    pmrem.dispose();
+    rooms.set(renderer, room);
+  }
+  room.users++;
+  const r = room;
+  let released = false;
+  return {
+    texture: r.texture,
+    release() {
+      if (released) return;
+      released = true;
+      if (--r.users > 0) return;
+      r.texture.dispose();
+      if (rooms.get(renderer) === r) rooms.delete(renderer);
+    },
+  };
+}
+
 /**
  * Lights a trainer's scene and sets up the renderer for it. Returns what
  * to dispose with the scene.
@@ -53,12 +81,8 @@ export function lightStage(scene: THREE.Scene, renderer: THREE.WebGLRenderer): {
   renderer.toneMappingExposure = 1.08;
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-  const pmrem = new THREE.PMREMGenerator(renderer);
-  const room = new RoomEnvironment();
-  const env = pmrem.fromScene(room, 0.04).texture;
-  room.dispose();
-  pmrem.dispose();
-  scene.environment = env;
+  const env = roomEnvironment(renderer);
+  scene.environment = env.texture;
   scene.environmentIntensity = 0.55;
   scene.add(new THREE.HemisphereLight(0xfff4e6, 0x9a8c8c, 1.45));
   const key = new THREE.DirectionalLight(0xfff0dc, 2.3);
@@ -86,7 +110,7 @@ export function lightStage(scene: THREE.Scene, renderer: THREE.WebGLRenderer): {
   scene.add(floor);
   return {
     dispose() {
-      env.dispose();
+      env.release();
       floorGeo.dispose();
       floorMat.dispose();
     },

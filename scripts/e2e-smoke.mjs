@@ -2457,6 +2457,107 @@ if (cpuTurns < 3) errors.push(`the battle against the computer only reached turn
 await page.screenshot({ path: `${OUT}/battle-cpu-later.png`, fullPage: true });
 if ((await page.getByTestId("battle-log").innerText()).length < 200) errors.push("the battle log stayed empty");
 
+// The battle's look: a versus intro before turn 1 (skippable), and the CSS backdrop when there's no WebGL for the 3D arena.
+step("battle look: the versus intro skips, and without WebGL the arena falls back to CSS");
+{
+  const noGl = await newPage({ width: 1280, height: 900 });
+  await noGl.context().addInitScript(() => {
+    const getContext = HTMLCanvasElement.prototype.getContext;
+    HTMLCanvasElement.prototype.getContext = function (type, ...rest) {
+      return /webgl/i.test(String(type)) ? null : getContext.call(this, type, ...rest);
+    };
+  });
+  await gotoSettled(noGl, `${BASE}/battle/play`);
+  await noGl.locator("label").filter({ hasText: "[Gen 9] Random Battle" }).first().click();
+  await noGl.getByLabel("Your trainer name").fill("Leaf");
+  await noGl.getByRole("button", { name: /Start battle/ }).click();
+  await noGl.waitForURL(/\/battle\/play\/[a-z2-9]{8}$/);
+  await noGl.getByTestId("battle-versus").waitFor({ timeout: 30_000 });
+  if ((await noGl.getByTestId("battle-versus").getByTestId("versus-character").count()) !== 2) errors.push("versus intro: both trainers should be on it");
+  if (!(await noGl.getByTestId("versus-cpu").count())) errors.push("versus intro: the computer has no card");
+  if (!(await noGl.getByTestId("versus-battle-record").count())) errors.push("versus intro: your battle record is missing");
+  await noGl.screenshot({ path: `${OUT}/battle-versus.png` });
+  await noGl.getByTestId("versus-skip").click();
+  await noGl.getByTestId("battle-versus").waitFor({ state: "detached", timeout: 3_000 });
+  await noGl.locator("[data-testid=move-button]").first().waitFor({ timeout: 60_000 });
+  const arenaMode = await noGl.getByTestId("battle-arena").getAttribute("data-mode");
+  if (arenaMode !== "css") errors.push(`without WebGL the battle arena should fall back to the CSS backdrop (data-mode ${arenaMode})`);
+  await noGl.screenshot({ path: `${OUT}/battle-arena-css.png` });
+  // A reload on turn 1 doesn't show the intro again.
+  await noGl.reload({ waitUntil: "load" });
+  await noGl.locator("[data-testid=move-button]").first().waitFor({ timeout: 60_000 });
+  if (await noGl.getByTestId("battle-versus").count()) errors.push("the versus intro showed again after a reload");
+  await noGl.context().close();
+}
+
+step("battle look: with WebGL, the versus intro never shows an empty figure (a drawn 3D trainer, or a flat stand-in), as it comes and with the 3D trainers forced");
+// As it comes, a software-drawn WebGL (this browser's, most likely) gets the flat look; forced, the two 3D trainers.
+for (const force3d of [false, true]) {
+  const glPage = await newPage({ width: 1280, height: 900 });
+  if (force3d) await glPage.context().addInitScript(() => sessionStorage.setItem("pokeiq:battle:versus-3d", "1"));
+  // Looks at the intro from inside the page, on its own frames (what's on screen), every quarter second while it's up:
+  // each figure is a 3D trainer with solid pixels on its canvas, its flat stand-in faded in under it, or a flat
+  // stand-in that has loaded (art, picture, the computer's badge, a silhouette). Anything else is empty.
+  await glPage.context().addInitScript(() => {
+    const looks = (window.__versusLooks = []);
+    let since = 0;
+    let lastAt = -1e9;
+    const loaded = (root) => {
+      const img = root.querySelector("img");
+      if (img) return img.complete && img.naturalWidth > 0;
+      return !!root.querySelector("svg, [data-testid=versus-cpu-badge]");
+    };
+    const figure = (el) => {
+      const kind = el.getAttribute("data-kind");
+      if (kind !== "trainer") return loaded(el) ? `${kind}:shown` : `${kind}:EMPTY`;
+      const canvas = el.querySelector("canvas");
+      const g = canvas?.width ? canvas.getContext("2d") : null;
+      if (g && el.getAttribute("data-painted") === "1") {
+        const d = g.getImageData(0, 0, canvas.width, canvas.height).data;
+        let solid = 0;
+        for (let i = 3; i < d.length && solid <= 200; i += 4) if (d[i] > 200) solid++;
+        if (solid > 200) return "trainer:drawn";
+      }
+      const under = el.querySelector("[data-testid=versus-flat-underlay]");
+      if (under && Number(getComputedStyle(under).opacity) > 0.5 && loaded(under)) return "trainer:underlay";
+      return "trainer:EMPTY";
+    };
+    const tick = (now) => {
+      const root = document.querySelector("[data-testid=battle-versus]");
+      if (root) {
+        if (!since) since = now;
+        if (now - lastAt >= 250) {
+          lastAt = now;
+          looks.push({ t: Math.round(now - since), figures: [...root.querySelectorAll("[data-testid=versus-character]")].map(figure) });
+        }
+      }
+      requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+  });
+  await gotoSettled(glPage, `${BASE}/battle/play`);
+  await glPage.locator("label").filter({ hasText: "[Gen 9] Random Battle" }).first().click();
+  await glPage.getByLabel("Your trainer name").fill("Ethan");
+  await glPage.getByRole("button", { name: /Start battle/ }).click();
+  await glPage.waitForURL(/\/battle\/play\/[a-z2-9]{8}$/);
+  await glPage.getByTestId("battle-versus").waitFor({ timeout: 30_000 });
+  await glPage.waitForTimeout(1_200);
+  await glPage.screenshot({ path: `${OUT}/battle-versus-gl${force3d ? "-3d" : ""}.png` });
+  await glPage.getByTestId("battle-versus").waitFor({ state: "detached", timeout: 30_000 });
+  const looks = await glPage.evaluate(() => window.__versusLooks);
+  // Allowed: an empty spot in the first 1.5 s (the 800 ms paint deadline, the stand-in's fade, its art loading).
+  const GRACE = 1_500;
+  const empty = looks.filter((l) => l.t > GRACE && (l.figures.length !== 2 || l.figures.some((f) => f.endsWith("EMPTY"))));
+  const full = looks.filter((l) => l.figures.length === 2 && !l.figures.some((f) => f.endsWith("EMPTY")));
+  console.log(`  versus figures${force3d ? " (3D forced)" : ""}: ${looks.length} looks; last: ${looks.at(-1)?.figures.join(", ") ?? "—"} at ${looks.at(-1)?.t ?? 0} ms`);
+  // Forced 3D on this browser's software WebGL, compiling the trainers holds the page up for seconds (why it isn't
+  // the default there): it only has to end up with both trainers drawn. As it comes, it's never empty past the grace.
+  if (!force3d && empty.length) errors.push(`versus intro: an empty figure ${empty[0].t} ms in (${empty[0].figures.join(", ")})`);
+  if (force3d && !looks.at(-1)?.figures.every((f) => f === "trainer:drawn" || !f.startsWith("trainer"))) errors.push(`versus intro (3D forced): the trainers weren't drawn by the end (${looks.at(-1)?.figures.join(", ")})`);
+  if (!full.length) errors.push(`versus intro${force3d ? " (3D forced)" : ""}: both figures were never on screen together (${JSON.stringify(looks.slice(-3))})`);
+  await glPage.context().close();
+}
+
 step("battle vs computer: Gen 9 OU with the team saved in the team builder");
 await gotoSettled(page, `${BASE}/battle/play`);
 await page.locator("label").filter({ hasText: "[Gen 9] OU" }).first().click();
@@ -2511,15 +2612,13 @@ await page.getByRole("button", { name: /Start battle/ }).click();
 await page.waitForURL(/\/battle\/play\/[a-z2-9]{8}$/);
 await page.locator("[data-testid=move-button]").first().waitFor({ timeout: 60_000 });
 await page.getByRole("button", { name: "4x", exact: true }).click();
-// A few turns, then a forfeit: an analysed battle only needs to have started (and the replacement prompt can't pass
-// a second position that has nothing left to send in, so a battle played to the end can stall there).
-const doublesTurns = await playBattle(page, 3, null);
-if (!(await page.getByTestId("battle-result").count())) {
-  await page.getByRole("button", { name: "Forfeit", exact: true }).click();
-  await page.getByRole("button", { name: "Forfeit", exact: true }).click();
-}
+// Played to the end: near it, both positions go down with one Pokémon (or none) left on the bench, and the replacement
+// prompt has to pass the position nobody can fill ("switch 3, pass") rather than wait on it for good.
+let lastOneNote = false;
+const noteWatch = setInterval(() => void page.getByTestId("switch-last-one").count().then((n) => (lastOneNote ||= n > 0)).catch(() => {}), 500);
+const doublesTurns = await playBattle(page, 200, null).finally(() => clearInterval(noteWatch));
 await page.getByTestId("battle-result").waitFor({ timeout: 60_000 });
-console.log(`  the doubles battle ended on turn ${doublesTurns}`);
+console.log(`  the doubles battle ended on turn ${doublesTurns}${lastOneNote ? " (a position went empty for want of Pokémon)" : ""}`);
 await page.getByTestId("save-replay").click({ timeout: 30_000 });
 await page.getByTestId("analyse-battle").click({ timeout: 30_000 });
 await page.waitForURL(/\/battle\/replay\/[a-z2-9]{8}\?analysis=1&side=0/);
@@ -2764,6 +2863,13 @@ for (const [who, p] of [["Red", mmRed], ["Blue", mmBlue], ["spectator", watcher]
 await watcher.screenshot({ path: `${OUT}/battle-spectator-result.png` });
 await mmRed.getByTestId("watch-replay").waitFor({ timeout: 45_000 });
 await mmRed.screenshot({ path: `${OUT}/battle-matched-result.png` });
+
+step("battle look: the victory screen, the winner's trainer over the result, for both players and the spectator");
+for (const [who, p] of [["Red", mmRed], ["Blue", mmBlue], ["spectator", watcher]]) {
+  if (/A draw|No contest/.test(await p.getByTestId("battle-result").innerText())) continue;
+  if (!(await p.getByTestId("battle-result").getByTestId("battle-victory").count())) errors.push(`${who}: no victory screen at the end of the battle`);
+}
+if (await mmRed.getByTestId("battle-victory").count()) await mmRed.getByTestId("battle-victory").screenshot({ path: `${OUT}/battle-victory.png` });
 
 step("replay: open it, step through it, jump, play");
 await mmRed.getByTestId("watch-replay").click();
