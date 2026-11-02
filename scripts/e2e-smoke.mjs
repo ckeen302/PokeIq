@@ -2524,7 +2524,7 @@ await page.waitForURL(/\/battle\/replay\/[a-z2-9]{8}\?analysis=1&side=0/);
   const boards = dbl.getByTestId("key-moment-board");
   if ((await boards.count()) !== lines.length) errors.push(`doubles analysis: ${await boards.count()} boards for ${lines.length} key moments`);
   for (const text of await boards.allInnerTexts()) {
-    const sides = text.split(/\bvs\b/);
+    const sides = text.split(/\bvs\b/i);
     if (sides.length !== 2 || sides.some((side) => !/\d+%/.test(side) || (side.match(/\d+%/g) ?? []).length > 2)) errors.push(`doubles analysis: odd board "${text.replace(/\s+/g, " ")}"`);
   }
   if (lines.length && !lines.some((l) => / on (your )?[A-Z]|hit both|knocked out|by targeting/.test(l))) errors.push("doubles analysis: no key moment names a target");
