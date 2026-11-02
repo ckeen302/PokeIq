@@ -69,8 +69,14 @@ export function layoutBadges(
   const lead = focus ? scaleOf(focus.sh) * 1.12 : Infinity;
   for (const c of sorted) {
     if (placed.length >= opts.max || (c.sh < opts.minSh && !c.focus)) continue;
-    const s = c.focus ? lead : Math.min(scaleOf(c.sh), lead * 0.74);
-    const { w, h } = badgeSize(c.info, s, measure);
+    let s = c.focus ? lead : Math.min(scaleOf(c.sh), lead * 0.74);
+    let { w, h } = badgeSize(c.info, s, measure);
+    // A long name never runs off a narrow (phone, video) frame: the whole badge shrinks to fit.
+    const room = frame.w * 0.94;
+    if (w > room) {
+      s *= room / w;
+      ({ w, h } = badgeSize(c.info, s, measure));
+    }
     const gap = s * 0.35;
     let x = c.x - w / 2;
     let y = c.y - gap - h;

@@ -260,9 +260,8 @@ export async function recordVideo(o: RecordOptions): Promise<RecordResult> {
       scene.render(t, 1 / fps);
       g.drawImage(scene.canvas, 0, 0, W, H);
       const stop = plan.glide.stops.find((s) => t >= s.t0 && t <= s.t1);
-      // Badges keep clear of the hook card while it shows.
-      const hookOn = t < tl.hook;
-      if (!hookOn || t > tl.hook - 0.3) drawBadges(g, scene.anchors(), pf.focus, byKey, W, H, { font: o.font, scale: 1.08, max: pf.view.rise > 0.3 ? 1 : 3, top: H * 0.07, bottom: H * 0.3 });
+      // Badges keep clear of the hook card and the end card.
+      if (t >= tl.hook && t <= v.seconds - tl.end + 0.25) drawBadges(g, scene.anchors(), pf.focus, byKey, W, H, { font: o.font, scale: 1.2, max: pf.view.rise > 0.3 ? 1 : 3, top: H * 0.07, bottom: H * 0.3 });
       const cap = stop && t - stop.t0 > 0.25 && t < v.seconds - tl.end ? captions.get(stop.key) ?? null : null;
       drawVideoLayers(g, W, H, t, v.seconds, cap, layers);
     };

@@ -487,3 +487,17 @@ describe("relief figures", () => {
     expect(m.height).toBe(1);
   });
 });
+
+describe("badge layout", () => {
+  it("keeps every badge inside the frame, shrinking long names on narrow frames", async () => {
+    const { layoutBadges } = await import("@/lib/sizes/badges");
+    const measure = (t: string, px: number) => t.length * px * 0.62;
+    const info = { name: "Eternamax Eternatus", dex: 890, kind: "eternamax" as const, m: 100, length: false, min: false, types: ["poison", "dragon"] };
+    for (const frame of [{ w: 1080, h: 1920 }, { w: 390, h: 700 }, { w: 1440, h: 900 }]) {
+      const placed = layoutBadges([{ key: "e", x: frame.w * 0.9, y: frame.h * 0.4, sh: frame.h * 0.5, info, focus: true }], { ...frame, top: 0, bottom: 0 }, measure, { max: 3, minSh: 10, scale: 1.2 });
+      expect(placed).toHaveLength(1);
+      expect(placed[0].x).toBeGreaterThanOrEqual(0);
+      expect(placed[0].x + placed[0].w).toBeLessThanOrEqual(frame.w);
+    }
+  });
+});

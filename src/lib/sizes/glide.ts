@@ -31,11 +31,15 @@ const MIN_D = 0.25;
 
 const rad = (deg: number) => (deg * Math.PI) / 180;
 
+/** In a vertical frame (phones, the videos) a wide figure may fill more of the narrow width. */
+export const FILL_W_PORTRAIT = 0.82;
+
 /** Camera distance that frames a w × h figure. */
 export function frameDistance(w: number, h: number, lens: Lens): number {
   const tv = Math.tan(rad(lens.vfov) / 2);
   const th = tv * lens.aspect;
-  return Math.max(h / (FILL_H * 2 * tv), w / (FILL_W * 2 * th), MIN_D);
+  const fillW = lens.aspect < 0.8 ? FILL_W_PORTRAIT : FILL_W;
+  return Math.max(h / (FILL_H * 2 * tv), w / (fillW * 2 * th), MIN_D);
 }
 
 /** Visible width of the frame at distance d. */
