@@ -191,6 +191,11 @@ export class Director {
         // Both armies in view, low enough to feel the scale, the target a little above them so they sit low in the frame (titles go on top).
         const span = Math.max(a.extent + b.extent + Math.hypot(a.cx - b.cx, a.cz - b.cz), 16);
         const big = Math.max(a.h, b.h);
+        if (portrait) {
+          // A tall frame: look down the line of battle from behind the first army, both armies stacked in view.
+          const yaw = Math.atan2(-(b.cx - a.cx), -(b.cz - a.cz));
+          return { tx: (a.cx + b.cx) / 2, ty: big * 0.5, tz: (a.cz + b.cz) / 2, yaw: yaw + 0.3 * Math.sin(s * 0.3), pitch: 0.42, dist: span * 0.62 + big * 2 + 6, fov, shake: 0 };
+        }
         return { tx: (a.cx + b.cx) / 2, ty: big * 0.9 + span * 0.06, tz: (a.cz + b.cz) / 2, yaw: 0.5 + this.orbit + s * 0.05, pitch: 0.3 - Math.min(0.08, s * 0.015), dist: span * 0.55 * widen + big * 2 + 6, fov, shake: 0 };
       }
       case "charge": {

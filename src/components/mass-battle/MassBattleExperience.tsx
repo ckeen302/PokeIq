@@ -325,6 +325,7 @@ export function MassBattleExperience({ list, presets, initial }: { list: PickerM
       if (ac.signal.aborted) return;
       const aspect = hostRef.current ? hostRef.current.clientWidth / Math.max(1, hostRef.current.clientHeight) : 1.6;
       directorRef.current.reset(summarize(view, heightsRef.current, "deploy", aspect));
+      if (/[?&]debug=1/.test(window.location.search)) (window as unknown as { __mb: unknown }).__mb = { scene, view, director: directorRef.current };
       camRef.current = "director";
       setCam("director");
       updateHud(view);

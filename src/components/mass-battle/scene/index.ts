@@ -88,6 +88,8 @@ export interface BattleScene {
   project(x: number, y: number, z: number): { x: number; y: number } | null;
   heightAt(x: number, z: number): number;
   stats(): { calls: number; triangles: number; instances: number };
+  /** The armies' layer (debugging). */
+  units(): UnitsLayer | null;
   dispose(): void;
 }
 
@@ -223,6 +225,7 @@ export function createBattleScene(host: HTMLElement, opts: SceneOptions): Battle
       return { x: ((v.x + 1) / 2) * W, y: ((1 - v.y) / 2) * H };
     },
     heightAt: (x, z) => arena?.heightAt(x, z) ?? 0,
+    units: () => units,
     stats() {
       const d = units?.drawn ?? { instances: 0, triangles: 0, calls: 0 };
       return { calls: renderer.info.render.calls, triangles: renderer.info.render.triangles, instances: d.instances };

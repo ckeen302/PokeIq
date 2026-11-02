@@ -46,6 +46,7 @@ interface Level {
   mesh: THREE.Mesh;
   pose: THREE.InstancedBufferAttribute;
   look: THREE.InstancedBufferAttribute;
+  depth: THREE.InstancedBufferAttribute;
   count: number;
   triangles: number;
 }
@@ -74,16 +75,18 @@ function unitPatch(m: THREE.MeshStandardMaterial) {
         `#include <common>
 attribute vec4 aPose;
 attribute vec4 aLook;
+attribute float aDepth;
 varying float vFlash;
 varying float vRecall;
 vec3 mbPlace(vec3 p) {
-  vec3 q = p * aLook.x;
+  vec3 q = vec3(p.x * aDepth, p.yz) * aLook.x;
   float cr = cos(aLook.y), sr = sin(aLook.y);
   q = vec3(q.x * cr - q.y * sr, q.x * sr + q.y * cr, q.z);
   float cy = cos(aPose.w), sy = sin(aPose.w);
   return vec3(q.x * cy + q.z * sy, q.y, -q.x * sy + q.z * cy) + aPose.xyz;
 }
 vec3 mbTurn(vec3 n) {
+  n = normalize(vec3(n.x / max(aDepth, 0.05), n.y, n.z));
   float cr = cos(aLook.y), sr = sin(aLook.y);
   n = vec3(n.x * cr - n.y * sr, n.x * sr + n.y * cr, n.z);
   float cy = cos(aPose.w), sy = sin(aPose.w);
@@ -149,6 +152,9 @@ export class UnitsLayer {
   private sphere = new THREE.Sphere();
   private camRight = new THREE.Vector3();
   opts: UnitsOptions;
+  /** Debugging: one unit's per-frame values. */
+  debugUnit = -1;
+  debugLog: { t: number; roll: number; yaw: number; flip: number; scale: number; y: number; recall: number; li: number }[] = [];
   /** Triangles and instances drawn last frame (for the stats overlay and tests). */
   drawn = { instances: 0, triangles: 0, calls: 0 };
 
@@ -179,14 +185,17 @@ export class UnitsLayer {
         const look = new THREE.InstancedBufferAttribute(new Float32Array(cap * 4), 4);
         pose.setUsage(THREE.DynamicDrawUsage);
         look.setUsage(THREE.DynamicDrawUsage);
+        const depth = new THREE.InstancedBufferAttribute(new Float32Array(cap).fill(1), 1);
+        depth.setUsage(THREE.DynamicDrawUsage);
         geo.setAttribute("aPose", pose);
         geo.setAttribute("aLook", look);
+        geo.setAttribute("aDepth", depth);
         geo.instanceCount = 0;
         const mesh = new THREE.Mesh(geo, material);
         mesh.frustumCulled = false;
         mesh.name = `${s.slug}-lod`;
         this.group.add(mesh);
-        return { geo, mesh, pose, look, count: 0, triangles: lv.triangles };
+        return { geo, mesh, pose, look, depth, count: 0, triangles: lv.triangles };
       });
       this.draws.push({
         species: s,
@@ -249,7 +258,7 @@ export class UnitsLayer {
     let shades = 0;
     let instances = 0, triangles = 0;
     const lodPx = this.opts.lodPx;
-    const flipRate = 1 - Math.exp(-dt * 7);
+    const flipStep = dt * 5;
     const speedRate = 1 - Math.exp(-dt * 6);
     for (let i = 0; i < n; i++) {
       if (!draw[i]) continue;
@@ -267,9 +276,11 @@ export class UnitsLayer {
       // Facing: toward the camera, turned round when its foe is to the right on screen.
       const fx = view.fx[i], fz = view.fz[i];
       if (!Number.isNaN(fx)) {
+        // Turn to face the foe on screen, with some slack so a foe straight ahead doesn't make it spin.
         const side = (fx - xi) * rx + (fz - zi) * rz;
-        const want = side > 0.05 ? 1 : side < -0.05 ? 0 : this.flip[i];
-        this.flip[i] += (want - this.flip[i]) * flipRate;
+        const slack = 0.2 + d.w * 0.25;
+        const want = side > slack ? 1 : side < -slack ? 0 : this.flip[i] > 0.5 ? 1 : 0;
+        this.flip[i] = want > this.flip[i] ? Math.min(want, this.flip[i] + flipStep) : Math.max(want, this.flip[i] - flipStep);
       }
       const h = d.h;
       // Visible at all?
@@ -322,7 +333,10 @@ export class UnitsLayer {
         y += h * 0.35 * shrink;
         flash = 0;
       }
-      const yaw = Math.atan2(cx - xi, cz - zi) + this.flip[i] * Math.PI;
+      // The turn: the figure narrows to nothing and opens out facing the other way (a relief never shows its edge).
+      const f = this.flip[i];
+      const yaw = Math.atan2(cx - xi, cz - zi) + (f < 0.5 ? 0 : Math.PI);
+      const squeeze = Math.abs(Math.cos(f * Math.PI));
       const o = lv.count * 4;
       const pose = lv.pose.array as Float32Array, look = lv.look.array as Float32Array;
       pose[o] = xi + ox;
@@ -333,6 +347,9 @@ export class UnitsLayer {
       look[o + 1] = roll;
       look[o + 2] = flash;
       look[o + 3] = recall;
+      (lv.depth.array as Float32Array)[lv.count] = squeeze;
+      if (this.debugUnit === i) this.debugLog.push({ t: view.t, roll, yaw, flip: this.flip[i], scale, y, recall, li });
+      void squeeze;
       lv.count++;
       instances++;
       triangles += lv.triangles;
@@ -358,6 +375,9 @@ export class UnitsLayer {
           lv.look.clearUpdateRanges();
           lv.look.addUpdateRange(0, lv.count * 4);
           lv.look.needsUpdate = true;
+          lv.depth.clearUpdateRanges();
+          lv.depth.addUpdateRange(0, lv.count);
+          lv.depth.needsUpdate = true;
         }
       }
     }
@@ -378,6 +398,8 @@ export class UnitsLayer {
         const pose = lv.pose.array as Float32Array, look = lv.look.array as Float32Array;
         pose.set([at.x, 0, at.z, 0], 0);
         look.set([d.scale[0] * 0.001, 0, 0, 0], 0);
+        (lv.depth.array as Float32Array)[0] = 1;
+        lv.depth.needsUpdate = true;
         lv.geo.instanceCount = 1;
         lv.mesh.visible = true;
         lv.pose.needsUpdate = true;
