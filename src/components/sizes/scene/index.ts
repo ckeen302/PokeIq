@@ -355,7 +355,7 @@ export function createSizesScene(host: HTMLElement, opts: SceneOptions): SizesSc
   // ---- Figures.
   const providers: FigureProvider[] = [];
   if (opts.models && Object.keys(opts.models).length) providers.push(new ModelProvider(opts.models));
-  const relief = new ReliefProvider(opts.urls, { anisotropy: maxAniso, sharpen: opts.quality === "export" ? 0.55 : 0.45, texSize: Q.texSize });
+  const relief = new ReliefProvider(opts.urls, { anisotropy: maxAniso, sharpen: opts.quality === "export" ? 0.55 : 0.45, texSize: Q.texSize, coverage: Q.msaa > 0 });
   providers.push(relief);
   let slots: Slot[] = [];
   let companion: Slot | null = null;
@@ -368,6 +368,7 @@ export function createSizesScene(host: HTMLElement, opts: SceneOptions): SizesSc
   const shadowGeo = new THREE.PlaneGeometry(1, 1).rotateX(-Math.PI / 2);
   // Far figures: the crowd of low-detail reliefs (one instanced draw).
   const crowd = new Crowd(renderer, opts.far ?? (FAR_MANIFEST as FarManifest));
+  crowd.setCoverage(Q.msaa > 0);
   figureGroup.add(crowd.mesh);
   // Contact shadows under every figure drawn, whatever its detail (one instanced draw).
   const BLOBS = 1400;
@@ -826,7 +827,19 @@ export function createSizesScene(host: HTMLElement, opts: SceneOptions): SizesSc
     renderer.setSize(W, H, false);
     post.dispose();
     post = postFor(Q);
+    const coverage = Q.msaa > 0;
+    relief.setCoverage(coverage);
+    crowd.setCoverage(coverage);
     shadowsDirty = true;
+    if (warmed && (warmed.mat as THREE.MeshStandardMaterial).alphaToCoverage !== coverage) {
+      // The figures' other shader variant, compiled now rather than when the next one streams in.
+      warmed.mat.dispose();
+      warmed.depth.dispose();
+      warmed.geo.dispose();
+      warmed.tex.dispose();
+      warmed = null;
+      try { warm(); } catch { /* drawing will compile it instead */ }
+    }
   }
 
   /** One step of streaming: what's on screen, what's coming, what to load, what to upload, what to draw. */

@@ -206,6 +206,13 @@ export class Crowd {
     }
   }
 
+  /** Alpha to coverage (smooth cut-out edges) only where the frame is multisampled; a plain cut is crisper without. */
+  setCoverage(on: boolean) {
+    if (this.material.alphaToCoverage === on) return;
+    this.material.alphaToCoverage = on;
+    this.material.needsUpdate = true;
+  }
+
   /** Whether the sheets are in (far figures can be drawn). */
   get loaded() {
     return this.ok;

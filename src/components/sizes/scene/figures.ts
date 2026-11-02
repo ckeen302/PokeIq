@@ -168,11 +168,17 @@ function textureFrom(bmp: ImageBitmap, anisotropy: number): THREE.Texture {
 
 /** Tier 1: HOME render + relief map. */
 export class ReliefProvider implements FigureProvider {
-  constructor(private urls: FigureUrls, private opts: { anisotropy: number; sharpen: number; texSize: 256 | 512 }) {}
+  /** Alpha to coverage: smooth cut-out edges with multisampling; without it, a plain cut is crisper (no speckled fringe). */
+  private coverage: boolean;
+  constructor(private urls: FigureUrls, private opts: { anisotropy: number; sharpen: number; texSize: 256 | 512; coverage?: boolean }) {
+    this.coverage = opts.coverage ?? true;
+  }
+  /** Figures built from now on use alpha to coverage or not (the quality's multisampling changed). */
+  setCoverage(on: boolean) { this.coverage = on; }
   has(item: SceneItem) { return item.art > 0; }
   /** A relief figure's mesh and materials (also used to compile their shaders before the first figure arrives). */
   dress(geo: THREE.BufferGeometry, tex: THREE.Texture, texSize: number) {
-    const mat = new THREE.MeshStandardMaterial({ map: tex, alphaTest: 0.5, alphaToCoverage: true, roughness: 0.62, metalness: 0, envMapIntensity: 0.8 });
+    const mat = new THREE.MeshStandardMaterial({ map: tex, alphaTest: 0.5, alphaToCoverage: this.coverage, roughness: 0.62, metalness: 0, envMapIntensity: 0.8 });
     const fade = { value: 1 };
     figureLook(mat, texSize, this.opts.sharpen, fade);
     const obj = new THREE.Mesh(geo, mat);
