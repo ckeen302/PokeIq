@@ -1,4 +1,4 @@
-import { DIFFICULTIES, type Difficulty, type ModuleId, type QuizFormat } from "@/engines/types";
+import { type Difficulty, type ModuleId, type QuizFormat } from "@/engines/types";
 
 /** Display metadata for game modes + SEO landing-page presets. */
 
@@ -24,7 +24,6 @@ export interface QuizFilter {
 }
 
 const REGION_TITLES = ["Kanto", "Johto", "Hoenn", "Sinnoh", "Unova", "Kalos", "Alola", "Galar", "Paldea"];
-const MIX_NOTE = "Every run mixes easy, medium and hard questions.";
 
 export const GEN_FILTER: QuizFilter = {
   label: "Generations",
@@ -43,12 +42,11 @@ export function defaultGens(module: ModuleId): number[] | undefined {
 const SHINY_FILTER: QuizFilter = { label: GEN_FILTER.label, chips: GEN_FILTER.chips };
 
 /** Same nine values: a game's generation, remakes included (FireRed is Gen 3). */
-const GAMES_FILTER: QuizFilter = { ...GEN_FILTER, note: MIX_NOTE };
+const GAMES_FILTER: QuizFilter = { label: GEN_FILTER.label, chips: GEN_FILTER.chips };
 
 const ANIME_FILTER: QuizFilter = {
   label: "Series",
   chips: ["Original", "Advanced", "Diamond & Pearl", "Black & White", "XY", "Sun & Moon", "Journeys", "Horizons"].map((label) => ({ label })),
-  note: MIX_NOTE,
 };
 
 /** Same nine values: the generation an ability, move or item was introduced in. */
@@ -117,7 +115,8 @@ export function playDifficulty(module: ModuleId, requested?: unknown): Difficult
 export function difficultyLabel(module: ModuleId, difficulty: Difficulty): string | null {
   const choices = DIFFICULTY_CHOICES[module];
   if (!choices) return null;
-  return choices.find((d) => d.id === difficulty)?.label ?? (DIFFICULTIES.includes(difficulty) ? difficulty.charAt(0).toUpperCase() + difficulty.slice(1) : null);
+  // An old run's level the mode no longer offers (Real Shiny's Medium) isn't named either.
+  return choices.find((d) => d.id === difficulty)?.label ?? null;
 }
 
 export function filterFor(module: ModuleId): QuizFilter {

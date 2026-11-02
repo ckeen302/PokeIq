@@ -7,14 +7,14 @@ import { eraVisibility, LAST_GEN, regionGeneration } from "@/lib/globe/era";
  * The world globe's three.js scene: the holographic world (the atlas mask),
  * its atmosphere, stars, a moving day/night line with towns lighting up at
  * night, drifting clouds, sun glint on the sea, mountains raised at their
- * atlas pins, three legendaries in orbit, the era filter (regions fade in by
+ * atlas pins, the era filter (regions fade in by
  * generation, on the GPU from public/geo/maps/globe-gens.png), the labels
  * (DOM, laid out each frame with collision avoidance) and every pointer
  * interaction. The React shell (WorldGlobe.tsx) owns the HUD and cards.
  *
  * Adaptive quality, as on the timeline: the frame time is watched and the
- * scene steps down (pixel ratio, stars, clouds, mountain detail, the
- * legendaries) when frames run slow, and back up after a long fast run.
+ * scene steps down (pixel ratio, stars, clouds, mountain detail) when
+ * frames run slow, and back up after a long fast run.
  */
 
 export type LabelKind = "region" | "city" | "place";
@@ -86,10 +86,10 @@ type Label = {
 };
 
 const QUALITY = [
-  { pr: 0.75, stars: 0, clouds: false, legends: false, peaks: 0 },
-  { pr: 1, stars: 0.35, clouds: false, legends: true, peaks: 1 },
-  { pr: 1.5, stars: 0.7, clouds: true, legends: true, peaks: 2 },
-  { pr: 2, stars: 1, clouds: true, legends: true, peaks: 2 },
+  { pr: 0.75, stars: 0, clouds: false, peaks: 0 },
+  { pr: 1, stars: 0.35, clouds: false, peaks: 1 },
+  { pr: 1.5, stars: 0.7, clouds: true, peaks: 2 },
+  { pr: 2, stars: 1, clouds: true, peaks: 2 },
 ] as const;
 const PEAK_DETAIL = [
   { rings: 2, segs: 5 },
@@ -101,13 +101,6 @@ const STAR_COUNT = 2600;
 const R = 1;
 const INTRO_S = 3.8;
 const INTRO_FROM = 26;
-
-/** Official artwork (the Pokédex's /api/art proxy) and which way each one faces in it. */
-const LEGENDS = [
-  { id: 384, name: "Rayquaza", faces: -1, size: 0.46, r: 1.95, tilt: 0.42, yaw: 0.3, period: 95, phase: 0.6, local: false },
-  { id: 250, name: "Ho-Oh", faces: 1, size: 0.3, r: 1.5, tilt: -0.55, yaw: 1.9, period: 70, phase: 2.4, local: false },
-  { id: 249, name: "Lugia", faces: -1, size: 0.26, r: 1.085, tilt: 0, yaw: 0, period: 120, phase: 4.1, local: true },
-] as const;
 
 const toVec = (lon: number, lat: number, r = R, out = new THREE.Vector3()) => {
   const phi = ((90 - lat) * Math.PI) / 180, th = ((lon + 180) * Math.PI) / 180;
@@ -160,7 +153,7 @@ export function createGlobeScene(host: HTMLElement, layer: HTMLDivElement, cb: S
 
   // ---- the world
   const maxAniso = renderer.capabilities.getMaxAnisotropy();
-  const tex = new THREE.TextureLoader().load("/geo/maps/globe-mask.png", (t) => sampleOcean(t.image as HTMLImageElement));
+  const tex = new THREE.TextureLoader().load("/geo/maps/globe-mask.png");
   tex.anisotropy = maxAniso;
   tex.minFilter = THREE.LinearMipmapLinearFilter;
   disposables.push(tex);
@@ -482,149 +475,6 @@ export function createGlobeScene(host: HTMLElement, layer: HTMLDivElement, cb: S
     });
   }
 
-  // ---- the legendaries: camera-facing artwork on gentle orbits (never picked: clicks go to the globe)
-  type Legend = { def: (typeof LEGENDS)[number]; sprite: THREE.Sprite; mat: THREE.SpriteMaterial; face: number; fade: number; trail?: THREE.Points; axis?: THREE.Quaternion };
-  const legends: Legend[] = [];
-  const legendGroup = new THREE.Group();
-  scene.add(legendGroup);
-  let legendsLoading = false;
-  /** Lugia skims the sea: the great circle (in the world's own frame) that crosses the most ocean, read off the mask. */
-  let oceanAxis = new THREE.Quaternion();
-  function sampleOcean(img: HTMLImageElement) {
-    try {
-      const w = 256, h = 128, c = document.createElement("canvas");
-      c.width = w; c.height = h;
-      const g = c.getContext("2d", { willReadFrequently: true });
-      if (!g) return;
-      g.drawImage(img, 0, 0, w, h);
-      const d = g.getImageData(0, 0, w, h).data;
-      const landAt = (v: THREE.Vector3) => {
-        const lat = Math.asin(Math.max(-1, Math.min(1, v.y))), lon = Math.atan2(v.z, -v.x);
-        const u = ((lon / (Math.PI * 2)) % 1 + 1) % 1, vv = 0.5 - lat / Math.PI;
-        return d[(Math.min(h - 1, Math.floor(vv * h)) * w + Math.min(w - 1, Math.floor(u * w))) * 4] > 10;
-      };
-      let best = Infinity;
-      const q = new THREE.Quaternion(), e = new THREE.Euler(), p = new THREE.Vector3();
-      for (let ti = 0; ti < 12; ti++)
-        for (let yi = 0; yi < 24; yi++) {
-          e.set((ti / 12) * Math.PI * 0.9 - 0.45 * Math.PI, (yi / 24) * Math.PI * 2, 0);
-          q.setFromEuler(e);
-          let land = 0;
-          for (let k = 0; k < 120; k++) {
-            const a = (k / 120) * Math.PI * 2;
-            p.set(Math.cos(a), 0, Math.sin(a)).applyQuaternion(q);
-            if (Math.abs(p.y) > 0.8) land += 0.5;
-            if (landAt(p)) land++;
-          }
-          if (land < best) { best = land; oceanAxis = q.clone(); }
-        }
-      for (const l of legends) if (l.def.local) l.axis = oceanAxis;
-    } catch {
-      // keep the default orbit
-    }
-  }
-  function loadLegends() {
-    if (legendsLoading || dead) return;
-    legendsLoading = true;
-    const loader = new THREE.TextureLoader();
-    LEGENDS.forEach((def, i) => {
-      window.setTimeout(() => {
-        if (dead) return;
-        loader.load(`/api/art/${def.id}?s=256`, (t) => {
-          if (dead) { t.dispose(); return; }
-          t.anisotropy = Math.min(4, maxAniso);
-          const mat = new THREE.SpriteMaterial({ map: t, transparent: true, depthWrite: false, opacity: 0 });
-          const sprite = new THREE.Sprite(mat);
-          sprite.renderOrder = 5;
-          sprite.raycast = () => undefined;
-          sprite.scale.setScalar(def.size);
-          const leg: Legend = { def, sprite, mat, face: 1, fade: 0, axis: def.local ? oceanAxis : undefined };
-          if (def.id === 250) leg.trail = makeTrail();
-          (def.local ? globe : legendGroup).add(sprite);
-          if (leg.trail) legendGroup.add(leg.trail);
-          disposables.push(t, mat);
-          legends.push(leg);
-        });
-      }, i * 250);
-    });
-  }
-  const TRAIL_N = 46;
-  function makeTrail() {
-    const geo = new THREE.BufferGeometry();
-    const pos = new Float32Array(TRAIL_N * 3), col = new Float32Array(TRAIL_N * 3), k = new Float32Array(TRAIL_N);
-    const c = new THREE.Color();
-    for (let i = 0; i < TRAIL_N; i++) {
-      c.setHSL((i / TRAIL_N) * 0.78, 0.95, 0.62);
-      col.set([c.r, c.g, c.b], i * 3);
-      k[i] = i / (TRAIL_N - 1);
-    }
-    geo.setAttribute("position", new THREE.BufferAttribute(pos, 3));
-    geo.setAttribute("color", new THREE.BufferAttribute(col, 3));
-    geo.setAttribute("aK", new THREE.BufferAttribute(k, 1));
-    const mat = new THREE.ShaderMaterial({
-      uniforms: { uPx: { value: 1 }, uFade: { value: 0 } },
-      transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, premultipliedAlpha: true, vertexColors: true,
-      vertexShader: `attribute float aK; uniform float uPx; varying vec3 vC; varying float vA;
-        void main(){ vC=color; vA=pow(1.-aK,1.4); vec4 mv=modelViewMatrix*vec4(position,1.); gl_Position=projectionMatrix*mv; gl_PointSize=(15.*(1.-aK*.55))*uPx*(3./-mv.z); }`,
-      fragmentShader: `uniform float uFade; varying vec3 vC; varying float vA;
-        void main(){ float d=length(gl_PointCoord-.5)*2.; float a=pow(max(1.-d,0.),1.6)*vA*.62*uFade; gl_FragColor=vec4(vC*a,a); }`,
-    });
-    const p = new THREE.Points(geo, mat);
-    p.renderOrder = 4;
-    p.frustumCulled = false;
-    disposables.push(geo, mat);
-    return p;
-  }
-  const lq = new THREE.Quaternion(), le = new THREE.Euler(), lp = new THREE.Vector3(), lp2 = new THREE.Vector3(), lw = new THREE.Vector3(), lw2 = new THREE.Vector3();
-  function orbitAt(def: (typeof LEGENDS)[number], axis: THREE.Quaternion | undefined, t: number, out: THREE.Vector3) {
-    const a = def.phase + (t / def.period) * Math.PI * 2;
-    out.set(Math.cos(a) * def.r, Math.sin(t * 0.7 + def.phase) * 0.03, Math.sin(a) * def.r);
-    if (axis) out.applyQuaternion(axis);
-    else out.applyQuaternion(lq.setFromEuler(le.set(def.tilt, def.yaw, 0)));
-    return out;
-  }
-  function updateLegends(t: number, dt: number, zoom: number, show: boolean) {
-    const zFade = 1 - smooth(1.45, 2.2, zoom);
-    for (const L of legends) {
-      const target = show ? zFade : 0;
-      L.fade += (target - L.fade) * Math.min(1, dt * 2.2);
-      const vis = L.fade > 0.01;
-      L.sprite.visible = vis;
-      if (L.trail) L.trail.visible = vis;
-      if (!vis) continue;
-      orbitAt(L.def, L.axis, t, lp);
-      orbitAt(L.def, L.axis, t + 0.25, lp2);
-      L.sprite.position.copy(lp);
-      // Faces the way it flies on screen.
-      lw.copy(lp); lw2.copy(lp2);
-      if (L.def.local) { lw.applyMatrix4(globe.matrixWorld); lw2.applyMatrix4(globe.matrixWorld); }
-      const front = lw.z > 0 && Math.hypot(lw.x, lw.y) < R * 1.02;
-      lw.project(camera); lw2.project(camera);
-      const dir = Math.sign(lw2.x - lw.x) || L.face;
-      if (dir !== L.face && Math.abs(lw2.x - lw.x) > 0.002) L.face = dir;
-      const bob = 1 + Math.sin(t * 1.6 + L.def.phase) * 0.035;
-      L.sprite.scale.set(L.def.size * bob, L.def.size * bob, 1);
-      // Sprites ignore a negative scale: mirror the artwork through its texture instead.
-      const map = L.mat.map!;
-      const flip = L.face !== L.def.faces;
-      if ((map.repeat.x < 0) !== flip) { map.repeat.x = flip ? -1 : 1; map.offset.x = flip ? 1 : 0; }
-      L.mat.rotation = Math.sin(t * 0.9 + L.def.phase) * 0.06;
-      // Over the world it is fainter, so the map stays readable.
-      L.mat.opacity = L.fade * (front ? 0.62 : 0.95);
-      if (L.trail) {
-        const p = L.trail.geometry.getAttribute("position") as THREE.BufferAttribute;
-        for (let i = 0; i < TRAIL_N; i++) {
-          orbitAt(L.def, L.axis, t - 0.06 - i * 0.075, lp2);
-          p.setXYZ(i, lp2.x, lp2.y - 0.02, lp2.z);
-        }
-        p.needsUpdate = true;
-        const m = L.trail.material as THREE.ShaderMaterial;
-        m.uniforms.uFade.value = L.fade;
-        m.uniforms.uPx.value = renderer.getPixelRatio();
-      }
-    }
-  }
-
   // ---- theme: the site's tokens, re-read when html.light toggles
   let darkTheme = true;
   function applyTheme() {
@@ -870,7 +720,6 @@ export function createGlobeScene(host: HTMLElement, layer: HTMLDivElement, cb: S
     stars.visible = darkTheme && Q.stars > 0;
     clouds.visible = Q.clouds;
     buildPeaks(Q.peaks);
-    if (Q.legends && labels.length) loadLegends();
     host.setAttribute("data-q", String(quality));
     cb.quality(quality, ftEma);
   }
@@ -991,7 +840,6 @@ export function createGlobeScene(host: HTMLElement, layer: HTMLDivElement, cb: S
     starU.uPx.value = renderer.getPixelRatio();
     starU.uFade.value = 1;
     stars.rotation.set(rotX * 0.3, rotY * 0.3, 0);
-    updateLegends(tm, dt, intro ? 1 : z, QUALITY[quality].legends);
 
     updatePeaks(dt, era);
     renderer.render(scene, camera);
@@ -1055,7 +903,6 @@ export function createGlobeScene(host: HTMLElement, layer: HTMLDivElement, cb: S
       lightGeo.setAttribute("aGen", new THREE.BufferAttribute(lg, 1));
       lightGeo.setAttribute("aSeed", new THREE.BufferAttribute(lsd, 1));
       buildPeaks(QUALITY[quality].peaks);
-      if (QUALITY[quality].legends) loadLegends();
       cb.ready();
       clock.getDelta();
       if (!document.hidden) frame();
