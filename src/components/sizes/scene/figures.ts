@@ -48,6 +48,8 @@ export interface FigureHandle {
   depth: number;
   lod: Lod;
   materials: THREE.Material[];
+  /** Its own materials (a model), not the shared relief look: its shaders need compiling. */
+  custom?: boolean;
   dispose(): void;
 }
 
@@ -97,6 +99,7 @@ interface MeshArrays {
   height: number;
   zMin: number;
   zMax: number;
+  sphere?: [number, number, number, number];
 }
 
 let worker: Worker | null | undefined;
@@ -133,7 +136,7 @@ function buildInWorker(map: ReliefMap & { data: Uint8ClampedArray }, box: { x: n
   if (!w) return Promise.resolve(null);
   return new Promise((resolve) => {
     const id = nextJob++;
-    jobs.set(id, (r) => resolve(r && r.position && r.normal && r.uv && r.index ? { position: r.position, normal: r.normal, uv: r.uv, index: r.index, height: r.height ?? 1, zMin: r.zMin ?? 0, zMax: r.zMax ?? 0 } : null));
+    jobs.set(id, (r) => resolve(r && r.position && r.normal && r.uv && r.index ? { position: r.position, normal: r.normal, uv: r.uv, index: r.index, height: r.height ?? 1, zMin: r.zMin ?? 0, zMax: r.zMax ?? 0, sphere: r.sphere } : null));
     const job: ReliefJob = { id, w: map.w, h: map.h, data: map.data, box, segments };
     w.postMessage(job, [map.data.buffer]);
   });
@@ -217,7 +220,9 @@ export class ReliefProvider implements FigureProvider {
     // Bitmaps upload with flipY off, so v runs down the image (the builder already flipped the mesh's v).
     geo.setAttribute("uv", new THREE.BufferAttribute(mesh.uv, 2));
     geo.setIndex(new THREE.BufferAttribute(mesh.index, 1));
-    geo.computeBoundingSphere();
+    // Measured in the worker when it built the mesh (a pass over every vertex the main thread is spared).
+    if (mesh.sphere) geo.boundingSphere = new THREE.Sphere(new THREE.Vector3(mesh.sphere[0], mesh.sphere[1], mesh.sphere[2]), mesh.sphere[3]);
+    else geo.computeBoundingSphere();
     const tex = textureFrom(artBmp, this.opts.anisotropy);
     const { mat, obj } = this.dress(geo, tex, artBmp.width);
     const s = item.h / mesh.height;
@@ -261,6 +266,7 @@ export class ModelProvider implements FigureProvider {
       depth: size.z * s,
       lod,
       materials,
+      custom: true,
       dispose() { root.traverse((o) => { const m = o as THREE.Mesh; if (m.isMesh) m.geometry.dispose(); }); materials.forEach((m) => m.dispose()); },
     };
   }

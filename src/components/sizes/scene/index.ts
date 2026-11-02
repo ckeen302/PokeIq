@@ -416,7 +416,8 @@ export function createSizesScene(host: HTMLElement, opts: SceneOptions): SizesSc
         crowdDirty = true;
         shadowsDirty = true;
       };
-      if (sync) { show(); continue; }
+      // Relief figures share the shaders warm() compiled; references and models bring their own, compiled before they're shown.
+      if (sync || (!s.item.ref && h.lod < 2 && !h.custom)) { show(); continue; }
       compiling++;
       compileFor(h.object).then(show, show).finally(() => { compiling--; });
     }
