@@ -32,7 +32,7 @@ export function DexTabs({ active }: { active: DexTabId }) {
             aria-current={active === t.id ? "page" : undefined}
             data-testid={`dex-tab-${t.id}`}
             className={cn(
-              "rounded-sm px-4 py-2 font-pixel text-[10px] uppercase tracking-wider transition-colors",
+              "rounded-sm px-3.5 py-2 font-pixel text-[10px] uppercase tracking-wider transition-colors",
               active === t.id ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
             )}
           >

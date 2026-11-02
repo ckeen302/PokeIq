@@ -42,7 +42,7 @@ type Face = "px" | "nx" | "py" | "ny" | "pz" | "nz";
  * arms carry their side (−1 / +1) so the shader can raise them.
  */
 function spectatorGeometry(): THREE.BufferGeometry {
-  const pos: number[] = [], nrm: number[] = [], part: number[] = [], arm: number[] = [];
+  const pos: number[] = [], nrm: number[] = [], part: number[] = [], arm: number[] = [], index: number[] = [];
   const box = (x0: number, x1: number, y0: number, y1: number, z0: number, z1: number, partOf: (f: Face) => number, side = 0, skip: Face[] = []) => {
     const faces: [Face, number[], [number, number, number][]][] = [
       ["px", [1, 0, 0], [[x1, y0, z1], [x1, y0, z0], [x1, y1, z0], [x1, y1, z1]]],
@@ -54,12 +54,15 @@ function spectatorGeometry(): THREE.BufferGeometry {
     ];
     for (const [f, n, q] of faces) {
       if (skip.includes(f)) continue;
-      for (const k of [0, 1, 2, 0, 2, 3]) {
-        pos.push(...q[k]);
+      // Four corners per face (flat shading), two triangles: the vertex shader runs once per corner.
+      const v0 = pos.length / 3;
+      for (const c of q) {
+        pos.push(...c);
         nrm.push(...n);
         part.push(partOf(f));
         arm.push(side);
       }
+      index.push(v0, v0 + 1, v0 + 2, v0, v0 + 2, v0 + 3);
     }
   };
   const all = (p: number) => () => p;
@@ -80,6 +83,7 @@ function spectatorGeometry(): THREE.BufferGeometry {
   g.setAttribute("normal", new THREE.Float32BufferAttribute(nrm, 3));
   g.setAttribute("aPart", new THREE.Float32BufferAttribute(part, 1));
   g.setAttribute("aArm", new THREE.Float32BufferAttribute(arm, 1));
+  g.setIndex(index);
   return g;
 }
 
@@ -193,6 +197,7 @@ export function buildCrowd(o: CrowdOptions): Crowd {
     const k = s.pos.length / 3;
     if (!k) continue;
     const geo = new THREE.InstancedBufferGeometry();
+    geo.setIndex(base.getIndex());
     for (const name of ["position", "normal", "aPart", "aArm"]) geo.setAttribute(name, base.getAttribute(name));
     geo.setAttribute("iPos", new THREE.InstancedBufferAttribute(new Float32Array(s.pos), 3));
     geo.setAttribute("iDir", new THREE.InstancedBufferAttribute(new Float32Array(s.dir), 2));

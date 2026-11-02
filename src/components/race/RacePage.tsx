@@ -9,6 +9,7 @@ import { displayTimes, formatGap, formatTime, kmh, makeRace } from "@/lib/race/r
 import { motionAt } from "@/lib/race/model";
 import { MOTION_LABEL } from "@/lib/race/gait";
 import { HUB_PRESET, presetPath, vsPath } from "@/lib/race/deeplink";
+import { LAB_PATH } from "@/lib/lab";
 import { KIND_LABEL, type Entrant } from "@/lib/race/types";
 import type { Distance } from "@/lib/race/track";
 import { DexTabs } from "@/components/pokedex/DexTabs";
@@ -59,13 +60,14 @@ export function RacePage({ preset = DEFAULT_PRESET, vs, distance, seed }: { pres
             </div>
           ) : preset.id === HUB_PRESET ? (
             <ListHeader
+              back={{ href: LAB_PATH, label: "3D Lab" }}
               kicker="Pokémon race · 3D"
               title="Pokémon "
               accent="Race"
               blurb="Who is the fastest Pokémon? Watch them race 100, 200 or 400 m under the floodlights of a 3D stadium, with speeds from their stats and a sprint model from sports science. Pick any of them, share the race or make a video."
             />
           ) : (
-            <ListHeader kicker={`Pokémon race · ${spec.distance} m`} title={`${preset.label} `} accent="race" blurb={preset.blurb} />
+            <ListHeader back={{ href: "/pokedex/race", label: "Pokémon Race" }} kicker={`Pokémon race · ${spec.distance} m`} title={`${preset.label} `} accent="race" blurb={preset.blurb} />
           )}
           <DexTabs active="race" />
           <nav aria-label="Races" className="flex flex-wrap justify-center gap-2">
