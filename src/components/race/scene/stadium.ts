@@ -501,7 +501,7 @@ function buildHalos(b: Built, points: { p: THREE.Vector3; size: number; streak: 
     streaks = new THREE.InstancedMesh(geo, sm, sPts.length);
     streaks.frustumCulled = false;
   }
-  const q = new THREE.Quaternion(), s = new THREE.Vector3(), mtx = new THREE.Matrix4(), camPos = new THREE.Vector3();
+  const q = new THREE.Quaternion(), s = new THREE.Vector3(), mtx = new THREE.Matrix4(), camPos = new THREE.Vector3(), ndc = new THREE.Vector3();
   return {
     mesh,
     streaks,
@@ -520,7 +520,10 @@ function buildHalos(b: Built, points: { p: THREE.Vector3; size: number; streak: 
       if (streaks) {
         sPts.forEach((pt, i) => {
           const d = camPos.distanceTo(pt.p);
-          const k = pt.size * Math.max(1, d / 140);
+          // A lens streak only comes from a lamp in the picture: it fades out as the lamp leaves the frame.
+          ndc.copy(pt.p).project(cam);
+          const inFrame = ndc.z > 1 ? 0 : Math.min(1, Math.max(0, (1.02 - Math.max(Math.abs(ndc.x), Math.abs(ndc.y))) / 0.12));
+          const k = pt.size * Math.max(1, d / 140) * inFrame;
           s.set(k * 9, k * 0.5, 1);
           mtx.compose(pt.p, q, s);
           streaks!.setMatrixAt(i, mtx);

@@ -4,7 +4,7 @@ import { CROWD_HAIR, CROWD_SHIRT, CROWD_SKIN, rng } from "./textures";
 
 /**
  * The crowd: every seat row of both tiers, filled with seated spectators
- * modelled in 3D (a low-poly body: torso, lap, head and two arms), drawn
+ * modelled in 3D (a low-poly body: torso, lap, head, hair and two arms), drawn
  * instanced. Each one has its own shirt, skin and hair (or cap) colour
  * and size; the vertex shader bobs them, and as the excitement grows more
  * of them clap and then stand their arms up, in waves round the bowl.
@@ -66,9 +66,10 @@ function spectatorGeometry(): THREE.BufferGeometry {
   // Lap (thighs on the seat, knees towards the field).
   box(-0.18, 0.18, 0.3, 0.46, -0.12, 0.3, all(PART.legs), 0, ["ny", "nz"]);
   // Torso.
-  box(-0.19, 0.19, 0.42, 0.94, -0.28, -0.06, all(PART.shirt), 0, ["ny"]);
-  // Head: face and sides skin, the top and the back hair (or a cap).
-  box(-0.1, 0.1, 0.97, 1.21, -0.27, -0.07, (f) => (f === "py" || f === "nz" ? PART.hair : PART.skin), 0, ["ny"]);
+  box(-0.19, 0.19, 0.42, 0.94, -0.28, -0.06, all(PART.shirt), 0, ["ny", "nz"]);
+  // Head: the face, then hair (or a cap) over the top, sides and fringe. The backs of heads and bodies face away from every camera.
+  box(-0.1, 0.1, 0.97, 1.14, -0.27, -0.07, all(PART.skin), 0, ["ny", "nz", "py"]);
+  box(-0.106, 0.106, 1.14, 1.23, -0.276, -0.064, all(PART.hair), 0, ["ny", "nz"]);
   // Arms, hanging from the shoulders (the shader swings them about the shoulder): sleeves, hands at the end.
   for (const s of [-1, 1]) {
     const x = s * 0.245;
