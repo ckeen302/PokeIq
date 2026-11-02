@@ -12,6 +12,7 @@ import { createPost, type Post } from "./post";
 import { Crowd, type CrowdInstance } from "./crowd";
 import { sharedUniforms } from "./shaders";
 import { SKY, createSky } from "./sky";
+import { createTrace, traceBare, type TraceFigure } from "./trace";
 
 /**
  * The 3D scene behind /pokedex/sizes and its videos: a sunny Lumiose City
@@ -336,6 +337,7 @@ export function createSizesScene(host: HTMLElement, opts: SceneOptions): SizesSc
     halo.position.copy(tower.crown);
     worldGroup.add(halo);
     setupTree(worldGroup);
+    if (traceBare()) worldGroup.visible = false;
   }
 
   function heightAt(x: number): number {
@@ -550,9 +552,11 @@ export function createSizesScene(host: HTMLElement, opts: SceneOptions): SizesSc
     // Drop what has been out of view for a while (references stay: they're few, and rebuilding one would compile its shaders again).
     for (const s of slots) if (s.want === -1 && !s.item.ref && (s.handle || s.loading !== null) && frameNo - s.lastSeen > 90) dropSlot(s);
   }
+  let crowdDrawn = new Set<Slot>();
   function updateCrowd() {
     const list: CrowdInstance[] = [];
-    for (const s of crowdList) if (!s.handle && s.want !== -1 && crowd.has(s.item.art)) list.push({ x: s.x, z: s.z ?? 0, w: s.w, h: s.h, art: s.item.art });
+    crowdDrawn = new Set();
+    for (const s of crowdList) if (!s.handle && s.want !== -1 && crowd.has(s.item.art)) { list.push({ x: s.x, z: s.z ?? 0, w: s.w, h: s.h, art: s.item.art }); crowdDrawn.add(s); }
     if (crowd.set(list)) shadowsDirty = true;
   }
   const inCrowd = (s: Slot) => !s.handle && s.want !== -1 && !!s.item.art && crowd.has(s.item.art);
@@ -665,7 +669,13 @@ export function createSizesScene(host: HTMLElement, opts: SceneOptions): SizesSc
     const aperture = Math.min(7, 3.6 * Math.pow(1.6 / Math.max(0.15, focusD), 0.45)) * (H / 900);
     post.frame(camera, focusD, Math.max(1.2, aperture), Math.min(4, Math.max(0.03, focusD * 0.09)));
     post.render();
+    if (trace) {
+      if (traceFigs.length !== slots.length || traceFigs[0]?.key !== slots[0]?.item.key) traceFigs = slots.map((q) => ({ key: q.item.key, x: q.x, w: q.w, h: q.h, z: q.z }));
+      trace.frame(performance.now(), camera, W, H, traceFigs, (i) => { const q = slots[i]; return q.handle ? 2 : crowdDrawn.has(q) ? 1 : 0; }, view.x);
+    }
   }
+  const trace = createTrace();
+  let traceFigs: TraceFigure[] = [];
 
   function anchors(): Anchor[] {
     const out: Anchor[] = [];
