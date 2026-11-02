@@ -1,6 +1,6 @@
 import { Director } from "@/lib/mass-battle/director";
 import { answerText, fmt, questionText, resultTitle, spreadText } from "@/lib/mass-battle/copy";
-import { EV, SPREAD_REACH, TICK_HZ } from "@/lib/mass-battle/engine";
+import { EV, SPREAD_REACH, TICK_HZ } from "@/lib/mass-battle/constants";
 import { figureSize } from "@/lib/mass-battle/stats";
 import type { MBSpecies } from "@/lib/mass-battle/types";
 import { Mp4Muxer, aacConfig } from "@/lib/sizes/mp4";

@@ -1,4 +1,4 @@
-import { EV, EVENT_INTS, TICK_HZ } from "@/lib/mass-battle/engine";
+import { EV, EVENT_INTS, TICK_HZ } from "@/lib/mass-battle/constants";
 import type { FieldSummary } from "@/lib/mass-battle/director";
 import type { SimEnd, SimFrame, SimReady } from "./protocol";
 

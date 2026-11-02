@@ -1,4 +1,4 @@
-import { CONTACT_REACH, MAX_SECONDS, RANGED_REACH, ROUND_TICKS, SPREAD_REACH, TICK_HZ } from "@/lib/mass-battle/engine";
+import { CONTACT_REACH, MAX_SECONDS, RANGED_REACH, ROUND_TICKS, SPREAD_REACH, TICK_HZ } from "@/lib/mass-battle/constants";
 import { SOLVER } from "@/lib/mass-battle/solver";
 import { EV, IV } from "@/lib/mass-battle/stats";
 

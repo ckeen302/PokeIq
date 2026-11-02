@@ -1,4 +1,5 @@
 import { effectiveness as chart, type PokemonType } from "@/lib/pokemon/type-matrix";
+import { CONTACT_REACH, DT, EV, EVENT_INTS, MAX_SECONDS, RANGED_REACH, ROUND_TICKS, SPREAD_REACH, TICK_HZ } from "./constants";
 import { DamageTable, type HitEntry, type HitState } from "./damage";
 import { placeArmies } from "./formation";
 import { expectedHitsOf } from "./moves";
@@ -33,20 +34,10 @@ import type { BattleLevel, BattleOutcome, BattleSpec, Formation, MBMove, MBSpeci
  * the same way, hit for hit.
  */
 
-export const TICK_HZ = 20;
-export const DT = 1 / TICK_HZ;
-/** A round lasts three seconds: everyone acts once. */
-export const ROUND_TICKS = 60;
+export { CONTACT_REACH, DT, EV, EVENT_INTS, MAX_SECONDS, RANGED_REACH, ROUND_TICKS, SPREAD_REACH, TICK_HZ };
+
 /** Actions are spread over the first ticks of a round, fastest first. */
 const ACT_TICKS = 50;
-/** Contact moves: the bodies (nearly) touching. */
-export const CONTACT_REACH = 0.6;
-/** Everything else reaches this far past the bodies. */
-export const RANGED_REACH = 6;
-/** Spread moves hit foes this far from the user's body. */
-export const SPREAD_REACH = 3;
-/** A battle still going after this long is a draw. */
-export const MAX_SECONDS = 180;
 /** Coarse cells searched around a unit for its nearest foe; beyond them it heads for the other army's beacons. */
 const LOCAL_RINGS = 4;
 const BEACONS = 96;
@@ -55,10 +46,6 @@ const KNOCK = 1.1;
 const KNOCK_MAX = 6;
 const KNOCK_DECAY = 5;
 
-/** Event flags (one hit, or a miss, per record). */
-export const EV = { CRIT: 1, KO: 2, MISS: 4, SUPER: 8, RESIST: 16, SPREAD: 32, IMMUNE: 64, RECOIL: 128 } as const;
-/** Ints per event: actor, target, move slot, damage, flags, action id. */
-export const EVENT_INTS = 6;
 
 /** The battle's species and their moves, resolved from the roster for this level. */
 export interface Prepared {

@@ -4,7 +4,7 @@ import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } fro
 import { track } from "@vercel/analytics";
 import { Camera, Clapperboard, Expand, Info, Loader2, Minus, Pause, Play, Plus, RotateCcw, Share2, Swords, Trophy, Volume2, VolumeX, X } from "lucide-react";
 import { Director, type Pose } from "@/lib/mass-battle/director";
-import { EV, SPREAD_REACH } from "@/lib/mass-battle/engine";
+import { EV, SPREAD_REACH } from "@/lib/mass-battle/constants";
 import { armyName, bossDownLine, critLine, fmt, multiKoLine, noAnswerText, possessive, questionText, resultLine, resultTitle, spreadText, winRateText } from "@/lib/mass-battle/copy";
 import { figureSize } from "@/lib/mass-battle/stats";
 import { encodeBattle, encodeQuestion, MASS_BATTLE_PATH, newSeed, type SlugIndex } from "@/lib/mass-battle/share";
