@@ -5,6 +5,8 @@ import { PuzzleOfTheDay } from "@/components/connections/PuzzleOfTheDay";
 import { GameInfo } from "@/components/seo/GameInfo";
 import { ConnectionsLazyCards } from "@/components/connections/LazyCards";
 import { connDailyViews } from "@/lib/server/connections-today";
+import { boardArtUrl } from "@/lib/pokemon/art";
+import type { ConnPuzzleResponse } from "@/lib/connections/types";
 
 export const metadata: Metadata = pageMetadata({
   title: "PokéConnections: the Daily Pokémon Connections Puzzle",
@@ -21,15 +23,24 @@ export const metadata: Metadata = pageMetadata({
  */
 export const revalidate = 3600;
 
-/** Runs before the board is parsed: marks the player's local date, so the right one of the pre-rendered boards shows. */
-const LOCAL_DAY_SCRIPT = `try{var d=new Date();document.documentElement.dataset.connDay=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}catch(e){}`;
+/**
+ * Runs before the board is parsed: marks the player's local date, so the
+ * right one of the pre-rendered boards shows, and starts that board's
+ * sixteen pictures at once, at high priority (the browser can't tell which
+ * board is the player's until this runs, and would otherwise fetch them
+ * behind the page's scripts).
+ */
+function localDayScript(initial: Record<string, ConnPuzzleResponse>): string {
+  const art = Object.fromEntries(Object.entries(initial).map(([date, view]) => [date, view.tiles.filter((t) => !t.kind).map((t) => boardArtUrl(t.id))]));
+  return `try{var d=new Date(),k=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");document.documentElement.dataset.connDay=k;(${JSON.stringify(art).replace(/</g, "\\u003c")}[k]||[]).forEach(function(u){var l=document.createElement("link");l.rel="preload";l.as="image";l.href=u;l.setAttribute("fetchpriority","high");document.head.appendChild(l)})}catch(e){}`;
+}
 
 export default async function ConnectionsPage() {
   // Per-player state (saved guesses, streaks, results) stays on the device and in its own requests; guesses are checked by /api/connections.
   const initial = await connDailyViews();
   return (
     <>
-    <script dangerouslySetInnerHTML={{ __html: LOCAL_DAY_SCRIPT }} />
+    <script dangerouslySetInnerHTML={{ __html: localDayScript(initial) }} />
     <div className="space-y-10">
       <Connections initial={initial} />
       <PuzzleOfTheDay />

@@ -5,7 +5,7 @@ import { forwardRef } from "react";
 import { motion } from "framer-motion";
 import { Sparkles } from "lucide-react";
 import { typeColor, typeTextColor } from "@/lib/pokemon/type-colors";
-import { artUrl } from "@/lib/pokemon/art";
+import { boardArtUrl } from "@/lib/pokemon/art";
 import { CONN_LEVELS, connLevels, type ConnGroupExplained, type ConnGroupReveal, type ConnLevel, type ConnSize, type ConnTile } from "@/lib/connections/types";
 import { cn } from "@/lib/utils";
 
@@ -24,11 +24,28 @@ export function LevelMark({ level, className }: { level: ConnLevel; className?: 
 /**
  * A tile's picture: a sprite for a Pokémon, a type-coloured chip for a move
  * or a type, an icon for an ability. `size` is the box in pixels.
+ *
+ * Every size shows the same static 160px file (public/art): the CDN serves
+ * it without waking /api/art, and a found group's bar and the "Why?" panel
+ * reuse the picture the grid already loaded. `priority`: the board's own
+ * sixteen, fetched ahead of the page's scripts.
  */
-export function TileArt({ tile, size, className, lazy }: { tile: ConnTile; size: number; className?: string; lazy?: boolean }) {
+export function TileArt({ tile, size, className, lazy, priority }: { tile: ConnTile; size: number; className?: string; lazy?: boolean; priority?: boolean }) {
   // width/height reserve the box before the sprite arrives (no layout shift); 160px art stays crisp on a 3x phone at the grid's size.
   if (!tile.kind)
-    return <img src={artUrl(tile.id, size <= 48 ? 96 : 160)} alt="" width={size} height={size} decoding="async" loading={lazy ? "lazy" : undefined} draggable={false} className={className} />;
+    return (
+      <img
+        src={boardArtUrl(tile.id)}
+        alt=""
+        width={size}
+        height={size}
+        decoding="async"
+        loading={lazy ? "lazy" : undefined}
+        fetchPriority={priority ? "high" : undefined}
+        draggable={false}
+        className={className}
+      />
+    );
   const small = size <= 48;
   if (tile.kind === "ability") {
     return (
@@ -48,6 +65,21 @@ export function TileArt({ tile, size, className, lazy }: { tile: ConnTile; size:
       {tile.kind === "move" ? "Move" : type}
     </span>
   );
+}
+
+/**
+ * Fetches a board's pictures before it's shown (Unlimited's next board), so
+ * it appears whole. Hold on to the result until then.
+ */
+export function preloadTileArt(tiles: readonly ConnTile[]): HTMLImageElement[] {
+  return tiles
+    .filter((t) => !t.kind)
+    .map((t) => {
+      const img = new Image();
+      img.decoding = "async";
+      img.src = boardArtUrl(t.id);
+      return img;
+    });
 }
 
 /** What a tile is, in words, for screen readers and the "Why?" panel. */
@@ -130,6 +162,7 @@ export const GridTile = forwardRef<
         tile={tile}
         size={76}
         lazy={pre}
+        priority={!pre}
         className={cn(compact ? "h-10 w-10 sm:h-14 sm:w-14" : "h-14 w-14 sm:h-[4.25rem] sm:w-[4.25rem]", "pointer-events-none object-contain transition-transform duration-150", !selected && "group-hover:scale-105")}
       />
       <span

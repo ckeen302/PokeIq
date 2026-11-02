@@ -1,12 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
-import sharp from "sharp";
 import { getPokemon } from "@/lib/pokemon/pokedex";
+import { officialArtworkUrl, transcodeArt } from "@/lib/server/art-transcode";
 
 /**
  * GET /api/art/:id?s=160&shiny=1 — resized WebP official artwork for the
  * Pokédex (public data, unlike quiz media). Responses are immutable and
  * CDN-cacheable, so each size is transcoded once per edge, not per visitor:
  * a 1,025-card grid ships ~8 KB thumbnails instead of 100+ KB PNGs.
+ *
+ * Every species' 160px picture is also a static file (public/art/160, see
+ * scripts/board-art.ts), which the CDN serves without waking this route.
  */
 
 export const runtime = "nodejs";
@@ -30,14 +33,10 @@ export async function GET(request: NextRequest, context: { params: Promise<{ id:
   const key = `${id}:${size}:${shiny ? 1 : 0}`;
   let body = cache.get(key);
   if (!body) {
-    const src = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${shiny ? "shiny/" : ""}${id}.png`;
     try {
-      const res = await fetch(src, { signal: AbortSignal.timeout(8000) });
+      const res = await fetch(officialArtworkUrl(id, shiny), { signal: AbortSignal.timeout(8000) });
       if (!res.ok) return NextResponse.json({ error: "Artwork unavailable" }, { status: res.status === 404 ? 404 : 502 });
-      body = await sharp(Buffer.from(await res.arrayBuffer()))
-        .resize(size, size, { fit: "contain", background: { r: 0, g: 0, b: 0, alpha: 0 } })
-        .webp({ quality: 82 })
-        .toBuffer();
+      body = await transcodeArt(Buffer.from(await res.arrayBuffer()), size);
     } catch (err) {
       // Upstream timeout / network error or a corrupt image.
       console.error("[api/art]", id, err instanceof Error ? err.message : err);
