@@ -625,7 +625,7 @@ step("pokéconnections: a full daily, one wrong guess then a solve");
   await page.getByTestId("conn-tile").nth(15).waitFor();
   const nextIds = (await page.getByTestId("conn-tile").evaluateAll((els) => els.map((e) => Number(e.dataset.id)))).sort((a, b) => a - b);
   if (nextIds.join() === hard.tiles.map((t) => t.id).sort((a, b) => a - b).join()) errors.push("Next puzzle gave the same puzzle");
-  if (!(await page.getByTestId("conn-title").innerText()).includes("Practice")) errors.push("Next puzzle didn't stay in Unlimited");
+  if (!(await page.getByTestId("conn-title").textContent())?.includes("Practice")) errors.push("Next puzzle didn't stay in Unlimited");
   await page.screenshot({ path: `${OUT}/conn-unlimited.png` });
 
   // Unlimited 5×5: the size toggle, twenty-five tiles, five groups of five and five mistakes, solved from the data alone.
