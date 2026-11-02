@@ -50,9 +50,10 @@ export interface Placement { key: string; x: number; y: number; s: number; alpha
 
 /**
  * Where badges go this frame: biggest figures first, each centred over its
- * figure's top (kept inside the frame, pinned under the top edge when the
- * figure is taller than the view), skipping any that would overlap a badge
- * already placed. Scale follows the figure's size on screen.
+ * figure's top (kept inside the frame; when the figure is taller than the
+ * view, in the top corner away from it, so it never covers a face),
+ * skipping any that would overlap a badge already placed. Scale follows the
+ * figure's size on screen.
  */
 export function layoutBadges(
   cands: { key: string; x: number; y: number; sh: number; info: BadgeInfo; focus: boolean }[],
@@ -81,6 +82,8 @@ export function layoutBadges(
     let x = c.x - w / 2;
     let y = c.y - gap - h;
     const margin = s * 0.3;
+    // Taller than the view (a close-up): pinned under the top edge it would sit on the figure's face, so it takes the top corner on the side away from the figure.
+    if (y < frame.top + margin) x = c.x >= frame.w / 2 ? margin : frame.w - margin - w;
     x = Math.max(margin, Math.min(frame.w - margin - w, x));
     y = Math.max(frame.top + margin, Math.min(frame.h - frame.bottom - h - margin, y));
     // Fade in as the figure grows on screen.

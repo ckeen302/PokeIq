@@ -554,6 +554,12 @@ describe("badge layout", () => {
       expect(placed[0].x).toBeGreaterThanOrEqual(0);
       expect(placed[0].x + placed[0].w).toBeLessThanOrEqual(frame.w);
     }
+    // A close-up taller than the view: its badge takes a top corner, off the figure's face.
+    const tall = layoutBadges([{ key: "p", x: 720, y: -400, sh: 2000, info, focus: true }], { w: 1440, h: 900, top: 72, bottom: 104 }, measure, { max: 3, minSh: 10, scale: 1 });
+    expect(tall[0].x).toBeLessThan(tall[0].s);
+    expect(tall[0].y).toBeGreaterThanOrEqual(72);
+    const short = layoutBadges([{ key: "p", x: 720, y: -400, sh: 2000, info: { ...info, name: "Pikachu", types: ["electric"] }, focus: true }], { w: 1440, h: 900, top: 72, bottom: 104 }, measure, { max: 3, minSh: 10, scale: 1 });
+    expect(short[0].x + short[0].w).toBeLessThan(720);
   });
 });
 
