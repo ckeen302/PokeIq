@@ -46,6 +46,7 @@ const nextConfig: NextConfig = {
     "/**/opengraph-image*": ["./src/assets/fonts/*.ttf"],
     // A size comparison's card is a route of its own (it reads ?vs=).
     "/pokedex/sizes/compare/og": ["./src/assets/fonts/*.ttf"],
+    "/lab/mass-battle/og": ["./src/assets/fonts/*.ttf"],
     // A shared PokéGuessr result's card draws the map that was played, by a computed path.
     "/guessr/r/**": ["./public/geo/maps/*.webp"],
     // The learn card's facts come from the Pokédex's places, which read the encounter tables from disk.

@@ -8,7 +8,8 @@ import { ARENAS, FORMATIONS, type ArenaId, type BattleLevel, type BattleSpec, ty
  *
  * (version, level, arena, seed in base 36, each side's formation, then
  * each side's units as slug*count joined by "_"). The same link replays
- * the same battle. A question is `?q=magikarp.arceus.100.plains`.
+ * the same battle. A question is `?ask=magikarp.arceus.100.plains`
+ * (`?q=` stays the render quality, as on the other 3D pages).
  * Only characters URLSearchParams leaves alone (letters, digits, - . _ *).
  */
 
@@ -84,7 +85,7 @@ export function decodeQuestion(code: string | null | undefined, slugs: SlugIndex
 }
 
 export const battleHref = (spec: BattleSpec, slugs: SlugIndex) => `${MASS_BATTLE_PATH}?b=${encodeBattle(spec, slugs)}`;
-export const questionHref = (q: Question, slugs: SlugIndex) => `${MASS_BATTLE_PATH}?q=${encodeQuestion(q, slugs)}`;
+export const questionHref = (q: Question, slugs: SlugIndex) => `${MASS_BATTLE_PATH}?ask=${encodeQuestion(q, slugs)}`;
 
 /** A fresh seed for a new battle. */
 export const newSeed = () => (Math.floor(Math.random() * 2 ** 32) >>> 0) % 36 ** 6;

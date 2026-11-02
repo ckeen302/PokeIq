@@ -12,8 +12,15 @@ export const LAB_PATH = "/lab";
  */
 export const RACE_LIVE = false;
 
+/**
+ * Pokémon Mass Battle (/lab/mass-battle) shows on /lab, in the sitemap and
+ * on Pokédex entries only once it's live; until then its pages work but
+ * stay out of search. Flip to true when it ships.
+ */
+export const MASS_BATTLE_LIVE = false;
+
 export interface LabExperience {
-  id: "timeline" | "sizes" | "globe" | "race";
+  id: "timeline" | "sizes" | "globe" | "race" | "mass-battle";
   href: string;
   title: string;
   /** Small HUD label above the title. */
@@ -72,6 +79,17 @@ export const LAB_EXPERIENCES: LabExperience[] = [
     tags: ["Photo finish", "Pick your own race", "Make a video"],
     accent: "340 86% 60%",
     live: RACE_LIVE,
+  },
+  {
+    id: "mass-battle",
+    href: "/lab/mass-battle",
+    title: "Pokémon Mass Battle",
+    kicker: "Real battle maths, at scale",
+    pitch: "Thousands of Pokémon clash on a 3D battlefield with the real games' damage maths. How many Magikarp does it take to beat Arceus? Find out, then make a video of it.",
+    tags: ["How many?", "Army vs army", "Make a video"],
+    image: "/lab/mass-battle.webp",
+    accent: "28 100% 58%",
+    live: MASS_BATTLE_LIVE,
   },
 ];
 

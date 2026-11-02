@@ -23,6 +23,8 @@ export interface PresetDef {
   sides: [SideDef, SideDef];
   /** "How many?" presets: the question the solver answers (an army of the first side's species against the second's). */
   question?: { challenger: string; boss: string };
+  /** Names for sides made of many species. */
+  labels?: [string, string];
 }
 
 const fe = (s: MBSpecies) => s.fullyEvolved && !s.legendary && !s.mythical;
@@ -69,6 +71,7 @@ export const PRESETS: PresetDef[] = [
     arena: "plains",
     level: 100,
     seed: 147,
+    labels: ["Starters", "Final evolutions"],
     sides: [
       { formation: "line", units: [["bulbasaur", 200], ["charmander", 200], ["squirtle", 200]] },
       { formation: "wedge", units: [["venusaur", 20], ["charizard", 20], ["blastoise", 20]] },
@@ -82,6 +85,7 @@ export const PRESETS: PresetDef[] = [
     arena: "volcano",
     level: 100,
     seed: 2026,
+    labels: ["Fire types", "Water types"],
     sides: [
       { formation: "line", rule: (s) => fe(s) && s.types.includes("fire") && !s.types.includes("water"), each: 10 },
       { formation: "line", rule: (s) => fe(s) && s.types.includes("water") && !s.types.includes("fire"), each: 5 },
@@ -95,6 +99,7 @@ export const PRESETS: PresetDef[] = [
     arena: "colosseum",
     level: 100,
     seed: 151,
+    labels: ["Legendaries", "Kanto"],
     sides: [
       { formation: "wedge", rule: (s) => s.legendary && s.moves[100].length > 0, each: 1 },
       { formation: "line", rule: (s) => fe(s) && s.gen === 1, each: 10 },
@@ -108,6 +113,7 @@ export const PRESETS: PresetDef[] = [
     arena: "volcano",
     level: 100,
     seed: 6,
+    labels: ["Bug swarm", "Charizard"],
     sides: [
       { formation: "swarm", units: [["beedrill", 250], ["butterfree", 250], ["venomoth", 250], ["scyther", 250]] },
       { formation: "line", units: [["charizard", 1]] },
@@ -122,6 +128,7 @@ export const PRESETS: PresetDef[] = [
     arena: "snowfield",
     level: 100,
     seed: 133,
+    labels: ["Vaporeon & co.", "Umbreon & co."],
     sides: [
       { formation: "wedge", units: [["vaporeon", 25], ["jolteon", 25], ["flareon", 25], ["espeon", 25]] },
       { formation: "wedge", units: [["umbreon", 25], ["leafeon", 25], ["glaceon", 25], ["sylveon", 25]] },
@@ -139,6 +146,7 @@ export interface ResolvedPreset {
   blurb: string;
   spec: BattleSpec;
   question: Question | null;
+  labels: [string, string] | null;
 }
 
 /** A preset's armies against the roster (species it can't field are left out). */
@@ -151,5 +159,5 @@ export function resolvePreset(p: PresetDef, roster: Pick<Roster, "species">): Re
     return { formation: d.formation, units: roster.species.filter((s) => d.rule(s) && s.moves[100].length > 0).map((s) => ({ id: s.id, count: d.each })) };
   };
   const q = p.question && bySlug.get(p.question.challenger) && bySlug.get(p.question.boss) ? { challenger: bySlug.get(p.question.challenger)!.id, boss: bySlug.get(p.question.boss)!.id, level: p.level, arena: p.arena } : null;
-  return { id: p.id, title: p.title, hook: p.hook, blurb: p.blurb, spec: { sides: [side(p.sides[0]), side(p.sides[1])], level: p.level, arena: p.arena, seed: p.seed }, question: q };
+  return { id: p.id, title: p.title, hook: p.hook, blurb: p.blurb, spec: { sides: [side(p.sides[0]), side(p.sides[1])], level: p.level, arena: p.arena, seed: p.seed }, question: q, labels: p.labels ?? null };
 }
