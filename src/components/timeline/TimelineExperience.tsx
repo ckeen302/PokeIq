@@ -13,6 +13,7 @@ import type { TimelineAudio } from "./audio";
 import { TimelineDetail } from "./TimelineDetail";
 import { TIMELINE_CSS } from "./timeline-css";
 import { cn } from "@/lib/utils";
+import { LAB_PATH } from "@/lib/lab";
 
 // The intro and the era transitions load only when they are about to play.
 const TimelineIntro = lazy(() => import("./TimelineIntro"));
@@ -451,8 +452,8 @@ export function TimelineExperience({ entries, eraStarts, initialId = null, child
           <div className="pointer-events-none absolute inset-x-0 top-0 z-10 flex items-start justify-between gap-3 p-3 sm:p-5">
             <div className="min-w-0 space-y-2">
               <div className="flex flex-wrap items-center gap-2">
-                <Link href="/pokedex" className={chip + " text-muted-foreground hover:text-foreground"} data-testid="timeline-back">
-                  <ArrowLeft className="h-3.5 w-3.5" aria-hidden /> Pokédex
+                <Link href={LAB_PATH} className={chip + " text-muted-foreground hover:text-foreground"} data-testid="timeline-back">
+                  <ArrowLeft className="h-3.5 w-3.5" aria-hidden /> 3D Lab
                 </Link>
                 <button type="button" className={chip + " text-muted-foreground hover:text-foreground"} onClick={() => setMode("list")} data-testid="timeline-list-view">
                   <List className="h-3.5 w-3.5" aria-hidden /> List

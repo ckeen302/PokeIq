@@ -5,6 +5,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { ChevronLeft, ChevronRight, Pause, Play, Volume2, VolumeX, X } from "lucide-react";
 import { REGION_ORIGINS } from "@/lib/region-origins";
+import { LAB_PATH } from "@/lib/lab";
 import { isMuted, onMuteChange, setMuted } from "@/lib/sound";
 import { artUrl } from "@/lib/pokemon/art";
 import { placeSlug } from "@/lib/dex/places";
@@ -307,7 +308,10 @@ export function WorldGlobe({ regions, eras }: { regions: GlobeRegionCard[]; eras
       <div className={"transition-opacity duration-700 " + (hudOn || state === "nogl" || state === "failed" || intro === false ? "opacity-100" : "opacity-0")}>
         <div className="pointer-events-none absolute inset-x-0 top-0 flex justify-between gap-3 px-4 pt-[max(1rem,env(safe-area-inset-top))] sm:px-6">
           <div className="min-w-0">
-            <Link href="/guessr" className={btn + " mb-3 inline-block"}>← PokéGuessr</Link>
+            <nav aria-label="Breadcrumb" className="mb-3 flex flex-wrap gap-2">
+              <Link href={LAB_PATH} className={btn} data-testid="globe-lab">← 3D Lab</Link>
+              <Link href="/guessr" className={btn}>PokéGuessr</Link>
+            </nav>
             <h1 className="font-display text-xl font-bold uppercase tracking-[0.14em] sm:text-3xl">Poké<span className="text-primary">IQ</span> World</h1>
             <p className="mt-1.5 font-pixel text-[10px] uppercase tracking-[0.14em] text-screen">
               {state === "ready" ? "Every region, on one world" : "Loading the world…"}

@@ -621,11 +621,12 @@ step("pokéconnections: a full daily, one wrong guess then a solve");
   await page.waitForTimeout(600);
   await page.screenshot({ path: `${OUT}/conn-perfect.png` });
   await page.screenshot({ path: `${OUT}/conn-unlimited-result.png`, fullPage: true });
-  const nextTiles = page.waitForResponse((r) => /\/api\/connections\?practice=hard-/.test(r.url()));
+  // The next board is usually dealt ahead while this one is played, so it may come with no request: read it off the grid.
   await page.getByTestId("conn-next").click();
-  const next = await (await nextTiles).json();
-  if (next.key === hard.key) errors.push("Next puzzle gave the same puzzle");
   await page.getByTestId("conn-tile").nth(15).waitFor();
+  const nextIds = (await page.getByTestId("conn-tile").evaluateAll((els) => els.map((e) => Number(e.dataset.id)))).sort((a, b) => a - b);
+  if (nextIds.join() === hard.tiles.map((t) => t.id).sort((a, b) => a - b).join()) errors.push("Next puzzle gave the same puzzle");
+  if (!(await page.getByTestId("conn-title").textContent())?.includes("Practice")) errors.push("Next puzzle didn't stay in Unlimited");
   await page.screenshot({ path: `${OUT}/conn-unlimited.png` });
 
   // Unlimited 5×5: the size toggle, twenty-five tiles, five groups of five and five mistakes, solved from the data alone.
@@ -642,7 +643,7 @@ step("pokéconnections: a full daily, one wrong guess then a solve");
   // The server rejects a four-tile guess on a 5×5 board, and a five-tile guess on a 4×4 one.
   const bad5 = await page.request.post(`${BASE}/api/connections`, { data: { practice: big.key.replace("practice:", ""), guesses: [big.tiles.slice(0, 4).map((t) => t.id)] } });
   if (bad5.status() !== 400) errors.push(`a four-tile guess on a 5×5 board returned ${bad5.status()}`);
-  const bad4 = await page.request.post(`${BASE}/api/connections`, { data: { practice: next.key.replace("practice:", ""), guesses: [big.tiles.slice(0, 5).map((t) => t.id)] } });
+  const bad4 = await page.request.post(`${BASE}/api/connections`, { data: { practice: hard.key.replace("practice:", ""), guesses: [big.tiles.slice(0, 5).map((t) => t.id)] } });
   if (bad4.status() !== 400) errors.push(`a five-tile guess on a 4×4 board returned ${bad4.status()}`);
   const bigIds = big.tiles.map((t) => String(t.id));
   const [big5] = JSON.parse(execFileSync("npx", ["tsx", "scripts/connections-solve.ts", ...bigIds], { encoding: "utf8", cwd: new URL("..", import.meta.url).pathname }));
@@ -2046,6 +2047,50 @@ step("pokédex TCG tab: sets, a set gallery (sort + filter), a card page, search
   }
 }
 
+step("pokédex: previous / next on a place, a move and a TCG card (link and → key)");
+{
+  // [page, next page, next's label, previous page or null at the start of the list]
+  const pagers = [
+    ["/pokedex/places/pewter-gym-kanto", "/pokedex/places/pewter-museum-of-science-kanto", "Pewter Museum of Science", "/pokedex/places/pewter-city-kanto"],
+    ["/pokedex/moves/thunderbolt", "/pokedex/moves/thunderclap", "Thunderclap", "/pokedex/moves/thunder-wave"],
+    ["/pokedex/tcg/card/base1-1", "/pokedex/tcg/card/base1-2", "#2 Blastoise", null],
+  ];
+  const at = (path) => new RegExp(`${path.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`);
+  for (const [from, next, label, prev] of pagers) {
+    await gotoSettled(page, `${BASE}${from}`);
+    const nextLink = page.getByTestId("dex-next");
+    if (!(await nextLink.waitFor({ timeout: 30_000 }).then(() => true, () => false))) {
+      if (from.includes("/tcg/") && (await page.getByTestId("tcg-unavailable").count())) continue;
+      errors.push(`pager: ${from} has no Next link`);
+      continue;
+    }
+    if ((await nextLink.getAttribute("href")) !== next) errors.push(`pager: ${from} Next goes to ${await nextLink.getAttribute("href")}, not ${next}`);
+    if (!(await nextLink.innerText()).includes(label)) errors.push(`pager: ${from} Next doesn't name ${label}`);
+    const prevHref = (await page.getByTestId("dex-prev").count()) ? await page.getByTestId("dex-prev").getAttribute("href") : null;
+    if (prevHref !== prev) errors.push(`pager: ${from} Previous goes to ${prevHref}, not ${prev}`);
+    await nextLink.click();
+    await page.waitForURL(at(next));
+    // → from the keyboard (retried: a key pressed before hydration does nothing).
+    await gotoSettled(page, `${BASE}${from}`);
+    let moved = false;
+    for (let i = 0; i < 4 && !moved; i++) {
+      await page.keyboard.press("ArrowRight");
+      moved = await page.waitForURL(at(next), { timeout: 5_000 }).then(() => true, () => false);
+    }
+    if (!moved) errors.push(`pager: → on ${from} didn't open ${next}`);
+    else {
+      // ← from there comes back (once the new page, and so its own shortcuts, is in).
+      await page.locator(`[data-testid="dex-prev"][href="${from}"]`).waitFor({ state: "attached" });
+      let back = false;
+      for (let i = 0; i < 4 && !back; i++) {
+        await page.keyboard.press("ArrowLeft");
+        back = await page.waitForURL(at(from), { timeout: 5_000 }).then(() => true, () => false);
+      }
+      if (!back) errors.push(`pager: ← on ${next} didn't open ${from}`);
+    }
+  }
+}
+
 step("pokédex Trainers tab: search, notable filter, a game by route, an area's teams, a notable trainer");
 {
   await gotoSettled(page, `${BASE}/pokedex`);
@@ -2272,6 +2317,52 @@ await page.getByText(/Daily Challenge #\d+/).first().waitFor();
 for (const path of ["/trainer", "/leaderboard?board=iq", "/pokemon/eevee", "/pokedex?type=ghost&sort=spe"]) {
   await gotoSettled(page, `${BASE}${path}`);
   await page.screenshot({ path: `${OUT}/${path.slice(1).replace(/[^a-z0-9]+/gi, "_")}.png` });
+}
+
+step("3D Lab: the nav's tab, /lab's cards, a card opens its page, the trophy opens the leaderboard");
+{
+  await gotoSettled(page, `${BASE}/`);
+  const labTab = page.locator("header").getByRole("link", { name: "3D Lab", exact: true });
+  await labTab.click();
+  await page.waitForURL(/\/lab$/);
+  await page.getByTestId("lab-hero").waitFor();
+  if ((await labTab.getAttribute("aria-current")) !== "page") errors.push("3d lab: the nav tab isn't active on /lab");
+  for (const id of ["timeline", "sizes", "globe"]) {
+    if (!(await page.getByTestId(`lab-card-${id}`).count())) errors.push(`3d lab: no ${id} card`);
+  }
+  // Card art: real screenshots, loaded (the picture drifts slowly, so it's never "stable" for Playwright's scrolling).
+  const art = page.getByTestId("lab-card-timeline").locator("img").first();
+  await art.evaluate((img) => img.scrollIntoView({ block: "center" }));
+  if (!(await art.evaluate((img) => img.complete ? img.naturalWidth > 0 : new Promise((r) => { img.onload = () => r(true); img.onerror = () => r(false); })))) errors.push("3d lab: the timeline card's picture didn't load");
+  // Race shows only once its page is live.
+  if (await page.getByTestId("lab-card-race").count()) {
+    const res = await page.request.get(`${BASE}/pokedex/race`);
+    if (!res.ok()) errors.push("3d lab: the Race card shows but /pokedex/race isn't there");
+  }
+  await page.screenshot({ path: `${OUT}/lab.png` });
+  await page.getByTestId("lab-open-timeline").click();
+  await page.waitForURL(/\/pokedex\/timeline$/);
+  if ((await labTab.getAttribute("aria-current")) !== "page") errors.push("3d lab: the nav tab isn't active on the timeline");
+  if ((await page.locator("header").getByRole("link", { name: "Pokédex", exact: true }).getAttribute("aria-current")) === "page") errors.push("3d lab: Pokédex is lit on the timeline too");
+  // The 3D stage (with WebGL) leads back to the Lab.
+  const back = page.getByTestId("timeline-back");
+  if (await back.count() && (await back.getAttribute("href")) !== "/lab") errors.push("3d lab: the timeline's back link doesn't lead to /lab");
+  // The leaderboard lives on as the trophy among the header's icons.
+  const trophy = page.getByTestId("nav-leaderboard");
+  if ((await trophy.getAttribute("title")) !== "Leaderboard" || (await trophy.getAttribute("aria-label")) !== "Leaderboard") errors.push("3d lab: the trophy has no label or tooltip");
+  await trophy.click();
+  await page.waitForURL(/\/leaderboard$/);
+  await page.getByTestId("leaderboard-tabs").waitFor();
+  if (await page.locator('header a[href="/leaderboard"]:not([data-testid="nav-leaderboard"])').count()) errors.push("3d lab: the nav still has a Leaderboard text link");
+  // Phones: 3D Lab in the tab bar, the trophy in the header, and nothing scrolls sideways.
+  const phone = await newPage({ width: 390, height: 844 });
+  await gotoSettled(phone, `${BASE}/lab`);
+  const phoneTab = phone.locator('nav[aria-label="Primary"]').getByRole("link", { name: "3D Lab" });
+  if ((await phoneTab.getAttribute("aria-current")) !== "page") errors.push("3d lab: the phone tab bar's 3D Lab isn't active on /lab");
+  if (!(await phone.getByTestId("nav-leaderboard").isVisible())) errors.push("3d lab: no trophy in the phone header");
+  if (await phone.evaluate(() => document.documentElement.scrollWidth > window.innerWidth)) errors.push("3d lab: /lab scrolls sideways on a phone");
+  await phone.screenshot({ path: `${OUT}/lab-phone.png` });
+  await phone.context().close();
 }
 
 step("battle: hub, team builder (paste an OU team, validate), damage calc");

@@ -12,6 +12,7 @@ import { Section } from "@/components/pokedex/entry/Reveal";
 import { Badges } from "@/components/pokedex/entry/EncountersSection";
 import { TypeBadge } from "@/components/pokedex/TypeBadge";
 import { DetailHero, DetailNav } from "@/components/pokedex/detail/DetailParts";
+import { pagerFor, placeLabel } from "@/lib/dex/neighbours";
 
 export const dynamicParams = false;
 
@@ -42,11 +43,12 @@ export default async function PlacePage({ params }: PageProps) {
   const gyms = gymsFor(place);
   const inside = placesIn(place.region, place.name);
   const parent = place.parent ? PLACES.find((p) => p.region === place.region && p.name === place.parent && !p.parent) : undefined;
+  const pager = pagerFor(PLACES, (x) => x.slug === place.slug, (x) => ({ href: `/pokedex/places/${x.slug}`, label: placeLabel(x, place) }));
   let idx = 0;
 
   return (
     <article className="mx-auto max-w-6xl space-y-10">
-      <DetailNav tab="places" label="Back to all places" />
+      <DetailNav tab="places" label="Back to all places" pager={pager} />
       <DetailHero kicker={`Place · ${place.type} · ${place.region}`} title={place.name}>
         <div className="space-y-3">
           {parent && (

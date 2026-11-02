@@ -2,8 +2,8 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { SHARE_IMAGES, pageMetadata } from "@/lib/seo";
-import { BackButton } from "@/components/ui/BackButton";
-import { DetailHero } from "@/components/pokedex/detail/DetailParts";
+import { DetailHero, DetailNav } from "@/components/pokedex/detail/DetailParts";
+import { pagerFor } from "@/lib/dex/neighbours";
 import { Section } from "@/components/pokedex/entry/Reveal";
 import { TrainerAvatar } from "@/components/trainers/TrainerAvatar";
 import { ROMAN, TRAINER_GAMES, sourceUrl, trainerGame } from "@/lib/trainers/games";
@@ -41,16 +41,12 @@ export default async function TrainerGamePage({ params }: PageProps) {
     .map((s) => notable(s)!)
     .sort((a, b) => ROLE_ORDER.indexOf(a.role) - ROLE_ORDER.indexOf(b.role) || NOTABLE.indexOf(a) - NOTABLE.indexOf(b));
   const places = regions.reduce((n, r) => n + r.groups.reduce((m, gr) => m + gr.areas.length, 0), 0);
+  const pager = pagerFor(TRAINER_GAMES, (x) => x.key === g.key, (x) => ({ href: `/pokedex/trainers/${x.key}`, label: x.name }));
   let idx = 0;
 
   return (
     <article className="mx-auto max-w-6xl space-y-10">
-      <nav className="flex flex-wrap items-center justify-between gap-2 text-sm text-muted-foreground">
-        <BackButton href="/pokedex/trainers" label="All trainers" />
-        <Link href="/pokedex" className="hover:text-foreground">
-          Pokédex
-        </Link>
-      </nav>
+      <DetailNav href="/pokedex/trainers" label="All trainers" pager={pager} />
       <DetailHero kicker={`Trainers · Gen ${ROMAN[g.gen]} ·${g.regions.join(" & ")}`} title={`Pokémon ${g.name}`}>
         <p className="max-w-2xl text-foreground/90">
           {f.teams.length.toLocaleString("en-US")} trainer teams across {places} places. Pick a route, town or dungeon to see everyone you can battle there and the exact Pokémon they use.

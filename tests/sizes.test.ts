@@ -10,9 +10,9 @@ import { DEFAULT_LENGTH, END_SECONDS, HOOK_SECONDS, LINK_TEXT, MIN_SECONDS, VIDE
 import { Mp4Muxer, aacConfig, readBoxes, type BoxInfo } from "@/lib/sizes/mp4";
 import { buildGlide, framer, glideAt, type Lens } from "@/lib/sizes/glide";
 import { holdsFor, planPlay, playAt } from "@/lib/sizes/play";
-import { BASE_YAW, MAX_ORBIT, finalePose, pitchFor, poseFor } from "@/lib/sizes/camera";
-import { ROOF_Y, planWorld } from "@/lib/sizes/world";
-import { clampX, flightAt, flightSeconds, overviewView, stepIndex } from "@/lib/sizes/explore";
+import { BASE_YAW, MAX_ORBIT, ORBIT_LIMIT, finalePose, pitchFor, poseFor } from "@/lib/sizes/camera";
+import { ROOF_Y, STREET, planWorld } from "@/lib/sizes/world";
+import { FRICTION, MAX_DISTANCE, RATE, ZOOM_MAX, ZOOM_MIN, ZOOM_STEP_BUTTON, ZOOM_STEP_KEY, angleDelta, badgeBudget, badgeScaleFor, clampOrbit, clampTilt, clampX, clampZoom, coast, damp, effectiveZoom, exploreView, flightAt, flightSeconds, lookPitch, overviewView, pinchZoom, pitchRange, releaseVelocity, stepIndex, wheelPixels, wheelZoom, zoomAnchorShift, zoomFloorAt, zoomPitch, zoomedDistance } from "@/lib/sizes/explore";
 import { compareHook, fold, lineFor, pushCompare, searchItems } from "@/lib/sizes/lineup";
 import { factFor, spanFact } from "@/lib/sizes/facts";
 import { INTRO_KEY, resetIntroMemory, shouldAutoPlay } from "@/lib/sizes/intro";
@@ -506,5 +506,160 @@ describe("badge layout", () => {
       expect(placed[0].x).toBeGreaterThanOrEqual(0);
       expect(placed[0].x + placed[0].w).toBeLessThanOrEqual(frame.w);
     }
+  });
+});
+
+describe("Explore: zoom, tilt, orbit and motion", () => {
+  const lens: Lens = { vfov: 35, aspect: 16 / 9 };
+  const every = presetLineup(DEFAULT_PRESET, SIZE_ITEMS);
+  const placed = layoutLine(every).map((p, i) => ({ ...p, key: every[i].key }));
+  const fr = framer(placed, lens);
+  const heights = new Map(placed.map((p) => [p.x, p.h]));
+  const heightAt = (x: number) => heights.get(x) ?? 1;
+  const tanHalf = Math.tan((lens.vfov * Math.PI) / 360);
+
+  it("damping is frame-rate independent and settles on the target", () => {
+    let a = 0, b = 0, c = 0;
+    for (let i = 0; i < 120; i++) a = damp(a, 10, RATE.zoom, 1 / 120);
+    for (let i = 0; i < 30; i++) b = damp(b, 10, RATE.zoom, 1 / 30);
+    c = damp(c, 10, RATE.zoom, 1);
+    expect(a).toBeCloseTo(b, 9);
+    expect(a).toBeCloseTo(c, 9);
+    expect(damp(3, 10, RATE.x, 0)).toBe(3);
+    expect(damp(0, 10, RATE.x, 5)).toBeCloseTo(10, 6);
+  });
+
+  it("a flick coasts the same distance at any frame rate, and stops", () => {
+    const run = (fps: number) => {
+      let s = { target: 0, vel: 6 };
+      for (let i = 0; i < fps * 5; i++) s = coast(s.target, s.vel, FRICTION.x, 1 / fps);
+      return s;
+    };
+    const a = run(30), b = run(144);
+    expect(a.target).toBeCloseTo(b.target, 6);
+    expect(a.target).toBeCloseTo(6 / FRICTION.x, 2);
+    expect(Math.abs(a.vel)).toBeLessThan(1e-3);
+    // The release speed comes from the last moments of the drag, not a pointer that had already stopped.
+    const samples = [0, 16, 32, 48, 64].map((t) => ({ t, v: t * 0.01 }));
+    expect(releaseVelocity(samples, 70)).toBeCloseTo(10, 6);
+    expect(releaseVelocity(samples, 400)).toBe(0);
+  });
+
+  it("zoom multiplies the automatic framing, within its range, and the distance cap holds over the giants", () => {
+    expect(zoomedDistance(4, 1)).toBe(4);
+    expect(zoomedDistance(4, 2)).toBeCloseTo(2, 9);
+    expect(zoomedDistance(4, 100)).toBeCloseTo(4 / ZOOM_MAX, 9);
+    expect(zoomedDistance(4, 0)).toBeCloseTo(4 / ZOOM_MIN, 9);
+    expect(zoomedDistance(300, ZOOM_MIN)).toBe(MAX_DISTANCE);
+    expect(zoomedDistance(900, 0.5)).toBe(900);
+    expect(effectiveZoom(4, zoomedDistance(4, 0.25))).toBeCloseTo(0.25, 9);
+    expect(zoomFloorAt(300)).toBeCloseTo(300 / MAX_DISTANCE, 9);
+    expect(zoomFloorAt(1)).toBe(ZOOM_MIN);
+    expect(clampZoom(NaN)).toBe(1);
+  });
+
+  it("zoomed in, a 10 cm Pokémon overfills the frame; zoomed out, dozens of figures share it", () => {
+    const tiny = placed[0];
+    expect(tiny.h).toBeLessThanOrEqual(0.12);
+    const close = exploreView(tiny.x, fr, heightAt, { zoom: ZOOM_MAX, tilt: 0, orbit: 0 });
+    expect(tiny.h / (2 * close.d * tanHalf)).toBeGreaterThan(1);
+    const mid = placed.find((p) => p.key === "pikachu")!;
+    const wide = exploreView(mid.x, fr, heightAt, { zoom: ZOOM_MIN, tilt: 0, orbit: 0 });
+    const halfW = wide.d * tanHalf * lens.aspect;
+    const inFrame = placed.filter((p) => Math.abs(p.x - mid.x) < halfW).length;
+    expect(inFrame).toBeGreaterThanOrEqual(24);
+  });
+
+  it("the automatic framing is unchanged at the default look", () => {
+    const p = placed[300];
+    const v = exploreView(p.x, fr, heightAt);
+    expect(v.d).toBeCloseTo(fr.at(p.x), 9);
+    expect(v.pitch).toBeCloseTo(pitchFor(p.h), 9);
+    expect(v.orbit).toBe(0);
+    expect(zoomPitch(1)).toBe(0);
+    expect(zoomPitch(2)).toBe(0);
+  });
+
+  it("tilt stays inside what the relief figures can take, and pulling back looks down on the crowd", () => {
+    for (const zoom of [ZOOM_MAX, 1, 0.3, 0.1, ZOOM_MIN]) {
+      const [lo, hi] = pitchRange(zoom);
+      expect(lo).toBeLessThan(hi);
+      for (const tilt of [-5, -0.2, 0, 0.2, 5]) {
+        const p = lookPitch(1.5, zoom, tilt);
+        expect(p).toBeGreaterThanOrEqual(lo - 1e-12);
+        expect(p).toBeLessThanOrEqual(hi + 1e-12);
+        expect(lookPitch(1.5, zoom, clampTilt(tilt, 1.5, zoom))).toBeCloseTo(p, 9);
+      }
+    }
+    // Up close never more than about 32° from above, nor more than a little from below.
+    expect(pitchRange(1)[1]).toBeLessThanOrEqual(0.57);
+    expect(pitchRange(1)[0]).toBeGreaterThanOrEqual(-0.11);
+    expect(zoomPitch(ZOOM_MIN)).toBeGreaterThan(0.4);
+    expect(lookPitch(1.5, ZOOM_MIN, 0)).toBeGreaterThan(lookPitch(1.5, 1, 0));
+  });
+
+  it("the camera never sinks into the pavement, and pulled back it looks over the rooftops", () => {
+    for (const p of [placed[0], ...["pikachu", "snorlax", "gyarados", "wailord"].map((k) => placed.find((q) => q.key === k)!)]) {
+      for (const zoom of [ZOOM_MAX, 1, 0.7, 0.4, 0.3, 0.2, 0.1, 0.06, ZOOM_MIN]) {
+        for (const tilt of [-5, 0, 5]) {
+          for (const orbit of [-1, 0, 1]) {
+            const v = exploreView(p.x, fr, heightAt, { zoom, tilt, orbit });
+            const pose = poseFor(v);
+            expect(pose.position[1]).toBeGreaterThan(0);
+            // Zoomed out behind the near facades, the sight line passes over their roofs.
+            const z = Math.abs(pose.position[2]);
+            if (zoom <= 0.4 && z > STREET.facade) {
+              const atFacade = pose.target[1] + (pose.position[1] - pose.target[1]) * (STREET.facade / z);
+              expect(atFacade).toBeGreaterThan(ROOF_Y);
+            }
+          }
+        }
+      }
+    }
+  });
+
+  it("orbit is a modest turn either way, and the rig holds it there", () => {
+    expect(ORBIT_LIMIT).toBeGreaterThanOrEqual(MAX_ORBIT);
+    expect(ORBIT_LIMIT).toBeLessThanOrEqual((30 * Math.PI) / 180);
+    expect(clampOrbit(9)).toBe(ORBIT_LIMIT);
+    expect(clampOrbit(-9)).toBe(-ORBIT_LIMIT);
+    const v = { x: 10, d: 5, h: 1, orbit: 3, pitch: 0.05, rise: 0 };
+    const pose = poseFor(v);
+    const yaw = Math.atan2(pose.target[0] - pose.position[0], pose.target[2] - pose.position[2]);
+    expect(yaw - BASE_YAW).toBeCloseTo(ORBIT_LIMIT, 6);
+  });
+
+  it("maps wheels, pinches and keys to zoom steps", () => {
+    // Scrolling up zooms in, about 16% a mouse notch; a trackpad pinch (ctrl + wheel) is more sensitive.
+    expect(Math.exp(wheelZoom(-100, false))).toBeCloseTo(1.16, 2);
+    expect(wheelZoom(100, false)).toBeLessThan(0);
+    expect(Math.abs(wheelZoom(10, true))).toBeGreaterThan(Math.abs(wheelZoom(10, false)));
+    expect(wheelPixels(3, 1, 900)).toBe(48);
+    expect(wheelPixels(5000, 0, 900)).toBe(240);
+    expect(Math.exp(ZOOM_STEP_KEY)).toBeGreaterThan(1.2);
+    expect(Math.exp(ZOOM_STEP_BUTTON)).toBeGreaterThan(Math.exp(ZOOM_STEP_KEY));
+    // A pinch follows the fingers' spread; a twist's angle wraps the short way round.
+    expect(pinchZoom(0, 100, 200)).toBeCloseTo(Math.log(2), 9);
+    expect(angleDelta(3.1, -3.1)).toBeCloseTo(2 * Math.PI - 6.2, 9);
+    // Zooming in towards a point right of centre moves the camera's point that way; at the centre it stays.
+    expect(zoomAnchorShift(300, 1440, 5, 1.5, lens)).toBeGreaterThan(0);
+    expect(zoomAnchorShift(0, 1440, 5, 1.5, lens)).toBe(0);
+    expect(zoomAnchorShift(300, 1440, 5, 1 / 1.5, lens)).toBeLessThan(0);
+  });
+
+  it("badges thin out and shrink as the view widens, and shrink up close", () => {
+    expect(badgeBudget(1, false)).toBe(4);
+    expect(badgeBudget(1, true)).toBe(2);
+    expect(badgeBudget(ZOOM_MIN, false)).toBe(1);
+    let lastN = Infinity;
+    for (const z of [2, 1, 0.5, 0.2, 0.1, ZOOM_MIN]) {
+      const n = badgeBudget(z, false);
+      expect(n).toBeLessThanOrEqual(lastN);
+      lastN = n;
+    }
+    expect(badgeScaleFor(1)).toBe(1);
+    expect(badgeScaleFor(ZOOM_MIN)).toBeCloseTo(0.7, 6);
+    expect(badgeScaleFor(ZOOM_MAX)).toBeCloseTo(0.7, 6);
+    expect(badgeScaleFor(1.5)).toBeLessThan(1);
   });
 });

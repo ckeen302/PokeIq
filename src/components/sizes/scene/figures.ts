@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import { RoundedBoxGeometry } from "three/examples/jsm/geometries/RoundedBoxGeometry.js";
 import { buildReliefMesh, type ReliefMap } from "@/lib/sizes/relief";
+import type { ReliefJob, ReliefResult } from "./relief-worker";
 import type { RefKind } from "@/lib/sizes/types";
 import { figureLook } from "./shaders";
 
@@ -15,7 +16,9 @@ import { figureLook } from "./shaders";
  *   (art id → GLB url) replaces the relief figure for that Pokémon.
  *
  * Figures are streamed: built when they come near the camera (a detailed
- * mesh near the focus, a flat cut-out far away), dropped when they leave.
+ * mesh near the focus, a lighter one around it; far ones join the crowd,
+ * see crowd.ts), dropped when they leave. Relief meshes are built in a
+ * worker, so a figure streaming in never stalls a frame.
  */
 
 export interface SceneItem {
@@ -45,6 +48,8 @@ export interface FigureHandle {
   depth: number;
   lod: Lod;
   materials: THREE.Material[];
+  /** Its own materials (a model), not the shared relief look: its shaders need compiling. */
+  custom?: boolean;
   dispose(): void;
 }
 
@@ -70,14 +75,78 @@ async function fetchBitmap(url: string, signal: AbortSignal): Promise<ImageBitma
   return createImageBitmap(blob, { colorSpaceConversion: "none", premultiplyAlpha: "none" });
 }
 
-function bitmapPixels(bmp: ImageBitmap): ReliefMap {
-  const cv = document.createElement("canvas");
-  cv.width = bmp.width;
-  cv.height = bmp.height;
-  const g = cv.getContext("2d", { willReadFrequently: true })!;
-  g.drawImage(bmp, 0, 0);
-  const img = g.getImageData(0, 0, bmp.width, bmp.height);
+let pixelCanvas: CanvasRenderingContext2D | null = null;
+/** A decoded map's bytes (relief maps are small, 128 px on the long side: one shared CPU canvas does). */
+function bitmapPixels(bmp: ImageBitmap): ReliefMap & { data: Uint8ClampedArray } {
+  if (!pixelCanvas) pixelCanvas = document.createElement("canvas").getContext("2d", { willReadFrequently: true })!;
+  const cv = pixelCanvas.canvas;
+  if (cv.width < bmp.width || cv.height < bmp.height) {
+    cv.width = Math.max(cv.width, bmp.width);
+    cv.height = Math.max(cv.height, bmp.height);
+  }
+  pixelCanvas.clearRect(0, 0, bmp.width, bmp.height);
+  pixelCanvas.drawImage(bmp, 0, 0);
+  const img = pixelCanvas.getImageData(0, 0, bmp.width, bmp.height);
   return { w: bmp.width, h: bmp.height, data: img.data, channels: 4 };
+}
+
+interface MeshArrays {
+  position: Float32Array;
+  normal: Float32Array;
+  /** Flipped for textures uploaded without flipY. */
+  uv: Float32Array;
+  index: Uint32Array | Uint16Array;
+  height: number;
+  zMin: number;
+  zMax: number;
+  sphere?: [number, number, number, number];
+}
+
+let worker: Worker | null | undefined;
+let nextJob = 1;
+const jobs = new Map<number, (r: ReliefResult | null) => void>();
+
+function reliefWorker(): Worker | null {
+  if (worker !== undefined) return worker;
+  try {
+    worker = typeof Worker === "undefined" ? null : new Worker(new URL("./relief-worker.ts", import.meta.url));
+  } catch {
+    worker = null;
+  }
+  if (worker) {
+    worker.onmessage = (e: MessageEvent<ReliefResult>) => {
+      const done = jobs.get(e.data.id);
+      jobs.delete(e.data.id);
+      done?.(e.data.ok ? e.data : null);
+    };
+    worker.onerror = () => {
+      // A broken worker: everything waiting (and everything after) is built on the main thread.
+      for (const done of jobs.values()) done(null);
+      jobs.clear();
+      worker?.terminate();
+      worker = null;
+    };
+  }
+  return worker;
+}
+
+/** The mesh, built off the main thread when a worker is available (the pixels are handed over, not copied). */
+function buildInWorker(map: ReliefMap & { data: Uint8ClampedArray }, box: { x: number; y: number; w: number; h: number; size: number }, segments: number): Promise<MeshArrays | null> {
+  const w = reliefWorker();
+  if (!w) return Promise.resolve(null);
+  return new Promise((resolve) => {
+    const id = nextJob++;
+    jobs.set(id, (r) => resolve(r && r.position && r.normal && r.uv && r.index ? { position: r.position, normal: r.normal, uv: r.uv, index: r.index, height: r.height ?? 1, zMin: r.zMin ?? 0, zMax: r.zMax ?? 0, sphere: r.sphere } : null));
+    const job: ReliefJob = { id, w: map.w, h: map.h, data: map.data, box, segments };
+    w.postMessage(job, [map.data.buffer]);
+  });
+}
+
+function buildHere(map: ReliefMap, box: { x: number; y: number; w: number; h: number; size: number }, segments: number): MeshArrays {
+  const mesh = buildReliefMesh(map, box, segments);
+  const uv = new Float32Array(mesh.uv.length);
+  for (let i = 0; i < uv.length; i += 2) { uv[i] = mesh.uv[i]; uv[i + 1] = 1 - mesh.uv[i + 1]; }
+  return { position: mesh.position, normal: mesh.normal, uv, index: mesh.index, height: mesh.height, zMin: mesh.zMin, zMax: mesh.zMax };
 }
 
 function textureFrom(bmp: ImageBitmap, anisotropy: number): THREE.Texture {
@@ -93,6 +162,16 @@ function textureFrom(bmp: ImageBitmap, anisotropy: number): THREE.Texture {
 export class ReliefProvider implements FigureProvider {
   constructor(private urls: FigureUrls, private opts: { anisotropy: number; sharpen: number; texSize: 256 | 512 }) {}
   has(item: SceneItem) { return item.art > 0; }
+  /** A relief figure's mesh and materials (also used to compile their shaders before the first figure arrives). */
+  dress(geo: THREE.BufferGeometry, tex: THREE.Texture, texSize: number) {
+    const mat = new THREE.MeshStandardMaterial({ map: tex, alphaTest: 0.5, alphaToCoverage: true, roughness: 0.62, metalness: 0, envMapIntensity: 0.8 });
+    figureLook(mat, texSize, this.opts.sharpen);
+    const obj = new THREE.Mesh(geo, mat);
+    obj.castShadow = true;
+    obj.receiveShadow = true;
+    obj.customDepthMaterial = new THREE.MeshDepthMaterial({ depthPacking: THREE.RGBADepthPacking, map: tex, alphaTest: 0.5 });
+    return { mat, obj };
+  }
   async load(item: SceneItem, lod: Lod, signal: AbortSignal): Promise<FigureHandle> {
     const [bx, by, bw, bh, size] = item.box;
     const L = Math.max(bw, bh);
@@ -123,26 +202,29 @@ export class ReliefProvider implements FigureProvider {
       };
     }
     const [artBmp, reliefBmp] = await Promise.all([fetchBitmap(this.urls.art(item.art, this.opts.texSize), signal), fetchBitmap(this.urls.relief(item.art), signal)]);
-    const map = bitmapPixels(reliefBmp);
-    reliefBmp.close();
     // UVs address the full render; the texture may be a smaller copy of it (same framing).
-    const mesh = buildReliefMesh(map, { x: bx, y: by, w: bw, h: bh, size }, SEGMENTS[lod]);
+    const box = { x: bx, y: by, w: bw, h: bh, size };
+    let mesh: MeshArrays | null;
+    try {
+      mesh = (await buildInWorker(bitmapPixels(reliefBmp), box, SEGMENTS[lod])) ?? buildHere(bitmapPixels(reliefBmp), box, SEGMENTS[lod]);
+    } finally {
+      reliefBmp.close();
+    }
+    if (signal.aborted) {
+      artBmp.close();
+      throw new DOMException("aborted", "AbortError");
+    }
     const geo = new THREE.BufferGeometry();
     geo.setAttribute("position", new THREE.BufferAttribute(mesh.position, 3));
     geo.setAttribute("normal", new THREE.BufferAttribute(mesh.normal, 3));
-    // Bitmaps upload with flipY off, so v runs down the image: undo the mesh's WebGL flip.
-    const uv = new Float32Array(mesh.uv.length);
-    for (let i = 0; i < uv.length; i += 2) { uv[i] = mesh.uv[i]; uv[i + 1] = 1 - mesh.uv[i + 1]; }
-    geo.setAttribute("uv", new THREE.BufferAttribute(uv, 2));
+    // Bitmaps upload with flipY off, so v runs down the image (the builder already flipped the mesh's v).
+    geo.setAttribute("uv", new THREE.BufferAttribute(mesh.uv, 2));
     geo.setIndex(new THREE.BufferAttribute(mesh.index, 1));
-    geo.computeBoundingSphere();
+    // Measured in the worker when it built the mesh (a pass over every vertex the main thread is spared).
+    if (mesh.sphere) geo.boundingSphere = new THREE.Sphere(new THREE.Vector3(mesh.sphere[0], mesh.sphere[1], mesh.sphere[2]), mesh.sphere[3]);
+    else geo.computeBoundingSphere();
     const tex = textureFrom(artBmp, this.opts.anisotropy);
-    const mat = new THREE.MeshStandardMaterial({ map: tex, alphaTest: 0.5, alphaToCoverage: true, roughness: 0.62, metalness: 0, envMapIntensity: 0.8 });
-    figureLook(mat, artBmp.width, this.opts.sharpen);
-    const obj = new THREE.Mesh(geo, mat);
-    obj.castShadow = true;
-    obj.receiveShadow = true;
-    obj.customDepthMaterial = new THREE.MeshDepthMaterial({ depthPacking: THREE.RGBADepthPacking, map: tex, alphaTest: 0.5 });
+    const { mat, obj } = this.dress(geo, tex, artBmp.width);
     const s = item.h / mesh.height;
     obj.scale.setScalar(s);
     return {
@@ -184,6 +266,7 @@ export class ModelProvider implements FigureProvider {
       depth: size.z * s,
       lod,
       materials,
+      custom: true,
       dispose() { root.traverse((o) => { const m = o as THREE.Mesh; if (m.isMesh) m.geometry.dispose(); }); materials.forEach((m) => m.dispose()); },
     };
   }

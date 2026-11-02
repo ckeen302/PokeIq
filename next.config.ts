@@ -26,6 +26,8 @@ const securityHeaders = [
  * the CDN again on every page.
  */
 const staticAssetCache = [{ key: "Cache-Control", value: "public, max-age=86400, stale-while-revalidate=604800" }];
+/** Pokémon artwork (public/art) never changes for a species: a month in the browser, and revalidated quietly after that. */
+const artCache = [{ key: "Cache-Control", value: "public, max-age=2592000, stale-while-revalidate=31536000" }];
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
@@ -63,6 +65,7 @@ const nextConfig: NextConfig = {
         source,
         headers: staticAssetCache,
       })),
+      { source: "/art/:path*", headers: artCache },
     ];
   },
   images: {

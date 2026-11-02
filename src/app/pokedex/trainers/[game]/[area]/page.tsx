@@ -3,12 +3,12 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { BookOpen, MapPin } from "lucide-react";
 import { SHARE_IMAGES, pageMetadata } from "@/lib/seo";
-import { BackButton } from "@/components/ui/BackButton";
-import { DetailHero } from "@/components/pokedex/detail/DetailParts";
+import { DetailHero, DetailNav } from "@/components/pokedex/detail/DetailParts";
+import { pagerFor, trainerAreaOrder } from "@/lib/dex/neighbours";
 import { HudHeading } from "@/components/game/HudHeading";
 import { TrainerCard } from "@/components/trainers/TeamView";
 import { TRAINER_GAMES, trainerGame } from "@/lib/trainers/games";
-import { areaTeams, gameFile, placeFor } from "@/lib/trainers/data";
+import { areaTeams, gameAreas, gameFile, placeFor } from "@/lib/trainers/data";
 
 export const dynamicParams = false;
 
@@ -47,16 +47,12 @@ export default async function TrainerAreaPage({ params }: PageProps) {
   const place = placeFor(data.area);
   const count = data.sections.reduce((k, s) => k + s.trainers.length, 0);
   const others = TRAINER_GAMES.filter((o) => o.key !== g.key && gameFile(o.key)!.areas.some((a) => a.slug === area && a.region === data.area.region));
+  const pager = pagerFor(trainerAreaOrder(gameAreas(g.key)), (a) => a.slug === data.area.slug, (a) => ({ href: `/pokedex/trainers/${g.key}/${a.slug}`, label: a.name }));
   const multi = data.sections.length > 1 || data.sections[0]?.name;
 
   return (
     <article className="mx-auto max-w-6xl space-y-8">
-      <nav className="flex flex-wrap items-center justify-between gap-2 text-sm text-muted-foreground">
-        <BackButton href={`/pokedex/trainers/${g.key}`} label={`${g.name} trainers`} />
-        <Link href="/pokedex/trainers" className="hover:text-foreground">
-          All trainers
-        </Link>
-      </nav>
+      <DetailNav href={`/pokedex/trainers/${g.key}`} label={`${g.name} trainers`} pager={pager} home={{ href: "/pokedex/trainers", label: "All trainers" }} />
       <DetailHero kicker={`Pokémon ${g.name} · ${data.area.region}`} title={data.area.name}>
         <div className="space-y-3">
           <p className="text-foreground/90">

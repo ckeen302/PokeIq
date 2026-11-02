@@ -4,14 +4,15 @@ import Link from "next/link";
 import { MapPin } from "lucide-react";
 import { SHARE_IMAGES, pageMetadata, jsonLd } from "@/lib/seo";
 import { SITE_URL } from "@/lib/site";
-import { BackButton } from "@/components/ui/BackButton";
 import { HudHeading } from "@/components/game/HudHeading";
+import { DetailNav } from "@/components/pokedex/detail/DetailParts";
+import { notableOrder, pagerFor } from "@/lib/dex/neighbours";
 import { TypeBadge } from "@/components/pokedex/TypeBadge";
 import { TeamGrid } from "@/components/trainers/TeamView";
 import { TeamTabs } from "@/components/trainers/TeamTabs";
 import { TrainerAvatar } from "@/components/trainers/TrainerAvatar";
 import { trainerGame } from "@/lib/trainers/games";
-import { notable } from "@/lib/trainers/notable";
+import { ROLE_ORDER, notable } from "@/lib/trainers/notable";
 import { notableDirectory, notableTeams } from "@/lib/trainers/data";
 import { teamTitle } from "@/lib/trainers/format";
 
@@ -43,17 +44,13 @@ export default async function NotableTrainerPage({ params }: PageProps) {
   if (!n) notFound();
   const byGame = notableTeams(n.slug);
   if (!byGame.length) notFound();
+  const pager = pagerFor(notableOrder(notableDirectory(), ROLE_ORDER), (x) => x.slug === n.slug, (x) => ({ href: `/pokedex/trainers/notable/${x.slug}`, label: x.name }));
   const roles = [n.role, ...(n.alsoRoles ?? [])];
 
   return (
     <article className="mx-auto max-w-6xl space-y-10">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd({ "@context": "https://schema.org", "@type": "Person", name: n.name, description: n.blurb, url: `${SITE_URL}/pokedex/trainers/notable/${n.slug}` }) }} />
-      <nav className="flex flex-wrap items-center justify-between gap-2 text-sm text-muted-foreground">
-        <BackButton href="/pokedex/trainers" label="All trainers" />
-        <Link href="/pokedex" className="hover:text-foreground">
-          Pokédex
-        </Link>
-      </nav>
+      <DetailNav href="/pokedex/trainers" label="All trainers" pager={pager} />
 
       <header className="hud flex flex-col gap-5 rounded-lg border bg-card p-5 sm:flex-row sm:items-center sm:p-6" data-testid="notable-hero">
         <TrainerAvatar name={n.name} type={n.type} size="lg" />

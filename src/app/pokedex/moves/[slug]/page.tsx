@@ -6,6 +6,7 @@ import { capitalize } from "@/lib/pokemon/type-matrix";
 import { Section } from "@/components/pokedex/entry/Reveal";
 import { TypeBadge } from "@/components/pokedex/TypeBadge";
 import { DetailHero, DetailNav, SpeciesGrid, StatBox } from "@/components/pokedex/detail/DetailParts";
+import { pagerFor } from "@/lib/dex/neighbours";
 
 export const dynamicParams = false;
 
@@ -32,6 +33,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 export default async function MovePage({ params }: PageProps) {
   const m = getMove((await params).slug);
   if (!m) notFound();
+  const pager = pagerFor(MOVES, (x) => x.slug === m.slug, (x) => ({ href: `/pokedex/moves/${x.slug}`, label: x.name }));
   const learners = m.learners.flatMap((l) => {
     const s = species(l.id);
     return s ? [{ ...s, note: l.how.slice(0, 3).join(" · ") }] : [];
@@ -39,7 +41,7 @@ export default async function MovePage({ params }: PageProps) {
 
   return (
     <article className="mx-auto max-w-6xl space-y-10">
-      <DetailNav tab="moves" label="Back to all moves" />
+      <DetailNav tab="moves" label="Back to all moves" pager={pager} />
       <DetailHero kicker={`Move · Gen ${m.gen}`} title={m.name}>
         <div className="flex flex-wrap items-center gap-2">
           <TypeBadge type={m.type} size="lg" />
