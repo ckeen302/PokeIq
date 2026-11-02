@@ -82,8 +82,8 @@ export function layoutBadges(
     let x = c.x - w / 2;
     let y = c.y - gap - h;
     const margin = s * 0.3;
-    // Its top out of the view (a close-up): pinned under the top edge it would sit on the figure's face, so it takes the top corner on the side away from the figure.
-    if (c.y < frame.top) x = c.x >= frame.w / 2 ? margin : frame.w - margin - w;
+    // The framed figure's top out of the view (a close-up): pinned under the top edge its badge would sit on the face, so it takes the top corner on the side away from the figure (a neighbour's stays over its own figure).
+    if (c.focus && c.y < frame.top) x = c.x >= frame.w / 2 ? margin : frame.w - margin - w;
     x = Math.max(margin, Math.min(frame.w - margin - w, x));
     y = Math.max(frame.top + margin, Math.min(frame.h - frame.bottom - h - margin, y));
     // Fade in as the figure grows on screen.

@@ -564,6 +564,13 @@ describe("badge layout", () => {
     const framed = layoutBadges([{ key: "p", x: 720, y: 160, sh: 480, info: { ...info, name: "Snorlax", types: ["normal"] }, focus: true }], { w: 1440, h: 900, top: 72, bottom: 104 }, measure, { max: 3, minSh: 10, scale: 1 });
     expect(framed[0].x).toBeLessThan(720);
     expect(framed[0].x + framed[0].w).toBeGreaterThan(720);
+    // A neighbour taller than the view keeps its badge over itself, never in a far corner.
+    const pair = layoutBadges([
+      { key: "f", x: 1000, y: 300, sh: 300, info: { ...info, name: "Eternatus", types: ["poison"] }, focus: true },
+      { key: "n", x: 200, y: -300, sh: 1400, info, focus: false },
+    ], { w: 1440, h: 900, top: 72, bottom: 104 }, measure, { max: 3, minSh: 10, scale: 1 });
+    const n = pair.find((p) => p.key === "n");
+    if (n) expect(n.x).toBeLessThan(720);
   });
 });
 
