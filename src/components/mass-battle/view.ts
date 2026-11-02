@@ -37,6 +37,8 @@ export class BattleView {
   readonly fx: Float32Array;
   readonly fz: Float32Array;
   readonly hitAt: Float32Array;
+  /** How hard the last hit was (its damage over the unit's max HP, 0..1). */
+  readonly hitPower: Float32Array;
   readonly attackAt: Float32Array;
   readonly faintAt: Float32Array;
   readonly hp: Uint16Array;
@@ -61,6 +63,7 @@ export class BattleView {
     this.fx = new Float32Array(n).fill(NaN);
     this.fz = new Float32Array(n).fill(NaN);
     this.hitAt = new Float32Array(n).fill(-1);
+    this.hitPower = new Float32Array(n);
     this.attackAt = new Float32Array(n).fill(-1);
     this.faintAt = new Float32Array(n).fill(-1);
     this.hp = new Uint16Array(n);
@@ -118,7 +121,10 @@ export class BattleView {
     for (let k = 0; k < ev.length; k += EVENT_INTS) {
       const actor = ev[k], target = ev[k + 1], flags = ev[k + 4];
       if (!(flags & EV.RECOIL)) this.attackAt[actor] = t;
-      if (target !== actor && !(flags & (EV.MISS | EV.IMMUNE))) this.hitAt[target] = t;
+      if (target !== actor && !(flags & (EV.MISS | EV.IMMUNE))) {
+        this.hitAt[target] = t;
+        this.hitPower[target] = Math.min(1, ev[k + 3] / Math.max(1, this.ready.maxHp[this.sp[target]]));
+      }
       if (flags & EV.KO) this.faintAt[target] = t;
       this.onHit?.({ t, actor, target, slot: ev[k + 2], damage: ev[k + 3], flags, action: ev[k + 5], ax: f.pos[actor * 2], az: f.pos[actor * 2 + 1], tx: f.pos[target * 2], tz: f.pos[target * 2 + 1] });
     }

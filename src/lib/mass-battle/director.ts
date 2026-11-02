@@ -188,8 +188,10 @@ export class Director {
     // Side A charges along +x: the camera looks along the line of battle from the side, a little behind A.
     switch (this.shot) {
       case "establish": {
-        const span = Math.max(a.extent + b.extent + Math.hypot(a.cx - b.cx, a.cz - b.cz), 20);
-        return { tx: (a.cx + b.cx) / 2, ty: h * 0.6, tz: (a.cz + b.cz) / 2, yaw: 0.5 + this.orbit + s * 0.05, pitch: 0.42 - Math.min(0.12, s * 0.02), dist: span * 0.75 * widen + 12, fov, shake: 0 };
+        // Both armies in view, low enough to feel the scale, the target a little above them so they sit low in the frame (titles go on top).
+        const span = Math.max(a.extent + b.extent + Math.hypot(a.cx - b.cx, a.cz - b.cz), 16);
+        const big = Math.max(a.h, b.h);
+        return { tx: (a.cx + b.cx) / 2, ty: big * 0.9 + span * 0.06, tz: (a.cz + b.cz) / 2, yaw: 0.5 + this.orbit + s * 0.05, pitch: 0.3 - Math.min(0.08, s * 0.015), dist: span * 0.55 * widen + big * 2 + 6, fov, shake: 0 };
       }
       case "charge": {
         const dx = b.cx - a.cx, dz = b.cz - a.cz;

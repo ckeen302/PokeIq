@@ -48,18 +48,18 @@ export function resultLine(o: BattleOutcome, names: [string, string]): string {
   return `${fmt(o.left[o.winner])} left standing after ${o.seconds.toFixed(1)} s · ${loser} KO'd ${fmt(o.kos[1 - o.winner])}`;
 }
 
+/** "Arceus'", "Mewtwo's". */
+export const possessive = (name: string) => (/s$/i.test(name) ? `${name}'` : `${name}'s`);
+
 /** "Arceus' Earthquake KO'd 48 Magikarp". */
 export function multiKoLine(actor: string, move: string, kos: number, target: string): string {
-  const owner = /s$/i.test(actor) ? `${actor}'` : `${actor}'s`;
-  return `${owner} ${move} KO'd ${fmt(kos)} ${target}`;
+  return `${possessive(actor)} ${move} KO'd ${fmt(kos)} ${target}`;
 }
 
 export function critLine(actor: string, move: string, target: string): string {
-  const owner = /s$/i.test(actor) ? `${actor}'` : `${actor}'s`;
-  return `Critical hit! ${owner} ${move} on ${target}`;
+  return `Critical hit! ${possessive(actor)} ${move} on ${target}`;
 }
 
 export function bossDownLine(actor: string, move: string, boss: string): string {
-  const owner = /s$/i.test(actor) ? `${actor}'` : `${actor}'s`;
-  return `${owner} ${move} knocked out ${boss}!`;
+  return `${possessive(actor)} ${move} knocked out ${boss}!`;
 }

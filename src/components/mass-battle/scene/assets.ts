@@ -84,6 +84,42 @@ async function fetchArt(id: number, size: 256 | 512, signal?: AbortSignal): Prom
   throw lastErr;
 }
 
+/** Colours for a figure whose render couldn't be fetched (its first type's). */
+const TYPE_TINT: Record<string, string> = {
+  normal: "#c8c4b4", fire: "#f08a3c", water: "#5a8ef0", electric: "#f5d03c", grass: "#6cc24a", ice: "#8fd8e8", fighting: "#c0503a",
+  poison: "#a05ac0", ground: "#d8b45a", flying: "#9fb4f0", psychic: "#f06a9a", bug: "#a8b82a", rock: "#b8a04a", ghost: "#705a98",
+  dragon: "#6a4ef0", dark: "#5a4a40", steel: "#b8b8d0", fairy: "#ee99ac",
+};
+
+/**
+ * When a render can't be fetched (a network hiccup), the figure still stands, in 3D: its silhouette (the relief
+ * map's coverage) in its type's colour, so nothing pops in later and nothing flat stands in for it.
+ */
+async function silhouette(s: MBSpecies): Promise<ImageBitmap> {
+  const res = await fetch(reliefUrl(s.id));
+  const map = await createImageBitmap(await res.blob(), { premultiplyAlpha: "none", colorSpaceConversion: "none" });
+  const [bx, by, bw, bh, size] = s.box;
+  const k = 256 / size;
+  const cv = document.createElement("canvas");
+  cv.width = cv.height = 256;
+  const g = cv.getContext("2d", { willReadFrequently: true })!;
+  g.drawImage(map, bx * k, by * k, bw * k, bh * k);
+  map.close();
+  const img = g.getImageData(0, 0, 256, 256);
+  const tint = TYPE_TINT[s.types[0]] ?? "#c8c4b4";
+  const r = parseInt(tint.slice(1, 3), 16), gg = parseInt(tint.slice(3, 5), 16), b = parseInt(tint.slice(5, 7), 16);
+  for (let i = 0; i < img.data.length; i += 4) {
+    const covered = img.data[i + 2] > 128;
+    const shade = 0.75 + (img.data[i] / 255) * 0.35;
+    img.data[i] = Math.min(255, r * shade);
+    img.data[i + 1] = Math.min(255, gg * shade);
+    img.data[i + 2] = Math.min(255, b * shade);
+    img.data[i + 3] = covered ? 255 : 0;
+  }
+  g.putImageData(img, 0, 0);
+  return createImageBitmap(cv, { premultiplyAlpha: "none", colorSpaceConversion: "none" });
+}
+
 const cache = new Map<string, Promise<SpeciesAsset>>();
 
 /** A species' render and relief meshes (cached per detail set). */
@@ -91,7 +127,7 @@ export function speciesAsset(s: MBSpecies, segments: number[], artSize: 256 | 51
   const key = `${s.id}|${artSize}|${segments.join(",")}`;
   let p = cache.get(key);
   if (!p) {
-    p = Promise.all([fetchArt(s.id, artSize, signal), buildRelief(s, segments)]).then(([art, levels]) => ({ id: s.id, art, artSize, levels, segments }));
+    p = Promise.all([fetchArt(s.id, artSize, signal).catch((e) => (signal?.aborted ? Promise.reject(e) : silhouette(s))), buildRelief(s, segments)]).then(([art, levels]) => ({ id: s.id, art, artSize: art.width as 256 | 512, levels, segments }));
     p.catch(() => cache.delete(key));
     cache.set(key, p);
   }

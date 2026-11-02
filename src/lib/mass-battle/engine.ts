@@ -754,7 +754,7 @@ export class Battle {
           const ux = dx / d, uz = dz / d;
           // A unit the crowd pushed back last tick doesn't press on into it (no piling up behind the front).
           const pushedBack = Math.max(0, -(this.lx[i] * ux + this.lz[i] * uz));
-          let step = Math.max(0, Math.min(row.vmax * DT, gap - want) - pushedBack * 1.2);
+          const step = Math.max(0, Math.min(row.vmax * DT, gap - want) - pushedBack * 1.2);
           // Someone right in front: step round them instead of into them.
           const side = this.small[i] ? this.blocker(i, t, ux, uz, step) : 0;
           if (side !== 0) {

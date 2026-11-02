@@ -5,7 +5,7 @@ import { track } from "@vercel/analytics";
 import { Camera, Clapperboard, Expand, Info, Loader2, Minus, Pause, Play, Plus, RotateCcw, Share2, Swords, Volume2, VolumeX, X } from "lucide-react";
 import { Director, type Pose } from "@/lib/mass-battle/director";
 import { EV, SPREAD_REACH } from "@/lib/mass-battle/engine";
-import { answerText, armyName, bossDownLine, critLine, fmt, multiKoLine, noAnswerText, questionText, resultLine, resultTitle, spreadText, winRateText } from "@/lib/mass-battle/copy";
+import { armyName, bossDownLine, critLine, fmt, multiKoLine, noAnswerText, possessive, questionText, resultLine, resultTitle, spreadText, winRateText } from "@/lib/mass-battle/copy";
 import { figureSize } from "@/lib/mass-battle/stats";
 import { encodeBattle, encodeQuestion, MASS_BATTLE_PATH, newSeed, type SlugIndex } from "@/lib/mass-battle/share";
 import { SOLVER, solve } from "@/lib/mass-battle/solver";
@@ -30,6 +30,7 @@ type Phase = "idle" | "solving" | "deploying" | "ready" | "playing" | "done" | "
 
 export interface PresetCard {
   id: string;
+  kind: "howmany" | "battle";
   title: string;
   hook: string;
   blurb: string;
@@ -51,6 +52,8 @@ export interface BattleDesc {
   question: Question | null;
   answer: { n: number; spread: number; wins: number; runs: number } | null;
   presetId: string | null;
+  /** A fixed battle's "how many?" answer for its matchup, shown with the result. */
+  bonus?: { question: Question; answer: { n: number; spread: number; wins: number; runs: number; seed: number } } | null;
 }
 
 interface FeedItem {
@@ -358,7 +361,7 @@ export function MassBattleExperience({ list, presets, initial }: { list: PickerM
     const sp = view.sp;
     const mvp = end.stats.mvp >= 0 && end.stats.mvpKos >= 2 ? `${speciesRef.current[sp[end.stats.mvp]]?.name} · ${fmt(end.stats.mvpKos)} KOs` : null;
     const bh = end.stats.big;
-    const big = bh ? `${speciesRef.current[sp[bh.actor]]?.name}'s ${view.ready.moves[sp[bh.actor]][bh.slot]?.name ?? "hit"}: ${fmt(bh.damage)} damage${bh.crit ? " (critical hit)" : ""}` : null;
+    const big = bh ? `${possessive(speciesRef.current[sp[bh.actor]]?.name ?? "")} ${view.ready.moves[sp[bh.actor]][bh.slot]?.name ?? "hit"}: ${fmt(bh.damage)} damage${bh.crit ? " (critical hit)" : ""}` : null;
     setFinal({ winner: o.winner, title: resultTitle(o.winner, b.names, o.left), line: resultLine(o, b.names), mvp, big, seconds: o.seconds });
     audioRef.current?.swell();
     track("mass_battle_end", { preset: b.presetId ?? "custom", winner: o.winner });
@@ -504,7 +507,7 @@ export function MassBattleExperience({ list, presets, initial }: { list: PickerM
 
   // ---- Battles from presets, links and the setup panel.
   const presetBattle = useCallback((p: PresetCard): BattleDesc => {
-    if (p.question && p.answer) {
+    if (p.kind === "howmany" && p.question && p.answer) {
       const q = p.question;
       return {
         spec: { sides: [{ units: [{ id: q.challenger, count: p.answer.n }], formation: "swarm" }, { units: [{ id: q.boss, count: 1 }], formation: "line" }], level: q.level, arena: q.arena, seed: p.answer.seed },
@@ -516,7 +519,7 @@ export function MassBattleExperience({ list, presets, initial }: { list: PickerM
       };
     }
     const names = p.labels ?? ([armyName(p.spec.sides[0].units.map((u) => nameOf(u.id))), armyName(p.spec.sides[1].units.map((u) => nameOf(u.id)))] as [string, string]);
-    return { spec: p.spec, names, hook: p.hook, question: null, answer: null, presetId: p.id };
+    return { spec: p.spec, names, hook: p.hook, question: null, answer: null, presetId: p.id, bonus: p.question && p.answer ? { question: p.question, answer: p.answer } : null };
   }, [nameOf]);
 
   const battleOf = useCallback((spec: BattleSpec): BattleDesc => {
@@ -857,7 +860,7 @@ export function MassBattleExperience({ list, presets, initial }: { list: PickerM
                 </div>
               ))}
             </div>
-            {hud.boss && (
+            {hud.boss && phase !== "ready" && (
               <div className="mx-auto mt-2 w-[min(420px,70%)] space-y-1 text-center" data-testid="mb-boss">
                 <div className="font-display text-sm font-bold uppercase tracking-wider sm:text-base">{hud.boss.name}</div>
                 <div className="mb-bar mb-boss h-[10px]"><i style={{ transform: `scaleX(${hud.boss.hp / Math.max(1, hud.boss.max)})` }} /></div>
@@ -882,8 +885,8 @@ export function MassBattleExperience({ list, presets, initial }: { list: PickerM
 
         {/* Ready: the question or the matchup, and Start. */}
         {phase === "ready" && b && (
-          <div className="absolute inset-x-0 top-[22%] z-[4] flex flex-col items-center gap-4 px-6 text-center">
-            <p className="mb-title text-3xl sm:text-6xl" data-testid="mb-hook">{b.question ? questionText(b.names[0], b.names[1]) : b.hook.replace(/\s*\p{Extended_Pictographic}+$/u, "")}</p>
+          <div className="absolute inset-x-0 top-[17%] z-[4] flex flex-col items-center gap-4 px-6 text-center sm:top-[16%]">
+            <p className="mb-title max-w-4xl text-3xl sm:text-5xl lg:text-6xl" data-testid="mb-hook">{b.question ? questionText(b.names[0], b.names[1]) : b.hook.replace(/\s*\p{Extended_Pictographic}+$/u, "")}</p>
             <button type="button" onClick={start} className="mb-go pointer-events-auto inline-flex h-12 items-center gap-2 rounded-lg px-6 font-display text-sm font-bold uppercase tracking-wider" data-testid="mb-start">
               <Swords className="h-4 w-4" aria-hidden /> {b.question ? "Watch the answer" : "Start the battle"}
             </button>
@@ -934,19 +937,34 @@ export function MassBattleExperience({ list, presets, initial }: { list: PickerM
 
         {/* The result. */}
         {phase === "done" && final && b && (
-          <div className="absolute inset-0 z-[5] flex items-center justify-center bg-[#05070f]/55 p-4 backdrop-blur-[2px]" data-testid="mb-final">
-            <div className="w-full max-w-lg space-y-4 rounded-2xl border border-white/15 bg-[#0b1226]/90 p-5 text-center shadow-2xl sm:p-7">
+          <div className="absolute inset-0 z-[7] flex items-center justify-center overflow-y-auto bg-[#05070f]/55 p-3 backdrop-blur-[2px] sm:p-4" data-testid="mb-final">
+            <div className="my-auto w-full max-w-lg space-y-3 rounded-2xl border border-white/15 bg-[#0b1226]/90 p-4 text-center shadow-2xl sm:space-y-4 sm:p-7">
               {b.answer && b.question ? (
                 <>
                   <p className="font-pixel text-[10px] uppercase tracking-[0.2em] text-white/60">{questionText(b.names[0], b.names[1])}</p>
                   <p className="mb-answer text-4xl sm:text-6xl" data-testid="mb-answer"><b>{fmt(b.answer.n)}</b> {b.names[0]}</p>
-                  <p className="font-display text-sm font-semibold uppercase tracking-wider text-white/80">{answerText(b.answer.n, b.names[0])} · {spreadText(b.answer.spread, b.answer.runs)}</p>
-                  <p className="text-xs text-white/55">{winRateText(b.answer.wins, b.answer.runs, b.answer.n)}. This one: {final.title.replace(/!$/, "")}.</p>
+                  <p className="font-display text-sm font-semibold uppercase tracking-wider text-white/80" data-testid="mb-spread">{spreadText(b.answer.spread, b.answer.runs)}</p>
+                  <p className="text-xs text-white/55">{winRateText(b.answer.wins, b.answer.runs, b.answer.n)}. This battle: {final.title}</p>
                 </>
               ) : (
                 <>
                   <p className="mb-answer text-4xl sm:text-5xl" data-testid="mb-result-title">{final.title}</p>
                   <p className="text-sm text-white/75">{final.line}</p>
+                  {b.bonus && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const bo = b.bonus!;
+                        const q = bo.question;
+                        void deploy({ spec: { sides: [{ units: [{ id: q.challenger, count: bo.answer.n }], formation: "swarm" }, { units: [{ id: q.boss, count: 1 }], formation: "line" }], level: q.level, arena: q.arena, seed: bo.answer.seed }, names: [nameOf(q.challenger), nameOf(q.boss)], hook: questionText(nameOf(q.challenger), nameOf(q.boss)), question: q, answer: bo.answer, presetId: null }, true);
+                      }}
+                      className="w-full rounded-lg border border-[#ffd84a]/40 bg-[#ffd84a]/10 px-3 py-2 text-sm text-[#ffe680] hover:bg-[#ffd84a]/15"
+                      data-testid="mb-bonus"
+                    >
+                      <span className="block">{questionText(nameOf(b.bonus.question.challenger), nameOf(b.bonus.question.boss))} <b>{fmt(b.bonus.answer.n)}</b> ({spreadText(b.bonus.answer.spread, b.bonus.answer.runs)})</span>
+                      <span className="block font-display text-xs font-bold uppercase tracking-wider">Watch it →</span>
+                    </button>
+                  )}
                 </>
               )}
               <dl className="grid grid-cols-2 gap-2 text-left text-xs">
@@ -965,8 +983,8 @@ export function MassBattleExperience({ list, presets, initial }: { list: PickerM
           </div>
         )}
 
-        {/* Controls. */}
-        {(phase === "ready" || phase === "playing" || phase === "done") && (
+        {/* Controls (the result card has its own). */}
+        {(phase === "ready" || phase === "playing" || (phase === "done" && !final)) && (
           <div className="absolute inset-x-0 bottom-0 z-[6] flex flex-wrap items-end justify-between gap-2 p-3 sm:p-4">
             <div className="flex flex-wrap items-center gap-1.5">
               <button type="button" onClick={togglePause} className={chip} aria-label={phase === "ready" ? "Start" : paused ? "Play" : "Pause"} data-testid="mb-play" disabled={phase === "done"}>

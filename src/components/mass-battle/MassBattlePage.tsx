@@ -18,11 +18,12 @@ import { MassBattleExperience, type Initial } from "./MassBattleExperience";
  */
 
 function presetSummary(p: PresetCardData): string {
-  if (p.question && p.answer) return `${answerText(p.answer.n, nameOf(p.question.challenger))} (${spreadText(p.answer.spread, p.answer.runs)}).`;
-  if (!p.outcome) return "";
+  const answer = p.question && p.answer ? `${answerText(p.answer.n, nameOf(p.question.challenger))} to beat ${nameOf(p.question.boss)} (${spreadText(p.answer.spread, p.answer.runs)}).` : "";
+  if (p.kind === "howmany") return answer;
+  if (!p.outcome) return answer;
   const names: [string, string] = p.labels ?? [nameOf(p.spec.sides[0].units[0].id), nameOf(p.spec.sides[1].units[0].id)];
   const o = p.outcome;
-  return `${resultTitle(o.winner, names, o.left)} ${o.winner === 2 ? "" : `${fmt(o.left[o.winner])} left standing after ${o.seconds.toFixed(1)} seconds.`}`;
+  return `${resultTitle(o.winner, names, o.left)} ${o.winner === 2 ? "" : `${fmt(o.left[o.winner])} left standing after ${o.seconds.toFixed(1)} seconds.`} ${answer}`.trim();
 }
 
 export function MassBattlePage({ preset, battle, question }: { preset?: PresetCardData | null; battle?: BattleSpec | null; question?: Question | null }) {
@@ -42,17 +43,19 @@ export function MassBattlePage({ preset, battle, question }: { preset?: PresetCa
   return (
     <div className="mx-auto max-w-6xl space-y-6" data-testid="mass-battle-page">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(ld) }} />
-      <div className="space-y-3">
-        <BackButton href={LAB_PATH} label="3D Lab" />
-        <p className="hud-label flex items-center gap-2 text-screen">
-          <span className="led h-1.5 w-1.5 text-success" aria-hidden /> <Link href={LAB_PATH} className="hover:text-foreground">3D Lab</Link> // Mass Battle
-        </p>
-        <h1 className="font-display text-4xl font-bold uppercase leading-[0.95] tracking-tight sm:text-6xl">{preset ? preset.title : <>Pokémon <span className="text-primary">Mass Battle</span></>}</h1>
-        <p className="max-w-3xl text-muted-foreground sm:text-lg">
-          {preset ? preset.blurb : "Thousands of Pokémon clash on a 3D battlefield, and every hit uses the real games' damage maths. Ask how many of one Pokémon it takes to beat another, or send two armies at each other."}
-        </p>
+      <div className="space-y-2">
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+          <BackButton href={LAB_PATH} label="3D Lab" />
+          <p className="hud-label flex items-center gap-2 text-screen">
+            <span className="led h-1.5 w-1.5 text-success" aria-hidden /> <Link href={LAB_PATH} className="hover:text-foreground">3D Lab</Link> {"//"} Mass Battle
+          </p>
+        </div>
+        <h1 className="font-display text-3xl font-bold uppercase leading-[0.95] tracking-tight sm:text-5xl">{preset ? preset.title : <>Pokémon <span className="text-primary">Mass Battle</span></>}</h1>
       </div>
       <MassBattleExperience list={list} presets={presets} initial={initial} />
+      <p className="max-w-3xl text-muted-foreground sm:text-lg">
+        {preset ? preset.blurb : "Thousands of Pokémon clash on a 3D battlefield, and every hit uses the real games' damage maths. Ask how many of one Pokémon it takes to beat another, or send two armies at each other."}
+      </p>
 
       <section className="space-y-4" aria-labelledby="mb-results">
         <HudHeading index={2} id="mb-results" title="Results" aside="Precomputed with the same battles" />

@@ -33,6 +33,8 @@ export interface UnitsView {
   fz: Float32Array;
   /** Battle-time seconds of each unit's last hit taken, last attack and its faint (−1 none). */
   hitAt: Float32Array;
+  /** The last hit's damage over max HP (a scratch barely flashes, a big hit lights the figure up). */
+  hitPower: Float32Array;
   attackAt: Float32Array;
   faintAt: Float32Array;
   /** The battle clock (s). */
@@ -93,7 +95,7 @@ vec3 mbTurn(vec3 n) {
     s.fragmentShader = s.fragmentShader
       .replace("#include <common>", "#include <common>\nvarying float vFlash;\nvarying float vRecall;")
       .replace("#include <map_fragment>", "#include <map_fragment>\ndiffuseColor.rgb = mix(diffuseColor.rgb, vec3(1.0, 0.16, 0.2), clamp(vRecall * 1.4, 0.0, 0.85));")
-      .replace("#include <emissivemap_fragment>", "#include <emissivemap_fragment>\ntotalEmissiveRadiance += vec3(1.0, 0.95, 0.85) * vFlash * 0.85 + vec3(1.0, 0.12, 0.16) * vRecall * 1.6;");
+      .replace("#include <emissivemap_fragment>", "#include <emissivemap_fragment>\ntotalEmissiveRadiance += vec3(1.0, 0.95, 0.85) * vFlash * 0.7 + vec3(1.0, 0.12, 0.16) * vRecall * 1.6;");
   };
   m.customProgramCacheKey = () => UNIT_KEY;
 }
@@ -303,8 +305,9 @@ export class UnitsLayer {
       const ha = t - view.hitAt[i];
       let flash = 0;
       if (view.hitAt[i] >= 0 && ha >= 0 && ha < 0.3) {
-        flash = 1 - ha / 0.3;
-        roll -= 0.22 * flash;
+        const k = 1 - ha / 0.3;
+        flash = k * Math.min(1, 0.06 + view.hitPower[i] * 3);
+        roll -= 0.22 * k * Math.min(1, 0.3 + view.hitPower[i] * 4);
       }
       let scale = d.scale[li];
       let recall = 0;

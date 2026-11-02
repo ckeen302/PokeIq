@@ -39,6 +39,7 @@ export const slugIndex = (): SlugIndex => {
 
 export interface PresetCardData {
   id: string;
+  kind: "howmany" | "battle";
   title: string;
   hook: string;
   blurb: string;

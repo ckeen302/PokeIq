@@ -29,8 +29,8 @@ export interface ArenaLook {
 export const ARENA_LOOK: Record<ArenaId, ArenaLook> = {
   plains: { sky: ["#3f8fe8", "#d9efff"], fog: "#cfe6f6", fogNear: 1.1, fogFar: 4.2, sun: "#fff3dc", sunIntensity: 2.6, sunElevation: 48, hemi: ["#cfe8ff", "#5b7a3a", 1.1], exposure: 1.0 },
   volcano: { sky: ["#1b0606", "#ff6a2a"], fog: "#4a1a12", fogNear: 0.7, fogFar: 3.2, sun: "#ffb27a", sunIntensity: 1.8, sunElevation: 28, hemi: ["#ff9a6a", "#2a0f0a", 0.9], exposure: 1.05 },
-  snowfield: { sky: ["#9fbad6", "#f2f6fa"], fog: "#e6edf4", fogNear: 0.5, fogFar: 2.6, sun: "#fffaf0", sunIntensity: 2.0, sunElevation: 34, hemi: ["#eef6ff", "#b7c6d6", 1.25], exposure: 0.95 },
-  colosseum: { sky: ["#2f6fcf", "#ffe1b0"], fog: "#f2d9b4", fogNear: 1.4, fogFar: 4.6, sun: "#ffe0b0", sunIntensity: 2.7, sunElevation: 36, hemi: ["#ffe9cc", "#8a6a44", 1.0], exposure: 1.0 },
+  snowfield: { sky: ["#7f9fc4", "#e9f0f7"], fog: "#dfe8f1", fogNear: 1.2, fogFar: 4.4, sun: "#fffaf0", sunIntensity: 2.2, sunElevation: 30, hemi: ["#e6f0ff", "#8ea3b8", 1.05], exposure: 0.92 },
+  colosseum: { sky: ["#2f6fcf", "#ffe1b0"], fog: "#f2d9b4", fogNear: 1.6, fogFar: 5, sun: "#fff0d6", sunIntensity: 3.0, sunElevation: 42, hemi: ["#fff1dc", "#a08058", 1.2], exposure: 1.05 },
 };
 
 export interface ArenaOptions {
@@ -152,7 +152,8 @@ export function buildArena(id: ArenaId, opts: ArenaOptions): Arena {
     } else if (id === "snowfield") {
       gm = new THREE.MeshStandardMaterial({ normalMap: texture("granite_tile", "nor", 0.5, false), normalScale: new THREE.Vector2(0.25, 0.25), roughness: 0.82, vertexColors: true, color: "#f4f8fc" });
     } else {
-      gm = new THREE.MeshStandardMaterial({ map: texture("granite_tile", "diff", 0.7, true), normalMap: texture("granite_tile", "nor", 0.7, false), roughness: 0.92, vertexColors: true, color: "#e8cf9e" });
+      // Packed sand: the granite scan's grain, tinted warm and lightened.
+      gm = new THREE.MeshStandardMaterial({ map: texture("granite_tile", "diff", 0.35, true), normalMap: texture("granite_tile", "nor", 0.35, false), normalScale: new THREE.Vector2(0.5, 0.5), roughness: 0.95, vertexColors: true, color: "#ffe2b0" });
     }
     if (id === "volcano") {
       // Lava veins: a glow along the noise's ridges, pulsing slowly.
@@ -169,10 +170,10 @@ float lh(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
 float ln(vec2 p) { vec2 i = floor(p), f = fract(p); vec2 u = f * f * (3.0 - 2.0 * f);
   return mix(mix(lh(i), lh(i + vec2(1.0, 0.0)), u.x), mix(lh(i + vec2(0.0, 1.0)), lh(i + vec2(1.0, 1.0)), u.x), u.y); }`)
           .replace("#include <emissivemap_fragment>", `#include <emissivemap_fragment>
-float n1 = ln(vWorld.xz * 0.045) * 0.65 + ln(vWorld.xz * 0.11) * 0.35;
-float vein = 1.0 - smoothstep(0.0, 0.035, abs(n1 - 0.5));
-float pulse = 0.75 + 0.25 * sin(uTime * 1.3 + vWorld.x * 0.05);
-totalEmissiveRadiance += vec3(1.0, 0.32, 0.05) * vein * 2.4 * pulse;`);
+float n1 = ln(vWorld.xz * 0.06) * 0.6 + ln(vWorld.xz * 0.17) * 0.4;
+float vein = 1.0 - smoothstep(0.0, 0.014, abs(n1 - 0.5));
+float pulse = 0.7 + 0.3 * sin(uTime * 1.3 + vWorld.x * 0.05);
+totalEmissiveRadiance += vec3(1.0, 0.3, 0.04) * vein * 1.6 * pulse;`);
       };
       gm.customProgramCacheKey = () => "mb-lava";
     }

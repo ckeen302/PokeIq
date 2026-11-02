@@ -261,8 +261,8 @@ export class Effects {
   recall(x: number, y: number, z: number, h: number, at = this.time.value) {
     const i = this.beams.slot();
     this.beams.set(0, i, x, y + h * 0.5, z, at);
-    this.beams.set(1, i, x, y + Math.max(6, h * 6), z, 0.75);
-    this.beams.set(2, i, RED.r, RED.g, RED.b, Math.max(0.08, h * 0.16));
+    this.beams.set(1, i, x, y + Math.max(2.5, h * 3.2), z, 0.6);
+    this.beams.set(2, i, RED.r, RED.g, RED.b, Math.max(0.06, h * 0.12));
     this.beams.set(3, i, 0, 0.18, 0, 0);
     const n = Math.max(2, Math.round(6 * this.density));
     for (let k = 0; k < n; k++) {

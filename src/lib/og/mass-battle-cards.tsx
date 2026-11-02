@@ -14,7 +14,7 @@ const ids = (spec: BattleSpec, s: 0 | 1) => [...spec.sides[s].units].sort((a, b)
 export function presetCardImage(id: string) {
   const p = presetById(id);
   if (!p) return questionCardImage({ challenger: 129, boss: 493, level: 100, arena: "colosseum" });
-  if (p.question && p.answer) {
+  if (p.kind === "howmany" && p.question && p.answer) {
     const c = nameOf(p.question.challenger), b = nameOf(p.question.boss);
     return massBattleCard({
       title: [`How many ${c}`, [`beat ${b}?`, "#ff9a2e"]],

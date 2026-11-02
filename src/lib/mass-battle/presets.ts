@@ -12,6 +12,8 @@ type SideDef =
 
 export interface PresetDef {
   id: string;
+  /** "howmany": the page shows the solver's answer battle; "battle": these armies (the answer, if any, is a bonus). */
+  kind: "howmany" | "battle";
   /** Card and page title. */
   title: string;
   /** The video's opening line. */
@@ -32,6 +34,7 @@ const fe = (s: MBSpecies) => s.fullyEvolved && !s.legendary && !s.mythical;
 export const PRESETS: PresetDef[] = [
   {
     id: "magikarp-vs-arceus",
+    kind: "howmany",
     title: "How many Magikarp beat Arceus?",
     hook: "How many Magikarp does it take to beat Arceus? 😳",
     blurb: "The weakest Pokémon against the one said to have shaped the universe. The solver finds the smallest army that wins.",
@@ -43,6 +46,7 @@ export const PRESETS: PresetDef[] = [
   },
   {
     id: "rattata-vs-mewtwo",
+    kind: "battle",
     title: "1,000 Rattata vs 1 Mewtwo",
     hook: "1,000 Rattata vs 1 Mewtwo. Who wins? 🐀",
     blurb: "A thousand of the commonest Pokémon in Kanto against its most powerful one.",
@@ -54,6 +58,7 @@ export const PRESETS: PresetDef[] = [
   },
   {
     id: "pikachu-vs-snorlax",
+    kind: "battle",
     title: "100 Pikachu vs 1 Snorlax",
     hook: "100 Pikachu vs 1 Snorlax ⚡",
     blurb: "A wave of Pikachu against the heaviest wall in Kanto.",
@@ -65,6 +70,7 @@ export const PRESETS: PresetDef[] = [
   },
   {
     id: "kanto-starters",
+    kind: "battle",
     title: "Kanto starters war",
     hook: "600 Kanto starters vs their final evolutions 🔥💧🌿",
     blurb: "Bulbasaur, Charmander and Squirtle in their hundreds against a few dozen Venusaur, Charizard and Blastoise.",
@@ -79,6 +85,7 @@ export const PRESETS: PresetDef[] = [
   },
   {
     id: "fire-vs-water",
+    kind: "battle",
     title: "Fire vs Water",
     hook: "Every Fire type vs every Water type 🔥🌊",
     blurb: "Every fully evolved Fire type against every fully evolved Water type: the oldest matchup in Pokémon, at scale.",
@@ -93,6 +100,7 @@ export const PRESETS: PresetDef[] = [
   },
   {
     id: "legendaries-vs-everyone",
+    kind: "battle",
     title: "Legendaries vs everyone",
     hook: "Every legendary Pokémon vs an army of Kanto 👑",
     blurb: "Every legendary Pokémon against ten of every other fully evolved Pokémon from Kanto.",
@@ -107,6 +115,7 @@ export const PRESETS: PresetDef[] = [
   },
   {
     id: "bug-swarm-vs-charizard",
+    kind: "battle",
     title: "Bug swarm vs one Charizard",
     hook: "1,000 bugs vs 1 Charizard 🔥🐝",
     blurb: "Beedrill, Butterfree, Venomoth and Scyther swarm a Charizard that is super effective against every one of them.",
@@ -122,6 +131,7 @@ export const PRESETS: PresetDef[] = [
   },
   {
     id: "eeveelution-civil-war",
+    kind: "battle",
     title: "Eeveelution civil war",
     hook: "Eeveelution civil war: which half wins? 🦊",
     blurb: "Vaporeon, Jolteon, Flareon and Espeon against Umbreon, Leafeon, Glaceon and Sylveon.",
@@ -141,6 +151,7 @@ export const DEFAULT_PRESET = PRESETS[0];
 
 export interface ResolvedPreset {
   id: string;
+  kind: "howmany" | "battle";
   title: string;
   hook: string;
   blurb: string;
@@ -159,5 +170,5 @@ export function resolvePreset(p: PresetDef, roster: Pick<Roster, "species">): Re
     return { formation: d.formation, units: roster.species.filter((s) => d.rule(s) && s.moves[100].length > 0).map((s) => ({ id: s.id, count: d.each })) };
   };
   const q = p.question && bySlug.get(p.question.challenger) && bySlug.get(p.question.boss) ? { challenger: bySlug.get(p.question.challenger)!.id, boss: bySlug.get(p.question.boss)!.id, level: p.level, arena: p.arena } : null;
-  return { id: p.id, title: p.title, hook: p.hook, blurb: p.blurb, spec: { sides: [side(p.sides[0]), side(p.sides[1])], level: p.level, arena: p.arena, seed: p.seed }, question: q, labels: p.labels ?? null };
+  return { id: p.id, kind: p.kind, title: p.title, hook: p.hook, blurb: p.blurb, spec: { sides: [side(p.sides[0]), side(p.sides[1])], level: p.level, arena: p.arena, seed: p.seed }, question: q, labels: p.labels ?? null };
 }
