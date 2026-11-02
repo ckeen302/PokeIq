@@ -22,6 +22,10 @@ export interface SceneEntry {
   laneLabel: string;
   /** Starters and box legendaries shown standing on a game's card. */
   mons?: { id: number; name: string; legend: boolean }[];
+  /** A compact card (title and date only, smaller, drawn only when near): the dense TCG lane's non-featured sets. */
+  compact?: boolean;
+  /** A landmark entry, drawn brighter. */
+  featured?: boolean;
 }
 /** A generation's stretch of the floor and the region map laid on it. */
 export interface SceneRegion {
@@ -415,20 +419,34 @@ export function createScene(host: HTMLElement, entries: SceneEntry[], eras: Scen
   scene.fog = new THREE.Fog(0x000000, 50, 170);
 
   // ---- cards (CSS3D)
+  // Full cards close in time climb up to three levels. Compact cards fill their own low rack of two
+  // columns by three rows, so a run of sets a month or two apart never stands one in front of the
+  // other; a full card with compact ones around it moves up a shelf, clear of the rack.
   const stackOf = new Map<string, number>();
+  const lifted = new Set<string>();
+  const RACK_SLOTS = 6, NEAR = 0.42;
   for (const l of lanes) {
+    const mine = entries.filter((x) => x.lane === l.id);
     let lastT = -1e9, level = 0;
-    for (const e of entries.filter((x) => x.lane === l.id)) {
-      level = e.t - lastT < 0.42 ? (level + 1) % 3 : 0;
+    for (const e of mine.filter((x) => !x.compact)) {
+      level = e.t - lastT < NEAR ? (level + 1) % 3 : 0;
       stackOf.set(e.id, level);
       lastT = e.t;
     }
+    lastT = -1e9; level = 0;
+    const minis = mine.filter((x) => x.compact);
+    for (const e of minis) {
+      level = e.t - lastT < NEAR ? (level + 1) % RACK_SLOTS : 0;
+      stackOf.set(e.id, level);
+      lastT = e.t;
+    }
+    for (const e of mine) if (!e.compact && minis.some((m) => Math.abs(m.t - e.t) < NEAR)) lifted.add(e.id);
   }
-  type Card = { e: SceneEntry; obj: CSS3DObject; el: HTMLElement; lane: number; level: number; shown: boolean; op: number; sc: number; art: boolean; mons: CSS3DObject | null; placed: boolean };
+  type Card = { e: SceneEntry; obj: CSS3DObject; el: HTMLElement; lane: number; level: number; mini: boolean; lift: boolean; shown: boolean; op: number; sc: number; art: boolean; mons: CSS3DObject | null; placed: boolean };
   const artSize = (window.devicePixelRatio || 1) > 1.4 ? 256 : 160;
   const cards: Card[] = entries.map((e) => {
     const el = document.createElement("div");
-    el.className = "tl-card";
+    el.className = `tl-card${e.compact ? " is-mini" : ""}${e.featured ? " is-featured" : ""}`;
     el.dataset.entry = e.id;
     el.dataset.lane = e.lane;
     el.setAttribute("role", "button");
@@ -440,7 +458,7 @@ export function createScene(host: HTMLElement, entries: SceneEntry[], eras: Scen
       el.classList.add("has-mons");
       el.setAttribute("aria-label", `${e.title}, ${e.date}. ${mons.map((m) => m.name).join(", ")}`);
     }
-    el.innerHTML = `<span class="tl-card-top"><span class="tl-card-lane">${esc(e.laneLabel)}</span><span class="tl-card-date">${esc(e.date)}</span></span><span class="tl-card-title">${esc(e.title)}</span><span class="tl-card-meta">${esc(e.meta)}</span>`;
+    el.innerHTML = `<span class="tl-card-top"><span class="tl-card-lane">${esc(e.laneLabel)}</span><span class="tl-card-date">${esc(e.date)}</span></span><span class="tl-card-title">${esc(e.title)}</span>${e.compact ? "" : `<span class="tl-card-meta">${esc(e.meta)}</span>`}`;
     const obj = new CSS3DObject(el);
     obj.visible = false;
     cssScene.add(obj);
@@ -459,7 +477,7 @@ export function createScene(host: HTMLElement, entries: SceneEntry[], eras: Scen
       m.style.pointerEvents = "none";
       obj.add(monsObj);
     }
-    return { e, obj, el, lane: lanes.findIndex((l) => l.id === e.lane), level: stackOf.get(e.id) ?? 0, shown: false, op: -1, sc: -1, art: !mons.length, mons: monsObj, placed: false };
+    return { e, obj, el, lane: lanes.findIndex((l) => l.id === e.lane), level: stackOf.get(e.id) ?? 0, mini: !!e.compact, lift: lifted.has(e.id), shown: false, op: -1, sc: -1, art: !mons.length, mons: monsObj, placed: false };
   });
   /** Stands the Pokémon on the card's top edge, right-aligned, once both have been laid out. */
   function placeMons(c: Card) {
@@ -479,8 +497,19 @@ export function createScene(host: HTMLElement, entries: SceneEntry[], eras: Scen
     });
   }
   const cardScale = () => (portrait ? 0.0074 : 0.0088);
-  const cardY = (c: Card) => laneY[c.lane] + (portrait ? 0 : c.level * 2.15);
-  const cardX = (c: Card) => laneX[c.lane] + (portrait && c.level ? (c.level % 2 ? 1 : -1) * 0.9 : 0);
+  /** Compact cards are this fraction of a full card's scale. */
+  const MINI = 0.62;
+  const cardY = (c: Card) => {
+    // Landscape: three rows low on the track, at and below eye level, so a nearer one drops down the
+    // screen rather than over the cards beyond it. Portrait (one shelf per track): just under the
+    // track's own full cards, between its shelf and the next.
+    if (c.mini) return laneY[c.lane] + (portrait ? -0.72 : -1.4 + Math.floor(c.level / 2) * 0.75);
+    return laneY[c.lane] + (portrait ? 0 : (c.lift ? 1.3 + c.level * 1.45 : c.level * 2.15));
+  };
+  const cardX = (c: Card) => {
+    if (c.mini) return laneX[c.lane] + (c.level % 2 ? 1 : -1) * (portrait ? 0.92 : 1.06);
+    return laneX[c.lane] + (portrait && c.level ? (c.level % 2 ? 1 : -1) * 0.9 : 0);
+  };
 
   // Year labels on the floor, and era titles over each portal.
   const eraSigns: CSS3DObject[] = [];
@@ -521,7 +550,7 @@ export function createScene(host: HTMLElement, entries: SceneEntry[], eras: Scen
       lo.entries.forEach((e, i) => {
         const c = cards.find((x) => x.e === e)!;
         const x = cardX(c), fy = floorY(x), z = zOf(e.t);
-        bp.setXYZ(i * 2, x, fy, z); bp.setXYZ(i * 2 + 1, x, cardY(c) - (portrait ? 0.5 : 0.8), z);
+        bp.setXYZ(i * 2, x, fy, z); bp.setXYZ(i * 2 + 1, x, cardY(c) - (c.mini ? (portrait ? 0.3 : 0.4) : portrait ? 0.5 : 0.8), z);
         np.setXYZ(i, x, fy + 0.02, z);
       });
       bp.needsUpdate = true; np.needsUpdate = true;
@@ -626,7 +655,7 @@ export function createScene(host: HTMLElement, entries: SceneEntry[], eras: Scen
     camera.updateProjectionMatrix();
     U.uK.value = portrait ? 0.02 : 0.035;
     U.uGlow.value = portrait ? 0.16 : 1;
-    for (const c of cards) { c.obj.scale.setScalar(cardScale()); c.sc = -1; }
+    for (const c of cards) { c.obj.scale.setScalar(cardScale() * (c.mini ? MINI : 1)); c.sc = -1; }
     for (const o of eraSigns) { o.position.y = portrait ? 9 : AXIS_Y + RING_R * 0.62 - 2.2; o.scale.setScalar(portrait ? 0.014 : 0.02); }
     if (wasPortrait !== portrait || !laneY.some(Boolean)) {
       layoutLanes();
@@ -754,16 +783,18 @@ export function createScene(host: HTMLElement, entries: SceneEntry[], eras: Scen
       // Outer tracks pass close to the screen edges (and the overlays), so their cards leave sooner, unless opened.
       const outer = !portrait && Math.abs(x) > 6 && c.e.id !== focusId;
       const n0 = outer ? 10 : 5.75, n1 = outer ? 15 : 6.9;
-      const inRange = d > n0 && d < far && la > 0.02;
+      // Compact cards only come in within about five years, where they can be read; past that they'd be specks.
+      const cFar = c.mini ? Math.min(far * 0.55, 50) : far;
+      const inRange = d > n0 && d < cFar && la > 0.02;
       if (inRange !== c.shown) { c.obj.visible = inRange; c.shown = inRange; c.op = -1; }
       if (!inRange) continue;
       if (!c.art && d < 125) loadArt(c);
       const nearK = smooth(n0, n1, d), out = 1 - nearK;
       c.obj.position.set(x, cardY(c) - out * 0.9, z);
       c.obj.rotation.set(-out * 0.6, portrait ? 0 : -x * 0.028, 0);
-      const sc = cardScale() * (0.62 + 0.38 * nearK);
+      const sc = cardScale() * (c.mini ? MINI : 1) * (0.62 + 0.38 * nearK);
       if (Math.abs(sc - c.sc) > 1e-6) { c.obj.scale.setScalar(sc); c.sc = sc; }
-      const op = Math.min(1, (far - d) / 60) * nearK * la;
+      const op = Math.min(1, (cFar - d) / (c.mini ? 22 : 60)) * nearK * la;
       if (Math.abs(op - c.op) > 0.015) {
         c.el.style.opacity = op.toFixed(3);
         if (c.mons) c.mons.element.style.opacity = c.el.style.opacity;
@@ -788,12 +819,14 @@ export function createScene(host: HTMLElement, entries: SceneEntry[], eras: Scen
     // An era change this frame means its title card is coming: quiet the signs before they are drawn.
     if (lastEra >= 0 && eraIndexAt(tCur + focusOffset() + 0.02) !== lastEra) quietUntil = now + 2700;
     const signsQuiet = now < quietUntil;
+    // The next title waits until any other has faded out completely, however slow the frames are.
+    const otherSignUp = labels.some((l) => l.kind === "era" && l !== nextSign && l.a > 0);
     for (const l of labels) {
       const d = camZ - l.z;
       let target = d <= (l.kind === "era" ? 2 : 0) || d >= 150 ? 0
         : l.kind === "era" ? Math.min(1, (125 - d) / 55) * Math.min(1, Math.max(0, (d - signGone) / 24))
         : Math.min(1, (150 - d) / 60) * Math.min(1, d / 6);
-      if (l.kind === "era" && (l !== nextSign || signsQuiet)) target = 0;
+      if (l.kind === "era" && (l !== nextSign || signsQuiet || otherSignUp)) target = 0;
       // Behind the title card they go at once, not over a few frames.
       if (l.kind === "era" && signsQuiet) l.a = 0;
       // Year labels follow the camera directly; era titles ease in and out so the hand-over is never a pop.

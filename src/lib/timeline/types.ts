@@ -43,6 +43,10 @@ export interface TimelineRaw {
   series?: string;
   season?: number;
   film?: number;
+  /** TCG sets: the Pokémon TCG API set id (src/lib/tcg/set-names.json), linked to /pokedex/tcg/<set>. */
+  set?: string;
+  /** A landmark entry: drawn full size where its lane otherwise uses compact cards. */
+  featured?: boolean;
   /** Where the starters / box legendaries come from (scripts/timeline-data.ts fills the ids). */
   basis?: { starters?: string; starter_slugs?: string[]; box?: string[]; box_slugs?: string[] };
   starters?: number[];
@@ -81,6 +85,9 @@ export interface TimelineEntry {
   legendaries: TimelineSpecies[];
   /** Generation openers: the generation whose new species the panel lists. */
   introduces: number | null;
+  /** TCG sets: the set's card list on /pokedex/tcg. */
+  setHref: string | null;
+  featured: boolean;
   sources: string[];
 }
 
@@ -164,6 +171,13 @@ export function firstRelease(e: Pick<TimelineEntry, "date_jp" | "date_na" | "dat
 
 /** Timeline span shown by the scrubber. */
 export const T_START = 1996;
+
+/**
+ * Lanes dense enough that only their featured entries get a full card; the
+ * rest are compact. The TCG lane has a card for every English expansion.
+ */
+export const COMPACT_LANES: ReadonlySet<LaneId> = new Set<LaneId>(["tcg"]);
+export const isCompact = (e: Pick<TimelineEntry, "lane" | "featured">) => COMPACT_LANES.has(e.lane) && !e.featured;
 
 /**
  * Each generation's region, as PokéGuessr's own world-atlas crop
