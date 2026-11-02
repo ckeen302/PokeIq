@@ -1319,8 +1319,8 @@ export function SizesExperience({ preset, focus = null, vs = [], compare = false
                   {playing ? <Square className="h-4 w-4 fill-current" aria-hidden /> : <Play className="h-4 w-4 fill-current" aria-hidden />}
                   {playing ? "Stop" : kind === "hold" ? "Replay" : "Play"}
                 </button>
-                <button type="button" onClick={() => (compareOpen ? closeCompare() : openCompare())} className={cn(chip, "h-11", compareOpen && "border-[#ffd84a]/70 text-[#ffd84a]")} aria-pressed={compareOpen} disabled={!ready} data-testid="sizes-compare">
-                  <Scale className="h-4 w-4" aria-hidden /> <span className="hidden min-[370px]:inline">Compare</span>
+                <button type="button" onClick={() => (compareOpen ? closeCompare() : openCompare())} className={cn(chip, "h-11", compareOpen && "border-[#ffd84a]/70 text-[#ffd84a]")} aria-pressed={compareOpen} disabled={!ready} aria-label="Compare sizes" data-testid="sizes-compare">
+                  <Scale className="h-4 w-4" aria-hidden /> <span className="hidden min-[420px]:inline">Compare</span>
                 </button>
               </div>
               <div className="hidden min-w-0 flex-1 truncate text-center font-display text-sm font-semibold uppercase tracking-wide text-white/90 md:block" aria-live="off">
