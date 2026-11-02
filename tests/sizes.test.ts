@@ -86,6 +86,13 @@ describe("heights and weights", () => {
     expect(item("ref-house").m).toBe(HOUSE_M);
   });
 
+  it("the browser builds every lineup exactly as the server does (from the wire rows)", () => {
+    const client = SIZE_ITEMS.map((i) => fromRow(toRow(i)));
+    for (const p of PRESETS) expect(presetLineup(p, client).map((i) => i.key)).toEqual(presetLineup(p, SIZE_ITEMS).map((i) => i.key));
+    expect(presetLineup(DEFAULT_PRESET, client).some((i) => i.key === "ref-phone")).toBe(false);
+    expect(lineFor({ preset: "legendaries", vs: [], extra: [] }, client).some((i) => i.key === "ref-phone")).toBe(false);
+  });
+
   it("the wire rows round-trip", () => {
     for (const i of SIZE_ITEMS.slice(0, 200)) {
       const back = fromRow(toRow(i));

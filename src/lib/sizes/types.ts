@@ -45,20 +45,23 @@ export interface SizeItem {
 }
 
 /** The compact wire format of /api/sizes (one row per item). */
-export type SizeRow = [key: string, name: string, kind: SizeKind, species: number, art: number, m: number, flags: number, bw: number, bh: number, gen: number, kg: number | null, chain: number, box: [bx: number, by: number, bs: number], types: string, ref: RefKind | 0];
+export type SizeRow = [key: string, name: string, kind: SizeKind, species: number, art: number, m: number, flags: number, bw: number, bh: number, gen: number, kg: number | null, chain: number, box: [bx: number, by: number, bs: number], types: string, ref: RefKind | 0, refPresets?: string];
 export const F_LENGTH = 1, F_MIN = 2, F_LEGEND = 4, F_MYTH = 8;
 
 export function toRow(i: SizeItem): SizeRow {
   const flags = (i.length ? F_LENGTH : 0) | (i.min ? F_MIN : 0) | (i.legendary ? F_LEGEND : 0) | (i.mythical ? F_MYTH : 0);
-  return [i.key, i.name, i.kind, i.species, i.art, i.m, flags, i.bw, i.bh, i.gen, i.kg, i.chain, [i.bx, i.by, i.bs], i.types.join("/"), i.ref?.kind ?? 0];
+  const row: SizeRow = [i.key, i.name, i.kind, i.species, i.art, i.m, flags, i.bw, i.bh, i.gen, i.kg, i.chain, [i.bx, i.by, i.bs], i.types.join("/"), i.ref?.kind ?? 0];
+  // A reference that only belongs to some lineups (the phone) says which, so the browser builds the same lines as the server.
+  if (i.ref?.presets?.length) row.push(i.ref.presets.join(","));
+  return row;
 }
-/** A row back to an item (a reference's source details stay on the server; the kind is kept for its model). */
+/** A row back to an item (a reference's source details stay on the server; its kind and lineups are kept). */
 export function fromRow(r: SizeRow): SizeItem {
-  const [key, name, kind, species, art, m, flags, bw, bh, gen, kg, chain, [bx, by, bs], types, ref] = r;
+  const [key, name, kind, species, art, m, flags, bw, bh, gen, kg, chain, [bx, by, bs], types, ref, refPresets] = r;
   return {
     key, name, kind, species, art, m, length: !!(flags & F_LENGTH), min: !!(flags & F_MIN), bw, bh, bx, by, bs, types: types ? types.split("/") : [], gen,
     legendary: !!(flags & F_LEGEND), mythical: !!(flags & F_MYTH), kg, chain,
-    ...(ref ? { ref: { kind: ref, source: "", url: "", fact: "" } } : {}),
+    ...(ref ? { ref: { kind: ref, source: "", url: "", fact: "", ...(refPresets ? { presets: refPresets.split(",") } : {}) } } : {}),
   };
 }
 
