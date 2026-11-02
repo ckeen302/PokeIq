@@ -359,6 +359,8 @@ export function createSizesScene(host: HTMLElement, opts: SceneOptions): SizesSc
   providers.push(relief);
   let slots: Slot[] = [];
   let companion: Slot | null = null;
+  /** The line and its companion, as one list (kept, not rebuilt every frame). */
+  let everyone: Slot[] = [];
   const figureGroup = new THREE.Group();
   scene.add(figureGroup);
   const shadowTex = contactShadowTexture();
@@ -423,6 +425,7 @@ export function createSizesScene(host: HTMLElement, opts: SceneOptions): SizesSc
       // A step to the side and behind the line: a person in the background, not a wall beside the lens.
       companion = newSlot({ ...human, key: "companion" }, -1, slots[0].x - slots[0].w / 2 - 1.1, human.w, human.h, 0.9);
     }
+    everyone = companion ? [companion, ...slots] : slots;
     return { placed: slots.map((s) => ({ key: s.item.key, x: s.x, w: s.w, h: s.h })), plan };
   }
 
@@ -576,7 +579,7 @@ export function createSizesScene(host: HTMLElement, opts: SceneOptions): SizesSc
     let lo = 0, hi = slots.length - 1;
     while (hi - lo > 1) { const mid = (lo + hi) >> 1; if (xs[mid] <= view.x) lo = mid; else hi = mid; }
     centre = lo;
-    const all = companion ? [companion, ...slots] : slots;
+    const all = everyone;
     for (const s of all) {
       const sh = screenHeight(s, camera, ps);
       s.inView = sh >= 2;
@@ -589,7 +592,7 @@ export function createSizesScene(host: HTMLElement, opts: SceneOptions): SizesSc
   let futures: FutureView[] = [];
   let needsAt = -1;
   function computeNeeds() {
-    const all = companion ? [companion, ...slots] : slots;
+    const all = everyone;
     for (const s of all) s.need = Infinity;
     futureCam.fov = camera.fov;
     futureCam.aspect = camera.aspect;
@@ -621,7 +624,7 @@ export function createSizesScene(host: HTMLElement, opts: SceneOptions): SizesSc
 
   /** Starts the loads the look-ahead asks for, soonest first; drops built figures nobody needs when over budget. */
   function pump() {
-    const all = companion ? [companion, ...slots] : slots;
+    const all = everyone;
     const want: Slot[] = [];
     let built = 0;
     for (const s of slots) if (s.mesh[1] || s.loading[1]) built++;
@@ -656,7 +659,7 @@ export function createSizesScene(host: HTMLElement, opts: SceneOptions): SizesSc
     return new Set(cands.slice(0, Math.max(1, Q.maxRelief)));
   }
   function decide(dt: number) {
-    const all = companion ? [companion, ...slots] : slots;
+    const all = everyone;
     const nearOk: Slot[] = [];
     let pend = 0;
     for (const s of all) {
@@ -709,9 +712,13 @@ export function createSizesScene(host: HTMLElement, opts: SceneOptions): SizesSc
   let blobHash = 0;
   const bm = new THREE.Matrix4(), bq = new THREE.Quaternion(), bp = new THREE.Vector3(), bs = new THREE.Vector3(), yAxis = new THREE.Vector3(0, 1, 0);
   /** Puts this frame's figures in the scene: own meshes in and out, the crowd's instances, and a contact shadow under each. */
+  /** This frame's far figures, reusing last frame's objects (hundreds a frame would otherwise be garbage). */
+  const crowdPool: CrowdInstance[] = [];
+  const crowdList: CrowdInstance[] = [];
   function present() {
-    const all = companion ? [companion, ...slots] : slots;
-    const list: CrowdInstance[] = [];
+    const all = everyone;
+    const list = crowdList;
+    list.length = 0;
     let nb = 0, hash = 7;
     for (const s of all) {
       for (const lod of [0, 1] as const) {
@@ -730,7 +737,11 @@ export function createSizesScene(host: HTMLElement, opts: SceneOptions): SizesSc
         }
       }
       const fc = levelFade(s, 1);
-      if (fc !== 0) list.push({ x: s.wx, z: s.wz, yaw: s.yaw, w: s.w, h: s.h, art: s.item.art, box: s.item.box, fade: fc, sh: s.sh });
+      if (fc !== 0) {
+        const it = crowdPool[list.length] ?? (crowdPool[list.length] = { x: 0, z: 0, yaw: 0, w: 0, h: 0, art: 0, box: s.item.box, fade: 1 });
+        it.x = s.wx; it.z = s.wz; it.yaw = s.yaw; it.w = s.w; it.h = s.h; it.art = s.item.art; it.box = s.item.box; it.fade = fc; it.sh = s.sh;
+        list.push(it);
+      }
       if ((s.draw || s.from) && nb < BLOBS) {
         // One soft shadow under the figure's feet, as wide as it is and as deep as its relief.
         const L = s.h * Math.max(1, s.item.box[2] / Math.max(1, s.item.box[3]));
@@ -869,7 +880,7 @@ export function createSizesScene(host: HTMLElement, opts: SceneOptions): SizesSc
     shared.uniforms.uTime.value = t;
     sky.update(camera, t);
     // Idle: a slow breath (and the trainer's own idle).
-    const all = companion ? [companion, ...slots] : slots;
+    const all = everyone;
     for (const s of all) {
       if (!s.draw && !s.from) continue;
       for (const h of s.mesh) {
@@ -927,7 +938,7 @@ export function createSizesScene(host: HTMLElement, opts: SceneOptions): SizesSc
       needsAt = frameNo;
       pump();
       uploadSome(1000, true);
-      const all = companion ? [companion, ...slots] : slots;
+      const all = everyone;
       // Everything on screen that gets its own mesh (within the cap) has it, and the crowd is in.
       const cands = all.filter((s) => s.inView && !s.failed && (s.item.ref || (s.item.art && s.sh >= NEAR_IN)));
       const missing = [...nearSet(cands)].some((s) => !s.up[1]);

@@ -216,7 +216,9 @@ export class ReliefProvider implements FigureProvider {
         dispose() { geo.dispose(); mat.dispose(); tex.dispose(); bmp.close(); (mesh.customDepthMaterial as THREE.Material).dispose(); },
       };
     }
-    const [artBmp, reliefBmp] = await Promise.all([fetchBitmap(this.urls.art(item.art, this.opts.texSize), signal, opts.priority), fetchBitmap(this.urls.relief(item.art), signal, opts.priority)]);
+    // The hero (a figure filling the screen) always gets the full 512 px render: there are only ever one or two.
+    const texSize = lod === 0 ? 512 : this.opts.texSize;
+    const [artBmp, reliefBmp] = await Promise.all([fetchBitmap(this.urls.art(item.art, texSize), signal, opts.priority), fetchBitmap(this.urls.relief(item.art), signal, opts.priority)]);
     // UVs address the full render; the texture may be a smaller copy of it (same framing).
     const box = { x: bx, y: by, w: bw, h: bh, size };
     let mesh: MeshArrays | null;
