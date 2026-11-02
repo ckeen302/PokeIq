@@ -46,7 +46,7 @@ const sizeText = (i: SizeItem) => `${formatMetres(i.m)}${i.min ? "+" : ""} (${fo
  * /pokedex/sizes, a preset's page, a Pokémon's own size page and a
  * comparison: the 3D experience over the server-rendered table.
  */
-export function SizesPage({ preset = DEFAULT_PRESET, focus, vs }: { preset?: SizePreset; focus?: SizeItem; vs?: SizeItem[] }) {
+export function SizesPage({ preset = DEFAULT_PRESET, focus, vs, compare = false }: { preset?: SizePreset; focus?: SizeItem; vs?: SizeItem[]; compare?: boolean }) {
   const comparing = !!vs && vs.length >= 2;
   const rows = comparing ? compareLineup(vs, SIZE_ITEMS) : focus ? neighbours(focus) : preset.id === DEFAULT_PRESET.id ? everything() : presetLineup(preset, SIZE_ITEMS);
   const mons = rows.filter((i) => i.kind !== "ref");
@@ -62,7 +62,7 @@ export function SizesPage({ preset = DEFAULT_PRESET, focus, vs }: { preset?: Siz
   return (
     <div className="mx-auto max-w-4xl space-y-6">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(ld) }} />
-      <SizesExperience preset={preset.id} focus={focus?.key ?? null} vs={comparing ? vs.map((i) => i.key) : []}>
+      <SizesExperience preset={preset.id} focus={focus?.key ?? null} vs={comparing ? vs.map((i) => i.key) : []} compare={compare}>
         <div className="space-y-6">
           {comparing ? (
             <CompareHeader items={vs} />

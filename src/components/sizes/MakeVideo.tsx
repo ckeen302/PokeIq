@@ -244,7 +244,7 @@ export default function MakeVideo({ items, line, hook, slug, lineLabel, trainer,
               {support === "none"
                 ? "This browser can't record video. Try Chrome, Edge or Safari."
                 : support === "webm"
-                  ? "This browser records in real time as WebM. Chrome, Edge and Safari make an MP4 frame by frame."
+                  ? "This browser records in real time. Chrome, Edge and Safari make an MP4 frame by frame."
                   : "Rendered frame by frame on this device, so it stays smooth. Keep this tab open while it records."}
             </p>
           </div>

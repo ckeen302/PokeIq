@@ -85,13 +85,14 @@ export async function runSizes({ browser, BASE, OUT, errors, step }) {
     await page.getByTestId("sizes-search-toggle").click();
     await page.getByTestId("sizes-search").fill("wailord");
     await page.locator('[data-testid="sizes-search-result"][data-key="wailord"]').click();
-    await page.waitForFunction(() => document.querySelector('[data-testid="sizes-stage"]')?.dataset.focus === "wailord", null, { timeout: 30_000 }).catch(async () => errors.push(`sizes: searching didn't fly to Wailord (focus ${await attr("focus")})`));
+    // A software renderer in CI draws a frame every second or two: give the flight time.
+    await page.waitForFunction(() => document.querySelector('[data-testid="sizes-stage"]')?.dataset.focus === "wailord", null, { timeout: 120_000 }).catch(async () => errors.push(`sizes: searching didn't fly to Wailord (focus ${await attr("focus")})`));
     await page.screenshot({ path: `${OUT}/sizes-wailord.png` });
     // The arrow keys step along the line.
     await page.keyboard.press("ArrowRight");
-    await page.waitForFunction(() => document.querySelector('[data-testid="sizes-stage"]')?.dataset.focus !== "wailord", null, { timeout: 30_000 }).catch(() => errors.push("sizes: → didn't step to the next Pokémon"));
+    await page.waitForFunction(() => document.querySelector('[data-testid="sizes-stage"]')?.dataset.focus !== "wailord", null, { timeout: 120_000 }).catch(() => errors.push("sizes: → didn't step to the next Pokémon"));
     await page.keyboard.press("ArrowLeft");
-    await page.waitForFunction(() => document.querySelector('[data-testid="sizes-stage"]')?.dataset.focus === "wailord", null, { timeout: 30_000 }).catch(() => errors.push("sizes: ← didn't step back to Wailord"));
+    await page.waitForFunction(() => document.querySelector('[data-testid="sizes-stage"]')?.dataset.focus === "wailord", null, { timeout: 120_000 }).catch(() => errors.push("sizes: ← didn't step back to Wailord"));
     // Compare Wailord with Eternatus: the line becomes the two (and the human) and the address its share link.
     await page.getByTestId("sizes-compare").click();
     await page.getByTestId("sizes-compare-tray").waitFor();

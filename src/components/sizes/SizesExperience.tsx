@@ -93,6 +93,8 @@ export interface SizesExperienceProps {
   focus?: string | null;
   /** A comparison from the address (validated on the server). */
   vs?: string[];
+  /** The comparison page: the tray opens even before two are chosen. */
+  compare?: boolean;
   /** The server-rendered list: what search engines, reduced motion and browsers without WebGL get. */
   children: React.ReactNode;
 }
@@ -105,7 +107,7 @@ export interface SizesExperienceProps {
  * MP4 for TikTok, Reels and Shorts. The list underneath is the page for
  * search engines, reduced motion and browsers without WebGL.
  */
-export function SizesExperience({ preset, focus = null, vs = [], children }: SizesExperienceProps) {
+export function SizesExperience({ preset, focus = null, vs = [], compare = false, children }: SizesExperienceProps) {
   const [mode, setMode] = useState<Mode>("boot");
   const [canGl, setCanGl] = useState(false);
   const [items, setItems] = useState<SizeItem[] | null>(null);
@@ -115,7 +117,7 @@ export function SizesExperience({ preset, focus = null, vs = [], children }: Siz
   const [focusKey, setFocusKey] = useState<string | null>(null);
   const [caption, setCaption] = useState<{ key: string; text: string } | null>(null);
   const [hook, setHook] = useState<string | null>(null);
-  const [compareOpen, setCompareOpen] = useState(vs.length > 0);
+  const [compareOpen, setCompareOpen] = useState(vs.length > 0 || compare);
   const [compareKeys, setCompareKeys] = useState<string[]>(vs);
   const [searchOpen, setSearchOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -148,6 +150,8 @@ export function SizesExperience({ preset, focus = null, vs = [], children }: Siz
   const pendingRef = useRef<{ focus?: string; play?: boolean; overview?: boolean } | null>(focus ? { focus } : vs.length >= COMPARE_MIN ? { overview: true } : null);
   const recordingRef = useRef(false);
   recordingRef.current = recording;
+  const hookRef = useRef<string | null>(null);
+  hookRef.current = hook;
   const ctl = useRef({
     kind: "explore" as Kind,
     x: 0,
@@ -405,7 +409,8 @@ export function SizesExperience({ preset, focus = null, vs = [], children }: Siz
       if (!scene || !fr || !placed.length || recordingRef.current) { last = performance.now(); return; }
       const now = performance.now();
       const raw = now - last;
-      const dt = Math.min(0.1, raw / 1000);
+      // Time moves on with the clock (a slow device still finishes a flight in about its time), capped after a hidden tab.
+      const dt = Math.min(0.25, raw / 1000);
       last = now;
       const c = ctl.current;
       c.now += dt;
@@ -479,9 +484,9 @@ export function SizesExperience({ preset, focus = null, vs = [], children }: Siz
         g.clearRect(0, 0, cv.width, cv.height);
         g.setTransform(dpr, 0, 0, dpr, 0, 0);
         const phone = w < 640;
-        // The finale is the giant's alone.
+        // The finale is the giant's alone; the title card has the screen to itself.
         const max = view.rise > 0.3 ? 1 : phone ? 2 : 4;
-        drawBadges(g, scene.anchors(), focusNow, byKeyRef.current, w, h, { font, scale: phone ? 1.15 : 1, max, top: phone ? 104 : 72, bottom: phone ? 128 : 104 });
+        if (!hookRef.current) drawBadges(g, scene.anchors(), focusNow, byKeyRef.current, w, h, { font, scale: phone ? 1.15 : 1, max, top: phone ? 104 : 72, bottom: phone ? 128 : 104 });
       }
       // Where we are on the line.
       if (thumbRef.current && placed.length > 1) {
@@ -720,7 +725,7 @@ export function SizesExperience({ preset, focus = null, vs = [], children }: Siz
       {mode !== "list" && (
         <div
           ref={stageRef}
-          className="sz-stage fixed left-0 !mt-0 w-screen bottom-[calc(4rem+env(safe-area-inset-bottom))] top-14 z-40 overflow-hidden lg:bottom-0"
+          className="sz-stage fixed left-0 !mt-0 w-screen bottom-[calc(3.5rem+env(safe-area-inset-bottom))] top-14 z-40 overflow-hidden lg:bottom-0"
           data-testid="sizes-stage"
           data-ready={ready ? "1" : "0"}
           data-kind={kind}
@@ -792,7 +797,7 @@ export function SizesExperience({ preset, focus = null, vs = [], children }: Siz
                 <ArrowLeft className="h-4 w-4" aria-hidden />
               </Link>
               <div className="relative min-w-0">
-                <button type="button" className={cn(chip, "max-w-[46vw] sm:max-w-none")} onClick={() => { setPresetMenu((v) => !v); setSearchOpen(false); }} aria-expanded={presetMenu} aria-haspopup="menu" data-testid="sizes-lineup">
+                <button type="button" className={cn(chip, "max-w-[40vw] sm:max-w-none")} onClick={() => { setPresetMenu((v) => !v); setSearchOpen(false); }} aria-expanded={presetMenu} aria-haspopup="menu" data-testid="sizes-lineup">
                   <span className="truncate">{lineTitle}</span>
                   <ChevronDown className="h-3.5 w-3.5 shrink-0" aria-hidden />
                 </button>
@@ -919,7 +924,7 @@ export function SizesExperience({ preset, focus = null, vs = [], children }: Siz
                   {playing ? "Stop" : kind === "hold" ? "Replay" : "Play"}
                 </button>
                 <button type="button" onClick={() => (compareOpen ? closeCompare() : openCompare())} className={cn(chip, "h-11", compareOpen && "border-[#ffd84a]/70 text-[#ffd84a]")} aria-pressed={compareOpen} disabled={!ready} data-testid="sizes-compare">
-                  <Scale className="h-4 w-4" aria-hidden /> <span className="hidden min-[400px]:inline">Compare</span>
+                  <Scale className="h-4 w-4" aria-hidden /> <span className="hidden min-[370px]:inline">Compare</span>
                 </button>
               </div>
               <div className="hidden min-w-0 flex-1 truncate text-center font-display text-sm font-semibold uppercase tracking-wide text-white/90 md:block" aria-live="off">
@@ -936,7 +941,7 @@ export function SizesExperience({ preset, focus = null, vs = [], children }: Siz
                   <Share2 className="h-4 w-4" aria-hidden /> <span className="hidden sm:inline">Share</span>
                 </button>
                 <button type="button" onClick={() => { toExplore(); setVideoOpen(true); }} className={cn(chip, "h-11 border-[#ffd84a]/50 text-white")} disabled={!ready} data-testid="sizes-video">
-                  <Clapperboard className="h-4 w-4 text-[#ffd84a]" aria-hidden /> <span className="hidden min-[400px]:inline">Make a video</span>
+                  <Clapperboard className="h-4 w-4 text-[#ffd84a]" aria-hidden /> <span className="sm:hidden">Video</span><span className="hidden sm:inline">Make a video</span>
                 </button>
               </div>
             </div>

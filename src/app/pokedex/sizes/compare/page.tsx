@@ -33,5 +33,5 @@ export async function generateMetadata({ searchParams }: { searchParams: Promise
 
 export default async function Page({ searchParams }: { searchParams: Promise<{ vs?: string | string[] }> }) {
   const items = chosen((await searchParams).vs);
-  return <SizesPage vs={items} />;
+  return <SizesPage vs={items} compare />;
 }

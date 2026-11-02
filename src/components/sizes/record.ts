@@ -347,7 +347,9 @@ export async function recordVideo(o: RecordOptions): Promise<RecordResult> {
 
     // ---- Fallback: MediaRecorder in real time (WebM).
     if (typeof MediaRecorder === "undefined" || !compose.captureStream) throw new Error("This browser can't record video");
-    const mime = ["video/webm;codecs=vp9,opus", "video/webm;codecs=vp8,opus", "video/webm"].find((m) => MediaRecorder.isTypeSupported(m)) ?? "video/webm";
+    // WebM where the recorder makes it (Chrome, Firefox); MP4 where that is what it makes (Safari).
+    const mime = ["video/webm;codecs=vp9,opus", "video/webm;codecs=vp8,opus", "video/webm", "video/mp4;codecs=avc1,mp4a", "video/mp4"].find((m) => MediaRecorder.isTypeSupported(m)) ?? "video/webm";
+    const isMp4 = mime.startsWith("video/mp4");
     const stream = compose.captureStream(fps);
     let actx: AudioContext | null = null;
     const mix = await mixAudio(o.music, v.seconds, holdStarts, finaleAt, 48000, o.signal);
@@ -377,7 +379,8 @@ export async function recordVideo(o: RecordOptions): Promise<RecordResult> {
     rec.stop();
     await done;
     void actx?.close();
-    return { blob: new Blob(parts, { type: "video/webm" }), name: videoFileName(o.slug, v.seconds, "webm"), type: "video/webm" };
+    const type = isMp4 ? "video/mp4" : "video/webm";
+    return { blob: new Blob(parts, { type }), name: videoFileName(o.slug, v.seconds, isMp4 ? "mp4" : "webm"), type };
   } finally {
     scene.dispose();
     host.remove();

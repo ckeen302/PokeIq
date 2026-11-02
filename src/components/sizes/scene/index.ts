@@ -293,8 +293,10 @@ export function createSizesScene(host: HTMLElement, opts: SceneOptions): SizesSc
     plan = planWorld(slots.map((s) => ({ x: s.x, w: s.w, h: s.h })));
     rebuildWorld();
     // A companion at the start: tiny figures stand at a person's feet.
-    const human = items.find((i) => i.ref === "human" || i.ref === "trainer");
-    if (human && slots.length && slots[0].h < 0.6) {
+    const humanAt = items.findIndex((i) => i.ref === "human" || i.ref === "trainer");
+    const human = humanAt >= 0 ? items[humanAt] : undefined;
+    // Not when the line's own human already stands near the start (a comparison).
+    if (human && slots.length && slots[0].h < 0.6 && humanAt > 4) {
       const x = slots[0].x - slots[0].w / 2 - 0.55;
       companion = { item: { ...human, key: "companion" }, x, w: human.w, h: human.h, handle: null, loading: null, abort: null, want: 1, shadow: null, phase: 1, lastSeen: 0 };
     }
