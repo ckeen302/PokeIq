@@ -10,7 +10,7 @@ import { assignLanes, displayTimes, formatGap, formatTime, leaderAt, makeRace, r
 import { DEFAULT_PRESET, PRESETS, PRESET_BY_ID, PSEUDO_LEGENDARIES, predicted } from "@/lib/race/presets";
 import { HUB_PRESET, RACE_PATH, RUN_PATH, VS_MAX, parseDistance, parseSeed, parseVs, presetPath, presetRunPath, pushRunner, vsOk, vsPath } from "@/lib/race/deeplink";
 import { DEFAULT_SEED, heatSizes, knockout, mulberry32, nextCount, pathOf, shuffle } from "@/lib/race/tournament";
-import { excitementAt, leaderReaches, photoWindow, planShow, raceTimeAt, shotAt } from "@/lib/race/broadcast";
+import { PHOTO_CLOSE, excitementAt, leaderReaches, photoWindow, planShow, raceTimeAt, shotAt } from "@/lib/race/broadcast";
 import { fieldFor, heatFor, searchEntrants, specFor } from "@/lib/race/lineup";
 import { cameraFor, fovToFit, type Spot } from "@/lib/race/director";
 import { orbitBy, orbitFrom, orbitPose, wheelFactor, zoomBy, zoomFov } from "@/lib/race/orbit";
@@ -459,8 +459,17 @@ describe("lineups and search", () => {
     expect(excitementAt(plan, race, set.t0 + 0.1)).toBeLessThan(0.1);
     const fin = plan.shots.find((s) => s.phase === "race" && s.race0 <= race.first && s.race0 + (s.t1 - s.t0) >= race.first)!;
     expect(excitementAt(plan, race, fin.t0 + (race.first - fin.race0) + 0.05)).toBeGreaterThan(0.9);
+    // Regieleki wins by almost a second: the photo is the winner's alone.
     const w = photoWindow(race);
+    expect(race.order[1].time - race.first).toBeGreaterThan(PHOTO_CLOSE);
     expect(w.from).toBeLessThan(race.first);
-    expect(w.to).toBeGreaterThan(race.order[1].time);
+    expect(w.to).toBeGreaterThan(race.first);
+    expect(w.to).toBeLessThan(race.order[1].time);
+    // A close finish takes in the runner-up.
+    const close = makeRace([mon("jolteon"), mon("aerodactyl")], 100);
+    expect(close.order[1].time - close.first).toBeLessThan(PHOTO_CLOSE);
+    const wc = photoWindow(close);
+    expect(wc.from).toBeLessThan(close.first);
+    expect(wc.to).toBeGreaterThan(close.order[1].time);
   });
 });

@@ -222,10 +222,25 @@ export function excitementAt(plan: ShowPlan, race: Race, t: number): number {
   }
 }
 
-/** The race-time window the photo-finish image covers: the winner and whoever is close behind (up to the fourth). */
+/** Within this gap (s) the runner-up shares the photo finish; further back, the winner has it alone. */
+export const PHOTO_CLOSE = 0.5;
+
+/** Half the time a runner's figure takes to pass the line: its width at its finishing speed (the image is centred on its time). */
+function passHalf(r: RaceLane): number {
+  return Math.min(1.5, r.w / 2 / Math.max(0.3, motionAt(r.profile, r.time).v));
+}
+
+/**
+ * The race-time window the photo-finish image covers. A close finish
+ * spans the winner and the runner-up; a clear win shows the winner alone,
+ * scanned over about twice its own passing time so it keeps roughly its
+ * proportions instead of a sliver in a long, empty strip.
+ */
 export function photoWindow(race: Race): { from: number; to: number } {
-  const T1 = race.first;
-  const k = Math.min(3, race.order.length - 1);
-  const span = Math.max(0.3, Math.min(1.0, race.order[k].time - T1));
-  return { from: T1 - 0.22 * span - 0.04, to: T1 + span + 0.08 };
+  const [a, b] = race.order;
+  const h1 = passHalf(a);
+  const from = a.time - 1.6 * h1 - 0.02;
+  let to = a.time + 2.4 * h1 + 0.1;
+  if (b && b.time - a.time <= PHOTO_CLOSE) to = Math.max(to, b.time + 1.6 * passHalf(b) + 0.06);
+  return { from, to };
 }

@@ -203,12 +203,14 @@ export function drawNameTags(g: CanvasRenderingContext2D, tags: { lane: number; 
   g.textBaseline = "middle";
   g.textAlign = "left";
   const placed: { x: number; y: number; w: number; h: number }[] = [];
+  // Keep tags inside the frame (the canvas may be drawn at device scale).
+  const cw = g.canvas.width / (g.getTransform().a || 1);
   for (const t of [...tags].sort((a, b) => Number(b.lead) - Number(a.lead))) {
     const name = badgeName(t.name);
     g.font = `800 ${s}px ${o.font}`;
     const nw = g.measureText(name).width;
     const w = s * 1.5 + nw + s * 0.8, h = s * 1.55;
-    const x = t.x - w / 2;
+    const x = Math.max(4, Math.min(cw - w - 4, t.x - w / 2));
     let y = t.y - h - s * 0.5;
     // Nudge up once past a tag already placed; in a tight pack, leave the rest untagged (the leader's tag goes first).
     const hits = (yy: number) => placed.find((p) => x < p.x + p.w && x + w > p.x && yy < p.y + p.h && yy + h > p.y);
@@ -413,6 +415,26 @@ export function drawPhotoFinish(g: CanvasRenderingContext2D, W: number, H: numbe
     g.fillStyle = i === 0 ? INK : "#ffffff";
     g.fillText(label, px, ly + 8.5 * o.scale);
   });
+  // The next finisher, still to come beyond the right edge.
+  const next = race.order.find((r) => r.time > win.to);
+  if (next && reveal > 0.5) {
+    const label = `${next.lane} · ${formatTime(next.time, 3)}`;
+    g.font = `800 ${12 * o.scale}px ${o.font}`;
+    const lw = g.measureText(label).width + 10;
+    const ah = 16 * o.scale, aw = ah * 0.55;
+    const lx = x + iw - 6 - aw - lw, ly = y + 6;
+    roundRect(g, lx, ly, lw + aw + 2, ah, 3);
+    g.fillStyle = "rgba(10,18,40,0.9)";
+    g.fill();
+    g.fillStyle = "#ffffff";
+    g.fillText(label, lx + lw / 2, ly + 8.5 * o.scale);
+    g.beginPath();
+    g.moveTo(lx + lw - 1, ly + ah * 0.25);
+    g.lineTo(lx + lw - 1 + aw * 0.75, ly + ah / 2);
+    g.lineTo(lx + lw - 1, ly + ah * 0.75);
+    g.closePath();
+    g.fill();
+  }
   g.restore();
 }
 
