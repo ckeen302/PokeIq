@@ -415,14 +415,14 @@ export function drawPhotoFinish(g: CanvasRenderingContext2D, W: number, H: numbe
     g.fillStyle = i === 0 ? INK : "#ffffff";
     g.fillText(label, px, ly + 8.5 * o.scale);
   });
-  // The next finisher, still to come beyond the right edge.
+  // The next finisher, still to come beyond the right edge (bottom corner, clear of the crossing labels).
   const next = race.order.find((r) => r.time > win.to);
   if (next && reveal > 0.5) {
     const label = `${next.lane} · ${formatTime(next.time, 3)}`;
     g.font = `800 ${12 * o.scale}px ${o.font}`;
     const lw = g.measureText(label).width + 10;
     const ah = 16 * o.scale, aw = ah * 0.55;
-    const lx = x + iw - 6 - aw - lw, ly = y + 6;
+    const lx = x + iw - 6 - aw - lw, ly = y + ih - 6 - ah;
     roundRect(g, lx, ly, lw + aw + 2, ah, 3);
     g.fillStyle = "rgba(10,18,40,0.9)";
     g.fill();
