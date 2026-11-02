@@ -84,7 +84,8 @@ function truthOf(battle: Battle): Truth {
   };
 }
 
-export function selfPlay(format: string, n: number, opts: { policy?: "hard" | "legacy"; maxTurns?: number } = {}): SelfPlay {
+/** `teamFormat`: where the teams come from, when the format has no generator of its own (Doubles OU plays Random Doubles teams). */
+export function selfPlay(format: string, n: number, opts: { policy?: "hard" | "legacy"; maxTurns?: number; teamFormat?: string } = {}): SelfPlay {
   const battle = new Battle({ formatid: format as never, seed: seedOf(n) as PRNGSeed });
   const refused: string[] = [];
   (battle as { send: Battle["send"] }).send = (type: string, data: string | string[]) => {
@@ -94,7 +95,7 @@ export function selfPlay(format: string, n: number, opts: { policy?: "hard" | "l
     if (err >= 0 && !text.startsWith("[Unavailable choice]", err + 7)) refused.push(text.slice(err + 7));
   };
   // Teams from their own seeds (left to the battle, they'd be drawn from a fresh random seed).
-  const team = (i: number) => Teams.pack(Teams.generate(format, { seed: seedOf(n * 2 + i + 500) as PRNGSeed }));
+  const team = (i: number) => Teams.pack(Teams.generate(opts.teamFormat ?? format, { seed: seedOf(n * 2 + i + 500) as PRNGSeed }));
   battle.setPlayer("p1", { name: "Red", team: team(0) });
   battle.setPlayer("p2", { name: "Blue", team: team(1) });
   const rands = [seededRandom(`selfplay:${n}:0`), seededRandom(`selfplay:${n}:1`)];

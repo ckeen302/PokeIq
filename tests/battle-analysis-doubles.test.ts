@@ -252,6 +252,20 @@ describe("doubles: the analysis, start to finish", () => {
     }
   }
 
+  it("analyses a Doubles OU battle too (team preview, the format's own set sources)", async () => {
+    const live = selfPlay("gen9doublesou", 5, { teamFormat: FORMAT });
+    expect(live.refused).toEqual([]);
+    expect(live.winner).not.toBeNull();
+    const replay = { id: "dblou5", format: "gen9doublesou", formatName: "[Gen 9] Doubles OU", players: live.players, winner: live.winner, turns: live.turns, log: live.log, reason: "normal" } as unknown as ReplayData;
+    const r = (await analyseReplay(replay, 0, inlinePool(), () => undefined, () => false))!;
+    expect(r.doubles).toBe(true);
+    expect(r.points).toHaveLength(live.turns + 1);
+    expect(r.points[r.points.length - 1].p).toBe(live.winner === 0 ? 1 : 0);
+    // Random Doubles Pokémon are mostly missing from Doubles OU's usage statistics: those fall back to random-battle sets.
+    expect(Object.values(r.sources[0]).reduce((a, b) => a + (b ?? 0), 0)).toBeGreaterThan(0);
+    console.log(`Doubles OU: ${live.turns} turns, ${r.rollouts} rollouts, ${r.points.map((p) => Math.round(p.p * 100)).join(" ")}`);
+  }, 300_000);
+
   it("names the targets, spread hits and shared KOs in a turn's words", () => {
     const p23 = parsedOf(fixtures.find((x) => x.seed === 23)!);
     expect(describeDoublesTurn(p23, 0, 8)).toBe(

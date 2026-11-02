@@ -241,6 +241,8 @@ function doublesFacts(calc: Calc, parsed: ParsedBattle, turn: number, viewer: Si
     if (!choice || !revealedMoves.length) return;
     let best: { move: string; target: MonState; chance: number; spread: boolean } | null = null;
     for (const move of revealedMoves) {
+      // Fake Out and First Impression only work on the first turn out.
+      if (mine.moved && /^(fakeout|firstimpression)$/.test(toId(move))) continue;
       const spread = SPREAD_TARGETS.has(calc.gen.moves.get(move)?.target ?? "");
       for (const foe of foes) {
         const c = chanceOf(mine, myConds, viewer, move, foe, foeConds);
@@ -250,7 +252,8 @@ function doublesFacts(calc: Calc, parsed: ParsedBattle, turn: number, viewer: Si
     if (!best) return;
     const used = choice.kind === "move" ? choice : null;
     // It did it: the same move, at that foe (or a spread move, which hits it anyway).
-    if (used && toId(used.move) === toId(best.move) && (best.spread || used.target === best.target.key || used.spread?.includes(best.target.key))) return;
+    // (No target in the log: a two-turn move charging, a move that failed; the choice was the right one.)
+    if (used && toId(used.move) === toId(best.move) && (best.spread || !used.target || used.target === used.mon || used.target === best.target.key || used.spread?.includes(best.target.key))) return;
     // It went for another likely KO instead.
     const usedOn = used?.target ? monAt(state, foeSide, used.target) : undefined;
     if (used && usedOn && (chanceOf(mine, myConds, viewer, used.move, usedOn, foeConds) ?? 0) >= KO_THRESHOLD) return;
