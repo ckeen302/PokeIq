@@ -2487,6 +2487,22 @@ const customTurns = await playBattle(page, 4, "battle-custom-turn");
 if (customTurns < 3) errors.push(`the Gen 4 custom battle only reached turn ${customTurns}`);
 if (!/L50/.test(await page.getByTestId("battle-log").innerText().catch(() => ""))) console.log("  (level shown in sprites only)");
 
+step("battle music: plays after a click, toggles off and stays off");
+await page.getByTestId("music-control").waitFor();
+await page.waitForTimeout(1500);
+const tracks = await page.evaluate(() => performance.getEntriesByType("resource").map((e) => e.name).filter((n) => /\/audio\/battle\/.+\.(ogg|mp3)$/.test(n)));
+if (!tracks.length && !musicRequests.length) errors.push("battle music never loaded");
+else console.log(`  loaded ${(tracks.length ? tracks : musicRequests).map((t) => t.split("/").pop()).join(", ")}`);
+await page.getByTestId("music-toggle").click();
+if ((await page.getByTestId("music-toggle").getAttribute("aria-pressed")) !== "false") errors.push("the music toggle didn't turn off");
+await page.reload({ waitUntil: "load" });
+  await page.waitForLoadState("networkidle", { timeout: 8_000 }).catch(() => {});
+await page.getByTestId("music-toggle").waitFor();
+// The saved setting is read after hydration: give it a moment to settle before checking.
+const musicOff = await page.locator('[data-testid="music-toggle"][aria-pressed="false"]').waitFor({ timeout: 5_000 }).then(() => true, () => false);
+if (!musicOff) errors.push("music off wasn't remembered");
+await page.getByTestId("music-toggle").click();
+
 step("battle vs computer: Random Doubles, its replay saved and analysed (both positions, targets named)");
 await gotoSettled(page, `${BASE}/battle/play`);
 await page.locator("label").filter({ hasText: "[Gen 9] Random Doubles Battle" }).first().click();
@@ -2530,22 +2546,6 @@ await page.waitForURL(/\/battle\/replay\/[a-z2-9]{8}\?analysis=1&side=0/);
   if (lines.length && !lines.some((l) => / on (your )?[A-Z]|hit both|knocked out|by targeting/.test(l))) errors.push("doubles analysis: no key moment names a target");
   await dbl.screenshot({ path: `${OUT}/battle-doubles-analysis.png` });
 }
-
-step("battle music: plays after a click, toggles off and stays off");
-await page.getByTestId("music-control").waitFor();
-await page.waitForTimeout(1500);
-const tracks = await page.evaluate(() => performance.getEntriesByType("resource").map((e) => e.name).filter((n) => /\/audio\/battle\/.+\.(ogg|mp3)$/.test(n)));
-if (!tracks.length && !musicRequests.length) errors.push("battle music never loaded");
-else console.log(`  loaded ${(tracks.length ? tracks : musicRequests).map((t) => t.split("/").pop()).join(", ")}`);
-await page.getByTestId("music-toggle").click();
-if ((await page.getByTestId("music-toggle").getAttribute("aria-pressed")) !== "false") errors.push("the music toggle didn't turn off");
-await page.reload({ waitUntil: "load" });
-  await page.waitForLoadState("networkidle", { timeout: 8_000 }).catch(() => {});
-await page.getByTestId("music-toggle").waitFor();
-// The saved setting is read after hydration: give it a moment to settle before checking.
-const musicOff = await page.locator('[data-testid="music-toggle"][aria-pressed="false"]').waitFor({ timeout: 5_000 }).then(() => true, () => false);
-if (!musicOff) errors.push("music off wasn't remembered");
-await page.getByTestId("music-toggle").click();
 
 step("Battle Factory: rent a team, battle, and trade after a win");
 await gotoSettled(page, `${BASE}/battle/factory`);
