@@ -885,9 +885,15 @@ export function RaceExperience({ preset, vs = [], distance = null, seed = null, 
                     <SkipForward className="h-4 w-4" aria-hidden /> <span className="hidden min-[400px]:inline">To the start</span><span className="min-[400px]:hidden">Start</span>
                   </button>
                 ) : (
-                  <button type="button" onClick={() => replay(!after)} disabled={phase === "loading"} className="rc-go pointer-events-auto inline-flex h-11 items-center gap-2 rounded-lg px-4 font-display text-sm font-bold uppercase tracking-wider disabled:opacity-50" data-testid="race-replay">
+                  <button type="button" onClick={() => replay(!after)} disabled={phase === "loading"} aria-label={after ? "Watch again" : undefined} className="rc-go pointer-events-auto inline-flex h-11 items-center gap-2 whitespace-nowrap rounded-lg px-4 font-display text-sm font-bold uppercase tracking-wider disabled:opacity-50" data-testid="race-replay">
                     {after ? <RotateCcw className="h-4 w-4" aria-hidden /> : <Play className="h-4 w-4 fill-current" aria-hidden />}
-                    {after ? "Watch again" : "Restart"}
+                    {after ? (
+                      <>
+                        {/* A phone's bar also holds the results (and the bracket's) buttons after a race. */}
+                        <span className="hidden min-[420px]:inline">Watch again</span>
+                        {!field?.tournament && <span className="min-[420px]:hidden">Again</span>}
+                      </>
+                    ) : "Restart"}
                   </button>
                 )}
                 <button type="button" onClick={() => setPicker(true)} disabled={!all} className={cn(chip, "h-11")} data-testid="race-new">
