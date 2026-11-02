@@ -89,6 +89,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <Link href="/pokedex" prefetch={false} className="hover:text-foreground">Pokédex</Link>
               <Link href="/pokedex/study" prefetch={false} className="hover:text-foreground">Study mode</Link>
               <Link href="/atlas" prefetch={false} className="hover:text-foreground">World atlas</Link>
+              <Link href="/lab" prefetch={false} className="hover:text-foreground">3D Lab</Link>
               <Link href="/pokedex/timeline" prefetch={false} className="hover:text-foreground">Pokémon timeline</Link>
               <Link href="/pokedex/sizes" prefetch={false} className="hover:text-foreground">Pokémon sizes</Link>
               <Link href="/leaderboard" prefetch={false} className="hover:text-foreground">Leaderboard</Link>
