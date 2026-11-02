@@ -2490,6 +2490,74 @@ step("battle look: the versus intro skips, and without WebGL the arena falls bac
   await noGl.context().close();
 }
 
+step("battle look: with WebGL, the versus intro never shows an empty figure (a drawn 3D trainer, or a flat stand-in), as it comes and with the 3D trainers forced");
+// As it comes, a software-drawn WebGL (this browser's, most likely) gets the flat look; forced, the two 3D trainers.
+for (const force3d of [false, true]) {
+  const glPage = await newPage({ width: 1280, height: 900 });
+  if (force3d) await glPage.context().addInitScript(() => sessionStorage.setItem("pokeiq:battle:versus-3d", "1"));
+  // Looks at the intro from inside the page, on its own frames (what's on screen), every quarter second while it's up:
+  // each figure is a 3D trainer with solid pixels on its canvas, its flat stand-in faded in under it, or a flat
+  // stand-in that has loaded (art, picture, the computer's badge, a silhouette). Anything else is empty.
+  await glPage.context().addInitScript(() => {
+    const looks = (window.__versusLooks = []);
+    let since = 0;
+    let lastAt = -1e9;
+    const loaded = (root) => {
+      const img = root.querySelector("img");
+      if (img) return img.complete && img.naturalWidth > 0;
+      return !!root.querySelector("svg, [data-testid=versus-cpu-badge]");
+    };
+    const figure = (el) => {
+      const kind = el.getAttribute("data-kind");
+      if (kind !== "trainer") return loaded(el) ? `${kind}:shown` : `${kind}:EMPTY`;
+      const canvas = el.querySelector("canvas");
+      const g = canvas?.width ? canvas.getContext("2d") : null;
+      if (g && el.getAttribute("data-painted") === "1") {
+        const d = g.getImageData(0, 0, canvas.width, canvas.height).data;
+        let solid = 0;
+        for (let i = 3; i < d.length && solid <= 200; i += 4) if (d[i] > 200) solid++;
+        if (solid > 200) return "trainer:drawn";
+      }
+      const under = el.querySelector("[data-testid=versus-flat-underlay]");
+      if (under && Number(getComputedStyle(under).opacity) > 0.5 && loaded(under)) return "trainer:underlay";
+      return "trainer:EMPTY";
+    };
+    const tick = (now) => {
+      const root = document.querySelector("[data-testid=battle-versus]");
+      if (root) {
+        if (!since) since = now;
+        if (now - lastAt >= 250) {
+          lastAt = now;
+          looks.push({ t: Math.round(now - since), figures: [...root.querySelectorAll("[data-testid=versus-character]")].map(figure) });
+        }
+      }
+      requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+  });
+  await gotoSettled(glPage, `${BASE}/battle/play`);
+  await glPage.locator("label").filter({ hasText: "[Gen 9] Random Battle" }).first().click();
+  await glPage.getByLabel("Your trainer name").fill("Ethan");
+  await glPage.getByRole("button", { name: /Start battle/ }).click();
+  await glPage.waitForURL(/\/battle\/play\/[a-z2-9]{8}$/);
+  await glPage.getByTestId("battle-versus").waitFor({ timeout: 30_000 });
+  await glPage.waitForTimeout(1_200);
+  await glPage.screenshot({ path: `${OUT}/battle-versus-gl${force3d ? "-3d" : ""}.png` });
+  await glPage.getByTestId("battle-versus").waitFor({ state: "detached", timeout: 30_000 });
+  const looks = await glPage.evaluate(() => window.__versusLooks);
+  // Allowed: an empty spot in the first 1.5 s (the 800 ms paint deadline, the stand-in's fade, its art loading).
+  const GRACE = 1_500;
+  const empty = looks.filter((l) => l.t > GRACE && (l.figures.length !== 2 || l.figures.some((f) => f.endsWith("EMPTY"))));
+  const full = looks.filter((l) => l.figures.length === 2 && !l.figures.some((f) => f.endsWith("EMPTY")));
+  console.log(`  versus figures${force3d ? " (3D forced)" : ""}: ${looks.length} looks; last: ${looks.at(-1)?.figures.join(", ") ?? "—"} at ${looks.at(-1)?.t ?? 0} ms`);
+  // Forced 3D on this browser's software WebGL, compiling the trainers holds the page up for seconds (why it isn't
+  // the default there): it only has to end up with both trainers drawn. As it comes, it's never empty past the grace.
+  if (!force3d && empty.length) errors.push(`versus intro: an empty figure ${empty[0].t} ms in (${empty[0].figures.join(", ")})`);
+  if (force3d && !looks.at(-1)?.figures.every((f) => f === "trainer:drawn" || !f.startsWith("trainer"))) errors.push(`versus intro (3D forced): the trainers weren't drawn by the end (${looks.at(-1)?.figures.join(", ")})`);
+  if (!full.length) errors.push(`versus intro${force3d ? " (3D forced)" : ""}: both figures were never on screen together (${JSON.stringify(looks.slice(-3))})`);
+  await glPage.context().close();
+}
+
 step("battle vs computer: Gen 9 OU with the team saved in the team builder");
 await gotoSettled(page, `${BASE}/battle/play`);
 await page.locator("label").filter({ hasText: "[Gen 9] OU" }).first().click();

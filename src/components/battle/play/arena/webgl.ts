@@ -12,3 +12,27 @@ export function webglAvailable(): boolean {
   }
   return cached;
 }
+
+let software: boolean | null = null;
+
+/**
+ * Whether WebGL here is drawn on the CPU (SwiftShader, llvmpipe and the
+ * like: no usable GPU, or a blocklisted one). Compiling a 3D trainer's
+ * shaders there can hold the page up for seconds, so the versus intro
+ * shows its flat look instead. Unknown renderers count as hardware.
+ */
+export function softwareWebgl(): boolean {
+  if (software !== null) return software;
+  software = false;
+  if (typeof document === "undefined") return software;
+  try {
+    const gl = (document.createElement("canvas").getContext("webgl") as WebGLRenderingContext | null) ?? null;
+    const info = gl?.getExtension("WEBGL_debug_renderer_info");
+    const name = info && gl ? String(gl.getParameter(info.UNMASKED_RENDERER_WEBGL)) : "";
+    software = /swiftshader|llvmpipe|softpipe|software|basic render/i.test(name);
+    gl?.getExtension("WEBGL_lose_context")?.loseContext();
+  } catch {
+    // unknown: hardware
+  }
+  return software;
+}

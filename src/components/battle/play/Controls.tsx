@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ArrowLeftRight, Crosshair, Gem, Sparkles, Undo2 } from "lucide-react";
 import type { BattleRequest, BattleRequestMove, BattleRequestPokemon } from "@/lib/battle/play";
 import { BattleSprite } from "@/components/battle/BattleSprite";
@@ -15,6 +15,7 @@ import { MonTip, MoveTip, Tip, isRandomFormat, tipFromRequest, tipFromSnap } fro
 import type { FieldMon, FieldState } from "@/lib/battle/tooltip-calc";
 import { useBattleKeys, type BattleKeys } from "./hotkeys";
 import { benchOrder } from "./model";
+import { emptiedSlots, fainted, fillPasses, slotCount, switchOptions, switchedIn } from "./choice";
 
 /**
  * What the player can do now, built from their request: pick a lead (team
@@ -39,7 +40,6 @@ interface Props {
   onHelp?: () => void;
 }
 
-const fainted = (p: BattleRequestPokemon) => p.condition.endsWith(" fnt");
 const speciesOf = (p: BattleRequestPokemon) => p.details.split(",")[0];
 
 function hpOf(p: BattleRequestPokemon): [number, number, string] {
@@ -329,22 +329,20 @@ export function Controls({ request, snap, me, doubles, busy, onChoose, format, o
   const foeSide = snap.sides[other(me)];
   const mySide = snap.sides[me];
 
-  // Doubles builds one choice per slot; a fainted or commanding Pokémon passes.
-  const slots = request.forceSwitch?.length ?? request.active?.length ?? 0;
-  const passes = (s: number) => {
-    const p = request.side.pokemon[s];
-    if (request.forceSwitch) return !request.forceSwitch[s];
-    return !request.active?.[s] || !p || fainted(p) || !!p.commanding;
-  };
-  /** The choices so far plus any passes due next (a fainted Pokémon with nothing to replace it). */
-  const fill = (list: string[]) => {
-    let next = list;
-    while (next.length < slots && passes(next.length)) next = [...next, "pass"];
-    return next;
-  };
+  // Doubles builds one choice per slot; a slot passes on its own when its Pokémon is fainted or commanding,
+  // or, switching in after a faint, when there's nobody left on the bench for it (see ./choice).
+  const slots = slotCount(request);
+  const fill = (list: string[]) => fillPasses(request, list);
   const filled = fill(parts);
   const slot = filled.length;
-  const switchingIn = useMemo(() => parts.map((c) => /^switch (\d+)$/.exec(c)?.[1]).filter(Boolean).map(Number), [parts]);
+  // Every slot passing (nobody left to send in at all): the choice goes out without asking, once per request.
+  const sentFor = useRef<BattleRequest | null>(null);
+  const allPass = !request.teamPreview && slots > 0 && parts.length === 0 && filled.length >= slots;
+  useEffect(() => {
+    if (!allPass || busy || sentFor.current === request) return;
+    sentFor.current = request;
+    onChoose(fillPasses(request, []).join(", "));
+  }, [allPass, busy, request, onChoose]);
   const teraTaken = parts.some((c) => c.includes("terastallize"));
   const extraTaken = (e: Extra) => parts.some((c) => c.endsWith(` ${e}`));
   const suffix = () => `${tera && teraType ? " terastallize" : ""}${extra && extraOn(extra) ? ` ${extra}` : ""}`;
@@ -375,7 +373,10 @@ export function Controls({ request, snap, me, doubles, busy, onChoose, format, o
 
   if (request.forceSwitch) {
     const reviving = !!actor?.reviving;
-    const canPick = (p: BattleRequestPokemon | undefined, i: number) => !!p && !busy && !p.active && !switchingIn.includes(i + 1) && (reviving ? fainted(p) : !fainted(p));
+    const options = switchOptions(request, slot, filled);
+    const canPick = (p: BattleRequestPokemon | undefined, i: number) => !!p && !busy && options.includes(i + 1);
+    // Two down and fewer left to send in: the spot without one stays empty.
+    const emptied = emptiedSlots(request, filled).map((s) => request.side.pokemon[s]?.ident.split(": ")[1] ?? "your Pokémon");
     keys.digit = (n) => {
       if (canPick(request.side.pokemon[n - 1], n - 1)) add(`switch ${n}`);
     };
@@ -386,6 +387,11 @@ export function Controls({ request, snap, me, doubles, busy, onChoose, format, o
           <p className="font-display text-lg font-bold uppercase">{reviving ? "Revive which Pokémon?" : doubles ? `Replace ${actorName}` : "Send out which Pokémon?"}</p>
           {back}
         </div>
+        {!reviving && emptied.length > 0 && (
+          <p className="text-sm text-muted-foreground" data-testid="switch-last-one">
+            Only {options.length} Pokémon left to send in: {emptied.join(" and ")}&apos;s spot stays empty.
+          </p>
+        )}
         <SwitchGrid
           tipInfo={{ gen: snap.gen, format, seen: mySide.team }}
           pokemon={request.side.pokemon}
@@ -456,7 +462,7 @@ export function Controls({ request, snap, me, doubles, busy, onChoose, format, o
     if (targets.length > 1) setAiming({ index, move, targets });
     else add(`move ${index}${targets[0] ? ` ${targets[0]}` : ""}${suffix()}`);
   };
-  const canSwitchTo = (p: BattleRequestPokemon | undefined, i: number) => !!p && !busy && !trapped && !p.active && !fainted(p) && !switchingIn.includes(i + 1);
+  const canSwitchTo = (p: BattleRequestPokemon | undefined, i: number) => !!p && !busy && !trapped && !p.active && !fainted(p) && !switchedIn(parts).includes(i + 1);
   const bench = benchOrder(request.side.pokemon);
   keys.digit = (n) => {
     // 5-9: switch to the first to fifth Pokémon on the bench (Showdown's keys).

@@ -38,6 +38,8 @@ export interface VersusSide {
   record?: React.ReactNode;
   /** A 3D trainer for a trainer who hasn't made one (instead of their art or a silhouette). */
   fallback?: TrainerConfig;
+  /** What stands in when the 3D trainer can't be drawn and they have no profile avatar (VersusCharacter's `flat`). */
+  flat?: React.ReactNode;
   /** The side's colour (its glow and the card's edge). */
   accent: string;
 }
@@ -55,11 +57,15 @@ export interface VersusIntroProps {
   testId?: string;
   /** Skipping ends the intro (the caller closes it) instead of folding it down to the countdown. */
   onSkip?: () => void;
+  /** 3D trainers not on screen within this many ms give way to their flat look (VersusCharacter's `paintWithin`). */
+  paintWithin?: number;
+  /** Both 3D trainers on one shared WebGL context. */
+  sharedGl?: boolean;
 }
 
 const EASE = [0.2, 0.8, 0.2, 1] as const;
 
-export function VersusIntro({ left, right, title, subtitle, detail, icon, countdown, testId = "versus-intro", onSkip }: VersusIntroProps) {
+export function VersusIntro({ left, right, title, subtitle, detail, icon, countdown, testId = "versus-intro", onSkip, paintWithin, sharedGl }: VersusIntroProps) {
   const reduced = useReducedMotion();
   const [skipped, setSkipped] = useState(false);
   useEffect(() => {
@@ -101,7 +107,7 @@ export function VersusIntro({ left, right, title, subtitle, detail, icon, countd
             transition={{ duration: 0.2 }}
             className="relative z-10 grid min-h-0 flex-1 grid-cols-[1fr_auto_1fr] content-center items-start gap-1 px-3 sm:gap-4 sm:px-8 lg:items-center lg:px-16"
           >
-            <Side side={left} align="left" motionProps={from(-80)} cardMotion={from(-40, 0.15)} />
+            <Side side={left} gl={{ paintWithin, shared: sharedGl }} align="left" motionProps={from(-80)} cardMotion={from(-40, 0.15)} />
             <motion.span
               initial={reduced ? false : { scale: 0.3, opacity: 0, rotate: -14 }}
               animate={{ scale: 1, opacity: 1, rotate: -6 }}
@@ -111,7 +117,7 @@ export function VersusIntro({ left, right, title, subtitle, detail, icon, countd
             >
               VS
             </motion.span>
-            <Side side={right} align="right" motionProps={from(80)} cardMotion={from(40, 0.15)} />
+            <Side side={right} gl={{ paintWithin, shared: sharedGl }} align="right" motionProps={from(80)} cardMotion={from(40, 0.15)} />
           </motion.div>
         )}
       </AnimatePresence>
@@ -137,7 +143,7 @@ export function VersusIntro({ left, right, title, subtitle, detail, icon, countd
   );
 }
 
-function Side({ side, align, motionProps, cardMotion }: { side: VersusSide; align: "left" | "right"; motionProps: MotionProps; cardMotion: MotionProps }) {
+function Side({ side, gl, align, motionProps, cardMotion }: { side: VersusSide; gl: { paintWithin?: number; shared?: boolean }; align: "left" | "right"; motionProps: MotionProps; cardMotion: MotionProps }) {
   const isLeft = align === "left";
   return (
     <div className={cn("flex min-w-0 flex-col items-center gap-2 sm:gap-4 lg:flex-row", isLeft ? "lg:justify-end" : "lg:flex-row-reverse lg:justify-end")} data-testid={`versus-side-${align}`}>
@@ -148,7 +154,16 @@ function Side({ side, align, motionProps, cardMotion }: { side: VersusSide; alig
         <div className="relative">
           <div aria-hidden className="absolute inset-x-[12%] bottom-[2%] h-[12%] rounded-[50%] bg-black/45 blur-md" />
           <div aria-hidden className="absolute inset-[14%] rounded-full opacity-60 blur-3xl" style={{ background: side.accent }} />
-          <VersusCharacter avatar={side.avatar} figure={side.figure} fallback={side.fallback} facing={isLeft ? "right" : "left"} className="relative w-full" />
+          <VersusCharacter
+            avatar={side.avatar}
+            figure={side.figure}
+            fallback={side.fallback}
+            flat={side.flat}
+            paintWithin={gl.paintWithin}
+            shared={gl.shared}
+            facing={isLeft ? "right" : "left"}
+            className="relative w-full"
+          />
         </div>
       </motion.div>
     </div>

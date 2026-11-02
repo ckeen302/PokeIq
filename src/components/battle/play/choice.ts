@@ -1,0 +1,60 @@
+import type { BattleRequest, BattleRequestPokemon } from "@/lib/battle/play";
+
+/**
+ * Building a choice one slot at a time (doubles has one per active
+ * Pokémon). The pure part of the Controls: which slots pass on their own,
+ * and which Pokémon a slot may send in. Slot s's Pokémon is side.pokemon[s].
+ */
+
+export const fainted = (p: BattleRequestPokemon) => p.condition.endsWith(" fnt");
+
+/** Team positions (1-based) already picked to switch in by earlier slots. */
+export function switchedIn(parts: string[]): number[] {
+  return parts.map((c) => /^switch (\d+)$/.exec(c)?.[1]).filter(Boolean).map(Number);
+}
+
+/**
+ * The team positions (1-based) slot `slot` may send in, given the earlier
+ * slots' choices: benched (not active), not already picked, and healthy (or,
+ * for Revival Blessing, fainted).
+ */
+export function switchOptions(request: BattleRequest, slot: number, parts: string[]): number[] {
+  const reviving = !!request.side.pokemon[slot]?.reviving;
+  const taken = switchedIn(parts);
+  const out: number[] = [];
+  request.side.pokemon.forEach((p, i) => {
+    if (!p.active && !taken.includes(i + 1) && (reviving ? fainted(p) : !fainted(p))) out.push(i + 1);
+  });
+  return out;
+}
+
+/** How many slots this request wants a choice for. */
+export const slotCount = (request: BattleRequest) => request.forceSwitch?.length ?? request.active?.length ?? 0;
+
+/**
+ * Whether slot `slot` passes without asking. When switching in after a
+ * faint: a slot that isn't asked to, or that has nobody left to send in
+ * (two fainted and one on the bench: one comes in, the other spot stays
+ * empty, e.g. "switch 3, pass"). Otherwise: a fainted or commanding Pokémon.
+ */
+export function slotPasses(request: BattleRequest, slot: number, parts: string[]): boolean {
+  if (request.forceSwitch) return !request.forceSwitch[slot] || switchOptions(request, slot, parts).length === 0;
+  const p = request.side.pokemon[slot];
+  return !request.active?.[slot] || !p || fainted(p) || !!p.commanding;
+}
+
+/** The choices so far plus any passes due next. */
+export function fillPasses(request: BattleRequest, parts: string[]): string[] {
+  const slots = slotCount(request);
+  let next = parts;
+  while (next.length < slots && slotPasses(request, next.length, next)) next = [...next, "pass"];
+  return next;
+}
+
+/** The forced switch's slots still asking, after the one being chosen now, that will go empty for want of Pokémon. */
+export function emptiedSlots(request: BattleRequest, parts: string[]): number[] {
+  if (!request.forceSwitch) return [];
+  const wanting = request.forceSwitch.map((on, s) => (on && s >= parts.length ? s : -1)).filter((s) => s >= 0);
+  const left = switchOptions(request, parts.length, parts).length;
+  return wanting.slice(Math.max(0, left));
+}

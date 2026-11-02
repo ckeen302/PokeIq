@@ -7,9 +7,10 @@ import { CPU_LEVEL_INFO, PLAY_FORMAT_INFO, type BattleView } from "@/lib/battle/
 import type { BattleVersusRecord, BattleVersusResponse } from "@/lib/battle/versus";
 import { battleIdHeaders, ensureBattleId } from "@/lib/battle/replay-client";
 import { seededTrainer, type TrainerConfig } from "@/lib/trainer/config";
+import { Dex } from "@pkmn/dex";
 import { Figure, History, VersusIntro, type VersusSide } from "@/components/duel/VersusIntro";
-import { Avatar3D } from "@/components/trainer3d/Avatar3D";
-import { webglAvailable } from "./arena/webgl";
+import { PokemonArt } from "@/components/duel/VersusCharacter";
+import { softwareWebgl, webglAvailable } from "./arena/webgl";
 
 /**
  * The versus screen before a battle's first turn (the duel's, shared with
@@ -23,6 +24,31 @@ export const YOU_ACCENT = "#f0457f";
 export const FOE_ACCENT = "#a78bfa";
 /** How long the intro stays up unless skipped. */
 export const VERSUS_MS = 3_400;
+/** A 3D trainer not on screen by then gives way to a flat one (their art, or their lead Pokémon's). */
+export const VERSUS_PAINT_MS = 800;
+
+/** A side's lead Pokémon as far as this player's log (or their own request) tells: its Dex number and shininess. */
+export function versusLead(view: BattleView, side: "p1" | "p2"): { num: number; shiny: boolean } | null {
+  const pick = (name: string, details: string) => {
+    const species = Dex.species.get(details.split(",")[0] || name);
+    return species.exists && species.num > 0 ? { num: species.num, shiny: /, shiny\b/.test(details) } : null;
+  };
+  let preview: { num: number; shiny: boolean } | null = null;
+  for (const line of view.log.lines) {
+    const [, cmd, who, details = ""] = line.split("|");
+    if ((cmd === "switch" || cmd === "drag") && who?.startsWith(`${side}a`)) {
+      const found = pick(who.slice(who.indexOf(":") + 1).trim(), details);
+      if (found) return found;
+    }
+    if (cmd === "poke" && who === side && !preview) preview = pick("", details);
+  }
+  const mine = view.request?.data.side;
+  if (mine?.id === side && mine.pokemon[0]) {
+    const found = pick("", mine.pokemon[0].details);
+    if (found) return found;
+  }
+  return preview;
+}
 
 /** The computer's own trainer, one look per difficulty. */
 export function cpuTrainer(level: string): TrainerConfig {
@@ -105,8 +131,17 @@ export function BattleVersus({ view, onDone }: { view: BattleView; onDone: () =>
   const loading = data === undefined;
   const rated = !!view.ranked || PLAY_FORMAT_INFO[view.format]?.random === true;
   const [left, setLeft] = useState(3);
-  // Without WebGL: no 3D trainers (their art, or a silhouette; the computer's badge).
-  const [gl] = useState(webglAvailable);
+  // Without WebGL, or with it drawn in software (seconds of shader compiling): the flat look (their art, their lead's,
+  // the computer's badge). Session storage "pokeiq:battle:versus-3d" = "1" forces the 3D trainers (for checking them).
+  const [gl] = useState(() => {
+    if (!webglAvailable()) return false;
+    try {
+      if (window.sessionStorage.getItem("pokeiq:battle:versus-3d") === "1") return true;
+    } catch {
+      // storage blocked
+    }
+    return !softwareWebgl();
+  });
 
   useEffect(() => {
     // The count starts once both trainers are drawn (or after a moment, whatever has loaded by then).
@@ -115,7 +150,7 @@ export function BattleVersus({ view, onDone }: { view: BattleView; onDone: () =>
     const id = window.setInterval(() => {
       const now = Date.now();
       if (!t0) {
-        const drawn = document.querySelectorAll("[data-testid=battle-versus] [data-testid=versus-character] canvas, [data-testid=battle-versus] [data-testid=versus-character]:not([data-kind=trainer]):not([data-kind=figure])").length;
+        const drawn = document.querySelectorAll("[data-testid=battle-versus] [data-testid=versus-character]:is([data-painted='1'], :not([data-kind=trainer]))").length;
         if (drawn >= 2 || now - opened > 1_200) t0 = now;
         else return;
       }
@@ -126,11 +161,18 @@ export function BattleVersus({ view, onDone }: { view: BattleView; onDone: () =>
     return () => window.clearInterval(id);
   }, [onDone]);
 
+  // Each side's flat look, should their 3D trainer not draw: their lead Pokémon's art (the computer's badge without one).
+  const youLead = versusLead(view, youSeat === 0 ? "p1" : "p2");
+  const foeLead = versusLead(view, foeSeat === 0 ? "p1" : "p2");
+  const youFlat = youLead ? <PokemonArt id={youLead.num} shiny={youLead.shiny} facing="right" /> : undefined;
+  const foeFlat = foeLead ? <PokemonArt id={foeLead.num} shiny={foeLead.shiny} facing="left" /> : undefined;
+
   const youSide: VersusSide = {
     name: you?.name ?? "You",
     you: true,
     avatar: you?.avatar ?? null,
     fallback: gl ? standIn(you?.name ?? "you") : undefined,
+    flat: youFlat,
     stats: null,
     record: <RecordCard record={data ? data.you : null} loading={loading} rated={rated} />,
     accent: YOU_ACCENT,
@@ -138,10 +180,9 @@ export function BattleVersus({ view, onDone }: { view: BattleView; onDone: () =>
   const foeSide: VersusSide = cpu
     ? {
         name: foe?.name ?? "Computer",
-        figure: gl ? (
-          <Avatar3D config={cpuTrainer(cpu)} pose="fight" facing="left" label="The computer's trainer, ready to battle" />
-        ) : (
-          <span className="flex aspect-square w-[70%] items-center justify-center rounded-full border-4 border-white/40 bg-[radial-gradient(circle_at_35%_30%,#c4b5fd,#6d28d9_70%)] shadow-2xl" aria-hidden>
+        fallback: gl ? cpuTrainer(cpu) : undefined,
+        flat: foeFlat ?? (
+          <span className="flex aspect-square w-[70%] items-center justify-center self-center rounded-full border-4 border-white/40 bg-[radial-gradient(circle_at_35%_30%,#c4b5fd,#6d28d9_70%)] shadow-2xl" aria-hidden data-testid="versus-cpu-badge">
             <Bot className="h-1/2 w-1/2 text-white" />
           </span>
         ),
@@ -158,6 +199,7 @@ export function BattleVersus({ view, onDone }: { view: BattleView; onDone: () =>
         name: foe?.name ?? "Opponent",
         avatar: foe?.avatar ?? null,
         fallback: gl ? standIn(foe?.name ?? "opponent") : undefined,
+        flat: foeFlat,
         stats: null,
         record: <RecordCard record={data ? (data.names[(foe?.name ?? "").toLowerCase()] ?? null) : null} loading={loading && names.length > 0} rated={rated} />,
         accent: FOE_ACCENT,
@@ -186,6 +228,8 @@ export function BattleVersus({ view, onDone }: { view: BattleView; onDone: () =>
           </span>
         }
         onSkip={onDone}
+        paintWithin={VERSUS_PAINT_MS}
+        sharedGl
       />
     </div>,
     document.body
