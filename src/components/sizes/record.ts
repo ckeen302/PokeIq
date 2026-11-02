@@ -1,10 +1,11 @@
 import { factFor, spanFact } from "@/lib/sizes/facts";
-import { dims, type SizeItem } from "@/lib/sizes/types";
+import type { SizeItem } from "@/lib/sizes/types";
 import { planPlay, playAt } from "@/lib/sizes/play";
 import { cardAlpha, frameCount, videoFileName, videoSettings, videoTimeline, type VideoSettings } from "@/lib/sizes/export";
 import { Mp4Muxer, aacConfig } from "@/lib/sizes/mp4";
-import { createSizesScene, type SceneUrls } from "./scene";
-import type { RefBuilders, SceneItem } from "./scene/figures";
+import { createSizesScene, type Quality, type SceneUrls } from "./scene";
+import type { RefBuilders } from "./scene/figures";
+import { toSceneItem } from "./scene-item";
 import { drawBadges } from "./overlay";
 
 /**
@@ -27,6 +28,8 @@ export interface RecordOptions {
   font: string;
   music: string;
   logo: string;
+  /** Render quality (the export's own by default; tests can ask for a lighter one). */
+  quality?: Quality;
   onProgress(p: number, label: string): void;
   signal: AbortSignal;
 }
@@ -38,11 +41,6 @@ export interface RecordResult {
 }
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
-
-export function toSceneItem(i: SizeItem): SceneItem {
-  const d = dims(i);
-  return { key: i.key, name: i.name, kind: i.kind, art: i.art, species: i.species, m: i.m, length: i.length, min: i.min, w: d.w, h: d.h, box: [i.bx, i.by, i.bw, i.bh, i.bs || 512], types: i.types, ref: i.ref?.kind };
-}
 
 async function pickVideoCodec(v: VideoSettings): Promise<VideoEncoderConfig | null> {
   if (typeof VideoEncoder === "undefined") return null;
@@ -232,7 +230,7 @@ export async function recordVideo(o: RecordOptions): Promise<RecordResult> {
   const host = document.createElement("div");
   host.style.cssText = `position:fixed;left:-20000px;top:0;width:${W}px;height:${H}px;pointer-events:none;`;
   document.body.appendChild(host);
-  const scene = createSizesScene(host, { quality: "export", size: { w: W, h: H }, urls: o.urls, trainer: o.trainer });
+  const scene = createSizesScene(host, { quality: o.quality ?? "export", size: { w: W, h: H }, urls: o.urls, trainer: o.trainer });
   try {
     await scene.ready;
     const { placed } = scene.setLine(o.items.map(toSceneItem));

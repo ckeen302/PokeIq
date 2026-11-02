@@ -92,7 +92,9 @@ export function groundVariation(m: THREE.Material) {
         `#include <map_fragment>
         float gv = gvNoise(vSizesWorld.xz * 0.045) * 0.6 + gvNoise(vSizesWorld.xz * 0.21) * 0.4;
         diffuseColor.rgb *= mix(0.86, 1.08, gv);`
-      );
+      )
+      // Weathered paving is matte: no mirror-like sky in the stone at grazing angles.
+      .replace("#include <roughnessmap_fragment>", "#include <roughnessmap_fragment>\n        roughnessFactor = max(roughnessFactor, 0.66);");
   });
 }
 

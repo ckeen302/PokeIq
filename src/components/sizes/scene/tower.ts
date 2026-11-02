@@ -98,9 +98,9 @@ export function buildTower(x: number, z: number): Tower {
   const group = new THREE.Group();
   group.name = "prism-tower";
   group.position.set(x, 0, z);
-  const steel = new THREE.MeshStandardMaterial({ color: "#a4afbb", roughness: 0.42, metalness: 0.65 });
+  const steel = new THREE.MeshStandardMaterial({ color: "#d9e0e8", roughness: 0.38, metalness: 0.35 });
   const lattice = latticeTexture();
-  const latticeMat = new THREE.MeshStandardMaterial({ color: "#a4afbb", roughness: 0.45, metalness: 0.6, map: lattice, alphaTest: 0.5, side: THREE.DoubleSide });
+  const latticeMat = new THREE.MeshStandardMaterial({ color: "#d4dce5", roughness: 0.42, metalness: 0.32, map: lattice, alphaTest: 0.5, side: THREE.DoubleSide });
   const geos: THREE.BufferGeometry[] = [];
   const addMesh = (g: THREE.BufferGeometry, m: THREE.Material, cast = true) => {
     const mesh = new THREE.Mesh(g, m);

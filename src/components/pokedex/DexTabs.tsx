@@ -12,6 +12,7 @@ const TABS = [
   { id: "trainers", label: "Trainers", href: "/pokedex/trainers" },
   { id: "tcg", label: "TCG", href: "/pokedex/tcg" },
   { id: "timeline", label: "Timeline", href: "/pokedex/timeline" },
+  { id: "sizes", label: "Sizes", href: "/pokedex/sizes" },
 ] as const;
 
 export type DexTabId = (typeof TABS)[number]["id"];

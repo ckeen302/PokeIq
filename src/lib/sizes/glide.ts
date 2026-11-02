@@ -207,13 +207,12 @@ export function glideAt(plan: GlidePlan, t: number): GlideState {
     if (tt >= s.t0 && tt <= s.t1) {
       const p = atWeight(plan, plan.cum[s.index]);
       let d = Math.exp(p.logD);
-      let x = p.x;
+      const x = p.x;
       const f = s.t1 > s.t0 ? (tt - s.t0) / (s.t1 - s.t0) : 1;
       if (s.finale) {
-        // The reveal: pull back and slide left, so the line stands at the giant's feet.
-        const k = smooth(Math.min(1, f * 1.6));
-        d *= 1 + 0.32 * k;
-        x -= viewWidth(d, plan.lens) * 0.14 * k;
+        // The reveal: a slow pull back (the camera rig lifts and swings it over the rooftops).
+        const k = smooth(Math.min(1, f * 1.4));
+        d *= 1 + 0.1 * k;
       } else {
         // A gentle push in while it pauses.
         d *= 1 - 0.05 * Math.sin(Math.PI * f);

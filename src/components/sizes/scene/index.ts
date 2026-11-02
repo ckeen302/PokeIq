@@ -2,7 +2,7 @@ import * as THREE from "three";
 import { RGBELoader } from "three/examples/jsm/loaders/RGBELoader.js";
 import { CSM } from "three/examples/jsm/csm/CSM.js";
 import { layoutLine } from "@/lib/sizes/types";
-import { planWorld, type WorldPlan } from "@/lib/sizes/world";
+import { ROOF_Y, planWorld, type WorldPlan } from "@/lib/sizes/world";
 import { FACING, poseFor, type View } from "@/lib/sizes/camera";
 import { buildCity, type City } from "./city";
 import { buildProps, type Props } from "./props";
@@ -95,6 +95,9 @@ export interface SizesScene {
   settle(timeoutMs?: number): Promise<void>;
   anchors(): Anchor[];
   resize(w: number, h: number): void;
+  /** Adaptive quality: pixel ratio, post effects and figure detail (the city and shadow maps keep what they were built with). */
+  setQuality(q: Quality): void;
+  readonly quality: Quality;
   /** Ready to draw (environment loaded). */
   ready: Promise<void>;
   stats(): { figures: number; loading: number; calls: number; tris: number };
@@ -104,7 +107,9 @@ export interface SizesScene {
 const SUN_ELEVATION = (41 * Math.PI) / 180;
 
 export function createSizesScene(host: HTMLElement, opts: SceneOptions): SizesScene {
-  const Q = QUALITY[opts.quality];
+  let quality: Quality = opts.quality;
+  let Q = QUALITY[quality];
+  const Q0 = Q;
   const canvas = document.createElement("canvas");
   canvas.style.display = "block";
   canvas.style.width = "100%";
@@ -134,7 +139,7 @@ export function createSizesScene(host: HTMLElement, opts: SceneOptions): SizesSc
   const sunDir = new THREE.Vector3(Math.sin(az) * Math.cos(SUN_ELEVATION), Math.sin(SUN_ELEVATION), Math.cos(az) * Math.cos(SUN_ELEVATION)).normalize();
   const sky = createSky(sunDir);
   scene.add(sky.mesh);
-  scene.fog = new THREE.FogExp2(SKY.haze.clone().convertSRGBToLinear(), 0.00019);
+  scene.fog = new THREE.FogExp2(SKY.haze.clone().convertSRGBToLinear(), 0.00034);
   const hemi = new THREE.HemisphereLight(0xdfeaff, 0xb9ab92, 0.35);
   scene.add(hemi);
 
@@ -384,15 +389,15 @@ export function createSizesScene(host: HTMLElement, opts: SceneOptions): SizesSc
     for (const l of csm.lights) {
       l.shadow.camera.far = csm.lightMargin * 2 + csm.maxFar * 3;
       const cam = l.shadow.camera;
-      const texel = (cam.right - cam.left) / Q.shadow;
+      const texel = (cam.right - cam.left) / Q0.shadow;
       l.shadow.normalBias = texel * 1.6;
       l.shadow.bias = -0.0002;
       cam.updateProjectionMatrix();
     }
     shared.uniforms.uCutA.value.copy(camera.position);
     shared.uniforms.uCutB.value.copy(target);
-    // Above the rooftops in the finale nothing is in the way.
-    shared.uniforms.uCutR.value = view.rise > 0.25 ? 0 : Math.max(0.25, Math.max(view.h, 0.6 * view.d * 0.6) * 0.55);
+    // Above the rooftops (the giants, the finale) nothing is in the way: cutting would only punch holes in the roofs.
+    shared.uniforms.uCutR.value = view.rise > 0.25 || camera.position.y > ROOF_Y + 2 ? 0 : Math.max(0.25, Math.max(view.h, 0.6 * view.d * 0.6) * 0.55);
     city?.update(camera.position, csm.maxFar * 1.3);
   }
 
@@ -442,8 +447,18 @@ export function createSizesScene(host: HTMLElement, opts: SceneOptions): SizesSc
   }
 
   // ---- Post.
-  const post: Post = createPost(renderer, scene, camera, W, H, { msaa: Q.msaa, ao: Q.ao, aoSamples: Q.aoSamples, dof: Q.dof, dofSamples: Q.dofSamples, bloom: Q.bloom });
-  post.setSize(W, H);
+  const postFor = (q: QualitySpec) => { const p = createPost(renderer, scene, camera, W, H, { msaa: q.msaa, ao: q.ao, aoSamples: q.aoSamples, dof: q.dof, dofSamples: q.dofSamples, bloom: q.bloom }); p.setSize(W, H); return p; };
+  let post: Post = postFor(Q);
+
+  function setQuality(next: Quality) {
+    if (next === quality) return;
+    quality = next;
+    Q = QUALITY[next];
+    if (!opts.size) renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, Q.pr));
+    renderer.setSize(W, H, false);
+    post.dispose();
+    post = postFor(Q);
+  }
 
   function render(t: number, dt: number) {
     frameNo++;
@@ -517,6 +532,8 @@ export function createSizesScene(host: HTMLElement, opts: SceneOptions): SizesSc
     settle,
     anchors,
     resize,
+    setQuality,
+    get quality() { return quality; },
     ready,
     stats: () => ({ figures: slots.filter((s) => s.handle).length, loading: loadingCount, calls: renderer.info.render.calls, tris: renderer.info.render.triangles }),
     dispose() {
