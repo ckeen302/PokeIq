@@ -199,6 +199,8 @@ class FinishPass extends Pass {
 
 export interface Post {
   composer: EffectComposer;
+  /** Where the scene itself is drawn: shaders must be compiled for this target (HDR, no tone mapping) to be the ones used. */
+  target: THREE.WebGLRenderTarget;
   setSize(w: number, h: number): void;
   /** Focus and blur for this frame. */
   frame(camera: THREE.PerspectiveCamera, focus: number, aperturePx: number, aoRadius: number): void;
@@ -264,6 +266,7 @@ export function createPost(renderer: THREE.WebGLRenderer, scene: THREE.Scene, ca
 
   return {
     composer,
+    target: sceneRT,
     setSize(nw, nh) {
       composer.setSize(nw, nh);
       const pr = renderer.getPixelRatio();

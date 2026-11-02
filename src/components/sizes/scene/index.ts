@@ -418,7 +418,7 @@ export function createSizesScene(host: HTMLElement, opts: SceneOptions): SizesSc
       };
       if (sync) { show(); continue; }
       compiling++;
-      renderer.compileAsync(h.object, camera, scene).then(show, show).finally(() => { compiling--; });
+      compileFor(h.object).then(show, show).finally(() => { compiling--; });
     }
   }
 
@@ -556,35 +556,61 @@ export function createSizesScene(host: HTMLElement, opts: SceneOptions): SizesSc
   }
   const inCrowd = (s: Slot) => !s.handle && s.want !== -1 && !!s.item.art && crowd.has(s.item.art);
 
-  /** Compiles the figures' shaders (relief and crowd, with their shadow variants) by drawing stand-ins once, out of sight behind the loading screen. */
+  /**
+   * Compiles an object's shaders for the target the scene is drawn into (an
+   * HDR target, so no tone mapping and linear output: compiled for the
+   * screen they would be the wrong programs), without blocking where the
+   * browser compiles in parallel.
+   */
+  function compileFor(o: THREE.Object3D): Promise<unknown> {
+    const was = renderer.getRenderTarget();
+    renderer.setRenderTarget(post.target);
+    try {
+      return renderer.compileAsync(o, camera, scene);
+    } finally {
+      renderer.setRenderTarget(was);
+    }
+  }
+
+  // The stand-ins' materials stay alive: three.js deletes a program when the last material using it is disposed, and the next figure would compile it all over again.
+  let warmed: { mat: THREE.Material; depth: THREE.Material; geo: THREE.BufferGeometry; tex: THREE.Texture } | null = null;
+  /** Compiles the figures' shaders (relief, contact shadow and crowd, with their shadow variants) by drawing stand-ins once, before the first frame. */
   function warm() {
     applyView();
-    const tex = new THREE.DataTexture(new Uint8Array([255, 255, 255, 255]), 1, 1);
-    tex.colorSpace = THREE.SRGBColorSpace;
-    tex.needsUpdate = true;
-    const geo = new THREE.PlaneGeometry(1, 1);
-    const { mat, obj } = relief.dress(geo, tex, Q.texSize);
-    setupMat(mat);
-    obj.position.copy(target);
-    obj.scale.setScalar(Math.max(0.05, view.h * 0.2));
-    figureGroup.add(obj);
+    if (!warmed) {
+      const tex = new THREE.DataTexture(new Uint8Array([255, 255, 255, 255]), 1, 1);
+      tex.colorSpace = THREE.SRGBColorSpace;
+      tex.needsUpdate = true;
+      const geo = new THREE.PlaneGeometry(1, 1);
+      const { mat, obj } = relief.dress(geo, tex, Q.texSize);
+      setupMat(mat);
+      warmed = { mat, depth: obj.customDepthMaterial as THREE.Material, geo, tex };
+    }
+    const fig = new THREE.Mesh(warmed.geo, warmed.mat);
+    fig.castShadow = fig.receiveShadow = true;
+    fig.customDepthMaterial = warmed.depth;
+    fig.position.copy(target);
+    fig.scale.setScalar(Math.max(0.05, view.h * 0.2));
+    const blob = new THREE.Mesh(shadowGeo, shadowMat);
+    blob.position.copy(target);
+    figureGroup.add(fig, blob);
     setupMat(crowd.material);
     const crowdWas = crowd.mesh.count;
     crowd.mesh.count = Math.max(1, crowdWas);
     crowd.shadows.count = Math.max(1, crowd.shadows.count);
+    const was = renderer.getRenderTarget();
     try {
+      renderer.setRenderTarget(post.target);
       renderer.compile(scene, camera);
+      renderer.setRenderTarget(was);
       csm.update();
       renderer.shadowMap.needsUpdate = true;
       post.frame(camera, focusD, 1.2, 0.1);
       post.render();
     } finally {
+      renderer.setRenderTarget(was);
       shadowsDirty = true;
-      figureGroup.remove(obj);
-      geo.dispose();
-      mat.dispose();
-      (obj.customDepthMaterial as THREE.Material | undefined)?.dispose();
-      tex.dispose();
+      figureGroup.remove(fig, blob);
       crowd.mesh.count = crowdWas;
       crowd.shadows.count = crowdWas;
     }
@@ -710,6 +736,7 @@ export function createSizesScene(host: HTMLElement, opts: SceneOptions): SizesSc
       for (const p of toPlace) p.h.dispose();
       toPlace.length = 0;
       crowd.dispose();
+      if (warmed) { warmed.mat.dispose(); warmed.depth.dispose(); warmed.geo.dispose(); warmed.tex.dispose(); warmed = null; }
       city?.dispose();
       props?.dispose();
       tower?.dispose();

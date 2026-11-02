@@ -647,7 +647,7 @@ describe("Explore: zoom, tilt, orbit and motion", () => {
     expect(zoomAnchorShift(300, 1440, 5, 1 / 1.5, lens)).toBeLessThan(0);
   });
 
-  it("badges thin out and shrink as the view widens", () => {
+  it("badges thin out and shrink as the view widens, and shrink up close", () => {
     expect(badgeBudget(1, false)).toBe(4);
     expect(badgeBudget(1, true)).toBe(2);
     expect(badgeBudget(ZOOM_MIN, false)).toBe(1);
@@ -659,5 +659,7 @@ describe("Explore: zoom, tilt, orbit and motion", () => {
     }
     expect(badgeScaleFor(1)).toBe(1);
     expect(badgeScaleFor(ZOOM_MIN)).toBeCloseTo(0.7, 6);
+    expect(badgeScaleFor(ZOOM_MAX)).toBeCloseTo(0.7, 6);
+    expect(badgeScaleFor(1.5)).toBeLessThan(1);
   });
 });

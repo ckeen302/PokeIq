@@ -263,8 +263,12 @@ export function badgeBudget(zoom: number, phone: boolean): number {
   return 1;
 }
 
-/** Badges shrink a little as the view widens (never below 70%), so a label never dwarfs a crowd of small figures. */
-export const badgeScaleFor = (zoom: number) => 1 - 0.3 * zoomOutness(zoom);
+/**
+ * Badges shrink a little away from the automatic framing (never below 70%):
+ * zoomed out a label mustn't dwarf a crowd of small figures, zoomed in it
+ * mustn't hide the face it names.
+ */
+export const badgeScaleFor = (zoom: number) => (zoom > 1 ? 1 - 0.3 * Math.min(1, Math.log(zoom) / Math.log(ZOOM_MAX)) : 1 - 0.3 * zoomOutness(zoom));
 
 /**
  * Compare's overview: the camera centred on the comparison and far enough
