@@ -1,0 +1,73 @@
+{
+  "note": "Real-world scale references for /pokedex/sizes. Each size is the documented figure from its source, in metres; `length` means the figure is a length (measured along its longest side), otherwise a height.",
+  "refs": [
+    {
+      "id": "phone",
+      "name": "Smartphone",
+      "detail": "iPhone 16",
+      "kind": "phone",
+      "m": 0.1476,
+      "length": false,
+      "presets": [
+        "smaller-than-your-phone"
+      ],
+      "fact": "An iPhone 16 is 147.6 mm (5.81 in) tall.",
+      "source": "Apple, iPhone 16 technical specifications",
+      "url": "https://www.apple.com/iphone-16/specs/"
+    },
+    {
+      "id": "human",
+      "name": "Adult human",
+      "kind": "human",
+      "m": 1.71,
+      "length": false,
+      "fact": "The global mean height of adult men born in 1996 is 171 cm.",
+      "source": "Our World in Data, Human Height",
+      "url": "https://ourworldindata.org/human-height"
+    },
+    {
+      "id": "car",
+      "name": "Car",
+      "detail": "Toyota Corolla saloon",
+      "kind": "car",
+      "m": 4.63,
+      "height": 1.435,
+      "length": true,
+      "fact": "A Toyota Corolla saloon (E210, international) is 4,630 mm long and 1,435 mm tall.",
+      "source": "Wikipedia, Toyota Corolla (E210), specifications",
+      "url": "https://en.wikipedia.org/wiki/Toyota_Corolla_(E210)"
+    },
+    {
+      "id": "bus",
+      "name": "School bus",
+      "detail": "Blue Bird Vision",
+      "kind": "bus",
+      "m": 12.67,
+      "height": 3.25,
+      "length": true,
+      "fact": "The longest Blue Bird Vision school bus is 499 in (12.67 m) long and up to 128 in (3.25 m) tall.",
+      "source": "Wikipedia, Blue Bird Vision, citing Blue Bird's specifications",
+      "url": "https://en.wikipedia.org/wiki/Blue_Bird_Vision"
+    },
+    {
+      "id": "house",
+      "name": "Two-storey house",
+      "kind": "house",
+      "m": 6.2,
+      "length": false,
+      "fact": "Two storeys at the 3.1 m floor-to-floor height typical of residential buildings.",
+      "source": "Wikipedia, Storey, citing Saroglou et al. (2017), Energy and Buildings 149",
+      "url": "https://en.wikipedia.org/wiki/Storey"
+    },
+    {
+      "id": "building",
+      "name": "10-storey building",
+      "kind": "building",
+      "m": 31,
+      "length": false,
+      "fact": "Ten storeys at the 3.1 m floor-to-floor height typical of residential buildings.",
+      "source": "Wikipedia, Storey, citing Saroglou et al. (2017), Energy and Buildings 149",
+      "url": "https://en.wikipedia.org/wiki/Storey"
+    }
+  ]
+}
