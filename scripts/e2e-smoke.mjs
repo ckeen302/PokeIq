@@ -12,6 +12,7 @@ import { chromium } from "playwright";
 import fs from "fs";
 import { execFileSync } from "child_process";
 import { runIqTest } from "./e2e-iq-test.mjs";
+import { runSizes } from "./e2e-sizes.mjs";
 
 const BASE = process.argv[2] ?? "http://localhost:3000";
 // Each game opens its how-to pop-up (with a live demo) on a first visit. "Don't show again" dismisses it for good on this device.
@@ -2258,6 +2259,8 @@ step("pokédex Timeline: an entry's own link opens its panel, share copies it, t
   await context.close();
 }
 
+await runSizes({ browser, BASE, OUT, errors, step });
+
 step("trainer, leaderboard, pokémon page");
 // Quiz modes are off the leaderboard: an old quiz board link lands on the Daily, with no quiz tabs.
 await gotoSettled(page, `${BASE}/leaderboard?board=whos-that&format=classic&difficulty=medium`);
@@ -2407,8 +2410,9 @@ async function playBattle(p, maxTurn, shoot) {
       const score = (t) => (Number(/pow (\d+)/.exec(t)?.[1] ?? 0) || 1) * (t.includes("super effective") ? 2 : t.includes("not very") ? 0.5 : t.includes("no effect") ? 0 : 1);
       const best = texts.reduce((b, t, i) => (score(t) > score(texts[b]) ? i : b), 0);
       await moves.nth(best).click();
-      // Doubles: aim at the first foe.
-      if (await p.locator("[data-testid=target-button]").count()) await p.locator("[data-testid=target-button]").first().click();
+      // Doubles: aim at the first position that can be aimed at (a fainted foe's button is disabled).
+      const targets = p.locator("[data-testid=target-button]:not([disabled])");
+      if (await targets.count()) await targets.first().click();
     } else await p.locator("[data-testid=switch-button]:not([disabled])").first().click();
   }
   throw new Error("the battle didn't progress");
