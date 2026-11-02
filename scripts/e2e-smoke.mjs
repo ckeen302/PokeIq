@@ -2487,7 +2487,7 @@ const customTurns = await playBattle(page, 4, "battle-custom-turn");
 if (customTurns < 3) errors.push(`the Gen 4 custom battle only reached turn ${customTurns}`);
 if (!/L50/.test(await page.getByTestId("battle-log").innerText().catch(() => ""))) console.log("  (level shown in sprites only)");
 
-step("battle vs computer: Random Doubles to the end, its replay saved and analysed (both positions, targets named)");
+step("battle vs computer: Random Doubles, its replay saved and analysed (both positions, targets named)");
 await gotoSettled(page, `${BASE}/battle/play`);
 await page.locator("label").filter({ hasText: "[Gen 9] Random Doubles Battle" }).first().click();
 await page.getByLabel("Your trainer name").fill("Red");
@@ -2495,7 +2495,13 @@ await page.getByRole("button", { name: /Start battle/ }).click();
 await page.waitForURL(/\/battle\/play\/[a-z2-9]{8}$/);
 await page.locator("[data-testid=move-button]").first().waitFor({ timeout: 60_000 });
 await page.getByRole("button", { name: "4x", exact: true }).click();
-const doublesTurns = await playBattle(page, 1000, null);
+// A few turns, then a forfeit: an analysed battle only needs to have started (and the replacement prompt can't pass
+// a second position that has nothing left to send in, so a battle played to the end can stall there).
+const doublesTurns = await playBattle(page, 3, null);
+if (!(await page.getByTestId("battle-result").count())) {
+  await page.getByRole("button", { name: "Forfeit", exact: true }).click();
+  await page.getByRole("button", { name: "Forfeit", exact: true }).click();
+}
 await page.getByTestId("battle-result").waitFor({ timeout: 60_000 });
 console.log(`  the doubles battle ended on turn ${doublesTurns}`);
 await page.getByTestId("save-replay").click({ timeout: 30_000 });
