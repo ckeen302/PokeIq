@@ -1,13 +1,15 @@
 /**
- * Pokémon Race (/pokedex/race), end to end in the browser: the Race tab
- * and its server-rendered results, the 3D stadium and the broadcast (lane
- * intros, the start, the race, the replay) through to the results and the
- * photo-finish image, the camera presets and zoom (buttons, wheel, a
- * trackpad pinch, drag to orbit), a shared race link with its own title
- * and preview card, the preset cards, the list fallback, the Pokédex
- * entry's "Race it" link, the sound staying off when the site is muted,
- * and "Make a video": a 5-second export (?len=5, at the light test quality
- * and 10 fps) that must be a valid 1080 × 1920 MP4 with video and audio.
+ * Pokémon Race (/pokedex/race), end to end in the browser: its 3D Lab card
+ * and the way back to the Lab, the Race tab and its server-rendered
+ * results, the 3D stadium and the broadcast (lane intros, the start, the
+ * race, the replay) through to the results and the photo-finish image, the
+ * camera presets and zoom (buttons, wheel, a trackpad pinch as ctrl +
+ * wheel or Safari's gesture events, drag to orbit), a shared race link
+ * with its own title and preview card, the preset cards, the list
+ * fallback, the Pokédex entry's "Race it" link, the sound staying off when
+ * the site is muted, and "Make a video": a 5-second export (?len=5, at the
+ * light test quality and 10 fps) that must be a valid 1080 × 1920 MP4 with
+ * video and audio.
  * Screenshots at 1440 and 390 px.
  *
  * CI has no GPU: software WebGL draws a frame every few seconds. So the
@@ -29,7 +31,7 @@ async function part(errors, name, fn) {
 }
 
 export async function runRace({ browser, BASE, OUT, errors, step }) {
-  step("pokédex Race tab: 3D stadium, broadcast to results, photo finish, camera and zoom, share link, preview cards, list view");
+  step("pokédex Race: its 3D Lab card, the Race tab, 3D stadium, broadcast to results, photo finish, camera and zoom, share link, preview cards, list view");
   const context = await browser.newContext({ viewport: { width: 1440, height: 900 }, acceptDownloads: true });
   await context.addInitScript(() => {
     sessionStorage.setItem("pokeiq-splash", "1");
@@ -51,6 +53,23 @@ export async function runRace({ browser, BASE, OUT, errors, step }) {
   const phaseIs = (re, ms = 120_000) => page.waitForFunction((src) => new RegExp(src).test(document.querySelector('[data-testid="race-stage"]')?.dataset.phase ?? ""), re.source, { timeout: ms });
   const state = () => page.evaluate(() => window.__race?.state());
   const seek = (t) => page.evaluate((x) => window.__race.seek(x), t);
+
+  await part(errors, "3d lab", async () => {
+    // The race lives in the 3D Lab: its card (a real screenshot) opens /pokedex/race, the nav's 3D Lab tab is lit there, and the stage leads back.
+    await page.goto(`${BASE}/lab`, { waitUntil: "load" });
+    const card = page.getByTestId("lab-card-race");
+    if (!(await card.count())) throw new Error("no Race card on /lab");
+    const art = card.locator("img").first();
+    await art.evaluate((img) => img.scrollIntoView({ block: "center" }));
+    if (!(await art.evaluate((img) => img.complete ? img.naturalWidth > 0 : new Promise((r) => { img.onload = () => r(true); img.onerror = () => r(false); })))) errors.push("race: the 3D Lab card's picture didn't load");
+    await page.getByTestId("lab-open-race").click();
+    await page.waitForURL(/\/pokedex\/race$/);
+    const header = page.locator("header");
+    if ((await header.getByRole("link", { name: "3D Lab", exact: true }).getAttribute("aria-current")) !== "page") errors.push("race: the nav's 3D Lab tab isn't lit on /pokedex/race");
+    if ((await header.getByRole("link", { name: "Pokédex", exact: true }).getAttribute("aria-current")) === "page") errors.push("race: Pokédex is lit on /pokedex/race too");
+    const back = page.getByTestId("race-back");
+    if (await back.count() && (await back.getAttribute("href")) !== "/lab") errors.push("race: the stage's back link doesn't lead to /lab");
+  });
 
   await part(errors, "tab", async () => {
     await page.goto(`${BASE}/pokedex`, { waitUntil: "load" });
@@ -107,6 +126,16 @@ export async function runRace({ browser, BASE, OUT, errors, step }) {
     const d3 = (await camState()).dist;
     await page.getByTestId("race-scene").dispatchEvent("wheel", { deltaY: 8, deltaMode: 0, ctrlKey: true });
     await page.waitForFunction((d) => window.__race.state().camera.dist > d + 0.001, d3, { timeout: 30_000 }).catch(() => errors.push("race: a trackpad pinch (ctrl + wheel) didn't zoom"));
+    // Safari's trackpad pinch: gesture events with a growing scale zoom in.
+    const d4 = (await camState()).dist;
+    await page.getByTestId("race-stage").evaluate((el) => {
+      const fire = (type, scale) => { const e = new Event(type, { bubbles: true, cancelable: true }); Object.defineProperty(e, "scale", { value: scale }); el.dispatchEvent(e); };
+      fire("gesturestart", 1);
+      fire("gesturechange", 1.2);
+      fire("gesturechange", 1.5);
+      fire("gestureend", 1.5);
+    });
+    await page.waitForFunction((d) => window.__race.state().camera.dist < d - 0.01, d4, { timeout: 30_000 }).catch(() => errors.push("race: a Safari pinch (gesture events) didn't zoom"));
     // Presets, then drag to orbit (back to Free).
     for (const m of ["headon", "overhead", "broadcast"]) {
       await press(page, `race-cam-${m}`);
