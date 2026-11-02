@@ -1,75 +1,91 @@
+"use client";
+
+import { useMemo, useState } from "react";
 import Link from "next/link";
+import { ArrowDown, ArrowUp } from "lucide-react";
 import { itemPath } from "@/lib/sizes/deeplink";
 import { dexTag } from "@/lib/sizes/badges";
-import { KIND_LABEL, formatFeet, formatMetres, type SizeItem } from "@/lib/sizes/types";
-import { capitalize } from "@/lib/pokemon/type-matrix";
-import { typeColor } from "@/lib/pokemon/type-colors";
-import { getPokemon } from "@/lib/pokemon/pokedex";
-import { SortTable, type SortColumn } from "./SortTable";
+import { KIND_LABEL, formatFeet, formatMetres, type SizeKind } from "@/lib/sizes/types";
+import { TYPE_COLORS } from "@/lib/pokemon/type-colors";
 
-const COLUMNS: SortColumn[] = [
-  { key: "name", label: "Pokémon", numeric: false },
-  { key: "m", label: "Size", numeric: true },
-  { key: "kg", label: "Weight", numeric: true, className: "hidden sm:table-cell" },
-  { key: "dex", label: "Dex", numeric: true, className: "hidden md:table-cell" },
+/** One table row, compact on the wire: key, name, kind, Dex number, metres, length?, minimum?, kg, types ("fire/flying"), Pokédex slug. */
+export type ListRow = [key: string, name: string, kind: SizeKind, dex: number, m: number, length: 0 | 1, min: 0 | 1, kg: number | null, types: string, dexSlug: string];
+
+type SortKey = "m" | "name" | "kg" | "dex";
+
+const HEAD: { key: SortKey; label: string; cls?: string }[] = [
+  { key: "name", label: "Pokémon" },
+  { key: "m", label: "Size" },
+  { key: "kg", label: "Weight", cls: "szt-w" },
+  { key: "dex", label: "Dex", cls: "szt-d" },
 ];
 
 /**
  * The line as a plain table, smallest first, sortable by name, size, weight
  * and Dex number: what search engines index, and the whole page without
  * WebGL or with reduced motion. Each Pokémon links to its own size page and
- * its Pokédex entry; real-world references stand in the table for scale.
+ * its Pokédex entry; real-world references stand in the table for scale. A
+ * client component so its rows travel once, as compact data, rather than
+ * as a second rendered tree.
  */
-export function SizesList({ items, focus, caption }: { items: SizeItem[]; focus?: string; caption: string }) {
+export function SizesList({ rows, focus, caption }: { rows: ListRow[]; focus?: string; caption: string }) {
+  const [sort, setSort] = useState<{ key: SortKey; dir: 1 | -1 }>({ key: "m", dir: 1 });
+  const sorted = useMemo(() => {
+    const idx = rows.map((r, i) => [r, i] as const);
+    const val = (r: ListRow): number | string => (sort.key === "m" ? r[4] : sort.key === "name" ? r[1] : sort.key === "kg" ? r[7] ?? 1e9 : r[3] || 1e9);
+    idx.sort(([a, ia], [b, ib]) => {
+      const va = val(a), vb = val(b);
+      const d = typeof va === "number" ? va - (vb as number) : va.localeCompare(vb as string);
+      return (d || ia - ib) * sort.dir;
+    });
+    return idx.map(([r]) => r);
+  }, [rows, sort]);
   return (
     <div className="overflow-x-clip rounded-lg border bg-card/40 px-3 sm:px-4" data-testid="sizes-list">
-      <SortTable columns={COLUMNS} initial={{ key: "m", dir: 1 }} label={caption}>
-        {items.map((i, n) => {
-          const ref = i.kind === "ref";
-          return (
-            <tr
-              key={i.key}
-              id={`size-${i.key}`}
-              data-order={n}
-              data-name={i.name.toLowerCase()}
-              data-m={i.m}
-              data-kg={i.kg ?? ""}
-              data-dex={i.species || ""}
-              className={`scroll-mt-28 border-b border-foreground/[0.06] last:border-0 ${i.key === focus ? "sz-list-hit" : ""} ${ref ? "text-muted-foreground" : ""}`}
-            >
-              <td className="py-2 pr-2 font-pixel text-[10px] tabular-nums text-muted-foreground" data-rank>{n + 1}</td>
-              <td className="py-2 pr-2">
-                {ref ? (
-                  <span className="font-display font-semibold uppercase tracking-wide">{i.name}<span className="ml-2 font-pixel text-[9px] normal-case tracking-normal">real-world size</span></span>
-                ) : (
-                  <span className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
-                    <Link href={itemPath(i.key)} prefetch={false} className="font-display font-semibold uppercase tracking-wide hover:text-primary">{i.name}</Link>
-                    {i.kind !== "pokemon" && <span className="font-pixel text-[9px] uppercase tracking-wider text-muted-foreground">{KIND_LABEL[i.kind]}</span>}
-                    <span className="inline-flex gap-1" aria-label={i.types.map(capitalize).join(" / ")}>
-                      {i.types.map((t) => <span key={t} className="h-2 w-2 rounded-full" style={{ background: typeColor(t) }} title={capitalize(t)} />)}
-                    </span>
-                  </span>
-                )}
-              </td>
-              <td className="whitespace-nowrap py-2 pr-2 tabular-nums">
-                <span className="font-semibold">{formatMetres(i.m)}{i.min ? "+" : ""}</span>
-                <span className="ml-1.5 text-xs text-muted-foreground">{formatFeet(i.m)}{i.min ? "+" : ""}{i.length ? " · length" : ""}</span>
-              </td>
-              <td className="hidden whitespace-nowrap py-2 pr-2 tabular-nums text-muted-foreground sm:table-cell">{i.kg != null ? `${i.kg.toLocaleString("en-US")} kg` : "—"}</td>
-              <td className="hidden py-2 pr-2 md:table-cell">
-                {ref ? null : (
-                  <Link href={`/pokemon/${pokedexSlug(i)}`} prefetch={false} className="font-pixel text-[10px] text-muted-foreground hover:text-foreground">{dexTag(i.species)}</Link>
-                )}
-              </td>
-            </tr>
-          );
-        })}
-      </SortTable>
+      <table className="szt" aria-label={caption}>
+        <thead>
+          <tr>
+            <th scope="col">#</th>
+            {HEAD.map((h) => {
+              const on = sort.key === h.key;
+              return (
+                <th key={h.key} scope="col" className={h.cls} aria-sort={on ? (sort.dir === 1 ? "ascending" : "descending") : "none"}>
+                  <button type="button" onClick={() => setSort((s) => ({ key: h.key, dir: s.key === h.key ? (s.dir === 1 ? -1 : 1) : 1 }))} className={on ? "on" : undefined} data-testid={`sizes-sort-${h.key}`}>
+                    {h.label}
+                    {on && (sort.dir === 1 ? <ArrowUp className="h-3 w-3" aria-hidden /> : <ArrowDown className="h-3 w-3" aria-hidden />)}
+                  </button>
+                </th>
+              );
+            })}
+          </tr>
+        </thead>
+        <tbody>
+          {sorted.map((r, n) => {
+            const [key, name, kind, dex, m, length, min, kg, types, slug] = r;
+            const plus = min ? "+" : "";
+            const ref = kind === "ref";
+            return (
+              <tr key={key} id={`size-${key}`} className={`${ref ? "ref" : ""}${key === focus ? " sz-list-hit" : ""}`}>
+                <td>{n + 1}</td>
+                <td>
+                  {ref ? (
+                    <>{name}<span className="k">real-world size</span></>
+                  ) : (
+                    <>
+                      <Link href={itemPath(key)} prefetch={false} className="n">{name}</Link>
+                      {kind !== "pokemon" && <span className="k">{KIND_LABEL[kind]}</span>}
+                      {types.split("/").filter(Boolean).map((t) => <i key={t} style={{ background: TYPE_COLORS[t] ?? "#888" }} title={t} />)}
+                    </>
+                  )}
+                </td>
+                <td><b>{formatMetres(m)}{plus}</b><small>{formatFeet(m)}{plus}{length ? " · length" : ""}</small></td>
+                <td className="szt-w">{kg != null ? `${kg.toLocaleString("en-US")} kg` : "—"}</td>
+                <td className="szt-d">{ref ? null : <Link href={`/pokemon/${slug}`} prefetch={false}>{dexTag(dex)}</Link>}</td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
     </div>
   );
-}
-
-/** The species' Pokédex page for any form ("charizard-gmax" → "charizard"). */
-export function pokedexSlug(i: SizeItem): string {
-  return i.kind === "pokemon" ? i.key : getPokemon(i.species)?.slug ?? i.key;
 }

@@ -36,10 +36,21 @@ function lengthFromUrl(): number | null {
   }
 }
 
+/** A frame rate from the address (?vfps=10), for quick automated checks. */
+function fpsFromUrl(): number | undefined {
+  try {
+    const n = Number(new URLSearchParams(window.location.search).get("vfps"));
+    return Number.isFinite(n) && n >= 10 && n <= 60 ? Math.round(n) : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+/** A render quality from the address (?vq=draft), for quick automated checks. */
 function qualityFromUrl(): Quality | undefined {
   try {
     const q = new URLSearchParams(window.location.search).get("vq");
-    return q === "low" || q === "medium" || q === "high" ? q : undefined;
+    return q === "draft" || q === "low" || q === "medium" || q === "high" ? q : undefined;
   } catch {
     return undefined;
   }
@@ -110,6 +121,7 @@ export default function MakeVideo({ items, line, hook, slug, lineLabel, onRecord
         music: MUSIC_URL,
         logo: "/logo.svg",
         quality: qualityFromUrl(),
+        fps: fpsFromUrl(),
         signal: ac.signal,
         onProgress(p, label) {
           const now = performance.now();

@@ -12,6 +12,7 @@ import { chromium } from "playwright";
 import fs from "fs";
 import { execFileSync } from "child_process";
 import { runIqTest } from "./e2e-iq-test.mjs";
+import { runSizes } from "./e2e-sizes.mjs";
 
 const BASE = process.argv[2] ?? "http://localhost:3000";
 // Each game opens its how-to pop-up (with a live demo) on a first visit. "Don't show again" dismisses it for good on this device.
@@ -2257,6 +2258,8 @@ step("pokédex Timeline: an entry's own link opens its panel, share copies it, t
   await tp.locator('[data-testid="timeline-list"] #gold-silver.tl-list-hit').waitFor({ timeout: 15_000 }).catch(() => errors.push("timeline: the list view didn't bring the linked entry into view"));
   await context.close();
 }
+
+await runSizes({ browser, BASE, OUT, errors, step });
 
 step("trainer, leaderboard, pokémon page");
 // Quiz modes are off the leaderboard: an old quiz board link lands on the Daily, with no quiz tabs.

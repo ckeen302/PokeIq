@@ -10,7 +10,8 @@ import { DexTabs } from "@/components/pokedex/DexTabs";
 import { ListHeader } from "@/components/pokedex/detail/DetailParts";
 import { BackButton } from "@/components/ui/BackButton";
 import { SizesExperience } from "./SizesExperience";
-import { SizesList, pokedexSlug } from "./SizesList";
+import { SizesList, type ListRow } from "./SizesList";
+import { getPokemon } from "@/lib/pokemon/pokedex";
 import { cn } from "@/lib/utils";
 
 /** The full line with every form too: the main page's table. */
@@ -27,6 +28,16 @@ export function neighbours(focus: SizeItem, n = 12): SizeItem[] {
   const near = all.slice(Math.max(0, at - n), at + n + 1);
   const human = SIZE_ITEMS.find((i) => i.ref?.kind === "human")!;
   return near.some((i) => i.key === human.key) ? near : [...near, human].sort(bySize);
+}
+
+/** The species' Pokédex page for any form ("charizard-gmax" → "charizard"). */
+export function pokedexSlug(i: SizeItem): string {
+  return i.kind === "pokemon" ? i.key : getPokemon(i.species)?.slug ?? i.key;
+}
+
+/** Compact rows for the table (sent once, rendered on the server and in the browser). */
+export function listRows(items: SizeItem[]): ListRow[] {
+  return items.map((i) => [i.key, i.name, i.kind, i.species, i.m, i.length ? 1 : 0, i.min ? 1 : 0, i.kg, i.types.join("/"), i.kind === "ref" ? "" : pokedexSlug(i)]);
 }
 
 const sizeText = (i: SizeItem) => `${formatMetres(i.m)}${i.min ? "+" : ""} (${formatFeet(i.m)}${i.min ? "+" : ""})`;
@@ -83,7 +94,7 @@ export function SizesPage({ preset = DEFAULT_PRESET, focus, vs }: { preset?: Siz
               Compare
             </Link>
           </nav>
-          <SizesList items={rows} focus={focus?.key} caption={caption} />
+          <SizesList rows={listRows(rows)} focus={focus?.key} caption={caption} />
           <p className="text-center text-xs text-muted-foreground">
             Heights and weights from the Pokédex (PokéAPI); Gigantamax heights are the Pokédex&apos;s minimum. Long Pokémon such as serpents and fish are measured by length.
             Real-world sizes are documented figures, each with its source.

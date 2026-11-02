@@ -4,8 +4,9 @@ import { bySize, type SizeItem } from "./types";
  * The ready-made lineups on /pokedex/sizes. Each has its own page
  * (/pokedex/sizes/<id>, with a preview card) and a hook title for videos.
  * The real-world references join every lineup they fit in (from half the
- * smallest figure to twice the largest); the adult human always stands in
- * the line so every lineup has a familiar scale.
+ * smallest figure up to the largest, so a line always ends on a Pokémon);
+ * the adult human stands in every line for a familiar scale, except where a
+ * preset brings its own reference (the phone).
  */
 
 export interface SizePreset {
@@ -109,16 +110,17 @@ export function bindPresets(all: SizeItem[]) {
 export const DEFAULT_PRESET = PRESETS[0];
 export const PRESET_BY_ID = new Map(PRESETS.map((p) => [p.id, p]));
 
-/** References that fit a lineup: the human always; the others from half the smallest figure to twice the largest. */
+/** References that fit a lineup: the preset's own (the phone), else the human always and the others from half the smallest figure up to the largest. */
 export function refsFor(figures: SizeItem[], all: SizeItem[], presetId?: string): SizeItem[] {
   if (!figures.length) return [];
   const lo = Math.min(...figures.map((f) => f.m)) / 2;
-  const hi = Math.max(...figures.map((f) => f.m)) * 2;
+  const hi = Math.max(...figures.map((f) => f.m));
+  const own = all.filter((i) => i.kind === "ref" && !!presetId && !!i.ref?.presets?.includes(presetId));
+  if (own.length) return own;
   return all.filter((i) => {
-    if (i.kind !== "ref") return false;
-    if (i.ref?.presets) return !!presetId && i.ref.presets.includes(presetId);
+    if (i.kind !== "ref" || i.ref?.presets) return false;
     if (i.ref?.kind === "human") return true;
-    return i.m >= lo && i.m <= hi;
+    return i.m >= lo && i.m < hi;
   });
 }
 

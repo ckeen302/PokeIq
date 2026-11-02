@@ -20,7 +20,8 @@ import { SKY, createSky } from "./sky";
  * Loaded only on this page.
  */
 
-export type Quality = "low" | "medium" | "high" | "export";
+/** "draft" is for automated checks (no shadows or post effects): never offered to people. */
+export type Quality = "draft" | "low" | "medium" | "high" | "export";
 
 interface QualitySpec {
   pr: number;
@@ -42,6 +43,7 @@ interface QualitySpec {
 }
 
 export const QUALITY: Record<Quality, QualitySpec> = {
+  draft: { pr: 1, msaa: 0, ao: false, aoSamples: 8, dof: false, dofSamples: 16, bloom: false, shadow: 512, cascades: 1, blocks: 0.2, facadeScale: 1, texSize: 256, trees: false, maxRelief: 4, anisotropy: 1 },
   low: { pr: 1, msaa: 0, ao: false, aoSamples: 8, dof: false, dofSamples: 16, bloom: false, shadow: 1024, cascades: 2, blocks: 0.45, facadeScale: 1, texSize: 256, trees: true, maxRelief: 10, anisotropy: 2 },
   medium: { pr: 1.25, msaa: 4, ao: false, aoSamples: 8, dof: true, dofSamples: 16, bloom: true, shadow: 2048, cascades: 3, blocks: 0.75, facadeScale: 1, texSize: 512, trees: true, maxRelief: 18, anisotropy: 4 },
   high: { pr: 1.5, msaa: 4, ao: true, aoSamples: 12, dof: true, dofSamples: 32, bloom: true, shadow: 2048, cascades: 3, blocks: 1, facadeScale: 1, texSize: 512, trees: true, maxRelief: 28, anisotropy: 8 },
@@ -118,7 +120,7 @@ export function createSizesScene(host: HTMLElement, opts: SceneOptions): SizesSc
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: false, alpha: false, powerPreference: "high-performance", stencil: false });
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 0.95;
-  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.enabled = opts.quality !== "draft";
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   const sizeOf = () => opts.size ?? { w: Math.max(1, host.clientWidth), h: Math.max(1, host.clientHeight) };
   let { w: W, h: H } = sizeOf();

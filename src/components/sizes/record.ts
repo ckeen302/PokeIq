@@ -30,6 +30,8 @@ export interface RecordOptions {
   logo: string;
   /** Render quality (the export's own by default; tests can ask for a lighter one). */
   quality?: Quality;
+  /** Frame rate (30 by default; tests can ask for fewer frames). */
+  fps?: number;
   onProgress(p: number, label: string): void;
   signal: AbortSignal;
 }
@@ -222,7 +224,7 @@ export function drawVideoLayers(g: CanvasRenderingContext2D, W: number, H: numbe
 }
 
 export async function recordVideo(o: RecordOptions): Promise<RecordResult> {
-  const v = videoSettings(o.seconds, o.hook);
+  const v = { ...videoSettings(o.seconds, o.hook), ...(o.fps ? { fps: o.fps } : {}) };
   const W = v.width, H = v.height, fps = v.fps;
   const N = frameCount(v);
   const tl = videoTimeline(v.seconds);

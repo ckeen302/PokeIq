@@ -79,7 +79,7 @@ function initialQuality(): Quality {
   if (window.innerWidth < 1100 || (nav.hardwareConcurrency ?? 8) <= 4 || mem <= 4) return "medium";
   return "high";
 }
-const LOWER: Record<Quality, Quality> = { export: "high", high: "medium", medium: "low", low: "low" };
+const LOWER: Record<Quality, Quality> = { export: "high", high: "medium", medium: "low", low: "low", draft: "draft" };
 const FRAME_BUDGET_MS = 1000 / 50;
 
 const sizeLine = (i: SizeItem) => `${formatMetres(i.m)}${i.min ? "+" : ""} · ${formatFeet(i.m)}${i.min ? "+" : ""}`;
@@ -712,7 +712,7 @@ export function SizesExperience({ preset, focus = null, vs = [], children }: Siz
       {mode !== "list" && (
         <div
           ref={stageRef}
-          className="sz-stage fixed inset-x-0 !mt-0 bottom-[calc(4rem+env(safe-area-inset-bottom))] top-14 z-40 overflow-hidden lg:bottom-0"
+          className="sz-stage fixed left-0 !mt-0 w-screen bottom-[calc(4rem+env(safe-area-inset-bottom))] top-14 z-40 overflow-hidden lg:bottom-0"
           data-testid="sizes-stage"
           data-ready={ready ? "1" : "0"}
           data-kind={kind}
