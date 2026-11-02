@@ -500,4 +500,37 @@ describe("mass battle: director", () => {
       }
     }
   });
+
+  it("in a tall frame (videos, phones) both armies sit between the titles and the controls", () => {
+    const army = (cx: number, alive: number, h: number, extent: number): ArmySummary => ({ alive, start: alive, cx, cz: 0, extent, fx: cx > 0 ? cx - extent : cx + extent, fz: 0, h });
+    const fields: FieldSummary[] = [
+      { t: 0, phase: "deploy", armies: [army(-21, 53, 0.9, 5), army(21, 1, 3.2, 1)], boss: { x: 21, z: 0, h: 3.2, side: 1 }, arena: 60, aspect: 1080 / 1920 },
+      { t: 0, phase: "deploy", armies: [army(-25, 1000, 0.4, 12), army(25, 1, 2, 1)], boss: { x: 25, z: 0, h: 2, side: 1 }, arena: 70, aspect: 390 / 555 },
+      { t: 0, phase: "deploy", armies: [army(-30, 365, 1.5, 15), army(30, 360, 1.6, 15)], boss: null, arena: 80, aspect: 1080 / 1920 },
+    ];
+    for (const field of fields) {
+      const d = new Director();
+      d.reset(field);
+      for (let i = 0; i < 600; i++) {
+        const p = d.update(field, 0.1);
+        if (i < 30) continue;
+        const cp = Math.cos(p.pitch);
+        const cam = [p.tx + Math.sin(p.yaw) * cp * p.dist, p.ty + Math.sin(p.pitch) * p.dist, p.tz + Math.cos(p.yaw) * cp * p.dist];
+        const halfV = (p.fov / 2) * (Math.PI / 180);
+        const halfH = Math.atan(Math.tan(halfV) * field.aspect);
+        const fwdYaw = Math.atan2(p.tx - cam[0], p.tz - cam[2]);
+        const fwdPitch = Math.atan2(p.ty - cam[1], Math.hypot(p.tx - cam[0], p.tz - cam[2]));
+        for (const a of field.armies) {
+          const dx = a.cx - cam[0], dy = a.h / 2 - cam[1], dz = a.cz - cam[2];
+          let h = Math.atan2(dx, dz) - fwdYaw;
+          h = Math.atan2(Math.sin(h), Math.cos(h));
+          const v = Math.atan2(dy, Math.hypot(dx, dz)) - fwdPitch;
+          expect(Math.abs(h)).toBeLessThan(halfH * 0.9);
+          // Below the titles (the top two fifths) and above the controls (the bottom seventh).
+          expect(v / halfV).toBeLessThan(0.2);
+          expect(v / halfV).toBeGreaterThan(-0.7);
+        }
+      }
+    }
+  });
 });

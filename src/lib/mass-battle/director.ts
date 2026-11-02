@@ -192,9 +192,16 @@ export class Director {
         const span = Math.max(a.extent + b.extent + Math.hypot(a.cx - b.cx, a.cz - b.cz), 16);
         const big = Math.max(a.h, b.h);
         if (portrait) {
-          // A tall frame: look down the line of battle from behind the first army, both armies stacked in view.
-          const yaw = Math.atan2(-(b.cx - a.cx), -(b.cz - a.cz));
-          return { tx: (a.cx + b.cx) / 2, ty: big * 0.5, tz: (a.cz + b.cz) / 2, yaw: yaw + 0.3 * Math.sin(s * 0.3), pitch: 0.42, dist: span * 0.62 + big * 2 + 6, fov, shake: 0 };
+          // A tall frame: from behind and above the first army, looking down the line of battle. Both armies sit between
+          // the titles over the top and the controls along the bottom: the far one just under the middle, the near one below it.
+          const S = Math.max(8, Math.hypot(b.cx - a.cx, b.cz - a.cz));
+          const ux = (b.cx - a.cx) / S, uz = (b.cz - a.cz) / S;
+          const back = S * 0.72 + a.extent;
+          const H = S * 0.33 + big * 2;
+          const pitch = Math.atan2(H, back + S + b.extent * 0.5) + 0.02;
+          const D = back + S * 0.5;
+          const camX = a.cx - ux * back, camZ = a.cz - uz * back;
+          return { tx: camX + ux * D * Math.cos(pitch), ty: H - D * Math.sin(pitch), tz: camZ + uz * D * Math.cos(pitch), yaw: Math.atan2(-ux, -uz) + 0.12 * Math.sin(s * 0.3), pitch, dist: D, fov, shake: 0 };
         }
         // Side on to the line of battle, swinging gently however long the wait, and far enough back for both armies to be in
         // frame: looking down the line, the far army would hide behind the near one (and behind the titles).
