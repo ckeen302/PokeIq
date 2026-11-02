@@ -10,7 +10,8 @@ import { assignLanes, displayTimes, formatGap, formatTime, leaderAt, makeRace, r
 import { DEFAULT_PRESET, PRESETS, PRESET_BY_ID, PSEUDO_LEGENDARIES, predicted } from "@/lib/race/presets";
 import { HUB_PRESET, RACE_PATH, RUN_PATH, VS_MAX, parseDistance, parseSeed, parseVs, presetPath, presetRunPath, pushRunner, vsOk, vsPath } from "@/lib/race/deeplink";
 import { DEFAULT_SEED, heatSizes, knockout, mulberry32, nextCount, pathOf, shuffle } from "@/lib/race/tournament";
-import { leaderReaches, planShow, raceTimeAt, shotAt } from "@/lib/race/broadcast";
+import { excitementAt, leaderReaches, photoWindow, planShow, raceTimeAt, shotAt } from "@/lib/race/broadcast";
+import { fieldFor, heatFor, searchEntrants, specFor } from "@/lib/race/lineup";
 import { cameraFor, fovToFit, type Spot } from "@/lib/race/director";
 import { orbitBy, orbitFrom, orbitPose, wheelFactor, zoomBy, zoomFov } from "@/lib/race/orbit";
 import { figureSize, fromRow, toRow, type Entrant } from "@/lib/race/types";
@@ -426,5 +427,40 @@ describe("the free camera", () => {
     expect(Math.abs(Math.log(wheelFactor(-5, 0, true)))).toBeGreaterThan(Math.abs(Math.log(wheelFactor(-5, 0, false))));
     expect(orbitBy(o, 0, 10000, 800).pitch).toBeLessThanOrEqual(1.5);
     expect(zoomFov(40, 2)).toBeLessThan(40);
+  });
+});
+
+describe("lineups and search", () => {
+  it("runs a preset, a custom field, a heat and the knockout's final", () => {
+    expect(fieldFor(specFor("shuckle-vs-regieleki"), RACE_ENTRANTS).entrants.map((e) => e.key)).toEqual(["shuckle", "regieleki"]);
+    const custom = fieldFor(specFor("fastest-eight", ["pikachu", "raichu-alola"], 200), RACE_ENTRANTS);
+    expect(custom.title).toBe("Pikachu vs Alolan Raichu");
+    expect(custom.hook).toMatch(/😳$/);
+    const heat = heatFor(mon("pikachu"), RACE_ENTRANTS, 100);
+    expect(heat).toHaveLength(8);
+    expect(heat[0].key).toBe("pikachu");
+    expect(heat.every((e) => Math.abs(predicted(e, 100) - predicted(mon("pikachu"), 100)) < 1)).toBe(true);
+    expect(fieldFor(specFor("fastest-eight", ["pikachu"]), RACE_ENTRANTS).title).toBe("Pikachu's heat");
+    const ko = fieldFor(specFor("every-pokemon"), RACE_ENTRANTS);
+    expect(ko.tournament).not.toBeNull();
+    expect(ko.entrants.map((e) => e.key)).toEqual(ko.tournament!.finalists);
+  });
+  it("finds Pokémon and forms by name or number", () => {
+    expect(searchEntrants(RACE_ENTRANTS, "pika")[0].key).toBe("pikachu");
+    expect(searchEntrants(RACE_ENTRANTS, "#25")[0].key).toBe("pikachu");
+    expect(searchEntrants(RACE_ENTRANTS, "deoxys").map((e) => e.key)).toContain("deoxys-speed");
+    expect(searchEntrants(RACE_ENTRANTS, "flabebe")[0].key).toBe("flabebe");
+    expect(searchEntrants(RACE_ENTRANTS, "  ")).toEqual([]);
+  });
+  it("hushes the crowd for the start and frames the photo finish on the leaders", () => {
+    const race = makeRace(PRESET_BY_ID.get("fastest-eight")!.pick(RACE_ENTRANTS, 100), 100);
+    const plan = planShow(race);
+    const set = plan.shots.find((s) => s.phase === "set")!;
+    expect(excitementAt(plan, race, set.t0 + 0.1)).toBeLessThan(0.1);
+    const fin = plan.shots.find((s) => s.phase === "race" && s.race0 <= race.first && s.race0 + (s.t1 - s.t0) >= race.first)!;
+    expect(excitementAt(plan, race, fin.t0 + (race.first - fin.race0) + 0.05)).toBeGreaterThan(0.9);
+    const w = photoWindow(race);
+    expect(w.from).toBeLessThan(race.first);
+    expect(w.to).toBeGreaterThan(race.order[1].time);
   });
 });

@@ -3,7 +3,7 @@
 PokéIQ Stadium on /pokedex/race is drawn by the page itself: the track and
 its markings, the stands, roof, floodlight masts, crowd, screens, boards and
 timing equipment are procedural and original. Nothing is taken from any
-Pokémon game, and no Olympic marks are used.
+Pokémon game or any sports event, and no event's marks are used.
 
 ## Textures (Poly Haven, CC0 1.0)
 

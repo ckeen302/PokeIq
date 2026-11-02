@@ -89,6 +89,8 @@ export interface RaceScene {
   /** Draws a frame; returns the heavy footfalls it saw (with their distance from the camera, for the sound). */
   frame(f: FrameInput): { kg: number; dist: number }[];
   heads(): HeadAnchor[];
+  /** What the big screens show between races: a title and a line under it (the winner after the race). */
+  setCard(title: string, sub: string): void;
   /** Develops the photo-finish image over a race-time window, a few columns per call; resolves with the image. */
   photoFinish(from: number, to: number): { step(): boolean; result(): HTMLCanvasElement | null; progress(): number };
   resize(w: number, h: number): void;
@@ -131,7 +133,7 @@ export function createRaceScene(host: HTMLElement, opts: SceneOptions): RaceScen
 
   // ---- Lights: the floodlights' key and fill, the night sky and the red track's bounce.
   scene.add(new THREE.HemisphereLight(0x9fb3e0, 0x5a2a22, 0.5));
-  const stadium: Stadium = buildStadium({ urls: opts.urls, font: opts.font, q: { beams: Q0.beams, liveScreens: Q0.screenEvery > 0, anisotropy: Math.min(Q0.aniso, renderer.capabilities.getMaxAnisotropy()) } });
+  const stadium: Stadium = buildStadium({ urls: opts.urls, font: opts.font, q: { beams: Q0.beams, liveScreens: Q0.screenEvery > 0, anisotropy: Math.min(Q0.aniso, renderer.capabilities.getMaxAnisotropy()) }, upload: (t) => renderer.initTexture(t) });
   scene.add(stadium.group);
   const lightAt = (m: THREE.Vector3, color: number, k: number) => {
     const l = new THREE.DirectionalLight(color, k);
@@ -296,7 +298,7 @@ export function createRaceScene(host: HTMLElement, opts: SceneOptions): RaceScen
     // Aim the slit along the line: from the photo-finish camera, framing every lane and every runner's height.
     const r0 = race;
     // The slit sits a hair past the line (so the lanes read in the image), at the photo-finish camera on its post outside lane 8.
-    const camAt = new THREE.Vector3(X0 + 0.04, 4.55, OUTER_R + 8);
+    const camAt = new THREE.Vector3(X0 + 0.04, 3.0, OUTER_R + 14);
     let top = -Infinity, bottom = Infinity;
     for (const l of r0?.lanes ?? []) {
       const z = KERB_R + 1.22 * (l.lane - 0.5);
@@ -323,9 +325,9 @@ export function createRaceScene(host: HTMLElement, opts: SceneOptions): RaceScen
         vertexShader: "varying vec2 vUv; void main(){ vUv = uv; gl_Position = vec4(position.xy, 0.0, 1.0); }",
         fragmentShader: /* glsl */ `uniform sampler2D t; varying vec2 vUv;
           vec3 aces(vec3 x){ return clamp((x * (2.51 * x + 0.03)) / (x * (2.43 * x + 0.59) + 0.14), 0.0, 1.0); }
-          void main(){ vec3 c = texture2D(t, vUv).rgb * 1.25; c = aces(c);
-            c = mix(vec3(dot(c, vec3(0.299, 0.587, 0.114))), c, 0.85);
-            c = pow(c, vec3(1.0 / 2.2)); gl_FragColor = vec4(c, 1.0); }`,
+          void main(){ vec3 c = texture2D(t, vUv).rgb * 1.3; c = aces(c);
+            c = mix(vec3(dot(c, vec3(0.299, 0.587, 0.114))), c, 1.08);
+            c = pow(clamp(c, 0.0, 1.0), vec3(1.0 / 2.2)); gl_FragColor = vec4(c, 1.0); }`,
         depthTest: false,
         depthWrite: false,
       }));
@@ -408,6 +410,7 @@ export function createRaceScene(host: HTMLElement, opts: SceneOptions): RaceScen
     setRace,
     frame,
     heads,
+    setCard: drawCard,
     photoFinish,
     resize,
     setQuality,

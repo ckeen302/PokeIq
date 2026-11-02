@@ -19,7 +19,7 @@ import { ClockFace, glowTexture, laneNumbersTexture, ledBoardTexture, paintLineT
  *   two giant video screens at the ends, the trackside clock and the
  *   photo-finish camera at the line.
  *
- * No Olympic rings or marks: the stadium's own name is on the boards.
+ * No sports event's marks: the stadium's own name is on the boards.
  */
 
 export const LAYER = { BASE: 0, MAIN: 1, PF: 2, SCREEN: 3, CROWD: 4 } as const;
@@ -380,7 +380,7 @@ function buildRoof(b: Built): { mesh: THREE.Group; lamps: THREE.Vector3[] } {
     geo.computeVertexNormals();
     return new THREE.Mesh(geo, mat(b, new THREE.MeshLambertMaterial({ color, side, emissive })));
   };
-  g.add(mk(topPos, idx, "#aeb6c4", THREE.DoubleSide));
+  g.add(mk(topPos, idx, "#2c3340", THREE.DoubleSide));
   g.add(mk(botPos, idx, "#1a2030", THREE.DoubleSide, "#06080d"));
   g.add(mk(edgePos, idxE, "#e8ecf2", THREE.DoubleSide, "#141820"));
   // Support trusses: a rib every few slices from the back wall to the inner edge (dark lines on the underside).
@@ -391,6 +391,14 @@ function buildRoof(b: Built): { mesh: THREE.Group; lamps: THREE.Vector3[] } {
     const rib = new THREE.BoxGeometry(0.5, 1.4, len);
     rib.lookAt(new THREE.Vector3(o.x - a.x, yOut - yIn, o.z - a.z));
     rib.translate((a.x + o.x) / 2, (yIn + yOut) / 2 - th - 0.4, (a.z + o.z) / 2);
+    ribs.push(rib);
+  }
+  for (let i = 0; i < N; i += 10) {
+    const a = inner[i], o = outer[i];
+    const len = Math.hypot(o.x - a.x, o.z - a.z, yOut - yIn);
+    const rib = new THREE.BoxGeometry(0.8, 0.5, len);
+    rib.lookAt(new THREE.Vector3(o.x - a.x, yOut - yIn, o.z - a.z));
+    rib.translate((a.x + o.x) / 2, (yIn + yOut) / 2 + 0.3, (a.z + o.z) / 2);
     ribs.push(rib);
   }
   const ribGeo = track(b, mergeGeometries(ribs));
@@ -462,6 +470,13 @@ function buildBoards(b: Built, font: string): { group: THREE.Group; material: TH
   };
   const m = mat(b, new THREE.MeshBasicMaterial({ map: tex, side: THREE.DoubleSide, color: new THREE.Color(1.25, 1.25, 1.25), toneMapped: false }));
   const fascia = mat(b, new THREE.MeshBasicMaterial({ map: tex, side: THREE.DoubleSide, color: new THREE.Color(1.6, 1.6, 1.6), toneMapped: false }));
+  // The screens face the field; from behind (a camera in the stands) a board is just its dark casing.
+  for (const mm of [m, fascia]) {
+    mm.onBeforeCompile = (sh) => {
+      sh.fragmentShader = sh.fragmentShader.replace("#include <map_fragment>", "#include <map_fragment>\n  if (!gl_FrontFacing) diffuseColor.rgb = vec3(0.012, 0.014, 0.02);");
+    };
+    mm.customProgramCacheKey = () => "race-board";
+  }
   // Track-side boards: 1 m tall, leaning back a little, on the apron.
   g.add(new THREE.Mesh(strip(-1.6, 0.05, 1.0, 64, -0.25), m));
   // The fascia between the tiers.
@@ -528,7 +543,7 @@ function buildBeams(b: Built, heads: THREE.Vector3[]): THREE.Group {
     vertexShader: /* glsl */ `varying float vT; varying vec3 vN; varying vec3 vV;
       void main(){ vT = uv.y; vec4 w = modelMatrix * vec4(position, 1.0); vN = normalize(mat3(modelMatrix) * normal); vV = normalize(cameraPosition - w.xyz); gl_Position = projectionMatrix * viewMatrix * w; }`,
     fragmentShader: /* glsl */ `uniform vec3 uColor; varying float vT; varying vec3 vN; varying vec3 vV;
-      void main(){ float edge = pow(abs(dot(vN, vV)), 1.5); float a = vT * vT * 0.035 * edge; gl_FragColor = vec4(uColor * a, a); }`,
+      void main(){ float edge = pow(abs(dot(vN, vV)), 1.5); float a = vT * vT * 0.016 * edge; gl_FragColor = vec4(uColor * a, a); }`,
   }));
   for (const h of heads) {
     const target = new THREE.Vector3(h.x * 0.12, 0, h.z * 0.12);
@@ -613,11 +628,37 @@ function buildLineFurniture(b: Built, font: string): { group: THREE.Group; clock
   g.add(cam);
   // Timing posts at each end of the line.
   for (const z of [KERB_R - 0.35, OUTER_R + 0.35]) {
-    const tp = new THREE.Mesh(track(b, new THREE.BoxGeometry(0.09, 1.0, 0.09)), mat(b, new THREE.MeshStandardMaterial({ color: "#e8e8e8", roughness: 0.5 })));
-    tp.position.set(X0 + 0.05, 0.5, z);
+    const tp = new THREE.Mesh(track(b, new THREE.BoxGeometry(0.06, 0.85, 0.06)), mat(b, new THREE.MeshStandardMaterial({ color: "#e8e8e8", roughness: 0.5 })));
+    tp.position.set(X0 + 0.04, 0.425, z);
     g.add(tp);
   }
   return { group: g, clock };
+}
+
+/** The city around the stadium at night: dark ground to the horizon, scattered with lights. */
+function buildSurroundings(b: Built): THREE.Group {
+  const g = new THREE.Group();
+  const ground = new THREE.Mesh(track(b, new THREE.RingGeometry(140, 3200, 64, 1).rotateX(-Math.PI / 2)), mat(b, new THREE.MeshBasicMaterial({ color: new THREE.Color(0.006, 0.007, 0.01) })));
+  ground.position.y = -0.3;
+  g.add(ground);
+  const r = rng(99);
+  const pos: number[] = [], col: number[] = [];
+  const palette = [[1, 0.78, 0.45], [1, 0.9, 0.7], [0.75, 0.85, 1], [1, 0.6, 0.35]];
+  for (let i = 0; i < 2600; i++) {
+    const a = r() * Math.PI * 2;
+    const d = 220 + Math.pow(r(), 0.6) * 2600;
+    pos.push(Math.cos(a) * d, r() < 0.08 ? 4 + r() * 40 : 0.5, Math.sin(a) * d);
+    const c = palette[Math.floor(r() * palette.length)];
+    const k = 0.5 + r() * 1.6;
+    col.push(c[0] * k, c[1] * k, c[2] * k);
+  }
+  const geo = track(b, new THREE.BufferGeometry());
+  geo.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3));
+  geo.setAttribute("color", new THREE.Float32BufferAttribute(col, 3));
+  const lights = new THREE.Points(geo, mat(b, new THREE.PointsMaterial({ size: 2.2, sizeAttenuation: false, vertexColors: true, toneMapped: false, fog: false })));
+  g.add(lights);
+  g.traverse((o) => o.layers.set(LAYER.MAIN));
+  return g;
 }
 
 /** Sky: night, with a faint glow over the bowl from the floodlights in the haze. */
@@ -632,10 +673,10 @@ function buildSky(b: Built): THREE.Mesh {
       void main(){
         float y = vDir.y;
         vec3 zen = vec3(0.004, 0.007, 0.018);
-        vec3 hor = vec3(0.05, 0.055, 0.085);
+        vec3 hor = vec3(0.022, 0.026, 0.042);
         vec3 c = mix(hor, zen, smoothstep(-0.05, 0.6, y));
         // Light dome over the stadium.
-        c += vec3(0.07, 0.07, 0.09) * exp(-max(y, 0.0) * 5.0);
+        c += vec3(0.035, 0.035, 0.05) * exp(-max(y, 0.0) * 6.0);
         // A few stars.
         vec3 q = floor(vDir * 420.0);
         float s = step(0.9985, h(q)) * smoothstep(0.15, 0.6, y);
@@ -650,9 +691,12 @@ function buildSky(b: Built): THREE.Mesh {
   return sky;
 }
 
-export function buildStadium(opts: { urls: StadiumUrls; font: string; q: QualityBits }): Stadium {
+export function buildStadium(opts: { urls: StadiumUrls; font: string; q: QualityBits; upload?: (t: THREE.Texture) => void }): Stadium {
   const b: Built = { geos: [], mats: [], texs: [] };
   const loader = new THREE.TextureLoader();
+  const load = loader.load.bind(loader);
+  // Upload each texture as soon as it decodes, not on the frame that first draws it.
+  loader.load = ((url: string, onLoad?: (t: THREE.Texture) => void) => load(url, (t) => { opts.upload?.(t); onLoad?.(t); })) as typeof loader.load;
   const group = new THREE.Group();
   const floor = buildFloor(b, opts.urls, opts.q.anisotropy, loader);
   group.add(floor);
@@ -671,6 +715,7 @@ export function buildStadium(opts: { urls: StadiumUrls; font: string; q: Quality
   const line = buildLineFurniture(b, opts.font);
   group.add(line.group);
   group.add(buildSky(b));
+  group.add(buildSurroundings(b));
   // Lamps: the masts' banks (bright, with streaks on the nearest) and the roof ring.
   const r = rng(7);
   const lampPts = [

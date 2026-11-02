@@ -217,19 +217,19 @@ function drawFrame(g: CanvasRenderingContext2D, W: number, H: number, t: number,
     } else if (shot.phase === "race" || shot.phase === "fast") {
       const lead = leaderAt(race, raceT);
       const v = spotsAt(race, raceT).find((x) => x.lane === lead.lane)?.v ?? 0;
-      drawClockBug(g, W, H, { ...gfx, scale: 1.6, top, title: `${race.distance} m · ${o.title}`, time: formatTime(Math.min(raceT, race.first)), leader: raceT < race.first ? { name: lead.entrant.name, v } : null, live: raceT < race.first });
+      drawClockBug(g, W, H, { ...gfx, scale: 2.3, top, title: `${race.distance} m · ${o.title}`, time: formatTime(Math.min(raceT, race.first)), leader: raceT < race.first ? { name: lead.entrant.name, v } : null, live: raceT < race.first });
       if (shot.phase === "fast") {
         const r = race.lanes.find((x) => x.lane === shot.lane);
-        drawFastForward(g, W, H, shot.rate, r ? (raceT > race.first ? `Meanwhile, ${r.entrant.name}…` : `${r.entrant.name} leads`) : "", { ...gfx, scale: 1.4, top: top + 150 });
+        drawFastForward(g, W, H, shot.rate, r ? (raceT > race.first ? `Meanwhile, ${r.entrant.name}…` : `${r.entrant.name} leads`) : "", { ...gfx, scale: 1.9, top: top + 190 });
       }
       const heads = o.heads.filter((a) => a.visible && a.by - a.y > 30);
-      drawNameTags(g, heads.map((a) => ({ lane: a.lane, name: race.lanes.find((x) => x.lane === a.lane)!.entrant.name, x: a.x, y: a.y, lead: a.lane === lead.lane })), { font, scale: 1.7 });
+      drawNameTags(g, heads.map((a) => ({ lane: a.lane, name: race.lanes.find((x) => x.lane === a.lane)!.entrant.name, x: a.x, y: a.y, lead: a.lane === lead.lane })), { font, scale: 2.3 });
       if (raceT >= race.first && raceT < race.first + 3) {
         const w = race.order[0];
         drawStartCall(g, W, H, `${w.entrant.name.toUpperCase()} ${formatTime(w.time)}`, 0.5, { font, scale: 1.3 });
       }
     } else if (shot.phase === "replay") {
-      drawReplayBug(g, W, H, { ...gfx, top });
+      drawReplayBug(g, W, H, { ...gfx, scale: 2.3, top });
     } else if (shot.phase === "photo" && o.photo) {
       drawPhotoFinish(g, W, H, o.photo, race, winPhoto, k, { font, scale: 1.9, top: top + 40, bottom });
     } else if (shot.phase === "results") {
@@ -285,9 +285,12 @@ function drawFrame(g: CanvasRenderingContext2D, W: number, H: number, t: number,
     g.textBaseline = "middle";
     gameText(g, "PokéIQ", W / 2, H * 0.34 + s * 0.72, W * 0.11, font, "#ffffff", "#0d1626", W * 0.022);
     gameText(g, "Race any Pokémon", W / 2, H * 0.52, W * 0.05, font, "#ffd21f", "#0d1626", W * 0.01);
-    g.font = `800 ${W * 0.04}px ${font}`;
-    const lines = wrap(g, o.link, W * 0.86);
-    lines.forEach((l, i) => gameText(g, l, W / 2, H * 0.58 + i * W * 0.05, W * 0.04, font, "#9fd8ff", "#0d1626", W * 0.008));
+    // The link on one line, shrunk to fit (a URL has no spaces to wrap at).
+    let lpx = W * 0.042;
+    g.font = `800 ${lpx}px ${font}`;
+    const lw = g.measureText(o.link).width;
+    if (lw > W * 0.9) lpx *= (W * 0.9) / lw;
+    gameText(g, o.link, W / 2, H * 0.58, lpx, font, "#9fd8ff", "#0d1626", lpx * 0.2);
     g.restore();
   }
 }

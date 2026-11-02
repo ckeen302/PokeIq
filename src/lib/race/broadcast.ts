@@ -95,7 +95,7 @@ export function planShow(race: Race, opts: ShowOptions = {}): ShowPlan {
     t += dur;
   };
   if (!opts.quick) {
-    hold("crane", "crane", v ? 2.6 : 4.2);
+    hold("crane", "crane", v ? 3.0 : 5.4);
     const each = v ? (n > 4 ? 0.62 : 1.0) : n > 4 ? 1.15 : 2.0;
     for (const r of race.lanes) hold("intro", "intro", each, r.lane);
   }
@@ -116,10 +116,14 @@ export function planShow(race: Race, opts: ShowOptions = {}): ShowPlan {
   };
   const cuts = CUTS[race.distance] ?? CUTS[100];
   const finishCam: Camera = "line";
-  const LIVE_MAX = v ? 9 : 14;
+  // A race the page can show live (a 400 m takes half a minute); videos keep it short.
+  const LIVE_MAX = v ? 9 : 36;
+  // The gun: hold the start for a moment as they burst out of the blocks.
+  const burst = Math.min(v ? 1.0 : 1.3, Math.max(0.6, T1 * 0.16));
+  live("marks", 0, burst);
   if (T1 <= LIVE_MAX) {
     // All live: cut at the leader's marks (each shot at least MIN_SHOT long).
-    let from = 0;
+    let from = burst;
     cuts.forEach(([cam, share], k) => {
       const last = k === cuts.length - 1;
       let to = last ? T1 + (v ? 0.9 : 1.4) : leaderReaches(race, share * race.distance);
@@ -132,13 +136,17 @@ export function planShow(race: Race, opts: ShowOptions = {}): ShowPlan {
     // The start live, the middle fast-forwarded, the finish live.
     const startLive = v ? 2.2 : 3.4;
     const endLive = v ? 2.4 : 3.2;
-    live(cuts[0][0], 0, startLive);
+    live(cuts[0][0], burst, startLive);
     fast("chase", startLive, T1 - endLive, v ? 3.2 : 5.5, race.order[0].lane);
     live("headon", T1 - endLive, T1 - Math.min(1.2, endLive / 2));
     live(finishCam, T1 - Math.min(1.2, endLive / 2), T1 + (v ? 0.9 : 1.4));
   }
+  // The winner, close up, easing off in the run-out as the crowd erupts.
+  const crossed = T1 + (v ? 0.9 : 1.4);
+  const hero = v ? 1.5 : 2.0;
+  live("winner", crossed, crossed + hero, race.order[0].lane);
   // Stragglers: fast-forward the rest of the field to the line, live for the last one in.
-  const after = T1 + (v ? 0.9 : 1.4);
+  const after = crossed + hero;
   if (Tn - after > (v ? 2.5 : 4)) {
     const lastLane = race.order[race.order.length - 1].lane;
     fast("chase", after, Tn - 0.9, v ? 2.6 : 4.5, lastLane);

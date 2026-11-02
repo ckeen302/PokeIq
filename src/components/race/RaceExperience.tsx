@@ -131,7 +131,7 @@ export function RaceExperience({ preset, vs = [], distance = null, seed = null, 
   const presetInfo = PRESET_BY_ID.get(spec.preset) ?? DEFAULT_PRESET;
   const custom = spec.vs.length > 0;
   const title = field?.title ?? presetInfo.label;
-  const raceLabel = `${spec.distance} m · ${custom ? "Custom race" : presetInfo.label}`;
+  const raceLabel = `${spec.distance} m · ${custom ? (title.length <= 24 ? title : "Custom race") : presetInfo.label}`;
 
   /** Mutable show state, read by the frame loop. */
   const show = useRef({
@@ -143,6 +143,9 @@ export function RaceExperience({ preset, vs = [], distance = null, seed = null, 
     orbit: null as Orbit | null,
     autoOrbit: false,
     yaw0: 0,
+    heard: -1,
+    /** Main-thread time spent in the frame loop (ms), for the perf checks. */
+    prof: { n: 0, sum: 0, max: 0 },
     blend: null as { from: CamPose; t0: number; dur: number } | null,
     last: null as CamPose | null,
     phase: "loading" as UiPhase,
@@ -325,6 +328,15 @@ export function RaceExperience({ preset, vs = [], distance = null, seed = null, 
       const raw = now - last;
       last = now;
       if (!scene || recordingRef.current) return;
+      try { frame(scene, now, raw); } finally {
+        const ms = performance.now() - now;
+        s.prof.n++;
+        s.prof.sum += ms;
+        s.prof.max = Math.max(s.prof.max, ms);
+      }
+    };
+    const frame = (scene: RaceScene, now: number, raw: number) => {
+      const s = show.current;
       const dt = Math.min(0.1, raw / 1000);
       const { w, h } = sizeRef.current;
       const race = s.race, plan = s.plan;
@@ -407,11 +419,16 @@ export function RaceExperience({ preset, vs = [], distance = null, seed = null, 
       // Sound.
       const au = audioRef.current;
       if (au) {
-        au.crowd(excitement);
+        if (Math.abs(excitement - s.heard) > 0.015) { s.heard = excitement; au.crowd(excitement); }
         for (const st of steps) au.footfall(st.kg, st.dist);
       }
       if (!s.gun && raceT > 0 && ph !== "replay") { s.gun = true; au?.gun(); }
-      if (!s.roar && raceT >= race.first && ph !== "replay") { s.roar = true; au?.roar(); }
+      if (!s.roar && raceT >= race.first && ph !== "replay") {
+        s.roar = true;
+        au?.roar();
+        const w = race.order[0];
+        scene.setCard(`${w.entrant.name} wins`, `${formatTime(w.time)} s · ${race.distance} m`);
+      }
       // Photo finish: developed during the replay, a few columns a frame.
       if ((ph === "replay" || ph === "photo" || ph === "results") && !s.pfImg) {
         s.pf ??= scene.photoFinish(s.pfWin.from, s.pfWin.to);
@@ -464,7 +481,8 @@ export function RaceExperience({ preset, vs = [], distance = null, seed = null, 
       g.setTransform(dpr, 0, 0, dpr, 0, 0);
       const phone = w < 640;
       const o = { font, scale: phone ? 1 : 1.1 };
-      const top = phone ? 64 : 76;
+      // Under the top bar (and, on phones, under the camera presets).
+      const top = phone ? 104 : 76;
       const bottom = phone ? 132 : 96;
       const shot = shotAt(s.plan, t);
       const k = shotProgress(shot, t);
@@ -539,7 +557,7 @@ export function RaceExperience({ preset, vs = [], distance = null, seed = null, 
       seek(t: number) { show.current.t = t; },
       state() {
         const s = show.current;
-        return { t: s.t, phase: s.phase, gun: s.plan?.gun ?? null, end: s.plan?.end ?? null, shots: s.plan?.shots.map((x) => [x.phase, x.camera, x.t0, x.t1]) ?? [], quality: sceneRef.current?.quality ?? null, stats: sceneRef.current?.stats() ?? null, camera: { mode: s.cam, fov: s.last?.fov ?? null, pos: s.last?.pos ?? null, dist: s.orbit?.dist ?? null, zoom: s.zoom } };
+        return { t: s.t, phase: s.phase, gun: s.plan?.gun ?? null, end: s.plan?.end ?? null, shots: s.plan?.shots.map((x) => [x.phase, x.camera, x.t0, x.t1]) ?? [], quality: sceneRef.current?.quality ?? null, stats: sceneRef.current?.stats() ?? null, camera: { mode: s.cam, fov: s.last?.fov ?? null, pos: s.last?.pos ?? null, dist: s.orbit?.dist ?? null, zoom: s.zoom }, prof: { ...s.prof } };
       },
     };
     return () => cancelAnimationFrame(raf);
@@ -904,7 +922,7 @@ export function RaceExperience({ preset, vs = [], distance = null, seed = null, 
           </AnimatePresence>
 
           {picker && all && (
-            <RacePicker all={all} keys={custom ? spec.vs : (field?.entrants ?? []).map((e) => e.key)} distance={spec.distance} onRun={runCustom} onPreset={runPreset} onClose={() => setPicker(false)} />
+            <RacePicker all={all} keys={spec.vs.length >= 2 ? spec.vs : (field?.entrants ?? []).map((e) => e.key)} distance={spec.distance} onRun={runCustom} onPreset={runPreset} onClose={() => setPicker(false)} />
           )}
           {bracket && field?.tournament && (
             <RaceBracket t={field.tournament} byKey={byKey} onClose={() => setBracket(false)} onWatchFinal={() => { setBracket(false); quickRef.current = false; setRunId((x) => x + 1); }} onRedraw={redraw} />

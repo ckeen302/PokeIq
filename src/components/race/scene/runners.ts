@@ -41,7 +41,7 @@ export interface Figure {
   body: THREE.Mesh;
   /** Flat cut-out for the photo-finish camera. */
   cut: THREE.Mesh;
-  uniforms: { uWave: { value: number }; uWaveK: { value: number } };
+  uniforms: { uWave: { value: number }; uWaveK: { value: number }; uWavePhase: { value: number } };
   mirrored: boolean;
   lastStep: number;
   dispose(): void;
@@ -74,14 +74,16 @@ const nextFrame = () => new Promise<void>((r) => (typeof requestAnimationFrame =
 
 /** Crisp, slightly richer HOME renders, and the serpent's body wave. */
 function figureMaterial(tex: THREE.Texture, texSize: number, uniforms: Figure["uniforms"]): THREE.MeshStandardMaterial {
-  const m = new THREE.MeshStandardMaterial({ map: tex, alphaTest: 0.5, roughness: 0.58, metalness: 0, envMapIntensity: 0.85 });
+  // Some HOME renders are partly see-through (Pheromosa, ghosts): a low cut-off keeps them solid.
+  const m = new THREE.MeshStandardMaterial({ map: tex, alphaTest: 0.28, roughness: 0.58, metalness: 0, envMapIntensity: 0.85 });
   m.onBeforeCompile = (s) => {
     s.uniforms.uTexel = { value: 1 / texSize };
     s.uniforms.uWave = uniforms.uWave;
     s.uniforms.uWaveK = uniforms.uWaveK;
+    s.uniforms.uWavePhase = uniforms.uWavePhase;
     s.vertexShader = s.vertexShader
-      .replace("#include <common>", "#include <common>\nuniform float uWave;\nuniform float uWaveK;")
-      .replace("#include <begin_vertex>", "#include <begin_vertex>\ntransformed.y += uWave * sin(transformed.x * uWaveK) * (0.35 + 0.65 * smoothstep(-0.5, 0.5, abs(transformed.x)));");
+      .replace("#include <common>", "#include <common>\nuniform float uWave;\nuniform float uWaveK;\nuniform float uWavePhase;")
+      .replace("#include <begin_vertex>", "#include <begin_vertex>\ntransformed.y += uWave * sin(transformed.x * uWaveK - uWavePhase) * (0.35 + 0.65 * smoothstep(0.0, 0.5, abs(transformed.x)));");
     s.fragmentShader = s.fragmentShader
       .replace("#include <common>", "#include <common>\nuniform float uTexel;")
       .replace(
@@ -128,7 +130,7 @@ export async function loadFigure(renderer: THREE.WebGLRenderer, lane: RaceLane, 
   tex.needsUpdate = true;
   // Upload now (while the crane shot plays), not on the first frame it's drawn.
   renderer.initTexture(tex);
-  const uniforms = { uWave: { value: 0 }, uWaveK: { value: 6 } };
+  const uniforms = { uWave: { value: 0 }, uWaveK: { value: 9 }, uWavePhase: { value: 0 } };
   const mat = figureMaterial(tex, artBmp.width, uniforms);
   const body = new THREE.Mesh(geo, mat);
   const s = lane.h / rm.height;
@@ -154,7 +156,7 @@ export async function loadFigure(renderer: THREE.WebGLRenderer, lane: RaceLane, 
     const u = cuv.getX(i), v = cuv.getY(i);
     cuv.setXY(i, (bx + u * bw) / size, (by + (1 - v) * bh) / size);
   }
-  const cmat = new THREE.MeshBasicMaterial({ map: tex, alphaTest: 0.5, side: THREE.DoubleSide });
+  const cmat = new THREE.MeshBasicMaterial({ map: tex, alphaTest: 0.28, side: THREE.DoubleSide });
   const cut = new THREE.Mesh(cgeo, cmat);
   cut.scale.set(-lane.h / (bh / L), lane.h / (bh / L), 1);
   cut.layers.set(LAYER.PF);
@@ -331,9 +333,9 @@ export function makeRunners(race: Race, figures: Figure[], masts: THREE.Vector3[
       f.yaw.scale.set((f.mirrored ? -1 : 1) * flap * (1 - squash * 0.5), 1 + squash, 1 - squash * 0.5);
       // Balls roll the way they move on screen.
       f.spin.rotation.z = e.motion === "roll" ? pose.spin * (f.mirrored ? -1 : 1) : 0;
-      f.uniforms.uWave.value = e.motion === "slither" ? 0.035 * pose.wave * Math.min(1, st.v / 2 + 0.2) : 0;
-      f.uniforms.uWaveK.value = 9;
-      if (e.motion === "slither") f.uniforms.uWave.value = 0.04 * Math.sin(st.phase * Math.PI * 2) * Math.min(1, st.v / 2 + 0.15);
+      // Serpents: a wave travels down the body, one per gait cycle (a slow ripple when still).
+      f.uniforms.uWave.value = e.motion === "slither" ? 0.035 * Math.min(1, st.v / 2 + 0.25) : 0;
+      f.uniforms.uWavePhase.value = (raceT > 0 ? st.phase : showT * 0.4) * Math.PI * 2 * (f.mirrored ? -1 : 1);
       headsOut[i].pos.set(p.x, lift + r.h * 1.02, p.z);
       // Footfalls of heavy grounded runners.
       const step = Math.floor(st.phase);

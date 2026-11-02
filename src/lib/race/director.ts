@@ -109,10 +109,11 @@ export function cameraFor(cam: Camera, k: number, spots: Spot[], ctx: DirectorCo
     case "crane": {
       // The establishing shot: from high over the roof at the west end, across the whole bowl, sweeping down to the start.
       const c = centroid(ctx.starts);
-      const e = ease(k);
+      // Hold the wide view, then swoop in.
+      const e = ease((k - 0.32) / 0.68);
       const e2 = e * e * (3 - 2 * e);
-      const from: Vec3 = [-158, 86, 74];
-      const fromT: Vec3 = [20, 0, -4];
+      const from: Vec3 = [-158 + 14 * k, 86 - 6 * k, 74];
+      const fromT: Vec3 = [24, 12, -6];
       const to: Vec3 = ctx.distance === 100 ? [c[0] + 15, 3.2 + H, c[2] + 11] : [c[0] * 0.8, 10 + H, c[2] * 0.62];
       const toT: Vec3 = [c[0], 0.5 * H, c[2]];
       const pos = lerp3(from, to, e2);
@@ -123,12 +124,12 @@ export function cameraFor(cam: Camera, k: number, spots: Spot[], ctx: DirectorCo
       const r = spots.find((s) => s.lane === ctx.lane) ?? spots[0];
       const h = Math.max(0.5, r.h);
       const [nx, nz] = outward(r.dx, r.dz);
-      const a = (9 + 6 * k) * DEG;
+      const a = (5 + 5 * k) * DEG;
       const ux = r.dx * Math.cos(a) + nx * Math.sin(a), uz = r.dz * Math.cos(a) + nz * Math.sin(a);
       const D = (3.0 + 2.6 * h) * (1 - 0.08 * k) * (portrait ? 1.3 : 1);
       const target: Vec3 = [r.x, r.y + 0.5 * h, r.z];
-      const pos: Vec3 = [r.x + ux * D, r.y + 0.42 * h + 0.25, r.z + uz * D];
-      return { pos, target, fov: fovToFit(Math.max(r.w, h) * 1.65, h * 1.75, D, ctx.aspect, 8, 60) };
+      const pos: Vec3 = [r.x + ux * D, r.y + 0.55 * h + 0.35, r.z + uz * D];
+      return { pos, target, fov: fovToFit(Math.max(r.w, h) * 1.45, h * 1.6, D, ctx.aspect, 8, 60) };
     }
     case "marks": {
       const c = centroid(ctx.starts);
@@ -220,10 +221,10 @@ export function cameraFor(cam: Camera, k: number, spots: Spot[], ctx: DirectorCo
     case "results": {
       // From the infield, over the runners stopped in the run-out, the main stand behind them.
       const l = leader(spots);
-      const a = (-16 + 26 * k) * DEG;
-      const R = 20 + 2.5 * H;
-      const pos: Vec3 = [l.x - 6 + R * Math.sin(a), 6.5 + 1.2 * H, zMid - R * Math.cos(a)];
-      const target: Vec3 = [l.x - 4, 0.6 * H, zMid + 1];
+      const a = (-20 + 26 * k) * DEG;
+      const R = 13 + 2.6 * H;
+      const pos: Vec3 = [l.x - 5 + R * Math.sin(a), 3.4 + 1.1 * H, zMid - R * Math.cos(a)];
+      const target: Vec3 = [l.x - 4, 0.6 * H, zMid + 0.5];
       return { pos, target, fov: portrait ? 60 : 44 };
     }
   }
