@@ -62,6 +62,7 @@ export default async function PokemonPage({ params }: PageProps) {
           <Link href="/quiz/whos-that-pokemon" className="underline-offset-2 hover:text-foreground hover:underline">Who&apos;s That Pokémon quiz</Link>
           <Link href="/battle/teams" className="underline-offset-2 hover:text-foreground hover:underline">Pokémon team builder</Link>
           <Link href="/battle/calc" className="underline-offset-2 hover:text-foreground hover:underline">Pokémon damage calculator</Link>
+          <Link href={`/pokedex/sizes/${p.slug}`} className="underline-offset-2 hover:text-foreground hover:underline">How big is {p.name}?</Link>
           <Link href="/pokedex" className="underline-offset-2 hover:text-foreground hover:underline">Full Pokédex</Link>
         </p>
         <p className="flex flex-wrap gap-x-4 gap-y-1">

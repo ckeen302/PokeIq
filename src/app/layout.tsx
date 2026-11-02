@@ -90,6 +90,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <Link href="/pokedex/study" prefetch={false} className="hover:text-foreground">Study mode</Link>
               <Link href="/atlas" prefetch={false} className="hover:text-foreground">World atlas</Link>
               <Link href="/pokedex/timeline" prefetch={false} className="hover:text-foreground">Pokémon timeline</Link>
+              <Link href="/pokedex/sizes" prefetch={false} className="hover:text-foreground">Pokémon sizes</Link>
               <Link href="/leaderboard" prefetch={false} className="hover:text-foreground">Leaderboard</Link>
               <Link href="/battle/teams" prefetch={false} className="hover:text-foreground">Team builder</Link>
               <Link href="/battle/calc" prefetch={false} className="hover:text-foreground">Damage calc</Link>
@@ -110,6 +111,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               </a>
               ). PokéGuessr music and countdown sounds by Juhani Junkala, cosmac, Fupi, Kosmo The Cat, congusbongus, bart, yd and pyranostudios via OpenGameArt.org, under CC0 (
               <a href="/audio/guessr/CREDITS.md" className="underline-offset-2 hover:underline">
+                credits
+              </a>
+              ). Sizes music by cynicmusic and city textures from Poly Haven, both CC0 (
+              <a href="/sizes/CREDITS.md" className="underline-offset-2 hover:underline">
                 credits
               </a>
               ).
