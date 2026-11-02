@@ -9,6 +9,7 @@ import type { MoveRecord } from "@/lib/dex/build";
 import { Section } from "@/components/pokedex/entry/Reveal";
 import { TypeBadge } from "@/components/pokedex/TypeBadge";
 import { DetailHero, DetailNav, SpeciesGrid, StatBox } from "@/components/pokedex/detail/DetailParts";
+import { pagerFor } from "@/lib/dex/neighbours";
 
 export const dynamicParams = false;
 
@@ -89,6 +90,7 @@ export default async function TypePage({ params }: PageProps) {
   const m = typeMatchups(t);
   const { pure, dual } = pokemonOfType(t);
   const moves = movesOfType(t);
+  const pager = pagerFor(TYPES, (x) => x === t, (x) => ({ href: `/pokedex/types/${x}`, label: `${capitalize(x)} type` }));
   const chip = (p: (typeof pure)[number]) => ({ id: p.id, slug: p.slug, name: p.name, types: p.types });
 
   const crumbs = breadcrumbList([
@@ -105,7 +107,7 @@ export default async function TypePage({ params }: PageProps) {
     <article className="mx-auto max-w-6xl space-y-10">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(crumbs) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(list) }} />
-      <DetailNav tab="types" label="Type chart" />
+      <DetailNav tab="types" label="Type chart" pager={pager} />
       <DetailHero kicker={`Type · ${pure.length + dual.length} Pokémon`} title={`${name} type`}>
         <TypeBadge type={t} size="lg" />
         <p className="max-w-2xl text-foreground/90">{typeDescription(t)}</p>

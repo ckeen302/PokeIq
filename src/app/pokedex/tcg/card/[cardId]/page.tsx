@@ -8,7 +8,8 @@ import { breadcrumbList } from "@/lib/structured-data";
 import { DetailNav, StatBox } from "@/components/pokedex/detail/DetailParts";
 import { HudHeading } from "@/components/game/HudHeading";
 import { EnergyChip } from "@/components/tcg/EnergyChip";
-import { getCard } from "@/lib/tcg/api";
+import { getCard, getSetCardList } from "@/lib/tcg/api";
+import { NO_PAGER, pagerFor, tcgCardLabel, tcgCardOrder } from "@/lib/dex/neighbours";
 import { cardmarketRows, formatApiDate, formatPrice, headlinePrice, PRICE_SOURCES, priceSourceLine, tcgplayerRows } from "@/lib/tcg/prices";
 import { getPokemon } from "@/lib/pokemon/pokedex";
 
@@ -37,12 +38,18 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 const cell = (v: number | null) => (v === null ? <span className="text-muted-foreground">—</span> : formatPrice(v, "USD"));
 
 export default async function CardPage({ params }: PageProps) {
-  const card = await getCard((await params).cardId);
+  const { cardId } = await params;
+  // Card ids are "<set id>-<number>": fetch the set's card list (for previous / next) alongside the card.
+  const setGuess = cardId.includes("-") ? cardId.slice(0, cardId.lastIndexOf("-")) : null;
+  const [card, guessedList] = await Promise.all([getCard(cardId), setGuess ? getSetCardList(setGuess) : null]);
   if (!card) {
     // Unknown id vs. the API being down look the same here; a 404 is the honest answer for a bad id.
     notFound();
   }
   const set = card.set;
+  // Previous / next card in the set, by number (the set gallery's default order).
+  const setList = !set ? null : set.id === setGuess ? guessedList : await getSetCardList(set.id);
+  const pager = setList ? pagerFor(tcgCardOrder(setList), (c) => c.id === card.id, (c) => ({ href: `/pokedex/tcg/card/${c.id}`, label: tcgCardLabel(c) })) : NO_PAGER;
   const tcg = tcgplayerRows(card);
   const cm = cardmarketRows(card);
   const species = (card.nationalPokedexNumbers ?? []).flatMap((n) => getPokemon(n) ?? []);
@@ -73,7 +80,7 @@ export default async function CardPage({ params }: PageProps) {
     <article className="mx-auto max-w-6xl space-y-8">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(ld) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(crumbs) }} />
-      {set ? <DetailNav tab={`tcg/${set.id}`} label={set.name} /> : <DetailNav tab="tcg" label="All sets" />}
+      {set ? <DetailNav tab={`tcg/${set.id}`} label={set.name} pager={pager} home={{ href: "/pokedex/tcg", label: "All sets" }} /> : <DetailNav tab="tcg" label="All sets" />}
 
       <div className="grid grid-cols-1 gap-8 md:grid-cols-[minmax(0,22rem)_1fr] lg:grid-cols-[minmax(0,26rem)_1fr]">
         <div className="mx-auto w-full max-w-sm md:sticky md:top-24 md:max-w-none md:self-start">
