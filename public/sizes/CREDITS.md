@@ -1,10 +1,10 @@
 # Sizes credits
 
 Everything in the Lumiose City tribute on /pokedex/sizes is either drawn by
-the page itself (the buildings, facades, Prism Tower, trees, street
-furniture, cars, buses and the real-world references are procedural and
-original) or comes from Poly Haven under CC0. Nothing is taken from any
-Pokémon game.
+the page itself (the round city and its plaza, the buildings, facades,
+Prism Tower, trees, café terraces, banners, fountains, street furniture,
+cars, buses and the real-world references are procedural and original) or
+comes from Poly Haven under CC0. Nothing is taken from any Pokémon game.
 
 ## Textures and lighting (Poly Haven, CC0 1.0)
 
@@ -33,4 +33,6 @@ Cinematic" by cynicmusic (OpenGameArt.org, CC0 1.0).
 
 The figures are built from the Pokémon HOME renders served by PokéAPI's
 sprites repository. Their depth (`depth/*.webp`) was estimated with Depth
-Anything V2 Small (Apache-2.0) by `scripts/sizes-depth.ts`.
+Anything V2 Small (Apache-2.0) by `scripts/sizes-depth.ts`. The renders
+are kept as static files (`art/256`, `art/512`) and, with the depth maps,
+packed small onto the far atlas (`far/`) by `scripts/sizes-art.ts`.

@@ -55,15 +55,18 @@ interface QualitySpec {
   maxRelief: number;
   /** Most relief meshes kept built (on screen, coming up, or just passed). */
   resident: number;
+  /** Most far figures drawn (the biggest on screen first), and whether they cast shadows into the cascades. */
+  crowd: number;
+  crowdShadows: boolean;
   anisotropy: number;
 }
 
 export const QUALITY: Record<Quality, QualitySpec> = {
-  draft: { pr: 1, msaa: 0, ao: false, aoSamples: 8, dof: false, dofSamples: 16, bloom: false, shadow: 512, cascades: 1, blocks: 0.2, facadeScale: 1, texSize: 256, trees: false, maxRelief: 4, resident: 24, anisotropy: 1 },
-  low: { pr: 1, msaa: 0, ao: false, aoSamples: 8, dof: false, dofSamples: 16, bloom: false, shadow: 1024, cascades: 2, blocks: 0.45, facadeScale: 1, texSize: 256, trees: true, maxRelief: 10, resident: 48, anisotropy: 2 },
-  medium: { pr: 1.25, msaa: 4, ao: false, aoSamples: 8, dof: true, dofSamples: 16, bloom: true, shadow: 2048, cascades: 3, blocks: 0.75, facadeScale: 1, texSize: 512, trees: true, maxRelief: 18, resident: 64, anisotropy: 4 },
-  high: { pr: 1.5, msaa: 4, ao: true, aoSamples: 12, dof: true, dofSamples: 32, bloom: true, shadow: 2048, cascades: 3, blocks: 1, facadeScale: 1, texSize: 512, trees: true, maxRelief: 28, resident: 80, anisotropy: 8 },
-  export: { pr: 1, msaa: 4, ao: true, aoSamples: 24, dof: true, dofSamples: 32, bloom: true, shadow: 4096, cascades: 4, blocks: 1, facadeScale: 2, texSize: 512, trees: true, maxRelief: 40, resident: 100, anisotropy: 8 },
+  draft: { pr: 1, msaa: 0, ao: false, aoSamples: 8, dof: false, dofSamples: 16, bloom: false, shadow: 512, cascades: 1, blocks: 0.2, facadeScale: 1, texSize: 256, trees: false, maxRelief: 4, resident: 24, crowd: 400, crowdShadows: false, anisotropy: 1 },
+  low: { pr: 1, msaa: 0, ao: false, aoSamples: 8, dof: false, dofSamples: 16, bloom: false, shadow: 1024, cascades: 2, blocks: 0.45, facadeScale: 1, texSize: 256, trees: true, maxRelief: 10, resident: 48, crowd: 650, crowdShadows: false, anisotropy: 2 },
+  medium: { pr: 1.25, msaa: 4, ao: false, aoSamples: 8, dof: true, dofSamples: 16, bloom: true, shadow: 2048, cascades: 3, blocks: 0.75, facadeScale: 1, texSize: 512, trees: true, maxRelief: 18, resident: 64, crowd: 1000, crowdShadows: true, anisotropy: 4 },
+  high: { pr: 1.5, msaa: 4, ao: true, aoSamples: 12, dof: true, dofSamples: 32, bloom: true, shadow: 2048, cascades: 3, blocks: 1, facadeScale: 1, texSize: 512, trees: true, maxRelief: 28, resident: 80, crowd: 1200, crowdShadows: true, anisotropy: 8 },
+  export: { pr: 1, msaa: 4, ao: true, aoSamples: 24, dof: true, dofSamples: 32, bloom: true, shadow: 4096, cascades: 4, blocks: 1, facadeScale: 2, texSize: 512, trees: true, maxRelief: 40, resident: 100, crowd: 1200, crowdShadows: true, anisotropy: 8 },
 };
 
 export interface SceneUrls extends FigureUrls {
@@ -726,7 +729,7 @@ export function createSizesScene(host: HTMLElement, opts: SceneOptions): SizesSc
         }
       }
       const fc = levelFade(s, 1);
-      if (fc !== 0) list.push({ x: s.wx, z: s.wz, yaw: s.yaw, w: s.w, h: s.h, art: s.item.art, box: s.item.box, fade: fc });
+      if (fc !== 0) list.push({ x: s.wx, z: s.wz, yaw: s.yaw, w: s.w, h: s.h, art: s.item.art, box: s.item.box, fade: fc, sh: s.sh });
       if ((s.draw || s.from) && nb < BLOBS) {
         // One soft shadow under the figure's feet, as wide as it is and as deep as its relief.
         const L = s.h * Math.max(1, s.item.box[2] / Math.max(1, s.item.box[3]));
@@ -738,6 +741,11 @@ export function createSizesScene(host: HTMLElement, opts: SceneOptions): SizesSc
         hash = (Math.imul(hash, 31) + s.index * 13 + Math.round(s.wx * 16) + Math.round(deep * 8)) | 0;
       }
     }
+    // Over the quality's cap (a wide view over hundreds), the biggest on screen are drawn.
+    if (list.length > Q.crowd) { list.sort((a, b) => (b.sh ?? 0) - (a.sh ?? 0)); list.length = Q.crowd; }
+    // Tiny far figures' shadows are hardly seen: the light quality (and any very wide view) leaves them out of the shadow maps.
+    const crowdCasts = Q.crowdShadows && list.length < 420;
+    if (crowd.mesh.castShadow !== crowdCasts) { crowd.mesh.castShadow = crowdCasts; shadowsDirty = true; }
     if (crowd.set(list)) shadowsDirty = true;
     blobs.count = nb;
     if (hash !== blobHash || nb === 0) {

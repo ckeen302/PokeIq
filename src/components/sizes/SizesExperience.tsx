@@ -1179,7 +1179,7 @@ export function SizesExperience({ preset, focus = null, vs = [], compare = false
                 <ArrowLeft className="h-4 w-4" aria-hidden />
               </Link>
               <div className="relative min-w-0">
-                <button type="button" className={cn(chip, "max-w-[40vw] sm:max-w-none")} onClick={() => { setPresetMenu((v) => !v); setSearchOpen(false); }} aria-expanded={presetMenu} aria-haspopup="menu" data-testid="sizes-lineup">
+                <button type="button" className={cn(chip, "max-w-[calc(100vw-13rem)] sm:max-w-none")} onClick={() => { setPresetMenu((v) => !v); setSearchOpen(false); }} aria-expanded={presetMenu} aria-haspopup="menu" data-testid="sizes-lineup">
                   <span className="truncate">{lineTitle}</span>
                   <ChevronDown className="h-3.5 w-3.5 shrink-0" aria-hidden />
                 </button>

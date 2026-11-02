@@ -26,6 +26,8 @@ export interface CrowdInstance {
   box: [number, number, number, number, number];
   /** Dissolve: 1 drawn, 0 < f < 1 fading in, -1 - f fading out (see DITHER_GLSL). */
   fade: number;
+  /** Its height on screen (px), for choosing which to draw when there are too many. */
+  sh?: number;
 }
 
 /** Grid cells across a far figure (front and back). */

@@ -406,9 +406,11 @@ export function contactShadowTexture(): THREE.Texture {
   const c = document.createElement("canvas");
   c.width = c.height = 128;
   const g = c.getContext("2d")!;
+  // A dark core where the feet meet the ground, fading softly outwards.
   const grad = g.createRadialGradient(64, 64, 0, 64, 64, 64);
-  grad.addColorStop(0, "rgba(0,0,0,0.62)");
-  grad.addColorStop(0.45, "rgba(0,0,0,0.32)");
+  grad.addColorStop(0, "rgba(0,0,0,0.7)");
+  grad.addColorStop(0.3, "rgba(0,0,0,0.45)");
+  grad.addColorStop(0.62, "rgba(0,0,0,0.14)");
   grad.addColorStop(1, "rgba(0,0,0,0)");
   g.fillStyle = grad;
   g.fillRect(0, 0, 128, 128);

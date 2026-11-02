@@ -294,15 +294,16 @@ function flowerTexture(color: string): THREE.CanvasTexture {
   const cv = document.createElement("canvas");
   cv.width = cv.height = 128;
   const g = cv.getContext("2d")!;
-  g.fillStyle = "#4d7a3a";
+  g.fillStyle = "#3f6e33";
   g.fillRect(0, 0, 128, 128);
   const r = rng(77);
-  for (let i = 0; i < 420; i++) {
+  // Mostly the district's colour (it must still read as that colour from the sky), a few white and gold.
+  for (let i = 0; i < 520; i++) {
     const k = r();
-    g.fillStyle = k < 0.62 ? color : k < 0.82 ? "#f6f1e4" : "#f2c84b";
-    g.globalAlpha = 0.75 + r() * 0.25;
+    g.fillStyle = k < 0.8 ? color : k < 0.9 ? "#f6f1e4" : "#f2c84b";
+    g.globalAlpha = 0.8 + r() * 0.2;
     g.beginPath();
-    g.arc(r() * 128, r() * 128, 1.6 + r() * 2.2, 0, Math.PI * 2);
+    g.arc(r() * 128, r() * 128, 1.4 + r() * 1.8, 0, Math.PI * 2);
     g.fill();
   }
   g.globalAlpha = 1;
@@ -386,7 +387,8 @@ export function buildCity(plan: WorldPlan, shared: Shared, tex: CityTextures, qu
   // ---- The round city: courtyard blocks in rings round the plaza, out past the boulevard's far end, cut by the avenues and the ring streets.
   const M = new Buckets(640);
   const ring0 = ringR + D + 18;
-  const rMax = Math.max(700, Math.hypot(C.x - plan.x0, C.z) + 160) * quality.blocks;
+  // Out to the boulevard's far end, and at least far enough that the finale's aerial sees a city all round (blocks are cheap: lighter qualities thin them less than the street walls).
+  const rMax = Math.max(ringR + 620, Math.hypot(C.x - plan.x0, C.z) + 160) * (0.55 + 0.45 * quality.blocks);
   const dividers = plan.avenues.map((a) => wrap(a)).sort((p, q) => p - q);
   let seed = 1;
   for (let r0 = ring0; r0 < rMax; r0 += 96) {
@@ -544,7 +546,7 @@ function buildGround(plan: WorldPlan, shared: Shared, tex: CityTextures): { mesh
   const arc = (r0: number, r1: number, a0: number, a1: number, segs: number) => new THREE.RingGeometry(r0, r1, segs, 1, -a1, a1 - a0);
   // The plaza: fan-patterned cobbles round its rim, pale stone with a radial pattern inside.
   flat(new THREE.CircleGeometry(R + STREET.facade - 10, 160), cobble, -0.035, 2.5);
-  const plazaStone = mk("granite_tile", 2.3, { color: "#fbf7ef", bright: 1.55 });
+  const plazaStone = mk("granite_tile", 2.3, { color: "#fcf6ea", bright: 1.7 });
   plazaPattern(plazaStone, new THREE.Vector2(cx, cz), R - 4);
   flat(new THREE.CircleGeometry(R - 4, 160), plazaStone, -0.022, 2.3);
   const rr = ring?.r ?? Math.max(60, R - 120);
