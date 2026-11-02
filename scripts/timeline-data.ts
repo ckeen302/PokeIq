@@ -26,7 +26,7 @@ const box = read<BoxRow[]>("src/data/quiz/games/box-art.json");
 const entries = read<TimelineRaw[]>(FILE);
 
 const openers = entries.filter((e) => e.lane === "games" && e.kind === "opener").map((e) => ({ generation: e.generation, t: yearFrac(firstDate(e)) }));
-const KEYS: (keyof TimelineRaw)[] = ["id", "lane", "title", "platform", "date_jp", "date_na", "date_eu", "worldwide", "generation", "region", "kind", "note", "series", "season", "film", "basis", "starters", "legendaries", "source", "sources"];
+const KEYS: (keyof TimelineRaw)[] = ["id", "lane", "title", "platform", "date_jp", "date_na", "date_eu", "worldwide", "generation", "region", "kind", "note", "series", "season", "film", "set", "featured", "basis", "starters", "legendaries", "source", "sources"];
 
 const out = entries
   .map((e) => {

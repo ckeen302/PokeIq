@@ -42,6 +42,8 @@ export const TIMELINE: TimelineEntry[] = RAW.map((e) => {
     starters: (e.starters ?? []).map(sp),
     legendaries: (e.legendaries ?? []).map(sp),
     introduces: e.lane === "games" && e.kind === "opener" ? e.generation : null,
+    setHref: e.set ? `/pokedex/tcg/${e.set}` : null,
+    featured: !!e.featured,
     sources: e.sources,
   };
 });
