@@ -560,6 +560,10 @@ describe("badge layout", () => {
     expect(tall[0].y).toBeGreaterThanOrEqual(72);
     const short = layoutBadges([{ key: "p", x: 720, y: -400, sh: 2000, info: { ...info, name: "Pikachu", types: ["electric"] }, focus: true }], { w: 1440, h: 900, top: 72, bottom: 104 }, measure, { max: 3, minSh: 10, scale: 1 });
     expect(short[0].x + short[0].w).toBeLessThan(720);
+    // Framed as usual (its top in view, just no room above it), the badge stays over its own figure.
+    const framed = layoutBadges([{ key: "p", x: 720, y: 160, sh: 480, info: { ...info, name: "Snorlax", types: ["normal"] }, focus: true }], { w: 1440, h: 900, top: 72, bottom: 104 }, measure, { max: 3, minSh: 10, scale: 1 });
+    expect(framed[0].x).toBeLessThan(720);
+    expect(framed[0].x + framed[0].w).toBeGreaterThan(720);
   });
 });
 
