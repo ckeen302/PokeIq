@@ -1,7 +1,9 @@
 /**
  * Pokémon Sizes (/pokedex/sizes), end to end in the browser: the Sizes tab,
  * the 3D scene and its first-visit Play glide, stopping it, search and
- * fly-to, the arrow keys, a two-Pokémon comparison and its share link and
+ * fly-to, the arrow keys, zooming (the wheel, a trackpad pinch as ctrl +
+ * wheel, the + and − buttons, reset) and turning the view, a two-Pokémon
+ * comparison and its share link and
  * preview card, a Pokémon's own size page, the list fallback, the sound
  * staying off when the site is muted, and "Make a video": a 5-second
  * export (?len=5, at the light test quality and 10 fps so it runs in CI
@@ -62,6 +64,21 @@ const typeInto = (page, id, value) =>
   }, value, { timeout: 120_000 });
 /** A key press on the page (the stage listens on the window). */
 const key = (page, k) => page.evaluate((kk) => window.dispatchEvent(new KeyboardEvent("keydown", { key: kk, bubbles: true })), k);
+/** A wheel turn over the 3D scene, dispatched in the page; resolves to whether the page kept it from the browser (preventDefault). */
+const wheel = (page, init) =>
+  page.getByTestId("sizes-scene").evaluate((el, i) => {
+    const r = el.getBoundingClientRect();
+    return !el.dispatchEvent(new WheelEvent("wheel", { clientX: r.left + r.width / 2, clientY: r.top + r.height / 2, bubbles: true, cancelable: true, ...i }));
+  }, init, { timeout: 120_000 });
+/** A drag over the 3D scene with the given mouse button (2 is the right button), dispatched in the page. */
+const drag = (page, button, dx, dy) =>
+  page.getByTestId("sizes-scene").evaluate((el, [b, x, y]) => {
+    const r = el.getBoundingClientRect();
+    const at = (type, k) => el.dispatchEvent(new PointerEvent(type, { pointerId: 9, pointerType: "mouse", isPrimary: true, button: b, buttons: type === "pointerup" ? 0 : 1 << (b === 2 ? 1 : 0), clientX: r.left + r.width / 2 + x * k, clientY: r.top + r.height / 2 + y * k, bubbles: true, cancelable: true }));
+    at("pointerdown", 0);
+    for (let k = 1; k <= 8; k++) at("pointermove", k / 8);
+    at("pointerup", 1);
+  }, [button, dx, dy], { timeout: 120_000 });
 /** Runs one part of the test, recording a failure rather than stopping the run. */
 async function part(errors, name, fn) {
   try {
@@ -124,6 +141,42 @@ export async function runSizes({ browser, BASE, OUT, errors, step }) {
     await page.waitForFunction(() => document.querySelector('[data-testid="sizes-stage"]')?.dataset.focus !== "wailord", null, { timeout: 120_000 }).catch(() => errors.push("sizes: → didn't step to the next Pokémon"));
     await key(page, "ArrowLeft");
     await stageIs("focus", "wailord").catch(() => errors.push("sizes: ← didn't step back to Wailord"));
+  });
+  await part(errors, "zoom", async () => {
+    // The zoom on screen is on the stage as data-zoom (1 is the automatic framing).
+    const zoom = async () => Number(await attr("zoom"));
+    /** Waits for data-zoom to be in [lo, hi]. */
+    const zoomed = (lo, hi, ms = 120_000) => page.waitForFunction(([a, b]) => { const z = Number(document.querySelector('[data-testid="sizes-stage"]')?.dataset.zoom); return Number.isFinite(z) && z >= a && z <= b; }, [lo, hi], { timeout: ms });
+    await zoomed(0.98, 1.02, 60_000).catch(async () => errors.push(`sizes: exploring didn't start at the automatic framing (data-zoom ${await attr("zoom")})`));
+    // The wheel zooms in (and the page itself doesn't scroll or zoom).
+    if (!(await wheel(page, { deltaY: -240 }))) errors.push("sizes: the wheel over the scene wasn't kept from the page");
+    await zoomed(1.15, 99).catch(async () => errors.push(`sizes: the wheel didn't zoom in (data-zoom ${await attr("zoom")})`));
+    // A trackpad pinch in Chrome, Edge and Firefox: ctrl + wheel. Spreading the fingers zooms out here (deltaY > 0); the browser's page zoom stays out of it.
+    const before = await zoom();
+    if (!(await wheel(page, { deltaY: 40, ctrlKey: true }))) errors.push("sizes: a pinch (ctrl + wheel) over the scene would zoom the page");
+    await zoomed(0, before * 0.8).catch(async () => errors.push(`sizes: a pinch didn't zoom (data-zoom ${before} → ${await attr("zoom")})`));
+    // The on-screen buttons.
+    const atOut = await zoom();
+    await press(page, "sizes-zoom-in");
+    await zoomed(atOut * 1.3, 99).catch(async () => errors.push(`sizes: + didn't zoom in (data-zoom ${atOut} → ${await attr("zoom")})`));
+    const atIn = await zoom();
+    await press(page, "sizes-zoom-out");
+    await press(page, "sizes-zoom-out");
+    await press(page, "sizes-zoom-out");
+    await zoomed(0, atIn / 2).catch(async () => errors.push(`sizes: − didn't zoom out (data-zoom ${atIn} → ${await attr("zoom")})`));
+    // Looking round: a right-drag turns the camera round the figure (a little), and tilts.
+    await drag(page, 2, 220, 120);
+    await page.waitForFunction(() => Math.abs(Number(document.querySelector('[data-testid="sizes-stage"]')?.dataset.orbit)) > 5, null, { timeout: 120_000 }).catch(async () => errors.push(`sizes: a right-drag didn't turn the view (data-orbit ${await attr("orbit")})`));
+    await page.screenshot({ path: `${OUT}/sizes-zoomed-out.png` });
+    // Reset: back to the automatic framing, square on.
+    await press(page, "sizes-reset-view");
+    await zoomed(0.98, 1.02).catch(async () => errors.push(`sizes: reset didn't restore the framing (data-zoom ${await attr("zoom")})`));
+    await page.waitForFunction(() => Math.abs(Number(document.querySelector('[data-testid="sizes-stage"]')?.dataset.orbit)) < 0.5, null, { timeout: 120_000 }).catch(async () => errors.push(`sizes: reset didn't turn the view back (data-orbit ${await attr("orbit")})`));
+    // + and − keys too.
+    await key(page, "+");
+    await zoomed(1.2, 99).catch(async () => errors.push(`sizes: the + key didn't zoom in (data-zoom ${await attr("zoom")})`));
+    await key(page, "0");
+    await zoomed(0.98, 1.02).catch(async () => errors.push(`sizes: the 0 key didn't reset the view (data-zoom ${await attr("zoom")})`));
   });
   await part(errors, "compare", async () => {
     // Compare Wailord with Eternatus: the line becomes the two (and the human) and the address its share link.
@@ -213,7 +266,7 @@ export async function runSizes({ browser, BASE, OUT, errors, step }) {
     if (!(await ready())) throw new Error("the 3D scene never became ready on a phone");
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1);
     if (overflow) errors.push("sizes: the phone layout scrolls sideways");
-    for (const id of ["sizes-play", "sizes-compare", "sizes-video", "sizes-share", "sizes-lineup"]) {
+    for (const id of ["sizes-play", "sizes-compare", "sizes-video", "sizes-share", "sizes-lineup", "sizes-zoom-in", "sizes-zoom-out", "sizes-reset-view"]) {
       const box = await page.getByTestId(id).boundingBox();
       if (!box || box.x < 0 || box.x + box.width > 391) errors.push(`sizes: ${id} is off a 390 px screen`);
     }
