@@ -46,6 +46,8 @@ export interface RollCandidate {
   defenderConditions: Record<string, number>;
   weather: string;
   terrain: string;
+  /** A spread move that hit more than one Pokémon (its damage is 75%). */
+  spread?: boolean;
   /** The defender's HP bar before and after the hit (percent). */
   before: number;
   after: number;
@@ -121,6 +123,8 @@ interface MoveCtx {
   /** Effects seen on targets: key → kinds. */
   seen: { status: Map<string, string>; flinchable: Map<string, number>; confusion: Set<string>; drops: Map<string, Set<string>>; raises: Set<string> };
   serene: boolean;
+  /** How many Pokémon a spread move hit (doubles: at 75% when it's more than one). */
+  spread: number;
 }
 
 export function computeStats(log: readonly string[], opts: StatsOptions = {}): BattleStats {
@@ -132,6 +136,7 @@ export function computeStats(log: readonly string[], opts: StatsOptions = {}): B
   const leads: [string | null, string | null] = [null, null];
   const rollsCount = { placed: 0, unplaced: 0 };
   let turn = 0;
+  let doubles = false;
   let winner: StatsSide | null = null;
   const players: [string, string] = ["Player 1", "Player 2"];
   let ctx: MoveCtx | null = null;
@@ -294,6 +299,7 @@ export function computeStats(log: readonly string[], opts: StatsOptions = {}): B
     }
     const { args, kwArgs } = parsed;
     const cmd = args[0];
+    if (cmd === "gametype" && args[1] === "doubles") doubles = true;
     const switching = cmd === "switch" || cmd === "drag" || cmd === "replace";
     const ident = /^p[12][a-d]?: /.test(args[1] ?? "") ? args[1] : undefined;
     // A switch line names the Pokémon coming in: look it up on the bench (by its key), not in the slot.
@@ -322,8 +328,27 @@ export function computeStats(log: readonly string[], opts: StatsOptions = {}): B
           hits: [],
           seen: { status: new Map(), flinchable: new Map(), confusion: new Set(), drops: new Map(), raises: new Set() },
           serene: abilityOf(user) === "serenegrace",
+          spread: 0,
         };
-        if (turn > 0) note({ kind: "move", side, mon: ctx.species, move: move.name || args[2], target: target && sideOf(args[3]) !== side ? stat(target).species : undefined });
+        // A spread move names every position it hit ("p2a,p2b,p1b"): the Pokémon in them now.
+        const spreadAt = typeof kwArgs.spread === "string" ? kwArgs.spread.split(",").map((x) => x.trim()) : [];
+        const spreadHit = spreadAt.flatMap((pos) => {
+          const s = sideOf(pos);
+          const q = s === null ? null : battle.sides[s].active[pos.charCodeAt(2) - 97];
+          return q ? [{ species: stat(q).species, ally: s === side }] : [];
+        });
+        ctx.spread = spreadHit.length;
+        const allyTarget = target && sideOf(args[3]) === side && target !== user ? stat(target).species : undefined;
+        if (turn > 0)
+          note({
+            kind: "move",
+            side,
+            mon: ctx.species,
+            move: move.name || args[2],
+            target: target && sideOf(args[3]) !== side ? stat(target).species : undefined,
+            ...(spreadHit.length ? { spread: spreadHit } : {}),
+            ...(allyTarget ? { ally: allyTarget } : {}),
+          });
         // The accuracy roll, against a foe that isn't out of reach.
         if (target && sideOf(args[3]) !== side && move.exists && !kwArgs.still && !kwArgs.notarget && !charging.has(target.originalIdent)) {
           const chance = hitChance({
@@ -575,6 +600,7 @@ export function computeStats(log: readonly string[], opts: StatsOptions = {}): B
               defenderConditions: conditionsOf(battle, foe),
               weather: toId(battle.field.weather),
               terrain: toId(battle.field.terrain),
+              spread: c.spread > 1,
               before,
               after: Math.round(pctOf(target)),
             })
@@ -638,6 +664,7 @@ export function computeStats(log: readonly string[], opts: StatsOptions = {}): B
     notes: Array.from({ length: turn + 1 }, (_, t) => notes[t] ?? []),
     leads,
     rolls: rollsCount,
+    ...(doubles ? { doubles: true } : {}),
   };
 }
 

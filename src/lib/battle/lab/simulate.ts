@@ -4,7 +4,7 @@ import type { BattleRequest } from "@/lib/battle/play";
 import { makeChooser, originalSlot, type Chooser } from "./policies";
 import { battleSeed, strategyRandom } from "./seed";
 import { addRecord, emptyTotals, type BattleRecord, type LabTotals, type Outcome, type Pair } from "./stats";
-import { labFormatId, SIDE_NAMES, TURN_LIMIT, type LabSetup } from "./types";
+import { labFormatId, SIDE_NAMES, TURN_LIMIT, type LabMon, type LabSetup } from "./types";
 
 /**
  * One Battle Lab battle on Pokémon Showdown's simulator (@pkmn/sim), start
@@ -45,7 +45,16 @@ export interface PreparedLab {
   scripts: Pair<string[][]>;
   /** Changes made to fit the generation (e.g. "dropped the item: Gen 1 has none"). */
   notes: string[];
+  /**
+   * A battle in progress with one Pokémon left on a side of a double battle:
+   * the simulator needs two to start, so a stand-in fills the empty position
+   * and faints, silently, before the first turn.
+   */
+  placeholders: Pair<boolean>;
 }
+
+/** The stand-in for an empty position (see PreparedLab.placeholders). */
+const PLACEHOLDER = "Empty Slot";
 
 const OK_NONSTANDARD = new Set(["Past", "Unobtainable"]);
 const toId = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "");
@@ -59,11 +68,12 @@ export function prepareLab(setup: LabSetup): PreparedLab {
   const packed: string[] = [];
   const names: string[][] = [];
   const scripts: string[][][] = [];
+  const placeholders: [boolean, boolean] = [false, false];
   for (const s of [0, 1] as const) {
     const side = setup.sides[s];
     const label = SIDE_NAMES[s];
     if (!side.team.length) throw new LabSetupError(`${label} needs a Pokémon.`);
-    if (setup.doubles && side.team.length < 2) throw new LabSetupError(`${label} needs two Pokémon for a double battle.`);
+    if (setup.doubles && side.team.length < 2 && !setup.inProgress) throw new LabSetupError(`${label} needs two Pokémon for a double battle.`);
     const taken = new Set<string>();
     const sets: PokemonSet[] = [];
     const sideNames: string[] = [];
@@ -131,6 +141,10 @@ export function prepareLab(setup: LabSetup): PreparedLab {
       sideNames.push(name);
       sideScripts.push(mon.script.map(toId).filter((id) => moves.some((m) => toId(m) === id)));
     }
+    if (setup.doubles && sets.length === 1) {
+      placeholders[s] = true;
+      sets.push({ name: PLACEHOLDER, species: "Magikarp", item: "", ability: gen >= 3 ? "Rattled" : "", moves: ["Splash"], nature: "", gender: "", evs: { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 }, ivs: { hp: 31, atk: 31, def: 31, spa: 31, spd: 31, spe: 31 }, level: 1 } as PokemonSet);
+    }
     packed.push(Teams.pack(sets));
     names.push(sideNames);
     scripts.push(sideScripts);
@@ -142,6 +156,7 @@ export function prepareLab(setup: LabSetup): PreparedLab {
     names: names as Pair<string[]>,
     scripts: scripts as Pair<string[][]>,
     notes,
+    placeholders,
   };
 }
 
@@ -154,6 +169,26 @@ function applyStart(battle: Battle, prep: PreparedLab): string[] {
   const { setup } = prep;
   const misses: string[] = [];
   let changed = false;
+  for (const s of [0, 1] as const) {
+    if (!prep.placeholders[s]) continue;
+    // The empty position: its stand-in leaves without a trace (no faint message, no KO for anyone).
+    const p = battle.sides[s].pokemon.find((q) => q.name === PLACEHOLDER);
+    if (p) {
+      p.hp = 0;
+      p.fainted = true;
+      p.isActive = false;
+      p.isStarted = false;
+      p.switchFlag = false;
+      p.clearVolatile(false);
+      battle.sides[s].pokemonLeft--;
+      changed = true;
+    }
+  }
+  if (setup.inProgress) {
+    // Abilities that acted on the way in (Drizzle, Electric Surge…) don't decide the field of a battle in progress.
+    if (battle.field.weather && battle.field.weather !== setup.weather) battle.field.clearWeather();
+    if (battle.field.terrain && battle.field.terrain !== setup.terrain) battle.field.clearTerrain();
+  }
   for (const s of [0, 1] as const) {
     const side = battle.sides[s];
     setup.sides[s].team.forEach((mon, i) => {
@@ -179,6 +214,8 @@ function applyStart(battle: Battle, prep: PreparedLab): string[] {
       if (p.isActive) {
         const boosts: Record<string, number> = { ...mon.boosts };
         if (setup.gen === 1 && boosts.spa) boosts.spd = boosts.spa; // one Special stat
+        // In progress: the stages are exactly these (an Intimidate on the way in didn't happen); otherwise they add to it.
+        if (setup.inProgress) for (const stat of Object.keys(p.boosts)) boosts[stat] = (boosts[stat] ?? 0) - p.boosts[stat as keyof typeof p.boosts];
         for (const [stat, amount] of Object.entries(boosts)) {
           if (!amount) continue;
           const before = p.boosts[stat as keyof typeof p.boosts];
@@ -187,6 +224,10 @@ function applyStart(battle: Battle, prep: PreparedLab): string[] {
           if (delta && !(setup.gen === 1 && stat === "spd")) battle.add(delta > 0 ? "-boost" : "-unboost", p, stat, Math.abs(delta), "[silent]");
           changed = true;
         }
+      }
+      if (mon.progress && setup.inProgress) {
+        applyProgress(battle, p, mon.progress);
+        changed = true;
       }
     });
   }
@@ -208,6 +249,12 @@ function applyStart(battle: Battle, prep: PreparedLab): string[] {
     else misses.push("The terrain didn't take.");
     changed = true;
   }
+  if (setup.inProgress && setup.trickRoom && source) {
+    battle.field.addPseudoWeather("trickroom", source, battle.dex.moves.get("trickroom") as never);
+    const state = battle.field.pseudoWeather.trickroom;
+    if (state) state.duration = setup.trickRoom;
+    changed = true;
+  }
   for (const s of [0, 1] as const) {
     const side = battle.sides[s];
     const f = setup.sides[s].field;
@@ -222,10 +269,41 @@ function applyStart(battle: Battle, prep: PreparedLab): string[] {
     if (f.reflect) add("reflect");
     if (f.lightscreen) add("lightscreen");
     if (f.auroraveil) add("auroraveil");
+    if (setup.inProgress) {
+      const lab = setup.sides[s];
+      if (lab.tailwind) add("tailwind");
+      const turns: Partial<Record<string, number>> = { ...lab.screenTurns, ...(lab.tailwind ? { tailwind: lab.tailwind } : {}) };
+      for (const [id, n] of Object.entries(turns)) if (n && side.sideConditions[id]) side.sideConditions[id].duration = n;
+    }
   }
   // The requests the simulator made for turn 1 predate the edits.
   if (changed) battle.makeRequest("move");
   return misses;
+}
+
+/** A battle in progress: what a Pokémon carries into the turn besides HP, status and stat stages. */
+function applyProgress(battle: Battle, p: Battle["sides"][number]["pokemon"][number], progress: NonNullable<LabMon["progress"]>) {
+  const volatile = (id: string, extra: Record<string, unknown> = {}) => {
+    const condition = battle.dex.conditions.get(id);
+    p.volatiles[id] = battle.initEffectState({ id: condition.id || id, name: condition.name || id, target: p, ...extra });
+    return p.volatiles[id];
+  };
+  if (p.isActive && progress.moved) p.activeMoveActions = 1;
+  if (p.isActive && progress.choiceLock && p.getItem().isChoice && p.moveSlots.some((m) => m.id === progress.choiceLock)) volatile("choicelock", { move: progress.choiceLock });
+  if (p.isActive && progress.protectStreak) {
+    // The Protect counter as it stands after that many in a row, running out at the end of this turn.
+    volatile("stall", { counter: Math.min(729, 3 ** progress.protectStreak), duration: 1 });
+  }
+  if (p.isActive && progress.substitute && p.hp > p.maxhp / 4) volatile("substitute", { hp: Math.floor(p.maxhp / 4) });
+  if (p.status === "slp" && progress.sleepTurns && battle.gen >= 5) {
+    // Gen 5 on, sleep lasts 1 to 3 turns, and it has slept some of them: the length is drawn from those it could still be.
+    const slept = progress.sleepTurns;
+    const lengths = [1, 2, 3].filter((n) => n >= slept);
+    const length = lengths.length ? lengths[battle.random(lengths.length)] : slept;
+    p.statusState.startTime = length + 1;
+    p.statusState.time = length - slept + 1;
+  }
+  if (p.status === "tox" && progress.toxicTurns) p.statusState.stage = Math.min(15, progress.toxicTurns);
 }
 
 // ---------------------------------------------------------------------------
@@ -343,6 +421,25 @@ export interface LabBattleOptions {
   choosers?: (rands: [() => number, () => number], record: BattleRecord) => [Chooser, Chooser];
 }
 
+/** The players, team preview (the leads are the setup's first Pokémon, the rest in order) and the starting conditions. */
+function startLab(battle: Battle, prep: PreparedLab): { misses: string[]; setupStart: number; setupEnd: number } {
+  battle.setPlayer("p1", { name: SIDE_NAMES[0], team: prep.packed[0] });
+  battle.setPlayer("p2", { name: SIDE_NAMES[1], team: prep.packed[1] });
+  for (const side of battle.sides) {
+    const request = side.activeRequest as unknown as BattleRequest | null;
+    if (request?.teamPreview) battle.choose(side.id, teamChoice(request, 1));
+  }
+  const setupStart = battle.log.length;
+  const misses = applyStart(battle, prep);
+  return { misses, setupStart, setupEnd: battle.log.length };
+}
+
+/** Battle `index` of the run, set up and waiting for the first turn's choices (for tests: the position the strategies start from). */
+export function startLabBattle(prep: PreparedLab, master: string, index: number): { battle: Battle; misses: string[] } {
+  const battle = new Battle({ formatid: prep.formatid as never, seed: battleSeed(master, index) as PRNGSeed });
+  return { battle, misses: startLab(battle, prep).misses };
+}
+
 /** Battle `index` of the run with master seed `master`. The same arguments always play the same battle. */
 export function runLabBattle(prep: PreparedLab, master: string, index: number, opts: LabBattleOptions = {}): LabBattle {
   const { setup } = prep;
@@ -370,16 +467,7 @@ export function runLabBattle(prep: PreparedLab, master: string, index: number, o
   let setupStart = -1;
   let setupEnd = -1;
   try {
-    battle.setPlayer("p1", { name: SIDE_NAMES[0], team: prep.packed[0] });
-    battle.setPlayer("p2", { name: SIDE_NAMES[1], team: prep.packed[1] });
-    // Team preview (Gen 5 on): the leads are the setup's first Pokémon, the rest in order.
-    for (const side of battle.sides) {
-      const request = side.activeRequest as unknown as BattleRequest | null;
-      if (request?.teamPreview) battle.choose(side.id, teamChoice(request, 1));
-    }
-    setupStart = battle.log.length;
-    misses = applyStart(battle, prep);
-    setupEnd = battle.log.length;
+    ({ misses, setupStart, setupEnd } = startLab(battle, prep));
 
     let decisions = 0;
     while (!battle.ended) {

@@ -58,6 +58,17 @@ interface Memo {
 }
 let memo: Memo | null = null;
 
+/** Runs `fn` with the per-decision calc memo on (as chooseCpuLegacy does), for another policy built on toCalc and hit. */
+export function withCalcMemo<T>(fn: () => T): T {
+  if (memo) return fn();
+  memo = { mons: new Map(), hits: new Map(), ids: new WeakMap(), next: 0 };
+  try {
+    return fn();
+  } finally {
+    memo = null;
+  }
+}
+
 function memoId(m: Memo, o: object): number {
   let id = m.ids.get(o);
   if (id === undefined) m.ids.set(o, (id = ++m.next));
@@ -211,7 +222,7 @@ function calcHit(gen: CalcGen, attacker: CalcMon, defender: CalcMon, moveName: s
   }
 }
 
-const STAB_GUESS: Record<string, [string, string]> = {
+export const STAB_GUESS: Record<string, [string, string]> = {
   Normal: ["Double-Edge", "Hyper Voice"],
   Fire: ["Flare Blitz", "Flamethrower"],
   Water: ["Liquidation", "Surf"],

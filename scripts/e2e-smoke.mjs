@@ -2487,6 +2487,50 @@ const customTurns = await playBattle(page, 4, "battle-custom-turn");
 if (customTurns < 3) errors.push(`the Gen 4 custom battle only reached turn ${customTurns}`);
 if (!/L50/.test(await page.getByTestId("battle-log").innerText().catch(() => ""))) console.log("  (level shown in sprites only)");
 
+step("battle vs computer: Random Doubles, its replay saved and analysed (both positions, targets named)");
+await gotoSettled(page, `${BASE}/battle/play`);
+await page.locator("label").filter({ hasText: "[Gen 9] Random Doubles Battle" }).first().click();
+await page.getByLabel("Your trainer name").fill("Red");
+await page.getByRole("button", { name: /Start battle/ }).click();
+await page.waitForURL(/\/battle\/play\/[a-z2-9]{8}$/);
+await page.locator("[data-testid=move-button]").first().waitFor({ timeout: 60_000 });
+await page.getByRole("button", { name: "4x", exact: true }).click();
+// A few turns, then a forfeit: an analysed battle only needs to have started (and the replacement prompt can't pass
+// a second position that has nothing left to send in, so a battle played to the end can stall there).
+const doublesTurns = await playBattle(page, 3, null);
+if (!(await page.getByTestId("battle-result").count())) {
+  await page.getByRole("button", { name: "Forfeit", exact: true }).click();
+  await page.getByRole("button", { name: "Forfeit", exact: true }).click();
+}
+await page.getByTestId("battle-result").waitFor({ timeout: 60_000 });
+console.log(`  the doubles battle ended on turn ${doublesTurns}`);
+await page.getByTestId("save-replay").click({ timeout: 30_000 });
+await page.getByTestId("analyse-battle").click({ timeout: 30_000 });
+await page.waitForURL(/\/battle\/replay\/[a-z2-9]{8}\?analysis=1&side=0/);
+{
+  const dbl = page.getByTestId("replay-analysis");
+  if (await dbl.getByTestId("analysis-unsupported").count()) errors.push(`doubles analysis: refused: ${await dbl.getByTestId("analysis-unsupported").innerText()}`);
+  const started = Date.now();
+  await dbl.getByTestId("key-moments").waitFor({ timeout: 180_000 });
+  console.log(`  doubles analysis took ${((Date.now() - started) / 1000).toFixed(1)} s`);
+  if ((await dbl.getByTestId("analysis-chart").locator("path").count()) < 2) errors.push("doubles analysis: no win-chance line");
+  if (!/Double battles play both Pokémon/.test(await dbl.getByTestId("analysis-assumptions").innerText())) errors.push("doubles analysis: the assumptions don't mention double battles");
+  const lines = await dbl.getByTestId("key-moments").getByTestId("key-moment-text").allInnerTexts();
+  for (const line of lines) {
+    if (!/^Turn \d+: .+ \(win chance \d+% → (\d+%|won|lost|draw)\)\.$/.test(line)) errors.push(`doubles analysis: odd key moment "${line}"`);
+    else console.log(`  ${line}`);
+  }
+  // Each key moment shows who was in battle: one or two Pokémon a side.
+  const boards = dbl.getByTestId("key-moment-board");
+  if ((await boards.count()) !== lines.length) errors.push(`doubles analysis: ${await boards.count()} boards for ${lines.length} key moments`);
+  for (const text of await boards.allInnerTexts()) {
+    const sides = text.split(/\bvs\b/i);
+    if (sides.length !== 2 || sides.some((side) => !/\d+%/.test(side) || (side.match(/\d+%/g) ?? []).length > 2)) errors.push(`doubles analysis: odd board "${text.replace(/\s+/g, " ")}"`);
+  }
+  if (lines.length && !lines.some((l) => / on (your )?[A-Z]|hit both|knocked out|by targeting/.test(l))) errors.push("doubles analysis: no key moment names a target");
+  await dbl.screenshot({ path: `${OUT}/battle-doubles-analysis.png` });
+}
+
 step("battle music: plays after a click, toggles off and stays off");
 await page.getByTestId("music-control").waitFor();
 await page.waitForTimeout(1500);
@@ -2752,7 +2796,7 @@ const analysisSecs = ((Date.now() - analysisStart) / 1000).toFixed(1);
 if ((await analysis.getByTestId("analysis-chart").locator("path").count()) < 2) errors.push("analysis: no win-chance line");
 const assumptions = await analysis.getByTestId("analysis-assumptions").innerText();
 if (!/95% confidence interval/.test(assumptions) || !/assumed/.test(assumptions)) errors.push(`analysis: the assumptions aren't spelled out: ${assumptions}`);
-for (const line of (await analysis.getByTestId("key-moments").locator("li").allInnerTexts())) {
+for (const line of (await analysis.getByTestId("key-moments").getByTestId("key-moment-text").allInnerTexts())) {
   if (!/^Turn \d+: .+ \(win chance \d+% → (\d+%|won|lost|draw)\)\.$/.test(line)) errors.push(`analysis: odd key moment "${line}"`);
   else console.log(`  ${line}`);
 }
@@ -2782,7 +2826,7 @@ await statsPanel.getByTestId("stats-copy").filter({ hasText: "Copied!" }).waitFo
 const copied = await mmRed.evaluate(() => navigator.clipboard.readText()).catch(() => "");
 if (copied && !copied.includes(`/battle/replay/${mmCode}?analysis=1`)) errors.push("stats: the copied card has no link to the analysis");
 await statsPanel.screenshot({ path: `${OUT}/battle-replay-stats.png` });
-const statsRes = await mmRed.request.get(`${BASE}/api/battle/analysis/stats/${mmCode}?v=1`);
+const statsRes = await mmRed.request.get(`${BASE}/api/battle/analysis/stats/${mmCode}?v=2`);
 if (statsRes.status() !== 200 || !/max-age/.test(statsRes.headers()["cache-control"] ?? "")) errors.push(`stats API: ${statsRes.status()} ${statsRes.headers()["cache-control"]}`);
 // Cached in this browser: a reload shows it at once.
 await mmRed.reload({ waitUntil: "load" });
