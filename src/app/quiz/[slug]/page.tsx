@@ -73,8 +73,8 @@ export default async function QuizPage({ params }: PageProps) {
         {preset.module === "games" || preset.module === "anime" ? (
           <p>
             Every question was checked against Bulbapedia, and each answer links the page it came from. Where the games
-            differ, the question names the game. Answers are checked on our server and your PokéIQ is calculated from how
-            hard each question you got right actually was.
+            differ, the question names the game. Answers are checked on our server and your PokéIQ weighs each right answer by
+            how tricky that question is.
           </p>
         ) : preset.module === "whose-team" ? (
           <p>
@@ -98,14 +98,14 @@ export default async function QuizPage({ params }: PageProps) {
         ) : preset.module === "competitive" ? (
           <p>
             Every question is generated from the Pokémon Showdown data (current generation): abilities, move types and
-            categories, and item effects. Answers are checked on our server and your PokéIQ is calculated from how hard
-            each question you got right actually was.
+            categories, and item effects. Answers are checked on our server and your PokéIQ weighs each right answer by how
+            tricky that question is.
           </p>
         ) : (
           <p>
             Every question is generated on the fly from the complete Pokédex — there are thousands of possible
-            questions, so no two runs are the same. Answers are checked on our server and your PokéIQ is calculated
-            from how hard each question you got right actually was.
+            questions, so no two runs are the same. Answers are checked on our server and your PokéIQ weighs
+            each right answer by how tricky that question is.
           </p>
         )}
         <p>
@@ -135,7 +135,7 @@ export default async function QuizPage({ params }: PageProps) {
             ? "Choose a format and difficulty, and the generations to include."
             : "Choose a format and the generations to include.",
           "Answer each question before the timer runs out.",
-          "Your PokéIQ is calculated from how hard the questions you got right were.",
+          "Your PokéIQ weighs each right answer by how tricky that question is.",
         ]}
         faqs={[
           { q: `What formats can I play?`, a: `Classic is 10 questions with 15 seconds each, Survival is endless with 3 lives and Blitz gives you 60 seconds to answer as many as you can.` },

@@ -1,4 +1,5 @@
 import type { Generation } from "@pkmn/data";
+import { Dex } from "@pkmn/dex";
 import type { CalcModule } from "@/lib/battle/calc";
 import { loadCalcGenerations } from "@/lib/battle/dex";
 import type { LabPool } from "@/lib/battle/lab/pool";
@@ -6,9 +7,9 @@ import { isLabGen } from "@/lib/battle/lab/types";
 import { PLAY_FORMAT_INFO } from "@/lib/battle/play";
 import type { ReplayData } from "@/lib/battle/replay";
 import { SOURCE_LABELS, type AssumedSet, type SetSource } from "./assume";
-import { keyMomentLine, missedKoText, riskySwitchText, turnFacts } from "./facts";
+import { keyMomentLine, missedKoText, NO_FACTS, riskySwitchText, turnFacts } from "./facts";
 import { keySwings, pct, resultPoint, rolloutsFor, swings, winPoint, type WinPoint } from "./maths";
-import { parseReplay, type SideIndex } from "./parse";
+import { parseReplay, type ParsedBattle, type SideIndex } from "./parse";
 import { turnSetup } from "./setup";
 
 /**
@@ -20,7 +21,7 @@ import { turnSetup } from "./setup";
  * kept per replay and side in this browser.
  */
 
-export const ANALYSIS_VERSION = 1;
+export const ANALYSIS_VERSION = 2;
 /** Aim to finish a typical battle in about this long. */
 export const BUDGET_MS = 25_000;
 export const MIN_ROLLOUTS = 40;
@@ -35,6 +36,30 @@ export class AnalysisUnsupported extends Error {}
 export interface AnalysisLine {
   turn: number;
   text: string;
+  /** Key moments: who was in battle as the turn started, per side, in position order. */
+  board?: [BoardMon[], BoardMon[]];
+}
+
+/** A Pokémon in battle at the start of a turn. */
+export interface BoardMon {
+  species: string;
+  /** % HP. */
+  hp: number;
+  status: string;
+  /** For its sprite: Showdown id and National Dex number. */
+  sprite: { id: string; num: number } | null;
+}
+
+/** Who was in battle at the start of turn `t`, per side, in position order (a, then b). */
+export function boardAt(parsed: ParsedBattle, t: number): [BoardMon[], BoardMon[]] {
+  const state = parsed.turns[t];
+  const side = (s: SideIndex): BoardMon[] =>
+    state.sides[s].active.flatMap((key) => {
+      const m = key ? state.sides[s].team.find((x) => x.key === key) : undefined;
+      const dex = m ? Dex.species.get(m.species) : null;
+      return m && !m.fainted ? [{ species: m.species, hp: m.hp, status: m.status, sprite: dex?.exists ? { id: dex.id, num: dex.num } : null }] : [];
+    });
+  return [side(0), side(1)];
 }
 
 export interface AnalysisResult {
@@ -42,6 +67,8 @@ export interface AnalysisResult {
   id: string;
   viewer: SideIndex;
   players: [string, string];
+  /** A double battle (each side has two Pokémon in battle). */
+  doubles?: boolean;
   /** Start of each turn, then the result (n = 0). */
   points: WinPoint[];
   keyMoments: AnalysisLine[];
@@ -84,11 +111,21 @@ function store(result: AnalysisResult) {
   }
 }
 
-/** Why a replay can't be analysed (yet), or null if it can. */
+const GAME_TYPE_NAMES: Record<string, string> = { triples: "Triple battles", freeforall: "Free-for-all battles", multi: "Multi battles" };
+
+/** Why a log's game type can't be simulated, or null for singles and doubles. */
+export function gameTypeReason(gameType: string): string | null {
+  if (gameType === "singles" || gameType === "doubles") return null;
+  return `${GAME_TYPE_NAMES[gameType] ?? "Battles of this kind"} can't be simulated by the Battle Lab (it plays singles and doubles), so they can't be analysed.`;
+}
+
+/** Why a replay can't be analysed, or null if it can: any singles or doubles battle of a generation the Battle Lab plays. */
 export function unsupportedReason(replay: Pick<ReplayData, "format" | "turns">): string | null {
-  if (PLAY_FORMAT_INFO[replay.format]?.gameType === "doubles") return "Analysis for double battles is coming soon.";
   if (replay.turns < 1) return "This battle ended before the first turn, so there's nothing to analyse.";
-  return null;
+  const gen = Number(/^gen(\d)/.exec(replay.format)?.[1] ?? 9);
+  if (!isLabGen(gen)) return `Gen ${gen} battles can't be simulated by the Battle Lab, so they can't be analysed.`;
+  const type = PLAY_FORMAT_INFO[replay.format]?.gameType ?? (/triples/.test(replay.format) ? "triples" : /freeforall/.test(replay.format) ? "freeforall" : /multi/.test(replay.format) ? "multi" : "singles");
+  return gameTypeReason(type);
 }
 
 let calcLoad: Promise<{ gen: (n: number) => Generation; lib: CalcModule }> | null = null;
@@ -109,8 +146,9 @@ export async function analyseReplay(
   if (why) throw new AnalysisUnsupported(why);
   const started = performance.now();
   const parsed = parseReplay(replay.log);
-  if (parsed.doubles) throw new AnalysisUnsupported("Analysis for double battles is coming soon.");
-  if (!isLabGen(parsed.gen)) throw new AnalysisUnsupported(`Gen ${parsed.gen} battles can't be simulated.`);
+  const typeWhy = gameTypeReason(parsed.gameType);
+  if (typeWhy) throw new AnalysisUnsupported(typeWhy);
+  if (!isLabGen(parsed.gen)) throw new AnalysisUnsupported(`Gen ${parsed.gen} battles can't be simulated by the Battle Lab, so they can't be analysed.`);
   const total = parsed.lastTurn;
   onProgress({ done: 0, total, points: [], stage: "sets" });
 
@@ -137,7 +175,7 @@ export async function analyseReplay(
   const seed = `analysis:${replay.id}`;
   for (let t = 1; t <= total; t++) {
     if (cancelled()) return null;
-    const setup = turnSetup(parsed.turns[t], parsed.gen, sets, keys);
+    const setup = turnSetup(parsed.turns[t], parsed.gen, sets, keys, parsed.doubles);
     if (!setup) continue;
     const elapsed = performance.now() - started;
     const n = t === 1 ? FIRST_ROLLOUTS : rolloutsFor({ budgetMs: BUDGET_MS, elapsedMs: elapsed, turnsLeft: total - t + 1, msPerRollout: rollouts ? elapsed / rollouts : 0, min: elapsed > BUDGET_MS ? OVER_BUDGET_ROLLOUTS : MIN_ROLLOUTS, max: MAX_ROLLOUTS });
@@ -154,7 +192,7 @@ export async function analyseReplay(
   onProgress({ done: total, total, points: [...points], stage: "calc" });
   const { lib, gen } = await loadCalc();
   const calc = { lib, gen: gen(parsed.gen) };
-  const facts = Array.from({ length: total + 1 }, (_, t) => (t ? turnFacts(calc, parsed, t, viewer, sets) : { missedKo: null, riskySwitch: null }));
+  const facts = Array.from({ length: total + 1 }, (_, t) => (t ? turnFacts(calc, parsed, t, viewer, sets) : NO_FACTS));
   const allSwings = swings(points);
   const swingAt = new Map(allSwings.map((s) => [s.turn, s]));
   const change = (t: number) => {
@@ -174,10 +212,11 @@ export async function analyseReplay(
     id: replay.id,
     viewer,
     players: replay.players,
+    ...(parsed.doubles ? { doubles: true } : {}),
     points,
-    keyMoments: keySwings(allSwings).map((s) => ({ turn: s.turn, text: keyMomentLine(parsed, viewer, s, facts[s.turn]) })),
-    missedKos: facts.flatMap((f, t) => (f.missedKo ? [{ turn: t, text: `Turn ${t}: ${missedKoText(parsed, viewer, f.missedKo)}${change(t)}.` }] : [])),
-    riskySwitches: facts.flatMap((f, t) => (f.riskySwitch ? [{ turn: t, text: `Turn ${t}: ${capital(riskySwitchText(f.riskySwitch))}${change(t)}.` }] : [])),
+    keyMoments: keySwings(allSwings).map((s) => ({ turn: s.turn, text: keyMomentLine(parsed, viewer, s, facts[s.turn]), board: boardAt(parsed, s.turn) })),
+    missedKos: facts.flatMap((f, t) => f.missedKos.map((m) => ({ turn: t, text: `Turn ${t}: ${capital(missedKoText(parsed, viewer, m))}${change(t)}.` }))),
+    riskySwitches: facts.flatMap((f, t) => f.riskySwitches.map((r) => ({ turn: t, text: `Turn ${t}: ${capital(riskySwitchText(r))}${change(t)}.` }))),
     sources,
     assumedMoves,
     rollouts,

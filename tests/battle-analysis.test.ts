@@ -89,12 +89,12 @@ describe("a real battle, analysed", () => {
     expect(parsed.lastTurn).toBe(fixture.turns);
     expect(parsed.turns[1].sides[0].active[0]).toBe("p1: Toxapex");
     expect(parsed.events[1].actions[1]).toEqual([
-      { kind: "tera", mon: "p2: Slaking", type: "Ground" },
-      { kind: "move", mon: "p2: Slaking", move: "Earthquake", missed: false },
+      { kind: "tera", mon: "p2: Slaking", type: "Ground", slot: 0 },
+      { kind: "move", mon: "p2: Slaking", move: "Earthquake", missed: false, slot: 0, target: "p1: Toxapex", spread: null },
     ]);
-    expect(parsed.events[10].actions[0]).toEqual([{ kind: "switch", from: "p1: Lugia", to: "p1: Arceus" }]);
-    expect(parsed.events[9].actions[1]).toEqual([{ kind: "switch", from: "p2: Great Tusk", to: "p2: Skarmory" }]);
-    expect(parsed.events[20].actions[1]).toEqual([{ kind: "move", mon: "p2: Masquerain", move: "Hurricane", missed: true }]);
+    expect(parsed.events[10].actions[0]).toEqual([{ kind: "switch", from: "p1: Lugia", to: "p1: Arceus", slot: 0 }]);
+    expect(parsed.events[9].actions[1]).toEqual([{ kind: "switch", from: "p2: Great Tusk", to: "p2: Skarmory", slot: 0 }]);
+    expect(parsed.events[20].actions[1]).toEqual([{ kind: "move", mon: "p2: Masquerain", move: "Hurricane", missed: true, slot: 0, target: "p1: Jirachi", spread: null }]);
     // A replacement after a faint isn't a choice (Slaking loafed around on turn 3, then fainted).
     expect(parsed.events[3].actions[1]).toEqual([]);
     expect(parsed.events[3].fainted).toEqual(["p2: Slaking"]);

@@ -10,6 +10,10 @@ import { Protocol } from "@pkmn/protocol";
  * Terastallized), what each side did during it, and everything each
  * Pokémon revealed over the whole battle (moves, item, ability, Tera type).
  * Nothing here knows more than a spectator did.
+ *
+ * Double battles: each side's `active` lists its two positions (a, b), a
+ * move names its target (a foe, the partner or itself) and, for a spread
+ * move, every Pokémon it hit; a switch names the position it filled.
  */
 
 const gens = new Generations(Dex);
@@ -32,18 +36,31 @@ export interface MonState {
   terastallized: string;
   /** Its item as known at this point: a name, "" if it's gone (knocked off, eaten…), null if never revealed. */
   item: string | null;
+  /** While active: it has used a move since it last came in (so Fake Out and First Impression won't work again). */
+  moved?: boolean;
+  /** While active: the last move it used (id), "" for none since it came in. */
+  lastMove?: string;
+  /** While active: how many turns in a row it has just protected itself (Protect, Detect…). */
+  protectStreak?: number;
+  /** While active: the volatile effects on it a spectator can see (ids: "substitute", "taunt", "encore", "confusion"…). */
+  volatiles?: string[];
+  /** Turns it has been asleep, or badly poisoned, so far. */
+  sleepTurns?: number;
+  toxicTurns?: number;
 }
 
 export interface SideState {
   name: string;
-  /** The key of the Pokémon in battle (singles: slot a). */
+  /** The key of the Pokémon in each position (singles: a; doubles: a, b), null for an empty one. */
   active: (string | null)[];
   /** Every Pokémon seen so far, in order of appearance. */
   team: MonState[];
   /** How many Pokémon the side brought. */
   size: number;
-  /** Hazards and screens: id → layers. */
+  /** Hazards, screens, Tailwind…: id → layers. */
   conditions: Record<string, number>;
+  /** Turns left of the conditions that run out (screens, Tailwind), the most it could be. */
+  conditionTurns: Record<string, number>;
   teraUsed: boolean;
 }
 
@@ -56,12 +73,38 @@ export interface TurnState {
   weatherTurns: number;
   terrain: string;
   terrainTurns: number;
+  /** Turns of Trick Room left (the most it could be), 0 for none. */
+  trickRoom: number;
 }
 
 export type Action =
-  | { kind: "move"; mon: string; move: string; missed: boolean }
-  | { kind: "switch"; from: string | null; to: string }
-  | { kind: "tera"; mon: string; type: string };
+  | {
+      kind: "move";
+      mon: string;
+      move: string;
+      missed: boolean;
+      /** The position it was used from (0 = a, 1 = b). */
+      slot: number;
+      /** The Pokémon it was aimed at (a foe, the partner or itself), null for none (a field move, or no target left). */
+      target: string | null;
+      /** A spread move: every Pokémon it hit (foes and the partner); null for a single-target move. */
+      spread: string[] | null;
+    }
+  | { kind: "switch"; from: string | null; to: string; slot: number }
+  | { kind: "tera"; mon: string; type: string; slot: number };
+
+/** A move's hit on one Pokémon, with its HP before and after. */
+export interface Hit {
+  by: string;
+  move: string;
+  target: string;
+  before: number;
+  after: number;
+  /** The target is on the mover's own side (a spread move hitting the partner). */
+  ally: boolean;
+  /** Part of a spread move. */
+  spread: boolean;
+}
 
 /** What happened in a turn, per side, from the log. */
 export interface TurnEvents {
@@ -70,8 +113,10 @@ export interface TurnEvents {
   actions: [Action[], Action[]];
   /** Keys of the Pokémon that fainted during the turn. */
   fainted: string[];
-  /** The first move each side's Pokémon used on the other side, with its target's HP before and after. */
-  hits: { by: string; move: string; target: string; before: number; after: number }[];
+  /** Every move's hit on a Pokémon other than its user (each target of a spread move), in order. */
+  hits: Hit[];
+  /** Keys of the Pokémon that protected themselves this turn (Protect, Detect…). */
+  protected: string[];
 }
 
 export interface Revealed {
@@ -88,6 +133,8 @@ export interface Revealed {
 export interface ParsedBattle {
   gen: number;
   doubles: boolean;
+  /** The log's game type: "singles", "doubles", "triples", "freeforall", "multi". */
+  gameType: string;
   /** turns[t]: the state at the start of turn t (turns[0] is unused). */
   turns: TurnState[];
   /** events[t]: what happened during turn t. */
@@ -105,7 +152,10 @@ function itemNow(p: Pokemon): string | null {
   return null;
 }
 
-function monState(p: Pokemon, active: boolean): MonState {
+const PROTECTS = new Set(["protect", "detect", "spikyshield", "kingsshield", "banefulbunker", "silktrap", "burningbulwark", "obstruct", "maxguard"]);
+export const isProtectMove = (move: string) => PROTECTS.has(toId(move));
+
+function monState(p: Pokemon, active: boolean, streaks: Map<string, number>): MonState {
   const pct = p.fainted ? 0 : p.maxhp ? Math.max(1, Math.round((100 * p.hp) / p.maxhp)) : 100;
   return {
     key: p.originalIdent,
@@ -117,35 +167,56 @@ function monState(p: Pokemon, active: boolean): MonState {
     boosts: active ? Object.fromEntries(Object.entries(p.boosts).filter(([, v]) => v)) : {},
     terastallized: p.terastallized ?? "",
     item: itemNow(p),
+    moved: active && p.movesUsedWhileActive.length > 0,
+    lastMove: active && p.movesUsedWhileActive.length ? toId(p.lastMove) : "",
+    protectStreak: active ? (streaks.get(p.originalIdent) ?? 0) : 0,
+    volatiles: active ? Object.keys(p.volatiles).map(toId).filter(Boolean) : [],
+    sleepTurns: p.status === "slp" ? p.statusState.sleepTurns : 0,
+    toxicTurns: p.status === "tox" ? p.statusState.toxicTurns : 0,
   };
 }
 
-function sideState(side: Side, teraUsed: boolean): SideState {
+function sideState(side: Side, teraUsed: boolean, streaks: Map<string, number>): SideState {
   const conditions: Record<string, number> = {};
-  for (const [id, c] of Object.entries(side.sideConditions)) conditions[id] = c.level || 1;
+  const conditionTurns: Record<string, number> = {};
+  for (const [id, c] of Object.entries(side.sideConditions)) {
+    conditions[id] = c.level || 1;
+    // Tailwind's and screens' usual length (Light Clay's longer one is the exception).
+    if (c.minDuration || c.maxDuration) conditionTurns[id] = c.minDuration || c.maxDuration;
+  }
   return {
     name: side.name,
     active: side.active.map((p) => (p && !p.fainted ? p.originalIdent : null)),
-    team: side.team.map((p) => monState(p, side.active.includes(p))),
+    team: side.team.map((p) => monState(p, side.active.includes(p), streaks)),
     size: side.totalPokemon || 6,
     conditions,
+    conditionTurns,
     teraUsed: teraUsed || side.team.some((p) => !!p.terastallized),
   };
 }
 
-function snapshot(b: Battle, turn: number, teraUsed: [boolean, boolean]): TurnState {
+function snapshot(b: Battle, turn: number, teraUsed: [boolean, boolean], streaks: Map<string, number>): TurnState {
   const left = (s: { minDuration: number; maxDuration: number } | undefined) => s?.maxDuration ?? 0;
+  const trickRoom = b.field.pseudoWeather.trickroom as { minDuration: number; maxDuration: number } | undefined;
   return {
     turn,
-    sides: [sideState(b.p1, teraUsed[0]), sideState(b.p2, teraUsed[1])],
+    sides: [sideState(b.p1, teraUsed[0], streaks), sideState(b.p2, teraUsed[1], streaks)],
     weather: toId(b.field.weather),
     weatherTurns: b.field.weather ? left(b.field.weatherState) : 0,
     terrain: toId(b.field.terrain),
     terrainTurns: b.field.terrain ? left(b.field.terrainState) : 0,
+    trickRoom: trickRoom ? trickRoom.minDuration || trickRoom.maxDuration || 1 : 0,
   };
 }
 
 const sideOf = (ident: string | undefined): SideIndex | null => (ident?.startsWith("p1") ? 0 : ident?.startsWith("p2") ? 1 : null);
+/** "p1b: Name" → 1 (position a is 0). */
+const slotOf = (ident: string | undefined): number => {
+  const letter = /^p[12]([a-c])/.exec(ident ?? "")?.[1];
+  return letter ? letter.charCodeAt(0) - 97 : 0;
+};
+/** Items and abilities that switch their holder out, not its trainer. */
+const FORCED_OUT = /^(item: )?(eject button|eject pack)$|^ability: (emergency exit|wimp out)$/i;
 
 /** Reads a replay's log. Throws only on a log with no turns at all. */
 export function parseReplay(log: readonly string[]): ParsedBattle {
@@ -153,22 +224,37 @@ export function parseReplay(log: readonly string[]): ParsedBattle {
   const turns: TurnState[] = [];
   const events: TurnEvents[] = [];
   let doubles = false;
+  let gameType = "singles";
   let winner: SideIndex | null = null;
   let current: TurnEvents | null = null;
   const faintedThisTurn = new Set<SideIndex>();
   const teraUsed: [boolean, boolean] = [false, false];
+  // Turns in a row each Pokémon has protected itself, up to the current turn.
+  const streaks = new Map<string, number>();
+  // This turn: positions ("p1a") whose Pokémon has moved, positions about to be switched out by an item or ability, past the end-of-turn effects.
+  const acted = new Set<string>();
+  const forcedOut = new Set<string>();
+  let afterUpkeep = false;
   // "p1a: Name" → "p1: Name", the tracker's originalIdent (a switch line names the Pokémon coming in, not the one out).
   const keyOf = (ident: string | undefined): string => (sideOf(ident) === null ? "" : (ident ?? "").replace(/^(p[12])[a-c]?: /, "$1: "));
-  const hpOf = (ident: string | undefined) => {
-    const p = battle.getPokemon(ident as never);
+  const position = (ident: string | undefined) => (ident ?? "").slice(0, 3);
+  const sideAt = (s: SideIndex) => battle[s === 0 ? "p1" : "p2"];
+  /** The Pokémon in a position ("p2b") right now, as a key. */
+  const keyAt = (pos: string): string | null => {
+    const s = sideOf(pos);
+    if (s === null) return null;
+    const p = sideAt(s).active[slotOf(pos)];
+    return p ? p.originalIdent : null;
+  };
+  const hpOf = (key: string) => {
+    const s = sideOf(key);
+    const p = s === null ? undefined : sideAt(s).team.find((m) => m.originalIdent === key);
     return p && p.maxhp ? Math.round((100 * p.hp) / p.maxhp) : 0;
   };
-  let pendingHit: { by: string; move: string; target: string; before: number; ident: string } | null = null;
+  let pending: Omit<Hit, "after">[] = [];
   const flushHit = () => {
-    if (pendingHit && current) {
-      current.hits.push({ by: pendingHit.by, move: pendingHit.move, target: pendingHit.target, before: pendingHit.before, after: hpOf(pendingHit.ident) });
-    }
-    pendingHit = null;
+    if (current) for (const h of pending) current.hits.push({ ...h, after: hpOf(h.target) });
+    pending = [];
   };
 
   for (const line of log) {
@@ -180,36 +266,58 @@ export function parseReplay(log: readonly string[]): ParsedBattle {
     }
     const { args, kwArgs } = parsed;
     const cmd = args[0];
-    if (cmd === "gametype") doubles = args[1] === "doubles";
+    if (cmd === "gametype") {
+      gameType = String(args[1] ?? "singles");
+      doubles = gameType === "doubles";
+    }
     if (cmd === "-terastallize" && sideOf(args[1]) !== null) teraUsed[sideOf(args[1])!] = true;
     if (cmd === "win") winner = args[1] === battle.p1.name ? 0 : args[1] === battle.p2.name ? 1 : null;
 
     // Events, read before the tracker moves on (a switch needs who was out before it).
     if (current) {
       const side = sideOf(args[1]);
+      // The HP a hit left is read once its own lines are done: at the next move, switch, item, ability or end of turn.
+      if (cmd === "move" || cmd === "switch" || cmd === "drag" || cmd === "upkeep" || cmd === "faint" || ((cmd === "-heal" || cmd === "-damage") && kwArgs.from)) flushHit();
       if (cmd === "move" && side !== null && !kwArgs.from) {
-        flushHit();
         const by = keyOf(args[1]);
         const move = Dex.moves.get(args[2] ?? "").name || args[2] || "";
-        current.actions[side].push({ kind: "move", mon: by, move, missed: !!kwArgs.miss });
-        const targetSide = sideOf(args[3]);
-        if (targetSide !== null && targetSide !== side && !kwArgs.miss) {
-          pendingHit = { by, move, target: keyOf(args[3]), before: hpOf(args[3]), ident: args[3]! };
+        const slot = slotOf(args[1]);
+        acted.add(position(args[1]));
+        const aimed = args[3] && sideOf(args[3]) !== null && !kwArgs.notarget ? args[3] : undefined;
+        const spreadAt = typeof kwArgs.spread === "string" ? kwArgs.spread.split(",").map((x) => x.trim()).filter((x) => sideOf(x) !== null) : null;
+        const spread = spreadAt ? spreadAt.map(keyAt).filter((k): k is string => !!k) : null;
+        const target = aimed ? keyOf(aimed) : null;
+        current.actions[side].push({ kind: "move", mon: by, move, missed: !!kwArgs.miss, slot, target, spread });
+        if (!kwArgs.miss && !kwArgs.still) {
+          const hitKeys = spread ?? (target && target !== by ? [target] : []);
+          for (const t of hitKeys) {
+            if (t === by) continue;
+            pending.push({ by, move, target: t, before: hpOf(t), ally: sideOf(t) === side, spread: !!spread });
+          }
         }
-      } else if (cmd === "move") {
-        flushHit();
       }
-      if (cmd === "switch" && side !== null && !faintedThisTurn.has(side)) {
-        const acted = current.actions[side].some((a) => a.kind !== "tera");
-        const from = battle[side === 0 ? "p1" : "p2"].active[0]?.originalIdent ?? null;
-        // A switch after this side already moved is a pivot (U-turn, Eject Button…), not its choice.
-        if (!acted) current.actions[side].push({ kind: "switch", from, to: keyOf(args[1]) });
+      if (cmd === "switch" && side !== null && !faintedThisTurn.has(side) && !afterUpkeep) {
+        const pos = position(args[1]);
+        const slot = slotOf(args[1]);
+        const from = sideAt(side).active[slot]?.originalIdent ?? null;
+        // A switch after this position already moved is a pivot (U-turn, Baton Pass…), and one an item or ability forced isn't a choice either.
+        if (!acted.has(pos) && !forcedOut.has(pos)) current.actions[side].push({ kind: "switch", from, to: keyOf(args[1]), slot });
+        acted.add(pos);
       }
-      if (cmd === "-terastallize" && side !== null) current.actions[side].push({ kind: "tera", mon: keyOf(args[1]), type: args[2] ?? "" });
+      if ((cmd === "-enditem" || cmd === "-activate") && side !== null) {
+        const what = String(args[2] ?? "");
+        if (FORCED_OUT.test(what)) forcedOut.add(position(args[1]));
+      }
+      if (cmd === "-singleturn" && side !== null && isProtectMove(String(args[2] ?? "").replace(/^move: /, ""))) {
+        const k = keyOf(args[1]);
+        if (!current.protected.includes(k)) current.protected.push(k);
+      }
+      if (cmd === "-terastallize" && side !== null) current.actions[side].push({ kind: "tera", mon: keyOf(args[1]), type: args[2] ?? "", slot: slotOf(args[1]) });
       if (cmd === "faint" && side !== null) {
         current.fainted.push(keyOf(args[1]));
         faintedThisTurn.add(side);
       }
+      if (cmd === "upkeep") afterUpkeep = true;
     }
 
     try {
@@ -220,11 +328,19 @@ export function parseReplay(log: readonly string[]): ParsedBattle {
 
     if (cmd === "turn") {
       flushHit();
+      // Protect streaks: a Pokémon that protected itself last turn has a worse chance to do it again.
+      if (current) {
+        for (const k of [...streaks.keys()]) if (!current.protected.includes(k)) streaks.delete(k);
+        for (const k of current.protected) streaks.set(k, (streaks.get(k) ?? 0) + 1);
+      }
       const t = Number(args[1]);
-      turns[t] = snapshot(battle, t, teraUsed);
-      current = { turn: t, actions: [[], []], fainted: [], hits: [] };
+      turns[t] = snapshot(battle, t, teraUsed, streaks);
+      current = { turn: t, actions: [[], []], fainted: [], hits: [], protected: [] };
       events[t] = current;
       faintedThisTurn.clear();
+      acted.clear();
+      forcedOut.clear();
+      afterUpkeep = false;
     }
   }
   flushHit();
@@ -247,5 +363,5 @@ export function parseReplay(log: readonly string[]): ParsedBattle {
       });
     }
   });
-  return { gen: battle.gen.num, doubles, turns, events, revealed, winner, lastTurn };
+  return { gen: battle.gen.num, doubles, gameType, turns, events, revealed, winner, lastTurn };
 }
