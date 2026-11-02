@@ -155,6 +155,20 @@ function itemNow(p: Pokemon): string | null {
 const PROTECTS = new Set(["protect", "detect", "spikyshield", "kingsshield", "banefulbunker", "silktrap", "burningbulwark", "obstruct", "maxguard"]);
 export const isProtectMove = (move: string) => PROTECTS.has(toId(move));
 
+/**
+ * A revealed ability as the Dex names it. The log shows Calyrex's riders' ability
+ * as "As One", which the Dex only knows as "As One (Glastrier)" or "As One
+ * (Spectrier)": a name the Dex doesn't know is read as the Pokémon's own
+ * ability that starts with it, or as unknown.
+ */
+export function abilityName(raw: string, species: string): string | null {
+  const ab = Dex.abilities.get(raw);
+  if (ab.exists) return ab.name;
+  const id = toId(raw);
+  const own = Object.values(Dex.species.get(species).abilities).filter(Boolean) as string[];
+  return (id && own.find((a) => toId(a).startsWith(id))) || null;
+}
+
 function monState(p: Pokemon, active: boolean, streaks: Map<string, number>): MonState {
   const pct = p.fainted ? 0 : p.maxhp ? Math.max(1, Math.round((100 * p.hp) / p.maxhp)) : 100;
   return {
@@ -358,7 +372,7 @@ export function parseReplay(log: readonly string[]): ParsedBattle {
         level: p.level || 100,
         moves: p.moveSlots.map((m) => m.name).filter((m) => m && !/^(struggle|recharge)$/i.test(m)),
         item: first,
-        ability: p.baseAbility ? Dex.abilities.get(p.baseAbility).name : p.ability ? Dex.abilities.get(p.ability).name : null,
+        ability: p.baseAbility ? abilityName(p.baseAbility, p.speciesForme) : p.ability ? abilityName(p.ability, p.speciesForme) : null,
         teraType: p.terastallized ?? null,
       });
     }
