@@ -75,6 +75,7 @@ export function ZoomStage({
         >
           <img
             src={layer.url}
+            fetchPriority={layer.n === 0 ? "high" : undefined}
             alt={revealed && label ? label : `Mystery Pokémon, zoom step ${view.step} of ${view.steps}`}
             draggable={false}
             className="absolute inset-0 h-full w-full select-none object-contain"
