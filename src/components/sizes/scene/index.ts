@@ -261,7 +261,7 @@ export function createSizesScene(host: HTMLElement, opts: SceneOptions): SizesSc
   const providers: FigureProvider[] = [];
   if (opts.models && Object.keys(opts.models).length) providers.push(new ModelProvider(opts.models));
   providers.push(new ReliefProvider(opts.urls, { anisotropy: maxAniso, sharpen: opts.quality === "export" ? 0.55 : 0.45, texSize: Q.texSize }));
-  interface Slot { item: SceneItem; x: number; w: number; h: number; handle: FigureHandle | null; loading: Lod | null; abort: AbortController | null; want: Lod | -1; shadow: THREE.Mesh | null; phase: number; update?: (t: number, dt: number) => void; lastSeen: number }
+  interface Slot { item: SceneItem; x: number; z?: number; w: number; h: number; handle: FigureHandle | null; loading: Lod | null; abort: AbortController | null; want: Lod | -1; shadow: THREE.Mesh | null; phase: number; update?: (t: number, dt: number) => void; lastSeen: number }
   let slots: Slot[] = [];
   let companion: Slot | null = null;
   const figureGroup = new THREE.Group();
@@ -287,7 +287,8 @@ export function createSizesScene(host: HTMLElement, opts: SceneOptions): SizesSc
     const raw = slots.map((s) => Math.log(Math.max(0.02, s.h)));
     logH = raw.map((_, i) => {
       let sum = 0, n = 0;
-      for (let k = -3; k <= 3; k++) { const j = i + k; if (j < 0 || j >= raw.length) continue; const wt = Math.exp(-(k * k) / 4); sum += raw[j] * wt; n += wt; }
+      // Bilateral, like the camera's distance: a giant next door must not lift the aim off a human-sized figure.
+      for (let k = -3; k <= 3; k++) { const j = i + k; if (j < 0 || j >= raw.length) continue; const dl = raw[j] - raw[i]; const wt = Math.exp(-(k * k) / 4) * Math.exp(-(dl * dl) / 0.18); sum += raw[j] * wt; n += wt; }
       return Math.max(sum / n, raw[i] - 0.05);
     });
     plan = planWorld(slots.map((s) => ({ x: s.x, w: s.w, h: s.h })));
@@ -297,8 +298,9 @@ export function createSizesScene(host: HTMLElement, opts: SceneOptions): SizesSc
     const human = humanAt >= 0 ? items[humanAt] : undefined;
     // Not when the line's own human already stands near the start (a comparison).
     if (human && slots.length && slots[0].h < 0.6 && humanAt > 4) {
-      const x = slots[0].x - slots[0].w / 2 - 0.55;
-      companion = { item: { ...human, key: "companion" }, x, w: human.w, h: human.h, handle: null, loading: null, abort: null, want: 1, shadow: null, phase: 1, lastSeen: 0 };
+      // A step to the side and behind the line: a person in the background, not a wall beside the lens.
+      const x = slots[0].x - slots[0].w / 2 - 1.1;
+      companion = { item: { ...human, key: "companion" }, x, z: 0.9, w: human.w, h: human.h, handle: null, loading: null, abort: null, want: 1, shadow: null, phase: 1, lastSeen: 0 };
     }
     return { placed: slots.map((s) => ({ key: s.item.key, x: s.x, w: s.w, h: s.h })), plan };
   }
@@ -339,7 +341,7 @@ export function createSizesScene(host: HTMLElement, opts: SceneOptions): SizesSc
 
   function place(s: Slot, h: FigureHandle) {
     const o = h.object;
-    o.position.set(s.x, 0, 0);
+    o.position.set(s.x, 0, s.z ?? 0);
     o.rotation.y = FACING;
     figureGroup.add(o);
     h.materials.forEach(setupMat);
@@ -348,7 +350,7 @@ export function createSizesScene(host: HTMLElement, opts: SceneOptions): SizesSc
       s.shadow.renderOrder = 1;
       figureGroup.add(s.shadow);
     }
-    s.shadow.position.set(s.x, 0.004 + s.h * 0.0005, 0);
+    s.shadow.position.set(s.x, 0.004 + s.h * 0.0005, s.z ?? 0);
     s.shadow.rotation.y = FACING;
     s.shadow.scale.set(s.w * 1.05, 1, Math.max(h.depth * 1.8, s.w * 0.35));
   }
