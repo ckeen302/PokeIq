@@ -5,6 +5,8 @@ import type { BattleView } from "@/lib/battle/play";
 import { tauntOf, type TauntId } from "@/lib/trainer/taunts";
 import { Avatar3D } from "@/components/trainer3d/Avatar3D";
 import { cn } from "@/lib/utils";
+import { Trophy } from "lucide-react";
+import { webglAvailable } from "./arena/webgl";
 import { cpuTrainer, FOE_ACCENT, standIn, YOU_ACCENT } from "./Versus";
 
 /**
@@ -27,6 +29,7 @@ export function BattleVictory({ view, title, detail, tone }: { view: BattleView;
   const config = isCpu ? cpuTrainer(view.cpu!.level) : (player?.avatar?.trainer ?? standIn(player?.name ?? "winner"));
   const move = CELEBRATIONS[(view.code.charCodeAt(0) + view.code.charCodeAt(view.code.length - 1)) % CELEBRATIONS.length];
   const [n, setN] = useState(1);
+  const [gl] = useState(webglAvailable);
   useEffect(() => {
     if (seat === null) return;
     const secs = tauntOf(move)?.secs ?? 3;
@@ -47,7 +50,13 @@ export function BattleVictory({ view, title, detail, tone }: { view: BattleView;
       <div className="relative mx-auto flex max-w-3xl flex-col items-center gap-2 sm:flex-row sm:justify-center sm:gap-8">
         <div className="relative h-52 w-44 shrink-0 sm:h-64 sm:w-56">
           <div className="battle-victory-podium absolute inset-x-[6%] bottom-[2%] h-[16%]" aria-hidden />
-          <Avatar3D config={config} pose="victory" taunt={{ id: move, n }} facing="front" label={`${player?.name ?? "The winner"}'s trainer celebrating`} className="absolute inset-0" />
+          {gl ? (
+            <Avatar3D config={config} pose="victory" taunt={{ id: move, n }} facing="front" label={`${player?.name ?? "The winner"}'s trainer celebrating`} className="absolute inset-0" />
+          ) : (
+            <span className="absolute inset-x-[18%] bottom-[14%] flex aspect-square items-center justify-center rounded-full border-4 border-[#ffd23c]/70 bg-[radial-gradient(circle_at_35%_30%,#fff3b0,#f5b82e_60%,#b7791f)] shadow-2xl" aria-hidden>
+              <Trophy className="h-1/2 w-1/2 text-[#5a3a05]" />
+            </span>
+          )}
         </div>
         <div className="relative space-y-1.5 sm:text-left">
           <p className="hud-label text-white/70">{view.formatName ?? "Battle"} · Winner</p>

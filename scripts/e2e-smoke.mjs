@@ -2457,6 +2457,39 @@ if (cpuTurns < 3) errors.push(`the battle against the computer only reached turn
 await page.screenshot({ path: `${OUT}/battle-cpu-later.png`, fullPage: true });
 if ((await page.getByTestId("battle-log").innerText()).length < 200) errors.push("the battle log stayed empty");
 
+// The battle's look: a versus intro before turn 1 (skippable), and the CSS backdrop when there's no WebGL for the 3D arena.
+step("battle look: the versus intro skips, and without WebGL the arena falls back to CSS");
+{
+  const noGl = await newPage({ width: 1280, height: 900 });
+  await noGl.context().addInitScript(() => {
+    const getContext = HTMLCanvasElement.prototype.getContext;
+    HTMLCanvasElement.prototype.getContext = function (type, ...rest) {
+      return /webgl/i.test(String(type)) ? null : getContext.call(this, type, ...rest);
+    };
+  });
+  await gotoSettled(noGl, `${BASE}/battle/play`);
+  await noGl.locator("label").filter({ hasText: "[Gen 9] Random Battle" }).first().click();
+  await noGl.getByLabel("Your trainer name").fill("Leaf");
+  await noGl.getByRole("button", { name: /Start battle/ }).click();
+  await noGl.waitForURL(/\/battle\/play\/[a-z2-9]{8}$/);
+  await noGl.getByTestId("battle-versus").waitFor({ timeout: 30_000 });
+  if ((await noGl.getByTestId("battle-versus").getByTestId("versus-character").count()) !== 2) errors.push("versus intro: both trainers should be on it");
+  if (!(await noGl.getByTestId("versus-cpu").count())) errors.push("versus intro: the computer has no card");
+  if (!(await noGl.getByTestId("versus-battle-record").count())) errors.push("versus intro: your battle record is missing");
+  await noGl.screenshot({ path: `${OUT}/battle-versus.png` });
+  await noGl.getByTestId("versus-skip").click();
+  await noGl.getByTestId("battle-versus").waitFor({ state: "detached", timeout: 3_000 });
+  await noGl.locator("[data-testid=move-button]").first().waitFor({ timeout: 60_000 });
+  const arenaMode = await noGl.getByTestId("battle-arena").getAttribute("data-mode");
+  if (arenaMode !== "css") errors.push(`without WebGL the battle arena should fall back to the CSS backdrop (data-mode ${arenaMode})`);
+  await noGl.screenshot({ path: `${OUT}/battle-arena-css.png` });
+  // A reload on turn 1 doesn't show the intro again.
+  await noGl.reload({ waitUntil: "load" });
+  await noGl.locator("[data-testid=move-button]").first().waitFor({ timeout: 60_000 });
+  if (await noGl.getByTestId("battle-versus").count()) errors.push("the versus intro showed again after a reload");
+  await noGl.context().close();
+}
+
 step("battle vs computer: Gen 9 OU with the team saved in the team builder");
 await gotoSettled(page, `${BASE}/battle/play`);
 await page.locator("label").filter({ hasText: "[Gen 9] OU" }).first().click();
@@ -2718,6 +2751,13 @@ for (const [who, p] of [["Red", mmRed], ["Blue", mmBlue], ["spectator", watcher]
 await watcher.screenshot({ path: `${OUT}/battle-spectator-result.png` });
 await mmRed.getByTestId("watch-replay").waitFor({ timeout: 45_000 });
 await mmRed.screenshot({ path: `${OUT}/battle-matched-result.png` });
+
+step("battle look: the victory screen, the winner's trainer over the result, for both players and the spectator");
+for (const [who, p] of [["Red", mmRed], ["Blue", mmBlue], ["spectator", watcher]]) {
+  if (/A draw|No contest/.test(await p.getByTestId("battle-result").innerText())) continue;
+  if (!(await p.getByTestId("battle-result").getByTestId("battle-victory").count())) errors.push(`${who}: no victory screen at the end of the battle`);
+}
+if (await mmRed.getByTestId("battle-victory").count()) await mmRed.getByTestId("battle-victory").screenshot({ path: `${OUT}/battle-victory.png` });
 
 step("replay: open it, step through it, jump, play");
 await mmRed.getByTestId("watch-replay").click();

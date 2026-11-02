@@ -9,6 +9,7 @@ import { battleIdHeaders, ensureBattleId } from "@/lib/battle/replay-client";
 import { seededTrainer, type TrainerConfig } from "@/lib/trainer/config";
 import { Figure, History, VersusIntro, type VersusSide } from "@/components/duel/VersusIntro";
 import { Avatar3D } from "@/components/trainer3d/Avatar3D";
+import { webglAvailable } from "./arena/webgl";
 
 /**
  * The versus screen before a battle's first turn (the duel's, shared with
@@ -104,11 +105,21 @@ export function BattleVersus({ view, onDone }: { view: BattleView; onDone: () =>
   const loading = data === undefined;
   const rated = !!view.ranked || PLAY_FORMAT_INFO[view.format]?.random === true;
   const [left, setLeft] = useState(3);
+  // Without WebGL: no 3D trainers (their art, or a silhouette; the computer's badge).
+  const [gl] = useState(webglAvailable);
 
   useEffect(() => {
-    const t0 = Date.now();
+    // The count starts once both trainers are drawn (or after a moment, whatever has loaded by then).
+    const opened = Date.now();
+    let t0 = 0;
     const id = window.setInterval(() => {
-      const gone = Date.now() - t0;
+      const now = Date.now();
+      if (!t0) {
+        const drawn = document.querySelectorAll("[data-testid=battle-versus] [data-testid=versus-character] canvas, [data-testid=battle-versus] [data-testid=versus-character]:not([data-kind=trainer]):not([data-kind=figure])").length;
+        if (drawn >= 2 || now - opened > 1_200) t0 = now;
+        else return;
+      }
+      const gone = now - t0;
       setLeft(Math.max(1, 3 - Math.floor(gone / (VERSUS_MS / 3))));
       if (gone >= VERSUS_MS) onDone();
     }, 100);
@@ -119,7 +130,7 @@ export function BattleVersus({ view, onDone }: { view: BattleView; onDone: () =>
     name: you?.name ?? "You",
     you: true,
     avatar: you?.avatar ?? null,
-    fallback: standIn(you?.name ?? "you"),
+    fallback: gl ? standIn(you?.name ?? "you") : undefined,
     stats: null,
     record: <RecordCard record={data ? data.you : null} loading={loading} rated={rated} />,
     accent: YOU_ACCENT,
@@ -127,7 +138,13 @@ export function BattleVersus({ view, onDone }: { view: BattleView; onDone: () =>
   const foeSide: VersusSide = cpu
     ? {
         name: foe?.name ?? "Computer",
-        figure: <Avatar3D config={cpuTrainer(cpu)} pose="fight" facing="left" label="The computer's trainer, ready to battle" />,
+        figure: gl ? (
+          <Avatar3D config={cpuTrainer(cpu)} pose="fight" facing="left" label="The computer's trainer, ready to battle" />
+        ) : (
+          <span className="flex aspect-square w-[70%] items-center justify-center rounded-full border-4 border-white/40 bg-[radial-gradient(circle_at_35%_30%,#c4b5fd,#6d28d9_70%)] shadow-2xl" aria-hidden>
+            <Bot className="h-1/2 w-1/2 text-white" />
+          </span>
+        ),
         tag: (
           <span className="inline-flex items-center gap-1 rounded-sm border border-white/30 bg-white/10 px-1.5 py-0.5 font-pixel text-[9px] uppercase text-white/90">
             <Bot className="h-3 w-3" aria-hidden /> Computer
@@ -140,7 +157,7 @@ export function BattleVersus({ view, onDone }: { view: BattleView; onDone: () =>
     : {
         name: foe?.name ?? "Opponent",
         avatar: foe?.avatar ?? null,
-        fallback: standIn(foe?.name ?? "opponent"),
+        fallback: gl ? standIn(foe?.name ?? "opponent") : undefined,
         stats: null,
         record: <RecordCard record={data ? (data.names[(foe?.name ?? "").toLowerCase()] ?? null) : null} loading={loading && names.length > 0} rated={rated} />,
         accent: FOE_ACCENT,

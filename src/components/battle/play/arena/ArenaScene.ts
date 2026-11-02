@@ -1,5 +1,6 @@
 import * as THREE from "three";
 import { BACKDROP_H, BACKDROP_W, groundSpots, toNdc, type ArenaField, type ArenaKind, type GroundSpot } from "./layout";
+import { webglAvailable } from "./webgl";
 
 /**
  * The battle's 3D arena, drawn behind Showdown's 2D stage: a championship
@@ -48,9 +49,9 @@ export interface ArenaApi {
 }
 
 const QUALITY = [
-  { pr: 0.6, crowd: 0, particles: 0.25, fps: 30 },
-  { pr: 0.85, crowd: 0.5, particles: 0.5, fps: 30 },
-  { pr: 1.25, crowd: 1, particles: 0.8, fps: 60 },
+  { pr: 0.75, crowd: 0, particles: 0.25, fps: 30 },
+  { pr: 1.25, crowd: 0.5, particles: 0.5, fps: 30 },
+  { pr: 1.75, crowd: 1, particles: 0.8, fps: 60 },
   { pr: 2, crowd: 1, particles: 1, fps: 60 },
 ] as const;
 const FRAME_BUDGET_MS = 1000 / 30;
@@ -167,15 +168,6 @@ const COMMON_FRAG_TAIL = `
 // The scene
 // ---------------------------------------------------------------------------
 
-export function webglAvailable(): boolean {
-  try {
-    const c = document.createElement("canvas");
-    return !!(c.getContext("webgl2") || c.getContext("webgl"));
-  } catch {
-    return false;
-  }
-}
-
 export function createArena(host: HTMLElement, opts: ArenaOptions, cb: ArenaCallbacks): ArenaApi | null {
   if (!webglAvailable()) return null;
   const canvas = document.createElement("canvas");
@@ -194,7 +186,8 @@ export function createArena(host: HTMLElement, opts: ArenaOptions, cb: ArenaCall
   renderer.toneMappingExposure = 1.05;
 
   const kind = opts.kind;
-  let quality = opts.quality ?? (Math.min(window.innerWidth, window.innerHeight) < 600 ? 1 : 2);
+  // The canvas is only the stage's size, so even phones start well up the scale; slow frames step it down.
+  let quality = opts.quality ?? 2;
   const pal = PALETTES[kind];
   const R = rng(kind.length * 977 + opts.active * 31);
   const disposables: { dispose(): void }[] = [];
