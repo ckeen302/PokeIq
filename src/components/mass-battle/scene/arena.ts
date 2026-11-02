@@ -28,7 +28,8 @@ export interface ArenaLook {
 
 export const ARENA_LOOK: Record<ArenaId, ArenaLook> = {
   plains: { sky: ["#3f8fe8", "#d9efff"], fog: "#cfe6f6", fogNear: 1.1, fogFar: 4.2, sun: "#fff3dc", sunIntensity: 2.6, sunElevation: 48, hemi: ["#cfe8ff", "#5b7a3a", 1.1], exposure: 1.0 },
-  volcano: { sky: ["#1b0606", "#ff6a2a"], fog: "#4a1a12", fogNear: 0.7, fogFar: 3.2, sun: "#ffb27a", sunIntensity: 1.8, sunElevation: 28, hemi: ["#ff9a6a", "#2a0f0a", 0.9], exposure: 1.05 },
+  // A smoky red sky and lava glow, but a paler key light so a Water type still reads as blue.
+  volcano: { sky: ["#1b0606", "#ff6a2a"], fog: "#4a1a12", fogNear: 0.7, fogFar: 3.2, sun: "#ffdcbc", sunIntensity: 2.6, sunElevation: 34, hemi: ["#ffd2b8", "#3a1a12", 1.15], exposure: 1.1 },
   snowfield: { sky: ["#7f9fc4", "#e9f0f7"], fog: "#dfe8f1", fogNear: 1.2, fogFar: 4.4, sun: "#fffaf0", sunIntensity: 2.2, sunElevation: 30, hemi: ["#e6f0ff", "#8ea3b8", 1.05], exposure: 0.92 },
   colosseum: { sky: ["#2f6fcf", "#ffe1b0"], fog: "#f2d9b4", fogNear: 1.6, fogFar: 5, sun: "#fff0d6", sunIntensity: 3.0, sunElevation: 42, hemi: ["#fff1dc", "#a08058", 1.2], exposure: 1.05 },
 };
@@ -181,6 +182,23 @@ float pulse = 0.7 + 0.3 * sin(uTime * 1.3 + vWorld.x * 0.05);
 totalEmissiveRadiance += vec3(1.0, 0.3, 0.04) * vein * 1.6 * pulse;`);
       };
       gm.customProgramCacheKey = () => "mb-lava";
+    } else if (id === "colosseum") {
+      // Sand that reads as sand from any height: drifts of colour from world-space noise, and faint raked rings close to the camera.
+      gm.onBeforeCompile = (s) => {
+        s.vertexShader = s.vertexShader.replace("#include <common>", "#include <common>\nvarying vec3 vWorld;").replace("#include <worldpos_vertex>", "#include <worldpos_vertex>\nvWorld = (modelMatrix * vec4(transformed, 1.0)).xyz;");
+        s.fragmentShader = s.fragmentShader
+          .replace("#include <common>", `#include <common>
+varying vec3 vWorld;
+float sh(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+float sn(vec2 p) { vec2 i = floor(p), f = fract(p); vec2 u = f * f * (3.0 - 2.0 * f);
+  return mix(mix(sh(i), sh(i + vec2(1.0, 0.0)), u.x), mix(sh(i + vec2(0.0, 1.0)), sh(i + vec2(1.0, 1.0)), u.x), u.y); }`)
+          .replace("#include <color_fragment>", `#include <color_fragment>
+float mbSand = sn(vWorld.xz * 0.07) * 0.5 + sn(vWorld.xz * 0.31 + 3.7) * 0.3 + sn(vWorld.xz * 1.1 - 1.3) * 0.2;
+float mbClose = 1.0 - smoothstep(18.0, 55.0, distance(cameraPosition, vWorld));
+float mbRake = sin(length(vWorld.xz) * 4.2 + sn(vWorld.xz * 0.2) * 6.0) * mbClose;
+diffuseColor.rgb *= 0.8 + mbSand * 0.3 + mbRake * 0.025;`);
+      };
+      gm.customProgramCacheKey = () => "mb-sand";
     }
     mats.push(gm);
     const mesh = new THREE.Mesh(g, gm);

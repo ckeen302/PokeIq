@@ -43,7 +43,7 @@ export function HowItWorksBody() {
         <p>Above the view&apos;s limit (lower on phones), the battle is still fought by every unit, and the view draws an even share of each army, labelled on screen. Every battle is seeded: its share link replays the same battle, hit for hit.</p>
       </section>
       <p className="text-xs">
-        Data: the Pokédex (PokéAPI), Showdown&apos;s random-battle sets and move data (@pkmn), Smogon&apos;s damage calculator (@smogon/calc). Figures: Pokémon HOME renders made solid with depth maps (Depth Anything V2). Music: &ldquo;Epic Endgame Cinematic&rdquo; by cynicmusic (CC0). Ground textures: Poly Haven (CC0).
+        Data: the Pokédex (PokéAPI), Showdown&apos;s random-battle sets and move data (@pkmn), Smogon&apos;s damage calculator (@smogon/calc). Figures: Pokémon HOME renders made solid with depth maps (Depth Anything V2). Music: &ldquo;Epic Endgame Cinematic&rdquo; by cynicmusic (CC0). The colosseum&apos;s crowd: &ldquo;Crowd Shouting/Speaking Ambience&rdquo; by StarNinjas (CC0); the other sounds are made in the browser. Ground textures: Poly Haven (CC0).
       </p>
     </div>
   );

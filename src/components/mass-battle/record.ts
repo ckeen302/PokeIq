@@ -2,9 +2,9 @@ import { Director } from "@/lib/mass-battle/director";
 import { answerText, fmt, questionText, resultTitle, spreadText } from "@/lib/mass-battle/copy";
 import { EV, SPREAD_REACH, TICK_HZ } from "@/lib/mass-battle/constants";
 import { figureSize } from "@/lib/mass-battle/stats";
-import type { MBSpecies } from "@/lib/mass-battle/types";
+import type { ArenaId, MBSpecies } from "@/lib/mass-battle/types";
 import { Mp4Muxer, aacConfig } from "@/lib/sizes/mp4";
-import { BATTLE_MUSIC_URL } from "./audio";
+import { BATTLE_CROWD_URL, BATTLE_MUSIC_URL, loopPoints } from "./audio";
 import type { BattleDesc } from "./MassBattleExperience";
 import { sliceRoster, specIds } from "./protocol";
 import { getRoster } from "./roster-client";
@@ -19,8 +19,9 @@ import { SimClient } from "./workers";
  * take to beat Arceus? 😳"), the answer is revealed after the battle, a
  * watermark runs throughout and an end card closes it with the link.
  * Frames go through WebCodecs (H.264); the soundtrack (the CC0 music with
- * a swell at the final blow, and the battle's hits as they land) is mixed
- * offline and encoded as AAC (or Opus); the file is muxed with the same
+ * a swell at the final blow, the colosseum's crowd, and the battle's hits
+ * as they land) is mixed offline and encoded as AAC (or Opus); the file
+ * is muxed with the same
  * MP4 writer Pokémon Sizes uses. Copied from Sizes' recorder pattern
  * (src/components/sizes/record.ts) and adapted to battles.
  */
@@ -120,11 +121,19 @@ async function pickAudioCodec(rate: number): Promise<{ cfg: AudioEncoderConfig; 
   return null;
 }
 
-/** The soundtrack: the music trimmed with fades and a swell at the final blow, and the battle's hits mixed in. */
-async function mixAudio(seconds: number, cues: Cue[], finaleAt: number, rate: number, signal: AbortSignal): Promise<AudioBuffer | null> {
+/** The soundtrack: the music trimmed with fades and a swell at the final blow, the colosseum's crowd, and the battle's hits mixed in. */
+async function mixAudio(seconds: number, cues: Cue[], finaleAt: number, rate: number, signal: AbortSignal, arena: ArenaId): Promise<AudioBuffer | null> {
   try {
     const Ctx = (window.OfflineAudioContext ?? (window as unknown as { webkitOfflineAudioContext?: typeof OfflineAudioContext }).webkitOfflineAudioContext)!;
     const ctx = new Ctx(2, Math.ceil(rate * seconds), rate);
+    // Everything goes through a gentle limiter so music, crowd and a pile of hits never clip.
+    const out = ctx.createDynamicsCompressor();
+    out.threshold.value = -6;
+    out.knee.value = 6;
+    out.ratio.value = 4;
+    out.attack.value = 0.003;
+    out.release.value = 0.25;
+    out.connect(ctx.destination);
     const data = await (await fetch(BATTLE_MUSIC_URL, { signal })).arrayBuffer();
     const music = await ctx.decodeAudioData(data);
     const src = ctx.createBufferSource();
@@ -136,8 +145,33 @@ async function mixAudio(seconds: number, cues: Cue[], finaleAt: number, rate: nu
     g.gain.linearRampToValueAtTime(0.95, Math.min(seconds - 0.5, finaleAt + 0.9));
     g.gain.setValueAtTime(0.95, Math.max(finaleAt + 0.9, seconds - 1.4));
     g.gain.linearRampToValueAtTime(0, seconds);
-    src.connect(g).connect(ctx.destination);
+    src.connect(g).connect(out);
     src.start(0, Math.min(8, Math.max(0, music.duration - seconds - 1) * 0.15));
+    if (arena === "colosseum") {
+      try {
+        const crowd = await ctx.decodeAudioData(await (await fetch(BATTLE_CROWD_URL, { signal })).arrayBuffer());
+        const cs = ctx.createBufferSource();
+        cs.buffer = crowd;
+        cs.loop = true;
+        const { start, end } = loopPoints(crowd.duration);
+        cs.loopStart = start;
+        cs.loopEnd = end;
+        // About 6 LU under the music, roaring at the final blow.
+        const level = 0.5;
+        const cg = ctx.createGain();
+        cg.gain.setValueAtTime(0, 0);
+        cg.gain.linearRampToValueAtTime(level, Math.min(1.2, seconds * 0.2));
+        cg.gain.setValueAtTime(level, Math.max(1.2, finaleAt - 0.2));
+        cg.gain.linearRampToValueAtTime(level * 1.7, Math.min(seconds - 0.6, finaleAt + 0.8));
+        cg.gain.setValueAtTime(level * 1.7, Math.max(finaleAt + 0.8, seconds - 2.2));
+        cg.gain.linearRampToValueAtTime(0, seconds);
+        cs.connect(cg).connect(out);
+        cs.start(0, start);
+      } catch (e) {
+        if (signal.aborted) throw e;
+        // No crowd: the video keeps its music and hits.
+      }
+    }
     const noise = ctx.createBuffer(1, Math.ceil(rate * 1.2), rate);
     const nd = noise.getChannelData(0);
     for (let i = 0; i < nd.length; i++) nd[i] = Math.random() * 2 - 1;
@@ -150,7 +184,7 @@ async function mixAudio(seconds: number, cues: Cue[], finaleAt: number, rate: nu
       gg.gain.setValueAtTime(0, t);
       gg.gain.linearRampToValueAtTime(gain, t + 0.01);
       gg.gain.exponentialRampToValueAtTime(0.0008, t + dur);
-      o.connect(gg).connect(ctx.destination);
+      o.connect(gg).connect(out);
       o.start(t);
       o.stop(t + dur + 0.05);
     };
@@ -164,7 +198,7 @@ async function mixAudio(seconds: number, cues: Cue[], finaleAt: number, rate: nu
       gg.gain.setValueAtTime(0, t);
       gg.gain.linearRampToValueAtTime(gain, t + 0.01);
       gg.gain.exponentialRampToValueAtTime(0.0008, t + dur);
-      s.connect(f).connect(gg).connect(ctx.destination);
+      s.connect(f).connect(gg).connect(out);
       s.start(t, Math.random() * 0.5);
       s.stop(t + dur + 0.05);
     };
@@ -419,7 +453,7 @@ export async function recordBattleVideo(o: RecordOptions): Promise<RecordResult>
     o.onProgress(0.95, "Mixing the sound");
     const rate = 48000;
     const acodec = await pickAudioCodec(rate);
-    const mix = acodec ? await mixAudio(seconds, cues, Math.min(finaleAt, seconds - plan.end), rate, o.signal) : null;
+    const mix = acodec ? await mixAudio(seconds, cues, Math.min(finaleAt, seconds - plan.end), rate, o.signal, b.spec.arena) : null;
     const audioChunks: { data: Uint8Array; ts: number; dur: number }[] = [];
     let audioDesc: Uint8Array | undefined;
     if (acodec && mix) {

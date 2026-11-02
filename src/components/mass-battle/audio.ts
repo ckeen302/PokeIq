@@ -2,17 +2,29 @@ import { isMuted, onMuteChange } from "@/lib/sound";
 import type { ArenaId } from "@/lib/mass-battle/types";
 
 /**
- * The sound of a mass battle, all of it made here except the music:
- * a battle ambience synthesised for each arena (wind over the plains, a
- * low rumble on the volcano, a crowd in the colosseum), hits layered by
- * type (a punch for Normal moves, a crackle for Fire, a splash for Water,
- * a zap for Electric…), the recall beam's chirp, and the CC0 orchestral
- * track Pokémon Sizes uses (public/audio/sizes, credited there), which
- * swells for the finale. Like the rest of the site it follows the sound
- * toggle (off: no AudioContext at all) and starts from a user gesture.
+ * The sound of a mass battle, all of it made here except two recordings:
+ * an ambience synthesised for each arena (wind over the plains and the
+ * snowfield, a low rumble on the volcano), hits layered by type (a punch
+ * for Normal moves, a crackle for Fire, a splash for Water, a zap for
+ * Electric…), the recall beam's chirp, the colosseum's crowd (a CC0
+ * recording, public/audio/mass-battle, credited there) and the CC0
+ * orchestral track Pokémon Sizes uses (public/audio/sizes, credited
+ * there). Music and crowd swell for the finale. Like the rest of the site
+ * it follows the sound toggle (off: no AudioContext at all) and starts
+ * from a user gesture.
  */
 
 export const BATTLE_MUSIC_URL = "/audio/sizes/epic-endgame.mp3";
+/** The colosseum's crowd: a seamless loop. */
+export const BATTLE_CROWD_URL = "/audio/mass-battle/crowd.mp3";
+/** The crowd's level under the music (the recording is about 5 LU louder than the music at its level). */
+const CROWD_LEVEL = 0.3;
+
+/** Loops a decoded MP3, skipping the encoder's padding at either end so the loop has no gap. */
+export function loopPoints(duration: number): { start: number; end: number } {
+  const start = Math.min(0.05, duration / 4);
+  return { start, end: Math.max(start + 0.1, duration - 0.05) };
+}
 
 export interface BattleAudio {
   gesture(): void;
@@ -35,10 +47,13 @@ export function createBattleAudio(): BattleAudio {
   let filter: BiquadFilterNode | null = null;
   let musicGain: GainNode | null = null;
   let ambGain: GainNode | null = null;
+  let crowdGain: GainNode | null = null;
   let noise: AudioBuffer | null = null;
   let music: AudioBufferSourceNode | null = null;
+  let crowd: AudioBufferSourceNode | null = null;
   let amb: AudioScheduledSourceNode[] = [];
   let loading: Promise<AudioBuffer | null> | null = null;
+  let crowdLoading: Promise<AudioBuffer | null> | null = null;
   let arena: ArenaId | null = null;
   let playing = false;
   let dead = false;
@@ -67,6 +82,9 @@ export function createBattleAudio(): BattleAudio {
     ambGain = ctx.createGain();
     ambGain.gain.value = 0;
     ambGain.connect(master);
+    crowdGain = ctx.createGain();
+    crowdGain.gain.value = 0;
+    crowdGain.connect(master);
     const n = ctx.createBuffer(1, Math.floor(ctx.sampleRate * 2), ctx.sampleRate);
     const d = n.getChannelData(0);
     for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
@@ -81,6 +99,34 @@ export function createBattleAudio(): BattleAudio {
     return loading;
   }
 
+  function loadCrowd(): Promise<AudioBuffer | null> {
+    const c = ctx;
+    if (!c) return Promise.resolve(null);
+    crowdLoading ??= fetch(BATTLE_CROWD_URL).then((r) => (r.ok ? r.arrayBuffer() : Promise.reject(new Error(String(r.status))))).then((b) => c.decodeAudioData(b)).catch(() => null);
+    return crowdLoading;
+  }
+
+  /** The colosseum's crowd fades in once the recording has loaded (the synthesised swell under it covers the wait). */
+  function startCrowd() {
+    if (!ctx || !crowdGain || crowd || arena !== "colosseum") return;
+    void loadCrowd().then((b) => {
+      if (!b || !ctx || !crowdGain || crowd || !playing || dead || arena !== "colosseum") return;
+      const s = ctx.createBufferSource();
+      s.buffer = b;
+      s.loop = true;
+      const { start, end } = loopPoints(b.duration);
+      s.loopStart = start;
+      s.loopEnd = end;
+      s.connect(crowdGain);
+      s.start(0, start + Math.random() * (end - start));
+      crowd = s;
+      const t = ctx.currentTime;
+      crowdGain.gain.cancelScheduledValues(t);
+      crowdGain.gain.setValueAtTime(0, t);
+      crowdGain.gain.linearRampToValueAtTime(CROWD_LEVEL, t + 2);
+    });
+  }
+
   function startAmbience() {
     if (!ctx || !ambGain || !noise || amb.length || !arena) return;
     const c = ctx;
@@ -91,7 +137,7 @@ export function createBattleAudio(): BattleAudio {
     const lfo = c.createOscillator();
     const lfoGain = c.createGain();
     if (arena === "colosseum") {
-      // A crowd: band-passed noise that swells and ebbs.
+      // Under the recorded crowd: band-passed noise that swells and ebbs.
       bp.type = "bandpass";
       bp.frequency.value = 900;
       bp.Q.value = 0.6;
@@ -118,7 +164,8 @@ export function createBattleAudio(): BattleAudio {
     const t = c.currentTime;
     ambGain.gain.cancelScheduledValues(t);
     ambGain.gain.setValueAtTime(ambGain.gain.value, t);
-    ambGain.gain.linearRampToValueAtTime(arena === "colosseum" ? 0.22 : 0.16, t + 1.5);
+    ambGain.gain.linearRampToValueAtTime(arena === "colosseum" ? 0.1 : 0.16, t + 1.5);
+    startCrowd();
   }
 
   function startMusic() {
@@ -140,28 +187,32 @@ export function createBattleAudio(): BattleAudio {
   function stopAll() {
     if (!ctx) return;
     const t = ctx.currentTime;
-    for (const g of [musicGain, ambGain]) {
+    for (const g of [musicGain, ambGain, crowdGain]) {
       if (!g) continue;
       g.gain.cancelScheduledValues(t);
       g.gain.setValueAtTime(g.gain.value, t);
       g.gain.linearRampToValueAtTime(0, t + 0.8);
     }
-    const m = music, a = amb;
+    const m = music, cr = crowd, a = amb;
     music = null;
+    crowd = null;
     amb = [];
     setTimeout(() => {
       try { m?.stop(); } catch { /* stopped */ }
+      try { cr?.stop(); } catch { /* stopped */ }
       for (const s of a) { try { s.stop(); } catch { /* stopped */ } }
     }, 900);
   }
 
   function close() {
     music = null;
+    crowd = null;
     amb = [];
     void ctx?.close().catch(() => undefined);
     ctx = null;
-    master = filter = musicGain = ambGain = null;
+    master = filter = musicGain = ambGain = crowdGain = null;
     loading = null;
+    crowdLoading = null;
   }
 
   const unsub = onMuteChange((muted) => {
@@ -274,6 +325,14 @@ export function createBattleAudio(): BattleAudio {
       musicGain.gain.linearRampToValueAtTime(0.62, t + 1.4);
       musicGain.gain.setValueAtTime(0.62, t + 5);
       musicGain.gain.linearRampToValueAtTime(0.3, t + 8);
+      if (crowd && crowdGain) {
+        // The crowd roars at the final blow.
+        crowdGain.gain.cancelScheduledValues(t);
+        crowdGain.gain.setValueAtTime(crowdGain.gain.value, t);
+        crowdGain.gain.linearRampToValueAtTime(CROWD_LEVEL * 1.8, t + 0.8);
+        crowdGain.gain.setValueAtTime(CROWD_LEVEL * 1.8, t + 3.5);
+        crowdGain.gain.linearRampToValueAtTime(CROWD_LEVEL, t + 8);
+      }
     },
     slow(on) {
       if (!ctx || !filter) return;
