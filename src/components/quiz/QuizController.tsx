@@ -56,6 +56,12 @@ interface QuizControllerProps {
    * the caller (who records it) instead of the results screen.
    */
   onComplete?: (result: RunResult, tokens: { resultToken: string; shareToken: string }) => void;
+  /**
+   * A run QuizSetup got ready ahead and began on the Start click (see
+   * quiz-prefetch.ts): used for the first attempt instead of a fresh start,
+   * which still happens if it resolves to null.
+   */
+  begun?: Promise<StartResponse | null> | null;
 }
 
 const BLITZ_FLASH_MS = 450;
@@ -72,7 +78,7 @@ function isOtherControl(target: EventTarget | null): boolean {
   return button !== null && !button.hasAttribute("data-answer-tile");
 }
 
-export function QuizController({ request, challenger, onRestart, onAnswered, onComplete }: QuizControllerProps) {
+export function QuizController({ request, challenger, onRestart, onAnswered, onComplete, begun }: QuizControllerProps) {
   const [phase, setPhase] = useState<Phase>("loading");
   const [error, setError] = useState<string | null>(null);
   const [rules, setRules] = useState<StartResponse["rules"] | null>(null);
@@ -106,6 +112,7 @@ export function QuizController({ request, challenger, onRestart, onAnswered, onC
 
   const isBlitz = rules?.runMs != null;
   const requestKey = JSON.stringify(request);
+  const begunRef = useRef(begun);
 
   // ---- start -------------------------------------------------------------
   useEffect(() => {
@@ -115,15 +122,10 @@ export function QuizController({ request, challenger, onRestart, onAnswered, onC
       setError(null);
       const req = JSON.parse(requestKey) as StartRequest;
       try {
-        const res = await fetch("/api/session", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ ...req, name: getProgress().name || undefined }),
-        });
-        const body = await res.json();
-        if (!res.ok) throw new Error(body.error ?? `Request failed (${res.status})`);
+        // The run got ready ahead (first attempt only); otherwise, or if it couldn't begin, start one now.
+        const ready = attempt === 0 && begunRef.current ? await begunRef.current : null;
+        const start = ready ?? (await startRun(req));
         if (cancelled) return;
-        const start = body as StartResponse;
         tokenRef.current = start.token;
         setRules(start.rules);
         setQuestion(start.question);
@@ -616,6 +618,7 @@ export function QuizController({ request, challenger, onRestart, onAnswered, onC
               <ImageMedia
                 key={question.media.url}
                 src={question.media.url}
+                priority={question.index === 0}
                 revealSrc={graded?.revealUrl}
                 silhouette={question.module === "whos-that"}
                 revealed={revealed}
@@ -651,7 +654,7 @@ export function QuizController({ request, challenger, onRestart, onAnswered, onC
                   <AnswerTile key={option} index={i} option={option} phase={phase} selected={selected} graded={graded} onPick={submit} card>
                     <div className="screen relative mx-auto aspect-square w-full max-w-[200px] rounded-md">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={question.images![i]} alt={`Option ${i + 1}`} width={384} height={384} draggable={false} className="relative z-[1] h-full w-full object-contain p-1 [image-rendering:pixelated]" />
+                      <img src={question.images![i]} alt={`Option ${i + 1}`} width={384} height={384} fetchPriority={question.index === 0 ? "high" : undefined} draggable={false} className="relative z-[1] h-full w-full object-contain p-1 [image-rendering:pixelated]" />
                     </div>
                   </AnswerTile>
                 ))}
@@ -772,6 +775,17 @@ function AnswerTile({ index, option, phase, selected, graded, onPick, card, chil
       </span>
     </motion.button>
   );
+}
+
+async function startRun(req: StartRequest): Promise<StartResponse> {
+  const res = await fetch("/api/session", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ ...req, name: getProgress().name || undefined }),
+  });
+  const body = await res.json();
+  if (!res.ok) throw new Error(body.error ?? `Request failed (${res.status})`);
+  return body as StartResponse;
 }
 
 function LoadingCard() {
