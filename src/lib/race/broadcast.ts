@@ -1,9 +1,11 @@
+import { poseFor } from "./gait";
 import { motionAt } from "./model";
+import { barrierZ, KERB_R, LANE_W, X0 } from "./track";
 import type { Race, RaceLane } from "./race";
 
 /**
  * The broadcast: what the director shows when, like a night-time 100 m
- * final on TV. Pure and unit-tested (tests/race-broadcast.test.ts).
+ * final on TV. Pure and unit-tested (tests/race.test.ts).
  *
  * A show is a list of shots on the show clock (seconds from the start of
  * the broadcast), each tied to the race clock (seconds from the gun) by a
@@ -225,22 +227,55 @@ export function excitementAt(plan: ShowPlan, race: Race, t: number): number {
 /** Within this gap (s) the runner-up shares the photo finish; further back, the winner has it alone. */
 export const PHOTO_CLOSE = 0.5;
 
+/** The photo-finish camera: high in the front of the main stand, its slit a hair past the line (m). */
+export const PF_CAM = { x: X0 + 0.04, y: 6.5, z: barrierZ(X0) + 4.8 } as const;
+
+/** What the photo-finish image covers: race time across, and the slit's downward angles (rad) at its top and bottom edges. */
+export interface PhotoFrame {
+  from: number;
+  to: number;
+  top: number;
+  bottom: number;
+}
+
+/** How high a runner rides at its crossing (fliers and hoppers are off the ground). */
+function liftAt(r: RaceLane): number {
+  const m = motionAt(r.profile, r.time);
+  return poseFor(r.entrant.motion, { phase: m.phase, v: m.v, a: m.a, h: r.h, hip: r.hip, distance: m.x, time: r.time }).lift;
+}
+
 /** Half the time a runner's figure takes to pass the line: its width at its finishing speed (the image is centred on its time). */
 function passHalf(r: RaceLane): number {
   return Math.min(1.5, r.w / 2 / Math.max(0.3, motionAt(r.profile, r.time).v));
 }
 
 /**
- * The race-time window the photo-finish image covers. A close finish
- * spans the winner and the runner-up; a clear win shows the winner alone,
- * scanned over about twice its own passing time so it keeps roughly its
- * proportions instead of a sliver in a long, empty strip.
+ * The photo finish's framing. It catches the winner, and the runner-up
+ * (with anyone between) when it's close; the slit is aimed at their
+ * lanes, a lane either side and their full height, and the scan runs for
+ * as long as draws the winner at about its own proportions (a touch
+ * stretched, as real photo-finish images often are), or longer to reach
+ * the runner-up. `aspect` is the image's width over its height.
  */
-export function photoWindow(race: Race): { from: number; to: number } {
+export function photoWindow(race: Race, aspect = 2.1): PhotoFrame {
   const [a, b] = race.order;
-  const h1 = passHalf(a);
-  const from = a.time - 1.6 * h1 - 0.02;
-  let to = a.time + 2.4 * h1 + 0.1;
-  if (b && b.time - a.time <= PHOTO_CLOSE) to = Math.max(to, b.time + 1.6 * passHalf(b) + 0.06);
-  return { from, to };
+  const caught = b && b.time - a.time <= PHOTO_CLOSE ? race.order.filter((r) => r.time <= b.time) : [a];
+  const cy = PF_CAM.y;
+  const dzOf = (r: RaceLane) => PF_CAM.z - (KERB_R + LANE_W * (r.lane - 0.5));
+  let top = Infinity, bottom = -Infinity;
+  for (const r of caught) {
+    const dz = dzOf(r);
+    const tall = liftAt(r) + Math.min(r.h, 4) * 1.08 + 0.3;
+    bottom = Math.max(bottom, Math.atan2(cy, dz - LANE_W * 1.5));
+    top = Math.min(top, Math.atan2(cy - tall, dz - 0.5), Math.atan2(cy, dz + LANE_W * 1.5));
+  }
+  const fov = (bottom - top) * 1.06;
+  const lift = liftAt(a), dz = dzOf(a);
+  const theta = Math.max(1e-3, Math.atan2(cy - lift, dz) - Math.atan2(cy - lift - Math.min(a.h, 4), dz));
+  const v = Math.max(0.3, motionAt(a.profile, a.time).v);
+  const span = Math.min(6, (Math.min(a.h, 4) / v) * aspect * fov / (theta * 1.25));
+  const from = a.time - Math.max(passHalf(a) * 1.4, span * 0.3);
+  const last = caught[caught.length - 1];
+  const to = Math.max(from + span, a.time + passHalf(a) * 1.4, last.time + passHalf(last) * 1.5);
+  return { from, to, top, bottom };
 }

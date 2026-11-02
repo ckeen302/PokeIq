@@ -10,7 +10,7 @@ import { assignLanes, displayTimes, formatGap, formatTime, leaderAt, makeRace, r
 import { DEFAULT_PRESET, PRESETS, PRESET_BY_ID, PSEUDO_LEGENDARIES, predicted } from "@/lib/race/presets";
 import { HUB_PRESET, RACE_PATH, RUN_PATH, VS_MAX, parseDistance, parseSeed, parseVs, presetPath, presetRunPath, pushRunner, vsOk, vsPath } from "@/lib/race/deeplink";
 import { DEFAULT_SEED, heatSizes, knockout, mulberry32, nextCount, pathOf, shuffle } from "@/lib/race/tournament";
-import { PHOTO_CLOSE, excitementAt, leaderReaches, photoWindow, planShow, raceTimeAt, shotAt } from "@/lib/race/broadcast";
+import { PF_CAM, PHOTO_CLOSE, excitementAt, leaderReaches, photoWindow, planShow, raceTimeAt, shotAt } from "@/lib/race/broadcast";
 import { fieldFor, heatFor, searchEntrants, specFor } from "@/lib/race/lineup";
 import { cameraFor, fovToFit, type Spot } from "@/lib/race/director";
 import { orbitBy, orbitFrom, orbitPose, wheelFactor, zoomBy, zoomFov } from "@/lib/race/orbit";
@@ -471,5 +471,12 @@ describe("lineups and search", () => {
     const wc = photoWindow(close);
     expect(wc.from).toBeLessThan(close.first);
     expect(wc.to).toBeGreaterThan(close.order[1].time);
+    // The slit looks down on the caught runners' lanes: each one's feet are inside the frame.
+    for (const [f, r] of [[w, race.order[0]], [wc, close.order[0]], [wc, close.order[1]]] as const) {
+      const feet = Math.atan2(PF_CAM.y, PF_CAM.z - (36.5 + 1.22 * (r.lane - 0.5)));
+      expect(f.top).toBeGreaterThan(0);
+      expect(feet).toBeGreaterThan(f.top);
+      expect(feet).toBeLessThan(f.bottom);
+    }
   });
 });

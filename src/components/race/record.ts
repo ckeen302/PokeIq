@@ -309,7 +309,7 @@ export async function recordRace(o: RaceRecordOptions): Promise<RaceRecordResult
     await scene.setRace(o.race, o.signal, (k) => o.onProgress(0.02 * k, "Runners warming up"));
     // The photo finish, developed up front.
     const win = photoWindow(o.race);
-    const pf = scene.photoFinish(win.from, win.to);
+    const pf = scene.photoFinish(win);
     for (let i = 0; i < 2000 && !pf.step(); i++) await sleep(0);
     const photo = pf.result();
     const starts = spotsAt(o.race, 0);

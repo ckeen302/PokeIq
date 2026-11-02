@@ -10,7 +10,7 @@ import { fromRow, type Entrant, type EntrantRow } from "@/lib/race/types";
 import { PRESET_BY_ID, DEFAULT_PRESET } from "@/lib/race/presets";
 import { fieldFor, specFor, type RaceSpec } from "@/lib/race/lineup";
 import { makeRace, displayTimes, formatGap, formatTime, leaderAt, spotsAt, type Race } from "@/lib/race/race";
-import { excitementAt, photoWindow, planShow, raceTimeAt, shotAt, shotProgress, type Phase, type ShowPlan } from "@/lib/race/broadcast";
+import { excitementAt, photoWindow, planShow, raceTimeAt, shotAt, shotProgress, type Phase, type PhotoFrame, type ShowPlan } from "@/lib/race/broadcast";
 import { blendPose, cameraFor, leader as leaderSpot, pack, type CamPose, type Spot, type Vec3 } from "@/lib/race/director";
 import { clampZoom, orbitBy, orbitFrom, orbitPose, wheelFactor, zoomBy, zoomFov, type Orbit } from "@/lib/race/orbit";
 import { parseDistance, parseSeed, parseVs, presetPath, presetRunPath, vsOk, vsPath } from "@/lib/race/deeplink";
@@ -154,7 +154,7 @@ export function RaceExperience({ preset, vs = [], distance = null, seed = null, 
     beep: false,
     pf: null as ReturnType<RaceScene["photoFinish"]> | null,
     pfImg: null as HTMLCanvasElement | null,
-    pfWin: { from: 0, to: 1 },
+    pfWin: { from: 0, to: 1, top: 0.2, bottom: 0.4 } as PhotoFrame,
     starts: [] as Spot[],
     title: "",
     /** Checks and screenshots can hold the show clock still. */
@@ -433,7 +433,7 @@ export function RaceExperience({ preset, vs = [], distance = null, seed = null, 
       }
       // Photo finish: developed during the replay, a few columns a frame.
       if ((ph === "replay" || ph === "photo" || ph === "results") && !s.pfImg) {
-        s.pf ??= scene.photoFinish(s.pfWin.from, s.pfWin.to);
+        s.pf ??= scene.photoFinish(s.pfWin);
         if (s.pf.step()) {
           s.pfImg = s.pf.result();
           if (s.pfImg) setPhoto(s.pfImg.toDataURL("image/png"));
