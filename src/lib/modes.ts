@@ -1,4 +1,4 @@
-import { DIFFICULTIES, type Difficulty, type ModuleId, type QuizFormat } from "@/engines/types";
+import { type Difficulty, type ModuleId, type QuizFormat } from "@/engines/types";
 
 /** Display metadata for game modes + SEO landing-page presets. */
 
@@ -115,7 +115,8 @@ export function playDifficulty(module: ModuleId, requested?: unknown): Difficult
 export function difficultyLabel(module: ModuleId, difficulty: Difficulty): string | null {
   const choices = DIFFICULTY_CHOICES[module];
   if (!choices) return null;
-  return choices.find((d) => d.id === difficulty)?.label ?? (DIFFICULTIES.includes(difficulty) ? difficulty.charAt(0).toUpperCase() + difficulty.slice(1) : null);
+  // An old run's level the mode no longer offers (Real Shiny's Medium) isn't named either.
+  return choices.find((d) => d.id === difficulty)?.label ?? null;
 }
 
 export function filterFor(module: ModuleId): QuizFilter {

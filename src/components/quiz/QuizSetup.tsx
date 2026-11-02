@@ -109,14 +109,15 @@ export function QuizSetup({ module, initialFormat, initialDifficulty, initialGen
     };
   }, []);
 
-  // After a setting changes (and settles): the run as it now stands. The prefetcher caps the requests.
+  // After a setting changes (and settles), or back on this screen after a run: the run as it now
+  // stands. Starting clears a pending one. The prefetcher caps the requests.
   const settingsKey = JSON.stringify([format, difficulty, gens, scope]);
+  const playing = request !== null;
   useEffect(() => {
-    if (!idled.current || request) return;
+    if (!idled.current || playing) return;
     const id = window.setTimeout(() => warm(latest.current()), SETTLE_MS);
     return () => window.clearTimeout(id);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [settingsKey]);
+  }, [settingsKey, playing]);
 
   useEffect(() => {
     if (request) return;
@@ -204,7 +205,14 @@ export function QuizSetup({ module, initialFormat, initialDifficulty, initialGen
                 {gens.length === 0 && filter.note && <p className="text-xs text-muted-foreground">{filter.note}</p>}
               </Field>
 
-              <Button size="lg" className="w-full" onClick={start} onPointerEnter={() => warm(settings())} onFocus={() => warm(settings())}>
+              <Button
+                size="lg"
+                className="w-full"
+                onClick={start}
+                // A mouse hover or keyboard focus comes well before the click; a tap's comes with it, too late to help.
+                onPointerEnter={(e) => e.pointerType === "mouse" && warm(settings())}
+                onFocus={(e) => e.currentTarget.matches(":focus-visible") && warm(settings())}
+              >
                 <Play className="h-4 w-4 fill-current" /> Start {info.title}
               </Button>
             </CardContent>

@@ -14,6 +14,7 @@ import { revealFactor } from "@/lib/whose-team";
 import { artUrl } from "@/lib/pokemon/art";
 import { artworkUrl, getPokemon } from "@/lib/pokemon/pokedex";
 import { itemInformation, performanceRating, ratingStandardError, ratingToIQ, type AnsweredItem } from "@/lib/rating";
+import { questionAssets } from "@/lib/preload";
 import { deriveSeed, randomId, signToken, verifyToken } from "./crypto";
 import { itemRating } from "./calibration";
 import { mediaUrl } from "./media-url";
@@ -427,9 +428,9 @@ export function holdSession(spec: SessionSpec, name?: string) {
 
 /** The pictures and sound question 1 shows before any answer: nothing the player won't see at once. */
 export function heldAssets(q: PublicQuestion): { images: string[]; audio: string[] } {
-  const images = [...(q.images ?? []), ...(q.cards ?? []).map((c) => c.imageUrl), q.media?.type === "image" ? q.media.url : undefined, q.zoom?.url];
-  const audio = [q.media?.type === "audio" ? q.media.url : undefined];
-  return { images: images.filter((u): u is string => !!u), audio: audio.filter((u): u is string => !!u) };
+  const { images = [], audio = [] } = questionAssets(q);
+  const present = (u: string | null | undefined): u is string => !!u;
+  return { images: images.filter(present), audio: audio.filter(present) };
 }
 
 /**

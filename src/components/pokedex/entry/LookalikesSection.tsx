@@ -11,7 +11,7 @@ import { cn } from "@/lib/utils";
 
 /**
  * Silhouettes a vision model finds most similar to this one — the exact
- * confusions Who's That Pokémon? hard mode is built from. Hover or tap to
+ * confusions Who's That Pokémon? draws its trickiest options from. Hover or tap to
  * reveal each one.
  */
 export function LookalikesSection({ self, lookalikes }: { self: { id: number; name: string }; lookalikes: DexEntryData["lookalikes"] }) {
@@ -72,8 +72,8 @@ export function LookalikesSection({ self, lookalikes }: { self: { id: number; na
         })}
       </div>
       <p className="text-[11px] text-muted-foreground">
-        Ranked by a DINOv2 vision model comparing silhouette shapes — these are the options Who&apos;s That Pokémon? hard
-        mode will try to trip you up with. Tap to reveal.
+        Ranked by a DINOv2 vision model comparing silhouette shapes — these are the options Who&apos;s That Pokémon? will
+        try to trip you up with. Tap to reveal.
       </p>
     </div>
   );
