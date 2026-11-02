@@ -22,6 +22,12 @@ import { cn } from "@/lib/utils";
  * still: true draws one frame and stops (also the case under reduced motion).
  * taunt: plays a dance or emote once (lib/trainer/taunts); a new `n` plays it
  *       again. Under reduced motion the trainer holds the move's key pose.
+ * shared: draws with one WebGL context shared by every trainer on the page
+ *       that asks for it (each copies its frame to a 2D canvas), so two
+ *       trainers squaring up cost one context, not two.
+ * onPaint: called once the trainer is actually on screen (a frame with the
+ *       model in it, checked by sampling its pixels).
+ * onFail: called when WebGL can't be had or the context is lost.
  */
 export interface Avatar3DProps {
   config: TrainerConfig;
@@ -34,6 +40,9 @@ export interface Avatar3DProps {
   className?: string;
   /** Accessible name, e.g. "Red's trainer". */
   label?: string;
+  shared?: boolean;
+  onPaint?: () => void;
+  onFail?: () => void;
 }
 
 export type Avatar3DSceneProps = Omit<Avatar3DProps, "className" | "label" | "stage">;
@@ -42,6 +51,11 @@ const Scene = dynamic(() => import("./Avatar3DScene").then((m) => m.Avatar3DScen
   ssr: false,
   loading: () => <div className="absolute inset-x-[30%] bottom-[6%] top-[18%] animate-pulse rounded-full bg-foreground/[0.05]" />,
 });
+
+/** Fetch the 3D trainer's code ahead of time (no GL work), so a trainer about to show draws sooner. */
+export function preloadAvatar3D() {
+  void import("./Avatar3DScene").catch(() => {});
+}
 
 export function Avatar3D({ className, label = "Trainer avatar", stage, ...props }: Avatar3DProps) {
   return (

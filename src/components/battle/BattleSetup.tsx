@@ -18,6 +18,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { clock } from "@/components/duel/DuelParts";
 import { useMatchmaking } from "@/components/duel/use-matchmaking";
 import { cn } from "@/lib/utils";
+import { preloadAvatar3D } from "@/components/trainer3d/Avatar3D";
 import { TeamPick, type TeamSource } from "./TeamPick";
 import { CustomRulesEditor, RulesVerdictNote, useRulesCheck } from "./CustomRulesEditor";
 import { challengeToBattle } from "@/lib/friends-client";
@@ -165,6 +166,8 @@ export function BattleSetup({ initial = "cpu", challenge }: { initial?: Opponent
 
   // The last custom ruleset, remembered on this device.
   useEffect(() => setRules(lastCustomRules()), []);
+  // The versus intro's 3D trainers come up right after a battle starts: their code is fetched now.
+  useEffect(() => preloadAvatar3D(), []);
   // While the trainer picks a format: fetch the battle id, and wake the battle
   // functions (a code that can't exist is a cheap 404) so Start isn't a cold start.
   useEffect(() => {
