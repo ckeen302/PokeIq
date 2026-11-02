@@ -1310,7 +1310,7 @@ export function createArena(host: HTMLElement, opts: ArenaOptions, cb: ArenaCall
   }
 
   const TERRAIN_COLOR: Record<string, [number, number]> = {
-    electric: [0xffc400, 0xfff07a],
+    electric: [0xffb800, 0xffe23a],
     grassy: [0x5ee07a, 0xc8ff9a],
     psychic: [0xff5fd0, 0x9b7bff],
     misty: [0xffb8e6, 0xffffff],
@@ -1613,9 +1613,10 @@ export function createArena(host: HTMLElement, opts: ArenaOptions, cb: ArenaCall
     timeUniform.value = t;
     flashUniform.value = Math.max(0, flashUniform.value - dt * 3);
     // A gentle sway round the point between the platforms: the court barely moves, the stands drift.
-    camOffset.set(Math.sin(t * 0.21) * 0.22, Math.sin(t * 0.17 + 1) * 0.07, Math.cos(t * 0.13) * 0.12);
+    // Small enough that the platforms stay under the sprites (a pixel or two); the stands and sky drift a little more.
+    camOffset.set(Math.sin(t * 0.21) * 0.08, Math.sin(t * 0.17 + 1) * 0.035, Math.cos(t * 0.13) * 0.05);
     camera.position.copy(CAM).add(camOffset);
-    camera.lookAt(LOOK.x + camOffset.x * 0.85, LOOK.y + camOffset.y * 0.85, LOOK.z);
+    camera.lookAt(LOOK);
     for (const tick of tickers) tick(t, dt);
     renderer.render(scene, camera);
     if (!readyFired) {
@@ -1652,6 +1653,8 @@ export function createArena(host: HTMLElement, opts: ArenaOptions, cb: ArenaCall
     for (const d of disposables) d.dispose();
     crowdMesh?.dispose();
     renderer.dispose();
+    // Hand the GL context back now (browsers cap how many a page may hold), not whenever it's collected.
+    renderer.forceContextLoss();
     canvas.remove();
   }
 

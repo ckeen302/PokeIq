@@ -332,8 +332,8 @@ export async function playStep(step: Step, deps: PlayDeps): Promise<void> {
       await frame();
       // Out of sight until its ball bursts.
       const entering = who ? stage.sprite(who) : null;
-      const hide = !deps.reducedMotion && !signal.aborted && !!entering;
-      if (hide) entering!.el.style.opacity = "0";
+      const hide = !deps.reducedMotion && !signal.aborted;
+      if (hide && entering) entering.el.style.opacity = "0";
       await frame();
       // Hold the entrance until the sprite has loaded (it was preloaded when the line arrived).
       const img = who ? stage.sprite(who)?.el.querySelector("img") : null;

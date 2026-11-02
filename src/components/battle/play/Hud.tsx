@@ -78,7 +78,8 @@ export function Hud({ mon, mine, compact }: { mon: MonSnap; mine: boolean; compa
       </div>
       <div className="mt-1 flex items-center gap-1.5">
         <span className="font-pixel text-[8px] text-warning">HP</span>
-        <HpBar hp={mon.fainted ? 0 : mon.hp} maxhp={mon.maxhp} className={cn("flex-1", compact ? "h-2" : "h-2.5")} />
+        {/* Keyed by the Pokémon: one switching in starts at its own HP, no damage ghost from the last one. */}
+        <HpBar key={mon.key} hp={mon.fainted ? 0 : mon.hp} maxhp={mon.maxhp} className={cn("flex-1", compact ? "h-2" : "h-2.5")} />
         <span className={cn("w-[4.5rem] text-right font-pixel text-[10px] tabular-nums", low ? "text-[#ff8a9a]" : "text-white/85")}>{mine ? `${mon.fainted ? 0 : mon.hp}/${mon.maxhp}` : `${mon.fainted ? 0 : percent}%`}</span>
       </div>
       {(boosts.length > 0 || mon.volatiles.length > 0) && (

@@ -59,7 +59,7 @@ export function BattleVictory({ view, title, detail, tone }: { view: BattleView;
           )}
         </div>
         <div className="relative space-y-1.5 sm:text-left">
-          <p className="hud-label text-white/70">{view.formatName ?? "Battle"} · Winner</p>
+          <p className="hud-label text-white/70">Winner · {player?.name ?? "—"}</p>
           {heading}
         </div>
       </div>
