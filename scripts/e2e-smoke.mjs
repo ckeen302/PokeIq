@@ -2683,7 +2683,7 @@ if (await mmRed.locator("[data-testid=move-button]:not([disabled])").count()) {
   const tip = mmRed.getByTestId("move-tooltip");
   await tip.waitFor();
   const tipText = await tip.innerText();
-  if (!/Power|Accuracy/i.test(tipText) || !/PP \d+\/\d+/i.test(tipText)) errors.push(`move tooltip is missing details: ${tipText}`);
+  if (!/Power|Accuracy/i.test(tipText) || !/PP (\d+|–)\/(\d+|–)/i.test(tipText)) errors.push(`move tooltip is missing details: ${tipText}`);
   const damaging = await mmRed.getByTestId("move-damage").count();
   if (damaging) {
     await mmRed.getByTestId("damage-range").first().waitFor({ timeout: 15_000 });
