@@ -157,6 +157,8 @@ export function RaceExperience({ preset, vs = [], distance = null, seed = null, 
     pfWin: { from: 0, to: 1 },
     starts: [] as Spot[],
     title: "",
+    /** Checks and screenshots can hold the show clock still. */
+    frozen: false,
   });
 
   // ---- Which view.
@@ -347,7 +349,7 @@ export function RaceExperience({ preset, vs = [], distance = null, seed = null, 
         clearOverlay();
         return;
       }
-      s.t += dt;
+      if (!s.frozen) s.t += dt;
       const t = s.t;
       const shot = shotAt(plan, t);
       const atEnd = t >= plan.end;
@@ -528,7 +530,7 @@ export function RaceExperience({ preset, vs = [], distance = null, seed = null, 
         }
         // Name tags while the runners are big enough on screen.
         if (s.cam !== "overhead") {
-          const heads = scene.heads().filter((a) => a.visible && a.by - a.y > 14);
+          const heads = scene.heads().filter((a) => a.visible && a.by - a.y > 20);
           if (heads.length) {
             drawNameTags(g, heads.map((a) => {
               const r = race.lanes.find((x) => x.lane === a.lane)!;
@@ -554,7 +556,7 @@ export function RaceExperience({ preset, vs = [], distance = null, seed = null, 
     raf = requestAnimationFrame(tick);
     // For automated checks and screenshots: jump the show clock, read where it is.
     (window as unknown as { __race?: unknown }).__race = {
-      seek(t: number) { show.current.t = t; },
+      seek(t: number, freeze = false) { show.current.t = t; show.current.frozen = freeze; },
       state() {
         const s = show.current;
         return { t: s.t, phase: s.phase, gun: s.plan?.gun ?? null, end: s.plan?.end ?? null, shots: s.plan?.shots.map((x) => [x.phase, x.camera, x.t0, x.t1]) ?? [], quality: sceneRef.current?.quality ?? null, stats: sceneRef.current?.stats() ?? null, camera: { mode: s.cam, fov: s.last?.fov ?? null, pos: s.last?.pos ?? null, dist: s.orbit?.dist ?? null, zoom: s.zoom }, prof: { ...s.prof } };

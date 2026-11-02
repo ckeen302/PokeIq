@@ -112,8 +112,9 @@ export function cameraFor(cam: Camera, k: number, spots: Spot[], ctx: DirectorCo
       // Hold the wide view, then swoop in.
       const e = ease((k - 0.32) / 0.68);
       const e2 = e * e * (3 - 2 * e);
-      const from: Vec3 = [-158 + 14 * k, 86 - 6 * k, 74];
-      const fromT: Vec3 = [24, 12, -6];
+      // On a phone (or a 9:16 video) the frame is tall: start higher and look down the bowl's length, so it fills the frame instead of the dark ground outside.
+      const from: Vec3 = portrait ? [-150 + 14 * k, 122 - 8 * k, 52] : [-158 + 14 * k, 86 - 6 * k, 74];
+      const fromT: Vec3 = portrait ? [10, 0, -4] : [24, 12, -6];
       const to: Vec3 = ctx.distance === 100 ? [c[0] + 15, 3.2 + H, c[2] + 11] : [c[0] * 0.8, 10 + H, c[2] * 0.62];
       const toT: Vec3 = [c[0], 0.5 * H, c[2]];
       const pos = lerp3(from, to, e2);
@@ -190,7 +191,8 @@ export function cameraFor(cam: Camera, k: number, spots: Spot[], ctx: DirectorCo
       const pos: Vec3 = [X0 + 30, 1.25 + 0.35 * H, zMid];
       const target: Vec3 = [Math.min(c[0], X0 + 6), 0.55 * H, zMid];
       const D = Math.max(6, pos[0] - target[0]);
-      return { pos, target, fov: fovToFit(span * 1.08, H * 2.1, D, ctx.aspect, 5, 55) };
+      // A tall frame can't hold every lane on a long lens without shrinking the runners: it keeps the middle lanes (where the fastest are drawn).
+      return { pos, target, fov: fovToFit(span * (portrait ? 0.62 : 1.08), H * 2.1, D, ctx.aspect, 5, 55) };
     }
     case "line": {
       // The finish-line camera, high in the main stand just past the line.

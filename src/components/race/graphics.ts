@@ -210,12 +210,11 @@ export function drawNameTags(g: CanvasRenderingContext2D, tags: { lane: number; 
     const w = s * 1.5 + nw + s * 0.8, h = s * 1.55;
     const x = t.x - w / 2;
     let y = t.y - h - s * 0.5;
-    // Nudge up past tags already placed.
-    for (let k = 0; k < 4; k++) {
-      const hit = placed.find((p) => x < p.x + p.w && x + w > p.x && y < p.y + p.h && y + h > p.y);
-      if (!hit) break;
-      y = hit.y - h - 2;
-    }
+    // Nudge up once past a tag already placed; in a tight pack, leave the rest untagged (the leader's tag goes first).
+    const hits = (yy: number) => placed.find((p) => x < p.x + p.w && x + w > p.x && yy < p.y + p.h && yy + h > p.y);
+    const hit = hits(y);
+    if (hit) y = hit.y - h - 2;
+    if (hit && hits(y)) continue;
     placed.push({ x, y, w, h });
     shadow(g, 6);
     roundRect(g, x, y, w, h, 4);

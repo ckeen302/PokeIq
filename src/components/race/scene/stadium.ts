@@ -713,6 +713,8 @@ export function buildStadium(opts: { urls: StadiumUrls; font: string; q: Quality
   const scr = buildScreens(b);
   group.add(scr.group);
   const line = buildLineFurniture(b, opts.font);
+  // The timing posts and the camera prop stand on the line itself: keep them out of the slit's view.
+  line.group.traverse((o) => o.layers.set(LAYER.MAIN));
   group.add(line.group);
   group.add(buildSky(b));
   group.add(buildSurroundings(b));
