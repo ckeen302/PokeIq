@@ -149,8 +149,12 @@ describe("PokéGuessr music", () => {
     await settle();
     expect(contexts).toBe(0);
     expect(player.playing).toBeNull();
-    activated = true;
+    // A touch's pointerdown isn't an activation yet: still silent, still listening.
     window.dispatchEvent(new Event("pointerdown"));
+    await settle();
+    expect(contexts).toBe(0);
+    activated = true;
+    window.dispatchEvent(new Event("pointerup"));
     await settle();
     await settle();
     expect(player.playing).toBe("lobby");

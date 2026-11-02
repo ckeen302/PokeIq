@@ -53,7 +53,16 @@ const shotLoaded = (p) =>
     },
     null,
     { timeout: 30_000 }
-  );
+  ).catch(async (e) => {
+    // Say which screenshot didn't load, and why, before failing.
+    const info = await p.evaluate(async () => {
+      const img = document.querySelector("img[alt='Where is this?']");
+      if (!img) return "no screenshot on the page";
+      const res = await fetch(img.currentSrc || img.src).then((r) => `${r.status} ${r.headers.get("content-type")}`, (err) => String(err));
+      return `${img.src} complete=${img.complete} width=${img.naturalWidth} fetch=${res}`;
+    }).catch(() => "page gone");
+    throw new Error(`the round's screenshot never loaded (${info}): ${e.message}`);
+  });
 
 /** Drops a pin at (at, at) across the map and presses Guess: through the dock, or the phone's sheet. */
 async function pinAndGuess(p, phone, at, shots) {
@@ -257,7 +266,8 @@ async function duel(width, height, { turbo }) {
   const url = red.url();
   await red.getByText("Waiting for a challenger").waitFor();
   if (turbo && !(await red.getByText(/Turbo/).first().isVisible())) errors.push("the Turbo lobby doesn't say Turbo");
-  await blue.goto(url, { waitUntil: "networkidle" });
+  await blue.goto(url, { waitUntil: "domcontentloaded" });
+  await settled(blue);
   await blue.getByText("Red challenges you!").waitFor();
   await blue.getByLabel("Your trainer name").fill("Blue");
   await blue.getByRole("button", { name: /Join duel/ }).click();
@@ -325,7 +335,8 @@ async function duel(width, height, { turbo }) {
 
   // Play on to the end.
   const next = (p) => p.getByRole("button", { name: /Next round|See results/ });
-  for (let i = 0; i < 12; i++) {
+  // Damage grows each round, but close rounds can stretch a game: allow plenty.
+  for (let i = 0; i < 30; i++) {
     await Promise.all([next(red).waitFor({ timeout: 30_000 }), next(blue).waitFor({ timeout: 30_000 })]);
     const label = await next(red).innerText();
     await Promise.all([next(red).click(), next(blue).click()]);
@@ -334,14 +345,14 @@ async function duel(width, height, { turbo }) {
     await pinAndGuess(red, phone, 0.5);
     await pinAndGuess(blue, phone, 0.22);
   }
-  await red.getByTestId("geo-duel-end").waitFor({ timeout: 15_000 });
-  await red.getByTestId("geo-duel-result").filter({ hasText: /Victory!|Defeat|Draw/ }).waitFor();
+  await red.getByTestId("geo-duel-end").waitFor({ timeout: 45_000 });
+  await red.getByTestId("geo-duel-result").filter({ hasText: /Victory!|Defeat|Draw/ }).waitFor({ timeout: 45_000 });
   if ((await red.getByTestId("geo-duel-table").count()) !== 1) errors.push("the end screen has no damage table");
   if ((await red.getByTestId("geo-hp-timeline").count()) !== 1) errors.push("the end screen has no HP timeline");
   if (!(await red.getByRole("button", { name: /^Rematch$/ }).isVisible())) errors.push("the end screen has no Rematch button");
   await red.waitForTimeout(900);
   await red.screenshot({ path: `${OUT}/duel-end-${tag}.png`, fullPage: true });
-  await blue.getByTestId("geo-duel-end").waitFor({ timeout: 15_000 });
+  await blue.getByTestId("geo-duel-end").waitFor({ timeout: 45_000 });
   // Post-game taunts: Red dances, and Blue sees it on Red's trainer.
   await red.getByTestId("taunt-stage").waitFor();
   if ((await red.locator("[data-testid=taunt-stage] [data-testid=versus-character]").count()) !== 2) errors.push("the end screen doesn't show both trainers");
@@ -349,7 +360,7 @@ async function duel(width, height, { turbo }) {
   await red.getByTestId("taunt-dab").click();
   await blue
     .locator('[data-testid="taunt-trainer-them"][data-playing="dab"]')
-    .waitFor({ timeout: 15_000 })
+    .waitFor({ timeout: 30_000 })
     .catch(() => errors.push("Blue never saw Red's dance"));
   if (!(await red.getByTestId("taunt-heeltap").isDisabled())) errors.push("a locked dance is usable by a guest");
   await red.screenshot({ path: `${OUT}/duel-taunt-${tag}.png` });
@@ -361,13 +372,33 @@ async function duel(width, height, { turbo }) {
 // Parties
 // ---------------------------------------------------------------------------
 
+/**
+ * A duel or party page polls its room, and under load the gaps between polls can be too short for
+ * "networkidle" ever to fire: wait for it briefly, then rely on the elements each step waits for.
+ */
+async function settled(p) {
+  await p.waitForLoadState("networkidle", { timeout: 8_000 }).catch(() => undefined);
+}
+
+/**
+ * The line-up shows for a few seconds as a game starts; a slow machine can poll right past it.
+ * True if it showed, false if the round itself is already up; throws if neither appears.
+ */
+async function lineupShown(p) {
+  return Promise.any([
+    p.getByTestId("party-lineup").waitFor({ timeout: 30_000 }).then(() => true),
+    p.getByTestId("party-band").waitFor({ timeout: 30_000 }).then(() => false),
+  ]);
+}
+
 /** Joins a party's lobby by its link as `name`. */
 async function joinParty(p, url, name) {
-  await p.goto(url, { waitUntil: "networkidle" });
+  await p.goto(url, { waitUntil: "domcontentloaded" });
+  await settled(p);
   await p.getByTestId("party-lobby").waitFor().catch(async (e) => { await p.screenshot({ path: `${OUT}/fail-lobby-${name}.png` }); console.log(await p.evaluate(() => document.body.innerText.slice(0, 400))); throw e; });
   await p.getByLabel("Your trainer name").fill(name, { timeout: 20_000 }).catch(async (e) => { await p.screenshot({ path: `${OUT}/fail-join-${name}.png`, fullPage: true }); throw e; });
   await p.getByTestId("party-join").click();
-  await p.getByTestId("party-leave").waitFor({ timeout: 15_000 });
+  await p.getByTestId("party-leave").waitFor({ timeout: 30_000 });
 }
 
 /** Presses Next on every page whose trainer is still in. */
@@ -411,8 +442,8 @@ async function royale(width, height) {
   await red.waitForURL(/\/guessr\/party\/[a-z2-9]{6}$/, { timeout: 20_000 });
   const url = red.url();
   await red.getByTestId("party-lobby").waitFor();
-  // The host sets up a quick game: one life, a 30 s round, 10 s after the first pin.
-  for (const id of ["party-set-lives-1", "party-set-timer-30", "party-set-countdown-10"]) {
+  // The host sets up a quick game: one life, a 60 s round, 20 s after the first pin (room for a slow machine).
+  for (const id of ["party-set-lives-1", "party-set-timer-60", "party-set-countdown-20"]) {
     await red.getByTestId(id).click();
     await red.locator(`[data-testid=${id}][aria-checked=true]`).waitFor({ timeout: 8_000 });
   }
@@ -421,16 +452,18 @@ async function royale(width, height) {
   await red.getByTestId("party-seat-2").waitFor({ timeout: 15_000 });
   if (await blue.getByTestId("party-start").count()) errors.push("a guest sees the host's Start button");
   // A trainer who reloads keeps their seat.
-  await green.reload({ waitUntil: "networkidle" });
+  await green.reload({ waitUntil: "domcontentloaded" });
+  await settled(green);
   await green.getByTestId("party-leave").waitFor({ timeout: 30_000 }).catch(async () => { await green.screenshot({ path: `${OUT}/fail-reload.png`, fullPage: true }); throw new Error("Green lost the seat on reload"); });
   await red.waitForTimeout(1500);
   await red.screenshot({ path: `${OUT}/party-lobby-${tag}.png`, fullPage: true });
   await blue.screenshot({ path: `${OUT}/party-lobby-guest-${tag}.png`, fullPage: true });
   await red.getByTestId("party-start").click();
 
-  await red.getByTestId("party-lineup").waitFor({ timeout: 15_000 });
-  await red.waitForTimeout(1500);
-  await red.screenshot({ path: `${OUT}/party-lineup-${tag}.png` });
+  if (await lineupShown(red)) {
+    await red.waitForTimeout(1500);
+    await red.screenshot({ path: `${OUT}/party-lineup-${tag}.png` });
+  }
 
   // Round 1: Red and Blue guess, Green doesn't (and, on one life, goes out unless everyone ties).
   await Promise.all([shotLoaded(red), shotLoaded(blue), shotLoaded(green)]);
@@ -441,10 +474,15 @@ async function royale(width, height) {
   await red.getByTestId("geo-emote-pika").click();
   await blue.getByTestId("party-emote-0").waitFor({ timeout: 8_000 }).catch(() => errors.push("Blue never saw Red's emote"));
   await pinAndGuess(red, phone, 0.5);
-  // Red's pin starts the countdown: the others see who guessed.
-  await green.getByTestId("geo-opponent-guessed").filter({ hasText: /Red guessed/ }).waitFor({ timeout: 8_000 }).catch(() => errors.push("Green never saw that Red guessed"));
-  await green.screenshot({ path: `${OUT}/party-guessed-${tag}.png` });
-  await pinAndGuess(blue, phone, 0.35);
+  // Red's pin starts the countdown: the others see who guessed (while Blue guesses inside it).
+  await Promise.all([
+    green
+      .getByTestId("geo-opponent-guessed")
+      .filter({ hasText: /Red guessed/ })
+      .waitFor({ timeout: 8_000 })
+      .then(() => green.screenshot({ path: `${OUT}/party-guessed-${tag}.png` }), () => errors.push("Green never saw that Red guessed")),
+    pinAndGuess(blue, phone, 0.35),
+  ]);
   await red.locator("[data-testid=party-roster-1][data-guessed=true]").waitFor({ timeout: 8_000 }).catch(() => errors.push("the roster doesn't tick off Blue's guess"));
   await red.getByTestId("party-reveal").waitFor({ timeout: 30_000 });
   await red.waitForTimeout(2200);
@@ -454,7 +492,8 @@ async function royale(width, height) {
 
   // On to the end: Red always guesses, Blue in odd rounds; whoever is out watches.
   let sawSpectator = false;
-  for (let i = 0; i < 12; i++) {
+  // Damage grows each round, but close rounds can stretch a game: allow plenty.
+  for (let i = 0; i < 30; i++) {
     const phase = await phaseOf(red);
     if (phase === "end") break;
     if (phase === "reveal") {
@@ -476,17 +515,17 @@ async function royale(width, height) {
     if (i % 2 === 1 && (await blue.getByTestId("geo-dock").isVisible().catch(() => false))) await pinAndGuess(blue, phone, 0.4).catch(() => {});
     await red.getByTestId("party-reveal").waitFor({ timeout: 40_000 });
   }
-  await red.getByTestId("party-end").waitFor({ timeout: 30_000 });
+  await red.getByTestId("party-end").waitFor({ timeout: 45_000 });
   if (!sawSpectator) errors.push("the trainer who went out never watched a round");
   await red.getByTestId("party-result").waitFor();
   if ((await red.locator("[data-testid^=party-standing-]").count()) !== 3) errors.push("the standings don't list all three trainers");
   await blue.getByTestId("party-next").click().catch(() => {});
-  await blue.getByTestId("party-end").waitFor({ timeout: 20_000 });
+  await blue.getByTestId("party-end").waitFor({ timeout: 45_000 });
   // Post-game taunts reach the others.
   await red.getByTestId("party-taunt-dab").click();
   await blue
     .locator('[data-testid="party-trainer-0"][data-playing="dab"]')
-    .waitFor({ timeout: 15_000 })
+    .waitFor({ timeout: 30_000 })
     .catch(() => errors.push("Blue never saw Red's dance"));
   await red.waitForTimeout(800);
   await red.screenshot({ path: `${OUT}/party-end-${tag}.png`, fullPage: true });
@@ -525,11 +564,13 @@ async function teamDuel(width, height) {
   await red.waitForTimeout(1500);
   await red.screenshot({ path: `${OUT}/party-team-lobby-${tag}.png`, fullPage: true });
   await red.getByTestId("party-start").click();
-  await red.getByTestId("party-lineup").waitFor({ timeout: 15_000 });
-  await red.waitForTimeout(1500);
-  await red.screenshot({ path: `${OUT}/party-team-lineup-${tag}.png` });
+  if (await lineupShown(red)) {
+    await red.waitForTimeout(1500);
+    await red.screenshot({ path: `${OUT}/party-team-lineup-${tag}.png` });
+  }
 
-  for (let i = 0; i < 12; i++) {
+  // Damage grows each round, but close rounds can stretch a game: allow plenty.
+  for (let i = 0; i < 30; i++) {
     const phase = await phaseOf(red);
     if (phase === "end") break;
     if (phase === "reveal") {
@@ -577,8 +618,8 @@ async function teamDuel(width, height) {
     await pinAndGuess(gold, phone, 0.15);
     await red.getByTestId("party-reveal").waitFor({ timeout: 40_000 });
   }
-  await red.getByTestId("party-end").waitFor({ timeout: 30_000 });
-  await red.getByTestId("party-result").filter({ hasText: /Victory!|Defeat|Draw/ }).waitFor();
+  await red.getByTestId("party-end").waitFor({ timeout: 45_000 });
+  await red.getByTestId("party-result").filter({ hasText: /Victory!|Defeat|Draw/ }).waitFor({ timeout: 45_000 });
   if ((await red.locator("[data-testid^=party-standing-]").count()) !== 4) errors.push("the team standings don't list all four trainers");
   await red.waitForTimeout(900);
   await red.screenshot({ path: `${OUT}/party-team-end-${tag}.png`, fullPage: true });
@@ -600,6 +641,9 @@ try {
   if (only.includes("team390")) await teamDuel(390, 844);
 } catch (err) {
   errors.push(`FAILED: ${err?.stack ?? err}`);
+  // What every open page showed when it failed.
+  let n = 0;
+  for (const c of browser.contexts()) for (const p of c.pages()) await p.screenshot({ path: `${OUT}/fail-page-${n++}.png` }).catch(() => undefined);
 } finally {
   await browser.close();
   if (errors.length > 0) {

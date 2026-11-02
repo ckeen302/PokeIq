@@ -44,6 +44,17 @@ export const MUSIC_NEXT: Record<MusicState, MusicState[]> = {
 };
 
 export const CROSSFADE_S = 1.2;
+
+/** Freezes a param where it is now (mid-ramp included), so a new ramp starts from there without a jump. */
+function hold(param: AudioParam, at: number) {
+  if (typeof param.cancelAndHoldAtTime === "function") {
+    param.cancelAndHoldAtTime(at);
+    return;
+  }
+  const value = param.value;
+  param.cancelScheduledValues(at);
+  param.setValueAtTime(value, at);
+}
 /** The countdown's pressure: the music ducks to this share and the duel loop speeds up. */
 export const PRESSURE_DUCK = 0.45;
 export const PRESSURE_RATE = 1.06;
@@ -137,14 +148,19 @@ export class GuessrMusic {
     this.started = true;
     this.prefs = loadGuessrAudio();
     this.muted = isMuted();
+    // A touch's pointerdown isn't a user activation (its pointerup / touchend is), so listen for all
+    // of them and keep listening until the browser counts one.
+    const events = ["pointerdown", "pointerup", "touchend", "click", "keydown"] as const;
     const arm = () => {
-      window.removeEventListener("pointerdown", arm, true);
-      window.removeEventListener("keydown", arm, true);
-      // After the gesture's own handlers (the context may only start inside one).
+      const activation = (navigator as Navigator & { userActivation?: { hasBeenActive: boolean } }).userActivation;
+      if (activation && !activation.hasBeenActive) return;
+      for (const e of events) window.removeEventListener(e, arm, true);
+      // Start (or resume) the context inside the gesture itself: iOS only allows it there.
+      if (this.audible) liveAudio();
+      // Then match the state, after the gesture's own handlers.
       setTimeout(() => this.apply(), 0);
     };
-    window.addEventListener("pointerdown", arm, true);
-    window.addEventListener("keydown", arm, true);
+    for (const e of events) window.addEventListener(e, arm, true);
     onMuteChange((muted) => {
       this.muted = muted;
       this.apply();
@@ -268,7 +284,7 @@ export class GuessrMusic {
       this.master.connect(audio.destination);
     }
     const now = audio.currentTime;
-    this.master.gain.cancelScheduledValues(now);
+    hold(this.master.gain, now);
     this.master.gain.setTargetAtTime(this.prefs.music.volume, now, 0.05);
     this.preloadNext(state);
     if (this.voice?.state === state) return;
@@ -316,10 +332,10 @@ export class GuessrMusic {
     const v = this.voice;
     if (!v || !this.audio) return;
     const now = this.audio.currentTime;
-    v.gain.gain.cancelScheduledValues(now);
+    hold(v.gain.gain, now);
     v.gain.gain.setTargetAtTime(this.level(v.state), now, 0.08);
     if (v.state === "duel") {
-      v.src.playbackRate.cancelScheduledValues(now);
+      hold(v.src.playbackRate, now);
       v.src.playbackRate.setTargetAtTime(this.pressure ? PRESSURE_RATE : 1, now, 0.4);
     }
   }
@@ -329,8 +345,7 @@ export class GuessrMusic {
     if (!v || !this.audio) return;
     this.voice = null;
     const now = this.audio.currentTime;
-    v.gain.gain.cancelScheduledValues(now);
-    v.gain.gain.setValueAtTime(v.gain.gain.value, now);
+    hold(v.gain.gain, now);
     v.gain.gain.linearRampToValueAtTime(0, now + seconds);
     try {
       v.src.stop(now + seconds + 0.05);

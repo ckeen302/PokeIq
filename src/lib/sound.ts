@@ -69,6 +69,8 @@ export function setMuted(muted: boolean): void {
     // keep the in-memory value
   }
   window.dispatchEvent(new CustomEvent(MUTE_EVENT, { detail: muted }));
+  // Muted: nothing should be rendering at all (the next sound after unmuting resumes it).
+  if (muted && ctx?.state === "running") void ctx.suspend?.()?.catch(() => undefined);
 }
 
 const MUTE_EVENT = "pokeiq:muted";
