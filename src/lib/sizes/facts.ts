@@ -6,7 +6,7 @@ import { formatMetres, type SizeItem } from "./types";
  * Pokédex weight, the references' sourced sizes); nothing is made up.
  */
 
-const times = (k: number) => (k >= 10 ? `${Math.round(k)}×` : `${(Math.round(k * 10) / 10).toString()}×`);
+const times = (k: number) => (k >= 10 ? `${Math.round(k).toLocaleString("en-US")}×` : `${(Math.round(k * 10) / 10).toString()}×`);
 
 /** One caption for a figure, comparing it with the references (and the smallest figure) in the line. */
 export function factFor(item: SizeItem, line: SizeItem[]): string | null {

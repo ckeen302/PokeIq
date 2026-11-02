@@ -82,7 +82,7 @@ export function sizesCard(preset: SizePreset) {
     eyebrow: "Pokémon sizes · in 3D",
     title: preset.id === "every-pokemon" ? ["Every Pokémon", ["to scale", ACCENT]] : [preset.label],
     titleSize: preset.label.length > 18 ? 54 : 68,
-    subtitle: small && big ? `${mons.length.toLocaleString("en-US")} Pokémon from ${formatMetres(small.m)} to ${formatMetres(big.m)}${big.min ? "+" : ""}, side by side in Lumiose City.` : preset.blurb,
+    subtitle: small && big ? `From ${formatMetres(small.m)} to ${formatMetres(big.m)}${big.min ? "+" : ""}, side by side in Lumiose City.` : preset.blurb,
     accent: ACCENT,
     visual: <Lineup items={spread(line, 5)} />,
     footer: "Make your own size video →",

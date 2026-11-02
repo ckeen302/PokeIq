@@ -219,7 +219,7 @@ export default function MakeVideo({ items, line, hook, slug, lineLabel, trainer,
             </div>
             <div className="rounded-lg border border-white/10 bg-white/[0.04] p-3 text-sm">
               <p className="font-display font-semibold uppercase tracking-wide text-[#ffd84a]">“{chosen.hook}”</p>
-              <p className="mt-1 text-white/60">{chosen.items.filter((i) => i.kind !== "ref").length.toLocaleString("en-US")} Pokémon · {VIDEO_W} × {VIDEO_H} · {support === "webm" ? "WebM" : "MP4"}</p>
+              <p className="mt-1 text-white/60">{VIDEO_W} × {VIDEO_H} · {support === "webm" ? "WebM" : "MP4"}</p>
             </div>
             {phase.kind === "recording" ? (
               <div className="space-y-2" data-testid="sizes-video-progress" data-p={phase.p.toFixed(3)}>

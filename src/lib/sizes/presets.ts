@@ -43,7 +43,7 @@ export const PRESETS: SizePreset[] = [
     id: "legendaries",
     label: "Legendaries & Mythicals",
     title: "Every Legendary and Mythical Pokémon by size",
-    hook: "Every Legendary Pokémon by size 😳",
+    hook: "Every Legendary & Mythical Pokémon by size 😳",
     blurb: "Every Legendary and Mythical Pokémon side by side, ending with Eternamax Eternatus.",
     pick: (i) => (isMon(i) && (i.legendary || i.mythical)) || i.kind === "eternamax",
   },

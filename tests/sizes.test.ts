@@ -445,7 +445,7 @@ describe("badges and captions", () => {
     expect(factFor(item("wailord"), every)).toBe("Wailord is 8.5× as long as an adult human");
     expect(factFor(item("pikachu"), every)).toBe("You are 4.3× as tall as Pikachu");
     expect(factFor(item("eternatus-eternamax"), every)).toMatch(/^Eternamax Eternatus is 3\.2× the size of a 10-storey building$/);
-    expect(spanFact(every)).toBe("Eternamax Eternatus is 1000× the size of Joltik");
+    expect(spanFact(every)).toBe("Eternamax Eternatus is 1,000× the size of Joltik");
     for (const i of every) expect(factFor(i, every) ?? "").not.toMatch(/NaN|Infinity|undefined/);
   });
 });
