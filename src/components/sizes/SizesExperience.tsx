@@ -22,6 +22,8 @@ import type { SizesAudio } from "./audio";
 import { drawBadges } from "./overlay";
 import { SCENE_URLS, toSceneItem } from "./scene-item";
 import { SIZES_CSS } from "./sizes-css";
+import { trainerFigure } from "./trainer-figure";
+import { useAccount } from "@/lib/account";
 import { cn } from "@/lib/utils";
 
 const MakeVideo = lazy(() => import("./MakeVideo"));
@@ -123,6 +125,10 @@ export function SizesExperience({ preset, focus = null, vs = [], children }: Siz
   const [muted, setMutedState] = useState(true);
   const [toast, setToast] = useState<string | null>(null);
   const [quality, setQualityState] = useState<Quality>("high");
+  const account = useAccount();
+  const myTrainer = account.user?.avatar?.trainer ?? null;
+  const trainerRef = useRef(myTrainer);
+  trainerRef.current = myTrainer;
 
   const stageRef = useRef<HTMLDivElement>(null);
   const hostRef = useRef<HTMLDivElement>(null);
@@ -312,7 +318,7 @@ export function SizesExperience({ preset, focus = null, vs = [], children }: Siz
       if (!alive) return;
       try {
         const q = initialQuality();
-        const scene = createSizesScene(host, { quality: q, urls: SCENE_URLS });
+        const scene = createSizesScene(host, { quality: q, urls: SCENE_URLS, trainer: trainerFigure(trainerRef.current) });
         sceneRef.current = scene;
         setQualityState(q);
         await scene.ready;
@@ -473,7 +479,9 @@ export function SizesExperience({ preset, focus = null, vs = [], children }: Siz
         g.clearRect(0, 0, cv.width, cv.height);
         g.setTransform(dpr, 0, 0, dpr, 0, 0);
         const phone = w < 640;
-        drawBadges(g, scene.anchors(), focusNow, byKeyRef.current, w, h, { font, scale: phone ? 1.15 : 1, max: phone ? 2 : 4, top: phone ? 104 : 72, bottom: phone ? 128 : 104 });
+        // The finale is the giant's alone.
+        const max = view.rise > 0.3 ? 1 : phone ? 2 : 4;
+        drawBadges(g, scene.anchors(), focusNow, byKeyRef.current, w, h, { font, scale: phone ? 1.15 : 1, max, top: phone ? 104 : 72, bottom: phone ? 128 : 104 });
       }
       // Where we are on the line.
       if (thumbRef.current && placed.length > 1) {
@@ -950,6 +958,7 @@ export function SizesExperience({ preset, focus = null, vs = [], children }: Siz
                 hook={hookText}
                 slug={comparing ? spec.vs.join("-vs-") : spec.preset}
                 lineLabel={lineTitle}
+                trainer={myTrainer}
                 onRecording={setRecording}
                 onClose={() => setVideoOpen(false)}
               />

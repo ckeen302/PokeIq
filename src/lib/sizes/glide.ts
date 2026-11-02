@@ -25,7 +25,7 @@ export interface Lens {
 }
 
 /** Share of the frame a framed figure fills, vertically and horizontally. */
-export const FILL_H = 0.5;
+export const FILL_H = 0.54;
 export const FILL_W = 0.6;
 const MIN_D = 0.25;
 

@@ -6,7 +6,8 @@ import { rng } from "./geo";
 import { cutaway, type Shared } from "./shaders";
 
 /**
- * Street furniture for the boulevard, all instanced: London plane trees
+ * Street furniture for the boulevard, all instanced (and kept low in
+ * triangles: hundreds of cars line the boulevard): London plane trees
  * along the promenade, cast-iron lantern posts, parked and passing cars
  * and buses (plain liveries, no logos) and Morris advertising columns.
  * Original procedural models.
@@ -132,16 +133,16 @@ function morrisGeometry(): { body: THREE.BufferGeometry; band: THREE.BufferGeome
 }
 
 function carGeometry(): { body: THREE.BufferGeometry; glass: THREE.BufferGeometry; wheels: THREE.BufferGeometry } {
-  const lower = new RoundedBoxGeometry(4.45, 0.78, 1.8, 3, 0.22);
+  const lower = new RoundedBoxGeometry(4.45, 0.78, 1.8, 1, 0.22);
   lower.translate(0, 0.72, 0);
-  const roof = new RoundedBoxGeometry(2.25, 0.08, 1.5, 2, 0.04);
+  const roof = new RoundedBoxGeometry(2.25, 0.08, 1.5, 1, 0.04);
   roof.translate(-0.25, 1.62, 0);
   const body = mergeGeometries([lower.toNonIndexed(), roof.toNonIndexed()]);
-  const cabin = new RoundedBoxGeometry(2.55, 0.56, 1.6, 3, 0.18);
+  const cabin = new RoundedBoxGeometry(2.55, 0.56, 1.6, 1, 0.18);
   cabin.translate(-0.25, 1.33, 0);
   const wheelParts: THREE.BufferGeometry[] = [];
   for (const [x, z] of [[1.42, 0.82], [1.42, -0.82], [-1.38, 0.82], [-1.38, -0.82]]) {
-    const w = new THREE.CylinderGeometry(0.34, 0.34, 0.24, 14);
+    const w = new THREE.CylinderGeometry(0.34, 0.34, 0.24, 10);
     w.rotateX(Math.PI / 2);
     w.translate(x, 0.34, z);
     wheelParts.push(w.toNonIndexed());
@@ -150,13 +151,13 @@ function carGeometry(): { body: THREE.BufferGeometry; glass: THREE.BufferGeometr
 }
 
 function busGeometry(): { body: THREE.BufferGeometry; glass: THREE.BufferGeometry; wheels: THREE.BufferGeometry } {
-  const body = new RoundedBoxGeometry(12, 2.6, 2.55, 3, 0.25);
+  const body = new RoundedBoxGeometry(12, 2.6, 2.55, 1, 0.25);
   body.translate(0, 1.65, 0);
-  const glass = new RoundedBoxGeometry(11.2, 1.05, 2.6, 2, 0.12);
+  const glass = new RoundedBoxGeometry(11.2, 1.05, 2.6, 1, 0.12);
   glass.translate(0.1, 2.25, 0);
   const wheelParts: THREE.BufferGeometry[] = [];
   for (const [x, z] of [[3.9, 1.12], [3.9, -1.12], [-3.6, 1.12], [-3.6, -1.12]]) {
-    const w = new THREE.CylinderGeometry(0.5, 0.5, 0.32, 14);
+    const w = new THREE.CylinderGeometry(0.5, 0.5, 0.32, 10);
     w.rotateX(Math.PI / 2);
     w.translate(x, 0.5, z);
     wheelParts.push(w.toNonIndexed());
@@ -241,7 +242,8 @@ export function buildProps(plan: WorldPlan, shared: Shared, tex: { bark: THREE.M
     const mats: THREE.Matrix4[] = [];
     for (const side of [1, -1]) {
       for (let x = x0 + 10; x < x1 - 8; x += 26) mats.push(place(x, 0.12, side * (STREET.roadOut + 0.7), 0));
-      for (let x = x0 + 23; x < x1 - 8; x += 26) mats.push(place(x, 0, side * (STREET.promenade - 0.5), 0));
+      // Along the lawn only on the far side: on the camera's side they would stand right in front of the lens.
+      if (side > 0) for (let x = x0 + 23; x < x1 - 8; x += 26) mats.push(place(x, 0, side * (STREET.promenade - 0.5), 0));
     }
     const { iron, glass } = lanternGeometry();
     const ironM = new THREE.MeshStandardMaterial({ color: "#1f2a26", roughness: 0.45, metalness: 0.7 });
@@ -273,6 +275,8 @@ export function buildProps(plan: WorldPlan, shared: Shared, tex: { bark: THREE.M
     const busMats: THREE.Matrix4[] = [], busCols: THREE.Color[] = [];
     for (const side of [1, -1]) {
       for (const lane of [STREET.roadIn + 1.25, STREET.roadOut - 1.25]) {
+        // The camera's side keeps its inner kerb clear: parked cars there would sit right in front of the lens.
+        if (side < 0 && lane === STREET.roadIn + 1.25) continue;
         for (let x = x0 + 5; x < x1 - 8; x += 5.6 + r() * 1.4) {
           if (r() < 0.32) continue;
           carMats.push(place(x, 0, side * lane, side > 0 ? 0 : Math.PI, 1));

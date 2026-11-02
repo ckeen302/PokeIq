@@ -47,7 +47,7 @@ function finishShader(samples: number) {
       resolution: { value: new THREE.Vector2(1, 1) },
       dofOn: { value: 1 },
       vignette: { value: 0.22 },
-      saturation: { value: 1.12 },
+      saturation: { value: 1.17 },
       warmth: { value: 0.02 },
       poisson: { value: POISSON_32.map(([x, y]) => new THREE.Vector2(x, y)) },
     },

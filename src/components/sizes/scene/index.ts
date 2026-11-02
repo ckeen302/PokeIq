@@ -103,6 +103,8 @@ export interface SizesScene {
   /** Ready to draw (environment loaded). */
   ready: Promise<void>;
   stats(): { figures: number; loading: number; calls: number; tris: number };
+  /** The three.js objects behind the scene, for profiling and debugging tools. */
+  internals(): { scene: THREE.Scene; renderer: THREE.WebGLRenderer; camera: THREE.PerspectiveCamera; world: THREE.Group; figures: THREE.Group; sky: THREE.Object3D };
   dispose(): void;
 }
 
@@ -479,7 +481,8 @@ export function createSizesScene(host: HTMLElement, opts: SceneOptions): SizesSc
     }
     if (companion?.handle) companion.update?.(t, dt);
     if (tower) tower.glow.emissiveIntensity = 2.4 + 0.5 * Math.sin(t * 1.3);
-    const aperture = Math.min(12, 6 * Math.pow(1.6 / Math.max(0.15, focusD), 0.45)) * (H / 900);
+    // A gentle depth of field: macro-like for the smallest, the city still readable behind.
+    const aperture = Math.min(7, 3.6 * Math.pow(1.6 / Math.max(0.15, focusD), 0.45)) * (H / 900);
     post.frame(camera, focusD, Math.max(1.2, aperture), Math.min(4, Math.max(0.03, focusD * 0.09)));
     post.render();
   }
@@ -494,6 +497,8 @@ export function createSizesScene(host: HTMLElement, opts: SceneOptions): SizesSc
       if (top.z > 1 || bot.z > 1) return;
       const dist = camera.position.distanceTo(tmpV.set(s.x, s.h / 2, 0));
       const x = (top.x * 0.5 + 0.5) * W, y = (1 - (top.y * 0.5 + 0.5)) * H;
+      // A figure standing off the frame gets no badge (it would be clamped in, over someone else).
+      if (x < -W * 0.04 || x > W * 1.04) return;
       const by = (1 - (bot.y * 0.5 + 0.5)) * H;
       out.push({ index, item: s.item, x, y, sh: Math.abs(by - y), dist, by });
     });
@@ -538,6 +543,7 @@ export function createSizesScene(host: HTMLElement, opts: SceneOptions): SizesSc
     get quality() { return quality; },
     ready,
     stats: () => ({ figures: slots.filter((s) => s.handle).length, loading: loadingCount, calls: renderer.info.render.calls, tris: renderer.info.render.triangles }),
+    internals: () => ({ scene, renderer, camera, world: worldGroup, figures: figureGroup, sky: sky.mesh }),
     dispose() {
       for (const s of slots) dropSlot(s);
       if (companion) dropSlot(companion);

@@ -57,7 +57,7 @@ export const FINALE_YAW = (16 * Math.PI) / 180;
  */
 export function finalePose(v: View): Pose {
   const yaw = BASE_YAW + FINALE_YAW;
-  const D = v.d * 1.06;
+  const D = v.d * 0.92;
   const target: [number, number, number] = [v.x, v.h * 0.46, 0];
   const camY = Math.max(ROOF_Y + 14, v.h * 0.36);
   const dy = target[1] - camY;

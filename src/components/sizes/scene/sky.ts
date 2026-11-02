@@ -15,9 +15,52 @@ export const SKY = {
   sun: new THREE.Color("#fff3df"),
 };
 
+/**
+ * Tileable fractal noise for the clouds, baked once (periodic value noise,
+ * five octaves): the sky then reads two texels a pixel instead of working
+ * the noise out for every pixel of every frame.
+ */
+function cloudNoise(size = 256): THREE.DataTexture {
+  const data = new Uint8Array(size * size);
+  const hash = (x: number, y: number, p: number) => {
+    const xx = ((x % p) + p) % p, yy = ((y % p) + p) % p;
+    let h = Math.imul(xx, 374761393) ^ Math.imul(yy, 668265263) ^ Math.imul(p, 1442695041);
+    h = Math.imul(h ^ (h >>> 13), 1274126177);
+    return ((h ^ (h >>> 16)) >>> 0) / 4294967295;
+  };
+  const noise = (x: number, y: number, p: number) => {
+    const ix = Math.floor(x), iy = Math.floor(y);
+    let fx = x - ix, fy = y - iy;
+    fx = fx * fx * (3 - 2 * fx);
+    fy = fy * fy * (3 - 2 * fy);
+    const a = hash(ix, iy, p), b = hash(ix + 1, iy, p), c = hash(ix, iy + 1, p), d = hash(ix + 1, iy + 1, p);
+    return (a + (b - a) * fx) * (1 - fy) + (c + (d - c) * fx) * fy;
+  };
+  for (let y = 0; y < size; y++) {
+    for (let x = 0; x < size; x++) {
+      let s = 0, amp = 0.5, f = 4;
+      for (let o = 0; o < 5; o++) {
+        s += amp * noise((x / size) * f, (y / size) * f, f);
+        amp *= 0.5;
+        f *= 2;
+      }
+      data[y * size + x] = Math.round(Math.min(1, s / 0.96875) * 255);
+    }
+  }
+  const t = new THREE.DataTexture(data, size, size, THREE.RedFormat, THREE.UnsignedByteType);
+  t.wrapS = t.wrapT = THREE.RepeatWrapping;
+  t.magFilter = THREE.LinearFilter;
+  t.minFilter = THREE.LinearMipmapLinearFilter;
+  t.generateMipmaps = true;
+  t.needsUpdate = true;
+  return t;
+}
+
 export function createSky(sunDir: THREE.Vector3): { mesh: THREE.Mesh; update(camera: THREE.Camera, t: number): void; dispose(): void } {
+  const noiseTex = cloudNoise();
   const mat = new THREE.ShaderMaterial({
     uniforms: {
+      noiseTex: { value: noiseTex },
       sunDir: { value: sunDir.clone().normalize() },
       zenith: { value: SKY.zenith.clone().convertSRGBToLinear() },
       horizon: { value: SKY.horizon.clone().convertSRGBToLinear() },
@@ -36,11 +79,10 @@ export function createSky(sunDir: THREE.Vector3): { mesh: THREE.Mesh; update(cam
     fragmentShader: /* glsl */ `
       uniform vec3 sunDir, zenith, horizon, haze, sunCol;
       uniform float time;
+      uniform sampler2D noiseTex;
       varying vec3 vDir;
-      float h21(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
-      float n2(vec2 p){ vec2 i = floor(p), f = fract(p); f = f*f*(3.0-2.0*f);
-        return mix(mix(h21(i), h21(i+vec2(1,0)), f.x), mix(h21(i+vec2(0,1)), h21(i+vec2(1,1)), f.x), f.y); }
-      float fbm(vec2 p){ float s = 0.0, a = 0.5; for (int i = 0; i < 5; i++) { s += a * n2(p); p = p * 2.03 + vec2(1.7, 9.2); a *= 0.5; } return s; }
+      // The baked noise has four cells across the tile: a quarter tile per unit, like the noise it replaces.
+      float fbm(vec2 p){ return texture2D(noiseTex, p * 0.25).r; }
       void main() {
         vec3 d = normalize(vDir);
         float h = d.y;
@@ -77,6 +119,6 @@ export function createSky(sunDir: THREE.Vector3): { mesh: THREE.Mesh; update(cam
       mesh.scale.setScalar(1000);
       mat.uniforms.time.value = t;
     },
-    dispose() { mesh.geometry.dispose(); mat.dispose(); },
+    dispose() { mesh.geometry.dispose(); mat.dispose(); noiseTex.dispose(); },
   };
 }

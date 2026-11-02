@@ -10,6 +10,8 @@ import type { SizeItem } from "@/lib/sizes/types";
 import type { Quality } from "./scene";
 import { MUSIC_URL } from "./audio";
 import { SCENE_URLS } from "./scene-item";
+import { trainerFigure } from "./trainer-figure";
+import type { TrainerConfig } from "@/lib/trainer/config";
 import { cn } from "@/lib/utils";
 
 type Phase =
@@ -64,12 +66,13 @@ function qualityFromUrl(): Quality | undefined {
  * is smooth however slow the device; progress shows and it can be
  * cancelled. Then download it, or share the file straight to an app.
  */
-export default function MakeVideo({ items, line, hook, slug, lineLabel, onRecording, onClose }: {
+export default function MakeVideo({ items, line, hook, slug, lineLabel, trainer, onRecording, onClose }: {
   items: SizeItem[];
   line: SizeItem[];
   hook: string;
   slug: string;
   lineLabel: string;
+  trainer: TrainerConfig | null;
   onRecording(on: boolean): void;
   onClose(): void;
 }) {
@@ -117,6 +120,7 @@ export default function MakeVideo({ items, line, hook, slug, lineLabel, onRecord
         hook: chosen.hook,
         slug: chosen.slug,
         urls: SCENE_URLS,
+        trainer: trainerFigure(trainer),
         font,
         music: MUSIC_URL,
         logo: "/logo.svg",

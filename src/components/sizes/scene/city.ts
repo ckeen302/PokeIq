@@ -419,13 +419,21 @@ function ground(plan: WorldPlan, shared: Shared, tex: CityTextures): THREE.Mesh[
   const cobble = mk("patterned_cobblestone", 2.5, { color: "#d9d2c6" });
   const grass = mk("leafy_grass", 2, { color: "#8cc455", bright: 0.95 });
   lawnStripes(grass);
+  // The line stands on a long lawn down the middle of the boulevard (finer grass: the camera gets close to the smallest).
+  const lineLawn = mk("leafy_grass", 0.9, { color: "#93cc58", bright: 1 });
+  lawnStripes(lineLawn);
+  // The figures stand at y = 0 on this lawn: it sits exactly there and wins the depth test against the paving just below.
+  lineLawn.polygonOffset = true;
+  lineLawn.polygonOffsetFactor = -1;
+  lineLawn.polygonOffsetUnits = -2;
   const curb = new THREE.MeshStandardMaterial({ color: "#c9c4ba", roughness: 0.8 });
   const { x0, x1 } = plan;
   const far = 2600;
   // Base: the whole city's streets.
-  strip("ground-base", asphalt, x0 - far, plan.plaza.cx + plan.plaza.r + far, -far, far, -0.02, 3);
-  // The boulevard: promenade, then per side road and pavement.
-  strip("promenade", prom, x0, x1 + 4, -STREET.promenade, STREET.promenade, 0.0, 2.3);
+  strip("ground-base", asphalt, x0 - far, plan.plaza.cx + plan.plaza.r + far, -far, far, -0.05, 3);
+  // The boulevard: promenade (a lawn with stone edging), then per side road and pavement.
+  strip("promenade", prom, x0, x1 + 4, -STREET.promenade, STREET.promenade, -0.006, 2.3);
+  strip("lawn", lineLawn, x0, x1 + 2, -STREET.promenade + 1.1, STREET.promenade - 1.1, 0, 0.9);
   for (const s of [1, -1]) {
     const lo = (a: number, b: number) => [Math.min(s * a, s * b), Math.max(s * a, s * b)] as const;
     const [p0, p1] = lo(STREET.roadOut + 0.3, STREET.facade + 0.6);
@@ -464,10 +472,10 @@ function ground(plan: WorldPlan, shared: Shared, tex: CityTextures): THREE.Mesh[
     out.push(m);
     return m;
   };
-  flat(new THREE.CircleGeometry(R + STREET.facade - 10, 128), cobble, 0.025, 2.5);
+  flat(new THREE.CircleGeometry(R + STREET.facade - 10, 128), cobble, -0.035, 2.5);
   const plazaStone = mk("granite_tile", 2.3, { color: "#fbf7ef", bright: 1.55 });
   plazaPattern(plazaStone, new THREE.Vector2(cx, 0), R - 4);
-  flat(new THREE.CircleGeometry(R - 4, 128), plazaStone, 0.04, 2.3);
+  flat(new THREE.CircleGeometry(R - 4, 128), plazaStone, -0.022, 2.3);
   const lawnIn = R * 0.3, lawnOut = R * 0.9;
   for (let i = 0; i < 8; i++) {
     const c0 = Math.PI + (i * Math.PI) / 4, c1 = c0 + Math.PI / 4;
@@ -476,8 +484,10 @@ function ground(plan: WorldPlan, shared: Shared, tex: CityTextures): THREE.Mesh[
     const t0 = c0 + Math.asin(Math.min(0.9, pathHalf(i) / lawnIn)), t1 = c1 - Math.asin(Math.min(0.9, pathHalf(i + 1) / lawnIn));
     if (t1 <= t0) continue;
     const g = new THREE.RingGeometry(lawnIn, lawnOut, 32, 2, -t1, t1 - t0);
-    flat(g, grass, 0.06, 2);
+    flat(g, grass, -0.01, 2);
   }
+  // The line's lawn runs on into the plaza, where the giants stand.
+  strip("plaza-lawn", lineLawn, x1, cx + R * 0.86, -16, 16, 0, 0.9);
   flat(new THREE.CircleGeometry(66, 64), prom, 0.08, 2.3, { x: plan.tower.x, z: plan.tower.z });
   // Fountains: a stone basin, water and a spray.
   const basinM = new THREE.MeshStandardMaterial({ color: "#e8e1d3", roughness: 0.7 });

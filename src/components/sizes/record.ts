@@ -124,7 +124,8 @@ function loadImage(src: string): Promise<HTMLImageElement | null> {
 }
 
 function wrap(g: CanvasRenderingContext2D, text: string, maxW: number): string[] {
-  const words = text.split(/\s+/);
+  // Plain spaces only: a no-break space keeps an emoji with its word.
+  const words = text.split(/ +/);
   const lines: string[] = [];
   let line = "";
   for (const w of words) {
@@ -160,29 +161,31 @@ export function drawVideoLayers(g: CanvasRenderingContext2D, W: number, H: numbe
   const font = o.font;
   g.textAlign = "center";
   g.textBaseline = "middle";
-  // Caption: a fun fact during each pause, above the platforms' bottom controls.
+  // Caption: a fun fact during each pause, clear of the platforms' bottom text and right-hand buttons.
   if (caption) {
     g.save();
     g.font = `800 ${W * 0.046}px ${font}`;
-    const lines = wrap(g, caption, W * 0.78);
+    const cx = W * 0.46;
+    const lines = wrap(g, caption, W * 0.7);
     const lh = W * 0.058;
-    const y0 = H * 0.74 - ((lines.length - 1) * lh) / 2;
+    const y0 = H * 0.67 - ((lines.length - 1) * lh) / 2;
     const bw = Math.max(...lines.map((l) => g.measureText(l).width)) + W * 0.08;
     g.fillStyle = "rgba(10,16,30,0.62)";
     const bh = lines.length * lh + W * 0.04;
     g.beginPath();
-    g.roundRect(W / 2 - bw / 2, y0 - lh / 2 - W * 0.02, bw, bh, W * 0.03);
+    g.roundRect(cx - bw / 2, y0 - lh / 2 - W * 0.02, bw, bh, W * 0.03);
     g.fill();
-    lines.forEach((l, k) => outlined(g, l, W / 2, y0 + k * lh, W * 0.046, font, "#ffffff"));
+    lines.forEach((l, k) => outlined(g, l, cx, y0 + k * lh, W * 0.046, font, "#ffffff"));
     g.restore();
   }
-  // Watermark.
+  // Watermark: subtle, on the left under the platforms' top bar (their icons sit top right).
   g.save();
-  g.globalAlpha = 0.78;
+  g.globalAlpha = 0.62;
   const wm = W * 0.034;
-  if (o.logo) g.drawImage(o.logo, W - W * 0.05 - wm * 5.2, H * 0.085 - wm * 0.55, wm * 1.1, wm * 1.1);
+  const wx = W * 0.05, wy = H * 0.125;
+  if (o.logo) g.drawImage(o.logo, wx, wy - wm * 0.55, wm * 1.1, wm * 1.1);
   g.textAlign = "left";
-  outlined(g, o.watermark, W - W * 0.05 - wm * 3.9, H * 0.085, wm, font, "#ffffff");
+  outlined(g, o.watermark, wx + wm * 1.35, wy, wm, font, "#ffffff");
   g.restore();
   // Hook card.
   const a = cardAlpha(t, -1, tl.hook, 0.4);
@@ -197,7 +200,8 @@ export function drawVideoLayers(g: CanvasRenderingContext2D, W: number, H: numbe
     g.fillStyle = grad;
     g.fillRect(0, H * 0.12, W, H * 0.32);
     g.font = `800 ${W * 0.085}px ${font}`;
-    const lines = wrap(g, o.hook, W * 0.86);
+    // An emoji at the end stays on the last line with its word.
+    const lines = wrap(g, o.hook.replace(/ (\p{Extended_Pictographic}+)$/u, "\u00a0$1"), W * 0.86);
     const lh = W * 0.1;
     const y0 = H * 0.28 - ((lines.length - 1) * lh) / 2;
     const fill = g.createLinearGradient(0, y0 - lh, 0, y0 + lines.length * lh);
@@ -258,7 +262,7 @@ export async function recordVideo(o: RecordOptions): Promise<RecordResult> {
       const stop = plan.glide.stops.find((s) => t >= s.t0 && t <= s.t1);
       // Badges keep clear of the hook card while it shows.
       const hookOn = t < tl.hook;
-      if (!hookOn || t > tl.hook - 0.3) drawBadges(g, scene.anchors(), pf.focus, byKey, W, H, { font: o.font, scale: 1.08, max: 3, top: H * 0.07, bottom: H * 0.3 });
+      if (!hookOn || t > tl.hook - 0.3) drawBadges(g, scene.anchors(), pf.focus, byKey, W, H, { font: o.font, scale: 1.08, max: pf.view.rise > 0.3 ? 1 : 3, top: H * 0.07, bottom: H * 0.3 });
       const cap = stop && t - stop.t0 > 0.25 && t < v.seconds - tl.end ? captions.get(stop.key) ?? null : null;
       drawVideoLayers(g, W, H, t, v.seconds, cap, layers);
     };

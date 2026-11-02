@@ -268,16 +268,36 @@ export async function buildRef(item: SceneItem, builders: RefBuilders): Promise<
     add(roofGeo.translate(0, wallH + (H - wallH) / 2, 0), roofM);
     for (const [x, y] of [[-0.25, 0.3], [0.25, 0.3], [-0.25, 0.72], [0.25, 0.72]]) add(new THREE.BoxGeometry(W * 0.16, wallH * 0.2, 0.05).translate(x * W, y * wallH, W * 0.35 + 0.01), win);
   } else if (kind === "building") {
-    const W = item.w, H = item.h;
+    // A modern ten-storey block: pale concrete frame, a band of glazing per floor with balconies, a glass lobby and a roof parapet.
+    const W = item.w, H = item.h, D = W * 0.8;
+    const floors = 10, fh = H / floors;
     const cv = document.createElement("canvas");
-    cv.width = 64; cv.height = 128;
+    cv.width = 256; cv.height = 512;
     const c = cv.getContext("2d")!;
-    c.fillStyle = "#cfd4da"; c.fillRect(0, 0, 64, 128);
-    for (let f = 0; f < 10; f++) for (let k = 0; k < 4; k++) { c.fillStyle = "#33414f"; c.fillRect(4 + k * 15, 4 + f * 12.6, 11, 8); }
+    c.fillStyle = "#e9e6df"; c.fillRect(0, 0, 256, 512);
+    const rowH = 512 / floors;
+    for (let f = 0; f < floors; f++) {
+      const y = f * rowH;
+      const g = c.createLinearGradient(0, y, 0, y + rowH);
+      g.addColorStop(0, "#9fc3dd"); g.addColorStop(0.55, "#4f7894"); g.addColorStop(1, "#2c4458");
+      c.fillStyle = g;
+      c.fillRect(10, y + rowH * 0.18, 236, rowH * 0.62);
+      c.fillStyle = "#f4f2ee";
+      for (let k = 0; k <= 6; k++) c.fillRect(8 + k * 39, y + rowH * 0.18, 4, rowH * 0.62);
+      // Slab edge and a glass balustrade.
+      c.fillStyle = "#d8d4cc"; c.fillRect(0, y + rowH * 0.8, 256, rowH * 0.2);
+      c.fillStyle = "rgba(200,225,240,0.55)"; c.fillRect(6, y + rowH * 0.62, 244, rowH * 0.18);
+    }
+    c.fillStyle = "#cdc8bf"; c.fillRect(0, 0, 10, 512); c.fillRect(246, 0, 10, 512);
     const t = new THREE.CanvasTexture(cv);
     t.colorSpace = THREE.SRGBColorSpace;
-    const m = mat({ map: t, roughness: 0.6, metalness: 0.2 });
-    add(new THREE.BoxGeometry(W, H, W * 0.8).translate(0, H / 2, 0), m);
+    t.anisotropy = 4;
+    const m = mat({ map: t, roughness: 0.42, metalness: 0.15 });
+    const top = mat({ color: "#bdb8ae", roughness: 0.85 });
+    add(new THREE.BoxGeometry(W, H - fh * 0.15, D).translate(0, (H - fh * 0.15) / 2, 0), m);
+    // Parapet and a rooftop plant room.
+    add(new THREE.BoxGeometry(W * 1.02, fh * 0.15, D * 1.02).translate(0, H - fh * 0.075, 0), top);
+    add(new THREE.BoxGeometry(W * 0.35, fh * 0.6, D * 0.35).translate(W * 0.15, H + fh * 0.3, -D * 0.1), top);
   } else if (kind === "phone") {
     const body = mat({ color: "#2b2e33", roughness: 0.3, metalness: 0.8 });
     const screen = mat({ color: "#0b0d10", roughness: 0.05, metalness: 0.2, emissive: "#20324a", emissiveIntensity: 0.4 });
