@@ -14,7 +14,7 @@ html.rc-locked, html.rc-locked body { overflow: hidden; overscroll-behavior: non
 .rc-results { background: linear-gradient(180deg, rgb(8 14 32 / .96), rgb(6 10 24 / .96)); }
 .rc-results table { width: 100%; border-collapse: collapse; }
 .rc-results th { font-family: var(--font-pixel); font-size: 9px; text-transform: uppercase; letter-spacing: .06em; color: rgb(255 255 255 / .5); font-weight: 400; padding: .35rem .3rem; text-align: left; }
-.rc-results td { padding: .42rem .3rem; border-top: 1px solid rgb(255 255 255 / .07); font-variant-numeric: tabular-nums; }
+.rc-results td { padding: .36rem .3rem; border-top: 1px solid rgb(255 255 255 / .07); font-variant-numeric: tabular-nums; }
 .rc-results tr.win td { color: #ffd84a; }
 .rc-stage .rc-ui { transition: opacity .5s ease .05s; }
 .rc-stage[data-recording="1"] .rc-ui { opacity: .25; pointer-events: none; }

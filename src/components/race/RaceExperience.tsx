@@ -868,7 +868,7 @@ export function RaceExperience({ preset, vs = [], distance = null, seed = null, 
 
           {/* Results. */}
           {after && race && resultsOpen && (
-            <div className="rc-ui pointer-events-auto absolute inset-x-3 bottom-[7.2rem] z-20 max-h-[min(26rem,calc(100%-12rem))] overflow-y-auto rounded-xl border border-white/15 p-3 text-white shadow-2xl backdrop-blur-xl sm:inset-x-auto sm:bottom-24 sm:right-4 sm:w-[27rem] rc-results" data-testid="race-results" data-rc-scroll>
+            <div className="rc-ui pointer-events-auto absolute inset-x-3 bottom-[7.2rem] z-20 max-h-[min(31rem,calc(100%-12rem))] overflow-y-auto rounded-xl border border-white/15 p-3 text-white shadow-2xl backdrop-blur-xl sm:inset-x-auto sm:bottom-24 sm:right-4 sm:w-[27rem] rc-results" data-testid="race-results" data-rc-scroll>
               <div className="mb-1 flex items-center justify-between gap-2">
                 <h2 className="font-display text-sm font-bold uppercase tracking-wider"><Trophy className="mr-1.5 inline h-4 w-4 text-[#ffd84a]" aria-hidden />Results · {spec.distance} m</h2>
                 <button type="button" onClick={() => setResultsOpen(false)} className="rounded p-1 text-white/60 hover:text-white" aria-label="Hide the results" data-testid="race-results-close"><X className="h-4 w-4" /></button>

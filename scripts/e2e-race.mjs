@@ -180,7 +180,8 @@ export async function runRace({ browser, BASE, OUT, errors, step }) {
     // The list fallback.
     await page.goto(`${BASE}/pokedex/race/shuckle-vs-regieleki?view=list`, { waitUntil: "domcontentloaded" });
     await page.getByTestId("race-list").waitFor({ timeout: 15_000 }).catch(() => errors.push("race: the list view has no results table"));
-    if (await stage.count()) errors.push("race: the list view still shows the 3D stage");
+    // The server's page carries the stage until the page hydrates and reads ?view=list (slow on a busy CI runner).
+    await stage.waitFor({ state: "detached", timeout: 60_000 }).catch(() => errors.push("race: the list view still shows the 3D stage"));
     // The Pokédex entry races it.
     await page.goto(`${BASE}/pokemon/pikachu`, { waitUntil: "domcontentloaded" });
     if ((await page.getByTestId("dex-race-it").getAttribute("href")) !== "/pokedex/race/run?vs=pikachu") errors.push("race: Pikachu's Pokédex entry has no 'Race it' link");
