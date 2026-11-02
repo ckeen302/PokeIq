@@ -7,10 +7,15 @@ import { ROOF_Y } from "./world";
  * camera looks across the boulevard and a little down it, towards Prism
  * Tower; figures face it. Holds add a small orbit (±20° at most) so the
  * relief shows, and the finale pulls back to just above the roofline.
+ * Exploring, the visitor may orbit a little further (ORBIT_LIMIT): past
+ * about 30° a relief figure starts to show its edge.
  */
 
 export const BASE_YAW = (36 * Math.PI) / 180;
+/** Play's orbit at a hold (and the finale's): the relief shows, the figure still faces the lens. */
 export const MAX_ORBIT = (20 * Math.PI) / 180;
+/** The most any camera orbits round a figure (the visitor's own limit in Explore). */
+export const ORBIT_LIMIT = (28 * Math.PI) / 180;
 
 export interface View {
   /** Point on the line the camera frames (m). */
@@ -19,7 +24,7 @@ export interface View {
   d: number;
   /** Height of the framed figure (m): the camera aims at its middle. */
   h: number;
-  /** Extra yaw around the framed figure (radians, clamped to ±MAX_ORBIT). */
+  /** Extra yaw around the framed figure (radians, clamped to ±ORBIT_LIMIT). */
   orbit: number;
   /** Downward tilt (radians). */
   pitch: number;
@@ -37,7 +42,7 @@ export const FACING = BASE_YAW + Math.PI;
 
 /** The side-on pose: looking across the boulevard (and a little down it) at the framed point. */
 function sidePose(v: View): Pose {
-  const yaw = BASE_YAW + Math.max(-MAX_ORBIT, Math.min(MAX_ORBIT, v.orbit));
+  const yaw = BASE_YAW + Math.max(-ORBIT_LIMIT, Math.min(ORBIT_LIMIT, v.orbit));
   const target: [number, number, number] = [v.x, v.h * 0.5, 0];
   const cp = Math.cos(v.pitch), sp = Math.sin(v.pitch);
   const dx = Math.sin(yaw) * cp, dy = -sp, dz = Math.cos(yaw) * cp;

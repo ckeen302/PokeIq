@@ -9,6 +9,7 @@ import { buildProps, type Props } from "./props";
 import { buildTower, type Tower } from "./tower";
 import { ModelProvider, ReliefProvider, buildRef, contactShadowTexture, type FigureHandle, type FigureProvider, type FigureUrls, type Lod, type RefBuilders, type SceneItem } from "./figures";
 import { createPost, type Post } from "./post";
+import { Crowd, type CrowdInstance } from "./crowd";
 import { sharedUniforms } from "./shaders";
 import { SKY, createSky } from "./sky";
 
@@ -95,6 +96,8 @@ export interface SizesScene {
   render(t: number, dt: number): void;
   /** Wait until every figure the current view needs is built (exports, screenshots). */
   settle(timeoutMs?: number): Promise<void>;
+  /** Compile every figure shader now (before the first frame), so none compiles mid-glide. */
+  warm(): void;
   anchors(): Anchor[];
   resize(w: number, h: number): void;
   /** Adaptive quality: pixel ratio, post effects and figure detail (the city and shadow maps keep what they were built with). */
@@ -102,7 +105,7 @@ export interface SizesScene {
   readonly quality: Quality;
   /** Ready to draw (environment loaded). */
   ready: Promise<void>;
-  stats(): { figures: number; loading: number; calls: number; tris: number };
+  stats(): { figures: number; relief: number; crowd: number; loading: number; calls: number; tris: number };
   /** The three.js objects behind the scene, for profiling and debugging tools. */
   internals(): { scene: THREE.Scene; renderer: THREE.WebGLRenderer; camera: THREE.PerspectiveCamera; world: THREE.Group; figures: THREE.Group; sky: THREE.Object3D };
   dispose(): void;
@@ -260,8 +263,9 @@ export function createSizesScene(host: HTMLElement, opts: SceneOptions): SizesSc
   // ---- Figures.
   const providers: FigureProvider[] = [];
   if (opts.models && Object.keys(opts.models).length) providers.push(new ModelProvider(opts.models));
-  providers.push(new ReliefProvider(opts.urls, { anisotropy: maxAniso, sharpen: opts.quality === "export" ? 0.55 : 0.45, texSize: Q.texSize }));
-  interface Slot { item: SceneItem; x: number; z?: number; w: number; h: number; handle: FigureHandle | null; loading: Lod | null; abort: AbortController | null; want: Lod | -1; shadow: THREE.Mesh | null; phase: number; update?: (t: number, dt: number) => void; lastSeen: number }
+  const relief = new ReliefProvider(opts.urls, { anisotropy: maxAniso, sharpen: opts.quality === "export" ? 0.55 : 0.45, texSize: Q.texSize });
+  providers.push(relief);
+  interface Slot { item: SceneItem; x: number; z?: number; w: number; h: number; handle: FigureHandle | null; loading: Lod | null; abort: AbortController | null; want: Lod | -1; shadow: THREE.Mesh | null; phase: number; update?: (t: number, dt: number) => void; lastSeen: number; sh: number; crowdSince: number }
   let slots: Slot[] = [];
   let companion: Slot | null = null;
   const figureGroup = new THREE.Group();
@@ -271,6 +275,14 @@ export function createSizesScene(host: HTMLElement, opts: SceneOptions): SizesSc
   shadowMat.polygonOffset = true;
   shadowMat.polygonOffsetFactor = -2;
   const shadowGeo = new THREE.PlaneGeometry(1, 1).rotateX(-Math.PI / 2);
+  // Far figures: one instanced crowd.
+  const crowd = new Crowd(renderer, opts.urls, FACING, shadowGeo, shadowMat);
+  figureGroup.add(crowd.mesh, crowd.shadows);
+  let crowdList: Slot[] = [];
+  let crowdDirty = false;
+  // Built figures wait here for their turn on the GPU: a few per frame, each compiled before it's shown.
+  const toPlace: { s: Slot; h: FigureHandle; ac: AbortController }[] = [];
+  let compiling = 0;
   let logH: number[] = [];
   let xs: number[] = [];
   let loadingCount = 0;
@@ -281,7 +293,9 @@ export function createSizesScene(host: HTMLElement, opts: SceneOptions): SizesSc
     if (companion) dropSlot(companion);
     companion = null;
     const placed = layoutLine(items.map((i) => ({ m: i.m, length: i.length, bw: i.box[2], bh: i.box[3] })));
-    slots = items.map((item, i) => ({ item: { ...item, w: placed[i].w, h: placed[i].h }, x: placed[i].x, w: placed[i].w, h: placed[i].h, handle: null, loading: null, abort: null, want: -1, shadow: null, phase: (i * 2.399) % (Math.PI * 2), lastSeen: 0 }));
+    slots = items.map((item, i) => ({ item: { ...item, w: placed[i].w, h: placed[i].h }, x: placed[i].x, w: placed[i].w, h: placed[i].h, handle: null, loading: null, abort: null, want: -1, shadow: null, phase: (i * 2.399) % (Math.PI * 2), lastSeen: 0, sh: 0, crowdSince: 0 }));
+    crowdList = [];
+    crowdDirty = true;
     xs = slots.map((s) => s.x);
     // Smoothed log heights (same idea as the camera's distance), for aiming.
     const raw = slots.map((s) => Math.log(Math.max(0.02, s.h)));
@@ -300,7 +314,7 @@ export function createSizesScene(host: HTMLElement, opts: SceneOptions): SizesSc
     if (human && slots.length && slots[0].h < 0.6 && humanAt > 4) {
       // A step to the side and behind the line: a person in the background, not a wall beside the lens.
       const x = slots[0].x - slots[0].w / 2 - 1.1;
-      companion = { item: { ...human, key: "companion" }, x, z: 0.9, w: human.w, h: human.h, handle: null, loading: null, abort: null, want: 1, shadow: null, phase: 1, lastSeen: 0 };
+      companion = { item: { ...human, key: "companion" }, x, z: 0.9, w: human.w, h: human.h, handle: null, loading: null, abort: null, want: 1, shadow: null, phase: 1, lastSeen: 0, sh: 0, crowdSince: 0 };
     }
     return { placed: slots.map((s) => ({ key: s.item.key, x: s.x, w: s.w, h: s.h })), plan };
   }
@@ -366,17 +380,39 @@ export function createSizesScene(host: HTMLElement, opts: SceneOptions): SizesSc
       ? buildRef(item, { trainer: opts.trainer })
       : (providers.find((p) => p.has(item)) ?? providers[providers.length - 1]).load(item, lod, ac.signal);
     job.then((h) => {
+      loadingCount--;
       if (ac.signal.aborted) { h.dispose(); return; }
-      if (s.handle) { figureGroup.remove(s.handle.object); s.handle.dispose(); }
-      s.handle = h;
-      s.update = (h as { update?: (t: number, dt: number) => void }).update;
-      place(s, h);
-    }).catch(() => {
+      // Shown on a later frame (see placeSome), once its shaders are compiled and its texture is on the GPU.
+      toPlace.push({ s, h, ac });
+    }, () => {
       // A figure that can't load (offline, missing art) is left out.
-    }).finally(() => {
       loadingCount--;
       if (s.abort === ac) { s.abort = null; s.loading = null; }
     });
+  }
+
+  /** Puts up to `n` built figures in the scene: textures uploaded one figure per frame, shaders compiled without blocking where the browser can. */
+  function placeSome(n: number, sync = false) {
+    while (n > 0 && toPlace.length) {
+      const { s, h, ac } = toPlace.shift()!;
+      if (ac.signal.aborted || s.abort !== ac) { h.dispose(); continue; }
+      n--;
+      h.materials.forEach(setupMat);
+      for (const m of h.materials) { const map = (m as THREE.MeshStandardMaterial).map; if (map) renderer.initTexture(map); }
+      const show = () => {
+        if (ac.signal.aborted || s.abort !== ac) { h.dispose(); return; }
+        if (s.handle) { figureGroup.remove(s.handle.object); s.handle.dispose(); }
+        s.handle = h;
+        s.abort = null;
+        s.loading = null;
+        s.update = (h as { update?: (t: number, dt: number) => void }).update;
+        place(s, h);
+        crowdDirty = true;
+      };
+      if (sync) { show(); continue; }
+      compiling++;
+      renderer.compileAsync(h.object, camera, scene).then(show, show).finally(() => { compiling--; });
+    }
   }
 
   // ---- Camera.
@@ -410,48 +446,139 @@ export function createSizesScene(host: HTMLElement, opts: SceneOptions): SizesSc
   }
 
   // ---- Streaming: which figures to build, and how detailed.
+  // Relief above RELIEF_IN px on screen, the crowd below RELIEF_OUT (the gap keeps a figure from flickering between the two).
+  const RELIEF_IN = 40, RELIEF_OUT = 27, MIN_PX = 4;
   const tmpV = new THREE.Vector3();
   const projScale = () => (renderer.domElement.height / renderer.getPixelRatio()) / (2 * Math.tan(THREE.MathUtils.degToRad(camera.fov) / 2));
+  const isRelief = (s: Slot) => (s.handle !== null && s.handle.lod < 2) || (s.loading !== null && s.loading < 2);
+  // Everything wanted last time: a figure the scan no longer reaches is no longer wanted.
+  let active: Slot[] = [];
   function wanted(): void {
     const ps = projScale();
+    for (const s of active) s.want = -1;
+    active = [];
     if (!slots.length) return;
     let lo = 0, hi = slots.length - 1;
     while (hi - lo > 1) { const mid = (lo + hi) >> 1; if (xs[mid] <= view.x) lo = mid; else hi = mid; }
     const centre = lo;
+    // How far either way to look: further when the camera has pulled back over the crowd.
+    const viewW = 2 * view.d * Math.tan(THREE.MathUtils.degToRad(camera.fov) / 2) * camera.aspect;
+    const back = view.rise > 0 ? 700 : 60, ahead = 420;
     const ranked: { s: Slot; sh: number }[] = [];
-    for (let i = Math.max(0, centre - (view.rise > 0 ? 700 : 60)); i < Math.min(slots.length, centre + 420); i++) {
+    for (let i = Math.max(0, centre - back * 3); i < Math.min(slots.length, centre + ahead * 2); i++) {
       const s = slots[i];
+      const off = i - centre;
+      if ((off < -back || off > ahead) && Math.abs(s.x - view.x) > viewW * 1.5) { s.want = -1; continue; }
       tmpV.set(s.x, s.h / 2, 0);
       const dist = tmpV.distanceTo(camera.position);
       const sh = (s.h / Math.max(0.01, dist)) * ps;
+      s.sh = sh;
       tmpV.project(camera);
       const inView = tmpV.z < 1 && Math.abs(tmpV.x) < 1.25 + (s.w / Math.max(0.01, dist)) * 2 && tmpV.y > -1.6 && tmpV.y < 2.2;
-      s.want = !inView || sh < 5 ? -1 : sh > 260 && Math.abs(i - centre) <= 2 ? 0 : sh > 34 ? 1 : 2;
-      if (s.want !== -1) { ranked.push({ s, sh }); s.lastSeen = frameNo; }
+      let want: Lod | -1;
+      if (!inView || sh < MIN_PX) want = -1;
+      else if (s.item.ref) want = 1;
+      else want = sh > 260 && Math.abs(off) <= 2 ? 0 : sh > (isRelief(s) ? RELIEF_OUT : RELIEF_IN) ? 1 : 2;
+      s.want = want;
+      // Figures already in relief keep a head start in the ranking, so the cap doesn't swap them back and forth.
+      if (want !== -1) { ranked.push({ s, sh: isRelief(s) ? sh * 1.3 : sh }); s.lastSeen = frameNo; active.push(s); }
     }
-    // Cap the detailed ones: the biggest on screen get relief.
+    // Cap the detailed ones: the biggest on screen get relief, the rest join the crowd (as many as it holds).
     ranked.sort((a, b) => b.sh - a.sh);
-    ranked.forEach((r, k) => { if (k >= Q.maxRelief && r.s.want !== 2) r.s.want = 2; });
+    let reliefN = 0, crowdN = 0;
+    crowdList = [];
+    for (const r of ranked) {
+      const s = r.s;
+      if (s.item.ref || !s.item.art) continue;
+      if (s.want !== 2) {
+        if (reliefN < Q.maxRelief) reliefN++;
+        else s.want = 2;
+      }
+      if (s.want === 2) {
+        if (crowdN >= 240) { s.want = -1; continue; }
+        crowdN++;
+        if (!s.crowdSince) s.crowdSince = frameNo;
+      } else s.crowdSince = 0;
+      // In the crowd: wanted there, or a placeholder until its relief arrives.
+      if (!s.handle) crowdList.push(s);
+    }
+    crowdDirty = true;
     if (companion) companion.want = 1;
   }
+  const art = (s: Slot) => ({ art: s.item.art, box: s.item.box });
   function stream(budget: number) {
     let started = 0;
     const all = companion ? [companion, ...slots] : slots;
     // Biggest wants first.
     const order = all.filter((s) => s.want !== -1).sort((a, b) => (a.want as number) - (b.want as number));
     for (const s of order) {
-      if (started >= budget || loadingCount >= 8) break;
+      if (s.want === 2) {
+        // The crowd's art; once it's in, a relief figure that has shrunk (or lost its place to bigger ones) steps down to it.
+        crowd.want(art(s));
+        if (s.handle && s.handle.lod < 2 && !s.item.ref && crowd.has(s.item.art) && frameNo - s.crowdSince > 8) {
+          figureGroup.remove(s.handle.object);
+          s.handle.dispose();
+          s.handle = null;
+          s.update = undefined;
+          if (s.shadow) { figureGroup.remove(s.shadow); s.shadow = null; }
+          crowdList.push(s);
+          crowdDirty = true;
+        }
+        if (s.abort && s.loading !== null && s.loading < 2) { s.abort.abort(); s.abort = null; s.loading = null; }
+        continue;
+      }
+      // A placeholder from the crowd while the relief loads.
+      if (!s.handle && !s.item.ref && s.item.art) crowd.want(art(s));
+      if (started >= budget || loadingCount >= 8) continue;
       const want = s.want as Lod;
       const have = s.handle?.lod ?? null;
       if (have === want || s.loading === want) continue;
-      // References are built once; a figure never swaps down while it's on screen.
+      // References are built once; a figure never swaps to a lighter mesh while it's on screen.
       if (s.item.ref && (s.handle || s.loading !== null)) continue;
       if (have !== null && have < want) continue;
       startLoad(s, want);
       started++;
     }
-    // Drop what has been out of view for a while.
-    for (const s of slots) if (s.want === -1 && (s.handle || s.loading !== null) && frameNo - s.lastSeen > 90) dropSlot(s);
+    // Drop what has been out of view for a while (references stay: they're few, and rebuilding one would compile its shaders again).
+    for (const s of slots) if (s.want === -1 && !s.item.ref && (s.handle || s.loading !== null) && frameNo - s.lastSeen > 90) dropSlot(s);
+  }
+  function updateCrowd() {
+    const list: CrowdInstance[] = [];
+    for (const s of crowdList) if (!s.handle && s.want !== -1 && crowd.has(s.item.art)) list.push({ x: s.x, z: s.z ?? 0, w: s.w, h: s.h, art: s.item.art });
+    crowd.set(list);
+  }
+  const inCrowd = (s: Slot) => !s.handle && s.want !== -1 && !!s.item.art && crowd.has(s.item.art);
+
+  /** Compiles the figures' shaders (relief and crowd, with their shadow variants) by drawing stand-ins once, out of sight behind the loading screen. */
+  function warm() {
+    applyView();
+    const tex = new THREE.DataTexture(new Uint8Array([255, 255, 255, 255]), 1, 1);
+    tex.colorSpace = THREE.SRGBColorSpace;
+    tex.needsUpdate = true;
+    const geo = new THREE.PlaneGeometry(1, 1);
+    const { mat, obj } = relief.dress(geo, tex, Q.texSize);
+    setupMat(mat);
+    obj.position.copy(target);
+    obj.scale.setScalar(Math.max(0.05, view.h * 0.2));
+    figureGroup.add(obj);
+    setupMat(crowd.material);
+    const crowdWas = crowd.mesh.count;
+    crowd.mesh.count = Math.max(1, crowdWas);
+    crowd.shadows.count = Math.max(1, crowd.shadows.count);
+    try {
+      renderer.compile(scene, camera);
+      csm.update();
+      post.frame(camera, focusD, 1.2, 0.1);
+      post.render();
+    } finally {
+      figureGroup.remove(obj);
+      geo.dispose();
+      mat.dispose();
+      (obj.customDepthMaterial as THREE.Material | undefined)?.dispose();
+      tex.dispose();
+      crowd.mesh.count = crowdWas;
+      crowd.shadows.count = crowdWas;
+    }
   }
 
   // ---- Post.
@@ -472,7 +599,12 @@ export function createSizesScene(host: HTMLElement, opts: SceneOptions): SizesSc
     frameNo++;
     applyView();
     csm.update();
-    if (frameNo % 3 === 1 || opts.quality === "export") { wanted(); stream(opts.quality === "export" ? 99 : 4); }
+    const all = opts.quality === "export";
+    if (frameNo % 3 === 1 || all) { wanted(); stream(all ? 99 : 4); }
+    // GPU uploads, spread over frames: two crowd figures and one relief figure at most (exports take everything at once).
+    if (crowd.upload(all ? 999 : 2)) crowdDirty = true;
+    placeSome(all ? 999 : 1, all);
+    if (crowdDirty) { updateCrowd(); crowdDirty = false; } else crowd.tick();
     shared.uniforms.uTime.value = t;
     sky.update(camera, t);
     // Idle: a slow breath (and the trainer's own idle).
@@ -495,7 +627,8 @@ export function createSizesScene(host: HTMLElement, opts: SceneOptions): SizesSc
     const out: Anchor[] = [];
     const ps = projScale();
     slots.forEach((s, index) => {
-      if (!s.handle || s.handle.lod === 2 && s.h / Math.max(0.01, camera.position.distanceTo(tmpV.set(s.x, s.h / 2, 0))) * ps < 40) return;
+      if (!s.handle && !inCrowd(s)) return;
+      if (!s.handle && s.h / Math.max(0.01, camera.position.distanceTo(tmpV.set(s.x, s.h / 2, 0))) * ps < 6) return;
       const top = new THREE.Vector3(s.x, s.h, 0).project(camera);
       const bot = new THREE.Vector3(s.x, 0, 0).project(camera);
       if (top.z > 1 || bot.z > 1) return;
@@ -515,13 +648,17 @@ export function createSizesScene(host: HTMLElement, opts: SceneOptions): SizesSc
     wanted();
     for (;;) {
       stream(99);
+      crowd.upload(999);
+      placeSome(999, true);
       const all = companion ? [companion, ...slots] : slots;
       const pending = all.some((s) => s.want !== -1 && s.loading !== null);
-      const missing = all.some((s) => s.want !== -1 && !s.handle && s.loading === null);
-      if (!pending && !missing && loadingCount === 0) break;
+      const missing = all.some((s) => s.want !== -1 && s.want !== 2 && !s.handle && s.loading === null);
+      if (!pending && !missing && loadingCount === 0 && !crowd.busy && !toPlace.length && !compiling) break;
       if (performance.now() - t0 > timeoutMs) break;
       await new Promise((r) => setTimeout(r, 30));
     }
+    updateCrowd();
+    crowdDirty = false;
   }
 
   function resize(w: number, h: number) {
@@ -546,11 +683,15 @@ export function createSizesScene(host: HTMLElement, opts: SceneOptions): SizesSc
     setQuality,
     get quality() { return quality; },
     ready,
-    stats: () => ({ figures: slots.filter((s) => s.handle).length, loading: loadingCount, calls: renderer.info.render.calls, tris: renderer.info.render.triangles }),
+    warm,
+    stats: () => ({ figures: slots.filter((s) => s.handle || inCrowd(s)).length, relief: slots.filter((s) => s.handle && s.handle.lod < 2).length, crowd: crowd.mesh.count, loading: loadingCount, calls: renderer.info.render.calls, tris: renderer.info.render.triangles }),
     internals: () => ({ scene, renderer, camera, world: worldGroup, figures: figureGroup, sky: sky.mesh }),
     dispose() {
       for (const s of slots) dropSlot(s);
       if (companion) dropSlot(companion);
+      for (const p of toPlace) p.h.dispose();
+      toPlace.length = 0;
+      crowd.dispose();
       city?.dispose();
       props?.dispose();
       tower?.dispose();

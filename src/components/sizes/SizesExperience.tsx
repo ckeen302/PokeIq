@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { ArrowLeft, ChevronDown, Clapperboard, List, Play, Plus, Scale, Search, Share2, Square, Volume2, VolumeX, X } from "lucide-react";
+import { ArrowLeft, ChevronDown, Clapperboard, List, Play, Plus, RotateCcw, Scale, Search, Share2, Square, Volume2, VolumeX, X, ZoomIn, ZoomOut } from "lucide-react";
 import { isMuted, onMuteChange, setMuted } from "@/lib/sound";
 import { copyText } from "@/lib/share";
 import { fromRow, formatFeet, formatMetres, type SizeItem, type SizeRow } from "@/lib/sizes/types";
@@ -12,14 +12,14 @@ import { COMPARE_MAX, COMPARE_MIN, comparePath, compareOk, itemPath, parseVs, pr
 import { compareHook, lineFor, pushCompare, searchItems, type LineSpec } from "@/lib/sizes/lineup";
 import { framer, type Framer, type Lens } from "@/lib/sizes/glide";
 import { nearestIndex, planPlay, playAt, type PlayPlan } from "@/lib/sizes/play";
-import { blendViews, clampX, dragMetres, exploreView, flightAt, flightSeconds, overviewView, stepIndex, wheelMetres, type Flight } from "@/lib/sizes/explore";
+import { FRICTION, RATE, ORBIT_PER_PX, TILT_PER_PX, ZOOM_MAX, ZOOM_MIN, ZOOM_STEP_BUTTON, ZOOM_STEP_KEY, angleDelta, badgeBudget, badgeScaleFor, blendViews, clampOrbit, clampTilt, clampX, clampZoom, coast, damp, dragMetres, effectiveZoom, exploreView, flightAt, flightSeconds, overviewView, pinchZoom, releaseVelocity, stepIndex, wheelPixels, wheelZoom, zoomAnchorShift, zoomFloorAt, type Flight } from "@/lib/sizes/explore";
 import { factFor, spanFact } from "@/lib/sizes/facts";
 import { markIntroSeen, shouldAutoPlay } from "@/lib/sizes/intro";
 import type { View } from "@/lib/sizes/camera";
 import { badgeName, dexTag } from "@/lib/sizes/badges";
 import type { Quality, SizesScene } from "./scene";
 import type { SizesAudio } from "./audio";
-import { drawBadges } from "./overlay";
+import { BadgeLayer } from "./overlay";
 import { SCENE_URLS, toSceneItem } from "./scene-item";
 import { SIZES_CSS } from "./sizes-css";
 import { trainerFigure } from "./trainer-figure";
@@ -71,17 +71,19 @@ function localStore(): Storage | null {
   }
 }
 
-/** Phones get the light render, small or modest machines the middle one; the frame-time monitor takes it from there. */
+/**
+ * Phones, touch screens and low-memory devices start on the light render,
+ * everything else on the middle one; the frame-time monitor takes it from
+ * there, in both directions.
+ */
 function initialQuality(): Quality {
   const nav = navigator as Navigator & { deviceMemory?: number };
   const short = Math.min(window.screen.width, window.screen.height);
   const coarse = window.matchMedia("(pointer: coarse)").matches;
-  const mem = nav.deviceMemory ?? 8;
-  if ((coarse && short < 820) || mem <= 2) return "low";
-  if (window.innerWidth < 1100 || (nav.hardwareConcurrency ?? 8) <= 4 || mem <= 4) return "medium";
-  return "high";
+  if (coarse || short < 600 || (nav.deviceMemory !== undefined && nav.deviceMemory <= 4)) return "low";
+  return "medium";
 }
-/** A render quality from the address (?q=draft), for automated checks on machines without a GPU. */
+/** A render quality from the address (?q=draft), for automated checks on machines without a GPU: it stays put. */
 function qualityParam(): Quality | null {
   try {
     const q = new URLSearchParams(window.location.search).get("q");
@@ -90,8 +92,15 @@ function qualityParam(): Quality | null {
     return null;
   }
 }
-const LOWER: Record<Quality, Quality> = { export: "high", high: "medium", medium: "low", low: "low", draft: "draft" };
+/** The live qualities, lightest first (exports and the test render are never chosen by the monitor). */
+const LADDER: Quality[] = ["low", "medium", "high"];
 const FRAME_BUDGET_MS = 1000 / 50;
+/** The drag follows the pointer this closely (per second); everything else eases at its RATE. */
+const RATE_DRAG = 22;
+const LZ_MIN = Math.log(ZOOM_MIN), LZ_MAX = Math.log(ZOOM_MAX);
+/** A twist must pass this angle (radians) before it orbits, so a pinch doesn't wobble the view. */
+const TWIST_DEAD = 0.14;
+const softDead = (a: number, dead: number) => Math.sign(a) * Math.max(0, Math.abs(a) - dead);
 
 const sizeLine = (i: SizeItem) => `${formatMetres(i.m)}${i.min ? "+" : ""} · ${formatFeet(i.m)}${i.min ? "+" : ""}`;
 
@@ -163,21 +172,40 @@ export function SizesExperience({ preset, focus = null, vs = [], compare = false
   hookRef.current = hook;
   const ctl = useRef({
     kind: "explore" as Kind,
+    /** Point on the line: current, target and flick velocity (m/s). */
     x: 0,
     target: 0,
     vel: 0,
+    /** The visitor's look: log zoom, tilt and orbit (current and target), with the flick velocities of tilt and orbit. */
+    lz: 0,
+    lzT: 0,
+    tilt: 0,
+    tiltT: 0,
+    vTilt: 0,
+    orbit: 0,
+    orbitT: 0,
+    vOrbit: 0,
+    /** A pointer is holding the camera (drag, pinch). */
     dragging: false,
+    /** A trackpad gesture (Safari's pinch and twist) is under way. */
+    gesturing: false,
+    /** When the last input arrived (performance.now(), ms). */
+    lastInput: -1e9,
     flight: null as Flight | null,
     play: null as { plan: PlayPlan; t0: number; stop: string | null; finale: boolean } | null,
     blend: null as { from: View; t0: number; dur: number } | null,
     last: null as View | null,
     now: 0,
   });
+  const qualityPinnedRef = useRef(false);
+  const badgesRef = useRef<BadgeLayer | null>(null);
 
   const byKey = useMemo(() => new Map((items ?? []).map((i) => [i.key, i])), [items]);
   const line = useMemo(() => (items ? lineFor(spec, items) : []), [items, spec]);
   const presetInfo = PRESET_BY_ID.get(spec.preset) ?? DEFAULT_PRESET;
   const comparing = compareOk(spec.vs.length);
+  const comparingRef = useRef(comparing);
+  comparingRef.current = comparing;
   const lineTitle = comparing ? compareHook(line).replace(/ 😳$/, "") : presetInfo.label;
   const hookText = comparing ? compareHook(line) : presetInfo.hook;
   const focusItem = focusKey ? byKey.get(focusKey) ?? null : null;
@@ -270,10 +298,20 @@ export function SizesExperience({ preset, focus = null, vs = [], compare = false
 
   const toExplore = useCallback((blend = 0.7) => {
     const c = ctl.current;
+    c.lastInput = performance.now();
     if (c.kind === "explore") return;
     const wasPlaying = c.kind === "play";
-    if (c.last) { c.x = c.target = c.last.x; }
-    c.vel = 0;
+    if (c.last) {
+      c.x = c.target = c.last.x;
+      // Leaving Compare's overview, the explore camera starts as far back as the overview stood (Play and its finale keep the visitor's own zoom).
+      const fr = frRef.current;
+      if (c.kind === "overview" && fr) {
+        c.lz = c.lzT = Math.log(clampZoom(effectiveZoom(fr.at(c.last.x), c.last.d)));
+        c.tilt = c.tiltT = 0;
+        c.orbit = c.orbitT = 0;
+      }
+    }
+    c.vel = c.vTilt = c.vOrbit = 0;
     c.flight = null;
     c.play = null;
     c.kind = "explore";
@@ -281,6 +319,48 @@ export function SizesExperience({ preset, focus = null, vs = [], compare = false
     startBlend(blend);
     if (wasPlaying) { setCaption(null); setHook(null); audioRef.current?.music(false); }
   }, [startBlend]);
+
+  /**
+   * Zooms by a log factor (positive is closer). With `anchorX` (px from the
+   * stage's left), the spot under the pointer stays about where it is.
+   */
+  const zoomBy = useCallback((dlz: number, anchorX?: number) => {
+    const c = ctl.current;
+    const fr = frRef.current;
+    if (!fr || recordingRef.current) return;
+    if (c.kind !== "explore") toExplore(0.5);
+    c.lastInput = performance.now();
+    // Over the giants the distance cap holds the camera: a zoom left further out (from smaller figures) starts back from there.
+    const lo = Math.log(zoomFloorAt(fr.at(c.target)));
+    const from = Math.max(lo, Math.min(LZ_MAX, c.lzT));
+    const next = Math.max(lo, Math.min(LZ_MAX, from + dlz));
+    const w = sizeRef.current.w;
+    if (anchorX !== undefined && c.last && !c.flight && next !== from) c.target += 0.7 * zoomAnchorShift(anchorX - w / 2, w, c.last.d, Math.exp(next - from), lensRef.current);
+    c.lzT = next;
+  }, [toExplore]);
+
+  /** Back to the automatic framing, level and square on (a comparison goes back to its overview). */
+  const resetView = useCallback(() => {
+    const c = ctl.current;
+    if (recordingRef.current) return;
+    c.lastInput = performance.now();
+    c.vTilt = c.vOrbit = c.vel = 0;
+    c.lzT = 0;
+    c.tiltT = 0;
+    c.orbitT = 0;
+    if (comparingRef.current) {
+      // Stopping a glide also stops its music and captions.
+      if (c.kind === "play") toExplore(0.3);
+      c.lz = c.tilt = c.orbit = 0;
+      c.play = null;
+      c.flight = null;
+      c.kind = "overview";
+      setKind("overview");
+      startBlend(0.9);
+      return;
+    }
+    if (c.kind !== "explore") toExplore(0.6);
+  }, [startBlend, toExplore]);
 
   const startPlay = useCallback((showHook: boolean) => {
     const placed = placedRef.current;
@@ -297,7 +377,8 @@ export function SizesExperience({ preset, focus = null, vs = [], compare = false
     audioRef.current?.music(true);
   }, [startBlend, hookText]);
 
-  const flyTo = useCallback((key: string) => {
+  /** Flies along the line to a figure; `frame` (a search) also brings a wide view back in so the figure is seen. */
+  const flyTo = useCallback((key: string, frame = false) => {
     const placed = placedRef.current;
     const i = placed.findIndex((p) => p.key === key);
     if (i < 0) return false;
@@ -307,6 +388,7 @@ export function SizesExperience({ preset, focus = null, vs = [], compare = false
     const from = c.x;
     c.flight = { from, to: placed[i].x, t0: c.now, dur: flightSeconds(from, placed[i].x, 2 * d * Math.tan((lensRef.current.vfov * Math.PI) / 360) * lensRef.current.aspect) };
     c.vel = 0;
+    if (frame && c.lzT < Math.log(0.7)) c.lzT = 0;
     if (Math.abs(placed[i].x - from) > 0.5) audioRef.current?.whoosh(0.8);
     return true;
   }, [toExplore]);
@@ -330,7 +412,9 @@ export function SizesExperience({ preset, focus = null, vs = [], compare = false
     import("./scene").then(async ({ createSizesScene }) => {
       if (!alive) return;
       try {
-        const q = qualityParam() ?? initialQuality();
+        const pinned = qualityParam();
+        qualityPinnedRef.current = pinned !== null;
+        const q = pinned ?? initialQuality();
         // The human is built when it first comes near the camera: by then the player's own trainer has usually loaded.
         const scene = createSizesScene(host, { quality: q, urls: SCENE_URLS, trainer: () => trainerFigure(trainerRef.current)() });
         sceneRef.current = scene;
@@ -364,6 +448,9 @@ export function SizesExperience({ preset, focus = null, vs = [], compare = false
     pendingRef.current = null;
     c.blend = null;
     c.flight = null;
+    // A new lineup starts on the automatic framing.
+    c.lz = c.lzT = c.tilt = c.tiltT = c.orbit = c.orbitT = 0;
+    c.vel = c.vTilt = c.vOrbit = 0;
     const at = pending?.focus ? placed.find((p) => p.key === pending.focus) : undefined;
     c.x = c.target = at ? at.x : placed[0]?.x ?? 0;
     c.last = null;
@@ -378,6 +465,8 @@ export function SizesExperience({ preset, focus = null, vs = [], compare = false
       c.play = null;
       setKind("explore");
     }
+    // Every figure shader compiles now, before the first frame, instead of mid-glide.
+    try { scene.warm(); } catch { /* drawing will compile them instead */ }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ready, line]);
 
@@ -394,6 +483,7 @@ export function SizesExperience({ preset, focus = null, vs = [], compare = false
         const dpr = Math.min(2, window.devicePixelRatio || 1);
         cv.width = Math.round(w * dpr);
         cv.height = Math.round(h * dpr);
+        badgesRef.current?.invalidate();
       }
       lensRef.current = { vfov: w / h < 0.8 ? 46 : 35, aspect: w / h };
       if (placedRef.current.length) frRef.current = framer(placedRef.current, lensRef.current);
@@ -409,8 +499,15 @@ export function SizesExperience({ preset, focus = null, vs = [], compare = false
     if (!ready) return;
     let raf = 0;
     let last = performance.now();
-    let ftEma = FRAME_BUDGET_MS, slowFor = 0, warm = 0, lastFocus: string | null = null;
+    let lastFocus: string | null = null, lastFocusAt = 0, lastThumb = -1, lastProgress = "", lastPublish = 0, lastLook = "", hookShown = false;
+    // Adaptive quality: frame-time average, the display's own frame interval, and how long frames have been slow or comfortable.
+    let ftEma = 1000 / 60, refresh = 1000 / 60, slowFor = 0, calmFor = 0, warm = 0, raisedAt = -1e9, ceiling = LADDER.length - 1;
     const font = getComputedStyle(document.documentElement).getPropertyValue("--font-display").trim() || "sans-serif";
+    const badges = new BadgeLayer(font);
+    badgesRef.current = badges;
+    // A web font that arrives late changes every badge's measurements.
+    const onFonts = () => badges.reset(font);
+    document.fonts?.addEventListener?.("loadingdone", onFonts);
     const tick = () => {
       raf = requestAnimationFrame(tick);
       const scene = sceneRef.current;
@@ -444,9 +541,12 @@ export function SizesExperience({ preset, focus = null, vs = [], compare = false
             else audioRef.current?.whoosh(0.6);
           } else setCaption(null);
         }
-        if (pt > 2.6) setHook(null);
-        const p = Math.min(1, pt / c.play.plan.glide.duration);
-        if (progressRef.current) progressRef.current.style.transform = `scaleX(${p.toFixed(4)})`;
+        if (pt > 2.6 && hookRef.current) setHook(null);
+        const p = Math.min(1, pt / c.play.plan.glide.duration).toFixed(3);
+        if (progressRef.current && p !== lastProgress) {
+          lastProgress = p;
+          progressRef.current.style.transform = `scaleX(${p})`;
+        }
         if (pf.state.done) {
           // The finale holds until the next input.
           c.kind = "hold";
@@ -461,19 +561,34 @@ export function SizesExperience({ preset, focus = null, vs = [], compare = false
         view = overviewView(placed, lens);
         focusNow = placed.reduce((a, b) => (b.h > a.h ? b : a)).key;
       } else {
+        // Explore: the visitor's camera, every part easing towards its target at a rate that doesn't depend on the frame rate.
+        const first = placed[0], lastP = placed[placed.length - 1];
         if (c.flight) {
           const f = flightAt(c.flight, c.now);
           c.x = c.target = f.x;
           if (f.done) c.flight = null;
-        } else if (!c.dragging) {
-          c.target += c.vel * dt;
-          c.vel *= Math.exp(-5 * dt);
-          c.x += (c.target - c.x) * (1 - Math.exp(-dt * 8));
+        } else {
+          if (!c.dragging) ({ target: c.target, vel: c.vel } = coast(c.target, c.vel, FRICTION.x, dt));
+          const t = clampX(c.target, first, lastP);
+          if (t !== c.target) { c.target = t; c.vel = 0; }
+          c.x = damp(c.x, c.target, c.dragging ? RATE_DRAG : RATE.x, dt);
         }
-        const first = placed[0], lastP = placed[placed.length - 1];
-        c.target = clampX(c.target, first, lastP);
         c.x = clampX(c.x, first, lastP);
-        view = exploreView(c.x, fr, scene.heightAt);
+        if (!c.dragging) {
+          ({ target: c.tiltT, vel: c.vTilt } = coast(c.tiltT, c.vTilt, FRICTION.tilt, dt));
+          ({ target: c.orbitT, vel: c.vOrbit } = coast(c.orbitT, c.vOrbit, FRICTION.orbit, dt));
+        }
+        c.lzT = Math.max(LZ_MIN, Math.min(LZ_MAX, c.lzT));
+        c.lz = damp(c.lz, c.lzT, RATE.zoom, dt);
+        const zoom = Math.exp(c.lz);
+        const h = scene.heightAt(c.x);
+        const tiltT = clampTilt(c.tiltT, h, zoom);
+        if (tiltT !== c.tiltT) { c.tiltT = tiltT; c.vTilt = 0; }
+        const orbitT = clampOrbit(c.orbitT);
+        if (orbitT !== c.orbitT) { c.orbitT = orbitT; c.vOrbit = 0; }
+        c.tilt = damp(c.tilt, c.tiltT, c.dragging ? RATE_DRAG : RATE.tilt, dt);
+        c.orbit = damp(c.orbit, c.orbitT, c.dragging ? RATE_DRAG : RATE.orbit, dt);
+        view = exploreView(c.x, fr, scene.heightAt, { zoom, tilt: c.tilt, orbit: c.orbit });
         focusNow = placed[Math.max(0, nearestIndex(placed, c.x))].key;
       }
       if (c.blend) {
@@ -484,106 +599,290 @@ export function SizesExperience({ preset, focus = null, vs = [], compare = false
       c.last = view;
       scene.setView(view);
       scene.render(c.now, dt);
-      // Badges.
+      const zoomNow = effectiveZoom(fr.at(view.x), view.d);
+      // Badges: fewer and a little smaller as the view widens; the title card has the screen to itself.
       const cv = overlayRef.current;
       if (cv) {
-        const g = cv.getContext("2d")!;
+        const g = cv.getContext("2d");
         const { w, h } = sizeRef.current;
-        const dpr = cv.width / w;
-        g.setTransform(1, 0, 0, 1, 0, 0);
-        g.clearRect(0, 0, cv.width, cv.height);
-        g.setTransform(dpr, 0, 0, dpr, 0, 0);
-        const phone = w < 640;
-        // The finale is the giant's alone; the title card has the screen to itself.
-        const max = view.rise > 0.3 ? 1 : phone ? 2 : 4;
-        if (!hookRef.current) drawBadges(g, scene.anchors(), focusNow, byKeyRef.current, w, h, { font, scale: phone ? 1.15 : 1, max, top: phone ? 104 : 72, bottom: phone ? 128 : 104 });
+        if (g && !hookRef.current) {
+          hookShown = false;
+          const phone = w < 640;
+          // The finale is the giant's alone.
+          let max = view.rise > 0.3 ? 1 : phone ? 2 : 4;
+          let scale = phone ? 1.15 : 1;
+          if (c.kind === "explore") {
+            max = Math.min(max, badgeBudget(zoomNow, phone));
+            scale *= badgeScaleFor(zoomNow);
+          }
+          badges.draw(g, scene.anchors(), focusNow, byKeyRef.current, w, h, cv.width / w, { scale, max, top: phone ? 104 : 72, bottom: phone ? 128 : 104 });
+        } else if (g && !hookShown) {
+          hookShown = true;
+          g.setTransform(1, 0, 0, 1, 0, 0);
+          g.clearRect(0, 0, cv.width, cv.height);
+          badges.invalidate();
+        }
       }
-      // Where we are on the line.
+      // Where we are on the line (only written when it moves to another figure).
       if (thumbRef.current && placed.length > 1) {
         const i = Math.max(0, nearestIndex(placed, view.x));
-        thumbRef.current.style.left = `${((i / (placed.length - 1)) * 100).toFixed(3)}%`;
+        if (i !== lastThumb) {
+          lastThumb = i;
+          thumbRef.current.style.left = `${((i / (placed.length - 1)) * 100).toFixed(3)}%`;
+        }
       }
-      if (focusNow !== lastFocus) {
+      // React hears about the framed figure at most a few times a second while the camera moves, and at once when it settles.
+      const settled = !c.dragging && !c.gesturing && !c.flight && !c.blend && Math.abs(c.vel) < 1e-3 && Math.abs(c.target - c.x) < 1e-3 * Math.max(0.05, view.d);
+      if (focusNow !== lastFocus && (settled || now - lastFocusAt > 160 || c.kind !== "explore")) {
         lastFocus = focusNow;
+        lastFocusAt = now;
         setFocusKey(focusNow);
       }
-      // Adaptive quality: step down when frames stay slow (never back up mid-visit).
-      if (warm < 40 || raw > 500) warm++;
-      else {
-        ftEma = ftEma * 0.9 + raw * 0.1;
-        slowFor = ftEma > FRAME_BUDGET_MS * 1.6 ? slowFor + raw : 0;
-        if (slowFor > 1500 && scene.quality !== "low") {
-          scene.setQuality(LOWER[scene.quality]);
-          setQualityState(scene.quality);
-          slowFor = 0;
-          warm = 20;
+      // The zoom on screen, for tests and tools (an attribute, not React state).
+      if (now - lastPublish > 120 && stageRef.current) {
+        lastPublish = now;
+        const z = zoomNow.toFixed(3), tilt = ((view.pitch * 180) / Math.PI).toFixed(1), orbit = ((view.orbit * 180) / Math.PI).toFixed(1);
+        const look = `${z} ${tilt} ${orbit}`;
+        if (look !== lastLook) {
+          lastLook = look;
+          const ds = stageRef.current.dataset;
+          ds.zoom = z;
+          ds.tilt = tilt;
+          ds.orbit = orbit;
         }
+      }
+      // Adaptive quality: down after half a second of slow frames, up only after several calm seconds with nothing moving.
+      if (qualityPinnedRef.current || !LADDER.includes(scene.quality)) return;
+      const work = performance.now() - now;
+      if (warm < 24 || raw > 400) { warm++; return; }
+      ftEma = ftEma * 0.85 + raw * 0.15;
+      refresh = Math.min(34, Math.max(6, Math.min(raw, refresh + 0.005)));
+      const slow = ftEma > Math.max(FRAME_BUDGET_MS, refresh) * 1.5;
+      slowFor = slow ? slowFor + raw : Math.max(0, slowFor - raw * 0.5);
+      const level = LADDER.indexOf(scene.quality);
+      if (slowFor > 500 && level > 0) {
+        // Raised a moment ago and it couldn't keep up: don't try that level again this visit.
+        if (now - raisedAt < 10_000) ceiling = level - 1;
+        scene.setQuality(LADDER[level - 1]);
+        setQualityState(scene.quality);
+        slowFor = calmFor = 0;
+        warm = 0;
+        ftEma = refresh;
+        return;
+      }
+      const busy = c.dragging || c.gesturing || now - c.lastInput < 2500 || !!c.flight || !!c.blend || c.kind === "play";
+      const calm = !busy && ftEma < refresh * 1.2 && raw < refresh * 1.7 && work < refresh * 0.45;
+      calmFor = calm ? calmFor + raw : 0;
+      if (calmFor > 6000 && level < ceiling) {
+        scene.setQuality(LADDER[level + 1]);
+        setQualityState(scene.quality);
+        raisedAt = now;
+        slowFor = calmFor = 0;
+        warm = 0;
       }
     };
     raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
+    return () => {
+      cancelAnimationFrame(raf);
+      document.fonts?.removeEventListener?.("loadingdone", onFonts);
+      badgesRef.current = null;
+    };
   }, [ready]);
 
-  // ---- Input: drag, wheel and keys explore; any of them stops Play.
+  // ---- Input: drags, the wheel, trackpad gestures and keys explore; any of them stops Play.
   useEffect(() => {
-    if (!ready || !hostRef.current) return;
+    if (!ready || !hostRef.current || !stageRef.current) return;
     const host = hostRef.current;
-    let lastX = 0, lastT = 0, id = -1;
+    const stage = stageRef.current;
+    const cam = ctl.current;
+    const pts = new Map<number, { x: number; y: number; type: string }>();
+    // pan: one finger or the left button (sideways moves along the line, up and down tilts); look: right button, or shift/ctrl and drag (turns round the figure and tilts); pinch: two fingers.
+    let mode: "pan" | "look" | "pinch" | null = null;
+    let lock: "x" | "y" | null = null;
+    let sx = 0, sy = 0, lx = 0, ly = 0;
+    let pinch: { spread: number; angle: number; lz: number; orbit: number; mx: number } | null = null;
+    let trail: { t: number; x: number; tilt: number; orbit: number }[] = [];
+    let gesture: { lz: number; orbit: number } | null = null;
+    const here = () => {
+      const c = ctl.current;
+      return { h: sceneRef.current?.heightAt(c.x) ?? 1, zoom: Math.exp(c.lz) };
+    };
+    const record = (now: number) => {
+      const c = ctl.current;
+      trail.push({ t: now, x: c.target, tilt: c.tiltT, orbit: c.orbitT });
+      if (trail.length > 12) trail.shift();
+    };
+    const pair = () => {
+      const [a, b] = [...pts.values()];
+      return { spread: Math.hypot(b.x - a.x, b.y - a.y), angle: Math.atan2(b.y - a.y, b.x - a.x), mx: (a.x + b.x) / 2 };
+    };
+    const startPan = (x: number, y: number) => {
+      mode = "pan";
+      lock = null;
+      sx = lx = x;
+      sy = ly = y;
+      trail = [];
+    };
     const down = (e: PointerEvent) => {
-      if (e.button !== 0 || recordingRef.current) return;
+      if (recordingRef.current) return;
+      if (e.pointerType === "mouse" && e.button !== 0 && e.button !== 2) return;
       setPresetMenu(false);
       toExplore();
       const c = ctl.current;
-      c.dragging = true;
       c.flight = null;
-      c.vel = 0;
-      lastX = e.clientX;
-      lastT = performance.now();
-      id = e.pointerId;
-      host.setPointerCapture(e.pointerId);
+      c.vel = c.vTilt = c.vOrbit = 0;
+      c.dragging = true;
+      pts.set(e.pointerId, { x: e.clientX, y: e.clientY, type: e.pointerType });
+      try { host.setPointerCapture(e.pointerId); } catch { /* a synthetic or already-ended pointer */ }
+      if (pts.size === 1) {
+        startPan(e.clientX, e.clientY);
+        if (e.pointerType === "mouse" && (e.button === 2 || e.shiftKey || e.ctrlKey)) mode = "look";
+      } else if (pts.size === 2) {
+        const p = pair();
+        pinch = { spread: p.spread, angle: p.angle, lz: c.lzT, orbit: c.orbitT, mx: p.mx };
+        mode = "pinch";
+      }
     };
     const move = (e: PointerEvent) => {
+      const p = pts.get(e.pointerId);
       const c = ctl.current;
-      if (!c.dragging || e.pointerId !== id || !c.last) return;
+      if (!p || !c.last) return;
+      p.x = e.clientX;
+      p.y = e.clientY;
       const now = performance.now();
-      const m = dragMetres(e.clientX - lastX, sizeRef.current.w, c.last.d, lensRef.current);
-      c.x += m;
-      c.target = c.x;
-      const dtp = Math.max(1, now - lastT) / 1000;
-      c.vel = c.vel * 0.6 + (m / dtp) * 0.4;
-      lastX = e.clientX;
-      lastT = now;
+      const w = sizeRef.current.w;
+      c.lastInput = now;
+      if (mode === "pinch" && pinch && pts.size >= 2) {
+        const q = pair();
+        const { h } = here();
+        const fr = frRef.current;
+        const lo = fr ? Math.log(zoomFloorAt(fr.at(c.target))) : LZ_MIN;
+        c.lzT = Math.max(lo, Math.min(LZ_MAX, pinchZoom(pinch.lz, pinch.spread, q.spread)));
+        // A twist turns the camera round the figure (clockwise fingers, clockwise scene).
+        c.orbitT = clampOrbit(pinch.orbit - softDead(angleDelta(pinch.angle, q.angle), TWIST_DEAD));
+        c.tiltT = clampTilt(c.tiltT, h, Math.exp(c.lzT));
+        c.target += dragMetres(q.mx - pinch.mx, w, c.last.d, lensRef.current);
+        pinch.mx = q.mx;
+        return;
+      }
+      const dx = e.clientX - lx, dy = e.clientY - ly;
+      lx = e.clientX;
+      ly = e.clientY;
+      const { h, zoom } = here();
+      if (mode === "look") {
+        c.orbitT = clampOrbit(c.orbitT + dx * ORBIT_PER_PX);
+        c.tiltT = clampTilt(c.tiltT + dy * TILT_PER_PX, h, zoom);
+      } else if (mode === "pan") {
+        // The first few pixels decide: mostly sideways moves along the line, mostly up or down tilts.
+        if (!lock) {
+          const tx = e.clientX - sx, ty = e.clientY - sy;
+          if (tx * tx + ty * ty > 36) lock = Math.abs(ty) > Math.abs(tx) * 1.15 ? "y" : "x";
+        }
+        if (lock === "y") c.tiltT = clampTilt(c.tiltT + dy * TILT_PER_PX, h, zoom);
+        else c.target += dragMetres(dx, w, c.last.d, lensRef.current);
+      }
+      record(now);
     };
     const up = (e: PointerEvent) => {
+      if (!pts.delete(e.pointerId)) return;
       const c = ctl.current;
-      if (e.pointerId !== id) return;
+      if (mode === "pinch") {
+        pinch = null;
+        // Lifting one of two fingers carries on as a one-finger drag.
+        if (pts.size === 1) {
+          const [p] = [...pts.values()];
+          startPan(p.x, p.y);
+          return;
+        }
+      }
+      if (pts.size) return;
+      const now = performance.now();
+      // A flick carries on and slows to a stop.
+      if (mode === "pan" && lock !== "y") {
+        const v = releaseVelocity(trail.map((p) => ({ t: p.t, v: p.x })), now);
+        const cap = 6 * (c.last ? 2 * c.last.d * Math.tan((lensRef.current.vfov * Math.PI) / 360) * lensRef.current.aspect : 10);
+        c.vel = Math.max(-cap, Math.min(cap, v));
+      }
+      if (mode === "look" || lock === "y") {
+        c.vTilt = Math.max(-3, Math.min(3, releaseVelocity(trail.map((p) => ({ t: p.t, v: p.tilt })), now)));
+        if (mode === "look") c.vOrbit = Math.max(-3, Math.min(3, releaseVelocity(trail.map((p) => ({ t: p.t, v: p.orbit })), now)));
+      }
       c.dragging = false;
-      if (performance.now() - lastT > 120) c.vel = 0;
-      id = -1;
+      c.lastInput = now;
+      mode = null;
+      trail = [];
     };
+    // Scrolling: up and down zooms, sideways moves along the line; a trackpad pinch arrives as ctrl + wheel (Chrome, Firefox, Edge).
     const wheel = (e: WheelEvent) => {
       if (recordingRef.current) return;
+      // Lists in the page's panels scroll as usual (but a pinch over them still mustn't zoom the page).
+      if (!e.ctrlKey && (e.target as HTMLElement).closest?.("[data-sz-scroll]")) return;
       e.preventDefault();
+      if (gesture) return;
+      const c = ctl.current;
+      toExplore();
+      if (!c.last) return;
+      const { w, h } = sizeRef.current;
+      let zy = wheelPixels(e.deltaY, e.deltaMode, h);
+      let px = wheelPixels(e.deltaX, e.deltaMode, w);
+      // Shift + wheel scrolls sideways on a mouse.
+      if (e.shiftKey && !px) { px = zy; zy = 0; }
+      if (zy) zoomBy(wheelZoom(zy, e.ctrlKey), e.clientX);
+      if (px && !e.ctrlKey) {
+        c.flight = null;
+        c.target += dragMetres(-px, w, c.last.d, lensRef.current);
+        c.vel = 0;
+      }
+    };
+    // Safari: a trackpad pinch (and twist) arrives as gesture events.
+    type Gesture = Event & { scale: number; rotation: number; clientX?: number };
+    const gstart = (e: Event) => {
+      e.preventDefault();
+      if (recordingRef.current || [...pts.values()].some((p) => p.type === "touch")) return;
       toExplore();
       const c = ctl.current;
-      if (!c.last) return;
-      c.flight = null;
-      const delta = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
-      c.target += wheelMetres(delta * (e.deltaMode === 1 ? 16 : 1), c.last.d, lensRef.current);
+      gesture = { lz: c.lzT, orbit: c.orbitT };
+      c.gesturing = true;
     };
+    const gchange = (e: Event) => {
+      e.preventDefault();
+      if (!gesture) return;
+      const g = e as Gesture;
+      const c = ctl.current;
+      zoomBy(gesture.lz + Math.log(Math.max(0.05, g.scale || 1)) - c.lzT, g.clientX);
+      c.orbitT = clampOrbit(gesture.orbit - softDead(((g.rotation || 0) * Math.PI) / 180, TWIST_DEAD));
+      c.lastInput = performance.now();
+    };
+    const gend = (e: Event) => {
+      e.preventDefault();
+      gesture = null;
+      ctl.current.gesturing = false;
+      ctl.current.lastInput = performance.now();
+    };
+    const menu = (e: Event) => e.preventDefault();
     host.addEventListener("pointerdown", down);
     host.addEventListener("pointermove", move);
     host.addEventListener("pointerup", up);
     host.addEventListener("pointercancel", up);
-    host.addEventListener("wheel", wheel, { passive: false });
+    host.addEventListener("contextmenu", menu);
+    stage.addEventListener("wheel", wheel, { passive: false });
+    stage.addEventListener("gesturestart", gstart);
+    stage.addEventListener("gesturechange", gchange);
+    stage.addEventListener("gestureend", gend);
     return () => {
       host.removeEventListener("pointerdown", down);
       host.removeEventListener("pointermove", move);
       host.removeEventListener("pointerup", up);
       host.removeEventListener("pointercancel", up);
-      host.removeEventListener("wheel", wheel);
+      host.removeEventListener("contextmenu", menu);
+      stage.removeEventListener("wheel", wheel);
+      stage.removeEventListener("gesturestart", gstart);
+      stage.removeEventListener("gesturechange", gchange);
+      stage.removeEventListener("gestureend", gend);
+      cam.dragging = false;
+      cam.gesturing = false;
     };
-  }, [ready, toExplore]);
+  }, [ready, toExplore, zoomBy]);
 
   useEffect(() => {
     if (!ready) return;
@@ -605,6 +904,15 @@ export function SizesExperience({ preset, focus = null, vs = [], compare = false
       } else if (e.key === "Home" || e.key === "End") {
         e.preventDefault();
         flyTo(placed[e.key === "Home" ? 0 : placed.length - 1].key);
+      } else if (e.key === "+" || e.key === "=") {
+        e.preventDefault();
+        zoomBy(ZOOM_STEP_KEY);
+      } else if (e.key === "-" || e.key === "_") {
+        e.preventDefault();
+        zoomBy(-ZOOM_STEP_KEY);
+      } else if (e.key === "0") {
+        e.preventDefault();
+        resetView();
       } else if (e.key === " " && (e.target as HTMLElement).closest?.("button,a") == null) {
         e.preventDefault();
         if (c.kind === "play") toExplore(); else startPlay(false);
@@ -618,7 +926,7 @@ export function SizesExperience({ preset, focus = null, vs = [], compare = false
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [ready, flyTo, startPlay, toExplore, videoOpen]);
+  }, [ready, flyTo, startPlay, toExplore, zoomBy, resetView, videoOpen]);
 
   useEffect(() => { if (searchOpen) searchRef.current?.focus(); }, [searchOpen]);
   useEffect(() => {
@@ -679,7 +987,7 @@ export function SizesExperience({ preset, focus = null, vs = [], compare = false
       return;
     }
     setSearchOpen(false);
-    if (flyTo(item.key)) return;
+    if (flyTo(item.key, true)) return;
     // Not on this line: the full line (with the form, when it's a form), flown there.
     pendingRef.current = { focus: item.key };
     setSpec({ preset: DEFAULT_PRESET.id, vs: [], extra: item.kind === "pokemon" ? [] : [item.key] });
@@ -748,7 +1056,7 @@ export function SizesExperience({ preset, focus = null, vs = [], compare = false
             className="sz-host absolute inset-0 cursor-grab touch-none select-none active:cursor-grabbing"
             data-testid="sizes-scene"
             role="application"
-            aria-label="Pokémon to scale in 3D, smallest to largest. Drag, scroll or use the arrow keys to move along the line; Space plays the glide."
+            aria-label="Pokémon to scale in 3D, smallest to largest. Drag sideways or use the arrow keys to move along the line, scroll or pinch to zoom (+ and − keys too), drag up and down to tilt, right-drag or shift-drag to turn; 0 resets the view and Space plays the glide."
           />
           <canvas ref={overlayRef} className="sz-overlay h-full w-full" aria-hidden />
           <div className="sz-shade-top" aria-hidden />
@@ -812,7 +1120,7 @@ export function SizesExperience({ preset, focus = null, vs = [], compare = false
                   <ChevronDown className="h-3.5 w-3.5 shrink-0" aria-hidden />
                 </button>
                 {presetMenu && (
-                  <div className="pointer-events-auto absolute left-0 top-11 w-64 overflow-hidden rounded-lg border border-white/15 bg-[#0b1226]/95 p-1 shadow-2xl backdrop-blur-xl" role="menu" data-testid="sizes-presets">
+                  <div className="pointer-events-auto absolute left-0 top-11 w-64 overflow-hidden rounded-lg border border-white/15 bg-[#0b1226]/95 p-1 shadow-2xl backdrop-blur-xl" role="menu" data-testid="sizes-presets" data-sz-scroll>
                     {PRESETS.map((p) => (
                       <button
                         key={p.id}
@@ -843,6 +1151,19 @@ export function SizesExperience({ preset, focus = null, vs = [], compare = false
             </div>
           </div>
 
+          {/* Zoom and reset: the wheel, a pinch and the keys do the same. */}
+          <div className="sz-ui pointer-events-none absolute right-3 top-1/2 z-10 flex -translate-y-1/2 flex-col gap-2 sm:right-4" data-testid="sizes-view-controls">
+            <button type="button" className={cn(chip, "h-10 w-10 justify-center px-0")} onClick={() => zoomBy(ZOOM_STEP_BUTTON)} disabled={!ready} aria-label="Zoom in" title="Zoom in (+)" data-testid="sizes-zoom-in">
+              <ZoomIn className="h-4 w-4" aria-hidden />
+            </button>
+            <button type="button" className={cn(chip, "h-10 w-10 justify-center px-0")} onClick={() => zoomBy(-ZOOM_STEP_BUTTON)} disabled={!ready} aria-label="Zoom out" title="Zoom out (−)" data-testid="sizes-zoom-out">
+              <ZoomOut className="h-4 w-4" aria-hidden />
+            </button>
+            <button type="button" className={cn(chip, "h-10 w-10 justify-center px-0")} onClick={resetView} disabled={!ready} aria-label="Reset the view" title="Reset the view (0)" data-testid="sizes-reset-view">
+              <RotateCcw className="h-4 w-4" aria-hidden />
+            </button>
+          </div>
+
           {/* Search (also adds to a comparison). */}
           {searchOpen && (
             <div className="sz-ui pointer-events-auto absolute right-3 top-[3.75rem] z-20 w-[min(22rem,calc(100%-1.5rem))] sm:right-4">
@@ -857,7 +1178,7 @@ export function SizesExperience({ preset, focus = null, vs = [], compare = false
                 data-testid="sizes-search"
               />
               {results.length > 0 && (
-                <ul className="mt-1 max-h-[50vh] overflow-y-auto rounded-lg border border-white/15 bg-[#0b1226]/95 p-1 shadow-2xl backdrop-blur-xl" role="listbox">
+                <ul className="mt-1 max-h-[50vh] overflow-y-auto rounded-lg border border-white/15 bg-[#0b1226]/95 p-1 shadow-2xl backdrop-blur-xl" role="listbox" data-sz-scroll>
                   {results.map((r) => (
                     <li key={r.key}>
                       <button type="button" onClick={() => pick(r)} className="flex w-full items-center justify-between gap-3 rounded-md px-3 py-2 text-left hover:bg-white/10" data-testid="sizes-search-result" data-key={r.key}>
