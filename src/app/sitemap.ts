@@ -15,6 +15,8 @@ import { entryPath } from "@/lib/timeline/deeplink";
 import { SIZE_ITEMS } from "@/lib/sizes/data";
 import { DEFAULT_PRESET, PRESETS } from "@/lib/sizes/presets";
 import { SIZES_PATH, itemPath, presetPath } from "@/lib/sizes/deeplink";
+import { PRESETS as RACE_PRESETS } from "@/lib/race/presets";
+import { HUB_PRESET, RACE_PATH, presetPath as racePresetPath } from "@/lib/race/deeplink";
 
 // Card pages are in /pokedex/tcg/sitemap/<n>.xml (see src/app/pokedex/tcg/sitemap.ts).
 // TCG sets come from the Pokémon TCG API: refresh daily; without the API the sitemap simply omits them.
@@ -46,6 +48,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${SITE_URL}${SIZES_PATH}`, changeFrequency: "monthly", priority: 0.8 },
     ...PRESETS.filter((p) => p.id !== DEFAULT_PRESET.id).map((p) => ({ url: `${SITE_URL}${presetPath(p.id)}`, changeFrequency: "monthly" as const, priority: 0.6 })),
     ...SIZE_ITEMS.filter((i) => i.kind !== "ref").map((i) => ({ url: `${SITE_URL}${itemPath(i.key)}`, changeFrequency: "yearly" as const, priority: 0.3 })),
+    { url: `${SITE_URL}${RACE_PATH}`, changeFrequency: "monthly", priority: 0.8 },
+    ...RACE_PRESETS.filter((p) => p.id !== HUB_PRESET).map((p) => ({ url: `${SITE_URL}${racePresetPath(p.id)}`, changeFrequency: "monthly" as const, priority: 0.6 })),
     { url: `${SITE_URL}/pokedex/types`, changeFrequency: "monthly", priority: 0.7 },
     ...TYPES.map((t) => ({ url: `${SITE_URL}/pokedex/types/${t}`, changeFrequency: "monthly" as const, priority: 0.6 })),
     { url: `${SITE_URL}/pokedex/natures`, changeFrequency: "monthly", priority: 0.6 },

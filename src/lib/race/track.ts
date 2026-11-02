@@ -28,7 +28,7 @@ export const DISTANCES = [100, 200, 400] as const;
 export type Distance = (typeof DISTANCES)[number];
 export const isDistance = (d: number): d is Distance => (DISTANCES as readonly number[]).includes(d);
 /** Run-out beyond the finish line on the home straight (m). */
-export const RUN_OUT = 34;
+export const RUN_OUT = 30;
 
 /** Radius of a lane's measurement line on the bends. */
 export function measureRadius(lane: number): number {
@@ -102,3 +102,16 @@ export const startPoint = (lane: number, distance: Distance) => lanePoint(lane, 
 
 /** The 100 m start line's x (the home straight extended past bend 2). */
 export const START_100_X = X0 - 100;
+
+/**
+ * PokéIQ Stadium's bowl: the stands' barrier is a superellipse
+ * |x/A|^N + |z/B|^N = 1 round the track (with room for the 100 m start and
+ * the run-out on the home straight).
+ */
+export const BOWL = { A: 112, B: 57, N: 2.6 } as const;
+
+/** The barrier's distance from the long axis at x (m): where the apron ends and the stands begin. */
+export function barrierZ(x: number): number {
+  const k = Math.min(0.999, Math.abs(x) / BOWL.A);
+  return BOWL.B * Math.pow(1 - Math.pow(k, BOWL.N), 1 / BOWL.N);
+}

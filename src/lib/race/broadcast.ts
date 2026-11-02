@@ -180,3 +180,44 @@ export function raceTimeAt(plan: ShowPlan, t: number): number {
 export function shotProgress(s: Shot, t: number): number {
   return Math.max(0, Math.min(1, (t - s.t0) / Math.max(1e-6, s.t1 - s.t0)));
 }
+
+/** How worked up the crowd is (0 calm … 1 the finish): it hushes for the start, builds through the race and erupts at the line. */
+export function excitementAt(plan: ShowPlan, race: Race, t: number): number {
+  const s = shotAt(plan, t);
+  const k = shotProgress(s, t);
+  switch (s.phase) {
+    case "crane":
+      return 0.42;
+    case "intro":
+      // A cheer for each runner as it's introduced.
+      return 0.38 + 0.32 * Math.exp(-k * 3);
+    case "marks":
+      return 0.12;
+    case "set":
+      return 0.04;
+    case "race":
+    case "fast": {
+      const rt = raceTimeAt(plan, t);
+      const since = rt - race.first;
+      if (since >= 0) return Math.max(0.68, 1 - since * 0.05);
+      let lead = 0;
+      for (const r of race.lanes) lead = Math.max(lead, motionAt(r.profile, rt).x);
+      const share = Math.min(1, lead / race.distance);
+      return 0.42 + 0.55 * share * share;
+    }
+    case "replay":
+      return 0.6;
+    case "photo":
+      return 0.62;
+    case "results":
+      return 0.72;
+  }
+}
+
+/** The race-time window the photo-finish image covers: the winner and whoever is close behind (up to the fourth). */
+export function photoWindow(race: Race): { from: number; to: number } {
+  const T1 = race.first;
+  const k = Math.min(3, race.order.length - 1);
+  const span = Math.max(0.3, Math.min(1.0, race.order[k].time - T1));
+  return { from: T1 - 0.22 * span - 0.04, to: T1 + span + 0.08 };
+}
