@@ -8,7 +8,10 @@ import { projectPos, spritePosition, STAGE_H, STAGE_W } from "./scene";
 import { battleSpriteCandidates, spriteData } from "./sprites";
 import type { PopupTone, StageHandle, StageSprite } from "./player";
 import { Hud, TeamBalls, type Ball } from "./Hud";
-import { Backdrop } from "./Backdrop";
+import { Arena } from "./Arena";
+import type { ArenaApi } from "./arena/ArenaScene";
+import { arenaField, arenaKindOf, footOf } from "./arena/layout";
+import type { BallLook } from "./PokeBall";
 import { ConditionTip, MonTip, TapTip, Tip, tipFromRequest, tipFromSnap } from "./Tooltips";
 import type { BattleRequestPokemon } from "@/lib/battle/play";
 import { cn } from "@/lib/utils";
@@ -36,6 +39,9 @@ const POPUP_TONES: Record<PopupTone, string> = {
   super: "bg-primary text-primary-foreground",
   weak: "bg-slate-600/90 text-white",
 };
+
+/** The big moments get a callout instead of a chip: crits, super effective, not very effective, no effect. */
+const CALLOUT: Partial<Record<PopupTone, string>> = { crit: "battle-callout-crit", super: "battle-callout-super", weak: "battle-callout-weak" };
 
 const WEATHER_CLASS: Record<string, string> = {
   Rain: "battle-rain",
@@ -87,6 +93,9 @@ const MonSprite = memo(function MonSprite({
   }, [register, slotKey, mon.key, near, sp.url, sp.w, sp.h, pos.x, pos.y, pos.z]); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!choice) return null;
+  // Where its feet are, as a share of its box (the sprite's transparent margin below them).
+  const foot = footOf({ left: 0, top: 0, width: 1, height: 1 }, !!sp.pixelated);
+  const shadowAt = foot.y;
   return (
     <div
       ref={wrap}
@@ -94,6 +103,8 @@ const MonSprite = memo(function MonSprite({
       style={{ left: box.left, top: box.top, width: box.width, height: box.height, zIndex: near ? 3 : 2, transformOrigin: "50% 90%" }}
       aria-hidden
     >
+      {/* A soft contact shadow where its feet meet the platform (it moves, shrinks and fades with the sprite). */}
+      <span className="battle-shadow" style={{ top: `${shadowAt * 100}%`, width: `${near ? 62 : 58}%` }} aria-hidden />
       <img
         key={choice.url}
         src={choice.url}
@@ -107,7 +118,7 @@ const MonSprite = memo(function MonSprite({
           setSize(null);
           setIndex((i) => i + 1);
         }}
-        className="h-full w-full select-none object-contain"
+        className="battle-sprite relative h-full w-full select-none object-contain"
         style={{ imageRendering: sp.pixelated ? "pixelated" : undefined, transform: choice.flip ? "scaleX(-1)" : undefined }}
       />
     </div>
@@ -167,9 +178,11 @@ export interface StageProps {
   myRequest?: BattleRequestPokemon[];
   /** A spectator or a replay: neither side is yours. */
   watching?: boolean;
+  /** Each side's Poké Ball (from their 3D trainer), for the send-out. */
+  balls?: Partial<Record<SideId, BallLook>>;
 }
 
-export function Stage({ snap, me, doubles, popups, onHandle, myBalls, format = "", myRequest, watching = false }: StageProps) {
+export function Stage({ snap, me, doubles, popups, onHandle, myBalls, format = "", myRequest, watching = false, balls }: StageProps) {
   const outer = useRef<HTMLDivElement>(null);
   const stage = useRef<HTMLDivElement>(null);
   const backdrop = useRef<HTMLDivElement>(null);
@@ -179,6 +192,17 @@ export function Stage({ snap, me, doubles, popups, onHandle, myBalls, format = "
   const [scale, setScale] = useState(1);
   const foe = other(me);
   const active = doubles ? 2 : 1;
+  const arena = useRef<ArenaApi | null>(null);
+  const [arena3d, setArena3d] = useState(false);
+  const onArena = useMemo(
+    () => (api: ArenaApi | null) => {
+      arena.current = api;
+      setArena3d(!!api);
+    },
+    []
+  );
+  const ballsRef = useRef(balls);
+  ballsRef.current = balls;
 
   useLayoutEffect(() => {
     const el = outer.current;
@@ -206,6 +230,8 @@ export function Stage({ snap, me, doubles, popups, onHandle, myBalls, format = "
       bgfx: bgfx.current,
       fx: fx.current,
       me,
+      cheer: (power) => arena.current?.cheer(power),
+      ball: (side) => ballsRef.current?.[side],
       sprite: (ref) => sprites.current.get(`${ref.side === me ? "near" : "far"}:${ref.slot}`) ?? null,
       repaint: () => {
         for (const s of sprites.current.values()) {
@@ -219,6 +245,10 @@ export function Stage({ snap, me, doubles, popups, onHandle, myBalls, format = "
   const weather = WEATHER_CLASS[snap.weather];
   const tint = TERRAIN_TINT[snap.terrain];
   const trickRoom = snap.pseudo.includes("trickroom");
+  const pseudoKey = snap.pseudo.join(",");
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- pseudoKey stands for snap.pseudo
+  const field = useMemo(() => arenaField(snap.weather, snap.terrain, snap.pseudo), [snap.weather, snap.terrain, pseudoKey]);
+  const kind = arenaKindOf(format, doubles);
   const fieldChips: Chip[] = [];
   if (snap.weather) fieldChips.push({ id: WEATHER_ID[snap.weather] ?? snap.weather, label: snap.weather, turns: snap.turns?.weather });
   if (snap.terrain) fieldChips.push({ id: `${snap.terrain.toLowerCase()}terrain`, label: `${snap.terrain} Terrain`, turns: snap.turns?.terrain });
@@ -226,23 +256,25 @@ export function Stage({ snap, me, doubles, popups, onHandle, myBalls, format = "
 
   return (
     <div className="relative">
-      <div ref={outer} className="dark-scope relative aspect-[16/9] w-full overflow-hidden rounded-lg border border-black/50 bg-[hsl(250_45%_8%)] shadow-[0_18px_50px_-20px_hsl(var(--screen)/0.5)]">
+      <div ref={outer} className={cn("battle-stage dark-scope relative aspect-[16/9] w-full overflow-hidden rounded-lg border border-black/50 bg-[hsl(250_45%_8%)] shadow-[0_18px_50px_-20px_hsl(var(--screen)/0.5)]", `battle-arena-${kind}`)} data-arena={arena3d ? "3d" : "css"}>
         <div ref={stage} className="absolute left-0 top-0 origin-top-left" style={{ width: STAGE_W, height: STAGE_H, transform: `scale(${scale})` }}>
           {/* Backdrop: our own scene (Earthquake shakes it, so it's taller than the stage). */}
           <div ref={backdrop} className="absolute inset-x-0" style={{ top: -90, bottom: 0 }}>
-            <Backdrop trickRoom={trickRoom} tint={tint} />
+            <Arena kind={kind} active={active} field={field} scale={scale} tint={tint} trickRoom={trickRoom} onApi={onArena} />
           </div>
           <div ref={bgfx} className="pointer-events-none absolute inset-0" style={{ zIndex: 1 }} />
           <SideField side={snap.sides[foe]} near={false} />
           <SideField side={snap.sides[me]} near />
           {[foe, me].map((sideId) =>
             snap.sides[sideId].active.map((mon, slot) =>
-              mon && !mon.fainted ? (
+              // A Pokémon at 0 HP stays on the field until its faint plays out (the faint line takes it off).
+              mon ? (
                 <MonSprite key={`${sideId}:${slot}:${mon.key}:${mon.species}`} mon={mon} near={sideId === me} slot={slot} active={active} register={register} />
               ) : null
             )
           )}
-          {weather && <div className={cn(weather, "pointer-events-none absolute inset-0")} style={{ zIndex: 5 }} />}
+          {/* The 3D arena draws the weather in depth; a lighter layer in front of the Pokémon keeps it all around them. */}
+          {weather && <div className={cn(weather, "pointer-events-none absolute inset-0", arena3d && "opacity-50")} style={{ zIndex: 5 }} />}
           <div ref={fx} className="pointer-events-none absolute inset-0" style={{ zIndex: 6 }} />
         </div>
 
@@ -287,6 +319,14 @@ export function Stage({ snap, me, doubles, popups, onHandle, myBalls, format = "
           </div>
           {popups.map((p) => {
             const at = p.ref ? slotCenter(p.ref, me, active) : { x: 0.5, y: 0.35 };
+            const callout = CALLOUT[p.tone] ?? (p.text === "No effect" ? "battle-callout-weak" : undefined);
+            if (callout) {
+              return (
+                <span key={p.id} className={cn("battle-callout absolute whitespace-nowrap", callout)} style={{ left: `${at.x * 100}%`, top: `${Math.max(0.16, at.y) * 100}%` }}>
+                  <span className="battle-callout-text">{p.text}</span>
+                </span>
+              );
+            }
             return (
               <span
                 key={p.id}

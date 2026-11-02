@@ -7,6 +7,7 @@ import type { PublicAvatar } from "@/lib/avatar";
 import type { VersusResult, VersusStats, VersusStatsResponse } from "@/lib/duel-stats";
 import { cn } from "@/lib/utils";
 import { VersusCharacter } from "./VersusCharacter";
+import type { TrainerConfig } from "@/lib/trainer/config";
 
 /**
  * The versus screen before a duel's first round, GeoGuessr's: the two
@@ -33,6 +34,10 @@ export interface VersusSide {
   badge?: React.ReactNode;
   /** undefined while loading; null when there's no record to show (a guest). */
   stats: VersusStats | null | undefined;
+  /** A game's own record, in place of the PokéGuessr duel stats (the card's body). */
+  record?: React.ReactNode;
+  /** A 3D trainer for a trainer who hasn't made one (instead of their art or a silhouette). */
+  fallback?: TrainerConfig;
   /** The side's colour (its glow and the card's edge). */
   accent: string;
 }
@@ -48,11 +53,13 @@ export interface VersusIntroProps {
   /** The countdown to the round (a big digit). */
   countdown?: React.ReactNode;
   testId?: string;
+  /** Skipping ends the intro (the caller closes it) instead of folding it down to the countdown. */
+  onSkip?: () => void;
 }
 
 const EASE = [0.2, 0.8, 0.2, 1] as const;
 
-export function VersusIntro({ left, right, title, subtitle, detail, icon, countdown, testId = "versus-intro" }: VersusIntroProps) {
+export function VersusIntro({ left, right, title, subtitle, detail, icon, countdown, testId = "versus-intro", onSkip }: VersusIntroProps) {
   const reduced = useReducedMotion();
   const [skipped, setSkipped] = useState(false);
   useEffect(() => {
@@ -62,10 +69,11 @@ export function VersusIntro({ left, right, title, subtitle, detail, icon, countd
       if ((e.target as HTMLElement | null)?.closest("input, textarea, select, button, a")) return;
       e.preventDefault();
       setSkipped(true);
+      onSkip?.();
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [skipped]);
+  }, [skipped, onSkip]);
 
   const from = (x: number, delay = 0): MotionProps => (reduced ? { initial: false as const } : { initial: { opacity: 0, x }, animate: { opacity: 1, x: 0 }, transition: { duration: 0.45, ease: EASE, delay } });
 
@@ -114,7 +122,10 @@ export function VersusIntro({ left, right, title, subtitle, detail, icon, countd
         {!skipped && (
           <button
             type="button"
-            onClick={() => setSkipped(true)}
+            onClick={() => {
+              setSkipped(true);
+              onSkip?.();
+            }}
             className="absolute bottom-4 right-4 inline-flex items-center gap-1.5 rounded-full bg-black/35 px-3 py-1.5 font-display text-xs font-bold uppercase tracking-wide text-white/85 ring-1 ring-white/20 backdrop-blur transition hover:bg-black/50 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd23c] sm:bottom-6 sm:right-6"
             data-testid="versus-skip"
           >
@@ -137,7 +148,7 @@ function Side({ side, align, motionProps, cardMotion }: { side: VersusSide; alig
         <div className="relative">
           <div aria-hidden className="absolute inset-x-[12%] bottom-[2%] h-[12%] rounded-[50%] bg-black/45 blur-md" />
           <div aria-hidden className="absolute inset-[14%] rounded-full opacity-60 blur-3xl" style={{ background: side.accent }} />
-          <VersusCharacter avatar={side.avatar} figure={side.figure} facing={isLeft ? "right" : "left"} className="relative w-full" />
+          <VersusCharacter avatar={side.avatar} figure={side.figure} fallback={side.fallback} facing={isLeft ? "right" : "left"} className="relative w-full" />
         </div>
       </motion.div>
     </div>
@@ -159,20 +170,24 @@ function StatCard({ side }: { side: VersusSide }) {
         </div>
         {(side.tag || side.badge) && <div className="flex min-w-0 flex-wrap items-center gap-1.5">{side.tag}{side.badge}</div>}
       </div>
-      <dl className="grid grid-cols-2 border-y border-white/10 text-center">
-        <Figure label="Duels" value={stats ? stats.duels.toLocaleString("en-US") : dash} />
-        <Figure label="Guessed first" value={stats && stats.guessedFirst !== null ? `${stats.guessedFirst}%` : dash} className="border-l border-white/10" />
-      </dl>
-      <div className="space-y-2 px-3 py-2.5 sm:px-4 sm:py-3">
-        <Regions label="Strongest" regions={stats?.strongest} dash={dash} tone="text-[#8ee26b]" />
-        <Regions label="Toughest" regions={stats?.toughest} dash={dash} tone="text-[#ff8a8a]" />
-        <History recent={stats?.recent} loading={loading} />
-      </div>
+      {side.record ?? (
+        <>
+          <dl className="grid grid-cols-2 border-y border-white/10 text-center">
+            <Figure label="Duels" value={stats ? stats.duels.toLocaleString("en-US") : dash} />
+            <Figure label="Guessed first" value={stats && stats.guessedFirst !== null ? `${stats.guessedFirst}%` : dash} className="border-l border-white/10" />
+          </dl>
+          <div className="space-y-2 px-3 py-2.5 sm:px-4 sm:py-3">
+            <Regions label="Strongest" regions={stats?.strongest} dash={dash} tone="text-[#8ee26b]" />
+            <Regions label="Toughest" regions={stats?.toughest} dash={dash} tone="text-[#ff8a8a]" />
+            <History recent={stats?.recent} loading={loading} />
+          </div>
+        </>
+      )}
     </div>
   );
 }
 
-function Figure({ label, value, className }: { label: string; value: React.ReactNode; className?: string }) {
+export function Figure({ label, value, className }: { label: string; value: React.ReactNode; className?: string }) {
   return (
     <div className={cn("px-2 py-1.5 sm:py-2", className)}>
       <dt className="font-pixel text-[8px] uppercase text-white/55 sm:text-[9px]">{label}</dt>
@@ -198,12 +213,12 @@ const RESULT_STYLE: Record<VersusResult, { cls: string; label: string; Icon: typ
   draw: { cls: "bg-white/30 text-white", label: "Draw", Icon: Minus },
 };
 
-function History({ recent, loading }: { recent: VersusResult[] | undefined; loading: boolean }) {
+export function History({ recent, loading, label = "Last 5 duels", none = "No duels yet" }: { recent: VersusResult[] | undefined; loading: boolean; label?: string; none?: string }) {
   const slots = Array.from({ length: 5 }, (_, i) => recent?.[i] ?? null);
   return (
     <div>
-      <p className="font-pixel text-[8px] uppercase text-white/55 sm:text-[9px]">Last 5 duels</p>
-      <ol className="mt-1 flex gap-1" aria-label={recent?.length ? `Latest first: ${recent.map((r) => RESULT_STYLE[r].label).join(", ")}` : "No duels yet"} data-testid="versus-history">
+      <p className="font-pixel text-[8px] uppercase text-white/55 sm:text-[9px]">{label}</p>
+      <ol className="mt-1 flex gap-1" aria-label={recent?.length ? `Latest first: ${recent.map((r) => RESULT_STYLE[r].label).join(", ")}` : none} data-testid="versus-history">
         {slots.map((r, i) => {
           if (!r) return <li key={i} className={cn("h-5 w-5 rounded-full border border-dashed border-white/25 sm:h-6 sm:w-6", loading && "animate-pulse")} aria-hidden />;
           const { cls, Icon } = RESULT_STYLE[r];

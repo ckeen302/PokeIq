@@ -16,6 +16,10 @@ import { HotkeyHelp, useHotkeyHelp } from "./hotkeys";
 import { TIMER_WARNINGS, timerWarning } from "@/lib/battle/timer-warning";
 import type { Ball } from "./Hud";
 import { Avatar } from "@/components/avatar/Avatar";
+import { ballLook } from "./PokeBall";
+import { BattleVersus, VERSUS_MS } from "./Versus";
+import { BattleVictory } from "./Victory";
+import "./battle-look.css";
 
 /**
  * The battle screen. Lines from the player's channel go through the model
@@ -123,6 +127,30 @@ function stamp(at: number): string {
   return `[${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}:${String(d.getSeconds()).padStart(2, "0")}]`;
 }
 
+/** Battles whose versus intro this tab has shown (a reload on turn 1 doesn't show it again). */
+const VERSUS_KEY = "pokeiq:battle:versus-seen";
+
+/** The versus intro plays before a battle's first turn, for its two players, once. */
+function wantsVersus(view: BattleView, replay: boolean | undefined): boolean {
+  if (replay || view.you === null || view.status !== "playing" || view.turn > 1 || view.end) return false;
+  try {
+    const seen = JSON.parse(window.sessionStorage.getItem(VERSUS_KEY) ?? "[]");
+    return !(Array.isArray(seen) && seen.includes(view.code));
+  } catch {
+    return true;
+  }
+}
+
+function markVersusSeen(code: string) {
+  try {
+    const seen = JSON.parse(window.sessionStorage.getItem(VERSUS_KEY) ?? "[]");
+    const list = Array.isArray(seen) ? seen.filter((c): c is string => typeof c === "string") : [];
+    window.sessionStorage.setItem(VERSUS_KEY, JSON.stringify([...list.filter((c) => c !== code), code].slice(-30)));
+  } catch {
+    // not remembered
+  }
+}
+
 const SPEEDS = [0.5, 1, 2, 4] as const;
 const SPEED_KEY = "pokeiq:battle:speed";
 const ANIM_KEY = "pokeiq:battle:animations";
@@ -189,6 +217,35 @@ export default function BattleScreen({ view, log, offset, busy, error, onChoose,
     }
   };
   const me: SideId = view.you === 1 ? "p2" : "p1";
+  /** The versus intro: the first turn waits for it (it ends on its own, or when skipped). */
+  const intro = useRef<{ done: Promise<void>; end: () => void } | null>(null);
+  const [versus, setVersus] = useState(() => {
+    const on = wantsVersus(view, replay);
+    if (on) {
+      let end = () => {};
+      const done = new Promise<void>((resolve) => (end = resolve));
+      intro.current = { done, end };
+    }
+    return on;
+  });
+  const code = view.code;
+  const endVersus = useCallback(() => {
+    setVersus(false);
+    markVersusSeen(code);
+    intro.current?.end();
+    intro.current = null;
+  }, [code]);
+  useEffect(() => {
+    if (!versus) return;
+    // However it goes, the battle never waits long for it.
+    const id = window.setTimeout(endVersus, VERSUS_MS + 2_500);
+    return () => window.clearTimeout(id);
+  }, [versus, endVersus]);
+  const ballIds = `${view.players[0]?.avatar?.trainer?.ball ?? ""}|${view.players[1]?.avatar?.trainer?.ball ?? ""}`;
+  const balls = useMemo(() => {
+    const [a, b] = ballIds.split("|");
+    return { p1: ballLook(a), p2: ballLook(b) };
+  }, [ballIds]);
   const doubles = PLAY_FORMAT_INFO[view.format].gameType === "doubles";
   const model = useRef<BattleModel | null>(null);
   const fed = useRef(0);
@@ -285,6 +342,8 @@ export default function BattleScreen({ view, log, offset, busy, error, onChoose,
     if (running.current) return;
     running.current = true;
     setPlaying(true);
+    // Turn 1 plays out once the versus intro is gone.
+    if (intro.current) await intro.current.done;
     const reducedMotion = typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
     while (queue.current.length) {
       const step = queue.current.shift()!;
@@ -462,6 +521,7 @@ export default function BattleScreen({ view, log, offset, busy, error, onChoose,
 
   return (
     <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_300px]">
+      {versus && <BattleVersus view={view} onDone={endVersus} />}
       <div className="min-w-0 space-y-3">
         {/* Who's playing, the clocks and playback controls. */}
         <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
@@ -561,7 +621,7 @@ export default function BattleScreen({ view, log, offset, busy, error, onChoose,
 
         {toolbar}
 
-        <Stage snap={snap} me={me} doubles={doubles} popups={popups} onHandle={onHandle} myBalls={myBalls} format={view.format} myRequest={lastTeam} watching={watching} />
+        <Stage snap={snap} me={me} doubles={doubles} popups={popups} onHandle={onHandle} myBalls={myBalls} format={view.format} myRequest={lastTeam} watching={watching} balls={balls} />
 
         {/* The text box: the latest line of the battle. */}
         <div className="dialog-box min-h-[4.25rem] text-sm leading-relaxed text-muted-foreground" data-done={showControls} aria-live="polite" data-testid="battle-message">
@@ -593,10 +653,7 @@ export default function BattleScreen({ view, log, offset, busy, error, onChoose,
               <Controls key={view.request!.rqid} request={view.request!.data} snap={snap} me={me} doubles={doubles} busy={busy} format={view.format} onChoose={(choice) => onChoose(view.request!.rqid, choice)} onHelp={help.toggle} />
             ) : ended ? (
               <div className="space-y-3 text-center" data-testid="battle-result">
-                <p className={cn("font-display text-3xl font-bold uppercase", result!.tone === "win" ? "text-success" : result!.tone === "draw" ? "text-foreground" : "text-destructive")}>
-                  {result!.title}
-                </p>
-                <p className="text-sm text-muted-foreground">{result!.detail}</p>
+                <BattleVictory view={view} title={result!.title} detail={result!.detail} tone={result!.tone} />
                 {endActions}
               </div>
             ) : replay ? (

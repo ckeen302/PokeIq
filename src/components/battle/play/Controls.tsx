@@ -53,11 +53,11 @@ function speciesKey(name: string) {
   return { id: s.id, num: s.num };
 }
 
-const EFFECT_LABEL: Record<Effect, { text: string; className: string }> = {
-  super: { text: "Super effective", className: "bg-emerald-400 text-black" },
-  neutral: { text: "Effective", className: "bg-white/20 text-white" },
-  resisted: { text: "Not very effective", className: "bg-amber-300 text-black" },
-  immune: { text: "No effect", className: "bg-slate-500 text-white" },
+const EFFECT_LABEL: Record<Effect, { text: string; className: string; mark: string }> = {
+  super: { text: "Super effective", className: "bg-emerald-400 text-black shadow-[0_0_10px_rgb(52_211_153/0.7)]", mark: "▲" },
+  neutral: { text: "Effective", className: "bg-black/30 text-white", mark: "●" },
+  resisted: { text: "Not very effective", className: "bg-amber-300 text-black", mark: "▼" },
+  immune: { text: "No effect", className: "bg-slate-700 text-white", mark: "✕" },
 };
 
 /** What the Pokémon tooltips need: the generation, the format and your Pokémon as the field shows them. */
@@ -114,6 +114,7 @@ function MoveButton({
   const off = disabled || !!move.disabled;
   const hints = foes.map((foe) => effectiveness(info, foe, tera ? teraType : undefined, gen));
   const shown = hints.filter((h): h is Effect => h !== null);
+  const ppShare = move.maxpp ? Math.max(0, Math.min(1, (move.pp ?? 0) / move.maxpp)) : 1;
   return (
     <Tip content={() => <MoveTip info={info} type={type} pp={move.pp} maxpp={move.maxpp} gen={gen} attacker={tip?.attacker ?? null} foes={tip?.foes ?? foes} field={tip?.field ?? NO_FIELD} randomBattle={!!tip?.randomBattle} />}>
     <button
@@ -123,14 +124,14 @@ function MoveButton({
       data-testid="move-button"
       aria-keyshortcuts={String(index)}
       className={cn(
-        "group relative flex min-h-[4.25rem] flex-col justify-between overflow-hidden rounded-md border-2 px-3 py-2 text-left transition-[transform,filter] duration-100 hover:-translate-y-0.5 hover:brightness-110 active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:translate-y-0",
+        "battle-move group relative flex min-h-[5.25rem] flex-col justify-between overflow-hidden rounded-lg border-2 px-3 pb-2.5 pt-2 text-left transition-[transform,filter,box-shadow] duration-100 hover:-translate-y-0.5 hover:brightness-110 active:translate-y-0 active:brightness-95 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:translate-y-0 sm:min-h-[4.5rem]",
         tera && "ring-2 ring-offset-2 ring-offset-background"
       )}
       style={{
         borderColor: `${color}`,
-        background: `linear-gradient(135deg, ${color}ee, ${color}99 60%, ${color}55)`,
+        background: `radial-gradient(120% 140% at 0% 0%, ${color} 0%, ${color}dd 45%, color-mix(in srgb, ${color} 55%, #0b0a18) 100%)`,
         color: typeTextColor(type.toLowerCase()),
-        boxShadow: tera ? `0 0 16px ${teraColor(teraType ?? "")}` : `0 3px 0 ${color}66`,
+        boxShadow: tera ? `0 0 16px ${teraColor(teraType ?? "")}` : `0 4px 0 color-mix(in srgb, ${color} 45%, #000), 0 8px 18px -8px ${color}`,
         ...(tera ? { ["--tw-ring-color" as string]: teraColor(teraType ?? "") } : {}),
       }}
     >
@@ -139,7 +140,7 @@ function MoveButton({
           <kbd className="mr-1.5 hidden rounded-sm bg-black/25 px-1 align-middle font-pixel text-[9px] font-normal sm:inline">{index}</kbd>
           {info.name}
         </span>
-        <span className="shrink-0 font-pixel text-[10px] tabular-nums opacity-90">
+        <span className={cn("shrink-0 rounded-sm bg-black/25 px-1 py-0.5 font-pixel text-[10px] tabular-nums", ppShare <= 0.25 ? "text-[#ffd1d1]" : "opacity-90")}>
           {move.pp ?? "–"}/{move.maxpp ?? "–"}
         </span>
       </span>
@@ -154,7 +155,8 @@ function MoveButton({
         <span className="mt-1 flex flex-wrap gap-1">
           {hints.map((h, i) =>
             h ? (
-              <span key={i} className={cn("rounded-sm px-1 py-0.5 font-pixel text-[8px] uppercase", EFFECT_LABEL[h].className)}>
+              <span key={i} className={cn("inline-flex items-center gap-1 rounded-sm px-1 py-0.5 font-pixel text-[8px] uppercase", EFFECT_LABEL[h].className)}>
+                <span aria-hidden>{EFFECT_LABEL[h].mark}</span>
                 {foes.length > 1 ? `${foes[i]?.name ?? "?"}: ` : ""}
                 {EFFECT_LABEL[h].text}
               </span>
@@ -163,6 +165,12 @@ function MoveButton({
         </span>
       )}
       {typeof move.disabled === "string" && <span className="font-pixel text-[8px] uppercase">Disabled</span>}
+      {/* PP left, as a thin gauge along the bottom. */}
+      {move.maxpp ? (
+        <span className="absolute inset-x-0 bottom-0 h-1 bg-black/30" aria-hidden>
+          <span className="block h-full" style={{ width: `${ppShare * 100}%`, background: ppShare <= 0.25 ? "#ff6b6b" : "rgb(255 255 255 / 0.7)" }} />
+        </span>
+      ) : null}
     </button>
     </Tip>
   );
@@ -510,7 +518,7 @@ export function Controls({ request, snap, me, doubles, busy, onChoose, format, o
           ))}
         </div>
       </div>
-      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+      <div className="grid grid-cols-2 gap-2.5 sm:gap-2">
         {active.moves.map((move, i) => (
           <MoveButton
             key={`${move.id}-${i}`}

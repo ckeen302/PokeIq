@@ -1,6 +1,7 @@
 import { BattleScene, PokemonSprite, type SpriteData } from "./scene";
 import { moveInfo } from "./moves";
-import type { SlotRef, Snap, Step } from "./model";
+import type { SideId, SlotRef, Snap, Step } from "./model";
+import { ballBackground, STANDARD_BALL, type BallLook } from "./PokeBall";
 
 /**
  * Plays one step of the battle on the stage: the move's animation (ported
@@ -37,6 +38,10 @@ export interface StageHandle {
   repaint(): void;
   /** The near side (yours). */
   me: "p1" | "p2";
+  /** The 3D arena's crowd reacts (camera flashes); nothing on the CSS backdrop. */
+  cheer?(power?: number): void;
+  /** A side's Poké Ball (their 3D trainer's), for the send-out. */
+  ball?(side: SideId): BallLook | undefined;
 }
 
 export type PopupTone = "good" | "bad" | "info" | "crit" | "super" | "weak";
@@ -64,9 +69,9 @@ const sleep = (ms: number, signal: AbortSignal) =>
 
 const frame = () => new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
 
-function animateEl(el: HTMLElement | undefined | null, keyframes: Keyframe[], ms: number, deps: PlayDeps, fill: FillMode = "none") {
+function animateEl(el: HTMLElement | undefined | null, keyframes: Keyframe[], ms: number, deps: PlayDeps, fill: FillMode = "none", extra: KeyframeAnimationOptions = {}) {
   if (!el || deps.reducedMotion || deps.signal.aborted || typeof el.animate !== "function") return Promise.resolve();
-  const anim = el.animate(keyframes, { duration: Math.max(1, ms / deps.speed), easing: "ease-out", fill });
+  const anim = el.animate(keyframes, { duration: Math.max(1, ms / deps.speed), easing: "ease-out", fill, ...extra });
   const abort = () => anim.finish();
   deps.signal.addEventListener("abort", abort);
   return anim.finished.then(
@@ -142,12 +147,109 @@ function otherAnim(deps: PlayDeps, who: SlotRef | undefined, id: string) {
 const STATUS_LABEL: Record<string, string> = { brn: "Burned", par: "Paralyzed", slp: "Asleep", frz: "Frozen", psn: "Poisoned", tox: "Badly poisoned" };
 const STAT_LABEL: Record<string, string> = { atk: "Atk", def: "Def", spa: "Sp. Atk", spd: "Sp. Def", spe: "Speed", accuracy: "Accuracy", evasion: "Evasion" };
 const SHAKE: Keyframe[] = [
-  { transform: "translateX(0)", filter: "brightness(1)" },
-  { transform: "translateX(-7px)", filter: "brightness(2.2)" },
-  { transform: "translateX(6px)", filter: "brightness(1)" },
-  { transform: "translateX(-4px)", filter: "brightness(2.2)" },
-  { transform: "translateX(0)", filter: "brightness(1)" },
+  { transform: "translateX(0)" },
+  { transform: "translateX(-7px)" },
+  { transform: "translateX(6px)" },
+  { transform: "translateX(-4px)" },
+  { transform: "translateX(0)" },
 ];
+/** The hit flash, on the sprite image itself (so its shadow stays a shadow): a white silhouette, then a blink. */
+const HIT_FLASH: Keyframe[] = [
+  { filter: "brightness(1)" },
+  { filter: "brightness(0) invert(1)", offset: 0.1 },
+  { filter: "brightness(1.8)", offset: 0.32 },
+  { filter: "brightness(0) invert(1)", offset: 0.52 },
+  { filter: "brightness(1.3)", offset: 0.72 },
+  { filter: "brightness(1)" },
+];
+/** Recoil and status damage: a blink, no white-out. */
+const SOFT_FLASH: Keyframe[] = [{ filter: "brightness(1)" }, { filter: "brightness(2)", offset: 0.25 }, { filter: "brightness(1)", offset: 0.5 }, { filter: "brightness(2)", offset: 0.75 }, { filter: "brightness(1)" }];
+
+const px = (v: string) => parseFloat(v) || 0;
+/** A sprite's box on the stage (its inline style, in stage px). */
+function boxOf(s: StageSprite) {
+  const st = s.el.style;
+  return { left: px(st.left), top: px(st.top), width: px(st.width), height: px(st.height) };
+}
+
+/** A throwaway element in the effects layer, removed when its animation ends (or the step is skipped). */
+function spark(deps: PlayDeps, className: string, style: Partial<CSSStyleDeclaration>, keyframes: Keyframe[], ms: number, easing = "ease-out") {
+  if (deps.reducedMotion || deps.signal.aborted) return Promise.resolve();
+  const el = document.createElement("div");
+  el.className = className;
+  Object.assign(el.style, { position: "absolute", pointerEvents: "none", ...style });
+  deps.stage.fx.appendChild(el);
+  if (typeof el.animate !== "function") {
+    el.remove();
+    return Promise.resolve();
+  }
+  const anim = el.animate(keyframes, { duration: Math.max(1, ms / deps.speed), easing, fill: "forwards" });
+  const done = () => el.remove();
+  const abort = () => anim.finish();
+  deps.signal.addEventListener("abort", abort, { once: true });
+  return anim.finished.then(done, done).finally(() => deps.signal.removeEventListener("abort", abort));
+}
+
+/** An impact burst over a Pokémon that was hit. */
+function impact(deps: PlayDeps, s: StageSprite, big = false) {
+  const b = boxOf(s);
+  const size = Math.max(40, Math.min(b.width, b.height) * (big ? 0.95 : 0.7));
+  const cx = b.left + b.width / 2;
+  const cy = b.top + b.height * 0.52;
+  void spark(deps, "battle-impact", { left: `${cx - size / 2}px`, top: `${cy - size / 2}px`, width: `${size}px`, height: `${size}px`, zIndex: "1" }, [
+    { transform: "scale(0.3) rotate(0deg)", opacity: 1 },
+    { transform: "scale(1) rotate(18deg)", opacity: 0.9, offset: 0.45 },
+    { transform: "scale(1.25) rotate(30deg)", opacity: 0 },
+  ], big ? 340 : 260);
+}
+
+/** Dust kicked up where a fainting Pokémon falls. */
+function dust(deps: PlayDeps, s: StageSprite) {
+  const b = boxOf(s);
+  const foot = b.top + b.height * 0.92;
+  const cx = b.left + b.width / 2;
+  const spread = Math.max(36, b.width * 0.55);
+  for (let i = 0; i < 9; i++) {
+    const dir = (i / 8) * 2 - 1;
+    const size = 10 + ((i * 7) % 5) * 4 + b.width * 0.06;
+    void spark(deps, "battle-dust", { left: `${cx - size / 2}px`, top: `${foot - size / 2}px`, width: `${size}px`, height: `${size}px`, zIndex: s.near ? "4" : "3" }, [
+      { transform: "translate(0, 0) scale(0.4)", opacity: 0 },
+      { transform: `translate(${dir * spread * 0.5}px, ${-6 - (i % 3) * 3}px) scale(1)`, opacity: 0.75, offset: 0.3 },
+      { transform: `translate(${dir * spread}px, ${-14 - (i % 3) * 6}px) scale(1.6)`, opacity: 0 },
+    ], 620 + (i % 3) * 80);
+  }
+}
+
+/**
+ * The send-out: a Poké Ball arcs in from its trainer's side (yours from the
+ * bottom left, the opponent's from the top right) and bursts open where the
+ * Pokémon appears. Resolves as it bursts.
+ */
+async function ballIn(deps: PlayDeps, s: StageSprite, look: BallLook) {
+  if (deps.reducedMotion || deps.signal.aborted) return;
+  const b = boxOf(s);
+  const tx = b.left + b.width / 2;
+  const ty = b.top + b.height * 0.62;
+  const from = s.near ? { x: tx - 230, y: 420 } : { x: tx + 250, y: -30 };
+  const size = s.near ? 22 : 16;
+  const steps = 8;
+  const peak = s.near ? 110 : 60;
+  const frames: Keyframe[] = [];
+  for (let i = 0; i <= steps; i++) {
+    const u = i / steps;
+    const x = from.x + (tx - from.x) * u;
+    const y = from.y + (ty - from.y) * u - Math.sin(u * Math.PI) * peak;
+    frames.push({ transform: `translate(${x - size / 2}px, ${y - size / 2}px) rotate(${u * (s.near ? 720 : -720)}deg) scale(${s.near ? 1.4 - u * 0.4 : 0.9 + u * 0.1})`, offset: u });
+  }
+  await spark(deps, "battle-ball", { left: "0px", top: "0px", width: `${size}px`, height: `${size}px`, background: ballBackground(look), zIndex: "7" }, frames, 300, "linear");
+  if (deps.signal.aborted) return;
+  const burst = Math.max(70, b.width * 0.9);
+  void spark(deps, "battle-ball-burst", { left: `${tx - burst / 2}px`, top: `${ty - burst / 2}px`, width: `${burst}px`, height: `${burst}px`, zIndex: "7" }, [
+    { transform: "scale(0.15)", opacity: 1 },
+    { transform: "scale(1)", opacity: 0.85, offset: 0.4 },
+    { transform: "scale(1.35)", opacity: 0 },
+  ], 380);
+}
 
 /** A spot of light and particles over a sprite (stat changes, Tera). */
 function overlay(deps: PlayDeps, s: StageSprite | null, className: string, ms: number, color?: string) {
@@ -203,7 +305,10 @@ export async function playStep(step: Step, deps: PlayDeps): Promise<void> {
     case "-damage": {
       if (from === "brn" || from === "psn" || from === "tox") await statusAnim(deps, who, from === "tox" ? "psn" : from);
       commit(snap);
-      await animateEl(sprite?.el, SHAKE, 320, deps);
+      // A direct hit flashes white with a burst; recoil, status and the like just blink.
+      const direct = !from;
+      if (sprite && direct) impact(deps, sprite);
+      await Promise.all([animateEl(sprite?.el, SHAKE, 320, deps), animateEl(sprite?.el.querySelector("img"), direct ? HIT_FLASH : SOFT_FLASH, 320, deps)]);
       await wait(260);
       return;
     }
@@ -225,6 +330,10 @@ export async function playStep(step: Step, deps: PlayDeps): Promise<void> {
       }
       commit(snap);
       await frame();
+      // Out of sight until its ball bursts.
+      const entering = who ? stage.sprite(who) : null;
+      const hide = !deps.reducedMotion && !signal.aborted && !!entering;
+      if (hide) entering!.el.style.opacity = "0";
       await frame();
       // Hold the entrance until the sprite has loaded (it was preloaded when the line arrived).
       const img = who ? stage.sprite(who)?.el.querySelector("img") : null;
@@ -239,38 +348,62 @@ export async function playStep(step: Step, deps: PlayDeps): Promise<void> {
         await frame();
       }
       const next = who ? stage.sprite(who) : null;
-      await animateEl(next?.el, [
-        { transform: "scale(0.1)", opacity: 0, filter: "brightness(6)" },
-        { transform: "scale(1.06)", opacity: 1, filter: "brightness(2)", offset: 0.65 },
-        { transform: "scale(1)", opacity: 1, filter: "brightness(1)" },
-      ], 480, deps);
-      await wait(200);
+      try {
+        if (next && hide) next.el.style.opacity = "0";
+        if (next && hide) await ballIn(deps, next, stage.ball?.(next.near ? stage.me : stage.me === "p1" ? "p2" : "p1") ?? STANDARD_BALL);
+        if (next) next.el.style.opacity = "";
+        await animateEl(next?.el, [
+          { transform: "scale(0.1)", opacity: 0, filter: "brightness(6)" },
+          { transform: "scale(1.06)", opacity: 1, filter: "brightness(2)", offset: 0.6 },
+          { transform: "scale(1)", opacity: 1, filter: "brightness(1)" },
+        ], 420, deps);
+      } finally {
+        if (next) next.el.style.opacity = "";
+        if (entering && entering !== next) entering.el.style.opacity = "";
+      }
+      await wait(120);
       return;
     }
     case "faint": {
+      // A last flash, a drop with a squash, a fade, and dust where it lands.
+      if (sprite) {
+        window.setTimeout(() => !signal.aborted && dust(deps, sprite), 230 / deps.speed);
+        stage.cheer?.(0.9);
+      }
       await animateEl(sprite?.el, [
-        { transform: "translateY(0)", opacity: 1 },
-        { transform: "translateY(42px)", opacity: 0 },
-      ], 560, deps, "forwards");
+        { transform: "translateY(0) scale(1, 1)", opacity: 1, filter: "brightness(1)" },
+        { transform: "translateY(-4px) scale(0.96, 1.04)", opacity: 1, filter: "brightness(1.7)", offset: 0.14 },
+        { transform: "translateY(26px) scale(1.06, 0.9)", opacity: 0.75, filter: "brightness(0.8)", offset: 0.62 },
+        { transform: "translateY(40px) scale(1.1, 0.82)", opacity: 0, filter: "brightness(0.6)" },
+      ], 560, deps, "forwards", { easing: "cubic-bezier(0.5, 0, 0.8, 0.6)" });
       commit(snap);
       await wait(250);
       return;
     }
     case "-crit": {
+      // A freeze-frame: a white flash and a punch-in that holds, then the shake, the splash and the crowd.
       popup(who, "Critical hit!", "crit");
+      stage.cheer?.(1);
+      if (sprite) impact(deps, sprite, true);
+      void spark(deps, "battle-crit-flash", { inset: "0", zIndex: "8" }, [{ opacity: 0.85 }, { opacity: 0.35, offset: 0.4 }, { opacity: 0 }], 240);
+      // `add`: on top of the stage's own scale.
+      const punch = (k: number) => ({ transform: `translate(320px, 180px) scale(${k}) translate(-320px, -180px)` });
+      await animateEl(stage.stage, [punch(1), { ...punch(1.035), offset: 0.2 }, { ...punch(1.035), offset: 0.85 }, punch(1)], 110, deps, "none", { composite: "add", easing: "linear" });
       await animateEl(stage.stage, [
         { transform: "translate(0, 0)" },
-        { transform: "translate(-6px, 3px)" },
-        { transform: "translate(5px, -3px)" },
-        { transform: "translate(-3px, 2px)" },
+        { transform: "translate(-7px, 4px)" },
+        { transform: "translate(6px, -3px)" },
+        { transform: "translate(-4px, 2px)" },
+        { transform: "translate(2px, -1px)" },
         { transform: "translate(0, 0)" },
-      ], 300, deps);
+      ], 260, deps, "none", { composite: "add" });
       commit(snap);
-      await wait(150);
+      await wait(90);
       return;
     }
     case "-supereffective":
       popup(who, "Super effective!", "super");
+      stage.cheer?.(0.45);
       commit(snap);
       await wait(450);
       return;
