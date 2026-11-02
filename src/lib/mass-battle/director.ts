@@ -196,7 +196,13 @@ export class Director {
           const yaw = Math.atan2(-(b.cx - a.cx), -(b.cz - a.cz));
           return { tx: (a.cx + b.cx) / 2, ty: big * 0.5, tz: (a.cz + b.cz) / 2, yaw: yaw + 0.3 * Math.sin(s * 0.3), pitch: 0.42, dist: span * 0.62 + big * 2 + 6, fov, shake: 0 };
         }
-        return { tx: (a.cx + b.cx) / 2, ty: big * 0.9 + span * 0.06, tz: (a.cz + b.cz) / 2, yaw: 0.5 + this.orbit + s * 0.05, pitch: 0.3 - Math.min(0.08, s * 0.015), dist: span * 0.55 * widen + big * 2 + 6, fov, shake: 0 };
+        // Side on to the line of battle, swinging gently however long the wait, and far enough back for both armies to be in
+        // frame: looking down the line, the far army would hide behind the near one (and behind the titles).
+        const line = Math.atan2(-(b.cz - a.cz), b.cx - a.cx);
+        const halfW = Math.atan(Math.tan((fov * Math.PI) / 360) * f.aspect);
+        const reach = Math.hypot(a.cx - b.cx, a.cz - b.cz) / 2 + Math.max(a.extent, b.extent) * 0.5;
+        const dist = Math.max(span * 0.55 + big * 2 + 6, reach / Math.tan(halfW * 0.85) + big * 1.5 + 3);
+        return { tx: (a.cx + b.cx) / 2, ty: big * 0.9 + span * 0.06, tz: (a.cz + b.cz) / 2, yaw: line + 0.15 + 0.25 * Math.sin(this.orbit * 0.9 + s * 0.05), pitch: 0.3 - Math.min(0.08, s * 0.015), dist, fov, shake: 0 };
       }
       case "charge": {
         const dx = b.cx - a.cx, dz = b.cz - a.cz;

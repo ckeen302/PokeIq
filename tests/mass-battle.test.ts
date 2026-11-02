@@ -11,6 +11,7 @@ import { monotone, probesAround, questionSeeds, solve, spreadOf, type Evaluate }
 import { decodeBattle, decodeQuestion, encodeBattle, encodeQuestion, MAX_SIDE, type SlugIndex } from "@/lib/mass-battle/share";
 import { PRESETS, resolvePreset } from "@/lib/mass-battle/presets";
 import type { BattleSpec, MBSpecies, Question } from "@/lib/mass-battle/types";
+import { Director, type ArmySummary, type FieldSummary } from "@/lib/mass-battle/director";
 
 const roster = buildRoster();
 const bySlug = new Map(roster.species.map((s) => [s.slug, s]));
@@ -421,8 +422,9 @@ describe("mass battle: presets", () => {
     }
     const fw = resolvePreset(PRESETS.find((p) => p.id === "fire-vs-water")!, roster);
     const types = (id: number) => roster.species.find((s) => s.id === id)!.types;
-    expect(fw.spec.sides[0].units.every((u) => types(u.id).includes("fire") && !types(u.id).includes("water"))).toBe(true);
-    expect(fw.spec.sides[1].units.every((u) => types(u.id).includes("water") && !types(u.id).includes("fire"))).toBe(true);
+    // Water on the blue side, Fire on the red.
+    expect(fw.spec.sides[0].units.every((u) => types(u.id).includes("water") && !types(u.id).includes("fire"))).toBe(true);
+    expect(fw.spec.sides[1].units.every((u) => types(u.id).includes("fire") && !types(u.id).includes("water"))).toBe(true);
   });
 });
 
@@ -466,6 +468,35 @@ describe("mass battle: the presets' precomputed results", () => {
         const q = r.question!;
         const shown = runHeadless(prepare(roster, { sides: [{ units: [{ id: q.challenger, count: saved.answer!.n }], formation: "swarm" }, { units: [{ id: q.boss, count: 1 }], formation: "line" }], level: q.level, arena: q.arena, seed: saved.answer!.seed }));
         expect(shown.winner).toBe(0);
+      }
+    }
+  });
+});
+
+describe("mass battle: director", () => {
+  it("the establishing shot keeps both armies in frame and apart, however long the wait", () => {
+    const army = (cx: number, alive: number, h: number, extent: number): ArmySummary => ({ alive, start: alive, cx, cz: 0, extent, fx: cx > 0 ? cx - extent : cx + extent, fz: 0, h });
+    // Signed horizontal angle from u to v.
+    const angle = (ux: number, uz: number, vx: number, vz: number) => Math.atan2(ux * vz - uz * vx, ux * vx + uz * vz);
+    const fields: FieldSummary[] = [
+      // 53 Magikarp and Arceus on a desktop stage, and two big armies on a squarer one.
+      { t: 0, phase: "deploy", armies: [army(-21, 53, 0.9, 5), army(21, 1, 3.2, 1)], boss: { x: 21, z: 0, h: 3.2, side: 1 }, arena: 60, aspect: 1152 / 666 },
+      { t: 0, phase: "deploy", armies: [army(-40, 2000, 1, 20), army(40, 2000, 1.6, 20)], boss: null, arena: 120, aspect: 1.2 },
+    ];
+    for (const field of fields) {
+      const d = new Director();
+      d.reset(field);
+      for (let i = 0; i < 1800; i++) {
+        const p = d.update(field, 0.1);
+        if (i < 30) continue; // the glide in
+        // The scene's convention: the camera sits at the target plus (sin yaw, cos yaw) × the level distance.
+        const cp = Math.cos(p.pitch);
+        const camX = p.tx + Math.sin(p.yaw) * cp * p.dist, camZ = p.tz + Math.cos(p.yaw) * cp * p.dist;
+        const half = Math.atan(Math.tan(((p.fov / 2) * Math.PI) / 180) * field.aspect);
+        const bearings = field.armies.map((a) => angle(p.tx - camX, p.tz - camZ, a.cx - camX, a.cz - camZ));
+        for (const b of bearings) expect(Math.abs(b)).toBeLessThan(half);
+        // Side by side, not one behind the other.
+        expect(Math.abs(bearings[0] - bearings[1])).toBeGreaterThan(0.25);
       }
     }
   });

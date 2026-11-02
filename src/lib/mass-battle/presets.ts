@@ -92,10 +92,11 @@ export const PRESETS: PresetDef[] = [
     arena: "volcano",
     level: 100,
     seed: 2026,
-    labels: ["Fire types", "Water types"],
+    // Water on the blue side, Fire on the red.
+    labels: ["Water types", "Fire types"],
     sides: [
-      { formation: "line", rule: (s) => fe(s) && s.types.includes("fire") && !s.types.includes("water"), each: 10 },
       { formation: "line", rule: (s) => fe(s) && s.types.includes("water") && !s.types.includes("fire"), each: 5 },
+      { formation: "line", rule: (s) => fe(s) && s.types.includes("fire") && !s.types.includes("water"), each: 10 },
     ],
   },
   {

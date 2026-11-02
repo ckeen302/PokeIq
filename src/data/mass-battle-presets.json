@@ -98,19 +98,19 @@
   },
   "fire-vs-water": {
    "outcome": {
-    "winner": 1,
-    "seconds": 25.6,
+    "winner": 0,
+    "seconds": 25.45,
     "left": [
-     0,
-     129
+     124,
+     0
     ],
     "kos": [
-     234,
-     360
+     360,
+     238
     ],
     "dealt": [
-     78113,
-     114819
+     114590,
+     77857
     ]
    },
    "answer": null
