@@ -337,6 +337,7 @@ export async function recordRace(o: RaceRecordOptions): Promise<RaceRecordResult
         clock: raceT <= 0 ? "0.00" : formatTime(Math.min(raceT, o.race.first)),
         replay: shot.phase === "replay" ? 1 : 0,
         screen: raceT > 0 ? cameraFor("chase", 0.5, spots, { ...ctx, aspect: 16 / 9, lane: lead.lane }) : null,
+        focus: shot.phase === "intro" && st < plan.end ? shot.lane : undefined,
       });
       g.drawImage(scene.canvas, 0, 0, W, H);
       drawFrame(g, W, H, t, o.race, plan, total, end, { font: o.font, hook: o.hook, title: o.title, link: o.link, logo, photo, heads: scene.heads(), times });

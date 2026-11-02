@@ -265,7 +265,7 @@ export interface Runners {
   pfGroup: THREE.Group;
   figures: Figure[];
   /** Pose every runner for race time `raceT`; returns the footfalls of heavy runners since the last call. */
-  update(raceT: number, showT: number, cam: THREE.Camera, pre: "idle" | "marks" | "set" | "race"): Footfall[];
+  update(raceT: number, showT: number, cam: THREE.Camera, pre: "idle" | "marks" | "set" | "race", focus?: number): Footfall[];
   /** Pose the photo-finish cut-outs (only) at race time t. */
   posePhoto(t: number): void;
   /** Screen anchor (top centre) of each runner, for name tags. */
@@ -291,8 +291,40 @@ export function makeRunners(race: Race, figures: Figure[], masts: THREE.Vector3[
   const headsOut: { lane: number; pos: THREE.Vector3; h: number }[] = figures.map((f) => ({ lane: f.lane.lane, pos: new THREE.Vector3(), h: f.lane.h }));
   let lastShow = 0;
 
-  function update(raceT: number, showT: number, cam: THREE.Camera, pre: "idle" | "marks" | "set" | "race"): Footfall[] {
+  /** Screen rectangle (NDC) of a runner standing at a point, for the lane intros' framing. */
+  const ndc = new THREE.Vector3();
+  function rectOf(x: number, z: number, w: number, h: number, cam: THREE.Camera, right: THREE.Vector3): [number, number, number, number] | null {
+    let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity;
+    for (const [sx, sy] of [[-0.5, 0], [0.5, 0], [-0.5, 1], [0.5, 1]]) {
+      ndc.set(x + right.x * w * sx, h * sy, z + right.z * w * sx).project(cam);
+      if (ndc.z > 1) return null;
+      x0 = Math.min(x0, ndc.x); x1 = Math.max(x1, ndc.x); y0 = Math.min(y0, ndc.y); y1 = Math.max(y1, ndc.y);
+    }
+    return [x0, y0, x1, y1];
+  }
+
+  function update(raceT: number, showT: number, cam: THREE.Camera, pre: "idle" | "marks" | "set" | "race", focus?: number): Footfall[] {
     const steps: Footfall[] = [];
+    // A lane introduction is that runner's moment: neighbours that would cover it in this shot step out of the frame.
+    const hidden = new Set<number>();
+    if (focus != null) {
+      cam.updateMatrixWorld();
+      const right = new THREE.Vector3().setFromMatrixColumn(cam.matrixWorld, 0);
+      const me = figures.find((f) => f.lane.lane === focus);
+      if (me) {
+        const p0 = runnerAt(race, me.lane, 0).point;
+        const a = rectOf(p0.x, p0.z, me.lane.w, me.lane.h, cam, right);
+        if (a) {
+          const padX = (a[2] - a[0]) * 0.35, padY = (a[3] - a[1]) * 0.2;
+          for (const f of figures) {
+            if (f === me) continue;
+            const p = runnerAt(race, f.lane, 0).point;
+            const b = rectOf(p.x, p.z, f.lane.w, f.lane.h, cam, right);
+            if (b && b[0] < a[2] + padX && b[2] > a[0] - padX && b[1] < a[3] + padY && b[3] > a[1] - padY) hidden.add(f.lane.lane);
+          }
+        }
+      }
+    }
     cam.getWorldPosition(camPos);
     camRight.setFromMatrixColumn(cam.matrixWorld, 0);
     const dtShow = showT - lastShow;
@@ -315,6 +347,7 @@ export function makeRunners(race: Race, figures: Figure[], masts: THREE.Vector3[
         if (e.motion === "hover") lift = pose.lift;
       }
       f.root.position.set(p.x, lift, p.z);
+      f.root.visible = !hidden.has(r.lane);
       // Lean (and pitch) about the axis across the running direction.
       axis.set(p.dx, 0, p.dz).cross(up).normalize();
       qLean.setFromAxisAngle(axis, -(lean + pose.pitch));
@@ -342,7 +375,7 @@ export function makeRunners(race: Race, figures: Figure[], masts: THREE.Vector3[
       if (raceT > 0 && step !== f.lastStep && GROUNDED.has(e.motion) && e.kg >= 150 && st.v > 0.2) steps.push({ x: p.x, z: p.z, kg: e.kg });
       f.lastStep = step;
       // Shadows: a core under the runner, and one away from each mast.
-      const fade = Math.max(0, 1 - lift / (r.h * 0.8 + 0.6));
+      const fade = hidden.has(r.lane) ? 0 : Math.max(0, 1 - lift / (r.h * 0.8 + 0.6));
       const w = Math.max(0.25, r.w * 0.55);
       const base = i * per;
       quat.identity();

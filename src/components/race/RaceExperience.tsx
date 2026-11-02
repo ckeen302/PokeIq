@@ -415,7 +415,7 @@ export function RaceExperience({ preset, vs = [], distance = null, seed = null, 
       const clock = raceT <= 0 ? "0.00" : formatTime(Math.min(raceT, race.first), raceT < race.first ? (raceT < 10 ? 2 : 1) : 2);
       const lead = leaderAt(race, raceT);
       const screen = raceT > 0 && raceT < race.last + 1.5 ? cameraFor("chase", 0.5, spots, { ...ctx, aspect: 16 / 9, lane: lead.lane }) : ph === "intro" ? cameraFor("intro", shotProgress(shot, t), spots, { ...ctx, aspect: 16 / 9 }) : null;
-      const steps = scene.frame({ raceT, showT: t, pose, pre, excitement, clock, replay: ph === "replay" ? 1 : 0, screen });
+      const steps = scene.frame({ raceT, showT: t, pose, pre, excitement, clock, replay: ph === "replay" ? 1 : 0, screen, focus: ph === "intro" && s.cam === "broadcast" ? shot.lane : undefined });
       // Sound.
       const au = audioRef.current;
       if (au) {
@@ -601,7 +601,7 @@ export function RaceExperience({ preset, vs = [], distance = null, seed = null, 
     const down = (e: PointerEvent) => {
       if (recordingRef.current) return;
       pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
-      host.setPointerCapture(e.pointerId);
+      try { host.setPointerCapture(e.pointerId); } catch { /* a synthetic or already-released pointer */ }
       if (pointers.size === 2) {
         const [a, b] = [...pointers.values()];
         pinch0 = Math.hypot(a.x - b.x, a.y - b.y);
@@ -889,7 +889,7 @@ export function RaceExperience({ preset, vs = [], distance = null, seed = null, 
                   </button>
                 )}
                 <button type="button" onClick={() => setPicker(true)} disabled={!all} className={cn(chip, "h-11")} data-testid="race-new">
-                  <Flag className="h-4 w-4" aria-hidden /> <span className="hidden min-[370px]:inline">New race</span>
+                  <Flag className="h-4 w-4" aria-hidden /> <span className="hidden whitespace-nowrap min-[420px]:inline">New race</span>
                 </button>
                 {field?.tournament && (
                   <button type="button" onClick={() => setBracket(true)} className={cn(chip, "h-11")} data-testid="race-bracket-open">

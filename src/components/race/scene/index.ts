@@ -1,7 +1,7 @@
 import * as THREE from "three";
 import type { CamPose } from "@/lib/race/director";
 import type { Race } from "@/lib/race/race";
-import { KERB_R, OUTER_R, X0 } from "@/lib/race/track";
+import { KERB_R, X0, barrierZ } from "@/lib/race/track";
 import { buildCrowd, type Crowd } from "./crowd";
 import { createPost, stadiumEnvironment, type Post } from "./post";
 import { loadFigure, makeRunners, type Footfall, type Runners, type RunnerUrls } from "./runners";
@@ -39,9 +39,9 @@ interface Spec {
 export const QUALITY: Record<Quality, Spec> = {
   draft: { pr: 1, post: false, msaa: 0, bloom: false, perSprite: 4, rowStep: 2, flashes: 150, beams: false, screenEvery: 0, texSize: 256, segments: 40, aniso: 1, pf: { w: 360, h: 200, perFrame: 90 } },
   low: { pr: 1, post: false, msaa: 0, bloom: false, perSprite: 4, rowStep: 2, flashes: 500, beams: false, screenEvery: 0, texSize: 256, segments: 56, aniso: 2, pf: { w: 480, h: 240, perFrame: 40 } },
-  medium: { pr: 1.25, post: true, msaa: 4, bloom: true, perSprite: 3, rowStep: 1, flashes: 1200, beams: true, screenEvery: 3, texSize: 512, segments: 80, aniso: 4, pf: { w: 640, h: 300, perFrame: 40 } },
-  high: { pr: 1.6, post: true, msaa: 4, bloom: true, perSprite: 2, rowStep: 1, flashes: 2000, beams: true, screenEvery: 2, texSize: 512, segments: 110, aniso: 8, pf: { w: 800, h: 360, perFrame: 60 } },
-  export: { pr: 1, post: true, msaa: 4, bloom: true, perSprite: 2, rowStep: 1, flashes: 2400, beams: true, screenEvery: 1, texSize: 512, segments: 120, aniso: 8, pf: { w: 900, h: 400, perFrame: 900 } },
+  medium: { pr: 1.25, post: true, msaa: 4, bloom: true, perSprite: 3, rowStep: 1, flashes: 1200, beams: false, screenEvery: 3, texSize: 512, segments: 80, aniso: 4, pf: { w: 640, h: 300, perFrame: 40 } },
+  high: { pr: 1.6, post: true, msaa: 4, bloom: true, perSprite: 2, rowStep: 1, flashes: 2000, beams: false, screenEvery: 2, texSize: 512, segments: 110, aniso: 8, pf: { w: 800, h: 360, perFrame: 60 } },
+  export: { pr: 1, post: true, msaa: 4, bloom: true, perSprite: 2, rowStep: 1, flashes: 2400, beams: false, screenEvery: 1, texSize: 512, segments: 120, aniso: 8, pf: { w: 900, h: 400, perFrame: 900 } },
 };
 
 export interface SceneUrls extends RunnerUrls, StadiumUrls {}
@@ -69,6 +69,8 @@ export interface FrameInput {
   replay: number;
   /** What the big screens show (null: the stadium card). */
   screen: CamPose | null;
+  /** The lane being introduced (its neighbours step out of the shot). */
+  focus?: number;
 }
 
 export interface HeadAnchor {
@@ -234,7 +236,7 @@ export function createRaceScene(host: HTMLElement, opts: SceneOptions): RaceScen
     camera.lookAt(...pose.target);
     camera.updateMatrixWorld();
     let steps: Footfall[] = [];
-    if (runners) steps = runners.update(f.raceT, f.showT, camera, f.pre);
+    if (runners) steps = runners.update(f.raceT, f.showT, camera, f.pre, f.focus);
     camera.getWorldPosition(camPos);
     const heard: { kg: number; dist: number }[] = [];
     for (const s of steps) {
@@ -264,7 +266,7 @@ export function createRaceScene(host: HTMLElement, opts: SceneOptions): RaceScen
       renderer.setRenderTarget(screenRT);
       renderer.render(scene, screenCam);
       renderer.setRenderTarget(null);
-      if (runners) runners.update(f.raceT, f.showT, camera, f.pre);
+      if (runners) runners.update(f.raceT, f.showT, camera, f.pre, f.focus);
       if (stadium.screenMaterial.map !== screenRT.texture) { stadium.screenMaterial.map = screenRT.texture; stadium.screenMaterial.needsUpdate = true; }
     } else if ((!f.screen || !screenRT) && stadium.screenMaterial.map !== cardTex) {
       stadium.screenMaterial.map = cardTex;
@@ -297,8 +299,8 @@ export function createRaceScene(host: HTMLElement, opts: SceneOptions): RaceScen
     rt.texture.colorSpace = THREE.LinearSRGBColorSpace;
     // Aim the slit along the line: from the photo-finish camera, framing every lane and every runner's height.
     const r0 = race;
-    // The slit sits a hair past the line (so the lanes read in the image), at the photo-finish camera on its post outside lane 8.
-    const camAt = new THREE.Vector3(X0 + 0.04, 3.0, OUTER_R + 14);
+    // The slit sits a hair past the line (so the lanes read in the image), high in the front of the main stand like a real photo-finish camera.
+    const camAt = new THREE.Vector3(X0 + 0.04, 6.5, barrierZ(X0) + 4.8);
     let top = -Infinity, bottom = Infinity;
     for (const l of r0?.lanes ?? []) {
       const z = KERB_R + 1.22 * (l.lane - 0.5);
