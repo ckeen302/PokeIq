@@ -322,7 +322,8 @@ export function SizesExperience({ preset, focus = null, vs = [], compare = false
       if (!alive) return;
       try {
         const q = initialQuality();
-        const scene = createSizesScene(host, { quality: q, urls: SCENE_URLS, trainer: trainerFigure(trainerRef.current) });
+        // The human is built when it first comes near the camera: by then the player's own trainer has usually loaded.
+        const scene = createSizesScene(host, { quality: q, urls: SCENE_URLS, trainer: () => trainerFigure(trainerRef.current)() });
         sceneRef.current = scene;
         setQualityState(q);
         await scene.ready;
