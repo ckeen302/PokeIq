@@ -3,9 +3,8 @@
 /* eslint-disable @next/next/no-img-element -- pre-sized art */
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { BookOpenCheck, ChevronLeft, ChevronRight, Gamepad2 } from "lucide-react";
+import { BookOpenCheck, Gamepad2 } from "lucide-react";
 import type { DexEntryData, DexForm } from "@/lib/pokemon/dex-types";
 import { TYPES, defensiveProfile, effectiveness, type PokemonType } from "@/lib/pokemon/type-matrix";
 import { typeColor } from "@/lib/pokemon/type-colors";
@@ -23,13 +22,13 @@ import { LookalikesSection } from "./LookalikesSection";
 import { EncountersSection } from "./EncountersSection";
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
+import { DexPager } from "@/components/pokedex/detail/DexPager";
 
 /**
  * One Pokémon's full study page. Selecting a form (Mega, regional,
  * Gigantamax…) re-derives typing, stats, abilities and matchups live.
  */
 export function DexEntry({ data }: { data: DexEntryData }) {
-  const router = useRouter();
   const p = data.core;
   const [form, setForm] = useState<DexForm | null>(null);
 
@@ -63,40 +62,12 @@ export function DexEntry({ data }: { data: DexEntryData }) {
   const active = useScrollSpy(sections.map((s) => s.id));
   const sectionIndex = (id: string) => sections.findIndex((s) => s.id === id) + 1;
 
-  // ← / → to flip through the Pokédex. Arrow keys keep their native meaning
-  // in form fields and in horizontally scrolling rows ([data-hscroll]).
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.defaultPrevented || e.metaKey || e.ctrlKey || e.altKey || e.shiftKey) return;
-      if (e.target instanceof HTMLElement && e.target.closest("input, select, textarea, [contenteditable], [data-hscroll]")) return;
-      if (e.key === "ArrowLeft" && data.prev) router.push(`/pokemon/${data.prev.slug}`);
-      if (e.key === "ArrowRight" && data.next) router.push(`/pokemon/${data.next.slug}`);
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [data.prev, data.next, router]);
-
   return (
     <article className="mx-auto max-w-6xl space-y-10">
-      <nav className="flex items-center justify-between text-sm text-muted-foreground">
-        {data.prev ? (
-          <Link href={`/pokemon/${data.prev.slug}`} className="flex items-center gap-1 hover:text-foreground">
-            <ChevronLeft className="h-4 w-4" /> #{data.prev.id} {data.prev.name}
-          </Link>
-        ) : (
-          <span />
-        )}
-        <Link href="/pokedex" className="hover:text-foreground">
-          Pokédex
-        </Link>
-        {data.next ? (
-          <Link href={`/pokemon/${data.next.slug}`} className="flex items-center gap-1 hover:text-foreground">
-            #{data.next.id} {data.next.name} <ChevronRight className="h-4 w-4" />
-          </Link>
-        ) : (
-          <span />
-        )}
-      </nav>
+      <DexPager
+        prev={data.prev && { href: `/pokemon/${data.prev.slug}`, label: `#${data.prev.id} ${data.prev.name}` }}
+        next={data.next && { href: `/pokemon/${data.next.slug}`, label: `#${data.next.id} ${data.next.name}` }}
+      />
 
       <Hero data={data} form={form} onFormChange={setForm} types={types} abilities={abilities} />
 

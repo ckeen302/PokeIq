@@ -4,16 +4,41 @@ import { BackButton } from "@/components/ui/BackButton";
 import { artUrl } from "@/lib/pokemon/art";
 import { typeColor } from "@/lib/pokemon/type-colors";
 import { TypeBadge } from "../TypeBadge";
+import type { Pager, PagerLink } from "@/lib/dex/neighbours";
+import { DexPager } from "./DexPager";
 
-/** Breadcrumb row shared by the move / ability / item pages. */
-export function DetailNav({ tab, label }: { tab: string; label: string }) {
+/**
+ * Top of every Pokédex detail page: a back button to the list, then the
+ * previous / next entry row (the same one the Pokémon pages use).
+ */
+export function DetailNav({
+  tab,
+  href = `/pokedex/${tab}`,
+  label,
+  pager,
+  home = { href: "/pokedex", label: "Pokédex" },
+}: {
+  tab?: string;
+  href?: string;
+  label: string;
+  pager?: Pager;
+  home?: PagerLink;
+}) {
+  if (!pager?.prev && !pager?.next) {
+    return (
+      <nav className="flex flex-wrap items-center justify-between gap-2 text-sm text-muted-foreground">
+        <BackButton href={href} label={label} />
+        <Link href={home.href} className="hover:text-foreground">
+          {home.label}
+        </Link>
+      </nav>
+    );
+  }
   return (
-    <nav className="flex flex-wrap items-center justify-between gap-2 text-sm text-muted-foreground">
-      <BackButton href={`/pokedex/${tab}`} label={label} />
-      <Link href="/pokedex" className="hover:text-foreground">
-        Pokédex
-      </Link>
-    </nav>
+    <div className="space-y-4">
+      <BackButton href={href} label={label} />
+      <DexPager prev={pager.prev} next={pager.next} center={home} />
+    </div>
   );
 }
 

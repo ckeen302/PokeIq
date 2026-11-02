@@ -2045,6 +2045,49 @@ step("pokédex TCG tab: sets, a set gallery (sort + filter), a card page, search
   }
 }
 
+step("pokédex: previous / next on a place, a move and a TCG card (link and → key)");
+{
+  // [page, next page, next's label, previous page or null at the start of the list]
+  const pagers = [
+    ["/pokedex/places/pewter-gym-kanto", "/pokedex/places/pewter-museum-of-science-kanto", "Pewter Museum of Science", "/pokedex/places/pewter-city-kanto"],
+    ["/pokedex/moves/thunderbolt", "/pokedex/moves/thunderclap", "Thunderclap", "/pokedex/moves/thunder-wave"],
+    ["/pokedex/tcg/card/base1-1", "/pokedex/tcg/card/base1-2", "#2 Blastoise", null],
+  ];
+  const at = (path) => new RegExp(`${path.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`);
+  for (const [from, next, label, prev] of pagers) {
+    await gotoSettled(page, `${BASE}${from}`);
+    const nextLink = page.getByTestId("dex-next");
+    if (!(await nextLink.waitFor({ timeout: 30_000 }).then(() => true, () => false))) {
+      if (from.includes("/tcg/") && (await page.getByTestId("tcg-unavailable").count())) continue;
+      errors.push(`pager: ${from} has no Next link`);
+      continue;
+    }
+    if ((await nextLink.getAttribute("href")) !== next) errors.push(`pager: ${from} Next goes to ${await nextLink.getAttribute("href")}, not ${next}`);
+    if (!(await nextLink.innerText()).includes(label)) errors.push(`pager: ${from} Next doesn't name ${label}`);
+    const prevHref = (await page.getByTestId("dex-prev").count()) ? await page.getByTestId("dex-prev").getAttribute("href") : null;
+    if (prevHref !== prev) errors.push(`pager: ${from} Previous goes to ${prevHref}, not ${prev}`);
+    await nextLink.click();
+    await page.waitForURL(at(next));
+    // → from the keyboard (retried: a key pressed before hydration does nothing).
+    await gotoSettled(page, `${BASE}${from}`);
+    let moved = false;
+    for (let i = 0; i < 4 && !moved; i++) {
+      await page.keyboard.press("ArrowRight");
+      moved = await page.waitForURL(at(next), { timeout: 5_000 }).then(() => true, () => false);
+    }
+    if (!moved) errors.push(`pager: → on ${from} didn't open ${next}`);
+    else {
+      // ← from there comes back.
+      let back = false;
+      for (let i = 0; i < 4 && !back; i++) {
+        await page.keyboard.press("ArrowLeft");
+        back = await page.waitForURL(at(from), { timeout: 5_000 }).then(() => true, () => false);
+      }
+      if (!back) errors.push(`pager: ← on ${next} didn't open ${from}`);
+    }
+  }
+}
+
 step("pokédex Trainers tab: search, notable filter, a game by route, an area's teams, a notable trainer");
 {
   await gotoSettled(page, `${BASE}/pokedex`);

@@ -6,7 +6,8 @@ import { breadcrumbList, itemList } from "@/lib/structured-data";
 import { DetailHero, DetailNav, StatBox } from "@/components/pokedex/detail/DetailParts";
 import { SetGallery } from "@/components/tcg/SetGallery";
 import { TcgUnavailable } from "@/components/tcg/CardGrid";
-import { getSet, getSetCards } from "@/lib/tcg/api";
+import { getSet, getSetCards, getSets } from "@/lib/tcg/api";
+import { pagerFor, tcgSetOrder } from "@/lib/dex/neighbours";
 import { formatApiDate, formatPrice, headlinePrice, tilePriceNote, toTile } from "@/lib/tcg/prices";
 
 export const dynamic = "force-dynamic";
@@ -30,7 +31,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 export default async function SetPage({ params }: PageProps) {
   const { setId } = await params;
-  const [set, cards] = await Promise.all([getSet(setId), getSetCards(setId)]);
+  const [set, cards, sets] = await Promise.all([getSet(setId), getSetCards(setId), getSets()]);
   if (!set) {
     if (cards === null) return <TcgUnavailable what="This set" />;
     notFound();
@@ -41,6 +42,7 @@ export default async function SetPage({ params }: PageProps) {
     .filter((x) => x.p?.currency === "USD")
     .sort((a, b) => b.p!.value - a.p!.value)[0];
   const date = formatApiDate(set.releaseDate);
+  const pager = pagerFor(tcgSetOrder(sets ?? []), (s) => s.id === set.id, (s) => ({ href: `/pokedex/tcg/${s.id}`, label: s.name }));
 
   const crumbs = breadcrumbList([
     { name: "Pokédex", path: "/pokedex" },
@@ -56,7 +58,7 @@ export default async function SetPage({ params }: PageProps) {
     <article className="mx-auto max-w-6xl space-y-8">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(crumbs) }} />
       {cards && cards.length > 0 && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(list) }} />}
-      <DetailNav tab="tcg" label="All sets" />
+      <DetailNav tab="tcg" label="All sets" pager={pager} />
       <DetailHero
         kicker={`TCG set · ${set.series}`}
         title={set.name}

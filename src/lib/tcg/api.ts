@@ -96,6 +96,11 @@ export async function getSetCards(setId: string): Promise<TcgCard[] | null> {
   return priced(await setCards(setId));
 }
 
+/** A set's cards without the price lookups (for callers that only need names and numbers). */
+export async function getSetCardList(setId: string): Promise<TcgCard[] | null> {
+  return setCards(setId);
+}
+
 async function setCards(setId: string): Promise<TcgCard[] | null> {
   if (fixtureMode()) return (await fixture()).cards.filter((c) => c.set?.id === setId);
   if (!/^[a-z0-9.-]+$/i.test(setId)) return null;

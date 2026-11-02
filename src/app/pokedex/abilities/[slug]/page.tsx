@@ -4,6 +4,7 @@ import { SHARE_IMAGES, pageMetadata } from "@/lib/seo";
 import { ABILITIES, getAbility, species } from "@/lib/dex/data";
 import { Section } from "@/components/pokedex/entry/Reveal";
 import { DetailHero, DetailNav, SpeciesGrid } from "@/components/pokedex/detail/DetailParts";
+import { pagerFor } from "@/lib/dex/neighbours";
 
 export const dynamicParams = false;
 
@@ -35,12 +36,13 @@ export default async function AbilityPage({ params }: PageProps) {
       const s = species(h.id);
       return s ? [s] : [];
     });
+  const pager = pagerFor(ABILITIES, (x) => x.slug === a.slug, (x) => ({ href: `/pokedex/abilities/${x.slug}`, label: x.name }));
   const normal = chips(false);
   const hidden = chips(true);
 
   return (
     <article className="mx-auto max-w-6xl space-y-10">
-      <DetailNav tab="abilities" label="Back to all abilities" />
+      <DetailNav tab="abilities" label="Back to all abilities" pager={pager} />
       <DetailHero kicker="Ability" title={a.name}>
         <p className="max-w-2xl text-foreground/90">{a.effect || "No effect description available."}</p>
       </DetailHero>

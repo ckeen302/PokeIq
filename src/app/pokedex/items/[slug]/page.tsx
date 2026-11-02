@@ -8,6 +8,7 @@ import { itemSpriteUrl, versionGroupLabel, versionLabel } from "@/lib/dex/build"
 import { Section } from "@/components/pokedex/entry/Reveal";
 import { TypeBadge } from "@/components/pokedex/TypeBadge";
 import { DetailHero, DetailNav } from "@/components/pokedex/detail/DetailParts";
+import { pagerFor } from "@/lib/dex/neighbours";
 
 export const dynamicParams = false;
 
@@ -38,6 +39,7 @@ export default async function ItemPage({ params }: PageProps) {
     const s = speciesBySlug(slug);
     return s ? [{ s, rarity }] : [];
   });
+  const pager = pagerFor(ITEMS, (x) => x.slug === item.slug, (x) => ({ href: `/pokedex/items/${x.slug}`, label: x.name }));
   const byGen = new Map<number, [string, string][]>();
   for (const [gen, vg, move] of item.machines) {
     const list = byGen.get(gen) ?? [];
@@ -48,7 +50,7 @@ export default async function ItemPage({ params }: PageProps) {
 
   return (
     <article className="mx-auto max-w-6xl space-y-10">
-      <DetailNav tab="items" label="Back to all items" />
+      <DetailNav tab="items" label="Back to all items" pager={pager} />
       <DetailHero
         kicker={`Item · ${item.category}`}
         title={item.name}
