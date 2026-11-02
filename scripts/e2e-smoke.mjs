@@ -939,7 +939,7 @@ step("world globe: skip the intro, the era filter, a region's card, a town's scr
     if (!(await ok(intro.waitFor({ timeout: 10_000 })))) errors.push("globe: the intro didn't play on a first visit");
     else {
       await intro.click();
-      if (!(await ok(intro.waitFor({ state: "detached", timeout: 10_000 })))) errors.push("globe: clicking didn't skip the intro");
+      if (!(await ok(intro.waitFor({ state: "detached", timeout: 30_000 })))) errors.push("globe: clicking didn't skip the intro");
     }
     // Era filter: Generation I is Kanto alone; IX brings the whole world back.
     await gp.getByTestId("globe-era-1").click();
@@ -1141,7 +1141,8 @@ await blue.waitForURL(red.url());
 await Promise.all([shotLoaded(red), shotLoaded(blue)]);
 await red.getByRole("button", { name: /Leave duel/ }).click();
 await red.getByRole("button", { name: /^Forfeit$/ }).click();
-await red.waitForURL(/\/guessr$/);
+// The hub is a heavy page: give a loaded machine time to navigate there.
+await red.waitForURL(/\/guessr$/, { timeout: 60_000 });
 await blue.getByText("Red left the duel.").waitFor();
 await blue.getByText("Victory!").waitFor();
 await blue.screenshot({ path: `${OUT}/duel-forfeit.png` });

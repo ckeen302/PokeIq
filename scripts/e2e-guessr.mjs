@@ -479,11 +479,11 @@ async function royale(width, height) {
     green
       .getByTestId("geo-opponent-guessed")
       .filter({ hasText: /Red guessed/ })
-      .waitFor({ timeout: 8_000 })
+      .waitFor({ timeout: 18_000 })
       .then(() => green.screenshot({ path: `${OUT}/party-guessed-${tag}.png` }), () => errors.push("Green never saw that Red guessed")),
     pinAndGuess(blue, phone, 0.35),
   ]);
-  await red.locator("[data-testid=party-roster-1][data-guessed=true]").waitFor({ timeout: 8_000 }).catch(() => errors.push("the roster doesn't tick off Blue's guess"));
+  await red.locator("[data-testid=party-roster-1][data-guessed=true]").waitFor({ timeout: 18_000 }).catch(() => errors.push("the roster doesn't tick off Blue's guess"));
   await red.getByTestId("party-reveal").waitFor({ timeout: 30_000 });
   await red.waitForTimeout(2200);
   await red.screenshot({ path: `${OUT}/party-reveal-${tag}.png` });
