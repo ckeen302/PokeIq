@@ -2272,6 +2272,52 @@ for (const path of ["/trainer", "/leaderboard?board=iq", "/pokemon/eevee", "/pok
   await page.screenshot({ path: `${OUT}/${path.slice(1).replace(/[^a-z0-9]+/gi, "_")}.png` });
 }
 
+step("3D Lab: the nav's tab, /lab's cards, a card opens its page, the trophy opens the leaderboard");
+{
+  await gotoSettled(page, `${BASE}/`);
+  const labTab = page.locator("header").getByRole("link", { name: "3D Lab", exact: true });
+  await labTab.click();
+  await page.waitForURL(/\/lab$/);
+  await page.getByTestId("lab-hero").waitFor();
+  if ((await labTab.getAttribute("aria-current")) !== "page") errors.push("3d lab: the nav tab isn't active on /lab");
+  for (const id of ["timeline", "sizes", "globe"]) {
+    if (!(await page.getByTestId(`lab-card-${id}`).count())) errors.push(`3d lab: no ${id} card`);
+  }
+  // Card art: real screenshots, loaded (the picture drifts slowly, so it's never "stable" for Playwright's scrolling).
+  const art = page.getByTestId("lab-card-timeline").locator("img").first();
+  await art.evaluate((img) => img.scrollIntoView({ block: "center" }));
+  if (!(await art.evaluate((img) => img.complete ? img.naturalWidth > 0 : new Promise((r) => { img.onload = () => r(true); img.onerror = () => r(false); })))) errors.push("3d lab: the timeline card's picture didn't load");
+  // Race shows only once its page is live.
+  if (await page.getByTestId("lab-card-race").count()) {
+    const res = await page.request.get(`${BASE}/pokedex/race`);
+    if (!res.ok()) errors.push("3d lab: the Race card shows but /pokedex/race isn't there");
+  }
+  await page.screenshot({ path: `${OUT}/lab.png` });
+  await page.getByTestId("lab-open-timeline").click();
+  await page.waitForURL(/\/pokedex\/timeline$/);
+  if ((await labTab.getAttribute("aria-current")) !== "page") errors.push("3d lab: the nav tab isn't active on the timeline");
+  if ((await page.locator("header").getByRole("link", { name: "Pokédex", exact: true }).getAttribute("aria-current")) === "page") errors.push("3d lab: Pokédex is lit on the timeline too");
+  // The 3D stage (with WebGL) leads back to the Lab.
+  const back = page.getByTestId("timeline-back");
+  if (await back.count() && (await back.getAttribute("href")) !== "/lab") errors.push("3d lab: the timeline's back link doesn't lead to /lab");
+  // The leaderboard lives on as the trophy among the header's icons.
+  const trophy = page.getByTestId("nav-leaderboard");
+  if ((await trophy.getAttribute("title")) !== "Leaderboard" || (await trophy.getAttribute("aria-label")) !== "Leaderboard") errors.push("3d lab: the trophy has no label or tooltip");
+  await trophy.click();
+  await page.waitForURL(/\/leaderboard$/);
+  await page.getByTestId("leaderboard-tabs").waitFor();
+  if (await page.locator('header a[href="/leaderboard"]:not([data-testid="nav-leaderboard"])').count()) errors.push("3d lab: the nav still has a Leaderboard text link");
+  // Phones: 3D Lab in the tab bar, the trophy in the header, and nothing scrolls sideways.
+  const phone = await newPage({ width: 390, height: 844 });
+  await gotoSettled(phone, `${BASE}/lab`);
+  const phoneTab = phone.locator('nav[aria-label="Primary"]').getByRole("link", { name: "3D Lab" });
+  if ((await phoneTab.getAttribute("aria-current")) !== "page") errors.push("3d lab: the phone tab bar's 3D Lab isn't active on /lab");
+  if (!(await phone.getByTestId("nav-leaderboard").isVisible())) errors.push("3d lab: no trophy in the phone header");
+  if (await phone.evaluate(() => document.documentElement.scrollWidth > window.innerWidth)) errors.push("3d lab: /lab scrolls sideways on a phone");
+  await phone.screenshot({ path: `${OUT}/lab-phone.png` });
+  await phone.context().close();
+}
+
 step("battle: hub, team builder (paste an OU team, validate), damage calc");
 const OU_TEAM = `Garchomp @ Rocky Helmet
 Ability: Rough Skin

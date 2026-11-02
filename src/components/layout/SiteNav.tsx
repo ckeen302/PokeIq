@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
 import {
   BookOpen,
+  Box,
   CalendarDays,
   Compass,
   Gamepad2,
@@ -12,11 +13,13 @@ import {
   MessagesSquare,
   Search,
   Swords,
+  Trophy,
 } from "lucide-react";
 import { useProgress } from "@/lib/progress";
 import { useAccount } from "@/lib/account";
 import { Avatar } from "@/components/avatar/Avatar";
 import { cn } from "@/lib/utils";
+import { LAB_PATH, isLabPath } from "@/lib/lab";
 import { MuteToggle } from "./MuteToggle";
 import { ThemeToggle } from "./ThemeToggle";
 import { FriendsButton } from "@/components/community/FriendsButton";
@@ -30,8 +33,9 @@ const DESKTOP_LINKS: { href: string; label: string; wideOnly?: boolean }[] = [
   { href: "/battle", label: "Battle" },
   { href: "/play", label: "Quizzes" },
   { href: "/pokedex", label: "Pokédex" },
-  // Only on wide screens: with PokéConnections the row is too long for 1024px (the footer links it too).
-  { href: "/leaderboard", label: "Leaderboard", wideOnly: true },
+  // Only on wide screens, where the leaderboard link was: the row is full at 1024px (the footer links it too).
+  // The leaderboard is the trophy among the header's icons.
+  { href: LAB_PATH, label: "3D Lab", wideOnly: true },
 ];
 
 const MOBILE_TABS = [
@@ -42,9 +46,12 @@ const MOBILE_TABS = [
   { href: "/pokedex", label: "Pokédex", icon: BookOpen },
   { href: "/play", label: "Modes", icon: Gamepad2 },
   { href: "/battle", label: "Battle", icon: Swords },
+  { href: LAB_PATH, label: "3D Lab", icon: Box },
 ];
 
 function isActive(pathname: string, href: string) {
+  // The 3D experiences (the timeline, sizes, the globe...) belong to the 3D Lab tab, not to the Pokédex or PokéGuessr.
+  if (href === LAB_PATH || isLabPath(pathname)) return href === LAB_PATH && isLabPath(pathname);
   return href === "/" ? pathname === "/" : pathname.startsWith(href);
 }
 
@@ -97,6 +104,19 @@ export function DesktopNav() {
           <MessagesSquare className="h-5 w-5" aria-hidden />
         </Link>
         <FriendsButton />
+        <Link
+          href="/leaderboard"
+          aria-label="Leaderboard"
+          title="Leaderboard"
+          className={cn(
+            "flex h-9 w-9 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-accent hover:text-foreground",
+            isActive(pathname, "/leaderboard") && "text-foreground",
+          )}
+          aria-current={isActive(pathname, "/leaderboard") ? "page" : undefined}
+          data-testid="nav-leaderboard"
+        >
+          <Trophy className="h-4 w-4" aria-hidden />
+        </Link>
         <ThemeToggle />
         <MuteToggle />
         {account.status === "ready" && account.enabled && !account.user && (
@@ -117,7 +137,7 @@ export function DesktopNav() {
           )}
         >
           <Avatar avatar={account.user?.avatar} size={22} />
-          <span className="hidden max-w-[4rem] truncate font-display font-semibold min-[380px]:inline sm:max-w-[9rem] lg:hidden 2xl:inline">
+          <span className="hidden max-w-[4rem] truncate font-display font-semibold min-[420px]:inline sm:max-w-[9rem] lg:hidden 2xl:inline">
             {account.user?.username ?? (progress?.name || "Trainer")}
           </span>
         </Link>
@@ -130,7 +150,7 @@ export function MobileTabBar() {
   const pathname = usePathname();
   return (
     <nav
-      className="glass-top fixed inset-x-0 bottom-0 z-50 grid grid-cols-7 pb-[env(safe-area-inset-bottom)] lg:hidden"
+      className="glass-top fixed inset-x-0 bottom-0 z-50 grid grid-cols-8 pb-[env(safe-area-inset-bottom)] lg:hidden"
       aria-label="Primary"
     >
       {MOBILE_TABS.map(({ href, label, icon: Icon }) => {
