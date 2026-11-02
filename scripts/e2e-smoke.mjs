@@ -2077,7 +2077,8 @@ step("pokédex: previous / next on a place, a move and a TCG card (link and → 
     }
     if (!moved) errors.push(`pager: → on ${from} didn't open ${next}`);
     else {
-      // ← from there comes back.
+      // ← from there comes back (once the new page, and so its own shortcuts, is in).
+      await page.locator(`[data-testid="dex-prev"][href="${from}"]`).waitFor({ state: "attached" });
       let back = false;
       for (let i = 0; i < 4 && !back; i++) {
         await page.keyboard.press("ArrowLeft");
