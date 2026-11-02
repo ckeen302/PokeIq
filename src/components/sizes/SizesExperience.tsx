@@ -94,7 +94,8 @@ function qualityParam(): Quality | null {
 }
 /** The live qualities, lightest first (exports and the test render are never chosen by the monitor). */
 const LADDER: Quality[] = ["low", "medium", "high"];
-const FRAME_BUDGET_MS = 1000 / 50;
+/** A frame-time average above this (ms) is slow on any screen. */
+const SLOW_MS = 18;
 /** The drag follows the pointer this closely (per second); everything else eases at its RATE. */
 const RATE_DRAG = 22;
 const LZ_MIN = Math.log(ZOOM_MIN), LZ_MAX = Math.log(ZOOM_MAX);
@@ -657,7 +658,8 @@ export function SizesExperience({ preset, focus = null, vs = [], compare = false
       if (warm < 24 || raw > 400) { warm++; return; }
       ftEma = ftEma * 0.85 + raw * 0.15;
       refresh = Math.min(34, Math.max(6, Math.min(raw, refresh + 0.005)));
-      const slow = ftEma > Math.max(FRAME_BUDGET_MS, refresh) * 1.5;
+      // Slow: dropping frames steadily (under about 46 fps on a 60 Hz screen; a 120 Hz one may settle at 60).
+      const slow = ftEma > Math.max(refresh * 1.3, SLOW_MS);
       slowFor = slow ? slowFor + raw : Math.max(0, slowFor - raw * 0.5);
       const level = LADDER.indexOf(scene.quality);
       if (slowFor > 500 && level > 0) {
@@ -671,7 +673,7 @@ export function SizesExperience({ preset, focus = null, vs = [], compare = false
         return;
       }
       const busy = c.dragging || c.gesturing || now - c.lastInput < 2500 || !!c.flight || !!c.blend || c.kind === "play";
-      const calm = !busy && ftEma < refresh * 1.2 && raw < refresh * 1.7 && work < refresh * 0.45;
+      const calm = !busy && ftEma < refresh * 1.12 && raw < refresh * 1.6 && work < refresh * 0.4;
       calmFor = calm ? calmFor + raw : 0;
       if (calmFor > 6000 && level < ceiling) {
         scene.setQuality(LADDER[level + 1]);

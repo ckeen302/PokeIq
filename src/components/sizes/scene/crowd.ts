@@ -6,8 +6,8 @@ import type { FigureUrls } from "./figures";
  * relief mesh is a flat quad of its own HOME render, all of them in one
  * instanced draw (and one more per shadow cascade), textured from a shared
  * atlas. Each render is fetched at 128 px, decoded off the main thread
- * (createImageBitmap, cropped to the figure and premultiplied for clean
- * mipmaps) and copied into a free cell of the atlas a few per frame, so a
+ * (createImageBitmap, cropped to the figure and scaled to its cell) and
+ * copied into a free cell of the atlas a few per frame, so a
  * zoom out onto hundreds of figures never stalls a frame. Least recently
  * used cells are recycled.
  */
@@ -56,7 +56,12 @@ export class Crowd {
   private decoded: { cell: Cell; bmp: ImageBitmap }[] = [];
   private failed = new Set<number>();
   private clear: THREE.DataTexture;
+  /** One transparent texel (cell 0's corner is always padding). */
+  private clearPixel: THREE.DataTexture;
+  private unmipped: Cell[] = [];
+  private mippedAt = -1e9;
   private frame = 0;
+  private hash = 0;
   private tmpM = new THREE.Matrix4();
   private tmpQ = new THREE.Quaternion();
   private tmpP = new THREE.Vector3();
@@ -65,8 +70,7 @@ export class Crowd {
   constructor(private renderer: THREE.WebGLRenderer, private urls: FigureUrls, facing: number, shadowGeo: THREE.BufferGeometry, shadowMat: THREE.Material, readonly capacity = 900) {
     for (let i = CELLS - 1; i >= 0; i--) this.free.push(i);
     this.atlas = new THREE.DataTexture(null, ATLAS, ATLAS, THREE.RGBAFormat, THREE.UnsignedByteType);
-    // Premultiplied sRGB bytes, decoded in the shader.
-    this.atlas.colorSpace = THREE.NoColorSpace;
+    this.atlas.colorSpace = THREE.SRGBColorSpace;
     this.atlas.minFilter = THREE.LinearMipmapLinearFilter;
     this.atlas.magFilter = THREE.LinearFilter;
     this.atlas.generateMipmaps = true;
@@ -76,6 +80,8 @@ export class Crowd {
     this.atlas.needsUpdate = true;
     this.clear = new THREE.DataTexture(new Uint8Array(CELL * CELL * 4), CELL, CELL, THREE.RGBAFormat, THREE.UnsignedByteType);
     this.clear.flipY = false;
+    this.clearPixel = new THREE.DataTexture(new Uint8Array(4), 1, 1, THREE.RGBAFormat, THREE.UnsignedByteType);
+    this.clearPixel.flipY = false;
 
     const geo = new THREE.PlaneGeometry(1, 1).translate(0, 0.5, 0);
     this.cellAttr = new THREE.InstancedBufferAttribute(new Float32Array(capacity * 4), 4);
@@ -83,9 +89,9 @@ export class Crowd {
     geo.setAttribute("aCell", this.cellAttr);
     this.material = new THREE.MeshStandardMaterial({ map: this.atlas, alphaTest: 0.5, roughness: 0.6, metalness: 0 });
     this.material.shadowSide = THREE.DoubleSide;
-    crowdPatch(this.material, true);
+    crowdPatch(this.material);
     this.depthMaterial = new THREE.MeshDepthMaterial({ depthPacking: THREE.RGBADepthPacking, map: this.atlas, alphaTest: 0.5 });
-    crowdPatch(this.depthMaterial, false);
+    crowdPatch(this.depthMaterial);
     this.mesh = new THREE.InstancedMesh(geo, this.material, capacity);
     this.mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
     this.mesh.count = 0;
@@ -125,7 +131,7 @@ export class Crowd {
 
   /** Whether anything asked for is still on its way. */
   get busy() {
-    return this.loading.size > 0 || this.decoded.length > 0;
+    return this.loading.size > 0 || this.decoded.length > 0 || this.unmipped.length > 0;
   }
 
   private take(art: number): Cell | null {
@@ -157,7 +163,7 @@ export class Crowd {
       const sw = Math.max(1, Math.min(128 - sx, Math.ceil((bx + bw) * k) - sx)), sh = Math.max(1, Math.min(128 - sy, Math.ceil((by + bh) * k) - sy));
       const fit = INNER / Math.max(sw, sh);
       const rw = Math.max(1, Math.round(sw * fit)), rh = Math.max(1, Math.round(sh * fit));
-      let bmp = await createImageBitmap(blob, sx, sy, sw, sh, { resizeWidth: rw, resizeHeight: rh, resizeQuality: "high", premultiplyAlpha: "premultiply", colorSpaceConversion: "none" });
+      let bmp = await createImageBitmap(blob, sx, sy, sw, sh, { resizeWidth: rw, resizeHeight: rh, resizeQuality: "high", premultiplyAlpha: "none", colorSpaceConversion: "none" });
       if (bmp.width !== rw || bmp.height !== rh) {
         // A browser that ignores the resize options: scale it on a canvas instead.
         const cv = document.createElement("canvas");
@@ -165,7 +171,7 @@ export class Crowd {
         cv.height = rh;
         cv.getContext("2d")!.drawImage(bmp, 0, 0, rw, rh);
         bmp.close();
-        bmp = await createImageBitmap(cv, { premultiplyAlpha: "premultiply" });
+        bmp = await createImageBitmap(cv, { premultiplyAlpha: "none", colorSpaceConversion: "none" });
       }
       if (ac.signal.aborted || this.cells.get(a.art) !== cell) { bmp.close(); return; }
       const col = cell.index % PER_ROW, row = Math.floor(cell.index / PER_ROW);
@@ -183,42 +189,57 @@ export class Crowd {
     }
   }
 
-  /** Copies up to `budget` decoded figures into the atlas (each a small sub-upload; the mipmaps are rebuilt once). Returns how many. */
-  upload(budget: number): number {
-    let n = 0;
+  /**
+   * Copies up to `budget` decoded figures into the atlas (each a small
+   * sub-upload). The atlas's mipmaps are rebuilt for a batch at a time, at
+   * most every third frame while figures stream in (all at once when
+   * `flush`), and a figure is drawn only once its mipmaps exist. Returns how
+   * many became ready.
+   */
+  upload(budget: number, flush = false): number {
     const pos = new THREE.Vector2();
+    this.atlas.generateMipmaps = false;
+    let n = 0;
     while (n < budget && this.decoded.length) {
       const { cell, bmp } = this.decoded.shift()!;
       if (this.cells.get(cell.art) !== cell) { bmp.close(); continue; }
       const col = cell.index % PER_ROW, row = Math.floor(cell.index / PER_ROW);
-      const last = n === budget - 1 || !this.decoded.length;
-      this.atlas.generateMipmaps = false;
       pos.set(col * CELL, row * CELL);
       this.renderer.copyTextureToTexture(this.clear, this.atlas, null, pos);
       const src = new THREE.Texture(bmp as unknown as HTMLImageElement);
       src.flipY = false;
-      this.atlas.generateMipmaps = last;
       pos.set(Math.round(cell.uv[0] * ATLAS), Math.round(cell.uv[1] * ATLAS));
       this.renderer.copyTextureToTexture(src, this.atlas, null, pos);
       bmp.close();
-      cell.ready = true;
+      this.unmipped.push(cell);
       n++;
     }
+    let ready = 0;
+    if (this.unmipped.length && (flush || this.frame - this.mippedAt >= 3 || this.unmipped.length >= 8)) {
+      // A one-texel copy with mipmaps on rebuilds the whole chain once for everything copied since.
+      this.atlas.generateMipmaps = true;
+      pos.set(0, 0);
+      this.renderer.copyTextureToTexture(this.clearPixel, this.atlas, null, pos);
+      this.mippedAt = this.frame;
+      for (const c of this.unmipped) if (this.cells.get(c.art) === c) { c.ready = true; ready++; }
+      this.unmipped = [];
+    }
     this.atlas.generateMipmaps = true;
-    return n;
+    return ready;
   }
 
-  /** This frame's crowd. */
-  set(list: CrowdInstance[]) {
+  /** This frame's crowd; returns whether it differs from the last one. */
+  set(list: CrowdInstance[]): boolean {
     this.frame++;
     const n = Math.min(list.length, this.capacity);
     const arr = this.cellAttr.array as Float32Array;
-    let k = 0;
+    let k = 0, hash = 17;
     for (let i = 0; i < n; i++) {
       const it = list[i];
       const c = this.cells.get(it.art);
       if (!c?.ready) continue;
       c.used = this.frame;
+      hash = (Math.imul(hash, 31) + it.art * 7 + c.index + Math.round(it.x * 64)) | 0;
       this.tmpP.set(it.x, 0, it.z);
       this.tmpS.set(it.w, it.h, 1);
       this.mesh.setMatrixAt(k, this.tmpM.compose(this.tmpP, this.tmpQ, this.tmpS));
@@ -231,9 +252,12 @@ export class Crowd {
       arr[k * 4 + 3] = c.uv[3];
       k++;
     }
+    hash = (Math.imul(hash, 31) + k) | 0;
+    const changed = hash !== this.hash;
+    this.hash = hash;
     this.mesh.count = k;
     this.shadows.count = k;
-    if (k) {
+    if (k && changed) {
       this.mesh.instanceMatrix.clearUpdateRanges();
       this.mesh.instanceMatrix.addUpdateRange(0, k * 16);
       this.mesh.instanceMatrix.needsUpdate = true;
@@ -244,6 +268,7 @@ export class Crowd {
       this.cellAttr.addUpdateRange(0, k * 4);
       this.cellAttr.needsUpdate = true;
     }
+    return changed;
   }
 
   /** Marks the frame as passed without changing the crowd. */
@@ -263,32 +288,19 @@ export class Crowd {
     this.depthMaterial.dispose();
     this.atlas.dispose();
     this.clear.dispose();
+    this.clearPixel.dispose();
   }
 }
 
-/**
- * Per-instance atlas cell for the crowd's materials. The atlas holds
- * premultiplied sRGB (so mipmaps don't darken the outlines): the colour
- * material turns it back into straight, linear colour itself.
- */
-function crowdPatch(m: THREE.Material, colour: boolean) {
+/** Per-instance atlas cell for the crowd's materials (its colour and its shadow). */
+function crowdPatch(m: THREE.Material) {
   const prev = m.onBeforeCompile;
   m.onBeforeCompile = (s, r) => {
     prev?.call(m, s, r);
     s.vertexShader = s.vertexShader
       .replace("#include <common>", "#include <common>\nattribute vec4 aCell;")
       .replace("#include <uv_vertex>", "#include <uv_vertex>\n#ifdef USE_MAP\n  vMapUv = vec2(aCell.x + vMapUv.x * aCell.z, aCell.y + (1.0 - vMapUv.y) * aCell.w);\n#endif");
-    if (colour) {
-      s.fragmentShader = s.fragmentShader.replace(
-        "#include <map_fragment>",
-        `#ifdef USE_MAP
-          vec4 sampledDiffuseColor = texture2D(map, vMapUv);
-          sampledDiffuseColor.rgb = sRGBTransferEOTF(vec4(sampledDiffuseColor.rgb / max(sampledDiffuseColor.a, 0.004), 1.0)).rgb;
-          diffuseColor *= sampledDiffuseColor;
-        #endif`
-      );
-    }
   };
   const prevKey = m.customProgramCacheKey?.bind(m);
-  m.customProgramCacheKey = () => `${prevKey ? prevKey() : ""}|crowd${colour ? "c" : "d"}`;
+  m.customProgramCacheKey = () => `${prevKey ? prevKey() : ""}|crowd`;
 }

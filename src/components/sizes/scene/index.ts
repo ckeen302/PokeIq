@@ -127,6 +127,9 @@ export function createSizesScene(host: HTMLElement, opts: SceneOptions): SizesSc
   renderer.toneMappingExposure = 0.95;
   renderer.shadowMap.enabled = opts.quality !== "draft";
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  // Shadow maps are redrawn when the camera or the figures change, and only every few frames while all is still (see render).
+  renderer.shadowMap.autoUpdate = false;
+  renderer.shadowMap.needsUpdate = true;
   const sizeOf = () => opts.size ?? { w: Math.max(1, host.clientWidth), h: Math.max(1, host.clientHeight) };
   let { w: W, h: H } = sizeOf();
   const pr = opts.size ? 1 : Math.min(window.devicePixelRatio || 1, Q.pr);
@@ -283,6 +286,8 @@ export function createSizesScene(host: HTMLElement, opts: SceneOptions): SizesSc
   // Built figures wait here for their turn on the GPU: a few per frame, each compiled before it's shown.
   const toPlace: { s: Slot; h: FigureHandle; ac: AbortController }[] = [];
   let compiling = 0;
+  // The shadow maps need redrawing (a figure came or went, the quality or size changed).
+  let shadowsDirty = true;
   let logH: number[] = [];
   let xs: number[] = [];
   let loadingCount = 0;
@@ -345,6 +350,7 @@ export function createSizesScene(host: HTMLElement, opts: SceneOptions): SizesSc
   }
 
   function dropSlot(s: Slot) {
+    if (s.handle) shadowsDirty = true;
     s.abort?.abort();
     s.abort = null;
     s.loading = null;
@@ -408,6 +414,7 @@ export function createSizesScene(host: HTMLElement, opts: SceneOptions): SizesSc
         s.update = (h as { update?: (t: number, dt: number) => void }).update;
         place(s, h);
         crowdDirty = true;
+        shadowsDirty = true;
       };
       if (sync) { show(); continue; }
       compiling++;
@@ -545,7 +552,7 @@ export function createSizesScene(host: HTMLElement, opts: SceneOptions): SizesSc
   function updateCrowd() {
     const list: CrowdInstance[] = [];
     for (const s of crowdList) if (!s.handle && s.want !== -1 && crowd.has(s.item.art)) list.push({ x: s.x, z: s.z ?? 0, w: s.w, h: s.h, art: s.item.art });
-    crowd.set(list);
+    if (crowd.set(list)) shadowsDirty = true;
   }
   const inCrowd = (s: Slot) => !s.handle && s.want !== -1 && !!s.item.art && crowd.has(s.item.art);
 
@@ -568,9 +575,11 @@ export function createSizesScene(host: HTMLElement, opts: SceneOptions): SizesSc
     try {
       renderer.compile(scene, camera);
       csm.update();
+      renderer.shadowMap.needsUpdate = true;
       post.frame(camera, focusD, 1.2, 0.1);
       post.render();
     } finally {
+      shadowsDirty = true;
       figureGroup.remove(obj);
       geo.dispose();
       mat.dispose();
@@ -593,18 +602,26 @@ export function createSizesScene(host: HTMLElement, opts: SceneOptions): SizesSc
     renderer.setSize(W, H, false);
     post.dispose();
     post = postFor(Q);
+    shadowsDirty = true;
   }
 
+  const lastCam = new THREE.Vector3(Infinity, 0, 0), lastAim = new THREE.Vector3();
   function render(t: number, dt: number) {
     frameNo++;
     applyView();
     csm.update();
+    // The shadow cascades follow the camera: redrawn when it moves or a figure comes or goes, otherwise every third frame (for the idle motion).
+    const moved = camera.position.distanceToSquared(lastCam) > 1e-12 || target.distanceToSquared(lastAim) > 1e-12;
+    lastCam.copy(camera.position);
+    lastAim.copy(target);
     const all = opts.quality === "export";
     if (frameNo % 3 === 1 || all) { wanted(); stream(all ? 99 : 4); }
     // GPU uploads, spread over frames: two crowd figures and one relief figure at most (exports take everything at once).
-    if (crowd.upload(all ? 999 : 2)) crowdDirty = true;
+    if (crowd.upload(all ? 999 : 2, all)) crowdDirty = true;
     placeSome(all ? 999 : 1, all);
     if (crowdDirty) { updateCrowd(); crowdDirty = false; } else crowd.tick();
+    renderer.shadowMap.needsUpdate = moved || shadowsDirty || frameNo % 3 === 0 || opts.quality === "export";
+    shadowsDirty = false;
     shared.uniforms.uTime.value = t;
     sky.update(camera, t);
     // Idle: a slow breath (and the trainer's own idle).
@@ -648,7 +665,7 @@ export function createSizesScene(host: HTMLElement, opts: SceneOptions): SizesSc
     wanted();
     for (;;) {
       stream(99);
-      crowd.upload(999);
+      crowd.upload(999, true);
       placeSome(999, true);
       const all = companion ? [companion, ...slots] : slots;
       const pending = all.some((s) => s.want !== -1 && s.loading !== null);
@@ -669,6 +686,7 @@ export function createSizesScene(host: HTMLElement, opts: SceneOptions): SizesSc
     camera.fov = w / h < 0.8 ? 46 : 35;
     camera.updateProjectionMatrix();
     post.setSize(w, h);
+    shadowsDirty = true;
   }
 
   return {

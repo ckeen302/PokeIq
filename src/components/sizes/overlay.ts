@@ -22,6 +22,7 @@ export interface OverlayOptions {
 }
 
 type Cand = { key: string; x: number; y: number; sh: number; info: BadgeInfo; focus: boolean };
+type Bitmap = { key: string; dpr: number; canvas: HTMLCanvasElement; pad: number; w: number; h: number; s: number };
 
 function candidates(anchors: Anchor[], focusKey: string | null, byKey: Map<string, SizeItem>): Cand[] {
   const focusDist = anchors.find((a) => a.item.key === focusKey)?.dist ?? Infinity;
@@ -45,9 +46,11 @@ export function drawBadges(g: CanvasRenderingContext2D, anchors: Anchor[], focus
   }
 }
 
-/** Badge scales are rendered on a grid of steps this fine (about 2%), then drawn at their exact size. */
-const STEPS_PER_OCTAVE = 32;
-const MAX_CACHED = 48;
+/** A cached badge is reused while the size it's needed at stays within this share of the size it was drawn at (drawn scaled to fit). */
+const REUSE = 0.05;
+/** Close enough to count as drawn at its own size. */
+const EXACT = 0.004;
+const MAX_CACHED = 40;
 
 /**
  * The live page's badge layer. Drawing a badge (gradients, outlined text,
@@ -58,8 +61,11 @@ const MAX_CACHED = 48;
  */
 export class BadgeLayer {
   private widths = new Map<string, number>();
-  private bitmaps = new Map<string, { canvas: HTMLCanvasElement; pad: number; w: number; h: number; s: number }>();
+  private bitmaps = new Map<string, Bitmap>();
+  private spare: HTMLCanvasElement[] = [];
   private lastSig = "";
+  private still = 0;
+  private crisp = true;
   private probe: CanvasRenderingContext2D | null = null;
 
   constructor(private font: string) {}
@@ -69,6 +75,7 @@ export class BadgeLayer {
     this.font = font;
     this.widths.clear();
     this.bitmaps.clear();
+    this.spare = [];
     this.lastSig = "";
   }
 
@@ -84,33 +91,41 @@ export class BadgeLayer {
     return (w100 * px) / 100;
   };
 
-  private bitmap(key: string, info: BadgeInfo, s: number, dpr: number) {
-    const step = Math.round(Math.log2(Math.max(1, s)) * STEPS_PER_OCTAVE);
-    const id = `${key}|${step}|${dpr}`;
-    let b = this.bitmaps.get(id);
-    if (b) {
-      // Most recently used last.
-      this.bitmaps.delete(id);
-      this.bitmaps.set(id, b);
-      return b;
+  private bitmap(key: string, info: BadgeInfo, s: number, dpr: number, tolerance: number) {
+    // Any copy drawn near this size will do: as a figure drifts across the frame its badge's size wanders, and redrawing it each time would cost more than it saves.
+    let best: { id: string; b: Bitmap } | null = null;
+    for (const [id, b] of this.bitmaps) {
+      if (b.key !== key || b.dpr !== dpr) continue;
+      const off = Math.abs(b.s / s - 1);
+      if (off <= tolerance && (!best || off < Math.abs(best.b.s / s - 1))) best = { id, b };
     }
-    const sq = Math.pow(2, step / STEPS_PER_OCTAVE);
-    const { w, h } = badgeSize(info, sq, this.measure);
-    const pad = Math.ceil(sq * 0.45);
+    if (best) {
+      // Most recently used last.
+      this.bitmaps.delete(best.id);
+      this.bitmaps.set(best.id, best.b);
+      return best.b;
+    }
+    const { w, h } = badgeSize(info, s, this.measure);
+    const pad = Math.ceil(s * 0.45);
     // The dex tag (and "(LENGTH)") may run past a short name's banner.
-    const th = sq * 0.5;
-    const tagW = info.dex ? sq * 0.1 + this.measure(dexTagText(info.dex), th * 0.72) + th * 0.7 + (info.length ? sq * 0.1 + this.measure("(LENGTH)", th * 0.6) + th * 0.6 : 0) : 0;
-    const canvas = document.createElement("canvas");
+    const th = s * 0.5;
+    const tagW = info.dex ? s * 0.1 + this.measure(dexTagText(info.dex), th * 0.72) + th * 0.7 + (info.length ? s * 0.1 + this.measure("(LENGTH)", th * 0.6) + th * 0.6 : 0) : 0;
+    // Reuse an evicted canvas when there is one.
+    const canvas = this.spare.pop() ?? document.createElement("canvas");
     canvas.width = Math.ceil((Math.max(w, tagW) + pad * 2) * dpr);
     canvas.height = Math.ceil((h + pad * 2) * dpr);
     const g = canvas.getContext("2d");
     if (g) {
-      g.scale(dpr, dpr);
-      drawBadge(g, info, { x: pad, y: pad, s: sq, alpha: 1, w }, this.font);
+      g.setTransform(dpr, 0, 0, dpr, 0, 0);
+      drawBadge(g, info, { x: pad, y: pad, s, alpha: 1, w }, this.font);
     }
-    b = { canvas, pad, w, h, s: sq };
-    this.bitmaps.set(id, b);
-    if (this.bitmaps.size > MAX_CACHED) this.bitmaps.delete(this.bitmaps.keys().next().value!);
+    const b: Bitmap = { key, dpr, canvas, pad, w, h, s };
+    this.bitmaps.set(`${key}|${s.toFixed(3)}|${dpr}`, b);
+    if (this.bitmaps.size > MAX_CACHED) {
+      const [oldest, old] = this.bitmaps.entries().next().value!;
+      this.bitmaps.delete(oldest);
+      if (this.spare.length < 8) this.spare.push(old.canvas);
+    }
     return b;
   }
 
@@ -119,21 +134,34 @@ export class BadgeLayer {
     const cands = candidates(anchors, focusKey, byKey);
     const places = layoutBadges(cands, { w, h, top: o.top, bottom: o.bottom }, this.measure, { max: o.max, minSh: h * 0.12, scale: o.scale });
     const sig = signature(places, w, h);
-    if (sig === this.lastSig) return false;
+    if (sig === this.lastSig) {
+      // Still for a moment: redraw any badge that was copied a little off its size, so text at rest is pixel-sharp.
+      if (!this.crisp && ++this.still >= 6) this.crisp = this.paint(g, places, cands, dpr, EXACT);
+      return false;
+    }
     this.lastSig = sig;
+    this.still = 0;
+    this.crisp = this.paint(g, places, cands, dpr, REUSE);
+    return true;
+  }
+
+  /** Paints the placed badges; true when every one was copied at (about) its own size. */
+  private paint(g: CanvasRenderingContext2D, places: Placement[], cands: Cand[], dpr: number, tolerance: number): boolean {
     g.setTransform(1, 0, 0, 1, 0, 0);
     g.clearRect(0, 0, g.canvas.width, g.canvas.height);
     g.setTransform(dpr, 0, 0, dpr, 0, 0);
+    let exact = true;
     for (const p of places) {
       const c = cands.find((x) => x.key === p.key);
       if (!c) continue;
-      const b = this.bitmap(p.key, c.info, p.s, dpr);
+      const b = this.bitmap(p.key, c.info, p.s, dpr, tolerance);
       const k = p.s / b.s;
+      if (Math.abs(k - 1) > EXACT) exact = false;
       g.globalAlpha = p.alpha;
-      g.drawImage(b.canvas, p.x - b.pad * k, p.y - b.pad * k, (b.w + b.pad * 2) * k, (b.h + b.pad * 2) * k);
+      g.drawImage(b.canvas, p.x - b.pad * k, p.y - b.pad * k, (b.canvas.width / dpr) * k, (b.canvas.height / dpr) * k);
     }
     g.globalAlpha = 1;
-    return true;
+    return exact;
   }
 
   /** Forgets the last frame (the overlay was cleared or resized). */
