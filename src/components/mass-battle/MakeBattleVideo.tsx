@@ -26,7 +26,7 @@ function param(name: string): string | null {
 }
 
 /** "Make a video": the battle as a vertical 1080 × 1920 MP4 for TikTok, Reels and Shorts. */
-export default function MakeBattleVideo({ battle, onClose }: { battle: BattleDesc; species: MBSpecies[]; onClose(): void }) {
+export default function MakeBattleVideo({ battle, onRecording, onClose }: { battle: BattleDesc; species: MBSpecies[]; onRecording?(on: boolean): void; onClose(): void }) {
   const extra = (() => {
     const n = Number(param("len"));
     return Number.isFinite(n) && n >= 3 && n <= 60 ? Math.round(n) : null;
@@ -55,6 +55,7 @@ export default function MakeBattleVideo({ battle, onClose }: { battle: BattleDes
     const ac = new AbortController();
     abortRef.current = ac;
     setPhase({ kind: "recording", p: 0, label: "Setting up the battle" });
+    onRecording?.(true);
     try {
       const { recordBattleVideo } = await import("./record");
       const font = getComputedStyle(document.documentElement).getPropertyValue("--font-display").trim() || "sans-serif";
@@ -83,6 +84,7 @@ export default function MakeBattleVideo({ battle, onClose }: { battle: BattleDes
       else setPhase({ kind: "error", message: e instanceof Error ? e.message : "Something went wrong" });
     } finally {
       abortRef.current = null;
+      onRecording?.(false);
     }
   }
 

@@ -128,6 +128,8 @@ export function MassBattleExperience({ list, presets, initial }: { list: PickerM
   const battleRef = useRef<BattleDesc | null>(null);
   const feedId = useRef(0);
   const endTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  /** A video is being made: the live view stops drawing so the recorder has the device to itself. */
+  const recordingRef = useRef(false);
   /** Worker milliseconds per simulation tick (smoothed), for the stats on the stage. */
   const tickMs = useRef(0);
 
@@ -394,7 +396,7 @@ export function MassBattleExperience({ list, presets, initial }: { list: PickerM
       last = now;
       const dt = Math.min(0.1, raw / 1000);
       const scene = sceneRef.current;
-      if (!scene) return;
+      if (!scene || recordingRef.current) return;
       const view = viewRef.current;
       const phase = phaseRef.current;
       const host = hostRef.current;
@@ -1044,7 +1046,21 @@ export function MassBattleExperience({ list, presets, initial }: { list: PickerM
 
         {showVideo && b && viewRef.current && (
           <Suspense fallback={<div className="absolute inset-0 z-[9] flex items-center justify-center bg-black/55"><Loader2 className="h-6 w-6 animate-spin" /></div>}>
-            <MakeBattleVideo battle={b} species={speciesRef.current} onClose={() => setShowVideo(false)} />
+            <MakeBattleVideo
+              battle={b}
+              species={speciesRef.current}
+              onRecording={(on) => {
+                recordingRef.current = on;
+                if (on && phaseRef.current === "playing" && !pausedRef.current) {
+                  pausedRef.current = true;
+                  setPaused(true);
+                }
+              }}
+              onClose={() => {
+                recordingRef.current = false;
+                setShowVideo(false);
+              }}
+            />
           </Suspense>
         )}
       </div>
