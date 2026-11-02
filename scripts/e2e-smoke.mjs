@@ -2752,7 +2752,7 @@ const analysisSecs = ((Date.now() - analysisStart) / 1000).toFixed(1);
 if ((await analysis.getByTestId("analysis-chart").locator("path").count()) < 2) errors.push("analysis: no win-chance line");
 const assumptions = await analysis.getByTestId("analysis-assumptions").innerText();
 if (!/95% confidence interval/.test(assumptions) || !/assumed/.test(assumptions)) errors.push(`analysis: the assumptions aren't spelled out: ${assumptions}`);
-for (const line of (await analysis.getByTestId("key-moments").locator("li").allInnerTexts())) {
+for (const line of (await analysis.getByTestId("key-moments").getByTestId("key-moment-text").allInnerTexts())) {
   if (!/^Turn \d+: .+ \(win chance \d+% → (\d+%|won|lost|draw)\)\.$/.test(line)) errors.push(`analysis: odd key moment "${line}"`);
   else console.log(`  ${line}`);
 }
@@ -2782,7 +2782,7 @@ await statsPanel.getByTestId("stats-copy").filter({ hasText: "Copied!" }).waitFo
 const copied = await mmRed.evaluate(() => navigator.clipboard.readText()).catch(() => "");
 if (copied && !copied.includes(`/battle/replay/${mmCode}?analysis=1`)) errors.push("stats: the copied card has no link to the analysis");
 await statsPanel.screenshot({ path: `${OUT}/battle-replay-stats.png` });
-const statsRes = await mmRed.request.get(`${BASE}/api/battle/analysis/stats/${mmCode}?v=1`);
+const statsRes = await mmRed.request.get(`${BASE}/api/battle/analysis/stats/${mmCode}?v=2`);
 if (statsRes.status() !== 200 || !/max-age/.test(statsRes.headers()["cache-control"] ?? "")) errors.push(`stats API: ${statsRes.status()} ${statsRes.headers()["cache-control"]}`);
 // Cached in this browser: a reload shows it at once.
 await mmRed.reload({ waitUntil: "load" });

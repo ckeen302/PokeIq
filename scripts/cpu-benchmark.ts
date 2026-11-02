@@ -7,6 +7,8 @@
  *   npx tsx scripts/cpu-benchmark.ts                       (1,000 games per matchup, all cores)
  *   npx tsx scripts/cpu-benchmark.ts --games 200 --seed 3 --only hard-vs-legacy
  *
+ * --tune takes the lookahead's TUNE weights and the doubles policy's DOUBLES_TUNE.
+ *
  * Matchups: hard-vs-legacy (the lookahead against the old Hard policy in
  * cpu-policy-legacy.ts), hard-vs-normal, normal-vs-easy, and in Gen 9 Random
  * Doubles Battles doubles-vs-legacy (cpu-policy-doubles.ts on Hard against
@@ -19,6 +21,7 @@ import { Teams } from "@pkmn/sim";
 import { TeamGenerators } from "@pkmn/randoms";
 import type { Battle, Side } from "@pkmn/sim";
 import { chooseCpu, TUNE } from "@/lib/battle/cpu-policy";
+import { DOUBLES_TUNE } from "@/lib/battle/cpu-policy-doubles";
 import { chooseCpuLegacy } from "@/lib/battle/cpu-policy-legacy";
 import { withMega, type Chooser } from "@/lib/battle/lab/policies";
 import { defaultSetup, emptySide, labMon } from "@/lib/battle/lab/setup";
@@ -79,7 +82,8 @@ function policyChooser(policy: Policy, rand: () => number, times: number[], onFa
 
 /** Games `from` to `to` of a matchup: game 2k and 2k+1 share a team pairing with the sides swapped. */
 function runJob(job: Job): Result {
-  Object.assign(TUNE, job.tune);
+  // Weights of either policy (the doubles one's names don't clash with the lookahead's).
+  for (const [k, v] of Object.entries(job.tune)) Object.assign(k in DOUBLES_TUNE ? DOUBLES_TUNE : TUNE, { [k]: v });
   const [a, b] = MATCHUPS[job.matchup];
   const out: Result = { wins: [0, 0], draws: 0, turns: 0, refused: 0, fallbacks: 0, broken: 0, times: [[], []] };
   for (let g = job.from; g < job.to; g++) {
@@ -144,7 +148,7 @@ async function main() {
   const tune: Record<string, number> = {};
   for (const kv of arg("tune", "").split(",").filter(Boolean)) {
     const [k, v] = kv.split("=");
-    if (!(k in TUNE) || !Number.isFinite(Number(v))) throw new Error(`Unknown weight ${kv}; one of ${Object.keys(TUNE).join(", ")}`);
+    if (!(k in TUNE || k in DOUBLES_TUNE) || !Number.isFinite(Number(v))) throw new Error(`Unknown weight ${kv}; one of ${[...Object.keys(TUNE), ...Object.keys(DOUBLES_TUNE)].join(", ")}`);
     tune[k] = Number(v);
   }
   if (Object.keys(tune).length) console.log(`weights: ${JSON.stringify(tune)}`);

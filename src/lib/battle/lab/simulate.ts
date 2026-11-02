@@ -421,6 +421,25 @@ export interface LabBattleOptions {
   choosers?: (rands: [() => number, () => number], record: BattleRecord) => [Chooser, Chooser];
 }
 
+/** The players, team preview (the leads are the setup's first Pokémon, the rest in order) and the starting conditions. */
+function startLab(battle: Battle, prep: PreparedLab): { misses: string[]; setupStart: number; setupEnd: number } {
+  battle.setPlayer("p1", { name: SIDE_NAMES[0], team: prep.packed[0] });
+  battle.setPlayer("p2", { name: SIDE_NAMES[1], team: prep.packed[1] });
+  for (const side of battle.sides) {
+    const request = side.activeRequest as unknown as BattleRequest | null;
+    if (request?.teamPreview) battle.choose(side.id, teamChoice(request, 1));
+  }
+  const setupStart = battle.log.length;
+  const misses = applyStart(battle, prep);
+  return { misses, setupStart, setupEnd: battle.log.length };
+}
+
+/** Battle `index` of the run, set up and waiting for the first turn's choices (for tests: the position the strategies start from). */
+export function startLabBattle(prep: PreparedLab, master: string, index: number): { battle: Battle; misses: string[] } {
+  const battle = new Battle({ formatid: prep.formatid as never, seed: battleSeed(master, index) as PRNGSeed });
+  return { battle, misses: startLab(battle, prep).misses };
+}
+
 /** Battle `index` of the run with master seed `master`. The same arguments always play the same battle. */
 export function runLabBattle(prep: PreparedLab, master: string, index: number, opts: LabBattleOptions = {}): LabBattle {
   const { setup } = prep;
@@ -448,16 +467,7 @@ export function runLabBattle(prep: PreparedLab, master: string, index: number, o
   let setupStart = -1;
   let setupEnd = -1;
   try {
-    battle.setPlayer("p1", { name: SIDE_NAMES[0], team: prep.packed[0] });
-    battle.setPlayer("p2", { name: SIDE_NAMES[1], team: prep.packed[1] });
-    // Team preview (Gen 5 on): the leads are the setup's first Pokémon, the rest in order.
-    for (const side of battle.sides) {
-      const request = side.activeRequest as unknown as BattleRequest | null;
-      if (request?.teamPreview) battle.choose(side.id, teamChoice(request, 1));
-    }
-    setupStart = battle.log.length;
-    misses = applyStart(battle, prep);
-    setupEnd = battle.log.length;
+    ({ misses, setupStart, setupEnd } = startLab(battle, prep));
 
     let decisions = 0;
     while (!battle.ended) {

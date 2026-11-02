@@ -25,7 +25,7 @@ export function rollPlacer(calc: Calc, sets: Map<string, AssumedSet>): (c: RollC
     try {
       const attacker = calcSide(c.attacker, a, c.attackerConditions);
       const defender = calcSide(c.defender, d, c.defenderConditions, c.before);
-      const field = { ...emptyField(), ...fieldOf({ weather: c.weather, terrain: c.terrain } as TurnState) };
+      const field = { ...emptyField(), ...fieldOf({ weather: c.weather, terrain: c.terrain } as TurnState, c.spread ? 2 : 1) };
       const line = calcMoves(calc, { ...attacker, moves: [c.move] }, defender, field)[0];
       if (!line || line.category === "Status" || line.rolls.length < 2) return null;
       const max = makePokemon(calc, defender).maxHP();

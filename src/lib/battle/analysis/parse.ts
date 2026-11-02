@@ -133,6 +133,8 @@ export interface Revealed {
 export interface ParsedBattle {
   gen: number;
   doubles: boolean;
+  /** The log's game type: "singles", "doubles", "triples", "freeforall", "multi". */
+  gameType: string;
   /** turns[t]: the state at the start of turn t (turns[0] is unused). */
   turns: TurnState[];
   /** events[t]: what happened during turn t. */
@@ -222,6 +224,7 @@ export function parseReplay(log: readonly string[]): ParsedBattle {
   const turns: TurnState[] = [];
   const events: TurnEvents[] = [];
   let doubles = false;
+  let gameType = "singles";
   let winner: SideIndex | null = null;
   let current: TurnEvents | null = null;
   const faintedThisTurn = new Set<SideIndex>();
@@ -263,7 +266,10 @@ export function parseReplay(log: readonly string[]): ParsedBattle {
     }
     const { args, kwArgs } = parsed;
     const cmd = args[0];
-    if (cmd === "gametype") doubles = args[1] === "doubles";
+    if (cmd === "gametype") {
+      gameType = String(args[1] ?? "singles");
+      doubles = gameType === "doubles";
+    }
     if (cmd === "-terastallize" && sideOf(args[1]) !== null) teraUsed[sideOf(args[1])!] = true;
     if (cmd === "win") winner = args[1] === battle.p1.name ? 0 : args[1] === battle.p2.name ? 1 : null;
 
@@ -357,5 +363,5 @@ export function parseReplay(log: readonly string[]): ParsedBattle {
       });
     }
   });
-  return { gen: battle.gen.num, doubles, turns, events, revealed, winner, lastTurn };
+  return { gen: battle.gen.num, doubles, gameType, turns, events, revealed, winner, lastTurn };
 }

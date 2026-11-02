@@ -138,6 +138,12 @@ function calcMove(gen: CalcGen, name: string): CalcMove {
   return m;
 }
 
+/** A status move that raises its target's stats (Decorate, Coaching…): for the partner only. */
+function boostsTarget(battle: Battle, id: string): boolean {
+  const m = battle.dex.moves.get(id);
+  return m.target !== "self" && !!m.boosts && Object.values(m.boosts as Record<string, number>).some((b) => b > 0);
+}
+
 /** Everything one decision works out once. */
 interface Ctx {
   battle: Battle;
@@ -484,6 +490,7 @@ function optionsFor(ctx: Ctx, request: BattleRequest, me: Mine, mine: Mine[], fo
         const last = target.p.lastMove;
         opt.extra += last && (last.category === "Status" || PROTECT.has(last.id)) ? 0.2 : 0.01;
       } else if (id === "taunt" && target) opt.extra += 0.04;
+      else if (target && boostsTarget(battle, id)) opt.extra -= 0.5; // Decorate and the like: never on a foe
       else opt.extra += 0.01;
     }
     out.push(opt);
@@ -622,7 +629,11 @@ function scorePair(ctx: Ctx, mine: Mine[], foes: Foe[], opts: Opt[]): number {
       const partner = opts.find((p, j) => j !== i && p.kind === "move" && p.data?.attack);
       if (!partner) score -= 0.2;
     }
-    if (o.kind === "switch") score -= T.switchCost + switchValue(ctx, mine[i], o.to!, foes);
+    if (o.kind === "switch") {
+      // Coming straight back out of a switch just made is rarely right.
+      const settled = mine[i].p.activeTurns > 1 ? 0 : 0.12;
+      score -= T.switchCost + settled + switchValue(ctx, mine[i], o.to!, foes);
+    }
   });
   return score;
 }
@@ -789,7 +800,7 @@ function decide(ctx: Ctx, request: BattleRequest, rand: () => number): string {
     }
     const doomed = Math.max(1 - kMiss, koFrom(incoming, m.hp)) >= 0.55;
     const canKoFirst = list.some((o) => o.data?.attack && foes.some((f) => (o.on[f.pos]?.k ?? 0) >= 0.5 && before(ctx, m.p, o.priority, f.p, 0) === 1));
-    const helpless = m.power < 0.12;
+    const helpless = m.power < 0.12 && !list.some((o) => o.kind === "move" && !o.data?.attack && o.extra > 0.1);
     const trouble = (doomed && !canKoFirst) || helpless;
     const keep = list.filter((o) => o.kind !== "switch" || trouble);
     return keep.length ? keep : list;
