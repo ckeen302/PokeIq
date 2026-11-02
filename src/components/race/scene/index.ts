@@ -297,16 +297,24 @@ export function createRaceScene(host: HTMLElement, opts: SceneOptions): RaceScen
     const { w: PW, h: PH, perFrame } = Q0.pf;
     const rt = new THREE.WebGLRenderTarget(PW, PH, { type: THREE.HalfFloatType });
     rt.texture.colorSpace = THREE.LinearSRGBColorSpace;
-    // Aim the slit along the line: from the photo-finish camera, framing every lane and every runner's height.
+    // Aim the slit along the line, framing every lane and the runners it catches.
     const r0 = race;
     // The slit sits a hair past the line (so the lanes read in the image), high in the front of the main stand like a real photo-finish camera.
     const camAt = new THREE.Vector3(X0 + 0.04, 6.5, barrierZ(X0) + 4.8);
+    // Every lane's ground (with a strip of infield beyond lane 1), and the full height of each runner the scan catches.
     let top = -Infinity, bottom = Infinity;
-    for (const l of r0?.lanes ?? []) {
-      const z = KERB_R + 1.22 * (l.lane - 0.5);
-      const dz = camAt.z - z;
-      bottom = Math.min(bottom, Math.atan2(-camAt.y, dz + 0.5));
-      top = Math.max(top, Math.atan2(Math.min(l.h, 4) * 1.08 + 0.15 - camAt.y, dz - 0.5));
+    const lanes = r0?.lanes ?? [];
+    for (const l of lanes) {
+      const dz = camAt.z - (KERB_R + 1.22 * (l.lane - 0.5));
+      bottom = Math.min(bottom, Math.atan2(-camAt.y, dz - 0.7));
+      top = Math.max(top, Math.atan2(-camAt.y, dz + 2.1));
+    }
+    for (const f of runners?.figures ?? []) {
+      const l = f.lane;
+      if (l.time < from - 0.3 || l.time > to + 0.3) continue;
+      runners!.posePhoto(l.time);
+      const dz = camAt.z - (KERB_R + 1.22 * (l.lane - 0.5));
+      top = Math.max(top, Math.atan2(f.cut.position.y + Math.min(l.h, 4) * 1.08 + 0.15 - camAt.y, dz - 0.5));
     }
     if (!Number.isFinite(top)) { top = -0.2; bottom = -0.8; }
     const pitch = (top + bottom) / 2;
