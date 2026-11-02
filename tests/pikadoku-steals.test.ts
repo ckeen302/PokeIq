@@ -99,8 +99,14 @@ describe("Steals in a duel", () => {
     // A (X) cannot steal their own; B's turn is next? The failed steal passed the turn to X, who plays elsewhere.
     expect(claimCell(weak.duel, a, 0, y, t + 2, rates).ok).toBe(false);
   });
+  /** A fresh duel whose cell 0 has at least two different Pokémon (the grid is random). */
+  function withTwo(steals: boolean) {
+    let game = started(steals);
+    for (let i = 0; i < 50 && distinct(gridFromIds(game.d.gridIds).answers[0]).length < 2; i++) game = started(steals);
+    return game;
+  }
   it("steals with a rarer pick and holds a classic game's cells", () => {
-    const { d, a, b, t } = started(true);
+    const { d, a, b, t } = withTwo(true);
     const [x, y] = distinct(gridFromIds(d.gridIds).answers[0]);
     const first = claimCell(d, a, 0, x, t, new Map([[x, 10], [y, 2]]));
     if (!first.ok) throw new Error("claim");
@@ -108,7 +114,7 @@ describe("Steals in a duel", () => {
     if (!stolen.ok) throw new Error("steal");
     expect(stolen.duel.ttt.owners[0]).toBe("O");
     expect(stolen.duel.picks[0]).toBe(y);
-    const classic = started(false);
+    const classic = withTwo(false);
     const [p, q] = distinct(gridFromIds(classic.d.gridIds).answers[0]);
     const c1 = claimCell(classic.d, classic.a, 0, p, classic.t);
     if (!c1.ok) throw new Error("claim");
