@@ -620,11 +620,12 @@ step("pokéconnections: a full daily, one wrong guess then a solve");
   await page.waitForTimeout(600);
   await page.screenshot({ path: `${OUT}/conn-perfect.png` });
   await page.screenshot({ path: `${OUT}/conn-unlimited-result.png`, fullPage: true });
-  const nextTiles = page.waitForResponse((r) => /\/api\/connections\?practice=hard-/.test(r.url()));
+  // The next board is usually dealt ahead while this one is played, so it may come with no request: read it off the grid.
   await page.getByTestId("conn-next").click();
-  const next = await (await nextTiles).json();
-  if (next.key === hard.key) errors.push("Next puzzle gave the same puzzle");
   await page.getByTestId("conn-tile").nth(15).waitFor();
+  const nextIds = (await page.getByTestId("conn-tile").evaluateAll((els) => els.map((e) => Number(e.dataset.id)))).sort((a, b) => a - b);
+  if (nextIds.join() === hard.tiles.map((t) => t.id).sort((a, b) => a - b).join()) errors.push("Next puzzle gave the same puzzle");
+  if (!(await page.getByTestId("conn-title").innerText()).includes("Practice")) errors.push("Next puzzle didn't stay in Unlimited");
   await page.screenshot({ path: `${OUT}/conn-unlimited.png` });
 
   // Unlimited 5×5: the size toggle, twenty-five tiles, five groups of five and five mistakes, solved from the data alone.
@@ -641,7 +642,7 @@ step("pokéconnections: a full daily, one wrong guess then a solve");
   // The server rejects a four-tile guess on a 5×5 board, and a five-tile guess on a 4×4 one.
   const bad5 = await page.request.post(`${BASE}/api/connections`, { data: { practice: big.key.replace("practice:", ""), guesses: [big.tiles.slice(0, 4).map((t) => t.id)] } });
   if (bad5.status() !== 400) errors.push(`a four-tile guess on a 5×5 board returned ${bad5.status()}`);
-  const bad4 = await page.request.post(`${BASE}/api/connections`, { data: { practice: next.key.replace("practice:", ""), guesses: [big.tiles.slice(0, 5).map((t) => t.id)] } });
+  const bad4 = await page.request.post(`${BASE}/api/connections`, { data: { practice: hard.key.replace("practice:", ""), guesses: [big.tiles.slice(0, 5).map((t) => t.id)] } });
   if (bad4.status() !== 400) errors.push(`a five-tile guess on a 4×4 board returned ${bad4.status()}`);
   const bigIds = big.tiles.map((t) => String(t.id));
   const [big5] = JSON.parse(execFileSync("npx", ["tsx", "scripts/connections-solve.ts", ...bigIds], { encoding: "utf8", cwd: new URL("..", import.meta.url).pathname }));

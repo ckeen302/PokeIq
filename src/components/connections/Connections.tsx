@@ -34,7 +34,7 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Popover } from "@/components/ui/popover";
 import { ShareButton } from "@/components/share/ShareButton";
-import { GridTile, GroupBar, GuessHistory, LevelLegend, MistakeDots, TILE_H4, TILE_H5, WhyPanel, type TileMotion } from "./parts";
+import { GridTile, GroupBar, GuessHistory, LevelLegend, MistakeDots, TILE_H4, TILE_H5, WhyPanel, preloadTileArt, type TileMotion } from "./parts";
 // The pop-ups (how to play with its demo, stats, the archive) load when first opened, not with the board.
 const ConnHowToSheet = dynamic(() => import("./sheets").then((m) => m.ConnHowToSheet), { ssr: false });
 const ConnStatsSheet = dynamic(() => import("./sheets").then((m) => m.ConnStatsSheet), { ssr: false });
@@ -51,8 +51,40 @@ type Target = { kind: "daily"; date: string } | { kind: "archive"; date: string 
 type Mode = Target["kind"];
 
 /** A practice seed, with Unlimited's board size and difficulty in front ("s5-hard-x7k2abcd"): the server reads them back from there. */
+const seedPrefix = (level: ConnPrefs["level"] = "normal", pack: ConnPrefs["pack"] = "all", size: ConnSize = 4) => `${size === 5 ? "s5-" : ""}${pack === "all" ? "" : `${pack}-`}${level}-`;
 const newSeed = (level: ConnPrefs["level"] = "normal", pack: ConnPrefs["pack"] = "all", size: ConnSize = 4) =>
-  `${size === 5 ? "s5-" : ""}${pack === "all" ? "" : `${pack}-`}${level}-${Math.random().toString(36).slice(2, 10).padEnd(8, "0")}`;
+  `${seedPrefix(level, pack, size)}${Math.random().toString(36).slice(2, 10).padEnd(8, "0")}`;
+
+/**
+ * Unlimited's next board, dealt ahead of time: its seed and its tiles, the
+ * same tiles-only view GET /api/connections always sends (never the
+ * groups), and, once wanted, its pictures, fetched and held here.
+ */
+interface DealtAhead {
+  seed: string;
+  puzzle: Promise<ConnPuzzleResponse>;
+  /** The tiles, once they're in. */
+  ready?: ConnPuzzleResponse;
+  /** Fetch the pictures too (as soon as the tiles are in). */
+  wantArt?: boolean;
+  art?: HTMLImageElement[];
+}
+
+/** Runs `fn` once the page has settled (the board's own pictures first); returns a cancel. */
+function whenIdle(fn: () => void, delay = 1200): () => void {
+  let idle: number | undefined;
+  const timer = window.setTimeout(() => {
+    if (typeof window.requestIdleCallback === "function") idle = window.requestIdleCallback(fn, { timeout: 2000 });
+    else fn();
+  }, delay);
+  return () => {
+    window.clearTimeout(timer);
+    if (idle !== undefined) window.cancelIdleCallback(idle);
+  };
+}
+
+/** The player asked their browser to save data: nothing is fetched before they ask for it. */
+const saveData = () => typeof navigator !== "undefined" && !!(navigator as Navigator & { connection?: { saveData?: boolean } }).connection?.saveData;
 const SIZE_WORDS = { 4: "four", 5: "five" } as const;
 const SIZE_SQUARES = { 4: "Sixteen", 5: "Twenty-five" } as const;
 const LEVELS: { id: ConnPrefs["level"]; label: string; hint: string }[] = [
@@ -181,7 +213,8 @@ export function Connections({ customId, initial }: { customId?: string; initial?
 
   // ---- Loading a puzzle ------------------------------------------------------
 
-  const load = useCallback(async (t: Target) => {
+  /** `dealt`: a practice board's tiles already fetched (or on their way), from Unlimited's next board dealt ahead. */
+  const load = useCallback(async (t: Target, dealt?: ConnPuzzleResponse | Promise<ConnPuzzleResponse>) => {
     const id = ++reqRef.current;
     // A new puzzle (Next puzzle, a mode, the archive) starts at the top; the first one loads where the page opened.
     if (loadedRef.current) window.scrollTo({ top: 0, behavior: reducedMotion() ? "auto" : "smooth" });
@@ -211,21 +244,21 @@ export function Connections({ customId, initial }: { customId?: string; initial?
     setUsedHint(!!saved?.hinted);
     setElapsed({ banked: saved?.ms ?? 0, since: null });
     try {
-      // Today's tiles came with the page: no wait. Only the start token (which times the game for the leaderboard) is fetched, in the background.
+      // Today's tiles came with the page (and Unlimited's next board may be dealt already): no wait. Only a daily's start token (which times the game for the leaderboard) is fetched, in the background.
       const dailyDate = t.kind === "daily" ? t.date : null;
-      const pre = dailyDate ? initial?.[dailyDate] : undefined;
-      if (pre && dailyDate) {
+      const pre = dailyDate ? initial?.[dailyDate] : dealt instanceof Promise ? undefined : dealt;
+      if (pre) {
         setPuzzle(pre);
         setOrder(pre.tiles.map((x) => x.id));
         if (!list.length) setBusy(false);
-        if (!startFor(dailyDate)) {
+        if (dailyDate && !startFor(dailyDate)) {
           void fetch(`/api/connections?${new URLSearchParams(query(t))}`)
             .then((r) => (r.ok ? (r.json() as Promise<ConnPuzzleResponse>) : null))
             .then((p) => p && rememberStart(dailyDate, p.start))
             .catch(() => undefined);
         }
       }
-      const p = pre ?? (await fetchPuzzle(t));
+      const p = pre ?? (await (dealt ?? fetchPuzzle(t)));
       if (id !== reqRef.current) return;
       if (!pre) {
         // The first deal of the day times the game for the leaderboard (a reload doesn't restart the clock).
@@ -268,6 +301,46 @@ export function Connections({ customId, initial }: { customId?: string; initial?
     // At midnight an untouched daily rolls over by itself; a started or finished one stays, with a "new puzzle" banner.
     else if (prev === null ? reqRef.current === 0 : mode === "daily" && guesses.length === 0) void load({ kind: "daily", date: today });
   }, [today, progress, mode, guesses.length, load, customId]);
+
+  // ---- Unlimited's next board, dealt ahead -----------------------------------
+
+  const aheadRef = useRef<DealtAhead | null>(null);
+  /**
+   * Deals the next Unlimited board for the current settings in the
+   * background (tiles only, like any deal); `art` fetches its pictures too.
+   * Unlimited and "Next puzzle" then show it at once.
+   */
+  const dealAhead = useCallback((art: boolean) => {
+    const { level: lv, size: sz } = getConnPrefs();
+    let next = aheadRef.current;
+    if (!next || !next.seed.startsWith(seedPrefix(lv, "all", sz === 5 ? 5 : 4))) {
+      const seed = newSeed(lv, "all", sz === 5 ? 5 : 4);
+      const dealt: DealtAhead = { seed, puzzle: fetchPuzzle({ kind: "practice", seed }) };
+      dealt.puzzle.then(
+        (p) => {
+          dealt.ready = p;
+          if (dealt.wantArt) dealt.art = preloadTileArt(p.tiles);
+        },
+        // Dealt normally when it's asked for.
+        () => {
+          if (aheadRef.current === dealt) aheadRef.current = null;
+        }
+      );
+      aheadRef.current = next = dealt;
+    }
+    if (art && !next.wantArt) {
+      next.wantArt = true;
+      if (next.ready) next.art = preloadTileArt(next.ready.tiles);
+    }
+  }, []);
+  /** The player is heading for Unlimited (a pointer over it, or focus): its pictures too. */
+  const reachForUnlimited = useCallback(() => dealAhead(true), [dealAhead]);
+  // Once a board is on screen and the page has settled: in Unlimited, and after a finished game (whose result offers another), the next board with its pictures; otherwise its tiles alone (a few hundred bytes), its pictures once the player reaches for Unlimited.
+  const inPractice = target?.kind === "practice";
+  useEffect(() => {
+    if (!puzzle || !prefs || saveData()) return;
+    return whenIdle(() => dealAhead(inPractice || over));
+  }, [puzzle, prefs, inPractice, over, dealAhead]);
 
   // Offline: the board stays playable to look at; guesses wait for the connection.
   const [online, setOnline] = useState(true);
@@ -528,7 +601,12 @@ export function Connections({ customId, initial }: { customId?: string; initial?
   // ---- Modes -----------------------------------------------------------------
 
   function newPractice(level: ConnPrefs["level"] = getConnPrefs().level, boardSize: ConnSize = getConnPrefs().size === 5 ? 5 : 4) {
-    void load({ kind: "practice", seed: newSeed(level, "all", boardSize) });
+    // The board dealt ahead, if it's for these settings: it shows at once, pictures and all.
+    const next = aheadRef.current;
+    if (next?.seed.startsWith(seedPrefix(level, "all", boardSize))) {
+      aheadRef.current = null;
+      void load({ kind: "practice", seed: next.seed }, next.ready ?? next.puzzle);
+    } else void load({ kind: "practice", seed: newSeed(level, "all", boardSize) });
   }
 
   function backToDaily() {
@@ -615,6 +693,8 @@ export function Connections({ customId, initial }: { customId?: string; initial?
                   aria-checked={mode === m.id}
                   title={m.title}
                   onClick={m.on}
+                  onPointerEnter={m.id === "practice" ? reachForUnlimited : undefined}
+                  onFocus={m.id === "practice" ? reachForUnlimited : undefined}
                   disabled={"disabled" in m && m.disabled}
                   className={cn(
                     "min-w-[4.75rem] rounded px-3 py-1.5 font-display text-[13px] font-semibold uppercase tracking-wider transition-colors sm:min-w-24 sm:px-4 sm:text-sm",
