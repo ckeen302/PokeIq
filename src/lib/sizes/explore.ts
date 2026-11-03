@@ -244,6 +244,17 @@ export function releaseVelocity(samples: { t: number; v: number }[], now: number
 export const RATE = { x: 9, zoom: 8, tilt: 10, orbit: 10 } as const;
 export const FRICTION = { x: 3.2, tilt: 5, orbit: 5 } as const;
 
+/**
+ * Where the camera's point on the line will be `tau` seconds from now if
+ * nothing else happens: a flick coasting on, the camera easing after its
+ * target (the look-ahead that builds figures before they are seen).
+ */
+export function viewAhead(x: number, target: number, vel: number, tau: number): number {
+  const k = Math.exp(-FRICTION.x * tau);
+  const t = target + (vel * (1 - k)) / FRICTION.x;
+  return t + (x - target) * Math.exp(-RATE.x * tau);
+}
+
 /** Keeps the camera's point on the line, with a little room past each end. */
 export function clampX(x: number, first: { x: number; w: number }, last: { x: number; w: number }): number {
   return Math.max(first.x - first.w, Math.min(last.x + last.w * 0.5, x));

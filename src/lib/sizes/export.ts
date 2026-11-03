@@ -67,7 +67,8 @@ export function videoTimeline(seconds: number) {
   const k = Math.min(1, seconds / 15);
   const hook = HOOK_SECONDS * k;
   const end = END_SECONDS * k;
-  return { hook, end, glide: seconds, intro: hook * 0.7, finale: end + 1.4 * k };
+  // The finale starts early enough that its rise (the giant before Prism Tower) is seen whole before the end card: `revealAt` is when it completes (seconds into the video).
+  return { hook, end, glide: seconds, intro: hook * 0.7, finale: end + 2.8 * k, revealAt: seconds - end - 0.8 * k };
 }
 
 /** Fades for overlays (0..1) by time. */

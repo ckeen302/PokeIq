@@ -24,7 +24,7 @@ interface RefRow { id: string; name: string; detail?: string; kind: RefKind; m: 
 export const SIZE_REFS = (REFS as { refs: RefRow[] }).refs;
 
 /** Proportions of each reference model (width : height), matching the grey models the scene builds. */
-const REF_ASPECT: Record<RefKind, number> = { phone: 71.6 / 147.6, human: 0.3, car: 4.63 / 1.435, bus: 12.67 / 3.25, house: 1.35, building: 0.58, whale: 6.2, trainer: 0.5 };
+const REF_ASPECT: Record<RefKind, number> = { phone: 71.6 / 147.6, human: 0.3, car: 4.63 / 1.435, bus: 12.67 / 3.25, house: 1.35, building: 0.46, whale: 6.2, trainer: 0.5 };
 
 const SPECIES = new Map(POKEDEX.map((p) => [p.id, p]));
 

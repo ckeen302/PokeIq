@@ -11,7 +11,7 @@ import { Mp4Muxer, aacConfig, readBoxes, type BoxInfo } from "@/lib/sizes/mp4";
 import { buildGlide, framer, glideAt, type Lens } from "@/lib/sizes/glide";
 import { holdsFor, planPlay, playAt } from "@/lib/sizes/play";
 import { BASE_YAW, MAX_ORBIT, ORBIT_LIMIT, finalePose, pitchFor, poseFor } from "@/lib/sizes/camera";
-import { ROOF_Y, STREET, planWorld } from "@/lib/sizes/world";
+import { DISTRICT_COLORS, RING_M, RING_MAX_TURN, ROOF_Y, STREET, boulevardDistricts, districtAt, inPlaza, planWorld } from "@/lib/sizes/world";
 import { FRICTION, MAX_DISTANCE, RATE, ZOOM_MAX, ZOOM_MIN, ZOOM_STEP_BUTTON, ZOOM_STEP_KEY, angleDelta, badgeBudget, badgeScaleFor, clampOrbit, clampTilt, clampX, clampZoom, coast, damp, effectiveZoom, exploreView, flightAt, flightSeconds, lookPitch, overviewView, pinchZoom, pitchRange, releaseVelocity, stepIndex, wheelPixels, wheelZoom, zoomAnchorShift, zoomFloorAt, zoomPitch, zoomedDistance } from "@/lib/sizes/explore";
 import { compareHook, fold, lineFor, pushCompare, searchItems } from "@/lib/sizes/lineup";
 import { factFor, spanFact } from "@/lib/sizes/facts";
@@ -388,23 +388,158 @@ describe("the camera: Play, Explore and the finale", () => {
     expect(pf.focus).toBe(placed[0].key);
   });
 
-  it("the finale pulls back to just above the roofline, inside the relief-safe angle", () => {
+  it("the finale rises over the rooftops to reveal the city, inside the relief-safe angle", () => {
     const v = { x: 1000, d: 320, h: 100, orbit: 0, pitch: pitchFor(100), rise: 1 };
     const f = finalePose(v);
-    expect(f.position[1]).toBeGreaterThan(ROOF_Y);
-    expect(f.position[1]).toBeLessThan(v.h * 0.6);
+    expect(f.position[1]).toBeGreaterThan(ROOF_Y + 20);
+    expect(f.position[1]).toBeGreaterThan(v.h);
     const yaw = Math.atan2(f.target[0] - f.position[0], f.target[2] - f.position[2]);
     expect(Math.abs(yaw - BASE_YAW)).toBeLessThanOrEqual(MAX_ORBIT);
+    // From above, but still nearly face on: never more than about 20° down onto the relief figures.
+    const horiz = Math.hypot(f.target[0] - f.position[0], f.target[2] - f.position[2]);
+    expect(Math.atan2(f.position[1] - f.target[1], horiz)).toBeLessThan((20 * Math.PI) / 180);
     expect(poseFor(v)).toEqual(f);
     const side = poseFor({ ...v, rise: 0 });
     expect(side.position).not.toEqual(f.position);
+    // A small finale doesn't fly off into the sky.
+    const small = finalePose({ x: 10, d: 4, h: 1.5, orbit: 0, pitch: pitchFor(1.5), rise: 1 });
+    expect(small.position[1]).toBeLessThan(6);
   });
 
-  it("the giants stand in the plaza, Prism Tower behind the line", () => {
+  it("the line walks down the boulevard into the plaza, and the big figures stand round Prism Tower", () => {
     const plan = planWorld(placed);
-    const eternamax = placed[placed.length - 1];
-    expect(Math.abs(eternamax.x - plan.plaza.cx)).toBeLessThan(plan.plaza.r);
+    const ring = plan.ring!;
+    expect(ring).not.toBeNull();
+    // Prism Tower stands at the plaza's centre, behind the line (away from the camera).
+    expect(plan.tower).toEqual({ x: plan.plaza.cx, z: plan.plaza.cz });
     expect(plan.tower.z).toBeGreaterThan(0);
+    // The path is continuous: straight down the boulevard, then on round the ring without a kink.
+    const a = plan.path.at(ring.s0 - 1e-6), b = plan.path.at(ring.s0 + 1e-6);
+    expect(Math.hypot(a.x - b.x, a.z - b.z)).toBeLessThan(1e-4);
+    expect(Math.abs(a.heading - b.heading)).toBeLessThan(1e-4);
+    expect(plan.path.at(ring.s0 - 500)).toEqual({ x: ring.s0 - 500, z: 0, heading: 0 });
+    let walls = 0;
+    for (const p of placed) {
+      const at = plan.path.at(p.x);
+      if (Math.max(p.h, p.w) >= RING_M) {
+        // Every big figure is on the ring round the tower, inside the plaza, and the ring never turns past the sun.
+        expect(Math.abs(Math.hypot(at.x - plan.tower.x, at.z - plan.tower.z) - ring.r)).toBeLessThan(1e-6);
+        expect(inPlaza(plan, at.x, at.z)).toBe(true);
+        expect(at.heading).toBeLessThanOrEqual(RING_MAX_TURN + 1e-9);
+        // Outside the ring the camera has the tower behind the figure.
+        const pose = poseFor({ x: p.x, d: Math.max(5, p.h * 2.5), h: p.h, orbit: 0, pitch: pitchFor(p.h), rise: 0 }, plan.path);
+        const camToTower = Math.hypot(pose.position[0] - plan.tower.x, pose.position[2] - plan.tower.z);
+        expect(camToTower).toBeGreaterThan(ring.r);
+        const fx = pose.target[0] - pose.position[0], fz = pose.target[2] - pose.position[2];
+        expect(fx * (plan.tower.x - pose.position[0]) + fz * (plan.tower.z - pose.position[2])).toBeGreaterThan(0);
+      } else if (at.x < plan.x1) {
+        // The rest stand down the middle of the boulevard.
+        expect(at.z).toBe(0);
+        walls++;
+      }
+    }
+    expect(walls).toBeGreaterThan(placed.length * 0.8);
+    // Five districts round the tower, each with its own colour plaza out in the city, and the boulevard between two of them.
+    expect(plan.districts.map((d) => d.name)).toEqual(DISTRICT_COLORS.map((d) => d.name));
+    for (const d of plan.districts) {
+      expect(inPlaza(plan, d.plaza.x, d.plaza.z)).toBe(false);
+      expect(districtAt(plan, d.plaza.x, d.plaza.z)).toBe(d);
+      expect(Math.abs(d.plaza.z)).toBeGreaterThan(STREET.facade + STREET.depth + d.plaza.r);
+    }
+    const { far, near } = boulevardDistricts(plan);
+    expect(far).not.toBe(near);
+    // Lines without big figures stay straight on the boulevard, the plaza just past their end.
+    const starters = layoutLine(presetLineup(PRESET_BY_ID.get("starters")!, SIZE_ITEMS));
+    const sp = planWorld(starters);
+    expect(sp.ring).toBeNull();
+    expect(sp.x1).toBeGreaterThan(starters[starters.length - 1].x);
+  });
+
+  it("a video's finale rises over the rooftops before its end card covers the frame", () => {
+    for (const seconds of [15, 30, 60]) {
+      const tl = videoTimeline(seconds);
+      const pp = planPlay(placed, { vfov: 46, aspect: 1080 / 1920 }, { duration: seconds, intro: tl.intro, finale: tl.finale, revealAt: tl.revealAt });
+      const endCard = seconds - tl.end;
+      expect(playAt(pp, endCard - 0.05, () => 100).view.rise).toBeGreaterThan(0.999);
+      // ...after a beat on the giant first.
+      const fin = pp.glide.stops[pp.glide.stops.length - 1];
+      expect(playAt(pp, fin.t0 + 0.1, () => 100).view.rise).toBe(0);
+    }
+  });
+
+  it("Play's end holds the finale's risen view (no snap back down when the glide is over)", () => {
+    const pp = planPlay(placed, lens, { duration: 40 });
+    const end = playAt(pp, 40, () => 100);
+    expect(end.view.rise).toBe(1);
+    expect(end.state.done).toBe(true);
+    // A frame that overshoots the end (the page's clock steps past it) sees the same view.
+    expect(playAt(pp, 40.4, () => 100).view).toEqual(end.view);
+    expect(playAt(pp, 40.4, () => 100).focus).toBe(FINALE);
+  });
+
+  it("the finale stands the giant in front of the whole of Prism Tower, prism and spire in the frame, on any screen", () => {
+    // A pinhole camera for a pose: where a world point lands in the frame (0..1 across and down).
+    const project = (pose: { position: number[]; target: number[] }, fr: Lens, p: number[]) => {
+      const [cx, cy, cz] = pose.position;
+      const f = pose.target.map((t, i) => t - pose.position[i]);
+      const fl = Math.hypot(f[0], f[1], f[2]);
+      const [fx, fy, fz] = f.map((x) => x / fl);
+      const rl = Math.hypot(fz, fx);
+      const [rx, rz] = [-fz / rl, fx / rl];
+      const [ux, uy, uz] = [-rz * fy, rz * fx - rx * fz, rx * fy];
+      const d = [p[0] - cx, p[1] - cy, p[2] - cz];
+      const depth = d[0] * fx + d[1] * fy + d[2] * fz;
+      const tv = Math.tan((fr.vfov * Math.PI) / 360);
+      return { x: 0.5 + (d[0] * rx + d[2] * rz) / (depth * tv * fr.aspect) / 2, y: 0.5 - (d[0] * ux + d[1] * uy + d[2] * uz) / (depth * tv) / 2, depth };
+    };
+    for (const id of ["every-pokemon", "bigger-than-a-house", "gen-1"]) {
+      const line = presetLineup(PRESET_BY_ID.get(id)!, SIZE_ITEMS);
+      const pl = layoutLine(line).map((p, i) => ({ ...p, key: line[i].key }));
+      const plan = planWorld(pl);
+      expect(plan.ring).not.toBeNull();
+      const giant = pl[pl.length - 1];
+      const at = plan.path.at(giant.x);
+      for (const fr of [{ vfov: 35, aspect: 1440 / 844 }, { vfov: 46, aspect: 390 / 716 }, { vfov: 46, aspect: 1080 / 1920 }]) {
+        const pp = planPlay(pl, fr);
+        const v = playAt(pp, pp.glide.duration, () => giant.h).view;
+        expect(v.rise).toBe(1);
+        const pose = poseFor(v, plan.path, fr);
+        const feet = project(pose, fr, [at.x, 0, at.z]);
+        const head = project(pose, fr, [at.x, giant.h, at.z]);
+        const tip = project(pose, fr, [plan.tower.x, 232, plan.tower.z]);
+        const prism = project(pose, fr, [plan.tower.x, 190, plan.tower.z]);
+        // The spire's tip under the page's top bar, the giant's feet over its controls (and a tall frame's caption), both across the frame.
+        expect(tip.y).toBeGreaterThan(0.06);
+        expect(feet.y).toBeLessThan(fr.aspect < 0.8 ? 0.75 : 0.86);
+        for (const p of [feet, head, tip, prism]) {
+          expect(p.x).toBeGreaterThan(0.02);
+          expect(p.x).toBeLessThan(0.98);
+        }
+        // The tower stands behind the giant and rises well above it.
+        expect(tip.depth).toBeGreaterThan(feet.depth);
+        expect(prism.y).toBeLessThan(head.y);
+        // Over the rooftops, still nearly face on (never more than about 20° down onto the reliefs).
+        expect(pose.position[1]).toBeGreaterThan(ROOF_Y);
+        const horiz = Math.hypot(pose.target[0] - pose.position[0], pose.target[2] - pose.position[2]);
+        expect(Math.atan2(pose.position[1] - pose.target[1], horiz)).toBeLessThan((20 * Math.PI) / 180);
+        // The sight line to the giant's feet passes over the buildings round the plaza.
+        const R = plan.plaza.r + 12;
+        for (let k = 0.02; k < 1; k += 0.02) {
+          const x = at.x + (pose.position[0] - at.x) * k, z = at.z + (pose.position[2] - at.z) * k, y = pose.position[1] * k;
+          const r = Math.hypot(x - plan.tower.x, z - plan.tower.z);
+          if (r > R && r < R + STREET.depth) expect(y).toBeGreaterThan(ROOF_Y);
+        }
+      }
+    }
+    // A short line (no ring) turns towards the tower standing past its end, inside the relief-safe angle.
+    const st = layoutLine(presetLineup(PRESET_BY_ID.get("starters")!, SIZE_ITEMS));
+    const sp = planWorld(st);
+    const last = st[st.length - 1];
+    const f = finalePose({ x: last.x, d: last.h * 3, h: last.h, orbit: 0, pitch: pitchFor(last.h), rise: 1 }, sp.path);
+    const yaw = Math.atan2(f.target[0] - f.position[0], f.target[2] - f.position[2]);
+    expect(Math.abs(yaw - BASE_YAW)).toBeLessThanOrEqual(MAX_ORBIT + 1e-9);
+    const toTower = Math.atan2(sp.tower.x - last.x, sp.tower.z);
+    expect(Math.abs(yaw - toTower)).toBeLessThan(Math.abs(BASE_YAW - toTower));
   });
 
   it("Explore: flights ease from one figure to the next and stay on the line", () => {
@@ -506,6 +641,30 @@ describe("badge layout", () => {
       expect(placed[0].x).toBeGreaterThanOrEqual(0);
       expect(placed[0].x + placed[0].w).toBeLessThanOrEqual(frame.w);
     }
+    // A close-up taller than the view: its badge takes a top corner, off the figure's face.
+    const tall = layoutBadges([{ key: "p", x: 720, y: -400, sh: 2000, info, focus: true }], { w: 1440, h: 900, top: 72, bottom: 104 }, measure, { max: 3, minSh: 10, scale: 1 });
+    expect(tall[0].x).toBeLessThan(tall[0].s);
+    expect(tall[0].y).toBeGreaterThanOrEqual(72);
+    const short = layoutBadges([{ key: "p", x: 720, y: -400, sh: 2000, info: { ...info, name: "Pikachu", types: ["electric"] }, focus: true }], { w: 1440, h: 900, top: 72, bottom: 104 }, measure, { max: 3, minSh: 10, scale: 1 });
+    expect(short[0].x + short[0].w).toBeLessThan(720);
+    // Framed as usual (its top in view, just no room above it), the badge stays over its own figure.
+    const framed = layoutBadges([{ key: "p", x: 720, y: 160, sh: 480, info: { ...info, name: "Snorlax", types: ["normal"] }, focus: true }], { w: 1440, h: 900, top: 72, bottom: 104 }, measure, { max: 3, minSh: 10, scale: 1 });
+    expect(framed[0].x).toBeLessThan(720);
+    expect(framed[0].x + framed[0].w).toBeGreaterThan(720);
+    // A neighbour taller than the view keeps its badge over itself, never in a far corner.
+    const pair = layoutBadges([
+      { key: "f", x: 1000, y: 300, sh: 300, info: { ...info, name: "Eternatus", types: ["poison"] }, focus: true },
+      { key: "n", x: 200, y: -300, sh: 1400, info, focus: false },
+    ], { w: 1440, h: 900, top: 72, bottom: 104 }, measure, { max: 3, minSh: 10, scale: 1 });
+    const n = pair.find((p) => p.key === "n");
+    if (n) expect(n.x).toBeLessThan(720);
+    // A neighbour whose head is out of the frame yields to one framed whole: pinned under the top edge, its badge would sit over whoever stands in front of it.
+    const yields = layoutBadges([
+      { key: "f", x: 1100, y: 300, sh: 300, info: { ...info, name: "Eternatus", types: ["poison"] }, focus: true },
+      { key: "giant", x: 300, y: -300, sh: 1400, info, focus: false },
+      { key: "block", x: 320, y: 210, sh: 420, info: { ...info, name: "10 Storey Building", types: [] }, focus: false },
+    ], { w: 1440, h: 900, top: 72, bottom: 104 }, measure, { max: 3, minSh: 10, scale: 1 });
+    expect(yields.map((p) => p.key)).toContain("block");
   });
 });
 
