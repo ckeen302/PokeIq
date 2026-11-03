@@ -13,14 +13,16 @@ const ROUND_S = ROUND_TICKS / TICK_HZ;
 /** The simulator check's summary (scripts/mass-battle-crosscheck.ts, 1,000 battles a row; rerun it after changing the rules). */
 export const CROSSCHECK = {
   battles: 1000,
-  matchups: 18,
-  rows: 36,
-  agree: 33,
+  matchups: 34,
+  rows: 68,
+  agree: 65,
   examples: [
     { label: "Charizard vs Armarouge, level 100", engine: 63.5, sim: 63.3 },
     { label: "3 Poliwrath vs Bruxish, level 100", engine: 80.6, sim: 80.1 },
     { label: "Delphox vs 2 Exeggutor, level 50", engine: 73.5, sim: 72.6 },
-    { label: "Garchomp vs Tyranitar in a sandstorm, level 100", engine: 88.8, sim: 88.8 },
+    { label: "Slaking (Truant) vs Typhlosion, level 50", engine: 37.4, sim: 37.8 },
+    { label: "Greninja (Protean) vs Samurott, level 100", engine: 43.6, sim: 42.7 },
+    { label: "Cloyster (Skill Link) vs Skarmory (Sturdy), level 100", engine: 50.7, sim: 50.3 },
   ],
 } as const;
 
@@ -37,7 +39,7 @@ export function HowItWorksBody() {
           {li("damage", <><b className="text-foreground">Damage</b> is Smogon&apos;s damage calculator, the one Pokémon Showdown uses: STAB, the type chart, abilities, items, weather, terrain, Terastallization, stat stages, burns, critical hits and the 16 random damage rolls are exact.</>)}
           {li("stats", <><b className="text-foreground">Stats</b> come from the Pokédex with the games&apos; stat formula at each Pokémon&apos;s level (any from 1 to 100) with its nature, EVs and IVs; by default a neutral nature, {EV} EVs and {IV} IVs in every stat (the random battles&apos; spread).</>)}
           {li("sets", <><b className="text-foreground">Sets</b>: by default, Pokémon in Showdown&apos;s random battles bring up to four attacking moves of their random-battle set and its ability; the rest use the attacking moves they know by levelling up to their level (the strongest first, then new types) and their first regular ability. In Advanced you can give any species any moves it can legally learn, any of its abilities, a nature, an EV and IV spread and a Tera type.</>)}
-          {li("items", <><b className="text-foreground">No held items unless you choose them.</b> Items change matchups a lot (Pikachu&apos;s Light Ball doubles its Attack), so armies hold nothing by default and every answer here is item-free. Pick an item per species, or turn on random-battle items in Advanced.</>)}
+          {li("items", <><b className="text-foreground">No held items unless you choose them.</b> Items change matchups a lot (Pikachu&apos;s Light Ball doubles its Attack), so armies hold nothing by default, and every answer here is item-free unless its battle says otherwise (the Light Ball one does). Pick an item per species, or turn on random-battle items in Advanced.</>)}
           {li("turns", <><b className="text-foreground">Turns</b>: everyone acts once a round, choosing its move as the round starts: the one that does the most expected damage (accuracy × average damage) to the foes it would hit. Priority moves go first, then higher Speed (with its stages, paralysis, Choice Scarf and the weather abilities), ties at random.</>)}
           {li("hits", <><b className="text-foreground">Hits</b>: accuracy and evasion (with their stages, No Guard, Compound Eyes, Wide Lens, Bright Powder, Thunder in the rain…), critical hits, recoil, drain, Life Orb and High Jump Kick&apos;s crash. Multi-hit moves play hit by hit, as in the games: each hit can be a critical hit, and Sturdy, Focus Sash and Disguise only hold a hit taken at full HP, so Icicle Spear and Population Bomb break through them. A spread move (Earthquake, Surf, Blizzard…) that hits more than one foe does 0.75× damage, as in double battles.</>)}
           {li("effects", <><b className="text-foreground">Side effects and status</b>: Thunderbolt&apos;s paralysis, Scald&apos;s burns, Crunch&apos;s Defense drop, Close Combat&apos;s own drops, Iron Head&apos;s flinch, Hurricane&apos;s confusion and Outrage&apos;s lock-in, with Serene Grace, Sheer Force and Shield Dust. Paralysis, burns, poison, bad poison, sleep and freezing work as in the games, with the types, abilities and terrains that block them.</>)}
@@ -49,7 +51,7 @@ export function HowItWorksBody() {
       <section className="space-y-2" data-testid="mb-how-check">
         <h3 className="font-display text-base font-bold uppercase tracking-wide text-foreground">Checked against Showdown&apos;s simulator</h3>
         <p>
-          The same sets were played {CROSSCHECK.battles.toLocaleString("en-US")} times each in this battle and in Pokémon Showdown&apos;s own simulator, in {CROSSCHECK.matchups} small battles (one against one, two against one, one against two, three against one) at levels 50 and 100, with both choosing moves the same way and everyone in reach of everyone (the battlefield below is left out). In {CROSSCHECK.agree} of the {CROSSCHECK.rows} comparisons the two win rates are within the noise of that many battles. Two of the other three are a known gap: in a double battle, Lightning Rod pulls a partner&apos;s Electric moves into itself, and this battle has no moves between allies. The third is chance: played again with 4,000 fresh battles, it agrees.
+          The same sets were played {CROSSCHECK.battles.toLocaleString("en-US")} times each in this battle and in Pokémon Showdown&apos;s own simulator, in {CROSSCHECK.matchups} small battles (one against one, two against one, one against two, three against one) at levels 50 and 100, with both choosing moves the same way and everyone in reach of everyone (the battlefield below is left out). In {CROSSCHECK.agree} of the {CROSSCHECK.rows} comparisons the two win rates are within the noise of that many battles. The matchups include one for each ability here that changes a Pokémon as it fights (Truant, Slow Start, Stance Change, Schooling, Shields Down, Ice Face, Disguise, Protean, Libero, Toxic Chain, Poison Puppeteer, Mold Breaker and Skill Link against Sturdy, Intrepid Sword, and Protosynthesis and Quark Drive in their weather and terrain). Two of the other three are a known gap: in a double battle, Lightning Rod pulls a partner&apos;s Electric moves into itself, and this battle has no moves between allies. The third is chance: played again with 4,000 fresh battles, it agrees.
         </p>
         <ul className="grid gap-1.5 sm:grid-cols-2">
           {CROSSCHECK.examples.map((e) => (

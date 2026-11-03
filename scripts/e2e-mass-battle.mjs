@@ -5,8 +5,9 @@
  * (from a shared question link), a shared battle's link, title and preview
  * cards, the Battle setup panel (rows, a group, the Advanced section's
  * field, behaviour, a species' set and playback) building a link that
- * fills the panel back in when it's opened, a "how many?" with the
- * solver's settings, the zoom controls (the wheel, a trackpad pinch as ctrl + wheel,
+ * fills the panel back in when it's opened, presets with a held item,
+ * the field and their own playback filling the panel in (and a preset
+ * link's playback), a "how many?" with the solver's settings, the zoom controls (the wheel, a trackpad pinch as ctrl + wheel,
  * Safari's gesture events, the + and − buttons, the 0 key back to the
  * director), the sound staying off when the site is muted, the phone
  * layout, and "Make a video": a 5-second export (?len=5 at the light test
@@ -230,6 +231,31 @@ export async function runMassBattle({ browser, BASE, OUT, errors, step }) {
     await id("mb-side-0-0-set-toggle").click();
     if ((await id("mb-side-0-0-level").inputValue()) !== "50" || (await id("mb-side-0-0-nature").inputValue()) !== "Adamant" || (await id("mb-side-0-0-tera").inputValue()) !== "Water") errors.push("mass battle: the link lost Pikachu's set");
     await page.screenshot({ path: `${OUT}/mass-battle-setup-from-link.png` });
+  });
+
+  await part(errors, "preset options", async () => {
+    // A preset with a held item and its own playback fills the How many? tab in, Advanced included.
+    const id = (t) => page.getByTestId(t);
+    await page.goto(`${BASE}/lab/mass-battle/light-ball-pikachu-vs-snorlax?q=draft`, { waitUntil: "load" });
+    await phaseIs(["ready", "error"]);
+    if ((await attr("phase")) !== "ready") throw new Error("the Light Ball preset never deployed");
+    if (!(await id("mb-tab-ask").getAttribute("aria-selected"))?.includes("true")) errors.push("mass battle: a how-many preset doesn't open the How many? tab");
+    if ((await id("mb-pick-challenger").getAttribute("data-value")) !== "pikachu") errors.push("mass battle: the Light Ball preset's challenger isn't Pikachu");
+    if (Number(await attr("answer")) < 1) errors.push("mass battle: the Light Ball preset has no answer on the stage");
+    await id("mb-advanced").click();
+    if ((await id("mb-numbers").getAttribute("aria-checked")) !== "true") errors.push("mass battle: the Light Ball preset didn't turn damage numbers on");
+    await id("mb-side-army-0-set-toggle").click();
+    await id("mb-side-army-0-set").waitFor();
+    if ((await id("mb-side-army-0-item").inputValue()) !== "Light Ball") errors.push(`mass battle: the Light Ball preset's Pikachu holds ${await id("mb-side-army-0-item").inputValue()}`);
+    // A preset with the field: harsh sunlight in the panel; its static page still reads a link's playback.
+    await page.goto(`${BASE}/lab/mass-battle/fire-vs-water-sun?v=2-noslow&q=draft`, { waitUntil: "load" });
+    await phaseIs(["ready", "error"]);
+    if (!/Fire vs Water in harsh sunlight/.test(await page.title())) errors.push(`mass battle: the sunny preset's title is "${await page.title()}"`);
+    await id("mb-advanced").click();
+    if ((await id("mb-weather").inputValue()) !== "sun") errors.push(`mass battle: the sunny preset's weather is ${await id("mb-weather").inputValue()}`);
+    if ((await id("mb-speed-pick").inputValue()) !== "2") errors.push("mass battle: a preset link's playback speed was lost");
+    if ((await id("mb-slowmo").getAttribute("aria-checked")) !== "false") errors.push("mass battle: a preset link's slow motion setting was lost");
+    await page.screenshot({ path: `${OUT}/mass-battle-preset-sun.png` });
   });
 
   await part(errors, "ask", async () => {

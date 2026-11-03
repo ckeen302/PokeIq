@@ -166,10 +166,11 @@ export function MassBattleExperience({ list, presets, initial, playback: initial
   const setPlayback = useCallback((p: PlaybackSpec) => {
     playbackRef.current = p;
     setPlaybackState(p);
+    // The battle worker plays ahead by the speed.
+    simRef.current?.setPlayback(p, pausedRef.current);
     speedRef.current = p.speed;
     setSpeed(p.speed);
     if (battleRef.current) battleRef.current = { ...battleRef.current, playback: p };
-    simRef.current?.setPlayback(p, pausedRef.current);
   }, []);
 
   const setPhase = (p: Phase) => {
