@@ -7,7 +7,7 @@ import { Director, type Pose } from "@/lib/mass-battle/director";
 import { TICK_HZ } from "@/lib/mass-battle/constants";
 import { bossDownLine, critLine, fmt, multiKoLine, noAnswerText, possessive, questionText, resultLine, resultTitle, sideName as armyLabel, spreadText, winRateText } from "@/lib/mass-battle/copy";
 import { figureSize } from "@/lib/mass-battle/stats";
-import { encodeBattle, encodePlayback, encodeQuestion, MASS_BATTLE_PATH, newSeed, questionKey, questionSpec, runsOf, thresholdOf, type SlugIndex } from "@/lib/mass-battle/share";
+import { decodePlayback, encodeBattle, encodePlayback, encodeQuestion, MASS_BATTLE_PATH, newSeed, questionKey, questionSpec, runsOf, thresholdOf, type SlugIndex } from "@/lib/mass-battle/share";
 import { expandQuestion, expandSpec } from "@/lib/mass-battle/sets";
 import { SOLVER, solve } from "@/lib/mass-battle/solver";
 import type { BattleSpec, MBSpecies, PlaybackSpec, Question, Winner } from "@/lib/mass-battle/types";
@@ -43,6 +43,8 @@ export interface PresetCard {
   answer: { n: number; spread: number; wins: number; runs: number; seed: number } | null;
   /** Names for the two sides on presets with many species. */
   labels: [string, string] | null;
+  /** How it's shown: the preset's own choices (the rest stays as the viewer has it). */
+  playback?: Partial<PlaybackSpec>;
 }
 
 export type Initial = { kind: "preset"; id: string } | { kind: "battle"; spec: BattleSpec } | { kind: "question"; q: Question } | null;
@@ -195,6 +197,7 @@ export function MassBattleExperience({ list, presets, initial, playback: initial
     setNumbersOn(p.numbers);
     if (p.camera !== was.camera && viewRef.current) applyCam(p.camera);
     if (battleRef.current) battleRef.current = { ...battleRef.current, playback: p };
+    simRef.current?.setPlayback(p, pausedRef.current);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   /** One playback setting changed from the stage (the setup panel and links see it too). */
@@ -324,7 +327,7 @@ export function MassBattleExperience({ list, presets, initial, playback: initial
       const slice = sliceRoster(roster, specIds(b.spec));
       simRef.current ??= new SimClient();
       const sim = simRef.current;
-      const ready = await sim.init(slice, b.spec);
+      const ready = await sim.init(slice, b.spec, playbackRef.current);
       if (ac.signal.aborted) return;
       const species = ready.species.map((id) => slice.species.find((s) => s.id === id)!);
       speciesRef.current = species;
@@ -715,6 +718,9 @@ export function MassBattleExperience({ list, presets, initial, playback: initial
       setGlOk(false);
       return;
     }
+    // A preset's page is static: its link's playback (?v=) is read here.
+    const v = new URLSearchParams(window.location.search).get("v");
+    if (v) setPlayback(decodePlayback(v));
     if (initial?.kind === "question") void ask(initial.q);
     else if (initial?.kind === "battle") void deploy(battleOf(initial.spec), false);
     else {
@@ -919,6 +925,7 @@ export function MassBattleExperience({ list, presets, initial, playback: initial
     const next = !pausedRef.current;
     pausedRef.current = next;
     setPaused(next);
+    simRef.current?.setPlayback(playbackRef.current, next);
   };
   const changeSpeed = (next: number) => playbackSet({ speed: next });
   const replay = () => {
@@ -1189,6 +1196,7 @@ export function MassBattleExperience({ list, presets, initial, playback: initial
         onPreset={(p) => {
           audioRef.current ??= createBattleAudio();
           audioRef.current.gesture();
+          if (p.playback && Object.keys(p.playback).length) setPlayback({ ...playbackRef.current, ...p.playback });
           replaceUrl(`${MASS_BATTLE_PATH}/${p.id}${`${viewParam()}${keepQuality()}`.replace("&", "?")}`);
           stageRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
           void deploy(presetBattle(p), true);

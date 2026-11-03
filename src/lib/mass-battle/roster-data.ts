@@ -68,7 +68,7 @@ const ART = artData as unknown as Record<string, [number, number, number, number
 const FORMS = (formsData as unknown as { forms: FormRow[] }).forms;
 
 /** Bumped when the roster's shape or its sets change. */
-export const ROSTER_VERSION = 2;
+export const ROSTER_VERSION = 3;
 export const RANDSETS_FORMAT = "gen9randombattle";
 /** Forms the battle fields (Gigantamax and Eternamax forms only exist in Dynamax battles). */
 export const BATTLE_FORMS = new Set(["mega", "regional"]);
@@ -159,6 +159,7 @@ export function moveInfo(name: string): MBMove {
   else if (BEST_STAT.has(m.id)) out.atkStat = "best";
   if (raw.overrideDefensiveStat === "def" && out.cat === "Special") out.hitsDef = true;
   if (m.flags.sound) out.sound = true;
+  if (m.flags.punch) out.punch = true;
   if (m.flags.defrost) out.thaws = true;
   if ((m as { self?: { volatileStatus?: string } }).self?.volatileStatus === "lockedmove") out.rampage = true;
   if ((m as { hasCrashDamage?: boolean }).hasCrashDamage) out.crash = true;

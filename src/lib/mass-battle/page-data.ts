@@ -66,6 +66,8 @@ export interface PresetCardData {
   answer: { n: number; spread: number; wins: number; runs: number; seed: number } | null;
   labels: [string, string] | null;
   outcome: PresetsFile["results"][string]["outcome"] | null;
+  /** How it's shown: the preset's own choices, unless the link says otherwise. */
+  playback: Partial<PlaybackSpec>;
 }
 
 export function presetCards(): PresetCardData[] {

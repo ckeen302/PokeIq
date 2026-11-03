@@ -40,12 +40,15 @@ export const EVENT_INTS = 6;
  * - CHIP: HP lost outside a hit (value: HP): recoil, Life Orb, sandstorm, poison, burns, Rough Skin, Rocky Helmet.
  * - BOOST: a stat stage changed (value: stat × 16 + change + 8; stats 0–6 are Attack, Defense, Sp. Atk, Sp. Def,
  *   Speed, accuracy, evasion).
- * - SKIP: it lost its turn (value: NOTE_SKIP: asleep, frozen, flinched, fully paralysed).
+ * - SKIP: it lost its turn (value: NOTE_SKIP: asleep, frozen, flinched, fully paralysed, hurt in confusion, loafing
+ *   around with Truant).
  * - ITEM: its item did something or went (value: NOTE_ITEM).
+ * - FORM: an ability changed its form or type (value: the form, see formsOf in damage.ts): Aegislash's Blade Forme,
+ *   Wishiwashi's School Form, Minior's Core, Eiscue's Noice Face, a Protean or Libero type change.
  */
-export const NOTE = { STATUS: 1, CURE: 2, HEAL: 3, CHIP: 4, BOOST: 5, SKIP: 6, ITEM: 7 } as const;
+export const NOTE = { STATUS: 1, CURE: 2, HEAL: 3, CHIP: 4, BOOST: 5, SKIP: 6, ITEM: 7, FORM: 8 } as const;
 export const NOTE_INTS = 4;
-export const NOTE_SKIP = { sleep: 1, frozen: 2, flinch: 3, paralysed: 4, confused: 5 } as const;
+export const NOTE_SKIP = { sleep: 1, frozen: 2, flinch: 3, paralysed: 4, confused: 5, loafing: 6 } as const;
 /** STATUS and CURE notes with this value are confusion (not a major status). */
 export const NOTE_CONFUSION = 9;
 export const NOTE_ITEM = { sitrus: 1, lum: 2, disguise: 3, sash: 4, weaknessPolicy: 5, balloon: 6, knockedOff: 7 } as const;

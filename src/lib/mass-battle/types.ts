@@ -114,6 +114,8 @@ export interface MBMove {
   rampage?: boolean;
   /** Hurts the user (half its max HP) when it misses (High Jump Kick, Axe Kick, Supercell Slam). */
   crash?: boolean;
+  /** A punch (Iron Fist boosts it; with a Punching Glove it doesn't make contact). */
+  punch?: boolean;
 }
 
 /** A species (or form) and its default set, as the battle needs it. Stats from src/data/pokedex.json and Showdown's data. */

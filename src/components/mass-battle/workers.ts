@@ -1,6 +1,6 @@
 import { defaultPoolSize } from "@/lib/battle/lab/pool";
 import type { Evaluate, Evaluation } from "@/lib/mass-battle/solver";
-import type { BattleSpec, Question } from "@/lib/mass-battle/types";
+import type { BattleSpec, PlaybackSpec, Question } from "@/lib/mass-battle/types";
 import type { FromSim, FromSolver, Moment, RosterSlice, SimEnd, SimFrame, SimReady, ToSim, ToSolver } from "./protocol";
 
 /**
@@ -58,11 +58,16 @@ export class SimClient {
     });
   }
 
-  /** Sets a battle up (damage table, armies in formation); resolves with its first frame. */
-  async init(roster: RosterSlice, spec: BattleSpec): Promise<SimReady> {
+  /** Sets a battle up (damage table, armies in formation); resolves with its first frame. `playback`: how fast it will be shown. */
+  async init(roster: RosterSlice, spec: BattleSpec, playback?: PlaybackSpec): Promise<SimReady> {
     const id = ++this.id;
     this.inflight = 0;
-    return this.request<SimReady>({ type: "init", id, roster, spec }, "ready", id);
+    return this.request<SimReady>({ type: "init", id, roster, spec, playback }, "ready", id);
+  }
+
+  /** The playback changed (or it was paused): the worker plays ahead by it. */
+  setPlayback(playback: PlaybackSpec, paused = false) {
+    this.worker.postMessage({ type: "playback", id: this.id, playback, paused } satisfies ToSim);
   }
 
   step(count: number) {

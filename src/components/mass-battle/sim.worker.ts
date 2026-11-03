@@ -1,4 +1,5 @@
 import { Battle, EV, EVENT_INTS, NOTE_INTS, prepare, TICK_HZ } from "@/lib/mass-battle/engine";
+import { DEFAULT_PLAYBACK, type PlaybackSpec } from "@/lib/mass-battle/types";
 import type { FromSim, Moment, SimEnd, SimFrame, ToSim } from "./protocol";
 
 /**
@@ -7,7 +8,17 @@ import type { FromSim, Moment, SimEnd, SimFrame, ToSim } from "./protocol";
  * positions, HP, targets and hits back as transferred buffers, so drawing
  * thousands of Pokémon never waits on the simulation. Buffers come back
  * for reuse once drawn.
+ *
+ * Between requests it plays ahead by the battle's playback speed (half a
+ * second of battle at 1×, two at 4×, never while paused), a few ticks at a
+ * time so a request is answered at once from what's ready.
  */
+
+/** Battle seconds played ahead per 1× of playback speed, and the most ticks held. */
+const AHEAD_S = 0.5;
+const AHEAD_MAX = 48;
+/** Ticks played ahead before the worker looks at its messages again. */
+const AHEAD_CHUNK = 4;
 
 const scope = self as unknown as {
   postMessage(message: FromSim, transfer?: Transferable[]): void;
@@ -16,6 +27,23 @@ const scope = self as unknown as {
 
 let battle: Battle | null = null;
 let current = -1;
+let playback: PlaybackSpec = DEFAULT_PLAYBACK;
+let paused = false;
+/** Frames played ahead of the page's requests (in order). */
+let ahead: SimFrame[] = [];
+let aheadTimer: ReturnType<typeof setTimeout> | null = null;
+/** Milliseconds a tick takes to play (smoothed), reported with each batch of frames. */
+let tickCost = 0;
+
+/** One tick played and turned into a frame. */
+function advance(b: Battle): SimFrame {
+  const t0 = performance.now();
+  b.step();
+  const f = frameOf(b);
+  const ms = performance.now() - t0;
+  tickCost = tickCost ? tickCost * 0.9 + ms * 0.1 : ms;
+  return f;
+}
 let spec: Extract<ToSim, { type: "init" }>["spec"] | null = null;
 let roster: Extract<ToSim, { type: "init" }>["roster"] | null = null;
 const pool = new Map<number, ArrayBuffer[]>();
@@ -52,6 +80,28 @@ function endOf(b: Battle): SimEnd {
 }
 
 const transfers = (f: SimFrame) => [f.pos.buffer, f.hp.buffer, f.target.buffer, f.events.buffer, f.notes.buffer] as ArrayBuffer[];
+
+/** How many ticks to hold ready for the playback. */
+const aheadWanted = () => (paused ? 0 : Math.min(AHEAD_MAX, Math.ceil(Math.max(1, playback.speed) * AHEAD_S * TICK_HZ)));
+
+/** Plays ahead a few ticks at a time, letting the page's messages in between. */
+function playAhead() {
+  if (aheadTimer !== null) return;
+  aheadTimer = setTimeout(() => {
+    aheadTimer = null;
+    const b = battle;
+    if (!b) return;
+    const want = aheadWanted();
+    for (let k = 0; k < AHEAD_CHUNK && ahead.length < want && !b.ended; k++) ahead.push(advance(b));
+    if (ahead.length < want && !b.ended) playAhead();
+  }, 0);
+}
+
+function dropAhead() {
+  if (aheadTimer !== null) clearTimeout(aheadTimer);
+  aheadTimer = null;
+  ahead = [];
+}
 
 /** Plays the same battle to the end without drawing, noting the moments worth a cut (for the video). */
 function plan(id: number) {
@@ -98,8 +148,12 @@ scope.onmessage = (event) => {
   try {
     if (msg.type === "init") {
       const t0 = performance.now();
+      dropAhead();
+      tickCost = 0;
       spec = msg.spec;
       roster = msg.roster;
+      playback = msg.playback ?? DEFAULT_PLAYBACK;
+      paused = false;
       const prep = prepare({ version: msg.roster.version, moves: msg.roster.moves, species: msg.roster.species }, msg.spec);
       battle = new Battle(prep);
       current = msg.id;
@@ -139,16 +193,22 @@ scope.onmessage = (event) => {
       plan(msg.id);
       return;
     }
+    if (msg.type === "playback") {
+      if (msg.id !== current) return;
+      playback = msg.playback;
+      paused = !!msg.paused;
+      if (ahead.length < aheadWanted()) playAhead();
+      return;
+    }
     if (msg.type === "step") {
       if (!battle || msg.id !== current) return;
-      const t0 = performance.now();
-      const frames: SimFrame[] = [];
-      for (let k = 0; k < msg.count && !battle.ended; k++) {
-        battle.step();
-        frames.push(frameOf(battle));
-      }
-      const end = battle.ended ? endOf(battle) : undefined;
-      scope.postMessage({ type: "frames", id: msg.id, frames, end, ms: performance.now() - t0 }, frames.flatMap(transfers));
+      // What's been played ahead first, then the rest.
+      const frames: SimFrame[] = ahead.splice(0, msg.count);
+      while (frames.length < msg.count && !battle.ended) frames.push(advance(battle));
+      // The end goes with the battle's last frame.
+      const end = battle.ended && !ahead.length ? endOf(battle) : undefined;
+      scope.postMessage({ type: "frames", id: msg.id, frames, end, ms: tickCost * frames.length }, frames.flatMap(transfers));
+      if (!battle.ended) playAhead();
     }
   } catch (err) {
     scope.postMessage({ type: "error", id: "id" in msg ? msg.id : -1, message: err instanceof Error ? err.message : String(err) });

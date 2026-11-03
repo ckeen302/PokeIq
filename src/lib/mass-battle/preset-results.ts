@@ -24,6 +24,6 @@ export interface PresetsFile {
 }
 
 /** The battle rules' version: change it with any change to the simulation that changes outcomes. */
-export const ENGINE_VERSION = 2;
+export const ENGINE_VERSION = 3;
 
 export const presetsFile = (roster: number, results: Record<string, PresetResult>): PresetsFile => ({ engine: ENGINE_VERSION, roster, results });

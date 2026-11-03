@@ -1,6 +1,6 @@
 import { effectiveness as chart, type PokemonType } from "@/lib/pokemon/type-matrix";
 import { CONTACT_REACH, DT, EV, EVENT_INTS, MAX_SECONDS, NOTE, NOTE_CONFUSION, NOTE_INTS, NOTE_ITEM, NOTE_SKIP, RANGED_REACH, ROUND_TICKS, SPREAD_REACH, TICK_HZ } from "./constants";
-import { DamageTable, neutralState, type Fighter, type HitEntry, type HitState } from "./damage";
+import { DamageTable, neutralState, type Fighter, type FormRule, type HitEntry, type HitState } from "./damage";
 import { placeArmies, placeMelee } from "./formation";
 import { expectedHitsOf } from "./moves";
 import { expandArmy, factsOf, moveIndex, resolveSet, setKey } from "./sets";
@@ -28,10 +28,13 @@ import { fieldOf, itemsOf, STATUS, type Boosts, type BattleOutcome, type BattleS
  * conditions (paralysis, burn, poison, bad poison, sleep and freezing) and
  * who they can't touch; contact abilities and items (Static, Flame Body,
  * Rough Skin, Rocky Helmet); the abilities that grow with the battle (Moxie,
- * Beast Boost, Speed Boost, Stamina, Justified, Weak Armor…); Sturdy, Focus
- * Sash, Disguise, Air Balloon, Sitrus and Lum Berries, Leftovers, Weakness
- * Policy, Knock Off; and the end of each round: sandstorm, Grassy Terrain,
- * Leftovers, poison and burns.
+ * Beast Boost, Speed Boost, Stamina, Justified, Weak Armor…); Truant, Slow
+ * Start, the abilities that change form or type (Stance Change, Schooling,
+ * Shields Down, Ice Face, Protean, Libero), Mold Breaker; Sturdy, Focus
+ * Sash and Disguise hit by hit (multi-hit moves break them), Air Balloon,
+ * Sitrus and Lum Berries, Leftovers, Weakness Policy, King's Rock, Knock
+ * Off; and the end of each round: sandstorm, Grassy Terrain, Leftovers,
+ * poison and burns, Shed Skin, Hydration.
  *
  * Positioning is this page's own addition: Pokémon run at 10 m/s per 100
  * base Speed towards their target (the nearest foe they can hurt, the
@@ -148,8 +151,31 @@ const accMul = (s: number) => (s >= 0 ? (3 + s) / 3 : 3 / (3 - s));
 const WEATHER_SPEED: Record<string, FieldSpec["weather"]> = { swiftswim: "rain", chlorophyll: "sun", sandrush: "sand", slushrush: "snow" };
 const STATUS_CODE: Record<StatusId, number> = { par: STATUS.par, brn: STATUS.brn, psn: STATUS.psn, tox: STATUS.tox, slp: STATUS.slp, frz: STATUS.frz };
 const CLEAR_BODY = new Set(["clearbody", "whitesmoke", "fullmetalbody"]);
+/**
+ * The target's abilities a Mold Breaker (Teravolt, Turboblaze) move ignores, of those this battle checks itself
+ * (the calculator handles the damage ones): Showdown's "breakable" abilities.
+ */
+export const BREAKABLE = new Set([
+  "sturdy", "disguise", "iceface", "shielddust", "innerfocus", "owntempo", "limber", "insomnia", "vitalspirit", "waterveil",
+  "waterbubble", "thermalexchange", "immunity", "pastelveil", "magmaarmor", "leafguard", "sweetveil", "purifyingsalt",
+  "clearbody", "whitesmoke", "hypercutter", "bigpecks", "keeneye", "mindseye", "contrary", "simple", "dazzling",
+  "queenlymajesty", "armortail", "sandveil", "snowcloak", "stickyhold",
+]);
+const MOLD_BREAKERS = new Set(["moldbreaker", "teravolt", "turboblaze"]);
+/** Slow Start holds its Pokémon back for its first five turns. */
+const SLOW_START_ROUNDS = 5;
+/** Bookkeeping bits on a move use's per-target flags (never in an event): hit by the current hit; a Disguise or Ice Face took it. */
+const HIT_NOW = 1 << 12;
+const SHIELD = 1 << 13;
 const SAND_IMMUNE_ABILITIES = new Set(["sandveil", "sandrush", "sandforce", "overcoat", "magicguard"]);
 const CHOICE = new Set(["choiceband", "choicespecs", "choicescarf"]);
+
+/** What changes with a fighter's form. */
+interface FormRow {
+  types: string[];
+  stats: { atk: number; def: number; spa: number; spd: number; spe: number };
+  grounded: boolean;
+}
 
 /** Per-fighter numbers the engine reads every tick. */
 interface FighterRow {
@@ -157,6 +183,9 @@ interface FighterRow {
   /** Raw Speed stat (stages and the rest are applied as it acts). */
   spe: number;
   stats: { atk: number; def: number; spa: number; spd: number; spe: number };
+  /** Its forms (one unless an ability changes it: see formsOf in damage.ts), and the rule they follow. */
+  forms: FormRow[];
+  formRule: FormRule;
   radius: number;
   mass: number;
   vmax: number;
@@ -181,11 +210,21 @@ interface FighterRow {
   lifeOrb: boolean;
   sheerForce: boolean;
   sereneGrace: boolean;
-  /** Shield Dust or Covert Cloak: no side effects of foes' moves. */
-  shielded: boolean;
+  /** Shield Dust: no side effects of foes' moves (Covert Cloak, an item, is checked as it's held). */
+  shieldDust: boolean;
   contactProof: boolean;
   /** Mega forms can't lose their stone. */
   mega: boolean;
+  /** Mold Breaker, Teravolt, Turboblaze: its moves ignore the target's breakable abilities. */
+  moldBreaker: boolean;
+  /** Truant: it loafs around every other turn. */
+  truant: boolean;
+  /** Slow Start: half Attack and Speed for its first five turns. */
+  slowStart: boolean;
+  /** Protosynthesis in sun, or Quark Drive on Electric Terrain, with Speed its best stat: 1.5× Speed. */
+  boostedSpeed: boolean;
+  /** Disguise: the first hit does nothing but costs an eighth of its HP. */
+  disguise: boolean;
 }
 
 export interface BattleStats {
@@ -231,6 +270,10 @@ export class Battle {
   readonly itemGone: Uint8Array;
   /** Disguise or Ice Face has taken its hit. */
   private shieldUsed: Uint8Array;
+  /** Each unit's form (see formsOf in damage.ts). */
+  readonly form: Uint8Array;
+  /** Truant: it moved last time, so it loafs around next. */
+  private loaf: Uint8Array;
   /** Choice lock (move slot, −1 none). */
   private lock: Int8Array;
   /** Confusion: turns left (0 none). */
@@ -298,6 +341,7 @@ export class Battle {
   private state: HitState = neutralState(1, 1);
   private scratch: Int32Array = new Int32Array(1024);
   private hitScratch: Int32Array = new Int32Array(1024);
+  private doneScratch: Float64Array = new Float64Array(64);
   private effCache = new Map<number, number>();
 
   constructor(prep: Prepared, table?: DamageTable) {
@@ -306,17 +350,30 @@ export class Battle {
     this.table = table ?? new DamageTable(fighters, prep.field);
     this.rng = (prep.seed ^ 0x9e3779b9) >>> 0;
     const F = prep.species.length;
+    const field = prep.field;
     this.rows = prep.species.map((s, k) => {
       const set = prep.sets[k];
       const st = this.table.stats(k);
       const ab = toId(set.ability);
       const it = toId(set.item);
-      const types = set.tera ? [set.tera.toLowerCase()] : s.types;
+      const forecast = ab === "forecast" && s.calc === "Castform" ? ({ sun: "fire", rain: "water", snow: "ice" } as Record<string, string>)[field.weather] : undefined;
+      const types = set.tera ? [set.tera.toLowerCase()] : forecast ? [forecast] : s.types;
       const bst = s.base.hp + s.base.atk + s.base.def + s.base.spa + s.base.spd + s.base.spe;
+      const formRule = this.table.rules[k];
+      const forms: FormRow[] = this.table.formDefs[k].map((_, f) => {
+        const fs = this.table.stats(k, f);
+        const ft = f === 0 || set.tera ? types : this.table.types(k, f);
+        return { types: ft, stats: { atk: fs.atk, def: fs.def, spa: fs.spa, spd: fs.spd, spe: fs.spe }, grounded: !ft.includes("flying") && ab !== "levitate" };
+      });
+      // Protosynthesis and Quark Drive: the stat they boost is the best one as the battle starts.
+      const paradox = (ab === "protosynthesis" && field.weather === "sun") || (ab === "quarkdrive" && field.terrain === "electric");
+      const best = (["atk", "def", "spa", "spd", "spe"] as const).reduce((a, b) => (st[b] > st[a] ? b : a), "atk" as "atk" | "def" | "spa" | "spd" | "spe");
       return {
         maxHp: this.table.maxHp(k),
         spe: st.spe,
         stats: { atk: st.atk, def: st.def, spa: st.spa, spd: st.spd, spe: st.spe },
+        forms,
+        formRule,
         radius: bodyRadius(s),
         mass: bodyMass(s.kg),
         vmax: runSpeed(s.base.spe),
@@ -338,9 +395,14 @@ export class Battle {
         lifeOrb: it === "lifeorb",
         sheerForce: ab === "sheerforce",
         sereneGrace: ab === "serenegrace",
-        shielded: ab === "shielddust" || it === "covertcloak",
+        shieldDust: ab === "shielddust",
         contactProof: ab === "longreach" || it === "protectivepads",
         mega: s.form === "mega",
+        moldBreaker: MOLD_BREAKERS.has(ab),
+        truant: ab === "truant",
+        slowStart: ab === "slowstart",
+        boostedSpeed: paradox && best === "spe",
+        disguise: ab === "disguise",
       };
     });
     // Units, army by army, fighter by fighter.
@@ -378,6 +440,8 @@ export class Battle {
     this.actedRound = new Int32Array(n).fill(-1);
     this.itemGone = new Uint8Array(n);
     this.shieldUsed = new Uint8Array(n);
+    this.form = new Uint8Array(n);
+    this.loaf = new Uint8Array(n);
     this.lock = new Int8Array(n).fill(-1);
     this.confused = new Int8Array(n);
     this.rampSlot = new Int8Array(n).fill(-1);
@@ -392,16 +456,22 @@ export class Battle {
     this.keys = new Float64Array(n);
     this.aliveByFighter = new Int32Array(F);
     for (let i = 0; i < n; i++) {
-      this.hp[i] = this.rows[this.sp[i]].maxHp;
+      const row = this.rows[this.sp[i]];
+      this.hp[i] = row.maxHp;
       this.alive[i] = 1;
       this.left[this.side[i]]++;
       this.aliveByFighter[this.sp[i]]++;
-      if (!this.rows[this.sp[i]].item) this.itemGone[i] = 1;
+      if (!row.item) this.itemGone[i] = 1;
+      // Schooling: a Wishiwashi from level 20 starts in School Form.
+      if (row.formRule === "school" && prep.sets[this.sp[i]].level >= 20) this.form[i] = 1;
+      // Abilities that act as the battle starts, on the Pokémon itself (Gen 9: once a battle).
+      if (row.ability === "intrepidsword") this.stages[i * STAGES + ATK] = 1;
+      else if (row.ability === "dauntlessshield") this.stages[i * STAGES + DEF] = 1;
     }
     this.start[0] = this.left[0];
     this.start[1] = this.left[1];
-    const RESIDUAL_ABILITIES = new Set(["speedboost", "raindish", "dryskin", "icebody", "solarpower", "poisonheal"]);
-    this.residualFighters = this.rows.some((r) => r.item === "leftovers" || r.item === "blacksludge" || RESIDUAL_ABILITIES.has(r.ability));
+    const RESIDUAL_ABILITIES = new Set(["speedboost", "raindish", "dryskin", "icebody", "solarpower", "poisonheal", "shedskin", "hydration"]);
+    this.residualFighters = this.rows.some((r) => r.item === "leftovers" || r.item === "blacksludge" || RESIDUAL_ABILITIES.has(r.ability) || r.formRule === "school" || r.formRule === "shields");
     // Damage between the sides, worked out before the first round.
     const sideFighters = (s: number) => [...new Set(prep.armies[s].map(([fi]) => fi))];
     this.table.warm(sideFighters(0), sideFighters(1));
@@ -676,9 +746,30 @@ export class Battle {
     return !this.itemGone[i] && this.rows[this.sp[i]].item === id;
   }
 
+  /** What `i`'s current form changes: its types, stats, whether it's on the ground. */
+  private formRow(i: number): FormRow {
+    const row = this.rows[this.sp[i]];
+    return row.forms[this.form[i]] ?? row.forms[0];
+  }
+
+  private typesOf(i: number): string[] {
+    return this.formRow(i).types;
+  }
+
   /** Grounded right now (an Air Balloon keeps it up until it pops). */
   private grounded(i: number): boolean {
-    return this.rows[this.sp[i]].grounded && !this.hasItem(i, "airballoon");
+    return this.formRow(i).grounded && !this.hasItem(i, "airballoon");
+  }
+
+  /** `j`'s ability as `i`'s move sees it: "" when Mold Breaker ignores it. */
+  private abilityVs(i: number, j: number): string {
+    const ab = this.rows[this.sp[j]].ability;
+    return i >= 0 && this.rows[this.sp[i]].moldBreaker && BREAKABLE.has(ab) ? "" : ab;
+  }
+
+  /** Slow Start still holds it back (its first five turns). */
+  private slowed(i: number): boolean {
+    return this.rows[this.sp[i]].slowStart && this.round < SLOW_START_ROUNDS;
   }
 
   private hitState(i: number, j: number, mv: MBMove, crit: boolean, spread: boolean): HitState {
@@ -695,6 +786,9 @@ export class Battle {
     st.dStatus = this.status[j];
     st.aItem = !this.itemGone[i];
     st.dItem = !this.itemGone[j];
+    st.aForm = this.form[i];
+    st.dForm = this.form[j];
+    st.aSlow = this.slowed(i);
     return st;
   }
 
@@ -705,7 +799,7 @@ export class Battle {
       mv,
       aAbility: a.ability,
       aItem: this.itemGone[i] ? "" : a.item,
-      dAbility: d.ability,
+      dAbility: this.abilityVs(i, j),
       dItem: this.itemGone[j] ? "" : d.item,
       accStage: this.stage(i, ACC),
       evaStage: this.stage(j, EVA),
@@ -714,16 +808,15 @@ export class Battle {
     });
   }
 
-  /** Moves that can't touch this target now: priority into Psychic Terrain or Dazzling, Sucker Punch on a foe that already moved. */
+  /** Moves that can't touch this target now: priority into Psychic Terrain or Dazzling, Sucker Punch on a foe that already moved (or isn't attacking). */
   private blocked(i: number, j: number, mv: MBMove, slotPriority: number): boolean {
     if (slotPriority > 0) {
       if (this.prep.field.terrain === "psychic" && this.grounded(j)) return true;
-      const ab = this.rows[this.sp[j]].ability;
+      const ab = this.abilityVs(i, j);
       if (ab === "dazzling" || ab === "queenlymajesty" || ab === "armortail") return true;
     }
     const id = toId(mv.name);
-    if ((id === "suckerpunch" || id === "thunderclap") && this.actedRound[j] === this.round) return true;
-    void i;
+    if ((id === "suckerpunch" || id === "thunderclap") && (this.actedRound[j] === this.round || this.plan[j] < 0)) return true;
     return false;
   }
 
@@ -774,10 +867,10 @@ export class Battle {
     return p;
   }
 
-  /** The Speed it acts on: its stat with stages, paralysis, Choice Scarf, the weather abilities, Quick Feet and Unburden. */
+  /** The Speed it acts on: its stat (in its form) with stages, paralysis, Choice Scarf, the weather abilities, Quick Feet, Unburden, Slow Start, Protosynthesis and Quark Drive. */
   effectiveSpeed(i: number): number {
     const row = this.rows[this.sp[i]];
-    let s = row.spe * statMul(this.stage(i, SPE));
+    let s = this.formRow(i).stats.spe * statMul(this.stage(i, SPE));
     const ab = row.ability;
     const f = this.prep.field;
     if (WEATHER_SPEED[ab] && WEATHER_SPEED[ab] === f.weather) s *= 2;
@@ -785,6 +878,8 @@ export class Battle {
     if (ab === "quickfeet" && this.status[i]) s *= 1.5;
     else if (this.status[i] === STATUS.par) s *= 0.5;
     if (ab === "unburden" && this.itemGone[i] && row.item) s *= 2;
+    if (row.boostedSpeed) s *= 1.5;
+    if (this.slowed(i)) s *= 0.5;
     if (this.hasItem(i, "choicescarf")) s *= 1.5;
     return Math.floor(s);
   }
@@ -899,12 +994,18 @@ export class Battle {
     this.heal(j, Math.floor(max / 4));
   }
 
-  /** Whether `j` can be given this status now. */
-  private canStatus(j: number, st: StatusId, by: number): boolean {
+  /**
+   * Whether `j` can be given this status now. `breaker`: it comes from the move of a Mold Breaker (`by`), which ignores
+   * the target's breakable abilities.
+   */
+  private canStatus(j: number, st: StatusId, by: number, breaker = false): boolean {
     if (!this.alive[j] || this.status[j]) return false;
     const row = this.rows[this.sp[j]];
-    const t = row.types, ab = row.ability, f = this.prep.field;
-    if (ab === "comatose" || ab === "purifyingsalt") return false;
+    const t = this.typesOf(j), f = this.prep.field;
+    const ab = breaker ? this.abilityVs(by, j) : row.ability;
+    if (row.ability === "comatose" || ab === "purifyingsalt") return false;
+    // Shields Down: Minior's Meteor Form can't be given a status.
+    if (row.formRule === "shields" && this.form[j] === 0) return false;
     if (ab === "leafguard" && f.weather === "sun") return false;
     if (this.grounded(j) && f.terrain === "misty") return false;
     switch (st) {
@@ -920,8 +1021,9 @@ export class Battle {
     }
   }
 
-  private setStatus(j: number, st: StatusId, by: number) {
-    if (!this.canStatus(j, st, by)) return;
+  /** Gives `j` a status, if it can take it. `fromMove`: by `by`'s move (Mold Breaker applies; Poison Puppeteer answers). */
+  private setStatus(j: number, st: StatusId, by: number, fromMove = false) {
+    if (!this.canStatus(j, st, by, fromMove)) return;
     this.status[j] = STATUS_CODE[st];
     if (st === "psn" || st === "tox" || st === "brn") this.residualAny = true;
     if (st === "slp") this.sleep[j] = 2 + Math.floor(this.random() * 3);
@@ -932,14 +1034,17 @@ export class Battle {
       this.status[j] = 0;
       this.pushNote(j, NOTE.ITEM, NOTE_ITEM.lum);
       this.pushNote(j, NOTE.CURE, STATUS_CODE[st]);
+      return;
     }
+    // Poison Puppeteer: Pecharunt's moves that poison also confuse.
+    if (fromMove && by >= 0 && by !== j && (st === "psn" || st === "tox") && this.rows[this.sp[by]].ability === "poisonpuppeteer") this.confuse(j, by);
   }
 
-  /** Stat stage changes on `u` (by a foe's move or its own), with the abilities that block, flip or answer them. */
-  private boost(u: number, boosts: Boosts, byFoe: boolean) {
+  /** Stat stage changes on `u` (by a foe's move or its own), with the abilities that block, flip or answer them; `by`: the foe whose move it is (its Mold Breaker ignores the blockers). */
+  private boost(u: number, boosts: Boosts, byFoe: boolean, by = -1) {
     if (!this.alive[u]) return;
     const row = this.rows[this.sp[u]];
-    const ab = row.ability;
+    const ab = byFoe && by >= 0 ? this.abilityVs(by, u) : row.ability;
     let dropped = false;
     for (const key in boosts) {
       let d = boosts[key as keyof Boosts] ?? 0;
@@ -960,8 +1065,8 @@ export class Battle {
       if (after < before && byFoe) dropped = true;
     }
     if (dropped) {
-      if (ab === "defiant") this.boost(u, { atk: 2 }, false);
-      else if (ab === "competitive") this.boost(u, { spa: 2 }, false);
+      if (row.ability === "defiant") this.boost(u, { atk: 2 }, false);
+      else if (row.ability === "competitive") this.boost(u, { spa: 2 }, false);
     }
   }
 
@@ -985,6 +1090,15 @@ export class Battle {
         this.pushNote(i, NOTE.SKIP, NOTE_SKIP.frozen);
         return true;
       }
+    }
+    // Truant: every other turn it loafs around (checked after sleep and freezing, before flinching, as in the games).
+    if (this.rows[this.sp[i]].truant) {
+      if (this.loaf[i]) {
+        this.loaf[i] = 0;
+        this.pushNote(i, NOTE.SKIP, NOTE_SKIP.loafing);
+        return this.interrupted(i);
+      }
+      this.loaf[i] = 1;
     }
     if (this.flinchRound[i] === this.round) {
       this.pushNote(i, NOTE.SKIP, NOTE_SKIP.flinch);
@@ -1015,40 +1129,40 @@ export class Battle {
     return true;
   }
 
-  /** The damage of hitting itself in confusion (Showdown's getConfusionDamage). */
+  /** The damage of hitting itself in confusion (Showdown's getConfusionDamage: its Attack on its Defense, in its form; a burn doesn't change it). */
   private confusionDamage(i: number): number {
-    const row = this.rows[this.sp[i]];
+    const st = this.formRow(i).stats;
     const level = this.prep.sets[this.sp[i]].level;
-    const atk = Math.floor(row.stats.atk * statMul(this.stage(i, ATK)));
-    const def = Math.floor(row.stats.def * statMul(this.stage(i, DEF)));
+    const atk = Math.floor(st.atk * statMul(this.stage(i, ATK)));
+    const def = Math.floor(st.def * statMul(this.stage(i, DEF)));
     const base = Math.floor(Math.floor(Math.floor((2 * level) / 5 + 2) * 40 * atk / Math.max(1, def)) / 50) + 2;
-    let dmg = Math.floor((base * (100 - Math.floor(this.random() * 16))) / 100);
-    if (this.status[i] === STATUS.brn) dmg = Math.floor(dmg / 2);
+    const dmg = Math.floor((base * (100 - Math.floor(this.random() * 16))) / 100);
     return Math.max(1, dmg);
   }
 
-  /** Confuses `j` (2 to 5 turns) unless something stops it. */
-  private confuse(j: number) {
+  /** Confuses `j` (2 to 5 turns) unless something stops it (`by`: the foe whose move it is, for Mold Breaker). */
+  private confuse(j: number, by = -1) {
     if (!this.alive[j] || this.confused[j] > 0) return;
-    if (this.rows[this.sp[j]].ability === "owntempo") return;
+    if ((by >= 0 ? this.abilityVs(by, j) : this.rows[this.sp[j]].ability) === "owntempo") return;
     if (this.prep.field.terrain === "misty" && this.grounded(j)) return;
     this.confused[j] = 2 + Math.floor(this.random() * 4);
     this.pushNote(j, NOTE.STATUS, NOTE_CONFUSION);
   }
 
-  /** Number of hits for one use of a multi-hit move. */
+  /** Number of hits for one use of a multi-hit move (Skill Link: the most; Loaded Dice: four or five, or 4 to 10 for Population Bomb). */
   private hitCount(i: number, mv: MBMove): number {
     if (!mv.hits) return 1;
     const [lo, hi] = mv.hits;
-    if (lo === hi) return lo;
     const row = this.rows[this.sp[i]];
+    const dice = row.loadedDice && !this.itemGone[i];
+    if (lo === hi) return dice && hi === 10 ? 10 - Math.floor(this.random() * 7) : lo;
     if (row.skillLink) return hi;
     if (lo === 2 && hi === 5) {
-      if (row.loadedDice) return this.random() < 0.5 ? 4 : 5;
+      if (dice) return this.random() < 0.5 ? 4 : 5;
       const r = this.random();
       return r < 0.35 ? 2 : r < 0.7 ? 3 : r < 0.85 ? 4 : 5;
     }
-    if (row.loadedDice && hi >= 4) return hi;
+    if (dice && hi >= 4) return hi;
     return lo + Math.floor(this.random() * (hi - lo + 1));
   }
 
@@ -1099,7 +1213,24 @@ export class Battle {
     return { slot: best, spreadCount: bestCount };
   }
 
-  /** One use of a move by `i` against its target (and, for a spread move, everyone around). */
+  /** Stance Change and Protean or Libero change the user as it attacks: Blade Forme; the move's type (once). */
+  private formForMove(i: number, slot: number, mv: MBMove) {
+    const rule = this.rows[this.sp[i]].formRule;
+    if (rule === "stance" && this.form[i] === 0) this.setForm(i, 1);
+    else if (rule === "protean" && this.form[i] === 0) {
+      const t = mv.type.toLowerCase();
+      const now = this.typesOf(i);
+      if (now.length !== 1 || now[0] !== t) this.setForm(i, slot + 1);
+    }
+  }
+
+  private setForm(i: number, f: number) {
+    if (this.form[i] === f) return;
+    this.form[i] = f;
+    this.pushNote(i, NOTE.FORM, f);
+  }
+
+  /** One use of a move by `i` against its target (and, for a spread move, everyone around), hit by hit as the games play it. */
   private act(i: number) {
     let t = this.target[i];
     if (t < 0 || !this.alive[t]) {
@@ -1115,6 +1246,7 @@ export class Battle {
     this.idleSince = this.tick;
     if (this.skipsTurn(i, mv)) return;
     this.actionId++;
+    this.formForMove(i, best, mv);
     let targets: number;
     if (mv.spread && spreadCount >= 2) {
       targets = this.foesNear(i, this.x[i], this.z[i], row.radius + SPREAD_REACH);
@@ -1123,12 +1255,14 @@ export class Battle {
       targets = 1;
     }
     // The scratch buffer is reused below (Moxie, contact chip): copy the targets out.
-    if (this.hitScratch.length < targets) this.hitScratch = new Int32Array(targets * 2);
+    if (this.hitScratch.length < targets * 3) this.hitScratch = new Int32Array(targets * 6);
     const hitList = this.hitScratch;
     for (let k = 0; k < targets; k++) hitList[k] = this.scratch[k];
     const multi = targets >= 2;
     const pri = this.priority(i, best);
-    let total = 0, landed = 0, kos = 0, crashed = false;
+    let crashed = false;
+    // Who it lands on: protection, accuracy and immunity, once per target.
+    let landed = 0;
     for (let k = 0; k < targets; k++) {
       const j = hitList[k];
       if (!this.alive[j] || !this.alive[i]) continue;
@@ -1143,75 +1277,124 @@ export class Battle {
         if (mv.crash) crashed = true;
         continue;
       }
-      const crit = this.random() < this.critChance(i, j, mv);
-      const e: HitEntry = this.table.entry(spi, best, this.sp[j], this.hitState(i, j, mv, crit, multi));
-      if (e.immune) {
+      if (this.table.entry(spi, best, this.sp[j], this.hitState(i, j, mv, false, multi)).immune) {
         this.pushEvent(i, j, best, 0, flagsBase | EV.IMMUNE);
         if (mv.crash) crashed = true;
         this.absorb(j, mv);
         continue;
       }
-      const dRow = this.rows[this.sp[j]];
-      const nh = this.hitCount(i, mv);
-      let dmg = 0;
-      let shield = false;
-      // Disguise (any hit) and Ice Face (a physical one) take the first hit for it.
-      if (!this.shieldUsed[j] && (dRow.ability === "disguise" || (dRow.ability === "iceface" && mv.cat === "Physical"))) {
-        this.shieldUsed[j] = 1;
-        shield = true;
-        this.pushNote(j, NOTE.ITEM, NOTE_ITEM.disguise);
-      } else {
-        for (let h = 0; h < nh; h++) {
-          if (h > 0 && mv.multiAcc && this.random() >= this.accuracy(i, j, mv)) break;
+      hitList[targets + landed++] = j;
+    }
+    // Per landed target (after the targets and the landed list in the scratch buffer): damage so far, and its flags.
+    if (this.doneScratch.length < landed) this.doneScratch = new Float64Array(landed * 2);
+    const done = this.doneScratch;
+    const F0 = targets * 2;
+    for (let k = 0; k < landed; k++) { done[k] = 0; hitList[F0 + k] = multi ? EV.SPREAD : 0; }
+    // Multi-hit moves hit one target; spread moves hit once.
+    const nh = landed ? (multi ? 1 : this.hitCount(i, mv)) : 0;
+    const eachAcc = mv.multiAcc && !row.skillLink && !(row.loadedDice && !this.itemGone[i]);
+    let total = 0, kos = 0, healed = 0, ooze = 0, hits = 0;
+    for (let h = 0; h < nh && this.alive[i]; h++) {
+      let any = false;
+      // The damage of this hit, on every target at once.
+      for (let k = 0; k < landed; k++) {
+        const j = hitList[targets + k];
+        hitList[F0 + k] &= ~(HIT_NOW | SHIELD);
+        if (!this.alive[j] || hitList[F0 + k] & EV.MISS) continue;
+        // Triple Axel, Population Bomb: every hit after the first checks accuracy again; a miss ends the move.
+        if (h > 0 && eachAcc && this.random() >= this.accuracy(i, j, mv)) { hitList[F0 + k] |= EV.MISS; continue; }
+        const dRow = this.rows[this.sp[j]];
+        const crit = this.random() < this.critChance(i, j, mv);
+        let dmg = 0;
+        let shield = false;
+        // Disguise (any hit) and Ice Face (a physical one, in its ice form) take a hit for it; Mold Breaker goes through.
+        const dAb = this.abilityVs(i, j);
+        if (!this.shieldUsed[j] && (dAb === "disguise" || (dAb === "iceface" && mv.cat === "Physical" && this.form[j] === 0))) {
+          this.shieldUsed[j] = 1;
+          shield = true;
+        } else {
+          const e: HitEntry = this.table.entry(spi, best, this.sp[j], this.hitState(i, j, mv, crit, multi));
           const rolls = e.hits[Math.min(h, e.hits.length - 1)];
-          dmg += rolls[Math.floor(this.random() * 16)];
+          dmg = rolls[Math.floor(this.random() * 16)];
+        }
+        const before = this.hp[j];
+        // Sturdy and Focus Sash: a Pokémon at full HP survives a hit with 1 HP (each hit of a multi-hit move on its own).
+        if (dmg >= before && before >= dRow.maxHp) {
+          if (dAb === "sturdy") dmg = before - 1;
+          else if (this.hasItem(j, "focussash")) {
+            dmg = before - 1;
+            this.itemGone[j] = 1;
+            this.pushNote(j, NOTE.ITEM, NOTE_ITEM.sash);
+          }
+        }
+        const got = Math.min(dmg, before);
+        this.hp[j] = before - got;
+        this.dealt[i] += got;
+        this.sideDealt[this.side[i]] += got;
+        done[k] += got;
+        total += got;
+        any = true;
+        let fl = hitList[F0 + k] | HIT_NOW | (shield ? SHIELD : 0) | (crit ? EV.CRIT : 0);
+        if (h === 0) {
+          const eff = this.effectiveness(spi, best, j);
+          if (eff > 1) fl |= EV.SUPER;
+          else if (eff < 1) fl |= EV.RESIST;
+        }
+        // Drain, target by target (Liquid Ooze turns it into damage).
+        if (mv.drain && got > 0) {
+          const amount = Math.round((got * mv.drain[0]) / mv.drain[1]);
+          if (dRow.ability === "liquidooze") ooze += amount;
+          else healed += amount;
+        }
+        if (this.hp[j] <= 0) {
+          fl |= EV.KO;
+          this.faint(j);
+          this.kos[i]++;
+          kos++;
+          this.sideKos[this.side[i]]++;
+        }
+        hitList[F0 + k] = fl;
+      }
+      if (!any) break;
+      hits++;
+      if (healed > 0) { this.heal(i, healed); healed = 0; }
+      if (ooze > 0) { if (!row.magicGuard) this.chip(i, ooze, -1); ooze = 0; }
+      // What the hit sets off on each target it reached, in the games' order.
+      for (let k = 0; k < landed; k++) {
+        const fl = hitList[F0 + k];
+        if (!(fl & HIT_NOW)) continue;
+        const j = hitList[targets + k];
+        this.afterHit(i, j, mv, this.effectiveness(spi, best, j), !!(fl & EV.CRIT));
+        if (fl & SHIELD) {
+          // Disguise is busted (an eighth of its HP); Ice Face's ice breaks (Noice Face).
+          const dRow = this.rows[this.sp[j]];
+          if (dRow.disguise) {
+            this.pushNote(j, NOTE.ITEM, NOTE_ITEM.disguise);
+            if (this.alive[j]) this.chip(j, Math.max(1, Math.floor(dRow.maxHp / 8)), -1);
+          } else this.setForm(j, 1);
         }
       }
-      const before = this.hp[j];
-      // Sturdy and Focus Sash: a full-HP Pokémon survives any one hit with 1 HP.
-      if (dmg >= before && before >= dRow.maxHp) {
-        if (dRow.sturdy) dmg = before - 1;
-        else if (this.hasItem(j, "focussash")) {
-          dmg = before - 1;
-          this.itemGone[j] = 1;
-          this.pushNote(j, NOTE.ITEM, NOTE_ITEM.sash);
-        }
-      }
-      const done = Math.min(dmg, before);
-      this.hp[j] = before - done;
-      this.dealt[i] += done;
-      this.sideDealt[this.side[i]] += done;
-      total += done;
-      landed++;
-      let flags = flagsBase | (crit ? EV.CRIT : 0);
-      const eff = e.avg > 0 ? this.effectiveness(spi, best, this.sp[j]) : 1;
-      if (eff > 1) flags |= EV.SUPER;
-      else if (eff < 1) flags |= EV.RESIST;
-      if (this.prep.layout === "field") {
+    }
+    for (let k = 0; k < landed; k++) {
+      const j = hitList[targets + k];
+      const got = done[k];
+      const flags = hitList[F0 + k] & ~(EV.MISS | HIT_NOW | SHIELD);
+      if (this.prep.layout === "field" && got > 0) {
         // Knockback: damage over weight, away from the attacker.
         const dx = this.x[j] - this.x[i], dz = this.z[j] - this.z[i];
         const d = Math.sqrt(dx * dx + dz * dz) || 1;
-        const kv = Math.min(KNOCK_MAX, (KNOCK * done) / dRow.mass);
+        const kv = Math.min(KNOCK_MAX, (KNOCK * got) / this.rows[this.sp[j]].mass);
         this.kx[j] += (dx / d) * kv;
         this.kz[j] += (dz / d) * kv;
       }
-      if (this.hp[j] <= 0) {
-        flags |= EV.KO;
-        this.faint(j);
-        this.kos[i]++;
-        kos++;
-        this.sideKos[this.side[i]]++;
-      }
-      this.pushEvent(i, j, best, done, flags);
-      if (!this.bigHit || done > this.bigHit.damage) this.bigHit = { damage: done, actor: i, target: j, slot: best, crit };
-      if (shield) continue;
-      this.afterHit(i, j, mv, done, eff, crit);
+      this.pushEvent(i, j, best, got, flags);
+      if (!this.bigHit || got > this.bigHit.damage) this.bigHit = { damage: got, actor: i, target: j, slot: best, crit: !!(flags & EV.CRIT) };
     }
     // High Jump Kick and the like: a miss costs half its max HP.
     if (crashed && !landed && this.alive[i] && !row.magicGuard) this.chip(i, Math.floor(row.maxHp / 2), -1);
     // Outrage and the like: locked in for two or three uses, then confused by the fatigue.
     if (mv.rampage && this.alive[i]) {
-      if (this.rampLeft[i] <= 0 && landed > 0) {
+      if (this.rampLeft[i] <= 0 && hits > 0) {
         this.rampSlot[i] = best;
         this.rampLeft[i] = this.random() < 0.5 ? 2 : 3;
       }
@@ -1222,19 +1405,13 @@ export class Battle {
     }
     if (!this.alive[i]) return;
     // The attacker's own after-effects, once a move use.
-    if (landed > 0) {
+    if (hits > 0) {
       const max = row.maxHp;
       const sfNoRecoil = row.sheerForce && !!mv.fx?.some((f) => !f.always);
       if (total > 0) {
         let self = 0;
         if (mv.recoil && !row.noRecoil) self += Math.max(1, Math.round((total * mv.recoil[0]) / mv.recoil[1]));
-        if (row.lifeOrb && !this.itemGone[i] && !row.magicGuard && !sfNoRecoil) self += Math.floor(max / 10);
-        if (mv.drain) {
-          const amount = Math.max(1, Math.round((total * mv.drain[0]) / mv.drain[1]));
-          const ooze = hitList.subarray(0, targets).some((j) => this.rows[this.sp[j]].ability === "liquidooze");
-          if (ooze && !row.magicGuard) self += amount;
-          else this.heal(i, amount);
-        }
+        if (row.lifeOrb && !this.itemGone[i] && !row.magicGuard && !sfNoRecoil) self += Math.max(1, Math.floor(max / 10));
         if (this.hasItem(i, "shellbell")) this.heal(i, Math.max(1, Math.floor(total / 8)));
         if (self > 0) this.chip(i, self, -1);
       }
@@ -1244,7 +1421,7 @@ export class Battle {
           if (row.ability === "moxie" || row.ability === "chillingneigh" || row.ability === "asoneglastrier") this.boost(i, { atk: kos }, false);
           else if (row.ability === "grimneigh" || row.ability === "asonespectrier") this.boost(i, { spa: kos }, false);
           else if (row.ability === "beastboost") {
-            const st = row.stats;
+            const st = this.formRow(i).stats;
             const top = (["atk", "def", "spa", "spd", "spe"] as const).reduce((a, b) => (st[b] > st[a] ? b : a), "atk" as "atk" | "def" | "spa" | "spd" | "spe");
             this.boost(i, { [top]: kos }, false);
           }
@@ -1254,29 +1431,39 @@ export class Battle {
     }
   }
 
-  /** What a landed hit sets off: its side effects, the target's answers, contact and Knock Off. */
-  private afterHit(i: number, j: number, mv: MBMove, done: number, eff: number, crit: boolean) {
+  /**
+   * What a hit that landed sets off, in Showdown's order: the move's side effects on the target (Sheer Force trades
+   * them for power; Shield Dust and Covert Cloak keep them off; King's Rock adds a flinch), then the target's answers
+   * and contact (its abilities and items, the attacker's Poison Touch and Toxic Chain), then Knock Off.
+   */
+  private afterHit(i: number, j: number, mv: MBMove, eff: number, crit: boolean) {
     const row = this.rows[this.sp[i]];
     const dRow = this.rows[this.sp[j]];
-    const alive = !!this.alive[j];
-    // A frozen target thaws when a Fire move (or Scald) hits it.
-    if (alive && this.status[j] === STATUS.frz && (mv.type === "Fire" || toId(mv.name) === "scald" || toId(mv.name) === "scorchingsands" || toId(mv.name) === "steameruption")) {
-      this.status[j] = 0;
-      this.pushNote(j, NOTE.CURE, STATUS.frz);
-    }
-    // Side effects on the target (Sheer Force trades them for power; Shield Dust and Covert Cloak keep them off).
-    if (alive && mv.fx && !row.sheerForce && !dRow.shielded) {
-      for (const f of mv.fx) {
-        if (f.on !== "target") continue;
-        if (this.random() * 100 >= Math.min(100, f.chance * (row.sereneGrace ? 2 : 1))) continue;
-        if (f.status) this.setStatus(j, f.status, i);
-        if (f.flinch && this.actedRound[j] !== this.round && dRow.ability !== "innerfocus") this.flinchRound[j] = this.round;
-        if (f.confuse) this.confuse(j);
-        if (f.boosts) this.boost(j, f.boosts, true);
+    const dAb = this.abilityVs(i, j);
+    const covered = dAb === "shielddust" || this.hasItem(j, "covertcloak");
+    const sg = row.sereneGrace ? 2 : 1;
+    // 1. Side effects.
+    if (this.alive[j] && !covered) {
+      if (mv.fx && !row.sheerForce) {
+        for (const f of mv.fx) {
+          if (f.on !== "target") continue;
+          if (this.random() * 100 >= Math.min(100, f.chance * sg)) continue;
+          if (f.status) this.setStatus(j, f.status, i, true);
+          if (f.flinch && this.actedRound[j] !== this.round && dAb !== "innerfocus") this.flinchRound[j] = this.round;
+          if (f.confuse) this.confuse(j, i);
+          if (f.boosts) this.boost(j, f.boosts, true, i);
+        }
       }
+      // King's Rock: a 10% flinch on moves that have none of their own.
+      if (this.hasItem(i, "kingsrock") && !mv.fx?.some((f) => f.flinch) && this.random() * 100 < 10 * sg && this.actedRound[j] !== this.round && dAb !== "innerfocus") this.flinchRound[j] = this.round;
     }
-    // The target's answers to being hit.
-    if (alive && this.alive[j] && done > 0) {
+    // 2. The target's answers to being hit (they come even when Disguise took the damage).
+    if (this.alive[j]) {
+      // A frozen target thaws when a Fire move (or Scald) hits it.
+      if (this.status[j] === STATUS.frz && (mv.type === "Fire" || toId(mv.name) === "scald" || toId(mv.name) === "scorchingsands" || toId(mv.name) === "steameruption")) {
+        this.status[j] = 0;
+        this.pushNote(j, NOTE.CURE, STATUS.frz);
+      }
       const ab = dRow.ability;
       if (ab === "stamina") this.boost(j, { def: 1 }, false);
       else if (ab === "justified" && mv.type === "Dark") this.boost(j, { atk: 1 }, false);
@@ -1295,30 +1482,33 @@ export class Battle {
         this.itemGone[j] = 1;
         this.pushNote(j, NOTE.ITEM, NOTE_ITEM.balloon);
       }
-      this.checkBerry(j);
     }
-    // Knock Off takes the item (not a Mega Stone, not through Sticky Hold).
-    if (this.alive[j] && toId(mv.name) === "knockoff" && !this.itemGone[j] && !dRow.mega && dRow.ability !== "stickyhold") {
-      this.itemGone[j] = 1;
-      this.lock[j] = -1;
-      this.pushNote(j, NOTE.ITEM, NOTE_ITEM.knockedOff, i);
-    }
-    // Contact: the target's ability or Rocky Helmet strikes back.
-    if (mv.contact && !row.contactProof && this.alive[i]) {
+    // Contact: the target's ability or Rocky Helmet strikes back (even as it faints); Punching Glove keeps punches off.
+    const contact = mv.contact && !row.contactProof && !(mv.punch && this.hasItem(i, "punchingglove"));
+    if (contact && this.alive[i]) {
       const ab = dRow.ability;
       if (ab === "static" || ab === "flamebody" || ab === "poisonpoint") {
         if (this.random() < 0.3) this.setStatus(i, ab === "static" ? "par" : ab === "flamebody" ? "brn" : "psn", j);
-      } else if (ab === "effectspore" && !row.types.includes("grass") && row.ability !== "overcoat" && !this.hasItem(i, "safetygoggles")) {
+      } else if (ab === "effectspore" && !this.typesOf(i).includes("grass") && row.ability !== "overcoat" && !this.hasItem(i, "safetygoggles")) {
         const r = this.random() * 100;
         if (r < 11) this.setStatus(i, "slp", j);
         else if (r < 21) this.setStatus(i, "par", j);
         else if (r < 30) this.setStatus(i, "psn", j);
       } else if (ab === "gooey" || ab === "tanglinghair") this.boost(i, { spe: -1 }, true);
-      if (row.ability === "poisontouch" && this.alive[j] && this.random() < 0.3) this.setStatus(j, "psn", i);
+      if (row.ability === "poisontouch" && this.alive[j] && !covered && this.random() < 0.3) this.setStatus(j, "psn", i);
       if (!row.magicGuard) {
         if (ab === "roughskin" || ab === "ironbarbs") this.chip(i, Math.max(1, Math.floor(row.maxHp / 8)), j);
         if (this.alive[i] && this.hasItem(j, "rockyhelmet")) this.chip(i, Math.max(1, Math.floor(row.maxHp / 6)), j);
       }
+    }
+    // Toxic Chain: any hit may badly poison the target.
+    if (row.ability === "toxicchain" && this.alive[j] && !covered && this.random() < 0.3) this.setStatus(j, "tox", i);
+    if (this.alive[j]) this.checkBerry(j);
+    // 3. Knock Off takes the item (not a Mega Stone, not through Sticky Hold).
+    if (this.alive[i] && this.alive[j] && toId(mv.name) === "knockoff" && !this.itemGone[j] && !dRow.mega && dAb !== "stickyhold") {
+      this.itemGone[j] = 1;
+      this.lock[j] = -1;
+      this.pushNote(j, NOTE.ITEM, NOTE_ITEM.knockedOff, i);
     }
   }
 
@@ -1339,7 +1529,7 @@ export class Battle {
   /** Fighters with an item or ability that acts at the end of a round. */
   private residualFighters = false;
 
-  /** The end of a round, as in the games: sandstorm, Grassy Terrain, Leftovers, poison and burns, Speed Boost. */
+  /** The end of a round, as in the games: sandstorm, Grassy Terrain, Shed Skin and Hydration, Leftovers, poison and burns, Speed Boost, then Schooling and Shields Down. */
   private endOfRound() {
     const f = this.prep.field;
     if (!this.residualAny && !this.residualFighters && f.weather !== "sand" && f.terrain !== "grassy") return;
@@ -1351,7 +1541,7 @@ export class Battle {
     };
     if (f.weather === "sand") {
       each((i, row) => {
-        if (row.types.some((t) => t === "rock" || t === "ground" || t === "steel") || SAND_IMMUNE_ABILITIES.has(row.ability) || this.hasItem(i, "safetygoggles")) return;
+        if (this.typesOf(i).some((t) => t === "rock" || t === "ground" || t === "steel") || SAND_IMMUNE_ABILITIES.has(row.ability) || this.hasItem(i, "safetygoggles")) return;
         this.chip(i, Math.max(1, Math.floor(row.maxHp / 16)), -1, EV.RECOIL | EV.RESIDUAL);
       });
     }
@@ -1362,10 +1552,17 @@ export class Battle {
       if (f.weather === "sun" && (row.ability === "dryskin" || row.ability === "solarpower") && !row.magicGuard) this.chip(i, Math.max(1, Math.floor(max / 8)), -1, EV.RECOIL | EV.RESIDUAL);
     });
     if (f.terrain === "grassy") each((i, row) => { if (this.grounded(i)) this.heal(i, Math.floor(row.maxHp / 16)); });
+    // Shed Skin (a third of the time) and Hydration (in the rain) cure a status.
+    each((i, row) => {
+      const st = this.status[i];
+      if (!st || !((row.ability === "shedskin" && this.random() < 0.33) || (row.ability === "hydration" && f.weather === "rain"))) return;
+      this.status[i] = 0;
+      this.pushNote(i, NOTE.CURE, st);
+    });
     each((i, row) => {
       if (this.hasItem(i, "leftovers")) this.heal(i, Math.floor(row.maxHp / 16));
       else if (this.hasItem(i, "blacksludge")) {
-        if (row.types.includes("poison")) this.heal(i, Math.floor(row.maxHp / 16));
+        if (this.typesOf(i).includes("poison")) this.heal(i, Math.floor(row.maxHp / 16));
         else if (!row.magicGuard) this.chip(i, Math.max(1, Math.floor(row.maxHp / 8)), -1, EV.RECOIL | EV.RESIDUAL);
       }
     });
@@ -1385,14 +1582,20 @@ export class Battle {
     each((i, row) => {
       if (row.ability === "speedboost") this.boost(i, { spe: 1 }, false);
     });
+    // Schooling (from level 20) and Shields Down change form by the HP left.
+    each((i, row) => {
+      if (row.formRule === "school" && this.prep.sets[this.sp[i]].level >= 20) this.setForm(i, this.hp[i] * 4 > row.maxHp ? 1 : 0);
+      else if (row.formRule === "shields") this.setForm(i, this.hp[i] * 2 > row.maxHp ? 0 : 1);
+    });
   }
 
-  /** Type effectiveness of a move on a fighter (for the hit's flash and sound). */
-  private effectiveness(a: number, slot: number, d: number): number {
-    const key = (a * 8 + slot) * 65536 + d;
+  /** Type effectiveness of fighter `a`'s move on unit `j` in its form (for the hit's flash and sound, and Weakness Policy). */
+  private effectiveness(a: number, slot: number, j: number): number {
+    const d = this.sp[j];
+    const key = ((a * 8 + slot) * 65536 + d) * 8 + this.form[j];
     let v = this.effCache.get(key);
     if (v === undefined) {
-      v = typeFactor(this.prep.moves[a][slot].type, this.rows[d].types);
+      v = typeFactor(this.prep.moves[a][slot].type, this.typesOf(j));
       this.effCache.set(key, v);
     }
     return v;
