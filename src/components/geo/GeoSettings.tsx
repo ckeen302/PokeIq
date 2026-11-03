@@ -7,6 +7,10 @@ import { GEO_ROUND_OPTIONS, type GeoRounds } from "@/lib/geo-types";
 import { GEO_TIMERS, geoSettingsBadge, type GeoPlaySettings } from "@/lib/geo-settings";
 import { GEO_DIFFICULTIES, GEO_DIFFICULTY_BLURBS, GEO_DIFFICULTY_NAMES, type GeoDifficulty } from "@/lib/geo-difficulty";
 import { cn } from "@/lib/utils";
+import { guessrMusic } from "@/lib/guessr-music";
+import { useGuessrAudioPrefs } from "@/lib/use-guessr-music";
+import { setDuelSfx, useDuelSfx } from "@/lib/duel-sfx";
+import { play, unlockAudio } from "@/lib/sound";
 
 /**
  * PokéGuessr's play settings (No move, Zoomed, a round timer), in a popover
@@ -75,8 +79,59 @@ export function GeoSettingsButton({ value, onChange }: { value: GeoPlaySettings;
           <p className="text-xs text-muted-foreground">When time runs out, your pin is guessed where it is. No pin scores 0 (and ends a streak).</p>
         </div>
         <p className="border-t pt-3 text-xs text-muted-foreground">These only make a game harder, so your scores still count on the leaderboards.</p>
+        <GuessrSoundSettings />
       </Popover>
     </div>
+  );
+}
+
+/** Music and sound effects: each on or off, with its own volume. The site's mute (the speaker up top) silences both. */
+export function GuessrSoundSettings() {
+  const prefs = useGuessrAudioPrefs();
+  const sfxOn = useDuelSfx();
+  return (
+    <div className="space-y-3 border-t pt-3" data-testid="geo-sound-settings">
+      <p className="hud-label">Sound</p>
+      <SettingToggle
+        label="Music"
+        description="Chiptune for the menus, the rounds and duels."
+        checked={prefs.music.on}
+        onChange={() => {
+          unlockAudio();
+          guessrMusic.setPrefs({ music: { on: !prefs.music.on } });
+        }}
+        testId="geo-music"
+      />
+      <VolumeSlider label="Music volume" value={prefs.music.volume} disabled={!prefs.music.on} onChange={(volume) => guessrMusic.setPrefs({ music: { volume } })} testId="geo-music-volume" />
+      <SettingToggle label="Sound effects" description="Pins, guesses, scores and the countdown." checked={sfxOn} onChange={() => setDuelSfx(!sfxOn)} testId="geo-sfx" />
+      <VolumeSlider
+        label="Sound effects volume"
+        value={prefs.sfxVolume}
+        disabled={!sfxOn}
+        onChange={(sfxVolume) => guessrMusic.setPrefs({ sfxVolume })}
+        onCommit={() => play("pin")}
+        testId="geo-sfx-volume"
+      />
+    </div>
+  );
+}
+
+function VolumeSlider({ label, value, disabled, onChange, onCommit, testId }: { label: string; value: number; disabled: boolean; onChange: (v: number) => void; onCommit?: () => void; testId: string }) {
+  return (
+    <input
+      type="range"
+      min={0}
+      max={100}
+      step={5}
+      value={Math.round(value * 100)}
+      disabled={disabled}
+      aria-label={label}
+      onChange={(e) => onChange(Number(e.target.value) / 100)}
+      onPointerUp={onCommit}
+      onKeyUp={onCommit}
+      data-testid={testId}
+      className="h-2 w-full cursor-pointer accent-[hsl(var(--primary))] disabled:cursor-not-allowed disabled:opacity-40"
+    />
   );
 }
 

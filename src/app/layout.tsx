@@ -111,6 +111,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <a href="/audio/battle/CREDITS.md" className="underline-offset-2 hover:underline">
                 credits
               </a>
+              ). PokéGuessr music and countdown sounds by Juhani Junkala, cosmac, Fupi, Kosmo The Cat, congusbongus, bart, yd and pyranostudios via OpenGameArt.org, under CC0 (
+              <a href="/audio/guessr/CREDITS.md" className="underline-offset-2 hover:underline">
+                credits
+              </a>
               ). Sizes music by cynicmusic and city textures from Poly Haven, both CC0 (
               <a href="/sizes/CREDITS.md" className="underline-offset-2 hover:underline">
                 credits

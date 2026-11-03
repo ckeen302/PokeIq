@@ -8,6 +8,7 @@ import { type GeoRegionInfo } from "@/lib/geo-types";
 import { GEO_REGION_STREAK_BOARD, GEO_REGION_STREAK_KEY, GEO_STREAK_REGIONS, type GeoStreakGuessResponse, type GeoStreakRegion, type GeoStreakStartResponse } from "@/lib/geo-streak-types";
 import { recordGeoGame, useProgress } from "@/lib/progress";
 import { play, unlockAudio } from "@/lib/sound";
+import { useGuessrMusic } from "@/lib/use-guessr-music";
 import { preloadImage } from "@/lib/preload";
 import { useAccount } from "@/lib/account";
 import { avatarSrc } from "@/lib/avatar";
@@ -68,6 +69,8 @@ export function StreakGame({ world }: { world: GeoRegionInfo }) {
 
   const streak = played.filter((p) => p.graded.correct).length;
   const current = phase === "revealed" ? played[played.length - 1] : null;
+  // Music: the menu loop on the start screen, the calm loop while playing, a sting when the streak ends.
+  useGuessrMusic(phase === "results" ? "draw" : phase === "guessing" || phase === "submitting" || phase === "revealed" ? "round" : "lobby");
   const localBest = progress?.best[`geo:${GEO_REGION_STREAK_KEY}`] ?? 0;
 
   async function start() {
