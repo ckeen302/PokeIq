@@ -400,9 +400,12 @@ export class Director {
       }
       case "slowmo": {
         const c = this.cue ?? { x: mx, z: mz, h, power: 0, kind: "crit" as const };
-        const d = Math.max(3.2, c.h * 2.4 + 2.5) * (tall ? 1.15 : 1);
+        // A crowd knocked out at once is seen from above the crowd (close in, the bodies round it would block the view);
+        // a single huge hit is seen close and low.
+        const wide = c.kind === "multi";
+        const d = (wide ? Math.max(9, c.h * 4 + 10) : Math.max(3.2, c.h * 2.4 + 2.5)) * (tall ? 1.15 : 1);
         const ang = Math.atan2(px, pz) + 0.5 * this.flip + s * 0.22 * this.flip;
-        return { tx: c.x, ty: c.h * 0.5, tz: c.z, yaw: ang, pitch: 0.12 + s * 0.02, dist: d * (1 - Math.min(0.15, s * 0.1)), fov: fov - 2, shake: 0 };
+        return { tx: c.x, ty: c.h * 0.5, tz: c.z, yaw: ang, pitch: (wide ? 0.5 : 0.12) + s * 0.02, dist: d * (1 - Math.min(0.15, s * 0.1)), fov: fov - 2, shake: 0 };
       }
       case "aerial": {
         const loser = a.alive / Math.max(1, a.start) < b.alive / Math.max(1, b.start) ? a : b;
