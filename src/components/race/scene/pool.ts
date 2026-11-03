@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { POOL_INSET, POOL_X0, WATER_Y, poolBounds, poolWalls } from "@/lib/race/pool";
+import { POOL_INSET, POOL_X0, WATER_Y, clipsUnderwater, poolBounds, poolWalls } from "@/lib/race/pool";
 import { KERB_R, LANE_W, RUN_OUT, X0, type Distance } from "@/lib/race/track";
 import { puffTexture } from "./textures";
 
@@ -256,9 +256,11 @@ export function buildPool(lanes: number[], distance: Distance, modes: number[], 
               raceFoam += wash * sp * 1.2 * k;
             }
             // Bow wave: a crest pushed ahead of the nose, spilling out to the sides.
+            // (A whale's crest is metres long and stands well up, a goldfish's a few centimetres.)
             float front = fwd - len * 0.45;
-            float bow = exp(-front * front / 0.05) * exp(-lat * lat / (beam * beam * 2.5));
-            h += k * 0.06 * sp * bow;
+            float bs = clamp(len / 3.0, 1.0, 4.0);
+            float bow = exp(-front * front / (0.05 * bs * bs)) * exp(-lat * lat / (beam * beam * 2.5 * bs));
+            h += k * 0.06 * sp * bow * bs;
             // Bigger swimmers push a bigger bow wave and more foam.
             raceFoam += bow * sp * 0.9 * k;
             // Where the body cuts the surface.
@@ -302,7 +304,7 @@ export function buildPool(lanes: number[], distance: Distance, modes: number[], 
         #include <opaque_fragment>`
       );
   };
-  water.customProgramCacheKey = () => "race-pool-water";
+  water.customProgramCacheKey = () => "race-pool-water-2";
   mats.push(water);
   const waterMesh = new THREE.Mesh(waterGeo, water);
   waterMesh.renderOrder = 4;
@@ -355,8 +357,18 @@ export function buildPool(lanes: number[], distance: Distance, modes: number[], 
       const beat = Math.floor(w.phase * 2);
       const prev = lastBeat.get(i);
       lastBeat.set(i, beat);
+      const big = Math.cbrt(w.kg / 10);
+      // A giant's nose throws spray off its bow wave all the time, up and out to both sides.
+      if (!jumped && clipsUnderwater(w.h) && w.v > 0.3) {
+        const nose = Math.min(4, Math.floor((4 + w.v * 1.5) * dt + rnd()));
+        for (let k = 0; k < nose; k++) {
+          const side = rnd() < 0.5 ? -1 : 1;
+          const ahead = w.len * 0.42 + rnd() * 0.3, out = side * (0.1 + rnd() * 0.35);
+          spl[ns] = { x: w.x + w.dx * ahead - w.dz * out, y: WATER_Y + 0.02, z: w.z + w.dz * ahead + w.dx * out, vx: w.dx * w.v * 0.4 - w.dz * side * (0.6 + rnd()), vy: 1 + rnd() * 1.4, vz: w.dz * w.v * 0.4 + w.dx * side * (0.6 + rnd()), s: 0.18 + rnd() * 0.22, t0: t, life: 0.45 + rnd() * 0.4 };
+          ns = (ns + 1) % NS;
+        }
+      }
       if (!jumped && prev != null && beat !== prev && w.v > 0.3) {
-        const big = Math.cbrt(w.kg / 10);
         const n = Math.min(14, Math.round(3 + big * 2.2 + w.v * 0.3));
         for (let k = 0; k < n; k++) {
           const back = w.len * (0.35 + rnd() * 0.25);
