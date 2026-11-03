@@ -12,7 +12,7 @@ const natureHint = (n: string) => {
   const x = NATURES[n];
   return x ? `${n} +${STAT_SHORT[x[0]]} −${STAT_SHORT[x[1]]}` : n;
 };
-const EV_SHORT: Record<EvPreset, string> = { random: "Random battles", offence: "Max offence", bulk: "Max bulk" };
+const EV_SHORT: Record<EvPreset, string> = { random: "85 each", offence: "Max offence", bulk: "Max bulk" };
 
 /**
  * One species' set in the Battle setup's Advanced section: level, up to
