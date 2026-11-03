@@ -2,9 +2,9 @@
 
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { track } from "@vercel/analytics";
-import { Camera, Clapperboard, Expand, Info, Loader2, Minus, Pause, Play, Plus, RotateCcw, Share2, Swords, Trophy, Volume2, VolumeX, X } from "lucide-react";
+import { Camera, Clapperboard, Loader2, RotateCcw, Share2, Swords, X } from "lucide-react";
 import { Director, type Pose } from "@/lib/mass-battle/director";
-import { EV, SPREAD_REACH } from "@/lib/mass-battle/constants";
+import { TICK_HZ } from "@/lib/mass-battle/constants";
 import { armyName, bossDownLine, critLine, fmt, multiKoLine, noAnswerText, possessive, questionText, resultLine, resultTitle, spreadText, winRateText } from "@/lib/mass-battle/copy";
 import { figureSize } from "@/lib/mass-battle/stats";
 import { encodeBattle, encodeQuestion, MASS_BATTLE_PATH, newSeed, type SlugIndex } from "@/lib/mass-battle/share";
@@ -13,16 +13,18 @@ import type { ArenaId, BattleLevel, BattleSpec, MBSpecies, Question, Winner } fr
 import type { SimEnd } from "./protocol";
 import { sliceRoster, specIds, questionIds } from "./protocol";
 import { getRoster } from "./roster-client";
-import { BattleView, summarize, type Hit } from "./view";
+import { BattleView, summarize } from "./view";
 import { SimClient, SolverPool } from "./workers";
 import { createBattleAudio, type BattleAudio } from "./audio";
 import { MB_CSS } from "./mass-battle-css";
 import type { BattleScene, Quality } from "./scene";
 import { HowItWorksBody } from "./HowItWorks";
+import { BattleControls, BattleHud, type CamMode } from "./BattleHud";
+import { DamageNumbers } from "./damage-numbers";
+import type { Choreographer } from "./scene/choreo";
 import { SetupPanel } from "./SetupPanel";
 import type { PickerMon } from "./PokemonPicker";
 import { isMuted, onMuteChange, setMuted } from "@/lib/sound";
-import { cn } from "@/lib/utils";
 
 const MakeBattleVideo = lazy(() => import("./MakeBattleVideo"));
 
@@ -119,7 +121,7 @@ export function MassBattleExperience({ list, presets, initial }: { list: PickerM
   const phaseRef = useRef<Phase>("idle");
   const pausedRef = useRef(false);
   const speedRef = useRef(1);
-  const camRef = useRef<"director" | "free">("director");
+  const camRef = useRef<CamMode>("director");
   const freeRef = useRef({ tx: 0, ty: 1, tz: 0, yaw: 0.6, pitch: 0.4, dist: 60, fov: 40, shake: 0, target: { tx: 0, tz: 0, yaw: 0.6, pitch: 0.4, dist: 60 } });
   const poseRef = useRef<Pose | null>(null);
   const abortRef = useRef<AbortController | null>(null);
@@ -132,6 +134,13 @@ export function MassBattleExperience({ list, presets, initial }: { list: PickerM
   const recordingRef = useRef(false);
   /** Worker milliseconds per simulation tick (smoothed), for the stats on the stage. */
   const tickMs = useRef(0);
+  /** Ticks to step through while paused. */
+  const stepRef = useRef(0);
+  const choreoRef = useRef<Choreographer | null>(null);
+  const numbersRef = useRef<DamageNumbers | null>(null);
+  const dmgLayerRef = useRef<HTMLDivElement>(null);
+  /** The top-down camera: where it looks (follows the battle until panned) and how high. */
+  const topRef = useRef({ tx: 0, tz: 0, dist: 80, yaw: 0, follow: true });
 
   const [phase, setPhaseState] = useState<Phase>("idle");
   const [battle, setBattle] = useState<BattleDesc | null>(null);
@@ -141,7 +150,10 @@ export function MassBattleExperience({ list, presets, initial }: { list: PickerM
   const [feed, setFeed] = useState<FeedItem[]>([]);
   const [final, setFinal] = useState<Final | null>(null);
   const [cardHidden, setCardHidden] = useState(false);
-  const [cam, setCam] = useState<"director" | "free">("director");
+  const [cam, setCam] = useState<CamMode>("director");
+  const [slowmo, setSlowmo] = useState(true);
+  const [hudOn, setHudOn] = useState(true);
+  const [numbersOn, setNumbersOn] = useState(false);
   const [paused, setPaused] = useState(false);
   const [speed, setSpeed] = useState(1);
   const [muted, setMutedState] = useState(true);
@@ -183,6 +195,8 @@ export function MassBattleExperience({ list, presets, initial }: { list: PickerM
     setQuality(q);
     try {
       sceneRef.current = createBattleScene(host, { quality: q, tex: TEX_URL });
+      sceneRef.current.onStep = (_x, _z, size) => audioRef.current?.step(size);
+      sceneRef.current.onThunder = (strength) => audioRef.current?.thunder(strength);
     } catch {
       setGlOk(false);
       return null;
@@ -197,81 +211,50 @@ export function MassBattleExperience({ list, presets, initial }: { list: PickerM
     setTimeout(() => setFeed((f) => f.filter((x) => x.id !== id)), 4200);
   }, []);
 
-  const wireHits = useCallback((view: BattleView) => {
+  const wireHits = useCallback(async (view: BattleView) => {
+    const { createChoreographer } = await import("./scene/choreo");
+    const scene = sceneRef.current;
+    if (!scene) return;
     const ready = view.ready;
     const sp = view.sp;
     const heights = heightsRef.current;
-    const radius = ready.radius;
-    let action = -1;
-    let act = { actor: -1, move: "", type: "", kos: 0, target: -1, crit: false, bossHit: false, bossKo: false, x: 0, z: 0, h: 1 };
-    let budget = 0, budgetAt = -1;
+    const widths = speciesRef.current.map((s) => figureSize(s).w);
+    const choreo = createChoreographer(scene.effects, view, ready, heights, widths);
+    choreo.budget = qualityRef.current === "low" || qualityRef.current === "draft" ? 24 : 70;
+    choreoRef.current = choreo;
     const bossSide = ready.start[0] <= 3 && ready.start[1] >= 4 ? 0 : ready.start[1] <= 3 && ready.start[0] >= 4 ? 1 : -1;
     const name = (i: number) => speciesRef.current[sp[i]]?.name ?? "";
-    const flush = () => {
-      if (action < 0) return;
-      const d = directorRef.current;
-      const actorName = name(act.actor);
-      const tone: FeedItem["tone"] = view.side[act.actor] === 0 ? "a" : "b";
-      if (act.bossKo) {
-        pushFeed(bossDownLine(actorName, act.move, name(act.target)), "gold");
-        d.offer({ kind: "ko-boss", x: act.x, z: act.z, h: act.h, power: 1 });
-        audioRef.current?.boom(1);
-      } else if (act.kos >= 3) {
-        pushFeed(multiKoLine(actorName, act.move, act.kos, name(act.target)), tone);
-        if (act.kos >= 5) {
-          d.offer({ kind: "multi", x: view.x[act.actor], z: view.z[act.actor], h: heights[sp[act.actor]], power: Math.min(1, act.kos / 20) });
-          audioRef.current?.boom(Math.min(1, act.kos / 15));
+    choreo.hooks = {
+      hit: (type, power, crit) => audioRef.current?.hit(type, power, crit),
+      recall: () => audioRef.current?.recall(),
+      punch: (x, y, z, strength, type) => {
+        sceneRef.current?.punch(x, y, z, strength, type);
+        if (strength > 0.55) audioRef.current?.boom(strength);
+      },
+      damage: (x, y, z, damage, flags, side) => numbersRef.current?.spawn(x, y, z, damage, flags, performance.now() / 1000, side === bossSide),
+      action: (a) => {
+        const d = directorRef.current;
+        const actorName = name(a.actor);
+        const tone: FeedItem["tone"] = view.side[a.actor] === 0 ? "a" : "b";
+        if (a.bossKo) {
+          pushFeed(bossDownLine(actorName, a.move, name(a.target)), "gold");
+          d.offer({ kind: "ko-boss", x: a.x, z: a.z, h: a.h, power: 1 });
+          audioRef.current?.boom(1);
+        } else if (a.kos >= 3) {
+          pushFeed(multiKoLine(actorName, a.move, a.kos, name(a.target)), tone);
+          if (a.kos >= 5) {
+            d.offer({ kind: "multi", x: view.x[a.actor], z: view.z[a.actor], h: heights[sp[a.actor]], power: Math.min(1, a.kos / 20) });
+            audioRef.current?.boom(Math.min(1, a.kos / 15));
+          }
+        } else if (a.crit && a.bossHit) {
+          pushFeed(critLine(actorName, a.move, name(a.target)), "gold");
+          d.offer({ kind: "crit", x: a.x, z: a.z, h: a.h, power: 0.6 });
         }
-      } else if (act.crit && act.bossHit) {
-        pushFeed(critLine(actorName, act.move, name(act.target)), "gold");
-        d.offer({ kind: "crit", x: act.x, z: act.z, h: act.h, power: 0.6 });
-      }
-      action = -1;
+        if (a.bossHit && a.share > 0.3) d.offer({ kind: "big", x: a.x, z: a.z, h: a.h, power: a.share });
+      },
     };
-    view.onHit = (h: Hit) => {
-      if (h.action !== action) {
-        flush();
-        action = h.action;
-        const mv = h.slot >= 0 ? ready.moves[sp[h.actor]][h.slot] : null;
-        act = { actor: h.actor, move: mv?.name ?? "", type: mv?.type ?? "Normal", kos: 0, target: h.target, crit: false, bossHit: false, bossKo: false, x: h.tx, z: h.tz, h: heights[sp[h.target]] };
-      }
-      const fx = sceneRef.current?.effects;
-      const isBoss = bossSide >= 0 && view.side[h.target] === bossSide;
-      if (h.flags & EV.KO) {
-        act.kos++;
-        if (isBoss) {
-          act.bossKo = true;
-          act.target = h.target;
-          act.x = h.tx;
-          act.z = h.tz;
-          act.h = heights[sp[h.target]];
-        }
-      }
-      if (h.flags & EV.CRIT) act.crit = true;
-      if (isBoss && !(h.flags & (EV.MISS | EV.IMMUNE))) act.bossHit = true;
-      // Effects, within a budget per moment of battle time (a huge clash stays smooth).
-      if (h.t !== budgetAt) { budgetAt = h.t; budget = qualityRef.current === "low" || qualityRef.current === "draft" ? 24 : 70; }
-      const drawnA = view.draw[h.actor], drawnT = view.draw[h.target];
-      const ht = heights[sp[h.target]], ha = heights[sp[h.actor]];
-      if (fx && (h.flags & EV.KO) && drawnT) fx.recall(h.tx, 0, h.tz, ht, h.t + 0.22);
-      if (h.flags & EV.KO) audioRef.current?.recall();
-      if (!fx || h.flags & EV.RECOIL || budget <= 0 || (!drawnA && !drawnT)) return;
-      budget--;
-      const mv = h.slot >= 0 ? ready.moves[sp[h.actor]][h.slot] : null;
-      if (!mv) return;
-      const first = h.target === act.target && act.kos <= 1;
-      if (first) {
-        if (mv.spread && h.flags & EV.SPREAD) fx.ring(mv.type, h.ax, h.az, radius[sp[h.actor]] + SPREAD_REACH + 0.4, 0.6, h.t);
-        else if (!mv.contact) fx.beam(mv.type, { x: h.ax, y: ha * 0.6, z: h.az }, { x: h.tx, y: ht * 0.5, z: h.tz }, Math.min(0.6, Math.max(0.04, ha * 0.07)), 0.34, h.t);
-        audioRef.current?.hit(mv.type, Math.min(1, h.damage / Math.max(1, ready.maxHp[sp[h.target]])), !!(h.flags & EV.CRIT));
-      }
-      if (h.flags & EV.MISS || h.flags & EV.IMMUNE) return;
-      const share = Math.min(1, h.damage / Math.max(1, ready.maxHp[sp[h.target]]));
-            const size = Math.min(1.6, Math.max(0.3, Math.min(ht, ha * 1.5) * 0.7));
-      fx.burst(mv.type, h.tx, ht * 0.5, h.tz, 4 + share * 12, 1.2 + share * 4 + size, size, h.t);
-      if (h.flags & EV.CRIT) fx.burst("Normal", h.tx, ht * 0.6, h.tz, 8, 3 + size * 2, size * 1.3, h.t);
-      if (share > 0.35 && isBoss) directorRef.current.offer({ kind: "big", x: h.tx, z: h.tz, h: ht, power: share });
-    };
+    view.onLaunch = (h) => choreo.launch(h);
+    view.onHit = (h) => choreo.hit(h);
   }, [pushFeed]);
 
   // ---- Deploying a battle.
@@ -306,7 +289,8 @@ export function MassBattleExperience({ list, presets, initial }: { list: PickerM
       const view = new BattleView(ready, (await import("./scene")).QUALITY[qualityRef.current].cap);
       viewRef.current = view;
       setDrawn(view.drawn < view.n ? { drawn: view.drawn, total: view.n } : null);
-      wireHits(view);
+      await wireHits(view);
+      numbersRef.current?.clear();
       sim.onFrames = (frames, end, ms) => {
         if (viewRef.current !== view) return;
         view.push(frames, end);
@@ -323,13 +307,15 @@ export function MassBattleExperience({ list, presets, initial }: { list: PickerM
         const total = (counts.get(k) ?? 0) + (counts.get(10000 + k) ?? 0);
         if (total <= 3) bosses.add(species[k].id);
       }
-      await scene.deploy({ arena: b.spec.arena, radius: ready.arena, species, bosses, view }, (p, label) => setProgress({ p, label }), ac.signal);
+      const env = b.spec as BattleSpec & { weather?: unknown; time?: unknown };
+      await scene.deploy({ arena: b.spec.arena, radius: ready.arena, species, bosses, view, weather: env.weather, time: env.time }, (p, label) => setProgress({ p, label }), ac.signal);
       if (ac.signal.aborted) return;
       const aspect = hostRef.current ? hostRef.current.clientWidth / Math.max(1, hostRef.current.clientHeight) : 1.6;
       directorRef.current.reset(summarize(view, heightsRef.current, "deploy", aspect));
-      if (/[?&]debug=1/.test(window.location.search)) (window as unknown as { __mb: unknown }).__mb = { scene, view, director: directorRef.current };
+      if (/[?&]debug=1/.test(window.location.search)) (window as unknown as { __mb: unknown }).__mb = { scene, view, director: directorRef.current, choreo: choreoRef.current };
       camRef.current = "director";
       setCam("director");
+      topRef.current.follow = true;
       updateHud(view);
       setPhase("ready");
       if (autoplay) start();
@@ -346,7 +332,7 @@ export function MassBattleExperience({ list, presets, initial }: { list: PickerM
     if (!view || !battleRef.current) return;
     audioRef.current ??= createBattleAudio();
     audioRef.current.gesture();
-    audioRef.current.start(battleRef.current.spec.arena);
+    audioRef.current.start(battleRef.current.spec.arena, sceneRef.current?.env.weather);
     setPhase("playing");
     simRef.current?.step(6);
     track("mass_battle_start", { preset: battleRef.current.presetId ?? "custom", units: view.n });
@@ -402,17 +388,25 @@ export function MassBattleExperience({ list, presets, initial }: { list: PickerM
       const host = hostRef.current;
       const aspect = host ? host.clientWidth / Math.max(1, host.clientHeight) : 1.6;
       const director = directorRef.current;
+      let bt = 0;
       if (view && (phase === "ready" || phase === "playing" || phase === "done")) {
-        if (phase === "playing" && !pausedRef.current) {
+        const tBefore = view.t;
+        if (phase === "playing" && (!pausedRef.current || stepRef.current > 0)) {
           const slow = camRef.current === "director" ? director.timeScale : 1;
-          const rate = speedRef.current * slow;
+          const rate = pausedRef.current ? 0 : speedRef.current * slow;
           if ((slow < 1) !== wasSlow) {
             wasSlow = slow < 1;
             audioRef.current?.slow(wasSlow);
           }
-          view.advance(dt * rate);
+          if (pausedRef.current) {
+            // A step: one tick of the battle.
+            stepRef.current--;
+            view.advance(1 / TICK_HZ);
+          } else view.advance(dt * rate);
+          choreoRef.current?.flush();
           const sim = simRef.current;
-          if (sim && !view.end && sim.inflight === 0 && view.head - view.t < 0.3 + dt * rate * 2) sim.step(Math.max(2, Math.min(24, Math.ceil((0.35 + dt * rate * 2) * 20))));
+          const ahead = 0.5 + dt * rate * 2;
+          if (sim && !view.end && sim.inflight === 0 && view.head - view.t < ahead) sim.step(Math.max(2, Math.min(24, Math.ceil((ahead + 0.1) * TICK_HZ))));
           const spent = view.takeSpent();
           if (spent.length) sim?.recycle(spent);
           if (view.ended && view.end) {
@@ -426,27 +420,44 @@ export function MassBattleExperience({ list, presets, initial }: { list: PickerM
         } else if (phase === "done" && !pausedRef.current) {
           view.advance(dt);
         }
+        bt = Math.max(0, view.t - tBefore);
         if (phase !== "playing") doneAt = phase === "done" ? doneAt : -1;
         const field = summarize(view, heightsRef.current, phase === "ready" ? "deploy" : view.ended ? "ended" : "battle", aspect);
         let pose: Pose;
+        const f = freeRef.current;
         if (camRef.current === "director") {
           pose = director.update(field, dt);
-          const f = freeRef.current;
           Object.assign(f, { tx: pose.tx, ty: pose.ty, tz: pose.tz, yaw: pose.yaw, pitch: pose.pitch, dist: pose.dist, fov: pose.fov });
           f.target = { tx: pose.tx, tz: pose.tz, yaw: pose.yaw, pitch: pose.pitch, dist: pose.dist };
         } else {
-          const f = freeRef.current;
+          if (camRef.current === "top") {
+            // Top-down: straight over the battle (following its middle until panned), north up, the wheel for height.
+            const top = topRef.current;
+            const [a, b] = field.armies;
+            if (top.follow) {
+              const w = a.alive + b.alive || 1;
+              top.tx = damp(top.tx, (a.cx * a.alive + b.cx * b.alive) / w, 2, dt);
+              top.tz = damp(top.tz, (a.cz * a.alive + b.cz * b.alive) / w, 2, dt);
+            }
+            const tg = f.target;
+            tg.tx = top.tx;
+            tg.tz = top.tz;
+            tg.pitch = 1.38;
+            tg.yaw = top.yaw;
+          }
           const tg = f.target;
           f.tx = damp(f.tx, tg.tx, 10, dt);
           f.tz = damp(f.tz, tg.tz, 10, dt);
           f.yaw = damp(f.yaw, tg.yaw, 12, dt);
-          f.pitch = damp(f.pitch, tg.pitch, 12, dt);
+          f.pitch = damp(f.pitch, tg.pitch, camRef.current === "top" ? 6 : 12, dt);
           f.dist = Math.exp(damp(Math.log(f.dist), Math.log(tg.dist), 10, dt));
-          pose = { tx: f.tx, ty: f.ty, tz: f.tz, yaw: f.yaw, pitch: f.pitch, dist: f.dist, fov: f.fov, shake: 0 };
+          f.fov = damp(f.fov, 40, 4, dt);
+          pose = { tx: f.tx, ty: camRef.current === "top" ? 0 : f.ty, tz: f.tz, yaw: f.yaw, pitch: f.pitch, dist: f.dist, fov: f.fov, shake: 0 };
         }
         poseRef.current = pose;
         scene.setCamera(pose);
-        scene.render(view, dt);
+        scene.render(view, dt, bt);
+        numbersRef.current?.update(now / 1000, (x, y, z) => scene.project(x, y, z));
         workEma = workEma * 0.95 + (performance.now() - start) * 0.05;
         const stage = stageRef.current;
         if (now - hudAt > 120) {
@@ -455,7 +466,7 @@ export function MassBattleExperience({ list, presets, initial }: { list: PickerM
           if (stage) {
             stage.dataset.t = view.t.toFixed(2);
             stage.dataset.dist = pose.dist.toFixed(2);
-            stage.dataset.shot = camRef.current === "free" ? "free" : director.shot;
+            stage.dataset.shot = camRef.current !== "director" ? camRef.current : director.shot;
             stage.dataset.left = `${view.left[0]},${view.left[1]}`;
             const st = scene.stats();
             stage.dataset.calls = String(st.calls);
@@ -463,6 +474,8 @@ export function MassBattleExperience({ list, presets, initial }: { list: PickerM
             stage.dataset.frameMs = frameEma.toFixed(1);
             stage.dataset.workMs = workEma.toFixed(2);
             stage.dataset.tickMs = tickMs.current.toFixed(2);
+            stage.dataset.timeScale = director.timeScale.toFixed(2);
+            stage.dataset.cuts = String(director.cuts);
           }
         }
       } else {
@@ -505,6 +518,24 @@ export function MassBattleExperience({ list, presets, initial }: { list: PickerM
     return () => cancelAnimationFrame(raf);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // ---- Damage numbers (a layer over the stage).
+  useEffect(() => {
+    const el = dmgLayerRef.current;
+    if (!el) return;
+    numbersRef.current = new DamageNumbers(el);
+    return () => {
+      numbersRef.current?.dispose();
+      numbersRef.current = null;
+    };
+  }, []);
+  useEffect(() => {
+    if (numbersRef.current) numbersRef.current.enabled = numbersOn;
+    if (!numbersOn) numbersRef.current?.clear();
+  }, [numbersOn]);
+  useEffect(() => {
+    directorRef.current.allowSlow = slowmo;
+  }, [slowmo]);
 
   // ---- Resize.
   useEffect(() => {
@@ -632,7 +663,8 @@ export function MassBattleExperience({ list, presets, initial }: { list: PickerM
 
   // ---- Camera input: any drag, wheel or pinch takes the free camera; the Director button gives it back.
   const toFree = () => {
-    if (camRef.current === "free") return;
+    // A drag, the wheel or a pinch takes the camera from the director (the top-down camera stays top-down).
+    if (camRef.current === "free" || camRef.current === "top") return;
     camRef.current = "free";
     setCam("free");
     const f = freeRef.current;
@@ -642,6 +674,24 @@ export function MassBattleExperience({ list, presets, initial }: { list: PickerM
   const toDirector = () => {
     camRef.current = "director";
     setCam("director");
+  };
+  const toTop = () => {
+    const f = freeRef.current;
+    const p = poseRef.current;
+    if (p) Object.assign(f, { tx: p.tx, ty: p.ty, tz: p.tz, yaw: p.yaw, pitch: p.pitch, dist: p.dist });
+    const view = viewRef.current;
+    const max = Math.max(60, (view?.ready.arena ?? 60) * 3.2);
+    const top = topRef.current;
+    Object.assign(top, { tx: f.tx, tz: f.tz, dist: Math.min(max, Math.max(24, (view?.ready.arena ?? 60) * 1.5)), yaw: 0, follow: true });
+    f.target = { tx: top.tx, tz: top.tz, yaw: 0, pitch: 1.38, dist: top.dist };
+    camRef.current = "top";
+    setCam("top");
+  };
+  const setCamMode = (m: CamMode) => {
+    if (m === "director") return toDirector();
+    if (m === "top") return toTop();
+    camRef.current = "director";
+    toFree();
   };
   const zoomBy = (factor: number) => {
     toFree();
@@ -664,9 +714,12 @@ export function MassBattleExperience({ list, presets, initial }: { list: PickerM
       return { spread: Math.hypot(a.x - b.x, a.y - b.y), mx: (a.x + b.x) / 2, my: (a.y + b.y) / 2 };
     };
     const pan = (dx: number, dy: number) => {
-      const t = freeRef.current.target;
-      const k = t.dist * 0.0016;
-      const cy = Math.cos(t.yaw), sy = Math.sin(t.yaw);
+      const top = camRef.current === "top";
+      const t = top ? topRef.current : freeRef.current.target;
+      if (top) topRef.current.follow = false;
+      const k = freeRef.current.target.dist * (top ? 0.0011 : 0.0016);
+      const yaw = top ? topRef.current.yaw : freeRef.current.target.yaw;
+      const cy = Math.cos(yaw), sy = Math.sin(yaw);
       t.tx += (-dx * cy - dy * sy) * k;
       t.tz += (dx * sy - dy * cy) * k;
       const lim = (viewRef.current?.ready.arena ?? 80) * 1.2;
@@ -706,7 +759,7 @@ export function MassBattleExperience({ list, presets, initial }: { list: PickerM
       if (Math.abs(dx) + Math.abs(dy) < 0.5) return;
       toFree();
       const t = freeRef.current.target;
-      if (mode === "pan") pan(dx, dy);
+      if (mode === "pan" || camRef.current === "top") pan(dx, dy);
       else if (mode === "orbit") {
         t.yaw -= dx * 0.0055;
         t.pitch = Math.max(0.04, Math.min(1.45, t.pitch + dy * 0.0045));
@@ -769,11 +822,19 @@ export function MassBattleExperience({ list, presets, initial }: { list: PickerM
   useEffect(() => {
     const key = (e: KeyboardEvent) => {
       const tag = (e.target as HTMLElement)?.tagName;
-      if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return;
+      if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT" || e.metaKey || e.altKey) return;
       if (!viewRef.current) return;
+      const k = e.key.toLowerCase();
       if (e.key === "+" || e.key === "=") zoomBy(1 / 1.3);
       else if (e.key === "-" || e.key === "_") zoomBy(1.3);
       else if (e.key === "0") toDirector();
+      else if (e.key >= "1" && e.key <= "5" && !e.ctrlKey) changeSpeed([0.25, 0.5, 1, 2, 4][Number(e.key) - 1]);
+      else if (e.key === " " && (phaseRef.current === "playing" || phaseRef.current === "ready") && stageRef.current?.contains(document.activeElement ?? null)) togglePause();
+      else if (e.key === "." && pausedRef.current) stepRef.current++;
+      else if (k === "s" && !e.ctrlKey) setSlowmo((v) => !v);
+      else if (k === "h" && !e.ctrlKey) setHudOn((v) => !v);
+      else if (k === "d" && !e.ctrlKey) setNumbersOn((v) => !v);
+      else if (k === "c" && !e.ctrlKey) setCamMode(camRef.current === "director" ? "free" : camRef.current === "free" ? "top" : "director");
       else return;
       e.preventDefault();
     };
@@ -788,8 +849,7 @@ export function MassBattleExperience({ list, presets, initial }: { list: PickerM
     pausedRef.current = next;
     setPaused(next);
   };
-  const cycleSpeed = () => {
-    const next = speed === 1 ? 2 : speed === 2 ? 0.5 : 1;
+  const changeSpeed = (next: number) => {
     speedRef.current = next;
     setSpeed(next);
   };
@@ -860,40 +920,11 @@ export function MassBattleExperience({ list, presets, initial }: { list: PickerM
         <div className="mb-shade-top" aria-hidden />
         <div className="mb-shade-bottom" aria-hidden />
 
-        {/* HUD: armies, the boss, the kill feed. */}
+        <div ref={dmgLayerRef} className="mb-dmg-layer" aria-hidden />
+
+        {/* HUD: armies, the boss, the clock, the kill feed. */}
         {hud && b && (phase === "ready" || phase === "playing" || phase === "done") && (
-          <div className="pointer-events-none absolute inset-x-0 top-0 z-[3] p-3 sm:p-4" data-testid="mb-hud">
-            <div className="flex items-start justify-between gap-3">
-              {([0, 1] as const).map((s) => (
-                <div key={s} className={cn("w-[42%] max-w-[300px] space-y-1", s === 1 && "text-right")} data-testid={`mb-army-${s}`}>
-                  <div className={cn("flex items-baseline gap-2", s === 1 && "flex-row-reverse")}>
-                    <span className="truncate font-display text-xs font-bold uppercase tracking-wide sm:text-sm">{sideName(s)}</span>
-                    <span className="font-pixel text-[10px] tabular-nums text-white/75" data-testid={`mb-left-${s}`}>
-                      {hideCount && s === 0 ? "?" : fmt(hud.left[s])}
-                    </span>
-                  </div>
-                  <div className={cn("mb-bar", s === 1 && "scale-x-[-1]")}>
-                    <i className={s === 0 ? "mb-a" : "mb-b"} style={{ transform: `scaleX(${hud.left[s] / Math.max(1, hud.start[s])})` }} />
-                  </div>
-                  <div className="font-pixel text-[9px] uppercase tracking-wider text-white/55">KOs {fmt(hud.start[1 - s] - hud.left[1 - s])}</div>
-                </div>
-              ))}
-            </div>
-            {hud.boss && phase !== "ready" && (
-              <div className="mx-auto mt-2 w-[min(420px,70%)] space-y-1 text-center" data-testid="mb-boss">
-                <div className="font-display text-sm font-bold uppercase tracking-wider sm:text-base">{hud.boss.name}</div>
-                <div className="mb-bar mb-boss h-[10px]"><i style={{ transform: `scaleX(${hud.boss.hp / Math.max(1, hud.boss.max)})` }} /></div>
-                <div className="font-pixel text-[9px] tabular-nums text-white/70">{fmt(hud.boss.hp)} / {fmt(hud.boss.max)} HP</div>
-              </div>
-            )}
-            <ol className="mb-feed absolute right-3 top-24 hidden w-[min(340px,40%)] space-y-1.5 sm:block" aria-live="polite" data-testid="mb-feed">
-              {feed.map((f) => (
-                <li key={f.id} className={cn("rounded-md border bg-[#0b1226]/72 px-2.5 py-1.5 text-right font-display text-xs font-semibold backdrop-blur-sm", f.tone === "gold" ? "border-[#ffd84a]/70 text-[#ffe680]" : f.tone === "a" ? "border-[#4f9bff]/60" : "border-[#ff5a64]/60")}>
-                  {f.text}
-                </li>
-              ))}
-            </ol>
-          </div>
+          <BattleHud hud={hud} names={[sideName(0), sideName(1)]} hideCount={hideCount} phase={phase} feed={feed} visible={hudOn && !(phase === "done" && final && !cardHidden)} />
         )}
 
         {drawn && (phase === "playing" || phase === "ready") && (
@@ -1004,32 +1035,33 @@ export function MassBattleExperience({ list, presets, initial }: { list: PickerM
 
         {/* Controls (the result card has its own). */}
         {(phase === "ready" || phase === "playing" || (phase === "done" && (!final || cardHidden))) && (
-          <div className="absolute inset-x-0 bottom-0 z-[6] flex flex-wrap items-end justify-between gap-2 p-3 sm:p-4">
-            <div className="flex flex-wrap items-center gap-1.5">
-              {phase === "done" && cardHidden && (
-                <button type="button" onClick={() => setCardHidden(false)} className={cn(chip, "border-[#ffd84a]/60 text-[#ffe680]")} data-testid="mb-show-result">
-                  <Trophy className="h-4 w-4" aria-hidden /> Result
-                </button>
-              )}
-              <button type="button" onClick={togglePause} className={chip} aria-label={phase === "ready" ? "Start" : paused ? "Play" : "Pause"} data-testid="mb-play" disabled={phase === "done"}>
-                {phase === "playing" && !paused ? <Pause className="h-4 w-4" aria-hidden /> : <Play className="h-4 w-4" aria-hidden />}
-              </button>
-              <button type="button" onClick={replay} className={chip} aria-label="Replay" data-testid="mb-restart"><RotateCcw className="h-4 w-4" aria-hidden /></button>
-              <button type="button" onClick={cycleSpeed} className={cn(chip, "tabular-nums")} aria-label={`Speed ${speed}×`} data-testid="mb-speed">{speed === 0.5 ? "½" : speed}×</button>
-              <button type="button" onClick={cam === "free" ? toDirector : toFree} className={cn(chip, cam === "director" && "border-[#ffd84a]/60 text-[#ffe680]")} data-testid="mb-camera" aria-pressed={cam === "director"}>
-                <Camera className="h-4 w-4" aria-hidden /> <span className="hidden sm:inline">{cam === "director" ? "Director" : "Free camera"}</span>
-              </button>
-            </div>
-            <div className="flex flex-wrap items-center justify-end gap-1.5">
-              <button type="button" onClick={() => zoomBy(1 / 1.45)} className={chip} aria-label="Zoom in" data-testid="mb-zoom-in"><Plus className="h-4 w-4" aria-hidden /></button>
-              <button type="button" onClick={() => zoomBy(1.45)} className={chip} aria-label="Zoom out" data-testid="mb-zoom-out"><Minus className="h-4 w-4" aria-hidden /></button>
-              <button type="button" onClick={toggleMute} className={chip} aria-label={muted ? "Sound on" : "Sound off"} data-testid="mb-sound">{muted ? <VolumeX className="h-4 w-4" aria-hidden /> : <Volume2 className="h-4 w-4" aria-hidden />}</button>
-              <button type="button" onClick={() => setShowHow(true)} className={chip} aria-label="How it works" data-testid="mb-how"><Info className="h-4 w-4" aria-hidden /></button>
-              <button type="button" onClick={share} className={chip} aria-label="Share" data-testid="mb-share"><Share2 className="h-4 w-4" aria-hidden /></button>
-              <button type="button" onClick={() => setShowVideo(true)} className={chip} aria-label="Make a video" data-testid="mb-video"><Clapperboard className="h-4 w-4" aria-hidden /><span className="hidden lg:inline">Video</span></button>
-              <button type="button" onClick={fullscreen} className={cn(chip, "hidden sm:inline-flex")} aria-label="Full screen"><Expand className="h-4 w-4" aria-hidden /></button>
-            </div>
-          </div>
+          <BattleControls
+            phase={phase}
+            paused={paused}
+            speed={speed}
+            cam={cam}
+            slowmo={slowmo}
+            hudOn={hudOn}
+            numbersOn={numbersOn}
+            muted={muted}
+            quality={pinnedRef.current ? quality : `Auto (${quality})`}
+            showResult={phase === "done" && cardHidden}
+            onResult={() => setCardHidden(false)}
+            onPlay={togglePause}
+            onStep={() => { stepRef.current++; }}
+            onReplay={replay}
+            onSpeed={changeSpeed}
+            onCam={setCamMode}
+            onZoom={zoomBy}
+            onSlowmo={() => setSlowmo((v) => !v)}
+            onHud={() => setHudOn((v) => !v)}
+            onNumbers={() => setNumbersOn((v) => !v)}
+            onMute={toggleMute}
+            onHow={() => setShowHow(true)}
+            onShare={share}
+            onVideo={() => setShowVideo(true)}
+            onFullscreen={fullscreen}
+          />
         )}
 
         {toast && <div className="pointer-events-none absolute left-1/2 top-1/2 z-[8] -translate-x-1/2 rounded-md bg-black/80 px-3 py-2 font-display text-xs uppercase tracking-wider" role="status">{toast}</div>}

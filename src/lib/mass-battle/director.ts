@@ -1,19 +1,25 @@
 /**
- * The cinematic director: picks the camera's shot from what the battle is
- * doing, like a sports broadcast. Pure (no three.js): it reads a summary
- * of the battlefield each frame and returns a camera pose and a time scale.
+ * The cinematic director: cuts the battle like an epic battle simulator's
+ * trailer. Pure (no three.js): it reads a summary of the battlefield each
+ * frame and returns a camera pose and a time scale. Shots are hard cuts;
+ * within a shot the camera moves on its own (a drone sweep, a dolly, a
+ * crane, an orbit) while it keeps the action framed.
  *
- * - Establishing: a drone sweep round the field while the armies line up.
- * - Charge: low behind the charging army, looking at the enemy.
- * - Clash: over the front line where the armies meet.
- * - Boss: following the lone giant (a side of three or fewer).
- * - Slow motion: a cut to a critical hit on the boss, a spread move that
- *   knocks out a crowd, or the boss going down, at a third of the speed.
+ * - Establishing: high and wide, a slow drone sweep over both armies.
+ * - Charge: at ground level in front of the charging army, the horde
+ *   running at the camera; then tracking alongside it.
+ * - Impact: the moment the front lines meet, low and wide, in slow motion.
+ * - Clash: over the thick of the fighting, a slow crane round it.
+ * - Boss: over the lone giant's shoulder at the horde, or low, looking up.
+ * - Slow motion: a huge hit (a critical hit on the boss, a crowd knocked
+ *   out at once, the boss going down): a cut in close, at a third of the
+ *   speed, with a punch.
  * - Last stand: an aerial circle over the last few of a side.
- * - Finale: the final blow in slow motion, then a slow orbit of the winners.
+ * - Finale: the final blow in slow motion, then a rising orbit over the
+ *   winners.
  *
- * Every part of the pose eases toward its target (frame-rate independent),
- * so the camera glides; slow-motion cuts jump.
+ * Tall frames (videos, phones) get their own framing: armies stacked
+ * along the frame rather than side by side.
  */
 
 export interface Pose {
@@ -40,6 +46,8 @@ export interface ArmySummary {
   fz: number;
   /** Typical figure height (m). */
   h: number;
+  /** Mean speed of its standing units (m/s), when known. */
+  speed?: number;
 }
 
 export interface FieldSummary {
@@ -54,7 +62,7 @@ export interface FieldSummary {
 }
 
 export interface Cue {
-  kind: "crit" | "multi" | "ko-boss" | "big";
+  kind: "crit" | "multi" | "ko-boss" | "big" | "final";
   x: number;
   z: number;
   h: number;
@@ -62,7 +70,7 @@ export interface Cue {
   power: number;
 }
 
-export type ShotName = "establish" | "charge" | "clash" | "boss" | "slowmo" | "aerial" | "finale";
+export type ShotName = "establish" | "charge" | "track" | "impact" | "clash" | "boss" | "hero" | "slowmo" | "aerial" | "finale";
 
 const damp = (cur: number, target: number, rate: number, dt: number) => target + (cur - target) * Math.exp(-rate * dt);
 const dampAngle = (cur: number, target: number, rate: number, dt: number) => {
@@ -71,48 +79,97 @@ const dampAngle = (cur: number, target: number, rate: number, dt: number) => {
   while (d < -Math.PI) d += Math.PI * 2;
   return target - d * Math.exp(-rate * dt);
 };
+const clamp = (v: number, a: number, b: number) => Math.max(a, Math.min(b, v));
+
+/** A pose from a camera position and the point it looks at. */
+export function poseAt(cx: number, cy: number, cz: number, tx: number, ty: number, tz: number, fov: number): Pose {
+  const dx = cx - tx, dy = cy - ty, dz = cz - tz;
+  const flat = Math.hypot(dx, dz);
+  const dist = Math.max(0.5, Math.hypot(flat, dy));
+  return { tx, ty, tz, yaw: Math.atan2(dx, dz), pitch: Math.atan2(dy, Math.max(1e-3, flat)), dist, fov, shake: 0 };
+}
+
+/** Real seconds each shot holds before the director looks for the next. */
+const HOLD: Record<ShotName, number> = { establish: 99, charge: 2.6, track: 2.4, impact: 1.6, clash: 4.2, boss: 3.6, hero: 3, slowmo: 1.5, aerial: 3.6, finale: 99 };
 
 export class Director {
   shot: ShotName = "establish";
   /** Battle-time scale the director wants (slow motion < 1). */
   timeScale = 1;
+  /** Slow motion on big moments (the viewer can turn it off). */
+  allowSlow = true;
   pose: Pose = { tx: 0, ty: 1, tz: 0, yaw: 0.7, pitch: 0.55, dist: 80, fov: 40, shake: 0 };
+  /** Cuts so far (a new shot each). */
+  cuts = 0;
+  onCut: ((shot: ShotName) => void) | null = null;
   private shotStart = 0;
   private real = 0;
-  private slowUntil = -1;
   private slowCooldown = 0;
   private cue: Cue | null = null;
   private shakeLevel = 0;
   private lastStandDone = false;
   private contact = false;
+  private impactDone = false;
+  private chargeDone = false;
   private finaleAt = -1;
   private orbit = 0.7;
+  /** Side of the line the shot is taken from (alternates, so cuts don't feel samey). */
+  private flip = 1;
+  private bossShots = 0;
+  /** Where the latest heavy action was (follow-the-action). */
+  private hot: { x: number; z: number; h: number; at: number } | null = null;
+  private jump = true;
+  /** The side charging in the charge and tracking shots (the bigger army: the horde), fixed for the shot. */
+  private lead: 0 | 1 = 0;
 
   /** Puts the camera straight on the establishing shot (no glide from wherever it was). */
   reset(f: FieldSummary) {
     this.shot = "establish";
     this.real = 0;
     this.shotStart = 0;
-    this.slowUntil = -1;
+    this.slowCooldown = 0;
     this.timeScale = 1;
     this.lastStandDone = false;
     this.contact = false;
+    this.impactDone = false;
+    this.chargeDone = false;
     this.finaleAt = -1;
+    this.cue = null;
+    this.hot = null;
+    this.bossShots = 0;
+    this.cuts = 0;
+    this.flip = 1;
     this.pose = this.target(f, 0);
+    this.jump = false;
   }
 
-  /** A moment worth a slow-motion cut (the director decides whether to take it). */
+  /** A moment worth a cut (the director decides whether to take it). */
   offer(c: Cue) {
     this.shakeLevel = Math.max(this.shakeLevel, Math.min(1.2, c.power));
-    if (this.real < this.slowCooldown || this.shot === "finale") return;
+    if (c.kind === "big" || c.kind === "multi") this.hot = { x: c.x, z: c.z, h: c.h, at: this.real };
+    if (this.shot === "finale" || this.shot === "establish") return;
+    if (c.kind === "final") {
+      this.cue = c;
+      return;
+    }
     if (c.kind === "big") return;
+    if (this.real < this.slowCooldown && c.kind !== "ko-boss") return;
     this.cue = c;
     this.cut("slowmo");
-    this.slowUntil = this.real + 1.5;
-    this.slowCooldown = this.real + 6;
+    this.slowCooldown = this.real + 5.5;
   }
 
-  private cut(s: ShotName) {
+  private cut(s: ShotName, f?: FieldSummary) {
+    if (f && (s === "charge" || s === "track")) {
+      const [a, b] = f.armies;
+      this.lead = b.alive > a.alive * 1.2 ? 1 : a.alive > b.alive * 1.2 ? 0 : (b.speed ?? 0) > (a.speed ?? 0) * 1.2 ? 1 : 0;
+    }
+    if (s !== this.shot || s === "slowmo") {
+      this.cuts++;
+      this.flip = -this.flip;
+      this.jump = true;
+      this.onCut?.(s);
+    }
     this.shot = s;
     this.shotStart = this.real;
   }
@@ -120,12 +177,13 @@ export class Director {
   /** Advances by `dt` real seconds; returns the pose to draw. */
   update(f: FieldSummary, dt: number): Pose {
     this.real += dt;
-    this.orbit += dt * 0.07;
+    this.orbit += dt * 0.06;
     const [a, b] = f.armies;
     const gap = Math.hypot(a.fx - b.fx, a.fz - b.fz);
-    if (f.phase === "battle" && gap < 6) this.contact = true;
-    // Which shot.
+    const meet = Math.max(4, (a.h + b.h) * 1.2);
+    if (f.phase === "battle" && gap < meet) this.contact = true;
     const since = this.real - this.shotStart;
+    // Which shot.
     if (f.phase === "deploy") {
       if (this.shot !== "establish") this.cut("establish");
     } else if (f.phase === "ended") {
@@ -134,112 +192,222 @@ export class Director {
         this.finaleAt = this.real;
       }
     } else if (this.shot === "slowmo") {
-      if (this.real > this.slowUntil) this.cut(this.contact ? (f.boss ? "boss" : "clash") : "charge");
+      if (since > HOLD.slowmo) this.next(f);
+    } else if (this.shot === "establish") {
+      this.cut(this.contact ? "impact" : "charge", f);
+    } else if (!this.impactDone && this.contact && (this.shot === "charge" || this.shot === "track")) {
+      this.impactDone = true;
+      this.cut("impact");
     } else {
       const weakest = Math.min(a.alive / Math.max(1, a.start), b.alive / Math.max(1, b.start));
       const few = Math.min(a.alive, b.alive);
       const big = Math.max(a.start, b.start) >= 10;
-      if (!this.lastStandDone && big && this.contact && (weakest < 0.12 || (few <= 5 && Math.min(a.start, b.start) > 5))) {
+      if (!this.lastStandDone && big && this.contact && (weakest < 0.15 || (few <= 6 && Math.min(a.start, b.start) > 6)) && since > 1) {
         this.lastStandDone = true;
         this.cut("aerial");
-      } else if (this.shot === "establish" || (this.shot === "charge" && this.contact)) {
-        this.cut(this.contact ? (f.boss ? "boss" : "clash") : "charge");
-      } else if (this.shot === "aerial" && since > 4) {
-        this.cut(f.boss ? "boss" : "clash");
-      } else if (this.shot === "boss" && since > 6) {
-        this.cut("clash");
-      } else if (this.shot === "clash" && since > 5 && f.boss) {
-        this.cut("boss");
+      } else if (since > HOLD[this.shot]) {
+        this.next(f);
       }
     }
-    // Time: slow motion for cuts and the final blow.
-    if (this.shot === "slowmo") this.timeScale = 0.32;
-    else if (this.shot === "finale" && this.real - this.finaleAt < 1.4) this.timeScale = 0.35;
-    else this.timeScale = 1;
-    const want = this.target(f, this.real - this.shotStart);
-    // Ease toward the shot (cuts into slow motion jump).
-    const jump = this.shot === "slowmo" && this.real - this.shotStart < dt * 1.5;
-    if (jump) {
+    // Time: slow motion for the impact, big moments and the final blow.
+    const s = this.real - this.shotStart;
+    let ts = 1;
+    if (this.shot === "slowmo") ts = s < 1.1 ? 0.3 : 0.3 + (s - 1.1) * 1.6;
+    else if (this.shot === "impact") ts = s < 0.9 ? 0.38 : Math.min(1, 0.38 + (s - 0.9) * 1.2);
+    else if (this.shot === "finale" && this.real - this.finaleAt < 1.7) ts = 0.3;
+    this.timeScale = this.allowSlow ? clamp(ts, 0.25, 1) : 1;
+    const want = this.target(f, s);
+    if (this.jump) {
       this.pose = { ...want };
+      this.jump = false;
     } else {
-      const r = this.shot === "establish" ? 2.2 : 2.6;
+      // Within a shot the rig glides (fast enough to keep the action framed, slow enough to feel like a camera operator).
+      const r = this.shot === "establish" ? 1.6 : this.shot === "charge" || this.shot === "track" ? 3.2 : 2.4;
       const p = this.pose;
-      p.tx = damp(p.tx, want.tx, r * 1.4, dt);
-      p.ty = damp(p.ty, want.ty, r * 1.4, dt);
-      p.tz = damp(p.tz, want.tz, r * 1.4, dt);
+      p.tx = damp(p.tx, want.tx, r * 1.3, dt);
+      p.ty = damp(p.ty, want.ty, r * 1.3, dt);
+      p.tz = damp(p.tz, want.tz, r * 1.3, dt);
       p.yaw = dampAngle(p.yaw, want.yaw, r, dt);
       p.pitch = damp(p.pitch, want.pitch, r, dt);
       p.dist = Math.exp(damp(Math.log(p.dist), Math.log(want.dist), r, dt));
       p.fov = damp(p.fov, want.fov, r, dt);
     }
-    this.shakeLevel = damp(this.shakeLevel, 0, 4, dt);
-    this.pose.shake = this.shakeLevel * Math.min(1.2, this.pose.dist * 0.012);
+    this.shakeLevel = damp(this.shakeLevel, 0, 3.5, dt);
+    this.pose.shake = this.shakeLevel * Math.min(1, this.pose.dist * 0.01);
     return this.pose;
   }
 
-  /** The pose each shot wants. */
+  /** The next shot in the melee. */
+  private next(f: FieldSummary) {
+    const [a, b] = f.armies;
+    if (!this.contact) {
+      this.cut(this.shot === "charge" ? "track" : "charge", f);
+      return;
+    }
+    const options: ShotName[] = [];
+    if (f.boss) options.push(this.bossShots % 2 === 0 ? "boss" : "hero");
+    options.push("clash");
+    if (Math.max(a.alive, b.alive) > 30) options.push("aerial");
+    // Avoid repeating the shot we're on.
+    const pick = options.find((o) => o !== this.shot) ?? options[0];
+    if (pick === "boss" || pick === "hero") this.bossShots++;
+    this.cut(pick);
+  }
+
+  /** The pose each shot wants, `s` real seconds into it. */
   private target(f: FieldSummary, s: number): Pose {
     const [a, b] = f.armies;
-    const portrait = f.aspect < 0.9;
-    const fov = portrait ? 52 : 38;
-    const widen = portrait ? 1.35 : 1;
+    const tall = f.aspect < 0.9;
+    const fov = tall ? 50 : 36;
+    const aspect = Math.max(0.3, f.aspect);
+    // How far back to stand to fit a width w (m) across the frame.
+    const fitW = (w: number, fv = fov) => w / 2 / (Math.tan((fv * Math.PI) / 360) * Math.min(aspect, 1.9));
+    const fitH = (h: number, fv = fov) => h / 2 / Math.tan((fv * Math.PI) / 360);
+    const S = Math.max(4, Math.hypot(b.cx - a.cx, b.cz - a.cz));
+    const ux = (b.cx - a.cx) / S, uz = (b.cz - a.cz) / S;
+    // Perpendicular to the line of battle.
+    const px = -uz * this.flip, pz = ux * this.flip;
     const mx = (a.fx + b.fx) / 2, mz = (a.fz + b.fz) / 2;
     const h = Math.max(0.3, (a.h + b.h) / 2);
-    // Side A charges along +x: the camera looks along the line of battle from the side, a little behind A.
+    const big = Math.max(a.h, b.h);
     switch (this.shot) {
       case "establish": {
-        // Both armies in view, low enough to feel the scale, the target a little above them so they sit low in the frame (titles go on top).
-        const span = Math.max(a.extent + b.extent + Math.hypot(a.cx - b.cx, a.cz - b.cz), 16);
-        const big = Math.max(a.h, b.h);
-        if (portrait) {
-          // A tall frame: from behind and above the first army, looking down the line of battle. Both armies sit between
-          // the titles over the top and the controls along the bottom: the far one just under the middle, the near one below it.
-          const S = Math.max(8, Math.hypot(b.cx - a.cx, b.cz - a.cz));
-          const ux = (b.cx - a.cx) / S, uz = (b.cz - a.cz) / S;
-          const back = S * 0.72 + a.extent;
-          const H = S * 0.33 + big * 2;
-          const pitch = Math.atan2(H, back + S + b.extent * 0.5) + 0.02;
-          const D = back + S * 0.5;
-          const camX = a.cx - ux * back, camZ = a.cz - uz * back;
-          return { tx: camX + ux * D * Math.cos(pitch), ty: H - D * Math.sin(pitch), tz: camZ + uz * D * Math.cos(pitch), yaw: Math.atan2(-ux, -uz) + 0.12 * Math.sin(s * 0.3), pitch, dist: D, fov, shake: 0 };
+        const span = Math.max(16, S + a.extent + b.extent);
+        const cx = (a.cx + b.cx) / 2, cz = (a.cz + b.cz) / 2;
+        if (tall) {
+          // From behind and above the first army, down the line of battle: the far army just under the middle of
+          // the frame, the near one below it (titles over the top, controls along the bottom stay clear).
+          const back = S * 1.05 + a.extent + big * 2;
+          const gapWanted = (fov * Math.PI) / 180 * 0.27;
+          let lo = 1, hi = back * 4;
+          for (let k = 0; k < 30; k++) {
+            const H = (lo + hi) / 2;
+            const g = Math.atan2(H - a.h * 0.5, back) - Math.atan2(H - b.h * 0.5, back + S);
+            if (g < gapWanted) lo = H;
+            else hi = H;
+          }
+          const H = (lo + hi) / 2;
+          const pitch = Math.atan2(H - b.h * 0.5, back + S) - (fov * Math.PI) / 180 * 0.03;
+          const side = Math.sin(s * 0.12) * S * 0.08;
+          const camX = a.cx - ux * back + px * side, camZ = a.cz - uz * back + pz * side;
+          const D = back + S;
+          return { tx: camX + ux * D, ty: H - D * Math.tan(pitch), tz: camZ + uz * D, yaw: Math.atan2(-ux, -uz), pitch, dist: Math.hypot(D, D * Math.tan(pitch)), fov, shake: 0 };
         }
-        // Side on to the line of battle, swinging gently however long the wait, and far enough back for both armies to be in
-        // frame: looking down the line, the far army would hide behind the near one (and behind the titles).
-        const line = Math.atan2(-(b.cz - a.cz), b.cx - a.cx);
-        const halfW = Math.atan(Math.tan((fov * Math.PI) / 360) * f.aspect);
-        const reach = Math.hypot(a.cx - b.cx, a.cz - b.cz) / 2 + Math.max(a.extent, b.extent) * 0.5;
-        const dist = Math.max(span * 0.55 + big * 2 + 6, reach / Math.tan(halfW * 0.85) + big * 1.5 + 3);
-        return { tx: (a.cx + b.cx) / 2, ty: big * 0.9 + span * 0.06, tz: (a.cz + b.cz) / 2, yaw: line + 0.15 + 0.25 * Math.sin(this.orbit * 0.9 + s * 0.05), pitch: 0.3 - Math.min(0.08, s * 0.015), dist, fov, shake: 0 };
+        // A high drone shot from the side of the line, sweeping slowly, back far enough for both armies (and their
+        // width) to stay in frame wherever the sweep is.
+        const yaw = Math.atan2(px, pz) + 0.18 + 0.26 * Math.sin(this.orbit * 0.8 + s * 0.05);
+        const pitch = 0.4;
+        const half = Math.atan(Math.tan((fov * Math.PI) / 360) * aspect);
+        const fits = (dist: number) => {
+          const cp = Math.cos(pitch);
+          const camX = cx + Math.sin(yaw) * cp * dist, camZ = cz + Math.cos(yaw) * cp * dist;
+          const fwd = Math.atan2(cx - camX, cz - camZ);
+          const rx = Math.cos(yaw), rz = -Math.sin(yaw);
+          for (const army of [a, b]) {
+            for (const e of [-1, 0, 1]) {
+              const x = army.cx + rx * army.extent * e, z = army.cz + rz * army.extent * e;
+              let d = Math.atan2(x - camX, z - camZ) - fwd;
+              d = Math.atan2(Math.sin(d), Math.cos(d));
+              if (Math.abs(d) > half * (e === 0 ? 0.78 : 0.94)) return false;
+            }
+          }
+          return true;
+        };
+        let dist = Math.max(10, span * 0.45);
+        for (let k = 0; k < 40 && !fits(dist); k++) dist *= 1.07;
+        dist += big * 2;
+        return { tx: cx, ty: big * 0.5 + dist * 0.07, tz: cz, yaw, pitch, dist, fov, shake: 0 };
       }
       case "charge": {
-        const dx = b.cx - a.cx, dz = b.cz - a.cz;
-        const yaw = Math.atan2(-dx, -dz);
-        const d = Math.max(6, a.extent * 0.55 + 4) * widen;
-        return { tx: a.fx + Math.sign(dx || 1) * 3, ty: a.h * 0.9, tz: a.fz, yaw: yaw + 0.25 * Math.sin(s * 0.4), pitch: 0.14, dist: d, fov: fov + 6, shake: 0 };
+        // At ground level in front of the charging army, the horde coming at the camera (it backs away as they come).
+        const lead = this.lead === 1 ? b : a;
+        const other = lead === a ? b : a;
+        const vx = other.cx - lead.cx, vz = other.cz - lead.cz;
+        const vl = Math.hypot(vx, vz) || 1;
+        const dx = vx / vl, dz = vz / vl;
+        const d = Math.max(4, lead.h * 5 + Math.min(lead.extent, 30) * 0.35) * (tall ? 1.25 : 1);
+        const camX = lead.fx + dx * d + -dz * this.flip * d * 0.25, camZ = lead.fz + dz * d + dx * this.flip * d * 0.25;
+        return poseAt(camX, Math.max(0.35, lead.h * 0.45), camZ, lead.fx - dx * lead.extent * 0.25, lead.h * 0.75, lead.fz - dz * lead.extent * 0.25, fov + 4);
+      }
+      case "track": {
+        // Tracking alongside the charge, low, the enemy ahead.
+        const lead = this.lead === 1 ? b : a;
+        const other = lead === a ? b : a;
+        const vx = other.cx - lead.cx, vz = other.cz - lead.cz;
+        const vl = Math.hypot(vx, vz) || 1;
+        const dx = vx / vl, dz = vz / vl;
+        const off = Math.max(5, lead.h * 6 + Math.min(lead.extent, 40) * 0.4);
+        const sx = -dz * this.flip, sz = dx * this.flip;
+        const tx = lead.fx - dx * lead.h, tz = lead.fz - dz * lead.h;
+        return poseAt(tx + sx * off - dx * off * 0.35, Math.max(0.6, lead.h * 1.1 + off * 0.12), tz + sz * off - dz * off * 0.35, tx + dx * off * 0.4, lead.h * 0.6, tz + dz * off * 0.4, fov);
+      }
+      case "impact": {
+        // The fronts meeting, low and wide from the side (from behind one army in a tall frame), drifting in.
+        const w = Math.max(10, Math.min(a.extent, b.extent) * 1.4 + 6);
+        if (tall) {
+          const back = fitH(w * 0.9) * 0.7 + big * 3;
+          return poseAt(mx - ux * back + px * back * 0.15, Math.max(1, big * 1.4 + back * 0.18), mz - uz * back + pz * back * 0.15, mx + ux * 2, h * 0.5, mz + uz * 2, fov);
+        }
+        const d = Math.max(fitW(w) * 0.8, 6) * (1 - Math.min(0.2, s * 0.08));
+        return poseAt(mx + px * d - ux * d * 0.15, Math.max(0.6, h * 1.2 + d * 0.1), mz + pz * d - uz * d * 0.15, mx, h * 0.55, mz, fov);
       }
       case "clash": {
-        const local = Math.max(10, Math.min(a.extent, b.extent) * 0.9 + 8);
-        return { tx: mx, ty: h * 0.5, tz: mz, yaw: 0.9 + this.orbit * 1.4, pitch: 0.48, dist: local * widen + h * 4, fov, shake: 0 };
+        // A crane round the thick of it (the latest heavy action, or where the fronts meet).
+        const hot = this.hot && this.real - this.hot.at < 6 ? this.hot : null;
+        const cx = hot ? hot.x * 0.6 + mx * 0.4 : mx, cz = hot ? hot.z * 0.6 + mz * 0.4 : mz;
+        const local = Math.max(8, Math.min(a.extent, b.extent) * 0.7 + 6);
+        const d = (tall ? fitH(local) * 0.9 : fitW(local)) + h * 4;
+        return { tx: cx, ty: h * 0.5, tz: cz, yaw: Math.atan2(px, pz) + 0.5 * this.flip + s * 0.09 * this.flip, pitch: 0.36 + Math.min(0.15, s * 0.03), dist: d, fov, shake: 0 };
       }
       case "boss": {
-        const bo = f.boss ?? { x: mx, z: mz, h, side: 1 };
-        return { tx: bo.x, ty: bo.h * 0.55, tz: bo.z, yaw: 1.2 + this.orbit * 2 + s * 0.08, pitch: 0.24, dist: Math.max(6, bo.h * 4.2 + 4) * widen, fov, shake: 0 };
+        // Over the boss's shoulder at the horde coming for it.
+        const bo = f.boss ?? { x: mx, z: mz, h, side: 1 as const };
+        const foe = bo.side === 0 ? b : a;
+        const vx = foe.cx - bo.x, vz = foe.cz - bo.z;
+        const vl = Math.hypot(vx, vz) || 1;
+        const dx = vx / vl, dz = vz / vl;
+        const sx = -dz * this.flip, sz = dx * this.flip;
+        const back = bo.h * (tall ? 2.4 : 2) + 2;
+        const camX = bo.x - dx * back + sx * bo.h * 0.9 + sx * s * 0.25, camZ = bo.z - dz * back + sz * bo.h * 0.9 + sz * s * 0.25;
+        return poseAt(camX, bo.h * 1.05 + 0.5, camZ, bo.x + dx * Math.max(4, bo.h * 2.5), bo.h * 0.35, bo.z + dz * Math.max(4, bo.h * 2.5), fov);
+      }
+      case "hero": {
+        // Low in front of the boss, looking up at it, circling slowly.
+        const bo = f.boss ?? { x: mx, z: mz, h, side: 1 as const };
+        const foe = bo.side === 0 ? b : a;
+        const vx = foe.cx - bo.x, vz = foe.cz - bo.z;
+        const vl = Math.hypot(vx, vz) || 1;
+        const base = Math.atan2(vx / vl, vz / vl) + 0.6 * this.flip;
+        const ang = base + s * 0.12 * this.flip;
+        const d = bo.h * 2.4 + 2.5;
+        return poseAt(bo.x + Math.sin(ang) * d, Math.max(0.3, bo.h * 0.12), bo.z + Math.cos(ang) * d, bo.x, bo.h * 0.62, bo.z, fov + 4);
       }
       case "slowmo": {
         const c = this.cue ?? { x: mx, z: mz, h, power: 0, kind: "crit" as const };
-        return { tx: c.x, ty: c.h * 0.5, tz: c.z, yaw: this.orbit * 3 + 0.6 + s * 0.35, pitch: 0.16, dist: Math.max(3.2, c.h * 2.6 + 2.5) * widen, fov: fov - 4, shake: 0 };
+        const d = Math.max(3.2, c.h * 2.4 + 2.5) * (tall ? 1.15 : 1);
+        const ang = Math.atan2(px, pz) + 0.5 * this.flip + s * 0.22 * this.flip;
+        return { tx: c.x, ty: c.h * 0.5, tz: c.z, yaw: ang, pitch: 0.12 + s * 0.02, dist: d * (1 - Math.min(0.15, s * 0.1)), fov: fov - 2, shake: 0 };
       }
       case "aerial": {
         const loser = a.alive / Math.max(1, a.start) < b.alive / Math.max(1, b.start) ? a : b;
-        return { tx: loser.cx, ty: 0, tz: loser.cz, yaw: this.orbit * 2 + s * 0.15, pitch: 0.95, dist: (Math.max(10, loser.extent * 2.2) + 14) * widen, fov, shake: 0 };
+        const r = Math.max(10, loser.extent * 1.6 + 8);
+        return { tx: loser.cx, ty: 0, tz: loser.cz, yaw: this.orbit * 1.5 + s * 0.12, pitch: 1.05, dist: (tall ? fitH(r * 1.2) : fitW(r * 1.4)) + 6, fov, shake: 0 };
       }
       case "finale": {
         const win = a.alive >= b.alive ? a : b;
-        const d = Math.max(8, win.extent * 1.4 + win.h * 3 + 6) * widen;
-        const close = this.real - this.finaleAt < 1.4;
+        const since = this.real - this.finaleAt;
+        const c = this.cue && since < 1.7 ? this.cue : null;
+        if (c) {
+          // The final blow, close and slow.
+          const d = Math.max(3.5, c.h * 2.6 + 3);
+          return { tx: c.x, ty: c.h * 0.5, tz: c.z, yaw: Math.atan2(px, pz) + 0.4 + since * 0.15, pitch: 0.14, dist: d, fov: fov - 2, shake: 0 };
+        }
         const bo = f.boss;
-        const tx = close && bo ? bo.x : win.cx, tz = close && bo ? bo.z : win.cz;
-        return { tx, ty: (close && bo ? bo.h : win.h) * 0.5, tz, yaw: this.orbit * 2 + s * 0.12, pitch: 0.3 + Math.min(0.25, s * 0.03), dist: close ? d * 0.6 : d + s * 1.5, fov, shake: 0 };
+        const tx = bo && bo.side === (win === a ? 0 : 1) ? bo.x : win.cx, tz = bo && bo.side === (win === a ? 0 : 1) ? bo.z : win.cz;
+        const r = Math.max(6, win.extent * 1.2 + win.h * 3 + 4);
+        const d = (tall ? fitH(r) * 0.9 : fitW(r)) + win.h * 2;
+        const k = Math.min(1, Math.max(0, since - 1.7) / 6);
+        return { tx, ty: win.h * 0.5, tz, yaw: Math.atan2(px, pz) + 0.3 + since * 0.08, pitch: 0.18 + k * 0.35, dist: d * (0.75 + k * 0.5), fov, shake: 0 };
       }
     }
   }

@@ -26,6 +26,9 @@ export interface Hit {
   tz: number;
 }
 
+/** Moves are launched this long before they land (battle seconds): a projectile is in flight, a lunge peaks, as the hit comes. */
+export const LEAD = 0.3;
+
 export class BattleView {
   readonly ready: SimReady;
   readonly n: number;
@@ -42,6 +45,8 @@ export class BattleView {
   readonly attackAt: Float32Array;
   readonly faintAt: Float32Array;
   readonly hp: Uint16Array;
+  /** Each unit's speed between the frames either side of the clock (m/s). */
+  readonly speed: Float32Array;
   /** The playback clock (battle seconds). */
   t = 0;
   left: [number, number];
@@ -50,8 +55,12 @@ export class BattleView {
   readonly drawn: number;
   private frames: SimFrame[] = [];
   private eventsDone = 0;
+  /** Frames whose launches have gone (always at or past `eventsDone`). */
+  private launched = 0;
   private spent: SimFrame[] = [];
   onHit: ((h: Hit) => void) | null = null;
+  /** A move about to land: fired LEAD seconds before its hit (or with it, when the frames come late). */
+  onLaunch: ((h: Hit) => void) | null = null;
 
   constructor(ready: SimReady, cap: number) {
     this.ready = ready;
@@ -67,6 +76,7 @@ export class BattleView {
     this.attackAt = new Float32Array(n).fill(-1);
     this.faintAt = new Float32Array(n).fill(-1);
     this.hp = new Uint16Array(n);
+    this.speed = new Float32Array(n);
     this.left = [...ready.frame.left] as [number, number];
     this.draw = drawMask(ready, cap);
     this.drawn = this.draw.reduce((a, b) => a + b, 0);
@@ -99,6 +109,14 @@ export class BattleView {
   advance(dt: number) {
     // Once the battle is over the clock runs on, so the last recall beams and effects play out.
     this.t = this.end && this.eventsDone >= this.frames.length ? this.t + Math.max(0, dt) : Math.min(this.head, this.t + Math.max(0, dt));
+    // Launches first: the attacker winds up and its move flies a moment before the hit.
+    if (this.launched < this.eventsDone) this.launched = this.eventsDone;
+    while (this.launched < this.frames.length) {
+      const f = this.frames[this.launched];
+      if ((f.tick - 0.5) / TICK_HZ - LEAD > this.t) break;
+      this.launch(f);
+      this.launched++;
+    }
     // Events of tick k happen during the step that ends at k: fire them once the clock reaches k − ½ tick.
     while (this.frames.length) {
       const f = this.frames[this.eventsDone] ?? null;
@@ -112,8 +130,21 @@ export class BattleView {
     while (this.frames.length > 2 && this.frames[1].tick / TICK_HZ <= this.t && this.eventsDone > 1) {
       this.spent.push(this.frames.shift()!);
       this.eventsDone--;
+      this.launched = Math.max(0, this.launched - 1);
     }
     this.interpolate();
+  }
+
+  private launch(f: SimFrame) {
+    const ev = f.events;
+    const t = (f.tick - 0.5) / TICK_HZ;
+    for (let k = 0; k < ev.length; k += EVENT_INTS) {
+      const actor = ev[k], target = ev[k + 1], flags = ev[k + 4];
+      if (flags & EV.RECOIL) continue;
+      // The lunge (0.36 s) peaks as the move lands.
+      this.attackAt[actor] = t - 0.18;
+      this.onLaunch?.({ t, actor, target, slot: ev[k + 2], damage: ev[k + 3], flags, action: ev[k + 5], ax: f.pos[actor * 2], az: f.pos[actor * 2 + 1], tx: f.pos[target * 2], tz: f.pos[target * 2 + 1] });
+    }
   }
 
   private fire(f: SimFrame) {
@@ -121,7 +152,7 @@ export class BattleView {
     const t = (f.tick - 0.5) / TICK_HZ;
     for (let k = 0; k < ev.length; k += EVENT_INTS) {
       const actor = ev[k], target = ev[k + 1], flags = ev[k + 4];
-      if (!(flags & EV.RECOIL)) this.attackAt[actor] = t;
+      if (!(flags & EV.RECOIL) && this.attackAt[actor] < t - 0.4) this.attackAt[actor] = t - 0.18;
       if (target !== actor && !(flags & (EV.MISS | EV.IMMUNE))) {
         this.hitAt[target] = t;
         this.hitPower[target] = Math.min(1, ev[k + 3] / Math.max(1, this.ready.maxHp[this.sp[target]]));
@@ -145,10 +176,13 @@ export class BattleView {
     const ta = a.tick / TICK_HZ, tb = b.tick / TICK_HZ;
     const k = tb > ta ? Math.min(1, Math.max(0, (this.t - ta) / (tb - ta))) : 1;
     const pa = a.pos, pb = b.pos;
+    const inv = tb > ta ? 1 / (tb - ta) : 0;
     // (A fainted unit stays where it fell: the simulation stops moving it.)
     for (let i = 0; i < this.n; i++) {
-      this.x[i] = pa[i * 2] + (pb[i * 2] - pa[i * 2]) * k;
-      this.z[i] = pa[i * 2 + 1] + (pb[i * 2 + 1] - pa[i * 2 + 1]) * k;
+      const dx = pb[i * 2] - pa[i * 2], dz = pb[i * 2 + 1] - pa[i * 2 + 1];
+      this.x[i] = pa[i * 2] + dx * k;
+      this.z[i] = pa[i * 2 + 1] + dz * k;
+      if (inv) this.speed[i] = Math.hypot(dx, dz) * inv;
       const t = b.target[i];
       if (t >= 0) {
         this.fx[i] = pb[t * 2];
@@ -187,7 +221,7 @@ export function drawMask(ready: Pick<SimReady, "n" | "sp" | "species">, cap: num
 /** What the director needs to know about the battlefield this frame. */
 export function summarize(view: BattleView, heights: number[], phase: FieldSummary["phase"], aspect: number): FieldSummary {
   const n = view.n;
-  const sx = [0, 0], sz = [0, 0], cnt = [0, 0], hs = [0, 0];
+  const sx = [0, 0], sz = [0, 0], cnt = [0, 0], hs = [0, 0], vs = [0, 0];
   for (let i = 0; i < n; i++) {
     const s = view.side[i];
     const standing = view.faintAt[i] < 0 || view.t - view.faintAt[i] < 0.5;
@@ -195,11 +229,12 @@ export function summarize(view: BattleView, heights: number[], phase: FieldSumma
     sx[s] += view.x[i];
     sz[s] += view.z[i];
     hs[s] += heights[view.sp[i]];
+    vs[s] += view.speed[i];
     cnt[s]++;
   }
   const armies = [0, 1].map((s) => {
     const c = Math.max(1, cnt[s]);
-    return { alive: view.left[s], start: view.ready.start[s], cx: sx[s] / c, cz: sz[s] / c, extent: 0, fx: sx[s] / c, fz: sz[s] / c, h: hs[s] / c || 1 };
+    return { alive: view.left[s], start: view.ready.start[s], cx: sx[s] / c, cz: sz[s] / c, extent: 0, fx: sx[s] / c, fz: sz[s] / c, h: hs[s] / c || 1, speed: vs[s] / c };
   }) as [FieldSummary["armies"][0], FieldSummary["armies"][1]];
   const front = [Infinity, Infinity];
   for (let i = 0; i < n; i++) {
