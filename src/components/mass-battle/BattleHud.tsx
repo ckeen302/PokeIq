@@ -240,9 +240,9 @@ export function BattleControls(p: ControlsProps) {
           {menu && (
             <div className="mb-menu pointer-events-auto absolute bottom-11 right-0 w-56 space-y-1 rounded-lg p-2 text-left" role="menu" data-testid="mb-options-menu">
               {([
-                ["Slow motion", p.slowmo, p.onSlowmo, "mb-slowmo", "S"],
-                ["Damage numbers", p.numbersOn, p.onNumbers, "mb-numbers", "D"],
-                ["Show the HUD", p.hudOn, p.onHud, "mb-hud-toggle", "H"],
+                ["Slow motion", p.slowmo, p.onSlowmo, "mb-opt-slowmo", "S"],
+                ["Damage numbers", p.numbersOn, p.onNumbers, "mb-opt-numbers", "D"],
+                ["Show the HUD", p.hudOn, p.onHud, "mb-opt-hud", "H"],
               ] as const).map(([label, value, fn, id, key]) => (
                 <button key={id} type="button" role="menuitemcheckbox" aria-checked={value} onClick={fn} className="flex w-full items-center justify-between rounded-md px-2 py-1.5 font-display text-xs font-semibold uppercase tracking-wider text-white/85 hover:bg-white/10" data-testid={id}>
                   <span>{label} <span className="ml-1 font-pixel text-[8px] text-white/40">{key}</span></span>

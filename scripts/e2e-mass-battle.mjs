@@ -171,11 +171,11 @@ export async function runMassBattle({ browser, BASE, OUT, errors, step }) {
     await page.waitForFunction(() => document.querySelector('[data-testid="mb-stage"]')?.dataset.cam === "top", null, { timeout: 30_000 }).catch(() => errors.push("mass battle: the camera button didn't reach the top-down camera"));
     await press(page, "mb-options");
     await page.getByTestId("mb-options-menu").waitFor({ timeout: 30_000 });
-    await press(page, "mb-numbers");
-    if ((await page.getByTestId("mb-numbers").getAttribute("aria-checked")) !== "true") errors.push("mass battle: damage numbers didn't turn on");
-    await press(page, "mb-hud-toggle");
+    await press(page, "mb-opt-numbers");
+    if ((await page.getByTestId("mb-opt-numbers").getAttribute("aria-checked")) !== "true") errors.push("mass battle: damage numbers didn't turn on");
+    await press(page, "mb-opt-hud");
     if (await page.getByTestId("mb-hud").count()) errors.push("mass battle: the HUD didn't hide");
-    await press(page, "mb-hud-toggle");
+    await press(page, "mb-opt-hud");
     const t0 = Number(await attr("t"));
     await press(page, "mb-step");
     await press(page, "mb-step");
