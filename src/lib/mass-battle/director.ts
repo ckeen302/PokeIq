@@ -374,7 +374,7 @@ export class Director {
         const vx = other.cx - lead.cx, vz = other.cz - lead.cz;
         const vl = Math.hypot(vx, vz) || 1;
         const dx = vx / vl, dz = vz / vl;
-        const d = Math.max(6, lead.h * 6 + Math.min(lead.extent, 30) * 0.4) * (tall ? 1.25 : 1);
+        const d = Math.max(4.5, lead.h * 6.5 + Math.min(lead.extent, 30) * 0.14) * (tall ? 1.25 : 1);
         const camX = lead.fx + dx * d + -dz * this.flip * d * 0.25, camZ = lead.fz + dz * d + dx * this.flip * d * 0.25;
         return poseAt(camX, Math.max(0.7, lead.h * 1.0), camZ, lead.fx - dx * lead.extent * 0.25, lead.h * 0.65, lead.fz - dz * lead.extent * 0.25, fov + 4);
       }
@@ -385,7 +385,7 @@ export class Director {
         const vx = other.cx - lead.cx, vz = other.cz - lead.cz;
         const vl = Math.hypot(vx, vz) || 1;
         const dx = vx / vl, dz = vz / vl;
-        const off = Math.max(5, lead.h * 6 + Math.min(lead.extent, 40) * 0.4);
+        const off = Math.max(5, lead.h * 6 + Math.min(lead.extent, 40) * 0.18);
         const sx = -dz * this.flip, sz = dx * this.flip;
         const tx = lead.fx - dx * lead.h, tz = lead.fz - dz * lead.h;
         return poseAt(tx + sx * off - dx * off * 0.35, Math.max(0.6, lead.h * 1.1 + off * 0.12), tz + sz * off - dz * off * 0.35, tx + dx * off * 0.4, lead.h * 0.6, tz + dz * off * 0.4, fov);
@@ -436,7 +436,7 @@ export class Director {
         // A crowd knocked out at once is seen from above the crowd (close in, the bodies round it would block the view);
         // a single huge hit is seen close and low.
         const wide = c.kind === "multi";
-        const d = (wide ? Math.max(9, c.h * 4 + 10) : Math.max(3.2, c.h * 2.4 + 2.5)) * (tall ? 1.15 : 1);
+        const d = (wide ? Math.max(8, c.h * 3 + 7) : Math.max(3.2, c.h * 2.4 + 2.5)) * (tall ? 1.15 : 1);
         const ang = Math.atan2(px, pz) + 0.5 * this.flip + s * 0.22 * this.flip;
         return { tx: c.x, ty: c.h * 0.5, tz: c.z, yaw: ang, pitch: (wide ? 0.5 : 0.12) + s * 0.02, dist: d * (1 - Math.min(0.15, s * 0.1)), fov: fov - 2, shake: 0 };
       }
