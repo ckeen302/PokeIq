@@ -84,7 +84,7 @@ export const LAB_EXPERIENCES: LabExperience[] = [
     title: "The History of the Pokémon World",
     kicker: "The story, as the games tell it",
     pitch: "A cinematic museum of the Pokémon world's in-universe history, from Sinnoh's creation myth to the time machine in Area Zero. Scroll through it or press Play, with every line sourced to the games.",
-    tags: ["Eleven exhibits", "Every line sourced", "Make a video"],
+    tags: ["Twelve exhibits", "Every line sourced", "Make a video"],
     image: "/lab/world-history.webp",
     accent: "42 92% 66%",
     live: WORLD_HISTORY_LIVE,

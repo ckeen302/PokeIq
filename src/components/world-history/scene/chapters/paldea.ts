@@ -101,13 +101,13 @@ export const build: ChapterBuilder = async (ctx) => {
     if (Math.hypot(x - CR[0], z - CR[2]) < 200) continue;
     landPts.push([x, gh(x, z) + 1.5, z]);
   }
-  const lights2 = makeLanterns({ points: landPts, color: "#ffc070", size: 0.9, intensity: 3, seed: 4 });
+  const lights2 = makeLanterns({ points: landPts, color: "#ffc070", size: 0.5, intensity: 3, seed: 4 });
   scene.add(lights2.group);
   disposers.push(lights2.dispose);
   // Heath's expedition: torches going down the crater wall.
   const pathPts: Vec3[] = [];
   for (let i = 0; i < 14; i++) {
-    const a = Math.PI * 0.5 + 0.08 * i, d = 170 - i * 5;
+    const a = Math.PI * 0.3 + 0.05 * i, d = 168 - i * 4;
     const x = CR[0] + Math.cos(a) * d, z = CR[2] + Math.sin(a) * d;
     pathPts.push([x, gh(x, z) + 1, z]);
   }
@@ -153,11 +153,11 @@ export const build: ChapterBuilder = async (ctx) => {
   machine.position.set(...MACH);
   scene.add(machine);
   disposers.push(() => { ringGeo.dispose(); ringMat.dispose(); });
-  const gate = makePortal({ radius: 6, inner: "#e8fbff", outer: "#7ae0ff", intensity: 2.2, tear: 0 });
+  const gate = makePortal({ radius: 6, inner: "#cfefff", outer: "#7ae0ff", intensity: 1.3, tear: 0 });
   gate.mesh.position.set(MACH[0], MACH[1], MACH[2] + 0.05);
   scene.add(gate.mesh);
   disposers.push(gate.dispose);
-  const pulse = makeRing({ color: "#bff4ff", intensity: 2.2, thickness: 0.05 });
+  const pulse = makeRing({ color: "#bff4ff", intensity: 1.2, thickness: 0.04 });
   pulse.mesh.position.set(MACH[0], MACH[1], MACH[2] + 0.2);
   pulse.mesh.scale.setScalar(22);
   scene.add(pulse.mesh);
@@ -194,13 +194,13 @@ export const build: ChapterBuilder = async (ctx) => {
 
   const keys: Key[] = [
     { t: 0, pos: [44, 22, 74], look: [0, 12, -20], fov: 48 },
-    { t: tEmpire, pos: [24, 12, 46], look: [0, 14, -8], fov: 46 },
-    { t: tTreasure - 0.6, pos: [8, 16, 34], look: [0, 16, -40], fov: 46 },
+    { t: tEmpire, pos: [40, 18, 70], look: [0, 12, -10], fov: 46 },
+    { t: tTreasure - 0.6, pos: [20, 22, 50], look: [0, 16, -40], fov: 46 },
     { t: tTreasure + 1.4, pos: [0, 34, 10], look: [0, -30, -420], fov: 46 },
     { t: tUnited - 0.6, pos: [0, 70, -130], look: [0, -40, -420], fov: 50 },
     { t: tUnited, pos: [-90, 70, 90], look: [0, 0, -120], fov: 54 },
     { t: tHeath - 0.6, pos: [90, 80, 110], look: [0, 0, -140], fov: 54 },
-    { t: tHeath, pos: [-20, 40, -200], look: [0, -40, -330], fov: 48 },
+    { t: tHeath, pos: [-40, 50, -200], look: [90, -20, -290], fov: 48 },
     { t: tTera - 0.6, pos: [10, 18, -236], look: [0, -70, -370], fov: 48 },
     { t: tTera + 1.2, pos: [0, -30, -300], look: [0, -95, -410], fov: 56 },
     { t: cutZero, pos: [deep[0] + 22, deep[1] + 6, deep[2] + 40], look: [TP[0], TP[1] + 1.6, TP[2]], fov: 44 },
@@ -271,7 +271,7 @@ export const build: ChapterBuilder = async (ctx) => {
       pulse.u.uTime.value = ambient;
       pulse.u.uOpacity.value = charge * (1 - pk);
       pulse.mesh.visible = charge > 0.001;
-      zLight.intensity = zero ? 10 * charge + 10 * spike(t, tStep, 0.1, 1.2) : 0;
+      zLight.intensity = zero ? 6 * charge + 6 * spike(t, tStep, 0.1, 1.2) : 0;
       motes.u.uTime.value = ambient;
       motes.u.uPixel.value = px;
       motes.u.uOpacity.value = zero ? 1 : 0;
@@ -288,7 +288,7 @@ export const build: ChapterBuilder = async (ctx) => {
         figureStyle(f, { dissolve: zero ? k : 0, shadow: 0.92 - ramp(t, end - 3, end) * 0.25 });
       });
       // Light.
-      if (zero || inside) { L.key.intensity = 0.4; L.hemi.intensity = 0.35; L.hemi.color.copy(col("#8ab8ff")); }
+      if (zero || inside) { L.key.intensity = 0.4; L.hemi.intensity = inside ? 0.6 : 0.4; L.hemi.color.copy(col("#8ab8ff")); }
       else { L.key.intensity = 1.9 * (1 - night * 0.8); L.hemi.intensity = 0.6 - night * 0.3; L.hemi.color.copy(col("#ffd0b0").lerp(col("#6a7ab0"), night)); }
     },
     look(t) {
@@ -309,7 +309,7 @@ export const build: ChapterBuilder = async (ctx) => {
         }
       );
       L0.flash = 0.18 * spike(t, tStep, 0.08, 0.4);
-      if (zero) L0.rays = { pos: MACH, color: [0.75, 0.95, 1.0], strength: 0.5 * ramp(t, cutZero + 0.3, tMachine + 1) };
+      if (zero) L0.rays = { pos: MACH, color: [0.75, 0.95, 1.0], strength: 0.3 * ramp(t, cutZero + 0.3, tMachine + 1) };
       else if (inside) L0.rays = { pos: [TP[0], TP[1] + 1.6, TP[2]], color: [0.75, 0.95, 1.0], strength: 0.35 };
       else L0.rays = { pos: [-800, 50, -600], color: [1.0, 0.8, 0.6], strength: 0.3 * (1 - ramp(t, tUnited, tUnited + 2)) };
       return L0;

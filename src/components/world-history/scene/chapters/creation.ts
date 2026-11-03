@@ -95,7 +95,7 @@ export const build: ChapterBuilder = async (ctx) => {
   shards.visible = false;
   scene.add(shards);
   disposers.push(() => { shardGeo.dispose(); shardMat.dispose(); });
-  const burst = makeParticles({ count: P(2600), shape: "sphere", center: [0, 2.6, 0], extent: [0.8, 1.1, 0.8], velocity: [0, 0, 0], spread: [16, 16, 16], life: 4, size: [0.05, 0.18], colors: ["#ffffff", "#ffd27a", "#ff7ad9"], intensity: 1.0, fadeIn: 0.01, fadeOut: 0.6, burst: true, seed: 5 });
+  const burst = makeParticles({ count: P(900), shape: "sphere", center: [0, 2.6, 0], extent: [0.8, 1.1, 0.8], velocity: [0, 0, 0], spread: [26, 26, 26], life: 4, size: [0.03, 0.08], colors: ["#ffffff", "#ffd27a", "#ff7ad9"], intensity: 0.7, fadeIn: 0.01, fadeOut: 0.6, burst: true, seed: 5 });
   scene.add(burst.points);
   disposers.push(burst.dispose);
   const shock = makeRing({ color: "#ffe2a6", intensity: 4, thickness: 0.05 });

@@ -33,7 +33,7 @@ export const build: ChapterBuilder = async (ctx) => {
   const r = rng(29);
 
   // ---- Sky.
-  const sky = makeSky({ top: "#3a5a8a", horizon: "#f0c8a0", bottom: "#1a1c24", nebulaA: "#6a2a8a", nebulaB: "#ff3a6a", nebula: 0, nebulaScale: 1.2, stars: 0, sunDir: [0.7, 0.06, -0.8], sunColor: "#ffd0a0", sunSize: 600, sunGlow: 0.6, swirl: 0 });
+  const sky = makeSky({ top: "#2a4a7a", horizon: "#d89a78", bottom: "#1a1c24", nebulaA: "#6a2a8a", nebulaB: "#ff3a6a", nebula: 0, nebulaScale: 1.2, stars: 0, sunDir: [0.7, 0.06, -0.8], sunColor: "#ffd0a0", sunSize: 600, sunGlow: 0.6, swirl: 0 });
   scene.add(sky.mesh);
   disposers.push(sky.dispose);
   const fog = new THREE.FogExp2(col("#c8b8b0"), 0.004);
@@ -71,12 +71,13 @@ export const build: ChapterBuilder = async (ctx) => {
   scene.add(hall.group);
   disposers.push(hall.dispose);
   const treePts: Vec3[] = [];
-  for (let i = 0; i < 600; i++) {
-    const x = (r() - 0.5) * 360, z = 40 - r() * 240;
+  for (let i = 0; i < 520; i++) {
+    const x = (r() - 0.5) * 260, z = 40 - r() * 170;
     if (Math.hypot(x, z + 6) < 36 || Math.hypot(x + 40, z + 40) < 16 || Math.hypot(x - 40, z + 40) < 16) continue;
+    if (gh(x, z) > 10 || Math.hypot(x, z) > 130) continue;
     treePts.push([x, gh(x, z) + 2 + r() * 2, z]);
   }
-  const trees = makeFoliage({ points: treePts, size: [4, 7.5], colors: ["#0e2a1e", "#2a4a2e"], seed: 8, light: 0.8 });
+  const trees = makeFoliage({ points: treePts, size: [4, 7.5], colors: ["#1e3a24", "#4a6a3a"], seed: 8, light: 1.0 });
   scene.add(trees.mesh);
   disposers.push(trees.dispose);
 
@@ -118,7 +119,7 @@ export const build: ChapterBuilder = async (ctx) => {
   clouds.u.uHoleGlow.value.copy(col("#ff4aa0", 1.6));
   scene.add(clouds.mesh);
   disposers.push(clouds.dispose);
-  const rift = makePortal({ radius: 60, inner: "#1a0a2a", outer: "#ff3a8a", intensity: 2.6, tear: 0.55 });
+  const rift = makePortal({ radius: 60, inner: "#1a0a2a", outer: "#ff3a8a", intensity: 2.0, tear: 0.55 });
   rift.mesh.position.set(...RIFT);
   scene.add(rift.mesh);
   disposers.push(rift.dispose);
@@ -129,7 +130,7 @@ export const build: ChapterBuilder = async (ctx) => {
   scene.add(riftDust.points);
   disposers.push(riftDust.dispose);
   const ARC: Vec3 = [0, 74, -190];
-  const halo = makeRing({ color: "#ffe2a0", intensity: 3, thickness: 0.05 });
+  const halo = makeRing({ color: "#ffe2a0", intensity: 1.6, thickness: 0.04 });
   halo.mesh.position.set(...ARC);
   halo.mesh.scale.setScalar(40);
   scene.add(halo.mesh);
@@ -150,9 +151,9 @@ export const build: ChapterBuilder = async (ctx) => {
   figureStyle(pal, { rim: "#ffb8e0", rimK: 2, glow: "#ff6ab0", glowK: 0.25, edge: "#ffe0f0", dissolve: 0 });
   const GI: Vec3 = [RIFT[0], RIFT[1] - 22, RIFT[2] - 8];
   place(gir, GI, 44, 0, scene);
-  figureStyle(gir, { rim: "#ff4a6a", rimK: 2, glow: "#2a0010", glowK: 0.1, edge: "#ff6a8a", dissolve: 0, shadow: 0.75 });
+  figureStyle(gir, { rim: "#ff4a6a", rimK: 2.4, glow: "#2a0010", glowK: 0.1, edge: "#ff6a8a", dissolve: 0, shadow: 0.5 });
   place(arc, ARC, 20, 0, scene);
-  figureStyle(arc, { rim: "#fff0c0", rimK: 1.4, glow: "#ffe0a0", glowK: 0.06, edge: "#ffffff", dissolve: 0 });
+  figureStyle(arc, { rim: "#fff0c0", rimK: 1.0, glow: "#ffe0a0", glowK: 0.04, edge: "#ffffff", dissolve: 0 });
 
   const keys: Key[] = [
     { t: 0, pos: [34, 32, 96], look: [0, 30, -220], fov: 50 },
@@ -184,17 +185,17 @@ export const build: ChapterBuilder = async (ctx) => {
       const open = ramp(t, tRift + 0.2, tTear + 0.6) * (1 - ramp(t, tClose - 0.4, tClose + 1.4));
       const godA = ramp(t, cutClans + 0.6, tDia + 1.8) * (1 - ramp(t, tRift - 0.5, tRift + 1));
       const godB = ramp(t, tPearl - 0.2, tPearl + 1.4) * (1 - ramp(t, tRift - 0.5, tRift + 1));
-      const arcK = ramp(t, tCreator - 0.4, tCreator + 1.4) * (1 - ramp(t, tName + 1.5, end));
+      const arcK = ramp(t, tCreator - 0.4, tCreator + 1.4) * (1 - ramp(t, tName, tName + 2));
       const healed = ramp(t, tClose, tName + 1);
       // Sky.
       const top = sky.u.uTop.value, hor = sky.u.uHorizon.value;
       if (cel) { top.copy(col("#6a7a90")); hor.copy(col("#c8ccd4")); fog.color.copy(col("#b8bcc8")); fog.density = 0.028; sky.u.uSunGlow.value = 0.1; }
       else {
-        top.copy(col("#3a5a8a").lerp(col("#100820"), dark).lerp(col("#4a6aa0"), healed));
-        hor.copy(col("#f0c8a0").lerp(col("#5a2a5a"), dark).lerp(col("#ffd0a8"), healed));
+        top.copy(col("#2a4a7a").lerp(col("#100820"), dark).lerp(col("#3a5a90"), healed));
+        hor.copy(col("#d89a78").lerp(col("#5a2a5a"), dark).lerp(col("#d8a080"), healed));
         fog.color.copy(col("#c8b8b0").lerp(col("#2a1a30"), dark).lerp(col("#d8c0b0"), healed));
         fog.density = 0.004 + dark * 0.001;
-        sky.u.uSunGlow.value = 0.6 * (1 - dark);
+        sky.u.uSunGlow.value = 0.3 * (1 - dark);
       }
       sky.u.uSunColor.value.copy(col("#ffd0a0", 1 - dark));
       sky.u.uNeb.value = dark * 0.8;
@@ -224,7 +225,7 @@ export const build: ChapterBuilder = async (ctx) => {
       rift.mesh.visible = open > 0.001;
       rift.mesh.quaternion.copy(cam.quaternion);
       riftDust.u.uOpacity.value = open;
-      if (gir) { floatFigure(gir, GI, ambient, 0.8, 2, 0, 0.04); figureStyle(gir, { dissolve: ramp(t, tTear, tTear + 2.5) * (1 - ramp(t, tClose - 0.6, tClose + 0.6)) * 0.9, shadow: 0.75 }); }
+      if (gir) { floatFigure(gir, GI, ambient, 0.8, 2, 0, 0.04); figureStyle(gir, { dissolve: ramp(t, tTear, tTear + 2.5) * (1 - ramp(t, tClose - 0.6, tClose + 0.6)) * 0.9, shadow: 0.5 }); }
       [strikeAt(t, 1.1, 21), strikeAt(t + 0.5, 1.6, 23)].forEach((s, i) => {
         const b = riftBolts[i];
         if (s.level > 0 && open > 0.4 && s.id !== lastBolt[i]) {
@@ -236,13 +237,13 @@ export const build: ChapterBuilder = async (ctx) => {
         b.u.uAlpha.value = open > 0.4 ? s.level * open : 0;
       });
       // Arceus.
-      if (arc) { floatFigure(arc, ARC, ambient, 0.5, 0, 0, 0.03); figureStyle(arc, { dissolve: arcK, glowK: 0.06 + 0.3 * spike(t, tClose, 0.2, 1.4) }); }
+      if (arc) { floatFigure(arc, ARC, ambient, 0.5, 0, 0, 0.03); figureStyle(arc, { dissolve: arcK, glowK: 0.04 + 0.15 * spike(t, tClose, 0.2, 1.4) }); }
       halo.u.uK.value = 0.35 + 0.05 * Math.sin(ambient * 1.2);
       halo.u.uTime.value = ambient;
-      halo.u.uOpacity.value = arcK;
+      halo.u.uOpacity.value = arcK * (1 - ramp(t, tName - 0.5, tName + 1));
       halo.mesh.visible = arcK > 0.001;
       halo.mesh.quaternion.copy(cam.quaternion);
-      arcGlow.set("#ffd890", arcK * 0.6 + spike(t, tClose, 0.2, 1.4) * 0.8);
+      arcGlow.set("#ffd890", arcK * 0.2 + spike(t, tClose, 0.2, 1.2) * 0.3);
       // Light.
       L.key.intensity = cel ? 1.0 : 1.8 * (1 - dark * 0.6) + arcK * 1.2;
       L.key.color.copy(cel ? col("#dfe6ff") : col("#ffd8b0").lerp(col("#c08aff"), dark).lerp(col("#ffe0a0"), arcK));
@@ -265,7 +266,7 @@ export const build: ChapterBuilder = async (ctx) => {
         }
       );
       L0.flash = Math.min(0.5, 0.35 * spike(t, tTear, 0.05, 0.6) + 0.35 * spike(t, tClose, 0.1, 0.7));
-      if (!cel && t > tCreator - 0.5 && t < tName + 2) L0.rays = { pos: ARC, color: [1.0, 0.9, 0.65], strength: 0.6 * ramp(t, tCreator - 0.5, tCreator + 1) * (1 - ramp(t, tName, tName + 2)) };
+      if (!cel && t > tCreator - 0.5 && t < tName + 2) L0.rays = { pos: ARC, color: [1.0, 0.9, 0.65], strength: 0.3 * ramp(t, tCreator - 0.5, tCreator + 1) * (1 - ramp(t, tName, tName + 2)) };
       else if (!cel && t > tRift && t < tCreator) L0.rays = { pos: RIFT, color: [1.0, 0.55, 0.85], strength: 0.45 * ramp(t, tRift + 0.5, tTear + 1) };
       else if (!cel && (t < cutCel || t >= tName + 2)) L0.rays = { pos: [560, 50, -640], color: [1.0, 0.85, 0.65], strength: 0.3 };
       return L0;

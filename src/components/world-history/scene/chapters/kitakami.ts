@@ -65,7 +65,7 @@ export const build: ChapterBuilder = async (ctx) => {
   const treePts: Vec3[] = [];
   for (let i = 0; i < 700; i++) {
     const x = (r() - 0.5) * 260, z = 30 - r() * 260;
-    if (Math.hypot(x, z + 2) < 16 || Math.abs(x - 7) < 3) continue;
+    if (Math.hypot(x, z + 2) < 16 || Math.abs(x - 7) < 3 || gh(x, z) > 14) continue;
     treePts.push([x, gh(x, z) + 1.2 + r() * 2, z]);
   }
   const trees = makeFoliage({ points: treePts, size: [3, 6], colors: ["#0e2a1a", "#2a4a2a"], seed: 3, light: 0.5 });
@@ -90,17 +90,17 @@ export const build: ChapterBuilder = async (ctx) => {
   scene.add(hut.group);
   disposers.push(hut.dispose);
   const pathPts: Vec3[] = [];
-  for (let z = 26; z > -60; z -= 4.5) for (const s of [-1, 1]) pathPts.push([7 + s * 2.2, gh(7 + s * 2.2, z) + 1.6, z]);
-  for (const [x, z] of [[-2.2, -3.6], [2.2, -3.6], [-5, -5], [5, -5]] as [number, number][]) pathPts.push([x, gh(x, z) + 1.4, z]);
-  const lanterns = makeLanterns({ points: pathPts, color: "#ffa850", size: 0.26, intensity: 4.5, seed: 4 });
+  for (let z = 26; z > -60; z -= 5) pathPts.push([4.6, gh(4.6, z) + 1.6, z]);
+  for (const [x, z] of [[-5.6, -6.5], [5.6, -6.5]] as [number, number][]) pathPts.push([x, gh(x, z) + 1.4, z]);
+  const lanterns = makeLanterns({ points: pathPts, color: "#ffa850", size: 0.14, intensity: 3, seed: 4 });
   scene.add(lanterns.group);
   disposers.push(lanterns.dispose);
   const procPts: Vec3[] = [];
   for (let i = 0; i < 26; i++) { const x = (r() - 0.5) * 16, z = 2 + r() * 14; procPts.push([x, gh(x, z) + 1.3, z]); }
-  const procession = makeLanterns({ points: procPts, color: "#ffcf80", size: 0.16, intensity: 4, seed: 5 });
+  const procession = makeLanterns({ points: procPts, color: "#ffcf80", size: 0.1, intensity: 3, seed: 5 });
   scene.add(procession.group);
   disposers.push(procession.dispose);
-  const hutLamp = makeLanterns({ points: [[HUT_AT[0] + 1.4, HUT_AT[1] + 1.6, HUT_AT[2] + 0.6]], color: "#ffb060", size: 0.2, intensity: 4, seed: 6 });
+  const hutLamp = makeLanterns({ points: [[HUT_AT[0] + 1.4, HUT_AT[1] + 1.6, HUT_AT[2] + 0.6]], color: "#ffb060", size: 0.14, intensity: 3, seed: 6 });
   scene.add(hutLamp.group);
   disposers.push(hutLamp.dispose);
   const fireflies = makeParticles({ count: P(700), shape: "box", center: [0, 2.5, -10], extent: [40, 2.5, 40], velocity: [0, 0.1, 0], spread: [0.4, 0.3, 0.4], life: 8, size: [0.03, 0.07], colors: ["#e8ff9a", "#b8ff6a", "#ffe08a"], intensity: 2.4, turbulence: 0.8, flicker: 0.7, seed: 7 });
@@ -133,9 +133,9 @@ export const build: ChapterBuilder = async (ctx) => {
     return m;
   });
   disposers.push(() => maskGeo.dispose());
-  const clash = makeRing({ color: "#7affd0", intensity: 3.5, thickness: 0.06 });
+  const clash = makeRing({ color: "#7affd0", intensity: 1.6, thickness: 0.05 });
   clash.mesh.position.set(RIDGE_AT[0] - 2, RIDGE_AT[1] + 2.5, RIDGE_AT[2] + 4);
-  clash.mesh.scale.setScalar(14);
+  clash.mesh.scale.setScalar(8);
   scene.add(clash.mesh);
   disposers.push(clash.dispose);
   const leaves = makeParticles({ count: P(900), shape: "sphere", center: [RIDGE_AT[0] - 2, RIDGE_AT[1] + 2, RIDGE_AT[2] + 4], extent: [2, 2, 2], velocity: [0, 1, 0], spread: [7, 4, 7], gravity: [0, -2, 0], life: 2.6, size: [0.05, 0.14], colors: ["#cfffe8", "#3ad0a0", "#1a6a4a"], intensity: 2.4, burst: true, fadeOut: 0.5, seed: 8 });
@@ -144,7 +144,7 @@ export const build: ChapterBuilder = async (ctx) => {
 
   // ---- Light.
   const L = lights(scene, { sky: "#6a7ab8", ground: "#141a14", fill: 0.45, key: "#b8c8ff", keyK: 0.9, keyPos: [-30, 40, -60], rim: "#ffb070", rimK: 0.5, rimPos: [10, 6, 20] });
-  const lampLight = new THREE.PointLight(col("#ffa850"), 10, 26, 1.2);
+  const lampLight = new THREE.PointLight(col("#ffa850"), 4, 26, 1.2);
   lampLight.position.set(0, 3, -2);
   scene.add(lampLight);
 
@@ -161,11 +161,11 @@ export const build: ChapterBuilder = async (ctx) => {
     { t: 0, pos: [0, 6, 30], look: [0, 2.4, -6], fov: 46 },
     { t: tMon, pos: [4.2, 2.3, 6.2], look: [0, 2.4, -6.5], fov: 40 },
     { t: cuts[0], pos: [-4.2, 2.0, 5.2], look: [0, 2.3, -6.5], fov: 40 },
-    { t: cuts[0] + 0.01, pos: [10.5, 2.0, 17], look: [7, 1.3, 2], fov: 42 },
-    { t: cuts[1], pos: [10, 2.2, 15], look: [7, 1.3, 6], fov: 42 },
-    { t: cuts[1] + 0.01, pos: [RIDGE_AT[0] - 10, RIDGE_AT[1] + 4, RIDGE_AT[2] + 22], look: [RIDGE_AT[0] - 1, RIDGE_AT[1] + 2.4, RIDGE_AT[2] - 2], fov: 44 },
-    { t: tDon, pos: [RIDGE_AT[0] - 8, RIDGE_AT[1] + 3, RIDGE_AT[2] + 16], look: [RIDGE_AT[0] - 1, RIDGE_AT[1] + 2, RIDGE_AT[2] - 1], fov: 46 },
-    { t: cuts[2], pos: [RIDGE_AT[0] - 14, RIDGE_AT[1] + 6, RIDGE_AT[2] + 26], look: [RIDGE_AT[0] - 1, RIDGE_AT[1] + 2, RIDGE_AT[2] - 1], fov: 50 },
+    { t: cuts[0] + 0.01, pos: [12, 2.4, 16], look: [7, 1.4, 2], fov: 42 },
+    { t: cuts[1], pos: [12.5, 2.4, 14], look: [7, 1.4, 6], fov: 42 },
+    { t: cuts[1] + 0.01, pos: [RIDGE_AT[0] - 6, RIDGE_AT[1] + 3, RIDGE_AT[2] + 13], look: [RIDGE_AT[0] - 1, RIDGE_AT[1] + 2.2, RIDGE_AT[2] - 2], fov: 44 },
+    { t: tDon, pos: [RIDGE_AT[0] - 5, RIDGE_AT[1] + 2.6, RIDGE_AT[2] + 12], look: [RIDGE_AT[0] - 1, RIDGE_AT[1] + 2, RIDGE_AT[2] - 1], fov: 46 },
+    { t: cuts[2], pos: [RIDGE_AT[0] - 9, RIDGE_AT[1] + 4, RIDGE_AT[2] + 18], look: [RIDGE_AT[0] - 1, RIDGE_AT[1] + 2, RIDGE_AT[2] - 1], fov: 50 },
     { t: cuts[2] + 0.01, pos: [0, 3.2, 12], look: [0, 2.3, -6], fov: 44 },
     { t: cuts[3], pos: [5, 2.5, 7], look: [0, 2.3, -6], fov: 40 },
     { t: cuts[3] + 0.01, pos: [HUT_AT[0] + 8, HUT_AT[1] + 2.4, HUT_AT[2] + 10], look: [HUT_AT[0] + 1, HUT_AT[1] + 1.6, HUT_AT[2]], fov: 40 },
@@ -196,6 +196,7 @@ export const build: ChapterBuilder = async (ctx) => {
       // The three: stone heroes on the monument; alive (and greedy) on the ridge.
       trio.forEach((f, i) => {
         if (!f) return;
+        f.setHeight(statues ? 2.2 : 2.8);
         if (statues) {
           f.group.position.set(...STATUE[i]);
           f.group.rotation.y = [0.25, 0, -0.25][i];
@@ -261,7 +262,7 @@ export const build: ChapterBuilder = async (ctx) => {
       L.hemi.intensity = 0.45;
       lampLight.position.set(...(t >= cuts[3] ? ([HUT_AT[0] + 1.4, HUT_AT[1] + 2.2, HUT_AT[2] + 1] as Vec3) : ridge ? ([RIDGE_AT[0] - 2, RIDGE_AT[1] + 3, RIDGE_AT[2] + 5] as Vec3) : ([0, 3, -2] as Vec3)));
       lampLight.color.copy(ridge ? col("#7affd0") : col("#ffa850"));
-      lampLight.intensity = ridge ? 6 + 24 * spike(t, tDon + 1.6, 0.1, 1) + 10 * ramp(t, tDon - 0.2, tDon + 0.8) : 10;
+      lampLight.intensity = ridge ? 3 + 8 * spike(t, tDon + 1.6, 0.1, 1) + 4 * ramp(t, tDon - 0.2, tDon + 0.8) : 4;
       fog.density = t >= cuts[3] ? 0.012 + lonely * 0.006 : 0.012;
     },
     look(t) {

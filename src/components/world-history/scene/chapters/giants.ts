@@ -241,10 +241,10 @@ export const build: ChapterBuilder = async (ctx) => {
       caveShaft.u.uTime.value = ambient;
       const braille = ramp(t, tSealed + 0.2, tSealed + 2.6);
       (wall.mat as THREE.MeshBasicMaterial).color.copy(col("#ffffff", 0.2 + 1.6 * braille * (0.85 + 0.15 * Math.sin(ambient * 1.7))));
-      caveLight.intensity = t > cut ? 18 * (1 - ramp(t, tLong + 0.5, end) * 0.6) : 0;
+      caveLight.intensity = t > cut ? 34 * (1 - ramp(t, tLong + 0.5, end) * 0.5) : 0;
       glow.set("#ffb860", t > cut ? 0.35 * braille : 0);
       L.key.intensity = t > cut ? 0.4 : 2.2;
-      L.hemi.intensity = t > cut ? 0.25 : 0.7;
+      L.hemi.intensity = t > cut ? 0.45 : 0.7;
     },
     look(t) {
       return lookAt(

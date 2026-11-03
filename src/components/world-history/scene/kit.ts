@@ -804,7 +804,7 @@ export function makeCloudLayer(o: { size: number; y: number; color: string; shad
         float d = smoothstep(1.0 - uDensity, 1.0, n * 0.8 + m * 0.4);
         float edge = 1.0 - smoothstep(0.35, 0.5, length(vUv - 0.5));
         float hd = uHole.z > 0.0 ? length(vW.xz - uHole.xy) / uHole.z : 9.0;
-        float rim = exp(-pow((hd - 1.0) * 2.2, 2.0));
+        float rim = exp(-pow((hd - 1.0) * (2.2 + uHole.z * 0.02), 2.0));
         d *= smoothstep(0.75, 1.15, hd + (n - 0.5) * 0.35);
         vec3 c = mix(uShadow, uColor, smoothstep(0.2, 0.9, m)) * uIntensity + vec3(0.75, 0.8, 1.0) * uFlash * d + uHoleGlow * rim * d;
         float a = d * edge * uOpacity;

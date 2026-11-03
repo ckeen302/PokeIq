@@ -87,7 +87,7 @@ export const build: ChapterBuilder = async (ctx) => {
   const lab = new THREE.Group();
   lab.position.set(...LAB);
   scene.add(lab);
-  const wallMat = stoneMaterial({ color: "#3a3c40", roughness: 0.7, dirt: 0.5 });
+  const wallMat = stoneMaterial({ color: "#4a4e56", roughness: 0.7, dirt: 0.5 });
   wallMat.side = THREE.BackSide;
   const room = new THREE.Mesh(new THREE.BoxGeometry(26, 8, 22), wallMat);
   room.position.set(0, 3.6, -2);
@@ -264,10 +264,10 @@ export const build: ChapterBuilder = async (ctx) => {
       });
       alarm.intensity = alarmOn ? 6 * Math.max(0, Math.sin(ambient * 6)) : 0;
       pages.forEach((pg, i) => { pg.mesh.visible = inLab; (pg.mat as THREE.MeshStandardMaterial).emissiveIntensity = 0.3 + 0.25 * ramp(t, [tJungle, tMew, tBirth, tPower][i], [tJungle, tMew, tBirth, tPower][i] + 1); });
-      lamp.intensity = inLab ? 4 * (0.9 + 0.1 * Math.sin(ambient * 17)) : 0;
+      lamp.intensity = inLab ? 6 * (0.9 + 0.1 * Math.sin(ambient * 17)) : 0;
       // Light.
-      L.key.intensity = inLab ? 0.15 : 1.6;
-      L.hemi.intensity = inLab ? 0.18 : 0.6;
+      L.key.intensity = inLab ? 0.25 : 1.6;
+      L.hemi.intensity = inLab ? 0.35 : 0.6;
       L.hemi.color.copy(inLab ? col("#8ab0ff") : col("#c8ffd8"));
     },
     look(t) {

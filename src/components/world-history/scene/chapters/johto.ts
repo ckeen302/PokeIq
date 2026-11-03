@@ -35,7 +35,7 @@ export const build: ChapterBuilder = async (ctx) => {
   const r = rng(17);
 
   // ---- Sky.
-  const sky = makeSky({ top: "#3a5a8a", horizon: "#e8c8a8", bottom: "#1a1a24", nebulaA: "#000000", nebulaB: "#000000", nebula: 0, stars: 0, sunDir: [0.6, 0.08, -1], sunColor: "#ffd8a8", sunSize: 600, sunGlow: 0.6 });
+  const sky = makeSky({ top: "#3a5a8a", horizon: "#e8c8a8", bottom: "#1a1a24", nebulaA: "#000000", nebulaB: "#000000", nebula: 0, stars: 0, sunDir: [0.95, 0.06, -0.35], sunColor: "#ffd8a8", sunSize: 600, sunGlow: 0.4 });
   scene.add(sky.mesh);
   disposers.push(sky.dispose);
   const fog = new THREE.FogExp2(col("#b8b0b0"), 0.02);
@@ -119,8 +119,8 @@ export const build: ChapterBuilder = async (ctx) => {
   scene.add(town.group);
   disposers.push(town.dispose);
   const treePts: Vec3[] = [];
-  for (let i = 0; i < 520; i++) {
-    const x = (r() - 0.5) * 300, z = 30 - r() * 260;
+  for (let i = 0; i < 260; i++) {
+    const x = (r() - 0.5) * 240, z = 30 - r() * 140;
     if (Math.hypot(x - BT[0], z - BT[2]) < 18 || Math.hypot(x - TT[0], z - TT[2]) < 20 || (Math.abs(x) < 40 && z > -50 && z < 12)) continue;
     treePts.push([x, gh(x, z) + 1.5 + r() * 2, z]);
   }
@@ -210,7 +210,7 @@ export const build: ChapterBuilder = async (ctx) => {
     { t: 0, pos: [ALPH[0] + 2, 4.5, ALPH[2] + 26], look: [ALPH[0], 2.2, ALPH[2] - 8], fov: 46 },
     { t: tAlph, pos: [ALPH[0] - 3, 3, ALPH[2] + 14], look: [ALPH[0] + 1, 2.4, ALPH[2] - 14], fov: 44 },
     { t: cutTowers, pos: [ALPH[0] - 1, 2.6, ALPH[2] + 6], look: [ALPH[0], 2.6, ALPH[2] - 20], fov: 44 },
-    { t: cutTowers + 0.01, pos: [14, 8, 54], look: [6, 18, -58], fov: 50 },
+    { t: cutTowers + 0.01, pos: [10, 6, 30], look: [6, 19, -58], fov: 50 },
     { t: tLugia - 1.4, pos: [-4, 5, 30], look: [-12, 22, -40], fov: 46 },
     { t: tLugia, pos: [-4, 6, 16], look: [BT[0], 34, BT[2]], fov: 44 },
     { t: tFire - 0.8, pos: [6, 12, 6], look: [BT[0], 32, BT[2]], fov: 42 },
@@ -218,11 +218,11 @@ export const build: ChapterBuilder = async (ctx) => {
     { t: tRain, pos: [10, 4.5, 20], look: [BT[0], 14, BT[2]], fov: 50 },
     { t: tDead - 0.5, pos: [4, 4, 4], look: [BT[0], 6, BT[2]], fov: 48 },
     { t: tDead, pos: [-6, 3, -4], look: [BT[0], 2.4, BT[2] + 11], fov: 44 },
-    { t: tDescend + 1.6, pos: [-4, 2.4, -8], look: [BT[0], 12, BT[2] + 6], fov: 50 },
-    { t: tBeasts, pos: [-9, 2.4, -12], look: [BT[0], 2.6, BT[2] + 12], fov: 42 },
-    { t: tFlew - 1, pos: [-18, 3, -15], look: [BT[0], 3.2, BT[2] + 12], fov: 44 },
-    { t: tFlew, pos: [2, 6, 22], look: [0, 30, -60], fov: 54 },
-    { t: end, pos: [8, 10, 52], look: [4, 22, -60], fov: 52 },
+    { t: tDescend + 1.6, pos: [-4, 2.4, -8], look: [BT[0], 21, BT[2] + 4], fov: 56 },
+    { t: tBeasts, pos: [BT[0], 2.4, BT[2] + 30], look: [BT[0], 2.8, BT[2] + 12], fov: 46 },
+    { t: tFlew - 1, pos: [BT[0] - 4, 3, BT[2] + 32], look: [BT[0], 3.2, BT[2] + 12], fov: 46 },
+    { t: tFlew, pos: [2, 6, 22], look: [-6, 44, -60], fov: 60 },
+    { t: end, pos: [8, 10, 52], look: [-4, 40, -80], fov: 58 },
   ];
 
   const lugiaPos = new THREE.Vector3(), hoohPos = new THREE.Vector3();
@@ -243,10 +243,10 @@ export const build: ChapterBuilder = async (ctx) => {
       const bow = ramp(t, tDescend - 0.5, tDescend + 2) * (1 - ramp(t, tFlew + 2, end));
       // Sky by phase.
       const top = sky.u.uTop.value, hor = sky.u.uHorizon.value, bot = sky.u.uBottom.value;
-      if (alph) { top.copy(col("#8aa8c8")); hor.copy(col("#f0e0c8")); bot.copy(col("#3a3a3a")); sky.u.uSunGlow.value = 0.5; sky.u.uSunColor.value.copy(col("#fff0d0", 0.8)); fog.color.copy(col("#d8d0c8")); fog.density = 0.03; }
+      if (alph) { top.copy(col("#6a88a8")); hor.copy(col("#d8c8b0")); bot.copy(col("#2a2a2a")); sky.u.uSunGlow.value = 0.3; sky.u.uSunColor.value.copy(col("#fff0d0", 0.6)); fog.color.copy(col("#a8a49c")); fog.density = 0.014; }
       else {
-        top.copy(col("#2a3a6a").lerp(col("#0e1018"), storm).lerp(col("#06080e"), night).lerp(col("#5a7ab0"), dawn));
-        hor.copy(col("#f0a060").lerp(col("#3a3a44"), storm).lerp(col("#2a2030"), night).lerp(col("#ffc8a0"), dawn));
+        top.copy(col("#1e2a58").lerp(col("#0e1018"), storm).lerp(col("#06080e"), night).lerp(col("#3a5a90"), dawn));
+        hor.copy(col("#e07a48").lerp(col("#3a3a44"), storm).lerp(col("#2a2030"), night).lerp(col("#e0a080"), dawn));
         bot.copy(col("#1a1a24"));
         sky.u.uSunGlow.value = 0.7 * (1 - storm) * (1 - night) + dawn * 0.4;
         sky.u.uSunColor.value.copy(col("#ffc080", (1 - storm) * (1 - night) + dawn));
@@ -329,7 +329,7 @@ export const build: ChapterBuilder = async (ctx) => {
           exposure: [[0, 1.05], [cutTowers, 1.0], [tFire, 0.95], [tStrike + 1, 1.0], [tDead, 0.95], [tDescend + 1, 1.05], [end, 1.05]],
           fade: [[cutTowers - 0.45, 0], [cutTowers - 0.08, 1], [cutTowers + 0.12, 1], [cutTowers + 0.7, 0]],
           gain: [[0, [1.0, 1.0, 1.02]], [cutTowers, [1.0, 1.0, 1.02]], [cutTowers + 0.1, [1.1, 0.98, 0.9]], [tFire, [0.95, 0.98, 1.08]], [tStrike + 1, [1.12, 0.94, 0.84]], [tRain + 1, [0.92, 0.96, 1.08]], [tDead, [0.94, 0.94, 1.06]], [tDescend + 1, [1.08, 1.0, 0.94]], [end, [1.08, 1.0, 0.94]]],
-          lift: [[0, [0.03, 0.03, 0.03]], [cutTowers, [0.03, 0.03, 0.03]], [cutTowers + 0.1, [0.01, 0.005, 0.0]]],
+          lift: [[0, [0.012, 0.012, 0.012]], [cutTowers, [0.012, 0.012, 0.012]], [cutTowers + 0.1, [0.01, 0.005, 0.0]]],
           saturation: [[0, 0.85], [cutTowers + 0.1, 1.1], [tRain + 1, 0.9], [tDead, 0.8], [tDescend + 1, 1.18], [end, 1.1]],
           contrast: [[0, 0.98], [cutTowers + 0.1, 1.06], [tStrike, 1.15], [tDead, 1.08], [end, 1.04]],
           chroma: [[tStrike - 0.05, 0], [tStrike, 0.6], [tStrike + 1, 0], [tBeasts, 0], [tBeasts + 0.6, 0.3], [tBeasts + 1.6, 0]],

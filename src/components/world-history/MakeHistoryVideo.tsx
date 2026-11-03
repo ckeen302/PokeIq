@@ -30,7 +30,7 @@ const param = (k: string) => {
     return null;
   }
 };
-/** ?len=5: a short chapter video (automated checks). */
+/** ?len=5: a short chapter video, or (20 s and up) a shorter story (automated checks, samples). */
 const lengthFromUrl = () => { const n = Number(param("len")); return Number.isFinite(n) && n >= 3 && n <= 60 ? n : null; };
 /** ?vfps=10 and ?vq=draft: a quicker render (automated checks). */
 const fpsFromUrl = () => { const n = Number(param("vfps")); return Number.isFinite(n) && n >= 10 && n <= 60 ? Math.round(n) : undefined; };
@@ -45,7 +45,7 @@ const qualityFromUrl = (): Quality | undefined => { const q = param("vq"); retur
  */
 export default function MakeHistoryVideo({ film, chapter, onRecording, onClose }: { film: Film; chapter: number; onRecording(on: boolean): void; onClose(): void }) {
   const [len] = useState<number | null>(() => lengthFromUrl());
-  const [kind, setKind] = useState<"story" | "chapter">(() => (len !== null ? "chapter" : "story"));
+  const [kind, setKind] = useState<"story" | "chapter">(() => (len !== null && len < 20 ? "chapter" : "story"));
   const [pick, setPick] = useState(() => Math.max(0, chapter));
   const [phase, setPhase] = useState<Phase>({ kind: "idle" });
   const [support, setSupport] = useState<"mp4" | "webm" | "none">("mp4");
@@ -62,7 +62,7 @@ export default function MakeHistoryVideo({ film, chapter, onRecording, onClose }
     return () => URL.revokeObjectURL(phase.url);
   }, [phase]);
 
-  const plan = useMemo(() => (kind === "story" ? storyVideoPlan(film, STORY_SECONDS) : chapterVideoPlan(film, pick, len ?? 59)), [kind, film, pick, len]);
+  const plan = useMemo(() => (kind === "story" ? storyVideoPlan(film, len !== null && len >= 20 ? len : STORY_SECONDS) : chapterVideoPlan(film, pick, len ?? 59)), [kind, film, pick, len]);
   const c = CHAPTERS[pick];
   const busy = phase.kind === "recording";
 
@@ -81,7 +81,7 @@ export default function MakeHistoryVideo({ film, chapter, onRecording, onClose }
       const res = await recordHistoryVideo({
         film,
         plan,
-        hook: kind === "story" ? "The entire history of the Pokémon world in 60 seconds" : c.title,
+        hook: kind === "story" ? `The entire history of the Pokémon world in ${Math.round(plan.seconds)} seconds` : c.title,
         kicker: kind === "story" ? "From the games' own words" : `${c.numeral} · ${c.region} · ${c.when}`,
         slug: kind === "story" ? "story" : c.id,
         serif,

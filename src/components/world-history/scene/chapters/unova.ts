@@ -31,12 +31,12 @@ export const build: ChapterBuilder = async (ctx) => {
   const r = rng(5);
 
   // ---- Sky and air.
-  const sky = makeSky({ top: "#10183a", horizon: "#c89a8a", bottom: "#0a0a14", nebulaA: "#6a7ac0", nebulaB: "#c08a6a", nebula: 0.3, nebulaScale: 1.3, stars: 0.03, sunDir: [0, 0.03, -1], sunColor: "#ffd8b0", sunSize: 500, sunGlow: 0.6 });
+  const sky = makeSky({ top: "#0c1230", horizon: "#a0605a", bottom: "#0a0a14", nebulaA: "#6a7ac0", nebulaB: "#c08a6a", nebula: 0.3, nebulaScale: 1.3, stars: 0.03, sunDir: [-0.85, 0.05, -0.5], sunColor: "#e09060", sunSize: 500, sunGlow: 0.25 });
   scene.add(sky.mesh);
   disposers.push(sky.dispose);
-  const fog = new THREE.FogExp2(col("#4a4258"), 0.007);
+  const fog = new THREE.FogExp2(col("#2a2438"), 0.0055);
   scene.fog = fog;
-  const mist = makeCloudLayer({ size: 600, y: 1.5, color: "#d8c8e0", shadow: "#5a5070", density: 0.6, scale: 0.012, speed: [1, 0, 0.4], intensity: 0.7 });
+  const mist = makeCloudLayer({ size: 600, y: 1.5, color: "#a898b8", shadow: "#3a3050", density: 0.6, scale: 0.012, speed: [1, 0, 0.4], intensity: 0.45 });
   scene.add(mist.mesh);
   disposers.push(mist.dispose);
   const smokeSky = makeCloudLayer({ size: 800, y: 60, color: "#4a2a24", shadow: "#0a0606", density: 0.7, scale: 0.008, speed: [3, 0, 1], intensity: 0.9 });
@@ -68,8 +68,8 @@ export const build: ChapterBuilder = async (ctx) => {
   sons.forEach((h, i) => { h.mesh.position.set(...SON[i]); h.mesh.rotation.y = i ? -0.7 : 0.7; scene.add(h.mesh); disposers.push(h.dispose); });
 
   // ---- Truth and ideals: warm and cold light on either side.
-  const warm = makeGlow({ pos: [-60, 20, -80], size: 160, color: "#ffb070", intensity: 0 });
-  const cold = makeGlow({ pos: [60, 20, -80], size: 160, color: "#4a8aff", intensity: 0 });
+  const warm = makeGlow({ pos: [-60, 20, -80], size: 70, color: "#ffb070", intensity: 0 });
+  const cold = makeGlow({ pos: [60, 20, -80], size: 70, color: "#4a8aff", intensity: 0 });
   [warm, cold].forEach((g) => { scene.add(g.sprite); disposers.push(g.dispose); });
   const warmLight = new THREE.PointLight(col("#ffb070"), 0, 60, 1);
   warmLight.position.set(-10, 6, 0);
@@ -80,13 +80,13 @@ export const build: ChapterBuilder = async (ctx) => {
   // ---- The tearing: fire to one side, lightning to the other.
   const DRAGON: Vec3 = [0, gh(0, -14) + 4, -14];
   const RES_TO: Vec3 = [-13, gh(-13, -12) + 3, -12], ZEK_TO: Vec3 = [13, gh(13, -12) + 3, -12];
-  const tearRing = makeRing({ color: "#ffffff", intensity: 3.5, thickness: 0.05 });
+  const tearRing = makeRing({ color: "#ffffff", intensity: 1.6, thickness: 0.04 });
   tearRing.mesh.position.set(DRAGON[0], DRAGON[1] + 7, DRAGON[2]);
   tearRing.mesh.scale.setScalar(40);
   scene.add(tearRing.mesh);
   disposers.push(tearRing.dispose);
-  const whiteFire = makeParticles({ count: P(1800), shape: "sphere", center: RES_TO, extent: [5, 6, 3], velocity: [0, 3, 0], spread: [1.5, 1.5, 1.5], life: 1.8, size: [0.15, 0.5], colors: ["#ffffff", "#ffd090", "#ff6a20"], intensity: 2.4, turbulence: 1.2, flicker: 0.3, seed: 2 });
-  const sparks = makeParticles({ count: P(1400), shape: "sphere", center: ZEK_TO, extent: [5, 6, 3], velocity: [0, 0, 0], spread: [4, 4, 4], life: 0.6, size: [0.05, 0.16], colors: ["#ffffff", "#9ad0ff", "#3a6aff"], intensity: 3, flicker: 0.8, seed: 3 });
+  const whiteFire = makeParticles({ count: P(1800), shape: "sphere", center: RES_TO, extent: [5, 6, 3], velocity: [0, 3, 0], spread: [1.5, 1.5, 1.5], life: 1.8, size: [0.15, 0.5], colors: ["#ffffff", "#ffd090", "#ff6a20"], intensity: 1.2, turbulence: 1.2, flicker: 0.3, seed: 2 });
+  const sparks = makeParticles({ count: P(1400), shape: "sphere", center: ZEK_TO, extent: [5, 6, 3], velocity: [0, 0, 0], spread: [4, 4, 4], life: 0.6, size: [0.05, 0.16], colors: ["#ffffff", "#9ad0ff", "#3a6aff"], intensity: 1.4, flicker: 0.8, seed: 3 });
   [whiteFire, sparks].forEach((p) => { scene.add(p.points); disposers.push(p.dispose); });
   const zbolts = [makeLightning({ color: "#8ac0ff", width: 0.22, intensity: 6, branches: 3 }), makeLightning({ color: "#b8d8ff", width: 0.18, intensity: 5, branches: 2 })];
   zbolts.forEach((b) => { scene.add(b.mesh); disposers.push(b.dispose); });
@@ -98,16 +98,16 @@ export const build: ChapterBuilder = async (ctx) => {
     const x = -8 - r() * 120, z = 10 - r() * 160;
     firePts.push([x, gh(x, z) + 0.1, z]);
   }
-  const fires = makeFlames({ points: firePts, size: [2, 5.5], intensity: 3.2, seed: 7 });
+  const fires = makeFlames({ points: firePts, size: [2, 5.5], intensity: 2.4, seed: 7 });
   scene.add(fires.mesh);
   disposers.push(fires.dispose);
-  const breath = makeBeam({ from: [RES_TO[0] + 1, RES_TO[1] + 8, RES_TO[2] + 1], to: [-30, gh(-30, -50), -50], radius: 1.4, color: "#ffc070", intensity: 5 });
+  const breath = makeBeam({ from: [RES_TO[0] + 1, RES_TO[1] + 8, RES_TO[2] + 1], to: [-30, gh(-30, -50), -50], radius: 1.2, color: "#ffc070", intensity: 3 });
   scene.add(breath.mesh);
   disposers.push(breath.dispose);
   const storms = [makeLightning({ color: "#a8c8ff", width: 0.7, intensity: 7, branches: 5 }), makeLightning({ color: "#d0e0ff", width: 0.55, intensity: 6, branches: 4 })];
   storms.forEach((b) => { scene.add(b.mesh); disposers.push(b.dispose); });
   const lastS = [-1, -1];
-  const embers = makeParticles({ count: P(2200), shape: "box", center: [-40, 10, -50], extent: [60, 10, 60], velocity: [2, 3, 0], spread: [1, 1, 1], life: 5, size: [0.1, 0.3], colors: ["#ffe6a0", "#ff8a30", "#ff3a10"], intensity: 2.6, turbulence: 1.4, flicker: 0.6, seed: 8 });
+  const embers = makeParticles({ count: P(2200), shape: "box", center: [-40, 10, -50], extent: [60, 10, 60], velocity: [2, 3, 0], spread: [1, 1, 1], life: 5, size: [0.1, 0.3], colors: ["#ffe6a0", "#ff8a30", "#ff3a10"], intensity: 1.6, turbulence: 1.4, flicker: 0.6, seed: 8 });
   const blast = makeParticles({ count: P(1600), shape: "sphere", center: [-30, gh(-30, -50) + 2, -50], extent: [3, 2, 3], velocity: [0, 10, 0], spread: [12, 8, 12], gravity: [0, -6, 0], life: 2.2, size: [0.3, 1], colors: ["#fff0c0", "#ff8a30", "#5a2010"], intensity: 2.2, seed: 9 });
   [embers, blast].forEach((p) => { scene.add(p.points); disposers.push(p.dispose); });
 
@@ -143,8 +143,8 @@ export const build: ChapterBuilder = async (ctx) => {
   const res = figs.get(RESHIRAM), zek = figs.get(ZEKROM), kyu = figs.get(KYUREM);
   place(res, DRAGON, 13, 0, scene);
   place(zek, [DRAGON[0], DRAGON[1], DRAGON[2] - 0.6], 13, 0, scene);
-  figureStyle(res, { rim: "#fff2d8", rimK: 2.2, glow: "#ffd8a0", glowK: 0.05, edge: "#ffffff" });
-  figureStyle(zek, { rim: "#7ab8ff", rimK: 2.2, glow: "#4a8aff", glowK: 0.05, edge: "#9ad0ff" });
+  figureStyle(res, { rim: "#fff2d8", rimK: 1.2, glow: "#ffd8a0", glowK: 0.03, edge: "#ffffff" });
+  figureStyle(zek, { rim: "#7ab8ff", rimK: 1.2, glow: "#4a8aff", glowK: 0.03, edge: "#9ad0ff" });
   const KY: Vec3 = [ICE[0], -0.5, ICE[2] - 12];
   place(kyu, KY, 9, 0, scene);
   figureStyle(kyu, { rim: "#bfe8ff", rimK: 1.8, glow: "#6ab8ff", glowK: 0.06, edge: "#e0f4ff", dissolve: 0, shadow: 0.35 });
@@ -190,15 +190,15 @@ export const build: ChapterBuilder = async (ctx) => {
         fog.color.copy(col("#8aa8c8")); fog.density = 0.02;
       } else {
         const war = sk;
-        sky.u.uTop.value.copy(col("#10183a").lerp(col("#0a0606"), war));
-        sky.u.uHorizon.value.copy(col("#c89a8a").lerp(col("#ff7a3a"), war));
+        sky.u.uTop.value.copy(col("#0c1230").lerp(col("#080404"), war));
+        sky.u.uHorizon.value.copy(col("#a0605a").lerp(col("#7a2a10"), war));
         sky.u.uBottom.value.copy(col("#0a0a14"));
-        sky.u.uSunGlow.value = 0.6 * (1 - war);
-        sky.u.uSunColor.value.copy(col("#ffd8b0", 1 - war));
+        sky.u.uSunGlow.value = 0.25 * (1 - war);
+        sky.u.uSunColor.value.copy(col("#e09060", 0.8 * (1 - war)));
         sky.u.uNeb.value = 0.3 * (1 - war);
         sky.u.uStars.value = 0.03 * (1 - war);
-        fog.color.copy(col("#4a4258").lerp(col("#3a1a12"), war));
-        fog.density = 0.007 - rise * 0.003 + war * 0.004;
+        fog.color.copy(col("#2a2438").lerp(col("#2a120c"), war));
+        fog.density = 0.0055 - rise * 0.002 + war * 0.003;
       }
       mist.u.uTime.value = ambient;
       mist.u.uOpacity.value = ice ? 0 : 1 - rise * 0.75;
@@ -207,7 +207,7 @@ export const build: ChapterBuilder = async (ctx) => {
       // The land rises out of the mist.
       land.mesh.position.y = -6 * (1 - rise);
       land.u.uTime.value = ambient;
-      land.u.uLavaK.value = 5 * sk;
+      land.u.uLavaK.value = 2.2 * sk;
       // The heroes, then their sons.
       heroes.forEach((h, i) => {
         h.mesh.visible = !ice && t < tSons - 0.2;
@@ -215,21 +215,21 @@ export const build: ChapterBuilder = async (ctx) => {
         (h.mat as THREE.MeshStandardMaterial).emissiveIntensity = 0.06 + argue * 0.25;
       });
       sons.forEach((h) => { h.mesh.visible = !ice && t >= tSons - 0.2; });
-      warm.set("#ffb070", ice ? 0 : 0.35 * argue + 0.2 * tear * (1 - sk) + sk * 0.25);
-      cold.set("#4a8aff", ice ? 0 : 0.35 * argue + 0.2 * tear * (1 - sk) + sk * 0.25);
-      warmLight.intensity = ice ? 0 : 6 * argue + 8 * sk;
-      coldLight.intensity = ice ? 0 : 6 * argue + 8 * sk;
+      warm.set("#ffb070", ice ? 0 : 0.12 * argue + 0.06 * tear * (1 - sk) + sk * 0.08);
+      cold.set("#4a8aff", ice ? 0 : 0.12 * argue + 0.06 * tear * (1 - sk) + sk * 0.08);
+      warmLight.intensity = ice ? 0 : 3 * argue + 3 * sk;
+      coldLight.intensity = ice ? 0 : 3 * argue + 3 * sk;
       // The one dragon: a shadow edged in both lights; then two.
       const sep = 1 - Math.pow(1 - tear, 3);
       if (res) {
         const p = V0.set(...DRAGON).lerp(V1.set(...RES_TO), sep);
         floatFigure(res, [p.x, p.y, p.z], ambient, 0.25, 0, 0.45 * sep, 0.04);
-        figureStyle(res, { dissolve: ice ? 0 : ramp(t, 0.5, tOne + 1.5), shadow: 0.85 * (1 - ramp(t, tTear, tTear + 1.8)), glowK: 0.05 + 0.3 * spike(t, tTear, 0.1, 1.2) + argue * 0.08 });
+        figureStyle(res, { dissolve: ice ? 0 : ramp(t, 0.5, tOne + 1.5), shadow: 0.85 * (1 - ramp(t, tTear, tTear + 1.8)), glowK: 0.03 + 0.15 * spike(t, tTear, 0.1, 1.2) + argue * 0.04 });
       }
       if (zek) {
         const p = V0.set(DRAGON[0], DRAGON[1], DRAGON[2] - 0.6).lerp(V1.set(...ZEK_TO), sep);
         floatFigure(zek, [p.x, p.y, p.z], ambient, 0.25, 1.3, -0.45 * sep, 0.04);
-        figureStyle(zek, { dissolve: ice ? 0 : ramp(t, 0.5, tOne + 1.5), shadow: 0.85 * (1 - ramp(t, tTear, tTear + 1.8)), glowK: 0.05 + 0.3 * spike(t, tTear, 0.1, 1.2) + argue * 0.08 });
+        figureStyle(zek, { dissolve: ice ? 0 : ramp(t, 0.5, tOne + 1.5), shadow: 0.85 * (1 - ramp(t, tTear, tTear + 1.8)), glowK: 0.03 + 0.15 * spike(t, tTear, 0.1, 1.2) + argue * 0.04 });
       }
       tearRing.u.uK.value = ramp(t, tTear, tTear + 1.8);
       tearRing.u.uTime.value = ambient;
@@ -288,7 +288,7 @@ export const build: ChapterBuilder = async (ctx) => {
         t,
         { bloom: 0.8, bloomRadius: 0.6 },
         {
-          exposure: [[0, 0.95], [tOne, 1.0], [tTear, 1.05], [tSons, 1.0], [cutIce, 1.0], [end, 0.98]],
+          exposure: [[0, 0.95], [tOne, 1.0], [tTear, 1.02], [tSons, 0.95], [cutIce, 1.0], [end, 0.98]],
           fade: [[cutIce - 0.45, 0], [cutIce - 0.08, 1], [cutIce + 0.12, 1], [cutIce + 0.7, 0]],
           gain: [[0, [1.04, 0.98, 1.02]], [tBro, [1.02, 0.98, 1.02]], [tTear, [1.04, 1.0, 1.04]], [tSons, [1.14, 0.94, 0.86]], [cutIce, [1.14, 0.94, 0.86]], [cutIce + 0.1, [0.9, 1.0, 1.14]]],
           saturation: [[0, 1.08], [tSons, 1.15], [cutIce, 1.1], [cutIce + 0.1, 0.8]],
@@ -298,8 +298,8 @@ export const build: ChapterBuilder = async (ctx) => {
           bloom: [[0, 0.8], [tTear, 1.1], [tCeased, 0.85], [tSons, 1.0], [cutIce + 0.1, 0.85]],
         }
       );
-      L0.flash = Math.min(0.45, 0.4 * spike(t, tTear, 0.05, 0.6) + (ice ? 0 : 0.1 * sonsK(t) * strikeAt(t, 0.9, 11).level));
-      if (!ice && t > tTear - 0.3 && t < tCeased + 2) L0.rays = { pos: [DRAGON[0], DRAGON[1] + 7, DRAGON[2]], color: [1.0, 0.95, 0.9], strength: 0.5 * spike(t, tTear, 0.2, 1.6) + 0.15 };
+      L0.flash = Math.min(0.3, 0.2 * spike(t, tTear, 0.05, 0.3) + (ice ? 0 : 0.08 * sonsK(t) * strikeAt(t, 0.9, 11).level));
+      if (!ice && t > tTear - 0.3 && t < tCeased + 2) L0.rays = { pos: [DRAGON[0], DRAGON[1] + 7, DRAGON[2]], color: [1.0, 0.95, 0.9], strength: 0.25 * spike(t, tTear, 0.2, 1.6) + 0.08 };
       else if (ice) L0.rays = { pos: [ICE[0], 6, ICE[2] - 12], color: [0.7, 0.88, 1.0], strength: 0.3 * ramp(t, cutIce + 1, cutIce + 3) };
       return L0;
     },

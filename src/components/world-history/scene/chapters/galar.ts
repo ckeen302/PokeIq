@@ -41,7 +41,7 @@ export const build: ChapterBuilder = async (ctx) => {
   disposers.push(sky.dispose);
   const SKY = {
     night: [col("#040814"), col("#1a2a44"), col("#030408")],
-    storm: [col("#060204"), col("#3a0810"), col("#020101")],
+    storm: [col("#040103"), col("#2a050a"), col("#010101")],
     dawn: [col("#22365e"), col("#c87a4a"), col("#141420")],
     tundra: [col("#06102a"), col("#2a4a6a"), col("#0a1020")],
   };
@@ -95,7 +95,7 @@ export const build: ChapterBuilder = async (ctx) => {
   // ---- The Darkest Day: a black vortex with a red eye, pillars of red light, red lightning.
   const storm = makeCloudLayer({ size: 1100, y: 95, color: "#2a0a14", shadow: "#000000", density: 0.85, scale: 0.007, speed: [4, 0, 2], intensity: 1 });
   storm.mesh.position.set(CRATER[0], 95, CRATER[2]);
-  storm.u.uHoleGlow.value.copy(col("#ff1f4a", 2.2));
+  storm.u.uHoleGlow.value.copy(col("#ff1f4a", 0.9));
   scene.add(storm.mesh);
   disposers.push(storm.dispose);
   const PIL: Vec3[] = [];
@@ -104,7 +104,7 @@ export const build: ChapterBuilder = async (ctx) => {
     PIL.push([x, gh(x, z) - 1, z]);
   }
   const pillars = PIL.map((p, i) => {
-    const b = makeBeam({ from: p, to: [p[0], 260, p[2]], radius: 2 + (i % 3) * 0.8, color: "#ff1838", intensity: 1.5 });
+    const b = makeBeam({ from: p, to: [p[0], 260, p[2]], radius: 2 + (i % 3) * 0.8, color: "#ff1838", intensity: 1.1 });
     scene.add(b.mesh);
     disposers.push(b.dispose);
     return b;
@@ -158,9 +158,9 @@ export const build: ChapterBuilder = async (ctx) => {
   scene.add(tundra.mesh);
   disposers.push(tundra.dispose);
   const snow = makeParticles({ count: P(2600), shape: "box", center: [CAL[0], 6, CAL[2]], extent: [26, 8, 22], velocity: [0.6, -1.1, 0.2], spread: [0.3, 0.2, 0.3], life: 9, size: [0.03, 0.08], colors: ["#ffffff", "#dfe8ff", "#b8c8ff"], intensity: 1.3, turbulence: 0.6, seed: 8 });
-  const crownMotes = makeParticles({ count: P(500), shape: "sphere", center: [CAL[0], 3, CAL[2]], extent: [2.4, 2.4, 2.4], velocity: [0, 0.3, 0], spread: [0.2, 0.2, 0.2], life: 4, size: [0.03, 0.07], colors: ["#e8fff0", "#7affc8", "#b88aff"], intensity: 2.2, swirl: 0.6, seed: 9 });
+  const crownMotes = makeParticles({ count: P(500), shape: "sphere", center: [CAL[0], 3, CAL[2]], extent: [2.4, 2.4, 2.4], velocity: [0, 0.3, 0], spread: [0.2, 0.2, 0.2], life: 4, size: [0.03, 0.07], colors: ["#e8fff0", "#7affc8", "#b88aff"], intensity: 1.2, swirl: 0.6, seed: 9 });
   [snow, crownMotes].forEach((p) => { scene.add(p.points); disposers.push(p.dispose); });
-  const calGlow = makeGlow({ pos: [CAL[0], 3, CAL[2]], size: 8, color: "#9affd0", intensity: 0 });
+  const calGlow = makeGlow({ pos: [CAL[0], 3, CAL[2]], size: 5, color: "#9affd0", intensity: 0 });
   scene.add(calGlow.sprite);
   disposers.push(calGlow.dispose);
 
@@ -180,7 +180,7 @@ export const build: ChapterBuilder = async (ctx) => {
   figureStyle(zam, { rim: "#ffb0a0", rimK: 1.6, glow: "#ffd27a", glowK: 0.05, edge: "#fff0b0", dissolve: 0 });
   const CA: Vec3 = [CAL[0], 1.2, CAL[2]];
   place(cal, CA, 2.4, 0, scene);
-  figureStyle(cal, { rim: "#c8ffe8", rimK: 1.6, glow: "#7affc8", glowK: 0.08 });
+  figureStyle(cal, { rim: "#c8ffe8", rimK: 1.0, glow: "#7affc8", glowK: 0.04 });
 
   const keys: Key[] = [
     { t: 0, pos: [0, 16, 86], look: [-30, 46, -200], fov: 52 },
@@ -225,9 +225,9 @@ export const build: ChapterBuilder = async (ctx) => {
       sky.u.uStars.value = tund ? 0.05 : 0.06 * (1 - sk) * (1 - dawn);
       sky.u.uSunColor.value.copy(t < tStorm && !tund ? col("#cfd8ff", 0.6 * (1 - sk)) : col("#ffb878", tund ? 0 : dawn * 0.7));
       sky.u.uSunSize.value = t < tStorm && !tund ? 3000 : 600;
-      sky.u.uSunDir.value.set(...((t < tStorm && !tund ? [-0.5, 0.35, -1] : [0.2, 0.08, -1]) as Vec3)).normalize();
-      sky.u.uSunGlow.value = tund ? 0 : dawn * 0.3;
-      sky.u.uFlash.value = lv * 0.35 + spike(t, tImpact, 0.04, 0.5) * 0.5;
+      sky.u.uSunDir.value.set(...((t < tStorm && !tund ? [-0.5, 0.35, -1] : [0.85, 0.08, -0.5]) as Vec3)).normalize();
+      sky.u.uSunGlow.value = tund ? 0 : dawn * 0.22;
+      sky.u.uFlash.value = lv * 0.3 + spike(t, tImpact, 0.03, 0.3) * 0.3;
       sky.u.uFlashColor.value.copy(t > tStorm - 1 ? col("#ff4a6a") : col("#ffd0e0"));
       sky.follow(cam);
       sky.u.uTime.value = ambient;
@@ -325,12 +325,12 @@ export const build: ChapterBuilder = async (ctx) => {
       crownMotes.u.uTime.value = ambient;
       crownMotes.u.uPixel.value = px;
       crownMotes.u.uOpacity.value = tund ? ramp(t, cutTundra + 0.6, cutTundra + 2) : 0;
-      calGlow.set("#9affd0", tund ? 0.45 + 0.1 * Math.sin(ambient * 1.3) : 0);
+      calGlow.set("#9affd0", tund ? 0.15 + 0.04 * Math.sin(ambient * 1.3) : 0);
       if (cal) floatFigure(cal, CA, ambient, 0.12, 0.5, 0, 0.05);
       // Light.
       if (tund) { L.key.color.copy(col("#c8d8ff")); L.key.intensity = 1.4; L.hemi.intensity = 0.8; L.hemi.color.copy(col("#9ab8ff")); L.key.position.set(CAL[0] - 30, 40, 30); }
       else if (t < cutStatue) { L.key.color.copy(col("#a8c0ff").lerp(col("#ff4a6a"), sk)); L.key.intensity = 1.1 + lv * 1.6; L.hemi.intensity = 0.6 - sk * 0.25; L.hemi.color.copy(col("#7a90d0").lerp(col("#8a3040"), sk)); L.key.position.set(-40, 50, 40); }
-      else { L.key.color.copy(col("#ff6a6a").lerp(col("#ffd8a0"), dawn)); L.key.intensity = 1.2 + dawn * 1.4; L.hemi.intensity = 0.35 + dawn * 0.4; L.hemi.color.copy(col("#8a90c0").lerp(col("#ffd0b0"), dawn)); L.key.position.set(20, 30, -100); }
+      else { L.key.color.copy(col("#ff6a6a").lerp(col("#ffd8a0"), dawn)); L.key.intensity = 1.2 + dawn * 1.4; L.hemi.intensity = 0.35 + dawn * 0.4; L.hemi.color.copy(col("#8a90c0").lerp(col("#ffd0b0"), dawn)); L.key.position.set(60, 40, 40); }
     },
     look(t) {
       const tund = t >= cutTundra;
@@ -352,8 +352,8 @@ export const build: ChapterBuilder = async (ctx) => {
       );
       L0.flash = Math.min(0.45, 0.4 * spike(t, tImpact, 0.03, 0.22) + lv * 0.08 + 0.12 * spike(t, tTwo, 0.1, 0.5));
       if (!tund && t > tImpact && t < tStorm) L0.rays = { pos: [CRATER[0], 6, CRATER[2]], color: [1.0, 0.5, 0.7], strength: 0.6 * ramp(t, tImpact, tImpact + 0.4) * (1 - ramp(t, tStorm - 1, tStorm)) };
-      else if (!tund && t > cutStatue) L0.rays = { pos: [20, 30, -400], color: [1.0, 0.86, 0.6], strength: 0.14 + 0.24 * ramp(t, tTwo - 0.3, tTwo + 1.5) };
-      else if (tund) L0.rays = { pos: [CAL[0], 3, CAL[2]], color: [0.7, 1.0, 0.85], strength: 0.3 };
+      else if (!tund && t > cutStatue) L0.rays = { pos: [700, 40, -400], color: [1.0, 0.86, 0.6], strength: 0.1 + 0.18 * ramp(t, tTwo - 0.3, tTwo + 1.5) };
+      else if (tund) L0.rays = { pos: [CAL[0], 3, CAL[2]], color: [0.7, 1.0, 0.85], strength: 0.15 };
       return L0;
     },
     dispose() {

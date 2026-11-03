@@ -60,12 +60,12 @@ export const build: ChapterBuilder = async (ctx) => {
   const fog = new THREE.FogExp2(col("#2a1410"), 0.006);
   scene.fog = fog;
   const FOG = { war: col("#2a1410"), dusk: col("#4a3442"), ash: col("#3a3532"), dawn: col("#6a5058") };
-  const smokeLayer = makeCloudLayer({ size: 900, y: 70, color: "#8a4430", shadow: "#3a1810", density: 0.5, scale: 0.008, speed: [2, 0, 1], intensity: 0.55 });
+  const smokeLayer = makeCloudLayer({ size: 900, y: 70, color: "#8a4430", shadow: "#5a2818", density: 0.4, scale: 0.008, speed: [2, 0, 1], intensity: 0.5 });
   scene.add(smokeLayer.mesh);
   disposers.push(smokeLayer.dispose);
   const heaven = makeCloudLayer({ size: 1400, y: 170, color: "#8a5a70", shadow: "#2a1a24", density: 0.6, scale: 0.005, speed: [1, 0, 0.5], intensity: 0.0 });
   heaven.mesh.position.set(0, 170, -95);
-  heaven.u.uHoleGlow.value.copy(col("#ffd0ec", 2.2));
+  heaven.u.uHoleGlow.value.copy(col("#ffc8e8", 1.0));
   scene.add(heaven.mesh);
   disposers.push(heaven.dispose);
 
@@ -198,7 +198,7 @@ export const build: ChapterBuilder = async (ctx) => {
   const gather = makeParticles({ count: P(2200), shape: "shell", center: coreAt, extent: [90, 40, 90], velocity: [0, 0, 0], life: 2.6, size: [0.1, 0.28], colors: ["#ffffff", "#ffb8e0", "#b8d8ff"], intensity: 1.6, pull: 34, swirl: 0.5, seed: 10 });
   const dust = makeParticles({ count: P(1200), shape: "disc", center: [WPN[0], WPN[1] + 1, WPN[2]], extent: [16, 1, 16], velocity: [0, 4, 0], spread: [3, 2, 3], gravity: [0, -3, 0], life: 3, size: [1.2, 3.4], colors: ["#6a5a50", "#4a3e38", "#2a2420"], intensity: 0.5, additive: false, seed: 11 });
   [gather, dust].forEach((p) => { scene.add(p.points); disposers.push(p.dispose); });
-  const beam = makeBeam({ from: coreAt, to: [coreAt[0], 330, coreAt[2]], radius: 2.4, color: "#ffd8ee", intensity: 3 });
+  const beam = makeBeam({ from: coreAt, to: [coreAt[0], 330, coreAt[2]], radius: 2.2, color: "#ffd0ea", intensity: 2 });
   scene.add(beam.mesh);
   disposers.push(beam.dispose);
   const pour = makeStreaks({ count: P(1100), center: [0, 110, -90], extent: [260, 50, 190], velocity: [0, -170, 0], life: 0.85, length: 44, width: 0.45, color: "#ffd0ea", intensity: 1.6, seed: 12 });
@@ -257,8 +257,8 @@ export const build: ChapterBuilder = async (ctx) => {
     { t: tWeapon - 0.6, pos: [-3.2, 2.6, 7.4], look: [3, 6, -40], fov: 44 },
     { t: tWeapon + 2.0, pos: [-10, 7, -14], look: [0, 33, -95], fov: 48 },
     { t: tWeapon + 4.4, pos: [16, 12, -36], look: [0, 42, -95], fov: 44 },
-    { t: tFire - 0.6, pos: [0, 5, -26], look: [0, 44, -95], fov: 52 },
-    { t: tFire + 0.8, pos: [0, 4, -18], look: [0, 110, -95], fov: 62 },
+    { t: tFire - 0.6, pos: [30, 6, -20], look: [0, 46, -95], fov: 52 },
+    { t: tFire + 0.8, pos: [46, 10, 6], look: [0, 90, -95], fov: 58 },
     { t: tFire + 1.9, pos: [64, 42, 84], look: [0, 20, -100], fov: 55 },
     { t: tAsh - 0.05, pos: [70, 46, 94], look: [0, 18, -100], fov: 55 },
     { t: tAsh, pos: [3.6, 1.9, 7.2], look: [0.4, 1.7, 0], fov: 38 },

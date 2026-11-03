@@ -36,21 +36,21 @@ export const build: ChapterBuilder = async (ctx) => {
   const nz = noise2(23);
 
   // ---- Sky: storm, then night, then dawn.
-  const sky = makeSky({ top: "#0a0e18", horizon: "#3c2a2c", bottom: "#05060a", nebulaA: "#20283a", nebulaB: "#3a1a14", nebula: 0.0, stars: 0.05, sunDir: [0.5, 0.04, -1], sunColor: "#000000", sunSize: 500, sunGlow: 0 });
+  const sky = makeSky({ top: "#0a0e18", horizon: "#3c2a2c", bottom: "#05060a", nebulaA: "#20283a", nebulaB: "#3a1a14", nebula: 0.0, stars: 0.05, sunDir: [0.9, 0.05, -0.45], sunColor: "#000000", sunSize: 500, sunGlow: 0 });
   scene.add(sky.mesh);
   disposers.push(sky.dispose);
   const SKY = {
     storm: [col("#0a0e18"), col("#3c2a2c"), col("#05060a")],
     calm: [col("#16243a"), col("#5a6a78"), col("#0a0e14")],
     night: [col("#02040c"), col("#141c38"), col("#020308")],
-    dawn: [col("#1c3664"), col("#d87a52"), col("#121422")],
+    dawn: [col("#18305a"), col("#c0603a"), col("#101220")],
   };
   const fog = new THREE.FogExp2(col("#1a1a22"), 0.006);
   scene.fog = fog;
   const FOG = { storm: col("#1c1a20"), calm: col("#323e4a"), night: col("#060914"), dawn: col("#5a4450") };
 
   // ---- The sea, swelling around Kyogre.
-  const ocean = makeOcean({ size: 1000, segments: q.grid, waves: [{ dir: [1, 0.25], steep: 0.2, length: 34 }, { dir: [-0.3, 1], steep: 0.15, length: 19 }, { dir: [0.8, -0.6], steep: 0.1, length: 9 }, { dir: [0.1, 1], steep: 0.06, length: 5 }], deep: "#03101c", shallow: "#14414e", sky: "#4a5868", sun: [0.5, 0.04, -1], sunColor: "#000000", foam: 0.6, amp: 1.5 });
+  const ocean = makeOcean({ size: 1000, segments: q.grid, waves: [{ dir: [1, 0.25], steep: 0.2, length: 34 }, { dir: [-0.3, 1], steep: 0.15, length: 19 }, { dir: [0.8, -0.6], steep: 0.1, length: 9 }, { dir: [0.1, 1], steep: 0.06, length: 5 }], deep: "#03101c", shallow: "#14414e", sky: "#4a5868", sun: [0.9, 0.05, -0.45], sunColor: "#000000", foam: 0.6, amp: 1.5 });
   scene.add(ocean.mesh);
   disposers.push(ocean.dispose);
 
@@ -159,10 +159,10 @@ export const build: ChapterBuilder = async (ctx) => {
   const torches = makeLanterns({ points: rimPts, color: "#ffb060", size: 0.22, intensity: 5, seed: 3 });
   scene.add(torches.group);
   disposers.push(torches.dispose);
-  const burst = makeParticles({ count: P(1200), shape: "sphere", center: RQ_NIGHT, extent: [2, 2, 2], velocity: [0, 0, 0], spread: [12, 12, 12], life: 2.6, size: [0.08, 0.26], colors: ["#fff6d8", "#ffd86a", "#6dffb4"], intensity: 1.3, burst: true, fadeOut: 0.7, seed: 12 });
+  const burst = makeParticles({ count: P(1200), shape: "sphere", center: RQ_NIGHT, extent: [2, 2, 2], velocity: [0, 0, 0], spread: [12, 12, 12], life: 2.6, size: [0.08, 0.26], colors: ["#fff6d8", "#ffd86a", "#6dffb4"], intensity: 0.8, burst: true, fadeOut: 0.7, seed: 12 });
   scene.add(burst.points);
   disposers.push(burst.dispose);
-  const megaRing = makeRing({ color: "#ffe0a0", intensity: 2, thickness: 0.04 });
+  const megaRing = makeRing({ color: "#ffe0a0", intensity: 1.1, thickness: 0.035 });
   megaRing.mesh.position.set(...RQ_NIGHT);
   megaRing.mesh.scale.setScalar(36);
   scene.add(megaRing.mesh);
@@ -182,7 +182,7 @@ export const build: ChapterBuilder = async (ctx) => {
   figureStyle(ray, { rim: "#9affc8", rimK: 1.8, glow: "#3cff9a", glowK: 0.06, edge: "#d8ffe8" });
   place(mega, RQ_NIGHT, 26, 0, scene);
   figureStyle(mega, { rim: "#ffe6a0", rimK: 1.6, glow: "#6dffb4", glowK: 0.08, edge: "#ffffff", dissolve: 0 });
-  const megaMotes = mega ? makeConverge(mega.points, { radius: 3, colors: ["#fff4c8", "#6dffb4"], size: [0.03, 0.09], intensity: 2.4, spin: 1.6 }) : null;
+  const megaMotes = mega ? makeConverge(mega.points, { radius: 3, colors: ["#fff4c8", "#6dffb4"], size: [0.025, 0.07], intensity: 1.2, spin: 1.6 }) : null;
   if (mega && megaMotes) { mega.group.add(megaMotes.points); disposers.push(megaMotes.dispose); }
 
   /** Rayquaza's height above the sea as it descends through the storm. */
@@ -212,7 +212,7 @@ export const build: ChapterBuilder = async (ctx) => {
     { t: tPeace, pos: [-6, 10, -28], look: [12, 25, -86], fov: 46 },
     { t: end, pos: [-34, 17, 22], look: [12, 20, -86], fov: 50 },
   ];
-  const sunPos: Vec3 = [420, 30, -840];
+  const sunPos: Vec3 = [800, 45, -400];
 
   const lightning = (t: number) => (t > tCalm ? 0 : Math.max(strikeAt(t, 1.5, 3).level, strikeAt(t + 0.7, 2.3, 8).level * 0.8) * (t < tCalm - 0.6 ? 1 : 0));
 
@@ -278,7 +278,7 @@ export const build: ChapterBuilder = async (ctx) => {
       rain.u.uOpacity.value = night ? 0 : 1 - calm;
       // Fire.
       land.u.uTime.value = ambient;
-      land.u.uLavaK.value = 6 - calm * 3.8;
+      land.u.uLavaK.value = night ? 0 : 6 - calm * 3.8;
       for (const p of [fountain, embers, steam, spray]) { p.u.uTime.value = ambient; p.u.uPixel.value = px; }
       fountain.u.uOpacity.value = night ? 0 : 1 - calm;
       embers.u.uOpacity.value = night ? 0 : 1 - calm * 0.7;
@@ -288,7 +288,7 @@ export const build: ChapterBuilder = async (ctx) => {
       seaLight.intensity = night ? 0 : 30 * (1 - calm);
       L.key.intensity = night ? 0.5 + dawn * 1.6 : 1.1 + lv * 2.2;
       L.key.color.copy(night ? col("#9ab0ff").lerp(col("#ffc890"), dawn) : col("#c8d4ff"));
-      L.key.position.set(...(night ? ([120, 40, -200] as Vec3) : ([10, 30, 30] as Vec3)));
+      L.key.position.set(...(night ? ([400, 40, -200] as Vec3) : ([10, 30, 30] as Vec3)));
       L.hemi.intensity = night ? 0.25 + dawn * 0.45 : 0.45 + calm * 0.2;
       // The titans: they rage, then sink away when the storm breaks.
       const fade = 1 - ramp(t, tCalm + 0.8, tCalm + 3.6);
@@ -373,7 +373,7 @@ export const build: ChapterBuilder = async (ctx) => {
       megaRing.u.uTime.value = ambient;
       megaRing.mesh.visible = night && t > tMega && t < tMega + 1.7;
       billboard(megaRing.mesh, cam);
-      megaGlow.set("#8affc8", night ? 0.28 * ramp(t, tMega - 1, tMega) * (0.6 + 0.4 * (1 - ramp(t, tMega + 0.5, tMega + 3))) + dawn * 0.08 : 0);
+      megaGlow.set("#8affc8", night ? 0.15 * ramp(t, tMega - 1, tMega) * (0.6 + 0.4 * (1 - ramp(t, tMega + 0.5, tMega + 3))) + dawn * 0.05 : 0);
     },
     look(t) {
       const night = t > cut;
@@ -396,8 +396,8 @@ export const build: ChapterBuilder = async (ctx) => {
       L0.flash = Math.min(0.4, lv * 0.12 + 0.25 * spike(t, tCalm, 0.05, 0.35) + 0.4 * spike(t, tImpact, 0.03, 0.25) + 0.18 * spike(t, tMega, 0.05, 0.3));
       // Light shafts: from Rayquaza in the storm, from the Mega Evolution, from the dawn sun.
       if (!night && t > tRay - 0.5) L0.rays = { pos: [0, rayY(t), -36], color: [0.45, 1.0, 0.7], strength: 0.55 * ramp(t, tRay - 0.5, tRay + 1) * (1 - ramp(t, tCalm + 1.5, cut) * 0.7) };
-      else if (night && t > tMega - 1 && t < tPeace) L0.rays = { pos: RQ_NIGHT, color: [1.0, 0.9, 0.65], strength: 0.38 * ramp(t, tMega - 1, tMega) * (1 - ramp(t, tMega + 2, tPeace)) };
-      else if (night && t >= tPeace - 0.5) L0.rays = { pos: sunPos, color: [1.0, 0.78, 0.55], strength: 0.28 * ramp(t, tPeace - 0.5, tPeace + 3) };
+      else if (night && t > tMega - 1 && t < tPeace) L0.rays = { pos: RQ_NIGHT, color: [1.0, 0.9, 0.65], strength: 0.25 * ramp(t, tMega - 1, tMega) * (1 - ramp(t, tMega + 2, tPeace)) };
+      else if (night && t >= tPeace - 0.5) L0.rays = { pos: sunPos, color: [1.0, 0.78, 0.55], strength: 0.2 * ramp(t, tPeace - 0.5, tPeace + 3) };
       return L0;
     },
     dispose() {
