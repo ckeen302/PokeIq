@@ -115,11 +115,11 @@ export function SpeciesGrid({ list }: { list: SpeciesChip[] }) {
   );
 }
 
-export function ListHeader({ kicker, title, accent, blurb }: { kicker: string; title: string; accent: string; blurb: string }) {
+export function ListHeader({ kicker, title, accent, blurb, back }: { kicker: string; title: string; accent: string; blurb: string; back?: { href: string; label: string } }) {
   return (
     <div className="space-y-2 text-center">
       <div className="text-left">
-        <BackButton href="/pokedex" />
+        <BackButton href={back?.href ?? "/pokedex"} label={back?.label} />
       </div>
       <p className="hud-label text-screen">{kicker}</p>
       <h1 className="font-display text-4xl font-bold uppercase tracking-tight sm:text-5xl">
