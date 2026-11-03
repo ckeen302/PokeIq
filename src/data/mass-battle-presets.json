@@ -99,18 +99,18 @@
   "fire-vs-water": {
    "outcome": {
     "winner": 0,
-    "seconds": 25.75,
+    "seconds": 22.7,
     "left": [
-     107,
+     124,
      0
     ],
     "kos": [
-     409,
-     267
+     410,
+     250
     ],
     "dealt": [
-     131528,
-     91569
+     131238,
+     86095
     ]
    },
    "answer": null
@@ -118,18 +118,18 @@
   "legendaries-vs-everyone": {
    "outcome": {
     "winner": 1,
-    "seconds": 9.65,
+    "seconds": 9.9,
     "left": [
      0,
-     556
+     550
     ],
     "kos": [
-     44,
+     50,
      72
     ],
     "dealt": [
-     16404,
-     25496
+     18628,
+     25558
     ]
    },
    "answer": null
@@ -162,17 +162,17 @@
   "eeveelution-civil-war": {
    "outcome": {
     "winner": 1,
-    "seconds": 22.25,
+    "seconds": 23.4,
     "left": [
      0,
-     30
+     26
     ],
     "kos": [
-     67,
+     72,
      100
     ],
     "dealt": [
-     25273,
+     26005,
      31533
     ]
    },

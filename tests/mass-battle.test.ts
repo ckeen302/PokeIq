@@ -580,7 +580,7 @@ describe("mass battle: share links", () => {
     const code = encodeBattle(s, slugs);
     expect(code).toBe(`2.50.colosseum.${(123456).toString(36)}.rain-grassy-dusk-items.swarm-loose-boss-hold-single_magikarp*60*l30*mflail*ilifeorb*nadamant*eo*twater_all-fire-nolegend-fe*5.line_arceus*1*amultitype*i0`);
     expect(new URLSearchParams({ b: code }).toString()).toBe(`b=${code}`);
-    expect(decodeBattle(code, slugs)).toEqual({ ...s, sides: [{ ...s.sides[0], units: [{ ...s.sides[0].units[0], set: { ...s.sides[0].units[0].set, moves: ["flail"], item: "Life Orb", nature: "adamant", tera: "Water" } }, s.sides[0].units[1]] }, s.sides[1]] });
+    expect(decodeBattle(code, slugs)).toEqual({ ...s, sides: [{ ...s.sides[0], units: [{ ...s.sides[0].units[0], set: { ...s.sides[0].units[0].set, moves: ["flail"], item: "Life Orb", nature: "Adamant", tera: "Water" } }, s.sides[0].units[1]] }, s.sides[1]] });
     const plain: BattleSpec = { sides: [{ units: [{ id: 19, count: 1000 }], formation: "swarm" }, { units: [{ id: 150, count: 1 }], formation: "line" }], level: 100, arena: "plains", seed: 7 };
     expect(encodeBattle(plain, slugs)).toBe("2.100.plains.7.0.swarm_rattata*1000.line_mewtwo*1");
     expect(decodeBattle(encodeBattle(plain, slugs), slugs)).toEqual(plain);

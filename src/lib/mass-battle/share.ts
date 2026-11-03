@@ -1,4 +1,4 @@
-import { clampLevel, MODELLED_ITEMS } from "./sets";
+import { clampLevel, MODELLED_ITEMS, natureName } from "./sets";
 import {
   ARENAS, CAMERA_MODES, DEFAULT_FIELD, DEFAULT_PLAYBACK, FORMATIONS, SPEEDS, TERRAINS, TYPE_NAMES, WEATHERS,
   type ArenaId, type ArmySpec, type BattleSpec, type CameraMode, type FieldSpec, type Formation, type GroupRule, type ItemPolicy,
@@ -161,7 +161,7 @@ function decodeSet(fields: string[]): SetChoice | undefined {
     else if (k === "i") {
       const it = itemName(v);
       if (it !== undefined) set.item = it;
-    } else if (k === "n" && v) set.nature = v;
+    } else if (k === "n" && v) set.nature = natureName(v);
     else if (k === "e") set.evs = v === "o" ? "offence" : v === "b" ? "bulk" : "random";
     else if (k === "t" && TYPE_IDS.includes(v)) set.tera = TYPE_NAMES[TYPE_IDS.indexOf(v)];
   }

@@ -10,40 +10,75 @@ import { EV, IV } from "@/lib/mass-battle/stats";
 
 const ROUND_S = ROUND_TICKS / TICK_HZ;
 
+/** The simulator check's summary (scripts/mass-battle-crosscheck.ts, 1,000 battles a row; rerun it after changing the rules). */
+export const CROSSCHECK = {
+  battles: 1000,
+  matchups: 18,
+  rows: 36,
+  agree: 33,
+  examples: [
+    { label: "Charizard vs Armarouge, level 100", engine: 63.5, sim: 63.3 },
+    { label: "3 Poliwrath vs Bruxish, level 100", engine: 80.6, sim: 80.1 },
+    { label: "Delphox vs 2 Exeggutor, level 50", engine: 73.5, sim: 72.6 },
+    { label: "Garchomp vs Tyranitar in a sandstorm, level 100", engine: 88.8, sim: 88.8 },
+  ],
+} as const;
+
 export function HowItWorksBody() {
   const item = "flex gap-2";
+  const li = (k: string, children: React.ReactNode) => (
+    <li key={k} className={item}><span aria-hidden>•</span><span>{children}</span></li>
+  );
   return (
     <div className="space-y-5 text-sm leading-relaxed text-muted-foreground" data-testid="mb-how-body">
       <section className="space-y-2">
         <h3 className="font-display text-base font-bold uppercase tracking-wide text-foreground">The real games&apos; maths</h3>
         <ul className="space-y-1.5">
-          <li className={item}><span aria-hidden>•</span><span><b className="text-foreground">Damage</b> is Smogon&apos;s damage calculator, the one Pokémon Showdown uses: STAB, the type chart, abilities such as Huge Power, Levitate or Thick Fat, damage items, critical hits and the 16 random damage rolls are exact.</span></li>
-          <li className={item}><span aria-hidden>•</span><span><b className="text-foreground">Stats</b> come from the Pokédex with the games&apos; stat formula at the chosen level (50 or 100), a neutral nature, {IV} IVs and {EV} EVs in every stat.</span></li>
-          <li className={item}><span aria-hidden>•</span><span><b className="text-foreground">Sets</b>: Pokémon in Showdown&apos;s random battles bring up to four attacking moves of their random-battle set, its ability and its item if it changes damage (Life Orb, Choice Band, Light Ball…). The rest use the attacking moves they learn by levelling up to that level (up to four, the strongest first, then new types), their first regular ability and no item.</span></li>
-          <li className={item}><span aria-hidden>•</span><span><b className="text-foreground">Turns</b>: everyone acts once a round. Priority moves go first, then higher Speed, ties at random. Each Pokémon uses the move that does the most expected damage (accuracy × average damage) to the foes it can reach.</span></li>
-          <li className={item}><span aria-hidden>•</span><span><b className="text-foreground">Hits</b>: accuracy, critical hits (1 in 24, more for high-critical moves), multi-hit counts, recoil, drain, Life Orb recoil and Sturdy work as in the games. A spread move (Earthquake, Surf, Blizzard…) that hits more than one foe does 0.75× damage, as in double battles.</span></li>
+          {li("damage", <><b className="text-foreground">Damage</b> is Smogon&apos;s damage calculator, the one Pokémon Showdown uses: STAB, the type chart, abilities, items, weather, terrain, Terastallization, stat stages, burns, critical hits and the 16 random damage rolls are exact.</>)}
+          {li("stats", <><b className="text-foreground">Stats</b> come from the Pokédex with the games&apos; stat formula at each Pokémon&apos;s level (any from 1 to 100) with its nature, EVs and IVs; by default a neutral nature, {EV} EVs and {IV} IVs in every stat (the random battles&apos; spread).</>)}
+          {li("sets", <><b className="text-foreground">Sets</b>: by default, Pokémon in Showdown&apos;s random battles bring up to four attacking moves of their random-battle set and its ability; the rest use the attacking moves they know by levelling up to their level (the strongest first, then new types) and their first regular ability. In Advanced you can give any species any moves it can legally learn, any of its abilities, a nature, an EV and IV spread and a Tera type.</>)}
+          {li("items", <><b className="text-foreground">No held items unless you choose them.</b> Items change matchups a lot (Pikachu&apos;s Light Ball doubles its Attack), so armies hold nothing by default and every answer here is item-free. Pick an item per species, or turn on random-battle items in Advanced.</>)}
+          {li("turns", <><b className="text-foreground">Turns</b>: everyone acts once a round, choosing its move as the round starts: the one that does the most expected damage (accuracy × average damage) to the foes it would hit. Priority moves go first, then higher Speed (with its stages, paralysis, Choice Scarf and the weather abilities), ties at random.</>)}
+          {li("hits", <><b className="text-foreground">Hits</b>: accuracy and evasion (with their stages, No Guard, Compound Eyes, Wide Lens, Bright Powder, Thunder in the rain…), critical hits, multi-hit moves, recoil, drain, Life Orb and High Jump Kick&apos;s crash. A spread move (Earthquake, Surf, Blizzard…) that hits more than one foe does 0.75× damage, as in double battles.</>)}
+          {li("effects", <><b className="text-foreground">Side effects and status</b>: Thunderbolt&apos;s paralysis, Scald&apos;s burns, Crunch&apos;s Defense drop, Close Combat&apos;s own drops, Iron Head&apos;s flinch, Hurricane&apos;s confusion and Outrage&apos;s lock-in, with Serene Grace, Sheer Force and Shield Dust. Paralysis, burns, poison, bad poison, sleep and freezing work as in the games, with the types, abilities and terrains that block them.</>)}
+          {li("abilities", <><b className="text-foreground">Abilities and items in battle</b>: contact abilities (Static, Flame Body, Effect Spore, Rough Skin), abilities that grow with the battle (Moxie, Beast Boost, Speed Boost, Stamina, Justified, Weak Armor, Defiant), absorbing abilities (Lightning Rod, Volt Absorb, Sap Sipper), Sturdy and Disguise; Choice items lock their move, Leftovers, berries, Focus Sash, Air Balloon, Rocky Helmet and Weakness Policy do their jobs, and Knock Off takes an item away.</>)}
+          {li("field", <><b className="text-foreground">The field</b>: sun, rain, sandstorm or snow and Electric, Grassy, Psychic or Misty Terrain, through the calculator and at the end of each round (sandstorm damage, Grassy Terrain healing, Psychic Terrain stopping priority moves), as do Leftovers, poison and burns.</>)}
+        </ul>
+      </section>
+      <section className="space-y-2" data-testid="mb-how-check">
+        <h3 className="font-display text-base font-bold uppercase tracking-wide text-foreground">Checked against Showdown&apos;s simulator</h3>
+        <p>
+          The same sets were played {CROSSCHECK.battles.toLocaleString("en-US")} times each in this battle and in Pokémon Showdown&apos;s own simulator, in {CROSSCHECK.matchups} small battles (one against one, two against one, one against two, three against one) at levels 50 and 100, with both choosing moves the same way and everyone in reach of everyone (the battlefield below is left out). In {CROSSCHECK.agree} of the {CROSSCHECK.rows} comparisons the two win rates are within the noise of that many battles. Two of the other three are a known gap: in a double battle, Lightning Rod pulls a partner&apos;s Electric moves into itself, and this battle has no moves between allies. The third is chance: played again with 4,000 fresh battles, it agrees.
+        </p>
+        <ul className="grid gap-1.5 sm:grid-cols-2">
+          {CROSSCHECK.examples.map((e) => (
+            <li key={e.label} className="rounded-md bg-foreground/[0.04] px-2.5 py-1.5 text-xs">
+              <span className="block text-foreground">{e.label}</span>
+              <span className="tabular-nums">This battle {e.engine.toFixed(1)}% · Showdown {e.sim.toFixed(1)}%</span>
+            </li>
+          ))}
         </ul>
       </section>
       <section className="space-y-2">
         <h3 className="font-display text-base font-bold uppercase tracking-wide text-foreground">Our battlefield</h3>
         <ul className="space-y-1.5">
-          <li className={item}><span aria-hidden>•</span><span>Positions are this page&apos;s own addition. A round lasts {ROUND_S} seconds of battle time. Pokémon run toward the nearest foe they can hurt at 10 m/s per 100 base Speed (Pokémon Race&apos;s scale).</span></li>
-          <li className={item}><span aria-hidden>•</span><span>A move that makes contact needs the two side by side (within {CONTACT_REACH} m); any other move reaches {RANGED_REACH} m. Spread moves hit every foe within {SPREAD_REACH} m of the user, never its own side (in the games Earthquake and Surf also hit allies).</span></li>
-          <li className={item}><span aria-hidden>•</span><span>Bodies take room by height and the shape of their art and push each other apart (heavier ones harder). A hit knocks its target back by its damage over the target&apos;s weight.</span></li>
-          <li className={item}><span aria-hidden>•</span><span>A battle still going after {MAX_SECONDS / 60} minutes of battle time is a draw, and so is one where neither side can hurt the other at all.</span></li>
+          {li("pos", <>Positions are this page&apos;s own addition. A round lasts {ROUND_S} seconds of battle time. Pokémon run toward their target at 10 m/s per 100 base Speed (Pokémon Race&apos;s scale): the nearest foe they can hurt, the weakest or strongest one near them, or the other side&apos;s boss, as each side is told. A side holding the line waits for foes to come close (both waiting, they advance after a while).</>)}
+          {li("reach", <>A move that makes contact needs the two side by side (within {CONTACT_REACH} m); any other move reaches {RANGED_REACH} m. Spread moves hit every foe within {SPREAD_REACH} m of the user, never its own side (in the games Earthquake and Surf also hit allies).</>)}
+          {li("bodies", <>Bodies take room by height and the shape of their art and push each other apart (heavier ones harder); formations can be tight, normal or loose. A hit knocks its target back by its damage over the target&apos;s weight.</>)}
+          {li("end", <>A battle still going after {MAX_SECONDS / 60} minutes of battle time is a draw, and so is one where neither side can hurt the other at all.</>)}
         </ul>
       </section>
       <section className="space-y-2">
         <h3 className="font-display text-base font-bold uppercase tracking-wide text-foreground">Not in this version</h3>
-        <p>Status moves and status conditions, stat changes (Swords Dance, Intimidate), weather and terrain (Drizzle does nothing here), healing, held-item effects beyond damage (Leftovers, berries, Focus Sash), switching, Terastallization, and moves that need what the battle doesn&apos;t track: charging or recharging moves, moves that make the user faint, one-hit KO moves, Fake Out, Focus Punch, Dream Eater, Super Fang, Counter and the like.</p>
+        <p>Status moves (Swords Dance, Protect, Will-O-Wisp), switching, abilities that act as a Pokémon comes in (Intimidate, and Drizzle and the other weather and terrain setters: the field is the one you pick), anything between allies (Earthquake hitting partners, Lightning Rod drawing a partner&apos;s moves, Helping Hand), the damage trapping moves do over the next turns, Flash Fire&apos;s boost, Mega Evolution during the battle (Megas start Mega Evolved) and Dynamax, and moves that need what the battle doesn&apos;t track: charging or recharging moves, moves that make the user faint, one-hit KO moves, Fake Out, Focus Punch, Dream Eater, Super Fang, Counter and the like.</p>
       </section>
       <section className="space-y-2">
         <h3 className="font-display text-base font-bold uppercase tracking-wide text-foreground">&ldquo;How many?&rdquo;</h3>
-        <p>The answer is the smallest army that wins at least half its battles. Every size is tried on the same seeded battles: doubling first, then a binary search with {SOLVER.runs} battles per size, stopping a size early once the majority is decided. The ± is half the range of army sizes that win between a quarter and three quarters of their battles, measured on all {SOLVER.runs} battles at the answer and at sizes either side of it. Battles run in your browser, on every spare core.</p>
-        <p>Above the view&apos;s limit (lower on phones), the battle is still fought by every unit, and the view draws an even share of each army, labelled on screen. Every battle is seeded: its share link replays the same battle, hit for hit.</p>
+        <p>The answer is the smallest army that wins at least half its battles (or nine in ten, if you ask in Advanced). Every size is tried on the same seeded battles: doubling first, then a binary search with {SOLVER.runs} battles per size (20 to 200 in Advanced), stopping a size early once its result is decided. The ± is half the range of army sizes that could go either way (winning a quarter to three quarters of their battles), measured on all the battles at the answer and at sizes either side of it. An army of several species, or a group, is shared evenly between them. Battles run in your browser, on every spare core, and well past the number the view can draw.</p>
+        <p>Above the view&apos;s limit (lower on phones), the battle is still fought by every unit, and the view draws an even share of each army, labelled on screen. Every battle is seeded: its share link replays the same battle, hit for hit, with the same sets, field and settings.</p>
       </section>
       <p className="text-xs">
-        Data: the Pokédex (PokéAPI), Showdown&apos;s random-battle sets and move data (@pkmn), Smogon&apos;s damage calculator (@smogon/calc). Figures: Pokémon HOME renders made solid with depth maps (Depth Anything V2). Music: &ldquo;Epic Endgame Cinematic&rdquo; by cynicmusic (CC0). The colosseum&apos;s crowd: &ldquo;Crowd Shouting/Speaking Ambience&rdquo; by StarNinjas (CC0); the other sounds are made in the browser. Ground textures: Poly Haven (CC0).
+        Data: the Pokédex (PokéAPI), Showdown&apos;s random-battle sets, learnsets and move data (@pkmn), Smogon&apos;s damage calculator (@smogon/calc), checked against Showdown&apos;s simulator (@pkmn/sim). Figures: Pokémon HOME renders made solid with depth maps (Depth Anything V2). Music: &ldquo;Epic Endgame Cinematic&rdquo; by cynicmusic (CC0). The colosseum&apos;s crowd: &ldquo;Crowd Shouting/Speaking Ambience&rdquo; by StarNinjas (CC0); the other sounds are made in the browser. Ground textures: Poly Haven (CC0).
       </p>
     </div>
   );

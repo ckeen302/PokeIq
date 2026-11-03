@@ -8,7 +8,7 @@ import {
   type ArenaId, type BattleSpec, type CameraMode, type GroupRule, type MBSpecies, type PlaybackSpec, type Question, type Roster, type Terrain, type TimeOfDay, type Weather,
 } from "@/lib/mass-battle/types";
 import { MAX_SIDE, MAX_SPECIES, RUN_CHOICES, newSeed } from "@/lib/mass-battle/share";
-import { clampLevel, groupLabel, groupMembers, type GroupFacts } from "@/lib/mass-battle/sets";
+import { clampLevel, groupDetail, groupLabel, groupMembers, type GroupFacts } from "@/lib/mass-battle/sets";
 import { defaultSetup, fromBattle, fromQuestion, rowKey, toBattle, toQuestion, type RowState, type SetupState, type SideState } from "@/lib/mass-battle/setup";
 import { fmt, groupName, questionText } from "@/lib/mass-battle/copy";
 import { HudHeading } from "@/components/game/HudHeading";
@@ -120,15 +120,21 @@ export function SetupPanel({ list, presets, busy, current, playback, onPlayback,
     const setOpen = openSet === r.key;
     return (
       <div key={r.key} className="space-y-2" data-testid={`${tid}-row`}>
-        <div className={cn("grid items-end gap-2", counts ? "grid-cols-[minmax(0,1fr)_5.5rem_auto]" : "grid-cols-[minmax(0,1fr)_auto]")}>
+        <div className={cn("grid items-end gap-2", counts ? "grid-cols-[minmax(0,1fr)_auto] sm:grid-cols-[minmax(0,1fr)_5.5rem_auto]" : "grid-cols-[minmax(0,1fr)_auto]")}>
           {r.group ? (
-            <div className="min-w-0">
+            <div className={cn("min-w-0", counts && "col-span-2 sm:col-span-1")}>
               <span className={label}>Group</span>
-              <div className="mt-1 flex h-12 items-center gap-2 rounded-lg border bg-card px-3" data-testid={`${tid}-group`}>
+              <div className="mt-1 flex h-12 items-center gap-2 rounded-lg border bg-card px-3" data-testid={`${tid}-group`} title={groupLabel(r.group)}>
                 <Layers className="h-4 w-4 shrink-0 text-primary" aria-hidden />
-                <span className="min-w-0 flex-1 truncate font-display text-sm font-bold uppercase tracking-wide">{groupLabel(r.group)}</span>
-                <span className="font-pixel text-[9px] text-muted-foreground">{members(r.group)}</span>
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate font-display text-sm font-bold uppercase leading-tight tracking-wide">{groupName(r.group)}</span>
+                  <span className="block truncate text-[11px] leading-tight text-muted-foreground">{groupDetail(r.group)} · {members(r.group)} Pokémon</span>
+                </span>
               </div>
+            </div>
+          ) : counts ? (
+            <div className="col-span-2 min-w-0 sm:col-span-1">
+              <PokemonPicker label={sideId === "boss" ? "…beat" : `Pokémon ${k + 1}`} value={r.id} list={list} onChange={(id) => setRow(sideId, r.key, { id, set: undefined })} testId={typeof sideId === "number" ? `mb-side-${sideId}-pick-${k}` : sideId === "boss" ? "mb-pick-boss" : `mb-pick-army-${k}`} disabled={busy} />
             </div>
           ) : (
             <PokemonPicker label={sideId === "boss" ? "…beat" : k === 0 && sideId === "army" ? "How many…" : `Pokémon ${k + 1}`} value={r.id} list={list} onChange={(id) => setRow(sideId, r.key, { id, set: undefined })} testId={sideId === "army" ? (k === 0 ? "mb-pick-challenger" : `mb-pick-army-${k}`) : sideId === "boss" ? "mb-pick-boss" : `mb-side-${sideId}-pick-${k}`} disabled={busy} />
@@ -213,12 +219,12 @@ export function SetupPanel({ list, presets, busy, current, playback, onPlayback,
     return (
       <fieldset className="space-y-2 rounded-lg border p-3" data-testid={tid}>
         <legend className="px-1 font-display text-xs font-bold uppercase tracking-wider">{title}</legend>
-        <div className="grid grid-cols-2 gap-2 lg:grid-cols-5">
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
           <div><label className={label} htmlFor={`${tid}-f`}>Formation</label><select id={`${tid}-f`} value={sd.formation} onChange={(e) => set({ formation: e.target.value as SideState["formation"] })} className={small} data-testid={`${tid}-formation`}>{FORMATIONS.map((f) => <option key={f} value={f}>{FORMATION_LABEL[f]}</option>)}</select></div>
           <div><label className={label} htmlFor={`${tid}-s`}>Spacing</label><select id={`${tid}-s`} value={sd.spacing} onChange={(e) => set({ spacing: e.target.value as SideState["spacing"] })} className={small} data-testid={`${tid}-spacing`}>{SPACINGS.map((f) => <option key={f} value={f}>{SPACING_LABEL[f]}</option>)}</select></div>
           <div><label className={label} htmlFor={`${tid}-t`}>Targets</label><select id={`${tid}-t`} value={sd.targeting} onChange={(e) => set({ targeting: e.target.value as SideState["targeting"] })} className={small} data-testid={`${tid}-targeting`}>{TARGETINGS.map((f) => <option key={f} value={f}>{TARGETING_LABEL[f]}</option>)}</select></div>
           <div><label className={label} htmlFor={`${tid}-st`}>Stance</label><select id={`${tid}-st`} value={sd.stance} onChange={(e) => set({ stance: e.target.value as SideState["stance"] })} className={small} data-testid={`${tid}-stance`}>{STANCES.map((f) => <option key={f} value={f}>{STANCE_LABEL[f]}</option>)}</select></div>
-          <div className="col-span-2 lg:col-span-1"><label className={label} htmlFor={`${tid}-sp`}>Spread moves</label><select id={`${tid}-sp`} value={sd.spread} onChange={(e) => set({ spread: e.target.value as SideState["spread"] })} className={small} data-testid={`${tid}-spread`}>{SPREAD_USES.map((f) => <option key={f} value={f}>{SPREAD_LABEL[f]}</option>)}</select></div>
+          <div><label className={label} htmlFor={`${tid}-sp`}>Spread moves</label><select id={`${tid}-sp`} value={sd.spread} onChange={(e) => set({ spread: e.target.value as SideState["spread"] })} className={small} data-testid={`${tid}-spread`}>{SPREAD_USES.map((f) => <option key={f} value={f}>{SPREAD_LABEL[f]}</option>)}</select></div>
         </div>
       </fieldset>
     );
@@ -226,7 +232,7 @@ export function SetupPanel({ list, presets, busy, current, playback, onPlayback,
 
   const toggle = (on: boolean, onChange: (v: boolean) => void, text: string, testId: string) => (
     <button type="button" role="switch" aria-checked={on} onClick={() => onChange(!on)} className={cn("inline-flex h-10 items-center gap-2 rounded-md border px-3 text-sm transition-colors", on ? "border-primary/60 bg-primary/10 text-foreground" : "text-muted-foreground hover:text-foreground")} data-testid={testId}>
-      <span className={cn("relative h-4 w-7 rounded-full transition-colors", on ? "bg-primary" : "bg-muted-foreground/30")} aria-hidden>
+      <span className={cn("relative inline-block h-4 w-7 shrink-0 rounded-full transition-colors", on ? "bg-primary" : "bg-muted-foreground/30")} aria-hidden>
         <span className={cn("absolute top-0.5 h-3 w-3 rounded-full bg-background transition-transform", on ? "translate-x-3.5" : "translate-x-0.5")} />
       </span>
       {text}
@@ -304,7 +310,7 @@ export function SetupPanel({ list, presets, busy, current, playback, onPlayback,
                   <div><label className={label} htmlFor="mb-weather">Weather</label><select id="mb-weather" value={s.field.weather} onChange={(e) => patch({ field: { ...s.field, weather: e.target.value as Weather } })} className={small} data-testid="mb-weather">{WEATHERS.map((w) => <option key={w} value={w}>{WEATHER_LABEL[w]}</option>)}</select></div>
                   <div><label className={label} htmlFor="mb-terrain">Terrain</label><select id="mb-terrain" value={s.field.terrain} onChange={(e) => patch({ field: { ...s.field, terrain: e.target.value as Terrain } })} className={small} data-testid="mb-terrain">{TERRAINS.map((t) => <option key={t} value={t}>{TERRAIN_LABEL[t]}</option>)}</select></div>
                   <div><label className={label} htmlFor="mb-time">Time of day</label><select id="mb-time" value={s.field.time} onChange={(e) => patch({ field: { ...s.field, time: e.target.value as TimeOfDay } })} className={small} data-testid="mb-time">{TIMES.map((t) => <option key={t} value={t}>{TIME_LABEL[t]}</option>)}</select></div>
-                  <div><label className={label} htmlFor="mb-items">Held items</label><select id="mb-items" value={s.items} onChange={(e) => patch({ items: e.target.value as SetupState["items"] })} className={small} data-testid="mb-items"><option value="none">None unless chosen</option><option value="sets">Random-battle items</option></select></div>
+                  <div><label className={label} htmlFor="mb-items">Held items</label><select id="mb-items" value={s.items} onChange={(e) => patch({ items: e.target.value as SetupState["items"] })} className={small} data-testid="mb-items"><option value="none">None</option><option value="sets">Random-battle items</option></select></div>
                 </div>
               </fieldset>
               {s.tab === "ask" ? (
