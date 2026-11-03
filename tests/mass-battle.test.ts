@@ -847,6 +847,48 @@ describe("mass battle: presets", () => {
     expect(fw.sides[0].units.every((u) => types(u.id).includes("water") && !types(u.id).includes("fire"))).toBe(true);
     expect(fw.sides[1].units.every((u) => types(u.id).includes("fire") && !types(u.id).includes("water"))).toBe(true);
   });
+
+  it("a preset can say anything the setup panel can, and fills the panel in with it (and its link carries it)", () => {
+    const base: (typeof PRESETS)[number] = {
+      id: "test", kind: "howmany", title: "t", hook: "h", blurb: "b", arena: "snowfield", level: 50, seed: 3,
+      field: { weather: "rain", terrain: "grassy", time: "night" }, items: "sets",
+      sides: [
+        { formation: "wedge", spacing: "loose", targeting: "boss", stance: "hold", spread: "never", units: [["pikachu", 10, { item: "Light Ball", nature: "Timid" }]] },
+        { formation: "line", units: [["snorlax", 1, { evs: "bulk" }]] },
+      ],
+      question: { challenger: "pikachu", boss: "snorlax", threshold: 0.9, runs: 100 },
+      playback: { numbers: true, speed: 2 },
+    };
+    const r = resolvePreset(base, roster);
+    expect(r.spec.field).toEqual(base.field);
+    expect(r.spec.items).toBe("sets");
+    expect(r.spec.sides[0]).toMatchObject({ formation: "wedge", spacing: "loose", targeting: "boss", stance: "hold", spread: "never" });
+    expect(r.spec.sides[0].units[0].set).toEqual({ item: "Light Ball", nature: "Timid" });
+    const q = r.question!;
+    expect(q).toMatchObject({ level: 50, arena: "snowfield", field: base.field, items: "sets", threshold: 0.9, runs: 100 });
+    expect(q.army.units[0].set).toEqual({ item: "Light Ball", nature: "Timid" });
+    expect(q.army.targeting).toBe("boss");
+    expect(q.boss.units[0].set).toEqual({ evs: "bulk" });
+    expect(r.playback).toEqual({ numbers: true, speed: 2 });
+    // The panel, from the preset's battle and from its question, and back.
+    const panel = fromBattle(defaultSetup((slug) => mon(slug).id), r.spec);
+    expect(panel).toMatchObject({ tab: "army", level: 50, arena: "snowfield", field: base.field, items: "sets" });
+    expect(panel.sides[0]).toMatchObject({ formation: "wedge", spacing: "loose", targeting: "boss", stance: "hold", spread: "never" });
+    expect(toBattle(panel, 3)).toEqual(r.spec);
+    const asked = fromQuestion(defaultSetup((slug) => mon(slug).id), q);
+    expect(asked).toMatchObject({ tab: "ask", threshold: 0.9, runs: 100, items: "sets" });
+    expect(toQuestion(asked)).toEqual(q);
+    expect(decodeQuestion(encodeQuestion(q, slugs), slugs)).toEqual(q);
+    expect(decodeBattle(encodeBattle(r.spec, slugs), slugs)).toEqual(r.spec);
+  });
+
+  it("the sun turns Fire vs Water around, and a Light Ball cuts the Pikachu needed for Snorlax (the presets' own results)", async () => {
+    const { PRESET_RESULTS } = await import("@/lib/mass-battle/page-data");
+    expect(PRESET_RESULTS.results["fire-vs-water"].outcome.winner).toBe(0); // Water
+    expect(PRESET_RESULTS.results["fire-vs-water-sun"].outcome.winner).toBe(1); // Fire
+    const plain = PRESET_RESULTS.results["pikachu-vs-snorlax"].answer!, ball = PRESET_RESULTS.results["light-ball-pikachu-vs-snorlax"].answer!;
+    expect(ball.n).toBeLessThan(plain.n);
+  });
 });
 
 describe("mass battle: events", () => {

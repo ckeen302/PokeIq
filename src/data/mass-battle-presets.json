@@ -177,6 +177,50 @@
     ]
    },
    "answer": null
+  },
+  "fire-vs-water-sun": {
+   "outcome": {
+    "winner": 1,
+    "seconds": 36.45,
+    "left": [
+     0,
+     55
+    ],
+    "kos": [
+     353,
+     375
+    ],
+    "dealt": [
+     116383,
+     123452
+    ]
+   },
+   "answer": null
+  },
+  "light-ball-pikachu-vs-snorlax": {
+   "outcome": {
+    "winner": 0,
+    "seconds": 4.3,
+    "left": [
+     5,
+     0
+    ],
+    "kos": [
+     1,
+     0
+    ],
+    "dealt": [
+     482,
+     0
+    ]
+   },
+   "answer": {
+    "n": 2,
+    "spread": 1,
+    "wins": 20,
+    "runs": 40,
+    "seed": 1151014033
+   }
   }
  }
 }

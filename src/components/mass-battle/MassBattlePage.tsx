@@ -52,7 +52,7 @@ export function MassBattlePage({ preset, battle, question, playback }: { preset?
         </div>
         <h1 className="font-display text-3xl font-bold uppercase leading-[0.95] tracking-tight sm:text-5xl">{preset ? preset.title : <>Pokémon <span className="text-primary">Mass Battle</span></>}</h1>
       </div>
-      <MassBattleExperience list={list} presets={presets} initial={initial} playback={playback ?? DEFAULT_PLAYBACK} />
+      <MassBattleExperience list={list} presets={presets} initial={initial} playback={playback ?? { ...DEFAULT_PLAYBACK, ...preset?.playback }} />
       <p className="max-w-3xl text-muted-foreground sm:text-lg">
         {preset ? preset.blurb : "Thousands of Pokémon clash on a 3D battlefield, and every hit uses the real games' damage maths. Ask how many of one Pokémon it takes to beat another, or send two armies at each other."}
       </p>

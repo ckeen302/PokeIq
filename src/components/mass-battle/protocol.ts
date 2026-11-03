@@ -1,5 +1,5 @@
 import type { BattleStats } from "@/lib/mass-battle/engine";
-import type { BattleOutcome, BattleSpec, FieldSpec, MBMove, MBSpecies, Question, Winner } from "@/lib/mass-battle/types";
+import type { BattleOutcome, BattleSpec, FieldSpec, MBMove, MBSpecies, PlaybackSpec, Question, Winner } from "@/lib/mass-battle/types";
 
 /**
  * Messages between the page and its battle workers.
@@ -16,6 +16,12 @@ import type { BattleOutcome, BattleSpec, FieldSpec, MBMove, MBSpecies, Question,
  *   lost turn, an item used or lost).
  * And the ready message carries the field (weather, terrain, time of day)
  * and each fighter's level and set.
+ *
+ * The battle's playback (speed, slow motion, damage numbers, HUD, camera)
+ * goes to the live worker with the battle and whenever it changes: the
+ * worker plays ahead of what the page has asked for, further the faster
+ * the playback, so a battle of thousands at 4× never waits on the
+ * simulation (it's deterministic: playing ahead changes nothing in it).
  */
 
 /** The part of the roster a battle needs (move indices still point into the full move list). */
@@ -97,8 +103,9 @@ export interface SimEnd {
 }
 
 export type ToSim =
-  | { type: "init"; id: number; roster: RosterSlice; spec: BattleSpec }
+  | { type: "init"; id: number; roster: RosterSlice; spec: BattleSpec; playback?: PlaybackSpec }
   | { type: "step"; id: number; count: number }
+  | { type: "playback"; id: number; playback: PlaybackSpec; paused?: boolean }
   | { type: "plan"; id: number }
   | { type: "recycle"; buffers: ArrayBuffer[] };
 

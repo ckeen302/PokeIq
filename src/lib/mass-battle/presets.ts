@@ -1,16 +1,29 @@
 import { simpleQuestion } from "./share";
-import type { ArenaId, BattleLevel, BattleSpec, Formation, GroupRule, MBSpecies, Question, Roster, SetChoice, UnitSpec } from "./types";
+import { type ArenaId, type ArmySpec, type BattleLevel, type BattleSpec, type FieldSpec, type Formation, type GroupRule, type ItemPolicy, type MBSpecies, type PlaybackSpec, type Question, type Roster, type SetChoice, type Spacing, type SpreadUse, type Stance, type Targeting, type UnitSpec } from "./types";
 
 /**
  * The ready-made battles, each with its own page, share link and preview
- * card. A side is a few species with counts, or a group ("every fully
- * evolved Fire type") resolved against the real data. Nobody holds an item
- * unless a preset says so (the fair default).
+ * card. A preset can say anything the Battle setup panel can (and fills it
+ * in): a side is a few species with counts and sets, or a group ("every
+ * fully evolved Fire type") resolved against the real data, with its
+ * formation and how it fights; the field (weather, terrain, time of day);
+ * held items; the "how many?" question's settings; and how the battle is
+ * shown. Nobody holds an item unless a preset says so (the fair default).
  */
 
-type SideDef =
-  | { formation: Formation; units: [slug: string, count: number, set?: SetChoice][] }
-  | { formation: Formation; group: GroupRule; each: number };
+/** How a side fights (left out: nearest foe, charge, normal spacing, spread moves when they pay). */
+interface SideBehaviour {
+  spacing?: Spacing;
+  targeting?: Targeting;
+  stance?: Stance;
+  spread?: SpreadUse;
+}
+
+type SideDef = SideBehaviour &
+  (
+    | { formation: Formation; units: [slug: string, count: number, set?: SetChoice][] }
+    | { formation: Formation; group: GroupRule; each: number; set?: SetChoice }
+  );
 
 export interface PresetDef {
   id: string;
@@ -25,8 +38,17 @@ export interface PresetDef {
   level: BattleLevel;
   seed: number;
   sides: [SideDef, SideDef];
-  /** "How many?" presets: the question the solver answers (an army of the first side's species against the second's). */
-  question?: { challenger: string; boss: string };
+  /** Weather, terrain and time of day (left out: clear, none, day). */
+  field?: FieldSpec;
+  /** "sets": everyone holds its random-battle item (left out: no items unless a set says so). */
+  items?: ItemPolicy;
+  /**
+   * "How many?" presets: the question the solver answers: an army of the first side's species (with its set there)
+   * against the second's, in the preset's field, with the share of battles to win and the battles per size.
+   */
+  question?: { challenger: string; boss: string; threshold?: number; runs?: number };
+  /** How the battle is shown, unless the link says otherwise. */
+  playback?: Partial<PlaybackSpec>;
   /** Names for sides made of many species. */
   labels?: [string, string];
 }
@@ -145,6 +167,35 @@ export const PRESETS: PresetDef[] = [
       { formation: "wedge", units: [["umbreon", 25], ["leafeon", 25], ["glaceon", 25], ["sylveon", 25]] },
     ],
   },
+  {
+    id: "fire-vs-water-sun",
+    kind: "battle",
+    title: "Fire vs Water in harsh sunlight",
+    hook: "Fire vs Water… but the sun is out ☀️",
+    blurb: "The same armies as Fire vs Water, under harsh sunlight: Fire moves hit 1.5× harder and Water moves half as hard, as in the games.",
+    arena: "volcano",
+    level: 100,
+    seed: 2026,
+    field: { weather: "sun", terrain: "none", time: "day" },
+    labels: ["Water types", "Fire types"],
+    sides: [
+      { formation: "line", group: { types: ["water"], fullyEvolved: true, legendary: "no" }, each: 5 },
+      { formation: "line", group: { types: ["fire"], fullyEvolved: true, legendary: "no" }, each: 10 },
+    ],
+  },
+  {
+    id: "light-ball-pikachu-vs-snorlax",
+    kind: "howmany",
+    title: "How many Pikachu with a Light Ball beat Snorlax?",
+    hook: "How many Pikachu does it take to beat Snorlax… with a Light Ball? ⚡",
+    blurb: "Pikachu's own held item doubles its Attack and Special Attack. Every Pikachu holds one; Snorlax holds nothing.",
+    arena: "plains",
+    level: 100,
+    seed: 25,
+    sides: [{ formation: "swarm", units: [["pikachu", 5, { item: "Light Ball" }]] }, { formation: "line", units: [["snorlax", 1]] }],
+    question: { challenger: "pikachu", boss: "snorlax" },
+    playback: { numbers: true },
+  },
 ];
 
 export const PRESET_BY_ID = new Map(PRESETS.map((p) => [p.id, p]));
@@ -159,23 +210,48 @@ export interface ResolvedPreset {
   spec: BattleSpec;
   question: Question | null;
   labels: [string, string] | null;
+  /** How it's shown: the preset's own choices (the rest stays as the viewer has it). */
+  playback: Partial<PlaybackSpec>;
 }
+
+const behaviourOf = (d: SideBehaviour): Omit<ArmySpec, "units" | "formation"> => ({
+  ...(d.spacing && d.spacing !== "normal" ? { spacing: d.spacing } : {}),
+  ...(d.targeting && d.targeting !== "nearest" ? { targeting: d.targeting } : {}),
+  ...(d.stance === "hold" ? { stance: d.stance } : {}),
+  ...(d.spread === "never" ? { spread: d.spread } : {}),
+});
 
 /** A preset's armies against the roster (species it can't field are left out). */
 export function resolvePreset(p: PresetDef, roster: Pick<Roster, "species">): ResolvedPreset {
   const bySlug = new Map(roster.species.map((s) => [s.slug, s]));
   const canFight = (s: MBSpecies | undefined): s is MBSpecies => !!s && (!!s.randbats || s.levelUp.length > 0);
-  const side = (d: SideDef) => {
+  const side = (d: SideDef): ArmySpec => {
     if ("units" in d) {
       const units: UnitSpec[] = d.units.flatMap(([slug, count, set]) => {
         const s = bySlug.get(slug);
         return canFight(s) ? [{ id: s.id, count, ...(set ? { set } : {}) }] : [];
       });
-      return { formation: d.formation, units };
+      return { formation: d.formation, ...behaviourOf(d), units };
     }
-    return { formation: d.formation, units: [{ id: 0, count: d.each, group: d.group }] };
+    return { formation: d.formation, ...behaviourOf(d), units: [{ id: 0, count: d.each, group: d.group, ...(d.set ? { set: d.set } : {}) }] };
   };
+  const sides: [ArmySpec, ArmySpec] = [side(p.sides[0]), side(p.sides[1])];
+  const spec: BattleSpec = { sides, level: p.level, arena: p.arena, seed: p.seed };
+  if (p.field && (p.field.weather !== "none" || p.field.terrain !== "none" || p.field.time !== "day")) spec.field = { ...p.field };
+  if (p.items === "sets") spec.items = "sets";
+  // The question: its challenger and boss as the sides have them (their sets and how they fight), in the preset's field.
   const c = p.question ? bySlug.get(p.question.challenger) : undefined, b = p.question ? bySlug.get(p.question.boss) : undefined;
-  const q = c && b ? simpleQuestion(c.id, b.id, p.level, p.arena) : null;
-  return { id: p.id, kind: p.kind, title: p.title, hook: p.hook, blurb: p.blurb, spec: { sides: [side(p.sides[0]), side(p.sides[1])], level: p.level, arena: p.arena, seed: p.seed }, question: q, labels: p.labels ?? null };
+  let q: Question | null = null;
+  if (c && b && p.question) {
+    q = simpleQuestion(c.id, b.id, p.level, p.arena);
+    const setOf = (army: ArmySpec, id: number) => army.units.find((u) => u.id === id)?.set;
+    const cs = setOf(sides[0], c.id), bs = setOf(sides[1], b.id);
+    q.army = { ...q.army, ...behaviourOf(p.sides[0]), units: [{ id: c.id, count: 1, ...(cs ? { set: cs } : {}) }] };
+    q.boss = { ...q.boss, ...behaviourOf(p.sides[1]), units: [{ id: b.id, count: 1, ...(bs ? { set: bs } : {}) }] };
+    if (spec.field) q.field = spec.field;
+    if (spec.items) q.items = spec.items;
+    if (p.question.threshold === 0.9) q.threshold = 0.9;
+    if (p.question.runs && p.question.runs !== 40) q.runs = p.question.runs;
+  }
+  return { id: p.id, kind: p.kind, title: p.title, hook: p.hook, blurb: p.blurb, spec, question: q, labels: p.labels ?? null, playback: { ...p.playback } };
 }
