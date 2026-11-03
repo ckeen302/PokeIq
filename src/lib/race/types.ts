@@ -9,7 +9,7 @@
 export type RaceKind = "pokemon" | "mega" | "regional" | "form";
 
 /** How a runner moves down its lane (lib/race/gait decides it from shape, types and abilities). */
-export type Motion = "run" | "gallop" | "scuttle" | "fly" | "hover" | "slither" | "flop" | "roll" | "bounce";
+export type Motion = "run" | "gallop" | "scuttle" | "fly" | "hover" | "slither" | "flop" | "roll" | "bounce" | "swim";
 
 export interface Stats {
   hp: number;
@@ -60,7 +60,7 @@ export const KIND_LABEL: Record<RaceKind, string> = {
   form: "Alternate form",
 };
 
-const MOTIONS: Motion[] = ["run", "gallop", "scuttle", "fly", "hover", "slither", "flop", "roll", "bounce"];
+const MOTIONS: Motion[] = ["run", "gallop", "scuttle", "fly", "hover", "slither", "flop", "roll", "bounce", "swim"];
 const KINDS: RaceKind[] = ["pokemon", "mega", "regional", "form"];
 const F_LEGEND = 1, F_MYTH = 2, F_RACE_DEPTH = 4, F_LENGTH = 8, F_EVOLVED = 16;
 

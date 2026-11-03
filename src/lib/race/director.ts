@@ -1,12 +1,13 @@
 import type { Camera } from "./broadcast";
-import { LANE_W, laneCentre, X0, KERB_R, barrierZ, type Distance } from "./track";
+import { BOWL, LANE_W, barrierZ, laneCentre, X0, KERB_R, type Distance } from "./track";
 
 /**
  * Where each broadcast camera stands and what it frames, as plain math
  * (unit-tested). Every shot looks at the runners from the front or three
- * quarters (the relief figures are flat edge-on), with focal lengths like a
- * real athletics broadcast: long lenses on the rail and head-on cameras,
- * wider ones at the start and the line.
+ * quarters, where the 3D figures read best (never a pure side view), with
+ * focal lengths like a real athletics broadcast: long lenses on the
+ * tracking and head-on cameras, wider ones at the start and the line,
+ * framed tight on the runners.
  */
 
 export type Vec3 = [number, number, number];
@@ -33,6 +34,10 @@ export interface Spot {
   /** Figure size (m). */
   w: number;
   h: number;
+  /** How far out from the kerb it is drawn (m; negative in the big pool inside the kerb). Default: its lane's middle. */
+  across?: number;
+  /** Height of its highest point above the track (m; a flier rides above it, a swimmer is mostly under water). Default: h. */
+  top?: number;
 }
 
 export interface DirectorContext {
@@ -66,19 +71,22 @@ export function fieldHeight(spots: Spot[]): number {
   return clamp(hs[Math.floor(hs.length / 2)], 0.35, 3.2);
 }
 
+/** How far from the infield's long axis a runner is drawn on the home straight (its lane's middle, or its place in the big pool). */
+const radiusOf = (s: Spot) => (s.across == null ? laneCentre(s.lane) : KERB_R + s.across);
+
 /** Middle of the field across the lanes (z of the occupied lanes' centre on the home straight). */
 export function fieldMidZ(spots: Spot[]): number {
   if (!spots.length) return laneCentre(4.5);
-  const lanes = spots.map((s) => s.lane);
-  return (laneCentre(Math.min(...lanes)) + laneCentre(Math.max(...lanes))) / 2;
+  const rs = spots.map(radiusOf);
+  return (Math.min(...rs) + Math.max(...rs)) / 2;
 }
 
 /** Lateral span of the occupied lanes plus room for the figures (m). */
 export function fieldSpan(spots: Spot[]): number {
   if (!spots.length) return 8 * LANE_W;
-  const lanes = spots.map((s) => s.lane);
+  const rs = spots.map(radiusOf);
   const wide = Math.max(...spots.map((s) => Math.max(s.w, s.h * 0.6)));
-  return (Math.max(...lanes) - Math.min(...lanes) + 1) * LANE_W + Math.min(8, wide);
+  return Math.max(...rs) - Math.min(...rs) + LANE_W + Math.min(8, wide);
 }
 
 export function leader(spots: Spot[]): Spot {
@@ -100,10 +108,83 @@ const centroid = (ss: Spot[]): Vec3 => {
 /** Outward normal of a running direction (towards the stands: +z on the home straight). */
 const outward = (dx: number, dz: number): [number, number] => [-dz, dx];
 
+/** Shots that frame the field: tall runners in them (a giant flier) are kept in the frame, clear of the clock in its top corner. */
+const FIELD_SHOTS = new Set<Camera>(["rail", "bend", "wide", "headon", "line", "replay"]);
+
 export function cameraFor(cam: Camera, k: number, spots: Spot[], ctx: DirectorContext): CamPose {
+  const pose = shotFor(cam, k, spots, ctx);
+  return FIELD_SHOTS.has(cam) ? keepInFrame(pose, spots, ctx.aspect) : pose;
+}
+
+/**
+ * Widens a shot (a little), then pulls the camera back along its line of
+ * sight (as far as it must, up to about twice as far), until the tops of
+ * the runners it shows (any part of them) sit below the top tenth of the
+ * frame and their sides (bar a wingtip) inside it. Small runners stay as big as the shot made them unless
+ * a much taller one shares the frame.
+ */
+export function keepInFrame(pose: CamPose, spots: Spot[], aspect: number): CamPose {
+  const t = pose.target;
+  const off: Vec3 = [pose.pos[0] - t[0], pose.pos[1] - t[1], pose.pos[2] - t[2]];
+  const near = spots;
+  const need = (pos: Vec3, fovDeg: number): number => {
+    const f = [t[0] - pos[0], t[1] - pos[1], t[2] - pos[2]];
+    const fl = Math.hypot(f[0], f[1], f[2]) || 1;
+    const F = [f[0] / fl, f[1] / fl, f[2] / fl];
+    // right = F × up, up' = right × F
+    let R = [-F[2], 0, F[0]];
+    const rl = Math.hypot(R[0], R[2]) || 1;
+    R = [R[0] / rl, 0, R[2] / rl];
+    const U = [R[1] * F[2] - R[2] * F[1], R[2] * F[0] - R[0] * F[2], R[0] * F[1] - R[1] * F[0]];
+    const tv = Math.tan((fovDeg * DEG) / 2), th = tv * aspect;
+    let req = 0;
+    for (const s of near) {
+      const top = s.top ?? s.h;
+      const d = [s.x - pos[0], s.y + top * 0.55 - pos[1], s.z - pos[2]];
+      const zc = d[0] * F[0] + d[1] * F[1] + d[2] * F[2];
+      if (zc < 1) continue;
+      const half = Math.max(s.w, top * 0.6) * 0.5;
+      // Only runners the shot shows, if only a wing of them.
+      if (Math.abs(d[0] * R[0] + d[2] * R[2]) - half > th * zc || Math.abs((d[0] * U[0] + d[1] * U[1] + d[2] * U[2]) / zc) > tv) continue;
+      const hy = s.y + top * 1.06 - pos[1];
+      const yc = (d[0] * U[0] + hy * U[1] + d[2] * U[2]) / zc;
+      const xc = (Math.abs(d[0] * R[0] + d[2] * R[2]) + half * 0.8) / zc;
+      req = Math.max(req, yc / 0.78, xc / aspect);
+    }
+    return req;
+  };
+  let pos = pose.pos;
+  let fov = pose.fov;
+  const tanOf = (f: number) => Math.tan((f * DEG) / 2);
+  const req = need(pos, fov);
+  if (req <= tanOf(fov)) return pose;
+  fov = Math.min(Math.max(fov, (2 * Math.atan(req) / DEG)), pose.fov * 1.25, 62);
+  // Back along the line of sight, but never further into the stands than the shot already stood (some stand at the barrier).
+  const into = (p: Vec3) => Math.max(Math.abs(p[0]) - (BOWL.A - 4), Math.abs(p[2]) - (barrierZ(p[0]) - 1.5));
+  const limit = Math.max(0, into(pose.pos));
+  for (let k = 1; k <= 12 && need(pos, fov) > tanOf(fov); k++) {
+    const m = 1 + 0.1 * k;
+    const next: Vec3 = [t[0] + off[0] * m, t[1] + off[1] * m, t[2] + off[2] * m];
+    if (into(next) > limit) break;
+    pos = next;
+  }
+  // Where the camera can't go further back, the lens widens instead.
+  // (A wider lens shows more of the field, which may ask for wider still: settle it.)
+  for (let k = 0; k < 4; k++) {
+    const left = need(pos, fov);
+    if (left <= tanOf(fov) || fov >= 62) break;
+    fov = Math.min(62, (2 * Math.atan(left)) / DEG + 0.01);
+  }
+  return { pos, target: t, fov };
+}
+
+function shotFor(cam: Camera, k: number, spots: Spot[], ctx: DirectorContext): CamPose {
   const H = fieldHeight(spots);
-  const zMid = fieldMidZ(spots);
-  const span = fieldSpan(spots);
+  // Swimmers in the big pool inside the kerb count towards where the shot looks only while they race with the leader.
+  const inPack = new Set(pack(spots, 15));
+  const lanesNear = spots.filter((s) => (s.across ?? 0) >= 0 || inPack.has(s));
+  const zMid = fieldMidZ(lanesNear.length ? lanesNear : spots);
+  const span = fieldSpan(lanesNear.length ? lanesNear : spots);
   const portrait = ctx.aspect < 0.9;
   switch (cam) {
     case "crane": {
@@ -127,10 +208,10 @@ export function cameraFor(cam: Camera, k: number, spots: Spot[], ctx: DirectorCo
       const [nx, nz] = outward(r.dx, r.dz);
       const a = (5 + 5 * k) * DEG;
       const ux = r.dx * Math.cos(a) + nx * Math.sin(a), uz = r.dz * Math.cos(a) + nz * Math.sin(a);
-      const D = (3.0 + 2.6 * h) * (1 - 0.08 * k) * (portrait ? 1.3 : 1);
+      const D = (2.7 + 2.4 * h) * (1 - 0.08 * k) * (portrait ? 1.3 : 1);
       const target: Vec3 = [r.x, r.y + 0.5 * h, r.z];
       const pos: Vec3 = [r.x + ux * D, r.y + 0.55 * h + 0.35, r.z + uz * D];
-      return { pos, target, fov: fovToFit(Math.max(r.w, h) * 1.45, h * 1.6, D, ctx.aspect, 8, 60) };
+      return { pos, target, fov: fovToFit(Math.max(r.w, h) * 1.3, h * 1.4, D, ctx.aspect, 8, 60) };
     }
     case "marks": {
       const c = centroid(ctx.starts);
@@ -145,19 +226,20 @@ export function cameraFor(cam: Camera, k: number, spots: Spot[], ctx: DirectorCo
       return { pos, target, fov: fovToFit(span + spread * 1.2, H * 2.2, D, ctx.aspect, 12, 62) };
     }
     case "rail": {
-      // The tracking camera on its rail at the front of the main stand: side-on, a little ahead, on a long lens.
+      // The tracking camera on its rail outside the track, running ahead of the pack: three quarters from the front, on a long lens.
       const p = pack(spots);
       const l = leader(spots);
       const c = centroid(p);
       const xs = p.map((s) => s.x);
       const spreadX = Math.max(...xs) - Math.min(...xs);
-      const cx = (c[0] + l.x) / 2 + 0.4;
-      const camX = cx + (portrait ? 1.5 : 3);
-      const pos: Vec3 = [camX, 5.6 + 0.5 * H, barrierZ(camX) + 2.4];
-      const target: Vec3 = [cx, 0.55 * H, zMid];
+      const [nx, nz] = outward(l.dx, l.dz);
+      const ahead = 10 + 2.2 * H + spreadX * 0.4;
+      const out = 6.5 + 1.6 * H + (portrait ? 2 : 0);
+      const cx = (c[0] + l.x) / 2, cz = zMid;
+      const pos: Vec3 = [cx + l.dx * ahead + nx * out, 1.5 + 0.75 * H, cz + l.dz * ahead + nz * out];
+      const target: Vec3 = [cx + l.dx * 0.6, 0.55 * H, cz];
       const D = Math.hypot(pos[0] - target[0], pos[1] - target[1], pos[2] - target[2]);
-      const down = Math.atan2(pos[1] - target[1], pos[2] - target[2]);
-      return { pos, target, fov: fovToFit(Math.max(7, spreadX + Math.max(...p.map((s) => s.w)) + 3), H * 2.5 + span * Math.sin(down), D, ctx.aspect, 6, 50) };
+      return { pos, target, fov: fovToFit(Math.max(4, (span * 0.6 + spreadX * 0.5) * (portrait ? 0.7 : 1)), H * 1.6, D, ctx.aspect, 6, 50) };
     }
     case "bend": {
       const p = pack(spots, 9);
@@ -195,21 +277,21 @@ export function cameraFor(cam: Camera, k: number, spots: Spot[], ctx: DirectorCo
       return { pos, target, fov: fovToFit(span * (portrait ? 0.62 : 1.08), H * 2.1, D, ctx.aspect, 5, 55) };
     }
     case "line": {
-      // The finish-line camera, high in the main stand just past the line.
-      const pos: Vec3 = [X0 + 6, 10.5 + H, barrierZ(X0 + 6) + 9];
-      const target: Vec3 = [X0 - 2.6, 0.45 * H, zMid - 0.4];
+      // The finish-line camera: low, just past the line and outside the track, looking back at them coming in.
+      const pos: Vec3 = [X0 + 13 + 1.5 * H, 2.4 + 1.1 * H, zMid + 8 + 1.6 * H];
+      const target: Vec3 = [X0 - 3.2, 0.5 * H, zMid - 0.3];
       const D = Math.hypot(pos[0] - target[0], pos[1] - target[1], pos[2] - target[2]);
-      return { pos, target, fov: fovToFit(span * 1.1 + 6, H * 2.6 + span * 0.6, D, ctx.aspect, 12, 60) };
+      return { pos, target, fov: fovToFit(span * 0.72 + 2, H * 1.8, D, ctx.aspect, 9, 55) };
     }
     case "winner":
     case "chase": {
       const r = spots.find((s) => s.lane === ctx.lane) ?? leader(spots);
       const h = Math.max(0.5, r.h);
       const [nx, nz] = outward(r.dx, r.dz);
-      const D = 3.5 + 3.2 * h;
-      const pos: Vec3 = [r.x + r.dx * D * 0.62 + nx * D * 0.78, r.y + 0.8 + 0.6 * h, r.z + r.dz * D * 0.62 + nz * D * 0.78];
+      const D = 3.2 + 2.8 * h;
+      const pos: Vec3 = [r.x + r.dx * D * 0.7 + nx * D * 0.71, r.y + 0.7 + 0.55 * h, r.z + r.dz * D * 0.7 + nz * D * 0.71];
       const target: Vec3 = [r.x + r.dx * 0.3, r.y + 0.5 * h, r.z + r.dz * 0.3];
-      return { pos, target, fov: fovToFit(Math.max(r.w, h) * 2.6, h * 2.6, D, ctx.aspect, 10, 60) };
+      return { pos, target, fov: fovToFit(Math.max(r.w, h) * 2.1, h * 2.2, D, ctx.aspect, 10, 60) };
     }
     case "replay": {
       // Low, in front of the line and to the outside: the finish from three quarters, following the leader in.
@@ -218,7 +300,7 @@ export function cameraFor(cam: Camera, k: number, spots: Spot[], ctx: DirectorCo
       const pos: Vec3 = [fx + 8.5, 1.0 + 0.45 * H, zMid + 6.5 + 1.4 * H];
       const target: Vec3 = [fx - 0.6, 0.5 * H, zMid - 0.3];
       const D = Math.hypot(pos[0] - target[0], pos[2] - target[2]);
-      return { pos, target, fov: fovToFit(span * 0.9 + 2, H * 2.2, D, ctx.aspect, 10, 60) };
+      return { pos, target, fov: fovToFit(span * 0.8 + 2, H * 2, D, ctx.aspect, 10, 60) };
     }
     case "results": {
       // From the infield, over the runners stopped in the run-out, the main stand behind them.
