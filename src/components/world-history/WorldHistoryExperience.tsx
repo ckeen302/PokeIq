@@ -50,7 +50,7 @@ const HIGHER: Record<Quality, Quality> = { export: "export", high: "high", mediu
 const FRAME_BUDGET_MS = 1000 / 50;
 const HEADER_PX = 56;
 /** Stills of each chapter for the hall's doorways (public/lab/world-history/<id>.webp). */
-const HAS_STILLS = false;
+const HAS_STILLS = true;
 
 /** ?t=<seconds>: open the film at a moment (a shared moment, checks and screenshots). */
 function timeParam(): number | null {
