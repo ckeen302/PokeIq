@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { pageMetadata } from "@/lib/seo";
 import { BattleHeader } from "@/components/battle/BattleHeader";
 import { ReplayViewer } from "@/components/battle/ReplayViewer";
-import { REPLAY_ID_RE, replayResult } from "@/lib/battle/replay";
+import { REPLAY_ID_RE, replayMatchup, replayResult, replayTitle } from "@/lib/battle/replay";
 import { ReplaysUnavailable, replayStore } from "@/lib/server/battle-engine/replays";
 
 interface PageProps {
@@ -27,7 +27,7 @@ const findReplay = cache(async (id: string) => {
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const replay = await findReplay((await params).id);
   if (!replay) return pageMetadata({ title: "Battle replay", description: "A Pokémon battle replay on PokéIQ.", noindex: true });
-  const title = `${replay.players[0]} vs ${replay.players[1]}: ${replay.formatName} replay`;
+  const title = `${replayTitle(replay)}: ${replay.formatName} replay`;
   return pageMetadata({
     title,
     socialTitle: title,
@@ -42,7 +42,7 @@ export default async function ReplayPage({ params }: PageProps) {
   if (!replay) notFound();
   return (
     <div className="mx-auto max-w-7xl space-y-6">
-      <BattleHeader back="/battle/replays" crumb="Replay" title={`${replay.players[0]} vs`} accent={replay.players[1]}>
+      <BattleHeader back="/battle/replays" crumb="Replay" title={`${replayMatchup(replay).a} ${replayMatchup(replay).joiner}`} accent={replayMatchup(replay).b}>
         {replay.ranked ? "Ranked · " : ""}
         {replay.formatName} · {replayResult(replay)} in {replay.turns} turn{replay.turns === 1 ? "" : "s"}.
       </BattleHeader>

@@ -7,8 +7,8 @@ import { Clapperboard, FileUp, Loader2, Play, Trophy } from "lucide-react";
 import { IMPORT_MAX_BYTES, parseShowdownReplay } from "@/lib/battle/replay-file";
 import type { ReplayData } from "@/lib/battle/replay";
 import { Button } from "@/components/ui/button";
-import { PLAY_FORMAT_INFO, PLAY_FORMATS, type PlayFormatId } from "@/lib/battle/play";
-import { replayResult, type ReplayListResponse, type ReplaySummary } from "@/lib/battle/replay";
+import { GROUP_FORMATS, PLAY_FORMAT_INFO, PLAY_FORMATS, type PlayFormatId } from "@/lib/battle/play";
+import { replayMatchup, replayResult, replayTitle, type ReplayListResponse, type ReplaySummary } from "@/lib/battle/replay";
 import { battleIdHeaders, ensureBattleId, rememberedReplays } from "@/lib/battle/replay-client";
 import { startedAgo } from "@/lib/battle/watch";
 import { HudHeading } from "@/components/game/HudHeading";
@@ -25,7 +25,7 @@ export function ReplayRow({ r, now }: { r: ReplaySummary; now: number }) {
       <Clapperboard className="h-4 w-4 shrink-0 text-screen" aria-hidden />
       <span className="min-w-0 flex-1">
         <span className="block truncate font-display font-bold uppercase">
-          {r.players[0]} <span className="text-muted-foreground">vs</span> {r.players[1]}
+          {replayMatchup(r).a} <span className="text-muted-foreground">{replayMatchup(r).joiner}</span> {replayMatchup(r).b}
         </span>
         <span className="block truncate text-xs text-muted-foreground">
           {replayResult(r)} · {r.turns} turn{r.turns === 1 ? "" : "s"}
@@ -105,7 +105,7 @@ export function ReplayLists() {
       <section className="space-y-3" data-testid="recent-replays">
         <HudHeading index={2} title="Recent replays" />
         <div className="flex flex-wrap gap-1.5" role="group" aria-label="Filter by format">
-          {[null, ...PLAY_FORMATS].map((f) => (
+          {[null, ...PLAY_FORMATS, ...GROUP_FORMATS].map((f) => (
             <button
               key={f ?? "all"}
               type="button"
@@ -157,7 +157,7 @@ export function ReplayImport() {
       <div className="space-y-3">
         <p className="text-sm text-muted-foreground" data-testid="import-summary">
           <strong className="text-foreground">
-            {replay.players[0]} vs {replay.players[1]}
+            {replayTitle(replay)}
           </strong>{" "}
           · {replay.formatName} · {replay.turns} turn{replay.turns === 1 ? "" : "s"}
         </p>

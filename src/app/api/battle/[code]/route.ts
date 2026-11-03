@@ -10,7 +10,7 @@ import { actOnBattle, battleToken, chatBattle, pollBattle, readBattleToken, rema
 import { needsSettling, saveReplayFor, settleBattle } from "@/lib/server/battle-engine/settle";
 import { battlePlayerKey } from "@/lib/server/battle-engine/identity";
 import { DUEL_CODE_RE } from "@/lib/duel-types";
-import { BATTLE_CHOICE_RE, BATTLE_TEAM_MAX, type BattleSeatResponse } from "@/lib/battle/play";
+import { BATTLE_CHOICE_RE, BATTLE_TEAM_MAX, CPU_LEVELS, type BattleSeatResponse } from "@/lib/battle/play";
 
 /**
  * GET  /api/battle/:code?since=N: the battle as you may see it (header
@@ -21,7 +21,8 @@ import { BATTLE_CHOICE_RE, BATTLE_TEAM_MAX, type BattleSeatResponse } from "@/li
  * POST /api/battle/:code: an action:
  *   { action: "join", name, team?, rankedId? }    take the free seat in a live battle (returns your token)
  *   { action: "savereplay", token }               after the end: save the battle's replay (spectator log only)
- *   { action: "ready", token, ready }             in the lobby; the battle starts when both are ready
+ *   { action: "ready", token, ready }             in the lobby; the battle starts when both are ready (every seat, in a four-player battle)
+ *   { action: "fill", token, level? }             a four-player lobby's host: the computer takes every empty seat
  *   { action: "team", token, team }               in the lobby: bring (or replace) your team
  *   { action: "choose", token, rqid, choice }     answer request `rqid` ("move 1", "switch 3", "team 213456"...)
  *   { action: "forfeit", token }                  leave the lobby, or forfeit the battle
@@ -44,6 +45,7 @@ const bodySchema = z.discriminatedUnion("action", [
   z.object({ action: z.literal("join"), name: duelNameSchema, team: z.string().max(BATTLE_TEAM_MAX).optional(), rankedId: z.string().max(200).optional() }),
   z.object({ action: z.literal("savereplay"), token, since }),
   z.object({ action: z.literal("ready"), token, ready: z.boolean(), since }),
+  z.object({ action: z.literal("fill"), token, level: z.enum(CPU_LEVELS).optional(), since }),
   z.object({ action: z.literal("team"), token, team: z.string().min(1).max(BATTLE_TEAM_MAX), since }),
   z.object({
     action: z.literal("choose"),

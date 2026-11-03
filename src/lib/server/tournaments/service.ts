@@ -236,7 +236,7 @@ async function readGames(rec: TourRecord, now: number): Promise<Map<string, Game
       if (lite.meta.status !== "finished" || !lite.meta.end) return;
       if (!lite.meta.settled) await settleBattle(code).catch((err) => console.error("[tournament] settling failed:", err));
       const seats = lite.meta.seats;
-      out.set(m.id, { code, winner: lite.meta.end.winner, arrived: [seats[0]?.arrived !== undefined, seats[1]?.arrived !== undefined] });
+      out.set(m.id, { code, winner: lite.meta.end.winner as 0 | 1 | null, arrived: [seats[0]?.arrived !== undefined, seats[1]?.arrived !== undefined] });
     })
   );
   return out;

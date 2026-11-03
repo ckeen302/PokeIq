@@ -1,7 +1,7 @@
 import { calculate, Field, Move as CalcMove, Pokemon as CalcMon } from "@smogon/calc";
 import type { Battle, Pokemon, Side } from "@pkmn/sim";
 import randsets from "@/data/battle/randsets.json";
-import type { BattleRequest, CpuLevel } from "@/lib/battle/play";
+import type { BattleRequest, CpuLevel, GameType } from "@/lib/battle/play";
 import { benchIndices, forcedSwitchSlots, moveSlotOptions, randomChoice, type SlotOption } from "./choices";
 import { alive, calcGen, calcName, field, STAB_GUESS, toCalc, withCalcMemo } from "./cpu-policy-legacy";
 
@@ -32,6 +32,14 @@ import { alive, calcGen, calcName, field, STAB_GUESS, toCalc, withCalcMemo } fro
  * - Switching: only when a Pokémon is badly threatened (it likely faints
  *   this turn, or can't touch either foe), to whoever takes the foes' moves
  *   best and fights them best.
+ *
+ * The same policy plays triples (three positions scored together; only
+ * adjacent Pokémon are in reach of single-target and spread moves either
+ * way, and an edge Pokémon with no foe in reach shifts to the centre) and
+ * the four-player game types: in a Free-For-All every other trainer's
+ * Pokémon is a foe, and a foe may well aim at someone else; in a Multi
+ * Battle the partner's Pokémon (which the computer doesn't control) is an
+ * ally its spread moves can hurt.
  *
  * It always returns an explicit, legal choice built from the request.
  * Pure and isomorphic: no server or Node APIs.
@@ -276,7 +284,10 @@ interface Incoming {
 }
 
 interface Foe {
+  /** Its index among the foe positions (`foeSlots`). */
   pos: number;
+  /** Its target location from our side (Showdown's). */
+  loc: number;
   p: Pokemon;
   hp: number;
   /** Our positions → the attacks expected on them. */
@@ -315,12 +326,49 @@ function before(ctx: Ctx, a: Pokemon, pa: number, b: Pokemon, pb: number): numbe
   return sa === sb ? 0.5 : sa > sb ? 1 : 0;
 }
 
+/**
+ * The foes' positions on the field, gaps included: the other side's in a
+ * two-trainer battle, both foes' in a Multi Battle, every other trainer's
+ * in a Free-For-All.
+ */
+function foeSlots(battle: Battle, side: Side): (Pokemon | null)[] {
+  if (battle.sides.length !== 4) return side.foe.active;
+  if (battle.gameType === "freeforall") return battle.sides.filter((s) => s !== side).map((s) => s.active[0] ?? null);
+  return side.foe.activeTeam();
+}
+
+/** Our partner's Pokémon in a Multi Battle (the computer doesn't control them). */
+function partnerMons(battle: Battle, side: Side): Pokemon[] {
+  if (battle.sides.length !== 4 || battle.gameType !== "multi" || !side.allySide) return [];
+  return side.allySide.active.filter(alive);
+}
+
+/** In reach: Showdown's adjacency (everyone but itself with two a half; neighbours and the Pokémon across in triples). */
+const reach = (a: Pokemon, b: Pokemon) => (a.battle.activePerHalf <= 2 ? a !== b : a.isAdjacent(b));
+
+/**
+ * The share of a foe's attention we get: all of it in a two-trainer battle;
+ * in a four-player one it has other targets too (the other trainers in a
+ * Free-For-All, our partner in a Multi Battle).
+ */
+function shareOf(ctx: Ctx, foe: Pokemon, mine: Mine[]): number {
+  const { battle, side } = ctx;
+  if (battle.sides.length !== 4) return 1;
+  const targets = battle.sides.flatMap((s) => s.active).filter((q) => alive(q) && q !== foe && !foe.side.hasAlly(q) && reach(foe, q!));
+  const ours = mine.filter((m) => reach(foe, m.p)).length;
+  void side;
+  return targets.length ? Math.min(1, ours / targets.length) : 1;
+}
+
 function foeModel(ctx: Ctx, mine: Mine[], foes: Pokemon[]): Foe[] {
   const { battle, side } = ctx;
   const out: Foe[] = [];
+  const slots = foeSlots(battle, side);
   for (const p of foes) {
-    const pos = side.foe.active.indexOf(p);
+    const pos = slots.indexOf(p);
+    const loc = mine[0] ? mine[0].p.getLocOf(p) : pos + 1;
     const attacker = foeCalc(ctx, p);
+    const share = shareOf(ctx, p, mine);
     const moves = foeMoves(ctx, p);
     const fresh = p.activeMoveActions === 0 || p.activeTurns === 0;
     // Its best attack on each of ours (value = damage + KO), then its aim between them.
@@ -334,8 +382,10 @@ function foeModel(ctx: Ctx, mine: Mine[], foes: Pokemon[]): Foe[] {
         if (PROTECT.has(data.id)) protects = true;
         if (!data.attack) continue;
         if (FIRST_TURN.has(data.id) && !fresh) continue;
+        // Triples: out of reach unless the move reaches anywhere.
+        if (!reach(p, m.p) && !(data.target === "any" && !data.spread)) continue;
         if (data.spread) spreads = true;
-        const targets = data.spread ? mine : [m];
+        const targets = data.spread ? mine.filter((t) => reach(p, t.p)) : [m];
         const fieldFor = data.spread && targets.length > 1 ? ctx.theirs[0] : ctx.theirs[1];
         const d = mine.map(() => 0);
         const k = mine.map(() => 0);
@@ -358,7 +408,7 @@ function foeModel(ctx: Ctx, mine: Mine[], foes: Pokemon[]): Foe[] {
     let threat = 0;
     const likeliest = weights.indexOf(Math.max(...weights));
     best.forEach((b, i) => {
-      const aim = weights[i] / total;
+      const aim = (weights[i] / total) * share;
       if (!b.value) return;
       for (let j = 0; j < mine.length; j++) {
         if (!b.d[j] && !(b.flinch && j === i)) continue;
@@ -371,7 +421,7 @@ function foeModel(ctx: Ctx, mine: Mine[], foes: Pokemon[]): Foe[] {
     let protect = protects ? 0.14 : 0;
     if (protects && hpOf(p) < 0.5) protect = 0.22;
     if (stall) protect *= 1 / Math.max(3, stall.counter ?? 3);
-    out.push({ pos, p, hp: hpOf(p), on, threat, protect, spreads, physical: p.species.baseStats.atk > p.species.baseStats.spa, priority: best[likeliest]?.priority ?? 0 });
+    out.push({ pos, loc, p, hp: hpOf(p), on, threat, protect, spreads, physical: p.species.baseStats.atk > p.species.baseStats.spa, priority: best[likeliest]?.priority ?? 0 });
   }
   return out;
 }
@@ -383,14 +433,14 @@ function foeModel(ctx: Ctx, mine: Mine[], foes: Pokemon[]): Foe[] {
 interface Opt {
   text: string;
   option: SlotOption;
-  kind: "move" | "switch" | "pass";
+  kind: "move" | "switch" | "pass" | "shift";
   data?: MoveData;
   tera: boolean;
   priority: number;
-  /** Damage on each foe position (by side.foe.active index). */
+  /** Damage on each foe position (by `foeSlots` index). */
   on: Dmg[];
-  /** Damage on the partner (Earthquake and the like). */
-  ally: Dmg;
+  /** Damage on each of our other positions (by `mine` index: Earthquake and the like). */
+  ally: Dmg[];
   protect: number;
   flinch: number;
   helping: boolean;
@@ -415,39 +465,59 @@ function speedEdge(ctx: Ctx, mine: Mine[], foes: Foe[]): number {
 
 function optionsFor(ctx: Ctx, request: BattleRequest, me: Mine, mine: Mine[], foes: Foe[]): Opt[] {
   const { battle, side } = ctx;
-  const slotOptions = moveSlotOptions(request, me.slot, true);
-  const partner = mine.find((m) => m.slot !== me.slot);
+  const geometry = battle.gameType as GameType;
+  const slotOptions = moveSlotOptions(request, me.slot, geometry);
+  // Our other Pokémon in reach (the partner in doubles; the neighbours in triples).
+  const partners = mine.filter((m) => m.slot !== me.slot && reach(me.p, m.p));
+  const partner = partners[0];
+  // A Multi Battle's partner: not ours to move, but our spread moves hit it.
+  const others = partnerMons(battle, side).filter((q) => reach(me.p, q));
   const fresh = me.p.activeMoveActions === 0;
   const out: Opt[] = [];
-  const foeAt = (loc: number) => foes.find((f) => f.pos === loc - 1) ?? null;
+  const blank = () => mine.map(() => NO_DMG);
+  const foeAt = (loc: number) => foes.find((f) => f.loc === loc) ?? null;
   const incomingOn = (m: Mine) => foes.reduce((a, f) => a + (f.on[mine.indexOf(m)] ?? []).reduce((b, x) => b + x.p * x.d, 0), 0);
   const threatened = incomingOn(me);
+  const foeCount = foeSlots(battle, side).length;
   for (const o of slotOptions) {
     if (o.kind === "pass") {
-      out.push({ text: o.text, option: o, kind: "pass", tera: false, priority: 0, on: [], ally: NO_DMG, protect: 0, flinch: 0, helping: false, redirect: false, wideGuard: false, extra: 0 });
+      out.push({ text: o.text, option: o, kind: "pass", tera: false, priority: 0, on: [], ally: blank(), protect: 0, flinch: 0, helping: false, redirect: false, wideGuard: false, extra: 0 });
+      continue;
+    }
+    if (o.kind === "shift") {
+      // Triples: to the centre, where every foe is in reach; worth it only when nothing is in reach from the edge.
+      const stuck = !foes.some((f) => alive(f.p) && reach(me.p, f.p));
+      out.push({ text: o.text, option: o, kind: "shift", tera: false, priority: 0, on: [], ally: blank(), protect: 0, flinch: 0, helping: false, redirect: false, wideGuard: false, extra: stuck ? 0.35 : -0.6 });
       continue;
     }
     if (o.kind === "switch") {
-      out.push({ text: o.text, option: o, kind: "switch", tera: false, priority: 7, on: [], ally: NO_DMG, protect: 0, flinch: 0, helping: false, redirect: false, wideGuard: false, extra: 0, to: side.pokemon[o.index - 1] });
+      out.push({ text: o.text, option: o, kind: "switch", tera: false, priority: 7, on: [], ally: blank(), protect: 0, flinch: 0, helping: false, redirect: false, wideGuard: false, extra: 0, to: side.pokemon[o.index - 1] });
       continue;
     }
     if (!o.move) continue;
     const data = moveData(battle, o.move.move);
-    const opt: Opt = { text: o.text, option: o, kind: "move", data, tera: o.tera, priority: data.priority, on: side.foe.active.map(() => NO_DMG), ally: NO_DMG, protect: 0, flinch: 0, helping: false, redirect: false, wideGuard: false, extra: 0 };
+    const opt: Opt = { text: o.text, option: o, kind: "move", data, tera: o.tera, priority: data.priority, on: Array.from({ length: foeCount }, () => NO_DMG), ally: blank(), protect: 0, flinch: 0, helping: false, redirect: false, wideGuard: false, extra: 0 };
     if (data.attack) {
       const attacker = ownCalc(ctx, me.p, o.tera);
       const liveFoes = foes.filter((f) => alive(f.p));
-      const hitsAlly = data.target === "allAdjacent" && partner && alive(partner.p);
-      const n = data.spread ? liveFoes.length + (hitsAlly ? 1 : 0) : 1;
+      const inReach = liveFoes.filter((f) => reach(me.p, f.p));
+      const hitAllies = data.target === "allAdjacent" ? partners.filter((m) => alive(m.p)) : [];
+      const hitOthers = data.target === "allAdjacent" ? others : [];
+      const n = data.spread ? inReach.length + hitAllies.length + hitOthers.length : 1;
       const f = n > 1 ? ctx.ours[0] : ctx.ours[1];
       if (FIRST_TURN.has(data.id) && !fresh) {
         opt.extra -= 1; // it would fail
       } else if (data.spread) {
-        for (const foe of liveFoes) opt.on[foe.pos] = damage(ctx, attacker, foeCalc(ctx, foe.p), o.move.move, f);
-        if (hitsAlly) opt.ally = damage(ctx, attacker, ownCalc(ctx, partner!.p), o.move.move, f);
+        for (const foe of inReach) opt.on[foe.pos] = damage(ctx, attacker, foeCalc(ctx, foe.p), o.move.move, f);
+        for (const m of hitAllies) opt.ally[mine.indexOf(m)] = damage(ctx, attacker, ownCalc(ctx, m.p), o.move.move, f);
+        // Hurting the partner we don't control: counted as if it were ours.
+        for (const q of hitOthers) {
+          const h = damage(ctx, attacker, ownCalc(ctx, q), o.move.move, f);
+          opt.extra -= DOUBLES_TUNE.defense * DOUBLES_TUNE.ally * h.d + h.k * DOUBLES_TUNE.faint;
+        }
       } else {
-        // Aimed at a foe that's gone: the move goes to the other one (Gen 5 on).
-        const foe = foeAt(o.target) ?? (battle.gen >= 5 ? liveFoes[0] : null);
+        // Aimed at a foe that's gone: the move goes to another in reach (Gen 5 on).
+        const foe = foeAt(o.target) ?? (battle.gen >= 5 ? (inReach[0] ?? null) : null);
         if (foe) opt.on[foe.pos] = damage(ctx, attacker, foeCalc(ctx, foe.p), o.move.move, f);
         if (foe && FLINCH_FIRST.has(data.id) && opt.on[foe.pos].d > 0 && fresh) opt.flinch = foe.pos + 1;
       }
@@ -605,12 +675,13 @@ function scorePair(ctx: Ctx, mine: Mine[], foes: Foe[], opts: Opt[]): number {
       dmg += a.p * live * (1 - blocked) * a.d;
       kMiss *= 1 - a.p * live * (1 - blocked) * a.k;
     }
-    // The partner's Earthquake.
+    // A partner's Earthquake.
     opts.forEach((p, j) => {
-      if (j === i || p.kind !== "move" || !p.ally.d) return;
+      const h = p.ally[i];
+      if (j === i || p.kind !== "move" || !h?.d) return;
       const w = act[j] * (1 - shield) * T.ally;
-      dmg += w * p.ally.d;
-      kMiss *= 1 - w * p.ally.k;
+      dmg += w * h.d;
+      kMiss *= 1 - w * h.k;
     });
     const hp = hpAt[i];
     const faint = Math.max(1 - kMiss, koFrom(dmg, hp));
@@ -702,6 +773,8 @@ function matchup(ctx: Ctx, p: Pokemon, foes: Pokemon[]): number {
 const NOISE: Record<CpuLevel, number> = { easy: 0.4, normal: 0.08, hard: 0 };
 /** Options per position kept for pairing (the best by their own score), so a turn's pairs stay few. */
 const KEEP = 9;
+/** Triples: fewer per position, since three positions are scored together. */
+const KEEP_TRIPLES = 5;
 
 function makeCtx(battle: Battle, side: Side, level: CpuLevel): Ctx {
   return {
@@ -734,7 +807,7 @@ export function chooseCpuDoubles(
     return withCalcMemo(() => decide(makeCtx(battle, side, level), request, rand));
   } catch (err) {
     onError(err);
-    return randomChoice(request, true, rand);
+    return randomChoice(request, battle.gameType as GameType, rand);
   }
 }
 
@@ -742,14 +815,20 @@ function decide(ctx: Ctx, request: BattleRequest, rand: () => number): string {
   const { side } = ctx;
   const noise = NOISE[ctx.level];
   const jitter = () => (noise ? (rand() - 0.5) * noise : 0);
-  const foesNow = side.foe.active.filter(alive);
+  const { battle } = ctx;
+  const geometry = battle.gameType as GameType;
+  const four = battle.sides.length === 4;
+  // The foes in battle: the other side's (both foes' in a Multi Battle, everyone else's in a Free-For-All).
+  const foesNow = four ? side.foes() : side.foe.active.filter(alive);
 
   if (request.teamPreview) {
-    // Lead with the two that fare best against their whole team.
-    const theirs = side.foe.pokemon.filter((p) => !p.fainted);
+    // Lead with the ones (two in doubles, three in triples) that fare best against their whole team (every foe's in four-player battles).
+    const theirs = (four ? battle.sides.filter((s) => s !== side && !side.hasAlly(s.pokemon[0])).flatMap((s) => s.pokemon) : side.foe.pokemon).filter((p) => !p.fainted);
+    const leads = Math.max(1, side.active.length);
     const ranked = side.pokemon.map((p, i) => ({ i: i + 1, s: matchup(ctx, p, theirs) + jitter() })).sort((a, b) => b.s - a.s);
-    const order = [...ranked.slice(0, 2).map((r) => r.i), ...side.pokemon.map((_, i) => i + 1).filter((i) => !ranked.slice(0, 2).some((r) => r.i === i))];
-    return `team ${order.join("")}`;
+    const order = [...ranked.slice(0, leads).map((r) => r.i), ...side.pokemon.map((_, i) => i + 1).filter((i) => !ranked.slice(0, leads).some((r) => r.i === i))];
+    const picked = request.maxChosenTeamSize && request.maxChosenTeamSize < order.length ? order.slice(0, request.maxChosenTeamSize) : order;
+    return `team ${picked.join("")}`;
   }
 
   if (request.forceSwitch) {
@@ -776,11 +855,11 @@ function decide(ctx: Ctx, request: BattleRequest, rand: () => number): string {
   const mine: Mine[] = [];
   for (let slot = 0; slot < slots; slot++) {
     const p = side.active[slot];
-    const options = moveSlotOptions(request, slot, true);
+    const options = moveSlotOptions(request, slot, geometry);
     if (!alive(p) || (options.length === 1 && options[0].kind === "pass")) continue;
     mine.push({ slot, p, hp: hpOf(p), power: 0 });
   }
-  if (!mine.length || !foesNow.length) return randomChoice(request, true, () => 0);
+  if (!mine.length || !foesNow.length) return randomChoice(request, geometry, () => 0);
 
   const foes = foeModel(ctx, mine, foesNow);
   const perSlot = mine.map((m) => optionsFor(ctx, request, m, mine, foes));
@@ -807,7 +886,7 @@ function decide(ctx: Ctx, request: BattleRequest, rand: () => number): string {
   });
 
   // Each option alone (the partner idle), to keep the best few for pairing.
-  const pass: Opt = { text: "pass", option: { kind: "pass", text: "pass", index: 0, target: 0, tera: false }, kind: "pass", tera: false, priority: 0, on: [], ally: NO_DMG, protect: 0, flinch: 0, helping: false, redirect: false, wideGuard: false, extra: 0 };
+  const pass: Opt = { text: "pass", option: { kind: "pass", text: "pass", index: 0, target: 0, tera: false }, kind: "pass", tera: false, priority: 0, on: [], ally: mine.map(() => NO_DMG), protect: 0, flinch: 0, helping: false, redirect: false, wideGuard: false, extra: 0 };
   const shortlists = filtered.map((list, i) => {
     const scored = list.map((o) => {
       const pairOpts = mine.map((_, j) => (j === i ? o : pass));
@@ -817,7 +896,7 @@ function decide(ctx: Ctx, request: BattleRequest, rand: () => number): string {
     // Tera only where it's worth something over the same move without it.
     const plain = new Map(scored.filter((x) => !x.o.tera).map((x) => [x.o.text, x.s]));
     const kept = scored.filter((x) => !x.o.tera || x.s > (plain.get(x.o.text.replace(/ terastallize$/, "")) ?? -Infinity) + 0.12);
-    return kept.slice(0, KEEP).map((x) => x.o);
+    return kept.slice(0, mine.length > 2 ? KEEP_TRIPLES : KEEP).map((x) => x.o);
   });
 
   let bestScore = -Infinity;
@@ -825,6 +904,8 @@ function decide(ctx: Ctx, request: BattleRequest, rand: () => number): string {
   const consider = (opts: Opt[]) => {
     const switches = opts.filter((o) => o.kind === "switch").map((o) => o.option.index);
     if (new Set(switches).size !== switches.length) return;
+    // Triples: one Pokémon shifts to the centre at a time.
+    if (opts.filter((o) => o.kind === "shift").length > 1) return;
     const teras = opts.filter((o) => o.tera).length;
     if (teras > 1) return;
     // Terastallizing is once a battle: it has to buy something.
@@ -832,7 +913,8 @@ function decide(ctx: Ctx, request: BattleRequest, rand: () => number): string {
     if (score > bestScore) [bestScore, chosen] = [score, opts];
   };
   if (mine.length === 1) for (const o of shortlists[0]) consider([o]);
-  else for (const a of shortlists[0]) for (const b of shortlists[1]) consider([a, b]);
+  else if (mine.length === 2) for (const a of shortlists[0]) for (const b of shortlists[1]) consider([a, b]);
+  else for (const a of shortlists[0]) for (const b of shortlists[1]) for (const c of shortlists[2]) consider([a, b, c]);
 
   // TypeScript can't see the assignment inside consider().
   const picked = chosen as Opt[] | null;
@@ -843,7 +925,7 @@ function decide(ctx: Ctx, request: BattleRequest, rand: () => number): string {
     const i = mine.findIndex((m) => m.slot === slot);
     let text: string;
     if (i < 0 || !picked) {
-      const options = moveSlotOptions(request, slot, true);
+      const options = moveSlotOptions(request, slot, geometry);
       text = (options.find((o) => o.kind === "move" && !o.tera) ?? options.find((o) => o.kind !== "switch") ?? options[0]).text;
       if (text.startsWith("switch")) {
         const used = parts.map((p) => /^switch (\d+)/.exec(p)?.[1]).filter(Boolean).map(Number);

@@ -29,7 +29,7 @@ export const isPopularLadderFormat = (format: string) => (POPULAR_LADDER_FORMATS
  * or a disconnect lose); a battle played out to a tie is a draw. Null: it
  * doesn't count at all (the battle couldn't go on: no contest).
  */
-export function ladderReason(end: { reason: BattleEndReason; winner: 0 | 1 | null }): PvpEndReason | null {
+export function ladderReason(end: { reason: BattleEndReason; winner: number | null }): PvpEndReason | null {
   if (end.reason === "nocontest") return null;
   if (end.winner !== null) return "played";
   return end.reason === "normal" ? "played" : "left";

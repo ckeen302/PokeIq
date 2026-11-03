@@ -3,7 +3,7 @@
 /* eslint-disable @next/next/no-img-element -- animated GIF sprites with a fallback chain, and effect images; next/image would freeze or re-encode them */
 import { memo, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { FX } from "./fx";
-import { other, type MonSnap, type SideId, type SideSnap, type SlotRef, type Snap } from "./model";
+import { other, sameHalf, type MonSnap, type SideId, type SideSnap, type SlotRef, type Snap } from "./model";
 import { projectPos, spritePosition, STAGE_H, STAGE_W } from "./scene";
 import { battleSpriteCandidates, spriteData } from "./sprites";
 import type { PopupTone, StageHandle, StageSprite } from "./player";
@@ -13,7 +13,7 @@ import type { ArenaApi } from "./arena/ArenaScene";
 import { arenaField, arenaKindOf, footOf } from "./arena/layout";
 import type { BallLook } from "./PokeBall";
 import { ConditionTip, MonTip, TapTip, Tip, tipFromRequest, tipFromSnap } from "./Tooltips";
-import type { BattleRequestPokemon } from "@/lib/battle/play";
+import { activesPerHalf, playerCount, type BattleRequestPokemon, type GameType } from "@/lib/battle/play";
 import { cn } from "@/lib/utils";
 
 export interface Popup {
@@ -25,7 +25,7 @@ export interface Popup {
 
 /** Where a slot's Pokémon stands, as a fraction of the stage (for popups over it). */
 function slotCenter(ref: SlotRef, me: SideId, active: number) {
-  const near = ref.side === me;
+  const near = sameHalf(ref.side, me);
   const pos = spritePosition(near, ref.slot, active, false);
   const box = projectPos(pos, { w: 96, h: 96, gen: 6 });
   return { x: (box.left + box.width / 2) / STAGE_W, y: (box.top + box.height * 0.2) / STAGE_H };
@@ -167,7 +167,10 @@ function SideField({ side, near }: { side: SideSnap; near: boolean }) {
 export interface StageProps {
   snap: Snap;
   me: SideId;
-  doubles: boolean;
+  /** Showdown's game type: how many Pokémon stand on each half (3 in triples; 2 in doubles and in four-player battles, one per trainer). */
+  gameType: GameType;
+  /** Four-player battles: each side's trainer, for the tags on their Pokémon's boxes. */
+  names?: Partial<Record<SideId, string>>;
   popups: Popup[];
   onHandle: (handle: StageHandle) => void;
   /** Your whole team for the party balls (unseen members show as healthy). */
@@ -184,7 +187,7 @@ export interface StageProps {
   holdArena?: boolean;
 }
 
-export function Stage({ snap, me, doubles, popups, onHandle, myBalls, format = "", myRequest, watching = false, balls, holdArena = false }: StageProps) {
+export function Stage({ snap, me, gameType, names, popups, onHandle, myBalls, format = "", myRequest, watching = false, balls, holdArena = false }: StageProps) {
   const outer = useRef<HTMLDivElement>(null);
   const stage = useRef<HTMLDivElement>(null);
   const backdrop = useRef<HTMLDivElement>(null);
@@ -193,7 +196,16 @@ export function Stage({ snap, me, doubles, popups, onHandle, myBalls, format = "
   const sprites = useRef(new Map<string, StageSprite>());
   const [scale, setScale] = useState(1);
   const foe = other(me);
-  const active = doubles ? 2 : 1;
+  const active = activesPerHalf(gameType);
+  const compact = active > 1;
+  const four = playerCount(gameType) === 4;
+  // A half's trainers (with four, the two whose Pokémon stand on it), for their party balls and side conditions.
+  const halfSides = (lead: SideId): SideId[] => (four ? (lead === "p1" || lead === "p3" ? ["p1", "p3"] : ["p2", "p4"]) : [lead]);
+  const nearSides = halfSides(me);
+  const farSides = halfSides(foe);
+  // Four trainers: whose Pokémon each box is (yours, your partner's, or a foe's), by name.
+  const tagOf = (mon: MonSnap) => (four ? `${mon.owner === me && !watching ? "You" : (names?.[mon.owner] ?? mon.owner)}${gameType === "multi" && !watching && mon.owner !== me && sameHalf(mon.owner, me) ? " · partner" : ""}` : undefined);
+  const mineOf = (mon: MonSnap) => !watching && (!four || mon.owner === me);
   const arena = useRef<ArenaApi | null>(null);
   const [arena3d, setArena3d] = useState(false);
   const onArena = useMemo(
@@ -234,7 +246,7 @@ export function Stage({ snap, me, doubles, popups, onHandle, myBalls, format = "
       me,
       cheer: (power) => arena.current?.cheer(power),
       ball: (side) => ballsRef.current?.[side],
-      sprite: (ref) => sprites.current.get(`${ref.side === me ? "near" : "far"}:${ref.slot}`) ?? null,
+      sprite: (ref) => sprites.current.get(`${sameHalf(ref.side, me) ? "near" : "far"}:${ref.slot}`) ?? null,
       repaint: () => {
         for (const s of sprites.current.values()) {
           const box = projectPos(s.pos, s.sp);
@@ -250,7 +262,7 @@ export function Stage({ snap, me, doubles, popups, onHandle, myBalls, format = "
   const pseudoKey = snap.pseudo.join(",");
   // eslint-disable-next-line react-hooks/exhaustive-deps -- pseudoKey stands for snap.pseudo
   const field = useMemo(() => arenaField(snap.weather, snap.terrain, snap.pseudo), [snap.weather, snap.terrain, pseudoKey]);
-  const kind = arenaKindOf(format, doubles);
+  const kind = arenaKindOf(format, active > 1);
   const fieldChips: Chip[] = [];
   if (snap.weather) fieldChips.push({ id: WEATHER_ID[snap.weather] ?? snap.weather, label: snap.weather, turns: snap.turns?.weather });
   if (snap.terrain) fieldChips.push({ id: `${snap.terrain.toLowerCase()}terrain`, label: `${snap.terrain} Terrain`, turns: snap.turns?.terrain });
@@ -295,26 +307,34 @@ export function Stage({ snap, me, doubles, popups, onHandle, myBalls, format = "
               ))}
             </div>
           )}
-          <div className="absolute left-[2%] top-[3%] hidden w-[42%] flex-col gap-1 sm:flex">
+          <div className={cn("absolute left-[2%] top-[3%] hidden flex-col gap-1 sm:flex", active > 2 ? "w-[38%]" : "w-[42%]")} data-testid="stage-far">
             {snap.sides[foe].active.map((mon, i) =>
               mon ? (
                 <Tip key={i} place="bottom" content={() => <MonTip mon={tipFromSnap(mon)} mine={false} gen={snap.gen} format={format} />}>
-                  <Hud mon={mon} mine={false} compact={doubles} />
+                  <Hud mon={mon} mine={four && mineOf(mon)} compact={compact} dense={active > 2} tag={tagOf(mon)} />
                 </Tip>
               ) : null
             )}
-            <TeamBalls side={snap.sides[foe]} />
-            <SideConditions side={snap.sides[foe]} />
+            {farSides.map((id) => (
+              <TeamBalls key={id} side={snap.sides[id]} label={four ? (names?.[id] ?? id) : undefined} balls={four && id === me ? myBalls : undefined} />
+            ))}
+            {farSides.map((id) => (
+              <SideConditions key={id} side={snap.sides[id]} />
+            ))}
           </div>
-          <div className="absolute bottom-[4%] right-[2%] hidden w-[42%] flex-col items-stretch gap-1 sm:flex">
-            <SideConditions side={snap.sides[me]} align="end" />
-            <TeamBalls side={snap.sides[me]} align="end" balls={myBalls} />
+          <div className={cn("absolute bottom-[4%] right-[2%] hidden flex-col items-stretch gap-1 sm:flex", active > 2 ? "w-[38%]" : "w-[42%]")} data-testid="stage-near">
+            {nearSides.map((id) => (
+              <SideConditions key={id} side={snap.sides[id]} align="end" />
+            ))}
+            {nearSides.map((id) => (
+              <TeamBalls key={id} side={snap.sides[id]} align="end" balls={id === me ? myBalls : undefined} label={four ? (id === me && !watching ? "You" : (names?.[id] ?? id)) : undefined} />
+            ))}
             {snap.sides[me].active.map((mon, i) => {
               if (!mon) return null;
               const own = myRequest?.find((p) => p.ident === mon.key);
               return (
-                <Tip key={i} content={() => <MonTip mon={own ? tipFromRequest(own, mon) : tipFromSnap(mon)} mine={!watching} gen={snap.gen} format={format} />}>
-                  <Hud mon={mon} mine={!watching} compact={doubles} />
+                <Tip key={i} content={() => <MonTip mon={own ? tipFromRequest(own, mon) : tipFromSnap(mon)} mine={mineOf(mon)} gen={snap.gen} format={format} />}>
+                  <Hud mon={mon} mine={mineOf(mon)} compact={compact} dense={active > 2} tag={tagOf(mon)} />
                 </Tip>
               );
             })}
@@ -344,32 +364,40 @@ export function Stage({ snap, me, doubles, popups, onHandle, myBalls, format = "
 
       {/* Phones: the HUDs sit around the field instead of over it. */}
       <div className="mt-2 grid gap-1.5 sm:hidden">
-        <div className="grid grid-cols-1 gap-1.5" data-testid="phone-foe">
-          <div className="flex flex-wrap items-center justify-between gap-1.5">
-            <TeamBalls side={snap.sides[foe]} />
-            <SideConditions side={snap.sides[foe]} align="end" />
+        <div className={cn("grid gap-1.5", active > 2 ? "grid-cols-2" : "grid-cols-1")} data-testid="phone-foe">
+          <div className={cn("flex flex-wrap items-center justify-between gap-1.5", active > 2 && "col-span-2")}>
+            {farSides.map((id) => (
+              <TeamBalls key={id} side={snap.sides[id]} label={four ? (names?.[id] ?? id) : undefined} balls={four && id === me ? myBalls : undefined} />
+            ))}
+            {farSides.map((id) => (
+              <SideConditions key={id} side={snap.sides[id]} align="end" />
+            ))}
           </div>
           {snap.sides[foe].active.map((mon, i) =>
             mon ? (
               <TapTip key={i} content={() => <MonTip mon={tipFromSnap(mon)} mine={false} gen={snap.gen} format={format} />}>
-                <Hud mon={mon} mine={false} compact={doubles} />
+                <Hud mon={mon} mine={four && mineOf(mon)} compact={compact} dense={active > 2} tag={tagOf(mon)} />
               </TapTip>
             ) : null
           )}
         </div>
-        <div className="grid grid-cols-1 gap-1.5" data-testid="phone-mine">
+        <div className={cn("grid gap-1.5", active > 2 ? "grid-cols-2" : "grid-cols-1")} data-testid="phone-mine">
           {snap.sides[me].active.map((mon, i) => {
             if (!mon) return null;
             const own = myRequest?.find((p) => p.ident === mon.key);
             return (
-              <TapTip key={i} content={() => <MonTip mon={own ? tipFromRequest(own, mon) : tipFromSnap(mon)} mine={!watching} gen={snap.gen} format={format} />}>
-                <Hud mon={mon} mine={!watching} compact={doubles} />
+              <TapTip key={i} content={() => <MonTip mon={own ? tipFromRequest(own, mon) : tipFromSnap(mon)} mine={mineOf(mon)} gen={snap.gen} format={format} />}>
+                <Hud mon={mon} mine={mineOf(mon)} compact={compact} dense={active > 2} tag={tagOf(mon)} />
               </TapTip>
             );
           })}
-          <div className="flex flex-wrap items-center justify-between gap-1.5">
-            <TeamBalls side={snap.sides[me]} balls={myBalls} />
-            <SideConditions side={snap.sides[me]} align="end" />
+          <div className={cn("flex flex-wrap items-center justify-between gap-1.5", active > 2 && "col-span-2")}>
+            {nearSides.map((id) => (
+              <TeamBalls key={id} side={snap.sides[id]} balls={id === me ? myBalls : undefined} label={four ? (id === me && !watching ? "You" : (names?.[id] ?? id)) : undefined} />
+            ))}
+            {nearSides.map((id) => (
+              <SideConditions key={id} side={snap.sides[id]} align="end" />
+            ))}
           </div>
         </div>
       </div>
