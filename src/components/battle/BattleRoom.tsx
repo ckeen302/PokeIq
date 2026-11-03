@@ -240,7 +240,10 @@ function LiveAgain({ view, battle }: { view: BattleView; battle: BattleHandle })
           <Swords className="h-4 w-4" aria-hidden /> New battle
         </Link>
       </div>
-      <p className="text-xs text-muted-foreground">A rematch keeps the trainers, the format and any teams you brought. It starts when you both press it.</p>
+      <p className="text-xs text-muted-foreground">
+        A rematch keeps the trainers, the format and any teams you brought.{" "}
+        {view.players.length === 4 ? "The computer keeps its seats; it starts when every trainer presses it." : "It starts when you both press it."}
+      </p>
     </div>
   );
 }

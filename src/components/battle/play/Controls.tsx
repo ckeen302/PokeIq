@@ -291,8 +291,8 @@ function TeamPreview({
           <div key={o.name} className="space-y-1.5">
             <p className="hud-label">{o.partner ? `Your partner ${o.name}'s team` : `${o.name}'s team`}</p>
             <div className="flex flex-wrap gap-1" data-testid="foe-preview">
-              {o.team.map((m) => (
-                <Tip key={m.key} content={() => <MonTip mon={tipFromSnap(m)} mine={false} gen={tipInfo.gen} format={tipInfo.format} />}>
+              {o.team.map((m, i) => (
+                <Tip key={`${m.species}:${i}`} content={() => <MonTip mon={tipFromSnap(m)} mine={false} gen={tipInfo.gen} format={tipInfo.format} />}>
                   <span className={cn("flex flex-col items-center rounded-md border bg-shade/20 px-1.5 py-1", o.partner ? "border-primary/40" : "border-screen/30")}>
                     <BattleSprite species={speciesKey(m.species)} size={40} />
                     <span className="max-w-[4.5rem] truncate text-[10px] text-muted-foreground">{m.species}</span>
@@ -307,8 +307,9 @@ function TeamPreview({
         <div className="space-y-1.5">
           <p className="hud-label">Their team</p>
           <div className="flex flex-wrap gap-1" data-testid="foe-preview">
-            {foes.map((m) => (
-              <Tip key={m.key} content={() => <MonTip mon={tipFromSnap(m)} mine={false} gen={tipInfo.gen} format={tipInfo.format} />}>
+            {foes.map((m, i) => (
+              // Team preview's Pokémon have no ident yet (an empty key): keyed by their place.
+              <Tip key={`${m.species}:${i}`} content={() => <MonTip mon={tipFromSnap(m)} mine={false} gen={tipInfo.gen} format={tipInfo.format} />}>
               <span className="flex flex-col items-center rounded-md border border-screen/30 bg-shade/20 px-1.5 py-1">
                 <BattleSprite species={speciesKey(m.species)} size={44} />
                 <span className="max-w-[4.5rem] truncate text-[10px] text-muted-foreground">{m.species}</span>
@@ -499,7 +500,7 @@ export function Controls({ request, snap, me, gameType, names, busy, onChoose, f
           <span className="hud-label flex w-full min-w-0 items-center gap-1 truncate">
             {t.self ? "You" : t.foe ? "Foe" : gameType === "multi" ? "Partner" : "Ally"}
             {owner && !t.self && <span className="truncate normal-case text-muted-foreground">· {owner}</span>}
-            {!t.legal && <span className="text-muted-foreground">· out of reach</span>}
+            {!t.legal && !t.self && <span className="text-muted-foreground">· out of reach</span>}
           </span>
         </button>
       );

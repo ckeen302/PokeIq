@@ -240,7 +240,6 @@ function FourHeader({ view, gameType, cpu }: { view: BattleView; gameType: GameT
       <span key={seat} className={cn("flex min-w-0 items-center gap-1.5", out && "opacity-50")} data-testid="battle-trainer" data-seat={seat} data-out={out || undefined}>
         <Avatar avatar={p.cpu ? null : p.avatar} size={20} />
         <span className={cn("truncate", seat === view.you ? "text-primary" : "text-screen", out && "line-through")}>{p.name}</span>
-        {p.cpu && <span className="hud-label">{cpu ?? "CPU"}</span>}
       </span>
     );
   };
@@ -270,7 +269,10 @@ function FourHeader({ view, gameType, cpu }: { view: BattleView; gameType: GameT
           </span>
         ))
       )}
-      <span className="hud-label ml-1 hidden sm:inline">{view.formatName ?? PLAY_FORMAT_INFO[view.format].name}</span>
+      <span className="hud-label ml-1 hidden sm:inline">
+        {view.formatName ?? PLAY_FORMAT_INFO[view.format].name}
+        {cpu && view.players.some((p) => p.cpu) ? ` · ${cpu} computer` : ""}
+      </span>
     </div>
   );
 }
@@ -603,7 +605,7 @@ export default function BattleScreen({ view, log, offset, busy, error, onChoose,
   const cpu = view.cpu ? CPU_LEVEL_INFO[view.cpu.level].name : null;
   const showControls = !pending && view.status === "playing" && !!view.request && !view.end;
   const ended = !!view.end && !pending;
-  const won = ended && view.end!.winner !== null && view.end!.winner === view.you;
+  const won = ended && view.end!.winner !== null && (view.end!.winner === view.you || (view.you !== null && !!view.end!.winners?.includes(view.you)));
   const result = ended ? endText({ ...view, gameType }, snap.turn) : null;
   useBattleMusic(trackFor(view, ended, won));
   const help = useHotkeyHelp();

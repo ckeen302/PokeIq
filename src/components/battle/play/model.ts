@@ -292,6 +292,11 @@ export class BattleModel {
     }
     // Showdown's timer messages ("Battle timer is ON…", "Red has 20 seconds left.") are plain text.
     if (cmd === "inactive" || cmd === "inactiveoff") text = args[1] ?? "";
+    // Four trainers: Showdown's "Battle started between" names them all (a Multi Battle's by team).
+    if (cmd === "start" && this.battle.sides.length === 4) {
+      const n = this.battle.sides.map((s) => s.name || "?");
+      text = this.battle.gameType === "multi" ? `Battle started between ${n[0]} & ${n[2]} and ${n[1]} & ${n[3]}!` : `Battle started between ${n[0]}, ${n[1]}, ${n[2]} and ${n[3]}!`;
+    }
     // The battle's header, as Showdown's log opens: the format, then its rules.
     if (cmd === "tier" && args[1]) text = `Format: **${args[1]}**`;
     if (cmd === "rule" && args[1]) text = args[1];
