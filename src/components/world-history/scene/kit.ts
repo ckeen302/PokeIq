@@ -167,6 +167,8 @@ export interface ParticleOpts {
   /** Flicker amount (embers). */
   flicker?: number;
   seed?: number;
+  /** One shot: every particle starts together at uTime 0 and lives once (uTime is the time since the burst). */
+  burst?: boolean;
 }
 
 export function makeParticles(o: ParticleOpts) {
@@ -194,7 +196,7 @@ export function makeParticles(o: ParticleOpts) {
     transparent: true,
     depthWrite: false,
     blending: o.additive === false ? THREE.NormalBlending : THREE.AdditiveBlending,
-    defines: { SHAPE: shapeId },
+    defines: { SHAPE: shapeId, BURST: o.burst ? 1 : 0 },
     vertexShader: /* glsl */ `
       ${NOISE}
       attribute vec4 aSeed;
@@ -202,8 +204,12 @@ export function makeParticles(o: ParticleOpts) {
       uniform vec3 uCenter, uExtent, uVel, uSpread, uGravity;
       varying float vAge; varying float vSeed;
       void main(){
-        float t = uTime / uLife + aSeed.w;
-        float cyc = floor(t); float age = fract(t);
+        #if BURST == 1
+          float cyc = 0.0; float age = clamp(uTime / (uLife * (0.55 + 0.45 * aSeed.w)), 0.0, 1.0);
+        #else
+          float t = uTime / uLife + aSeed.w;
+          float cyc = floor(t); float age = fract(t);
+        #endif
         vec3 r = whHash3(dot(aSeed.xyz, vec3(12.9898, 78.233, 37.719)) + cyc * 1.618);
         vec3 r2 = whHash3(aSeed.x * 91.7 + cyc * 3.3);
         vec3 p;
@@ -220,7 +226,11 @@ export function makeParticles(o: ParticleOpts) {
           float th = r.x * 6.2831853; float rad = sqrt(r.y);
           p = vec3(cos(th) * rad * uExtent.x, (r.z * 2.0 - 1.0) * uExtent.y, sin(th) * rad * uExtent.z);
         #endif
-        float a = age * uLife;
+        #if BURST == 1
+          float a = uTime;
+        #else
+          float a = age * uLife;
+        #endif
         vec3 vel = uVel + (r2 * 2.0 - 1.0) * uSpread;
         p += vel * a + 0.5 * uGravity * a * a;
         if (uPull != 0.0) p -= normalize(p + 1e-4) * min(length(p) * 0.98, 0.5 * uPull * a * a);

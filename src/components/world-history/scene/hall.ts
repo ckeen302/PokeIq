@@ -32,7 +32,7 @@ export interface Hall {
   setPoster(i: number, tex: THREE.Texture): void;
   update(ambient: number, cam: THREE.PerspectiveCamera): void;
   /** Camera for the prologue (k 0..1), a transition from i to i+1, and the epilogue. */
-  prologue(k: number, fovIn: number, aspect: number): Pose;
+  prologue(k: number, fovIn: number, hallFov: number): Pose;
   transition(i: number, k: number, fovOut: number, fovIn: number, hallFov: number): Pose;
   epilogue(i: number, k: number, fovOut: number, hallFov: number): Pose;
   count: number;
@@ -94,25 +94,57 @@ export function posterTexture(c: Chapter, font: string): THREE.CanvasTexture {
   return t;
 }
 
-export function buildHall(chapters: Chapter[], font: string): Hall {
+/** The hall as an environment for reflections: dark, with warm lamps and the glow of the doorways. */
+function hallEnvironment(renderer: THREE.WebGLRenderer): THREE.Texture {
+  const env = new THREE.Scene();
+  env.add(new THREE.Mesh(new THREE.SphereGeometry(50, 32, 16), new THREE.MeshBasicMaterial({ color: col("#0e0a14"), side: THREE.BackSide })));
+  const lamp = new THREE.MeshBasicMaterial({ color: col("#ffd59a", 6) });
+  for (let i = 0; i < 10; i++) {
+    const m = new THREE.Mesh(new THREE.BoxGeometry(3, 0.5, 0.5), lamp);
+    m.position.set(-40 + i * 9, 18, -20 + (i % 2) * 40);
+    env.add(m);
+  }
+  const door = new THREE.MeshBasicMaterial({ color: col("#b48cff", 2.2) });
+  for (let i = 0; i < 6; i++) {
+    const m = new THREE.Mesh(new THREE.PlaneGeometry(5, 7), door);
+    m.position.set(-30 + i * 12, 6, -30);
+    env.add(m);
+  }
+  const pmrem = new THREE.PMREMGenerator(renderer);
+  const rt = pmrem.fromScene(env, 0.03);
+  pmrem.dispose();
+  env.traverse((o) => { const m = o as THREE.Mesh; if (m.isMesh) m.geometry.dispose(); });
+  lamp.dispose();
+  door.dispose();
+  return rt.texture;
+}
+
+export function buildHall(chapters: Chapter[], font: string, renderer?: THREE.WebGLRenderer): Hall {
   const scene = new THREE.Scene();
-  scene.background = col("#05040a");
-  scene.fog = new THREE.FogExp2(col("#07050d"), 0.012);
+  scene.background = col("#07050d");
+  scene.fog = new THREE.FogExp2(col("#0b0812"), 0.006);
+  if (renderer) { scene.environment = hallEnvironment(renderer); scene.environmentIntensity = 0.9; }
   const n = chapters.length;
   const xOf = (i: number) => i * ARCH_SPACING;
   const disposers: (() => void)[] = [];
 
   // Light: a dim cool fill, warm key from above the doorways.
-  scene.add(new THREE.HemisphereLight(col("#8a7fb8"), col("#1a1208"), 0.35));
-  const key = new THREE.DirectionalLight(col("#ffd9a0"), 1.1);
+  scene.add(new THREE.HemisphereLight(col("#a99adf"), col("#2a1c10"), 1.1));
+  const key = new THREE.DirectionalLight(col("#ffd9a0"), 1.6);
   key.position.set(20, 30, 25);
   scene.add(key, key.target);
-  const rim = new THREE.DirectionalLight(col("#7aa0ff"), 0.45);
+  const rim = new THREE.DirectionalLight(col("#7aa0ff"), 0.6);
   rim.position.set(-30, 10, -10);
   scene.add(rim);
+  // Warm lamps along the gallery (a few, spaced: the doorways' own plaques and glows do the rest).
+  for (let i = 0; i < n; i += 2) {
+    const lamp = new THREE.PointLight(col("#ffc983"), 90, 34, 1.7);
+    lamp.position.set(i * ARCH_SPACING + ARCH_SPACING / 2, 12, 9);
+    scene.add(lamp);
+  }
 
   // Floor: dark polished stone with a long runner down the middle.
-  const floorMat = new THREE.MeshStandardMaterial({ color: col("#0d0b12"), roughness: 0.22, metalness: 0.15 });
+  const floorMat = new THREE.MeshStandardMaterial({ color: col("#16121c"), roughness: 0.18, metalness: 0.2 });
   const floor = new THREE.Mesh(new THREE.PlaneGeometry(n * ARCH_SPACING + 160, 90).rotateX(-Math.PI / 2), floorMat);
   floor.position.set(xOf(n - 1) / 2, 0, 30);
   scene.add(floor);
@@ -121,7 +153,7 @@ export function buildHall(chapters: Chapter[], font: string): Hall {
   scene.add(runner);
 
   // The back wall, a ceiling and a far wall.
-  const wallMat = stoneMaterial({ color: "#2a2433", roughness: 0.75, dirt: 0.35 });
+  const wallMat = stoneMaterial({ color: "#3a3245", roughness: 0.7, dirt: 0.3 });
   const wall = new THREE.Mesh(new THREE.PlaneGeometry(n * ARCH_SPACING + 160, 30), wallMat);
   wall.position.set(xOf(n - 1) / 2, 15, -0.4);
   scene.add(wall);
@@ -203,7 +235,7 @@ export function buildHall(chapters: Chapter[], font: string): Hall {
     scene.add(plaque);
     const glow = makeGlow({ pos: [xOf(i), OPENING_Y + OPENING_H / 2 + 3.3, 1.2], size: 3.2, color: "#ffd38a", intensity: 1.6 });
     scene.add(glow.sprite);
-    const shaft = makeShaft({ from: [xOf(i), 16.8, 6], to: [xOf(i), 0, 2.2], r0: 0.9, r1: 4.6, color: "#ffcf8a", intensity: 0.16, noise: 0.6 });
+    const shaft = makeShaft({ from: [xOf(i), 16.8, 5], to: [xOf(i), 0.5, 2.2], r0: 0.6, r1: 3.2, color: "#ffcf8a", intensity: 0.045, noise: 0.7 });
     scene.add(shaft.mesh);
     disposers.push(() => { shaft.dispose(); glow.dispose(); plaqueTex.dispose(); (plaque.material as THREE.Material).dispose(); plaque.geometry.dispose(); mat.dispose(); frameMesh.geometry.dispose(); posterTex.dispose(); });
     doors.push({ frame, portal, mat, plaque, posterTex, glow });
@@ -272,12 +304,12 @@ export function buildHall(chapters: Chapter[], font: string): Hall {
       doors.forEach((d) => { d.mat.uniforms.uTime.value = ambient; });
       cam.getWorldDirection(fwd);
     },
-    prologue(k, fovIn) {
+    prologue(k, fovIn, hallFov) {
       const r = this.ref(0, fovIn);
       const keys: Key[] = [
-        { t: 0, pos: [xOf(-1) - 18, 6.2, 26], look: [xOf(3), 4.2, 0], fov: 48 },
-        { t: 0.42, pos: [xOf(-1) + 2, 5.2, 19], look: [xOf(1), 4.4, 0], fov: 46 },
-        { t: 0.76, pos: [xOf(0) - 2.4, OPENING_Y + 0.8, r.pos[2] + 7], look: [xOf(0), OPENING_Y, 0], fov: (46 + fovIn) / 2 },
+        { t: 0, pos: [xOf(-1) - 18, 6.2, 26], look: [xOf(3), 4.2, 0], fov: hallFov },
+        { t: 0.42, pos: [xOf(-1) + 2, 5.2, 19], look: [xOf(1), 4.4, 0], fov: hallFov - 2 },
+        { t: 0.76, pos: [xOf(0) - 2.4, OPENING_Y + 0.8, r.pos[2] + 7], look: [xOf(0), OPENING_Y, 0], fov: (hallFov - 2 + fovIn) / 2 },
         { t: 1, pos: r.pos, look: r.look, fov: fovIn },
       ];
       return poseOnPath(keys, k);
@@ -310,6 +342,7 @@ export function buildHall(chapters: Chapter[], font: string): Hall {
       plinthMat.dispose();
       portalGeo.dispose();
       scene.traverse((o) => { const m = o as THREE.Mesh; if (m.name === "plinth") m.geometry.dispose(); });
+      scene.environment?.dispose();
     },
   };
 }

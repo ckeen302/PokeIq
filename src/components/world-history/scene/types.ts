@@ -86,11 +86,13 @@ export interface ChapterRig {
   scene: THREE.Scene;
   /** The film's camera at anim time t (lens as designed for 16:9). */
   camera(t: number): Pose;
-  /** Animates the scene to anim time t (ambient: a free-running clock for idle motion). */
-  update(t: number, ambient: number, camera: THREE.PerspectiveCamera): void;
+  /** Animates the scene to anim time t (ambient: a free-running clock for idle motion; viewH: drawing-buffer height in px, for point sizes). */
+  update(t: number, ambient: number, camera: THREE.PerspectiveCamera, viewH: number): void;
   look(t: number): Look;
   /** Free look: what to orbit around at t, and how far it may turn. */
   orbit(t: number): { target: Vec3; limits: OrbitLimits };
+  /** Chapter units per hall metre when the chapter is seen through its doorway (bigger: a vaster diorama). */
+  portalScale?: number;
   dispose(): void;
 }
 
