@@ -28,7 +28,8 @@ export function ShareReplay({ id, result, formatName, size = "sm" }: { id: strin
 /** A battle you won (or drew), as a share result. */
 export function battleShareResult(view: BattleView): BattleShareResult | null {
   if (view.you === null || !view.end || view.end.reason === "nocontest" || view.turn < 1) return null;
-  const outcome = view.end.winner === null ? "tie" : view.end.winner === view.you ? "win" : "loss";
+  // A Multi Battle is won by both partners.
+  const outcome = view.end.winner === null ? "tie" : view.end.winner === view.you || !!view.end.winners?.includes(view.you) ? "win" : "loss";
   if (outcome === "loss") return null;
   return {
     game: "battle",
@@ -66,7 +67,7 @@ export function BattleAfter({ view, battle }: { view: BattleView; battle: Battle
   }, [view.replay, view.you]);
 
   if (view.you === null) return null;
-  const players = view.players.map((p) => p.name).join(" vs ");
+  const players = view.players.length === 4 && view.gameType === "multi" ? `${view.players[0]?.name} & ${view.players[2]?.name} vs ${view.players[1]?.name} & ${view.players[3]?.name}` : view.players.map((p) => p.name).join(" vs ");
   const mine = view.ratings?.[view.you];
   const win = battleShareResult(view);
   return (

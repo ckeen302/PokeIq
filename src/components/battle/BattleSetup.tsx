@@ -4,7 +4,7 @@ import { useCallback, useEffect, useId, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Bot, Loader2, Radio, Swords, UserSearch, X } from "lucide-react";
-import { CPU_LEVEL_INFO, CPU_LEVELS, PLAY_FORMAT_INFO, PLAY_FORMATS, battleHref, type BattleSeatResponse, type CpuLevel, type PlayFormatId, type StandardFormatId } from "@/lib/battle/play";
+import { CPU_LEVEL_INFO, CPU_LEVELS, GROUP_FORMATS, PLAY_FORMAT_INFO, PLAY_FORMATS, battleHref, playerCount, type BattleSeatResponse, type CpuLevel, type GameType, type PlayFormatId, type StandardFormatId } from "@/lib/battle/play";
 import { saveBattleSeat, saveBattleSeed } from "@/lib/battle/seat";
 import { ensureBattleId } from "@/lib/battle/replay-client";
 import { isLadderFormat } from "@/lib/battle/ladder";
@@ -115,6 +115,15 @@ export function Toggle({ checked, onChange, label, hint, testId, disabled }: { c
 /** Live battles add the Battle Factory: both trainers rent a team. */
 const LIVE_FORMATS: readonly PlayFormatId[] = [...PLAY_FORMATS, "factory"];
 
+/** How the setup names a game type beyond singles. */
+export const GAME_TYPE_LABEL: Partial<Record<GameType, string>> = { doubles: "Doubles", triples: "Triples", freeforall: "Free-For-All", multi: "Multi Battle" };
+
+/** What the computer plays in a four-player battle against it. */
+const FOUR_CPU: Partial<Record<GameType, string>> = {
+  freeforall: "Three computer trainers, each on their own.",
+  multi: "A computer partner beside you against two computer trainers.",
+};
+
 const OPPONENTS = [
   ["cpu", Bot, "Computer", "Battle a computer opponent, right now."],
   ["match", UserSearch, "Find an opponent", "Get paired with a trainer searching for the same format, and battle live."],
@@ -146,6 +155,8 @@ export function BattleSetup({ initial = "cpu", challenge }: { initial?: Opponent
   const custom = format === "custom";
   const info = PLAY_FORMAT_INFO[format];
   const formatName = custom ? customName(rules) : info.name;
+  const four = playerCount(info.gameType) === 4;
+  const group = (GROUP_FORMATS as readonly string[]).includes(format);
   // A random Showdown format (custom rules, "Showdown format") deals the teams itself.
   const needsTeam = !info.random && !(custom && rules.baseRandom);
   const verdict = useRulesCheck(custom ? rules : null, custom ? team : "");
@@ -160,8 +171,10 @@ export function BattleSetup({ initial = "cpu", challenge }: { initial?: Opponent
             quick: { rules },
             quickNote: `Random-battle sets from Gen ${rules.gen}, checked against your rules.`,
           }
-        : undefined,
-    [custom, rules]
+        : group
+          ? { name: info.name, short: info.short, saved: null, quick: { format }, quickNote: `Random-battle sets legal in ${info.name}.` }
+          : undefined,
+    [custom, rules, group, format, info.name, info.short]
   );
 
   // The last custom ruleset, remembered on this device.
@@ -284,6 +297,30 @@ export function BattleSetup({ initial = "cpu", challenge }: { initial?: Opponent
           </div>
         </fieldset>
 
+        {/* Showdown's other game types: three Pokémon a side, and four trainers (unranked, as on Showdown). */}
+        <fieldset className="space-y-2" disabled={searching} data-testid="group-formats">
+          <legend className="hud-label mb-2">Triples and four trainers</legend>
+          <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+            {GROUP_FORMATS.map((f) => {
+              const fi = PLAY_FORMAT_INFO[f];
+              return (
+                <label
+                  key={f}
+                  className={cn("flex cursor-pointer flex-col gap-1 rounded-md border bg-card px-3 py-2.5 hover:border-screen/60", format === f && "border-primary ring-1 ring-primary")}
+                  data-testid={`format-${f}`}
+                >
+                  <input type="radio" name={`${id}-format`} value={f} checked={format === f} onChange={() => setFormat(f)} className="sr-only" />
+                  <span className="flex items-center justify-between gap-2">
+                    <span className="font-display text-sm font-bold uppercase">{fi.short}</span>
+                    <span className="hud-label shrink-0 text-screen">{GAME_TYPE_LABEL[fi.gameType]}</span>
+                  </span>
+                  <span className="text-xs text-muted-foreground">{fi.random ? fi.blurb : `${playerCount(fi.gameType) === 4 ? "Four trainers, one Pokémon out each. " : "Three Pokémon out a side. "}Bring a team, or a quick one.`}</span>
+                </label>
+              );
+            })}
+          </div>
+        </fieldset>
+
         {opponent === "cpu" && (
           <p className="text-xs text-muted-foreground" data-testid="frontier-links">
             Looking for a streak? Rent a team in the{" "}
@@ -341,12 +378,18 @@ export function BattleSetup({ initial = "cpu", challenge }: { initial?: Opponent
           <p className="font-display text-2xl font-bold uppercase leading-tight">{formatName}</p>
           <p className="text-sm text-muted-foreground">
             {opponent === "cpu"
-              ? `${CPU_LEVEL_INFO[level].name} computer. ${info.random ? "Random teams for both of you." : "It brings its own team."}`
+              ? four
+                ? `${CPU_LEVEL_INFO[level].name} computer. ${FOUR_CPU[info.gameType]} ${info.random ? "Random teams for everyone." : "Each brings its own team."}`
+                : `${CPU_LEVEL_INFO[level].name} computer. ${info.random ? "Random teams for both of you." : "It brings its own team."}`
               : opponent === "match"
-                ? `You'll be paired with the next trainer searching for ${info.name}, and the battle starts at once.${info.random ? " Teams are random." : " You each bring your own team."}`
+                ? four
+                  ? `You'll be paired with the next trainer searching for ${info.name}; the computer takes the other two seats.${info.gameType === "multi" ? " You and your opponent each get a computer partner." : ""} Unranked, as on Showdown.`
+                  : `You'll be paired with the next trainer searching for ${info.name}, and the battle starts at once.${info.random ? " Teams are random." : " You each bring your own team."}`
                 : challenge
                   ? `${challenge} gets your challenge at once (and you get the link too). The battle starts when you're both ready.`
-                  : "You'll get a link to send. The battle starts when you're both ready."}
+                  : four
+                    ? "You'll get a link to send to up to three friends; any seat nobody takes, the computer can fill. Unranked, as on Showdown."
+                    : "You'll get a link to send. The battle starts when you're both ready."}
           </p>
           <div className="space-y-1.5">
             <label htmlFor={`${id}-name`} className="hud-label">

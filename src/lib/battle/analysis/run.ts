@@ -120,12 +120,19 @@ export function gameTypeReason(gameType: string): string | null {
 }
 
 /** Why a replay can't be analysed, or null if it can: any singles or doubles battle of a generation the Battle Lab plays. */
-export function unsupportedReason(replay: Pick<ReplayData, "format" | "turns">): string | null {
+export function unsupportedReason(replay: Pick<ReplayData, "format" | "turns"> & Partial<Pick<ReplayData, "gameType" | "log">>): string | null {
   if (replay.turns < 1) return "This battle ended before the first turn, so there's nothing to analyse.";
+  // The game type first: a Triples, Free-For-All or Multi battle can't be simulated whatever its generation (custom rules on one of Showdown's formats included).
+  const type =
+    replay.gameType ??
+    replay.log?.find((l) => l.startsWith("|gametype|"))?.slice("|gametype|".length) ??
+    PLAY_FORMAT_INFO[replay.format]?.gameType ??
+    (/triples/.test(replay.format) ? "triples" : /freeforall/.test(replay.format) ? "freeforall" : /multi/.test(replay.format) ? "multi" : "singles");
+  const byType = gameTypeReason(type);
+  if (byType) return byType;
   const gen = Number(/^gen(\d)/.exec(replay.format)?.[1] ?? 9);
   if (!isLabGen(gen)) return `Gen ${gen} battles can't be simulated by the Battle Lab, so they can't be analysed.`;
-  const type = PLAY_FORMAT_INFO[replay.format]?.gameType ?? (/triples/.test(replay.format) ? "triples" : /freeforall/.test(replay.format) ? "freeforall" : /multi/.test(replay.format) ? "multi" : "singles");
-  return gameTypeReason(type);
+  return null;
 }
 
 let calcLoad: Promise<{ gen: (n: number) => Generation; lib: CalcModule }> | null = null;
@@ -186,7 +193,7 @@ export async function analyseReplay(
     points.push(winPoint(t, out.totals, viewer));
     onProgress({ done: t, total, points: [...points], stage: "rollouts" });
   }
-  points.push(resultPoint(total + 1, replay.winner, viewer));
+  points.push(resultPoint(total + 1, replay.winner as SideIndex | null, viewer));
 
   // The calc's facts, and the lines.
   onProgress({ done: total, total, points: [...points], stage: "calc" });
@@ -211,7 +218,7 @@ export async function analyseReplay(
     version: ANALYSIS_VERSION,
     id: replay.id,
     viewer,
-    players: replay.players,
+    players: [replay.players[0] ?? "Player 1", replay.players[1] ?? "Player 2"],
     ...(parsed.doubles ? { doubles: true } : {}),
     points,
     keyMoments: keySwings(allSwings).map((s) => ({ turn: s.turn, text: keyMomentLine(parsed, viewer, s, facts[s.turn]), board: boardAt(parsed, s.turn) })),

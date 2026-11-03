@@ -3,11 +3,11 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { MusicControl, trackFor, useBattleMusic } from "./MusicControl";
 import { AlertTriangle, ChevronDown, Eye, Undo2, FastForward, Gauge, Loader2, ScrollText, SkipForward, Sparkles, Timer } from "lucide-react";
-import { CPU_LEVEL_INFO, PLAY_FORMAT_INFO, timerNagMarks, type BattleRequestPokemon, type BattleView } from "@/lib/battle/play";
+import { CPU_LEVEL_INFO, PLAY_FORMAT_INFO, isGameType, playerCount, teamOf, timerNagMarks, type BattleRequestPokemon, type BattleView, type GameType } from "@/lib/battle/play";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { Dex } from "@pkmn/dex";
-import { BattleModel, endNote, textLines, type SideId, type Snap, type Step } from "./model";
+import { BattleModel, SIDE_IDS, emptySide, endNote, sideOfSeat, textLines, type SideId, type Snap, type Step } from "./model";
 import { preloadSprite } from "./sprites";
 import { loadAnims, playStep, type PopupTone, type StageHandle } from "./player";
 import { Stage, type Popup } from "./Stage";
@@ -57,9 +57,36 @@ export interface BattleScreenProps {
   onIdle?: () => void;
 }
 
-/** How a finished battle ended, told from one trainer's side or, for spectators and replays, neutrally. */
-export function endText(view: Pick<BattleView, "end" | "players" | "you">, turns: number): { title: string; detail: string; tone: "win" | "loss" | "draw" } {
+/** "1st", "2nd", "3rd", "4th". */
+export const place = (n: number) => `${n}${n === 1 ? "st" : n === 2 ? "nd" : n === 3 ? "rd" : "th"}`;
+
+/** A four-player battle's end: a Multi Battle's winning team, or a Free-For-All's winner and your place in it. */
+function fourEndText(view: Pick<BattleView, "end" | "players" | "you" | "gameType">, turns: number): { title: string; detail: string; tone: "win" | "loss" | "draw" } {
   const end = view.end!;
+  const names = view.players.map((p) => p.name);
+  const turnsText = `${turns} turn${turns === 1 ? "" : "s"}`;
+  if (end.winner === null) return { title: end.reason === "nocontest" ? "No contest" : "A draw", detail: end.reason === "nocontest" ? "The battle couldn't go on." : `After ${turnsText}.`, tone: "draw" };
+  const winners = end.winners ?? [end.winner];
+  const winnerNames = winners.map((s) => names[s] ?? "A trainer").join(" & ");
+  if (view.gameType === "multi") {
+    const team = (t: number) => [t, t + 2].map((s) => names[s] ?? "?").join(" & ");
+    const lost = team(1 - (end.winner % 2));
+    if (view.you === null) return { title: `${winnerNames} won!`, detail: `They beat ${lost} in ${turnsText}.`, tone: "win" };
+    const won = winners.includes(view.you);
+    const partner = names[view.you < 2 ? view.you + 2 : view.you - 2] ?? "your partner";
+    return won ? { title: "Victory!", detail: `You and ${partner} beat ${lost} in ${turnsText}.`, tone: "win" } : { title: "Defeat", detail: `${winnerNames} won in ${turnsText}.`, tone: "loss" };
+  }
+  const standings = end.standings ?? [end.winner];
+  if (view.you === null) return { title: `${winnerNames} won!`, detail: `Last trainer standing after ${turnsText}.`, tone: "win" };
+  const at = standings.indexOf(view.you);
+  if (winners.includes(view.you)) return { title: "Victory!", detail: `Last trainer standing after ${turnsText}.`, tone: "win" };
+  return { title: at >= 0 ? `${place(at + 1)} place` : "Defeat", detail: `${winnerNames} won the Free-For-All in ${turnsText}.`, tone: "loss" };
+}
+
+/** How a finished battle ended, told from one trainer's side or, for spectators and replays, neutrally. */
+export function endText(view: Pick<BattleView, "end" | "players" | "you" | "gameType">, turns: number): { title: string; detail: string; tone: "win" | "loss" | "draw" } {
+  const end = view.end!;
+  if (view.players.length === 4) return fourEndText(view, turns);
   const names = view.players.map((p) => p.name);
   const winner = end.winner === null ? null : (names[end.winner] ?? "A trainer");
   const loser = end.winner === null ? null : (names[1 - end.winner] ?? "A trainer");
@@ -131,9 +158,9 @@ function stamp(at: number): string {
 /** Battles whose versus intro this tab has shown (a reload on turn 1 doesn't show it again). */
 const VERSUS_KEY = "pokeiq:battle:versus-seen";
 
-/** The versus intro plays before a battle's first turn, for its two players, once. */
+/** The versus intro plays before a battle's first turn, for its two players, once (a four-player battle goes straight in). */
 function wantsVersus(view: BattleView, replay: boolean | undefined): boolean {
-  if (replay || view.you === null || view.status !== "playing" || view.turn > 1 || view.end) return false;
+  if (replay || view.you === null || view.status !== "playing" || view.turn > 1 || view.end || view.players.length > 2) return false;
   try {
     const seen = JSON.parse(window.sessionStorage.getItem(VERSUS_KEY) ?? "[]");
     return !(Array.isArray(seen) && seen.includes(view.code));
@@ -158,7 +185,103 @@ const ANIM_KEY = "pokeiq:battle:animations";
 
 function emptySnap(): Snap {
   const side = (id: SideId) => ({ id, name: "", active: [], team: [], total: 6, conditions: [] });
-  return { gen: 9, turn: 0, sides: { p1: side("p1"), p2: side("p2") }, weather: "", terrain: "", pseudo: [] };
+  return { gen: 9, turn: 0, sides: { p1: side("p1"), p2: side("p2"), p3: emptySide("p3"), p4: emptySide("p4") }, weather: "", terrain: "", pseudo: [] };
+}
+
+/** A Free-For-All's standings, or a Multi Battle's two teams, under the result. */
+export function FourResult({ view }: { view: Pick<BattleView, "end" | "players" | "you" | "gameType"> }) {
+  const end = view.end;
+  if (!end || view.players.length !== 4) return null;
+  const name = (s: number) => (s === view.you ? `${view.players[s]?.name ?? "You"} (you)` : (view.players[s]?.name ?? "A trainer"));
+  if (view.gameType === "multi") {
+    return (
+      <div className="mx-auto grid max-w-md grid-cols-2 gap-2 text-left" data-testid="multi-result">
+        {[0, 1].map((t) => {
+          const won = end.winner !== null && end.winner % 2 === t;
+          return (
+            <div key={t} className={cn("rounded-md border px-3 py-2", won ? "border-success/60 bg-success/10" : "border-border")}>
+              <p className={cn("hud-label", won ? "text-success" : "text-muted-foreground")}>{won ? "Winners" : end.winner === null ? `Team ${t + 1}` : "Beaten"}</p>
+              {[t, t + 2].map((s) => (
+                <p key={s} className="truncate font-display text-sm font-bold uppercase">
+                  {name(s)}
+                </p>
+              ))}
+            </div>
+          );
+        })}
+      </div>
+    );
+  }
+  const order = end.standings ?? [];
+  if (!order.length) return null;
+  return (
+    <ol className="mx-auto max-w-sm space-y-1 text-left" data-testid="ffa-standings" aria-label="Final standings">
+      {order.map((s, i) => {
+        const out = view.players[s]?.out;
+        return (
+          <li key={s} className={cn("flex items-center gap-2 rounded-md border px-3 py-1.5", i === 0 ? "border-success/60 bg-success/10" : "border-border", s === view.you && "ring-1 ring-primary")} data-testid="ffa-standing">
+            <span className={cn("w-9 shrink-0 font-pixel text-[11px]", i === 0 ? "text-success" : "text-muted-foreground")}>{place(i + 1)}</span>
+            <span className="min-w-0 flex-1 truncate font-display text-sm font-bold uppercase">{name(s)}</span>
+            <span className="hud-label shrink-0 text-muted-foreground">{i === 0 ? "Last standing" : out ? `Out on turn ${out}` : "Out"}</span>
+          </li>
+        );
+      })}
+    </ol>
+  );
+}
+
+/** A four-player battle's trainers: your team against theirs (Multi), or all four (Free-For-All), with who's out. */
+function FourHeader({ view, gameType, cpu }: { view: BattleView; gameType: GameType; cpu: string | null }) {
+  const chip = (seat: number) => {
+    const p = view.players[seat];
+    if (!p) return null;
+    const out = p.out !== undefined;
+    return (
+      <span key={seat} className={cn("flex min-w-0 items-center gap-1.5", out && "opacity-50")} data-testid="battle-trainer" data-seat={seat} data-out={out || undefined}>
+        <Avatar avatar={p.cpu ? null : p.avatar} size={20} />
+        <span className={cn("truncate", seat === view.you ? "text-primary" : "text-screen", out && "line-through")}>{p.name}</span>
+      </span>
+    );
+  };
+  const order = view.you === null ? [0, 1, 2, 3] : [view.you, ...[0, 1, 2, 3].filter((s) => s !== view.you)];
+  return (
+    <div className="flex min-w-0 basis-full flex-wrap items-center gap-x-2 gap-y-1 font-display text-sm font-bold uppercase tracking-wide sm:basis-auto sm:flex-1" data-testid="battle-four-header">
+      {gameType === "multi" ? (
+        <>
+          {[0, 1].map((t) => {
+            const mine = view.you !== null ? teamOf("multi", view.you) : 0;
+            const team = t === 0 ? mine : 1 - mine;
+            return (
+              <span key={t} className="flex min-w-0 items-center gap-1.5">
+                {t === 1 && <span className="hud-label mr-1">vs</span>}
+                {chip(team)}
+                <span className="text-muted-foreground">&amp;</span>
+                {chip(team + 2)}
+              </span>
+            );
+          })}
+        </>
+      ) : (
+        order.map((s, i) => (
+          <span key={s} className="flex min-w-0 items-center gap-1.5">
+            {i > 0 && <span className="hud-label">·</span>}
+            {chip(s)}
+          </span>
+        ))
+      )}
+      <span className="hud-label ml-1 hidden sm:inline">
+        {view.formatName ?? PLAY_FORMAT_INFO[view.format].name}
+        {cpu && view.players.some((p) => p.cpu) ? ` · ${cpu} computer` : ""}
+      </span>
+    </div>
+  );
+}
+
+/** The game type a view's battle is played in: the server's word, else its log's |gametype| line, else its format's. */
+function gameTypeOfView(view: BattleView, snap: Snap): GameType {
+  if (view.gameType) return view.gameType;
+  if (isGameType(snap.gameType)) return snap.gameType;
+  return PLAY_FORMAT_INFO[view.format]?.gameType ?? "singles";
 }
 
 function RichText({ text }: { text: string }) {
@@ -217,7 +340,7 @@ export default function BattleScreen({ view, log, offset, busy, error, onChoose,
       // not remembered
     }
   };
-  const me: SideId = view.you === 1 ? "p2" : "p1";
+  const me: SideId = sideOfSeat(view.you);
   /** The versus intro: the first turn waits for it (it ends on its own, or when skipped). */
   const intro = useRef<{ done: Promise<void>; end: () => void } | null>(null);
   const [versus, setVersus] = useState(() => {
@@ -247,12 +370,11 @@ export default function BattleScreen({ view, log, offset, busy, error, onChoose,
     const id = window.setTimeout(endVersus, VERSUS_MS + 2_500);
     return () => window.clearTimeout(id);
   }, [versus, endVersus]);
-  const ballIds = `${view.players[0]?.avatar?.trainer?.ball ?? ""}|${view.players[1]?.avatar?.trainer?.ball ?? ""}`;
+  const ballIds = SIDE_IDS.map((_, i) => view.players[i]?.avatar?.trainer?.ball ?? "").join("|");
   const balls = useMemo(() => {
-    const [a, b] = ballIds.split("|");
-    return { p1: ballLook(a), p2: ballLook(b) };
+    const [a, b, c, d] = ballIds.split("|");
+    return { p1: ballLook(a), p2: ballLook(b), p3: ballLook(c), p4: ballLook(d) };
   }, [ballIds]);
-  const doubles = PLAY_FORMAT_INFO[view.format].gameType === "doubles";
   const model = useRef<BattleModel | null>(null);
   const fed = useRef(0);
   const resetSeen = useRef(-1);
@@ -264,6 +386,11 @@ export default function BattleScreen({ view, log, offset, busy, error, onChoose,
   const entryId = useRef(0);
   const popupId = useRef(0);
   const [snap, setSnap] = useState<Snap>(emptySnap);
+  const gameType = gameTypeOfView(view, snap);
+  const four = playerCount(gameType) === 4 || view.players.length === 4;
+  const namesKey = view.players.map((p) => p.name).join("|");
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- namesKey stands for the names
+  const names = useMemo(() => Object.fromEntries(view.players.map((p, i) => [SIDE_IDS[i], p.name])) as Partial<Record<SideId, string>>, [namesKey]);
   const [entries, setEntries] = useState<Entry[]>([]);
   const [message, setMessage] = useState("");
   const [popups, setPopups] = useState<Popup[]>([]);
@@ -472,12 +599,14 @@ export default function BattleScreen({ view, log, offset, busy, error, onChoose,
   const pending = playing || log.lines.length > fed.current;
   const now = useTick(!!view.clocks && view.status === "playing") + offset;
   const youName = view.players[view.you ?? 0]?.name ?? "You";
-  const foeName = view.players[view.you === 1 ? 0 : 1]?.name ?? "Opponent";
+  const foeName = four ? "the other trainers" : (view.players[view.you === 1 ? 0 : 1]?.name ?? "Opponent");
+  /** A Free-For-All trainer who's out watches the rest. */
+  const youOut = view.you !== null && view.players[view.you]?.out !== undefined;
   const cpu = view.cpu ? CPU_LEVEL_INFO[view.cpu.level].name : null;
   const showControls = !pending && view.status === "playing" && !!view.request && !view.end;
   const ended = !!view.end && !pending;
-  const won = ended && view.end!.winner !== null && view.end!.winner === view.you;
-  const result = ended ? endText(view, snap.turn) : null;
+  const won = ended && view.end!.winner !== null && (view.end!.winner === view.you || (view.you !== null && !!view.end!.winners?.includes(view.you)));
+  const result = ended ? endText({ ...view, gameType }, snap.turn) : null;
   useBattleMusic(trackFor(view, ended, won));
   const help = useHotkeyHelp();
   const myLeft = view.clocks && view.status === "playing" && view.clocks.you.deadline && !view.waiting && view.request ? view.clocks.you.deadline - now : null;
@@ -531,6 +660,9 @@ export default function BattleScreen({ view, log, offset, busy, error, onChoose,
       <div className="min-w-0 space-y-3">
         {/* Who's playing, the clocks and playback controls. */}
         <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+          {four ? (
+            <FourHeader view={view} gameType={gameType} cpu={cpu} />
+          ) : (
           <div className="flex min-w-0 basis-full items-center gap-2 font-display text-sm font-bold uppercase tracking-wide sm:basis-auto sm:flex-1">
             <Avatar avatar={view.players[view.you ?? 0]?.avatar} size={24} />
             <span className="truncate text-primary">
@@ -549,6 +681,7 @@ export default function BattleScreen({ view, log, offset, busy, error, onChoose,
               {view.formatName ?? PLAY_FORMAT_INFO[view.format].name}
             </span>
           </div>
+          )}
           {view.kind === "pvp" && view.spectators !== undefined && !replay && (
             <span className="hud-label flex items-center gap-1" title="Spectators watching now" data-testid="spectator-count">
               <Eye className="h-3.5 w-3.5" aria-hidden /> {view.spectators} watching
@@ -583,12 +716,22 @@ export default function BattleScreen({ view, log, offset, busy, error, onChoose,
             </span>
           )}
           {view.clocks && view.status === "playing" && (
-            <div className="flex items-center gap-3 font-pixel text-[11px]" data-testid="battle-clocks">
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 font-pixel text-[11px]" data-testid="battle-clocks">
               <Timer className="h-3.5 w-3.5 text-muted-foreground" aria-hidden />
               <span className={cn(view.clocks.you.deadline && view.clocks.you.deadline - now < 20_000 ? "text-destructive" : "text-foreground")}>
                 You {view.clocks.you.deadline ? clock(view.clocks.you.deadline - now) : clock(view.clocks.you.bank)}
               </span>
-              <span className="text-muted-foreground">Foe {view.clocks.foe.deadline ? clock(view.clocks.foe.deadline - now) : clock(view.clocks.foe.bank)}</span>
+              {view.clocks.seats ? (
+                view.clocks.seats.map((c, i) =>
+                  c && i !== view.you && view.players[i]?.out === undefined ? (
+                    <span key={i} className="max-w-[9rem] truncate text-muted-foreground" data-testid="seat-clock">
+                      {view.players[i]?.name ?? "?"} {c.deadline ? clock(c.deadline - now) : clock(c.bank)}
+                    </span>
+                  ) : null
+                )
+              ) : (
+                <span className="text-muted-foreground">Foe {view.clocks.foe.deadline ? clock(view.clocks.foe.deadline - now) : clock(view.clocks.foe.bank)}</span>
+              )}
             </div>
           )}
           <MusicControl />
@@ -627,7 +770,7 @@ export default function BattleScreen({ view, log, offset, busy, error, onChoose,
 
         {toolbar}
 
-        <Stage snap={snap} me={me} doubles={doubles} popups={popups} onHandle={onHandle} myBalls={myBalls} format={view.format} myRequest={lastTeam} watching={watching} balls={balls} holdArena={versus} />
+        <Stage snap={snap} me={me} gameType={gameType} names={four ? names : undefined} popups={popups} onHandle={onHandle} myBalls={myBalls} format={view.format} myRequest={lastTeam} watching={watching} balls={balls} holdArena={versus} />
 
         {/* The text box: the latest line of the battle. */}
         <div className="dialog-box min-h-[4.25rem] text-sm leading-relaxed text-muted-foreground" data-done={showControls} aria-live="polite" data-testid="battle-message">
@@ -656,10 +799,11 @@ export default function BattleScreen({ view, log, offset, busy, error, onChoose,
         <Card ref={controlsCard}>
           <CardContent className="p-4">
             {showControls ? (
-              <Controls key={view.request!.rqid} request={view.request!.data} snap={snap} me={me} doubles={doubles} busy={busy} format={view.format} onChoose={(choice) => onChoose(view.request!.rqid, choice)} onHelp={help.toggle} />
+              <Controls key={view.request!.rqid} request={view.request!.data} snap={snap} me={me} gameType={gameType} names={four ? names : undefined} busy={busy} format={view.format} onChoose={(choice) => onChoose(view.request!.rqid, choice)} onHelp={help.toggle} />
             ) : ended ? (
               <div className="space-y-3 text-center" data-testid="battle-result">
                 <BattleVictory view={view} title={result!.title} detail={result!.detail} tone={result!.tone} />
+                <FourResult view={{ ...view, gameType }} />
                 {endActions}
               </div>
             ) : replay ? (
@@ -674,7 +818,16 @@ export default function BattleScreen({ view, log, offset, busy, error, onChoose,
                   </>
                 ) : (
                   <>
-                    <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> {busy ? "Sending…" : view.cpu ? "The computer is thinking…" : watching ? "The trainers are choosing…" : `Waiting for ${foeName}…`}
+                    <Loader2 className="h-4 w-4 animate-spin" aria-hidden />{" "}
+                    {busy
+                      ? "Sending…"
+                      : youOut
+                        ? "You're out: watching the rest of the Free-For-All…"
+                        : view.cpu && (view.kind === "cpu" || !four)
+                          ? "The computer is thinking…"
+                          : watching
+                            ? "The trainers are choosing…"
+                            : `Waiting for ${foeName}…`}
                     {view.cancel && onUndo && !busy && (
                       <button
                         type="button"

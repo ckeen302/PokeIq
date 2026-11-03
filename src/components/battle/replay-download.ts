@@ -11,7 +11,7 @@ export interface DownloadableBattle {
   id: string;
   format: string;
   formatName: string;
-  players: [string, string];
+  players: string[];
   log: readonly string[];
 }
 

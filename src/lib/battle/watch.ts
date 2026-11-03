@@ -1,4 +1,4 @@
-import type { PlayFormatId } from "./play";
+import type { GameType, PlayFormatId } from "./play";
 import type { AvatarMap } from "../avatar";
 
 /**
@@ -12,8 +12,10 @@ export interface WatchEntry {
   format: PlayFormatId;
   /** The format's name as the players see it. */
   formatName: string;
-  /** Each trainer, with (ranked) the Glicko-2 rating and Elo they brought. */
-  players: { name: string; rating?: number; elo?: number }[];
+  /** Each trainer, with (ranked) the Glicko-2 rating and Elo they brought; four in Free-For-All and Multi Battles (the computer's seats marked). */
+  players: { name: string; rating?: number; elo?: number; cpu?: boolean }[];
+  /** Four-player battles: Free-For-All or Multi. */
+  gameType?: GameType;
   ranked: boolean;
   turn: number;
   spectators: number;
