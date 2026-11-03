@@ -1,4 +1,4 @@
-import type { ArenaId } from "@/lib/mass-battle/types";
+import type { ArenaId, BattleSpec } from "@/lib/mass-battle/types";
 
 /**
  * How each battlefield is lit: sky, sun, fog and the frame's grade, for the
@@ -222,4 +222,22 @@ export function lookFor(arena: ArenaId, time: TimeOfDay, weather: Weather): Look
     });
   }
   return l;
+}
+
+/**
+ * The sky over a battle: its weather and time of day from the battle (when it has them). ?tod= (day, dusk, night)
+ * picks the time of day, which is only how it looks; ?wx= previews a weather's look on test pages (?debug=1) only,
+ * since a weather changes the battle's maths.
+ */
+export function envOf(spec: BattleSpec): { weather: unknown; time: unknown } {
+  const e = spec as BattleSpec & { weather?: unknown; time?: unknown; timeOfDay?: unknown };
+  let weather = e.weather, time = e.time ?? e.timeOfDay;
+  try {
+    const q = new URLSearchParams(window.location.search);
+    if (q.get("tod")) time = q.get("tod");
+    if (q.get("debug") === "1" && q.get("wx")) weather = q.get("wx");
+  } catch {
+    /* no address */
+  }
+  return { weather, time };
 }

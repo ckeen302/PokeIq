@@ -19,6 +19,7 @@ import { createBattleAudio, type BattleAudio } from "./audio";
 import { MB_CSS } from "./mass-battle-css";
 import type { BattleScene, Quality } from "./scene";
 import { HowItWorksBody } from "./HowItWorks";
+import { envOf } from "./scene/look";
 import { BattleControls, BattleHud, type CamMode } from "./BattleHud";
 import { DamageNumbers } from "./damage-numbers";
 import type { Choreographer } from "./scene/choreo";
@@ -103,6 +104,7 @@ const keepQuality = () => {
   return q ? `&q=${q}` : "";
 };
 const LADDER: Quality[] = ["low", "medium", "high"];
+
 const SLOW_MS = 18;
 
 const damp = (cur: number, target: number, rate: number, dt: number) => target + (cur - target) * Math.exp(-rate * dt);
@@ -307,12 +309,21 @@ export function MassBattleExperience({ list, presets, initial }: { list: PickerM
         const total = (counts.get(k) ?? 0) + (counts.get(10000 + k) ?? 0);
         if (total <= 3) bosses.add(species[k].id);
       }
-      const env = b.spec as BattleSpec & { weather?: unknown; time?: unknown };
+      const env = envOf(b.spec);
       await scene.deploy({ arena: b.spec.arena, radius: ready.arena, species, bosses, view, weather: env.weather, time: env.time }, (p, label) => setProgress({ p, label }), ac.signal);
       if (ac.signal.aborted) return;
       const aspect = hostRef.current ? hostRef.current.clientWidth / Math.max(1, hostRef.current.clientHeight) : 1.6;
       directorRef.current.reset(summarize(view, heightsRef.current, "deploy", aspect));
-      if (/[?&]debug=1/.test(window.location.search)) (window as unknown as { __mb: unknown }).__mb = { scene, view, director: directorRef.current, choreo: choreoRef.current };
+      if (/[?&]debug=1/.test(window.location.search)) {
+        // Test pages: the scene and a way to put the free camera anywhere.
+        const setCam = (p: Partial<Pose>) => {
+          camRef.current = "director";
+          toFree();
+          Object.assign(freeRef.current, p);
+          Object.assign(freeRef.current.target, p);
+        };
+        (window as unknown as { __mb: unknown }).__mb = { scene, view, director: directorRef.current, choreo: choreoRef.current, setCam };
+      }
       camRef.current = "director";
       setCam("director");
       topRef.current.follow = true;

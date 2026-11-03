@@ -146,7 +146,7 @@ function grassField(count: number, R: number, look: Look, sunDir: THREE.Vector3,
   for (let k = 0; k < count; k++) seed.set([rand(), rand(), rand(), rand()], k * 4);
   geo.setAttribute("aSeed", new THREE.InstancedBufferAttribute(seed, 4));
   geo.instanceCount = count;
-  const box = 64;
+  const box = 30;
   const uniforms = {
     uTime: { value: 0 },
     uFocus: { value: new THREE.Vector3() },
@@ -174,8 +174,8 @@ void main() {
   float r = length(p);
   float edge = 1.0 - smoothstep(uBox * 0.36, uBox * 0.5, length(p - uFocus.xz));
   float field = smoothstep(uR * 0.98, uR * 1.12, r);
-  float hgt = mix(0.09, 0.5, field) * (0.55 + aSeed.z * 0.9) * edge;
-  float wid = mix(0.035, 0.05, field) * (0.7 + aSeed.w * 0.6);
+  float hgt = mix(0.07, 0.42, field) * (0.5 + aSeed.z * 0.9) * edge;
+  float wid = mix(0.022, 0.04, field) * (0.7 + aSeed.w * 0.6);
   float ang = aSeed.w * 6.2831;
   float wind = sin(uTime * 1.6 + p.x * 0.18 + p.y * 0.11) * 0.5 + sin(uTime * 3.1 + p.x * 0.7) * 0.2;
   vec3 q = position;
@@ -310,9 +310,9 @@ export function buildArena(id: ArenaId, opts: ArenaOptions): Arena {
         // Patches of dry grass and bare earth, more where the battle stands (the battleground is trampled).
         colorPatch = `
 float mbP = mbF(vWorld.xz * 0.045);
-float mbDirt = smoothstep(0.62, 0.78, mbF(vWorld.xz * 0.09 + 3.0)) * 0.55;
+float mbDirt = smoothstep(0.7, 0.82, mbF(vWorld.xz * 0.11 + 3.0)) * 0.32;
 float mbDry = smoothstep(0.45, 0.8, mbP);
-diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb * vec3(1.18, 1.05, 0.62), mbDry * 0.5);
+diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb * vec3(1.12, 1.04, 0.7), mbDry * 0.35);
 diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.42, 0.33, 0.22), mbDirt);
 diffuseColor.rgb *= 0.88 + mbN(vWorld.xz * 0.6) * 0.2;`;
       } else if (ground === "volcano") {
@@ -528,7 +528,7 @@ diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb * vec3(0.72, 0.66, 0.6
       const ice = new THREE.ConeGeometry(0.35, 2.2, 5).translate(0, 1.0, 0);
       const iceMat = new THREE.MeshStandardMaterial({ color: "#bfe8ff", roughness: 0.15, metalness: 0.1, emissive: "#3a7aa0", emissiveIntensity: 0.25, flatShading: true });
       const nIce = Math.round(80 * props);
-      const ices = instanced(ice, iceMat, nIce);
+      const ices = instanced(ice, iceMat, nIce * 3);
       scatterRing(nIce, R * 1.02, R * 1.9, (x, z, s) => {
         const y = heightAt(x, z);
         for (let k = 0; k < 3; k++) put(ices, x + (rand() - 0.5) * 2, y - 0.2, z + (rand() - 0.5) * 2, s * (0.5 + rand() * 0.7), rand() * 6);

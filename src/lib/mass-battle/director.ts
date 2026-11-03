@@ -295,8 +295,8 @@ export class Director {
         }
         // A high drone shot from the side of the line, sweeping slowly, back far enough for both armies (and their
         // width) to stay in frame wherever the sweep is.
-        const yaw = Math.atan2(px, pz) + 0.18 + 0.26 * Math.sin(this.orbit * 0.8 + s * 0.05);
-        const pitch = 0.4;
+        const yaw = Math.atan2(px, pz) + 0.2 + 0.24 * Math.sin(this.orbit * 0.8 + s * 0.05);
+        const pitch = 0.3;
         const half = Math.atan(Math.tan((fov * Math.PI) / 360) * aspect);
         const fits = (dist: number) => {
           const cp = Math.cos(pitch);
@@ -308,7 +308,7 @@ export class Director {
               const x = army.cx + rx * army.extent * e, z = army.cz + rz * army.extent * e;
               let d = Math.atan2(x - camX, z - camZ) - fwd;
               d = Math.atan2(Math.sin(d), Math.cos(d));
-              if (Math.abs(d) > half * (e === 0 ? 0.78 : 0.94)) return false;
+              if (Math.abs(d) > half * (e === 0 ? 0.84 : 0.96)) return false;
             }
           }
           return true;
@@ -327,7 +327,7 @@ export class Director {
         const dx = vx / vl, dz = vz / vl;
         const d = Math.max(4, lead.h * 5 + Math.min(lead.extent, 30) * 0.35) * (tall ? 1.25 : 1);
         const camX = lead.fx + dx * d + -dz * this.flip * d * 0.25, camZ = lead.fz + dz * d + dx * this.flip * d * 0.25;
-        return poseAt(camX, Math.max(0.35, lead.h * 0.45), camZ, lead.fx - dx * lead.extent * 0.25, lead.h * 0.75, lead.fz - dz * lead.extent * 0.25, fov + 4);
+        return poseAt(camX, Math.max(0.6, lead.h * 0.8), camZ, lead.fx - dx * lead.extent * 0.25, lead.h * 0.7, lead.fz - dz * lead.extent * 0.25, fov + 4);
       }
       case "track": {
         // Tracking alongside the charge, low, the enemy ahead.

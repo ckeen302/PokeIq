@@ -86,6 +86,10 @@ void main() {
   p = mod(p - lo, vec3(uBox, uHeight, uBox)) + lo;
   vec3 rel = (p - lo) / vec3(uBox, uHeight, uBox);
   vA = smoothstep(0.0, 0.12, rel.x) * smoothstep(1.0, 0.88, rel.x) * smoothstep(0.0, 0.12, rel.z) * smoothstep(1.0, 0.88, rel.z) * smoothstep(1.0, 0.85, rel.y);
+  // Nothing right in front of the lens (a flake an inch away would fill the screen).
+  float dc = length(p - uCam);
+  vA *= smoothstep(1.2, 3.5, dc);
+  if (dc < 1.0) { gl_Position = vec4(2.0, 2.0, 2.0, 1.0); return; }
   float speed = length(vel);
   vec3 dir = speed > 1e-3 ? vel / speed : vec3(0.0, -1.0, 0.0);
   vec3 toCam = normalize(uCam - p);
@@ -192,9 +196,9 @@ export function buildWeather(arena: ArenaId, weather: Weather, opts: { density: 
   let s = (opts.seed ?? 4242) % 2147483647 || 1;
   const rand = () => (s = (s * 16807) % 2147483647) / 2147483647;
   const d = Math.max(0.15, opts.density);
-  const streak = new THREE.PlaneGeometry(1, 1, 1, 1);
+  // Every piece is a little 3D crystal (stretched along its fall for rain and sand), never a flat card.
   const crystal = new THREE.OctahedronGeometry(1, 0);
-  disposables.push(streak, crystal);
+  disposables.push(crystal);
   const add = (f: Field) => {
     fields.push(f);
     group.add(f.mesh);
@@ -202,7 +206,7 @@ export function buildWeather(arena: ArenaId, weather: Weather, opts: { density: 
   let splash: Field | null = null;
   let dust: Field | null = null;
   if (weather === "rain") {
-    add(particleField({ count: Math.round(6000 * d), box: 46, height: 30, fall: 16, wind: [1.6, 0.8], size: 0.012, stretch: 55, color: new THREE.Color(0.62, 0.7, 0.82), alpha: 0.55, additive: true, wobble: 0, base: streak, rand }));
+    add(particleField({ count: Math.round(6000 * d), box: 46, height: 30, fall: 16, wind: [1.6, 0.8], size: 0.012, stretch: 40, color: new THREE.Color(0.62, 0.7, 0.82), alpha: 0.6, additive: true, wobble: 0, base: crystal, rand }));
     splash = splashField(Math.round(900 * d), 44, rand);
     add(splash);
   }
@@ -213,7 +217,7 @@ export function buildWeather(arena: ArenaId, weather: Weather, opts: { density: 
   }
   if (weather === "sand") {
     const col = new THREE.Color("#e0b47a");
-    add(particleField({ count: Math.round(5000 * d), box: 46, height: 14, fall: 0.6, wind: [22, 4], size: 0.02, stretch: 14, color: col, alpha: 0.7, additive: false, wobble: 0.4, base: streak, rand }));
+    add(particleField({ count: Math.round(5000 * d), box: 46, height: 14, fall: 0.6, wind: [22, 4], size: 0.02, stretch: 10, color: col, alpha: 0.7, additive: false, wobble: 0.4, base: crystal, rand }));
     dust = dustSheets(Math.round(70 * Math.max(0.5, d)), 90, new THREE.Color("#c89a64"), rand);
     add(dust);
   }

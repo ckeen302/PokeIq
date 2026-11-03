@@ -2,7 +2,7 @@ import { Director } from "@/lib/mass-battle/director";
 import { answerText, bossDownLine, critLine, fmt, multiKoLine, questionText, resultTitle, spreadText } from "@/lib/mass-battle/copy";
 import { TICK_HZ } from "@/lib/mass-battle/constants";
 import { figureSize } from "@/lib/mass-battle/stats";
-import type { ArenaId, BattleSpec, MBSpecies } from "@/lib/mass-battle/types";
+import type { ArenaId, MBSpecies } from "@/lib/mass-battle/types";
 import { Mp4Muxer, aacConfig } from "@/lib/sizes/mp4";
 import { BATTLE_CROWD_URL, BATTLE_MUSIC_URL, loopPoints, noiseBuffer, synthBoom, synthHit, synthRecall, synthRiser, synthStep, synthThunder, synthWhoosh } from "./audio";
 import type { BattleDesc } from "./MassBattleExperience";
@@ -10,6 +10,7 @@ import { sliceRoster, specIds } from "./protocol";
 import { getRoster } from "./roster-client";
 import { createBattleScene, QUALITY, TEX_URL, type Quality } from "./scene";
 import { createChoreographer } from "./scene/choreo";
+import { envOf } from "./scene/look";
 import { BattleView, LEAD, summarize } from "./view";
 import { SimClient } from "./workers";
 
@@ -255,7 +256,7 @@ export async function recordBattleVideo(o: RecordOptions): Promise<RecordResult>
     const counts = new Map<number, number>();
     for (let i = 0; i < ready.n; i++) counts.set(ready.sp[i], (counts.get(ready.sp[i]) ?? 0) + 1);
     species.forEach((s, k) => { if ((counts.get(k) ?? 0) <= 3 && (ready.start[0] <= 3 || ready.start[1] <= 3)) bosses.add(s.id); });
-    const envSpec = b.spec as BattleSpec & { weather?: unknown; time?: unknown };
+    const envSpec = envOf(b.spec);
     await scene.deploy({ arena: b.spec.arena, radius: ready.arena, species, bosses, view, weather: envSpec.weather, time: envSpec.time }, (p) => o.onProgress(0.01 + p * 0.07, "Deploying armies"), o.signal);
     // Frames from the worker, on demand.
     let waiting: (() => void) | null = null;

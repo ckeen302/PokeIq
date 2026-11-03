@@ -158,14 +158,11 @@ export function createBattleScene(host: HTMLElement, opts: SceneOptions): Battle
   effects.marksOn = quality !== "draft";
   scene.add(effects.group);
   let post: Post | null = null;
-  let postMsaa = -1;
+  // The finishing pass is made once: remaking it for a new quality would recompile its shaders mid-battle.
   const makePost = () => {
-    if (!usePost) return;
-    if (post && postMsaa === Q.msaa) return;
-    post?.dispose();
+    if (!usePost || post) return;
     const pr = renderer.getPixelRatio();
     post = createPost(renderer, Math.round(W * pr), Math.round(H * pr), { msaa: Q.msaa, bloomMips: Q.bloom });
-    postMsaa = Q.msaa;
     if (look) applyGrade(look);
   };
   let arena: Arena | null = null;
