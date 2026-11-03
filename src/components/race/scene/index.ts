@@ -256,7 +256,8 @@ export function createRaceScene(host: HTMLElement, opts: SceneOptions): RaceScen
       const k = Math.sqrt(s.kg / 300);
       impulses.push({ t: f.showT, a: Math.min(0.022, 0.0012 * k / (1 + d / 30) + 0.0055 * k / (1 + (d / 9) * (d / 9))) });
     }
-    while (impulses.length && f.showT - impulses[0].t > 0.6) impulses.shift();
+    // Only recent impulses shake (and none "from the future" after the show clock jumps back: a restart, a seek).
+    for (let k = impulses.length - 1; k >= 0; k--) if (f.showT - impulses[k].t > 0.6 || f.showT < impulses[k].t) impulses.splice(k, 1);
     let shake = 0;
     for (const im of impulses) shake += im.a * Math.exp(-(f.showT - im.t) / 0.12);
     if (shake > 0) {

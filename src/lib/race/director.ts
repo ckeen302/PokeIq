@@ -157,9 +157,9 @@ export function cameraFor(cam: Camera, k: number, spots: Spot[], ctx: DirectorCo
       const out = 6.5 + 1.6 * H + (portrait ? 2 : 0);
       const cx = (c[0] + l.x) / 2, cz = zMid;
       const pos: Vec3 = [cx + l.dx * ahead + nx * out, 1.5 + 0.75 * H, cz + l.dz * ahead + nz * out];
-      const target: Vec3 = [cx + l.dx * 0.6, 0.5 * H, cz];
+      const target: Vec3 = [cx + l.dx * 0.6, 0.55 * H, cz];
       const D = Math.hypot(pos[0] - target[0], pos[1] - target[1], pos[2] - target[2]);
-      return { pos, target, fov: fovToFit(Math.max(4.5, span * 0.75 + spreadX * 0.55), H * 1.9, D, ctx.aspect, 6, 50) };
+      return { pos, target, fov: fovToFit(Math.max(4, (span * 0.6 + spreadX * 0.5) * (portrait ? 0.7 : 1)), H * 1.6, D, ctx.aspect, 6, 50) };
     }
     case "bend": {
       const p = pack(spots, 9);
@@ -201,7 +201,7 @@ export function cameraFor(cam: Camera, k: number, spots: Spot[], ctx: DirectorCo
       const pos: Vec3 = [X0 + 13 + 1.5 * H, 2.4 + 1.1 * H, zMid + 8 + 1.6 * H];
       const target: Vec3 = [X0 - 3.2, 0.5 * H, zMid - 0.3];
       const D = Math.hypot(pos[0] - target[0], pos[1] - target[1], pos[2] - target[2]);
-      return { pos, target, fov: fovToFit(span * 0.95 + 3, H * 2.1, D, ctx.aspect, 10, 55) };
+      return { pos, target, fov: fovToFit(span * 0.72 + 2, H * 1.8, D, ctx.aspect, 9, 55) };
     }
     case "winner":
     case "chase": {

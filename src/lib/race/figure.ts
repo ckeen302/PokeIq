@@ -60,7 +60,7 @@ export interface FigureMesh {
 
 const smoothstep = (a: number, b: number, x: number) => { const t = Math.max(0, Math.min(1, (x - a) / (b - a || 1))); return t * t * (3 - 2 * t); };
 
-export function buildFigureMesh(map: ReliefMap, box: { x: number; y: number; w: number; h: number; size: number }, segments: number, parts: PartMap | null, tune = BODY): FigureMesh {
+export function buildFigureMesh(map: ReliefMap, box: { x: number; y: number; w: number; h: number; size: number }, segments: number, parts: PartMap | null, tune: { cap: number; round: number; soften: number } = BODY): FigureMesh {
   const L = Math.max(box.w, box.h);
   const W = box.w / L, H = box.h / L;
   const nx = Math.max(2, Math.round(segments * W)), ny = Math.max(2, Math.round(segments * H));

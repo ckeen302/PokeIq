@@ -7,7 +7,8 @@ import { buildFigureMesh } from "@/lib/race/figure";
 import { celebrationAt, dipAt, jointAngles, legSwing } from "@/lib/race/limbs";
 import { describeParts, findParts, type ReliefPixels } from "@/lib/race/parts";
 import { poolAt, poolBounds, poolDepth, poolModes, poolWalls, swimmerY, WATER_Y } from "@/lib/race/pool";
-import { makeRace, runnerAt } from "@/lib/race/race";
+import { makeRace, runnerAt, spotsAt } from "@/lib/race/race";
+import { cameraFor, leader } from "@/lib/race/director";
 import { RUN_OUT, X0, lanePoint, type Distance } from "@/lib/race/track";
 import type { Motion } from "@/lib/race/types";
 
@@ -301,6 +302,23 @@ describe("swimmers and their pool lanes", () => {
     for (const h of [0.6, 2, 7.7]) {
       expect(swimmerY(h)).toBeLessThan(WATER_Y);
       expect(swimmerY(h)).toBeGreaterThan(-poolDepth([h]));
+    }
+  });
+});
+
+describe("the broadcast's framing", () => {
+  it("shows the race from the front or three quarters, never side-on", () => {
+    const es = ["regieleki", "zeraora", "arcanine", "groudon", "pikachu", "lucario"].map((k) => RACE_ENTRANTS.find((e) => e.key === k)!);
+    const race = makeRace(es, 100);
+    const ctx = { distance: 100 as const, aspect: 16 / 9, starts: spotsAt(race, 0) };
+    for (const [cam, t] of [["rail", 2], ["rail", 4], ["headon", 5], ["line", race.first - 0.4], ["winner", race.first + 1.5], ["replay", race.first - 0.3]] as const) {
+      const spots = spotsAt(race, t);
+      const l = cam === "winner" ? spots.find((s) => s.lane === race.order[0].lane)! : leader(spots);
+      const pose = cameraFor(cam, 0.5, spots, { ...ctx, lane: race.order[0].lane });
+      const tx = pose.pos[0] - l.x, tz = pose.pos[2] - l.z;
+      const along = (tx * l.dx + tz * l.dz) / Math.hypot(tx, tz);
+      // In front of the leader, at most about 60° off head-on.
+      expect(along, `${cam} at ${t} s`).toBeGreaterThan(Math.cos((62 * Math.PI) / 180));
     }
   });
 });
