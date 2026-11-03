@@ -2,7 +2,10 @@
  * Pokémon Mass Battle (/lab/mass-battle), end to end in the browser: a
  * preset battle played to its result, the "how many?" solver to its answer
  * (from a shared question link), a shared battle's link, title and preview
- * cards, the zoom controls (the wheel, a trackpad pinch as ctrl + wheel,
+ * cards, the Battle setup panel (rows, a group, the Advanced section's
+ * field, behaviour, a species' set and playback) building a link that
+ * fills the panel back in when it's opened, a "how many?" with the
+ * solver's settings, the zoom controls (the wheel, a trackpad pinch as ctrl + wheel,
  * Safari's gesture events, the + and − buttons, the 0 key back to the
  * director), the sound staying off when the site is muted, the phone
  * layout, and "Make a video": a 5-second export (?len=5 at the light test
@@ -103,17 +106,21 @@ export async function runMassBattle({ browser, BASE, OUT, errors, step }) {
   });
 
   await part(errors, "links", async () => {
+    // A version 1 link still opens; its preview card and canonical link are version 2.
     const code = "1.100.plains.k3f9.swarm.line.rattata*40.mewtwo*1";
+    const v2 = "2.100.plains.k3f9.items.swarm_rattata*40.line_mewtwo*1";
     await page.goto(`${BASE}/lab/mass-battle?b=${code}&q=draft`, { waitUntil: "load" });
     if (!/40 Rattata vs 1 Mewtwo/.test(await page.title())) errors.push(`mass battle: the battle link's title is "${await page.title()}"`);
     const og = await page.locator('meta[property="og:image"]').getAttribute("content");
-    if (!og || !og.includes(`/lab/mass-battle/og?b=${code}`)) errors.push(`mass battle: the battle link's preview image is ${og}`);
-    for (const path of [`/lab/mass-battle/og?b=${code}`, "/lab/mass-battle/og?ask=magikarp.arceus.100.colosseum", "/lab/mass-battle/opengraph-image", "/lab/mass-battle/fire-vs-water/opengraph-image"]) {
+    if (!og || !og.includes(`/lab/mass-battle/og?b=${v2}`)) errors.push(`mass battle: the battle link's preview image is ${og}`);
+    for (const path of [`/lab/mass-battle/og?b=${code}`, `/lab/mass-battle/og?b=${v2}`, "/lab/mass-battle/og?b=2.100.volcano.1.0.line_all-water-fe-nolegend*5.line_all-fire-fe-nolegend*10", "/lab/mass-battle/og?ask=magikarp.arceus.100.colosseum", "/lab/mass-battle/og?ask=2.100.colosseum.90-20.sun.swarm_magikarp*1.line_arceus*1", "/lab/mass-battle/opengraph-image", "/lab/mass-battle/fire-vs-water/opengraph-image"]) {
       const res = await page.request.get(`${BASE}${path}`);
       if (res.status() !== 200 || !/image\/png/.test(res.headers()["content-type"] ?? "")) errors.push(`mass battle: preview card ${path} failed (${res.status()})`);
     }
     const roster = await page.request.get(`${BASE}/api/mass-battle/roster`);
     if (roster.status() !== 200) errors.push(`mass battle: the roster returned ${roster.status()}`);
+    const learnsets = await page.request.get(`${BASE}/api/mass-battle/learnsets`);
+    if (learnsets.status() !== 200 || !Object.keys(await learnsets.json()).length) errors.push(`mass battle: the learnsets returned ${learnsets.status()}`);
     if ((await page.request.get(`${BASE}/lab/mass-battle/not-a-preset`)).status() !== 404) errors.push("mass battle: an unknown preset isn't a 404");
   });
 
@@ -148,6 +155,97 @@ export async function runMassBattle({ browser, BASE, OUT, errors, step }) {
     await page.screenshot({ path: `${OUT}/mass-battle-free-camera.png` });
     await page.evaluate(() => window.dispatchEvent(new KeyboardEvent("keydown", { key: "0", bubbles: true })));
     await until(() => document.querySelector('[data-testid="mb-stage"]')?.dataset.cam === "director").catch(() => errors.push("mass battle: 0 didn't hand the camera back to the director"));
+  });
+
+  step("3D Lab Mass Battle: the Battle setup panel and its share link both ways");
+  await part(errors, "setup", async () => {
+    await page.goto(`${BASE}/lab/mass-battle?q=draft`, { waitUntil: "load" });
+    await phaseIs(["ready", "error"]);
+    const id = (t) => page.getByTestId(t);
+    const pick = async (testId, query, slug) => {
+      await id(testId).click();
+      await id(`${testId}-search`).fill(query);
+      await page.locator(`[data-testid="${testId}-option"][data-slug="${slug}"]`).first().dispatchEvent("mousedown");
+      if ((await id(testId).getAttribute("data-value")) !== slug) throw new Error(`${testId} didn't take ${slug}`);
+    };
+    await id("mb-tab-army").click();
+    await pick("mb-side-0-pick-0", "pikach", "pikachu");
+    await id("mb-side-0-count-0").fill("30");
+    // A whole group on the red side: every fully evolved Fire type, two of each.
+    await id("mb-add-group-1").click();
+    await id("mb-group-1-type").selectOption("fire");
+    await id("mb-group-1-kind").selectOption("no");
+    await id("mb-group-1-count").fill("2");
+    const matches = await id("mb-group-1-matches").textContent();
+    if (!/Every fully evolved Fire type/.test(matches ?? "")) errors.push(`mass battle: the group reads "${matches}"`);
+    await id("mb-group-1-add").click();
+    await id("mb-side-1-1-group").waitFor();
+    // Advanced: the field, how the blue side fights, Pikachu's set, playback.
+    await id("mb-advanced").click();
+    await id("mb-weather").selectOption("rain");
+    await id("mb-terrain").selectOption("grassy");
+    await id("mb-time").selectOption("night");
+    await id("mb-items").selectOption("sets");
+    await id("mb-beh-0-targeting").selectOption("boss");
+    await id("mb-beh-0-stance").selectOption("hold");
+    await id("mb-side-0-0-set-toggle").click();
+    await id("mb-side-0-0-set").waitFor();
+    await id("mb-side-0-0-level").fill("50");
+    await id("mb-side-0-0-nature").selectOption("Adamant");
+    await id("mb-side-0-0-tera").selectOption("Water");
+    await page.waitForFunction(() => document.querySelector('[data-testid="mb-side-0-0-move-0"] optgroup[label="Its other legal moves"]'), null, { timeout: 30_000 });
+    await id("mb-side-0-0-move-0").selectOption("Thunderbolt");
+    const stats = await id("mb-side-0-0-stats").textContent();
+    if (!/Level 50/.test(stats ?? "") || !/Tera Water/.test(stats ?? "")) errors.push(`mass battle: Pikachu's set reads "${stats}"`);
+    await id("mb-speed-pick").selectOption("2");
+    await id("mb-numbers").click();
+    await page.screenshot({ path: `${OUT}/mass-battle-setup-advanced.png`, fullPage: true });
+    await id("mb-fight").click();
+    await page.waitForFunction(() => /[?&]b=2\./.test(location.search), null, { timeout: 30_000 });
+    const url = new URL(page.url());
+    const b = url.searchParams.get("b") ?? "";
+    for (const want of ["rain-grassy-night-items", "swarm-boss-hold_pikachu*30*l50*mthunderbolt", "nadamant", "twater", "_all-fire-nolegend-fe*2"]) if (!b.includes(want)) errors.push(`mass battle: the battle's link ${b} has no ${want}`);
+    if (url.searchParams.get("v") !== "2-numbers") errors.push(`mass battle: the link's playback is ${url.searchParams.get("v")}`);
+    await phaseIs(["ready", "playing", "done", "error"], 240_000);
+    if ((await attr("phase")) === "error") throw new Error("the panel's battle didn't deploy");
+    // The link opens the same battle, with the panel filled in.
+    await page.goto(`${BASE}/lab/mass-battle?b=${b}&v=2-numbers&q=draft`, { waitUntil: "load" });
+    await phaseIs(["ready", "error"]);
+    if (!(await id("mb-tab-army").getAttribute("aria-selected"))?.includes("true")) errors.push("mass battle: a battle link doesn't open the Army vs army tab");
+    if ((await id("mb-side-0-pick-0").getAttribute("data-value")) !== "pikachu") errors.push("mass battle: the link lost the blue army's Pikachu");
+    if ((await id("mb-side-0-count-0").inputValue()) !== "30") errors.push("mass battle: the link lost the count");
+    if (!(await id("mb-side-1-1-group").count())) errors.push("mass battle: the link lost the red army's group");
+    await id("mb-advanced").click();
+    const values = { "mb-weather": "rain", "mb-terrain": "grassy", "mb-time": "night", "mb-items": "sets", "mb-beh-0-targeting": "boss", "mb-beh-0-stance": "hold", "mb-speed-pick": "2" };
+    for (const [t, want] of Object.entries(values)) if ((await id(t).inputValue()) !== want) errors.push(`mass battle: after the link, ${t} is ${await id(t).inputValue()}, not ${want}`);
+    if ((await id("mb-numbers").getAttribute("aria-checked")) !== "true") errors.push("mass battle: the link lost the damage numbers");
+    await id("mb-side-0-0-set-toggle").click();
+    if ((await id("mb-side-0-0-level").inputValue()) !== "50" || (await id("mb-side-0-0-nature").inputValue()) !== "Adamant" || (await id("mb-side-0-0-tera").inputValue()) !== "Water") errors.push("mass battle: the link lost Pikachu's set");
+    await page.screenshot({ path: `${OUT}/mass-battle-setup-from-link.png` });
+  });
+
+  await part(errors, "ask", async () => {
+    await page.goto(`${BASE}/lab/mass-battle?q=draft`, { waitUntil: "load" });
+    await phaseIs(["ready", "error"]);
+    const id = (t) => page.getByTestId(t);
+    await id("mb-pick-challenger").click();
+    await id("mb-pick-challenger-search").fill("rattata");
+    await page.locator('[data-testid="mb-pick-challenger-option"][data-slug="rattata"]').first().dispatchEvent("mousedown");
+    await id("mb-pick-boss").click();
+    await id("mb-pick-boss-search").fill("mewtwo");
+    await page.locator('[data-testid="mb-pick-boss-option"][data-slug="mewtwo"]').first().dispatchEvent("mousedown");
+    await id("mb-advanced").click();
+    await id("mb-threshold").selectOption("0.9");
+    await id("mb-runs").selectOption("20");
+    if (!/How many Rattata beat Mewtwo\?/.test((await id("mb-question").textContent()) ?? "")) errors.push(`mass battle: the question reads "${await id("mb-question").textContent()}"`);
+    await id("mb-ask").click();
+    await page.waitForFunction(() => /[?&]ask=2\./.test(location.search), null, { timeout: 30_000 });
+    const ask = new URL(page.url()).searchParams.get("ask") ?? "";
+    if (!/^2\.100\.[a-z]+\.90-20\.0\.swarm_rattata\*1\.line_mewtwo\*1$/.test(ask)) errors.push(`mass battle: the question's link is ${ask}`);
+    await phaseIs(["playing", "done", "error"], 300_000);
+    if ((await attr("phase")) === "error") throw new Error("the 90% question stopped with an error");
+    const answer = Number(await attr("answer"));
+    if (!(answer >= 2 && answer <= 200)) errors.push(`mass battle: the 90% answer is ${answer}`);
   });
 
   step("3D Lab Mass Battle: make a 5 s video (a valid 1080 × 1920 MP4 with sound), phone layout");
@@ -191,6 +289,14 @@ export async function runMassBattle({ browser, BASE, OUT, errors, step }) {
     await page.screenshot({ path: `${OUT}/mass-battle-390.png` });
     await press(page, "mb-how");
     await page.getByTestId("mb-how-panel").waitFor();
+    // The setup panel with Advanced open still fits a phone.
+    await page.getByTestId("mb-how-panel").getByRole("button", { name: "Close" }).click();
+    await page.getByTestId("mb-advanced").click();
+    await page.getByTestId("mb-tab-army").click();
+    await page.getByTestId("mb-side-0-0-set-toggle").click();
+    await page.getByTestId("mb-side-0-0-set").waitFor();
+    if (await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1)) errors.push("mass battle: the setup panel scrolls sideways on a phone");
+    await page.getByTestId("mb-setup").screenshot({ path: `${OUT}/mass-battle-setup-390.png` });
   });
   await context.close();
 }

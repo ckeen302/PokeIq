@@ -196,6 +196,17 @@ export function groupLabel(g: GroupRule): string {
   return `Every ${[...parts, noun].join(" ")}${not}`;
 }
 
+/** What a group adds to its type (or kind): "fully evolved, Gen 1, no legendaries". */
+export function groupDetail(g: GroupRule): string {
+  const parts: string[] = [];
+  if (g.types?.length && g.legendary === true) parts.push(g.mythical ? "legendary or mythical" : "legendary");
+  else if (g.types?.length && g.mythical) parts.push("mythical");
+  if (g.fullyEvolved) parts.push("fully evolved");
+  if (g.gen && (g.types?.length || g.legendary === true || g.mythical)) parts.push(`Gen ${g.gen}`);
+  if (g.legendary === "no") parts.push("no legendaries");
+  return parts.length ? parts.join(", ") : "all of them";
+}
+
 /** An army's rows with every group spelled out as its species (the group's count and set for each). */
 export function expandArmy(army: Pick<ArmySpec, "units">, species: GroupFacts[]): UnitSpec[] {
   const out: UnitSpec[] = [];

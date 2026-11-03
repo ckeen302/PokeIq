@@ -17,6 +17,7 @@ import { DamageTable } from "../src/lib/mass-battle/damage";
 import { prepare, runHeadless } from "../src/lib/mass-battle/engine";
 import { PRESETS, resolvePreset } from "../src/lib/mass-battle/presets";
 import { questionKey, questionSpec, runsOf, thresholdOf, type SlugIndex } from "../src/lib/mass-battle/share";
+import { expandQuestion, factsOf } from "../src/lib/mass-battle/sets";
 import { solve, type Evaluate } from "../src/lib/mass-battle/solver";
 import type { Question } from "../src/lib/mass-battle/types";
 import { presetsFile, type PresetResult } from "../src/lib/mass-battle/preset-results";
@@ -26,8 +27,9 @@ const bySlug = new Map(roster.species.map((s) => [s.slug, s.id]));
 const byId = new Map(roster.species.map((s) => [s.id, s.slug]));
 export const SLUGS: SlugIndex = { id: (s) => bySlug.get(s), slug: (id) => byId.get(id) };
 
-/** Plays a question's battles in this process, keeping each fighter list's damage table (as the browser's workers do). */
-export function evaluator(q: Question): Evaluate {
+/** Plays a question's battles in this process, keeping each fighter list's damage table (as the browser's workers do); groups are spelled out first, as the page does. */
+export function evaluator(question: Question): Evaluate {
+  const q = expandQuestion(question, roster.species.map(factsOf));
   const tables = new Map<number, DamageTable>();
   const cache = new Map<string, number>();
   return async (n, seeds, settled) => {

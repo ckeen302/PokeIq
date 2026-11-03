@@ -1,7 +1,7 @@
 /**
  * The Mass Battle engine against Pokémon Showdown's simulator.
  *
- *   npx tsx scripts/mass-battle-crosscheck.ts [--runs 200] [--only id,id] [--json out.json] [--sets]
+ *   npx tsx scripts/mass-battle-crosscheck.ts [--runs 200] [--only id,id] [--offset n] [--json out.json] [--sets]
  *
  * For small battles (1 v 1, 2 v 1, 1 v 2, 1 v 3) at levels 50 and 100, the
  * same sets (the battle's own: moves, ability, item, nature, EVs, IVs) are
@@ -88,10 +88,14 @@ function specOf(m: Matchup, level: number, seed: number): BattleSpec {
 // The engine
 // ---------------------------------------------------------------------------
 
-function engineRate(prep: Prepared, table: DamageTable, runs: number, layout: "melee" | "field"): { wins: number; draws: number } {
+/** Each level plays its own battles (their outcomes would otherwise be nearly the same, and the rows not independent); --offset moves to fresh ones. */
+let seedOffset = 0;
+const seedBase = (level: number) => level * 100_000 + seedOffset;
+
+function engineRate(prep: Prepared, table: DamageTable, runs: number, layout: "melee" | "field", level: number): { wins: number; draws: number } {
   let wins = 0, draws = 0;
   for (let k = 0; k < runs; k++) {
-    const b = new Battle({ ...prep, seed: 1000 + k, layout }, table);
+    const b = new Battle({ ...prep, seed: 7_000_000 + seedBase(level) + k, layout }, table);
     while (!b.ended) b.step();
     if (b.winner === 0) wins++;
     else if (b.winner === 2) draws++;
@@ -315,11 +319,11 @@ export interface Row {
 export function crossCheck(m: Matchup, level: number, runs: number): Row {
   const prep = prepare(roster, specOf(m, level, 1), { layout: "melee" });
   const table = new DamageTable(prep.species.map((species, k) => ({ species, set: prep.sets[k] })), prep.field);
-  const engine = engineRate(prep, table, runs, "melee");
-  const field = engineRate(prep, table, runs, "field");
+  const engine = engineRate(prep, table, runs, "melee", level);
+  const field = engineRate(prep, table, runs, "field", level);
   let wins = 0, draws = 0;
   for (let k = 0; k < runs; k++) {
-    const w = simBattle(prep, table, k);
+    const w = simBattle(prep, table, seedBase(level) + k);
     if (w === 0) wins++;
     else if (w === 2) draws++;
   }
@@ -337,6 +341,7 @@ async function main() {
     return i >= 0 ? args[i + 1] : undefined;
   };
   const runs = Number(arg("--runs") ?? 200);
+  seedOffset = Number(arg("--offset") ?? 0);
   const only = arg("--only")?.split(",");
   const rows: Row[] = [];
   for (const m of MATCHUPS) {
@@ -349,6 +354,8 @@ async function main() {
       if (args.includes("--sets")) console.log(`   ${r.sets}`);
     }
   }
+  const agree = rows.filter((r) => Math.abs(r.z) < 2).length;
+  console.log(`\n${agree} of ${rows.length} comparisons agree within |z| < 2 (${runs} battles each).`);
   const json = arg("--json");
   if (json) writeFileSync(json, JSON.stringify(rows, null, 1));
 }

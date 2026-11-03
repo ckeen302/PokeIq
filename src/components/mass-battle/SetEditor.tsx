@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 import { RotateCcw } from "lucide-react";
-import { ITEM_GROUPS, MAX_MOVES, NATURE_NAMES, NATURES, clampLevel, defaultMoves, resolveSet } from "@/lib/mass-battle/sets";
+import { ITEM_GROUPS, MAX_MOVES, NATURE_NAMES, NATURES, clampLevel, defaultMoves, moveIndex, natureName, resolveSet } from "@/lib/mass-battle/sets";
 import { battleStats } from "@/lib/mass-battle/stats";
 import { EV_LABEL, EV_PRESETS, TYPE_NAMES, type EvPreset, type ItemPolicy, type MBMove, type MBSpecies, type SetChoice } from "@/lib/mass-battle/types";
 import { cn } from "@/lib/utils";
@@ -10,8 +10,9 @@ import { cn } from "@/lib/utils";
 const STAT_SHORT: Record<string, string> = { atk: "Atk", def: "Def", spa: "SpA", spd: "SpD", spe: "Spe" };
 const natureHint = (n: string) => {
   const x = NATURES[n];
-  return x ? `${n} (+${STAT_SHORT[x[0]]} −${STAT_SHORT[x[1]]})` : `${n} (neutral)`;
+  return x ? `${n} +${STAT_SHORT[x[0]]} −${STAT_SHORT[x[1]]}` : n;
 };
+const EV_SHORT: Record<EvPreset, string> = { random: "Random battles", offence: "Max offence", bulk: "Max bulk" };
 
 /**
  * One species' set in the Battle setup's Advanced section: level, up to
@@ -49,7 +50,11 @@ export function SetEditor({ species, moves, learnset, level, items, value, onCha
     const rest = (learnset ?? []).map((i) => moves[i]).filter((m) => m && !seen.has(m.name));
     return { rb, lu: lu.filter((m) => !rb.some((r) => r.name === m.name)), rest };
   }, [species, moves, learnset, lv]);
-  const chosen = v.moves?.length ? v.moves : defaults;
+  // A link carries ids ("thunderbolt", "hugepower"): shown by their names.
+  const byName = useMemo(() => moveIndex(moves), [moves]);
+  const toId = (x: string) => x.toLowerCase().replace(/[^a-z0-9]+/g, "");
+  const chosen = (v.moves?.length ? v.moves : defaults).map((m) => byName.get(toId(m))?.name ?? m);
+  const ability = species ? species.abilities.find((a) => toId(a) === toId(v.ability ?? "")) ?? species.ability : "";
   const stats = species && resolved ? battleStats(species, resolved) : null;
   const label = "font-pixel text-[9px] uppercase tracking-[0.18em] text-muted-foreground";
   const select = "mt-1 h-10 w-full min-w-0 rounded-md border bg-card px-2 text-sm";
@@ -62,7 +67,7 @@ export function SetEditor({ species, moves, learnset, level, items, value, onCha
 
   return (
     <div className="space-y-3 rounded-lg border border-dashed bg-background/40 p-3" data-testid={`${idPrefix}-set`}>
-      <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+      <div className="grid grid-cols-2 gap-2">
         <div>
           <label className={label} htmlFor={`${idPrefix}-level`}>Level</label>
           <input
@@ -72,7 +77,7 @@ export function SetEditor({ species, moves, learnset, level, items, value, onCha
             min={1}
             max={100}
             value={v.level ?? ""}
-            placeholder={`${level} (battle's)`}
+            placeholder={`${level}`}
             onChange={(e) => set({ level: e.target.value === "" ? undefined : clampLevel(Number(e.target.value)) })}
             className={cn(select, "tabular-nums")}
             data-testid={`${idPrefix}-level`}
@@ -81,12 +86,12 @@ export function SetEditor({ species, moves, learnset, level, items, value, onCha
         <div>
           <label className={label} htmlFor={`${idPrefix}-evs`}>EVs and IVs</label>
           <select id={`${idPrefix}-evs`} value={v.evs ?? "random"} onChange={(e) => set({ evs: e.target.value === "random" ? undefined : (e.target.value as EvPreset) })} className={select} data-testid={`${idPrefix}-evs`}>
-            {EV_PRESETS.map((p) => <option key={p} value={p}>{EV_LABEL[p]}</option>)}
+            {EV_PRESETS.map((p) => <option key={p} value={p} title={EV_LABEL[p]}>{EV_SHORT[p]}</option>)}
           </select>
         </div>
         <div>
           <label className={label} htmlFor={`${idPrefix}-nature`}>Nature</label>
-          <select id={`${idPrefix}-nature`} value={v.nature ?? "Hardy"} onChange={(e) => set({ nature: e.target.value === "Hardy" ? undefined : e.target.value })} className={select} data-testid={`${idPrefix}-nature`}>
+          <select id={`${idPrefix}-nature`} value={natureName(v.nature)} onChange={(e) => set({ nature: e.target.value === "Hardy" ? undefined : e.target.value })} className={select} data-testid={`${idPrefix}-nature`}>
             {NATURE_NAMES.map((n) => <option key={n} value={n}>{natureHint(n)}</option>)}
           </select>
         </div>
@@ -94,7 +99,7 @@ export function SetEditor({ species, moves, learnset, level, items, value, onCha
           <label className={label} htmlFor={`${idPrefix}-tera`}>Tera type</label>
           <select id={`${idPrefix}-tera`} value={v.tera ?? ""} onChange={(e) => set({ tera: e.target.value || undefined })} className={select} data-testid={`${idPrefix}-tera`}>
             <option value="">No Tera</option>
-            {TYPE_NAMES.map((t) => <option key={t} value={t}>{t}{species?.tera.includes(t) ? " (its set's)" : ""}</option>)}
+            {TYPE_NAMES.map((t) => <option key={t} value={t}>{t}{species?.tera.includes(t) ? " (set's)" : ""}</option>)}
           </select>
         </div>
       </div>
@@ -103,7 +108,7 @@ export function SetEditor({ species, moves, learnset, level, items, value, onCha
         <div className="grid gap-2 sm:grid-cols-2">
           <div>
             <label className={label} htmlFor={`${idPrefix}-ability`}>Ability</label>
-            <select id={`${idPrefix}-ability`} value={v.ability ?? species.ability} onChange={(e) => set({ ability: e.target.value === species.ability ? undefined : e.target.value })} className={select} data-testid={`${idPrefix}-ability`}>
+            <select id={`${idPrefix}-ability`} value={ability} onChange={(e) => set({ ability: e.target.value === species.ability ? undefined : e.target.value })} className={select} data-testid={`${idPrefix}-ability`}>
               {species.abilities.map((a) => <option key={a} value={a}>{a}{a === species.ability ? " (default)" : ""}</option>)}
             </select>
           </div>

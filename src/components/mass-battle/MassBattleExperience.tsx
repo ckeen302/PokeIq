@@ -810,8 +810,7 @@ export function MassBattleExperience({ list, presets, initial, playback: initial
   };
   const cycleSpeed = () => {
     const next = speed === 1 ? 2 : speed === 2 ? 0.5 : 1;
-    speedRef.current = next;
-    setSpeed(next);
+    setPlayback({ ...playbackRef.current, speed: next });
   };
   const replay = () => {
     const b = battleRef.current;
