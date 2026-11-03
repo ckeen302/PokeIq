@@ -336,7 +336,11 @@ diffuseColor.rgb *= 1.0 - mbRiver * mbAway * 0.8;`;
         // Snow: soft drifts, blue in the hollows, glittering crystals that catch the light as the camera moves.
         colorPatch = `
 float mbD = mbF(vWorld.xz * 0.06);
-diffuseColor.rgb *= mix(vec3(0.82, 0.88, 0.98), vec3(1.0), smoothstep(0.3, 0.7, mbD));`;
+diffuseColor.rgb *= mix(vec3(0.8, 0.86, 0.97), vec3(1.0), smoothstep(0.3, 0.7, mbD));
+// Wind ripples in the snow, and trampled grey where the armies stand.
+float mbSa = sin(vWorld.x * 1.7 + vWorld.z * 0.6 + mbN(vWorld.xz * 0.15) * 7.0) * 0.5 + 0.5;
+diffuseColor.rgb *= 0.95 + mbSa * 0.05 * (1.0 - smoothstep(25.0, 70.0, distance(cameraPosition, vWorld)));
+diffuseColor.rgb *= 1.0 - smoothstep(0.62, 0.85, mbF(vWorld.xz * 0.09 + 5.0)) * 0.1;`;
         emissivePatch = `
 vec2 mbCell = floor(vWorld.xz * 9.0);
 float mbG = mbH(mbCell);

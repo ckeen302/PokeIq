@@ -253,6 +253,8 @@ export function MassBattleExperience({ list, presets, initial }: { list: PickerM
           d.offer({ kind: "crit", x: a.x, z: a.z, h: a.h, power: 0.6 });
         }
         if (a.bossHit && a.share > 0.3) d.offer({ kind: "big", x: a.x, z: a.z, h: a.h, power: a.share });
+        // The latest knockout: if it ends the battle, the finale opens on it.
+        if (a.kos > 0) d.offer({ kind: "final", x: a.x, z: a.z, h: a.h, power: 0 });
       },
     };
     view.onLaunch = (h) => choreo.launch(h);

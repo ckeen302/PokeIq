@@ -119,6 +119,8 @@ export class Director {
   /** Where the latest heavy action was (follow-the-action). */
   private hot: { x: number; z: number; h: number; at: number } | null = null;
   private jump = true;
+  /** Where the latest knockout was: the final blow, when the battle ends. */
+  private finalCue: Cue | null = null;
   /** The side charging in the charge and tracking shots (the bigger army: the horde), fixed for the shot. */
   private lead: 0 | 1 = 0;
 
@@ -135,6 +137,7 @@ export class Director {
     this.chargeDone = false;
     this.finaleAt = -1;
     this.cue = null;
+    this.finalCue = null;
     this.hot = null;
     this.bossShots = 0;
     this.cuts = 0;
@@ -145,13 +148,13 @@ export class Director {
 
   /** A moment worth a cut (the director decides whether to take it). */
   offer(c: Cue) {
+    if (c.kind === "final") {
+      this.finalCue = c;
+      return;
+    }
     this.shakeLevel = Math.max(this.shakeLevel, Math.min(1.2, c.power));
     if (c.kind === "big" || c.kind === "multi") this.hot = { x: c.x, z: c.z, h: c.h, at: this.real };
     if (this.shot === "finale" || this.shot === "establish") return;
-    if (c.kind === "final") {
-      this.cue = c;
-      return;
-    }
     if (c.kind === "big") return;
     if (this.real < this.slowCooldown && c.kind !== "ko-boss") return;
     this.cue = c;
@@ -293,15 +296,22 @@ export class Director {
           const D = back + S;
           return { tx: camX + ux * D, ty: H - D * Math.tan(pitch), tz: camZ + uz * D, yaw: Math.atan2(-ux, -uz), pitch, dist: Math.hypot(D, D * Math.tan(pitch)), fov, shake: 0 };
         }
-        // A high drone shot from the side of the line, sweeping slowly, back far enough for both armies (and their
-        // width) to stay in frame wherever the sweep is.
-        const yaw = Math.atan2(px, pz) + 0.2 + 0.24 * Math.sin(this.orbit * 0.8 + s * 0.05);
-        const pitch = 0.3;
+        // A drone shot from behind the lone boss (or the bigger army), three-quarters on, the enemy across the field,
+        // sweeping slowly; back far enough for both armies (and their width) to stay in frame wherever the sweep is.
+        const nearSide = f.boss ? f.boss.side : a.alive >= b.alive ? 0 : 1;
+        const near = nearSide === 0 ? a : b, far = nearSide === 0 ? b : a;
+        const nx = near.cx - far.cx, nz = near.cz - far.cz;
+        const nl = Math.hypot(nx, nz) || 1;
+        const off = (0.62 + 0.12 * Math.sin(this.orbit * 0.8 + s * 0.05)) * this.flip;
+        const dirX = (nx / nl) * Math.cos(off) - (nz / nl) * Math.sin(off), dirZ = (nx / nl) * Math.sin(off) + (nz / nl) * Math.cos(off);
+        const yaw = Math.atan2(dirX, dirZ);
+        const pitch = 0.28;
         const half = Math.atan(Math.tan((fov * Math.PI) / 360) * aspect);
+        const tx0 = cx * 0.85 + far.cx * 0.15, tz0 = cz * 0.85 + far.cz * 0.15;
         const fits = (dist: number) => {
           const cp = Math.cos(pitch);
-          const camX = cx + Math.sin(yaw) * cp * dist, camZ = cz + Math.cos(yaw) * cp * dist;
-          const fwd = Math.atan2(cx - camX, cz - camZ);
+          const camX = tx0 + Math.sin(yaw) * cp * dist, camZ = tz0 + Math.cos(yaw) * cp * dist;
+          const fwd = Math.atan2(tx0 - camX, tz0 - camZ);
           const rx = Math.cos(yaw), rz = -Math.sin(yaw);
           for (const army of [a, b]) {
             for (const e of [-1, 0, 1]) {
@@ -309,14 +319,16 @@ export class Director {
               let d = Math.atan2(x - camX, z - camZ) - fwd;
               d = Math.atan2(Math.sin(d), Math.cos(d));
               if (Math.abs(d) > half * (e === 0 ? 0.84 : 0.96)) return false;
+              // Never right on top of the near army.
+              if (Math.hypot(x - camX, z - camZ) < army.h * 4 + 4) return false;
             }
           }
           return true;
         };
-        let dist = Math.max(10, span * 0.45);
+        let dist = Math.max(10, span * 0.4);
         for (let k = 0; k < 40 && !fits(dist); k++) dist *= 1.07;
-        dist += big * 2;
-        return { tx: cx, ty: big * 0.5 + dist * 0.07, tz: cz, yaw, pitch, dist, fov, shake: 0 };
+        dist += big * 1.5;
+        return { tx: tx0, ty: big * 0.5 + dist * 0.06, tz: tz0, yaw, pitch, dist, fov, shake: 0 };
       }
       case "charge": {
         // At ground level in front of the charging army, the horde coming at the camera (it backs away as they come).
@@ -396,7 +408,7 @@ export class Director {
       case "finale": {
         const win = a.alive >= b.alive ? a : b;
         const since = this.real - this.finaleAt;
-        const c = this.cue && since < 1.7 ? this.cue : null;
+        const c = since < 1.7 ? this.finalCue ?? this.cue : null;
         if (c) {
           // The final blow, close and slow.
           const d = Math.max(3.5, c.h * 2.6 + 3);

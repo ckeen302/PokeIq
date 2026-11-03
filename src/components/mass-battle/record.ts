@@ -306,6 +306,7 @@ export async function recordBattleVideo(o: RecordOptions): Promise<RecordResult>
           caption = { text: critLine(nameOf(a.actor), a.move, nameOf(a.target)), at: videoT, gold: true };
         }
         if (a.bossHit && a.share > 0.3) director.offer({ kind: "big", x: a.x, z: a.z, h: a.h, power: a.share });
+        if (a.kos > 0) director.offer({ kind: "final", x: a.x, z: a.z, h: a.h, power: 0 });
       },
     };
     choreo.budget = 90;

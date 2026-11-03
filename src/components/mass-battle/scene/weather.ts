@@ -47,6 +47,10 @@ function particleField(opts: {
   wobble: number;
   base: THREE.BufferGeometry;
   rand: () => number;
+  /** Fireflies: each one glows and fades on its own beat. */
+  blink?: number;
+  /** Kept round what the camera looks at, from the ground up (fireflies), rather than round the camera. */
+  grounded?: boolean;
 }): Field {
   const geo = new THREE.InstancedBufferGeometry();
   geo.index = opts.base.index;
@@ -70,10 +74,14 @@ function particleField(opts: {
       uColor: { value: opts.color },
       uAlpha: { value: opts.alpha },
       uWobble: { value: opts.wobble },
+      uBlink: { value: opts.blink ?? 0 },
+      uGround: { value: opts.grounded ? 1 : 0 },
+      uFocus: { value: new THREE.Vector3() },
     },
     vertexShader: /* glsl */ `
 uniform float uTime; uniform vec3 uCam; uniform float uBox; uniform float uHeight; uniform float uFall;
-uniform vec2 uWind; uniform float uSize; uniform float uStretch; uniform float uWobble;
+uniform vec2 uWind; uniform float uSize; uniform float uStretch; uniform float uWobble; uniform float uBlink;
+uniform float uGround; uniform vec3 uFocus;
 attribute vec4 aSeed;
 varying float vA;
 void main() {
@@ -82,13 +90,15 @@ void main() {
   vec3 p = aSeed.xyz * vec3(uBox, uHeight, uBox) + vel * uTime;
   p.x += sin(uTime * 1.3 * sp + aSeed.y * 40.0) * uWobble;
   p.z += cos(uTime * 1.1 * sp + aSeed.x * 40.0) * uWobble;
-  vec3 lo = vec3(uCam.x - uBox * 0.5, max(0.0, uCam.y - uHeight * 0.5), uCam.z - uBox * 0.5);
+  vec3 c = uGround > 0.5 ? uFocus : uCam;
+  vec3 lo = vec3(c.x - uBox * 0.5, uGround > 0.5 ? 0.0 : max(0.0, c.y - uHeight * 0.5), c.z - uBox * 0.5);
   p = mod(p - lo, vec3(uBox, uHeight, uBox)) + lo;
   vec3 rel = (p - lo) / vec3(uBox, uHeight, uBox);
   vA = smoothstep(0.0, 0.12, rel.x) * smoothstep(1.0, 0.88, rel.x) * smoothstep(0.0, 0.12, rel.z) * smoothstep(1.0, 0.88, rel.z) * smoothstep(1.0, 0.85, rel.y);
   // Nothing right in front of the lens (a flake an inch away would fill the screen).
   float dc = length(p - uCam);
   vA *= smoothstep(1.2, 3.5, dc);
+  if (uBlink > 0.0) vA *= pow(0.5 + 0.5 * sin(uTime * (1.0 + aSeed.w * 2.0) * uBlink + aSeed.x * 60.0), 6.0);
   if (dc < 1.0) { gl_Position = vec4(2.0, 2.0, 2.0, 1.0); return; }
   float speed = length(vel);
   vec3 dir = speed > 1e-3 ? vel / speed : vec3(0.0, -1.0, 0.0);
@@ -188,7 +198,7 @@ void main() {
   return { mesh, mat, geo };
 }
 
-export function buildWeather(arena: ArenaId, weather: Weather, opts: { density: number; radius: number; seed?: number }): WeatherLayer {
+export function buildWeather(arena: ArenaId, weather: Weather, opts: { density: number; radius: number; seed?: number; night?: boolean }): WeatherLayer {
   const group = new THREE.Group();
   group.name = "weather";
   const fields: Field[] = [];
@@ -213,7 +223,7 @@ export function buildWeather(arena: ArenaId, weather: Weather, opts: { density: 
   const snowy = weather === "snow" || (arena === "snowfield" && weather === "none");
   if (snowy) {
     const heavy = weather === "snow";
-    add(particleField({ count: Math.round((heavy ? 5000 : 2400) * d), box: 44, height: 26, fall: heavy ? 2.2 : 1.3, wind: heavy ? [1.4, 0.6] : [0.4, 0.2], size: 0.045, stretch: 0, color: new THREE.Color(1, 1, 1), alpha: 0.95, additive: false, wobble: 0.6, base: crystal, rand }));
+    add(particleField({ count: Math.round((heavy ? 5000 : 2400) * d), box: 44, height: 26, fall: heavy ? 2.2 : 1.3, wind: heavy ? [1.4, 0.6] : [0.4, 0.2], size: 0.03, stretch: 0.3, color: new THREE.Color(1, 1, 1), alpha: 0.85, additive: false, wobble: 0.6, base: crystal, rand }));
   }
   if (weather === "sand") {
     const col = new THREE.Color("#e0b47a");
@@ -225,6 +235,10 @@ export function buildWeather(arena: ArenaId, weather: Weather, opts: { density: 
     // Embers rising on the heat and ash drifting down.
     add(particleField({ count: Math.round(1600 * d), box: 50, height: 28, fall: -1.4, wind: [0.8, 0.3], size: 0.04, stretch: 1.5, color: new THREE.Color(3.2, 1.1, 0.25), alpha: 1, additive: true, wobble: 0.8, base: crystal, rand }));
     add(particleField({ count: Math.round(1200 * d), box: 50, height: 28, fall: 0.7, wind: [0.6, 0.2], size: 0.05, stretch: 0, color: new THREE.Color("#5a5452"), alpha: 0.75, additive: false, wobble: 0.6, base: crystal, rand }));
+  }
+  if (opts.night && (arena === "plains" || arena === "colosseum") && weather === "none") {
+    // Fireflies over the grass (and round the arena's torches) at night.
+    add(particleField({ count: Math.round(600 * d), box: 60, height: 3, fall: 0, wind: [0.2, 0.1], size: 0.04, stretch: 0, color: new THREE.Color(2.4, 3.2, 0.9), alpha: 1, additive: true, wobble: 1.2, base: crystal, rand, blink: 1, grounded: true }));
   }
   if (weather === "sun") {
     // Motes glinting in the light.

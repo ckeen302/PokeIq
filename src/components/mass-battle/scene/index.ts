@@ -261,7 +261,7 @@ export function createBattleScene(host: HTMLElement, opts: SceneOptions): Battle
       env.look = look;
       arena = buildArena(input.arena, { radius: input.radius, props: Q.props, grass: Q.grass, anisotropy: Q.anisotropy, tex: opts.tex, look });
       scene.add(arena.group);
-      weatherLayer = buildWeather(input.arena, weather, { density: Q.weather, radius: input.radius });
+      weatherLayer = buildWeather(input.arena, weather, { density: Q.weather, radius: input.radius, night: time === "night" });
       scene.add(weatherLayer.group);
       weatherLayer.onFlash = (x, z, s) => {
         effects.lightning(x, z, radius * 1.2, effects.time.value);
