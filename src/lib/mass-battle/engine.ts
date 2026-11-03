@@ -1,32 +1,46 @@
 import { effectiveness as chart, type PokemonType } from "@/lib/pokemon/type-matrix";
-import { CONTACT_REACH, DT, EV, EVENT_INTS, MAX_SECONDS, RANGED_REACH, ROUND_TICKS, SPREAD_REACH, TICK_HZ } from "./constants";
-import { DamageTable, type HitEntry, type HitState } from "./damage";
-import { placeArmies } from "./formation";
+import { CONTACT_REACH, DT, EV, EVENT_INTS, MAX_SECONDS, NOTE, NOTE_CONFUSION, NOTE_INTS, NOTE_ITEM, NOTE_SKIP, RANGED_REACH, ROUND_TICKS, SPREAD_REACH, TICK_HZ } from "./constants";
+import { DamageTable, neutralState, type Fighter, type HitEntry, type HitState } from "./damage";
+import { placeArmies, placeMelee } from "./formation";
 import { expectedHitsOf } from "./moves";
-import { battleStats, bodyMass, bodyRadius, runSpeed } from "./stats";
-import type { BattleLevel, BattleOutcome, BattleSpec, Formation, MBMove, MBSpecies, Roster, Winner } from "./types";
+import { expandArmy, factsOf, moveIndex, resolveSet, setKey } from "./sets";
+import { bodyMass, bodyRadius, runSpeed } from "./stats";
+import { fieldOf, itemsOf, STATUS, type Boosts, type BattleOutcome, type BattleSpec, type FieldSpec, type Formation, type MBMove, type MBSpecies, type Roster, type Spacing, type SpreadUse, type Stance, type StatusId, type Targeting, type UnitSet, type Winner } from "./types";
 
 /**
  * The Mass Battle simulation: thousands of Pokémon on an open field, every
- * hit worked out with the games' damage formula (see damage.ts).
+ * hit worked out with the games' damage formula (see damage.ts) and the
+ * games' turn rules.
  *
  * Rounds, like turns in the games: every Pokémon acts once a round (three
- * seconds of battle time). Within a round, priority moves go first, then
- * higher Speed (the battle stat), with ties broken at random, so the
- * actions are spread over the round in that order. A Pokémon picks, each
- * time it acts, the move that does the most expected damage (accuracy ×
- * average damage, over every foe a spread move would hit, never more than
- * the HP they have left) among the moves it can reach its target with.
- * Accuracy, critical hits (1 in 24, more for high-critical moves), the
- * 16 damage rolls, multi-hit counts, recoil, drain and Life Orb all follow
- * the games.
+ * seconds of battle time). Each picks its move as the round starts, the
+ * one that does the most expected damage (accuracy × average damage, over
+ * every foe a spread move would hit, never more than the HP they have
+ * left); priority moves go first, then higher Speed (the battle stat with
+ * its stages, paralysis, Choice Scarf and the weather abilities), ties at
+ * random, and the actions are spread over the round in that order.
+ *
+ * As in the games: accuracy and evasion (with their stages, abilities,
+ * items and the weather), critical hits, the 16 damage rolls, multi-hit
+ * counts, recoil, drain and Life Orb; the side effects of moves (Thunder-
+ * bolt's paralysis, Crunch's Defense drop, Iron Head's flinch, Close
+ * Combat's own drops) and the stat stages they leave; the major status
+ * conditions (paralysis, burn, poison, bad poison, sleep and freezing) and
+ * who they can't touch; contact abilities and items (Static, Flame Body,
+ * Rough Skin, Rocky Helmet); the abilities that grow with the battle (Moxie,
+ * Beast Boost, Speed Boost, Stamina, Justified, Weak Armor…); Sturdy, Focus
+ * Sash, Disguise, Air Balloon, Sitrus and Lum Berries, Leftovers, Weakness
+ * Policy, Knock Off; and the end of each round: sandstorm, Grassy Terrain,
+ * Leftovers, poison and burns.
  *
  * Positioning is this page's own addition: Pokémon run at 10 m/s per 100
- * base Speed towards the nearest foe they can hurt; a move that makes
- * contact needs them next to it, any other move reaches 6 m; spread moves
- * (Earthquake, Surf…) hit every foe within 3 m of the user's body; bodies
- * push each other apart (heavier ones push harder) and a hit knocks its
- * target back by its damage over the target's weight.
+ * base Speed towards their target (the nearest foe they can hurt, the
+ * weakest or strongest near them, or the other side's boss); a move that
+ * makes contact needs them next to it, any other move reaches 6 m; spread
+ * moves (Earthquake, Surf…) hit every foe within 3 m of the user's body;
+ * bodies push each other apart (heavier ones push harder) and a hit knocks
+ * its target back by its damage over the target's weight. A side that
+ * holds the line waits for the other to come close.
  *
  * Struct-of-arrays in typed arrays, a uniform grid for neighbours and a
  * coarse one for finding foes, no allocation per tick: 10,000 units run
@@ -34,7 +48,7 @@ import type { BattleLevel, BattleOutcome, BattleSpec, Formation, MBMove, MBSpeci
  * the same way, hit for hit.
  */
 
-export { CONTACT_REACH, DT, EV, EVENT_INTS, MAX_SECONDS, RANGED_REACH, ROUND_TICKS, SPREAD_REACH, TICK_HZ };
+export { CONTACT_REACH, DT, EV, EVENT_INTS, MAX_SECONDS, NOTE, NOTE_INTS, NOTE_ITEM, NOTE_SKIP, RANGED_REACH, ROUND_TICKS, SPREAD_REACH, TICK_HZ };
 
 /** Actions are spread over the first ticks of a round, fastest first. */
 const ACT_TICKS = 50;
@@ -45,68 +59,133 @@ const BEACONS = 96;
 const KNOCK = 1.1;
 const KNOCK_MAX = 6;
 const KNOCK_DECAY = 5;
+/** "Weakest / strongest nearby": foes within this far (m, past the bodies), or the nearest. */
+const NEARBY = 9;
+/** A side holding the line moves on once nobody has acted for this long (both holding would never meet). */
+const HOLD_IDLE_TICKS = 6 * TICK_HZ;
+/** A side holding the line steps up to foes this close. */
+const HOLD_ENGAGE = 8;
 
-
-/** The battle's species and their moves, resolved from the roster for this level. */
-export interface Prepared {
-  species: MBSpecies[];
-  moves: MBMove[][];
-  level: BattleLevel;
-  /** Units per side, species by species: [species index, count]. */
-  armies: [[number, number][], [number, number][]];
-  formations: [Formation, Formation];
-  seed: number;
+/** How a side fights. */
+export interface SideBehaviour {
+  spacing: Spacing;
+  targeting: Targeting;
+  stance: Stance;
+  spread: SpreadUse;
 }
 
-/** Turns a battle spec into the species list and armies the engine uses. */
-export function prepare(roster: Roster, spec: BattleSpec): Prepared {
+export const DEFAULT_BEHAVIOUR: SideBehaviour = { spacing: "normal", targeting: "nearest", stance: "charge", spread: "auto" };
+
+/** The battle's fighters (a species and its set) and armies, resolved from the roster. */
+export interface Prepared {
+  /** Per fighter. */
+  species: MBSpecies[];
+  sets: UnitSet[];
+  moves: MBMove[][];
+  /** Everyone's level unless their set says otherwise. */
+  level: number;
+  /** Units per side, fighter by fighter: [fighter index, count]. */
+  armies: [[number, number][], [number, number][]];
+  formations: [Formation, Formation];
+  behaviour: [SideBehaviour, SideBehaviour];
+  field: FieldSpec;
+  seed: number;
+  /** "field": the armies a charge apart (the page); "melee": everyone in reach from the start, nobody moves (for checks against the simulator). */
+  layout: "field" | "melee";
+}
+
+/** Turns a battle spec into the fighters and armies the engine uses (groups spelled out, sets resolved). */
+export function prepare(roster: Roster, spec: BattleSpec, opts: { layout?: "field" | "melee" } = {}): Prepared {
   const byId = new Map(roster.species.map((s) => [s.id, s]));
+  const byName = moveIndex(roster.moves);
   const species: MBSpecies[] = [];
-  const index = new Map<number, number>();
+  const sets: UnitSet[] = [];
+  const index = new Map<string, number>();
   const armies: [[number, number][], [number, number][]] = [[], []];
+  const items = itemsOf(spec);
+  const facts = spec.sides.some((a) => a.units.some((u) => u.group)) ? roster.species.map(factsOf) : [];
   spec.sides.forEach((army, s) => {
-    for (const u of army.units) {
+    for (const u of expandArmy(army, facts)) {
       const sp = byId.get(u.id);
       if (!sp || u.count <= 0) continue;
-      let k = index.get(u.id);
+      const set = resolveSet(sp, roster, u.set, spec.level, items, byName);
+      const key = `${sp.id}#${setKey(set)}`;
+      let k = index.get(key);
       if (k === undefined) {
         k = species.length;
         species.push(sp);
-        index.set(u.id, k);
+        sets.push(set);
+        index.set(key, k);
       }
-      armies[s].push([k, Math.floor(u.count)]);
+      const prev = armies[s].find((e) => e[0] === k);
+      if (prev) prev[1] += Math.floor(u.count);
+      else armies[s].push([k, Math.floor(u.count)]);
     }
   });
-  const moves = species.map((s) => (s.moves[spec.level] ?? []).map((i) => roster.moves[i]));
-  return { species, moves, level: spec.level, armies, formations: [spec.sides[0].formation, spec.sides[1].formation], seed: spec.seed >>> 0 };
+  const behaviour = spec.sides.map((a) => ({ spacing: a.spacing ?? "normal", targeting: a.targeting ?? "nearest", stance: a.stance ?? "charge", spread: a.spread ?? "auto" })) as [SideBehaviour, SideBehaviour];
+  return {
+    species,
+    sets,
+    moves: sets.map((s) => s.moves),
+    level: spec.level,
+    armies,
+    formations: [spec.sides[0].formation, spec.sides[1].formation],
+    behaviour,
+    field: fieldOf(spec),
+    seed: spec.seed >>> 0,
+    layout: opts.layout ?? "field",
+  };
 }
 
 const toId = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "");
 
-/** Per-species numbers the engine reads every tick. */
-interface SpeciesRow {
+/** Stat stage slots per unit. */
+const ATK = 0, DEF = 1, SPA = 2, SPD = 3, SPE = 4, ACC = 5, EVA = 6, STAGES = 7;
+const STAGE_OF: Record<string, number> = { atk: ATK, def: DEF, spa: SPA, spd: SPD, spe: SPE, accuracy: ACC, evasion: EVA };
+const statMul = (s: number) => (s >= 0 ? (2 + s) / 2 : 2 / (2 - s));
+const accMul = (s: number) => (s >= 0 ? (3 + s) / 3 : 3 / (3 - s));
+
+const WEATHER_SPEED: Record<string, FieldSpec["weather"]> = { swiftswim: "rain", chlorophyll: "sun", sandrush: "sand", slushrush: "snow" };
+const STATUS_CODE: Record<StatusId, number> = { par: STATUS.par, brn: STATUS.brn, psn: STATUS.psn, tox: STATUS.tox, slp: STATUS.slp, frz: STATUS.frz };
+const CLEAR_BODY = new Set(["clearbody", "whitesmoke", "fullmetalbody"]);
+const SAND_IMMUNE_ABILITIES = new Set(["sandveil", "sandrush", "sandforce", "overcoat", "magicguard"]);
+const CHOICE = new Set(["choiceband", "choicespecs", "choicescarf"]);
+
+/** Per-fighter numbers the engine reads every tick. */
+interface FighterRow {
   maxHp: number;
+  /** Raw Speed stat (stages and the rest are applied as it acts). */
   spe: number;
+  stats: { atk: number; def: number; spa: number; spd: number; spe: number };
   radius: number;
   mass: number;
   vmax: number;
   ability: string;
   item: string;
-  /** Crit stage bonus (Super Luck). */
+  /** Types it defends with (its Tera type once Terastallized). */
+  types: string[];
+  /** On the ground: not Flying, no Levitate (an Air Balloon is checked as it fights). */
+  grounded: boolean;
+  /** How big a threat it is (base stat total, scaled by level), for "strongest" and "boss". */
+  threat: number;
   critBoost: number;
-  /** No critical hits against it (Battle Armor, Shell Armor). */
   critImmune: boolean;
-  /** Survives a hit from full HP with 1 HP (Sturdy). */
   sturdy: boolean;
   noRecoil: boolean;
   magicGuard: boolean;
   noGuard: boolean;
   accMul: number;
-  /** Physical moves' accuracy multiplier (Hustle). */
   physAccMul: number;
   skillLink: boolean;
   loadedDice: boolean;
   lifeOrb: boolean;
+  sheerForce: boolean;
+  sereneGrace: boolean;
+  /** Shield Dust or Covert Cloak: no side effects of foes' moves. */
+  shielded: boolean;
+  contactProof: boolean;
+  /** Mega forms can't lose their stone. */
+  mega: boolean;
 }
 
 export interface BattleStats {
@@ -122,7 +201,7 @@ export class Battle {
   readonly table: DamageTable;
   readonly n: number;
   readonly arena: number;
-  readonly rows: SpeciesRow[];
+  readonly rows: FighterRow[];
   readonly sp: Uint16Array;
   readonly side: Uint8Array;
   readonly x: Float64Array;
@@ -138,7 +217,28 @@ export class Battle {
   readonly hp: Int32Array;
   readonly alive: Uint8Array;
   readonly target: Int32Array;
-  /** Planned move slot against the target (for priority and how close to go). */
+  /** Major status (STATUS codes), sleep turns left, bad-poison counter. */
+  readonly status: Uint8Array;
+  private sleep: Int8Array;
+  private toxic: Uint8Array;
+  /** Stat stages, STAGES per unit (Attack, Defense, Sp. Atk, Sp. Def, Speed, accuracy, evasion). */
+  readonly stages: Int8Array;
+  /** Round in which each unit flinched (−1 none). */
+  private flinchRound: Int32Array;
+  /** Round in which each unit last acted (−1 none). */
+  private actedRound: Int32Array;
+  /** Its item is gone (used, popped or Knocked Off). */
+  readonly itemGone: Uint8Array;
+  /** Disguise or Ice Face has taken its hit. */
+  private shieldUsed: Uint8Array;
+  /** Choice lock (move slot, −1 none). */
+  private lock: Int8Array;
+  /** Confusion: turns left (0 none). */
+  readonly confused: Int8Array;
+  /** Outrage and the like: the slot it's locked into and uses left (then it's confused). */
+  private rampSlot: Int8Array;
+  private rampLeft: Int8Array;
+  /** The move planned this round (slot), chosen as the round starts. */
   private plan: Int8Array;
   private actTick: Int32Array;
   readonly kos: Int32Array;
@@ -147,19 +247,24 @@ export class Battle {
   readonly faintTick: Int32Array;
   tick = 0;
   ended = false;
-  /** Set when both armies fall to the same move (recoil): that move's side wins. */
-  private lastBlow = -1;
+  /** When both armies fall at once, the side whose Pokémon fainted last wins (as in the games, Gen 5 on). */
+  private lastFaintSide = -1;
   winner: Winner = 2;
   readonly left: [number, number] = [0, 0];
   readonly sideKos: [number, number] = [0, 0];
   readonly sideDealt: [number, number] = [0, 0];
   readonly start: [number, number] = [0, 0];
   private bigHit: BattleStats["big"] = null;
-  /** This tick's events (EVENT_INTS each). */
+  /** This tick's hits (EVENT_INTS each). */
   events: Int32Array = new Int32Array(EVENT_INTS * 256);
   eventCount = 0;
+  /** This tick's other happenings: status, healing, chip damage, stat stages, lost turns, items (NOTE_INTS each). */
+  notes: Int32Array = new Int32Array(NOTE_INTS * 128);
+  noteCount = 0;
   private actionId = 0;
   private rng: number;
+  private round = -1;
+  private idleSince = 0;
   // Turn order for the current round.
   private order: Int32Array;
   private orderLen = 0;
@@ -180,47 +285,64 @@ export class Battle {
   private cItems: Int32Array;
   private cx: Float64Array;
   private cz: Float64Array;
-  /** canHurt[a * S + d]: species a has a move that can damage species d. */
+  /** canHurt[a * F + d]: fighter a has a move that can damage fighter d. */
   private canHurt: Uint8Array;
-  private aliveBySpecies: Int32Array;
+  private aliveByFighter: Int32Array;
   /** 1 while a unit is heading for a far beacon rather than a foe near it. */
   private far: Uint8Array;
   private beacons: [Int32Array, Int32Array] = [new Int32Array(BEACONS), new Int32Array(BEACONS)];
   private beaconCount: [number, number] = [0, 0];
-  private state: HitState = { crit: false, spread: false, aHp: 1, aMax: 1, dHp: 1, dMax: 1 };
+  /** Each side's boss (its biggest threat standing), for "focus the boss". */
+  private bossOf: [number, number] = [-1, -1];
+  private state: HitState = neutralState(1, 1);
   private scratch: Int32Array = new Int32Array(1024);
+  private hitScratch: Int32Array = new Int32Array(1024);
+  private effCache = new Map<number, number>();
 
   constructor(prep: Prepared, table?: DamageTable) {
     this.prep = prep;
-    this.table = table ?? new DamageTable(prep.species, prep.moves, prep.level);
+    const fighters: Fighter[] = prep.species.map((species, k) => ({ species, set: prep.sets[k] }));
+    this.table = table ?? new DamageTable(fighters, prep.field);
     this.rng = (prep.seed ^ 0x9e3779b9) >>> 0;
-    const S = prep.species.length;
-    this.rows = prep.species.map((s) => {
-      const st = battleStats(s, prep.level);
-      const ab = toId(s.ability);
-      const it = toId(s.item);
+    const F = prep.species.length;
+    this.rows = prep.species.map((s, k) => {
+      const set = prep.sets[k];
+      const st = this.table.stats(k);
+      const ab = toId(set.ability);
+      const it = toId(set.item);
+      const types = set.tera ? [set.tera.toLowerCase()] : s.types;
+      const bst = s.base.hp + s.base.atk + s.base.def + s.base.spa + s.base.spd + s.base.spe;
       return {
-        maxHp: st.hp,
+        maxHp: this.table.maxHp(k),
         spe: st.spe,
+        stats: { atk: st.atk, def: st.def, spa: st.spa, spd: st.spd, spe: st.spe },
         radius: bodyRadius(s),
         mass: bodyMass(s.kg),
         vmax: runSpeed(s.base.spe),
         ability: ab,
         item: it,
-        critBoost: ab === "superluck" ? 1 : 0,
+        types,
+        grounded: !types.includes("flying") && ab !== "levitate",
+        threat: bst * (0.5 + set.level / 200),
+        critBoost: (ab === "superluck" ? 1 : 0) + (it === "scopelens" || it === "razorclaw" ? 1 : 0),
         critImmune: ab === "battlearmor" || ab === "shellarmor",
         sturdy: ab === "sturdy",
         noRecoil: ab === "rockhead" || ab === "magicguard",
         magicGuard: ab === "magicguard",
         noGuard: ab === "noguard",
-        accMul: ab === "compoundeyes" ? 1.3 : 1,
+        accMul: (ab === "compoundeyes" ? 1.3 : 1) * (ab === "victorystar" ? 1.1 : 1) * (it === "widelens" ? 1.1 : 1),
         physAccMul: ab === "hustle" ? 0.8 : 1,
         skillLink: ab === "skilllink",
         loadedDice: it === "loadeddice",
         lifeOrb: it === "lifeorb",
+        sheerForce: ab === "sheerforce",
+        sereneGrace: ab === "serenegrace",
+        shielded: ab === "shielddust" || it === "covertcloak",
+        contactProof: ab === "longreach" || it === "protectivepads",
+        mega: s.form === "mega",
       };
     });
-    // Units, army by army, species by species.
+    // Units, army by army, fighter by fighter.
     let n = 0;
     for (const army of prep.armies) for (const [, c] of army) n += c;
     this.n = n;
@@ -228,11 +350,13 @@ export class Battle {
     this.side = new Uint8Array(n);
     let k = 0;
     prep.armies.forEach((army, s) => {
-      for (const [spi, c] of army) for (let j = 0; j < c; j++) { this.sp[k] = spi; this.side[k] = s; k++; }
+      for (const [fi, c] of army) for (let j = 0; j < c; j++) { this.sp[k] = fi; this.side[k] = s; k++; }
     });
     const radius = new Float64Array(n);
     for (let i = 0; i < n; i++) radius[i] = this.rows[this.sp[i]].radius;
-    const place = placeArmies(radius, this.side, prep.formations, () => this.random());
+    const place = prep.layout === "melee"
+      ? placeMelee(radius, this.side)
+      : placeArmies(radius, this.side, prep.formations, () => this.random(), [prep.behaviour[0].spacing, prep.behaviour[1].spacing]);
     this.x = place.x;
     this.z = place.z;
     this.arena = place.arena;
@@ -245,6 +369,18 @@ export class Battle {
     this.hp = new Int32Array(n);
     this.alive = new Uint8Array(n);
     this.target = new Int32Array(n).fill(-1);
+    this.status = new Uint8Array(n);
+    this.sleep = new Int8Array(n);
+    this.toxic = new Uint8Array(n);
+    this.stages = new Int8Array(n * STAGES);
+    this.flinchRound = new Int32Array(n).fill(-1);
+    this.actedRound = new Int32Array(n).fill(-1);
+    this.itemGone = new Uint8Array(n);
+    this.shieldUsed = new Uint8Array(n);
+    this.lock = new Int8Array(n).fill(-1);
+    this.confused = new Int8Array(n);
+    this.rampSlot = new Int8Array(n).fill(-1);
+    this.rampLeft = new Int8Array(n);
     this.plan = new Int8Array(n).fill(-1);
     this.actTick = new Int32Array(n).fill(-1);
     this.kos = new Int32Array(n);
@@ -252,21 +388,22 @@ export class Battle {
     this.faintTick = new Int32Array(n).fill(-1);
     this.order = new Int32Array(n);
     this.keys = new Float64Array(n);
-    this.aliveBySpecies = new Int32Array(S);
+    this.aliveByFighter = new Int32Array(F);
     for (let i = 0; i < n; i++) {
       this.hp[i] = this.rows[this.sp[i]].maxHp;
       this.alive[i] = 1;
       this.left[this.side[i]]++;
-      this.aliveBySpecies[this.sp[i]]++;
+      this.aliveByFighter[this.sp[i]]++;
+      if (!this.rows[this.sp[i]].item) this.itemGone[i] = 1;
     }
     this.start[0] = this.left[0];
     this.start[1] = this.left[1];
     // Damage between the sides, worked out before the first round.
-    const sideSpecies = (s: number) => [...new Set(prep.armies[s].map(([spi]) => spi))];
-    this.table.warm(sideSpecies(0), sideSpecies(1));
-    this.canHurt = new Uint8Array(S * S);
-    for (const a of sideSpecies(0)) for (const d of sideSpecies(1)) this.canHurt[a * S + d] = this.table.canDamage(a, d) ? 1 : 0;
-    for (const a of sideSpecies(1)) for (const d of sideSpecies(0)) this.canHurt[a * S + d] = this.table.canDamage(a, d) ? 1 : 0;
+    const sideFighters = (s: number) => [...new Set(prep.armies[s].map(([fi]) => fi))];
+    this.table.warm(sideFighters(0), sideFighters(1));
+    this.canHurt = new Uint8Array(F * F);
+    for (const a of sideFighters(0)) for (const d of sideFighters(1)) this.canHurt[a * F + d] = this.table.canDamage(a, d) ? 1 : 0;
+    for (const a of sideFighters(1)) for (const d of sideFighters(0)) this.canHurt[a * F + d] = this.table.canDamage(a, d) ? 1 : 0;
     // Grids: fine cells sized for most bodies (bigger ones are checked on their own), coarse cells for finding foes.
     const radii = Array.from(radius).sort((a, b) => a - b);
     const rSmall = radii.length ? radii[Math.min(radii.length - 1, Math.floor(radii.length * 0.85))] : 0.5;
@@ -294,6 +431,7 @@ export class Battle {
     this.far = new Uint8Array(n);
     this.rebuildGrids();
     this.refreshBeacons();
+    this.refreshBosses();
     for (let i = 0; i < n; i++) this.target[i] = this.findTarget(i);
   }
 
@@ -366,24 +504,37 @@ export class Battle {
     return this.fillBuf;
   }
 
-  /** The nearest foe `i` can hurt (or the nearest foe at all), −1 if none is left. */
+  /** `i`'s target by its side's rule: the nearest foe it can hurt (or the nearest at all), the weakest or strongest near it, or the boss. −1 if none is left. */
   findTarget(i: number): number {
-    const S = this.prep.species.length;
-    const mySide = this.side[i], row = this.sp[i] * S;
-    const xi = this.x[i], zi = this.z[i];
+    const F = this.prep.species.length;
+    const mySide = this.side[i], row = this.sp[i] * F;
+    const rule = this.prep.behaviour[mySide].targeting;
+    const { alive, sp, x, z, canHurt, hp } = this;
+    if (rule === "boss") {
+      const b = this.bossOf[1 - mySide];
+      if (b >= 0 && alive[b] && canHurt[row + sp[b]]) {
+        this.far[i] = 0;
+        return b;
+      }
+    }
+    const xi = x[i], zi = z[i];
     const cols = this.ccols, size = this.coarse, a = this.arena;
     const px = xi + a, pz = zi + a;
     const ccx = Math.min(cols - 1, Math.max(0, Math.floor(px / size)));
     const ccz = Math.min(cols - 1, Math.max(0, Math.floor(pz / size)));
     let best = -1, bestD = Infinity, fallback = -1, fallbackD = Infinity;
-    const { cStart, cItems, alive, sp, x, z, canHurt } = this;
+    // Weakest / strongest: the best by HP or threat among foes within NEARBY of its body.
+    const picky = rule === "weakest" || rule === "strongest";
+    const near = this.rows[sp[i]].radius + NEARBY;
+    let pick = -1, pickV = 0;
+    const { cStart, cItems } = this;
     const base = (1 - mySide) * cols * cols;
     const scan = (gx: number, gz: number) => {
       // Skip a cell that can't hold anything nearer than what's been found.
       const bx = px < gx * size ? gx * size - px : px > (gx + 1) * size ? px - (gx + 1) * size : 0;
       const bz = pz < gz * size ? gz * size - pz : pz > (gz + 1) * size ? pz - (gz + 1) * size : 0;
       const lb = bx * bx + bz * bz;
-      if (lb >= bestD && lb >= fallbackD) return;
+      if (lb >= bestD && lb >= fallbackD && (!picky || lb > (near + 16) * (near + 16))) return;
       const c = base + gz * cols + gx;
       for (let k = cStart[c], e = cStart[c + 1]; k < e; k++) {
         const j = cItems[k];
@@ -392,13 +543,20 @@ export class Battle {
         const d = dx * dx + dz * dz;
         if (canHurt[row + sp[j]]) {
           if (d < bestD) { bestD = d; best = j; }
+          if (picky) {
+            const lim = near + this.rows[sp[j]].radius;
+            if (d <= lim * lim) {
+              const v = rule === "weakest" ? -hp[j] : this.rows[sp[j]].threat * 1e6 + hp[j];
+              if (pick < 0 || v > pickV) { pick = j; pickV = v; }
+            }
+          }
         } else if (d < fallbackD) { fallbackD = d; fallback = j; }
       }
     };
     for (let ring = 0; ring <= LOCAL_RINGS; ring++) {
       // Every cell of this ring is at least (ring − 1) cells away: stop once that is past the best found.
-      const near = Math.max(0, ring - 1) * size;
-      if (best >= 0 && near * near >= bestD) break;
+      const nearRing = Math.max(0, ring - 1) * size;
+      if (best >= 0 && nearRing * nearRing >= bestD && (!picky || nearRing > near + 16)) break;
       const z0 = ccz - ring, z1 = ccz + ring, x0 = ccx - ring, x1 = ccx + ring;
       if (z0 < 0 && z1 >= cols && x0 < 0 && x1 >= cols) break;
       for (let gx = Math.max(0, x0); gx <= Math.min(cols - 1, x1); gx++) {
@@ -409,6 +567,10 @@ export class Battle {
         if (x0 >= 0) scan(x0, gz);
         if (ring > 0 && x1 < cols) scan(x1, gz);
       }
+    }
+    if (pick >= 0) {
+      this.far[i] = 0;
+      return pick;
     }
     if (best >= 0) {
       this.far[i] = 0;
@@ -445,8 +607,26 @@ export class Battle {
     }
   }
 
+  /** Each side's biggest threat still standing. */
+  private refreshBosses() {
+    const best = [-1, -1], bestV = [-1, -1];
+    for (let i = 0; i < this.n; i++) {
+      if (!this.alive[i]) continue;
+      const s = this.side[i];
+      const v = this.rows[this.sp[i]].threat * 1e6 + this.hp[i];
+      if (v > bestV[s]) { bestV[s] = v; best[s] = i; }
+    }
+    this.bossOf = [best[0], best[1]];
+  }
+
   /** Foes of `i`'s side whose bodies are within `reach` of (x, z) (written to the scratch buffer); returns how many. */
   private foesNear(i: number, x: number, z: number, reach: number): number {
+    if (this.prep.layout === "melee") {
+      // Everyone is in reach of everyone.
+      let count = 0;
+      for (let j = 0; j < this.n; j++) if (this.alive[j] && this.side[j] !== this.side[i]) this.scratch[count++] = j;
+      return count;
+    }
     const cols = this.ccols, size = this.coarse, a = this.arena;
     const base = (1 - this.side[i]) * cols * cols;
     const span = Math.ceil((reach + 16) / size);
@@ -475,15 +655,29 @@ export class Battle {
   }
 
   // -------------------------------------------------------------------------
-  // Moves
+  // The state a hit reads
   // -------------------------------------------------------------------------
 
   private gap(i: number, j: number): number {
+    if (this.prep.layout === "melee") return 0;
     const dx = this.x[j] - this.x[i], dz = this.z[j] - this.z[i];
     return Math.sqrt(dx * dx + dz * dz) - this.rows[this.sp[i]].radius - this.rows[this.sp[j]].radius;
   }
 
-  private hitState(i: number, j: number, crit: boolean, spread: boolean): HitState {
+  private stage(i: number, k: number): number {
+    return this.stages[i * STAGES + k];
+  }
+
+  private hasItem(i: number, id: string): boolean {
+    return !this.itemGone[i] && this.rows[this.sp[i]].item === id;
+  }
+
+  /** Grounded right now (an Air Balloon keeps it up until it pops). */
+  private grounded(i: number): boolean {
+    return this.rows[this.sp[i]].grounded && !this.hasItem(i, "airballoon");
+  }
+
+  private hitState(i: number, j: number, mv: MBMove, crit: boolean, spread: boolean): HitState {
     const st = this.state;
     st.crit = crit;
     st.spread = spread;
@@ -491,34 +685,79 @@ export class Battle {
     st.aMax = this.rows[this.sp[i]].maxHp;
     st.dHp = this.hp[j];
     st.dMax = this.rows[this.sp[j]].maxHp;
+    const S = this.stages, ai = i * STAGES, dj = j * STAGES;
+    setStages(st, mv, S[ai + ATK], S[ai + DEF], S[ai + SPA], S[dj + ATK], S[dj + DEF], S[dj + SPD]);
+    st.aStatus = this.status[i];
+    st.dStatus = this.status[j];
+    st.aItem = !this.itemGone[i];
+    st.dItem = !this.itemGone[j];
     return st;
   }
 
+  /** Chance the move lands on `j`. */
   private accuracy(i: number, j: number, mv: MBMove): number {
-    if (!mv.acc) return 1;
     const a = this.rows[this.sp[i]], d = this.rows[this.sp[j]];
-    if (a.noGuard || d.noGuard) return 1;
-    return Math.min(1, (mv.acc / 100) * a.accMul * (mv.cat === "Physical" ? a.physAccMul : 1));
+    return hitChance({
+      mv,
+      aAbility: a.ability,
+      aItem: this.itemGone[i] ? "" : a.item,
+      dAbility: d.ability,
+      dItem: this.itemGone[j] ? "" : d.item,
+      accStage: this.stage(i, ACC),
+      evaStage: this.stage(j, EVA),
+      weather: this.prep.field.weather,
+      targetMoved: this.actedRound[j] === this.round,
+    });
+  }
+
+  /** Moves that can't touch this target now: priority into Psychic Terrain or Dazzling, Sucker Punch on a foe that already moved. */
+  private blocked(i: number, j: number, mv: MBMove, slotPriority: number): boolean {
+    if (slotPriority > 0) {
+      if (this.prep.field.terrain === "psychic" && this.grounded(j)) return true;
+      const ab = this.rows[this.sp[j]].ability;
+      if (ab === "dazzling" || ab === "queenlymajesty" || ab === "armortail") return true;
+    }
+    const id = toId(mv.name);
+    if ((id === "suckerpunch" || id === "thunderclap") && this.actedRound[j] === this.round) return true;
+    void i;
+    return false;
   }
 
   /** Expected damage of one use against one foe (capped at its HP). */
   private expected(i: number, slot: number, j: number, spread: boolean): number {
     const mv = this.prep.moves[this.sp[i]][slot];
-    const e = this.table.entry(this.sp[i], slot, this.sp[j], this.hitState(i, j, false, spread));
-    if (e.immune) return 0;
-    const hits = this.rows[this.sp[i]].skillLink && mv.hits ? mv.hits[1] : expectedHitsOf(mv);
-    return Math.min(this.hp[j], e.avg * hits) * this.accuracy(i, j, mv);
+    if (this.blocked(i, j, mv, this.priority(i, slot))) return 0;
+    const row = this.rows[this.sp[i]];
+    const st = this.hitState(i, j, mv, false, spread);
+    return expectedDamage(this.table, this.sp[i], slot, this.sp[j], st, this.accuracy(i, j, mv), expectedHits(mv, row.ability, this.itemGone[i] ? "" : row.item), this.hp[j]);
   }
 
-  /** The move `i` plans against `j` (best expected damage, ignoring reach): for priority and how close to go. */
+  /** The move `i` wants this round against `j`: the most expected damage over everyone it would hit (ignoring reach). */
   private planMove(i: number, j: number): number {
     const moves = this.prep.moves[this.sp[i]];
-    let best = -1, bestV = 0;
+    if (this.rampLeft[i] > 0 && this.rampSlot[i] >= 0) return this.rampSlot[i];
+    const locked = this.itemGone[i] ? -1 : this.lock[i];
+    if (locked >= 0 && locked < moves.length) return locked;
+    const never = this.prep.behaviour[this.side[i]].spread === "never";
+    let best = -1, bestV = 0, bestSpread = -1, bestSpreadV = 0;
     for (let s = 0; s < moves.length; s++) {
-      const v = this.expected(i, s, j, false);
+      const mv = moves[s];
+      let v: number;
+      if (mv.spread && this.gap(i, j) <= RANGED_REACH) {
+        const count = this.foesNear(i, this.x[i], this.z[i], this.rows[this.sp[i]].radius + SPREAD_REACH);
+        if (count >= 2) {
+          v = 0;
+          for (let k = 0; k < count; k++) v += this.expected(i, s, this.scratch[k], true);
+        } else v = this.expected(i, s, j, false);
+      } else v = this.expected(i, s, j, false);
+      if (never && mv.spread) {
+        if (v > bestSpreadV) { bestSpreadV = v; bestSpread = s; }
+        continue;
+      }
       if (v > bestV) { bestV = v; best = s; }
     }
-    return best;
+    // "Never" still uses a spread move when it has nothing else that works.
+    return best >= 0 ? best : bestSpread;
   }
 
   private priority(i: number, slot: number): number {
@@ -531,8 +770,23 @@ export class Battle {
     return p;
   }
 
+  /** The Speed it acts on: its stat with stages, paralysis, Choice Scarf, the weather abilities, Quick Feet and Unburden. */
+  effectiveSpeed(i: number): number {
+    const row = this.rows[this.sp[i]];
+    let s = row.spe * statMul(this.stage(i, SPE));
+    const ab = row.ability;
+    const f = this.prep.field;
+    if (WEATHER_SPEED[ab] && WEATHER_SPEED[ab] === f.weather) s *= 2;
+    if (ab === "surgesurfer" && f.terrain === "electric") s *= 2;
+    if (ab === "quickfeet" && this.status[i]) s *= 1.5;
+    else if (this.status[i] === STATUS.par) s *= 0.5;
+    if (ab === "unburden" && this.itemGone[i] && row.item) s *= 2;
+    if (this.hasItem(i, "choicescarf")) s *= 1.5;
+    return Math.floor(s);
+  }
+
   // -------------------------------------------------------------------------
-  // The tick
+  // Events
   // -------------------------------------------------------------------------
 
   private pushEvent(actor: number, target: number, slot: number, damage: number, flags: number) {
@@ -551,18 +805,41 @@ export class Battle {
     this.eventCount++;
   }
 
+  private pushNote(unit: number, kind: number, value: number, source = -1) {
+    if ((this.noteCount + 1) * NOTE_INTS > this.notes.length) {
+      const grown = new Int32Array(this.notes.length * 2);
+      grown.set(this.notes);
+      this.notes = grown;
+    }
+    const o = this.noteCount * NOTE_INTS;
+    this.notes[o] = unit;
+    this.notes[o + 1] = kind;
+    this.notes[o + 2] = value;
+    this.notes[o + 3] = source;
+    this.noteCount++;
+  }
+
+  // -------------------------------------------------------------------------
+  // Rounds
+  // -------------------------------------------------------------------------
+
   private startRound() {
     const { n, alive } = this;
+    this.round++;
     this.refreshBeacons();
+    this.refreshBosses();
     let len = 0;
     for (let i = 0; i < n; i++) {
       if (!alive[i]) continue;
       let t = this.target[i];
-      if (t < 0 || !alive[t]) t = this.target[i] = this.findTarget(i);
+      if (t < 0 || !alive[t] || this.prep.behaviour[this.side[i]].targeting !== "nearest") t = this.target[i] = this.findTarget(i);
       const slot = t >= 0 ? this.planMove(i, t) : -1;
       this.plan[i] = slot;
-      // Priority, then the battle Speed stat, then a coin toss.
-      this.keys[i] = this.priority(i, slot) * 100000 + this.rows[this.sp[i]].spe + this.random() * 0.999;
+      // Priority (Quick Claw now and then), then the Speed it acts on, then a coin toss.
+      let pri = this.priority(i, slot);
+      if (this.hasItem(i, "quickclaw") && this.random() < 0.2) pri += 0.5;
+      else if (this.rows[this.sp[i]].ability === "quickdraw" && this.random() < 0.3) pri += 0.5;
+      this.keys[i] = pri * 100000 + this.effectiveSpeed(i) + this.random() * 0.999;
       this.order[len++] = i;
     }
     const keys = this.keys;
@@ -578,7 +855,179 @@ export class Battle {
     this.hp[j] = 0;
     this.faintTick[j] = this.tick;
     this.left[this.side[j]]--;
-    this.aliveBySpecies[this.sp[j]]--;
+    this.aliveByFighter[this.sp[j]]--;
+    this.lastFaintSide = this.side[j];
+  }
+
+  /** HP lost outside a hit (recoil, chip, residual damage): faints it at 0. Credit goes to `by` if a foe did it. */
+  private chip(j: number, amount: number, by: number, flags: number = EV.RECOIL) {
+    if (!this.alive[j] || amount <= 0) return;
+    const done = Math.min(amount, this.hp[j]);
+    this.hp[j] -= done;
+    this.pushNote(j, NOTE.CHIP, done, by);
+    if (this.hp[j] <= 0) {
+      this.faint(j);
+      this.pushEvent(j, j, -1, done, EV.KO | flags);
+      if (by >= 0 && this.side[by] !== this.side[j]) {
+        this.kos[by]++;
+        this.sideKos[this.side[by]]++;
+      }
+    } else this.checkBerry(j);
+  }
+
+  private heal(j: number, amount: number) {
+    if (!this.alive[j] || amount <= 0) return;
+    const max = this.rows[this.sp[j]].maxHp;
+    const done = Math.min(amount, max - this.hp[j]);
+    if (done <= 0) return;
+    this.hp[j] += done;
+    this.pushNote(j, NOTE.HEAL, done);
+  }
+
+  /** Sitrus Berry at half HP or less. */
+  private checkBerry(j: number) {
+    if (!this.alive[j] || !this.hasItem(j, "sitrusberry")) return;
+    const max = this.rows[this.sp[j]].maxHp;
+    if (this.hp[j] * 2 > max) return;
+    this.itemGone[j] = 1;
+    this.pushNote(j, NOTE.ITEM, NOTE_ITEM.sitrus);
+    this.heal(j, Math.floor(max / 4));
+  }
+
+  /** Whether `j` can be given this status now. */
+  private canStatus(j: number, st: StatusId, by: number): boolean {
+    if (!this.alive[j] || this.status[j]) return false;
+    const row = this.rows[this.sp[j]];
+    const t = row.types, ab = row.ability, f = this.prep.field;
+    if (ab === "comatose" || ab === "purifyingsalt") return false;
+    if (ab === "leafguard" && f.weather === "sun") return false;
+    if (this.grounded(j) && f.terrain === "misty") return false;
+    switch (st) {
+      case "par": return !t.includes("electric") && ab !== "limber";
+      case "brn": return !t.includes("fire") && ab !== "waterveil" && ab !== "waterbubble" && ab !== "thermalexchange";
+      case "psn":
+      case "tox": {
+        const corrosion = by >= 0 && this.rows[this.sp[by]].ability === "corrosion";
+        return (corrosion || (!t.includes("poison") && !t.includes("steel"))) && ab !== "immunity" && ab !== "pastelveil";
+      }
+      case "slp": return ab !== "insomnia" && ab !== "vitalspirit" && ab !== "sweetveil" && !(this.grounded(j) && f.terrain === "electric");
+      case "frz": return !t.includes("ice") && ab !== "magmaarmor" && f.weather !== "sun";
+    }
+  }
+
+  private setStatus(j: number, st: StatusId, by: number) {
+    if (!this.canStatus(j, st, by)) return;
+    this.status[j] = STATUS_CODE[st];
+    if (st === "slp") this.sleep[j] = 2 + Math.floor(this.random() * 3);
+    if (st === "tox") this.toxic[j] = 0;
+    this.pushNote(j, NOTE.STATUS, STATUS_CODE[st], by);
+    if (this.hasItem(j, "lumberry")) {
+      this.itemGone[j] = 1;
+      this.status[j] = 0;
+      this.pushNote(j, NOTE.ITEM, NOTE_ITEM.lum);
+      this.pushNote(j, NOTE.CURE, STATUS_CODE[st]);
+    }
+  }
+
+  /** Stat stage changes on `u` (by a foe's move or its own), with the abilities that block, flip or answer them. */
+  private boost(u: number, boosts: Boosts, byFoe: boolean) {
+    if (!this.alive[u]) return;
+    const row = this.rows[this.sp[u]];
+    const ab = row.ability;
+    let dropped = false;
+    for (const key in boosts) {
+      let d = boosts[key as keyof Boosts] ?? 0;
+      const k = STAGE_OF[key];
+      if (d === 0 || k === undefined) continue;
+      if (ab === "contrary") d = -d;
+      if (ab === "simple") d *= 2;
+      if (byFoe && d < 0) {
+        if (CLEAR_BODY.has(ab) || this.hasItem(u, "clearamulet")) continue;
+        if ((ab === "hypercutter" && k === ATK) || (ab === "bigpecks" && k === DEF) || ((ab === "keeneye" || ab === "mindseye") && k === ACC)) continue;
+      }
+      const o = u * STAGES + k;
+      const before = this.stages[o];
+      const after = Math.max(-6, Math.min(6, before + d));
+      if (after === before) continue;
+      this.stages[o] = after;
+      this.pushNote(u, NOTE.BOOST, k * 16 + (after - before + 8));
+      if (after < before && byFoe) dropped = true;
+    }
+    if (dropped) {
+      if (ab === "defiant") this.boost(u, { atk: 2 }, false);
+      else if (ab === "competitive") this.boost(u, { spa: 2 }, false);
+    }
+  }
+
+  /** Whether `i` loses its turn (asleep, frozen, flinched, fully paralysed). */
+  private skipsTurn(i: number, mv: MBMove | null): boolean {
+    const st = this.status[i];
+    if (st === STATUS.slp) {
+      this.sleep[i] -= this.rows[this.sp[i]].ability === "earlybird" ? 2 : 1;
+      if (this.sleep[i] <= 0) {
+        this.status[i] = 0;
+        this.pushNote(i, NOTE.CURE, STATUS.slp);
+      } else {
+        this.pushNote(i, NOTE.SKIP, NOTE_SKIP.sleep);
+        return true;
+      }
+    } else if (st === STATUS.frz) {
+      if (mv?.thaws || this.random() < 0.2) {
+        this.status[i] = 0;
+        this.pushNote(i, NOTE.CURE, STATUS.frz);
+      } else {
+        this.pushNote(i, NOTE.SKIP, NOTE_SKIP.frozen);
+        return true;
+      }
+    }
+    if (this.flinchRound[i] === this.round) {
+      this.pushNote(i, NOTE.SKIP, NOTE_SKIP.flinch);
+      if (this.rows[this.sp[i]].ability === "steadfast") this.boost(i, { spe: 1 }, false);
+      return this.interrupted(i);
+    }
+    if (this.confused[i] > 0) {
+      this.confused[i]--;
+      if (this.confused[i] <= 0) this.pushNote(i, NOTE.CURE, NOTE_CONFUSION);
+      else if (this.random() < 0.33) {
+        // It hurts itself: a 40-power typeless physical hit on its own Defense, as the games work it out.
+        this.pushNote(i, NOTE.SKIP, NOTE_SKIP.confused);
+        this.chip(i, this.confusionDamage(i), -1);
+        return this.interrupted(i);
+      }
+    }
+    if (this.status[i] === STATUS.par && this.random() < 0.25) {
+      this.pushNote(i, NOTE.SKIP, NOTE_SKIP.paralysed);
+      return this.interrupted(i);
+    }
+    return false;
+  }
+
+  /** A lost turn ends an Outrage-style lock (without the confusion). */
+  private interrupted(i: number): true {
+    this.rampLeft[i] = 0;
+    this.rampSlot[i] = -1;
+    return true;
+  }
+
+  /** The damage of hitting itself in confusion (Showdown's getConfusionDamage). */
+  private confusionDamage(i: number): number {
+    const row = this.rows[this.sp[i]];
+    const level = this.prep.sets[this.sp[i]].level;
+    const atk = Math.floor(row.stats.atk * statMul(this.stage(i, ATK)));
+    const def = Math.floor(row.stats.def * statMul(this.stage(i, DEF)));
+    const base = Math.floor(Math.floor(Math.floor((2 * level) / 5 + 2) * 40 * atk / Math.max(1, def)) / 50) + 2;
+    let dmg = Math.floor((base * (100 - Math.floor(this.random() * 16))) / 100);
+    if (this.status[i] === STATUS.brn) dmg = Math.floor(dmg / 2);
+    return Math.max(1, dmg);
+  }
+
+  /** Confuses `j` (2 to 5 turns) unless something stops it. */
+  private confuse(j: number) {
+    if (!this.alive[j] || this.confused[j] > 0) return;
+    if (this.rows[this.sp[j]].ability === "owntempo") return;
+    if (this.prep.field.terrain === "misty" && this.grounded(j)) return;
+    this.confused[j] = 2 + Math.floor(this.random() * 4);
+    this.pushNote(j, NOTE.STATUS, NOTE_CONFUSION);
   }
 
   /** Number of hits for one use of a multi-hit move. */
@@ -593,6 +1042,7 @@ export class Battle {
       const r = this.random();
       return r < 0.35 ? 2 : r < 0.7 ? 3 : r < 0.85 ? 4 : 5;
     }
+    if (row.loadedDice && hi >= 4) return hi;
     return lo + Math.floor(this.random() * (hi - lo + 1));
   }
 
@@ -602,7 +1052,47 @@ export class Battle {
     return stage >= 3 ? 1 : stage === 2 ? 0.5 : stage === 1 ? 0.125 : 1 / 24;
   }
 
-  /** One use of a move by `i` against `t` (and, for a spread move, everyone around). */
+  /** The move it uses as its turn comes: the one planned, if it can still reach; otherwise the best it can reach. */
+  private chooseNow(i: number, t: number): { slot: number; spreadCount: number } {
+    const spi = this.sp[i];
+    const moves = this.prep.moves[spi];
+    const row = this.rows[spi];
+    const gapT = this.gap(i, t);
+    const never = this.prep.behaviour[this.side[i]].spread === "never";
+    const reach = (mv: MBMove) => gapT <= (mv.contact ? CONTACT_REACH : RANGED_REACH);
+    const spreadCount = (mv: MBMove) => (mv.spread ? this.foesNear(i, this.x[i], this.z[i], row.radius + SPREAD_REACH) : 0);
+    const planned = this.plan[i];
+    const locked = this.rampLeft[i] > 0 && this.rampSlot[i] >= 0 ? this.rampSlot[i] : this.itemGone[i] ? -1 : this.lock[i];
+    if (locked >= 0) {
+      const mv = moves[locked];
+      return reach(mv) ? { slot: locked, spreadCount: spreadCount(mv) } : { slot: -1, spreadCount: 0 };
+    }
+    // As in the games, the move chosen as the round began is the one used (on its new target if the first one fell),
+    // unless the battlefield has put it out of reach.
+    if (planned >= 0 && planned < moves.length && reach(moves[planned])) return { slot: planned, spreadCount: spreadCount(moves[planned]) };
+    let best = -1, bestV = 0, bestCount = 0;
+    // "Never" passes over spread moves unless nothing else can hurt the target.
+    for (const skipSpread of never ? [true, false] : [false]) {
+      for (let s = 0; s < moves.length; s++) {
+        const mv = moves[s];
+        if (!reach(mv) || (skipSpread && mv.spread)) continue;
+        let v: number;
+        let count = 0;
+        if (mv.spread) {
+          count = spreadCount(mv);
+          if (count >= 2) {
+            v = 0;
+            for (let k = 0; k < count; k++) v += this.expected(i, s, this.scratch[k], true);
+          } else v = this.expected(i, s, t, false);
+        } else v = this.expected(i, s, t, false);
+        if (v > bestV) { bestV = v; best = s; bestCount = count; }
+      }
+      if (best >= 0) break;
+    }
+    return { slot: best, spreadCount: bestCount };
+  }
+
+  /** One use of a move by `i` against its target (and, for a spread move, everyone around). */
   private act(i: number) {
     let t = this.target[i];
     if (t < 0 || !this.alive[t]) {
@@ -610,120 +1100,299 @@ export class Battle {
       if (t < 0) return;
     }
     const spi = this.sp[i];
-    const moves = this.prep.moves[spi];
     const row = this.rows[spi];
-    const gapT = this.gap(i, t);
-    // The best move it can use from where it stands.
-    let best = -1, bestV = 0, bestSpreadCount = 0;
-    for (let s = 0; s < moves.length; s++) {
-      const mv = moves[s];
-      if (gapT > (mv.contact ? CONTACT_REACH : RANGED_REACH)) continue;
-      let v: number;
-      let count = 0;
-      if (mv.spread) {
-        count = this.foesNear(i, this.x[i], this.z[i], row.radius + SPREAD_REACH);
-        if (count >= 2) {
-          v = 0;
-          for (let k = 0; k < count; k++) v += this.expected(i, s, this.scratch[k], true);
-        } else v = this.expected(i, s, t, false);
-      } else v = this.expected(i, s, t, false);
-      if (v > bestV) { bestV = v; best = s; bestSpreadCount = count; }
-    }
+    const { slot: best, spreadCount } = this.chooseNow(i, t);
     if (best < 0) return;
-    const mv = moves[best];
+    const mv = this.prep.moves[spi][best];
+    this.actedRound[i] = this.round;
+    this.idleSince = this.tick;
+    if (this.skipsTurn(i, mv)) return;
     this.actionId++;
     let targets: number;
-    if (mv.spread && bestSpreadCount >= 2) {
+    if (mv.spread && spreadCount >= 2) {
       targets = this.foesNear(i, this.x[i], this.z[i], row.radius + SPREAD_REACH);
     } else {
       this.scratch[0] = t;
       targets = 1;
     }
+    // The scratch buffer is reused below (Moxie, contact chip): copy the targets out.
+    if (this.hitScratch.length < targets) this.hitScratch = new Int32Array(targets * 2);
+    const hitList = this.hitScratch;
+    for (let k = 0; k < targets; k++) hitList[k] = this.scratch[k];
     const multi = targets >= 2;
-    let total = 0;
+    const pri = this.priority(i, best);
+    let total = 0, landed = 0, kos = 0, crashed = false;
     for (let k = 0; k < targets; k++) {
-      const j = this.scratch[k];
-      if (!this.alive[j]) continue;
+      const j = hitList[k];
+      if (!this.alive[j] || !this.alive[i]) continue;
       const flagsBase = multi ? EV.SPREAD : 0;
+      if (this.blocked(i, j, mv, pri)) {
+        this.pushEvent(i, j, best, 0, flagsBase | EV.IMMUNE);
+        if (mv.crash) crashed = true;
+        continue;
+      }
       if (this.random() >= this.accuracy(i, j, mv)) {
         this.pushEvent(i, j, best, 0, flagsBase | EV.MISS);
+        if (mv.crash) crashed = true;
         continue;
       }
       const crit = this.random() < this.critChance(i, j, mv);
-      const e: HitEntry = this.table.entry(spi, best, this.sp[j], this.hitState(i, j, crit, multi));
+      const e: HitEntry = this.table.entry(spi, best, this.sp[j], this.hitState(i, j, mv, crit, multi));
       if (e.immune) {
         this.pushEvent(i, j, best, 0, flagsBase | EV.IMMUNE);
+        if (mv.crash) crashed = true;
+        this.absorb(j, mv);
         continue;
       }
+      const dRow = this.rows[this.sp[j]];
       const nh = this.hitCount(i, mv);
       let dmg = 0;
-      for (let h = 0; h < nh; h++) {
-        if (h > 0 && mv.multiAcc && this.random() >= this.accuracy(i, j, mv)) break;
-        const rolls = e.hits[Math.min(h, e.hits.length - 1)];
-        dmg += rolls[Math.floor(this.random() * 16)];
+      let shield = false;
+      // Disguise (any hit) and Ice Face (a physical one) take the first hit for it.
+      if (!this.shieldUsed[j] && (dRow.ability === "disguise" || (dRow.ability === "iceface" && mv.cat === "Physical"))) {
+        this.shieldUsed[j] = 1;
+        shield = true;
+        this.pushNote(j, NOTE.ITEM, NOTE_ITEM.disguise);
+      } else {
+        for (let h = 0; h < nh; h++) {
+          if (h > 0 && mv.multiAcc && this.random() >= this.accuracy(i, j, mv)) break;
+          const rolls = e.hits[Math.min(h, e.hits.length - 1)];
+          dmg += rolls[Math.floor(this.random() * 16)];
+        }
       }
       const before = this.hp[j];
-      const dRow = this.rows[this.sp[j]];
-      if (dRow.sturdy && before >= dRow.maxHp && dmg >= before) dmg = before - 1;
+      // Sturdy and Focus Sash: a full-HP Pokémon survives any one hit with 1 HP.
+      if (dmg >= before && before >= dRow.maxHp) {
+        if (dRow.sturdy) dmg = before - 1;
+        else if (this.hasItem(j, "focussash")) {
+          dmg = before - 1;
+          this.itemGone[j] = 1;
+          this.pushNote(j, NOTE.ITEM, NOTE_ITEM.sash);
+        }
+      }
       const done = Math.min(dmg, before);
       this.hp[j] = before - done;
       this.dealt[i] += done;
       this.sideDealt[this.side[i]] += done;
       total += done;
+      landed++;
       let flags = flagsBase | (crit ? EV.CRIT : 0);
       const eff = e.avg > 0 ? this.effectiveness(spi, best, this.sp[j]) : 1;
       if (eff > 1) flags |= EV.SUPER;
       else if (eff < 1) flags |= EV.RESIST;
-      // Knockback: damage over weight, away from the attacker.
-      const dx = this.x[j] - this.x[i], dz = this.z[j] - this.z[i];
-      const d = Math.sqrt(dx * dx + dz * dz) || 1;
-      const kv = Math.min(KNOCK_MAX, (KNOCK * done) / dRow.mass);
-      this.kx[j] += (dx / d) * kv;
-      this.kz[j] += (dz / d) * kv;
+      if (this.prep.layout === "field") {
+        // Knockback: damage over weight, away from the attacker.
+        const dx = this.x[j] - this.x[i], dz = this.z[j] - this.z[i];
+        const d = Math.sqrt(dx * dx + dz * dz) || 1;
+        const kv = Math.min(KNOCK_MAX, (KNOCK * done) / dRow.mass);
+        this.kx[j] += (dx / d) * kv;
+        this.kz[j] += (dz / d) * kv;
+      }
       if (this.hp[j] <= 0) {
         flags |= EV.KO;
         this.faint(j);
         this.kos[i]++;
+        kos++;
         this.sideKos[this.side[i]]++;
       }
       this.pushEvent(i, j, best, done, flags);
       if (!this.bigHit || done > this.bigHit.damage) this.bigHit = { damage: done, actor: i, target: j, slot: best, crit };
+      if (shield) continue;
+      this.afterHit(i, j, mv, done, eff, crit);
     }
-    if (total > 0 && this.alive[i]) {
+    // High Jump Kick and the like: a miss costs half its max HP.
+    if (crashed && !landed && this.alive[i] && !row.magicGuard) this.chip(i, Math.floor(row.maxHp / 2), -1);
+    // Outrage and the like: locked in for two or three uses, then confused by the fatigue.
+    if (mv.rampage && this.alive[i]) {
+      if (this.rampLeft[i] <= 0 && landed > 0) {
+        this.rampSlot[i] = best;
+        this.rampLeft[i] = this.random() < 0.5 ? 2 : 3;
+      }
+      if (this.rampLeft[i] > 0 && --this.rampLeft[i] === 0) {
+        this.rampSlot[i] = -1;
+        this.confuse(i);
+      }
+    }
+    if (!this.alive[i]) return;
+    // The attacker's own after-effects, once a move use.
+    if (landed > 0) {
       const max = row.maxHp;
-      let self = 0;
-      if (mv.recoil && !row.noRecoil) self += Math.max(1, Math.round((total * mv.recoil[0]) / mv.recoil[1]));
-      if (row.lifeOrb && !row.magicGuard) self += Math.floor(max / 10);
-      if (mv.drain) this.hp[i] = Math.min(max, this.hp[i] + Math.max(1, Math.round((total * mv.drain[0]) / mv.drain[1])));
-      if (self > 0) {
-        this.hp[i] -= Math.min(self, this.hp[i]);
-        if (this.hp[i] <= 0) {
-          this.faint(i);
-          this.pushEvent(i, i, -1, self, EV.KO | EV.RECOIL);
-          // Both last Pokémon down at once: as in the games (Gen 5 on), the one whose move did it wins.
-          if (!this.left[0] && !this.left[1]) this.lastBlow = this.side[i];
+      const sfNoRecoil = row.sheerForce && !!mv.fx?.some((f) => !f.always);
+      if (total > 0) {
+        let self = 0;
+        if (mv.recoil && !row.noRecoil) self += Math.max(1, Math.round((total * mv.recoil[0]) / mv.recoil[1]));
+        if (row.lifeOrb && !this.itemGone[i] && !row.magicGuard && !sfNoRecoil) self += Math.floor(max / 10);
+        if (mv.drain) {
+          const amount = Math.max(1, Math.round((total * mv.drain[0]) / mv.drain[1]));
+          const ooze = hitList.subarray(0, targets).some((j) => this.rows[this.sp[j]].ability === "liquidooze");
+          if (ooze && !row.magicGuard) self += amount;
+          else this.heal(i, amount);
         }
+        if (this.hasItem(i, "shellbell")) this.heal(i, Math.max(1, Math.floor(total / 8)));
+        if (self > 0) this.chip(i, self, -1);
+      }
+      if (this.alive[i]) {
+        for (const f of mv.fx ?? []) if (f.on === "self" && f.boosts && (f.always || (!row.sheerForce && this.random() * 100 < f.chance * (row.sereneGrace ? 2 : 1)))) this.boost(i, f.boosts, false);
+        if (kos) {
+          if (row.ability === "moxie" || row.ability === "chillingneigh" || row.ability === "asoneglastrier") this.boost(i, { atk: kos }, false);
+          else if (row.ability === "grimneigh" || row.ability === "asonespectrier") this.boost(i, { spa: kos }, false);
+          else if (row.ability === "beastboost") {
+            const st = row.stats;
+            const top = (["atk", "def", "spa", "spd", "spe"] as const).reduce((a, b) => (st[b] > st[a] ? b : a), "atk" as "atk" | "def" | "spa" | "spd" | "spe");
+            this.boost(i, { [top]: kos }, false);
+          }
+        }
+        if (row.item && CHOICE.has(row.item) && !this.itemGone[i] && this.lock[i] < 0) this.lock[i] = best;
       }
     }
   }
 
-  private effCache = new Map<number, number>();
-  /** Type effectiveness of a move on a species (for the hit's flash and sound). */
+  /** What a landed hit sets off: its side effects, the target's answers, contact and Knock Off. */
+  private afterHit(i: number, j: number, mv: MBMove, done: number, eff: number, crit: boolean) {
+    const row = this.rows[this.sp[i]];
+    const dRow = this.rows[this.sp[j]];
+    const alive = !!this.alive[j];
+    // A frozen target thaws when a Fire move (or Scald) hits it.
+    if (alive && this.status[j] === STATUS.frz && (mv.type === "Fire" || toId(mv.name) === "scald" || toId(mv.name) === "scorchingsands" || toId(mv.name) === "steameruption")) {
+      this.status[j] = 0;
+      this.pushNote(j, NOTE.CURE, STATUS.frz);
+    }
+    // Side effects on the target (Sheer Force trades them for power; Shield Dust and Covert Cloak keep them off).
+    if (alive && mv.fx && !row.sheerForce && !dRow.shielded) {
+      for (const f of mv.fx) {
+        if (f.on !== "target") continue;
+        if (this.random() * 100 >= Math.min(100, f.chance * (row.sereneGrace ? 2 : 1))) continue;
+        if (f.status) this.setStatus(j, f.status, i);
+        if (f.flinch && this.actedRound[j] !== this.round && dRow.ability !== "innerfocus") this.flinchRound[j] = this.round;
+        if (f.confuse) this.confuse(j);
+        if (f.boosts) this.boost(j, f.boosts, true);
+      }
+    }
+    // The target's answers to being hit.
+    if (alive && this.alive[j] && done > 0) {
+      const ab = dRow.ability;
+      if (ab === "stamina") this.boost(j, { def: 1 }, false);
+      else if (ab === "justified" && mv.type === "Dark") this.boost(j, { atk: 1 }, false);
+      else if (ab === "weakarmor" && mv.cat === "Physical") this.boost(j, { def: -1, spe: 2 }, false);
+      else if (ab === "angerpoint" && crit) this.boost(j, { atk: 12 }, false);
+      else if (ab === "rattled" && (mv.type === "Bug" || mv.type === "Ghost" || mv.type === "Dark")) this.boost(j, { spe: 1 }, false);
+      else if (ab === "steamengine" && (mv.type === "Fire" || mv.type === "Water")) this.boost(j, { spe: 6 }, false);
+      else if (ab === "watercompaction" && mv.type === "Water") this.boost(j, { def: 2 }, false);
+      else if (ab === "thermalexchange" && mv.type === "Fire") this.boost(j, { atk: 1 }, false);
+      if (this.hasItem(j, "weaknesspolicy") && eff > 1) {
+        this.itemGone[j] = 1;
+        this.pushNote(j, NOTE.ITEM, NOTE_ITEM.weaknessPolicy);
+        this.boost(j, { atk: 2, spa: 2 }, false);
+      }
+      if (this.hasItem(j, "airballoon")) {
+        this.itemGone[j] = 1;
+        this.pushNote(j, NOTE.ITEM, NOTE_ITEM.balloon);
+      }
+      this.checkBerry(j);
+    }
+    // Knock Off takes the item (not a Mega Stone, not through Sticky Hold).
+    if (this.alive[j] && toId(mv.name) === "knockoff" && !this.itemGone[j] && !dRow.mega && dRow.ability !== "stickyhold") {
+      this.itemGone[j] = 1;
+      this.lock[j] = -1;
+      this.pushNote(j, NOTE.ITEM, NOTE_ITEM.knockedOff, i);
+    }
+    // Contact: the target's ability or Rocky Helmet strikes back.
+    if (mv.contact && !row.contactProof && this.alive[i]) {
+      const ab = dRow.ability;
+      if (ab === "static" || ab === "flamebody" || ab === "poisonpoint") {
+        if (this.random() < 0.3) this.setStatus(i, ab === "static" ? "par" : ab === "flamebody" ? "brn" : "psn", j);
+      } else if (ab === "effectspore" && !row.types.includes("grass") && row.ability !== "overcoat" && !this.hasItem(i, "safetygoggles")) {
+        const r = this.random() * 100;
+        if (r < 11) this.setStatus(i, "slp", j);
+        else if (r < 21) this.setStatus(i, "par", j);
+        else if (r < 30) this.setStatus(i, "psn", j);
+      } else if (ab === "gooey" || ab === "tanglinghair") this.boost(i, { spe: -1 }, true);
+      if (row.ability === "poisontouch" && this.alive[j] && this.random() < 0.3) this.setStatus(j, "psn", i);
+      if (!row.magicGuard) {
+        if (ab === "roughskin" || ab === "ironbarbs") this.chip(i, Math.max(1, Math.floor(row.maxHp / 8)), j);
+        if (this.alive[i] && this.hasItem(j, "rockyhelmet")) this.chip(i, Math.max(1, Math.floor(row.maxHp / 6)), j);
+      }
+    }
+  }
+
+  /** Abilities that take a move in (Lightning Rod, Volt Absorb, Sap Sipper…): the immunity is the calculator's, the boost or healing is here. */
+  private absorb(j: number, mv: MBMove) {
+    const row = this.rows[this.sp[j]];
+    const ab = row.ability, t = mv.type;
+    const heal = (ab === "voltabsorb" && t === "Electric") || ((ab === "waterabsorb" || ab === "dryskin") && t === "Water") || (ab === "eartheater" && t === "Ground");
+    if (heal) return this.heal(j, Math.floor(row.maxHp / 4));
+    if ((ab === "lightningrod" && t === "Electric") || (ab === "stormdrain" && t === "Water")) this.boost(j, { spa: 1 }, false);
+    else if (ab === "motordrive" && t === "Electric") this.boost(j, { spe: 1 }, false);
+    else if (ab === "sapsipper" && t === "Grass") this.boost(j, { atk: 1 }, false);
+    else if (ab === "wellbakedbody" && t === "Fire") this.boost(j, { def: 2 }, false);
+  }
+
+  /** The end of a round, as in the games: sandstorm, Grassy Terrain, Leftovers, poison and burns, Speed Boost. */
+  private endOfRound() {
+    const f = this.prep.field;
+    const order: number[] = [];
+    for (let i = 0; i < this.n; i++) if (this.alive[i]) order.push(i);
+    order.sort((a, b) => this.effectiveSpeed(b) - this.effectiveSpeed(a) || a - b);
+    const each = (fn: (i: number, row: FighterRow) => void) => {
+      for (const i of order) if (this.alive[i]) fn(i, this.rows[this.sp[i]]);
+    };
+    if (f.weather === "sand") {
+      each((i, row) => {
+        if (row.types.some((t) => t === "rock" || t === "ground" || t === "steel") || SAND_IMMUNE_ABILITIES.has(row.ability) || this.hasItem(i, "safetygoggles")) return;
+        this.chip(i, Math.max(1, Math.floor(row.maxHp / 16)), -1, EV.RECOIL | EV.RESIDUAL);
+      });
+    }
+    each((i, row) => {
+      const max = row.maxHp;
+      if (f.weather === "rain" && (row.ability === "raindish" || row.ability === "dryskin")) this.heal(i, Math.floor(max / (row.ability === "dryskin" ? 8 : 16)));
+      if (f.weather === "snow" && row.ability === "icebody") this.heal(i, Math.floor(max / 16));
+      if (f.weather === "sun" && (row.ability === "dryskin" || row.ability === "solarpower") && !row.magicGuard) this.chip(i, Math.max(1, Math.floor(max / 8)), -1, EV.RECOIL | EV.RESIDUAL);
+    });
+    if (f.terrain === "grassy") each((i, row) => { if (this.grounded(i)) this.heal(i, Math.floor(row.maxHp / 16)); });
+    each((i, row) => {
+      if (this.hasItem(i, "leftovers")) this.heal(i, Math.floor(row.maxHp / 16));
+      else if (this.hasItem(i, "blacksludge")) {
+        if (row.types.includes("poison")) this.heal(i, Math.floor(row.maxHp / 16));
+        else if (!row.magicGuard) this.chip(i, Math.max(1, Math.floor(row.maxHp / 8)), -1, EV.RECOIL | EV.RESIDUAL);
+      }
+    });
+    each((i, row) => {
+      const st = this.status[i];
+      if (st !== STATUS.psn && st !== STATUS.tox) return;
+      if (row.ability === "poisonheal") return this.heal(i, Math.floor(row.maxHp / 8));
+      if (row.magicGuard) return;
+      if (st === STATUS.tox) this.toxic[i] = Math.min(15, this.toxic[i] + 1);
+      const amount = st === STATUS.tox ? Math.floor((row.maxHp * this.toxic[i]) / 16) : Math.floor(row.maxHp / 8);
+      this.chip(i, Math.max(1, amount), -1, EV.RECOIL | EV.RESIDUAL);
+    });
+    each((i, row) => {
+      if (this.status[i] !== STATUS.brn || row.magicGuard) return;
+      this.chip(i, Math.max(1, Math.floor(row.maxHp / (row.ability === "heatproof" ? 32 : 16))), -1, EV.RECOIL | EV.RESIDUAL);
+    });
+    each((i, row) => {
+      if (row.ability === "speedboost") this.boost(i, { spe: 1 }, false);
+    });
+  }
+
+  /** Type effectiveness of a move on a fighter (for the hit's flash and sound). */
   private effectiveness(a: number, slot: number, d: number): number {
     const key = (a * 8 + slot) * 65536 + d;
     let v = this.effCache.get(key);
     if (v === undefined) {
-      // Neutral damage against the same defender would be the move's average with the type factor removed; the
-      // calculator doesn't expose the factor, so it's read off the type chart.
-      v = typeFactor(this.prep.moves[a][slot].type, this.prep.species[d].types);
+      v = typeFactor(this.prep.moves[a][slot].type, this.rows[d].types);
       this.effCache.set(key, v);
     }
     return v;
   }
 
+  // -------------------------------------------------------------------------
+  // Moving
+  // -------------------------------------------------------------------------
+
   private move() {
     const { n, alive, x, z } = this;
     const decay = Math.exp(-KNOCK_DECAY * DT);
+    const released = this.tick - this.idleSince >= HOLD_IDLE_TICKS;
     for (let i = 0; i < n; i++) {
       if (!alive[i]) { this.vx[i] = this.vz[i] = 0; continue; }
       let t = this.target[i];
@@ -737,7 +1406,9 @@ export class Battle {
         const slot = this.plan[i];
         const ranged = slot >= 0 && !this.prep.moves[this.sp[i]][slot].contact;
         const want = ranged ? RANGED_REACH * 0.7 : 0.05;
-        if (gap > want && d > 1e-6) {
+        // Holding the line: it steps up only to a foe that has come close (or once the field has been quiet a while).
+        const holding = this.prep.behaviour[this.side[i]].stance === "hold" && !released && gap > want + HOLD_ENGAGE;
+        if (!holding && gap > want && d > 1e-6) {
           const ux = dx / d, uz = dz / d;
           // A unit the crowd pushed back last tick doesn't press on into it (no piling up behind the front).
           const pushedBack = Math.max(0, -(this.lx[i] * ux + this.lz[i] * uz));
@@ -880,21 +1551,33 @@ export class Battle {
     }
   }
 
-  /** Whether either side can still hurt the other at all. */
+  /** Whether a side can still hurt the other at all. */
   private canStillHurt(s: number): boolean {
-    const S = this.prep.species.length;
+    const F = this.prep.species.length;
     for (const [a] of this.prep.armies[s]) {
-      if (!this.aliveBySpecies[a]) continue;
-      for (const [d] of this.prep.armies[1 - s]) if (this.aliveBySpecies[d] && this.canHurt[a * S + d]) return true;
+      if (!this.aliveByFighter[a]) continue;
+      for (const [d] of this.prep.armies[1 - s]) if (this.aliveByFighter[d] && this.canHurt[a * F + d]) return true;
     }
     return false;
+  }
+
+  private checkEnd(): boolean {
+    if (this.left[0] && this.left[1]) return false;
+    this.ended = true;
+    this.winner = !this.left[0] && !this.left[1] ? (this.lastFaintSide >= 0 ? (this.lastFaintSide as 0 | 1) : 2) : this.left[0] ? 0 : 1;
+    return true;
   }
 
   /** One tick (1/20 s). */
   step() {
     this.eventCount = 0;
+    this.noteCount = 0;
     if (this.ended) return;
     if (this.tick % ROUND_TICKS === 0) {
+      if (this.tick > 0) {
+        this.endOfRound();
+        if (this.checkEnd()) { this.tick++; return; }
+      }
       this.startRound();
       if (!this.canStillHurt(0) && !this.canStillHurt(1)) {
         this.ended = true;
@@ -910,19 +1593,21 @@ export class Battle {
       if (this.alive[i]) this.act(i);
       if (!this.left[0] || !this.left[1]) break;
     }
-    // Retargeting spread over the round: each unit looks for a nearer foe once a round, and more often while it's
-    // still heading for a far one.
-    for (let i = this.tick % ROUND_TICKS; i < this.n; i += ROUND_TICKS) if (this.alive[i]) this.target[i] = this.findTarget(i);
-    for (let i = this.tick % TICK_HZ; i < this.n; i += TICK_HZ) if (this.alive[i] && this.far[i]) this.target[i] = this.findTarget(i);
-    this.move();
-    this.rebuildGrids();
-    this.separate();
-    this.separate();
+    if (this.prep.layout === "field") {
+      // Retargeting spread over the round: each unit looks for a better foe once a round, and more often while it's
+      // still heading for a far one.
+      for (let i = this.tick % ROUND_TICKS; i < this.n; i += ROUND_TICKS) if (this.alive[i]) this.target[i] = this.findTarget(i);
+      for (let i = this.tick % TICK_HZ; i < this.n; i += TICK_HZ) if (this.alive[i] && this.far[i]) this.target[i] = this.findTarget(i);
+      this.move();
+      this.rebuildGrids();
+      this.separate();
+      this.separate();
+    } else {
+      for (let i = 0; i < this.n; i++) if (this.alive[i] && (this.target[i] < 0 || !this.alive[this.target[i]])) this.target[i] = this.findTarget(i);
+    }
     this.tick++;
-    if (!this.left[0] || !this.left[1]) {
-      this.ended = true;
-      this.winner = !this.left[0] && !this.left[1] ? (this.lastBlow >= 0 ? (this.lastBlow as 0 | 1) : 2) : this.left[0] ? 0 : 1;
-    } else if (this.tick >= MAX_SECONDS * TICK_HZ) {
+    if (this.checkEnd()) return;
+    if (this.tick >= MAX_SECONDS * TICK_HZ) {
       this.ended = true;
       this.winner = 2;
     }
@@ -948,6 +1633,68 @@ export class Battle {
     }
     return max ? cur / max : 0;
   }
+}
+
+/** What a move's chance to hit depends on. */
+export interface AccuracyInput {
+  mv: MBMove;
+  /** Ability and held item ids ("" for none). */
+  aAbility: string;
+  aItem: string;
+  dAbility: string;
+  dItem: string;
+  /** The user's accuracy stage and the target's evasion stage. */
+  accStage: number;
+  evaStage: number;
+  weather: FieldSpec["weather"];
+  /** The target has already moved this turn (Zoom Lens). */
+  targetMoved: boolean;
+}
+
+/** Chance a move lands, as in the games: its accuracy with the stages, abilities (No Guard, Compound Eyes, Hustle, Victory Star, Sand Veil, Snow Cloak), items (Wide Lens, Zoom Lens, Bright Powder) and the weather (Thunder and Hurricane in rain or sun, Blizzard in snow). */
+export function hitChance(x: AccuracyInput): number {
+  const id = toId(x.mv.name);
+  const w = x.weather;
+  if ((id === "thunder" || id === "hurricane") && w === "rain") return 1;
+  if (id === "blizzard" && w === "snow") return 1;
+  let acc = x.mv.acc;
+  if (!acc) return 1;
+  if (x.aAbility === "noguard" || x.dAbility === "noguard") return 1;
+  if ((id === "thunder" || id === "hurricane") && w === "sun") acc = 50;
+  const stage = Math.max(-6, Math.min(6, x.accStage - x.evaStage));
+  let p = (acc / 100) * accMul(stage);
+  if (x.aAbility === "compoundeyes") p *= 1.3;
+  if (x.aAbility === "victorystar") p *= 1.1;
+  if (x.aAbility === "hustle" && x.mv.cat === "Physical") p *= 0.8;
+  if (x.aItem === "widelens") p *= 1.1;
+  if (x.aItem === "zoomlens" && x.targetMoved) p *= 1.2;
+  if (x.dItem === "brightpowder") p *= 0.9;
+  if ((x.dAbility === "sandveil" && w === "sand") || (x.dAbility === "snowcloak" && w === "snow")) p *= 0.8;
+  return Math.min(1, p);
+}
+
+/** Expected hits of one use of a move (Skill Link always hits five times, Loaded Dice four or five). */
+export function expectedHits(mv: MBMove, ability: string, item: string): number {
+  if (!mv.hits) return 1;
+  if (ability === "skilllink") return mv.hits[1];
+  if (item === "loadeddice" && mv.hits[1] >= 4) return mv.hits[0] === 2 && mv.hits[1] === 5 ? 4.5 : mv.hits[1];
+  return expectedHitsOf(mv);
+}
+
+/** Expected damage of one use on one target, capped at the HP it has left: the policy every Pokémon fights by. */
+export function expectedDamage(table: DamageTable, a: number, slot: number, d: number, st: HitState, chance: number, hits: number, targetHp: number): number {
+  const e = table.entry(a, slot, d, st);
+  if (e.immune) return 0;
+  return Math.min(targetHp, e.avg * hits) * chance;
+}
+
+/** Puts the stat stages a move reads into a hit state: its attacking stat (Body Press: Defense, Foul Play: the target's Attack) and the defending one. */
+export function setStages(st: HitState, mv: MBMove, aAtk: number, aDef: number, aSpa: number, dAtk: number, dDef: number, dSpd: number) {
+  const s = mv.atkStat;
+  st.aStage = s === "def" ? aDef : s === "target-atk" ? dAtk : s === "best" ? aAtk : mv.cat === "Physical" ? aAtk : aSpa;
+  st.aStage2 = s === "best" ? aSpa : 0;
+  st.dStage = s === "best" ? dDef : mv.cat === "Physical" || mv.hitsDef ? dDef : dSpd;
+  st.dStage2 = s === "best" ? dSpd : 0;
 }
 
 /** The type chart, for the hit's look and sound (damage itself is the calculator's). */

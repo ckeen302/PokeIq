@@ -1,4 +1,4 @@
-import { Battle, EV, EVENT_INTS, prepare, TICK_HZ } from "@/lib/mass-battle/engine";
+import { Battle, EV, EVENT_INTS, NOTE_INTS, prepare, TICK_HZ } from "@/lib/mass-battle/engine";
 import type { FromSim, Moment, SimEnd, SimFrame, ToSim } from "./protocol";
 
 /**
@@ -37,22 +37,21 @@ function frameOf(b: Battle): SimFrame {
     target[i] = b.target[i];
   }
   const events = b.events.slice(0, b.eventCount * EVENT_INTS);
-  return { tick: b.tick, pos, hp, target, events, left: [b.left[0], b.left[1]], ended: b.ended, winner: b.winner };
+  const notes = b.notes.slice(0, b.noteCount * NOTE_INTS);
+  return { tick: b.tick, pos, hp, target, events, notes, left: [b.left[0], b.left[1]], ended: b.ended, winner: b.winner };
 }
 
 function endOf(b: Battle): SimEnd {
-  const S = b.prep.species.length;
   const kos: [number, number][][] = [[], []];
   for (let s = 0; s < 2; s++) {
     const by = new Map<number, number>();
     for (let i = 0; i < b.n; i++) if (b.side[i] === s && b.kos[i]) by.set(b.sp[i], (by.get(b.sp[i]) ?? 0) + b.kos[i]);
     kos[s] = [...by.entries()].sort((a, c) => c[1] - a[1]);
   }
-  void S;
   return { outcome: b.outcome(), stats: b.stats(), kosBySpecies: kos };
 }
 
-const transfers = (f: SimFrame) => [f.pos.buffer, f.hp.buffer, f.target.buffer, f.events.buffer] as ArrayBuffer[];
+const transfers = (f: SimFrame) => [f.pos.buffer, f.hp.buffer, f.target.buffer, f.events.buffer, f.notes.buffer] as ArrayBuffer[];
 
 /** Plays the same battle to the end without drawing, noting the moments worth a cut (for the video). */
 function plan(id: number) {
@@ -119,6 +118,8 @@ scope.onmessage = (event) => {
           radius: b.rows.map((r) => r.radius),
           start: [b.start[0], b.start[1]],
           moves: prep.moves.map((ms) => ms.map((m) => ({ name: m.name, type: m.type, cat: m.cat, contact: m.contact, spread: m.spread }))),
+          fighters: prep.sets.map((s) => ({ level: s.level, ability: s.ability, item: s.item, nature: s.nature, tera: s.tera })),
+          field: prep.field,
           frame,
           setupMs: performance.now() - t0,
         },

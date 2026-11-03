@@ -1,4 +1,4 @@
-import type { BattleOutcome, Winner } from "./types";
+import type { ArmySpec, BattleOutcome, GroupRule, Winner } from "./types";
 
 /**
  * The words around the numbers: answers, results and kill-feed lines.
@@ -33,6 +33,22 @@ export function armyName(names: string[], label?: string): string {
   if (names.length <= 1) return names[0] ?? "";
   if (names.length <= 3) return `${names.slice(0, -1).join(", ")} and ${names[names.length - 1]}`;
   return `${names.slice(0, 2).join(", ")} and more`;
+}
+
+/** A group's short name: "Fire types", "Water/Flying types", "Legendaries", "Gen 1 Pokémon". */
+export function groupName(g: GroupRule): string {
+  const cap = (t: string) => t[0].toUpperCase() + t.slice(1);
+  if (g.types?.length) return `${g.types.map(cap).join("/")} types`;
+  if (g.legendary === true && g.mythical) return "Legendaries and mythicals";
+  if (g.legendary === true) return "Legendaries";
+  if (g.mythical) return "Mythicals";
+  if (g.gen) return `Gen ${g.gen} Pokémon`;
+  return g.fullyEvolved ? "Fully evolved Pokémon" : "Pokémon";
+}
+
+/** An army's name from its rows (a group by its short name). */
+export function sideName(army: Pick<ArmySpec, "units">, nameOf: (id: number) => string, label?: string): string {
+  return armyName(army.units.map((u) => (u.group ? groupName(u.group) : nameOf(u.id))), label);
 }
 
 export function resultTitle(winner: Winner, names: [string, string], left: [number, number]): string {

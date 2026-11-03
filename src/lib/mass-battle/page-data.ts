@@ -2,9 +2,9 @@ import "server-only";
 import presetsJson from "@/data/mass-battle-presets.json";
 import { buildRoster } from "./roster-data";
 import { PRESETS, PRESET_BY_ID, resolvePreset } from "./presets";
-import { decodeBattle, decodeQuestion, type SlugIndex } from "./share";
+import { decodeBattle, decodePlayback, decodeQuestion, MAX_SPECIES, type SlugIndex } from "./share";
 import type { PresetsFile } from "./preset-results";
-import type { BattleSpec, MBSpecies, Question } from "./types";
+import type { BattleSpec, MBSpecies, PlaybackSpec, Question } from "./types";
 
 /**
  * What the Mass Battle pages need on the server: the picker's list, the
@@ -14,16 +14,34 @@ import type { BattleSpec, MBSpecies, Question } from "./types";
 
 export const PRESET_RESULTS = presetsJson as unknown as PresetsFile;
 
+/** One Pokémon in the pickers (enough to search, filter and draw it). */
 export interface PickerRow {
   id: number;
   slug: string;
   name: string;
   types: string[];
+  /** Has attacking moves by default. */
   attacks: boolean;
+  gen: number;
+  /** "L" legendary, "M" mythical, "" neither. */
+  rank: "" | "L" | "M";
+  fe: boolean;
+  /** "mega", a region, or "" for a default form. */
+  form: string;
 }
 
 export function pickerList(): PickerRow[] {
-  return buildRoster().species.map((s) => ({ id: s.id, slug: s.slug, name: s.name, types: s.types, attacks: s.moves[100].length > 0 }));
+  return buildRoster().species.map((s) => ({
+    id: s.id,
+    slug: s.slug,
+    name: s.name,
+    types: s.types,
+    attacks: !!s.randbats || s.levelUp.length > 0,
+    gen: s.gen,
+    rank: s.mythical ? "M" : s.legendary ? "L" : "",
+    fe: s.fullyEvolved,
+    form: s.form,
+  }));
 }
 
 export function speciesById(): Map<number, MBSpecies> {
@@ -61,12 +79,18 @@ export function presetCards(): PresetCardData[] {
 
 export const presetById = (id: string) => (PRESET_BY_ID.has(id) ? presetCards().find((c) => c.id === id) ?? null : null);
 
+const first = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v);
+
 export function linkBattle(code: string | string[] | undefined): BattleSpec | null {
-  return decodeBattle(Array.isArray(code) ? code[0] : code, slugIndex(), 4);
+  return decodeBattle(first(code), slugIndex(), MAX_SPECIES);
 }
 
 export function linkQuestion(code: string | string[] | undefined): Question | null {
-  return decodeQuestion(Array.isArray(code) ? code[0] : code, slugIndex());
+  return decodeQuestion(first(code), slugIndex());
+}
+
+export function linkPlayback(code: string | string[] | undefined): PlaybackSpec {
+  return decodePlayback(first(code));
 }
 
 export const nameOf = (id: number) => speciesById().get(id)?.name ?? "";

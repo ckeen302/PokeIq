@@ -1,7 +1,22 @@
 import type { BattleStats } from "@/lib/mass-battle/engine";
-import type { BattleOutcome, BattleSpec, MBMove, MBSpecies, Question, Winner } from "@/lib/mass-battle/types";
+import type { BattleOutcome, BattleSpec, FieldSpec, MBMove, MBSpecies, Question, Winner } from "@/lib/mass-battle/types";
 
-/** Messages between the page and its battle workers. */
+/**
+ * Messages between the page and its battle workers.
+ *
+ * For the renderer, besides positions and HP each frame carries:
+ * - `events`: one per target of each move use (EVENT_INTS each: actor,
+ *   target, move slot, damage, flags, action id; flags in EV, see
+ *   constants.ts). A Pokémon that faints outside a hit (recoil, Rough Skin,
+ *   poison…) gets one with actor = target, slot −1 and EV.RECOIL | EV.KO
+ *   (plus EV.RESIDUAL at the end of a round).
+ * - `notes`: everything else that happens to a unit, for damage numbers and
+ *   status icons (NOTE_INTS each: unit, kind, value, source; kinds in NOTE:
+ *   a status condition and its cure, healing, chip damage, a stat stage, a
+ *   lost turn, an item used or lost).
+ * And the ready message carries the field (weather, terrain, time of day)
+ * and each fighter's level and set.
+ */
 
 /** The part of the roster a battle needs (move indices still point into the full move list). */
 export interface RosterSlice {
@@ -21,9 +36,22 @@ export interface SimFrame {
   target: Int32Array;
   /** EVENT_INTS per event (see engine.ts). */
   events: Int32Array;
+  /** NOTE_INTS per note (see constants.ts). */
+  notes: Int32Array;
   left: [number, number];
   ended: boolean;
   winner: Winner;
+}
+
+/** A fighter's set, as the HUD and tooltips show it. */
+export interface FighterInfo {
+  level: number;
+  ability: string;
+  /** "" for none. */
+  item: string;
+  nature: string;
+  /** "" without Tera. */
+  tera: string;
 }
 
 export interface SimReady {
@@ -31,17 +59,21 @@ export interface SimReady {
   id: number;
   n: number;
   arena: number;
-  /** Battle species → roster species. */
+  /** Battle species (fighter) → roster species id (a species can appear twice with different sets). */
   species: number[];
   /** Per unit: battle species index and side. */
   sp: Uint16Array;
   side: Uint8Array;
-  /** Per battle species: max HP, body radius (m), battle Speed. */
+  /** Per battle species: max HP, body radius (m). */
   maxHp: number[];
   radius: number[];
   start: [number, number];
   /** Move names per battle species (by slot), with type and whether it makes contact / spreads. */
   moves: { name: string; type: string; cat: string; contact: boolean; spread: boolean }[][];
+  /** Per battle species: its level and set. */
+  fighters: FighterInfo[];
+  /** Weather, terrain and time of day. */
+  field: FieldSpec;
   frame: SimFrame;
   /** Milliseconds the setup took (damage table and placement). */
   setupMs: number;
@@ -90,5 +122,6 @@ export function sliceRoster(roster: { version: number; moves: MBMove[]; species:
   return { version: roster.version, moves: roster.moves, species: roster.species.filter((s) => want.has(s.id)) };
 }
 
+/** The species a battle fields (groups must be spelled out first: see expandSpec). */
 export const specIds = (spec: BattleSpec) => [...new Set(spec.sides.flatMap((s) => s.units.map((u) => u.id)))];
-export const questionIds = (q: Question) => [q.challenger, q.boss];
+export const questionIds = (q: Question) => [...new Set([...q.army.units, ...q.boss.units].map((u) => u.id))];
