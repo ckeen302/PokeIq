@@ -392,6 +392,37 @@ describe("a live four-player room", () => {
     expect(next.players.map((p) => p.name)).toEqual(["Red", "Blue", "Gold", "CPU"]);
   });
 
+  it("the turn timer in a Free-For-All: a trainer out of time is out alone, and the others battle on", { timeout: 120_000 }, async () => {
+    const made = await createLiveBattle({ name: "Red", format: "gen9freeforallrandombattle", timer: true, timeoutLoses: true }, Date.now());
+    if (!made.ok) throw new Error(made.error);
+    const code = made.code;
+    const blue = await actOnBattle(code, null, { action: "join", name: "Blue" }, 0);
+    if (!blue.ok) throw new Error(blue.error);
+    const red = readBattleToken(made.token, code)!;
+    await actOnBattle(code, blue.playerId, { action: "ready", ready: true }, 0);
+    const filled = await actOnBattle(code, red.playerId, { action: "fill", level: "easy" }, 0);
+    if (!filled.ok) throw new Error(filled.error);
+    expect(filled.view.status).toBe("playing");
+    const blueToken = battleToken(code, blue.playerId, 1);
+    // Blue keeps the page open (so never "left") but never chooses; Red answers every request.
+    const first = await poll(code, blueToken);
+    const deadline = first.clocks!.you.deadline!;
+    expect(deadline).toBeGreaterThan(T0);
+    for (let t = 20_000; t <= deadline - T0 + 20_000; t += 20_000) {
+      vi.setSystemTime(T0 + t);
+      await act(code, made.token, (v) => firstChoice(v.request!.data, "freeforall"));
+      await poll(code, blueToken);
+    }
+    const after = await poll(code, made.token);
+    expect(after.players[1].out).toBeGreaterThanOrEqual(1);
+    expect(after.players[0].out).toBeUndefined();
+    expect(after.status).toBe("playing");
+    expect(after.log.lines).toContain("|-message|Blue lost due to inactivity.");
+    // Blue has nothing left to choose; Red's turns still come.
+    expect((await poll(code, blueToken)).request).toBeNull();
+    expect(after.request).not.toBeNull();
+  });
+
   it("a disconnected trainer in a Multi Battle forfeits for their team; matchmaking fills two seats with the computer", { timeout: 120_000 }, async () => {
     const matched = await createMatchedBattle("gen9multirandombattle", [{ name: "Red" }, { name: "Blue" }]);
     if (!matched) throw new Error("no battle");
