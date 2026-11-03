@@ -181,6 +181,8 @@ export async function runMassBattle({ browser, BASE, OUT, errors, step }) {
     }
     await press(page, "mb-speed");
     await press(page, "mb-speed");
+    // The camera button cycles director → free → follow the boss → top-down.
+    await press(page, "mb-camera");
     await press(page, "mb-camera");
     await press(page, "mb-camera");
     await page.waitForFunction(() => document.querySelector('[data-testid="mb-stage"]')?.dataset.cam === "top", null, { timeout: 30_000 }).catch(() => errors.push("mass battle: the camera button didn't reach the top-down camera"));
