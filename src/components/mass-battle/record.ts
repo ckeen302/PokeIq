@@ -360,7 +360,7 @@ export async function recordBattleVideo(o: RecordOptions): Promise<RecordResult>
       const inBattle = battleOn && t < revealAt + 0.3;
       // The armies' counters along the top, clear of the apps' own bar.
       if (inBattle) {
-        const y = H * 0.115;
+        const y = H * 0.135;
         const pw = W * 0.38, ph = W * 0.12;
         for (const s of [0, 1] as const) {
           const x = s === 0 ? W * 0.06 : W - W * 0.06 - pw;
@@ -393,7 +393,7 @@ export async function recordBattleVideo(o: RecordOptions): Promise<RecordResult>
           for (const k of bossIdx) hp += view.hp[k];
           const share = Math.max(0, Math.min(1, hp / bossMax));
           bossTrail = Math.max(share, bossTrail - dt * 0.6);
-          const by = H * 0.17, bw = W * 0.62, bx = (W - bw) / 2, bh = W * 0.018;
+          const by = H * 0.193, bw = W * 0.62, bx = (W - bw) / 2, bh = W * 0.018;
           outlined(g, `👑 ${bossName.toUpperCase()}`, W / 2, by - W * 0.028, W * 0.034, font, "#ffffff", 800, 0.16);
           roundRect(g, bx - 3, by - 3, bw + 6, bh + 6, bh);
           g.fillStyle = "rgba(10,16,36,0.75)";
@@ -423,13 +423,14 @@ export async function recordBattleVideo(o: RecordOptions): Promise<RecordResult>
           g.restore();
         }
       }
-      // Watermark.
+      // Watermark: low on the left, clear of the apps' tabs over the top and their captions along the bottom.
       g.save();
-      g.globalAlpha = 0.7;
+      g.globalAlpha = 0.68;
       const wm = W * 0.036;
+      const wy = H * 0.735;
       g.textAlign = "left";
-      if (logo) g.drawImage(logo, W * 0.06, H * 0.055 - wm * 0.55, wm * 1.1, wm * 1.1);
-      outlined(g, "PokéIQ", W * 0.06 + wm * 1.35, H * 0.055, wm, font, "#ffffff", 800, 0.18);
+      if (logo) g.drawImage(logo, W * 0.06, wy - wm * 0.55, wm * 1.1, wm * 1.1);
+      outlined(g, "PokéIQ", W * 0.06 + wm * 1.35, wy, wm, font, "#ffffff", 800, 0.18);
       g.restore();
       g.textAlign = "center";
       // Hook card: the question pops in over the establishing shot, the matchup under it.

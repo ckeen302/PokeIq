@@ -303,6 +303,7 @@ export function createBattleScene(host: HTMLElement, opts: SceneOptions): Battle
     units = new UnitsLayer(input.species, assets, input.view, { lodPx: Q.lodPx, anisotropy: Q.anisotropy, shadows: shadowsOn, bosses: input.bosses });
     scene.add(units.group);
     const a = arena!;
+    effects.dustColor.copy(a.dust);
     units.hooks = {
       step: (x, z, size) => {
         effects.step(x, z, size, a.dust, null);

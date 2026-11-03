@@ -166,7 +166,7 @@ float mbRim = pow(1.0 - clamp(dot(normal, normalize(vViewPosition)), 0.0, 1.0), 
 vec3 mbTeam = vSide < 0.5 ? uTeamA : uTeamB;
 totalEmissiveRadiance += (uRim + mbTeam * 0.25) * mbRim * (0.35 + 0.65 * smoothstep(0.1, 0.6, vH));
 // A boss's aura: its outline glows and pulses.
-totalEmissiveRadiance += uAura * (mbRim * 2.2 + 0.08) * (0.75 + 0.25 * sin(uTime * 3.0 + vH * 6.0));
+totalEmissiveRadiance += uAura * (mbRim * 1.7 + 0.04) * (0.75 + 0.25 * sin(uTime * 3.0 + vH * 6.0));
 totalEmissiveRadiance += vec3(1.0, 0.95, 0.85) * vFlash * 0.9 + vec3(1.0, 0.12, 0.16) * vRecall * 2.2;`
       );
   };
@@ -275,7 +275,7 @@ export class UnitsLayer {
       tex.minFilter = THREE.LinearMipmapLinearFilter;
       tex.needsUpdate = true;
       const boss = opts.bosses.has(s.id);
-      const uniforms = { uAura: { value: new THREE.Color(boss ? AURA[s.types[0]] ?? "#ffe9b0" : "#000000").multiplyScalar(boss ? 0.55 : 0) }, uMeshH: { value: asset.levels[0]?.height ?? 1 } };
+      const uniforms = { uAura: { value: new THREE.Color(boss ? AURA[s.types[0]] ?? "#ffe9b0" : "#000000").multiplyScalar(boss ? 0.4 : 0) }, uMeshH: { value: asset.levels[0]?.height ?? 1 } };
       const material = new THREE.MeshStandardMaterial({ map: tex, alphaTest: 0.5, roughness: 0.55, metalness: 0, side: THREE.FrontSide });
       const draw: SpeciesDraw = {
         species: s,

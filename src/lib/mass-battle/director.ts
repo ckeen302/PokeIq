@@ -308,9 +308,11 @@ export class Director {
         const pitch = 0.28;
         const half = Math.atan(Math.tan((fov * Math.PI) / 360) * aspect);
         const tx0 = cx * 0.85 + far.cx * 0.15, tz0 = cz * 0.85 + far.cz * 0.15;
+        const halfV = (fov * Math.PI) / 360;
+        const ty0 = big * 0.5;
         const fits = (dist: number) => {
           const cp = Math.cos(pitch);
-          const camX = tx0 + Math.sin(yaw) * cp * dist, camZ = tz0 + Math.cos(yaw) * cp * dist;
+          const camX = tx0 + Math.sin(yaw) * cp * dist, camZ = tz0 + Math.cos(yaw) * cp * dist, camY = ty0 + Math.sin(pitch) * dist;
           const fwd = Math.atan2(tx0 - camX, tz0 - camZ);
           const rx = Math.cos(yaw), rz = -Math.sin(yaw);
           for (const army of [a, b]) {
@@ -319,16 +321,18 @@ export class Director {
               let d = Math.atan2(x - camX, z - camZ) - fwd;
               d = Math.atan2(Math.sin(d), Math.cos(d));
               if (Math.abs(d) > half * (e === 0 ? 0.84 : 0.96)) return false;
-              // Never right on top of the near army.
-              if (Math.hypot(x - camX, z - camZ) < army.h * 4 + 4) return false;
+              const flat = Math.hypot(x - camX, z - camZ);
+              // Never right on top of the near army; low enough in the frame to clear the titles, high enough to clear the controls.
+              if (flat < army.h * 4 + 4) return false;
+              const v = Math.atan2(army.h * 0.5 - camY, flat) + pitch;
+              if (v > halfV * 0.2 || v < -halfV * 0.72) return false;
             }
           }
           return true;
         };
         let dist = Math.max(10, span * 0.4);
-        for (let k = 0; k < 40 && !fits(dist); k++) dist *= 1.07;
-        dist += big * 1.5;
-        return { tx: tx0, ty: big * 0.5 + dist * 0.06, tz: tz0, yaw, pitch, dist, fov, shake: 0 };
+        for (let k = 0; k < 40 && !fits(dist); k++) dist *= 1.06;
+        return { tx: tx0, ty: ty0, tz: tz0, yaw, pitch, dist, fov, shake: 0 };
       }
       case "charge": {
         // At ground level in front of the charging army, the horde coming at the camera (it backs away as they come).

@@ -174,7 +174,9 @@ void main() {
   float r = length(p);
   float edge = 1.0 - smoothstep(uBox * 0.36, uBox * 0.5, length(p - uFocus.xz));
   float field = smoothstep(uR * 0.98, uR * 1.12, r);
-  float hgt = mix(0.07, 0.42, field) * (0.5 + aSeed.z * 0.9) * edge;
+  // Far from the camera a blade is less than a pixel: it shrinks away rather than shimmer.
+  float near = 1.0 - smoothstep(16.0, 28.0, distance(cameraPosition.xz, p));
+  float hgt = mix(0.07, 0.42, field) * (0.5 + aSeed.z * 0.9) * edge * near;
   float wid = mix(0.022, 0.04, field) * (0.7 + aSeed.w * 0.6);
   float ang = aSeed.w * 6.2831;
   float wind = sin(uTime * 1.6 + p.x * 0.18 + p.y * 0.11) * 0.5 + sin(uTime * 3.1 + p.x * 0.7) * 0.2;
@@ -263,7 +265,7 @@ export function buildArena(id: ArenaId, opts: ArenaOptions): Arena {
         const a = (s / segs) * Math.PI * 2;
         const x = Math.cos(a) * r, z = Math.sin(a) * r;
         pos.push(x, heightAt(x, z), z);
-        uv.push(x / 8, z / 8);
+        uv.push(x / 4, z / 4);
         const v = 0.86 + fbm(x * 0.05 + 7, z * 0.05 - 3) * 0.28;
         if (id === "colosseum") {
           const n = fbm(x * 0.09 - 2, z * 0.09 + 5);

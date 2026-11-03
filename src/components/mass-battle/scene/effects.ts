@@ -732,6 +732,8 @@ export class Effects {
   private pxPerM = 800;
   /** Ground marks can be switched off (the lightest quality). */
   marksOn = true;
+  /** The colour of this arena's dust (sand, earth, ash, snow). */
+  dustColor = DUST.clone();
 
   constructor(caps: EffectCaps) {
     const t = this.time;
@@ -944,7 +946,7 @@ export class Effects {
         // The ground bursts under the target: rocks shoot up round it.
         at = Math.max(this.time.value, arrive - 0.08);
         const n = this.count(6, to, size);
-        const c = type === "Ground" ? DUST : L.color;
+        const c = type === "Ground" ? this.dustColor : L.color;
         for (let k = 0; k < n; k++) {
           const a = this.rand() * Math.PI * 2, r = this.rand() * size * 0.5;
           this.chunk(to.x + Math.cos(a) * r, 0, to.z + Math.sin(a) * r, Math.cos(a) * 1.5, 6 + this.rand() * 5, Math.sin(a) * 1.5, 1.0, c, Math.min(0.35, Math.max(0.06, size * (0.05 + this.rand() * 0.06))), 1, 1.6, 1, 4, -18, 0, at);
@@ -1083,10 +1085,10 @@ export class Effects {
         // An impact star: streaks flung out flat, a shockwave ring, a puff of dust.
         for (let k = 0; k < n; k++) {
           const a = (k / n) * Math.PI * 2 + this.rand() * 0.3;
-          this.spark(x, y, z, Math.cos(a) * speed * 1.6, this.rs(1.5), Math.sin(a) * speed * 1.6, 0.22 + this.rand() * 0.1, k % 2 ? L.glow : WHITE, s * 0.04, 0, 6, 0.08, 2.8, at);
+          this.spark(x, y, z, Math.cos(a) * speed * 1.7, this.rs(1.5), Math.sin(a) * speed * 1.7, 0.24 + this.rand() * 0.1, k % 2 ? L.glow : WHITE, s * 0.055, 0, 6, 0.1, 3, at);
         }
-        this.ringAt(x, z, s * (0.7 + p), 0.4, s * 0.1, 0, L.glow, 1, at);
-        this.cloud(x, 0.1, z, 0, 0.3, 0, 0.9, DUST, s * 0.2, s * 0.6, 0.2, 3, 0.4, at);
+        this.ringAt(x, z, s * (0.8 + p * 1.2), 0.42, s * 0.12, 0, L.glow, 1.3, at);
+        this.cloud(x, 0.1, z, 0, 0.3, 0, 0.9, this.dustColor, s * 0.2, s * 0.6, 0.2, 3, 0.4, at);
         break;
       }
       case "Ground":
@@ -1095,7 +1097,7 @@ export class Effects {
           const a = this.rand() * Math.PI * 2;
           this.chunk(x, Math.max(0.1, y * 0.5), z, Math.cos(a) * speed * 0.5, 2 + this.rand() * speed * 0.8, Math.sin(a) * speed * 0.5, 1.1, tmpC.set(type === "Rock" ? (k % 2 ? "#a08a68" : "#7a6a50") : k % 2 ? "#a07a48" : "#6a5034"), s * (0.025 + this.rand() * 0.035), 1, 0.8, 1, 6, -16, 0, at);
         }
-        for (let k = 0; k < Math.ceil(n / 3); k++) this.cloud(x + this.rs(s * 0.3), 0.15, z + this.rs(s * 0.3), this.rs(1.5), 0.6, this.rs(1.5), 1.4 + this.rand() * 0.6, DUST, s * 0.25, s * 0.9, 0.2, 1.6, 0.5, at);
+        for (let k = 0; k < Math.ceil(n / 5); k++) this.cloud(x + this.rs(s * 0.3), 0.15, z + this.rs(s * 0.3), this.rs(1.5), 0.6, this.rs(1.5), 1.2 + this.rand() * 0.5, this.dustColor, s * 0.22, s * 0.8, 0.2, 1.6, 0.4, at);
         if (p > 0.3) this.mark(4, x, z, s * (0.5 + p * 0.5), 7, 0.65, tmpC.set("#6a5034"), 0, at);
         break;
       }
@@ -1143,7 +1145,7 @@ export class Effects {
       case "Ground":
       case "Rock": {
         around(14, (cx, cz, a) => this.chunk(cx, 0.05, cz, Math.cos(a) * 2, 3 + this.rand() * 4, Math.sin(a) * 2, 1.1, tmpC.set(this.rand() < 0.5 ? "#8a6a44" : "#6a5236"), Math.min(0.14, s * (0.02 + this.rand() * 0.03)), 1, 0.7, 1, 5, -16, 0, at + this.rand() * 0.25));
-        around(10, (cx, cz, a) => this.cloud(cx, 0.2, cz, Math.cos(a) * 3, 0.5, Math.sin(a) * 3, 1.8 + this.rand(), DUST, s * 0.4, s * 1.4, 0.15, 1.2, 0.55, at + this.rand() * 0.3));
+        around(7, (cx, cz, a) => this.cloud(cx, 0.2, cz, Math.cos(a) * 3, 0.5, Math.sin(a) * 3, 1.5 + this.rand() * 0.8, this.dustColor, s * 0.35, s * 1.2, 0.15, 1.2, 0.42, at + this.rand() * 0.3));
         this.mark(1, x, z, radius * 0.9, 9, 0.9, tmpC.set("#ffb060"), type === "Ground" ? 0.6 : 0, at);
         break;
       }

@@ -70,8 +70,8 @@ export interface Look {
 const BASE: Record<ArenaId, Look> = {
   plains: {
     skyTop: "#2f7fe0", skyHorizon: "#cfe8ff", sunGlow: "#fff2d0", clouds: 0.38, cloudColor: "#ffffff", stars: 0,
-    fog: "#c4def4", fogDensity: 0.55, sun: "#fff1d8", sunIntensity: 3.1, sunElevation: 42, sunAzimuth: 35, sunDisc: 1,
-    hemiSky: "#bcdcff", hemiGround: "#5c7a3a", hemiIntensity: 1.05, exposure: 1.0, rim: "#fff4dc", rimStrength: 0.55,
+    fog: "#c4def4", fogDensity: 0.55, sun: "#fff1d8", sunIntensity: 2.8, sunElevation: 36, sunAzimuth: 35, sunDisc: 1,
+    hemiSky: "#bcdcff", hemiGround: "#5c7a3a", hemiIntensity: 1.0, exposure: 0.96, rim: "#fff4dc", rimStrength: 0.45,
     saturation: 1.14, contrast: 1.06, warmth: 0.02, vignette: 0.32, bloom: 0.2, threshold: 1.6, wet: 0,
   },
   volcano: {
@@ -88,8 +88,8 @@ const BASE: Record<ArenaId, Look> = {
   },
   colosseum: {
     skyTop: "#2c6cd0", skyHorizon: "#ffe2b8", sunGlow: "#fff0d0", clouds: 0.25, cloudColor: "#ffffff", stars: 0,
-    fog: "#f0d8b4", fogDensity: 0.35, sun: "#fff0d6", sunIntensity: 3.2, sunElevation: 46, sunAzimuth: 120, sunDisc: 1,
-    hemiSky: "#ffeedc", hemiGround: "#a08058", hemiIntensity: 1.1, exposure: 1.0, rim: "#fff0d8", rimStrength: 0.55,
+    fog: "#f0d8b4", fogDensity: 0.35, sun: "#fff0d6", sunIntensity: 2.8, sunElevation: 36, sunAzimuth: 120, sunDisc: 1,
+    hemiSky: "#ffeedc", hemiGround: "#a08058", hemiIntensity: 1.0, exposure: 0.95, rim: "#fff0d8", rimStrength: 0.45,
     saturation: 1.06, contrast: 1.08, warmth: 0.0, vignette: 0.34, bloom: 0.18, threshold: 1.8, wet: 0,
   },
 };
