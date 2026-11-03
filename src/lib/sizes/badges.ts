@@ -49,7 +49,8 @@ export function badgeSize(info: BadgeInfo, s: number, measure: (text: string, px
 export interface Placement { key: string; x: number; y: number; s: number; alpha: number; w: number; h: number }
 
 /**
- * Where badges go this frame: biggest figures first, each centred over its
+ * Where badges go this frame: the framed figure first, then the biggest
+ * whose top is in view, then any taller than the view, each centred over its
  * figure's top (kept inside the frame; when the figure's top is out of the
  * view, in the top corner away from it, so it never covers a face),
  * skipping any that would overlap a badge already placed. Scale follows the
@@ -62,7 +63,9 @@ export function layoutBadges(
   opts: { max: number; minSh: number; scale: number }
 ): Placement[] {
   const placed: Placement[] = [];
-  const sorted = [...cands].sort((a, b) => Number(b.focus) - Number(a.focus) || b.sh - a.sh);
+  // The framed figure first, then those whose top is in view, biggest first: a neighbour whose head is out of the frame only gets a badge where it crowds none of theirs (pinned under the top edge, it would sit over whoever stands in front of it).
+  const headIn = (c: { y: number }) => Number(c.y >= frame.top);
+  const sorted = [...cands].sort((a, b) => Number(b.focus) - Number(a.focus) || headIn(b) - headIn(a) || b.sh - a.sh);
   const unit = Math.min(frame.w, frame.h * 1.25);
   const scaleOf = (sh: number) => Math.max(unit * 0.032, Math.min(unit * 0.082, sh * 0.13)) * opts.scale;
   const focus = sorted.find((c) => c.focus);

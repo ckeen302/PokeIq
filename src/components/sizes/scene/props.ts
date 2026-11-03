@@ -16,6 +16,8 @@ import { cutaway, type Shared } from "./shaders";
 
 export interface Props {
   group: THREE.Group;
+  /** Alpha to coverage on the leaves only where the frame is multisampled (without it every leaf card's soft edge is drawn whole: blocky clumps). */
+  setCoverage(on: boolean): void;
   dispose(): void;
 }
 
@@ -56,6 +58,79 @@ function canopyGeometry(seed: number): THREE.BufferGeometry {
   g.setIndex(idx);
   g.computeBoundingSphere();
   return g;
+}
+
+/** Canopy proportions shared by the leaf cards and their core. */
+const CANOPY = { cy: 11.2, rx: 4.6, ry: 3.4, rz: 4.6 };
+
+/**
+ * The canopy's core: a lumpy ellipsoid of dense foliage inside the leaf
+ * cards, so a crown reads as one leafy mass from afar (no sky showing
+ * through it, no speckle where the cards' mipmaps thin out) and casts a
+ * whole shadow. Normals point out from the centre, like the cards'.
+ */
+function canopyCore(seed: number): THREE.BufferGeometry {
+  const { cy, rx, ry, rz } = CANOPY;
+  const g = new THREE.IcosahedronGeometry(1, 1);
+  const pos = g.attributes.position as THREE.BufferAttribute;
+  const nrm = g.attributes.normal as THREE.BufferAttribute;
+  const r = rng(seed);
+  const bump = new Map<string, number>();
+  const v = new THREE.Vector3(), n = new THREE.Vector3();
+  for (let i = 0; i < pos.count; i++) {
+    v.fromBufferAttribute(pos, i);
+    // Corners shared by neighbouring faces move together (the geometry isn't indexed).
+    const key = `${v.x.toFixed(3)},${v.y.toFixed(3)},${v.z.toFixed(3)}`;
+    let k = bump.get(key);
+    if (k === undefined) { k = 0.62 + r() * 0.2; bump.set(key, k); }
+    pos.setXYZ(i, v.x * rx * k, cy + v.y * ry * k, v.z * rz * k);
+    n.set(v.x / rx, v.y / ry, v.z / rz).normalize();
+    nrm.setXYZ(i, n.x, n.y, n.z);
+  }
+  g.computeBoundingSphere();
+  return g;
+}
+
+/** Leaves drawn into a 256 px square at (ox, oy): varied greens, three-lobed, with a midrib. */
+function drawLeaves(g: CanvasRenderingContext2D, ox: number, oy: number, count: number, spread: number, light: [number, number], r: () => number) {
+  for (let i = 0; i < count; i++) {
+    const a = r() * Math.PI * 2, d = Math.sqrt(r()) * spread;
+    const x = ox + 128 + Math.cos(a) * d, y = oy + 128 + Math.sin(a) * d;
+    const len = 15 + r() * 15, wid = len * (0.55 + r() * 0.2);
+    const l = light[0] + r() * light[1];
+    g.save();
+    g.translate(x, y);
+    g.rotate(r() * Math.PI * 2);
+    g.fillStyle = `hsl(${88 + r() * 26}, ${42 + r() * 22}%, ${l * 100}%)`;
+    g.beginPath();
+    for (const t of [-0.55, 0, 0.55]) g.ellipse(Math.sin(t) * len * 0.35, -Math.cos(t) * len * 0.2, wid * 0.42, len * 0.5, t, 0, Math.PI * 2);
+    g.fill();
+    g.strokeStyle = "rgba(20,40,10,0.35)";
+    g.lineWidth = 1;
+    g.beginPath();
+    g.moveTo(0, len * 0.35);
+    g.lineTo(0, -len * 0.4);
+    g.stroke();
+    g.restore();
+  }
+}
+
+/** The core's foliage: dense leaves over deep shade, tiling (no transparency). */
+function coreTexture(): THREE.CanvasTexture {
+  const cv = document.createElement("canvas");
+  cv.width = cv.height = 256;
+  const g = cv.getContext("2d")!;
+  g.fillStyle = "hsl(98, 38%, 16%)";
+  g.fillRect(0, 0, 256, 256);
+  // Each layer is drawn at all nine neighbouring offsets (the same leaves each time), so leaves cross the edges seamlessly.
+  for (const [seed, light] of [[456, [0.17, 0.16]], [789, [0.24, 0.2]]] as const) {
+    for (let dx = -256; dx <= 256; dx += 256) for (let dy = -256; dy <= 256; dy += 256) drawLeaves(g, dx, dy, 110, 150, [light[0], light[1]], rng(seed));
+  }
+  const t = new THREE.CanvasTexture(cv);
+  t.colorSpace = THREE.SRGBColorSpace;
+  t.wrapS = t.wrapT = THREE.RepeatWrapping;
+  t.anisotropy = 4;
+  return t;
 }
 
 /** Leaf clusters (four per texture), drawn with varied greens and sun-catching edges. */
@@ -231,10 +306,51 @@ function parasolGeometry(): { pole: THREE.BufferGeometry; canopy: THREE.BufferGe
   return { pole, canopy: mergeGeometries([cone.toNonIndexed(), valance.toNonIndexed()]) };
 }
 
-export function buildProps(plan: WorldPlan, shared: Shared, tex: { bark: THREE.MeshStandardMaterialParameters }, quality: { trees: boolean }): Props {
+/** A Paris park bench: green-painted wooden slats on two cast-iron frames, 1.9 m long, facing +z. */
+function benchGeometry(): { iron: THREE.BufferGeometry; wood: THREE.BufferGeometry } {
+  const iron: THREE.BufferGeometry[] = [], wood: THREE.BufferGeometry[] = [];
+  for (const x of [-0.82, 0.82]) {
+    iron.push(new THREE.BoxGeometry(0.07, 0.44, 0.08).translate(x, 0.22, 0.2).toNonIndexed());
+    iron.push(new THREE.BoxGeometry(0.07, 0.86, 0.08).rotateX(-0.2).translate(x, 0.43, -0.16).toNonIndexed());
+    iron.push(new THREE.BoxGeometry(0.07, 0.06, 0.5).translate(x, 0.44, 0.02).toNonIndexed());
+  }
+  for (let k = 0; k < 3; k++) wood.push(new THREE.BoxGeometry(1.9, 0.04, 0.12).translate(0, 0.47, 0.18 - k * 0.15).toNonIndexed());
+  for (let k = 0; k < 2; k++) wood.push(new THREE.BoxGeometry(1.9, 0.11, 0.035).rotateX(-0.2).translate(0, 0.66 + k * 0.16, -0.2 - k * 0.035).toNonIndexed());
+  return { iron: mergeGeometries(iron), wood: mergeGeometries(wood) };
+}
+
+/** The radial walks inside the giants' ring (between the tower's apron and the ring's lawns: see city.ts) and the fountains on them. */
+export function plazaWalks(plan: WorldPlan): { angles: number[]; from: number; to: number; fountains: { x: number; z: number; r: number }[] } {
+  const rr = plan.ring?.r ?? Math.max(60, plan.plaza.r - 120);
+  const apron = 58, inner = rr - 20;
+  const fr = (apron + inner) / 2;
+  const fountains = inner - apron > 30 ? [0, 1, 2, 3].map((k) => { const a = Math.PI / 4 + (k * Math.PI) / 2; return { x: plan.plaza.cx + Math.cos(a) * fr, z: plan.plaza.cz + Math.sin(a) * fr, r: 8.5 * 1.6 }; }) : [];
+  return { angles: [0, 1, 2, 3, 4, 5, 6, 7].map((k) => (k * Math.PI) / 4), from: apron + 14, to: inner - 10, fountains };
+}
+
+export function buildProps(plan: WorldPlan, shared: Shared, tex: { bark: THREE.MeshStandardMaterialParameters }, quality: { trees: boolean; coverage?: boolean }): Props {
   const group = new THREE.Group();
   group.name = "props";
   const disposables: { dispose(): void }[] = [];
+  const leafMats: THREE.MeshStandardMaterial[] = [];
+  const walks = plazaWalks(plan);
+  /** Points along both sides of the plaza's radial walks, every `every` metres (starting `phase` in), clear of the fountains. */
+  const alongWalks = (every: number, phase: number, side: number) => {
+    const pts: { x: number; z: number; t: number; s: number }[] = [];
+    if (!plan.ring) return pts;
+    for (const a of walks.angles) {
+      for (let d = walks.from + phase; d < walks.to; d += every) {
+        for (const s of [-1, 1]) {
+          // Just inside the walk, along the lawns' edge (the walks widen outwards like the lawns between them).
+          const t = a + s * Math.min(0.17, side / d);
+          const x = plan.plaza.cx + Math.cos(t) * d, z = plan.plaza.cz + Math.sin(t) * d;
+          if (walks.fountains.some((f) => Math.hypot(f.x - x, f.z - z) < f.r + 4)) continue;
+          pts.push({ x, z, t, s });
+        }
+      }
+    }
+    return pts;
+  };
   const m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), s = new THREE.Vector3(), p = new THREE.Vector3();
   const r = rng(424242);
   const { x0 } = plan;
@@ -288,14 +404,23 @@ export function buildProps(plan: WorldPlan, shared: Shared, tex: { bark: THREE.M
         for (const off of [-14, 14]) tree(C.x + c * d - sn * off, C.z + sn * d + c * off);
       }
     }
+    // Allées of plane trees along the plaza's radial walks, from the tower's apron out towards the giants' ring (behind them, seen from the camera).
+    for (const p of alongWalks(13, 4, 10)) tree(p.x, p.z);
     const bark = new THREE.MeshStandardMaterial({ ...tex.bark, color: "#a49a8c" });
     cutaway(bark, shared);
     add(trunkGeometry(), bark, trunkMats);
+    // Every crown's solid core of foliage (one draw for all of them).
+    const coreTex = coreTexture();
+    disposables.push(coreTex);
+    const core = new THREE.MeshStandardMaterial({ color: "#ffffff", map: coreTex, roughness: 0.9, metalness: 0 });
+    cutaway(core, shared);
+    add(canopyCore(7), core, canopy.flat(), leafCols.flat().map((c) => c.clone().multiplyScalar(0.92)));
     const leafTex = leafTexture();
     disposables.push(leafTex);
     for (let v = 0; v < 3; v++) {
-      const leaves = new THREE.MeshStandardMaterial({ color: "#ffffff", map: leafTex, alphaTest: 0.5, alphaToCoverage: true, side: THREE.DoubleSide, roughness: 0.8, metalness: 0 });
+      const leaves = new THREE.MeshStandardMaterial({ color: "#ffffff", map: leafTex, alphaTest: 0.5, alphaToCoverage: quality.coverage ?? true, side: THREE.DoubleSide, roughness: 0.8, metalness: 0 });
       cutaway(leaves, shared);
+      leafMats.push(leaves);
       const before = group.children.length;
       add(canopyGeometry(17 + v * 31), leaves, canopy[v], leafCols[v]);
       const mesh = group.children[before] as THREE.InstancedMesh | undefined;
@@ -324,6 +449,17 @@ export function buildProps(plan: WorldPlan, shared: Shared, tex: { bark: THREE.M
       for (let k = 0; k < n; k++) {
         const a = (k / n) * Math.PI * 2;
         mats.push(place(C.x + Math.cos(a) * ir, 0, C.z + Math.sin(a) * ir, 0, 1.25));
+      }
+      // Down the radial walks to the tower, between the allées' trees.
+      for (const p of alongWalks(26, 10.5, 6.5)) mats.push(place(p.x, 0, p.z, 0, 1.1));
+    }
+    // Round the plaza's ring road, on the buildings' side.
+    {
+      const lr = plan.plaza.r + 9.4;
+      const n = Math.round((Math.PI * 2 * lr) / 27);
+      for (let k = 0; k < n; k++) {
+        const a = ((k + 0.5) / n) * Math.PI * 2;
+        if (offWays(a, lr, 26)) mats.push(place(C.x + Math.cos(a) * lr, 0.12, C.z + Math.sin(a) * lr, 0));
       }
     }
     const { iron, glass } = lanternGeometry();
@@ -354,6 +490,29 @@ export function buildProps(plan: WorldPlan, shared: Shared, tex: { bark: THREE.M
     cutaway(poster, shared);
     add(body, green, mats);
     add(band, poster, mats);
+  }
+
+  // ---- Benches: down the plaza's radial walks between the trees (facing the walk), and round the plaza's edge facing the tower.
+  {
+    const mats: THREE.Matrix4[] = [];
+    for (const p of alongWalks(26, 17, 8.4)) {
+      // Facing the walk's middle: across it, towards the other row.
+      const fx = p.s * Math.sin(p.t), fz = -p.s * Math.cos(p.t);
+      mats.push(place(p.x, 0, p.z, Math.atan2(fx, fz)));
+    }
+    const er = plan.plaza.r - 6.5;
+    const en = Math.round((Math.PI * 2 * er) / 24);
+    for (let k = 0; k < en; k++) {
+      const a = ((k + 0.5) / en) * Math.PI * 2;
+      if (offWays(a, er, 26)) mats.push(place(C.x + Math.cos(a) * er, 0, C.z + Math.sin(a) * er, Math.atan2(-Math.cos(a), -Math.sin(a))));
+    }
+    const b = benchGeometry();
+    const ironB = new THREE.MeshStandardMaterial({ color: "#1d2a24", roughness: 0.5, metalness: 0.6 });
+    const slats = new THREE.MeshStandardMaterial({ color: "#2f5a3e", roughness: 0.6, metalness: 0.05 });
+    cutaway(ironB, shared);
+    cutaway(slats, shared);
+    add(b.iron, ironB, mats);
+    add(b.wood, slats, mats);
   }
 
   // ---- Café terraces on the far pavement (behind the line, under the plane trees): tables for two and parasols in the district's colour.
@@ -416,6 +575,25 @@ export function buildProps(plan: WorldPlan, shared: Shared, tex: { bark: THREE.M
         }
       }
     }
+    // The plaza's ring road, the city's great roundabout: traffic going round it (anticlockwise seen from above), clear of the junctions.
+    for (const lr of [plan.plaza.r + 1.8, plan.plaza.r + 5.6]) {
+      const n = Math.floor((Math.PI * 2 * lr) / 7.5);
+      for (let k = 0; k < n; k++) {
+        if (r() < 0.58) continue;
+        const a = (k / n) * Math.PI * 2 + (r() - 0.5) * 0.002;
+        if (!offWays(a, lr, 24)) continue;
+        // Facing along the road, anticlockwise from above (the car's length is its local x, turned to (sin a, -cos a)).
+        const yaw = Math.atan2(Math.cos(a), Math.sin(a));
+        const x = C.x + Math.cos(a) * lr, z = C.z + Math.sin(a) * lr;
+        if (r() < 0.07) {
+          busMats.push(place(x, 0, z, yaw));
+          busCols.push(new THREE.Color(r() < 0.5 ? "#2f6b4f" : "#2b4f7c"));
+        } else {
+          carMats.push(place(x, 0, z, yaw, 1));
+          carCols.push(CAR_COLOURS[Math.floor(r() * CAR_COLOURS.length)]);
+        }
+      }
+    }
     const paint = new THREE.MeshPhysicalMaterial({ color: "#ffffff", roughness: 0.32, metalness: 0.45, clearcoat: 0.8, clearcoatRoughness: 0.12 });
     const glass = new THREE.MeshStandardMaterial({ color: "#1a2129", roughness: 0.08, metalness: 0.6 });
     const tyre = new THREE.MeshStandardMaterial({ color: "#151515", roughness: 0.9 });
@@ -430,5 +608,15 @@ export function buildProps(plan: WorldPlan, shared: Shared, tex: { bark: THREE.M
     add(bus.wheels, tyre.clone(), busMats);
   }
 
-  return { group, dispose() { for (const d of disposables) d.dispose(); } };
+  return {
+    group,
+    setCoverage(on) {
+      for (const m of leafMats) {
+        if (m.alphaToCoverage === on) continue;
+        m.alphaToCoverage = on;
+        m.needsUpdate = true;
+      }
+    },
+    dispose() { for (const d of disposables) d.dispose(); },
+  };
 }

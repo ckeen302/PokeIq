@@ -108,7 +108,8 @@ export function finalePose(v: View, path: LinePath = STRAIGHT): Pose {
     // Both ends of the sight line drift towards the tower, keeping the camera's direction.
     const k = 0.32 * big;
     const dx = (path.ring.cx - pose.target[0]) * k, dz = (path.ring.cz - pose.target[2]) * k;
-    pose.target = [pose.target[0] + dx, pose.target[1], pose.target[2] + dz];
+    // The aim also lifts, so Prism Tower's crown stands clear in the sky over the giant's head.
+    pose.target = [pose.target[0] + dx, pose.target[1] + v.h * 0.42 * big, pose.target[2] + dz];
     pose.position = [pose.position[0] + dx, pose.position[1], pose.position[2] + dz];
   }
   return pose;

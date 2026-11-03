@@ -571,6 +571,13 @@ describe("badge layout", () => {
     ], { w: 1440, h: 900, top: 72, bottom: 104 }, measure, { max: 3, minSh: 10, scale: 1 });
     const n = pair.find((p) => p.key === "n");
     if (n) expect(n.x).toBeLessThan(720);
+    // A neighbour whose head is out of the frame yields to one framed whole: pinned under the top edge, its badge would sit over whoever stands in front of it.
+    const yields = layoutBadges([
+      { key: "f", x: 1100, y: 300, sh: 300, info: { ...info, name: "Eternatus", types: ["poison"] }, focus: true },
+      { key: "giant", x: 300, y: -300, sh: 1400, info, focus: false },
+      { key: "block", x: 320, y: 210, sh: 420, info: { ...info, name: "10 Storey Building", types: [] }, focus: false },
+    ], { w: 1440, h: 900, top: 72, bottom: 104 }, measure, { max: 3, minSh: 10, scale: 1 });
+    expect(yields.map((p) => p.key)).toContain("block");
   });
 });
 

@@ -348,7 +348,7 @@ export function createSizesScene(host: HTMLElement, opts: SceneOptions): SizesSc
     g.fillRect(0, 0, 128, 128);
     const t = new THREE.CanvasTexture(c);
     const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: t, blending: THREE.AdditiveBlending, depthWrite: false, fog: false, toneMapped: false }));
-    s.scale.setScalar(70);
+    s.scale.setScalar(96);
     return s;
   })();
 
@@ -405,7 +405,9 @@ export function createSizesScene(host: HTMLElement, opts: SceneOptions): SizesSc
     companion = null;
     const placed = layoutLine(items.map((i) => ({ m: i.m, length: i.length, bw: i.box[2], bh: i.box[3] })));
     plan = planWorld(placed);
-    slots = items.map((item, i) => newSlot({ ...item, w: placed[i].w, h: placed[i].h }, i, placed[i].x, placed[i].w, placed[i].h));
+    // The ten-storey building stands a step off the giants' ring on the camera's side (on the paving short of the parterres): on the ring itself it would hide Prism Tower's legs and the giant after it.
+    const aside = (item: SceneItem, i: number) => (item.ref === "building" && plan.ring && placed[i].x > plan.ring.s0 ? -Math.min(22, placed[i].w * 1.6) : 0);
+    slots = items.map((item, i) => newSlot({ ...item, w: placed[i].w, h: placed[i].h }, i, placed[i].x, placed[i].w, placed[i].h, aside(item, i)));
     xs = slots.map((s) => s.x);
     // Smoothed log heights (same idea as the camera's distance), for aiming.
     const raw = slots.map((s) => Math.log(Math.max(0.02, s.h)));
@@ -435,7 +437,7 @@ export function createSizesScene(host: HTMLElement, opts: SceneOptions): SizesSc
     tower?.dispose();
     worldGroup.clear();
     city = buildCity(plan, shared, { pbr }, { facadeScale: Q.facadeScale, anisotropy: maxAniso, blocks: Q.blocks });
-    props = buildProps(plan, shared, { bark: pbr("bark_brown_02", 1.5) }, { trees: Q.trees });
+    props = buildProps(plan, shared, { bark: pbr("bark_brown_02", 1.5) }, { trees: Q.trees, coverage: Q.msaa > 0 });
     tower = buildTower(plan.tower.x, plan.tower.z);
     worldGroup.add(city.group, props.group, tower.group);
     halo.position.copy(tower.crown);
@@ -841,6 +843,7 @@ export function createSizesScene(host: HTMLElement, opts: SceneOptions): SizesSc
     const coverage = Q.msaa > 0;
     relief.setCoverage(coverage);
     crowd.setCoverage(coverage);
+    props?.setCoverage(coverage);
     shadowsDirty = true;
     if (warmed && (warmed.mat as THREE.MeshStandardMaterial).alphaToCoverage !== coverage) {
       // The figures' other shader variant, compiled now rather than when the next one streams in.

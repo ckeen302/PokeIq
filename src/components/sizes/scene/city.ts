@@ -1,7 +1,7 @@
 import * as THREE from "three";
 import { CORNICE_Y, DISTRICT_COLORS, ROOF_Y, STREET, boulevardDistricts, boulevardEnd, districtAt, wrap, type District, type WorldPlan } from "@/lib/sizes/world";
 import { ATLAS, AWNING_ROWS, BALCONY_FLOORS, BAY_M, FLOORS_M, GROUND_M, UPPER_M, awningTexture, facadeAtlas, railingTexture, type FacadeMaps } from "./facade";
-import { Buckets, rng, type Geo } from "./geo";
+import { Buckets, Geo, rng } from "./geo";
 import { cutaway, groundVariation, lawnStripes, plazaPattern, type Shared } from "./shaders";
 
 /**
@@ -138,13 +138,15 @@ function roof(B: Buckets, o: THREE.Vector3, dir: THREE.Vector3, n: THREE.Vector3
   const inset = 1.35;
   const P = (u: number, k: number, y: number) => o.clone().addScaledVector(dir, u).addScaledVector(n, -k).setY(y);
   const grey = new THREE.Color(0.93, 0.95, 1);
+  // The shallow upper slope is zinc, paler and bluer than the slates below (each roof a shade of its own).
+  const zinc = new THREE.Color(1.22, 1.27, 1.34).multiplyScalar(0.94 + r() * 0.12);
   const tile = 3;
-  const slope = (a: THREE.Vector3, b: THREE.Vector3, c: THREE.Vector3, d: THREE.Vector3, w: number, h: number) => g.quad(a, b, c, d, [0, 0, w / tile, 0, w / tile, h / tile, 0, h / tile], grey);
+  const slope = (a: THREE.Vector3, b: THREE.Vector3, c: THREE.Vector3, d: THREE.Vector3, w: number, h: number, col = grey) => g.quad(a, b, c, d, [0, 0, w / tile, 0, w / tile, h / tile, 0, h / tile], col);
   // Front lower and upper slopes, back lower and upper slopes.
   slope(P(0, 0, y0), P(len, 0, y0), P(len, inset, y1), P(0, inset, y1), len, 3.6);
-  slope(P(0, inset, y1), P(len, inset, y1), P(len, depth / 2, y2), P(0, depth / 2, y2), len, depth / 2);
+  slope(P(0, inset, y1), P(len, inset, y1), P(len, depth / 2, y2), P(0, depth / 2, y2), len, depth / 2, zinc);
   slope(P(len, depth, y0), P(0, depth, y0), P(0, depth - inset, y1), P(len, depth - inset, y1), len, 3.6);
-  slope(P(len, depth - inset, y1), P(0, depth - inset, y1), P(0, depth / 2, y2), P(len, depth / 2, y2), len, depth / 2);
+  slope(P(len, depth - inset, y1), P(0, depth - inset, y1), P(0, depth / 2, y2), P(len, depth / 2, y2), len, depth / 2, zinc);
   // Gable ends (hipped look at row ends).
   for (const [u, open] of [[0, endL], [len, endR]] as const) {
     const s = u === 0 ? 1 : -1;
@@ -152,10 +154,10 @@ function roof(B: Buckets, o: THREE.Vector3, dir: THREE.Vector3, n: THREE.Vector3
     const a = P(u, 0, y0), b = P(u, depth, y0), c = P(u + s * ii, depth - inset, y1), d = P(u + s * ii, inset, y1), e = P(u + s * ii, depth / 2, y2);
     if (s > 0) {
       g.quad(b, a, d, c, [0, 0, depth / tile, 0, depth / tile, 1, 0, 1], grey);
-      g.tri(c, d, e, [0, 0, 1, 0, 0.5, 0.6], grey);
+      g.tri(c, d, e, [0, 0, 1, 0, 0.5, 0.6], zinc);
     } else {
       g.quad(a, b, c, d, [0, 0, depth / tile, 0, depth / tile, 1, 0, 1], grey);
-      g.tri(d, c, e, [0, 0, 1, 0, 0.5, 0.6], grey);
+      g.tri(d, c, e, [0, 0, 1, 0, 0.5, 0.6], zinc);
     }
   }
   if (!details) return;
@@ -297,13 +299,13 @@ function flowerTexture(color: string): THREE.CanvasTexture {
   g.fillStyle = "#3f6e33";
   g.fillRect(0, 0, 128, 128);
   const r = rng(77);
-  // Mostly the district's colour (it must still read as that colour from the sky), a few white and gold.
-  for (let i = 0; i < 520; i++) {
+  // Mostly the district's colour, densely (it must read as that colour from the sky), a few white and gold.
+  for (let i = 0; i < 1100; i++) {
     const k = r();
-    g.fillStyle = k < 0.8 ? color : k < 0.9 ? "#f6f1e4" : "#f2c84b";
-    g.globalAlpha = 0.8 + r() * 0.2;
+    g.fillStyle = k < 0.88 ? color : k < 0.95 ? "#f6f1e4" : "#f2c84b";
+    g.globalAlpha = 0.75 + r() * 0.25;
     g.beginPath();
-    g.arc(r() * 128, r() * 128, 1.4 + r() * 1.8, 0, Math.PI * 2);
+    g.arc(r() * 128, r() * 128, 1.6 + r() * 2, 0, Math.PI * 2);
     g.fill();
   }
   g.globalAlpha = 1;
@@ -532,6 +534,23 @@ function buildGround(plan: WorldPlan, shared: Shared, tex: CityTextures): { mesh
   dashes.count = di;
   dashes.receiveShadow = true;
   out.push(dashes);
+  {
+    const lr = R + 3.6;
+    const n = Math.round((Math.PI * 2 * lr) / 9);
+    const ringDashes = new THREE.InstancedMesh(new THREE.PlaneGeometry(3, 0.15).rotateX(-Math.PI / 2), dash, n);
+    const q = new THREE.Quaternion(), up = new THREE.Vector3(0, 1, 0), at = new THREE.Vector3(), one = new THREE.Vector3(1, 1, 1);
+    let k = 0;
+    for (let i = 0; i < n; i++) {
+      const a = (i / n) * Math.PI * 2;
+      at.set(cx + Math.cos(a) * lr, 0.012, cz + Math.sin(a) * lr);
+      // Not across the line's lawn where it enters the plaza.
+      if (Math.abs(at.z) < STREET.promenade + 1 && at.x < cx) continue;
+      ringDashes.setMatrixAt(k++, m4.compose(at, q.setFromAxisAngle(up, Math.atan2(Math.cos(a), Math.sin(a))), one));
+    }
+    ringDashes.count = k;
+    ringDashes.receiveShadow = true;
+    out.push(ringDashes);
+  }
   const flat = (geo: THREE.BufferGeometry, mat: THREE.Material, y: number, tile: number, at: { x: number; z: number } = { x: cx, z: cz }) => {
     geo.rotateX(-Math.PI / 2);
     geo.translate(at.x, y, at.z);
@@ -548,8 +567,10 @@ function buildGround(plan: WorldPlan, shared: Shared, tex: CityTextures): { mesh
   // The plaza: fan-patterned cobbles round its rim, pale stone with a radial pattern inside.
   flat(new THREE.CircleGeometry(R + STREET.facade - 10, 160), cobble, -0.035, 2.5);
   const plazaStone = mk("granite_tile", 2.3, { color: "#fcf6ea", bright: 1.7 });
-  plazaPattern(plazaStone, new THREE.Vector2(cx, cz), R - 4);
+  plazaPattern(plazaStone, new THREE.Vector2(cx, cz), R - 4, { entry: plan.districts[0]?.a0 ?? 0, colors: plan.districts.map((d) => new THREE.Color(d.color)) });
   flat(new THREE.CircleGeometry(R - 4, 160), plazaStone, -0.022, 2.3);
+  // The plaza's ring road, the city's great roundabout: two lanes between the lamps on the plaza's edge and the buildings round it.
+  flat(new THREE.RingGeometry(R - 1, R + 8.2, 240, 1), asphalt, -0.03, 3);
   const rr = ring?.r ?? Math.max(60, R - 120);
   // The ring promenade the giants stand on: a band of cobbles edged in stone, with the line's lawn running round it.
   if (ring) {
@@ -560,11 +581,24 @@ function buildGround(plan: WorldPlan, shared: Shared, tex: CityTextures): { mesh
     lawnArc.name = "ring-lawn";
     // The straight lawn's end joins the ring's start without a seam.
   }
-  // Between the ring and the plaza's edge: low parterres, box hedges round flowers in the colour of the district beyond (flat: they never hide a figure).
+  // Between the ring and the plaza's edge: French parterres, clipped box hedges round raised beds of flowers in the colour of the district beyond (knee-high: they never hide a figure).
   {
     const flowers = new Map<string, THREE.MeshStandardMaterial>();
-    const hedge = new THREE.MeshStandardMaterial({ color: "#3f6b34", roughness: 0.9 });
-    own.push(hedge);
+    const hedges = new Geo();
+    const hedgeTint = [new THREE.Color(0.92, 0.97, 0.9), new THREE.Color(0.84, 0.9, 0.82), new THREE.Color(1, 1, 0.94)];
+    const blooms: THREE.Matrix4[] = [], bloomCols: THREE.Color[] = [];
+    const rnd = rng(5150);
+    /** A clipped hedge from a to b (its corners overlap the next run's). */
+    const hedgeRun = (a: THREE.Vector3, b: THREE.Vector3, h: number, w: number) => {
+      const len = a.distanceTo(b);
+      if (len < 0.05) return;
+      hedges.box((a.x + b.x) / 2, 0, (a.z + b.z) / 2, len + w, h, w, Math.atan2(-(b.z - a.z), b.x - a.x), hedgeTint[Math.floor(rnd() * hedgeTint.length)], 1.2, 0b011111);
+    };
+    const at = (r: number, a: number) => new THREE.Vector3(cx + Math.cos(a) * r, 0, cz + Math.sin(a) * r);
+    const arcRun = (r: number, a0: number, a1: number, h: number, w: number) => {
+      const n = Math.max(2, Math.round(((a1 - a0) * r) / 6));
+      for (let i = 0; i < n; i++) hedgeRun(at(r, a0 + ((a1 - a0) * i) / n), at(r, a0 + ((a1 - a0) * (i + 1)) / n), h, w);
+    };
     const r0 = rr + 30, r1 = R - 24;
     if (r1 - r0 > 18) {
       for (let k = 0; k < 16; k++) {
@@ -582,9 +616,53 @@ function buildGround(plan: WorldPlan, shared: Shared, tex: CityTextures): { mesh
           flowers.set(d.name, fm);
           own.push(fm);
         }
-        flat(arc(r0, r1, a0, a1, 12), hedge, 0.05, 2);
-        flat(arc(r0 + 1.4, r1 - 1.4, a0 + 1.4 / r0, a1 - 1.4 / r0, 12), fm, 0.09, 3.2);
+        // Gravel under the hedges, then the beds raised a little inside them.
+        flat(arc(r0 - 1.2, r1 + 1.2, a0 - 1.2 / r0, a1 + 1.2 / r0, 12), prom, 0.02, 2.3);
+        flat(arc(r0, r1, a0, a1, 12), fm, 0.2, 3.2);
+        // The border, and a hedge across the middle making two beds.
+        const rm = (r0 + r1) / 2;
+        arcRun(r0, a0, a1, 0.62, 0.8);
+        arcRun(r1, a0, a1, 0.62, 0.8);
+        arcRun(rm, a0 + 0.8 / rm, a1 - 0.8 / rm, 0.5, 0.65);
+        hedgeRun(at(r0, a0), at(r1, a0), 0.62, 0.8);
+        hedgeRun(at(r0, a1), at(r1, a1), 0.62, 0.8);
+        // Flowers standing in the beds: mostly the district's colour, some white and gold.
+        const base = new THREE.Color(d.color);
+        for (let rb = r0 + 1.8; rb < r1 - 1.3; rb += 2.6) {
+          if (Math.abs(rb - rm) < 1.2) continue;
+          const span = (a1 - a0) * rb - 2.6;
+          const n = Math.max(1, Math.floor(span / 2.6));
+          for (let i = 0; i < n; i++) {
+            if (blooms.length >= 9000) break;
+            const a = a0 + (1.3 + (i + 0.5) * (span / n) + (rnd() - 0.5) * 0.8) / rb;
+            const p = at(rb + (rnd() - 0.5) * 0.8, a);
+            const sc = 0.6 + rnd() * 0.4;
+            blooms.push(new THREE.Matrix4().compose(p.setY(0.22 + sc * 0.16), new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), rnd() * 6.28), new THREE.Vector3(sc * 1.25, sc * (0.5 + rnd() * 0.2), sc * 1.25)));
+            const kc = rnd();
+            bloomCols.push(kc < 0.86 ? base.clone().offsetHSL((rnd() - 0.5) * 0.02, 0, (rnd() - 0.5) * 0.1) : kc < 0.95 ? new THREE.Color("#f7f2e6") : new THREE.Color("#f2c84b"));
+          }
+        }
       }
+    }
+    if (!hedges.empty) {
+      const hedge = new THREE.MeshStandardMaterial({ ...tex.pbr("leafy_grass", 1.2, { color: "#7fa862" }), vertexColors: true, roughness: 0.95 });
+      cutaway(hedge, shared);
+      own.push(hedge);
+      const mesh = new THREE.Mesh(hedges.build(), hedge);
+      mesh.castShadow = mesh.receiveShadow = true;
+      out.push(mesh);
+    }
+    if (blooms.length) {
+      const petals = new THREE.MeshStandardMaterial({ color: "#ffffff", roughness: 0.75 });
+      cutaway(petals, shared);
+      own.push(petals);
+      const geo = new THREE.IcosahedronGeometry(0.5, 0);
+      const mesh = new THREE.InstancedMesh(geo, petals, blooms.length);
+      blooms.forEach((m, i) => { mesh.setMatrixAt(i, m); mesh.setColorAt(i, bloomCols[i]); });
+      mesh.castShadow = false;
+      mesh.receiveShadow = true;
+      mesh.computeBoundingSphere();
+      out.push(mesh);
     }
   }
   // Inside the ring: lawns between paths that radiate from the tower, a stone apron round its feet, four fountains.
@@ -638,6 +716,5 @@ function buildGround(plan: WorldPlan, shared: Shared, tex: CityTextures): { mesh
     fountain(p.x, p.z, 7);
   }
   for (const m of out) { m.matrixAutoUpdate = false; m.updateMatrix(); }
-  void shared;
   return { meshes: out, dispose() { for (const m of own) m.dispose(); } };
 }

@@ -95,7 +95,7 @@ function latticeTube(rings: Ring[], cellM: number): { faces: THREE.BufferGeometr
 export interface Tower {
   group: THREE.Group;
   /** The prism's material, for the glow. */
-  glow: THREE.MeshStandardMaterial;
+  glow: THREE.MeshPhysicalMaterial;
   /** World position of the crown (for the halo). */
   crown: THREE.Vector3;
   /** The prism breathes and the lights twinkle (t: seconds). */
@@ -107,9 +107,11 @@ export function buildTower(x: number, z: number): Tower {
   const group = new THREE.Group();
   group.name = "prism-tower";
   group.position.set(x, 0, z);
-  const steel = new THREE.MeshStandardMaterial({ color: "#c9d2dc", roughness: 0.36, metalness: 0.45 });
+  // Warm steel, a champagne bronze that glows in the late-morning sun against the pale city.
+  const steel = new THREE.MeshStandardMaterial({ color: "#c9ab7f", roughness: 0.38, metalness: 0.42 });
   const lattice = latticeTexture();
-  const latticeMat = new THREE.MeshStandardMaterial({ color: "#c4ced9", roughness: 0.4, metalness: 0.4, map: lattice, alphaTest: 0.5, side: THREE.DoubleSide });
+  const latticeMat = new THREE.MeshStandardMaterial({ color: "#d2b68b", roughness: 0.42, metalness: 0.36, map: lattice, alphaTest: 0.5, side: THREE.DoubleSide });
+  const stone = new THREE.MeshStandardMaterial({ color: "#cdbf9f", roughness: 0.9, metalness: 0 });
   const geos: THREE.BufferGeometry[] = [];
   const addMesh = (g: THREE.BufferGeometry, m: THREE.Material, cast = true) => {
     const mesh = new THREE.Mesh(g, m);
@@ -212,12 +214,35 @@ export function buildTower(x: number, z: number): Tower {
     for (const p of parts) if (!p.attributes.uv) p.setAttribute("uv", new THREE.Float32BufferAttribute(new Float32Array(p.attributes.position.count * 2), 2));
     addMesh(mergeGeometries(parts.map((p) => { const q = p.clone(); for (const k of Object.keys(q.attributes)) if (k !== "position" && k !== "normal" && k !== "uv") q.deleteAttribute(k); return q; })), steel);
   }
-  // The prism: a long faceted crystal (a twelve-sided bipyramid) that glows from within.
-  const glow = new THREE.MeshStandardMaterial({ color: "#e6fbff", emissive: "#6fdcff", emissiveIntensity: 2.4, roughness: 0.12, metalness: 0.15, flatShading: true });
-  const prismPts = [new THREE.Vector2(0, -15), new THREE.Vector2(6.2, -4), new THREE.Vector2(7.2, 3), new THREE.Vector2(0, 19)];
-  const prism = new THREE.LatheGeometry(prismPts, 12);
-  prism.translate(0, PRISM_Y, 0);
-  addMesh(prism, glow, false);
+  // The base: a stepped round plinth set in the plaza's stone apron, and a masonry pier under each leg.
+  {
+    const parts: THREE.BufferGeometry[] = [];
+    parts.push(new THREE.CylinderGeometry(70, 71.5, 0.5, 96).translate(0, 0.25, 0).toNonIndexed());
+    parts.push(new THREE.CylinderGeometry(66, 67, 1.1, 96).translate(0, 0.55, 0).toNonIndexed());
+    for (const [sx, sz] of [[1, 1], [-1, 1], [-1, -1], [1, -1]]) {
+      const c = profile(0) - 6.6;
+      parts.push(new THREE.BoxGeometry(17, 4.4, 17).translate(sx * c, 1.1 + 2.2, sz * c).toNonIndexed());
+      parts.push(new THREE.BoxGeometry(18.4, 0.7, 18.4).translate(sx * c, 1.1 + 4.4 + 0.35, sz * c).toNonIndexed());
+    }
+    addMesh(mergeGeometries(parts), stone);
+  }
+  // The prism: a great faceted crystal (a six-sided bipyramid, flat facets that catch the sun) ringed by six smaller ones, glowing from within.
+  const glow = new THREE.MeshPhysicalMaterial({ color: "#d8f6ff", emissive: "#3cc6ff", emissiveIntensity: 3.2, roughness: 0.06, metalness: 0.2, clearcoat: 1, clearcoatRoughness: 0.05, iridescence: 0.7, iridescenceIOR: 1.5, flatShading: true, envMapIntensity: 1.6 });
+  {
+    const parts: THREE.BufferGeometry[] = [];
+    const main = new THREE.LatheGeometry([new THREE.Vector2(0, -19), new THREE.Vector2(8.6, -6), new THREE.Vector2(9.4, 6), new THREE.Vector2(0, 25)], 6);
+    parts.push(main.translate(0, PRISM_Y, 0).toNonIndexed());
+    for (let k = 0; k < 6; k++) {
+      const a = (k / 6) * Math.PI * 2 + Math.PI / 6;
+      const small = new THREE.LatheGeometry([new THREE.Vector2(0, -6), new THREE.Vector2(2.4, -1.5), new THREE.Vector2(2.6, 2), new THREE.Vector2(0, 8.5)], 6);
+      small.rotateZ(-0.42);
+      small.rotateY(-a);
+      parts.push(small.translate(Math.cos(a) * 9.5, PRISM_Y - 9, Math.sin(a) * 9.5).toNonIndexed());
+    }
+    const prism = mergeGeometries(parts);
+    prism.computeVertexNormals();
+    addMesh(prism, glow, false);
+  }
   // Strings of lights: tiny bulbs that bloom, each twinkling on its own beat.
   const bulbGeo = new THREE.SphereGeometry(0.42, 6, 4);
   geos.push(bulbGeo);
@@ -240,12 +265,13 @@ export function buildTower(x: number, z: number): Tower {
     glow,
     crown,
     tick(t) {
-      glow.emissiveIntensity = 2.3 + 0.55 * Math.sin(t * 1.3);
+      glow.emissiveIntensity = 3.2 + 0.7 * Math.sin(t * 1.3);
       bulbTime.value = t;
     },
     dispose() {
       for (const g of geos) g.dispose();
       steel.dispose();
+      stone.dispose();
       latticeMat.dispose();
       lattice.dispose();
       glow.dispose();

@@ -305,7 +305,7 @@ export async function buildRef(item: SceneItem, builders: RefBuilders): Promise<
   const geos: THREE.BufferGeometry[] = [];
   const g = new THREE.Group();
   const mat = (p: THREE.MeshStandardMaterialParameters) => { const m = new THREE.MeshStandardMaterial(p); materials.push(m); return m; };
-  const add = (geo: THREE.BufferGeometry, m: THREE.Material) => { geos.push(geo); const mesh = new THREE.Mesh(geo, m); mesh.castShadow = mesh.receiveShadow = true; g.add(mesh); return mesh; };
+  const add = (geo: THREE.BufferGeometry, m: THREE.Material | THREE.Material[]) => { geos.push(geo); const mesh = new THREE.Mesh(geo, m); mesh.castShadow = mesh.receiveShadow = true; g.add(mesh); return mesh; };
   if ((kind === "human" || kind === "trainer") && builders.trainer) {
     try {
       const t = await builders.trainer();
@@ -369,44 +369,148 @@ export async function buildRef(item: SceneItem, builders: RefBuilders): Promise<
     add(roofGeo.translate(0, wallH + (H - wallH) / 2, 0), roofM);
     for (const [x, y] of [[-0.25, 0.3], [0.25, 0.3], [-0.25, 0.72], [0.25, 0.72]]) add(new THREE.BoxGeometry(W * 0.16, wallH * 0.2, 0.05).translate(x * W, y * wallH, W * 0.35 + 0.01), win);
   } else if (kind === "building") {
-    // A modern ten-storey block: pale concrete frame, a band of glazing per floor with balconies, a glass lobby and a roof parapet.
+    // A Lumiose apartment house, ten storeys of 3.1 m (the reference's documented height to the roof's ridge):
+    // eight in cream stone (a rusticated ground floor, wrought-iron balconies on the second and fifth, a deep
+    // cornice) and two in a slate mansard with dormers and a zinc top.
     const W = item.w, H = item.h, D = W * 0.8;
-    const floors = 10, fh = H / floors;
+    const fh = H / 10, stoneH = fh * 8, bays = Math.max(3, Math.round(W / 3));
+    const bayW = W / bays;
     const cv = document.createElement("canvas");
-    cv.width = 256; cv.height = 512;
+    cv.width = 512;
+    cv.height = 1024;
     const c = cv.getContext("2d")!;
-    c.fillStyle = "#e9e6df"; c.fillRect(0, 0, 256, 512);
-    const rowH = 512 / floors;
-    for (let f = 0; f < floors; f++) {
-      const y = f * rowH;
-      const g = c.createLinearGradient(0, y, 0, y + rowH);
-      g.addColorStop(0, "#9fc3dd"); g.addColorStop(0.55, "#4f7894"); g.addColorStop(1, "#2c4458");
-      c.fillStyle = g;
-      c.fillRect(10, y + rowH * 0.18, 236, rowH * 0.62);
-      c.fillStyle = "#f4f2ee";
-      for (let k = 0; k <= 6; k++) c.fillRect(8 + k * 39, y + rowH * 0.18, 4, rowH * 0.62);
-      // Slab edge and a glass balustrade.
-      c.fillStyle = "#d8d4cc"; c.fillRect(0, y + rowH * 0.8, 256, rowH * 0.2);
-      c.fillStyle = "rgba(200,225,240,0.55)"; c.fillRect(6, y + rowH * 0.62, 244, rowH * 0.18);
+    const px = cv.width / W, py = cv.height / stoneH;
+    c.fillStyle = "#eee2c6";
+    c.fillRect(0, 0, cv.width, cv.height);
+    // Stone courses, deeper on the ground floor.
+    for (let y = 0; y < stoneH; y += 0.52) {
+      const ground = y > stoneH - fh;
+      c.fillStyle = ground ? "rgba(120,96,60,0.32)" : "rgba(140,118,80,0.14)";
+      c.fillRect(0, cv.height - (y + 0.05) * py, cv.width, ground ? 3 : 1.5);
     }
-    c.fillStyle = "#cdc8bf"; c.fillRect(0, 0, 10, 512); c.fillRect(246, 0, 10, 512);
+    const win = (x: number, y: number, w: number, h: number, arch: boolean, lit: boolean) => {
+      // Surround, glass (warm where a room is lit), frame and glazing bars.
+      c.fillStyle = "#e3d3b0";
+      c.fillRect(x - 6, y - 8, w + 12, h + 12);
+      const gl = c.createLinearGradient(0, y, 0, y + h);
+      gl.addColorStop(0, lit ? "#8a6d45" : "#3e4c5a");
+      gl.addColorStop(1, lit ? "#4b3a26" : "#24303b");
+      c.fillStyle = gl;
+      c.beginPath();
+      if (arch) { c.moveTo(x, y + h); c.lineTo(x, y + w / 2); c.arc(x + w / 2, y + w / 2, w / 2, Math.PI, 0); c.lineTo(x + w, y + h); }
+      else c.rect(x, y, w, h);
+      c.fill();
+      c.strokeStyle = "#f6f1e6";
+      c.lineWidth = 3;
+      c.stroke();
+      c.lineWidth = 2;
+      c.beginPath();
+      c.moveTo(x + w / 2, y + (arch ? w / 2 : 0));
+      c.lineTo(x + w / 2, y + h);
+      for (let k = 1; k < 3; k++) { c.moveTo(x, y + (h * k) / 3); c.lineTo(x + w, y + (h * k) / 3); }
+      c.stroke();
+    };
+    const rnd = (k: number) => { const v = Math.sin(k * 127.1 + 311.7) * 43758.5453; return v - Math.floor(v); };
+    for (let f = 0; f < 8; f++) {
+      const top = cv.height - (f + 1) * fh * py;
+      for (let b = 0; b < bays; b++) {
+        const x0 = b * bayW * px;
+        if (f === 0) {
+          // Arcades on the ground floor; the middle one is the entrance.
+          win(x0 + bayW * px * 0.16, top + fh * py * 0.12, bayW * px * 0.68, fh * py * 0.82, true, b !== Math.floor(bays / 2));
+        } else {
+          const ww = bayW * px * 0.44, wh = fh * py * 0.66;
+          win(x0 + (bayW * px - ww) / 2, top + fh * py * 0.2, ww, wh, false, rnd(f * 31 + b) < 0.18);
+          // A carved lintel (a little pediment on the second floor).
+          c.fillStyle = "#e6d6b4";
+          if (f === 1) { c.beginPath(); c.moveTo(x0 + (bayW * px - ww) / 2 - 10, top + fh * py * 0.2 - 8); c.lineTo(x0 + bayW * px / 2, top + fh * py * 0.04); c.lineTo(x0 + (bayW * px + ww) / 2 + 10, top + fh * py * 0.2 - 8); c.fill(); }
+          else c.fillRect(x0 + (bayW * px - ww) / 2 - 10, top + fh * py * 0.2 - 14, ww + 20, 7);
+        }
+      }
+      // String course under each floor.
+      c.fillStyle = "rgba(160,136,96,0.35)";
+      c.fillRect(0, top + fh * py - 4, cv.width, 4);
+    }
     const t = new THREE.CanvasTexture(cv);
     t.colorSpace = THREE.SRGBColorSpace;
-    t.anisotropy = 4;
-    const m = mat({ map: t, roughness: 0.42, metalness: 0.15 });
-    const top = mat({ color: "#bdb8ae", roughness: 0.85 });
-    add(new THREE.BoxGeometry(W, H - fh * 0.15, D).translate(0, (H - fh * 0.15) / 2, 0), m);
-    // Parapet and a rooftop plant room.
-    add(new THREE.BoxGeometry(W * 1.02, fh * 0.15, D * 1.02).translate(0, H - fh * 0.075, 0), top);
-    add(new THREE.BoxGeometry(W * 0.35, fh * 0.6, D * 0.35).translate(W * 0.15, H + fh * 0.3, -D * 0.1), top);
-  } else if (kind === "phone") {
+    t.anisotropy = 8;
+    const stone = mat({ map: t, roughness: 0.82, metalness: 0 });
+    const plain = mat({ color: "#eadcbe", roughness: 0.85 });
+    const slate = mat({ color: "#5d6673", roughness: 0.62, metalness: 0.12 });
+    const zinc = mat({ color: "#a7b0ba", roughness: 0.45, metalness: 0.35 });
+    const body = new THREE.BoxGeometry(W, stoneH, D);
+    // Sides keep the bays' width (the box maps the whole picture onto every face).
+    const uv = body.attributes.uv as THREE.BufferAttribute;
+    for (let i = 0; i < 8; i++) uv.setX(i, uv.getX(i) * (D / W));
+    add(body.translate(0, stoneH / 2, 0), [stone, stone, plain, plain, stone, stone]);
+    // Cornice, the course over the ground floor, and the balconies (a slab and a wrought-iron rail).
+    add(new THREE.BoxGeometry(W + 1.2, 0.7, D + 1.2).translate(0, stoneH - 0.35, 0), plain);
+    add(new THREE.BoxGeometry(W + 0.4, 0.35, D + 0.4).translate(0, fh, 0), plain);
+    const rail = document.createElement("canvas");
+    rail.width = 256;
+    rail.height = 64;
+    const rg = rail.getContext("2d")!;
+    rg.strokeStyle = rg.fillStyle = "#151617";
+    rg.fillRect(0, 0, 256, 6);
+    rg.fillRect(0, 58, 256, 6);
+    rg.lineWidth = 3;
+    for (let x = 4; x < 256; x += 12) { rg.beginPath(); rg.moveTo(x, 5); rg.lineTo(x, 59); rg.stroke(); }
+    for (let x = 10; x < 256; x += 24) { rg.beginPath(); rg.arc(x, 32, 7, 0, Math.PI * 2); rg.stroke(); }
+    const railTex = new THREE.CanvasTexture(rail);
+    railTex.colorSpace = THREE.SRGBColorSpace;
+    railTex.wrapS = THREE.RepeatWrapping;
+    railTex.repeat.set(W / 1.5, 1);
+    const railM = mat({ map: railTex, alphaTest: 0.5, side: THREE.DoubleSide, roughness: 0.5, metalness: 0.6 });
+    for (const f of [2, 5]) {
+      const y = f * fh;
+      add(new THREE.BoxGeometry(W + 0.6, 0.18, 1.0).translate(0, y - 0.09, D / 2 + 0.5), plain);
+      add(new THREE.PlaneGeometry(W + 0.6, 1.0).translate(0, y + 0.5, D / 2 + 0.98), railM);
+    }
+    // The mansard: a steep slate slope with a dormer per bay (the ninth storey), a shallow zinc slope over the tenth up to the ridge at H.
+    const inset = 1.4, kneeY = stoneH + fh * 1.45;
+    const roof = new THREE.BufferGeometry();
+    const pos: number[] = [];
+    const quad = (a: number[], b: number[], cc: number[], d: number[]) => pos.push(...a, ...b, ...cc, ...a, ...cc, ...d);
+    const hw = W / 2, hd = D / 2;
+    const lo = [[-hw, stoneH, hd], [hw, stoneH, hd], [hw, stoneH, -hd], [-hw, stoneH, -hd]];
+    const mid = [[-hw + inset, kneeY, hd - inset], [hw - inset, kneeY, hd - inset], [hw - inset, kneeY, -hd + inset], [-hw + inset, kneeY, -hd + inset]];
+    for (let k = 0; k < 4; k++) quad(lo[k], lo[(k + 1) % 4], mid[(k + 1) % 4], mid[k]);
+    roof.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3));
+    roof.computeVertexNormals();
+    add(roof, slate);
+    const top = new THREE.BufferGeometry();
+    const tp: number[] = [];
+    const ridge = [[-hw + inset + (hd - inset), H, 0], [hw - inset - (hd - inset), H, 0]];
+    const tq = (a: number[], b: number[], cc: number[], d: number[]) => tp.push(...a, ...b, ...cc, ...a, ...cc, ...d);
+    tq(mid[0], mid[1], ridge[1], ridge[0]);
+    tq(mid[2], mid[3], ridge[0], ridge[1]);
+    tp.push(...mid[1], ...mid[2], ...ridge[1], ...mid[3], ...mid[0], ...ridge[0]);
+    top.setAttribute("position", new THREE.Float32BufferAttribute(tp, 3));
+    top.computeVertexNormals();
+    add(top, zinc);
+    // Dormers on the front and back slopes: a stone face with a window, a little pediment.
+    const dormerFace = mat({ color: "#e9dcbf", roughness: 0.8 });
+    const glass = mat({ color: "#2c3742", roughness: 0.12, metalness: 0.5 });
+    for (const side of [1, -1]) {
+      for (let b = 0; b < bays; b++) {
+        const x = -hw + (b + 0.5) * bayW;
+        const zf = side * (hd - 0.15);
+        const dw = Math.min(1.5, bayW * 0.5), dh = fh * 0.95;
+        add(new THREE.BoxGeometry(dw, dh, 1.1).translate(x, stoneH + 0.35 + dh / 2, zf - side * 0.45), dormerFace);
+        add(new THREE.PlaneGeometry(dw * 0.62, dh * 0.7).rotateY(side > 0 ? 0 : Math.PI).translate(x, stoneH + 0.35 + dh * 0.47, zf + side * 0.11), glass);
+        // Its little pitched roof: a triangular prism along the dormer, apex up.
+        const pr = (dw + 0.25) / Math.sqrt(3);
+        add(new THREE.CylinderGeometry(pr, pr, 1.25, 3).rotateX(-Math.PI / 2).scale(1, 0.55, 1).translate(x, stoneH + 0.35 + dh + pr * 0.27, zf - side * 0.45), slate);
+      }
+    }
+    } else if (kind === "phone") {
     const body = mat({ color: "#2b2e33", roughness: 0.3, metalness: 0.8 });
     const screen = mat({ color: "#0b0d10", roughness: 0.05, metalness: 0.2, emissive: "#20324a", emissiveIntensity: 0.4 });
     add(new RoundedBoxGeometry(item.w, item.h, 0.0078, 2, 0.003).translate(0, item.h / 2, 0), body);
     add(new THREE.PlaneGeometry(item.w * 0.92, item.h * 0.95).translate(0, item.h / 2, 0.0041), screen);
     g.rotation.x = -0.12;
   }
-  return { object: g, depth: item.w * 0.5, lod: 1, materials, dispose() { geos.forEach((x) => x.dispose()); materials.forEach((m) => m.dispose()); } };
+  return { object: g, depth: item.w * 0.5, lod: 1, materials, dispose() { geos.forEach((x) => x.dispose()); materials.forEach((m) => { (m as THREE.MeshStandardMaterial).map?.dispose(); m.dispose(); }); } };
 }
 
 /** A soft round shadow texture for contact shadows under figures. */
