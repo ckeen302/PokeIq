@@ -455,6 +455,93 @@ describe("the camera: Play, Explore and the finale", () => {
     expect(sp.x1).toBeGreaterThan(starters[starters.length - 1].x);
   });
 
+  it("a video's finale rises over the rooftops before its end card covers the frame", () => {
+    for (const seconds of [15, 30, 60]) {
+      const tl = videoTimeline(seconds);
+      const pp = planPlay(placed, { vfov: 46, aspect: 1080 / 1920 }, { duration: seconds, intro: tl.intro, finale: tl.finale, revealAt: tl.revealAt });
+      const endCard = seconds - tl.end;
+      expect(playAt(pp, endCard - 0.05, () => 100).view.rise).toBeGreaterThan(0.999);
+      // ...after a beat on the giant first.
+      const fin = pp.glide.stops[pp.glide.stops.length - 1];
+      expect(playAt(pp, fin.t0 + 0.1, () => 100).view.rise).toBe(0);
+    }
+  });
+
+  it("Play's end holds the finale's risen view (no snap back down when the glide is over)", () => {
+    const pp = planPlay(placed, lens, { duration: 40 });
+    const end = playAt(pp, 40, () => 100);
+    expect(end.view.rise).toBe(1);
+    expect(end.state.done).toBe(true);
+    // A frame that overshoots the end (the page's clock steps past it) sees the same view.
+    expect(playAt(pp, 40.4, () => 100).view).toEqual(end.view);
+    expect(playAt(pp, 40.4, () => 100).focus).toBe(FINALE);
+  });
+
+  it("the finale stands the giant in front of the whole of Prism Tower, prism and spire in the frame, on any screen", () => {
+    // A pinhole camera for a pose: where a world point lands in the frame (0..1 across and down).
+    const project = (pose: { position: number[]; target: number[] }, fr: Lens, p: number[]) => {
+      const [cx, cy, cz] = pose.position;
+      const f = pose.target.map((t, i) => t - pose.position[i]);
+      const fl = Math.hypot(f[0], f[1], f[2]);
+      const [fx, fy, fz] = f.map((x) => x / fl);
+      const rl = Math.hypot(fz, fx);
+      const [rx, rz] = [-fz / rl, fx / rl];
+      const [ux, uy, uz] = [-rz * fy, rz * fx - rx * fz, rx * fy];
+      const d = [p[0] - cx, p[1] - cy, p[2] - cz];
+      const depth = d[0] * fx + d[1] * fy + d[2] * fz;
+      const tv = Math.tan((fr.vfov * Math.PI) / 360);
+      return { x: 0.5 + (d[0] * rx + d[2] * rz) / (depth * tv * fr.aspect) / 2, y: 0.5 - (d[0] * ux + d[1] * uy + d[2] * uz) / (depth * tv) / 2, depth };
+    };
+    for (const id of ["every-pokemon", "bigger-than-a-house", "gen-1"]) {
+      const line = presetLineup(PRESET_BY_ID.get(id)!, SIZE_ITEMS);
+      const pl = layoutLine(line).map((p, i) => ({ ...p, key: line[i].key }));
+      const plan = planWorld(pl);
+      expect(plan.ring).not.toBeNull();
+      const giant = pl[pl.length - 1];
+      const at = plan.path.at(giant.x);
+      for (const fr of [{ vfov: 35, aspect: 1440 / 844 }, { vfov: 46, aspect: 390 / 716 }, { vfov: 46, aspect: 1080 / 1920 }]) {
+        const pp = planPlay(pl, fr);
+        const v = playAt(pp, pp.glide.duration, () => giant.h).view;
+        expect(v.rise).toBe(1);
+        const pose = poseFor(v, plan.path, fr);
+        const feet = project(pose, fr, [at.x, 0, at.z]);
+        const head = project(pose, fr, [at.x, giant.h, at.z]);
+        const tip = project(pose, fr, [plan.tower.x, 232, plan.tower.z]);
+        const prism = project(pose, fr, [plan.tower.x, 190, plan.tower.z]);
+        // The spire's tip under the page's top bar, the giant's feet over its controls (and a tall frame's caption), both across the frame.
+        expect(tip.y).toBeGreaterThan(0.06);
+        expect(feet.y).toBeLessThan(fr.aspect < 0.8 ? 0.75 : 0.86);
+        for (const p of [feet, head, tip, prism]) {
+          expect(p.x).toBeGreaterThan(0.02);
+          expect(p.x).toBeLessThan(0.98);
+        }
+        // The tower stands behind the giant and rises well above it.
+        expect(tip.depth).toBeGreaterThan(feet.depth);
+        expect(prism.y).toBeLessThan(head.y);
+        // Over the rooftops, still nearly face on (never more than about 20° down onto the reliefs).
+        expect(pose.position[1]).toBeGreaterThan(ROOF_Y);
+        const horiz = Math.hypot(pose.target[0] - pose.position[0], pose.target[2] - pose.position[2]);
+        expect(Math.atan2(pose.position[1] - pose.target[1], horiz)).toBeLessThan((20 * Math.PI) / 180);
+        // The sight line to the giant's feet passes over the buildings round the plaza.
+        const R = plan.plaza.r + 12;
+        for (let k = 0.02; k < 1; k += 0.02) {
+          const x = at.x + (pose.position[0] - at.x) * k, z = at.z + (pose.position[2] - at.z) * k, y = pose.position[1] * k;
+          const r = Math.hypot(x - plan.tower.x, z - plan.tower.z);
+          if (r > R && r < R + STREET.depth) expect(y).toBeGreaterThan(ROOF_Y);
+        }
+      }
+    }
+    // A short line (no ring) turns towards the tower standing past its end, inside the relief-safe angle.
+    const st = layoutLine(presetLineup(PRESET_BY_ID.get("starters")!, SIZE_ITEMS));
+    const sp = planWorld(st);
+    const last = st[st.length - 1];
+    const f = finalePose({ x: last.x, d: last.h * 3, h: last.h, orbit: 0, pitch: pitchFor(last.h), rise: 1 }, sp.path);
+    const yaw = Math.atan2(f.target[0] - f.position[0], f.target[2] - f.position[2]);
+    expect(Math.abs(yaw - BASE_YAW)).toBeLessThanOrEqual(MAX_ORBIT + 1e-9);
+    const toTower = Math.atan2(sp.tower.x - last.x, sp.tower.z);
+    expect(Math.abs(yaw - toTower)).toBeLessThan(Math.abs(BASE_YAW - toTower));
+  });
+
   it("Explore: flights ease from one figure to the next and stay on the line", () => {
     const f = { from: 0, to: 10, t0: 1, dur: 2 };
     expect(flightAt(f, 1).x).toBe(0);

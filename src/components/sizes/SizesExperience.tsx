@@ -746,10 +746,19 @@ export function SizesExperience({ preset, focus = null, vs = [], compare = false
       }
     };
     raf = requestAnimationFrame(tick);
+    // For automated checks and screenshots: jump Play's clock (to its finale, say), and read where things stand.
+    (window as unknown as { __sizes?: unknown }).__sizes = {
+      seek(t: number) { const c = ctl.current; if (c.kind === "play" && c.play) c.play.t = Math.max(0, Math.min(t, c.play.plan.glide.duration)); },
+      state() {
+        const c = ctl.current, s = sceneRef.current;
+        return { kind: c.kind, t: c.play?.t ?? null, duration: c.play?.plan.glide.duration ?? null, stops: c.play?.plan.glide.stops.map((x) => ({ key: x.key, t0: x.t0, t1: x.t1 })) ?? [], blending: !!c.blend, quality: s?.quality ?? null, pending: s?.pending() ?? null, stats: s?.stats() ?? null, view: c.last };
+      },
+    };
     return () => {
       cancelAnimationFrame(raf);
       document.fonts?.removeEventListener?.("loadingdone", onFonts);
       badgesRef.current = null;
+      delete (window as unknown as { __sizes?: unknown }).__sizes;
     };
   }, [ready]);
 

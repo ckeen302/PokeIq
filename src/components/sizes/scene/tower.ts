@@ -1,5 +1,6 @@
 import * as THREE from "three";
 import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
+import { PRISM_Y, TOWER_H } from "@/lib/sizes/world";
 
 /**
  * Prism Tower, our own design in the spirit of Lumiose City's landmark: a
@@ -12,14 +13,14 @@ import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js
  * in the city, standing at the centre of its great round plaza.
  */
 
-export const TOWER_H = 232;
-/** Where the legs meet, the platforms, the shaft's top and the prism's middle (m). */
-const MERGE = 74, DECK1 = 46, DECK2 = 112, SHAFT_TOP = 168, PRISM_Y = 190;
+export { TOWER_H };
+/** Where the legs meet, the platforms and the shaft's top (m); the prism's middle is PRISM_Y. */
+const MERGE = 74, DECK1 = 46, DECK2 = 112, SHAFT_TOP = 168;
 
 /** Half-width of the tower's footprint at height y (an Eiffel-like exponential flare). */
 const profile = (y: number) => 3.2 + 40 * Math.exp(-y / 46);
 
-function latticeTexture(): THREE.CanvasTexture {
+function latticeTexture(): THREE.DataTexture {
   const cv = document.createElement("canvas");
   cv.width = 128;
   cv.height = 256;
@@ -42,9 +43,57 @@ function latticeTexture(): THREE.CanvasTexture {
   g.beginPath(); g.moveTo(64, 0); g.lineTo(64, 256); g.stroke();
   g.lineWidth = 2;
   for (const y of [32, 96, 160, 224]) { g.beginPath(); g.arc(64, y, 11, 0, Math.PI * 2); g.stroke(); }
-  const t = new THREE.CanvasTexture(cv);
+  return coverageMips(g.getImageData(0, 0, 128, 256));
+}
+
+/**
+ * The lattice as a texture whose smaller mip levels keep the bars: a cut-out
+ * pattern averaged down loses its alpha under the cut (from the finale's
+ * height the tower's faces would vanish, leaving bare corner girders), so
+ * each level's alpha is scaled until as much of it stands solid as in the
+ * full-size picture. From afar the faces read as a fine steel mesh.
+ */
+function coverageMips(img: ImageData): THREE.DataTexture {
+  const { width: w0, height: h0 } = img;
+  const solid = (a: Uint8ClampedArray | Float32Array, scale = 1) => { let n = 0; for (let i = 0; i < a.length; i++) if (a[i] * scale > 127.5) n++; return n / a.length; };
+  let alpha = new Float32Array(w0 * h0);
+  for (let i = 0; i < alpha.length; i++) alpha[i] = img.data[i * 4 + 3];
+  const target = solid(alpha);
+  const rgba = (a: Float32Array, scale: number): Uint8Array<ArrayBuffer> => {
+    const out = new Uint8Array(new ArrayBuffer(a.length * 4));
+    for (let i = 0; i < a.length; i++) { out[i * 4] = out[i * 4 + 1] = out[i * 4 + 2] = 255; out[i * 4 + 3] = Math.min(255, Math.round(a[i] * scale)); }
+    return out;
+  };
+  const levels: { data: Uint8Array<ArrayBuffer>; width: number; height: number }[] = [{ data: rgba(alpha, 1), width: w0, height: h0 }];
+  let w = w0, h = h0;
+  while (w > 1 || h > 1) {
+    const nw = Math.max(1, w >> 1), nh = Math.max(1, h >> 1);
+    const next = new Float32Array(nw * nh);
+    for (let y = 0; y < nh; y++) for (let x = 0; x < nw; x++) {
+      let s = 0, c = 0;
+      for (let dy = 0; dy < 2; dy++) for (let dx = 0; dx < 2; dx++) {
+        const sx = Math.min(w - 1, x * 2 + dx), sy = Math.min(h - 1, y * 2 + dy);
+        s += alpha[sy * w + sx];
+        c++;
+      }
+      next[y * nw + x] = s / c;
+    }
+    // The scale that keeps the solid share (a few halvings of a binary search are plenty).
+    let lo = 1, hi = 6;
+    for (let k = 0; k < 14; k++) { const m = (lo + hi) / 2; if (solid(next, m) < target) lo = m; else hi = m; }
+    levels.push({ data: rgba(next, hi), width: nw, height: nh });
+    alpha = next;
+    w = nw;
+    h = nh;
+  }
+  const t = new THREE.DataTexture(levels[0].data, w0, h0, THREE.RGBAFormat);
+  t.mipmaps = levels as unknown as THREE.DataTexture["mipmaps"];
+  t.generateMipmaps = false;
+  t.minFilter = THREE.LinearMipmapLinearFilter;
+  t.magFilter = THREE.LinearFilter;
   t.wrapS = t.wrapT = THREE.RepeatWrapping;
   t.anisotropy = 4;
+  t.needsUpdate = true;
   return t;
 }
 

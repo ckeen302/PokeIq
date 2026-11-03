@@ -241,7 +241,7 @@ export async function recordVideo(o: RecordOptions): Promise<RecordResult> {
     await scene.ready;
     const { placed } = scene.setLine(o.items.map(toSceneItem));
     const lens = { vfov: 46, aspect: W / H };
-    const plan = planPlay(placed, lens, { duration: v.seconds, intro: tl.intro, finale: tl.finale, hold: Math.min(1.6, v.seconds / 14) });
+    const plan = planPlay(placed, lens, { duration: v.seconds, intro: tl.intro, finale: tl.finale, revealAt: tl.revealAt, hold: Math.min(1.6, v.seconds / 14) });
     const byKey = new Map(o.items.map((i) => [i.key, i]));
     const holdStarts = plan.glide.stops.map((s) => s.t0);
     const finaleAt = plan.glide.stops.find((s) => s.finale)?.t0 ?? v.seconds - 2;

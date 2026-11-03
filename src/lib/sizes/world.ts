@@ -33,6 +33,10 @@ export const STREET = {
 export const CORNICE_Y = 4.4 + 15.3 + 0.8;
 export const ROOF_Y = CORNICE_Y + 4.7;
 
+/** Prism Tower to the tip of its spire, and the middle of its glowing prism (m): the scene builds it, the finale frames it whole. */
+export const TOWER_H = 232;
+export const PRISM_Y = 190;
+
 /** Figures at least this big (height or width, m) are too big for the boulevard: they stand in the plaza. */
 export const GIANT_M = 18;
 /** Figures at least this big (height or width, m) stand on the ring round Prism Tower. */
@@ -70,6 +74,8 @@ export interface Ring {
 export interface LinePath {
   at(s: number): PathPoint;
   ring: Ring | null;
+  /** Where Prism Tower stands (a plan's path knows; the bare straight line doesn't). */
+  tower?: { x: number; z: number };
 }
 
 export function linePath(ring: Ring | null): LinePath {
@@ -158,7 +164,7 @@ export function planWorld(placed: PlacedFigure[]): WorldPlan {
     const am = (a0 + a1) / 2, pr = r + 205;
     return { ...d, a0, a1, plaza: { x: cx + Math.cos(am) * pr, z: cz + Math.sin(am) * pr, r: 34 } };
   });
-  return { x0, x1, plaza: { cx, cz, r }, tower: { x: cx, z: cz }, lineStart, lineEnd, path: linePath(ring), ring, avenues, districts };
+  return { x0, x1, plaza: { cx, cz, r }, tower: { x: cx, z: cz }, lineStart, lineEnd, path: { ...linePath(ring), tower: { x: cx, z: cz } }, ring, avenues, districts };
 }
 
 /** An angle in (-π, π]. */

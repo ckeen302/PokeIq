@@ -170,7 +170,7 @@ function textureFrom(bmp: ImageBitmap, anisotropy: number): THREE.Texture {
 export class ReliefProvider implements FigureProvider {
   /** Alpha to coverage: smooth cut-out edges with multisampling; without it, a plain cut is crisper (no speckled fringe). */
   private coverage: boolean;
-  constructor(private urls: FigureUrls, private opts: { anisotropy: number; sharpen: number; texSize: 256 | 512; coverage?: boolean }) {
+  constructor(private urls: FigureUrls, private opts: { anisotropy: number; sharpen: number; texSize: 256 | 512; coverage?: boolean; segments?: number }) {
     this.coverage = opts.coverage ?? true;
   }
   /** Figures built from now on use alpha to coverage or not (the quality's multisampling changed). */
@@ -223,7 +223,8 @@ export class ReliefProvider implements FigureProvider {
     const box = { x: bx, y: by, w: bw, h: bh, size };
     let mesh: MeshArrays | null;
     try {
-      mesh = (await buildInWorker(bitmapPixels(reliefBmp), box, SEGMENTS[lod])) ?? buildHere(bitmapPixels(reliefBmp), box, SEGMENTS[lod]);
+      const segments = lod === 1 && this.opts.segments ? this.opts.segments : SEGMENTS[lod];
+      mesh = (await buildInWorker(bitmapPixels(reliefBmp), box, segments)) ?? buildHere(bitmapPixels(reliefBmp), box, segments);
     } finally {
       reliefBmp.close();
     }
@@ -299,6 +300,118 @@ export interface RefBuilders {
   trainer?: () => Promise<{ object: THREE.Object3D; update?(t: number, dt: number): void; dispose(): void }>;
 }
 
+/** A side profile (x along the length, y up, metres) extruded across `width`, centred on z, with softly rounded edges. */
+function profileBody(outline: THREE.Shape, width: number, bevel: number): THREE.BufferGeometry {
+  const g = new THREE.ExtrudeGeometry(outline, { depth: Math.max(0.01, width - 2 * bevel), bevelEnabled: bevel > 0, bevelThickness: bevel, bevelSize: bevel * 0.6, bevelSegments: 2, curveSegments: 10 });
+  g.translate(0, 0, -(width - 2 * bevel) / 2);
+  return g;
+}
+
+/** An outline from points, with wheel arches cut into its bottom edge (each [centre x, centre y, radius]) as it runs from back to front. */
+function archedOutline(top: [number, number][], bottomY: number, back: number, front: number, arches: [number, number, number][]): THREE.Shape {
+  const s = new THREE.Shape();
+  s.moveTo(back, bottomY);
+  for (const [cx, cy, r] of [...arches].sort((a, b) => a[0] - b[0])) {
+    s.lineTo(cx - r, bottomY);
+    s.lineTo(cx - r, cy);
+    s.absarc(cx, cy, r, Math.PI, 0, true);
+    s.lineTo(cx + r, bottomY);
+  }
+  s.lineTo(front, bottomY);
+  for (const [x, y] of top) s.lineTo(x, y);
+  s.closePath();
+  return s;
+}
+
+/**
+ * The car and the bus, side-on, front towards +x: a body extruded from its
+ * side profile with arches over the wheels, a glasshouse with its pillars,
+ * lamps, bumpers, tyres and hubs. The car is a red saloon, the bus a
+ * cream-and-green city bus with its windows, doors and destination sign
+ * (plain liveries, no logos). Returns the vehicle's width.
+ */
+function vehicle(kind: "car" | "bus", L: number, add: (geo: THREE.BufferGeometry, m: THREE.Material | THREE.Material[]) => THREE.Mesh, mat: (p: THREE.MeshStandardMaterialParameters) => THREE.MeshStandardMaterial, materials: THREE.Material[]): number {
+  const glass = mat({ color: "#18212b", roughness: 0.06, metalness: 0.55, envMapIntensity: 1.3 });
+  const tyre = mat({ color: "#161616", roughness: 0.92 });
+  const hub = mat({ color: "#c9ccd1", roughness: 0.3, metalness: 0.85 });
+  const trim = mat({ color: "#2a2c30", roughness: 0.6, metalness: 0.2 });
+  const head = mat({ color: "#fff6e0", emissive: "#fff1cc", emissiveIntensity: 0.6, roughness: 0.2 });
+  const tail = mat({ color: "#b3121b", emissive: "#d0101a", emissiveIntensity: 0.5, roughness: 0.3 });
+  const half = L / 2;
+  const box = (w: number, h: number, d: number, x: number, y: number, z: number, m: THREE.Material) => add(new THREE.BoxGeometry(w, h, d).translate(x, y, z), m);
+  const wheels = (xs: number[], r: number, W: number) => {
+    for (const x of xs) for (const side of [1, -1]) {
+      add(new THREE.CylinderGeometry(r, r, 0.24, 20).rotateX(Math.PI / 2).translate(x, r, side * (W / 2 - 0.11)), tyre);
+      add(new THREE.CylinderGeometry(r * 0.58, r * 0.58, 0.25, 16).rotateX(Math.PI / 2).translate(x, r, side * (W / 2 - 0.105)), hub);
+    }
+  };
+  if (kind === "car") {
+    const W = 1.78, r = 0.33, wf = half - 0.9, wb = -half + 0.95;
+    const paint = new THREE.MeshPhysicalMaterial({ color: "#c0262d", roughness: 0.28, metalness: 0.5, clearcoat: 1, clearcoatRoughness: 0.08 });
+    materials.push(paint);
+    // The body: boot, waistline, bonnet and nose, arches over the wheels.
+    const body = archedOutline([[half, 0.3], [half + 0.01, 0.56], [half - 0.22, 0.72], [half - 1.25, 0.84], [-half + 1.05, 0.86], [-half + 0.22, 0.8], [-half, 0.62]], 0.2, -half, half, [[wb, r, r + 0.07], [wf, r, r + 0.07]]);
+    add(profileBody(body, W, 0.07), paint);
+    // The glasshouse: windscreen, side windows and rear window, a little narrower than the body; the roof over it.
+    const gh = new THREE.Shape([new THREE.Vector2(-half + 1.02, 0.82), new THREE.Vector2(half - 1.22, 0.82), new THREE.Vector2(half - 1.92, 1.33), new THREE.Vector2(-half + 1.62, 1.35)]);
+    add(profileBody(gh, W * 0.86, 0.03), glass);
+    const roof = new THREE.Shape([new THREE.Vector2(-half + 1.6, 1.32), new THREE.Vector2(half - 1.9, 1.31), new THREE.Vector2(half - 1.97, 1.39), new THREE.Vector2(-half + 1.66, 1.41)]);
+    add(profileBody(roof, W * 0.84, 0.04), paint);
+    // Pillars: the slanted ones along the windscreen and rear window, an upright one between the doors.
+    for (const side of [1, -1]) {
+      const z = side * W * 0.43;
+      const pillar = (x0: number, y0: number, x1: number, y1: number, t: number) => {
+        const len = Math.hypot(x1 - x0, y1 - y0);
+        add(new THREE.BoxGeometry(t, len, 0.05).rotateZ(-Math.atan2(x1 - x0, y1 - y0)).translate((x0 + x1) / 2, (y0 + y1) / 2, z), paint);
+      };
+      pillar(half - 1.22, 0.84, half - 1.9, 1.32, 0.07);
+      pillar(-half + 1.04, 0.84, -half + 1.62, 1.33, 0.16);
+      pillar(-0.35, 0.84, -0.35, 1.33, 0.09);
+      // Mirror, lamps.
+      box(0.16, 0.1, 0.12, half - 1.3, 0.95, side * (W / 2 + 0.05), paint);
+      box(0.06, 0.13, 0.36, half + 0.0, 0.62, side * 0.56, head);
+      box(0.06, 0.12, 0.34, -half - 0.01, 0.68, side * 0.6, tail);
+    }
+    box(0.14, 0.17, W * 0.94, half - 0.02, 0.3, 0, trim);
+    box(0.14, 0.17, W * 0.94, -half + 0.02, 0.32, 0, trim);
+    wheels([wb, wf], r, W);
+    return W;
+  }
+  // The bus: green below the waist, cream above, a white roof with its air-conditioning pod (3.25 m to the top of it, as documented).
+  const W = 2.55, r = 0.5, wf = half - 2.55, wb = -half + 3.3;
+  const green = new THREE.MeshPhysicalMaterial({ color: "#1f6b4a", roughness: 0.32, metalness: 0.35, clearcoat: 0.8, clearcoatRoughness: 0.1 });
+  const cream = new THREE.MeshPhysicalMaterial({ color: "#efe7d2", roughness: 0.35, metalness: 0.2, clearcoat: 0.7, clearcoatRoughness: 0.12 });
+  materials.push(green, cream);
+  const roofM = mat({ color: "#f6f4ee", roughness: 0.55 });
+  const sign = mat({ color: "#2a1d05", emissive: "#ffb21c", emissiveIntensity: 1.1, roughness: 0.4 });
+  const lower = archedOutline([[half, 0.38], [half + 0.02, 1.16], [-half, 1.16]], 0.32, -half, half, [[wb, r, r + 0.1], [wf, r, r + 0.1]]);
+  add(profileBody(lower, W, 0.1), green);
+  const upper = new THREE.Shape([new THREE.Vector2(-half, 1.14), new THREE.Vector2(half + 0.02, 1.14), new THREE.Vector2(half - 0.02, 2.72), new THREE.Vector2(half - 0.3, 2.84), new THREE.Vector2(-half + 0.2, 2.84), new THREE.Vector2(-half, 2.7)]);
+  add(profileBody(upper, W, 0.1), cream);
+  box(L - 1.2, 0.14, W - 0.3, -0.1, 2.93, 0, roofM);
+  box(2.6, 0.24, W - 0.7, -1.2, 3.12, 0, roofM);
+  // The windows down both sides (a cream pillar between each, none across a door), the doors, the windscreen and the destination sign.
+  const doors = [half - 1.15, 0.35, -half + 2.3];
+  box(L - 2.0, 1.02, W + 0.03, -0.55, 1.92, 0, glass);
+  const panes = Math.round((L - 2.0) / 1.45);
+  for (let k = 0; k <= panes; k++) {
+    const x = -half + 0.45 + (k * (L - 2.0)) / panes;
+    if (doors.every((d) => Math.abs(x - d) > 0.62)) box(0.16, 1.04, W + 0.06, x, 1.92, 0, cream);
+  }
+  for (const x of doors) box(1.12, 2.06, W + 0.05, x, 1.42, 0, glass);
+  box(0.06, 1.6, W - 0.25, half + 0.03, 1.86, 0, glass);
+  box(0.07, 0.18, W - 0.6, half + 0.03, 2.6, 0, sign);
+  for (const side of [1, -1]) {
+    box(0.06, 0.16, 0.4, half + 0.04, 0.72, side * 0.88, head);
+    box(0.06, 0.32, 0.22, -half - 0.02, 0.9, side * 1.02, tail);
+    box(0.08, 0.3, 0.14, half + 0.12, 2.12, side * (W / 2 + 0.12), trim);
+  }
+  box(0.16, 0.24, W * 0.96, half + 0.02, 0.42, 0, trim);
+  box(0.16, 0.24, W * 0.96, -half - 0.02, 0.42, 0, trim);
+  wheels([wb, wf], r, W);
+  return W;
+}
+
 export async function buildRef(item: SceneItem, builders: RefBuilders): Promise<FigureHandle & { update?(t: number, dt: number): void }> {
   const kind = item.ref!;
   const materials: THREE.Material[] = [];
@@ -336,38 +449,53 @@ export async function buildRef(item: SceneItem, builders: RefBuilders): Promise<
     add(arm.translate(0.17 * H, 0.63 * H, 0), cloth);
     add(new THREE.SphereGeometry(0.075 * H, 20, 16).translate(0, 0.9 * H, 0), skin);
   } else if (kind === "car" || kind === "bus") {
-    const L = item.m, Hh = kind === "car" ? 1.435 : 3.25;
-    const paint = new THREE.MeshPhysicalMaterial({ color: kind === "car" ? "#c62828" : "#f2b705", roughness: 0.3, metalness: 0.45, clearcoat: 0.9 });
-    materials.push(paint);
-    const glass = mat({ color: "#1a2129", roughness: 0.08, metalness: 0.6 });
-    const tyre = mat({ color: "#151515", roughness: 0.9 });
-    const Wd = kind === "car" ? 1.78 : 2.55;
-    if (kind === "car") {
-      add(new RoundedBoxGeometry(L, Hh * 0.52, Wd, 3, 0.2).translate(0, Hh * 0.45, 0), paint);
-      add(new RoundedBoxGeometry(L * 0.55, Hh * 0.4, Wd * 0.88, 3, 0.16).translate(-L * 0.05, Hh * 0.82, 0), glass);
-    } else {
-      add(new RoundedBoxGeometry(L, Hh * 0.82, Wd, 3, 0.3).translate(0, Hh * 0.5, 0), paint);
-      add(new RoundedBoxGeometry(L * 0.94, Hh * 0.28, Wd * 1.02, 2, 0.1).translate(0, Hh * 0.68, 0), glass);
-    }
-    const wr = kind === "car" ? 0.33 : 0.52;
-    for (const [x, z] of [[0.32, 0.45], [0.32, -0.45], [-0.32, 0.45], [-0.32, -0.45]]) {
-      add(new THREE.CylinderGeometry(wr, wr, 0.25, 16).rotateX(Math.PI / 2).translate(x * L, wr, z * Wd * 1.0), tyre);
-    }
-    g.rotation.y = Math.PI / 2; // side-on to the camera
+    const Wd = vehicle(kind, item.m, add, mat, materials);
+    // Side-on to the camera, its length along the line (a figure's x runs across the screen), heading down the line towards the giants.
+    g.rotation.y = Math.PI;
     const holder = new THREE.Group();
     holder.add(g);
     return { object: holder, depth: Wd, lod: 1, materials, dispose() { geos.forEach((x) => x.dispose()); materials.forEach((m) => m.dispose()); } };
   } else if (kind === "house") {
-    const wall = mat({ color: "#e8dcc6", roughness: 0.9 });
-    const roofM = mat({ color: "#8c3b2b", roughness: 0.8 });
-    const win = mat({ color: "#2d3a46", roughness: 0.1, metalness: 0.5 });
-    const W = item.w, H = item.h, wallH = H * 0.66;
-    add(new THREE.BoxGeometry(W, wallH, W * 0.7).translate(0, wallH / 2, 0), wall);
-    const roofGeo = new THREE.CylinderGeometry(0.01, (W * 0.75) / Math.SQRT2 * 1.1, H - wallH, 4, 1);
-    roofGeo.rotateY(Math.PI / 4);
-    roofGeo.scale(1, 1, 0.7);
-    add(roofGeo.translate(0, wallH + (H - wallH) / 2, 0), roofM);
-    for (const [x, y] of [[-0.25, 0.3], [0.25, 0.3], [-0.25, 0.72], [0.25, 0.72]]) add(new THREE.BoxGeometry(W * 0.16, wallH * 0.2, 0.05).translate(x * W, y * wallH, W * 0.35 + 0.01), win);
+    // A two-storey house with a hipped slate roof (6.2 m to its ridge, as documented): rendered walls on a stone plinth,
+    // framed windows with green shutters and sills, a front door under a little canopy, a chimney.
+    const wall = mat({ color: "#efe4cf", roughness: 0.92 });
+    const stoneM = mat({ color: "#cdbf9f", roughness: 0.9 });
+    const roofM = mat({ color: "#5f6874", roughness: 0.7, metalness: 0.1 });
+    const frame = mat({ color: "#f7f4ec", roughness: 0.6 });
+    const win = mat({ color: "#24313d", roughness: 0.08, metalness: 0.5, envMapIntensity: 1.3 });
+    const shutter = mat({ color: "#2f6a4b", roughness: 0.7 });
+    const doorM = mat({ color: "#3a2a1e", roughness: 0.6 });
+    const W = item.w, H = item.h, D = W * 0.7, wallH = H * 0.64, eave = 0.35;
+    add(new THREE.BoxGeometry(W, wallH, D).translate(0, wallH / 2, 0), wall);
+    add(new THREE.BoxGeometry(W + 0.12, 0.45, D + 0.12).translate(0, 0.225, 0), stoneM);
+    add(new THREE.BoxGeometry(W + 0.1, 0.18, D + 0.1).translate(0, wallH * 0.5, 0), stoneM);
+    // The hipped roof: four slopes from the eaves to a short ridge.
+    {
+      const hw = W / 2 + eave, hd = D / 2 + eave, ridge = Math.max(0.2, hw - hd);
+      const p = [[-hw, wallH, hd], [hw, wallH, hd], [hw, wallH, -hd], [-hw, wallH, -hd], [-ridge, H, 0], [ridge, H, 0]];
+      const tri = [0, 1, 5, 0, 5, 4, 2, 3, 4, 2, 4, 5, 1, 2, 5, 3, 0, 4];
+      const pos = tri.flatMap((i) => p[i]);
+      const roofGeo = new THREE.BufferGeometry();
+      roofGeo.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3));
+      roofGeo.computeVertexNormals();
+      add(roofGeo, roofM);
+      add(new THREE.BoxGeometry(W + eave * 2, 0.16, D + eave * 2).translate(0, wallH - 0.02, 0), frame);
+      // The chimney stack, its top level with the ridge.
+      add(new THREE.BoxGeometry(0.7, 1.6, 0.6).translate(W * 0.28, H - 0.8, -D * 0.12), stoneM);
+    }
+    const zf = D / 2;
+    const windowAt = (x: number, y: number, w: number, h: number) => {
+      add(new THREE.BoxGeometry(w + 0.16, h + 0.16, 0.06).translate(x, y, zf + 0.02), frame);
+      add(new THREE.BoxGeometry(w, h, 0.06).translate(x, y, zf + 0.04), win);
+      add(new THREE.BoxGeometry(w + 0.3, 0.08, 0.2).translate(x, y - h / 2 - 0.1, zf + 0.08), stoneM);
+      for (const s of [-1, 1]) add(new THREE.BoxGeometry(w * 0.5, h + 0.06, 0.05).translate(x + s * (w * 0.75 + 0.1), y, zf + 0.04), shutter);
+    };
+    const ww = W * 0.13, wh = wallH * 0.24;
+    for (const x of [-0.3, 0.3]) windowAt(x * W, wallH * 0.28, ww, wh);
+    for (const x of [-0.3, 0, 0.3]) windowAt(x * W, wallH * 0.74, ww, wh);
+    add(new THREE.BoxGeometry(W * 0.13 + 0.16, wallH * 0.42 + 0.08, 0.06).translate(0, 0.45 + wallH * 0.21, zf + 0.02), frame);
+    add(new THREE.BoxGeometry(W * 0.13, wallH * 0.42, 0.08).translate(0, 0.45 + wallH * 0.21, zf + 0.04), doorM);
+    add(new THREE.BoxGeometry(W * 0.22, 0.08, 0.7).translate(0, 0.45 + wallH * 0.44, zf + 0.35), roofM);
   } else if (kind === "building") {
     // A Lumiose apartment house, ten storeys of 3.1 m (the reference's documented height to the roof's ridge):
     // eight in cream stone (a rusticated ground floor, wrought-iron balconies on the second and fifth, a deep

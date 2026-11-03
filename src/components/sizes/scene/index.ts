@@ -50,6 +50,8 @@ interface QualitySpec {
   blocks: number;
   facadeScale: 1 | 2;
   texSize: 256 | 512;
+  /** Grid of a relief mesh (cells on the box's longest side): lighter on the light qualities, which draw more of them at once. */
+  segments?: number;
   trees: boolean;
   /** Most figures drawn with their own relief mesh at once (the biggest on screen); the rest are the crowd's. */
   maxRelief: number;
@@ -62,8 +64,8 @@ interface QualitySpec {
 }
 
 export const QUALITY: Record<Quality, QualitySpec> = {
-  draft: { pr: 1, msaa: 0, ao: false, aoSamples: 8, dof: false, dofSamples: 16, bloom: false, shadow: 512, cascades: 1, blocks: 0.2, facadeScale: 1, texSize: 256, trees: false, maxRelief: 4, resident: 24, crowd: 400, crowdShadows: false, anisotropy: 1 },
-  low: { pr: 1, msaa: 0, ao: false, aoSamples: 8, dof: false, dofSamples: 16, bloom: false, shadow: 1024, cascades: 2, blocks: 0.45, facadeScale: 1, texSize: 256, trees: true, maxRelief: 10, resident: 48, crowd: 650, crowdShadows: false, anisotropy: 2 },
+  draft: { pr: 1, msaa: 0, ao: false, aoSamples: 8, dof: false, dofSamples: 16, bloom: false, shadow: 512, cascades: 1, blocks: 0.2, facadeScale: 1, texSize: 256, segments: 56, trees: false, maxRelief: 4, resident: 24, crowd: 400, crowdShadows: false, anisotropy: 1 },
+  low: { pr: 1, msaa: 0, ao: false, aoSamples: 8, dof: false, dofSamples: 16, bloom: false, shadow: 1024, cascades: 2, blocks: 0.45, facadeScale: 1, texSize: 256, segments: 56, trees: true, maxRelief: 16, resident: 64, crowd: 650, crowdShadows: false, anisotropy: 2 },
   medium: { pr: 1.25, msaa: 4, ao: false, aoSamples: 8, dof: true, dofSamples: 16, bloom: true, shadow: 2048, cascades: 3, blocks: 0.75, facadeScale: 1, texSize: 512, trees: true, maxRelief: 18, resident: 64, crowd: 1000, crowdShadows: true, anisotropy: 4 },
   high: { pr: 1.5, msaa: 4, ao: true, aoSamples: 12, dof: true, dofSamples: 32, bloom: true, shadow: 2048, cascades: 3, blocks: 1, facadeScale: 1, texSize: 512, trees: true, maxRelief: 28, resident: 80, crowd: 1200, crowdShadows: true, anisotropy: 8 },
   export: { pr: 1, msaa: 4, ao: true, aoSamples: 24, dof: true, dofSamples: 32, bloom: true, shadow: 4096, cascades: 4, blocks: 1, facadeScale: 2, texSize: 512, trees: true, maxRelief: 40, resident: 100, crowd: 1200, crowdShadows: true, anisotropy: 8 },
@@ -355,7 +357,7 @@ export function createSizesScene(host: HTMLElement, opts: SceneOptions): SizesSc
   // ---- Figures.
   const providers: FigureProvider[] = [];
   if (opts.models && Object.keys(opts.models).length) providers.push(new ModelProvider(opts.models));
-  const relief = new ReliefProvider(opts.urls, { anisotropy: maxAniso, sharpen: opts.quality === "export" ? 0.55 : 0.45, texSize: Q.texSize, coverage: Q.msaa > 0 });
+  const relief = new ReliefProvider(opts.urls, { anisotropy: maxAniso, sharpen: opts.quality === "export" ? 0.55 : 0.45, texSize: Q.texSize, coverage: Q.msaa > 0, segments: Q.segments });
   providers.push(relief);
   let slots: Slot[] = [];
   let companion: Slot | null = null;
@@ -535,8 +537,11 @@ export function createSizesScene(host: HTMLElement, opts: SceneOptions): SizesSc
 
   // ---- Camera.
   const target = new THREE.Vector3();
+  /** The frame the camera draws (the finale composes Prism Tower for it). */
+  const lens = { vfov: 35, aspect: 1 };
+  const lensNow = () => { lens.vfov = camera.fov; lens.aspect = camera.aspect; return lens; };
   function applyView() {
-    const p = poseFor(view, plan.path);
+    const p = poseFor(view, plan.path, lensNow());
     camera.position.set(...p.position);
     target.set(...p.target);
     camera.lookAt(target);
@@ -605,7 +610,7 @@ export function createSizesScene(host: HTMLElement, opts: SceneOptions): SizesSc
     // Now, then each view the page says is coming.
     const list: FutureView[] = [{ view, dt: 0 }, ...futures];
     for (const f of list) {
-      const p = poseFor(f.view, plan.path);
+      const p = poseFor(f.view, plan.path, lensNow());
       futureCam.position.set(...p.position);
       futureCam.lookAt(tmpV.set(...p.target));
       futureCam.updateMatrixWorld();
