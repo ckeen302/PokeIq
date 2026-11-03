@@ -15,8 +15,22 @@ import { LogFormatter } from "@pkmn/view";
 export const gens = new Generations(Dex);
 export const gen9 = gens.get(9);
 
-export type SideId = "p1" | "p2";
-export const other = (side: SideId): SideId => (side === "p1" ? "p2" : "p1");
+export type SideId = "p1" | "p2" | "p3" | "p4";
+export const SIDE_IDS: readonly SideId[] = ["p1", "p2", "p3", "p4"];
+/** The side seat `seat` plays (0 is p1). */
+export const sideOfSeat = (seat: number | null | undefined): SideId => SIDE_IDS[seat ?? 0] ?? "p1";
+/**
+ * The half of the field a side battles on: p1 and p3 share the near half
+ * from p1's seat, p2 and p4 the far one (Showdown's four-player layout).
+ */
+export const halfOf = (side: SideId): 0 | 1 => (side === "p1" || side === "p3" ? 0 : 1);
+export const sameHalf = (a: SideId, b: SideId) => halfOf(a) === halfOf(b);
+/**
+ * The side across from `side`: in a two-trainer battle the opponent; with
+ * four, the first side of the other half (in @pkmn/client a half's sides
+ * share one array of Pokémon in battle, so it holds both of theirs).
+ */
+export const other = (side: SideId): SideId => (halfOf(side) === 0 ? "p2" : "p1");
 
 export interface SlotRef {
   side: SideId;
@@ -26,6 +40,8 @@ export interface SlotRef {
 export interface MonSnap {
   /** Stable within its side (Showdown's original ident). */
   key: string;
+  /** The trainer it belongs to (in four-player battles a half's Pokémon in battle are two trainers'). */
+  owner: SideId;
   name: string;
   /** The current forme, e.g. "Ogerpon-Wellspring". */
   species: string;
@@ -63,7 +79,10 @@ export interface Snap {
   /** The battle's generation (from its `|gen|` line; 9 until then). */
   gen: number;
   turn: number;
+  /** Every side (p3 and p4 are empty outside four-player battles). */
   sides: Record<SideId, SideSnap>;
+  /** The battle's game type, from its `|gametype|` line. */
+  gameType?: string;
   weather: string;
   terrain: string;
   pseudo: string[];
@@ -88,9 +107,9 @@ export interface Step {
   at?: number;
 }
 
-/** "p2a: Name" → p2, slot 0. */
+/** "p2a: Name" → p2, slot 0 ("p3b: Name" → p3, slot 1: a four-player half's second spot). */
 export function slotOf(ident: string | undefined): SlotRef | undefined {
-  const m = /^(p[12])([a-c])?:/.exec(ident ?? "");
+  const m = /^(p[1-4])([a-c])?:/.exec(ident ?? "");
   if (!m) return undefined;
   return { side: m[1] as SideId, slot: m[2] ? m[2].charCodeAt(0) - 97 : 0 };
 }
@@ -155,6 +174,7 @@ function monSnap(p: Pokemon): MonSnap {
     .filter((label): label is string => !!label);
   return {
     key: p.originalIdent,
+    owner: (/^p[1-4]/.exec(p.originalIdent)?.[0] ?? "p1") as SideId,
     name: p.name,
     species: p.speciesForme,
     speciesId: species?.id ?? "",
@@ -185,6 +205,9 @@ function safeTypes(p: Pokemon): string[] {
     return [];
   }
 }
+
+/** A side no four-player battle filled in (p3 and p4 of a two-trainer battle). */
+export const emptySide = (id: SideId): SideSnap => ({ id, name: "", active: [], team: [], total: 0, conditions: [] });
 
 function sideSnap(side: Side): SideSnap {
   return {
@@ -269,6 +292,11 @@ export class BattleModel {
     }
     // Showdown's timer messages ("Battle timer is ON…", "Red has 20 seconds left.") are plain text.
     if (cmd === "inactive" || cmd === "inactiveoff") text = args[1] ?? "";
+    // Four trainers: Showdown's "Battle started between" names them all (a Multi Battle's by team).
+    if (cmd === "start" && this.battle.sides.length === 4) {
+      const n = this.battle.sides.map((s) => s.name || "?");
+      text = this.battle.gameType === "multi" ? `Battle started between ${n[0]} & ${n[2]} and ${n[1]} & ${n[3]}!` : `Battle started between ${n[0]}, ${n[1]}, ${n[2]} and ${n[3]}!`;
+    }
     // The battle's header, as Showdown's log opens: the format, then its rules.
     if (cmd === "tier" && args[1]) text = `Format: **${args[1]}**`;
     if (cmd === "rule" && args[1]) text = args[1];
@@ -288,7 +316,7 @@ export class BattleModel {
       if (typeof kwArgs.spread === "string") step.targets = kwArgs.spread.split(",").map((t) => slotOf(`${t}:`)).filter((t): t is SlotRef => !!t);
     }
     if ((cmd === "switch" || cmd === "drag" || cmd === "replace") && who) {
-      step.replaced = this.battle[who.side].active[who.slot]?.originalIdent;
+      step.replaced = this.battle[who.side]?.active[who.slot]?.originalIdent;
     }
     try {
       this.battle.add(args as never, kwArgs as never);
@@ -304,7 +332,8 @@ export class BattleModel {
     return {
       gen: b.gen.num,
       turn: b.turn,
-      sides: { p1: sideSnap(b.p1), p2: sideSnap(b.p2) },
+      sides: { p1: sideSnap(b.p1), p2: sideSnap(b.p2), p3: b.p3 ? sideSnap(b.p3) : emptySide("p3"), p4: b.p4 ? sideSnap(b.p4) : emptySide("p4") },
+      gameType: b.gameType,
       weather: b.field.weather ?? "",
       terrain: b.field.terrain ?? "",
       pseudo: Object.keys(b.field.pseudoWeather),
@@ -321,7 +350,8 @@ export function benchOrder(pokemon: { active?: boolean }[]): number[] {
 /** Showdown's log says how a battle ended early ("Red forfeited.") before naming the winner. */
 export function endNote(view: { end?: { winner: number | null; reason?: string } | null; players: { name: string }[] }): string | null {
   const end = view.end;
-  if (!end || end.winner === null || end.reason !== "forfeit") return null;
+  // Four trainers: the log's own lines say who forfeited.
+  if (!end || end.winner === null || end.reason !== "forfeit" || view.players.length !== 2) return null;
   const loser = view.players[1 - end.winner]?.name;
   return loser ? `${loser} forfeited.` : null;
 }

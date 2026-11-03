@@ -18,9 +18,13 @@ import {
   type BattleRequest,
   type BattleView,
   type CpuLevel,
+  type GameType,
+  isGameType,
+  playerCount as playersFor,
+  teamOf,
 } from "@/lib/battle/play";
 import { PVP_AWAY_MS } from "@/lib/pvp-types";
-import { SIDES, SIM_VERSION, SimReplayError, SimSession, newSeed, seatOfSide, sideOf, type SideID } from "./engine";
+import { SIM_VERSION, SimReplayError, SimSession, newSeed, seatOfSide, sideOf, type PlayerSide } from "./engine";
 import { chooseCpu, seededRandom } from "./cpu";
 import { randomChoice } from "./choices";
 import { cpuTeam, factoryTeam, pickFactoryTier, prepareTeam, seatTeam } from "./teams";
@@ -28,6 +32,7 @@ import { checkRules, customCpuTeam, prepareCustomTeam } from "./custom";
 import { Dex, Teams } from "pokemon-showdown";
 import { customName, customTimer, type CustomRules } from "@/lib/battle/custom-rules";
 import {
+  ALL_CHANNELS,
   insertBattle,
   jsonbOrder,
   loadBattle,
@@ -66,7 +71,40 @@ const SEEN_STEP_MS = 5_000;
 const MAX_TRIES = 6;
 /** The computer never needs more than a couple of choices in a row; a cap keeps a bug from spinning. */
 const MAX_CPU_STEPS = 8;
+/** With no trainer left to answer (a Free-For-All whose last trainer is out), the computers play the battle out: at most this many choices a request. */
+const MAX_CPU_ONLY_STEPS = 480;
 const CPU_SEAT_ID = "cpu";
+
+/** A seat the computer plays: the opponent in a battle against the computer, or a four-player room's filled seat. */
+export const isCpuSeat = (seat: Pick<BattleSeat, "id" | "cpu"> | undefined) => !!seat && (seat.cpu === true || seat.id === CPU_SEAT_ID);
+
+const gameTypes = new Map<string, GameType>();
+
+/** The Showdown format id a battle plays. */
+const showdownIdOf = (meta: Pick<BattleMeta, "format" | "formatid">) => meta.formatid ?? SHOWDOWN_FORMAT[meta.format] ?? meta.format;
+
+/** A battle's game type: stored once it starts; before that, the Showdown format's own (custom rules on one of Showdown's formats included). */
+export function gameTypeOf(meta: Pick<BattleMeta, "format" | "formatid" | "gameType">): GameType {
+  if (meta.gameType) return meta.gameType;
+  const id = showdownIdOf(meta);
+  let type = gameTypes.get(id);
+  if (!type) {
+    try {
+      const raw = Dex.formats.get(id, true).gameType;
+      type = isGameType(raw) ? raw : PLAY_FORMAT_INFO[meta.format].gameType;
+    } catch {
+      type = PLAY_FORMAT_INFO[meta.format].gameType;
+    }
+    gameTypes.set(id, type);
+  }
+  return type;
+}
+
+/** Trainers a battle seats: four in Free-For-All and Multi Battles. */
+export const seatsFor = (meta: Pick<BattleMeta, "format" | "formatid" | "gameType" | "playerCount">) => meta.playerCount ?? playersFor(gameTypeOf(meta));
+
+/** A Free-For-All seat whose trainer is already out. */
+const isOut = (meta: BattleMeta, seat: number) => !!meta.out?.some((o) => o.seat === seat);
 
 // ---------------------------------------------------------------------------
 // Seats
@@ -80,11 +118,11 @@ export function battleToken(code: string, playerId: string, seat: number): strin
 /** The player (and the seat they last had, a hint for which channel to read) a token is for. */
 export function readBattleToken(token: unknown, code: string): { playerId: string; seat: number } | null {
   const t = verifyToken<{ d: string; p: string; s: number }>("battle", token);
-  return t && t.d === code && typeof t.p === "string" ? { playerId: t.p, seat: t.s === 1 ? 1 : 0 } : null;
+  return t && t.d === code && typeof t.p === "string" ? { playerId: t.p, seat: t.s === 1 || t.s === 2 || t.s === 3 ? t.s : 0 } : null;
 }
 
-const seatIndex = (meta: BattleMeta, playerId: string | null) => (playerId ? meta.seats.findIndex((s) => s.id === playerId) : -1);
-const channelOf = (seat: number): BattleChannel => (seat === 0 ? "p1" : "p2");
+const seatIndex = (meta: BattleMeta, playerId: string | null) => (playerId ? meta.seats.findIndex((s) => s.id === playerId && !isCpuSeat(s)) : -1);
+const channelOf = (seat: number): BattleChannel => sideOf(seat);
 
 /**
  * The one channel a viewer may read: a seated player's own, and for anyone
@@ -93,13 +131,13 @@ const channelOf = (seat: number): BattleChannel => (seat === 0 ? "p1" : "p2");
  * visitor to a battle against the computer.
  */
 export function channelFor(meta: Pick<BattleMeta, "kind">, seat: number): BattleChannel | null {
-  if (seat === 0 || seat === 1) return channelOf(seat);
+  if (seat >= 0 && seat <= 3) return channelOf(seat);
   return meta.kind === "pvp" ? "spectator" : null;
 }
 
 const viewerLog = (rec: BattleRecord, seat: number) => {
   const channel = channelFor(rec.meta, seat);
-  return channel ? rec.logs[channel] : [];
+  return channel ? (rec.logs[channel] ?? []) : [];
 };
 
 // ---------------------------------------------------------------------------
@@ -138,7 +176,7 @@ class Work {
   private readonly before: string;
   private stateChanged = false;
   private readonly logsChanged = new Set<BattleChannel>();
-  private sim: { session: SimSession; before: [object | null, object | null] } | null = null;
+  private sim: { session: SimSession; before: (object | null)[] } | null = null;
   /** Why the battle is about to end, when a forfeit, timeout or disconnect ends it. */
   reason: BattleEndReason | null = null;
 
@@ -161,7 +199,15 @@ class Work {
       patch.state = this.rec.state;
       patch.inputLog = this.rec.inputLog;
     }
-    if (this.logsChanged.size) patch.logs = Object.fromEntries([...this.logsChanged].map((ch) => [ch, this.rec.logs[ch]]));
+    if (this.logsChanged.size) {
+      // p3's channel is stored with p1's and p4's with p2's (store.ts): a change to either writes both.
+      const changed = new Set(this.logsChanged);
+      for (const [a, b] of [["p1", "p3"], ["p2", "p4"]] as const) {
+        if (!this.rec.logs[b]) continue;
+        if (changed.has(a) || changed.has(b)) changed.add(a).add(b);
+      }
+      patch.logs = Object.fromEntries([...changed].map((ch) => [ch, this.rec.logs[ch] ?? []]));
+    }
     return patch;
   }
 
@@ -171,27 +217,29 @@ class Work {
     if (!this.rec.state) return null;
     try {
       const session = SimSession.restore({ simVersion: this.meta.simVersion, state: this.rec.state, inputLog: this.rec.inputLog, chosen: this.meta.chosen });
-      this.sim = { session, before: [session.requestObject("p1"), session.requestObject("p2")] };
+      this.sim = { session, before: session.sides.map((side) => session.requestObject(side)) };
       return session;
     } catch (err) {
       console.error(`[battle] ${this.meta.code} couldn't be restored:`, err instanceof SimReplayError ? err.message : err);
-      endBattle(this.meta, "nocontest", null, now);
+      endBattle(this.meta, "nocontest", [], now);
       return null;
     }
   }
 
   /** A line for everyone's log that isn't the simulator's (Showdown's |inactive| timer messages). */
   note(line: string) {
-    for (const channel of ["p1", "p2", "spectator"] as const) {
-      this.rec.logs[channel].push(line);
-      this.meta.lines[channel] = this.rec.logs[channel].length;
+    for (const channel of ALL_CHANNELS) {
+      const log = this.rec.logs[channel];
+      if (!log) continue;
+      log.push(line);
+      this.meta.lines[channel] = log.length;
       this.logsChanged.add(channel);
     }
   }
 
   /** A battle that's just starting. */
   begin(session: SimSession) {
-    this.sim = { session, before: [null, null] };
+    this.sim = { session, before: session.sides.map(() => null) };
   }
 
   /**
@@ -203,6 +251,8 @@ class Work {
     if (!this.sim) return;
     const { session } = this.sim;
     const meta = this.meta;
+    // The computer answers whatever it's been asked (every seat it plays) before the turn's lines are taken in.
+    playCpu(this, session);
     const res = session.result();
     this.rec.state = res.state;
     this.rec.inputLog = res.inputLog;
@@ -210,22 +260,31 @@ class Work {
     meta.simVersion = res.simVersion;
     meta.turn = res.turn;
     meta.chosen = res.chosen ?? {};
-    for (const channel of ["p1", "p2", "spectator"] as const) {
-      if (!res.lines[channel].length) continue;
-      this.rec.logs[channel].push(...res.lines[channel]);
-      meta.lines[channel] = this.rec.logs[channel].length;
+    for (const channel of ["spectator", ...session.sides] as const) {
+      const lines = res.lines[channel];
+      if (!lines?.length) continue;
+      const log = (this.rec.logs[channel] ??= []);
+      log.push(...lines);
+      meta.lines[channel] = log.length;
       this.logsChanged.add(channel);
     }
+    // A Free-For-All's trainers as they're knocked out (a forfeit counts), in order.
+    if (gameTypeOf(meta) === "freeforall") {
+      for (const side of session.out()) {
+        const seat = seatOfSide(side);
+        if (!isOut(meta, seat)) meta.out = [...(meta.out ?? []), { seat, turn: res.turn }];
+      }
+    }
     const started: number[] = [];
-    SIDES.forEach((side, seat) => {
+    session.sides.forEach((side, seat) => {
       const pending = session.pending(side);
       const object = session.requestObject(side);
       // Compared by content in a fixed key order: the stored copy comes back from jsonb with its keys reordered.
       const fresh = object !== this.sim!.before[seat] || canonicalJson(pending) !== canonicalJson(meta.requests[seat]);
       this.sim!.before[seat] = object;
       if (!fresh) return;
-      const wasPending = meta.requests[seat] !== null;
-      meta.rqid[seat] += 1;
+      const wasPending = (meta.requests[seat] ?? null) !== null;
+      meta.rqid[seat] = (meta.rqid[seat] ?? 0) + 1;
       meta.requests[seat] = pending ? (JSON.parse(JSON.stringify(pending)) as BattleRequest) : null;
       const clock = meta.clocks?.[seat];
       if (!clock) return;
@@ -246,20 +305,39 @@ class Work {
       }
     }
     if (res.ended && !meta.end) {
-      endBattle(meta, this.reason ?? "normal", res.winner ? seatOfSide(res.winner) : null, now);
+      endBattle(meta, this.reason ?? "normal", res.winners.map(seatOfSide), now);
     }
   }
 }
 
-function endBattle(meta: BattleMeta, reason: BattleEndReason, winner: 0 | 1 | null, at: number) {
+/**
+ * The end of a battle: who won (`winners`, every winning seat: both
+ * partners in a Multi Battle; none for a tie or no contest) and, in a
+ * Free-For-All, the final standings (the winner, then the trainers knocked
+ * out, latest first).
+ */
+function endBattle(meta: BattleMeta, reason: BattleEndReason, winners: number[], at: number) {
   meta.status = "finished";
-  meta.end = { reason, winner, at };
-  meta.requests = [null, null];
+  const four = seatsFor(meta) === 4;
+  meta.end = { reason, winner: winners.length ? Math.min(...winners) : null, at };
+  if (four) meta.end.winners = [...winners].sort((a, b) => a - b);
+  if (gameTypeOf(meta) === "freeforall") {
+    const out = (meta.out ?? []).map((o) => o.seat);
+    const rest = meta.seats.map((_, i) => i).filter((i) => !winners.includes(i) && !out.includes(i));
+    meta.end.standings = [...winners, ...rest, ...[...out].reverse()].filter((s, i, all) => all.indexOf(s) === i);
+  }
+  meta.requests = meta.requests.map(() => null);
   for (const clock of meta.clocks ?? []) {
     clock.startedAt = null;
     clock.deadline = null;
   }
   if (meta.kind === "pvp") meta.chat = systemLine(meta.chat, "GG!", at);
+}
+
+/** Everyone who isn't `seat`'s side: the winners when `seat` loses a two-trainer battle, or (a Multi Battle) when its team does. */
+function winnersAgainst(meta: BattleMeta, seat: number): number[] {
+  const type = gameTypeOf(meta);
+  return meta.seats.map((_, i) => i).filter((i) => teamOf(type, i) !== teamOf(type, seat));
 }
 
 // ---------------------------------------------------------------------------
@@ -271,9 +349,9 @@ type Timer = BattleTimer;
 const showdownTimers = new Map<string, BattleTimer>();
 
 /** A battle's turn timer: its ruleset's (null: no timer), else Showdown's timer for the Showdown format it plays (the VGC Timer where the format has it). */
-export function timerOf(meta: Pick<BattleMeta, "format" | "rules"> & { formatid?: string }): Timer | null {
+export function timerOf(meta: Pick<BattleMeta, "format" | "rules"> & { formatid?: string; gameType?: GameType }): Timer | null {
   if (meta.rules) return customTimer(meta.rules);
-  const gameType = PLAY_FORMAT_INFO[meta.format].gameType;
+  const gameType = gameTypeOf(meta);
   const id = meta.formatid ?? SHOWDOWN_FORMAT[meta.format] ?? meta.format;
   let timer = showdownTimers.get(id);
   if (!timer) {
@@ -298,7 +376,7 @@ export function newClock(timer: Timer): SideClock {
  * a turn for one player (a switch after a KO, U-turn) adds up to 5 s to
  * every bank. The first request after the timer starts adds nothing.
  */
-function topUp(meta: BattleMeta, clocks: [SideClock, SideClock], timer: Timer, freshCount: number, pendingCount: number) {
+function topUp(meta: BattleMeta, clocks: SideClock[], timer: Timer, freshCount: number, pendingCount: number) {
   if (meta.timerTurn === undefined) {
     meta.timerTurn = meta.turn;
     meta.timerFirst = true;
@@ -338,8 +416,11 @@ export function stopClock(clock: SideClock, now: number) {
 
 /** Whether a live battle has a clock run out or a player gone, so a poll must catch it up. */
 function overdue(meta: BattleMeta, now: number): boolean {
-  if (meta.kind !== "pvp" || meta.status !== "playing") return false;
-  if (meta.seats.some((s) => now - s.seenAt > BATTLE_AWAY_MS)) return true;
+  if (meta.status !== "playing") return false;
+  // The computer still owes a choice (its seats answer at once, unless a long run of them was cut short).
+  if (meta.seats.some((s, i) => isCpuSeat(s) && meta.requests[i])) return true;
+  if (meta.kind !== "pvp") return false;
+  if (meta.seats.some((s, i) => !isCpuSeat(s) && !isOut(meta, i) && now - s.seenAt > BATTLE_AWAY_MS)) return true;
   return (meta.clocks ?? []).some((c) => c.deadline !== null && c.deadline <= now);
 }
 
@@ -349,11 +430,16 @@ function overdue(meta: BattleMeta, now: number): boolean {
  */
 function catchUp(work: Work, now: number) {
   const meta = work.meta;
+  // The computer's owed choices first (a long run of them cut short by the step cap).
+  if (meta.status === "playing" && meta.seats.some((s, i) => isCpuSeat(s) && meta.requests[i])) {
+    const session = work.session(now);
+    if (session) work.absorb(now);
+  }
   for (let step = 0; step < 6 && meta.kind === "pvp" && meta.status === "playing"; step++) {
-    // Gone the longest first.
+    // Gone the longest first (the computer never goes, and a Free-For-All trainer who's out has nothing left to lose).
     const gone = meta.seats
-      .map((s, seat) => ({ seat, at: s.seenAt + BATTLE_AWAY_MS }))
-      .filter((g) => g.at < now)
+      .map((s, seat) => ({ seat, at: s.seenAt + BATTLE_AWAY_MS, cpu: isCpuSeat(s) }))
+      .filter((g) => !g.cpu && !isOut(meta, g.seat) && g.at < now)
       .sort((a, b) => a.at - b.at)[0];
     if (gone) {
       if (!forceLose(work, gone.seat, "left", now)) return;
@@ -366,9 +452,9 @@ function catchUp(work: Work, now: number) {
     if (!late) return;
     const { clock, seat } = late;
     const timer = timerOf(meta);
-    // Both players out of time together: Showdown calls it a tie.
-    const other = meta.clocks![1 - seat];
-    if (meta.timeoutLoses && !timer?.autoChoose && other.deadline !== null && other.deadline <= now) {
+    // Both players out of time together: Showdown calls it a tie (two-trainer battles; with four, each trainer out of time loses alone).
+    const other = meta.clocks!.length === 2 ? meta.clocks![1 - seat] : null;
+    if (meta.timeoutLoses && !timer?.autoChoose && other && other.deadline !== null && other.deadline <= now) {
       work.note("|-message|All players are inactive.");
       if (!forceTie(work, now)) return;
       continue;
@@ -397,11 +483,11 @@ function catchUp(work: Work, now: number) {
         continue;
       }
     } else if (request) {
-      const doubles = PLAY_FORMAT_INFO[meta.format].gameType === "doubles";
+      const geometry = gameTypeOf(meta);
       const rand = seededRandom(`${meta.seed}:timer:${session.battle.inputLog.length}`);
-      let choice = chooseCpu(session.battle, session.battle[side], "easy", rand);
+      let choice = chooseCpu(session.battle, session.side(side)!, "easy", rand);
       if (!session.choose(side, choice).ok) {
-        choice = randomChoice(request, doubles, rand);
+        choice = randomChoice(request, geometry, rand);
         if (!session.choose(side, choice).ok) {
           if (!forceLose(work, seat, "timeout", now)) return;
           continue;
@@ -419,19 +505,31 @@ function forceTie(work: Work, now: number): boolean {
   work.reason = "timeout";
   session.tie();
   work.absorb(now);
-  if (!work.meta.end) endBattle(work.meta, "timeout", null, now);
+  if (!work.meta.end) endBattle(work.meta, "timeout", [], now);
   return true;
 }
 
-/** `seat` loses (forfeit, timeout, disconnect). */
+/**
+ * `seat` loses (forfeit, timeout, disconnect). In a Free-For-All only that
+ * trainer is out and the others battle on (the last one standing wins); in
+ * a Multi Battle their team loses.
+ */
 function forceLose(work: Work, seat: number, reason: BattleEndReason, now: number): boolean {
   const session = work.session(now);
   if (!session) return false;
+  const ffa = gameTypeOf(work.meta) === "freeforall";
+  // A Free-For-All goes on without them: everyone's log says why they're out (a timeout already has its own line).
+  if (ffa && reason !== "timeout") work.note(`|-message|${work.meta.seats[seat]?.name ?? "A trainer"} forfeited.`);
+  // How the battle ends if this loss ends it (a Free-For-All's last two: the other one wins).
   work.reason = reason;
   session.lose(sideOf(seat));
+  if (ffa && !session.ended) {
+    // Out, but the battle goes on: the reason belongs to the battle's end, whoever brings it.
+    work.reason = null;
+  }
   work.absorb(now);
-  // The simulator always ends a battle on a forced loss; make sure of it.
-  if (!work.meta.end) endBattle(work.meta, reason, seat === 0 ? 1 : 0, now);
+  // The simulator always ends a two-trainer (or Multi) battle on a forced loss; make sure of it.
+  if (!work.meta.end && !ffa) endBattle(work.meta, reason, winnersAgainst(work.meta, seat), now);
   return true;
 }
 
@@ -439,28 +537,42 @@ function forceLose(work: Work, seat: number, reason: BattleEndReason, now: numbe
 // The computer's turns
 // ---------------------------------------------------------------------------
 
-/** Lets the computer (p2) answer every request it has, explicitly. */
+/**
+ * Lets the computer answer every request it has on every seat it plays,
+ * explicitly. With no trainer left who could still answer anything (a
+ * Free-For-All whose trainers are all out), it plays the battle out.
+ */
 function playCpu(work: Work, session: SimSession) {
   const meta = work.meta;
-  if (meta.kind !== "cpu" || !meta.cpu) return;
-  const doubles = PLAY_FORMAT_INFO[meta.format].gameType === "doubles";
-  let failures = 0;
-  for (let i = 0; i < MAX_CPU_STEPS && !session.ended; i++) {
+  const cpus = meta.seats.map((s, i) => (isCpuSeat(s) ? i : -1)).filter((i) => i >= 0);
+  if (!cpus.length || session.ended) return;
+  const level = meta.cpu?.level ?? "normal";
+  const geometry = gameTypeOf(meta);
+  const humansLeft = meta.seats.some((s, i) => !isCpuSeat(s) && (session.side(sideOf(i))?.pokemonLeft ?? 0) > 0);
+  const limit = humansLeft ? MAX_CPU_STEPS * cpus.length : MAX_CPU_ONLY_STEPS;
+  const failures = new Map<number, number>();
+  for (let i = 0; i < limit && !session.ended; i++) {
     // Re-read every time: a rejected choice can update the request (a move turned out to be disabled).
-    const request = session.pending("p2");
-    if (!request) return;
-    const rand = seededRandom(`${meta.seed}:cpu:${session.battle.inputLog.length}:${failures}`);
-    const choice = failures === 0 ? chooseCpu(session.battle, session.battle.p2, meta.cpu.level, rand) : randomChoice(request, doubles, rand);
-    if (session.choose("p2", choice).ok) {
-      failures = 0;
+    const seat = cpus.find((c) => session.pending(sideOf(c)));
+    if (seat === undefined) return;
+    const side = sideOf(seat);
+    const request = session.pending(side)!;
+    const failed = failures.get(seat) ?? 0;
+    const rand = seededRandom(`${meta.seed}:cpu${seat === 1 ? "" : seat}:${session.battle.inputLog.length}:${failed}`);
+    const choice = failed === 0 ? chooseCpu(session.battle, session.side(side)!, level, rand) : randomChoice(request, geometry, rand);
+    if (session.choose(side, choice).ok) {
+      failures.set(seat, 0);
       continue;
     }
-    if (++failures < 3) continue;
+    if (failed + 1 < 3) {
+      failures.set(seat, failed + 1);
+      continue;
+    }
     // A computer that can't move would stall the battle: it concedes.
-    console.error(`[battle] ${meta.code}: the computer had no legal choice`);
-    work.reason = "forfeit";
-    session.lose("p2");
-    return;
+    console.error(`[battle] ${meta.code}: the computer (${side}) had no legal choice`);
+    if (geometry !== "freeforall") work.reason = "forfeit";
+    session.lose(side);
+    failures.set(seat, 0);
   }
 }
 
@@ -469,11 +581,13 @@ function playCpu(work: Work, session: SimSession) {
 // ---------------------------------------------------------------------------
 
 function blankRecord(meta: BattleMeta): BattleRecord {
-  return { meta, state: null, inputLog: [], logs: { p1: [], p2: [], spectator: [] } };
+  const rec: BattleRecord = { meta, state: null, inputLog: [], logs: { p1: [], p2: [], spectator: [] } };
+  if (seatsFor(meta) === 4) Object.assign(rec.logs, { p3: [], p4: [] });
+  return rec;
 }
 
-function newMeta(code: string, kind: BattleMeta["kind"], format: PlayFormatId, seats: BattleSeat[], now: number): BattleMeta {
-  return {
+function newMeta(code: string, kind: BattleMeta["kind"], format: PlayFormatId, seats: BattleSeat[], now: number, formatid?: string): BattleMeta {
+  const meta: BattleMeta = {
     v: 1,
     code,
     kind,
@@ -488,9 +602,24 @@ function newMeta(code: string, kind: BattleMeta["kind"], format: PlayFormatId, s
     requests: [null, null],
     lines: { p1: 0, p2: 0, spectator: 0 },
   };
+  if (formatid) meta.formatid = formatid;
+  shape(meta);
+  return meta;
 }
 
-/** Both seats are filled (and ready): the simulator starts the battle. */
+/** Records the battle's game type, and gives a four-player battle its four sides' counters. */
+function shape(meta: BattleMeta) {
+  const type = gameTypeOf({ format: meta.format, formatid: meta.formatid });
+  if (type === "singles" || type === "doubles") return;
+  meta.gameType = type;
+  const n = playersFor(type);
+  meta.playerCount = n;
+  meta.rqid = Array.from({ length: n }, (_, i) => meta.rqid[i] ?? 0);
+  meta.requests = Array.from({ length: n }, (_, i) => meta.requests[i] ?? null);
+  if (n === 4) meta.lines = { ...meta.lines, p3: meta.lines.p3 ?? 0, p4: meta.lines.p4 ?? 0 };
+}
+
+/** Every seat is filled (and ready): the simulator starts the battle. */
 function start(work: Work, now: number) {
   const meta = work.meta;
   let teams: string[];
@@ -500,20 +629,18 @@ function start(work: Work, now: number) {
     if (style === "open") meta.factoryTier = pickFactoryTier();
     teams = meta.seats.map((s) => s.team ?? Teams.pack(factoryTeam(style, meta.factoryTier ?? "OU")));
   } else {
-    teams = meta.seats.map((s) => (s.id === CPU_SEAT_ID ? s.team! : seatTeam(meta.format, s.team)));
+    teams = meta.seats.map((s) => (isCpuSeat(s) ? s.team! : seatTeam(meta.format, s.team)));
   }
   const session = SimSession.create({
-    formatid: meta.formatid ?? SHOWDOWN_FORMAT[meta.format] ?? meta.format,
+    formatid: showdownIdOf(meta),
     seed: meta.seed,
-    p1: { name: meta.seats[0].name, team: teams[0] },
-    p2: { name: meta.seats[1].name, team: teams[1] },
+    players: meta.seats.map((s, i) => ({ name: s.name, team: teams[i] })),
   });
   work.begin(session);
   meta.status = "playing";
   meta.startedAt = now;
   const timer = timerOf(meta);
-  if (meta.kind === "pvp" && timer && !meta.timerOff) meta.clocks = [newClock(timer), newClock(timer)];
-  playCpu(work, session);
+  if (meta.kind === "pvp" && timer && !meta.timerOff) meta.clocks = meta.seats.map(() => newClock(timer));
   work.absorb(now);
 }
 
@@ -541,6 +668,30 @@ export const SHOWDOWN_FORMAT: Partial<Record<PlayFormatId, string>> = {
 /** The computer's name, never the same as the player's (the simulator tells sides apart by name). */
 const cpuName = (player: string) => (player.toLowerCase() === "cpu" ? "Computer" : "CPU");
 
+/** Names for the computer's seats in a four-player battle, none of them a trainer's (the simulator tells sides apart by name). */
+function cpuNames(taken: string[], count: number): string[] {
+  const used = new Set(taken.map((n) => n.toLowerCase()));
+  const out: string[] = [];
+  for (let n = 1; out.length < count && n < 99; n++) {
+    const name = n === 1 ? "CPU" : `CPU ${n}`;
+    if (!used.has(name.toLowerCase())) {
+      out.push(name);
+      used.add(name.toLowerCase());
+    }
+  }
+  return out;
+}
+
+/** A computer seat for a four-player battle, with its team. */
+function cpuSeat(name: string, team: string, now: number): BattleSeat {
+  return { id: `cpu-${randomId()}`, name, ready: true, seenAt: now, team, cpu: true };
+}
+
+/** The computer's team for `format` (custom rules: legal under them). */
+function cpuTeamFor(format: PlayFormatId, rules: CustomRules | undefined): string {
+  return rules ? customCpuTeam(rules) : cpuTeam(format);
+}
+
 /** Custom rules checked by Showdown's format parser: the ruleset and its format id, or the parser's reasons. */
 function customFormat(format: PlayFormatId, raw: unknown): Outcome<{ custom?: { rules: CustomRules; formatid: string } }> {
   if (format !== "custom") return { ok: true };
@@ -559,17 +710,22 @@ export async function createCpuBattle(opts: { name: string; format: PlayFormatId
   if (!custom.ok) return custom;
   const team = checkTeam(opts.format, opts.team, custom.custom?.rules);
   if (!team.ok) return team;
-  let foeTeam: string;
+  // A four-player format: the computer plays the other three seats (in a Multi Battle, your partner too).
+  const seats = playersFor(gameTypeOf({ format: opts.format, formatid: custom.custom?.formatid }));
+  let foeTeams: string[];
   try {
-    foeTeam = custom.custom ? customCpuTeam(custom.custom.rules) : cpuTeam(opts.format);
+    foeTeams = Array.from({ length: seats - 1 }, () => cpuTeamFor(opts.format, custom.custom?.rules));
   } catch (err) {
     return fail(400, err instanceof Error ? err.message : "Couldn't build the computer's team.");
   }
   for (let attempt = 0; attempt < 4; attempt++) {
     const code = newBattleCode();
     const me: BattleSeat = { id: randomId(), name: opts.name, ready: true, seenAt: now, team: team.packed, ...(opts.player ? { player: opts.player } : {}) };
-    const cpu: BattleSeat = { id: CPU_SEAT_ID, name: cpuName(opts.name), ready: true, seenAt: now, team: foeTeam };
-    const meta = newMeta(code, "cpu", opts.format, [me, cpu], now);
+    const cpus =
+      seats === 4
+        ? cpuNames([opts.name], 3).map((name, i) => cpuSeat(name, foeTeams[i], now))
+        : [{ id: CPU_SEAT_ID, name: cpuName(opts.name), ready: true, seenAt: now, team: foeTeams[0] } satisfies BattleSeat];
+    const meta = newMeta(code, "cpu", opts.format, [me, ...cpus], now, custom.custom?.formatid);
     applyCustom(meta, custom.custom);
     meta.cpu = { level: opts.level };
     const work = new Work(blankRecord(meta));
@@ -625,7 +781,7 @@ export async function createLiveBattle(
     const code = newBattleCode();
     const me: BattleSeat = { id: randomId(), name: opts.name, ready: false, seenAt: now, team: team.packed };
     if (opts.player) me.player = opts.player;
-    const rec = blankRecord(newMeta(code, "pvp", opts.format, [me], now));
+    const rec = blankRecord(newMeta(code, "pvp", opts.format, [me], now, custom.custom?.formatid));
     applyCustom(rec.meta, custom.custom);
     if (opts.hidden) rec.meta.hidden = true;
     else if (opts.public) rec.meta.public = true;
@@ -660,22 +816,41 @@ export async function createMatchedBattle(
 ): Promise<{ code: string; ids: [string, string]; seenAt: number } | null> {
   // A tournament match waits longer for a trainer to turn up: they're told by a toast, not sitting in a queue.
   const seenAt = now + (opts.tournament?.graceMs ?? 0);
+  // A four-player format: the two trainers matched face each other (opposite teams in a Multi Battle), and the computer fills the other two seats.
+  const four = playersFor(gameTypeOf({ format })) === 4;
+  let cpuTeams: string[] = [];
+  if (four) {
+    try {
+      cpuTeams = [cpuTeam(format), cpuTeam(format)];
+    } catch (err) {
+      console.error("[battle] couldn't build the computer's teams:", err);
+      return null;
+    }
+  }
   for (let attempt = 0; attempt < 4; attempt++) {
     const code = newBattleCode();
-    const seats = players.map((p) => {
+    const humans = players.map((p) => {
       const seat: BattleSeat = { id: randomId(), name: p.name, ready: true, seenAt, team: p.team };
       if (p.player) seat.player = p.player;
       if (opts.ranked && p.rating) seat.rating = { rating: p.rating.rating, games: p.rating.games, ...(p.rating.elo !== undefined ? { elo: p.rating.elo } : {}) };
       return seat;
-    }) as [BattleSeat, BattleSeat];
+    });
+    const seats = four ? [...humans, ...cpuNames(humans.map((h) => h.name), 2).map((name, i) => cpuSeat(name, cpuTeams[i], now))] : humans;
     const work = new Work(blankRecord(newMeta(code, "pvp", format, seats, now)));
+    if (four) work.meta.cpu = { level: "normal" };
     // Matchmade battles are open to spectators, like Showdown's ladder.
     work.meta.public = true;
-    if (opts.ranked) work.meta.ranked = true;
+    if (opts.ranked && !four) work.meta.ranked = true;
     if (opts.tournament) work.meta.tournament = opts.tournament.id;
-    work.meta.chat = systemLine(undefined, `${opts.tournament ? "Tournament match" : "Matched"}: ${seats[0].name} vs ${seats[1].name}. Good luck!`, now);
+    work.meta.chat = systemLine(
+      undefined,
+      four
+        ? `Matched: ${seats[0].name} and ${seats[1].name}, with the computer in the other two seats. Good luck!`
+        : `${opts.tournament ? "Tournament match" : "Matched"}: ${seats[0].name} vs ${seats[1].name}. Good luck!`,
+      now
+    );
     start(work, now);
-    if (await insertBattle(work.rec)) return { code, ids: [seats[0].id, seats[1].id], seenAt };
+    if (await insertBattle(work.rec)) return { code, ids: [humans[0].id, humans[1].id], seenAt };
   }
   return null;
 }
@@ -846,7 +1021,7 @@ function touch(meta: BattleMeta, playerId: string | null, now: number): boolean 
     changed = true;
   }
   if (meta.status === "lobby") {
-    const here = meta.seats.filter((s) => now - s.seenAt <= PVP_AWAY_MS);
+    const here = meta.seats.filter((s) => isCpuSeat(s) || now - s.seenAt <= PVP_AWAY_MS);
     if (here.length < meta.seats.length) {
       meta.seats = here;
       changed = true;
@@ -858,6 +1033,8 @@ function touch(meta: BattleMeta, playerId: string | null, now: number): boolean 
 export type BattleAction =
   | { action: "join"; name: string; team?: string; player?: string }
   | { action: "ready"; ready: boolean }
+  /** A four-player room's host: the computer takes every empty seat, and the battle starts once the trainers are ready. */
+  | { action: "fill"; level?: CpuLevel }
   | { action: "team"; team: string }
   | { action: "choose"; rqid: number; choice: string }
   | { action: "forfeit" }
@@ -889,7 +1066,7 @@ export async function actOnBattle(
 
     if (body.action === "join") {
       if (meta.kind !== "pvp" || meta.status !== "lobby") return fail(409, "This battle has already started.");
-      if (meta.seats.length >= 2) return fail(409, "This battle is full.");
+      if (meta.seats.length >= seatsFor(meta)) return fail(409, "This battle is full.");
       if (meta.seats.some((s) => s.name.toLowerCase() === body.name.toLowerCase())) return fail(409, `${body.name} is already in this battle. Pick another name.`);
       if (!PLAY_FORMAT_INFO[meta.format].random && !packed) return fail(400, `${PLAY_FORMAT_INFO[meta.format].name} needs a team: paste one in Showdown's export format.`);
       joined = randomId();
@@ -905,7 +1082,28 @@ export async function actOnBattle(
         if (meta.status !== "lobby") return fail(409, "The battle has already started.");
         if (body.ready && !PLAY_FORMAT_INFO[meta.format].random && !meta.seats[seat].team) return fail(400, "Bring a team first.");
         meta.seats[seat].ready = body.ready;
-        if (meta.seats.length === 2 && meta.seats.every((s) => s.ready)) start(work, now);
+        if (meta.seats.length === seatsFor(meta) && meta.seats.every((s) => s.ready)) start(work, now);
+        return { ok: true };
+      }
+      case "fill": {
+        if (meta.status !== "lobby") return fail(409, "The battle has already started.");
+        if (seatsFor(meta) !== 4) return fail(400, "Only four-player battles have seats for the computer.");
+        if (seat !== 0) return fail(403, "Only the trainer who opened the battle can fill the seats.");
+        const empty = seatsFor(meta) - meta.seats.length;
+        if (empty <= 0) return fail(409, "Every seat is taken.");
+        let teams: string[];
+        try {
+          teams = Array.from({ length: empty }, () => cpuTeamFor(meta.format, meta.rules));
+        } catch (err) {
+          return fail(400, err instanceof Error ? err.message : "Couldn't build the computer's team.");
+        }
+        const names = cpuNames(meta.seats.map((s) => s.name), empty);
+        meta.seats.push(...names.map((name, i) => cpuSeat(name, teams[i], now)));
+        meta.cpu = { level: body.level ?? meta.cpu?.level ?? "normal" };
+        meta.chat = systemLine(meta.chat, empty === 1 ? `${names[0]} (the computer) took the last seat` : `The computer took ${empty} seats: ${names.join(", ")}`, now);
+        if (!PLAY_FORMAT_INFO[meta.format].random && !meta.seats[0].team) meta.seats[0].ready = false;
+        else meta.seats[0].ready = true;
+        if (meta.seats.every((s) => s.ready)) start(work, now);
         return { ok: true };
       }
       case "team": {
@@ -916,7 +1114,7 @@ export async function actOnBattle(
       }
       case "forfeit": {
         if (meta.status === "lobby") meta.seats.splice(seat, 1);
-        else if (meta.status === "playing") forceLose(work, seat, "forfeit", now);
+        else if (meta.status === "playing" && !isOut(meta, seat)) forceLose(work, seat, "forfeit", now);
         return { ok: true };
       }
       case "choose":
@@ -930,7 +1128,7 @@ export async function actOnBattle(
   if (!out.ok) return out;
   const me = joined ?? playerId!;
   const seat = seatIndex(out.rec.meta, me);
-  const view = battleView(out.rec.meta, me, seat >= 0 ? out.rec.logs[channelOf(seat)] : [], joined ? 0 : since, out.now, out.rev);
+  const view = battleView(out.rec.meta, me, seat >= 0 ? (out.rec.logs[channelOf(seat)] ?? []) : [], joined ? 0 : since, out.now, out.rev);
   return { ok: true, view, playerId: me, rejected: out.rejected };
 }
 
@@ -968,9 +1166,9 @@ function setTimer(work: Work, seat: number, on: boolean, now: number): Outcome<{
     meta.timerRequesters = [seat];
     meta.timerTurn = undefined;
     meta.timerFirst = undefined;
-    meta.clocks = [newClock(timer), newClock(timer)];
+    meta.clocks = meta.seats.map(() => newClock(timer));
     work.note(`|inactive|Battle timer is ON: inactive players will automatically lose when time's up. (requested by ${name})`);
-    const pending = meta.requests.map((r, s: number) => (r ? s : -1)).filter((s) => s >= 0);
+    const pending = meta.requests.map((r, s: number) => (r && !isCpuSeat(meta.seats[s]) ? s : -1)).filter((s) => s >= 0);
     if (pending.length) topUp(meta, meta.clocks, timer, pending.length, pending.length);
     for (const s of pending) startClock(meta.clocks[s], now, !!meta.requests[s]!.teamPreview, timer, !!meta.timerFirst);
     return { ok: true };
@@ -997,9 +1195,9 @@ function choose(work: Work, seat: number, rqid: number, choice: string, now: num
   if (rqid !== meta.rqid[seat]) return fail(409, "That choice is out of date. The battle has moved on.");
   const session = work.session(now);
   if (!session) return fail(409, "This battle couldn't continue.");
-  const side: SideID = sideOf(seat);
+  const side: PlayerSide = sideOf(seat);
   const result = session.choose(side, choice);
-  if (result.ok) playCpu(work, session);
+  // The computer's seats answer in absorb.
   work.absorb(now);
   return result.ok ? { ok: true } : { ok: true, rejected: result.error };
 }
@@ -1013,7 +1211,7 @@ function choose(work: Work, seat: number, rqid: number, choice: string, now: num
 function undoChoice(work: Work, seat: number, rqid: number, now: number): Outcome<{ rejected?: string }> {
   const meta = work.meta;
   if (meta.kind !== "pvp" || meta.status !== "playing") return fail(409, "There's nothing to cancel.");
-  const side: SideID = sideOf(seat);
+  const side: PlayerSide = sideOf(seat);
   if (meta.requests[seat] || !meta.chosen?.[side]) return fail(409, "There's nothing to cancel.");
   if (rqid !== meta.rqid[seat]) return fail(409, "Too late to cancel: the next turn has already started.");
   const clock = meta.clocks?.[seat];
@@ -1061,8 +1259,14 @@ export async function rematchBattle(code: string, playerId: string): Promise<Out
     let opened: string | null = null;
     for (let attempt = 0; attempt < 4 && !opened; attempt++) {
       const now = Date.now();
-      const seats = old.seats.map((s) => ({ id: s.id, name: s.name, ready: false, seenAt: now, team: s.team, ...(s.player ? { player: s.player } : {}) }));
-      const fresh = newMeta(newBattleCode(), "pvp", old.format, seats, now);
+      // The computer's seats come along, ready (with fresh teams in random formats).
+      const seats = old.seats.map((s) =>
+        isCpuSeat(s)
+          ? { ...s, ready: true, seenAt: now, team: PLAY_FORMAT_INFO[old.format].random && !old.rules ? cpuTeam(old.format) : s.team }
+          : { id: s.id, name: s.name, ready: false, seenAt: now, team: s.team, ...(s.player ? { player: s.player } : {}) }
+      );
+      const fresh = newMeta(newBattleCode(), "pvp", old.format, seats, now, old.formatid);
+      if (old.cpu) fresh.cpu = old.cpu;
       if (old.rules && old.formatid) applyCustom(fresh, { rules: old.rules, formatid: old.formatid });
       // A rematch is a friendly (never ranked), listed for watching if the first battle was.
       if (old.public) fresh.public = true;
@@ -1089,13 +1293,15 @@ export async function rematchBattle(code: string, playerId: string): Promise<Out
     let seat = seatIndex(meta, playerId);
     if (meta.status !== "lobby") return seat >= 0 ? { ok: true } : fail(409, "The rematch has already started.");
     if (seat < 0) {
-      if (meta.seats.length >= 2) return fail(409, "The rematch is full.");
-      meta.seats.push({ id: me.id, name: me.name, ready: false, seenAt: now, team: me.team, ...(me.player ? { player: me.player } : {}) });
-      seat = meta.seats.length - 1;
+      if (meta.seats.length >= seatsFor(meta)) return fail(409, "The rematch is full.");
+      // Everyone takes the seat they had (the computer's seats are already in theirs).
+      const at = Math.min(mySeat, meta.seats.length);
+      meta.seats.splice(at, 0, { id: me.id, name: me.name, ready: false, seenAt: now, team: me.team, ...(me.player ? { player: me.player } : {}) });
+      seat = at;
     }
     meta.seats[seat].seenAt = now;
     meta.seats[seat].ready = true;
-    if (meta.seats.length === 2 && meta.seats.every((s) => s.ready)) start(work, now);
+    if (meta.seats.length === seatsFor(meta) && meta.seats.every((s) => s.ready)) start(work, now);
     return { ok: true };
   });
   if (!out.ok) return out;
@@ -1119,12 +1325,13 @@ export async function rematchBattle(code: string, playerId: string): Promise<Out
  */
 export function battleView(meta: BattleMeta, playerId: string | null, log: string[], since: number, now: number, rev: number): BattleView {
   const seat = seatIndex(meta, playerId);
-  const you = seat === 0 || seat === 1 ? seat : null;
+  const you = seat >= 0 && seat <= 3 ? seat : null;
   // `log` is the viewer's own channel (channelFor): a spectator's is the spectator channel; a visitor to a computer battle has none.
   const visible = channelFor(meta, seat) ? log : [];
   const total = visible.length;
   const from = since >= 0 && since <= total ? since : 0;
   const request = you !== null && meta.requests[you] ? { rqid: meta.rqid[you], data: meta.requests[you]! } : null;
+  const gameType = gameTypeOf(meta);
   const view: BattleView = {
     code: meta.code,
     kind: meta.kind,
@@ -1133,24 +1340,35 @@ export function battleView(meta: BattleMeta, playerId: string | null, log: strin
     now,
     rev,
     you,
-    players: meta.seats.map((s) => ({
-      name: s.name,
-      ready: s.ready,
-      quiet: meta.kind === "pvp" && meta.status !== "finished" && now - s.seenAt > (meta.status === "lobby" ? 10_000 : BATTLE_QUIET_MS),
-      hasTeam: PLAY_FORMAT_INFO[meta.format].random || !!s.team,
-      ...(meta.ranked && s.rating ? { rating: s.rating.rating, games: s.rating.games, ...(s.rating.elo !== undefined ? { elo: s.rating.elo } : {}) } : {}),
-    })),
+    gameType,
+    players: meta.seats.map((s, i) => {
+      const cpu = isCpuSeat(s);
+      const out = meta.out?.find((o) => o.seat === i);
+      return {
+        name: s.name,
+        ready: s.ready,
+        quiet: !cpu && meta.kind === "pvp" && meta.status !== "finished" && now - s.seenAt > (meta.status === "lobby" ? 10_000 : BATTLE_QUIET_MS),
+        hasTeam: PLAY_FORMAT_INFO[meta.format].random || !!s.team,
+        ...(cpu && seatsFor(meta) === 4 ? { cpu: true } : {}),
+        ...(out ? { out: out.turn } : {}),
+        ...(meta.ranked && s.rating ? { rating: s.rating.rating, games: s.rating.games, ...(s.rating.elo !== undefined ? { elo: s.rating.elo } : {}) } : {}),
+      };
+    }),
     turn: meta.turn,
     log: { from, total, lines: visible.slice(from) },
     request,
     waiting: you !== null && meta.status === "playing" && !request,
   };
   // Chosen, and the opponent hasn't: the choice can still be taken back (live battles; the computer answers at once).
-  if (you !== null && !request && meta.kind === "pvp" && meta.status === "playing" && meta.chosen?.[you === 0 ? "p1" : "p2"]) view.cancel = { rqid: meta.rqid[you] };
+  if (you !== null && !request && meta.kind === "pvp" && meta.status === "playing" && meta.chosen?.[sideOf(you)]) view.cancel = { rqid: meta.rqid[you] };
   if (meta.cpu) view.cpu = { level: meta.cpu.level };
   if (meta.clocks && you !== null) {
     const clock = (c: SideClock) => ({ bank: c.bank, deadline: c.deadline, startedAt: c.startedAt });
-    view.clocks = { you: clock(meta.clocks[you]), foe: clock(meta.clocks[1 - you]) };
+    // "Foe": the opponent in a two-trainer battle; with four, the trainer (not the computer) whose choice is due soonest.
+    const others = meta.clocks.map((c, i) => ({ c, i })).filter(({ i }) => i !== you && !isCpuSeat(meta.seats[i]));
+    const foe = others.length === 1 ? others[0] : (others.filter(({ c }) => c.deadline !== null).sort((a, b) => a.c.deadline! - b.c.deadline!)[0] ?? others[0]);
+    view.clocks = { you: clock(meta.clocks[you]), foe: clock((foe ?? { c: meta.clocks[1 - Math.min(1, you)] }).c) };
+    if (meta.clocks.length === 4) view.clocks.seats = meta.clocks.map((c, i) => (isCpuSeat(meta.seats[i]) ? null : clock(c)));
   }
   if (meta.end) view.end = meta.end;
   if (meta.rematch) view.rematch = meta.rematch;

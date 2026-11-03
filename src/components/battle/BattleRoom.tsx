@@ -5,7 +5,8 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Download, Eye, Flag, History, Loader2, RotateCcw, Settings2, Swords, WifiOff } from "lucide-react";
-import { BATTLE_AWAY_MS, BATTLE_QUIET_MS, BATTLE_TIMER, PLAY_FORMAT_INFO, battleHref, type BattleView } from "@/lib/battle/play";
+import { BATTLE_AWAY_MS, BATTLE_QUIET_MS, BATTLE_TIMER, PLAY_FORMAT_INFO, battleHref, playerCount, type BattleView } from "@/lib/battle/play";
+import { GroupLobby } from "./GroupLobby";
 import { DuelLobby, MatchedNote } from "@/components/duel/DuelParts";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -51,8 +52,8 @@ function BattleChat({ view, battle, collapsible, className }: { view: BattleView
       // not remembered
     }
   };
-  // Players mute the opponent from the chat box itself; spectators can ignore either trainer here.
-  const others = view.you === null ? view.players.map((p) => p.name) : [];
+  // Players mute the opponent from the chat box itself; spectators can ignore either trainer here (and with four trainers, everyone can ignore the others).
+  const others = view.you === null ? view.players.filter((p) => !p.cpu).map((p) => p.name) : view.players.length === 4 ? view.players.filter((p, i) => i !== view.you && !p.cpu).map((p) => p.name) : [];
   const lines = view.chat?.filter((l) => l.seat === null || !l.name || !ignored.includes(l.name) || l.seat === view.you);
   const hidden = (view.chat?.length ?? 0) - (lines?.length ?? 0);
   return (
@@ -109,12 +110,15 @@ const ReplayViewer = dynamic(() => import("./ReplayViewer").then((m) => m.Replay
 
 /** The battle so far as a replay (your own view of it): Showdown's instant replay, and the file to download. */
 function replayOf(view: BattleView, log: readonly string[]): ReplayData {
-  const players = [view.players[0]?.name ?? "Player 1", view.players[1]?.name ?? "Player 2"] as [string, string];
+  const players = view.players.length === 4 ? view.players.map((p) => p.name) : [view.players[0]?.name ?? "Player 1", view.players[1]?.name ?? "Player 2"];
   return {
     id: view.code,
     format: view.format,
     formatName: view.formatName ?? PLAY_FORMAT_INFO[view.format].name,
     players,
+    ...(view.gameType && view.gameType !== "singles" && view.gameType !== "doubles" ? { gameType: view.gameType } : {}),
+    ...(view.end?.winners ? { winners: view.end.winners } : {}),
+    ...(view.end?.standings ? { standings: view.end.standings } : {}),
     winner: view.end?.winner ?? null,
     reason: view.end?.reason ?? "normal",
     turns: lastTurn(log),
@@ -236,7 +240,10 @@ function LiveAgain({ view, battle }: { view: BattleView; battle: BattleHandle })
           <Swords className="h-4 w-4" aria-hidden /> New battle
         </Link>
       </div>
-      <p className="text-xs text-muted-foreground">A rematch keeps the trainers, the format and any teams you brought. It starts when you both press it.</p>
+      <p className="text-xs text-muted-foreground">
+        A rematch keeps the trainers, the format and any teams you brought.{" "}
+        {view.players.length === 4 ? "The computer keeps its seats; it starts when every trainer presses it." : "It starts when you both press it."}
+      </p>
     </div>
   );
 }
@@ -256,8 +263,78 @@ function LiveLobby({ code, view, battle }: { code: string; view: BattleView; bat
         : undefined,
     [rules]
   );
-  const joining = view.you === null && view.players.length < 2;
+  const gameType = view.gameType ?? info.gameType;
+  const four = playerCount(gameType) === 4;
+  const joining = view.you === null && view.players.length < (four ? 4 : 2);
   const host = view.players[0]?.name;
+  const lobbyRules = [
+    { label: "Format", text: <>{info.name}: {info.random ? info.blurb : "each of you brings a team, checked against Pokémon Showdown's rules."}</> },
+    ...(rules ? describeRules(rules).map((r) => ({ label: r.label, text: <>{r.text}</> })) : []),
+    {
+      label: "Turn timer",
+      text: timer ? (
+        <>
+          Showdown&apos;s timer: {(timer.refill ?? timer.bank) / 1000} s{timer.refill && timer.refill < timer.bank ? ` plus ${(timer.bank - timer.refill) / 1000} s grace` : ""}
+          {timer.perTurn ? `, +${timer.perTurn / 1000} s a turn` : ""}, {timer.cap / 1000} s at most per turn.{" "}
+          {view.timeoutLoses
+            ? timer.autoChoose
+              ? "Run out on a turn and a default move is made; run out of time altogether and you lose."
+              : "Run out and you lose."
+            : "Run out and the timer picks a move for you; a second time in a row loses."}
+        </>
+      ) : (
+        <>Off: take your time. Any of you can start it mid-battle.</>
+      ),
+    },
+    {
+      label: "Spectators",
+      text: view.public ? <>Listed in Watch live: anyone can watch.</> : <>Private: only people with the link can watch.</>,
+    },
+    {
+      label: "Fair play",
+      text: (
+        <>
+          You see only your own team and what the others reveal. Leaving forfeits after {Math.round((BATTLE_AWAY_MS - BATTLE_QUIET_MS) / 1000)} s away
+          {gameType === "multi" ? " (your team loses, as on Showdown)" : gameType === "freeforall" ? " (you're out; the others battle on)" : ""}.
+        </>
+      ),
+    },
+    ...(four ? [{ label: "Ladder", text: <>Unranked: Showdown doesn&apos;t ladder {gameType === "multi" ? "Multi Battles" : "Free-For-Alls"} either, so these never move your rating.</> }] : []),
+  ];
+
+  if (four) {
+    return (
+      <div className="space-y-3">
+        {(battle.error || battle.offline) && (
+          <p role="alert" className="text-center text-sm text-destructive">
+            {battle.error ?? "Connection lost. Reconnecting…"}
+          </p>
+        )}
+        <GroupLobby
+          view={view}
+          gameType={gameType}
+          path={`/battle/live/${code}`}
+          formatName={info.name}
+          rules={lobbyRules}
+          settings={joining && !info.random ? <TeamPick format={view.format} onChange={onTeam} idPrefix={`join-${code}`} source={source} /> : undefined}
+          busy={battle.busy}
+          chat={<BattleChat view={view} battle={battle} />}
+          onJoin={(name) => {
+            if (!info.random && !team) {
+              battle.setError("Pick or paste a team first.");
+              return;
+            }
+            void battle.join(name, info.random ? undefined : team);
+          }}
+          onReady={(ready) => void battle.act({ action: "ready", ready })}
+          onFill={(level) => void battle.act({ action: "fill", level })}
+          onLeave={async () => {
+            if (await battle.act({ action: "forfeit" })) router.push("/battle");
+          }}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-3">
@@ -353,7 +430,7 @@ export function BattleRoom({ code }: { code: string }) {
     return (
       <div className="space-y-3">
         <p className="hud-label flex items-center justify-center gap-1.5 text-screen" data-testid="spectating">
-          <Eye className="h-3.5 w-3.5" aria-hidden /> You&apos;re watching {view.players.map((p) => p.name).join(" vs ")}
+          <Eye className="h-3.5 w-3.5" aria-hidden /> You&apos;re watching {view.players.length === 4 && view.gameType === "multi" ? `${view.players[0]?.name} & ${view.players[2]?.name} vs ${view.players[1]?.name} & ${view.players[3]?.name}` : view.players.map((p) => p.name).join(" vs ")}
         </p>
         {offline && (
           <p role="alert" className="flex items-center justify-center gap-1.5 text-sm text-destructive">
@@ -389,7 +466,7 @@ export function BattleRoom({ code }: { code: string }) {
         <CardContent className="space-y-3 p-6 text-center">
           <p className="hud-label text-screen">{view.status === "finished" ? "Battle over" : "Battle in progress"}</p>
           <p className="font-display text-2xl font-bold uppercase">{view.players.map((p) => p.name).join(" vs ")}</p>
-          <p className="text-sm text-muted-foreground">This battle is between two other trainers.</p>
+          <p className="text-sm text-muted-foreground">This battle is between {view.players.length === 4 ? "four" : "two"} other trainers.</p>
           <Link href="/battle/play" className={cn(buttonVariants({ size: "lg" }), "w-full")}>
             Start your own
           </Link>
@@ -400,6 +477,8 @@ export function BattleRoom({ code }: { code: string }) {
   }
 
   const foe = view.players[view.you === 0 ? 1 : 0];
+  // Four trainers: every other trainer (not the computer) who's lost their connection.
+  const quietOthers = view.players.length === 4 ? view.players.filter((p, i) => i !== view.you && !p.cpu && p.quiet && p.out === undefined) : [];
   if (instant) {
     return <ReplayViewer replay={replayOf(view, battle.log.lines)} instant={{ onClose: () => setInstant(false), timed: !!view.clocks }} />;
   }
@@ -433,7 +512,13 @@ export function BattleRoom({ code }: { code: string }) {
           <WifiOff className="h-4 w-4" aria-hidden /> Connection lost. Reconnecting…
         </p>
       )}
-      {view.kind === "pvp" && view.status === "playing" && foe?.quiet && (
+      {view.kind === "pvp" && view.status === "playing" && quietOthers.length > 0 && (
+        <p role="status" className="flex items-center justify-center gap-1.5 text-sm text-warning" data-testid="foe-disconnected">
+          <WifiOff className="h-4 w-4" aria-hidden /> {quietOthers.map((p) => p.name).join(" and ")} lost their connection. If they don&apos;t come back within a minute,{" "}
+          {view.gameType === "multi" ? "their team forfeits." : "they forfeit."}
+        </p>
+      )}
+      {view.kind === "pvp" && view.status === "playing" && view.players.length !== 4 && foe?.quiet && (
         <p role="status" className="flex items-center justify-center gap-1.5 text-sm text-warning" data-testid="foe-disconnected">
           <WifiOff className="h-4 w-4" aria-hidden /> {foe.name} lost their connection. If they don&apos;t come back within a minute, they forfeit.
         </p>

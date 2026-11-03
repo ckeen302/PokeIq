@@ -1077,6 +1077,8 @@ export function chooseCpu(
   const request = side.activeRequest as unknown as BattleRequest | null;
   if (!request || request.wait) throw new Error("The computer has nothing to choose.");
   if (level !== "easy" && battle.gameType === "doubles") return chooseCpuDoubles(battle, side, level, rand, onError);
+  // Triples and the four-player game types: the doubles policy at every level (Easy plays it with more noise).
+  if (battle.gameType === "triples" || battle.gameType === "freeforall" || battle.gameType === "multi") return chooseCpuDoubles(battle, side, level, rand, onError);
   if (level === "easy" || battle.gameType !== "singles") return chooseCpuLegacy(battle, side, level, rand, onError);
   noteSeen(battle, side);
   try {

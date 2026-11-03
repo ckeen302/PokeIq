@@ -47,10 +47,21 @@ export interface RecordStore {
 
 /** The records a finished live battle makes: one per seat the server knows (none for a no contest). */
 export function resultsOf(meta: BattleMeta, ratings: BattleRatings | undefined, at: number): ResultEntry[] {
-  if (meta.kind !== "pvp" || !meta.end || meta.end.reason === "nocontest" || meta.seats.length !== 2) return [];
+  if (meta.kind !== "pvp" || !meta.end || meta.end.reason === "nocontest") return [];
   const info = PLAY_FORMAT_INFO[meta.format];
   const formatName = meta.rules ? customName(meta.rules) : info.name;
-  const winner = meta.end.winner;
+  // A four-player battle: a win for every winning seat (both partners in a Multi Battle), never ranked.
+  if (meta.seats.length === 4) {
+    const winners = meta.end.winners ?? (meta.end.winner === null ? [] : [meta.end.winner]);
+    return meta.seats.flatMap((s, i) => {
+      if (!s.player || s.cpu) return [];
+      const others = meta.seats.filter((_, j) => j !== i).map((o) => o.name);
+      const result: BattleOutcome = meta.end!.winner === null ? "draw" : winners.includes(i) ? "win" : "loss";
+      return [{ code: meta.code, key: s.player, format: meta.format, formatName, name: s.name, opponent: others.join(", "), result, ranked: false, at }];
+    });
+  }
+  if (meta.seats.length !== 2) return [];
+  const winner = meta.end.winner as 0 | 1 | null;
   return meta.seats.flatMap((s, i) => {
     if (!s.player) return [];
     const seat = i as 0 | 1;

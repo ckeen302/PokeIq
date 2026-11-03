@@ -129,7 +129,8 @@ export function ReplayViewer({
       request: null,
       waiting: false,
       ranked: replay.ranked,
-      ...(atEnd ? { end: { reason: replay.reason, winner: replay.winner, at: 0 } } : {}),
+      ...(replay.gameType ? { gameType: replay.gameType } : {}),
+      ...(atEnd ? { end: { reason: replay.reason, winner: replay.winner, at: 0, ...(replay.winners ? { winners: replay.winners } : {}), ...(replay.standings ? { standings: replay.standings } : {}) } } : {}),
     }),
     [replay, atEnd, turn, last]
   );

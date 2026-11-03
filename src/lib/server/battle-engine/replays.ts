@@ -43,8 +43,11 @@ export function replayFromRecord(rec: BattleRecord, listed: boolean, now = Date.
     id: meta.code,
     format: meta.format,
     formatName: meta.rules ? customName(meta.rules) : meta.factoryTier ? `${info.name} · ${meta.factoryTier}` : info.name,
-    players: [meta.seats[0]?.name ?? "Player 1", meta.seats[1]?.name ?? "Player 2"],
+    players: meta.seats.length === 4 ? meta.seats.map((s) => s.name) : [meta.seats[0]?.name ?? "Player 1", meta.seats[1]?.name ?? "Player 2"],
     winner: meta.end?.winner ?? null,
+    ...(meta.end?.winners ? { winners: meta.end.winners } : {}),
+    ...(meta.end?.standings ? { standings: meta.end.standings } : {}),
+    ...(meta.gameType && meta.gameType !== "singles" && meta.gameType !== "doubles" ? { gameType: meta.gameType } : {}),
     reason: meta.end?.reason ?? "normal",
     turns: meta.turn,
     ranked: !!meta.ranked,
@@ -147,13 +150,73 @@ interface Row {
 const SUMMARY_COLUMNS = "id, format, format_name, players, ratings, elos, winner, end_reason, turns, ranked, public, created_at";
 const REASONS = new Set(["normal", "forfeit", "timeout", "left", "nocontest"]);
 
+/**
+ * Four-player replays in the table's two-name `players` column (it allows
+ * exactly two, and a winner of 0 or 1): each half's two trainers joined by
+ * "|", the first one prefixed with the game type ("multi:" or "freeforall:"),
+ * a Free-For-All's winner marked with "*". Trainer names never contain
+ * "|", ":" or "*" (duel-core's name rule), so this reads back exactly.
+ */
+export function packPlayers(r: Pick<ReplaySummary, "players" | "gameType" | "winner">): { players: string[]; winner: number | null } {
+  if (r.players.length !== 4) return { players: r.players, winner: r.winner };
+  const type = r.gameType === "multi" ? "multi" : "freeforall";
+  const name = (seat: number) => `${type === "freeforall" && r.winner === seat ? "*" : ""}${r.players[seat]}`;
+  return { players: [`${type}:${name(0)}|${name(2)}`, `${name(1)}|${name(3)}`], winner: type === "multi" ? r.winner : r.winner === 0 || r.winner === 1 ? r.winner : null };
+}
+
+/** `packPlayers` read back: the four trainers, the game type and the winner. */
+export function unpackPlayers(players: string[], winner: number | null): Pick<ReplaySummary, "players" | "winner" | "gameType" | "winners"> {
+  const m = /^(multi|freeforall):(.*)$/.exec(players[0] ?? "");
+  if (!m || !(players[1] ?? "").includes("|")) return { players: [players[0] ?? "", players[1] ?? ""], winner: winner === 0 || winner === 1 ? winner : null };
+  const [a, c] = m[2].split("|");
+  const [b, d] = (players[1] ?? "").split("|");
+  const raw = [a, b, c, d];
+  const gameType = m[1] as "multi" | "freeforall";
+  if (gameType === "multi") {
+    const w = winner === 0 || winner === 1 ? winner : null;
+    return { players: raw, gameType, winner: w, ...(w !== null ? { winners: [w, w + 2] } : {}) };
+  }
+  const marked = raw.findIndex((n) => n?.startsWith("*"));
+  return { players: raw.map((n) => (n ?? "").replace(/^\*/, "")), gameType, winner: marked >= 0 ? marked : null, ...(marked >= 0 ? { winners: [marked] } : {}) };
+}
+
+/**
+ * A Free-For-All's standings from its log: the winner, then each trainer in
+ * the reverse of the order they went out (their last Pokémon fainting, or a
+ * forfeit or timeout the log notes).
+ */
+export function standingsFromLog(log: readonly string[], players: string[], winner: number | null): number[] | undefined {
+  if (players.length !== 4 || winner === null) return undefined;
+  const size: Record<string, number> = {};
+  const fainted: Record<string, number> = {};
+  const out: number[] = [];
+  const mark = (seat: number) => {
+    if (seat >= 0 && seat !== winner && !out.includes(seat)) out.push(seat);
+  };
+  for (const line of log) {
+    const parts = line.split("|");
+    if (parts[1] === "teamsize") size[parts[2]] = Number(parts[3]) || 6;
+    else if (parts[1] === "faint") {
+      const side = /^p([1-4])/.exec(parts[2] ?? "")?.[1];
+      if (!side) continue;
+      fainted[side] = (fainted[side] ?? 0) + 1;
+      if (fainted[side] >= (size[`p${side}`] ?? 6)) mark(Number(side) - 1);
+    } else if (parts[1] === "-message") {
+      const who = players.findIndex((n) => parts[2] === `${n} forfeited.` || parts[2] === `${n} lost due to inactivity.`);
+      if (who >= 0) mark(who);
+    }
+  }
+  const rest = [0, 1, 2, 3].filter((s) => s !== winner && !out.includes(s));
+  return [winner, ...rest, ...out.reverse()];
+}
+
 function fromRow(row: Row): ReplaySummary {
+  const unpacked = unpackPlayers(row.players ?? [], row.winner);
   const s: ReplaySummary = {
     id: row.id,
     format: row.format as ReplaySummary["format"],
     formatName: row.format_name,
-    players: [row.players[0] ?? "", row.players[1] ?? ""],
-    winner: row.winner === 0 || row.winner === 1 ? row.winner : null,
+    ...unpacked,
     reason: (REASONS.has(row.end_reason) ? row.end_reason : "normal") as ReplaySummary["reason"],
     turns: row.turns,
     ranked: row.ranked,
@@ -177,10 +240,9 @@ export function supabaseReplayStore(sb: NonNullable<ReturnType<typeof getService
           id: r.id,
           format: r.format,
           format_name: r.formatName,
-          players: r.players,
+          ...packPlayers(r),
           ratings: r.ratings ?? null,
           elos: r.elos ?? null,
-          winner: r.winner,
           end_reason: r.reason,
           turns: r.turns,
           ranked: r.ranked,
@@ -197,7 +259,13 @@ export function supabaseReplayStore(sb: NonNullable<ReturnType<typeof getService
       guard();
       const { data, error } = await sb.from(TABLE).select(`${SUMMARY_COLUMNS}, log`).eq("id", id).maybeSingle<Row>();
       check(error);
-      return data ? { ...fromRow(data), log: data.log ? data.log.split("\n") : [] } : null;
+      if (!data) return null;
+      const replay: ReplayData = { ...fromRow(data), log: data.log ? data.log.split("\n") : [] };
+      if (replay.gameType === "freeforall") {
+        const standings = standingsFromLog(replay.log, replay.players, replay.winner);
+        if (standings) replay.standings = standings;
+      }
+      return replay;
     },
     async recent(format, limit) {
       guard();
