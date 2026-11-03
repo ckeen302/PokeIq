@@ -425,3 +425,55 @@ export function makeRobed(o: { height: number; color: string; emissive?: string;
   const mesh = new THREE.Mesh(geo, mat);
   return { mesh, mat, dispose() { geo.dispose(); mat.dispose(); } };
 }
+
+/** A meadow: flowers as soft dots in a palette over the ground. uBloom (a radius around uCenter) opens them outward; 0 keeps them closed. */
+export function makeMeadow(o: { points: Vec3[]; colors: string[]; size: [number, number]; center: Vec3; intensity?: number; seed?: number }) {
+  const n = o.points.length;
+  const r = rng(o.seed ?? 17);
+  const pos = new Float32Array(n * 3), colors = new Float32Array(n * 3), seeds = new Float32Array(n);
+  const pal = o.colors.map((c) => col(c));
+  o.points.forEach((p, i) => {
+    pos.set(p, i * 3);
+    const c = pal[Math.floor(r() * pal.length) % pal.length];
+    colors.set([c.r, c.g, c.b], i * 3);
+    seeds[i] = r();
+  });
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute("position", new THREE.BufferAttribute(pos, 3));
+  geo.setAttribute("aColor", new THREE.BufferAttribute(colors, 3));
+  geo.setAttribute("aSeed", new THREE.BufferAttribute(seeds, 1));
+  const u = { uPixel: { value: 600 }, uSize0: { value: o.size[0] }, uSize1: { value: o.size[1] }, uBloom: { value: 1e4 }, uCenter: { value: v3(o.center) }, uTime: { value: 0 }, uIntensity: { value: o.intensity ?? 1 }, uOpacity: { value: 1 } };
+  const mat = new THREE.ShaderMaterial({
+    uniforms: u,
+    transparent: true,
+    depthWrite: false,
+    vertexShader: /* glsl */ `
+      attribute vec3 aColor; attribute float aSeed;
+      uniform float uPixel, uSize0, uSize1, uBloom, uTime; uniform vec3 uCenter;
+      varying vec3 vColor; varying float vOpen;
+      void main(){
+        float d = length(position.xz - uCenter.xz) + aSeed * 5.0;
+        float open = smoothstep(uBloom, uBloom - 6.0, d);
+        vec3 p = position + vec3(sin(uTime * 1.2 + aSeed * 40.0), 0.0, cos(uTime * 0.9 + aSeed * 30.0)) * 0.03;
+        vec4 mv = modelViewMatrix * vec4(p, 1.0);
+        gl_Position = projectionMatrix * mv;
+        gl_PointSize = clamp(mix(uSize0, uSize1, aSeed) * open * uPixel / max(0.05, -mv.z), 0.0, 48.0);
+        vColor = aColor; vOpen = open;
+      }`,
+    fragmentShader: /* glsl */ `
+      uniform float uIntensity, uOpacity; varying vec3 vColor; varying float vOpen;
+      void main(){
+        vec2 q = gl_PointCoord - 0.5;
+        float d = length(q);
+        float ang = atan(q.y, q.x);
+        float petals = 0.36 + 0.1 * cos(ang * 5.0);
+        float a = smoothstep(petals, petals - 0.12, d);
+        vec3 c = mix(vColor, vec3(1.0, 0.86, 0.45), smoothstep(0.12, 0.0, d));
+        float k = a * uOpacity * step(0.01, vOpen);
+        gl_FragColor = vec4(c * uIntensity, k);
+      }`,
+  });
+  const points = new THREE.Points(geo, mat);
+  points.frustumCulled = false;
+  return { points, u, dispose() { geo.dispose(); mat.dispose(); } };
+}

@@ -29,7 +29,10 @@ function hermite(p0: number, m0: number, p1: number, m1: number, u: number, h: n
   return (2 * u3 - 3 * u2 + 1) * p0 + (u3 - 2 * u2 + u) * h * m0 + (-2 * u3 + 3 * u2) * p1 + (u3 - u2) * h * m1;
 }
 
-/** Interpolates one channel of keyed values at time t (tangents: finite differences; zero at the ends). */
+/** Keys closer than this are a cut: the camera jumps, and neither side's curve leans on the other. */
+export const CUT_GAP = 0.4;
+
+/** Interpolates one channel of keyed values at time t (tangents: finite differences; zero at the ends; one-sided at a cut). */
 function channel(keys: Key[], get: (k: Key) => number, t: number): number {
   const n = keys.length;
   if (n === 1 || t <= keys[0].t) return get(keys[0]);
@@ -40,8 +43,12 @@ function channel(keys: Key[], get: (k: Key) => number, t: number): number {
   const h = Math.max(1e-6, b.t - a.t);
   const tangent = (j: number) => {
     if (j <= 0 || j >= n - 1) return 0;
-    const prev = keys[j - 1], next = keys[j + 1];
-    return (get(next) - get(prev)) / Math.max(1e-6, next.t - prev.t);
+    const prev = keys[j - 1], cur = keys[j], next = keys[j + 1];
+    const before = cur.t - prev.t > CUT_GAP, after = next.t - cur.t > CUT_GAP;
+    if (before && after) return (get(next) - get(prev)) / Math.max(1e-6, next.t - prev.t);
+    if (before) return (get(cur) - get(prev)) / (cur.t - prev.t);
+    if (after) return (get(next) - get(cur)) / (next.t - cur.t);
+    return 0;
   };
   const u = (t - a.t) / h;
   return hermite(get(a), tangent(i), get(b), tangent(i + 1), u, h);

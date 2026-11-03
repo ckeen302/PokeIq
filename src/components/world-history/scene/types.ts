@@ -79,6 +79,8 @@ export interface ChapterCtx {
   /** Anim time a beat's caption appears (the chapter's start if the beat isn't in the film). */
   beat(id: string): number;
   figures: FigureFactory;
+  /** The film's serif (for words drawn into a scene: journal pages, plaques). */
+  font: string;
   signal: AbortSignal;
 }
 

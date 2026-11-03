@@ -62,6 +62,15 @@ function timeParam(): number | null {
   }
 }
 
+/** ?solo=1: build only the chapter on screen, not its neighbours (checks and screenshots on slow machines). */
+function soloParam(): boolean {
+  try {
+    return new URLSearchParams(window.location.search).get("solo") === "1";
+  } catch {
+    return false;
+  }
+}
+
 interface Ui {
   kind: "chapter" | "hall";
   chapter: number;
@@ -306,6 +315,7 @@ export function WorldHistoryExperience({ initialChapter, children }: { initialCh
     let last = performance.now();
     let ftEma = FRAME_BUDGET_MS, slowFor = 0, fastFor = 0, warm = 0;
     const pinned = qualityParam() !== null;
+    const solo = soloParam();
     let prev: Ui = { kind: "hall", chapter: -1, beat: -2, title: "none", loading: true, progress: -1 };
     let lastSync = 0;
     const tick = () => {
@@ -336,10 +346,10 @@ export function WorldHistoryExperience({ initialChapter, children }: { initialCh
         const state = filmAt(film, s.playhead);
         // Chapters: the current one and its neighbours are kept built.
         const cur = chapterAtFilm(film, s.playhead);
-        const near = state.kind === "hall" ? [state.hall.from, state.hall.to, cur] : [cur, cur + 1, cur - 1];
+        const near = solo ? [cur] : state.kind === "hall" ? [state.hall.from, state.hall.to, cur] : [cur, cur + 1, cur - 1];
         const want = [...new Set(near.filter((i) => i >= 0 && i < film.chapters.length))];
         for (const i of want) void scene.prepare(i);
-        scene.retain([...want, cur + 1].filter((i) => i >= 0 && i < film.chapters.length));
+        scene.retain((solo ? want : [...want, cur + 1]).filter((i) => i >= 0 && i < film.chapters.length));
         // The camera: free look, or blending back to the film from it.
         let lookPose: Pose | null = null;
         if (s.free && state.kind === "chapter") lookPose = orbitPose(s.free);
@@ -408,7 +418,7 @@ export function WorldHistoryExperience({ initialChapter, children }: { initialCh
       state() {
         const s = show.current;
         const st = filmAt(film, s.playhead);
-        return { t: s.playhead, duration: film.duration, kind: st.kind, chapter: chapterAtFilm(film, s.playhead), playing: s.playing, free: !!s.free, dist: s.free?.dist ?? null, quality: sceneRef.current?.quality ?? null, stats: sceneRef.current?.stats() ?? null, prof: { ...s.prof } };
+        return { t: s.playhead, anim: st.kind === "chapter" ? st.anim : null, duration: film.duration, kind: st.kind, chapter: chapterAtFilm(film, s.playhead), playing: s.playing, free: !!s.free, dist: s.free?.dist ?? null, quality: sceneRef.current?.quality ?? null, stats: sceneRef.current?.stats() ?? null, prof: { ...s.prof } };
       },
     };
     return () => cancelAnimationFrame(raf);

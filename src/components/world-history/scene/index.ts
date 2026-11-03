@@ -186,6 +186,7 @@ export function createHistoryScene(host: HTMLElement, opts: SceneOptions): Histo
           timing,
           beat: (id) => timing.beats.find((b) => b.id === id)?.anim ?? 0,
           figures,
+          font: opts.font,
           signal: ac.signal,
         });
         if (ac.signal.aborted) { rig.dispose(); return; }

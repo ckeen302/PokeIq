@@ -656,11 +656,13 @@ export function makeOcean(o: { size: number; segments: number; waves: Wave[]; de
     uDeep: { value: col(o.deep) }, uShallow: { value: col(o.shallow) }, uSky: { value: col(o.sky) },
     uSun: { value: v3(o.sun ?? [0.3, 0.5, -1]).normalize() }, uSunColor: { value: col(o.sunColor ?? "#ffffff") },
     uFoam: { value: o.foam ?? 0.5 }, uFlash: { value: 0 }, uFogColor: { value: col(o.sky) }, uFogDensity: { value: 0.004 },
+    /** A local swell: x, z of its centre, its radius and its height (0 for none). */
+    uSwell: { value: new THREE.Vector4(0, 0, 1, 0) },
   };
   const mat = new THREE.ShaderMaterial({
     uniforms: u,
     vertexShader: /* glsl */ `
-      uniform float uTime, uAmp; uniform vec4 uW[4]; uniform vec4 uSpeed;
+      uniform float uTime, uAmp; uniform vec4 uW[4]; uniform vec4 uSpeed; uniform vec4 uSwell;
       varying vec3 vWorld; varying vec3 vNormal; varying float vCrest;
       void main(){
         vec3 p = position; vec3 t = vec3(1.0, 0.0, 0.0); vec3 b = vec3(0.0, 0.0, 1.0);
@@ -675,6 +677,20 @@ export function makeOcean(o: { size: number; segments: number; waves: Wave[]; de
           t += vec3(-d.x * d.x * w.z * uAmp * sin(f), d.x * w.z * uAmp * cos(f), -d.x * d.y * w.z * uAmp * sin(f));
           b += vec3(-d.x * d.y * w.z * uAmp * sin(f), d.y * w.z * uAmp * cos(f), -d.y * d.y * w.z * uAmp * sin(f));
           crest += max(0.0, sin(f)) * w.z * uAmp;
+        }
+        if (uSwell.w != 0.0) {
+          vec2 rel = wp0.xz - uSwell.xy;
+          float sd = max(length(rel), 1e-3);
+          float env = exp(-pow(sd / uSwell.z, 2.0));
+          float ph = sd * 0.32 - uTime * 2.1;
+          float ring = 0.55 + 0.45 * sin(ph);
+          float sh = uSwell.w * env * ring;
+          float dsh = uSwell.w * (env * (-2.0 * sd / (uSwell.z * uSwell.z)) * ring + env * 0.45 * cos(ph) * 0.32);
+          vec2 g = dsh * rel / sd;
+          p.y += sh;
+          t += vec3(0.0, g.x, 0.0);
+          b += vec3(0.0, g.y, 0.0);
+          crest += max(0.0, sh) * 0.06 * (0.5 + 0.5 * sin(ph));
         }
         vNormal = normalize(cross(b, t));
         vec4 wp = modelMatrix * vec4(p, 1.0);
@@ -769,7 +785,7 @@ export function makeTerrain(o: TerrainOpts) {
 export function makeCloudLayer(o: { size: number; y: number; color: string; shadow?: string; density?: number; scale?: number; speed?: Vec3; intensity?: number; additive?: boolean; center?: Vec3 }) {
   const geo = new THREE.PlaneGeometry(o.size, o.size, 1, 1);
   geo.rotateX(-Math.PI / 2);
-  const u = { uTime: { value: 0 }, uColor: { value: col(o.color) }, uShadow: { value: col(o.shadow ?? o.color) }, uDensity: { value: o.density ?? 0.6 }, uScale: { value: o.scale ?? 0.012 }, uSpeed: { value: v3(o.speed ?? [1, 0, 0.5]) }, uIntensity: { value: o.intensity ?? 1 }, uFlash: { value: 0 }, uOpacity: { value: 1 } };
+  const u = { uTime: { value: 0 }, uColor: { value: col(o.color) }, uShadow: { value: col(o.shadow ?? o.color) }, uDensity: { value: o.density ?? 0.6 }, uScale: { value: o.scale ?? 0.012 }, uSpeed: { value: v3(o.speed ?? [1, 0, 0.5]) }, uIntensity: { value: o.intensity ?? 1 }, uFlash: { value: 0 }, uOpacity: { value: 1 }, uHole: { value: new THREE.Vector3(0, 0, 0) }, uHoleGlow: { value: col("#000000") } };
   const mat = new THREE.ShaderMaterial({
     uniforms: u,
     transparent: true,
@@ -779,7 +795,7 @@ export function makeCloudLayer(o: { size: number; y: number; color: string; shad
     vertexShader: /* glsl */ `varying vec3 vW; varying vec2 vUv; void main(){ vUv = uv; vec4 wp = modelMatrix * vec4(position, 1.0); vW = wp.xyz; gl_Position = projectionMatrix * viewMatrix * wp; }`,
     fragmentShader: /* glsl */ `
       ${NOISE}
-      uniform float uTime, uDensity, uScale, uIntensity, uFlash, uOpacity; uniform vec3 uColor, uShadow, uSpeed;
+      uniform float uTime, uDensity, uScale, uIntensity, uFlash, uOpacity; uniform vec3 uColor, uShadow, uSpeed, uHole, uHoleGlow;
       varying vec3 vW; varying vec2 vUv;
       void main(){
         vec3 q = vec3(vW.x, 0.0, vW.z) * uScale + uSpeed * uTime * 0.01;
@@ -787,7 +803,10 @@ export function makeCloudLayer(o: { size: number; y: number; color: string; shad
         float m = whFbm(q * 2.7 + 3.0);
         float d = smoothstep(1.0 - uDensity, 1.0, n * 0.8 + m * 0.4);
         float edge = 1.0 - smoothstep(0.35, 0.5, length(vUv - 0.5));
-        vec3 c = mix(uShadow, uColor, smoothstep(0.2, 0.9, m)) * uIntensity + vec3(0.75, 0.8, 1.0) * uFlash * d;
+        float hd = uHole.z > 0.0 ? length(vW.xz - uHole.xy) / uHole.z : 9.0;
+        float rim = exp(-pow((hd - 1.0) * 2.2, 2.0));
+        d *= smoothstep(0.75, 1.15, hd + (n - 0.5) * 0.35);
+        vec3 c = mix(uShadow, uColor, smoothstep(0.2, 0.9, m)) * uIntensity + vec3(0.75, 0.8, 1.0) * uFlash * d + uHoleGlow * rim * d;
         float a = d * edge * uOpacity;
         gl_FragColor = vec4(c * a, a);
       }`,

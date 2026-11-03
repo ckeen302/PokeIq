@@ -95,7 +95,7 @@ export const build: ChapterBuilder = async (ctx) => {
   shards.visible = false;
   scene.add(shards);
   disposers.push(() => { shardGeo.dispose(); shardMat.dispose(); });
-  const burst = makeParticles({ count: P(2600), shape: "sphere", center: [0, 2.6, 0], extent: [0.8, 1.1, 0.8], velocity: [0, 0, 0], spread: [16, 16, 16], life: 4, size: [0.05, 0.18], colors: ["#ffffff", "#ffd27a", "#ff7ad9"], intensity: 1.6, fadeIn: 0.01, fadeOut: 0.6, burst: true, seed: 5 });
+  const burst = makeParticles({ count: P(2600), shape: "sphere", center: [0, 2.6, 0], extent: [0.8, 1.1, 0.8], velocity: [0, 0, 0], spread: [16, 16, 16], life: 4, size: [0.05, 0.18], colors: ["#ffffff", "#ffd27a", "#ff7ad9"], intensity: 1.0, fadeIn: 0.01, fadeOut: 0.6, burst: true, seed: 5 });
   scene.add(burst.points);
   disposers.push(burst.dispose);
   const shock = makeRing({ color: "#ffe2a6", intensity: 4, thickness: 0.05 });
@@ -170,7 +170,7 @@ export const build: ChapterBuilder = async (ctx) => {
   figureStyle(dialga, { rim: "#8fd8ff", rimK: 1.2, glow: "#6fb6ff", glowK: 0.08, edge: "#a8e8ff", dissolve: 0 });
   figureStyle(palkia, { rim: "#ffb0e8", rimK: 1.2, glow: "#ff9ad6", glowK: 0.08, edge: "#ffd0f0", dissolve: 0 });
   lake.forEach((f, i) => figureStyle(f, { rim: ["#fff08a", "#ff9ae0", "#8ac8ff"][i], rimK: 1.4, glow: ["#fff08a", "#ff9ae0", "#8ac8ff"][i], glowK: 0.25, edge: "#ffffff", dissolve: 0 }));
-  figureStyle(giratina, { rim: "#ff3355", rimK: 1.6, glow: "#3a0018", glowK: 0.2, edge: "#ff4060", dissolve: 0, shadow: 0.55 });
+  figureStyle(giratina, { rim: "#ff3355", rimK: 2.0, glow: "#3a0018", glowK: 0.12, edge: "#ff4060", dissolve: 0, shadow: 0.3 });
 
   // Motes that gather into each figure.
   const converge = (f: typeof arceus, colors: [string, string], radius: number) => {
@@ -368,8 +368,8 @@ export const build: ChapterBuilder = async (ctx) => {
       eggU.uCrack.value = ramp(t, tCrack0, tBurst);
       eggU.uGlow.value = 0.6 + ramp(t, tCrack0, tBurst) * 1.8;
       eggGlow.sprite.visible = appear > 0;
-      eggGlow.set("#ffd890", (0.9 + 1.6 * ramp(t, tCrack0, tBurst)) * appear * (1 - ramp(t, tBurst, tBurst + 1.5)) + 0.15 * appear * (1 - ramp(t, tBurst, tBurst + 3)));
-      eggGlow.sprite.scale.setScalar(9 + 10 * spike(t, tBurst, 0.05, 0.5));
+      eggGlow.set("#ffd890", (0.9 + 1.1 * ramp(t, tCrack0, tBurst)) * appear * (1 - ramp(t, tBurst, tBurst + 0.45)) + 0.12 * appear * (1 - ramp(t, tBurst, tBurst + 2.5)));
+      eggGlow.sprite.scale.setScalar(6 + 4 * spike(t, tBurst, 0.05, 0.4));
       // Shards fly.
       const sd = t - tBurst;
       shards.visible = sd > 0 && sd < 6;
@@ -458,7 +458,7 @@ export const build: ChapterBuilder = async (ctx) => {
       const formG = ramp(t, tThird + 0.8, tThird + 3.6);
       const sink = ramp(t, tBan + 1.5, end);
       if (giratina) {
-        figureStyle(giratina, { dissolve: formG * (1 - sink * 0.6), shadow: 0.55 + sink * 0.35 });
+        figureStyle(giratina, { dissolve: formG * (1 - sink * 0.35), shadow: 0.3 + sink * 0.3 });
         giratina.group.position.set(GIR[0] + Math.sin(ambient * 0.5) * 0.3, GIR[1] - sink * 6 + Math.sin(ambient * 0.7) * 0.25, GIR[2]);
       }
       const st = strikeAt(ambient, 1.7, 7);
@@ -480,13 +480,13 @@ export const build: ChapterBuilder = async (ctx) => {
         { bloomRadius: 0.62 },
         {
           exposure: [[0, 0.9], [tEgg, 1], [tBurst, 1.05], [tBurst + 3, 1.0], [tThird, 0.95], [end, 0.9]],
-          bloom: [[0, 0.85], [tCrack0, 1.0], [tBurst, 1.35], [tBurst + 2, 0.95], [tThird, 1.05], [end, 0.9]],
-          bloomThreshold: [[0, 0.78], [tBurst, 0.7], [tBurst + 2, 0.78]],
-          flash: [[tBurst - 0.02, 0], [tBurst, 0.55], [tBurst + 0.25, 0.12], [tBurst + 0.8, 0]],
+          bloom: [[0, 0.85], [tCrack0, 1.0], [tBurst, 1.1], [tBurst + 2, 0.95], [tThird, 1.05], [end, 0.9]],
+          bloomThreshold: [[0, 0.78], [tBurst, 0.76], [tBurst + 2, 0.8]],
+          flash: [[tBurst - 0.02, 0], [tBurst, 0.32], [tBurst + 0.2, 0.06], [tBurst + 0.6, 0]],
           saturation: [[0, 1.15], [tBurst + 2, 1.08], [tThird, 0.95]],
           chroma: [[0, 0.12], [tBurst, 0.45], [tBurst + 1.5, 0.06], [tThird, 0.12], [tThird + 1.5, 0.3]],
           vignette: [[0, 0.5], [tBurst, 0.3], [tThird, 0.55]],
-          rays: [[tBurst - 0.1, 0], [tBurst + 0.2, 1.0], [tBurst + 3, 0.45], [tSleep + 1, 0.35], [tSleep + 4, 0]],
+          rays: [[tBurst - 0.1, 0], [tBurst + 0.3, 0.65], [tBurst + 3, 0.4], [tSleep + 1, 0.32], [tSleep + 4, 0]],
           gain: [[0, [0.88, 0.95, 1.12]], [tBurst, [1.1, 1.0, 0.9]], [tThird, [0.95, 0.85, 1.05]], [end, [0.95, 0.9, 1.08]]],
           lift: [[0, [0.01, 0.0, 0.03]], [tThird, [0.03, 0.0, 0.02]]],
         },

@@ -31,11 +31,11 @@ export const build: ChapterBuilder = async (ctx) => {
   const P = (n: number) => Math.max(40, Math.round(n * q.particles));
 
   // ---- The primordial sea at dusk.
-  const sky = makeSky({ top: "#0e1734", horizon: "#e07a4a", bottom: "#0a0a14", nebulaA: "#3a2a6a", nebulaB: "#a04a3a", nebula: 0.35, nebulaScale: 1.2, stars: 0.025, sunDir: [-0.2, 0.06, -1], sunColor: "#ffb070", sunSize: 600, sunGlow: 0.9 });
+  const sky = makeSky({ top: "#0e1734", horizon: "#e07a4a", bottom: "#0a0a14", nebulaA: "#3a2a6a", nebulaB: "#a04a3a", nebula: 0.35, nebulaScale: 1.2, stars: 0.025, sunDir: [-0.65, 0.05, -1], sunColor: "#c8844a", sunSize: 800, sunGlow: 0.32 });
   scene.add(sky.mesh);
   disposers.push(sky.dispose);
   scene.fog = new THREE.FogExp2(col("#2a2238"), 0.0045);
-  const ocean = makeOcean({ size: 900, segments: q.grid, waves: [{ dir: [1, 0.3], steep: 0.16, length: 38 }, { dir: [-0.4, 1], steep: 0.12, length: 22 }, { dir: [0.7, -0.8], steep: 0.08, length: 11 }, { dir: [0.2, 1], steep: 0.05, length: 6 }], deep: "#06182a", shallow: "#1d4b5c", sky: "#c87a5a", sun: [-0.2, 0.06, -1], sunColor: "#ffc080", foam: 0.35 });
+  const ocean = makeOcean({ size: 900, segments: q.grid, waves: [{ dir: [1, 0.3], steep: 0.16, length: 38 }, { dir: [-0.4, 1], steep: 0.12, length: 22 }, { dir: [0.7, -0.8], steep: 0.08, length: 11 }, { dir: [0.2, 1], steep: 0.05, length: 6 }], deep: "#06182a", shallow: "#1d4b5c", sky: "#c87a5a", sun: [-0.65, 0.05, -1], sunColor: "#e8a060", foam: 0.35 });
   scene.add(ocean.mesh);
   disposers.push(ocean.dispose);
   ocean.u.uFogColor.value.copy(col("#2a2238"));
@@ -97,7 +97,7 @@ export const build: ChapterBuilder = async (ctx) => {
     depthWrite: false,
     blending: THREE.AdditiveBlending,
     vertexShader: /* glsl */ `varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
-    fragmentShader: /* glsl */ `uniform float uTime, uOpacity; varying vec2 vUv; void main(){ float pulse = 0.6 + 0.4 * sin(vUv.x * 40.0 - uTime * 4.0); vec3 c = mix(vec3(1.0, 0.75, 0.4), vec3(1.0, 0.95, 0.8), pulse) * (1.6 + pulse); gl_FragColor = vec4(c * uOpacity, uOpacity); }`,
+    fragmentShader: /* glsl */ `uniform float uTime, uOpacity; varying vec2 vUv; void main(){ float pulse = 0.6 + 0.4 * sin(vUv.x * 40.0 - uTime * 4.0); float core = 1.0 - abs(vUv.y - 0.5) * 2.0; vec3 c = mix(vec3(0.45, 0.85, 1.0), vec3(0.9, 1.0, 1.0), pulse * core) * (1.4 + pulse) * (0.4 + core); gl_FragColor = vec4(c * uOpacity, uOpacity); }`,
   });
   const ropes: THREE.Mesh[] = [0, 1].map(() => {
     const m = new THREE.Mesh(new THREE.BufferGeometry(), ropeMat);
@@ -111,7 +111,7 @@ export const build: ChapterBuilder = async (ctx) => {
     mid.y -= sag;
     const curve = new THREE.QuadraticBezierCurve3(a, mid, b);
     m.geometry.dispose();
-    m.geometry = new THREE.TubeGeometry(curve, 48, 0.16, 6, false);
+    m.geometry = new THREE.TubeGeometry(curve, 48, 0.42, 8, false);
   };
 
   // ---- The Sealed Chamber.
@@ -119,8 +119,8 @@ export const build: ChapterBuilder = async (ctx) => {
   cave.position.set(...CAVE);
   scene.add(cave);
   const caveMat = stoneMaterial({ color: "#4a4038", roughness: 0.95, dirt: 0.6 });
+  caveMat.side = THREE.BackSide;
   const room = new THREE.Mesh(new THREE.BoxGeometry(34, 16, 34), caveMat);
-  room.geometry.scale(-1, 1, 1);
   room.position.set(0, 7.5, 0);
   cave.add(room);
   disposers.push(() => { room.geometry.dispose(); caveMat.dispose(); });
@@ -177,11 +177,11 @@ export const build: ChapterBuilder = async (ctx) => {
   const keys: Key[] = [
     { t: 0, pos: [0, 8, 96], look: [0, 10, -20], fov: 48 },
     { t: tTowed, pos: [14, 4, 50], look: [0, 11, -20], fov: 44 },
-    { t: tHisui, pos: [-24, 18, 46], look: [0, 4, -60], fov: 50 },
-    { t: tHisui + 4, pos: [-10, 9, 40], look: [0, 8, -40], fov: 48 },
+    { t: tHisui, pos: [-30, 26, 42], look: [-12, 2, -70], fov: 50 },
+    { t: tHisui + 4, pos: [-18, 15, 38], look: [-6, 5, -52], fov: 48 },
     { t: tShaped, pos: [3, 3.2, 35], look: [0, 2.8, 19], fov: 44 },
     { t: cut, pos: [0, 2.6, 30], look: [0, 2.5, 19], fov: 42 },
-    { t: cut + 0.3, pos: [CAVE[0], 3, CAVE[2] + 15], look: [CAVE[0], 4.5, CAVE[2] - 12], fov: 46 },
+    { t: cut + 0.01, pos: [CAVE[0], 3, CAVE[2] + 15], look: [CAVE[0], 4.5, CAVE[2] - 12], fov: 46 },
     { t: tLong, pos: [CAVE[0] - 2, 2.2, CAVE[2] + 4], look: [CAVE[0], 2.6, CAVE[2] - 13], fov: 42 },
     { t: end, pos: [CAVE[0] + 2, 4, CAVE[2] + 16], look: [CAVE[0], 4.5, CAVE[2] - 12], fov: 46 },
   ];

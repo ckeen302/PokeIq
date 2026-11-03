@@ -363,6 +363,28 @@ describe("camera", () => {
     expect(Math.abs(v1 - v2)).toBeLessThan(0.05);
   });
 
+  it("cuts cleanly: a jump between two keys a moment apart never swings the camera off its path", () => {
+    const cut: Key[] = [
+      { t: 0, pos: [0, 2, 30], look: [0, 2, 0], fov: 40 },
+      { t: 4, pos: [0, 2, 20], look: [0, 2, 0], fov: 40 },
+      { t: 4.01, pos: [400, 3, 15], look: [400, 4, -12], fov: 46 },
+      { t: 9, pos: [398, 2, 4], look: [400, 3, -12], fov: 42 },
+    ];
+    // Before the cut the camera stays between its own keys (z 30 → 20, x 0).
+    for (let t = 0; t <= 4; t += 0.25) {
+      const p = poseOnPath(cut, t).pos;
+      expect(Math.abs(p[0])).toBeLessThan(1e-6);
+      expect(p[2]).toBeLessThanOrEqual(30.0001);
+      expect(p[2]).toBeGreaterThanOrEqual(19.9999);
+    }
+    // After it, near the far side's keys.
+    for (let t = 4.01; t <= 9; t += 0.25) {
+      const p = poseOnPath(cut, t).pos;
+      expect(p[0]).toBeGreaterThan(397);
+      expect(p[0]).toBeLessThan(401);
+    }
+  });
+
   it("widens the lens for tall screens, never past a fish-eye", () => {
     expect(fovFor(40, 16 / 9)).toBe(40);
     expect(fovFor(40, 2.4)).toBe(40);
