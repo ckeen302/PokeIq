@@ -18,17 +18,19 @@ interface Label {
   life: number;
   scale: number;
   live: boolean;
+  /** Shown even with damage numbers off (a form change). */
+  always: boolean;
 }
 
 const LIFE = 0.95;
 
 const STATUS_NAME: Record<number, string> = { 1: "Paralysed", 2: "Burned", 3: "Poisoned", 4: "Badly poisoned", 5: "Asleep", 6: "Frozen", [NOTE_CONFUSION]: "Confused" };
 const STAT_NAME = ["Attack", "Defense", "Sp. Atk", "Sp. Def", "Speed", "Accuracy", "Evasion"];
-const SKIP_NAME: Record<number, string> = { [NOTE_SKIP.sleep]: "Fast asleep", [NOTE_SKIP.frozen]: "Frozen solid", [NOTE_SKIP.flinch]: "Flinched", [NOTE_SKIP.paralysed]: "Fully paralysed", [NOTE_SKIP.confused]: "Hurt itself" };
+const SKIP_NAME: Record<number, string> = { [NOTE_SKIP.sleep]: "Fast asleep", [NOTE_SKIP.frozen]: "Frozen solid", [NOTE_SKIP.flinch]: "Flinched", [NOTE_SKIP.paralysed]: "Fully paralysed", [NOTE_SKIP.confused]: "Hurt itself", [NOTE_SKIP.loafing]: "Loafing around" };
 const ITEM_NAME: Record<number, string> = { [NOTE_ITEM.sitrus]: "Sitrus Berry", [NOTE_ITEM.lum]: "Lum Berry", [NOTE_ITEM.disguise]: "Disguise", [NOTE_ITEM.sash]: "Focus Sash", [NOTE_ITEM.weaknessPolicy]: "Weakness Policy", [NOTE_ITEM.balloon]: "Air Balloon popped", [NOTE_ITEM.knockedOff]: "Item knocked off" };
 
-/** The label for a note (a status, healing, chip damage, a stat stage, a lost turn, an item), or null. */
-export function noteLabel(kind: number, value: number): { text: string; cls: string } | null {
+/** The label for a note (a status, healing, chip damage, a stat stage, a lost turn, an item, a form: its name), or null. */
+export function noteLabel(kind: number, value: number, form?: string): { text: string; cls: string } | null {
   switch (kind) {
     case NOTE.HEAL: return value > 0 ? { text: `+${fmt(value)}`, cls: "mb-dmg-heal" } : null;
     case NOTE.CHIP: return value > 0 ? { text: `−${fmt(value)}`, cls: "mb-dmg-chip" } : null;
@@ -41,6 +43,7 @@ export function noteLabel(kind: number, value: number): { text: string; cls: str
     }
     case NOTE.SKIP: return SKIP_NAME[value] ? { text: SKIP_NAME[value], cls: "mb-dmg-miss" } : null;
     case NOTE.ITEM: return ITEM_NAME[value] ? { text: ITEM_NAME[value], cls: "mb-dmg-item" } : null;
+    case NOTE.FORM: return form ? { text: form, cls: "mb-dmg-form" } : null;
   }
   return null;
 }
@@ -63,7 +66,7 @@ export class DamageNumbers {
       el.className = "mb-dmg";
       el.setAttribute("aria-hidden", "true");
       root.appendChild(el);
-      this.labels.push({ el, x: 0, y: 0, z: 0, born: 0, life: LIFE, scale: 1, live: false });
+      this.labels.push({ el, x: 0, y: 0, z: 0, born: 0, life: LIFE, scale: 1, live: false, always: false });
     }
   }
 
@@ -92,13 +95,14 @@ export class DamageNumbers {
     l.z = z + (Math.random() - 0.5) * 0.4;
     l.born = now;
     l.life = crit || boss ? LIFE * 1.3 : LIFE;
+    l.always = false;
     l.scale = crit ? 1.35 : boss ? 1.15 : 1;
     l.live = true;
   }
 
   /** A word over a unit (a status, a stat stage, healing…); `priority` ones always show. */
-  spawnText(x: number, y: number, z: number, text: string, cls: string, now: number, priority: boolean) {
-    if (!this.enabled) return;
+  spawnText(x: number, y: number, z: number, text: string, cls: string, now: number, priority: boolean, always = false) {
+    if (!this.enabled && !always) return;
     this.budget = Math.min(6, this.budget + (now - this.lastAt) * 14);
     this.lastAt = now;
     if (!priority && this.budget < 1) return;
@@ -111,9 +115,10 @@ export class DamageNumbers {
     l.y = y;
     l.z = z + (Math.random() - 0.5) * 0.3;
     l.born = now;
-    l.life = LIFE * 1.2;
-    l.scale = 0.9;
+    l.life = LIFE * (always ? 1.7 : 1.2);
+    l.scale = always ? 1.05 : 0.9;
     l.live = true;
+    l.always = always;
   }
 
   /** Places the live labels for this frame. */
@@ -121,7 +126,7 @@ export class DamageNumbers {
     for (const l of this.labels) {
       if (!l.live) continue;
       const age = now - l.born;
-      if (age > l.life || !this.enabled) {
+      if (age > l.life || (!this.enabled && !l.always)) {
         l.live = false;
         l.el.style.opacity = "0";
         continue;

@@ -4,7 +4,7 @@ import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } fro
 import { track } from "@vercel/analytics";
 import { Camera, Clapperboard, Loader2, RotateCcw, Share2, Swords, X } from "lucide-react";
 import { Director, type Pose } from "@/lib/mass-battle/director";
-import { TICK_HZ } from "@/lib/mass-battle/constants";
+import { NOTE, TICK_HZ } from "@/lib/mass-battle/constants";
 import { bossDownLine, critLine, fmt, multiKoLine, noAnswerText, possessive, questionText, resultLine, resultTitle, sideName as armyLabel, spreadText, winRateText } from "@/lib/mass-battle/copy";
 import { figureSize } from "@/lib/mass-battle/stats";
 import { decodePlayback, encodeBattle, encodePlayback, encodeQuestion, MASS_BATTLE_PATH, newSeed, questionKey, questionSpec, runsOf, thresholdOf, type SlugIndex } from "@/lib/mass-battle/share";
@@ -23,6 +23,7 @@ import { HowItWorksBody } from "./HowItWorks";
 import { envOf } from "./scene/look";
 import { BattleControls, LiveHud, type CamMode, type HudApi, type HudState } from "./BattleHud";
 import { DamageNumbers, noteLabel } from "./damage-numbers";
+import { formFigures, speciesForms, type SpeciesForms } from "./scene/forms";
 import type { Choreographer } from "./scene/choreo";
 import { factsOfRow, SetupPanel } from "./SetupPanel";
 import type { PickerMon } from "./PokemonPicker";
@@ -130,6 +131,8 @@ export function MassBattleExperience({ list, presets, initial, playback: initial
   const directorRef = useRef(new Director());
   const speciesRef = useRef<MBSpecies[]>([]);
   const heightsRef = useRef<number[]>([]);
+  /** Each battle species' forms (Blade Forme, School Form, a Protean type…): labels, effects and figures. */
+  const formsRef = useRef<SpeciesForms[]>([]);
   const phaseRef = useRef<Phase>("idle");
   const pausedRef = useRef(false);
   const speedRef = useRef(initialPlayback.speed);
@@ -258,7 +261,7 @@ export function MassBattleExperience({ list, presets, initial, playback: initial
     const sp = view.sp;
     const heights = heightsRef.current;
     const widths = speciesRef.current.map((s) => figureSize(s).w);
-    const choreo = createChoreographer(scene.effects, view, ready, heights, widths);
+    const choreo = createChoreographer(scene.effects, view, ready, heights, widths, formsRef.current);
     choreo.budget = qualityRef.current === "low" || qualityRef.current === "draft" ? 24 : 70;
     choreoRef.current = choreo;
     const bossSide = ready.start[0] <= 3 && ready.start[1] >= 4 ? 0 : ready.start[1] <= 3 && ready.start[0] >= 4 ? 1 : -1;
@@ -272,8 +275,10 @@ export function MassBattleExperience({ list, presets, initial, playback: initial
       },
       damage: (x, y, z, damage, flags, side) => numbersRef.current?.spawn(x, y, z, damage, flags, performance.now() / 1000, side === bossSide),
       note: (n, y) => {
-        const label = noteLabel(n.kind, n.value);
-        if (label && view.draw[n.unit]) numbersRef.current?.spawnText(n.x, y, n.z, label.text, label.cls, performance.now() / 1000, view.side[n.unit] === bossSide);
+        // A form change is named over the unit even with damage numbers off.
+        const form = n.kind === NOTE.FORM ? formsRef.current[sp[n.unit]]?.forms[n.value]?.label : undefined;
+        const label = noteLabel(n.kind, n.value, form);
+        if (label && view.draw[n.unit]) numbersRef.current?.spawnText(n.x, y, n.z, label.text, label.cls, performance.now() / 1000, view.side[n.unit] === bossSide || !!form, !!form);
       },
       action: (a) => {
         const d = directorRef.current;
@@ -334,6 +339,9 @@ export function MassBattleExperience({ list, presets, initial, playback: initial
       speciesRef.current = species;
       heightsRef.current = species.map((s) => figureSize(s).h);
       const view = new BattleView(ready, (await import("./scene")).QUALITY[qualityRef.current].cap);
+      // Forms (as the engine plays them): Wishiwashi starts schooled from level 20, the rest in their first form.
+      formsRef.current = species.map((s, k) => speciesForms(s, ready.fighters[k] ?? { ability: "", tera: "", level: 100 }, ready.moves[k] ?? []));
+      view.startForms(formsRef.current.map((f) => f.initial));
       viewRef.current = view;
       setDrawn(view.drawn < view.n ? { drawn: view.drawn, total: view.n } : null);
       await wireHits(view);
@@ -355,7 +363,8 @@ export function MassBattleExperience({ list, presets, initial, playback: initial
         if (total <= 3) bosses.add(species[k].id);
       }
       const env = envOf(b.spec);
-      await scene.deploy({ arena: b.spec.arena, radius: ready.arena, species, bosses, view, weather: env.weather ?? ready.field?.weather, time: env.time ?? ready.field?.time, terrain: env.terrain ?? ready.field?.terrain }, (p, label) => setProgress({ p, label }), ac.signal);
+      const forms = await formFigures(species, formsRef.current);
+      await scene.deploy({ arena: b.spec.arena, radius: ready.arena, species, bosses, view, weather: env.weather ?? ready.field?.weather, time: env.time ?? ready.field?.time, terrain: env.terrain ?? ready.field?.terrain, forms }, (p, label) => setProgress({ p, label }), ac.signal);
       if (ac.signal.aborted) return;
       const aspect = hostRef.current ? hostRef.current.clientWidth / Math.max(1, hostRef.current.clientHeight) : 1.6;
       directorRef.current.reset(summarize(view, heightsRef.current, "deploy", aspect));

@@ -5,6 +5,10 @@ import { moveStyle } from "@/components/mass-battle/scene/effects";
 import { lookFor, normTerrain, normTime, normWeather, TIMES, WEATHERS } from "@/components/mass-battle/scene/look";
 import { noteLabel, statusFxType } from "@/components/mass-battle/damage-numbers";
 import { NOTE, NOTE_CONFUSION, NOTE_SKIP } from "@/lib/mass-battle/constants";
+import { formsOf, type Fighter } from "@/lib/mass-battle/damage";
+import { FORM_FIGURES, formFigures, speciesForms } from "@/components/mass-battle/scene/forms";
+import type { MBSpecies } from "@/lib/mass-battle/types";
+import { noteLabel as label } from "@/components/mass-battle/damage-numbers";
 import { BattleView, HIT_TYPES, LEAD, drawMask } from "@/components/mass-battle/view";
 import type { SimFrame, SimReady } from "@/components/mass-battle/protocol";
 import { ARENAS } from "@/lib/mass-battle/types";
@@ -206,6 +210,18 @@ describe("mass battle visuals: the view", () => {
     expect(v.hitAt[2]).toBe(-1);
   });
 
+  it("starts each unit in its species' form and changes it when a FORM note passes", () => {
+    const r = ready(2, [0, 1]);
+    const v = new BattleView(r, 100);
+    v.startForms([1]);
+    expect([...v.form]).toEqual([1, 1]);
+    const frames: SimFrame[] = [];
+    for (let k = 1; k <= 20; k++) frames.push(k === 6 ? { ...frame(k, 2, []), notes: Int32Array.from([1, NOTE.FORM, 0, -1]) } : frame(k, 2, []));
+    v.push(frames);
+    for (let k = 0; k < 120; k++) v.advance(1 / 120);
+    expect([...v.form]).toEqual([1, 0]);
+  });
+
   it("draws a representative share of a big army and every boss", () => {
     const n = 1001;
     const sp = new Uint16Array(n);
@@ -215,5 +231,57 @@ describe("mass battle visuals: the view", () => {
     const drawn = mask.reduce((a, b) => a + b, 0);
     expect(drawn).toBeGreaterThan(190);
     expect(drawn).toBeLessThanOrEqual(200);
+  });
+});
+
+describe("mass battle visuals: forms", () => {
+  const moves = [{ name: "Shadow Ball", type: "Ghost" }, { name: "Iron Head", type: "Steel" }, { name: "Close Combat", type: "Fighting" }];
+  const cases: { calc: string; types: string[]; ability: string; tera: string }[] = [
+    { calc: "Aegislash", types: ["steel", "ghost"], ability: "Stance Change", tera: "" },
+    { calc: "Wishiwashi", types: ["water"], ability: "Schooling", tera: "" },
+    { calc: "Minior-Meteor", types: ["rock", "flying"], ability: "Shields Down", tera: "" },
+    { calc: "Eiscue", types: ["ice"], ability: "Ice Face", tera: "" },
+    { calc: "Greninja", types: ["water", "dark"], ability: "Protean", tera: "" },
+    { calc: "Cinderace", types: ["fire"], ability: "Libero", tera: "" },
+    { calc: "Greninja", types: ["water", "dark"], ability: "Protean", tera: "Water" },
+    { calc: "Pikachu", types: ["electric"], ability: "Static", tera: "" },
+  ];
+
+  it("reads the engine's forms the way the engine does (same rule, same forms in the same order)", () => {
+    for (const c of cases) {
+      const engine = formsOf({ species: { calc: c.calc, types: c.types }, set: { ability: c.ability, tera: c.tera, moves } } as unknown as Fighter);
+      const mine = speciesForms({ calc: c.calc, types: c.types }, { ability: c.ability, tera: c.tera, level: 100 }, moves);
+      expect(mine.rule, c.calc).toBe(engine.rule);
+      expect(mine.forms.length, c.calc).toBe(engine.forms.length);
+      // A Protean form is its move's type.
+      engine.forms.forEach((f, k) => { if (f.types) expect(mine.forms[k].label).toBe(`${f.types[0]} type`); });
+    }
+    expect(speciesForms({ calc: "Aegislash", types: ["steel", "ghost"] }, { ability: "Stance Change", tera: "", level: 50 }, moves).forms[1]).toMatchObject({ label: "Blade Forme", figure: FORM_FIGURES.aegislashBlade });
+  });
+
+  it("starts Wishiwashi schooled from level 20, as the engine does", () => {
+    const at = (level: number) => speciesForms({ calc: "Wishiwashi", types: ["water"] }, { ability: "Schooling", tera: "", level }, moves).initial;
+    expect(at(19)).toBe(0);
+    expect(at(20)).toBe(1);
+    expect(at(100)).toBe(1);
+  });
+
+  it("gives a form with a figure its documented size and render box (src/data/race-forms.json), and Protean none", async () => {
+    const base = { id: 746, slug: "wishiwashi", name: "Wishiwashi", calc: "Wishiwashi", types: ["water"], m: 0.2, kg: 0.3, shape: "fish", box: [61, 154, 390, 204, 512] } as unknown as MBSpecies;
+    const school = speciesForms(base, { ability: "Schooling", tera: "", level: 100 }, moves);
+    const figs = await formFigures([base], [school]);
+    expect(figs).toHaveLength(1);
+    expect(figs[0]).toMatchObject({ sp: 0, form: 1, relief: "/race/depth/10127.webp" });
+    expect(figs[0].species.m).toBeCloseTo(8.2, 5);
+    expect(figs[0].species.box).toEqual([11, 100, 491, 312, 512]);
+    expect(figs[0].art(512)).toBe("/api/race/home/10127?s=512");
+    const greninja = { ...base, calc: "Greninja", types: ["water", "dark"] } as MBSpecies;
+    expect(await formFigures([greninja], [speciesForms(greninja, { ability: "Protean", tera: "", level: 100 }, moves)])).toHaveLength(0);
+  });
+
+  it("names form changes and Truant's lost turns", () => {
+    expect(label(NOTE.FORM, 1, "Blade Forme")).toEqual({ text: "Blade Forme", cls: "mb-dmg-form" });
+    expect(label(NOTE.FORM, 1)).toBeNull();
+    expect(label(NOTE.SKIP, NOTE_SKIP.loafing)?.text).toBe("Loafing around");
   });
 });

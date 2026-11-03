@@ -49,6 +49,8 @@ export interface UnitsView {
   hitPower: Float32Array;
   /** The last hit's move type (1 + its index in HIT_TYPES; 0 none). */
   hitType: Uint8Array;
+  /** Each unit's form (scene/forms.ts), when its species has forms with figures of their own. */
+  form?: Uint8Array;
   attackAt: Float32Array;
   faintAt: Float32Array;
   /** The battle clock (s). */
@@ -239,6 +241,14 @@ void main() {
   });
 }
 
+/** A form with a figure of its own, for a battle species (see forms.ts). */
+export interface UnitForm {
+  sp: number;
+  form: number;
+  species: MBSpecies;
+  asset: SpeciesAsset;
+}
+
 export interface UnitsOptions {
   /** Projected heights (px) above which the more detailed levels are used (one fewer than the levels). */
   lodPx: number[];
@@ -274,6 +284,12 @@ export class UnitsLayer {
   private lastZ: Float32Array;
   private flip: Float32Array;
   private stepCount: Float32Array;
+  /** Draw index per (battle species × 16 + form) for forms with figures of their own. */
+  private formDraw = new Map<number, number>();
+  /** The form each unit was last drawn in (255 before its first frame), when it changed and the height it changed from. */
+  private shownForm: Uint8Array;
+  private formAt: Float32Array;
+  private formFrom: Float32Array;
   private frustum = new THREE.Frustum();
   private projScreen = new THREE.Matrix4();
   private sphere = new THREE.Sphere();
@@ -288,69 +304,22 @@ export class UnitsLayer {
   /** Triangles and instances drawn last frame (for the stats overlay and tests). */
   drawn = { instances: 0, triangles: 0, calls: 0 };
 
-  constructor(species: MBSpecies[], assets: Map<number, SpeciesAsset>, view: Pick<UnitsView, "n" | "sp" | "draw">, opts: UnitsOptions) {
+  constructor(species: MBSpecies[], assets: Map<number, SpeciesAsset>, view: Pick<UnitsView, "n" | "sp" | "draw">, opts: UnitsOptions, forms: UnitForm[] = []) {
     this.opts = opts;
     const counts = new Array(species.length).fill(0);
     for (let i = 0; i < view.n; i++) if (view.draw[i]) counts[view.sp[i]]++;
     species.forEach((s, k) => {
       const asset = assets.get(s.id);
       if (!asset) throw new Error(`no figure for ${s.name}`);
-      const tex = new THREE.Texture(asset.art as unknown as HTMLImageElement);
-      tex.colorSpace = THREE.SRGBColorSpace;
-      tex.flipY = false;
-      tex.anisotropy = opts.anisotropy;
-      tex.minFilter = THREE.LinearMipmapLinearFilter;
-      tex.needsUpdate = true;
-      const boss = opts.bosses.has(s.id);
-      const uniforms = { uAura: { value: new THREE.Color(boss ? AURA[s.types[0]] ?? "#ffe9b0" : "#000000").multiplyScalar(boss ? 0.4 : 0) }, uMeshH: { value: asset.levels[0]?.height ?? 1 } };
-      const material = new THREE.MeshStandardMaterial({ map: tex, alphaTest: 0.5, roughness: 0.55, metalness: 0, side: THREE.FrontSide });
-      const draw: SpeciesDraw = {
-        species: s,
-        motion: motionFor(s),
-        w: 0,
-        h: 0,
-        scale: [],
-        levels: [],
-        material,
-        depth: depthMaterial(tex),
-        texture: tex,
-        boss,
-        uniforms,
-      };
-      unitPatch(material, uniforms);
-      const size = figureSize(s);
-      const cap = Math.max(1, counts[k]);
-      draw.levels = asset.levels.map((lv, li) => {
-        const geo = new THREE.InstancedBufferGeometry();
-        geo.setAttribute("position", new THREE.BufferAttribute(lv.position, 3));
-        geo.setAttribute("normal", new THREE.BufferAttribute(lv.normal, 3));
-        geo.setAttribute("uv", new THREE.BufferAttribute(lv.uv, 2));
-        geo.setIndex(new THREE.BufferAttribute(lv.index, 1));
-        const pose = new THREE.InstancedBufferAttribute(new Float32Array(cap * 4), 4);
-        const look = new THREE.InstancedBufferAttribute(new Float32Array(cap * 4), 4);
-        const extra = new THREE.InstancedBufferAttribute(new Float32Array(cap * 4), 4);
-        const fx = new THREE.InstancedBufferAttribute(new Float32Array(cap * 2), 2);
-        for (const a of [pose, look, extra, fx]) a.setUsage(THREE.DynamicDrawUsage);
-        geo.setAttribute("aPose", pose);
-        geo.setAttribute("aLook", look);
-        geo.setAttribute("aExtra", extra);
-        geo.setAttribute("aFx", fx);
-        geo.instanceCount = 0;
-        const mesh = new THREE.Mesh(geo, material);
-        mesh.frustumCulled = false;
-        mesh.name = `${s.slug}-lod${li}`;
-        // The coarsest level is only ever far away: its contact shadow is enough.
-        mesh.castShadow = opts.shadows && (li < asset.levels.length - 1 || boss || asset.levels.length === 1);
-        mesh.receiveShadow = opts.shadows;
-        mesh.customDepthMaterial = draw.depth;
-        this.group.add(mesh);
-        return { geo, mesh, pose, look, extra, fx, count: 0, triangles: lv.triangles };
-      });
-      draw.w = size.w;
-      draw.h = size.h;
-      draw.scale = asset.levels.map((lv) => size.h / Math.max(1e-6, lv.height));
-      this.draws.push(draw);
+      this.draws.push(this.makeDraw(s, asset, counts[k], opts.bosses.has(s.id), motionFor(s)));
     });
+    // A form with a figure of its own (Blade Forme, School Form…): its own draw, as many slots as its species has units.
+    for (const f of forms) {
+      const base = species[f.sp];
+      if (!base) continue;
+      this.formDraw.set(f.sp * 16 + f.form, this.draws.length);
+      this.draws.push(this.makeDraw(f.species, f.asset, counts[f.sp], opts.bosses.has(base.id), motionFor(base)));
+    }
     // Contact shadows for every figure, one draw.
     const total = counts.reduce((a, b) => a + b, 0);
     const geo = new THREE.InstancedBufferGeometry();
@@ -375,6 +344,61 @@ export class UnitsLayer {
     this.lastZ = new Float32Array(view.n).fill(NaN);
     this.flip = new Float32Array(view.n);
     this.stepCount = new Float32Array(view.n);
+    this.shownForm = new Uint8Array(view.n).fill(255);
+    this.formAt = new Float32Array(view.n).fill(-1);
+    this.formFrom = new Float32Array(view.n);
+  }
+
+  /** One species' (or form's) figure: its texture, material and instanced mesh at every detail level. */
+  private makeDraw(s: MBSpecies, asset: SpeciesAsset, count: number, boss: boolean, motion: Motion): SpeciesDraw {
+    const opts = this.opts;
+    const tex = new THREE.Texture(asset.art as unknown as HTMLImageElement);
+    tex.colorSpace = THREE.SRGBColorSpace;
+    tex.flipY = false;
+    tex.anisotropy = opts.anisotropy;
+    tex.minFilter = THREE.LinearMipmapLinearFilter;
+    tex.needsUpdate = true;
+    const uniforms = { uAura: { value: new THREE.Color(boss ? AURA[s.types[0]] ?? "#ffe9b0" : "#000000").multiplyScalar(boss ? 0.4 : 0) }, uMeshH: { value: asset.levels[0]?.height ?? 1 } };
+    const material = new THREE.MeshStandardMaterial({ map: tex, alphaTest: 0.5, roughness: 0.55, metalness: 0, side: THREE.FrontSide });
+    const draw: SpeciesDraw = { species: s, motion, w: 0, h: 0, scale: [], levels: [], material, depth: depthMaterial(tex), texture: tex, boss, uniforms };
+    unitPatch(material, uniforms);
+    const size = figureSize(s);
+    const cap = Math.max(1, count);
+    draw.levels = asset.levels.map((lv, li) => {
+      const geo = new THREE.InstancedBufferGeometry();
+      geo.setAttribute("position", new THREE.BufferAttribute(lv.position, 3));
+      geo.setAttribute("normal", new THREE.BufferAttribute(lv.normal, 3));
+      geo.setAttribute("uv", new THREE.BufferAttribute(lv.uv, 2));
+      geo.setIndex(new THREE.BufferAttribute(lv.index, 1));
+      const pose = new THREE.InstancedBufferAttribute(new Float32Array(cap * 4), 4);
+      const look = new THREE.InstancedBufferAttribute(new Float32Array(cap * 4), 4);
+      const extra = new THREE.InstancedBufferAttribute(new Float32Array(cap * 4), 4);
+      const fx = new THREE.InstancedBufferAttribute(new Float32Array(cap * 2), 2);
+      for (const a of [pose, look, extra, fx]) a.setUsage(THREE.DynamicDrawUsage);
+      geo.setAttribute("aPose", pose);
+      geo.setAttribute("aLook", look);
+      geo.setAttribute("aExtra", extra);
+      geo.setAttribute("aFx", fx);
+      geo.instanceCount = 0;
+      const mesh = new THREE.Mesh(geo, material);
+      mesh.frustumCulled = false;
+      mesh.name = `${s.slug}-lod${li}`;
+      // The coarsest level is only ever far away: its contact shadow is enough.
+      mesh.castShadow = opts.shadows && (li < asset.levels.length - 1 || boss || asset.levels.length === 1);
+      mesh.receiveShadow = opts.shadows;
+      mesh.customDepthMaterial = draw.depth;
+      this.group.add(mesh);
+      return { geo, mesh, pose, look, extra, fx, count: 0, triangles: lv.triangles };
+    });
+    draw.w = size.w;
+    draw.h = size.h;
+    draw.scale = asset.levels.map((lv) => size.h / Math.max(1e-6, lv.height));
+    return draw;
+  }
+
+  /** The draw for a unit's species in a form (its own figure when the form has one). */
+  private drawFor(sp: number, form: number): SpeciesDraw {
+    return this.draws[form ? this.formDraw.get(sp * 16 + form) ?? sp : sp];
   }
 
   /** Every material, for compiling before the battle starts. */
@@ -426,7 +450,16 @@ export class UnitsLayer {
       const fa = view.faintAt[i];
       const age = fa >= 0 ? t - fa : -1;
       if (age >= RECALL) continue;
-      const d = this.draws[sp[i]];
+      // Its form: a change (Blade Forme, School Form…) grows or shrinks the new figure out of the old one, with a flash.
+      const fm = view.form ? view.form[i] : 0;
+      if (fm !== this.shownForm[i]) {
+        if (this.shownForm[i] !== 255) {
+          this.formFrom[i] = this.drawFor(sp[i], this.shownForm[i]).h;
+          this.formAt[i] = t;
+        }
+        this.shownForm[i] = fm;
+      }
+      const d = this.drawFor(sp[i], fm);
       const xi = x[i], zi = z[i];
       // Speed (for the gait), smoothed, in battle time.
       let v = 0;
@@ -488,7 +521,9 @@ export class UnitsLayer {
       // Hit: a flash, a flinch back and a squash.
       const ha = t - view.hitAt[i];
       let flash = 0;
+      let flashType = 0;
       if (view.hitAt[i] >= 0 && ha >= 0 && ha < 0.34) {
+        flashType = view.hitType[i];
         const k = 1 - ha / 0.34;
         const p = Math.min(1, 0.3 + view.hitPower[i] * 4);
         // Bright at once, quickly gone (in slow motion it lasts three times as long on screen, so it must not linger).
@@ -504,6 +539,13 @@ export class UnitsLayer {
         }
       }
       let scale = d.scale[li];
+      const fc = t - this.formAt[i];
+      if (this.formAt[i] >= 0 && fc >= 0 && fc < 0.45) {
+        const k = fc / 0.45;
+        const from = this.formFrom[i] / Math.max(1e-3, d.h);
+        scale *= from + (1 - from) * (1 - (1 - k) * (1 - k) * (1 - k));
+        flash = Math.max(flash, (1 - k) * 0.8);
+      }
       let recall = 0;
       if (age >= 0) {
         // Faint: drop and tip over, glow red, then shrink up into the Poké Ball's beam.
@@ -536,7 +578,7 @@ export class UnitsLayer {
       const pose = lv.pose.array as Float32Array, look = lv.look.array as Float32Array, extra = lv.extra.array as Float32Array;
       const fxa = lv.fx.array as Float32Array;
       fxa[lv.count * 2] = fade;
-      fxa[lv.count * 2 + 1] = flash > 0 ? view.hitType[i] : 0;
+      fxa[lv.count * 2 + 1] = flash > 0 ? flashType : 0;
       pose[o] = xi + ox;
       pose[o + 1] = y;
       pose[o + 2] = zi + oz;

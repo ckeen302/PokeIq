@@ -56,19 +56,19 @@ function reliefWorkers(): Worker[] {
   return workers;
 }
 
-function buildRelief(s: MBSpecies, segments: number[]): Promise<ReliefLevel[]> {
+function buildRelief(s: MBSpecies, segments: number[], relief = reliefUrl(s.id)): Promise<ReliefLevel[]> {
   const ws = reliefWorkers();
   const id = nextId++;
   const [x, y, w, h, size] = s.box;
-  const req: ReliefRequest = { id, url: new URL(reliefUrl(s.id), location.origin).href, box: { x, y, w, h, size }, segments };
+  const req: ReliefRequest = { id, url: new URL(relief, location.origin).href, box: { x, y, w, h, size }, segments };
   return new Promise((resolve, reject) => {
     pending.set(id, (r) => (r.ok ? resolve(r.levels) : reject(new Error(r.message))));
     ws[rr++ % ws.length].postMessage(req);
   });
 }
 
-async function fetchArt(id: number, size: 256 | 512, signal?: AbortSignal): Promise<ImageBitmap> {
-  const url = await artUrl(id, size);
+async function fetchArt(id: number, size: 256 | 512, signal?: AbortSignal, src?: string): Promise<ImageBitmap> {
+  const url = src ?? (await artUrl(id, size));
   let lastErr: unknown;
   for (let attempt = 0; attempt < 3; attempt++) {
     try {
@@ -95,8 +95,8 @@ const TYPE_TINT: Record<string, string> = {
  * When a render can't be fetched (a network hiccup), the figure still stands, in 3D: its silhouette (the relief
  * map's coverage) in its type's colour, so nothing pops in later and nothing flat stands in for it.
  */
-async function silhouette(s: MBSpecies): Promise<ImageBitmap> {
-  const res = await fetch(reliefUrl(s.id));
+async function silhouette(s: MBSpecies, relief = reliefUrl(s.id)): Promise<ImageBitmap> {
+  const res = await fetch(relief);
   const map = await createImageBitmap(await res.blob(), { premultiplyAlpha: "none", colorSpaceConversion: "none" });
   const [bx, by, bw, bh, size] = s.box;
   const k = 256 / size;
@@ -128,6 +128,19 @@ export function speciesAsset(s: MBSpecies, segments: number[], artSize: 256 | 51
   let p = cache.get(key);
   if (!p) {
     p = Promise.all([fetchArt(s.id, artSize, signal).catch((e) => (signal?.aborted ? Promise.reject(e) : silhouette(s))), buildRelief(s, segments)]).then(([art, levels]) => ({ id: s.id, art, artSize: art.width as 256 | 512, levels, segments }));
+    p.catch(() => cache.delete(key));
+    cache.set(key, p);
+  }
+  return p;
+}
+
+/** A form's figure (another render and relief map: see forms.ts), cached like a species'. */
+export function formAsset(f: { species: MBSpecies; art: (size: 256 | 512) => string; relief: string }, segments: number[], artSize: 256 | 512, signal?: AbortSignal): Promise<SpeciesAsset> {
+  const s = f.species;
+  const key = `form:${s.id}|${artSize}|${segments.join(",")}`;
+  let p = cache.get(key);
+  if (!p) {
+    p = Promise.all([fetchArt(s.id, artSize, signal, f.art(artSize)).catch((e) => (signal?.aborted ? Promise.reject(e) : silhouette(s, f.relief))), buildRelief(s, segments, f.relief)]).then(([art, levels]) => ({ id: s.id, art, artSize: art.width as 256 | 512, levels, segments }));
     p.catch(() => cache.delete(key));
     cache.set(key, p);
   }

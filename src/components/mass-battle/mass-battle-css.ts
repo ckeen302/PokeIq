@@ -50,6 +50,7 @@ export const MB_CSS = `
 .mb-dmg-down { color: #ff9aa8; font-size: 13px; }
 .mb-dmg-item { color: #ffe680; font-size: 12px; }
 .mb-dmg-status { font-size: 13px; text-transform: uppercase; letter-spacing: .04em; }
+.mb-dmg-form { color: #fff3b0; font-size: 16px; text-transform: uppercase; letter-spacing: .05em; text-shadow: 0 0 10px rgb(255 214 90 / .85); }
 .mb-st-1 { color: #ffe23a; } .mb-st-2 { color: #ff7a3a; } .mb-st-3, .mb-st-4 { color: #c88aff; } .mb-st-5 { color: #b8c8ff; } .mb-st-6 { color: #9feaff; } .mb-st-9 { color: #ff9ae0; }
 .mb-loader-ball { width: 46px; height: 46px; border-radius: 50%; position: relative; overflow: hidden;
   background: linear-gradient(180deg, #ff3b4a 0 46%, #10131d 46% 54%, #f4f6fb 54%); box-shadow: 0 0 0 3px #10131d, 0 0 24px rgb(255 60 80 / .45);

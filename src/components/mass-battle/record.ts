@@ -10,6 +10,7 @@ import { sliceRoster, specIds } from "./protocol";
 import { getRoster } from "./roster-client";
 import { createBattleScene, QUALITY, TEX_URL, type Quality } from "./scene";
 import { createChoreographer } from "./scene/choreo";
+import { formFigures, speciesForms } from "./scene/forms";
 import { envOf } from "./scene/look";
 import { BattleView, LEAD, summarize } from "./view";
 import { SimClient } from "./workers";
@@ -255,12 +256,14 @@ export async function recordBattleVideo(o: RecordOptions): Promise<RecordResult>
     const heights = species.map((s) => figureSize(s).h);
     const widths = species.map((s) => figureSize(s).w);
     const view = new BattleView(ready, QUALITY[quality].cap);
+    const forms = species.map((s, k) => speciesForms(s, ready.fighters[k] ?? { ability: "", tera: "", level: 100 }, ready.moves[k] ?? []));
+    view.startForms(forms.map((f) => f.initial));
     const bosses = new Set<number>();
     const counts = new Map<number, number>();
     for (let i = 0; i < ready.n; i++) counts.set(ready.sp[i], (counts.get(ready.sp[i]) ?? 0) + 1);
     species.forEach((s, k) => { if ((counts.get(k) ?? 0) <= 3 && (ready.start[0] <= 3 || ready.start[1] <= 3)) bosses.add(s.id); });
     const envSpec = envOf(b.spec);
-    await scene.deploy({ arena: b.spec.arena, radius: ready.arena, species, bosses, view, weather: envSpec.weather ?? ready.field?.weather, time: envSpec.time ?? ready.field?.time, terrain: envSpec.terrain ?? ready.field?.terrain }, (p) => o.onProgress(0.01 + p * 0.07, "Deploying armies"), o.signal);
+    await scene.deploy({ arena: b.spec.arena, radius: ready.arena, species, bosses, view, weather: envSpec.weather ?? ready.field?.weather, time: envSpec.time ?? ready.field?.time, terrain: envSpec.terrain ?? ready.field?.terrain, forms: await formFigures(species, forms) }, (p) => o.onProgress(0.01 + p * 0.07, "Deploying armies"), o.signal);
     // Frames from the worker, on demand.
     let waiting: (() => void) | null = null;
     sim.onFrames = (frames, end) => {
@@ -281,7 +284,7 @@ export async function recordBattleVideo(o: RecordOptions): Promise<RecordResult>
     let videoT = 0;
     let finaleAt = plan.hook + plan.battle;
     const director = new Director();
-    const choreo = createChoreographer(scene.effects, view, ready, heights, widths);
+    const choreo = createChoreographer(scene.effects, view, ready, heights, widths, forms);
     const bossSide = ready.start[0] <= 3 && ready.start[1] >= 4 ? 0 : ready.start[1] <= 3 && ready.start[0] >= 4 ? 1 : -1;
     const nameOf = (i: number) => species[ready.sp[i]]?.name ?? "";
     let caption: { text: string; at: number; gold: boolean } | null = null;

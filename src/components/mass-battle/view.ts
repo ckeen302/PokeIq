@@ -1,4 +1,4 @@
-import { EV, EVENT_INTS, NOTE_INTS, TICK_HZ } from "@/lib/mass-battle/constants";
+import { EV, EVENT_INTS, NOTE, NOTE_INTS, TICK_HZ } from "@/lib/mass-battle/constants";
 import type { FieldSummary } from "@/lib/mass-battle/director";
 import type { SimEnd, SimFrame, SimReady } from "./protocol";
 
@@ -59,6 +59,8 @@ export class BattleView {
   readonly hitPower: Float32Array;
   /** The last hit's move type (1 + its index in HIT_TYPES; 0 none), for the colour of its flash. */
   readonly hitType: Uint8Array;
+  /** Each unit's form (see scene/forms.ts): changed by FORM notes as the clock passes them. */
+  readonly form: Uint8Array;
   readonly attackAt: Float32Array;
   readonly faintAt: Float32Array;
   readonly hp: Uint16Array;
@@ -92,6 +94,7 @@ export class BattleView {
     this.hitAt = new Float32Array(n).fill(-1);
     this.hitPower = new Float32Array(n);
     this.hitType = new Uint8Array(n);
+    this.form = new Uint8Array(n);
     this.attackAt = new Float32Array(n).fill(-1);
     this.faintAt = new Float32Array(n).fill(-1);
     this.hp = new Uint16Array(n);
@@ -101,6 +104,11 @@ export class BattleView {
     this.drawn = this.draw.reduce((a, b) => a + b, 0);
     this.frames.push(ready.frame);
     this.interpolate();
+  }
+
+  /** Each unit's starting form, by battle species (Wishiwashi schools from the start: no note says so). */
+  startForms(initial: number[]) {
+    for (let i = 0; i < this.n; i++) this.form[i] = initial[this.sp[i]] ?? 0;
   }
 
   /** Battle seconds of the newest frame. */
@@ -182,10 +190,11 @@ export class BattleView {
       this.onHit?.({ t, actor, target, slot: ev[k + 2], damage: ev[k + 3], flags, action: ev[k + 5], ax: f.pos[actor * 2], az: f.pos[actor * 2 + 1], tx: f.pos[target * 2], tz: f.pos[target * 2 + 1] });
     }
     const nt = f.notes;
-    if (nt && this.onNote) {
+    if (nt) {
       for (let k = 0; k + NOTE_INTS <= nt.length; k += NOTE_INTS) {
         const u = nt[k];
-        this.onNote({ t, unit: u, kind: nt[k + 1], value: nt[k + 2], source: nt[k + 3], x: f.pos[u * 2], z: f.pos[u * 2 + 1] });
+        if (nt[k + 1] === NOTE.FORM && u >= 0 && u < this.n) this.form[u] = nt[k + 2];
+        this.onNote?.({ t, unit: u, kind: nt[k + 1], value: nt[k + 2], source: nt[k + 3], x: f.pos[u * 2], z: f.pos[u * 2 + 1] });
       }
     }
     for (let i = 0; i < this.n; i++) this.hp[i] = f.hp[i];

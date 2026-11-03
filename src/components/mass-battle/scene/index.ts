@@ -2,11 +2,12 @@ import * as THREE from "three";
 import type { ArenaId, MBSpecies } from "@/lib/mass-battle/types";
 import { figureSize } from "@/lib/mass-battle/stats";
 import { buildArena, type Arena } from "./arena";
-import { loadAll } from "./assets";
+import { formAsset, loadAll } from "./assets";
+import type { FormFigure } from "./forms";
 import { Effects, effectCaps, typeLook } from "./effects";
 import { lookFor, normTerrain, normTime, normWeather, type Look, type TerrainLook, type TimeOfDay, type Weather } from "./look";
 import { createPost, type Post } from "./post";
-import { UNIT_LIGHT, UnitsLayer, type UnitsView } from "./units";
+import { UNIT_LIGHT, UnitsLayer, type UnitForm, type UnitsView } from "./units";
 import { buildWeather, type WeatherLayer } from "./weather";
 
 /**
@@ -92,6 +93,8 @@ export interface DeployInput {
   time?: unknown;
   /** Electric, Grassy, Psychic or Misty Terrain over the battleground. */
   terrain?: unknown;
+  /** Forms with figures of their own (Blade Forme, School Form…), loaded with the armies. */
+  forms?: FormFigure[];
 }
 
 export interface SceneOptions {
@@ -297,17 +300,34 @@ export function createBattleScene(host: HTMLElement, opts: SceneOptions): Battle
     effects.clear();
     // The figures.
     onProgress(0.02, "Deploying armies");
+    const formList = input.forms ?? [];
+    const share = formList.length ? input.species.length / (input.species.length + formList.length) : 1;
     const assets = await loadAll(
       // Big armies of many species keep to the smaller renders (memory); a few species get the sharp ones at the top qualities.
       input.species.map((s) => ({ s, segments: input.bosses.has(s.id) ? Q.bossSegments : Q.segments, artSize: input.bosses.has(s.id) || (Q.artSize === 512 && input.species.length <= 12) ? (512 as const) : (256 as const) })),
-      (p) => onProgress(0.02 + p * 0.76, "Deploying armies"),
+      (p) => onProgress(0.02 + p * 0.76 * share, "Deploying armies"),
       signal
     );
+    // The forms' own figures, at their species' detail.
+    const forms: UnitForm[] = [];
+    for (const [k, f] of formList.entries()) {
+      const base = input.species[f.sp];
+      if (!base) continue;
+      const boss = input.bosses.has(base.id);
+      const artSize = boss || (Q.artSize === 512 && input.species.length <= 12) ? (512 as const) : (256 as const);
+      try {
+        forms.push({ sp: f.sp, form: f.form, species: f.species, asset: await formAsset(f, boss ? Q.bossSegments : Q.segments, artSize, signal) });
+      } catch (e) {
+        if (signal?.aborted) throw e;
+        // No figure for that form: the unit keeps its own (the label and the flash still mark the change).
+      }
+      onProgress(0.02 + 0.76 * (share + ((k + 1) / formList.length) * (1 - share)), "Deploying armies");
+    }
     await arena!.ready;
     if (signal?.aborted) throw new DOMException("Cancelled", "AbortError");
     units?.dispose();
     if (units) scene.remove(units.group);
-    units = new UnitsLayer(input.species, assets, input.view, { lodPx: Q.lodPx, anisotropy: Q.anisotropy, shadows: shadowsOn, bosses: input.bosses });
+    units = new UnitsLayer(input.species, assets, input.view, { lodPx: Q.lodPx, anisotropy: Q.anisotropy, shadows: shadowsOn, bosses: input.bosses }, forms);
     scene.add(units.group);
     const a = arena!;
     effects.dustColor.copy(a.dust);

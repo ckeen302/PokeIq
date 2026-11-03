@@ -1,8 +1,9 @@
-import { EV, NOTE, SPREAD_REACH } from "@/lib/mass-battle/constants";
+import { EV, NOTE, NOTE_SKIP, SPREAD_REACH } from "@/lib/mass-battle/constants";
 import { statusFxType } from "../damage-numbers";
 import type { SimReady } from "../protocol";
 import type { Hit, Note } from "../view";
 import { moveStyle, type Effects, type MoveStyle } from "./effects";
+import type { SpeciesForms } from "./forms";
 import { ballHeight } from "./units";
 
 /**
@@ -73,7 +74,7 @@ export interface Choreographer {
   budget: number;
 }
 
-export function createChoreographer(fx: Effects, view: ChoreoView, ready: SimReady, heights: number[], widths: number[]): Choreographer {
+export function createChoreographer(fx: Effects, view: ChoreoView, ready: SimReady, heights: number[], widths: number[], forms: SpeciesForms[] = []): Choreographer {
   const sp = view.sp;
   const bossSide = ready.start[0] <= 3 && ready.start[1] >= 4 ? 0 : ready.start[1] <= 3 && ready.start[0] >= 4 ? 1 : -1;
   const styles: MoveStyle[][] = ready.moves.map((ms) => ms.map((m) => moveStyle(m.name, m.type, m.contact)));
@@ -168,6 +169,14 @@ export function createChoreographer(fx: Effects, view: ChoreoView, ready: SimRea
           if (type) fx.impact(type, n.x, ht * 0.6, n.z, size, 0.3, false, n.t);
         } else if (n.kind === NOTE.HEAL) fx.impact("Grass", n.x, ht * 0.6, n.z, size * 0.7, 0.05, false, n.t);
         else if (n.kind === NOTE.BOOST && (n.value % 16) - 8 > 0) fx.auraDisc("Psychic", n.x, n.z, Math.max(0.6, size), n.t);
+        else if (n.kind === NOTE.FORM) {
+          // A form or type change: a burst of its type's light and a glow on the ground (the figure changes with it).
+          const look = forms[sp[n.unit]]?.forms[n.value];
+          const type = look?.type ?? "Normal";
+          const big = Math.min(3, Math.max(1.1, ht * (look?.figure ? 1.4 : 1)));
+          fx.impact(type, n.x, ht * 0.55, n.z, big, 0.6, false, n.t);
+          fx.auraDisc(type, n.x, n.z, Math.max(0.9, big * 1.2), n.t);
+        } else if (n.kind === NOTE.SKIP && n.value === NOTE_SKIP.loafing) fx.dust(n.x, n.z, Math.max(0.4, size * 0.8));
       }
       self.hooks.note?.(n, ht * 1.05 + 0.2);
     },
