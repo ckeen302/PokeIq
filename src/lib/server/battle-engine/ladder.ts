@@ -400,7 +400,7 @@ export async function settleRankedBattle(meta: BattleMeta, store: LadderStore): 
   if (!reason || !keys[0] || !keys[1] || keys[0] === keys[1]) return null;
   const format = meta.format as StandardFormatId;
   const pairKeys: [string, string] = [keys[0], keys[1]];
-  const scores = matchScores(reason, meta.end.winner);
+  const scores = matchScores(reason, meta.end.winner as 0 | 1 | null);
   const fresh = async (key: string) => (await store.rating(key, format)) ?? NEW_BATTLE_RATING;
   let current: [BattleRating, BattleRating] = [await fresh(pairKeys[0]), await fresh(pairKeys[1])];
   for (let attempt = 0; attempt < 5; attempt++) {

@@ -23,8 +23,12 @@ export function BattleVictory({ view, title, detail, tone }: { view: BattleView;
   const winner = view.end?.winner ?? null;
   const seat = winner === null ? null : winner;
   const player = seat === null ? null : view.players[seat];
-  const isCpu = !!view.cpu && seat !== null && seat !== (view.you ?? 0) && view.you !== null;
-  const mine = seat !== null && seat === view.you;
+  // Four trainers: the computer plays the seats marked as its own; with two, whichever seat isn't yours.
+  const four = view.players.length === 4;
+  const isCpu = four ? !!player?.cpu : !!view.cpu && seat !== null && seat !== (view.you ?? 0) && view.you !== null;
+  const winners = view.end?.winners ?? (seat === null ? [] : [seat]);
+  const mine = seat !== null && (seat === view.you || (view.you !== null && winners.includes(view.you)));
+  const winnerName = winners.map((s) => view.players[s]?.name ?? "—").join(" & ");
   const accent = view.you === null ? (seat === 0 ? YOU_ACCENT : FOE_ACCENT) : mine ? YOU_ACCENT : FOE_ACCENT;
   const config = isCpu ? cpuTrainer(view.cpu!.level) : (player?.avatar?.trainer ?? standIn(player?.name ?? "winner"));
   const move = CELEBRATIONS[(view.code.charCodeAt(0) + view.code.charCodeAt(view.code.length - 1)) % CELEBRATIONS.length];
@@ -59,7 +63,7 @@ export function BattleVictory({ view, title, detail, tone }: { view: BattleView;
           )}
         </div>
         <div className="relative space-y-1.5 sm:text-left">
-          <p className="hud-label text-white/70">Winner · {player?.name ?? "—"}</p>
+          <p className="hud-label text-white/70">{winners.length > 1 ? "Winners" : "Winner"} · {winnerName || "—"}</p>
           {heading}
         </div>
       </div>

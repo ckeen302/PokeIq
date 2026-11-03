@@ -1,13 +1,14 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { ArrowLeftRight, Crosshair, Gem, Sparkles, Undo2 } from "lucide-react";
-import type { BattleRequest, BattleRequestMove, BattleRequestPokemon } from "@/lib/battle/play";
+import { ArrowLeftRight, Crosshair, Gem, MoveHorizontal, Sparkles, Undo2 } from "lucide-react";
+import { activesPerHalf, activesPerSide, playerCount, type BattleRequest, type BattleRequestMove, type BattleRequestPokemon, type GameType } from "@/lib/battle/play";
+import { canShift, sideIndexOf, targetSpots, type TargetSpot } from "@/lib/battle/choices";
 import { BattleSprite } from "@/components/battle/BattleSprite";
 import { typeColor, typeTextColor } from "@/lib/pokemon/type-colors";
 import { cn } from "@/lib/utils";
 import { Dex } from "@pkmn/dex";
-import { other, type MonSnap, type SideId, type Snap } from "./model";
+import { other, sameHalf, type MonSnap, type SideId, type Snap } from "./model";
 import { effectiveness, moveInfo, targetChoices, type Effect } from "./moves";
 import { HpBar, STATUS_STYLE } from "./Hud";
 import { teraColor } from "./player";
@@ -21,6 +22,9 @@ import { emptiedSlots, fainted, fillPasses, slotCount, switchOptions, switchedIn
  * What the player can do now, built from their request: pick a lead (team
  * preview), a move (with Tera) or a switch, a replacement after a faint, and
  * in doubles a choice per Pokémon with a target where the move needs one.
+ * Triples and four-player battles aim the same way on Showdown's own grid
+ * (the foes' row above yours, spots out of reach greyed out), and in
+ * triples a Pokémon on the edge can shift to the centre.
  * Every choice goes out in the simulator's syntax, fully explicit.
  */
 
@@ -31,7 +35,10 @@ interface Props {
   request: BattleRequest;
   snap: Snap;
   me: SideId;
-  doubles: boolean;
+  /** Showdown's game type (singles, doubles, triples, freeforall, multi). */
+  gameType: GameType;
+  /** Four-player battles: each side's trainer (target buttons and team preview name them). */
+  names?: Partial<Record<SideId, string>>;
   busy: boolean;
   onChoose: (choice: string) => void;
   /** The battle's format (random formats know their spreads; tooltips use it). */
@@ -241,25 +248,29 @@ function SwitchGrid({
  */
 function TeamPreview({
   request,
-  doubles,
+  leadCount,
   busy,
   onChoose,
   foes,
+  others,
   tipInfo,
   keys,
 }: {
   request: BattleRequest;
-  doubles: boolean;
+  /** Pokémon you lead with: 1, 2 in doubles, 3 in triples. */
+  leadCount: number;
   busy: boolean;
   onChoose: (c: string) => void;
   foes: MonSnap[];
+  /** Four-player battles: every other trainer's team, by name (your partner's marked). */
+  others?: { name: string; partner: boolean; team: MonSnap[] }[];
   tipInfo: TipInfo;
   keys: BattleKeys;
 }) {
   const [leads, setLeads] = useState<number[]>([]);
   const size = request.side.pokemon.length;
   const picking = !!request.maxChosenTeamSize && request.maxChosenTeamSize < size;
-  const need = picking ? request.maxChosenTeamSize! : doubles ? 2 : 1;
+  const need = picking ? request.maxChosenTeamSize! : Math.min(size, leadCount);
   const pick = (n: number) => {
     const next = leads.includes(n) ? leads.filter((l) => l !== n) : [...leads, n];
     if (next.length >= need) {
@@ -272,14 +283,33 @@ function TeamPreview({
     if (!busy && n <= size) pick(n);
   };
   keys.back = () => setLeads([]);
+  const LEADS = ["", "lead", "two leads", "three leads"];
   return (
     <div className="space-y-3">
-      {foes.length > 0 && (
+      {others?.map((o) =>
+        o.team.length ? (
+          <div key={o.name} className="space-y-1.5">
+            <p className="hud-label">{o.partner ? `Your partner ${o.name}'s team` : `${o.name}'s team`}</p>
+            <div className="flex flex-wrap gap-1" data-testid="foe-preview">
+              {o.team.map((m, i) => (
+                <Tip key={`${m.species}:${i}`} content={() => <MonTip mon={tipFromSnap(m)} mine={false} gen={tipInfo.gen} format={tipInfo.format} />}>
+                  <span className={cn("flex flex-col items-center rounded-md border bg-shade/20 px-1.5 py-1", o.partner ? "border-primary/40" : "border-screen/30")}>
+                    <BattleSprite species={speciesKey(m.species)} size={40} />
+                    <span className="max-w-[4.5rem] truncate text-[10px] text-muted-foreground">{m.species}</span>
+                  </span>
+                </Tip>
+              ))}
+            </div>
+          </div>
+        ) : null
+      )}
+      {!others && foes.length > 0 && (
         <div className="space-y-1.5">
           <p className="hud-label">Their team</p>
           <div className="flex flex-wrap gap-1" data-testid="foe-preview">
-            {foes.map((m) => (
-              <Tip key={m.key} content={() => <MonTip mon={tipFromSnap(m)} mine={false} gen={tipInfo.gen} format={tipInfo.format} />}>
+            {foes.map((m, i) => (
+              // Team preview's Pokémon have no ident yet (an empty key): keyed by their place.
+              <Tip key={`${m.species}:${i}`} content={() => <MonTip mon={tipFromSnap(m)} mine={false} gen={tipInfo.gen} format={tipInfo.format} />}>
               <span className="flex flex-col items-center rounded-md border border-screen/30 bg-shade/20 px-1.5 py-1">
                 <BattleSprite species={speciesKey(m.species)} size={44} />
                 <span className="max-w-[4.5rem] truncate text-[10px] text-muted-foreground">{m.species}</span>
@@ -290,7 +320,7 @@ function TeamPreview({
         </div>
       )}
       <p className="font-display text-lg font-bold uppercase">
-        {picking ? `Choose ${need} to battle (the first leads)` : doubles ? "Choose your two leads" : "Choose your lead"}
+        {picking ? `Choose ${need} to battle (the first leads)` : `Choose your ${LEADS[need] ?? `${need} leads`}`}
       </p>
       <div className="grid grid-cols-3 gap-2 sm:grid-cols-6">
         {request.side.pokemon.map((p, i) => {
@@ -317,7 +347,13 @@ function TeamPreview({
   );
 }
 
-export function Controls({ request, snap, me, doubles, busy, onChoose, format, onHelp }: Props) {
+export function Controls({ request, snap, me, gameType, names, busy, onChoose, format, onHelp }: Props) {
+  const doubles = gameType === "doubles";
+  const perHalf = activesPerHalf(gameType);
+  const four = playerCount(gameType) === 4;
+  const sideIndex = sideIndexOf(request);
+  /** Where your slot's Pokémon stands in your half (a four-player half has two trainers' Pokémon: p3's and p4's stand second). */
+  const posOf = (slot: number) => (four && (me === "p3" || me === "p4") ? slot + 1 : slot);
   /** Filled in below for whichever menu is showing; the listener reads it on every key. */
   const keys: BattleKeys = {};
   useBattleKeys(keys, () => onHelp?.());
@@ -325,7 +361,7 @@ export function Controls({ request, snap, me, doubles, busy, onChoose, format, o
   const [tera, setTera] = useState(false);
   /** Mega Evolution, a Z-Move or Dynamax for this Pokémon's move (where the rules and gen allow it). */
   const [extra, setExtra] = useState<Extra | null>(null);
-  const [aiming, setAiming] = useState<{ index: number; move: BattleRequestMove; targets: number[] } | null>(null);
+  const [aiming, setAiming] = useState<{ index: number; move: BattleRequestMove; targets: number[]; spots?: TargetSpot[] } | null>(null);
   const foeSide = snap.sides[other(me)];
   const mySide = snap.sides[me];
 
@@ -358,7 +394,14 @@ export function Controls({ request, snap, me, doubles, busy, onChoose, format, o
     } else setParts(next);
   }
 
-  if (request.teamPreview) return <TeamPreview request={request} doubles={doubles} busy={busy} onChoose={onChoose} foes={foeSide.team} tipInfo={{ gen: snap.gen, format, seen: mySide.team }} keys={keys} />;
+  if (request.teamPreview) {
+    const others = four
+      ? (["p1", "p2", "p3", "p4"] as SideId[])
+          .filter((id) => id !== me)
+          .map((id) => ({ name: names?.[id] ?? id, partner: gameType === "multi" && sameHalf(id, me), team: snap.sides[id].team }))
+      : undefined;
+    return <TeamPreview request={request} leadCount={activesPerSide(gameType)} busy={busy} onChoose={onChoose} foes={foeSide.team} others={others} tipInfo={{ gen: snap.gen, format, seen: mySide.team }} keys={keys} />;
+  }
   if (slot >= slots) return null;
   const actor = request.side.pokemon[slot];
   const actorName = actor?.ident.split(": ")[1] ?? "your Pokémon";
@@ -384,7 +427,7 @@ export function Controls({ request, snap, me, doubles, busy, onChoose, format, o
     return (
       <div className="space-y-2">
         <div className="flex items-center justify-between">
-          <p className="font-display text-lg font-bold uppercase">{reviving ? "Revive which Pokémon?" : doubles ? `Replace ${actorName}` : "Send out which Pokémon?"}</p>
+          <p className="font-display text-lg font-bold uppercase">{reviving ? "Revive which Pokémon?" : slots > 1 ? `Replace ${actorName}` : "Send out which Pokémon?"}</p>
           {back}
         </div>
         {!reviving && emptied.length > 0 && (
@@ -405,14 +448,78 @@ export function Controls({ request, snap, me, doubles, busy, onChoose, format, o
 
   const active = request.active![slot];
   const teraType = active.canTerastallize && !teraTaken ? active.canTerastallize : undefined;
-  const foes = doubles ? foeSide.active : foeSide.active.slice(0, 1);
-  const fieldState: FieldState = { doubles, weather: snap.weather, terrain: snap.terrain, pseudo: snap.pseudo, attacker: mySide.conditions, defender: foeSide.conditions };
+  // The foes the move menu rates moves against: the far half's (and in a Free-For-All the other trainer on your own half).
+  const foes = perHalf > 1 ? [...foeSide.active, ...(gameType === "freeforall" ? mySide.active.filter((m) => m && m.owner !== me) : [])] : foeSide.active.slice(0, 1);
+  const fieldState: FieldState = { doubles: perHalf > 1, weather: snap.weather, terrain: snap.terrain, pseudo: snap.pseudo, attacker: mySide.conditions, defender: foeSide.conditions };
+  const shiftable = canShift(request, slot, gameType);
   const trapped = !!active.trapped;
   const extras: Extra[] = [];
   if (active.canMegaEvo && !extraTaken("mega")) extras.push("mega");
   if (active.canZMove?.some(Boolean) && !extraTaken("zmove")) extras.push("zmove");
   if (active.canDynamax && !extraTaken("dynamax")) extras.push("dynamax");
   const extraOn = (e: Extra) => extras.includes(e);
+
+  if (aiming?.spots) {
+    const spots = aiming.spots;
+    const at = (loc: number) => (loc > 0 ? foeSide.active[loc - 1] : mySide.active[-loc - 1]);
+    const empty = (loc: number) => {
+      const mon = at(loc);
+      return !mon || mon.fainted;
+    };
+    // Showdown's grid: the far half's spots above (in screen order, right to left by slot), yours below.
+    const far = spots.filter((t) => t.loc > 0).sort((a, b) => b.loc - a.loc);
+    const near = spots.filter((t) => t.loc < 0).sort((a, b) => b.loc - a.loc);
+    const usable = [...far, ...near].filter((t) => t.legal && !empty(t.loc));
+    keys.digit = (n) => {
+      const t = usable[n - 1];
+      if (t && !busy) add(`move ${aiming.index} ${t.loc}${suffix()}`);
+    };
+    keys.back = () => setAiming(null);
+    const button = (t: TargetSpot) => {
+      const mon = at(t.loc);
+      const off = busy || !t.legal || empty(t.loc);
+      const key = usable.indexOf(t);
+      const owner = four && mon ? (mon.owner === me ? "You" : (names?.[mon.owner] ?? mon.owner)) : null;
+      return (
+        <button
+          key={t.loc}
+          type="button"
+          data-testid="target-button"
+          data-loc={t.loc}
+          data-legal={t.legal}
+          aria-keyshortcuts={key >= 0 ? String(key + 1) : undefined}
+          disabled={off}
+          onClick={() => add(`move ${aiming.index} ${t.loc}${suffix()}`)}
+          title={!t.legal ? "Out of reach: this move only reaches adjacent Pokémon" : undefined}
+          className={cn("menu-item flex min-w-0 flex-col items-start gap-0.5 rounded-md border bg-card px-2.5 py-2 text-left hover:border-screen/60 disabled:opacity-40", !t.foe && "border-dashed")}
+        >
+          <span className="flex w-full min-w-0 items-center gap-1.5">
+            <Crosshair className={cn("h-3.5 w-3.5 shrink-0", t.foe ? "text-primary" : "text-screen")} aria-hidden />
+            <span className="truncate font-display text-sm font-bold uppercase">{mon && !mon.fainted ? mon.name : "Empty spot"}</span>
+          </span>
+          <span className="hud-label flex w-full min-w-0 items-center gap-1 truncate">
+            {t.self ? "You" : t.foe ? "Foe" : gameType === "multi" ? "Partner" : "Ally"}
+            {owner && !t.self && <span className="truncate normal-case text-muted-foreground">· {owner}</span>}
+            {!t.legal && !t.self && <span className="text-muted-foreground">· out of reach</span>}
+          </span>
+        </button>
+      );
+    };
+    return (
+      <div className="space-y-3" data-testid="target-grid">
+        <div className="flex items-center justify-between">
+          <p className="font-display text-lg font-bold uppercase">{moveInfo(aiming.move.move || aiming.move.id, snap.gen).name}: pick a target</p>
+          <button type="button" className="hud-label hover:text-foreground" onClick={() => setAiming(null)}>
+            Back
+          </button>
+        </div>
+        <div className="grid gap-2" style={{ gridTemplateColumns: `repeat(${perHalf}, minmax(0, 1fr))` }}>
+          {far.map(button)}
+          {near.map(button)}
+        </div>
+      </div>
+    );
+  }
 
   if (aiming) {
     keys.digit = (n) => {
@@ -458,6 +565,14 @@ export function Controls({ request, snap, me, doubles, busy, onChoose, format, o
   }
 
   const pickMove = (index: number, move: BattleRequestMove) => {
+    if (perHalf > 1 && !doubles) {
+      // Triples and four-player battles: Showdown's own adjacency (a lone legal target is picked for you).
+      const spots = targetSpots(move.target, slot, gameType, sideIndex);
+      const legal = spots.filter((t) => t.legal);
+      if (legal.length > 1) setAiming({ index, move, targets: legal.map((t) => t.loc), spots });
+      else add(`move ${index}${legal[0] ? ` ${legal[0].loc}` : ""}${suffix()}`);
+      return;
+    }
     const targets = doubles ? targetChoices(move.target, slot) : [];
     if (targets.length > 1) setAiming({ index, move, targets });
     else add(`move ${index}${targets[0] ? ` ${targets[0]}` : ""}${suffix()}`);
@@ -536,10 +651,22 @@ export function Controls({ request, snap, me, doubles, busy, onChoose, format, o
             teraType={teraType}
             disabled={busy || (extra === "zmove" && !active.canZMove?.[i])}
             onPick={pickMove}
-            tip={{ attacker: attackerOf(request.side.pokemon[slot], mySide.active[slot], tera, teraType), field: fieldState, randomBattle: isRandomFormat(format), foes }}
+            tip={{ attacker: attackerOf(request.side.pokemon[slot], mySide.active[posOf(slot)], tera, teraType), field: fieldState, randomBattle: isRandomFormat(format), foes }}
           />
         ))}
       </div>
+      {shiftable && (
+        <button
+          type="button"
+          disabled={busy}
+          onClick={() => add("shift")}
+          data-testid="shift-button"
+          className="menu-item flex w-full items-center justify-center gap-2 rounded-md border border-dashed bg-card px-3 py-2 font-display text-sm font-bold uppercase hover:border-screen/60 disabled:opacity-40"
+          title="Move to the centre spot (the Pokémon there moves to this edge): from the centre every foe is in reach"
+        >
+          <MoveHorizontal className="h-4 w-4 text-screen" aria-hidden /> Shift to the centre
+        </button>
+      )}
       <SwitchGrid
         tipInfo={{ gen: snap.gen, format, seen: mySide.team }}
         pokemon={request.side.pokemon}
