@@ -120,7 +120,7 @@ export function WorldHistoryExperience({ initialChapter, children }: { initialCh
     /** Programmatic scrolls in flight (their scroll events must not move the target). */
     syncing: 0,
     frozen: false,
-    /** Frames drawn since the clock was frozen (a frozen film stops drawing once it has settled). */
+    /** Frames drawn since a frozen moment's chapter was ready (a frozen film stops drawing once it has settled). */
     frozenFrames: 0,
     jumped: false,
     lastPath: "",
@@ -326,8 +326,12 @@ export function WorldHistoryExperience({ initialChapter, children }: { initialCh
       last = now;
       if (!scene || recordingRef.current) return;
       const s = show.current;
-      if (s.frozen && s.frozenFrames > 6 && scene.isReady(chapterAtFilm(film, s.playhead))) return;
-      if (s.frozen) s.frozenFrames++;
+      if (s.frozen) {
+        // A frozen moment keeps drawing until its chapter is built, then a few frames more, then rests.
+        if (!scene.isReady(chapterAtFilm(film, s.playhead))) s.frozenFrames = 0;
+        else if (s.frozenFrames > 6) return;
+        s.frozenFrames++;
+      }
       try {
         const dt = Math.min(0.1, raw / 1000);
         // The clock: Play advances it (holding while a chapter loads); otherwise it eases toward the scroll.
