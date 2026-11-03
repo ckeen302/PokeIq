@@ -169,12 +169,12 @@ export interface BattlePatch {
 }
 
 /** One column's text: a channel's lines, and after the separator the channel sharing it (four-player battles). */
-function columnText(first: string[], second: string[] | undefined): string {
+export function columnText(first: string[], second: string[] | undefined): string {
   return second?.length ? joinLines([...first, CHANNEL_SEP, ...second]) : joinLines(first);
 }
 
 /** A column's two channels. */
-function columnLines(text: string | null | undefined): [string[], string[]] {
+export function columnLines(text: string | null | undefined): [string[], string[]] {
   const lines = splitLines(text);
   const at = lines.indexOf(CHANNEL_SEP);
   return at < 0 ? [lines, []] : [lines.slice(0, at), lines.slice(at + 1)];

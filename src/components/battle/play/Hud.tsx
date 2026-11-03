@@ -45,7 +45,11 @@ export function HpBar({ hp, maxhp, className }: { hp: number; maxhp: number; cla
 
 const genderMark = (g: string) => (g === "M" ? <span className="text-sky-300">♂</span> : g === "F" ? <span className="text-pink-300">♀</span> : null);
 
-export function Hud({ mon, mine, compact }: { mon: MonSnap; mine: boolean; compact?: boolean }) {
+/**
+ * `compact`: two or more a side. `dense`: three a side (triples), smaller
+ * still. `tag`: whose Pokémon it is, in four-player battles.
+ */
+export function Hud({ mon, mine, compact, dense, tag }: { mon: MonSnap; mine: boolean; compact?: boolean; dense?: boolean; tag?: string }) {
   const status = STATUS_STYLE[mon.status];
   const percent = mon.maxhp ? Math.round((mon.hp / mon.maxhp) * 100) : 0;
   const boosts = Object.entries(mon.boosts).filter(([, v]) => v);
@@ -56,12 +60,14 @@ export function Hud({ mon, mine, compact }: { mon: MonSnap; mine: boolean; compa
         "battle-hud pointer-events-auto relative overflow-hidden rounded-md border border-white/12 text-white shadow-[0_8px_24px_-8px_rgb(0_0_0/0.7)] backdrop-blur-md",
         mine ? "battle-hud-mine" : "battle-hud-foe",
         low && "battle-hud-low",
-        compact ? "px-2 py-1" : "px-2.5 py-1.5"
+        dense ? "px-1.5 py-0.5" : compact ? "px-2 py-1" : "px-2.5 py-1.5"
       )}
       data-testid={mine ? "hud-mine" : "hud-foe"}
+      data-owner={tag ? mon.owner : undefined}
     >
+      {tag && <span className="block truncate font-pixel text-[8px] uppercase leading-3 text-white/60" data-testid="hud-owner">{tag}</span>}
       <div className="flex items-center gap-1.5">
-        <span className={cn("min-w-0 flex-1 truncate font-display font-bold uppercase tracking-wide drop-shadow-[0_1px_0_rgb(0_0_0/0.6)]", compact ? "text-xs" : "text-sm")}>
+        <span className={cn("min-w-0 flex-1 truncate font-display font-bold uppercase tracking-wide drop-shadow-[0_1px_0_rgb(0_0_0/0.6)]", dense ? "text-[11px]" : compact ? "text-xs" : "text-sm")}>
           {mon.name} {genderMark(mon.gender)}
         </span>
         {mon.terastallized && (
@@ -79,8 +85,8 @@ export function Hud({ mon, mine, compact }: { mon: MonSnap; mine: boolean; compa
       <div className="mt-1 flex items-center gap-1.5">
         <span className="font-pixel text-[8px] text-warning">HP</span>
         {/* Keyed by the Pokémon: one switching in starts at its own HP, no damage ghost from the last one. */}
-        <HpBar key={mon.key} hp={mon.fainted ? 0 : mon.hp} maxhp={mon.maxhp} className={cn("flex-1", compact ? "h-2" : "h-2.5")} />
-        <span className={cn("w-[4.5rem] text-right font-pixel text-[10px] tabular-nums", low ? "text-[#ff8a9a]" : "text-white/85")}>{mine ? `${mon.fainted ? 0 : mon.hp}/${mon.maxhp}` : `${mon.fainted ? 0 : percent}%`}</span>
+        <HpBar key={mon.key} hp={mon.fainted ? 0 : mon.hp} maxhp={mon.maxhp} className={cn("flex-1", dense ? "h-1.5" : compact ? "h-2" : "h-2.5")} />
+        <span className={cn("text-right font-pixel tabular-nums", dense ? "w-[3.6rem] text-[9px]" : "w-[4.5rem] text-[10px]", low ? "text-[#ff8a9a]" : "text-white/85")}>{mine ? `${mon.fainted ? 0 : mon.hp}/${mon.maxhp}` : `${mon.fainted ? 0 : percent}%`}</span>
       </div>
       {(boosts.length > 0 || mon.volatiles.length > 0) && (
         <div className="mt-1 flex flex-wrap gap-1">
@@ -103,11 +109,12 @@ export function Hud({ mon, mine, compact }: { mon: MonSnap; mine: boolean; compa
 export type Ball = Pick<MonSnap, "name" | "fainted" | "status"> | null;
 
 /** Six Poké Balls: healthy, statused, fainted, or not seen yet. `balls` overrides (your own full team). */
-export function TeamBalls({ side, align = "start", balls: given }: { side: SideSnap; align?: "start" | "end"; balls?: Ball[] }) {
+export function TeamBalls({ side, align = "start", balls: given, label }: { side: SideSnap; align?: "start" | "end"; balls?: Ball[]; label?: string }) {
   const total = Math.max(side.total, side.team.length);
   const balls = given ?? Array.from({ length: total }, (_, i) => side.team[i] ?? null);
   return (
-    <div className={cn("flex gap-1", align === "end" && "justify-end")} aria-label={`${side.name}'s team`}>
+    <div className={cn("flex items-center gap-1", align === "end" && "justify-end")} aria-label={`${side.name || label || "A trainer"}'s team`}>
+      {label && <span className="mr-0.5 max-w-[6rem] truncate font-pixel text-[8px] uppercase text-muted-foreground">{label}</span>}
       {balls.map((mon, i) => (
         <span
           key={i}

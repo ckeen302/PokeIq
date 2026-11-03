@@ -47,6 +47,20 @@ export interface ReplayListResponse {
   replays: ReplaySummary[];
 }
 
+/** Who played, as two names around a joiner: "Red" vs "Blue", "Red & Gold" vs "Blue & Silver" (Multi), "Red, Blue, Gold" and "Silver" (Free-For-All). */
+export function replayMatchup(r: Pick<ReplaySummary, "players" | "gameType">): { a: string; b: string; joiner: "vs" | "and" } {
+  const p = r.players;
+  if (p.length === 4 && r.gameType === "multi") return { a: `${p[0]} & ${p[2]}`, b: `${p[1]} & ${p[3]}`, joiner: "vs" };
+  if (p.length === 4) return { a: p.slice(0, 3).join(", "), b: p[3], joiner: "and" };
+  return { a: p[0] ?? "Player 1", b: p[1] ?? "Player 2", joiner: "vs" };
+}
+
+/** "Red vs Blue", "Red & Gold vs Blue & Silver", "Red, Blue, Gold and Silver". */
+export const replayTitle = (r: Pick<ReplaySummary, "players" | "gameType">) => {
+  const m = replayMatchup(r);
+  return `${m.a} ${m.joiner} ${m.b}`;
+};
+
 /** "Red beat Blue", "Red and Blue drew"; "Red & Gold beat Blue & Silver" (Multi); "Red won a Free-For-All". */
 export function replayResult(r: Pick<ReplaySummary, "players" | "winner" | "winners" | "gameType">): string {
   if (r.players.length === 4) {

@@ -24,7 +24,7 @@ import {
   teamOf,
 } from "@/lib/battle/play";
 import { PVP_AWAY_MS } from "@/lib/pvp-types";
-import { SIM_VERSION, SimReplayError, SimSession, newSeed, seatOfSide, sideOf, sidesFor, type PlayerSide } from "./engine";
+import { SIM_VERSION, SimReplayError, SimSession, newSeed, seatOfSide, sideOf, type PlayerSide } from "./engine";
 import { chooseCpu, seededRandom } from "./cpu";
 import { randomChoice } from "./choices";
 import { cpuTeam, factoryTeam, pickFactoryTier, prepareTeam, seatTeam } from "./teams";
@@ -103,8 +103,6 @@ export function gameTypeOf(meta: Pick<BattleMeta, "format" | "formatid" | "gameT
 /** Trainers a battle seats: four in Free-For-All and Multi Battles. */
 export const seatsFor = (meta: Pick<BattleMeta, "format" | "formatid" | "gameType" | "playerCount">) => meta.playerCount ?? playersFor(gameTypeOf(meta));
 
-/** Seats a trainer plays (not the computer). */
-const humanSeats = (meta: BattleMeta) => meta.seats.map((s, i) => (isCpuSeat(s) ? -1 : i)).filter((i) => i >= 0);
 /** A Free-For-All seat whose trainer is already out. */
 const isOut = (meta: BattleMeta, seat: number) => !!meta.out?.some((o) => o.seat === seat);
 
@@ -520,6 +518,8 @@ function forceLose(work: Work, seat: number, reason: BattleEndReason, now: numbe
   const session = work.session(now);
   if (!session) return false;
   const ffa = gameTypeOf(work.meta) === "freeforall";
+  // A Free-For-All goes on without them: everyone's log says why they're out (a timeout already has its own line).
+  if (ffa && reason !== "timeout") work.note(`|-message|${work.meta.seats[seat]?.name ?? "A trainer"} forfeited.`);
   // How the battle ends if this loss ends it (a Free-For-All's last two: the other one wins).
   work.reason = reason;
   session.lose(sideOf(seat));

@@ -311,7 +311,7 @@ export class BattleModel {
       if (typeof kwArgs.spread === "string") step.targets = kwArgs.spread.split(",").map((t) => slotOf(`${t}:`)).filter((t): t is SlotRef => !!t);
     }
     if ((cmd === "switch" || cmd === "drag" || cmd === "replace") && who) {
-      step.replaced = this.battle[who.side].active[who.slot]?.originalIdent;
+      step.replaced = this.battle[who.side]?.active[who.slot]?.originalIdent;
     }
     try {
       this.battle.add(args as never, kwArgs as never);

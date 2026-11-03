@@ -66,7 +66,8 @@ export interface ReplayFileInput {
   id: string;
   /** The format's name ("[Gen 9] Random Battle"). */
   format: string;
-  players: [string, string];
+  /** The trainers (four in Free-For-All and Multi Battles). */
+  players: string[];
   log: readonly string[];
   /** The text log, as HTML (the battle log, one line per element), for reading offline. */
   logHtml: string;
@@ -74,16 +75,16 @@ export interface ReplayFileInput {
 
 /** Showdown's replay file (version 1), byte for byte the same layout as its "Download replay". */
 export function replayFileHtml({ id, format, players, log, logHtml }: ReplayFileInput): string {
-  const [p1, p2] = players;
+  const names = players.length ? players : ["p1", "p2"];
   let buf = "<!DOCTYPE html>\n";
   buf += '<meta charset="utf-8" />\n';
   buf += "<!-- version 1 -->\n";
-  buf += `<title>${escapeHTML(format)} replay: ${escapeHTML(p1)} vs. ${escapeHTML(p2)}</title>\n`;
+  buf += `<title>${escapeHTML(format)} replay: ${names.map(escapeHTML).join(" vs. ")}</title>\n`;
   buf += "<style>\n" + STYLE + "\n</style>\n";
   buf += '<div class="wrapper replay-wrapper" style="max-width:1180px;margin:0 auto">\n';
   buf += `<input type="hidden" name="replayid" value="${escapeHTML(`pokeiq-${id}`)}" />\n`;
   buf += '<div class="battle"></div><div class="battle-log"></div><div class="replay-controls"></div><div class="replay-controls-2"></div>\n';
-  buf += `<h1 style="font-weight:normal;text-align:center"><strong>${escapeHTML(format)}</strong><br /><a href="https://pokemonshowdown.com/users/${toID(p1)}" class="subtle" target="_blank">${escapeHTML(p1)}</a> vs. <a href="https://pokemonshowdown.com/users/${toID(p2)}" class="subtle" target="_blank">${escapeHTML(p2)}</a></h1>\n`;
+  buf += `<h1 style="font-weight:normal;text-align:center"><strong>${escapeHTML(format)}</strong><br />${names.map((p) => `<a href="https://pokemonshowdown.com/users/${toID(p)}" class="subtle" target="_blank">${escapeHTML(p)}</a>`).join(" vs. ")}</h1>\n`;
   // "</script>" can't appear inside the block: Showdown escapes every slash.
   buf += '<script type="text/plain" class="battle-log-data">' + replayLogData(log).join("\n").replace(/\//g, "\\/") + "</script>\n";
   buf += "</div>\n";
@@ -105,8 +106,9 @@ export function logLineHtml(text: string, turn?: number): string {
 }
 
 /** A file name for the replay: "gen9randombattle-red-vs-blue-abcd2345.html". */
-export function replayFileName(formatId: string, players: [string, string], id: string, ext = "html"): string {
-  return `${toID(formatId)}-${toID(players[0]) || "p1"}-vs-${toID(players[1]) || "p2"}-${id}.${ext}`;
+export function replayFileName(formatId: string, players: string[], id: string, ext = "html"): string {
+  const names = (players.length > 2 ? players : [players[0], players[1]]).map((p, i) => toID(p ?? "") || `p${i + 1}`);
+  return `${toID(formatId)}-${names.join("-vs-")}-${id}.${ext}`;
 }
 
 // ---------------------------------------------------------------------------

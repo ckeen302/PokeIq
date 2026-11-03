@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { Eye, Loader2, Radio, Swords, Trophy } from "lucide-react";
-import { PLAY_FORMAT_INFO, PLAY_FORMATS, type PlayFormatId } from "@/lib/battle/play";
+import { GROUP_FORMATS, PLAY_FORMAT_INFO, PLAY_FORMATS, type PlayFormatId } from "@/lib/battle/play";
 import { startedAgo, type WatchEntry, type WatchResponse } from "@/lib/battle/watch";
 import { startPoller } from "@/lib/polling";
 import { buttonVariants } from "@/components/ui/button";
@@ -15,7 +15,7 @@ import type { AvatarMap } from "@/lib/avatar";
 /** The lobby refreshes this often while it's in view (and not at all while hidden). */
 const REFRESH_MS = 15_000;
 
-const FILTERS: (PlayFormatId | null)[] = [null, ...PLAY_FORMATS, "factory"];
+const FILTERS: (PlayFormatId | null)[] = [null, ...PLAY_FORMATS, "factory", ...GROUP_FORMATS];
 
 function BattleCard({ b, now, avatars }: { b: WatchEntry; now: number; avatars?: AvatarMap }) {
   return (
@@ -32,6 +32,23 @@ function BattleCard({ b, now, avatars }: { b: WatchEntry; now: number; avatars?:
           </span>
         )}
       </span>
+      {b.players.length === 4 ? (
+        // Four trainers: a Multi Battle's two teams, or a Free-For-All's four.
+        <span className="grid grid-cols-2 gap-x-3 gap-y-1 font-display text-base font-bold uppercase leading-tight" data-testid="watch-four">
+          {(b.gameType === "multi" ? [0, 2, 1, 3] : [0, 1, 2, 3]).map((seat, i) => {
+            const p = b.players[seat];
+            return (
+              <span key={seat} className={cn("flex min-w-0 items-center gap-1.5", i % 2 === 1 && "justify-end text-right")}>
+                {i % 2 === 0 && <NameAvatar name={p.name} avatars={avatars} size={20} />}
+                <span className={cn("truncate", b.gameType === "multi" ? (seat % 2 === 0 ? "text-primary" : "text-screen") : seat === 0 ? "text-primary" : "text-screen")}>{p.name}</span>
+                {p.cpu && <span className="hud-label shrink-0">CPU</span>}
+                {i % 2 === 1 && <NameAvatar name={p.name} avatars={avatars} size={20} />}
+              </span>
+            );
+          })}
+          <span className="col-span-2 font-pixel text-[10px] font-normal text-muted-foreground">{b.gameType === "multi" ? "Multi battle · 2 vs 2" : "Free-for-all · 4 trainers"}</span>
+        </span>
+      ) : (
       <span className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 font-display text-lg font-bold uppercase leading-tight">
         {b.players.map((p, i) => (
           <span key={i} className={cn("min-w-0", i === 1 && "order-3 text-right")}>
@@ -42,6 +59,7 @@ function BattleCard({ b, now, avatars }: { b: WatchEntry; now: number; avatars?:
         ))}
         <span className="order-2 font-pixel text-[11px] text-muted-foreground">VS</span>
       </span>
+      )}
       <span className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
         <span className="font-pixel tabular-nums">Turn {Math.max(1, b.turn)}</span>
         <span className="flex items-center gap-1">
