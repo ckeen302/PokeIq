@@ -1,0 +1,400 @@
+import * as THREE from "three";
+import { fovFor, lerp, type OrbitLimits, type Pose, type Vec3 } from "@/lib/world-history/camera";
+import type { Film, FilmState } from "@/lib/world-history/timing";
+import type { Chapter } from "@/lib/world-history/types";
+import { createFigureFactory, type FigureFactory } from "./figures";
+import { buildHall, type Hall } from "./hall";
+import { createPost, type Post } from "./post";
+import { BASE_LOOK, QUALITY, type ChapterBuilder, type ChapterRig, type Look, type Quality } from "./types";
+
+export type { Quality } from "./types";
+
+/**
+ * The 3D side of The History of the Pokémon World, used by the page and by
+ * the video recorder. The caller owns the clock and says where the film is
+ * (a chapter at an anim time, or the hall between two); the scene draws
+ * that frame. Chapters are built on demand (each one's code loads only
+ * then), their shaders compiled before they're first seen, and dropped
+ * when the film is far from them.
+ */
+
+const BUILDERS: Record<string, () => Promise<{ build: ChapterBuilder }>> = {
+  creation: () => import("./chapters/creation"),
+  giants: () => import("./chapters/giants"),
+  hoenn: () => import("./chapters/hoenn"),
+  kalos: () => import("./chapters/kalos"),
+  galar: () => import("./chapters/galar"),
+  unova: () => import("./chapters/unova"),
+  kitakami: () => import("./chapters/kitakami"),
+  johto: () => import("./chapters/johto"),
+  hisui: () => import("./chapters/hisui"),
+  alola: () => import("./chapters/alola"),
+  kanto: () => import("./chapters/kanto"),
+  paldea: () => import("./chapters/paldea"),
+};
+
+export interface SceneOptions {
+  quality: Quality;
+  film: Film;
+  chapters: Chapter[];
+  /** The serif for plaques. */
+  font: string;
+  /** A still of each chapter for its doorway (until it's loaded). */
+  poster?: (id: string) => string;
+  /** Fixed drawing size (exports); otherwise the host's. */
+  size?: { w: number; h: number };
+}
+
+export interface FrameInput {
+  state: FilmState;
+  ambient: number;
+  /** Free look in a chapter (lens as designed for 16:9). */
+  look?: Pose | null;
+  /** A video's light-burst cut from one chapter into another. */
+  cut?: { from: { index: number; anim: number }; to: { index: number; anim: number }; k: number } | null;
+}
+
+export interface FrameInfo {
+  /** The camera drawn (lens as designed for 16:9). */
+  pose: Pose;
+  /** In a chapter: what free look orbits, and its limits. */
+  orbit: { target: Vec3; limits: OrbitLimits } | null;
+  /** Whether everything the frame needed was loaded. */
+  complete: boolean;
+}
+
+export interface HistoryScene {
+  canvas: HTMLCanvasElement;
+  ready: Promise<void>;
+  prepare(index: number): Promise<void>;
+  isReady(index: number): boolean;
+  retain(indices: number[]): void;
+  frame(f: FrameInput): FrameInfo;
+  resize(w: number, h: number): void;
+  setQuality(q: Quality): void;
+  readonly quality: Quality;
+  stats(): { calls: number; tris: number; loaded: number[] };
+  dispose(): void;
+}
+
+const HALL_LOOK: Look = { ...BASE_LOOK, exposure: 1.05, bloom: 0.75, bloomThreshold: 0.78, gain: [1.05, 0.98, 0.9], lift: [0.012, 0.008, 0.02], saturation: 0.95, contrast: 1.08, vignette: 0.5, grain: 0.035 };
+const HALL_FOV = 50;
+
+function blendLook(a: Look, b: Look, k: number): Look {
+  const v = (x: Vec3, y: Vec3): Vec3 => [lerp(x[0], y[0], k), lerp(x[1], y[1], k), lerp(x[2], y[2], k)];
+  return {
+    exposure: lerp(a.exposure, b.exposure, k),
+    bloom: lerp(a.bloom, b.bloom, k),
+    bloomRadius: lerp(a.bloomRadius, b.bloomRadius, k),
+    bloomThreshold: lerp(a.bloomThreshold, b.bloomThreshold, k),
+    gain: v(a.gain, b.gain),
+    lift: v(a.lift, b.lift),
+    saturation: lerp(a.saturation, b.saturation, k),
+    contrast: lerp(a.contrast, b.contrast, k),
+    vignette: lerp(a.vignette, b.vignette, k),
+    chroma: lerp(a.chroma, b.chroma, k),
+    flash: lerp(a.flash, b.flash, k),
+    fade: lerp(a.fade, b.fade, k),
+    grain: lerp(a.grain, b.grain, k),
+    rays: k < 0.5 ? (a.rays ? { ...a.rays, strength: a.rays.strength * (1 - k * 2) } : undefined) : b.rays ? { ...b.rays, strength: b.rays.strength * (k * 2 - 1) } : undefined,
+  };
+}
+
+interface Slot {
+  promise: Promise<void>;
+  rig: ChapterRig | null;
+  ac: AbortController;
+  failed?: boolean;
+}
+
+export function createHistoryScene(host: HTMLElement, opts: SceneOptions): HistoryScene {
+  let quality = opts.quality;
+  let Q = QUALITY[quality];
+  const canvas = document.createElement("canvas");
+  canvas.style.display = "block";
+  canvas.style.width = "100%";
+  canvas.style.height = "100%";
+  host.appendChild(canvas);
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: false, alpha: false, powerPreference: "high-performance", stencil: false, preserveDrawingBuffer: !!opts.size });
+  renderer.setClearColor(0x000000, 1);
+  renderer.toneMapping = THREE.NoToneMapping;
+  const sizeOf = () => opts.size ?? { w: Math.max(1, host.clientWidth), h: Math.max(1, host.clientHeight) };
+  let { w: W, h: H } = sizeOf();
+  const prOf = () => (opts.size ? Math.min(1, Q.pr) : Math.min(window.devicePixelRatio || 1, Q.pr));
+  let PR = prOf();
+  renderer.setPixelRatio(PR);
+  renderer.setSize(W, H, false);
+  let post: Post = createPost(renderer, W, H, PR, Q);
+  let figures: FigureFactory = createFigureFactory(renderer, { segments: Q.segments, texSize: Q.texSize, anisotropy: Math.min(Q.aniso, renderer.capabilities.getMaxAnisotropy()) });
+
+  const camera = new THREE.PerspectiveCamera(45, W / H, 0.1, 3000);
+  const portalCam = new THREE.PerspectiveCamera(45, W / H, 0.1, 3000);
+  const helper = new THREE.PerspectiveCamera();
+  const hall: Hall = buildHall(opts.chapters, opts.font, renderer);
+  hall.setAspect(W / H);
+  const n = opts.chapters.length;
+  const slots = new Map<number, Slot>();
+  const film = opts.film;
+
+  // Doorway stills.
+  if (opts.poster) {
+    const loader = new THREE.TextureLoader();
+    opts.chapters.forEach((c, i) => {
+      loader.load(opts.poster!(c.id), (tex) => { tex.colorSpace = THREE.SRGBColorSpace; hall.setPoster(i, tex); }, undefined, () => undefined);
+    });
+  }
+
+  const effFov = (fov: number) => fovFor(fov, W / H);
+  const setCam = (cam: THREE.PerspectiveCamera, p: Pose, design = true) => {
+    cam.position.set(...p.pos);
+    cam.up.set(0, 1, 0);
+    cam.lookAt(...p.look);
+    if (p.roll) cam.rotateZ(p.roll);
+    cam.fov = design ? effFov(p.fov) : p.fov;
+    cam.aspect = W / H;
+    const d = Math.hypot(p.pos[0] - p.look[0], p.pos[1] - p.look[1], p.pos[2] - p.look[2]);
+    cam.near = Math.max(0.05, Math.min(1, d * 0.01));
+    cam.far = 4000;
+    cam.updateProjectionMatrix();
+    cam.updateMatrixWorld();
+  };
+  const matrixOf = (p: Pose) => {
+    helper.position.set(...p.pos);
+    helper.up.set(0, 1, 0);
+    helper.lookAt(...p.look);
+    if (p.roll) helper.rotateZ(p.roll);
+    helper.updateMatrixWorld();
+    return helper.matrixWorld.clone();
+  };
+
+  function prepare(index: number): Promise<void> {
+    if (index < 0 || index >= n) return Promise.resolve();
+    const have = slots.get(index);
+    if (have) return have.promise;
+    const c = opts.chapters[index];
+    const ac = new AbortController();
+    const slot: Slot = { promise: Promise.resolve(), rig: null, ac };
+    slot.promise = (async () => {
+      try {
+        const mod = await BUILDERS[c.id]();
+        if (ac.signal.aborted) return;
+        const timing = film.chapters[index];
+        const rig = await mod.build({
+          renderer,
+          q: Q,
+          chapter: c,
+          timing,
+          beat: (id) => timing.beats.find((b) => b.id === id)?.anim ?? 0,
+          figures,
+          font: opts.font,
+          signal: ac.signal,
+        });
+        if (ac.signal.aborted) { rig.dispose(); return; }
+        // Compile every shader now, so the first frame of the chapter doesn't stall.
+        setCam(portalCam, rig.camera(0));
+        rig.update(0, 0, portalCam, H * PR);
+        await renderer.compileAsync(rig.scene, portalCam).catch(() => undefined);
+        if (ac.signal.aborted) { rig.dispose(); return; }
+        slot.rig = rig;
+      } catch (e) {
+        slot.failed = true;
+        if (!ac.signal.aborted) console.error("[world-history] chapter failed", c.id, e);
+      }
+    })();
+    slots.set(index, slot);
+    return slot.promise;
+  }
+
+  function retain(indices: number[]) {
+    const keep = new Set(indices);
+    for (const [i, s] of slots) {
+      if (keep.has(i)) continue;
+      s.ac.abort();
+      s.rig?.dispose();
+      slots.delete(i);
+    }
+  }
+
+  const rigOf = (i: number) => (i >= 0 && i < n ? slots.get(i)?.rig ?? null : null);
+
+  const ndc = new THREE.Vector3();
+  const raysUv = (look: Look, cam: THREE.PerspectiveCamera): [number, number] | null => {
+    if (!look.rays) return null;
+    ndc.set(...look.rays.pos).project(cam);
+    if (ndc.z > 1 || Math.abs(ndc.x) > 1.6 || Math.abs(ndc.y) > 1.6) return null;
+    return [ndc.x * 0.5 + 0.5, ndc.y * 0.5 + 0.5];
+  };
+
+  const renderRig = (rig: ChapterRig, anim: number, ambient: number, pose: Pose, design: boolean, target: THREE.WebGLRenderTarget, cam: THREE.PerspectiveCamera) => {
+    setCam(cam, pose, design);
+    rig.update(anim, ambient, cam, H * PR);
+    renderer.setRenderTarget(target);
+    renderer.clear();
+    renderer.render(rig.scene, cam);
+  };
+
+  /** Covered share of the screen by doorway i's opening (0..1), and whether any of it shows. */
+  const coverage = (i: number, cam: THREE.PerspectiveCamera) => {
+    const pts = hall.corners(i).map((p) => p.clone().project(cam));
+    if (pts.some((p) => p.z > 1)) return { share: 0, visible: false };
+    const xs = pts.map((p) => p.x), ys = pts.map((p) => p.y);
+    const x0 = Math.max(-1, Math.min(...xs)), x1 = Math.min(1, Math.max(...xs));
+    const y0 = Math.max(-1, Math.min(...ys)), y1 = Math.min(1, Math.max(...ys));
+    if (x1 <= x0 || y1 <= y0) return { share: 0, visible: false };
+    return { share: ((x1 - x0) * (y1 - y0)) / 4, visible: true };
+  };
+
+  const rel = new THREE.Matrix4(), tmp = new THREE.Matrix4();
+  const tPos = new THREE.Vector3(), tQuat = new THREE.Quaternion(), tScale = new THREE.Vector3();
+  /** The chapter's camera behind doorway i: its doorway pose, moved as the hall camera moves relative to the doorway. */
+  const portalPose = (i: number, chapterPose: Pose, doorFov: number) => {
+    const rig = rigOf(i);
+    const s = rig?.portalScale ?? 4;
+    const ref = hall.ref(i, doorFov);
+    rel.copy(matrixOf(ref)).invert().multiply(camera.matrixWorld);
+    rel.decompose(tPos, tQuat, tScale);
+    tPos.multiplyScalar(s);
+    tmp.compose(tPos, tQuat, new THREE.Vector3(1, 1, 1));
+    const m = matrixOf(chapterPose).multiply(tmp);
+    m.decompose(tPos, tQuat, tScale);
+    portalCam.position.copy(tPos);
+    portalCam.quaternion.copy(tQuat);
+    portalCam.fov = camera.fov;
+    portalCam.aspect = W / H;
+    portalCam.near = 0.1;
+    portalCam.far = 4000;
+    portalCam.updateProjectionMatrix();
+    portalCam.updateMatrixWorld();
+  };
+
+  const res = new THREE.Vector2();
+  function frame(f: FrameInput): FrameInfo {
+    const s = f.state;
+    renderer.setClearColor(0x000000, 1);
+    // ---- A video cut: two chapters mixed with a burst of light.
+    if (f.cut) {
+      const a = rigOf(f.cut.from.index), b = rigOf(f.cut.to.index);
+      if (a && b) {
+        const pa = a.camera(f.cut.from.anim), pb = b.camera(f.cut.to.anim);
+        renderRig(a, f.cut.from.anim, f.ambient, pa, true, post.aux(0), portalCam);
+        renderRig(b, f.cut.to.anim, f.ambient, pb, true, post.aux(1), camera);
+        post.mix(f.cut.k, Math.sin(Math.PI * f.cut.k));
+        const la = a.look(f.cut.from.anim), lb = b.look(f.cut.to.anim);
+        post.finish(blendLook(la, lb, f.cut.k), null, f.ambient);
+        return { pose: pb, orbit: null, complete: true };
+      }
+    }
+    // ---- Inside a chapter.
+    if (s.kind === "chapter") {
+      const rig = rigOf(s.index);
+      if (rig) {
+        const pose = f.look ?? rig.camera(s.anim);
+        renderRig(rig, s.anim, f.ambient, pose, true, post.target, camera);
+        const look = rig.look(s.anim);
+        post.finish(look, raysUv(look, camera), f.ambient);
+        return { pose, orbit: rig.orbit(s.anim), complete: true };
+      }
+      // Not loaded yet: wait a few steps back from its doorway, in the hall.
+      const ref = s.index > 0 ? hall.transition(s.index - 1, 0.82, effFov(40), effFov(40), effFov(HALL_FOV)) : hall.prologue(0.78, effFov(40), effFov(HALL_FOV));
+      setCam(camera, ref, false);
+      hall.update(f.ambient, camera);
+      renderer.setRenderTarget(post.target);
+      renderer.clear();
+      renderer.render(hall.scene, camera);
+      post.finish(HALL_LOOK, null, f.ambient);
+      return { pose: { ...ref, fov: 40 }, orbit: null, complete: false };
+    }
+    // ---- The hall: the prologue, a walk between two doorways, the epilogue.
+    const h = s.hall;
+    const from = h.from >= 0 ? h.from : -1, to = h.to < n ? h.to : -1;
+    const ra = rigOf(from), rb = rigOf(to);
+    const fa = from >= 0 ? film.chapters[from] : null;
+    const exitAnim = fa ? fa.anim + Math.min(1.5, s.k * 2) : 0;
+    const poseA = ra && fa ? ra.camera(fa.anim) : null;
+    const poseB = rb ? rb.camera(0) : null;
+    const fovOut = effFov(poseA?.fov ?? 40), fovIn = effFov(poseB?.fov ?? 40);
+    const hallFov = effFov(HALL_FOV);
+    const hp = from < 0 ? hall.prologue(s.k, fovIn, hallFov) : to < 0 ? hall.epilogue(from, s.k, fovOut, hallFov) : hall.transition(from, s.k, fovOut, fovIn, hallFov);
+    setCam(camera, hp, false);
+    res.set(Math.round(W * PR), Math.round(H * PR));
+    let look = from < 0 ? { ...HALL_LOOK, fade: Math.max(0, 0.7 - s.k * 1.8) } : HALL_LOOK;
+    let complete = true;
+    const doors: [number, ChapterRig | null, Pose | null, number, number, 0 | 1][] = [
+      [from, ra, poseA, fovOut, exitAnim, 0],
+      [to, rb, poseB, fovIn, 0, 1],
+    ];
+    for (const [i, rig, pose, doorFov, anim, auxI] of doors) {
+      if (i < 0) continue;
+      const cov = coverage(i, camera);
+      if (!rig || !pose) {
+        hall.setLive(i, null);
+        if (cov.share > 0.5) complete = false;
+        continue;
+      }
+      if (!cov.visible) { hall.setLive(i, null); continue; }
+      portalPose(i, pose, doorFov);
+      const target = post.aux(auxI);
+      rig.update(anim, f.ambient, portalCam, H * PR);
+      renderer.setRenderTarget(target);
+      renderer.clear();
+      renderer.render(rig.scene, portalCam);
+      hall.setLive(i, target.texture, res);
+      const w = Math.min(1, Math.max(0, (cov.share - 0.25) / 0.7));
+      look = blendLook(look, rig.look(anim), w);
+    }
+    hall.update(f.ambient, camera);
+    renderer.setRenderTarget(post.target);
+    renderer.clear();
+    renderer.render(hall.scene, camera);
+    post.finish(look, null, f.ambient);
+    // The rest of the doorways show their stills again.
+    for (let i = 0; i < n; i++) if (i !== from && i !== to) hall.setLive(i, null);
+    return { pose: { ...hp, fov: HALL_FOV }, orbit: null, complete };
+  }
+
+  function resize(w: number, h: number) {
+    W = w;
+    H = h;
+    renderer.setSize(w, h, false);
+    post.setSize(w, h, PR);
+    hall.setAspect(w / h);
+  }
+
+  function setQuality(next: Quality) {
+    if (next === quality) return;
+    quality = next;
+    Q = QUALITY[next];
+    PR = prOf();
+    renderer.setPixelRatio(PR);
+    renderer.setSize(W, H, false);
+    post.dispose();
+    post = createPost(renderer, W, H, PR, Q);
+    figures = createFigureFactory(renderer, { segments: Q.segments, texSize: Q.texSize, anisotropy: Math.min(Q.aniso, renderer.capabilities.getMaxAnisotropy()) });
+  }
+
+  const ready = (async () => {
+    setCam(camera, hall.prologue(0, effFov(40), effFov(HALL_FOV)), false);
+    await renderer.compileAsync(hall.scene, camera).catch(() => undefined);
+  })();
+
+  return {
+    canvas,
+    ready,
+    prepare,
+    isReady: (i) => !!rigOf(i) || !!slots.get(i)?.failed,
+    retain,
+    frame,
+    resize,
+    setQuality,
+    get quality() { return quality; },
+    stats: () => ({ calls: renderer.info.render.calls, tris: renderer.info.render.triangles, loaded: [...slots.entries()].filter(([, s]) => s.rig).map(([i]) => i) }),
+    dispose() {
+      for (const s of slots.values()) { s.ac.abort(); s.rig?.dispose(); }
+      slots.clear();
+      hall.dispose();
+      post.dispose();
+      renderer.dispose();
+      canvas.remove();
+    },
+  };
+}

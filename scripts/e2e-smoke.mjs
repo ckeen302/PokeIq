@@ -14,6 +14,7 @@ import { execFileSync } from "child_process";
 import { runIqTest } from "./e2e-iq-test.mjs";
 import { runSizes } from "./e2e-sizes.mjs";
 import { runRace } from "./e2e-race.mjs";
+import { runWorldHistory } from "./e2e-world-history.mjs";
 import { runGroupBattles } from "./e2e-battle-group.mjs";
 
 const BASE = process.argv[2] ?? "http://localhost:3000";
@@ -2308,6 +2309,7 @@ step("pokédex Timeline: an entry's own link opens its panel, share copies it, t
 
 await runSizes({ browser, BASE, OUT, errors, step });
 await runRace({ browser, BASE, OUT, errors, step });
+await runWorldHistory({ browser, BASE, OUT, errors, step });
 
 step("trainer, leaderboard, pokémon page");
 // Quiz modes are off the leaderboard: an old quiz board link lands on the Daily, with no quiz tabs.

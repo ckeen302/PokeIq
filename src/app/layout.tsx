@@ -119,6 +119,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <a href="/race/CREDITS.md" className="underline-offset-2 hover:underline">
                 credits
               </a>
+              ). History of the Pokémon World music by cynicmusic, CC0 (
+              <a href="/audio/world-history/CREDITS.md" className="underline-offset-2 hover:underline">
+                credits
+              </a>
               ).
             </p>
           </div>

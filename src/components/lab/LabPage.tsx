@@ -107,9 +107,9 @@ function LabCard({ experience: e, flip, priority }: { experience: LabExperience;
               priority={priority}
               className="lab-kb object-cover"
             />
-          ) : (
+          ) : e.id === "race" ? (
             <RacePreview />
-          )}
+          ) : null}
           <span className="pointer-events-none absolute inset-0 z-[1] bg-[linear-gradient(180deg,transparent_50%,rgb(0_0_0/0.7))]" />
           <span className="hud-label pointer-events-none absolute bottom-3 left-3 z-[3] flex items-center gap-1.5 rounded-sm bg-black/55 px-2 py-1.5 text-white/90 backdrop-blur-sm">
             <span className="led lab-led h-1.5 w-1.5" /> Live 3D
