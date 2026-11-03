@@ -10,14 +10,14 @@ import { fromRow, formatFeet, formatMetres, type SizeItem, type SizeRow } from "
 import { DEFAULT_PRESET, PRESETS, PRESET_BY_ID } from "@/lib/sizes/presets";
 import { COMPARE_MAX, COMPARE_MIN, comparePath, compareOk, itemPath, parseVs, presetPath } from "@/lib/sizes/deeplink";
 import { compareHook, lineFor, pushCompare, searchItems, type LineSpec } from "@/lib/sizes/lineup";
-import { framer, type Framer, type Lens } from "@/lib/sizes/glide";
+import { framer, viewWidth, type Framer, type Lens } from "@/lib/sizes/glide";
 import { nearestIndex, planPlay, playAt, type PlayPlan } from "@/lib/sizes/play";
-import { FRICTION, RATE, ORBIT_PER_PX, TILT_PER_PX, ZOOM_MAX, ZOOM_MIN, ZOOM_STEP_BUTTON, ZOOM_STEP_KEY, angleDelta, badgeBudget, badgeScaleFor, blendViews, clampOrbit, clampTilt, clampX, clampZoom, coast, damp, dragMetres, effectiveZoom, exploreView, flightAt, flightSeconds, overviewView, pinchZoom, releaseVelocity, stepIndex, wheelPixels, wheelZoom, zoomAnchorShift, zoomFloorAt, type Flight } from "@/lib/sizes/explore";
+import { FRICTION, RATE, ORBIT_PER_PX, TILT_PER_PX, ZOOM_MAX, ZOOM_MIN, ZOOM_STEP_BUTTON, ZOOM_STEP_KEY, angleDelta, badgeBudget, badgeScaleFor, blendViews, clampOrbit, clampTilt, clampX, clampZoom, coast, damp, dragMetres, effectiveZoom, exploreView, flightAt, flightSeconds, overviewView, pinchZoom, releaseVelocity, stepIndex, viewAhead, wheelPixels, wheelZoom, zoomAnchorShift, zoomFloorAt, type Flight } from "@/lib/sizes/explore";
 import { factFor, spanFact } from "@/lib/sizes/facts";
 import { markIntroSeen, shouldAutoPlay } from "@/lib/sizes/intro";
 import type { View } from "@/lib/sizes/camera";
 import { badgeName, dexTag } from "@/lib/sizes/badges";
-import type { Quality, SizesScene } from "./scene";
+import type { FutureView, Quality, SizesScene } from "./scene";
 import type { SizesAudio } from "./audio";
 import { BadgeLayer } from "./overlay";
 import { SCENE_URLS, toSceneItem } from "./scene-item";
@@ -146,6 +146,9 @@ export function SizesExperience({ preset, focus = null, vs = [], compare = false
   const [muted, setMutedState] = useState(true);
   const [toast, setToast] = useState<string | null>(null);
   const [quality, setQualityState] = useState<Quality>("high");
+  /** The first view is built and showing (the scene stays hidden behind the loading card until then). */
+  const [shown, setShown] = useState(false);
+  const shownRef = useRef(false);
   const account = useAccount();
   const myTrainer = account.user?.avatar?.trainer ?? null;
   const trainerRef = useRef(myTrainer);
@@ -193,7 +196,12 @@ export function SizesExperience({ preset, focus = null, vs = [], compare = false
     /** When the last input arrived (performance.now(), ms). */
     lastInput: -1e9,
     flight: null as Flight | null,
-    play: null as { plan: PlayPlan; t0: number; stop: string | null; finale: boolean } | null,
+    /** The flights' own clock (it slows with the camera when loading falls behind). */
+    flightNow: 0,
+    play: null as { plan: PlayPlan; t: number; stop: string | null; finale: boolean } | null,
+    /** Camera speed, 1 normally: eased down while a figure on screen still waits for its detail, never for long. */
+    ease: 1,
+    easedFor: 0,
     blend: null as { from: View; t0: number; dur: number } | null,
     last: null as View | null,
     now: 0,
@@ -368,7 +376,7 @@ export function SizesExperience({ preset, focus = null, vs = [], compare = false
     if (!placed.length) return;
     const c = ctl.current;
     const plan = planPlay(placed, lensRef.current);
-    c.play = { plan, t0: c.now, stop: null, finale: false };
+    c.play = { plan, t: 0, stop: null, finale: false };
     c.flight = null;
     c.kind = "play";
     setKind("play");
@@ -387,7 +395,7 @@ export function SizesExperience({ preset, focus = null, vs = [], compare = false
     if (c.kind !== "explore") toExplore(0.5);
     const d = c.last?.d ?? 2;
     const from = c.x;
-    c.flight = { from, to: placed[i].x, t0: c.now, dur: flightSeconds(from, placed[i].x, 2 * d * Math.tan((lensRef.current.vfov * Math.PI) / 360) * lensRef.current.aspect) };
+    c.flight = { from, to: placed[i].x, t0: c.flightNow, dur: flightSeconds(from, placed[i].x, 2 * d * Math.tan((lensRef.current.vfov * Math.PI) / 360) * lensRef.current.aspect) };
     c.vel = 0;
     if (frame && c.lzT < Math.log(0.7)) c.lzT = 0;
     if (Math.abs(placed[i].x - from) > 0.5) audioRef.current?.whoosh(0.8);
@@ -468,6 +476,18 @@ export function SizesExperience({ preset, focus = null, vs = [], compare = false
     }
     // Every figure shader compiles now, before the first frame, instead of mid-glide.
     try { scene.warm(); } catch { /* drawing will compile them instead */ }
+    // The first view is built before it is shown (and the glide waits for it): nothing pops in on arrival.
+    let alive = true;
+    setShown(false);
+    shownRef.current = false;
+    const v = c.kind === "overview" ? overviewView(placed, lensRef.current) : exploreView(c.x, frRef.current, scene.heightAt);
+    scene.setView(v);
+    void scene.settle(5000).then(() => {
+      if (!alive) return;
+      shownRef.current = true;
+      setShown(true);
+    });
+    return () => { alive = false; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ready, line]);
 
@@ -481,7 +501,8 @@ export function SizesExperience({ preset, focus = null, vs = [], compare = false
       sceneRef.current?.resize(w, h);
       const cv = overlayRef.current;
       if (cv) {
-        const dpr = Math.min(2, window.devicePixelRatio || 1);
+        // The badges are text: drawn at the screen's own density (phones are 3×), so they stay crisp.
+        const dpr = Math.min(3, window.devicePixelRatio || 1);
         cv.width = Math.round(w * dpr);
         cv.height = Math.round(h * dpr);
         badgesRef.current?.invalidate();
@@ -500,12 +521,42 @@ export function SizesExperience({ preset, focus = null, vs = [], compare = false
     if (!ready) return;
     let raf = 0;
     let last = performance.now();
-    let lastFocus: string | null = null, lastFocusAt = 0, lastThumb = -1, lastProgress = "", lastPublish = 0, lastLook = "", hookShown = false;
+    let lastFocus: string | null = null, lastFocusAt = 0, lastThumb = -1, lastProgress = "", lastPublish = 0, lastLook = "", hookShown = false, ahead = 0;
     // Adaptive quality: frame-time average, the display's own frame interval, and how long frames have been slow or comfortable.
     let ftEma = 1000 / 60, refresh = 1000 / 60, slowFor = 0, calmFor = 0, warm = 0, raisedAt = -1e9, ceiling = LADDER.length - 1;
     const font = getComputedStyle(document.documentElement).getPropertyValue("--font-display").trim() || "sans-serif";
     const badges = new BadgeLayer(font);
     badgesRef.current = badges;
+    /** The views the camera will reach over the next seconds (and, while it rests, further along both ways), soonest first: the scene builds what they need ahead. */
+    const futureViews = (view: View, scene: SizesScene, fr: Framer, placed: Placed[]): FutureView[] => {
+      const c = ctl.current;
+      const out: FutureView[] = [];
+      if (c.kind === "play" && c.play) {
+        const end = c.play.plan.glide.duration + 0.5;
+        for (const tau of [0.3, 0.6, 1, 1.5, 2.1, 2.8, 3.6, 4.6, 5.8, 7.2, 9, 11.5, 14]) {
+          if (c.play.t + tau > end) break;
+          out.push({ view: playAt(c.play.plan, c.play.t + tau, scene.heightAt).view, dt: tau });
+        }
+        return out;
+      }
+      if (c.kind !== "explore") return out;
+      const look = { zoom: Math.exp(c.lz), tilt: c.tilt, orbit: c.orbit };
+      const first = placed[0], lastP = placed[placed.length - 1];
+      const at = (x: number) => exploreView(clampX(x, first, lastP), fr, scene.heightAt, look);
+      if (c.flight) {
+        for (const tau of [0.2, 0.45, 0.8, 1.2, 1.7, 2.3, 3]) {
+          const f = flightAt(c.flight, c.flightNow + tau);
+          out.push({ view: at(f.x), dt: tau });
+          if (f.done) break;
+        }
+      } else if (Math.abs(c.vel) > 1e-3 || Math.abs(c.target - c.x) > 1e-3 * Math.max(0.05, view.d)) {
+        for (const tau of [0.15, 0.4, 0.8, 1.3, 2]) out.push({ view: at(viewAhead(c.x, c.target, c.vel, tau)), dt: tau });
+      }
+      // The next stretch either way, nearest first (it only loads while nothing sooner is waiting).
+      const w = viewWidth(view.d, lensRef.current);
+      for (let k = 1; k <= 6; k++) for (const dir of [1, -1]) out.push({ view: at(view.x + dir * k * w * 0.55), dt: 1.2 + k * 0.7 + (dir < 0 ? 0.35 : 0) });
+      return out;
+    };
     // A web font that arrives late changes every badge's measurements.
     const onFonts = () => badges.reset(font);
     document.fonts?.addEventListener?.("loadingdone", onFonts);
@@ -523,10 +574,18 @@ export function SizesExperience({ preset, focus = null, vs = [], compare = false
       const c = ctl.current;
       c.now += dt;
       const lens = lensRef.current;
+      // Loading behind the camera: ease off (quickly), and back up (gently) once it has caught up; never for more than a few seconds at a time.
+      const lag = shownRef.current ? scene.pending() : 1;
+      const easing = lag > 0.04 && c.easedFor < 3;
+      c.easedFor = easing ? c.easedFor + dt : Math.max(0, c.easedFor - dt * 0.5);
+      c.ease = shownRef.current ? damp(c.ease, easing ? Math.max(0.12, 1 - lag * 1.6) : 1, easing ? 7 : 2.2, dt) : 0;
+      const mdt = dt * c.ease;
+      c.flightNow += mdt;
       let view: View;
       let focusNow: string | null = null;
       if (c.kind === "play" && c.play) {
-        const pt = c.now - c.play.t0;
+        c.play.t += mdt;
+        const pt = c.play.t;
         const pf = playAt(c.play.plan, pt, scene.heightAt);
         view = pf.view;
         focusNow = pf.focus;
@@ -565,14 +624,14 @@ export function SizesExperience({ preset, focus = null, vs = [], compare = false
         // Explore: the visitor's camera, every part easing towards its target at a rate that doesn't depend on the frame rate.
         const first = placed[0], lastP = placed[placed.length - 1];
         if (c.flight) {
-          const f = flightAt(c.flight, c.now);
+          const f = flightAt(c.flight, c.flightNow);
           c.x = c.target = f.x;
           if (f.done) c.flight = null;
         } else {
-          if (!c.dragging) ({ target: c.target, vel: c.vel } = coast(c.target, c.vel, FRICTION.x, dt));
+          if (!c.dragging) ({ target: c.target, vel: c.vel } = coast(c.target, c.vel, FRICTION.x, mdt));
           const t = clampX(c.target, first, lastP);
           if (t !== c.target) { c.target = t; c.vel = 0; }
-          c.x = damp(c.x, c.target, c.dragging ? RATE_DRAG : RATE.x, dt);
+          c.x = damp(c.x, c.target, (c.dragging ? RATE_DRAG : RATE.x) * Math.max(0.2, c.ease), dt);
         }
         c.x = clampX(c.x, first, lastP);
         if (!c.dragging) {
@@ -580,7 +639,8 @@ export function SizesExperience({ preset, focus = null, vs = [], compare = false
           ({ target: c.orbitT, vel: c.vOrbit } = coast(c.orbitT, c.vOrbit, FRICTION.orbit, dt));
         }
         c.lzT = Math.max(LZ_MIN, Math.min(LZ_MAX, c.lzT));
-        c.lz = damp(c.lz, c.lzT, RATE.zoom, dt);
+        // Zooming in also waits a moment for the figures it brings close.
+        c.lz = damp(c.lz, c.lzT, RATE.zoom * (c.lzT > c.lz ? Math.max(0.25, c.ease) : 1), dt);
         const zoom = Math.exp(c.lz);
         const h = scene.heightAt(c.x);
         const tiltT = clampTilt(c.tiltT, h, zoom);
@@ -599,6 +659,8 @@ export function SizesExperience({ preset, focus = null, vs = [], compare = false
       }
       c.last = view;
       scene.setView(view);
+      // Where the camera is going, so the figures it will need are built ahead (a few times a second is plenty).
+      if (++ahead % 4 === 0) scene.prefetch(futureViews(view, scene, fr, placed));
       scene.render(c.now, dt);
       const zoomNow = effectiveZoom(fr.at(view.x), view.d);
       // Badges: fewer and a little smaller as the view widens; the title card has the screen to itself.
@@ -684,10 +746,19 @@ export function SizesExperience({ preset, focus = null, vs = [], compare = false
       }
     };
     raf = requestAnimationFrame(tick);
+    // For automated checks and screenshots: jump Play's clock (to its finale, say), and read where things stand.
+    (window as unknown as { __sizes?: unknown }).__sizes = {
+      seek(t: number) { const c = ctl.current; if (c.kind === "play" && c.play) c.play.t = Math.max(0, Math.min(t, c.play.plan.glide.duration)); },
+      state() {
+        const c = ctl.current, s = sceneRef.current;
+        return { kind: c.kind, t: c.play?.t ?? null, duration: c.play?.plan.glide.duration ?? null, stops: c.play?.plan.glide.stops.map((x) => ({ key: x.key, t0: x.t0, t1: x.t1 })) ?? [], blending: !!c.blend, quality: s?.quality ?? null, pending: s?.pending() ?? null, stats: s?.stats() ?? null, view: c.last };
+      },
+    };
     return () => {
       cancelAnimationFrame(raf);
       document.fonts?.removeEventListener?.("loadingdone", onFonts);
       badgesRef.current = null;
+      delete (window as unknown as { __sizes?: unknown }).__sizes;
     };
   }, [ready]);
 
@@ -1048,6 +1119,7 @@ export function SizesExperience({ preset, focus = null, vs = [], compare = false
           className="sz-stage fixed left-0 !mt-0 w-screen bottom-[calc(3.5rem+env(safe-area-inset-bottom))] top-14 z-40 overflow-hidden lg:bottom-0"
           data-testid="sizes-stage"
           data-ready={ready ? "1" : "0"}
+          data-shown={shown ? "1" : "0"}
           data-kind={kind}
           data-focus={focusKey ?? ""}
           data-count={line.length}
@@ -1055,7 +1127,7 @@ export function SizesExperience({ preset, focus = null, vs = [], compare = false
         >
           <div
             ref={hostRef}
-            className="sz-host absolute inset-0 cursor-grab touch-none select-none active:cursor-grabbing"
+            className={cn("sz-host absolute inset-0 cursor-grab touch-none select-none transition-opacity duration-500 active:cursor-grabbing", !shown && "opacity-0")}
             data-testid="sizes-scene"
             role="application"
             aria-label="Pokémon to scale in 3D, smallest to largest. Drag sideways or use the arrow keys to move along the line, scroll or pinch to zoom (+ and − keys too), drag up and down to tilt, right-drag or shift-drag to turn; 0 resets the view and Space plays the glide."
@@ -1064,15 +1136,16 @@ export function SizesExperience({ preset, focus = null, vs = [], compare = false
           <div className="sz-shade-top" aria-hidden />
           <div className="sz-shade-bottom" aria-hidden />
 
-          {!ready && (
-            <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-white" aria-hidden>
+          {(!ready || (!shown && !hook)) && (
+            <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-3 text-white" aria-hidden data-testid="sizes-loading">
               <Scale className="h-8 w-8 animate-pulse text-[#ffd84a]" />
-              <div className="font-pixel text-[10px] uppercase tracking-[0.3em]">Building Lumiose City…</div>
+              <div className="font-pixel text-[10px] uppercase tracking-[0.3em]">{ready ? "Lining them up…" : "Building Lumiose City…"}</div>
             </div>
           )}
 
           {/* Title card: the lineup's hook, as the glide begins. */}
           <AnimatePresence>
+            {/* Shown at once, over the first view being built: the glide (and its clock) starts under it. */}
             {hook && (
               <motion.div
                 key={hook}
@@ -1117,7 +1190,7 @@ export function SizesExperience({ preset, focus = null, vs = [], compare = false
                 <ArrowLeft className="h-4 w-4" aria-hidden />
               </Link>
               <div className="relative min-w-0">
-                <button type="button" className={cn(chip, "max-w-[40vw] sm:max-w-none")} onClick={() => { setPresetMenu((v) => !v); setSearchOpen(false); }} aria-expanded={presetMenu} aria-haspopup="menu" data-testid="sizes-lineup">
+                <button type="button" className={cn(chip, "max-w-[calc(100vw-13rem)] sm:max-w-none")} onClick={() => { setPresetMenu((v) => !v); setSearchOpen(false); }} aria-expanded={presetMenu} aria-haspopup="menu" data-testid="sizes-lineup">
                   <span className="truncate">{lineTitle}</span>
                   <ChevronDown className="h-3.5 w-3.5 shrink-0" aria-hidden />
                 </button>
@@ -1256,8 +1329,8 @@ export function SizesExperience({ preset, focus = null, vs = [], compare = false
                   {playing ? <Square className="h-4 w-4 fill-current" aria-hidden /> : <Play className="h-4 w-4 fill-current" aria-hidden />}
                   {playing ? "Stop" : kind === "hold" ? "Replay" : "Play"}
                 </button>
-                <button type="button" onClick={() => (compareOpen ? closeCompare() : openCompare())} className={cn(chip, "h-11", compareOpen && "border-[#ffd84a]/70 text-[#ffd84a]")} aria-pressed={compareOpen} disabled={!ready} data-testid="sizes-compare">
-                  <Scale className="h-4 w-4" aria-hidden /> <span className="hidden min-[370px]:inline">Compare</span>
+                <button type="button" onClick={() => (compareOpen ? closeCompare() : openCompare())} className={cn(chip, "h-11", compareOpen && "border-[#ffd84a]/70 text-[#ffd84a]")} aria-pressed={compareOpen} disabled={!ready} aria-label="Compare sizes" data-testid="sizes-compare">
+                  <Scale className="h-4 w-4" aria-hidden /> <span className="hidden min-[420px]:inline">Compare</span>
                 </button>
               </div>
               <div className="hidden min-w-0 flex-1 truncate text-center font-display text-sm font-semibold uppercase tracking-wide text-white/90 md:block" aria-live="off">

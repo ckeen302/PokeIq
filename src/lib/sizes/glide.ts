@@ -162,11 +162,13 @@ export function buildGlide(placed: Placed[], fr: Framer, lens: Lens, opts: Glide
   const stopIdx = [...new Set(opts.holds.map((k) => placed.findIndex((p) => p.key === k)).filter((i) => i > 0 && i < last))].sort((a, b) => a - b);
   let hold = opts.hold ?? 1.4;
   let finale = Math.min(opts.finale ?? 2.5, duration * 0.35);
-  // Keep at least 45% of the time moving.
+  // Keep at least 45% of the time moving: the milestone holds shorten first (to 40% of their length at most), then the finale with them.
   const budget = duration - intro;
   const pauses = () => stopIdx.length * hold + finale;
-  if (pauses() > budget * 0.55) {
-    const k = (budget * 0.55) / pauses();
+  const cap = budget * 0.55;
+  if (pauses() > cap && stopIdx.length) hold = Math.max(hold * 0.4, Math.min(hold, (cap - finale) / stopIdx.length));
+  if (pauses() > cap) {
+    const k = cap / pauses();
     hold *= k;
     finale *= k;
   }

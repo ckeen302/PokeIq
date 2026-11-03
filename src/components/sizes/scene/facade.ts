@@ -34,12 +34,17 @@ export const ATLAS = {
   SHOPS: 6,
 };
 
-interface Ctxs { col: CanvasRenderingContext2D; hgt: CanvasRenderingContext2D; orm: CanvasRenderingContext2D }
+interface Ctxs { col: CanvasRenderingContext2D; hgt: CanvasRenderingContext2D; orm: CanvasRenderingContext2D; /** Light from inside (shop windows, a few lit rooms). */ emi: CanvasRenderingContext2D }
 
 /** Paint a rect on all three maps: colour, height (0..1), roughness, metalness, occlusion. */
 function paint(c: Ctxs, x: number, y: number, w: number, h: number, color: string, height: number, rough = 0.85, metal = 0, ao = 1) {
   c.col.fillStyle = color;
   c.col.fillRect(x, y, w, h);
+  // Solid things (frames, stone, doors) hide any light behind them.
+  if (!color.startsWith("rgba")) {
+    c.emi.fillStyle = "#000";
+    c.emi.fillRect(x, y, w, h);
+  }
   const hv = Math.round(Math.max(0, Math.min(1, height)) * 255);
   c.hgt.fillStyle = `rgb(${hv},${hv},${hv})`;
   c.hgt.fillRect(x, y, w, h);
@@ -88,7 +93,7 @@ function stoneCourses(c: Ctxs, x: number, y: number, w: number, h: number, pxPer
 }
 
 /** A French window: stone surround, recessed glass in white frames with small panes, optional curtains. */
-function frenchWindow(c: Ctxs, cx: number, top: number, ww: number, wh: number, pxPerM: number, opts: { pediment?: "tri" | "seg" | "cornice" | "key" | null; balconette?: boolean; curtain?: number; open?: boolean }) {
+function frenchWindow(c: Ctxs, cx: number, top: number, ww: number, wh: number, pxPerM: number, opts: { pediment?: "tri" | "seg" | "cornice" | "key" | null; balconette?: boolean; curtain?: number; open?: boolean; lit?: number }) {
   const sur = 0.2 * pxPerM;
   const x = cx - ww / 2;
   // Surround (raised, lighter).
@@ -109,6 +114,14 @@ function frenchWindow(c: Ctxs, cx: number, top: number, ww: number, wh: number, 
   c.hgt.fillRect(gx, gy, gw, gh);
   c.orm.fillStyle = "rgb(230,22,110)";
   c.orm.fillRect(gx, gy, gw, gh);
+  if (opts.lit) {
+    // A lamp on in the room: a warm glow low in the window.
+    const glowG = c.emi.createLinearGradient(0, gy, 0, gy + gh);
+    glowG.addColorStop(0, "rgba(255,190,110,0.15)");
+    glowG.addColorStop(1, `rgba(255,200,120,${opts.lit})`);
+    c.emi.fillStyle = glowG;
+    c.emi.fillRect(gx, gy, gw, gh);
+  }
   // Curtains behind the glass.
   if (opts.curtain) {
     c.col.fillStyle = `rgba(236,230,214,${opts.curtain})`;
@@ -216,6 +229,7 @@ function drawUpperBay(c: Ctxs, ox: number, S: number, variant: 0 | 1) {
       balconette: floor === 1 || floor === 2 || floor === 3,
       curtain: r() < 0.6 ? 0.55 + r() * 0.35 : 0,
       open: r() < 0.12,
+      lit: r() < 0.3 ? 0.35 + r() * 0.3 : 0,
     });
     y += hpx;
   });
@@ -274,11 +288,21 @@ function drawShop(c: Ctxs, ox: number, oy: number, S: number, i: number) {
   c.hgt.fillRect(gx, top + 4 * S, gw, gh - 4 * S);
   c.orm.fillStyle = "rgb(230,25,100)";
   c.orm.fillRect(gx, top + 4 * S, gw, gh - 4 * S);
+  // The shop is lit: a warm glow through the glass (brighter low down, where the displays are).
+  const lit = c.emi.createLinearGradient(0, top, 0, top + gh);
+  lit.addColorStop(0, "rgba(255,196,120,0.35)");
+  lit.addColorStop(0.55, kind === 1 ? "rgba(255,178,96,0.85)" : "rgba(255,214,150,0.8)");
+  lit.addColorStop(1, "rgba(255,190,110,0.55)");
+  c.emi.fillStyle = lit;
+  c.emi.fillRect(gx, top + 4 * S, gw, gh - 4 * S);
   // Warm interior glow and displays.
   const r = rng(71 + i);
   for (let k = 0; k < 5; k++) {
     c.col.fillStyle = kind === 1 ? `rgba(255,${190 + Math.round(r() * 40)},120,${0.12 + r() * 0.12})` : `rgba(${200 + Math.round(r() * 55)},${180 + Math.round(r() * 60)},${150 + Math.round(r() * 80)},${0.15 + r() * 0.15})`;
-    c.col.fillRect(gx + r() * gw * 0.8, top + gh * (0.45 + r() * 0.35), gw * (0.1 + r() * 0.2), gh * (0.1 + r() * 0.25));
+    const dx = gx + r() * gw * 0.8, dy = top + gh * (0.45 + r() * 0.35), dw = gw * (0.1 + r() * 0.2), dh = gh * (0.1 + r() * 0.25);
+    c.col.fillRect(dx, dy, dw, dh);
+    c.emi.fillStyle = "rgba(255,236,200,0.9)";
+    c.emi.fillRect(dx, dy, dw, dh);
   }
   // Mullions and the door.
   const mull = (mx: number) => paint(c, mx, top, 3 * S, gh, frame, 0.42, 0.55);
@@ -335,8 +359,10 @@ export interface FacadeMaps {
   map: THREE.Texture;
   normalMap: THREE.Texture;
   orm: THREE.Texture;
+  /** Light from inside: lit shop windows and a few lit rooms. */
+  emissive: THREE.Texture;
   /** A horizontally tiling facade (two bays, shops to cornice: 7.2 m × 20.5 m) for the city blocks behind the boulevard. */
-  mass: { map: THREE.Texture; normalMap: THREE.Texture; orm: THREE.Texture };
+  mass: { map: THREE.Texture; normalMap: THREE.Texture; orm: THREE.Texture; emissive: THREE.Texture };
   dispose(): void;
 }
 
@@ -366,8 +392,10 @@ export function facadeAtlas(scale: 1 | 2, anisotropy: number): FacadeMaps {
     cv.width = cv.height = N;
     return cv;
   };
-  const colC = mk(), hgtC = mk(), ormC = mk();
-  const c: Ctxs = { col: colC.getContext("2d", { willReadFrequently: true })!, hgt: hgtC.getContext("2d", { willReadFrequently: true })!, orm: ormC.getContext("2d")! };
+  const colC = mk(), hgtC = mk(), ormC = mk(), emiC = mk();
+  const c: Ctxs = { col: colC.getContext("2d", { willReadFrequently: true })!, hgt: hgtC.getContext("2d", { willReadFrequently: true })!, orm: ormC.getContext("2d")!, emi: emiC.getContext("2d")! };
+  c.emi.fillStyle = "#000";
+  c.emi.fillRect(0, 0, N, N);
   paint(c, 0, 0, N, N, "#e6dcc5", 0.5, 0.9);
   drawUpperBay(c, 0, S, 0);
   drawUpperBay(c, 256 * S, S, 1);
@@ -384,10 +412,10 @@ export function facadeAtlas(scale: 1 | 2, anisotropy: number): FacadeMaps {
     t.minFilter = THREE.LinearMipmapLinearFilter;
     return t;
   };
-  const map = tex(colC, true), normalMap = tex(hgtC, false), orm = tex(ormC, false);
+  const map = tex(colC, true), normalMap = tex(hgtC, false), orm = tex(ormC, false), emissive = tex(emiC, true);
   const tile = (t: THREE.Texture) => { t.wrapS = THREE.RepeatWrapping; return t; };
-  const mass = { map: tile(tex(massCanvas(colC, S), true)), normalMap: tile(tex(massCanvas(hgtC, S), false)), orm: tile(tex(massCanvas(ormC, S), false)) };
-  return { map, normalMap, orm, mass, dispose() { [map, normalMap, orm, mass.map, mass.normalMap, mass.orm].forEach((t) => t.dispose()); } };
+  const mass = { map: tile(tex(massCanvas(colC, S), true)), normalMap: tile(tex(massCanvas(hgtC, S), false)), orm: tile(tex(massCanvas(ormC, S), false)), emissive: tile(tex(massCanvas(emiC, S), true)) };
+  return { map, normalMap, orm, emissive, mass, dispose() { [map, normalMap, orm, emissive, mass.map, mass.normalMap, mass.orm, mass.emissive].forEach((t) => t.dispose()); } };
 }
 
 /** The wrought-iron railing of a continuous balcony: an alpha texture (one bay wide, 1 m tall). */
@@ -414,20 +442,35 @@ export function railingTexture(anisotropy: number): THREE.Texture {
   return t;
 }
 
-/** Striped café awning cloth. */
-export function awningTexture(): THREE.Texture {
+/** Rows of the awning cloth: one per district colour (in DISTRICT_COLORS order), then the classic ones. */
+export const AWNING_ROWS = 8;
+
+/** Striped café awning cloth: a row per district colour, then classic red, green and navy, with a scalloped valance edge. */
+export function awningTexture(district: string[]): THREE.Texture {
   const cv = document.createElement("canvas");
   cv.width = 256;
-  cv.height = 64;
+  cv.height = AWNING_ROWS * 32;
   const g = cv.getContext("2d")!;
-  const pairs = [["#b3262d", "#f3ece0"], ["#1f5a3a", "#f1ebdc"], ["#1e2f57", "#efe9dc"], ["#8a2a4a", "#f3eadb"]];
-  pairs.forEach(([a, b], row) => {
+  const shade = (hex: string, k: number) => {
+    const n = parseInt(hex.slice(1), 16);
+    const f = (v: number) => Math.round(Math.max(0, Math.min(255, v * k)));
+    return `rgb(${f((n >> 16) & 255)},${f((n >> 8) & 255)},${f(n & 255)})`;
+  };
+  const cols = [...district.slice(0, 5).map((c) => shade(c, 0.86)), "#b3262d", "#1f5a3a", "#1e2f57"];
+  cols.forEach((a, row) => {
     for (let x = 0; x < 256; x += 16) {
-      g.fillStyle = (x / 16) % 2 ? b : a;
-      g.fillRect(x, row * 16, 16, 16);
+      g.fillStyle = (x / 16) % 2 ? "#f3ede0" : a;
+      g.fillRect(x, row * 32, 16, 32);
     }
+    // A little sheen down the cloth.
+    const sh = g.createLinearGradient(0, row * 32, 0, row * 32 + 32);
+    sh.addColorStop(0, "rgba(255,255,255,0.12)");
+    sh.addColorStop(1, "rgba(0,0,0,0.12)");
+    g.fillStyle = sh;
+    g.fillRect(0, row * 32, 256, 32);
   });
   const t = new THREE.CanvasTexture(cv);
   t.colorSpace = THREE.SRGBColorSpace;
+  t.anisotropy = 4;
   return t;
 }

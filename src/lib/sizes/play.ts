@@ -14,13 +14,15 @@ import { MILESTONES } from "./presets";
 export interface PlayPlan {
   glide: GlidePlan;
   placed: Placed[];
+  /** When the finale's rise is complete (seconds into Play: a video's comes before its end card); by default 90% of the way through the finale. */
+  revealAt?: number;
 }
 
-export function planPlay(placed: Placed[], lens: Lens, opts: { duration?: number; intro?: number; hold?: number; finale?: number } = {}): PlayPlan {
+export function planPlay(placed: Placed[], lens: Lens, opts: { duration?: number; intro?: number; hold?: number; finale?: number; revealAt?: number } = {}): PlayPlan {
   const fr = framer(placed, lens);
   const holds = holdsFor(placed);
   const duration = opts.duration ?? naturalDuration(placed.length, holds.length + 1);
-  return { glide: buildGlide(placed, fr, lens, { duration, holds, intro: opts.intro, hold: opts.hold, finale: opts.finale }), placed };
+  return { glide: buildGlide(placed, fr, lens, { duration, holds, intro: opts.intro, hold: opts.hold, finale: opts.finale }), placed, revealAt: opts.revealAt };
 }
 
 /**
@@ -55,13 +57,19 @@ export interface PlayFrame {
 export function playAt(plan: PlayPlan, t: number, heightAt: (x: number) => number): PlayFrame {
   const st = glideAt(plan.glide, t);
   const h = heightAt(st.x);
-  let orbit = 0.05 * Math.sin(t * 0.35);
+  // Past the end Play holds its last view (the finale's, fully risen): the page keeps it until the next input.
+  const tt = Math.max(0, Math.min(t, plan.glide.duration));
+  let orbit = 0.05 * Math.sin(tt * 0.35);
   let rise = 0;
-  const stop = plan.glide.stops.find((s) => t >= s.t0 && t <= s.t1);
+  const stop = plan.glide.stops.find((s) => tt >= s.t0 && tt <= s.t1);
   if (stop) {
-    const f = stop.t1 > stop.t0 ? (t - stop.t0) / (stop.t1 - stop.t0) : 1;
+    const f = stop.t1 > stop.t0 ? (tt - stop.t0) / (stop.t1 - stop.t0) : 1;
     if (stop.finale) {
-      rise = smooth((f - 0.18) / 0.72);
+      // A beat on the giant, then the rise over the rooftops (done by `revealAt`, or 90% of the way through).
+      const len = stop.t1 - stop.t0;
+      const end = plan.revealAt !== undefined ? Math.min(stop.t1, Math.max(stop.t0 + Math.min(0.6, len), plan.revealAt)) : stop.t0 + 0.9 * len;
+      const start = stop.t0 + 0.2 * (end - stop.t0);
+      rise = end > start ? smooth((tt - start) / (end - start)) : 1;
       orbit = 0;
     } else {
       // Alternate sides from one hold to the next.

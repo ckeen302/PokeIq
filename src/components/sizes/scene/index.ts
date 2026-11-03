@@ -4,6 +4,8 @@ import { CSM } from "three/examples/jsm/csm/CSM.js";
 import { layoutLine } from "@/lib/sizes/types";
 import { ROOF_Y, planWorld, type WorldPlan } from "@/lib/sizes/world";
 import { FACING, poseFor, type View } from "@/lib/sizes/camera";
+import type { FarManifest } from "@/lib/sizes/far";
+import FAR_MANIFEST from "@/data/sizes-far.json";
 import { buildCity, type City } from "./city";
 import { buildProps, type Props } from "./props";
 import { buildTower, type Tower } from "./tower";
@@ -12,13 +14,23 @@ import { createPost, type Post } from "./post";
 import { Crowd, type CrowdInstance } from "./crowd";
 import { sharedUniforms } from "./shaders";
 import { SKY, createSky } from "./sky";
+import { createTrace, traceBare, type Drawn, type TraceFigure } from "./trace";
 
 /**
  * The 3D scene behind /pokedex/sizes and its videos: a sunny Lumiose City
- * tribute with the line of figures down the boulevard. The page (or the
- * video recorder) owns the clock and the camera plan; the scene draws a
- * frame for a View and reports where each figure's badge belongs.
- * Loaded only on this page.
+ * tribute, the line of figures walking down the Grand Boulevard and round
+ * Prism Tower. The page (or the video recorder) owns the clock and the
+ * camera plan; the scene draws a frame for a View and reports where each
+ * figure's badge belongs.
+ *
+ * Every figure is always drawn in 3D. Far ones are the crowd's low-detail
+ * reliefs (one instanced draw, from an atlas that arrives with the page);
+ * near ones have their own relief mesh, built ahead of time: the page tells
+ * the scene where the camera is going (prefetch) and the figures it will
+ * need are fetched, decoded, built and uploaded seconds before they are
+ * seen. A figure changing detail dissolves over a few frames; if the camera
+ * outruns the loading anyway, pending() says so and the page eases the
+ * camera instead of showing anything less. Loaded only on this page.
  */
 
 /** "draft" is for automated checks (no shadows or post effects): never offered to people. */
@@ -38,17 +50,25 @@ interface QualitySpec {
   blocks: number;
   facadeScale: 1 | 2;
   texSize: 256 | 512;
+  /** Grid of a relief mesh (cells on the box's longest side): lighter on the light qualities, which draw more of them at once. */
+  segments?: number;
   trees: boolean;
+  /** Most figures drawn with their own relief mesh at once (the biggest on screen); the rest are the crowd's. */
   maxRelief: number;
+  /** Most relief meshes kept built (on screen, coming up, or just passed). */
+  resident: number;
+  /** Most far figures drawn (the biggest on screen first), and whether they cast shadows into the cascades. */
+  crowd: number;
+  crowdShadows: boolean;
   anisotropy: number;
 }
 
 export const QUALITY: Record<Quality, QualitySpec> = {
-  draft: { pr: 1, msaa: 0, ao: false, aoSamples: 8, dof: false, dofSamples: 16, bloom: false, shadow: 512, cascades: 1, blocks: 0.2, facadeScale: 1, texSize: 256, trees: false, maxRelief: 4, anisotropy: 1 },
-  low: { pr: 1, msaa: 0, ao: false, aoSamples: 8, dof: false, dofSamples: 16, bloom: false, shadow: 1024, cascades: 2, blocks: 0.45, facadeScale: 1, texSize: 256, trees: true, maxRelief: 10, anisotropy: 2 },
-  medium: { pr: 1.25, msaa: 4, ao: false, aoSamples: 8, dof: true, dofSamples: 16, bloom: true, shadow: 2048, cascades: 3, blocks: 0.75, facadeScale: 1, texSize: 512, trees: true, maxRelief: 18, anisotropy: 4 },
-  high: { pr: 1.5, msaa: 4, ao: true, aoSamples: 12, dof: true, dofSamples: 32, bloom: true, shadow: 2048, cascades: 3, blocks: 1, facadeScale: 1, texSize: 512, trees: true, maxRelief: 28, anisotropy: 8 },
-  export: { pr: 1, msaa: 4, ao: true, aoSamples: 24, dof: true, dofSamples: 32, bloom: true, shadow: 4096, cascades: 4, blocks: 1, facadeScale: 2, texSize: 512, trees: true, maxRelief: 40, anisotropy: 8 },
+  draft: { pr: 1, msaa: 0, ao: false, aoSamples: 8, dof: false, dofSamples: 16, bloom: false, shadow: 512, cascades: 1, blocks: 0.2, facadeScale: 1, texSize: 256, segments: 56, trees: false, maxRelief: 4, resident: 24, crowd: 400, crowdShadows: false, anisotropy: 1 },
+  low: { pr: 1, msaa: 0, ao: false, aoSamples: 8, dof: false, dofSamples: 16, bloom: false, shadow: 1024, cascades: 2, blocks: 0.45, facadeScale: 1, texSize: 256, segments: 56, trees: true, maxRelief: 16, resident: 64, crowd: 650, crowdShadows: false, anisotropy: 2 },
+  medium: { pr: 1.25, msaa: 4, ao: false, aoSamples: 8, dof: true, dofSamples: 16, bloom: true, shadow: 2048, cascades: 3, blocks: 0.75, facadeScale: 1, texSize: 512, trees: true, maxRelief: 18, resident: 64, crowd: 1000, crowdShadows: true, anisotropy: 4 },
+  high: { pr: 1.5, msaa: 4, ao: true, aoSamples: 12, dof: true, dofSamples: 32, bloom: true, shadow: 2048, cascades: 3, blocks: 1, facadeScale: 1, texSize: 512, trees: true, maxRelief: 28, resident: 80, crowd: 1200, crowdShadows: true, anisotropy: 8 },
+  export: { pr: 1, msaa: 4, ao: true, aoSamples: 24, dof: true, dofSamples: 32, bloom: true, shadow: 4096, cascades: 4, blocks: 1, facadeScale: 2, texSize: 512, trees: true, maxRelief: 40, resident: 100, crowd: 1200, crowdShadows: true, anisotropy: 8 },
 };
 
 export interface SceneUrls extends FigureUrls {
@@ -64,6 +84,8 @@ export interface SceneOptions {
   models?: Record<string, string>;
   /** Fixed drawing size (exports); otherwise the host's size. */
   size?: { w: number; h: number };
+  /** The far atlas (src/data/sizes-far.json by default). */
+  far?: FarManifest;
 }
 
 export interface Placed {
@@ -86,12 +108,26 @@ export interface Anchor {
   by: number;
 }
 
+/** A view the camera will reach `dt` seconds from now. */
+export interface FutureView {
+  view: View;
+  dt: number;
+}
+
 export interface SizesScene {
   canvas: HTMLCanvasElement;
   setLine(items: SceneItem[]): { placed: Placed[]; plan: WorldPlan };
   /** Height of the figures around a point on the line (smoothed, m). */
   heightAt(x: number): number;
   setView(v: View): void;
+  /** Where the camera is going: the figures those views need are built ahead of time, the soonest first. */
+  prefetch(views: FutureView[]): void;
+  /**
+   * How far the loading is behind the camera: 0 when every figure on
+   * screen has the detail it needs, up to 1 when a big one is still
+   * waiting for it (the page eases the camera meanwhile).
+   */
+  pending(): number;
   /** Draw a frame (t: seconds of scene time, for idle motion). */
   render(t: number, dt: number): void;
   /** Wait until every figure the current view needs is built (exports, screenshots). */
@@ -103,7 +139,7 @@ export interface SizesScene {
   /** Adaptive quality: pixel ratio, post effects and figure detail (the city and shadow maps keep what they were built with). */
   setQuality(q: Quality): void;
   readonly quality: Quality;
-  /** Ready to draw (environment loaded). */
+  /** Ready to draw (environment and the far atlas loaded). */
   ready: Promise<void>;
   stats(): { figures: number; relief: number; crowd: number; loading: number; calls: number; tris: number };
   /** The three.js objects behind the scene, for profiling and debugging tools. */
@@ -113,10 +149,61 @@ export interface SizesScene {
 
 const SUN_ELEVATION = (41 * Math.PI) / 180;
 
+/** On-screen heights (px) where a figure takes its own relief mesh (and gives it back below the second, so it never flickers), and its hero mesh. */
+const NEAR_IN = 52, NEAR_OUT = 40, HERO_IN = 300, HERO_OUT = 240;
+/** A figure coming up this big (px) within the look-ahead is built ahead of time. */
+const NEED_PX = NEAR_IN * 0.8;
+/** Dissolve length between levels of detail (seconds). */
+const FADE_S = 0.3;
+/** Figures loading at once (each is two small files). */
+const MAX_LOADS = 10;
+
+type Level = 0 | 1 | 2 | 3; // nothing, crowd, relief, hero
+
+interface Slot {
+  index: number;
+  item: SceneItem;
+  /** Distance along the line. */
+  x: number;
+  /** Feet in the world and the direction the figure faces. */
+  wx: number;
+  wz: number;
+  yaw: number;
+  /** Sideways step off the line (the companion). */
+  z?: number;
+  w: number;
+  h: number;
+  /** Built meshes: [hero, relief] by Lod. */
+  mesh: [FigureHandle | null, FigureHandle | null];
+  /** On the GPU (texture uploaded): may be drawn. */
+  up: [boolean, boolean];
+  loading: [AbortController | null, AbortController | null];
+  /** Its relief couldn't load (offline, missing art): it stays the crowd's. */
+  failed: boolean;
+  phase: number;
+  update?: (t: number, dt: number) => void;
+  /** This frame: on screen, and how tall (px). */
+  inView: boolean;
+  sh: number;
+  /** Seconds until the camera needs its relief mesh (Infinity: not coming up). */
+  need: number;
+  /** What is drawn, and what is dissolving out (with the dissolve's progress 0..1). */
+  draw: Level;
+  from: Level;
+  t: number;
+  /** In view on the last frame (a figure already on screen dissolves in rather than appearing). */
+  seen: boolean;
+  /** Trace: when its relief became ready, and when it was first needed in view. */
+  readyAt: number;
+  neededAt: number;
+  lastNear: number;
+}
+
 export function createSizesScene(host: HTMLElement, opts: SceneOptions): SizesScene {
   let quality: Quality = opts.quality;
   let Q = QUALITY[quality];
   const Q0 = Q;
+  const exporting = opts.quality === "export";
   const canvas = document.createElement("canvas");
   canvas.style.display = "block";
   canvas.style.width = "100%";
@@ -124,7 +211,7 @@ export function createSizesScene(host: HTMLElement, opts: SceneOptions): SizesSc
   host.appendChild(canvas);
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: false, alpha: false, powerPreference: "high-performance", stencil: false });
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 0.95;
+  renderer.toneMappingExposure = 0.97;
   renderer.shadowMap.enabled = opts.quality !== "draft";
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   // Shadow maps are redrawn when the camera or the figures change, and only every few frames while all is still (see render).
@@ -142,15 +229,16 @@ export function createSizesScene(host: HTMLElement, opts: SceneOptions): SizesSc
   const maxAniso = Math.min(Q.anisotropy, renderer.capabilities.getMaxAnisotropy());
 
   // ---- Sun, sky and haze.
-  const yawToCam = FACING; // figures face the camera
+  const yawToCam = FACING; // figures on the boulevard face the camera
   // The sun stands in front of the figures and to the camera's left, as in the classic size-comparison videos:
-  // faces and the facades behind them are lit, shadows fall back and to the right.
+  // faces and the facades behind them are lit, shadows fall back and to the right. The line only ever turns
+  // away from the camera (round the tower), so the sun stays in front of every figure.
   const az = yawToCam - Math.PI * 0.25;
   const sunDir = new THREE.Vector3(Math.sin(az) * Math.cos(SUN_ELEVATION), Math.sin(SUN_ELEVATION), Math.cos(az) * Math.cos(SUN_ELEVATION)).normalize();
   const sky = createSky(sunDir);
   scene.add(sky.mesh);
-  scene.fog = new THREE.FogExp2(SKY.haze.clone().convertSRGBToLinear(), 0.00034);
-  const hemi = new THREE.HemisphereLight(0xdfeaff, 0xb9ab92, 0.35);
+  scene.fog = new THREE.FogExp2(SKY.haze.clone().convertSRGBToLinear(), 0.0003);
+  const hemi = new THREE.HemisphereLight(0xdcE8ff, 0xc2ab88, 0.38);
   scene.add(hemi);
 
   // Camera state (read by the shadow cascades' split callback).
@@ -165,7 +253,7 @@ export function createSizesScene(host: HTMLElement, opts: SceneOptions): SizesSc
     mode: "custom",
     shadowMapSize: Q.shadow,
     lightDirection: sunDir.clone().negate(),
-    lightIntensity: 3.7,
+    lightIntensity: 3.75,
     lightNear: 1,
     lightFar: 6000,
     lightMargin: 120,
@@ -178,7 +266,8 @@ export function createSizesScene(host: HTMLElement, opts: SceneOptions): SizesSc
     },
   });
   csm.fade = true;
-  for (const l of csm.lights) l.color.set("#fff3e2");
+  // Warm late-morning sun.
+  for (const l of csm.lights) l.color.set("#fff0d9");
   const csmMaterials = new Set<THREE.Material>();
   const setupMat = (m: THREE.Material) => {
     if (csmMaterials.has(m) || !(m as THREE.MeshStandardMaterial).isMeshStandardMaterial) return;
@@ -193,7 +282,7 @@ export function createSizesScene(host: HTMLElement, opts: SceneOptions): SizesSc
   // ---- Environment (sky light and reflections from a CC0 HDRI), aligned to our sun.
   const pmrem = new THREE.PMREMGenerator(renderer);
   let envTex: THREE.Texture | null = null;
-  const ready = new RGBELoader().loadAsync(opts.urls.hdr).then((hdr) => {
+  const envReady = new RGBELoader().loadAsync(opts.urls.hdr).then((hdr) => {
     // Find the HDRI's sun (brightest texel) to turn the map so it agrees with ours.
     const img = hdr.image as unknown as { data: Uint16Array | Float32Array; width: number; height: number };
     let best = 0, bi = 0;
@@ -219,7 +308,7 @@ export function createSizesScene(host: HTMLElement, opts: SceneOptions): SizesSc
   // ---- Texture sets.
   const loader = new THREE.TextureLoader();
   const texCache = new Map<string, THREE.Texture>();
-  const loadTex = (name: string, map: "diff" | "nor" | "rough", tile: number) => {
+  const loadTex = (name: string, map: "diff" | "nor" | "rough") => {
     const key = `${name}:${map}`;
     let t = texCache.get(key);
     if (!t) {
@@ -229,18 +318,20 @@ export function createSizesScene(host: HTMLElement, opts: SceneOptions): SizesSc
       t.colorSpace = map === "diff" ? THREE.SRGBColorSpace : THREE.NoColorSpace;
       texCache.set(key, t);
     }
-    void tile;
     return t;
   };
-  const pbr = (name: string, tile: number, o: { color?: string; normalScale?: number } = {}): THREE.MeshStandardMaterialParameters => ({
-    map: loadTex(name, "diff", tile),
-    normalMap: loadTex(name, "nor", tile),
-    roughnessMap: loadTex(name, "rough", tile),
-    normalScale: new THREE.Vector2(o.normalScale ?? 1, o.normalScale ?? 1),
-    color: o.color ?? "#ffffff",
-    roughness: 1,
-    metalness: 0,
-  });
+  const pbr = (name: string, tile: number, o: { color?: string; normalScale?: number } = {}): THREE.MeshStandardMaterialParameters => {
+    void tile;
+    return {
+      map: loadTex(name, "diff"),
+      normalMap: loadTex(name, "nor"),
+      roughnessMap: loadTex(name, "rough"),
+      normalScale: new THREE.Vector2(o.normalScale ?? 1, o.normalScale ?? 1),
+      color: o.color ?? "#ffffff",
+      roughness: 1,
+      metalness: 0,
+    };
+  };
 
   // ---- World.
   const worldGroup = new THREE.Group();
@@ -252,39 +343,49 @@ export function createSizesScene(host: HTMLElement, opts: SceneOptions): SizesSc
     c.width = c.height = 128;
     const g = c.getContext("2d")!;
     const grad = g.createRadialGradient(64, 64, 0, 64, 64, 64);
-    grad.addColorStop(0, "rgba(220,250,255,0.9)");
-    grad.addColorStop(0.25, "rgba(140,225,255,0.35)");
-    grad.addColorStop(1, "rgba(120,210,255,0)");
+    grad.addColorStop(0, "rgba(230,253,255,1)");
+    grad.addColorStop(0.2, "rgba(140,228,255,0.55)");
+    grad.addColorStop(0.5, "rgba(110,205,255,0.16)");
+    grad.addColorStop(1, "rgba(100,200,255,0)");
     g.fillStyle = grad;
     g.fillRect(0, 0, 128, 128);
     const t = new THREE.CanvasTexture(c);
     const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: t, blending: THREE.AdditiveBlending, depthWrite: false, fog: false, toneMapped: false }));
-    s.scale.setScalar(60);
+    s.scale.setScalar(118);
     return s;
   })();
 
   // ---- Figures.
   const providers: FigureProvider[] = [];
   if (opts.models && Object.keys(opts.models).length) providers.push(new ModelProvider(opts.models));
-  const relief = new ReliefProvider(opts.urls, { anisotropy: maxAniso, sharpen: opts.quality === "export" ? 0.55 : 0.45, texSize: Q.texSize });
+  const relief = new ReliefProvider(opts.urls, { anisotropy: maxAniso, sharpen: opts.quality === "export" ? 0.55 : 0.45, texSize: Q.texSize, coverage: Q.msaa > 0, segments: Q.segments });
   providers.push(relief);
-  interface Slot { item: SceneItem; x: number; z?: number; w: number; h: number; handle: FigureHandle | null; loading: Lod | null; abort: AbortController | null; want: Lod | -1; shadow: THREE.Mesh | null; phase: number; update?: (t: number, dt: number) => void; lastSeen: number; sh: number; crowdSince: number }
   let slots: Slot[] = [];
   let companion: Slot | null = null;
+  /** The line and its companion, as one list (kept, not rebuilt every frame). */
+  let everyone: Slot[] = [];
   const figureGroup = new THREE.Group();
   scene.add(figureGroup);
   const shadowTex = contactShadowTexture();
-  const shadowMat = new THREE.MeshBasicMaterial({ map: shadowTex, transparent: true, depthWrite: false, color: 0x000000, opacity: 0.55 });
+  const shadowMat = new THREE.MeshBasicMaterial({ map: shadowTex, transparent: true, depthWrite: false, color: 0x000000, opacity: 0.6 });
   shadowMat.polygonOffset = true;
   shadowMat.polygonOffsetFactor = -2;
   const shadowGeo = new THREE.PlaneGeometry(1, 1).rotateX(-Math.PI / 2);
-  // Far figures: one instanced crowd.
-  const crowd = new Crowd(renderer, opts.urls, FACING, shadowGeo, shadowMat);
-  figureGroup.add(crowd.mesh, crowd.shadows);
-  let crowdList: Slot[] = [];
-  let crowdDirty = false;
+  // Far figures: the crowd of low-detail reliefs (one instanced draw).
+  const crowd = new Crowd(renderer, opts.far ?? (FAR_MANIFEST as FarManifest));
+  crowd.setCoverage(Q.msaa > 0);
+  figureGroup.add(crowd.mesh);
+  // Contact shadows under every figure drawn, whatever its detail (one instanced draw).
+  const BLOBS = 1400;
+  const blobs = new THREE.InstancedMesh(shadowGeo, shadowMat, BLOBS);
+  blobs.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+  blobs.count = 0;
+  blobs.frustumCulled = false;
+  blobs.renderOrder = 1;
+  figureGroup.add(blobs);
+  const ready = Promise.all([envReady, Promise.race([crowd.ready, new Promise((r) => setTimeout(r, 12000))])]).then(() => undefined);
   // Built figures wait here for their turn on the GPU: a few per frame, each compiled before it's shown.
-  const toPlace: { s: Slot; h: FigureHandle; ac: AbortController }[] = [];
+  const toUpload: { s: Slot; lod: 0 | 1; h: FigureHandle }[] = [];
   let compiling = 0;
   // The shadow maps need redrawing (a figure came or went, the quality or size changed).
   let shadowsDirty = true;
@@ -292,15 +393,24 @@ export function createSizesScene(host: HTMLElement, opts: SceneOptions): SizesSc
   let xs: number[] = [];
   let loadingCount = 0;
   let frameNo = 0;
+  let lastDt = 1 / 60;
+
+  const newSlot = (item: SceneItem, index: number, x: number, w: number, h: number, z = 0): Slot => {
+    const at = plan.path.at(x);
+    // The path's frame: along it is local x, its right (away from the camera) local z.
+    const wx = at.x - Math.sin(at.heading) * z, wz = at.z + Math.cos(at.heading) * z;
+    return { index, item, x, wx, wz, yaw: FACING - at.heading, z, w, h, mesh: [null, null], up: [false, false], loading: [null, null], failed: false, phase: (index * 2.399) % (Math.PI * 2), inView: false, sh: 0, need: Infinity, draw: 0, from: 0, t: 1, seen: false, readyAt: 0, neededAt: 0, lastNear: -1e9 };
+  };
 
   function setLine(items: SceneItem[]) {
     for (const s of slots) dropSlot(s);
     if (companion) dropSlot(companion);
     companion = null;
     const placed = layoutLine(items.map((i) => ({ m: i.m, length: i.length, bw: i.box[2], bh: i.box[3] })));
-    slots = items.map((item, i) => ({ item: { ...item, w: placed[i].w, h: placed[i].h }, x: placed[i].x, w: placed[i].w, h: placed[i].h, handle: null, loading: null, abort: null, want: -1, shadow: null, phase: (i * 2.399) % (Math.PI * 2), lastSeen: 0, sh: 0, crowdSince: 0 }));
-    crowdList = [];
-    crowdDirty = true;
+    plan = planWorld(placed);
+    // The ten-storey building stands a step off the giants' ring on the camera's side (on the paving short of the parterres): on the ring itself it would hide Prism Tower's legs and the giant after it.
+    const aside = (item: SceneItem, i: number) => (item.ref === "building" && plan.ring && placed[i].x > plan.ring.s0 ? -Math.min(22, placed[i].w * 1.6) : 0);
+    slots = items.map((item, i) => newSlot({ ...item, w: placed[i].w, h: placed[i].h }, i, placed[i].x, placed[i].w, placed[i].h, aside(item, i)));
     xs = slots.map((s) => s.x);
     // Smoothed log heights (same idea as the camera's distance), for aiming.
     const raw = slots.map((s) => Math.log(Math.max(0.02, s.h)));
@@ -310,17 +420,17 @@ export function createSizesScene(host: HTMLElement, opts: SceneOptions): SizesSc
       for (let k = -3; k <= 3; k++) { const j = i + k; if (j < 0 || j >= raw.length) continue; const dl = raw[j] - raw[i]; const wt = Math.exp(-(k * k) / 4) * Math.exp(-(dl * dl) / 0.18); sum += raw[j] * wt; n += wt; }
       return Math.max(sum / n, raw[i] - 0.05);
     });
-    plan = planWorld(slots.map((s) => ({ x: s.x, w: s.w, h: s.h })));
     rebuildWorld();
+    traceFigs = [];
     // A companion at the start: tiny figures stand at a person's feet.
     const humanAt = items.findIndex((i) => i.ref === "human" || i.ref === "trainer");
     const human = humanAt >= 0 ? items[humanAt] : undefined;
     // Not when the line's own human already stands near the start (a comparison).
     if (human && slots.length && slots[0].h < 0.6 && humanAt > 4) {
       // A step to the side and behind the line: a person in the background, not a wall beside the lens.
-      const x = slots[0].x - slots[0].w / 2 - 1.1;
-      companion = { item: { ...human, key: "companion" }, x, z: 0.9, w: human.w, h: human.h, handle: null, loading: null, abort: null, want: 1, shadow: null, phase: 1, lastSeen: 0, sh: 0, crowdSince: 0 };
+      companion = newSlot({ ...human, key: "companion" }, -1, slots[0].x - slots[0].w / 2 - 1.1, human.w, human.h, 0.9);
     }
+    everyone = companion ? [companion, ...slots] : slots;
     return { placed: slots.map((s) => ({ key: s.item.key, x: s.x, w: s.w, h: s.h })), plan };
   }
 
@@ -330,12 +440,13 @@ export function createSizesScene(host: HTMLElement, opts: SceneOptions): SizesSc
     tower?.dispose();
     worldGroup.clear();
     city = buildCity(plan, shared, { pbr }, { facadeScale: Q.facadeScale, anisotropy: maxAniso, blocks: Q.blocks });
-    props = buildProps(plan, shared, { bark: pbr("bark_brown_02", 1.5) }, { trees: Q.trees });
+    props = buildProps(plan, shared, { bark: pbr("bark_brown_02", 1.5) }, { trees: Q.trees, coverage: Q.msaa > 0 });
     tower = buildTower(plan.tower.x, plan.tower.z);
     worldGroup.add(city.group, props.group, tower.group);
     halo.position.copy(tower.crown);
     worldGroup.add(halo);
     setupTree(worldGroup);
+    if (traceBare()) worldGroup.visible = false;
   }
 
   function heightAt(x: number): number {
@@ -349,84 +460,89 @@ export function createSizesScene(host: HTMLElement, opts: SceneOptions): SizesSc
     return Math.exp(logH[lo] + (logH[hi] - logH[lo]) * f);
   }
 
+  /** Removes a built mesh from the slot (and the scene). */
+  function dropMesh(s: Slot, lod: 0 | 1) {
+    s.loading[lod]?.abort();
+    s.loading[lod] = null;
+    const h = s.mesh[lod];
+    if (!h) return;
+    if (h.object.parent) { figureGroup.remove(h.object); shadowsDirty = true; }
+    h.dispose();
+    s.mesh[lod] = null;
+    s.up[lod] = false;
+    const lvl: Level = lod === 0 ? 3 : 2;
+    if (s.draw === lvl) { s.draw = 0; s.t = 1; }
+    if (s.from === lvl) s.from = 0;
+  }
+
   function dropSlot(s: Slot) {
-    if (s.handle) shadowsDirty = true;
-    s.abort?.abort();
-    s.abort = null;
-    s.loading = null;
-    if (s.handle) { figureGroup.remove(s.handle.object); s.handle.dispose(); s.handle = null; }
-    if (s.shadow) { figureGroup.remove(s.shadow); s.shadow = null; }
+    dropMesh(s, 0);
+    dropMesh(s, 1);
     s.update = undefined;
+    s.draw = s.from = 0;
   }
 
-  function place(s: Slot, h: FigureHandle) {
-    const o = h.object;
-    o.position.set(s.x, 0, s.z ?? 0);
-    o.rotation.y = FACING;
-    figureGroup.add(o);
-    h.materials.forEach(setupMat);
-    if (!s.shadow) {
-      s.shadow = new THREE.Mesh(shadowGeo, shadowMat);
-      s.shadow.renderOrder = 1;
-      figureGroup.add(s.shadow);
-    }
-    s.shadow.position.set(s.x, 0.004 + s.h * 0.0005, s.z ?? 0);
-    s.shadow.rotation.y = FACING;
-    s.shadow.scale.set(s.w * 1.05, 1, Math.max(h.depth * 1.8, s.w * 0.35));
-  }
-
-  function startLoad(s: Slot, lod: Lod) {
-    s.abort?.abort();
+  function startLoad(s: Slot, lod: 0 | 1, urgent: boolean) {
     const ac = new AbortController();
-    s.abort = ac;
-    s.loading = lod;
+    s.loading[lod] = ac;
     loadingCount++;
     const item = s.item;
     const job = item.ref
       ? buildRef(item, { trainer: opts.trainer })
-      : (providers.find((p) => p.has(item)) ?? providers[providers.length - 1]).load(item, lod, ac.signal);
+      : (providers.find((p) => p.has(item)) ?? providers[providers.length - 1]).load(item, lod as Lod, ac.signal, { priority: urgent ? "high" : "low" });
     job.then((h) => {
       loadingCount--;
-      if (ac.signal.aborted) { h.dispose(); return; }
-      // Shown on a later frame (see placeSome), once its shaders are compiled and its texture is on the GPU.
-      toPlace.push({ s, h, ac });
+      if (ac.signal.aborted || s.loading[lod] !== ac) { h.dispose(); return; }
+      s.loading[lod] = null;
+      s.mesh[lod]?.dispose();
+      s.mesh[lod] = h;
+      s.up[lod] = false;
+      const o = h.object;
+      o.position.set(s.wx, 0, s.wz);
+      o.rotation.y = s.yaw;
+      h.materials.forEach(setupMat);
+      toUpload.push({ s, lod, h });
     }, () => {
-      // A figure that can't load (offline, missing art) is left out.
+      // A figure that can't load (offline, missing art) stays the crowd's.
       loadingCount--;
-      if (s.abort === ac) { s.abort = null; s.loading = null; }
+      if (s.loading[lod] === ac) {
+        s.loading[lod] = null;
+        if (lod === 1) s.failed = true;
+      }
     });
   }
 
-  /** Puts up to `n` built figures in the scene: textures uploaded one figure per frame, shaders compiled without blocking where the browser can. */
-  function placeSome(n: number, sync = false) {
-    while (n > 0 && toPlace.length) {
-      const { s, h, ac } = toPlace.shift()!;
-      if (ac.signal.aborted || s.abort !== ac) { h.dispose(); continue; }
-      n--;
-      h.materials.forEach(setupMat);
+  /** Puts built figures on the GPU, a few per frame (all at once in `sync`): textures uploaded, custom shaders compiled first. */
+  function uploadSome(budgetMs: number, sync = false) {
+    const t0 = performance.now();
+    while (toUpload.length && (sync || performance.now() - t0 < budgetMs)) {
+      // The soonest needed first.
+      let bi = 0;
+      for (let i = 1; i < toUpload.length; i++) if (toUpload[i].s.need < toUpload[bi].s.need) bi = i;
+      const { s, lod, h } = toUpload.splice(bi, 1)[0];
+      if (s.mesh[lod] !== h) continue;
       for (const m of h.materials) { const map = (m as THREE.MeshStandardMaterial).map; if (map) renderer.initTexture(map); }
-      const show = () => {
-        if (ac.signal.aborted || s.abort !== ac) { h.dispose(); return; }
-        if (s.handle) { figureGroup.remove(s.handle.object); s.handle.dispose(); }
-        s.handle = h;
-        s.abort = null;
-        s.loading = null;
-        s.update = (h as { update?: (t: number, dt: number) => void }).update;
-        place(s, h);
-        crowdDirty = true;
-        shadowsDirty = true;
+      const done = () => {
+        if (s.mesh[lod] !== h) return;
+        s.up[lod] = true;
+        s.readyAt = performance.now();
+        s.update = (h as { update?: (t: number, dt: number) => void }).update ?? s.update;
       };
       // Relief figures share the shaders warm() compiled; references and models bring their own, compiled before they're shown.
-      if (sync || (!s.item.ref && h.lod < 2 && !h.custom)) { show(); continue; }
+      if (sync || (!s.item.ref && !h.custom)) { done(); continue; }
       compiling++;
-      compileFor(h.object).then(show, show).finally(() => { compiling--; });
+      compileFor(h.object).then(done, done).finally(() => { compiling--; });
+      if (!sync) break;
     }
   }
 
   // ---- Camera.
   const target = new THREE.Vector3();
+  /** The frame the camera draws (the finale composes Prism Tower for it). */
+  const lens = { vfov: 35, aspect: 1 };
+  const lensNow = () => { lens.vfov = camera.fov; lens.aspect = camera.aspect; return lens; };
   function applyView() {
-    const p = poseFor(view);
+    const p = poseFor(view, plan.path, lensNow());
     camera.position.set(...p.position);
     target.set(...p.target);
     camera.lookAt(target);
@@ -453,109 +569,216 @@ export function createSizesScene(host: HTMLElement, opts: SceneOptions): SizesSc
     city?.update(camera.position, csm.maxFar * 1.3);
   }
 
-  // ---- Streaming: which figures to build, and how detailed.
-  // Relief above RELIEF_IN px on screen, the crowd below RELIEF_OUT (the gap keeps a figure from flickering between the two).
-  const RELIEF_IN = 40, RELIEF_OUT = 27, MIN_PX = 4;
+  // ---- What is on screen, and how big.
   const tmpV = new THREE.Vector3();
-  const projScale = () => (renderer.domElement.height / renderer.getPixelRatio()) / (2 * Math.tan(THREE.MathUtils.degToRad(camera.fov) / 2));
-  const isRelief = (s: Slot) => (s.handle !== null && s.handle.lod < 2) || (s.loading !== null && s.loading < 2);
-  // Everything wanted last time: a figure the scan no longer reaches is no longer wanted.
-  let active: Slot[] = [];
-  function wanted(): void {
-    const ps = projScale();
-    for (const s of active) s.want = -1;
-    active = [];
-    if (!slots.length) return;
+  const projScale = (cam: THREE.PerspectiveCamera, hPx: number) => hPx / (2 * Math.tan(THREE.MathUtils.degToRad(cam.fov) / 2));
+  /** On screen in this camera, and how tall (px): -1 when not. */
+  function screenHeight(s: Slot, cam: THREE.PerspectiveCamera, ps: number): number {
+    tmpV.set(s.wx, s.h / 2, s.wz);
+    const dist = tmpV.distanceTo(cam.position);
+    tmpV.project(cam);
+    const half = (Math.max(s.w, s.h) / Math.max(0.01, dist)) * 1.6;
+    if (!(tmpV.z < 1 && Math.abs(tmpV.x) < 1.05 + half && tmpV.y > -1.05 - half && tmpV.y < 1.05 + half)) return -1;
+    return (s.h / Math.max(0.01, dist)) * ps;
+  }
+  let centre = 0;
+  function scan() {
+    const ps = projScale(camera, H);
     let lo = 0, hi = slots.length - 1;
     while (hi - lo > 1) { const mid = (lo + hi) >> 1; if (xs[mid] <= view.x) lo = mid; else hi = mid; }
-    const centre = lo;
-    // How far either way to look: further when the camera has pulled back over the crowd.
-    const viewW = 2 * view.d * Math.tan(THREE.MathUtils.degToRad(camera.fov) / 2) * camera.aspect;
-    const back = view.rise > 0 ? 700 : 60, ahead = 420;
-    const ranked: { s: Slot; sh: number }[] = [];
-    for (let i = Math.max(0, centre - back * 3); i < Math.min(slots.length, centre + ahead * 2); i++) {
-      const s = slots[i];
-      const off = i - centre;
-      if ((off < -back || off > ahead) && Math.abs(s.x - view.x) > viewW * 1.5) { s.want = -1; continue; }
-      tmpV.set(s.x, s.h / 2, 0);
-      const dist = tmpV.distanceTo(camera.position);
-      const sh = (s.h / Math.max(0.01, dist)) * ps;
-      s.sh = sh;
-      tmpV.project(camera);
-      const inView = tmpV.z < 1 && Math.abs(tmpV.x) < 1.25 + (s.w / Math.max(0.01, dist)) * 2 && tmpV.y > -1.6 && tmpV.y < 2.2;
-      let want: Lod | -1;
-      if (!inView || sh < MIN_PX) want = -1;
-      else if (s.item.ref) want = 1;
-      else want = sh > 260 && Math.abs(off) <= 2 ? 0 : sh > (isRelief(s) ? RELIEF_OUT : RELIEF_IN) ? 1 : 2;
-      s.want = want;
-      // Figures already in relief keep a head start in the ranking, so the cap doesn't swap them back and forth.
-      if (want !== -1) { ranked.push({ s, sh: isRelief(s) ? sh * 1.3 : sh }); s.lastSeen = frameNo; active.push(s); }
+    centre = lo;
+    const all = everyone;
+    for (const s of all) {
+      const sh = screenHeight(s, camera, ps);
+      s.inView = sh >= 2;
+      s.sh = Math.max(0, sh);
     }
-    // Cap the detailed ones: the biggest on screen get relief, the rest join the crowd (as many as it holds).
-    ranked.sort((a, b) => b.sh - a.sh);
-    let reliefN = 0, crowdN = 0;
-    crowdList = [];
-    for (const r of ranked) {
-      const s = r.s;
-      if (s.item.ref || !s.item.art) continue;
-      if (s.want !== 2) {
-        if (reliefN < Q.maxRelief) reliefN++;
-        else s.want = 2;
-      }
-      if (s.want === 2) {
-        if (crowdN >= 240) { s.want = -1; continue; }
-        crowdN++;
-        if (!s.crowdSince) s.crowdSince = frameNo;
-      } else s.crowdSince = 0;
-      // In the crowd: wanted there, or a placeholder until its relief arrives.
-      if (!s.handle) crowdList.push(s);
-    }
-    crowdDirty = true;
-    if (companion) companion.want = 1;
   }
-  const art = (s: Slot) => ({ art: s.item.art, box: s.item.box });
-  function stream(budget: number) {
-    let started = 0;
-    const all = companion ? [companion, ...slots] : slots;
-    // Biggest wants first.
-    const order = all.filter((s) => s.want !== -1).sort((a, b) => (a.want as number) - (b.want as number));
-    for (const s of order) {
-      if (s.want === 2) {
-        // The crowd's art; once it's in, a relief figure that has shrunk (or lost its place to bigger ones) steps down to it.
-        crowd.want(art(s));
-        if (s.handle && s.handle.lod < 2 && !s.item.ref && crowd.has(s.item.art) && frameNo - s.crowdSince > 8) {
-          figureGroup.remove(s.handle.object);
-          s.handle.dispose();
-          s.handle = null;
-          s.update = undefined;
-          if (s.shadow) { figureGroup.remove(s.shadow); s.shadow = null; }
-          crowdList.push(s);
-          crowdDirty = true;
-        }
-        if (s.abort && s.loading !== null && s.loading < 2) { s.abort.abort(); s.abort = null; s.loading = null; }
+
+  // ---- Look-ahead: which figures the coming views need, and how soon.
+  const futureCam = new THREE.PerspectiveCamera();
+  let futures: FutureView[] = [];
+  let needsAt = -1;
+  function computeNeeds() {
+    const all = everyone;
+    for (const s of all) s.need = Infinity;
+    futureCam.fov = camera.fov;
+    futureCam.aspect = camera.aspect;
+    futureCam.near = 0.05;
+    futureCam.far = 9000;
+    futureCam.updateProjectionMatrix();
+    const ps = projScale(futureCam, H);
+    // Now, then each view the page says is coming.
+    const list: FutureView[] = [{ view, dt: 0 }, ...futures];
+    for (const f of list) {
+      const p = poseFor(f.view, plan.path, lensNow());
+      futureCam.position.set(...p.position);
+      futureCam.lookAt(tmpV.set(...p.target));
+      futureCam.updateMatrixWorld();
+      // Only figures within reach of that view: bigger ones ahead show from further off.
+      const reach = 2 * f.view.d * Math.tan(THREE.MathUtils.degToRad(camera.fov) / 2) * Math.max(1, camera.aspect) * 3 + 40;
+      let a = 0, b = slots.length;
+      { let l = 0, h = slots.length; while (l < h) { const m = (l + h) >> 1; if (xs[m] < f.view.x - reach) l = m + 1; else h = m; } a = l; }
+      { let l = a, h = slots.length; while (l < h) { const m = (l + h) >> 1; if (xs[m] <= f.view.x + reach * 4) l = m + 1; else h = m; } b = l; }
+      // The line grows along its length: past the window every figure is bigger, and a giant at the far end of the
+      // boulevard can stand big on screen from half a kilometre away. The next seconds' views look at all of them
+      // (left unbuilt, it would hold settle() and every video frame for its whole timeout, and keep the camera easing).
+      const end = f.dt <= 2 ? slots.length : b;
+      for (let i = a; i < end; i++) {
+        const s = slots[i];
+        if (s.need <= f.dt) continue;
+        const sh = screenHeight(s, futureCam, ps);
+        if (sh >= NEED_PX || (s.item.ref && sh >= 2)) s.need = f.dt;
+      }
+      if (companion && companion.need > f.dt && screenHeight(companion, futureCam, ps) >= 2) companion.need = f.dt;
+    }
+  }
+
+  /** Starts the loads the look-ahead asks for, soonest first; drops built figures nobody needs when over budget. */
+  function pump() {
+    const all = everyone;
+    const want: Slot[] = [];
+    let built = 0;
+    for (const s of slots) if (s.mesh[1] || s.loading[1]) built++;
+    for (const s of all) if (s.need < Infinity && !s.mesh[1] && !s.loading[1] && !s.failed && (s.item.ref || s.item.art)) want.push(s);
+    want.sort((a, b) => a.need - b.need || b.sh - a.sh);
+    for (const s of want) {
+      if (loadingCount >= MAX_LOADS) break;
+      // Over the memory budget only what is needed soon still starts (what is no longer coming up makes room below).
+      if (built >= Q.resident && s.need > 1.2) break;
+      startLoad(s, 1, s.need < 0.8);
+      built++;
+    }
+    // Heroes: the framed figure when it fills the screen.
+    for (let k = Math.max(0, centre - 2); k <= Math.min(slots.length - 1, centre + 3); k++) {
+      const s = slots[k];
+      if (!s.item.ref && s.inView && s.sh >= HERO_IN && !s.mesh[0] && !s.loading[0] && loadingCount < MAX_LOADS + 2) startLoad(s, 0, true);
+    }
+    // Over budget: let go of what is furthest from the camera and not coming up.
+    if (built > Q.resident) {
+      const spare = slots.filter((s) => (s.mesh[1] || s.loading[1]) && !s.item.ref && s.need === Infinity && !s.inView && s.draw < 2 && s.from < 2);
+      spare.sort((a, b) => Math.abs(b.x - view.x) - Math.abs(a.x - view.x));
+      for (const s of spare.slice(0, built - Q.resident)) dropMesh(s, 1);
+    }
+    for (const s of slots) if (s.mesh[0] && !s.inView && s.draw !== 3 && s.from !== 3 && frameNo - s.lastNear > 120) dropMesh(s, 0);
+  }
+
+  // ---- Levels of detail and the dissolves between them.
+  let lastPending = 0;
+  /** The biggest on screen get their own meshes, up to the quality's cap (those already drawn so keep a head start). */
+  function nearSet(cands: Slot[]): Set<Slot> {
+    cands.sort((a, b) => (b.draw >= 2 ? b.sh * 1.3 : b.sh) - (a.draw >= 2 ? a.sh * 1.3 : a.sh));
+    return new Set(cands.slice(0, Math.max(1, Q.maxRelief)));
+  }
+  function decide(dt: number) {
+    const all = everyone;
+    const nearOk: Slot[] = [];
+    let pend = 0;
+    for (const s of all) {
+      if (!s.inView) {
+        // Off screen: nothing drawn (no dissolve needed).
+        if (s.draw || s.from) { s.draw = 0; s.from = 0; s.t = 1; }
+        s.seen = false;
         continue;
       }
-      // A placeholder from the crowd while the relief loads.
-      if (!s.handle && !s.item.ref && s.item.art) crowd.want(art(s));
-      if (started >= budget || loadingCount >= 8) continue;
-      const want = s.want as Lod;
-      const have = s.handle?.lod ?? null;
-      if (have === want || s.loading === want) continue;
-      // References are built once; a figure never swaps to a lighter mesh while it's on screen.
-      if (s.item.ref && (s.handle || s.loading !== null)) continue;
-      if (have !== null && have < want) continue;
-      startLoad(s, want);
-      started++;
+      const wantNear = s.item.ref ? true : s.sh >= (s.draw >= 2 ? NEAR_OUT : NEAR_IN);
+      if (wantNear && !s.failed && (s.item.ref || s.item.art)) {
+        s.lastNear = frameNo;
+        if (!s.neededAt) s.neededAt = performance.now();
+        nearOk.push(s);
+      } else s.neededAt = 0;
     }
-    // Drop what has been out of view for a while (references stay: they're few, and rebuilding one would compile its shaders again).
-    for (const s of slots) if (s.want === -1 && !s.item.ref && (s.handle || s.loading !== null) && frameNo - s.lastSeen > 90) dropSlot(s);
+    const allowed = nearSet(nearOk);
+    // Seen big (or a reference not built yet) and still without its own mesh: the camera has outrun the loading.
+    for (const s of allowed) if (!s.up[1]) pend = Math.max(pend, s.item.ref ? 0.6 : Math.min(1, s.sh / (H * 0.35)));
+    for (const s of all) {
+      if (!s.inView) continue;
+      let to: Level = 0;
+      if (allowed.has(s) && s.up[1]) {
+        to = !s.item.ref && s.up[0] && s.sh >= (s.draw === 3 ? HERO_OUT : HERO_IN) && Math.abs(s.index - centre) <= 2 ? 3 : 2;
+      } else if (!s.item.ref && crowd.loaded && crowd.has(s.item.art)) to = 1;
+      if (to !== s.draw) {
+        // Trace: how long before it was needed its relief was ready (negative: the camera got there first).
+        if (trace && to >= 2 && s.draw < 2 && s.neededAt && s.readyAt && !s.item.ref) (trace.extra.lead ??= []).push(Math.round(s.neededAt - s.readyAt));
+        if (exporting || (!s.seen && s.draw === 0)) {
+          // Coming into the frame (or a video frame): drawn as it is.
+          s.from = 0;
+          s.t = 1;
+        } else {
+          s.from = s.draw;
+          s.t = 0;
+        }
+        s.draw = to;
+        shadowsDirty = true;
+      }
+      if (s.t < 1) {
+        s.t = Math.min(1, s.t + dt / FADE_S);
+        if (s.t >= 1) { s.from = 0; shadowsDirty = true; }
+      }
+      s.seen = true;
+    }
+    lastPending = pend;
   }
-  function updateCrowd() {
-    const list: CrowdInstance[] = [];
-    for (const s of crowdList) if (!s.handle && s.want !== -1 && crowd.has(s.item.art)) list.push({ x: s.x, z: s.z ?? 0, w: s.w, h: s.h, art: s.item.art });
+
+  const levelFade = (s: Slot, lvl: Level): number => (s.draw === lvl ? (s.t < 1 ? s.t : 1) : s.from === lvl ? -1 - s.t : 0);
+  let blobHash = 0;
+  const bm = new THREE.Matrix4(), bq = new THREE.Quaternion(), bp = new THREE.Vector3(), bs = new THREE.Vector3(), yAxis = new THREE.Vector3(0, 1, 0);
+  /** Puts this frame's figures in the scene: own meshes in and out, the crowd's instances, and a contact shadow under each. */
+  /** This frame's far figures, reusing last frame's objects (hundreds a frame would otherwise be garbage). */
+  const crowdPool: CrowdInstance[] = [];
+  const crowdList: CrowdInstance[] = [];
+  function present() {
+    const all = everyone;
+    const list = crowdList;
+    list.length = 0;
+    let nb = 0, hash = 7;
+    for (const s of all) {
+      for (const lod of [0, 1] as const) {
+        const h = s.mesh[lod];
+        if (!h) continue;
+        const lvl: Level = lod === 0 ? 3 : 2;
+        const f = levelFade(s, lvl);
+        const on = f !== 0 && s.up[lod];
+        if (on && !h.object.parent) { figureGroup.add(h.object); shadowsDirty = true; }
+        else if (!on && h.object.parent) { figureGroup.remove(h.object); shadowsDirty = true; }
+        if (on) {
+          if (h.fade) h.fade.value = f;
+          // The shadow switches over halfway through a dissolve.
+          const cast = f >= 0 ? f >= 0.5 : -f - 1 < 0.5;
+          if (h.object.castShadow !== cast) { h.object.traverse((o) => { if ((o as THREE.Mesh).isMesh) o.castShadow = cast; }); shadowsDirty = true; }
+        }
+      }
+      const fc = levelFade(s, 1);
+      if (fc !== 0) {
+        const it = crowdPool[list.length] ?? (crowdPool[list.length] = { x: 0, z: 0, yaw: 0, w: 0, h: 0, art: 0, box: s.item.box, fade: 1 });
+        it.x = s.wx; it.z = s.wz; it.yaw = s.yaw; it.w = s.w; it.h = s.h; it.art = s.item.art; it.box = s.item.box; it.fade = fc; it.sh = s.sh;
+        list.push(it);
+      }
+      if ((s.draw || s.from) && nb < BLOBS) {
+        // One soft shadow under the figure's feet, as wide as it is and as deep as its relief.
+        const L = s.h * Math.max(1, s.item.box[2] / Math.max(1, s.item.box[3]));
+        const deep = Math.max(s.w * 0.32, (s.mesh[1]?.depth ?? L * 0.3) * 1.7);
+        bp.set(s.wx, 0.004 + s.h * 0.0005, s.wz);
+        bq.setFromAxisAngle(yAxis, s.yaw);
+        bs.set(s.w * 1.04, 1, deep);
+        blobs.setMatrixAt(nb++, bm.compose(bp, bq, bs));
+        hash = (Math.imul(hash, 31) + s.index * 13 + Math.round(s.wx * 16) + Math.round(deep * 8)) | 0;
+      }
+    }
+    // Over the quality's cap (a wide view over hundreds), the biggest on screen are drawn.
+    if (list.length > Q.crowd) { list.sort((a, b) => (b.sh ?? 0) - (a.sh ?? 0)); list.length = Q.crowd; }
+    // Tiny far figures' shadows are hardly seen: the light quality (and any very wide view) leaves them out of the shadow maps.
+    const crowdCasts = Q.crowdShadows && list.length < 420;
+    if (crowd.mesh.castShadow !== crowdCasts) { crowd.mesh.castShadow = crowdCasts; shadowsDirty = true; }
     if (crowd.set(list)) shadowsDirty = true;
+    blobs.count = nb;
+    if (hash !== blobHash || nb === 0) {
+      blobHash = hash;
+      blobs.instanceMatrix.clearUpdateRanges();
+      blobs.instanceMatrix.addUpdateRange(0, Math.max(1, nb) * 16);
+      blobs.instanceMatrix.needsUpdate = true;
+    }
   }
-  const inCrowd = (s: Slot) => !s.handle && s.want !== -1 && !!s.item.art && crowd.has(s.item.art);
 
   /**
    * Compiles an object's shaders for the target the scene is drawn into (an
@@ -592,13 +815,11 @@ export function createSizesScene(host: HTMLElement, opts: SceneOptions): SizesSc
     fig.customDepthMaterial = warmed.depth;
     fig.position.copy(target);
     fig.scale.setScalar(Math.max(0.05, view.h * 0.2));
-    const blob = new THREE.Mesh(shadowGeo, shadowMat);
-    blob.position.copy(target);
-    figureGroup.add(fig, blob);
+    figureGroup.add(fig);
     setupMat(crowd.material);
-    const crowdWas = crowd.mesh.count;
+    const crowdWas = crowd.mesh.count, blobsWas = blobs.count;
     crowd.mesh.count = Math.max(1, crowdWas);
-    crowd.shadows.count = Math.max(1, crowd.shadows.count);
+    blobs.count = Math.max(1, blobsWas);
     const was = renderer.getRenderTarget();
     try {
       renderer.setRenderTarget(post.target);
@@ -611,9 +832,9 @@ export function createSizesScene(host: HTMLElement, opts: SceneOptions): SizesSc
     } finally {
       renderer.setRenderTarget(was);
       shadowsDirty = true;
-      figureGroup.remove(fig, blob);
+      figureGroup.remove(fig);
       crowd.mesh.count = crowdWas;
-      crowd.shadows.count = crowdWas;
+      blobs.count = blobsWas;
     }
   }
 
@@ -629,54 +850,89 @@ export function createSizesScene(host: HTMLElement, opts: SceneOptions): SizesSc
     renderer.setSize(W, H, false);
     post.dispose();
     post = postFor(Q);
+    const coverage = Q.msaa > 0;
+    relief.setCoverage(coverage);
+    crowd.setCoverage(coverage);
+    props?.setCoverage(coverage);
     shadowsDirty = true;
+    if (warmed && (warmed.mat as THREE.MeshStandardMaterial).alphaToCoverage !== coverage) {
+      // The figures' other shader variant, compiled now rather than when the next one streams in.
+      warmed.mat.dispose();
+      warmed.depth.dispose();
+      warmed.geo.dispose();
+      warmed.tex.dispose();
+      warmed = null;
+      try { warm(); } catch { /* drawing will compile it instead */ }
+    }
+  }
+
+  /** One step of streaming: what's on screen, what's coming, what to load, what to upload, what to draw. */
+  function stream(dt: number) {
+    scan();
+    // The look-ahead is worked out a few times a second (and at once when the page sends new views).
+    if (frameNo - needsAt >= 6 || exporting) { computeNeeds(); needsAt = frameNo; }
+    pump();
+    uploadSome(exporting ? 1000 : 5, exporting);
+    decide(dt);
+    present();
   }
 
   const lastCam = new THREE.Vector3(Infinity, 0, 0), lastAim = new THREE.Vector3();
   function render(t: number, dt: number) {
     frameNo++;
+    lastDt = dt;
     applyView();
     csm.update();
     // The shadow cascades follow the camera: redrawn when it moves or a figure comes or goes, otherwise every third frame (for the idle motion).
     const moved = camera.position.distanceToSquared(lastCam) > 1e-12 || target.distanceToSquared(lastAim) > 1e-12;
     lastCam.copy(camera.position);
     lastAim.copy(target);
-    const all = opts.quality === "export";
-    if (frameNo % 3 === 1 || all) { wanted(); stream(all ? 99 : 4); }
-    // GPU uploads, spread over frames: two crowd figures and one relief figure at most (exports take everything at once).
-    if (crowd.upload(all ? 999 : 2, all)) crowdDirty = true;
-    placeSome(all ? 999 : 1, all);
-    if (crowdDirty) { updateCrowd(); crowdDirty = false; } else crowd.tick();
-    renderer.shadowMap.needsUpdate = moved || shadowsDirty || frameNo % 3 === 0 || opts.quality === "export";
+    stream(dt);
+    renderer.shadowMap.needsUpdate = moved || shadowsDirty || frameNo % 3 === 0 || exporting;
     shadowsDirty = false;
     shared.uniforms.uTime.value = t;
     sky.update(camera, t);
     // Idle: a slow breath (and the trainer's own idle).
-    for (const s of slots) {
-      const o = s.handle?.object;
-      if (!o) continue;
-      const k = Math.sin(t * 1.9 + s.phase);
-      o.scale.y = o.scale.x * (1 + 0.011 * k) / (1 + 0.004 * k);
+    const all = everyone;
+    for (const s of all) {
+      if (!s.draw && !s.from) continue;
+      for (const h of s.mesh) {
+        const o = h?.object;
+        if (!o || !o.parent) continue;
+        const k = Math.sin(t * 1.9 + s.phase);
+        o.scale.y = o.scale.x * (1 + 0.011 * k) / (1 + 0.004 * k);
+      }
       s.update?.(t, dt);
     }
-    if (companion?.handle) companion.update?.(t, dt);
-    if (tower) tower.glow.emissiveIntensity = 2.4 + 0.5 * Math.sin(t * 1.3);
+    if (tower) tower.tick(t);
     // A gentle depth of field: macro-like for the smallest, the city still readable behind.
     const aperture = Math.min(7, 3.6 * Math.pow(1.6 / Math.max(0.15, focusD), 0.45)) * (H / 900);
     post.frame(camera, focusD, Math.max(1.2, aperture), Math.min(4, Math.max(0.03, focusD * 0.09)));
     post.render();
+    if (trace) {
+      if (!traceFigs.length && slots.length) traceFigs = slots.map((q) => ({ key: q.item.key, x: q.wx, z: q.wz, yaw: q.yaw, s: q.x, w: q.w, h: q.h }));
+      trace.frame(performance.now(), camera, W, H, traceFigs, (i) => drawnAs(slots[i]), view.x, NEAR_IN);
+    }
   }
+  const drawnAs = (q: Slot | undefined): Drawn => {
+    if (!q) return 0;
+    if (q.draw >= 2 || (q.from >= 2 && q.t < 1)) return 3;
+    return q.draw === 1 || (q.from === 1 && q.t < 1) ? 2 : 0;
+  };
+  const trace = createTrace();
+  let traceFigs: TraceFigure[] = [];
 
   function anchors(): Anchor[] {
     const out: Anchor[] = [];
-    const ps = projScale();
+    const ps = projScale(camera, H);
+    const top = new THREE.Vector3(), bot = new THREE.Vector3();
     slots.forEach((s, index) => {
-      if (!s.handle && !inCrowd(s)) return;
-      if (!s.handle && s.h / Math.max(0.01, camera.position.distanceTo(tmpV.set(s.x, s.h / 2, 0))) * ps < 6) return;
-      const top = new THREE.Vector3(s.x, s.h, 0).project(camera);
-      const bot = new THREE.Vector3(s.x, 0, 0).project(camera);
+      if (!s.draw) return;
+      const dist = camera.position.distanceTo(tmpV.set(s.wx, s.h / 2, s.wz));
+      if (s.draw === 1 && (s.h / Math.max(0.01, dist)) * ps < 6) return;
+      top.set(s.wx, s.h, s.wz).project(camera);
+      bot.set(s.wx, 0, s.wz).project(camera);
       if (top.z > 1 || bot.z > 1) return;
-      const dist = camera.position.distanceTo(tmpV.set(s.x, s.h / 2, 0));
       const x = (top.x * 0.5 + 0.5) * W, y = (1 - (top.y * 0.5 + 0.5)) * H;
       // A figure standing off the frame gets no badge (it would be clamped in, over someone else).
       if (x < -W * 0.04 || x > W * 1.04) return;
@@ -689,20 +945,26 @@ export function createSizesScene(host: HTMLElement, opts: SceneOptions): SizesSc
   async function settle(timeoutMs = 20000) {
     const t0 = performance.now();
     applyView();
-    wanted();
     for (;;) {
-      stream(99);
-      crowd.upload(999, true);
-      placeSome(999, true);
-      const all = companion ? [companion, ...slots] : slots;
-      const pending = all.some((s) => s.want !== -1 && s.loading !== null);
-      const missing = all.some((s) => s.want !== -1 && s.want !== 2 && !s.handle && s.loading === null);
-      if (!pending && !missing && loadingCount === 0 && !crowd.busy && !toPlace.length && !compiling) break;
+      scan();
+      computeNeeds();
+      needsAt = frameNo;
+      pump();
+      uploadSome(1000, true);
+      const all = everyone;
+      // Everything on screen that gets its own mesh (within the cap) has it, and the crowd is in.
+      const cands = all.filter((s) => s.inView && !s.failed && (s.item.ref || (s.item.art && s.sh >= NEAR_IN)));
+      const missing = [...nearSet(cands)].some((s) => !s.up[1]);
+      const busy = toUpload.length > 0 || compiling > 0;
+      if (!missing && !busy && (crowd.loaded || performance.now() - t0 > 12000)) break;
       if (performance.now() - t0 > timeoutMs) break;
       await new Promise((r) => setTimeout(r, 30));
     }
-    updateCrowd();
-    crowdDirty = false;
+    decide(0);
+    // Settled: everything shown as it is, no dissolves under way.
+    for (const s of slots) { s.from = 0; s.t = 1; }
+    if (companion) { companion.from = 0; companion.t = 1; }
+    present();
   }
 
   function resize(w: number, h: number) {
@@ -721,6 +983,10 @@ export function createSizesScene(host: HTMLElement, opts: SceneOptions): SizesSc
     setLine,
     heightAt,
     setView(v) { view = v; },
+    prefetch(views) {
+      futures = views.filter((f) => f.dt > 0).sort((a, b) => a.dt - b.dt).slice(0, 24);
+    },
+    pending: () => lastPending,
     render,
     settle,
     anchors,
@@ -729,14 +995,14 @@ export function createSizesScene(host: HTMLElement, opts: SceneOptions): SizesSc
     get quality() { return quality; },
     ready,
     warm,
-    stats: () => ({ figures: slots.filter((s) => s.handle || inCrowd(s)).length, relief: slots.filter((s) => s.handle && s.handle.lod < 2).length, crowd: crowd.mesh.count, loading: loadingCount, calls: renderer.info.render.calls, tris: renderer.info.render.triangles }),
+    stats: () => ({ figures: slots.filter((s) => s.draw).length, relief: slots.filter((s) => s.draw >= 2).length, crowd: crowd.mesh.count, loading: loadingCount, calls: renderer.info.render.calls, tris: renderer.info.render.triangles }),
     internals: () => ({ scene, renderer, camera, world: worldGroup, figures: figureGroup, sky: sky.mesh }),
     dispose() {
       for (const s of slots) dropSlot(s);
       if (companion) dropSlot(companion);
-      for (const p of toPlace) p.h.dispose();
-      toPlace.length = 0;
+      toUpload.length = 0;
       crowd.dispose();
+      blobs.dispose();
       if (warmed) { warmed.mat.dispose(); warmed.depth.dispose(); warmed.geo.dispose(); warmed.tex.dispose(); warmed = null; }
       city?.dispose();
       props?.dispose();
@@ -752,6 +1018,7 @@ export function createSizesScene(host: HTMLElement, opts: SceneOptions): SizesSc
       shadowGeo.dispose();
       renderer.dispose();
       canvas.remove();
+      void lastDt;
     },
   };
 }

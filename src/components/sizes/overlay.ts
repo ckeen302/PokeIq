@@ -47,7 +47,7 @@ export function drawBadges(g: CanvasRenderingContext2D, anchors: Anchor[], focus
 }
 
 /** A cached badge is reused while the size it's needed at stays within this share of the size it was drawn at (drawn scaled to fit). */
-const REUSE = 0.05;
+const REUSE = 0.03;
 /** Close enough to count as drawn at its own size. */
 const EXACT = 0.004;
 const MAX_CACHED = 40;
@@ -158,7 +158,10 @@ export class BadgeLayer {
       const k = p.s / b.s;
       if (Math.abs(k - 1) > EXACT) exact = false;
       g.globalAlpha = p.alpha;
-      g.drawImage(b.canvas, p.x - b.pad * k, p.y - b.pad * k, (b.canvas.width / dpr) * k, (b.canvas.height / dpr) * k);
+      const dx = p.x - b.pad * k, dy = p.y - b.pad * k;
+      // At its own size a badge lands on whole device pixels, so its text is copied pixel for pixel, not resampled.
+      if (Math.abs(k - 1) <= EXACT) g.drawImage(b.canvas, Math.round(dx * dpr) / dpr, Math.round(dy * dpr) / dpr, b.canvas.width / dpr, b.canvas.height / dpr);
+      else g.drawImage(b.canvas, dx, dy, (b.canvas.width / dpr) * k, (b.canvas.height / dpr) * k);
     }
     g.globalAlpha = 1;
     return exact;

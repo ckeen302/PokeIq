@@ -90,7 +90,9 @@ describe("targets, as Showdown's simulator judges them", () => {
 
 describe("triples: shifting and forced switches", () => {
   it("lets an edge Pokémon shift to the centre, never the centre one", () => {
-    const session = SimSession.create({ formatid: "gen9triples", seed: "5,6,7,8", players: players("gen9triples", 2) });
+    // Fixed teams with plain attacks, so nothing drags, ejects or pivots the shifter out first and the turn is the same every run.
+    const plain = Teams.pack(Teams.import(["Snorlax", "Blissey", "Chansey", "Slaking", "Wigglytuff", "Audino"].map((s) => `${s}\nLevel: 50\nAbility: ${s === "Slaking" ? "Truant" : s === "Snorlax" ? "Thick Fat" : s === "Audino" ? "Healer" : s === "Wigglytuff" ? "Competitive" : "Natural Cure"}\n- Tackle\n- Protect`).join("\n\n"))!);
+    const session = SimSession.create({ formatid: "gen9triples", seed: "5,6,7,8", players: [{ name: "Trainer A", team: plain }, { name: "Trainer B", team: plain }] });
     for (const side of ["p1", "p2"] as const) session.choose(side, "default");
     const request = session.pending("p1")!;
     expect(request.active).toHaveLength(3);

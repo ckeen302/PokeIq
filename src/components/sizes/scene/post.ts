@@ -115,9 +115,9 @@ function finishShader() {
       tDiffuse: { value: null as THREE.Texture | null },
       tDof: { value: null as THREE.Texture | null },
       dofOn: { value: 1 },
-      vignette: { value: 0.22 },
-      saturation: { value: 1.17 },
-      warmth: { value: 0.02 },
+      vignette: { value: 0.2 },
+      saturation: { value: 1.14 },
+      warmth: { value: 0.03 },
     },
     vertexShader: VERTEX,
     fragmentShader: /* glsl */ `
@@ -135,7 +135,9 @@ function finishShader() {
         }
         float l = dot(col, vec3(0.2126, 0.7152, 0.0722));
         col = max(mix(vec3(l), col, saturation), 0.0);
-        col *= vec3(1.0 + warmth, 1.0, 1.0 - warmth);
+        // Split tone: a touch of blue in the shade, warm sun on what's lit (a late-morning Lumiose).
+        float lit = smoothstep(0.04, 0.9, l);
+        col *= mix(vec3(0.965, 0.995, 1.05), vec3(1.0 + warmth, 1.0 + warmth * 0.3, 1.0 - warmth), lit);
         vec2 q = vUv - 0.5;
         col *= 1.0 - vignette * smoothstep(0.25, 0.85, dot(q, q) * 2.2);
         gl_FragColor = vec4(col, base.a);
