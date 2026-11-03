@@ -426,3 +426,43 @@ describe("art", () => {
     expect([px[12], px[13], px[14]]).toEqual([0, 0, 0]);
   });
 });
+
+describe("sound", () => {
+  it("gives every chapter a mix whose cues name real beats, with every level in range", async () => {
+    const { MOODS, MUSIC, hitsOf, mixAt, mixFor } = await import("@/components/world-history/audio");
+    for (const [i, c] of CHAPTERS.entries()) {
+      const mood = MOODS[c.id];
+      expect(mood, c.id).toBeDefined();
+      const ids = new Set(film.chapters[i].beats.map((b) => b.id));
+      for (const [a, , b] of mood.swells) {
+        expect(ids.has(a), `${c.id}: swell from ${a}`).toBe(true);
+        expect(ids.has(b), `${c.id}: swell to ${b}`).toBe(true);
+      }
+      for (const h of hitsOf(film, i)) {
+        expect(h.at, `${c.id}: ${h.kind}`).toBeGreaterThanOrEqual(0);
+        expect(h.at, `${c.id}: ${h.kind}`).toBeLessThanOrEqual(film.chapters[i].anim);
+      }
+      for (let a = 0; a <= film.chapters[i].anim; a += 0.5) {
+        for (const v of Object.values(mixAt(film, i, a))) {
+          expect(v).toBeGreaterThanOrEqual(0);
+          expect(v).toBeLessThanOrEqual(1);
+        }
+      }
+      // The cinematic layer swells somewhere in every chapter.
+      const peak = Math.max(...Array.from({ length: Math.ceil(film.chapters[i].anim * 4) }, (_, k) => mixAt(film, i, k / 4).epic));
+      expect(peak, c.id).toBeGreaterThan(0.9);
+    }
+    // Between chapters the hall plays the bed.
+    for (let t = 0; t < film.duration; t += 1.7) {
+      const m = mixFor(film, filmAt(film, t));
+      expect(m.bed + m.cave + m.ice + m.epic).toBeGreaterThan(0.2);
+    }
+    // Every track is in public/ and credited.
+    const credits = (await import("node:fs")).readFileSync(join(process.cwd(), "public/audio/world-history/CREDITS.md"), "utf8");
+    for (const url of Object.values(MUSIC)) {
+      expect(existsSync(join(process.cwd(), "public", url)), url).toBe(true);
+      expect(credits).toContain(url.split("/").pop()!);
+      expect(credits).toContain("CC0");
+    }
+  });
+});
