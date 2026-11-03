@@ -119,13 +119,15 @@ export function cameraFor(cam: Camera, k: number, spots: Spot[], ctx: DirectorCo
 /**
  * Widens a shot (a little), then pulls the camera back along its line of
  * sight (as far as it must, up to about twice as far), until the tops of
- * the runners it shows sit below the upper fifth of the frame and their
- * sides inside it. Small runners stay as big as the shot made them unless
+ * the runners it shows (any part of them, near the leader) sit below the
+ * upper fifth of the frame and their sides inside it. Small runners stay as big as the shot made them unless
  * a much taller one shares the frame.
  */
 export function keepInFrame(pose: CamPose, spots: Spot[], aspect: number): CamPose {
   const t = pose.target;
   const off: Vec3 = [pose.pos[0] - t[0], pose.pos[1] - t[1], pose.pos[2] - t[2]];
+  // The runners racing with the leader (stragglers far behind may leave the frame).
+  const near = spots.length ? pack(spots, 15) : spots;
   const need = (pos: Vec3, fovDeg: number): number => {
     const f = [t[0] - pos[0], t[1] - pos[1], t[2] - pos[2]];
     const fl = Math.hypot(f[0], f[1], f[2]) || 1;
@@ -137,16 +139,16 @@ export function keepInFrame(pose: CamPose, spots: Spot[], aspect: number): CamPo
     const U = [R[1] * F[2] - R[2] * F[1], R[2] * F[0] - R[0] * F[2], R[0] * F[1] - R[1] * F[0]];
     const tv = Math.tan((fovDeg * DEG) / 2), th = tv * aspect;
     let req = 0;
-    for (const s of spots) {
+    for (const s of near) {
       const top = s.top ?? s.h;
       const d = [s.x - pos[0], s.y + top * 0.55 - pos[1], s.z - pos[2]];
       const zc = d[0] * F[0] + d[1] * F[1] + d[2] * F[2];
       if (zc < 1) continue;
-      // Only runners the shot shows (their middle in the frame).
-      if (Math.abs((d[0] * R[0] + d[2] * R[2]) / zc) > th * 0.95 || Math.abs((d[0] * U[0] + d[1] * U[1] + d[2] * U[2]) / zc) > tv) continue;
+      const half = Math.max(s.w, top * 0.6) * 0.5;
+      // Only runners the shot shows, if only a wing of them.
+      if (Math.abs(d[0] * R[0] + d[2] * R[2]) - half > th * zc || Math.abs((d[0] * U[0] + d[1] * U[1] + d[2] * U[2]) / zc) > tv) continue;
       const hy = s.y + top * 1.06 - pos[1];
       const yc = (d[0] * U[0] + hy * U[1] + d[2] * U[2]) / zc;
-      const half = Math.max(s.w, top * 0.6) * 0.5;
       const xc = (Math.abs(d[0] * R[0] + d[2] * R[2]) + half) / zc;
       req = Math.max(req, yc / 0.6, xc / (aspect * 0.97));
     }
