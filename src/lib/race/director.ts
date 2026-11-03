@@ -119,15 +119,14 @@ export function cameraFor(cam: Camera, k: number, spots: Spot[], ctx: DirectorCo
 /**
  * Widens a shot (a little), then pulls the camera back along its line of
  * sight (as far as it must, up to about twice as far), until the tops of
- * the runners it shows (any part of them, near the leader) sit below the
- * upper fifth of the frame and their sides inside it. Small runners stay as big as the shot made them unless
+ * the runners it shows (any part of them) sit below the top tenth of the
+ * frame and their sides (bar a wingtip) inside it. Small runners stay as big as the shot made them unless
  * a much taller one shares the frame.
  */
 export function keepInFrame(pose: CamPose, spots: Spot[], aspect: number): CamPose {
   const t = pose.target;
   const off: Vec3 = [pose.pos[0] - t[0], pose.pos[1] - t[1], pose.pos[2] - t[2]];
-  // The runners racing with the leader (stragglers far behind may leave the frame).
-  const near = spots.length ? pack(spots, 15) : spots;
+  const near = spots;
   const need = (pos: Vec3, fovDeg: number): number => {
     const f = [t[0] - pos[0], t[1] - pos[1], t[2] - pos[2]];
     const fl = Math.hypot(f[0], f[1], f[2]) || 1;
@@ -149,8 +148,8 @@ export function keepInFrame(pose: CamPose, spots: Spot[], aspect: number): CamPo
       if (Math.abs(d[0] * R[0] + d[2] * R[2]) - half > th * zc || Math.abs((d[0] * U[0] + d[1] * U[1] + d[2] * U[2]) / zc) > tv) continue;
       const hy = s.y + top * 1.06 - pos[1];
       const yc = (d[0] * U[0] + hy * U[1] + d[2] * U[2]) / zc;
-      const xc = (Math.abs(d[0] * R[0] + d[2] * R[2]) + half) / zc;
-      req = Math.max(req, yc / 0.6, xc / (aspect * 0.97));
+      const xc = (Math.abs(d[0] * R[0] + d[2] * R[2]) + half * 0.8) / zc;
+      req = Math.max(req, yc / 0.78, xc / aspect);
     }
     return req;
   };
@@ -169,8 +168,11 @@ export function keepInFrame(pose: CamPose, spots: Spot[], aspect: number): CamPo
 
 function shotFor(cam: Camera, k: number, spots: Spot[], ctx: DirectorContext): CamPose {
   const H = fieldHeight(spots);
-  const zMid = fieldMidZ(spots);
-  const span = fieldSpan(spots);
+  // Swimmers in the big pool inside the kerb count towards where the shot looks only while they race with the leader.
+  const inPack = new Set(pack(spots, 15));
+  const lanesNear = spots.filter((s) => (s.across ?? 0) >= 0 || inPack.has(s));
+  const zMid = fieldMidZ(lanesNear.length ? lanesNear : spots);
+  const span = fieldSpan(lanesNear.length ? lanesNear : spots);
   const portrait = ctx.aspect < 0.9;
   switch (cam) {
     case "crane": {
