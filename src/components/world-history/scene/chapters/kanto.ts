@@ -87,7 +87,7 @@ export const build: ChapterBuilder = async (ctx) => {
   const lab = new THREE.Group();
   lab.position.set(...LAB);
   scene.add(lab);
-  const wallMat = stoneMaterial({ color: "#4a4e56", roughness: 0.7, dirt: 0.5 });
+  const wallMat = stoneMaterial({ color: "#7a808c", roughness: 0.7, dirt: 0.5 });
   wallMat.side = THREE.BackSide;
   const room = new THREE.Mesh(new THREE.BoxGeometry(26, 8, 22), wallMat);
   room.position.set(0, 3.6, -2);
@@ -183,6 +183,16 @@ export const build: ChapterBuilder = async (ctx) => {
   const lamp = new THREE.PointLight(col("#ffd8a0"), 4, 8, 1.4);
   lamp.position.set(LAB[0] - 4, 2.6, LAB[2] - 0.6);
   scene.add(lamp);
+  // Fluorescent strips on the ceiling (they flicker once things go wrong).
+  const stripMat = new THREE.MeshBasicMaterial({ color: col("#d8ecff", 1.6), toneMapped: false });
+  const stripGeo = merge([-8, -2, 4].map((z) => placed(new THREE.BoxGeometry(9, 0.08, 0.35), [0, 7.5, z])));
+  const strips = new THREE.Mesh(stripGeo, stripMat);
+  lab.add(strips);
+  const ceil = [new THREE.PointLight(col("#bcd8ff"), 0, 40, 1.0), new THREE.PointLight(col("#bcd8ff"), 0, 40, 1.0)];
+  ceil[0].position.set(LAB[0] - 6, 7, LAB[2] - 3);
+  ceil[1].position.set(LAB[0] + 6, 7, LAB[2] - 3);
+  scene.add(...ceil);
+  disposers.push(() => { stripGeo.dispose(); stripMat.dispose(); });
   const alarm = new THREE.PointLight(col("#ff2a2a"), 0, 30, 1.2);
   alarm.position.set(LAB[0], 7, LAB[2] - 2);
   scene.add(alarm);
@@ -227,7 +237,7 @@ export const build: ChapterBuilder = async (ctx) => {
       sky.follow(cam);
       sky.u.uTime.value = ambient;
       fog.color.copy(inLab ? col("#0a0c10") : col("#4a6a50"));
-      fog.density = inLab ? 0.03 : 0.035;
+      fog.density = inLab ? 0.016 : 0.035;
       leaves.u.uTime.value = ambient;
       ferns.u.uTime.value = ambient;
       mist.u.uTime.value = ambient;
@@ -263,6 +273,10 @@ export const build: ChapterBuilder = async (ctx) => {
         (m.mat as THREE.MeshBasicMaterial).color.copy(col("#ffffff", (broken ? 0.9 + 0.5 * Math.max(0, Math.sin(ambient * 13 + i * 3)) : 1.4) * flick));
       });
       alarm.intensity = alarmOn ? 6 * Math.max(0, Math.sin(ambient * 6)) : 0;
+      const buzz = broken ? (Math.sin(ambient * 37) * Math.sin(ambient * 11.3) > 0.2 ? 0.25 : 1) : 1;
+      strips.visible = inLab;
+      stripMat.color.copy(col("#d8ecff", 1.6 * buzz));
+      ceil.forEach((c) => (c.intensity = inLab ? 40 * buzz : 0));
       pages.forEach((pg, i) => { pg.mesh.visible = inLab; (pg.mat as THREE.MeshStandardMaterial).emissiveIntensity = 0.3 + 0.25 * ramp(t, [tJungle, tMew, tBirth, tPower][i], [tJungle, tMew, tBirth, tPower][i] + 1); });
       lamp.intensity = inLab ? 6 * (0.9 + 0.1 * Math.sin(ambient * 17)) : 0;
       // Light.

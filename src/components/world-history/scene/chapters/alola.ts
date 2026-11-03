@@ -64,7 +64,7 @@ export const build: ChapterBuilder = async (ctx) => {
     disposers.push(t.dispose);
     const top: Vec3 = [I.c[0], hf(0, 0) + 1, I.c[2]];
     const plume = makeParticles({ count: P(700), shape: "cylinder", center: top, extent: [3, 1, 3], velocity: [0, 14, 0], spread: [4, 3, 4], gravity: [0, -9.8, 0], life: 2.4, size: [0.3, 0.8], colors: ["#fff2b0", "#ff7a20", "#ff2a08"], intensity: 3, flicker: 0.4, seed: 10 + i });
-    const steam = makeParticles({ count: P(400), shape: "disc", center: [I.c[0], 0.5, I.c[2]], extent: [I.r * 0.9, 0.5, I.r * 0.9], velocity: [0.5, 4, 0], spread: [1, 1.5, 1], life: 5, size: [3, 8], colors: ["#e0e0e8", "#a0a4b0", "#60646e"], intensity: 0.35, turbulence: 0.6, additive: false, seed: 20 + i });
+    const steam = makeParticles({ count: P(160), shape: "disc", center: [I.c[0], 0.5, I.c[2]], extent: [I.r * 0.9, 0.5, I.r * 0.9], velocity: [0.5, 4, 0], spread: [1, 1.5, 1], life: 6, size: [6, 14], colors: ["#d8d0d8", "#b0a8b0", "#888088"], intensity: 0.18, turbulence: 0.6, additive: false, fadeIn: 0.3, fadeOut: 0.5, seed: 20 + i });
     scene.add(plume.points, steam.points);
     disposers.push(plume.dispose, steam.dispose);
     return { t, plume, steam, top, hf };
@@ -108,7 +108,7 @@ export const build: ChapterBuilder = async (ctx) => {
   const TAPU_COL = ["#ffd84a", "#ff8ac8", "#ffb04a", "#8a9aff"];
   const N_ALOLA: Vec3 = [HOLE[0], HOLE[1] - 14, HOLE[2] + 12];
   const tapuBeams = PEAK.map((p, i) => {
-    const b = makeBeam({ from: [p[0], p[1] + 6, p[2]], to: N_ALOLA, radius: 0.7, color: TAPU_COL[i], intensity: 1.6 });
+    const b = makeBeam({ from: [p[0], p[1] + 6, p[2]], to: N_ALOLA, radius: 0.45, color: TAPU_COL[i], intensity: 1.0 });
     scene.add(b.mesh);
     disposers.push(b.dispose);
     return b;
@@ -166,7 +166,7 @@ export const build: ChapterBuilder = async (ctx) => {
       const dawn = ramp(t, tZ + 1, end);
       // Sky.
       const top = sky.u.uTop.value, hor = sky.u.uHorizon.value;
-      if (inCity) { top.copy(col("#1a1440").lerp(col("#000000"), drain)); hor.copy(col("#ffd890").lerp(col("#0a0a12"), drain)); fog.color.copy(col("#4a3a5a").lerp(col("#020204"), drain)); fog.density = 0.0025; sky.u.uSunGlow.value = 0; sky.u.uStars.value = 0.02 * (1 - drain); }
+      if (inCity) { top.copy(col("#0e0a26").lerp(col("#000000"), drain)); hor.copy(col("#4a3424").lerp(col("#0a0a12"), drain)); fog.color.copy(col("#2a2030").lerp(col("#020204"), drain)); fog.density = 0.002; sky.u.uSunGlow.value = 0; sky.u.uStars.value = 0.02 * (1 - drain); }
       else if (!night) { top.copy(col("#1a2a4a")); hor.copy(col("#d08060")); fog.color.copy(col("#5a4a5a")); fog.density = 0.0035; sky.u.uSunGlow.value = 0.35; sky.u.uStars.value = 0; }
       else { top.copy(col("#04060e").lerp(col("#1e3a6a"), dawn)); hor.copy(col("#1a1a3a").lerp(col("#d89080"), dawn)); fog.color.copy(col("#0a0a1a").lerp(col("#5a4a5a"), dawn)); fog.density = 0.0035; sky.u.uSunGlow.value = dawn * 0.35; sky.u.uStars.value = 0.05 * (1 - dawn); }
       sky.u.uSunColor.value.copy(col("#ffc890", inCity ? 0 : night ? dawn : 1));
@@ -264,7 +264,7 @@ export const build: ChapterBuilder = async (ctx) => {
           contrast: [[0, 1.05], [tDrain, 1.12], [cutBack, 1.08], [end, 1.04]],
           chroma: [[tDrain - 0.05, 0], [tDrain + 0.2, 0.7], [tDrain + 2, 0.2], [cutBack, 0.1], [tTapu, 0.35], [tZ + 2, 0.15]],
           vignette: [[0, 0.36], [tDrain, 0.55], [cutBack, 0.5], [end, 0.38]],
-          bloom: [[0, 0.85], [cutCity + 0.1, 1.05], [tDrain + 2, 0.75], [tTapu + 2, 1.05], [end, 0.9]],
+          bloom: [[0, 0.85], [cutCity + 0.1, 0.9], [tDrain + 2, 0.75], [tTapu + 2, 0.85], [end, 0.85]],
         }
       );
       L0.flash = Math.min(0.4, 0.35 * spike(t, tDrain, 0.1, 0.8) + 0.12 * spike(t, tTapu + 2, 0.2, 1));

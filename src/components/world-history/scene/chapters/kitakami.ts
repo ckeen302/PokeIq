@@ -81,7 +81,7 @@ export const build: ChapterBuilder = async (ctx) => {
   disposers.push(() => { pedestals.forEach((p) => p.geometry.dispose()); stoneMat.dispose(); });
   const STATUE: Vec3[] = pedestals.map((p) => [p.position.x, p.position.y + 0.55, p.position.z]);
   const houses = makeHouses({
-    spots: [[-12, 2], [-16, -8], [14, -2], [18, -12], [-8, -16], [10, 12], [-20, -20], [22, 4]].map(([x, z], i) => ({ pos: [x, gh(x, z) - 0.2, z] as Vec3, rot: (i % 3) * 0.4 - 0.3, size: [4.5, 3, 4] as Vec3 })),
+    spots: [[-12, 2], [-16, -8], [16, -4], [20, -14], [-8, -16], [-14, 12], [-20, -20], [24, 2]].map(([x, z], i) => ({ pos: [x, gh(x, z) - 0.2, z] as Vec3, rot: (i % 3) * 0.4 - 0.3, size: [4.5, 3, 4] as Vec3 })),
     wall: "#5a4a3a", roof: "#2a2a32", window: "#ffb060", windowK: 2.2,
   });
   scene.add(houses.group);

@@ -111,7 +111,7 @@ export const build: ChapterBuilder = async (ctx) => {
     const x = CR[0] + Math.cos(a) * d, z = CR[2] + Math.sin(a) * d;
     pathPts.push([x, gh(x, z) + 1, z]);
   }
-  const expedition = makeLanterns({ points: pathPts, color: "#ffcf80", size: 0.6, intensity: 5, seed: 5 });
+  const expedition = makeLanterns({ points: pathPts, color: "#ffcf80", size: 1.4, intensity: 5, seed: 5 });
   scene.add(expedition.group);
   disposers.push(expedition.dispose);
 
@@ -126,6 +126,9 @@ export const build: ChapterBuilder = async (ctx) => {
   const crystals = makeCrystals({ spots, colors: ["#2a3a6a", "#bff0ff"], glow: 1.1, seed: 7 });
   scene.add(crystals.mesh);
   disposers.push(crystals.dispose);
+  const teraGlow = makeGlow({ pos: [deep[0] + 6, deep[1] + 4, deep[2] + 10], size: 18, color: "#9af0ff", intensity: 0 });
+  scene.add(teraGlow.sprite);
+  disposers.push(teraGlow.dispose);
   const teraMotes = makeParticles({ count: P(1400), shape: "box", center: [deep[0], deep[1] + 12, deep[2]], extent: [60, 12, 60], velocity: [0, 0.4, 0], spread: [0.2, 0.2, 0.2], life: 9, size: [0.08, 0.22], colors: ["#ffffff", "#9af0ff", "#ffb8f0"], intensity: 2, turbulence: 0.6, seed: 8 });
   scene.add(teraMotes.points);
   disposers.push(teraMotes.dispose);
@@ -177,7 +180,7 @@ export const build: ChapterBuilder = async (ctx) => {
   const tera = figs.get(TERAPAGOS), kor = figs.get(KORAIDON), mir = figs.get(MIRAIDON);
   const paradox = PARADOX.map((a) => figs.get(a));
   const TP: Vec3 = [deep[0] + 6, deep[1] + 1, deep[2] + 10];
-  place(tera, TP, 3.2, 0, scene);
+  place(tera, TP, 6, 0, scene);
   figureStyle(tera, { rim: "#bff4ff", rimK: 1.8, glow: "#9af0ff", glowK: 0.2, edge: "#ffffff", dissolve: 0 });
   const KO: Vec3 = [MACH[0] - 4.2, 0, MACH[2] + 6], MI: Vec3 = [MACH[0] + 4.2, 0, MACH[2] + 6];
   place(kor, KO, 4, 0.35, scene);
@@ -199,11 +202,11 @@ export const build: ChapterBuilder = async (ctx) => {
     { t: tTreasure + 1.4, pos: [0, 34, 10], look: [0, -30, -420], fov: 46 },
     { t: tUnited - 0.6, pos: [0, 70, -130], look: [0, -40, -420], fov: 50 },
     { t: tUnited, pos: [-90, 70, 90], look: [0, 0, -120], fov: 54 },
-    { t: tHeath - 0.6, pos: [90, 80, 110], look: [0, 0, -140], fov: 54 },
-    { t: tHeath, pos: [-40, 50, -200], look: [90, -20, -290], fov: 48 },
-    { t: tTera - 0.6, pos: [10, 18, -236], look: [0, -70, -370], fov: 48 },
-    { t: tTera + 1.2, pos: [0, -30, -300], look: [0, -95, -410], fov: 56 },
-    { t: cutZero, pos: [deep[0] + 22, deep[1] + 6, deep[2] + 40], look: [TP[0], TP[1] + 1.6, TP[2]], fov: 44 },
+    { t: tHeath - 0.6, pos: [90, 80, 110], look: [20, 0, -200], fov: 54 },
+    { t: tHeath, pos: [40, gh(40, -180) + 40, -180], look: [50, -20, -300], fov: 50 },
+    { t: tTera - 0.6, pos: [20, 40, -200], look: [0, -70, -380], fov: 48 },
+    { t: tTera + 1.2, pos: [0, -30, -300], look: [TP[0], TP[1] + 3, TP[2]], fov: 52 },
+    { t: cutZero, pos: [deep[0] + 18, deep[1] + 6, deep[2] + 34], look: [TP[0], TP[1] + 3, TP[2]], fov: 44 },
     { t: cutZero + 0.01, pos: [ZERO[0], 3, ZERO[2] + 20], look: [ZERO[0], 5, ZERO[2] - 4], fov: 46 },
     { t: tParadox - 0.6, pos: [ZERO[0] - 6, 2.6, ZERO[2] + 13], look: [ZERO[0], 3.6, ZERO[2] - 4], fov: 44 },
     { t: tParadox + 0.6, pos: [ZERO[0], 2.4, ZERO[2] + 17], look: [ZERO[0], 4, ZERO[2] - 4], fov: 48 },
@@ -236,12 +239,13 @@ export const build: ChapterBuilder = async (ctx) => {
       sky.u.uTime.value = ambient;
       cloudSea.u.uTime.value = ambient;
       cloudSea.u.uOpacity.value = zero ? 0 : 1 - ramp(t, tTera, tTera + 1.2);
+      cloudSea.u.uIntensity.value = 0.9 * (1 - night * 0.6);
       deepGlow.set("#9ad8ff", zero ? 0 : ramp(t, tTreasure, tTreasure + 2) * 0.25 * (1 - ramp(t, tTera, tTera + 1)));
       // The empire, then the lights of a united land.
       torches.update(ambient, 0, px);
       lights2.update(ambient, 0, px);
       (lights2.mesh.material as THREE.MeshBasicMaterial).color.copy(col("#ffc070", 3 * ramp(t, tUnited, tUnited + 4)));
-      lights2.group.visible = !zero && !inside && t > tUnited - 0.2;
+      lights2.group.visible = !zero && !inside && t > tUnited - 0.2 && t < tHeath + 0.3;
       town.group.visible = !zero;
       expedition.update(ambient, 0, px);
       const go = ramp(t, tHeath, tHeath + 3.4);
@@ -254,6 +258,7 @@ export const build: ChapterBuilder = async (ctx) => {
       teraMotes.u.uTime.value = ambient;
       teraMotes.u.uPixel.value = px;
       teraMotes.u.uOpacity.value = inside ? 1 : 0;
+      teraGlow.set("#9af0ff", inside ? 0.3 * ramp(t, tTera + 0.6, tTera + 2.4) * (0.85 + 0.15 * Math.sin(ambient * 1.5)) : 0);
       if (tera) { floatFigure(tera, TP, ambient, 0.15, 0, 0, 0.05); figureStyle(tera, { dissolve: inside ? ramp(t, tTera + 0.6, tTera + 2.4) : 0, glowK: 0.2 + 0.1 * Math.sin(ambient * 1.5) }); }
       // Zero Lab: the machine pulls in the past and the future.
       zLand.mesh.visible = zero;
@@ -289,7 +294,7 @@ export const build: ChapterBuilder = async (ctx) => {
       });
       // Light.
       if (zero || inside) { L.key.intensity = 0.4; L.hemi.intensity = inside ? 0.6 : 0.4; L.hemi.color.copy(col("#8ab8ff")); }
-      else { L.key.intensity = 1.9 * (1 - night * 0.8); L.hemi.intensity = 0.6 - night * 0.3; L.hemi.color.copy(col("#ffd0b0").lerp(col("#6a7ab0"), night)); }
+      else { L.key.intensity = 1.9 * (1 - night * 0.55); L.key.color.copy(col("#ffb880").lerp(col("#9ab0ff"), night)); L.hemi.intensity = 0.6 - night * 0.15; L.hemi.color.copy(col("#ffd0b0").lerp(col("#6a7ab0"), night)); }
     },
     look(t) {
       const zero = t >= cutZero;

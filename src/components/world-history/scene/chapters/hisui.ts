@@ -16,7 +16,7 @@ import { figureStyle, floatFigure, lights, loadFigures, lookAt, place, pointPixe
 
 const DIALGA_O = 10245, PALKIA_O = 10246, GIRATINA_O = 10007, ARCEUS = 493;
 const CEL: Vec3 = [-170, 0, -150];
-const RIFT: Vec3 = [0, 120, -250];
+const RIFT: Vec3 = [0, 172, -205];
 
 export const build: ChapterBuilder = async (ctx) => {
   const { q } = ctx;
@@ -114,12 +114,12 @@ export const build: ChapterBuilder = async (ctx) => {
   [diaGlow, palGlow].forEach((g) => { scene.add(g.sprite); disposers.push(g.dispose); });
 
   // ---- The rift.
-  const clouds = makeCloudLayer({ size: 900, y: 95, color: "#3a2a4a", shadow: "#0a0610", density: 0.7, scale: 0.008, speed: [2, 0, 1], intensity: 0.9 });
-  clouds.mesh.position.set(0, 95, -200);
-  clouds.u.uHoleGlow.value.copy(col("#ff4aa0", 1.6));
+  const clouds = makeCloudLayer({ size: 900, y: 150, color: "#3a2a4a", shadow: "#0a0610", density: 0.7, scale: 0.008, speed: [2, 0, 1], intensity: 0.9 });
+  clouds.mesh.position.set(0, 150, -200);
+  clouds.u.uHoleGlow.value.copy(col("#ff4aa0", 0.8));
   scene.add(clouds.mesh);
   disposers.push(clouds.dispose);
-  const rift = makePortal({ radius: 60, inner: "#1a0a2a", outer: "#ff3a8a", intensity: 2.0, tear: 0.55 });
+  const rift = makePortal({ radius: 60, inner: "#1a0a2a", outer: "#ff3a8a", intensity: 1.6, tear: 0.55 });
   rift.mesh.position.set(...RIFT);
   scene.add(rift.mesh);
   disposers.push(rift.dispose);
@@ -129,7 +129,7 @@ export const build: ChapterBuilder = async (ctx) => {
   const riftDust = makeParticles({ count: P(1800), shape: "shell", center: RIFT, extent: [70, 40, 20], velocity: [0, 0, 0], life: 3, size: [0.4, 1.2], colors: ["#ffd0f0", "#c07aff", "#5a2aff"], intensity: 2.2, pull: 18, swirl: 0.4, seed: 6 });
   scene.add(riftDust.points);
   disposers.push(riftDust.dispose);
-  const ARC: Vec3 = [0, 74, -190];
+  const ARC: Vec3 = [0, 118, -168];
   const halo = makeRing({ color: "#ffe2a0", intensity: 1.6, thickness: 0.04 });
   halo.mesh.position.set(...ARC);
   halo.mesh.scale.setScalar(40);
@@ -149,7 +149,7 @@ export const build: ChapterBuilder = async (ctx) => {
   figureStyle(dia, { rim: "#8ab8ff", rimK: 2, glow: "#3a6aff", glowK: 0.25, edge: "#cfe0ff", dissolve: 0 });
   place(pal, PAL_AT, 46, -0.25, scene);
   figureStyle(pal, { rim: "#ffb8e0", rimK: 2, glow: "#ff6ab0", glowK: 0.25, edge: "#ffe0f0", dissolve: 0 });
-  const GI: Vec3 = [RIFT[0], RIFT[1] - 22, RIFT[2] - 8];
+  const GI: Vec3 = [RIFT[0], RIFT[1] - 26, RIFT[2] - 6];
   place(gir, GI, 44, 0, scene);
   figureStyle(gir, { rim: "#ff4a6a", rimK: 2.4, glow: "#2a0010", glowK: 0.1, edge: "#ff6a8a", dissolve: 0, shadow: 0.5 });
   place(arc, ARC, 20, 0, scene);
@@ -165,10 +165,10 @@ export const build: ChapterBuilder = async (ctx) => {
     { t: tPearl - 0.4, pos: [-30, 6, -12], look: [-20, 36, -150], fov: 50 },
     { t: tPearl, pos: [50, 4.5, -16], look: [34, 34, -150], fov: 50 },
     { t: tRift - 0.4, pos: [30, 6, -12], look: [20, 40, -150], fov: 50 },
-    { t: tRift, pos: [0, 8, 30], look: [0, 92, -240], fov: 58 },
-    { t: tTear + 2.2, pos: [0, 22, -64], look: [0, 108, -245], fov: 52 },
-    { t: tCreator, pos: [0, 30, -92], look: [0, 74, -185], fov: 46 },
-    { t: tName - 0.6, pos: [-6, 34, -100], look: [0, 76, -190], fov: 46 },
+    { t: tRift, pos: [0, 8, 30], look: [0, 140, -205], fov: 58 },
+    { t: tTear + 2.2, pos: [0, 30, -50], look: [0, 158, -205], fov: 54 },
+    { t: tCreator, pos: [0, 70, -80], look: [0, 122, -168], fov: 46 },
+    { t: tName - 0.6, pos: [-8, 76, -92], look: [0, 124, -168], fov: 46 },
     { t: tName, pos: [12, 7, 32], look: [0, 10, -30], fov: 46 },
     { t: end, pos: [26, 17, 72], look: [0, 22, -170], fov: 52 },
   ];
@@ -177,12 +177,12 @@ export const build: ChapterBuilder = async (ctx) => {
     scene,
     portalScale: 7,
     camera: (t) => shake(poseOnPath(keys, t), t, [{ at: tTear, k: 0.22, dur: 2.6 }, { at: tClose, k: 0.1, dur: 1.6 }]),
-    orbit: (t) => ({ target: t < cutCel || t >= tName ? [0, 8, -20] : t < cutClans ? [CEL_AT[0], CEL_AT[1] + 3, CEL_AT[2]] : t < tRift ? [0, 30, -150] : [0, 90, -230], limits: { yaw0: 0, yawSpan: 1.1, minPitch: -0.15, maxPitch: 1.1, minDist: 4, maxDist: 260 } }),
+    orbit: (t) => ({ target: t < cutCel || t >= tName ? [0, 8, -20] : t < cutClans ? [CEL_AT[0], CEL_AT[1] + 3, CEL_AT[2]] : t < tRift ? [0, 30, -150] : [0, 140, -200], limits: { yaw0: 0, yawSpan: 1.1, minPitch: -0.15, maxPitch: 1.1, minDist: 4, maxDist: 260 } }),
     update(t, ambient, cam, viewH) {
       const px = pointPixel(viewH, cam);
       const cel = t >= cutCel && t < cutClans;
       const dark = ramp(t, tRift - 0.6, tRift + 1.2) * (1 - ramp(t, tClose, tName + 1));
-      const open = ramp(t, tRift + 0.2, tTear + 0.6) * (1 - ramp(t, tClose - 0.4, tClose + 1.4));
+      const open = ramp(t, tRift + 0.2, tTear + 0.6) * (1 - ramp(t, tCreator - 0.6, tClose + 0.6));
       const godA = ramp(t, cutClans + 0.6, tDia + 1.8) * (1 - ramp(t, tRift - 0.5, tRift + 1));
       const godB = ramp(t, tPearl - 0.2, tPearl + 1.4) * (1 - ramp(t, tRift - 0.5, tRift + 1));
       const arcK = ramp(t, tCreator - 0.4, tCreator + 1.4) * (1 - ramp(t, tName, tName + 2));

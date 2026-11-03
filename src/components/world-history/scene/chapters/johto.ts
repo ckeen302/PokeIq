@@ -112,7 +112,7 @@ export const build: ChapterBuilder = async (ctx) => {
   const houseSpots: { pos: Vec3; rot: number; size: Vec3 }[] = [];
   for (let i = 0; i < 26; i++) {
     const x = -40 + r() * 80, z = 10 - r() * 50;
-    if (Math.hypot(x - BT[0], z - BT[2]) < 14) continue;
+    if (Math.hypot(x - BT[0], z - BT[2]) < 14 || (Math.abs(x - BT[0]) < 14 && z > BT[2] && z < BT[2] + 42)) continue;
     houseSpots.push({ pos: [x, gh(x, z) - 0.2, z], rot: Math.floor(r() * 4) * (Math.PI / 2) + (r() - 0.5) * 0.2, size: [4 + r() * 2, 2.6, 3.5 + r()] });
   }
   const town = makeHouses({ spots: houseSpots, wall: "#8a7a64", roof: "#3a2a2a", window: "#ffb060", windowK: 2 });
@@ -195,7 +195,7 @@ export const build: ChapterBuilder = async (ctx) => {
   figureStyle(lugia, { rim: "#d8e8ff", rimK: 1.4, glow: "#a8c8ff", glowK: 0.04, edge: "#ffffff" });
   const HO: Vec3 = [BT[0] + 1, gh(BT[0], BT[2]) + 13, BT[2] + 6];
   place(hooh, HO, 10, 0, scene);
-  figureStyle(hooh, { rim: "#ffe0a0", rimK: 1.6, glow: "#ffb04a", glowK: 0.1, edge: "#fff0c0", dissolve: 0 });
+  figureStyle(hooh, { rim: "#ffe0a0", rimK: 2.2, glow: "#ffb04a", glowK: 0.25, edge: "#fff0c0", dissolve: 0 });
   const BEAST: Vec3[] = [[BT[0] - 5, 0, BT[2] + 12], [BT[0], 0, BT[2] + 13], [BT[0] + 5, 0, BT[2] + 12]].map(([x, , z]) => [x, gh(x, z), z] as Vec3);
   beasts.forEach((f, i) => { place(f, BEAST[i], 2.4, [0.3, 0, -0.3][i], scene); figureStyle(f, { rim: "#ffe6c0", rimK: 1.3, edge: "#ffb050", shadow: 1, dissolve: 0 }); });
   const revive = beasts.map((f, i) => {
@@ -206,32 +206,37 @@ export const build: ChapterBuilder = async (ctx) => {
     return c;
   });
 
+  /** A point `h` above the ground at x, z (Ecruteak's ground rolls). */
+  const up = (x: number, z: number, h: number): Vec3 => [x, gh(x, z) + h, z];
+  const BEASTS_AT = up(BT[0], BT[2] + 12.5, 1.4);
   const keys: Key[] = [
     { t: 0, pos: [ALPH[0] + 2, 4.5, ALPH[2] + 26], look: [ALPH[0], 2.2, ALPH[2] - 8], fov: 46 },
     { t: tAlph, pos: [ALPH[0] - 3, 3, ALPH[2] + 14], look: [ALPH[0] + 1, 2.4, ALPH[2] - 14], fov: 44 },
     { t: cutTowers, pos: [ALPH[0] - 1, 2.6, ALPH[2] + 6], look: [ALPH[0], 2.6, ALPH[2] - 20], fov: 44 },
-    { t: cutTowers + 0.01, pos: [10, 6, 30], look: [6, 19, -58], fov: 50 },
-    { t: tLugia - 1.4, pos: [-4, 5, 30], look: [-12, 22, -40], fov: 46 },
-    { t: tLugia, pos: [-4, 6, 16], look: [BT[0], 34, BT[2]], fov: 44 },
-    { t: tFire - 0.8, pos: [6, 12, 6], look: [BT[0], 32, BT[2]], fov: 42 },
-    { t: tFire, pos: [22, 6, 34], look: [BT[0], 18, BT[2]], fov: 48 },
-    { t: tRain, pos: [10, 4.5, 20], look: [BT[0], 14, BT[2]], fov: 50 },
-    { t: tDead - 0.5, pos: [4, 4, 4], look: [BT[0], 6, BT[2]], fov: 48 },
-    { t: tDead, pos: [-6, 3, -4], look: [BT[0], 2.4, BT[2] + 11], fov: 44 },
-    { t: tDescend + 1.6, pos: [-4, 2.4, -8], look: [BT[0], 21, BT[2] + 4], fov: 56 },
-    { t: tBeasts, pos: [BT[0], 2.4, BT[2] + 30], look: [BT[0], 2.8, BT[2] + 12], fov: 46 },
-    { t: tFlew - 1, pos: [BT[0] - 4, 3, BT[2] + 32], look: [BT[0], 3.2, BT[2] + 12], fov: 46 },
-    { t: tFlew, pos: [2, 6, 22], look: [-6, 44, -60], fov: 60 },
-    { t: end, pos: [8, 10, 52], look: [-4, 40, -80], fov: 58 },
+    { t: cutTowers + 0.01, pos: up(10, 30, 6), look: [6, 19, -58], fov: 50 },
+    { t: tLugia - 1.4, pos: up(-4, 30, 5), look: [-12, 22, -40], fov: 46 },
+    { t: tLugia, pos: up(-4, 16, 6), look: [BT[0], 34, BT[2]], fov: 44 },
+    { t: tFire - 0.8, pos: up(6, 6, 12), look: [BT[0], 32, BT[2]], fov: 42 },
+    { t: tFire, pos: up(22, 34, 6), look: [BT[0], 18, BT[2]], fov: 48 },
+    { t: tRain, pos: up(10, 20, 4.5), look: [BT[0], 14, BT[2]], fov: 50 },
+    { t: tDead - 0.5, pos: up(4, 4, 4), look: [BT[0], gh(BT[0], BT[2]) + 6, BT[2]], fov: 48 },
+    { t: tDead, pos: up(BT[0] + 9, BT[2] + 26, 3), look: BEASTS_AT, fov: 44 },
+    { t: tDescend + 1.6, pos: up(BT[0] + 7, BT[2] + 28, 2.6), look: [BT[0], gh(BT[0], BT[2]) + 20, BT[2] + 4], fov: 56 },
+    { t: tBeasts, pos: up(BT[0] + 2, BT[2] + 25, 3), look: BEASTS_AT, fov: 46 },
+    { t: tFlew - 1, pos: up(BT[0] - 3, BT[2] + 27, 2.8), look: BEASTS_AT, fov: 46 },
+    { t: tFlew, pos: up(2, 22, 6), look: [-2, 50, -90], fov: 58 },
+    { t: end, pos: up(8, 52, 10), look: [0, 66, -130], fov: 56 },
   ];
 
   const lugiaPos = new THREE.Vector3(), hoohPos = new THREE.Vector3();
+  const hoohLight = new THREE.PointLight(col("#ffb860"), 0, 40, 1.2);
+  scene.add(hoohLight);
 
   return {
     scene,
     portalScale: 4,
     camera: (t) => shake(poseOnPath(keys, t), t, [{ at: tStrike, k: 0.22, dur: 2 }, { at: tDescend + 1.2, k: 0.05 }]),
-    orbit: (t) => ({ target: t < cutTowers ? [ALPH[0], 2.4, ALPH[2] - 14] : t < tDead - 0.5 || t >= tFlew ? [BT[0], 18, BT[2]] : [BT[0], 3, BT[2] + 11], limits: { yaw0: 0, yawSpan: 1.1, minPitch: -0.15, maxPitch: 1.0, minDist: 3, maxDist: 160 } }),
+    orbit: (t) => ({ target: t < cutTowers ? [ALPH[0], 2.4, ALPH[2] - 14] : t < tDead - 0.5 || t >= tFlew ? [BT[0], 18, BT[2]] : BEASTS_AT, limits: { yaw0: 0, yawSpan: 1.1, minPitch: -0.15, maxPitch: 1.0, minDist: 3, maxDist: 160 } }),
     update(t, ambient, cam, viewH) {
       const px = pointPixel(viewH, cam);
       const alph = t < cutTowers;
@@ -284,8 +289,9 @@ export const build: ChapterBuilder = async (ctx) => {
       const away = ramp(t, tFlew + 0.5, end - 0.5);
       if (lugia) {
         if (t < tStrike) lugiaPos.set(LU[0], LU[1] + Math.sin(ambient * 0.8) * 0.2, LU[2]);
-        else lugiaPos.set(LU[0] - 30 - away * 160, LU[1] + 30 + away * 40, LU[2] - 60 - away * 200);
+        else lugiaPos.set(LU[0] - 4 - away * 30, LU[1] + 6 + away * 40, LU[2] - 10 - away * 110);
         lugia.group.position.copy(lugiaPos);
+        lugia.setHeight(t > tFlew ? 8 + away * 6 : 8);
         lugia.group.rotation.y = 0.2 + Math.sin(ambient * 0.4) * 0.05;
         const show = t < tStrike + 0.3 ? 1 - ramp(t, tStrike, tStrike + 0.3) : t > tFlew ? ramp(t, tFlew, tFlew + 1) * (1 - ramp(t, end - 2, end)) : 0;
         figureStyle(lugia, { dissolve: alph ? 0 : show });
@@ -293,14 +299,17 @@ export const build: ChapterBuilder = async (ctx) => {
       if (hooh) {
         const d = 1 - Math.pow(1 - ramp(t, tDescend - 0.6, tDescend + 3), 2.2);
         if (t < tFlew) hoohPos.set(HO[0], HO[1] + 50 * (1 - d) + Math.sin(ambient * 0.9) * 0.3, HO[2] - 10 * (1 - d));
-        else hoohPos.set(HO[0] + away * 140, HO[1] + 20 + away * 70, HO[2] - away * 220);
+        else hoohPos.set(HO[0] + 6 + away * 30, HO[1] + 14 + away * 46, HO[2] - 6 - away * 110);
         hooh.group.position.copy(hoohPos);
+        hooh.setHeight(t > tFlew ? 10 + away * 6 : 10);
+        hoohLight.position.set(hoohPos.x, hoohPos.y + 6, hoohPos.z + 8);
+        hoohLight.intensity = alph ? 0 : 20 * ramp(t, tDescend - 0.8, tDescend + 0.6) * (1 - ramp(t, tFlew, tFlew + 2));
         hooh.group.rotation.y = Math.sin(ambient * 0.4) * 0.06;
         figureStyle(hooh, { dissolve: alph ? 0 : ramp(t, tDescend - 0.8, tDescend + 0.6) * (1 - ramp(t, end - 2, end)), glowK: 0.1 + 0.3 * ramp(t, tBeasts - 0.5, tBeasts + 1) * (1 - ramp(t, tBeasts + 3, tFlew)) });
       }
       plumes.u.uCenter.value.set(hoohPos.x, hoohPos.y - 2, hoohPos.z + 1);
       plumes.u.uOpacity.value = alph ? 0 : ramp(t, tDescend - 0.4, tDescend + 1) * (1 - ramp(t, tFlew + 1, end));
-      bowMat.uniforms.uOpacity.value = alph ? 0 : bow * 0.55;
+      bowMat.uniforms.uOpacity.value = alph ? 0 : bow * 0.32;
       rainbow.quaternion.copy(cam.quaternion);
       // The three: dead in the ashes, then alive again.
       const life = ramp(t, tBeasts - 0.6, tBeasts + 1.6);
