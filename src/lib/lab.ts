@@ -14,7 +14,7 @@ export const RACE_LIVE = true;
  * the sitemap and from the Pokémon Timeline only once this is true. Until
  * then its pages work by URL but stay out of search.
  */
-export const WORLD_HISTORY_LIVE = false;
+export const WORLD_HISTORY_LIVE = true;
 
 export interface LabExperience {
   id: "timeline" | "sizes" | "globe" | "race" | "world-history";
@@ -84,7 +84,7 @@ export const LAB_EXPERIENCES: LabExperience[] = [
     title: "The History of the Pokémon World",
     kicker: "The story, as the games tell it",
     pitch: "A cinematic museum of the Pokémon world's in-universe history, from Sinnoh's creation myth to the time machine in Area Zero. Scroll through it or press Play, with every line sourced to the games.",
-    tags: ["Twelve exhibits", "Every line sourced", "Make a video"],
+    tags: ["Told by the games", "Every line sourced", "Make a video"],
     image: "/lab/world-history.webp",
     accent: "42 92% 66%",
     live: WORLD_HISTORY_LIVE,

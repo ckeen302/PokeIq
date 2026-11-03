@@ -76,7 +76,7 @@ export async function historyHubCard(chapters: Chapter[]) {
     eyebrow: "PokéIQ 3D Lab · In-universe history",
     title: ["The History of", ["the Pokémon World", C.yellow]],
     titleSize: 54,
-    subtitle: `${chapters.length} chapters, from Sinnoh's creation myth to Area Zero, each line sourced to the games.`,
+    subtitle: "From Sinnoh's creation myth to Area Zero, each line sourced to the games.",
     accent: hero.accent,
     visual: <Exhibit accent={hero.accent}>{pic ? <img src={pic} width={W} height={H} style={{ objectFit: "cover" }} /> : <Figures chapter={hero} />}</Exhibit>,
     footer: "Step inside →",

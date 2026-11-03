@@ -681,7 +681,7 @@ export function WorldHistoryExperience({ initialChapter, children }: { initialCh
               <motion.div key="pro" className="wh-pro pointer-events-none absolute inset-x-0 top-[18%] z-[6] flex flex-col items-center px-6 text-center text-white" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, scale: 0.97, filter: "blur(6px)" }} transition={{ duration: 0.9 }} data-testid="wh-prologue">
                 <p className="wh-title-k text-[10px] uppercase text-[#f2c96b] sm:text-xs">PokéIQ 3D Lab · In-universe history</p>
                 <h1 className="wh-serif wh-title mt-3 max-w-4xl text-5xl font-semibold leading-[0.95] sm:text-7xl lg:text-8xl">The History of the Pokémon World</h1>
-                <p className="wh-cap-lead mt-4 max-w-xl text-sm text-white/80 sm:text-base">{CHAPTERS.length} exhibits, as the games themselves tell it. Every line is sourced.</p>
+                <p className="wh-cap-lead mt-4 max-w-xl text-sm text-white/80 sm:text-base">The story of the Pokémon world, as the games themselves tell it. Every line is sourced.</p>
                 <p className="wh-hint mt-6 inline-flex items-center gap-2 font-display text-[11px] font-semibold uppercase tracking-[0.2em] text-white/75">Scroll, or press play <ArrowDown className="h-3.5 w-3.5" aria-hidden /></p>
               </motion.div>
             )}
