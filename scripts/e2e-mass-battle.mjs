@@ -1,6 +1,7 @@
 /**
  * Pokémon Mass Battle (/lab/mass-battle), end to end in the browser: a
- * preset battle played to its result, the "how many?" solver to its answer
+ * preset battle (which fills the Battle setup panel in) played to its
+ * result, the "how many?" solver to its answer
  * (from a shared question link), a shared battle's link, title and preview
  * cards, the Battle setup panel (rows, a group, the Advanced section's
  * field, behaviour, a species' set and playback) building a link that
@@ -76,6 +77,13 @@ export async function runMassBattle({ browser, BASE, OUT, errors, step }) {
     if ((await attr("phase")) !== "ready") throw new Error("the battle never deployed");
     await page.screenshot({ path: `${OUT}/mass-battle-ready.png` });
     if ((await attr("left")) && (await attr("left")) !== "100,1") errors.push(`mass battle: the armies start at ${await attr("left")}`);
+    // The preset fills the Battle setup panel in.
+    if (!(await page.getByTestId("mb-tab-army").getAttribute("aria-selected"))?.includes("true")) errors.push("mass battle: a preset battle doesn't open the Army vs army tab");
+    for (const [t, want] of [["mb-side-0-pick-0", "pikachu"], ["mb-side-1-pick-0", "snorlax"]]) {
+      const got = await page.getByTestId(t).getAttribute("data-value");
+      if (got !== want) errors.push(`mass battle: the preset's panel has ${got} in ${t}, not ${want}`);
+    }
+    if ((await page.getByTestId("mb-side-0-count-0").inputValue()) !== "100") errors.push("mass battle: the preset's panel lost the count");
     await press(page, "mb-start");
     await phaseIs(["playing"], 60_000);
     await page.waitForTimeout(1500);
