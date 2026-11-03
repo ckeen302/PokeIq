@@ -52,5 +52,7 @@ export const MB_CSS = `
 .mb-progress { background: linear-gradient(90deg, #ffd84a, #ff9d00); box-shadow: 0 0 10px rgb(255 190 40 / .6); transform-origin: left center; transition: transform .2s linear; }
 .mb-answer { font-family: var(--font-display); font-weight: 700; line-height: .95; color: #fff; -webkit-text-stroke: 2px #0d1626; paint-order: stroke fill; text-shadow: 0 5px 0 #0d1626, 0 0 40px rgb(255 210 60 / .45); }
 .mb-answer b { color: #ffd84a; }
-@media (prefers-reduced-motion: reduce) { .mb-loader-ball, .mb-feed-item { animation: none !important; } .mb-bar > i, .mb-progress, .mb-switch, .mb-switch::after { transition: none; } }
+.mb-fight { animation: mb-fight 1.3s cubic-bezier(.2,.9,.25,1) both; }
+@keyframes mb-fight { 0% { opacity: 0; transform: scale(1.8); } 12% { opacity: 1; transform: scale(.94); } 22% { transform: scale(1.02); } 70% { opacity: 1; transform: scale(1); } 100% { opacity: 0; transform: scale(1.08); visibility: hidden; } }
+@media (prefers-reduced-motion: reduce) { .mb-loader-ball, .mb-feed-item { animation: none !important; } .mb-fight { display: none; } .mb-bar > i, .mb-progress, .mb-switch, .mb-switch::after { transition: none; } }
 `;

@@ -198,7 +198,8 @@ void main() {
   vec3 n = normalize(mat3(viewMatrix) * normal);
   vFres = max(dot(n, normalize(-mv.xyz)), 0.0);
   vColor = mix(aC.rgb, aD.rgb, k);
-  vAlpha = (1.0 - k) * (1.0 - k) * smoothstep(0.0, 0.06, age);
+  // A projectile stays bright all the way to its target; everything else fades as it goes.
+  vAlpha = aE.w > 0.5 && aE.w < 1.5 ? smoothstep(0.0, 0.03, age) * (1.0 - smoothstep(0.88, 1.0, k)) : (1.0 - k) * (1.0 - k) * smoothstep(0.0, 0.06, age);
   gl_Position = projectionMatrix * mv;
 }`;
 

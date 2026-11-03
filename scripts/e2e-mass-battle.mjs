@@ -150,6 +150,39 @@ export async function runMassBattle({ browser, BASE, OUT, errors, step }) {
     await until(() => document.querySelector('[data-testid="mb-stage"]')?.dataset.cam === "director").catch(() => errors.push("mass battle: 0 didn't hand the camera back to the director"));
   });
 
+  await part(errors, "controls", async () => {
+    // Playback: speed, the top-down camera, the options menu (damage numbers, slow motion, the HUD), pause and step.
+    await page.goto(`${BASE}/lab/mass-battle/pikachu-vs-snorlax?q=draft`, { waitUntil: "load" });
+    await phaseIs(["ready"], 240_000);
+    await press(page, "mb-start");
+    await phaseIs(["playing"], 60_000);
+    // Paused at once, so the battle is still on when the checks end.
+    await press(page, "mb-play");
+    await page.getByTestId("mb-step").waitFor({ timeout: 30_000 });
+    for (const want of ["2×", "4×", "¼×"]) {
+      await press(page, "mb-speed");
+      const label = (await page.getByTestId("mb-speed").textContent())?.trim();
+      if (label !== want) errors.push(`mass battle: the speed reads "${label}", expected ${want}`);
+    }
+    await press(page, "mb-speed");
+    await press(page, "mb-speed");
+    await press(page, "mb-camera");
+    await press(page, "mb-camera");
+    await page.waitForFunction(() => document.querySelector('[data-testid="mb-stage"]')?.dataset.cam === "top", null, { timeout: 30_000 }).catch(() => errors.push("mass battle: the camera button didn't reach the top-down camera"));
+    await press(page, "mb-options");
+    await page.getByTestId("mb-options-menu").waitFor({ timeout: 30_000 });
+    await press(page, "mb-numbers");
+    if ((await page.getByTestId("mb-numbers").getAttribute("aria-checked")) !== "true") errors.push("mass battle: damage numbers didn't turn on");
+    await press(page, "mb-hud-toggle");
+    if (await page.getByTestId("mb-hud").count()) errors.push("mass battle: the HUD didn't hide");
+    await press(page, "mb-hud-toggle");
+    const t0 = Number(await attr("t"));
+    await press(page, "mb-step");
+    await press(page, "mb-step");
+    await page.waitForFunction((t) => Number(document.querySelector('[data-testid="mb-stage"]')?.dataset.t) > t, t0, { timeout: 60_000 }).catch(() => errors.push("mass battle: stepping while paused didn't move the battle on"));
+    await page.screenshot({ path: `${OUT}/mass-battle-controls.png` });
+  });
+
   step("3D Lab Mass Battle: make a 5 s video (a valid 1080 × 1920 MP4 with sound), phone layout");
   await part(errors, "video", async () => {
     await page.goto(`${BASE}/lab/mass-battle/pikachu-vs-snorlax?q=draft&len=5&vq=draft&vfps=10`, { waitUntil: "load" });
@@ -184,7 +217,7 @@ export async function runMassBattle({ browser, BASE, OUT, errors, step }) {
     await phaseIs(["ready"], 240_000);
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1);
     if (overflow) errors.push("mass battle: the phone layout scrolls sideways");
-    for (const id of ["mb-play", "mb-restart", "mb-speed", "mb-camera", "mb-zoom-in", "mb-zoom-out", "mb-sound", "mb-how", "mb-share", "mb-video", "mb-start"]) {
+    for (const id of ["mb-play", "mb-restart", "mb-speed", "mb-camera", "mb-zoom-in", "mb-zoom-out", "mb-options", "mb-sound", "mb-how", "mb-share", "mb-video", "mb-start"]) {
       const box = await page.getByTestId(id).boundingBox();
       if (!box || box.x < 0 || box.x + box.width > 391) errors.push(`mass battle: ${id} is off a 390 px screen`);
     }

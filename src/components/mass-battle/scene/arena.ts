@@ -247,6 +247,7 @@ export function buildArena(id: ArenaId, opts: ArenaOptions): Arena {
   };
   const time = { value: 0 };
   const wet = { value: look.wet };
+  const puddleTint = { value: new THREE.Color(look.skyHorizon).lerp(new THREE.Color(look.fog), 0.5) };
   const segs = 180;
   {
     // Rings of vertices: a polar grid so the middle is flat and the edge can rise.
@@ -303,6 +304,7 @@ export function buildArena(id: ArenaId, opts: ArenaOptions): Arena {
     gm.onBeforeCompile = (s) => {
       s.uniforms.uTime = time;
       s.uniforms.uWet = wet;
+      s.uniforms.uPuddle = puddleTint;
       s.vertexShader = s.vertexShader.replace("#include <common>", "#include <common>\nvarying vec3 vWorld;").replace("#include <worldpos_vertex>", "#include <worldpos_vertex>\nvWorld = (modelMatrix * vec4(transformed, 1.0)).xyz;");
       let colorPatch = "";
       let emissivePatch = "";
@@ -366,8 +368,8 @@ mbLine = max(mbLine, (1.0 - smoothstep(${lw} * 1.2, ${lw} * 2.0, abs(mbRr - ${ri
 diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb * vec3(0.72, 0.66, 0.6), mbLine * 0.85);`;
       }
       s.fragmentShader = s.fragmentShader
-        .replace("#include <common>", `#include <common>\nuniform float uTime;\nuniform float uWet;\nvarying vec3 vWorld;\n${NOISE_GLSL}`)
-        .replace("#include <color_fragment>", `#include <color_fragment>\n${colorPatch}\n// Rain darkens the ground.\ndiffuseColor.rgb *= 1.0 - uWet * 0.28;`)
+        .replace("#include <common>", `#include <common>\nuniform float uTime;\nuniform float uWet;\nuniform vec3 uPuddle;\nvarying vec3 vWorld;\n${NOISE_GLSL}`)
+        .replace("#include <color_fragment>", `#include <color_fragment>\n${colorPatch}\n// Rain darkens the ground, and puddles gather (they mirror the sky, rings rippling across them).\ndiffuseColor.rgb *= 1.0 - uWet * 0.28;\nfloat mbPd = smoothstep(0.66, 0.7, mbF(vWorld.xz * 0.08 + 1.3)) * uWet;\nfloat mbRip = sin(length(fract(vWorld.xz * 0.7) - 0.5) * 40.0 - uTime * 8.0) * 0.5 + 0.5;\ndiffuseColor.rgb = mix(diffuseColor.rgb, uPuddle * (0.55 + 0.08 * mbRip), mbPd * 0.75);`)
         .replace("#include <roughnessmap_fragment>", "#include <roughnessmap_fragment>\nroughnessFactor = mix(roughnessFactor, 0.32, uWet * smoothstep(0.35, 0.6, mbN(vWorld.xz * 0.12)) );")
         .replace("#include <emissivemap_fragment>", `#include <emissivemap_fragment>\n${emissivePatch}`);
     };

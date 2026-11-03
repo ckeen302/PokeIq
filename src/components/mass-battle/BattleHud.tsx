@@ -63,11 +63,24 @@ function clock(t: number) {
   return `${m}:${s < 10 ? "0" : ""}${s.toFixed(1)}`;
 }
 
+/**
+ * The HUD fed straight from the render loop: `bind` hands the loop a setter, so the counters, the bars and the clock
+ * update without re-rendering the page around them.
+ */
+export function LiveHud({ bind, ...rest }: { bind(set: ((h: HudState) => void) | null): void; names: [string, string]; hideCount: boolean; phase: string; feed: FeedEntry[]; visible: boolean }) {
+  const [hud, setHud] = useState<HudState | null>(null);
+  useEffect(() => {
+    bind(setHud);
+    return () => bind(null);
+  }, [bind]);
+  return hud ? <BattleHud hud={hud} {...rest} /> : null;
+}
+
 export function BattleHud({ hud, names, hideCount, phase, feed, visible }: { hud: HudState; names: [string, string]; hideCount: boolean; phase: string; feed: FeedEntry[]; visible: boolean }) {
   if (!visible) return null;
   const boss = hud.boss;
   return (
-    <div className="pointer-events-none absolute inset-x-0 top-0 z-[3] p-2.5 sm:p-4" data-testid="mb-hud">
+    <div className="pointer-events-none absolute inset-0 z-[3] p-2.5 sm:p-4" data-testid="mb-hud">
       <div className="flex items-start justify-between gap-2 sm:gap-3">
         {([0, 1] as const).map((s) => {
           const share = hud.left[s] / Math.max(1, hud.start[s]);
@@ -99,6 +112,12 @@ export function BattleHud({ hud, names, hideCount, phase, feed, visible }: { hud
           </div>
           <TrailBar value={boss.hp / Math.max(1, boss.max)} tone="mb-boss-fill" className="mb-boss h-[9px] sm:h-[12px]" />
           <div className="font-pixel text-[8px] tabular-nums text-white/70 sm:text-[9px]">{fmt(boss.hp)} / {fmt(boss.max)} HP</div>
+        </div>
+      )}
+      {feed.length > 0 && (
+        // Phones: the latest big moment, over the controls.
+        <div className="absolute inset-x-0 bottom-[6.25rem] flex justify-center px-6 sm:hidden" aria-hidden>
+          <span key={feed[feed.length - 1].id} className={cn("mb-feed-item max-w-full truncate rounded-md px-2.5 py-1 text-center font-display text-[11px] font-semibold", feed[feed.length - 1].tone === "gold" ? "mb-feed-gold" : feed[feed.length - 1].tone === "a" ? "mb-feed-a" : "mb-feed-b")}>{feed[feed.length - 1].text}</span>
         </div>
       )}
       <ol className="mb-feed absolute right-2.5 top-[5.5rem] hidden w-[min(340px,40%)] space-y-1.5 sm:right-4 sm:top-28 sm:block" aria-live="polite" data-testid="mb-feed">

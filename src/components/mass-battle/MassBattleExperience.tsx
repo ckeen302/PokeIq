@@ -20,7 +20,7 @@ import { MB_CSS } from "./mass-battle-css";
 import type { BattleScene, Quality } from "./scene";
 import { HowItWorksBody } from "./HowItWorks";
 import { envOf } from "./scene/look";
-import { BattleControls, BattleHud, type CamMode } from "./BattleHud";
+import { BattleControls, LiveHud, type CamMode, type HudState } from "./BattleHud";
 import { DamageNumbers } from "./damage-numbers";
 import type { Choreographer } from "./scene/choreo";
 import { SetupPanel } from "./SetupPanel";
@@ -80,6 +80,8 @@ interface Final {
   mvp: string | null;
   big: string | null;
   seconds: number;
+  /** Left standing on each side. */
+  left: [number, number];
 }
 
 /** Phones, touch screens and low-memory devices start light; everything else on the middle quality. The monitor adapts from there. */
@@ -148,7 +150,13 @@ export function MassBattleExperience({ list, presets, initial }: { list: PickerM
   const [battle, setBattle] = useState<BattleDesc | null>(null);
   const [progress, setProgress] = useState<{ p: number; label: string }>({ p: 0, label: "" });
   const [solving, setSolving] = useState<{ n: number; wins: number; played: number; of: number; phase: string } | null>(null);
-  const [hud, setHud] = useState<Hud | null>(null);
+  /** The HUD's numbers go straight to it from the render loop (the page doesn't re-render for them). */
+  const hudSet = useRef<((h: HudState) => void) | null>(null);
+  const hudLast = useRef<HudState | null>(null);
+  const bindHud = useCallback((set: ((h: HudState) => void) | null) => {
+    hudSet.current = set;
+    if (set && hudLast.current) set(hudLast.current);
+  }, []);
   const [feed, setFeed] = useState<FeedItem[]>([]);
   const [final, setFinal] = useState<Final | null>(null);
   const [cardHidden, setCardHidden] = useState(false);
@@ -156,6 +164,8 @@ export function MassBattleExperience({ list, presets, initial }: { list: PickerM
   const [slowmo, setSlowmo] = useState(true);
   const [hudOn, setHudOn] = useState(true);
   const [numbersOn, setNumbersOn] = useState(false);
+  /** Bumped when a battle starts: "Fight!" flashes up. */
+  const [fightCue, setFightCue] = useState(0);
   const [paused, setPaused] = useState(false);
   const [speed, setSpeed] = useState(1);
   const [muted, setMutedState] = useState(true);
@@ -347,6 +357,7 @@ export function MassBattleExperience({ list, presets, initial }: { list: PickerM
     audioRef.current.gesture();
     audioRef.current.start(battleRef.current.spec.arena, sceneRef.current?.env.weather);
     setPhase("playing");
+    setFightCue((f) => f + 1);
     simRef.current?.step(6);
     track("mass_battle_start", { preset: battleRef.current.presetId ?? "custom", units: view.n });
   };
@@ -362,7 +373,9 @@ export function MassBattleExperience({ list, presets, initial }: { list: PickerM
         boss = { name: speciesRef.current[view.sp[bi]]?.name ?? "", hp, max, side: s };
       }
     }
-    setHud({ left: [...view.left] as [number, number], start: [...start] as [number, number], boss, t: view.t, shot: camRef.current === "free" ? "free" : directorRef.current.shot });
+    const h: Hud = { left: [...view.left] as [number, number], start: [...start] as [number, number], boss, t: view.t, shot: camRef.current === "free" ? "free" : directorRef.current.shot };
+    hudLast.current = h;
+    hudSet.current?.(h);
   };
 
   const finish = useCallback((view: BattleView, end: SimEnd) => {
@@ -373,7 +386,7 @@ export function MassBattleExperience({ list, presets, initial }: { list: PickerM
     const mvp = end.stats.mvp >= 0 && end.stats.mvpKos >= 2 ? `${speciesRef.current[sp[end.stats.mvp]]?.name} · ${fmt(end.stats.mvpKos)} KOs` : null;
     const bh = end.stats.big;
     const big = bh ? `${possessive(speciesRef.current[sp[bh.actor]]?.name ?? "")} ${view.ready.moves[sp[bh.actor]][bh.slot]?.name ?? "hit"}: ${fmt(bh.damage)} damage${bh.crit ? " (critical hit)" : ""}` : null;
-    setFinal({ winner: o.winner, title: resultTitle(o.winner, b.names, o.left), line: resultLine(o, b.names), mvp, big, seconds: o.seconds });
+    setFinal({ winner: o.winner, title: resultTitle(o.winner, b.names, o.left), line: resultLine(o, b.names), mvp, big, seconds: o.seconds, left: [o.left[0], o.left[1]] });
     audioRef.current?.swell();
     track("mass_battle_end", { preset: b.presetId ?? "custom", winner: o.winner });
   }, []);
@@ -934,10 +947,15 @@ export function MassBattleExperience({ list, presets, initial }: { list: PickerM
         <div className="mb-shade-bottom" aria-hidden />
 
         <div ref={dmgLayerRef} className="mb-dmg-layer" aria-hidden />
+        {fightCue > 0 && phase === "playing" && hudOn && (
+          <div key={fightCue} className="mb-fight pointer-events-none absolute inset-0 z-[4] flex items-center justify-center" aria-hidden>
+            <span className="mb-title text-5xl sm:text-7xl">Fight!</span>
+          </div>
+        )}
 
         {/* HUD: armies, the boss, the clock, the kill feed. */}
-        {hud && b && (phase === "ready" || phase === "playing" || phase === "done") && (
-          <BattleHud hud={hud} names={[sideName(0), sideName(1)]} hideCount={hideCount} phase={phase} feed={feed} visible={hudOn && !(phase === "done" && final && !cardHidden)} />
+        {b && (phase === "ready" || phase === "playing" || phase === "done") && (
+          <LiveHud bind={bindHud} names={[sideName(0), sideName(1)]} hideCount={hideCount} phase={phase} feed={feed} visible={hudOn && !(phase === "done" && final && !cardHidden)} />
         )}
 
         {drawn && (phase === "playing" || phase === "ready") && (
@@ -1032,7 +1050,7 @@ export function MassBattleExperience({ list, presets, initial }: { list: PickerM
               )}
               <dl className="grid grid-cols-2 gap-2 text-left text-xs">
                 <div className="rounded-lg bg-white/5 p-2"><dt className="font-pixel text-[9px] uppercase text-white/50">Battle time</dt><dd className="font-display text-sm font-bold">{final.seconds.toFixed(1)} s</dd></div>
-                <div className="rounded-lg bg-white/5 p-2"><dt className="font-pixel text-[9px] uppercase text-white/50">Left standing</dt><dd className="font-display text-sm font-bold">{hud ? `${fmt(hud.left[0])} · ${fmt(hud.left[1])}` : ""}</dd></div>
+                <div className="rounded-lg bg-white/5 p-2"><dt className="font-pixel text-[9px] uppercase text-white/50">Left standing</dt><dd className="font-display text-sm font-bold">{`${fmt(final.left[0])} · ${fmt(final.left[1])}`}</dd></div>
                 {final.mvp && <div className="col-span-2 rounded-lg bg-white/5 p-2"><dt className="font-pixel text-[9px] uppercase text-white/50">Most KOs</dt><dd className="font-display text-sm font-bold">{final.mvp}</dd></div>}
                 {final.big && <div className="col-span-2 rounded-lg bg-white/5 p-2"><dt className="font-pixel text-[9px] uppercase text-white/50">Biggest hit</dt><dd className="font-display text-sm font-bold">{final.big}</dd></div>}
               </dl>
