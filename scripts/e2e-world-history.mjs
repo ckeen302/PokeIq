@@ -13,7 +13,8 @@
  * a recording. Screenshots at 1440 and 390 px.
  *
  * CI has no GPU: software WebGL draws a frame every few seconds, and real
- * input events then wait behind those frames. So the film runs at its
+ * input events then wait behind those frames (a development server also
+ * compiles each route on its first request, hence the long timeouts). So the film runs at its
  * light test quality (?q=draft), presses on the stage are dispatched in
  * the page, and each part records a failure instead of stopping the rest.
  */
@@ -64,7 +65,7 @@ export async function runWorldHistory({ browser, BASE, OUT, errors, step }) {
 
   await part(errors, "server text", async () => {
     // Without JavaScript the page is the whole history with its sources.
-    const res = await page.request.get(`${BASE}/lab/world-history`);
+    const res = await page.request.get(`${BASE}/lab/world-history`, { timeout: 180_000 });
     if (res.status() !== 200) throw new Error(`the page returned ${res.status()}`);
     const html = await res.text();
     for (const c of CHAPTERS) if (!html.includes(c.title.replace(/'/g, "&#x27;")) && !html.includes(c.title)) errors.push(`world-history: the server-rendered page is missing "${c.title}"`);
@@ -130,7 +131,7 @@ export async function runWorldHistory({ browser, BASE, OUT, errors, step }) {
   await part(errors, "links", async () => {
     // Every chapter: its own page, title and preview card.
     for (const c of CHAPTERS) {
-      const res = await page.request.get(`${BASE}/lab/world-history/${c.id}`);
+      const res = await page.request.get(`${BASE}/lab/world-history/${c.id}`, { timeout: 180_000 });
       if (res.status() !== 200) { errors.push(`world-history: /lab/world-history/${c.id} returned ${res.status()}`); continue; }
       const html = await res.text();
       const title = html.match(/<title>([^<]*)<\/title>/)?.[1] ?? "";
@@ -139,10 +140,10 @@ export async function runWorldHistory({ browser, BASE, OUT, errors, step }) {
       if (!og.includes(`/lab/world-history/${c.id}/opengraph-image`)) errors.push(`world-history: ${c.id}'s preview image is ${og}`);
     }
     for (const path of ["/lab/world-history/opengraph-image", "/lab/world-history/creation/opengraph-image", "/lab/world-history/paldea/opengraph-image"]) {
-      const og = await page.request.get(`${BASE}${path}`);
+      const og = await page.request.get(`${BASE}${path}`, { timeout: 180_000 });
       if (og.status() !== 200 || !/image\/png/.test(og.headers()["content-type"] ?? "")) errors.push(`world-history: preview card ${path} failed (${og.status()})`);
     }
-    if ((await page.request.get(`${BASE}/lab/world-history/not-a-chapter`)).status() !== 404) errors.push("world-history: an unknown chapter isn't a 404");
+    if ((await page.request.get(`${BASE}/lab/world-history/not-a-chapter`, { timeout: 180_000 })).status() !== 404) errors.push("world-history: an unknown chapter isn't a 404");
   });
 
   step("3D Lab: The History of the Pokémon World — make a 5 s video (a valid 1080 × 1920 MP4 with music), cancel a recording, phone layout");
