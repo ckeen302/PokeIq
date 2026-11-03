@@ -1324,7 +1324,8 @@ async function playPokedleDuel({ p, name, seen }, shoot) {
           await p.screenshot({ path: `${OUT}/pokedle-duel-no-option.png`, fullPage: true });
           throw new Error(`${name}: no suggestion for ${pick.name} (box "${await input.inputValue()}", listed ${JSON.stringify(listed)}, tried ${[...tried]})`);
         }
-        await option.click();
+        // The other trainer can solve the round between finding the suggestion and clicking it: look again then.
+        if (!(await option.click({ timeout: 5_000 }).then(() => true, () => false))) continue;
       }
       for (let w = 0; w < 50 && (seen.view?.round?.rows.length ?? before + 1) === before && seen.view?.round?.index === round.index; w++) await p.waitForTimeout(100);
       continue;

@@ -23,6 +23,19 @@ function validator(format: BattleFormatId): TeamValidator {
 /** The validator edits sets as it reads them, so it only ever sees copies. */
 const copy = <T>(value: T): T => structuredClone(value);
 
+/**
+ * Whether the validator turns a drawn set away. A set it throws on counts as
+ * turned away: some mods' data trips Showdown's own checks (CCAPM 2025's
+ * Zarude-Alchemist "should have a string battleOnly").
+ */
+function turnedAway(v: TeamValidator, set: TeamSet): boolean {
+  try {
+    return !!v.validateSet(copy(set), {});
+  } catch {
+    return true;
+  }
+}
+
 export function checkTeam(format: BattleFormatId, sets: TeamSet[]): TeamCheck {
   const v = validator(format);
   const perSet = sets.map((set) => v.validateSet(copy(set), {}) ?? []);
@@ -102,7 +115,7 @@ export function legalRandomTeam(opts: { generator: string; gen: number; level: n
           spares.push({ ...set, item: "" });
           continue;
         }
-        if (v.validateSet(copy(set), {})) continue;
+        if (turnedAway(v, set)) continue;
         team.push(set);
         species.add(num);
         if (set.item) items.add(set.item);
@@ -111,7 +124,7 @@ export function legalRandomTeam(opts: { generator: string; gen: number; level: n
     for (const set of spares) {
       if (team.length >= size) break;
       const num = dex.species.get(set.species).num;
-      if (species.has(num) || v.validateSet(copy(set), {})) continue;
+      if (species.has(num) || turnedAway(v, set)) continue;
       team.push(set);
       species.add(num);
     }
