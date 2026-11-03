@@ -28,9 +28,9 @@ function latticeTexture(): THREE.DataTexture {
   g.clearRect(0, 0, 128, 256);
   g.strokeStyle = "#fff";
   g.lineCap = "square";
-  g.lineWidth = 7;
-  g.strokeRect(3.5, 3.5, 121, 249);
-  g.lineWidth = 5;
+  g.lineWidth = 9;
+  g.strokeRect(4.5, 4.5, 119, 247);
+  g.lineWidth = 6.5;
   for (const [y0, y1] of [[0, 128], [128, 256]]) {
     g.beginPath(); g.moveTo(4, y0); g.lineTo(124, y1); g.stroke();
     g.beginPath(); g.moveTo(124, y0); g.lineTo(4, y1); g.stroke();
@@ -130,7 +130,8 @@ function latticeTube(rings: Ring[], cellM: number): { faces: THREE.BufferGeometr
     for (let i = 0; i < rings.length - 1; i++) {
       const a = corner(rings[i], k), b = corner(rings[i + 1], k);
       const len = a.distanceTo(b);
-      const w = Math.max(0.45, rings[i].h * 0.1);
+      // Heavy corner members, as on the real thing: they carry the tower's outline from across the city.
+      const w = Math.max(0.8, rings[i].h * 0.16);
       const g = new THREE.BoxGeometry(w, len, w);
       g.translate(0, len / 2, 0);
       g.applyQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), b.clone().sub(a).normalize()));

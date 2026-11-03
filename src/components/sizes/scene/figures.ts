@@ -327,11 +327,11 @@ function archedOutline(top: [number, number][], bottomY: number, back: number, f
  * The car and the bus, side-on, front towards +x: a body extruded from its
  * side profile with arches over the wheels, a glasshouse with its pillars,
  * lamps, bumpers, tyres and hubs. The car is a red saloon, the bus a
- * cream-and-green city bus with its windows, doors and destination sign
- * (plain liveries, no logos). Returns the vehicle's width.
+ * yellow school bus with a short hood, its windows and warning lamps
+ * (plain liveries, no logos or lettering). Returns the vehicle's width.
  */
 function vehicle(kind: "car" | "bus", L: number, add: (geo: THREE.BufferGeometry, m: THREE.Material | THREE.Material[]) => THREE.Mesh, mat: (p: THREE.MeshStandardMaterialParameters) => THREE.MeshStandardMaterial, materials: THREE.Material[]): number {
-  const glass = mat({ color: "#18212b", roughness: 0.06, metalness: 0.55, envMapIntensity: 1.3 });
+  const glass = mat({ color: "#3a4d60", roughness: 0.07, metalness: 0.3, envMapIntensity: 1.8 });
   const tyre = mat({ color: "#161616", roughness: 0.92 });
   const hub = mat({ color: "#c9ccd1", roughness: 0.3, metalness: 0.85 });
   const trim = mat({ color: "#2a2c30", roughness: 0.6, metalness: 0.2 });
@@ -377,37 +377,39 @@ function vehicle(kind: "car" | "bus", L: number, add: (geo: THREE.BufferGeometry
     wheels([wb, wf], r, W);
     return W;
   }
-  // The bus: green below the waist, cream above, a white roof with its air-conditioning pod (3.25 m to the top of it, as documented).
-  const W = 2.55, r = 0.5, wf = half - 2.55, wb = -half + 3.3;
-  const green = new THREE.MeshPhysicalMaterial({ color: "#1f6b4a", roughness: 0.32, metalness: 0.35, clearcoat: 0.8, clearcoatRoughness: 0.1 });
-  const cream = new THREE.MeshPhysicalMaterial({ color: "#efe7d2", roughness: 0.35, metalness: 0.2, clearcoat: 0.7, clearcoatRoughness: 0.12 });
-  materials.push(green, cream);
-  const roofM = mat({ color: "#f6f4ee", roughness: 0.55 });
-  const sign = mat({ color: "#2a1d05", emissive: "#ffb21c", emissiveIntensity: 1.1, roughness: 0.4 });
-  const lower = archedOutline([[half, 0.38], [half + 0.02, 1.16], [-half, 1.16]], 0.32, -half, half, [[wb, r, r + 0.1], [wf, r, r + 0.1]]);
-  add(profileBody(lower, W, 0.1), green);
-  const upper = new THREE.Shape([new THREE.Vector2(-half, 1.14), new THREE.Vector2(half + 0.02, 1.14), new THREE.Vector2(half - 0.02, 2.72), new THREE.Vector2(half - 0.3, 2.84), new THREE.Vector2(-half + 0.2, 2.84), new THREE.Vector2(-half, 2.7)]);
-  add(profileBody(upper, W, 0.1), cream);
-  box(L - 1.2, 0.14, W - 0.3, -0.1, 2.93, 0, roofM);
-  box(2.6, 0.24, W - 0.7, -1.2, 3.12, 0, roofM);
-  // The windows down both sides (a cream pillar between each, none across a door), the doors, the windscreen and the destination sign.
-  const doors = [half - 1.15, 0.35, -half + 2.3];
-  box(L - 2.0, 1.02, W + 0.03, -0.55, 1.92, 0, glass);
-  const panes = Math.round((L - 2.0) / 1.45);
-  for (let k = 0; k <= panes; k++) {
-    const x = -half + 0.45 + (k * (L - 2.0)) / panes;
-    if (doors.every((d) => Math.abs(x - d) > 0.62)) box(0.16, 1.04, W + 0.06, x, 1.92, 0, cream);
-  }
-  for (const x of doors) box(1.12, 2.06, W + 0.05, x, 1.42, 0, glass);
-  box(0.06, 1.6, W - 0.25, half + 0.03, 1.86, 0, glass);
-  box(0.07, 0.18, W - 0.6, half + 0.03, 2.6, 0, sign);
+  // The school bus (a conventional one, as the reference's Blue Bird Vision): school-bus yellow with a short hood before the windscreen,
+  // a white roof (3.25 m to its top, as documented), black rub rails down the side, a row of windows, warning lamps at the roof's corners.
+  const W = 2.44, r = 0.5, wf = half - 1.05, wb = -half + 3.4;
+  const yellow = new THREE.MeshPhysicalMaterial({ color: "#f5b400", roughness: 0.3, metalness: 0.2, clearcoat: 0.8, clearcoatRoughness: 0.1 });
+  materials.push(yellow);
+  const roofM = mat({ color: "#f4f2ea", roughness: 0.5 });
+  const amber = mat({ color: "#ffb21c", emissive: "#ff9a00", emissiveIntensity: 0.7, roughness: 0.3 });
+  const red = mat({ color: "#c4161c", emissive: "#d0101a", emissiveIntensity: 0.6, roughness: 0.3 });
+  const hood = half - 1.72;
+  const body = archedOutline([[half, 0.42], [half + 0.02, 1.38], [half - 0.3, 1.52], [hood + 0.05, 1.6], [hood - 0.1, 2.92], [hood - 0.32, 3.04], [-half + 0.12, 3.04], [-half, 2.9]], 0.36, -half, half, [[wb, r, r + 0.1], [wf, r, r + 0.1]]);
+  add(profileBody(body, W, 0.08), yellow);
+  box(L - 2.2, 0.16, W - 0.12, -1.0, 3.1, 0, roofM);
+  // Windows down the side, a yellow pillar between each; the windscreen over the hood.
+  const x0 = -half + 0.45, x1 = hood - 0.55;
+  box(x1 - x0, 0.86, W + 0.03, (x0 + x1) / 2, 2.2, 0, glass);
+  const panes = Math.max(1, Math.round((x1 - x0) / 0.92));
+  for (let k = 0; k <= panes; k++) box(0.13, 0.88, W + 0.06, x0 + (k * (x1 - x0)) / panes, 2.2, 0, yellow);
+  add(new THREE.BoxGeometry(0.05, 1.12, W - 0.3).rotateZ(-0.1).translate(hood - 0.02, 2.24, 0), glass);
+  // Rub rails and bumpers, black; the grille.
+  for (const y of [0.8, 1.16, 1.52]) box(L - 1.9, 0.08, W + 0.05, -0.95, y, 0, trim);
+  box(0.06, 0.62, W * 0.6, half + 0.03, 1.0, 0, trim);
+  box(0.2, 0.26, W * 0.98, half + 0.06, 0.48, 0, trim);
+  box(0.2, 0.26, W * 0.98, -half - 0.06, 0.5, 0, trim);
   for (const side of [1, -1]) {
-    box(0.06, 0.16, 0.4, half + 0.04, 0.72, side * 0.88, head);
-    box(0.06, 0.32, 0.22, -half - 0.02, 0.9, side * 1.02, tail);
-    box(0.08, 0.3, 0.14, half + 0.12, 2.12, side * (W / 2 + 0.12), trim);
+    box(0.06, 0.18, 0.3, half + 0.04, 1.1, side * 0.9, head);
+    box(0.06, 0.24, 0.2, -half - 0.03, 1.05, side * 0.95, red);
+    // Warning lamps over the windscreen and at the back.
+    box(0.08, 0.16, 0.2, hood - 0.3, 2.98, side * 0.55, amber);
+    box(0.08, 0.16, 0.2, hood - 0.3, 2.98, side * 0.85, red);
+    box(0.08, 0.16, 0.2, -half - 0.02, 2.75, side * 0.55, amber);
+    box(0.08, 0.16, 0.2, -half - 0.02, 2.75, side * 0.85, red);
+    box(0.08, 0.28, 0.12, hood + 0.25, 2.0, side * (W / 2 + 0.16), trim);
   }
-  box(0.16, 0.24, W * 0.96, half + 0.02, 0.42, 0, trim);
-  box(0.16, 0.24, W * 0.96, -half - 0.02, 0.42, 0, trim);
   wheels([wb, wf], r, W);
   return W;
 }

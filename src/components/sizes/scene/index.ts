@@ -343,14 +343,15 @@ export function createSizesScene(host: HTMLElement, opts: SceneOptions): SizesSc
     c.width = c.height = 128;
     const g = c.getContext("2d")!;
     const grad = g.createRadialGradient(64, 64, 0, 64, 64, 64);
-    grad.addColorStop(0, "rgba(225,252,255,0.95)");
-    grad.addColorStop(0.22, "rgba(150,230,255,0.4)");
-    grad.addColorStop(1, "rgba(120,210,255,0)");
+    grad.addColorStop(0, "rgba(230,253,255,1)");
+    grad.addColorStop(0.2, "rgba(140,228,255,0.55)");
+    grad.addColorStop(0.5, "rgba(110,205,255,0.16)");
+    grad.addColorStop(1, "rgba(100,200,255,0)");
     g.fillStyle = grad;
     g.fillRect(0, 0, 128, 128);
     const t = new THREE.CanvasTexture(c);
     const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: t, blending: THREE.AdditiveBlending, depthWrite: false, fog: false, toneMapped: false }));
-    s.scale.setScalar(96);
+    s.scale.setScalar(118);
     return s;
   })();
 
