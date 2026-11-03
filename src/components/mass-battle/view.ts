@@ -10,6 +10,10 @@ import type { SimEnd, SimFrame, SimReady } from "./protocol";
  * the director) as the clock passes them.
  */
 
+/** The types in a fixed order (index + 1 is a unit's `hitType`; 0 is no type). */
+export const HIT_TYPES = ["Normal", "Fire", "Water", "Electric", "Grass", "Ice", "Fighting", "Poison", "Ground", "Flying", "Psychic", "Bug", "Rock", "Ghost", "Dragon", "Dark", "Steel", "Fairy"] as const;
+const HIT_TYPE_INDEX = new Map<string, number>(HIT_TYPES.map((t, k) => [t, k + 1]));
+
 /** Something that happened to a unit besides a hit (a status, healing, chip damage, a stat stage…: NOTE in constants.ts). */
 export interface Note {
   t: number;
@@ -53,6 +57,8 @@ export class BattleView {
   readonly hitAt: Float32Array;
   /** How hard the last hit was (its damage over the unit's max HP, 0..1). */
   readonly hitPower: Float32Array;
+  /** The last hit's move type (1 + its index in HIT_TYPES; 0 none), for the colour of its flash. */
+  readonly hitType: Uint8Array;
   readonly attackAt: Float32Array;
   readonly faintAt: Float32Array;
   readonly hp: Uint16Array;
@@ -85,6 +91,7 @@ export class BattleView {
     this.fz = new Float32Array(n).fill(NaN);
     this.hitAt = new Float32Array(n).fill(-1);
     this.hitPower = new Float32Array(n);
+    this.hitType = new Uint8Array(n);
     this.attackAt = new Float32Array(n).fill(-1);
     this.faintAt = new Float32Array(n).fill(-1);
     this.hp = new Uint16Array(n);
@@ -168,6 +175,8 @@ export class BattleView {
       if (target !== actor && !(flags & (EV.MISS | EV.IMMUNE))) {
         this.hitAt[target] = t;
         this.hitPower[target] = Math.min(1, ev[k + 3] / Math.max(1, this.ready.maxHp[this.sp[target]]));
+        const slot = ev[k + 2];
+        this.hitType[target] = slot >= 0 ? HIT_TYPE_INDEX.get(this.ready.moves[this.sp[actor]]?.[slot]?.type ?? "") ?? 0 : 0;
       }
       if (flags & EV.KO) this.faintAt[target] = t;
       this.onHit?.({ t, actor, target, slot: ev[k + 2], damage: ev[k + 3], flags, action: ev[k + 5], ax: f.pos[actor * 2], az: f.pos[actor * 2 + 1], tx: f.pos[target * 2], tz: f.pos[target * 2 + 1] });

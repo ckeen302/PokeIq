@@ -2,7 +2,9 @@ import * as THREE from "three";
 import { BOB, FLOAT, cycleHz, motionFor, type Motion } from "@/lib/mass-battle/gait";
 import { figureSize } from "@/lib/mass-battle/stats";
 import type { MBSpecies } from "@/lib/mass-battle/types";
+import { HIT_TYPES } from "../view";
 import type { SpeciesAsset } from "./assets";
+import { typeLook } from "./effects";
 
 /**
  * The armies: every Pokémon is a solid 3D relief figure of its HOME render
@@ -17,9 +19,11 @@ import type { SpeciesAsset } from "./assets";
  * the camera (a relief reads best from the front; it turns round like a
  * card flip to face the way it fights), bob and lean with their gait,
  * lunge when they attack, flinch (squashed and knocked back) when hit,
- * and when they faint, drop, glow red and shrink up into a Poké Ball's
- * beam. A boss (a side of three or fewer) glows with its type's aura and
- * shakes the ground as it walks.
+ * with a flash in the colour of the move's type round their outline, and
+ * when they faint, drop, glow red and shrink up into a Poké Ball's beam.
+ * A boss (a side of three or fewer) glows with its type's aura and shakes
+ * the ground as it walks. A figure right in front of the lens dissolves
+ * (a screen-door fade, as games do) so it never blocks the shot.
  */
 
 /** Seconds a fainted figure takes to drop and be recalled. */
@@ -43,6 +47,8 @@ export interface UnitsView {
   hitAt: Float32Array;
   /** The last hit's damage over max HP (a scratch barely flashes, a big hit lights the figure up). */
   hitPower: Float32Array;
+  /** The last hit's move type (1 + its index in HIT_TYPES; 0 none). */
+  hitType: Uint8Array;
   attackAt: Float32Array;
   faintAt: Float32Array;
   /** The battle clock (s). */
@@ -55,6 +61,7 @@ interface Level {
   pose: THREE.InstancedBufferAttribute;
   look: THREE.InstancedBufferAttribute;
   extra: THREE.InstancedBufferAttribute;
+  fx: THREE.InstancedBufferAttribute;
   count: number;
   triangles: number;
 }
@@ -75,7 +82,10 @@ interface SpeciesDraw {
   uniforms: { uAura: { value: THREE.Color }; uMeshH: { value: number } };
 }
 
-const UNIT_KEY = "mb-unit-v2";
+const UNIT_KEY = "mb-unit-v3";
+
+/** The hit flash's colour per type (index as in `hitType`; 0 is a plain warm white). */
+const FLASH_COLORS = [new THREE.Color(1, 0.95, 0.85), ...HIT_TYPES.map((t) => typeLook(t).color.clone().lerp(typeLook(t).glow, 0.35))];
 
 /** The per-instance placement, shared by the figure and its shadow. */
 const PLACE_GLSL = /* glsl */ `
@@ -114,18 +124,22 @@ export const UNIT_LIGHT = {
 /** Places, turns and animates each instance (hit flash, recall, rim light, aura) in the standard material. */
 function unitPatch(m: THREE.MeshStandardMaterial, u: SpeciesDraw["uniforms"]) {
   m.onBeforeCompile = (s) => {
-    Object.assign(s.uniforms, UNIT_LIGHT, u);
+    Object.assign(s.uniforms, UNIT_LIGHT, u, { uFlashCols: { value: FLASH_COLORS } });
     s.vertexShader = s.vertexShader
       .replace(
         "#include <common>",
         `#include <common>
 ${PLACE_GLSL}
 uniform float uMeshH;
+uniform vec3 uFlashCols[${FLASH_COLORS.length}];
+attribute vec2 aFx; // fade (in front of the lens), the flash's type
 varying float vFlash;
 varying float vRecall;
 varying float vH;
 varying float vSide;
-varying float vTint;`
+varying float vTint;
+varying float vFade;
+varying vec3 vFlashCol;`
       )
       .replace("#include <beginnormal_vertex>", "vec3 objectNormal = mbTurn(vec3(normal));\n#ifdef USE_TANGENT\nvec3 objectTangent = vec3(tangent.xyz);\n#endif")
       .replace(
@@ -135,7 +149,9 @@ vFlash = aLook.z;
 vRecall = aLook.w;
 vH = position.y / max(uMeshH, 1e-4);
 vSide = floor(aExtra.z);
-vTint = fract(aExtra.z);`
+vTint = fract(aExtra.z);
+vFade = aFx.x;
+vFlashCol = uFlashCols[int(aFx.y + 0.5)];`
       );
     s.fragmentShader = s.fragmentShader
       .replace(
@@ -150,7 +166,17 @@ varying float vFlash;
 varying float vRecall;
 varying float vH;
 varying float vSide;
-varying float vTint;`
+varying float vTint;
+varying float vFade;
+varying vec3 vFlashCol;
+// A 4×4 ordered dither for the screen-door fade.
+float mbBayer2(vec2 a) { a = floor(a); return fract(dot(a, vec2(0.5, a.y * 0.75))); }
+float mbBayer4(vec2 a) { return mbBayer2(0.5 * a) * 0.25 + mbBayer2(a) + 1.0 / 32.0; }`
+      )
+      .replace(
+        "#include <clipping_planes_fragment>",
+        `#include <clipping_planes_fragment>
+if (vFade > 0.004 && mbBayer4(gl_FragCoord.xy) < vFade) discard;`
       )
       .replace(
         "#include <map_fragment>",
@@ -167,7 +193,8 @@ vec3 mbTeam = vSide < 0.5 ? uTeamA : uTeamB;
 totalEmissiveRadiance += (uRim + mbTeam * 0.25) * mbRim * (0.35 + 0.65 * smoothstep(0.1, 0.6, vH));
 // A boss's aura: its outline glows and pulses.
 totalEmissiveRadiance += uAura * (mbRim * 1.7 + 0.04) * (0.75 + 0.25 * sin(uTime * 3.0 + vH * 6.0));
-totalEmissiveRadiance += vec3(1.0, 0.95, 0.85) * vFlash * 0.9 + vec3(1.0, 0.12, 0.16) * vRecall * 2.2;`
+// A hit: a flash in the move's type's colour, strongest round the outline so the figure still reads.
+totalEmissiveRadiance += vFlashCol * vFlash * (0.22 + 1.1 * mbRim) + vec3(1.0, 0.12, 0.16) * vRecall * 2.2;`
       );
   };
   m.customProgramCacheKey = () => UNIT_KEY;
@@ -302,10 +329,12 @@ export class UnitsLayer {
         const pose = new THREE.InstancedBufferAttribute(new Float32Array(cap * 4), 4);
         const look = new THREE.InstancedBufferAttribute(new Float32Array(cap * 4), 4);
         const extra = new THREE.InstancedBufferAttribute(new Float32Array(cap * 4), 4);
-        for (const a of [pose, look, extra]) a.setUsage(THREE.DynamicDrawUsage);
+        const fx = new THREE.InstancedBufferAttribute(new Float32Array(cap * 2), 2);
+        for (const a of [pose, look, extra, fx]) a.setUsage(THREE.DynamicDrawUsage);
         geo.setAttribute("aPose", pose);
         geo.setAttribute("aLook", look);
         geo.setAttribute("aExtra", extra);
+        geo.setAttribute("aFx", fx);
         geo.instanceCount = 0;
         const mesh = new THREE.Mesh(geo, material);
         mesh.frustumCulled = false;
@@ -315,7 +344,7 @@ export class UnitsLayer {
         mesh.receiveShadow = opts.shadows;
         mesh.customDepthMaterial = draw.depth;
         this.group.add(mesh);
-        return { geo, mesh, pose, look, extra, count: 0, triangles: lv.triangles };
+        return { geo, mesh, pose, look, extra, fx, count: 0, triangles: lv.triangles };
       });
       draw.w = size.w;
       draw.h = size.h;
@@ -462,7 +491,8 @@ export class UnitsLayer {
       if (view.hitAt[i] >= 0 && ha >= 0 && ha < 0.34) {
         const k = 1 - ha / 0.34;
         const p = Math.min(1, 0.3 + view.hitPower[i] * 4);
-        flash = k * Math.min(1, 0.08 + view.hitPower[i] * 3);
+        // Bright at once, quickly gone (in slow motion it lasts three times as long on screen, so it must not linger).
+        flash = k * k * Math.min(0.9, 0.12 + view.hitPower[i] * 2.5);
         roll -= 0.26 * k * p;
         squash += 0.12 * k * k * p;
         if (!Number.isNaN(fx)) {
@@ -494,8 +524,19 @@ export class UnitsLayer {
       // Seen from high above, figures lean back a little toward the camera so they still read.
       const camPitch = Math.atan2(cy - h * 0.5, Math.hypot(cx - xi, cz - zi));
       const pitch = Math.max(0, Math.min(0.42, (camPitch - 0.55) * 0.55));
+      // In front of the lens: a figure filling most of the frame (or with the camera inside it) dissolves, so a crowd
+      // round a low camera frames the action instead of hiding it. A boss never does: its shots are built round it.
+      let fade = 0;
+      if (!d.boss) {
+        fade = Math.min(1, Math.max(0, (px / viewportH - 0.62) / 0.38));
+        if (dist < Math.max(d.w, h) * 0.55) fade = 1;
+      }
+      if (fade >= 0.999) continue;
       const o = lv.count * 4;
       const pose = lv.pose.array as Float32Array, look = lv.look.array as Float32Array, extra = lv.extra.array as Float32Array;
+      const fxa = lv.fx.array as Float32Array;
+      fxa[lv.count * 2] = fade;
+      fxa[lv.count * 2 + 1] = flash > 0 ? view.hitType[i] : 0;
       pose[o] = xi + ox;
       pose[o + 1] = y;
       pose[o + 2] = zi + oz;
@@ -528,9 +569,9 @@ export class UnitsLayer {
         lv.mesh.visible = lv.count > 0;
         if (lv.count) {
           calls++;
-          for (const a of [lv.pose, lv.look, lv.extra]) {
+          for (const a of [lv.pose, lv.look, lv.extra, lv.fx]) {
             a.clearUpdateRanges();
-            a.addUpdateRange(0, lv.count * 4);
+            a.addUpdateRange(0, lv.count * a.itemSize);
             a.needsUpdate = true;
           }
         }
@@ -553,7 +594,8 @@ export class UnitsLayer {
         (lv.pose.array as Float32Array).set([at.x, 0, at.z, 0], 0);
         (lv.look.array as Float32Array).set([d.scale[0] * 0.001, 0, 0, 0], 0);
         (lv.extra.array as Float32Array).set([1, 0, 0, 0], 0);
-        for (const a of [lv.pose, lv.look, lv.extra]) {
+        (lv.fx.array as Float32Array).set([0, 0], 0);
+        for (const a of [lv.pose, lv.look, lv.extra, lv.fx]) {
           a.clearUpdateRanges();
           a.needsUpdate = true;
         }
