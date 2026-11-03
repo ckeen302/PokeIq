@@ -190,6 +190,8 @@ export function MassBattleExperience({ list, presets, initial, playback: initial
     const was = playbackRef.current;
     playbackRef.current = p;
     setPlaybackState(p);
+    // The battle worker plays ahead by the speed.
+    simRef.current?.setPlayback(p, pausedRef.current);
     speedRef.current = p.speed;
     setSpeed(p.speed);
     setSlowmo(p.slowmo);
@@ -197,7 +199,6 @@ export function MassBattleExperience({ list, presets, initial, playback: initial
     setNumbersOn(p.numbers);
     if (p.camera !== was.camera && viewRef.current) applyCam(p.camera);
     if (battleRef.current) battleRef.current = { ...battleRef.current, playback: p };
-    simRef.current?.setPlayback(p, pausedRef.current);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   /** One playback setting changed from the stage (the setup panel and links see it too). */
