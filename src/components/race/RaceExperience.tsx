@@ -163,6 +163,7 @@ export function RaceExperience({ preset, vs = [], distance = null, seed = null, 
     title: "",
     /** Checks and screenshots can hold the show clock still. */
     frozen: false,
+    look: null as { lane: number; az: number; dist: number; y: number; ty: number; fov: number } | null,
   });
 
   // ---- Which view.
@@ -414,6 +415,16 @@ export function RaceExperience({ preset, vs = [], distance = null, seed = null, 
         if (s.autoOrbit) s.orbit = { ...s.orbit, yaw: s.yaw0 + 0.22 * Math.sin((t - plan.end) * 0.16) };
         pose = orbitPose(s.orbit);
       }
+      // A camera fixed on one runner (screenshots and checks: window.__race.look).
+      if (s.look) {
+        const L = s.look;
+        const sp = spots.find((x) => x.lane === L.lane);
+        if (sp) {
+          const a = (L.az * Math.PI) / 180;
+          const ux = sp.dx * Math.cos(a) - sp.dz * Math.sin(a), uz = sp.dz * Math.cos(a) + sp.dx * Math.sin(a);
+          pose = { pos: [sp.x + ux * L.dist, L.y, sp.z + uz * L.dist], target: [sp.x, L.ty, sp.z], fov: L.fov };
+        }
+      }
       if (s.blend) {
         const k = (now / 1000 - s.blend.t0) / s.blend.dur;
         if (k >= 1) s.blend = null;
@@ -566,6 +577,11 @@ export function RaceExperience({ preset, vs = [], distance = null, seed = null, 
     // For automated checks and screenshots: jump the show clock, read where it is.
     (window as unknown as { __race?: unknown }).__race = {
       seek(t: number, freeze = false) { show.current.t = t; show.current.frozen = freeze; },
+      look(v: { lane: number; az: number; dist: number; y: number; ty: number; fov: number } | null) { show.current.look = v; },
+      lanes() {
+        const r = show.current.race;
+        return r ? r.lanes.map((l) => ({ key: l.entrant.key, lane: l.lane, h: l.h, w: l.w, time: l.time, place: l.place, motion: l.entrant.motion })) : [];
+      },
       state() {
         const s = show.current;
         return { t: s.t, phase: s.phase, gun: s.plan?.gun ?? null, end: s.plan?.end ?? null, shots: s.plan?.shots.map((x) => [x.phase, x.camera, x.t0, x.t1]) ?? [], quality: sceneRef.current?.quality ?? null, stats: sceneRef.current?.stats() ?? null, camera: { mode: s.cam, fov: s.last?.fov ?? null, pos: s.last?.pos ?? null, dist: s.orbit?.dist ?? null, zoom: s.zoom }, prof: { ...s.prof } };

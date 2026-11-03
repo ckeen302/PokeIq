@@ -4,6 +4,8 @@ import type { CamPose } from "@/lib/race/director";
 import type { Race } from "@/lib/race/race";
 import { buildCrowd, type Crowd } from "./crowd";
 import { createPost, stadiumEnvironment, type Post } from "./post";
+import { poolDepth, poolModes } from "@/lib/race/pool";
+import { buildPool, setPoolModes, type Pool } from "./pool";
 import { loadFigure, makeRunners, type Footfall, type Runners, type RunnerUrls } from "./runners";
 import { LAYER, buildStadium, type Stadium, type StadiumUrls } from "./stadium";
 
@@ -197,8 +199,9 @@ export function createRaceScene(host: HTMLElement, opts: SceneOptions): RaceScen
   // ---- Post.
   let post: Post | null = Q.post ? createPost(renderer, scene, camera, W, H, { msaa: Q.msaa, bloom: Q.bloom }) : null;
 
-  // ---- Runners.
+  // ---- Runners (and the pool lanes of any swimmers).
   let runners: Runners | null = null;
+  let pool: Pool | null = null;
 
   async function setRace(r: Race, signal: AbortSignal, onProgress?: (k: number) => void) {
     const figs = [];
@@ -210,7 +213,16 @@ export function createRaceScene(host: HTMLElement, opts: SceneOptions): RaceScen
     }
     if (signal.aborted) { figs.forEach((f) => f.dispose()); throw new DOMException("aborted", "AbortError"); }
     if (runners) { scene.remove(runners.group, runners.pfGroup); runners.dispose(); }
-    runners = makeRunners(r, figs, stadium.masts);
+    if (pool) { scene.remove(pool.group); pool.dispose(); pool = null; }
+    // Swimmers race in a water channel set into their lane, built now so nothing pops in.
+    const swimLanes = r.lanes.filter((l) => l.entrant.motion === "swim");
+    const modes = poolModes(swimLanes.map((l) => l.lane), r.distance);
+    setPoolModes(stadium.pool, modes);
+    if (swimLanes.length) {
+      pool = buildPool(swimLanes.map((l) => l.lane), r.distance, modes, poolDepth(swimLanes.map((l) => l.h)), stadium.pool, scene.environment, LAYER.BASE);
+      scene.add(pool.group);
+    }
+    runners = makeRunners(r, figs, stadium.masts, pool);
     scene.add(runners.group, runners.pfGroup);
     drawCard(`${r.distance} m`, r.order.slice(0, 3).map((x) => x.entrant.name).join(" · "));
     // Compile every shader now, so the first frames of the show don't stall.
@@ -240,7 +252,9 @@ export function createRaceScene(host: HTMLElement, opts: SceneOptions): RaceScen
     for (const s of steps) {
       const d = Math.hypot(s.x - camPos.x, s.z - camPos.z);
       heard.push({ kg: s.kg, dist: d });
-      impulses.push({ t: f.showT, a: Math.min(0.012, 0.0035 * Math.sqrt(s.kg / 300) / (1 + d / 25)) });
+      // A heavyweight thundering past close to the camera shakes it hard; far away, a tremor.
+      const k = Math.sqrt(s.kg / 300);
+      impulses.push({ t: f.showT, a: Math.min(0.022, 0.0012 * k / (1 + d / 30) + 0.0055 * k / (1 + (d / 9) * (d / 9))) });
     }
     while (impulses.length && f.showT - impulses[0].t > 0.6) impulses.shift();
     let shake = 0;
@@ -408,6 +422,7 @@ export function createRaceScene(host: HTMLElement, opts: SceneOptions): RaceScen
     internals: () => ({ scene, renderer, camera }),
     dispose() {
       runners?.dispose();
+      pool?.dispose();
       stadium.dispose();
       crowd.dispose();
       post?.dispose();

@@ -76,7 +76,7 @@ export function makeRace(entrants: Entrant[], distance: Distance, lanes = assign
     const runner = runnerFor(entrant.stats, entrant.kg);
     const { w, h } = figureSize(entrant);
     const hip = hipHeight(h, entrant.shape);
-    const profile = profileFor(runner, distance, (v) => cycleRate(entrant.motion, v, hip, entrant.kg));
+    const profile = profileFor(runner, distance, (v) => cycleRate(entrant.motion, v, hip, entrant.kg, Math.max(w, h)));
     return { entrant, lane: lanes[i], runner, profile, w, h, hip, time: profile.finish, place: 0, gap: 0 };
   });
   const order = [...rows].sort((a, b) => a.time - b.time || a.lane - b.lane);
