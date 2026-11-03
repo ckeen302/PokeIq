@@ -11,7 +11,8 @@ html.wh-locked, html.wh-locked body { overflow: hidden; overscroll-behavior: non
 .wh-stage canvas{display:block}
 .wh-shade-top{position:absolute;inset:0 0 auto 0;height:9rem;pointer-events:none;background:linear-gradient(180deg,rgb(3 2 7 / .78),transparent)}
 .wh-shade-bottom{position:absolute;inset:auto 0 0 0;height:15rem;pointer-events:none;background:linear-gradient(0deg,rgb(3 2 7 / .86),rgb(3 2 7 / .45) 55%,transparent)}
-.wh-chip{pointer-events:auto;display:inline-flex;height:2.25rem;align-items:center;gap:.4rem;border-radius:.4rem;border:1px solid rgb(255 255 255 / .14);background:rgb(10 8 22 / .62);padding:0 .75rem;font-family:var(--font-display),sans-serif;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.12em;color:rgb(255 255 255 / .86);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);transition:border-color .2s,color .2s,background .2s}
+:where(.wh-chip){display:inline-flex}
+.wh-chip{pointer-events:auto;height:2.25rem;align-items:center;gap:.4rem;border-radius:.4rem;border:1px solid rgb(255 255 255 / .14);background:rgb(10 8 22 / .62);padding:0 .75rem;font-family:var(--font-display),sans-serif;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.12em;color:rgb(255 255 255 / .86);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);transition:border-color .2s,color .2s,background .2s}
 .wh-chip:hover{border-color:rgb(255 255 255 / .36);color:#fff}
 .wh-chip:focus-visible{outline:none;box-shadow:0 0 0 2px #f2c96b}
 .wh-chip:disabled{opacity:.45}
