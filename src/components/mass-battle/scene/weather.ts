@@ -233,7 +233,7 @@ export function buildWeather(arena: ArenaId, weather: Weather, opts: { density: 
   }
   if (arena === "volcano") {
     // Embers rising on the heat and ash drifting down.
-    add(particleField({ count: Math.round(1600 * d), box: 50, height: 28, fall: -1.4, wind: [0.8, 0.3], size: 0.04, stretch: 1.5, color: new THREE.Color(3.2, 1.1, 0.25), alpha: 1, additive: true, wobble: 0.8, base: crystal, rand }));
+    add(particleField({ count: Math.round(1000 * d), box: 50, height: 28, fall: -1.4, wind: [0.8, 0.3], size: 0.022, stretch: 1.5, color: new THREE.Color(2.4, 0.85, 0.2), alpha: 1, additive: true, wobble: 0.8, base: crystal, rand }));
     add(particleField({ count: Math.round(1200 * d), box: 50, height: 28, fall: 0.7, wind: [0.6, 0.2], size: 0.05, stretch: 0, color: new THREE.Color("#5a5452"), alpha: 0.75, additive: false, wobble: 0.6, base: crystal, rand }));
   }
   if (opts.night && (arena === "plains" || arena === "colosseum") && weather === "none") {

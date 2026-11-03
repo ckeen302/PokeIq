@@ -67,13 +67,38 @@ function clock(t: number) {
  * The HUD fed straight from the render loop: `bind` hands the loop a setter, so the counters, the bars and the clock
  * update without re-rendering the page around them.
  */
-export function LiveHud({ bind, ...rest }: { bind(set: ((h: HudState) => void) | null): void; names: [string, string]; hideCount: boolean; phase: string; feed: FeedEntry[]; visible: boolean }) {
+export interface HudApi {
+  set(h: HudState): void;
+  /** A big moment for the kill feed (it stays a few seconds). */
+  push(text: string, tone: FeedEntry["tone"]): void;
+  clear(): void;
+}
+
+export function LiveHud({ bind, ...rest }: { bind(api: HudApi | null): void; names: [string, string]; hideCount: boolean; phase: string; visible: boolean }) {
   const [hud, setHud] = useState<HudState | null>(null);
+  const [feed, setFeed] = useState<FeedEntry[]>([]);
   useEffect(() => {
-    bind(setHud);
-    return () => bind(null);
+    let id = 0;
+    const timers = new Set<ReturnType<typeof setTimeout>>();
+    bind({
+      set: setHud,
+      push(text, tone) {
+        const k = ++id;
+        setFeed((f) => [...f.slice(-3), { id: k, text, tone }]);
+        const t = setTimeout(() => {
+          timers.delete(t);
+          setFeed((f) => f.filter((x) => x.id !== k));
+        }, 4200);
+        timers.add(t);
+      },
+      clear: () => setFeed([]),
+    });
+    return () => {
+      bind(null);
+      for (const t of timers) clearTimeout(t);
+    };
   }, [bind]);
-  return hud ? <BattleHud hud={hud} {...rest} /> : null;
+  return hud ? <BattleHud hud={hud} feed={feed} {...rest} /> : null;
 }
 
 export function BattleHud({ hud, names, hideCount, phase, feed, visible }: { hud: HudState; names: [string, string]; hideCount: boolean; phase: string; feed: FeedEntry[]; visible: boolean }) {

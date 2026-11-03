@@ -328,13 +328,14 @@ diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.22, 0.16, 0.15), smoothstep(0.55
         emissivePatch = `
 float mbR = length(vWorld.xz);
 vec2 mbFlow = vWorld.xz * 0.045 + vec2(uTime * 0.01, uTime * 0.006);
-float mbN1 = mbF(mbFlow) ;
-float mbRiver = 1.0 - smoothstep(0.0, 0.035, abs(mbN1 - 0.5));
-float mbCrack = 1.0 - smoothstep(0.0, 0.012, abs(mbF(vWorld.xz * 0.21) - 0.5));
+float mbN1 = mbF(mbFlow);
+// Rivers run only through some stretches of the field, cracks glow only in some patches: most of it is dark rock.
+float mbRiver = (1.0 - smoothstep(0.0, 0.03, abs(mbN1 - 0.5))) * smoothstep(0.52, 0.66, mbN(vWorld.xz * 0.011 + 3.0));
+float mbCrack = (1.0 - smoothstep(0.0, 0.01, abs(mbF(vWorld.xz * 0.21) - 0.5))) * smoothstep(0.58, 0.74, mbF(vWorld.xz * 0.035 + 7.0));
 float mbPulse = 0.75 + 0.25 * sin(uTime * 1.3 + vWorld.x * 0.05 + vWorld.z * 0.03);
 float mbAway = smoothstep(${(R * 0.45).toFixed(1)}, ${(R * 0.95).toFixed(1)}, mbR) * 0.85 + 0.15;
 vec3 mbLava = mix(vec3(1.0, 0.18, 0.02), vec3(1.0, 0.62, 0.12), mbN(vWorld.xz * 0.8 + uTime * 0.3));
-totalEmissiveRadiance += mbLava * (mbRiver * 3.2 * mbAway + mbCrack * 1.4) * mbPulse;
+totalEmissiveRadiance += mbLava * (mbRiver * 3.0 * mbAway + mbCrack * 1.1) * mbPulse;
 diffuseColor.rgb *= 1.0 - mbRiver * mbAway * 0.8;`;
       } else if (ground === "snowfield") {
         // Snow: soft drifts, blue in the hollows, glittering crystals that catch the light as the camera moves.

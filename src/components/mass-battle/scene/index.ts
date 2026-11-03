@@ -51,14 +51,16 @@ export interface QualitySpec {
   weather: number;
   /** Effects pieces per frame. */
   fxBudget: number;
+  /** Size of the armies' renders (bosses always get 512). */
+  artSize: 256 | 512;
 }
 
 export const QUALITY: Record<Quality, QualitySpec> = {
-  draft: { pr: 1, msaa: 0, cap: 1500, segments: [24, 10], bossSegments: [48, 16], lodPx: [70], particles: 900, props: 0.25, anisotropy: 1, shadow: 0, bloom: 0, grass: 0, post: false, weather: 0.3, fxBudget: 120 },
-  low: { pr: 1, msaa: 0, cap: 1500, segments: [32, 12], bossSegments: [72, 24], lodPx: [70], particles: 1800, props: 0.5, anisotropy: 2, shadow: 0, bloom: 4, grass: 5000, post: true, weather: 0.5, fxBudget: 220 },
-  medium: { pr: 1.25, msaa: 4, cap: 5000, segments: [56, 28, 12], bossSegments: [96, 40, 16], lodPx: [170, 48], particles: 3600, props: 0.8, anisotropy: 4, shadow: 2048, bloom: 5, grass: 18000, post: true, weather: 0.8, fxBudget: 420 },
-  high: { pr: 1.75, msaa: 4, cap: 10000, segments: [72, 32, 16], bossSegments: [120, 56, 24], lodPx: [150, 40], particles: 5400, props: 1, anisotropy: 8, shadow: 4096, bloom: 5, grass: 32000, post: true, weather: 1, fxBudget: 640 },
-  export: { pr: 1, msaa: 4, cap: 10000, segments: [72, 32, 16], bossSegments: [120, 56, 24], lodPx: [120, 32], particles: 5400, props: 1, anisotropy: 8, shadow: 4096, bloom: 5, grass: 32000, post: true, weather: 1, fxBudget: 640 },
+  draft: { pr: 1, msaa: 0, cap: 1500, segments: [24, 10], bossSegments: [48, 16], lodPx: [70], particles: 900, props: 0.25, anisotropy: 1, shadow: 0, bloom: 0, grass: 0, post: false, weather: 0.3, fxBudget: 120, artSize: 256 },
+  low: { pr: 1, msaa: 0, cap: 1500, segments: [32, 12], bossSegments: [72, 24], lodPx: [70], particles: 1800, props: 0.5, anisotropy: 2, shadow: 0, bloom: 4, grass: 5000, post: true, weather: 0.5, fxBudget: 220, artSize: 256 },
+  medium: { pr: 1.25, msaa: 4, cap: 5000, segments: [56, 28, 12], bossSegments: [96, 40, 16], lodPx: [170, 48], particles: 3600, props: 0.8, anisotropy: 4, shadow: 2048, bloom: 5, grass: 18000, post: true, weather: 0.8, fxBudget: 420, artSize: 256 },
+  high: { pr: 1.75, msaa: 4, cap: 10000, segments: [72, 32, 16], bossSegments: [120, 56, 24], lodPx: [150, 40], particles: 5400, props: 1, anisotropy: 8, shadow: 4096, bloom: 5, grass: 32000, post: true, weather: 1, fxBudget: 640, artSize: 512 },
+  export: { pr: 1, msaa: 4, cap: 10000, segments: [72, 32, 16], bossSegments: [120, 56, 24], lodPx: [120, 32], particles: 5400, props: 1, anisotropy: 8, shadow: 4096, bloom: 5, grass: 32000, post: true, weather: 1, fxBudget: 640, artSize: 512 },
 };
 
 /** The lightest first; the live adaptive ladder. */
@@ -292,7 +294,8 @@ export function createBattleScene(host: HTMLElement, opts: SceneOptions): Battle
     // The figures.
     onProgress(0.02, "Deploying armies");
     const assets = await loadAll(
-      input.species.map((s) => ({ s, segments: input.bosses.has(s.id) ? Q.bossSegments : Q.segments, artSize: input.bosses.has(s.id) ? (512 as const) : (256 as const) })),
+      // Big armies of many species keep to the smaller renders (memory); a few species get the sharp ones at the top qualities.
+      input.species.map((s) => ({ s, segments: input.bosses.has(s.id) ? Q.bossSegments : Q.segments, artSize: input.bosses.has(s.id) || (Q.artSize === 512 && input.species.length <= 12) ? (512 as const) : (256 as const) })),
       (p) => onProgress(0.02 + p * 0.76, "Deploying armies"),
       signal
     );

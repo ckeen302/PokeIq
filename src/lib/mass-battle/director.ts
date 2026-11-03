@@ -341,9 +341,9 @@ export class Director {
         const vx = other.cx - lead.cx, vz = other.cz - lead.cz;
         const vl = Math.hypot(vx, vz) || 1;
         const dx = vx / vl, dz = vz / vl;
-        const d = Math.max(4, lead.h * 5 + Math.min(lead.extent, 30) * 0.35) * (tall ? 1.25 : 1);
+        const d = Math.max(6, lead.h * 6 + Math.min(lead.extent, 30) * 0.4) * (tall ? 1.25 : 1);
         const camX = lead.fx + dx * d + -dz * this.flip * d * 0.25, camZ = lead.fz + dz * d + dx * this.flip * d * 0.25;
-        return poseAt(camX, Math.max(0.6, lead.h * 0.8), camZ, lead.fx - dx * lead.extent * 0.25, lead.h * 0.7, lead.fz - dz * lead.extent * 0.25, fov + 4);
+        return poseAt(camX, Math.max(0.7, lead.h * 1.0), camZ, lead.fx - dx * lead.extent * 0.25, lead.h * 0.65, lead.fz - dz * lead.extent * 0.25, fov + 4);
       }
       case "track": {
         // Tracking alongside the charge, low, the enemy ahead.

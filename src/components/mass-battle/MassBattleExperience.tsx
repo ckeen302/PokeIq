@@ -20,7 +20,7 @@ import { MB_CSS } from "./mass-battle-css";
 import type { BattleScene, Quality } from "./scene";
 import { HowItWorksBody } from "./HowItWorks";
 import { envOf } from "./scene/look";
-import { BattleControls, LiveHud, type CamMode, type HudState } from "./BattleHud";
+import { BattleControls, LiveHud, type CamMode, type HudApi, type HudState } from "./BattleHud";
 import { DamageNumbers } from "./damage-numbers";
 import type { Choreographer } from "./scene/choreo";
 import { SetupPanel } from "./SetupPanel";
@@ -151,13 +151,12 @@ export function MassBattleExperience({ list, presets, initial }: { list: PickerM
   const [progress, setProgress] = useState<{ p: number; label: string }>({ p: 0, label: "" });
   const [solving, setSolving] = useState<{ n: number; wins: number; played: number; of: number; phase: string } | null>(null);
   /** The HUD's numbers go straight to it from the render loop (the page doesn't re-render for them). */
-  const hudSet = useRef<((h: HudState) => void) | null>(null);
+  const hudApi = useRef<HudApi | null>(null);
   const hudLast = useRef<HudState | null>(null);
-  const bindHud = useCallback((set: ((h: HudState) => void) | null) => {
-    hudSet.current = set;
-    if (set && hudLast.current) set(hudLast.current);
+  const bindHud = useCallback((api: HudApi | null) => {
+    hudApi.current = api;
+    if (api && hudLast.current) api.set(hudLast.current);
   }, []);
-  const [feed, setFeed] = useState<FeedItem[]>([]);
   const [final, setFinal] = useState<Final | null>(null);
   const [cardHidden, setCardHidden] = useState(false);
   const [cam, setCam] = useState<CamMode>("director");
@@ -218,9 +217,8 @@ export function MassBattleExperience({ list, presets, initial }: { list: PickerM
 
   // ---- Feed and effects from the battle's hits.
   const pushFeed = useCallback((text: string, tone: FeedItem["tone"]) => {
-    const id = ++feedId.current;
-    setFeed((f) => [...f.slice(-3), { id, text, tone }]);
-    setTimeout(() => setFeed((f) => f.filter((x) => x.id !== id)), 4200);
+    feedId.current++;
+    hudApi.current?.push(text, tone);
   }, []);
 
   const wireHits = useCallback(async (view: BattleView) => {
@@ -279,7 +277,7 @@ export function MassBattleExperience({ list, presets, initial }: { list: PickerM
     if (endTimer.current) clearTimeout(endTimer.current);
     setFinal(null);
     setCardHidden(false);
-    setFeed([]);
+    hudApi.current?.clear();
     setError(null);
     setPaused(false);
     pausedRef.current = false;
@@ -375,7 +373,7 @@ export function MassBattleExperience({ list, presets, initial }: { list: PickerM
     }
     const h: Hud = { left: [...view.left] as [number, number], start: [...start] as [number, number], boss, t: view.t, shot: camRef.current === "free" ? "free" : directorRef.current.shot };
     hudLast.current = h;
-    hudSet.current?.(h);
+    hudApi.current?.set(h);
   };
 
   const finish = useCallback((view: BattleView, end: SimEnd) => {
@@ -955,7 +953,7 @@ export function MassBattleExperience({ list, presets, initial }: { list: PickerM
 
         {/* HUD: armies, the boss, the clock, the kill feed. */}
         {b && (phase === "ready" || phase === "playing" || phase === "done") && (
-          <LiveHud bind={bindHud} names={[sideName(0), sideName(1)]} hideCount={hideCount} phase={phase} feed={feed} visible={hudOn && !(phase === "done" && final && !cardHidden)} />
+          <LiveHud bind={bindHud} names={[sideName(0), sideName(1)]} hideCount={hideCount} phase={phase} visible={hudOn && !(phase === "done" && final && !cardHidden)} />
         )}
 
         {drawn && (phase === "playing" || phase === "ready") && (
