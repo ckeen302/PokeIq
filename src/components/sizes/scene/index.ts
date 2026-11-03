@@ -620,7 +620,11 @@ export function createSizesScene(host: HTMLElement, opts: SceneOptions): SizesSc
       let a = 0, b = slots.length;
       { let l = 0, h = slots.length; while (l < h) { const m = (l + h) >> 1; if (xs[m] < f.view.x - reach) l = m + 1; else h = m; } a = l; }
       { let l = a, h = slots.length; while (l < h) { const m = (l + h) >> 1; if (xs[m] <= f.view.x + reach * 4) l = m + 1; else h = m; } b = l; }
-      for (let i = a; i < b; i++) {
+      // The line grows along its length: past the window every figure is bigger, and a giant at the far end of the
+      // boulevard can stand big on screen from half a kilometre away. The next seconds' views look at all of them
+      // (left unbuilt, it would hold settle() and every video frame for its whole timeout, and keep the camera easing).
+      const end = f.dt <= 2 ? slots.length : b;
+      for (let i = a; i < end; i++) {
         const s = slots[i];
         if (s.need <= f.dt) continue;
         const sh = screenHeight(s, futureCam, ps);
