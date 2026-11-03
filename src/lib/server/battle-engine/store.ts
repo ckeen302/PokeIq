@@ -1,7 +1,7 @@
 import "server-only";
 import { getServiceSupabase } from "@/lib/supabase";
 import { DUEL_CODE_RE } from "@/lib/duel-types";
-import type { BattleEnd, PlayFormatId, BattleKind, BattleRatings, BattleRequest, CpuLevel } from "@/lib/battle/play";
+import type { BattleEnd, PlayFormatId, BattleKind, BattleRatings, BattleRequest, CpuLevel, GameType } from "@/lib/battle/play";
 import type { DuelStatus } from "@/lib/duel-types";
 import type { ChatLine } from "@/lib/chat";
 import type { CustomRules } from "@/lib/battle/custom-rules";
@@ -17,7 +17,9 @@ import type { FrontierRun } from "./frontier";
  * - `state`: the simulator snapshot (text, ~55 KB; TOAST-compressed);
  * - `input_log`: the simulator's input log, the source of truth;
  * - `log_p1`, `log_p2`, `log_spectator`: each viewer's protocol channel,
- *   newline-joined, so a poll reads only its own.
+ *   newline-joined, so a poll reads only its own. A four-player battle's p3
+ *   channel rides in `log_p1` and p4's in `log_p2`, after a separator line
+ *   (CHANNEL_SEP), so the table needs no new columns.
  *
  * Every write is a compare-and-swap on `version`, and only the columns that
  * changed are sent (a presence tick rewrites `meta` alone).
@@ -26,12 +28,27 @@ import type { FrontierRun } from "./frontier";
  * which is right for one server process: local development and the E2E test.
  */
 
-export type BattleChannel = "p1" | "p2" | "spectator";
+export type BattleChannel = "p1" | "p2" | "p3" | "p4" | "spectator";
+/** Every channel a record can have (p3 and p4 only in four-player battles). */
+export const ALL_CHANNELS: readonly BattleChannel[] = ["p1", "p2", "p3", "p4", "spectator"];
+
+/** Where a channel is kept in the table, and the channel sharing that column. */
+const COLUMN: Record<BattleChannel, { column: "p1" | "p2" | "spectator"; shared?: BattleChannel; second?: boolean }> = {
+  p1: { column: "p1", shared: "p3" },
+  p3: { column: "p1", shared: "p1", second: true },
+  p2: { column: "p2", shared: "p4" },
+  p4: { column: "p2", shared: "p2", second: true },
+  spectator: { column: "spectator" },
+};
+/** Splits a column holding two channels (no protocol line has a control character). */
+export const CHANNEL_SEP = "\u001e";
 
 export interface BattleSeat {
   id: string;
   name: string;
   ready: boolean;
+  /** The computer plays this seat (against the computer, or filling a four-player room). */
+  cpu?: boolean;
   /** Last request from this player (kept to the nearest few seconds, to spare writes). */
   seenAt: number;
   /** A brought team, packed and validated (bring-your-own formats). Server-side only. */
@@ -76,20 +93,27 @@ export interface BattleMeta {
   createdAt: number;
   /** When both trainers were in and the battle began. */
   startedAt?: number;
-  /** Seat 0 plays p1, seat 1 plays p2. */
+  /** Seat 0 plays p1, seat 1 plays p2 (and in four-player battles seats 2 and 3 play p3 and p4). */
   seats: BattleSeat[];
+  /** The computer's level, for every seat it plays. */
   cpu?: { level: CpuLevel };
+  /** Showdown's game type (absent on battles from before triples and four-player battles: singles or doubles by format). */
+  gameType?: GameType;
+  /** Trainers this battle seats (2, or 4 in Free-For-All and Multi Battles). */
+  playerCount?: number;
+  /** Free-For-All: the seats knocked out so far, first out first, with the turn. */
+  out?: { seat: number; turn: number }[];
   turn: number;
   /** Per side: increases whenever that side gets a new request; a choice must quote it. */
-  rqid: [number, number];
+  rqid: number[];
   /** Per side: the request it must answer now (null: nothing owed, or already chosen). */
-  requests: [BattleRequest | null, BattleRequest | null];
+  requests: (BattleRequest | null)[];
   /** Choices made for a turn that hasn't run yet (needed to rebuild from the input log). Server-side only. */
-  chosen?: { p1?: string; p2?: string };
+  chosen?: { p1?: string; p2?: string; p3?: string; p4?: string };
   /** Live battles only. */
-  clocks?: [SideClock, SideClock];
+  clocks?: SideClock[];
   /** Lines in each channel (so a poll knows the total without counting). */
-  lines: Record<BattleChannel, number>;
+  lines: Partial<Record<BattleChannel, number>> & Record<"p1" | "p2" | "spectator", number>;
   end?: BattleEnd;
   rematch?: string;
   /** Live battles: the players' chat, the last few dozen lines (a rematch carries them on). */
@@ -133,7 +157,7 @@ export interface BattleRecord {
   /** The simulator snapshot (null before the battle starts). */
   state: string | null;
   inputLog: string[];
-  logs: Record<BattleChannel, string[]>;
+  logs: Partial<Record<BattleChannel, string[]>> & Record<"p1" | "p2" | "spectator", string[]>;
 }
 
 /** The parts of a record a write changes; `meta` always (it carries the version's meaning). */
@@ -142,6 +166,24 @@ export interface BattlePatch {
   state?: string | null;
   inputLog?: string[];
   logs?: Partial<Record<BattleChannel, string[]>>;
+}
+
+/** One column's text: a channel's lines, and after the separator the channel sharing it (four-player battles). */
+function columnText(first: string[], second: string[] | undefined): string {
+  return second?.length ? joinLines([...first, CHANNEL_SEP, ...second]) : joinLines(first);
+}
+
+/** A column's two channels. */
+function columnLines(text: string | null | undefined): [string[], string[]] {
+  const lines = splitLines(text);
+  const at = lines.indexOf(CHANNEL_SEP);
+  return at < 0 ? [lines, []] : [lines.slice(0, at), lines.slice(at + 1)];
+}
+
+/** One channel from its column. */
+function channelLines(channel: BattleChannel, text: string | null | undefined): string[] {
+  const [first, second] = columnLines(text);
+  return COLUMN[channel].second ? second : first;
 }
 
 /** A battle is kept this long after its last change. */
@@ -187,7 +229,7 @@ export async function loadBattleMeta(code: string, channel: BattleChannel | null
   if (!DUEL_CODE_RE.test(code)) return null;
   const sb = remote();
   if (sb) {
-    const column = channel ? `log_${channel}` : null;
+    const column = channel ? `log_${COLUMN[channel].column}` : null;
     const { data, error } = await sb
       .from(TABLE)
       .select(`meta, version, expires_at${column ? `, ${column}` : ""}`)
@@ -195,13 +237,13 @@ export async function loadBattleMeta(code: string, channel: BattleChannel | null
       .maybeSingle<Pick<Row, "meta" | "version" | "expires_at"> & Partial<Row>>();
     if (error) throw new Error(error.message);
     if (!data || Date.parse(data.expires_at) <= Date.now()) return null;
-    const log = column ? splitLines((data as Record<string, unknown>)[column] as string) : [];
+    const log = column && channel ? channelLines(channel, (data as Record<string, unknown>)[column] as string) : [];
     return { meta: data.meta, version: data.version, log };
   }
   const row = memory().get(code);
   if (!row || row.expires <= Date.now()) return null;
   const rec = JSON.parse(row.json) as BattleRecord;
-  return { meta: rec.meta, version: row.version, log: channel ? rec.logs[channel] : [] };
+  return { meta: rec.meta, version: row.version, log: channel ? (rec.logs[channel] ?? []) : [] };
 }
 
 /** The whole battle (for anything that runs the simulator). */
@@ -216,13 +258,12 @@ export async function loadBattle(code: string): Promise<{ rec: BattleRecord; ver
       .maybeSingle<Row>();
     if (error) throw new Error(error.message);
     if (!data || Date.parse(data.expires_at) <= Date.now()) return null;
+    const [p1, p3] = columnLines(data.log_p1);
+    const [p2, p4] = columnLines(data.log_p2);
+    const logs: BattleRecord["logs"] = { p1, p2, spectator: splitLines(data.log_spectator) };
+    if (p3.length || p4.length || (data.meta.playerCount ?? 2) === 4) Object.assign(logs, { p3, p4 });
     return {
-      rec: {
-        meta: data.meta,
-        state: data.state,
-        inputLog: data.input_log ?? [],
-        logs: { p1: splitLines(data.log_p1), p2: splitLines(data.log_p2), spectator: splitLines(data.log_spectator) },
-      },
+      rec: { meta: data.meta, state: data.state, inputLog: data.input_log ?? [], logs },
       version: data.version,
     };
   }
@@ -246,8 +287,8 @@ export async function insertBattle(rec: BattleRecord): Promise<boolean> {
       meta: rec.meta,
       state: rec.state,
       input_log: rec.inputLog,
-      log_p1: joinLines(rec.logs.p1),
-      log_p2: joinLines(rec.logs.p2),
+      log_p1: columnText(rec.logs.p1, rec.logs.p3),
+      log_p2: columnText(rec.logs.p2, rec.logs.p4),
       log_spectator: joinLines(rec.logs.spectator),
       expires_at: expiry(),
     });
@@ -290,7 +331,16 @@ export async function saveBattle(code: string, version: number, patch: BattlePat
     };
     if (patch.state !== undefined) update.state = patch.state;
     if (patch.inputLog) update.input_log = patch.inputLog;
-    for (const [channel, lines] of Object.entries(patch.logs ?? {})) update[`log_${channel}`] = joinLines(lines);
+    // A column with two channels is written whole (the patch carries both whenever either changed: see the service's Work.patch).
+    for (const [channel, lines] of Object.entries(patch.logs ?? {}) as [BattleChannel, string[]][]) {
+      const { column, shared, second } = COLUMN[channel];
+      if (second) continue;
+      update[`log_${column}`] = columnText(lines, shared ? patch.logs?.[shared] : undefined);
+    }
+    for (const channel of ["p3", "p4"] as const) {
+      const first = COLUMN[channel].shared!;
+      if (patch.logs?.[channel] && !patch.logs[first]) throw new Error(`A ${channel} log must be saved with ${first}'s.`);
+    }
     const { data, error } = await sb.from(TABLE).update(update).eq("code", code).eq("version", version).select("code");
     if (error) throw new Error(error.message);
     return (data ?? []).length === 1;

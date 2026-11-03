@@ -1,4 +1,4 @@
-import type { BattleEndReason, PlayFormatId } from "./play";
+import type { BattleEndReason, GameType, PlayFormatId } from "./play";
 
 /**
  * Battle replays: a finished battle's public log (the spectator channel,
@@ -14,13 +14,20 @@ export interface ReplaySummary {
   id: string;
   format: PlayFormatId;
   formatName: string;
-  players: [string, string];
+  /** The trainers, seat by seat (four in Free-For-All and Multi Battles). */
+  players: string[];
+  /** Triples and four-player battles: the game type (absent: singles or doubles by format). */
+  gameType?: GameType;
   /** Ranked: each trainer's Glicko-2 rating before the battle. */
   ratings?: [number, number];
   /** Ranked: each trainer's Elo before the battle (the number shown), for battles since the ladder had Elo. */
   elos?: [number, number];
-  /** The winner's seat (0 played p1), or null for a draw. */
-  winner: 0 | 1 | null;
+  /** The winner's seat (0 played p1), or null for a draw. A Multi Battle's is the winning team's first seat. */
+  winner: number | null;
+  /** Four-player battles: every winning seat (both partners in a Multi Battle). */
+  winners?: number[];
+  /** Free-For-All: the seats from first to last. */
+  standings?: number[];
   /** How it ended (a forfeit, the clock, a disconnect, or played out). */
   reason: BattleEndReason;
   turns: number;
@@ -40,8 +47,18 @@ export interface ReplayListResponse {
   replays: ReplaySummary[];
 }
 
-/** "Red beat Blue", "Red and Blue drew". */
-export function replayResult(r: Pick<ReplaySummary, "players" | "winner">): string {
+/** "Red beat Blue", "Red and Blue drew"; "Red & Gold beat Blue & Silver" (Multi); "Red won a Free-For-All". */
+export function replayResult(r: Pick<ReplaySummary, "players" | "winner" | "winners" | "gameType">): string {
+  if (r.players.length === 4) {
+    const names = (seats: number[]) => seats.map((s) => r.players[s] ?? "?").join(" & ");
+    if (r.gameType === "multi" || (r.winners?.length === 2 && r.gameType !== "freeforall")) {
+      if (r.winner === null) return `${names([0, 2])} and ${names([1, 3])} drew`;
+      const won = r.winner % 2;
+      return `${names([won, won + 2])} beat ${names([1 - won, 3 - won])}`;
+    }
+    if (r.winner === null) return `${r.players.join(", ")}: no winner`;
+    return `${r.players[r.winner]} won a Free-For-All`;
+  }
   if (r.winner === null) return `${r.players[0]} and ${r.players[1]} drew`;
   return `${r.players[r.winner]} beat ${r.players[1 - r.winner]}`;
 }
