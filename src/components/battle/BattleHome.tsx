@@ -64,6 +64,14 @@ const GROUPS: { title: string; items: Pick[] }[] = [
     ],
   },
   { title: "Doubles", items: [{ id: "gen9doublesou", label: "Doubles OU" }] },
+  {
+    title: "Triples & four trainers",
+    items: [
+      { id: "gen9triples", label: "Triples" },
+      { id: "gen9freeforallrandombattle", label: "Random Free-For-All", note: "4 trainers" },
+      { id: "gen9multirandombattle", label: "Random Multi", note: "2 vs 2" },
+    ],
+  },
   { title: "Custom", items: [{ id: "custom", label: "Custom rules", note: "by invite" }] },
 ];
 

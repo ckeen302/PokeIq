@@ -1,6 +1,6 @@
 import { BattleScene, PokemonSprite, type SpriteData } from "./scene";
 import { moveInfo } from "./moves";
-import type { SideId, SlotRef, Snap, Step } from "./model";
+import { other, sameHalf, type SideId, type SlotRef, type Snap, type Step } from "./model";
 import { ballBackground, STANDARD_BALL, type BallLook } from "./PokeBall";
 
 /**
@@ -36,8 +36,8 @@ export interface StageHandle {
   sprite(ref: SlotRef): StageSprite | null;
   /** Puts every sprite back at its resting box. */
   repaint(): void;
-  /** The near side (yours). */
-  me: "p1" | "p2";
+  /** The near side (yours; its half's in four-player battles). */
+  me: SideId;
   /** The 3D arena's crowd reacts (camera flashes); nothing on the CSS backdrop. */
   cheer?(power?: number): void;
   /** A side's Poké Ball (their 3D trainer's), for the send-out. */
@@ -288,11 +288,11 @@ export async function playStep(step: Step, deps: PlayDeps): Promise<void> {
           const attacker = proxy(scene, sprite);
           const at = (ref: SlotRef) => {
             const s = stage.sprite(ref);
-            return s ? proxy(scene, s) : missed(scene, ref.side === stage.me);
+            return s ? proxy(scene, s) : missed(scene, sameHalf(ref.side, stage.me));
           };
           // No target named: Showdown aims at the first opposing Pokémon. A miss aims beside the target.
-          const aimed = targets.length ? targets : [{ side: who!.side === "p1" ? "p2" : "p1", slot: 0 } as SlotRef];
-          const defenders = step.kw.miss ? [missed(scene, aimed[0].side === stage.me)] : aimed.map(at);
+          const aimed = targets.length ? targets : [{ side: other(who!.side), slot: 0 } as SlotRef];
+          const defenders = step.kw.miss ? [missed(scene, sameHalf(aimed[0].side, stage.me))] : aimed.map(at);
           scene.battle.mySide = { x: 0, y: 0, z: 0 };
           const id = typeof step.kw.anim === "string" ? step.kw.anim.toLowerCase().replace(/[^a-z0-9]/g, "") : step.moveId!;
           moveAnim(t, t.BattleMoveAnims[id] ? id : step.moveId!, selfTarget)(scene, [attacker, ...defenders]);
@@ -350,7 +350,7 @@ export async function playStep(step: Step, deps: PlayDeps): Promise<void> {
       const next = who ? stage.sprite(who) : null;
       try {
         if (next && hide) next.el.style.opacity = "0";
-        if (next && hide) await ballIn(deps, next, stage.ball?.(next.near ? stage.me : stage.me === "p1" ? "p2" : "p1") ?? STANDARD_BALL);
+        if (next && hide) await ballIn(deps, next, stage.ball?.(who!.side) ?? STANDARD_BALL);
         if (next) next.el.style.opacity = "";
         await animateEl(next?.el, [
           { transform: "scale(0.1)", opacity: 0, filter: "brightness(6)" },

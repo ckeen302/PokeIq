@@ -1,5 +1,5 @@
 import { C, LIVE_CARD_HEADERS, OG_CONTENT_TYPE, OG_SIZE, ogCard } from "@/lib/og/card";
-import { REPLAY_ID_RE, replayResult } from "@/lib/battle/replay";
+import { REPLAY_ID_RE, replayMatchup, replayResult } from "@/lib/battle/replay";
 import { replayStore } from "@/lib/server/battle-engine/replays";
 
 /** A replay's preview card: the format, the two trainers and how it ended. */
@@ -20,7 +20,7 @@ export default async function Image({ params }: { params: Promise<{ id: string }
   return ogCard(
     {
       eyebrow: `Replay · ${replay.formatName}`,
-      title: [replay.players[0], ["vs", C.muted], [replay.players[1], C.pink]],
+      title: [replayMatchup(replay).a, [replayMatchup(replay).joiner, C.muted], [replayMatchup(replay).b, C.pink]],
       titleSize: 72,
       subtitle: `${replayResult(replay)}${replay.reason === "forfeit" ? " by forfeit" : replay.reason === "timeout" ? " on time" : ""}.`,
       accent: C.cyan,

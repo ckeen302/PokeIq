@@ -12,13 +12,14 @@ import { listLiveBattles, type BattleMeta } from "./store";
  * private friend battles never are. Each entry carries public facts only.
  */
 export function watchEntry(meta: BattleMeta, now: number): WatchEntry | null {
-  if (meta.kind !== "pvp" || meta.status !== "playing" || meta.public !== true || meta.seats.length !== 2) return null;
+  if (meta.kind !== "pvp" || meta.status !== "playing" || meta.public !== true || (meta.seats.length !== 2 && meta.seats.length !== 4)) return null;
   const info = PLAY_FORMAT_INFO[meta.format];
   return {
+    ...(meta.seats.length === 4 && meta.gameType ? { gameType: meta.gameType } : {}),
     code: meta.code,
     format: meta.format,
     formatName: meta.rules ? customName(meta.rules) : meta.factoryTier ? `${info.name} · ${meta.factoryTier}` : info.name,
-    players: meta.seats.map((s) => (meta.ranked && s.rating ? { name: s.name, rating: s.rating.rating, ...(s.rating.elo !== undefined ? { elo: s.rating.elo } : {}) } : { name: s.name })),
+    players: meta.seats.map((s) => (meta.ranked && s.rating ? { name: s.name, rating: s.rating.rating, ...(s.rating.elo !== undefined ? { elo: s.rating.elo } : {}) } : { name: s.name, ...(s.cpu ? { cpu: true } : {}) })),
     ranked: !!meta.ranked,
     turn: meta.turn,
     spectators: spectatorCount(meta, now),
