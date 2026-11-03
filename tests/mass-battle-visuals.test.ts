@@ -5,7 +5,7 @@ import { moveStyle } from "@/components/mass-battle/scene/effects";
 import { lookFor, normTerrain, normTime, normWeather, TIMES, WEATHERS } from "@/components/mass-battle/scene/look";
 import { noteLabel, statusFxType } from "@/components/mass-battle/damage-numbers";
 import { NOTE, NOTE_CONFUSION, NOTE_SKIP } from "@/lib/mass-battle/constants";
-import { BattleView, LEAD, drawMask } from "@/components/mass-battle/view";
+import { BattleView, HIT_TYPES, LEAD, drawMask } from "@/components/mass-battle/view";
 import type { SimFrame, SimReady } from "@/components/mass-battle/protocol";
 import { ARENAS } from "@/lib/mass-battle/types";
 
@@ -191,6 +191,19 @@ describe("mass battle visuals: the view", () => {
     expect(hitAt - launchedAt).toBeGreaterThan(LEAD - 0.02);
     // The attacker's lunge peaks as the hit lands.
     expect(v.attackAt[0]).toBeCloseTo(hitT - 0.18, 5);
+  });
+
+  it("remembers each hit's move type for the colour of its flash (a miss changes nothing)", () => {
+    const r = ready(3, [0, 1, 1]);
+    const v = new BattleView(r, 100);
+    const frames: SimFrame[] = [];
+    for (let k = 1; k <= 20; k++) frames.push(frame(k, 3, k === 5 ? [0, 1, 0, 30, 0, 7] : k === 8 ? [0, 2, 0, 0, EV.MISS, 7] : []));
+    v.push(frames);
+    for (let k = 0; k < 120; k++) v.advance(1 / 120);
+    expect(v.hitType[1]).toBe(HIT_TYPES.indexOf("Electric") + 1);
+    expect(v.hitAt[1]).toBeGreaterThan(0);
+    expect(v.hitType[2]).toBe(0);
+    expect(v.hitAt[2]).toBe(-1);
   });
 
   it("draws a representative share of a big army and every boss", () => {

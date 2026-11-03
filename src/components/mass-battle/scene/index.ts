@@ -345,7 +345,11 @@ export function createBattleScene(host: HTMLElement, opts: SceneOptions): Battle
     }
     if (signal?.aborted) throw new DOMException("Cancelled", "AbortError");
     onProgress(0.95, "Warming up");
-    // One full frame (shadow pass, finishing pass) so their programs are ready too.
+    // One full frame (shadow pass, finishing pass) so their programs are ready too, with every figure level and every
+    // effect drawn again: the page kept rendering while the shaders compiled, and each of those frames put the effects
+    // back to none (drawn for the first time mid-battle, a program finishes linking there: a hitch of up to seconds).
+    units.primeAll(new THREE.Vector3(0, 0, 0));
+    effects.primeAll();
     drawFrame(0);
     effects.setTime(0);
     onProgress(1, "Ready");

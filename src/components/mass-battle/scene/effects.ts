@@ -1005,7 +1005,7 @@ export class Effects {
     if (n <= 0) return;
     const speed = 1.5 + p * 4 + s;
     // A flash of light at the point of impact.
-    this.puff(x, y, z, 0, 0, 0, 0.16 + p * 0.1, tmpC.copy(L.glow).lerp(L.color, 0.6), s * 0.12, L.color, s * (0.26 + p * 0.3), 0, 1, 0.5, at, 1.7 + p * 1.1, 1.1);
+    this.puff(x, y, z, 0, 0, 0, 0.16 + p * 0.1, tmpC.copy(L.glow).lerp(L.color, 0.6), s * 0.12, L.color, s * (0.26 + p * 0.3), 0, 1, 0.5, at, 1.4 + p * 0.8, 1);
     this.ringAt(x, z, s * (0.45 + p * 0.5), 0.35, s * 0.08, 0, L.color, 0.9, at);
     if (crit) this.puff(x, y, z, 0, 0, 0, 0.28, WHITE, s * 0.2, L.glow, s * 0.75, 0, 1, 0.6, at, 3.6, 1.4);
     // Type-specific pieces.
@@ -1013,7 +1013,7 @@ export class Effects {
       case "Fire": {
         for (let k = 0; k < n; k++) {
           const a = this.rand() * Math.PI * 2, u = 0.3 + this.rand();
-          this.puff(x + this.rs(s * 0.2), y + this.rs(s * 0.2), z + this.rs(s * 0.2), Math.cos(a) * speed * 0.35, u * speed * 0.45, Math.sin(a) * speed * 0.35, 0.5 + this.rand() * 0.4, tmpC.set(k % 3 ? "#ffb02a" : "#ffe27a"), s * 0.22, L.color, s * (0.38 + this.rand() * 0.3), 3.5, 2.5, 0.6, at, 1.9, 1.5);
+          this.puff(x + this.rs(s * 0.2), y + this.rs(s * 0.2), z + this.rs(s * 0.2), Math.cos(a) * speed * 0.35, u * speed * 0.45, Math.sin(a) * speed * 0.35, 0.5 + this.rand() * 0.4, tmpC.set(k % 3 ? "#ffb02a" : "#ffe27a"), s * 0.22, L.color, s * (0.38 + this.rand() * 0.3), 3.5, 2.5, 0.6, at, 1.45, 1.15);
         }
         for (let k = 0; k < n; k++) this.spark(x, y, z, this.rs(speed), this.rand() * speed, this.rs(speed), 0.6 + this.rand() * 0.6, L.glow, s * 0.025, 2.5, 1.2, 0.04, 2.4, at);
         this.cloud(x, y + s * 0.2, z, 0, 0.6, 0, 1.6, tmpC.set("#3a3330"), s * 0.25, s * 0.9, 0.4, 1, 0.35, at + 0.15);
