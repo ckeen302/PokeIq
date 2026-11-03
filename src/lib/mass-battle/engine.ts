@@ -238,8 +238,9 @@ export class Battle {
   /** Outrage and the like: the slot it's locked into and uses left (then it's confused). */
   private rampSlot: Int8Array;
   private rampLeft: Int8Array;
-  /** The move planned this round (slot), chosen as the round starts. */
+  /** The move planned this round (slot), chosen as the round starts, and the foe it was chosen against. */
   private plan: Int8Array;
+  private planTarget: Int32Array;
   private actTick: Int32Array;
   readonly kos: Int32Array;
   readonly dealt: Float64Array;
@@ -382,6 +383,7 @@ export class Battle {
     this.rampSlot = new Int8Array(n).fill(-1);
     this.rampLeft = new Int8Array(n);
     this.plan = new Int8Array(n).fill(-1);
+    this.planTarget = new Int32Array(n).fill(-1);
     this.actTick = new Int32Array(n).fill(-1);
     this.kos = new Int32Array(n);
     this.dealt = new Float64Array(n);
@@ -398,6 +400,8 @@ export class Battle {
     }
     this.start[0] = this.left[0];
     this.start[1] = this.left[1];
+    const RESIDUAL_ABILITIES = new Set(["speedboost", "raindish", "dryskin", "icebody", "solarpower", "poisonheal"]);
+    this.residualFighters = this.rows.some((r) => r.item === "leftovers" || r.item === "blacksludge" || RESIDUAL_ABILITIES.has(r.ability));
     // Damage between the sides, worked out before the first round.
     const sideFighters = (s: number) => [...new Set(prep.armies[s].map(([fi]) => fi))];
     this.table.warm(sideFighters(0), sideFighters(1));
@@ -835,6 +839,7 @@ export class Battle {
       if (t < 0 || !alive[t] || this.prep.behaviour[this.side[i]].targeting !== "nearest") t = this.target[i] = this.findTarget(i);
       const slot = t >= 0 ? this.planMove(i, t) : -1;
       this.plan[i] = slot;
+      this.planTarget[i] = t;
       // Priority (Quick Claw now and then), then the Speed it acts on, then a coin toss.
       let pri = this.priority(i, slot);
       if (this.hasItem(i, "quickclaw") && this.random() < 0.2) pri += 0.5;
@@ -918,6 +923,7 @@ export class Battle {
   private setStatus(j: number, st: StatusId, by: number) {
     if (!this.canStatus(j, st, by)) return;
     this.status[j] = STATUS_CODE[st];
+    if (st === "psn" || st === "tox" || st === "brn") this.residualAny = true;
     if (st === "slp") this.sleep[j] = 2 + Math.floor(this.random() * 3);
     if (st === "tox") this.toxic[j] = 0;
     this.pushNote(j, NOTE.STATUS, STATUS_CODE[st], by);
@@ -1069,7 +1075,8 @@ export class Battle {
     }
     // As in the games, the move chosen as the round began is the one used (on its new target if the first one fell),
     // unless the battlefield has put it out of reach.
-    if (planned >= 0 && planned < moves.length && reach(moves[planned])) return { slot: planned, spreadCount: spreadCount(moves[planned]) };
+    // (On a battlefield a new target can be one the planned move can't touch at all: then it picks again.)
+    if (planned >= 0 && planned < moves.length && reach(moves[planned]) && (t === this.planTarget[i] || this.expected(i, planned, t, false) > 0)) return { slot: planned, spreadCount: spreadCount(moves[planned]) };
     let best = -1, bestV = 0, bestCount = 0;
     // "Never" passes over spread moves unless nothing else can hurt the target.
     for (const skipSpread of never ? [true, false] : [false]) {
@@ -1327,9 +1334,15 @@ export class Battle {
     else if (ab === "wellbakedbody" && t === "Fire") this.boost(j, { def: 2 }, false);
   }
 
+  /** Whether anything happens at the end of a round at all (most battles: nothing until someone is poisoned or burned). */
+  private residualAny = false;
+  /** Fighters with an item or ability that acts at the end of a round. */
+  private residualFighters = false;
+
   /** The end of a round, as in the games: sandstorm, Grassy Terrain, Leftovers, poison and burns, Speed Boost. */
   private endOfRound() {
     const f = this.prep.field;
+    if (!this.residualAny && !this.residualFighters && f.weather !== "sand" && f.terrain !== "grassy") return;
     const order: number[] = [];
     for (let i = 0; i < this.n; i++) if (this.alive[i]) order.push(i);
     order.sort((a, b) => this.effectiveSpeed(b) - this.effectiveSpeed(a) || a - b);
