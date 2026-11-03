@@ -44,6 +44,13 @@ export const MB_CSS = `
 .mb-dmg-resist { color: #b8c4d8; font-size: 13px; }
 .mb-dmg-miss { color: #c8ccd8; font-size: 13px; font-weight: 700; }
 .mb-dmg-boss { font-size: 18px; }
+.mb-dmg-heal { color: #7dff8a; font-size: 14px; }
+.mb-dmg-chip { color: #ffb070; font-size: 12px; }
+.mb-dmg-up { color: #8fd8ff; font-size: 13px; }
+.mb-dmg-down { color: #ff9aa8; font-size: 13px; }
+.mb-dmg-item { color: #ffe680; font-size: 12px; }
+.mb-dmg-status { font-size: 13px; text-transform: uppercase; letter-spacing: .04em; }
+.mb-st-1 { color: #ffe23a; } .mb-st-2 { color: #ff7a3a; } .mb-st-3, .mb-st-4 { color: #c88aff; } .mb-st-5 { color: #b8c8ff; } .mb-st-6 { color: #9feaff; } .mb-st-9 { color: #ff9ae0; }
 .mb-loader-ball { width: 46px; height: 46px; border-radius: 50%; position: relative; overflow: hidden;
   background: linear-gradient(180deg, #ff3b4a 0 46%, #10131d 46% 54%, #f4f6fb 54%); box-shadow: 0 0 0 3px #10131d, 0 0 24px rgb(255 60 80 / .45);
   animation: mb-wobble 1.1s ease-in-out infinite; }

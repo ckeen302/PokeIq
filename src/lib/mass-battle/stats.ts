@@ -1,10 +1,12 @@
-import type { BattleLevel, MBSpecies, StatTable } from "./types";
+import { NATURES } from "./sets";
+import type { MBSpecies, StatTable, UnitSet } from "./types";
 
 /**
  * The numbers each unit fights with. Battle stats use the games' stat
- * formula (Gen 3 onwards) with a neutral nature, 31 IVs and 85 EVs in every
- * stat (510 in all, the most a Pokémon can have); the damage calculator
- * gets the same spread, so its HP and ours agree.
+ * formula (Gen 3 onwards) with the set's nature, EVs and IVs at its level
+ * (by default a neutral nature, 31 IVs and 85 EVs in every stat, the
+ * random battles' spread); the damage calculator gets the same set, so its
+ * HP and ours agree.
  *
  * Bodies on the battlefield are our own addition: a footprint from the
  * Pokémon's height and the proportions of its HOME render, a mass from its
@@ -16,23 +18,25 @@ export const IV = 31;
 export const EV = 85;
 export const NATURE = "Hardy";
 
-/** A battle stat at `level` (neutral nature). */
-export function battleStat(key: keyof StatTable, base: number, level: number, shedinja = false): number {
-  const core = Math.floor(((2 * base + IV + Math.floor(EV / 4)) * level) / 100);
+/** A battle stat at `level` (with a nature's 1.1 / 0.9 when it raises or lowers it). */
+export function battleStat(key: keyof StatTable, base: number, level: number, shedinja = false, ev = EV, iv = IV, nature = 1): number {
+  const core = Math.floor(((2 * base + iv + Math.floor(ev / 4)) * level) / 100);
   if (key === "hp") return shedinja ? 1 : core + level + 10;
-  return core + 5;
+  return Math.floor((core + 5) * nature);
 }
 
-export function battleStats(s: Pick<MBSpecies, "base" | "id">, level: BattleLevel): StatTable {
+const natureMul = (nature: string, key: keyof StatTable) => {
+  const n = NATURES[nature];
+  if (!n) return 1;
+  return n[0] === key ? 1.1 : n[1] === key ? 0.9 : 1;
+};
+
+/** A species' stats with a set (or the random battles' spread at a level). */
+export function battleStats(s: Pick<MBSpecies, "base" | "id">, set: Pick<UnitSet, "level" | "nature" | "evs" | "ivs"> | number): StatTable {
   const shed = s.id === 292;
-  return {
-    hp: battleStat("hp", s.base.hp, level, shed),
-    atk: battleStat("atk", s.base.atk, level),
-    def: battleStat("def", s.base.def, level),
-    spa: battleStat("spa", s.base.spa, level),
-    spd: battleStat("spd", s.base.spd, level),
-    spe: battleStat("spe", s.base.spe, level),
-  };
+  const st = typeof set === "number" ? { level: set, nature: NATURE, evs: { hp: EV, atk: EV, def: EV, spa: EV, spd: EV, spe: EV }, ivs: { hp: IV, atk: IV, def: IV, spa: IV, spd: IV, spe: IV } } : set;
+  const one = (k: keyof StatTable) => battleStat(k, s.base[k], st.level, shed, st.evs[k], st.ivs[k], natureMul(st.nature, k));
+  return { hp: one("hp"), atk: one("atk"), def: one("def"), spa: one("spa"), spd: one("spd"), spe: one("spe") };
 }
 
 /** m/s per point of base Speed (100 Speed = 10 m/s). */

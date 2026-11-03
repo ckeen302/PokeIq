@@ -1,4 +1,4 @@
-import { EV } from "@/lib/mass-battle/constants";
+import { EV, NOTE, NOTE_CONFUSION, NOTE_ITEM, NOTE_SKIP } from "@/lib/mass-battle/constants";
 import { fmt } from "@/lib/mass-battle/copy";
 
 /**
@@ -21,6 +21,34 @@ interface Label {
 }
 
 const LIFE = 0.95;
+
+const STATUS_NAME: Record<number, string> = { 1: "Paralysed", 2: "Burned", 3: "Poisoned", 4: "Badly poisoned", 5: "Asleep", 6: "Frozen", [NOTE_CONFUSION]: "Confused" };
+const STAT_NAME = ["Attack", "Defense", "Sp. Atk", "Sp. Def", "Speed", "Accuracy", "Evasion"];
+const SKIP_NAME: Record<number, string> = { [NOTE_SKIP.sleep]: "Fast asleep", [NOTE_SKIP.frozen]: "Frozen solid", [NOTE_SKIP.flinch]: "Flinched", [NOTE_SKIP.paralysed]: "Fully paralysed", [NOTE_SKIP.confused]: "Hurt itself" };
+const ITEM_NAME: Record<number, string> = { [NOTE_ITEM.sitrus]: "Sitrus Berry", [NOTE_ITEM.lum]: "Lum Berry", [NOTE_ITEM.disguise]: "Disguise", [NOTE_ITEM.sash]: "Focus Sash", [NOTE_ITEM.weaknessPolicy]: "Weakness Policy", [NOTE_ITEM.balloon]: "Air Balloon popped", [NOTE_ITEM.knockedOff]: "Item knocked off" };
+
+/** The label for a note (a status, healing, chip damage, a stat stage, a lost turn, an item), or null. */
+export function noteLabel(kind: number, value: number): { text: string; cls: string } | null {
+  switch (kind) {
+    case NOTE.HEAL: return value > 0 ? { text: `+${fmt(value)}`, cls: "mb-dmg-heal" } : null;
+    case NOTE.CHIP: return value > 0 ? { text: `−${fmt(value)}`, cls: "mb-dmg-chip" } : null;
+    case NOTE.STATUS: return STATUS_NAME[value] ? { text: STATUS_NAME[value], cls: `mb-dmg-status mb-st-${value}` } : null;
+    case NOTE.CURE: return STATUS_NAME[value] ? { text: value === NOTE_CONFUSION ? "Snapped out" : "Cured", cls: "mb-dmg-heal" } : null;
+    case NOTE.BOOST: {
+      const stat = Math.floor(value / 16), change = (value % 16) - 8;
+      if (!STAT_NAME[stat] || !change) return null;
+      return { text: `${STAT_NAME[stat]} ${change > 0 ? "↑".repeat(Math.min(3, change)) : "↓".repeat(Math.min(3, -change))}`, cls: change > 0 ? "mb-dmg-up" : "mb-dmg-down" };
+    }
+    case NOTE.SKIP: return SKIP_NAME[value] ? { text: SKIP_NAME[value], cls: "mb-dmg-miss" } : null;
+    case NOTE.ITEM: return ITEM_NAME[value] ? { text: ITEM_NAME[value], cls: "mb-dmg-item" } : null;
+  }
+  return null;
+}
+
+/** The move type whose sparks show a status starting (a burn's embers, paralysis' sparks…). */
+export function statusFxType(status: number): string | null {
+  return ({ 1: "Electric", 2: "Fire", 3: "Poison", 4: "Poison", 5: "Psychic", 6: "Ice", [NOTE_CONFUSION]: "Psychic" } as Record<number, string>)[status] ?? null;
+}
 
 export class DamageNumbers {
   private labels: Label[] = [];
@@ -65,6 +93,26 @@ export class DamageNumbers {
     l.born = now;
     l.life = crit || boss ? LIFE * 1.3 : LIFE;
     l.scale = crit ? 1.35 : boss ? 1.15 : 1;
+    l.live = true;
+  }
+
+  /** A word over a unit (a status, a stat stage, healing…); `priority` ones always show. */
+  spawnText(x: number, y: number, z: number, text: string, cls: string, now: number, priority: boolean) {
+    if (!this.enabled) return;
+    this.budget = Math.min(6, this.budget + (now - this.lastAt) * 14);
+    this.lastAt = now;
+    if (!priority && this.budget < 1) return;
+    if (!priority) this.budget -= 1;
+    const l = this.labels[this.next];
+    this.next = (this.next + 1) % this.labels.length;
+    l.el.className = `mb-dmg ${cls}`;
+    l.el.textContent = text;
+    l.x = x + (Math.random() - 0.5) * 0.3;
+    l.y = y;
+    l.z = z + (Math.random() - 0.5) * 0.3;
+    l.born = now;
+    l.life = LIFE * 1.2;
+    l.scale = 0.9;
     l.live = true;
   }
 

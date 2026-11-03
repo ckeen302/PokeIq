@@ -257,7 +257,7 @@ export async function recordBattleVideo(o: RecordOptions): Promise<RecordResult>
     for (let i = 0; i < ready.n; i++) counts.set(ready.sp[i], (counts.get(ready.sp[i]) ?? 0) + 1);
     species.forEach((s, k) => { if ((counts.get(k) ?? 0) <= 3 && (ready.start[0] <= 3 || ready.start[1] <= 3)) bosses.add(s.id); });
     const envSpec = envOf(b.spec);
-    await scene.deploy({ arena: b.spec.arena, radius: ready.arena, species, bosses, view, weather: envSpec.weather, time: envSpec.time }, (p) => o.onProgress(0.01 + p * 0.07, "Deploying armies"), o.signal);
+    await scene.deploy({ arena: b.spec.arena, radius: ready.arena, species, bosses, view, weather: envSpec.weather ?? ready.field?.weather, time: envSpec.time ?? ready.field?.time, terrain: envSpec.terrain ?? ready.field?.terrain }, (p) => o.onProgress(0.01 + p * 0.07, "Deploying armies"), o.signal);
     // Frames from the worker, on demand.
     let waiting: (() => void) | null = null;
     sim.onFrames = (frames, end) => {
@@ -312,12 +312,16 @@ export async function recordBattleVideo(o: RecordOptions): Promise<RecordResult>
     choreo.budget = 90;
     view.onLaunch = (h) => choreo.launch(h);
     view.onHit = (h) => choreo.hit(h);
+    view.onNote = (n) => choreo.note(n);
     director.onCut = (shot) => {
       if (shot === "slowmo" || shot === "impact") cues.push({ t: videoT, kind: "whoosh", power: 0.8 });
     };
     scene.onStep = (_x, _z, size) => cues.push({ t: videoT, kind: "step", power: size });
     scene.onThunder = (s) => cues.push({ t: videoT, kind: "thunder", power: s });
     director.reset(summarize(view, heights, "deploy", W / H));
+    // The battle's playback: slow motion on its big moments (or not), its HUD (or a clean picture).
+    director.allowSlow = b.playback?.slowmo ?? true;
+    const hudOn = b.playback?.hud ?? true;
     // The battle plays at its own pace when it fits, faster when it doesn't (slow-motion cuts included).
     const slowCuts = Math.min(4, ahead.moments.filter((m) => m.kind !== "final").length);
     const speed = Math.max(1, (ahead.seconds + 1.4 + slowCuts * 0.9) / plan.battle);
@@ -357,7 +361,7 @@ export async function recordBattleVideo(o: RecordOptions): Promise<RecordResult>
       g.drawImage(scene.canvas, 0, 0, W, H);
       g.textAlign = "center";
       g.textBaseline = "middle";
-      const inBattle = battleOn && t < revealAt + 0.3;
+      const inBattle = battleOn && t < revealAt + 0.3 && hudOn;
       // The armies' counters along the top, clear of the apps' own bar.
       if (inBattle) {
         const y = H * 0.135;

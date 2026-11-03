@@ -11,11 +11,19 @@ export interface PickerMon {
   slug: string;
   name: string;
   types: string[];
-  /** Can it attack at all in this battle (has attacking moves)? */
+  /** Can it attack at all in this battle (has attacking moves by default)? */
   attacks: boolean;
+  gen: number;
+  /** "L" legendary, "M" mythical. */
+  rank: "" | "L" | "M";
+  fe: boolean;
+  /** "mega", a region ("alola"…), or "" for a default form. */
+  form: string;
 }
 
-/** A searchable Pokémon picker: type a name, pick from the matches (keyboard or pointer). */
+const FORM_TAG: Record<string, string> = { mega: "Mega", alola: "Alola", galar: "Galar", hisui: "Hisui", paldea: "Paldea" };
+
+/** A searchable Pokémon picker: type a name or a Pokédex number, pick from the matches (keyboard or pointer). Forms included. */
 export function PokemonPicker({ label, value, list, onChange, testId, disabled }: { label: string; value: number; list: PickerMon[]; onChange(id: number): void; testId: string; disabled?: boolean }) {
   const id = useId();
   const [open, setOpen] = useState(false);
@@ -26,8 +34,12 @@ export function PokemonPicker({ label, value, list, onChange, testId, disabled }
   const matches = useMemo(() => {
     const q = query.trim().toLowerCase();
     if (!q) return list.slice(0, 40);
-    const starts = list.filter((p) => p.name.toLowerCase().startsWith(q));
-    const has = list.filter((p) => !p.name.toLowerCase().startsWith(q) && p.name.toLowerCase().includes(q));
+    if (/^#?\d+$/.test(q)) {
+      const n = Number(q.replace("#", ""));
+      return list.filter((p) => p.id === n || String(p.id).startsWith(String(n))).slice(0, 40);
+    }
+    const starts = list.filter((p) => p.name.toLowerCase().startsWith(q) || p.slug.startsWith(q));
+    const has = list.filter((p) => !starts.includes(p) && (p.name.toLowerCase().includes(q) || p.slug.includes(q.replace(/\s+/g, "-"))));
     return [...starts, ...has].slice(0, 40);
   }, [list, query]);
   const choose = (p: PickerMon) => {
@@ -103,7 +115,8 @@ export function PokemonPicker({ label, value, list, onChange, testId, disabled }
               >
                 <Image src={boardArtUrl(p.id)} alt="" width={32} height={32} className="h-8 w-8 object-contain" unoptimized />
                 <span className="font-display text-sm font-semibold uppercase tracking-wide">{p.name}</span>
-                <span className="ml-auto font-pixel text-[9px] uppercase text-muted-foreground">#{String(p.id).padStart(4, "0")}</span>
+                {p.form && <span className="rounded bg-primary/15 px-1.5 py-0.5 font-pixel text-[8px] uppercase text-primary">{FORM_TAG[p.form] ?? p.form}</span>}
+                <span className="ml-auto font-pixel text-[9px] uppercase text-muted-foreground">{p.id < 10000 ? `#${String(p.id).padStart(4, "0")}` : ""}</span>
                 {!p.attacks && <span className="font-pixel text-[9px] uppercase text-destructive">No attacks</span>}
               </li>
             ))}

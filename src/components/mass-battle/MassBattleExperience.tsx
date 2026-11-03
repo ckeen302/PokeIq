@@ -5,11 +5,12 @@ import { track } from "@vercel/analytics";
 import { Camera, Clapperboard, Loader2, RotateCcw, Share2, Swords, X } from "lucide-react";
 import { Director, type Pose } from "@/lib/mass-battle/director";
 import { TICK_HZ } from "@/lib/mass-battle/constants";
-import { armyName, bossDownLine, critLine, fmt, multiKoLine, noAnswerText, possessive, questionText, resultLine, resultTitle, spreadText, winRateText } from "@/lib/mass-battle/copy";
+import { bossDownLine, critLine, fmt, multiKoLine, noAnswerText, possessive, questionText, resultLine, resultTitle, sideName as armyLabel, spreadText, winRateText } from "@/lib/mass-battle/copy";
 import { figureSize } from "@/lib/mass-battle/stats";
-import { encodeBattle, encodeQuestion, MASS_BATTLE_PATH, newSeed, type SlugIndex } from "@/lib/mass-battle/share";
+import { encodeBattle, encodePlayback, encodeQuestion, MASS_BATTLE_PATH, newSeed, questionKey, questionSpec, runsOf, thresholdOf, type SlugIndex } from "@/lib/mass-battle/share";
+import { expandQuestion, expandSpec } from "@/lib/mass-battle/sets";
 import { SOLVER, solve } from "@/lib/mass-battle/solver";
-import type { ArenaId, BattleLevel, BattleSpec, MBSpecies, Question, Winner } from "@/lib/mass-battle/types";
+import type { BattleSpec, MBSpecies, PlaybackSpec, Question, Winner } from "@/lib/mass-battle/types";
 import type { SimEnd } from "./protocol";
 import { sliceRoster, specIds, questionIds } from "./protocol";
 import { getRoster } from "./roster-client";
@@ -21,9 +22,9 @@ import type { BattleScene, Quality } from "./scene";
 import { HowItWorksBody } from "./HowItWorks";
 import { envOf } from "./scene/look";
 import { BattleControls, LiveHud, type CamMode, type HudApi, type HudState } from "./BattleHud";
-import { DamageNumbers } from "./damage-numbers";
+import { DamageNumbers, noteLabel } from "./damage-numbers";
 import type { Choreographer } from "./scene/choreo";
-import { SetupPanel } from "./SetupPanel";
+import { factsOfRow, SetupPanel } from "./SetupPanel";
 import type { PickerMon } from "./PokemonPicker";
 import { isMuted, onMuteChange, setMuted } from "@/lib/sound";
 
@@ -48,7 +49,12 @@ export type Initial = { kind: "preset"; id: string } | { kind: "battle"; spec: B
 
 /** What's on the field. */
 export interface BattleDesc {
+  /** What the simulation plays (groups spelled out). */
   spec: BattleSpec;
+  /** The battle as set up (with its groups), for links and the setup panel; `spec` when left out. */
+  source?: BattleSpec;
+  /** How it's shown (speed, camera, slow motion, damage numbers, HUD), for the live view and the video. */
+  playback?: PlaybackSpec;
   names: [string, string];
   hook: string;
   /** A "how many?" answer battle: its question and answer. */
@@ -111,7 +117,7 @@ const SLOW_MS = 18;
 
 const damp = (cur: number, target: number, rate: number, dt: number) => target + (cur - target) * Math.exp(-rate * dt);
 
-export function MassBattleExperience({ list, presets, initial }: { list: PickerMon[]; presets: PresetCard[]; initial: Initial }) {
+export function MassBattleExperience({ list, presets, initial, playback: initialPlayback }: { list: PickerMon[]; presets: PresetCard[]; initial: Initial; playback: PlaybackSpec }) {
   const stageRef = useRef<HTMLDivElement>(null);
   const hostRef = useRef<HTMLDivElement>(null);
   const sceneRef = useRef<BattleScene | null>(null);
@@ -124,7 +130,7 @@ export function MassBattleExperience({ list, presets, initial }: { list: PickerM
   const heightsRef = useRef<number[]>([]);
   const phaseRef = useRef<Phase>("idle");
   const pausedRef = useRef(false);
-  const speedRef = useRef(1);
+  const speedRef = useRef(initialPlayback.speed);
   const camRef = useRef<CamMode>("director");
   const freeRef = useRef({ tx: 0, ty: 1, tz: 0, yaw: 0.6, pitch: 0.4, dist: 60, fov: 40, shake: 0, target: { tx: 0, tz: 0, yaw: 0.6, pitch: 0.4, dist: 60 } });
   const poseRef = useRef<Pose | null>(null);
@@ -160,13 +166,13 @@ export function MassBattleExperience({ list, presets, initial }: { list: PickerM
   const [final, setFinal] = useState<Final | null>(null);
   const [cardHidden, setCardHidden] = useState(false);
   const [cam, setCam] = useState<CamMode>("director");
-  const [slowmo, setSlowmo] = useState(true);
-  const [hudOn, setHudOn] = useState(true);
-  const [numbersOn, setNumbersOn] = useState(false);
+  const [slowmo, setSlowmo] = useState(initialPlayback.slowmo);
+  const [hudOn, setHudOn] = useState(initialPlayback.hud);
+  const [numbersOn, setNumbersOn] = useState(initialPlayback.numbers);
   /** Bumped when a battle starts: "Fight!" flashes up. */
   const [fightCue, setFightCue] = useState(0);
   const [paused, setPaused] = useState(false);
-  const [speed, setSpeed] = useState(1);
+  const [speed, setSpeed] = useState(initialPlayback.speed);
   const [muted, setMutedState] = useState(true);
   const [showHow, setShowHow] = useState(false);
   const [showVideo, setShowVideo] = useState(false);
@@ -175,6 +181,24 @@ export function MassBattleExperience({ list, presets, initial }: { list: PickerM
   const [quality, setQuality] = useState<Quality>("medium");
   const [drawn, setDrawn] = useState<{ drawn: number; total: number } | null>(null);
   const [glOk, setGlOk] = useState(true);
+  /** How the battle is shown; the setup panel and the stage's controls both change it, and links carry it. */
+  const [playback, setPlaybackState] = useState<PlaybackSpec>(initialPlayback);
+  const playbackRef = useRef(initialPlayback);
+  const setPlayback = useCallback((p: PlaybackSpec) => {
+    const was = playbackRef.current;
+    playbackRef.current = p;
+    setPlaybackState(p);
+    speedRef.current = p.speed;
+    setSpeed(p.speed);
+    setSlowmo(p.slowmo);
+    setHudOn(p.hud);
+    setNumbersOn(p.numbers);
+    if (p.camera !== was.camera && viewRef.current) applyCam(p.camera);
+    if (battleRef.current) battleRef.current = { ...battleRef.current, playback: p };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  /** One playback setting changed from the stage (the setup panel and links see it too). */
+  const playbackSet = (patch: Partial<PlaybackSpec>) => setPlayback({ ...playbackRef.current, ...patch });
 
   const setPhase = (p: Phase) => {
     phaseRef.current = p;
@@ -182,6 +206,7 @@ export function MassBattleExperience({ list, presets, initial }: { list: PickerM
   };
 
   const byId = useMemo(() => new Map(list.map((p) => [p.id, p])), [list]);
+  const facts = useMemo(() => list.map(factsOfRow), [list]);
   const slugs: SlugIndex = useMemo(() => {
     const bySlug = new Map(list.map((p) => [p.slug, p.id]));
     return { id: (s) => bySlug.get(s), slug: (id) => byId.get(id)?.slug };
@@ -242,6 +267,10 @@ export function MassBattleExperience({ list, presets, initial }: { list: PickerM
         if (strength > 0.55) audioRef.current?.boom(strength);
       },
       damage: (x, y, z, damage, flags, side) => numbersRef.current?.spawn(x, y, z, damage, flags, performance.now() / 1000, side === bossSide),
+      note: (n, y) => {
+        const label = noteLabel(n.kind, n.value);
+        if (label && view.draw[n.unit]) numbersRef.current?.spawnText(n.x, y, n.z, label.text, label.cls, performance.now() / 1000, view.side[n.unit] === bossSide);
+      },
       action: (a) => {
         const d = directorRef.current;
         const actorName = name(a.actor);
@@ -267,6 +296,7 @@ export function MassBattleExperience({ list, presets, initial }: { list: PickerM
     };
     view.onLaunch = (h) => choreo.launch(h);
     view.onHit = (h) => choreo.hit(h);
+    view.onNote = (n) => choreo.note(n);
   }, [pushFeed]);
 
   // ---- Deploying a battle.
@@ -281,6 +311,7 @@ export function MassBattleExperience({ list, presets, initial }: { list: PickerM
     setError(null);
     setPaused(false);
     pausedRef.current = false;
+    b = { ...b, playback: playbackRef.current };
     battleRef.current = b;
     setBattle(b);
     setPhase("deploying");
@@ -320,7 +351,7 @@ export function MassBattleExperience({ list, presets, initial }: { list: PickerM
         if (total <= 3) bosses.add(species[k].id);
       }
       const env = envOf(b.spec);
-      await scene.deploy({ arena: b.spec.arena, radius: ready.arena, species, bosses, view, weather: env.weather, time: env.time }, (p, label) => setProgress({ p, label }), ac.signal);
+      await scene.deploy({ arena: b.spec.arena, radius: ready.arena, species, bosses, view, weather: env.weather ?? ready.field?.weather, time: env.time ?? ready.field?.time, terrain: env.terrain ?? ready.field?.terrain }, (p, label) => setProgress({ p, label }), ac.signal);
       if (ac.signal.aborted) return;
       const aspect = hostRef.current ? hostRef.current.clientWidth / Math.max(1, hostRef.current.clientHeight) : 1.6;
       directorRef.current.reset(summarize(view, heightsRef.current, "deploy", aspect));
@@ -337,6 +368,8 @@ export function MassBattleExperience({ list, presets, initial }: { list: PickerM
       camRef.current = "director";
       setCam("director");
       topRef.current.follow = true;
+      // The camera the battle's playback asks for (a link can open it top-down or on the boss).
+      if (playbackRef.current.camera !== "director") applyCam(playbackRef.current.camera);
       updateHud(view);
       setPhase("ready");
       if (autoplay) start();
@@ -449,7 +482,11 @@ export function MassBattleExperience({ list, presets, initial }: { list: PickerM
         const field = summarize(view, heightsRef.current, phase === "ready" ? "deploy" : view.ended ? "ended" : "battle", aspect);
         let pose: Pose;
         const f = freeRef.current;
-        if (camRef.current === "director") {
+        if (camRef.current === "boss") {
+          pose = director.follow(field, dt);
+          Object.assign(f, { tx: pose.tx, ty: pose.ty, tz: pose.tz, yaw: pose.yaw, pitch: pose.pitch, dist: pose.dist, fov: pose.fov });
+          f.target = { tx: pose.tx, tz: pose.tz, yaw: pose.yaw, pitch: pose.pitch, dist: pose.dist };
+        } else if (camRef.current === "director") {
           pose = director.update(field, dt);
           Object.assign(f, { tx: pose.tx, ty: pose.ty, tz: pose.tz, yaw: pose.yaw, pitch: pose.pitch, dist: pose.dist, fov: pose.fov });
           f.target = { tx: pose.tx, tz: pose.tz, yaw: pose.yaw, pitch: pose.pitch, dist: pose.dist };
@@ -580,30 +617,37 @@ export function MassBattleExperience({ list, presets, initial }: { list: PickerM
   }, []);
 
   // ---- Battles from presets, links and the setup panel.
-  const presetBattle = useCallback((p: PresetCard): BattleDesc => {
-    if (p.kind === "howmany" && p.question && p.answer) {
-      const q = p.question;
-      return {
-        spec: { sides: [{ units: [{ id: q.challenger, count: p.answer.n }], formation: "swarm" }, { units: [{ id: q.boss, count: 1 }], formation: "line" }], level: q.level, arena: q.arena, seed: p.answer.seed },
-        names: [nameOf(q.challenger), nameOf(q.boss)],
-        hook: p.hook,
-        question: q,
-        answer: { n: p.answer.n, spread: p.answer.spread, wins: p.answer.wins, runs: p.answer.runs },
-        presetId: p.id,
-      };
-    }
-    const names = p.labels ?? ([armyName(p.spec.sides[0].units.map((u) => nameOf(u.id))), armyName(p.spec.sides[1].units.map((u) => nameOf(u.id)))] as [string, string]);
-    return { spec: p.spec, names, hook: p.hook, question: null, answer: null, presetId: p.id, bonus: p.question && p.answer ? { question: p.question, answer: p.answer } : null };
-  }, [nameOf]);
+  /** The answer battle of a question: `n` of its army (shared by its rows and groups) against the boss. */
+  const answerBattle = useCallback((q: Question, answer: { n: number; spread: number; wins: number; runs: number }, seed: number, hook: string, presetId: string | null): BattleDesc => ({
+    spec: questionSpec(expandQuestion(q, facts), answer.n, seed),
+    names: [armyLabel(q.army, nameOf), armyLabel(q.boss, nameOf)],
+    hook,
+    question: q,
+    answer: { n: answer.n, spread: answer.spread, wins: answer.wins, runs: answer.runs },
+    presetId,
+    playback: playbackRef.current,
+  }), [facts, nameOf]);
 
-  const battleOf = useCallback((spec: BattleSpec): BattleDesc => {
-    const names = [armyName(spec.sides[0].units.map((u) => nameOf(u.id))), armyName(spec.sides[1].units.map((u) => nameOf(u.id)))] as [string, string];
+  const presetBattle = useCallback((p: PresetCard): BattleDesc => {
+    if (p.kind === "howmany" && p.question && p.answer) return answerBattle(p.question, p.answer, p.answer.seed, p.hook, p.id);
+    const names = p.labels ?? ([armyLabel(p.spec.sides[0], nameOf), armyLabel(p.spec.sides[1], nameOf)] as [string, string]);
+    return { spec: expandSpec(p.spec, facts), source: p.spec, names, hook: p.hook, question: null, answer: null, presetId: p.id, bonus: p.question && p.answer ? { question: p.question, answer: p.answer } : null, playback: playbackRef.current };
+  }, [answerBattle, facts, nameOf]);
+
+  const battleOf = useCallback((source: BattleSpec): BattleDesc => {
+    const spec = expandSpec(source, facts);
+    const names = [armyLabel(source.sides[0], nameOf), armyLabel(source.sides[1], nameOf)] as [string, string];
     const total = (s: 0 | 1) => spec.sides[s].units.reduce((a, u) => a + u.count, 0);
-    return { spec, names, hook: `${fmt(total(0))} ${names[0]} vs ${fmt(total(1))} ${names[1]}`, question: null, answer: null, presetId: null };
-  }, [nameOf]);
+    return { spec, source, names, hook: `${fmt(total(0))} ${names[0]} vs ${fmt(total(1))} ${names[1]}`, question: null, answer: null, presetId: null, playback: playbackRef.current };
+  }, [facts, nameOf]);
 
   const replaceUrl = (href: string) => {
     try { window.history.replaceState(null, "", href); } catch { /* sandboxed */ }
+  };
+  /** The playback part of a link (left out when it's all the defaults). */
+  const viewParam = () => {
+    const v = encodePlayback(playbackRef.current);
+    return v ? `&v=${v}` : "";
   };
 
   const ask = useCallback(async (q: Question) => {
@@ -614,35 +658,30 @@ export function MassBattleExperience({ list, presets, initial }: { list: PickerM
     audioRef.current.gesture();
     setFinal(null);
     setError(null);
-    replaceUrl(`${MASS_BATTLE_PATH}?ask=${encodeQuestion(q, slugs)}${keepQuality()}`);
-    const hook = `${questionText(nameOf(q.challenger), nameOf(q.boss))}`;
-    setBattle({ spec: { sides: [{ units: [{ id: q.challenger, count: 1 }], formation: "swarm" }, { units: [{ id: q.boss, count: 1 }], formation: "line" }], level: q.level, arena: q.arena, seed: 1 }, names: [nameOf(q.challenger), nameOf(q.boss)], hook, question: q, answer: null, presetId: null });
+    replaceUrl(`${MASS_BATTLE_PATH}?ask=${encodeQuestion(q, slugs)}${viewParam()}${keepQuality()}`);
+    const names: [string, string] = [armyLabel(q.army, nameOf), armyLabel(q.boss, nameOf)];
+    const hook = questionText(names[0], names[1]);
+    const qx = expandQuestion(q, facts);
+    setBattle({ spec: questionSpec(qx, 1, 1), names, hook, question: q, answer: null, presetId: null, playback: playbackRef.current });
     setPhase("solving");
     setSolving({ n: 1, wins: 0, played: 0, of: SOLVER.quick, phase: "doubling" });
     void ensureScene();
     try {
       const roster = await getRoster();
-      const slice = sliceRoster(roster, questionIds(q));
+      const slice = sliceRoster(roster, questionIds(qx));
       poolRef.current ??= new SolverPool();
       const t0 = performance.now();
       let phaseName = "doubling";
-      const evaluate = poolRef.current.evaluator(slice, q, (p) => setSolving({ ...p, phase: phaseName }), ac.signal);
-      const res = await solve(q, evaluate, (_s, ph) => { phaseName = ph; }, { signal: ac.signal });
+      const evaluate = poolRef.current.evaluator(slice, qx, (p) => setSolving({ ...p, phase: phaseName }), ac.signal);
+      const res = await solve(questionKey(q, slugs), evaluate, (_s, ph) => { phaseName = ph; }, { signal: ac.signal, runs: runsOf(q), threshold: thresholdOf(q) });
       track("mass_battle_solve", { ms: Math.round(performance.now() - t0), answer: res.answer ?? -1 });
       setSolving(null);
       if (res.answer === null) {
-        setError(noAnswerText(nameOf(q.challenger), nameOf(q.boss), SOLVER.maxN));
+        setError(noAnswerText(names[0], names[1], SOLVER.maxN));
         setPhase("error");
         return;
       }
-      const b: BattleDesc = {
-        spec: { sides: [{ units: [{ id: q.challenger, count: res.answer }], formation: "swarm" }, { units: [{ id: q.boss, count: 1 }], formation: "line" }], level: q.level, arena: q.arena, seed: res.wonSeed ?? newSeed() },
-        names: [nameOf(q.challenger), nameOf(q.boss)],
-        hook,
-        question: q,
-        answer: { n: res.answer, spread: res.spread, wins: res.wins, runs: res.runs },
-        presetId: null,
-      };
+      const b = answerBattle(q, { n: res.answer, spread: res.spread, wins: res.wins, runs: res.runs }, res.wonSeed ?? newSeed(), hook, null);
       await deploy(b, true);
     } catch (e) {
       if ((e as Error)?.name === "AbortError") return;
@@ -650,12 +689,12 @@ export function MassBattleExperience({ list, presets, initial }: { list: PickerM
       setError(e instanceof Error ? e.message : "Something went wrong");
       setPhase("error");
     }
-  }, [deploy, ensureScene, nameOf, slugs]);
+  }, [answerBattle, deploy, ensureScene, facts, nameOf, slugs]);
 
   const fight = useCallback((spec: BattleSpec) => {
     audioRef.current ??= createBattleAudio();
     audioRef.current.gesture();
-    replaceUrl(`${MASS_BATTLE_PATH}?b=${encodeBattle(spec, slugs)}${keepQuality()}`);
+    replaceUrl(`${MASS_BATTLE_PATH}?b=${encodeBattle(spec, slugs)}${viewParam()}${keepQuality()}`);
     void deploy(battleOf(spec), true);
   }, [battleOf, deploy, slugs]);
 
@@ -711,12 +750,20 @@ export function MassBattleExperience({ list, presets, initial }: { list: PickerM
     camRef.current = "top";
     setCam("top");
   };
-  const setCamMode = (m: CamMode) => {
+  const toBoss = () => {
+    if (poseRef.current) directorRef.current.startFollow(poseRef.current);
+    camRef.current = "boss";
+    setCam("boss");
+  };
+  /** Puts the camera in a mode (from a button, a key, the setup panel or a link). */
+  const applyCam = (m: CamMode) => {
     if (m === "director") return toDirector();
     if (m === "top") return toTop();
+    if (m === "boss") return toBoss();
     camRef.current = "director";
     toFree();
   };
+  const setCamMode = (m: CamMode) => playbackSet({ camera: m });
   const zoomBy = (factor: number) => {
     toFree();
     const view = viewRef.current;
@@ -855,10 +902,10 @@ export function MassBattleExperience({ list, presets, initial }: { list: PickerM
       else if (e.key >= "1" && e.key <= "5" && !e.ctrlKey) changeSpeed([0.25, 0.5, 1, 2, 4][Number(e.key) - 1]);
       else if (e.key === " " && (phaseRef.current === "playing" || phaseRef.current === "ready") && stageRef.current?.contains(document.activeElement ?? null)) togglePause();
       else if (e.key === "." && pausedRef.current) stepRef.current++;
-      else if (k === "s" && !e.ctrlKey) setSlowmo((v) => !v);
-      else if (k === "h" && !e.ctrlKey) setHudOn((v) => !v);
-      else if (k === "d" && !e.ctrlKey) setNumbersOn((v) => !v);
-      else if (k === "c" && !e.ctrlKey) setCamMode(camRef.current === "director" ? "free" : camRef.current === "free" ? "top" : "director");
+      else if (k === "s" && !e.ctrlKey) playbackSet({ slowmo: !playbackRef.current.slowmo });
+      else if (k === "h" && !e.ctrlKey) playbackSet({ hud: !playbackRef.current.hud });
+      else if (k === "d" && !e.ctrlKey) playbackSet({ numbers: !playbackRef.current.numbers });
+      else if (k === "c" && !e.ctrlKey) setCamMode(({ director: "free", free: "boss", boss: "top", top: "director" } as const)[camRef.current]);
       else return;
       e.preventDefault();
     };
@@ -873,10 +920,7 @@ export function MassBattleExperience({ list, presets, initial }: { list: PickerM
     pausedRef.current = next;
     setPaused(next);
   };
-  const changeSpeed = (next: number) => {
-    speedRef.current = next;
-    setSpeed(next);
-  };
+  const changeSpeed = (next: number) => playbackSet({ speed: next });
   const replay = () => {
     const b = battleRef.current;
     if (b) void deploy(b, true);
@@ -890,9 +934,10 @@ export function MassBattleExperience({ list, presets, initial }: { list: PickerM
   const shareHref = () => {
     const b = battleRef.current;
     if (!b) return `${window.location.origin}${MASS_BATTLE_PATH}`;
-    if (b.presetId) return `${window.location.origin}${MASS_BATTLE_PATH}/${b.presetId}`;
-    if (b.question) return `${window.location.origin}${MASS_BATTLE_PATH}?ask=${encodeQuestion(b.question, slugs)}`;
-    return `${window.location.origin}${MASS_BATTLE_PATH}?b=${encodeBattle(b.spec, slugs)}`;
+    const v = encodePlayback(playbackRef.current);
+    if (b.presetId) return `${window.location.origin}${MASS_BATTLE_PATH}/${b.presetId}${v ? `?v=${v}` : ""}`;
+    if (b.question) return `${window.location.origin}${MASS_BATTLE_PATH}?ask=${encodeQuestion(b.question, slugs)}${v ? `&v=${v}` : ""}`;
+    return `${window.location.origin}${MASS_BATTLE_PATH}?b=${encodeBattle(b.source ?? b.spec, slugs)}${v ? `&v=${v}` : ""}`;
   };
   const share = async () => {
     const url = shareHref();
@@ -1035,12 +1080,12 @@ export function MassBattleExperience({ list, presets, initial }: { list: PickerM
                       onClick={() => {
                         const bo = b.bonus!;
                         const q = bo.question;
-                        void deploy({ spec: { sides: [{ units: [{ id: q.challenger, count: bo.answer.n }], formation: "swarm" }, { units: [{ id: q.boss, count: 1 }], formation: "line" }], level: q.level, arena: q.arena, seed: bo.answer.seed }, names: [nameOf(q.challenger), nameOf(q.boss)], hook: questionText(nameOf(q.challenger), nameOf(q.boss)), question: q, answer: bo.answer, presetId: null }, true);
+                        void deploy(answerBattle(q, bo.answer, bo.answer.seed, questionText(armyLabel(q.army, nameOf), armyLabel(q.boss, nameOf)), null), true);
                       }}
                       className="w-full rounded-lg border border-[#ffd84a]/40 bg-[#ffd84a]/10 px-3 py-2 text-sm text-[#ffe680] hover:bg-[#ffd84a]/15"
                       data-testid="mb-bonus"
                     >
-                      <span className="block">{questionText(nameOf(b.bonus.question.challenger), nameOf(b.bonus.question.boss))} <b>{fmt(b.bonus.answer.n)}</b> ({spreadText(b.bonus.answer.spread, b.bonus.answer.runs)})</span>
+                      <span className="block">{questionText(armyLabel(b.bonus.question.army, nameOf), armyLabel(b.bonus.question.boss, nameOf))} <b>{fmt(b.bonus.answer.n)}</b> ({spreadText(b.bonus.answer.spread, b.bonus.answer.runs)})</span>
                       <span className="block font-display text-xs font-bold uppercase tracking-wider">Watch it →</span>
                     </button>
                   )}
@@ -1082,9 +1127,9 @@ export function MassBattleExperience({ list, presets, initial }: { list: PickerM
             onSpeed={changeSpeed}
             onCam={setCamMode}
             onZoom={zoomBy}
-            onSlowmo={() => setSlowmo((v) => !v)}
-            onHud={() => setHudOn((v) => !v)}
-            onNumbers={() => setNumbersOn((v) => !v)}
+            onSlowmo={() => playbackSet({ slowmo: !playbackRef.current.slowmo })}
+            onHud={() => playbackSet({ hud: !playbackRef.current.hud })}
+            onNumbers={() => playbackSet({ numbers: !playbackRef.current.numbers })}
             onMute={toggleMute}
             onHow={() => setShowHow(true)}
             onShare={share}
@@ -1131,17 +1176,23 @@ export function MassBattleExperience({ list, presets, initial }: { list: PickerM
         presets={presets}
         busy={phase === "solving" || phase === "deploying"}
         current={b}
-        onAsk={ask}
-        onFight={fight}
+        playback={playback}
+        onPlayback={setPlayback}
+        onAsk={(q) => {
+          stageRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+          void ask(q);
+        }}
+        onFight={(spec) => {
+          stageRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+          fight(spec);
+        }}
         onPreset={(p) => {
           audioRef.current ??= createBattleAudio();
           audioRef.current.gesture();
-          replaceUrl(`${MASS_BATTLE_PATH}/${p.id}${keepQuality().replace("&", "?")}`);
+          replaceUrl(`${MASS_BATTLE_PATH}/${p.id}${`${viewParam()}${keepQuality()}`.replace("&", "?")}`);
           stageRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
           void deploy(presetBattle(p), true);
         }}
-        levelDefault={(b?.spec.level ?? 100) as BattleLevel}
-        arenaDefault={(b?.spec.arena ?? "plains") as ArenaId}
       />
     </div>
   );

@@ -136,11 +136,13 @@ describe("mass battle visuals: the view", () => {
     radius: [0.3],
     start: [sides.filter((s) => s === 0).length, sides.filter((s) => s === 1).length],
     moves: [[{ name: "Thunderbolt", type: "Electric", cat: "Special", contact: false, spread: false }]],
+    fighters: [{ level: 100, ability: "Static", item: "", nature: "Hardy", tera: "" }],
+    field: { weather: "none", terrain: "none", time: "day" },
     frame: frame(0, n, []),
     setupMs: 1,
   });
   function frame(tick: number, n: number, events: number[]): SimFrame {
-    return { tick, pos: new Float32Array(n * 2).map((_, i) => i), hp: new Uint16Array(n).fill(100), target: new Int32Array(n).fill(-1), events: Int32Array.from(events), left: [1, 1], ended: false, winner: 2 };
+    return { tick, pos: new Float32Array(n * 2).map((_, i) => i), hp: new Uint16Array(n).fill(100), target: new Int32Array(n).fill(-1), events: Int32Array.from(events), notes: new Int32Array(0), left: [1, 1], ended: false, winner: 2 };
   }
 
   it("launches a move before it lands, and lands it once", () => {

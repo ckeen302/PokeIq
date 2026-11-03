@@ -15,7 +15,7 @@ import { cn } from "@/lib/utils";
  * motion, damage numbers, the HUD itself).
  */
 
-export type CamMode = "director" | "free" | "top";
+export type CamMode = "director" | "free" | "boss" | "top";
 
 export interface HudState {
   left: [number, number];
@@ -184,8 +184,8 @@ export interface ControlsProps {
   onFullscreen(): void;
 }
 
-const CAM_NEXT: Record<CamMode, CamMode> = { director: "free", free: "top", top: "director" };
-const CAM_LABEL: Record<CamMode, string> = { director: "Director", free: "Free camera", top: "Top-down" };
+const CAM_NEXT: Record<CamMode, CamMode> = { director: "free", free: "boss", boss: "top", top: "director" };
+const CAM_LABEL: Record<CamMode, string> = { director: "Director", free: "Free camera", boss: "Follow the boss", top: "Top-down" };
 
 export function BattleControls(p: ControlsProps) {
   const [menu, setMenu] = useState(false);
@@ -206,7 +206,7 @@ export function BattleControls(p: ControlsProps) {
     const k = order.indexOf(i >= 0 ? SPEEDS[i] : 1);
     p.onSpeed(order[(k + 1) % order.length]);
   };
-  const CamIcon = p.cam === "top" ? MapIcon : p.cam === "free" ? Move3d : Camera;
+  const CamIcon = p.cam === "top" ? MapIcon : p.cam === "free" ? Move3d : p.cam === "boss" ? Crown : Camera;
   return (
     <div className="absolute inset-x-0 bottom-0 z-[6] flex flex-wrap items-end justify-between gap-2 p-2.5 sm:p-4" data-testid="mb-controls">
       <div className="flex flex-wrap items-center gap-1.5">
@@ -228,7 +228,7 @@ export function BattleControls(p: ControlsProps) {
           <Gauge className="hidden h-4 w-4 sm:block" aria-hidden />
           {speedLabel(p.speed)}×
         </button>
-        <button type="button" onClick={() => p.onCam(CAM_NEXT[p.cam])} className={cn(chip, p.cam === "director" && on)} data-testid="mb-camera" data-mode={p.cam} aria-pressed={p.cam === "director"} aria-label={`Camera: ${CAM_LABEL[p.cam]}`} title="Camera: director, free, top-down (C)">
+        <button type="button" onClick={() => p.onCam(CAM_NEXT[p.cam])} className={cn(chip, p.cam === "director" && on)} data-testid="mb-camera" data-mode={p.cam} aria-pressed={p.cam === "director"} aria-label={`Camera: ${CAM_LABEL[p.cam]}`} title="Camera: director, free, follow the boss, top-down (C)">
           <CamIcon className="h-4 w-4" aria-hidden /> <span className="hidden sm:inline">{CAM_LABEL[p.cam]}</span>
         </button>
       </div>

@@ -4,7 +4,7 @@ import { figureSize } from "@/lib/mass-battle/stats";
 import { buildArena, type Arena } from "./arena";
 import { loadAll } from "./assets";
 import { Effects, effectCaps, typeLook } from "./effects";
-import { lookFor, normTime, normWeather, type Look, type TimeOfDay, type Weather } from "./look";
+import { lookFor, normTerrain, normTime, normWeather, type Look, type TerrainLook, type TimeOfDay, type Weather } from "./look";
 import { createPost, type Post } from "./post";
 import { UNIT_LIGHT, UnitsLayer, type UnitsView } from "./units";
 import { buildWeather, type WeatherLayer } from "./weather";
@@ -90,6 +90,8 @@ export interface DeployInput {
   /** What the sky is doing (any of the battle's names for it), and when. */
   weather?: unknown;
   time?: unknown;
+  /** Electric, Grassy, Psychic or Misty Terrain over the battleground. */
+  terrain?: unknown;
 }
 
 export interface SceneOptions {
@@ -119,7 +121,7 @@ export interface BattleScene {
   /** The armies' layer (debugging). */
   units(): UnitsLayer | null;
   /** The look in use (the weather and time it shows). */
-  readonly env: { weather: Weather; time: TimeOfDay; look: Look | null };
+  readonly env: { weather: Weather; time: TimeOfDay; terrain: TerrainLook; look: Look | null };
   /** A boss's footfall, a lightning strike (for the sound). */
   onStep: ((x: number, z: number, size: number) => void) | null;
   onThunder: ((strength: number) => void) | null;
@@ -172,7 +174,7 @@ export function createBattleScene(host: HTMLElement, opts: SceneOptions): Battle
   let weatherLayer: WeatherLayer | null = null;
   let units: UnitsLayer | null = null;
   let look: Look | null = null;
-  const env: BattleScene["env"] = { weather: "none", time: "day", look: null };
+  const env: BattleScene["env"] = { weather: "none", time: "day", terrain: "none", look: null };
   let shake = 0;
   const shakeSeed = Math.random() * 100;
   let clock = 0;
@@ -246,10 +248,12 @@ export function createBattleScene(host: HTMLElement, opts: SceneOptions): Battle
     radius = input.radius;
     const weather = normWeather(input.weather);
     const time = normTime(input.time);
+    const terrain = normTerrain(input.terrain);
     env.weather = weather;
     env.time = time;
+    env.terrain = terrain;
     // The arena (rebuilt only when it changes).
-    const key = `${input.arena}|${Math.round(input.radius)}|${weather}|${time}|${quality === "draft" ? "d" : "f"}`;
+    const key = `${input.arena}|${Math.round(input.radius)}|${weather}|${time}|${terrain}|${quality === "draft" ? "d" : "f"}`;
     if (key !== arenaKey || !arena) {
       if (arena) {
         scene.remove(arena.group);
@@ -261,9 +265,9 @@ export function createBattleScene(host: HTMLElement, opts: SceneOptions): Battle
       }
       look = lookFor(input.arena, time, weather);
       env.look = look;
-      arena = buildArena(input.arena, { radius: input.radius, props: Q.props, grass: Q.grass, anisotropy: Q.anisotropy, tex: opts.tex, look });
+      arena = buildArena(input.arena, { radius: input.radius, props: Q.props, grass: Q.grass, anisotropy: Q.anisotropy, tex: opts.tex, look, terrain });
       scene.add(arena.group);
-      weatherLayer = buildWeather(input.arena, weather, { density: Q.weather, radius: input.radius, night: time === "night" });
+      weatherLayer = buildWeather(input.arena, weather, { density: Q.weather, radius: input.radius, night: time === "night", terrain });
       scene.add(weatherLayer.group);
       weatherLayer.onFlash = (x, z, s) => {
         effects.lightning(x, z, radius * 1.2, effects.time.value);

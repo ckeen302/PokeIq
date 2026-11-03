@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import type { ArenaId } from "@/lib/mass-battle/types";
-import type { Weather } from "./look";
+import { TERRAIN_COLOR, type TerrainLook, type Weather } from "./look";
 
 /**
  * Weather in the air, all of it 3D and animated on the GPU from the clock:
@@ -198,7 +198,7 @@ void main() {
   return { mesh, mat, geo };
 }
 
-export function buildWeather(arena: ArenaId, weather: Weather, opts: { density: number; radius: number; seed?: number; night?: boolean }): WeatherLayer {
+export function buildWeather(arena: ArenaId, weather: Weather, opts: { density: number; radius: number; seed?: number; night?: boolean; terrain?: TerrainLook }): WeatherLayer {
   const group = new THREE.Group();
   group.name = "weather";
   const fields: Field[] = [];
@@ -239,6 +239,11 @@ export function buildWeather(arena: ArenaId, weather: Weather, opts: { density: 
   if (opts.night && (arena === "plains" || arena === "colosseum") && weather === "none") {
     // Fireflies over the grass (and round the arena's torches) at night.
     add(particleField({ count: Math.round(600 * d), box: 60, height: 3, fall: 0, wind: [0.2, 0.1], size: 0.04, stretch: 0, color: new THREE.Color(2.4, 3.2, 0.9), alpha: 1, additive: true, wobble: 1.2, base: crystal, rand, blink: 1, grounded: true }));
+  }
+  if (opts.terrain && opts.terrain !== "none") {
+    // The terrain's motes over the battleground: sparks, pollen, psychic glints or pink mist.
+    const c = new THREE.Color(TERRAIN_COLOR[opts.terrain]).multiplyScalar(opts.terrain === "misty" ? 1.2 : 2.4);
+    add(particleField({ count: Math.round(900 * d), box: 56, height: opts.terrain === "misty" ? 2 : 3, fall: opts.terrain === "electric" ? 0 : -0.2, wind: [0.3, 0.2], size: opts.terrain === "misty" ? 0.06 : 0.03, stretch: opts.terrain === "electric" ? 3 : 0, color: c, alpha: 0.9, additive: true, wobble: 0.8, base: crystal, rand, blink: opts.terrain === "electric" ? 4 : 1, grounded: true }));
   }
   if (weather === "sun") {
     // Motes glinting in the light.

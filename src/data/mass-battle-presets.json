@@ -1,11 +1,11 @@
 {
- "engine": 1,
- "roster": 1,
+ "engine": 2,
+ "roster": 2,
  "results": {
   "magikarp-vs-arceus": {
    "outcome": {
     "winner": 1,
-    "seconds": 9.05,
+    "seconds": 12.05,
     "left": [
      0,
      1
@@ -15,16 +15,16 @@
      40
     ],
     "dealt": [
-     197,
+     348,
      8080
     ]
    },
    "answer": {
-    "n": 53,
-    "spread": 5,
+    "n": 46,
+    "spread": 7,
     "wins": 20,
     "runs": 40,
-    "seed": 3620799910
+    "seed": 1047923721
    }
   },
   "rattata-vs-mewtwo": {
@@ -40,22 +40,22 @@
      1
     ],
     "dealt": [
-     337,
+     374,
      222
     ]
    },
    "answer": {
-    "n": 3,
+    "n": 4,
     "spread": 1,
-    "wins": 31,
+    "wins": 40,
     "runs": 40,
-    "seed": 1135224752
+    "seed": 1069852830
    }
   },
   "pikachu-vs-snorlax": {
    "outcome": {
     "winner": 0,
-    "seconds": 3.7,
+    "seconds": 3.95,
     "left": [
      100,
      0
@@ -70,28 +70,28 @@
     ]
    },
    "answer": {
-    "n": 3,
+    "n": 5,
     "spread": 1,
-    "wins": 30,
+    "wins": 22,
     "runs": 40,
-    "seed": 1435880725
+    "seed": 4061662381
    }
   },
   "kanto-starters": {
    "outcome": {
     "winner": 0,
-    "seconds": 8,
+    "seconds": 7.85,
     "left": [
-     509,
+     554,
      0
     ],
     "kos": [
      60,
-     91
+     46
     ],
     "dealt": [
      19200,
-     35559
+     28495
     ]
    },
    "answer": null
@@ -99,18 +99,18 @@
   "fire-vs-water": {
    "outcome": {
     "winner": 0,
-    "seconds": 25.45,
+    "seconds": 25.75,
     "left": [
-     124,
+     107,
      0
     ],
     "kos": [
-     360,
-     238
+     409,
+     267
     ],
     "dealt": [
-     114590,
-     77857
+     131528,
+     91569
     ]
    },
    "answer": null
@@ -118,18 +118,18 @@
   "legendaries-vs-everyone": {
    "outcome": {
     "winner": 1,
-    "seconds": 9.05,
+    "seconds": 9.65,
     "left": [
      0,
-     565
+     556
     ],
     "kos": [
-     32,
-     69
+     44,
+     72
     ],
     "dealt": [
-     14365,
-     24016
+     16404,
+     25496
     ]
    },
    "answer": null
@@ -156,24 +156,24 @@
     "spread": 1,
     "wins": 40,
     "runs": 40,
-    "seed": 8827175
+    "seed": 108809341
    }
   },
   "eeveelution-civil-war": {
    "outcome": {
-    "winner": 0,
-    "seconds": 17.15,
+    "winner": 1,
+    "seconds": 22.25,
     "left": [
-     46,
-     0
+     0,
+     30
     ],
     "kos": [
-     100,
-     49
+     67,
+     100
     ],
     "dealt": [
-     32046,
-     14538
+     25273,
+     31533
     ]
    },
    "answer": null

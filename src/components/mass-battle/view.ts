@@ -1,4 +1,4 @@
-import { EV, EVENT_INTS, TICK_HZ } from "@/lib/mass-battle/constants";
+import { EV, EVENT_INTS, NOTE_INTS, TICK_HZ } from "@/lib/mass-battle/constants";
 import type { FieldSummary } from "@/lib/mass-battle/director";
 import type { SimEnd, SimFrame, SimReady } from "./protocol";
 
@@ -9,6 +9,17 @@ import type { SimEnd, SimFrame, SimReady } from "./protocol";
  * figures' animation. Events are handed on (effects, sound, kill feed,
  * the director) as the clock passes them.
  */
+
+/** Something that happened to a unit besides a hit (a status, healing, chip damage, a stat stage…: NOTE in constants.ts). */
+export interface Note {
+  t: number;
+  unit: number;
+  kind: number;
+  value: number;
+  source: number;
+  x: number;
+  z: number;
+}
 
 export interface Hit {
   /** Battle time (s). */
@@ -61,6 +72,7 @@ export class BattleView {
   onHit: ((h: Hit) => void) | null = null;
   /** A move about to land: fired LEAD seconds before its hit (or with it, when the frames come late). */
   onLaunch: ((h: Hit) => void) | null = null;
+  onNote: ((n: Note) => void) | null = null;
 
   constructor(ready: SimReady, cap: number) {
     this.ready = ready;
@@ -159,6 +171,13 @@ export class BattleView {
       }
       if (flags & EV.KO) this.faintAt[target] = t;
       this.onHit?.({ t, actor, target, slot: ev[k + 2], damage: ev[k + 3], flags, action: ev[k + 5], ax: f.pos[actor * 2], az: f.pos[actor * 2 + 1], tx: f.pos[target * 2], tz: f.pos[target * 2 + 1] });
+    }
+    const nt = f.notes;
+    if (nt && this.onNote) {
+      for (let k = 0; k + NOTE_INTS <= nt.length; k += NOTE_INTS) {
+        const u = nt[k];
+        this.onNote({ t, unit: u, kind: nt[k + 1], value: nt[k + 2], source: nt[k + 3], x: f.pos[u * 2], z: f.pos[u * 2 + 1] });
+      }
     }
     for (let i = 0; i < this.n; i++) this.hp[i] = f.hp[i];
     this.left = [...f.left] as [number, number];

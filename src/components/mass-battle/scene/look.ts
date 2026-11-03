@@ -8,6 +8,19 @@ import type { ArenaId, BattleSpec } from "@/lib/mass-battle/types";
  */
 
 export type Weather = "none" | "rain" | "sun" | "sand" | "snow";
+export type TerrainLook = "none" | "electric" | "grassy" | "psychic" | "misty";
+
+export function normTerrain(t: unknown): TerrainLook {
+  const s = String(t ?? "").toLowerCase();
+  if (s.includes("electric")) return "electric";
+  if (s.includes("grass")) return "grassy";
+  if (s.includes("psych")) return "psychic";
+  if (s.includes("mist")) return "misty";
+  return "none";
+}
+
+/** Terrain over the battleground: its glow and the motes over it. */
+export const TERRAIN_COLOR: Record<Exclude<TerrainLook, "none">, string> = { electric: "#ffe23a", grassy: "#5ad84a", psychic: "#ff4fb8", misty: "#ffb8f0" };
 export type TimeOfDay = "day" | "dusk" | "night";
 
 export const WEATHERS: Weather[] = ["none", "rain", "sun", "sand", "snow"];
@@ -225,19 +238,21 @@ export function lookFor(arena: ArenaId, time: TimeOfDay, weather: Weather): Look
 }
 
 /**
- * The sky over a battle: its weather and time of day from the battle (when it has them). ?tod= (day, dusk, night)
- * picks the time of day, which is only how it looks; ?wx= previews a weather's look on test pages (?debug=1) only,
- * since a weather changes the battle's maths.
+ * The sky over a battle: its weather, terrain and time of day from the battle's field. ?tod= (day, dusk, night)
+ * picks the time of day, which is only how it looks; ?wx= and ?tr= preview a weather's or a terrain's look on test
+ * pages (?debug=1) only, since they change the battle's maths.
  */
-export function envOf(spec: BattleSpec): { weather: unknown; time: unknown } {
-  const e = spec as BattleSpec & { weather?: unknown; time?: unknown; timeOfDay?: unknown };
-  let weather = e.weather, time = e.time ?? e.timeOfDay;
+export function envOf(spec: BattleSpec): { weather: unknown; time: unknown; terrain: unknown } {
+  const f = spec.field;
+  let weather: unknown = f?.weather, time: unknown = f?.time;
+  let terrain: unknown = f?.terrain;
   try {
     const q = new URLSearchParams(window.location.search);
     if (q.get("tod")) time = q.get("tod");
     if (q.get("debug") === "1" && q.get("wx")) weather = q.get("wx");
+    if (q.get("debug") === "1" && q.get("tr")) terrain = q.get("tr");
   } catch {
     /* no address */
   }
-  return { weather, time };
+  return { weather, time, terrain };
 }

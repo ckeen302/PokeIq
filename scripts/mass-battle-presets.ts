@@ -16,14 +16,19 @@ import { buildRoster } from "../src/lib/mass-battle/roster-data";
 import { DamageTable } from "../src/lib/mass-battle/damage";
 import { prepare, runHeadless } from "../src/lib/mass-battle/engine";
 import { PRESETS, resolvePreset } from "../src/lib/mass-battle/presets";
+import { questionKey, questionSpec, runsOf, thresholdOf, type SlugIndex } from "../src/lib/mass-battle/share";
 import { solve, type Evaluate } from "../src/lib/mass-battle/solver";
 import type { Question } from "../src/lib/mass-battle/types";
 import { presetsFile, type PresetResult } from "../src/lib/mass-battle/preset-results";
 
 const roster = buildRoster();
+const bySlug = new Map(roster.species.map((s) => [s.slug, s.id]));
+const byId = new Map(roster.species.map((s) => [s.id, s.slug]));
+export const SLUGS: SlugIndex = { id: (s) => bySlug.get(s), slug: (id) => byId.get(id) };
 
-function evaluator(q: Question): Evaluate {
-  let table: DamageTable | null = null;
+/** Plays a question's battles in this process, keeping each fighter list's damage table (as the browser's workers do). */
+export function evaluator(q: Question): Evaluate {
+  const tables = new Map<number, DamageTable>();
   const cache = new Map<string, number>();
   return async (n, seeds, settled) => {
     let wins = 0, losses = 0;
@@ -32,8 +37,12 @@ function evaluator(q: Question): Evaluate {
       const key = `${n}:${seed}`;
       let w = cache.get(key);
       if (w === undefined) {
-        const prep = prepare(roster, { sides: [{ units: [{ id: q.challenger, count: n }], formation: "swarm" }, { units: [{ id: q.boss, count: 1 }], formation: "line" }], level: q.level, arena: q.arena, seed });
-        table ??= new DamageTable(prep.species, prep.moves, prep.level);
+        const prep = prepare(roster, questionSpec(q, n, seed));
+        let table = tables.get(prep.species.length);
+        if (!table) {
+          table = new DamageTable(prep.species.map((species, k) => ({ species, set: prep.sets[k] })), prep.field);
+          tables.set(prep.species.length, table);
+        }
         w = runHeadless(prep, table).winner;
         cache.set(key, w);
       }
@@ -52,7 +61,8 @@ async function main() {
     const b = runHeadless(prepare(roster, r.spec));
     const res: PresetResult = { outcome: b.outcome(), answer: null };
     if (r.question) {
-      const s = await solve(r.question, evaluator(r.question));
+      const q = r.question;
+      const s = await solve(questionKey(q, SLUGS), evaluator(q), undefined, { runs: runsOf(q), threshold: thresholdOf(q) });
       res.answer = s.answer === null ? null : { n: s.answer, spread: s.spread, wins: s.wins, runs: s.runs, seed: s.wonSeed ?? r.spec.seed };
     }
     results[p.id] = res;
@@ -62,4 +72,4 @@ async function main() {
   writeFileSync(join(__dirname, "../src/data/mass-battle-presets.json"), `${JSON.stringify(out, null, 1)}\n`);
 }
 
-void main();
+if (process.argv[1]?.endsWith("mass-battle-presets.ts")) void main();

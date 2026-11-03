@@ -257,8 +257,41 @@ export class Director {
     this.cut(pick);
   }
 
+  private followPose: Pose | null = null;
+  private followAt = 0;
+
+  /**
+   * The "follow the boss" camera: over the boss's shoulder at what's coming for it, gliding with it, no cuts and no
+   * slow motion (with no boss, it rides along the bigger army's front).
+   */
+  follow(f: FieldSummary, dt: number): Pose {
+    this.followAt += dt;
+    this.orbit += dt * 0.06;
+    const [a, b] = f.armies;
+    if (!f.boss) this.lead = a.alive >= b.alive ? 0 : 1;
+    const want = this.target(f, this.followAt, f.boss ? "boss" : "track");
+    if (!this.followPose) this.followPose = { ...want };
+    const p = this.followPose;
+    const r = 2.2;
+    p.tx = damp(p.tx, want.tx, r * 1.3, dt);
+    p.ty = damp(p.ty, want.ty, r * 1.3, dt);
+    p.tz = damp(p.tz, want.tz, r * 1.3, dt);
+    p.yaw = dampAngle(p.yaw, want.yaw, r, dt);
+    p.pitch = damp(p.pitch, want.pitch, r, dt);
+    p.dist = Math.exp(damp(Math.log(p.dist), Math.log(want.dist), r, dt));
+    p.fov = damp(p.fov, want.fov, r, dt);
+    p.shake = 0;
+    return p;
+  }
+
+  /** Starts the follow camera from a pose (no jump when switching to it). */
+  startFollow(from: Pose) {
+    this.followPose = { ...from };
+    this.followAt = 0;
+  }
+
   /** The pose each shot wants, `s` real seconds into it. */
-  private target(f: FieldSummary, s: number): Pose {
+  private target(f: FieldSummary, s: number, shot: ShotName = this.shot): Pose {
     const [a, b] = f.armies;
     const tall = f.aspect < 0.9;
     const fov = tall ? 50 : 36;
@@ -273,7 +306,7 @@ export class Director {
     const mx = (a.fx + b.fx) / 2, mz = (a.fz + b.fz) / 2;
     const h = Math.max(0.3, (a.h + b.h) / 2);
     const big = Math.max(a.h, b.h);
-    switch (this.shot) {
+    switch (shot) {
       case "establish": {
         const span = Math.max(16, S + a.extent + b.extent);
         const cx = (a.cx + b.cx) / 2, cz = (a.cz + b.cz) / 2;

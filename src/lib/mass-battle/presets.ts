@@ -1,14 +1,16 @@
-import type { ArenaId, BattleLevel, BattleSpec, Formation, MBSpecies, Question, Roster } from "./types";
+import { simpleQuestion } from "./share";
+import type { ArenaId, BattleLevel, BattleSpec, Formation, GroupRule, MBSpecies, Question, Roster, SetChoice, UnitSpec } from "./types";
 
 /**
  * The ready-made battles, each with its own page, share link and preview
- * card. A side is either a list of species with counts or a rule over the
- * roster ("every fully evolved Fire type"), resolved against the real data.
+ * card. A side is a few species with counts, or a group ("every fully
+ * evolved Fire type") resolved against the real data. Nobody holds an item
+ * unless a preset says so (the fair default).
  */
 
 type SideDef =
-  | { formation: Formation; units: [slug: string, count: number][] }
-  | { formation: Formation; rule: (s: MBSpecies) => boolean; each: number };
+  | { formation: Formation; units: [slug: string, count: number, set?: SetChoice][] }
+  | { formation: Formation; group: GroupRule; each: number };
 
 export interface PresetDef {
   id: string;
@@ -28,8 +30,6 @@ export interface PresetDef {
   /** Names for sides made of many species. */
   labels?: [string, string];
 }
-
-const fe = (s: MBSpecies) => s.fullyEvolved && !s.legendary && !s.mythical;
 
 export const PRESETS: PresetDef[] = [
   {
@@ -95,8 +95,8 @@ export const PRESETS: PresetDef[] = [
     // Water on the blue side, Fire on the red.
     labels: ["Water types", "Fire types"],
     sides: [
-      { formation: "line", rule: (s) => fe(s) && s.types.includes("water") && !s.types.includes("fire"), each: 5 },
-      { formation: "line", rule: (s) => fe(s) && s.types.includes("fire") && !s.types.includes("water"), each: 10 },
+      { formation: "line", group: { types: ["water"], fullyEvolved: true, legendary: "no" }, each: 5 },
+      { formation: "line", group: { types: ["fire"], fullyEvolved: true, legendary: "no" }, each: 10 },
     ],
   },
   {
@@ -110,8 +110,8 @@ export const PRESETS: PresetDef[] = [
     seed: 151,
     labels: ["Legendaries", "Kanto"],
     sides: [
-      { formation: "wedge", rule: (s) => s.legendary && s.moves[100].length > 0, each: 1 },
-      { formation: "line", rule: (s) => fe(s) && s.gen === 1, each: 10 },
+      { formation: "wedge", group: { legendary: true }, each: 1 },
+      { formation: "line", group: { gen: 1, fullyEvolved: true, legendary: "no" }, each: 10 },
     ],
   },
   {
@@ -164,12 +164,18 @@ export interface ResolvedPreset {
 /** A preset's armies against the roster (species it can't field are left out). */
 export function resolvePreset(p: PresetDef, roster: Pick<Roster, "species">): ResolvedPreset {
   const bySlug = new Map(roster.species.map((s) => [s.slug, s]));
+  const canFight = (s: MBSpecies | undefined): s is MBSpecies => !!s && (!!s.randbats || s.levelUp.length > 0);
   const side = (d: SideDef) => {
     if ("units" in d) {
-      return { formation: d.formation, units: d.units.flatMap(([slug, count]) => (bySlug.get(slug) ? [{ id: bySlug.get(slug)!.id, count }] : [])) };
+      const units: UnitSpec[] = d.units.flatMap(([slug, count, set]) => {
+        const s = bySlug.get(slug);
+        return canFight(s) ? [{ id: s.id, count, ...(set ? { set } : {}) }] : [];
+      });
+      return { formation: d.formation, units };
     }
-    return { formation: d.formation, units: roster.species.filter((s) => d.rule(s) && s.moves[100].length > 0).map((s) => ({ id: s.id, count: d.each })) };
+    return { formation: d.formation, units: [{ id: 0, count: d.each, group: d.group }] };
   };
-  const q = p.question && bySlug.get(p.question.challenger) && bySlug.get(p.question.boss) ? { challenger: bySlug.get(p.question.challenger)!.id, boss: bySlug.get(p.question.boss)!.id, level: p.level, arena: p.arena } : null;
+  const c = p.question ? bySlug.get(p.question.challenger) : undefined, b = p.question ? bySlug.get(p.question.boss) : undefined;
+  const q = c && b ? simpleQuestion(c.id, b.id, p.level, p.arena) : null;
   return { id: p.id, kind: p.kind, title: p.title, hook: p.hook, blurb: p.blurb, spec: { sides: [side(p.sides[0]), side(p.sides[1])], level: p.level, arena: p.arena, seed: p.seed }, question: q, labels: p.labels ?? null };
 }

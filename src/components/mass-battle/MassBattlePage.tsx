@@ -2,10 +2,10 @@ import Link from "next/link";
 import { jsonLd } from "@/lib/seo";
 import { SITE_URL } from "@/lib/site";
 import { LAB_PATH } from "@/lib/lab";
-import { answerText, fmt, resultTitle, spreadText } from "@/lib/mass-battle/copy";
+import { answerText, fmt, resultTitle, sideName, spreadText } from "@/lib/mass-battle/copy";
 import { MASS_BATTLE_PATH } from "@/lib/mass-battle/share";
 import { nameOf, pickerList, presetCards, type PresetCardData } from "@/lib/mass-battle/page-data";
-import type { BattleSpec, Question } from "@/lib/mass-battle/types";
+import { DEFAULT_PLAYBACK, type BattleSpec, type PlaybackSpec, type Question } from "@/lib/mass-battle/types";
 import { HudHeading } from "@/components/game/HudHeading";
 import { BackButton } from "@/components/ui/BackButton";
 import { HowItWorksBody } from "./HowItWorks";
@@ -18,15 +18,15 @@ import { MassBattleExperience, type Initial } from "./MassBattleExperience";
  */
 
 function presetSummary(p: PresetCardData): string {
-  const answer = p.question && p.answer ? `${answerText(p.answer.n, nameOf(p.question.challenger))} to beat ${nameOf(p.question.boss)} (${spreadText(p.answer.spread, p.answer.runs)}).` : "";
+  const answer = p.question && p.answer ? `${answerText(p.answer.n, sideName(p.question.army, nameOf))} to beat ${sideName(p.question.boss, nameOf)} (${spreadText(p.answer.spread, p.answer.runs)}).` : "";
   if (p.kind === "howmany") return answer;
   if (!p.outcome) return answer;
-  const names: [string, string] = p.labels ?? [nameOf(p.spec.sides[0].units[0].id), nameOf(p.spec.sides[1].units[0].id)];
+  const names: [string, string] = p.labels ?? [sideName(p.spec.sides[0], nameOf), sideName(p.spec.sides[1], nameOf)];
   const o = p.outcome;
   return `${resultTitle(o.winner, names, o.left)} ${o.winner === 2 ? "" : `${fmt(o.left[o.winner])} left standing after ${o.seconds.toFixed(1)} seconds.`} ${answer}`.trim();
 }
 
-export function MassBattlePage({ preset, battle, question }: { preset?: PresetCardData | null; battle?: BattleSpec | null; question?: Question | null }) {
+export function MassBattlePage({ preset, battle, question, playback }: { preset?: PresetCardData | null; battle?: BattleSpec | null; question?: Question | null; playback?: PlaybackSpec }) {
   const presets = presetCards();
   const list = pickerList();
   const initial: Initial = question ? { kind: "question", q: question } : battle ? { kind: "battle", spec: battle } : preset ? { kind: "preset", id: preset.id } : null;
@@ -52,7 +52,7 @@ export function MassBattlePage({ preset, battle, question }: { preset?: PresetCa
         </div>
         <h1 className="font-display text-3xl font-bold uppercase leading-[0.95] tracking-tight sm:text-5xl">{preset ? preset.title : <>Pokémon <span className="text-primary">Mass Battle</span></>}</h1>
       </div>
-      <MassBattleExperience list={list} presets={presets} initial={initial} />
+      <MassBattleExperience list={list} presets={presets} initial={initial} playback={playback ?? DEFAULT_PLAYBACK} />
       <p className="max-w-3xl text-muted-foreground sm:text-lg">
         {preset ? preset.blurb : "Thousands of Pokémon clash on a 3D battlefield, and every hit uses the real games' damage maths. Ask how many of one Pokémon it takes to beat another, or send two armies at each other."}
       </p>

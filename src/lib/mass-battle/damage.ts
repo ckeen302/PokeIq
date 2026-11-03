@@ -2,50 +2,66 @@ import * as CalcLib from "@smogon/calc";
 import type { Generation } from "@pkmn/data";
 import { makePokemon, sideFromSet, type CalcModule } from "@/lib/battle/calc";
 import type { TeamSet } from "@/lib/battle/sets";
-import { EV, IV, NATURE } from "./stats";
-import type { BattleLevel, MBMove, MBSpecies } from "./types";
+import { STATUS_IDS, type FieldSpec, type MBMove, type MBSpecies, type UnitSet } from "./types";
 
 /**
  * Damage, exactly as the games work it out: every number a hit can do comes
  * from Smogon's damage calculator (@smogon/calc, the one Showdown uses), so
- * STAB, the type chart, abilities (Huge Power, Levitate, Thick Fat…), items
- * and the 16 random rolls are the real ones. The Pokémon are built through
- * the site's own calculator glue (src/lib/battle/calc.ts).
+ * STAB, the type chart, abilities (Huge Power, Levitate, Thick Fat…), items,
+ * weather, terrain, Terastallization, stat stages, burns and the 16 random
+ * rolls are the real ones. The Pokémon are built through the site's own
+ * calculator glue (src/lib/battle/calc.ts).
  *
- * A battle has a few species but thousands of hits, so the table works each
- * (attacker, move, defender) out once and every hit after that is a lookup
- * plus a seeded roll. Entries are made on first use and kept. The few things
- * that change a hit mid-battle are part of the key: a critical hit, a spread
- * move hitting more than one foe (the 0.75 multiplier of the games' double
- * battles), and the HP-dependent cases (Flail and Reversal, Eruption and
- * Water Spout, Blaze-style abilities, Multiscale, Brine, Crush Grip).
+ * A battle has a few fighters (a species and its set) but thousands of
+ * hits, so the table works each (attacker, move, defender) out once per
+ * state and every hit after that is a lookup plus a seeded roll. The things
+ * that change a hit mid-battle are part of the key: a critical hit, a
+ * spread move hitting more than one foe (the 0.75 multiplier of the games'
+ * double battles), the stat stages the move reads, both sides' status, a
+ * Knocked Off item, and the HP-dependent cases (Flail and Reversal,
+ * Eruption and Water Spout, Blaze-style abilities, Multiscale, Brine,
+ * Crush Grip).
  */
 
 const GEN = CalcLib.Generations.get(9);
 const CALC = { gen: GEN as unknown as Generation, lib: CalcLib as unknown as CalcModule };
-const SINGLES = new CalcLib.Field({ gameType: "Singles" });
-const DOUBLES = new CalcLib.Field({ gameType: "Doubles" });
 
 const toId = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "");
 const PINCH: Record<string, string> = { blaze: "Fire", torrent: "Water", overgrow: "Grass", swarm: "Bug" };
 const FULL_HP_SHIELDS = new Set(["multiscale", "shadowshield", "terashell"]);
+const WEATHER: Record<FieldSpec["weather"], string | undefined> = { none: undefined, sun: "Sun", rain: "Rain", sand: "Sand", snow: "Snow" };
+const TERRAIN: Record<FieldSpec["terrain"], string | undefined> = { none: undefined, electric: "Electric", grassy: "Grassy", psychic: "Psychic", misty: "Misty" };
 
-/** The calculator's Pokémon for a species at a level, with the battle's spread (neutral nature, 31 IVs, 85 EVs). */
-export function calcPokemon(s: MBSpecies, level: BattleLevel, moves: MBMove[]): CalcLib.Pokemon {
-  const stats = (v: number) => ({ hp: v, atk: v, def: v, spa: v, spd: v, spe: v });
-  const set = {
+/** One fighter: a species and its set. */
+export interface Fighter {
+  species: MBSpecies;
+  set: UnitSet;
+}
+
+/** The calculator's Pokémon for a fighter. */
+export function calcPokemon(f: Fighter): CalcLib.Pokemon {
+  const { species: s, set } = f;
+  const team = {
     name: s.name,
     species: s.calc,
-    item: s.item,
-    ability: s.ability,
-    moves: moves.map((m) => m.name),
-    nature: NATURE,
+    item: set.item,
+    ability: set.ability,
+    moves: set.moves.map((m) => m.name),
+    nature: set.nature,
     gender: "",
-    evs: stats(EV),
-    ivs: stats(IV),
-    level,
+    evs: { ...set.evs },
+    ivs: { ...set.ivs },
+    level: set.level,
+    teraType: set.tera || undefined,
   } as unknown as TeamSet;
-  return makePokemon(CALC, sideFromSet(set)) as unknown as CalcLib.Pokemon;
+  const side = sideFromSet(team);
+  side.terastallized = !!set.tera;
+  return makePokemon(CALC, side) as unknown as CalcLib.Pokemon;
+}
+
+/** The calculator's field for a battle's weather and terrain, in singles or (for spread moves) doubles. */
+export function calcField(field: FieldSpec, doubles: boolean): CalcLib.Field {
+  return new CalcLib.Field({ gameType: doubles ? "Doubles" : "Singles", weather: WEATHER[field.weather] as CalcLib.Field["weather"], terrain: TERRAIN[field.terrain] as CalcLib.Field["terrain"] });
 }
 
 /** How an attacker's HP changes its move: by the move's power, or by a pinch ability. */
@@ -72,7 +88,7 @@ function defenderKey(move: MBMove, ability: string, hp: number, max: number): nu
   return 0;
 }
 
-/** A hit's possible damage: one array of the 16 rolls per hit (multi-hit moves have one per hit, most hits first worked out). */
+/** A hit's possible damage: one array of the 16 rolls per hit (multi-hit moves have one per hit). */
 export interface HitEntry {
   hits: Uint16Array[];
   /** Average damage of one hit (the first). */
@@ -81,6 +97,7 @@ export interface HitEntry {
   immune: boolean;
 }
 
+/** Everything about the moment of a hit the damage depends on. */
 export interface HitState {
   crit: boolean;
   spread: boolean;
@@ -88,9 +105,21 @@ export interface HitState {
   aMax: number;
   dHp: number;
   dMax: number;
+  /** Stat stages (−6..6) the move reads: the attacking stat (for Foul Play the target's Attack) and, for moves that pick the better stat, Special Attack too. */
+  aStage: number;
+  aStage2: number;
+  /** The defending stat's stage, and for "better stat" moves the other one. */
+  dStage: number;
+  dStage2: number;
+  /** STATUS codes. */
+  aStatus: number;
+  dStatus: number;
+  /** Still holding their item (Knock Off takes it). */
+  aItem: boolean;
+  dItem: boolean;
 }
 
-const FULL = (aMax: number, dMax: number): HitState => ({ crit: false, spread: false, aHp: aMax, aMax, dHp: dMax, dMax });
+export const neutralState = (aMax: number, dMax: number): HitState => ({ crit: false, spread: false, aHp: aMax, aMax, dHp: dMax, dMax, aStage: 0, aStage2: 0, dStage: 0, dStage2: 0, aStatus: 0, dStatus: 0, aItem: true, dItem: true });
 
 /** Normalises the calculator's damage (a number, 16 rolls, or 16 rolls per hit) into per-hit roll arrays. */
 export function rollsOf(damage: unknown): Uint16Array[] {
@@ -107,27 +136,42 @@ export function rollsOf(damage: unknown): Uint16Array[] {
   return (damage as unknown[]).map((h) => rollsOf(h)[0]);
 }
 
+type BoostKey = "atk" | "def" | "spa" | "spd";
+
 export class DamageTable {
-  readonly species: MBSpecies[];
+  readonly fighters: Fighter[];
   readonly moves: MBMove[][];
-  readonly level: BattleLevel;
+  readonly field: FieldSpec;
   private mons: CalcLib.Pokemon[];
   private calcMoves = new Map<string, CalcLib.Move>();
-  private cache = new Map<number, HitEntry>();
+  private singles: CalcLib.Field;
+  private doubles: CalcLib.Field;
+  /** (attacker, defender, slot) → (state) → entry. */
+  private cache: (Map<number, HitEntry> | undefined)[];
   private canHit = new Map<number, boolean>();
+  private readonly F: number;
   /** Calculations run so far (for profiling and tests). */
   calcs = 0;
 
-  constructor(species: MBSpecies[], moves: MBMove[][], level: BattleLevel) {
-    this.species = species;
-    this.moves = moves;
-    this.level = level;
-    this.mons = species.map((s, i) => calcPokemon(s, level, moves[i]));
+  constructor(fighters: Fighter[], field: FieldSpec) {
+    this.fighters = fighters;
+    this.moves = fighters.map((f) => f.set.moves);
+    this.field = field;
+    this.F = fighters.length;
+    this.mons = fighters.map((f) => calcPokemon(f));
+    this.singles = calcField(field, false);
+    this.doubles = calcField(field, true);
+    this.cache = new Array(this.F * this.F * 4);
   }
 
-  /** The calculator's HP for a species (the battle's own formula gives the same). */
-  maxHp(sp: number): number {
-    return this.mons[sp].maxHP();
+  /** The calculator's HP for a fighter (the battle's own formula gives the same). */
+  maxHp(f: number): number {
+    return this.mons[f].maxHP();
+  }
+
+  /** The calculator's stats for a fighter (with its nature, EVs and IVs). */
+  stats(f: number) {
+    return this.mons[f].rawStats;
   }
 
   private move(name: string, crit: boolean, hits: number): CalcLib.Move {
@@ -140,36 +184,63 @@ export class DamageTable {
     return m;
   }
 
-  /** The rolls of attacker species `a`'s move `slot` against species `d` in `state`. */
+  /** The rolls of fighter `a`'s move `slot` against fighter `d` in `state`. */
   entry(a: number, slot: number, d: number, state: HitState): HitEntry {
     const mv = this.moves[a][slot];
-    const ak = attackerKey(mv, this.species[a].ability, state.aHp, state.aMax);
-    const dk = defenderKey(mv, this.species[d].ability, state.dHp, state.dMax);
+    const ak = attackerKey(mv, this.fighters[a].set.ability, state.aHp, state.aMax);
+    const dk = defenderKey(mv, this.fighters[d].set.ability, state.dHp, state.dMax);
     const spread = state.spread && mv.spread;
-    const S = this.species.length;
-    const key = ((((a * S + d) * 4 + slot) * 2 + (state.crit ? 1 : 0)) * 2 + (spread ? 1 : 0)) * 65536 + ak * 256 + dk;
-    let e = this.cache.get(key);
+    const outer = (a * this.F + d) * 4 + slot;
+    let k = state.crit ? 1 : 0;
+    k = k * 2 + (spread ? 1 : 0);
+    k = k * 256 + ak;
+    k = k * 128 + dk;
+    k = k * 13 + state.aStage + 6;
+    k = k * 13 + state.aStage2 + 6;
+    k = k * 13 + state.dStage + 6;
+    k = k * 13 + state.dStage2 + 6;
+    k = k * 7 + state.aStatus;
+    k = k * 7 + state.dStatus;
+    k = k * 2 + (state.aItem ? 1 : 0);
+    k = k * 2 + (state.dItem ? 1 : 0);
+    let row = this.cache[outer];
+    if (!row) row = this.cache[outer] = new Map();
+    let e = row.get(k);
     if (e) return e;
     e = this.compute(a, mv, d, state, spread);
-    this.cache.set(key, e);
+    row.set(k, e);
     return e;
   }
 
-  private compute(a: number, mv: MBMove, d: number, state: HitState, spread: boolean): HitEntry {
+  private compute(a: number, mv: MBMove, d: number, st: HitState, spread: boolean): HitEntry {
     this.calcs++;
     let atk = this.mons[a];
     let def = this.mons[d];
-    if (state.aHp < state.aMax) {
+    const changesA = st.aHp < st.aMax || st.aStatus || !st.aItem || (mv.atkStat !== "target-atk" && (st.aStage || st.aStage2));
+    const changesD = st.dHp < st.dMax || st.dStatus || !st.dItem || st.dStage || st.dStage2 || (mv.atkStat === "target-atk" && st.aStage);
+    if (changesA) {
       atk = atk.clone();
-      atk.originalCurHP = Math.max(1, state.aHp);
+      if (st.aHp < st.aMax) atk.originalCurHP = Math.max(1, st.aHp);
+      if (st.aStatus) atk.status = STATUS_IDS[st.aStatus] as CalcLib.Pokemon["status"];
+      if (!st.aItem) atk.item = undefined;
+      const b = atk.boosts as Record<BoostKey, number>;
+      if (mv.atkStat === "def") b.def = st.aStage;
+      else if (mv.atkStat === "best") { b.atk = st.aStage; b.spa = st.aStage2; }
+      else if (mv.atkStat !== "target-atk") b[mv.cat === "Physical" ? "atk" : "spa"] = st.aStage;
     }
-    if (state.dHp < state.dMax) {
+    if (changesD) {
       def = def.clone();
-      def.originalCurHP = Math.max(1, state.dHp);
+      if (st.dHp < st.dMax) def.originalCurHP = Math.max(1, st.dHp);
+      if (st.dStatus) def.status = STATUS_IDS[st.dStatus] as CalcLib.Pokemon["status"];
+      if (!st.dItem) def.item = undefined;
+      const b = def.boosts as Record<BoostKey, number>;
+      if (mv.atkStat === "target-atk") b.atk = st.aStage;
+      if (mv.atkStat === "best") { b.def = st.dStage; b.spd = st.dStage2; }
+      else b[mv.cat === "Physical" || mv.hitsDef ? "def" : "spd"] = st.dStage;
     }
     const hits = mv.hits ? mv.hits[1] : 1;
     try {
-      const r = CalcLib.calculate(GEN, atk, def, this.move(mv.name, state.crit, hits), spread ? DOUBLES : SINGLES);
+      const r = CalcLib.calculate(GEN, atk, def, this.move(mv.name, st.crit, hits), spread ? this.doubles : this.singles);
       const rolls = rollsOf(r.damage);
       const first = rolls[0];
       let sum = 0;
@@ -187,7 +258,7 @@ export class DamageTable {
     let ok = this.canHit.get(key);
     if (ok === undefined) {
       ok = false;
-      const st = FULL(this.maxHp(a), this.maxHp(d));
+      const st = neutralState(this.maxHp(a), this.maxHp(d));
       for (let s = 0; s < this.moves[a].length && !ok; s++) ok = !this.entry(a, s, d, st).immune;
       this.canHit.set(key, ok);
     }
@@ -199,7 +270,7 @@ export class DamageTable {
     for (const [att, defs] of [[sideA, sideB], [sideB, sideA]] as const) {
       for (const a of att) {
         for (const d of defs) {
-          const st = FULL(this.maxHp(a), this.maxHp(d));
+          const st = neutralState(this.maxHp(a), this.maxHp(d));
           for (let s = 0; s < this.moves[a].length; s++) {
             this.entry(a, s, d, st);
             if (this.moves[a][s].spread) this.entry(a, s, d, { ...st, spread: true });
@@ -211,6 +282,8 @@ export class DamageTable {
   }
 
   get size() {
-    return this.cache.size;
+    let n = 0;
+    for (const row of this.cache) n += row?.size ?? 0;
+    return n;
   }
 }

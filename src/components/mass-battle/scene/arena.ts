@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import type { ArenaId } from "@/lib/mass-battle/types";
-import type { Look } from "./look";
+import { TERRAIN_COLOR, type Look, type TerrainLook } from "./look";
 
 /**
  * The battlefields, built in the browser (nothing here is from any game):
@@ -26,6 +26,8 @@ export interface ArenaOptions {
   grass: number;
   anisotropy: number;
   look: Look;
+  /** A terrain move's glow over the battleground. */
+  terrain?: TerrainLook;
   tex(name: string, map: "diff" | "nor" | "rough"): string;
 }
 
@@ -76,6 +78,30 @@ float mbH(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); 
 float mbN(vec2 p) { vec2 i = floor(p), f = fract(p); vec2 u = f * f * (3.0 - 2.0 * f);
   return mix(mix(mbH(i), mbH(i + vec2(1.0, 0.0)), u.x), mix(mbH(i + vec2(0.0, 1.0)), mbH(i + vec2(1.0, 1.0)), u.x), u.y); }
 float mbF(vec2 p) { return mbN(p) * 0.5 + mbN(p * 2.03 + 1.7) * 0.3 + mbN(p * 4.1 - 3.1) * 0.2; }`;
+
+/** A terrain over the battleground (Electric, Grassy, Psychic, Misty): its glow, in the ground's shader. */
+const TERRAIN_GLSL = (R: number) => /* glsl */ `
+if (uTerrainKind > 0.5) {
+  float tr = length(vWorld.xz) / ${R.toFixed(2)};
+  float tIn = 1.0 - smoothstep(0.92, 1.06, tr);
+  float tPat = 0.0;
+  if (uTerrainKind < 1.5) {
+    // Electric: crackling lines racing over the ground.
+    float l = abs(mbN(vWorld.xz * 0.35 + vec2(uTime * 0.7, -uTime * 0.4)) - 0.5);
+    tPat = (1.0 - smoothstep(0.0, 0.02, l)) * (0.6 + 0.4 * sin(uTime * 23.0 + vWorld.x)) + 0.12;
+  } else if (uTerrainKind < 2.5) {
+    // Grassy: the ground grows lush and glows softly green.
+    diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb * vec3(0.6, 1.25, 0.55), tIn * 0.7);
+    tPat = 0.08 + 0.06 * mbN(vWorld.xz * 0.2 + uTime * 0.1);
+  } else if (uTerrainKind < 3.5) {
+    // Psychic: rings pulsing out over a shimmering floor.
+    tPat = pow(0.5 + 0.5 * sin(tr * 60.0 - uTime * 3.0), 8.0) * 0.6 + 0.1 * mbN(vWorld.xz * 0.3 + uTime * 0.2);
+  } else {
+    // Misty: a pale pink glow, brighter in drifting banks.
+    tPat = 0.12 + 0.2 * smoothstep(0.4, 0.8, mbF(vWorld.xz * 0.05 + uTime * 0.03));
+  }
+  totalEmissiveRadiance += uTerrain * tPat * tIn * 1.6;
+}`;
 
 /** The sky: a gradient from the horizon up, the sun's disc and glow, drifting clouds, stars at night. */
 function skyMaterial(look: Look, sunDir: THREE.Vector3, fog: THREE.Color) {
@@ -250,6 +276,9 @@ export function buildArena(id: ArenaId, opts: ArenaOptions): Arena {
   const time = { value: 0 };
   const wet = { value: look.wet };
   const puddleTint = { value: new THREE.Color(look.skyHorizon).lerp(new THREE.Color(look.fog), 0.5) };
+  const terrain = opts.terrain ?? "none";
+  const terrainKind = { value: ["none", "electric", "grassy", "psychic", "misty"].indexOf(terrain) };
+  const terrainColor = { value: new THREE.Color(terrain === "none" ? "#000000" : TERRAIN_COLOR[terrain]) };
   const segs = 180;
   {
     // Rings of vertices: a polar grid so the middle is flat and the edge can rise.
@@ -307,6 +336,8 @@ export function buildArena(id: ArenaId, opts: ArenaOptions): Arena {
       s.uniforms.uTime = time;
       s.uniforms.uWet = wet;
       s.uniforms.uPuddle = puddleTint;
+      s.uniforms.uTerrain = terrainColor;
+      s.uniforms.uTerrainKind = terrainKind;
       s.vertexShader = s.vertexShader.replace("#include <common>", "#include <common>\nvarying vec3 vWorld;").replace("#include <worldpos_vertex>", "#include <worldpos_vertex>\nvWorld = (modelMatrix * vec4(transformed, 1.0)).xyz;");
       let colorPatch = "";
       let emissivePatch = "";
@@ -371,10 +402,10 @@ mbLine = max(mbLine, (1.0 - smoothstep(${lw} * 1.2, ${lw} * 2.0, abs(mbRr - ${ri
 diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb * vec3(0.72, 0.66, 0.6), mbLine * 0.85);`;
       }
       s.fragmentShader = s.fragmentShader
-        .replace("#include <common>", `#include <common>\nuniform float uTime;\nuniform float uWet;\nuniform vec3 uPuddle;\nvarying vec3 vWorld;\n${NOISE_GLSL}`)
+        .replace("#include <common>", `#include <common>\nuniform float uTime;\nuniform float uWet;\nuniform vec3 uPuddle;\nuniform vec3 uTerrain;\nuniform float uTerrainKind;\nvarying vec3 vWorld;\n${NOISE_GLSL}`)
         .replace("#include <color_fragment>", `#include <color_fragment>\n${colorPatch}\n// Rain darkens the ground, and puddles gather (they mirror the sky, rings rippling across them).\ndiffuseColor.rgb *= 1.0 - uWet * 0.28;\nfloat mbPd = smoothstep(0.66, 0.7, mbF(vWorld.xz * 0.08 + 1.3)) * uWet;\nfloat mbRip = sin(length(fract(vWorld.xz * 0.7) - 0.5) * 40.0 - uTime * 8.0) * 0.5 + 0.5;\ndiffuseColor.rgb = mix(diffuseColor.rgb, uPuddle * (0.55 + 0.08 * mbRip), mbPd * 0.75);`)
         .replace("#include <roughnessmap_fragment>", "#include <roughnessmap_fragment>\nroughnessFactor = mix(roughnessFactor, 0.32, uWet * smoothstep(0.35, 0.6, mbN(vWorld.xz * 0.12)) );")
-        .replace("#include <emissivemap_fragment>", `#include <emissivemap_fragment>\n${emissivePatch}`);
+        .replace("#include <emissivemap_fragment>", `#include <emissivemap_fragment>\n${emissivePatch}\n${TERRAIN_GLSL(R)}`);
     };
     gm.customProgramCacheKey = () => `mb-ground-${ground}`;
     mats.push(gm);
