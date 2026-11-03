@@ -14,7 +14,7 @@ export const RACE_LIVE = true;
  * on Pokédex entries only once it's live; until then its pages work but
  * stay out of search. Flip to true when it ships.
  */
-export const MASS_BATTLE_LIVE = false;
+export const MASS_BATTLE_LIVE = true;
 
 export interface LabExperience {
   id: "timeline" | "sizes" | "globe" | "race" | "mass-battle";
