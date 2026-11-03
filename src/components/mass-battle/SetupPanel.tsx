@@ -233,7 +233,7 @@ export function SetupPanel({ list, presets, busy, current, playback, onPlayback,
   const toggle = (on: boolean, onChange: (v: boolean) => void, text: string, testId: string) => (
     <button type="button" role="switch" aria-checked={on} onClick={() => onChange(!on)} className={cn("inline-flex h-10 items-center gap-2 rounded-md border px-3 text-sm transition-colors", on ? "border-primary/60 bg-primary/10 text-foreground" : "text-muted-foreground hover:text-foreground")} data-testid={testId}>
       <span className={cn("relative inline-block h-4 w-7 shrink-0 rounded-full transition-colors", on ? "bg-primary" : "bg-muted-foreground/30")} aria-hidden>
-        <span className={cn("absolute top-0.5 h-3 w-3 rounded-full bg-background transition-transform", on ? "translate-x-3.5" : "translate-x-0.5")} />
+        <span className={cn("absolute left-0 top-0.5 h-3 w-3 rounded-full bg-background transition-transform", on ? "translate-x-3.5" : "translate-x-0.5")} />
       </span>
       {text}
     </button>
@@ -328,7 +328,7 @@ export function SetupPanel({ list, presets, busy, current, playback, onPlayback,
                 <fieldset className="space-y-2" data-testid="mb-solver">
                   <legend className="font-display text-xs font-bold uppercase tracking-wider">The answer</legend>
                   <div className="grid grid-cols-2 gap-2 sm:max-w-md">
-                    <div><label className={label} htmlFor="mb-threshold">Wins needed</label><select id="mb-threshold" value={s.threshold} onChange={(e) => patch({ threshold: Number(e.target.value) })} className={small} data-testid="mb-threshold"><option value={0.5}>Half its battles (50%)</option><option value={0.9}>Nine in ten (90%)</option></select></div>
+                    <div><label className={label} htmlFor="mb-threshold">Wins needed</label><select id="mb-threshold" value={s.threshold} onChange={(e) => patch({ threshold: Number(e.target.value) })} className={small} data-testid="mb-threshold"><option value={0.5}>Half (50%)</option><option value={0.9}>Nine in ten (90%)</option></select></div>
                     <div><label className={label} htmlFor="mb-runs">Battles per size</label><select id="mb-runs" value={s.runs} onChange={(e) => patch({ runs: Number(e.target.value) })} className={small} data-testid="mb-runs">{RUN_CHOICES.map((n) => <option key={n} value={n}>{n}</option>)}</select></div>
                   </div>
                 </fieldset>
