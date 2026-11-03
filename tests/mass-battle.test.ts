@@ -6,7 +6,9 @@ import { hit, withCalcMemo } from "@/lib/battle/cpu-policy-legacy";
 import { buildLearnsets, buildRoster, EXCLUDED_MOVES, unplayable } from "@/lib/mass-battle/roster-data";
 import { calcPokemon, DamageTable, neutralState, rollsOf, type Fighter } from "@/lib/mass-battle/damage";
 import { Battle, BREAKABLE, EV, EVENT_INTS, NOTE, NOTE_INTS, NOTE_SKIP, prepare, runHeadless, type Prepared } from "@/lib/mass-battle/engine";
-import { battleStat, battleStats } from "@/lib/mass-battle/stats";
+import { battleStat, battleStats, bodyRadius, FORM_BODIES } from "@/lib/mass-battle/stats";
+import { TICK_HZ } from "@/lib/mass-battle/constants";
+import RACE_FORMS from "@/data/race-forms.json";
 import { defaultMoves, expandSpec, factsOf, groupLabel, groupMembers, matchesGroup, resolveSet, spreadOf as evSpread } from "@/lib/mass-battle/sets";
 import { monotone, probesAround, questionSeeds, solve, spreadOf, winsNeeded, type Evaluate } from "@/lib/mass-battle/solver";
 import { decodeBattle, decodePlayback, decodeQuestion, encodeBattle, encodePlayback, encodeQuestion, MAX_SIDE, questionKey, questionSpec, simpleQuestion, type SlugIndex } from "@/lib/mass-battle/share";
@@ -465,6 +467,52 @@ describe("mass battle: abilities that change a Pokémon as it fights (checked ag
     const paraAt = notes.findIndex((n) => n.kind === NOTE.STATUS && n.unit === 0 && n.value === STATUS.par);
     if (paraAt >= 0) expect(coreAt).toBeGreaterThanOrEqual(0);
     if (paraAt >= 0) expect(paraAt).toBeGreaterThan(coreAt);
+  });
+
+  it("School Wishiwashi's body follows its form: a shoal metres across while schooled, a small fish again once it leaves", () => {
+    const w = melee([{ slug: "wishiwashi", side: 0, moves: ["Hydro Pump"] }, { slug: "blissey", side: 1, moves: ["Tackle"], set: { evs: "bulk" } }]);
+    const school = FORM_BODIES["Wishiwashi-School"];
+    expect(w.form[0]).toBe(1);
+    expect(w.bodyR[0]).toBe(bodyRadius({ m: school.m, shape: mon("wishiwashi").shape, box: school.box }));
+    expect(w.bodyR[0]).toBeGreaterThan(3);
+    expect(w.bodyM[0]).toBe(school.kg);
+    w.step();
+    w.hp[0] = Math.floor(w.rows[0].maxHp / 4);
+    finishRound(w);
+    expect(w.form[0]).toBe(0);
+    expect(w.bodyR[0]).toBe(w.rows[0].radius);
+    expect(w.bodyM[0]).toBe(w.rows[0].mass);
+    // Everyone else keeps its species' body.
+    expect(w.bodyR[1]).toBe(w.rows[1].radius);
+  });
+
+  it("schooled Wishiwashi keep their distance on the field instead of standing inside each other", () => {
+    const b = new Battle(prepare(roster, spec([["wishiwashi", 12]], [["aegislash", 6]], 3)));
+    for (let k = 0; k < TICK_HZ * 3 && !b.ended; k++) b.step();
+    let worst = Infinity, pairs = 0;
+    for (let i = 0; i < b.n; i++) {
+      for (let j = i + 1; j < b.n; j++) {
+        if (!b.alive[i] || !b.alive[j] || b.side[i] !== 0 || b.side[j] !== 0 || b.form[i] !== 1 || b.form[j] !== 1) continue;
+        worst = Math.min(worst, Math.hypot(b.x[i] - b.x[j], b.z[i] - b.z[j]) / (b.bodyR[i] + b.bodyR[j]));
+        pairs++;
+      }
+    }
+    expect(pairs).toBeGreaterThan(10);
+    expect(worst).toBeGreaterThan(0.8);
+  });
+
+  it("gives a form an ability brings a body of its own only when it's another size, as src/data/race-forms.json has it", () => {
+    const forms = RACE_FORMS.forms as { slug: string; height: number; weight: number; box: number[] }[];
+    const id = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, "");
+    for (const [calc, body] of Object.entries(FORM_BODIES)) {
+      const f = forms.find((x) => id(x.slug) === id(calc));
+      expect(f, calc).toBeTruthy();
+      expect(body).toEqual({ m: f!.height / 10, kg: f!.weight / 10, box: f!.box });
+    }
+    // The other forms these abilities bring are their species' height: same body.
+    for (const [slug, base] of [["aegislash-blade", "aegislash"], ["minior-red", "minior"], ["eiscue-noice", "eiscue"]] as const) {
+      expect(forms.find((x) => x.slug === slug)!.height / 10).toBe(mon(base).m);
+    }
   });
 
   it("Disguise and Ice Face take a hit for their Pokémon (Disguise for an eighth of its HP); Mold Breaker goes through", () => {

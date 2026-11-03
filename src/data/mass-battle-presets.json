@@ -1,5 +1,5 @@
 {
- "engine": 3,
+ "engine": 4,
  "roster": 3,
  "results": {
   "magikarp-vs-arceus": {
@@ -99,18 +99,18 @@
   "fire-vs-water": {
    "outcome": {
     "winner": 0,
-    "seconds": 25.55,
+    "seconds": 23.35,
     "left": [
-     94,
+     115,
      0
     ],
     "kos": [
      406,
-     278
+     259
     ],
     "dealt": [
-     131556,
-     95005
+     131370,
+     88062
     ]
    },
    "answer": null
@@ -181,18 +181,18 @@
   "fire-vs-water-sun": {
    "outcome": {
     "winner": 1,
-    "seconds": 36.45,
+    "seconds": 40.2,
     "left": [
      0,
-     55
+     42
     ],
     "kos": [
-     353,
-     375
+     368,
+     373
     ],
     "dealt": [
-     116383,
-     123452
+     120913,
+     123396
     ]
    },
    "answer": null

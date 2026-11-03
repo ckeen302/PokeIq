@@ -68,3 +68,13 @@ export function bodyRadius(s: Pick<MBSpecies, "m" | "shape" | "box">): number {
 
 /** Mass (kg) for pushing and knockback; a floor keeps feather-light Pokémon from flying off. */
 export const bodyMass = (kg: number) => Math.max(1, kg);
+
+/**
+ * Forms an ability brings whose body isn't their species' size, by the damage calculator's name: PokéAPI's height
+ * (m) and weight (kg) for the form and its HOME render's visible box, as src/data/race-forms.json has them (a unit
+ * test checks they agree). Wishiwashi's School Form is a shoal 8.2 m long; the Solo Form is a 0.2 m fish. The other
+ * forms (Aegislash's Blade Forme, Minior's core, Eiscue's Noice Face) are their species' own height.
+ */
+export const FORM_BODIES: Record<string, { m: number; kg: number; box: [number, number, number, number, number] }> = {
+  "Wishiwashi-School": { m: 8.2, kg: 78.6, box: [11, 100, 491, 312, 512] },
+};

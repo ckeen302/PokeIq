@@ -4,7 +4,7 @@ import { DamageTable, neutralState, type Fighter, type FormRule, type HitEntry, 
 import { placeArmies, placeMelee } from "./formation";
 import { expectedHitsOf } from "./moves";
 import { expandArmy, factsOf, moveIndex, resolveSet, setKey } from "./sets";
-import { bodyMass, bodyRadius, runSpeed } from "./stats";
+import { bodyMass, bodyRadius, FORM_BODIES, runSpeed } from "./stats";
 import { fieldOf, itemsOf, STATUS, type Boosts, type BattleOutcome, type BattleSpec, type FieldSpec, type Formation, type MBMove, type MBSpecies, type Roster, type Spacing, type SpreadUse, type Stance, type StatusId, type Targeting, type UnitSet, type Winner } from "./types";
 
 /**
@@ -175,7 +175,13 @@ interface FormRow {
   types: string[];
   stats: { atk: number; def: number; spa: number; spd: number; spe: number };
   grounded: boolean;
+  /** Its body: the species' own, or the form's when it's another size (School Wishiwashi). */
+  radius: number;
+  mass: number;
 }
+
+/** The form a unit starts in: Schooling puts a Wishiwashi from level 20 in School Form. */
+const startForm = (rule: FormRule, level: number) => (rule === "school" && level >= 20 ? 1 : 0);
 
 /** Per-fighter numbers the engine reads every tick. */
 interface FighterRow {
@@ -272,6 +278,9 @@ export class Battle {
   private shieldUsed: Uint8Array;
   /** Each unit's form (see formsOf in damage.ts). */
   readonly form: Uint8Array;
+  /** Each unit's body radius (m) and mass (kg): its species', or its form's when that's another size (see FormRow). */
+  readonly bodyR: Float64Array;
+  readonly bodyM: Float64Array;
   /** Truant: it moved last time, so it loafs around next. */
   private loaf: Uint8Array;
   /** Choice lock (move slot, −1 none). */
@@ -360,10 +369,19 @@ export class Battle {
       const types = set.tera ? [set.tera.toLowerCase()] : forecast ? [forecast] : s.types;
       const bst = s.base.hp + s.base.atk + s.base.def + s.base.spa + s.base.spd + s.base.spe;
       const formRule = this.table.rules[k];
-      const forms: FormRow[] = this.table.formDefs[k].map((_, f) => {
+      const radius = bodyRadius(s), mass = bodyMass(s.kg);
+      const forms: FormRow[] = this.table.formDefs[k].map((def, f) => {
         const fs = this.table.stats(k, f);
         const ft = f === 0 || set.tera ? types : this.table.types(k, f);
-        return { types: ft, stats: { atk: fs.atk, def: fs.def, spa: fs.spa, spd: fs.spd, spe: fs.spe }, grounded: !ft.includes("flying") && ab !== "levitate" };
+        // A form of another size has a body of its own (School Wishiwashi: a shoal metres across, and heavier).
+        const body = f > 0 ? FORM_BODIES[def.calc] : undefined;
+        return {
+          types: ft,
+          stats: { atk: fs.atk, def: fs.def, spa: fs.spa, spd: fs.spd, spe: fs.spe },
+          grounded: !ft.includes("flying") && ab !== "levitate",
+          radius: body ? bodyRadius({ m: body.m, shape: s.shape, box: body.box }) : radius,
+          mass: body ? bodyMass(body.kg) : mass,
+        };
       });
       // Protosynthesis and Quark Drive: the stat they boost is the best one as the battle starts.
       const paradox = (ab === "protosynthesis" && field.weather === "sun") || (ab === "quarkdrive" && field.terrain === "electric");
@@ -374,8 +392,8 @@ export class Battle {
         stats: { atk: st.atk, def: st.def, spa: st.spa, spd: st.spd, spe: st.spe },
         forms,
         formRule,
-        radius: bodyRadius(s),
-        mass: bodyMass(s.kg),
+        radius,
+        mass,
         vmax: runSpeed(s.base.spe),
         ability: ab,
         item: it,
@@ -415,8 +433,17 @@ export class Battle {
     prep.armies.forEach((army, s) => {
       for (const [fi, c] of army) for (let j = 0; j < c; j++) { this.sp[k] = fi; this.side[k] = s; k++; }
     });
-    const radius = new Float64Array(n);
-    for (let i = 0; i < n; i++) radius[i] = this.rows[this.sp[i]].radius;
+    // Each unit's body: its species', or its form's if it starts in one of another size (Wishiwashi schooled from
+    // level 20); a form change changes it (setForm).
+    const radius = new Float64Array(n), mass = new Float64Array(n);
+    for (let i = 0; i < n; i++) {
+      const row = this.rows[this.sp[i]];
+      const body = row.forms[startForm(row.formRule, prep.sets[this.sp[i]].level)] ?? row;
+      radius[i] = body.radius;
+      mass[i] = body.mass;
+    }
+    this.bodyR = radius;
+    this.bodyM = mass;
     const place = prep.layout === "melee"
       ? placeMelee(radius, this.side)
       : placeArmies(radius, this.side, prep.formations, () => this.random(), [prep.behaviour[0].spacing, prep.behaviour[1].spacing]);
@@ -463,7 +490,8 @@ export class Battle {
       this.aliveByFighter[this.sp[i]]++;
       if (!row.item) this.itemGone[i] = 1;
       // Schooling: a Wishiwashi from level 20 starts in School Form.
-      if (row.formRule === "school" && prep.sets[this.sp[i]].level >= 20) this.form[i] = 1;
+      const f0 = startForm(row.formRule, prep.sets[this.sp[i]].level);
+      if (f0) this.form[i] = f0;
       // Abilities that act as the battle starts, on the Pokémon itself (Gen 9: once a battle).
       if (row.ability === "intrepidsword") this.stages[i * STAGES + ATK] = 1;
       else if (row.ability === "dauntlessshield") this.stages[i * STAGES + DEF] = 1;
@@ -487,12 +515,9 @@ export class Battle {
     this.cellItems = new Int32Array(n);
     this.cellOf = new Int32Array(n);
     this.small = new Uint8Array(n);
-    let big = 0;
-    for (let i = 0; i < n; i++) {
-      if (radius[i] * 2 <= this.cell + 1e-9) this.small[i] = 1;
-      else big++;
-    }
-    this.bigUnits = new Int32Array(big);
+    for (let i = 0; i < n; i++) if (radius[i] * 2 <= this.cell + 1e-9) this.small[i] = 1;
+    // Room for every unit: one can grow into a big body as it fights (School Form).
+    this.bigUnits = new Int32Array(n);
     // Coarse cells hold a couple of dozen units of a packed army, so a search for a foe reads few of them.
     const rMid = radii.length ? radii[Math.floor(radii.length / 2)] : 0.5;
     this.coarse = Math.max(1, Math.max(this.cell, 2 * rMid * 1.35) * 4.5);
@@ -599,7 +624,7 @@ export class Battle {
     let best = -1, bestD = Infinity, fallback = -1, fallbackD = Infinity;
     // Weakest / strongest: the best by HP or threat among foes within NEARBY of its body.
     const picky = rule === "weakest" || rule === "strongest";
-    const near = this.rows[sp[i]].radius + NEARBY;
+    const near = this.bodyR[i] + NEARBY;
     let pick = -1, pickV = 0;
     const { cStart, cItems } = this;
     const base = (1 - mySide) * cols * cols;
@@ -618,7 +643,7 @@ export class Battle {
         if (canHurt[row + sp[j]]) {
           if (d < bestD) { bestD = d; best = j; }
           if (picky) {
-            const lim = near + this.rows[sp[j]].radius;
+            const lim = near + this.bodyR[j];
             if (d <= lim * lim) {
               const v = rule === "weakest" ? -hp[j] : this.rows[sp[j]].threat * 1e6 + hp[j];
               if (pick < 0 || v > pickV) { pick = j; pickV = v; }
@@ -713,7 +738,7 @@ export class Battle {
           const j = this.cItems[k];
           if (!this.alive[j]) continue;
           const dx = this.x[j] - x, dz = this.z[j] - z;
-          const lim = reach + this.rows[this.sp[j]].radius;
+          const lim = reach + this.bodyR[j];
           if (dx * dx + dz * dz <= lim * lim) {
             if (count >= this.scratch.length) {
               const grown = new Int32Array(this.scratch.length * 2);
@@ -735,7 +760,7 @@ export class Battle {
   private gap(i: number, j: number): number {
     if (this.prep.layout === "melee") return 0;
     const dx = this.x[j] - this.x[i], dz = this.z[j] - this.z[i];
-    return Math.sqrt(dx * dx + dz * dz) - this.rows[this.sp[i]].radius - this.rows[this.sp[j]].radius;
+    return Math.sqrt(dx * dx + dz * dz) - this.bodyR[i] - this.bodyR[j];
   }
 
   private stage(i: number, k: number): number {
@@ -841,7 +866,7 @@ export class Battle {
       const mv = moves[s];
       let v: number;
       if (mv.spread && this.gap(i, j) <= RANGED_REACH) {
-        const count = this.foesNear(i, this.x[i], this.z[i], this.rows[this.sp[i]].radius + SPREAD_REACH);
+        const count = this.foesNear(i, this.x[i], this.z[i], this.bodyR[i] + SPREAD_REACH);
         if (count >= 2) {
           v = 0;
           for (let k = 0; k < count; k++) v += this.expected(i, s, this.scratch[k], true);
@@ -1176,11 +1201,10 @@ export class Battle {
   private chooseNow(i: number, t: number): { slot: number; spreadCount: number } {
     const spi = this.sp[i];
     const moves = this.prep.moves[spi];
-    const row = this.rows[spi];
     const gapT = this.gap(i, t);
     const never = this.prep.behaviour[this.side[i]].spread === "never";
     const reach = (mv: MBMove) => gapT <= (mv.contact ? CONTACT_REACH : RANGED_REACH);
-    const spreadCount = (mv: MBMove) => (mv.spread ? this.foesNear(i, this.x[i], this.z[i], row.radius + SPREAD_REACH) : 0);
+    const spreadCount = (mv: MBMove) => (mv.spread ? this.foesNear(i, this.x[i], this.z[i], this.bodyR[i] + SPREAD_REACH) : 0);
     const planned = this.plan[i];
     const locked = this.rampLeft[i] > 0 && this.rampSlot[i] >= 0 ? this.rampSlot[i] : this.itemGone[i] ? -1 : this.lock[i];
     if (locked >= 0) {
@@ -1227,6 +1251,13 @@ export class Battle {
   private setForm(i: number, f: number) {
     if (this.form[i] === f) return;
     this.form[i] = f;
+    // Its body follows the form (School Wishiwashi is a shoal metres across; it falls back to a small fish).
+    const body = this.rows[this.sp[i]].forms[f];
+    if (body && body.radius !== this.bodyR[i]) {
+      this.bodyR[i] = body.radius;
+      this.bodyM[i] = body.mass;
+      this.small[i] = body.radius * 2 <= this.cell + 1e-9 ? 1 : 0;
+    }
     this.pushNote(i, NOTE.FORM, f);
   }
 
@@ -1249,7 +1280,7 @@ export class Battle {
     this.formForMove(i, best, mv);
     let targets: number;
     if (mv.spread && spreadCount >= 2) {
-      targets = this.foesNear(i, this.x[i], this.z[i], row.radius + SPREAD_REACH);
+      targets = this.foesNear(i, this.x[i], this.z[i], this.bodyR[i] + SPREAD_REACH);
     } else {
       this.scratch[0] = t;
       targets = 1;
@@ -1383,7 +1414,7 @@ export class Battle {
         // Knockback: damage over weight, away from the attacker.
         const dx = this.x[j] - this.x[i], dz = this.z[j] - this.z[i];
         const d = Math.sqrt(dx * dx + dz * dz) || 1;
-        const kv = Math.min(KNOCK_MAX, (KNOCK * got) / this.rows[this.sp[j]].mass);
+        const kv = Math.min(KNOCK_MAX, (KNOCK * got) / this.bodyM[j]);
         this.kx[j] += (dx / d) * kv;
         this.kz[j] += (dz / d) * kv;
       }
@@ -1618,7 +1649,7 @@ export class Battle {
       if (t >= 0) {
         const dx = x[t] - x[i], dz = z[t] - z[i];
         const d = Math.sqrt(dx * dx + dz * dz);
-        const gap = d - row.radius - this.rows[this.sp[t]].radius;
+        const gap = d - this.bodyR[i] - this.bodyR[t];
         const slot = this.plan[i];
         const ranged = slot >= 0 && !this.prep.moves[this.sp[i]][slot].contact;
         const want = ranged ? RANGED_REACH * 0.7 : 0.05;
@@ -1658,7 +1689,7 @@ export class Battle {
    */
   private blocker(i: number, t: number, ux: number, uz: number, step: number): number {
     const cols = this.cols, a = this.arena, size = this.cell;
-    const xi = this.x[i], zi = this.z[i], ri = this.rows[this.sp[i]].radius;
+    const xi = this.x[i], zi = this.z[i], ri = this.bodyR[i];
     const gx = Math.min(cols - 1, Math.max(0, Math.floor((xi + a) / size)));
     const gz = Math.min(cols - 1, Math.max(0, Math.floor((zi + a) / size)));
     let nearest = Infinity, lateral = 0;
@@ -1672,7 +1703,7 @@ export class Battle {
           const ahead = dx * ux + dz * uz;
           if (ahead <= 0) continue;
           const across = -dx * uz + dz * ux;
-          const reach = ri + this.rows[this.sp[j]].radius;
+          const reach = ri + this.bodyR[j];
           if (Math.abs(across) >= reach * 0.85 || ahead > reach + step) continue;
           if (ahead < nearest) { nearest = ahead; lateral = across; }
         }
@@ -1692,7 +1723,7 @@ export class Battle {
     const cols = this.cols;
     const pair = (i: number, j: number) => {
       const dx = x[j] - x[i], dz = z[j] - z[i];
-      const ri = this.rows[this.sp[i]].radius, rj = this.rows[this.sp[j]].radius;
+      const ri = this.bodyR[i], rj = this.bodyR[j];
       const min = ri + rj;
       const d2 = dx * dx + dz * dz;
       if (d2 >= min * min) return;
@@ -1708,7 +1739,7 @@ export class Battle {
         uz = dz / d;
       }
       const push = (min - d) * 0.5;
-      const mi = this.rows[this.sp[i]].mass, mj = this.rows[this.sp[j]].mass;
+      const mi = this.bodyM[i], mj = this.bodyM[j];
       const wi = mj / (mi + mj), wj = mi / (mi + mj);
       cx[i] -= ux * push * wi;
       cz[i] -= uz * push * wi;
@@ -1736,7 +1767,7 @@ export class Battle {
     for (let k = 0; k < this.bigCount; k++) {
       const i = this.bigUnits[k];
       if (!alive[i]) continue;
-      const r = this.rows[this.sp[i]].radius + this.cell;
+      const r = this.bodyR[i] + this.cell;
       const g0x = Math.max(0, Math.floor((x[i] - r + this.arena) / this.cell)), g1x = Math.min(cols - 1, Math.floor((x[i] + r + this.arena) / this.cell));
       const g0z = Math.max(0, Math.floor((z[i] - r + this.arena) / this.cell)), g1z = Math.min(cols - 1, Math.floor((z[i] + r + this.arena) / this.cell));
       for (let gz = g0z; gz <= g1z; gz++) {
@@ -1757,7 +1788,7 @@ export class Battle {
       z[i] += cz[i];
       this.lx[i] = this.lx[i] * 0.5 + cx[i];
       this.lz[i] = this.lz[i] * 0.5 + cz[i];
-      const r = this.rows[this.sp[i]].radius;
+      const r = this.bodyR[i];
       const d = Math.sqrt(x[i] * x[i] + z[i] * z[i]);
       const max = lim - r;
       if (d > max && d > 0) {
