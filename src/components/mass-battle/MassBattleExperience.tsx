@@ -275,10 +275,13 @@ export function MassBattleExperience({ list, presets, initial, playback: initial
       },
       damage: (x, y, z, damage, flags, side) => numbersRef.current?.spawn(x, y, z, damage, flags, performance.now() / 1000, side === bossSide),
       note: (n, y) => {
-        // A form change is named over the unit even with damage numbers off.
-        const form = n.kind === NOTE.FORM ? formsRef.current[sp[n.unit]]?.forms[n.value]?.label : undefined;
+        // A form change (Blade Forme, School Form…) is named over the unit even with damage numbers off; a Protean or
+        // Libero type change only with them on (a whole army changes type on its first moves).
+        const forms = n.kind === NOTE.FORM ? formsRef.current[sp[n.unit]] : undefined;
+        const form = forms?.forms[n.value]?.label;
+        const named = !!form && forms?.rule !== "protean";
         const label = noteLabel(n.kind, n.value, form);
-        if (label && view.draw[n.unit]) numbersRef.current?.spawnText(n.x, y, n.z, label.text, label.cls, performance.now() / 1000, view.side[n.unit] === bossSide || !!form, !!form);
+        if (label && view.draw[n.unit]) numbersRef.current?.spawnText(n.x, y, n.z, label.text, label.cls, performance.now() / 1000, view.side[n.unit] === bossSide || named, named);
       },
       action: (a) => {
         const d = directorRef.current;
