@@ -443,24 +443,32 @@ export async function recordBattleVideo(o: RecordOptions): Promise<RecordResult>
       outlined(g, "PokéIQ", W * 0.06 + wm * 1.35, wy, wm, font, "#ffffff", 800, 0.18);
       g.restore();
       g.textAlign = "center";
-      // Hook card: the question pops in over the establishing shot, the matchup under it.
+      // Hook card: the question pops in over the establishing shot, the matchup under it, all of it above the middle
+      // of the frame, where the armies stand (the far one just under the middle, the near one below it).
       const a = fade(t, -1, plan.hook + 0.25, 0.3);
       if (a > 0) {
         g.save();
-        g.globalAlpha = a;
-        const grad = g.createLinearGradient(0, H * 0.16, 0, H * 0.56);
-        grad.addColorStop(0, "rgba(8,14,32,0)");
-        grad.addColorStop(0.22, "rgba(8,14,32,0.66)");
-        grad.addColorStop(0.78, "rgba(8,14,32,0.66)");
-        grad.addColorStop(1, "rgba(8,14,32,0)");
-        g.fillStyle = grad;
-        g.fillRect(0, H * 0.16, W, H * 0.4);
-        const pop = easeOutBack(t / 0.45);
-        g.translate(W / 2, H * 0.32);
-        g.scale(0.6 + 0.4 * pop, 0.6 + 0.4 * pop);
         g.font = `800 ${W * 0.09}px ${font}`;
         const lines = wrap(g, hookText, W * 0.84);
         const lh = W * 0.105;
+        // Laid out from the bottom up: the subtitle ends at 46% of the height, the matchup over it, the question over that.
+        const subY = H * 0.46 - W * 0.014;
+        const vsY = subY - W * 0.06;
+        const cy = vsY - W * 0.07 - (lines.length * lh) / 2;
+        const top = cy - (lines.length * lh) / 2;
+        // A band behind the words only, gone by the middle of the frame.
+        const b0 = Math.max(0, top - H * 0.06), b1 = H * 0.5;
+        const grad = g.createLinearGradient(0, b0, 0, b1);
+        grad.addColorStop(0, "rgba(8,14,32,0)");
+        grad.addColorStop(Math.min(0.4, (H * 0.05) / (b1 - b0)), "rgba(8,14,32,0.62)");
+        grad.addColorStop(Math.max(0.6, 1 - (H * 0.035) / (b1 - b0)), "rgba(8,14,32,0.62)");
+        grad.addColorStop(1, "rgba(8,14,32,0)");
+        g.globalAlpha = a;
+        g.fillStyle = grad;
+        g.fillRect(0, b0, W, b1 - b0);
+        const pop = easeOutBack(t / 0.45);
+        g.translate(W / 2, cy);
+        g.scale(0.6 + 0.4 * pop, 0.6 + 0.4 * pop);
         const y0 = -((lines.length - 1) * lh) / 2;
         const fill = g.createLinearGradient(0, y0 - lh, 0, y0 + lines.length * lh);
         fill.addColorStop(0, "#fff27a");
@@ -469,11 +477,10 @@ export async function recordBattleVideo(o: RecordOptions): Promise<RecordResult>
         g.restore();
         g.save();
         g.globalAlpha = a * Math.min(1, Math.max(0, (t - 0.35) / 0.3));
-        const vsY = H * 0.32 + (lines.length * W * 0.105) / 2 + W * 0.07;
         const left = b.answer ? `? ${names[0]}` : `${fmt(total(0))} ${names[0]}`;
         const right = `${fmt(total(1))} ${names[1]}`;
         outlined(g, `${left}  VS  ${right}`.toUpperCase(), W / 2, vsY, W * 0.045, font, "#ffffff", 800, 0.18);
-        outlined(g, "POKÉMON MASS BATTLE · REAL BATTLE MATHS", W / 2, vsY + W * 0.06, W * 0.028, font, "#9fd8ff", 800, 0.16);
+        outlined(g, "POKÉMON MASS BATTLE · REAL BATTLE MATHS", W / 2, subY, W * 0.028, font, "#9fd8ff", 800, 0.16);
         g.restore();
       }
       // The answer (counted up), or the result.

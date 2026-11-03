@@ -315,15 +315,29 @@ export class Director {
           // the frame, the near one below it (titles over the top, controls along the bottom stay clear).
           const back = S * 1.05 + a.extent + big * 2;
           const gapWanted = (fov * Math.PI) / 180 * 0.27;
+          // The angle between the armies grows with the camera's height up to a peak, then shrinks again as the view
+          // turns to look straight down: the lowest height that opens the gap wanted, or the peak when the armies are
+          // too far apart for it (a big battle). Never higher, where the armies shrink to lines.
+          const gap = (H: number) => Math.atan2(H - a.h * 0.5, back) - Math.atan2(H - b.h * 0.5, back + S);
           let lo = 1, hi = back * 4;
-          for (let k = 0; k < 30; k++) {
-            const H = (lo + hi) / 2;
-            const g = Math.atan2(H - a.h * 0.5, back) - Math.atan2(H - b.h * 0.5, back + S);
-            if (g < gapWanted) lo = H;
-            else hi = H;
+          for (let k = 0; k < 40; k++) {
+            const m1 = lo + (hi - lo) / 3, m2 = hi - (hi - lo) / 3;
+            if (gap(m1) < gap(m2)) lo = m1;
+            else hi = m2;
           }
-          const H = (lo + hi) / 2;
-          const pitch = Math.atan2(H - b.h * 0.5, back + S) - (fov * Math.PI) / 180 * 0.03;
+          let H = (lo + hi) / 2;
+          if (gap(H) > gapWanted) {
+            lo = 1;
+            hi = H;
+            for (let k = 0; k < 30; k++) {
+              const m = (lo + hi) / 2;
+              if (gap(m) < gapWanted) lo = m;
+              else hi = m;
+            }
+            H = (lo + hi) / 2;
+          }
+          // The far army a little under the middle, clear of the video's title card above it.
+          const pitch = Math.atan2(H - b.h * 0.5, back + S) - (fov * Math.PI) / 180 * 0.05;
           const side = Math.sin(s * 0.12) * S * 0.08;
           const camX = a.cx - ux * back + px * side, camZ = a.cz - uz * back + pz * side;
           const D = back + S;
