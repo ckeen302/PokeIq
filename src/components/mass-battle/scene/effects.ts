@@ -1000,14 +1000,15 @@ export class Effects {
     if (n <= 0) return;
     const speed = 1.5 + p * 4 + s;
     // A flash of light at the point of impact.
-    this.puff(x, y, z, 0, 0, 0, 0.2 + p * 0.12, L.glow, s * 0.15, L.color, s * (0.32 + p * 0.38), 0, 1, 0.5, at, 2.6 + p * 2, 1.1);
+    this.puff(x, y, z, 0, 0, 0, 0.22 + p * 0.12, tmpC.copy(L.glow).lerp(L.color, 0.45), s * 0.15, L.color, s * (0.34 + p * 0.4), 0, 1, 0.5, at, 2.4 + p * 1.8, 1.4);
+    this.ringAt(x, z, s * (0.45 + p * 0.5), 0.35, s * 0.08, 0, L.color, 0.9, at);
     if (crit) this.puff(x, y, z, 0, 0, 0, 0.28, WHITE, s * 0.2, L.glow, s * 0.75, 0, 1, 0.6, at, 3.6, 1.4);
     // Type-specific pieces.
     switch (type) {
       case "Fire": {
         for (let k = 0; k < n; k++) {
           const a = this.rand() * Math.PI * 2, u = 0.3 + this.rand();
-          this.puff(x + this.rs(s * 0.2), y + this.rs(s * 0.2), z + this.rs(s * 0.2), Math.cos(a) * speed * 0.35, u * speed * 0.4, Math.sin(a) * speed * 0.35, 0.45 + this.rand() * 0.35, tmpC.set("#fff0a0"), s * 0.18, L.color, s * (0.3 + this.rand() * 0.25), 3.5, 2.5, 0.6, at, 2.6, 1.6);
+          this.puff(x + this.rs(s * 0.2), y + this.rs(s * 0.2), z + this.rs(s * 0.2), Math.cos(a) * speed * 0.35, u * speed * 0.45, Math.sin(a) * speed * 0.35, 0.5 + this.rand() * 0.4, tmpC.set("#fff0a0"), s * 0.22, L.color, s * (0.38 + this.rand() * 0.3), 3.5, 2.5, 0.6, at, 2.6, 1.7);
         }
         for (let k = 0; k < n; k++) this.spark(x, y, z, this.rs(speed), this.rand() * speed, this.rs(speed), 0.6 + this.rand() * 0.6, L.glow, s * 0.025, 2.5, 1.2, 0.04, 2.4, at);
         this.cloud(x, y + s * 0.2, z, 0, 0.6, 0, 1.6, tmpC.set("#3a3330"), s * 0.25, s * 0.9, 0.4, 1, 0.35, at + 0.15);
@@ -1058,7 +1059,7 @@ export class Effects {
         this.ringAt(x, z, s * (1 + p), 0.6, s * 0.12, 0, L.color, 1.2, at);
         for (let k = 0; k < n; k++) {
           const a = (k / n) * Math.PI * 2;
-          this.swirl(x, y - s * 0.3, z, a, 5 + this.rand() * 3, s * 0.5, 1.2, 0.8 + this.rand() * 0.3, k % 2 ? L.glow : L.color, s * 0.07, at, 2);
+          this.swirl(x, y - s * 0.3, z, a, 5 + this.rand() * 3, s * 0.65, 1.4, 0.8 + this.rand() * 0.3, k % 2 ? L.glow : L.color, s * 0.1, at, 2.2);
         }
         if (type === "Fairy") for (let k = 0; k < n; k++) this.spark(x, y, z, this.rs(speed * 0.6), this.rand() * speed * 0.8, this.rs(speed * 0.6), 0.8, WHITE, s * 0.03, -1, 2, 0.01, 2.6, at);
         break;
@@ -1067,7 +1068,7 @@ export class Effects {
       case "Dark": {
         for (let k = 0; k < n; k++) {
           const a = this.rand() * Math.PI * 2;
-          this.swirl(x, y - s * 0.2, z, a, (this.rand() < 0.5 ? -1 : 1) * (2 + this.rand() * 2), s * 0.35, 1.4, 1 + this.rand() * 0.5, L.color, s * 0.16, at, 1.4);
+          this.swirl(x, y - s * 0.2, z, a, (this.rand() < 0.5 ? -1 : 1) * (2 + this.rand() * 2), s * 0.45, 1.5, 1 + this.rand() * 0.5, L.color, s * 0.2, at, 1.8);
         }
         this.cloud(x, y, z, 0, 0.5, 0, 1.2, tmpC.set(type === "Ghost" ? "#2a1a40" : "#1a1424"), s * 0.3, s * 1.1, 0.5, 1.5, 0.55, at);
         break;
@@ -1075,7 +1076,7 @@ export class Effects {
       case "Dragon": {
         for (let k = 0; k < n; k++) {
           const a = (k / n) * Math.PI * 2;
-          this.swirl(x, y - s * 0.3, z, a, 7, s * 0.55, 2, 0.7, k % 3 ? L.color : tmpC.set("#40d0ff"), s * 0.12, at, 2.2);
+          this.swirl(x, y - s * 0.3, z, a, 7, s * 0.7, 2.2, 0.75, k % 3 ? L.color : tmpC.set("#40d0ff"), s * 0.15, at, 2.4);
         }
         for (let k = 0; k < n; k++) this.spark(x, y, z, this.rs(speed), this.rand() * speed, this.rs(speed), 0.6, L.glow, s * 0.025, 0, 1, 0.04, 2.6, at);
         break;

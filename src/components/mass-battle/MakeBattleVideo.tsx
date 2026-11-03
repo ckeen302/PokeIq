@@ -3,7 +3,6 @@
 import { useEffect, useRef, useState } from "react";
 import { track } from "@vercel/analytics";
 import { Clapperboard, Download, Loader2, Share2, X } from "lucide-react";
-import { questionText } from "@/lib/mass-battle/copy";
 import type { MBSpecies } from "@/lib/mass-battle/types";
 import type { BattleDesc } from "./MassBattleExperience";
 import type { Quality } from "./scene";
@@ -47,7 +46,7 @@ export default function MakeBattleVideo({ battle, onRecording, onClose }: { batt
     return () => URL.revokeObjectURL(phase.url);
   }, [phase]);
 
-  const hook = battle.question ? `${questionText(battle.names[0], battle.names[1])} 😳` : battle.hook;
+  const hook = battle.question ? `How many ${battle.names[0]} does it take to beat ${battle.names[1]}? 😳` : battle.hook;
   const lengths = extra && !LENGTHS.includes(extra) ? [extra, ...LENGTHS] : LENGTHS;
   const busy = phase.kind === "recording";
 

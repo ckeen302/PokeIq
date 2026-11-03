@@ -1,5 +1,5 @@
 import { Director } from "@/lib/mass-battle/director";
-import { answerText, bossDownLine, critLine, fmt, multiKoLine, questionText, resultTitle, spreadText } from "@/lib/mass-battle/copy";
+import { answerText, bossDownLine, critLine, fmt, multiKoLine, resultTitle, spreadText } from "@/lib/mass-battle/copy";
 import { TICK_HZ } from "@/lib/mass-battle/constants";
 import { figureSize } from "@/lib/mass-battle/stats";
 import type { ArenaId, MBSpecies } from "@/lib/mass-battle/types";
@@ -68,6 +68,9 @@ export function videoPlan(seconds: number) {
   const hook = 2.6 * k, reveal = 2.8 * k, end = 2.4 * k;
   return { hook, battle: Math.max(0.5, seconds - hook - reveal - end), reveal, end };
 }
+
+/** The video's opening question ("How many Magikarp does it take to beat Arceus? 😳"), or the battle's own hook. */
+export const videoHook = (b: Pick<BattleDesc, "question" | "names" | "hook">) => (b.question ? `How many ${b.names[0]} does it take to beat ${b.names[1]}? 😳` : b.hook);
 
 export const videoFileName = (slug: string, seconds: number, ext: "mp4" | "webm") =>
   `pokeiq-mass-battle-${slug.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 60) || "battle"}-${seconds}s.${ext}`;
@@ -332,7 +335,7 @@ export async function recordBattleVideo(o: RecordOptions): Promise<RecordResult>
     const logo = await loadImage(o.logo);
     const font = o.font;
     const names = b.names;
-    const hookText = b.question ? `${questionText(names[0], names[1])} 😳` : b.hook;
+    const hookText = videoHook(b);
     const total = (s: 0 | 1) => ready.start[s];
     const bossIdx = bossSide >= 0 ? Array.from({ length: ready.n }, (_, i) => i).filter((i) => ready.side[i] === bossSide) : [];
     const bossMax = bossIdx.reduce((a, i) => a + ready.maxHp[ready.sp[i]], 0);
