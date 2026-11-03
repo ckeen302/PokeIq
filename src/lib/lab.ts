@@ -10,6 +10,13 @@ export const LAB_PATH = "/lab";
 export const RACE_LIVE = true;
 
 /**
+ * Pokémon Mass Battle (/lab/mass-battle) shows on /lab, in the sitemap and
+ * on Pokédex entries only once it's live; until then its pages work but
+ * stay out of search. Flip to true when it ships.
+ */
+export const MASS_BATTLE_LIVE = true;
+
+/**
  * The History of the Pokémon World (/lab/world-history) shows on /lab, in
  * the sitemap and from the Pokémon Timeline only once this is true. Until
  * then its pages work by URL but stay out of search.
@@ -17,7 +24,7 @@ export const RACE_LIVE = true;
 export const WORLD_HISTORY_LIVE = true;
 
 export interface LabExperience {
-  id: "timeline" | "sizes" | "globe" | "race" | "world-history";
+  id: "timeline" | "sizes" | "globe" | "race" | "mass-battle" | "world-history";
   href: string;
   title: string;
   /** Small HUD label above the title. */
@@ -77,6 +84,17 @@ export const LAB_EXPERIENCES: LabExperience[] = [
     image: "/lab/race.webp",
     accent: "340 86% 60%",
     live: RACE_LIVE,
+  },
+  {
+    id: "mass-battle",
+    href: "/lab/mass-battle",
+    title: "Pokémon Mass Battle",
+    kicker: "Real battle maths, at scale",
+    pitch: "Thousands of Pokémon clash on a 3D battlefield with the real games' damage maths. How many Magikarp does it take to beat Arceus? Find out, then make a video of it.",
+    tags: ["How many?", "Army vs army", "Make a video"],
+    image: "/lab/mass-battle.webp",
+    accent: "28 100% 58%",
+    live: MASS_BATTLE_LIVE,
   },
   {
     id: "world-history",

@@ -1,0 +1,81 @@
+import type { ArmySpec, BattleOutcome, GroupRule, Winner } from "./types";
+
+/**
+ * The words around the numbers: answers, results and kill-feed lines.
+ * Pokémon names don't take a plural ("48 Magikarp").
+ */
+
+export const fmt = (n: number) => Math.round(n).toLocaleString("en-US");
+
+export function questionText(challenger: string, boss: string): string {
+  return `How many ${challenger} beat ${boss}?`;
+}
+
+export function answerText(n: number, challenger: string): string {
+  return `It takes ${fmt(n)} ${challenger}`;
+}
+
+export function spreadText(spread: number, runs: number): string {
+  return `± ${fmt(spread)} over ${fmt(runs)} battles`;
+}
+
+export function winRateText(wins: number, runs: number, n: number): string {
+  return `${fmt(n)} won ${fmt(wins)} of ${fmt(runs)} battles`;
+}
+
+export function noAnswerText(challenger: string, boss: string, cap: number): string {
+  return `No army of ${challenger} up to ${fmt(cap)} beats ${boss}`;
+}
+
+/** The side's name: its species ("Magikarp", "Rattata and Raticate", "Bulbasaur, Charmander and Squirtle", or "Fire types…" for presets). */
+export function armyName(names: string[], label?: string): string {
+  if (label) return label;
+  if (names.length <= 1) return names[0] ?? "";
+  if (names.length <= 3) return `${names.slice(0, -1).join(", ")} and ${names[names.length - 1]}`;
+  return `${names.slice(0, 2).join(", ")} and more`;
+}
+
+/** A group's short name: "Fire types", "Water/Flying types", "Legendaries", "Gen 1 Pokémon". */
+export function groupName(g: GroupRule): string {
+  const cap = (t: string) => t[0].toUpperCase() + t.slice(1);
+  if (g.types?.length) return `${g.types.map(cap).join("/")} types`;
+  if (g.legendary === true && g.mythical) return "Legendaries and mythicals";
+  if (g.legendary === true) return "Legendaries";
+  if (g.mythical) return "Mythicals";
+  if (g.gen) return `Gen ${g.gen} Pokémon`;
+  return g.fullyEvolved ? "Fully evolved Pokémon" : "Pokémon";
+}
+
+/** An army's name from its rows (a group by its short name). */
+export function sideName(army: Pick<ArmySpec, "units">, nameOf: (id: number) => string, label?: string): string {
+  return armyName(army.units.map((u) => (u.group ? groupName(u.group) : nameOf(u.id))), label);
+}
+
+export function resultTitle(winner: Winner, names: [string, string], left: [number, number]): string {
+  if (winner === 2) return "It's a draw";
+  const w = names[winner];
+  const one = left[winner] === 1;
+  return `${w} ${one && !/ and /.test(w) ? "wins" : "win"}!`;
+}
+
+export function resultLine(o: BattleOutcome, names: [string, string]): string {
+  if (o.winner === 2) return `Time ran out after ${o.seconds.toFixed(0)} seconds with both sides standing.`;
+  const loser = names[1 - o.winner];
+  return `${fmt(o.left[o.winner])} left standing after ${o.seconds.toFixed(1)} s · ${loser} KO'd ${fmt(o.kos[1 - o.winner])}`;
+}
+
+/** "Arceus'", "Mewtwo's". */
+export const possessive = (name: string) => (/s$/i.test(name) ? `${name}'` : `${name}'s`);
+
+/** "Arceus' Earthquake KO'd 48 Magikarp". */
+export function multiKoLine(actor: string, move: string, kos: number, target: string): string {
+  return `${possessive(actor)} ${move} KO'd ${fmt(kos)} ${target}`;
+}
+
+export function critLine(actor: string, move: string, target: string): string {
+  return `Critical hit! ${possessive(actor)} ${move} on ${target}`;
+}
+
+export function bossDownLine(actor: string, move: string, boss: string): string {
+  return `${possessive(actor)} ${move} knocked out ${boss}!`;
+}

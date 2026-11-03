@@ -1,0 +1,226 @@
+{
+ "engine": 4,
+ "roster": 3,
+ "results": {
+  "magikarp-vs-arceus": {
+   "outcome": {
+    "winner": 1,
+    "seconds": 12.05,
+    "left": [
+     0,
+     1
+    ],
+    "kos": [
+     0,
+     40
+    ],
+    "dealt": [
+     362,
+     8080
+    ]
+   },
+   "answer": {
+    "n": 49,
+    "spread": 8,
+    "wins": 22,
+    "runs": 40,
+    "seed": 143106351
+   }
+  },
+  "rattata-vs-mewtwo": {
+   "outcome": {
+    "winner": 0,
+    "seconds": 3.7,
+    "left": [
+     999,
+     0
+    ],
+    "kos": [
+     1,
+     1
+    ],
+    "dealt": [
+     374,
+     222
+    ]
+   },
+   "answer": {
+    "n": 4,
+    "spread": 1,
+    "wins": 40,
+    "runs": 40,
+    "seed": 1069852830
+   }
+  },
+  "pikachu-vs-snorlax": {
+   "outcome": {
+    "winner": 0,
+    "seconds": 3.95,
+    "left": [
+     100,
+     0
+    ],
+    "kos": [
+     1,
+     0
+    ],
+    "dealt": [
+     482,
+     0
+    ]
+   },
+   "answer": {
+    "n": 5,
+    "spread": 1,
+    "wins": 25,
+    "runs": 40,
+    "seed": 564827029
+   }
+  },
+  "kanto-starters": {
+   "outcome": {
+    "winner": 0,
+    "seconds": 7.85,
+    "left": [
+     554,
+     0
+    ],
+    "kos": [
+     60,
+     46
+    ],
+    "dealt": [
+     19200,
+     28461
+    ]
+   },
+   "answer": null
+  },
+  "fire-vs-water": {
+   "outcome": {
+    "winner": 0,
+    "seconds": 23.35,
+    "left": [
+     115,
+     0
+    ],
+    "kos": [
+     406,
+     259
+    ],
+    "dealt": [
+     131370,
+     88062
+    ]
+   },
+   "answer": null
+  },
+  "legendaries-vs-everyone": {
+   "outcome": {
+    "winner": 1,
+    "seconds": 9.2,
+    "left": [
+     0,
+     566
+    ],
+    "kos": [
+     34,
+     71
+    ],
+    "dealt": [
+     18872,
+     25522
+    ]
+   },
+   "answer": null
+  },
+  "bug-swarm-vs-charizard": {
+   "outcome": {
+    "winner": 0,
+    "seconds": 3.65,
+    "left": [
+     999,
+     0
+    ],
+    "kos": [
+     1,
+     1
+    ],
+    "dealt": [
+     218,
+     302
+    ]
+   },
+   "answer": {
+    "n": 3,
+    "spread": 1,
+    "wins": 40,
+    "runs": 40,
+    "seed": 108809341
+   }
+  },
+  "eeveelution-civil-war": {
+   "outcome": {
+    "winner": 0,
+    "seconds": 25.9,
+    "left": [
+     18,
+     0
+    ],
+    "kos": [
+     98,
+     82
+    ],
+    "dealt": [
+     31849,
+     27082
+    ]
+   },
+   "answer": null
+  },
+  "fire-vs-water-sun": {
+   "outcome": {
+    "winner": 1,
+    "seconds": 40.2,
+    "left": [
+     0,
+     42
+    ],
+    "kos": [
+     368,
+     373
+    ],
+    "dealt": [
+     120913,
+     123396
+    ]
+   },
+   "answer": null
+  },
+  "light-ball-pikachu-vs-snorlax": {
+   "outcome": {
+    "winner": 0,
+    "seconds": 4.3,
+    "left": [
+     5,
+     0
+    ],
+    "kos": [
+     1,
+     0
+    ],
+    "dealt": [
+     482,
+     0
+    ]
+   },
+   "answer": {
+    "n": 2,
+    "spread": 1,
+    "wins": 20,
+    "runs": 40,
+    "seed": 1151014033
+   }
+  }
+ }
+}

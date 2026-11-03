@@ -6,7 +6,8 @@ import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 import Link from "next/link";
 import { slugify } from "@/lib/dex/build";
-import { Flag, Ruler, Sparkles, Volume2 } from "lucide-react";
+import { Flag, Ruler, Sparkles, Swords, Volume2 } from "lucide-react";
+import { MASS_BATTLE_LIVE } from "@/lib/lab";
 import type { DexAbility, DexEntryData, DexForm } from "@/lib/pokemon/dex-types";
 import { GENERATION_REGIONS, formatHeight, formatWeight, titleCase } from "@/lib/pokemon/constants";
 import { typeColor } from "@/lib/pokemon/type-colors";
@@ -213,6 +214,16 @@ export function Hero({ data, form, onFormChange, types, abilities }: HeroProps) 
               <Flag className="h-4 w-4 text-screen" aria-hidden /> Race it
               <span className="transition-transform group-hover:translate-x-0.5" aria-hidden>→</span>
             </Link>
+            {MASS_BATTLE_LIVE && (
+              <Link
+                href={`/lab/mass-battle?ask=${p.slug === "arceus" ? "magikarp" : p.slug}.arceus.100.colosseum`}
+                className="group inline-flex items-center gap-2 rounded-md border border-foreground/10 bg-shade/25 px-3 py-2 font-display text-[13px] font-bold uppercase tracking-wide transition-colors hover:border-screen/50 hover:text-screen"
+                data-testid="dex-battle-it"
+              >
+                <Swords className="h-4 w-4 text-screen" aria-hidden /> Battle it
+                <span className="transition-transform group-hover:translate-x-0.5" aria-hidden>→</span>
+              </Link>
+            )}
           </div>
 
           <div className="space-y-2">
