@@ -1,6 +1,6 @@
 import * as THREE from "three";
-import { POOL_INSET, POOL_X0, WATER_Y, clipsUnderwater, poolBounds, poolWalls } from "@/lib/race/pool";
-import { KERB_R, LANE_W, RUN_OUT, X0, type Distance } from "@/lib/race/track";
+import { POOL_INSET, POOL_X0, WATER_Y, bigPoolWalls, clipsUnderwater, poolBounds, poolWalls, type BigPool } from "@/lib/race/pool";
+import { KERB_R, LANE_W, RUN_OUT, START_100_X, X0, type Distance } from "@/lib/race/track";
 import { puffTexture } from "./textures";
 
 /**
@@ -20,15 +20,28 @@ export const MAX_SWIMMERS = 8;
 export const POOL_GLSL = /* glsl */ `
   uniform vec4 uPoolA;
   uniform vec4 uPoolB;
+  // The big pool inside the kerb (lib/race/pool's bigPoolAt): mode, across from the kerb lo … hi, run-out angle round bend 1.
+  uniform vec4 uPoolG;
+  uniform float uPoolBack;
   const float POOL_IN = ${POOL_INSET.toFixed(4)};
   const float POOL_X0 = ${POOL_X0.toFixed(3)};
   float raceLaneMode(int L) { return L < 4 ? uPoolA[L] : uPoolB[L - 4]; }
   // 1 in a channel; f: across the lane (0 at its inner line … LANE at its outer one).
   float racePool(vec2 p, out float f) {
     f = 0.0;
-    if (dot(uPoolA, uPoolA) + dot(uPoolB, uPoolB) < 0.5) return 0.0;
+    if (dot(uPoolA, uPoolA) + dot(uPoolB, uPoolB) + uPoolG.x < 0.5) return 0.0;
     float ax = abs(p.x);
     float across = ax <= X0 ? abs(p.y) - KERB : length(vec2(ax - X0, p.y)) - KERB;
+    if (uPoolG.x > 0.5) {
+      if (across > uPoolG.y && across < uPoolG.z) {
+        bool home = ax <= X0 && p.y > 0.0;
+        bool runOut = p.x > X0 && p.y > 0.0 && atan(p.x - X0, p.y) < uPoolG.w;
+        bool lead = uPoolG.x > 1.5 && p.y < 0.0 && p.x >= -X0 && p.x < -X0 + uPoolBack;
+        if (uPoolG.x > 2.5 || home || runOut || (uPoolG.x > 1.5 && p.x < -X0) || lead) return 1.0;
+      }
+      float ag = p.y - KERB;
+      if (uPoolG.x < 1.5 && p.x < -X0 && p.x > ${START_100_X.toFixed(3)} - uPoolBack && ag > uPoolG.y && ag < uPoolG.z) return 1.0;
+    }
     if (across > 0.0 && across < 8.0 * LANE) {
       int L = int(floor(across / LANE));
       float m = raceLaneMode(L);
@@ -61,15 +74,20 @@ export const POOL_CONST = /* glsl */ `
 export interface PoolUniforms {
   uPoolA: { value: THREE.Vector4 };
   uPoolB: { value: THREE.Vector4 };
+  uPoolG: { value: THREE.Vector4 };
+  uPoolBack: { value: number };
 }
 
 export function poolUniforms(): PoolUniforms {
-  return { uPoolA: { value: new THREE.Vector4() }, uPoolB: { value: new THREE.Vector4() } };
+  return { uPoolA: { value: new THREE.Vector4() }, uPoolB: { value: new THREE.Vector4() }, uPoolG: { value: new THREE.Vector4() }, uPoolBack: { value: 0 } };
 }
 
-export function setPoolModes(u: PoolUniforms, modes: number[]) {
+export function setPoolModes(u: PoolUniforms, modes: number[], big: BigPool | null = null) {
   u.uPoolA.value.set(modes[0] ?? 0, modes[1] ?? 0, modes[2] ?? 0, modes[3] ?? 0);
   u.uPoolB.value.set(modes[4] ?? 0, modes[5] ?? 0, modes[6] ?? 0, modes[7] ?? 0);
+  if (big) u.uPoolG.value.set(big.mode, big.lo, big.hi, big.runOut);
+  else u.uPoolG.value.set(0, 0, 0, 0);
+  u.uPoolBack.value = big?.back ?? 0;
 }
 
 export interface SwimmerState {
@@ -108,7 +126,7 @@ const TILE_GLSL = /* glsl */ `
 `;
 
 /** Builds the pool for the swimmers' lanes (none: an empty group). */
-export function buildPool(lanes: number[], distance: Distance, modes: number[], depth: number, shared: PoolUniforms, envMap: THREE.Texture | null, layer: number, deep = 0): Pool {
+export function buildPool(lanes: number[], distance: Distance, modes: number[], depth: number, shared: PoolUniforms, envMap: THREE.Texture | null, layer: number, deep = 0, big: BigPool | null = null): Pool {
   const group = new THREE.Group();
   const geos: THREE.BufferGeometry[] = [];
   const mats: THREE.Material[] = [];
@@ -117,8 +135,8 @@ export function buildPool(lanes: number[], distance: Distance, modes: number[], 
   const swA = { value: Array.from({ length: MAX_SWIMMERS }, () => new THREE.Vector4()) };
   const swB = { value: Array.from({ length: MAX_SWIMMERS }, () => new THREE.Vector4()) };
   const swN = { value: 0 };
-  if (!lanes.length) return { group, update() {}, dispose() {} };
-  const [bx0, bz0, bx1, bz1] = poolBounds(modes);
+  if (!lanes.length && !big) return { group, update() {}, dispose() {} };
+  const [bx0, bz0, bx1, bz1] = poolBounds(modes, big);
   const bottom = -depth;
 
   // ---- Tiled floor (a plane cut to the channels) and walls.
@@ -127,6 +145,8 @@ export function buildPool(lanes: number[], distance: Distance, modes: number[], 
     m.onBeforeCompile = (s) => {
       s.uniforms.uPoolA = shared.uPoolA;
       s.uniforms.uPoolB = shared.uPoolB;
+      s.uniforms.uPoolG = shared.uPoolG;
+      s.uniforms.uPoolBack = shared.uPoolBack;
       s.uniforms.uTime = time;
       s.vertexShader = s.vertexShader
         .replace("#include <common>", "#include <common>\nvarying vec3 vPoolW;\nvarying vec2 vPoolUv;\nvarying vec3 vPoolN;")
@@ -171,8 +191,8 @@ export function buildPool(lanes: number[], distance: Distance, modes: number[], 
   // Walls: vertical strips along each wall polyline, facing into the water, from the floor up to the track.
   {
     const pos: number[] = [], nor: number[] = [], uv: number[] = [], idx: number[] = [];
-    for (const lane of lanes) {
-      for (const w of poolWalls(lane, distance)) {
+    for (const w of [...lanes.flatMap((lane) => poolWalls(lane, distance)), ...(big ? bigPoolWalls(big) : [])]) {
+      {
         let along = 0;
         const base = pos.length / 3;
         w.pts.forEach((p, i) => {
@@ -214,6 +234,8 @@ export function buildPool(lanes: number[], distance: Distance, modes: number[], 
   water.onBeforeCompile = (s) => {
     s.uniforms.uPoolA = shared.uPoolA;
     s.uniforms.uPoolB = shared.uPoolB;
+      s.uniforms.uPoolG = shared.uPoolG;
+      s.uniforms.uPoolBack = shared.uPoolBack;
     s.uniforms.uTime = time;
     s.uniforms.uSwA = swA;
     s.uniforms.uSwB = swB;

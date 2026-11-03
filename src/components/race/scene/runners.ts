@@ -5,7 +5,7 @@ import { artFacing } from "@/lib/race/facing";
 import { GROUNDED, poseFor, swimStyle } from "@/lib/race/gait";
 import { celebrationAt, dipAt, jointAngles, swayAt, type LimbPart } from "@/lib/race/limbs";
 import { MAX_PARTS } from "@/lib/race/parts";
-import { WATER_Y, clipsUnderwater, swimmerY } from "@/lib/race/pool";
+import { LANE_WATER, WATER_Y, beamOf, clipsUnderwater, needsBigPool, swimmerY, waterAround } from "@/lib/race/pool";
 import { runnerAt, type Race, type RaceLane } from "@/lib/race/race";
 import { lanePoint } from "@/lib/race/track";
 import type { Entrant } from "@/lib/race/types";
@@ -79,6 +79,8 @@ export interface Figure {
   /** Mesh size (units of the box's longest side). */
   meshW: number;
   meshH: number;
+  /** How far a swimmer may turn from side-on towards the camera (radians) without leaving the water. */
+  turnMax: number;
   /** Running towards the right of the screen (with hysteresis). */
   runsRight: boolean;
   /** Steps on stubby feet (and sways). */
@@ -192,6 +194,19 @@ function figureMaterial(tex: THREE.Texture, texSize: number, uniforms: FigureUni
 
 const v4s = () => Array.from({ length: MAX_PARTS }, () => new THREE.Vector4());
 
+/**
+ * A swimmer lies side-on along its channel and turns towards the camera
+ * only as far as the water each side of it allows (its body `depth` m
+ * across, its tail beating about a tenth of its length to each side), so
+ * no part of it ever reaches over the coping onto the track.
+ */
+export function swimTurn(lane: RaceLane, depth: number): number {
+  const { w, h } = lane;
+  const len = Math.max(w, h);
+  const water = needsBigPool(w, h) ? beamOf(w, h) + 2 * waterAround(w, h) : LANE_WATER;
+  return Math.asin(Math.max(0, Math.min(0.75, (water - depth - 0.2 * len) / Math.max(0.05, len))));
+}
+
 export async function loadFigure(renderer: THREE.WebGLRenderer, lane: RaceLane, urls: RunnerUrls, o: RunnerOptions, signal: AbortSignal): Promise<Figure> {
   const e = lane.entrant;
   const [bx, by, bw, bh, size] = e.box;
@@ -241,6 +256,8 @@ export async function loadFigure(renderer: THREE.WebGLRenderer, lane: RaceLane, 
   const root = new THREE.Group();
   // Balls roll about their middle.
   if (e.motion === "roll") { spin.position.y = lane.h / 2; body.position.y = -lane.h / 2; }
+  // A swimmer's body is centred across its channel (the relief's front and sculpted back aren't symmetric about the render's plane).
+  if (e.motion === "swim") body.position.z = -((rm.zMax + rm.zMin) / 2) * s;
   spin.add(body);
   yaw.add(spin);
   lean.add(yaw);
@@ -271,6 +288,7 @@ export async function loadFigure(renderer: THREE.WebGLRenderer, lane: RaceLane, 
     facing: rm.facing,
     meshW: rm.width,
     meshH: rm.height,
+    turnMax: swimTurn(lane, (rm.zMax - rm.zMin) * s),
     runsRight: true,
     stubby: rm.joints.some((j) => j.stub),
     mirrored: false,
@@ -549,6 +567,14 @@ export function makeRunners(race: Race, figures: Figure[], masts: THREE.Vector3[
       let nx = cx / cl + p.dx * 0.32, nz = cz / cl + p.dz * 0.32;
       const nl = Math.hypot(nx, nz) || 1;
       nx /= nl; nz /= nl;
+      if (swim) {
+        // Side-on along its channel (the side the camera is on), turned towards the camera only as far as its water allows.
+        let lx = -p.dz, lz = p.dx;
+        if (lx * cx + lz * cz < 0) { lx = -lx; lz = -lz; }
+        const a = Math.max(-f.turnMax, Math.min(f.turnMax, Math.atan2(lx * cz - lz * cx, lx * cx + lz * cz)));
+        nx = lx * Math.cos(a) - lz * Math.sin(a);
+        nz = lx * Math.sin(a) + lz * Math.cos(a);
+      }
       f.yaw.rotation.y = Math.atan2(nx, nz) + turn;
       const side = p.dx * camRight.x + p.dz * camRight.z;
       if (side > 0.12) f.runsRight = true;

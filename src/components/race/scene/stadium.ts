@@ -118,6 +118,8 @@ export interface Stadium {
   /** Lamp positions for halos (mast banks and the roof ring). */
   update(t: number, cam: THREE.Camera): void;
   setRace(distance: Distance): void;
+  /** Make room in the infield for the big pool (lib/race/pool), `inner` metres across from the kerb (negative), or put things back (null). */
+  setBigPool(inner: number | null): void;
   /** Which lanes are pools (shared with the floor's and paint's shaders). */
   pool: PoolUniforms;
   textures: THREE.Texture[];
@@ -170,6 +172,8 @@ function buildFloor(b: Built, urls: StadiumUrls, aniso: number, loader: THREE.Te
     s.uniforms.uGrass = { value: grass };
     s.uniforms.uPoolA = pool.uPoolA;
     s.uniforms.uPoolB = pool.uPoolB;
+    s.uniforms.uPoolG = pool.uPoolG;
+    s.uniforms.uPoolBack = pool.uPoolBack;
     s.fragmentShader = s.fragmentShader
       .replace("#include <common>", `#include <common>\nuniform sampler2D uGrass;\n${GLSL_CONST}\n${POOL_GLSL}\nfloat raceHash(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }\nfloat raceNoise(vec2 p){ vec2 i = floor(p), f = fract(p); f = f*f*(3.0-2.0*f); return mix(mix(raceHash(i), raceHash(i+vec2(1,0)), f.x), mix(raceHash(i+vec2(0,1)), raceHash(i+vec2(1,1)), f.x), f.y); }\nfloat raceLine(float d, float w, float aa){ return 1.0 - smoothstep(w - aa, w + aa, d); }\nfloat raceLines;\nfloat raceRegion;`)
       .replace(
@@ -289,6 +293,8 @@ function buildMarks(b: Built, font: string, pool: PoolUniforms): THREE.Group {
       withWorld(s);
       s.uniforms.uPoolA = pool.uPoolA;
       s.uniforms.uPoolB = pool.uPoolB;
+    s.uniforms.uPoolG = pool.uPoolG;
+    s.uniforms.uPoolBack = pool.uPoolBack;
       s.fragmentShader = s.fragmentShader
         .replace("#include <common>", `#include <common>\n${GLSL_CONST}\n${POOL_GLSL}`)
         .replace("#include <map_fragment>", "if (racePoolAt(vRaceWorld.xz) > 0.5) discard;\n#include <map_fragment>");
@@ -614,7 +620,7 @@ function buildScreens(b: Built): { group: THREE.Group; screens: THREE.Mesh[]; ma
 }
 
 /** The trackside clock past the finish line, and the photo-finish camera on its post at the line. */
-function buildLineFurniture(b: Built, font: string): { group: THREE.Group; clock: ClockFace } {
+function buildLineFurniture(b: Built, font: string): { group: THREE.Group; clock: ClockFace; board: THREE.Group } {
   const g = new THREE.Group();
   const dark = mat(b, new THREE.MeshStandardMaterial({ color: "#14161b", roughness: 0.6, metalness: 0.3 }));
   const clock = new ClockFace(font);
@@ -655,7 +661,7 @@ function buildLineFurniture(b: Built, font: string): { group: THREE.Group; clock
     tp.position.set(X0 + 0.04, 0.425, z);
     g.add(tp);
   }
-  return { group: g, clock };
+  return { group: g, clock, board };
 }
 
 /** The city around the stadium at night: dark ground to the horizon, scattered with lights. */
@@ -726,7 +732,8 @@ export function buildStadium(opts: { urls: StadiumUrls; font: string; q: Quality
   group.add(floor);
   group.add(buildKerb(b));
   group.add(buildMarks(b, opts.font, pool));
-  group.add(buildFieldEvents(b));
+  const fieldEvents = buildFieldEvents(b);
+  group.add(fieldEvents);
   group.add(buildBowl(b));
   const roof = buildRoof(b);
   group.add(roof.mesh);
@@ -785,6 +792,11 @@ export function buildStadium(opts: { urls: StadiumUrls; font: string; q: Quality
     },
     setRace() {
       // Marks for every distance are painted; nothing to change per race yet.
+    },
+    setBigPool(inner) {
+      // The field-event furniture stands where a big pool would run; the trackside clock moves in past its inner wall.
+      fieldEvents.visible = inner == null;
+      line.board.position.z = KERB_R + Math.min(0, inner ?? 0) - 2.4;
     },
     dispose() {
       b.geos.forEach((g) => g.dispose());

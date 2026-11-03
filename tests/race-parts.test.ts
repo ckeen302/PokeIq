@@ -7,9 +7,9 @@ import { buildFigureMesh } from "@/lib/race/figure";
 import { celebrationAt, dipAt, jointAngles, legSwing, swayAt } from "@/lib/race/limbs";
 import { artFacing } from "@/lib/race/facing";
 import { describeParts, findParts, type ReliefPixels } from "@/lib/race/parts";
-import { clipsUnderwater, deepTint, poolAt, poolBounds, poolDepth, poolModes, poolWalls, submergeShare, swimmerY, WATER_Y } from "@/lib/race/pool";
-import { makeRace, runnerAt, spotsAt } from "@/lib/race/race";
-import { cameraFor, leader } from "@/lib/race/director";
+import { beamOf, bigPoolAt, bigPoolWalls, clipsUnderwater, deepTint, LANE_WATER, needsBigPool, poolAt, poolBounds, poolDepth, poolModes, poolWalls, submergeShare, swimmerY, waterAround, WATER_Y } from "@/lib/race/pool";
+import { drawPoint, makeRace, runnerAt, spotsAt } from "@/lib/race/race";
+import { cameraFor, keepInFrame, leader } from "@/lib/race/director";
 import { RUN_OUT, X0, lanePoint, type Distance } from "@/lib/race/track";
 import type { Motion } from "@/lib/race/types";
 
@@ -371,7 +371,87 @@ describe("swimmers and their pool lanes", () => {
   });
 });
 
+describe("every swimmer is in the water", () => {
+  const mon = (slug: string) => RACE_ENTRANTS.find((e) => e.key === slug)!;
+  // The body's waterline footprint: along its length and across its depth (plus its tail beat), around where it is drawn.
+  const footprint = (p: { x: number; z: number; dx: number; dz: number }, w: number, h: number) => {
+    const len = Math.max(w, h), half = beamOf(w, h) / 2 + 0.1 * len;
+    const pts: [number, number][] = [];
+    for (const a of [-0.5, -0.25, 0, 0.25, 0.5]) for (const b of [-1, 0, 1]) pts.push([p.x + p.dx * a * len - p.dz * b * half, p.z + p.dz * a * len + p.dx * b * half]);
+    return pts;
+  };
+  it("puts giants in a big pool inside the kerb, their whole footprint in its water, and small swimmers in their lane's", () => {
+    // Wailord, Wailmer and Kyogre are too big for a lane; Magikarp fits one with water on both sides.
+    for (const k of ["wailord", "wailmer", "kyogre", "lapras"]) { const e = mon(k); const { w, h } = makeRace([e], 100).lanes[0]; expect(needsBigPool(w, h), k).toBe(true); }
+    { const r = makeRace([mon("magikarp")], 100).lanes[0]; expect(needsBigPool(r.w, r.h)).toBe(false); expect(beamOf(r.w, r.h) + 2 * waterAround(r.w, r.h)).toBeLessThan(LANE_WATER); }
+    const field = ["wailord", "kyogre", "wailmer", "magikarp", "zeraora", "pikachu", "lugia", "regieleki"].map(mon);
+    for (const d of [100, 200, 400] as Distance[]) {
+      const race = makeRace(field, d);
+      const g = race.bigPool!;
+      expect(g).not.toBeNull();
+      // Inside the kerb, clear of every lane.
+      expect(g.hi).toBeLessThan(0);
+      const modes = poolModes(race.lanes.filter((r) => r.entrant.motion === "swim" && g.lanes[r.lane] == null).map((r) => r.lane), d);
+      for (const r of race.lanes) {
+        const swim = r.entrant.motion === "swim";
+        const big = g.lanes[r.lane] != null;
+        expect(big, r.entrant.key).toBe(swim && needsBigPool(r.w, r.h));
+        for (let s = 0; s <= d + 20; s += 2) {
+          const p = drawPoint(race, r, s);
+          if (big) for (const [x, z] of footprint(p, r.w, r.h)) expect(bigPoolAt(x, z, g), `${r.entrant.key} ${d} m at ${s} m`).toBe(true);
+          else if (swim) for (const [x, z] of footprint(p, r.w, r.h)) expect(poolAt(x, z, modes), `${r.entrant.key} at ${s} m`).toBe(true);
+          // Runners never run on the big pool's water.
+          else if (s <= d) expect(bigPoolAt(p.x, p.z, g), `${r.entrant.key} at ${s} m`).toBe(false);
+        }
+      }
+      // The big pool's walls stand on its edge, facing its water.
+      for (const wl of bigPoolWalls(g)) {
+        for (let k = 0; k < wl.pts.length - 1; k++) {
+          const a = wl.pts[k], b = wl.pts[k + 1];
+          const mx = (a.x + b.x) / 2, mz = (a.z + b.z) / 2;
+          expect(bigPoolAt(mx + a.nx * 0.05, mz + a.nz * 0.05, g)).toBe(true);
+          if (d !== 400) expect(bigPoolAt(mx - a.nx * 0.05, mz - a.nz * 0.05, g)).toBe(false);
+        }
+      }
+      // A big-pool swimmer swims abreast of where its lane would put it: the same distance covered, the same time.
+      const wl = race.lanes.find((r) => r.entrant.key === "wailord")!;
+      expect(runnerAt(race, wl, 5).x).toBe(runnerAt(makeRace(field, d), wl, 5).x);
+    }
+    // No swimmers too big for a lane: no big pool.
+    expect(makeRace([mon("magikarp"), mon("goldeen"), mon("zeraora")], 100).bigPool).toBeNull();
+  });
+});
+
 describe("the broadcast's framing", () => {
+  it("keeps a giant flier in the frame, clear of the clock in its top corner", () => {
+    const es = ["pikachu", "zeraora", "lugia", "wailord"].map((k) => RACE_ENTRANTS.find((e) => e.key === k)!);
+    const race = makeRace(es, 100);
+    for (const aspect of [16 / 10, 390 / 844]) {
+      const ctx = { distance: 100 as const, aspect, starts: spotsAt(race, 0) };
+      for (const [cam, t] of [["rail", 4], ["line", race.first - 0.3], ["headon", 5]] as const) {
+        const spots = spotsAt(race, t);
+        const pose = cameraFor(cam, 0.5, spots, ctx);
+        // Landscape: kept, nothing more to do.
+        if (aspect > 1) expect(keepInFrame(pose, spots, aspect), `${cam}`).toEqual(pose);
+        // Every runner it shows has its highest point inside the frame.
+        const F = [pose.target[0] - pose.pos[0], pose.target[1] - pose.pos[1], pose.target[2] - pose.pos[2]];
+        const fl = Math.hypot(...F);
+        const f = F.map((v) => v / fl);
+        const R = [-f[2], 0, f[0]].map((v) => v / Math.hypot(f[0], f[2]));
+        const U = [R[1] * f[2] - R[2] * f[1], R[2] * f[0] - R[0] * f[2], R[0] * f[1] - R[1] * f[0]];
+        const tv = Math.tan((pose.fov * Math.PI) / 360);
+        for (const sp of spots) {
+          const d = [sp.x - pose.pos[0], (sp.top ?? sp.h) * 0.55 - pose.pos[1], sp.z - pose.pos[2]];
+          const zc = d[0] * f[0] + d[1] * f[1] + d[2] * f[2];
+          const xc = (d[0] * R[0] + d[2] * R[2]) / zc;
+          if (zc < 1 || Math.abs(xc) > tv * aspect * 0.95) continue;
+          const top = [d[0], (sp.top ?? sp.h) - pose.pos[1], d[2]];
+          expect((top[0] * U[0] + top[1] * U[1] + top[2] * U[2]) / zc, `${cam} ${aspect.toFixed(2)} lane ${sp.lane}`).toBeLessThan(tv);
+        }
+      }
+    }
+  });
+
   it("shows the race from the front or three quarters, never side-on", () => {
     const es = ["regieleki", "zeraora", "arcanine", "groudon", "pikachu", "lucario"].map((k) => RACE_ENTRANTS.find((e) => e.key === k)!);
     const race = makeRace(es, 100);

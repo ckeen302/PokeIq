@@ -215,12 +215,15 @@ export function createRaceScene(host: HTMLElement, opts: SceneOptions): RaceScen
     if (runners) { scene.remove(runners.group, runners.pfGroup); runners.dispose(); }
     if (pool) { scene.remove(pool.group); pool.dispose(); pool = null; }
     // Swimmers race in a water channel set into their lane, built now so nothing pops in.
-    const swimLanes = r.lanes.filter((l) => l.entrant.motion === "swim");
+    // (Swimmers too big for a lane channel swim in the big pool inside the kerb, and their lanes stay dry.)
+    const swimmers = r.lanes.filter((l) => l.entrant.motion === "swim");
+    const swimLanes = swimmers.filter((l) => r.bigPool?.lanes[l.lane] == null);
     const modes = poolModes(swimLanes.map((l) => l.lane), r.distance);
-    setPoolModes(stadium.pool, modes);
-    if (swimLanes.length) {
-      const heights = swimLanes.map((l) => l.h);
-      pool = buildPool(swimLanes.map((l) => l.lane), r.distance, modes, poolDepth(heights), stadium.pool, scene.environment, LAYER.BASE, deepTint(heights));
+    setPoolModes(stadium.pool, modes, r.bigPool);
+    stadium.setBigPool(r.bigPool ? r.bigPool.lo : null);
+    if (swimmers.length) {
+      const heights = swimmers.map((l) => l.h);
+      pool = buildPool(swimLanes.map((l) => l.lane), r.distance, modes, poolDepth(heights), stadium.pool, scene.environment, LAYER.BASE, deepTint(heights), r.bigPool);
       scene.add(pool.group);
     }
     runners = makeRunners(r, figs, stadium.masts, pool);

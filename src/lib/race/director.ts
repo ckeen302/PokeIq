@@ -34,6 +34,10 @@ export interface Spot {
   /** Figure size (m). */
   w: number;
   h: number;
+  /** How far out from the kerb it is drawn (m; negative in the big pool inside the kerb). Default: its lane's middle. */
+  across?: number;
+  /** Height of its highest point above the track (m; a flier rides above it, a swimmer is mostly under water). Default: h. */
+  top?: number;
 }
 
 export interface DirectorContext {
@@ -67,19 +71,22 @@ export function fieldHeight(spots: Spot[]): number {
   return clamp(hs[Math.floor(hs.length / 2)], 0.35, 3.2);
 }
 
+/** How far from the infield's long axis a runner is drawn on the home straight (its lane's middle, or its place in the big pool). */
+const radiusOf = (s: Spot) => (s.across == null ? laneCentre(s.lane) : KERB_R + s.across);
+
 /** Middle of the field across the lanes (z of the occupied lanes' centre on the home straight). */
 export function fieldMidZ(spots: Spot[]): number {
   if (!spots.length) return laneCentre(4.5);
-  const lanes = spots.map((s) => s.lane);
-  return (laneCentre(Math.min(...lanes)) + laneCentre(Math.max(...lanes))) / 2;
+  const rs = spots.map(radiusOf);
+  return (Math.min(...rs) + Math.max(...rs)) / 2;
 }
 
 /** Lateral span of the occupied lanes plus room for the figures (m). */
 export function fieldSpan(spots: Spot[]): number {
   if (!spots.length) return 8 * LANE_W;
-  const lanes = spots.map((s) => s.lane);
+  const rs = spots.map(radiusOf);
   const wide = Math.max(...spots.map((s) => Math.max(s.w, s.h * 0.6)));
-  return (Math.max(...lanes) - Math.min(...lanes) + 1) * LANE_W + Math.min(8, wide);
+  return Math.max(...rs) - Math.min(...rs) + LANE_W + Math.min(8, wide);
 }
 
 export function leader(spots: Spot[]): Spot {
@@ -101,7 +108,64 @@ const centroid = (ss: Spot[]): Vec3 => {
 /** Outward normal of a running direction (towards the stands: +z on the home straight). */
 const outward = (dx: number, dz: number): [number, number] => [-dz, dx];
 
+/** Shots that frame the field: tall runners in them (a giant flier) are kept in the frame, clear of the clock in its top corner. */
+const FIELD_SHOTS = new Set<Camera>(["rail", "bend", "wide", "headon", "line", "replay"]);
+
 export function cameraFor(cam: Camera, k: number, spots: Spot[], ctx: DirectorContext): CamPose {
+  const pose = shotFor(cam, k, spots, ctx);
+  return FIELD_SHOTS.has(cam) ? keepInFrame(pose, spots, ctx.aspect) : pose;
+}
+
+/**
+ * Widens a shot (a little), then pulls the camera back along its line of
+ * sight (as far as it must, up to about twice as far), until the tops of
+ * the runners it shows sit below the upper fifth of the frame and their
+ * sides inside it. Small runners stay as big as the shot made them unless
+ * a much taller one shares the frame.
+ */
+export function keepInFrame(pose: CamPose, spots: Spot[], aspect: number): CamPose {
+  const t = pose.target;
+  const off: Vec3 = [pose.pos[0] - t[0], pose.pos[1] - t[1], pose.pos[2] - t[2]];
+  const need = (pos: Vec3, fovDeg: number): number => {
+    const f = [t[0] - pos[0], t[1] - pos[1], t[2] - pos[2]];
+    const fl = Math.hypot(f[0], f[1], f[2]) || 1;
+    const F = [f[0] / fl, f[1] / fl, f[2] / fl];
+    // right = F × up, up' = right × F
+    let R = [-F[2], 0, F[0]];
+    const rl = Math.hypot(R[0], R[2]) || 1;
+    R = [R[0] / rl, 0, R[2] / rl];
+    const U = [R[1] * F[2] - R[2] * F[1], R[2] * F[0] - R[0] * F[2], R[0] * F[1] - R[1] * F[0]];
+    const tv = Math.tan((fovDeg * DEG) / 2), th = tv * aspect;
+    let req = 0;
+    for (const s of spots) {
+      const top = s.top ?? s.h;
+      const d = [s.x - pos[0], s.y + top * 0.55 - pos[1], s.z - pos[2]];
+      const zc = d[0] * F[0] + d[1] * F[1] + d[2] * F[2];
+      if (zc < 1) continue;
+      // Only runners the shot shows (their middle in the frame).
+      if (Math.abs((d[0] * R[0] + d[2] * R[2]) / zc) > th * 0.95 || Math.abs((d[0] * U[0] + d[1] * U[1] + d[2] * U[2]) / zc) > tv) continue;
+      const hy = s.y + top * 1.06 - pos[1];
+      const yc = (d[0] * U[0] + hy * U[1] + d[2] * U[2]) / zc;
+      const half = Math.max(s.w, top * 0.6) * 0.5;
+      const xc = (Math.abs(d[0] * R[0] + d[2] * R[2]) + half) / zc;
+      req = Math.max(req, yc / 0.6, xc / (aspect * 0.97));
+    }
+    return req;
+  };
+  let pos = pose.pos;
+  let fov = pose.fov;
+  const tanOf = (f: number) => Math.tan((f * DEG) / 2);
+  const req = need(pos, fov);
+  if (req <= tanOf(fov)) return pose;
+  fov = Math.min(Math.max(fov, (2 * Math.atan(req) / DEG)), pose.fov * 1.25, 62);
+  for (let k = 1; k <= 12 && need(pos, fov) > tanOf(fov); k++) {
+    const m = 1 + 0.1 * k;
+    pos = [t[0] + off[0] * m, t[1] + off[1] * m, t[2] + off[2] * m];
+  }
+  return { pos, target: t, fov };
+}
+
+function shotFor(cam: Camera, k: number, spots: Spot[], ctx: DirectorContext): CamPose {
   const H = fieldHeight(spots);
   const zMid = fieldMidZ(spots);
   const span = fieldSpan(spots);
