@@ -5,7 +5,7 @@ import { POKEDEX } from "@/lib/pokemon/pokedex";
 import { hit, withCalcMemo } from "@/lib/battle/cpu-policy-legacy";
 import { buildLearnsets, buildRoster, EXCLUDED_MOVES, unplayable } from "@/lib/mass-battle/roster-data";
 import { calcPokemon, DamageTable, neutralState, rollsOf, type Fighter } from "@/lib/mass-battle/damage";
-import { Battle, EV, EVENT_INTS, NOTE, NOTE_INTS, prepare, runHeadless, type Prepared } from "@/lib/mass-battle/engine";
+import { Battle, BREAKABLE, EV, EVENT_INTS, NOTE, NOTE_INTS, NOTE_SKIP, prepare, runHeadless, type Prepared } from "@/lib/mass-battle/engine";
 import { battleStat, battleStats } from "@/lib/mass-battle/stats";
 import { defaultMoves, expandSpec, factsOf, groupLabel, groupMembers, matchesGroup, resolveSet, spreadOf as evSpread } from "@/lib/mass-battle/sets";
 import { monotone, probesAround, questionSeeds, solve, spreadOf, winsNeeded, type Evaluate } from "@/lib/mass-battle/solver";
@@ -400,6 +400,164 @@ describe("mass battle: status, stat stages and the rest of the games' rules", ()
       for (let k = 0; k < b.eventCount; k++) if (b.events[k * EVENT_INTS + 4] & EV.MISS) misses++;
     }
     expect(misses).toBe(0);
+  });
+});
+
+/** Rounds in which unit `u` used a move (its events), and in which it lost its turn by loafing around (Truant). */
+function turnsOf(b: Battle, u: number, rounds: number): { acted: number[]; loafed: number[] } {
+  const acted: number[] = [], loafed: number[] = [];
+  for (let t = 0; t < rounds * 60 && !b.ended; t++) {
+    b.step();
+    const r = Math.floor((b.tick - 1) / 60);
+    for (let k = 0; k < b.eventCount; k++) if (b.events[k * EVENT_INTS] === u && b.events[k * EVENT_INTS + 2] >= 0 && !acted.includes(r)) acted.push(r);
+    for (let k = 0; k < b.noteCount; k++) if (b.notes[k * NOTE_INTS] === u && b.notes[k * NOTE_INTS + 1] === NOTE.SKIP && b.notes[k * NOTE_INTS + 2] === NOTE_SKIP.loafing) loafed.push(r);
+  }
+  return { acted, loafed };
+}
+
+/** Steps to the end of the current round (its end-of-round checks included). */
+function finishRound(b: Battle) {
+  do b.step(); while (b.tick % 60 !== 1 && !b.ended);
+}
+
+describe("mass battle: abilities that change a Pokémon as it fights (checked against Showdown in the simulator check)", () => {
+  it("Truant: Slaking loafs around every other turn", () => {
+    const b = melee([{ slug: "slaking", side: 0, moves: ["Tackle"] }, { slug: "blissey", side: 1, moves: ["Tackle"], set: { evs: "bulk" } }]);
+    const { acted, loafed } = turnsOf(b, 0, 6);
+    expect(acted).toEqual([0, 2, 4]);
+    expect(loafed).toEqual([1, 3, 5]);
+  });
+
+  it("Slow Start: Regigigas has half its Attack (through the calculator) and half its Speed for its first five turns", () => {
+    const b = melee([{ slug: "regigigas", side: 0, moves: ["Tackle"] }, { slug: "snorlax", side: 1, moves: ["Tackle"], set: { evs: "bulk" } }]);
+    b.step();
+    const slow = b.effectiveSpeed(0);
+    for (let t = 0; t < 5 * 60; t++) b.step();
+    expect(b.effectiveSpeed(0)).toBe(b.rows[0].spe);
+    expect(slow).toBe(Math.floor(b.rows[0].spe * 0.5));
+    const st = neutralState(b.table.maxHp(0), b.table.maxHp(1));
+    const full = b.table.entry(0, 0, 1, st).avg, halved = b.table.entry(0, 0, 1, { ...st, aSlow: true }).avg;
+    expect(halved / full).toBeGreaterThan(0.45);
+    expect(halved / full).toBeLessThan(0.55);
+  });
+
+  it("Stance Change: Aegislash attacks in Blade Forme and stays in it", () => {
+    const b = melee([{ slug: "aegislash", side: 0, moves: ["Iron Head"] }, { slug: "blissey", side: 1, moves: ["Tackle"], set: { evs: "bulk" } }]);
+    expect(b.form[0]).toBe(0);
+    const st = neutralState(b.table.maxHp(0), b.table.maxHp(1));
+    expect(b.table.entry(0, 0, 1, { ...st, aForm: 1 }).avg).toBeGreaterThan(2 * b.table.entry(0, 0, 1, st).avg);
+    turnsOf(b, 0, 1);
+    expect(b.form[0]).toBe(1);
+    expect(b.table.stats(b.sp[0], 1).atk).toBeGreaterThan(b.table.stats(b.sp[0], 0).atk);
+  });
+
+  it("Schooling and Shields Down change form by the HP left at the end of a round", () => {
+    const w = melee([{ slug: "wishiwashi", side: 0, moves: ["Hydro Pump"] }, { slug: "blissey", side: 1, moves: ["Tackle"], set: { evs: "bulk" } }]);
+    expect(w.form[0]).toBe(1); // School Form from level 20
+    w.step();
+    w.hp[0] = Math.floor(w.rows[0].maxHp / 4);
+    finishRound(w);
+    expect(w.form[0]).toBe(0);
+    const m = melee([{ slug: "minior", side: 0, moves: ["Power Gem"] }, { slug: "pikachu", side: 1, moves: ["Nuzzle"] }]);
+    const notes = notesOf(m);
+    // Meteor Form can't be paralysed; once it's in Core Form (half its HP or less) it can.
+    const coreAt = notes.findIndex((n) => n.kind === NOTE.FORM && n.unit === 0 && n.value === 1);
+    const paraAt = notes.findIndex((n) => n.kind === NOTE.STATUS && n.unit === 0 && n.value === STATUS.par);
+    if (paraAt >= 0) expect(coreAt).toBeGreaterThanOrEqual(0);
+    if (paraAt >= 0) expect(paraAt).toBeGreaterThan(coreAt);
+  });
+
+  it("Disguise and Ice Face take a hit for their Pokémon (Disguise for an eighth of its HP); Mold Breaker goes through", () => {
+    const d = melee([{ slug: "machamp", side: 0, moves: ["Knock Off"] }, { slug: "mimikyu", side: 1, moves: ["Shadow Claw"], set: { evs: "bulk" } }]);
+    turnsOf(d, 0, 1);
+    expect(d.hp[1]).toBe(d.rows[1].maxHp - Math.floor(d.rows[1].maxHp / 8));
+    const mb = melee([{ slug: "excadrill", side: 0, moves: ["Iron Head"], set: { ability: "Mold Breaker" } }, { slug: "mimikyu", side: 1, moves: ["Shadow Claw"], set: { evs: "bulk" } }]);
+    turnsOf(mb, 0, 1);
+    expect(mb.rows[1].maxHp - mb.hp[1]).toBeGreaterThan(Math.floor(mb.rows[1].maxHp / 8));
+    const ice = melee([{ slug: "machamp", side: 0, moves: ["Close Combat"] }, { slug: "eiscue", side: 1, moves: ["Ice Spinner"], set: { evs: "bulk" } }]);
+    turnsOf(ice, 0, 1);
+    expect(ice.hp[1]).toBe(ice.rows[1].maxHp);
+    expect(ice.form[1]).toBe(1); // Noice Face
+  });
+
+  it("Sturdy and Focus Sash hold one hit at full HP, not every hit of a multi-hit move; Mold Breaker breaks Sturdy", () => {
+    const one = melee([{ slug: "mewtwo", side: 0, moves: ["Surf"] }, { slug: "golem", side: 1, moves: ["Tackle"], set: { ability: "Sturdy" } }]);
+    turnsOf(one, 0, 1);
+    expect(one.hp[1]).toBe(1);
+    // Five Icicle Spears on a Sturdy Geodude: no one hit would KO it from full HP, so Sturdy never comes into it.
+    const multi = melee([{ slug: "cloyster", side: 0, moves: ["Icicle Spear"], set: { ability: "Skill Link" } }, { slug: "geodude", side: 1, moves: ["Tackle"], set: { ability: "Sturdy" } }]);
+    turnsOf(multi, 0, 1);
+    expect(multi.alive[1]).toBe(0);
+    const sash = melee([{ slug: "cloyster", side: 0, moves: ["Icicle Spear"], set: { ability: "Skill Link" } }, { slug: "geodude", side: 1, moves: ["Tackle"], set: { item: "Focus Sash" } }]);
+    turnsOf(sash, 0, 1);
+    expect(sash.alive[1]).toBe(0);
+    const broken = melee([{ slug: "excadrill", side: 0, moves: ["Earthquake"], set: { ability: "Mold Breaker" } }, { slug: "magnezone", side: 1, moves: ["Tackle"], set: { ability: "Sturdy" } }]);
+    const kept = melee([{ slug: "excadrill", side: 0, moves: ["Earthquake"], set: { ability: "Sand Rush" } }, { slug: "magnezone", side: 1, moves: ["Tackle"], set: { ability: "Sturdy" } }]);
+    turnsOf(broken, 0, 1);
+    turnsOf(kept, 0, 1);
+    expect(broken.alive[1]).toBe(0);
+    expect(kept.hp[1]).toBe(1);
+  });
+
+  it("Protean and Libero: the first move of another type changes the user's type, once (and its STAB with it)", () => {
+    const b = melee([{ slug: "greninja", side: 0, moves: ["Ice Beam", "Hydro Pump"] }, { slug: "garchomp", side: 1, moves: ["Stone Edge"], set: { evs: "bulk" } }]);
+    turnsOf(b, 0, 1);
+    expect(b.form[0]).toBe(1); // Ice Beam's type
+    const st = neutralState(b.table.maxHp(0), b.table.maxHp(1));
+    // Once Ice type, Hydro Pump has no STAB, and Garchomp's Stone Edge is super effective on it.
+    expect(b.table.entry(0, 1, 1, { ...st, aForm: 1 }).avg).toBeLessThan(b.table.entry(0, 1, 1, st).avg * 0.75);
+    expect(b.table.entry(1, 0, 0, { ...st, dForm: 1 }).avg).toBeGreaterThan(b.table.entry(1, 0, 0, st).avg * 1.5);
+    turnsOf(b, 0, 2);
+    expect(b.form[0]).toBe(1);
+  });
+
+  it("battle-start, poisoning and residual abilities: Intrepid Sword, Toxic Chain, Poison Puppeteer, Hydration", () => {
+    const z = melee([{ slug: "zacian", side: 0, moves: ["Play Rough"] }, { slug: "blissey", side: 1, moves: ["Tackle"] }]);
+    expect(z.stages[0]).toBe(1);
+    let tox = 0, confused = 0;
+    for (let seed = 1; seed <= 40; seed++) {
+      const n1 = notesOf(melee([{ slug: "okidogi", side: 0, moves: ["Psychic Fangs"] }, { slug: "blissey", side: 1, moves: ["Seismic Toss"], set: { evs: "bulk" } }], seed));
+      if (n1.some((n) => n.kind === NOTE.STATUS && n.unit === 1 && n.value === STATUS.tox)) tox++;
+      const n2 = notesOf(melee([{ slug: "pecharunt", side: 0, moves: ["Malignant Chain"] }, { slug: "blissey", side: 1, moves: ["Seismic Toss"], set: { evs: "bulk" } }], seed));
+      if (n2.some((n) => n.kind === NOTE.STATUS && n.unit === 1 && n.value === 9)) confused++;
+    }
+    expect(tox).toBeGreaterThan(10);
+    expect(confused).toBeGreaterThan(10);
+    const h = melee([{ slug: "pikachu", side: 0, moves: ["Nuzzle"] }, { slug: "manaphy", side: 1, moves: ["Scald"], set: { ability: "Hydration" } }], 4, { weather: "rain", terrain: "none", time: "day" });
+    const notes = notesOf(h);
+    expect(notes.some((n) => n.kind === NOTE.STATUS && n.unit === 1 && n.value === STATUS.par)).toBe(true);
+    expect(notes.some((n) => n.kind === NOTE.CURE && n.unit === 1 && n.value === STATUS.par)).toBe(true);
+  });
+
+  it("Protosynthesis in sun and Quark Drive on Electric Terrain boost the best stat (Speed 1.5×)", () => {
+    const sun = { weather: "sun", terrain: "none", time: "day" } as const, electric = { weather: "none", terrain: "electric", time: "day" } as const;
+    const plain = melee([{ slug: "great-tusk", side: 0, moves: ["Close Combat"] }, { slug: "snorlax", side: 1, moves: ["Body Slam"] }]);
+    const sunny = melee([{ slug: "great-tusk", side: 0, moves: ["Close Combat"] }, { slug: "snorlax", side: 1, moves: ["Body Slam"] }], 9, sun);
+    const st = neutralState(plain.table.maxHp(0), plain.table.maxHp(1));
+    expect(sunny.table.entry(0, 0, 1, st).avg / plain.table.entry(0, 0, 1, st).avg).toBeGreaterThan(1.25);
+    const fast = melee([{ slug: "iron-bundle", side: 0, moves: ["Ice Beam"] }, { slug: "snorlax", side: 1, moves: ["Body Slam"] }], 9, electric);
+    const calm = melee([{ slug: "iron-bundle", side: 0, moves: ["Ice Beam"] }, { slug: "snorlax", side: 1, moves: ["Body Slam"] }]);
+    expect(fast.effectiveSpeed(0)).toBe(Math.floor(calm.effectiveSpeed(0) * 1.5));
+  });
+
+  it("items: King's Rock adds a flinch, a Punching Glove's punches don't touch, Rocky Helmet strikes before Knock Off takes it", () => {
+    let flinched = 0;
+    for (let seed = 1; seed <= 80; seed++) {
+      const notes = notesOf(melee([{ slug: "jolteon", side: 0, moves: ["Thunderbolt"], set: { item: "King's Rock" } }, { slug: "blissey", side: 1, moves: ["Seismic Toss"], set: { evs: "bulk" } }], seed));
+      if (notes.some((n) => n.kind === NOTE.SKIP && n.unit === 1 && n.value === NOTE_SKIP.flinch)) flinched++;
+    }
+    expect(flinched).toBeGreaterThan(10);
+    const glove = melee([{ slug: "hitmonchan", side: 0, moves: ["Drain Punch"], set: { item: "Punching Glove" } }, { slug: "garchomp", side: 1, moves: ["Dragon Claw"], set: { ability: "Rough Skin" } }]);
+    const chips = notesOf(glove).filter((n) => n.kind === NOTE.CHIP && n.unit === 0);
+    expect(chips.length).toBe(0);
+    const knock = melee([{ slug: "tyranitar", side: 0, moves: ["Knock Off"] }, { slug: "snorlax", side: 1, moves: ["Body Slam"], set: { item: "Rocky Helmet", evs: "bulk" } }]);
+    turnsOf(knock, 0, 1);
+    expect(knock.itemGone[1]).toBe(1);
+    expect(knock.rows[0].maxHp - knock.hp[0]).toBeGreaterThanOrEqual(Math.floor(knock.rows[0].maxHp / 6));
+  });
+
+  it("every ability Mold Breaker ignores here is one Showdown marks breakable", () => {
+    for (const id of BREAKABLE) expect(Dex.abilities.get(id).flags.breakable, id).toBe(1);
   });
 });
 

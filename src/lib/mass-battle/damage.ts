@@ -18,9 +18,10 @@ import { STATUS_IDS, type FieldSpec, type MBMove, type MBSpecies, type UnitSet }
  * that change a hit mid-battle are part of the key: a critical hit, a
  * spread move hitting more than one foe (the 0.75 multiplier of the games'
  * double battles), the stat stages the move reads, both sides' status, a
- * Knocked Off item, and the HP-dependent cases (Flail and Reversal,
+ * Knocked Off item, the HP-dependent cases (Flail and Reversal,
  * Eruption and Water Spout, Blaze-style abilities, Multiscale, Brine,
- * Crush Grip).
+ * Crush Grip), the form each side is in (Stance Change, Schooling, Shields
+ * Down, Ice Face, Protean and Libero: see formsOf) and Slow Start.
  */
 
 const GEN = CalcLib.Generations.get(9);
@@ -38,12 +39,65 @@ export interface Fighter {
   set: UnitSet;
 }
 
-/** The calculator's Pokémon for a fighter. */
-export function calcPokemon(f: Fighter): CalcLib.Pokemon {
+/**
+ * Abilities that change a Pokémon's form or type mid-battle, as Showdown
+ * plays them (form 0 is how it starts):
+ * - "stance": Aegislash turns to Blade Forme as it attacks (and stays, with
+ *   no King's Shield to turn it back).
+ * - "school": Wishiwashi is in School Form from level 20 while its HP is
+ *   over a quarter (checked at the start and the end of each round).
+ * - "shields": Minior is in Meteor Form (immune to status) while its HP is
+ *   over half, Core Form otherwise (the same checks).
+ * - "iceface": Eiscue's ice takes the first physical hit, then it is Noice.
+ * - "protean": Protean and Libero turn the user into its move's type the
+ *   first time it uses a move of another type (once, as in Gen 9); form
+ *   k + 1 is the type of move slot k. Not when Terastallized.
+ */
+export type FormRule = "" | "stance" | "school" | "shields" | "iceface" | "protean";
+
+export interface FormDef {
+  /** The calculator's species. */
+  calc: string;
+  /** Types in this form, when they aren't the species' own (capitalised). */
+  types?: string[];
+  /** Protean has done its work: the calculator no longer gives every move STAB. */
+  spent?: boolean;
+}
+
+export function formsOf(f: Fighter): { rule: FormRule; forms: FormDef[] } {
+  const ab = toId(f.set.ability);
+  const calc = f.species.calc;
+  if (ab === "stancechange" && calc.startsWith("Aegislash")) return { rule: "stance", forms: [{ calc: "Aegislash-Shield" }, { calc: "Aegislash-Blade" }] };
+  if (ab === "schooling" && calc.startsWith("Wishiwashi")) return { rule: "school", forms: [{ calc: "Wishiwashi" }, { calc: "Wishiwashi-School" }] };
+  if (ab === "shieldsdown" && calc.startsWith("Minior")) return { rule: "shields", forms: [{ calc: "Minior-Meteor" }, { calc: "Minior" }] };
+  if (ab === "iceface" && calc === "Eiscue") return { rule: "iceface", forms: [{ calc: "Eiscue" }, { calc: "Eiscue-Noice" }] };
+  if ((ab === "protean" || ab === "libero") && !f.set.tera && f.set.moves.length) {
+    return { rule: "protean", forms: [{ calc }, ...f.set.moves.map((m) => ({ calc, types: [m.type], spent: true }))] };
+  }
+  return { rule: "", forms: [{ calc }] };
+}
+
+/**
+ * Gives a calculator Pokémon other types, for good: calculate() works on clones, and clone() rebuilds the species by
+ * merging it into the Pokédex entry index by index (one type over two would keep the second), so every clone gets the
+ * types again.
+ */
+function withTypes(p: CalcLib.Pokemon, types: CalcLib.Pokemon["types"]): CalcLib.Pokemon {
+  const clone = p.clone;
+  (p.species as { types: CalcLib.Pokemon["types"] }).types = types;
+  p.types = types;
+  p.clone = function (this: CalcLib.Pokemon) {
+    return withTypes(clone.call(this), types);
+  };
+  return p;
+}
+
+/** The calculator's Pokémon for a fighter (in one of its forms). */
+export function calcPokemon(f: Fighter, form?: FormDef): CalcLib.Pokemon {
   const { species: s, set } = f;
   const team = {
     name: s.name,
-    species: s.calc,
+    species: form?.calc ?? s.calc,
     item: set.item,
     ability: set.ability,
     moves: set.moves.map((m) => m.name),
@@ -56,7 +110,14 @@ export function calcPokemon(f: Fighter): CalcLib.Pokemon {
   } as unknown as TeamSet;
   const side = sideFromSet(team);
   side.terastallized = !!set.tera;
-  return makePokemon(CALC, side) as unknown as CalcLib.Pokemon;
+  const p = makePokemon(CALC, side) as unknown as CalcLib.Pokemon;
+  // Protosynthesis and Quark Drive boost the best stat in sun or on Electric Terrain (the calculator checks the field).
+  const ab = toId(set.ability);
+  if (ab === "protosynthesis" || ab === "quarkdrive") (p as unknown as { boostedStat?: string }).boostedStat = "auto";
+  if (form?.types) withTypes(p, form.types as CalcLib.Pokemon["types"]);
+  // A Pokémon whose Protean has worked no longer gets STAB on every move (a damage-neutral ability stands in).
+  if (form?.spent) p.ability = "Pressure" as CalcLib.Pokemon["ability"];
+  return p;
 }
 
 /** The calculator's field for a battle's weather and terrain, in singles or (for spread moves) doubles. */
@@ -117,9 +178,14 @@ export interface HitState {
   /** Still holding their item (Knock Off takes it). */
   aItem: boolean;
   dItem: boolean;
+  /** The form each is in (see formsOf; 0 is how it starts). */
+  aForm: number;
+  dForm: number;
+  /** The attacker's Slow Start is still holding it back (its first five turns). */
+  aSlow: boolean;
 }
 
-export const neutralState = (aMax: number, dMax: number): HitState => ({ crit: false, spread: false, aHp: aMax, aMax, dHp: dMax, dMax, aStage: 0, aStage2: 0, dStage: 0, dStage2: 0, aStatus: 0, dStatus: 0, aItem: true, dItem: true });
+export const neutralState = (aMax: number, dMax: number): HitState => ({ crit: false, spread: false, aHp: aMax, aMax, dHp: dMax, dMax, aStage: 0, aStage2: 0, dStage: 0, dStage2: 0, aStatus: 0, dStatus: 0, aItem: true, dItem: true, aForm: 0, dForm: 0, aSlow: false });
 
 /** Normalises the calculator's damage (a number, 16 rolls, or 16 rolls per hit) into per-hit roll arrays. */
 export function rollsOf(damage: unknown): Uint16Array[] {
@@ -142,7 +208,10 @@ export class DamageTable {
   readonly fighters: Fighter[];
   readonly moves: MBMove[][];
   readonly field: FieldSpec;
-  private mons: CalcLib.Pokemon[];
+  /** Each fighter's form-changing rule and the calculator's Pokémon for each of its forms. */
+  readonly rules: FormRule[];
+  readonly formDefs: FormDef[][];
+  private mons: CalcLib.Pokemon[][];
   private calcMoves = new Map<string, CalcLib.Move>();
   private singles: CalcLib.Field;
   private doubles: CalcLib.Field;
@@ -158,7 +227,10 @@ export class DamageTable {
     this.moves = fighters.map((f) => f.set.moves);
     this.field = field;
     this.F = fighters.length;
-    this.mons = fighters.map((f) => calcPokemon(f));
+    const forms = fighters.map(formsOf);
+    this.rules = forms.map((x) => x.rule);
+    this.formDefs = forms.map((x) => x.forms);
+    this.mons = fighters.map((f, k) => forms[k].forms.map((form) => calcPokemon(f, form)));
     this.singles = calcField(field, false);
     this.doubles = calcField(field, true);
     this.cache = new Array(this.F * this.F * 4);
@@ -166,12 +238,17 @@ export class DamageTable {
 
   /** The calculator's HP for a fighter (the battle's own formula gives the same). */
   maxHp(f: number): number {
-    return this.mons[f].maxHP();
+    return this.mons[f][0].maxHP();
   }
 
-  /** The calculator's stats for a fighter (with its nature, EVs and IVs). */
-  stats(f: number) {
-    return this.mons[f].rawStats;
+  /** The calculator's stats for a fighter in a form (with its nature, EVs and IVs). */
+  stats(f: number, form = 0) {
+    return (this.mons[f][form] ?? this.mons[f][0]).rawStats;
+  }
+
+  /** A fighter's types in a form (lowercase). */
+  types(f: number, form = 0): string[] {
+    return (this.mons[f][form] ?? this.mons[f][0]).types.map((t) => t.toLowerCase());
   }
 
   private move(name: string, crit: boolean, hits: number): CalcLib.Move {
@@ -203,6 +280,9 @@ export class DamageTable {
     k = k * 7 + state.dStatus;
     k = k * 2 + (state.aItem ? 1 : 0);
     k = k * 2 + (state.dItem ? 1 : 0);
+    k = k * 5 + state.aForm;
+    k = k * 5 + state.dForm;
+    k = k * 2 + (state.aSlow ? 1 : 0);
     let row = this.cache[outer];
     if (!row) row = this.cache[outer] = new Map();
     let e = row.get(k);
@@ -214,15 +294,16 @@ export class DamageTable {
 
   private compute(a: number, mv: MBMove, d: number, st: HitState, spread: boolean): HitEntry {
     this.calcs++;
-    let atk = this.mons[a];
-    let def = this.mons[d];
-    const changesA = st.aHp < st.aMax || st.aStatus || !st.aItem || (mv.atkStat !== "target-atk" && (st.aStage || st.aStage2));
+    let atk = this.mons[a][st.aForm] ?? this.mons[a][0];
+    let def = this.mons[d][st.dForm] ?? this.mons[d][0];
+    const changesA = st.aHp < st.aMax || st.aStatus || !st.aItem || st.aSlow || (mv.atkStat !== "target-atk" && (st.aStage || st.aStage2));
     const changesD = st.dHp < st.dMax || st.dStatus || !st.dItem || st.dStage || st.dStage2 || (mv.atkStat === "target-atk" && st.aStage);
     if (changesA) {
       atk = atk.clone();
       if (st.aHp < st.aMax) atk.originalCurHP = Math.max(1, st.aHp);
       if (st.aStatus) atk.status = STATUS_IDS[st.aStatus] as CalcLib.Pokemon["status"];
       if (!st.aItem) atk.item = undefined;
+      if (st.aSlow) atk.abilityOn = true;
       const b = atk.boosts as Record<BoostKey, number>;
       if (mv.atkStat === "def") b.def = st.aStage;
       else if (mv.atkStat === "best") { b.atk = st.aStage; b.spa = st.aStage2; }

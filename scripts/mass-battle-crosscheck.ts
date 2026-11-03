@@ -3,7 +3,7 @@
  *
  *   npx tsx scripts/mass-battle-crosscheck.ts [--runs 200] [--only id,id] [--offset n] [--json out.json] [--sets]
  *
- * For small battles (1 v 1, 2 v 1, 1 v 2, 1 v 3) at levels 50 and 100, the
+ * For small battles (1 v 1, 2 v 1, 1 v 2, 3 v 1) at levels 50 and 100, the
  * same sets (the battle's own: moves, ability, item, nature, EVs, IVs) are
  * played many times in the engine and in @pkmn/sim (the browser build of
  * Showdown's simulator the Battle Lab runs on: singles, doubles, and gen 9
@@ -72,6 +72,23 @@ export const MATCHUPS: Matchup[] = [
   { id: "azumarill-tera-vileplume", label: "Azumarill (Tera Water) vs Vileplume", a: [["azumarill", 1, { tera: "Water" }]], b: [["vileplume", 1]] },
   // The field through the damage calculator and the end of each turn.
   { id: "garchomp-tyranitar-sand", label: "Garchomp vs Tyranitar in a sandstorm", a: [["garchomp", 1]], b: [["tyranitar", 1]], field: { weather: "sand", terrain: "none", time: "day" } },
+  // Abilities that change how a Pokémon fights as the battle goes (each opponent found by searching for a close fight).
+  { id: "slaking-typhlosion", label: "Slaking (Truant) vs Typhlosion", a: [["slaking", 1]], b: [["typhlosion", 1]] },
+  { id: "regigigas-honchkrow", label: "Regigigas (Slow Start) vs Honchkrow", a: [["regigigas", 1]], b: [["honchkrow", 1]] },
+  { id: "aegislash-conkeldurr", label: "Aegislash (Stance Change) vs Conkeldurr", a: [["aegislash", 1]], b: [["conkeldurr", 1]] },
+  { id: "wishiwashi-glalie", label: "Wishiwashi (Schooling) vs Glalie", a: [["wishiwashi", 1]], b: [["glalie", 1]] },
+  { id: "minior-sylveon", label: "Minior (Shields Down) vs Sylveon", a: [["minior", 1]], b: [["sylveon", 1]] },
+  { id: "eiscue-hitmonchan", label: "Eiscue (Ice Face) vs Hitmonchan", a: [["eiscue", 1]], b: [["hitmonchan", 1]] },
+  { id: "mimikyu-samurott", label: "Mimikyu (Disguise) vs Samurott", a: [["mimikyu", 1]], b: [["samurott", 1]] },
+  { id: "greninja-samurott", label: "Greninja (Protean) vs Samurott", a: [["greninja", 1]], b: [["samurott", 1]] },
+  { id: "cinderace-charizard", label: "Cinderace (Libero) vs Charizard", a: [["cinderace", 1]], b: [["charizard", 1]] },
+  { id: "okidogi-kingdra", label: "Okidogi (Toxic Chain) vs Kingdra", a: [["okidogi", 1]], b: [["kingdra", 1]] },
+  { id: "pecharunt-charizard", label: "Pecharunt (Poison Puppeteer) vs Charizard", a: [["pecharunt", 1]], b: [["charizard", 1]] },
+  { id: "excadrill-avalugg", label: "Excadrill (Mold Breaker) vs Avalugg (Sturdy)", a: [["excadrill", 1]], b: [["avalugg", 1]] },
+  { id: "cloyster-skarmory", label: "Cloyster (Skill Link) vs Skarmory (Sturdy)", a: [["cloyster", 1]], b: [["skarmory", 1]] },
+  { id: "zacian-bronzong", label: "Zacian (Intrepid Sword) vs Bronzong", a: [["zacian", 1]], b: [["bronzong", 1]] },
+  { id: "great-tusk-haxorus-sun", label: "Great Tusk (Protosynthesis) vs Haxorus in harsh sunlight", a: [["great-tusk", 1]], b: [["haxorus", 1]], field: { weather: "sun", terrain: "none", time: "day" } },
+  { id: "iron-bundle-delphox-electric", label: "Iron Bundle (Quark Drive) vs Delphox on Electric Terrain", a: [["iron-bundle", 1]], b: [["delphox", 1]], field: { weather: "none", terrain: "electric", time: "day" } },
 ];
 
 const TURNS = 60;
@@ -138,7 +155,7 @@ function teamsOf(prep: Prepared, active: number): { sets: PokemonSet[][]; units:
         units[s].push({ fighter: f, name });
         real.push({
           name,
-          species: sp.calc,
+          species: teamSpecies(sp.calc),
           item: set.item,
           ability: set.ability,
           moves: set.moves.map((m) => m.name),
@@ -159,10 +176,37 @@ function teamsOf(prep: Prepared, active: number): { sets: PokemonSet[][]; units:
   return { sets, units };
 }
 
+/** The species a team brings: a battle-only form (Minior's Meteor Form, Aegislash's Blade Forme) enters as its base form and changes in battle. */
+function teamSpecies(calc: string): string {
+  const s = SimDex.species.get(calc);
+  return s.exists ? (typeof s.battleOnly === "string" ? s.battleOnly : s.name) : calc;
+}
+
 type SimPokemon = SimBattle["sides"][number]["pokemon"][number];
 
-function simHitState(a: SimPokemon, d: SimPokemon, mv: Prepared["moves"][number][number], spread: boolean): HitState {
+/** The engine's form index (see formsOf) for a Pokémon as the simulator has it now. */
+function formIndex(table: DamageTable, f: number, p: SimPokemon): number {
+  const name = p.species.name;
+  switch (table.rules[f]) {
+    case "stance": return name === "Aegislash-Blade" ? 1 : 0;
+    case "school": return name === "Wishiwashi-School" ? 1 : 0;
+    case "shields": return name === "Minior-Meteor" ? 0 : 1;
+    case "iceface": return name === "Eiscue-Noice" ? 1 : 0;
+    case "protean": {
+      const types = p.getTypes();
+      if (types.length !== 1 || types.join() === table.types(f, 0).map((t) => t[0].toUpperCase() + t.slice(1)).join()) return 0;
+      const k = table.formDefs[f].findIndex((d, i) => i > 0 && d.types?.[0] === types[0]);
+      return Math.max(0, k);
+    }
+    default: return 0;
+  }
+}
+
+function simHitState(table: DamageTable, af: number, df: number, a: SimPokemon, d: SimPokemon, mv: Prepared["moves"][number][number], spread: boolean): HitState {
   const st = neutralState(a.maxhp, d.maxhp);
+  st.aForm = formIndex(table, af, a);
+  st.dForm = formIndex(table, df, d);
+  st.aSlow = !!a.volatiles["slowstart"];
   st.spread = spread;
   st.aHp = a.hp;
   st.dHp = d.hp;
@@ -237,7 +281,7 @@ export function simBattle(prep: Prepared, table: DamageTable, seedIndex: number,
         const mv = moves[slotIdx];
         const df = unitOf.get(`${1 - s}|${foe.name}`)!.fighter;
         const chance = hitChance({ mv, aAbility: toId(p.ability), aItem: toId(p.item), dAbility: toId(foe.ability), dItem: toId(foe.item), accStage: p.boosts.accuracy, evaStage: foe.boosts.evasion, weather: field.weather, targetMoved: false });
-        return expectedDamage(table, me.fighter, slotIdx, df, simHitState(p, foe, mv, spread), chance, expectedHits(mv, toId(p.ability), toId(p.item)), foe.hp);
+        return expectedDamage(table, me.fighter, slotIdx, df, simHitState(table, me.fighter, df, p, foe, mv, spread), chance, expectedHits(mv, toId(p.ability), toId(p.item)), foe.hp);
       };
       // The simulator's own list of what it may use (a lock leaves one move): matched to the set's slots by id.
       const optionOf = (m: number) => options.moves.findIndex((o) => o.id === toId(moves[m].name) && !o.disabled);
