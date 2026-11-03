@@ -717,7 +717,27 @@ export function findParts(map: ReliefPixels, o: FindOptions): PartMap {
   const armIdx = parts.map((p, i) => (p.kind === "arm" ? i : -1)).filter((i) => i >= 0).sort((a, b) => parts[a].px - parts[b].px);
   armIdx.forEach((i, k) => { parts[i].side = (k % 2) as 0 | 1; });
   if (STEPPERS.has(o.motion)) stubLegs();
+  if (!winged) fringe();
   return { ...out(), torso: torsoMask };
+
+  /**
+   * The thin edges the solid silhouette leaves out (claws, toes, fur tips,
+   * see-through fins) go with the nearest solid pixel, part, weight and
+   * all, so a foot's claws move with the foot instead of staying behind.
+   */
+  function fringe() {
+    const cover = clean(pm.cover, w, h);
+    const seeds = new Int32Array(n);
+    for (let i = 0; i < n; i++) if (mask[i]) seeds[i] = i + 1;
+    const near = nearestLabel(cover, seeds, w, h);
+    for (let i = 0; i < n; i++) {
+      if (mask[i] || !cover[i] || !near[i]) continue;
+      const j = near[i] - 1;
+      label[i] = label[j];
+      weight[i] = weight[j];
+      along[i] = along[j];
+    }
+  }
 
   /**
    * No pair of legs found (stubby feet under a round body, a skirt, a

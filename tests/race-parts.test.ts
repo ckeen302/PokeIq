@@ -65,6 +65,19 @@ describe("moving parts", () => {
     expect(p.along[foot * 60 + xs]).toBeGreaterThan(0.9);
   });
 
+  it("moves thin claws with the foot they hang off", () => {
+    const m = relief(60, 100, (x, y) => (inRect(x, y, 15, 10, 45, 60) || inRect(x, y, 17, 60, 27, 95) || inRect(x, y, 33, 60, 43, 95) ? 0.05 : null));
+    // Claws under each foot: visible, but too thin for the solid silhouette (front and back depth equal).
+    for (let y = 96; y <= 99; y++) for (const x of [18, 22, 26, 34, 38, 42]) { const i = (y * 60 + x) * 4; m.data[i] = m.data[i + 1] = 140; m.data[i + 2] = 255; m.data[i + 3] = 255; }
+    const p = findParts(m, { motion: "run", shape: "upright" });
+    for (const x of [18, 26, 34, 42]) {
+      const k = p.label[98 * 60 + x];
+      expect(k, `claw at ${x}`).toBeGreaterThan(0);
+      expect(p.parts[k - 1].kind).toBe("leg");
+      expect(p.weight[98 * 60 + x]).toBeGreaterThan(0.9);
+    }
+  });
+
   it("folds the toes of one foot into one leg", () => {
     const m = relief(60, 100, (x, y) => {
       if (inRect(x, y, 15, 10, 45, 55)) return 0.05;

@@ -146,7 +146,7 @@ function figureMaterial(tex: THREE.Texture, texSize: number, uniforms: FigureUni
           if (k >= 0 && aPart.y > 0.0) {
             vec4 ja = uJA[k], jb = uJB[k], xa = uXA[k], xb = uXB[k];
             float w = aPart.y, al = aPart.z;
-            float angB = jb.w * w * (xb.w > 0.5 ? al : smoothstep(0.3, 0.7, al));
+            float angB = jb.w * w * (xb.w > 0.5 ? al : smoothstep(0.4, 0.6, al));
             racePos = jb.xyz + raceRot(racePos - jb.xyz, xb.xyz, angB);
             objectNormal = raceRot(objectNormal, xb.xyz, angB);
             float angA = ja.w * w * (xa.w > 0.5 ? al : 1.0);
@@ -186,7 +186,7 @@ function figureMaterial(tex: THREE.Texture, texSize: number, uniforms: FigureUni
         #endif`
       );
   };
-  m.customProgramCacheKey = () => "race-figure-3";
+  m.customProgramCacheKey = () => "race-figure-4";
   return m;
 }
 

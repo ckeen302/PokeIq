@@ -113,8 +113,8 @@ export function jointAngles(p: LimbPart, c: LimbClock): JointAngles {
       const u = frac((c.phase + p.side) / 2);
       const duty = c.motion === "scuttle" ? 0.5 : contactShare(e);
       const ks = (c.motion === "scuttle" ? 0.55 : 1) * k;
-      // Stance share of a stride is half the share of a step; the knee folds up to about 60°.
-      return legSwing(u, duty / 2, (0.3 + 0.32 * e) * go * ks, (0.26 + 0.26 * e) * go * ks, Math.min(1.05, (0.35 + 0.8 * e) * go) * ks * k);
+      // Stance share of a stride is half the share of a step; the knee folds up to about 50° (more pulls a thick relief shin out of shape).
+      return legSwing(u, duty / 2, (0.3 + 0.32 * e) * go * ks, (0.26 + 0.26 * e) * go * ks, Math.min(0.85, (0.35 + 0.8 * e) * go) * ks * k);
     }
     case "arm": {
       if (c.motion === "run" || c.motion === "scuttle") {
