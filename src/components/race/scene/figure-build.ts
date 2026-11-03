@@ -19,6 +19,8 @@ export interface FigureJob {
   segments: number;
   motion: Motion;
   shape: string | null;
+  /** Which way the render faces (lib/race/facing). */
+  facing: -1 | 1;
 }
 
 export type FigureResult = { id: number; mesh: FigureMesh; error?: undefined } | { id: number; error: string; mesh?: undefined };
@@ -56,7 +58,7 @@ const nextFrame = () => new Promise<void>((r) => (typeof requestAnimationFrame =
 async function buildHere(job: Omit<FigureJob, "id">): Promise<FigureMesh> {
   await nextFrame();
   const map = { w: job.w, h: job.h, data: new Uint8ClampedArray(job.data), channels: 4 as const };
-  const parts = findParts(map, { motion: job.motion, shape: job.shape });
+  const parts = findParts(map, { motion: job.motion, shape: job.shape, facing: job.facing });
   return buildFigureMesh(map, job.box, job.segments, parts);
 }
 

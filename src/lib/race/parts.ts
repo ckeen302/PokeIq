@@ -19,10 +19,9 @@ import type { Motion } from "./types";
  *   points: sideways from the upper body are arms (wings on fliers),
  *   upwards from the top are ears and crests (they stay put), and a thin
  *   part on the side away from the head is the tail.
- * - Which way the figure faces: the head end of a long figure is nearer
- *   the camera in the depth estimate (renders are three-quarter views); a
- *   four-legged runner's head is its high end; otherwise left, as most
- *   HOME renders face.
+ * - Which way the figure faces comes with it (lib/race/facing): most HOME
+ *   renders face left. It decides which end the tail and the front legs
+ *   are at.
  *
  * Each pixel of the map gets a part (0: the body), a follow weight that
  * ramps smoothly from 0 at the joint to 1 along the part, so the mesh
@@ -77,6 +76,8 @@ export interface ReliefPixels {
 /** Most parts a figure can move (shader slots). */
 export const MAX_PARTS = 8;
 
+/** A later torso guess replaces an earlier one with as many wings only if it frees this much more wing. */
+const SPAN_GAIN = 2.2;
 /** Gaits whose runners use their legs. */
 const LEGGED = new Set<Motion>(["run", "gallop", "scuttle", "bounce"]);
 /** Gaits whose lower body steps (or sways) when no pair of legs is found. */
@@ -327,33 +328,11 @@ function geodesic(region: Uint8Array, from: number[], w: number, h: number): Flo
 
 const smooth = (a: number, b: number, x: number) => { const t = Math.max(0, Math.min(1, (x - a) / (b - a || 1))); return t * t * (3 - 2 * t); };
 
-/** Which way the head points: the nearer end of a long figure in the depth estimate, else opposite the tail, else left (most HOME renders). */
-function facingOf(mask: Uint8Array, depth: Float32Array, w: number, h: number): { facing: -1 | 1; sure: boolean } {
-  let x0 = w, x1 = -1, y0 = h, y1 = -1;
-  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) if (mask[y * w + x]) { x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); y1 = Math.max(y1, y); }
-  const bw = x1 - x0 + 1, bh = y1 - y0 + 1;
-  if (bw < 4) return { facing: -1, sure: false };
-  // Mean depth of the upper two thirds of each end third (the head is up; legs and feet are excluded).
-  let sl = 0, nl = 0, sr = 0, nr = 0;
-  for (let y = y0; y < y0 + bh * 0.67; y++) {
-    for (let x = x0; x <= x1; x++) {
-      const i = y * w + x;
-      if (!mask[i]) continue;
-      const u = (x - x0) / bw;
-      if (u < 0.3) { sl += depth[i]; nl++; } else if (u > 0.7) { sr += depth[i]; nr++; }
-    }
-  }
-  if (nl < 4 || nr < 4) return { facing: -1, sure: false };
-  const diff = sr / nr - sl / nl;
-  const wide = bw / bh;
-  // Only a clear difference on a figure that is long enough to have ends.
-  if (wide > 0.85 && Math.abs(diff) > 0.05) return { facing: diff > 0 ? 1 : -1, sure: true };
-  return { facing: -1, sure: false };
-}
-
 export interface FindOptions {
   motion: Motion;
   shape: string | null;
+  /** Which way the render faces (lib/race/facing): −1 left (the default), 1 right. */
+  facing?: -1 | 1;
 }
 
 /** Multi-source geodesic labelling inside `region`: each pixel gets the label of the nearest seed pixel (by 8-neighbour steps). */
@@ -430,22 +409,13 @@ export function findParts(map: ReliefPixels, o: FindOptions): PartMap {
   const mask = clean(winged ? pm.cover : pm.mask, w, h);
   const label = new Uint8Array(n), weight = new Float32Array(n), along = new Float32Array(n);
   const parts: Part[] = [];
-  const face = facingOf(mask, pm.depth, w, h);
-  let facing = face.facing;
-  let sure = face.sure;
+  const facing: -1 | 1 = o.facing ?? -1;
   const out = (): PartMap => ({ w, h, label, weight, along, parts, facing, mid: pm.mid });
   let area = 0;
   let top = h, bottom = -1, left = w, right = -1;
   for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) if (mask[y * w + x]) { area++; top = Math.min(top, y); bottom = Math.max(bottom, y); left = Math.min(left, x); right = Math.max(right, x); }
   if (!area) return out();
   const H = bottom - top + 1, W = right - left + 1;
-  // Four-legged runners: the head is the high end of a long body.
-  if (!sure && o.motion === "gallop" && W > H * 0.95) {
-    let tx = 0;
-    for (let y = top; y <= top + Math.max(1, H * 0.06); y++) for (let x = 0; x < w; x++) if (mask[y * w + x]) { tx = x; y = h; break; }
-    const u = (tx - left) / W;
-    if (u > 0.62) { facing = 1; sure = true; } else if (u < 0.38) { facing = -1; sure = true; }
-  }
   if (WHOLE_BODY.has(o.motion)) return out();
   let cx = 0;
   for (let i = 0; i < n; i++) if (mask[i]) cx += i % w;
@@ -623,9 +593,17 @@ export function findParts(map: ReliefPixels, o: FindOptions): PartMap {
       return null;
     };
     const kinds = cands.map((c) => ({ c, kind: classify(c, facing) })).filter((x) => x.kind) as { c: Cand; kind: PartKind }[];
-    const ws = kinds.filter((k) => k.kind === "wing").map((k) => k.c.area);
-    const top = Math.max(0, ...ws);
-    return { torsoMask, kinds, wings: Math.min(2, ws.filter((a) => a >= top * 0.35).length) };
+    const ws = kinds.filter((k) => k.kind === "wing").map((k) => k.c.area).sort((a, b) => b - a);
+    const top = ws[0] ?? 0;
+    const wings = Math.min(2, ws.filter((a) => a >= top * 0.35).length);
+    // How much of the wings it frees: the smaller of a pair (so both wings beat whole), or the one wing.
+    return { torsoMask, kinds, wings, span: wings >= 2 ? ws[1] : top, balance: wings >= 2 ? ws[1] / top : 0 };
+  };
+  /** Mean x of the figure's highest row. */
+  const topXOf = () => {
+    let sx = 0, sn = 0;
+    for (let x = 0; x < w; x++) if (rest[top * w + x]) { sx += x; sn++; }
+    return sn ? sx / sn : (left + right) / 2;
   };
   // Torso guesses: the opening; for fliers also the near side of the depth (wings spread behind the body), and a disc round the body's core.
   const guesses: Uint8Array[] = [];
@@ -684,10 +662,24 @@ export function findParts(map: ReliefPixels, o: FindOptions): PartMap {
     }
   }
   guesses.push(openOf(rest));
-  let best: ReturnType<typeof analyse> = null;
-  for (const g of guesses) {
+  let best = null as ReturnType<typeof analyse>;
+  const consider = (g: Uint8Array) => {
     const r = analyse(g);
-    if (r && (!best || r.wings > best.wings)) best = r;
+    if (r && (!best || r.wings > best.wings || (r.wings === best.wings && r.wings > 0 && r.span > best.span * SPAN_GAIN))) best = r;
+  };
+  guesses.forEach(consider);
+  // Insects whose wings came out lopsided (a butterfly's near wing covers its slim body): the body is a narrow column somewhere in the middle, with what hangs below the wings.
+  if (o.shape === "bug-wings" && (!best || best.balance < 0.5)) {
+    const R = Math.max(2, W * 0.09);
+    // Where the figure is highest: wingtips out to the side on a butterfly; a head or crest in the middle means the body is there, not a gap between wings.
+    const topX = topXOf();
+    for (const f of [0.35, 0.42, 0.5, 0.58, 0.65]) {
+      const bx = left + W * f;
+      if (Math.abs(topX - bx) < 2.5 * R) continue;
+      const col = new Uint8Array(n);
+      for (let i = 0; i < n; i++) if (rest[i] && (Math.abs((i % w) - bx) <= R || vOf((i / w) | 0) < 0.3)) col[i] = 1;
+      consider(col);
+    }
   }
   if (!best) return out();
   const { torsoMask } = best;

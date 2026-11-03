@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import type { ReliefMap } from "@/lib/sizes/relief";
 import type { Joint } from "@/lib/race/figure";
+import { artFacing } from "@/lib/race/facing";
 import { GROUNDED, poseFor, swimStyle } from "@/lib/race/gait";
 import { celebrationAt, dipAt, jointAngles, swayAt, type LimbPart } from "@/lib/race/limbs";
 import { MAX_PARTS } from "@/lib/race/parts";
@@ -200,7 +201,7 @@ export async function loadFigure(renderer: THREE.WebGLRenderer, lane: RaceLane, 
   reliefBmp.close();
   // The parts and the mesh are worked out off the main thread.
   const pixels = new Uint8ClampedArray(map.data);
-  const rm = await buildFigure({ w: map.w, h: map.h, data: pixels.buffer, box: { x: bx, y: by, w: bw, h: bh, size }, segments: o.segments, motion: e.motion, shape: e.shape });
+  const rm = await buildFigure({ w: map.w, h: map.h, data: pixels.buffer, box: { x: bx, y: by, w: bw, h: bh, size }, segments: o.segments, motion: e.motion, shape: e.shape, facing: artFacing(e.art) });
   if (signal.aborted) { artBmp.close(); throw new DOMException("aborted", "AbortError"); }
   const geo = new THREE.BufferGeometry();
   geo.setAttribute("position", new THREE.BufferAttribute(rm.position, 3));

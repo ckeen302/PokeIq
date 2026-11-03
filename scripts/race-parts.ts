@@ -20,6 +20,7 @@ import { join } from "node:path";
 import sharp from "sharp";
 import { RACE_ENTRANTS, RACE_POKEMON } from "../src/lib/race/data";
 import { EEVEE, PRESETS, PSEUDO_LEGENDARIES, STARTER_BASES } from "../src/lib/race/presets";
+import { artFacing } from "../src/lib/race/facing";
 import { describeParts, findParts, type PartMap } from "../src/lib/race/parts";
 import type { Entrant } from "../src/lib/race/types";
 
@@ -32,7 +33,7 @@ async function partsOf(e: Entrant) {
   const file = join("public", e.depth === "sizes" ? "sizes/depth" : "race/depth", `${e.art}.webp`);
   const { data, info } = await sharp(file).raw().toBuffer({ resolveWithObject: true });
   const map = { w: info.width, h: info.height, data, channels: info.channels as 3 | 4 };
-  return { map, pm: findParts(map, { motion: e.motion, shape: e.shape }) };
+  return { map, pm: findParts(map, { motion: e.motion, shape: e.shape, facing: artFacing(e.art) }) };
 }
 
 async function tile(e: Entrant, map: { w: number; h: number; data: Buffer; channels: number }, pm: PartMap) {
