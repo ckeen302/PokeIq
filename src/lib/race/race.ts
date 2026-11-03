@@ -1,7 +1,8 @@
 import type { Spot } from "./director";
-import { cycleRate, hipHeight } from "./gait";
+import { cruiseHeight, cycleRate, hipHeight } from "./gait";
 import { finishTime, motionAt, profileFor, runnerFor, type MotionState, type Profile, type Runner } from "./model";
-import { lanePoint, LANES, type Distance, type TrackPoint } from "./track";
+import { bigPoolFor, bigPoolPoint, submergeShare, WATER_Y, type BigPool } from "./pool";
+import { laneCentre, lanePoint, KERB_R, LANES, type Distance, type TrackPoint } from "./track";
 import { figureSize, type Entrant } from "./types";
 
 /**
@@ -47,6 +48,8 @@ export interface Race {
   order: RaceLane[];
   first: number;
   last: number;
+  /** Swimmers too big for a lane channel swim in the big pool inside the kerb (lib/race/pool); null if none. */
+  bigPool: BigPool | null;
 }
 
 /** Lanes for entrants given in seed order (fastest first). */
@@ -76,7 +79,7 @@ export function makeRace(entrants: Entrant[], distance: Distance, lanes = assign
     const runner = runnerFor(entrant.stats, entrant.kg);
     const { w, h } = figureSize(entrant);
     const hip = hipHeight(h, entrant.shape);
-    const profile = profileFor(runner, distance, (v) => cycleRate(entrant.motion, v, hip, entrant.kg));
+    const profile = profileFor(runner, distance, (v) => cycleRate(entrant.motion, v, hip, entrant.kg, Math.max(w, h)));
     return { entrant, lane: lanes[i], runner, profile, w, h, hip, time: profile.finish, place: 0, gap: 0 };
   });
   const order = [...rows].sort((a, b) => a.time - b.time || a.lane - b.lane);
@@ -85,17 +88,27 @@ export function makeRace(entrants: Entrant[], distance: Distance, lanes = assign
     r.place = k > 0 && Math.abs(r.time - order[k - 1].time) < 1e-9 ? order[k - 1].place : k + 1;
     r.gap = r.time - first;
   });
-  return { distance, lanes: [...rows].sort((a, b) => a.lane - b.lane), order, first, last: order[order.length - 1].time };
+  const bigPool = bigPoolFor(rows.filter((r) => r.entrant.motion === "swim").map((r) => ({ lane: r.lane, w: r.w, h: r.h })), distance);
+  return { distance, lanes: [...rows].sort((a, b) => a.lane - b.lane), order, first, last: order[order.length - 1].time, bigPool };
 }
 
 export interface RunnerState extends MotionState {
   point: TrackPoint;
 }
 
+/** Where a runner is drawn after covering s metres: in its lane, or abreast of it in the big pool. */
+export function drawPoint(race: Race, r: RaceLane, s: number): TrackPoint {
+  const across = race.bigPool?.lanes[r.lane];
+  return across == null ? lanePoint(r.lane, race.distance, s) : bigPoolPoint(r.lane, race.distance, s, across);
+}
+
+/** How far out from the kerb a runner is drawn (m): its lane's middle, or its place in the big pool. */
+export const drawAcross = (race: Race, r: RaceLane) => race.bigPool?.lanes[r.lane] ?? laneCentre(r.lane) - KERB_R;
+
 /** Where a runner is (on the track) and how it moves, at race time t. */
 export function runnerAt(race: Race, r: RaceLane, t: number): RunnerState {
   const m = motionAt(r.profile, t);
-  return { ...m, point: lanePoint(r.lane, race.distance, m.x) };
+  return { ...m, point: drawPoint(race, r, m.x) };
 }
 
 /** The runner furthest down the track at time t (by race distance covered). */
@@ -135,11 +148,19 @@ export function displayTimes(race: Race): Map<RaceLane, string> {
 /** km/h from m/s. */
 export const kmh = (v: number) => v * 3.6;
 
+/** How high a runner's highest point rides above the track (m): a flier at its cruising height, a swimmer only what shows above the water. */
+export function topOf(r: RaceLane): number {
+  const m = r.entrant.motion;
+  if (m === "fly" || m === "hover") return cruiseHeight(m, r.h) + r.h * 1.08;
+  if (m === "swim") return WATER_Y + r.h * (1 - submergeShare(r.h));
+  return r.h;
+}
+
 /** The director's view of every runner at race time t (see lib/race/director). */
 export function spotsAt(race: Race, t: number): Spot[] {
   return race.lanes.map((r) => {
     const m = motionAt(r.profile, t);
-    const p = lanePoint(r.lane, race.distance, m.x);
-    return { lane: r.lane, x: p.x, y: 0, z: p.z, dx: p.dx, dz: p.dz, s: m.x, v: m.v, w: r.w, h: r.h };
+    const p = drawPoint(race, r, m.x);
+    return { lane: r.lane, x: p.x, y: 0, z: p.z, dx: p.dx, dz: p.dz, s: m.x, v: m.v, w: r.w, h: r.h, across: drawAcross(race, r), top: topOf(r) };
   });
 }

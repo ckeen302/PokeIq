@@ -29,8 +29,10 @@ export function RaceInfo({ compact = false }: { compact?: boolean }) {
       <p>
         <strong className={strong}>How they move</strong> changes the animation, never the time. Stride length and rhythm follow R. McNeill Alexander&apos;s
         dynamic similarity (Nature, 1976): relative stride λ = 2.3 · (v²/gh)<sup>0.3</sup>, with h the hip height, so at the same speed small Pokémon patter
-        and giants lope. Winged Pokémon and Flying types fly low over their lane, Levitate and floating Ghosts hover, serpents slither, fish flop, balls
-        roll, blobs bounce and quadrupeds gallop, going by each Pokémon&apos;s body shape, types and abilities.
+        and giants lope; legs, arms, wings and tails swing in time with it. Winged Pokémon and Flying types fly low over their lane, Levitate and floating
+        Ghosts hover, serpents slither, balls roll, blobs bounce and quadrupeds gallop, going by each Pokémon&apos;s body shape, types and abilities. Fish
+        and legless Water types swim in a pool lane, beating their tails at the rate R. Bainbridge measured in fish (J. Exp. Biol., 1958): speed ≈ 0.75 ×
+        body length × tail beats a second.
       </p>
       <p>
         <strong className={strong}>The track:</strong> a regulation 400&nbsp;m track (84.39&nbsp;m straights, bends with a 36.5&nbsp;m inner radius, eight 1.22&nbsp;m lanes)

@@ -5,6 +5,8 @@ import { TIMELINE } from "@/lib/timeline/data";
 import { entryPath } from "@/lib/timeline/deeplink";
 import { ERAS, ERA_BY_ID, LANE_BY_ID, dateRows, formatDate, type TimelineEntry } from "@/lib/timeline/types";
 import { DexTabs } from "@/components/pokedex/DexTabs";
+import { WORLD_HISTORY_LIVE } from "@/lib/lab";
+import { HISTORY_PATH } from "@/lib/world-history/deeplink";
 import { ListHeader } from "@/components/pokedex/detail/DetailParts";
 import { TimelineExperience, type EraStart } from "./TimelineExperience";
 import { TimelineList } from "./TimelineList";
@@ -48,6 +50,12 @@ export function TimelinePage({ focus }: { focus?: TimelineEntry }) {
             />
           )}
           <DexTabs active="timeline" />
+          {WORLD_HISTORY_LIVE && (
+            <p className="text-center text-sm text-muted-foreground" data-testid="timeline-to-history">
+              This is the real-world timeline of the games, anime and films. For the history inside the Pokémon world, see{" "}
+              <Link href={HISTORY_PATH} prefetch={false} className="font-semibold text-foreground underline-offset-2 hover:underline">The History of the Pokémon World</Link>.
+            </p>
+          )}
           <TimelineList entries={TIMELINE} eraStarts={starts} />
         </div>
       </TimelineExperience>

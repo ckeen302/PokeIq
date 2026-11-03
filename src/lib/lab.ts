@@ -16,8 +16,15 @@ export const RACE_LIVE = true;
  */
 export const MASS_BATTLE_LIVE = true;
 
+/**
+ * The History of the Pokémon World (/lab/world-history) shows on /lab, in
+ * the sitemap and from the Pokémon Timeline only once this is true. Until
+ * then its pages work by URL but stay out of search.
+ */
+export const WORLD_HISTORY_LIVE = true;
+
 export interface LabExperience {
-  id: "timeline" | "sizes" | "globe" | "race" | "mass-battle";
+  id: "timeline" | "sizes" | "globe" | "race" | "mass-battle" | "world-history";
   href: string;
   title: string;
   /** Small HUD label above the title. */
@@ -88,6 +95,17 @@ export const LAB_EXPERIENCES: LabExperience[] = [
     image: "/lab/mass-battle.webp",
     accent: "28 100% 58%",
     live: MASS_BATTLE_LIVE,
+  },
+  {
+    id: "world-history",
+    href: "/lab/world-history",
+    title: "The History of the Pokémon World",
+    kicker: "The story, as the games tell it",
+    pitch: "A cinematic museum of the Pokémon world's in-universe history, from Sinnoh's creation myth to the time machine in Area Zero. Scroll through it or press Play, with every line sourced to the games.",
+    tags: ["Told by the games", "Every line sourced", "Make a video"],
+    image: "/lab/world-history.webp",
+    accent: "42 92% 66%",
+    live: WORLD_HISTORY_LIVE,
   },
 ];
 

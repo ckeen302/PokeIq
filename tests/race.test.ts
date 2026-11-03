@@ -177,7 +177,7 @@ describe("gait (Alexander's dynamic similarity)", () => {
     expect(mon("dodrio").motion).toBe("run");
     expect(FLIGHTLESS.has(85)).toBe(true);
     expect(mon("ekans").motion).toBe("slither");
-    expect(mon("magikarp").motion).toBe("flop");
+    expect(mon("magikarp").motion).toBe("swim");
     expect(mon("electrode").motion).toBe("roll");
     expect(mon("rapidash").motion).toBe("gallop");
     expect(mon("shuckle").motion).toBe("scuttle");

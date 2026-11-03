@@ -16,10 +16,11 @@ import type { Race, RaceLane } from "./race";
  * - The crane establishing shot over the stadium.
  * - Lane by lane: each runner's name banner and base Speed.
  * - "On your marks…", "Set…", then the gun.
- * - The race, cut by the leader's progress: the rail camera side-on (100 m)
- *   or the infield camera round the bend (200 m, 400 m), the high wide shot
- *   down the back straight (400 m), the head-on telephoto from beyond the
- *   line, then the finish-line camera.
+ * - The race, cut by the leader's progress: the tracking camera running
+ *   ahead of the pack at three quarters (100 m) or the infield camera
+ *   round the bend (200 m, 400 m), the high wide shot down the back
+ *   straight (400 m), the head-on telephoto from beyond the line, then the
+ *   finish-line camera, low and looking back at them coming in.
  * - A slow field is fast-forwarded (with the speed-up on screen), live
  *   again for the finish; stragglers are fast-forwarded to the line too.
  * - The slow-motion replay of the finish, the photo-finish image, then the
@@ -80,7 +81,7 @@ export function reachTime(r: RaceLane, d: number): number {
 
 /** Leader-progress cuts per distance: [camera, until the leader reaches this share of the distance]. */
 const CUTS: Record<number, [Camera, number][]> = {
-  100: [["rail", 0.46], ["headon", 0.86], ["line", 1]],
+  100: [["rail", 0.42], ["headon", 0.88], ["line", 1]],
   200: [["bend", 0.5], ["headon", 0.86], ["line", 1]],
   400: [["bend", 0.25], ["wide", 0.5], ["bend", 0.75], ["headon", 0.9], ["line", 1]],
 };
