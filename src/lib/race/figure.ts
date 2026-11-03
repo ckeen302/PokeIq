@@ -34,6 +34,10 @@ export interface Joint {
   kind: PartKind;
   side: 0 | 1;
   front: 0 | 1;
+  /** Stubby feet (the lower body stepping) rather than a found leg. */
+  stub: boolean;
+  /** The part's length as a share of the figure's height. */
+  reach: number;
   /** In mesh units: the hinge, the middle (knee, elbow, mid-wing) and the tip. */
   pivot: [number, number, number];
   knee: [number, number, number];
@@ -251,7 +255,7 @@ export function buildFigureMesh(map: ReliefMap, box: { x: number; y: number; w: 
   const joints: Joint[] = (parts?.parts ?? []).map((q) => {
     const pivot = toMesh(q.px, q.py), tip = toMesh(q.tx, q.ty);
     const knee: [number, number, number] = [(pivot[0] + tip[0]) / 2, (pivot[1] + tip[1]) / 2, (pivot[2] + tip[2]) / 2];
-    return { kind: q.kind, side: q.side, front: q.front, pivot, knee, tip };
+    return { kind: q.kind, side: q.side, front: q.front, stub: !!q.stub, reach: Math.hypot(tip[0] - pivot[0], tip[1] - pivot[1]) / Math.max(1e-6, H), pivot, knee, tip };
   });
   return {
     position, normal, uv, index, part, joints,

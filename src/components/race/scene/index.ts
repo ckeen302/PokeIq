@@ -4,7 +4,7 @@ import type { CamPose } from "@/lib/race/director";
 import type { Race } from "@/lib/race/race";
 import { buildCrowd, type Crowd } from "./crowd";
 import { createPost, stadiumEnvironment, type Post } from "./post";
-import { poolDepth, poolModes } from "@/lib/race/pool";
+import { deepTint, poolDepth, poolModes } from "@/lib/race/pool";
 import { buildPool, setPoolModes, type Pool } from "./pool";
 import { loadFigure, makeRunners, type Footfall, type Runners, type RunnerUrls } from "./runners";
 import { LAYER, buildStadium, type Stadium, type StadiumUrls } from "./stadium";
@@ -219,7 +219,8 @@ export function createRaceScene(host: HTMLElement, opts: SceneOptions): RaceScen
     const modes = poolModes(swimLanes.map((l) => l.lane), r.distance);
     setPoolModes(stadium.pool, modes);
     if (swimLanes.length) {
-      pool = buildPool(swimLanes.map((l) => l.lane), r.distance, modes, poolDepth(swimLanes.map((l) => l.h)), stadium.pool, scene.environment, LAYER.BASE);
+      const heights = swimLanes.map((l) => l.h);
+      pool = buildPool(swimLanes.map((l) => l.lane), r.distance, modes, poolDepth(heights), stadium.pool, scene.environment, LAYER.BASE, deepTint(heights));
       scene.add(pool.group);
     }
     runners = makeRunners(r, figs, stadium.masts, pool);

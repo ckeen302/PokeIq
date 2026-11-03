@@ -4,14 +4,22 @@
  * it loads, and reports what it found by gait, and which runners whose
  * gait uses legs got none (they keep whole-body motion).
  *
- *   npx tsx --conditions=react-server scripts/race-parts.ts [--only=pikachu,zeraora] [--png=out.png] [--list]
+ *   npx tsx --conditions=react-server scripts/race-parts.ts [--only=pikachu,zeraora] [--top] [--png=out.png] [--list]
+ *
+ * --top audits the popular set: every preset's field (at each distance),
+ * every starter's line, Eevee's, the pseudo-legendaries', the legendaries
+ * and mythicals, and the top 25 of every Smogon usage list in
+ * src/data/smogon. Coverage there counts runners with moving legs, arms or
+ * wings (balls, serpents and swimmers move their whole body by design).
  *
  * --png draws a contact sheet of the parts (legs red, arms blue, wings
  * yellow, tails violet; joints green), for tuning.
  */
+import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import sharp from "sharp";
-import { RACE_ENTRANTS } from "../src/lib/race/data";
+import { RACE_ENTRANTS, RACE_POKEMON } from "../src/lib/race/data";
+import { EEVEE, PRESETS, PSEUDO_LEGENDARIES, STARTER_BASES } from "../src/lib/race/presets";
 import { describeParts, findParts, type PartMap } from "../src/lib/race/parts";
 import type { Entrant } from "../src/lib/race/types";
 
@@ -50,8 +58,35 @@ async function tile(e: Entrant, map: { w: number; h: number; data: Buffer; chann
   return { pic, svg };
 }
 
+/** The popular set (see --top). */
+function popular(): Entrant[] {
+  const keys = new Set<string>();
+  for (const p of PRESETS) {
+    if (p.id === "every-pokemon" || !p.pick) continue;
+    for (const d of [100, 200, 400] as const) for (const e of p.pick(RACE_ENTRANTS, d)) keys.add(e.key);
+  }
+  const chainOf = (ids: readonly number[]) => new Set(RACE_POKEMON.filter((e) => ids.includes(e.species)).map((e) => e.chain));
+  const chains = new Set([...chainOf(STARTER_BASES), ...chainOf([EEVEE]), ...chainOf(PSEUDO_LEGENDARIES)]);
+  for (const e of RACE_POKEMON) if (chains.has(e.chain) || e.legendary || e.mythical) keys.add(e.key);
+  const slug = (name: string) => name.toLowerCase().replace(/[’'.:]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+  for (const f of readdirSync("src/data/smogon")) {
+    const data = JSON.parse(readFileSync(join("src/data/smogon", f), "utf8")) as { pokemon: { species: string; usage: number }[] };
+    for (const row of [...data.pokemon].sort((a, b) => b.usage - a.usage).slice(0, 25)) {
+      const k = slug(row.species);
+      const hit = RACE_ENTRANTS.find((e) => e.key === k) ?? RACE_ENTRANTS.find((e) => e.key === k.split("-")[0]);
+      if (hit) keys.add(hit.key);
+    }
+  }
+  keys.add("pikachu");
+  return RACE_ENTRANTS.filter((e) => keys.has(e.key));
+}
+
+const WHOLE = new Set(["roll", "slither", "swim"]);
+
 async function main() {
-  const list = RACE_ENTRANTS.filter((e) => !only || only.includes(e.key));
+  const list = process.argv.includes("--top") ? popular() : RACE_ENTRANTS.filter((e) => !only || only.includes(e.key));
+  let need = 0, moving = 0;
+  const missing: string[] = [];
   const byMotion = new Map<string, { n: number; limbs: number; legs: number }>();
   const gaps: string[] = [];
   const tiles: { input: Buffer; left: number; top: number }[] = [];
@@ -64,16 +99,23 @@ async function main() {
     if (pm.parts.some((p) => p.kind === "leg")) row.legs++;
     byMotion.set(e.motion, row);
     const legged = e.motion === "run" || e.motion === "gallop" || e.motion === "scuttle";
+    if (!WHOLE.has(e.motion)) {
+      need++;
+      if (pm.parts.some((p) => p.kind !== "tail")) moving++;
+      else missing.push(`${e.name} (${e.motion}: ${describeParts(pm)})`);
+    }
     if (legged && !pm.parts.some((p) => p.kind === "leg")) gaps.push(`${e.name} (${e.motion}: ${describeParts(pm)})`);
     if (process.argv.includes("--list")) console.log(`${e.key}\t${e.motion}\t${pm.facing < 0 ? "faces left" : "faces right"}\t${describeParts(pm)}`);
     if (png) {
       const t = await tile(e, map, pm);
       const left = (k % 6) * 262, top = Math.floor(k / 6) * 280;
-      tiles.push({ input: t.svg, left, top }, { input: t.pic, left, top: 18 });
+      tiles.push({ input: t.svg, left, top }, { input: t.pic, left, top: top + 18 });
       k++;
     }
   }
   for (const [m, r] of byMotion) console.log(`${m.padEnd(8)} ${String(r.n).padStart(5)} runners · ${r.limbs} with moving parts · ${r.legs} with legs`);
+  console.log(`\n${list.length} runners audited; ${moving} of ${need} that move their limbs have moving legs, arms or wings (the other ${list.length - need} roll, slither or swim).`);
+  if (missing.length) console.log(`Without moving legs, arms or wings:\n${missing.join("\n")}\n`);
   console.log(`\n${gaps.length} runners that run, gallop or scuttle with no legs found (they keep whole-body motion):\n${gaps.join("\n")}`);
   if (png && k) await sharp({ create: { width: 6 * 262, height: Math.ceil(k / 6) * 280, channels: 3, background: "#000" } }).composite(tiles).png().toFile(png);
 }

@@ -108,7 +108,7 @@ const TILE_GLSL = /* glsl */ `
 `;
 
 /** Builds the pool for the swimmers' lanes (none: an empty group). */
-export function buildPool(lanes: number[], distance: Distance, modes: number[], depth: number, shared: PoolUniforms, envMap: THREE.Texture | null, layer: number): Pool {
+export function buildPool(lanes: number[], distance: Distance, modes: number[], depth: number, shared: PoolUniforms, envMap: THREE.Texture | null, layer: number, deep = 0): Pool {
   const group = new THREE.Group();
   const geos: THREE.BufferGeometry[] = [];
   const mats: THREE.Material[] = [];
@@ -209,7 +209,8 @@ export function buildPool(lanes: number[], distance: Distance, modes: number[], 
   // ---- The water.
   const waterGeo = new THREE.PlaneGeometry(bx1 - bx0, bz1 - bz0, 1, 1).rotateX(-Math.PI / 2).translate((bx0 + bx1) / 2, WATER_Y, (bz0 + bz1) / 2);
   geos.push(waterGeo);
-  const water = new THREE.MeshStandardMaterial({ color: new THREE.Color(0.05, 0.3, 0.38), roughness: 0.05, metalness: 0, transparent: true, depthWrite: false, envMap, envMapIntensity: 1.35 });
+  // A giant's deep channel is darker: little light comes back from the bottom.
+  const water = new THREE.MeshStandardMaterial({ color: new THREE.Color(0.05, 0.3, 0.38).lerp(new THREE.Color(0.012, 0.07, 0.11), deep), roughness: 0.05, metalness: 0, transparent: true, depthWrite: false, envMap, envMapIntensity: 1.35 });
   water.onBeforeCompile = (s) => {
     s.uniforms.uPoolA = shared.uPoolA;
     s.uniforms.uPoolB = shared.uPoolB;
@@ -252,16 +253,17 @@ export function buildPool(lanes: number[], distance: Distance, modes: number[], 
               // Turbulent wash straight behind the tail.
               float wash = exp(-behind / (0.6 + 0.25 * v)) * exp(-lat * lat / (beam * beam * 1.6));
               h += k * 0.02 * sp * wash * sin(behind * 21.0 + lat * 13.0 - uTime * 11.0);
-              raceFoam += wash * sp * 1.2;
+              raceFoam += wash * sp * 1.2 * k;
             }
             // Bow wave: a crest pushed ahead of the nose, spilling out to the sides.
             float front = fwd - len * 0.45;
             float bow = exp(-front * front / 0.05) * exp(-lat * lat / (beam * beam * 2.5));
             h += k * 0.06 * sp * bow;
-            raceFoam += bow * sp * 0.9;
+            // Bigger swimmers push a bigger bow wave and more foam.
+            raceFoam += bow * sp * 0.9 * k;
             // Where the body cuts the surface.
             float body = length(vec2(fwd / (len * 0.5), lat / max(0.05, beam)));
-            raceFoam += exp(-(body - 1.0) * (body - 1.0) / 0.02) * (0.25 + 0.75 * sp);
+            raceFoam += exp(-(body - 1.0) * (body - 1.0) / (0.02 * k)) * (0.25 + 0.75 * sp) * (0.6 + 0.4 * k);
           }
           return h;
         }`
@@ -295,7 +297,7 @@ export function buildPool(lanes: number[], distance: Distance, modes: number[], 
           float fres = 0.02 + 0.98 * pow(1.0 - cosV, 5.0);
           float foam = clamp(raceFoam, 0.0, 1.0);
           outgoingLight = mix(outgoingLight, vec3(0.92, 0.96, 1.0) * 1.1, foam * 0.85);
-          diffuseColor.a = clamp(mix(0.42, 0.97, fres) + foam * 0.5, 0.0, 1.0);
+          diffuseColor.a = clamp(mix(${(0.42 + 0.4 * deep).toFixed(3)}, 0.97, fres) + foam * 0.5, 0.0, 1.0);
         }
         #include <opaque_fragment>`
       );

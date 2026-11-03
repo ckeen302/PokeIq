@@ -112,8 +112,23 @@ export function poolBounds(modes: number[]): [number, number, number, number] {
   return [-X0 - rOut - 0.5, -rOut - 0.5, X0 + RUN_OUT + 0.5, rOut + 0.5];
 }
 
-/** How deep the channel is for its swimmers (m): they float with about 45% of their height under water. */
-export const poolDepth = (heights: number[]) => Math.max(0.8, Math.min(4.2, Math.max(0, ...heights) * 0.45 + 0.35));
+/** Above this height (m) a swimmer is a giant: it rides low, and what is under the water is hidden. */
+export const GIANT_H = 1.2;
 
-/** How far below the track a swimmer of height h rides (m): its waterline at about 55% of its height. */
-export const swimmerY = (h: number) => WATER_Y - 0.45 * h;
+/** Share of a swimmer's height under the water: about 45% for a fish, up to 70% for a whale, which shows only its back. */
+export const submergeShare = (h: number) => {
+  const t = Math.max(0, Math.min(1, (h - GIANT_H) / (4 - GIANT_H)));
+  return 0.45 + 0.25 * t * t * (3 - 2 * t);
+};
+
+/** Giants are cut at the surface (their lane is far narrower than they are). */
+export const clipsUnderwater = (h: number) => h > GIANT_H;
+
+/** How deep the channel is (m): deep enough for its small swimmers to float clear of the floor; deep and dark for a giant. */
+export const poolDepth = (heights: number[]) => Math.max(0.8, Math.min(2.6, ...heights.map((h) => (clipsUnderwater(h) ? 2.6 : submergeShare(h) * h + 0.35))));
+
+/** How dark the deep water is (0 clear … 1 a giant's deep channel). */
+export const deepTint = (heights: number[]) => Math.max(0, Math.min(1, (Math.max(0, ...heights) - 0.8) / 3));
+
+/** How far below the track a swimmer of height h rides (m). */
+export const swimmerY = (h: number) => WATER_Y - submergeShare(h) * h;

@@ -35,9 +35,10 @@ import type { Motion } from "./types";
  *
  * How a Pokémon moves comes from its PokéAPI body shape, types and
  * abilities: Levitate and floating Ghosts hover, Flying types and winged
- * shapes fly low over their lane, fish and legless Water types (serpent
- * and tentacled bodies) swim, other serpents slither, balls roll, blobs
- * bounce, quadrupeds gallop, many-legged and armoured bodies scuttle, and
+ * shapes fly low over their lane, legless Water types (fish, serpent and
+ * tentacled bodies) swim, fish of other types float (or flop, if they're
+ * Ground types), other serpents slither, balls roll, blobs bounce,
+ * quadrupeds gallop, many-legged and armoured bodies scuttle, and
  * everything with legs runs.
  */
 
@@ -90,7 +91,7 @@ export const BAINBRIDGE = 0.75;
 /** Tail beats per second for a swimmer of body length `len` (m) at speed v (m/s). */
 export const tailBeatHz = (v: number, len: number) => (v <= 0 ? 0 : v / (BAINBRIDGE * Math.max(0.05, len)));
 
-/** Shapes that swim when they can't fly or float: fish, and serpents and tentacled bodies of Water types. */
+/** Water types of these shapes swim (as do fish-shaped ones) when they can't fly or float. */
 const SWIM_WATER_SHAPES = new Set(["squiggle", "tentacles"]);
 
 /** How a swimmer's body waves: fish carangiform, serpents anguilliform, tentacled bodies pulse. */
@@ -115,8 +116,9 @@ export function motionFor(p: { shape: string | null; types: string[]; abilities:
   if (p.abilities.includes("levitate")) return "hover";
   if (p.types.includes("ghost") && FLOATING_SHAPES.has(shape)) return "hover";
   if (!FLIGHTLESS.has(p.species) && (p.types.includes("flying") || shape === "wings" || shape === "bug-wings")) return "fly";
-  // Can't move on land: a pool lane.
-  if (shape === "fish" || (p.types.includes("water") && SWIM_WATER_SHAPES.has(shape))) return "swim";
+  // Water types that can't move on land: a pool lane. Fish that aren't Water types float (Chi-Yu), or flop about if they live in mud (Stunfisk).
+  if (p.types.includes("water") && (shape === "fish" || SWIM_WATER_SHAPES.has(shape))) return "swim";
+  if (shape === "fish") return p.types.includes("ground") ? "flop" : "hover";
   switch (shape) {
     case "squiggle":
       return "slither";

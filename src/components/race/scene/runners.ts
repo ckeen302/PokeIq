@@ -2,9 +2,9 @@ import * as THREE from "three";
 import type { ReliefMap } from "@/lib/sizes/relief";
 import type { Joint } from "@/lib/race/figure";
 import { GROUNDED, poseFor, swimStyle } from "@/lib/race/gait";
-import { celebrationAt, dipAt, jointAngles, type LimbPart } from "@/lib/race/limbs";
+import { celebrationAt, dipAt, jointAngles, swayAt, type LimbPart } from "@/lib/race/limbs";
 import { MAX_PARTS } from "@/lib/race/parts";
-import { swimmerY } from "@/lib/race/pool";
+import { WATER_Y, clipsUnderwater, swimmerY } from "@/lib/race/pool";
 import { runnerAt, type Race, type RaceLane } from "@/lib/race/race";
 import { lanePoint } from "@/lib/race/track";
 import type { Entrant } from "@/lib/race/types";
@@ -58,6 +58,8 @@ export interface FigureUniforms {
   uSwim: { value: THREE.Vector4 };
   uSwimAx: { value: THREE.Vector4 };
   uSwimLen: { value: THREE.Vector2 };
+  /** World height below which the figure isn't drawn (a giant swimmer under the water). */
+  uClipY: { value: number };
 }
 
 export interface Figure {
@@ -78,6 +80,8 @@ export interface Figure {
   meshH: number;
   /** Running towards the right of the screen (with hysteresis). */
   runsRight: boolean;
+  /** Steps on stubby feet (and sways). */
+  stubby: boolean;
   mirrored: boolean;
   lastStep: number;
   dispose(): void;
@@ -128,6 +132,7 @@ function figureMaterial(tex: THREE.Texture, texSize: number, uniforms: FigureUni
         uniform vec4 uSwimAx;
         uniform vec2 uSwimLen;
         attribute vec3 aPart;
+        varying float vRaceY;
         vec3 raceRot(vec3 v, vec3 a, float ang) { float c = cos(ang), s = sin(ang); return v * c + cross(a, v) * s + a * dot(a, v) * (1.0 - c); }`
       )
       .replace(
@@ -140,7 +145,7 @@ function figureMaterial(tex: THREE.Texture, texSize: number, uniforms: FigureUni
           if (k >= 0 && aPart.y > 0.0) {
             vec4 ja = uJA[k], jb = uJB[k], xa = uXA[k], xb = uXB[k];
             float w = aPart.y, al = aPart.z;
-            float angB = jb.w * w * (xb.w > 0.5 ? al : smoothstep(0.38, 0.62, al));
+            float angB = jb.w * w * (xb.w > 0.5 ? al : smoothstep(0.3, 0.7, al));
             racePos = jb.xyz + raceRot(racePos - jb.xyz, xb.xyz, angB);
             objectNormal = raceRot(objectNormal, xb.xyz, angB);
             float angA = ja.w * w * (xa.w > 0.5 ? al : 1.0);
@@ -159,9 +164,11 @@ function figureMaterial(tex: THREE.Texture, texSize: number, uniforms: FigureUni
           }
         }`
       )
+      .replace("#include <project_vertex>", "#include <project_vertex>\nvRaceY = (modelMatrix * vec4(transformed, 1.0)).y;")
       .replace("#include <begin_vertex>", "vec3 transformed = racePos;\ntransformed.y += uWave * sin(transformed.x * uWaveK - uWavePhase) * (0.35 + 0.65 * smoothstep(0.0, 0.5, abs(transformed.x)));");
     s.fragmentShader = s.fragmentShader
-      .replace("#include <common>", "#include <common>\nuniform float uTexel;")
+      .replace("#include <common>", "#include <common>\nuniform float uTexel;\nuniform float uClipY;\nvarying float vRaceY;")
+      .replace("#include <clipping_planes_fragment>", "#include <clipping_planes_fragment>\nif (vRaceY < uClipY) discard;")
       .replace(
         "#include <map_fragment>",
         `#ifdef USE_MAP
@@ -178,7 +185,7 @@ function figureMaterial(tex: THREE.Texture, texSize: number, uniforms: FigureUni
         #endif`
       );
   };
-  m.customProgramCacheKey = () => "race-figure-2";
+  m.customProgramCacheKey = () => "race-figure-3";
   return m;
 }
 
@@ -217,6 +224,7 @@ export async function loadFigure(renderer: THREE.WebGLRenderer, lane: RaceLane, 
     uWave: { value: 0 }, uWaveK: { value: 9 }, uWavePhase: { value: 0 },
     uJA: { value: v4s() }, uJB: { value: v4s() }, uXA: { value: v4s() }, uXB: { value: v4s() },
     uSwim: { value: new THREE.Vector4() }, uSwimAx: { value: new THREE.Vector4() }, uSwimLen: { value: new THREE.Vector2(1, 1) },
+    uClipY: { value: e.motion === "swim" && clipsUnderwater(lane.h) ? WATER_Y + 0.004 : -1e5 },
   };
   const mat = figureMaterial(tex, artBmp.width, uniforms);
   // Both sheets are drawn (the back is sculpted, not a flipped copy of the front).
@@ -263,6 +271,7 @@ export async function loadFigure(renderer: THREE.WebGLRenderer, lane: RaceLane, 
     meshW: rm.width,
     meshH: rm.height,
     runsRight: true,
+    stubby: rm.joints.some((j) => j.stub),
     mirrored: false,
     lastStep: 0,
     dispose() {
@@ -426,7 +435,7 @@ export function makeRunners(race: Race, figures: Figure[], masts: THREE.Vector3[
   const streaks = speedStreaks(72);
   group.add(streaks.mesh);
   const camPos = new THREE.Vector3(), camRight = new THREE.Vector3(), up = new THREE.Vector3(0, 1, 0);
-  const qLean = new THREE.Quaternion(), axis = new THREE.Vector3(), mtx = new THREE.Matrix4(), pos = new THREE.Vector3(), quat = new THREE.Quaternion(), scl = new THREE.Vector3();
+  const qLean = new THREE.Quaternion(), qRoll = new THREE.Quaternion(), axis = new THREE.Vector3(), mtx = new THREE.Matrix4(), pos = new THREE.Vector3(), quat = new THREE.Quaternion(), scl = new THREE.Vector3();
   const inv = new THREE.Matrix4(), dLoc = new THREE.Vector3(), upLoc = new THREE.Vector3(), S = new THREE.Vector3(), Zl = new THREE.Vector3(0, 0, 1), tmp = new THREE.Vector3();
   const headsOut: { lane: number; pos: THREE.Vector3; h: number }[] = figures.map((f) => ({ lane: f.lane.lane, pos: new THREE.Vector3(), h: f.lane.h }));
   const winner = race.order[0];
@@ -527,6 +536,11 @@ export function makeRunners(race: Race, figures: Figure[], masts: THREE.Vector3[
       f.root.visible = !hidden.has(r.lane);
       axis.set(p.dx, 0, p.dz).cross(up).normalize();
       qLean.setFromAxisAngle(axis, -(lean + pose.pitch));
+      // On stubby feet the body rocks over each foot as it steps.
+      if (f.stubby && raceT > 0) {
+        qRoll.setFromAxisAngle(tmp.set(p.dx, 0, p.dz), swayAt({ motion: e.motion, phase: st.phase, v: st.v, hip: r.hip, time: showT }));
+        qLean.multiply(qRoll);
+      }
       f.lean.quaternion.copy(qLean);
       // Face the camera, turned a little towards the running direction; mirror so the head leads.
       const cx = camPos.x - p.x, cz = camPos.z - p.z;
@@ -554,12 +568,14 @@ export function makeRunners(race: Race, figures: Figure[], masts: THREE.Vector3[
       dLoc.set(p.dx, 0, p.dz).transformDirection(inv);
       upLoc.set(0, 1, 0).transformDirection(inv);
       S.crossVectors(dLoc, upLoc).normalize();
+      // Strides stay mostly in the render's plane, where the relief is solid (swinging far out of it would pull a leg off the body).
+      S.set(S.x * 0.45, S.y * 0.45, S.z).normalize();
       const clock = { motion: e.motion, phase: raceT > 0 ? phase : showT * 0.5, v: raceT > 0 ? st.v : 0, hip: r.hip, time: showT };
       const U = f.uniforms;
       f.joints.forEach((j, k) => {
         if (k >= MAX_PARTS) return;
         const out = Math.sign(j.tip[0] - j.pivot[0]) || (j.pivot[0] >= 0 ? 1 : -1);
-        const part: LimbPart = { kind: j.kind, side: j.side, front: j.front, out };
+        const part: LimbPart = { kind: j.kind, side: j.side, front: j.front, out, stub: j.stub, reach: j.reach };
         const ang = jointAngles(part, clock);
         const JA = U.uJA.value[k], JB = U.uJB.value[k], XA = U.uXA.value[k], XB = U.uXB.value[k];
         switch (j.kind) {

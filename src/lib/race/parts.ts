@@ -45,6 +45,8 @@ export interface Part {
   front: 0 | 1;
   /** Pixels in the part. */
   area: number;
+  /** Stubby feet: the lower body stepping, when no pair of legs could be found. */
+  stub?: boolean;
 }
 
 export interface PartMap {
@@ -77,6 +79,8 @@ export const MAX_PARTS = 8;
 
 /** Gaits whose runners use their legs. */
 const LEGGED = new Set<Motion>(["run", "gallop", "scuttle", "bounce"]);
+/** Gaits whose lower body steps (or sways) when no pair of legs is found. */
+const STEPPERS = new Set<Motion>(["run", "gallop", "scuttle", "bounce", "hover"]);
 /** Gaits that keep the whole body moving instead (balls, serpents, swimmers). */
 const WHOLE_BODY = new Set<Motion>(["roll", "slither", "flop", "swim"]);
 
@@ -520,9 +524,112 @@ export function findParts(map: ReliefPixels, o: FindOptions): PartMap {
   }
 
   // ---- Everything else that sticks out of the torso.
-  let opened = openOf(rest);
+  const fly = o.motion === "fly" || o.motion === "hover";
+  type Cand = { px: number; py: number; tx: number; ty: number; len: number; area: number; attach: number[]; depth: number; mx: number; pix: number[] };
+  const wideBox = W > H * 1.15;
+  /** Given a torso guess (`opened`: the torso and any big pieces off it), the parts that stick out and what they are. */
+  const analyse = (opened: Uint8Array) => {
+    const oc = components(opened, w, h);
+    const ocDepth = new Float64Array(oc.size.length), ocX = new Float64Array(oc.size.length);
+    for (let i = 0; i < n; i++) if (oc.lab[i]) { ocDepth[oc.lab[i]] += pm.depth[i]; ocX[oc.lab[i]] += i % w; }
+    // The torso is the biggest piece, or a nearer one nearly as big (a small body between big wings).
+    let torsoK = 0, bestScore = -Infinity;
+    const biggest = Math.max(0, ...oc.size.slice(1));
+    for (let k = 1; k < oc.size.length; k++) {
+      if (oc.size[k] < biggest * 0.25) continue;
+      const score = oc.size[k] / biggest + (ocDepth[k] / oc.size[k]) * 12;
+      if (score > bestScore) { bestScore = score; torsoK = k; }
+    }
+    if (!torsoK) return null;
+    const torsoMask = new Uint8Array(n);
+    for (let i = 0; i < n; i++) if (oc.lab[i] === torsoK) torsoMask[i] = 1;
+    const td = ocDepth[torsoK] / oc.size[torsoK];
+    const torsoCx = ocX[torsoK] / oc.size[torsoK];
+    // Each leftover pixel goes with its nearest piece: the torso's thin parts (arms, ears, tails), or a big piece hanging off it (a wing, a head on a neck).
+    const seeds = new Int32Array(n);
+    for (let i = 0; i < n; i++) if (oc.lab[i]) seeds[i] = oc.lab[i];
+    const near = nearestLabel(rest, seeds, w, h);
+    const cand = new Uint8Array(n);
+    const piece = new Int32Array(n);
+    for (let i = 0; i < n; i++) {
+      if (!rest[i] || near[i] === torsoK) continue;
+      cand[i] = 1;
+      piece[i] = near[i] || 0;
+    }
+    const thinTorso = new Uint8Array(n);
+    for (let i = 0; i < n; i++) if (rest[i] && near[i] === torsoK && !opened[i]) thinTorso[i] = 1;
+    const cands: Cand[] = [];
+    const torsoSide = (j: number) => opened[j] && oc.lab[j] === torsoK;
+    const gather = (pix: number[]) => {
+      if (pix.length < Math.max(5, area * 0.006)) return;
+      const attach: number[] = [];
+      let dz = 0, mx = 0;
+      const own = new Set(pix);
+      for (const i of pix) {
+        dz += pm.depth[i];
+        mx += i % w;
+        const x = i % w, y = (i / w) | 0;
+        let touch = false;
+        for (let dy = -1; dy <= 1 && !touch; dy++) for (let dx = -1; dx <= 1 && !touch; dx++) {
+          const xx = x + dx, yy = y + dy;
+          if (xx < 0 || yy < 0 || xx >= w || yy >= h) continue;
+          const j = yy * w + xx;
+          if (!own.has(j) && rest[j] && (torsoSide(j) || near[j] === torsoK)) touch = true;
+        }
+        if (touch) attach.push(i);
+      }
+      // A piece that doesn't meet the torso (a floating wing or fin) stays rigid.
+      if (!attach.length) return;
+      let px = 0, py = 0;
+      for (const i of attach) { px += i % w; py += (i / w) | 0; }
+      px /= attach.length; py /= attach.length;
+      let tx = px, ty = py, best = -1;
+      for (const i of pix) {
+        const d = Math.hypot((i % w) - px, ((i / w) | 0) - py);
+        if (d > best) { best = d; tx = i % w; ty = (i / w) | 0; }
+      }
+      if (best < Math.max(2.5, H * 0.07)) return;
+      cands.push({ px, py, tx, ty, len: best, area: pix.length, attach, depth: dz / pix.length, mx: mx / pix.length, pix });
+    };
+    const c1 = components(thinTorso, w, h);
+    const lists: number[][] = c1.size.map(() => []);
+    for (let i = 0; i < n; i++) if (c1.lab[i]) lists[c1.lab[i]].push(i);
+    lists.slice(1).forEach(gather);
+    const c2 = components(cand, w, h);
+    const lists2 = new Map<string, number[]>();
+    for (let i = 0; i < n; i++) if (c2.lab[i]) { const key = `${c2.lab[i]}:${piece[i]}`; (lists2.get(key) ?? lists2.set(key, []).get(key)!).push(i); }
+    for (const pix of lists2.values()) gather(pix);
+    const classify = (c: Cand, faceDir: number): PartKind | null => {
+      const dx = c.tx - c.px, dy = c.ty - c.py;
+      const pv = vOf(c.py), tv = vOf(c.ty);
+      const lateral = Math.abs(dx) > Math.abs(dy) * 0.7;
+      const elong = (c.len * c.len) / Math.max(1, c.area);
+      const rearSide = (c.px - cx) * faceDir < 0;
+      const far = c.depth < td - 0.025;
+      const big = c.area > area * 0.05;
+      const aside = Math.abs(c.mx - torsoCx) > W * 0.16;
+      // Wings: a flier's big pieces out to the side of the upper body.
+      if (winged && big && pv > 0.3 && aside && c.area < area * 0.4) return "wing";
+      // Upwards out of the top: ears, horns, crests, hair, a head on a neck.
+      if (pv > 0.55 && tv > pv + 0.08) return null;
+      // Head features at the front end of a long body (jaws, horns, manes).
+      if (wideBox && pv > 0.45 && (c.px - (faceDir < 0 ? left : right)) * -faceDir < W * 0.3) return null;
+      // A thin part held behind the body, or out from the rear low down: the tail.
+      if (elong > 1.6 && pv < 0.75 && c.area < area * 0.25 && ((rearSide && (dx * faceDir < 0 || dy < 0) && (far || pv < 0.55)) || (far && c.len > H * 0.25))) return "tail";
+      if (c.area > area * 0.4) return null;
+      if (lateral && pv > 0.3 && pv < 0.92 && tv > 0.15) return winged && c.area > area * 0.035 ? "wing" : "arm";
+      // Hanging down from the upper body (arms held low).
+      if (pv > 0.35 && dy > 0 && Math.abs(dy) > Math.abs(dx) && tv > 0.08 && !fly) return "arm";
+      return null;
+    };
+    const kinds = cands.map((c) => ({ c, kind: classify(c, facing) })).filter((x) => x.kind) as { c: Cand; kind: PartKind }[];
+    const ws = kinds.filter((k) => k.kind === "wing").map((k) => k.c.area);
+    const top = Math.max(0, ...ws);
+    return { torsoMask, kinds, wings: Math.min(2, ws.filter((a) => a >= top * 0.35).length) };
+  };
+  // Torso guesses: the opening; for fliers also the near side of the depth (wings spread behind the body), and a disc round the body's core.
+  const guesses: Uint8Array[] = [];
   if (winged) {
-    // A flier's wings spread behind its body: the torso is the near side of the depth (Otsu's split), cleaned by a small opening.
     const t = otsu(pm.depth, rest);
     const nearSide = new Uint8Array(n);
     for (let i = 0; i < n; i++) if (rest[i] && pm.depth[i] >= t) nearSide[i] = 1;
@@ -536,115 +643,57 @@ export function findParts(map: ReliefPixels, o: FindOptions): PartMap {
     const op = new Uint8Array(n);
     for (let i = 0; i < n; i++) if (nearSide[i] && back[i] <= rr + 0.75) op[i] = 1;
     const cc = components(op, w, h);
-    const big = Math.max(0, ...cc.size.slice(1));
-    if (big > area * 0.08) {
+    if (Math.max(0, ...cc.size.slice(1)) > area * 0.08) {
       // The rim round the body reads as far too (the estimate falls away at outlines): it belongs to the body.
       const dOp = distanceTo(op, w, h);
       for (let i = 0; i < n; i++) if (rest[i] && dOp[i] <= 2.5) op[i] = 1;
-      opened = op;
+      guesses.push(op);
     }
-  }
-  const oc = components(opened, w, h);
-  const ocDepth = new Float64Array(oc.size.length), ocX = new Float64Array(oc.size.length);
-  for (let i = 0; i < n; i++) if (oc.lab[i]) { ocDepth[oc.lab[i]] += pm.depth[i]; ocX[oc.lab[i]] += i % w; }
-  // The torso is the biggest piece, or a nearer one nearly as big (a small body between big wings).
-  let torsoK = 0, bestScore = -Infinity;
-  const biggest = Math.max(0, ...oc.size.slice(1));
-  for (let k = 1; k < oc.size.length; k++) {
-    if (oc.size[k] < biggest * 0.25) continue;
-    const score = oc.size[k] / biggest + (ocDepth[k] / oc.size[k]) * 12;
-    if (score > bestScore) { bestScore = score; torsoK = k; }
-  }
-  if (!torsoK) return out();
-  const torsoMask = new Uint8Array(n);
-  for (let i = 0; i < n; i++) if (oc.lab[i] === torsoK) torsoMask[i] = 1;
-  let td = 0, torsoCx = 0;
-  td = ocDepth[torsoK] / oc.size[torsoK];
-  torsoCx = ocX[torsoK] / oc.size[torsoK];
-  // Each leftover pixel goes with its nearest piece: the torso's thin parts (arms, ears, tails), or a big piece hanging off it (a wing, a head on a neck).
-  const seeds = new Int32Array(n);
-  for (let i = 0; i < n; i++) if (oc.lab[i]) seeds[i] = oc.lab[i];
-  const near = nearestLabel(rest, seeds, w, h);
-  const cand = new Uint8Array(n);
-  const piece = new Int32Array(n);
-  for (let i = 0; i < n; i++) {
-    if (!rest[i] || near[i] === torsoK) continue;
-    cand[i] = 1;
-    piece[i] = near[i] || 0;
-  }
-  // Thin parts of the torso.
-  const thinTorso = new Uint8Array(n);
-  for (let i = 0; i < n; i++) if (rest[i] && near[i] === torsoK && !opened[i]) thinTorso[i] = 1;
-  const fly = o.motion === "fly" || o.motion === "hover";
-  type Cand = { px: number; py: number; tx: number; ty: number; len: number; area: number; attach: number[]; depth: number; mx: number; pix: number[] };
-  const cands: Cand[] = [];
-  const torsoSide = (j: number) => opened[j] && oc.lab[j] === torsoK;
-  const gather = (pix: number[]) => {
-    if (pix.length < Math.max(5, area * 0.006)) return;
-    const attach: number[] = [];
-    let dz = 0, mx = 0;
-    const own = new Set(pix);
-    for (const i of pix) {
-      dz += pm.depth[i];
-      mx += i % w;
-      const x = i % w, y = (i / w) | 0;
-      let touch = false;
-      for (let dy = -1; dy <= 1 && !touch; dy++) for (let dx = -1; dx <= 1 && !touch; dx++) {
-        const xx = x + dx, yy = y + dy;
-        if (xx < 0 || yy < 0 || xx >= w || yy >= h) continue;
-        const j = yy * w + xx;
-        if (!own.has(j) && rest[j] && (torsoSide(j) || near[j] === torsoK)) touch = true;
+    // The body's core: the thickest point in the middle half of the figure, or the thickest near one; the torso is a disc round it.
+    // (Not for serpents that fly: their long bodies would be cut into "wings".)
+    const dist = o.shape === "squiggle" ? new Float32Array(n) : distanceField(rest, w, h);
+    let dmin = Infinity, dmax = -Infinity;
+    for (let i = 0; i < n; i++) if (rest[i]) { dmin = Math.min(dmin, pm.depth[i]); dmax = Math.max(dmax, pm.depth[i]); }
+    for (const scoreOf of [
+      (i: number) => ((i % w) > left + W * 0.25 && (i % w) < right - W * 0.25 ? dist[i] : -1),
+      (i: number) => dist[i] * (0.4 + (pm.depth[i] - dmin) / Math.max(1e-6, dmax - dmin)),
+    ]) {
+      let bi = -1, bs = 0;
+      for (let i = 0; i < n; i++) if (rest[i]) { const sc = scoreOf(i); if (sc > bs) { bs = sc; bi = i; } }
+      if (bi < 0) continue;
+      const R = dist[bi] * 1.35, bx = bi % w, by = (bi / w) | 0;
+      const disc = new Uint8Array(n);
+      for (let i = 0; i < n; i++) if (rest[i] && Math.hypot((i % w) - bx, ((i / w) | 0) - by) <= R) disc[i] = 1;
+      guesses.push(disc);
+    }
+    // A column through the body's core (thickest point in the lower middle, where a flier's body hangs under its raised wings): the wings are what lies beside it.
+    {
+      let bi = -1, bs = 0;
+      for (let i = 0; i < n; i++) {
+        if (!rest[i]) continue;
+        const x = i % w, y = (i / w) | 0;
+        if (x < left + W * 0.3 || x > right - W * 0.3 || vOf(y) > 0.6) continue;
+        if (dist[i] > bs) { bs = dist[i]; bi = i; }
       }
-      if (touch) attach.push(i);
+      if (bi >= 0) {
+        const R = Math.max(2, dist[bi] * 1.1), bx = bi % w, by = (bi / w) | 0;
+        const col = new Uint8Array(n);
+        for (let i = 0; i < n; i++) if (rest[i] && (Math.abs((i % w) - bx) <= R || ((i / w) | 0) > by + R * 0.5)) col[i] = 1;
+        guesses.push(col);
+      }
     }
-    // A piece that doesn't meet the torso (a floating wing or fin) stays rigid.
-    if (!attach.length) return;
-    let px = 0, py = 0;
-    for (const i of attach) { px += i % w; py += (i / w) | 0; }
-    px /= attach.length; py /= attach.length;
-    let tx = px, ty = py, best = -1;
-    for (const i of pix) {
-      const d = Math.hypot((i % w) - px, ((i / w) | 0) - py);
-      if (d > best) { best = d; tx = i % w; ty = (i / w) | 0; }
-    }
-    if (best < Math.max(2.5, H * 0.07)) return;
-    cands.push({ px, py, tx, ty, len: best, area: pix.length, attach, depth: dz / pix.length, mx: mx / pix.length, pix });
-  };
-  {
-    const c1 = components(thinTorso, w, h);
-    const lists: number[][] = c1.size.map(() => []);
-    for (let i = 0; i < n; i++) if (c1.lab[i]) lists[c1.lab[i]].push(i);
-    lists.slice(1).forEach(gather);
-    const c2 = components(cand, w, h);
-    const lists2 = new Map<string, number[]>();
-    for (let i = 0; i < n; i++) if (c2.lab[i]) { const key = `${c2.lab[i]}:${piece[i]}`; (lists2.get(key) ?? lists2.set(key, []).get(key)!).push(i); }
-    for (const pix of lists2.values()) gather(pix);
   }
-  const wideBox = W > H * 1.15;
-  const classify = (c: Cand, faceDir: number): PartKind | null => {
-    const dx = c.tx - c.px, dy = c.ty - c.py;
-    const pv = vOf(c.py), tv = vOf(c.ty);
-    const lateral = Math.abs(dx) > Math.abs(dy) * 0.7;
-    const elong = (c.len * c.len) / Math.max(1, c.area);
-    const rearSide = (c.px - cx) * faceDir < 0;
-    const far = c.depth < td - 0.025;
-    const big = c.area > area * 0.05;
-    const aside = Math.abs(c.mx - torsoCx) > W * 0.16;
-    // Wings: a flier's big pieces out to the side of the upper body.
-    if (winged && big && pv > 0.3 && aside && c.area < area * 0.4) return "wing";
-    // Upwards out of the top: ears, horns, crests, hair, a head on a neck.
-    if (pv > 0.55 && tv > pv + 0.08) return null;
-    // Head features at the front end of a long body (jaws, horns, manes).
-    if (wideBox && pv > 0.45 && (c.px - (faceDir < 0 ? left : right)) * -faceDir < W * 0.3) return null;
-    // A thin part held behind the body, or out from the rear low down: the tail.
-    if (elong > 1.6 && pv < 0.75 && c.area < area * 0.25 && ((rearSide && (dx * faceDir < 0 || dy < 0) && (far || pv < 0.55)) || (far && c.len > H * 0.25))) return "tail";
-    if (c.area > area * 0.4) return null;
-    if (lateral && pv > 0.3 && pv < 0.92 && tv > 0.15) return winged && c.area > area * 0.035 ? "wing" : "arm";
-    // Hanging down from the upper body (arms held low).
-    if (pv > 0.35 && dy > 0 && Math.abs(dy) > Math.abs(dx) && tv > 0.08 && !fly) return "arm";
-    return null;
-  };
-  const kinds = cands.map((c) => ({ c, kind: classify(c, facing) })).filter((x) => x.kind) as { c: Cand; kind: PartKind }[];
+  guesses.push(openOf(rest));
+  let best: ReturnType<typeof analyse> = null;
+  for (const g of guesses) {
+    const r = analyse(g);
+    if (r && (!best || r.wings > best.wings)) best = r;
+  }
+  if (!best) return out();
+  const { torsoMask } = best;
+  // Wings much smaller than the biggest are tips, feet or a head: they stay with the body.
+  const bigWing = Math.max(0, ...best.kinds.filter((k) => k.kind === "wing").map((k) => k.c.area));
+  const kinds = best.kinds.filter((k) => k.kind !== "wing" || k.c.area >= bigWing * 0.35);
   // Keep the biggest few: wings and tails first, then arms.
   const rank: Record<PartKind, number> = { wing: 0, tail: 1, arm: 2, leg: 3 };
   kinds.sort((a, b) => rank[a.kind] - rank[b.kind] || b.c.area - a.c.area);
@@ -675,7 +724,50 @@ export function findParts(map: ReliefPixels, o: FindOptions): PartMap {
   // Arms swing opposite the leg on their side of the body: alternate by position.
   const armIdx = parts.map((p, i) => (p.kind === "arm" ? i : -1)).filter((i) => i >= 0).sort((a, b) => parts[a].px - parts[b].px);
   armIdx.forEach((i, k) => { parts[i].side = (k % 2) as 0 | 1; });
+  if (STEPPERS.has(o.motion)) stubLegs();
   return { ...out(), torso: torsoMask };
+
+  /**
+   * No pair of legs found (stubby feet under a round body, a skirt, a
+   * blob): the lower body takes small alternating steps instead. The
+   * bottom fifth of the figure splits at its middle into two feet, each
+   * hinged at the top of that band and bending more towards the ground.
+   */
+  function stubLegs() {
+    const legs = parts.map((p, i) => (p.kind === "leg" ? i : -1)).filter((i) => i >= 0);
+    if (legs.length >= 2) return;
+    // A lone leg can't step on its own: it joins the feet below.
+    for (const li of legs) for (let i = 0; i < n; i++) if (label[i] === li + 1) { label[i] = 0; weight[i] = 0; along[i] = 0; }
+    const band = Math.max(3, Math.round(H * 0.22));
+    const y0 = bottom - band;
+    const xs: number[] = [];
+    for (let y = y0 + 1; y <= bottom; y++) for (let x = 0; x < w; x++) { const i = y * w + x; if (mask[i] && !label[i]) xs.push(x); }
+    if (xs.length < Math.max(8, area * 0.02)) return;
+    xs.sort((a, b) => a - b);
+    const split = xs[Math.floor(xs.length / 2)];
+    const halves: [number[], number[]] = [[], []];
+    for (let y = y0 + 1; y <= bottom; y++) for (let x = 0; x < w; x++) { const i = y * w + x; if (mask[i] && !label[i]) halves[x < split ? 0 : 1].push(i); }
+    if (halves.some((hh) => hh.length < Math.max(4, area * 0.006))) return;
+    // Slots: reuse a removed leg's (only ever one) or append.
+    const free = legs.length ? [legs[0]] : [];
+    halves.forEach((pix, sIdx) => {
+      let mx = 0, lo = 0, ln = 0;
+      for (const i of pix) { mx += i % w; if (((i / w) | 0) >= bottom - 1) { lo += i % w; ln++; } }
+      mx /= pix.length;
+      const part: Part = { kind: "leg", px: mx, py: y0 + 0.5, tx: ln ? lo / ln : mx, ty: bottom, side: sIdx as 0 | 1, front: 0, area: pix.length, stub: true };
+      let k: number;
+      if (free.length) { k = free.shift()! + 1; parts[k - 1] = part; }
+      else if (parts.length < MAX_PARTS) { parts.push(part); k = parts.length; }
+      else return;
+      for (const i of pix) {
+        const y = (i / w) | 0;
+        label[i] = k;
+        // Bends more towards the ground, and eases off at the split so the feet never pull apart.
+        weight[i] = smooth(0, band * 0.85, y - y0) * smooth(0, 2.5, Math.abs((i % w) - split + 0.5));
+        along[i] = Math.min(1, (y - y0) / band);
+      }
+    });
+  }
 }
 
 /** Short description of what was found, for audits ("2 legs, 1 tail"). */

@@ -50,11 +50,21 @@ export interface LimbPart {
   front: 0 | 1;
   /** +1 if the part points to +x in the render (its tip right of its joint), −1 if left. */
   out: number;
+  /** Stubby feet: the lower body taking small steps (no pair of legs was found). */
+  stub?: boolean;
+  /** The part's length as a share of the figure's height (a leg found only below the knee swings less). */
+  reach?: number;
 }
 
 const clamp01 = (x: number) => Math.max(0, Math.min(1, x));
 const ease = (x: number) => { const t = clamp01(x); return t * t * (3 - 2 * t); };
 const frac = (x: number) => x - Math.floor(x);
+
+/** Side-to-side sway (radians) of a runner on stubby feet: it rocks over each foot as it steps. */
+export function swayAt(c: LimbClock): number {
+  const steps = c.motion === "gallop" ? c.phase * 2 : c.phase;
+  return 0.07 * ease(c.v / 1.4) * Math.sin(Math.PI * steps);
+}
 
 /** How hard the runner is going: 0 standing … 1 a flat-out sprint (Froude number 6 and up). */
 export const effortOf = (v: number, hip: number) => Math.min(1, froude(v, hip) / 6);
@@ -79,10 +89,19 @@ export function jointAngles(p: LimbPart, c: LimbClock): JointAngles {
   const idle = Math.sin(c.time * 1.7 + p.side * 2.1);
   switch (p.kind) {
     case "leg": {
+      if (p.stub) {
+        // Small alternating steps of the feet under the body (or a skirt's sway for hoverers).
+        if (c.motion === "hover") return { a: 0.1 * Math.sin(c.time * 2 * Math.PI * 0.7 + p.side * Math.PI), b: 0 };
+        const steps = c.motion === "gallop" ? c.phase * 2 : c.phase;
+        const u = frac((steps + p.side) / 2);
+        return { a: legSwing(u, 0.5, (0.2 + 0.08 * e) * go, (0.18 + 0.06 * e) * go, 0).a, b: 0 };
+      }
+      // A leg found only from the knee down swings less and barely folds.
+      const k = Math.max(0.4, Math.min(1, (p.reach ?? 0.4) / 0.32));
       if (c.motion === "gallop") {
         // One cycle a stride: hind pair, then the front pair half a stride on, each pair's legs a little apart.
         const u = frac(c.phase + (p.front ? 0.5 : 0) + p.side * 0.1);
-        const r = legSwing(u, 0.36, (0.32 + 0.22 * e) * go, (0.3 + 0.2 * e) * go, (0.3 + 0.6 * e) * go);
+        const r = legSwing(u, 0.36, (0.32 + 0.22 * e) * go * k, (0.3 + 0.2 * e) * go * k, Math.min(0.9, (0.3 + 0.6 * e) * go) * k * k);
         return { a: r.a, b: p.front ? r.b : -r.b * 0.7 };
       }
       if (c.motion === "bounce") {
@@ -93,9 +112,9 @@ export function jointAngles(p: LimbPart, c: LimbClock): JointAngles {
       // Running and scuttling: one footfall per cycle, the legs taking turns.
       const u = frac((c.phase + p.side) / 2);
       const duty = c.motion === "scuttle" ? 0.5 : contactShare(e);
-      const k = c.motion === "scuttle" ? 0.55 : 1;
-      // Stance share of a stride is half the share of a step.
-      return legSwing(u, duty / 2, (0.3 + 0.32 * e) * go * k, (0.26 + 0.26 * e) * go * k, (0.35 + 0.95 * e) * go * k);
+      const ks = (c.motion === "scuttle" ? 0.55 : 1) * k;
+      // Stance share of a stride is half the share of a step; the knee folds up to about 60°.
+      return legSwing(u, duty / 2, (0.3 + 0.32 * e) * go * ks, (0.26 + 0.26 * e) * go * ks, Math.min(1.05, (0.35 + 0.8 * e) * go) * ks * k);
     }
     case "arm": {
       if (c.motion === "run" || c.motion === "scuttle") {

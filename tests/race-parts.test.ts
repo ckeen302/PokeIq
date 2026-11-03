@@ -1,12 +1,12 @@
 import { describe, expect, it } from "vitest";
 import { join } from "node:path";
 import sharp from "sharp";
-import { RACE_ENTRANTS, RACE_POKEMON } from "@/lib/race/data";
+import { RACE_ENTRANTS } from "@/lib/race/data";
 import { BAINBRIDGE, cycleRate, motionFor, swimStyle, tailBeatHz } from "@/lib/race/gait";
 import { buildFigureMesh } from "@/lib/race/figure";
-import { celebrationAt, dipAt, jointAngles, legSwing } from "@/lib/race/limbs";
+import { celebrationAt, dipAt, jointAngles, legSwing, swayAt } from "@/lib/race/limbs";
 import { describeParts, findParts, type ReliefPixels } from "@/lib/race/parts";
-import { poolAt, poolBounds, poolDepth, poolModes, poolWalls, swimmerY, WATER_Y } from "@/lib/race/pool";
+import { clipsUnderwater, deepTint, poolAt, poolBounds, poolDepth, poolModes, poolWalls, submergeShare, swimmerY, WATER_Y } from "@/lib/race/pool";
 import { makeRace, runnerAt, spotsAt } from "@/lib/race/race";
 import { cameraFor, leader } from "@/lib/race/director";
 import { RUN_OUT, X0, lanePoint, type Distance } from "@/lib/race/track";
@@ -120,8 +120,12 @@ describe("moving parts", () => {
   it("keeps balls, serpents and swimmers in whole-body motion", () => {
     const disc = relief(64, 64, (x, y) => ((x - 32) ** 2 + (y - 32) ** 2 < 30 ** 2 ? 0.1 : null));
     for (const motion of ["roll", "swim", "slither"] as Motion[]) expect(findParts(disc, { motion, shape: "ball" }).parts).toHaveLength(0);
-    // A ball standing on the ground has no legs either.
-    expect(findParts(disc, { motion: "run", shape: "ball" }).parts.filter((q) => q.kind === "leg")).toHaveLength(0);
+    // A round runner with no legs to find steps on stubby feet: its lower body, in two alternating halves.
+    const stubs = findParts(disc, { motion: "run", shape: "ball" }).parts.filter((q) => q.kind === "leg");
+    expect(stubs).toHaveLength(2);
+    expect(stubs.every((q) => q.stub)).toBe(true);
+    expect(new Set(stubs.map((q) => q.side))).toEqual(new Set([0, 1]));
+    expect(stubs.every((q) => q.py > 64 * 0.7)).toBe(true);
     expect(describeParts({ parts: [] })).toBe("whole body");
   });
 
@@ -138,6 +142,11 @@ describe("moving parts", () => {
     expect(ninjask.parts.filter((q) => q.kind === "wing").length).toBeGreaterThanOrEqual(2);
     // Groudon's render faces right.
     expect(findParts(await load(383), { motion: "run", shape: "upright" }).facing).toBe(1);
+    // Pikachu's stubby feet step; Lugia and Butterfree beat two wings, Pidgeot at least its big one.
+    expect(findParts(await load(25), { motion: "gallop", shape: "quadruped" }).parts.filter((q) => q.kind === "leg")).toHaveLength(2);
+    expect(findParts(await load(249), { motion: "fly", shape: "wings" }).parts.filter((q) => q.kind === "wing").length).toBeGreaterThanOrEqual(2);
+    expect(findParts(await load(12), { motion: "fly", shape: "bug-wings" }).parts.filter((q) => q.kind === "wing")).toHaveLength(2);
+    expect(findParts(await load(18), { motion: "fly", shape: "wings" }).parts.filter((q) => q.kind === "wing").length).toBeGreaterThanOrEqual(1);
   }, 30_000);
 });
 
@@ -220,6 +229,21 @@ describe("how the parts swing", () => {
     const still = jointAngles({ kind: "leg", side: 0, front: 0, out: 1 }, clock(0.7, 0));
     expect(Math.abs(still.a) + Math.abs(still.b)).toBeLessThan(1e-9);
   });
+  it("steps stubby feet in turn, rocking the body over them", () => {
+    const a = jointAngles({ kind: "leg", side: 0, front: 0, out: 1, stub: true }, clock(0.2));
+    const b = jointAngles({ kind: "leg", side: 1, front: 0, out: 1, stub: true }, clock(0.2));
+    expect(Math.sign(a.a)).toBe(-Math.sign(b.a));
+    expect(Math.abs(a.a)).toBeLessThan(0.35);
+    expect(a.b).toBe(0);
+    expect(Math.abs(swayAt(clock(0.5)))).toBeGreaterThan(0.05);
+    expect(swayAt(clock(0.5, 0))).toBe(0);
+  });
+  it("swings a leg found only below the knee less, with less knee", () => {
+    const whole = Array.from({ length: 40 }, (_, k) => jointAngles({ kind: "leg", side: 0, front: 0, out: 1, reach: 0.45 }, clock((k / 40) * 2)));
+    const shin = Array.from({ length: 40 }, (_, k) => jointAngles({ kind: "leg", side: 0, front: 0, out: 1, reach: 0.18 }, clock((k / 40) * 2)));
+    expect(Math.max(...shin.map((x) => x.a))).toBeLessThan(Math.max(...whole.map((x) => x.a)) * 0.7);
+    expect(Math.min(...shin.map((x) => x.b))).toBeGreaterThan(Math.min(...whole.map((x) => x.b)) * 0.5);
+  });
   it("beats wings once per cycle", () => {
     const up = jointAngles({ kind: "wing", side: 0, front: 0, out: 1 }, { motion: "fly", phase: 0.25, v: 8, hip: 0.4, time: 0 });
     const down = jointAngles({ kind: "wing", side: 0, front: 0, out: 1 }, { motion: "fly", phase: 0.75, v: 8, hip: 0.4, time: 0 });
@@ -251,13 +275,19 @@ describe("swimmers and their pool lanes", () => {
     expect(mon("seviper").motion).toBe("slither");
     expect(mon("dratini").motion).toBe("slither");
     expect(mon("totodile").motion).not.toBe("swim");
-    // The rule, over the whole Pokédex.
-    for (const e of RACE_POKEMON) {
-      const fish = e.shape === "fish" || (e.types.includes("water") && (e.shape === "squiggle" || e.shape === "tentacles"));
-      if (e.motion === "swim") expect(fish).toBe(true);
-      if (fish && e.motion !== "swim") expect(["fly", "hover"]).toContain(e.motion);
+    // Only Water types swim: a fish of another type floats (or flops in its mud), and a Water-type serpent swims even as a Mega.
+    expect(mon("chi-yu").motion).toBe("hover");
+    expect(mon("overqwil").motion).toBe("hover");
+    expect(mon("stunfisk").motion).toBe("flop");
+    expect(mon("gyarados-mega").motion).toBe("swim");
+    // The rule, over every runner.
+    for (const e of RACE_ENTRANTS) {
+      const legless = e.types.includes("water") && (e.shape === "fish" || e.shape === "squiggle" || e.shape === "tentacles");
+      if (e.motion === "swim") expect(legless, e.key).toBe(true);
+      if (legless && e.motion !== "swim") expect(["fly", "hover"]).toContain(e.motion);
     }
     expect(motionFor({ shape: "fish", types: ["water"], abilities: [], species: 129 })).toBe("swim");
+    expect(motionFor({ shape: "fish", types: ["dark", "fire"], abilities: [], species: 1004 })).toBe("hover");
     expect(motionFor({ shape: "fish", types: ["electric"], abilities: ["levitate"], species: 604 })).toBe("hover");
   });
   it("beats the tail at Bainbridge's rate: speed ≈ 0.75 × length × frequency", () => {
@@ -298,11 +328,20 @@ describe("swimmers and their pool lanes", () => {
     expect(poolAt(0, -40, poolModes([3], 200))).toBe(false);
     expect(poolAt(0, -40, poolModes([3], 400))).toBe(true);
   });
-  it("is deep enough for its swimmers, who float at the surface", () => {
-    for (const h of [0.6, 2, 7.7]) {
+  it("floats small swimmers clear of the floor and sinks giants to a believable waterline", () => {
+    for (const h of [0.3, 0.6, 1.2]) {
+      expect(clipsUnderwater(h)).toBe(false);
       expect(swimmerY(h)).toBeLessThan(WATER_Y);
       expect(swimmerY(h)).toBeGreaterThan(-poolDepth([h]));
     }
+    // A whale shows its back (under a third of its height above the water); what is under the surface isn't drawn.
+    const wailord = RACE_ENTRANTS.find((e) => e.key === "wailord")!;
+    const h = makeRace([wailord], 100).lanes[0].h;
+    expect(clipsUnderwater(h)).toBe(true);
+    expect(submergeShare(h)).toBeGreaterThan(0.68);
+    expect(WATER_Y - swimmerY(h)).toBeGreaterThan(0.68 * h);
+    expect(deepTint([h])).toBeGreaterThan(0.9);
+    expect(deepTint([0.6])).toBe(0);
   });
 });
 
