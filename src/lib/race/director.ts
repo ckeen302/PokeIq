@@ -1,5 +1,5 @@
 import type { Camera } from "./broadcast";
-import { LANE_W, laneCentre, X0, KERB_R, type Distance } from "./track";
+import { BOWL, LANE_W, barrierZ, laneCentre, X0, KERB_R, type Distance } from "./track";
 
 /**
  * Where each broadcast camera stands and what it frames, as plain math
@@ -159,9 +159,21 @@ export function keepInFrame(pose: CamPose, spots: Spot[], aspect: number): CamPo
   const req = need(pos, fov);
   if (req <= tanOf(fov)) return pose;
   fov = Math.min(Math.max(fov, (2 * Math.atan(req) / DEG)), pose.fov * 1.25, 62);
+  // Back along the line of sight, but never further into the stands than the shot already stood (some stand at the barrier).
+  const into = (p: Vec3) => Math.max(Math.abs(p[0]) - (BOWL.A - 4), Math.abs(p[2]) - (barrierZ(p[0]) - 1.5));
+  const limit = Math.max(0, into(pose.pos));
   for (let k = 1; k <= 12 && need(pos, fov) > tanOf(fov); k++) {
     const m = 1 + 0.1 * k;
-    pos = [t[0] + off[0] * m, t[1] + off[1] * m, t[2] + off[2] * m];
+    const next: Vec3 = [t[0] + off[0] * m, t[1] + off[1] * m, t[2] + off[2] * m];
+    if (into(next) > limit) break;
+    pos = next;
+  }
+  // Where the camera can't go further back, the lens widens instead.
+  // (A wider lens shows more of the field, which may ask for wider still: settle it.)
+  for (let k = 0; k < 4; k++) {
+    const left = need(pos, fov);
+    if (left <= tanOf(fov) || fov >= 62) break;
+    fov = Math.min(62, (2 * Math.atan(left)) / DEG + 0.01);
   }
   return { pos, target: t, fov };
 }
