@@ -2,7 +2,9 @@ import { describe, expect, it } from "vitest";
 import { Director, type ArmySummary, type FieldSummary, type ShotName } from "@/lib/mass-battle/director";
 import { EV, EVENT_INTS } from "@/lib/mass-battle/constants";
 import { moveStyle } from "@/components/mass-battle/scene/effects";
-import { lookFor, normTime, normWeather, TIMES, WEATHERS } from "@/components/mass-battle/scene/look";
+import { lookFor, normTerrain, normTime, normWeather, TIMES, WEATHERS } from "@/components/mass-battle/scene/look";
+import { noteLabel, statusFxType } from "@/components/mass-battle/damage-numbers";
+import { NOTE, NOTE_CONFUSION, NOTE_SKIP } from "@/lib/mass-battle/constants";
 import { BattleView, LEAD, drawMask } from "@/components/mass-battle/view";
 import type { SimFrame, SimReady } from "@/components/mass-battle/protocol";
 import { ARENAS } from "@/lib/mass-battle/types";
@@ -107,6 +109,25 @@ describe("mass battle visuals: moves and weather", () => {
     expect(normTime("night")).toBe("night");
     expect(normTime("sunset")).toBe("dusk");
     expect(normTime(undefined)).toBe("day");
+  });
+
+  it("labels what happens to a unit besides a hit", () => {
+    expect(noteLabel(NOTE.HEAL, 25)?.text).toBe("+25");
+    expect(noteLabel(NOTE.CHIP, 12)?.text).toBe("−12");
+    expect(noteLabel(NOTE.STATUS, 2)?.text).toBe("Burned");
+    expect(noteLabel(NOTE.STATUS, NOTE_CONFUSION)?.text).toBe("Confused");
+    // Attack +2: stat 0 × 16 + 2 + 8.
+    expect(noteLabel(NOTE.BOOST, 10)?.text).toBe("Attack ↑↑");
+    // Speed −1.
+    expect(noteLabel(NOTE.BOOST, 4 * 16 + 7)?.text).toBe("Speed ↓");
+    expect(noteLabel(NOTE.SKIP, NOTE_SKIP.flinch)?.text).toBe("Flinched");
+    expect(noteLabel(99, 1)).toBeNull();
+    expect(statusFxType(1)).toBe("Electric");
+    expect(statusFxType(2)).toBe("Fire");
+    expect(statusFxType(6)).toBe("Ice");
+    expect(normTerrain("electric")).toBe("electric");
+    expect(normTerrain("Misty Terrain")).toBe("misty");
+    expect(normTerrain("none")).toBe("none");
   });
 
   it("has a look for every arena, time of day and weather", () => {
