@@ -459,12 +459,13 @@ export async function buildRef(item: SceneItem, builders: RefBuilders): Promise<
     const railTex = new THREE.CanvasTexture(rail);
     railTex.colorSpace = THREE.SRGBColorSpace;
     railTex.wrapS = THREE.RepeatWrapping;
-    railTex.repeat.set(W / 1.5, 1);
+    railTex.repeat.set((W - 0.5) / 1.5, 1);
     const railM = mat({ map: railTex, alphaTest: 0.5, side: THREE.DoubleSide, roughness: 0.5, metalness: 0.6 });
     for (const f of [2, 5]) {
+      // Within the facade's width (the corners stay clean), the rail on the slab's edge.
       const y = f * fh;
-      add(new THREE.BoxGeometry(W + 0.6, 0.18, 1.0).translate(0, y - 0.09, D / 2 + 0.5), plain);
-      add(new THREE.PlaneGeometry(W + 0.6, 1.0).translate(0, y + 0.5, D / 2 + 0.98), railM);
+      add(new THREE.BoxGeometry(W - 0.5, 0.18, 0.95).translate(0, y - 0.09, D / 2 + 0.47), plain);
+      add(new THREE.PlaneGeometry(W - 0.5, 1.0).translate(0, y + 0.5, D / 2 + 0.92), railM);
     }
     // The mansard: a steep slate slope with a dormer per bay (the ninth storey), a shallow zinc slope over the tenth up to the ridge at H.
     const inset = 1.4, kneeY = stoneH + fh * 1.45;

@@ -433,7 +433,7 @@ export function buildCity(plan: WorldPlan, shared: Shared, tex: CityTextures, qu
   for (const mesh of M.meshes(mats)) { group.add(mesh); shadowCasters.push(mesh); }
 
   // ---- Ground.
-  const ground = buildGround(plan, shared, tex);
+  const ground = buildGround(plan, shared, tex, quality.blocks);
   group.add(...ground.meshes);
 
   const centre = new THREE.Vector3();
@@ -459,7 +459,8 @@ export function buildCity(plan: WorldPlan, shared: Shared, tex: CityTextures, qu
 }
 
 /** The ground: flat strips and discs with world-scaled UVs, the plaza's pattern, the ring promenade, fountains and the colour plazas. */
-function buildGround(plan: WorldPlan, shared: Shared, tex: CityTextures): { meshes: THREE.Mesh[]; dispose(): void } {
+/** `detail` is the quality's share of the city (see QUALITY.blocks): the lighter ones plant fewer, simpler flowers. */
+function buildGround(plan: WorldPlan, shared: Shared, tex: CityTextures, detail = 1): { meshes: THREE.Mesh[]; dispose(): void } {
   const out: THREE.Mesh[] = [];
   const own: THREE.Material[] = [];
   const strip = (name: string, mat: THREE.MeshStandardMaterial, x0: number, x1: number, z0: number, z1: number, y: number, tile: number) => {
@@ -633,7 +634,7 @@ function buildGround(plan: WorldPlan, shared: Shared, tex: CityTextures): { mesh
           const span = (a1 - a0) * rb - 2.6;
           const n = Math.max(1, Math.floor(span / 2.6));
           for (let i = 0; i < n; i++) {
-            if (blooms.length >= 9000) break;
+            if (blooms.length >= 9000 * detail) break;
             const a = a0 + (1.3 + (i + 0.5) * (span / n) + (rnd() - 0.5) * 0.8) / rb;
             const p = at(rb + (rnd() - 0.5) * 0.8, a);
             const sc = 0.6 + rnd() * 0.4;
@@ -656,7 +657,8 @@ function buildGround(plan: WorldPlan, shared: Shared, tex: CityTextures): { mesh
       const petals = new THREE.MeshStandardMaterial({ color: "#ffffff", roughness: 0.75 });
       cutaway(petals, shared);
       own.push(petals);
-      const geo = new THREE.IcosahedronGeometry(0.5, 0);
+      // Rounded clumps; on the lighter qualities a simpler shape (8 triangles, not 20).
+      const geo = detail >= 0.7 ? new THREE.IcosahedronGeometry(0.5, 0) : new THREE.OctahedronGeometry(0.55, 0);
       const mesh = new THREE.InstancedMesh(geo, petals, blooms.length);
       blooms.forEach((m, i) => { mesh.setMatrixAt(i, m); mesh.setColorAt(i, bloomCols[i]); });
       mesh.castShadow = false;

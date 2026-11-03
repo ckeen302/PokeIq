@@ -69,9 +69,9 @@ const CANOPY = { cy: 11.2, rx: 4.6, ry: 3.4, rz: 4.6 };
  * through it, no speckle where the cards' mipmaps thin out) and casts a
  * whole shadow. Normals point out from the centre, like the cards'.
  */
-function canopyCore(seed: number): THREE.BufferGeometry {
+function canopyCore(seed: number, detail: 0 | 1): THREE.BufferGeometry {
   const { cy, rx, ry, rz } = CANOPY;
-  const g = new THREE.IcosahedronGeometry(1, 1);
+  const g = new THREE.IcosahedronGeometry(1, detail);
   const pos = g.attributes.position as THREE.BufferAttribute;
   const nrm = g.attributes.normal as THREE.BufferAttribute;
   const r = rng(seed);
@@ -409,12 +409,13 @@ export function buildProps(plan: WorldPlan, shared: Shared, tex: { bark: THREE.M
     const bark = new THREE.MeshStandardMaterial({ ...tex.bark, color: "#a49a8c" });
     cutaway(bark, shared);
     add(trunkGeometry(), bark, trunkMats);
-    // Every crown's solid core of foliage (one draw for all of them).
+    // Every crown's solid core of foliage, in the shade of the leaves round it (one draw for all of them).
     const coreTex = coreTexture();
     disposables.push(coreTex);
     const core = new THREE.MeshStandardMaterial({ color: "#ffffff", map: coreTex, roughness: 0.9, metalness: 0 });
     cutaway(core, shared);
-    add(canopyCore(7), core, canopy.flat(), leafCols.flat().map((c) => c.clone().multiplyScalar(0.92)));
+    // (Hidden inside the leaf cards, the core can be coarse on the light qualities: 20 triangles a crown instead of 80.)
+    add(canopyCore(7, quality.coverage === false ? 0 : 1), core, canopy.flat(), leafCols.flat().map((c) => c.clone().multiplyScalar(0.62)));
     const leafTex = leafTexture();
     disposables.push(leafTex);
     for (let v = 0; v < 3; v++) {
