@@ -23,6 +23,14 @@ export const MASS_BATTLE_LIVE = true;
  */
 export const WORLD_HISTORY_LIVE = true;
 
+/**
+ * The Story of Pokémon (/lab/pokemon-story), the real history of the
+ * franchise as a 3D film, takes the Pokémon Timeline's card on /lab and
+ * goes in the sitemap only once this is true. Until then its pages work by
+ * URL but stay out of search, and /lab keeps the Timeline card.
+ */
+export const POKEMON_STORY_LIVE = false;
+
 export interface LabExperience {
   id: "timeline" | "sizes" | "globe" | "race" | "mass-battle" | "world-history";
   href: string;
