@@ -30,11 +30,11 @@ export function beatPlain(b: Beat): string {
 }
 
 /** The beats the film captions (some are kept for the text version only). */
-export function filmBeats(c: Chapter): Beat[] {
+export function filmBeats<B extends Pick<Beat, "film">>(c: { beats: B[] }): B[] {
   return c.beats.filter((b) => b.film !== false);
 }
 
 /** What the film's caption shows: the excerpt when there is one (line breaks kept). */
-export function filmLine(b: Beat): string {
+export function filmLine(b: Pick<Beat, "cut" | "quote" | "text">): string {
   return b.cut ?? b.quote ?? b.text ?? "";
 }
