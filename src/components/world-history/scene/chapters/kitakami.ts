@@ -295,7 +295,7 @@ export const build: ChapterBuilder = async (ctx) => {
         }
       );
       L0.flash = 0.22 * spike(t, tDon + 1.6, 0.05, 0.5);
-      const fog: Look["fog"] = { color: [0.08, 0.1, 0.15], density: 0.014, height: RIDGE_AT[1] - 1, falloff: 0.22, sky: 0.3 };
+      const fog: Look["fog"] = { color: [0.05, 0.065, 0.1], density: 0.005, height: RIDGE_AT[1] - 1, falloff: 0.3, sky: 0.15 };
       return cine(L0, { fog, dof: { focus: t >= cuts[1] && t < cuts[2] ? [RIDGE_AT[0] - 2, RIDGE_AT[1] + 1, RIDGE_AT[2] + 3] : [7.6, 1, 0], k: 0.4 }, streak: 0.15 + 0.3 * spike(t, tDon + 1.6, 0.05, 1.2), streakColor: [0.5, 1.0, 0.85] });
     },
     dispose() {

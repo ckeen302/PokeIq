@@ -132,7 +132,7 @@ export function cine(L: Look, o: { fog?: Look["fog"]; dof?: Look["dof"]; streak?
   return {
     ...L,
     tone: o.tone ?? "filmic",
-    fringe: o.fringe ?? 0.35,
+    fringe: o.fringe ?? 0.25,
     streak: o.streak ?? 0.18,
     streakColor: o.streakColor ?? L.streakColor,
     mblur: o.mblur ?? 0.8,

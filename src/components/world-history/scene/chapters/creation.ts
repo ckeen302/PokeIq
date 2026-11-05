@@ -499,7 +499,7 @@ export const build: ChapterBuilder = async (ctx) => {
           lift: [[0, [0.01, 0.0, 0.03]], [tThird, [0.03, 0.0, 0.02]]],
         },
         { pos: [0, 3.2, -0.5], color: [1.0, 0.85, 0.55] }
-      ), { streak: 0.2 + 0.45 * spike(t, tBurst, 0.1, 2.4), streakColor: [1.0, 0.8, 0.55], dof: { focus, k: 0.3 }, fringe: 0.5 });
+      ), { streak: 0.2 + 0.45 * spike(t, tBurst, 0.1, 2.4), streakColor: [1.0, 0.8, 0.55], dof: { focus, k: 0.3 }, fringe: 0.35 });
     },
     dispose() {
       disposers.forEach((d) => d());
