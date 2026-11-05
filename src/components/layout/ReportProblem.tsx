@@ -3,7 +3,12 @@
 import { useEffect, useId, useRef, useState } from "react";
 import { MessageSquareWarning, X } from "lucide-react";
 import { currentPage, installErrorReporter } from "@/lib/report";
-import { FeedbackForm } from "./FeedbackForm";
+import dynamic from "next/dynamic";
+
+// Every page's footer has this button: the form's code stays out of the first load and is
+// fetched when the pointer or focus reaches the button.
+const loadForm = () => import("./FeedbackForm");
+const FeedbackForm = dynamic(() => loadForm().then((m) => m.FeedbackForm), { ssr: false });
 
 /** Sends errors the page didn't catch to /api/report (see lib/report). */
 export function ErrorReporter() {
@@ -28,7 +33,7 @@ export function ReportProblem() {
 
   return (
     <>
-      <button type="button" onClick={open} className="font-pixel text-[10px] uppercase tracking-wider hover:text-foreground">
+      <button type="button" onClick={open} onPointerEnter={() => void loadForm()} onFocus={() => void loadForm()} className="font-pixel text-[10px] uppercase tracking-wider hover:text-foreground">
         Report a problem
       </button>
       <dialog
