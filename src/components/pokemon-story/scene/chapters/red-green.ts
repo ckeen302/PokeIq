@@ -4,7 +4,7 @@ import { col, makeCloudLayer, makeGlow, makeSky, makeTerrain, merge, noise2, pla
 import { makeCanvasPanel } from "@/components/world-history/scene/props";
 import { lights, loadFigures, lookAt, pointPixel } from "@/components/world-history/scene/chapters/common";
 import type { ChapterBuilder } from "@/components/world-history/scene/types";
-import { drawCritter, makeBall, makeDevice, makeGrass, makeThreads } from "../story-kit";
+import { drawCritter, makeBall, makeDevice, makeGrass, makeSunShadows, makeThreads } from "../story-kit";
 import { bag, heroFigure, STOCK } from "./base";
 
 /**
@@ -18,23 +18,107 @@ import { bag, heroFigure, STOCK } from "./base";
  * cartridge glides in and a single card spins off it.
  */
 
-/** A gable-roofed house facing the village green: walls, a pitched roof, a chimney, a door and lit windows. */
-function gableHouse(o: { w: number; h: number; d: number }) {
+type Parts = Record<"plaster" | "trim" | "stone" | "wood" | "roof" | "pane", THREE.BufferGeometry[]>;
+
+/**
+ * A cottage facing +z: a stone plinth, plaster walls, a pitched roof whose
+ * eaves overhang the walls (with a ridge cap and a fascia line), a brick
+ * chimney with a cap, a framed door under a little hood with a step, and
+ * framed windows (sill, mullions, shutters) that glow warm from inside.
+ */
+function cottage(o: { w: number; h: number; d: number; seed: number }): Parts {
   const { w, h, d } = o;
-  const walls = new THREE.BoxGeometry(w, h, d).translate(0, h / 2, 0);
-  const tri = new THREE.Shape([new THREE.Vector2(-d * 0.6, 0), new THREE.Vector2(d * 0.6, 0), new THREE.Vector2(0, d * 0.46)]);
-  const roof = new THREE.ExtrudeGeometry(tri, { depth: w * 1.08, bevelEnabled: false }).translate(0, 0, -w * 0.54).rotateY(Math.PI / 2).translate(0, h, 0);
-  const gable = new THREE.ShapeGeometry(new THREE.Shape([new THREE.Vector2(-d / 2, 0), new THREE.Vector2(d / 2, 0), new THREE.Vector2(0, d * 0.38)]));
-  const g1 = gable.clone().rotateY(Math.PI / 2).translate(w / 2 + 0.001, h, 0), g2 = gable.clone().rotateY(-Math.PI / 2).translate(-w / 2 - 0.001, h, 0);
-  gable.dispose();
-  const chimney = new THREE.BoxGeometry(0.35, 1.1, 0.35).translate(w * 0.28, h + d * 0.3, -d * 0.12);
-  const door = new THREE.PlaneGeometry(0.55, 1.0).translate(0, 0.5, d / 2 + 0.01);
-  const wins = [-w * 0.3, w * 0.3].map((x) => new THREE.PlaneGeometry(0.5, 0.5).translate(x, h * 0.6, d / 2 + 0.01));
-  return { body: merge([walls, g1, g2, chimney]), roof, door, wins: merge(wins) };
+  const r = rng(o.seed);
+  const P: Parts = { plaster: [], trim: [], stone: [], wood: [], roof: [], pane: [] };
+  const box = (k: keyof Parts, sx: number, sy: number, sz: number, x: number, y: number, z: number, rx = 0, ry = 0) => P[k].push(placed(new THREE.BoxGeometry(sx, sy, sz), [x, y, z], ry, [1, 1, 1], rx));
+  box("stone", w + 0.12, 0.28, d + 0.12, 0, 0.14, 0);
+  box("plaster", w, h - 0.28, d, 0, 0.28 + (h - 0.28) / 2, 0);
+  // Gables (the walls' triangles under the roof, on the ±x ends).
+  const rh = d * 0.44;
+  const tri = new THREE.Shape([new THREE.Vector2(-d / 2, 0), new THREE.Vector2(d / 2, 0), new THREE.Vector2(0, rh)]);
+  const gable = new THREE.ExtrudeGeometry(tri, { depth: w, bevelEnabled: false }).translate(0, 0, -w / 2).rotateY(Math.PI / 2).translate(0, h, 0);
+  P.plaster.push(gable);
+  // The roof: two slabs from the ridge out past the eaves.
+  const ov = 0.42, ovx = 0.3, th = 0.12;
+  const run = d / 2 + ov, ang = Math.atan2(rh, d / 2), len = run / Math.cos(ang);
+  for (const side of [-1, 1]) {
+    const cz = side * run / 2, cy = h + rh - (run / 2) * Math.tan(ang) + th * 0.5 / Math.cos(ang);
+    box("roof", w + ovx * 2, th, len, 0, cy, cz, side * ang);
+    // A fascia board along the eave.
+    box("trim", w + ovx * 2, 0.16, 0.05, 0, h + rh - run * Math.tan(ang) - 0.02, side * (run + 0.01));
+  }
+  box("roof", w + ovx * 2 + 0.04, 0.1, 0.22, 0, h + rh + 0.09, 0);
+  // Barge boards up the gable ends.
+  for (const sx of [-1, 1]) for (const side of [-1, 1]) {
+    const g = placed(new THREE.BoxGeometry(0.06, 0.16, len), [sx * (w / 2 + ovx), h + rh - (run / 2) * Math.tan(ang) + 0.02, side * run / 2], 0, [1, 1, 1], side * ang);
+    P.trim.push(g);
+  }
+  // Chimney through the back slope.
+  const chx = (r() < 0.5 ? -1 : 1) * w * 0.28;
+  box("stone", 0.42, 1.5, 0.42, chx, h + rh * 0.55 + 0.4, -d * 0.2);
+  box("stone", 0.52, 0.08, 0.52, chx, h + rh * 0.55 + 1.18, -d * 0.2);
+  // The door: frame, panel, a hood on brackets, a step.
+  const dx = (r() - 0.5) * w * 0.08, fz = d / 2;
+  box("wood", 0.58, 1.12, 0.06, dx, 0.28 + 0.56, fz + 0.01);
+  box("trim", 0.72, 0.08, 0.08, dx, 0.28 + 1.16, fz + 0.02);
+  box("trim", 0.07, 1.16, 0.08, dx - 0.33, 0.28 + 0.58, fz + 0.02);
+  box("trim", 0.07, 1.16, 0.08, dx + 0.33, 0.28 + 0.58, fz + 0.02);
+  box("roof", 0.95, 0.06, 0.42, dx, 0.28 + 1.36, fz + 0.2, 0.18);
+  box("stone", 0.9, 0.12, 0.42, dx, 0.06, fz + 0.24);
+  P.pane.push(placed(new THREE.PlaneGeometry(0.3, 0.22), [dx, 0.28 + 0.92, fz + 0.045]));
+  // Windows: a pair on the front (either side of the door), one on each gable end.
+  const win = (x: number, y: number, z: number, ry: number, ww: number, wh: number) => {
+    const at = (lx: number, ly: number, lz: number): Vec3 => [x + Math.cos(ry) * lx + Math.sin(ry) * lz, y + ly, z - Math.sin(ry) * lx + Math.cos(ry) * lz];
+    P.pane.push(placed(new THREE.PlaneGeometry(ww, wh), at(0, 0, 0.012), ry));
+    const tb = 0.07;
+    P.trim.push(placed(new THREE.BoxGeometry(ww + tb * 2, tb, 0.07), at(0, wh / 2 + tb / 2, 0.02), ry));
+    P.trim.push(placed(new THREE.BoxGeometry(ww + tb * 2 + 0.1, 0.07, 0.16), at(0, -wh / 2 - 0.035, 0.06), ry));
+    P.trim.push(placed(new THREE.BoxGeometry(tb, wh, 0.07), at(-ww / 2 - tb / 2, 0, 0.02), ry));
+    P.trim.push(placed(new THREE.BoxGeometry(tb, wh, 0.07), at(ww / 2 + tb / 2, 0, 0.02), ry));
+    P.trim.push(placed(new THREE.BoxGeometry(0.035, wh, 0.04), at(0, 0, 0.02), ry));
+    P.trim.push(placed(new THREE.BoxGeometry(ww, 0.035, 0.04), at(0, wh * 0.1, 0.02), ry));
+    // Shutters, in the roof's colour.
+    P.roof.push(placed(new THREE.BoxGeometry(ww * 0.48, wh + 0.06, 0.04), at(-ww * 0.78 - tb, 0, 0.03), ry));
+    P.roof.push(placed(new THREE.BoxGeometry(ww * 0.48, wh + 0.06, 0.04), at(ww * 0.78 + tb, 0, 0.03), ry));
+  };
+  const wy = 0.28 + (h - 0.28) * 0.56;
+  win(dx - w * 0.27, wy, fz, 0, 0.44, 0.6); win(dx + w * 0.27, wy, fz, 0, 0.44, 0.6);
+  win(w / 2, wy, 0, Math.PI / 2, 0.46, 0.56);
+  win(-w / 2, wy, 0, -Math.PI / 2, 0.46, 0.56);
+  win(w / 2, h + rh * 0.38, 0, Math.PI / 2, 0.34, 0.36);
+  return P;
+}
+
+/** Merges geometries and gives each source its own vertex colour. */
+function mergeTinted(list: [THREE.BufferGeometry, THREE.Color][]) {
+  const counts = list.map(([g]) => (g.index ? g.getAttribute("position").count : g.getAttribute("position").count));
+  const geo = merge(list.map(([g]) => g));
+  const c = new Float32Array(geo.getAttribute("position").count * 3);
+  let o = 0;
+  list.forEach(([, k], i) => { for (let j = 0; j < counts[i]; j++, o++) c.set([k.r, k.g, k.b], o * 3); });
+  geo.setAttribute("color", new THREE.BufferAttribute(c, 3));
+  return { geo, counts };
+}
+
+/** The warm interior seen through a window pane: a lamp-lit room, curtains drawn back. */
+function paneTexture() {
+  const c = document.createElement("canvas");
+  c.width = 64; c.height = 64;
+  const g = c.getContext("2d")!;
+  const gr = g.createRadialGradient(32, 40, 2, 32, 40, 44);
+  gr.addColorStop(0, "#fff2c8"); gr.addColorStop(0.45, "#f6b860"); gr.addColorStop(1, "#7a3a18");
+  g.fillStyle = gr; g.fillRect(0, 0, 64, 64);
+  g.fillStyle = "rgba(120,40,30,0.75)";
+  g.beginPath(); g.moveTo(0, 0); g.lineTo(16, 0); g.quadraticCurveTo(8, 34, 14, 64); g.lineTo(0, 64); g.fill();
+  g.beginPath(); g.moveTo(64, 0); g.lineTo(48, 0); g.quadraticCurveTo(56, 34, 50, 64); g.lineTo(64, 64); g.fill();
+  g.fillStyle = "rgba(60,30,10,0.5)"; g.fillRect(20, 50, 24, 14);
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace;
+  return t;
 }
 
 /** The village (shared with Chapter X's return to Kanto). The side toward +z is left open: the camera walks in from there. */
-export function makeVillage(scene: THREE.Object3D, seed = 2) {
+export function makeVillage(scene: THREE.Object3D, seed = 2, sun: Vec3 = [-0.82, 0.27, -0.5]) {
   const r = rng(seed);
   const spots: { pos: Vec3; rot: number; size: Vec3 }[] = [];
   const N = 14;
@@ -45,46 +129,98 @@ export function makeVillage(scene: THREE.Object3D, seed = 2) {
     const x = Math.cos(a) * d, z = Math.sin(a) * d - 4;
     spots.push({ pos: [x, 0, z], rot: Math.atan2(-x, -(z + 4)), size: [2.8 + r() * 1.2, 2.0 + r() * 0.6, 2.4 + r() * 0.6] });
   }
-  const ROOFS = ["#b8443a", "#3a6a9a", "#4a7f4a", "#b8783a", "#7a5a9a"];
-  const wallMat = stoneMaterial({ color: "#efe2cc", roughness: 0.9, dirt: 0.25 });
-  const doorMat = new THREE.MeshStandardMaterial({ color: col("#5a3a22"), roughness: 0.8 });
-  const roofMats = ROOFS.map((c) => new THREE.MeshStandardMaterial({ color: col(c), roughness: 0.7 }));
-  const geos: THREE.BufferGeometry[] = [];
-  const houses = spots.map((sp, i) => {
-    const G = gableHouse({ w: sp.size[0], h: sp.size[1], d: sp.size[2] });
-    geos.push(G.body, G.roof, G.door, G.wins);
-    const winMat = new THREE.MeshBasicMaterial({ color: col("#ffd890", 0.25) });
-    const group = new THREE.Group();
-    group.add(new THREE.Mesh(G.body, wallMat), new THREE.Mesh(G.roof, roofMats[i % ROOFS.length]), new THREE.Mesh(G.door, doorMat), new THREE.Mesh(G.wins, winMat));
-    group.position.set(...sp.pos);
-    group.rotation.y = sp.rot;
-    scene.add(group);
-    return { group, winMat };
+  const ROOFS = ["#9a3a2e", "#3a5a7e", "#4a6a3e", "#a8683a", "#6a4a6a", "#7a3a2a"].map((c) => col(c));
+  const WALLS = ["#efe2cc", "#e8d4b4", "#f2e8d8", "#e2cfb8"].map((c) => col(c));
+  const parts: { [K in keyof Parts]: [THREE.BufferGeometry, THREE.Color][] } = { plaster: [], trim: [], stone: [], wood: [], roof: [], pane: [] };
+  const paneOwner: number[] = [];
+  spots.forEach((sp, i) => {
+    const P = cottage({ w: sp.size[0], h: sp.size[1], d: sp.size[2], seed: seed * 31 + i });
+    const roofC = ROOFS[i % ROOFS.length], wallC = WALLS[(i * 3) % WALLS.length];
+    for (const k of Object.keys(P) as (keyof Parts)[]) for (const g of P[k]) {
+      placed(g, sp.pos, sp.rot);
+      parts[k].push([g, k === "roof" ? roofC : k === "plaster" ? wallC : col("#ffffff")]);
+      if (k === "pane") paneOwner.push(i);
+    }
   });
-  // Grounding: a soft shadow under every house, and a low hedge along its front.
-  const shadowTex = (() => { const c = document.createElement("canvas"); c.width = c.height = 64; const g = c.getContext("2d")!; const gr = g.createRadialGradient(32, 32, 4, 32, 32, 32); gr.addColorStop(0, "rgba(0,0,0,0.7)"); gr.addColorStop(1, "rgba(0,0,0,0)"); g.fillStyle = gr; g.fillRect(0, 0, 64, 64); return new THREE.CanvasTexture(c); })();
-  const shadowMat = new THREE.MeshBasicMaterial({ map: shadowTex, transparent: true, depthWrite: false, color: col("#1a2a10") });
-  const shadowGeo = merge(spots.map((sp) => placed(new THREE.PlaneGeometry(sp.size[0] * 1.9, sp.size[2] * 1.9).rotateX(-Math.PI / 2), [sp.pos[0], 0.03, sp.pos[2]], sp.rot)));
-  const hedgeMat = new THREE.MeshStandardMaterial({ color: col("#3a6a2a"), roughness: 0.95 });
-  const hedgeGeo = merge(spots.flatMap((sp) => { const c = Math.cos(sp.rot), sn = Math.sin(sp.rot); const f = sp.size[2] / 2 + 1.0; return [-1, 1].map((side) => { const lx = side * (sp.size[0] * 0.42 + 0.2); return placed(new THREE.BoxGeometry(sp.size[0] * 0.5, 0.55, 0.45), [sp.pos[0] + lx * c + f * sn, 0.27, sp.pos[2] - lx * sn + f * c], sp.rot); }); }));
+  const sh = makeSunShadows({
+    sun,
+    boxes: spots.map((sp) => ({ c: [sp.pos[0], (sp.size[1] + sp.size[2] * 0.3) / 2, sp.pos[2]] as Vec3, half: [sp.size[0] / 2 + 0.1, (sp.size[1] + sp.size[2] * 0.3) / 2, sp.size[2] / 2 + 0.15] as Vec3, rot: sp.rot })),
+    balls: [],
+  });
+  const wallMat = stoneMaterial({ color: "#ffffff", roughness: 0.92, dirt: 0.22 });
+  wallMat.vertexColors = true;
+  const trimMat = new THREE.MeshStandardMaterial({ color: col("#f3ede0"), roughness: 0.7 });
+  const stoneMat = stoneMaterial({ color: "#8e8072", roughness: 0.95, dirt: 0.5 });
+  const woodMat = new THREE.MeshStandardMaterial({ color: col("#5a3420"), roughness: 0.75 });
+  const roofMat = stoneMaterial({ color: "#ffffff", roughness: 0.78, dirt: 0.35 });
+  roofMat.vertexColors = true;
+  const paneTex = paneTexture();
+  const paneMat = new THREE.MeshBasicMaterial({ map: paneTex, vertexColors: true });
+  const town = new THREE.Group();
+  const merged = (Object.keys(parts) as (keyof Parts)[]).map((k) => {
+    const { geo, counts } = mergeTinted(parts[k]);
+    const m = { plaster: wallMat, trim: trimMat, stone: stoneMat, wood: woodMat, roof: roofMat, pane: paneMat }[k];
+    town.add(new THREE.Mesh(geo, m));
+    return { k, geo, counts };
+  });
+  scene.add(town);
+  const paneGeo = merged.find((m) => m.k === "pane")!;
+  const paneCol = paneGeo.geo.getAttribute("color") as THREE.BufferAttribute;
+  // Grounding: garden paths from each door to the ring, picket fences with a gate gap, hedges.
+  const fenceG: THREE.BufferGeometry[] = [], pathG: THREE.BufferGeometry[] = [], hedgeG: THREE.BufferGeometry[] = [];
+  const toWorld = (sp: typeof spots[number], lx: number, lz: number): Vec3 => { const c = Math.cos(sp.rot), sn = Math.sin(sp.rot); return [sp.pos[0] + lx * c + lz * sn, 0, sp.pos[2] - lx * sn + lz * c]; };
+  const fence = (pts: [number, number][], at: (x: number, z: number) => Vec3, rot: number) => {
+    for (let i = 0; i < pts.length - 1; i++) {
+      const [x0, z0] = pts[i], [x1, z1] = pts[i + 1];
+      const L = Math.hypot(x1 - x0, z1 - z0), ry = rot + Math.atan2(-(z1 - z0), x1 - x0);
+      const n = Math.max(1, Math.round(L / 0.2));
+      for (let k = 0; k <= n; k++) { const f = k / n; const p = at(x0 + (x1 - x0) * f, z0 + (z1 - z0) * f); fenceG.push(placed(new THREE.BoxGeometry(0.07, k % 6 === 0 ? 0.7 : 0.58, 0.04), [p[0], k % 6 === 0 ? 0.35 : 0.29, p[2]], ry)); }
+      for (const y of [0.18, 0.44]) { const m = at((x0 + x1) / 2, (z0 + z1) / 2); fenceG.push(placed(new THREE.BoxGeometry(L, 0.05, 0.03), [m[0], y, m[2]], ry)); }
+    }
+  };
+  spots.forEach((sp, i) => {
+    const front = sp.size[2] / 2;
+    const dist = Math.hypot(sp.pos[0], sp.pos[2] + 4);
+    const L = Math.max(0.5, dist - front - 5.4);
+    const mid = toWorld(sp, 0, front + L / 2);
+    pathG.push(placed(new THREE.PlaneGeometry(0.9, L).rotateX(-Math.PI / 2), [mid[0], 0.022, mid[2]], sp.rot));
+    const fz = front + 1.8, hw = sp.size[0] * 0.5 + 0.6;
+    const at = (x: number, z: number) => toWorld(sp, x, z);
+    if (i % 3 !== 1) {
+      fence([[-hw, front - 0.3], [-hw, fz], [-0.6, fz]], at, sp.rot);
+      fence([[0.6, fz], [hw, fz], [hw, front - 0.3]], at, sp.rot);
+    } else {
+      for (const side of [-1, 1]) { const p = at(side * (hw * 0.55 + 0.3), fz); hedgeG.push(placed(new THREE.BoxGeometry(hw - 0.7, 0.6, 0.5), [p[0], 0.3, p[2]], sp.rot)); }
+    }
+    // A flower bed under the front windows.
+    for (const side of [-1, 1]) { const p = at(side * sp.size[0] * 0.3, front + 0.35); hedgeG.push(placed(new THREE.BoxGeometry(0.9, 0.32, 0.38), [p[0], 0.16, p[2]], sp.rot)); }
+  });
+  // Fences down both sides of the lane in.
+  fence([[1.6, 30], [1.6, 7]], (x, z) => [x, 0, z], 0);
+  fence([[-1.6, 7], [-1.6, 30]], (x, z) => [x, 0, z], 0);
+  const fenceMat = new THREE.MeshStandardMaterial({ color: col("#e9e2d2"), roughness: 0.8 });
+  const pathMat = new THREE.MeshStandardMaterial({ color: col("#cdb487"), roughness: 0.95 });
+  const hedgeMat = stoneMaterial({ color: "#3e6a2c", roughness: 0.95, dirt: 0.6 });
+  const fenceGeo = merge(fenceG), pathGeo = merge(pathG), hedgeGeo = merge(hedgeG);
   const extras = new THREE.Group();
-  extras.add(new THREE.Mesh(shadowGeo, shadowMat), new THREE.Mesh(hedgeGeo, hedgeMat));
+  extras.add(new THREE.Mesh(fenceGeo, fenceMat), new THREE.Mesh(pathGeo, pathMat), new THREE.Mesh(hedgeGeo, hedgeMat));
   scene.add(extras);
-  const grass = makeGrass({ count: 16000, center: [0, 0, -2], size: [44, 40], height: [0.1, 0.28], base: "#3a6a2a", tip: "#b4d86a", seed: 9, clear: { x: 0, z: -4, r: 6.2 } });
+  const grass = makeGrass({ count: 16000, center: [0, 0, -2], size: [44, 40], height: [0.1, 0.28], base: "#3a6a2a", tip: "#c4d870", seed: 9, clear: { x: 0, z: -4, r: 6.2 }, shadow: sh });
   grass.u.uWind.value = 0.4;
-  grass.u.uSunDir.value.set(-0.9, 0.28, 0.35).normalize();
+  grass.u.uSunDir.value.set(...sun).normalize();
   extras.add(grass.mesh);
   const nz = noise2(seed);
-  const terrain = makeTerrain({ size: [220, 220], segments: 90, height: (x, z) => { const d = Math.hypot(x, z + 4); return d < 24 ? 0 : (d - 24) * 0.12 + nz.fbm(x * 0.03, z * 0.03, 3) * 5; }, color: (h) => [0.26 + h * 0.008, 0.46 + h * 0.006, 0.2] });
+  const terrain = makeTerrain({ size: [220, 220], segments: 90, height: (x, z) => { const d = Math.hypot(x, z + 4); if (d < 24) return 0; const k = Math.min(1, (d - 24) / 10); return Math.max(0, (d - 24) * 0.12 + nz.fbm(x * 0.03, z * 0.03, 3) * 5 * k); }, color: (h, _s, x, z) => { const n = nz.fbm(x * 0.15, z * 0.15, 2); return [0.24 + h * 0.008 + n * 0.05, 0.42 + h * 0.006 + n * 0.06, 0.17]; } });
   scene.add(terrain.mesh);
-  const path = new THREE.Mesh(new THREE.RingGeometry(4, 5.6, 64).rotateX(-Math.PI / 2), new THREE.MeshStandardMaterial({ color: col("#d6c08e"), roughness: 0.95 }));
+  const path = new THREE.Mesh(new THREE.RingGeometry(4, 5.6, 64).rotateX(-Math.PI / 2), pathMat);
   path.position.set(0, 0.02, -4);
-  const lane = new THREE.Mesh(new THREE.PlaneGeometry(2.2, 30).rotateX(-Math.PI / 2), path.material);
+  const lane = new THREE.Mesh(new THREE.PlaneGeometry(2.2, 30).rotateX(-Math.PI / 2), pathMat);
   lane.position.set(0, 0.015, 16);
   scene.add(path, lane);
-  const trees = new THREE.InstancedMesh(new THREE.ConeGeometry(1.1, 3.4, 8), new THREE.MeshStandardMaterial({ color: col("#2f6a32"), roughness: 0.9 }), 70);
-  const trunks = new THREE.InstancedMesh(new THREE.CylinderGeometry(0.16, 0.2, 1, 6), new THREE.MeshStandardMaterial({ color: col("#5a3a22"), roughness: 0.9 }), 70);
+  const trees = new THREE.InstancedMesh(new THREE.ConeGeometry(1.1, 3.4, 8), new THREE.MeshStandardMaterial({ color: col("#2f5a2c"), roughness: 0.9 }), 70);
+  const trunks = new THREE.InstancedMesh(new THREE.CylinderGeometry(0.16, 0.2, 1, 6), new THREE.MeshStandardMaterial({ color: col("#4a3020"), roughness: 0.9 }), 70);
   const m = new THREE.Matrix4();
+  const balls: [number, number, number, number][] = [];
   for (let i = 0; i < 70; i++) {
     const a = r() * Math.PI * 2, dd = 22 + r() * 22;
     const x = Math.cos(a) * dd, z = Math.sin(a) * dd - 4;
@@ -94,17 +230,25 @@ export function makeVillage(scene: THREE.Object3D, seed = 2) {
     trees.setMatrixAt(i, m);
     m.makeScale(s, s, s).setPosition(x, 0.5 * s, z);
     trunks.setMatrixAt(i, m);
+    if (!open) balls.push([x, 1.9 * s, z, 0.95 * s]);
   }
+  sh.uniforms.uShBall.value = (sh.uniforms.uShBall.value as THREE.Vector4[]).map((v, i) => (balls[i] ? new THREE.Vector4(...balls[i]) : v));
   scene.add(trees, trunks);
+  for (const [mat, tag] of [[terrain.mesh.material, "terrain"], [pathMat, "path"], [hedgeMat, "hedge"], [fenceMat, "fence"]] as [THREE.MeshStandardMaterial, string][]) sh.patch(mat, tag);
+  const warm = col("#ffd8a0");
   return {
-    houses, spots, extras, grass,
-    windows(k: number[]) { houses.forEach((h, i) => h.winMat.color.copy(col("#ffd890", 0.25 + 3.0 * (k[i] ?? 0)))); },
+    spots, town, extras, grass, shadows: sh,
+    /** Window light per house (0 day glow … 1 lit at dusk). */
+    windows(k: number[]) {
+      let o = 0;
+      paneGeo.counts.forEach((n, j) => { const v = 0.35 + 2.6 * (k[paneOwner[j]] ?? 0); for (let q = 0; q < n; q++, o++) paneCol.setXYZ(o, warm.r * v, warm.g * v, warm.b * v); });
+      paneCol.needsUpdate = true;
+    },
     dispose() {
-      geos.forEach((g) => g.dispose());
-      shadowGeo.dispose(); shadowMat.dispose(); shadowTex.dispose(); hedgeGeo.dispose(); hedgeMat.dispose(); grass.dispose();
-      houses.forEach((h) => h.winMat.dispose());
-      [wallMat, doorMat, ...roofMats].forEach((x) => x.dispose());
-      terrain.dispose(); path.geometry.dispose(); lane.geometry.dispose(); (path.material as THREE.Material).dispose();
+      merged.forEach((x) => x.geo.dispose());
+      [wallMat, trimMat, stoneMat, woodMat, roofMat, paneMat, fenceMat, pathMat, hedgeMat].forEach((x) => x.dispose());
+      paneTex.dispose(); fenceGeo.dispose(); pathGeo.dispose(); hedgeGeo.dispose(); grass.dispose();
+      terrain.dispose(); path.geometry.dispose(); lane.geometry.dispose();
       [trees, trunks].forEach((t) => { t.geometry.dispose(); (t.material as THREE.Material).dispose(); t.dispose(); });
     },
   };
@@ -132,26 +276,81 @@ export const build: ChapterBuilder = async (ctx) => {
   const end = ctx.timing.anim;
   const tLaunch = B("launch"), tOld = B("old"), tThree = B("three"), tMew = B("mew-rumour"), tWord = B("word"), tBlue = B("blue");
 
-  const sky = D.add(makeSky({ top: "#3f86e0", horizon: "#e4ecf6", bottom: "#4a6a3a", sunDir: [-0.9, 0.28, 0.35], sunColor: "#fff0d0", sunSize: 900, sunGlow: 0.3 }));
+  // Early morning: a low warm sun off to the left, long shadows across the green.
+  const SUN: Vec3 = [-0.82, 0.27, -0.5];
+  const sunV = new THREE.Vector3(...SUN).normalize();
+  const sky = D.add(makeSky({ top: "#4a7fcc", horizon: "#f6d6a8", bottom: "#5a6a3a", sunDir: SUN, sunColor: "#ffd8a0", sunSize: 700, sunGlow: 0.45 }));
   scene.add(sky.mesh);
-  scene.fog = new THREE.FogExp2(col("#cfdcea"), 0.0045);
-  const clouds = D.add(makeCloudLayer({ size: 700, y: 70, color: "#ffffff", shadow: "#c8b8c8", density: 0.34, scale: 0.008, speed: [1, 0, 0.3], intensity: 1.05 }));
+  scene.fog = new THREE.FogExp2(col("#dcc6a2"), 0.0048);
+  const clouds = D.add(makeCloudLayer({ size: 700, y: 70, color: "#fff4e4", shadow: "#c0a8a8", density: 0.28, scale: 0.008, speed: [1, 0, 0.3], intensity: 1.05 }));
   scene.add(clouds.mesh);
-  const L = lights(scene, { sky: "#cfe4ff", ground: "#5a7a3a", fill: 0.7, key: "#fff0d8", keyK: 1.6, keyPos: [-12, 10, 6], rim: "#ffd0a0", rimK: 0.8 });
-  const V = D.add(makeVillage(scene));
+  const L = lights(scene, { sky: "#a8c4ec", ground: "#4a5a2a", fill: 0.72, key: "#ffd8a8", keyK: 2.5, keyPos: [SUN[0] * 30, SUN[1] * 30, SUN[2] * 30], rim: "#a8c0ff", rimK: 0.35, rimPos: [20, 8, 14] });
+  const V = D.add(makeVillage(scene, 2, SUN));
+  V.shadows.uniforms.uShK.value = 0.82;
 
   // The Game Boy whose screen we push through.
   const gb = D.add(makeDevice("gb", { draw: drawTitleScreen(ctx.font), px: [320, 288] }));
   gb.group.scale.setScalar(6);
   gb.group.position.set(0, 2.2 - 6 * 1.48 * 0.2, 26);
   scene.add(gb.group);
-  // Pixels that turn into blocks as we pass through.
-  const blocks = new THREE.InstancedMesh(new THREE.BoxGeometry(0.35, 0.35, 0.35), new THREE.MeshStandardMaterial({ color: col("#6a9a2a"), emissive: col("#9bbc0f"), emissiveIntensity: 0.6, roughness: 0.6 }), 400);
+  // The push through the screen: once the screen fills the frame, its pixels
+  // switch off cell by cell (centre first, ragged at the edge, each flaring
+  // pale green as it goes) and the morning village is behind them.
+  const GX = 40, GY = 36;
+  const thr = new Uint8Array(GX * GY * 4);
+  const tr0 = rng(17);
+  const cellK: number[] = [];
+  for (let y = 0; y < GY; y++) for (let x = 0; x < GX; x++) {
+    const rad = Math.hypot((x + 0.5) / GX - 0.5, ((y + 0.5) / GY - 0.5) * 0.9) / 0.68;
+    const k = Math.min(0.999, Math.max(0, rad * 0.62 + tr0() * 0.38));
+    cellK.push(k);
+    thr.set([Math.round(k * 255), 0, 0, 255], (y * GX + x) * 4);
+  }
+  const thrTex = new THREE.DataTexture(thr, GX, GY, THREE.RGBAFormat);
+  thrTex.magFilter = thrTex.minFilter = THREE.NearestFilter;
+  thrTex.needsUpdate = true;
+  const pixU = { uMap: { value: (gb.screen.mat as THREE.MeshBasicMaterial).map }, uThr: { value: thrTex }, uRect: { value: new THREE.Vector4(-1, -1, 1, 1) }, uK: { value: 0 }, uGrid: { value: new THREE.Vector2(GX, GY) } };
+  const pixMat = new THREE.ShaderMaterial({
+    uniforms: pixU,
+    transparent: true, depthTest: false, depthWrite: false, toneMapped: false,
+    vertexShader: /* glsl */ `varying vec2 vN; void main(){ vN = position.xy; gl_Position = vec4(position.xy, 0.0, 1.0); }`,
+    fragmentShader: /* glsl */ `
+      uniform sampler2D uMap, uThr; uniform vec4 uRect; uniform float uK; uniform vec2 uGrid;
+      varying vec2 vN;
+      void main(){
+        vec2 uv = (vN - uRect.xy) / max(uRect.zw - uRect.xy, vec2(1e-3));
+        vec2 cell = floor(uv * uGrid);
+        vec2 cuv = (cell + 0.5) / uGrid;
+        // Past the screen's edge (a tall phone frame), the bezel breaks up into cells too, a little ahead of the screen.
+        float outside = 1.0 - step(0.0, cuv.x) * step(cuv.x, 1.0) * step(0.0, cuv.y) * step(cuv.y, 1.0);
+        float th = texture2D(uThr, clamp(cuv, 0.5 / uGrid, 1.0 - 0.5 / uGrid)).r - 0.12 * outside;
+        float left = th - uK;
+        if (left < 0.0) discard;
+        vec3 c = mix(texture2D(uMap, cuv).rgb * 1.25, vec3(0.07, 0.07, 0.09), outside);
+        vec2 f = fract(uv * uGrid);
+        float gap = step(0.07, f.x) * step(0.07, f.y);
+        c *= mix(0.72, 1.0, gap);
+        float edge = 1.0 - smoothstep(0.0, 0.09, left);
+        c = mix(c, vec3(0.62, 0.78, 0.2), edge * step(0.001, uK));
+        gl_FragColor = vec4(c, 1.0);
+      }`,
+  });
+  const pix = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), pixMat);
+  pix.frustumCulled = false;
+  pix.renderOrder = 999;
+  scene.add(pix);
+  D.add({ dispose: () => { pix.geometry.dispose(); pixMat.dispose(); thrTex.dispose(); } });
+  // As each cell goes, a block of it falls away into the village.
+  const NB = 420;
+  const blocks = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 1, 1), new THREE.MeshStandardMaterial({ color: col("#ffffff"), roughness: 0.6, emissive: col("#9bbc0f"), emissiveIntensity: 0.35 }), NB);
+  const GBC = ["#0f380f", "#306230", "#8bac0f", "#9bbc0f"].map((c) => col(c));
+  const br = rng(7);
+  const bseed = Array.from({ length: NB }, (_, i) => { const cx = Math.floor(br() * GX), cy = Math.floor(br() * GY); blocks.setColorAt(i, GBC[Math.floor(br() * 4)]); return [cx, cy, cellK[cy * GX + cx], br()]; });
   scene.add(blocks);
   D.add({ dispose: () => { blocks.geometry.dispose(); (blocks.material as THREE.Material).dispose(); blocks.dispose(); } });
-  const br = rng(7);
-  const bseed = Array.from({ length: 400 }, () => [br(), br(), br()]);
   const m4 = new THREE.Matrix4();
+  const corner = new THREE.Vector3();
+  const scrW = 0.9 * 0.52, scrH = 0.9 * 0.47;
 
   // The lab table and three balls.
   const tableMat = new THREE.MeshStandardMaterial({ color: col("#7a5236"), roughness: 0.5 });
@@ -204,7 +403,9 @@ export const build: ChapterBuilder = async (ctx) => {
   const keys: Key[] = [
     { t: 0, pos: [0, 2.2, 26 + R * 1.6], look: [0, 2.2, 26], fov: 40 },
     { t: tLaunch + 0.6, pos: [0, 2.2, 26 + R * 0.9], look: [0, 2.2, 26], fov: 40 },
-    { t: tLaunch + 2.4, pos: [0, 2.2, 24], look: [0, 2.0, 10], fov: 46 },
+    { t: tLaunch + 1.25, pos: [0, 2.2, 29.1], look: [0, 2.2, 24], fov: 40 },
+    { t: tLaunch + 2.3, pos: [0, 2.2, 28.4], look: [0, 2.1, 18], fov: 42 },
+    { t: tLaunch + 3.6, pos: [0, 2.3, 22], look: [0, 1.8, 8], fov: 46 },
     { t: tOld + 1, pos: [0, 2.6, 16], look: [0, 1.6, 2], fov: 46 },
     { t: tThree, pos: [0, 2.2, 7], look: [0, 1.25, 2], fov: 42 },
     arc(0), arc(0.5), arc(1),
@@ -214,7 +415,7 @@ export const build: ChapterBuilder = async (ctx) => {
     { t: tBlue + 1.8, pos: [0.2, 5.2, 11.5], look: [0, 3.3, 4], fov: 42 },
     { t: end, pos: [0.4, 3.7, 7.6], look: [0, 3.3, 4], fov: 38 },
   ];
-  const dayTop = col("#3f86e0"), duskTop = col("#2a2e6a"), dayHor = col("#e4ecf6"), duskHor = col("#ff8a5a");
+  const dayTop = col("#4a7fcc"), duskTop = col("#2a2e6a"), dayHor = col("#f6d6a8"), duskHor = col("#ff8a5a");
 
   return {
     scene,
@@ -227,30 +428,46 @@ export const build: ChapterBuilder = async (ctx) => {
       const dusk = ramp(t, tWord - 1, tWord + 3);
       sky.u.uTop.value.copy(dayTop.clone().lerp(duskTop, dusk));
       sky.u.uHorizon.value.copy(dayHor.clone().lerp(duskHor, dusk));
-      L.key.intensity = 1.6 * (1 - dusk * 0.7);
+      L.key.intensity = 2.5 * (1 - dusk * 0.72);
+      L.key.color.copy(col("#ffd8a8").lerp(col("#ff8a50"), dusk));
       clouds.u.uTime.value = ambient;
-      clouds.u.uColor.value.copy(col("#ffffff").lerp(col("#ffb08a"), dusk));
-      clouds.u.uShadow.value.copy(col("#c8b8c8").lerp(col("#4a3a6a"), dusk));
+      clouds.u.uColor.value.copy(col("#fff4e4").lerp(col("#ffb08a"), dusk));
+      clouds.u.uShadow.value.copy(col("#b8a4b0").lerp(col("#4a3a6a"), dusk));
       V.grass.u.uTime.value = ambient;
       V.grass.u.uLight.value = 1 - dusk * 0.6;
-      L.hemi.intensity = 0.7 * (1 - dusk * 0.5);
-      (scene.fog as THREE.FogExp2).color.copy(col("#cfdcea").lerp(col("#5a4a6a"), dusk));
-      // Through the screen: the Game Boy falls behind; its pixels become blocks that settle as the village.
-      const through = ramp(t, tLaunch + 1.2, tLaunch + 2.6);
-      gb.group.visible = through < 0.98;
+      L.hemi.intensity = 0.72 * (1 - dusk * 0.25);
+      (scene.fog as THREE.FogExp2).color.copy(col("#dcc6a2").lerp(col("#6a4a5a"), dusk));
+      // Through the screen: the title's pixels switch off and fall into the village.
+      const tA = tLaunch + 1.25;
+      const dis = ramp(t, tA, tA + 1.0);
+      const lin = Math.max(0, Math.min(1, (t - tA) / 1.0));
+      gb.group.visible = t < tA;
       gb.screen.redraw(ambient);
-      for (let i = 0; i < 400; i++) {
-        const [a, b, c] = bseed[i];
-        const k = Math.max(0, Math.min(1, (through - 0.2) * 1.5 - c * 0.3));
-        const sx = (a - 0.5) * 2.6, sy = (b - 0.5) * 2.4 + 2.2;
-        const tx = (a - 0.5) * 30, tz = (c - 0.5) * 24 - 4;
-        const x = sx + (tx - sx) * k, y = sy + (0.2 - sy) * k + Math.sin(k * Math.PI) * 3, z = 25 + (tz - 25) * k;
-        const s = through > 0 && k < 1 ? 1 - k * k : 0.0001;
-        m4.makeScale(s, s, s).setPosition(x, y, z);
+      pix.visible = t >= tA && lin < 1;
+      if (pix.visible) {
+        gb.group.updateMatrixWorld(true);
+        let x0 = 9, y0 = 9, x1 = -9, y1 = -9;
+        for (const [sx, sy] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) {
+          corner.set((sx * scrW) / 2, (sy * scrH) / 2, 0);
+          gb.screen.mesh.localToWorld(corner).project(cam);
+          x0 = Math.min(x0, corner.x); x1 = Math.max(x1, corner.x); y0 = Math.min(y0, corner.y); y1 = Math.max(y1, corner.y);
+        }
+        pixU.uRect.value.set(x0, y0, x1, y1);
+        pixU.uK.value = lin * 1.02;
+      }
+      for (let i = 0; i < NB; i++) {
+        const [cx, cy, k0, rr] = bseed[i];
+        const f = Math.max(0, Math.min(1, (lin * 1.02 - k0) / 0.55));
+        const sx = ((cx + 0.5) / GX - 0.5) * scrW * 6, sy = 2.2 + ((cy + 0.5) / GY - 0.5) * scrH * 6;
+        const tx = sx * 7 + (rr - 0.5) * 6, tz = 27 - 10 - rr * 22;
+        const x = sx + (tx - sx) * f, z = 27.1 + (tz - 27.1) * f, y = sy + (0.12 - sy) * f * f + Math.sin(f * Math.PI) * 1.2;
+        const sc = f > 0 && f < 1 ? 0.07 * (1 - f) + 0.02 : 0.00001;
+        m4.makeRotationFromEuler(new THREE.Euler(f * 4 * rr, f * 3, 0)).scale(new THREE.Vector3(sc, sc, sc)).setPosition(x, y, z);
         blocks.setMatrixAt(i, m4);
       }
       blocks.instanceMatrix.needsUpdate = true;
-      blocks.visible = through > 0 && through < 1;
+      blocks.visible = t >= tA && lin < 1.6;
+      void dis;
       // The starters: each ball pops in turn and its Pokémon forms out of light.
       starters.forEach((s, i) => {
         const at = tThree + 0.9 + i * 1.2;
@@ -286,8 +503,8 @@ export const build: ChapterBuilder = async (ctx) => {
       const L0 = lookAt(t, { ...STOCK.pop, saturation: 1.15 }, {
         exposure: [[0, 0.95], [tLaunch + 2.5, 0.88], [tWord + 2, 0.9], [end, 0.95]],
         bloom: [[0, 0.9], [tLaunch + 2.6, 0.7], [tThree + 1, 0.95], [tMew, 0.75], [tWord + 2, 1.0]],
-        flash: [[tLaunch + 1.8, 0], [tLaunch + 2.1, 0.7], [tLaunch + 2.6, 0]],
-      });
+        rays: [[0, 0.16], [tWord, 0.16], [tWord + 2.5, 0.05]],
+      }, { pos: [sunV.x * 500, sunV.y * 500, sunV.z * 500], color: [1.0, 0.82, 0.55] });
       // "Old": for a moment the world flickers back to four shades of green.
       const g = t > tOld + 0.8 && t < tOld + 2.2 && Math.sin((t - tOld) * 22) > -0.6 ? 1 : 0;
       if (g) return { ...L0, saturation: 0, gain: [0.62, 0.78, 0.18], contrast: 1.5, lift: [0.06, 0.12, 0.03] };

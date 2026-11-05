@@ -17,7 +17,7 @@ import { makeCanvasPanel } from "@/components/world-history/scene/props";
 // Grass
 // ---------------------------------------------------------------------------
 
-export function makeGrass(o: { count: number; center: Vec3; size: [number, number]; height: [number, number]; base: string; tip: string; seed?: number; clear?: { x: number; z: number; r: number } }) {
+export function makeGrass(o: { count: number; center: Vec3; size: [number, number]; height: [number, number]; base: string; tip: string; seed?: number; clear?: { x: number; z: number; r: number }; shadow?: SunShadows }) {
   const r = rng(o.seed ?? 5);
   const blade = new THREE.BufferGeometry();
   // A tapered blade: 4 segments, 9 vertices.
@@ -49,8 +49,9 @@ export function makeGrass(o: { count: number; center: Vec3; size: [number, numbe
   geo.setAttribute("aOff", new THREE.InstancedBufferAttribute(off, 4));
   geo.setAttribute("aShape", new THREE.InstancedBufferAttribute(shape, 4));
   const u = { uTime: { value: 0 }, uSink: { value: 0 }, uBase: { value: col(o.base) }, uTip: { value: col(o.tip) }, uLight: { value: 1 }, uWind: { value: 1 }, uSun: { value: col("#ffcf7a") }, uSunDir: { value: new THREE.Vector3(0.3, 0.25, -1).normalize() }, uSat: { value: 1 } };
+  const sh = o.shadow;
   const mat = new THREE.ShaderMaterial({
-    uniforms: u,
+    uniforms: sh ? { ...u, ...sh.uniforms } : u,
     side: THREE.DoubleSide,
     vertexShader: /* glsl */ `
       ${NOISE}
@@ -75,11 +76,13 @@ export function makeGrass(o: { count: number; center: Vec3; size: [number, numbe
     fragmentShader: /* glsl */ `
       uniform vec3 uBase, uTip, uSun, uSunDir; uniform float uLight, uSat;
       varying float vY; varying float vSeed; varying vec3 vW;
+      ${sh ? sh.glsl : ""}
       void main(){
         vec3 c = mix(uBase, uTip, vY) * (0.75 + 0.5 * vSeed);
         vec3 v = normalize(cameraPosition - vW);
         float back = pow(max(dot(-v, uSunDir), 0.0), 3.0) * vY;
-        c = c * uLight * (0.55 + 0.45 * vY) + uSun * back * 0.35 * uLight;
+        float lit = ${sh ? "1.0 - sunShadow(vW)" : "1.0"};
+        c = c * uLight * (0.55 + 0.45 * vY) * mix(vec3(0.42, 0.5, 0.68), vec3(1.0), lit) + uSun * back * 0.35 * uLight * lit;
         float l = dot(c, vec3(0.2126, 0.7152, 0.0722));
         gl_FragColor = vec4(mix(vec3(l), c, uSat), 1.0);
       }`,
@@ -87,6 +90,77 @@ export function makeGrass(o: { count: number; center: Vec3; size: [number, numbe
   const mesh = new THREE.Mesh(geo, mat);
   mesh.frustumCulled = false;
   return { mesh, u, dispose() { geo.dispose(); blade.dispose(); mat.dispose(); } };
+}
+
+// ---------------------------------------------------------------------------
+// Sun shadows without a shadow map: rays toward the sun tested against a few
+// boxes (houses) and spheres (tree crowns), so long low-sun shadows fall on
+// the ground, the grass and the hedges in one pass, with no overlap seams.
+// ---------------------------------------------------------------------------
+
+export const MAX_SHADOW_BOXES = 16, MAX_SHADOW_BALLS = 72;
+export interface SunShadows {
+  uniforms: Record<string, { value: unknown }>;
+  glsl: string;
+  /** Adds the shadow to a standard material's direct light (ambient stays, so shade is sky-blue). */
+  patch(m: THREE.MeshStandardMaterial, tag: string): void;
+  setSun(d: THREE.Vector3): void;
+}
+
+export function makeSunShadows(o: { sun: Vec3; boxes: { c: Vec3; half: Vec3; rot: number }[]; balls?: [number, number, number, number][] }): SunShadows {
+  const boxes = o.boxes.slice(0, MAX_SHADOW_BOXES), balls = (o.balls ?? []).slice(0, MAX_SHADOW_BALLS);
+  const pad = <T,>(a: T[], n: number, z: () => T) => { const out = a.slice(); while (out.length < n) out.push(z()); return out; };
+  const uniforms = {
+    uShSun: { value: v3(o.sun).normalize() },
+    uShBoxC: { value: pad(boxes.map((b) => v3(b.c)), MAX_SHADOW_BOXES, () => new THREE.Vector3(0, -999, 0)) },
+    uShBoxH: { value: pad(boxes.map((b) => v3(b.half)), MAX_SHADOW_BOXES, () => new THREE.Vector3(0.001, 0.001, 0.001)) },
+    uShBoxR: { value: pad(boxes.map((b) => new THREE.Vector2(Math.cos(b.rot), Math.sin(b.rot))), MAX_SHADOW_BOXES, () => new THREE.Vector2(1, 0)) },
+    uShBall: { value: pad(balls.map((b) => new THREE.Vector4(...b)), MAX_SHADOW_BALLS, () => new THREE.Vector4(0, -999, 0, 0.001)) },
+    uShK: { value: 1 },
+  };
+  const glsl = /* glsl */ `
+    uniform vec3 uShSun; uniform vec3 uShBoxC[${MAX_SHADOW_BOXES}]; uniform vec3 uShBoxH[${MAX_SHADOW_BOXES}]; uniform vec2 uShBoxR[${MAX_SHADOW_BOXES}]; uniform vec4 uShBall[${MAX_SHADOW_BALLS}]; uniform float uShK;
+    float sunShadow(vec3 p) {
+      float s = 0.0;
+      for (int i = 0; i < ${MAX_SHADOW_BOXES}; i++) {
+        vec3 o = p - uShBoxC[i];
+        vec2 cs = uShBoxR[i];
+        // Into the box's frame (it is turned by rot about y).
+        vec3 lo = vec3(cs.x * o.x - cs.y * o.z, o.y, cs.y * o.x + cs.x * o.z);
+        vec3 ld = vec3(cs.x * uShSun.x - cs.y * uShSun.z, uShSun.y, cs.y * uShSun.x + cs.x * uShSun.z);
+        ld = sign(ld + 1e-6) * max(abs(ld), vec3(1e-4));
+        vec3 t1 = (-uShBoxH[i] - lo) / ld, t2 = (uShBoxH[i] - lo) / ld;
+        vec3 tn = min(t1, t2), tf = max(t1, t2);
+        float a = max(max(tn.x, tn.y), tn.z), b = min(min(tf.x, tf.y), tf.z);
+        if (b > max(a, 0.0)) s = 1.0;
+      }
+      for (int i = 0; i < ${MAX_SHADOW_BALLS}; i++) {
+        vec3 o = uShBall[i].xyz - p;
+        float tc = dot(o, uShSun);
+        float d2 = dot(o, o) - tc * tc;
+        float r2 = uShBall[i].w * uShBall[i].w;
+        if (tc > 0.0 && d2 < r2) s = max(s, smoothstep(r2, r2 * 0.55, d2));
+      }
+      return s * uShK;
+    }`;
+  return {
+    uniforms, glsl,
+    patch(m, tag) {
+      const prev = m.onBeforeCompile;
+      m.onBeforeCompile = (s, r) => {
+        prev.call(m, s, r);
+        Object.assign(s.uniforms, uniforms);
+        if (!s.vertexShader.includes("vShW;")) s.vertexShader = s.vertexShader.replace("#include <common>", "#include <common>\nvarying vec3 vShW;").replace("#include <worldpos_vertex>", "#include <worldpos_vertex>\nvShW = (modelMatrix * vec4(transformed, 1.0)).xyz;");
+        s.fragmentShader = s.fragmentShader
+          .replace("#include <common>", `#include <common>\nvarying vec3 vShW;\n${glsl}`)
+          .replace("#include <lights_fragment_end>", "#include <lights_fragment_end>\n{ float shd = sunShadow(vShW); reflectedLight.directDiffuse *= 1.0 - shd; reflectedLight.directSpecular *= 1.0 - shd; }");
+      };
+      const key = m.customProgramCacheKey.bind(m);
+      m.customProgramCacheKey = () => `${key()}-sunshadow-${tag}`;
+      m.needsUpdate = true;
+    },
+    setSun(d) { uniforms.uShSun.value.copy(d).normalize(); },
+  };
 }
 
 // ---------------------------------------------------------------------------
