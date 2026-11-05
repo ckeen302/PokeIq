@@ -1,9 +1,9 @@
 import * as THREE from "three";
 import { poseOnPath, type Key, type Vec3 } from "@/lib/world-history/camera";
-import { col, makeGlow, makeParticles, makeRing, makeShaft, ramp } from "@/components/world-history/scene/kit";
+import { NOISE, col, makeGlow, makeParticles, makeRing, makeShaft, placed, ramp, rng } from "@/components/world-history/scene/kit";
 import { lights, lookAt, pointPixel } from "@/components/world-history/scene/chapters/common";
 import type { ChapterBuilder } from "@/components/world-history/scene/types";
-import { drawCritter, makeCable, makeDevice, makeSilhouette, makeWords } from "../story-kit";
+import { drawCritter, makeCable, makeDevice, makeSilhouette, makeWords, mergeWithAttr } from "../story-kit";
 import { bag, STOCK } from "./base";
 
 /**
@@ -16,6 +16,100 @@ import { bag, STOCK } from "./base";
  * CAPSULE MONSTERS rearrange into POCKET MONSTERS and the capsule clicks
  * shut into a ball with a ring of light.
  */
+
+/**
+ * The room round the table, at the table's (giant) scale: a plaster back wall
+ * with a night window onto a city, a bookcase of spines and boxes, side walls
+ * and a picture rail, all in one draw call. The lamp over the table lights it
+ * with a soft falloff (analytic, no extra scene light), so the room fades into
+ * the dark instead of stopping at a black void; a cool spill comes from the
+ * window. Its floor line sits at the dark floor that hides the figures' legs.
+ */
+function makeLampRoom(o: { lamp: Vec3; floor: number }) {
+  const r = rng(13);
+  const F = o.floor, list: [THREE.BufferGeometry, [number, number, number, number]][] = [];
+  const box = (w: number, h: number, d: number, p: Vec3, c: [number, number, number], e = 0) => list.push([placed(new THREE.BoxGeometry(w, h, d), p), [c[0], c[1], c[2], e]]);
+  const plaster: [number, number, number] = [0.3, 0.25, 0.2], wood: [number, number, number] = [0.2, 0.12, 0.07];
+  const BZ = -15, TOP = 17, WX0 = -15, WX1 = -4, WY0 = 3.5, WY1 = 12;
+  // The back wall, around a window opening.
+  box(WX0 + 26, TOP - F, 0.6, [(-26 + WX0) / 2, (F + TOP) / 2, BZ], plaster);
+  box(26 - WX1, TOP - F, 0.6, [(26 + WX1) / 2, (F + TOP) / 2, BZ], plaster);
+  box(WX1 - WX0, WY0 - F, 0.6, [(WX0 + WX1) / 2, (F + WY0) / 2, BZ], plaster);
+  box(WX1 - WX0, TOP - WY1, 0.6, [(WX0 + WX1) / 2, (WY1 + TOP) / 2, BZ], plaster);
+  // The window: frame, mullions, a sill.
+  for (const x of [WX0, (WX0 + WX1) / 2, WX1]) box(0.35, WY1 - WY0, 0.5, [x, (WY0 + WY1) / 2, BZ + 0.2], wood);
+  for (const y of [WY0, (WY0 + WY1) / 2 + 0.8, WY1]) box(WX1 - WX0 + 0.35, 0.35, 0.5, [(WX0 + WX1) / 2, y, BZ + 0.2], wood);
+  box(WX1 - WX0 + 1.6, 0.3, 1.4, [(WX0 + WX1) / 2, WY0 - 0.2, BZ + 0.7], wood);
+  // Skirting and a picture rail.
+  box(52, 0.8, 0.3, [0, F + 0.4, BZ + 0.4], wood);
+  box(52, 0.25, 0.3, [0, TOP - 3, BZ + 0.4], wood);
+  // A bookcase to the right of the window: uprights, shelves, spines and a few boxes.
+  const BX0 = 2, BX1 = 18, shelves = [F + 0.4, 2.6, 6.4, 10.2, 14];
+  box(0.4, 14 - F + 0.4, 2.2, [BX0, (F + 14) / 2, BZ + 1.2], wood); box(0.4, 14 - F + 0.4, 2.2, [BX1, (F + 14) / 2, BZ + 1.2], wood);
+  for (const y of shelves) box(BX1 - BX0, 0.3, 2.2, [(BX0 + BX1) / 2, y, BZ + 1.2], wood);
+  const spineC: [number, number, number][] = [[0.36, 0.12, 0.1], [0.14, 0.2, 0.32], [0.38, 0.3, 0.14], [0.16, 0.26, 0.16], [0.42, 0.38, 0.3], [0.3, 0.18, 0.28]];
+  for (let k = 0; k < shelves.length - 1; k++) {
+    let x = BX0 + 0.4;
+    while (x < BX1 - 0.8) {
+      if (r() < 0.12) { const bw = 1.4 + r(); box(bw, 1.2 + r(), 1.6, [x + bw / 2, shelves[k] + 0.15 + 0.8, BZ + 1.2], [0.3, 0.28, 0.24]); x += bw + 0.2; continue; }
+      const w = 0.25 + r() * 0.35, hh = 2.1 + r() * 1.2, c = spineC[Math.floor(r() * spineC.length)];
+      const t = r() < 0.08 ? 0.25 : 0;
+      list.push([placed(new THREE.BoxGeometry(w, hh, 1.5), [x + w / 2, shelves[k] + 0.15 + hh / 2, BZ + 1.2], 0, [1, 1, 1], 0, t), [c[0] * (0.8 + r() * 0.4), c[1], c[2], 0]]);
+      x += w + 0.03 + t * 0.5;
+    }
+  }
+  // Side walls, set at an angle so the orbit always finds a wall.
+  box(0.6, TOP - F, 34, [-26, (F + TOP) / 2, BZ + 17], plaster);
+  box(0.6, TOP - F, 34, [26, (F + TOP) / 2, BZ + 17], plaster);
+  // The night outside the window (emissive: 1).
+  list.push([placed(new THREE.PlaneGeometry(WX1 - WX0, WY1 - WY0), [(WX0 + WX1) / 2, (WY0 + WY1) / 2, BZ - 0.1]), [0, 0, 0, 1]]);
+  const geo = mergeWithAttr(list);
+  list.forEach(([g]) => g.dispose());
+  // The view: a deep blue sky with a city line and a few lit windows.
+  const cv = document.createElement("canvas"); cv.width = 256; cv.height = 192;
+  const g = cv.getContext("2d")!;
+  const gr = g.createLinearGradient(0, 0, 0, 192); gr.addColorStop(0, "#060a1e"); gr.addColorStop(0.75, "#16244a"); gr.addColorStop(1, "#2a2a44");
+  g.fillStyle = gr; g.fillRect(0, 0, 256, 192);
+  for (let i = 0; i < 40; i++) { g.fillStyle = `rgba(255,255,255,${0.2 + r() * 0.5})`; g.fillRect(r() * 256, r() * 100, 1, 1); }
+  let x = 0;
+  while (x < 256) { const w = 10 + r() * 24, hh = 30 + r() * 70; g.fillStyle = "#05060c"; g.fillRect(x, 192 - hh, w, hh); for (let wy = 192 - hh + 4; wy < 188; wy += 6) for (let wx = x + 2; wx < x + w - 3; wx += 5) if (r() < 0.16) { g.fillStyle = r() < 0.8 ? "#e8a050" : "#9ab8ff"; g.fillRect(wx, wy, 2, 3); } x += w + 1; }
+  const tex = new THREE.CanvasTexture(cv); tex.colorSpace = THREE.SRGBColorSpace;
+  const u = { ...THREE.UniformsUtils.clone(THREE.UniformsLib.fog), uLamp: { value: new THREE.Vector3(...o.lamp) }, uLampC: { value: col("#ffd8a0") }, uK: { value: 1 }, uView: { value: tex }, uWin: { value: new THREE.Vector4(WX0, WY0, WX1, WY1) } };
+  const mat = new THREE.ShaderMaterial({
+    uniforms: u,
+    fog: true,
+    vertexShader: /* glsl */ `#include <fog_pars_vertex>
+      attribute vec4 aB; varying vec4 vB; varying vec3 vW; varying vec3 vN;
+      void main(){ vB = aB; vec4 wp = modelMatrix * vec4(position, 1.0); vW = wp.xyz; vN = normalize(mat3(modelMatrix) * normal); vec4 mvPosition = viewMatrix * wp; gl_Position = projectionMatrix * mvPosition;
+      #include <fog_vertex>
+      }`,
+    fragmentShader: /* glsl */ `${NOISE}
+      #include <fog_pars_fragment>
+      uniform vec3 uLamp, uLampC; uniform float uK; uniform sampler2D uView; uniform vec4 uWin;
+      varying vec4 vB; varying vec3 vW; varying vec3 vN;
+      void main(){
+        vec3 c;
+        if (vB.w > 0.5) {
+          vec2 uv = vec2((vW.x - uWin.x) / (uWin.z - uWin.x), (vW.y - uWin.y) / (uWin.w - uWin.y));
+          c = texture2D(uView, uv).rgb * 0.9;
+        } else {
+          vec3 n = normalize(vN);
+          vec3 d = uLamp - vW;
+          float dist = length(d);
+          float lamb = max(dot(n, d / max(dist, 1e-3)), 0.0);
+          float fall = 1.0 / (1.0 + dist * dist * 0.012);
+          // Plaster grain, and a cool spill from the window across the wall.
+          vec3 alb = vB.rgb * (0.88 + 0.24 * whNoise(vW * 0.6));
+          float spill = exp(-abs(vW.x - (uWin.x + uWin.z) * 0.5) * 0.12) * exp(-max(0.0, uWin.y - vW.y) * 0.2) * step(n.z, 0.5);
+          c = alb * (uLampC * uK * (0.1 + 1.1 * lamb) * fall + vec3(0.08, 0.1, 0.18) * (0.12 + 0.5 * spill));
+        }
+        gl_FragColor = vec4(c, 1.0);
+        #include <fog_fragment>
+      }`,
+  });
+  const mesh = new THREE.Mesh(geo, mat);
+  return { mesh, u, dispose() { geo.dispose(); mat.dispose(); tex.dispose(); } };
+}
 
 /** The table setup, shared with Chapter XI's callback (same Game Boys, same cable, same orbit). */
 export function cableTable(scene: THREE.Object3D) {
@@ -46,6 +140,8 @@ export function cableTable(scene: THREE.Object3D) {
   extras.add(cone.mesh);
   const dust = D.add(makeParticles({ count: 260, shape: "cylinder", center: [0, 3.2, 0.5], extent: [2.4, 3, 2.2], velocity: [0.02, -0.01, 0], spread: [0.02, 0.02, 0.02], life: 14, size: [0.012, 0.03], colors: ["#fff0d0", "#ffe2b0", "#c8b890"], intensity: 1.3, turbulence: 0.5, fadeIn: 0.3, fadeOut: 0.3, seed: 77 }));
   extras.add(dust.points);
+  const room = D.add(makeLampRoom({ lamp: [0, 7.0, 1.0], floor: -1.1 }));
+  extras.add(room.mesh);
   D.add({ dispose: () => { table.geometry.dispose(); tableMat.dispose(); grainTex.dispose(); shade.geometry.dispose(); cord.geometry.dispose(); shadeMat.dispose(); } });
   // The screens: who is on each, drawn from the clock.
   const state = { left: -1, right: -1, flash: 0, swap: 0 };
@@ -86,7 +182,7 @@ export function cableTable(scene: THREE.Object3D) {
   lamp.target.position.set(0, 0, 0);
   scene.add(lamp, lamp.target);
   return {
-    cable, gbA, gbB, state, lamp, extras,
+    cable, gbA, gbB, state, lamp, extras, room,
     /** The orbit both chapters use: slow, low, round the table. */
     orbit(t: number, r = 7.5): { pos: Vec3; look: Vec3 } {
       const a = 0.35 + t * 0.05;
