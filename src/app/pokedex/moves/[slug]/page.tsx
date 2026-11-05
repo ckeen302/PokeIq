@@ -14,6 +14,11 @@ export function generateStaticParams() {
   return MOVES.map((m) => ({ slug: m.slug }));
 }
 
+/** A move's name for its tab title: Z-Moves come in a physical and a special version under one name, so a twin's title adds its class. */
+function titleName(m: (typeof MOVES)[number]): string {
+  return MOVES.some((o) => o !== m && o.name === m.name) ? `${m.name} (${capitalize(m.cls)})` : m.name;
+}
+
 interface PageProps {
   params: Promise<{ slug: string }>;
 }
@@ -22,7 +27,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const m = getMove((await params).slug);
   if (!m) return {};
   return pageMetadata({
-    title: `${m.name} — Pokémon Move`,
+    title: `${titleName(m)} — Pokémon Move`,
     description: `${m.name} is a ${capitalize(m.type)}-type ${m.cls} move. ${m.effect} See its power, accuracy, PP and every Pokémon that learns it.`,
     path: `/pokedex/moves/${m.slug}`,
     image: SHARE_IMAGES.pokedex,

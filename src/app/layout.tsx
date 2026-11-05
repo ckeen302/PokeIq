@@ -44,9 +44,11 @@ export const viewport: Viewport = {
   viewportFit: "cover",
 };
 
+// The same @id as the home page's fuller WebSite node (with its SearchAction), so the two read as one site.
 const websiteJsonLd = {
   "@context": "https://schema.org",
   "@type": "WebSite",
+  "@id": `${SITE_URL}/#website`,
   name: SITE_NAME,
   url: SITE_URL,
   description: SITE_DESCRIPTION,

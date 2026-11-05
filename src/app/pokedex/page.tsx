@@ -5,7 +5,7 @@ import { PokedexExplorer, type DexListItem } from "@/components/pokedex/PokedexE
 import { DexTabs } from "@/components/pokedex/DexTabs";
 
 export const metadata: Metadata = pageMetadata({
-  title: "Pokédex — All 1,025 Pokémon",
+  title: "Pokédex: Every Pokémon from Kanto to Paldea",
   description:
     "Browse and search every Pokémon from Kanto to Paldea. Filter by type and generation, sort by stats, and study evolutions, moves, abilities and weaknesses.",
   path: "/pokedex",
