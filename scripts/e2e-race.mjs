@@ -72,9 +72,10 @@ export async function runRace({ browser, BASE, OUT, errors, step }) {
   });
 
   await part(errors, "tab", async () => {
+    // Race lives in the 3D Lab, not in the Pokédex's sections.
     await page.goto(`${BASE}/pokedex`, { waitUntil: "load" });
-    await page.getByTestId("dex-tab-race").click();
-    await page.waitForURL(/\/pokedex\/race$/);
+    if (await page.getByTestId("dex-tab-race").count()) errors.push("race: the Pokédex still has a Race tab");
+    await page.goto(`${BASE}/pokedex/race`, { waitUntil: "load" });
     if (!(await page.locator('[data-testid="race-list"] #race-regieleki').count())) errors.push("race: the server-rendered results are missing Regieleki");
     if (!/Furusawa/.test(await page.locator("body").innerText())) errors.push("race: the page doesn't explain the model (Furusawa / Alexander)");
   });

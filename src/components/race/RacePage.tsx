@@ -12,7 +12,6 @@ import { HUB_PRESET, presetPath, vsPath } from "@/lib/race/deeplink";
 import { LAB_PATH } from "@/lib/lab";
 import { KIND_LABEL, type Entrant } from "@/lib/race/types";
 import type { Distance } from "@/lib/race/track";
-import { DexTabs } from "@/components/pokedex/DexTabs";
 import { ListHeader } from "@/components/pokedex/detail/DetailParts";
 import { BackButton } from "@/components/ui/BackButton";
 import { RaceExperience } from "./RaceExperience";
@@ -69,7 +68,6 @@ export function RacePage({ preset = DEFAULT_PRESET, vs, distance, seed }: { pres
           ) : (
             <ListHeader back={{ href: "/pokedex/race", label: "Pokémon Race" }} kicker={`Pokémon race · ${spec.distance} m`} title={`${preset.label} `} accent="race" blurb={preset.blurb} />
           )}
-          <DexTabs active="race" />
           <nav aria-label="Races" className="flex flex-wrap justify-center gap-2">
             {PRESETS.map((p) => (
               <Link key={p.id} href={presetPath(p.id)} prefetch={false} className={cn("rounded-md border px-3 py-1.5 font-display text-xs font-semibold uppercase tracking-wider transition-colors", !custom && p.id === preset.id ? "border-primary/60 text-foreground" : "text-muted-foreground hover:text-foreground")}>

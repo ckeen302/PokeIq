@@ -4,7 +4,6 @@ import { SITE_URL } from "@/lib/site";
 import { TIMELINE } from "@/lib/timeline/data";
 import { entryPath } from "@/lib/timeline/deeplink";
 import { ERAS, ERA_BY_ID, LANE_BY_ID, dateRows, formatDate, type TimelineEntry } from "@/lib/timeline/types";
-import { DexTabs } from "@/components/pokedex/DexTabs";
 import { WORLD_HISTORY_LIVE } from "@/lib/lab";
 import { HISTORY_PATH } from "@/lib/world-history/deeplink";
 import { ListHeader } from "@/components/pokedex/detail/DetailParts";
@@ -49,7 +48,6 @@ export function TimelinePage({ focus }: { focus?: TimelineEntry }) {
               blurb="From Red and Green in 1996 to today: the main-series games, the anime, the films, the card game, key spin-offs and the milestones in between, with Japanese and Western release dates kept apart."
             />
           )}
-          <DexTabs active="timeline" />
           {WORLD_HISTORY_LIVE && (
             <p className="text-center text-sm text-muted-foreground" data-testid="timeline-to-history">
               This is the real-world timeline of the games, anime and films. For the history inside the Pokémon world, see{" "}
