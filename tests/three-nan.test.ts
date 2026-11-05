@@ -47,6 +47,8 @@ describe.each(Object.entries(MODULES))("%s never draws NaN", (_name, dir) => {
       expect(src, f).not.toMatch(/pow\(\s*(vUv|vY|uv|vT)\b/);
       expect(src, f).not.toMatch(/pow\(\s*\(/);
       expect(src, f).not.toMatch(/pow\(\s*[a-zA-Z_][\w.]*\s*\/\s*[\d.]+\s*,/);
+      // 1 - dot(unit, unit) can come out a hair below zero.
+      expect(src, f).not.toMatch(/pow\(\s*1\.0?\s*-\s*(max\(\s*)?dot\(/);
     }
   });
 

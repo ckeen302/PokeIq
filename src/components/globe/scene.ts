@@ -187,7 +187,7 @@ export function createGlobeScene(host: HTMLElement, layer: HTMLDivElement, cb: S
         float l0=step(.04,m), c0=smoothstep(.85,1.,m);
         float l=l0*vis, c=c0*vis;
         float g=gridf(vUv, vec2(36.,18.))*(1.-l*.6);
-        float f=pow(1.-max(dot(N,V),0.),2.2);
+        float f=pow(max(1.-max(dot(N,V),0.),0.),2.2);
         float band=.96+.04*sin(vUv.y*900.+time*2.);
         vec3 col=sea;
         col=mix(col, land*(.55+.75*m)*band, l*.92);
