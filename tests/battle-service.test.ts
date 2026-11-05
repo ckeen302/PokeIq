@@ -174,7 +174,8 @@ Adamant Nature
     if (!made.ok) throw new Error(made.error);
     let view = made.view;
     for (let i = 0; i < 25 && view.status === "playing"; i++) view = await choose(made.code, made.token, view);
-    expect(view.turn).toBeGreaterThan(3);
+    // If this ever stops early, say how (an end, a refused choice) rather than just the turn.
+    expect(view.turn, JSON.stringify({ status: view.status, end: view.end, last: view.log.lines.slice(-12) })).toBeGreaterThan(3);
   });
 
   it("rebuilds from the input log when the engine version changed", async () => {
