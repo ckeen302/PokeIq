@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import type { Key, Vec3 } from "@/lib/world-history/camera";
-import { col, makeGlow, makeParticles, makeShaft, makeSky, makeTerrain, merge, noise2, ramp, rng } from "@/components/world-history/scene/kit";
+import { col, makeCloudLayer, makeGlow, makeParticles, makeShaft, makeSky, makeTerrain, merge, noise2, ramp, rng } from "@/components/world-history/scene/kit";
 import { makeCity } from "@/components/world-history/scene/props";
 import { lights, loadFigures, lookAt, pointPixel } from "@/components/world-history/scene/chapters/common";
 import type { ChapterBuilder } from "@/components/world-history/scene/types";
@@ -38,6 +38,9 @@ export const build: ChapterBuilder = async (ctx) => {
   const fog = scene.fog as THREE.FogExp2;
   const L = lights(scene, { sky: "#cfe4ff", ground: "#5a7a3a", fill: 0.7, key: "#fff0d8", keyK: 1.6, keyPos: [-12, 10, 6], rim: "#ffd0a0", rimK: 0.6 });
 
+  // Clouds over Kanto and Paldea.
+  const clouds = D.add(makeCloudLayer({ size: 1400, y: 90, color: "#ffffff", shadow: "#b8c4d8", density: 0.36, scale: 0.006, speed: [1, 0, 0.4], intensity: 1.05 }));
+  scene.add(clouds.mesh);
   // ---- A. Kanto again: Chapter V's village in modern light.
   const V = D.add(makeVillage(scene));
 
@@ -94,7 +97,7 @@ export const build: ChapterBuilder = async (ctx) => {
   const hisuiLand = D.add(makeTerrain({ size: [300, 300], segments: 110, height: (x, z) => { const d = Math.hypot(x, z); const peak = Math.max(0, 1 - Math.hypot(x - 10, z + 110) / 50) * 55; return (d < 18 ? 0 : (d - 18) * 0.05) + nzH.fbm(x * 0.02, z * 0.02, 4) * 7 + peak; }, color: (h) => (h > 30 ? [0.7, 0.72, 0.78] : [0.24, 0.36, 0.2]) }));
   hisuiLand.mesh.position.set(AT.hisui, 0, 0);
   scene.add(hisuiLand.mesh);
-  const hutWood = new THREE.MeshStandardMaterial({ color: col("#6a4a2a"), roughness: 0.9 });
+  const hutWood = new THREE.MeshStandardMaterial({ color: col("#9a7450"), roughness: 0.9 });
   const hutRoof = new THREE.MeshStandardMaterial({ color: col("#3a2a1a"), roughness: 0.9 });
   const walls: THREE.BufferGeometry[] = [], roofsG: THREE.BufferGeometry[] = [];
   for (let i = 0; i < 10; i++) {
@@ -118,7 +121,7 @@ export const build: ChapterBuilder = async (ctx) => {
 
   // ---- E. Paldea: open hills, as wide as the film gets.
   const nzP = noise2(12);
-  const paldea = D.add(makeTerrain({ size: [900, 900], segments: 160, height: (x, z) => nzP.fbm(x * 0.006, z * 0.006, 5) * 46 + Math.sin(x * 0.01) * 6, color: (h) => (h > 26 ? [0.62, 0.56, 0.42] : h > 8 ? [0.36, 0.52, 0.24] : [0.42, 0.6, 0.28]) }));
+  const paldea = D.add(makeTerrain({ size: [900, 900], segments: 160, height: (x, z) => nzP.fbm(x * 0.006, z * 0.006, 5) * 46 + Math.sin(x * 0.01) * 6, color: (h) => { const k = Math.max(0, Math.min(1, (h + 10) / 50)); return h > 28 ? [0.6, 0.55, 0.44] : [0.5 - k * 0.24, 0.62 - k * 0.16, 0.26 - k * 0.08]; } }));
   paldea.mesh.position.set(AT.paldea, -10, -200);
   scene.add(paldea.mesh);
   const groundAt = (x: number, z: number) => nzP.fbm((x - AT.paldea) * 0.006, (z + 200) * 0.006, 5) * 46 + Math.sin((x - AT.paldea) * 0.01) * 6 - 10;
@@ -183,8 +186,9 @@ export const build: ChapterBuilder = async (ctx) => {
       { t: tGalar, pos: [2.2, 1.6, 22], look: [0.4, 0.7, 12], fov: 44 },
     ]],
     [tGalar - 0.15, [
-      { t: tGalar - 0.15, pos: [AT.stadium, 22, 40], look: [AT.stadium, 2, 0], fov: 46 },
-      { t: tGalar + 3, pos: [AT.stadium + 5, 6, 17], look: [AT.stadium, 3, 0], fov: 44 },
+      // Already inside the bowl, over the stands (never through the outer wall).
+      { t: tGalar - 0.15, pos: [AT.stadium, 17, 26], look: [AT.stadium, 2, 0], fov: 48 },
+      { t: tGalar + 3, pos: [AT.stadium + 5, 6.5, 17], look: [AT.stadium, 3, 0], fov: 44 },
       { t: t25, pos: [AT.stadium - 3, 4, 13], look: [AT.stadium, 3, 0], fov: 44 },
     ]],
     [t25 - 0.15, [
@@ -214,8 +218,8 @@ export const build: ChapterBuilder = async (ctx) => {
     // top, horizon, bottom, fog density, fog colour, key, hemi, exposure-ish
     ["#4a8ae8", "#ffe8c8", "#4a6a3a", 0.004, "#cfdcea", 1.6, 0.7, 1],
     ["#060812", "#1a1a3a", "#020204", 0.0, "#000000", 0.25, 0.25, 1],
-    ["#3a4a7a", "#ffb08a", "#2a2a3a", 0.0045, "#b8a0a0", 1.0, 0.55, 1],
-    ["#3a8ae8", "#dff0ff", "#5a7a3a", 0.0018, "#cfe4f8", 1.8, 0.8, 1],
+    ["#3a4a7a", "#ffb08a", "#2a2a3a", 0.0045, "#b8a0a0", 1.5, 0.6, 1],
+    ["#2f7ae0", "#d8ecff", "#5a7a3a", 0.0014, "#c8dcf4", 2.5, 0.55, 1],
     ["#030408", "#0a0a18", "#000000", 0.0, "#000000", 0.1, 0.12, 1],
     ["#3a2a5a", "#ff8a3a", "#2a1a10", 0.004, "#ff9a6a", 0.8, 0.5, 1],
     ["#02040c", "#0a1430", "#000000", 0.004, "#0a1020", 0.1, 0.2, 1],
@@ -234,7 +238,14 @@ export const build: ChapterBuilder = async (ctx) => {
       sky.u.uTop.value.copy(col(top)); sky.u.uHorizon.value.copy(col(hor)); sky.u.uBottom.value.copy(col(bot));
       sky.u.uSunGlow.value = st === 0 || st === 3 ? 0.25 : 0;
       fog.density = fd; fog.color.copy(col(fc));
+      clouds.mesh.visible = st === 0 || st === 3;
+      clouds.mesh.position.set(cam.position.x, 90, cam.position.z);
+      clouds.u.uTime.value = ambient;
       L.key.intensity = kk; L.hemi.intensity = hk;
+      // A low sun from the side over Paldea, so the hills model; the usual key elsewhere.
+      if (st === 3) L.key.position.set(cam.position.x + 120, cam.position.y + 45, cam.position.z - 60); else L.key.position.set(-12, 10, 6);
+      L.key.target.position.set(st === 3 ? cam.position.x : 0, st === 3 ? cam.position.y - 10 : 0, st === 3 ? cam.position.z : 0);
+      L.key.target.updateMatrixWorld();
 
       // A. Pikachu and Eevee walk side by side down the lane.
       V.windows(V.spots.map(() => 0.15));
