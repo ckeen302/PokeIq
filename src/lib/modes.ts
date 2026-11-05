@@ -320,7 +320,7 @@ export const QUIZ_PRESETS: QuizPreset[] = [
     module: "shiny",
     title: "Which Is the Real Shiny? Pokémon Shiny Quiz",
     h1: "Which Is the Real Shiny?",
-    description: "One of four colourings is the real shiny, the rest are fakes. Can you tell? All 1,025 Pokémon, on Easy or Hard.",
+    description: "One of four colourings is the real shiny, the rest are fakes. Can you tell? Every Pokémon, on Easy or Hard.",
   },
   {
     slug: "pokemon-zoom-quiz",

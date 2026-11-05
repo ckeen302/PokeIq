@@ -31,6 +31,12 @@ const artCache = [{ key: "Cache-Control", value: "public, max-age=2592000, stale
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  // Pages that render on request stream their <title>, description and
+  // canonical tag after the first bytes, except to the crawlers named here,
+  // which get them in <head>. Next's own list leaves Googlebot out (it runs
+  // JavaScript); it is added so Google's raw HTML has them in <head> too.
+  htmlLimitedBots:
+    /Googlebot|[\w-]+-Google|Google-[\w-]+|Chrome-Lighthouse|Slurp|DuckDuckBot|baiduspider|yandex|sogou|bitlybot|tumblr|vkShare|quora link preview|redditbot|ia_archiver|Bingbot|BingPreview|applebot|facebookexternalhit|facebookcatalog|Twitterbot|LinkedInBot|Slackbot|Discordbot|WhatsApp|SkypeUriPreview|Yeti|googleweblight/i,
   // The battle simulator runs as plain Node modules: bundled and minified,
   // its state serializer (which records constructor names) breaks.
   serverExternalPackages: ["pokemon-showdown", "@pkmn/sim"],

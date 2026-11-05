@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { SHARE_IMAGES, pageMetadata } from "@/lib/seo";
+import { SHARE_IMAGES, jsonLd, pageMetadata } from "@/lib/seo";
+import { breadcrumbList } from "@/lib/structured-data";
 import { MOVES, getMove, species } from "@/lib/dex/data";
 import { capitalize } from "@/lib/pokemon/type-matrix";
 import { Section } from "@/components/pokedex/entry/Reveal";
@@ -14,6 +15,11 @@ export function generateStaticParams() {
   return MOVES.map((m) => ({ slug: m.slug }));
 }
 
+/** A move's name for its tab title: Z-Moves come in a physical and a special version under one name, so a twin's title adds its class. */
+function titleName(m: (typeof MOVES)[number]): string {
+  return MOVES.some((o) => o !== m && o.name === m.name) ? `${m.name} (${capitalize(m.cls)})` : m.name;
+}
+
 interface PageProps {
   params: Promise<{ slug: string }>;
 }
@@ -22,7 +28,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const m = getMove((await params).slug);
   if (!m) return {};
   return pageMetadata({
-    title: `${m.name} — Pokémon Move`,
+    title: `${titleName(m)} — Pokémon Move`,
     description: `${m.name} is a ${capitalize(m.type)}-type ${m.cls} move. ${m.effect} See its power, accuracy, PP and every Pokémon that learns it.`,
     path: `/pokedex/moves/${m.slug}`,
     image: SHARE_IMAGES.pokedex,
@@ -69,6 +75,7 @@ export default async function MovePage({ params }: PageProps) {
           <p className="text-sm text-muted-foreground">No Pokémon learn this move in the games covered by the Pokédex.</p>
         )}
       </Section>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(breadcrumbList([{ name: "Pokédex", path: "/pokedex" }, { name: "Moves", path: "/pokedex/moves" }, { name: m.name, path: `/pokedex/moves/${m.slug}` }])) }} />
     </article>
   );
 }
