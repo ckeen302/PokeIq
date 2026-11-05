@@ -10,7 +10,7 @@ import {
   orderRange, orderSegment, orderSpanFact, orderTag, orderTitle, orderValue, parseOrder, parseOrderSegment, ringRuleFor, withOrder, type Order, type OrderKey,
 } from "@/lib/sizes/order";
 import { everythingLine, listCaption, listItems, listNote, listOrder, listRows, neighbourLine } from "@/lib/sizes/list";
-import { MIXED_SLOPE, envelope, frameDistance, framer, glideAt, type Lens } from "@/lib/sizes/glide";
+import { FILL_H, MIXED_ROOM, MIXED_SLOPE, envelope, frameDistance, framer, glideAt, type Lens } from "@/lib/sizes/glide";
 import { holdsFor, planPlay } from "@/lib/sizes/play";
 import { planWorld } from "@/lib/sizes/world";
 import { stopCaption } from "@/lib/sizes/facts";
@@ -287,10 +287,13 @@ describe("Order by: the camera in a mixed line", () => {
   const placed = layoutLine(line).map((p, i) => ({ ...p, key: line[i].key }));
   const raw = placed.map((p) => Math.log(frameDistance(p.w, p.h, lens)));
 
-  it("the envelope stays over every figure's own framing and changes slowly from one figure to the next", () => {
+  // Never cut off: a figure the camera stands at fills at most about three quarters of the frame (its own framing fills FILL_H).
+  const MOST = FILL_H * Math.exp(MIXED_ROOM);
+  it("the envelope leaves every figure room and changes slowly from one figure to the next", () => {
+    expect(MOST).toBeLessThan(0.75);
     const fr = framer(placed, lens, "mixed");
     for (let i = 0; i < placed.length; i++) {
-      expect(fr.logD[i]).toBeGreaterThanOrEqual(raw[i]);
+      expect(fr.logD[i]).toBeGreaterThanOrEqual(raw[i] - MIXED_ROOM);
       if (i) expect(Math.abs(fr.logD[i] - fr.logD[i - 1])).toBeLessThanOrEqual(MIXED_SLOPE + 1e-9);
     }
     // In this order the sizes jump about: figure to figure, the raw framing swings far more than the envelope.
@@ -320,12 +323,12 @@ describe("Order by: the camera in a mixed line", () => {
       const p = placed[s.index];
       for (let t = s.t0; t <= s.t1; t += 0.05) {
         const st = glideAt(mixed.g, t);
-        expect(st.d).toBeGreaterThanOrEqual(frameDistance(p.w, p.h, lens));
+        expect(st.d).toBeGreaterThanOrEqual(frameDistance(p.w, p.h, lens) * Math.exp(-MIXED_ROOM));
       }
     }
-    // Every figure, as the camera reaches it: never framed tighter than it needs.
+    // Every figure, as the camera reaches it, has that room too.
     const fr = framer(placed, lens, "mixed");
-    for (let i = 0; i < placed.length; i += 7) expect(fr.at(placed[i].x)).toBeGreaterThanOrEqual(frameDistance(placed[i].w, placed[i].h, lens) * (1 - 1e-9));
+    for (let i = 0; i < placed.length; i++) expect(fr.at(placed[i].x)).toBeGreaterThanOrEqual(frameDistance(placed[i].w, placed[i].h, lens) * Math.exp(-MIXED_ROOM) * (1 - 1e-9));
   });
 
   it("a mixed line stays on the boulevard unless it ends in giants; Height smallest first keeps its ring", () => {

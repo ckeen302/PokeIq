@@ -408,15 +408,12 @@ export function createSizesScene(host: HTMLElement, opts: SceneOptions): SizesSc
     return { index, item, x, wx, wz, yaw: FACING - at.heading, z, w, h, mesh: [null, null], up: [false, false], loading: [null, null], failed: false, phase: (index * 2.399) % (Math.PI * 2), inView: false, sh: 0, need: Infinity, draw: 0, from: 0, t: 1, seen: false, readyAt: 0, neededAt: 0, lastNear: -1e9 };
   };
 
-  let cutHigh = false;
   function setLine(items: SceneItem[], opts: { framing?: Framing; ring?: RingRule } = {}) {
     for (const s of slots) dropSlot(s);
     if (companion) dropSlot(companion);
     companion = null;
     const placed = layoutLine(items.map((i) => ({ m: i.m, length: i.length, bw: i.box[2], bh: i.box[3] })));
     plan = planWorld(placed, opts.ring);
-    // A line that doesn't grow (any order but Height, smallest first) may frame a giant on the boulevard from over the rooftops.
-    cutHigh = opts.ring === "tail";
     // The ten-storey building stands a step off the giants' ring on the camera's side (on the paving short of the parterres): on the ring itself it would hide Prism Tower's legs and the giant after it.
     const aside = (item: SceneItem, i: number) => (item.ref === "building" && plan.ring && placed[i].x > plan.ring.s0 ? -Math.min(22, placed[i].w * 1.6) : 0);
     slots = items.map((item, i) => newSlot({ ...item, w: placed[i].w, h: placed[i].h }, i, placed[i].x, placed[i].w, placed[i].h, aside(item, i)));
@@ -574,10 +571,8 @@ export function createSizesScene(host: HTMLElement, opts: SceneOptions): SizesSc
     }
     shared.uniforms.uCutA.value.copy(camera.position);
     shared.uniforms.uCutB.value.copy(target);
-    // Above the rooftops (the giants round the tower, the finale) nothing is in the way: cutting would only punch holes in the roofs.
-    // A giant on the boulevard (a stat order) is the exception: the near side's buildings would hide its feet.
-    const overRoofs = camera.position.y > ROOF_Y + 2 && !(cutHigh && (!plan.ring || view.x < plan.ring.s0));
-    shared.uniforms.uCutR.value = view.rise > 0.25 || overRoofs ? 0 : Math.max(0.25, Math.max(view.h, 0.6 * view.d * 0.6) * 0.55);
+    // Above the rooftops (the giants, the finale) nothing is in the way: cutting would only punch holes in the roofs.
+    shared.uniforms.uCutR.value = view.rise > 0.25 || camera.position.y > ROOF_Y + 2 ? 0 : Math.max(0.25, Math.max(view.h, 0.6 * view.d * 0.6) * 0.55);
     city?.update(camera.position, csm.maxFar * 1.3);
   }
 

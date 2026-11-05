@@ -1290,7 +1290,7 @@ export function SizesExperience({ preset, focus = null, vs = [], compare = false
                   <ChevronDown className="h-3.5 w-3.5 shrink-0" aria-hidden />
                 </button>
                 {presetMenu && (
-                  <div className="pointer-events-auto absolute left-0 top-11 max-h-[calc(100dvh-12rem)] w-64 overflow-y-auto rounded-lg border border-white/15 bg-[#0b1226]/95 p-1 shadow-2xl backdrop-blur-xl" role="menu" data-testid="sizes-presets" data-sz-scroll>
+                  <div className="pointer-events-auto absolute left-0 top-11 max-h-[calc(100dvh-12rem)] w-72 max-w-[calc(100vw-4.5rem)] overflow-y-auto rounded-lg border border-white/15 bg-[#0b1226]/95 p-1 shadow-2xl backdrop-blur-xl" role="menu" data-testid="sizes-presets" data-sz-scroll>
                     {PRESETS.map((p) => (
                       <button
                         key={p.id}

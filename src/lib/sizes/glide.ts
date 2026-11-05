@@ -66,9 +66,29 @@ export interface Framer {
 export type Framing = "size" | "mixed";
 
 /** The mixed framing's limit on how fast it may change: ln(distance) per figure passed (Play passes about 3 a second). */
-export const MIXED_SLOPE = 0.06;
+export const MIXED_SLOPE = 0.08;
 /** The mixed framing's smoothing window (figures, a Gaussian's sigma). */
 export const MIXED_SIGMA = 4;
+/**
+ * How much tighter than its own framing a big neighbour may stand in the mixed framing (ln distance): it fills up to
+ * about 73% of the frame's height instead of 54%, so the shot before and after it needn't pull back quite as far.
+ */
+export const MIXED_ROOM = 0.3;
+
+const gauss = (v: number[], sigma: number) => {
+  const R = Math.ceil(sigma * 3);
+  const w = Array.from({ length: R + 1 }, (_, k) => Math.exp(-(k * k) / (2 * sigma * sigma)));
+  return v.map((_, i) => {
+    let s = 0, n = 0;
+    for (let k = -R; k <= R; k++) {
+      const j = i + k;
+      if (j < 0 || j >= v.length) continue;
+      s += v[j] * w[Math.abs(k)];
+      n += w[Math.abs(k)];
+    }
+    return s / n;
+  });
+};
 
 /** Clamps a sequence to change by at most `slope` per step, only ever raising values (the least such envelope over it). */
 function cone(v: number[], slope: number): number[] {
@@ -79,31 +99,21 @@ function cone(v: number[], slope: number): number[] {
 }
 
 /**
- * A smooth running envelope over a sequence (log sizes along a line): a little above every value, changing by at most
- * `slope` per step, and without corners. A cone of the given slope over every value (raised by what the smoothing
- * takes off a peak), smoothed with a Gaussian, then raised back over the values and coned again, so both bounds hold
- * exactly.
+ * A smooth running envelope over a sequence of log framing distances along a line: the neighbourhood's own framing
+ * (a log mean over about eight figures either way, a little loose), raised wherever a bigger neighbour needs more
+ * room (each figure's framing less `room`, on a cone of the given slope), then smoothed without corners. Both bounds
+ * hold exactly: it changes by at most `slope` per figure and never frames a figure tighter than its framing less
+ * `room` (plus a margin for a hold's gentle push-in).
  */
-const FLOOR = 0.06;
-export function envelope(raw: number[], slope = MIXED_SLOPE, sigma = MIXED_SIGMA): number[] {
+export function envelope(raw: number[], slope = MIXED_SLOPE, sigma = MIXED_SIGMA, room = MIXED_ROOM): number[] {
   if (raw.length < 2) return raw.slice();
-  // A Gaussian takes about slope · sigma · √(2/π) off the tip of a cone.
+  const around = gauss(raw, 8).map((x) => x + 0.15);
+  const big = cone(raw.map((r) => r - room), slope);
+  // A Gaussian takes about slope · sigma · √(2/π) off the tip of a cone: raised by that first.
   const lift = slope * sigma * 0.8;
-  const c = cone(raw.map((r) => r + lift), slope);
-  const R = Math.ceil(sigma * 3);
-  const w = Array.from({ length: R + 1 }, (_, k) => Math.exp(-(k * k) / (2 * sigma * sigma)));
-  const g = c.map((_, i) => {
-    let s = 0, n = 0;
-    for (let k = -R; k <= R; k++) {
-      const j = i + k;
-      if (j < 0 || j >= c.length) continue;
-      s += c[j] * w[Math.abs(k)];
-      n += w[Math.abs(k)];
-    }
-    // A little over each figure's own framing, so a hold's gentle push-in never crops it either.
-    return Math.max(s / n, raw[i] + FLOOR);
-  });
-  return cone(g, slope);
+  const base = cone(around.map((x, i) => Math.max(x, big[i]) + lift), slope);
+  const floor = (i: number) => raw[i] - room + 0.06;
+  return cone(gauss(base, sigma).map((x, i) => Math.max(x, floor(i))), slope);
 }
 
 /**
