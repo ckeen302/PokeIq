@@ -51,7 +51,7 @@ export const build: ChapterBuilder = async (ctx) => {
   }));
   const pack = new THREE.Group();
   pack.add(foil.mesh);
-  const packTop = new THREE.Mesh(new THREE.PlaneGeometry(1.1, 0.16), new THREE.MeshBasicMaterial({ color: col("#e8e0f0", 1.2), side: THREE.DoubleSide }));
+  const packTop = new THREE.Mesh(new THREE.PlaneGeometry(1.1, 0.16), new THREE.MeshStandardMaterial({ color: col("#c8c0d0"), metalness: 0.6, roughness: 0.3, side: THREE.DoubleSide }));
   packTop.position.y = 0.88;
   pack.add(packTop);
   pack.position.set(AT.cards, 1.5, 0);
@@ -59,7 +59,7 @@ export const build: ChapterBuilder = async (ctx) => {
   D.add({ dispose: () => { packTop.geometry.dispose(); (packTop.material as THREE.Material).dispose(); } });
   const cards = D.add(makeCardBurst({ count: Math.round(260 * P) + 60, center: [AT.cards, 1.5, 0], radius: 3.6, size: 0.5, seed: 6 }));
   scene.add(cards.mesh);
-  const packGlow = D.add(makeGlow({ pos: [AT.cards, 1.6, -0.4], size: 7, color: "#ffd0f0", intensity: 0 }));
+  const packGlow = D.add(makeGlow({ pos: [AT.cards, 1.6, -0.6], size: 4.2, color: "#ffd0f0", intensity: 0 }));
   scene.add(packGlow.sprite);
   const speed = D.add(makeStreaks({ count: Math.round(220 * P) + 40, center: [AT.cards, 1.5, -6], extent: [8, 5, 10], velocity: [0, 0, 14], life: 1.2, length: 1.6, width: 0.025, color: "#ffd6f0", intensity: 1.4, seed: 4 }));
   scene.add(speed.mesh);
@@ -71,7 +71,7 @@ export const build: ChapterBuilder = async (ctx) => {
   room.position.set(AT.tv, 0, 0);
   scene.add(room);
   const wood = new THREE.MeshStandardMaterial({ color: col("#3a2818"), roughness: 0.6 });
-  const wallM = new THREE.MeshStandardMaterial({ color: col("#2a2230"), roughness: 0.9 });
+  const wallM = new THREE.MeshStandardMaterial({ color: col("#6a5a70"), roughness: 0.9 });
   const tvM = new THREE.MeshStandardMaterial({ color: col("#4a3a2c"), roughness: 0.45 });
   const blackM = new THREE.MeshStandardMaterial({ color: col("#121214"), roughness: 0.4 });
   const roomGeos = [new THREE.PlaneGeometry(30, 30).rotateX(-Math.PI / 2), new THREE.PlaneGeometry(30, 10), new RoundedBoxGeometry(2.3, 1.75, 1.6, 3, 0.18), new THREE.BoxGeometry(2.8, 0.55, 1.4), new THREE.BoxGeometry(1.75, 1.32, 0.05)];
@@ -174,11 +174,11 @@ export const build: ChapterBuilder = async (ctx) => {
   const m4 = new THREE.Matrix4();
   for (let i = 0; i < 90; i++) { const row = Math.floor(i / 15), c = i % 15; m4.makeTranslation(AT.cinema + (c - 7) * 0.75 + (row % 2) * 0.3, 1.0 + row * 0.3, 3 + row * 1.0); seats.setMatrixAt(i, m4); }
   scene.add(seats);
-  const screenM = new THREE.Mesh(new THREE.PlaneGeometry(13, 6), new THREE.MeshBasicMaterial({ color: col("#6a58a0", 0.14) }));
+  const screenM = new THREE.Mesh(new THREE.PlaneGeometry(13, 6), new THREE.MeshBasicMaterial({ color: col("#7a68c0", 0.4) }));
   screenM.position.set(AT.cinema, 3.6, -8);
   scene.add(screenM);
   D.add({ dispose: () => { seats.geometry.dispose(); (seats.material as THREE.Material).dispose(); seats.dispose(); screenM.geometry.dispose(); (screenM.material as THREE.Material).dispose(); } });
-  const beam = D.add(makeShaft({ from: [AT.cinema, 4.6, 10], to: [AT.cinema, 3.4, -8], r0: 0.12, r1: 3.2, color: "#cfc0ff", intensity: 0.5, noise: 0.6 }));
+  const beam = D.add(makeShaft({ from: [AT.cinema, 5.2, 12], to: [AT.cinema, 3.6, -8], r0: 0.15, r1: 4.2, color: "#cfc0ff", intensity: 0.75, noise: 0.6 }));
   scene.add(beam.mesh);
   const dust = D.add(makeParticles({ count: Math.round(500 * P) + 60, shape: "box", center: [AT.cinema, 3.8, 0], extent: [1.6, 1.2, 8], velocity: [0, 0.05, 0], spread: [0.1, 0.1, 0.1], life: 6, size: [0.01, 0.025], colors: ["#ffffff", "#e0d8ff", "#bfb0ff"], intensity: 1.6, turbulence: 0.3 }));
   scene.add(dust.points);
@@ -192,6 +192,8 @@ export const build: ChapterBuilder = async (ctx) => {
   const globe = D.add(makeGlobe({ radius: R, count: Math.round(9000 * Math.max(0.4, P)), land: "#ffb84a", lit: "#ffd23a", sea: "#05081a", seed: 8 }));
   globe.group.position.set(AT.globe, 0, 0);
   scene.add(globe.group);
+  const atmo = D.add(makeGlow({ pos: [AT.globe, 0, -1], size: R * 2.9, color: "#ffb84a", intensity: 0 }));
+  scene.add(atmo.sprite);
   const japan = new THREE.Vector3(0.42, 0.55, 0.72).normalize();
   globe.u.uFrom.value.copy(japan);
   const gr = rng(13);
@@ -260,11 +262,11 @@ export const build: ChapterBuilder = async (ctx) => {
   ]);
   const starts = [0, tAnime - 0.25, tCompany, tMovie - 0.2, tWorld - 0.2, tCatch];
   const SKIES: [string, string, string, number][] = [
-    ["#1a0626", "#b8286a", "#0a0312", 0],
+    ["#07030f", "#3a0f4a", "#040208", 0],
     ["#08060c", "#140e1c", "#040306", 0],
     ["#1b2a6a", "#ff9a5a", "#201018", 0],
     ["#020203", "#06040c", "#000000", 0],
-    ["#010208", "#060c22", "#000000", 0],
+    ["#010208", "#0a1230", "#000000", 0.05],
     ["#140800", "#7a3a00", "#0a0400", 0],
   ];
   const KEYK = [0.9, 0.1, 0.35, 0.05, 0.5, 0.6];
@@ -290,7 +292,7 @@ export const build: ChapterBuilder = async (ctx) => {
 
       // A. The pack tears; the cards burst and fan round the camera.
       const tear = ramp(t, tCards + 0.25, tCards + 0.7);
-      packTop.position.set((tear * 1.5) * 0.6, 0.88 + tear * 1.6, tear * 0.8);
+      packTop.position.set(-tear * 1.6, 0.88 + tear * 2.2, -tear * 0.6);
       packTop.rotation.z = tear * 2.4;
       pack.visible = st === 0;
       pack.rotation.y = Math.sin(ambient * 0.8) * 0.15 * (1 - tear);
@@ -298,7 +300,7 @@ export const build: ChapterBuilder = async (ctx) => {
       cards.u.uBurst.value = ramp(t, tCards + 0.5, tCards + 3.6);
       cards.u.uTime.value = ambient;
       cards.mesh.visible = st === 0 && t > tCards + 0.4;
-      packGlow.set("#ffd0f0", 0.25 + 0.7 * spike(t, tCards + 0.55, 0.08, 0.9));
+      packGlow.set("#ffc0e8", 0.14 + 0.32 * spike(t, tCards + 0.55, 0.08, 0.9));
       speed.u.uTime.value = ambient;
       speed.u.uOpacity.value = st === 0 ? ramp(t, tCards + 0.6, tCards + 1.4) * 0.7 : 0;
       glitter.u.uTime.value = ambient; glitter.u.uPixel.value = px;
@@ -311,7 +313,7 @@ export const build: ChapterBuilder = async (ctx) => {
       if (sk !== screenState) { screenState = sk; crt.redraw(s); }
       const tvOn = st === 1 ? on : 0;
       tvGlow.set("#9ad8ff", 0.3 * tvOn);
-      tvLight.intensity = 4 * tvOn;
+      tvLight.intensity = 16 * tvOn;
       kid.setRim("#bfe6ff", 1.2 * tvOn);
       kid.mesh.visible = st === 1 && t < tFace;
       const out = ramp(t, tAnime + 1.8, tAnime + 3.4);
@@ -363,7 +365,7 @@ export const build: ChapterBuilder = async (ctx) => {
       bricks.instanceMatrix.needsUpdate = true;
       bricks.visible = st === 2;
       const lit = ramp(t, tCompany + 3.0, tCompany + 3.6);
-      (storeWin.material as THREE.MeshBasicMaterial).color.copy(col("#ffe0a0", 1.1 * lit));
+      (storeWin.material as THREE.MeshBasicMaterial).color.copy(col("#ffe0a0", 0.7 * lit));
       (signBand.material as THREE.MeshStandardMaterial).emissiveIntensity = 1.2 * lit;
       sign.mat.opacity = lit;
       sign.mesh.visible = lit > 0.01;
@@ -393,6 +395,7 @@ export const build: ChapterBuilder = async (ctx) => {
       globe.u.uTime.value = ambient;
       globe.u.uPixel.value = px;
       globe.group.visible = st === 4;
+      atmo.set("#ff9a3a", st === 4 ? 0.12 + 0.18 * ramp(t, tWorld + 0.3, tWorld + 4) : 0);
       worldArcs.u.uGrow.value = ramp(t, tWorld + 0.8, tWorld + 5.5);
       worldArcs.u.uTime.value = ambient; worldArcs.u.uPixel.value = px;
       worldArcs.points.visible = st === 4;
@@ -416,7 +419,7 @@ export const build: ChapterBuilder = async (ctx) => {
       lookAt(t, { ...STOCK.pop }, {
         exposure: [[0, 0.9], [tAnime - 0.3, 0.9], [tAnime, 0.8], [tCompany - 0.01, 0.8], [tCompany, 0.85], [tMovie, 0.85], [tWorld, 1.1], [end, 1.0]],
         bloom: [[0, 0.75], [tCards + 0.6, 0.95], [tCards + 3, 0.8], [tAnime, 0.7], [tWorld, 1.0], [tCatch, 0.9], [end, 0.85]],
-        bloomThreshold: [[0, 0.8], [end, 0.8]],
+        bloomThreshold: [[0, 0.86], [tAnime - 0.3, 0.86], [tAnime, 0.8], [end, 0.8]],
         chroma: [[0, 0.1], [tCompany - 0.01, 0.1], [tCompany, 0.9], [tCompany + 0.35, 0.12], [tCatch - 0.01, 0.12], [tCatch, 1.0], [tCatch + 0.4, 0.15], [end, 0.15]],
         flash: [[tAnime - 0.3, 0], [tAnime - 0.25, 0.35], [tAnime + 0.05, 0], [tMovie - 0.25, 0], [tMovie - 0.2, 0.3], [tMovie + 0.1, 0], [tWorld - 0.25, 0], [tWorld - 0.2, 0.35], [tWorld + 0.1, 0], [tCatch, 0], [tCatch + 0.12, 0.5], [tCatch + 0.5, 0]],
         saturation: [[0, 1.25], [end, 1.25]],

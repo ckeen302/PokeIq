@@ -657,11 +657,21 @@ export function makeCardBurst(o: { count: number; center: Vec3; radius: number; 
         if (vSeed > uShow) discard;
         vec3 c = vPick < 0.5 ? texture2D(uT0, vUv).rgb : vPick < 1.5 ? texture2D(uT1, vUv).rgb : vPick < 2.5 ? texture2D(uT2, vUv).rgb : texture2D(uT3, vUv).rgb;
         float f = dot(vN, vV);
-        if (f < 0.0) c = vec3(0.12, 0.2, 0.55) + 0.25 * vec3(step(0.45, abs(vUv.x - 0.5) + abs(vUv.y - 0.5)));
+        // The back: deep navy with a gold border and a swirl (original, no marks).
+        if (f < 0.0) {
+          vec2 q = vUv - 0.5;
+          float border = step(0.43, max(abs(q.x) * 1.0, abs(q.y) * 0.74));
+          float sw = 0.5 + 0.5 * sin(atan(q.y, q.x) * 3.0 + length(q) * 26.0);
+          c = mix(vec3(0.06, 0.09, 0.3) + vec3(0.08, 0.1, 0.3) * sw * smoothstep(0.42, 0.0, length(q)), vec3(0.85, 0.65, 0.25), border);
+        }
+        float af = abs(f);
+        // Lit by the burst's light: brighter face-on, a moving sheen band, rainbow foil at grazing angles.
         float holo = sin((vUv.x + vUv.y) * 18.0 + f * 9.0 + uTime) * 0.5 + 0.5;
         vec3 rainbow = 0.5 + 0.5 * cos(6.2831 * (holo + vec3(0.0, 0.33, 0.67)));
-        c = c * 1.1 + rainbow * 0.35 * pow(clamp(1.0 - abs(f), 0.0, 1.0), 1.5);
-        gl_FragColor = vec4(c * 1.2, 1.0);
+        float band = smoothstep(0.12, 0.0, abs(fract(vUv.x * 0.7 + vUv.y * 0.5 - uTime * 0.25 + vSeed * 3.0) - 0.5) - 0.3);
+        float g = clamp(1.0 - af, 0.0, 1.0);
+        c = c * (0.4 + 0.42 * af) + rainbow * (0.12 + 0.4 * g * g) + vec3(1.0, 0.95, 0.85) * band * 0.3;
+        gl_FragColor = vec4(c, 1.0);
       }`,
   });
   const mesh = new THREE.Mesh(geo, mat);
