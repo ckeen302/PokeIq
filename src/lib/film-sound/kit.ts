@@ -489,9 +489,9 @@ export class AmbienceBank {
         const a = filt(c, "bandpass", 550, 0.7), b2 = filt(c, "bandpass", 1600, 1.3);
         lfo(c, a.frequency, 550, 120, 0.9, r());
         lfo(c, b2.frequency, 1600, 350, 1.7, r());
-        bed(N.pink, [a], kind === "stadium" ? 0.45 : 0.3, (lg) => lfo(c, lg.gain, kind === "stadium" ? 0.45 : 0.3, 0.08, 0.31, r()));
+        bed(N.pink, [a], kind === "stadium" ? 0.3 : 0.25, (lg) => lfo(c, lg.gain, kind === "stadium" ? 0.3 : 0.25, 0.07, 0.31, r()));
         bed(N.pink, [b2], kind === "stadium" ? 0.2 : 0.14, (lg) => lfo(c, lg.gain, kind === "stadium" ? 0.2 : 0.14, 0.06, 0.53, r()));
-        if (kind === "stadium") bed(N.brown, [filt(c, "lowpass", 200, 0.5)], 0.4);
+        if (kind === "stadium") bed(N.brown, [filt(c, "lowpass", 200, 0.5)], 0.25);
         break;
       }
       case "rain":
@@ -510,7 +510,7 @@ export class AmbienceBank {
         break;
       }
       case "city": {
-        bed(N.brown, [filt(c, "lowpass", 220, 0.5)], 0.45);
+        bed(N.brown, [filt(c, "lowpass", 220, 0.5)], 0.32);
         const bp = filt(c, "bandpass", 700, 0.5);
         lfo(c, bp.frequency, 700, 200, 0.05, r());
         bed(N.pink, [bp], 0.1, (lg) => lfo(c, lg.gain, 0.1, 0.05, 0.13, r()));
@@ -614,7 +614,7 @@ export class AmbienceBank {
         every(3.2, (t) => noise(wetBus, t, { color: "pink", type: "bandpass", f0: 900, f1: 1300, q: 0.8, dur: 1.4, gain: 0.08, attack: 0.5, wet: 0.5, pan: r() - 0.5 }));
         break;
       case "stadium":
-        every(4.5, (t) => roar(wetBus, t, 0.35, 2.6));
+        every(5.5, (t) => roar(wetBus, t, 0.2, 2.6));
         break;
       case "storm":
         every(7, (t) => thunder(wetBus, t, 0.5 + r() * 0.4, r));

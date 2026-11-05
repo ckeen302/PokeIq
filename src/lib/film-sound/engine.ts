@@ -311,10 +311,8 @@ export async function renderFilmVideo<L extends string, H extends string>(cfg: F
       for (const [k, v] of Object.entries(a)) o[k as keyof AmbienceLevels] = (v ?? 0) * 0.7;
       return o;
     };
-    const used = g.bank.automate(ambAt, seconds, step);
-    const all: AmbienceLevels = {};
-    for (const k of used) all[k] = 1;
-    g.bank.tick(all, 0, seconds);
+    g.bank.automate(ambAt, seconds, step);
+    for (let t = 0; t < seconds; t += 1) g.bank.tick(ambAt(t + 0.5), t, Math.min(seconds, t + 1));
     for (let t = 0; t <= seconds; t += step) {
       const f = videoAt(plan, t);
       g.drop.frequency.setValueAtTime(dropHz(f.anim >= 0 ? cfg.dropAt(film, f.chapter, f.anim) * 0.9 : 0, rate), t);
@@ -375,10 +373,9 @@ export async function renderFilmPass<L extends string, H extends string>(cfg: Fi
       playLoop(ctx, b, cfg.loop, lg, 0);
     });
   }
-  const used = g.bank.automate((t) => cfg.ambienceFor(film, st(t)), seconds, step);
-  const all: AmbienceLevels = {};
-  for (const k of used) all[k] = 1;
-  g.bank.tick(all, 0, seconds);
+  const ambAt = (t: number) => cfg.ambienceFor(film, st(t));
+  g.bank.automate(ambAt, seconds, step);
+  for (let t = 0; t < seconds; t += 1) g.bank.tick(ambAt(t + 0.5), t, Math.min(seconds, t + 1));
   let prev = st(0);
   for (let t = step; t <= seconds; t += step) {
     const s = st(t);

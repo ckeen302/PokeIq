@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import { poseOnPath, type Key, type Pose, type Vec3 } from "@/lib/world-history/camera";
-import type { Figure } from "@/components/world-history/scene/figures";
+import { actionCurve, type Figure } from "@/components/world-history/scene/figures";
 import { makeConverge } from "@/components/world-history/scene/kit";
 import { figureStyle, floatFigure, pointPixel } from "@/components/world-history/scene/chapters/common";
 import type { Look } from "@/components/world-history/scene/types";
@@ -35,19 +35,25 @@ export function heroFigure(f: Figure | undefined, o: { pos: Vec3; height: number
   f.group.position.set(...o.pos);
   f.group.rotation.y = o.rotY ?? 0;
   o.scene.add(f.group);
-  figureStyle(f, { rim: o.accent, rimK: 1.3, edge: o.accent, dissolve: 0, glow: o.accent, glowK: 0 });
+  // Alive: breathing and sway, a solid relief with a darker back (the films-v2 figure shader).
+  figureStyle(f, { rim: o.accent, rimK: 1.3, edge: o.accent, dissolve: 0, glow: o.accent, glowK: 0, alive: 1, flex: 0.8, depth: 1.35, back: 0.3 });
+  f.castShadow(true);
   const conv = makeConverge(f.points, { radius: o.height * 0.9, colors: ["#ffffff", o.accent], size: [0.012, 0.03], intensity: 2.2, spin: 0.9 });
   conv.points.scale.setScalar(o.height / Math.max(1e-3, f.height));
   conv.points.position.set(...o.pos);
   conv.points.rotation.y = o.rotY ?? 0;
   o.scene.add(conv.points);
   let base: Vec3 = [...o.pos];
+  /** The ambient time it finished forming (it settles with a little follow-through then). */
+  let formedAt = -1;
   return {
     fig: f,
     /** k: 0 hidden … 1 formed; glow: extra light while it forms. */
     set(k: number, ambient: number, viewH: number, cam: THREE.PerspectiveCamera, bob = 0.06, glow = 0) {
       const d = Math.max(0, Math.min(1, k));
-      figureStyle(f, { dissolve: d, glowK: glow + (1 - d) * 0.6 * (d > 0 ? 1 : 0) });
+      if (d >= 0.995 && formedAt < 0) formedAt = ambient;
+      if (d < 0.5) formedAt = -1;
+      figureStyle(f, { dissolve: d, glowK: glow + (1 - d) * 0.6 * (d > 0 ? 1 : 0), act: formedAt >= 0 ? actionCurve(ambient, formedAt, { pre: 0, post: 0.8 }) * 0.8 : 0 });
       floatFigure(f, base, ambient, bob * (o.height / 3), o.pos[0], o.rotY ?? 0, 0.04);
       conv.u.uForm.value = Math.min(1, d * 1.15);
       conv.u.uTime.value = ambient;

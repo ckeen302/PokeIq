@@ -199,11 +199,37 @@ export type Pose = "stand" | "net" | "seated" | "walk" | "point" | "lean";
 /** A limb segment between two points: a tapered cylinder with a rounded joint at each end. */
 function limb(parts: THREE.BufferGeometry[], a: THREE.Vector3, b: THREE.Vector3, ra: number, rb: number, joints = true) {
   const d = b.clone().sub(a), len = d.length();
-  const g = new THREE.CylinderGeometry(rb, ra, len, 10, 1, true);
+  const g = new THREE.CylinderGeometry(rb, ra, len, 14, 1, true);
   g.applyQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), d.normalize()));
   g.translate((a.x + b.x) / 2, (a.y + b.y) / 2, (a.z + b.z) / 2);
   parts.push(g);
-  if (joints) { parts.push(new THREE.SphereGeometry(ra, 10, 8).translate(a.x, a.y, a.z), new THREE.SphereGeometry(rb, 10, 8).translate(b.x, b.y, b.z)); }
+  // Joints a touch fuller than the limb, so the rim rolls over them instead of catching a seam.
+  if (joints) { parts.push(new THREE.SphereGeometry(ra * 1.06, 14, 10).translate(a.x, a.y, a.z), new THREE.SphereGeometry(rb * 1.06, 14, 10).translate(b.x, b.y, b.z)); }
+}
+
+/** A hand: a flattened palm, four fingers with a slight curl and a thumb (a silhouette, so the shape is what reads). */
+function hand(parts: THREE.BufferGeometry[], wrist: THREE.Vector3, dir: THREE.Vector3, h: number, spread = 1) {
+  const f = dir.clone().normalize();
+  let side = new THREE.Vector3().crossVectors(f, new THREE.Vector3(0, 1, 0));
+  if (side.lengthSq() < 1e-4) side = new THREE.Vector3(1, 0, 0);
+  side.normalize();
+  const palmN = new THREE.Vector3().crossVectors(side, f).normalize();
+  const palm = wrist.clone().addScaledVector(f, 0.022 * h);
+  const pg = new THREE.SphereGeometry(0.021 * h, 12, 10).scale(1.15, 1.25, 0.5);
+  pg.applyQuaternion(new THREE.Quaternion().setFromRotationMatrix(new THREE.Matrix4().makeBasis(side, f, palmN)));
+  parts.push(pg.translate(palm.x, palm.y, palm.z));
+  for (let i = 0; i < 4; i++) {
+    const o = (i - 1.5) * 0.0105 * h * spread;
+    const base = palm.clone().addScaledVector(f, 0.02 * h).addScaledVector(side, o);
+    const len = (i === 1 || i === 2 ? 0.036 : 0.03) * h;
+    const mid = base.clone().addScaledVector(f, len * 0.55).addScaledVector(side, o * 0.15);
+    const tip = mid.clone().addScaledVector(f, len * 0.45).addScaledVector(palmN, -len * 0.25);
+    limb(parts, base, mid, 0.0056 * h, 0.005 * h);
+    limb(parts, mid, tip, 0.005 * h, 0.0042 * h);
+  }
+  const tb = palm.clone().addScaledVector(side, 0.017 * h).addScaledVector(f, -0.004 * h);
+  const tt = tb.clone().addScaledVector(side, 0.012 * h).addScaledVector(f, 0.022 * h).addScaledVector(palmN, -0.006 * h);
+  limb(parts, tb, tt, 0.0062 * h, 0.0048 * h);
 }
 
 /**
@@ -261,7 +287,7 @@ export function makeSilhouette(o: { height: number; pose?: Pose; child?: boolean
     limb(parts, knee, ankle, 0.036 * h, 0.024 * h);
     parts.push(new THREE.SphereGeometry(0.03 * h, 10, 8).scale(1.05, 0.75, 2.1).translate(ankle.x, ankle.y - 0.012 * h, ankle.z + 0.03 * h));
   });
-  // Arms: upper arm, forearm, a mitten hand; posture per pose.
+  // Arms: upper arm, forearm, a hand with fingers; posture per pose.
   void sh; void hp;
   const shL = up(P.sh - 0.025).add(V(-P.shX * 0.86, 0, 0)), shR = up(P.sh - 0.025).add(V(P.shX * 0.86, 0, 0));
   const arm = (s0: THREE.Vector3, dirE: THREE.Vector3, dirW: THREE.Vector3) => {
@@ -270,7 +296,7 @@ export function makeSilhouette(o: { height: number; pose?: Pose; child?: boolean
     limb(parts, s0, e, 0.032 * h, 0.026 * h);
     limb(parts, e, w, 0.026 * h, 0.02 * h);
     const hd = w.clone().addScaledVector(dirW, 0.03 * h);
-    parts.push(new THREE.SphereGeometry(0.026 * h, 10, 8).scale(0.75, 1.25, 0.6).translate(hd.x, hd.y, hd.z));
+    hand(parts, w, dirW, h, pose === "lean" ? 1.25 : 1);
     return hd;
   };
   let handR: THREE.Vector3;

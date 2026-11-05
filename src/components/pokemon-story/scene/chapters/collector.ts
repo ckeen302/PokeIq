@@ -5,7 +5,7 @@ import { makeCity } from "@/components/world-history/scene/props";
 import { figureStyle, lights, loadFigures, lookAt, pointPixel } from "@/components/world-history/scene/chapters/common";
 import type { ChapterBuilder } from "@/components/world-history/scene/types";
 import { glassMaterial, makeFireflies, makeFirefly, makeGrass, makeSilhouette } from "../story-kit";
-import { bag, STOCK } from "./base";
+import { bag, shots, STOCK } from "./base";
 
 /**
  * I. The Collector. Machida in the 1970s at golden hour: knee-high grass in
@@ -219,19 +219,32 @@ export const build: ChapterBuilder = async (ctx) => {
   const skyGrey = { top: col("#2a2d36"), hor: col("#6c6460"), bot: col("#18171a") };
   const skyNight = { top: col("#0b1024"), hor: col("#3a2a2a"), bot: col("#0a0808") };
 
-  const keys: Key[] = [
-    { t: 0, pos: [-12, 1.05, 16], look: [-5, 0.9, 4], fov: 46 },
-    { t: tFields + 2, pos: [-7, 1.0, 12], look: [-2, 1.0, 0], fov: 44 },
-    { t: tBug, pos: [-3, 1.0, 10.5], look: [0, 0.9, 2], fov: 42 },
-    { t: tLearn - 0.4, pos: [0.5, 1.4, 9.5], look: [2, 0.4, 5], fov: 40 },
-    { t: tLearn + 3, pos: [2.9, 0.75, 7.0], look: [2.1, 0.2, 5], fov: 34 },
-    { t: tJar - 0.2, pos: [1.3, 1.6, 11.6], look: [0, 1.25, 8.8], fov: 36 },
-    { t: tJar + 4.5, pos: [0.55, 1.4, 10.6], look: [0, 1.3, 9], fov: 30 },
-    { t: tPaved + 0.5, pos: [0, 3, 16], look: [0, 2, 4], fov: 44 },
-    { t: tKept - 0.4, pos: [0, 12, 30], look: [0, 4, -2], fov: 48 },
-    { t: tKept + 1.5, pos: [0.4, 2.0, 15], look: [0.2, 1.8, 9], fov: 40 },
-    { t: end, pos: [0.3, 1.7, 12.6], look: [0.3, 1.55, 10], fov: 36 },
-  ];
+  // Four shots with real cuts: the field at knee height, a close low angle on the rock, the jar,
+  // and a wide as the city rises (the old single glide is split where the story turns).
+  const cam = shots([
+    [0, [
+      { t: 0, pos: [-12, 1.05, 16], look: [-5, 0.9, 4], fov: 46 },
+      { t: tFields + 2, pos: [-7, 1.0, 12], look: [-2, 1.0, 0], fov: 44 },
+      { t: tBug, pos: [-3, 1.0, 10.5], look: [0, 0.9, 2], fov: 42 },
+      { t: tLearn - 0.4, pos: [-1.2, 1.15, 9.8], look: [1, 0.8, 3], fov: 41 },
+    ]],
+    [tLearn - 0.4, [
+      { t: tLearn - 0.4, pos: [3.7, 0.5, 6.3], look: [2.1, 0.25, 5], fov: 30 },
+      { t: tLearn + 3, pos: [2.9, 0.68, 7.0], look: [2.1, 0.2, 5], fov: 32, stop: true },
+      { t: tJar - 0.2, pos: [2.6, 0.85, 7.5], look: [1.7, 0.35, 5.5], fov: 34 },
+    ]],
+    [tJar - 0.2, [
+      { t: tJar - 0.2, pos: [1.3, 1.6, 11.6], look: [0, 1.25, 8.8], fov: 36 },
+      { t: tJar + 4.5, pos: [0.55, 1.4, 10.6], look: [0, 1.3, 9], fov: 30, stop: true },
+      { t: tPaved + 0.5, pos: [0.45, 1.42, 10.9], look: [0, 1.32, 9], fov: 30 },
+    ]],
+    [tPaved + 0.5, [
+      { t: tPaved + 0.5, pos: [0, 3, 16], look: [0, 2, 4], fov: 44 },
+      { t: tKept - 0.4, pos: [0, 12, 30], look: [0, 4, -2], fov: 48 },
+      { t: tKept + 1.5, pos: [0.4, 2.0, 15], look: [0.2, 1.8, 9], fov: 40 },
+      { t: end, pos: [0.3, 1.7, 12.6], look: [0.3, 1.55, 10], fov: 36 },
+    ]],
+  ]);
   const lastPath: Key[] = [
     { t: tKept - 0.5, pos: [6, 5, 0], look: [0, 0, 0], fov: 1 },
     { t: tKept + 2, pos: [1.5, 2.6, 7], look: [0, 0, 0], fov: 1 },
@@ -242,9 +255,9 @@ export const build: ChapterBuilder = async (ctx) => {
   return {
     scene,
     portalScale: 1.4,
-    camera: (t) => poseOnPath(keys, t),
+    camera: cam,
     orbit: (t) => {
-      const p = poseOnPath(keys, t);
+      const p = cam(t);
       return { target: p.look, limits: { yaw0: 0, yawSpan: 1.0, minPitch: -0.05, maxPitch: 1.1, minDist: 1.2, maxDist: 40 } };
     },
     update(t, ambient, cam, viewH) {

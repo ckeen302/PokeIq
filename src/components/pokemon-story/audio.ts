@@ -218,10 +218,10 @@ export function hitsOf(film: Film, index: number): { kind: Hit; at: number }[] {
 
 function playHit(b: Bus, kind: Hit, at: number, gain: number, r: K.Rand) {
   switch (kind) {
-    case "boom": return K.impact(b, at, 0.9 * gain, 1, 1);
-    case "thud": return K.impact(b, at, 0.45 * gain, 0.35, 0);
-    case "rumble": return K.rumble(b, at, gain);
-    case "roar": return K.roar(b, at, gain);
+    case "boom": return K.impact(b, at, 0.32 * gain, 0.7, 1);
+    case "thud": return K.impact(b, at, 0.2 * gain, 0.3, 0);
+    case "rumble": return K.rumble(b, at, 0.35 * gain);
+    case "roar": return K.roar(b, at, 0.55 * gain);
     case "whoosh": return K.whoosh(b, at, gain);
     case "wind": return K.gust(b, at, gain);
     case "blip": return K.blip(b, at, gain);
@@ -257,10 +257,10 @@ export const SOUND: FilmSound<Layer, Hit> = {
   hold: HOLD,
   bpm: BPM,
   loop: LOOP,
-  layerGain: { bed: 0.62, curious: 0.6, bright: 0.42, drive: 0.5, warm: 0.6, swell: 0.82 },
+  layerGain: { bed: 0.85, curious: 0.8, bright: 0.55, drive: 0.66, warm: 0.8, swell: 1 },
   // Hits and foley sit well under the music, the ambience lower still.
   sfxGain: 0.42,
-  ambGain: 0.2,
+  ambGain: 0.11,
   room: [2.6, 2.4, 0.6],
   mixFor, mixAt, ambienceFor, ambienceAt, dropAt, revealsOf, hitsOf, playHit,
   musical: MUSICAL,

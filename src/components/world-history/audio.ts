@@ -195,9 +195,9 @@ export function hitsOf(film: Film, index: number): { kind: Hit; at: number }[] {
 
 function playHit(b: Bus, kind: Hit, at: number, gain: number, r: K.Rand) {
   switch (kind) {
-    case "boom": return K.impact(b, at, gain, 1, 0.8);
-    case "rumble": return K.rumble(b, at, gain);
-    case "thunder": return K.thunder(b, at, gain, r);
+    case "boom": return K.impact(b, at, 0.34 * gain, 0.75, 0.8);
+    case "rumble": return K.rumble(b, at, 0.38 * gain);
+    case "thunder": return K.thunder(b, at, 0.4 * gain, r);
     case "shimmer": {
       // A form made of light: a soft rising glass chord in D minor.
       [587.33, 698.46, 880, 1174.66, 1396.9].forEach((f, i) => K.tone(b, f, at + i * 0.06, 2.4 - i * 0.2, 0.045 * gain, { attack: 0.35, wet: 0.9, pan: (i - 2) * 0.3 }));
@@ -220,9 +220,9 @@ export const SOUND: FilmSound<Layer, Hit> = {
   hold: HOLD,
   bpm: BPM,
   loop: LOOP,
-  layerGain: { bed: 0.75, cave: 0.55, ice: 0.6, epic: 0.85 },
+  layerGain: { bed: 0.95, cave: 0.7, ice: 0.75, epic: 1 },
   sfxGain: 0.45,
-  ambGain: 0.2,
+  ambGain: 0.11,
   room: [3.2, 2.1, 0.5],
   mixFor, mixAt, ambienceFor, ambienceAt, dropAt, revealsOf, hitsOf, playHit,
   musical: MUSICAL,

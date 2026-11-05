@@ -114,6 +114,37 @@ export const build: ChapterBuilder = async (ctx) => {
   galFloor.position.set(AT.gallery, 0, 0);
   scene.add(galFloor);
   D.add({ dispose: () => { galFloor.geometry.dispose(); (galFloor.material as THREE.Material).dispose(); } });
+  // The gallery behind the case: a panelled wall in warm grey-green, washed by a lamp from above the
+  // vitrine (a soft pool, painted, so it costs no light), a dado rail and a skirting, plus two dim
+  // side bays so the room has depth on either side of the case.
+  const wallTex = (() => {
+    const c = document.createElement("canvas");
+    c.width = 512; c.height = 256;
+    const g = c.getContext("2d")!;
+    g.fillStyle = "#1c1a16"; g.fillRect(0, 0, 512, 256);
+    const pool = g.createRadialGradient(256, 70, 10, 256, 110, 260);
+    pool.addColorStop(0, "#8a7458"); pool.addColorStop(0.35, "#5a4a38"); pool.addColorStop(1, "#1c1a16");
+    g.fillStyle = pool; g.fillRect(0, 0, 512, 256);
+    // Panels: recessed frames with a light top edge and a dark bottom edge.
+    for (let i = 0; i < 6; i++) {
+      const x = 14 + i * 82, y = 26, w = 70, h = 118;
+      g.strokeStyle = "rgba(0,0,0,0.35)"; g.lineWidth = 3; g.strokeRect(x, y, w, h);
+      g.strokeStyle = "rgba(255,230,190,0.12)"; g.lineWidth = 1.5; g.strokeRect(x + 3, y + 3, w - 6, h - 6);
+    }
+    g.fillStyle = "rgba(255,225,180,0.16)"; g.fillRect(0, 160, 512, 4);
+    g.fillStyle = "rgba(0,0,0,0.4)"; g.fillRect(0, 164, 512, 3);
+    for (let i = 0; i < 6; i++) { g.strokeStyle = "rgba(0,0,0,0.3)"; g.lineWidth = 2; g.strokeRect(14 + i * 82, 176, 70, 56); }
+    g.fillStyle = "#120e0a"; g.fillRect(0, 240, 512, 16);
+    const t = new THREE.CanvasTexture(c);
+    t.colorSpace = THREE.SRGBColorSpace;
+    t.anisotropy = 4;
+    return t;
+  })();
+  const wallMat = new THREE.MeshBasicMaterial({ map: wallTex, color: col("#f0dcb8") });
+  const galWall = new THREE.Mesh(new THREE.PlaneGeometry(16, 8), wallMat);
+  galWall.position.set(AT.gallery, 4, -4.2);
+  scene.add(galWall);
+  D.add({ dispose: () => { galWall.geometry.dispose(); wallMat.dispose(); wallTex.dispose(); } });
 
   // ---- B. Chapter III's table: same Game Boys, same cable, same orbit.
   const T = D.add(cableTable(scene));
@@ -295,7 +326,7 @@ export const build: ChapterBuilder = async (ctx) => {
       L.hemi.intensity = st === 3 ? 0.6 : 0.4;
 
       // A. The case: wind and waves swirl round it.
-      gal.visible = galFloor.visible = st === 0;
+      gal.visible = galFloor.visible = galWall.visible = st === 0;
       caseLamp.intensity = st === 0 ? 30 : 0;
       sw2.group.rotation.y = Math.sin(ambient * 0.4) * 0.25;
       const swk = st === 0 ? ramp(t, tThirty + 0.6, tThirty + 2) : 0;
