@@ -81,14 +81,16 @@ export function MovesSection({ moves, game }: { moves: DexMove[]; game: string }
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b text-left text-[11px] uppercase tracking-wider text-muted-foreground">
-              <th className="w-14 p-2">{tab === "L" ? "Lv" : tab === "M" ? "TM" : ""}</th>
+              <th className="w-14 p-2">{tab === "L" ? "Lv" : tab === "M" ? "TM" : <span className="sr-only">Method</span>}</th>
               <th className="p-2">Move</th>
               <th className="p-2">Type</th>
               <th className="p-2">Cat.</th>
               <th className="p-2 text-right">Pow</th>
               <th className="hidden p-2 text-right sm:table-cell">Acc</th>
               <th className="hidden p-2 text-right sm:table-cell">PP</th>
-              <th className="w-6 p-2" />
+              <th className="w-6 p-2">
+                <span className="sr-only">Details</span>
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -109,7 +111,8 @@ export function MovesSection({ moves, game }: { moves: DexMove[]; game: string }
                     <td className="p-2 font-mono text-xs text-muted-foreground">
                       {tab === "L" ? (m.level === 0 ? "Evo" : m.level) : tab === "M" ? m.tm ?? "—" : ""}
                     </td>
-                    <td className="p-2 font-semibold">
+                    {/* The move's name heads its row, so every cell in the row has a header. */}
+                    <th scope="row" className="p-2 text-left font-semibold">
                       {/* The row handles the click; the button makes it reachable by keyboard. */}
                       <button
                         type="button"
@@ -127,7 +130,7 @@ export function MovesSection({ moves, game }: { moves: DexMove[]; game: string }
                       >
                         Page →
                       </Link>
-                    </td>
+                    </th>
                     <td className="p-2">
                       <TypeBadge type={m.type} size="sm" />
                     </td>
