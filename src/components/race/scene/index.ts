@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import { watchContext } from "@/lib/gl/context-loss";
 import { PF_CAM, type PhotoFrame } from "@/lib/race/broadcast";
 import type { CamPose } from "@/lib/race/director";
 import type { Race } from "@/lib/race/race";
@@ -55,6 +56,8 @@ export interface SceneOptions {
   font: string;
   /** Fixed drawing size (exports); otherwise the host's size. */
   size?: { w: number; h: number };
+  /** The WebGL context was lost and the scene must be built again (see watchContext). */
+  onContextGone?: () => void;
 }
 
 export interface FrameInput {
@@ -115,6 +118,7 @@ export function createRaceScene(host: HTMLElement, opts: SceneOptions): RaceScen
   canvas.style.width = "100%";
   canvas.style.height = "100%";
   host.appendChild(canvas);
+  const ctxWatch = watchContext(canvas, opts.onContextGone);
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: !Q.post && quality !== "draft", alpha: false, powerPreference: "high-performance", stencil: false, preserveDrawingBuffer: !!opts.size });
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.0;
@@ -241,6 +245,7 @@ export function createRaceScene(host: HTMLElement, opts: SceneOptions): RaceScen
   let frameNo = 0;
 
   function frame(f: FrameInput): { kg: number; dist: number }[] {
+    if (ctxWatch.lost) return [];
     frameNo++;
     const { pose } = f;
     camera.position.set(...pose.pos);
@@ -428,6 +433,7 @@ export function createRaceScene(host: HTMLElement, opts: SceneOptions): RaceScen
     stats: () => ({ calls: renderer.info.render.calls, tris: renderer.info.render.triangles, crowd: crowd.count }),
     internals: () => ({ scene, renderer, camera }),
     dispose() {
+      ctxWatch.dispose();
       runners?.dispose();
       pool?.dispose();
       stadium.dispose();

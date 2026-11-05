@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import { watchContext } from "@/lib/gl/context-loss";
 import { latOf, lonOf, type Atlas } from "@/lib/globe/geo";
 import { atlasMountains, type GlobeMountain } from "@/lib/globe/mountains";
 import { eraVisibility, LAST_GEN, regionGeneration } from "@/lib/globe/era";
@@ -49,6 +50,8 @@ export interface SceneOptions {
   /** Pins the quality level (0–3); null lets the frame-time monitor choose. */
   quality: number | null;
   era: number;
+  /** The WebGL context was lost and the scene must be built again (see watchContext). */
+  onContextGone?: () => void;
 }
 export interface SceneApi {
   next(): void;
@@ -132,10 +135,12 @@ export function createGlobeScene(host: HTMLElement, layer: HTMLDivElement, cb: S
   canvas.className = "absolute inset-0 h-full w-full cursor-grab touch-none active:cursor-grabbing";
   canvas.setAttribute("aria-label", "Interactive 3D globe of the Pokémon world. Drag to spin, scroll or pinch to zoom, hover or tap a town to see it.");
   host.insertBefore(canvas, layer);
+  const ctxWatch = watchContext(canvas, opts.onContextGone);
   let renderer: THREE.WebGLRenderer;
   try {
     renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, powerPreference: "high-performance" });
   } catch {
+    ctxWatch.dispose();
     canvas.remove();
     return null;
   }
@@ -776,6 +781,7 @@ export function createGlobeScene(host: HTMLElement, layer: HTMLDivElement, cb: S
   let hudT = 0, t = 0;
   function frame() {
     raf = requestAnimationFrame(frame);
+    if (ctxWatch.lost) return;
     const now = performance.now();
     monitor(now);
     const dt = Math.min(clock.getDelta(), 0.1);
@@ -937,6 +943,7 @@ export function createGlobeScene(host: HTMLElement, layer: HTMLDivElement, cb: S
     skipIntro,
     dispose() {
       dead = true;
+      ctxWatch.dispose();
       cancelAnimationFrame(raf);
       mo.disconnect();
       ro.disconnect();
