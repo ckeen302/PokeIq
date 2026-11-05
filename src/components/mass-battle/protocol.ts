@@ -81,6 +81,8 @@ export interface SimReady {
   /** Weather, terrain and time of day. */
   field: FieldSpec;
   frame: SimFrame;
+  /** A replay from partway through (startTick): each unit's form at that moment. */
+  forms?: Uint8Array;
   /** Milliseconds the setup took (damage table and placement). */
   setupMs: number;
 }
@@ -100,10 +102,29 @@ export interface SimEnd {
   stats: BattleStats;
   /** KOs per unit's species, per side: [battle species, KOs scored by that species]. */
   kosBySpecies: [number, number][][];
+  /** Post-battle stats (from a battle played from its start). */
+  post?: PostStats;
 }
 
+/** What the result's stats show: the MVP, damage and KOs by species, KOs by move, the boss's fall and the timeline. */
+export interface PostStats {
+  /** The unit with the most KOs (ties to the most damage): its battle species, side, KOs and damage. */
+  mvp: { unit: number; fighter: number; side: number; kos: number; dealt: number } | null;
+  /** Per battle species and side: damage dealt and KOs, the most damage first. */
+  bySpecies: { fighter: number; side: number; count: number; dealt: number; kos: number }[];
+  /** KOs by move: battle species, move slot, side, KOs (the most first). */
+  byMove: { fighter: number; slot: number; side: number; kos: number }[];
+  /** The tick the boss (a side of three or fewer against an army) went down, or −1. */
+  bossKoTick: number;
+  /** Every TIMELINE_TICKS: tick, each side standing, each side's HP left (per mille). */
+  timeline: number[];
+}
+
+/** Ticks between timeline samples (half a second). */
+export const TIMELINE_TICKS = 10;
+
 export type ToSim =
-  | { type: "init"; id: number; roster: RosterSlice; spec: BattleSpec; playback?: PlaybackSpec }
+  | { type: "init"; id: number; roster: RosterSlice; spec: BattleSpec; playback?: PlaybackSpec; startTick?: number }
   | { type: "step"; id: number; count: number }
   | { type: "playback"; id: number; playback: PlaybackSpec; paused?: boolean }
   | { type: "plan"; id: number }

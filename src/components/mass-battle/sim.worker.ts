@@ -1,7 +1,7 @@
 import { STRUGGLE } from "@/lib/mass-battle/damage";
 import { Battle, EV, EVENT_INTS, NOTE_INTS, prepare, TICK_HZ } from "@/lib/mass-battle/engine";
 import { DEFAULT_PLAYBACK, type PlaybackSpec } from "@/lib/mass-battle/types";
-import type { FromSim, Moment, SimEnd, SimFrame, ToSim } from "./protocol";
+import { TIMELINE_TICKS, type FromSim, type Moment, type SimEnd, type SimFrame, type ToSim } from "./protocol";
 
 /**
  * The live battle, off the main thread: the page asks for ticks a few at a
@@ -36,10 +36,40 @@ let aheadTimer: ReturnType<typeof setTimeout> | null = null;
 /** Milliseconds a tick takes to play (smoothed), reported with each batch of frames. */
 let tickCost = 0;
 
+/** The post-battle stats as the battle plays (only for a battle played from its start). */
+let tally: { kosByMove: Map<number, number>; bossKoTick: number; timeline: number[]; bossSide: number } | null = null;
+
+function newTally(b: Battle) {
+  const bossSide = b.start[0] <= 3 && b.start[1] >= 4 ? 0 : b.start[1] <= 3 && b.start[0] >= 4 ? 1 : -1;
+  tally = { kosByMove: new Map(), bossKoTick: -1, timeline: [], bossSide };
+  sample(b);
+}
+
+function sample(b: Battle) {
+  if (!tally) return;
+  tally.timeline.push(b.tick, b.left[0], b.left[1], Math.round(b.hpShare(0) * 1000), Math.round(b.hpShare(1) * 1000));
+}
+
+function count(b: Battle) {
+  if (!tally) return;
+  const ev = b.events;
+  for (let k = 0; k < b.eventCount; k++) {
+    const o = k * EVENT_INTS;
+    if (!(ev[o + 4] & EV.KO)) continue;
+    const actor = ev[o], target = ev[o + 1], slot = ev[o + 2];
+    if (tally.bossSide >= 0 && b.side[target] === tally.bossSide) tally.bossKoTick = b.tick;
+    if (actor === target || slot < 0 || b.side[actor] === b.side[target]) continue;
+    const key = (b.sp[actor] * 8 + slot) * 2 + b.side[actor];
+    tally.kosByMove.set(key, (tally.kosByMove.get(key) ?? 0) + 1);
+  }
+  if (b.tick % TIMELINE_TICKS === 0 || b.ended) sample(b);
+}
+
 /** One tick played and turned into a frame. */
 function advance(b: Battle): SimFrame {
   const t0 = performance.now();
   b.step();
+  count(b);
   const f = frameOf(b);
   const ms = performance.now() - t0;
   tickCost = tickCost ? tickCost * 0.9 + ms * 0.1 : ms;
@@ -77,7 +107,30 @@ function endOf(b: Battle): SimEnd {
     for (let i = 0; i < b.n; i++) if (b.side[i] === s && b.kos[i]) by.set(b.sp[i], (by.get(b.sp[i]) ?? 0) + b.kos[i]);
     kos[s] = [...by.entries()].sort((a, c) => c[1] - a[1]);
   }
-  return { outcome: b.outcome(), stats: b.stats(), kosBySpecies: kos };
+  const end: SimEnd = { outcome: b.outcome(), stats: b.stats(), kosBySpecies: kos };
+  if (tally) {
+    const by = new Map<number, { fighter: number; side: number; count: number; dealt: number; kos: number }>();
+    let mvp = -1;
+    for (let i = 0; i < b.n; i++) {
+      const key = b.sp[i] * 2 + b.side[i];
+      const row = by.get(key) ?? { fighter: b.sp[i], side: b.side[i], count: 0, dealt: 0, kos: 0 };
+      row.count++;
+      row.dealt += b.dealt[i];
+      row.kos += b.kos[i];
+      by.set(key, row);
+      if (b.kos[i] > 0 && (mvp < 0 || b.kos[i] > b.kos[mvp] || (b.kos[i] === b.kos[mvp] && b.dealt[i] > b.dealt[mvp]))) mvp = i;
+    }
+    // No KOs at all (one Pokémon left standing by recoil): the one that dealt the most.
+    if (mvp < 0) for (let i = 0; i < b.n; i++) if (b.dealt[i] > 0 && (mvp < 0 || b.dealt[i] > b.dealt[mvp])) mvp = i;
+    end.post = {
+      mvp: mvp >= 0 ? { unit: mvp, fighter: b.sp[mvp], side: b.side[mvp], kos: b.kos[mvp], dealt: Math.round(b.dealt[mvp]) } : null,
+      bySpecies: [...by.values()].map((r) => ({ ...r, dealt: Math.round(r.dealt) })).sort((a, c) => c.dealt - a.dealt),
+      byMove: [...tally.kosByMove.entries()].map(([key, kos]) => ({ fighter: Math.floor(key / 16), slot: Math.floor(key / 2) % 8, side: key % 2, kos })).sort((a, c) => c.kos - a.kos),
+      bossKoTick: tally.bossKoTick,
+      timeline: tally.timeline,
+    };
+  }
+  return end;
 }
 
 const transfers = (f: SimFrame) => [f.pos.buffer, f.hp.buffer, f.target.buffer, f.events.buffer, f.notes.buffer] as ArrayBuffer[];
@@ -159,6 +212,12 @@ scope.onmessage = (event) => {
       battle = new Battle(prep);
       current = msg.id;
       const b = battle;
+      // A replay from partway through (the kill cam, the timeline): the same battle played silently up to there.
+      const startTick = Math.max(0, Math.floor(msg.startTick ?? 0));
+      if (startTick > 0) {
+        tally = null;
+        while (b.tick < startTick && !b.ended) b.step();
+      } else newTally(b);
       const frame = frameOf(b);
       scope.postMessage(
         {
@@ -178,6 +237,7 @@ scope.onmessage = (event) => {
           // The field as the battle starts: a setter's weather or terrain (Drizzle, Electric Surge) is on show from the first frame.
           field: { ...prep.field, weather: b.fieldNow.weather, terrain: b.fieldNow.terrain },
           frame,
+          ...(startTick > 0 ? { forms: b.form.slice() } : {}),
           setupMs: performance.now() - t0,
         },
         transfers(frame)

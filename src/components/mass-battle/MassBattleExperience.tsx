@@ -2,7 +2,7 @@
 
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { track } from "@vercel/analytics";
-import { Camera, Clapperboard, Loader2, RotateCcw, Share2, Swords, X } from "lucide-react";
+import { BarChart3, Camera, Clapperboard, Crosshair, Loader2, RotateCcw, Share2, Swords, X } from "lucide-react";
 import { Director, type Pose } from "@/lib/mass-battle/director";
 import { NOTE, TICK_HZ } from "@/lib/mass-battle/constants";
 import { bossDownLine, critLine, fmt, multiKoLine, noAnswerText, possessive, questionText, resultLine, resultTitle, sideName as armyLabel, spreadText, winRateText } from "@/lib/mass-battle/copy";
@@ -24,6 +24,8 @@ import { HowItWorksBody } from "./HowItWorks";
 import { envOf } from "./scene/look";
 import { BattleControls, LiveHud, type CamMode, type HudApi, type HudState } from "./BattleHud";
 import { DamageNumbers, fieldLine, noteLabel } from "./damage-numbers";
+import { PostBattleStats } from "./PostBattleStats";
+import type { PostStats } from "./protocol";
 import { formFigures, speciesForms, type SpeciesForms } from "./scene/forms";
 import type { Choreographer } from "./scene/choreo";
 import { factsOfRow, SetupPanel } from "./SetupPanel";
@@ -171,6 +173,11 @@ export function MassBattleExperience({ list, presets, initial, playback: initial
   }, []);
   const [final, setFinal] = useState<Final | null>(null);
   const [cardHidden, setCardHidden] = useState(false);
+  /** The post-battle stats of the battle on the field (kept through replays from partway), and whether they're open. */
+  const [post, setPost] = useState<PostStats | null>(null);
+  const [showStats, setShowStats] = useState(false);
+  /** The battle on the field is a replay from partway through (its end shows the stats of the whole battle). */
+  const partialRef = useRef(false);
   const [cam, setCam] = useState<CamMode>("director");
   const [slowmo, setSlowmo] = useState(initialPlayback.slowmo);
   const [hudOn, setHudOn] = useState(initialPlayback.hud);
@@ -323,8 +330,12 @@ export function MassBattleExperience({ list, presets, initial, playback: initial
   }, [pushFeed]);
 
   // ---- Deploying a battle.
-  const deploy = useCallback(async (b: BattleDesc, autoplay: boolean) => {
+  const deploy = useCallback(async (b: BattleDesc, autoplay: boolean, from: { startTick?: number; killcam?: boolean } = {}) => {
     abortRef.current?.abort();
+    const startTick = Math.max(0, from.startTick ?? 0);
+    partialRef.current = startTick > 0;
+    if (!startTick) setPost(null);
+    setShowStats(false);
     const ac = new AbortController();
     abortRef.current = ac;
     if (endTimer.current) clearTimeout(endTimer.current);
@@ -347,7 +358,7 @@ export function MassBattleExperience({ list, presets, initial, playback: initial
       const slice = sliceRoster(roster, specIds(b.spec));
       simRef.current ??= new SimClient();
       const sim = simRef.current;
-      const ready = await sim.init(slice, b.spec, playbackRef.current);
+      const ready = await sim.init(slice, b.spec, playbackRef.current, startTick);
       if (ac.signal.aborted) return;
       const species = ready.species.map((id) => slice.species.find((s) => s.id === id)!);
       speciesRef.current = species;
@@ -395,8 +406,9 @@ export function MassBattleExperience({ list, presets, initial, playback: initial
       camRef.current = "director";
       setCam("director");
       topRef.current.follow = true;
-      // The camera the battle's playback asks for (a link can open it top-down or on the boss).
-      if (playbackRef.current.camera !== "director") applyCam(playbackRef.current.camera);
+      // The camera the battle's playback asks for (a link can open it top-down or on the boss); the kill cam rides on the boss.
+      if (from.killcam) applyCam("boss");
+      else if (playbackRef.current.camera !== "director") applyCam(playbackRef.current.camera);
       updateHud(view);
       setPhase("ready");
       if (autoplay) start();
@@ -445,6 +457,7 @@ export function MassBattleExperience({ list, presets, initial, playback: initial
     const bh = end.stats.big;
     const big = bh ? `${possessive(speciesRef.current[sp[bh.actor]]?.name ?? "")} ${view.ready.moves[sp[bh.actor]][bh.slot]?.name ?? "hit"}: ${fmt(bh.damage)} damage${bh.crit ? " (critical hit)" : ""}` : null;
     setFinal({ winner: o.winner, title: resultTitle(o.winner, b.names, o.left), line: resultLine(o, b.names), mvp, big, seconds: o.seconds, left: [o.left[0], o.left[1]] });
+    if (end.post && !partialRef.current) setPost(end.post);
     audioRef.current?.swell();
     track("mass_battle_end", { preset: b.presetId ?? "custom", winner: o.winner });
   }, []);
@@ -964,6 +977,17 @@ export function MassBattleExperience({ list, presets, initial, playback: initial
     const b = battleRef.current;
     if (b) void deploy(b, true);
   };
+  /** The same battle again from a moment of it (the timeline), or the boss's last seconds in slow motion on the boss (the kill cam). */
+  const replayFrom = (tick: number) => {
+    const b = battleRef.current;
+    if (b) void deploy(b, true, { startTick: tick });
+  };
+  const killCam = () => {
+    const b = battleRef.current;
+    if (!b || !post || post.bossKoTick < 0) return;
+    if (!playbackRef.current.slowmo) playbackSet({ slowmo: true });
+    void deploy(b, true, { startTick: Math.max(0, post.bossKoTick - 4 * TICK_HZ), killcam: true });
+  };
   const toggleMute = () => {
     const next = !isMuted();
     setMuted(next);
@@ -1135,13 +1159,27 @@ export function MassBattleExperience({ list, presets, initial, playback: initial
                   )}
                 </>
               )}
+              {showStats && post ? (
+                <PostBattleStats
+                  post={post}
+                  species={speciesRef.current.map((s) => s.name)}
+                  sides={b.names}
+                  move={(f, slot) => viewRef.current?.ready.moves[f]?.[slot]?.name ?? "a move"}
+                  start={viewRef.current ? [viewRef.current.ready.start[0], viewRef.current.ready.start[1]] : [1, 1]}
+                  onReplay={replayFrom}
+                  onKillCam={post.bossKoTick >= 0 ? killCam : null}
+                />
+              ) : (
               <dl className="grid grid-cols-2 gap-2 text-left text-xs">
                 <div className="rounded-lg bg-white/5 p-2"><dt className="font-pixel text-[9px] uppercase text-white/50">Battle time</dt><dd className="font-display text-sm font-bold">{final.seconds.toFixed(1)} s</dd></div>
                 <div className="rounded-lg bg-white/5 p-2"><dt className="font-pixel text-[9px] uppercase text-white/50">Left standing</dt><dd className="font-display text-sm font-bold">{`${fmt(final.left[0])} · ${fmt(final.left[1])}`}</dd></div>
                 {final.mvp && <div className="col-span-2 rounded-lg bg-white/5 p-2"><dt className="font-pixel text-[9px] uppercase text-white/50">Most KOs</dt><dd className="font-display text-sm font-bold">{final.mvp}</dd></div>}
                 {final.big && <div className="col-span-2 rounded-lg bg-white/5 p-2"><dt className="font-pixel text-[9px] uppercase text-white/50">Biggest hit</dt><dd className="font-display text-sm font-bold">{final.big}</dd></div>}
               </dl>
+              )}
               <div className="flex flex-wrap justify-center gap-2">
+                {post && <button type="button" onClick={() => setShowStats((v) => !v)} aria-pressed={showStats} className={chip} data-testid="mb-stats-toggle"><BarChart3 className="h-4 w-4" aria-hidden /> {showStats ? "Summary" : "Stats"}</button>}
+                {post && post.bossKoTick >= 0 && !showStats && <button type="button" onClick={killCam} className={chip} data-testid="mb-killcam-final"><Crosshair className="h-4 w-4" aria-hidden /> Kill cam</button>}
                 <button type="button" onClick={replay} className={chip} data-testid="mb-replay"><RotateCcw className="h-4 w-4" aria-hidden /> Replay</button>
                 <button type="button" onClick={() => setShowVideo(true)} className={chip} data-testid="mb-video-final"><Clapperboard className="h-4 w-4" aria-hidden /> Make a video</button>
                 <button type="button" onClick={share} className={chip} data-testid="mb-share-final"><Share2 className="h-4 w-4" aria-hidden /> Share</button>
