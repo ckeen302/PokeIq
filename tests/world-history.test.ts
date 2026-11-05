@@ -36,7 +36,7 @@ import {
   trackHeight,
   videoAt,
 } from "@/lib/world-history/timing";
-import { DEFAULT_LIMITS, blendPose, clampOrbit, fovFor, orbitBy, orbitFrom, orbitPose, poseOnPath, wheelFactor, wrapAngle, zoomBy, type Key } from "@/lib/world-history/camera";
+import { DEFAULT_LIMITS, arcKeys, blendPose, clampOrbit, fovFor, handheld, orbitBy, orbitFrom, orbitPose, poseOnPath, shots, wheelFactor, wrapAngle, zoomBy, type Key } from "@/lib/world-history/camera";
 
 const film = buildFilm();
 
@@ -414,6 +414,40 @@ describe("camera", () => {
     expect(wrapAngle(Math.PI * 3)).toBeCloseTo(Math.PI, 6);
     const mid = blendPose(pose, { ...pose, fov: 60 }, 0.5);
     expect(mid.fov).toBeCloseTo(50, 6);
+  });
+});
+
+describe("camera language", () => {
+  const A = { pos: [0, 2, 10], look: [0, 2, 0], fov: 40 } as const;
+  const B = { pos: [10, 2, 0], look: [0, 2, 0], fov: 40 } as const;
+  it("rests at a weighted key and still passes through it", () => {
+    const keys = [{ t: 0, ...A, pos: [0, 2, 10] as [number, number, number] }, { t: 1, ...A, pos: [5, 2, 10] as [number, number, number], stop: true }, { t: 2, ...A, pos: [10, 2, 10] as [number, number, number] }];
+    expect(poseOnPath(keys, 1).pos[0]).toBeCloseTo(5, 6);
+    const v = (poseOnPath(keys, 1.001).pos[0] - poseOnPath(keys, 0.999).pos[0]) / 0.002;
+    expect(Math.abs(v)).toBeLessThan(0.05);
+  });
+  it("drifts a handheld camera a little, the same way every time", () => {
+    const p = handheld({ ...A, pos: [...A.pos], look: [...A.look] }, 3.7, 1);
+    expect(p).toEqual(handheld({ ...A, pos: [...A.pos], look: [...A.look] }, 3.7, 1));
+    expect(Math.hypot(p.pos[0] - A.pos[0], p.pos[1] - A.pos[1], p.pos[2] - A.pos[2])).toBeLessThan(0.1);
+    expect(handheld({ ...A, pos: [...A.pos], look: [...A.look] }, 3.7, 0)).toEqual({ ...A, pos: [...A.pos], look: [...A.look] });
+  });
+  it("arcs around a point, weighted at both ends", () => {
+    const k = arcKeys({ center: [0, 0, 0], radius: [10, 10], y: [2, 6], angle: [0, Math.PI / 2], t: [0, 4], fov: [40, 40] });
+    expect(k[0].pos[2]).toBeCloseTo(10, 6);
+    expect(k[k.length - 1].pos[0]).toBeCloseTo(10, 6);
+    expect(k[0].stop && k[k.length - 1].stop).toBe(true);
+  });
+  it("cuts between shots: hard cuts jump, whips smear and turn, dips go through black", () => {
+    const S = shots([{ at: 0, keys: () => ({ ...A, pos: [...A.pos], look: [...A.look] }) }, { at: 2, keys: () => ({ ...B, pos: [...B.pos], look: [...B.look] }), enter: "whip" }, { at: 4, keys: () => ({ ...A, pos: [...A.pos], look: [...A.look] }), enter: "dip" }, { at: 6, keys: () => ({ ...B, pos: [...B.pos], look: [...B.look] }) }]);
+    expect(S.pose(1).pos).toEqual(A.pos);
+    expect(S.pose(3).pos).toEqual(B.pos);
+    expect(S.fx(2).whip?.k).toBeCloseTo(1, 6);
+    expect(S.fx(1).whip).toBeUndefined();
+    expect(S.pose(1.95).look).not.toEqual(A.look);
+    expect(S.fx(4).fade).toBeCloseTo(1, 6);
+    expect(S.fx(5).fade).toBe(0);
+    expect(S.pose(6.01).pos).toEqual(B.pos);
   });
 });
 
