@@ -54,6 +54,14 @@ const config: Config = {
           foreground: "hsl(var(--card-foreground))",
         },
       },
+      // bg-primary paints the deeper --primary-fill so white text on it passes AA;
+      // text-, border- and ring-primary keep the brighter --primary.
+      backgroundColor: {
+        primary: {
+          DEFAULT: "hsl(var(--primary-fill))",
+          foreground: "hsl(var(--primary-foreground))",
+        },
+      },
       borderRadius: {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 1px)",

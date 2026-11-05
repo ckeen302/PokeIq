@@ -22,6 +22,10 @@
     --card: 247 34% 9%;
     --card-foreground: 248 40% 97%;
     --primary: 340 86% 60%;
+    /* Filled pink surfaces (bg-primary) under white text: a deeper shade than
+       --primary (which stays bright for pink text on the dark field) so the
+       white label clears WCAG AA (4.6:1). */
+    --primary-fill: 340 86% 48%;
     --primary-foreground: 0 0% 100%;
     --primary-shadow: 338 72% 32%;
     --secondary: 248 28% 15%;
@@ -63,6 +67,7 @@
     --card: 0 0% 100%;
     --card-foreground: 248 42% 11%;
     --primary: 340 80% 52%;
+    --primary-fill: 340 80% 47%;
     --primary-foreground: 0 0% 100%;
     --primary-shadow: 338 70% 36%;
     --secondary: 248 32% 91%;
