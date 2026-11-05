@@ -1041,3 +1041,187 @@ export function makeStars(o: { count: number; radius: number; center: Vec3; seed
   points.renderOrder = -5;
   return { points, mat, dispose() { geo.dispose(); mat.dispose(); } };
 }
+
+// ---------------------------------------------------------------------------
+// Night cities: towers with crafted facades, and street lamps
+// ---------------------------------------------------------------------------
+
+/** Merges geometries and gives every vertex of each source the same vec4 attribute `aB`. */
+export function mergeWithAttr(list: [THREE.BufferGeometry, [number, number, number, number]][]) {
+  const counts = list.map(([g]) => g.getAttribute("position").count);
+  const geo = merge(list.map(([g]) => g));
+  const a = new Float32Array(geo.getAttribute("position").count * 4);
+  let o = 0;
+  list.forEach(([, v], i) => { for (let j = 0; j < counts[i]; j++, o++) a.set(v, o * 4); });
+  geo.setAttribute("aB", new THREE.BufferAttribute(a, 4));
+  return geo;
+}
+
+export interface TowerSpec { x: number; z: number; w: number; d: number; h: number; rot?: number; kind?: number }
+
+/**
+ * Towers for a city at night, one draw call: each has a facade of floors and
+ * bays (pilasters every few bays, slab lines, a cornice), windows by type
+ * (glass curtain wall, punched concrete, tall stone), lit warm or cool or
+ * whole office floors, a lit shopfront at street level with sign bands, a
+ * parapet and rooftop plant (housings, tanks, an antenna on the tallest).
+ * Distance haze (thicker near the ground) and warm light bounced up from the
+ * streets are in the shader, so the city has depth without extra lights.
+ */
+export function makeTowers(o: { towers: TowerSpec[]; seed?: number; haze?: string; hazeHigh?: string; fog?: number; street?: string; moon?: Vec3 }) {
+  const r = rng(o.seed ?? 3);
+  const list: [THREE.BufferGeometry, [number, number, number, number]][] = [];
+  const roofs: Vec3[] = [];
+  const at = (t: TowerSpec, g: THREE.BufferGeometry, y: number, lx = 0, lz = 0) => placed(g, [t.x + lx * Math.cos(t.rot ?? 0) + lz * Math.sin(t.rot ?? 0), y, t.z - lx * Math.sin(t.rot ?? 0) + lz * Math.cos(t.rot ?? 0)], t.rot ?? 0);
+  let tallest = 0;
+  o.towers.forEach((t) => { tallest = Math.max(tallest, t.h); });
+  o.towers.forEach((t) => {
+    const seed = r(), kind = t.kind ?? (r() < 0.38 ? 0 : r() < 0.6 ? 1 : 2);
+    // Main block, and on tall ones a setback upper block.
+    const set = t.h > 9 && r() < 0.55;
+    const h0 = set ? t.h * (0.55 + r() * 0.15) : t.h;
+    list.push([at(t, new THREE.BoxGeometry(t.w, h0, t.d), h0 / 2), [seed, h0, kind, 0]]);
+    let top = h0, tw = t.w, td = t.d;
+    if (set) {
+      tw = t.w * 0.72; td = t.d * 0.72;
+      list.push([at(t, new THREE.BoxGeometry(tw, t.h - h0, td), h0 + (t.h - h0) / 2), [seed, t.h, kind, 0]]);
+      // A parapet on the lower roof too.
+      for (const [sx, sz, lx, lz] of [[t.w, 0.12, 0, t.d / 2], [t.w, 0.12, 0, -t.d / 2], [0.12, t.d, t.w / 2, 0], [0.12, t.d, -t.w / 2, 0]]) list.push([at(t, new THREE.BoxGeometry(sx, 0.35, sz), h0 + 0.17, lx, lz), [seed, 0, kind, 1]]);
+      top = t.h;
+    }
+    for (const [sx, sz, lx, lz] of [[tw, 0.12, 0, td / 2], [tw, 0.12, 0, -td / 2], [0.12, td, tw / 2, 0], [0.12, td, -tw / 2, 0]]) list.push([at(t, new THREE.BoxGeometry(sx + 0.1, 0.4, sz + 0.02), top + 0.2, lx, lz), [seed, 0, kind, 1]]);
+    // Rooftop plant.
+    const n = 1 + Math.floor(r() * 3);
+    for (let k = 0; k < n; k++) {
+      const bw = 0.5 + r() * tw * 0.3, bd = 0.5 + r() * td * 0.3, bh = 0.4 + r() * 0.9;
+      list.push([at(t, new THREE.BoxGeometry(bw, bh, bd), top + bh / 2, (r() - 0.5) * (tw - bw), (r() - 0.5) * (td - bd)), [seed, 0, kind, 1]]);
+    }
+    if (kind === 1 && r() < 0.5) list.push([at(t, new THREE.CylinderGeometry(0.45, 0.45, 1.1, 10), top + 0.95, tw * 0.25, -td * 0.2), [seed, 0, kind, 1]]);
+    if (t.h > tallest * 0.82) list.push([at(t, new THREE.CylinderGeometry(0.03, 0.06, 3.2, 5), top + 1.6), [seed, top + 3.2, kind, 2]]);
+    roofs.push([t.x, top, t.z]);
+  });
+  const geo = mergeWithAttr(list);
+  const u = {
+    uLit: { value: 1 }, uBody: { value: 0.42 }, uTime: { value: 0 }, uHaze: { value: col(o.haze ?? "#1a2236") }, uHazeHigh: { value: col(o.hazeHigh ?? "#0c1220") }, uFog: { value: o.fog ?? 0.012 },
+    uStreet: { value: col(o.street ?? "#ff9a4a") }, uMoon: { value: v3(o.moon ?? [-0.4, 0.6, 0.5]).normalize() }, uSky: { value: col("#3a4a6a") },
+  };
+  const mat = new THREE.ShaderMaterial({
+    uniforms: u,
+    vertexShader: /* glsl */ `attribute vec4 aB; varying vec3 vW; varying vec3 vN; varying vec4 vB; void main(){ vec4 wp = modelMatrix * vec4(position, 1.0); vW = wp.xyz; vN = normalize(mat3(modelMatrix) * normal); vB = aB; gl_Position = projectionMatrix * viewMatrix * wp; }`,
+    fragmentShader: /* glsl */ `
+      ${NOISE}
+      uniform float uLit, uTime, uFog, uBody; uniform vec3 uHaze, uHazeHigh, uStreet, uMoon, uSky;
+      varying vec3 vW; varying vec3 vN; varying vec4 vB;
+      void main(){
+        float seed = vB.x, kind = vB.z;
+        vec3 n = normalize(vN);
+        float top = step(0.6, n.y);
+        float diff = 0.42 + 0.38 * max(dot(n, uMoon), 0.0) + 0.12 * n.y;
+        vec3 concrete = mix(vec3(0.16, 0.15, 0.15), vec3(0.24, 0.21, 0.18), seed);
+        vec3 stone = mix(vec3(0.3, 0.26, 0.2), vec3(0.36, 0.3, 0.22), seed);
+        vec3 glassBody = mix(vec3(0.05, 0.07, 0.1), vec3(0.07, 0.09, 0.12), seed);
+        vec3 body = (kind < 0.5 ? glassBody : kind < 1.5 ? concrete : stone) * uBody;
+        vec3 c;
+        if (vB.w > 0.5) {
+          // Parapets and rooftop plant: dark metal and concrete; the antenna tip blinks red.
+          c = mix(vec3(0.09, 0.09, 0.1), concrete * 0.8, step(vB.w, 1.5)) * diff * uBody;
+          if (vB.w > 1.5) c += vec3(1.0, 0.1, 0.05) * 3.0 * step(0.5, fract(uTime * 0.6 + seed * 3.0)) * step(vB.y - 0.25, vW.y);
+        } else if (top > 0.5) {
+          vec2 g = fract(vW.xz * 0.5);
+          c = concrete * uBody * 0.75 * diff * (0.85 + 0.15 * step(0.04, min(g.x, g.y)));
+        } else {
+          // Facade coordinates: across (along the face) and up.
+          float across = abs(n.x) > 0.5 ? vW.z * sign(n.x) : -vW.x * sign(n.z);
+          float floorH = kind < 0.5 ? 0.62 : 0.72;
+          float bayW = kind < 0.5 ? 0.52 : kind < 1.5 ? 0.66 : 0.56;
+          float y = vW.y;
+          float fl = floor(y / floorH), fy = fract(y / floorH);
+          float bay = floor(across / bayW + seed * 7.0), bx = fract(across / bayW + seed * 7.0);
+          float pil = step(mod(bay, kind < 1.5 ? 4.0 : 3.0), 0.5);
+          // The window opening in this cell, by type.
+          vec2 lo = kind < 0.5 ? vec2(0.06, 0.12) : kind < 1.5 ? vec2(0.22, 0.24) : vec2(0.28, 0.16);
+          vec2 hi = kind < 0.5 ? vec2(0.94, 0.9) : kind < 1.5 ? vec2(0.78, 0.8) : vec2(0.72, 0.86);
+          float win = step(lo.x, bx) * step(bx, hi.x) * step(lo.y, fy) * step(fy, hi.y) * (1.0 - pil * step(0.5, kind));
+          float crown = step(vB.y - 0.55, y);
+          win *= 1.0 - crown;
+          float ground = step(y, 1.15);
+          // Lit or not: per building density, per window, with some whole office floors lit cool.
+          float hw = whHash(vec3(bay, fl, seed * 91.0));
+          float dens = mix(0.18, 0.62, fract(seed * 13.7));
+          float office = step(0.88, whHash(vec3(fl, seed * 31.0, 2.0)));
+          float on = max(step(1.0 - dens, hw), office) * win;
+          vec3 warm = mix(vec3(1.0, 0.62, 0.3), vec3(1.0, 0.8, 0.52), whHash(vec3(bay, fl, 5.0)));
+          vec3 cool = vec3(0.72, 0.86, 1.0);
+          float tv = step(0.96, hw);
+          vec3 lit = office > 0.5 ? cool * 0.75 : mix(warm, vec3(0.45, 0.6, 1.0) * (0.7 + 0.3 * sin(uTime * 7.0 + hw * 40.0)), tv);
+          lit *= (0.55 + 0.35 * fract(hw * 17.0)) * (0.75 + 0.25 * smoothstep(0.12, 0.6, fy));
+          vec3 glass = mix(vec3(0.02, 0.025, 0.04), uSky * 0.35, clamp(y * 0.03, 0.0, 1.0)) * (0.6 + 0.4 * fract(hw * 7.0));
+          float slab = (1.0 - smoothstep(0.0, 0.05, fy)) * (1.0 - win);
+          vec3 wall = body * diff * (1.0 + pil * 0.18 + slab * 0.35);
+          wall *= 1.0 + crown * 0.25 * (1.0 - smoothstep(vB.y - 0.55, vB.y - 0.35, y)) ;
+          c = mix(wall, glass + lit * on * uLit * 1.2, win);
+          // The shopfronts: lit glass under a sign band of colour.
+          if (ground > 0.5) {
+            float shop = step(0.08, bx) * step(bx, 0.92) * step(0.12, y) * step(y, 0.86);
+            float sign = step(0.92, y) * step(y, 1.08) * step(0.3, whHash(vec3(floor(bay / 2.0), seed, 9.0)));
+            vec3 sc = mix(vec3(1.0, 0.4, 0.3), vec3(0.3, 0.9, 1.0), whHash(vec3(floor(bay / 2.0), seed, 4.0)));
+            c = mix(body * diff * 0.7, vec3(1.0, 0.78, 0.5) * 0.9 * uLit + vec3(0.02), shop);
+            c += sc * sign * 0.9 * uLit;
+          }
+          // Light bounced up from the lit street.
+          c += uStreet * 0.16 * exp(-y * 0.5) * uLit;
+        }
+        // Haze: thicker low down, blue-violet up high.
+        float dist = length(vW - cameraPosition);
+        float f = 1.0 - exp(-dist * uFog);
+        float low = exp(-max(vW.y, 0.0) * 0.12);
+        vec3 hz = mix(uHazeHigh, uHaze, low);
+        c = mix(c, hz, clamp(f * (0.65 + 0.35 * low), 0.0, 1.0));
+        gl_FragColor = vec4(c, 1.0);
+      }`,
+  });
+  const mesh = new THREE.Mesh(geo, mat);
+  return { mesh, u, roofs, geo, dispose() { geo.dispose(); mat.dispose(); } };
+}
+
+/**
+ * Street lamps (posts, one draw call) with soft heads (points, one draw
+ * call), plus the sodium pools they throw, drawn on a ground plane by the
+ * caller via `pools` (positions).
+ */
+export function makeStreetLamps(o: { points: Vec3[]; height?: number; color?: string; size?: number; pools?: number }) {
+  const h = o.height ?? 3.2;
+  const posts = merge(o.points.flatMap((p) => [placed(new THREE.CylinderGeometry(0.05, 0.08, h, 5), [p[0], h / 2, p[2]]), placed(new THREE.BoxGeometry(0.5, 0.05, 0.08), [p[0] + 0.2, h, p[2]])]));
+  const postMat = new THREE.MeshStandardMaterial({ color: col("#14161a"), roughness: 0.6, metalness: 0.5 });
+  const postMesh = new THREE.Mesh(posts, postMat);
+  const hp = new Float32Array(o.points.length * 3);
+  o.points.forEach((p, i) => hp.set([p[0] + 0.4, h - 0.06, p[2]], i * 3));
+  const hg = new THREE.BufferGeometry();
+  hg.setAttribute("position", new THREE.BufferAttribute(hp, 3));
+  const u = { uPixel: { value: 600 }, uK: { value: 1 }, uColor: { value: col(o.color ?? "#ffc070") }, uSize: { value: o.size ?? 0.5 } };
+  const hm = new THREE.ShaderMaterial({
+    uniforms: u, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
+    vertexShader: /* glsl */ `uniform float uPixel, uSize; void main(){ vec4 mv = modelViewMatrix * vec4(position, 1.0); gl_Position = projectionMatrix * mv; gl_PointSize = clamp(uSize * uPixel / -mv.z, 1.5, 40.0); }`,
+    fragmentShader: /* glsl */ `uniform vec3 uColor; uniform float uK; void main(){ float d = length(gl_PointCoord - 0.5) * 2.0; float a = max(0.0, 1.0 - d); a = a * a * (0.35 + 0.65 * step(d, 0.25)); gl_FragColor = vec4(uColor * a * 1.6 * uK, a * uK); }`,
+  });
+  const heads = new THREE.Points(hg, hm);
+  heads.frustumCulled = false;
+  const group = new THREE.Group();
+  group.add(postMesh, heads);
+  // Optional pools of light on the ground under each lamp (instanced, one draw call).
+  let pools: THREE.InstancedMesh | null = null, poolTex: THREE.CanvasTexture | null = null, poolMat: THREE.MeshBasicMaterial | null = null;
+  if (o.pools) {
+    const c = document.createElement("canvas"); c.width = c.height = 64;
+    const g = c.getContext("2d")!;
+    const gr = g.createRadialGradient(32, 32, 0, 32, 32, 32);
+    gr.addColorStop(0, "rgba(255,255,255,1)"); gr.addColorStop(0.35, "rgba(255,255,255,0.45)"); gr.addColorStop(1, "rgba(255,255,255,0)");
+    g.fillStyle = gr; g.fillRect(0, 0, 64, 64);
+    poolTex = new THREE.CanvasTexture(c);
+    poolMat = new THREE.MeshBasicMaterial({ map: poolTex, color: col(o.color ?? "#ffc070", o.pools), transparent: true, blending: THREE.AdditiveBlending, depthWrite: false });
+    pools = new THREE.InstancedMesh(new THREE.PlaneGeometry(1, 1).rotateX(-Math.PI / 2), poolMat, o.points.length);
+    const m = new THREE.Matrix4();
+    o.points.forEach((p, i) => { m.makeScale(h * 1.6, 1, h * 1.6).setPosition(p[0] + 0.4, (p[1] ?? 0) + 0.04, p[2]); pools!.setMatrixAt(i, m); });
+    group.add(pools);
+  }
+  return { group, u, poolMat, dispose() { posts.dispose(); postMat.dispose(); hg.dispose(); hm.dispose(); if (pools) { pools.geometry.dispose(); pools.dispose(); } poolMat?.dispose(); poolTex?.dispose(); } };
+}

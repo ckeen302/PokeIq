@@ -1,10 +1,10 @@
 import * as THREE from "three";
 import type { Key, Vec3 } from "@/lib/world-history/camera";
-import { NOISE, col, makeGlow, makeParticles, makeRing, makeSky, merge, ramp, rng } from "@/components/world-history/scene/kit";
+import { col, makeGlow, makeParticles, makeRing, makeSky, merge, ramp, rng } from "@/components/world-history/scene/kit";
 import { makeCanvasPanel } from "@/components/world-history/scene/props";
 import { lights, loadFigures, lookAt, pointPixel, spike } from "@/components/world-history/scene/chapters/common";
 import type { ChapterBuilder } from "@/components/world-history/scene/types";
-import { drawCritter, makeFirefly, makeGrass } from "../story-kit";
+import { drawCritter, makeFirefly, makeGrass, makeStreetLamps, makeTowers, type TowerSpec } from "../story-kit";
 import { bag, heroFigure, shots, STOCK, type Hero } from "./base";
 
 /**
@@ -76,62 +76,75 @@ export const build: ChapterBuilder = async (ctx) => {
   });
   D.add({ dispose: () => iconGeo.dispose() });
 
-  // ---- The city rising out of it: dark towers with glowing green edges.
+  // ---- The city rising out of it: towers with lit facades, green edges that fade once the city is lit.
+  const specs: TowerSpec[] = [];
   const boxes: THREE.BufferGeometry[] = [];
-  const roofs: Vec3[] = [];
   for (let i = 0; i < N; i++) for (let j = 0; j < N; j++) {
     if (isPark(i, j) || (i === PLAZA[0] && j === PLAZA[1])) continue;
     const [cx, , cz] = blockAt(i, j);
     for (let k = 0; k < 2; k++) {
       const w = 2.6 + r() * 1.2, d = 2.6 + r() * 1.2, h = 3 + r() * r() * 16;
       const x = cx + (k ? 1.8 : -1.8) + (r() - 0.5), z = cz + (r() - 0.5) * 3;
+      specs.push({ x, z, w, d, h });
       boxes.push(new THREE.BoxGeometry(w, h, d).translate(x, h / 2, z));
-      roofs.push([x, h, z]);
     }
   }
-  const cityGeo = merge(boxes);
-  boxes.forEach((b) => b.dispose());
-  // Facades: dark glass and concrete with a grid of windows, some lit warm, some cool (phone and TV light), lit more as night falls.
-  const cityU = { uLit: { value: 0 }, uTime: { value: 0 }, uSky: { value: col("#2a6a6a") } };
-  const cityMat = new THREE.ShaderMaterial({
-    uniforms: cityU,
-    vertexShader: /* glsl */ `varying vec3 vW; varying vec3 vN; void main(){ vec4 wp = modelMatrix * vec4(position, 1.0); vW = wp.xyz; vN = normal; gl_Position = projectionMatrix * viewMatrix * wp; }`,
-    fragmentShader: /* glsl */ `
-      ${NOISE}
-      uniform float uLit, uTime; uniform vec3 uSky; varying vec3 vW; varying vec3 vN;
-      void main(){
-        float top = step(0.5, abs(vN.y));
-        vec2 f = abs(vN.x) > 0.5 ? vec2(vW.z, vW.y) : vec2(vW.x, vW.y);
-        vec2 g = f * vec2(1.6, 1.25);
-        vec2 cell = floor(g), q = fract(g);
-        float win = step(0.2, q.x) * step(q.x, 0.8) * step(0.22, q.y) * step(q.y, 0.78);
-        float h = whHash(vec3(cell, floor(vW.x * 0.3) * 7.0 + floor(vW.z * 0.3)));
-        float on = step(0.72, h) * win * (1.0 - top);
-        vec3 warm = vec3(1.0, 0.72, 0.4), cool = vec3(0.55, 0.85, 1.0);
-        vec3 lit = mix(warm, cool, step(0.92, h)) * (0.32 + 0.22 * whNoise(vec3(cell * 0.7, uTime * 0.15)));
-        float shade = top > 0.5 ? 0.9 : (abs(vN.x) > 0.5 ? 0.55 : 0.75);
-        vec3 base = vec3(0.035, 0.05, 0.065) * shade + uSky * 0.05 * (1.0 - top) * clamp(vW.y * 0.05, 0.0, 1.0);
-        vec3 c = base + lit * on * uLit + vec3(0.02, 0.03, 0.035) * win * (1.0 - top);
-        gl_FragColor = vec4(c, 1.0);
-      }`,
-  });
-  const cityMesh = new THREE.Mesh(cityGeo, cityMat);
-  const edgeGeo = new THREE.EdgesGeometry(cityGeo, 20);
+  const towers = D.add(makeTowers({ towers: specs, seed: 61, haze: "#2a3040", hazeHigh: "#101828", fog: 0.011, street: "#ff9a4a", moon: [-0.5, 0.6, 0.4] }));
+  const cityU = towers.u;
+  cityU.uBody.value = 0.32;
+  cityU.uSky.value.copy(col("#2a5a6a"));
+  const roofs = towers.roofs;
+  const outlineGeo = merge(boxes);
+  const edgeGeo = new THREE.EdgesGeometry(outlineGeo, 20);
+  outlineGeo.dispose();
   const edgeMat = new THREE.LineBasicMaterial({ color: col("#4aff9a", 1.1), transparent: true, opacity: 0, toneMapped: false });
   const edges = new THREE.LineSegments(edgeGeo, edgeMat);
   const city = new THREE.Group();
-  city.add(cityMesh, edges);
+  city.add(towers.mesh, edges);
   scene.add(city);
-  D.add({ dispose: () => { cityGeo.dispose(); cityMat.dispose(); edgeGeo.dispose(); edgeMat.dispose(); } });
-  // Lit windows: points on the faces of the towers.
-  const winPos: number[] = [];
-  for (const [x, h, z] of roofs) for (let k = 0; k < Math.round(h * 2.2); k++) { const a = r() * Math.PI * 2; winPos.push(x + Math.cos(a) * 1.5, 0.6 + r() * (h - 0.8), z + Math.sin(a) * 1.5); }
-  const winGeo = new THREE.BufferGeometry();
-  winGeo.setAttribute("position", new THREE.Float32BufferAttribute(winPos, 3));
-  const winMat = new THREE.PointsMaterial({ color: col("#ffd890", 1.4), size: 0.22, transparent: true, opacity: 0, depthWrite: false });
-  const windows = new THREE.Points(winGeo, winMat);
-  city.add(windows);
-  D.add({ dispose: () => { winGeo.dispose(); winMat.dispose(); } });
+  D.add({ dispose: () => { edgeGeo.dispose(); edgeMat.dispose(); } });
+  // ---- Lit streets: sodium lamps down every street, their pools on the asphalt, kerbs, a dashed centre line.
+  const lampPts: Vec3[] = [];
+  const LS = 3.4, Z0 = -HALF + LS / 2;
+  for (let k = 0; k <= N; k++) for (let q = 0; q < Math.floor((N * CELL) / LS); q++) {
+    const along = Z0 + q * LS;
+    const nearX = Math.abs(((along + HALF) % CELL) - 0) < STREET / 2 + 0.3 || Math.abs(((along + HALF) % CELL) - CELL) < STREET / 2 + 0.3;
+    if (nearX) continue;
+    const pf = blockAt(PLAZA[0], PLAZA[1]);
+    for (const lp of [[-HALF + k * CELL + 0.95, 0, along], [along, 0, -HALF + k * CELL - 0.95]] as Vec3[]) if (Math.hypot(lp[0] - pf[0], lp[2] - pf[2]) > 8) lampPts.push(lp);
+  }
+  const lamps = D.add(makeStreetLamps({ points: lampPts, height: 2.6, color: "#ffb860", size: 0.55 }));
+  city.add(lamps.group);
+  const streetU = { uK: { value: 0 }, uHalf: { value: HALF }, uCell: { value: CELL }, uStreet: { value: STREET }, uLS: { value: LS }, uZ0: { value: Z0 }, uFog: { value: 0.011 }, uHaze: { value: col("#2a3040") } };
+  const streetMat = new THREE.ShaderMaterial({
+    uniforms: streetU, transparent: true, depthWrite: false,
+    vertexShader: /* glsl */ `varying vec3 vW; void main(){ vec4 wp = modelMatrix * vec4(position, 1.0); vW = wp.xyz; gl_Position = projectionMatrix * viewMatrix * wp; }`,
+    fragmentShader: /* glsl */ `
+      uniform float uK, uHalf, uCell, uStreet, uLS, uZ0, uFog; uniform vec3 uHaze; varying vec3 vW;
+      float pool(vec2 p, vec2 l) { vec2 d = p - l; return exp(-dot(d, d) * 1.3); }
+      void main(){
+        vec2 p = vW.xz + uHalf;
+        vec2 m = mod(p, uCell);
+        vec2 dl = min(m, uCell - m);
+        float onX = step(dl.x, uStreet / 2.0), onZ = step(dl.y, uStreet / 2.0);
+        float st = max(onX, onZ);
+        if (st < 0.5 || uK <= 0.0) discard;
+        vec2 line = floor(p / uCell + 0.5) * uCell - uHalf;
+        float az = floor((vW.z - uZ0) / uLS + 0.5) * uLS + uZ0, ax = floor((vW.x - uZ0) / uLS + 0.5) * uLS + uZ0;
+        float pl = max(pool(vW.xz, vec2(line.x + 0.95, az)) * onX, pool(vW.xz, vec2(ax, line.y - 0.95)) * onZ);
+        float kerb = smoothstep(uStreet / 2.0 - 0.28, uStreet / 2.0 - 0.2, onX > 0.5 && onZ < 0.5 ? dl.x : onZ > 0.5 && onX < 0.5 ? dl.y : 0.0);
+        float dash = (onX > 0.5 && onZ < 0.5 ? step(dl.x, 0.04) * step(0.5, fract(vW.z * 0.5)) : 0.0) + (onZ > 0.5 && onX < 0.5 ? step(dl.y, 0.04) * step(0.5, fract(vW.x * 0.5)) : 0.0);
+        vec3 c = vec3(0.012, 0.013, 0.016) + vec3(0.03, 0.028, 0.026) * kerb + vec3(0.25, 0.2, 0.1) * dash * 0.4;
+        c += vec3(1.0, 0.6, 0.26) * pl * 0.3 + vec3(0.3, 0.2, 0.1) * pl * kerb;
+        float f = 1.0 - exp(-length(vW - cameraPosition) * uFog);
+        c = mix(c, uHaze, f * 0.7);
+        gl_FragColor = vec4(c, uK);
+      }`,
+  });
+  const streets = new THREE.Mesh(new THREE.PlaneGeometry(N * CELL + STREET, N * CELL + STREET).rotateX(-Math.PI / 2), streetMat);
+  streets.position.y = 0.03;
+  scene.add(streets);
+  D.add({ dispose: () => { streets.geometry.dispose(); streetMat.dispose(); } });
 
   // ---- The parks: grass, a fountain in the plaza.
   const [ax, , az] = blockAt(PARK_A[0], PARK_A[1]);
@@ -335,7 +348,11 @@ export const build: ChapterBuilder = async (ctx) => {
       edgeMat.opacity = Math.min(1, rise * 2) * (0.75 - 0.4 * ramp(t, tParks, tParks + 3));
       cityU.uLit.value = ramp(t, tLaunch + 2.5, tParks + 1);
       cityU.uTime.value = ambient;
-      winMat.opacity = ramp(t, tLaunch + 3, tParks) * 0.35;
+      const lit = ramp(t, tLaunch + 2.5, tParks + 1);
+      streetU.uK.value = lit;
+      lamps.u.uK.value = lit;
+      lamps.u.uPixel.value = px;
+      cityU.uSky.value.copy(col("#3a4a6a").lerp(col("#1a3a4a"), dusk));
       spray.u.uTime.value = ambient; spray.u.uPixel.value = px; spray.u.uOpacity.value = rise;
       const street = ramp(t, tParks + 2, tWild - 0.5) * (1 - ramp(t, tTogether, tTogether + 1));
       lampGlows.forEach((g2) => g2.set("#ffd8a0", 1.1 * street));
