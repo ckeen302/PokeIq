@@ -55,7 +55,9 @@ const SPECS: Record<string, LensSpec> = {
     // The globe (the 60-second cut's beat) read dark: open it up.
     grade: (t, b, L) => {
       const k = ramp(t, b("world") - 0.4, b("world") + 0.4) * (1 - ramp(t, b("catch") - 0.3, b("catch")));
-      return { exposure: L.exposure * (1 + 0.38 * k), lift: [L.lift[0] + 0.01 * k, L.lift[1] + 0.012 * k, L.lift[2] + 0.02 * k] };
+      // The card burst ran hot under the filmic curve: hold it down so the foil reads, not white.
+      const cards = 1 - ramp(t, b("anime") - 0.5, b("anime"));
+      return { exposure: L.exposure * (1 + 0.38 * k) * (1 - 0.2 * cards), bloomThreshold: L.bloomThreshold + 0.08 * cards, lift: [L.lift[0] + 0.01 * k, L.lift[1] + 0.012 * k, L.lift[2] + 0.02 * k] };
     },
     streak: 0.25,
   },
