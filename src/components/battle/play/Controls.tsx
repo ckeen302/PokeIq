@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { ArrowLeftRight, Crosshair, Gem, MoveHorizontal, Sparkles, Undo2 } from "lucide-react";
-import { activesPerHalf, activesPerSide, playerCount, type BattleRequest, type BattleRequestMove, type BattleRequestPokemon, type GameType } from "@/lib/battle/play";
+import { AlertTriangle, ArrowLeftRight, Crosshair, Gem, MoveHorizontal, Sparkles, Undo2 } from "lucide-react";
+import { activesPerHalf, activesPerSide, gimmickFamily, gimmicksOf, moveAsUsed, playerCount, type BattleGimmick, type BattleRequest, type BattleRequestMove, type BattleRequestPokemon, type GameType } from "@/lib/battle/play";
 import { canShift, sideIndexOf, targetSpots, type TargetSpot } from "@/lib/battle/choices";
 import { BattleSprite } from "@/components/battle/BattleSprite";
 import { typeColor, typeTextColor } from "@/lib/pokemon/type-colors";
@@ -16,7 +16,7 @@ import { MonTip, MoveTip, Tip, isRandomFormat, tipFromRequest, tipFromSnap } fro
 import type { FieldMon, FieldState } from "@/lib/battle/tooltip-calc";
 import { useBattleKeys, type BattleKeys } from "./hotkeys";
 import { benchOrder } from "./model";
-import { emptiedSlots, fainted, fillPasses, slotCount, switchOptions, switchedIn } from "./choice";
+import { cycleExtra, emptiedSlots, fainted, fillPasses, slotCount, switchOptions, switchedIn, teamOrder } from "./choice";
 
 /**
  * What the player can do now, built from their request: pick a lead (team
@@ -28,8 +28,15 @@ import { emptiedSlots, fainted, fillPasses, slotCount, switchOptions, switchedIn
  * Every choice goes out in the simulator's syntax, fully explicit.
  */
 
-type Extra = "mega" | "zmove" | "dynamax";
-const EXTRA_LABEL: Record<Extra, string> = { mega: "Mega Evolve", zmove: "Z-Move", dynamax: "Dynamax" };
+type Extra = BattleGimmick;
+const EXTRA_LABEL: Record<Extra, string> = { mega: "Mega Evolve", megax: "Mega Evolve X", megay: "Mega Evolve Y", ultra: "Ultra Burst", zmove: "Z-Move", dynamax: "Dynamax" };
+const EXTRAS = new Set<string>(Object.keys(EXTRA_LABEL));
+
+/** A move's name and type by id or name (Max Moves and G-Max Moves included), for the buttons. */
+const moveNamed = (id: string) => {
+  const m = Dex.moves.get(id);
+  return { name: m.exists ? m.name : id, type: m.type };
+};
 
 interface Props {
   request: BattleRequest;
@@ -242,9 +249,22 @@ function SwitchGrid({
   );
 }
 
+/** Remembered on this device: team preview asks for the whole order, not just the leads. */
+const ORDER_ALL_KEY = "pokeiq:battle:order-all";
+
+function readOrderAll(): boolean {
+  try {
+    return window.localStorage.getItem(ORDER_ALL_KEY) === "1";
+  } catch {
+    return false;
+  }
+}
+
 /**
  * Team preview: their six (species only), then tap your lead (two in doubles);
- * the rest follow in order. Bring 6, pick N: tap the N that battle, in order.
+ * the rest follow in order. With "Set the whole order" on, tap the whole team
+ * in order instead (or send once the leads are in), as Showdown's full
+ * "team 123456" order. Bring 6, pick N: tap the N that battle, in order.
  */
 function TeamPreview({
   request,
@@ -268,16 +288,32 @@ function TeamPreview({
   keys: BattleKeys;
 }) {
   const [leads, setLeads] = useState<number[]>([]);
+  const [orderAll, setOrderAll] = useState(false);
+  useEffect(() => setOrderAll(readOrderAll()), []);
   const size = request.side.pokemon.length;
   const picking = !!request.maxChosenTeamSize && request.maxChosenTeamSize < size;
-  const need = picking ? request.maxChosenTeamSize! : Math.min(size, leadCount);
+  const leadsNeeded = Math.min(size, leadCount);
+  // The whole order: the last one left needs no tap.
+  const ordering = orderAll && !picking && size > leadsNeeded;
+  const need = picking ? request.maxChosenTeamSize! : ordering ? size - 1 : leadsNeeded;
+  const send = (order: number[]) => {
+    onChoose(teamOrder(order, size, !picking));
+    setLeads([]);
+  };
   const pick = (n: number) => {
     const next = leads.includes(n) ? leads.filter((l) => l !== n) : [...leads, n];
-    if (next.length >= need) {
-      const rest = picking ? [] : request.side.pokemon.map((_, i) => i + 1).filter((i) => !next.includes(i));
-      onChoose(`team ${[...next, ...rest].join("")}`);
-      setLeads([]);
-    } else setLeads(next);
+    if (next.length >= need) send(next);
+    else setLeads(next);
+  };
+  const toggleOrderAll = () => {
+    const on = !orderAll;
+    setOrderAll(on);
+    setLeads([]);
+    try {
+      window.localStorage.setItem(ORDER_ALL_KEY, on ? "1" : "0");
+    } catch {
+      // Private mode: the choice lasts for this battle only.
+    }
   };
   keys.digit = (n) => {
     if (!busy && n <= size) pick(n);
@@ -319,9 +355,30 @@ function TeamPreview({
           </div>
         </div>
       )}
-      <p className="font-display text-lg font-bold uppercase">
-        {picking ? `Choose ${need} to battle (the first leads)` : `Choose your ${LEADS[need] ?? `${need} leads`}`}
-      </p>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <p className="font-display text-lg font-bold uppercase">
+          {picking ? `Choose ${need} to battle (the first leads)` : ordering ? "Tap your team in order (the first leads)" : `Choose your ${LEADS[leadsNeeded] ?? `${leadsNeeded} leads`}`}
+        </p>
+        {!picking && size > leadsNeeded && (
+          <div className="flex items-center gap-2">
+            {ordering && leads.length >= leadsNeeded && (
+              <button type="button" disabled={busy} onClick={() => send(leads)} className="rounded-md border border-primary bg-primary px-3 py-1.5 font-display text-xs font-bold uppercase tracking-wider text-primary-foreground disabled:opacity-50" data-testid="send-order">
+                Send this order
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={toggleOrderAll}
+              aria-pressed={orderAll}
+              className={cn("rounded-md border px-3 py-1.5 font-display text-xs font-bold uppercase tracking-wider transition", orderAll ? "border-screen bg-screen/15 text-foreground" : "bg-card text-muted-foreground hover:border-screen/60")}
+              data-testid="order-all"
+              title="Choose the order of your whole team, not just the lead"
+            >
+              Set the whole order{orderAll ? " on" : ""}
+            </button>
+          </div>
+        )}
+      </div>
       <div className="grid grid-cols-3 gap-2 sm:grid-cols-6">
         {request.side.pokemon.map((p, i) => {
           const species = speciesOf(p);
@@ -380,7 +437,9 @@ export function Controls({ request, snap, me, gameType, names, busy, onChoose, f
     onChoose(fillPasses(request, []).join(", "));
   }, [allPass, busy, request, onChoose]);
   const teraTaken = parts.some((c) => c.includes("terastallize"));
-  const extraTaken = (e: Extra) => parts.some((c) => c.endsWith(` ${e}`));
+  // Each gimmick once a turn across the side (any Mega Evolution counts as the one Mega Evolution).
+  const takenFamilies = new Set(parts.flatMap((c) => c.split(/[ ,]+/)).filter((w) => EXTRAS.has(w)).map((w) => gimmickFamily(w as Extra)));
+  const extraTaken = (e: Extra) => takenFamilies.has(gimmickFamily(e));
   const suffix = () => `${tera && teraType ? " terastallize" : ""}${extra && extraOn(extra) ? ` ${extra}` : ""}`;
 
   function add(choice: string) {
@@ -453,11 +512,11 @@ export function Controls({ request, snap, me, gameType, names, busy, onChoose, f
   const fieldState: FieldState = { doubles: perHalf > 1, weather: snap.weather, terrain: snap.terrain, pseudo: snap.pseudo, attacker: mySide.conditions, defender: foeSide.conditions };
   const shiftable = canShift(request, slot, gameType);
   const trapped = !!active.trapped;
-  const extras: Extra[] = [];
-  if (active.canMegaEvo && !extraTaken("mega")) extras.push("mega");
-  if (active.canZMove?.some(Boolean) && !extraTaken("zmove")) extras.push("zmove");
-  if (active.canDynamax && !extraTaken("dynamax")) extras.push("dynamax");
+  const extras: Extra[] = gimmicksOf(active).filter((e) => !extraTaken(e));
   const extraOn = (e: Extra) => extras.includes(e);
+  // The moves as they'll be used: Max Moves while Dynamaxing (or Dynamaxed), Z-Moves with a Z-Move on.
+  const shown = active.moves.map((_, i) => moveAsUsed(active, i, extra && extraOn(extra) ? extra : null, moveNamed));
+  const maybeTrapped = !trapped && !!active.maybeTrapped;
 
   if (aiming?.spots) {
     const spots = aiming.spots;
@@ -586,15 +645,16 @@ export function Controls({ request, snap, me, gameType, names, busy, onChoose, f
       if (i !== undefined && canSwitchTo(request.side.pokemon[i], i)) add(`switch ${i + 1}`);
       return;
     }
-    const move = active.moves[n - 1];
-    if (!move || busy || move.disabled || (extra === "zmove" && !active.canZMove?.[n - 1])) return;
+    const move = shown[n - 1];
+    if (!move || busy || move.disabled) return;
     pickMove(n, move);
   };
   keys.shiftDigit = (n) => {
     if (canSwitchTo(request.side.pokemon[n - 1], n - 1)) add(`switch ${n}`);
   };
   if (teraType) keys.tera = () => setTera((t) => !t);
-  if (extras.length) keys.extra = () => setExtra((x) => (x ? null : extras[0]));
+  // M cycles: none, then each option in turn, then none again.
+  if (extras.length) keys.extra = () => setExtra((x) => cycleExtra(x, extras));
 
   return (
     <div className="space-y-3">
@@ -640,7 +700,7 @@ export function Controls({ request, snap, me, gameType, names, busy, onChoose, f
         </div>
       </div>
       <div className="grid grid-cols-2 gap-2.5 sm:gap-2">
-        {active.moves.map((move, i) => (
+        {shown.map((move, i) => (
           <MoveButton
             key={`${move.id}-${i}`}
             gen={snap.gen}
@@ -649,7 +709,7 @@ export function Controls({ request, snap, me, gameType, names, busy, onChoose, f
             foes={foes}
             tera={tera}
             teraType={teraType}
-            disabled={busy || (extra === "zmove" && !active.canZMove?.[i])}
+            disabled={busy}
             onPick={pickMove}
             tip={{ attacker: attackerOf(request.side.pokemon[slot], mySide.active[posOf(slot)], tera, teraType), field: fieldState, randomBattle: isRandomFormat(format), foes }}
           />
@@ -666,6 +726,11 @@ export function Controls({ request, snap, me, gameType, names, busy, onChoose, f
         >
           <MoveHorizontal className="h-4 w-4 text-screen" aria-hidden /> Shift to the centre
         </button>
+      )}
+      {maybeTrapped && (
+        <p className="flex items-center gap-2 rounded-md border border-amber-400/50 bg-amber-400/10 px-3 py-2 text-sm" role="note" data-testid="maybe-trapped">
+          <AlertTriangle className="h-4 w-4 shrink-0 text-amber-400" aria-hidden /> {actorName} might be trapped, so a switch can&apos;t be cancelled.
+        </p>
       )}
       <SwitchGrid
         tipInfo={{ gen: snap.gen, format, seen: mySide.team }}

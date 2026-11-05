@@ -330,10 +330,63 @@ export interface BattleRequestActive {
   maybeLocked?: boolean;
   canTerastallize?: string;
   canMegaEvo?: boolean;
+  /** Mega Evolution into the X or Y form (formats where one Pokémon may have both). */
+  canMegaEvoX?: boolean;
+  canMegaEvoY?: boolean;
+  /** Necrozma holding Ultranecrozium Z. */
+  canUltraBurst?: boolean;
   /** Per move: its Z-Move, or null. */
   canZMove?: ({ move: string; target: string } | null)[];
   canDynamax?: boolean;
-  maxMoves?: { maxMoves: { move: string; target: string; disabled?: boolean }[] };
+  /**
+   * The Max Moves (ids) in move order: sent while it can Dynamax, and while
+   * it is Dynamaxed (then without `canDynamax`). `gigantamax`: its G-Max
+   * Move's name, which replaces the Max Move of the same type.
+   */
+  maxMoves?: { maxMoves: { move: string; target: string; disabled?: boolean }[]; gigantamax?: string };
+}
+
+/** The once-a-battle moves a choice can add to a move (Showdown's suffixes): Mega Evolution (or its X or Y form), Ultra Burst, a Z-Move, Dynamax. */
+export type BattleGimmick = "mega" | "megax" | "megay" | "ultra" | "zmove" | "dynamax";
+
+/** Gimmicks a move request offers, in Showdown's button order. */
+export function gimmicksOf(active: BattleRequestActive): BattleGimmick[] {
+  const out: BattleGimmick[] = [];
+  if (active.canMegaEvo) out.push("mega");
+  if (active.canMegaEvoX) out.push("megax");
+  if (active.canMegaEvoY) out.push("megay");
+  if (active.canUltraBurst) out.push("ultra");
+  if (active.canZMove?.some(Boolean)) out.push("zmove");
+  if (active.canDynamax) out.push("dynamax");
+  return out;
+}
+
+/** Mega Evolution in any form counts as one (a side may Mega Evolve once a battle). */
+export const gimmickFamily = (g: BattleGimmick) => (g === "megax" || g === "megay" ? "mega" : g);
+
+/** Whether the Pokémon is Dynamaxed already: the request lists Max Moves with no Dynamax button. */
+export const isDynamaxed = (active: BattleRequestActive) => !!active.maxMoves && !active.canDynamax;
+
+/**
+ * Move `index` (0-based) as it will be used: the Max Move when Dynamaxing (or
+ * Dynamaxed), the Z-Move with a Z-Move on, else the move itself. The Max
+ * Move's name comes from its id (or the G-Max Move's, of the same type), so
+ * `typeOf` reads a move's type from its name.
+ */
+export function moveAsUsed(active: BattleRequestActive, index: number, gimmick: BattleGimmick | null, nameOf: (id: string) => { name: string; type: string }): BattleRequestMove {
+  const base = active.moves[index];
+  if (gimmick === "zmove") {
+    const z = active.canZMove?.[index];
+    return z ? { ...base, move: z.move, id: z.move.toLowerCase().replace(/[^a-z0-9]/g, ""), target: z.target } : { ...base, disabled: true };
+  }
+  const max = (gimmick === "dynamax" || isDynamaxed(active)) && active.maxMoves?.maxMoves[index];
+  if (max) {
+    const info = nameOf(max.move);
+    const gmax = active.maxMoves?.gigantamax ? nameOf(active.maxMoves.gigantamax) : null;
+    const name = gmax && gmax.type === info.type && info.name !== "Max Guard" ? gmax.name : info.name;
+    return { ...base, move: name, id: name.toLowerCase().replace(/[^a-z0-9]/g, ""), target: max.target, disabled: !!max.disabled || !!base?.disabled };
+  }
+  return base;
 }
 
 export interface BattleRequestPokemon {
