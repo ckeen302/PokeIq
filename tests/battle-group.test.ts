@@ -224,16 +224,28 @@ async function poll(code: string, token: string | null, since = 0): Promise<Batt
   return out.view;
 }
 
+/**
+ * Answers the request with `choice`, which the simulator must accept. The one
+ * refusal allowed is "[Unavailable choice]": the simulator revealing something
+ * the request had hidden (a move disabled by a foe's Imprison, a trap), as on
+ * Showdown. The request is updated with it, so choose again from that.
+ */
 async function act(code: string, token: string, choice: (view: BattleView) => string | null) {
-  const view = await poll(code, token);
-  if (!view.request) return view;
-  const pick = choice(view);
-  if (!pick) return view;
   const seat = readBattleToken(token, code)!;
-  const out = await actOnBattle(code, seat.playerId, { action: "choose", rqid: view.request.rqid, choice: pick }, 0);
-  if (!out.ok) throw new Error(`${out.status} ${out.error}`);
-  expect(out.rejected, `"${pick}"`).toBeUndefined();
-  return out.view;
+  for (let attempt = 0; ; attempt++) {
+    const view = await poll(code, token);
+    if (!view.request) return view;
+    const pick = choice(view);
+    if (!pick) return view;
+    const out = await actOnBattle(code, seat.playerId, { action: "choose", rqid: view.request.rqid, choice: pick }, 0);
+    if (!out.ok) throw new Error(`${out.status} ${out.error}`);
+    if (out.rejected?.startsWith("[Unavailable choice]") && attempt < 3) {
+      expect(out.view.request?.data, `"${pick}": ${out.rejected}`).not.toEqual(view.request.data);
+      continue;
+    }
+    expect(out.rejected, `"${pick}"`).toBeUndefined();
+    return out.view;
+  }
 }
 
 const geometryOf = (view: BattleView) => view.gameType ?? "singles";

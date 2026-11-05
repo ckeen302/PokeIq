@@ -29,7 +29,7 @@ export const WORLD_HISTORY_LIVE = true;
  * goes in the sitemap only once this is true. Until then its pages work by
  * URL but stay out of search, and /lab keeps the Timeline card.
  */
-export const POKEMON_STORY_LIVE = false;
+export const POKEMON_STORY_LIVE = true;
 
 export interface LabExperience {
   id: "timeline" | "pokemon-story" | "sizes" | "globe" | "race" | "mass-battle" | "world-history";
