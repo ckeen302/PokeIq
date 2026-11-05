@@ -76,9 +76,9 @@ describe("polling pace", () => {
       ({ kind: "pvp", status: "playing", you: 0, players: [{}, {}], request: null, waiting: false, now: NOW, rev: 1, ...over }) as BattleView;
     const request = { rqid: 1, data: {} } as BattleView["request"];
 
-    it("polls every second while waiting on the opponent, every 2 s while it's your move", () => {
-      expect(battlePollDelay(battle({ request, waiting: true }), 0, NOW)).toBe(1000);
-      expect(battlePollDelay(battle({ request: null }), 0, NOW)).toBe(1000);
+    it("polls every 500 ms while waiting on the opponent, every 2 s while it's your move", () => {
+      expect(battlePollDelay(battle({ request, waiting: true }), 0, NOW)).toBe(500);
+      expect(battlePollDelay(battle({ request: null }), 0, NOW)).toBe(500);
       expect(battlePollDelay(battle({ request }), 0, NOW)).toBe(2000);
     });
 

@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import { watchContext } from "@/lib/gl/context-loss";
 import { PF_CAM, type PhotoFrame } from "@/lib/race/broadcast";
 import type { CamPose } from "@/lib/race/director";
 import type { Race } from "@/lib/race/race";
@@ -8,6 +9,7 @@ import { deepTint, poolDepth, poolModes } from "@/lib/race/pool";
 import { buildPool, setPoolModes, type Pool } from "./pool";
 import { loadFigure, makeRunners, type Footfall, type Runners, type RunnerUrls } from "./runners";
 import { LAYER, buildStadium, type Stadium, type StadiumUrls } from "./stadium";
+import { SAFE_HDR } from "@/lib/gl/safe-hdr";
 
 /**
  * The 3D scene behind /pokedex/race and its videos: PokéIQ Stadium at
@@ -54,6 +56,8 @@ export interface SceneOptions {
   font: string;
   /** Fixed drawing size (exports); otherwise the host's size. */
   size?: { w: number; h: number };
+  /** The WebGL context was lost and the scene must be built again (see watchContext). */
+  onContextGone?: () => void;
 }
 
 export interface FrameInput {
@@ -114,6 +118,7 @@ export function createRaceScene(host: HTMLElement, opts: SceneOptions): RaceScen
   canvas.style.width = "100%";
   canvas.style.height = "100%";
   host.appendChild(canvas);
+  const ctxWatch = watchContext(canvas, opts.onContextGone);
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: !Q.post && quality !== "draft", alpha: false, powerPreference: "high-performance", stencil: false, preserveDrawingBuffer: !!opts.size });
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.0;
@@ -240,6 +245,7 @@ export function createRaceScene(host: HTMLElement, opts: SceneOptions): RaceScen
   let frameNo = 0;
 
   function frame(f: FrameInput): { kg: number; dist: number }[] {
+    if (ctxWatch.lost) return [];
     frameNo++;
     const { pose } = f;
     camera.position.set(...pose.pos);
@@ -332,8 +338,9 @@ export function createRaceScene(host: HTMLElement, opts: SceneOptions): RaceScen
         uniforms: { t: { value: rt.texture } },
         vertexShader: "varying vec2 vUv; void main(){ vUv = uv; gl_Position = vec4(position.xy, 0.0, 1.0); }",
         fragmentShader: /* glsl */ `uniform sampler2D t; varying vec2 vUv;
+          ${SAFE_HDR}
           vec3 aces(vec3 x){ return clamp((x * (2.51 * x + 0.03)) / (x * (2.43 * x + 0.59) + 0.14), 0.0, 1.0); }
-          void main(){ vec3 c = texture2D(t, vUv).rgb * 1.3; c = aces(c);
+          void main(){ vec3 c = glSafe(texture2D(t, vUv).rgb) * 1.3; c = aces(c);
             c = mix(vec3(dot(c, vec3(0.299, 0.587, 0.114))), c, 1.08);
             c = pow(clamp(c, 0.0, 1.0), vec3(1.0 / 2.2)); gl_FragColor = vec4(c, 1.0); }`,
         depthTest: false,
@@ -426,6 +433,7 @@ export function createRaceScene(host: HTMLElement, opts: SceneOptions): RaceScen
     stats: () => ({ calls: renderer.info.render.calls, tris: renderer.info.render.triangles, crowd: crowd.count }),
     internals: () => ({ scene, renderer, camera }),
     dispose() {
+      ctxWatch.dispose();
       runners?.dispose();
       pool?.dispose();
       stadium.dispose();

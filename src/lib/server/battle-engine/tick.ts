@@ -1,6 +1,7 @@
 import "server-only";
 import { createHash, timingSafeEqual } from "node:crypto";
 import { catchUpBattle } from "./service";
+import { publishBattle } from "./live";
 import { needsSettlingRecord, settleBattle } from "./settle";
 import { dueBattles } from "./store";
 
@@ -64,6 +65,9 @@ export async function tickBattles(now = Date.now(), limit = TICK_BATCH): Promise
         continue;
       }
       out.caught++;
+      // Inside the tick's request a "later" broadcast waits for the whole sweep (up to ~50 s) to answer, so wake the
+      // battle's pages now. The deferred copy from the write still goes out afterwards; pages ignore a revision they have.
+      if (caught.rec.meta.kind === "pvp") await publishBattle(code, caught.rev);
       if (needsSettlingRecord(caught.rec)) {
         await settleBattle(code);
         out.settled++;

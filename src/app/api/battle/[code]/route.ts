@@ -9,6 +9,8 @@ import { battlesEnabled } from "@/lib/server/battle-engine/store";
 import { actOnBattle, battleToken, chatBattle, pollBattle, readBattleToken, rematchBattle } from "@/lib/server/battle-engine/service";
 import { needsSettling, saveReplayFor, settleBattle } from "@/lib/server/battle-engine/settle";
 import { casualBattlePlayerKey } from "@/lib/server/battle-engine/identity";
+import { longPollBattle } from "@/lib/server/battle-engine/long-poll";
+import { realtimeClientConfig } from "@/lib/server/realtime";
 import { DUEL_CODE_RE } from "@/lib/duel-types";
 import { BATTLE_CHOICE_RE, BATTLE_TEAM_MAX, CPU_LEVELS, type BattleSeatResponse } from "@/lib/battle/play";
 
@@ -17,7 +19,10 @@ import { BATTLE_CHOICE_RE, BATTLE_TEAM_MAX, CPU_LEVELS, type BattleSeatResponse 
  *      x-battle-token: your seat token; without one you're a visitor), with
  *      your channel's protocol lines from N on. Clients poll this; it also
  *      tells the server you're still here, and catches up clocks and
- *      disconnects.
+ *      disconnects. With &wait=1&seen=D it's a long poll: the answer waits
+ *      (up to 20 s) until the battle moves on from what the page shows
+ *      (server/battle-engine/long-poll.ts). A live battle's answer carries
+ *      `live` when Realtime is set up: where to hear that it changed.
  * POST /api/battle/:code: an action:
  *   { action: "join", name, team?, rankedId? }    take the free seat in a live battle (returns your token)
  *   { action: "savereplay", token }               after the end: save the battle's replay (spectator log only)
@@ -38,6 +43,8 @@ export const dynamic = "force-dynamic";
 export const maxDuration = 30;
 
 const NO_STORE = { "Cache-Control": "no-store" };
+/** The long poll's `seen` (lib/battle/live.ts battleSeenDigest). */
+const SEEN_RE = /^[0-9a-z]{1,8}$/;
 const token = z.string().min(10).max(512);
 const since = z.number().int().min(0).max(1_000_000).default(0);
 
@@ -86,9 +93,14 @@ export async function GET(request: NextRequest, context: Context) {
   if (!code) return NextResponse.json({ error: "Not found" }, { status: 404, headers: NO_STORE });
   const raw = Number(request.nextUrl.searchParams.get("since") ?? 0);
   const from = Number.isInteger(raw) && raw >= 0 ? raw : 0;
+  const params = request.nextUrl.searchParams;
+  const wait = params.get("wait") === "1";
+  const seen = params.get("seen");
   try {
     const poll = () => pollBattle(code, request.headers.get("x-battle-token"), from, request.headers.get("x-battle-viewer"));
-    let out = await poll();
+    let out = wait
+      ? await longPollBattle(code, request.headers.get("x-battle-token"), from, request.headers.get("x-battle-viewer"), seen && SEEN_RE.test(seen) ? seen : null)
+      : await poll();
     if (!out.ok) return failure(out);
     // Just over: record it (replay, ratings, history) once, then answer with the settled battle.
     if (needsSettling(out.view)) {
@@ -100,7 +112,8 @@ export async function GET(request: NextRequest, context: Context) {
         console.error("[battle] settling failed:", err);
       }
     }
-    return NextResponse.json(await seatAvatars(out.view), { headers: NO_STORE });
+    const live = out.view.kind === "pvp" ? realtimeClientConfig() : null;
+    return NextResponse.json({ ...(await seatAvatars(out.view)), ...(live ? { live } : {}) }, { headers: NO_STORE });
   } catch (err) {
     return storeError(err);
   }

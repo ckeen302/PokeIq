@@ -1,0 +1,105 @@
+name: Showdown data bump
+
+# Once a week: if a newer pokemon-showdown is published, bump it, rebuild the
+# battle data from it (src/data/battle/randsets.json, formats.json and
+# format-rules.json), run the checks, and open a pull request for review.
+# Nothing is merged here. With the checks failing, the pull request opens as a
+# draft that says which ones failed.
+#
+# It uses the workflow's own GITHUB_TOKEN, no other secret. For it to open
+# pull requests, the repository needs Settings > Actions > General >
+# "Allow GitHub Actions to create and approve pull requests" turned on.
+# Pull requests opened with that token don't start the CI workflow on their
+# own; this job runs the same checks first and reports them in the PR body.
+
+on:
+  schedule:
+    # Mondays, 06:17 UTC.
+    - cron: "17 6 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: showdown-bump
+  cancel-in-progress: false
+
+jobs:
+  bump:
+    runs-on: ubuntu-latest
+    env:
+      POKEIQ_SECRET: ci-only-secret-not-used-anywhere-else
+      POKEIQ_LOCAL_ACCOUNTS: "1"
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Look for a newer pokemon-showdown
+        id: check
+        run: |
+          current=$(node -p "require('./package.json').dependencies['pokemon-showdown']")
+          latest=$(npm view pokemon-showdown version)
+          branch="data/showdown-$latest"
+          echo "current=$current" >> "$GITHUB_OUTPUT"
+          echo "latest=$latest" >> "$GITHUB_OUTPUT"
+          echo "branch=$branch" >> "$GITHUB_OUTPUT"
+          if [ "$current" = "$latest" ]; then
+            echo "pokemon-showdown $current is the newest published version."
+            echo "bump=false" >> "$GITHUB_OUTPUT"
+          elif git ls-remote --exit-code --heads origin "$branch" > /dev/null; then
+            echo "A bump to $latest is already open on $branch."
+            echo "bump=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "pokemon-showdown $current -> $latest"
+            echo "bump=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Bump and rebuild the battle data
+        if: steps.check.outputs.bump == 'true'
+        run: |
+          npm ci
+          npm install --save-exact "pokemon-showdown@${{ steps.check.outputs.latest }}"
+          npx tsx scripts/build-randsets.ts
+          npx tsx --conditions=react-server scripts/build-formats.ts
+
+      - name: Run the checks
+        if: steps.check.outputs.bump == 'true'
+        id: checks
+        run: |
+          failed=""
+          npm run lint || failed="$failed lint"
+          npm run typecheck || failed="$failed typecheck"
+          npm test || failed="$failed tests"
+          npm run verify:showdown -- --battles 400 || failed="$failed verify:showdown"
+          echo "failed=${failed# }" >> "$GITHUB_OUTPUT"
+
+      - name: Open the pull request
+        if: steps.check.outputs.bump == 'true'
+        run: |
+          branch="${{ steps.check.outputs.branch }}"
+          latest="${{ steps.check.outputs.latest }}"
+          failed="${{ steps.checks.outputs.failed }}"
+          git switch -c "$branch"
+          git add package.json package-lock.json src/data/battle
+          git -c user.name="github-actions[bot]" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
+            commit -m "Bump pokemon-showdown to $latest and rebuild the battle data"
+          git push origin "$branch"
+          if [ -n "$failed" ]; then
+            status="These checks failed and need a look: $failed."
+            draft="--draft"
+          else
+            status="Lint, typecheck, the unit tests and verify:showdown (400 battles) all passed."
+            draft=""
+          fi
+          body="pokemon-showdown ${{ steps.check.outputs.current }} -> $latest, with src/data/battle rebuilt by scripts/build-randsets.ts and scripts/build-formats.ts.
+
+          $status
+
+          CI doesn't start on its own for a pull request opened by a workflow: push a commit or close and reopen it to run CI and the browser E2E."
+          gh pr create $draft --base main --head "$branch" --title "Bump pokemon-showdown to $latest" --body "$body"

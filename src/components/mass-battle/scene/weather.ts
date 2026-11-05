@@ -98,12 +98,14 @@ void main() {
   // Nothing right in front of the lens (a flake an inch away would fill the screen).
   float dc = length(p - uCam);
   vA *= smoothstep(1.2, 3.5, dc);
-  if (uBlink > 0.0) vA *= pow(0.5 + 0.5 * sin(uTime * (1.0 + aSeed.w * 2.0) * uBlink + aSeed.x * 60.0), 6.0);
+  if (uBlink > 0.0) vA *= pow(max(0.0, 0.5 + 0.5 * sin(uTime * (1.0 + aSeed.w * 2.0) * uBlink + aSeed.x * 60.0)), 6.0);
   if (dc < 1.0) { gl_Position = vec4(2.0, 2.0, 2.0, 1.0); return; }
   float speed = length(vel);
   vec3 dir = speed > 1e-3 ? vel / speed : vec3(0.0, -1.0, 0.0);
   vec3 toCam = normalize(uCam - p);
-  vec3 side = normalize(cross(dir, toCam));
+  // Rain falling straight at a camera looking straight down: the cross is zero (normalize of zero is NaN on Apple GPUs).
+  vec3 sideRaw = cross(dir, toCam);
+  vec3 side = dot(sideRaw, sideRaw) > 1e-10 ? normalize(sideRaw) : vec3(1.0, 0.0, 0.0);
   vec3 q = side * position.x * uSize + dir * position.y * uSize * (1.0 + uStretch) + cross(side, dir) * position.z * uSize;
   gl_Position = projectionMatrix * viewMatrix * vec4(p + q, 1.0);
 }`,

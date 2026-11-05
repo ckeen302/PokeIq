@@ -1,4 +1,4 @@
-import { activesPerHalf, activesPerSide, playerCount, type BattleRequest, type BattleRequestMove, type GameType } from "@/lib/battle/play";
+import { activesPerHalf, activesPerSide, gimmickFamily, gimmicksOf, isDynamaxed, playerCount, type BattleGimmick, type BattleRequest, type BattleRequestMove, type GameType } from "@/lib/battle/play";
 
 /**
  * Every legal, fully explicit choice a request allows: what the computer
@@ -35,6 +35,8 @@ export interface SlotOption {
   target: number;
   tera: boolean;
   move?: BattleRequestMove;
+  /** A move used with Mega Evolution, Ultra Burst, a Z-Move or Dynamax (only when asked for, see moveSlotOptions). */
+  gimmick?: BattleGimmick;
 }
 
 /** One spot a move could be aimed at: its target location, and what the simulator makes of it. */
@@ -99,10 +101,16 @@ export function moveTargets(target: string | undefined, slot: number, doubles: C
 /** Triples: an edge Pokémon may shift to the centre instead of moving (Showdown's "shift"). */
 export const canShift = (request: BattleRequest, slot: number, doubles: ChoiceGeometry) => gameTypeOf(doubles) === "triples" && (request.active?.length ?? 0) === 3 && slot !== 1 && !request.forceSwitch;
 
-const moveText = (index: number, target: number, tera: boolean) => `move ${index}${target ? ` ${target}` : ""}${tera ? " terastallize" : ""}`;
+const moveText = (index: number, target: number, tera: boolean, gimmick?: BattleGimmick) => `move ${index}${target ? ` ${target}` : ""}${tera ? " terastallize" : ""}${gimmick ? ` ${gimmick}` : ""}`;
 
-/** The move and switch options for active slot `slot` of a move request. */
-export function moveSlotOptions(request: BattleRequest, slot: number, doubles: ChoiceGeometry): SlotOption[] {
+/**
+ * The move and switch options for active slot `slot` of a move request.
+ * `gimmicks`: also every move with each Mega Evolution, Ultra Burst, Z-Move
+ * or Dynamax the request offers (aimed as the Z-Move or Max Move is), as
+ * Showdown's random player may play them. Off by default: the computer's
+ * policies weigh moves as they are.
+ */
+export function moveSlotOptions(request: BattleRequest, slot: number, doubles: ChoiceGeometry, { gimmicks = false }: { gimmicks?: boolean } = {}): SlotOption[] {
   const active = request.active?.[slot];
   const mon = request.side.pokemon[slot];
   if (!active || !mon || isFainted(mon.condition) || mon.commanding) return [{ kind: "pass", text: "pass", index: 0, target: 0, tera: false }];
@@ -111,10 +119,24 @@ export function moveSlotOptions(request: BattleRequest, slot: number, doubles: C
   const usable = active.moves.map((move, i) => ({ move, index: i + 1 })).filter(({ move }) => !move.disabled);
   // Everything disabled can't happen (the simulator offers Struggle instead), but never leave a slot empty.
   const moves = usable.length ? usable : active.moves.slice(0, 1).map((move) => ({ move, index: 1 }));
+  // Dynamaxed already: the moves are its Max Moves, aimed as those are.
+  const maxed = isDynamaxed(active);
   for (const { move, index } of moves) {
-    for (const target of moveTargets(move.target, slot, doubles, side)) {
+    const aimAs = maxed ? (active.maxMoves?.maxMoves[index - 1]?.target ?? move.target) : move.target;
+    for (const target of moveTargets(aimAs, slot, doubles, side)) {
       options.push({ kind: "move", text: moveText(index, target, false), index, target, tera: false, move });
       if (active.canTerastallize) options.push({ kind: "move", text: moveText(index, target, true), index, target, tera: true, move });
+    }
+  }
+  if (gimmicks) {
+    for (const gimmick of gimmicksOf(active)) {
+      for (const { move, index } of moves) {
+        const as = gimmick === "zmove" ? active.canZMove?.[index - 1] : gimmick === "dynamax" ? active.maxMoves?.maxMoves[index - 1] : move;
+        if (!as || ("disabled" in as && as.disabled)) continue;
+        for (const target of moveTargets(as.target, slot, doubles, side)) {
+          options.push({ kind: "move", text: moveText(index, target, false, gimmick), index, target, tera: false, move, gimmick });
+        }
+      }
     }
   }
   if (!active.trapped) {
@@ -159,7 +181,9 @@ export function teamChoice(request: BattleRequest, lead = 1): string {
 
 /**
  * A random legal choice, using `rand` (0 ≤ x < 1). Picks a Pokémon at most
- * once per turn and Terastallizes at most one of them.
+ * once per turn and Terastallizes at most one of them. Like Showdown's random
+ * player it may also Mega Evolve, Ultra Burst, use a Z-Move or Dynamax where
+ * the request allows (each at most once a turn across the side).
  */
 export function randomChoice(request: BattleRequest, doubles: ChoiceGeometry, rand: () => number): string {
   const pick = <T,>(list: T[]): T => list[Math.floor(rand() * list.length)];
@@ -179,14 +203,18 @@ export function randomChoice(request: BattleRequest, doubles: ChoiceGeometry, ra
   const slots = request.active?.length ?? 0;
   const taken = new Set<number>();
   let tera = false;
+  const used = new Set<string>();
   const parts: string[] = [];
   for (let slot = 0; slot < slots; slot++) {
-    const options = moveSlotOptions(request, slot, doubles).filter((o) => (o.kind !== "switch" || !taken.has(o.index)) && !(o.tera && tera));
+    const options = moveSlotOptions(request, slot, doubles, { gimmicks: true }).filter(
+      (o) => (o.kind !== "switch" || !taken.has(o.index)) && !(o.tera && tera) && !(o.gimmick && used.has(gimmickFamily(o.gimmick)))
+    );
     // Prefer attacking: switching (or shifting) at random makes a poor opponent and a worse stand-in for a timed-out player.
     const moves = options.filter((o) => o.kind !== "switch" && o.kind !== "shift");
     const option = moves.length && rand() < 0.85 ? pick(moves) : pick(options);
     if (option.kind === "switch") taken.add(option.index);
     if (option.tera) tera = true;
+    if (option.gimmick) used.add(gimmickFamily(option.gimmick));
     parts.push(option.text);
   }
   return parts.join(", ");

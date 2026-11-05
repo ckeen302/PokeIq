@@ -202,14 +202,20 @@ export function duelHiddenDelay(view: DuelPace | null): number | null {
   return view && view.you !== null && view.you !== undefined && view.status !== "finished" ? HEARTBEAT_MS : null;
 }
 
+/** Live battles: the poll while waiting on the opponent without a push channel (Showdown pushes; this is the fallback). */
+export const BATTLE_WAITING_POLL_MS = 500;
+/** Live battles: the safety-net poll while the Realtime channel is up (it says when to fetch). */
+export const BATTLE_LIVE_POLL_MS = 3000;
+
 /**
  * Battles, while the tab is visible. Against the computer every choice comes
- * back with its result, so polling is only a safety net. Live: every second
+ * back with its result, so polling is only a safety net. Live: every 500 ms
  * while waiting on the opponent, every 2 s while it's your move (nothing
  * happens until you choose), with a poll right after either clock runs out;
- * the lobby and the end as for duels.
+ * the lobby and the end as for duels. With the battle's Realtime channel up
+ * (`live`), a poll every 3 s at most is only a safety net.
  */
-export function battlePollDelay(view: BattleView | null, quietPolls: number, serverNow: number): number | null {
+export function battlePollDelay(view: BattleView | null, quietPolls: number, serverNow: number, live = false): number | null {
   if (!view) return 1000;
   if (view.kind === "cpu") return view.status === "finished" ? null : 5000;
   if (view.status !== "playing" && chatBusy(view.chat, serverNow)) return CHAT_POLL_MS;
@@ -217,12 +223,24 @@ export function battlePollDelay(view: BattleView | null, quietPolls: number, ser
     if (view.end && serverNow - view.end.at > FINISHED_POLL_MS) return null;
     return backoff(4000, 15_000, quietPolls);
   }
-  if (view.status === "lobby") return view.players.length >= 2 ? 2000 : backoff(2000, 5000, quietPolls);
+  if (view.status === "lobby") return live ? Math.max(BATTLE_LIVE_POLL_MS, backoff(2000, 5000, quietPolls)) : view.players.length >= 2 ? 2000 : backoff(2000, 5000, quietPolls);
   const deadlines = [view.clocks?.you.deadline, view.clocks?.foe.deadline];
+  if (live) return untilNext(BATTLE_LIVE_POLL_MS, serverNow, deadlines);
   // Spectators follow the battle closely, easing off while nothing happens.
   if (view.you === null) return untilNext(backoff(1500, 4000, quietPolls), serverNow, deadlines);
   const yourMove = view.request !== null && !view.waiting;
-  return untilNext(yourMove ? 2000 : 1000, serverNow, deadlines);
+  return untilNext(yourMove ? 2000 : BATTLE_WAITING_POLL_MS, serverNow, deadlines);
+}
+
+/**
+ * Live battles without a push channel: whether the next poll should be a
+ * long poll (the server holds it until the battle moves on). Only a seated
+ * trainer waiting on the opponent; on your own move nothing can happen until
+ * you choose, so ordinary polls do.
+ */
+export function battleLongPoll(view: BattleView | null, live: boolean): boolean {
+  if (live || !view || view.kind !== "pvp" || view.status !== "playing" || view.you === null) return false;
+  return view.request === null || view.waiting;
 }
 
 /** Battles, while the tab is hidden: a heartbeat for a player seated in a live battle not yet over, nothing otherwise. */
