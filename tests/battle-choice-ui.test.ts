@@ -11,7 +11,7 @@ import { seededRandom } from "@/lib/battle/cpu-policy";
 
 /** A battle in `formatid` between two teams (Showdown export text), past team preview: [battle, p1's request]. */
 function battleOf(formatid: string, p1: string, p2: string): Battle {
-  const battle = new Battle({ formatid: formatid as never, seed: [1, 2, 3, 4] });
+  const battle = new Battle({ formatid: formatid as never, seed: "1,2,3,4" });
   battle.setPlayer("p1", { name: "Red", team: Teams.pack(Teams.import(p1)) });
   battle.setPlayer("p2", { name: "Blue", team: Teams.pack(Teams.import(p2)) });
   for (const side of battle.sides) if ((side.activeRequest as unknown as BattleRequest | null)?.teamPreview) battle.choose(side.id, "team 1");
@@ -150,7 +150,7 @@ describe("the M hotkey and team preview", () => {
   });
 
   it("offers to set the whole order at team preview", () => {
-    const battle = new Battle({ formatid: "gen9ou" as never, seed: [1, 2, 3, 4] });
+    const battle = new Battle({ formatid: "gen9ou" as never, seed: "1,2,3,4" });
     const team = Teams.pack(Teams.import(`${CORVIKNIGHT}\n\n${SNORLAX}`));
     battle.setPlayer("p1", { name: "Red", team });
     battle.setPlayer("p2", { name: "Blue", team });
