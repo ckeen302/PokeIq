@@ -13,6 +13,19 @@ import type { Look, Spec } from "./types";
 
 const FULLSCREEN_VERT = /* glsl */ `varying vec2 vUv; void main(){ vUv = uv; gl_Position = vec4(position.xy, 0.0, 1.0); }`;
 
+/**
+ * Reads of the HDR scene go through this: a pixel that came out NaN or
+ * infinite (a pow of a tiny negative, a normalize of zero: GPUs that follow
+ * IEEE strictly, like Apple's, give NaN where others give 0) becomes black
+ * instead of poisoning the bloom, whose blurs would spread it into large
+ * black blocks across the frame. Checked on the bits, so no compiler's
+ * fast-math can fold it away.
+ */
+export const SAFE_HDR = /* glsl */ `
+float whSafe1(float v){ return (floatBitsToUint(v) & 0x7f800000u) == 0x7f800000u ? 0.0 : clamp(v, 0.0, 60000.0); }
+vec3 whSafe(vec3 c){ return vec3(whSafe1(c.r), whSafe1(c.g), whSafe1(c.b)); }
+`;
+
 export interface Post {
   /** Where scenes render (HDR). */
   target: THREE.WebGLRenderTarget;
@@ -23,6 +36,8 @@ export interface Post {
   /** Bloom, shafts and grade from the main target to the screen. */
   finish(look: Look, raysUv: [number, number] | null, time: number): void;
   setSize(w: number, h: number, pr: number): void;
+  /** Every material the chain draws with (to compile ahead): those drawing into targets, and the one drawing to the screen. */
+  materials: { target: THREE.Material[]; screen: THREE.Material[] };
   dispose(): void;
 }
 
@@ -33,6 +48,14 @@ export function createPost(renderer: THREE.WebGLRenderer, w: number, h: number, 
   const half = () => new THREE.WebGLRenderTarget(Math.max(1, Math.round((w * pr) / 2)), Math.max(1, Math.round((h * pr) / 2)), { type: THREE.HalfFloatType, depthBuffer: false });
   let raysRT = q.rays ? half() : null;
   const bloom = q.bloom ? new UnrealBloomPass(new THREE.Vector2(w * pr, h * pr), 0.7, 0.55, 0.82) : null;
+  if (bloom) {
+    // The bloom's first read of the scene: scrubbed (see SAFE_HDR).
+    const hp = bloom.materialHighPassFilter;
+    hp.fragmentShader = hp.fragmentShader
+      .replace("void main() {", `${SAFE_HDR}\nvoid main() {`)
+      .replace("vec4 texel = texture2D( tDiffuse, vUv );", "vec4 texel = texture2D( tDiffuse, vUv ); texel.rgb = whSafe( texel.rgb );");
+    hp.needsUpdate = true;
+  }
 
   const quadGeo = new THREE.PlaneGeometry(2, 2);
   const quad = new THREE.Mesh(quadGeo);
@@ -46,11 +69,12 @@ export function createPost(renderer: THREE.WebGLRenderer, w: number, h: number, 
     vertexShader: FULLSCREEN_VERT,
     fragmentShader: /* glsl */ `
       uniform sampler2D tScene; uniform vec2 uLight; uniform float uThreshold, uDecay; varying vec2 vUv;
+      ${SAFE_HDR}
       void main(){
         vec2 d = (vUv - uLight) / 40.0;
         vec2 p = vUv; float w = 1.0; vec3 acc = vec3(0.0);
         for (int i = 0; i < 40; i++){
-          vec3 c = texture2D(tScene, p).rgb;
+          vec3 c = whSafe(texture2D(tScene, p).rgb);
           float l = dot(c, vec3(0.2126, 0.7152, 0.0722));
           acc += c * smoothstep(uThreshold, uThreshold * 2.5, l) * w;
           w *= uDecay; p -= d;
@@ -66,15 +90,17 @@ export function createPost(renderer: THREE.WebGLRenderer, w: number, h: number, 
     vertexShader: FULLSCREEN_VERT,
     fragmentShader: /* glsl */ `
       uniform sampler2D tA, tB; uniform float uK, uBurst; varying vec2 vUv;
+      ${SAFE_HDR}
       void main(){
         vec2 c = vUv - 0.5;
         float r = length(c);
         float zoomA = 1.0 - uK * 0.08, zoomB = 1.0 + (1.0 - uK) * 0.06;
-        vec3 a = texture2D(tA, 0.5 + c * zoomA).rgb;
-        vec3 b = texture2D(tB, 0.5 + c * zoomB).rgb;
+        vec3 a = whSafe(texture2D(tA, 0.5 + c * zoomA).rgb);
+        vec3 b = whSafe(texture2D(tB, 0.5 + c * zoomB).rgb);
         float edge = smoothstep(uK * 1.2 - 0.25, uK * 1.2, r);
         vec3 m = mix(b, a, edge);
-        float flash = uBurst * exp(-pow((r - uK * 0.9) * 4.0, 2.0)) + uBurst * 0.6 * (1.0 - abs(uK - 0.5) * 2.0);
+        float fx = (r - uK * 0.9) * 4.0;
+        float flash = uBurst * exp(-fx * fx) + uBurst * 0.6 * (1.0 - abs(uK - 0.5) * 2.0);
         gl_FragColor = vec4(m + vec3(1.0, 0.95, 0.85) * flash * 3.0, 1.0);
       }`,
     depthTest: false,
@@ -92,6 +118,7 @@ export function createPost(renderer: THREE.WebGLRenderer, w: number, h: number, 
     fragmentShader: /* glsl */ `
       uniform sampler2D tScene, tRays; uniform float uRays, uExposure, uSat, uContrast, uVignette, uChroma, uFlash, uFade, uGrain, uTime;
       uniform vec3 uRaysColor, uGain, uLift; uniform vec2 uRes; varying vec2 vUv;
+      ${SAFE_HDR}
       vec3 aces(vec3 x){ return clamp((x * (2.51 * x + 0.03)) / (x * (2.43 * x + 0.59) + 0.14), 0.0, 1.0); }
       vec3 toSrgb(vec3 c){ return mix(c * 12.92, 1.055 * pow(c, vec3(1.0 / 2.4)) - 0.055, step(0.0031308, c)); }
       float hash(vec2 p){ return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453); }
@@ -100,9 +127,9 @@ export function createPost(renderer: THREE.WebGLRenderer, w: number, h: number, 
         vec3 col;
         if (uChroma > 0.001) {
           vec2 off = c * uChroma * 0.018;
-          col = vec3(texture2D(tScene, vUv + off).r, texture2D(tScene, vUv).g, texture2D(tScene, vUv - off).b);
-        } else col = texture2D(tScene, vUv).rgb;
-        if (uRays > 0.0) col += texture2D(tRays, vUv).rgb * uRaysColor * uRays;
+          col = whSafe(vec3(texture2D(tScene, vUv + off).r, texture2D(tScene, vUv).g, texture2D(tScene, vUv - off).b));
+        } else col = whSafe(texture2D(tScene, vUv).rgb);
+        if (uRays > 0.0) col += whSafe(texture2D(tRays, vUv).rgb) * uRaysColor * uRays;
         col *= uExposure * uGain;
         col = aces(col);
         float l = dot(col, vec3(0.2126, 0.7152, 0.0722));
@@ -129,8 +156,10 @@ export function createPost(renderer: THREE.WebGLRenderer, w: number, h: number, 
   };
 
   let W = w, H = h, PR = pr;
+  const bloomMats: THREE.Material[] = bloom ? [bloom.materialHighPassFilter, ...bloom.separableBlurMaterials, bloom.compositeMaterial, bloom.blendMaterial] : [];
   return {
     target,
+    materials: { target: [...bloomMats, ...(raysRT ? [raysMat] : []), mixMat], screen: [gradeMat] },
     aux(i) {
       if (!auxes[i]) auxes[i] = mk(q.msaa);
       return auxes[i]!;

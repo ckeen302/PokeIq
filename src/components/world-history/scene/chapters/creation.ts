@@ -214,8 +214,9 @@ export const build: ChapterBuilder = async (ctx) => {
         float k = 0.0;
         for (int i = 0; i < 3; i++){
           float R = 0.42 + float(i) * 0.2; float sp = (float(i) - 1.0) * 0.6 + 0.25;
-          float band = exp(-pow((r - R) / 0.008, 2.0));
-          float ticks = step(0.92, fract((a + uTime * sp) / 6.2831853 * (24.0 + float(i) * 12.0))) * exp(-pow((r - R - 0.03) / 0.018, 2.0));
+          float bx = (r - R) / 0.008, tx = (r - R - 0.03) / 0.018;
+          float band = exp(-bx * bx);
+          float ticks = step(0.92, fract((a + uTime * sp) / 6.2831853 * (24.0 + float(i) * 12.0))) * exp(-tx * tx);
           k += band * 0.9 + ticks;
         }
         k *= 0.6 + uBeat * 1.4;

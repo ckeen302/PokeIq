@@ -69,6 +69,21 @@ export const newBattleCode = () => Array.from({ length: 8 }, () => CODE_ALPHABET
 /** Heartbeats move `seenAt` on in steps this big, so polling doesn't write every second. */
 const SEEN_STEP_MS = 5_000;
 const MAX_TRIES = 6;
+/**
+ * Between compare-and-swap retries, a random pause of up to this much per
+ * attempt so far: two requests that clashed don't clash again in lockstep.
+ */
+const CAS_JITTER_MS = 25;
+/**
+ * The computer plays inside the human's own request (its answer comes back
+ * with the choice). Past this much time in one request it stops, and the
+ * next poll (or tick) plays the rest: `overdue` sees the computer's open
+ * request. It always gets at least one choice per request, so it never
+ * stalls.
+ */
+export const CPU_REQUEST_BUDGET_MS = 1_500;
+
+const sleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
 /** The computer never needs more than a couple of choices in a row; a cap keeps a bug from spinning. */
 const MAX_CPU_STEPS = 8;
 /** With no trainer left to answer (a Free-For-All whose last trainer is out), the computers play the battle out: at most this many choices a request. */
@@ -179,10 +194,15 @@ class Work {
   private sim: { session: SimSession; before: (object | null)[] } | null = null;
   /** Why the battle is about to end, when a forfeit, timeout or disconnect ends it. */
   reason: BattleEndReason | null = null;
+  /** When the request working on this battle began (performance.now()), for the computer's time budget. */
+  readonly startedAt: number;
+  /** Choices the computer has made in this request. */
+  cpuSteps = 0;
 
-  constructor(rec: BattleRecord) {
+  constructor(rec: BattleRecord, startedAt = performance.now()) {
     this.rec = structuredClone(rec);
     this.before = JSON.stringify(rec.meta);
+    this.startedAt = startedAt;
   }
 
   get meta() {
@@ -555,6 +575,9 @@ function playCpu(work: Work, session: SimSession) {
     // Re-read every time: a rejected choice can update the request (a move turned out to be disabled).
     const seat = cpus.find((c) => session.pending(sideOf(c)));
     if (seat === undefined) return;
+    // Out of time for this request: the human's answer goes back now, and the next poll plays on.
+    if (work.cpuSteps > 0 && performance.now() - work.startedAt > CPU_REQUEST_BUDGET_MS) return;
+    work.cpuSteps++;
     const side = sideOf(seat);
     const request = session.pending(side)!;
     const failed = failures.get(seat) ?? 0;
@@ -869,11 +892,13 @@ export async function updateBattle<T extends object>(
   code: string,
   change: (work: Work, now: number) => Outcome<T>
 ): Promise<Outcome<T & { rec: BattleRecord; now: number; rev: number }>> {
+  const startedAt = performance.now();
   for (let attempt = 0; attempt < MAX_TRIES; attempt++) {
+    if (attempt > 0) await sleep(Math.random() * CAS_JITTER_MS * attempt);
     const loaded = (attempt === 0 && recalled(code)) || (await loadBattle(code));
     if (!loaded) return fail(404, "This battle has ended or never existed.");
     const now = Date.now();
-    const work = new Work(loaded.rec);
+    const work = new Work(loaded.rec, startedAt);
     const out = change(work, now);
     if (!out.ok) return out;
     if (!work.changed) return { ...out, rec: work.rec, now, rev: loaded.version };
