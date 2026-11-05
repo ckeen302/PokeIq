@@ -5,7 +5,8 @@ import { chapterPath, HISTORY_PATH } from "@/lib/world-history/deeplink";
 import { basisTag, sourceLine, type Basis, type Chapter } from "@/lib/world-history/types";
 import { getPokemon } from "@/lib/pokemon/pokedex";
 import { boardArtUrl } from "@/lib/pokemon/art";
-import { LAB_PATH } from "@/lib/lab";
+import { LAB_PATH, POKEMON_STORY_LIVE } from "@/lib/lab";
+import { STORY_PATH } from "@/lib/pokemon-story/deeplink";
 import { BackButton } from "@/components/ui/BackButton";
 import { cn } from "@/lib/utils";
 
@@ -139,8 +140,8 @@ export function HistoryText({ focus }: { focus?: Chapter }) {
       <header className="space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <BackButton href={focus ? HISTORY_PATH : LAB_PATH} label={focus ? "The whole history" : "3D Lab"} />
-          <Link href="/pokedex/timeline" prefetch={false} className="inline-flex h-8 items-center gap-1.5 rounded-md border border-border bg-card px-3 font-display text-xs font-semibold uppercase tracking-wider text-muted-foreground transition-colors hover:border-screen/60 hover:text-foreground" data-testid="wh-to-timeline">
-            <Clapperboard className="h-3.5 w-3.5" aria-hidden /> The real-world timeline
+          <Link href={POKEMON_STORY_LIVE ? STORY_PATH : "/pokedex/timeline"} prefetch={false} className="inline-flex h-8 items-center gap-1.5 rounded-md border border-border bg-card px-3 font-display text-xs font-semibold uppercase tracking-wider text-muted-foreground transition-colors hover:border-screen/60 hover:text-foreground" data-testid="wh-to-timeline">
+            <Clapperboard className="h-3.5 w-3.5" aria-hidden /> {POKEMON_STORY_LIVE ? "The real-world story" : "The real-world timeline"}
           </Link>
         </div>
         {!focus && (

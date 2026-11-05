@@ -38,10 +38,18 @@ const BUILDERS: Record<string, () => Promise<{ build: ChapterBuilder }>> = {
   paldea: () => import("./chapters/paldea"),
 };
 
+/** A film's hall grade at a moment in the hall (from −1: the prologue; to = count: the epilogue). */
+export type HallLook = (h: { from: number; to: number; k: number }) => Look;
+
 export interface SceneOptions {
   quality: Quality;
   film: Film;
+  /** The chapters (World History's, or another film's with the same id, figures and accent). */
   chapters: Chapter[];
+  /** Another film's chapter builders, hall and hall grade (default: World History's). */
+  builders?: Record<string, () => Promise<{ build: ChapterBuilder }>>;
+  hall?: (renderer: THREE.WebGLRenderer) => Hall;
+  hallLook?: HallLook;
   /** The serif for plaques. */
   font: string;
   /** A still of each chapter for its doorway (until it's loaded). */
@@ -88,7 +96,7 @@ export interface HistoryScene {
   dispose(): void;
 }
 
-const HALL_LOOK: Look = { ...BASE_LOOK, exposure: 1.05, bloom: 0.75, bloomThreshold: 0.78, gain: [1.05, 0.98, 0.9], lift: [0.012, 0.008, 0.02], saturation: 0.95, contrast: 1.08, vignette: 0.5, grain: 0.035 };
+export const HALL_LOOK: Look = { ...BASE_LOOK, exposure: 1.05, bloom: 0.75, bloomThreshold: 0.78, gain: [1.05, 0.98, 0.9], lift: [0.012, 0.008, 0.02], saturation: 0.95, contrast: 1.08, vignette: 0.5, grain: 0.035 };
 const HALL_FOV = 50;
 
 function blendLook(a: Look, b: Look, k: number): Look {
@@ -144,7 +152,9 @@ export function createHistoryScene(host: HTMLElement, opts: SceneOptions): Histo
   const camera = new THREE.PerspectiveCamera(45, W / H, 0.1, 3000);
   const portalCam = new THREE.PerspectiveCamera(45, W / H, 0.1, 3000);
   const helper = new THREE.PerspectiveCamera();
-  const hall: Hall = buildHall(opts.chapters, opts.font, renderer);
+  const hall: Hall = opts.hall ? opts.hall(renderer) : buildHall(opts.chapters, opts.font, renderer);
+  const builders = opts.builders ?? BUILDERS;
+  const hallLook: HallLook = opts.hallLook ?? ((h) => (h.from < 0 ? { ...HALL_LOOK, fade: Math.max(0, 0.7 - h.k * 1.8) } : HALL_LOOK));
   hall.setAspect(W / H);
   const n = opts.chapters.length;
   const slots = new Map<number, Slot>();
@@ -194,7 +204,7 @@ export function createHistoryScene(host: HTMLElement, opts: SceneOptions): Histo
     const slot: Slot = { promise: Promise.resolve(), rig: null, ac };
     slot.promise = (async () => {
       try {
-        const mod = await BUILDERS[c.id]();
+        const mod = await builders[c.id]();
         if (ac.signal.aborted) return;
         const timing = film.chapters[index];
         const rig = await mod.build({
@@ -345,7 +355,7 @@ export function createHistoryScene(host: HTMLElement, opts: SceneOptions): Histo
       renderer.setRenderTarget(post.target);
       renderer.clear();
       renderer.render(hall.scene, camera);
-      post.finish(HALL_LOOK, null, f.ambient);
+      post.finish(hallLook({ from: s.index - 1, to: s.index, k: 0.82 }), null, f.ambient);
       return { pose: { ...ref, fov: 40 }, orbit: null, complete: false };
     }
     // ---- The hall: the prologue, a walk between two doorways, the epilogue.
@@ -361,7 +371,7 @@ export function createHistoryScene(host: HTMLElement, opts: SceneOptions): Histo
     const hp = from < 0 ? hall.prologue(s.k, fovIn, hallFov) : to < 0 ? hall.epilogue(from, s.k, fovOut, hallFov) : hall.transition(from, s.k, fovOut, fovIn, hallFov);
     setCam(camera, hp, false);
     res.set(Math.round(W * PR), Math.round(H * PR));
-    let look = from < 0 ? { ...HALL_LOOK, fade: Math.max(0, 0.7 - s.k * 1.8) } : HALL_LOOK;
+    let look = hallLook({ from: h.from, to: h.to, k: s.k });
     let complete = true;
     const doors: [number, ChapterRig | null, Pose | null, number, number, 0 | 1][] = [
       [from, ra, poseA, fovOut, exitAnim, 0],

@@ -23,8 +23,16 @@ export const MASS_BATTLE_LIVE = true;
  */
 export const WORLD_HISTORY_LIVE = true;
 
+/**
+ * The Story of Pokémon (/lab/pokemon-story), the real history of the
+ * franchise as a 3D film, takes the Pokémon Timeline's card on /lab and
+ * goes in the sitemap only once this is true. Until then its pages work by
+ * URL but stay out of search, and /lab keeps the Timeline card.
+ */
+export const POKEMON_STORY_LIVE = false;
+
 export interface LabExperience {
-  id: "timeline" | "sizes" | "globe" | "race" | "mass-battle" | "world-history";
+  id: "timeline" | "pokemon-story" | "sizes" | "globe" | "race" | "mass-battle" | "world-history";
   href: string;
   title: string;
   /** Small HUD label above the title. */
@@ -40,18 +48,34 @@ export interface LabExperience {
   live: boolean;
 }
 
+/** The Pokémon Timeline's card: first on /lab until The Story of Pokémon takes its place. */
+const TIMELINE_CARD: LabExperience = {
+  id: "timeline",
+  href: "/pokedex/timeline",
+  title: "Pokémon Timeline",
+  kicker: "History in 3D",
+  pitch: "Fly through Pokémon history in a time tunnel, from Red and Green in 1996 to today: the games, the anime, the films and the card game.",
+  tags: ["Guided tour", "Era transitions", "Japanese and Western dates"],
+  image: "/lab/timeline.webp",
+  accent: "258 94% 74%",
+  live: true,
+};
+
+/** The Story of Pokémon's card, in the Timeline's slot once it's live. */
+const STORY_CARD: LabExperience = {
+  id: "pokemon-story",
+  href: "/lab/pokemon-story",
+  title: "The Story of Pokémon",
+  kicker: "The real history, in 3D",
+  pitch: "A cinematic film of how Pokémon really began, from a boy collecting insects in Machida to thirty years of games, cards and shows. Scroll through it or press Play, with every line sourced.",
+  tags: ["The real history", "Every line sourced", "Make a video"],
+  image: "/lab/pokemon-story.webp",
+  accent: "42 88% 64%",
+  live: POKEMON_STORY_LIVE,
+};
+
 export const LAB_EXPERIENCES: LabExperience[] = [
-  {
-    id: "timeline",
-    href: "/pokedex/timeline",
-    title: "Pokémon Timeline",
-    kicker: "History in 3D",
-    pitch: "Fly through Pokémon history in a time tunnel, from Red and Green in 1996 to today: the games, the anime, the films and the card game.",
-    tags: ["Guided tour", "Era transitions", "Japanese and Western dates"],
-    image: "/lab/timeline.webp",
-    accent: "258 94% 74%",
-    live: true,
-  },
+  POKEMON_STORY_LIVE ? STORY_CARD : TIMELINE_CARD,
   {
     id: "sizes",
     href: "/pokedex/sizes",
@@ -114,5 +138,5 @@ export const liveLabExperiences = () => LAB_EXPERIENCES.filter((e) => e.live);
 
 /** /lab itself and every experience's pages (the nav's 3D Lab tab is active on all of them). */
 export function isLabPath(pathname: string): boolean {
-  return [LAB_PATH, ...LAB_EXPERIENCES.map((e) => e.href)].some((p) => pathname === p || pathname.startsWith(`${p}/`));
+  return [LAB_PATH, TIMELINE_CARD.href, ...LAB_EXPERIENCES.map((e) => e.href)].some((p) => pathname === p || pathname.startsWith(`${p}/`));
 }

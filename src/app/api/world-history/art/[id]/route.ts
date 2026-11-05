@@ -1,13 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import sharp from "sharp";
 import { FIGURE_ARTS } from "@/lib/world-history/data";
+import { FIGURE_ARTS as STORY_ARTS } from "@/lib/pokemon-story/data";
 import { bleedEdges } from "@/lib/world-history/bleed";
 import { homeRenderUrl } from "@/lib/pokemon/art";
 
 /**
  * GET /api/world-history/art/:id?s=512: the Pokémon HOME render (PokéAPI's
  * sprites) of a figure in The History of the Pokémon World, as WebP at 256
- * or 512 px. Only the figures the chapters show are served. The alpha edge
+ * or 512 px (and of the figures in The Story of Pokémon, which builds its
+ * figures the same way). Only the figures the films show are served. The alpha edge
  * is kept at full quality (the figures are cut out by it) and the edge
  * colours are bled outwards so filtering never darkens it. Same-origin
  * (WebGL textures need CORS) and immutable, so each size is transcoded once
@@ -17,7 +19,7 @@ import { homeRenderUrl } from "@/lib/pokemon/art";
 export const runtime = "nodejs";
 
 const SIZES = new Set([256, 512]);
-const KNOWN = new Set(FIGURE_ARTS.map(String));
+const KNOWN = new Set([...FIGURE_ARTS, ...STORY_ARTS].map(String));
 const cache = new Map<string, Buffer>();
 
 export async function GET(request: NextRequest, context: { params: Promise<{ id: string }> }) {

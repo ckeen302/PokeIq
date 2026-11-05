@@ -154,6 +154,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <a href="/audio/world-history/CREDITS.md" className="underline-offset-2 hover:underline">
                 credits
               </a>
+              ). Story of Pokémon music by sudocolon, TinyWorlds, OwlishMedia and codemanu, CC0 (
+              <a href="/audio/pokemon-story/CREDITS.md" className="underline-offset-2 hover:underline">
+                credits
+              </a>
               ).
             </p>
           </div>

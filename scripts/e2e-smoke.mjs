@@ -16,6 +16,7 @@ import { runSizes } from "./e2e-sizes.mjs";
 import { runMassBattle } from "./e2e-mass-battle.mjs";
 import { runRace } from "./e2e-race.mjs";
 import { runWorldHistory } from "./e2e-world-history.mjs";
+import { runPokemonStory } from "./e2e-pokemon-story.mjs";
 import { runGroupBattles } from "./e2e-battle-group.mjs";
 import { runEmptyQueue } from "./e2e-battle-queue.mjs";
 
@@ -2314,6 +2315,7 @@ await runSizes({ browser, BASE, OUT, errors, step });
 await runMassBattle({ browser, BASE, OUT, errors, step });
 await runRace({ browser, BASE, OUT, errors, step });
 await runWorldHistory({ browser, BASE, OUT, errors, step });
+await runPokemonStory({ browser, BASE, OUT, errors, step });
 
 step("trainer, leaderboard, pokémon page");
 // Quiz modes are off the leaderboard: an old quiz board link lands on the Daily, with no quiz tabs.
@@ -2334,11 +2336,13 @@ step("3D Lab: the nav's tab, /lab's cards, a card opens its page, the trophy ope
   await page.waitForURL(/\/lab$/);
   await page.getByTestId("lab-hero").waitFor();
   if ((await labTab.getAttribute("aria-current")) !== "page") errors.push("3d lab: the nav tab isn't active on /lab");
-  for (const id of ["timeline", "sizes", "globe"]) {
+  // The first card is the Pokémon Timeline, or The Story of Pokémon once it's live (it takes the Timeline's slot).
+  const firstCard = (await page.getByTestId("lab-card-pokemon-story").count()) ? "pokemon-story" : "timeline";
+  for (const id of [firstCard, "sizes", "globe"]) {
     if (!(await page.getByTestId(`lab-card-${id}`).count())) errors.push(`3d lab: no ${id} card`);
   }
   // Card art: real screenshots, loaded (the picture drifts slowly, so it's never "stable" for Playwright's scrolling).
-  const art = page.getByTestId("lab-card-timeline").locator("img").first();
+  const art = page.getByTestId(`lab-card-${firstCard}`).locator("img").first();
   await art.evaluate((img) => img.scrollIntoView({ block: "center" }));
   if (!(await art.evaluate((img) => img.complete ? img.naturalWidth > 0 : new Promise((r) => { img.onload = () => r(true); img.onerror = () => r(false); })))) errors.push("3d lab: the timeline card's picture didn't load");
   // Race shows only once its page is live.
@@ -2347,8 +2351,15 @@ step("3D Lab: the nav's tab, /lab's cards, a card opens its page, the trophy ope
     if (!res.ok()) errors.push("3d lab: the Race card shows but /pokedex/race isn't there");
   }
   await page.screenshot({ path: `${OUT}/lab.png` });
-  await page.getByTestId("lab-open-timeline").click();
-  await page.waitForURL(/\/pokedex\/timeline$/);
+  if (firstCard === "pokemon-story") {
+    await page.getByTestId("lab-open-pokemon-story").click();
+    await page.waitForURL(/\/lab\/pokemon-story$/);
+    if ((await labTab.getAttribute("aria-current")) !== "page") errors.push("3d lab: the nav tab isn't active on the Story of Pokémon");
+    await page.goto(`${BASE}/pokedex/timeline`);
+  } else {
+    await page.getByTestId("lab-open-timeline").click();
+    await page.waitForURL(/\/pokedex\/timeline$/);
+  }
   if ((await labTab.getAttribute("aria-current")) !== "page") errors.push("3d lab: the nav tab isn't active on the timeline");
   if ((await page.locator("header").getByRole("link", { name: "Pokédex", exact: true }).getAttribute("aria-current")) === "page") errors.push("3d lab: Pokédex is lit on the timeline too");
   // The 3D stage (with WebGL) leads back to the Lab.

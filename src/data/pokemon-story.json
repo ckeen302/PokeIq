@@ -1,0 +1,858 @@
+{
+  "title": "The Story of Pokémon",
+  "tagline": "From a boy's bug hunts on the edge of Tokyo to thirty years of Pokémon: the real history of the franchise, as a film in 3D.",
+  "intro": "This is the real-world story of how Pokémon was made and how it grew. Every line says where it comes from: a dated record, something a creator said in an interview, or something the press reported. Where the story is told more than one way, the caption says so.",
+  "method": "Dates are Japanese release dates unless the line says otherwise, and they match the Pokémon Timeline. People appear only as silhouettes, hands and the things they used; everything on screen is built in 3D for this film.",
+  "prologue": {
+    "title": "The Story of Pokémon",
+    "line": "Every Pokémon started somewhere. This one started in a field."
+  },
+  "chapters": [
+    {
+      "id": "collector",
+      "numeral": "I",
+      "title": "The Collector",
+      "when": "The 1970s",
+      "year": "1970s",
+      "place": "Machida, Tokyo",
+      "tag": "Childhood",
+      "summary": "Satoshi Tajiri grew up in Machida, on the western edge of Tokyo, among rice paddies, rivers and woods. He caught more insects than anyone, until the city grew over the fields.",
+      "accent": "#e8c15a",
+      "figures": [{ "dex": 10, "art": 10, "name": "Caterpie" }],
+      "beats": [
+        {
+          "id": "fields",
+          "lead": "Satoshi Tajiri grew up in Machida, on the western edge of Tokyo.",
+          "quote": "There were rice paddies, rivers, forests. It was full of nature.",
+          "basis": "said",
+          "source": "time-gf"
+        },
+        {
+          "id": "dr-bug",
+          "text": "He collected insects. The other kids called him “Dr. Bug.”",
+          "basis": "reported",
+          "source": "time-gf"
+        },
+        {
+          "id": "learned",
+          "lead": "He learned how they lived.",
+          "quote": "My idea was to put a stone under a tree, because they slept during the day and like sleeping under stones.",
+          "basis": "said",
+          "source": "time-gf"
+        },
+        {
+          "id": "jar",
+          "quote": "I got more insects than anyone.",
+          "basis": "said",
+          "source": "time-gf"
+        },
+        {
+          "id": "paved",
+          "lead": "Then the city grew.",
+          "quote": "Then development started taking place, and as it grew, all the insects were driven away.",
+          "basis": "said",
+          "source": "time-gf"
+        },
+        {
+          "id": "kept",
+          "text": "The insects were going. The feeling of finding them stayed with him.",
+          "basis": "reported",
+          "source": "wiki-tajiri"
+        }
+      ],
+      "notes": [
+        {
+          "label": "About the jar",
+          "text": "The jar is the film's picture of a collection. Tajiri's own account in TIME is of beetles found under stones, crayfish in the river, and getting more insects than anyone.",
+          "basis": "line",
+          "source": "time-gf"
+        }
+      ],
+      "sources": [
+        { "id": "time-gf", "publisher": "TIME", "title": "“The Ultimate Game Freak”, interview with Satoshi Tajiri", "year": "1999", "kind": "interview", "url": "https://time.com/archive/6951818/the-ultimate-game-freak/" },
+        { "id": "wiki-tajiri", "publisher": "Wikipedia", "title": "Satoshi Tajiri", "year": "2026", "kind": "reference", "url": "https://en.wikipedia.org/wiki/Satoshi_Tajiri" }
+      ],
+      "video": "jar",
+      "slow": [{ "beat": "jar", "offset": 0.8, "dur": 1.6, "rate": 0.4 }],
+      "extra": { "jar": 1.6, "paved": 1.2 }
+    },
+    {
+      "id": "game-freak",
+      "numeral": "II",
+      "title": "Game Freak",
+      "when": "1981–1989",
+      "year": "1981",
+      "place": "Tokyo",
+      "tag": "The fanzine",
+      "summary": "As a teenager Tajiri found the arcade, then wrote a handmade magazine about games called Game Freak. Ken Sugimori drew for it, and in 1989 it became a game studio with the same name.",
+      "accent": "#ff5a8a",
+      "figures": [],
+      "beats": [
+        {
+          "id": "arcade",
+          "text": "As a teenager, Tajiri found a new kind of field: the arcade.",
+          "basis": "reported",
+          "source": "wiki-tajiri"
+        },
+        {
+          "id": "zine",
+          "lead": "He wrote about games in a magazine of tips and secrets, and called it Game Freak.",
+          "quote": "It was handwritten. I stapled the pages together.",
+          "basis": "said",
+          "source": "time-gf"
+        },
+        {
+          "id": "sugimori",
+          "text": "An artist named Ken Sugimori found it in a fanzine shop, and began drawing for it.",
+          "basis": "reported",
+          "source": "wiki-tajiri"
+        },
+        {
+          "id": "pages",
+          "text": "Copies spread from hand to hand. One special issue sold 10,000.",
+          "basis": "said",
+          "source": "time-gf"
+        },
+        {
+          "id": "studio",
+          "text": "In April 1989, the magazine became a game studio, with the same name.",
+          "basis": "record",
+          "source": "gf-about",
+          "dates": [{ "date": "1989-04-26" }]
+        }
+      ],
+      "notes": [
+        {
+          "label": "The first game",
+          "text": "Tajiri told TIME it took him two years to learn programming and a year to make Game Freak's first game, Quinty, released by Namco in 1989.",
+          "basis": "said",
+          "source": "time-gf"
+        }
+      ],
+      "sources": [
+        { "id": "time-gf", "publisher": "TIME", "title": "“The Ultimate Game Freak”, interview with Satoshi Tajiri", "year": "1999", "kind": "interview", "url": "https://time.com/archive/6951818/the-ultimate-game-freak/" },
+        { "id": "wiki-tajiri", "publisher": "Wikipedia", "title": "Satoshi Tajiri", "year": "2026", "kind": "reference", "url": "https://en.wikipedia.org/wiki/Satoshi_Tajiri" },
+        { "id": "gf-about", "publisher": "GAME FREAK", "title": "Company profile (established April 26, 1989)", "year": "2026", "kind": "official", "url": "https://www.gamefreak.co.jp/en/company/about/" }
+      ],
+      "video": "studio",
+      "slow": [{ "beat": "pages", "offset": 0.6, "dur": 1.4, "rate": 0.4 }],
+      "extra": { "pages": 1.4, "studio": 1.2 }
+    },
+    {
+      "id": "cable",
+      "numeral": "III",
+      "title": "The Cable",
+      "when": "1989–1990",
+      "year": "1989",
+      "place": "Game Freak, Tokyo",
+      "tag": "The idea",
+      "summary": "The Game Boy came with a cable to link two together. Tajiri imagined living creatures moving back and forth along it: catch them, collect them, trade them.",
+      "accent": "#9bbc0f",
+      "figures": [],
+      "beats": [
+        {
+          "id": "game-boy",
+          "text": "In 1989, Nintendo released the Game Boy, and with it a cable to link two together.",
+          "basis": "record",
+          "source": "nintendo-history",
+          "dates": [{ "date": "1989-04-21" }]
+        },
+        {
+          "id": "crawl",
+          "lead": "Tajiri imagined something travelling along that wire.",
+          "quote": "I thought of actual living organisms moving back and forth across the cable.",
+          "basis": "said",
+          "source": "time-gf"
+        },
+        {
+          "id": "trade",
+          "lead": "Catch them, collect them, trade them. No one could find every one alone.",
+          "quote": "The idea I had was for information to go back and forth. It wasn't about competition.",
+          "basis": "said",
+          "source": "time-gf"
+        },
+        {
+          "id": "pitch",
+          "text": "Its first name was Capsule Monsters. Tsunekazu Ishihara produced it with Game Freak, and Shigeru Miyamoto gave advice.",
+          "basis": "reported",
+          "source": "wiki-rby"
+        },
+        {
+          "id": "name",
+          "text": "The story goes that trademark trouble changed the name more than once. It became Pocket Monsters.",
+          "basis": "retold",
+          "source": "wiki-rby"
+        }
+      ],
+      "notes": [
+        {
+          "label": "Miyamoto",
+          "text": "Tajiri on Shigeru Miyamoto, in TIME: “I'd memorize each piece of advice he gave.”",
+          "basis": "said",
+          "source": "time-gf"
+        },
+        {
+          "label": "Ishihara",
+          "text": "In Iwata Asks, Tsunekazu Ishihara describes himself as “a producer working on the development of Pokémon Red and Green alongside Game Freak”, and says planning began in 1990.",
+          "basis": "said",
+          "source": "iwata-hgss"
+        },
+        {
+          "label": "Sources differ",
+          "text": "Accounts of the working titles between Capsule Monsters and Pocket Monsters differ; what they share is that trademark problems forced the changes.",
+          "basis": "retold",
+          "source": "wiki-rby"
+        }
+      ],
+      "sources": [
+        { "id": "nintendo-history", "publisher": "Nintendo", "title": "Company history: “Launched the handheld video game system, Game Boy”", "year": "1989", "kind": "official", "url": "https://www.nintendo.co.jp/corporate/en/history/index.html" },
+        { "id": "time-gf", "publisher": "TIME", "title": "“The Ultimate Game Freak”, interview with Satoshi Tajiri", "year": "1999", "kind": "interview", "url": "https://time.com/archive/6951818/the-ultimate-game-freak/" },
+        { "id": "wiki-rby", "publisher": "Wikipedia", "title": "Pokémon Red, Blue, and Yellow: Development", "year": "2026", "kind": "reference", "url": "https://en.wikipedia.org/wiki/Pok%C3%A9mon_Red,_Blue,_and_Yellow" },
+        { "id": "iwata-hgss", "publisher": "Nintendo", "title": "Iwata Asks: Pokémon HeartGold and SoulSilver", "year": "2010", "kind": "interview", "url": "https://iwataasks.nintendo.com/interviews/ds/pokemon/0/0" }
+      ],
+      "video": "crawl",
+      "slow": [{ "beat": "crawl", "offset": 0.9, "dur": 2.0, "rate": 0.4 }],
+      "extra": { "crawl": 2.2, "name": 1.2 }
+    },
+    {
+      "id": "six-years",
+      "numeral": "IV",
+      "title": "Six Years",
+      "when": "1990–1996",
+      "year": "1990",
+      "place": "Game Freak, Tokyo",
+      "tag": "The hard road",
+      "summary": "Making Pocket Monsters took nearly six years and nearly broke Game Freak. Junichi Masuda wrote the music, Atsuko Nishida designed Pikachu, Ken Sugimori led the art for all 151, and at the very end Shigeki Morimoto slipped in Mew.",
+      "accent": "#f2a65a",
+      "figures": [
+        { "dex": 25, "art": 25, "name": "Pikachu" },
+        { "dex": 151, "art": 151, "name": "Mew" }
+      ],
+      "beats": [
+        {
+          "id": "hard",
+          "text": "It took nearly six years. Money ran so short the studio almost went broke, and five people quit.",
+          "basis": "reported",
+          "source": "time-mania"
+        },
+        {
+          "id": "masuda",
+          "text": "Junichi Masuda wrote the music, and programmed it too.",
+          "basis": "record",
+          "source": "masuda"
+        },
+        {
+          "id": "pikachu",
+          "lead": "Atsuko Nishida designed Pikachu, dot by dot, straight onto the screen.",
+          "quote": "I didn't draw an illustration on paper, but went straight to the computer screen and punched in the dots.",
+          "basis": "said",
+          "source": "pikachu-creators",
+          "figures": [25]
+        },
+        {
+          "id": "151",
+          "text": "Ken Sugimori led the art. One by one, they found their shapes. 151 of them.",
+          "basis": "record",
+          "source": "wiki-rby"
+        },
+        {
+          "id": "mew",
+          "lead": "And at the very end, programmer Shigeki Morimoto slipped in one more: Mew.",
+          "quote": "We put Mew in right at the very end.",
+          "basis": "said",
+          "source": "iwata-hgss",
+          "figures": [151]
+        }
+      ],
+      "notes": [
+        {
+          "label": "Nintendo's doubts",
+          "text": "Asked whether Nintendo understood the game at first, Tajiri told TIME: “Not at first. They didn't expect much from the game.”",
+          "basis": "said",
+          "source": "time-gf"
+        },
+        {
+          "label": "Nishida's starters",
+          "text": "Ken Sugimori says Bulbasaur, Charmander and Squirtle were all designed by Atsuko Nishida too.",
+          "basis": "said",
+          "source": "pikachu-creators"
+        },
+        {
+          "label": "A prank",
+          "text": "In Iwata Asks, Ishihara calls Mew a prank everyone up to Tajiri was in on; it went in after Nintendo's debugging had finished.",
+          "basis": "said",
+          "source": "iwata-hgss"
+        }
+      ],
+      "sources": [
+        { "id": "time-mania", "publisher": "TIME", "title": "“Beware of the Poke Mania”", "year": "1999", "kind": "press", "url": "https://content.time.com/time/subscriber/article/0,33009,992625-4,00.html" },
+        { "id": "time-gf", "publisher": "TIME", "title": "“The Ultimate Game Freak”, interview with Satoshi Tajiri", "year": "1999", "kind": "interview", "url": "https://time.com/archive/6951818/the-ultimate-game-freak/" },
+        { "id": "masuda", "publisher": "Siliconera", "title": "Junichi Masuda on his composing process (and the game's own staff credits)", "year": "2017", "kind": "interview", "url": "https://www.siliconera.com/interview-game-freaks-junichi-masuda-reveals-composing-process-favorite-pokmon-track/" },
+        { "id": "pikachu-creators", "publisher": "Pokémon.com", "title": "“Creator Profile: The Creators of Pikachu”", "year": "2018", "kind": "official", "url": "https://www.pokemon.com/us/pokemon-news/creator-profile-the-creators-of-pikachu/" },
+        { "id": "wiki-rby", "publisher": "Wikipedia", "title": "Pokémon Red, Blue, and Yellow: Development", "year": "2026", "kind": "reference", "url": "https://en.wikipedia.org/wiki/Pok%C3%A9mon_Red,_Blue,_and_Yellow" },
+        { "id": "iwata-hgss", "publisher": "Nintendo", "title": "Iwata Asks: Pokémon HeartGold and SoulSilver", "year": "2010", "kind": "interview", "url": "https://iwataasks.nintendo.com/interviews/ds/pokemon/0/0" }
+      ],
+      "video": "151",
+      "slow": [{ "beat": "151", "offset": 1.0, "dur": 1.8, "rate": 0.45 }],
+      "extra": { "151": 2.0, "mew": 1.0 }
+    },
+    {
+      "id": "red-green",
+      "numeral": "V",
+      "title": "Red and Green",
+      "when": "February 27, 1996",
+      "year": "1996",
+      "place": "Japan",
+      "tag": "Launch",
+      "summary": "Pocket Monsters Red and Green came out in Japan on February 27, 1996, late in the Game Boy's life. A magazine contest for Mew and word of mouth did the rest.",
+      "accent": "#ee1515",
+      "figures": [
+        { "dex": 1, "art": 1, "name": "Bulbasaur" },
+        { "dex": 4, "art": 4, "name": "Charmander" },
+        { "dex": 7, "art": 7, "name": "Squirtle" },
+        { "dex": 151, "art": 151, "name": "Mew" }
+      ],
+      "beats": [
+        {
+          "id": "launch",
+          "text": "On February 27, 1996, Pocket Monsters Red and Green came out in Japan.",
+          "basis": "record",
+          "source": "tpc-history",
+          "dates": [{ "date": "1996-02-27", "timeline": "red-green", "field": "jp" }]
+        },
+        {
+          "id": "old",
+          "text": "The Game Boy was nearly seven years old, and there was a feeling it had reached the end of its shelf life.",
+          "basis": "said",
+          "source": "iwata-hgss"
+        },
+        {
+          "id": "three",
+          "text": "Every player began the same way: a choice between three. Bulbasaur, Charmander or Squirtle.",
+          "basis": "record",
+          "source": "tpc-history",
+          "figures": [1, 4, 7]
+        },
+        {
+          "id": "mew-rumour",
+          "text": "Then the whispers started: a hidden 151st Pokémon. A magazine contest gave Mew away, and sales took off.",
+          "basis": "said",
+          "source": "iwata-hgss",
+          "figures": [151]
+        },
+        {
+          "id": "word",
+          "text": "It didn't explode overnight. It grew, because kids told other kids.",
+          "basis": "said",
+          "source": "iwata-hgss"
+        },
+        {
+          "id": "blue",
+          "text": "By October came Blue, by mail order, and that same month the Trading Card Game.",
+          "basis": "record",
+          "source": "tpc-history",
+          "dates": [
+            { "date": "1996-10-15", "timeline": "blue-jp", "field": "jp" },
+            { "date": "1996-10-20", "timeline": "tcg-japan", "field": "jp" }
+          ]
+        }
+      ],
+      "notes": [
+        {
+          "label": "When it turned",
+          "text": "Satoru Iwata called the CoroCoro Mew offer the moment “when things turned round for Pokémon”; Tsunekazu Ishihara says sales grew “three then four times larger”, and credits “the power of word of mouth”.",
+          "basis": "said",
+          "source": "iwata-hgss"
+        }
+      ],
+      "sources": [
+        { "id": "tpc-history", "publisher": "The Pokémon Company", "title": "Corporate history", "year": "2026", "kind": "official", "url": "https://corporate.pokemon.co.jp/en/aboutus/history/" },
+        { "id": "iwata-hgss", "publisher": "Nintendo", "title": "Iwata Asks: Pokémon HeartGold and SoulSilver", "year": "2010", "kind": "interview", "url": "https://iwataasks.nintendo.com/interviews/ds/pokemon/0/0" }
+      ],
+      "video": "three",
+      "slow": [{ "beat": "three", "offset": 1.0, "dur": 1.6, "rate": 0.4 }],
+      "extra": { "launch": 1.2, "three": 2.0 }
+    },
+    {
+      "id": "pokemania",
+      "numeral": "VI",
+      "title": "Pokémania",
+      "when": "1996–1999",
+      "year": "1997",
+      "place": "Japan, then the world",
+      "tag": "Phenomenon",
+      "summary": "The card game, the anime, The Pokémon Company, the first Pokémon Center and the first film, and then North America and Europe: within three years Pokémon was everywhere.",
+      "accent": "#ffcb05",
+      "figures": [
+        { "dex": 25, "art": 25, "name": "Pikachu" },
+        { "dex": 150, "art": 150, "name": "Mewtwo" }
+      ],
+      "beats": [
+        {
+          "id": "cards",
+          "text": "The collecting jumped off the screen and into kids' pockets: the Trading Card Game.",
+          "basis": "record",
+          "source": "tpc-history",
+          "dates": [{ "date": "1996-10-20", "timeline": "tcg-japan", "field": "jp" }]
+        },
+        {
+          "id": "anime",
+          "text": "On April 1, 1997, the anime began: a boy named Ash, and a Pikachu that wouldn't get in its Poké Ball.",
+          "basis": "record",
+          "source": "tpc-history",
+          "dates": [{ "date": "1997-04-01", "timeline": "anime-s01", "field": "jp" }],
+          "figures": [25]
+        },
+        {
+          "id": "face",
+          "text": "Pikachu became the face of all of it.",
+          "basis": "reported",
+          "source": "wiki-pikachu",
+          "figures": [25]
+        },
+        {
+          "id": "company",
+          "text": "In April 1998, Nintendo, Game Freak and Creatures formed a company to look after it all. Two days later, the first Pokémon Center opened in Tokyo.",
+          "basis": "record",
+          "source": "tpc-history",
+          "dates": [
+            { "date": "1998-04-23", "timeline": "company-founded", "field": "jp" },
+            { "date": "1998-04-25", "timeline": "pokemon-center-tokyo", "field": "jp" }
+          ]
+        },
+        {
+          "id": "movie",
+          "text": "That summer, Mewtwo Strikes Back filled cinemas.",
+          "basis": "record",
+          "source": "tpc-history",
+          "dates": [{ "date": "1998-07-18", "timeline": "movie-01", "field": "jp" }],
+          "figures": [150]
+        },
+        {
+          "id": "world",
+          "text": "In September 1998, the games reached North America, and Europe a year later.",
+          "basis": "record",
+          "source": "tpc-history",
+          "dates": [
+            { "date": "1998-09-28", "timeline": "red-green", "field": "na" },
+            { "date": "1999-10-05", "timeline": "red-green", "field": "eu" }
+          ]
+        },
+        {
+          "id": "catch",
+          "text": "Gotta catch 'em all.",
+          "basis": "line",
+          "source": "wiki-pokemon"
+        }
+      ],
+      "notes": [
+        {
+          "label": "The company's name",
+          "text": "The company founded in April 1998 was Pokémon Center Co., Ltd.; it took the name The Pokémon Company in October 2000.",
+          "basis": "record",
+          "source": "tpc-history"
+        }
+      ],
+      "sources": [
+        { "id": "tpc-history", "publisher": "The Pokémon Company", "title": "Corporate history", "year": "2026", "kind": "official", "url": "https://corporate.pokemon.co.jp/en/aboutus/history/" },
+        { "id": "wiki-pikachu", "publisher": "Wikipedia", "title": "Pikachu: as the franchise's mascot", "year": "2026", "kind": "reference", "url": "https://en.wikipedia.org/wiki/Pikachu" },
+        { "id": "wiki-pokemon", "publisher": "Wikipedia", "title": "Pokémon: the English slogan “Gotta catch 'em all”", "year": "2026", "kind": "reference", "url": "https://en.wikipedia.org/wiki/Pok%C3%A9mon" }
+      ],
+      "video": "world",
+      "slow": [{ "beat": "cards", "offset": 0.7, "dur": 1.4, "rate": 0.4 }],
+      "extra": { "cards": 1.0, "world": 1.6, "catch": 0.6 }
+    },
+    {
+      "id": "growing",
+      "numeral": "VII",
+      "title": "A Growing World",
+      "when": "1999–2010",
+      "year": "1999",
+      "place": "Johto to Unova",
+      "tag": "Generations II–V",
+      "summary": "Gold and Silver's clock, Ruby and Sapphire's colour, Diamond and Pearl's online trading, the first World Championships, and Black and White's all-new region.",
+      "accent": "#5ad1ff",
+      "figures": [
+        { "dex": 250, "art": 250, "name": "Ho-Oh" },
+        { "dex": 249, "art": 249, "name": "Lugia" },
+        { "dex": 383, "art": 383, "name": "Groudon" },
+        { "dex": 382, "art": 382, "name": "Kyogre" },
+        { "dex": 483, "art": 483, "name": "Dialga" },
+        { "dex": 484, "art": 484, "name": "Palkia" },
+        { "dex": 643, "art": 643, "name": "Reshiram" },
+        { "dex": 644, "art": 644, "name": "Zekrom" }
+      ],
+      "beats": [
+        {
+          "id": "clock",
+          "text": "Gold and Silver added a clock. Day turned to night. Eggs hatched. And after the credits, a whole second region.",
+          "basis": "record",
+          "source": "wiki-gs",
+          "dates": [{ "date": "1999-11-21", "timeline": "gold-silver", "field": "jp" }],
+          "figures": [250, 249]
+        },
+        {
+          "id": "colour",
+          "text": "Ruby and Sapphire brought the Game Boy Advance's colour, with abilities, natures and double battles.",
+          "basis": "record",
+          "source": "wiki-rs",
+          "dates": [{ "date": "2002-11-21", "timeline": "ruby-sapphire", "field": "jp" }],
+          "figures": [383, 382]
+        },
+        {
+          "id": "online",
+          "text": "Diamond and Pearl took trading online. The link cable became the whole planet.",
+          "basis": "record",
+          "source": "wiki-dp",
+          "dates": [{ "date": "2006-09-28", "timeline": "diamond-pearl", "field": "jp" }],
+          "figures": [483, 484]
+        },
+        {
+          "id": "worlds",
+          "text": "Players began meeting to compete: a card-game World Championship in 2004, then from 2009 the video games too.",
+          "basis": "record",
+          "source": "wiki-worlds",
+          "dates": [
+            { "date": "2004-08-20", "timeline": "first-worlds", "field": "na" },
+            { "date": "2009-08-14", "timeline": "first-vgc-worlds", "field": "na" }
+          ]
+        },
+        {
+          "id": "fresh",
+          "text": "Black and White did something bold: new Pokémon only, all the way to the end of the story. Everyone was a beginner again.",
+          "basis": "record",
+          "source": "wiki-bw",
+          "dates": [{ "date": "2010-09-18", "timeline": "black-white", "field": "jp" }],
+          "figures": [643, 644]
+        }
+      ],
+      "notes": [
+        {
+          "label": "The first official Worlds",
+          "text": "The Pokémon Company lists the 2009 event as the first official Pokémon World Championships; the 2004 championship in Orlando was for the card game.",
+          "basis": "record",
+          "source": "tpc-history"
+        }
+      ],
+      "sources": [
+        { "id": "wiki-gs", "publisher": "Wikipedia", "title": "Pokémon Gold and Silver", "year": "2026", "kind": "reference", "url": "https://en.wikipedia.org/wiki/Pok%C3%A9mon_Gold_and_Silver" },
+        { "id": "wiki-rs", "publisher": "Wikipedia", "title": "Pokémon Ruby and Sapphire", "year": "2026", "kind": "reference", "url": "https://en.wikipedia.org/wiki/Pok%C3%A9mon_Ruby_and_Sapphire" },
+        { "id": "wiki-dp", "publisher": "Wikipedia", "title": "Pokémon Diamond and Pearl", "year": "2026", "kind": "reference", "url": "https://en.wikipedia.org/wiki/Pok%C3%A9mon_Diamond_and_Pearl" },
+        { "id": "wiki-worlds", "publisher": "Wikipedia", "title": "Pokémon World Championships", "year": "2026", "kind": "reference", "url": "https://en.wikipedia.org/wiki/Pok%C3%A9mon_World_Championships" },
+        { "id": "wiki-bw", "publisher": "Wikipedia", "title": "Pokémon Black and White", "year": "2026", "kind": "reference", "url": "https://en.wikipedia.org/wiki/Pok%C3%A9mon_Black_and_White" },
+        { "id": "tpc-history", "publisher": "The Pokémon Company", "title": "Corporate history", "year": "2026", "kind": "official", "url": "https://corporate.pokemon.co.jp/en/aboutus/history/" }
+      ],
+      "video": "online",
+      "slow": [{ "beat": "online", "offset": 1.0, "dur": 1.6, "rate": 0.45 }],
+      "extra": { "clock": 1.2, "colour": 1.0, "online": 2.0, "fresh": 1.2 }
+    },
+    {
+      "id": "together",
+      "numeral": "VIII",
+      "title": "Together",
+      "when": "2013–2016",
+      "year": "2013",
+      "place": "Kalos to Alola",
+      "tag": "Into 3D",
+      "summary": "X and Y launched worldwide on the same day, fully in 3D. Pikachu paraded through Yokohama, the originals came back for the 20th birthday, and Sun and Moon set out for islands inspired by Hawaii.",
+      "accent": "#3fd0ff",
+      "figures": [
+        { "dex": 716, "art": 716, "name": "Xerneas" },
+        { "dex": 717, "art": 717, "name": "Yveltal" },
+        { "dex": 25, "art": 25, "name": "Pikachu" },
+        { "dex": 791, "art": 791, "name": "Solgaleo" },
+        { "dex": 792, "art": 792, "name": "Lunala" }
+      ],
+      "beats": [
+        {
+          "id": "same-day",
+          "text": "On October 12, 2013, X and Y launched everywhere on the same day. For the first time, the whole world started together.",
+          "basis": "record",
+          "source": "tpc-history",
+          "dates": [{ "date": "2013-10-12", "timeline": "x-y", "field": "jp" }]
+        },
+        {
+          "id": "fold",
+          "text": "And for the first time in the main series, every Pokémon was fully 3D.",
+          "basis": "record",
+          "source": "wiki-xy",
+          "figures": [716]
+        },
+        {
+          "id": "outbreak",
+          "text": "In August 2014, a parade of Pikachu took over the streets of Yokohama.",
+          "basis": "record",
+          "source": "tpc-history",
+          "dates": [{ "date": "2014-08-09", "timeline": "pikachu-outbreak", "field": "jp" }],
+          "figures": [25]
+        },
+        {
+          "id": "twenty",
+          "text": "For its 20th birthday, the original games came back, 20 years to the day after Red and Green.",
+          "basis": "record",
+          "source": "serebii-rb",
+          "dates": [{ "date": "2016-02-27", "timeline": "anniversary-20", "field": "jp" }]
+        },
+        {
+          "id": "alola",
+          "text": "That November, Sun and Moon swapped Gyms for island trials, on islands inspired by Hawaii.",
+          "basis": "record",
+          "source": "wiki-sm",
+          "dates": [{ "date": "2016-11-18", "timeline": "sun-moon", "field": "jp" }],
+          "figures": [791, 792]
+        }
+      ],
+      "notes": [],
+      "sources": [
+        { "id": "tpc-history", "publisher": "The Pokémon Company", "title": "Corporate history", "year": "2026", "kind": "official", "url": "https://corporate.pokemon.co.jp/en/aboutus/history/" },
+        { "id": "wiki-xy", "publisher": "Wikipedia", "title": "Pokémon X and Y", "year": "2026", "kind": "reference", "url": "https://en.wikipedia.org/wiki/Pok%C3%A9mon_X_and_Y" },
+        { "id": "serebii-rb", "publisher": "Serebii.net", "title": "Pokémon Red and Blue on the Nintendo 3DS Virtual Console", "year": "2016", "kind": "press", "url": "https://www.serebii.net/rb/" },
+        { "id": "wiki-sm", "publisher": "Wikipedia", "title": "Pokémon Sun and Moon", "year": "2026", "kind": "reference", "url": "https://en.wikipedia.org/wiki/Pok%C3%A9mon_Sun_and_Moon" }
+      ],
+      "video": "same-day",
+      "slow": [{ "beat": "fold", "offset": 0.8, "dur": 1.6, "rate": 0.4 }],
+      "extra": { "same-day": 1.0, "fold": 1.8, "alola": 1.2 }
+    },
+    {
+      "id": "outside",
+      "numeral": "IX",
+      "title": "Outside",
+      "when": "July 2016",
+      "year": "2016",
+      "place": "Everywhere",
+      "tag": "Pokémon GO",
+      "summary": "An April Fools' joke on Google Maps grew into Pokémon GO. In July 2016 it turned the real world into the map, and people everywhere went outside to look.",
+      "accent": "#4aff9a",
+      "figures": [
+        { "dex": 25, "art": 25, "name": "Pikachu" },
+        { "dex": 133, "art": 133, "name": "Eevee" },
+        { "dex": 129, "art": 129, "name": "Magikarp" },
+        { "dex": 16, "art": 16, "name": "Pidgey" }
+      ],
+      "beats": [
+        {
+          "id": "april",
+          "text": "It grew out of an April Fools' joke in 2014: Pokémon hidden inside Google Maps.",
+          "basis": "said",
+          "source": "go-prank"
+        },
+        {
+          "id": "launch",
+          "text": "On July 6, 2016, Pokémon GO turned the real world into the map.",
+          "basis": "record",
+          "source": "tpc-history",
+          "dates": [{ "date": "2016-07-06", "timeline": "pokemon-go", "field": "na" }]
+        },
+        {
+          "id": "parks",
+          "text": "Parks filled at midnight. Strangers talked to each other. People walked for miles without noticing.",
+          "basis": "reported",
+          "source": "wiki-go"
+        },
+        {
+          "id": "wild",
+          "text": "Pokémon, right where you'd look for them.",
+          "basis": "reported",
+          "source": "wiki-go",
+          "figures": [129, 16, 133]
+        },
+        {
+          "id": "together",
+          "text": "A year later, thousands gathered in one park, Chicago's Grant Park, to play together.",
+          "basis": "record",
+          "source": "serebii-gofest",
+          "dates": [{ "date": "2017-07-22", "timeline": "go-fest-2017", "field": "na" }]
+        },
+        {
+          "id": "outside",
+          "text": "Decades after the fields were paved, the creatures were back outside, and everyone went looking.",
+          "basis": "line",
+          "source": "time-gf",
+          "figures": [25]
+        }
+      ],
+      "notes": [
+        {
+          "label": "Where it began",
+          "text": "Niantic's Tatsuo Nomura, who worked on Google Maps' 2014 “Pokémon Challenge”, said at E3 2016 that Pokémon GO grew from it.",
+          "basis": "said",
+          "source": "go-prank"
+        }
+      ],
+      "sources": [
+        { "id": "go-prank", "publisher": "CBC News / The Associated Press", "title": "“How Pokémon Go went from prank to phenomenon”", "year": "2016", "kind": "press", "url": "https://www.cbc.ca/news/technology/pokemon-go-google-prank-1.3690769" },
+        { "id": "tpc-history", "publisher": "The Pokémon Company", "title": "Corporate history", "year": "2026", "kind": "official", "url": "https://corporate.pokemon.co.jp/en/aboutus/history/" },
+        { "id": "wiki-go", "publisher": "Wikipedia", "title": "Pokémon Go: gameplay and social impact", "year": "2026", "kind": "reference", "url": "https://en.wikipedia.org/wiki/Pok%C3%A9mon_Go" },
+        { "id": "serebii-gofest", "publisher": "Serebii.net", "title": "Pokémon GO Fest 2017, Grant Park, Chicago", "year": "2017", "kind": "press", "url": "https://www.serebii.net/pokemongo/reallifeevents/gofest2017.shtml" },
+        { "id": "time-gf", "publisher": "TIME", "title": "“The Ultimate Game Freak”, interview with Satoshi Tajiri", "year": "1999", "kind": "interview", "url": "https://time.com/archive/6951818/the-ultimate-game-freak/" }
+      ],
+      "video": "outside",
+      "slow": [{ "beat": "parks", "offset": 0.9, "dur": 2.0, "rate": 0.45 }],
+      "extra": { "launch": 1.0, "parks": 2.0, "wild": 2.0, "outside": 2.6 }
+    },
+    {
+      "id": "open-worlds",
+      "numeral": "X",
+      "title": "Open Worlds",
+      "when": "2018–2025",
+      "year": "2018",
+      "place": "Kanto to Lumiose",
+      "tag": "The Switch era",
+      "summary": "Let's Go's return to Kanto, Galar's stadiums, Hisui's distant past, Paldea's open world, Ash's championship and farewell, and a whole adventure inside Lumiose City.",
+      "accent": "#ff4554",
+      "figures": [
+        { "dex": 25, "art": 25, "name": "Pikachu" },
+        { "dex": 133, "art": 133, "name": "Eevee" },
+        { "dex": 888, "art": 888, "name": "Zacian" },
+        { "dex": 889, "art": 889, "name": "Zamazenta" },
+        { "dex": 493, "art": 493, "name": "Arceus" },
+        { "dex": 1007, "art": 1007, "name": "Koraidon" },
+        { "dex": 1008, "art": 1008, "name": "Miraidon" }
+      ],
+      "beats": [
+        {
+          "id": "home",
+          "text": "Let's Go brought players back to Kanto, with Pikachu and Eevee walking beside them.",
+          "basis": "record",
+          "source": "tpc-history",
+          "dates": [{ "date": "2018-11-16", "timeline": "lets-go", "field": "jp" }],
+          "figures": [25, 133]
+        },
+        {
+          "id": "galar",
+          "text": "Sword and Shield brought a new generation to the Switch, with stadiums full of cheering crowds.",
+          "basis": "record",
+          "source": "tpc-history",
+          "dates": [{ "date": "2019-11-15", "timeline": "sword-shield", "field": "jp" }],
+          "figures": [888, 889]
+        },
+        {
+          "id": "twenty-five",
+          "text": "On its 25th anniversary, the franchise looked back in time, to Sinnoh's distant past.",
+          "basis": "record",
+          "source": "wiki-arceus",
+          "dates": [{ "date": "2021-02-27", "timeline": "anniversary-25", "field": "jp" }]
+        },
+        {
+          "id": "hisui",
+          "text": "Legends: Arceus returned to an ancient, wild land, before the first Pokédex was written.",
+          "basis": "record",
+          "source": "tpc-history",
+          "dates": [{ "date": "2022-01-28", "timeline": "legends-arceus", "field": "jp" }],
+          "figures": [493]
+        },
+        {
+          "id": "open",
+          "text": "Scarlet and Violet opened the whole map: go anywhere, in any order.",
+          "basis": "record",
+          "source": "tpc-history",
+          "dates": [{ "date": "2022-11-18", "timeline": "scarlet-violet", "field": "jp" }],
+          "figures": [1007, 1008]
+        },
+        {
+          "id": "champion",
+          "text": "After 25 years, Ash and Pikachu finally became World Champions.",
+          "basis": "record",
+          "source": "anime-ash",
+          "dates": [{ "date": "2022-11-11", "timeline": "ash-world-champion", "field": "jp" }],
+          "figures": [25]
+        },
+        {
+          "id": "farewell",
+          "text": "Then they said goodbye. Three weeks later, a new journey began with new heroes.",
+          "basis": "record",
+          "source": "anime-ash",
+          "dates": [
+            { "date": "2023-03-24", "timeline": "ash-farewell", "field": "jp" },
+            { "date": "2023-04-14", "timeline": "anime-s26", "field": "jp" }
+          ]
+        },
+        {
+          "id": "lumiose",
+          "text": "And in 2025, Legends: Z-A turned an entire city, Lumiose, into the adventure.",
+          "basis": "record",
+          "source": "tpc-history",
+          "dates": [{ "date": "2025-10-16", "timeline": "legends-z-a", "field": "jp" }]
+        }
+      ],
+      "notes": [],
+      "sources": [
+        { "id": "tpc-history", "publisher": "The Pokémon Company", "title": "Corporate history", "year": "2026", "kind": "official", "url": "https://corporate.pokemon.co.jp/en/aboutus/history/" },
+        { "id": "wiki-arceus", "publisher": "Wikipedia", "title": "Pokémon Legends: Arceus, revealed at the 25th-anniversary Pokémon Presents", "year": "2026", "kind": "reference", "url": "https://en.wikipedia.org/wiki/Pok%C3%A9mon_Legends:_Arceus" },
+        { "id": "anime-ash", "publisher": "Wikipedia (Japanese)", "title": "ポケットモンスター (2019年のアニメ)", "year": "2026", "kind": "reference", "url": "https://ja.wikipedia.org/wiki/%E3%83%9D%E3%82%B1%E3%83%83%E3%83%88%E3%83%A2%E3%83%B3%E3%82%B9%E3%82%BF%E3%83%BC_(2019%E5%B9%B4%E3%81%AE%E3%82%A2%E3%83%8B%E3%83%A1)" }
+      ],
+      "video": "open",
+      "slow": [{ "beat": "champion", "offset": 0.8, "dur": 1.8, "rate": 0.45 }],
+      "extra": { "galar": 1.0, "open": 1.8, "champion": 1.8, "farewell": 1.2 }
+    },
+    {
+      "id": "thirty",
+      "numeral": "XI",
+      "title": "Thirty Years",
+      "when": "February 27, 2026",
+      "year": "2026",
+      "place": "Everywhere",
+      "tag": "Today",
+      "summary": "Thirty years to the day after Red and Green, the next generation was announced. It started with two Game Boys and a cable; now there are more than a thousand Pokémon.",
+      "accent": "#f2c96b",
+      "figures": [
+        { "dex": 25, "art": 25, "name": "Pikachu" },
+        { "dex": 1, "art": 1, "name": "Bulbasaur" },
+        { "dex": 4, "art": 4, "name": "Charmander" },
+        { "dex": 7, "art": 7, "name": "Squirtle" },
+        { "dex": 151, "art": 151, "name": "Mew" }
+      ],
+      "beats": [
+        {
+          "id": "thirty",
+          "text": "Thirty years to the day after Red and Green, the next generation was announced: Pokémon Winds and Pokémon Waves, for 2027.",
+          "basis": "record",
+          "source": "winds-waves",
+          "dates": [{ "date": "2026-02-27", "timeline": "gen-10-revealed", "field": "jp" }]
+        },
+        {
+          "id": "then",
+          "text": "It started with two Game Boys and a cable.",
+          "basis": "line",
+          "source": "time-gf"
+        },
+        {
+          "id": "now",
+          "text": "Now it's games, cards, shows and films, and generations of players who grew up together without ever meeting.",
+          "basis": "reported",
+          "source": "tpc-history"
+        },
+        {
+          "id": "thousand",
+          "text": "More than a thousand Pokémon. Every one of them somebody's favourite.",
+          "basis": "record",
+          "source": "pokedex",
+          "figures": [25, 1, 4, 7, 151]
+        },
+        {
+          "id": "yours",
+          "text": "It all came from one feeling: the one you get when you turn over a stone and something's there. Go find yours.",
+          "basis": "line",
+          "source": "time-gf"
+        }
+      ],
+      "notes": [
+        {
+          "label": "How many",
+          "text": "The National Pokédex reached 1,025 species with Scarlet and Violet's additions. Winds and Waves will add more.",
+          "basis": "record",
+          "source": "pokedex"
+        }
+      ],
+      "sources": [
+        { "id": "winds-waves", "publisher": "Wikipedia", "title": "Pokémon Winds and Waves (announced at Pokémon Presents, February 27, 2026)", "year": "2026", "kind": "reference", "url": "https://en.wikipedia.org/wiki/Pok%C3%A9mon_Winds_and_Waves" },
+        { "id": "time-gf", "publisher": "TIME", "title": "“The Ultimate Game Freak”, interview with Satoshi Tajiri", "year": "1999", "kind": "interview", "url": "https://time.com/archive/6951818/the-ultimate-game-freak/" },
+        { "id": "tpc-history", "publisher": "The Pokémon Company", "title": "Corporate history", "year": "2026", "kind": "official", "url": "https://corporate.pokemon.co.jp/en/aboutus/history/" },
+        { "id": "pokedex", "publisher": "Pokémon.com", "title": "Pokédex", "year": "2026", "kind": "official", "url": "https://www.pokemon.com/us/pokedex" }
+      ],
+      "video": "yours",
+      "slow": [{ "beat": "thousand", "offset": 1.0, "dur": 2.0, "rate": 0.4 }],
+      "extra": { "thirty": 1.0, "now": 1.8, "thousand": 2.4, "yours": 3.0 }
+    }
+  ]
+}

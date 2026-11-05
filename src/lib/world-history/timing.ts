@@ -1,6 +1,20 @@
 import { CHAPTERS, filmBeats, filmLine } from "./data";
 import type { Beat, Chapter } from "./types";
 
+/** What the clock needs of a chapter (World History's chapters, or another film's with the same shape). */
+export type TimedBeat = Pick<Beat, "id" | "lead" | "quote" | "text" | "cut" | "film">;
+export interface TimedChapter {
+  id: string;
+  video: string;
+  beats: TimedBeat[];
+}
+export interface SlowSpec { beat: string; offset: number; dur: number; rate: number }
+/** A film's per-chapter pacing: extra seconds on big beats, and its slow-motion windows. */
+export interface Pacing {
+  extra(c: TimedChapter): Record<string, number>;
+  slow(c: TimedChapter): SlowSpec[];
+}
+
 /**
  * The film's clock. Each chapter has its own animation clock ("anim"
  * seconds): a title card, then its beats, each held long enough to read.
@@ -56,8 +70,11 @@ const SLOW: Record<string, { beat: string; offset: number; dur: number; rate: nu
 
 const clamp = (v: number, a: number, b: number) => Math.max(a, Math.min(b, v));
 
+/** World History's pacing (the tables above). */
+export const HISTORY_PACING: Pacing = { extra: (c) => EXTRA[c.id] ?? {}, slow: (c) => SLOW[c.id] ?? [] };
+
 /** How long a caption stays up (anim seconds). */
-export function beatSeconds(b: Beat): number {
+export function beatSeconds(b: TimedBeat): number {
   const chars = filmLine(b).length + (b.lead ? b.lead.length * 0.45 : 0);
   return clamp(1.4 + chars / READ_CPS, MIN_BEAT, MAX_BEAT);
 }
@@ -90,8 +107,8 @@ export interface ChapterTime {
   slow: SlowWindow[];
 }
 
-export function chapterTiming(c: Chapter, index = CHAPTERS.indexOf(c), start = 0): ChapterTime {
-  const extra = EXTRA[c.id] ?? {};
+export function chapterTiming(c: TimedChapter, index = CHAPTERS.indexOf(c as Chapter), start = 0, pacing: Pacing = HISTORY_PACING): ChapterTime {
+  const extra = pacing.extra(c);
   let t = TITLE_HOLD;
   const beats: BeatTime[] = filmBeats(c).map((b) => {
     const hold = beatSeconds(b) + (extra[b.id] ?? 0);
@@ -100,7 +117,7 @@ export function chapterTiming(c: Chapter, index = CHAPTERS.indexOf(c), start = 0
     return bt;
   });
   const anim = t + TAIL;
-  const slow: SlowWindow[] = (SLOW[c.id] ?? []).map((s) => {
+  const slow: SlowWindow[] = pacing.slow(c).map((s) => {
     const b = beats.find((x) => x.id === s.beat);
     if (!b) throw new Error(`world-history: ${c.id} slow motion on unknown beat ${s.beat}`);
     return { at: b.anim + s.offset, dur: s.dur, rate: s.rate };
@@ -166,12 +183,12 @@ export interface Film {
   halls: Transition[];
 }
 
-export function buildFilm(chapters: Chapter[] = CHAPTERS): Film {
+export function buildFilm(chapters: TimedChapter[] = CHAPTERS, pacing: Pacing = HISTORY_PACING): Film {
   let t = PROLOGUE;
   const halls: Transition[] = [{ from: -1, to: 0, start: 0, end: PROLOGUE }];
   const times: ChapterTime[] = [];
   chapters.forEach((c, i) => {
-    const ct = chapterTiming(c, i, t);
+    const ct = chapterTiming(c, i, t, pacing);
     times.push(ct);
     t += ct.film;
     const last = i === chapters.length - 1;
@@ -286,7 +303,7 @@ const HOOK = 2.6;
 const END = 3.4;
 
 /** "The entire history of the Pokémon world in 60 seconds": each chapter's big moment, quoted once. */
-export function storyVideoPlan(f: Film, seconds = STORY_SECONDS, chapters: Chapter[] = CHAPTERS): VideoPlan {
+export function storyVideoPlan(f: Film, seconds = STORY_SECONDS, chapters: TimedChapter[] = CHAPTERS): VideoPlan {
   const n = f.chapters.length;
   const body = Math.max(n * 0.5, seconds - HOOK * 0.5 - END);
   const each = body / n;
