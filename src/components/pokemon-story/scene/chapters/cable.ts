@@ -1,10 +1,10 @@
 import * as THREE from "three";
-import { poseOnPath, type Key, type Vec3 } from "@/lib/world-history/camera";
+import type { Key, Vec3 } from "@/lib/world-history/camera";
 import { NOISE, col, makeGlow, makeParticles, makeRing, makeShaft, placed, ramp, rng } from "@/components/world-history/scene/kit";
 import { lights, lookAt, pointPixel } from "@/components/world-history/scene/chapters/common";
 import type { ChapterBuilder } from "@/components/world-history/scene/types";
 import { drawCritter, makeCable, makeDevice, makeSilhouette, makeWords, mergeWithAttr } from "../story-kit";
-import { bag, STOCK } from "./base";
+import { bag, shots, STOCK } from "./base";
 
 /**
  * III. The Cable, the film's signature shot. Two Game Boys on a dark table,
@@ -282,27 +282,35 @@ export const build: ChapterBuilder = async (ctx) => {
   const lettersY = 3.6;
 
   const tight = (t: number) => T.orbit(t);
-  const keys: Key[] = [
-    { t: 0, ...tight(0), fov: 40 },
-    { t: tCrawl - 0.4, ...tight(tCrawl - 0.4), fov: 38 },
-    // Tracking the creature along the wire: the camera rides beside its head.
-    ...[0.02, 0.25, 0.5, 0.75, 0.98].map((u): Key => {
-      const at = tCrawl + 0.6 + (tTrade + 0.3 - tCrawl - 0.6) * u;
-      const p = T.cable.curve.getPointAt(u);
-      return { t: at, pos: [p.x - 0.75, 3.05, p.z + 0.95], look: [p.x + 0.45, 0.08, p.z - 0.1], fov: 40 };
-    }),
-    { t: tTrade + 0.9, pos: [3.4, 1.4, 3.0], look: [2.3, 0.2, 0.2], fov: 34 },
-    { t: tTrade + 4, pos: [0, 2.6, 5.4], look: [0, 0.3, 0], fov: 40 },
-    { t: tPitch + 1.5, pos: [0, 4.2, 11], look: [0, 1.4, -1], fov: 46 },
-    { t: tName, pos: [0, 3.2, 7.6], look: [0, 2.7, 0], fov: 40 },
-    { t: end, pos: [0, 2.9, 5.2], look: [0, 2.8, 0], fov: 38 },
-  ];
+  const track = [0.02, 0.25, 0.5, 0.75, 0.98].map((u): Key => {
+    const at = tCrawl + 0.6 + (tTrade + 0.3 - tCrawl - 0.6) * u;
+    const p = T.cable.curve.getPointAt(u);
+    return { t: at, pos: [p.x - 0.75, 3.05, p.z + 0.95], look: [p.x + 0.45, 0.08, p.z - 0.1], fov: 40 };
+  });
+  // Shots: the orbit of the table; cut to the top-down crawl beside the creature's head; cut low on the
+  // second screen for the trade; cut wide to the room for the pitch, then push in on the capsule.
+  const cam = shots([
+    [0, [{ t: 0, ...tight(0), fov: 40 }, { t: tCrawl - 0.4, ...tight(tCrawl - 0.4), fov: 38 }]],
+    [tCrawl - 0.4, [{ ...track[0], t: tCrawl - 0.4 }, ...track]],
+    [tTrade + 0.5, [
+      { t: tTrade + 0.5, pos: [3.6, 1.3, 3.2], look: [2.3, 0.2, 0.2], fov: 33 },
+      { t: tTrade + 0.9, pos: [3.4, 1.4, 3.0], look: [2.3, 0.2, 0.2], fov: 34 },
+      { t: tTrade + 4, pos: [0, 2.6, 5.4], look: [0, 0.3, 0], fov: 40 },
+      { t: tPitch, pos: [0, 2.7, 5.6], look: [0, 0.4, 0], fov: 40 },
+    ]],
+    [tPitch, [
+      { t: tPitch, pos: [0, 3.6, 9.4], look: [0, 1.2, -0.8], fov: 45 },
+      { t: tPitch + 1.5, pos: [0, 4.2, 11], look: [0, 1.4, -1], fov: 46 },
+      { t: tName, pos: [0, 3.2, 7.6], look: [0, 2.7, 0], fov: 40 },
+      { t: end, pos: [0, 2.9, 5.2], look: [0, 2.8, 0], fov: 38 },
+    ]],
+  ]);
 
   const pt = new THREE.Vector3();
   return {
     scene,
     portalScale: 1,
-    camera: (t) => poseOnPath(keys, t),
+    camera: cam,
     orbit: () => ({ target: [0, 0.6, 0], limits: { yaw0: 0, yawSpan: 1.25, minPitch: 0.02, maxPitch: 1.2, minDist: 2, maxDist: 20 } }),
     update(t, ambient, cam, viewH) {
       const px = pointPixel(viewH, cam);

@@ -195,7 +195,7 @@ export function hitsOf(film: Film, index: number): { kind: Hit; at: number }[] {
 
 function playHit(b: Bus, kind: Hit, at: number, gain: number, r: K.Rand) {
   switch (kind) {
-    case "boom": return K.impact(b, at, 0.34 * gain, 0.75, 0.8);
+    case "boom": return K.impact(b, at, 0.28 * gain, 0.75, 0.8);
     case "rumble": return K.rumble(b, at, 0.38 * gain);
     case "thunder": return K.thunder(b, at, 0.4 * gain, r);
     case "shimmer": {

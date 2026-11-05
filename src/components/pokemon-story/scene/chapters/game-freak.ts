@@ -1,11 +1,10 @@
 import * as THREE from "three";
-import { poseOnPath, type Key } from "@/lib/world-history/camera";
 import { col, makeGlow, makeParticles, merge, placed, ramp, rng } from "@/components/world-history/scene/kit";
 import { makeCanvasPanel } from "@/components/world-history/scene/props";
 import { lights, lookAt, pointPixel } from "@/components/world-history/scene/chapters/common";
 import type { ChapterBuilder } from "@/components/world-history/scene/types";
 import { drawCritter, makeSilhouette, makeWords } from "../story-kit";
-import { bag, STOCK } from "./base";
+import { bag, shots, STOCK } from "./base";
 
 /**
  * II. Game Freak. A neon arcade at night, cabinets of little pixel invaders
@@ -309,23 +308,36 @@ export const build: ChapterBuilder = async (ctx) => {
   sign.mesh.position.set(0.95, 2.35, 0.06);
   doorPivot.add(sign.mesh);
 
-  const keys: Key[] = [
-    { t: 0, pos: [0, 1.7, 26], look: [0, 1.6, 14], fov: 46 },
-    { t: tArc + 3, pos: [0.3, 1.65, 18], look: [-0.2, 1.5, 8], fov: 44 },
-    { t: tZine - 0.3, pos: [0, 2.0, 6], look: [0, 1.2, deskZ], fov: 42 },
-    { t: tZine + 3, pos: [-0.3, 2.3, deskZ + 1.6], look: [0, 1.06, deskZ + 0.1], fov: 38 },
-    { t: tSugi + 3.5, pos: [0.8, 2.25, deskZ + 1.4], look: [0.6, 1.06, deskZ + 0.1], fov: 36 },
-    { t: tPages, pos: [0, 2.0, deskZ + 2.6], look: [0, 1.4, deskZ], fov: 44 },
-    { t: tPages + 4.5, pos: [0.2, 1.8, deskZ + 2.1], look: [0, 1.6, deskZ - 1], fov: 48 },
-    { t: tStudio + 1, pos: [0, 2.05, deskZ + 0.6], look: [0.2, 1.95, doorZ], fov: 44 },
-    { t: end, pos: [0, 1.6, doorZ + 0.9], look: [0, 1.5, doorZ - 1], fov: 52 },
-  ];
+  // Shots: down the arcade aisle; cut to the desk; the vortex of pages; a hard cut to the door as the sign forms.
+  const cam = shots([
+    [0, [
+      { t: 0, pos: [0, 1.7, 26], look: [0, 1.6, 14], fov: 46 },
+      { t: tArc + 3, pos: [0.3, 1.65, 18], look: [-0.2, 1.5, 8], fov: 44 },
+      { t: tZine - 0.3, pos: [0.15, 1.62, 13.5], look: [-0.1, 1.5, 4], fov: 44 },
+    ]],
+    [tZine - 0.3, [
+      { t: tZine - 0.3, pos: [-0.7, 2.45, deskZ + 2.3], look: [0, 1.06, deskZ + 0.1], fov: 40 },
+      { t: tZine + 3, pos: [-0.3, 2.3, deskZ + 1.6], look: [0, 1.06, deskZ + 0.1], fov: 38 },
+      { t: tSugi + 3.5, pos: [0.8, 2.25, deskZ + 1.4], look: [0.6, 1.06, deskZ + 0.1], fov: 36 },
+      { t: tPages - 0.25, pos: [0.85, 2.2, deskZ + 1.5], look: [0.5, 1.1, deskZ], fov: 37 },
+    ]],
+    [tPages - 0.25, [
+      { t: tPages - 0.25, pos: [0, 1.95, deskZ + 2.9], look: [0, 1.4, deskZ], fov: 44 },
+      { t: tPages + 4.5, pos: [0.2, 1.8, deskZ + 2.1], look: [0, 1.6, deskZ - 1], fov: 48 },
+      { t: tStudio + 0.6, pos: [0.15, 1.85, deskZ + 1.7], look: [0.1, 1.75, deskZ - 1.4], fov: 48 },
+    ]],
+    [tStudio + 0.6, [
+      { t: tStudio + 0.6, pos: [0.05, 2.0, deskZ + 0.9], look: [0.2, 1.95, doorZ], fov: 40 },
+      { t: tStudio + 1.6, pos: [0, 2.0, deskZ + 0.5], look: [0.2, 1.93, doorZ], fov: 43 },
+      { t: end, pos: [0, 1.6, doorZ + 0.9], look: [0, 1.5, doorZ - 1], fov: 52 },
+    ]],
+  ]);
 
   return {
     scene,
     portalScale: 1.2,
-    camera: (t) => poseOnPath(keys, t),
-    orbit: (t) => ({ target: poseOnPath(keys, t).look, limits: { yaw0: 0, yawSpan: 0.9, minPitch: -0.1, maxPitch: 1.0, minDist: 0.8, maxDist: 20 } }),
+    camera: cam,
+    orbit: (t) => ({ target: cam(t).look, limits: { yaw0: 0, yawSpan: 0.9, minPitch: -0.1, maxPitch: 1.0, minDist: 0.8, maxDist: 20 } }),
     update(t, ambient, cam, viewH) {
       const px = pointPixel(viewH, cam);
       const deskOn = ramp(t, tZine - 1.6, tZine + 0.6);

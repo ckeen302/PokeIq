@@ -1,12 +1,11 @@
 import * as THREE from "three";
-import { poseOnPath, type Key } from "@/lib/world-history/camera";
 import { col, makeGlow, makeParticles, makeShaft, merge, placed, ramp, rng } from "@/components/world-history/scene/kit";
 import { makeCanvasPanel } from "@/components/world-history/scene/props";
 import { lights, loadFigures, lookAt, pointPixel } from "@/components/world-history/scene/chapters/common";
 import type { ChapterBuilder } from "@/components/world-history/scene/types";
 import { drawCritter, makeDeskLamp, makeSilhouette } from "../story-kit";
 import type { Vec3 } from "@/lib/world-history/camera";
-import { bag, heroFigure, STOCK } from "./base";
+import { bag, heroFigure, shots, STOCK } from "./base";
 
 /**
  * IV. Six Years. A small studio late at night: one desk lamp, a calendar
@@ -342,25 +341,40 @@ export const build: ChapterBuilder = async (ctx) => {
   const wall151 = D.add(makeDexWall({ count: 151, cols: 17, cell: 0.42, center: [0, 3.0, 0.6], from: [0, 1.6, -1.4], spread: [9, 0.8, 1.2], seed: 5 }));
   scene.add(wall151.mesh);
 
-  const keys: Key[] = [
-    { t: 0, pos: [-6.5, 2.0, 4.2], look: [-3.5, 1.4, -1.5], fov: 44 },
-    { t: tHard + 4, pos: [-4.0, 2.2, 3.4], look: [-2.0, 2.2, -3], fov: 44 },
-    { t: tMasuda, pos: [-1.2, 1.9, 2.6], look: [0, 1.3, -1.5], fov: 40 },
-    { t: tMasuda + 3, pos: [0.8, 1.8, 1.6], look: [0, 1.4, -1.6], fov: 36 },
-    { t: tPika, pos: [3.4, 1.85, 1.3], look: [4.5, 1.5, -1.6], fov: 34 },
-    { t: tPika + 4.2, pos: [3.6, 1.8, 1.9], look: [4.5, 1.5, -1.2], fov: 36 },
-    { t: t151 + 0.4, pos: [0.6, 2.4, 5.8], look: [0, 2.4, -0.5], fov: 46 },
-    { t: t151 + 5, pos: [0, 3.0, 8.4], look: [0, 3.0, 0], fov: 50 },
-    { t: tMew - 0.1, pos: [0.4, 3.0, 8.0], look: [0.5, 3.0, 0], fov: 48 },
-    { t: tMew + 0.6, pos: [3.4, 2.7, 5.6], look: [6.0, 2.6, 1.2], fov: 40 },
-    { t: end, pos: [4.2, 2.6, 4.8], look: [6.2, 2.7, 1.2], fov: 36 },
-  ];
+  // Shots: the late-night studio; cut to the music desk; the sketchbook; the wall of 151; a whip-pan to Mew.
+  const cam = shots([
+    [0, [
+      { t: 0, pos: [-6.5, 2.0, 4.2], look: [-3.5, 1.4, -1.5], fov: 44 },
+      { t: tHard + 4, pos: [-4.0, 2.2, 3.4], look: [-2.0, 2.2, -3], fov: 44 },
+      { t: tMasuda - 0.2, pos: [-2.8, 2.1, 3.1], look: [-1.2, 1.9, -2.4], fov: 43 },
+    ]],
+    [tMasuda - 0.2, [
+      { t: tMasuda - 0.2, pos: [0.3, 1.72, 2.1], look: [0, 1.35, -1.6], fov: 34 },
+      { t: tMasuda + 3, pos: [0.8, 1.8, 1.6], look: [0, 1.4, -1.6], fov: 36 },
+      { t: tPika - 0.2, pos: [1.0, 1.8, 1.55], look: [0.2, 1.4, -1.6], fov: 36 },
+    ]],
+    [tPika - 0.2, [
+      { t: tPika - 0.2, pos: [3.3, 1.86, 1.2], look: [4.5, 1.5, -1.6], fov: 33 },
+      { t: tPika + 4.2, pos: [3.6, 1.8, 1.9], look: [4.5, 1.5, -1.2], fov: 36 },
+      { t: t151 + 0.1, pos: [3.7, 1.82, 2.1], look: [4.5, 1.55, -1.1], fov: 37 },
+    ]],
+    [t151 + 0.1, [
+      { t: t151 + 0.1, pos: [0.6, 2.4, 5.6], look: [0, 2.4, -0.5], fov: 46 },
+      { t: t151 + 5, pos: [0, 3.0, 8.4], look: [0, 3.0, 0], fov: 50, stop: true },
+      { t: tMew - 0.05, pos: [0.4, 3.0, 8.0], look: [0.5, 3.0, 0], fov: 48 },
+    ]],
+    [tMew - 0.05, [
+      { t: tMew - 0.05, pos: [2.9, 2.75, 6.0], look: [6.0, 2.6, 1.2], fov: 42 },
+      { t: tMew + 0.6, pos: [3.4, 2.7, 5.6], look: [6.0, 2.6, 1.2], fov: 40 },
+      { t: end, pos: [4.2, 2.6, 4.8], look: [6.2, 2.7, 1.2], fov: 36 },
+    ]],
+  ]);
 
   return {
     scene,
     portalScale: 1.2,
-    camera: (t) => poseOnPath(keys, t),
-    orbit: (t) => ({ target: poseOnPath(keys, t).look, limits: { yaw0: 0, yawSpan: 1.0, minPitch: -0.05, maxPitch: 1.1, minDist: 1, maxDist: 22 } }),
+    camera: cam,
+    orbit: (t) => ({ target: cam(t).look, limits: { yaw0: 0, yawSpan: 1.0, minPitch: -0.05, maxPitch: 1.1, minDist: 1, maxDist: 22 } }),
     update(t, ambient, cam, viewH) {
       const px = pointPixel(viewH, cam);
       // Years pass: the calendar flips 1990 → 1995 and the windows cycle night and day.

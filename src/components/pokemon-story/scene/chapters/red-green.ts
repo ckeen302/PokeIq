@@ -1,11 +1,11 @@
 import * as THREE from "three";
-import { poseOnPath, type Key, type Vec3 } from "@/lib/world-history/camera";
+import type { Key, Vec3 } from "@/lib/world-history/camera";
 import { col, makeCloudLayer, makeGlow, makeSky, makeTerrain, merge, noise2, placed, ramp, rng, stoneMaterial } from "@/components/world-history/scene/kit";
 import { makeCanvasPanel } from "@/components/world-history/scene/props";
 import { lights, loadFigures, lookAt, pointPixel } from "@/components/world-history/scene/chapters/common";
 import type { ChapterBuilder } from "@/components/world-history/scene/types";
 import { drawCritter, makeBall, makeDevice, makeGrass, makeSunShadows, makeThreads } from "../story-kit";
-import { bag, heroFigure, STOCK } from "./base";
+import { bag, heroFigure, shots, STOCK } from "./base";
 
 /**
  * V. Red and Green. A Game Boy's screen fills the frame with a pixel title;
@@ -400,28 +400,42 @@ export const build: ChapterBuilder = async (ctx) => {
 
   const R = 6.2;
   const arc = (k: number): Key => { const a = -0.8 + k * 1.6; return { t: tThree + 0.4 + k * 4.6, pos: [Math.sin(a) * 4.6, 1.75, 2 + Math.cos(a) * 4.6], look: [0, 1.35, 2], fov: 38 }; };
-  const keys: Key[] = [
-    { t: 0, pos: [0, 2.2, 26 + R * 1.6], look: [0, 2.2, 26], fov: 40 },
-    { t: tLaunch + 0.6, pos: [0, 2.2, 26 + R * 0.9], look: [0, 2.2, 26], fov: 40 },
-    { t: tLaunch + 1.25, pos: [0, 2.2, 29.1], look: [0, 2.2, 24], fov: 40 },
-    { t: tLaunch + 2.3, pos: [0, 2.2, 28.4], look: [0, 2.1, 18], fov: 42 },
-    { t: tLaunch + 3.6, pos: [0, 2.3, 22], look: [0, 1.8, 8], fov: 46 },
-    { t: tOld + 1, pos: [0, 2.6, 16], look: [0, 1.6, 2], fov: 46 },
-    { t: tThree, pos: [0, 2.2, 7], look: [0, 1.25, 2], fov: 42 },
-    arc(0), arc(0.5), arc(1),
-    { t: tMew + 0.6, pos: [0, 6, 18], look: [0, 6, -2], fov: 50 },
-    { t: tWord + 0.5, pos: [0, 14, 30], look: [0, 1, -4], fov: 50 },
-    { t: tBlue, pos: [0, 17, 31], look: [0, 1.5, -4], fov: 50 },
-    { t: tBlue + 1.8, pos: [0.2, 5.2, 11.5], look: [0, 3.3, 4], fov: 42 },
-    { t: end, pos: [0.4, 3.7, 7.6], look: [0, 3.3, 4], fov: 38 },
-  ];
+  // Shots: the push through the screen into the village (one move); cut in to the starters' arc; cut to
+  // the rooftops for the rumour and the network; cut close on the Blue cartridge.
+  const cam = shots([
+    [0, [
+      { t: 0, pos: [0, 2.2, 26 + R * 1.6], look: [0, 2.2, 26], fov: 40 },
+      { t: tLaunch + 0.6, pos: [0, 2.2, 26 + R * 0.9], look: [0, 2.2, 26], fov: 40 },
+      { t: tLaunch + 1.25, pos: [0, 2.2, 29.1], look: [0, 2.2, 24], fov: 40 },
+      { t: tLaunch + 2.3, pos: [0, 2.2, 28.4], look: [0, 2.1, 18], fov: 42 },
+      { t: tLaunch + 3.6, pos: [0, 2.3, 22], look: [0, 1.8, 8], fov: 46 },
+      { t: tOld + 1, pos: [0, 2.6, 16], look: [0, 1.6, 2], fov: 46 },
+      { t: tThree - 0.3, pos: [0, 2.45, 11.5], look: [0, 1.45, 2], fov: 44 },
+    ]],
+    [tThree - 0.3, [
+      { t: tThree - 0.3, pos: [0, 2.2, 7], look: [0, 1.25, 2], fov: 42 },
+      arc(0), arc(0.5), arc(1),
+      { t: tMew - 0.1, pos: [Math.sin(0.8) * 4.7, 1.8, 2 + Math.cos(0.8) * 4.7], look: [0, 1.4, 2], fov: 38 },
+    ]],
+    [tMew - 0.1, [
+      { t: tMew - 0.1, pos: [0, 5.2, 16], look: [0, 6, -2], fov: 50 },
+      { t: tMew + 0.6, pos: [0, 6, 18], look: [0, 6, -2], fov: 50 },
+      { t: tWord + 0.5, pos: [0, 14, 30], look: [0, 1, -4], fov: 50 },
+      { t: tBlue + 0.5, pos: [0, 17.2, 31.2], look: [0, 1.5, -4], fov: 50 },
+    ]],
+    [tBlue + 0.5, [
+      { t: tBlue + 0.5, pos: [0.25, 5.8, 13], look: [0, 3.3, 4], fov: 42 },
+      { t: tBlue + 1.8, pos: [0.2, 5.2, 11.5], look: [0, 3.3, 4], fov: 42 },
+      { t: end, pos: [0.4, 3.7, 7.6], look: [0, 3.3, 4], fov: 38 },
+    ]],
+  ]);
   const dayTop = col("#3a74d0"), duskTop = col("#2a2e6a"), dayHor = col("#d6e0e6"), duskHor = col("#ff8a5a");
 
   return {
     scene,
     portalScale: 1.6,
-    camera: (t) => poseOnPath(keys, t),
-    orbit: (t) => ({ target: poseOnPath(keys, t).look, limits: { yaw0: 0, yawSpan: 1.1, minPitch: -0.05, maxPitch: 1.2, minDist: 1.5, maxDist: 60 } }),
+    camera: cam,
+    orbit: (t) => ({ target: cam(t).look, limits: { yaw0: 0, yawSpan: 1.1, minPitch: -0.05, maxPitch: 1.2, minDist: 1.5, maxDist: 60 } }),
     update(t, ambient, cam, viewH) {
       const px = pointPixel(viewH, cam);
       sky.follow(cam);
