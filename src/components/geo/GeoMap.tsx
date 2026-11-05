@@ -53,7 +53,7 @@ interface Props {
 
 export const WORLD_MAP = "/geo/maps/world.webp";
 /** A small copy of the whole world, shown while the big map loads on the world map itself. */
-const WORLD_THUMB = "/geo/maps/world-thumb.webp";
+export const WORLD_THUMB = "/geo/maps/world-thumb.webp";
 /** The world map has been decoded on this page (every map after the first draws it at once). */
 let worldMapReady = false;
 /** How long the first paint waits for the region's crop before the map goes on without it. */
