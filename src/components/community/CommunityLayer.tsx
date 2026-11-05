@@ -2,13 +2,18 @@
 
 import { useEffect, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
+import dynamic from "next/dynamic";
 import { Check, Loader2, Swords, Trophy, X } from "lucide-react";
 import { useAccount } from "@/lib/account";
 import { answerChallenge, beat, dismissNote, openTournamentMatch, useCommunity } from "@/lib/friends-client";
 import { PRESENCE_BEAT_MS, PRESENCE_MIN_GAP_MS, activityFromPath } from "@/lib/community";
 import { Button } from "@/components/ui/button";
-import { FriendsPanel } from "./FriendsPanel";
 import { Avatar } from "@/components/avatar/Avatar";
+
+// Every page carries this layer: the friends panel's code stays out of the first load, and a
+// signed-in trainer (who can open it) has it fetched once the page is idle.
+const loadPanel = () => import("./FriendsPanel");
+const FriendsPanel = dynamic(() => loadPanel().then((m) => m.FriendsPanel), { ssr: false });
 
 /**
  * Site-wide friends: the presence heartbeat (signed-in trainers only; once
@@ -58,6 +63,12 @@ export function CommunityLayer() {
       document.removeEventListener("visibilitychange", soon);
       window.removeEventListener("focus", soon);
     };
+  }, [userId]);
+
+  useEffect(() => {
+    if (!userId) return;
+    if (typeof window.requestIdleCallback === "function") window.requestIdleCallback(() => void loadPanel());
+    else window.setTimeout(() => void loadPanel(), 2000);
   }, [userId]);
 
   // A new page is a new activity: tell friends (throttled like a refocus).
