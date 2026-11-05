@@ -58,3 +58,18 @@ export function emptiedSlots(request: BattleRequest, parts: string[]): number[] 
   const left = switchOptions(request, parts.length, parts).length;
   return wanting.slice(Math.max(0, left));
 }
+
+/** The M key: no special move, then each one the request offers in turn, then none again. */
+export function cycleExtra<T>(current: T | null, extras: readonly T[]): T | null {
+  const next = (current === null ? -1 : extras.indexOf(current)) + 1;
+  return next < extras.length ? extras[next] : null;
+}
+
+/**
+ * Team preview's "team" choice: the Pokémon tapped, in order, then (unless
+ * the format brings fewer than the whole team) the rest in team order.
+ */
+export function teamOrder(picked: readonly number[], size: number, bringAll: boolean): string {
+  const rest = bringAll ? Array.from({ length: size }, (_, i) => i + 1).filter((i) => !picked.includes(i)) : [];
+  return `team ${[...picked, ...rest].join("")}`;
+}

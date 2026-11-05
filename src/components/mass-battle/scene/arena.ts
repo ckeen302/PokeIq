@@ -95,7 +95,7 @@ if (uTerrainKind > 0.5) {
     tPat = 0.08 + 0.06 * mbN(vWorld.xz * 0.2 + uTime * 0.1);
   } else if (uTerrainKind < 3.5) {
     // Psychic: rings pulsing out over a shimmering floor.
-    tPat = pow(0.5 + 0.5 * sin(tr * 60.0 - uTime * 3.0), 8.0) * 0.6 + 0.1 * mbN(vWorld.xz * 0.3 + uTime * 0.2);
+    tPat = pow(max(0.0, 0.5 + 0.5 * sin(tr * 60.0 - uTime * 3.0)), 8.0) * 0.6 + 0.1 * mbN(vWorld.xz * 0.3 + uTime * 0.2);
   } else {
     // Misty: a pale pink glow, brighter in drifting banks.
     tPat = 0.12 + 0.2 * smoothstep(0.4, 0.8, mbF(vWorld.xz * 0.05 + uTime * 0.03));
@@ -787,7 +787,7 @@ void main() {
   vF = max(dot(normalize(mat3(modelViewMatrix) * normal), normalize(-mv.xyz)), 0.0);
   gl_Position = projectionMatrix * mv;
 }`,
-      fragmentShader: "varying float vF; void main(){ float a = pow(vF, 1.5); gl_FragColor = vec4(vec3(3.2, 1.3, 0.3) * a, a); }",
+      fragmentShader: "varying float vF; void main(){ float a = pow(clamp(vF, 0.0, 1.0), 1.5); gl_FragColor = vec4(vec3(3.2, 1.3, 0.3) * a, a); }",
     });
     disposables.push(banner, ...bannerMats, torchGeo, torchMat, flameGeo, flameMat);
     mats.push(...bannerMats, torchMat, flameMat);

@@ -61,6 +61,9 @@ const INTRO_FLIGHT_S = 2.1;
 export function TimelineExperience({ entries, eraStarts, initialId = null, children }: { entries: TimelineEntry[]; eraStarts: EraStart[]; initialId?: string | null; children: React.ReactNode }) {
   const [mode, setMode] = useState<Mode>("boot");
   const [ready, setReady] = useState(false);
+  /** Bumped to build the scene again (after its WebGL context was lost); it picks up where the camera was. */
+  const [sceneGen, setSceneGen] = useState(0);
+  const lastT = useRef<number | null>(null);
   const [lanes, setLanes] = useState<Set<LaneId>>(() => new Set(LANES.map((l) => l.id)));
   const [openId, setOpenId] = useState<string | null>(null);
   const [eraIdx, setEraIdx] = useState(0);
@@ -208,6 +211,7 @@ export function TimelineExperience({ entries, eraStarts, initialId = null, child
           LANES.map((l) => ({ id: l.id, color: l.color })),
           {
             frame(t, speed) {
+              lastT.current = t;
               const y = Math.floor(Math.max(T_START, Math.min(t, tEnd)));
               if (yearRef.current && yearRef.current.textContent !== String(y)) yearRef.current.textContent = String(y);
               const p = pct(Math.max(T_START, Math.min(t, tEnd)));
@@ -226,11 +230,11 @@ export function TimelineExperience({ entries, eraStarts, initialId = null, child
               if (flashCount.current > 1) audioRef.current?.era(i);
             },
           },
-          deep ? deep.t : T_START + 0.1,
-          { regions, intro: introRef.current }
+          lastT.current ?? (deep ? deep.t : T_START + 0.1),
+          { regions, intro: introRef.current && lastT.current === null, onContextGone: () => alive && setSceneGen((g) => g + 1) }
         );
         setReady(true);
-        if (deep) open(deep.id);
+        if (deep && !sceneGen) open(deep.id);
         if (flyRequested.current) apiRef.current.introFly(INTRO_FLIGHT_S);
       } catch {
         setMode("list");
@@ -243,7 +247,7 @@ export function TimelineExperience({ entries, eraStarts, initialId = null, child
       setReady(false);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mode]);
+  }, [mode, sceneGen]);
 
   useEffect(() => { apiRef.current?.setLanes(lanes); }, [lanes, ready]);
 

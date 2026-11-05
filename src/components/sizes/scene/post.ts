@@ -5,6 +5,7 @@ import { CopyShader } from "three/examples/jsm/shaders/CopyShader.js";
 import { GTAOPass } from "three/examples/jsm/postprocessing/GTAOPass.js";
 import { UnrealBloomPass } from "three/examples/jsm/postprocessing/UnrealBloomPass.js";
 import { OutputPass } from "three/examples/jsm/postprocessing/OutputPass.js";
+import { SAFE_HDR, scrubBloom, scrubRead } from "@/lib/gl/safe-hdr";
 
 /**
  * The frame's finishing: the scene renders in HDR with 4× MSAA, then
@@ -77,8 +78,9 @@ function gatherShader(samples: number) {
       uniform vec2 resolution;
       uniform vec2 poisson[32];
       varying vec2 vUv;
+      ${SAFE_HDR}
       void main() {
-        vec3 col = texture2D(tColor, vUv).rgb;
+        vec3 col = glSafe(texture2D(tColor, vUv).rgb);
         float z0 = distAt(vUv);
         float c0 = cocAt(z0);
         if (c0 > 0.6) {
@@ -93,7 +95,7 @@ function gatherShader(samples: number) {
             float dist = length(o);
             // Nearer, sharper things must not bleed into the blurred background.
             float w = z < z0 - 0.02 * z0 ? clamp(c - dist + 1.0, 0.0, 1.0) : 1.0;
-            sum += texture2D(tColor, uv).rgb * w;
+            sum += glSafe(texture2D(tColor, uv).rgb) * w;
             wsum += w;
           }
           col = sum / wsum;
@@ -126,12 +128,13 @@ function finishShader() {
       uniform sampler2D tDof;
       uniform float dofOn, vignette, saturation, warmth;
       varying vec2 vUv;
+      ${SAFE_HDR}
       void main() {
         vec4 base = texture2D(tDiffuse, vUv);
-        vec3 col = base.rgb;
+        vec3 col = glSafe(base.rgb);
         if (dofOn > 0.5) {
           float c = cocAt(distAt(vUv));
-          if (c > 0.6) col = mix(col, texture2D(tDof, vUv).rgb, smoothstep(0.6, 1.8, c));
+          if (c > 0.6) col = mix(col, glSafe(texture2D(tDof, vUv).rgb), smoothstep(0.6, 1.8, c));
         }
         float l = dot(col, vec3(0.2126, 0.7152, 0.0722));
         col = max(mix(vec3(l), col, saturation), 0.0);
@@ -221,7 +224,7 @@ class ScenePass extends Pass {
   private copy: THREE.ShaderMaterial;
   constructor(private scene: THREE.Scene, private camera: THREE.Camera, public target: THREE.WebGLRenderTarget) {
     super();
-    this.copy = new THREE.ShaderMaterial({ uniforms: THREE.UniformsUtils.clone(CopyShader.uniforms), vertexShader: CopyShader.vertexShader, fragmentShader: CopyShader.fragmentShader, depthTest: false, depthWrite: false });
+    this.copy = new THREE.ShaderMaterial({ uniforms: THREE.UniformsUtils.clone(CopyShader.uniforms), vertexShader: CopyShader.vertexShader, fragmentShader: scrubRead(CopyShader.fragmentShader), depthTest: false, depthWrite: false });
     this.quad = new FullScreenQuad(this.copy);
   }
   render(renderer: THREE.WebGLRenderer, writeBuffer: THREE.WebGLRenderTarget) {
@@ -260,6 +263,7 @@ export function createPost(renderer: THREE.WebGLRenderer, scene: THREE.Scene, ca
   if (s.bloom) {
     // The pass already works from half size down; giving it half the frame puts its first level at a quarter of the pixels.
     bloom = new UnrealBloomPass(new THREE.Vector2(Math.max(1, w / 2), Math.max(1, h / 2)), 0.32, 0.55, 1.15);
+    scrubBloom(bloom);
     const sizeBloom = bloom.setSize.bind(bloom);
     bloom.setSize = (bw: number, bh: number) => sizeBloom(Math.max(2, Math.round(bw / 2)), Math.max(2, Math.round(bh / 2)));
     composer.addPass(bloom);

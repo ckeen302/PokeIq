@@ -208,7 +208,7 @@ varying vec3 vColor;
 varying float vAlpha;
 varying float vFres;
 void main() {
-  float a = vAlpha * pow(vFres, 1.6);
+  float a = vAlpha * pow(clamp(vFres, 0.0, 1.0), 1.6);
   if (a <= 0.003) discard;
   // The core runs hot, the edge keeps its colour (pushed toward its strongest channel), so a pile of glows reads as
   // fire, water or psychic energy instead of burning out to white.
@@ -399,7 +399,7 @@ void main() {
   vec3 n = normalize(mat3(viewMatrix) * (u * position.x + v * position.z));
   vFres = max(dot(n, normalize(-mv.xyz)), 0.0);
   // A white-hot core, the type's colour round it.
-  vColor = mix(aC.rgb * 2.2, vec3(2.6), aD.w * pow(vFres, 3.0));
+  vColor = mix(aC.rgb * 2.2, vec3(2.6), aD.w * pow(clamp(vFres, 0.0, 1.0), 3.0));
   vAlpha = (1.0 - k * k) * (0.85 + 0.15 * hash(floor(uTime * 30.0) + aA.y));
   gl_Position = projectionMatrix * mv;
 }`;
@@ -455,7 +455,7 @@ void main() {
   float d = length(vLocal);
   float a;
   if (vKind > 1.5) {
-    a = pow(0.5 + 0.5 * sin(d * 18.0 - vFres * 22.0), 6.0) * smoothstep(1.0, 0.6, d) * smoothstep(0.0, 0.2, d);
+    a = pow(max(0.0, 0.5 + 0.5 * sin(d * 18.0 - vFres * 22.0)), 6.0) * smoothstep(1.0, 0.6, d) * smoothstep(0.0, 0.2, d);
   } else if (vKind > 0.5) {
     a = smoothstep(1.0, 0.0, d) * (0.6 + 0.4 * smoothstep(0.7, 0.95, d));
   } else {
@@ -617,7 +617,9 @@ void main() {
   float pop = age < 0.18 ? 1.0 + 0.25 * sin(age / 0.18 * 3.14159) : 1.0;
   float scale = aB.x * smoothstep(0.0, 0.12, age) * pop * (1.0 - smoothstep(0.82, 1.0, k));
   // Turn the button toward the camera, with a wobble as it takes the Pokémon in.
-  vec3 toCam = normalize(vec3(cameraPosition.x - aA.x, 0.0, cameraPosition.z - aA.z));
+  // (Straight above it, as the top-down camera can be, the direction is zero: no normalize of zero, which is NaN on Apple GPUs.)
+  vec3 toCamRaw = vec3(cameraPosition.x - aA.x, 0.0, cameraPosition.z - aA.z);
+  vec3 toCam = dot(toCamRaw, toCamRaw) > 1e-8 ? normalize(toCamRaw) : vec3(0.0, 0.0, 1.0);
   float yaw = atan(toCam.x, toCam.z);
   float wob = sin(age * 22.0) * 0.35 * smoothstep(0.35, 0.5, k) * (1.0 - smoothstep(0.7, 0.8, k));
   vec3 q = position;
