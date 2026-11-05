@@ -48,23 +48,23 @@ function makeDexWall(o: { count: number; cols: number; cell: number; center: Vec
   geo.setAttribute("aOff", new THREE.InstancedBufferAttribute(off, 4));
   geo.setAttribute("aFrom", new THREE.InstancedBufferAttribute(from, 4));
   geo.instanceCount = o.count;
-  const u = { uFill: { value: 0 }, uTime: { value: 0 }, uTex: { value: tex }, uDim: { value: 1 }, uCenter: { value: new THREE.Vector3(...o.center) } };
+  const u = { uFill: { value: 0 }, uTime: { value: 0 }, uTex: { value: tex }, uDim: { value: 1 }, uScale: { value: 1 }, uCenter: { value: new THREE.Vector3(...o.center) } };
   const mat = new THREE.ShaderMaterial({
     uniforms: u,
     transparent: true,
     depthWrite: false,
     vertexShader: /* glsl */ `
-      attribute vec4 aOff; attribute vec4 aFrom; uniform float uFill, uTime; uniform vec3 uCenter;
+      attribute vec4 aOff; attribute vec4 aFrom; uniform float uFill, uTime, uScale; uniform vec3 uCenter;
       varying vec2 vUv; varying vec2 vQ; varying float vOn; varying float vFlash; varying float vSeed;
       void main(){
         float k = clamp((uFill - aOff.w) / 0.14, 0.0, 1.0);
         float e = k * k * (3.0 - 2.0 * k);
-        vec3 target = uCenter + vec3(aOff.xy, 0.0);
+        vec3 target = uCenter + vec3(aOff.xy * uScale, 0.0);
         vec3 c = mix(aFrom.xyz, target, e);
         c.y += sin(e * 3.14159) * (0.5 + aFrom.w * 0.6);
         c.y += sin(uTime * 1.1 + aFrom.w * 30.0) * 0.012 * e;
         float spin = (1.0 - e) * (2.5 + aFrom.w * 3.0);
-        vec3 q = position * (0.25 + 0.75 * e);
+        vec3 q = position * (0.25 + 0.75 * e) * mix(1.0, uScale, e);
         vec3 p = c + vec3(q.x * cos(spin), q.y, q.x * sin(spin));
         vUv = (vec2(mod(aOff.z, 8.0), 7.0 - floor(aOff.z / 8.0)) + uv) / 8.0;
         vQ = uv;
@@ -403,6 +403,8 @@ export const build: ChapterBuilder = async (ctx) => {
       burst.u.uOpacity.value = t > t151 + 0.3 ? 1 - ramp(t, t151 + 2.5, t151 + 3.5) : 0;
       const fill = Math.max(0, Math.min(1, (t - t151 - 0.6) / 3.8));
       wall151.u.uFill.value = fill * 1.02;
+      // On a portrait screen the wall shrinks about its centre to fit the frame's width at its final framing (distance 7.8, fov 50); 1 on desktop.
+      wall151.u.uScale.value = Math.min(1, (2 * Math.tan((25 * Math.PI) / 180) * 7.8 * cam.aspect * 0.92) / (17 * 0.42));
       wall151.u.uTime.value = ambient;
       wall151.u.uDim.value = 1 - 0.65 * ramp(t, tMew - 0.4, tMew + 0.8);
       wallLight.intensity = 5.5 * ramp(t, t151 + 0.8, t151 + 4.4) * (1 - 0.6 * ramp(t, tMew - 0.4, tMew + 0.8));

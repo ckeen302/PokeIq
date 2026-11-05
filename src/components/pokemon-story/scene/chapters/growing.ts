@@ -178,6 +178,8 @@ export const build: ChapterBuilder = async (ctx) => {
   const reshiram = mk(643, [0, 12, Z.unova - 10], 8.5, "#ffd8b0");
   const zekrom = mk(644, [0, 12, Z.unova - 10], 8.5, "#6ab8ff");
 
+  // The screen's aspect, as last drawn (the camera path reads it).
+  let aspect = 16 / 9;
   const keys: Key[] = [
     { t: 0, pos: [0, 18, Z.johto + 42], look: [0, 0, Z.johto], fov: 50 },
     { t: tClock + 1, pos: [2, 15, Z.johto + 28], look: [-2, 3, Z.johto - 2], fov: 50 },
@@ -231,9 +233,15 @@ export const build: ChapterBuilder = async (ctx) => {
   return {
     scene,
     portalScale: 1.6,
-    camera: (t) => poseOnPath(keys, t),
+    camera: (t) => {
+      const p = poseOnPath(keys, t);
+      // In the arena on a portrait screen, aim a little lower so the floodlight glows leave the top of the frame and the floor sits nearer the middle.
+      const k = ramp(t, tWorlds - 1, tWorlds) * (1 - ramp(t, tFresh - 0.5, tFresh)) * Math.max(0, Math.min(1, (1 - aspect) / 0.5));
+      return k > 0 ? { ...p, look: [p.look[0], p.look[1] - 3 * k, p.look[2]] as Vec3 } : p;
+    },
     orbit: (t) => ({ target: poseOnPath(keys, t).look, limits: { yaw0: 0, yawSpan: 1.0, minPitch: -0.1, maxPitch: 1.3, minDist: 2, maxDist: 90 } }),
     update(t, ambient, cam, viewH) {
+      aspect = cam.aspect;
       const px = pointPixel(viewH, cam);
       syncTerrainLight(TL, L.key, L.hemi);
       ground.u.uTime.value = ambient;
