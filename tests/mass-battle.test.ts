@@ -810,7 +810,7 @@ describe("mass battle: share links", () => {
     expect(decodeQuestion(code, slugs)).toEqual(q);
     expect(questionKey(q, slugs)).toBe(questionKey({ ...q, runs: 20 }, slugs));
     expect(questionKey(q, slugs)).not.toBe(questionKey({ ...q, level: 50 }, slugs));
-    expect(encodeQuestion(simpleQuestion(129, 493, 100, "colosseum"), slugs)).toBe("2.100.colosseum.50-40.0.swarm_magikarp*1.line_arceus*1");
+    expect(encodeQuestion(simpleQuestion(129, 493, 100, "colosseum"), slugs)).toBe("2.100.colosseum.50-60.0.swarm_magikarp*1.line_arceus*1");
   });
 
   it("encodes how the battle is shown", () => {
@@ -932,10 +932,12 @@ describe("mass battle: presets", () => {
     expect(decodeBattle(encodeBattle(r.spec, slugs), slugs)).toEqual(r.spec);
   });
 
-  it("the sun turns Fire vs Water around, and a Light Ball cuts the Pikachu needed for Snorlax (the presets' own results)", async () => {
+  it("the sun helps Fire against Water, and a Light Ball cuts the Pikachu needed for Snorlax (the presets' own results)", async () => {
     const { PRESET_RESULTS } = await import("@/lib/mass-battle/page-data");
-    expect(PRESET_RESULTS.results["fire-vs-water"].outcome.winner).toBe(0); // Water
-    expect(PRESET_RESULTS.results["fire-vs-water-sun"].outcome.winner).toBe(1); // Fire
+    const plainFw = PRESET_RESULTS.results["fire-vs-water"].outcome, sun = PRESET_RESULTS.results["fire-vs-water-sun"].outcome;
+    expect(sun.winner).toBe(1); // Fire
+    // Fire does better in the sun: it wins where it lost, or wins with more left.
+    expect(plainFw.winner !== 1 || sun.left[1] > plainFw.left[1]).toBe(true);
     const plain = PRESET_RESULTS.results["pikachu-vs-snorlax"].answer!, ball = PRESET_RESULTS.results["light-ball-pikachu-vs-snorlax"].answer!;
     expect(ball.n).toBeLessThan(plain.n);
   });

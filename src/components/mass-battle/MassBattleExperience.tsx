@@ -712,9 +712,10 @@ export function MassBattleExperience({ list, presets, initial, playback: initial
       await deploy(b, true);
       // The pure battle maths (everyone in reach of everyone), worked out while the battle plays.
       const pureEval = poolRef.current.evaluator(slice, qx, () => {}, ac.signal, "melee");
-      const pr = await solve(`${questionKey(q, slugs)}#pure`, pureEval, undefined, { signal: ac.signal, runs: runsOf(q), threshold: thresholdOf(q) });
-      if (pr.answer !== null && !ac.signal.aborted) {
-        const pure = { n: pr.answer, spread: pr.spread, wins: pr.wins, runs: pr.runs };
+      const pr = await solve(`${questionKey(q, slugs)}#pure`, pureEval, undefined, { signal: ac.signal, runs: runsOf(q), threshold: thresholdOf(q), maxN: SOLVER.pureMaxN });
+      if (!ac.signal.aborted) {
+        // No answer up to the cap: shown as "more than" it (n 0).
+        const pure = pr.answer === null ? { n: 0, spread: 0, wins: 0, runs: 0 } : { n: pr.answer, spread: pr.spread, wins: pr.wins, runs: pr.runs };
         setBattle((prev) => (prev && prev.question === q && prev.answer ? { ...prev, answer: { ...prev.answer, pure } } : prev));
       }
     } catch (e) {
@@ -1110,7 +1111,7 @@ export function MassBattleExperience({ list, presets, initial, playback: initial
                   <p className="text-xs text-white/55">{winRateText(b.answer.wins, b.answer.runs, b.answer.n)}. This battle: {final.title}</p>
                   <p className="rounded-lg bg-white/5 px-3 py-2 text-sm text-white/80" data-testid="mb-pure">
                     <span className="font-display text-[11px] font-bold uppercase tracking-[0.18em] text-white/60">Pure battle maths</span>{" "}
-                    {b.answer.pure ? <><b className="text-white">{fmt(b.answer.pure.n)}</b> ({spreadText(b.answer.pure.spread, b.answer.pure.runs)}), with everyone in reach of everyone</> : <span className="text-white/55">working it out…</span>}
+                    {b.answer.pure ? (b.answer.pure.n > 0 ? <><b className="text-white">{fmt(b.answer.pure.n)}</b> ({spreadText(b.answer.pure.spread, b.answer.pure.runs)}), with everyone in reach of everyone</> : <>more than {fmt(SOLVER.pureMaxN)}, with everyone in reach of everyone</>) : <span className="text-white/55">working it out…</span>}
                   </p>
                 </>
               ) : (

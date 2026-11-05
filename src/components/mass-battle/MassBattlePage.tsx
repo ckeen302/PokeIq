@@ -18,7 +18,7 @@ import { MassBattleExperience, type Initial } from "./MassBattleExperience";
  */
 
 function presetSummary(p: PresetCardData): string {
-  const pure = p.answer?.pure ? ` Pure battle maths, with everyone in reach of everyone: ${fmt(p.answer.pure.n)} (${spreadText(p.answer.pure.spread, p.answer.pure.runs)}).` : "";
+  const pure = p.answer?.pure ? ` Pure battle maths, with everyone in reach of everyone: ${p.answer.pure.n > 0 ? `${fmt(p.answer.pure.n)} (${spreadText(p.answer.pure.spread, p.answer.pure.runs)})` : "more than 2,000"}.` : "";
   const answer = p.question && p.answer ? `On the battlefield, ${answerText(p.answer.n, sideName(p.question.army, nameOf)).replace(/^./, (c) => c.toLowerCase())} to beat ${sideName(p.question.boss, nameOf)} (${spreadText(p.answer.spread, p.answer.runs)}).${pure}` : "";
   if (p.kind === "howmany") return answer;
   if (!p.outcome) return answer;

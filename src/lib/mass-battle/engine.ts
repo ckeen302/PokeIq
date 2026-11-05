@@ -1226,6 +1226,8 @@ export class Battle {
     if (this.blocked(i, j, mv, this.priority(i, slot))) return 0;
     if (!this.hitsHidden(i, j, mv)) return 0;
     if (k === "fakeout" && this.hasActed[i]) return 0;
+    // A Lightning Rod or Storm Drain would take it (a partner's, with friendly fire): it does nothing to the target.
+    if (!spread && (mv.type === "Electric" || mv.type === "Water") && this.redirect(i, j, mv) !== j) return 0;
     if (k === "dreameater" && this.status[j] !== STATUS.slp && this.R(j).ability !== "comatose") return 0;
     if (k === "fixed" || k === "ohko") {
       const d = this.fixedDamage(i, j, mv);
@@ -2006,9 +2008,12 @@ export class Battle {
     if (mv.spread || (mv.type !== "Electric" && mv.type !== "Water") || mv.cat === "Status" && SELF_KINDS.has(mv.effect?.kind ?? "")) return t;
     const want = mv.type === "Electric" ? "lightningrod" : "stormdrain";
     if (this.R(t).ability === want) return t;
+    if (!this.rodsFound) this.findRods();
+    const list = want === "lightningrod" ? this.rods[0] : this.rods[1];
+    if (!list.length) return t;
     let best = -1, bestS = -1;
     const reach = mv.contact ? CONTACT_REACH : RANGED_REACH;
-    for (let j = 0; j < this.n; j++) {
+    for (const j of list) {
       if (j === i || !this.alive[j] || this.R(j).ability !== want) continue;
       if (this.side[j] === this.side[i] && !this.prep.rules.friendlyFire) continue;
       if (this.prep.layout === "field" && this.gap(i, j) > reach) continue;
@@ -2016,6 +2021,19 @@ export class Battle {
       if (sp > bestS) { bestS = sp; best = j; }
     }
     return best >= 0 ? best : t;
+  }
+
+  /** Units whose fighter has Lightning Rod or Storm Drain (or could, by Trace), found once. */
+  private rods: [number[], number[]] = [[], []];
+  private rodsFound = false;
+  private findRods() {
+    this.rodsFound = true;
+    for (let i = 0; i < this.n; i++) {
+      const f = this.sp[i];
+      const abs = [this.rows[f].ability, ...this.table.formDefs[f].map((d) => toId(d.ability ?? ""))];
+      if (abs.includes("lightningrod")) this.rods[0].push(i);
+      if (abs.includes("stormdrain")) this.rods[1].push(i);
+    }
   }
 
   /** A status move: on the user (boosts, healing, Rest, Protect, screens) or on its target (status, Leech Seed, Memento). */

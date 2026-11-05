@@ -68,7 +68,7 @@ const ART = artData as unknown as Record<string, [number, number, number, number
 const FORMS = (formsData as unknown as { forms: FormRow[] }).forms;
 
 /** Bumped when the roster's shape or its sets change. */
-export const ROSTER_VERSION = 3;
+export const ROSTER_VERSION = 4;
 export const RANDSETS_FORMAT = "gen9randombattle";
 /** Forms the battle fields (Gigantamax and Eternamax forms only exist in Dynamax battles). */
 export const BATTLE_FORMS = new Set(["mega", "regional"]);

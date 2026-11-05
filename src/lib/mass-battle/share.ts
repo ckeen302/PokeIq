@@ -27,7 +27,7 @@ import {
  * (the share of battles to win, in percent, and battles per size) in the
  * seed's place and the army's rows sharing its size:
  *
- *   ?ask=2.100.colosseum.50-40.0.swarm_magikarp*1.line_arceus*1
+ *   ?ask=2.100.colosseum.50-60.0.swarm_magikarp*1.line_arceus*1
  *
  * How the battle is shown is `?v=` (speed, camera, numbers, nohud,
  * noslow). Version 1 links (`1.100.plains.k3f9.swarm.line.rattata*1000.
@@ -41,8 +41,8 @@ export const MAX_SIDE = 10000;
 /** Most rows a side can have in the sandbox (presets may have more). */
 export const MAX_SPECIES = 4;
 export const THRESHOLDS = [0.5, 0.9] as const;
-export const RUN_CHOICES = [20, 40, 100, 200] as const;
-export const DEFAULT_RUNS = 40;
+export const RUN_CHOICES = [20, 40, 60, 100, 200] as const;
+export const DEFAULT_RUNS = 60;
 
 export interface SlugIndex {
   id(slug: string): number | undefined;

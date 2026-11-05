@@ -18,7 +18,7 @@ import { prepare, runHeadless } from "../src/lib/mass-battle/engine";
 import { PRESETS, resolvePreset } from "../src/lib/mass-battle/presets";
 import { questionKey, questionSpec, runsOf, thresholdOf, type SlugIndex } from "../src/lib/mass-battle/share";
 import { expandQuestion, factsOf } from "../src/lib/mass-battle/sets";
-import { solve, type Evaluate } from "../src/lib/mass-battle/solver";
+import { solve, SOLVER, type Evaluate } from "../src/lib/mass-battle/solver";
 import type { Question } from "../src/lib/mass-battle/types";
 import { presetsFile, type PresetResult } from "../src/lib/mass-battle/preset-results";
 
@@ -57,7 +57,7 @@ export function evaluator(question: Question, layout: "field" | "melee" = "field
 
 /** `--rules pp` or `--rules noff`: the "how many?" answers with Real PP on, or friendly fire off, against the saved ones (nothing is written). */
 async function compareRules(which: string) {
-  const saved = (await import("../src/data/mass-battle-presets.json")).default as { results: Record<string, PresetResult> };
+  const saved = (await import("../src/data/mass-battle-presets.json")).default as unknown as { results: Record<string, PresetResult> };
   for (const p of PRESETS) {
     const r = resolvePreset(p, roster);
     if (!r.question) continue;
@@ -83,8 +83,8 @@ async function main() {
       res.answer = s.answer === null ? null : { n: s.answer, spread: s.spread, wins: s.wins, runs: s.runs, seed: s.wonSeed ?? r.spec.seed };
       // The pure battle maths: everyone in reach of everyone (the simulator check's model), on its own seeds.
       if (res.answer) {
-        const pure = await solve(`${questionKey(q, SLUGS)}#pure`, evaluator(q, "melee"), undefined, { runs: runsOf(q), threshold: thresholdOf(q) });
-        res.answer.pure = pure.answer === null ? null : { n: pure.answer, spread: pure.spread, wins: pure.wins, runs: pure.runs };
+        const pure = await solve(`${questionKey(q, SLUGS)}#pure`, evaluator(q, "melee"), undefined, { runs: runsOf(q), threshold: thresholdOf(q), maxN: SOLVER.pureMaxN });
+        res.answer.pure = pure.answer === null ? { n: 0, spread: 0, wins: 0, runs: 0 } : { n: pure.answer, spread: pure.spread, wins: pure.wins, runs: pure.runs };
       }
     }
     results[p.id] = res;

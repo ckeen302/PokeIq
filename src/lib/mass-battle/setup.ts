@@ -1,4 +1,4 @@
-import { MAX_SIDE, MAX_SPECIES, simpleQuestion } from "./share";
+import { DEFAULT_RUNS, MAX_SIDE, MAX_SPECIES, simpleQuestion } from "./share";
 import { clampLevel } from "./sets";
 import { DEFAULT_FIELD, type ArenaId, type ArmySpec, type BattleSpec, type FieldSpec, type Formation, type GroupRule, type ItemPolicy, type Question, type RulesSpec, type SetChoice, type Spacing, type SpreadUse, type Stance, type Targeting, type UnitSpec } from "./types";
 
@@ -63,7 +63,7 @@ export function defaultSetup(id: (slug: string) => number): SetupState {
     pp: false,
     friendlyFire: true,
     threshold: 0.5,
-    runs: 40,
+    runs: DEFAULT_RUNS,
   };
 }
 
@@ -77,7 +77,7 @@ export function fromBattle(s: SetupState, spec: BattleSpec): SetupState {
 
 /** The panel filled in from a question (the How many? tab). */
 export function fromQuestion(s: SetupState, q: Question): SetupState {
-  return { ...s, tab: "ask", army: toSide(q.army), boss: toSide(q.boss), level: q.level, arena: q.arena, field: q.field ?? { ...DEFAULT_FIELD }, items: q.items ?? "none", pp: !!q.rules?.pp, friendlyFire: q.rules?.friendlyFire !== false, threshold: q.threshold ?? 0.5, runs: q.runs ?? 40 };
+  return { ...s, tab: "ask", army: toSide(q.army), boss: toSide(q.boss), level: q.level, arena: q.arena, field: q.field ?? { ...DEFAULT_FIELD }, items: q.items ?? "none", pp: !!q.rules?.pp, friendlyFire: q.rules?.friendlyFire !== false, threshold: q.threshold ?? 0.5, runs: q.runs ?? DEFAULT_RUNS };
 }
 
 const toArmy = (s: SideState, counts = true): ArmySpec => {
@@ -117,7 +117,7 @@ export function toQuestion(s: SetupState): Question {
   const rules = rulesOf(s);
   if (rules) q.rules = rules;
   if (s.threshold !== 0.5) q.threshold = s.threshold;
-  if (s.runs !== 40) q.runs = s.runs;
+  if (s.runs !== DEFAULT_RUNS) q.runs = s.runs;
   return q;
 }
 
