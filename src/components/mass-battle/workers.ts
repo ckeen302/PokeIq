@@ -59,10 +59,10 @@ export class SimClient {
   }
 
   /** Sets a battle up (damage table, armies in formation); resolves with its first frame. `playback`: how fast it will be shown. */
-  async init(roster: RosterSlice, spec: BattleSpec, playback?: PlaybackSpec): Promise<SimReady> {
+  async init(roster: RosterSlice, spec: BattleSpec, playback?: PlaybackSpec, startTick = 0): Promise<SimReady> {
     const id = ++this.id;
     this.inflight = 0;
-    return this.request<SimReady>({ type: "init", id, roster, spec, playback }, "ready", id);
+    return this.request<SimReady>({ type: "init", id, roster, spec, playback, ...(startTick > 0 ? { startTick } : {}) }, "ready", id);
   }
 
   /** The playback changed (or it was paused): the worker plays ahead by it. */

@@ -100,6 +100,9 @@ export class BattleView {
     this.hp = new Uint16Array(n);
     this.speed = new Float32Array(n);
     this.left = [...ready.frame.left] as [number, number];
+    // A replay from partway through (the kill cam, the timeline): the clock starts there, and those already down stay down.
+    this.t = ready.frame.tick / TICK_HZ;
+    if (this.t > 0) for (let i = 0; i < n; i++) if (ready.frame.hp[i] === 0) this.faintAt[i] = this.t - 60;
     this.draw = drawMask(ready, cap);
     this.drawn = this.draw.reduce((a, b) => a + b, 0);
     this.frames.push(ready.frame);
@@ -108,7 +111,9 @@ export class BattleView {
 
   /** Each unit's starting form, by battle species (Wishiwashi schools from the start: no note says so). */
   startForms(initial: number[]) {
-    for (let i = 0; i < this.n; i++) this.form[i] = initial[this.sp[i]] ?? 0;
+    // A replay from partway through starts in the forms of that moment.
+    const now = this.ready.forms;
+    for (let i = 0; i < this.n; i++) this.form[i] = now ? now[i] : initial[this.sp[i]] ?? 0;
   }
 
   /** Battle seconds of the newest frame. */

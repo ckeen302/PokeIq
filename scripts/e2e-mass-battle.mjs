@@ -95,6 +95,18 @@ export async function runMassBattle({ browser, BASE, OUT, errors, step }) {
     await page.getByTestId("mb-final").waitFor();
     if (!(await page.getByTestId("mb-result-title").textContent())?.trim()) errors.push("mass battle: the result card has no title");
     await page.screenshot({ path: `${OUT}/mass-battle-result.png` });
+    // Post-battle stats: the MVP, damage by species, the timeline; replaying from a moment of it.
+    await press(page, "mb-stats-toggle");
+    await page.getByTestId("mb-stats").waitFor();
+    if (!(await page.getByTestId("mb-stats-species").locator("li").count())) errors.push("mass battle: the stats have no damage by species");
+    if (!(await page.getByTestId("mb-timeline").count())) errors.push("mass battle: the stats have no timeline");
+    await page.screenshot({ path: `${OUT}/mass-battle-stats.png` });
+    await page.getByTestId("mb-scrub").fill("500");
+    await press(page, "mb-replay-from");
+    await phaseIs(["playing", "done"], 120_000);
+    const t0 = Number(await attr("t"));
+    if (!(t0 > 0.5)) errors.push(`mass battle: replaying from halfway started at ${t0} s`);
+    await phaseIs(["done"], 240_000);
     const made = await page.evaluate(() => window.__audioContexts);
     if (made !== 0) errors.push(`mass battle: ${made} AudioContext(s) started with the site's sound off`);
   });
