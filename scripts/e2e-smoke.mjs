@@ -17,6 +17,7 @@ import { runMassBattle } from "./e2e-mass-battle.mjs";
 import { runRace } from "./e2e-race.mjs";
 import { runWorldHistory } from "./e2e-world-history.mjs";
 import { runGroupBattles } from "./e2e-battle-group.mjs";
+import { runEmptyQueue } from "./e2e-battle-queue.mjs";
 
 const BASE = process.argv[2] ?? "http://localhost:3000";
 // Each game opens its how-to pop-up (with a live demo) on a first visit. "Don't show again" dismisses it for good on this device.
@@ -2809,6 +2810,7 @@ await page.screenshot({ path: `${OUT}/battle-tower.png` });
 // A live battle in two browsers: Red opens it, Blue joins from the link.
 // Triples, a Free-For-All, a Multi Battle with a computer partner, and a live four-player room with a spectator.
 await runGroupBattles({ browser, BASE, OUT, errors, step });
+await runEmptyQueue({ browser, BASE, OUT, errors, step });
 
 step("live battle: create, join, ready");
 const liveRed = await newPage({ width: 1280, height: 900 });

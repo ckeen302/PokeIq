@@ -75,6 +75,14 @@ const GROUPS: { title: string; items: Pick[] }[] = [
   { title: "Custom", items: [{ id: "custom", label: "Custom rules", note: "by invite" }] },
 ];
 
+/**
+ * How long a search runs before the box offers the other ways in (the
+ * computer, a friend link). On a quiet day the queue is often empty, and a
+ * search that only spins looks broken. The search keeps going meanwhile, so a
+ * real opponent can still turn up.
+ */
+export const QUEUE_FALLBACK_MS = 20_000;
+
 const formatLabel = (f: PlayFormatId, rules: CustomRules) => (f === "custom" ? customName(rules) : PLAY_FORMAT_INFO[f].name);
 
 function FormatMenu({ value, rules, onChange, disabled }: { value: PlayFormatId; rules: CustomRules; onChange: (f: PlayFormatId) => void; disabled?: boolean }) {
@@ -259,7 +267,12 @@ export function BattleHome({ news }: { news: NewsItem[] }) {
     void finder.search(trainer, { ...(needsTeam ? { team } : {}), rankedId, ...(hidden ? { hidden: true } : {}) });
   }
 
-  async function open(mode: "cpu" | "pvp") {
+  /**
+   * Starts a battle against the computer or by invite link, with the format
+   * and team picked above. `copyLink`: the invite link goes to the clipboard
+   * too (the lobby shows it as well, so a refused clipboard costs nothing).
+   */
+  async function open(mode: "cpu" | "pvp", { copyLink = false }: { copyLink?: boolean } = {}) {
     if (!check()) return;
     unlockAudio();
     setBusy(mode === "cpu" ? "cpu" : "invite");
@@ -272,6 +285,7 @@ export function BattleHome({ news }: { news: NewsItem[] }) {
         rules: custom ? rules : undefined,
         ...(mode === "pvp" ? { hidden } : {}),
       });
+      if (copyLink) await navigator.clipboard?.writeText(`${window.location.origin}${href}`).catch(() => undefined);
       router.push(href);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Couldn't start a battle.");
@@ -279,7 +293,15 @@ export function BattleHome({ news }: { news: NewsItem[] }) {
     }
   }
 
+  /** Nobody turned up: the search box offers the computer or a friend link (the search runs on until one is picked). */
+  async function fallBack(mode: "cpu" | "pvp") {
+    finder.cancel();
+    await open(mode, { copyLink: mode === "pvp" });
+  }
+
   const problem = error ?? finder.error;
+  const waited = searching ? now - (finder.since ?? now) : 0;
+  const quiet = searching && waited >= QUEUE_FALLBACK_MS;
 
   return (
     <section className="space-y-5" data-testid="battle-home">
@@ -383,7 +405,31 @@ export function BattleHome({ news }: { news: NewsItem[] }) {
                   <p className="flex items-center justify-center gap-2 font-display text-sm font-semibold uppercase tracking-wider text-screen">
                     <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> {rankedOn ? "Searching for a ranked rival…" : "Searching for an opponent…"}
                   </p>
-                  <p className="font-pixel text-xs tabular-nums text-muted-foreground">{clock(now - (finder.since ?? now))}</p>
+                  <p className="font-pixel text-xs tabular-nums text-muted-foreground">{clock(waited)}</p>
+                  {quiet && (
+                    <div className="space-y-2 border-t border-screen/30 pt-2" data-testid="queue-fallback">
+                      <p className="text-sm font-semibold">Nobody&apos;s in {formatLabel(format, rules)} right now.</p>
+                      {counts && counts.battles > 0 && (
+                        <p className="text-xs text-muted-foreground" data-testid="queue-fallback-counts">
+                          {counts.battles.toLocaleString("en-US")} {counts.battles === 1 ? "battle" : "battles"} in progress. Still searching meanwhile.
+                        </p>
+                      )}
+                      <div className="grid grid-cols-1 gap-2 min-[400px]:grid-cols-2 md:grid-cols-1">
+                        {format === "factory" ? (
+                          <Link href="/battle/factory" onClick={finder.cancel} className="flex items-center justify-center gap-1.5 rounded-md bg-primary px-2 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90" data-testid="queue-fallback-cpu">
+                            <Bot className="h-3.5 w-3.5" aria-hidden /> Battle the computer
+                          </Link>
+                        ) : (
+                          <Button type="button" size="sm" disabled={!!busy} onClick={() => void fallBack("cpu")} data-testid="queue-fallback-cpu">
+                            {busy === "cpu" ? <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden /> : <Bot className="h-3.5 w-3.5" aria-hidden />} Battle the computer
+                          </Button>
+                        )}
+                        <Button type="button" size="sm" variant="outline" disabled={!!busy} onClick={() => void fallBack("pvp")} data-testid="queue-fallback-invite">
+                          {busy === "invite" ? <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden /> : <Link2 className="h-3.5 w-3.5" aria-hidden />} Copy a friend link
+                        </Button>
+                      </div>
+                    </div>
+                  )}
                   <Button type="button" size="sm" variant="ghost" onClick={finder.cancel}>
                     <X className="h-3.5 w-3.5" aria-hidden /> Cancel
                   </Button>
