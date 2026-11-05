@@ -1,10 +1,10 @@
 import * as THREE from "three";
 import { poseOnPath, type Key, type Vec3 } from "@/lib/world-history/camera";
-import { col, makeGlow, makeSky, makeTerrain, merge, noise2, ramp, rng } from "@/components/world-history/scene/kit";
+import { col, makeCloudLayer, makeGlow, makeSky, makeTerrain, merge, noise2, placed, ramp, rng, stoneMaterial } from "@/components/world-history/scene/kit";
 import { makeCanvasPanel } from "@/components/world-history/scene/props";
 import { lights, loadFigures, lookAt, pointPixel } from "@/components/world-history/scene/chapters/common";
 import type { ChapterBuilder } from "@/components/world-history/scene/types";
-import { drawCritter, makeBall, makeDevice, makeThreads } from "../story-kit";
+import { drawCritter, makeBall, makeDevice, makeGrass, makeThreads } from "../story-kit";
 import { bag, heroFigure, STOCK } from "./base";
 
 /**
@@ -45,8 +45,8 @@ export function makeVillage(scene: THREE.Object3D, seed = 2) {
     const x = Math.cos(a) * d, z = Math.sin(a) * d - 4;
     spots.push({ pos: [x, 0, z], rot: Math.atan2(-x, -(z + 4)), size: [2.8 + r() * 1.2, 2.0 + r() * 0.6, 2.4 + r() * 0.6] });
   }
-  const ROOFS = ["#c0392b", "#2f6fb0", "#3a8f4a", "#c07a2b", "#8a4ab0"];
-  const wallMat = new THREE.MeshStandardMaterial({ color: col("#efe2cc"), roughness: 0.9 });
+  const ROOFS = ["#b8443a", "#3a6a9a", "#4a7f4a", "#b8783a", "#7a5a9a"];
+  const wallMat = stoneMaterial({ color: "#efe2cc", roughness: 0.9, dirt: 0.25 });
   const doorMat = new THREE.MeshStandardMaterial({ color: col("#5a3a22"), roughness: 0.8 });
   const roofMats = ROOFS.map((c) => new THREE.MeshStandardMaterial({ color: col(c), roughness: 0.7 }));
   const geos: THREE.BufferGeometry[] = [];
@@ -61,6 +61,19 @@ export function makeVillage(scene: THREE.Object3D, seed = 2) {
     scene.add(group);
     return { group, winMat };
   });
+  // Grounding: a soft shadow under every house, and a low hedge along its front.
+  const shadowTex = (() => { const c = document.createElement("canvas"); c.width = c.height = 64; const g = c.getContext("2d")!; const gr = g.createRadialGradient(32, 32, 4, 32, 32, 32); gr.addColorStop(0, "rgba(0,0,0,0.7)"); gr.addColorStop(1, "rgba(0,0,0,0)"); g.fillStyle = gr; g.fillRect(0, 0, 64, 64); return new THREE.CanvasTexture(c); })();
+  const shadowMat = new THREE.MeshBasicMaterial({ map: shadowTex, transparent: true, depthWrite: false, color: col("#1a2a10") });
+  const shadowGeo = merge(spots.map((sp) => placed(new THREE.PlaneGeometry(sp.size[0] * 1.9, sp.size[2] * 1.9).rotateX(-Math.PI / 2), [sp.pos[0], 0.03, sp.pos[2]], sp.rot)));
+  const hedgeMat = new THREE.MeshStandardMaterial({ color: col("#3a6a2a"), roughness: 0.95 });
+  const hedgeGeo = merge(spots.flatMap((sp) => { const c = Math.cos(sp.rot), sn = Math.sin(sp.rot); const f = sp.size[2] / 2 + 1.0; return [-1, 1].map((side) => { const lx = side * (sp.size[0] * 0.42 + 0.2); return placed(new THREE.BoxGeometry(sp.size[0] * 0.5, 0.55, 0.45), [sp.pos[0] + lx * c + f * sn, 0.27, sp.pos[2] - lx * sn + f * c], sp.rot); }); }));
+  const extras = new THREE.Group();
+  extras.add(new THREE.Mesh(shadowGeo, shadowMat), new THREE.Mesh(hedgeGeo, hedgeMat));
+  scene.add(extras);
+  const grass = makeGrass({ count: 16000, center: [0, 0, -2], size: [44, 40], height: [0.1, 0.28], base: "#3a6a2a", tip: "#b4d86a", seed: 9, clear: { x: 0, z: -4, r: 6.2 } });
+  grass.u.uWind.value = 0.4;
+  grass.u.uSunDir.value.set(-0.9, 0.28, 0.35).normalize();
+  extras.add(grass.mesh);
   const nz = noise2(seed);
   const terrain = makeTerrain({ size: [220, 220], segments: 90, height: (x, z) => { const d = Math.hypot(x, z + 4); return d < 24 ? 0 : (d - 24) * 0.12 + nz.fbm(x * 0.03, z * 0.03, 3) * 5; }, color: (h) => [0.26 + h * 0.008, 0.46 + h * 0.006, 0.2] });
   scene.add(terrain.mesh);
@@ -84,10 +97,11 @@ export function makeVillage(scene: THREE.Object3D, seed = 2) {
   }
   scene.add(trees, trunks);
   return {
-    houses, spots,
+    houses, spots, extras, grass,
     windows(k: number[]) { houses.forEach((h, i) => h.winMat.color.copy(col("#ffd890", 0.25 + 3.0 * (k[i] ?? 0)))); },
     dispose() {
       geos.forEach((g) => g.dispose());
+      shadowGeo.dispose(); shadowMat.dispose(); shadowTex.dispose(); hedgeGeo.dispose(); hedgeMat.dispose(); grass.dispose();
       houses.forEach((h) => h.winMat.dispose());
       [wallMat, doorMat, ...roofMats].forEach((x) => x.dispose());
       terrain.dispose(); path.geometry.dispose(); lane.geometry.dispose(); (path.material as THREE.Material).dispose();
@@ -118,9 +132,11 @@ export const build: ChapterBuilder = async (ctx) => {
   const end = ctx.timing.anim;
   const tLaunch = B("launch"), tOld = B("old"), tThree = B("three"), tMew = B("mew-rumour"), tWord = B("word"), tBlue = B("blue");
 
-  const sky = D.add(makeSky({ top: "#6fa8e8", horizon: "#ffe2c0", bottom: "#4a6a3a", sunDir: [-0.9, 0.28, 0.35], sunColor: "#fff0d0", sunSize: 900, sunGlow: 0.3 }));
+  const sky = D.add(makeSky({ top: "#3f86e0", horizon: "#e4ecf6", bottom: "#4a6a3a", sunDir: [-0.9, 0.28, 0.35], sunColor: "#fff0d0", sunSize: 900, sunGlow: 0.3 }));
   scene.add(sky.mesh);
   scene.fog = new THREE.FogExp2(col("#cfdcea"), 0.0045);
+  const clouds = D.add(makeCloudLayer({ size: 700, y: 70, color: "#ffffff", shadow: "#c8b8c8", density: 0.34, scale: 0.008, speed: [1, 0, 0.3], intensity: 1.05 }));
+  scene.add(clouds.mesh);
   const L = lights(scene, { sky: "#cfe4ff", ground: "#5a7a3a", fill: 0.7, key: "#fff0d8", keyK: 1.6, keyPos: [-12, 10, 6], rim: "#ffd0a0", rimK: 0.8 });
   const V = D.add(makeVillage(scene));
 
@@ -138,16 +154,20 @@ export const build: ChapterBuilder = async (ctx) => {
   const m4 = new THREE.Matrix4();
 
   // The lab table and three balls.
-  const table = new THREE.Mesh(new THREE.BoxGeometry(4.2, 0.12, 1.6), new THREE.MeshStandardMaterial({ color: col("#a8805a"), roughness: 0.55 }));
-  table.position.set(0, 0.95, 2);
-  scene.add(table);
-  D.add({ dispose: () => { table.geometry.dispose(); (table.material as THREE.Material).dispose(); } });
+  const tableMat = new THREE.MeshStandardMaterial({ color: col("#7a5236"), roughness: 0.5 });
+  const table = new THREE.Mesh(merge([placed(new THREE.BoxGeometry(4.2, 0.1, 1.6), [0, 0.95, 2]), ...[[-1.95, -0.65], [1.95, -0.65], [-1.95, 0.65], [1.95, 0.65]].map(([x, z]) => placed(new THREE.BoxGeometry(0.1, 0.9, 0.1), [x, 0.45, 2 + z]))]), tableMat);
+  const clothMat = new THREE.MeshStandardMaterial({ color: col("#f4f0e6"), roughness: 0.85 });
+  const cloth = new THREE.Mesh(merge([placed(new THREE.BoxGeometry(3.9, 0.012, 1.3), [0, 1.006, 2]), placed(new THREE.BoxGeometry(3.9, 0.32, 0.012), [0, 0.85, 2.655])]), clothMat);
+  scene.add(table, cloth);
+  D.add({ dispose: () => { table.geometry.dispose(); tableMat.dispose(); cloth.geometry.dispose(); clothMat.dispose(); } });
+  // A halo of each starter's colour behind it as it forms.
+  const halos = ["#5aff8a", "#ff9a3a", "#5ab8ff"].map((c, i) => { const g = D.add(makeGlow({ pos: [(i - 1) * 1.2, 1.5, 1.7], size: 2.2, color: c, intensity: 0 })); scene.add(g.sprite); return g; });
   const balls = [-1.2, 0, 1.2].map((x) => { const b = D.add(makeBall({ radius: 0.17 })); b.group.position.set(x, 1.18, 2); b.group.rotation.y = 0; scene.add(b.group); return b; });
   const figs = await loadFigures(ctx, [1, 4, 7, 151]);
   const RIM = ["#5aff8a", "#ff9a3a", "#5ab8ff"];
   const starters = [1, 4, 7].map((a, i) => heroFigure(figs.get(a), { pos: [(i - 1) * 1.2, 1.02, 2.1], height: 0.9, accent: RIM[i], scene }));
   starters.forEach((s) => s && D.add(s));
-  const mew = heroFigure(figs.get(151), { pos: [0, 9, -2], height: 2.2, accent: "#ff9ad0", scene });
+  const mew = heroFigure(figs.get(151), { pos: [0, 9, -2], height: 2.8, accent: "#ff9ad0", scene });
   if (mew) D.add(mew);
   const mewTrail = D.add(makeGlow({ pos: [0, 9, -2], size: 4, color: "#ff9ad0", intensity: 0 }));
   scene.add(mewTrail.sprite);
@@ -165,15 +185,22 @@ export const build: ChapterBuilder = async (ctx) => {
   scene.add(threads.points);
 
   // The blue cartridge, and the card that spins off it.
-  const cart = new THREE.Mesh(new THREE.BoxGeometry(0.57, 0.65, 0.08), new THREE.MeshStandardMaterial({ color: col("#2a5ad8"), roughness: 0.35, emissive: col("#1a3a9a"), emissiveIntensity: 0.9 }));
+  // A plain cartridge: a body with a notched top corner, grip ridges and a blank label with a little creature.
+  const cartShape = new THREE.Shape([[-0.285, -0.325], [0.285, -0.325], [0.285, 0.24], [0.2, 0.325], [-0.285, 0.325]].map(([x, y]) => new THREE.Vector2(x, y)));
+  const cartGeo = merge([new THREE.ExtrudeGeometry(cartShape, { depth: 0.08, bevelEnabled: true, bevelSize: 0.012, bevelThickness: 0.012, bevelSegments: 2 }).translate(0, 0, -0.04), ...[0, 1, 2, 3].map((i) => placed(new THREE.BoxGeometry(0.4, 0.012, 0.012), [0, -0.2 - i * 0.03, 0.055]))]);
+  const cart = new THREE.Mesh(cartGeo, new THREE.MeshStandardMaterial({ color: col("#2a5ad8"), roughness: 0.3, metalness: 0.05, emissive: col("#1a3a9a"), emissiveIntensity: 0.5 }));
+  const label = makeCanvasPanel({ w: 0.42, h: 0.34, px: [168, 136], emissive: 0.9, draw(g, w, h) { const gr = g.createLinearGradient(0, 0, 0, h); gr.addColorStop(0, "#6aa8ff"); gr.addColorStop(1, "#1a4ab8"); g.fillStyle = gr; g.fillRect(0, 0, w, h); g.fillStyle = "#ffffff"; g.fillRect(8, 8, w - 16, 4); drawCritter(g, w / 2 - 34, 30, 68, 91, "#eaf2ff"); } });
+  label.mesh.position.set(0, 0.07, 0.066);
+  cart.add(label.mesh);
+  D.add(label);
   scene.add(cart);
   const cardTex = makeCanvasPanel({ w: 0.42, h: 0.58, px: [128, 176], emissive: 1.0, draw(g, w, h) { g.fillStyle = "#f2c94c"; g.fillRect(0, 0, w, h); g.fillStyle = "#e85a3a"; g.fillRect(7, 7, w - 14, h - 14); g.fillStyle = "#fff8e0"; g.fillRect(14, 24, w - 28, 64); drawCritter(g, 36, 28, 56, 77, "#3a2a8a"); } });
   D.add(cardTex);
   scene.add(cardTex.mesh);
-  D.add({ dispose: () => { cart.geometry.dispose(); (cart.material as THREE.Material).dispose(); } });
+  D.add({ dispose: () => { cartGeo.dispose(); (cart.material as THREE.Material).dispose(); } });
 
   const R = 6.2;
-  const arc = (k: number): Key => { const a = -0.9 + k * 1.8; return { t: tThree + 0.4 + k * 4.6, pos: [Math.sin(a) * 3.2, 1.9, 2 + Math.cos(a) * 3.2], look: [0, 1.25, 2], fov: 40 }; };
+  const arc = (k: number): Key => { const a = -0.8 + k * 1.6; return { t: tThree + 0.4 + k * 4.6, pos: [Math.sin(a) * 4.6, 1.75, 2 + Math.cos(a) * 4.6], look: [0, 1.35, 2], fov: 38 }; };
   const keys: Key[] = [
     { t: 0, pos: [0, 2.2, 26 + R * 1.6], look: [0, 2.2, 26], fov: 40 },
     { t: tLaunch + 0.6, pos: [0, 2.2, 26 + R * 0.9], look: [0, 2.2, 26], fov: 40 },
@@ -187,7 +214,7 @@ export const build: ChapterBuilder = async (ctx) => {
     { t: tBlue + 1.8, pos: [0.2, 5.2, 11.5], look: [0, 3.3, 4], fov: 42 },
     { t: end, pos: [0.4, 3.7, 7.6], look: [0, 3.3, 4], fov: 38 },
   ];
-  const dayTop = col("#6fa8e8"), duskTop = col("#2a2e6a"), dayHor = col("#ffe2c0"), duskHor = col("#ff8a5a");
+  const dayTop = col("#3f86e0"), duskTop = col("#2a2e6a"), dayHor = col("#e4ecf6"), duskHor = col("#ff8a5a");
 
   return {
     scene,
@@ -201,6 +228,11 @@ export const build: ChapterBuilder = async (ctx) => {
       sky.u.uTop.value.copy(dayTop.clone().lerp(duskTop, dusk));
       sky.u.uHorizon.value.copy(dayHor.clone().lerp(duskHor, dusk));
       L.key.intensity = 1.6 * (1 - dusk * 0.7);
+      clouds.u.uTime.value = ambient;
+      clouds.u.uColor.value.copy(col("#ffffff").lerp(col("#ffb08a"), dusk));
+      clouds.u.uShadow.value.copy(col("#c8b8c8").lerp(col("#4a3a6a"), dusk));
+      V.grass.u.uTime.value = ambient;
+      V.grass.u.uLight.value = 1 - dusk * 0.6;
       L.hemi.intensity = 0.7 * (1 - dusk * 0.5);
       (scene.fog as THREE.FogExp2).color.copy(col("#cfdcea").lerp(col("#5a4a6a"), dusk));
       // Through the screen: the Game Boy falls behind; its pixels become blocks that settle as the village.
@@ -225,7 +257,9 @@ export const build: ChapterBuilder = async (ctx) => {
         const k = ramp(t, at, at + 0.5);
         balls[i].open(k, RIM[i]);
         balls[i].group.visible = t < tMew + 1;
-        s?.set(ramp(t, at + 0.2, at + 1.4) * (1 - ramp(t, tMew + 0.5, tMew + 1.5)), ambient, viewH, cam, 0.03, 0.2);
+        const form = ramp(t, at + 0.2, at + 1.4) * (1 - ramp(t, tMew + 0.5, tMew + 1.5));
+        s?.set(form, ambient, viewH, cam, 0.03, 0.05);
+        halos[i].set(RIM[i], (0.5 * form + 0.9 * Math.max(0, 1 - Math.abs(t - at - 0.4) * 1.6)) * (1 - ramp(t, tMew, tMew + 1)));
       });
       // Mew zips across the top of the frame.
       const mz = ramp(t, tMew + 0.2, tMew + 2.6);

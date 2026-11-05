@@ -312,6 +312,8 @@ export const build: ChapterBuilder = async (ctx) => {
       towerGlow.set("#ffe8a0", lum ? 0.3 + 0.1 * Math.sin(ambient * 2) : 0);
       avenues.u.uTime.value = ambient; avenues.u.uPixel.value = px; avenues.u.uOpacity.value = lum ? 1 : 0;
       V.houses.forEach((h) => (h.group.visible = st === 0));
+      V.extras.visible = st === 0;
+      V.grass.u.uTime.value = ambient;
     },
     look: (t) =>
       lookAt(t, { ...STOCK.modern }, {
