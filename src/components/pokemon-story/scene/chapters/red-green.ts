@@ -3,6 +3,7 @@ import type { Key, Vec3 } from "@/lib/world-history/camera";
 import { col, makeCloudLayer, makeGlow, makeSky, makeTerrain, merge, noise2, placed, ramp, rng, stoneMaterial } from "@/components/world-history/scene/kit";
 import { makeCanvasPanel } from "@/components/world-history/scene/props";
 import { lights, loadFigures, lookAt, pointPixel } from "@/components/world-history/scene/chapters/common";
+import { withDetail } from "@/components/world-history/scene/materials";
 import type { ChapterBuilder } from "@/components/world-history/scene/types";
 import { drawCritter, makeBall, makeDevice, makeGrass, makeSunShadows, makeThreads } from "../story-kit";
 import { bag, heroFigure, shots, STOCK } from "./base";
@@ -154,6 +155,10 @@ export function makeVillage(scene: THREE.Object3D, seed = 2, sun: Vec3 = [-0.82,
   const woodMat = new THREE.MeshStandardMaterial({ color: col("#5a3420"), roughness: 0.75 });
   const roofMat = stoneMaterial({ color: "#ffffff", roughness: 0.78, dirt: 0.35 });
   roofMat.vertexColors = true;
+  // Surface detail (films-v2 materials): lime plaster with a trowelled grain, roofs with courses of tiles, worn timber.
+  withDetail(wallMat, { kind: "stone", scale: 2.2, bump: 0.5, rough: 0.15, tint: 0.08 });
+  withDetail(roofMat, { kind: "wood", scale: 3.5, bump: 1.1, rough: 0.2, tint: 0.14, axis: [1, 0, 0] });
+  withDetail(woodMat, { kind: "wood", scale: 2, bump: 0.8 });
   const paneTex = paneTexture();
   const paneMat = new THREE.MeshBasicMaterial({ map: paneTex, vertexColors: true });
   const town = new THREE.Group();
@@ -194,6 +199,17 @@ export function makeVillage(scene: THREE.Object3D, seed = 2, sun: Vec3 = [-0.82,
     }
     // A flower bed under the front windows.
     for (const side of [-1, 1]) { const p = at(side * sp.size[0] * 0.3, front + 0.35); hedgeG.push(placed(new THREE.BoxGeometry(0.9, 0.32, 0.38), [p[0], 0.16, p[2]], sp.rot)); }
+    // Lived-in: ivy climbing a front corner of every other cottage (clumps of leaves up to the eaves),
+    // and a climbing shrub by the door of the rest; merged into the hedges (no extra draw call).
+    const side = i % 2 ? 1 : -1;
+    const climbs = i % 2 === 0 ? 11 : 6;
+    for (let k = 0; k < climbs; k++) {
+      const u = k / (climbs - 1);
+      const y = 0.25 + u * sp.size[1] * (i % 2 === 0 ? 0.95 : 0.55);
+      const lx = i % 2 === 0 ? side * (sp.size[0] * 0.5 + 0.02) - side * (r() * 0.35) * u : side * 0.75 + (r() - 0.5) * 0.2;
+      const p = at(lx, front + 0.08 + r() * 0.06);
+      hedgeG.push(placed(new THREE.IcosahedronGeometry(0.17 + r() * 0.1 - u * 0.05, 1), [p[0], y, p[2]], r() * 6));
+    }
   });
   // Fences down both sides of the lane in.
   fence([[1.6, 30], [1.6, 7]], (x, z) => [x, 0, z], 0);
