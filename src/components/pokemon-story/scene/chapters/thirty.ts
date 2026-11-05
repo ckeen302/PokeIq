@@ -1,10 +1,10 @@
 import * as THREE from "three";
 import type { Key, Vec3 } from "@/lib/world-history/camera";
-import { col, makeGlow, makeParticles, makeRing, makeSky, makeStreaks, makeTerrain, noise2, ramp, rng } from "@/components/world-history/scene/kit";
+import { NOISE, col, makeGlow, makeParticles, makeRing, makeSky, makeStreaks, makeTerrain, merge, noise2, placed, ramp, rng } from "@/components/world-history/scene/kit";
 import { makeCity } from "@/components/world-history/scene/props";
 import { lights, loadFigures, lookAt, pointPixel } from "@/components/world-history/scene/chapters/common";
 import type { ChapterBuilder } from "@/components/world-history/scene/types";
-import { drawCritter, makeDevice, makeFireflies, makeGlassCase, makeGlobe, makeGrass, makeSilhouette, makeStars, makeWoods } from "../story-kit";
+import { drawCritter, glassMaterial, makeDevice, makeFireflies, makeGlassCase, makeGlobe, makeGrass, makeSilhouette, makeStars, makeWoods } from "../story-kit";
 import { bag, heroFigure, shots, stageAt, STOCK, type Hero } from "./base";
 import { cableTable } from "./cable";
 
@@ -44,8 +44,59 @@ export const build: ChapterBuilder = async (ctx) => {
   const gal = new THREE.Group();
   gal.position.set(AT.gallery, 0, 0);
   scene.add(gal);
-  const glassCase = D.add(makeGlassCase({ w: 2.2, h: 1.5, d: 1.2, wood: "#4a3020" }));
+  const glassCase = D.add(makeGlassCase({ w: 2.2, h: 1.5, d: 1.2, wood: "#2a1a12" }));
   gal.add(glassCase.group);
+  // A museum vitrine: clear glass that only shows at its edges, brass corner posts, a velvet bed,
+  // a clear acrylic stand under the console, and a blank brass plaque on the plinth.
+  const pane = glassCase.group.children[1] as THREE.Mesh;
+  const oldGlass = pane.material as THREE.Material;
+  const vitrine = glassMaterial({ tint: "#bcd8ff", edge: "#e8f2ff", k: 0.3 });
+  pane.material = vitrine;
+  const fit = merge([
+    ...[-1, 1].flatMap((sx) => [-1, 1].map((sz) => placed(new THREE.BoxGeometry(0.05, 1.5, 0.05), [sx * 1.1, 0.9 + 0.75, sz * 0.6]))),
+    placed(new THREE.BoxGeometry(0.62, 0.16, 0.01), [0, 0.55, 0.705]),
+  ]);
+  const brassMat = new THREE.MeshStandardMaterial({ color: col("#c79a4a"), roughness: 0.32, metalness: 1 });
+  const fittings = new THREE.Mesh(fit, brassMat);
+  const bed = new THREE.Mesh(new THREE.BoxGeometry(2.1, 0.08, 1.1), new THREE.MeshStandardMaterial({ color: col("#1a1430"), roughness: 1 }));
+  bed.position.y = 0.97;
+  const standMat = new THREE.MeshStandardMaterial({ color: col("#a8c0d8"), roughness: 0.15, metalness: 0, transparent: true, opacity: 0.35 });
+  const stand = new THREE.Mesh(merge([placed(new THREE.BoxGeometry(1.1, 0.05, 0.5), [0, 1.04, 0.05]), placed(new THREE.BoxGeometry(1.0, 0.5, 0.03), [0, 1.3, -0.15], 0, [1, 1, 1], -0.35)]), standMat);
+  gal.add(fittings, bed, stand);
+  D.add({ dispose: () => { oldGlass.dispose(); vitrine.dispose(); fit.dispose(); brassMat.dispose(); bed.geometry.dispose(); (bed.material as THREE.Material).dispose(); stand.geometry.dispose(); standMat.dispose(); } });
+  // The waves: two broken rings of water curling round the case, foam breaking white along their crests.
+  const waveU = { uTime: { value: 0 }, uK: { value: 0 } };
+  const waveMat = new THREE.ShaderMaterial({
+    uniforms: waveU, transparent: true, depthWrite: false, side: THREE.DoubleSide,
+    vertexShader: /* glsl */ `varying vec2 vUv; varying vec3 vN; varying vec3 vW; void main(){ vUv = uv; vN = normalize(mat3(modelMatrix) * normal); vec4 wp = modelMatrix * vec4(position, 1.0); vW = wp.xyz; gl_Position = projectionMatrix * viewMatrix * wp; }`,
+    fragmentShader: /* glsl */ `${NOISE}
+      uniform float uTime, uK; varying vec2 vUv; varying vec3 vN; varying vec3 vW;
+      void main(){
+        vec3 n = normalize(vN);
+        float flow = vUv.x * 30.0 - uTime * 1.4;
+        float top = smoothstep(-0.2, 0.9, n.y);
+        float nz = whNoise(vec3(flow, vUv.y * 7.0, uTime * 0.4)) * 0.6 + whNoise(vec3(flow * 2.7, vUv.y * 17.0, uTime * 0.9)) * 0.4;
+        // Foam: white cells and lace on the crest, thinning down the face.
+        float foam = smoothstep(0.52, 0.62, nz * 0.75 + top * 0.45);
+        float lace = smoothstep(0.6, 0.66, whNoise(vec3(flow * 5.0, vUv.y * 30.0, uTime))) * top;
+        vec3 v = normalize(cameraPosition - vW);
+        float fres = 1.0 - abs(dot(n, v));
+        vec3 water = mix(vec3(0.01, 0.06, 0.16), vec3(0.06, 0.24, 0.44), top * 0.7 + fres * 0.3);
+        vec3 c = mix(water, vec3(0.5, 0.54, 0.58), clamp(foam + lace * 0.6, 0.0, 1.0));
+        // Broken into travelling arcs, not a solid ring.
+        float arc = smoothstep(0.3, 0.7, sin(vUv.x * 6.2832 * 2.0 - uTime * 0.7) * 0.5 + 0.5) * (0.6 + 0.4 * whNoise(vec3(vUv.x * 9.0, uTime * 0.3, 2.0)));
+        float a = arc * uK * (0.55 + 0.45 * max(foam, lace)) * (0.7 + 0.3 * fres);
+        gl_FragColor = vec4(c, a);
+      }`,
+  });
+  const waveGeo = merge([
+    new THREE.TorusGeometry(1.75, 0.13, 10, 120).rotateX(Math.PI / 2).scale(1, 0.55, 0.72).translate(0, 1.05, 0).rotateZ(0.05),
+    new THREE.TorusGeometry(1.95, 0.1, 10, 120).rotateX(Math.PI / 2).scale(1, 0.55, 0.75).rotateY(1.3).translate(0, 1.4, 0).rotateZ(-0.08),
+  ]);
+  const waves = new THREE.Mesh(waveGeo, waveMat);
+  waves.renderOrder = 5;
+  gal.add(waves);
+  D.add({ dispose: () => { waveGeo.dispose(); waveMat.dispose(); } });
   const sw2 = D.add(makeDevice("switch2", { draw: (g, w, h) => { const grd = g.createLinearGradient(0, 0, w, h); grd.addColorStop(0, "#3a8aff"); grd.addColorStop(1, "#e8f4ff"); g.fillStyle = grd; g.fillRect(0, 0, w, h); }, screenK: 0.6 }));
   sw2.group.position.set(0, glassCase.shelf.y + 0.55, 0);
   sw2.group.rotation.x = -0.12;
@@ -57,7 +108,7 @@ export const build: ChapterBuilder = async (ctx) => {
   scene.add(caseLamp, caseLamp.target);
   const wind = D.add(makeStreaks({ count: Math.round(160 * P) + 40, center: [AT.gallery, 1.6, 0], extent: [2.8, 1.2, 2.2], velocity: [3.2, 0.4, 0], spread: [0.6, 0.4, 0.6], life: 1.4, length: 0.9, width: 0.02, color: "#ffffff", intensity: 1.4, seed: 7 }));
   scene.add(wind.mesh);
-  const foam = D.add(makeParticles({ count: Math.round(500 * P) + 80, shape: "cylinder", center: [AT.gallery, 1.5, 0], extent: [1.7, 0.45, 1.5], velocity: [0, 0.3, 0], spread: [0.2, 0.3, 0.2], life: 2.4, size: [0.02, 0.06], colors: ["#ffffff", "#9ad8ff", "#3a8aff"], intensity: 2.0, turbulence: 0.6, swirl: 1.8 }));
+  const foam = D.add(makeParticles({ count: Math.round(220 * P) + 40, shape: "cylinder", center: [AT.gallery, 1.3, 0], extent: [1.9, 0.3, 1.4], velocity: [0, 0.25, 0], spread: [0.2, 0.2, 0.2], life: 1.6, size: [0.015, 0.035], colors: ["#ffffff", "#e8f4ff", "#bcd8f0"], intensity: 0.7, turbulence: 0.6, swirl: 1.8 }));
   scene.add(foam.points);
   const galFloor = new THREE.Mesh(new THREE.PlaneGeometry(30, 30).rotateX(-Math.PI / 2), new THREE.MeshStandardMaterial({ color: col("#3a2618"), roughness: 0.5 }));
   galFloor.position.set(AT.gallery, 0, 0);
@@ -250,6 +301,7 @@ export const build: ChapterBuilder = async (ctx) => {
       const swk = st === 0 ? ramp(t, tThirty + 0.6, tThirty + 2) : 0;
       wind.u.uTime.value = ambient; wind.u.uOpacity.value = swk * 0.8;
       foam.u.uTime.value = ambient; foam.u.uPixel.value = px; foam.u.uOpacity.value = swk;
+      waveU.uTime.value = ambient; waveU.uK.value = swk;
 
       // B/C. The table; the cable lights and runs out of the room.
       T.redraw(ambient, viewH, cam);
