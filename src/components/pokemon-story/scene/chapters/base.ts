@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import type { Vec3 } from "@/lib/world-history/camera";
+import { poseOnPath, type Key, type Pose, type Vec3 } from "@/lib/world-history/camera";
 import type { Figure } from "@/components/world-history/scene/figures";
 import { makeConverge } from "@/components/world-history/scene/kit";
 import { figureStyle, floatFigure, pointPixel } from "@/components/world-history/scene/chapters/common";
@@ -69,3 +69,24 @@ export type Hero = NonNullable<ReturnType<typeof heroFigure>>;
 
 /** Wraps [−π, π] smoothly: an angle eased from a to b. */
 export const lerpAngle = (a: number, b: number, k: number) => a + (b - a) * k;
+
+/**
+ * A camera made of shots: each shot is its own key path from its start
+ * time, and the film cuts between them (a cut never bends the spline of the
+ * shot before or after it).
+ */
+export function shots(list: [number, Key[]][]): (t: number) => Pose {
+  const sorted = [...list].sort((a, b) => a[0] - b[0]);
+  return (t) => {
+    let k = sorted[0][1];
+    for (const [t0, keys] of sorted) if (t >= t0) k = keys;
+    return poseOnPath(k, t);
+  };
+}
+
+/** Which stage a moment is in: the index of the last start ≤ t. */
+export function stageAt(starts: number[], t: number) {
+  let i = 0;
+  for (let j = 0; j < starts.length; j++) if (t >= starts[j]) i = j;
+  return i;
+}
