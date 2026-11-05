@@ -194,60 +194,145 @@ export function makeFirefly(o: { color?: string; size?: number }) {
 // People, as silhouettes only
 // ---------------------------------------------------------------------------
 
-export type Pose = "stand" | "net" | "seated" | "walk" | "point";
+export type Pose = "stand" | "net" | "seated" | "walk" | "point" | "lean";
 
-/** A person as a dark silhouette (no face, no likeness): head, body, limbs, and what they hold. */
+/** A limb segment between two points: a tapered cylinder with a rounded joint at each end. */
+function limb(parts: THREE.BufferGeometry[], a: THREE.Vector3, b: THREE.Vector3, ra: number, rb: number, joints = true) {
+  const d = b.clone().sub(a), len = d.length();
+  const g = new THREE.CylinderGeometry(rb, ra, len, 10, 1, true);
+  g.applyQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), d.normalize()));
+  g.translate((a.x + b.x) / 2, (a.y + b.y) / 2, (a.z + b.z) / 2);
+  parts.push(g);
+  if (joints) { parts.push(new THREE.SphereGeometry(ra, 10, 8).translate(a.x, a.y, a.z), new THREE.SphereGeometry(rb, 10, 8).translate(b.x, b.y, b.z)); }
+}
+
+/**
+ * A person as a dark silhouette (no face, no likeness), built like a figure
+ * study: an ovoid head on a neck, shoulders wider than the waist, a pelvis,
+ * jointed arms and legs with hands and shoes, and a posture per beat
+ * (standing at ease, walking, seated forward at a desk, pointing, or holding
+ * a net up). Children have a larger head, shorter limbs and a cap. A soft rim
+ * light follows the brightest directional light in the scene, so it catches
+ * the edges that face the key, never a full outline.
+ */
 export function makeSilhouette(o: { height: number; pose?: Pose; child?: boolean; color?: string; rim?: string }) {
-  const h = o.height, child = !!o.child;
-  const headR = h * (child ? 0.09 : 0.065);
+  const h = o.height, child = !!o.child, pose = o.pose ?? "stand";
+  const V = (x: number, y: number, z: number) => new THREE.Vector3(x * h, y * h, z * h);
   const parts: THREE.BufferGeometry[] = [];
-  const torsoH = h * (child ? 0.3 : 0.33), legH = h * (child ? 0.42 : 0.47);
-  const seated = o.pose === "seated";
-  parts.push(placed(new THREE.SphereGeometry(headR, 14, 10), [0, h - headR, 0]));
-  parts.push(placed(new THREE.CapsuleGeometry(h * 0.085, torsoH - h * 0.08, 4, 10), [0, legH + torsoH / 2 - (seated ? legH * 0.55 : 0), 0], 0, [1, 1, 0.62]));
+  const seated = pose === "seated";
+  // Landmarks (fractions of height), adult or child.
+  const P = child
+    ? { head: 0.9, headR: 0.088, neck: 0.8, sh: 0.755, shX: 0.1, chest: 0.68, waist: 0.56, hip: 0.47, hipX: 0.05, knee: 0.25, ankle: 0.04, upper: 0.15, fore: 0.13 }
+    : { head: 0.935, headR: 0.064, neck: 0.855, sh: 0.82, shX: 0.118, chest: 0.73, waist: 0.6, hip: 0.5, hipX: 0.056, knee: 0.27, ankle: 0.04, upper: 0.17, fore: 0.15 };
+  // Seated: the pelvis drops onto a seat and the upper body leans in a little.
+  const drop = seated ? P.hip - 0.3 : 0, lean = seated ? 0.05 : pose === "walk" ? 0.02 : pose === "lean" ? 0.12 : 0;
+  const up = (y: number, z = 0) => V(0, y - drop, z + lean * ((y - P.hip) / (1 - P.hip)));
+  // Head (slightly ovoid), neck.
+  const hc = up(P.head);
+  parts.push(new THREE.SphereGeometry(P.headR * h, 18, 14).scale(0.9, 1.08, 0.98).translate(hc.x, hc.y, hc.z));
+  const nk0 = up(P.neck), nk1 = up(P.head - P.headR * 0.6);
+  limb(parts, nk0, nk1, 0.028 * h, 0.026 * h, false);
+  if (child) {
+    // A cap: a crown and a brim to the front.
+    parts.push(new THREE.SphereGeometry(P.headR * h * 1.04, 16, 8, 0, Math.PI * 2, 0, Math.PI * 0.5).translate(hc.x, hc.y + P.headR * h * 0.12, hc.z));
+    parts.push(new THREE.CylinderGeometry(P.headR * h * 0.7, P.headR * h * 0.7, 0.006 * h, 14).scale(1, 1, 0.75).translate(hc.x, hc.y + P.headR * h * 0.18, hc.z + P.headR * h * 0.9));
+  }
+  if (!child) {
+    // Hair: a fuller mass at the back and crown, so the head is never a bare ball.
+    parts.push(new THREE.SphereGeometry(P.headR * h * 1.03, 16, 12).scale(0.96, 0.86, 1.0).translate(hc.x, hc.y + P.headR * h * 0.2, hc.z - P.headR * h * 0.14));
+  }
+  // Torso as one smooth turned form: hips, a waist, the chest, sloping shoulders into the neck; oval in section.
+  const sh = up(P.sh), hp = up(P.hip);
+  const y0 = P.hip - 0.035, y1 = P.neck;
+  const prof = ([[0, 0], [0.06, 0.6], [0.15, 0.74], [0.33, 0.64], [0.55, 0.8], [0.76, 0.95], [0.86, 1.0], [0.93, 0.78], [0.97, 0.42], [1, 0.25]] as [number, number][]).map(([t, r]) => new THREE.Vector2(Math.max(0.001, r * P.shX * h), (y0 + (y1 - y0) * t) * h));
+  const torso = new THREE.LatheGeometry(prof, 20).scale(1, 1, 0.56);
+  // Lean from the hips, then sit it on the pelvis.
+  torso.translate(0, -P.hip * h, 0).rotateX(Math.atan2(lean, 1 - P.hip)).translate(0, (P.hip - drop) * h, 0);
+  parts.push(torso);
+  // Legs: thigh, shin, a shoe pointing forward.
+  const legs: [THREE.Vector3, THREE.Vector3][] = seated
+    ? [-1, 1].map((sd) => [V(sd * P.hipX * 1.05, P.hip - drop, 0.26), V(sd * P.hipX * 1.1, P.ankle, 0.3)])
+    : pose === "walk"
+      ? [[V(-P.hipX, P.knee + 0.01, 0.07), V(-P.hipX, P.ankle, 0.13)], [V(P.hipX, P.knee, -0.04), V(P.hipX, P.ankle + 0.03, -0.13)]]
+      : [-1, 1].map((sd) => [V(sd * P.hipX * 1.05, P.knee, 0.012), V(sd * P.hipX * 1.15, P.ankle, 0)]);
+  legs.forEach(([knee, ankle], i) => {
+    const hipJ = V((i ? 1 : -1) * P.hipX, P.hip - drop - 0.01, 0);
+    limb(parts, hipJ, knee, 0.05 * h, 0.036 * h);
+    limb(parts, knee, ankle, 0.036 * h, 0.024 * h);
+    parts.push(new THREE.SphereGeometry(0.03 * h, 10, 8).scale(1.05, 0.75, 2.1).translate(ankle.x, ankle.y - 0.012 * h, ankle.z + 0.03 * h));
+  });
+  // Arms: upper arm, forearm, a mitten hand; posture per pose.
+  void sh; void hp;
+  const shL = up(P.sh - 0.025).add(V(-P.shX * 0.86, 0, 0)), shR = up(P.sh - 0.025).add(V(P.shX * 0.86, 0, 0));
+  const arm = (s0: THREE.Vector3, dirE: THREE.Vector3, dirW: THREE.Vector3) => {
+    const e = s0.clone().addScaledVector(dirE.normalize(), P.upper * h);
+    const w = e.clone().addScaledVector(dirW.normalize(), P.fore * h);
+    limb(parts, s0, e, 0.032 * h, 0.026 * h);
+    limb(parts, e, w, 0.026 * h, 0.02 * h);
+    const hd = w.clone().addScaledVector(dirW, 0.03 * h);
+    parts.push(new THREE.SphereGeometry(0.026 * h, 10, 8).scale(0.75, 1.25, 0.6).translate(hd.x, hd.y, hd.z));
+    return hd;
+  };
+  let handR: THREE.Vector3;
   if (seated) {
-    parts[0].translate(0, -legH * 0.55, 0);
-    parts.push(placed(new THREE.CapsuleGeometry(h * 0.045, legH * 0.45, 4, 8), [0, legH * 0.47, legH * 0.22], 0, [1, 1, 1], Math.PI / 2));
-    parts.push(placed(new THREE.CapsuleGeometry(h * 0.04, legH * 0.42, 4, 8), [0, legH * 0.22, legH * 0.45]));
+    arm(shL, new THREE.Vector3(-0.15, -1, 0.55), new THREE.Vector3(0.35, -0.05, 1));
+    handR = arm(shR, new THREE.Vector3(0.15, -1, 0.55), new THREE.Vector3(-0.35, -0.05, 1));
+  } else if (pose === "walk") {
+    arm(shL, new THREE.Vector3(-0.12, -1, -0.32), new THREE.Vector3(-0.05, -1, -0.05));
+    handR = arm(shR, new THREE.Vector3(0.12, -1, 0.3), new THREE.Vector3(0.0, -0.8, 0.5));
+  } else if (pose === "point") {
+    arm(shL, new THREE.Vector3(-0.15, -1, 0.05), new THREE.Vector3(-0.05, -1, 0.15));
+    handR = arm(shR, new THREE.Vector3(0.25, -0.1, 1), new THREE.Vector3(0.1, 0.05, 1));
+  } else if (pose === "net") {
+    arm(shL, new THREE.Vector3(-0.2, -1, 0.1), new THREE.Vector3(-0.05, -1, 0.3));
+    handR = arm(shR, new THREE.Vector3(0.5, 0.25, 0.6), new THREE.Vector3(0.35, 0.8, 0.45));
+  } else if (pose === "lean") {
+    // Leaning in over a table, both hands forward on it.
+    arm(shL, new THREE.Vector3(-0.05, -0.75, 0.66), new THREE.Vector3(0.12, -0.75, 0.65));
+    handR = arm(shR, new THREE.Vector3(0.05, -0.75, 0.66), new THREE.Vector3(-0.12, -0.75, 0.65));
   } else {
-    const stride = o.pose === "walk" ? 0.28 : 0.06;
-    parts.push(placed(new THREE.CapsuleGeometry(h * 0.045, legH - h * 0.06, 4, 8), [-h * 0.05, legH / 2, 0], 0, [1, 1, 1], stride));
-    parts.push(placed(new THREE.CapsuleGeometry(h * 0.045, legH - h * 0.06, 4, 8), [h * 0.05, legH / 2, 0], 0, [1, 1, 1], -stride));
+    // At ease: arms hang a little out from the body, elbows soft.
+    arm(shL, new THREE.Vector3(-0.16, -1, -0.03), new THREE.Vector3(0.02, -1, 0.14));
+    handR = arm(shR, new THREE.Vector3(0.16, -1, -0.03), new THREE.Vector3(-0.02, -1, 0.14));
   }
-  const shoulder = h - headR * 2 - h * 0.04 - (seated ? legH * 0.55 : 0);
-  const armL = h * 0.3;
-  const reach = o.pose === "net" || o.pose === "point" ? 1.25 : seated ? 0.9 : 0.12;
-  parts.push(placed(new THREE.CapsuleGeometry(h * 0.032, armL, 4, 8), [-h * 0.11, shoulder - armL / 2 * Math.cos(reach * 0.5), armL * 0.3 * Math.sin(reach)], 0, [1, 1, 1], -reach * 0.6, -0.15));
-  parts.push(placed(new THREE.CapsuleGeometry(h * 0.032, armL, 4, 8), [h * 0.11, shoulder - armL / 2 * Math.cos(reach), armL * 0.45 * Math.sin(reach)], 0, [1, 1, 1], -reach, 0.15));
-  if (o.pose === "net") {
-    // A long pole over the shoulder, ending in a ring with a mesh bag.
-    const pole = new THREE.CylinderGeometry(h * 0.008, h * 0.008, h * 0.95, 6);
-    pole.rotateZ(-0.85);
-    pole.translate(h * 0.42, shoulder + h * 0.28, armL * 0.35);
-    parts.push(pole);
-    const ring = new THREE.TorusGeometry(h * 0.1, h * 0.008, 6, 20);
-    ring.rotateY(Math.PI / 2);
-    ring.translate(h * 0.78, shoulder + h * 0.62, armL * 0.35);
-    parts.push(ring);
-    const bag = new THREE.ConeGeometry(h * 0.095, h * 0.2, 12, 1, true);
-    bag.rotateZ(Math.PI);
-    bag.translate(h * 0.78, shoulder + h * 0.5, armL * 0.35);
-    parts.push(bag);
+  if (pose === "net") {
+    // A long pole held up from the raised hand, ending in a ring with a mesh bag.
+    const dir = new THREE.Vector3(0.62, 0.72, 0.3).normalize();
+    const tip = handR.clone().addScaledVector(dir, 0.72 * h);
+    limb(parts, handR.clone().addScaledVector(dir, -0.12 * h), tip, 0.008 * h, 0.007 * h, false);
+    const ringC = tip.clone().addScaledVector(dir, 0.1 * h);
+    parts.push(new THREE.TorusGeometry(h * 0.1, h * 0.008, 6, 20).rotateY(Math.PI / 2).translate(ringC.x, ringC.y, ringC.z));
+    parts.push(new THREE.ConeGeometry(h * 0.095, h * 0.2, 12, 1, true).rotateZ(Math.PI).translate(ringC.x, ringC.y - h * 0.12, ringC.z));
   }
-  const geo = merge(parts.map((g) => (g.index ? g : g)));
-  const mat = new THREE.MeshStandardMaterial({ color: col(o.color ?? "#07060a"), roughness: 0.9, metalness: 0, emissive: col(o.rim ?? "#000000"), emissiveIntensity: 0 });
-  // A rim of light around the edge (backlit), never any detail inside.
+  const geo = merge(parts);
+  parts.forEach((g) => g.dispose());
+  const mat = new THREE.MeshStandardMaterial({ color: col(o.color ?? "#0d0b10"), roughness: 0.85, metalness: 0, emissive: col(o.rim ?? "#000000"), emissiveIntensity: 0 });
+  const rimDir = new THREE.Vector3(0, 1, -0.3).normalize();
   mat.onBeforeCompile = (s) => {
     s.uniforms.uRimC = { value: col(o.rim ?? "#ffcf8a") };
     s.uniforms.uRimK = { value: 1.4 };
+    s.uniforms.uRimDir = { value: rimDir };
     mat.userData.shader = s;
     s.fragmentShader = s.fragmentShader
-      .replace("#include <common>", "#include <common>\nuniform vec3 uRimC; uniform float uRimK;")
-      // Lit from behind and above: the rim catches heads and shoulders, not a full outline.
-      .replace("#include <emissivemap_fragment>", "#include <emissivemap_fragment>\n{ vec3 sn = normalize(vNormal); float f = clamp(1.0 - abs(dot(sn, normalize(vViewPosition))), 0.0, 1.0); float up = smoothstep(-0.15, 0.75, sn.y); totalEmissiveRadiance += uRimC * f * f * f * f * uRimK * (0.12 + 1.1 * up); }");
+      .replace("#include <common>", "#include <common>\nuniform vec3 uRimC; uniform float uRimK; uniform vec3 uRimDir;")
+      // The rim catches the edges that face the key light (a little from above too), never a full outline.
+      .replace("#include <emissivemap_fragment>", "#include <emissivemap_fragment>\n{ vec3 sn = normalize(vNormal); float f = clamp(1.0 - abs(dot(sn, normalize(vViewPosition))), 0.0, 1.0); float toward = smoothstep(-0.1, 0.8, dot(sn, uRimDir)); float above = smoothstep(0.0, 0.9, sn.y); float f2 = f * f; totalEmissiveRadiance += uRimC * f2 * f2 * uRimK * (0.05 + 1.0 * toward + 0.2 * above); }");
   };
-  mat.customProgramCacheKey = () => "ps-silhouette";
+  mat.customProgramCacheKey = () => "ps-silhouette-2";
   const mesh = new THREE.Mesh(geo, mat);
+  // Find the scene's key (its brightest directional light) once, then track its direction in view space each frame.
+  let key: THREE.DirectionalLight | null | undefined;
+  const tmp = new THREE.Vector3();
+  mesh.onBeforeRender = (_r, scene, camera) => {
+    if (key === undefined) {
+      key = null;
+      scene.traverse((x) => { if ((x as THREE.DirectionalLight).isDirectionalLight && (!key || (x as THREE.DirectionalLight).intensity > key.intensity)) key = x as THREE.DirectionalLight; });
+    }
+    if (key) {
+      tmp.setFromMatrixPosition(key.matrixWorld).sub(tmp.clone().setFromMatrixPosition(key.target.matrixWorld));
+      if (tmp.lengthSq() > 1e-8) rimDir.copy(tmp.normalize().transformDirection(camera.matrixWorldInverse).normalize()).lerp(new THREE.Vector3(0, 0.6, -0.8), 0.25).normalize();
+    }
+  };
   return {
     mesh,
     setRim(color: string, k: number) {

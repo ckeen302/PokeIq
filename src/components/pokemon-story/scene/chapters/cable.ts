@@ -126,7 +126,7 @@ export const build: ChapterBuilder = async (ctx) => {
   // The room around the table: three backlit figures.
   // At this scale the Game Boys are huge: the people are seen from the chest up, looming round the table.
   const people = [[-7.2, -5.2, 0.75], [0, -8.2, 0], [7.2, -5.2, -0.75]].map(([x, z, ry]) => {
-    const s = D.add(makeSilhouette({ height: 13, rim: "#e8ffd0", color: "#040604" }));
+    const s = D.add(makeSilhouette({ height: 13, pose: "lean", rim: "#e8ffd0", color: "#040604" }));
     s.mesh.position.set(x, -7.4, z);
     s.mesh.rotation.y = ry;
     scene.add(s.mesh);
