@@ -1,11 +1,11 @@
 import * as THREE from "three";
 import { poseOnPath, type Key, type Vec3 } from "@/lib/world-history/camera";
-import { col, makeGlow, makeParticles, makeRing, makeSky, merge, ramp, rng } from "@/components/world-history/scene/kit";
+import { NOISE, col, makeGlow, makeParticles, makeRing, makeSky, merge, ramp, rng } from "@/components/world-history/scene/kit";
 import { makeCanvasPanel } from "@/components/world-history/scene/props";
 import { lights, loadFigures, lookAt, pointPixel, spike } from "@/components/world-history/scene/chapters/common";
 import type { ChapterBuilder } from "@/components/world-history/scene/types";
 import { drawCritter, makeFirefly, makeGrass } from "../story-kit";
-import { bag, heroFigure, STOCK, type Hero } from "./base";
+import { bag, heroFigure, shots, STOCK, type Hero } from "./base";
 
 /**
  * IX. Outside, the film's emotional peak. A flat map grid with tiny pixel
@@ -91,10 +91,33 @@ export const build: ChapterBuilder = async (ctx) => {
   }
   const cityGeo = merge(boxes);
   boxes.forEach((b) => b.dispose());
-  const cityMat = new THREE.MeshStandardMaterial({ color: col("#0c161e"), roughness: 0.7, emissive: col("#0a2a24"), emissiveIntensity: 0.4 });
+  // Facades: dark glass and concrete with a grid of windows, some lit warm, some cool (phone and TV light), lit more as night falls.
+  const cityU = { uLit: { value: 0 }, uTime: { value: 0 }, uSky: { value: col("#2a6a6a") } };
+  const cityMat = new THREE.ShaderMaterial({
+    uniforms: cityU,
+    vertexShader: /* glsl */ `varying vec3 vW; varying vec3 vN; void main(){ vec4 wp = modelMatrix * vec4(position, 1.0); vW = wp.xyz; vN = normal; gl_Position = projectionMatrix * viewMatrix * wp; }`,
+    fragmentShader: /* glsl */ `
+      ${NOISE}
+      uniform float uLit, uTime; uniform vec3 uSky; varying vec3 vW; varying vec3 vN;
+      void main(){
+        float top = step(0.5, abs(vN.y));
+        vec2 f = abs(vN.x) > 0.5 ? vec2(vW.z, vW.y) : vec2(vW.x, vW.y);
+        vec2 g = f * vec2(1.6, 1.25);
+        vec2 cell = floor(g), q = fract(g);
+        float win = step(0.2, q.x) * step(q.x, 0.8) * step(0.22, q.y) * step(q.y, 0.78);
+        float h = whHash(vec3(cell, floor(vW.x * 0.3) * 7.0 + floor(vW.z * 0.3)));
+        float on = step(0.72, h) * win * (1.0 - top);
+        vec3 warm = vec3(1.0, 0.72, 0.4), cool = vec3(0.55, 0.85, 1.0);
+        vec3 lit = mix(warm, cool, step(0.92, h)) * (0.32 + 0.22 * whNoise(vec3(cell * 0.7, uTime * 0.15)));
+        float shade = top > 0.5 ? 0.9 : (abs(vN.x) > 0.5 ? 0.55 : 0.75);
+        vec3 base = vec3(0.035, 0.05, 0.065) * shade + uSky * 0.05 * (1.0 - top) * clamp(vW.y * 0.05, 0.0, 1.0);
+        vec3 c = base + lit * on * uLit + vec3(0.02, 0.03, 0.035) * win * (1.0 - top);
+        gl_FragColor = vec4(c, 1.0);
+      }`,
+  });
   const cityMesh = new THREE.Mesh(cityGeo, cityMat);
   const edgeGeo = new THREE.EdgesGeometry(cityGeo, 20);
-  const edgeMat = new THREE.LineBasicMaterial({ color: col("#4aff9a", 1.6), transparent: true, opacity: 0, toneMapped: false });
+  const edgeMat = new THREE.LineBasicMaterial({ color: col("#4aff9a", 1.1), transparent: true, opacity: 0, toneMapped: false });
   const edges = new THREE.LineSegments(edgeGeo, edgeMat);
   const city = new THREE.Group();
   city.add(cityMesh, edges);
@@ -119,15 +142,26 @@ export const build: ChapterBuilder = async (ctx) => {
   const basinMat = new THREE.MeshStandardMaterial({ color: col("#8a9aa8"), roughness: 0.5 });
   const basin = new THREE.Mesh(new THREE.CylinderGeometry(2.2, 2.4, 0.6, 32), basinMat);
   basin.position.set(fx, 0.3, fz);
-  const pool = new THREE.Mesh(new THREE.CircleGeometry(2.0, 32).rotateX(-Math.PI / 2), new THREE.MeshStandardMaterial({ color: col("#2a6aa0"), roughness: 0.1, metalness: 0.5, emissive: col("#0a3a5a"), emissiveIntensity: 0.6 }));
+  const pool = new THREE.Mesh(new THREE.CircleGeometry(2.0, 32).rotateX(-Math.PI / 2), new THREE.MeshStandardMaterial({ color: col("#3a8ac0"), roughness: 0.6, metalness: 0, emissive: col("#2a8ac8"), emissiveIntensity: 0.9 }));
   pool.position.set(fx, 0.55, fz);
   scene.add(basin, pool);
+  const lampAt: Vec3[] = [[fx - 3.6, 0, fz - 3.6], [fx + 3.6, 0, fz - 3.6], [fx - 3.6, 0, fz + 3.6]];
+  const lampMat = new THREE.MeshStandardMaterial({ color: col("#1a1e24"), roughness: 0.5, metalness: 0.5 });
+  const lampPosts = new THREE.Mesh(merge(lampAt.map((p) => new THREE.CylinderGeometry(0.06, 0.08, 3.4, 6).translate(p[0], 1.7, p[2]))), lampMat);
+  scene.add(lampPosts);
+  const lampGlows = lampAt.map((p) => { const g2 = D.add(makeGlow({ pos: [p[0], 3.45, p[2]], size: 1.3, color: "#ffd8a0", intensity: 0 })); scene.add(g2.sprite); return g2; });
+  const plazaLight = new THREE.PointLight(col("#ffd8a0"), 0, 16, 1.4);
+  plazaLight.position.set(fx, 3.2, fz + 1);
+  scene.add(plazaLight);
+  const fountainGlow = D.add(makeGlow({ pos: [fx, 0.9, fz], size: 4.5, color: "#7ac8ff", intensity: 0 }));
+  scene.add(fountainGlow.sprite);
+  D.add({ dispose: () => { lampPosts.geometry.dispose(); lampMat.dispose(); } });
   D.add({ dispose: () => { basin.geometry.dispose(); basinMat.dispose(); pool.geometry.dispose(); (pool.material as THREE.Material).dispose(); } });
   const spray = D.add(makeParticles({ count: Math.round(300 * P) + 40, shape: "disc", center: [fx, 0.8, fz], extent: [0.3, 0.1, 0.3], velocity: [0, 2.6, 0], spread: [0.5, 0.3, 0.5], gravity: [0, -4, 0], life: 1.3, size: [0.03, 0.06], colors: ["#ffffff", "#bfe8ff", "#7ac8ff"], intensity: 1.6 }));
   scene.add(spray.points);
 
   // ---- Rivers of player-lights: each walks the streets (along x, then z) into a park.
-  const nFlow = Math.round(4200 * P) + 600;
+  const nFlow = Math.round(6500 * P) + 800;
   const fStart = new Float32Array(nFlow * 3), fEnd = new Float32Array(nFlow * 3), fSeed = new Float32Array(nFlow);
   for (let k = 0; k < nFlow; k++) {
     const toA = r() < 0.5;
@@ -143,7 +177,7 @@ export const build: ChapterBuilder = async (ctx) => {
   flowGeo.setAttribute("position", new THREE.BufferAttribute(fStart, 3));
   flowGeo.setAttribute("aEnd", new THREE.BufferAttribute(fEnd, 3));
   flowGeo.setAttribute("aSeed", new THREE.BufferAttribute(fSeed, 1));
-  const flowU = { uK: { value: 0 }, uShow: { value: 0 }, uTime: { value: 0 }, uPixel: { value: 600 }, uSize: { value: 0.3 } };
+  const flowU = { uK: { value: 0 }, uShow: { value: 0 }, uTime: { value: 0 }, uPixel: { value: 600 }, uSize: { value: 0.5 } };
   const flowMat = new THREE.ShaderMaterial({
     uniforms: flowU,
     transparent: true,
@@ -162,9 +196,9 @@ export const build: ChapterBuilder = async (ctx) => {
         vA = uShow * (0.55 + 0.45 * sin(uTime * 3.0 + aSeed * 30.0));
         vec4 mv = modelViewMatrix * vec4(p, 1.0);
         gl_Position = projectionMatrix * mv;
-        gl_PointSize = clamp(uSize * uPixel / -mv.z, 1.5, 10.0);
+        gl_PointSize = clamp(uSize * uPixel / -mv.z, 2.0, 16.0);
       }`,
-    fragmentShader: /* glsl */ `varying float vA; varying float vS; void main(){ float d = length(gl_PointCoord - 0.5); float a = smoothstep(0.5, 0.05, d) * vA; vec3 c = mix(vec3(0.55, 1.0, 0.85), vec3(0.75, 0.95, 1.0), vS) * 2.2; gl_FragColor = vec4(c * a, a); }`,
+    fragmentShader: /* glsl */ `varying float vA; varying float vS; void main(){ float d = length(gl_PointCoord - 0.5); float a = smoothstep(0.5, 0.0, d); a *= a * vA; vec3 c = (vS < 0.55 ? vec3(0.55, 1.0, 0.8) : vS < 0.85 ? vec3(0.8, 0.95, 1.0) : vec3(1.0, 0.85, 0.55)) * 2.6; gl_FragColor = vec4(c * a, a); }`,
   });
   const flow = new THREE.Points(flowGeo, flowMat);
   flow.frustumCulled = false;
@@ -218,11 +252,14 @@ export const build: ChapterBuilder = async (ctx) => {
 
   // ---- The spawns, and Pikachu with the firefly.
   const figs = await loadFigures(ctx, [129, 16, 133, 25]);
-  const roof = roofs.reduce((best, p) => (Math.hypot(p[0] - fx - 6, p[2] - fz) < Math.hypot(best[0] - fx - 6, best[2] - fz) ? p : best), roofs[0]);
+  // Pidgey's rooftop: the tallest tower close to the plaza, so the camera can look across at it over the others.
+  // Pidgey's rooftop: the tallest tower near the plaza, so a camera just above it sees over every other roof.
+  const near = roofs.filter((p) => Math.hypot(p[0] - fx, p[2] - fz) < 16);
+  const roof = (near.length ? near : roofs).reduce((best, p) => (p[1] > best[1] ? p : best));
   const SP: { dex: number; pos: Vec3; h: number; accent: string; at: number }[] = [
     { dex: 129, pos: [fx + 0.4, 0.62, fz + 0.2], h: 1.1, accent: "#ff9a5a", at: 0.4 },
-    { dex: 16, pos: [roof[0], roof[1], roof[2]], h: 1.0, accent: "#ffd8a0", at: 1.6 },
-    { dex: 133, pos: [ax + 1.2, 0, az + 2.6], h: 0.95, accent: "#ffd8a0", at: 2.8 },
+    { dex: 16, pos: [roof[0], roof[1], roof[2]], h: 1.0, accent: "#ffd8a0", at: 2.1 },
+    { dex: 133, pos: [ax + 1.2, 0, az + 2.6], h: 0.95, accent: "#ffd8a0", at: 3.4 },
   ];
   const spawns = SP.map((s) => {
     const h = heroFigure(figs.get(s.dex), { pos: s.pos, height: s.h, accent: s.accent, scene, rotY: 0.3 });
@@ -250,8 +287,18 @@ export const build: ChapterBuilder = async (ctx) => {
     { t: tParks + 5, pos: [8, 56, 26], look: [4, 0, -4], fov: 48 },
     { t: tWild - 0.4, pos: [fx + 9, 3.2, fz + 10], look: [fx, 1, fz], fov: 46 },
     { t: tWild + 1.2, pos: [fx + 4, 1.6, fz + 5.2], look: [fx, 0.9, fz], fov: 44 },
-    { t: tWild + 2.4, pos: [roof[0] - 4, roof[1] + 1.6, roof[2] + 5], look: [roof[0], roof[1] + 0.5, roof[2]], fov: 44 },
-    { t: tWild + 4.0, pos: [ax + 4, 1.3, az + 7], look: [ax + 1.2, 0.5, az + 2.6], fov: 44 },
+  ];
+  // Three quick shots for the spawns (cuts, so the camera never flies through a tower): fountain, rooftop, park.
+  const roofShot: Key[] = [
+    { t: tWild + 1.9, pos: [roof[0] - 2.9, roof[1] + 1.7, roof[2] + 3.4], look: [roof[0], roof[1] + 0.55, roof[2]], fov: 40 },
+    { t: tWild + 3.2, pos: [roof[0] - 2.3, roof[1] + 1.4, roof[2] + 2.8], look: [roof[0], roof[1] + 0.55, roof[2]], fov: 38 },
+  ];
+  const keys2: Key[] = [
+    { t: tWild + 3.2, pos: [ax + 3.2, 1.3, az + 4.7], look: [ax + 1.2, 0.5, az + 2.6], fov: 44 },
+    { t: tWild + 4.6, pos: [ax + 2.7, 1.15, az + 4.4], look: [ax + 1.2, 0.5, az + 2.6], fov: 42 },
+    // Rise straight up out of the park before the long move to the crowd (keeps the spline from swinging wide).
+    { t: tWild + 5.0, pos: [ax + 2.6, 2.2, az + 4.3], look: [ax + 1.2, 0.6, az + 2.6], fov: 42 },
+    { t: tTogether - 0.4, pos: [ax + 3, 14, az + 2], look: [(ax + bx) / 2, 0, (az + bz) / 2], fov: 46 },
     { t: tTogether + 0.4, pos: [bx + 6, 22, bz + 24], look: [bx, 0, bz], fov: 46 },
     { t: tTogether + 3.6, pos: [bx + 0.2, 36, bz + 4], look: [bx, 0, bz], fov: 44 },
     { t: tOutside - 0.4, pos: [bx + 0.1, 44, bz + 2.5], look: [bx, 0, bz], fov: 44 },
@@ -259,6 +306,7 @@ export const build: ChapterBuilder = async (ctx) => {
     { t: tOutside + 4, pos: [PK[0] + 2.2, 1.4, PK[2] + 4], look: [PK[0], 0.7, PK[2]], fov: 40 },
     { t: end, pos: [PK[0] + 1.1, 1.0, PK[2] + 2.2], look: [PK[0], 0.75, PK[2]], fov: 36 },
   ];
+  const camera = shots([[0, keys], [tWild + 1.9, roofShot], [tWild + 3.2, keys2]]);
   // The firefly's path: from across the city, through the lights, to the tip of an ear.
   const ffPath = new THREE.CatmullRomCurve3([new THREE.Vector3(ax + 14, 5, az - 10), new THREE.Vector3(ax + 7, 3.5, az - 2), new THREE.Vector3(PK[0] + 2.5, 2.2, PK[2] + 1), new THREE.Vector3(PK[0] + 0.8, 1.4, PK[2] + 0.6), new THREE.Vector3(PK[0] + 0.25, 0.98, PK[2] + 0.15)]);
   const ffp = new THREE.Vector3();
@@ -267,8 +315,8 @@ export const build: ChapterBuilder = async (ctx) => {
   return {
     scene,
     portalScale: 1.6,
-    camera: (t) => poseOnPath(keys, t),
-    orbit: (t) => ({ target: poseOnPath(keys, t).look, limits: { yaw0: 0, yawSpan: 1.1, minPitch: -0.05, maxPitch: 1.4, minDist: 1, maxDist: 100 } }),
+    camera,
+    orbit: (t) => ({ target: camera(t).look, limits: { yaw0: 0, yawSpan: 1.1, minPitch: -0.05, maxPitch: 1.4, minDist: 1, maxDist: 100 } }),
     update(t, ambient, cam, viewH) {
       const px = pointPixel(viewH, cam);
       sky.follow(cam);
@@ -284,9 +332,15 @@ export const build: ChapterBuilder = async (ctx) => {
       const e = rise * rise * (3 - 2 * rise);
       city.scale.y = Math.max(0.001, e);
       city.visible = rise > 0;
-      edgeMat.opacity = Math.min(1, rise * 2) * (0.6 + 0.4 * dusk);
-      winMat.opacity = ramp(t, tLaunch + 3, tParks) * 0.9;
+      edgeMat.opacity = Math.min(1, rise * 2) * (0.75 - 0.4 * ramp(t, tParks, tParks + 3));
+      cityU.uLit.value = ramp(t, tLaunch + 2.5, tParks + 1);
+      cityU.uTime.value = ambient;
+      winMat.opacity = ramp(t, tLaunch + 3, tParks) * 0.35;
       spray.u.uTime.value = ambient; spray.u.uPixel.value = px; spray.u.uOpacity.value = rise;
+      const street = ramp(t, tParks + 2, tWild - 0.5) * (1 - ramp(t, tTogether, tTogether + 1));
+      lampGlows.forEach((g2) => g2.set("#ffd8a0", 1.1 * street));
+      plazaLight.intensity = 14 * street;
+      fountainGlow.set("#7ac8ff", 0.35 * street);
       // The rivers of light.
       flowU.uK.value = ramp(t, tParks + 0.4, tWild - 0.6);
       flowU.uShow.value = ramp(t, tParks - 0.4, tParks + 0.8) * (1 - ramp(t, tTogether - 1, tTogether));
