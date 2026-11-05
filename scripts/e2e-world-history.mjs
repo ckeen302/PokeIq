@@ -80,7 +80,7 @@ export async function runWorldHistory({ browser, BASE, OUT, errors, step }) {
     if (!(await page.getByTestId("wh-sources-creation").count())) errors.push("world-history: the text version has no sources for Creation");
     if (!(await page.getByTestId("wh-screen-lane").count())) errors.push("world-history: the text version has no separate Anime & Movies lane");
     const toTimeline = await page.getByTestId("wh-to-timeline").getAttribute("href").catch(() => null);
-    if (toTimeline !== "/pokedex/timeline") errors.push(`world-history: the link to the Timeline goes to ${toTimeline}`);
+    if (toTimeline !== "/pokedex/timeline" && toTimeline !== "/lab/pokemon-story") errors.push(`world-history: the link to the Timeline goes to ${toTimeline}`);
     await page.screenshot({ path: `${OUT}/world-history-text.png` });
   });
 

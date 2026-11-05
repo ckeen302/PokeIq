@@ -164,6 +164,50 @@ describe("The Story of Pokémon: deep links and timing", () => {
   });
 });
 
+describe("The Story of Pokémon: sound", () => {
+  it("every music cue names a real beat, with every level in range, and every stem is credited", async () => {
+    const { MOODS, MUSIC, HITS, hitsOf, mixAt, mixFor } = await import("@/components/pokemon-story/audio");
+    const { filmAt } = await import("@/lib/world-history/timing");
+    expect(Object.keys(MOODS).sort()).toEqual([...CHAPTER_IDS].sort());
+    for (const [i, c] of CHAPTERS.entries()) {
+      const mood = MOODS[c.id];
+      const ids = new Set(film.chapters[i].beats.map((b) => b.id));
+      for (const [a, , b] of mood.swells) {
+        expect(ids.has(a), `${c.id}: swell from ${a}`).toBe(true);
+        expect(ids.has(b), `${c.id}: swell to ${b}`).toBe(true);
+      }
+      for (const [kind, beat] of mood.hits) {
+        expect(HITS, `${c.id}: hit ${kind}`).toContain(kind);
+        expect(ids.has(beat), `${c.id}: ${kind} on ${beat}`).toBe(true);
+      }
+      for (const h of hitsOf(film, i)) {
+        expect(h.at, `${c.id}: ${h.kind}`).toBeGreaterThanOrEqual(0);
+        expect(h.at, `${c.id}: ${h.kind}`).toBeLessThanOrEqual(film.chapters[i].anim);
+      }
+      for (let a = 0; a <= film.chapters[i].anim; a += 0.5) {
+        for (const v of Object.values(mixAt(film, i, a))) {
+          expect(v).toBeGreaterThanOrEqual(0);
+          expect(v).toBeLessThanOrEqual(1);
+        }
+      }
+      // Each chapter's big moment swells.
+      const peak = Math.max(...Array.from({ length: Math.ceil(film.chapters[i].anim * 4) }, (_, k) => mixAt(film, i, k / 4).swell));
+      expect(peak, c.id).toBeGreaterThan(0.9);
+    }
+    // The hall between chapters keeps the piano bed.
+    for (let t = 0; t < film.duration; t += 1.7) {
+      const m = mixFor(film, filmAt(film, t));
+      expect(m.bed + m.bright + m.drive + m.swell).toBeGreaterThan(0.2);
+    }
+    const credits = readFileSync(join(process.cwd(), "public/audio/pokemon-story/CREDITS.md"), "utf8");
+    for (const url of Object.values(MUSIC)) {
+      expect(existsSync(join(process.cwd(), "public", url)), url).toBe(true);
+      expect(credits).toContain(url.split("/").pop()!);
+    }
+    expect(credits).toContain("CC0");
+  });
+});
+
 describe("The Story of Pokémon: the film never draws NaN", () => {
   const dir = join(process.cwd(), "src/components/pokemon-story/scene");
   const files = [...readdirSync(dir).filter((f) => f.endsWith(".ts")).map((f) => join(dir, f)), ...readdirSync(join(dir, "chapters")).map((f) => join(dir, "chapters", f))];

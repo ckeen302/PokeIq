@@ -1,12 +1,18 @@
 import Link from "next/link";
 import { ArrowRight, History } from "lucide-react";
 import { ERAS, LANES, ROMAN } from "@/lib/timeline/types";
+import { POKEMON_STORY_LIVE } from "@/lib/lab";
 
-/** Home page feature card for /pokedex/timeline: the eras as a glowing track running into the distance. */
+/** Once The Story of Pokémon is live, the home page's history card opens the film instead of the release list. */
+const CARD = POKEMON_STORY_LIVE
+  ? { href: "/lab/pokemon-story", title: "The Story of Pokémon", pitch: "The real history as a 3D film: from a boy collecting insects to thirty years of games, cards and shows, with every line sourced." }
+  : { href: "/pokedex/timeline", title: "Pokémon timeline", pitch: "Fly through Pokémon history from Red and Green to today: games, anime, films, cards and milestones." };
+
+/** Home page feature card for Pokémon history (/pokedex/timeline, or the film once it's live): the eras as a glowing track running into the distance. */
 export function TimelineCard() {
   return (
     <Link
-      href="/pokedex/timeline"
+      href={CARD.href}
       className="group relative block overflow-hidden rounded-lg border bg-card transition-[border-color,transform] hover:-translate-y-0.5 hover:border-screen/50 motion-reduce:transition-none"
       data-testid="home-timeline-card"
     >
@@ -17,8 +23,8 @@ export function TimelineCard() {
           </span>
           <div className="min-w-0 flex-1">
             <p className="hud-label mb-1 text-screen">New · 3D</p>
-            <h3 className="font-display text-lg font-bold uppercase tracking-wide">Pokémon timeline</h3>
-            <p className="text-sm text-muted-foreground">Fly through Pokémon history from Red and Green to today: games, anime, films, cards and milestones.</p>
+            <h3 className="font-display text-lg font-bold uppercase tracking-wide">{CARD.title}</h3>
+            <p className="text-sm text-muted-foreground">{CARD.pitch}</p>
           </div>
           <ArrowRight className="h-5 w-5 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-1 group-hover:text-foreground md:hidden" aria-hidden />
         </div>
