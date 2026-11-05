@@ -1,9 +1,10 @@
 import * as THREE from "three";
-import { poseOnPath, type Key, type Vec3 } from "@/lib/world-history/camera";
+import { handheld, poseOnPath, type Key, type Vec3 } from "@/lib/world-history/camera";
 import { col, makeCloudLayer, makeGlow, makeParticles, makeRing, makeSky, makeTerrain, noise2, ramp, rng, stoneMaterial } from "../kit";
 import { makeFoliage, makeHouses, makeLanterns } from "../props";
 import type { ChapterBuilder, Look } from "../types";
-import { figureStyle, floatFigure, lights, loadFigures, lookAt, place, pointPixel, shake, spike } from "./common";
+import { actionCurve, hitCurve } from "../figures";
+import { cine, craft, figureStyle, floatFigure, lights, loadFigures, lookAt, place, pointPixel, shake, spike } from "./common";
 
 /**
  * VII. The Ogre's True Story. A moonlit valley in Kitakami under lantern
@@ -156,6 +157,13 @@ export const build: ChapterBuilder = async (ctx) => {
   trio.forEach((f, i) => { place(f, STATUE[i], 2.2, 0, scene); figureStyle(f, { rim: "#cfd8ff", rimK: 1.2, edge: "#ff5a5a", stone: 1 }); });
   place(oger, [7, 0, -40], 1.25, 0, scene);
   figureStyle(oger, { rim: "#9affd8", rimK: 1.4, glow: "#3ad0a0", glowK: 0.04, edge: "#cfffe8" });
+  const sh = craft(ctx, L, {
+    radius: 14, center: RIDGE_AT,
+    receive: [land.mesh, ...pedestals],
+    cast: [...pedestals, man],
+    figures: [...trio.map((f) => [f, { alive: 0 }] as [typeof f, { alive: number }]), [oger, { alive: 1.1 }]],
+    detail: [[land.mesh.material, { kind: "ground", scale: 1.2, bump: 1.2 }], [stoneMat, { kind: "stone", scale: 2.4, bump: 1 }]],
+  });
 
   const keys: Key[] = [
     { t: 0, pos: [0, 6, 30], look: [0, 2.4, -6], fov: 46 },
@@ -177,7 +185,8 @@ export const build: ChapterBuilder = async (ctx) => {
   return {
     scene,
     portalScale: 3,
-    camera: (t) => shake(poseOnPath(keys, t), t, [{ at: tDon + 1.6, k: 0.1, dur: 1.6 }, { at: tDon + 3.2, k: 0.08 }]),
+    // A handheld camera on the ridge: we're in the fight with the ogre.
+    camera: (t) => shake(handheld(poseOnPath(keys, t), t, t >= cuts[1] && t < cuts[2] ? 1.0 : 0.35, 7), t, [{ at: tDon + 1.6, k: 0.1, dur: 1.6 }, { at: tDon + 3.2, k: 0.08 }]),
     orbit: (t) => ({ target: t < cuts[0] || (t >= cuts[2] && t < cuts[3]) ? [0, 2.3, -6] : t < cuts[1] ? [7, 1.3, 2] : t < cuts[2] ? [RIDGE_AT[0] - 1, RIDGE_AT[1] + 2, RIDGE_AT[2] - 1] : [HUT_AT[0] + 1, HUT_AT[1] + 1.6, HUT_AT[2]], limits: { yaw0: 0, yawSpan: 1.1, minPitch: -0.15, maxPitch: 1.0, minDist: 2, maxDist: 120 } }),
     update(t, ambient, cam, viewH) {
       const px = pointPixel(viewH, cam);
@@ -200,11 +209,13 @@ export const build: ChapterBuilder = async (ctx) => {
         if (statues) {
           f.group.position.set(...STATUE[i]);
           f.group.rotation.y = [0.25, 0, -0.25][i];
-          figureStyle(f, { dissolve: 1, stone: 1, shadow: 0 });
+          figureStyle(f, { dissolve: 1, stone: 1, shadow: 0, alive: 0, hit: 0 });
+          f.setContact(0.5, STATUE[i][1]);
         } else {
           const beaten = ramp(t, tDon + 2.4 + i * 0.25, tDon + 4.2 + i * 0.25);
           floatFigure(f, [THIEF[i][0] + beaten * (i - 1) * 2, THIEF[i][1], THIEF[i][2] - beaten * 3], ambient, 0.05, i, [0.4, 0, -0.4][i], 0.05);
-          figureStyle(f, { dissolve: ramp(t, cuts[1] + 0.3 + i * 0.3, tStole + 1.4 + i * 0.3) * (1 - beaten), stone: 0, shadow: 0.25 });
+          figureStyle(f, { dissolve: ramp(t, cuts[1] + 0.3 + i * 0.3, tStole + 1.4 + i * 0.3) * (1 - beaten), stone: 0, shadow: 0.25, alive: 0.9, hit: hitCurve(t, tDon + 1.65 + i * 0.12, 1.0) });
+          f.setContact(0.5, THIEF[i][1]);
         }
       });
       // The man and the ogre, walking in from far away; the four masks.
@@ -223,7 +234,10 @@ export const build: ChapterBuilder = async (ctx) => {
           oger.group.rotation.y = 0;
         }
         const on = t >= cuts[0] && t < cuts[2];
-        figureStyle(oger, { dissolve: on ? 1 : 0, glowK: 0.04 + 0.5 * ramp(t, tDon - 0.2, tDon + 0.8) * (ridge ? 1 : 0) + 0.4 * spike(t, tDon + 1.6, 0.1, 1) });
+        // The strike: a coiled crouch, the swing, the follow-through.
+        figureStyle(oger, { dissolve: on ? 1 : 0, glowK: 0.04 + 0.5 * ramp(t, tDon - 0.2, tDon + 0.8) * (ridge ? 1 : 0) + 0.4 * spike(t, tDon + 1.6, 0.1, 1), act: ridge ? actionCurve(t, tDon + 1.6, { pre: 0.7, post: 0.9 }) : 0, flex: ridge ? 0.5 : 0 });
+        oger.setContact(0.6, t < cuts[1] ? ogerPos.y : RIDGE_AT[1] + 0.1);
+        sh.follow(t < cuts[1] ? [ogerPos.x, ogerPos.y, ogerPos.z] : RIDGE_AT, t < cuts[1] ? 8 : 14);
       }
       masks.forEach((m, i) => {
         const orbitA = ambient * 0.9 + (i / 4) * Math.PI * 2;
@@ -281,7 +295,8 @@ export const build: ChapterBuilder = async (ctx) => {
         }
       );
       L0.flash = 0.22 * spike(t, tDon + 1.6, 0.05, 0.5);
-      return L0;
+      const fog: Look["fog"] = { color: [0.08, 0.1, 0.15], density: 0.014, height: RIDGE_AT[1] - 1, falloff: 0.22, sky: 0.3 };
+      return cine(L0, { fog, dof: { focus: t >= cuts[1] && t < cuts[2] ? [RIDGE_AT[0] - 2, RIDGE_AT[1] + 1, RIDGE_AT[2] + 3] : [7.6, 1, 0], k: 0.4 }, streak: 0.15 + 0.3 * spike(t, tDon + 1.6, 0.05, 1.2), streakColor: [0.5, 1.0, 0.85] });
     },
     dispose() {
       disposers.forEach((d) => d());

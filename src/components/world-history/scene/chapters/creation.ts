@@ -2,7 +2,8 @@ import * as THREE from "three";
 import { poseOnPath, type Key, type Vec3 } from "@/lib/world-history/camera";
 import { NOISE, col, keyed, makeConverge, makeGlow, makeLightning, makeParticles, makePortal, makeRing, makeSky, ramp, rng, strikeAt } from "../kit";
 import type { ChapterBuilder } from "../types";
-import { billboard, figureStyle, floatFigure, lights, loadFigures, lookAt, place, pointPixel, shake, spike } from "./common";
+import { actionCurve, hitCurve } from "../figures";
+import { billboard, cine, craft, figureStyle, floatFigure, lights, loadFigures, lookAt, place, pointPixel, shake, spike } from "./common";
 
 /**
  * I. The Original One. Sinnoh's creation myth: a churning chaos; an Egg
@@ -62,7 +63,7 @@ export const build: ChapterBuilder = async (ctx) => {
         vec3 pearl = mix(vec3(0.92, 0.9, 1.0), vec3(1.0, 0.86, 0.62), 0.5 + 0.5 * sin(dot(vP, vec3(3.0, 5.0, 2.0)) + uTime * 0.3));
         vec3 irid = 0.5 + 0.5 * cos(6.2831 * (f * 1.2 + vec3(0.0, 0.33, 0.67)));
         vec3 c = pearl * (0.55 + 0.45 * whFbm3(vP * 3.0)) * 1.4 + irid * f * 1.6;
-        c += vec3(1.0, 0.8, 0.45) * uGlow * (0.6 + 0.4 * sin(uTime * 2.4));
+        c += vec3(1.0, 0.8, 0.45) * uGlow * 0.45 * (0.6 + 0.4 * sin(uTime * 2.4));
         vec2 v = cells(vP * 3.2);
         float spread = smoothstep(-1.0, 1.0, (vP.y + 0.4) * 1.2 + (uCrack * 3.2 - 1.6));
         float crack = smoothstep(0.08, 0.0, v.y - v.x) * spread * step(0.01, uCrack);
@@ -171,6 +172,8 @@ export const build: ChapterBuilder = async (ctx) => {
   figureStyle(palkia, { rim: "#ffb0e8", rimK: 1.2, glow: "#ff9ad6", glowK: 0.08, edge: "#ffd0f0", dissolve: 0 });
   lake.forEach((f, i) => figureStyle(f, { rim: ["#fff08a", "#ff9ae0", "#8ac8ff"][i], rimK: 1.4, glow: ["#fff08a", "#ff9ae0", "#8ac8ff"][i], glowK: 0.25, edge: "#ffffff", dissolve: 0 }));
   figureStyle(giratina, { rim: "#ff3355", rimK: 2.0, glow: "#3a0018", glowK: 0.12, edge: "#ff4060", dissolve: 0, shadow: 0.3 });
+  // In the void: alive and solid, no ground to shadow.
+  craft(ctx, L, { radius: 1, figures: [arceus, dialga, palkia, ...lake, giratina].map((f) => [f, { ground: null, alive: 0.8 }]) });
 
   // Motes that gather into each figure.
   const converge = (f: typeof arceus, colors: [string, string], radius: number) => {
@@ -367,9 +370,9 @@ export const build: ChapterBuilder = async (ctx) => {
       egg.rotation.set(Math.sin(ambient * 0.4) * 0.12, ambient * 0.25, Math.sin(ambient * 0.3) * 0.08);
       eggU.uTime.value = ambient;
       eggU.uCrack.value = ramp(t, tCrack0, tBurst);
-      eggU.uGlow.value = 0.6 + ramp(t, tCrack0, tBurst) * 1.8;
+      eggU.uGlow.value = 0.6 + ramp(t, tCrack0, tBurst) * 1.0;
       eggGlow.sprite.visible = appear > 0;
-      eggGlow.set("#ffd890", (0.9 + 1.1 * ramp(t, tCrack0, tBurst)) * appear * (1 - ramp(t, tBurst, tBurst + 0.45)) + 0.12 * appear * (1 - ramp(t, tBurst, tBurst + 2.5)));
+      eggGlow.set("#ffd890", (0.7 + 0.5 * ramp(t, tCrack0, tBurst)) * appear * (1 - ramp(t, tBurst, tBurst + 0.45)) + 0.12 * appear * (1 - ramp(t, tBurst, tBurst + 2.5)));
       eggGlow.sprite.scale.setScalar(6 + 4 * spike(t, tBurst, 0.05, 0.4));
       // Shards fly.
       const sd = t - tBurst;
@@ -398,7 +401,8 @@ export const build: ChapterBuilder = async (ctx) => {
       const formA = ramp(t, tBurst + 0.05, tBurst + 2.8);
       const sleep = ramp(t, tSleep + 0.6, tSleep + 4.2);
       if (arceus) {
-        figureStyle(arceus, { dissolve: Math.min(formA, 1 - sleep * 0.999), glowK: 0.06 + 0.35 * spike(t, tBurst + 1, 0.4, 1.5) });
+        // The Original One rises out of the burst: a gathering, a release, a settle.
+        figureStyle(arceus, { dissolve: Math.min(formA, 1 - sleep * 0.999), glowK: 0.06 + 0.35 * spike(t, tBurst + 1, 0.4, 1.5), act: actionCurve(t, tBurst + 1.6, { pre: 0.6, post: 1.2 }), flex: 0.5 * spike(t, tBurst + 1.6, 0.1, 1.5) });
         floatFigure(arceus, [ARC[0], ARC[1] + sleep * 2.5, ARC[2]], ambient, 0.12, 0, 0, 0.08);
       }
       if (arcMotes) { arcMotes.u.uForm.value = formA; arcMotes.u.uTime.value = ambient; arcMotes.u.uPixel.value = px; arcMotes.u.uOpacity.value = 1 - ramp(t, tBurst + 2.2, tBurst + 3.6); }
@@ -459,7 +463,7 @@ export const build: ChapterBuilder = async (ctx) => {
       const formG = ramp(t, tThird + 0.8, tThird + 3.6);
       const sink = ramp(t, tBan + 1.5, end);
       if (giratina) {
-        figureStyle(giratina, { dissolve: formG * (1 - sink * 0.35), shadow: 0.3 + sink * 0.3 });
+        figureStyle(giratina, { dissolve: formG * (1 - sink * 0.35), shadow: 0.3 + sink * 0.3, hit: hitCurve(t, tBan + 0.4, 1.1), flex: 0.6 + 0.4 * ramp(t, tThird, tThird + 2) });
         giratina.group.position.set(GIR[0] + Math.sin(ambient * 0.5) * 0.3, GIR[1] - sink * 6 + Math.sin(ambient * 0.7) * 0.25, GIR[2]);
       }
       const st = strikeAt(ambient, 1.7, 7);
@@ -476,14 +480,16 @@ export const build: ChapterBuilder = async (ctx) => {
       L.rim!.color.copy(col(t > tThird ? "#ff4060" : "#7ab8ff"));
     },
     look(t) {
-      return lookAt(
+      // Focus: the egg, then Arceus, then the pair of time and space, then the rift below.
+      const focus: Vec3 = t < tTS ? [0, 3, 0] : t < tThird ? [0, 0, 0.6] : [0, -40, -8];
+      return cine(lookAt(
         t,
         { bloomRadius: 0.62 },
         {
           exposure: [[0, 0.9], [tEgg, 1], [tBurst, 1.05], [tBurst + 3, 1.0], [tThird, 0.95], [end, 0.9]],
           bloom: [[0, 0.85], [tCrack0, 1.0], [tBurst, 1.1], [tBurst + 2, 0.95], [tThird, 1.05], [end, 0.9]],
-          bloomThreshold: [[0, 0.78], [tBurst, 0.76], [tBurst + 2, 0.8]],
-          flash: [[tBurst - 0.02, 0], [tBurst, 0.32], [tBurst + 0.2, 0.06], [tBurst + 0.6, 0]],
+          bloomThreshold: [[0, 0.82], [tCrack0, 0.95], [tBurst + 0.4, 1.05], [tBurst + 2.4, 0.86]],
+          flash: [[tBurst - 0.02, 0], [tBurst, 0.24], [tBurst + 0.2, 0.05], [tBurst + 0.6, 0]],
           saturation: [[0, 1.15], [tBurst + 2, 1.08], [tThird, 0.95]],
           chroma: [[0, 0.12], [tBurst, 0.45], [tBurst + 1.5, 0.06], [tThird, 0.12], [tThird + 1.5, 0.3]],
           vignette: [[0, 0.5], [tBurst, 0.3], [tThird, 0.55]],
@@ -492,7 +498,7 @@ export const build: ChapterBuilder = async (ctx) => {
           lift: [[0, [0.01, 0.0, 0.03]], [tThird, [0.03, 0.0, 0.02]]],
         },
         { pos: [0, 3.2, -0.5], color: [1.0, 0.85, 0.55] }
-      );
+      ), { streak: 0.2 + 0.45 * spike(t, tBurst, 0.1, 2.4), streakColor: [1.0, 0.8, 0.55], dof: { focus, k: 0.3 }, fringe: 0.5 });
     },
     dispose() {
       disposers.forEach((d) => d());

@@ -56,11 +56,12 @@ const EXTRA: Record<string, Record<string, number>> = {
 /** Slow-motion windows: from `offset` s after a beat starts, `dur` anim seconds played at `rate`. */
 const SLOW: Record<string, { beat: string; offset: number; dur: number; rate: number }[]> = {
   creation: [{ beat: "egg", offset: 2.4, dur: 1.8, rate: 0.4 }],
+  giants: [{ beat: "towed", offset: 0.4, dur: 1.4, rate: 0.5 }],
   galar: [{ beat: "meteorite", offset: 1.6, dur: 1.4, rate: 0.35 }],
   hoenn: [{ beat: "rayquaza", offset: 1.2, dur: 2.0, rate: 0.45 }],
   kalos: [{ beat: "weapon", offset: 2.2, dur: 1.6, rate: 0.4 }],
   unova: [{ beat: "split", offset: 1.4, dur: 1.8, rate: 0.4 }],
-  kitakami: [],
+  kitakami: [{ beat: "donned", offset: 1.2, dur: 1.2, rate: 0.45 }],
   alola: [{ beat: "stole", offset: 1.8, dur: 1.4, rate: 0.45 }],
   johto: [{ beat: "perished", offset: 1.6, dur: 1.8, rate: 0.45 }],
   hisui: [{ beat: "rift", offset: 1.6, dur: 1.6, rate: 0.45 }],

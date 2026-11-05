@@ -3,6 +3,8 @@ import type { Pose, Vec3 } from "@/lib/world-history/camera";
 import type { Figure } from "../figures";
 import { BASE_LOOK, type ChapterCtx, type Look } from "../types";
 import { col, keyed } from "../kit";
+import { castShadows, keyShadow, receiveShadows, type KeyShadow } from "../light";
+import { withDetail, type DetailOpts } from "../materials";
 
 /** Shared pieces for the chapters: figures by art id, keyed looks, shakes and billboards. */
 
@@ -62,6 +64,37 @@ export function livingFigure(f: Figure | undefined, o: { alive?: number; depth?:
   figureStyle(f, { alive: o.alive ?? 1, depth: o.depth ?? 1.4, back: o.back ?? 0.35 });
   if ((o.contact ?? 0.55) > 0) f.setContact(o.contact ?? 0.55, o.ground);
   f.castShadow(o.cast ?? true);
+}
+
+/**
+ * The film treatment for a chapter in one call: the key light casts soft
+ * shadows (box `radius`), the grounds receive them, the casters and living
+ * figures cast them, figures come alive (with a contact shadow where they
+ * stand: give `ground` for each one that hovers, or null for none), and
+ * materials get procedural detail. Returns the shadow, to `follow()` the
+ * action in update().
+ */
+export function craft(
+  ctx: ChapterCtx,
+  L: { key: THREE.DirectionalLight },
+  o: {
+    radius: number;
+    center?: Vec3;
+    receive?: (THREE.Object3D | null | undefined)[];
+    cast?: (THREE.Object3D | null | undefined)[];
+    figures?: [Figure | undefined, { ground?: number | null; alive?: number; depth?: number; contact?: number }?][];
+    detail?: [THREE.Material | THREE.Material[] | undefined, DetailOpts][];
+  }
+): KeyShadow {
+  const sh = keyShadow(ctx.q, L.key, { radius: o.radius, center: o.center });
+  receiveShadows(...(o.receive ?? []));
+  castShadows(...(o.cast ?? []));
+  for (const [f, fo = {}] of o.figures ?? []) {
+    if (!f) continue;
+    livingFigure(f, { alive: fo.alive, depth: fo.depth, contact: fo.ground === null ? 0 : fo.contact, ground: fo.ground ?? undefined });
+  }
+  for (const [m, d] of o.detail ?? []) if (m) withDetail(m, d);
+  return sh;
 }
 
 /** A look built from the base and a few keyed channels. */

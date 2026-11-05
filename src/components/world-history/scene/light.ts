@@ -46,9 +46,16 @@ export function keyShadow(q: Pick<Spec, "shadow">, light: THREE.DirectionalLight
   // A basis across the light, for snapping the box to texels.
   const right = new THREE.Vector3().crossVectors(Math.abs(dir.y) > 0.99 ? new THREE.Vector3(1, 0, 0) : new THREE.Vector3(0, 1, 0), dir).normalize();
   const up = new THREE.Vector3().crossVectors(dir, right).normalize();
-  const c = new THREE.Vector3();
+  const c = new THREE.Vector3(), d0 = new THREE.Vector3();
   const follow = (center: Vec3, r?: number) => {
     if (r !== undefined && Math.abs(r - radius) > 1e-3) { radius = r; fit(); }
+    // The chapter may have moved the light (a new time of day): keep its direction.
+    d0.subVectors(light.position, light.target.position);
+    if (d0.lengthSq() > 1e-6 && Math.abs(d0.length() - dist) > 1e-3) {
+      dir.copy(d0.normalize());
+      right.crossVectors(Math.abs(dir.y) > 0.99 ? new THREE.Vector3(1, 0, 0) : new THREE.Vector3(0, 1, 0), dir).normalize();
+      up.crossVectors(dir, right).normalize();
+    }
     c.set(center[0], center[1], center[2]);
     const texel = (radius * 2) / size;
     const a = Math.round(c.dot(right) / texel) * texel, b = Math.round(c.dot(up) / texel) * texel, d = c.dot(dir);

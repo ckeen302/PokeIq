@@ -363,7 +363,7 @@ export function createPost(renderer: THREE.WebGLRenderer, w: number, h: number, 
       let streak = 0;
       if (streakRT && (look.streak ?? 0) > 0) {
         streakMat.uniforms.tScene.value = target.texture;
-        streakMat.uniforms.uThreshold.value = Math.max(0.6, look.bloomThreshold * 1.4);
+        streakMat.uniforms.uThreshold.value = Math.max(1.6, look.bloomThreshold * 2.4);
         streakMat.uniforms.uTexel.value.set(1 / Math.max(1, W * PR), 1 / Math.max(1, H * PR));
         draw(streakMat, streakRT);
         streak = look.streak ?? 0;

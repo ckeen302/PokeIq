@@ -1,9 +1,12 @@
 import * as THREE from "three";
-import { poseOnPath, type Key, type Vec3 } from "@/lib/world-history/camera";
+import { handheld, lerp3, poseOnPath, type Key, type Vec3 } from "@/lib/world-history/camera";
 import { col, makeCloudLayer, makeGlow, makeParticles, makeShaft, makeSky, makeTerrain, merge, noise2, placed, ramp, rng, stoneMaterial } from "../kit";
 import { makeCanvasPanel, makeFoliage, makePage } from "../props";
+import { actionCurve } from "../figures";
+import { castShadows, keyShadow, receiveShadows } from "../light";
+import { withDetail } from "../materials";
 import type { ChapterBuilder, Look } from "../types";
-import { figureStyle, floatFigure, lights, loadFigures, lookAt, place, pointPixel, shake, spike } from "./common";
+import { cine, figureStyle, floatFigure, lights, livingFigure, loadFigures, lookAt, place, pointPixel, shake, spike } from "./common";
 
 /**
  * XI. The Mansion Journals. A jungle at dawn, shafts of light through the
@@ -34,7 +37,7 @@ export const build: ChapterBuilder = async (ctx) => {
   const sky = makeSky({ top: "#3a6a5a", horizon: "#e8d8a0", bottom: "#0a1a10", nebula: 0, stars: 0, sunDir: [0.3, 0.6, -0.7], sunColor: "#fff0c0", sunSize: 300, sunGlow: 0.5 });
   scene.add(sky.mesh);
   disposers.push(sky.dispose);
-  const fog = new THREE.FogExp2(col("#4a6a50"), 0.035);
+  const fog = new THREE.FogExp2(col("#4a6a50"), 0.026);
   scene.fog = fog;
   const ground = makeTerrain({
     size: [120, 120], segments: Math.round(q.grid * 0.4),
@@ -199,15 +202,26 @@ export const build: ChapterBuilder = async (ctx) => {
 
   // ---- Light.
   const L = lights(scene, { sky: "#c8ffd8", ground: "#1a2a14", fill: 0.6, key: "#fff0c8", keyK: 1.6, keyPos: [10, 30, -10], rim: "#8ab0ff", rimK: 0.4, rimPos: [-10, 10, 20] });
+  // One shadow light: the low dawn sun through the canopy, then the lab's ceiling strips.
+  const sh = keyShadow(q, L.key, { radius: 16, center: MEW_AT });
+  castShadows(trunkMesh, desk);
+  receiveShadows(ground.mesh, room, desk);
+  withDetail(ground.mesh.material, { kind: "ground", scale: 1.3, bump: 1.2 });
+  withDetail(trunkMat, { kind: "bark", scale: 2.2, bump: 1.6, axis: [0, 1, 0] });
+  withDetail(wallMat, { kind: "stone", scale: 2.2, bump: 0.45, tint: 0.06 });
+  withDetail(metal, { kind: "metal", scale: 3, bump: 0.35, rough: 0.35 });
 
   // ---- Figures.
   const figs = await loadFigures(ctx, [MEW, MEWTWO]);
   const mew = figs.get(MEW), two = figs.get(MEWTWO);
   place(mew, MEW_AT, 1.1, -0.2, scene);
   figureStyle(mew, { rim: "#ffd0f0", rimK: 1.4, glow: "#ff9ad8", glowK: 0.08, edge: "#ffffff", dissolve: 0 });
+  livingFigure(mew, { contact: 0.35, ground: -0.6, alive: 1.2 });
   const TWO: Vec3 = [LAB[0], 0.7, LAB[2] - 6];
   place(two, TWO, 3.4, 0, scene);
   figureStyle(two, { rim: "#d0a8ff", rimK: 1.6, glow: "#8a4aff", glowK: 0.06, edge: "#e8d0ff", shadow: 0.7 });
+  livingFigure(two, { contact: 0.6, ground: 0.61, alive: 0.6 });
+  const PAGES: Vec3 = [LAB[0] - 4.2, 1.0, LAB[2] - 1.0];
 
   const keys: Key[] = [
     { t: 0, pos: [0, 3, 24], look: [0, 4.5, -10], fov: 46 },
@@ -227,7 +241,8 @@ export const build: ChapterBuilder = async (ctx) => {
   return {
     scene,
     portalScale: 1.4,
-    camera: (t) => shake(poseOnPath(keys, t), t, [{ at: tBreak, k: 0.08, dur: 2.4 }]),
+    // Handheld in the jungle (someone creeping up on Mew) and at the journals; locked off for the tank.
+    camera: (t) => shake(handheld(poseOnPath(keys, t), t, t < cutLab ? 0.9 * ramp(t, tJungle, tMew) : t < tPower ? 0.7 : 0.25, 3), t, [{ at: tBreak, k: 0.08, dur: 2.4 }]),
     orbit: (t) => ({ target: t < cutLab ? [1, 3.2, -6] : [LAB[0], 2.6, LAB[2] - 6], limits: { yaw0: 0, yawSpan: 1.0, minPitch: -0.2, maxPitch: 0.9, minDist: 1.5, maxDist: 30 } }),
     update(t, ambient, cam, viewH) {
       const px = pointPixel(viewH, cam);
@@ -264,8 +279,13 @@ export const build: ChapterBuilder = async (ctx) => {
       tankLight.intensity = inLab ? (broken ? 2 : 8 + rage * 6) : 0;
       if (two) {
         floatFigure(two, [TWO[0], TWO[1] + (broken ? ramp(t, tBreak, tBreak + 2) * 0.6 : 0), TWO[2]], ambient, broken ? 0.06 : 0.02, 0, 0, 0.02);
-        figureStyle(two, { dissolve: inLab ? 1 : 0, shadow: broken ? 0.05 : 0.7 - rage * 0.3, glowK: 0.06 + rage * 0.2 + 0.3 * spike(t, tBreak, 0.1, 1.2) });
+        // The break: a gathering crouch, then the release and a stretch that settles; the tail and arms trail it.
+        const act = actionCurve(t, tBreak, { pre: 0.9, post: 1.0 });
+        figureStyle(two, { dissolve: inLab ? 1 : 0, shadow: broken ? 0.05 : 0.7 - rage * 0.3, glowK: 0.06 + rage * 0.2 + 0.3 * spike(t, tBreak, 0.1, 1.2), act, flex: 0.4 * rage + 0.6 * spike(t, tBreak, 0.05, 1.4), alive: 0.6 + rage * 0.6 });
       }
+      // The shadow box follows the subject.
+      if (inLab) sh.follow([LAB[0] - 1.5, 1, LAB[2] - 4], 9);
+      else sh.follow([MEW_AT[0], 0, MEW_AT[2]], 16);
       const alarmOn = t > tPower + 0.2;
       monitors.forEach((m, i) => {
         if (Math.floor(ambient * 5) !== Math.floor((ambient - 0.017) * 5) || i === 0) m.redraw(alarmOn ? 1000 + ambient : ambient);
@@ -280,7 +300,8 @@ export const build: ChapterBuilder = async (ctx) => {
       pages.forEach((pg, i) => { pg.mesh.visible = inLab; (pg.mat as THREE.MeshStandardMaterial).emissiveIntensity = 0.3 + 0.25 * ramp(t, [tJungle, tMew, tBirth, tPower][i], [tJungle, tMew, tBirth, tPower][i] + 1); });
       lamp.intensity = inLab ? 6 * (0.9 + 0.1 * Math.sin(ambient * 17)) : 0;
       // Light.
-      L.key.intensity = inLab ? 0.25 : 1.6;
+      L.key.intensity = inLab ? 0.4 : 1.6;
+      L.key.color.copy(inLab ? col("#cfe0ff") : col("#fff0c8"));
       L.hemi.intensity = inLab ? 0.35 : 0.6;
       L.hemi.color.copy(inLab ? col("#8ab0ff") : col("#c8ffd8"));
     },
@@ -303,7 +324,12 @@ export const build: ChapterBuilder = async (ctx) => {
       L0.flash = 0.25 * spike(t, tBreak, 0.04, 0.3);
       if (!inLab) L0.rays = { pos: [40, 70, -90], color: [1.0, 0.95, 0.75], strength: 0.45 };
       else if (t > tPower) L0.rays = { pos: [LAB[0], 2.6, LAB[2] - 6], color: [0.8, 0.6, 1.0], strength: 0.4 * ramp(t, tPower, tBreak) };
-      return L0;
+      // Ground mist in the jungle, a cold haze in the lab; focus racks from the journals to the tank as it breaks.
+      const fog: Look["fog"] = inLab
+        ? { color: [0.05, 0.06, 0.09], density: 0.02, height: 0.5, falloff: 0.25, sky: 0 }
+        : { color: [0.42, 0.55, 0.4], density: 0.05, height: 0.2, falloff: 0.45, sun: { dir: [0.3, 0.6, -0.7], color: [0.6, 0.5, 0.25] }, sky: 0.3 };
+      const focus: Vec3 = !inLab ? MEW_AT : t < tPower ? PAGES : lerp3(PAGES, TWO, ramp(t, tPower - 0.2, tPower + 0.5));
+      return cine(L0, { fog, dof: { focus: [focus[0], focus[1] + 1.2 * (inLab && t >= tPower ? 1 : 0), focus[2]], k: inLab ? 0.55 : 0.35 }, streak: inLab ? 0.2 : 0.12 });
     },
     dispose() {
       disposers.forEach((d) => d());

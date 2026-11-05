@@ -2,8 +2,10 @@ import * as THREE from "three";
 import { poseOnPath, type Key, type Vec3 } from "@/lib/world-history/camera";
 import { NOISE, col, makeCloudLayer, makeConverge, makeGlow, makeOcean, makeParticles, makeShaft, makeSky, makeTerrain, noise2, ramp, stoneMaterial } from "../kit";
 import { makeCanvasPanel } from "../props";
-import type { ChapterBuilder } from "../types";
-import { figureStyle, floatFigure, lights, loadFigures, lookAt, place, pointPixel, shake } from "./common";
+import { withDetail } from "../materials";
+import type { ChapterBuilder, Look } from "../types";
+import { actionCurve } from "../figures";
+import { cine, craft, figureStyle, floatFigure, lights, loadFigures, lookAt, place, pointPixel, shake } from "./common";
 
 /**
  * II. The Giant Who Moved Continents. A primordial sea at dusk: Regigigas
@@ -75,6 +77,13 @@ export const build: ChapterBuilder = async (ctx) => {
   place(gigas, GIG, 22, 0, scene);
   figureStyle(gigas, { rim: "#ffd0a0", rimK: 1.1, glow: "#ffe2a0", glowK: 0.02 });
   regis.forEach((f, i) => { place(f, SPOTS[i], 3.8, [0.3, 0, -0.3][i], scene); figureStyle(f, { rim: ["#ffb070", "#a8e8ff", "#c8d0ff"][i], rimK: 1.2, edge: ["#ff9a50", "#bff4ff", "#e0e6ff"][i], dissolve: 0 }); });
+  // Shadows from the low sun behind the titan fall toward us across the land; the three stand on the shore.
+  const sh = craft(ctx, L, {
+    radius: 30, center: [GIG[0], 0, GIG[2]],
+    receive: [land.mesh, land2.mesh, shore.mesh],
+    figures: [[gigas, { ground: null, alive: 0.7, depth: 1.5 }], ...regis.map((f) => [f, { ground: 0.4, alive: 0.5 }] as [typeof f, { ground: number; alive: number }])],
+    detail: [[land.mesh.material, { kind: "stone", scale: 0.6, bump: 1.4 }], [land2.mesh.material, { kind: "stone", scale: 0.6, bump: 1.4 }], [shore.mesh.material, { kind: "ground", scale: 1.1 }]],
+  });
   const motes = regis.map((f, i) => {
     if (!f) return null;
     const c = makeConverge(f.points, { radius: 1.5, colors: [["#ffd2a0", "#a86a3a"], ["#ffffff", "#7fdcff"], ["#fff0c8", "#ff6a20"]][i] as [string, string], size: [0.02, 0.06], intensity: 2, spin: 1.2 });
@@ -120,6 +129,7 @@ export const build: ChapterBuilder = async (ctx) => {
   scene.add(cave);
   const caveMat = stoneMaterial({ color: "#4a4038", roughness: 0.95, dirt: 0.6 });
   caveMat.side = THREE.BackSide;
+  withDetail(caveMat, { kind: "stone", scale: 1.4, bump: 1.1 });
   const room = new THREE.Mesh(new THREE.BoxGeometry(34, 16, 34), caveMat);
   room.position.set(0, 7.5, 0);
   cave.add(room);
@@ -204,9 +214,13 @@ export const build: ChapterBuilder = async (ctx) => {
       land.mesh.position.set(0, -tow * 0.5, -95 + tow * 30);
       land2.mesh.position.set(-80 + tow * 32, 0, -150 + tow * 52);
       if (gigas) {
-        gigas.group.position.set(GIG[0], GIG[1] + Math.sin(ambient * 0.5) * 0.2, GIG[2] + tow * 2);
+        // Each heave: the titan sinks its weight into the pull, leans back, and the ropes take the strain.
+        const heave = [0.6, 2.6, 4.6].reduce((a, d) => a + actionCurve(t, tTowed + d, { pre: 0.7, post: 0.9 }), 0);
+        gigas.group.position.set(GIG[0], GIG[1] + Math.sin(ambient * 0.5) * 0.2 + heave * 0.25, GIG[2] + tow * 2);
         gigas.group.rotation.y = Math.sin(ambient * 0.3) * 0.03;
+        figureStyle(gigas, { act: heave * 0.8, lean: -0.05 * ramp(t, tTowed - 0.5, tTowed + 0.5) * (1 - ramp(t, tShaped - 1, tShaped)) + heave * 0.03, flex: 0.3 });
       }
+      sh.follow(t > cut ? [CAVE[0], 2, CAVE[2] - 8] : t > tShaped - 0.5 ? [0, 0.5, 19] : [GIG[0], 0, GIG[2] + 6], t > cut ? 16 : t > tShaped - 0.5 ? 14 : 30);
       ropeU.uTime.value = ambient;
       ropeU.uOpacity.value = ramp(t, tTowed - 1.5, tTowed) * (1 - ramp(t, tShaped - 1, tShaped + 1));
       const step = Math.floor(t * 20);
@@ -228,6 +242,7 @@ export const build: ChapterBuilder = async (ctx) => {
         if (f) {
           figureStyle(f, { dissolve: inCave ? 1 : k, stone: inCave ? 0.25 + 0.75 * ramp(t, tLong - 0.5, tLong + 2.5) : 0 });
           floatFigure(f, base, ambient, inCave ? 0 : 0.04, i, [0.3, 0, -0.3][i] * (inCave ? 0.3 : 1), inCave ? 0 : 0.03);
+          f.setContact(inCave ? 0.7 : 0.5, base[1]);
         }
         const m = motes[i];
         if (m) { m.u.uForm.value = k; m.u.uTime.value = ambient; m.u.uPixel.value = px; m.u.uOpacity.value = inCave ? 0 : 1 - ramp(t, tShaped + 3 + i * 0.5, tShaped + 4.5 + i * 0.5); }
@@ -247,7 +262,12 @@ export const build: ChapterBuilder = async (ctx) => {
       L.hemi.intensity = t > cut ? 0.45 : 0.7;
     },
     look(t) {
-      return lookAt(
+      const inCave = t > cut;
+      const fog: Look["fog"] = inCave
+        ? { color: [0.1, 0.075, 0.05], density: 0.02, height: 0, falloff: 0.18, sky: 0 }
+        : { color: [0.42, 0.26, 0.16], density: 0.0035, height: -2, falloff: 0.07, sun: { dir: [-0.31, 0.19, -0.93], color: [0.9, 0.5, 0.2] }, sky: 0.25 };
+      const focus: Vec3 = inCave ? [CAVE[0], 3, CAVE[2] - 12] : t > tShaped - 0.5 ? [0, 2.5, 19] : [GIG[0], 10, GIG[2]];
+      return cine(lookAt(
         t,
         { bloom: 0.75, bloomRadius: 0.6 },
         {
@@ -258,7 +278,7 @@ export const build: ChapterBuilder = async (ctx) => {
           vignette: [[0, 0.4], [cut + 0.2, 0.6]],
           bloom: [[0, 0.75], [tSealed + 1, 1.0]],
         }
-      );
+      ), { fog, dof: { focus, k: 0.3 }, streak: inCave ? 0.2 : 0.12, streakColor: [1.0, 0.75, 0.5] });
     },
     dispose() {
       disposers.forEach((d) => d());
