@@ -3,7 +3,11 @@
 import { useEffect, useState } from "react";
 import { FeedbackForm } from "./FeedbackForm";
 
-/** /feedback's form, about the page the player came from (when it's one of ours). */
+/**
+ * /feedback's form, about the page the player came from (when it's one of ours).
+ * It renders straight away (about /feedback) and is rebuilt once the referrer is
+ * known, so the card never pops open after load and pushes the page down.
+ */
 export function FeedbackPage() {
   const [page, setPage] = useState<string | null>(null);
   useEffect(() => {
@@ -16,5 +20,5 @@ export function FeedbackPage() {
     }
     setPage(from);
   }, []);
-  return page === null ? null : <FeedbackForm page={page} />;
+  return <FeedbackForm key={page ?? "/feedback"} page={page ?? "/feedback"} />;
 }
