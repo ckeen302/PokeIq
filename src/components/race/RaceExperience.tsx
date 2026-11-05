@@ -100,6 +100,8 @@ export function RaceExperience({ preset, vs = [], distance = null, seed = null, 
   const [all, setAll] = useState<Entrant[] | null>(null);
   const [spec, setSpec] = useState<RaceSpec>(() => specFor(preset, vs, distance, seed));
   const [ready, setReady] = useState(false);
+  /** Bumped to build the scene again (after its WebGL context was lost). */
+  const [sceneGen, setSceneGen] = useState(0);
   const [loaded, setLoaded] = useState(0);
   const [phase, setPhase] = useState<UiPhase>("loading");
   const [cam, setCam] = useState<CamMode>("broadcast");
@@ -240,7 +242,7 @@ export function RaceExperience({ preset, vs = [], distance = null, seed = null, 
       try {
         await document.fonts?.load(`700 40px ${font}`).catch(() => undefined);
         const q = qualityParam() ?? initialQuality();
-        const scene = createRaceScene(host, { quality: q, urls: RACE_URLS, font });
+        const scene = createRaceScene(host, { quality: q, urls: RACE_URLS, font, onContextGone: () => alive && setSceneGen((g) => g + 1) });
         sceneRef.current = scene;
         setQualityState(q);
         await scene.ready;
@@ -255,7 +257,7 @@ export function RaceExperience({ preset, vs = [], distance = null, seed = null, 
       sceneRef.current = null;
       setReady(false);
     };
-  }, [mode, all]);
+  }, [mode, all, sceneGen]);
 
   // ---- A race: load its runners, then start the broadcast.
   useEffect(() => {

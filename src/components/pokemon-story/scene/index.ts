@@ -25,7 +25,7 @@ const BUILDERS: SceneOptions["builders"] = {
   thirty: () => import("./chapters/thirty"),
 };
 
-const ARCHIVE_LOOK: Look = { ...HALL_LOOK, exposure: 1.1, bloom: 0.85, gain: [1.08, 1.0, 0.88], lift: [0.02, 0.012, 0.006], saturation: 1.0, vignette: 0.55, grain: 0.05 };
+const ARCHIVE_LOOK: Look = { ...HALL_LOOK, exposure: 1.1, bloom: 0.85, gain: [1.02, 1.0, 0.92], lift: [0.02, 0.014, 0.008], saturation: 1.0, contrast: 1.0, vignette: 0.55, grain: 0.05 };
 
 /** The prologue opens on black and lamps; the epilogue dims them again. */
 export function archiveLook(h: { from: number; to: number; k: number }): Look {

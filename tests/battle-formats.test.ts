@@ -16,6 +16,19 @@ describe("format catalogue", () => {
     expect(PLAYABLE_FORMATS.length).toBeGreaterThan(200);
   });
 
+  it("matches Showdown's names, sections, generations and game types (else: npx tsx --conditions=react-server scripts/build-formats.ts)", () => {
+    const drift = FORMAT_CATALOGUE.filter((e) => {
+      const f = Dex.formats.get(e.id, true);
+      return f.name !== e.name || (f.section ?? "Other") !== e.section || Dex.forFormat(f).gen !== e.gen || f.gameType !== e.gameType;
+    }).map((e) => e.id);
+    expect(drift).toEqual([]);
+  });
+
+  it("keeps Inheritance hidden: Showdown's format code reads a global Dex this server doesn't define", () => {
+    expect(catalogueFormat("gen9inheritance")?.supported).toBe(false);
+    expect(isPlayableFormat("gen9inheritance")).toBe(false);
+  });
+
   it("keeps every format the site already plays", () => {
     for (const id of [...BATTLE_FORMAT_IDS, ...ALL_FORMATS]) expect(catalogueFormat(id)?.supported, id).toBe(true);
   });

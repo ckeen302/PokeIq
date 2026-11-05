@@ -16,6 +16,7 @@ import { sliceRoster, specIds, questionIds } from "./protocol";
 import { getRoster } from "./roster-client";
 import { BattleView, summarize } from "./view";
 import { SimClient, SolverPool } from "./workers";
+import { watchContext, type ContextWatch } from "./context-loss";
 import type { PureAnswer } from "@/lib/mass-battle/preset-results";
 import { createBattleAudio, type BattleAudio } from "./audio";
 import { MB_CSS } from "./mass-battle-css";
@@ -227,6 +228,8 @@ export function MassBattleExperience({ list, presets, initial, playback: initial
   }, []);
 
   // ---- The scene (made once, on first use).
+  const ctxWatchRef = useRef<ContextWatch | null>(null);
+  const recoverRef = useRef<() => void>(() => {});
   const ensureScene = useCallback(async (): Promise<BattleScene | null> => {
     if (sceneRef.current) return sceneRef.current;
     const host = hostRef.current;
@@ -239,6 +242,9 @@ export function MassBattleExperience({ list, presets, initial, playback: initial
     setQuality(q);
     try {
       sceneRef.current = createBattleScene(host, { quality: q, tex: TEX_URL });
+      // A lost WebGL context: nothing is drawn meanwhile, then the scene is rebuilt and the battle put back on it.
+      ctxWatchRef.current?.dispose();
+      ctxWatchRef.current = watchContext(sceneRef.current.canvas, () => recoverRef.current());
       sceneRef.current.onStep = (_x, _z, size) => audioRef.current?.step(size);
       sceneRef.current.onThunder = (strength) => audioRef.current?.thunder(strength);
     } catch {
@@ -323,6 +329,17 @@ export function MassBattleExperience({ list, presets, initial, playback: initial
   }, [pushFeed]);
 
   // ---- Deploying a battle.
+  // The context came back (or never did): a fresh scene, and the battle on the field deployed on it again.
+  recoverRef.current = () => {
+    ctxWatchRef.current?.dispose();
+    ctxWatchRef.current = null;
+    try { sceneRef.current?.dispose(); } catch { /* already gone with its context */ }
+    sceneRef.current = null;
+    const b = battleRef.current;
+    if (b) void deployRef.current(b, phaseRef.current === "playing");
+    else void ensureScene();
+  };
+  const deployRef = useRef<(b: BattleDesc, autoplay: boolean) => Promise<void>>(async () => {});
   const deploy = useCallback(async (b: BattleDesc, autoplay: boolean) => {
     abortRef.current?.abort();
     const ac = new AbortController();
@@ -407,6 +424,7 @@ export function MassBattleExperience({ list, presets, initial, playback: initial
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ensureScene, wireHits]);
+  deployRef.current = deploy;
 
   const start = () => {
     const view = viewRef.current;
@@ -466,7 +484,7 @@ export function MassBattleExperience({ list, presets, initial, playback: initial
       last = now;
       const dt = Math.min(0.1, raw / 1000);
       const scene = sceneRef.current;
-      if (!scene || recordingRef.current) return;
+      if (!scene || recordingRef.current || ctxWatchRef.current?.lost) return;
       const view = viewRef.current;
       const phase = phaseRef.current;
       const host = hostRef.current;
@@ -640,6 +658,7 @@ export function MassBattleExperience({ list, presets, initial, playback: initial
     simRef.current?.dispose();
     poolRef.current?.dispose();
     audioRef.current?.dispose();
+    ctxWatchRef.current?.dispose();
     sceneRef.current?.dispose();
   }, []);
 

@@ -131,6 +131,8 @@ export function SizesExperience({ preset, focus = null, vs = [], compare = false
   const [canGl, setCanGl] = useState(false);
   const [items, setItems] = useState<SizeItem[] | null>(null);
   const [ready, setReady] = useState(false);
+  /** Bumped to build the scene again (after its WebGL context was lost). */
+  const [sceneGen, setSceneGen] = useState(0);
   const [spec, setSpec] = useState<LineSpec>(() => ({ preset, vs, extra: focus ? [focus] : [] }));
   const [kind, setKind] = useState<Kind>("explore");
   const [focusKey, setFocusKey] = useState<string | null>(null);
@@ -425,7 +427,7 @@ export function SizesExperience({ preset, focus = null, vs = [], compare = false
         qualityPinnedRef.current = pinned !== null;
         const q = pinned ?? initialQuality();
         // The human is built when it first comes near the camera: by then the player's own trainer has usually loaded.
-        const scene = createSizesScene(host, { quality: q, urls: SCENE_URLS, trainer: () => trainerFigure(trainerRef.current)() });
+        const scene = createSizesScene(host, { quality: q, urls: SCENE_URLS, trainer: () => trainerFigure(trainerRef.current)(), onContextGone: () => alive && setSceneGen((g) => g + 1) });
         sceneRef.current = scene;
         setQualityState(q);
         await scene.ready;
@@ -441,7 +443,7 @@ export function SizesExperience({ preset, focus = null, vs = [], compare = false
       sceneRef.current = null;
       setReady(false);
     };
-  }, [mode, items]);
+  }, [mode, items, sceneGen]);
 
   // ---- The line: rebuilt when the lineup changes.
   useEffect(() => {

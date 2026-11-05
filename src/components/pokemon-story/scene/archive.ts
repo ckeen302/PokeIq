@@ -86,8 +86,8 @@ function woodTexture(): THREE.CanvasTexture {
   const r = () => ((s = (s * 16807) % 2147483647) / 2147483647);
   for (let i = 0; i < 8; i++) {
     const y = i * 64;
-    const l = 26 + r() * 10;
-    g.fillStyle = `hsl(${24 + r() * 6} 48% ${l}%)`;
+    const l = 22 + r() * 8;
+    g.fillStyle = `hsl(${28 + r() * 6} 30% ${l}%)`;
     g.fillRect(0, y, 512, 64);
     for (let k = 0; k < 40; k++) {
       g.strokeStyle = `rgba(40,20,8,${0.05 + r() * 0.08})`;
@@ -169,7 +169,7 @@ export function buildArchive(chapters: Chapter[], font: string, renderer?: THREE
   scene.add(key, key.target);
   const lamps: THREE.PointLight[] = [];
   for (let i = 0; i < n; i += 2) {
-    const lamp = new THREE.PointLight(col("#ffc277"), 80, 34, 1.7);
+    const lamp = new THREE.PointLight(col("#ffd9a8"), 80, 34, 1.7);
     lamp.position.set(xOf(i) + ARCH_SPACING / 2, 11.5, 9);
     scene.add(lamp);
     lamps.push(lamp);
@@ -178,11 +178,11 @@ export function buildArchive(chapters: Chapter[], font: string, renderer?: THREE
   // Floor: warm oak planks, a long runner, a brass rail along the front.
   const wood = woodTexture();
   wood.repeat.set(len / 6, 90 / 6);
-  const floorMat = new THREE.MeshStandardMaterial({ map: wood, roughness: 0.32, metalness: 0.05 });
+  const floorMat = new THREE.MeshStandardMaterial({ map: wood, roughness: 0.5, metalness: 0.05 });
   const floor = new THREE.Mesh(new THREE.PlaneGeometry(len, 90).rotateX(-Math.PI / 2), floorMat);
   floor.position.set(mid, 0, 30);
   scene.add(floor);
-  const runner = new THREE.Mesh(new THREE.PlaneGeometry(len - 60, 3.4).rotateX(-Math.PI / 2), new THREE.MeshStandardMaterial({ color: col("#5a1a12"), roughness: 0.95 }));
+  const runner = new THREE.Mesh(new THREE.PlaneGeometry(len - 60, 3.4).rotateX(-Math.PI / 2), new THREE.MeshStandardMaterial({ color: col("#3a1e16"), roughness: 0.95 }));
   runner.position.set(mid, 0.01, 13);
   scene.add(runner);
   const brass = new THREE.MeshStandardMaterial({ color: col("#c99a48"), roughness: 0.28, metalness: 1, emissive: col("#3a2408"), emissiveIntensity: 0.3 });

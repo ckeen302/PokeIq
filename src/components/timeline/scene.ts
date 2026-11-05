@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import { watchContext } from "@/lib/gl/context-loss";
 import { CSS3DObject, CSS3DRenderer } from "three/examples/jsm/renderers/CSS3DRenderer.js";
 import { artUrl } from "@/lib/pokemon/art";
 import type { LaneId } from "@/lib/timeline/types";
@@ -62,6 +63,8 @@ export interface SceneOptions {
   regions?: SceneRegion[];
   /** Park the camera in the dark before 1996 until `introFly` is called. */
   intro?: boolean;
+  /** The WebGL context was lost and the scene must be built again (see watchContext). */
+  onContextGone?: () => void;
 }
 export interface SceneApi {
   goTo(t: number): void;
@@ -142,6 +145,7 @@ export function createScene(host: HTMLElement, entries: SceneEntry[], eras: Scen
   const canvas = document.createElement("canvas");
   canvas.className = "tl-gl";
   host.appendChild(canvas);
+  const ctxWatch = watchContext(canvas, opts.onContextGone);
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, powerPreference: "high-performance" });
   THREE.ColorManagement.enabled = false;
   renderer.setClearColor(0x000000, 0);
@@ -200,7 +204,7 @@ export function createScene(host: HTMLElement, entries: SceneEntry[], eras: Scen
     fragmentShader: `${FADE_GLSL}${ERA_GLSL}
       uniform float uTime; uniform float uGlow; uniform float uBloom; uniform float uLaneX[${MAX_LANES}]; uniform float uLaneA[${MAX_LANES}]; uniform vec3 uLaneC[${MAX_LANES}];
       varying vec3 vP;
-      float line(float v, float w){ float d=abs(fract(v-.5)-.5)/fwidth(v); return 1.-min(d/w,1.); }
+      float line(float v, float w){ float d=abs(fract(v-.5)-.5)/max(fwidth(v),1e-6); return 1.-min(d/w,1.); }
       void main(){
         vec3 a,b; eraAt(vP.z,a,b);
         float yr=${T0.toFixed(2)}-vP.z/${YS.toFixed(1)};
@@ -710,6 +714,7 @@ export function createScene(host: HTMLElement, entries: SceneEntry[], eras: Scen
   }
   function frame() {
     raf = requestAnimationFrame(frame);
+    if (ctxWatch.lost) return;
     const now = performance.now();
     monitor(now);
     const dt = Math.min(clock.getDelta(), 0.1);
@@ -910,6 +915,7 @@ export function createScene(host: HTMLElement, entries: SceneEntry[], eras: Scen
     perf: () => ({ ft: ftEma, q: quality }),
     dispose() {
       dead = true;
+      ctxWatch.dispose();
       cancelAnimationFrame(raf);
       ro.disconnect();
       document.removeEventListener("visibilitychange", onVis);

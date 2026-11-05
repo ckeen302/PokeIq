@@ -4,7 +4,9 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import type { BattleSeatResponse, BattleView } from "@/lib/battle/play";
 import { loadBattleSeat, saveBattleSeat, takeBattleSeed } from "@/lib/battle/seat";
 import { setTrainerName, useProgress } from "@/lib/progress";
-import { battleHiddenDelay, battlePollDelay, fingerprint, startPoller } from "@/lib/polling";
+import { BATTLE_WAITING_POLL_MS, battleHiddenDelay, battleLongPoll, battlePollDelay, fingerprint, startPoller } from "@/lib/polling";
+import { battleSeenDigest } from "@/lib/battle/live";
+import { useBattleLive } from "./use-battle-live";
 import { unlockAudio } from "@/lib/sound";
 import { ensureBattleId } from "@/lib/battle/replay-client";
 import { sendRetryingBusy } from "@/lib/battle/busy-retry";
@@ -16,9 +18,12 @@ import { sendRetryingBusy } from "@/lib/battle/busy-retry";
  * sends choices with the request counter they answer, and keeps a clock on
  * the server's time.
  *
- * Polling (lib/polling): every second while waiting on the opponent, every
- * 2 s while it's your move, with a poll right after a clock runs out; slower
- * in the lobby and after the end (for a rematch). Against the computer every
+ * Polling (lib/polling): while waiting on the opponent, a long poll (the
+ * server answers as soon as the battle moves on, within 20 s) at most every
+ * 500 ms; every 2 s while it's your move, with a poll right after a clock
+ * runs out; slower in the lobby and after the end (for a rematch). When the
+ * server has Realtime set up, the battle's push channel says when to fetch
+ * (use-battle-live.ts) and polling drops to a 3 s safety net. Against the computer every
  * answer comes back with the choice itself, so polling there is only a
  * safety net. A hidden tab only sends a heartbeat while its player is seated
  * in a live battle, and catches up at once when it's shown again.
@@ -55,6 +60,8 @@ export function useBattle(code: string) {
   const [offline, setOffline] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  /** Where the battle's push channel is (only polls carry it; null: none on this server). */
+  const [liveConfig, setLiveConfig] = useState<BattleView["live"]>(null);
   const token = useRef<string | null>(null);
   const rev = useRef(-1);
   const lines = useRef<string[]>([]);
@@ -66,6 +73,9 @@ export function useBattle(code: string) {
   const quiet = useRef(0);
   const lastSeen = useRef("");
   const skew = useRef(0);
+  /** The battle's push channel is up (then polling is only a safety net), and the long poll under way, if any. */
+  const liveUp = useRef(false);
+  const longPoll = useRef<AbortController | null>(null);
 
   const receive = useCallback((next: BattleView, sentAt: number) => {
     // A slow response from before the latest change.
@@ -111,13 +121,21 @@ export function useBattle(code: string) {
     if (seed) receive(seed.view, seed.sentAt);
     let stopped = false;
     let throttledUntil = 0;
+    let pollStarted = 0;
     const poller = startPoller({
       async poll() {
         const sentAt = Date.now();
         try {
-          const res = await fetch(`${api}?since=${lines.current.length}`, {
+          // Waiting on the opponent with no push channel: the server holds the answer until the battle moves on.
+          const view = current.current;
+          const long = view !== null && document.visibilityState === "visible" && battleLongPoll(view, liveUp.current);
+          const abort = long ? new AbortController() : null;
+          longPoll.current = abort;
+          pollStarted = sentAt;
+          const res = await fetch(`${api}?since=${lines.current.length}${long ? `&wait=1&seen=${battleSeenDigest(view)}` : ""}`, {
             cache: "no-store",
             headers: token.current ? { "x-battle-token": token.current } : { "x-battle-viewer": viewerId() },
+            signal: abort?.signal,
           });
           const data = await res.json().catch(() => ({}));
           if (stopped) return;
@@ -128,20 +146,31 @@ export function useBattle(code: string) {
           else if (!res.ok) throw new Error(`Request failed (${res.status})`);
           else {
             receive(data as BattleView, sentAt);
+            setLiveConfig((data as BattleView).live ?? null);
             setOffline(false);
           }
-        } catch {
-          if (!stopped) setOffline(true);
+        } catch (err) {
+          // A long poll called off (something else said the battle moved on) isn't a lost connection.
+          if (!stopped && !(err instanceof DOMException && err.name === "AbortError")) setOffline(true);
+        } finally {
+          longPoll.current = null;
         }
       },
       delay() {
         if (stopped) return null;
-        const wait = battlePollDelay(current.current, quiet.current, Date.now() + skew.current);
+        // Long polls back to back, no closer than the ordinary waiting poll (an answer that came back at once).
+        const wait = battleLongPoll(current.current, liveUp.current)
+          ? Math.max(0, pollStarted + BATTLE_WAITING_POLL_MS - Date.now())
+          : battlePollDelay(current.current, quiet.current, Date.now() + skew.current, liveUp.current);
         return wait !== null && Date.now() < throttledUntil ? Math.max(wait, 5000) : wait;
       },
       hiddenDelay: () => (stopped ? null : battleHiddenDelay(current.current)),
     });
-    kick.current = poller.kick;
+    kick.current = () => {
+      // Fresh news: a long poll under way would only answer with it later.
+      longPoll.current?.abort();
+      poller.kick();
+    };
     touch.current = poller.touch;
     return () => {
       stopped = true;
@@ -239,6 +268,16 @@ export function useBattle(code: string) {
       return null;
     }
   }
+
+  // The push channel: a revision newer than ours means fetch now; while it's up, polling slows to a safety net.
+  const live = useBattleLive(liveConfig, code, (next) => {
+    if (next > rev.current) kick.current();
+  });
+  useEffect(() => {
+    liveUp.current = live;
+    // Just up: a long poll under way can stop waiting (the channel will say). Just down: back to polling closely.
+    kick.current();
+  }, [live]);
 
   return { view, log, offset, gone, offline, error, setError, busy, act, choose, startTimer, undo, chat, join, rematch };
 }

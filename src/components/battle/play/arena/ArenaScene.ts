@@ -398,7 +398,7 @@ export function createArena(host: HTMLElement, opts: ArenaOptions, cb: ArenaCall
         fragmentShader: `uniform vec3 uColor; uniform float uAlpha, uTime; varying float vY; varying vec3 vN; varying vec3 vV;
           void main(){
             float rim = pow(abs(dot(vN, vV)), 1.6);
-            float a = uAlpha * pow(vY, 1.7) * rim * (0.92 + 0.08 * sin(uTime * 1.3));
+            float a = uAlpha * pow(max(vY, 0.0), 1.7) * rim * (0.92 + 0.08 * sin(uTime * 1.3));
             gl_FragColor = vec4(uColor, a);
             ${COMMON_FRAG_TAIL}
           }`,
@@ -1279,7 +1279,7 @@ export function createArena(host: HTMLElement, opts: ArenaOptions, cb: ArenaCall
         fragmentShader: `uniform float uLevel, uTime; uniform vec3 uColor; varying vec2 vUv;
           void main(){
             float across = smoothstep(0.0, 0.5, vUv.x) * smoothstep(1.0, 0.5, vUv.x);
-            float along = pow(vUv.y, 1.4);
+            float along = pow(clamp(vUv.y, 0.0, 1.0), 1.4);
             float shimmer = 0.75 + 0.25 * sin(uTime * 0.8 + vUv.x * 9.0);
             gl_FragColor = vec4(uColor, across * along * uLevel * 0.22 * shimmer);
             ${COMMON_FRAG_TAIL}
@@ -1358,7 +1358,7 @@ export function createArena(host: HTMLElement, opts: ArenaOptions, cb: ArenaCall
               float r = length(p);
               float a = atan(p.y, p.x);
               float w = 0.5 + 0.5 * sin(r * 1.6 - uTime * 2.2 + sin(a * 3.0 + uTime) * 0.8);
-              v = 0.2 + 0.55 * pow(w, 3.0);
+              v = 0.2 + 0.55 * pow(max(w, 0.0), 3.0);
               col = mix(uA, uB, 0.5 + 0.5 * sin(a * 2.0 + uTime * 0.6));
             } else {
               // Misty: pale clouds drifting over the floor.

@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import { watchContext } from "@/lib/gl/context-loss";
 import { latOf, lonOf, type Atlas } from "@/lib/globe/geo";
 import { atlasMountains, type GlobeMountain } from "@/lib/globe/mountains";
 import { eraVisibility, LAST_GEN, regionGeneration } from "@/lib/globe/era";
@@ -49,6 +50,8 @@ export interface SceneOptions {
   /** Pins the quality level (0–3); null lets the frame-time monitor choose. */
   quality: number | null;
   era: number;
+  /** The WebGL context was lost and the scene must be built again (see watchContext). */
+  onContextGone?: () => void;
 }
 export interface SceneApi {
   next(): void;
@@ -132,10 +135,12 @@ export function createGlobeScene(host: HTMLElement, layer: HTMLDivElement, cb: S
   canvas.className = "absolute inset-0 h-full w-full cursor-grab touch-none active:cursor-grabbing";
   canvas.setAttribute("aria-label", "Interactive 3D globe of the Pokémon world. Drag to spin, scroll or pinch to zoom, hover or tap a town to see it.");
   host.insertBefore(canvas, layer);
+  const ctxWatch = watchContext(canvas, opts.onContextGone);
   let renderer: THREE.WebGLRenderer;
   try {
     renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, powerPreference: "high-performance" });
   } catch {
+    ctxWatch.dispose();
     canvas.remove();
     return null;
   }
@@ -178,7 +183,7 @@ export function createGlobeScene(host: HTMLElement, layer: HTMLDivElement, cb: S
       uniform float nightLevel; uniform float light; uniform vec3 uSun; uniform vec3 uCam;
       varying vec2 vUv; varying vec3 vP;
       ${NOISE}
-      float gridf(vec2 uv, vec2 n){ vec2 g=abs(fract(uv*n-.5)-.5)/fwidth(uv*n); return 1.-min(min(g.x,g.y),1.); }
+      float gridf(vec2 uv, vec2 n){ vec2 g=abs(fract(uv*n-.5)-.5)/max(fwidth(uv*n),vec2(1e-6)); return 1.-min(min(g.x,g.y),1.); }
       void main(){
         vec3 N=normalize(vP); vec3 V=normalize(uCam-vP);
         float m=texture2D(map,vUv).r;
@@ -187,7 +192,7 @@ export function createGlobeScene(host: HTMLElement, layer: HTMLDivElement, cb: S
         float l0=step(.04,m), c0=smoothstep(.85,1.,m);
         float l=l0*vis, c=c0*vis;
         float g=gridf(vUv, vec2(36.,18.))*(1.-l*.6);
-        float f=pow(1.-max(dot(N,V),0.),2.2);
+        float f=pow(max(1.-max(dot(N,V),0.),0.),2.2);
         float band=.96+.04*sin(vUv.y*900.+time*2.);
         vec3 col=sea;
         col=mix(col, land*(.55+.75*m)*band, l*.92);
@@ -201,7 +206,8 @@ export function createGlobeScene(host: HTMLElement, layer: HTMLDivElement, cb: S
         col+=spec*(pow(nh,110.)*(.55+.45*w)*.42+pow(nh,12.)*.035)*(1.-l0)*day;
         col*=mix(nightLevel,1.,day);
         col=mix(col,col*nightTint,(1.-day)*.75);
-        col+=dusk*exp(-pow((ndl-.03)/.06,2.))*(light>.5?.025:.05)*(.35+.65*l);
+        float dx=(ndl-.03)/.06;
+        col+=dusk*exp(-dx*dx)*(light>.5?.025:.05)*(.35+.65*l);
         col+=rim*f*(light>.5?.35:.9)*mix(.4,1.,day);
         gl_FragColor=vec4(col,1.);
       }`,
@@ -221,7 +227,8 @@ export function createGlobeScene(host: HTMLElement, layer: HTMLDivElement, cb: S
         float i=pow(max(.72-dot(vN,vec3(0,0,1.)),0.),2.4)*strength;
         float s=dot(vN,uSunV);
         float lit=.35+.85*smoothstep(-.45,.55,s);
-        vec3 c=mix(color,dusk,exp(-pow(s/.28,2.))*.45);
+        float sx=s/.28;
+        vec3 c=mix(color,dusk,exp(-sx*sx)*.45);
         float k=i*lit; gl_FragColor=vec4(c*k,min(1.,k*.8));
       }`,
   });
@@ -774,6 +781,7 @@ export function createGlobeScene(host: HTMLElement, layer: HTMLDivElement, cb: S
   let hudT = 0, t = 0;
   function frame() {
     raf = requestAnimationFrame(frame);
+    if (ctxWatch.lost) return;
     const now = performance.now();
     monitor(now);
     const dt = Math.min(clock.getDelta(), 0.1);
@@ -935,6 +943,7 @@ export function createGlobeScene(host: HTMLElement, layer: HTMLDivElement, cb: S
     skipIntro,
     dispose() {
       dead = true;
+      ctxWatch.dispose();
       cancelAnimationFrame(raf);
       mo.disconnect();
       ro.disconnect();

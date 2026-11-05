@@ -27,6 +27,7 @@ import { PVP_AWAY_MS } from "@/lib/pvp-types";
 import { SIM_VERSION, SimReplayError, SimSession, newSeed, seatOfSide, sideOf, type PlayerSide } from "./engine";
 import { chooseCpu, seededRandom } from "./cpu";
 import { randomChoice } from "./choices";
+import { publishBattleLater } from "./live";
 import { cpuTeam, factoryTeam, pickFactoryTier, prepareTeam, seatTeam } from "./teams";
 import { checkRules, customCpuTeam, prepareCustomTeam } from "./custom";
 import { Dex, Teams } from "pokemon-showdown";
@@ -905,6 +906,8 @@ export async function updateBattle<T extends object>(
     if (!work.changed) return { ...out, rec: work.rec, now, rev: loaded.version };
     if (await saveBattle(code, loaded.version, work.patch())) {
       remember(code, work.rec, loaded.version + 1);
+      // The other trainer's page (and any spectator's) fetches at once, when Realtime is on.
+      if (work.rec.meta.kind === "pvp") publishBattleLater(code, loaded.version + 1);
       return { ...out, rec: work.rec, now, rev: loaded.version + 1 };
     }
     // Someone else saved first (or this copy was stale): start over from the store.
@@ -1039,6 +1042,7 @@ export async function chatBattle(code: string, playerId: string, text: string, s
     touch(meta, playerId, now);
     if (await saveBattle(code, lite.version, { meta })) {
       rememberMeta(code, lite.version, meta);
+      publishBattleLater(code, lite.version + 1);
       const mine = await loadBattleMeta(code, channelOf(seat));
       return { ok: true, view: battleView(meta, playerId, mine?.log ?? [], since, now, lite.version + 1) };
     }
