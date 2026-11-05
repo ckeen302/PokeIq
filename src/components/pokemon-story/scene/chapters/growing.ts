@@ -46,7 +46,9 @@ export const build: ChapterBuilder = async (ctx) => {
     return f;
   }));
   // A dark ground under all of it, and the sea between Johto and Hoenn.
-  const ground = new THREE.Mesh(new THREE.PlaneGeometry(260, 520).rotateX(-Math.PI / 2), new THREE.MeshStandardMaterial({ color: col("#050c16"), roughness: 0.95, metalness: 0 }));
+  // A dark, faintly glossy sea that runs to the horizon and melts into the haze.
+  scene.fog = new THREE.FogExp2(col("#3a5a8a"), 0.0055);
+  const ground = new THREE.Mesh(new THREE.PlaneGeometry(1800, 1800).rotateX(-Math.PI / 2), new THREE.MeshStandardMaterial({ color: col("#0a1626"), roughness: 0.95, metalness: 0 }));
   ground.position.set(0, -0.05, -200);
   scene.add(ground);
   D.add({ dispose: () => { ground.geometry.dispose(); (ground.material as THREE.Material).dispose(); } });
@@ -99,7 +101,7 @@ export const build: ChapterBuilder = async (ctx) => {
   scene.add(stadium.group);
   const crowd = D.add(makeCrowd({ points: bowlPoints({ inner: 10, outer: 20, height: 7, count: Math.round(3200 * P) + 400, center: [0, 0, Z.stadium] }), colors: ["#ffe8b0", "#9ad8ff"], size: 0.1, intensity: 1.4 }));
   scene.add(crowd.points);
-  const spots = [-1, 1].flatMap((sx) => [-1, 1].map((sz) => { const s = D.add(makeShaft({ from: [sx * 17, 14, Z.stadium + sz * 14], to: [0, 0, Z.stadium], r0: 0.3, r1: 2.6, color: "#e8f0ff", intensity: 0.7, noise: 0.4 })); scene.add(s.mesh); return s; }));
+  const spots = [-1, 1].flatMap((sx) => [-1, 1].map((sz) => { const s = D.add(makeShaft({ from: [sx * 17, 14, Z.stadium + sz * 14], to: [0, 0, Z.stadium], r0: 0.3, r1: 2.6, color: "#e8f0ff", intensity: 0.42, noise: 0.4 })); scene.add(s.mesh); return s; }));
   const cupMat = new THREE.MeshStandardMaterial({ color: col("#f2c96b"), roughness: 0.2, metalness: 1, emissive: col("#7a5a10"), emissiveIntensity: 0.4 });
   const cupProfile = [[0, 0], [0.7, 0], [0.7, 0.15], [0.25, 0.3], [0.2, 0.9], [0.3, 1.0], [0.85, 1.4], [0.95, 2.1], [0.9, 2.15]].map(([x, y]) => new THREE.Vector2(x, y));
   const cup = new THREE.Mesh(new THREE.LatheGeometry(cupProfile, 40), cupMat);
@@ -143,8 +145,8 @@ export const build: ChapterBuilder = async (ctx) => {
   // ---- The legends.
   const figs = await loadFigures(ctx, [250, 249, 383, 382, 483, 484, 643, 644]);
   const mk = (dex: number, pos: Vec3, h: number, accent: string, rotY = 0) => { const f = heroFigure(figs.get(dex), { pos, height: h, accent, scene, rotY }); if (f) D.add(f); return f; };
-  const hoOh = mk(250, [0, 18, Z.johto], 5, "#ffb04a");
-  const lugia = mk(249, [0, 18, Z.johto], 5, "#9ad8ff");
+  const hoOh = mk(250, [0, 18, Z.johto], 6.6, "#ffb04a");
+  const lugia = mk(249, [0, 18, Z.johto], 6.6, "#9ad8ff");
   const groudon = mk(383, [-11, 0.2, Z.hoenn - 6], 8, "#ff5a2a", 0.9);
   const kyogre = mk(382, [11, 0.6, Z.hoenn - 6], 8, "#3a8aff", -0.9);
   const dialga = mk(483, [-19, 12, Z.sinnoh - 44], 10, "#6ab8ff", 0.5);
@@ -211,6 +213,8 @@ export const build: ChapterBuilder = async (ctx) => {
       const px = pointPixel(viewH, cam);
       sky.follow(cam);
       palAt(t, 1, sky.u.uTop.value); palAt(t, 2, sky.u.uHorizon.value); palAt(t, 3, sky.u.uBottom.value);
+      const fog = scene.fog as THREE.FogExp2;
+      fog.color.copy(sky.u.uHorizon.value).multiplyScalar(0.6);
       const night = ramp(t, tClock + 2.5, tClock + 4.5);
       const space = ramp(t, tOnline + 1, tOnline + 3) * (1 - ramp(t, tWorlds - 0.5, tWorlds + 1));
       stars.mat.opacity = Math.max(night * (1 - ramp(t, tColour, tColour + 2)) * 0.7, space, 0.25 * ramp(t, tFresh, end));
@@ -284,6 +288,7 @@ export const build: ChapterBuilder = async (ctx) => {
       skyline.mesh.visible = t > tFresh - 1.5;
       skyline.u.uLit.value = 0.25 + 0.75 * ramp(t, tFresh + 1, tFresh + 5);
       ground.visible = orb < 0.4;
+      fog.density = 0.0055 * (1 - orb);
 
       // The case in the corner of the frame: GBC → GBA → DS.
       cam.getWorldDirection(fwd);
