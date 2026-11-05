@@ -845,3 +845,69 @@ export function makeCritterWall(o: { count: number; cols: number; cell: number; 
   mesh.frustumCulled = false;
   return { mesh, u, dispose() { geo.dispose(); base.dispose(); mat.dispose(); tex.dispose(); } };
 }
+
+// ---------------------------------------------------------------------------
+// Region maps as glowing floors (the 3D Timeline's maps, public/geo/maps)
+// ---------------------------------------------------------------------------
+
+/**
+ * A region map laid flat as a glowing floor: coastlines and routes light in
+ * the tint, the land is a faint wash, the edges fade out. North is far (−z).
+ */
+export async function makeRegionFloor(o: { src: string; w: number; h: number; width: number; tint: string; signal?: AbortSignal }) {
+  const tex = await new THREE.TextureLoader().loadAsync(o.src);
+  if (o.signal?.aborted) { tex.dispose(); throw new DOMException("aborted", "AbortError"); }
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.anisotropy = 4;
+  const height = (o.width * o.h) / o.w;
+  const geo = new THREE.PlaneGeometry(o.width, height).rotateX(-Math.PI / 2);
+  const u = { uMap: { value: tex }, uTint: { value: col(o.tint) }, uA: { value: 1 }, uTime: { value: 0 }, uTexel: { value: new THREE.Vector2(1 / o.w, 1 / o.h) }, uLand: { value: 0.06 } };
+  const mat = new THREE.ShaderMaterial({
+    uniforms: u,
+    transparent: true,
+    depthWrite: false,
+    blending: THREE.AdditiveBlending,
+    vertexShader: /* glsl */ `varying vec2 vUv; varying vec3 vW; void main(){ vUv = uv; vec4 wp = modelMatrix * vec4(position, 1.0); vW = wp.xyz; gl_Position = projectionMatrix * viewMatrix * wp; }`,
+    fragmentShader: /* glsl */ `
+      uniform sampler2D uMap; uniform vec3 uTint; uniform float uA, uTime, uLand; uniform vec2 uTexel; varying vec2 vUv; varying vec3 vW;
+      float landAt(vec2 uv){ vec3 t = texture2D(uMap, uv).rgb; return smoothstep(-0.02, 0.1, max(t.r, t.g) - t.b); }
+      void main(){
+        vec4 t = texture2D(uMap, vUv);
+        float land = smoothstep(-0.02, 0.1, max(t.r, t.g) - t.b);
+        float lum = dot(t.rgb, vec3(0.3, 0.59, 0.11));
+        float route = smoothstep(0.72, 0.9, lum) * land;
+        vec2 o = uTexel * 1.5;
+        float around = (landAt(vUv + vec2(o.x, 0.0)) + landAt(vUv - vec2(o.x, 0.0)) + landAt(vUv + vec2(0.0, o.y)) + landAt(vUv - vec2(0.0, o.y))) * 0.25;
+        float coast = clamp(abs(land - around) * 3.0, 0.0, 1.0);
+        vec2 e = min(vUv, 1.0 - vUv);
+        float edge = smoothstep(0.0, 0.16, e.x) * smoothstep(0.0, 0.14, e.y);
+        float scan = 0.75 + 0.25 * smoothstep(0.55, 1.0, sin(vW.z * 0.3 - uTime * 2.0));
+        vec3 c = uTint * (land * uLand + coast * 0.9 + route * 0.55) * scan + t.rgb * land * 0.05;
+        float a = edge * uA;
+        gl_FragColor = vec4(c * a, a);
+      }`,
+  });
+  const mesh = new THREE.Mesh(geo, mat);
+  mesh.renderOrder = 1;
+  return { mesh, u, width: o.width, height, dispose() { geo.dispose(); mat.dispose(); tex.dispose(); } };
+}
+
+/** Stars: fixed points on a far sphere round a centre (no per-pixel sky noise, so no moiré). */
+export function makeStars(o: { count: number; radius: number; center: Vec3; seed?: number; size?: number }) {
+  const r = rng(o.seed ?? 17);
+  const pos = new Float32Array(o.count * 3), c = new Float32Array(o.count * 3);
+  for (let i = 0; i < o.count; i++) {
+    const y = r() * 2 - 1, th = r() * Math.PI * 2, rad = Math.sqrt(1 - y * y);
+    pos.set([o.center[0] + Math.cos(th) * rad * o.radius, o.center[1] + y * o.radius, o.center[2] + Math.sin(th) * rad * o.radius], i * 3);
+    const k = 0.4 + r() * r() * 1.6;
+    c.set([k, k * (0.9 + r() * 0.1), k * (0.85 + r() * 0.3)], i * 3);
+  }
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute("position", new THREE.BufferAttribute(pos, 3));
+  geo.setAttribute("color", new THREE.BufferAttribute(c, 3));
+  const mat = new THREE.PointsMaterial({ size: o.size ?? 1.6, sizeAttenuation: false, vertexColors: true, transparent: true, depthWrite: false, opacity: 1 });
+  const points = new THREE.Points(geo, mat);
+  points.frustumCulled = false;
+  points.renderOrder = -5;
+  return { points, mat, dispose() { geo.dispose(); mat.dispose(); } };
+}
