@@ -7,6 +7,9 @@ import { liveLabExperiences, type LabExperience } from "@/lib/lab";
 import { cn } from "@/lib/utils";
 import { LAB_CSS } from "./lab-css";
 
+/** How wide an experience's screenshot is drawn on its card (the hero's floating panels reuse the same file). */
+const CARD_IMAGE_SIZES = "(min-width: 1024px) 680px, 100vw";
+
 /**
  * /lab: a hero, then one big card per 3D experience. The previews are
  * screenshots of the real scenes drifting slowly (or, without one, a CSS
@@ -78,7 +81,8 @@ function LabHero({ shots }: { shots: LabExperience[] }) {
                 className={cn("lab-panel", pose.className)}
                 style={{ transform: pose.transform, animationDelay: pose.delay, "--lab-accent": e.accent } as Vars}
               >
-                <Image src={e.image!} alt="" width={1280} height={720} sizes="(min-width: 1024px) 420px, 70vw" priority className="block aspect-video h-auto w-full object-cover" />
+                {/* The same sizes as the experience's card below, so the browser downloads each screenshot once. */}
+                <Image src={e.image!} alt="" width={1280} height={720} sizes={CARD_IMAGE_SIZES} priority className="block aspect-video h-auto w-full object-cover" />
               </div>
             );
           })}
@@ -103,7 +107,7 @@ function LabCard({ experience: e, flip, priority }: { experience: LabExperience;
               src={e.image}
               alt=""
               fill
-              sizes="(min-width: 1024px) 680px, 100vw"
+              sizes={CARD_IMAGE_SIZES}
               priority={priority}
               className="lab-kb object-cover"
             />
