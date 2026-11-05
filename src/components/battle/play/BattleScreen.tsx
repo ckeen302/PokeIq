@@ -341,6 +341,8 @@ export default function BattleScreen({ view, log, offset, busy, error, onChoose,
     }
   };
   const me: SideId = sideOfSeat(view.you);
+  /** The request whose switch went out while maybe trapped: no Cancel for it. */
+  const [noCancel, setNoCancel] = useState<number | null>(null);
   /** The versus intro: the first turn waits for it (it ends on its own, or when skipped). */
   const intro = useRef<{ done: Promise<void>; end: () => void } | null>(null);
   const [versus, setVersus] = useState(() => {
@@ -799,7 +801,23 @@ export default function BattleScreen({ view, log, offset, busy, error, onChoose,
         <Card ref={controlsCard}>
           <CardContent className="p-4">
             {showControls ? (
-              <Controls key={view.request!.rqid} request={view.request!.data} snap={snap} me={me} gameType={gameType} names={four ? names : undefined} busy={busy} format={view.format} onChoose={(choice) => onChoose(view.request!.rqid, choice)} onHelp={help.toggle} />
+              <Controls
+                key={view.request!.rqid}
+                request={view.request!.data}
+                snap={snap}
+                me={me}
+                gameType={gameType}
+                names={four ? names : undefined}
+                busy={busy}
+                format={view.format}
+                onChoose={(choice) => {
+                  const rqid = view.request!.rqid;
+                  // Showdown: a switch sent while maybe trapped can't be cancelled (the cancel would tell whether it was).
+                  if (/\bswitch\b/.test(choice) && view.request!.data.active?.some((a) => a?.maybeTrapped)) setNoCancel(rqid);
+                  onChoose(rqid, choice);
+                }}
+                onHelp={help.toggle}
+              />
             ) : ended ? (
               <div className="space-y-3 text-center" data-testid="battle-result">
                 <BattleVictory view={view} title={result!.title} detail={result!.detail} tone={result!.tone} />
@@ -828,7 +846,7 @@ export default function BattleScreen({ view, log, offset, busy, error, onChoose,
                           : watching
                             ? "The trainers are choosing…"
                             : `Waiting for ${foeName}…`}
-                    {view.cancel && onUndo && !busy && (
+                    {view.cancel && onUndo && !busy && view.cancel.rqid !== noCancel && (
                       <button
                         type="button"
                         onClick={() => onUndo(view.cancel!.rqid)}
