@@ -2,7 +2,8 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { SHARE_IMAGES, pageMetadata } from "@/lib/seo";
+import { SHARE_IMAGES, jsonLd, pageMetadata } from "@/lib/seo";
+import { breadcrumbList } from "@/lib/structured-data";
 import { ITEMS, getItem, moveFromApiSlug, speciesBySlug } from "@/lib/dex/data";
 import { itemSpriteUrl, versionGroupLabel, versionLabel } from "@/lib/dex/build";
 import { Section } from "@/components/pokedex/entry/Reveal";
@@ -151,6 +152,7 @@ export default async function ItemPage({ params }: PageProps) {
           </div>
         </Section>
       )}
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(breadcrumbList([{ name: "Pokédex", path: "/pokedex" }, { name: "Items", path: "/pokedex/items" }, { name: item.name, path: `/pokedex/items/${item.slug}` }])) }} />
     </article>
   );
 }
