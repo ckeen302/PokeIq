@@ -436,7 +436,7 @@ export function makeShaft(o: { from: Vec3; to: Vec3; r0: number; r1: number; col
       void main(){
         float facing = abs(dot(normalize(vN), normalize(vV)));
         float core = pow(facing, 2.2);
-        float fall = smoothstep(0.0, 0.25, vY) * pow(vY, 0.6);
+        float fall = smoothstep(0.0, 0.25, vY) * pow(max(vY, 0.0), 0.6);
         float n = mix(1.0, 0.55 + 0.9 * whNoise(vec3(vP.x * 0.6, vP.y * 0.12 + uTime * 0.25, vP.z * 0.6)), uNoise);
         float k = core * fall * n * uOpacity;
         gl_FragColor = vec4(uColor * uIntensity * k, k);
@@ -564,7 +564,7 @@ export function makeLightning(o: { color: string; width: number; intensity?: num
     fragmentShader: /* glsl */ `
       uniform vec3 uColor; uniform float uIntensity, uAlpha; varying vec2 vUv;
       void main(){
-        float a = 1.0 - abs(vUv.x - 0.5) * 2.0;
+        float a = max(0.0, 1.0 - abs(vUv.x - 0.5) * 2.0);
         float core = pow(a, 6.0) * 2.5 + pow(a, 1.5) * 0.5;
         float k = core * uAlpha * vUv.y;
         gl_FragColor = vec4(mix(uColor, vec3(1.0), pow(a, 8.0)) * uIntensity * k, k);
@@ -681,7 +681,8 @@ export function makeOcean(o: { size: number; segments: number; waves: Wave[]; de
         if (uSwell.w != 0.0) {
           vec2 rel = wp0.xz - uSwell.xy;
           float sd = max(length(rel), 1e-3);
-          float env = exp(-pow(sd / uSwell.z, 2.0));
+          float envX = sd / uSwell.z;
+          float env = exp(-envX * envX);
           float ph = sd * 0.32 - uTime * 2.1;
           float ring = 0.55 + 0.45 * sin(ph);
           float sh = uSwell.w * env * ring;
@@ -804,7 +805,8 @@ export function makeCloudLayer(o: { size: number; y: number; color: string; shad
         float d = smoothstep(1.0 - uDensity, 1.0, n * 0.8 + m * 0.4);
         float edge = 1.0 - smoothstep(0.35, 0.5, length(vUv - 0.5));
         float hd = uHole.z > 0.0 ? length(vW.xz - uHole.xy) / uHole.z : 9.0;
-        float rim = exp(-pow((hd - 1.0) * (2.2 + uHole.z * 0.02), 2.0));
+        float rimX = (hd - 1.0) * (2.2 + uHole.z * 0.02);
+        float rim = exp(-rimX * rimX);
         d *= smoothstep(0.75, 1.15, hd + (n - 0.5) * 0.35);
         vec3 c = mix(uShadow, uColor, smoothstep(0.2, 0.9, m)) * uIntensity + vec3(0.75, 0.8, 1.0) * uFlash * d + uHoleGlow * rim * d;
         float a = d * edge * uOpacity;
