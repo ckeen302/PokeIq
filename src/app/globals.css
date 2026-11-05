@@ -193,6 +193,8 @@
   }
   .menu-item::before {
     content: "▶";
+    /* Decorative: kept out of the item's accessible name. */
+    content: "▶" / "";
     @apply pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-[10px] text-primary opacity-0 transition-opacity;
   }
   .menu-item:not(:disabled):hover,

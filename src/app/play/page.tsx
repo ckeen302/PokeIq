@@ -32,7 +32,6 @@ export default function PlayPage() {
       <Link
         href="/quiz/name-em-all"
         className="menu-item group relative flex items-center gap-4 overflow-hidden rounded-lg border bg-card p-4 hover:border-screen/50 hover:bg-accent/40"
-        aria-label="Play Name 'em All"
         data-testid="play-name-em-all"
       >
         <span className="absolute inset-y-0 left-0 w-1 bg-[hsl(170_80%_45%)]" aria-hidden />
