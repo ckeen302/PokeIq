@@ -1066,13 +1066,26 @@ function noteSeen(battle: Battle, side: Side) {
   for (const p of side.foe.active) if (p) set.add(p);
 }
 
+/**
+ * How long the computer may think. `budgetMs`: once this much has passed
+ * (by `now`, performance.now() by default), Hard stops looking further ahead
+ * and plays the best it has found. No budget (the Battle Lab, the tests):
+ * it always looks as far as it can, so a seeded game plays the same every
+ * time.
+ */
+export interface CpuThinking {
+  budgetMs?: number;
+  now?: () => number;
+}
+
 /** The computer's choice for `side`. `rand` drives the noise; `onError` hears about a fallback. */
 export function chooseCpu(
   battle: Battle,
   side: Side,
   level: CpuLevel,
   rand: () => number,
-  onError: (err: unknown) => void = (err) => console.error("[battle] cpu fell back to a random choice:", err)
+  onError: (err: unknown) => void = (err) => console.error("[battle] cpu fell back to a random choice:", err),
+  thinking: CpuThinking = {}
 ): string {
   const request = side.activeRequest as unknown as BattleRequest | null;
   if (!request || request.wait) throw new Error("The computer has nothing to choose.");
@@ -1082,7 +1095,7 @@ export function chooseCpu(
   if (level === "easy" || battle.gameType !== "singles") return chooseCpuLegacy(battle, side, level, rand, onError);
   noteSeen(battle, side);
   try {
-    return decide(makeCtx(battle, side, level), request, rand);
+    return decide(makeCtx(battle, side, level), request, rand, thinking);
   } catch (err) {
     onError(err);
     try {
@@ -1093,8 +1106,11 @@ export function chooseCpu(
   }
 }
 
-function decide(ctx: Ctx, request: BattleRequest, rand: () => number): string {
+function decide(ctx: Ctx, request: BattleRequest, rand: () => number, thinking: CpuThinking = {}): string {
   const { side, level } = ctx;
+  const clock = thinking.now ?? (() => performance.now());
+  const startedAt = clock();
+  const outOfTime = () => thinking.budgetMs !== undefined && clock() - startedAt >= thinking.budgetMs;
   const noise = NOISE[level];
   const jitter = () => (rand() - 0.5) * noise;
   const s = buildState(ctx);
@@ -1164,10 +1180,22 @@ function decide(ctx: Ctx, request: BattleRequest, rand: () => number): string {
     scored.push({ text: o.text, action, score: score + jitter(), cost });
   }
   scored.sort((a, b) => b.score - a.score);
-  // Hard: the best few are looked at a turn further (our best follow-up against their likeliest reply).
+  // Hard: the best few are looked at a turn further (our best follow-up against their likeliest reply),
+  // best first, while the time budget lasts. Scores a turn deeper only compare with each other: if time
+  // runs out partway, the choice is the best of those looked at (the one-turn favourites), or the one-turn
+  // best if fewer than two were.
   if (level === "hard" && TUNE.followups > 0) {
-    for (const c of scored.slice(0, TUNE.followups)) c.score = expectedValue(ctx, s, c.action, replies, (leaf) => followup(ctx, leaf)) + c.cost;
-    scored.sort((a, b) => b.score - a.score);
+    const deeper: typeof scored = [];
+    for (const c of scored.slice(0, TUNE.followups)) {
+      if (outOfTime()) break;
+      c.score = expectedValue(ctx, s, c.action, replies, (leaf) => followup(ctx, leaf)) + c.cost;
+      deeper.push(c);
+    }
+    if (deeper.length === Math.min(TUNE.followups, scored.length)) scored.sort((a, b) => b.score - a.score);
+    else if (deeper.length >= 2) {
+      deeper.sort((a, b) => b.score - a.score);
+      scored.splice(0, deeper.length, ...deeper);
+    }
   }
   let best = scored[0]?.text ?? "";
   if (!best) best = (options.find((o) => o.kind === "move" && !o.tera) ?? options[0]).text;

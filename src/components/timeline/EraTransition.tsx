@@ -72,7 +72,7 @@ const CSS = `
 .tl-tx-3ds .r { box-shadow: inset -14px 0 0 -6px rgb(63 208 255 / .55), inset 0 0 90px rgb(63 208 255 / .22); animation: tl-fringe-r .8s ease-out forwards; }
 @keyframes tl-fringe-l { 0% { opacity: 0; transform: translateX(-3%); } 20% { opacity: 1; transform: translateX(-1.6%); } 100% { opacity: 0; transform: translateX(0); } }
 @keyframes tl-fringe-r { 0% { opacity: 0; transform: translateX(3%); } 20% { opacity: 1; transform: translateX(1.6%); } 100% { opacity: 0; transform: translateX(0); } }
-.tl-stage[data-tx="3ds"] h1, .tl-stage[data-tx="3ds"] [data-testid="timeline-year"] { animation: tl-ana .8s ease-out both; }
+.tl-stage[data-tx="3ds"] .tl-title, .tl-stage[data-tx="3ds"] [data-testid="timeline-year"] { animation: tl-ana .8s ease-out both; }
 @keyframes tl-ana { 0% { text-shadow: -10px 0 rgb(255 77 109 / .8), 10px 0 rgb(63 208 255 / .8); } 100% { text-shadow: -2px 0 rgb(255 77 109 / .65), 2px 0 rgb(63 208 255 / .65); } }
 
 /* VIII: two controller rails snap in from the sides, click, and slide away. */

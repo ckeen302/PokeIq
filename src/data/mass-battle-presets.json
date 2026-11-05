@@ -1,6 +1,6 @@
 {
- "engine": 4,
- "roster": 3,
+ "engine": 5,
+ "roster": 4,
  "results": {
   "magikarp-vs-arceus": {
    "outcome": {
@@ -22,15 +22,21 @@
    "answer": {
     "n": 49,
     "spread": 8,
-    "wins": 22,
-    "runs": 40,
-    "seed": 143106351
+    "wins": 36,
+    "runs": 60,
+    "seed": 1148316336,
+    "pure": {
+     "n": 25,
+     "spread": 3,
+     "wins": 31,
+     "runs": 60
+    }
    }
   },
   "rattata-vs-mewtwo": {
    "outcome": {
     "winner": 0,
-    "seconds": 3.7,
+    "seconds": 4.7,
     "left": [
      999,
      0
@@ -45,72 +51,84 @@
     ]
    },
    "answer": {
-    "n": 4,
+    "n": 3,
     "spread": 1,
-    "wins": 40,
-    "runs": 40,
-    "seed": 1069852830
+    "wins": 48,
+    "runs": 60,
+    "seed": 2587697804,
+    "pure": {
+     "n": 3,
+     "spread": 1,
+     "wins": 43,
+     "runs": 60
+    }
    }
   },
   "pikachu-vs-snorlax": {
    "outcome": {
     "winner": 0,
-    "seconds": 3.95,
+    "seconds": 6.05,
     "left": [
-     100,
+     98,
      0
     ],
     "kos": [
      1,
-     0
+     2
     ],
     "dealt": [
      482,
-     0
+     12656
     ]
    },
    "answer": {
-    "n": 5,
-    "spread": 1,
-    "wins": 25,
-    "runs": 40,
-    "seed": 564827029
+    "n": 9,
+    "spread": 2,
+    "wins": 41,
+    "runs": 60,
+    "seed": 1077168487,
+    "pure": {
+     "n": 5,
+     "spread": 1,
+     "wins": 32,
+     "runs": 60
+    }
    }
   },
   "kanto-starters": {
    "outcome": {
     "winner": 0,
-    "seconds": 7.85,
+    "seconds": 6.65,
     "left": [
-     554,
+     588,
      0
     ],
     "kos": [
      60,
-     46
+     12
     ],
     "dealt": [
      19200,
-     28461
+     3033
     ]
    },
    "answer": null
   },
   "fire-vs-water": {
    "outcome": {
-    "winner": 0,
-    "seconds": 23.35,
+    "winner": 1,
+    "seconds": 30.4,
     "left": [
-     115,
-     0
+     0,
+     126
     ],
     "kos": [
-     406,
-     259
+     207,
+     338
     ],
     "dealt": [
-     131370,
-     88062
+     94754,
+     123944
     ]
    },
    "answer": null
@@ -118,18 +136,18 @@
   "legendaries-vs-everyone": {
    "outcome": {
     "winner": 1,
-    "seconds": 9.2,
+    "seconds": 9.8,
     "left": [
      0,
-     566
+     512
     ],
     "kos": [
-     34,
-     71
+     64,
+     72
     ],
     "dealt": [
-     18872,
-     25522
+     24800,
+     46598
     ]
    },
    "answer": null
@@ -137,43 +155,49 @@
   "bug-swarm-vs-charizard": {
    "outcome": {
     "winner": 0,
-    "seconds": 3.65,
+    "seconds": 3.15,
     "left": [
-     999,
+     1000,
      0
     ],
     "kos": [
      1,
-     1
+     0
     ],
     "dealt": [
-     218,
-     302
+     318,
+     0
     ]
    },
    "answer": {
     "n": 3,
     "spread": 1,
-    "wins": 40,
-    "runs": 40,
-    "seed": 108809341
+    "wins": 60,
+    "runs": 60,
+    "seed": 4011355943,
+    "pure": {
+     "n": 3,
+     "spread": 1,
+     "wins": 60,
+     "runs": 60
+    }
    }
   },
   "eeveelution-civil-war": {
    "outcome": {
     "winner": 0,
-    "seconds": 25.9,
+    "seconds": 18.95,
     "left": [
-     18,
+     40,
      0
     ],
     "kos": [
-     98,
-     82
+     99,
+     58
     ],
     "dealt": [
-     31849,
-     27082
+     31828,
+     18690
     ]
    },
    "answer": null
@@ -181,45 +205,51 @@
   "fire-vs-water-sun": {
    "outcome": {
     "winner": 1,
-    "seconds": 40.2,
+    "seconds": 27.6,
     "left": [
      0,
-     42
+     138
     ],
     "kos": [
-     368,
-     373
+     194,
+     339
     ],
     "dealt": [
-     120913,
-     123396
+     92544,
+     124004
     ]
    },
    "answer": null
   },
   "light-ball-pikachu-vs-snorlax": {
    "outcome": {
-    "winner": 0,
-    "seconds": 4.3,
+    "winner": 1,
+    "seconds": 7.7,
     "left": [
-     5,
-     0
+     0,
+     1
     ],
     "kos": [
-     1,
-     0
+     0,
+     5
     ],
     "dealt": [
-     482,
-     0
+     394,
+     1160
     ]
    },
    "answer": {
-    "n": 2,
-    "spread": 1,
-    "wins": 20,
-    "runs": 40,
-    "seed": 1151014033
+    "n": 4,
+    "spread": 2,
+    "wins": 31,
+    "runs": 60,
+    "seed": 4203519911,
+    "pure": {
+     "n": 3,
+     "spread": 1,
+     "wins": 46,
+     "runs": 60
+    }
    }
   }
  }

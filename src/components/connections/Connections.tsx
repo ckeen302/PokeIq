@@ -36,9 +36,12 @@ import { Popover } from "@/components/ui/popover";
 import { ShareButton } from "@/components/share/ShareButton";
 import { GridTile, GroupBar, GuessHistory, LevelLegend, MistakeDots, TILE_H4, TILE_H5, WhyPanel, preloadTileArt, type TileMotion } from "./parts";
 // The pop-ups (how to play with its demo, stats, the archive) load when first opened, not with the board.
-const ConnHowToSheet = dynamic(() => import("./sheets").then((m) => m.ConnHowToSheet), { ssr: false });
-const ConnStatsSheet = dynamic(() => import("./sheets").then((m) => m.ConnStatsSheet), { ssr: false });
-const ConnArchiveSheet = dynamic(() => import("./sheets").then((m) => m.ConnArchiveSheet), { ssr: false });
+const loadSheets = () => import("./sheets");
+// A first visit opens How to play at once: its code downloads while the page hydrates, not after.
+if (typeof window !== "undefined" && !getConnPrefs().seenHowToDemo) void loadSheets();
+const ConnHowToSheet = dynamic(() => loadSheets().then((m) => m.ConnHowToSheet), { ssr: false });
+const ConnStatsSheet = dynamic(() => loadSheets().then((m) => m.ConnStatsSheet), { ssr: false });
+const ConnArchiveSheet = dynamic(() => loadSheets().then((m) => m.ConnArchiveSheet), { ssr: false });
 // The stats card shows only on a finished daily.
 const ConnStatsCard = dynamic(() => import("./stats").then((m) => m.ConnStatsCard), { ssr: false, loading: () => <div className="mx-auto h-[19rem] max-w-md animate-pulse rounded-lg border bg-card/60" aria-hidden /> });
 import { ChallengeBanner, ChallengeResult, FeedbackPanel, GroupStats } from "./social";

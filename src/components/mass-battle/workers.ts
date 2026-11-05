@@ -108,6 +108,8 @@ export class SolverPool {
   /** Battles already played this question: `${n}:${seed}` → winner (the answer replays the search's battles). */
   private cache = new Map<string, number>();
   private onResult: ((msg: FromSolver) => void) | null = null;
+  /** The current job's layout ("melee" for the pure battle maths). */
+  private layout: "melee" | undefined;
   private pump: (() => void) | null = null;
 
   constructor(size = defaultPoolSize()) {
@@ -135,10 +137,11 @@ export class SolverPool {
   }
 
   /** An `evaluate` for the solver: battles of n challengers on the seeds, spread over the pool, counted in seed order. */
-  evaluator(roster: RosterSlice, q: Question, onProgress: (p: SolverProgress) => void, signal: AbortSignal): Evaluate {
+  evaluator(roster: RosterSlice, q: Question, onProgress: (p: SolverProgress) => void, signal: AbortSignal, layout?: "melee"): Evaluate {
     this.start();
     const job = ++this.job;
     this.cache.clear();
+    this.layout = layout;
     for (const s of this.slots) s.w.postMessage({ type: "setup", job, roster, question: q } satisfies ToSolver);
     return (n, seeds, settled) =>
       new Promise<Evaluation>((resolve, reject) => {
@@ -175,7 +178,7 @@ export class SolverPool {
             while (next < seeds.length && results[next] !== undefined) next++;
             if (next >= seeds.length) break;
             slot.busy = true;
-            slot.w.postMessage({ type: "run", job, tag, n, seed: seeds[next] } satisfies ToSolver);
+            slot.w.postMessage({ type: "run", job, tag, n, seed: seeds[next], ...(this.layout ? { layout: this.layout } : {}) } satisfies ToSolver);
             next++;
           }
         };

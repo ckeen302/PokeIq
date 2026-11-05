@@ -1,7 +1,18 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { battleQueueKey, cancelBattleSearch, searchBattle, type BattleSearchResult } from "@/lib/server/battle-engine/matchmaking";
+import {
+  SEARCH_RANGE_MAX,
+  battleQueueKey,
+  battleSearchRange,
+  cancelBattleSearch,
+  rankedBattleQueueKey,
+  searchBattle,
+  searchRankedBattle,
+  type BattleSearchResult,
+} from "@/lib/server/battle-engine/matchmaking";
 import { MATCH_FRESH_MS, newTicket } from "@/lib/server/match-queue";
-import { queueStore } from "@/lib/server/duel-store";
+import { queueStore, rankedQueueStore } from "@/lib/server/duel-store";
+import { LADDER_FORMATS } from "@/lib/battle/ladder";
+import type { RatingState } from "@/lib/ranked";
 import { loadBattle } from "@/lib/server/battle-engine/store";
 import { pollBattle, readBattleToken } from "@/lib/server/battle-engine/service";
 import { PLAY_FORMATS, type PlayFormatId } from "@/lib/battle/play";
@@ -52,6 +63,7 @@ beforeEach(async () => {
   vi.useFakeTimers({ toFake: ["Date"] });
   at(T0);
   for (const f of PLAY_FORMATS) await queueStore.remove(battleQueueKey(f));
+  for (const f of LADDER_FORMATS) await rankedQueueStore.remove(rankedBattleQueueKey(f));
 });
 
 afterEach(() => {
@@ -189,5 +201,75 @@ describe("battle matchmaking", () => {
     waiting(await searchBattle(RANDOM, "Ash", newTicket()));
     const out = matched(await searchBattle(RANDOM, "ash", newTicket()));
     expect((await loadBattle(out.code))!.rec.meta.seats.map((s) => s.name)).toEqual(["Ash", "ash 2"]);
+  });
+});
+
+describe("ranked pairing, by Showdown's rules (server/ladders.ts matchmakingOK)", () => {
+  /** Showdown's formula, written out independently: 50 or 100, +1 per 0.3 s, a tenth of the excess past 300, at most 600. */
+  const showdown = (busy: boolean, ms: number) => {
+    let r = (busy ? 50 : 100) + ms / 300;
+    if (r > 300) r = 300 + (r - 300) / 10;
+    return Math.min(r, 600);
+  };
+
+  it("widens the window as Showdown does, from 50 in Gen 9 OU and Random Battle and 100 elsewhere", () => {
+    for (const s of [0, 30, 90, 300]) {
+      expect(battleSearchRange("gen9randombattle", s * SECOND)).toBeCloseTo(showdown(true, s * SECOND), 9);
+      expect(battleSearchRange("gen9ou", s * SECOND)).toBeCloseTo(showdown(true, s * SECOND), 9);
+      expect(battleSearchRange("gen9uu", s * SECOND)).toBeCloseTo(showdown(false, s * SECOND), 9);
+    }
+    // The numbers themselves.
+    expect([0, 30, 90, 300].map((s) => battleSearchRange("gen9randombattle", s * SECOND))).toEqual([50, 150, 305, 375]);
+    expect([0, 30, 90, 300].map((s) => battleSearchRange("gen9uu", s * SECOND))).toEqual([100, 200, 310, 380]);
+    expect(battleSearchRange("gen9ou", 3_600 * SECOND)).toBe(SEARCH_RANGE_MAX);
+  });
+
+  const at1000: RatingState = { rating: 1500, games: 0, elo: 1000 };
+  const rate = (r: RatingState) => async () => r;
+
+  it("pairs two different trainers on different connections at once", async () => {
+    const red = newTicket();
+    waiting(await searchRankedBattle("gen9randombattle", "Red", red, "red-key", rate(at1000), undefined, "ip-red"));
+    const blue = matched(await searchRankedBattle("gen9randombattle", "Blue", newTicket(), "blue-key", rate(at1000), undefined, "ip-blue"));
+    expect(matched(await searchRankedBattle("gen9randombattle", "Red", red, "red-key", rate(at1000), undefined, "ip-red")).code).toBe(blue.code);
+  });
+
+  it("never pairs two trainers with the same IP hash, however long they wait", async () => {
+    const red = newTicket();
+    const blue = newTicket();
+    for (let t = 0; t <= 120 * SECOND; t += 5 * SECOND) {
+      at(T0 + t);
+      waiting(await searchRankedBattle("gen9randombattle", "Red", red, "red-key", rate(at1000), undefined, "same-ip"));
+      waiting(await searchRankedBattle("gen9randombattle", "Blue", blue, "blue-key", rate(at1000), undefined, "same-ip"));
+    }
+    // A third trainer elsewhere pairs with one of them straight away.
+    matched(await searchRankedBattle("gen9randombattle", "Green", newTicket(), "green-key", rate(at1000), undefined, "ip-green"));
+  });
+
+  it("never pairs a trainer with their last opponent straight away", async () => {
+    const first = newTicket();
+    waiting(await searchRankedBattle("gen9randombattle", "Red", first, "red-key", rate(at1000), undefined, "ip-red"));
+    matched(await searchRankedBattle("gen9randombattle", "Blue", newTicket(), "blue-key", rate(at1000), undefined, "ip-blue"));
+    matched(await searchRankedBattle("gen9randombattle", "Red", first, "red-key", rate(at1000), undefined, "ip-red"));
+    // They search again: no rematch, either way round, however long they wait.
+    const red = newTicket();
+    const blue = newTicket();
+    for (let t = 1 * SECOND; t <= 120 * SECOND; t += 5 * SECOND) {
+      at(T0 + t);
+      waiting(await searchRankedBattle("gen9randombattle", "Red", red, "red-key", rate(at1000), undefined, "ip-red"));
+      waiting(await searchRankedBattle("gen9randombattle", "Blue", blue, "blue-key", rate(at1000), undefined, "ip-blue"));
+    }
+    // Someone new is fine for either.
+    matched(await searchRankedBattle("gen9randombattle", "Green", newTicket(), "green-key", rate(at1000), undefined, "ip-green"));
+  });
+
+  it("measures the gap on Elo, not Glicko-2", async () => {
+    const red = newTicket();
+    // Glicko-2 900 apart, Elo equal: paired at once.
+    waiting(await searchRankedBattle("gen9randombattle", "Red", red, "red-key", rate({ rating: 2400, games: 9, elo: 1000 }), undefined, "ip-red"));
+    matched(await searchRankedBattle("gen9randombattle", "Blue", newTicket(), "blue-key", rate(at1000), undefined, "ip-blue"));
+    // Glicko-2 equal, Elo 200 apart: not yet (the window is 50 at first).
+    waiting(await searchRankedBattle("gen9randombattle", "Gold", newTicket(), "gold-key", rate({ rating: 1500, games: 9, elo: 1200 }), undefined, "ip-gold"));
+    waiting(await searchRankedBattle("gen9randombattle", "Silver", newTicket(), "silver-key", rate(at1000), undefined, "ip-silver"));
   });
 });

@@ -34,7 +34,8 @@ scope.onmessage = (event) => {
     if (msg.type === "run") {
       if (msg.job !== job || !roster || !question) return;
       const t0 = performance.now();
-      const prep = prepare(roster, questionSpec(question, msg.n, msg.seed));
+      // "melee": everyone in reach of everyone (the pure battle maths); otherwise the battlefield.
+      const prep = prepare(roster, questionSpec(question, msg.n, msg.seed), { layout: msg.layout ?? "field" });
       // Sizes with the same rows have the same fighters in the same order, so their table carries over.
       let table = tables.get(prep.species.length);
       if (!table) {

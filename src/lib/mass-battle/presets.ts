@@ -1,4 +1,4 @@
-import { simpleQuestion } from "./share";
+import { DEFAULT_RUNS, simpleQuestion } from "./share";
 import { type ArenaId, type ArmySpec, type BattleLevel, type BattleSpec, type FieldSpec, type Formation, type GroupRule, type ItemPolicy, type MBSpecies, type PlaybackSpec, type Question, type Roster, type SetChoice, type Spacing, type SpreadUse, type Stance, type Targeting, type UnitSpec } from "./types";
 
 /**
@@ -251,7 +251,7 @@ export function resolvePreset(p: PresetDef, roster: Pick<Roster, "species">): Re
     if (spec.field) q.field = spec.field;
     if (spec.items) q.items = spec.items;
     if (p.question.threshold === 0.9) q.threshold = 0.9;
-    if (p.question.runs && p.question.runs !== 40) q.runs = p.question.runs;
+    if (p.question.runs && p.question.runs !== DEFAULT_RUNS) q.runs = p.question.runs;
   }
   return { id: p.id, kind: p.kind, title: p.title, hook: p.hook, blurb: p.blurb, spec, question: q, labels: p.labels ?? null, playback: { ...p.playback } };
 }

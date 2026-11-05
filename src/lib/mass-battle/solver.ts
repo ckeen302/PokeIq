@@ -10,7 +10,7 @@ import { hashString } from "@/lib/rng";
  *    battles, stopping as soon as the majority is settled) until one wins
  *    half the time.
  * 2. A binary search between the last losing size and that one, now with
- *    the full set of battles per size (40 unless asked otherwise), again
+ *    the full set of battles per size (60 unless asked otherwise), again
  *    stopping once the result is settled.
  * 3. The answer is played on all of its battles, for its win rate and for
  *    a battle to show.
@@ -25,11 +25,13 @@ import { hashString } from "@/lib/rng";
 
 export const SOLVER = {
   /** Battles per size in the binary search (and for the answer). */
-  runs: 40,
+  runs: 60,
   /** Battles per size while doubling. */
   quick: 12,
   /** No answer above this. */
   maxN: 20000,
+  /** The pure battle maths (everyone in reach of everyone) stops here: every unit there is next to every other, so big ones are slow. */
+  pureMaxN: 2000,
 } as const;
 
 export interface Step {
@@ -124,7 +126,7 @@ export function probesAround(n: number): number[] {
 }
 
 export interface SolveOptions {
-  /** Battles per size (40). */
+  /** Battles per size (60). */
   runs?: number;
   quick?: number;
   maxN?: number;

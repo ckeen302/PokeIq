@@ -4,7 +4,7 @@ import { SITE_NAME } from "./site";
 /** What the site is, in one breath: the default description and the home page's. */
 export const SITE_TAGLINE = "Pokémon games: PokéGuessr, Pokédle, battles & quizzes";
 export const SITE_DESCRIPTION =
-  "Free Pokémon games, no sign-up: PokéGuessr (GeoGuessr with real in-game screenshots of every region), a daily Pokédle with live duels, Showdown-accurate battles against the computer or a friend, a Battle Lab that simulates thousands of battles for win odds, and quizzes on all 1,025 Pokémon.";
+  "Free Pokémon games, no sign-up: PokéGuessr (GeoGuessr with real in-game screenshots of every region), a daily Pokédle with live duels, Showdown-accurate battles against the computer or a friend, a Battle Lab that simulates thousands of battles for win odds, and quizzes on every Pokémon.";
 
 /**
  * Shared preview cards, for pages without an `opengraph-image` of their own.

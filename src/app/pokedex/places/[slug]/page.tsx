@@ -3,7 +3,8 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { MapPin } from "lucide-react";
-import { SHARE_IMAGES, pageMetadata } from "@/lib/seo";
+import { SHARE_IMAGES, jsonLd, pageMetadata } from "@/lib/seo";
+import { breadcrumbList } from "@/lib/structured-data";
 import { species } from "@/lib/dex/data";
 import { PLACES, getPlace, gymsFor, placesIn, wildAt } from "@/lib/dex/places-data";
 import { groupByGame } from "@/lib/dex/places";
@@ -226,6 +227,7 @@ export default async function PlacePage({ params }: PageProps) {
           </div>
         </Section>
       )}
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(breadcrumbList([{ name: "Pokédex", path: "/pokedex" }, { name: "Places", path: "/pokedex/places" }, { name: place.name, path: `/pokedex/places/${place.slug}` }])) }} />
     </article>
   );
 }

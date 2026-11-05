@@ -99,6 +99,8 @@ export function Hero({ data, form, onFormChange, types, abilities }: HeroProps) 
                   src={failed[srcKey] ? fallback : src}
                   alt={`${form?.name ?? p.name}${shiny ? " (shiny)" : ""}`}
                   onError={() => setFailed((f) => ({ ...f, [srcKey]: true }))}
+                  // The artwork is the page's largest paint.
+                  fetchPriority="high"
                   className={cn(
                     "absolute inset-0 m-auto object-contain drop-shadow-[0_20px_30px_rgba(0,0,0,0.5)]",
                     view === "animated" && !failed[srcKey] ? "h-[45%] w-[45%] [image-rendering:pixelated]" : "h-full w-full p-4"

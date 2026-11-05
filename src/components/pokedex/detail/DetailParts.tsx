@@ -101,7 +101,7 @@ export function SpeciesGrid({ list }: { list: SpeciesChip[] }) {
             <img src={artUrl(p.id, 96)} alt="" loading="lazy" decoding="async" width={48} height={48} className="h-12 w-12 shrink-0 object-contain" />
             <div className="min-w-0 space-y-1">
               <div className="truncate font-display text-sm font-bold uppercase tracking-wide group-hover:text-screen">{p.name}</div>
-              <div className="flex gap-1">
+              <div className="flex flex-wrap gap-1">
                 {p.types.map((t) => (
                   <TypeBadge key={t} type={t} size="sm" />
                 ))}
