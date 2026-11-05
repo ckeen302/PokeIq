@@ -101,7 +101,8 @@ const SPECS: Record<string, LensSpec> = {
 export function findCuts(camera: ChapterRig["camera"], end: number): { at: number; dir: number }[] {
   const out: { at: number; dir: number }[] = [];
   const h = 1 / 60;
-  let p0 = camera(0), p1 = camera(h);
+  const p0 = camera(0);
+  let p1 = camera(h);
   let prevStep = Math.hypot(p1.pos[0] - p0.pos[0], p1.pos[1] - p0.pos[1], p1.pos[2] - p0.pos[2]);
   for (let t = 2 * h; t <= end; t += h) {
     const p2 = camera(t);
