@@ -2,7 +2,7 @@ import * as THREE from "three";
 import { fovFor, lerp, type OrbitLimits, type Pose, type Vec3 } from "@/lib/world-history/camera";
 import type { Film, FilmState } from "@/lib/world-history/timing";
 import type { Chapter } from "@/lib/world-history/types";
-import { createFigureFactory, type FigureFactory } from "./figures";
+import { createFigureFactory, FIGURE_CLOCK, type FigureFactory } from "./figures";
 import { buildHall, type Hall } from "./hall";
 import { createPost, type Post } from "./post";
 import { BASE_LOOK, QUALITY, type ChapterBuilder, type ChapterRig, type Look, type Quality } from "./types";
@@ -116,8 +116,28 @@ function blendLook(a: Look, b: Look, k: number): Look {
     fade: lerp(a.fade, b.fade, k),
     grain: lerp(a.grain, b.grain, k),
     rays: k < 0.5 ? (a.rays ? { ...a.rays, strength: a.rays.strength * (1 - k * 2) } : undefined) : b.rays ? { ...b.rays, strength: b.rays.strength * (k * 2 - 1) } : undefined,
+    // Opt-in effects: the tone curve blends; the lens ones fade with their side.
+    tone: (b.tone && b.tone !== "aces" ? b.tone : a.tone),
+    toneMix: lerp(toneK(a), toneK(b), k),
+    streak: lerp(a.streak ?? 0, b.streak ?? 0, k),
+    streakColor: k < 0.5 ? a.streakColor : b.streakColor,
+    fringe: lerp(a.fringe ?? 0, b.fringe ?? 0, k),
+    fog: k < 0.5 ? (a.fog ? { ...a.fog, density: a.fog.density * (1 - k * 2) } : undefined) : b.fog ? { ...b.fog, density: b.fog.density * (k * 2 - 1) } : undefined,
+    dof: k < 0.5 ? (a.dof ? { ...a.dof, k: a.dof.k * (1 - k * 2) } : undefined) : b.dof ? { ...b.dof, k: b.dof.k * (k * 2 - 1) } : undefined,
+    mblur: k < 0.5 ? a.mblur : b.mblur,
+    whip: k < 0.5 ? a.whip : b.whip,
   };
 }
+
+const toneK = (l: Look) => (l.tone && l.tone !== "aces" ? l.toneMix ?? 1 : 0);
+
+/** A chapter's depth effects (fog, focus, blur) only exist inside it: they ease in and out over its first and last moments, so the hall (which has no such depth) never pops against them. */
+function lensEdge(l: Look, k: number): Look {
+  if (k >= 1 || (!l.fog && !l.dof && !l.mblur)) return l;
+  return { ...l, fog: l.fog ? { ...l.fog, density: l.fog.density * k } : undefined, dof: l.dof ? { ...l.dof, k: l.dof.k * k } : undefined, mblur: (l.mblur ?? 0) * k };
+}
+/** Hall frames: nothing that needs the chapter's depth. */
+const flat = (l: Look): Look => (l.fog || l.dof || l.mblur || l.whip ? { ...l, fog: undefined, dof: undefined, mblur: undefined, whip: undefined } : l);
 
 interface Slot {
   promise: Promise<void>;
@@ -140,6 +160,9 @@ export function createHistoryScene(host: HTMLElement, opts: SceneOptions): Histo
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: false, alpha: false, powerPreference: "high-performance", stencil: false, preserveDrawingBuffer: !!opts.size });
   renderer.setClearColor(0x000000, 1);
   renderer.toneMapping = THREE.NoToneMapping;
+  // Shadows: only lights a chapter marks castShadow draw any (see light.ts), so this costs nothing until one does.
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   const sizeOf = () => opts.size ?? { w: Math.max(1, host.clientWidth), h: Math.max(1, host.clientHeight) };
   let { w: W, h: H } = sizeOf();
   const prOf = () => (opts.size ? Math.min(1, Q.pr) : Math.min(window.devicePixelRatio || 1, Q.pr));
@@ -314,6 +337,25 @@ export function createHistoryScene(host: HTMLElement, opts: SceneOptions): Histo
     portalCam.updateMatrixWorld();
   };
 
+  /**
+   * Where the camera was a shutter's length earlier (a 180° shutter at 24 fps), for motion blur: from the film's own
+   * camera path, so it is the same at any frame rate and in an export. Null across a cut (a jump), so a cut never smears.
+   */
+  const SHUTTER = 1 / 48;
+  const prevCam = new THREE.PerspectiveCamera();
+  const prevVP = new THREE.Matrix4();
+  const prevViewProj = (rig: ChapterRig, anim: number, pose: Pose): THREE.Matrix4 | null => {
+    if (anim < SHUTTER) return null;
+    const p = rig.camera(anim - SHUTTER);
+    const moved = Math.hypot(p.pos[0] - pose.pos[0], p.pos[1] - pose.pos[1], p.pos[2] - pose.pos[2]);
+    const span = Math.max(1, Math.hypot(pose.pos[0] - pose.look[0], pose.pos[1] - pose.look[1], pose.pos[2] - pose.look[2]));
+    const da = [p.look[0] - p.pos[0], p.look[1] - p.pos[1], p.look[2] - p.pos[2]], db = [pose.look[0] - pose.pos[0], pose.look[1] - pose.pos[1], pose.look[2] - pose.pos[2]];
+    const cos = (da[0] * db[0] + da[1] * db[1] + da[2] * db[2]) / Math.max(1e-6, Math.hypot(...da) * Math.hypot(...db));
+    if (moved > span * 0.25 || cos < 0.94) return null;
+    setCam(prevCam, p, true);
+    return prevVP.multiplyMatrices(prevCam.projectionMatrix, prevCam.matrixWorldInverse);
+  };
+
   const res = new THREE.Vector2();
   function frame(f: FrameInput): FrameInfo {
     if (lost || renderer.getContext().isContextLost()) return { pose: lastPose, orbit: null, complete: false, lost: true };
@@ -334,7 +376,7 @@ export function createHistoryScene(host: HTMLElement, opts: SceneOptions): Histo
         renderRig(b, f.cut.to.anim, f.ambient, pb, true, post.aux(1), camera);
         post.mix(f.cut.k, Math.sin(Math.PI * f.cut.k));
         const la = a.look(f.cut.from.anim), lb = b.look(f.cut.to.anim);
-        post.finish(blendLook(la, lb, f.cut.k), null, f.ambient);
+        post.finish(flat(blendLook(la, lb, f.cut.k)), null, f.ambient);
         return { pose: pb, orbit: null, complete: true };
       }
     }
@@ -343,9 +385,11 @@ export function createHistoryScene(host: HTMLElement, opts: SceneOptions): Histo
       const rig = rigOf(s.index);
       if (rig) {
         const pose = f.look ?? rig.camera(s.anim);
+        FIGURE_CLOCK.value = f.ambient;
         renderRig(rig, s.anim, f.ambient, pose, true, post.target, camera);
-        const look = rig.look(s.anim);
-        post.finish(look, raysUv(look, camera), f.ambient);
+        const end = film.chapters[s.index].anim;
+        const look = lensEdge(rig.look(s.anim), Math.min(1, s.anim / 0.8, Math.max(0, end - s.anim) / 0.8));
+        post.finish(look, raysUv(look, camera), f.ambient, { camera, prevViewProj: !f.look && Q.lens && look.mblur ? prevViewProj(rig, s.anim, pose) : null });
         return { pose, orbit: rig.orbit(s.anim), complete: true };
       }
       // Not loaded yet: wait a few steps back from its doorway, in the hall.
@@ -355,7 +399,7 @@ export function createHistoryScene(host: HTMLElement, opts: SceneOptions): Histo
       renderer.setRenderTarget(post.target);
       renderer.clear();
       renderer.render(hall.scene, camera);
-      post.finish(hallLook({ from: s.index - 1, to: s.index, k: 0.82 }), null, f.ambient);
+      post.finish(flat(hallLook({ from: s.index - 1, to: s.index, k: 0.82 })), null, f.ambient);
       return { pose: { ...ref, fov: 40 }, orbit: null, complete: false };
     }
     // ---- The hall: the prologue, a walk between two doorways, the epilogue.
@@ -388,6 +432,7 @@ export function createHistoryScene(host: HTMLElement, opts: SceneOptions): Histo
       if (!cov.visible) { hall.setLive(i, null); continue; }
       portalPose(i, pose, doorFov);
       const target = post.aux(auxI);
+      FIGURE_CLOCK.value = f.ambient;
       rig.update(anim, f.ambient, portalCam, H * PR);
       renderer.setRenderTarget(target);
       renderer.clear();
@@ -400,7 +445,7 @@ export function createHistoryScene(host: HTMLElement, opts: SceneOptions): Histo
     renderer.setRenderTarget(post.target);
     renderer.clear();
     renderer.render(hall.scene, camera);
-    post.finish(look, null, f.ambient);
+    post.finish(flat(look), null, f.ambient);
     // The rest of the doorways show their stills again.
     for (let i = 0; i < n; i++) if (i !== from && i !== to) hall.setLive(i, null);
     return { pose: { ...hp, fov: HALL_FOV }, orbit: null, complete };

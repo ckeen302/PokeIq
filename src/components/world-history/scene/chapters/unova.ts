@@ -3,7 +3,8 @@ import { poseOnPath, type Key, type Vec3 } from "@/lib/world-history/camera";
 import { col, makeBeam, makeCloudLayer, makeFlames, makeGlow, makeLightning, makeParticles, makeRing, makeSky, makeTerrain, noise2, ramp, rng, strikeAt } from "../kit";
 import { makeCrystals, makeRobed } from "../props";
 import type { ChapterBuilder, Look } from "../types";
-import { figureStyle, floatFigure, lights, loadFigures, lookAt, place, pointPixel, shake, spike } from "./common";
+import { hitCurve } from "../figures";
+import { cine, craft, figureStyle, floatFigure, lights, loadFigures, lookAt, place, pointPixel, shake, spike } from "./common";
 
 /**
  * VI. Truth and Ideals. A new land rising out of the mist under one
@@ -148,6 +149,12 @@ export const build: ChapterBuilder = async (ctx) => {
   const KY: Vec3 = [ICE[0], -0.5, ICE[2] - 12];
   place(kyu, KY, 9, 0, scene);
   figureStyle(kyu, { rim: "#bfe8ff", rimK: 1.8, glow: "#6ab8ff", glowK: 0.06, edge: "#e0f4ff", dissolve: 0, shadow: 0.35 });
+  const sh = craft(ctx, L, {
+    radius: 30, center: DRAGON,
+    receive: [land.mesh, iceLand.mesh],
+    figures: [[res, { ground: DRAGON[1] - 4, alive: 0.9, depth: 1.5 }], [zek, { ground: DRAGON[1] - 4, alive: 0.9, depth: 1.5 }], [kyu, { ground: KY[1], alive: 0.4, depth: 1.4 }]],
+    detail: [[land.mesh.material, { kind: "ground", scale: 0.7, bump: 1.3 }], [iceLand.mesh.material, { kind: "stone", scale: 0.9, bump: 0.6, rough: 0.4 }]],
+  });
 
   const keys: Key[] = [
     { t: 0, pos: [0, 30, 92], look: [0, 6, -20], fov: 50 },
@@ -224,13 +231,15 @@ export const build: ChapterBuilder = async (ctx) => {
       if (res) {
         const p = V0.set(...DRAGON).lerp(V1.set(...RES_TO), sep);
         floatFigure(res, [p.x, p.y, p.z], ambient, 0.25, 0, 0.45 * sep, 0.04);
-        figureStyle(res, { dissolve: ice ? 0 : ramp(t, 0.5, tOne + 1.5), shadow: 0.85 * (1 - ramp(t, tTear, tTear + 1.8)), glowK: 0.03 + 0.15 * spike(t, tTear, 0.1, 1.2) + argue * 0.04 });
+        // The split: both halves snap away from the seam and shudder, then the wings catch up.
+        figureStyle(res, { dissolve: ice ? 0 : ramp(t, 0.5, tOne + 1.5), shadow: 0.85 * (1 - ramp(t, tTear, tTear + 1.8)), glowK: 0.03 + 0.15 * spike(t, tTear, 0.1, 1.2) + argue * 0.04, hit: hitCurve(t, tTear, 1.2), flex: 0.3 + 0.7 * spike(t, tTear, 0.1, 1.8) });
       }
       if (zek) {
         const p = V0.set(DRAGON[0], DRAGON[1], DRAGON[2] - 0.6).lerp(V1.set(...ZEK_TO), sep);
         floatFigure(zek, [p.x, p.y, p.z], ambient, 0.25, 1.3, -0.45 * sep, 0.04);
-        figureStyle(zek, { dissolve: ice ? 0 : ramp(t, 0.5, tOne + 1.5), shadow: 0.85 * (1 - ramp(t, tTear, tTear + 1.8)), glowK: 0.03 + 0.15 * spike(t, tTear, 0.1, 1.2) + argue * 0.04 });
+        figureStyle(zek, { dissolve: ice ? 0 : ramp(t, 0.5, tOne + 1.5), shadow: 0.85 * (1 - ramp(t, tTear, tTear + 1.8)), glowK: 0.03 + 0.15 * spike(t, tTear, 0.1, 1.2) + argue * 0.04, hit: hitCurve(t, tTear + 0.06, 1.2), flex: 0.3 + 0.7 * spike(t, tTear, 0.1, 1.8) });
       }
+      sh.follow(ice ? KY : DRAGON, ice ? 12 : 30);
       tearRing.u.uK.value = ramp(t, tTear, tTear + 1.8);
       tearRing.u.uTime.value = ambient;
       tearRing.mesh.visible = !ice && t > tTear && t < tTear + 1.9;
@@ -295,13 +304,18 @@ export const build: ChapterBuilder = async (ctx) => {
           contrast: [[0, 1.04], [tBro, 1.08], [tSons, 1.15], [cutIce + 0.1, 1.04]],
           chroma: [[tTear - 0.05, 0], [tTear + 0.1, 0.6], [tTear + 1.4, 0], [tSons + 0.3, 0.2], [cutIce, 0.1], [cutIce + 0.1, 0]],
           vignette: [[0, 0.38], [tBro, 0.5], [tCeased, 0.36], [tSons, 0.55], [cutIce + 0.1, 0.45]],
-          bloom: [[0, 0.8], [tTear, 1.1], [tCeased, 0.85], [tSons, 1.0], [cutIce + 0.1, 0.85]],
+          bloom: [[0, 0.8], [tTear, 0.95], [tCeased, 0.85], [tSons, 1.0], [cutIce + 0.1, 0.85]],
+          bloomThreshold: [[0, 0.82], [tTear - 0.2, 0.82], [tTear, 1.0], [tTear + 1.8, 0.84]],
         }
       );
       L0.flash = Math.min(0.3, 0.2 * spike(t, tTear, 0.05, 0.3) + (ice ? 0 : 0.08 * sonsK(t) * strikeAt(t, 0.9, 11).level));
       if (!ice && t > tTear - 0.3 && t < tCeased + 2) L0.rays = { pos: [DRAGON[0], DRAGON[1] + 7, DRAGON[2]], color: [1.0, 0.95, 0.9], strength: 0.25 * spike(t, tTear, 0.2, 1.6) + 0.08 };
       else if (ice) L0.rays = { pos: [ICE[0], 6, ICE[2] - 12], color: [0.7, 0.88, 1.0], strength: 0.3 * ramp(t, cutIce + 1, cutIce + 3) };
-      return L0;
+      const fog: Look["fog"] = ice
+        ? { color: [0.4, 0.48, 0.6], density: 0.012, height: -0.5, falloff: 0.2, sky: 0.4 }
+        : t > tSons ? { color: [0.16, 0.07, 0.05], density: 0.004, height: -2, falloff: 0.06, sky: 0.3 }
+        : { color: [0.12, 0.1, 0.16], density: 0.004, height: -2, falloff: 0.06, sky: 0.25 };
+      return cine(L0, { fog, dof: { focus: ice ? KY : [DRAGON[0], DRAGON[1] + 5, DRAGON[2]], k: 0.25 }, streak: 0.15 + 0.3 * spike(t, tTear, 0.05, 1.5) });
     },
     dispose() {
       disposers.forEach((d) => d());

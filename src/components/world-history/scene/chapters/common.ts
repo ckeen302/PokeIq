@@ -3,6 +3,8 @@ import type { Pose, Vec3 } from "@/lib/world-history/camera";
 import type { Figure } from "../figures";
 import { BASE_LOOK, type ChapterCtx, type Look } from "../types";
 import { col, keyed } from "../kit";
+import { castShadows, keyShadow, receiveShadows, type KeyShadow } from "../light";
+import { withDetail, type DetailOpts } from "../materials";
 
 /** Shared pieces for the chapters: figures by art id, keyed looks, shakes and billboards. */
 
@@ -22,8 +24,24 @@ export function place(f: Figure | undefined, pos: Vec3, height: number, rotY = 0
   scene?.add(f.group);
 }
 
-export function figureStyle(f: Figure | undefined, o: { rim?: string; rimK?: number; glow?: string; glowK?: number; edge?: string; dissolve?: number; shadow?: number; stone?: number }) {
+export function figureStyle(
+  f: Figure | undefined,
+  o: {
+    rim?: string; rimK?: number; glow?: string; glowK?: number; edge?: string; dissolve?: number; shadow?: number; stone?: number;
+    /** Opt-in life (see figures.ts): idle breathing and sway, extra secondary motion, an action curve, a hit, a lean. */
+    alive?: number; flex?: number; act?: number; hit?: number; lean?: number;
+    /** Opt-in solidity: depth scale and a darker back. */
+    depth?: number; back?: number;
+  }
+) {
   if (!f) return;
+  if (o.alive !== undefined) f.u.uAlive.value = o.alive;
+  if (o.flex !== undefined) f.u.uFlex.value = o.flex;
+  if (o.act !== undefined) f.u.uAct.value = o.act;
+  if (o.hit !== undefined) f.u.uHit.value = o.hit;
+  if (o.lean !== undefined) f.u.uLean.value = o.lean;
+  if (o.depth !== undefined) f.u.uDepthK.value = o.depth;
+  if (o.back !== undefined) f.u.uBack.value = o.back;
   if (o.rim) f.u.uRimColor.value.copy(col(o.rim));
   if (o.rimK !== undefined) f.u.uRim.value = o.rimK;
   if (o.glow) f.u.uGlowColor.value.copy(col(o.glow));
@@ -33,6 +51,50 @@ export function figureStyle(f: Figure | undefined, o: { rim?: string; rimK?: num
   if (o.shadow !== undefined) f.u.uShadow.value = o.shadow;
   if (o.stone !== undefined) f.u.uStone.value = o.stone;
   f.mesh.visible = (o.dissolve ?? f.u.uDissolve.value) > 0.001;
+}
+
+/**
+ * The crafted-film defaults for a figure that lives on screen: solid from
+ * the side, breathing, a soft contact shadow where it stands (pass the
+ * ground height for one that hovers), and a cast shadow from the
+ * chapter's shadow light.
+ */
+export function livingFigure(f: Figure | undefined, o: { alive?: number; depth?: number; back?: number; contact?: number; ground?: number; cast?: boolean } = {}) {
+  if (!f) return;
+  figureStyle(f, { alive: o.alive ?? 1, depth: o.depth ?? 1.4, back: o.back ?? 0.35 });
+  if ((o.contact ?? 0.55) > 0) f.setContact(o.contact ?? 0.55, o.ground);
+  f.castShadow(o.cast ?? true);
+}
+
+/**
+ * The film treatment for a chapter in one call: the key light casts soft
+ * shadows (box `radius`), the grounds receive them, the casters and living
+ * figures cast them, figures come alive (with a contact shadow where they
+ * stand: give `ground` for each one that hovers, or null for none), and
+ * materials get procedural detail. Returns the shadow, to `follow()` the
+ * action in update().
+ */
+export function craft(
+  ctx: ChapterCtx,
+  L: { key: THREE.DirectionalLight },
+  o: {
+    radius: number;
+    center?: Vec3;
+    receive?: (THREE.Object3D | null | undefined)[];
+    cast?: (THREE.Object3D | null | undefined)[];
+    figures?: [Figure | undefined, { ground?: number | null; alive?: number; depth?: number; contact?: number }?][];
+    detail?: [THREE.Material | THREE.Material[] | undefined, DetailOpts][];
+  }
+): KeyShadow {
+  const sh = keyShadow(ctx.q, L.key, { radius: o.radius, center: o.center });
+  receiveShadows(...(o.receive ?? []));
+  castShadows(...(o.cast ?? []));
+  for (const [f, fo = {}] of o.figures ?? []) {
+    if (!f) continue;
+    livingFigure(f, { alive: fo.alive, depth: fo.depth, contact: fo.ground === null ? 0 : fo.contact, ground: fo.ground ?? undefined });
+  }
+  for (const [m, d] of o.detail ?? []) if (m) withDetail(m, d);
+  return sh;
 }
 
 /** A look built from the base and a few keyed channels. */
@@ -58,6 +120,26 @@ export function lookAt(t: number, base: Partial<Look>, k: LookKeys, rays?: { pos
     if (s > 0.001) L.rays = { pos: rays.pos, color: rays.color, strength: s };
   }
   return L;
+}
+
+/**
+ * The crafted-film lens on top of a chapter's look (all opt-in fields of
+ * Look): the filmic tone curve, gentle edge fringing, an anamorphic streak
+ * on hot lights, camera motion blur on fast moves, and, when given, height
+ * fog and a focus pull. Each quality keeps only what it can afford.
+ */
+export function cine(L: Look, o: { fog?: Look["fog"]; dof?: Look["dof"]; streak?: number; streakColor?: Vec3; fringe?: number; mblur?: number; whip?: Look["whip"]; tone?: Look["tone"] } = {}): Look {
+  return {
+    ...L,
+    tone: o.tone ?? "filmic",
+    fringe: o.fringe ?? 0.35,
+    streak: o.streak ?? 0.18,
+    streakColor: o.streakColor ?? L.streakColor,
+    mblur: o.mblur ?? 0.8,
+    fog: o.fog ?? L.fog,
+    dof: o.dof ?? L.dof,
+    whip: o.whip ?? L.whip,
+  };
 }
 
 /** A spike: 0 before `at`, up to 1 quickly, then decaying. */

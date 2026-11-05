@@ -3,7 +3,9 @@ import { poseOnPath, type Key, type Vec3 } from "@/lib/world-history/camera";
 import { col, makeCloudLayer, makeConverge, makeGlow, makeParticles, makePortal, makeRing, makeSky, makeTerrain, merge, noise2, placed, ramp, rng, stoneMaterial } from "../kit";
 import { makeCrystals, makeHouses, makeLanterns } from "../props";
 import type { ChapterBuilder, Look } from "../types";
-import { figureStyle, floatFigure, lights, loadFigures, lookAt, place, pointPixel, shake, spike } from "./common";
+import { actionCurve } from "../figures";
+import { withDetail } from "../materials";
+import { cine, craft, figureStyle, floatFigure, lights, loadFigures, lookAt, place, pointPixel, shake, spike } from "./common";
 
 /**
  * XII. Area Zero. Paldea at sunset under an empire's walls; beyond them
@@ -194,6 +196,14 @@ export const build: ChapterBuilder = async (ctx) => {
   const PX: Vec3[] = [[MACH[0] - 9, 0, MACH[2] + 2], [MACH[0] - 3, 0, MACH[2] - 1], [MACH[0] + 3, 0, MACH[2] - 1], [MACH[0] + 9, 0, MACH[2] + 2]];
   const PXRIM = ["#ff9a5a", "#ff7a6a", "#7ae0ff", "#9ab8ff"];
   paradox.forEach((f, i) => { place(f, PX[i], [3.4, 3.6, 3.2, 3.6][i], [0.4, 0.15, -0.15, -0.4][i], scene); figureStyle(f, { rim: PXRIM[i], rimK: 2.4, edge: PXRIM[i], shadow: 0.92, dissolve: 0 }); });
+  const sh = craft(ctx, L, {
+    radius: 40, center: [0, 0, 0],
+    receive: [land.mesh, zLand.mesh, palace],
+    cast: [palace],
+    figures: [[tera, { ground: null, alive: 1 }], [kor, { ground: 0, alive: 1 }], [mir, { ground: 0, alive: 1 }], ...paradox.map((f) => [f, { ground: 0, alive: 1.1 }] as [typeof f, { ground: number; alive: number }])],
+    detail: [[land.mesh.material, { kind: "ground", scale: 0.9, bump: 1.2 }], [zLand.mesh.material, { kind: "stone", scale: 1.1, bump: 1.2 }]],
+  });
+  withDetail(wallMat, { kind: "stone", scale: 1.8, bump: 0.8 });
 
   const keys: Key[] = [
     { t: 0, pos: [44, 22, 74], look: [0, 12, -20], fov: 48 },
@@ -290,10 +300,12 @@ export const build: ChapterBuilder = async (ctx) => {
         const k = ramp(t, tStep + i * 0.5, tStep + 1.6 + i * 0.5);
         const p = PX[i];
         f.group.position.set(p[0] + (MACH[0] - p[0]) * (1 - k) * 0.7, p[1], p[2] + (MACH[2] - p[2]) * (1 - k) * 0.7 + Math.sin(ambient * 0.6 + i) * 0.03);
-        figureStyle(f, { dissolve: zero ? k : 0, shadow: 0.92 - ramp(t, end - 3, end) * 0.25 });
+        // Each steps out of the machine's light: a lean in, the step, the weight landing.
+        figureStyle(f, { dissolve: zero ? k : 0, shadow: 0.92 - ramp(t, end - 3, end) * 0.25, act: actionCurve(t, tStep + i * 0.5 + 0.8, { pre: 0.5, post: 0.8 }), lean: 0.05 * (1 - k) * (i < 2 ? -1 : 1), flex: 0.5 });
       });
+      sh.follow(zero ? [MACH[0], 0, MACH[2] + 4] : inside ? TP : [0, 0, 0], zero ? 16 : inside ? 10 : 40);
       // Light.
-      if (zero || inside) { L.key.intensity = 0.4; L.hemi.intensity = inside ? 0.6 : 0.4; L.hemi.color.copy(col("#8ab8ff")); }
+      if (zero || inside) { L.key.intensity = 0.55; L.hemi.intensity = inside ? 0.6 : 0.4; L.hemi.color.copy(col("#8ab8ff")); }
       else { L.key.intensity = 1.9 * (1 - night * 0.55); L.key.color.copy(col("#ffb880").lerp(col("#9ab0ff"), night)); L.hemi.intensity = 0.6 - night * 0.15; L.hemi.color.copy(col("#ffd0b0").lerp(col("#6a7ab0"), night)); }
     },
     look(t) {
@@ -317,7 +329,12 @@ export const build: ChapterBuilder = async (ctx) => {
       if (zero) L0.rays = { pos: MACH, color: [0.75, 0.95, 1.0], strength: 0.3 * ramp(t, cutZero + 0.3, tMachine + 1) };
       else if (inside) L0.rays = { pos: [TP[0], TP[1] + 1.6, TP[2]], color: [0.75, 0.95, 1.0], strength: 0.35 };
       else L0.rays = { pos: [-800, 50, -600], color: [1.0, 0.8, 0.6], strength: 0.3 * (1 - ramp(t, tUnited, tUnited + 2)) };
-      return L0;
+      const fog: Look["fog"] = zero
+        ? { color: [0.04, 0.07, 0.1], density: 0.02, height: 0, falloff: 0.25, sun: { dir: [0, 0.15, -1], color: [0.12, 0.25, 0.35] }, sky: 0.2 }
+        : inside ? { color: [0.05, 0.09, 0.12], density: 0.02, height: TP[1], falloff: 0.2, sky: 0 }
+        : { color: [0.4, 0.3, 0.22], density: 0.0025, height: 0, falloff: 0.03, sun: { dir: [-0.8, 0.12, -0.6], color: [0.5, 0.3, 0.15] }, sky: 0.3 };
+      const focus: Vec3 = zero ? (t > tStep ? [MACH[0], 1.6, MACH[2] + 2] : [MACH[0], 1.5, MACH[2] + 6]) : inside ? TP : [0, 5, 0];
+      return cine(L0, { fog, dof: { focus, k: 0.35 }, streak: zero ? 0.25 : 0.15, streakColor: [0.6, 0.9, 1.0] });
     },
     dispose() {
       disposers.forEach((d) => d());

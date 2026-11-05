@@ -22,14 +22,20 @@ export interface Spec {
   aniso: number;
   /** Terrain and ocean grid resolution. */
   grid: number;
+  /** Key-light shadow map size (0: no shadows). */
+  shadow: 0 | 1024 | 2048;
+  /** A depth texture for the lens pass (height fog); depth of field and camera motion blur need `lens` too. */
+  depth: boolean;
+  /** Depth of field and camera motion blur (the costly lens effects). */
+  lens: boolean;
 }
 
 export const QUALITY: Record<Quality, Spec> = {
-  draft: { pr: 0.6, msaa: 0, bloom: false, rays: false, particles: 0.12, segments: 40, texSize: 256, aniso: 1, grid: 48 },
-  low: { pr: 1, msaa: 0, bloom: false, rays: false, particles: 0.35, segments: 64, texSize: 256, aniso: 2, grid: 96 },
-  medium: { pr: 1.25, msaa: 4, bloom: true, rays: true, particles: 0.7, segments: 96, texSize: 512, aniso: 4, grid: 160 },
-  high: { pr: 1.75, msaa: 4, bloom: true, rays: true, particles: 1, segments: 120, texSize: 512, aniso: 8, grid: 220 },
-  export: { pr: 1, msaa: 4, bloom: true, rays: true, particles: 1, segments: 140, texSize: 512, aniso: 8, grid: 240 },
+  draft: { pr: 0.6, msaa: 0, bloom: false, rays: false, particles: 0.12, segments: 40, texSize: 256, aniso: 1, grid: 48, shadow: 0, depth: false, lens: false },
+  low: { pr: 1, msaa: 0, bloom: false, rays: false, particles: 0.35, segments: 64, texSize: 256, aniso: 2, grid: 96, shadow: 0, depth: false, lens: false },
+  medium: { pr: 1.25, msaa: 4, bloom: true, rays: true, particles: 0.7, segments: 96, texSize: 512, aniso: 4, grid: 160, shadow: 1024, depth: true, lens: false },
+  high: { pr: 1.75, msaa: 4, bloom: true, rays: true, particles: 1, segments: 120, texSize: 512, aniso: 8, grid: 220, shadow: 2048, depth: true, lens: true },
+  export: { pr: 1, msaa: 4, bloom: true, rays: true, particles: 1, segments: 140, texSize: 512, aniso: 8, grid: 240, shadow: 2048, depth: true, lens: true },
 };
 
 /** A chapter's grade and lens, keyed over its anim clock. */
@@ -53,6 +59,36 @@ export interface Look {
   rays?: { pos: Vec3; strength: number; color: Vec3 };
   /** Film grain. */
   grain: number;
+
+  // ---- Opt-in (absent: the original look, unchanged).
+  /**
+   * Tone curve. "aces" (default): the original per-channel fit. "filmic":
+   * the fuller ACES fit (bright saturated colours roll off toward white
+   * instead of clipping to pure hues), with contrast, lift and saturation
+   * applied on display values, so contrast > 1 deepens shadows without
+   * crushing dark channels to 0. "agx": AgX, softer and more neutral.
+   */
+  tone?: "aces" | "filmic" | "agx";
+  /** How much of `tone` is used (0..1, default 1; blends from the original curve, for transitions). */
+  toneMix?: number;
+  /**
+   * Height fog in the lens pass (medium and up): densest at and below
+   * `height`, thinning above it at `falloff` per unit; `sun` brightens the
+   * fog toward a light (a cheap in-scatter), `sky` (0..1) how much of the
+   * fog reaches the sky dome at the horizon.
+   */
+  fog?: { color: Vec3; density: number; height: number; falloff: number; sun?: { dir: Vec3; color: Vec3 }; sky?: number };
+  /** Depth of field (high only): the focus distance from the camera, or a point to focus on; `k` 0..1 is the aperture (0 off). */
+  dof?: { focus: number | Vec3; k: number };
+  /** Camera motion blur strength on fast moves (high only; 1 is a 180° shutter). */
+  mblur?: number;
+  /** A whip-pan smear (medium and up): screen direction and strength 0..1. */
+  whip?: { dir: [number, number]; k: number };
+  /** Anamorphic streak on hot lights (medium and up): strength, and tint. */
+  streak?: number;
+  streakColor?: Vec3;
+  /** Chromatic fringing at the frame's edges only (0..1). */
+  fringe?: number;
 }
 
 export const BASE_LOOK: Look = {

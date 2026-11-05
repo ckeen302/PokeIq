@@ -3,7 +3,8 @@ import { poseOnPath, type Key, type Vec3 } from "@/lib/world-history/camera";
 import { col, makeBeam, makeCloudLayer, makeGlow, makeLightning, makeParticles, makeRing, makeSky, makeTerrain, noise2, ramp, rng, stoneMaterial, strikeAt } from "../kit";
 import { makeMeteor, makeRobed } from "../props";
 import type { ChapterBuilder, Look } from "../types";
-import { figureStyle, floatFigure, lights, loadFigures, lookAt, place, pointPixel, shake, spike } from "./common";
+import { actionCurve } from "../figures";
+import { cine, craft, figureStyle, floatFigure, lights, loadFigures, lookAt, place, pointPixel, shake, spike } from "./common";
 
 /**
  * V. The Darkest Day. Night over ancient Galar: a meteorite falls (slow
@@ -179,6 +180,13 @@ export const build: ChapterBuilder = async (ctx) => {
   place(zam, ZM, 3.3, -0.35, scene);
   figureStyle(zam, { rim: "#ffb0a0", rimK: 1.6, glow: "#ffd27a", glowK: 0.05, edge: "#fff0b0", dissolve: 0 });
   const CA: Vec3 = [CAL[0], 1.2, CAL[2]];
+  const sh = craft(ctx, L, {
+    radius: 40, center: [CRATER[0], 0, CRATER[2]],
+    receive: [land.mesh, tundra.mesh, pedestal],
+    cast: [pedestal],
+    figures: [[eter, { ground: null, alive: 0.8, depth: 1.5 }], [zac, { ground: SPOT[1], alive: 0.9 }], [zam, { ground: SPOT[1], alive: 0.9 }], [cal, { ground: 0, alive: 1 }]],
+    detail: [[land.mesh.material, { kind: "ground", scale: 0.8, bump: 1.3 }], [tundra.mesh.material, { kind: "ground", scale: 1.2, bump: 0.8, tint: 0.05 }], [pedestal.material as THREE.Material, { kind: "stone", scale: 2, bump: 0.9 }]],
+  });
   place(cal, CA, 2.4, 0, scene);
   figureStyle(cal, { rim: "#c8ffe8", rimK: 1.0, glow: "#7affc8", glowK: 0.04 });
 
@@ -267,7 +275,7 @@ export const build: ChapterBuilder = async (ctx) => {
       if (eter) {
         const emerge = ramp(t, tImpact + 1.2, tStorm - 1.2);
         eter.group.position.set(ET[0], ET[1] + emerge * 4 + Math.sin(ambient * 0.7) * 0.3, ET[2]);
-        figureStyle(eter, { dissolve: tund || t > tStorm + 1.4 ? 0 : emerge * (1 - ramp(t, tStorm - 0.2, tStorm + 1.4)), glowK: 0.15 + 0.1 * Math.sin(ambient * 3) });
+        figureStyle(eter, { dissolve: tund || t > tStorm + 1.4 ? 0 : emerge * (1 - ramp(t, tStorm - 0.2, tStorm + 1.4)), glowK: 0.15 + 0.1 * Math.sin(ambient * 3), act: actionCurve(t, tStorm - 0.6, { pre: 1.0, post: 1.2 }), flex: 0.7 });
       }
       // The black storm and the red pillars.
       storm.mesh.visible = sk > 0.001 && !tund;
@@ -310,8 +318,9 @@ export const build: ChapterBuilder = async (ctx) => {
         m.emissiveIntensity = 0.5 * spike(t, tTwo + 0.2, 0.2, 1.4) + 0.05;
         y.mesh.visible = m.opacity > 0.001 && plaza;
       });
-      if (zac) { floatFigure(zac, ZA, ambient, 0.03, 0, 0.35, 0.02); figureStyle(zac, { dissolve: plaza ? reveal : 0, glowK: 0.05 + 0.3 * spike(t, tTwo + 0.3, 0.2, 1.4) }); }
-      if (zam) { floatFigure(zam, ZM, ambient, 0.03, 1, -0.35, 0.02); figureStyle(zam, { dissolve: plaza ? ramp(t, tTwo - 0.1, tTwo + 1.6) : 0, glowK: 0.05 + 0.3 * spike(t, tTwo + 0.4, 0.2, 1.4) }); }
+      // The two break out of the stone: a crouch, a spring up, a settle into their stance.
+      if (zac) { floatFigure(zac, ZA, ambient, 0.03, 0, 0.35, 0.02); figureStyle(zac, { dissolve: plaza ? reveal : 0, glowK: 0.05 + 0.3 * spike(t, tTwo + 0.3, 0.2, 1.4), act: actionCurve(t, tTwo + 0.35, { pre: 0.4, post: 0.8 }) }); }
+      if (zam) { floatFigure(zam, ZM, ambient, 0.03, 1, -0.35, 0.02); figureStyle(zam, { dissolve: plaza ? ramp(t, tTwo - 0.1, tTwo + 1.6) : 0, glowK: 0.05 + 0.3 * spike(t, tTwo + 0.4, 0.2, 1.4), act: actionCurve(t, tTwo + 0.5, { pre: 0.4, post: 0.8 }) }); }
       goldRing.u.uK.value = ramp(t, tTwo, tTwo + 1.8);
       goldRing.u.uTime.value = ambient;
       goldRing.mesh.visible = t > tTwo && t < tTwo + 1.9 && !tund;
@@ -327,6 +336,7 @@ export const build: ChapterBuilder = async (ctx) => {
       crownMotes.u.uOpacity.value = tund ? ramp(t, cutTundra + 0.6, cutTundra + 2) : 0;
       calGlow.set("#9affd0", tund ? 0.15 + 0.04 * Math.sin(ambient * 1.3) : 0);
       if (cal) floatFigure(cal, CA, ambient, 0.12, 0.5, 0, 0.05);
+      sh.follow(tund ? [CA[0], 0, CA[2]] : plaza ? [SPOT[0], SPOT[1], SPOT[2]] : [CRATER[0], 0, CRATER[2]], tund ? 9 : plaza ? 10 : 40);
       // Light.
       if (tund) { L.key.color.copy(col("#c8d8ff")); L.key.intensity = 1.4; L.hemi.intensity = 0.8; L.hemi.color.copy(col("#9ab8ff")); L.key.position.set(CAL[0] - 30, 40, 30); }
       else if (t < cutStatue) { L.key.color.copy(col("#a8c0ff").lerp(col("#ff4a6a"), sk)); L.key.intensity = 1.1 + lv * 1.6; L.hemi.intensity = 0.6 - sk * 0.25; L.hemi.color.copy(col("#7a90d0").lerp(col("#8a3040"), sk)); L.key.position.set(-40, 50, 40); }
@@ -354,7 +364,14 @@ export const build: ChapterBuilder = async (ctx) => {
       if (!tund && t > tImpact && t < tStorm) L0.rays = { pos: [CRATER[0], 6, CRATER[2]], color: [1.0, 0.5, 0.7], strength: 0.6 * ramp(t, tImpact, tImpact + 0.4) * (1 - ramp(t, tStorm - 1, tStorm)) };
       else if (!tund && t > cutStatue) L0.rays = { pos: [700, 40, -400], color: [1.0, 0.86, 0.6], strength: 0.1 + 0.18 * ramp(t, tTwo - 0.3, tTwo + 1.5) };
       else if (tund) L0.rays = { pos: [CAL[0], 3, CAL[2]], color: [0.7, 1.0, 0.85], strength: 0.15 };
-      return L0;
+      const plaza = t >= cutStatue && !tund;
+      const fog: Look["fog"] = tund
+        ? { color: [0.4, 0.48, 0.6], density: 0.015, height: 0, falloff: 0.18, sky: 0.4 }
+        : plaza ? { color: [0.42, 0.32, 0.28], density: 0.012, height: 0, falloff: 0.3, sun: { dir: [0.7, 0.45, 0.5], color: [0.5, 0.35, 0.2] }, sky: 0.3 }
+        : t > tImpact ? { color: [0.2, 0.05, 0.07], density: 0.0035, height: 0, falloff: 0.05, sky: 0.25 }
+        : { color: [0.05, 0.045, 0.09], density: 0.003, height: 0, falloff: 0.05, sky: 0.2 };
+      const focus: Vec3 = tund ? CA : plaza ? [SPOT[0], SPOT[1] + 2, SPOT[2]] : [CRATER[0], 4, CRATER[2]];
+      return cine(L0, { fog, dof: { focus, k: 0.25 }, streak: 0.15 + 0.4 * spike(t, tImpact, 0.03, 1.6), streakColor: [1.0, 0.55, 0.75] });
     },
     dispose() {
       disposers.forEach((d) => d());
