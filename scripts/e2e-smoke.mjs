@@ -2331,7 +2331,7 @@ for (const path of ["/trainer", "/leaderboard?board=iq", "/pokemon/eevee", "/pok
 step("3D Lab: the nav's tab, /lab's cards, a card opens its page, the trophy opens the leaderboard");
 {
   await gotoSettled(page, `${BASE}/`);
-  const labTab = page.locator("header").getByRole("link", { name: "3D Lab", exact: true });
+  const labTab = page.getByRole("banner").getByRole("link", { name: "3D Lab", exact: true });
   await labTab.click();
   await page.waitForURL(/\/lab$/);
   await page.getByTestId("lab-hero").waitFor();
