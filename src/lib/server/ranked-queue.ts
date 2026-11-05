@@ -13,6 +13,12 @@ import { MATCH_FRESH_MS, seatNames, type OpenedGame } from "./match-queue";
  * widens the longer either has waited: close games at first, then anyone
  * rather than nobody. Every change is a compare-and-swap on the row, as in
  * match-queue.ts, so nobody is paired twice.
+ *
+ * Battle ladders ask for Showdown's stricter rules (`strict`, see
+ * server/ladders.ts matchmakingOK): two trainers on one connection (the same
+ * salted IP hash) never pair, and neither does a trainer with the one they
+ * last played. The last opponent is kept per player in the row, since it
+ * must outlive the waiter.
  */
 
 export const RANKED_QUEUE_KEY = "pokedle:ranked";
@@ -25,6 +31,9 @@ const SEEN_STEP_MS = 2_000;
 const MATCH_KEEP_MS = 60_000;
 /** Never more than this many waiting in one row. */
 const POOL_MAX = 64;
+/** How long a pairing is remembered as each player's last opponent, and how many players are remembered at most. */
+const LAST_KEEP_MS = 24 * 60 * 60_000;
+const LAST_MAX = 256;
 const MAX_TRIES = 6;
 
 /** The rating gap allowed after waiting `ms`. */
@@ -44,12 +53,16 @@ export interface RankedWaiter {
   seenAt: number;
   /** A battle team, packed and checked (bring-your-own formats). Server-side only. */
   team?: string;
+  /** A salted HMAC of the trainer's IP address (never the address itself), for the same-connection rule. Server-side only. */
+  ipHash?: string;
 }
 
 export interface RankedQueueRow {
   key: string;
   pool: RankedWaiter[];
   matched: Record<string, { code: string; playerId: string; at: number }>;
+  /** Each recently paired player's last opponent (both are rating keys), for the no-immediate-rematch rule. */
+  last?: Record<string, { opponent: string; at: number }>;
 }
 
 export const emptyRankedQueue = (key = RANKED_QUEUE_KEY): RankedQueueRow => ({ key, pool: [], matched: {} });
@@ -60,6 +73,16 @@ export interface RankedSearcher {
   player: string;
   /** A battle team, packed and checked before the search (bring-your-own formats). Server-side only. */
   team?: string;
+  /** A salted HMAC of the searcher's IP address. Server-side only. */
+  ipHash?: string;
+}
+
+/** How a queue pairs, beyond the rating window. */
+export interface RankedQueueOptions {
+  /** What the gap is measured on: the rating (the default) or, for battle ladders as on Showdown, the Elo. */
+  gapOn?: "rating" | "elo";
+  /** Showdown's rules: never the same IP hash, never the last opponent of either. */
+  strict?: boolean;
 }
 
 export type RankedPlan =
@@ -81,16 +104,27 @@ export const longestWaitPairable: Pairable = (gap, waits) => gap <= allowedGap(M
  * two allows); of those, the closest rating wins, then whoever has waited
  * longest.
  */
-export function planRanked(row: RankedQueueRow, me: RankedSearcher, rating: number, now: number, pairable: Pairable = longestWaitPairable): RankedPlan {
-  // `rating` is ignored once the searcher is in the pool: they keep the rating they queued at.
+export function planRanked(
+  row: RankedQueueRow,
+  me: RankedSearcher,
+  rating: number,
+  now: number,
+  pairable: Pairable = longestWaitPairable,
+  opts: RankedQueueOptions & { elo?: number } = {}
+): RankedPlan {
+  // `rating` (and `opts.elo`) are ignored once the searcher is in the pool: they keep the rating they queued at.
   const match = row.matched[me.ticket];
   if (match) return { kind: "matched", code: match.code, playerId: match.playerId };
   const mine = row.pool.find((w) => w.ticket === me.ticket);
   const mySince = mine?.since ?? now;
   const myRating = mine?.rating ?? rating;
+  const myElo = mine ? mine.elo : opts.elo;
+  const myIp = mine?.ipHash ?? me.ipHash;
+  const gapTo = (w: RankedWaiter) => (opts.gapOn === "elo" && w.elo !== undefined && myElo !== undefined ? Math.abs(w.elo - myElo) : Math.abs(w.rating - myRating));
+  const allowed = (w: RankedWaiter) => !opts.strict || (!(myIp && w.ipHash === myIp) && !lastPlayed(row, me.player, w.player, now));
   const best = row.pool
-    .filter((w) => w.ticket !== me.ticket && w.player !== me.player && now - w.seenAt <= MATCH_FRESH_MS)
-    .map((w) => ({ w, gap: Math.abs(w.rating - myRating) }))
+    .filter((w) => w.ticket !== me.ticket && w.player !== me.player && now - w.seenAt <= MATCH_FRESH_MS && allowed(w))
+    .map((w) => ({ w, gap: gapTo(w) }))
     .filter((c) => pairable(c.gap, [now - mySince, now - c.w.since]))
     .sort((a, b) => a.gap - b.gap || a.w.since - b.w.since)[0];
   if (best) return { kind: "pair", opponent: best.w };
@@ -98,16 +132,36 @@ export function planRanked(row: RankedQueueRow, me: RankedSearcher, rating: numb
   return { kind: "wait" };
 }
 
+/** Whether `a` and `b` were each other's last opponent (either way round), recently enough to count. */
+export function lastPlayed(row: RankedQueueRow, a: string, b: string, now: number): boolean {
+  const recent = (p: string, other: string) => {
+    const last = row.last?.[p];
+    return !!last && last.opponent === other && now - last.at < LAST_KEEP_MS;
+  };
+  return recent(a, b) || recent(b, a);
+}
+
 const live = (row: RankedQueueRow, now: number) => ({
   pool: row.pool.filter((w) => now - w.seenAt <= MATCH_FRESH_MS),
   matched: Object.fromEntries(Object.entries(row.matched).filter(([, m]) => now - m.at < MATCH_KEEP_MS)),
+  ...(row.last ? { last: row.last } : {}),
 });
+
+/** The last-opponent map with a new pairing in it, trimmed to what still counts. */
+function withLast(last: RankedQueueRow["last"], players: [string, string], now: number): NonNullable<RankedQueueRow["last"]> {
+  const kept = Object.entries(last ?? {})
+    .filter(([p, l]) => now - l.at < LAST_KEEP_MS && !players.includes(p))
+    .sort((x, y) => y[1].at - x[1].at)
+    .slice(0, LAST_MAX - 2);
+  return { ...Object.fromEntries(kept), [players[0]]: { opponent: players[1], at: now }, [players[1]]: { opponent: players[0], at: now } };
+}
 
 /** You join the pool, or say you're still in it (keeping the rating and time you queued at). */
 export function withRankedWaiter(row: RankedQueueRow, me: RankedSearcher, rating: RatingState, now: number): RankedQueueRow {
-  const { pool, matched } = live(row, now);
+  const { pool, matched, last } = live(row, now);
   const mine = row.pool.find((w) => w.ticket === me.ticket);
   const elo = mine ? mine.elo : rating.elo;
+  const ipHash = mine?.ipHash ?? me.ipHash;
   const waiter: RankedWaiter = {
     ticket: me.ticket,
     name: me.name,
@@ -118,16 +172,27 @@ export function withRankedWaiter(row: RankedQueueRow, me: RankedSearcher, rating
     since: mine?.since ?? now,
     seenAt: now,
     ...(me.team ?? mine?.team ? { team: me.team ?? mine?.team } : {}),
+    ...(ipHash ? { ipHash } : {}),
   };
   // Another search by the same trainer (a second tab) gives way to this one.
   const others = pool.filter((w) => w.ticket !== me.ticket && w.player !== me.player);
-  return { key: row.key, pool: [...others, waiter].slice(-POOL_MAX), matched };
+  return { key: row.key, pool: [...others, waiter].slice(-POOL_MAX), matched, ...(last ? { last } : {}) };
 }
 
-/** Two trainers paired: both out of the pool, the waiter's seat kept for them to collect. */
-export function withRankedPair(row: RankedQueueRow, opponent: string, me: string, seat: { code: string; playerId: string }, now: number): RankedQueueRow {
-  const { pool, matched } = live(row, now);
-  return { key: row.key, pool: pool.filter((w) => w.ticket !== opponent && w.ticket !== me), matched: { ...matched, [opponent]: { ...seat, at: now } } };
+/**
+ * Two trainers paired: both out of the pool, the waiter's seat kept for them
+ * to collect. `players` (their rating keys) are remembered as each other's
+ * last opponent.
+ */
+export function withRankedPair(row: RankedQueueRow, opponent: string, me: string, seat: { code: string; playerId: string }, now: number, players?: [string, string]): RankedQueueRow {
+  const { pool, matched, last } = live(row, now);
+  const next = players ? withLast(last, players, now) : last;
+  return {
+    key: row.key,
+    pool: pool.filter((w) => w.ticket !== opponent && w.ticket !== me),
+    matched: { ...matched, [opponent]: { ...seat, at: now } },
+    ...(next ? { last: next } : {}),
+  };
 }
 
 export function withoutRankedTicket(row: RankedQueueRow, ticket: string): RankedQueueRow {
@@ -159,7 +224,8 @@ export async function searchRankedQueue(
   rating: () => Promise<RatingState>,
   open: (players: [RankedSeat, RankedSeat], now: number) => Promise<OpenedGame | null>,
   key = RANKED_QUEUE_KEY,
-  pairable: Pairable = longestWaitPairable
+  pairable: Pairable = longestWaitPairable,
+  opts: RankedQueueOptions = {}
 ): Promise<RankedQueueResult | PvpFailure> {
   let mine: RatingState | null = null;
   for (let attempt = 0; attempt < MAX_TRIES; attempt++) {
@@ -170,7 +236,7 @@ export async function searchRankedQueue(
     if (!queued && !row.matched[me.ticket] && mine === null) mine = await rating();
     const myRating: RatingState = queued ?? mine ?? { rating: 0, games: 0 };
     const now = Date.now();
-    const plan = planRanked(row, me, myRating.rating, now, pairable);
+    const plan = planRanked(row, me, myRating.rating, now, pairable, { ...opts, elo: myRating.elo });
 
     if (plan.kind === "matched") return { ok: true, status: "matched", code: plan.code, playerId: plan.playerId, seat: 0 };
     if (plan.kind === "waiting") {
@@ -192,7 +258,7 @@ export async function searchRankedQueue(
       now
     );
     if (!game) return busy;
-    if (!(await writeRow(withRankedPair(row, plan.opponent.ticket, me.ticket, { code: game.code, playerId: game.ids[0] }, now), version))) {
+    if (!(await writeRow(withRankedPair(row, plan.opponent.ticket, me.ticket, { code: game.code, playerId: game.ids[0] }, now, [plan.opponent.player, me.player]), version))) {
       await game.remove();
       continue;
     }

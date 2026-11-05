@@ -227,7 +227,9 @@ export function BattleHome({ news }: { news: NewsItem[] }) {
   const needsTeam = !info.random && !(custom && rules.baseRandom);
   const ladderable = isLadderFormat(format);
   const ladder = useLadderStanding(ladderable ? (format as StandardFormatId) : null);
-  const rankedOn = ranked && ladderable && ladder.status !== "off";
+  /** Ranked needs an account, as on Showdown (a guest can still battle casually). */
+  const needsAccount = account.status === "ready" && !account.user;
+  const rankedOn = ranked && ladderable && ladder.status !== "off" && !needsAccount;
   const settings = useMemo(() => ({ format, ranked: rankedOn }), [format, rankedOn]);
   const finder = useMatchmaking(custom ? undefined : settings, { endpoint: "/api/battle/match", save: saveBattleSeat });
   const searching = finder.searching;
@@ -387,11 +389,19 @@ export function BattleHome({ news }: { news: NewsItem[] }) {
               </label>
 
               {!custom && ladderable && (
-                <label className={cn("flex cursor-pointer items-center gap-2 text-sm", ladder.status === "off" && "cursor-not-allowed opacity-50")}>
-                  <input type="checkbox" checked={rankedOn} onChange={(e) => setRanked(e.target.checked)} disabled={searching || ladder.status === "off"} data-testid="ranked-toggle" />
+                <label className={cn("flex cursor-pointer items-center gap-2 text-sm", (ladder.status === "off" || needsAccount) && "cursor-not-allowed opacity-50")}>
+                  <input type="checkbox" checked={rankedOn} onChange={(e) => setRanked(e.target.checked)} disabled={searching || ladder.status === "off" || needsAccount} data-testid="ranked-toggle" />
                   Ranked
                   {rankedOn && ladder.status === "ready" && (ladder.you && ladder.you.games > 0 ? <GlickoBadge rating={ladder.you.rating} rd={ladder.you.rd} gxe={ladder.you.gxe} elo={ladder.you.elo} size="sm" /> : <span className="text-xs text-muted-foreground">starts at 1000 Elo</span>)}
                 </label>
+              )}
+              {!custom && ladderable && needsAccount && ladder.status !== "off" && (
+                <p className="-mt-2 pl-6 text-xs text-muted-foreground" data-testid="ranked-sign-in">
+                  <Link href="/login" className="font-semibold text-primary hover:underline">
+                    Sign in
+                  </Link>{" "}
+                  to play ranked.
+                </p>
               )}
 
               {problem && (
