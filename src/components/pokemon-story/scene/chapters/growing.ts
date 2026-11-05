@@ -254,8 +254,11 @@ export const build: ChapterBuilder = async (ctx) => {
       stars.mat.opacity = Math.max(night * (1 - ramp(t, tColour, tColour + 2)) * 0.7, space, 0.25 * ramp(t, tFresh, end));
       sun.set("#fff0c0", 0.8 * (1 - night));
       moon.set("#dfe8ff", 0.7 * night * (1 - ramp(t, tColour - 1, tColour + 1)));
-      L.key.intensity = 1.6 * (1 - night * 0.6) * (1 - space * 0.7);
-      L.hemi.intensity = 0.8 * (1 - night * 0.4);
+      // Johto's night is night: the moon keys the map cool and low, and the sky fill nearly goes.
+      const johtoNight = night * (1 - ramp(t, tColour - 1.2, tColour + 0.6));
+      L.key.intensity = 1.6 * (1 - night * 0.6) * (1 - space * 0.7) * (1 - johtoNight * 0.55);
+      L.key.color.set("#fff4e0").lerp(col("#9fb4ff"), johtoNight);
+      L.hemi.intensity = 0.8 * (1 - night * 0.4) * (1 - johtoNight * 0.65);
       // The floors glow up as we reach them.
       const near = [tClock - 3, tColour - 1, tOnline - 2, tFresh - 1];
       floors.forEach((f, i) => { f.u.uA.value = ramp(t, near[i], near[i] + 2.5) * (i === 2 ? 1 - space : 1); f.u.uTime.value = ambient; f.mesh.visible = f.u.uA.value > 0.001 || Math.abs(cam.position.z - f.mesh.position.z) < 90; });

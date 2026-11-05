@@ -203,8 +203,8 @@ function limb(parts: THREE.BufferGeometry[], a: THREE.Vector3, b: THREE.Vector3,
   g.applyQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), d.normalize()));
   g.translate((a.x + b.x) / 2, (a.y + b.y) / 2, (a.z + b.z) / 2);
   parts.push(g);
-  // Joints a touch fuller than the limb, so the rim rolls over them instead of catching a seam.
-  if (joints) { parts.push(new THREE.SphereGeometry(ra * 1.06, 14, 10).translate(a.x, a.y, a.z), new THREE.SphereGeometry(rb * 1.06, 14, 10).translate(b.x, b.y, b.z)); }
+  // Joints as round as the limb and as finely divided, so the rim rolls over them without a seam or a bulge.
+  if (joints) { parts.push(new THREE.SphereGeometry(ra, 14, 10).translate(a.x, a.y, a.z), new THREE.SphereGeometry(rb, 14, 10).translate(b.x, b.y, b.z)); }
 }
 
 /** A hand: a flattened palm, four fingers with a slight curl and a thumb (a silhouette, so the shape is what reads). */
@@ -665,8 +665,25 @@ export function makeGlobe(o: { radius: number; count: number; land: string; lit:
   });
   const points = new THREE.Points(geo, mat);
   points.frustumCulled = false;
-  // A faint body so the far side is hidden and the globe reads as a sphere.
-  const bodyMat = new THREE.MeshBasicMaterial({ color: col(o.sea ?? "#04101c"), transparent: true, opacity: 0.92 });
+  // A body so the far side is hidden and the globe reads as a sphere: an ocean lit softly from the
+  // upper left (a terminator, not a flat disc), with an atmosphere rim in the land's light.
+  const bodyMat = new THREE.ShaderMaterial({
+    uniforms: { uSea: { value: col(o.sea ?? "#04101c") }, uRim: { value: col(o.lit) } },
+    transparent: true,
+    vertexShader: /* glsl */ `
+      varying vec3 vN; varying vec3 vV;
+      void main(){ vec4 mv = modelViewMatrix * vec4(position, 1.0); vN = normalize(normalMatrix * normal); vV = normalize(-mv.xyz); gl_Position = projectionMatrix * mv; }`,
+    fragmentShader: /* glsl */ `
+      uniform vec3 uSea, uRim; varying vec3 vN; varying vec3 vV;
+      void main(){
+        vec3 n = normalize(vN);
+        float key = clamp(dot(n, normalize(vec3(-0.55, 0.6, 0.6))), 0.0, 1.0);
+        float f = clamp(1.0 - dot(n, normalize(vV)), 0.0, 1.0);
+        float rim = f * f * f;
+        vec3 c = uSea * (0.4 + 1.25 * key) + uRim * rim * 0.35;
+        gl_FragColor = vec4(c, 0.94);
+      }`,
+  });
   const body = new THREE.Mesh(new THREE.SphereGeometry(o.radius * 0.985, 48, 32), bodyMat);
   const atmo = makeGlow({ pos: [0, 0, 0], size: o.radius * 3.1, color: o.lit, intensity: 0.22 });
   const group = new THREE.Group();

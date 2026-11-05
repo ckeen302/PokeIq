@@ -261,7 +261,7 @@ export const build: ChapterBuilder = async (ctx) => {
 
   // ---- E. The globe, lighting outward from Japan.
   const R = 5;
-  const globe = D.add(makeGlobe({ radius: R, count: Math.round(9000 * Math.max(0.4, P)), land: "#ffb84a", lit: "#ffd23a", sea: "#05081a", seed: 8 }));
+  const globe = D.add(makeGlobe({ radius: R, count: Math.round(9000 * Math.max(0.4, P)), land: "#ffb84a", lit: "#ffd23a", sea: "#0c1f48", seed: 8 }));
   globe.group.position.set(AT.globe, 0, 0);
   scene.add(globe.group);
   const atmo = D.add(makeGlow({ pos: [AT.globe, 0, -1], size: R * 2.9, color: "#ffb84a", intensity: 0 }));
