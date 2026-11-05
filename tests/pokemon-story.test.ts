@@ -199,6 +199,13 @@ describe("The Story of Pokémon: sound", () => {
       const m = mixFor(film, filmAt(film, t));
       expect(m.bed + m.bright + m.drive + m.swell).toBeGreaterThan(0.2);
     }
+    // One song at a time: the tracks are separate pieces, so at most two are ever audible, and only while one fades into the other.
+    for (let t = 0; t < film.duration; t += 0.25) {
+      const m = mixFor(film, filmAt(film, t));
+      const audible = Object.values(m).filter((v) => v > 0.02);
+      expect(audible.length, `t=${t.toFixed(2)}: ${JSON.stringify(m)}`).toBeLessThanOrEqual(2);
+      if (audible.length === 2) expect(Math.min(...audible), `t=${t.toFixed(2)}: two songs at full level`).toBeLessThan(0.75);
+    }
     const credits = readFileSync(join(process.cwd(), "public/audio/pokemon-story/CREDITS.md"), "utf8");
     for (const url of Object.values(MUSIC)) {
       expect(existsSync(join(process.cwd(), "public", url)), url).toBe(true);
