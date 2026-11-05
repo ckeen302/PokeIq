@@ -149,11 +149,12 @@ function FitLabel({ text }: { text: string }) {
   );
 }
 
-function Header({ cat, testId }: { cat: PdkCategoryView | undefined; testId: string }) {
+function Header({ cat, testId, role }: { cat: PdkCategoryView | undefined; testId: string; role: "columnheader" | "rowheader" }) {
   const [open, setOpen] = useState(false);
   const tipId = `${testId}-tip`;
   return (
     <div
+      role={role}
       data-testid={testId}
       title={cat ? PDK_FAMILY_LABELS[cat.family] : undefined}
       className={cn("relative flex min-h-14 items-center justify-center rounded-md border px-1 py-1 sm:px-1.5 text-center text-[11px] font-bold leading-tight sm:text-sm", cat ? FAMILY_TINT[cat.family] : "border-foreground/10")}
@@ -252,64 +253,69 @@ export function PdkBoard({
     }
   };
   return (
+    // Each row is a `display: contents` role="row", so the CSS grid still lays the headers and cells out directly.
     <div className="mx-auto grid max-w-xl grid-cols-[minmax(4.5rem,0.8fr)_repeat(3,minmax(0,1fr))] gap-1.5" role="grid" aria-label="Pikadoku grid" onKeyDown={onKeyDown}>
-      <div />
-      {[0, 1, 2].map((c) => (
-        <Header key={c} cat={grid?.cols[c]} testId={`${testPrefix}-col-${c}`} />
+      <div role="row" className="contents">
+        <div aria-hidden />
+        {[0, 1, 2].map((c) => (
+          <Header key={c} role="columnheader" cat={grid?.cols[c]} testId={`${testPrefix}-col-${c}`} />
+        ))}
+      </div>
+      {[0, 1, 2].map((r) => (
+        <div key={r} role="row" className="contents">
+          <Header role="rowheader" cat={grid?.rows[r]} testId={`${testPrefix}-row-${r}`} />
+          {[0, 1, 2].map((c) => {
+            const i = r * 3 + c;
+            const cell = cells[i] ?? { id: null };
+            const filled = cell.id !== null;
+            const label = filled ? names.get(cell.id!) ?? `#${cell.id}` : "Empty";
+            return (
+              <button
+                key={i}
+                ref={(el) => {
+                  refs.current[i] = el;
+                }}
+                type="button"
+                role="gridcell"
+                data-testid={`${testPrefix}-cell-${i}`}
+                disabled={disabled || (filled && !stealable?.(i)) || !onCell || !grid}
+                onClick={() => onCell?.(i)}
+                aria-label={`Row ${r + 1}, column ${c + 1}: ${label}`}
+                className={cn(
+                  "relative flex aspect-square min-w-0 flex-col items-center justify-center rounded-md border-2 p-0.5 text-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                  filled
+                    ? cell.owner === 1
+                      ? "border-rose-400 bg-rose-400/15"
+                      : cell.owner === 0
+                        ? "border-sky-400 bg-sky-400/15"
+                        : "border-primary/60 bg-primary/10"
+                    : "border-dashed border-foreground/25 bg-card hover:border-primary hover:bg-primary/5 disabled:hover:border-foreground/25 disabled:hover:bg-card",
+                  cell.miss && "animate-pulse border-solid border-destructive bg-destructive/15",
+                  cell.hit && "border-success bg-success/20 ring-2 ring-success/60",
+                  cell.highlight && "ring-2 ring-warning"
+                )}
+              >
+                {filled ? (
+                  <>
+                    <Image src={spriteUrl(cell.id!)} alt="" width={64} height={64} unoptimized className="h-10 w-10 sm:h-16 sm:w-16" style={{ imageRendering: "pixelated" }} />
+                    <span className="max-w-full truncate text-[10px] font-semibold leading-tight sm:text-xs">{label}</span>
+                    {cell.owner != null && <span className="absolute left-1 top-0.5 text-xs font-bold">{cell.owner === 0 ? "X" : "O"}</span>}
+                    {cell.pct != null && (
+                      <span data-testid={`${testPrefix}-pct-${i}`} className="absolute right-1 top-0.5 rounded bg-background/80 px-1 text-[10px] font-bold tabular-nums">
+                        {cell.pct}%
+                      </span>
+                    )}
+                  </>
+                ) : (
+                  <span className="text-2xl text-foreground/25" aria-hidden>
+                    +
+                  </span>
+                )}
+              </button>
+            );
+          })}
+          </div>
       ))}
-      {[0, 1, 2].flatMap((r) => [
-        <Header key={`r${r}`} cat={grid?.rows[r]} testId={`${testPrefix}-row-${r}`} />,
-        ...[0, 1, 2].map((c) => {
-          const i = r * 3 + c;
-          const cell = cells[i] ?? { id: null };
-          const filled = cell.id !== null;
-          const label = filled ? names.get(cell.id!) ?? `#${cell.id}` : "Empty";
-          return (
-            <button
-              key={i}
-              ref={(el) => {
-                refs.current[i] = el;
-              }}
-              type="button"
-              role="gridcell"
-              data-testid={`${testPrefix}-cell-${i}`}
-              disabled={disabled || (filled && !stealable?.(i)) || !onCell || !grid}
-              onClick={() => onCell?.(i)}
-              aria-label={`Row ${r + 1}, column ${c + 1}: ${label}`}
-              className={cn(
-                "relative flex aspect-square min-w-0 flex-col items-center justify-center rounded-md border-2 p-0.5 text-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                filled
-                  ? cell.owner === 1
-                    ? "border-rose-400 bg-rose-400/15"
-                    : cell.owner === 0
-                      ? "border-sky-400 bg-sky-400/15"
-                      : "border-primary/60 bg-primary/10"
-                  : "border-dashed border-foreground/25 bg-card hover:border-primary hover:bg-primary/5 disabled:hover:border-foreground/25 disabled:hover:bg-card",
-                cell.miss && "animate-pulse border-solid border-destructive bg-destructive/15",
-                cell.hit && "border-success bg-success/20 ring-2 ring-success/60",
-                cell.highlight && "ring-2 ring-warning"
-              )}
-            >
-              {filled ? (
-                <>
-                  <Image src={spriteUrl(cell.id!)} alt="" width={64} height={64} unoptimized className="h-10 w-10 sm:h-16 sm:w-16" style={{ imageRendering: "pixelated" }} />
-                  <span className="max-w-full truncate text-[10px] font-semibold leading-tight sm:text-xs">{label}</span>
-                  {cell.owner != null && <span className="absolute left-1 top-0.5 text-xs font-bold">{cell.owner === 0 ? "X" : "O"}</span>}
-                  {cell.pct != null && (
-                    <span data-testid={`${testPrefix}-pct-${i}`} className="absolute right-1 top-0.5 rounded bg-background/80 px-1 text-[10px] font-bold tabular-nums">
-                      {cell.pct}%
-                    </span>
-                  )}
-                </>
-              ) : (
-                <span className="text-2xl text-foreground/25" aria-hidden>
-                  +
-                </span>
-              )}
-            </button>
-          );
-        }),
-      ])}
     </div>
   );
 }
