@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import { watchContext } from "@/lib/gl/context-loss";
 import { RGBELoader } from "three/examples/jsm/loaders/RGBELoader.js";
 import { CSM } from "three/examples/jsm/csm/CSM.js";
 import { layoutLine } from "@/lib/sizes/types";
@@ -86,6 +87,8 @@ export interface SceneOptions {
   size?: { w: number; h: number };
   /** The far atlas (src/data/sizes-far.json by default). */
   far?: FarManifest;
+  /** The WebGL context was lost and the scene must be built again (see watchContext). */
+  onContextGone?: () => void;
 }
 
 export interface Placed {
@@ -209,6 +212,7 @@ export function createSizesScene(host: HTMLElement, opts: SceneOptions): SizesSc
   canvas.style.width = "100%";
   canvas.style.height = "100%";
   host.appendChild(canvas);
+  const ctxWatch = watchContext(canvas, opts.onContextGone);
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: false, alpha: false, powerPreference: "high-performance", stencil: false });
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 0.97;
@@ -879,6 +883,7 @@ export function createSizesScene(host: HTMLElement, opts: SceneOptions): SizesSc
 
   const lastCam = new THREE.Vector3(Infinity, 0, 0), lastAim = new THREE.Vector3();
   function render(t: number, dt: number) {
+    if (ctxWatch.lost) return;
     frameNo++;
     lastDt = dt;
     applyView();
@@ -998,6 +1003,7 @@ export function createSizesScene(host: HTMLElement, opts: SceneOptions): SizesSc
     stats: () => ({ figures: slots.filter((s) => s.draw).length, relief: slots.filter((s) => s.draw >= 2).length, crowd: crowd.mesh.count, loading: loadingCount, calls: renderer.info.render.calls, tris: renderer.info.render.triangles }),
     internals: () => ({ scene, renderer, camera, world: worldGroup, figures: figureGroup, sky: sky.mesh }),
     dispose() {
+      ctxWatch.dispose();
       for (const s of slots) dropSlot(s);
       if (companion) dropSlot(companion);
       toUpload.length = 0;

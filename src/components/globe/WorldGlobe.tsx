@@ -58,6 +58,8 @@ export function WorldGlobe({ regions, eras }: { regions: GlobeRegionCard[]; eras
   const shotsLoad = useRef<Promise<GlobeShotIndex | null> | null>(null);
   const closeTimer = useRef(0);
   const heldByHover = useRef(false);
+  /** Bumped to build the scene again (after its WebGL context was lost). */
+  const [sceneGen, setSceneGen] = useState(0);
   const [state, setState] = useState<"loading" | "ready" | "nogl" | "failed">("loading");
   const [stats, setStats] = useState({ lon: "0.0°", lat: "0.0°", zoom: "1.0×", tier: "Regions", focus: "Kanto" });
   const [auto, setAuto] = useState(true);
@@ -114,7 +116,8 @@ export function WorldGlobe({ regions, eras }: { regions: GlobeRegionCard[]; eras
       introDecision.current = shouldPlayGlobeIntro({ store: localStore(), reducedMotion: reduce });
       if (introDecision.current) markGlobeIntroSeen(localStore());
     }
-    const playIntro = introDecision.current;
+    // A scene built again after a lost WebGL context doesn't replay the intro.
+    const playIntro = introDecision.current && !sceneGen;
     setIntro(playIntro);
     setEraState(startEra);
     setMutedState(isMuted());
@@ -170,7 +173,7 @@ export function WorldGlobe({ regions, eras }: { regions: GlobeRegionCard[]; eras
           introDone() { setIntro(false); },
           firstPointer() { void ensureShots(); },
         },
-        { intro: playIntro, quality: q !== null && /^[0-3]$/.test(q) ? Number(q) : null, era: startEra },
+        { intro: playIntro, quality: q !== null && /^[0-3]$/.test(q) ? Number(q) : null, era: startEra, onContextGone: () => alive && setSceneGen((g) => g + 1) },
       );
       if (!s) { setIntro(false); return setState("nogl"); }
       api.current = s;
@@ -185,7 +188,7 @@ export function WorldGlobe({ regions, eras }: { regions: GlobeRegionCard[]; eras
       api.current?.dispose();
       api.current = null;
     };
-  }, [ensureShots, preload]);
+  }, [ensureShots, preload, sceneGen]);
 
   // ---- the globe is full screen: the page behind it doesn't scroll (nor show a scrollbar)
   useEffect(() => {
