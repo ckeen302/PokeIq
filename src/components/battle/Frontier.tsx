@@ -205,7 +205,8 @@ export function FrontierHub({ mode, startPanel }: { mode: FrontierMode; startPan
           </div>
         )}
 
-        {!loaded ? null : run ? (
+        {/* Until the saved run is read, hold about the start panel's height so the page doesn't jump when it appears. */}
+        {!loaded ? <div className="min-h-[26rem]" aria-hidden /> : run ? (
           <Card>
             <CardContent className="space-y-4 p-5">
               <StreakBar run={run} best={best} />

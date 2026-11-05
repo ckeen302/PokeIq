@@ -1,3 +1,4 @@
+import type { PureAnswer } from "./preset-results";
 import "server-only";
 import presetsJson from "@/data/mass-battle-presets.json";
 import { buildRoster } from "./roster-data";
@@ -63,7 +64,7 @@ export interface PresetCardData {
   blurb: string;
   spec: BattleSpec;
   question: Question | null;
-  answer: { n: number; spread: number; wins: number; runs: number; seed: number } | null;
+  answer: { n: number; spread: number; wins: number; runs: number; seed: number; pure?: PureAnswer | null } | null;
   labels: [string, string] | null;
   outcome: PresetsFile["results"][string]["outcome"] | null;
   /** How it's shown: the preset's own choices, unless the link says otherwise. */

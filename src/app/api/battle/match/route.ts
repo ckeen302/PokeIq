@@ -7,7 +7,7 @@ import { newTicket } from "@/lib/server/match-queue";
 import { battlesEnabled } from "@/lib/server/battle-engine/store";
 import { cancelBattleSearch, searchBattle, searchRankedBattle } from "@/lib/server/battle-engine/matchmaking";
 import { hideBattle, readBattleToken } from "@/lib/server/battle-engine/service";
-import { battlePlayerKey } from "@/lib/server/battle-engine/identity";
+import { casualBattlePlayerKey, ipHashOf, rankedBattlePlayerKey } from "@/lib/server/battle-engine/identity";
 import { ladderStore, pairingRating } from "@/lib/server/battle-engine/ladder";
 import { RankedUnavailable } from "@/lib/server/ranked";
 import { isLadderFormat } from "@/lib/battle/ladder";
@@ -24,9 +24,11 @@ import { ALL_FORMATS, BATTLE_TEAM_MAX, type StandardFormatId } from "@/lib/battl
  *   { action: "cancel", settings: { format, ranked? }, ticket }   give up the search
  *
  * `settings.ranked`: the format's ranked queue (ladder formats only), paired
- * by rating. Every search sends `rankedId` (the signed id /api/battle/id gave
- * this browser) unless signed in: it's who the rating, record and replays
- * belong to.
+ * by Elo as on Showdown. Ranked needs a signed-in account (401 otherwise),
+ * and while the accounts service is down it answers 503 rather than rate the
+ * game anywhere else. Casual searches send `rankedId` (the signed id
+ * /api/battle/id gave this browser) unless signed in: it's who the record
+ * and replays belong to.
  */
 
 // Pairing starts the battle, so the simulator runs here (unbundled, see next.config.ts).
@@ -74,21 +76,23 @@ export async function POST(request: NextRequest) {
       await cancelBattleSearch(body.settings.format, body.ticket, body.settings.ranked);
       return NextResponse.json({ ok: true }, { headers: NO_STORE });
     }
-    const player = (await battlePlayerKey(request, body.rankedId)) ?? undefined;
     let out: Awaited<ReturnType<typeof searchBattle>>;
     const format = body.settings.format;
     if (body.settings.ranked) {
       if (!isLadderFormat(format)) return NextResponse.json({ error: "There's no ladder for that format." }, { status: 400, headers: NO_STORE });
+      const who = await rankedBattlePlayerKey(request);
+      if (!who.ok && who.reason === "guest") return NextResponse.json({ error: "Sign in to play ranked." }, { status: 401, headers: NO_STORE });
+      if (!who.ok) return NextResponse.json({ error: "Accounts are down for a moment, so ranked is paused. Casual battles are on." }, { status: 503, headers: NO_STORE });
       const store = ladderStore();
       if (!store) return NextResponse.json({ error: "Ranked battles aren't open on this server yet." }, { status: 503, headers: NO_STORE });
-      if (!player) return NextResponse.json({ error: "Reload the page to get your ranked card." }, { status: 400, headers: NO_STORE });
+      const player = who.key;
       try {
-        out = await searchRankedBattle(format, body.name, body.ticket ?? newTicket(), player, async () => pairingRating(await store.rating(player, format)), body.team);
+        out = await searchRankedBattle(format, body.name, body.ticket ?? newTicket(), player, async () => pairingRating(await store.rating(player, format)), body.team, ipHashOf(request));
       } catch (err) {
         if (err instanceof RankedUnavailable) return NextResponse.json({ error: "Ranked battles open soon. Casual battles are on." }, { status: 409, headers: NO_STORE });
         throw err;
       }
-    } else out = await searchBattle(format, body.name, body.ticket ?? newTicket(), body.team, player);
+    } else out = await searchBattle(format, body.name, body.ticket ?? newTicket(), body.team, (await casualBattlePlayerKey(request, body.rankedId)) ?? undefined);
     if (!out.ok) return NextResponse.json({ error: out.error }, { status: out.status, headers: NO_STORE });
     if (out.status === "matched" && body.hidden) {
       const seat = readBattleToken(out.token, out.code);

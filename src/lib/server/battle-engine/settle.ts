@@ -22,6 +22,9 @@ import { RankedUnavailable } from "../ranked";
 /** A finished live battle that hasn't been settled yet. */
 export const needsSettling = (view: BattleView) => view.kind === "pvp" && view.status === "finished" && !view.settled;
 
+/** The same, for a stored record (the tick has no viewer). */
+export const needsSettlingRecord = (rec: BattleRecord) => rec.meta.kind === "pvp" && rec.meta.status === "finished" && !rec.meta.settled;
+
 /** Whether a finished battle is worth a replay (a battle that never got going isn't). */
 const replayable = (rec: BattleRecord) => rec.meta.end?.reason !== "nocontest" && rec.meta.turn >= 1 && rec.logs.spectator.length > 0;
 

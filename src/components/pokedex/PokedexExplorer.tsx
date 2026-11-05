@@ -1,6 +1,6 @@
 "use client";
 
-/* eslint-disable @next/next/no-img-element -- thumbnails come pre-sized from /api/art */
+/* eslint-disable @next/next/no-img-element -- thumbnails are pre-sized static files (public/art/160) */
 import { memo, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -8,7 +8,7 @@ import { motion } from "framer-motion";
 import { ArrowDownWideNarrow, ArrowUpNarrowWide, BookOpenCheck, Search, Shuffle, SlidersHorizontal, X } from "lucide-react";
 import { TYPES, capitalize } from "@/lib/pokemon/type-matrix";
 import { typeColor } from "@/lib/pokemon/type-colors";
-import { artUrl } from "@/lib/pokemon/art";
+import { boardArtUrl } from "@/lib/pokemon/art";
 import { TypeBadge } from "./TypeBadge";
 import { cn } from "@/lib/utils";
 
@@ -46,6 +46,8 @@ const SORTS: { key: SortKey; label: string }[] = [
 
 const REGIONS = ["Kanto", "Johto", "Hoenn", "Sinnoh", "Unova", "Kalos", "Alola", "Galar", "Paldea"];
 const PAGE = 60;
+/** Cards in the first rows (two across on a phone, up to eight on a wide screen) that load their picture straight away. */
+const EAGER_CARDS = 8;
 
 const normalize = (s: string) =>
   s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/[^a-z0-9]/g, "");
@@ -294,7 +296,7 @@ export function PokedexExplorer({ items }: { items: DexListItem[] }) {
         // keystroke is far too slow. Cards are memoised and fade in on mount.
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
           {filtered.slice(0, visible).map((p, i) => (
-            <DexCard key={p.id} p={p} index={i % PAGE} badge={sortLabel(p, sort)} animate={animateCards} />
+            <DexCard key={p.id} p={p} index={i % PAGE} badge={sortLabel(p, sort)} animate={animateCards} eager={i < EAGER_CARDS} />
           ))}
         </div>
       )}
@@ -331,11 +333,14 @@ const DexCard = memo(function DexCard({
   index,
   badge,
   animate,
+  eager,
 }: {
   p: DexListItem;
   index: number;
   badge: string | null;
   animate: boolean;
+  /** One of the first cards on screen: its picture is the page's largest paint, so it loads at once. */
+  eager: boolean;
 }) {
   const c1 = typeColor(p.types[0]);
   const c2 = typeColor(p.types[1] ?? p.types[0]);
@@ -365,9 +370,10 @@ const DexCard = memo(function DexCard({
             aria-hidden
           />
           <img
-            src={artUrl(p.id, 160)}
+            src={boardArtUrl(p.id)}
             alt={p.name}
-            loading="lazy"
+            loading={eager ? "eager" : "lazy"}
+            fetchPriority={eager ? "high" : undefined}
             decoding="async"
             width={160}
             height={160}

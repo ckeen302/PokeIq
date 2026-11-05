@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import Link from "next/link";
-import { Chakra_Petch, Inter, Silkscreen } from "next/font/google";
+import localFont from "next/font/local";
 import { Analytics } from "@vercel/analytics/next";
 import { DesktopNav, MobileTabBar } from "@/components/layout/SiteNav";
 import { Logo } from "@/components/layout/Logo";
@@ -14,9 +14,36 @@ import { ErrorReporter, ReportProblem } from "@/components/layout/ReportProblem"
 import { SHINY_ORIGIN } from "@/lib/shiny";
 import "./globals.css";
 
-const display = Chakra_Petch({ subsets: ["latin"], weight: ["500", "600", "700"], variable: "--font-display", display: "swap" });
-const body = Inter({ subsets: ["latin"], variable: "--font-body", display: "swap" });
-const pixel = Silkscreen({ subsets: ["latin"], weight: ["400", "700"], variable: "--font-pixel", display: "swap" });
+// The site's fonts are committed in src/fonts (the same latin files Google Fonts serves, all under the SIL Open Font License),
+// so a build never has to fetch them from Google: those fetches failed builds now and then.
+const display = localFont({
+  src: [
+    { path: "../fonts/chakra-petch-normal-500.woff2", weight: "500", style: "normal" },
+    { path: "../fonts/chakra-petch-normal-600.woff2", weight: "600", style: "normal" },
+    { path: "../fonts/chakra-petch-normal-700.woff2", weight: "700", style: "normal" },
+  ],
+  variable: "--font-display",
+  display: "swap",
+  fallback: ["system-ui", "sans-serif"],
+});
+const body = localFont({
+  src: [{ path: "../fonts/inter-normal-100-900.woff2", weight: "100 900", style: "normal" }],
+  variable: "--font-body",
+  display: "swap",
+  fallback: ["system-ui", "sans-serif"],
+});
+const pixel = localFont({
+  src: [
+    { path: "../fonts/silkscreen-normal-400.woff2", weight: "400", style: "normal" },
+    { path: "../fonts/silkscreen-normal-700.woff2", weight: "700", style: "normal" },
+  ],
+  variable: "--font-pixel",
+  display: "swap",
+  fallback: ["monospace"],
+});
+
+/** The token from Search Console's "HTML tag" method: only the content="…" value. */
+const GOOGLE_SITE_VERIFICATION = process.env.GOOGLE_SITE_VERIFICATION?.trim();
 
 /**
  * Site-wide defaults. `metadataBase` is SITE_URL (NEXT_PUBLIC_SITE_URL, else
@@ -35,6 +62,8 @@ export const metadata: Metadata = {
   openGraph: { siteName: SITE_NAME, type: "website", locale: "en_US", title: `${SITE_NAME}: ${SITE_TAGLINE}`, description: SITE_DESCRIPTION },
   twitter: { card: "summary_large_image", title: `${SITE_NAME}: ${SITE_TAGLINE}`, description: SITE_DESCRIPTION },
   appleWebApp: { capable: true, statusBarStyle: "black-translucent", title: SITE_NAME },
+  // Google Search Console's HTML-tag check (docs/search-console.md). Read at build time.
+  ...(GOOGLE_SITE_VERIFICATION && { verification: { google: GOOGLE_SITE_VERIFICATION } }),
 };
 
 export const viewport: Viewport = {
@@ -44,9 +73,11 @@ export const viewport: Viewport = {
   viewportFit: "cover",
 };
 
+// The same @id as the home page's fuller WebSite node (with its SearchAction), so the two read as one site.
 const websiteJsonLd = {
   "@context": "https://schema.org",
   "@type": "WebSite",
+  "@id": `${SITE_URL}/#website`,
   name: SITE_NAME,
   url: SITE_URL,
   description: SITE_DESCRIPTION,

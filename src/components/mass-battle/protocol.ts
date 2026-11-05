@@ -117,7 +117,7 @@ export type FromSim =
 
 export type ToSolver =
   | { type: "setup"; job: number; roster: RosterSlice; question: Question }
-  | { type: "run"; job: number; tag: number; n: number; seed: number };
+  | { type: "run"; job: number; tag: number; n: number; seed: number; layout?: "melee" };
 
 export type FromSolver =
   | { type: "result"; job: number; tag: number; n: number; seed: number; winner: Winner; seconds: number; ms: number }
