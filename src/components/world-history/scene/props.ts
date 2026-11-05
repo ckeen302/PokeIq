@@ -214,7 +214,7 @@ export function makeCrystals(o: { spots: { pos: Vec3; h: number; r?: number; til
     fragmentShader: /* glsl */ `
       uniform vec3 uC0, uC1; uniform float uGlow, uTime; varying vec3 vN; varying vec3 vV; varying vec3 vW;
       void main(){
-        float f = 1.0 - abs(dot(normalize(vN), normalize(vV)));
+        float f = max(0.0, 1.0 - abs(dot(normalize(vN), normalize(vV))));
         vec3 irid = 0.5 + 0.5 * cos(6.2831 * (f * 1.4 + vW.y * 0.05 + vec3(0.0, 0.33, 0.67)) + uTime * 0.2);
         vec3 c = mix(uC0, uC1, f) * (0.35 + 0.9 * f) + irid * pow(f, 2.0) * 0.8;
         c += uC1 * pow(f, 4.0) * 2.0;
@@ -370,9 +370,10 @@ export function makeMeteor(o: { size: number; color: string; trail: number }) {
       uniform vec3 uColor; uniform float uOpacity, uTime; varying vec2 vUv; varying vec3 vN; varying vec3 vV;
       void main(){
         float f = pow(abs(dot(normalize(vN), normalize(vV))), 1.5);
-        float along = pow(vUv.y, 2.2);
+        float vy = clamp(vUv.y, 0.0, 1.0);
+        float along = pow(vy, 2.2);
         float n = 0.6 + 0.8 * whNoise(vec3(vUv.x * 8.0, vUv.y * 20.0 - uTime * 6.0, 0.0));
-        vec3 c = mix(uColor, vec3(1.0, 0.95, 0.85), pow(vUv.y, 6.0)) * f * along * n * 3.0;
+        vec3 c = mix(uColor, vec3(1.0, 0.95, 0.85), pow(vy, 6.0)) * f * along * n * 3.0;
         gl_FragColor = vec4(c * uOpacity, f * along * uOpacity);
       }`,
   });
