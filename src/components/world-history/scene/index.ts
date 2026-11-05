@@ -93,6 +93,8 @@ export interface HistoryScene {
   setQuality(q: Quality): void;
   readonly quality: Quality;
   stats(): { calls: number; tris: number; loaded: number[] };
+  /** Checks (automated runs): how many pixels of the last frame's HDR picture are NaN or infinite, before any scrub. */
+  probe(): { bad: number; total: number };
   dispose(): void;
 }
 
@@ -514,9 +516,37 @@ export function createHistoryScene(host: HTMLElement, opts: SceneOptions): Histo
     await compileFor(hall.scene, camera);
   })();
 
+  function probe() {
+    if (lost) return { bad: -1, total: 0 };
+    const w = post.target.width, h = post.target.height;
+    const rt = new THREE.WebGLRenderTarget(w, h);
+    const mat = new THREE.ShaderMaterial({
+      uniforms: { tScene: { value: post.target.texture } },
+      vertexShader: `varying vec2 vUv; void main(){ vUv = uv; gl_Position = vec4(position.xy, 0.0, 1.0); }`,
+      fragmentShader: `uniform sampler2D tScene; varying vec2 vUv;
+        bool bad(float v){ return (floatBitsToUint(v) & 0x7f800000u) == 0x7f800000u; }
+        void main(){ vec4 c = texture2D(tScene, vUv); gl_FragColor = vec4(bad(c.r) || bad(c.g) || bad(c.b) || bad(c.a) ? 1.0 : 0.0, 0.0, 0.0, 1.0); }`,
+    });
+    const sc = new THREE.Scene();
+    const m = new THREE.Mesh(quad, mat);
+    m.frustumCulled = false;
+    sc.add(m);
+    renderer.setRenderTarget(rt);
+    renderer.render(sc, ortho);
+    const buf = new Uint8Array(w * h * 4);
+    renderer.readRenderTargetPixels(rt, 0, 0, w, h, buf);
+    renderer.setRenderTarget(null);
+    let bad = 0;
+    for (let i = 0; i < buf.length; i += 4) if (buf[i] > 127) bad++;
+    rt.dispose();
+    mat.dispose();
+    return { bad, total: w * h };
+  }
+
   return {
     canvas,
     ready,
+    probe,
     prepare,
     isReady: (i) => !!rigOf(i) || !!slots.get(i)?.failed,
     busy: () => [...slots.values()].some((s) => !s.rig && !s.failed),
