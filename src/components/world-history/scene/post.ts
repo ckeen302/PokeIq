@@ -283,7 +283,7 @@ export function createPost(renderer: THREE.WebGLRenderer, w: number, h: number, 
       void main(){
         vec2 c = vUv - 0.5;
         vec3 col;
-        float chroma = uChroma + uFringe * dot(c, c) * 10.0;
+        float chroma = uChroma + uFringe * dot(c, c) * 4.0;
         if (chroma > 0.001) {
           vec2 off = c * chroma * 0.018;
           col = whSafe(vec3(texture2D(tScene, vUv + off).r, texture2D(tScene, vUv).g, texture2D(tScene, vUv - off).b));
