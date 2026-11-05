@@ -51,10 +51,11 @@ import {
  * invite with a lobby), each poll, each choice, the clocks, presence,
  * forfeits and rematches.
  *
- * As with duels, nothing runs on a timer: every poll or action catches the
- * battle up. A player whose clock ran out gets an explicit choice played
- * for them (two in a row, or an empty bank, loses); a player who stopped
- * polling forfeits. Every change is read-modify-compare-and-swap on the
+ * Every poll or action catches the battle up, and so does the tick
+ * (/api/battle/tick, once a minute from the database's scheduler) for live
+ * battles nobody is polling. A player whose clock ran out gets an explicit
+ * choice played for them (two in a row, or an empty bank, loses); a player
+ * who stopped polling forfeits. Every change is read-modify-compare-and-swap on the
  * battle's row, retried from a fresh read on a clash.
  *
  * A player's choice must quote the request counter (`rqid`) of the request
@@ -926,6 +927,22 @@ function recalled(code: string): { rec: BattleRecord; version: number } | null {
 /** Tests: forget every remembered record, so a test starts from the store. */
 export function forgetRecentBattles() {
   recent.clear();
+}
+
+/**
+ * The tick's catch-up for one battle: whatever is due by now (a clock out, a
+ * trainer gone, the computer owing a choice) is played, through the same
+ * compare-and-swap as a poll, without marking anyone as here. Nothing due:
+ * nothing is written.
+ */
+export async function catchUpBattle(code: string): Promise<Outcome<{ rec: BattleRecord; now: number; rev: number }>> {
+  // From the store, not this instance's remembered copy: the tick finds a battle by its stored next_deadline, and a copy that
+  // another instance moved past might show nothing due, which would end the catch-up without the compare-and-swap ever noticing.
+  recent.delete(code);
+  return updateBattle(code, (work, now) => {
+    if (overdue(work.meta, now)) catchUp(work, now);
+    return { ok: true };
+  });
 }
 
 /** A poll: marks the player as here, catches the battle up and returns their view from line `since`. */
