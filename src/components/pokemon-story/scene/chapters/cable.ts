@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import { poseOnPath, type Key, type Vec3 } from "@/lib/world-history/camera";
-import { col, makeGlow, makeParticles, makeRing, ramp } from "@/components/world-history/scene/kit";
+import { col, makeGlow, makeParticles, makeRing, makeShaft, ramp } from "@/components/world-history/scene/kit";
 import { lights, lookAt, pointPixel } from "@/components/world-history/scene/chapters/common";
 import type { ChapterBuilder } from "@/components/world-history/scene/types";
 import { drawCritter, makeCable, makeDevice, makeSilhouette, makeWords } from "../story-kit";
@@ -20,10 +20,33 @@ import { bag, STOCK } from "./base";
 /** The table setup, shared with Chapter XI's callback (same Game Boys, same cable, same orbit). */
 export function cableTable(scene: THREE.Object3D) {
   const D = bag();
-  const table = new THREE.Mesh(new THREE.BoxGeometry(9, 0.2, 5), new THREE.MeshStandardMaterial({ color: col("#17110c"), roughness: 0.35, metalness: 0.1 }));
+  // A dark wooden table, a lamp hung low over it with dust in its cone (all in one group, so a callback can hide it).
+  const extras = new THREE.Group();
+  scene.add(extras);
+  const grainTex = (() => {
+    const c = document.createElement("canvas"); c.width = 512; c.height = 64;
+    const g = c.getContext("2d")!;
+    g.fillStyle = "#3a2516"; g.fillRect(0, 0, 512, 64);
+    for (let i = 0; i < 90; i++) { const y = (i * 37) % 64; g.strokeStyle = `rgba(${i % 2 ? 20 : 70},${i % 2 ? 12 : 44},${i % 2 ? 6 : 24},0.5)`; g.lineWidth = 1 + (i % 3); g.beginPath(); g.moveTo(0, y); for (let x = 0; x <= 512; x += 16) g.lineTo(x, y + Math.sin(x * 0.02 + i) * 3); g.stroke(); }
+    const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(1.5, 4); return t;
+  })();
+  const tableMat = new THREE.MeshStandardMaterial({ color: col("#ffffff"), map: grainTex, roughness: 0.32, metalness: 0.05 });
+  const table = new THREE.Mesh(new THREE.BoxGeometry(9, 0.2, 5), tableMat);
   table.position.set(0, -0.1, 0);
-  scene.add(table);
-  D.add({ dispose: () => { table.geometry.dispose(); (table.material as THREE.Material).dispose(); } });
+  extras.add(table);
+  const shadeMat = new THREE.MeshStandardMaterial({ color: col("#1c2a1c"), roughness: 0.4, metalness: 0.5, side: THREE.DoubleSide, emissive: col("#ffe2b0"), emissiveIntensity: 0.05 });
+  const shade = new THREE.Mesh(new THREE.ConeGeometry(1.0, 0.7, 32, 1, true), shadeMat);
+  shade.position.set(0, 7.35, 1.0);
+  const cord = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.02, 6, 6), shadeMat);
+  cord.position.set(0, 10.7, 1.0);
+  extras.add(shade, cord);
+  const bulb = D.add(makeGlow({ pos: [0, 7.0, 1.0], size: 1.2, color: "#fff0d0", intensity: 1.6 }));
+  extras.add(bulb.sprite);
+  const cone = D.add(makeShaft({ from: [0, 7.0, 1.0], to: [0, -0.1, 0.2], r0: 0.9, r1: 4.2, color: "#ffe2b0", intensity: 0.05, noise: 0.6 }));
+  extras.add(cone.mesh);
+  const dust = D.add(makeParticles({ count: 260, shape: "cylinder", center: [0, 3.2, 0.5], extent: [2.4, 3, 2.2], velocity: [0.02, -0.01, 0], spread: [0.02, 0.02, 0.02], life: 14, size: [0.012, 0.03], colors: ["#fff0d0", "#ffe2b0", "#c8b890"], intensity: 1.3, turbulence: 0.5, fadeIn: 0.3, fadeOut: 0.3, seed: 77 }));
+  extras.add(dust.points);
+  D.add({ dispose: () => { table.geometry.dispose(); tableMat.dispose(); grainTex.dispose(); shade.geometry.dispose(); cord.geometry.dispose(); shadeMat.dispose(); } });
   // The screens: who is on each, drawn from the clock.
   const state = { left: -1, right: -1, flash: 0, swap: 0 };
   const drawScreen = (side: 0 | 1) => (g: CanvasRenderingContext2D, w: number, h: number) => {
@@ -52,24 +75,27 @@ export function cableTable(scene: THREE.Object3D) {
   gbB.group.updateMatrixWorld(true);
   const pa = gbA.port.clone().applyMatrix4(gbA.group.matrixWorld);
   const pb = gbB.port.clone().applyMatrix4(gbB.group.matrixWorld);
-  const cable = D.add(makeCable({ from: [pa.x, 0.1, pa.z], to: [pb.x, 0.1, pb.z], sag: -0.05, radius: 0.04, coils: 0.5, color: "#2c2c34", glow: "#c8ff5a" }));
+  const cable = D.add(makeCable({ from: [pa.x, 0.1, pa.z], to: [pb.x, 0.1, pb.z], sag: -0.05, radius: 0.04, coils: 0.5, color: "#7a7a84", glow: "#c8ff5a", bow: [0, 0, -1.1] }));
   cable.mesh.position.y = 0.02;
   scene.add(cable.mesh);
   const glowA = D.add(makeGlow({ pos: [-2.6, 0.5, 0.0], size: 1.3, color: "#b8e05a", intensity: 0.3 }));
   const glowB = D.add(makeGlow({ pos: [2.6, 0.5, 0.0], size: 1.3, color: "#b8e05a", intensity: 0.3 }));
   scene.add(glowA.sprite, glowB.sprite);
-  const lamp = new THREE.SpotLight(col("#ffe2b0"), 30, 18, 0.7, 0.5, 1.4);
-  lamp.position.set(0, 7, 2);
+  const lamp = new THREE.SpotLight(col("#ffe2b0"), 30, 20, 0.62, 0.55, 0.9);
+  lamp.position.set(0, 7, 1.0);
   lamp.target.position.set(0, 0, 0);
   scene.add(lamp, lamp.target);
   return {
-    cable, gbA, gbB, state, lamp,
+    cable, gbA, gbB, state, lamp, extras,
     /** The orbit both chapters use: slow, low, round the table. */
     orbit(t: number, r = 7.5): { pos: Vec3; look: Vec3 } {
       const a = 0.35 + t * 0.05;
       return { pos: [Math.sin(a) * r, 2.6 + Math.sin(t * 0.2) * 0.2, Math.cos(a) * r], look: [0, 0.2, 0] };
     },
-    redraw(ambient: number) {
+    redraw(ambient: number, viewH = 900, cam?: THREE.PerspectiveCamera) {
+      dust.u.uTime.value = ambient;
+      cone.u.uTime.value = ambient;
+      if (cam) dust.u.uPixel.value = viewH / (2 * Math.tan((cam.fov * Math.PI) / 360));
       gbA.screen.redraw(ambient);
       gbB.screen.redraw(ambient);
       cable.u.uTime.value = ambient;
@@ -90,22 +116,29 @@ export const build: ChapterBuilder = async (ctx) => {
   const T = D.add(cableTable(scene));
 
   // The creature of light: a cluster of motes riding the cable's curve.
-  const motes = D.add(makeParticles({ count: 220, shape: "sphere", center: [0, 0, 0], extent: [0.28, 0.2, 0.28], velocity: [0, 0, 0], spread: [0.05, 0.05, 0.05], life: 1.6, size: [0.02, 0.05], colors: ["#ffffff", "#d8ff7a", "#9bbc0f"], intensity: 1.8, turbulence: 0.12, fadeIn: 0.1, fadeOut: 0.4 }));
+  const motes = D.add(makeParticles({ count: 260, shape: "sphere", center: [0, 0, 0], extent: [0.36, 0.13, 0.15], velocity: [0, 0, 0], spread: [0.05, 0.05, 0.05], life: 1.6, size: [0.02, 0.045], colors: ["#ffffff", "#d8ff7a", "#9bbc0f"], intensity: 1.3, turbulence: 0.12, fadeIn: 0.1, fadeOut: 0.4 }));
   scene.add(motes.points);
-  const head = D.add(makeGlow({ pos: [0, 0, 0], size: 1.1, color: "#e6ff9a", intensity: 0 }));
+  const head = D.add(makeGlow({ pos: [0, 0, 0], size: 0.75, color: "#e6ff9a", intensity: 0 }));
   scene.add(head.sprite);
-  const trail = D.add(makeParticles({ count: 300, shape: "sphere", center: [0, 0, 0], extent: [0.08, 0.08, 0.08], velocity: [0, 0.25, 0], spread: [0.15, 0.15, 0.15], life: 1.2, size: [0.01, 0.025], colors: ["#e6ff9a", "#9bbc0f", "#2a4a10"], intensity: 2.2, turbulence: 0.2 }));
+  const trail = D.add(makeParticles({ count: 300, shape: "sphere", center: [0, 0, 0], extent: [0.08, 0.08, 0.08], velocity: [0, 0.25, 0], spread: [0.15, 0.15, 0.15], life: 1.2, size: [0.01, 0.025], colors: ["#e6ff9a", "#9bbc0f", "#2a4a10"], intensity: 1.4, turbulence: 0.2 }));
   scene.add(trail.points);
 
   // The room around the table: three backlit figures.
-  const people = [[-4.2, -3.2, 0.7], [0, -4.6, 0], [4.2, -3.2, -0.7]].map(([x, z, ry]) => {
-    const s = D.add(makeSilhouette({ height: 1.8, rim: "#e8ffd0" }));
-    s.mesh.position.set(x, -0.2, z);
+  // At this scale the Game Boys are huge: the people are seen from the chest up, looming round the table.
+  const people = [[-7.2, -5.2, 0.75], [0, -8.2, 0], [7.2, -5.2, -0.75]].map(([x, z, ry]) => {
+    const s = D.add(makeSilhouette({ height: 13, rim: "#e8ffd0", color: "#040604" }));
+    s.mesh.position.set(x, -7.4, z);
     s.mesh.rotation.y = ry;
     scene.add(s.mesh);
     return s;
   });
-  const back = D.add(makeGlow({ pos: [0, 2.5, -9], size: 18, color: "#b8e09a", intensity: 0 }));
+  // A dark floor behind the table edge, so the figures read from the chest up.
+  const floorMat = new THREE.MeshBasicMaterial({ color: col("#030403") });
+  const floor = new THREE.Mesh(new THREE.PlaneGeometry(60, 48).rotateX(-Math.PI / 2), floorMat);
+  floor.position.set(0, -1.1, -9);
+  scene.add(floor);
+  D.add({ dispose: () => { floor.geometry.dispose(); floorMat.dispose(); } });
+  const back = D.add(makeGlow({ pos: [0, 3.5, -14], size: 30, color: "#b8e09a", intensity: 0 }));
   scene.add(back.sprite);
 
   // The capsule: two halves that close into a ball.
@@ -160,7 +193,7 @@ export const build: ChapterBuilder = async (ctx) => {
     ...[0.02, 0.25, 0.5, 0.75, 0.98].map((u): Key => {
       const at = tCrawl + 0.6 + (tTrade + 0.3 - tCrawl - 0.6) * u;
       const p = T.cable.curve.getPointAt(u);
-      return { t: at, pos: [p.x - 0.5, 1.7, p.z + 3.0], look: [p.x + 0.3, 0.12, p.z], fov: 34 };
+      return { t: at, pos: [p.x - 0.75, 3.05, p.z + 0.95], look: [p.x + 0.45, 0.08, p.z - 0.1], fov: 40 };
     }),
     { t: tTrade + 0.9, pos: [3.4, 1.4, 3.0], look: [2.3, 0.2, 0.2], fov: 34 },
     { t: tTrade + 4, pos: [0, 2.6, 5.4], look: [0, 0.3, 0], fov: 40 },
@@ -193,17 +226,17 @@ export const build: ChapterBuilder = async (ctx) => {
       trail.u.uPixel.value = px;
       trail.u.uOpacity.value = alive * 0.8;
       head.sprite.position.copy(pt);
-      head.set("#e6ff9a", 0.8 * alive);
+      head.set("#e6ff9a", 0.6 * alive);
       // The screens: a creature on the left, it arrives on the right; then they trade places.
       T.state.left = t > tGB + 1.5 ? 1 : -1;
       T.state.right = run >= 1 ? 1 : -1;
       T.state.flash = Math.max(0, 1 - Math.abs(t - (tTrade + 0.35)) * 3) * 0.9;
       T.state.swap = ramp(t, tTrade + 1.2, tTrade + 3.2);
-      T.redraw(ambient);
+      T.redraw(ambient, viewH, cam);
       // The room: figures backlit, the capsule above.
       const room = ramp(t, tPitch - 0.5, tPitch + 1.6);
-      people.forEach((p) => { p.mesh.visible = room > 0.01; p.setRim("#e8ffd0", 2.2 * room); });
-      back.set("#b8e09a", 0.22 * room);
+      people.forEach((p) => { p.mesh.visible = room > 0.01; p.setRim("#e8ffd0", 0.45 * room); });
+      back.set("#c8e8a8", 0.62 * room);
       const cap = ramp(t, tPitch + 0.8, tPitch + 2.2);
       capsule.visible = cap > 0.01;
       capsule.scale.setScalar(Math.max(0.001, cap));
@@ -237,7 +270,7 @@ export const build: ChapterBuilder = async (ctx) => {
     look: (t) =>
       lookAt(t, { ...STOCK.warm, gain: [0.98, 1.04, 0.92] }, {
         exposure: [[0, 0.85], [tCrawl, 0.9], [tTrade, 1.0], [end, 1.05]],
-        bloom: [[0, 0.85], [tCrawl + 0.5, 1.4], [tTrade + 0.5, 1.4], [tTrade + 3, 0.9], [tName, 0.8], [tName + 1.6, 1.2], [end, 0.9]],
+        bloom: [[0, 0.85], [tCrawl + 0.5, 1.25], [tTrade + 0.3, 1.2], [tTrade + 2, 0.85], [tTrade + 3, 0.85], [tName, 0.8], [tName + 1.6, 1.2], [end, 0.9]],
         saturation: [[0, 0.95], [end, 1.1]],
         fade: [[0, 0.5], [1.2, 0]],
       }),

@@ -250,7 +250,7 @@ export function makeDevice(kind: DeviceKind, o: { draw?: Draw; draw2?: Draw; px?
     const gb = kind === "gb";
     const [W, H, D] = gb ? [0.9, 1.48, 0.32] : [0.78, 1.33, 0.27];
     size = [W, H, D];
-    add(rbox(W, H, D, gb ? 0.05 : 0.08), gb ? mat("#c8c4bb", 0.6) : mat("#6a3fb0", 0.3, { transparent: true, opacity: 0.92 }), [0, 0, 0]);
+    add(rbox(W, H, D, gb ? 0.05 : 0.08), gb ? mat("#c8c4bb", 0.78) : mat("#6a3fb0", 0.3, { transparent: true, opacity: 0.92 }), [0, 0, 0]);
     // The bezel and the screen.
     add(rbox(W * 0.82, H * 0.42, 0.04, 0.02), mat(gb ? "#4a4c5a" : "#202028", 0.5), [0, H * 0.2, D / 2]);
     screen = panel(W * 0.52, W * 0.47, draw, o.px ?? [160, 144]);
@@ -318,7 +318,7 @@ export function makeDevice(kind: DeviceKind, o: { draw?: Draw; draw2?: Draw; px?
 }
 
 /** A link cable between two points: a sagging curve as a tube, with a glow that can run along it (uFuse 0 → 1). */
-export function makeCable(o: { from: Vec3; to: Vec3; sag?: number; radius?: number; color?: string; glow?: string; coils?: number }) {
+export function makeCable(o: { from: Vec3; to: Vec3; sag?: number; radius?: number; color?: string; glow?: string; coils?: number; bow?: Vec3 }) {
   const a = v3(o.from), b = v3(o.to);
   const pts: THREE.Vector3[] = [];
   const n = 64;
@@ -326,6 +326,8 @@ export function makeCable(o: { from: Vec3; to: Vec3; sag?: number; radius?: numb
     const t = i / n;
     const p = a.clone().lerp(b, t);
     p.y -= Math.sin(Math.PI * t) * (o.sag ?? 0.3);
+    // A bow sideways (a cable leaves its ports, then lies in a loose curve).
+    if (o.bow) { const k = Math.sin(Math.PI * t); p.x += o.bow[0] * k; p.z += o.bow[2] * Math.pow(k, 0.6); }
     // A loose coil in the middle (the cable lies curled on the table).
     const c = (o.coils ?? 0) * Math.exp(-(((t - 0.5) * 4.5) ** 2));
     p.z += Math.sin(t * Math.PI * 6) * c;
@@ -348,7 +350,7 @@ export function makeCable(o: { from: Vec3; to: Vec3; sag?: number; radius?: numb
         float fres = clamp(1.0 - abs(dot(vN, vV)), 0.0, 1.0);
         fres *= fres;
         vec3 c = uBase * (0.35 + 0.65 * max(dot(vN, normalize(vec3(0.3, 1.0, 0.4))), 0.0)) + uBase * fres * 0.6;
-        c += uGlow * (lit * (0.8 + 0.2 * sin(t * 140.0 - uTime * 8.0)) * 1.4 + head * 6.0);
+        c += uGlow * (lit * (0.8 + 0.2 * sin(t * 140.0 - uTime * 8.0)) * 0.85 + head * 4.5);
         gl_FragColor = vec4(c, 1.0);
       }`,
   });

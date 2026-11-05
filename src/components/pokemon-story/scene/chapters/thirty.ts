@@ -235,9 +235,9 @@ export const build: ChapterBuilder = async (ctx) => {
       foam.u.uTime.value = ambient; foam.u.uPixel.value = px; foam.u.uOpacity.value = swk;
 
       // B/C. The table; the cable lights and runs out of the room.
-      T.redraw(ambient);
+      T.redraw(ambient, viewH, cam);
       T.lamp.intensity = st === 1 ? 30 : 0;
-      T.cable.mesh.visible = T.gbA.group.visible = T.gbB.group.visible = st === 1;
+      T.cable.mesh.visible = T.gbA.group.visible = T.gbB.group.visible = T.extras.visible = st === 1;
       const fuse = st === 1 ? ramp(t, tNow, tNow + 1.4) : 0;
       T.cable.u.uFuse.value = fuse;
       T.cable.u.uHead.value = fuse > 0 && fuse < 1 ? fuse : -1;
