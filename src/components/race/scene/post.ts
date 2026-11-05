@@ -4,6 +4,7 @@ import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass.js";
 import { ShaderPass } from "three/examples/jsm/postprocessing/ShaderPass.js";
 import { UnrealBloomPass } from "three/examples/jsm/postprocessing/UnrealBloomPass.js";
 import { OutputPass } from "three/examples/jsm/postprocessing/OutputPass.js";
+import { SAFE_HDR, scrubBloom } from "@/lib/gl/safe-hdr";
 
 /**
  * The broadcast look, kept cheap for a live view: the scene in HDR with
@@ -23,9 +24,10 @@ const GradeShader = {
   vertexShader: /* glsl */ `varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
   fragmentShader: /* glsl */ `
     uniform sampler2D tDiffuse; uniform float uVignette; uniform float uReplay; varying vec2 vUv;
+    ${SAFE_HDR}
     void main(){
       vec4 b = texture2D(tDiffuse, vUv);
-      vec3 c = b.rgb;
+      vec3 c = glSafe(b.rgb);
       float l = dot(c, vec3(0.2126, 0.7152, 0.0722));
       // A little extra saturation and contrast, like broadcast colour.
       c = mix(vec3(l), c, 1.1);
@@ -53,6 +55,7 @@ export function createPost(renderer: THREE.WebGLRenderer, scene: THREE.Scene, ca
   let bloom: UnrealBloomPass | null = null;
   if (o.bloom) {
     bloom = new UnrealBloomPass(new THREE.Vector2(w, h), 0.55, 0.45, 1.25);
+    scrubBloom(bloom);
     composer.addPass(bloom);
   }
   const grade = new ShaderPass(GradeShader);

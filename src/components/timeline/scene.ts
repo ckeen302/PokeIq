@@ -200,7 +200,7 @@ export function createScene(host: HTMLElement, entries: SceneEntry[], eras: Scen
     fragmentShader: `${FADE_GLSL}${ERA_GLSL}
       uniform float uTime; uniform float uGlow; uniform float uBloom; uniform float uLaneX[${MAX_LANES}]; uniform float uLaneA[${MAX_LANES}]; uniform vec3 uLaneC[${MAX_LANES}];
       varying vec3 vP;
-      float line(float v, float w){ float d=abs(fract(v-.5)-.5)/fwidth(v); return 1.-min(d/w,1.); }
+      float line(float v, float w){ float d=abs(fract(v-.5)-.5)/max(fwidth(v),1e-6); return 1.-min(d/w,1.); }
       void main(){
         vec3 a,b; eraAt(vP.z,a,b);
         float yr=${T0.toFixed(2)}-vP.z/${YS.toFixed(1)};

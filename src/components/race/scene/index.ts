@@ -8,6 +8,7 @@ import { deepTint, poolDepth, poolModes } from "@/lib/race/pool";
 import { buildPool, setPoolModes, type Pool } from "./pool";
 import { loadFigure, makeRunners, type Footfall, type Runners, type RunnerUrls } from "./runners";
 import { LAYER, buildStadium, type Stadium, type StadiumUrls } from "./stadium";
+import { SAFE_HDR } from "@/lib/gl/safe-hdr";
 
 /**
  * The 3D scene behind /pokedex/race and its videos: PokéIQ Stadium at
@@ -332,8 +333,9 @@ export function createRaceScene(host: HTMLElement, opts: SceneOptions): RaceScen
         uniforms: { t: { value: rt.texture } },
         vertexShader: "varying vec2 vUv; void main(){ vUv = uv; gl_Position = vec4(position.xy, 0.0, 1.0); }",
         fragmentShader: /* glsl */ `uniform sampler2D t; varying vec2 vUv;
+          ${SAFE_HDR}
           vec3 aces(vec3 x){ return clamp((x * (2.51 * x + 0.03)) / (x * (2.43 * x + 0.59) + 0.14), 0.0, 1.0); }
-          void main(){ vec3 c = texture2D(t, vUv).rgb * 1.3; c = aces(c);
+          void main(){ vec3 c = glSafe(texture2D(t, vUv).rgb) * 1.3; c = aces(c);
             c = mix(vec3(dot(c, vec3(0.299, 0.587, 0.114))), c, 1.08);
             c = pow(clamp(c, 0.0, 1.0), vec3(1.0 / 2.2)); gl_FragColor = vec4(c, 1.0); }`,
         depthTest: false,
