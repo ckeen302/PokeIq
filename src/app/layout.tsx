@@ -18,6 +18,9 @@ const display = Chakra_Petch({ subsets: ["latin"], weight: ["500", "600", "700"]
 const body = Inter({ subsets: ["latin"], variable: "--font-body", display: "swap" });
 const pixel = Silkscreen({ subsets: ["latin"], weight: ["400", "700"], variable: "--font-pixel", display: "swap" });
 
+/** The token from Search Console's "HTML tag" method: only the content="…" value. */
+const GOOGLE_SITE_VERIFICATION = process.env.GOOGLE_SITE_VERIFICATION?.trim();
+
 /**
  * Site-wide defaults. `metadataBase` is SITE_URL (NEXT_PUBLIC_SITE_URL, else
  * pokeiq.vercel.app), so every Open Graph image URL is absolute. Pages set
@@ -35,6 +38,8 @@ export const metadata: Metadata = {
   openGraph: { siteName: SITE_NAME, type: "website", locale: "en_US", title: `${SITE_NAME}: ${SITE_TAGLINE}`, description: SITE_DESCRIPTION },
   twitter: { card: "summary_large_image", title: `${SITE_NAME}: ${SITE_TAGLINE}`, description: SITE_DESCRIPTION },
   appleWebApp: { capable: true, statusBarStyle: "black-translucent", title: SITE_NAME },
+  // Google Search Console's HTML-tag check (docs/search-console.md). Read at build time.
+  ...(GOOGLE_SITE_VERIFICATION && { verification: { google: GOOGLE_SITE_VERIFICATION } }),
 };
 
 export const viewport: Viewport = {
@@ -44,9 +49,11 @@ export const viewport: Viewport = {
   viewportFit: "cover",
 };
 
+// The same @id as the home page's fuller WebSite node (with its SearchAction), so the two read as one site.
 const websiteJsonLd = {
   "@context": "https://schema.org",
   "@type": "WebSite",
+  "@id": `${SITE_URL}/#website`,
   name: SITE_NAME,
   url: SITE_URL,
   description: SITE_DESCRIPTION,

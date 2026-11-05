@@ -12,6 +12,7 @@ import { useLadderStanding } from "@/lib/battle/ladder-client";
 import { GlickoBadge } from "./GlickoBadge";
 import { NAME_REJECTED, isCleanName } from "@/lib/name-filter";
 import { setTrainerName, useProgress } from "@/lib/progress";
+import { useAccount } from "@/lib/account";
 import { unlockAudio } from "@/lib/sound";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -151,6 +152,9 @@ export function BattleSetup({ initial = "cpu", challenge }: { initial?: Opponent
   const [timeoutLoses, setTimeoutLoses] = useState(true);
   /** Find an opponent: the format's ranked queue (paired by rating) instead of the casual one. */
   const [ranked, setRanked] = useState(false);
+  const account = useAccount();
+  /** Ranked needs an account, as on Showdown (a guest can still battle casually). */
+  const needsAccount = account.status === "ready" && !account.user;
   const ladder = useLadderStanding(opponent === "match" && isLadderFormat(format) ? (format as StandardFormatId) : null);
   const custom = format === "custom";
   const info = PLAY_FORMAT_INFO[format];
@@ -195,7 +199,7 @@ export function BattleSetup({ initial = "cpu", challenge }: { initial?: Opponent
   useEffect(() => {
     if ((opponent === "match" && format === "custom") || (opponent === "cpu" && format === "factory")) setFormat("gen9randombattle");
   }, [opponent, format]);
-  const rankedOn = opponent === "match" && ranked && isLadderFormat(format) && ladder.status !== "off";
+  const rankedOn = opponent === "match" && ranked && isLadderFormat(format) && ladder.status !== "off" && !needsAccount;
   const settings = useMemo(() => ({ format, ranked: rankedOn }), [format, rankedOn]);
   const finder = useMatchmaking(settings, { endpoint: "/api/battle/match", save: saveBattleSeat });
   const searching = finder.searching;
@@ -411,11 +415,19 @@ export function BattleSetup({ initial = "cpu", challenge }: { initial?: Opponent
               <Toggle
                 checked={rankedOn}
                 onChange={setRanked}
-                disabled={searching || ladder.status === "off"}
+                disabled={searching || ladder.status === "off" || needsAccount}
                 label="Ranked"
-                hint={ladder.status === "off" ? "Ranked battles open soon." : "Paired by rating on the ladder. A forfeit or leaving counts as a loss."}
+                hint={ladder.status === "off" ? "Ranked battles open soon." : needsAccount ? "Ranked needs an account, so your rating follows you." : "Paired by rating on the ladder. A forfeit or leaving counts as a loss."}
                 testId="ranked-toggle"
               />
+              {needsAccount && ladder.status !== "off" && (
+                <p className="text-xs text-muted-foreground" data-testid="ranked-sign-in">
+                  <Link href="/login" className="font-semibold text-primary hover:underline">
+                    Sign in
+                  </Link>{" "}
+                  to play ranked.
+                </p>
+              )}
               {rankedOn && ladder.status === "ready" && (
                 <p className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
                   {ladder.you && ladder.you.games > 0 ? <GlickoBadge rating={ladder.you.rating} rd={ladder.you.rd} gxe={ladder.you.gxe} elo={ladder.you.elo} size="sm" /> : <span>Unrated: you start at 1000 Elo (1500 ± 350 Glicko-2).</span>}

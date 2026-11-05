@@ -16,9 +16,9 @@ const NO_STORE = { "Cache-Control": "no-store" };
 
 export async function GET(request: NextRequest) {
   if (!rateLimit(`battle-profile:${clientIp(request)}`, 20, 0.5)) return tooManyRequests();
-  const key = await battlePlayerKey(request, request.headers.get("x-ranked-id"));
-  if (!key) return NextResponse.json({ available: true, formats: [], recent: [] } satisfies BattleProfileResponse, { headers: NO_STORE });
   try {
+    const key = await battlePlayerKey(request, request.headers.get("x-ranked-id"));
+    if (!key) return NextResponse.json({ available: true, formats: [], recent: [] } satisfies BattleProfileResponse, { headers: NO_STORE });
     const profile = await battleProfile(key);
     return NextResponse.json((profile ? { available: true, ...profile } : { available: false }) satisfies BattleProfileResponse, { headers: NO_STORE });
   } catch (err) {

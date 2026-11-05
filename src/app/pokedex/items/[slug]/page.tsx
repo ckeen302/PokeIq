@@ -2,7 +2,8 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { SHARE_IMAGES, pageMetadata } from "@/lib/seo";
+import { SHARE_IMAGES, jsonLd, pageMetadata } from "@/lib/seo";
+import { breadcrumbList } from "@/lib/structured-data";
 import { ITEMS, getItem, moveFromApiSlug, speciesBySlug } from "@/lib/dex/data";
 import { itemSpriteUrl, versionGroupLabel, versionLabel } from "@/lib/dex/build";
 import { Section } from "@/components/pokedex/entry/Reveal";
@@ -16,6 +17,22 @@ export function generateStaticParams() {
   return ITEMS.map((i) => ({ slug: i.slug }));
 }
 
+/** What a variant's PokéAPI name points to ("card-key--letsgo", "leaf-letter--eevee"). */
+const VARIANT_LABEL: Record<string, string> = { letsgo: "Let's Go", galar: "Galar", pikachu: "Pikachu", eevee: "Eevee" };
+
+/**
+ * An item's name for its tab title. A few names belong to two items (a
+ * game's own version of a key item, two Heavy Balls): a twin's title adds
+ * its category when that tells them apart, else what its name points to.
+ */
+function titleName(i: (typeof ITEMS)[number]): string {
+  const twins = ITEMS.filter((o) => o !== i && o.name === i.name);
+  if (!twins.length) return i.name;
+  if (twins.every((o) => o.category !== i.category)) return `${i.name} (${i.category})`;
+  const variant = VARIANT_LABEL[i.slug.split("--")[1] ?? ""];
+  return variant ? `${i.name} (${variant})` : i.name;
+}
+
 interface PageProps {
   params: Promise<{ slug: string }>;
 }
@@ -24,7 +41,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const i = getItem((await params).slug);
   if (!i) return {};
   return pageMetadata({
-    title: `${i.name} — Pokémon Item`,
+    title: `${titleName(i)} — Pokémon Item`,
     description: `${i.name} (${i.category}): ${i.effect} See which wild Pokémon hold it and which games it appears in.`,
     path: `/pokedex/items/${i.slug}`,
     image: SHARE_IMAGES.pokedex,
@@ -135,6 +152,7 @@ export default async function ItemPage({ params }: PageProps) {
           </div>
         </Section>
       )}
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(breadcrumbList([{ name: "Pokédex", path: "/pokedex" }, { name: "Items", path: "/pokedex/items" }, { name: item.name, path: `/pokedex/items/${item.slug}` }])) }} />
     </article>
   );
 }

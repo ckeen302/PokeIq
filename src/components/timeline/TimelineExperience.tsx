@@ -479,9 +479,10 @@ export function TimelineExperience({ entries, eraStarts, initialId = null, child
                 </button>
               </div>
               <div className="tl-ui">
-                <h1 className="font-display text-xl font-bold uppercase leading-none tracking-[0.14em] sm:text-3xl">
+                {/* The page's own heading is its h1: this is the stage's title card. */}
+                <p className="tl-title font-display text-xl font-bold uppercase leading-none tracking-[0.14em] sm:text-3xl">
                   Pokémon <span className="tl-accent">Timeline</span>
-                </h1>
+                </p>
                 <p className="mt-1.5 font-pixel text-[9px] uppercase tracking-[0.16em] text-muted-foreground sm:text-[10px]">
                   {era.label} · {era.device}
                 </p>

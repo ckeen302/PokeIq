@@ -35,7 +35,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const first = pokemon.blurb.split(/(?<=\.)\s/)[0];
   return pageMetadata({
     title: `I Got ${name}! Which Pokémon Are You?`,
-    description: `${name}, ${pokemon.title}: ${first} Take the 18-question Pokémon personality quiz and find your own match from 200 Pokémon.`,
+    description: `${name}, ${pokemon.title}: ${first} Take the Pokémon personality quiz and find your own match.`,
     path: `${QUIZ_PATH}/${pokemon.slug}`,
     socialTitle: `I'm ${name}! Which Pokémon are you?`,
     socialDescription: `${pokemon.title}. ${first}`,

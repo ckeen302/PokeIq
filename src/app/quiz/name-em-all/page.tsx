@@ -10,7 +10,7 @@ import { neaCounts } from "@/lib/name-em-all/targets";
 
 export const metadata: Metadata = pageMetadata({
   title: "Name 'em All: Can You Name Every Pokémon? Recall Quiz",
-  description: "Type every Pokémon you can remember: all 1,025, a generation, a type, Legendaries, Megas, regional forms or a regional Pokédex. Daily quiz, races with friends and personal bests.",
+  description: "Type every Pokémon you can remember: all of them, a generation, a type, Legendaries, Megas, regional forms or a regional Pokédex. Daily quiz, races with friends and personal bests.",
   path: NEA_PATH,
   image: SHARE_IMAGES.site,
 });

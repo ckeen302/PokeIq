@@ -112,6 +112,7 @@ It works with no configuration: duels fall back to memory and accounts to a loca
 | `NEXT_PUBLIC_SUPABASE_URL` | Fallback for `SUPABASE_URL` when locating the screenshot store |
 | `SUPABASE_SERVICE_ROLE_KEY` | Server-only Supabase key |
 | `NEXT_PUBLIC_SITE_URL` | Canonical URL for link previews and the sitemap (defaults to `https://pokeiq.vercel.app`) |
+| `GOOGLE_SITE_VERIFICATION` | Optional. Google Search Console's HTML-tag token (the `content` value only); every page then carries the verification meta tag. See [docs/search-console.md](docs/search-console.md) |
 | `NEXT_PUBLIC_OAUTH_PROVIDERS` | "Continue with" buttons to show: `discord,google` (default), one of them, or empty to hide. Needs Supabase Auth with those providers on and `<site>/api/auth/oauth/callback` in its redirect URLs |
 | `POKEIQ_LOCAL_ACCOUNTS` | `1` to use the local account file and in-memory duels with `npm start` |
 | `POKEIQ_ADMINS` | Comma-separated trainer names who can open `/admin` (moderation). Empty by default: nobody |

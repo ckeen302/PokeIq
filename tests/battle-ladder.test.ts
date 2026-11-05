@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { rankedBattleQueueKey, searchRankedBattle, type BattleSearchResult } from "@/lib/server/battle-engine/matchmaking";
 import { rankedQueueStore } from "@/lib/server/duel-store";
 import { newTicket } from "@/lib/server/match-queue";
-import { actOnBattle, pollBattle, readBattleToken } from "@/lib/server/battle-engine/service";
+import { actOnBattle, battleToken, createMatchedBattle, pollBattle, readBattleToken, type MatchedPlayer } from "@/lib/server/battle-engine/service";
 import { loadBattle } from "@/lib/server/battle-engine/store";
 import { settleBattle } from "@/lib/server/battle-engine/settle";
 import { NEW_BATTLE_RATING, catchUpElo, clearMemoryLadder, memoryLadderStore, pairingRating, rateBattle, settleRankedBattle, utcDay } from "@/lib/server/battle-engine/ladder";
@@ -53,6 +53,20 @@ async function rankedBattle() {
   const redSeat = matched(await searchRankedBattle(FORMAT, "Red", red, RED, rating(RED)));
   expect(redSeat.code).toBe(blue.code);
   return { code: blue.code, red: redSeat.token, blue: blue.token };
+}
+
+/**
+ * Red and Blue seated in a ranked Random Battle without the queue, for
+ * ratings further apart than the matchmaking window ever allows (it pairs on
+ * Elo, at most 600 apart): [code, red's token, blue's token].
+ */
+async function seatedRankedBattle() {
+  const players = await Promise.all(
+    [["Red", RED], ["Blue", BLUE]].map(async ([name, key]) => ({ name, player: key, rating: pairingRating(await ladder().rating(key, FORMAT)) }))
+  );
+  const opened = await createMatchedBattle(FORMAT, players as [MatchedPlayer, MatchedPlayer], Date.now(), { ranked: true });
+  if (!opened) throw new Error("no battle");
+  return { code: opened.code, red: battleToken(opened.code, opened.ids[0], 0), blue: battleToken(opened.code, opened.ids[1], 1) };
 }
 
 /** Sets a trainer's Glicko-2 rating (and Elo) by counting a made-up battle against a sparring partner. */
@@ -140,7 +154,7 @@ describe("ranked battles", () => {
 
   it("give the two trainers of one battle different Ks, from each one's own Elo", async () => {
     await seed(RED, 1500, "seedkkkk", 1500);
-    const b = await rankedBattle();
+    const b = await seatedRankedBattle();
     const meta0 = (await loadBattle(b.code))!.rec.meta;
     expect(meta0.seats.map((s) => s.rating)).toEqual([
       { rating: 1500, games: 1, elo: 1500 },
@@ -263,11 +277,11 @@ describe("Elo decay", () => {
   });
 
   it("decays before a battle counts, and a day's games stop that day's decay", async () => {
-    // Glicko-2 stays at 1500 (the matchmaking window pairs by it); the Elo is 1800.
+    // Glicko-2 stays at 1500; the Elo is 1800.
     await seed(RED, 1500, "seedeeee", 1800);
     at(DAY + 1000);
     // Settling the next day: Red's Elo has decayed to 1797 before the battle, and the battle moves it from there.
-    const b = await rankedBattle();
+    const b = await seatedRankedBattle();
     const blue = readBattleToken(b.blue, b.code)!;
     await actOnBattle(b.code, blue.playerId, { action: "forfeit" }, 0);
     await settleBattle(b.code);
@@ -311,14 +325,13 @@ describe("ranked matchmaking", () => {
     const red = newTicket();
     const blue = newTicket();
     waiting(await searchRankedBattle(FORMAT, "Red", red, RED, rating(RED)));
-    at(1_000);
-    // 400 apart: too far for now (the window starts at 100 and widens 15 a second).
-    waiting(await searchRankedBattle(FORMAT, "Blue", blue, BLUE, rating(BLUE)));
-    at(7_000);
-    waiting(await searchRankedBattle(FORMAT, "Red", red, RED, rating(RED)));
-    at(14_000);
-    waiting(await searchRankedBattle(FORMAT, "Blue", blue, BLUE, rating(BLUE)));
-    at(20_000);
+    // 300 Elo apart: too far until Showdown's window (50 in Random Battle, +1 every 0.3 s) reaches 300, after 75 s.
+    for (let t = 1_000; t <= 74_000; t += 5_000) {
+      at(t);
+      waiting(await searchRankedBattle(FORMAT, "Blue", blue, BLUE, rating(BLUE)));
+      waiting(await searchRankedBattle(FORMAT, "Red", red, RED, rating(RED)));
+    }
+    at(76_000);
     const paired = matched(await searchRankedBattle(FORMAT, "Red", red, RED, rating(RED)));
     const other = matched(await searchRankedBattle(FORMAT, "Blue", blue, BLUE, rating(BLUE)));
     expect(other.code).toBe(paired.code);
