@@ -3,6 +3,7 @@ import { Teams } from "pokemon-showdown";
 import { SimSession } from "@/lib/server/battle-engine/engine";
 import type { BattleRequest, BattleRequestPokemon } from "@/lib/battle/play";
 import { emptiedSlots, fillPasses, slotPasses, switchOptions } from "@/components/battle/play/choice";
+import { forcedSwitchSlots, randomChoice } from "@/lib/battle/choices";
 
 /**
  * Doubles switch-ins after a faint (the Controls' choice builder): every
@@ -71,6 +72,29 @@ describe("forced switches in doubles", () => {
     const r = req([true, false], [mon("Pawmot", { active: true, reviving: true }), mon("Eevee", { active: true }), mon("Snorlax", { fnt: true }), mon("Mew")]);
     expect(switchOptions(r, 0, [])).toEqual([3]);
     expect(clickThrough(r)).toBe("switch 3, pass");
+  });
+
+  it("Revival Blessing can bring back an ally that fainted earlier this turn, still in its spot (the simulator takes it)", () => {
+    const team = (text: string) => Teams.pack(Teams.import(text));
+    // Jolteon (faster) explodes, then Pawmot uses Revival Blessing: the only fainted Pokémon is Jolteon, still on the field.
+    const red = team(["Jolteon|||VoltAbsorb|Explosion||||||100|", "Pawmot|||VoltAbsorb|Revival Blessing||||||100|", "Chansey|||NaturalCure|Soft-Boiled||||||100|"].join("]"));
+    const blue = team(["Blissey|||NaturalCure|Protect||||||100|", "Blissey|||NaturalCure|Protect||||||100|"].join("]"));
+    for (const pick of ["controls", "random"] as const) {
+      const session = SimSession.create({ formatid: "gen9doublescustomgame", seed: "1,2,3,4", p1: { name: "Red", team: red }, p2: { name: "Blue", team: blue } });
+      for (const side of ["p1", "p2"] as const) expect(session.choose(side, "team 123")).toEqual({ ok: true });
+      expect(session.choose("p1", "move 1, move 1")).toEqual({ ok: true });
+      expect(session.choose("p2", "move 1, move 1")).toEqual({ ok: true });
+      const r = session.pending("p1")!;
+      expect(r.forceSwitch).toEqual([false, true]);
+      expect(r.side.pokemon[0]).toMatchObject({ active: true, condition: "0 fnt" });
+      expect(r.side.pokemon[1].reviving).toBe(true);
+      expect(switchOptions(r, 1, ["pass"])).toEqual([1]);
+      expect(forcedSwitchSlots(r)[1].pool).toEqual([1]);
+      const choice = pick === "controls" ? clickThrough(r) : randomChoice(r, true, () => 0.5);
+      expect(choice).toBe("pass, switch 1");
+      expect(session.choose("p1", choice), choice).toEqual({ ok: true });
+      expect(session.side("p1")!.active[0].hp).toBeGreaterThan(0);
+    }
   });
 
   it("singles: one slot, send one out", () => {

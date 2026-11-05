@@ -65,7 +65,13 @@ describe("the long poll", () => {
     expect(out.ok).toBe(true);
     if (!out.ok) return;
     expect(out.view.log.total).toBeGreaterThan(since);
-    expect(out.view.log.lines.some((l) => l.startsWith("|turn|"))).toBe(true);
+    const lines = out.view.log.lines;
+    // The turn played out: its moves are among the new lines.
+    expect(lines.some((l) => /^\|(move|cant)\|/.test(l))).toBe(true);
+    // It ends on the next turn, unless a Pokémon fainted or switched out mid-turn (U-turn, Volt Switch, Eject
+    // Button...): then the battle asks that trainer for a switch-in instead, and the turn waits on it.
+    const forced = !!out.view.request?.data.forceSwitch || !!(await poll(code, blue)).request?.data.forceSwitch;
+    expect(lines.some((l) => l.startsWith("|turn|")) || forced, lines.join("\n")).toBe(true);
     expect(took).toBeGreaterThanOrEqual(280);
     expect(took).toBeLessThan(2_000);
   });

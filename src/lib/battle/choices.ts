@@ -155,11 +155,15 @@ export function benchIndices(request: BattleRequest): number[] {
   return out;
 }
 
-/** For Revival Blessing: fainted Pokémon that can be brought back (1-based). */
+/**
+ * For Revival Blessing: fainted Pokémon that can be brought back (1-based),
+ * including an ally that fainted earlier this turn and still holds its spot
+ * on the field (the simulator revives it in place).
+ */
 function revivable(request: BattleRequest): number[] {
   const out: number[] = [];
   request.side.pokemon.forEach((p, i) => {
-    if (!p.active && isFainted(p.condition)) out.push(i + 1);
+    if (isFainted(p.condition)) out.push(i + 1);
   });
   return out;
 }

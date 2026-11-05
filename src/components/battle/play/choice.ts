@@ -15,15 +15,16 @@ export function switchedIn(parts: string[]): number[] {
 
 /**
  * The team positions (1-based) slot `slot` may send in, given the earlier
- * slots' choices: benched (not active), not already picked, and healthy (or,
- * for Revival Blessing, fainted).
+ * slots' choices: benched (not active), not already picked, and healthy. For
+ * Revival Blessing: any fainted one, an ally that fainted this turn and still
+ * holds its spot on the field included (the simulator revives it in place).
  */
 export function switchOptions(request: BattleRequest, slot: number, parts: string[]): number[] {
   const reviving = !!request.side.pokemon[slot]?.reviving;
   const taken = switchedIn(parts);
   const out: number[] = [];
   request.side.pokemon.forEach((p, i) => {
-    if (!p.active && !taken.includes(i + 1) && (reviving ? fainted(p) : !fainted(p))) out.push(i + 1);
+    if (!taken.includes(i + 1) && (reviving ? fainted(p) : !p.active && !fainted(p))) out.push(i + 1);
   });
   return out;
 }
