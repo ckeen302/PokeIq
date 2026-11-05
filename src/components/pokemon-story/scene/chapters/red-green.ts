@@ -282,7 +282,7 @@ export const build: ChapterBuilder = async (ctx) => {
   const sky = D.add(makeSky({ top: "#4a7fcc", horizon: "#f6d6a8", bottom: "#5a6a3a", sunDir: SUN, sunColor: "#ffd8a0", sunSize: 700, sunGlow: 0.45 }));
   scene.add(sky.mesh);
   scene.fog = new THREE.FogExp2(col("#dcc6a2"), 0.0048);
-  const clouds = D.add(makeCloudLayer({ size: 700, y: 70, color: "#fff4e4", shadow: "#c0a8a8", density: 0.28, scale: 0.008, speed: [1, 0, 0.3], intensity: 1.05 }));
+  const clouds = D.add(makeCloudLayer({ size: 700, y: 70, color: "#fff4e4", shadow: "#c0a8a8", density: 0.2, scale: 0.006, speed: [1, 0, 0.3], intensity: 1.05 }));
   scene.add(clouds.mesh);
   const L = lights(scene, { sky: "#a8c4ec", ground: "#4a5a2a", fill: 0.72, key: "#ffd8a8", keyK: 2.5, keyPos: [SUN[0] * 30, SUN[1] * 30, SUN[2] * 30], rim: "#a8c0ff", rimK: 0.35, rimPos: [20, 8, 14] });
   const V = D.add(makeVillage(scene, 2, SUN));
@@ -415,7 +415,7 @@ export const build: ChapterBuilder = async (ctx) => {
     { t: tBlue + 1.8, pos: [0.2, 5.2, 11.5], look: [0, 3.3, 4], fov: 42 },
     { t: end, pos: [0.4, 3.7, 7.6], look: [0, 3.3, 4], fov: 38 },
   ];
-  const dayTop = col("#4a7fcc"), duskTop = col("#2a2e6a"), dayHor = col("#f6d6a8"), duskHor = col("#ff8a5a");
+  const dayTop = col("#3a74d0"), duskTop = col("#2a2e6a"), dayHor = col("#d6e0e6"), duskHor = col("#ff8a5a");
 
   return {
     scene,
@@ -432,11 +432,11 @@ export const build: ChapterBuilder = async (ctx) => {
       L.key.color.copy(col("#ffd8a8").lerp(col("#ff8a50"), dusk));
       clouds.u.uTime.value = ambient;
       clouds.u.uColor.value.copy(col("#fff4e4").lerp(col("#ffb08a"), dusk));
-      clouds.u.uShadow.value.copy(col("#b8a4b0").lerp(col("#4a3a6a"), dusk));
+      clouds.u.uShadow.value.copy(col("#d8c8cc").lerp(col("#4a3a6a"), dusk));
       V.grass.u.uTime.value = ambient;
       V.grass.u.uLight.value = 1 - dusk * 0.6;
       L.hemi.intensity = 0.72 * (1 - dusk * 0.25);
-      (scene.fog as THREE.FogExp2).color.copy(col("#dcc6a2").lerp(col("#6a4a5a"), dusk));
+      (scene.fog as THREE.FogExp2).color.copy(col("#d2cdbc").lerp(col("#6a4a5a"), dusk));
       // Through the screen: the title's pixels switch off and fall into the village.
       const tA = tLaunch + 1.25;
       const dis = ramp(t, tA, tA + 1.0);
