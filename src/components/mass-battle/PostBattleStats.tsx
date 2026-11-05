@@ -57,7 +57,7 @@ export function PostBattleStats({ post, species, sides, move, start, onReplay, o
         <div className="rounded-lg bg-[#ffd84a]/10 px-3 py-2 ring-1 ring-[#ffd84a]/30" data-testid="mb-mvp">
           <p className="font-pixel text-[9px] uppercase tracking-wider text-[#ffe680]/80">MVP</p>
           <p className="font-display text-sm font-bold text-white">
-            {species[post.mvp.fighter]} <span className="font-normal text-white/60">({sides[post.mvp.side]})</span>
+            {species[post.mvp.fighter]}{sides[post.mvp.side] !== species[post.mvp.fighter] && <span className="font-normal text-white/60"> ({sides[post.mvp.side]})</span>}
           </p>
           <p className="text-xs text-white/70">{fmt(post.mvp.kos)} KOs · {fmt(post.mvp.dealt)} damage</p>
         </div>

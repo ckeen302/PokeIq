@@ -118,10 +118,12 @@ function endOf(b: Battle): SimEnd {
       row.dealt += b.dealt[i];
       row.kos += b.kos[i];
       by.set(key, row);
+      // The MVP is the winners' (anyone's in a draw).
+      if (b.winner < 2 && b.side[i] !== b.winner) continue;
       if (b.kos[i] > 0 && (mvp < 0 || b.kos[i] > b.kos[mvp] || (b.kos[i] === b.kos[mvp] && b.dealt[i] > b.dealt[mvp]))) mvp = i;
     }
     // No KOs at all (one Pokémon left standing by recoil): the one that dealt the most.
-    if (mvp < 0) for (let i = 0; i < b.n; i++) if (b.dealt[i] > 0 && (mvp < 0 || b.dealt[i] > b.dealt[mvp])) mvp = i;
+    if (mvp < 0) for (let i = 0; i < b.n; i++) if ((b.winner === 2 || b.side[i] === b.winner) && b.dealt[i] > 0 && (mvp < 0 || b.dealt[i] > b.dealt[mvp])) mvp = i;
     end.post = {
       mvp: mvp >= 0 ? { unit: mvp, fighter: b.sp[mvp], side: b.side[mvp], kos: b.kos[mvp], dealt: Math.round(b.dealt[mvp]) } : null,
       bySpecies: [...by.values()].map((r) => ({ ...r, dealt: Math.round(r.dealt) })).sort((a, c) => c.dealt - a.dealt),
