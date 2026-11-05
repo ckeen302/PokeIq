@@ -1,10 +1,10 @@
 import * as THREE from "three";
 import { poseOnPath, type Key } from "@/lib/world-history/camera";
-import { col, makeGlow, makeParticles, merge, ramp, rng } from "@/components/world-history/scene/kit";
+import { col, makeGlow, makeParticles, makeShaft, merge, placed, ramp, rng } from "@/components/world-history/scene/kit";
 import { makeCanvasPanel } from "@/components/world-history/scene/props";
 import { lights, loadFigures, lookAt, pointPixel } from "@/components/world-history/scene/chapters/common";
 import type { ChapterBuilder } from "@/components/world-history/scene/types";
-import { makeCritterWall, makeSilhouette } from "../story-kit";
+import { makeCritterWall, makeDeskLamp, makeSilhouette } from "../story-kit";
 import { bag, heroFigure, STOCK } from "./base";
 
 /**
@@ -25,13 +25,15 @@ export const build: ChapterBuilder = async (ctx) => {
   const tHard = B("hard"), tMasuda = B("masuda"), tPika = B("pikachu"), t151 = B("151"), tMew = B("mew");
   scene.background = col("#04050a");
   scene.fog = new THREE.FogExp2(col("#070912"), 0.025);
-  const L = lights(scene, { sky: "#6a7aaa", ground: "#14141c", fill: 0.6, key: "#aab8e8", keyK: 0.5, keyPos: [-4, 6, 6] });
+  const L = lights(scene, { sky: "#6a7aaa", ground: "#14141c", fill: 0.85, key: "#aab8e8", keyK: 0.6, keyPos: [-4, 6, 6] });
 
   // The room: floor, back wall with windows, desks.
-  const floor = new THREE.Mesh(new THREE.PlaneGeometry(30, 30).rotateX(-Math.PI / 2), new THREE.MeshStandardMaterial({ color: col("#14161e"), roughness: 0.7 }));
-  const wall = new THREE.Mesh(new THREE.PlaneGeometry(30, 10), new THREE.MeshStandardMaterial({ color: col("#1c1e28"), roughness: 0.9 }));
+  const floor = new THREE.Mesh(new THREE.PlaneGeometry(30, 30).rotateX(-Math.PI / 2), new THREE.MeshStandardMaterial({ color: col("#4a4c58"), roughness: 0.55, metalness: 0.1 }));
+  const wall = new THREE.Mesh(new THREE.PlaneGeometry(30, 10), new THREE.MeshStandardMaterial({ color: col("#9096b0"), roughness: 0.9 }));
   wall.position.set(0, 5, -5);
-  scene.add(floor, wall);
+  const sides = new THREE.Mesh(merge([placed(new THREE.PlaneGeometry(14, 10), [-9.5, 5, 2], Math.PI / 2), placed(new THREE.PlaneGeometry(14, 10), [9.5, 5, 2], -Math.PI / 2)]), wall.material as THREE.Material);
+  scene.add(floor, wall, sides);
+  D.add({ dispose: () => sides.geometry.dispose() });
   // The view through the glass: a night skyline with a few lit windows (painted once).
   const view = document.createElement("canvas");
   view.width = 256; view.height = 128;
@@ -87,16 +89,38 @@ export const build: ChapterBuilder = async (ctx) => {
   cal.mesh.position.set(-0.2, 3.6, -4.9);
   scene.add(cal.mesh);
 
-  // The lamp moving from desk to desk.
-  const lamp = new THREE.SpotLight(col("#ffd590"), 12, 10, 0.85, 0.6, 1.2);
-  lamp.position.set(-4.5, 2.4, -1.4);
-  lamp.target.position.set(-4.5, 0.9, -1.5);
+  // A lamp on every desk; one light, moving from desk to desk as the work does.
+  const lampAt = [-4.5 + 0.95, 0 + 0.95, 4.5 - 1.0];
+  const bulbs = lampAt.map((x, i) => {
+    const lp = D.add(makeDeskLamp({ color: ["#2c5a3c", "#5a2c2c", "#2c3a5a"][i] }));
+    lp.group.position.set(x, 0.99, -1.95);
+    if (i === 2) lp.group.scale.x = -1;
+    scene.add(lp.group);
+    lp.group.updateMatrixWorld(true);
+    return lp.bulb.clone().applyMatrix4(lp.group.matrixWorld);
+  });
+  const lamp = new THREE.SpotLight(col("#ffd590"), 9, 8, 0.8, 0.55, 1.1);
+  lamp.position.copy(bulbs[0]);
+  lamp.target.position.set(-4.5, 0.9, -1.4);
   scene.add(lamp, lamp.target);
-  const lampGlow = D.add(makeGlow({ pos: [-4.5, 2.3, -1.4], size: 1.4, color: "#ffd590", intensity: 1 }));
+  const lampGlow = D.add(makeGlow({ pos: [bulbs[0].x, bulbs[0].y, bulbs[0].z], size: 0.42, color: "#ffe2a8", intensity: 1 }));
   scene.add(lampGlow.sprite);
+  // The first desk's clutter: a dark CRT and stacks of sketches and printouts.
+  const clutterMat = new THREE.MeshStandardMaterial({ color: col("#cfc9bc"), roughness: 0.65 });
+  const paperMat = new THREE.MeshStandardMaterial({ color: col("#e4dccb"), roughness: 0.9 });
+  const crt = new THREE.Mesh(merge([placed(new THREE.BoxGeometry(1.0, 0.82, 0.7), [-4.95, 1.42, -1.85]), placed(new THREE.BoxGeometry(0.5, 0.06, 0.4), [-4.95, 1.0, -1.85])]), clutterMat);
+  const papers = new THREE.Mesh(merge([placed(new THREE.BoxGeometry(0.42, 0.14, 0.58), [-3.85, 1.06, -1.2], 0.2), placed(new THREE.BoxGeometry(0.42, 0.08, 0.58), [-3.4, 1.03, -1.35], -0.3), placed(new THREE.BoxGeometry(0.42, 0.22, 0.58), [5.6, 1.1, -1.3], 0.1)]), paperMat);
+  const crtFace = new THREE.Mesh(new THREE.PlaneGeometry(0.78, 0.6), new THREE.MeshBasicMaterial({ color: col("#24304a") }));
+  crtFace.position.set(-4.95, 1.44, -1.49);
+  scene.add(crt, papers, crtFace);
+  D.add({ dispose: () => { crt.geometry.dispose(); papers.geometry.dispose(); clutterMat.dispose(); paperMat.dispose(); crtFace.geometry.dispose(); (crtFace.material as THREE.Material).dispose(); } });
+  // Moonlight (and, as the years pass, daylight) falling through the windows.
+  const shafts = [-6, -2.6, 2.6, 6].map((x) => { const sh = D.add(makeShaft({ from: [x, 3.4, -4.85], to: [x + 1.2, 0, 0.6], r0: 1.0, r1: 1.7, color: "#8aa8ff", intensity: 0.085, noise: 0.5 })); scene.add(sh.mesh); return sh; });
+  const dust = D.add(makeParticles({ count: Math.round(380 * ctx.q.particles) + 40, shape: "box", center: [0, 2.0, -1], extent: [7, 1.8, 3], velocity: [0.03, 0.01, 0], spread: [0.02, 0.02, 0.02], life: 14, size: [0.01, 0.025], colors: ["#dfe6ff", "#ffe6c0", "#c8d0e8"], intensity: 1.0, turbulence: 0.5, fadeIn: 0.3, fadeOut: 0.3, seed: 61 }));
+  scene.add(dust.points);
 
   // Masuda's desk: a keyboard, notes rising, a waveform on a screen.
-  const kb = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.06, 0.4), new THREE.MeshStandardMaterial({ color: col("#d8d4cc"), roughness: 0.5 }));
+  const kb = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.06, 0.4), new THREE.MeshStandardMaterial({ color: col("#9a968e"), roughness: 0.6 }));
   kb.position.set(0, 1.02, -1.2);
   scene.add(kb);
   D.add({ dispose: () => { kb.geometry.dispose(); (kb.material as THREE.Material).dispose(); } });
@@ -201,12 +225,24 @@ export const build: ChapterBuilder = async (ctx) => {
       const y = 1990 + Math.min(5, Math.floor(yk * 6));
       if (y !== year) { year = y; cal.redraw(y); }
       const day = 0.5 + 0.5 * Math.sin(yk * Math.PI * 12);
-      winMat.color.copy(col("#2a3460").lerp(col("#c0d0f0"), yk > 0 && yk < 1 ? day * 0.7 : 0));
+      winMat.color.copy(col("#7a84a8").lerp(col("#f0f4ff"), yk > 0 && yk < 1 ? day * 0.85 : 0).multiplyScalar(1 - 0.75 * ramp(t, t151 + 0.5, t151 + 2.5)));
       // The lamp moves to each desk in turn.
-      lamp.position.x = -4.5 + 4.5 * ramp(t, tMasuda - 0.8, tMasuda + 0.2) + 4.5 * ramp(t, tPika - 0.8, tPika + 0.2);
-      lamp.target.position.x = lamp.position.x;
-      lampGlow.sprite.position.x = lamp.position.x;
-      people.forEach((p, i) => p.setRim("#9fb0ff", 0.6 + 1.2 * (Math.abs([-4.5, 0, 4.5][i] - lamp.position.x) < 1 ? 1 : 0)));
+      // The light moves to each desk in turn (a quick dim and up, as one lamp goes off and the next comes on).
+      const s1 = ramp(t, tMasuda - 0.8, tMasuda + 0.2), s2 = ramp(t, tPika - 0.8, tPika + 0.2);
+      const at = s2 > 0 ? 2 : s1 > 0 ? 1 : 0;
+      const kk = at === 2 ? s2 : at === 1 ? s1 : 1;
+      const on = Math.min(1, Math.abs(kk - 0.5) * 2.2);
+      const bp = bulbs[kk < 0.5 ? at - 1 : at] ?? bulbs[0];
+      lamp.position.copy(bp);
+      lamp.target.position.set(bp.x + (at === 2 && kk >= 0.5 ? 0.6 : -0.6), 0.95, -1.4);
+      lamp.intensity = 6 * on;
+      lampGlow.sprite.position.copy(bp);
+      lampGlow.set("#ffe2a8", 1.8 * on);
+      const deskX = [-4.5, 0, 4.5][kk < 0.5 ? Math.max(0, at - 1) : at];
+      people.forEach((p, i) => p.setRim("#9fb0ff", 0.5 + 1.0 * (Math.abs([-4.5, 0, 4.5][i] - deskX) < 1 ? 1 : 0)));
+      shafts.forEach((sh, i) => { sh.u.uTime.value = ambient; sh.u.uOpacity.value = (0.55 + 0.45 * (yk > 0 && yk < 1 ? day : 0)) * (1 - ramp(t, t151, t151 + 1.5) * 0.7) * (0.85 + 0.15 * Math.sin(ambient * 0.4 + i)); });
+      dust.u.uTime.value = ambient;
+      dust.u.uPixel.value = px;
       notes.u.uTime.value = ambient;
       notes.u.uPixel.value = px;
       notes.u.uOpacity.value = ramp(t, tMasuda + 0.4, tMasuda + 1.4) * (1 - ramp(t, t151, t151 + 1));
@@ -233,7 +269,10 @@ export const build: ChapterBuilder = async (ctx) => {
       sparkles.u.uTime.value = ambient;
       sparkles.u.uPixel.value = px;
       sparkles.u.uOpacity.value = ramp(t, tMew + 0.5, tMew + 1.5);
-      L.key.intensity = 0.5 + 0.5 * ramp(t, t151, t151 + 3);
+      // The room falls back into the dark as the wall of shapes lights it.
+      const wallUp = ramp(t, t151 + 0.3, t151 + 2.5) * (1 - 0.6 * ramp(t, tMew - 0.4, tMew + 1));
+      L.key.intensity = 0.6 * (1 - 0.75 * wallUp);
+      L.hemi.intensity = 0.85 * (1 - 0.7 * wallUp);
     },
     look: (t) =>
       lookAt(t, { ...STOCK.warm }, {

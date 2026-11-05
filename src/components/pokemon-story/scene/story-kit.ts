@@ -169,7 +169,8 @@ export function makeSilhouette(o: { height: number; pose?: Pose; child?: boolean
     mat.userData.shader = s;
     s.fragmentShader = s.fragmentShader
       .replace("#include <common>", "#include <common>\nuniform vec3 uRimC; uniform float uRimK;")
-      .replace("#include <emissivemap_fragment>", "#include <emissivemap_fragment>\n{ float f = clamp(1.0 - abs(dot(normalize(vNormal), normalize(vViewPosition))), 0.0, 1.0); totalEmissiveRadiance += uRimC * f * f * f * uRimK; }");
+      // Lit from behind and above: the rim catches heads and shoulders, not a full outline.
+      .replace("#include <emissivemap_fragment>", "#include <emissivemap_fragment>\n{ vec3 sn = normalize(vNormal); float f = clamp(1.0 - abs(dot(sn, normalize(vViewPosition))), 0.0, 1.0); float up = smoothstep(-0.15, 0.75, sn.y); totalEmissiveRadiance += uRimC * f * f * f * f * uRimK * (0.12 + 1.1 * up); }");
   };
   mat.customProgramCacheKey = () => "ps-silhouette";
   const mesh = new THREE.Mesh(geo, mat);
@@ -181,6 +182,22 @@ export function makeSilhouette(o: { height: number; pose?: Pose; child?: boolean
     },
     dispose() { geo.dispose(); mat.dispose(); },
   };
+}
+
+/** An anglepoise desk lamp (base, two arms, a shade tipped forward); `bulb` is where its light sits, in the group's space. */
+export function makeDeskLamp(o: { color?: string; scale?: number } = {}) {
+  const s = o.scale ?? 1;
+  const rod = (a: THREE.Vector3, b: THREE.Vector3, r0: number) => { const g = new THREE.CylinderGeometry(r0, r0, a.distanceTo(b), 8); g.applyQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), b.clone().sub(a).normalize())); g.translate((a.x + b.x) / 2, (a.y + b.y) / 2, (a.z + b.z) / 2); return g; };
+  const lb = new THREE.Vector3(0, 0.02, 0).multiplyScalar(s), le = new THREE.Vector3(0.1, 0.58, -0.12).multiplyScalar(s), lh = new THREE.Vector3(-0.28, 0.8, 0.22).multiplyScalar(s);
+  const shade = new THREE.ConeGeometry(0.17 * s, 0.24 * s, 24, 1, true).translate(0, -0.06 * s, 0);
+  shade.rotateZ(0.55); shade.rotateX(-0.35); shade.translate(lh.x, lh.y, lh.z);
+  const geo = merge([placed(new THREE.CylinderGeometry(0.13 * s, 0.15 * s, 0.035 * s, 20), [0, 0.017 * s, 0]), rod(lb, le, 0.014 * s), rod(le, lh, 0.012 * s), placed(new THREE.SphereGeometry(0.03 * s, 10, 8), [le.x, le.y, le.z]), shade]);
+  shade.dispose();
+  const mat = new THREE.MeshStandardMaterial({ color: col(o.color ?? "#2c5a3c"), roughness: 0.35, metalness: 0.55, side: THREE.DoubleSide });
+  const group = new THREE.Group();
+  group.add(new THREE.Mesh(geo, mat));
+  const bulb = new THREE.Vector3(lh.x - 0.06 * s, lh.y - 0.1 * s, lh.z + 0.04 * s);
+  return { group, bulb, dispose() { geo.dispose(); mat.dispose(); } };
 }
 
 // ---------------------------------------------------------------------------
