@@ -1,6 +1,6 @@
 import * as THREE from "three";
-import type { Key, Vec3 } from "@/lib/world-history/camera";
-import { col, makeGlow, makeParticles, makeRing, makeShaft, makeSky, makeTerrain, noise2, ramp, rng } from "@/components/world-history/scene/kit";
+import type { Key } from "@/lib/world-history/camera";
+import { col, makeGlow, makeParticles, makeShaft, makeSky, makeTerrain, noise2, ramp, rng } from "@/components/world-history/scene/kit";
 import { makeCity } from "@/components/world-history/scene/props";
 import { lights, loadFigures, lookAt, pointPixel, spike } from "@/components/world-history/scene/chapters/common";
 import type { ChapterBuilder } from "@/components/world-history/scene/types";

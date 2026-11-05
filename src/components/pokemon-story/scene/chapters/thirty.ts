@@ -65,7 +65,7 @@ export const build: ChapterBuilder = async (ctx) => {
   D.add({ dispose: () => { galFloor.geometry.dispose(); (galFloor.material as THREE.Material).dispose(); } });
 
   // ---- B. Chapter III's table: same Game Boys, same cable, same orbit.
-  const T = D.add(cableTable(scene, { font: ctx.font }));
+  const T = D.add(cableTable(scene));
   T.state.left = 1; T.state.right = 1;
 
   // ---- C. Out over a city, a coast, to the world of light.

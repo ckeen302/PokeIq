@@ -18,7 +18,7 @@ import { bag, STOCK } from "./base";
  */
 
 /** The table setup, shared with Chapter XI's callback (same Game Boys, same cable, same orbit). */
-export function cableTable(scene: THREE.Object3D, o: { font: string }) {
+export function cableTable(scene: THREE.Object3D) {
   const D = bag();
   const table = new THREE.Mesh(new THREE.BoxGeometry(9, 0.2, 5), new THREE.MeshStandardMaterial({ color: col("#17110c"), roughness: 0.35, metalness: 0.1 }));
   table.position.set(0, -0.1, 0);
@@ -87,7 +87,7 @@ export const build: ChapterBuilder = async (ctx) => {
   scene.background = col("#030403");
   scene.fog = new THREE.FogExp2(col("#050806"), 0.02);
   lights(scene, { sky: "#3a4a30", ground: "#0a0a08", fill: 0.4, key: "#ffe2b0", keyK: 0.5, keyPos: [3, 8, 6] });
-  const T = D.add(cableTable(scene, { font: ctx.font }));
+  const T = D.add(cableTable(scene));
 
   // The creature of light: a cluster of motes riding the cable's curve.
   const motes = D.add(makeParticles({ count: 220, shape: "sphere", center: [0, 0, 0], extent: [0.28, 0.2, 0.28], velocity: [0, 0, 0], spread: [0.05, 0.05, 0.05], life: 1.6, size: [0.02, 0.05], colors: ["#ffffff", "#d8ff7a", "#9bbc0f"], intensity: 1.8, turbulence: 0.12, fadeIn: 0.1, fadeOut: 0.4 }));
