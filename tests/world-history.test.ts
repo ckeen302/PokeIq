@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { existsSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync } from "node:fs";
+import { LuminosityHighPassShader } from "three/examples/jsm/shaders/LuminosityHighPassShader.js";
 import { join } from "node:path";
 import RAW from "@/data/world-history.json";
 import { getPokemon } from "@/lib/pokemon/pokedex";
@@ -464,5 +465,28 @@ describe("sound", () => {
       expect(credits).toContain(url.split("/").pop()!);
       expect(credits).toContain("CC0");
     }
+  });
+});
+
+describe("the film never draws NaN", () => {
+  const dir = join(process.cwd(), "src/components/world-history/scene");
+  const files = [...readdirSync(dir).filter((f) => f.endsWith(".ts")).map((f) => join(dir, f)), ...readdirSync(join(dir, "chapters")).map((f) => join(dir, "chapters", f))];
+
+  it("takes no pow() of a value that can dip below zero (NaN on IEEE-strict GPUs such as Apple's)", () => {
+    for (const f of files) {
+      const src = readFileSync(f, "utf8");
+      // Raw interpolated UVs and signed differences squared through pow() are the shapes that went NaN.
+      expect(src, f).not.toMatch(/pow\(\s*(vUv|vY|uv)\b/);
+      expect(src, f).not.toMatch(/pow\(\s*\(/);
+    }
+  });
+
+  it("scrubs NaN in every pass that reads the HDR scene, including the bloom's first read", () => {
+    const post = readFileSync(join(dir, "post.ts"), "utf8");
+    expect(post).toContain("floatBitsToUint");
+    expect((post.match(/whSafe\(texture2D/g) ?? []).length).toBeGreaterThanOrEqual(4);
+    // The bloom patch replaces these exact lines of three.js's high-pass shader: they must still be there.
+    expect(LuminosityHighPassShader.fragmentShader).toContain("void main() {");
+    expect(LuminosityHighPassShader.fragmentShader).toContain("vec4 texel = texture2D( tDiffuse, vUv );");
   });
 });

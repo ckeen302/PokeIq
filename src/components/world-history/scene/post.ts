@@ -36,6 +36,8 @@ export interface Post {
   /** Bloom, shafts and grade from the main target to the screen. */
   finish(look: Look, raysUv: [number, number] | null, time: number): void;
   setSize(w: number, h: number, pr: number): void;
+  /** Every material the chain draws with (to compile ahead): those drawing into targets, and the one drawing to the screen. */
+  materials: { target: THREE.Material[]; screen: THREE.Material[] };
   dispose(): void;
 }
 
@@ -154,8 +156,10 @@ export function createPost(renderer: THREE.WebGLRenderer, w: number, h: number, 
   };
 
   let W = w, H = h, PR = pr;
+  const bloomMats: THREE.Material[] = bloom ? [bloom.materialHighPassFilter, ...bloom.separableBlurMaterials, bloom.compositeMaterial, bloom.blendMaterial] : [];
   return {
     target,
+    materials: { target: [...bloomMats, ...(raysRT ? [raysMat] : []), mixMat], screen: [gradeMat] },
     aux(i) {
       if (!auxes[i]) auxes[i] = mk(q.msaa);
       return auxes[i]!;
