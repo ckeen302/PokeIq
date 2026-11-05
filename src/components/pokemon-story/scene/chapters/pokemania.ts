@@ -241,7 +241,7 @@ export const build: ChapterBuilder = async (ctx) => {
   // The screen lights the room: a broad soft light from it into the seats, and two warm wall sconces.
   const screenLight = new THREE.SpotLight(col("#a890ff"), 0, 30, 0.9, 0.9, 1.0);
   screenLight.position.set(C, 3.9, -7.6);
-  screenLight.target.position.set(C, 1.5, 6);
+  screenLight.target.position.set(C, 2.6, 8);
   const sconces = [-8.6, 8.6].flatMap((dx) => [-2, 5].map((z) => { const g2 = D.add(makeGlow({ pos: [C + dx * 0.98, 4.2, z], size: 1.1, color: "#ffb070", intensity: 0 })); scene.add(g2.sprite); return g2; }));
   const wallLights = [-8.2, 8.2].map((dx) => { const pl = new THREE.PointLight(col("#ffa060"), 0, 9, 1.2); pl.position.set(C + dx, 4.2, 1.5); scene.add(pl); return pl; });
   const booth = D.add(makeGlow({ pos: [C, 5.2, 13.0], size: 1.6, color: "#ffffff", intensity: 0 }));
@@ -451,7 +451,7 @@ export const build: ChapterBuilder = async (ctx) => {
       cinema.visible = cin > 0;
       if (cin) screen.redraw(ambient);
       const flick = 0.9 + 0.1 * Math.sin(ambient * 23) * Math.sin(ambient * 7.3);
-      screenLight.intensity = cin * 240 * flick;
+      screenLight.intensity = cin * 150 * flick;
       wallLights.forEach((w) => (w.intensity = cin * 9));
       sconces.forEach((g2) => g2.set("#ffb070", 0.5 * cin));
       booth.set("#ffffff", 1.2 * cin);
