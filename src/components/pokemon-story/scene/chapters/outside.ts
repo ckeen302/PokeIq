@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { poseOnPath, type Key, type Vec3 } from "@/lib/world-history/camera";
+import type { Key, Vec3 } from "@/lib/world-history/camera";
 import { NOISE, col, makeGlow, makeParticles, makeRing, makeSky, merge, ramp, rng } from "@/components/world-history/scene/kit";
 import { makeCanvasPanel } from "@/components/world-history/scene/props";
 import { lights, loadFigures, lookAt, pointPixel, spike } from "@/components/world-history/scene/chapters/common";
