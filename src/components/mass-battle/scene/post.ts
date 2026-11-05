@@ -35,9 +35,21 @@ const VERTEX = /* glsl */ `
 varying vec2 vUv;
 void main() { vUv = uv; gl_Position = vec4(position.xy, 0.0, 1.0); }`;
 
+/**
+ * Reads of the HDR scene go through this: a pixel that came out NaN or infinite (a pow of a tiny negative, a normalize
+ * of zero: GPUs that follow IEEE strictly, like Apple's, give NaN where others give 0) becomes black instead of
+ * poisoning the bloom, whose blurs would spread it into black blocks across the frame. Checked on the bits, so no
+ * compiler's fast-math can fold it away (the World History fix, #165).
+ */
+const SAFE_HDR = /* glsl */ `
+float mbSafe1(float v) { return (floatBitsToUint(v) & 0x7f800000u) == 0x7f800000u ? 0.0 : clamp(v, 0.0, 60000.0); }
+vec3 mbSafe(vec3 c) { return vec3(mbSafe1(c.r), mbSafe1(c.g), mbSafe1(c.b)); }
+`;
+
 /** Threshold with a soft knee, at half size (a 4-tap box that also downsamples). */
 const BRIGHT = /* glsl */ `
 uniform sampler2D tColor;
+${SAFE_HDR}
 uniform vec2 texel;
 uniform float threshold;
 varying vec2 vUv;
@@ -50,10 +62,10 @@ vec3 pick(vec3 c) {
   return c * w;
 }
 void main() {
-  vec3 a = texture2D(tColor, vUv + texel * vec2(-0.5, -0.5)).rgb;
-  vec3 b = texture2D(tColor, vUv + texel * vec2(0.5, -0.5)).rgb;
-  vec3 c = texture2D(tColor, vUv + texel * vec2(-0.5, 0.5)).rgb;
-  vec3 d = texture2D(tColor, vUv + texel * vec2(0.5, 0.5)).rgb;
+  vec3 a = mbSafe(texture2D(tColor, vUv + texel * vec2(-0.5, -0.5)).rgb);
+  vec3 b = mbSafe(texture2D(tColor, vUv + texel * vec2(0.5, -0.5)).rgb);
+  vec3 c = mbSafe(texture2D(tColor, vUv + texel * vec2(-0.5, 0.5)).rgb);
+  vec3 d = mbSafe(texture2D(tColor, vUv + texel * vec2(0.5, 0.5)).rgb);
   // Fireflies (a single blazing pixel) are tamed before they bloom.
   vec3 s = pick(min(a, vec3(40.0))) + pick(min(b, vec3(40.0))) + pick(min(c, vec3(40.0))) + pick(min(d, vec3(40.0)));
   gl_FragColor = vec4(s * 0.25, 1.0);
@@ -110,6 +122,7 @@ uniform float grain;
 uniform float time;
 uniform float aspect;
 varying vec2 vUv;
+${SAFE_HDR}
 float hash(vec2 p) { return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453); }
 void main() {
   vec3 col;
@@ -123,21 +136,21 @@ void main() {
       vec2 uv = punchAt + dir * (1.0 - punch * 0.035 * k);
       float w = 1.0 - k * 0.5;
       vec2 ca = dir * punch * 0.004;
-      acc += vec3(texture2D(tColor, uv + ca).r, texture2D(tColor, uv).g, texture2D(tColor, uv - ca).b) * w;
+      acc += mbSafe(vec3(texture2D(tColor, uv + ca).r, texture2D(tColor, uv).g, texture2D(tColor, uv - ca).b)) * w;
       wsum += w;
     }
     col = acc / wsum;
   } else {
-    col = texture2D(tColor, vUv).rgb;
+    col = mbSafe(texture2D(tColor, vUv).rgb);
   }
-  if (bloomOn > 0.5) col += texture2D(tBloom, vUv).rgb * bloom;
+  if (bloomOn > 0.5) col += mbSafe(texture2D(tBloom, vUv).rgb) * bloom;
   col += flashColor * flash;
   // Grade (in linear light, before the filmic curve).
   float l = dot(col, vec3(0.2126, 0.7152, 0.0722));
   col = max(mix(vec3(l), col, saturation), 0.0);
-  col *= vec3(1.0 + warmth, 1.0 + warmth * 0.2, 1.0 - warmth);
-  // Contrast as a power curve round middle grey (HDR-safe).
-  col = 0.18 * pow(col / 0.18 + 1e-5, vec3(contrast));
+  col *= max(vec3(1.0 + warmth, 1.0 + warmth * 0.2, 1.0 - warmth), 0.0);
+  // Contrast as a power curve round middle grey (HDR-safe: the base is kept positive).
+  col = 0.18 * pow(max(col, 0.0) / 0.18 + 1e-5, vec3(contrast));
   vec2 q = vUv - 0.5;
   col *= 1.0 - vignette * smoothstep(0.18, 0.62, dot(q, q) * (1.0 + 0.25 * abs(aspect - 1.0)));
   gl_FragColor = vec4(col, 1.0);
