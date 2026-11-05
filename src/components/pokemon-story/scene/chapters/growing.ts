@@ -1,11 +1,11 @@
 import * as THREE from "three";
 import { poseOnPath, type Key, type Vec3 } from "@/lib/world-history/camera";
 import { col, makeGlow, makeParticles, makeRing, makeShaft, makeSky, ramp, rng } from "@/components/world-history/scene/kit";
-import { makeCity } from "@/components/world-history/scene/props";
 import { lights, loadFigures, lookAt, pointPixel, spike } from "@/components/world-history/scene/chapters/common";
 import type { ChapterBuilder } from "@/components/world-history/scene/types";
 import { REGION_MAPS } from "@/lib/timeline/types";
-import { bowlPoints, glassMaterial, makeArcs, makeCritterWall, makeCrowd, makeDevice, makeGlobe, makeRegionFloor, makeStadium, makeStars, spherePoint, type Device } from "../story-kit";
+import { glassMaterial, makeArcs, makeCritterWall, makeCrowd, makeDevice, makeGlobe, makeStars, makeStreetLamps, makeTowers, spherePoint, type Device, type TowerSpec } from "../story-kit";
+import { makeArena, makeGlowPoints, makeReliefMap, makeSea, syncTerrainLight, terrainLight } from "../relief-kit";
 import { bag, heroFigure, STOCK, type Hero } from "./base";
 
 /**
@@ -37,21 +37,19 @@ export const build: ChapterBuilder = async (ctx) => {
   scene.add(stars.points);
   const L = lights(scene, { sky: "#cfe0ff", ground: "#203040", fill: 0.8, key: "#fff0d8", keyK: 1.6, keyPos: [8, 20, 10], rim: "#9ad0ff", rimK: 0.8 });
 
-  // ---- The region floors.
+  // ---- The region maps, raised into lit relief out of one open sea.
+  const TL = terrainLight();
+  const SEA = "#1a4a7a";
   const floors = await Promise.all(([[2, Z.johto, "#7ad8ff"], [3, Z.hoenn, "#ff9a6a"], [4, Z.sinnoh, "#b8a8ff"], [5, Z.unova, "#ffd27a"]] as [number, number, string][]).map(async ([gen, z, tint]) => {
     const m = REGION_MAPS[gen];
-    const f = D.add(await makeRegionFloor({ src: m.src, w: m.w, h: m.h, width: 66, tint, signal: ctx.signal }));
+    const f = D.add(await makeReliefMap({ src: m.src, w: m.w, h: m.h, width: 66, tint, light: TL, sea: SEA, cols: Math.round(180 * Math.max(0.7, P)), signal: ctx.signal }));
     f.mesh.position.set(0, 0, z);
     scene.add(f.mesh);
     return f;
   }));
-  // A dark ground under all of it, and the sea between Johto and Hoenn.
-  // A dark, faintly glossy sea that runs to the horizon and melts into the haze.
   scene.fog = new THREE.FogExp2(col("#3a5a8a"), 0.0055);
-  const ground = new THREE.Mesh(new THREE.PlaneGeometry(1800, 1800).rotateX(-Math.PI / 2), new THREE.MeshStandardMaterial({ color: col("#0a1626"), roughness: 0.95, metalness: 0 }));
-  ground.position.set(0, -0.05, -200);
-  scene.add(ground);
-  D.add({ dispose: () => { ground.geometry.dispose(); (ground.material as THREE.Material).dispose(); } });
+  const ground = D.add(makeSea({ size: 1800, center: [0, -0.05, -200], color: SEA, light: TL }));
+  scene.add(ground.mesh);
   const seaGlints = D.add(makeParticles({ count: Math.round(900 * P) + 100, shape: "box", center: [0, 0.1, -48], extent: [50, 0.05, 30], velocity: [0, 0, 0], spread: [0.05, 0, 0.05], life: 2.5, size: [0.05, 0.14], colors: ["#ffffff", "#9ad8ff", "#3a8aff"], intensity: 1.6, flicker: 0.9 }));
   scene.add(seaGlints.points);
 
@@ -92,16 +90,18 @@ export const build: ChapterBuilder = async (ctx) => {
   links.u.uSize.value = 0.9;
   scene.add(links.points);
 
-  // ---- Worlds: a stadium bowl, crowds of lights, spot shafts, a cup.
-  const stadium = D.add(makeStadium({ inner: 9, outer: 20, height: 7, pitch: "#2a5a9a", stand: "#3a4058" }));
+  // ---- Worlds: a night arena (two tiers, a lit concourse, a canopy, floodlight masts), its crowd of lights, spot shafts, a cup.
+  const stadium = D.add(makeArena({ inner: 10, outer: 22, height: 7.5, masts: 6, crowd: Math.round(6500 * P) + 900 }));
   const stadLight = new THREE.PointLight(col("#e8f0ff"), 0, 60, 1.2);
   stadLight.position.set(0, 14, Z.stadium);
   scene.add(stadLight);
   stadium.group.position.set(0, 0, Z.stadium);
   scene.add(stadium.group);
-  const crowd = D.add(makeCrowd({ points: bowlPoints({ inner: 10, outer: 20, height: 7, count: Math.round(3200 * P) + 400, center: [0, 0, Z.stadium] }), colors: ["#ffe8b0", "#9ad8ff"], size: 0.1, intensity: 1.4 }));
+  const crowd = D.add(makeCrowd({ points: stadium.crowd.map(([x, y, z]) => [x, y, z + Z.stadium] as Vec3), colors: ["#ffd890", "#7ac8ff"], size: 0.13, intensity: 1.7 }));
   scene.add(crowd.points);
-  const spots = [-1, 1].flatMap((sx) => [-1, 1].map((sz) => { const s = D.add(makeShaft({ from: [sx * 17, 14, Z.stadium + sz * 14], to: [0, 0, Z.stadium], r0: 0.3, r1: 2.6, color: "#e8f0ff", intensity: 0.42, noise: 0.4 })); scene.add(s.mesh); return s; }));
+  const flood = D.add(makeGlowPoints({ points: stadium.heads.map(([x, y, z]) => [x * 0.98, y - 0.2, z + Z.stadium] as Vec3), color: "#eef4ff", size: 6 }));
+  scene.add(flood.points);
+  const spots = stadium.heads.filter(([, , z]) => z < 1).map(([x, y, z]) => { const s = D.add(makeShaft({ from: [x * 0.95, y - 0.5, z + Z.stadium], to: [x * 0.12, 0, Z.stadium + z * 0.12], r0: 0.6, r1: 3.2, color: "#e8f0ff", intensity: 0.2, noise: 0.5 })); scene.add(s.mesh); return s; });
   const cupMat = new THREE.MeshStandardMaterial({ color: col("#f2c96b"), roughness: 0.2, metalness: 1, emissive: col("#7a5a10"), emissiveIntensity: 0.4 });
   const cupProfile = [[0, 0], [0.7, 0], [0.7, 0.15], [0.25, 0.3], [0.2, 0.9], [0.3, 1.0], [0.85, 1.4], [0.95, 2.1], [0.9, 2.15]].map(([x, y]) => new THREE.Vector2(x, y));
   const cup = new THREE.Mesh(new THREE.LatheGeometry(cupProfile, 40), cupMat);
@@ -112,8 +112,32 @@ export const build: ChapterBuilder = async (ctx) => {
   scene.add(cupGlow.sprite);
 
   // ---- Unova: a skyline at dusk, and a field of new shapes.
-  const skyline = D.add(makeCity({ center: [0, 0, Z.unova - 46], radius: 26, count: 70, height: [10, 34], color: "#7a5a3a", seed: 5 }));
+  // A harbour city on a quay behind the map: streets on a grid, towers rising to a tall core, sodium lamps down every street.
+  const UC = Z.unova - 50;
+  const uspecs: TowerSpec[] = [];
+  const ur = rng(57);
+  for (let gx = -5; gx <= 5; gx++) for (let gz = -3; gz <= 3; gz++) {
+    if (gx === 0) continue;
+    const cx = gx * 7.2, cz = UC + gz * 7.2;
+    const core = Math.exp(-(cx * cx) / 380 - ((cz - UC) * (cz - UC)) / 300);
+    for (const [ox, oz] of [[-1.6, -1.6], [1.6, 1.6], [-1.6, 1.6], [1.6, -1.6]]) {
+      if (ur() < 0.35) continue;
+      uspecs.push({ x: cx + ox, z: cz + oz, w: 2.6 + ur() * 0.6, d: 2.6 + ur() * 0.6, h: 4 + ur() * 6 + core * (10 + ur() * 22), kind: ur() < 0.5 ? 0 : ur() < 0.6 ? 1 : 2 });
+    }
+  }
+  const skyline = D.add(makeTowers({ towers: uspecs, seed: 57, haze: "#6a3a4a", hazeHigh: "#2a2050", fog: 0.012, street: "#ff9a4a", moon: [-0.3, 0.5, 0.8] }));
+  skyline.u.uSky.value.copy(col("#5a4a7a"));
   scene.add(skyline.mesh);
+  const ulampPts: Vec3[] = [];
+  for (let gx = -5; gx <= 5; gx++) for (let z = UC - 24; z <= UC + 24; z += 3.6) ulampPts.push([gx * 7.2 + 3.6, 0, z]);
+  for (let gz = -3; gz <= 4; gz++) for (let x = -38; x <= 38; x += 3.6) ulampPts.push([x, 0, UC + gz * 7.2 - 3.6]);
+  const ulamps = D.add(makeStreetLamps({ points: ulampPts, height: 1.8, color: "#ffb060", size: 0.45, pools: 0.5 }));
+  ulamps.group.position.y = 0.1;
+  scene.add(ulamps.group);
+  const quay = new THREE.Mesh(new THREE.BoxGeometry(84, 0.2, 58), new THREE.MeshStandardMaterial({ color: col("#141418"), roughness: 0.9 }));
+  quay.position.set(0, 0.0, UC);
+  scene.add(quay);
+  D.add({ dispose: () => { quay.geometry.dispose(); (quay.material as THREE.Material).dispose(); } });
   const field = D.add(makeCritterWall({ count: Math.round(260 * Math.max(0.5, P)), cols: 26, cell: 1.6, center: [0, 0, 0], colors: ["#bfe8ff", "#ffe27a"], seed: 9 }));
   field.mesh.rotation.x = -Math.PI / 2;
   field.mesh.position.set(0, 0.25, Z.unova + 4);
@@ -166,10 +190,10 @@ export const build: ChapterBuilder = async (ctx) => {
     { t: tOnline + 0.6, pos: [0, 16, Z.sinnoh + 22], look: [0, 0, Z.sinnoh - 4], fov: 52 },
     { t: tOnline + 2.4, pos: [0, 44, Z.sinnoh + 30], look: [0, -14, Z.sinnoh - 40], fov: 54 },
     { t: tOnline + 6, pos: [0, 62, Z.sinnoh + 44], look: [0, 2, Z.sinnoh - 60], fov: 54 },
-    { t: tWorlds - 1, pos: [0, 34, Z.stadium + 60], look: [0, 0, Z.stadium], fov: 50 },
-    { t: tWorlds + 1.6, pos: [0, 24, Z.stadium + 16], look: [0, 0, Z.stadium - 2], fov: 50 },
-    { t: tWorlds + 5, pos: [3, 15, Z.stadium + 10], look: [0, 1, Z.stadium], fov: 48 },
-    { t: tFresh - 0.6, pos: [0, 12, Z.stadium - 26], look: [0, 6, Z.unova], fov: 50 },
+    { t: tWorlds - 1, pos: [0, 30, Z.stadium + 64], look: [0, 2, Z.stadium], fov: 50 },
+    { t: tWorlds + 1.6, pos: [0, 15, Z.stadium + 15], look: [0, 2, Z.stadium - 6], fov: 52 },
+    { t: tWorlds + 4.6, pos: [2.5, 7.5, Z.stadium + 9.5], look: [0, 2.6, Z.stadium - 8], fov: 52 },
+    { t: tFresh - 0.6, pos: [0, 24, Z.stadium - 30], look: [0, 6, Z.unova], fov: 50 },
     { t: tFresh + 3, pos: [0, 9, Z.unova + 34], look: [0, 8, Z.unova - 10], fov: 50 },
     { t: end, pos: [0, 8, Z.unova + 24], look: [0, 9.5, Z.unova - 12], fov: 48 },
   ];
@@ -211,6 +235,8 @@ export const build: ChapterBuilder = async (ctx) => {
     orbit: (t) => ({ target: poseOnPath(keys, t).look, limits: { yaw0: 0, yawSpan: 1.0, minPitch: -0.1, maxPitch: 1.3, minDist: 2, maxDist: 90 } }),
     update(t, ambient, cam, viewH) {
       const px = pointPixel(viewH, cam);
+      syncTerrainLight(TL, L.key, L.hemi);
+      ground.u.uTime.value = ambient;
       sky.follow(cam);
       palAt(t, 1, sky.u.uTop.value); palAt(t, 2, sky.u.uHorizon.value); palAt(t, 3, sky.u.uBottom.value);
       const fog = scene.fog as THREE.FogExp2;
@@ -224,7 +250,7 @@ export const build: ChapterBuilder = async (ctx) => {
       L.hemi.intensity = 0.8 * (1 - night * 0.4);
       // The floors glow up as we reach them.
       const near = [tClock - 3, tColour - 1, tOnline - 2, tFresh - 1];
-      floors.forEach((f, i) => { f.u.uA.value = ramp(t, near[i], near[i] + 2) * (i === 2 ? 1 - space : 1); f.u.uTime.value = ambient; });
+      floors.forEach((f, i) => { f.u.uA.value = ramp(t, near[i], near[i] + 2.5) * (i === 2 ? 1 - space : 1); f.u.uTime.value = ambient; f.mesh.visible = f.u.uA.value > 0.001 || Math.abs(cam.position.z - f.mesh.position.z) < 90; });
       seaGlints.u.uTime.value = ambient; seaGlints.u.uPixel.value = px;
       seaGlints.u.uOpacity.value = ramp(t, tClock + 6, tColour - 1) * (1 - ramp(t, tColour + 3, tOnline));
 
@@ -266,9 +292,11 @@ export const build: ChapterBuilder = async (ctx) => {
       const st = ramp(t, tWorlds - 0.5, tWorlds + 1.5) * (1 - ramp(t, tFresh, tFresh + 1.5));
       crowd.u.uTime.value = ambient; crowd.u.uPixel.value = px; crowd.u.uShow.value = st; crowd.u.uCheer.value = ramp(t, tWorlds + 1, tWorlds + 2);
       spots.forEach((s) => { s.u.uOpacity.value = st; s.u.uTime.value = ambient; });
+      stadium.setLit(st);
+      flood.u.uPixel.value = px; flood.u.uK.value = 0.75 * st;
       cupGlow.set("#ffd27a", 0.6 * st + 0.6 * spike(t, tWorlds + 1.2, 0.1, 1.2));
       cup.rotation.y = ambient * 0.3;
-      stadium.group.visible = cup.visible = t > tOnline + 4;
+      stadium.group.visible = cup.visible = crowd.points.visible = flood.points.visible = t > tOnline + 4 && t < tFresh + 4;
       stadLight.intensity = 45 * st;
 
       // Unova: the skyline at dusk, the pair circling, the field glowing on in a wave.
@@ -285,9 +313,13 @@ export const build: ChapterBuilder = async (ctx) => {
       field.u.uDim.value = 0.6;
       field.mesh.visible = t > tFresh;
       skyline.u.uTime.value = ambient;
-      skyline.mesh.visible = t > tFresh - 1.5;
+      skyline.mesh.visible = ulamps.group.visible = quay.visible = t > tFresh - 1.5;
+      ulamps.u.uPixel.value = px; ulamps.u.uK.value = skyline.u.uLit.value;
+      skyline.u.uHaze.value.copy(fog.color);
       skyline.u.uLit.value = 0.25 + 0.75 * ramp(t, tFresh + 1, tFresh + 5);
-      ground.visible = orb < 0.4;
+      ground.u.uVis.value = 1 - orb;
+      ground.mesh.visible = orb < 0.99;
+      floors.forEach((f) => { f.u.uVis.value = 1 - orb; if (orb > 0.99) f.mesh.visible = false; });
       fog.density = 0.0055 * (1 - orb);
 
       // The case in the corner of the frame: GBC → GBA → DS.
