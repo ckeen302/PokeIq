@@ -444,3 +444,19 @@ export async function peekBattle(code: string): Promise<{ kind: BattleKind; form
     return undefined;
   }
 }
+
+/**
+ * Just the battle's version (null: gone or expired): the long poll's cheap
+ * check for "anything written since", without reading meta or a channel.
+ */
+export async function battleVersion(code: string): Promise<number | null> {
+  if (!DUEL_CODE_RE.test(code)) return null;
+  const sb = remote();
+  if (sb) {
+    const { data, error } = await sb.from(TABLE).select("version, expires_at").eq("code", code).maybeSingle<Pick<Row, "version" | "expires_at">>();
+    if (error) throw new Error(error.message);
+    return !data || Date.parse(data.expires_at) <= Date.now() ? null : data.version;
+  }
+  const row = memory().get(code);
+  return !row || row.expires <= Date.now() ? null : row.version;
+}
