@@ -1,6 +1,7 @@
 import { STRUGGLE } from "@/lib/mass-battle/damage";
 import { Battle, EV, EVENT_INTS, NOTE_INTS, prepare, TICK_HZ } from "@/lib/mass-battle/engine";
 import { DEFAULT_PLAYBACK, type PlaybackSpec } from "@/lib/mass-battle/types";
+import { pickMvp } from "./post-stats";
 import { TIMELINE_TICKS, type FromSim, type Moment, type SimEnd, type SimFrame, type ToSim } from "./protocol";
 
 /**
@@ -110,7 +111,6 @@ function endOf(b: Battle): SimEnd {
   const end: SimEnd = { outcome: b.outcome(), stats: b.stats(), kosBySpecies: kos };
   if (tally) {
     const by = new Map<number, { fighter: number; side: number; count: number; dealt: number; kos: number }>();
-    let mvp = -1;
     for (let i = 0; i < b.n; i++) {
       const key = b.sp[i] * 2 + b.side[i];
       const row = by.get(key) ?? { fighter: b.sp[i], side: b.side[i], count: 0, dealt: 0, kos: 0 };
@@ -118,12 +118,9 @@ function endOf(b: Battle): SimEnd {
       row.dealt += b.dealt[i];
       row.kos += b.kos[i];
       by.set(key, row);
-      // The MVP is the winners' (anyone's in a draw).
-      if (b.winner < 2 && b.side[i] !== b.winner) continue;
-      if (b.kos[i] > 0 && (mvp < 0 || b.kos[i] > b.kos[mvp] || (b.kos[i] === b.kos[mvp] && b.dealt[i] > b.dealt[mvp]))) mvp = i;
     }
-    // No KOs at all (one Pokémon left standing by recoil): the one that dealt the most.
-    if (mvp < 0) for (let i = 0; i < b.n; i++) if ((b.winner === 2 || b.side[i] === b.winner) && b.dealt[i] > 0 && (mvp < 0 || b.dealt[i] > b.dealt[mvp])) mvp = i;
+    // The MVP is the winners' (anyone's in a draw).
+    const mvp = pickMvp(b.side, b.kos, b.dealt, b.winner);
     end.post = {
       mvp: mvp >= 0 ? { unit: mvp, fighter: b.sp[mvp], side: b.side[mvp], kos: b.kos[mvp], dealt: Math.round(b.dealt[mvp]) } : null,
       bySpecies: [...by.values()].map((r) => ({ ...r, dealt: Math.round(r.dealt) })).sort((a, c) => c.dealt - a.dealt),
