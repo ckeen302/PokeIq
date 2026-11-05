@@ -536,6 +536,12 @@ export interface BattleView {
   replay?: string;
   /** When the battle began (server time). */
   startedAt?: number;
+  /**
+   * Live battles, when Supabase Realtime is set up: where the page subscribes
+   * to the battle's "something changed" signal (lib/battle/live.ts). Added by
+   * the GET route; absent or null: the page polls.
+   */
+  live?: { url: string; anon: string; key: JsonWebKey } | null;
 }
 
 /** Creating, joining or rematching a battle: its code, your seat's token and the battle. */
