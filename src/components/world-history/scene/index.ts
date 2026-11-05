@@ -16,6 +16,11 @@ export type { Quality } from "./types";
  * that frame. Chapters are built on demand (each one's code loads only
  * then), their shaders compiled before they're first seen, and dropped
  * when the film is far from them.
+ *
+ * Built to never show a broken frame: a lost WebGL context draws nothing
+ * (the page shows its loading state) and comes back on restore; a quality
+ * switch builds and compiles the new post chain before swapping it in; a
+ * chapter that fails to build is retried.
  */
 
 const BUILDERS: Record<string, () => Promise<{ build: ChapterBuilder }>> = {
@@ -61,6 +66,8 @@ export interface FrameInfo {
   orbit: { target: Vec3; limits: OrbitLimits } | null;
   /** Whether everything the frame needed was loaded. */
   complete: boolean;
+  /** The WebGL context is lost (nothing was drawn). */
+  lost?: boolean;
 }
 
 export interface HistoryScene {
@@ -68,6 +75,10 @@ export interface HistoryScene {
   ready: Promise<void>;
   prepare(index: number): Promise<void>;
   isReady(index: number): boolean;
+  /** Whether any chapter is still being built (frame times are not representative). */
+  busy(): boolean;
+  /** The WebGL context is lost and not restored yet. */
+  readonly lost: boolean;
   retain(indices: number[]): void;
   frame(f: FrameInput): FrameInfo;
   resize(w: number, h: number): void;
@@ -107,6 +118,9 @@ interface Slot {
   failed?: boolean;
 }
 
+/** A chapter that failed to build is tried again after these delays (ms), then left to the hall. */
+const RETRY_MS = [1500, 5000];
+
 export function createHistoryScene(host: HTMLElement, opts: SceneOptions): HistoryScene {
   let quality = opts.quality;
   let Q = QUALITY[quality];
@@ -134,6 +148,10 @@ export function createHistoryScene(host: HTMLElement, opts: SceneOptions): Histo
   hall.setAspect(W / H);
   const n = opts.chapters.length;
   const slots = new Map<number, Slot>();
+  const attempts = new Map<number, number>();
+  let lost = false;
+  let disposed = false;
+  let lastPose: Pose = { pos: [0, 2, 10], look: [0, 2, 0], fov: HALL_FOV };
   const film = opts.film;
 
   // Doorway stills.
@@ -193,16 +211,35 @@ export function createHistoryScene(host: HTMLElement, opts: SceneOptions): Histo
         // Compile every shader now, so the first frame of the chapter doesn't stall.
         setCam(portalCam, rig.camera(0));
         rig.update(0, 0, portalCam, H * PR);
-        await renderer.compileAsync(rig.scene, portalCam).catch(() => undefined);
+        await compileFor(rig.scene, portalCam);
         if (ac.signal.aborted) { rig.dispose(); return; }
         slot.rig = rig;
       } catch (e) {
         slot.failed = true;
-        if (!ac.signal.aborted) console.error("[world-history] chapter failed", c.id, e);
+        if (ac.signal.aborted) return;
+        console.error("[world-history] chapter failed", c.id, e);
+        // Try again later (a network blip, a busy GPU): the slot is dropped, so the next prepare() rebuilds it.
+        const tries = (attempts.get(index) ?? 0) + 1;
+        attempts.set(index, tries);
+        if (tries <= RETRY_MS.length) setTimeout(() => { if (slots.get(index) === slot) slots.delete(index); }, RETRY_MS[tries - 1]);
       }
     })();
     slots.set(index, slot);
     return slot.promise;
+  }
+
+  /**
+   * Compiles a scene's programs ahead of use. Programs depend on where they
+   * draw (the HDR target, not the screen), so compile with that target bound,
+   * or the first real frame would compile them again.
+   */
+  async function compileFor(scene: THREE.Object3D, cam: THREE.Camera, target: THREE.WebGLRenderTarget | null = post.target) {
+    if (lost) return;
+    const prev = renderer.getRenderTarget();
+    renderer.setRenderTarget(target);
+    const done = renderer.compileAsync(scene, cam).catch(() => undefined);
+    renderer.setRenderTarget(prev);
+    await done;
   }
 
   function retain(indices: number[]) {
@@ -269,6 +306,13 @@ export function createHistoryScene(host: HTMLElement, opts: SceneOptions): Histo
 
   const res = new THREE.Vector2();
   function frame(f: FrameInput): FrameInfo {
+    if (lost || renderer.getContext().isContextLost()) return { pose: lastPose, orbit: null, complete: false, lost: true };
+    const info = draw(f);
+    lastPose = info.pose;
+    return info;
+  }
+
+  function draw(f: FrameInput): FrameInfo {
     const s = f.state;
     renderer.setClearColor(0x000000, 1);
     // ---- A video cut: two chapters mixed with a burst of light.
@@ -360,21 +404,59 @@ export function createHistoryScene(host: HTMLElement, opts: SceneOptions): Histo
     hall.setAspect(w / h);
   }
 
+  /**
+   * A new quality: chapters built from now on use it at once; the post chain
+   * (render targets, bloom, shafts) is built and its shaders compiled first,
+   * while the old one keeps drawing, then swapped in between two frames.
+   */
+  let qGen = 0;
+  const quad = new THREE.PlaneGeometry(2, 2);
+  const ortho = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+  async function warmPost(p: Post) {
+    if (lost) return;
+    const onTarget = new THREE.Scene(), onScreen = new THREE.Scene();
+    for (const m of p.materials.target) onTarget.add(Object.assign(new THREE.Mesh(quad, m), { frustumCulled: false }));
+    for (const m of p.materials.screen) onScreen.add(Object.assign(new THREE.Mesh(quad, m), { frustumCulled: false }));
+    renderer.initRenderTarget(p.target);
+    await Promise.all([compileFor(onTarget, ortho, p.target), compileFor(onScreen, ortho, null)]);
+  }
   function setQuality(next: Quality) {
     if (next === quality) return;
     quality = next;
     Q = QUALITY[next];
-    PR = prOf();
-    renderer.setPixelRatio(PR);
-    renderer.setSize(W, H, false);
-    post.dispose();
-    post = createPost(renderer, W, H, PR, Q);
     figures = createFigureFactory(renderer, { segments: Q.segments, texSize: Q.texSize, anisotropy: Math.min(Q.aniso, renderer.capabilities.getMaxAnisotropy()) });
+    const gen = ++qGen;
+    const q = Q;
+    const np = createPost(renderer, W, H, prOf(), q);
+    void warmPost(np).then(() => {
+      if (gen !== qGen || disposed) { np.dispose(); return; }
+      PR = prOf();
+      renderer.setPixelRatio(PR);
+      renderer.setSize(W, H, false);
+      np.setSize(W, H, PR);
+      const old = post;
+      post = np;
+      old.dispose();
+      // Doorways may still point at the old chain's portal targets.
+      for (let i = 0; i < n; i++) hall.setLive(i, null);
+    });
   }
+
+  // ---- A lost context draws nothing until it is restored; three.js then rebuilds its GPU objects on use, and we recompile what's built.
+  const onLost = () => { lost = true; };
+  const onRestored = () => {
+    lost = false;
+    for (let i = 0; i < n; i++) hall.setLive(i, null);
+    void compileFor(hall.scene, camera);
+    for (const s of slots.values()) if (s.rig) void compileFor(s.rig.scene, camera);
+    void warmPost(post);
+  };
+  canvas.addEventListener("webglcontextlost", onLost);
+  canvas.addEventListener("webglcontextrestored", onRestored);
 
   const ready = (async () => {
     setCam(camera, hall.prologue(0, effFov(40), effFov(HALL_FOV)), false);
-    await renderer.compileAsync(hall.scene, camera).catch(() => undefined);
+    await compileFor(hall.scene, camera);
   })();
 
   return {
@@ -382,6 +464,8 @@ export function createHistoryScene(host: HTMLElement, opts: SceneOptions): Histo
     ready,
     prepare,
     isReady: (i) => !!rigOf(i) || !!slots.get(i)?.failed,
+    busy: () => [...slots.values()].some((s) => !s.rig && !s.failed),
+    get lost() { return lost; },
     retain,
     frame,
     resize,
@@ -389,6 +473,10 @@ export function createHistoryScene(host: HTMLElement, opts: SceneOptions): Histo
     get quality() { return quality; },
     stats: () => ({ calls: renderer.info.render.calls, tris: renderer.info.render.triangles, loaded: [...slots.entries()].filter(([, s]) => s.rig).map(([i]) => i) }),
     dispose() {
+      disposed = true;
+      canvas.removeEventListener("webglcontextlost", onLost);
+      canvas.removeEventListener("webglcontextrestored", onRestored);
+      quad.dispose();
       for (const s of slots.values()) { s.ac.abort(); s.rig?.dispose(); }
       slots.clear();
       hall.dispose();
