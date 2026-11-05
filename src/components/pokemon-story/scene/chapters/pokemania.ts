@@ -1,7 +1,7 @@
 import * as THREE from "three";
 import { RoundedBoxGeometry } from "three/examples/jsm/geometries/RoundedBoxGeometry.js";
 import type { Key, Vec3 } from "@/lib/world-history/camera";
-import { col, makeGlow, makeLightning, makeParticles, makeRing, makeShaft, makeSky, makeStreaks, ramp, rng } from "@/components/world-history/scene/kit";
+import { col, makeGlow, makeLightning, makeParticles, makeRing, makeShaft, makeSky, makeStreaks, merge, placed, ramp, rng } from "@/components/world-history/scene/kit";
 import { makeCanvasPanel, makeCity } from "@/components/world-history/scene/props";
 import { lights, loadFigures, lookAt, pointPixel, spike } from "@/components/world-history/scene/chapters/common";
 import type { ChapterBuilder } from "@/components/world-history/scene/types";
@@ -169,16 +169,88 @@ export const build: ChapterBuilder = async (ctx) => {
   storeLight.target.position.set(AT.store, 2, 0);
   scene.add(storeLight, storeLight.target);
 
-  // ---- D. The cinema: rows of heads, a projector beam, Mewtwo rising in it.
-  const seats = new THREE.InstancedMesh(new THREE.SphereGeometry(0.2, 10, 8), new THREE.MeshStandardMaterial({ color: col("#0a0a0e"), roughness: 0.8 }), 90);
+  // ---- D. The cinema: a raked hall of red velvet seats, an audience in silhouette, curtains, a glowing
+  // screen that lights the room, a projector beam from the booth through dust, Mewtwo rising in it.
+  const C = AT.cinema;
+  const ROWS = 7, PER = 16;
+  const rowY = (row: number) => row * 0.32, rowZ = (row: number) => 2.6 + row * 1.05;
+  const hall = new THREE.Mesh(merge([
+    // Stepped floor: one tread per row, and the flat front before the screen.
+    ...Array.from({ length: ROWS + 2 }, (_, row) => placed(new THREE.BoxGeometry(18, 0.32, 1.05), [C, rowY(row) - 0.16, rowZ(row)])),
+    placed(new THREE.BoxGeometry(18, 0.1, 12), [C, -0.05, -4]),
+    // Side walls, ceiling, back wall with the booth window, the screen's black masking and stage.
+    placed(new THREE.BoxGeometry(0.3, 10, 26), [C - 9, 5, 2]), placed(new THREE.BoxGeometry(0.3, 10, 26), [C + 9, 5, 2]),
+    placed(new THREE.BoxGeometry(18, 0.3, 26), [C, 9.2, 2]),
+    placed(new THREE.BoxGeometry(18, 10, 0.3), [C, 5, 13.2]),
+    placed(new THREE.BoxGeometry(18, 10, 0.2), [C, 5, -8.25]),
+    placed(new THREE.BoxGeometry(14.6, 0.7, 1.4), [C, 0.35, -7.5]),
+  ]), new THREE.MeshStandardMaterial({ color: col("#2a1418"), roughness: 0.85 }));
+  // Velvet drapes down both walls and framing the screen: folds as a wavy strip.
+  const drape = (x0: number, z0: number, z1: number, h: number, alongX = false) => {
+    const n = 48, g = new THREE.PlaneGeometry(1, h, n, 1);
+    const pos = g.getAttribute("position") as THREE.BufferAttribute;
+    for (let i = 0; i < pos.count; i++) {
+      const u = pos.getX(i) + 0.5, y = pos.getY(i);
+      const fold = Math.sin(u * n * 0.9) * 0.12;
+      if (alongX) pos.setXYZ(i, x0 + (z0 + (z1 - z0) * u), y + h / 2, -7.9 + fold);
+      else pos.setXYZ(i, x0 + fold * Math.sign(-x0 + C), y + h / 2, z0 + (z1 - z0) * u);
+    }
+    g.computeVertexNormals();
+    return g;
+  };
+  const drapes = new THREE.Mesh(merge([drape(C - 8.75, -6, 12, 8.6), drape(C + 8.75, 12, -6, 8.6), drape(C - 8.6, 0, 1.9, 8.6, true), drape(C + 6.7, 0, 1.9, 8.6, true)]), new THREE.MeshStandardMaterial({ color: col("#6a1020"), roughness: 0.7, side: THREE.DoubleSide }));
+  // Seats (backs and arms in one rounded shape) and the audience: head and shoulders, some seats empty.
+  const seatGeo = new RoundedBoxGeometry(0.62, 0.95, 0.18, 2, 0.08);
+  const seats = new THREE.InstancedMesh(seatGeo, new THREE.MeshStandardMaterial({ color: col("#7a1424"), roughness: 0.75 }), ROWS * PER);
+  const heads = new THREE.InstancedMesh(new THREE.SphereGeometry(0.16, 12, 10), new THREE.MeshStandardMaterial({ color: col("#08070a"), roughness: 0.6 }), ROWS * PER);
+  const shoulders = new THREE.InstancedMesh(new THREE.SphereGeometry(0.3, 12, 8), heads.material as THREE.Material, ROWS * PER);
   const m4 = new THREE.Matrix4();
-  for (let i = 0; i < 90; i++) { const row = Math.floor(i / 15), c = i % 15; m4.makeTranslation(AT.cinema + (c - 7) * 0.75 + (row % 2) * 0.3, 1.0 + row * 0.3, 3 + row * 1.0); seats.setMatrixAt(i, m4); }
-  scene.add(seats);
-  const screenM = new THREE.Mesh(new THREE.PlaneGeometry(13, 6), new THREE.MeshBasicMaterial({ color: col("#7a68c0", 0.4) }));
-  screenM.position.set(AT.cinema, 3.6, -8);
-  scene.add(screenM);
-  D.add({ dispose: () => { seats.geometry.dispose(); (seats.material as THREE.Material).dispose(); seats.dispose(); screenM.geometry.dispose(); (screenM.material as THREE.Material).dispose(); } });
-  const beam = D.add(makeShaft({ from: [AT.cinema, 5.2, 12], to: [AT.cinema, 3.6, -8], r0: 0.15, r1: 4.2, color: "#cfc0ff", intensity: 0.75, noise: 0.6 }));
+  const ra = rng(77);
+  let nh = 0;
+  for (let row = 0; row < ROWS; row++) for (let c = 0; c < PER; c++) {
+    const x = C + (c - (PER - 1) / 2) * 0.7, y = rowY(row), z = rowZ(row) + 0.35;
+    // A centre aisle.
+    const ax = x + (c >= PER / 2 ? 0.5 : -0.5);
+    m4.makeTranslation(ax, y + 0.5, z);
+    seats.setMatrixAt(row * PER + c, m4);
+    if (ra() < 0.82) {
+      const lean = (ra() - 0.5) * 0.12, hs = 0.9 + ra() * 0.25;
+      m4.makeScale(hs, hs * 1.12, hs).setPosition(ax + lean, y + 1.35 + ra() * 0.08, z - 0.16);
+      heads.setMatrixAt(nh, m4);
+      m4.makeScale(1.0, 0.45, 0.5).setPosition(ax, y + 1.0, z - 0.1);
+      shoulders.setMatrixAt(nh, m4);
+      nh++;
+    }
+  }
+  heads.count = shoulders.count = nh;
+  // The screen: an original moving image (a violet sky, a swirl of light, a far ridge), masked in black.
+  const screen = D.add(makeCanvasPanel({
+    w: 13, h: 6, px: [520, 240], emissive: 0.95,
+    draw(g, w, h, tt) {
+      const gr = g.createLinearGradient(0, 0, 0, h);
+      gr.addColorStop(0, "#1a1040"); gr.addColorStop(0.6, "#5a3a9a"); gr.addColorStop(1, "#d8a0d0");
+      g.fillStyle = gr; g.fillRect(0, 0, w, h);
+      g.save(); g.translate(w / 2, h * 0.45);
+      for (let k = 0; k < 7; k++) { g.rotate(0.9 + tt * 0.15); g.strokeStyle = `rgba(230,200,255,${0.12 + k * 0.03})`; g.lineWidth = 6 - k * 0.6; g.beginPath(); g.ellipse(0, 0, 40 + k * 22, 16 + k * 8, 0, 0, Math.PI * 1.4); g.stroke(); }
+      g.restore();
+      g.fillStyle = "#120a20";
+      g.beginPath(); g.moveTo(0, h); for (let x = 0; x <= w; x += 20) g.lineTo(x, h * 0.78 - Math.sin(x * 0.02) * 18 - Math.sin(x * 0.07) * 6); g.lineTo(w, h); g.fill();
+    },
+  }));
+  screen.mesh.position.set(C, 3.9, -8.1);
+  // The screen lights the room: a broad soft light from it into the seats, and two warm wall sconces.
+  const screenLight = new THREE.SpotLight(col("#a890ff"), 0, 30, 0.9, 0.9, 1.0);
+  screenLight.position.set(C, 3.9, -7.6);
+  screenLight.target.position.set(C, 1.5, 6);
+  const sconces = [-8.6, 8.6].flatMap((dx) => [-2, 5].map((z) => { const g2 = D.add(makeGlow({ pos: [C + dx * 0.98, 4.2, z], size: 1.1, color: "#ffb070", intensity: 0 })); scene.add(g2.sprite); return g2; }));
+  const wallLights = [-8.2, 8.2].map((dx) => { const pl = new THREE.PointLight(col("#ffa060"), 0, 9, 1.2); pl.position.set(C + dx, 4.2, 1.5); scene.add(pl); return pl; });
+  const booth = D.add(makeGlow({ pos: [C, 5.2, 13.0], size: 1.6, color: "#ffffff", intensity: 0 }));
+  scene.add(booth.sprite);
+  const cinema = new THREE.Group();
+  cinema.add(hall, drapes, seats, heads, shoulders, screen.mesh, screenLight, screenLight.target);
+  scene.add(cinema);
+  D.add({ dispose: () => { hall.geometry.dispose(); (hall.material as THREE.Material).dispose(); drapes.geometry.dispose(); (drapes.material as THREE.Material).dispose(); seatGeo.dispose(); (seats.material as THREE.Material).dispose(); seats.dispose(); heads.geometry.dispose(); (heads.material as THREE.Material).dispose(); heads.dispose(); shoulders.geometry.dispose(); shoulders.dispose(); } });
+  const beam = D.add(makeShaft({ from: [AT.cinema, 5.2, 13], to: [AT.cinema, 3.9, -8], r0: 0.12, r1: 3.0, color: "#cfc0ff", intensity: 0.28, noise: 0.6 }));
   scene.add(beam.mesh);
   const dust = D.add(makeParticles({ count: Math.round(500 * P) + 60, shape: "box", center: [AT.cinema, 3.8, 0], extent: [1.6, 1.2, 8], velocity: [0, 0.05, 0], spread: [0.1, 0.1, 0.1], life: 6, size: [0.01, 0.025], colors: ["#ffffff", "#e0d8ff", "#bfb0ff"], intensity: 1.6, turbulence: 0.3 }));
   scene.add(dust.points);
@@ -376,6 +448,13 @@ export const build: ChapterBuilder = async (ctx) => {
 
       // D. The cinema: the beam, the dust, Mewtwo rising.
       const cin = st === 3 ? 1 : 0;
+      cinema.visible = cin > 0;
+      if (cin) screen.redraw(ambient);
+      const flick = 0.9 + 0.1 * Math.sin(ambient * 23) * Math.sin(ambient * 7.3);
+      screenLight.intensity = cin * 240 * flick;
+      wallLights.forEach((w) => (w.intensity = cin * 9));
+      sconces.forEach((g2) => g2.set("#ffb070", 0.5 * cin));
+      booth.set("#ffffff", 1.2 * cin);
       beam.u.uTime.value = ambient;
       beam.u.uOpacity.value = cin * (0.4 + 0.6 * ramp(t, tMovie - 0.2, tMovie + 0.6));
       dust.u.uTime.value = ambient; dust.u.uPixel.value = px; dust.u.uOpacity.value = cin;
