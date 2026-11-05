@@ -89,6 +89,8 @@ export function boostTotal(o: Outlook, Eb: number, defMul: number, spdMul: numbe
 export function healTotal(o: Outlook, amount: number): number {
   const got = Math.min(amount, o.maxHp - o.hp);
   if (got <= 0) return 0;
+  // With nothing to attack with, the turns it buys still count (barely): it stays in the fight for its side.
+  if (o.E <= 0) return o.incoming > 0 ? 1e-6 * got : 0;
   return after(o, o.E, horizon(o.hp + got, o.incoming));
 }
 

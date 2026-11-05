@@ -1,4 +1,4 @@
-import { EV, NOTE, NOTE_CONFUSION, NOTE_ITEM, NOTE_SKIP } from "@/lib/mass-battle/constants";
+import { ABILITY_NOTE, EV, FIELD_NOTE, NOTE, NOTE_CONFUSION, NOTE_ITEM, NOTE_SKIP } from "@/lib/mass-battle/constants";
 import { fmt } from "@/lib/mass-battle/copy";
 
 /**
@@ -24,10 +24,33 @@ interface Label {
 
 const LIFE = 0.95;
 
-const STATUS_NAME: Record<number, string> = { 1: "Paralysed", 2: "Burned", 3: "Poisoned", 4: "Badly poisoned", 5: "Asleep", 6: "Frozen", [NOTE_CONFUSION]: "Confused" };
+const STATUS_NAME: Record<number, string> = { 1: "Paralysed", 2: "Burned", 3: "Poisoned", 4: "Badly poisoned", 5: "Asleep", 6: "Frozen", [NOTE_CONFUSION]: "Confused", 10: "Seeded" };
 const STAT_NAME = ["Attack", "Defense", "Sp. Atk", "Sp. Def", "Speed", "Accuracy", "Evasion"];
-const SKIP_NAME: Record<number, string> = { [NOTE_SKIP.sleep]: "Fast asleep", [NOTE_SKIP.frozen]: "Frozen solid", [NOTE_SKIP.flinch]: "Flinched", [NOTE_SKIP.paralysed]: "Fully paralysed", [NOTE_SKIP.confused]: "Hurt itself", [NOTE_SKIP.loafing]: "Loafing around" };
+const SKIP_NAME: Record<number, string> = { [NOTE_SKIP.sleep]: "Fast asleep", [NOTE_SKIP.frozen]: "Frozen solid", [NOTE_SKIP.flinch]: "Flinched", [NOTE_SKIP.paralysed]: "Fully paralysed", [NOTE_SKIP.confused]: "Hurt itself", [NOTE_SKIP.loafing]: "Loafing around", [NOTE_SKIP.recharge]: "Recharging", [NOTE_SKIP.failed]: "But it failed" };
 const ITEM_NAME: Record<number, string> = { [NOTE_ITEM.sitrus]: "Sitrus Berry", [NOTE_ITEM.lum]: "Lum Berry", [NOTE_ITEM.disguise]: "Disguise", [NOTE_ITEM.sash]: "Focus Sash", [NOTE_ITEM.weaknessPolicy]: "Weakness Policy", [NOTE_ITEM.balloon]: "Air Balloon popped", [NOTE_ITEM.knockedOff]: "Item knocked off" };
+
+const ABILITY_NAME: Record<number, string> = { [ABILITY_NOTE.intimidate]: "Intimidate", [ABILITY_NOTE.trace]: "Trace", [ABILITY_NOTE.download]: "Download", [ABILITY_NOTE.gas]: "Neutralizing Gas", [ABILITY_NOTE.pressure]: "Pressure" };
+const WEATHER_START = ["The skies cleared", "The sunlight turned harsh", "It started to rain", "A sandstorm kicked up", "It started to snow"];
+const TERRAIN_START = ["The terrain faded", "Electric Terrain spread out", "Grass grew to cover the field", "The field got weird", "Mist swirled over the field"];
+const SCREEN_NAME = ["", "Reflect", "Light Screen", "Aurora Veil"];
+
+/** A kill-feed line for a change to the field or an ability as a Pokémon comes in, or null. */
+export function fieldLine(kind: number, value: number, who: string): string | null {
+  if (kind === NOTE.ABILITY) {
+    if (value === ABILITY_NOTE.gas) return `${who}'s Neutralizing Gas filled the area`;
+    if (value === ABILITY_NOTE.intimidate) return `${who}'s Intimidate`;
+    if (value === ABILITY_NOTE.trace) return `${who} traced an ability`;
+    return null;
+  }
+  if (kind !== NOTE.FIELD) return null;
+  const what = Math.floor(value / 16), v = value % 16;
+  const by = who ? ` (${who})` : "";
+  if (what === FIELD_NOTE.weather) return WEATHER_START[v] ? `${WEATHER_START[v]}${by}` : null;
+  if (what === FIELD_NOTE.terrain) return TERRAIN_START[v] ? `${TERRAIN_START[v]}${by}` : null;
+  if (what === FIELD_NOTE.screen) return SCREEN_NAME[v % 4] ? `${SCREEN_NAME[v % 4]} went up${by}` : null;
+  if (what === FIELD_NOTE.screenEnd) return SCREEN_NAME[v % 4] ? `${SCREEN_NAME[v % 4]} wore off` : null;
+  return null;
+}
 
 /** The label for a note (a status, healing, chip damage, a stat stage, a lost turn, an item, a form: its name), or null. */
 export function noteLabel(kind: number, value: number, form?: string): { text: string; cls: string } | null {
@@ -44,6 +67,9 @@ export function noteLabel(kind: number, value: number, form?: string): { text: s
     case NOTE.SKIP: return SKIP_NAME[value] ? { text: SKIP_NAME[value], cls: "mb-dmg-miss" } : null;
     case NOTE.ITEM: return ITEM_NAME[value] ? { text: ITEM_NAME[value], cls: "mb-dmg-item" } : null;
     case NOTE.FORM: return form ? { text: form, cls: "mb-dmg-form" } : null;
+    case NOTE.MOVE: return form ? { text: form, cls: "mb-dmg-up" } : null;
+    case NOTE.PP: return { text: "Out of PP: Struggle", cls: "mb-dmg-miss" };
+    case NOTE.ABILITY: return ABILITY_NAME[value] ? { text: ABILITY_NAME[value], cls: "mb-dmg-item" } : null;
   }
   return null;
 }

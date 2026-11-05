@@ -9,6 +9,15 @@ export interface PresetAnswer {
   runs: number;
   /** The battle at the answer the page shows (one the army won). */
   seed: number;
+  /** The pure battle maths: the answer with everyone in reach of everyone (no battlefield), as the simulator check plays it. */
+  pure?: PureAnswer | null;
+}
+
+export interface PureAnswer {
+  n: number;
+  spread: number;
+  wins: number;
+  runs: number;
 }
 
 export interface PresetResult {

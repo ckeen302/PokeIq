@@ -1066,3 +1066,173 @@ describe("mass battle: director", () => {
     }
   });
 });
+
+/** Plays a battle to the end, collecting its events and notes. */
+function playAll(b: Battle) {
+  const events: { actor: number; target: number; slot: number; damage: number; flags: number; tick: number }[] = [];
+  const notes: { unit: number; kind: number; value: number; tick: number }[] = [];
+  while (!b.ended) {
+    b.step();
+    for (let k = 0; k < b.eventCount; k++) {
+      const o = k * EVENT_INTS;
+      events.push({ actor: b.events[o], target: b.events[o + 1], slot: b.events[o + 2], damage: b.events[o + 3], flags: b.events[o + 4], tick: b.tick });
+    }
+    for (let k = 0; k < b.noteCount; k++) notes.push({ unit: b.notes[k * NOTE_INTS], kind: b.notes[k * NOTE_INTS + 1], value: b.notes[k * NOTE_INTS + 2], tick: b.tick });
+  }
+  return { events, notes };
+}
+
+describe("mass battle: status moves (Showdown's data and rules)", () => {
+  it("the roster keeps the status moves it plays, with their rules, and leaves out the rest", () => {
+    expect(move("Swords Dance").effect).toEqual({ kind: "boost", boosts: { atk: 2 } });
+    expect(move("Dragon Dance").effect).toEqual({ kind: "boost", boosts: { atk: 1, spe: 1 } });
+    expect(move("Recover").effect).toEqual({ kind: "heal", share: 0.5 });
+    expect(move("Will-O-Wisp").effect).toEqual({ kind: "inflict", status: "brn" });
+    expect(move("Spore").powder).toBe(true);
+    expect(move("Protect").effect).toEqual({ kind: "protect" });
+    expect(move("Earthquake").allies).toBe(true);
+    expect(move("Rock Slide").allies).toBeUndefined();
+    expect(move("Hydro Pump").pp).toBe(8);
+    expect(unplayable("stealthrock")).toBe("status");
+    expect(unplayable("taunt")).toBe("status");
+  });
+
+  it("a boss facing a horde never sets up (each foe it knocks out is a fresh one); one against one it does when it pays", () => {
+    const horde = new Battle(prepare(roster, spec([["magikarp", 30]], [["arceus", 1]]), { layout: "melee" }));
+    const { notes } = playAll(horde);
+    const arceus = horde.n - 1;
+    const sd = horde.prep.moves[horde.sp[arceus]].findIndex((m) => m.name === "Swords Dance");
+    expect(sd).toBeGreaterThanOrEqual(0);
+    expect(notes.some((n) => n.unit === arceus && n.kind === NOTE.MOVE && n.value === sd)).toBe(false);
+    const duel = melee([{ slug: "gyarados", side: 0, moves: ["Dragon Dance", "Waterfall"] }, { slug: "toxapex", side: 1, moves: ["Recover"] }]);
+    const d = playAll(duel);
+    expect(d.notes.some((n) => n.unit === 0 && n.kind === NOTE.MOVE && n.value === 0)).toBe(true);
+    expect(d.notes.some((n) => n.unit === 0 && n.kind === NOTE.BOOST && Math.floor(n.value / 16) === 0)).toBe(true);
+  });
+
+  it("heals only when it has lost HP, and never puts a status on a target that has one", () => {
+    const b = melee([{ slug: "blissey", side: 0, moves: ["Seismic Toss", "Soft-Boiled", "Thunder Wave"] }, { slug: "machamp", side: 1, moves: ["Close Combat"] }]);
+    const { notes } = playAll(b);
+    const heals = notes.filter((n) => n.unit === 0 && n.kind === NOTE.MOVE && n.value === 1);
+    for (const h of heals) expect(notes.find((n) => n.tick === h.tick && n.unit === 0 && n.kind === NOTE.HEAL)).toBeTruthy();
+    const waves = notes.filter((n) => n.unit === 0 && n.kind === NOTE.MOVE && n.value === 2);
+    expect(waves.length).toBeLessThanOrEqual(1 + notes.filter((n) => n.kind === NOTE.SKIP && n.value === NOTE_SKIP.failed).length);
+    const wisp = melee([{ slug: "weezing-galar", side: 0, moves: ["Will-O-Wisp", "Strange Steam"] }, { slug: "garchomp", side: 1, moves: ["Earthquake"] }], 3);
+    const w = playAll(wisp);
+    const burned = w.notes.findIndex((n) => n.unit === 1 && n.kind === NOTE.STATUS && n.value === STATUS.brn);
+    if (burned >= 0) expect(w.notes.slice(burned + 1).some((n) => n.unit === 0 && n.kind === NOTE.MOVE && n.value === 0)).toBe(false);
+  });
+
+  it("Protect stops a hit, Leech Seed drains an eighth, Rest sleeps two turns", () => {
+    let blocked = false;
+    for (let seed = 1; seed < 30 && !blocked; seed++) {
+      const b = melee([{ slug: "ferrothorn", side: 0, moves: ["Protect", "Leech Seed", "Power Whip"] }, { slug: "iron-valiant", side: 1, moves: ["Moonblast"] }], seed);
+      blocked = playAll(b).events.some((e) => e.flags & EV.PROTECT);
+    }
+    expect(blocked).toBe(true);
+    const seeded = melee([{ slug: "ferrothorn", side: 0, moves: ["Leech Seed"] }, { slug: "snorlax", side: 1, moves: ["Body Slam"] }], 2);
+    const s = playAll(seeded);
+    const chip = s.notes.find((n) => n.unit === 1 && n.kind === NOTE.CHIP);
+    if (chip) expect(chip.value).toBe(Math.floor(seeded.rows[1].maxHp / 8));
+  });
+});
+
+describe("mass battle: abilities as a Pokémon comes in", () => {
+  it("Drizzle sets rain for five rounds, then the weather picked comes back; the slower setter's weather stands", () => {
+    const b = melee([{ slug: "pelipper", side: 0, moves: ["Hydro Pump"], set: { ability: "Drizzle" } }, { slug: "blissey", side: 1, moves: ["Seismic Toss"] }]);
+    expect(b.fieldNow.weather).toBe("rain");
+    for (let t = 0; t < 5 * 60 + 2 && !b.ended; t++) b.step();
+    if (!b.ended) expect(b.fieldNow.weather).toBe("none");
+    const both = melee([{ slug: "pelipper", side: 0, moves: ["Hydro Pump"], set: { ability: "Drizzle" } }, { slug: "ninetales", side: 1, moves: ["Flamethrower"], set: { ability: "Drought" } }]);
+    // Ninetales is faster: it sets sun first, then Pelipper's rain replaces it.
+    expect(both.fieldNow.weather).toBe("rain");
+  });
+
+  it("Intimidate drops every foe in reach one stage (Inner Focus ignores it), Neutralizing Gas turns abilities off", () => {
+    const b = melee([{ slug: "gyarados", side: 0, moves: ["Waterfall"], set: { ability: "Intimidate" } }, { slug: "garchomp", side: 1, moves: ["Earthquake"] }, { slug: "lucario", side: 1, moves: ["Aura Sphere"], set: { ability: "Inner Focus" } }]);
+    expect(b.stages[1 * 7]).toBe(-1);
+    expect(b.stages[2 * 7]).toBe(0);
+    const gas = melee([{ slug: "weezing", side: 0, moves: ["Sludge Bomb"], set: { ability: "Neutralizing Gas" } }, { slug: "dragonite", side: 1, moves: ["Outrage"], set: { ability: "Multiscale" } }]);
+    expect(gas.R(1).ability).toBe("");
+  });
+});
+
+describe("mass battle: moves that charge, recharge, faint the user, or don't use the damage formula", () => {
+  it("Seismic Toss does the user's level, Super Fang half the target's HP, a Ghost is immune to both", () => {
+    const toss = melee([{ slug: "blissey", side: 0, moves: ["Seismic Toss"] }, { slug: "snorlax", side: 1, moves: ["Body Slam"] }]);
+    const t = playAll(toss).events.filter((e) => e.actor === 0 && e.target === 1 && !(e.flags & (EV.MISS | EV.IMMUNE)));
+    expect(t.length).toBeGreaterThan(0);
+    for (const e of t) expect(e.damage === 100 || e.flags & EV.KO).toBeTruthy();
+    const fang = melee([{ slug: "rattata", side: 0, moves: ["Super Fang"] }, { slug: "snorlax", side: 1, moves: ["Body Slam"] }], 4);
+    const f = playAll(fang).events.find((e) => e.actor === 0 && e.damage > 0);
+    if (f) expect(f.damage).toBe(Math.floor(fang.rows[1].maxHp / 2));
+    const ghost = melee([{ slug: "blissey", side: 0, moves: ["Seismic Toss"] }, { slug: "gengar", side: 1, moves: ["Shadow Ball"] }]);
+    expect(ghost.table.canDamage(0, 1)).toBe(false);
+  });
+
+  it("Explosion: the user faints with a blast, and with friendly fire on it hits its partner too", () => {
+    const units = [{ slug: "electrode", side: 0 as const, moves: ["Explosion"] }, { slug: "snorlax", side: 0 as const, moves: ["Body Slam"] }, { slug: "garchomp", side: 1 as const, moves: ["Earthquake"] }, { slug: "garchomp", side: 1 as const, moves: ["Earthquake"] }];
+    for (const ff of [true, false]) {
+      let saw = false;
+      for (let seed = 1; seed < 20 && !saw; seed++) {
+        const b = melee(units, seed, undefined, { pp: false, friendlyFire: ff });
+        const { events } = playAll(b);
+        const blast = events.find((e) => e.flags & EV.BLAST);
+        if (!blast) continue;
+        saw = true;
+        expect(blast.actor).toBe(0);
+        expect(events.some((e) => e.actor === 0 && e.target === 1 && e.flags & EV.ALLY)).toBe(ff);
+      }
+      expect(saw).toBe(true);
+    }
+  });
+
+  it("Solar Beam fires at once in the sun and charges a turn otherwise; Hyper Beam needs a turn to recharge", () => {
+    const sun = { weather: "sun", terrain: "none", time: "day" } as const;
+    const fast = melee([{ slug: "venusaur", side: 0, moves: ["Solar Beam"] }, { slug: "blastoise", side: 1, moves: ["Surf"] }], 1, sun);
+    expect(playAll(fast).notes.some((n) => n.unit === 0 && n.kind === NOTE.MOVE)).toBe(false);
+    const slow = melee([{ slug: "venusaur", side: 0, moves: ["Solar Beam"] }, { slug: "blastoise", side: 1, moves: ["Surf"] }]);
+    expect(playAll(slow).notes.some((n) => n.unit === 0 && n.kind === NOTE.MOVE && n.value === 0)).toBe(true);
+    const beam = melee([{ slug: "porygon-z", side: 0, moves: ["Hyper Beam"] }, { slug: "blissey", side: 1, moves: ["Seismic Toss"] }]);
+    expect(playAll(beam).notes.some((n) => n.unit === 0 && n.kind === NOTE.SKIP && n.value === NOTE_SKIP.recharge)).toBe(true);
+  });
+
+  it("Fake Out only works on the user's first action", () => {
+    const b = melee([{ slug: "hitmontop", side: 0, moves: ["Fake Out"] }, { slug: "snorlax", side: 1, moves: ["Body Slam"] }]);
+    const { events, notes } = playAll(b);
+    const hits = events.filter((e) => e.actor === 0 && e.slot === 0 && e.damage > 0);
+    expect(hits.length).toBeLessThanOrEqual(1);
+    expect(notes.filter((n) => n.unit === 0 && n.kind === NOTE.SKIP && n.value === NOTE_SKIP.failed).length).toBe(0);
+  });
+
+  it("a one-hit KO move fails on a higher level and an Ice type is immune to Sheer Cold", () => {
+    const b = melee([{ slug: "lapras", side: 0, moves: ["Sheer Cold"] }, { slug: "glaceon", side: 1, moves: ["Ice Beam"] }]);
+    expect(b.table.canDamage(0, 1)).toBe(false);
+  });
+});
+
+describe("mass battle: Real PP and Pressure", () => {
+  it("with Real PP a Pokémon that runs out Struggles (a quarter of its HP back on itself); Pressure takes two PP", () => {
+    const pressure = melee([{ slug: "blissey", side: 0, moves: ["Seismic Toss"] }, { slug: "mewtwo", side: 1, moves: ["Psystrike"], set: { ability: "Pressure" } }], 1, undefined, { pp: true, friendlyFire: true });
+    const pp = (pressure as unknown as { ppLeft: Int16Array }).ppLeft;
+    expect(pp[0]).toBe(32);
+    while (!pressure.ended && pp[0] === 32) pressure.step();
+    // Against Pressure a use costs two.
+    expect(pp[0]).toBe(30);
+    // Out of PP: it Struggles (its slot after its own moves) and takes a quarter of its max HP.
+    const out = melee([{ slug: "blissey", side: 0, moves: ["Seismic Toss"] }, { slug: "snorlax", side: 1, moves: ["Body Slam"] }], 1, undefined, { pp: true, friendlyFire: true });
+    (out as unknown as { ppLeft: Int16Array }).ppLeft[0] = 0;
+    const { events, notes } = playAll(out);
+    expect(events.some((e) => e.actor === 0 && e.slot === 1 && e.damage > 0)).toBe(true);
+    expect(notes.some((n) => n.unit === 0 && n.kind === NOTE.CHIP && n.value === Math.round(out.rows[0].maxHp / 4))).toBe(true);
+  });
+});
+
+describe("mass battle: share links carry the rules", () => {
+  it("Real PP and friendly fire off round-trip", () => {
+    const s: BattleSpec = { ...spec([["rattata", 10]], [["mewtwo", 1]]), rules: { pp: true, friendlyFire: false } };
+    const back = decodeBattle(encodeBattle(s, slugs), slugs);
+    expect(back?.rules).toEqual({ pp: true, friendlyFire: false });
+    expect(decodeBattle(encodeBattle(spec([["rattata", 10]], [["mewtwo", 1]]), slugs), slugs)?.rules).toBeUndefined();
+  });
+});

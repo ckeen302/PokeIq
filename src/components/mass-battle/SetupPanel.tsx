@@ -313,6 +313,14 @@ export function SetupPanel({ list, presets, busy, current, playback, onPlayback,
                   <div><label className={label} htmlFor="mb-items">Held items</label><select id="mb-items" value={s.items} onChange={(e) => patch({ items: e.target.value as SetupState["items"] })} className={small} data-testid="mb-items"><option value="none">None</option><option value="sets">Random-battle items</option></select></div>
                 </div>
               </fieldset>
+              <fieldset className="space-y-2" data-testid="mb-rules">
+                <legend className="font-display text-xs font-bold uppercase tracking-wider">Rules</legend>
+                <div className="flex flex-wrap gap-2">
+                  {toggle(s.pp, (v) => patch({ pp: v }), "Real PP", "mb-pp")}
+                  {toggle(s.friendlyFire, (v) => patch({ friendlyFire: v }), "Friendly fire", "mb-ff")}
+                </div>
+                <p className="text-xs text-muted-foreground">Real PP: moves run out as in the games (Pressure takes two), then Struggle. Friendly fire: Earthquake, Surf and Explosion hit partners too, and Lightning Rod and Storm Drain pull a partner&apos;s moves in.</p>
+              </fieldset>
               {s.tab === "ask" ? (
                 <div className="grid gap-3 lg:grid-cols-2">
                   {renderBehaviour({ sideId: "army", title: `The army (${names(s.army)})` })}

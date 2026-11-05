@@ -223,6 +223,7 @@ export function moveInfo(name: string): MBMove {
   if (m.flags.protect) out.protectable = true;
   if (m.flags.reflectable) out.reflectable = true;
   if (m.flags.powder) out.powder = true;
+  if ((m as { volatileStatus?: string }).volatileStatus === "partiallytrapped") out.binds = true;
   const rule = moveRule(m.id);
   if (rule) out.effect = rule;
   return out;

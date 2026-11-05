@@ -2,7 +2,7 @@ import { clampLevel, MODELLED_ITEMS, natureName } from "./sets";
 import {
   ARENAS, CAMERA_MODES, DEFAULT_FIELD, DEFAULT_PLAYBACK, FORMATIONS, SPEEDS, TERRAINS, TYPE_NAMES, WEATHERS,
   type ArenaId, type ArmySpec, type BattleSpec, type CameraMode, type FieldSpec, type Formation, type GroupRule, type ItemPolicy,
-  type PlaybackSpec, type Question, type SetChoice, type Terrain, type UnitSpec, type Weather,
+  type PlaybackSpec, type Question, type RulesSpec, type SetChoice, type Terrain, type UnitSpec, type Weather,
 } from "./types";
 
 /**
@@ -15,8 +15,8 @@ import {
  *   ?b=2.100.volcano.1.0.line_all-water-fe*5.line_all-fire-fe*10
  *
  * Version, everyone's level, arena, seed (base 36), the field (weather,
- * terrain, time of day, "items" for random-battle items; 0 for none of
- * them), then each side: its formation and any other ways it fights
+ * terrain, time of day, "items" for random-battle items, "pp" for Real PP,
+ * "noff" for friendly fire off; 0 for none of them), then each side: its formation and any other ways it fights
  * (spacing, targeting, hold, single), then its rows, each `slug*count`
  * (or `all-<filters>*count` for a group: types, genN, legendary, mythical,
  * fe for fully evolved, nolegend) and any set choices: level l, moves m
@@ -66,24 +66,27 @@ export function itemName(s: string): string | undefined {
 
 const FIELD_WORDS = { weather: WEATHERS.filter((w) => w !== "none"), terrain: TERRAINS.filter((t) => t !== "none"), time: ["dusk", "night"] };
 
-function encodeField(field: FieldSpec | undefined, items: ItemPolicy | undefined): string {
+function encodeField(field: FieldSpec | undefined, items: ItemPolicy | undefined, rules?: RulesSpec): string {
   const f = field ?? DEFAULT_FIELD;
-  const words = [f.weather !== "none" ? f.weather : "", f.terrain !== "none" ? f.terrain : "", f.time !== "day" ? f.time : "", items === "sets" ? "items" : ""].filter(Boolean);
+  const words = [f.weather !== "none" ? f.weather : "", f.terrain !== "none" ? f.terrain : "", f.time !== "day" ? f.time : "", items === "sets" ? "items" : "", rules?.pp ? "pp" : "", rules?.friendlyFire === false ? "noff" : ""].filter(Boolean);
   return words.length ? words.join("-") : "0";
 }
 
-function decodeField(text: string): { field: FieldSpec; items: ItemPolicy } | null {
+function decodeField(text: string): { field: FieldSpec; items: ItemPolicy; rules: RulesSpec } | null {
   const field: FieldSpec = { ...DEFAULT_FIELD };
   let items: ItemPolicy = "none";
-  if (text === "0" || text === "") return { field, items };
+  const rules: RulesSpec = {};
+  if (text === "0" || text === "") return { field, items, rules };
   for (const w of text.split("-")) {
     if ((FIELD_WORDS.weather as string[]).includes(w)) field.weather = w as Weather;
     else if ((FIELD_WORDS.terrain as string[]).includes(w)) field.terrain = w as Terrain;
     else if (w === "dusk" || w === "night") field.time = w;
     else if (w === "items") items = "sets";
+    else if (w === "pp") rules.pp = true;
+    else if (w === "noff") rules.friendlyFire = false;
     else return null;
   }
-  return { field, items };
+  return { field, items, rules };
 }
 
 function encodeBehaviour(a: ArmySpec): string {
@@ -224,7 +227,7 @@ function capSide(units: UnitSpec[]) {
 // ---------------------------------------------------------------------------
 
 export function encodeBattle(spec: BattleSpec, slugs: SlugIndex): string {
-  return ["2", clampLevel(spec.level), spec.arena, (spec.seed >>> 0).toString(36), encodeField(spec.field, spec.items), encodeSide(spec.sides[0], slugs), encodeSide(spec.sides[1], slugs)].join(".");
+  return ["2", clampLevel(spec.level), spec.arena, (spec.seed >>> 0).toString(36), encodeField(spec.field, spec.items, spec.rules), encodeSide(spec.sides[0], slugs), encodeSide(spec.sides[1], slugs)].join(".");
 }
 
 /** A battle from its link (version 1 or 2), or null if anything in it is off (an unknown Pokémon, a bad number…). */
@@ -246,6 +249,7 @@ export function decodeBattle(code: string | null | undefined, slugs: SlugIndex, 
   const spec: BattleSpec = { sides: [a, b], level, arena, seed };
   if (fi.field.weather !== "none" || fi.field.terrain !== "none" || fi.field.time !== "day") spec.field = fi.field;
   if (fi.items === "sets") spec.items = "sets";
+  if (fi.rules.pp || fi.rules.friendlyFire === false) spec.rules = fi.rules;
   return spec;
 }
 
@@ -292,7 +296,7 @@ export const runsOf = (q: Pick<Question, "runs">) => (RUN_CHOICES as readonly nu
 export function encodeQuestion(q: Question, slugs: SlugIndex): string {
   const solver = `${Math.round(thresholdOf(q) * 100)}-${runsOf(q)}`;
   const army: ArmySpec = { ...q.army, units: q.army.units.map((u) => ({ ...u, count: 1 })) };
-  return ["2", clampLevel(q.level), q.arena, solver, encodeField(q.field, q.items), encodeSide(army, slugs), encodeSide(q.boss, slugs)].join(".");
+  return ["2", clampLevel(q.level), q.arena, solver, encodeField(q.field, q.items, q.rules), encodeSide(army, slugs), encodeSide(q.boss, slugs)].join(".");
 }
 
 /** The key a question's battles are seeded by: everything that decides them, but not how many are played. */
@@ -321,6 +325,7 @@ export function decodeQuestion(code: string | null | undefined, slugs: SlugIndex
   q.runs = runsOf(q);
   if (fi.field.weather !== "none" || fi.field.terrain !== "none" || fi.field.time !== "day") q.field = fi.field;
   if (fi.items === "sets") q.items = "sets";
+  if (fi.rules.pp || fi.rules.friendlyFire === false) q.rules = fi.rules;
   return q;
 }
 
@@ -346,6 +351,7 @@ export function questionSpec(q: Question, n: number, seed: number): BattleSpec {
   const spec: BattleSpec = { sides: [{ ...q.army, units }, q.boss], level: q.level, arena: q.arena, seed };
   if (q.field) spec.field = q.field;
   if (q.items) spec.items = q.items;
+  if (q.rules) spec.rules = q.rules;
   return spec;
 }
 

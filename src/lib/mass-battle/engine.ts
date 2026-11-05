@@ -70,6 +70,33 @@ const HOLD_IDLE_TICKS = 6 * TICK_HZ;
 /** A side holding the line steps up to foes this close. */
 const HOLD_ENGAGE = 8;
 
+/** A unit's state as sync sets it. */
+export interface UnitSync {
+  alive: boolean;
+  hp: number;
+  status: number;
+  toxic: number;
+  /** Attack, Defense, Sp. Atk, Sp. Def, Speed, accuracy, evasion. */
+  stages: number[];
+  itemGone: boolean;
+  form: number;
+  confused: number;
+  protectStreak: number;
+  seededBy: number;
+  charging: number;
+  hidden: number;
+  mustRecharge: boolean;
+  hasActed: boolean;
+  rampSlot: number;
+  lock: number;
+  shieldUsed: boolean;
+  /** A slot Cursed Body disabled (−1 none). */
+  disabled?: number;
+  pp?: number[];
+  /** Its ability now (Trace's copy), as an id. */
+  ability?: string;
+}
+
 /** How a side fights. */
 export interface SideBehaviour {
   spacing: Spacing;
@@ -334,7 +361,7 @@ export class Battle {
   noteCount = 0;
   private actionId = 0;
   private rng: number;
-  private round = -1;
+  round = -1;
   private idleSince = 0;
   // Turn order for the current round.
   private order: Int32Array;
@@ -400,6 +427,12 @@ export class Battle {
   private lastSpecBy!: Int32Array;
   private lastHitBy!: Int32Array;
   private lastHit!: Int32Array;
+  /** Wrap and the like: who bound it (−1 none) and the rounds left. */
+  private boundBy!: Int32Array;
+  private boundLeft!: Uint8Array;
+  /** Cursed Body: a move slot disabled (−1 none) and the rounds left. */
+  private disabled!: Int8Array;
+  private disabledLeft!: Uint8Array;
   /** PP left per unit and move slot (Real PP only). */
   private ppLeft: Int16Array | null = null;
   /** Its own row when its ability isn't its fighter's (Trace's copy), else null. */
@@ -510,6 +543,10 @@ export class Battle {
     this.lastHitBy = new Int32Array(n).fill(-1);
     this.lastHit = new Int32Array(n);
     this.unitRow = new Array(n).fill(null);
+    this.disabled = new Int8Array(n).fill(-1);
+    this.boundBy = new Int32Array(n).fill(-1);
+    this.boundLeft = new Uint8Array(n);
+    this.disabledLeft = new Uint8Array(n);
     this.entryPending = new Uint8Array(n);
     this.benched = new Uint8Array(n);
     this.planValue = new Float64Array(n);
@@ -571,7 +608,56 @@ export class Battle {
     for (let i = 0; i < n; i++) this.target[i] = this.findTarget(i);
   }
 
-  /** The row a unit fights with now: its fighter's, the one for Trace's copy, or the one with no ability under Neutralizing Gas. */
+  /**
+   * Sets a unit's state from outside (the check against Showdown's simulator mirrors the simulator's battle into an
+   * engine battle each turn and plans with planAll, so both choose the same way).
+   */
+  sync(i: number, u: UnitSync) {
+    this.alive[i] = u.alive ? 1 : 0;
+    this.benched[i] = u.alive || u.hp <= 0 ? 0 : 1;
+    this.hp[i] = u.hp;
+    this.status[i] = u.status;
+    this.toxic[i] = u.toxic;
+    this.stages.set(u.stages, i * STAGES);
+    this.itemGone[i] = u.itemGone ? 1 : 0;
+    this.form[i] = u.form;
+    this.confused[i] = u.confused;
+    this.protectRound[i] = u.protectStreak ? this.round - 1 : -9;
+    this.protectStreak[i] = u.protectStreak;
+    this.seededBy[i] = u.seededBy;
+    this.charging[i] = u.charging;
+    this.hidden[i] = u.hidden;
+    this.mustRecharge[i] = u.mustRecharge ? 1 : 0;
+    this.hasActed[i] = u.hasActed ? 1 : 0;
+    this.rampSlot[i] = u.rampSlot;
+    this.rampLeft[i] = u.rampSlot >= 0 ? 1 : 0;
+    this.lock[i] = u.lock;
+    this.shieldUsed[i] = u.shieldUsed ? 1 : 0;
+    this.disabled[i] = u.disabled ?? -1;
+    this.disabledLeft[i] = (u.disabled ?? -1) >= 0 ? 2 : 0;
+    if (this.ppLeft && u.pp) for (let s = 0; s < 4; s++) this.ppLeft[i * 4 + s] = u.pp[s] ?? 0;
+    this.unitRow[i] = u.ability && u.ability !== this.rows[this.sp[i]].ability ? this.variant(this.sp[i], u.ability) : null;
+    this.target[i] = -1;
+  }
+
+  /** The field from outside (see sync); also counts who's left. */
+  syncField(f: { weather: FieldSpec["weather"]; terrain: FieldSpec["terrain"]; screens: number[]; gas: boolean; round: number }) {
+    this.fieldNow.weather = f.weather;
+    this.fieldNow.terrain = f.terrain;
+    this.screens.set(f.screens);
+    this.gas = f.gas;
+    this.round = f.round;
+    this.rebuildGrids();
+    this.left[0] = this.left[1] = 0;
+    for (let i = 0; i < this.n; i++) if (this.alive[i] || this.benched[i]) this.left[this.side[i]]++;
+  }
+
+  /** The plan planAll made for a unit: its move slot (−1 none) and target unit. */
+  planOf(i: number): { slot: number; target: number } {
+    return { slot: this.plan[i], target: this.planTarget[i] };
+  }
+
+    /** The row a unit fights with now: its fighter's, the one for Trace's copy, or the one with no ability under Neutralizing Gas. */
   R(i: number): FighterRow {
     const own = this.unitRow?.[i] ?? this.rows[this.sp[i]];
     if (this.gas && own.ability && !GAS_PROOF.has(own.ability)) return this.variant(this.sp[i], "");
@@ -1077,9 +1163,9 @@ export class Battle {
   /** Whether it can pick this slot now: it has PP left (Real PP), and Struggle only once it has none. */
   private hasPP(i: number, slot: number): boolean {
     const own = this.ownMoves(i);
-    if (!this.ppLeft) return slot < own;
-    if (slot < own) return this.ppLeft[i * 4 + slot] > 0;
-    for (let s = 0; s < own; s++) if (this.ppLeft[i * 4 + s] > 0) return false;
+    const usable = (s: number) => this.disabled[i] !== s && (!this.ppLeft || this.ppLeft[i * 4 + s] > 0);
+    if (slot < own) return usable(slot);
+    for (let s = 0; s < own; s++) if (usable(s)) return false;
     return true;
   }
 
@@ -1634,6 +1720,7 @@ export class Battle {
     this.lastFaintSide = this.side[j];
     this.charging[j] = -1;
     this.hidden[j] = 0;
+    this.boundBy[j] = -1;
     // The last Neutralizing Gas gone: every ability comes back, and those that act as a Pokémon comes in act again.
     if (this.gas && this.R(j).ability === "neutralizinggas") {
       let still = false;
@@ -2430,6 +2517,11 @@ export class Battle {
         this.pushNote(j, NOTE.CURE, STATUS.frz);
       }
       const ab = dRow.ability;
+      // Cursed Body: three times in ten the move that hit it is disabled for the next three rounds.
+      if (ab === "cursedbody" && this.alive[i] && this.disabled[i] < 0 && this.side[i] !== this.side[j] && this.random() < 0.3) {
+        const slot = this.table.moves[this.sp[i]].indexOf(mv);
+        if (slot >= 0 && slot < this.ownMoves(i)) { this.disabled[i] = slot; this.disabledLeft[i] = 4; this.residualAny = true; }
+      }
       if (ab === "stamina") this.boost(j, { def: 1 }, false);
       else if (ab === "justified" && mv.type === "Dark") this.boost(j, { atk: 1 }, false);
       else if (ab === "weakarmor" && mv.cat === "Physical") this.boost(j, { def: -1, spe: 2 }, false);
@@ -2469,6 +2561,12 @@ export class Battle {
     // Toxic Chain: any hit may badly poison the target.
     if (row.ability === "toxicchain" && this.alive[j] && !covered && this.random() < 0.3) this.setStatus(j, "tox", i);
     if (this.alive[j]) this.checkBerry(j);
+    // Wrap, Fire Spin, Whirlpool: bound for five or six rounds, this one included (Showdown's partiallytrapped).
+    if (mv.binds && this.alive[i] && this.alive[j] && this.boundBy[j] < 0) {
+      this.boundBy[j] = i;
+      this.boundLeft[j] = 5 + Math.floor(this.random() * 2);
+      this.residualAny = true;
+    }
     // 3. Knock Off takes the item (not a Mega Stone, not through Sticky Hold).
     if (this.alive[i] && this.alive[j] && toId(mv.name) === "knockoff" && !this.itemGone[j] && !dRow.mega && dAb !== "stickyhold") {
       this.itemGone[j] = 1;
@@ -2562,9 +2660,18 @@ export class Battle {
       if (this.status[i] !== STATUS.brn || row.magicGuard) return;
       this.chip(i, Math.max(1, Math.floor(row.maxHp / (row.ability === "heatproof" ? 32 : 16))), -1, EV.RECOIL | EV.RESIDUAL);
     });
+    // Binding: an eighth of its max HP a round while it lasts (it ends when the binder is gone).
+    each((i, row) => {
+      const by = this.boundBy[i];
+      if (by < 0) return;
+      if (!this.alive[by] || --this.boundLeft[i] === 0) { this.boundBy[i] = -1; this.boundLeft[i] = 0; return; }
+      if (!row.magicGuard) this.chip(i, Math.max(1, Math.floor(row.maxHp / 8)), by, EV.RECOIL | EV.RESIDUAL);
+    });
     each((i, row) => {
       if (row.ability === "speedboost") this.boost(i, { spe: 1 }, false);
     });
+    // Disable (Cursed Body) wears off.
+    for (let i = 0; i < this.n; i++) if (this.disabledLeft[i] > 0 && --this.disabledLeft[i] === 0) this.disabled[i] = -1;
     // Screens run out, then a setter's terrain.
     for (let o = 0; o < 6; o++) if (this.screens[o] > 0 && --this.screens[o] === 0) this.pushNote(-1, NOTE.FIELD, FIELD_NOTE.screenEnd * 16 + Math.floor(o / 3) * 4 + (o % 3) + 1);
     if (this.terrainLeft > 0 && --this.terrainLeft === 0) {
@@ -2782,6 +2889,7 @@ export class Battle {
       }
     }
     if (came.length) {
+      this.rebuildGrids();
       this.comeIn(came);
       for (let i = 0; i < this.n; i++) if (this.alive[i] && (this.target[i] < 0 || !this.alive[this.target[i]])) this.target[i] = this.findTarget(i);
     }

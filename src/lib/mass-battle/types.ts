@@ -116,6 +116,8 @@ export interface MBMove {
   crash?: boolean;
   /** A punch (Iron Fist boosts it; with a Punching Glove it doesn't make contact). */
   punch?: boolean;
+  /** Wrap, Fire Spin, Whirlpool and the like: the target takes an eighth of its max HP for four or five more rounds. */
+  binds?: boolean;
   /** Its power points (Showdown's, with three PP Ups as in every Showdown set). */
   pp?: number;
   /** A spread move that also hits the user's allies (Showdown's target allAdjacent: Earthquake, Surf, Explosion). */
