@@ -43,20 +43,24 @@ export function NeaDaily() {
     <div className="space-y-6">
       <header className="mx-auto max-w-3xl space-y-2 text-center">
         <p className="hud-label text-screen">Name &apos;em All · Daily {today ?? ""}</p>
-        <h1 className="font-display text-3xl font-bold uppercase tracking-tight sm:text-5xl" data-testid="nea-daily-title">
+        {/* Two lines tall from the start: the day's title (local date) replaces the placeholder after load. */}
+        <h1 className="flex min-h-[4.5rem] items-center justify-center font-display text-3xl font-bold uppercase tracking-tight sm:min-h-24 sm:text-5xl" data-testid="nea-daily-title">
           {cat ? cat.h1 : "Today's category"}
         </h1>
         <p className="text-sm text-muted-foreground">One category a day, the same for everyone. One try counts towards your best: Regular mode, the standard time, no hints or pauses.</p>
       </header>
-      {error ? (
-        <p className="text-center text-destructive">{error}</p>
-      ) : !data || !cat || !today ? (
-        <p className="flex items-center justify-center gap-2 py-16 text-muted-foreground">
-          <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> Loading today&apos;s Pokémon…
-        </p>
-      ) : (
-        <NameEmAll key={today} category={{ id: cat.id, label: cat.label }} targets={data.targets} outsiders={data.outsiders} daily={today} />
-      )}
+      {/* Hold about the start card's height while today's Pokémon load, so the page doesn't jump when it appears. */}
+      <div className="min-h-[48rem] sm:min-h-[34rem]">
+        {error ? (
+          <p className="text-center text-destructive">{error}</p>
+        ) : !data || !cat || !today ? (
+          <p className="flex items-center justify-center gap-2 py-16 text-muted-foreground">
+            <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> Loading today&apos;s Pokémon…
+          </p>
+        ) : (
+          <NameEmAll key={today} category={{ id: cat.id, label: cat.label }} targets={data.targets} outsiders={data.outsiders} daily={today} />
+        )}
+      </div>
     </div>
   );
 }

@@ -24,7 +24,10 @@ export default function DuelHistoryPage() {
         <h1 className="font-display text-3xl font-bold tracking-tight sm:text-4xl">Duel history</h1>
         <p className="text-sm text-muted-foreground">Every duel you finish on this device, or on your account when you&apos;re signed in. Open one to replay it round by round.</p>
       </header>
-      <DuelHistoryList mapNames={mapNames()} />
+      {/* Hold about the empty-history card's height while the list loads, so the page doesn't jump when it appears. */}
+      <div className="min-h-[12.25rem] sm:min-h-44">
+        <DuelHistoryList mapNames={mapNames()} />
+      </div>
     </div>
   );
 }

@@ -1155,7 +1155,6 @@ function MapTile({ map, selected, onPick }: { map: GeoRegionInfo; selected: bool
         type="button"
         onClick={onPick}
         aria-pressed={selected}
-        aria-label={`${map.name}: set up a solo game on this map`}
         data-testid={`geo-map-tile-${map.id}`}
         className={cn(
           "group relative block aspect-[4/3] w-full overflow-hidden rounded-lg border bg-shade/30 text-left transition-colors",
@@ -1178,6 +1177,8 @@ function MapTile({ map, selected, onPick }: { map: GeoRegionInfo; selected: bool
           </span>
           <span className="block font-pixel text-[9px] uppercase tracking-wider text-white/75">{fmt(map.locations)} places</span>
         </span>
+        {/* The tile's name is its visible text, then what picking it does. */}
+        <span className="sr-only">, set up a solo game on this map</span>
         {selected && (
           <span className="absolute right-2 top-2 rounded-sm bg-screen px-1.5 py-1 font-pixel text-[9px] uppercase leading-none text-background" aria-hidden>
             Selected

@@ -26,7 +26,6 @@ export function ModeGrid() {
             <Link
               href={moduleHref(id)}
               className="menu-item group flex h-full items-center gap-4 overflow-hidden rounded-lg border bg-card p-4 hover:border-screen/50 hover:bg-accent/40"
-              aria-label={`Play ${info.title}`}
             >
               <span className="absolute inset-y-0 left-0 w-1" style={{ background: `hsl(${info.accent})` }} aria-hidden />
               <span
@@ -37,7 +36,10 @@ export function ModeGrid() {
               </span>
               <span className="min-w-0 flex-1">
                 <span className="flex items-center gap-2">
-                  <span className="hud-label">{String(i + 1).padStart(2, "0")}</span>
+                  {/* The link's name is its visible text: the title, then the description. */}
+                  <span className="hud-label" aria-hidden>
+                    {String(i + 1).padStart(2, "0")}
+                  </span>
                   <span className="truncate font-display text-lg font-bold uppercase tracking-wide">{info.title}</span>
                 </span>
                 <span className="mt-0.5 block text-sm text-muted-foreground">{info.description}</span>

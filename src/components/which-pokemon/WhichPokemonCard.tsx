@@ -13,7 +13,6 @@ export function WhichPokemonCard() {
     <Link
       href={QUIZ_PATH}
       className="menu-item group relative flex items-center gap-4 overflow-hidden rounded-lg border bg-card p-4 hover:border-screen/50 hover:bg-accent/40"
-      aria-label="Play Which Pokémon Are You?"
       data-testid="play-which-pokemon"
     >
       <span className="absolute inset-y-0 left-0 w-1 bg-[hsl(290_80%_62%)]" aria-hidden />
