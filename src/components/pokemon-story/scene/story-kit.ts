@@ -184,6 +184,33 @@ export function makeSilhouette(o: { height: number; pose?: Pose; child?: boolean
   };
 }
 
+/** A line of woods behind a field: merged trunks and lumpy crowns (two draw calls), with a gap along the sun's line. */
+export function makeWoods(o: { height: (x: number, z: number) => number; center: Vec3; seed?: number; count?: number; sunX?: (z: number) => number }) {
+  const r = rng(o.seed ?? 12);
+  const trunkG: THREE.BufferGeometry[] = [], crownG: THREE.BufferGeometry[] = [];
+  const [cx, , cz] = o.center;
+  for (let i = 0, made = 0; i < 200 && made < (o.count ?? 64); i++) {
+    const x = (r() - 0.5) * 140, z = -24 - r() * 52;
+    if (o.sunX && Math.abs(x - o.sunX(z)) < 7 + (9 - z) * 0.08) continue;
+    made++;
+    const s = 0.75 + r() * 1.0;
+    const y0 = o.height(cx + x, cz + z);
+    trunkG.push(placed(new THREE.CylinderGeometry(0.22, 0.42, 7, 7), [cx + x, y0 + 3.5 * s, cz + z], 0, [s, s, s], (r() - 0.5) * 0.08));
+    const lumps = 3 + Math.floor(r() * 3);
+    for (let j = 0; j < lumps; j++) {
+      const a = r() * Math.PI * 2, d = r() * 1.9 * s;
+      crownG.push(placed(new THREE.IcosahedronGeometry(1.9 + r() * 1.2, 1), [cx + x + Math.cos(a) * d, y0 + (6.4 + r() * 2.6) * s, cz + z + Math.sin(a) * d * 0.6], r() * 3, [s * (1 + r() * 0.3), s * (0.8 + r() * 0.4), s]));
+    }
+  }
+  const trunkMat = new THREE.MeshStandardMaterial({ color: col("#24160a"), roughness: 0.9 });
+  const leafMat = new THREE.MeshStandardMaterial({ color: col("#34401a"), roughness: 0.85 });
+  const trunks = new THREE.Mesh(merge(trunkG), trunkMat), crowns = new THREE.Mesh(merge(crownG), leafMat);
+  trunkG.concat(crownG).forEach((g) => g.dispose());
+  const group = new THREE.Group();
+  group.add(trunks, crowns);
+  return { group, dispose() { trunks.geometry.dispose(); crowns.geometry.dispose(); trunkMat.dispose(); leafMat.dispose(); } };
+}
+
 /** An anglepoise desk lamp (base, two arms, a shade tipped forward); `bulb` is where its light sits, in the group's space. */
 export function makeDeskLamp(o: { color?: string; scale?: number } = {}) {
   const s = o.scale ?? 1;

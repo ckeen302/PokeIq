@@ -4,7 +4,7 @@ import { col, makeGlow, makeParticles, makeRing, makeSky, makeStreaks, makeTerra
 import { makeCity } from "@/components/world-history/scene/props";
 import { lights, loadFigures, lookAt, pointPixel } from "@/components/world-history/scene/chapters/common";
 import type { ChapterBuilder } from "@/components/world-history/scene/types";
-import { drawCritter, makeDevice, makeFireflies, makeGlassCase, makeGlobe, makeGrass, makeSilhouette, makeStars } from "../story-kit";
+import { drawCritter, makeDevice, makeFireflies, makeGlassCase, makeGlobe, makeGrass, makeSilhouette, makeStars, makeWoods } from "../story-kit";
 import { bag, heroFigure, shots, stageAt, STOCK, type Hero } from "./base";
 import { cableTable } from "./cable";
 
@@ -44,7 +44,7 @@ export const build: ChapterBuilder = async (ctx) => {
   const gal = new THREE.Group();
   gal.position.set(AT.gallery, 0, 0);
   scene.add(gal);
-  const glassCase = D.add(makeGlassCase({ w: 2.2, h: 1.5, d: 1.2 }));
+  const glassCase = D.add(makeGlassCase({ w: 2.2, h: 1.5, d: 1.2, wood: "#4a3020" }));
   gal.add(glassCase.group);
   const sw2 = D.add(makeDevice("switch2", { draw: (g, w, h) => { const grd = g.createLinearGradient(0, 0, w, h); grd.addColorStop(0, "#3a8aff"); grd.addColorStop(1, "#e8f4ff"); g.fillStyle = grd; g.fillRect(0, 0, w, h); }, screenK: 0.6 }));
   sw2.group.position.set(0, glassCase.shelf.y + 0.55, 0);
@@ -57,7 +57,7 @@ export const build: ChapterBuilder = async (ctx) => {
   scene.add(caseLamp, caseLamp.target);
   const wind = D.add(makeStreaks({ count: Math.round(160 * P) + 40, center: [AT.gallery, 1.6, 0], extent: [2.8, 1.2, 2.2], velocity: [3.2, 0.4, 0], spread: [0.6, 0.4, 0.6], life: 1.4, length: 0.9, width: 0.02, color: "#ffffff", intensity: 1.4, seed: 7 }));
   scene.add(wind.mesh);
-  const foam = D.add(makeParticles({ count: Math.round(500 * P) + 80, shape: "cylinder", center: [AT.gallery, 1.4, 0], extent: [2.2, 0.9, 2.2], velocity: [0, 0.3, 0], spread: [0.2, 0.3, 0.2], life: 2.4, size: [0.02, 0.06], colors: ["#ffffff", "#9ad8ff", "#3a8aff"], intensity: 2.0, turbulence: 0.6, swirl: 1.8 }));
+  const foam = D.add(makeParticles({ count: Math.round(500 * P) + 80, shape: "cylinder", center: [AT.gallery, 1.5, 0], extent: [1.7, 0.45, 1.5], velocity: [0, 0.3, 0], spread: [0.2, 0.3, 0.2], life: 2.4, size: [0.02, 0.06], colors: ["#ffffff", "#9ad8ff", "#3a8aff"], intensity: 2.0, turbulence: 0.6, swirl: 1.8 }));
   scene.add(foam.points);
   const galFloor = new THREE.Mesh(new THREE.PlaneGeometry(30, 30).rotateX(-Math.PI / 2), new THREE.MeshStandardMaterial({ color: col("#3a2618"), roughness: 0.5 }));
   galFloor.position.set(AT.gallery, 0, 0);
@@ -151,11 +151,12 @@ export const build: ChapterBuilder = async (ctx) => {
   const field = D.add(makeTerrain({ size: [200, 200], segments: 90, height: (x, z) => nz.fbm(x * 0.03, z * 0.03, 4) * 3 - 1.2 + Math.max(0, -z - 40) * 0.04, color: (h) => { const k = Math.max(0, Math.min(1, (h + 1.5) / 3)); return [0.2 + 0.12 * k, 0.24 + 0.1 * k, 0.08]; } }));
   field.mesh.position.set(AT.field, 0, 0);
   scene.add(field.mesh);
-  const grass = D.add(makeGrass({ count: Math.round(16000 * P) + 2000, center: [AT.field, 0, 2], size: [40, 34], height: [0.5, 1.15], base: "#16200a", tip: "#8f8436", seed: 3 }));
+  const grass = D.add(makeGrass({ count: Math.round(16000 * P) + 2000, center: [AT.field, 0, 2], size: [40, 34], height: [0.5, 1.15], base: "#0c1206", tip: "#a89a44", seed: 3, clear: { x: AT.field, z: -2, r: 1.3 } }));
   scene.add(grass.mesh);
   const groundY = (x: number, z: number) => nz.fbm((x - AT.field) * 0.03, z * 0.03, 4) * 3 - 1.2;
   const kid = D.add(makeSilhouette({ height: 1.35, pose: "net", child: true, rim: "#ffcf7a" }));
-  kid.mesh.position.set(AT.field, groundY(AT.field, -2), -2);
+  // The grass layer stands at y = 0 over the field; the child stands in it, not under it.
+  kid.mesh.position.set(AT.field, Math.max(groundY(AT.field, -2), -0.12), -2);
   kid.mesh.rotation.y = 0.4;
   scene.add(kid.mesh);
   const flies = D.add(makeFireflies({ count: Math.round(420 * P) + 60, center: [AT.field, 1.8, 0], extent: [16, 2.6, 12], seed: 7 }));
@@ -167,6 +168,13 @@ export const build: ChapterBuilder = async (ctx) => {
   scene.add(finalRing.mesh);
   const dusk = D.add(makeGlow({ pos: [AT.field + 10, 4, -80], size: 70, color: "#ffb05a", intensity: 0 }));
   scene.add(dusk.sprite);
+  // The same woods and low sun as Chapter I, so the film ends where it began.
+  const woods = D.add(makeWoods({ height: (x, z) => groundY(x, z), center: [AT.field, 0, 0], sunX: (z) => 0.15 * (-2 - z) }));
+  scene.add(woods.group);
+  grass.u.uSunDir.value.set(0.15, 0.06, -1).normalize();
+  grass.u.uSun.value.copy(col("#ffb860"));
+  const motes = D.add(makeParticles({ count: Math.round(420 * P) + 60, shape: "box", center: [AT.field, 2.2, 0], extent: [14, 2.2, 10], velocity: [0.05, 0.02, 0], spread: [0.04, 0.03, 0.04], life: 12, size: [0.012, 0.03], colors: ["#ffe2a0", "#ffd080", "#ffb860"], intensity: 1.5, turbulence: 0.6, fadeIn: 0.3, fadeOut: 0.3, seed: 41 }));
+  scene.add(motes.points);
 
   // ---- The figures: Pikachu at the heart, the first three and Mew in front.
   const figs = await loadFigures(ctx, [25, 1, 4, 7, 151]);
@@ -198,8 +206,9 @@ export const build: ChapterBuilder = async (ctx) => {
     ]],
     [tYours, [
       { t: tYours, pos: [AT.field + 0.5, 14, 18], look: [AT.field, 0, -2], fov: 50 },
-      { t: tYours + 3, pos: [AT.field + 0.8, 2.2, 8], look: [AT.field, 0.9, -2], fov: 42 },
-      { t: end, pos: [AT.field + 0.6, 1.3, 5.4], look: [AT.field, 1.0, -2], fov: 40 },
+      { t: tYours + 3, pos: [AT.field + 0.1, 1.8, 8], look: [AT.field + 0.2, 1.1, -2], fov: 40 },
+      // Low in the grass, the child just left of the setting sun (backlit, not lost in its glare), as in Chapter I.
+      { t: end, pos: [AT.field + 0.05, 1.3, 4.4], look: [AT.field + 0.3, 1.1, -2], fov: 36 },
     ]],
   ]);
   const starts = [0, tThen - 0.2, tThousand - 0.2, tYours];
@@ -214,14 +223,22 @@ export const build: ChapterBuilder = async (ctx) => {
       const st = stageAt(starts, t);
       sky.follow(cam);
       const out = st === 1 ? ramp(t, tNow + 1.5, tNow + 5) : 0;
+      woods.group.visible = st === 3;
+      motes.u.uTime.value = ambient; motes.u.uPixel.value = px; motes.u.uOpacity.value = st === 3 ? 1 : 0;
+      sky.u.uSunDir.value.set(0.15, 0.03, -1).normalize();
+      sky.u.uSunColor.value.copy(col(st === 3 ? "#ffb860" : "#000000", 0.8));
+      sky.u.uSunSize.value = 1400;
+      sky.u.uSunGlow.value = st === 3 ? 0.4 : 0;
       if (st === 3) {
-        sky.u.uTop.value.copy(col("#2f3d78")); sky.u.uHorizon.value.copy(col("#e8904a")); sky.u.uBottom.value.copy(col("#2a1a0e"));
+        sky.u.uTop.value.copy(col("#2f3d78")); sky.u.uHorizon.value.copy(col("#ff8a4a")); sky.u.uBottom.value.copy(col("#2a1a0e"));
+      } else if (st === 0) {
+        sky.u.uTop.value.copy(col("#0c0a08")); sky.u.uHorizon.value.copy(col("#3a2e1a")); sky.u.uBottom.value.copy(col("#080604"));
       } else {
         sky.u.uTop.value.copy(col("#0a0a14").lerp(col("#02040c"), out)); sky.u.uHorizon.value.copy(col("#1a1a2a").lerp(col("#0a1430"), out)); sky.u.uBottom.value.copy(col("#050508"));
       }
       stars.points.visible = st === 2 || out > 0.5;
-      fog.density = st === 3 ? 0.009 : 0;
-      fog.color.copy(col("#7a5030"));
+      fog.density = st === 3 ? 0.0062 : 0;
+      fog.color.copy(col("#6a4028"));
       L.key.intensity = st === 3 ? 1.6 : 0.8;
       L.key.color.copy(col(st === 3 ? "#ffc070" : "#fff0d8"));
       L.hemi.intensity = st === 3 ? 0.6 : 0.4;
@@ -236,7 +253,7 @@ export const build: ChapterBuilder = async (ctx) => {
 
       // B/C. The table; the cable lights and runs out of the room.
       T.redraw(ambient, viewH, cam);
-      T.lamp.intensity = st === 1 ? 30 : 0;
+      T.lamp.intensity = st === 1 ? 18 : 0;
       T.cable.mesh.visible = T.gbA.group.visible = T.gbB.group.visible = T.extras.visible = st === 1;
       const fuse = st === 1 ? ramp(t, tNow, tNow + 1.4) : 0;
       T.cable.u.uFuse.value = fuse;
