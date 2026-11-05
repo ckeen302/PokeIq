@@ -54,15 +54,35 @@ export function readAnonId(token: unknown): string | null {
 /** The key a trainer's rating is stored under: an HMAC of "u:<account>" or "a:<anonymous id>". */
 export const rankedKey = (identity: string) => deriveSeed("pokedle-ranked", identity);
 
-/** The trainer behind a request: their account if signed in, else the anonymous id they sent. Null when neither. */
+/**
+ * Thrown when a request carries a session but the accounts service can't say
+ * whose it is. Falling back to the browser's anonymous id would rate a
+ * signed-in trainer's game on a different ladder entry, so callers answer
+ * 503 (or, for casual play, go on without a ladder key).
+ */
+export class AccountsUnavailable extends Error {
+  constructor() {
+    super("Accounts are unavailable right now.");
+  }
+}
+
+/**
+ * The trainer behind a request: their account if signed in, else the
+ * anonymous id they sent. Null when neither. A session cookie that no longer
+ * names an account (signed out elsewhere, expired) counts as no session.
+ * Throws AccountsUnavailable when there is a session and the accounts
+ * service fails: never the anonymous id for a request that carries a session.
+ */
 export async function rankedIdentity(request: NextRequest, anonToken: unknown): Promise<string | null> {
   if (sessionTokenHash(request)) {
+    let user: Awaited<ReturnType<typeof userFromRequest>>;
     try {
-      const user = await userFromRequest(request);
-      if (user) return `u:${user.id}`;
-    } catch {
-      // Accounts are down: fall back to the anonymous id.
+      user = await userFromRequest(request);
+    } catch (err) {
+      console.error("[ranked] accounts lookup failed:", err);
+      throw new AccountsUnavailable();
     }
+    if (user) return `u:${user.id}`;
   }
   const anon = readAnonId(anonToken);
   return anon ? `a:${anon}` : null;

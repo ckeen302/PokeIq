@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { clientIp, rateLimit, tooManyRequests } from "@/lib/server/rate-limit";
-import { RankedUnavailable, newAnonId } from "@/lib/server/ranked";
+import { AccountsUnavailable, RankedUnavailable, newAnonId } from "@/lib/server/ranked";
 import { ladderStore } from "@/lib/server/battle-engine/ladder";
 import { battlePlayerKey } from "@/lib/server/battle-engine/identity";
 import { LADDER_FORMATS, type LadderResponse } from "@/lib/battle/ladder";
@@ -26,11 +26,18 @@ export async function GET(request: NextRequest) {
   const query = querySchema.safeParse(Object.fromEntries(request.nextUrl.searchParams));
   if (!query.success) return NextResponse.json({ error: "Bad request." }, { status: 400, headers: NO_STORE });
   const { format, top } = query.data;
-  let key = await battlePlayerKey(request, request.headers.get("x-ranked-id"));
+  let key: string | null;
   let id: string | undefined;
-  if (!key) {
-    id = newAnonId();
-    key = await battlePlayerKey(request, id);
+  try {
+    key = await battlePlayerKey(request, request.headers.get("x-ranked-id"));
+    if (!key) {
+      id = newAnonId();
+      key = await battlePlayerKey(request, id);
+    }
+  } catch (err) {
+    // A session the accounts service can't read: never show (or hand out) a guest standing in its place.
+    if (err instanceof AccountsUnavailable) return NextResponse.json({ error: "Accounts are down for a moment. Try again." }, { status: 503, headers: NO_STORE });
+    throw err;
   }
   const store = ladderStore();
   if (!store) return NextResponse.json({ available: false, id } satisfies LadderResponse, { headers: NO_STORE });

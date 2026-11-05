@@ -8,7 +8,7 @@ import { duelNameSchema, type PvpFailure } from "@/lib/server/duel-core";
 import { battlesEnabled } from "@/lib/server/battle-engine/store";
 import { actOnBattle, battleToken, chatBattle, pollBattle, readBattleToken, rematchBattle } from "@/lib/server/battle-engine/service";
 import { needsSettling, saveReplayFor, settleBattle } from "@/lib/server/battle-engine/settle";
-import { battlePlayerKey } from "@/lib/server/battle-engine/identity";
+import { casualBattlePlayerKey } from "@/lib/server/battle-engine/identity";
 import { DUEL_CODE_RE } from "@/lib/duel-types";
 import { BATTLE_CHOICE_RE, BATTLE_TEAM_MAX, CPU_LEVELS, type BattleSeatResponse } from "@/lib/battle/play";
 
@@ -126,7 +126,7 @@ export async function POST(request: NextRequest, context: Context) {
 
   try {
     if (body.action === "join") {
-      const player = await battlePlayerKey(request, body.rankedId);
+      const player = await casualBattlePlayerKey(request, body.rankedId);
       const out = await actOnBattle(code, null, { action: "join", name: body.name, team: body.team, player: player ?? undefined }, 0);
       if (!out.ok) return failure(out);
       const seat: BattleSeatResponse = { code, token: battleToken(code, out.playerId, out.view.you ?? 1), view: await seatAvatars(out.view) };

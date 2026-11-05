@@ -5,7 +5,7 @@ import { clientIp, rateLimit } from "@/lib/server/rate-limit";
 import { duelNameSchema } from "@/lib/server/duel-core";
 import { battlesEnabled } from "@/lib/server/battle-engine/store";
 import { createCpuBattle, createLiveBattle } from "@/lib/server/battle-engine/service";
-import { battlePlayerKey } from "@/lib/server/battle-engine/identity";
+import { casualBattlePlayerKey } from "@/lib/server/battle-engine/identity";
 import { ALL_FORMATS, BATTLE_TEAM_MAX, CPU_LEVELS, type BattleSeatResponse, type StandardFormatId } from "@/lib/battle/play";
 
 /**
@@ -62,7 +62,7 @@ export async function POST(request: NextRequest) {
     if (blocked) return blocked;
   }
   try {
-    const player = (await battlePlayerKey(request, body.rankedId)) ?? undefined;
+    const player = (await casualBattlePlayerKey(request, body.rankedId)) ?? undefined;
     const out = body.mode === "cpu" ? await createCpuBattle({ ...body, player }) : await createLiveBattle({ ...body, player });
     if (!out.ok) return NextResponse.json({ error: out.error }, { status: out.status, headers: NO_STORE });
     const seat: BattleSeatResponse = { code: out.code, token: out.token, view: out.view };
