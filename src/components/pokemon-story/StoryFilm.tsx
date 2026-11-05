@@ -27,7 +27,10 @@ type Mode = "boot" | "3d" | "list";
 
 function webglOk() {
   try {
-    return !!document.createElement("canvas").getContext("webgl2");
+    const gl = document.createElement("canvas").getContext("webgl2");
+    // Give the probe's context back at once: browsers cap live contexts and drop the oldest.
+    gl?.getExtension("WEBGL_lose_context")?.loseContext();
+    return !!gl;
   } catch {
     return false;
   }
@@ -52,6 +55,8 @@ function qualityParam(): Quality | null {
 const LOWER: Record<Quality, Quality> = { export: "high", high: "medium", medium: "low", low: "low", draft: "draft" };
 const HIGHER: Record<Quality, Quality> = { export: "export", high: "high", medium: "high", low: "medium", draft: "draft" };
 const FRAME_BUDGET_MS = 1000 / 50;
+/** A lost WebGL context that isn't restored within this long gets a new scene (ms). */
+const LOST_REBUILD_MS = 2500;
 const HEADER_PX = 56;
 /** Stills of each chapter for the hall's doorways (public/lab/pokemon-story/<id>.webp). */
 const HAS_STILLS = false;
@@ -82,6 +87,8 @@ interface Ui {
   /** The title card: the chapter's start, or the prologue's title. */
   title: "none" | "prologue" | "chapter" | "end";
   loading: boolean;
+  /** The WebGL context is lost (restoring). */
+  lost: boolean;
   progress: number;
 }
 
@@ -97,12 +104,14 @@ export function StoryFilm({ initialChapter, children }: { initialChapter: string
   const [mode, setMode] = useState<Mode>("boot");
   const [canGl, setCanGl] = useState(false);
   const [ready, setReady] = useState(false);
+  /** Bumped to build the scene again (after a lost context that never came back). */
+  const [sceneGen, setSceneGen] = useState(0);
   const [playing, setPlaying] = useState(false);
   const [free, setFree] = useState(false);
   const [canLook, setCanLook] = useState(false);
   const [muted, setMutedState] = useState(true);
   const [quality, setQualityState] = useState<Quality>("medium");
-  const [ui, setUi] = useState<Ui>({ kind: "hall", chapter: 0, beat: -1, title: "prologue", loading: true, progress: 0 });
+  const [ui, setUi] = useState<Ui>({ kind: "hall", chapter: 0, beat: -1, title: "prologue", loading: true, lost: false, progress: 0 });
   const [railOpen, setRailOpen] = useState(false);
   const [videoOpen, setVideoOpen] = useState(false);
   const [recording, setRecording] = useState(false);
@@ -254,7 +263,7 @@ export function StoryFilm({ initialChapter, children }: { initialChapter: string
       sceneRef.current = null;
       setReady(false);
     };
-  }, [mode, film]);
+  }, [mode, film, sceneGen]);
 
   // ---- Size.
   useEffect(() => {
@@ -327,7 +336,8 @@ export function StoryFilm({ initialChapter, children }: { initialChapter: string
     let ftEma = FRAME_BUDGET_MS, slowFor = 0, fastFor = 0, warm = 0;
     const pinned = qualityParam() !== null;
     const solo = soloParam();
-    let prev: Ui = { kind: "hall", chapter: -1, beat: -2, title: "none", loading: true, progress: -1 };
+    let prev: Ui = { kind: "hall", chapter: -1, beat: -2, title: "none", loading: true, lost: false, progress: -1 };
+    let lostSince = 0;
     let lastSync = 0;
     const tick = () => {
       raf = requestAnimationFrame(tick);
@@ -347,7 +357,9 @@ export function StoryFilm({ initialChapter, children }: { initialChapter: string
         const dt = Math.min(0.1, raw / 1000);
         // The clock: Play advances it (holding while a chapter loads); otherwise it eases toward the scroll.
         const state0 = filmAt(film, s.playhead);
-        const waiting = state0.kind === "chapter" && !scene.isReady(state0.index);
+        // Play holds (in the hall, a few steps from the doorway, or at the chapter's start) until the chapter ahead is built.
+        const ahead = state0.kind === "chapter" ? state0.index : state0.hall.to < film.chapters.length && state0.k > 0.55 ? state0.hall.to : -1;
+        const waiting = scene.lost || (ahead >= 0 && !scene.isReady(ahead));
         if (!s.frozen) {
           if (s.playing && !s.free) {
             if (!waiting) s.playhead = Math.min(film.duration, s.playhead + dt);
@@ -359,12 +371,18 @@ export function StoryFilm({ initialChapter, children }: { initialChapter: string
           }
         }
         const state = filmAt(film, s.playhead);
-        // Chapters: the current one and its neighbours are kept built.
+        // Chapters: built in order of need (the one on screen, the next two, the previous one), one
+        // after another so the nearest is never slowed by the rest; only these stay built.
         const cur = chapterAtFilm(film, s.playhead);
-        const near = solo ? [cur] : state.kind === "hall" ? [state.hall.from, state.hall.to, cur] : [cur, cur + 1, cur - 1];
-        const want = [...new Set(near.filter((i) => i >= 0 && i < film.chapters.length))];
-        for (const i of want) void scene.prepare(i);
-        scene.retain((solo ? want : [...want, cur + 1]).filter((i) => i >= 0 && i < film.chapters.length));
+        const next = state.kind === "hall" ? state.hall.to : cur + 1;
+        const lookahead = scene.quality === "low" || scene.quality === "draft" ? 1 : 2;
+        const order = solo ? [cur] : state.kind === "hall" ? [state.hall.to, state.hall.from, ...Array.from({ length: lookahead }, (_, j) => next + 1 + j)] : [cur, ...Array.from({ length: lookahead }, (_, j) => next + j), cur - 1];
+        const want = [...new Set(order.filter((i) => i >= 0 && i < film.chapters.length))];
+        for (const i of want) {
+          void scene.prepare(i);
+          if (!scene.isReady(i)) break;
+        }
+        scene.retain(want);
         // The camera: free look, or blending back to the film from it.
         let lookPose: Pose | null = null;
         if (s.free && state.kind === "chapter") lookPose = orbitPose(s.free);
@@ -385,13 +403,18 @@ export function StoryFilm({ initialChapter, children }: { initialChapter: string
         const ct = state.kind === "chapter" ? film.chapters[state.index] : null;
         const beat = ct && state.kind === "chapter" ? beatAt(ct.beats, state.anim) : -1;
         const title: Ui["title"] = state.kind === "hall" ? (state.hall.from < 0 && state.k < 0.62 ? "prologue" : state.hall.to >= film.chapters.length && state.k > 0.4 ? "end" : "none") : state.anim < TITLE_HOLD - 0.15 ? "chapter" : "none";
-        const next: Ui = { kind: state.kind, chapter: cur, beat, title, loading: !info.complete, progress: Math.round((s.playhead / film.duration) * 400) / 400 };
-        if (next.kind !== prev.kind || next.chapter !== prev.chapter || next.beat !== prev.beat || next.title !== prev.title || next.loading !== prev.loading) {
-          setUi(next);
+        const nextUi: Ui = { kind: state.kind, chapter: cur, beat, title, loading: !info.complete || (s.playing && waiting), lost: !!info.lost, progress: Math.round((s.playhead / film.duration) * 400) / 400 };
+        if (nextUi.kind !== prev.kind || nextUi.chapter !== prev.chapter || nextUi.beat !== prev.beat || nextUi.title !== prev.title || nextUi.loading !== prev.loading || nextUi.lost !== prev.lost) {
+          setUi(nextUi);
           setCanLook(!!info.orbit);
         }
+        // A lost context the browser doesn't give back: start the scene again on a new canvas.
+        if (info.lost) {
+          if (!lostSince) lostSince = now;
+          else if (now - lostSince > LOST_REBUILD_MS) { lostSince = 0; setSceneGen((g) => g + 1); }
+        } else lostSince = 0;
         if (barRef.current) barRef.current.style.transform = `scaleX(${(s.playhead / film.duration).toFixed(4)})`;
-        prev = next;
+        prev = nextUi;
         // The address follows the chapter.
         const path = s.playhead < PROLOGUE * 0.6 ? HISTORY_PATH : chapterPath(CHAPTERS[cur].id);
         if (path !== s.lastPath) {
@@ -406,6 +429,8 @@ export function StoryFilm({ initialChapter, children }: { initialChapter: string
       }
       // Adaptive quality, both ways.
       if (pinned) return;
+      // Frames while a chapter builds (decoding, compiling) say nothing about the device.
+      if (scene.busy() || scene.lost) { slowFor = fastFor = 0; return; }
       if (warm < 40 || raw > 400) warm++;
       else {
         ftEma = ftEma * 0.92 + raw * 0.08;
@@ -427,6 +452,7 @@ export function StoryFilm({ initialChapter, children }: { initialChapter: string
     raf = requestAnimationFrame(tick);
     // For automated checks and screenshots: move the film clock, read where it is.
     (window as unknown as { __ps?: unknown }).__ps = {
+      setQuality(q: Quality) { sceneRef.current?.setQuality(q); setQualityState(q); },
       seek(t: number, freeze = false) { show.current.playhead = show.current.target = t; show.current.frozen = freeze; show.current.frozenFrames = 0; },
       chapterStart: (i: number) => chapterStart(film, i),
       beatTime: (i: number, beat: number) => { const c = film.chapters[i]; return c.start + (c.beats[beat] ? animToFilm(c, c.beats[beat].anim) : 0); },
@@ -646,7 +672,7 @@ export function StoryFilm({ initialChapter, children }: { initialChapter: string
           {(!ready || ui.loading) && (
             <div className="pointer-events-none absolute inset-0 z-[5] flex flex-col items-center justify-center gap-4 text-white" aria-live="polite">
               <div className="wh-load-ring" aria-hidden />
-              <p className="wh-title-k text-[10px] uppercase text-white/80" data-testid="ps-loading">{!ready ? "Opening the archive…" : `Opening ${chapter?.title ?? "the exhibit"}…`}</p>
+              <p className="wh-title-k text-[10px] uppercase text-white/80" data-testid="ps-loading">{!ready ? "Opening the archive…" : ui.lost ? "Restoring the picture…" : `Opening ${chapter?.title ?? "the exhibit"}…`}</p>
             </div>
           )}
 

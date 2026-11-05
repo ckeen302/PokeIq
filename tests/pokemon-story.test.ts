@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { existsSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import TIMELINE from "@/data/pokemon-timeline.json";
 import POKEDEX from "@/data/pokedex.json";
@@ -161,5 +161,29 @@ describe("The Story of Pokémon: deep links and timing", () => {
       expect(s.from).toBeLessThanOrEqual(b.anim);
       expect(s.to).toBeGreaterThan(b.anim);
     });
+  });
+});
+
+describe("The Story of Pokémon: the film never draws NaN", () => {
+  const dir = join(process.cwd(), "src/components/pokemon-story/scene");
+  const files = [...readdirSync(dir).filter((f) => f.endsWith(".ts")).map((f) => join(dir, f)), ...readdirSync(join(dir, "chapters")).map((f) => join(dir, "chapters", f))];
+
+  it("takes no pow() of raw UVs or signed differences (NaN on IEEE-strict GPUs such as Apple's)", () => {
+    expect(files.length).toBeGreaterThan(12);
+    for (const f of files) {
+      const src = readFileSync(f, "utf8");
+      expect(src, f).not.toMatch(/pow\(\s*(vUv|vY|uv)\b/);
+      expect(src, f).not.toMatch(/pow\(\s*\(/);
+      // A pow() of 1 − something is clamped first (a dot of normals can overshoot 1 by a hair).
+      expect(src, f).not.toMatch(/pow\(\s*1\.0\s*-/);
+    }
+  });
+
+  it("draws through the shared post chain, which scrubs NaN including the bloom's first read", () => {
+    const post = readFileSync(join(process.cwd(), "src/components/world-history/scene/post.ts"), "utf8");
+    expect(post).toContain("floatBitsToUint");
+    expect(post).toContain("texel.rgb = whSafe( texel.rgb )");
+    const index = readFileSync(join(dir, "index.ts"), "utf8");
+    expect(index).toContain("createHistoryScene");
   });
 });

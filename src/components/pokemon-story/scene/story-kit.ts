@@ -169,7 +169,7 @@ export function makeSilhouette(o: { height: number; pose?: Pose; child?: boolean
     mat.userData.shader = s;
     s.fragmentShader = s.fragmentShader
       .replace("#include <common>", "#include <common>\nuniform vec3 uRimC; uniform float uRimK;")
-      .replace("#include <emissivemap_fragment>", "#include <emissivemap_fragment>\n{ float f = 1.0 - abs(dot(normalize(vNormal), normalize(vViewPosition))); totalEmissiveRadiance += uRimC * pow(f, 3.0) * uRimK; }");
+      .replace("#include <emissivemap_fragment>", "#include <emissivemap_fragment>\n{ float f = clamp(1.0 - abs(dot(normalize(vNormal), normalize(vViewPosition))), 0.0, 1.0); totalEmissiveRadiance += uRimC * f * f * f * uRimK; }");
   };
   mat.customProgramCacheKey = () => "ps-silhouette";
   const mesh = new THREE.Mesh(geo, mat);
@@ -327,7 +327,7 @@ export function makeCable(o: { from: Vec3; to: Vec3; sag?: number; radius?: numb
     const p = a.clone().lerp(b, t);
     p.y -= Math.sin(Math.PI * t) * (o.sag ?? 0.3);
     // A loose coil in the middle (the cable lies curled on the table).
-    const c = (o.coils ?? 0) * Math.exp(-Math.pow((t - 0.5) * 4.5, 2));
+    const c = (o.coils ?? 0) * Math.exp(-(((t - 0.5) * 4.5) ** 2));
     p.z += Math.sin(t * Math.PI * 6) * c;
     p.x += Math.cos(t * Math.PI * 6) * c * 0.4;
     pts.push(p);
@@ -343,8 +343,10 @@ export function makeCable(o: { from: Vec3; to: Vec3; sag?: number; radius?: numb
       void main(){
         float t = vUv.x;
         float lit = smoothstep(uFuse, uFuse - 0.04, t);
-        float head = exp(-pow((t - uHead) * 40.0, 2.0));
-        float fres = pow(1.0 - abs(dot(vN, vV)), 2.0);
+        float hx = (t - uHead) * 40.0;
+        float head = exp(-hx * hx);
+        float fres = clamp(1.0 - abs(dot(vN, vV)), 0.0, 1.0);
+        fres *= fres;
         vec3 c = uBase * (0.35 + 0.65 * max(dot(vN, normalize(vec3(0.3, 1.0, 0.4))), 0.0)) + uBase * fres * 0.6;
         c += uGlow * (lit * (0.8 + 0.2 * sin(t * 140.0 - uTime * 8.0)) * 1.4 + head * 6.0);
         gl_FragColor = vec4(c, 1.0);
@@ -617,7 +619,8 @@ export function makeCardBurst(o: { count: number; center: Vec3; radius: number; 
       mat3 rotX(float a){ float c = cos(a), s = sin(a); return mat3(1., 0., 0., 0., c, s, 0., -s, c); }
       void main(){
         float k = clamp(uBurst * 1.25 - aSeed.w * 0.25, 0.0, 1.0);
-        float e = 1.0 - pow(1.0 - k, 3.0);
+        float ik = 1.0 - k;
+        float e = 1.0 - ik * ik * ik;
         float th = aSeed.x * 6.2831853 + uTime * 0.12 * (0.5 + aSeed.y);
         float rad = uRadius * (0.35 + 0.65 * aSeed.y) * e;
         vec3 off = vec3(cos(th) * rad, (aSeed.z - 0.5) * uRadius * 0.9 * e + sin(uTime * 0.7 + aSeed.x * 9.0) * 0.15, sin(th) * rad * 0.7);
@@ -638,7 +641,7 @@ export function makeCardBurst(o: { count: number; center: Vec3; radius: number; 
         if (f < 0.0) c = vec3(0.12, 0.2, 0.55) + 0.25 * vec3(step(0.45, abs(vUv.x - 0.5) + abs(vUv.y - 0.5)));
         float holo = sin((vUv.x + vUv.y) * 18.0 + f * 9.0 + uTime) * 0.5 + 0.5;
         vec3 rainbow = 0.5 + 0.5 * cos(6.2831 * (holo + vec3(0.0, 0.33, 0.67)));
-        c = c * 1.1 + rainbow * 0.35 * pow(1.0 - abs(f), 1.5);
+        c = c * 1.1 + rainbow * 0.35 * pow(clamp(1.0 - abs(f), 0.0, 1.0), 1.5);
         gl_FragColor = vec4(c * 1.2, 1.0);
       }`,
   });
@@ -701,11 +704,144 @@ export function glassMaterial(o: { tint?: string; edge?: string; k?: number } = 
     fragmentShader: /* glsl */ `
       uniform vec3 uTint, uEdge; uniform float uK; varying vec3 vN; varying vec3 vV; varying vec3 vL;
       void main(){
-        float f = 1.0 - abs(dot(normalize(vN), normalize(vV)));
-        float edge = pow(f, 3.0);
+        float f = clamp(1.0 - abs(dot(normalize(vN), normalize(vV))), 0.0, 1.0);
+        float edge = f * f * f;
         float streak = smoothstep(0.92, 1.0, sin(atan(vL.z, vL.x) * 1.0 + 0.9)) * 0.6;
         float a = clamp(0.04 + edge * 0.9 + streak * 0.5, 0.0, 1.0) * uK;
         gl_FragColor = vec4(mix(uTint * 0.3, uEdge * 0.9, clamp(edge + streak, 0.0, 1.0)), a);
       }`,
   });
+}
+
+/** A ball that opens: red top, white bottom, a dark band and a button; open(k) lifts the lid back. */
+export function makeBall(o: { radius: number; top?: string; bottom?: string }) {
+  const group = new THREE.Group();
+  const lid = new THREE.Group();
+  const r = o.radius;
+  const red = new THREE.MeshStandardMaterial({ color: col(o.top ?? "#e3262f"), roughness: 0.25, emissive: col("#3a0508"), emissiveIntensity: 0.5 });
+  const white = new THREE.MeshStandardMaterial({ color: col(o.bottom ?? "#f4f1ea"), roughness: 0.3 });
+  const dark = new THREE.MeshStandardMaterial({ color: col("#111111"), roughness: 0.5 });
+  const topG = new THREE.SphereGeometry(r, 32, 16, 0, Math.PI * 2, 0, Math.PI / 2);
+  const botG = new THREE.SphereGeometry(r, 32, 16, 0, Math.PI * 2, Math.PI / 2, Math.PI / 2);
+  const bandG = new THREE.CylinderGeometry(r * 1.01, r * 1.01, r * 0.12, 32, 1, true);
+  const btnG = new THREE.CylinderGeometry(r * 0.24, r * 0.24, r * 0.12, 20).rotateX(Math.PI / 2);
+  const top = new THREE.Mesh(topG, red);
+  top.position.set(0, 0, r);
+  lid.position.set(0, 0, -r);
+  lid.add(top);
+  const bot = new THREE.Mesh(botG, white);
+  const band = new THREE.Mesh(bandG, dark);
+  const btn = new THREE.Mesh(btnG, white);
+  btn.position.set(0, 0, r * 1.0);
+  group.add(lid, bot, band, btn);
+  const light = makeGlow({ pos: [0, r * 0.4, 0], size: r * 6, color: "#ffffff", intensity: 0 });
+  group.add(light.sprite);
+  return {
+    group,
+    open(k: number, color = "#ffffff") {
+      lid.rotation.x = -k * 1.9;
+      btn.visible = k < 0.05;
+      light.set(color, 1.1 * Math.sin(Math.min(1, k) * Math.PI) + 0.25 * k);
+    },
+    dispose() { [topG, botG, bandG, btnG].forEach((g) => g.dispose()); [red, white, dark].forEach((m) => m.dispose()); light.dispose(); },
+  };
+}
+
+/** Threads of light between pairs of points (house to house, city to city): motes that grow along each curve as uGrow goes 0 → 1. */
+export function makeThreads(o: { pairs: [Vec3, Vec3][]; lift: number; color: string; per?: number; size?: number; seed?: number }) {
+  const per = o.per ?? 40;
+  const r = rng(o.seed ?? 3);
+  const n = o.pairs.length * per;
+  const pos = new Float32Array(n * 3), t = new Float32Array(n), arc = new Float32Array(n);
+  o.pairs.forEach(([a, b], k) => {
+    const A = v3(a), B = v3(b);
+    const M = A.clone().lerp(B, 0.5);
+    M.y += o.lift * (0.5 + A.distanceTo(B) * 0.05);
+    const c = new THREE.QuadraticBezierCurve3(A, M, B);
+    const d = r();
+    for (let i = 0; i < per; i++) {
+      const p = c.getPoint(i / (per - 1));
+      pos.set([p.x, p.y, p.z], (k * per + i) * 3);
+      t[k * per + i] = i / (per - 1);
+      arc[k * per + i] = d;
+    }
+  });
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute("position", new THREE.BufferAttribute(pos, 3));
+  geo.setAttribute("aT", new THREE.BufferAttribute(t, 1));
+  geo.setAttribute("aArc", new THREE.BufferAttribute(arc, 1));
+  const u = { uGrow: { value: 0 }, uTime: { value: 0 }, uPixel: { value: 600 }, uSize: { value: o.size ?? 0.08 }, uColor: { value: col(o.color) } };
+  const mat = new THREE.ShaderMaterial({
+    uniforms: u,
+    transparent: true,
+    depthWrite: false,
+    blending: THREE.AdditiveBlending,
+    vertexShader: /* glsl */ `
+      attribute float aT; attribute float aArc; uniform float uGrow, uTime, uPixel, uSize; varying float vA;
+      void main(){
+        float g = clamp((uGrow - aArc * 0.7) / 0.3, 0.0, 1.0);
+        float flow = fract(aT - uTime * 0.5 - aArc);
+        vA = step(aT, g) * (0.35 + 0.65 * smoothstep(0.8, 1.0, flow));
+        vec4 mv = modelViewMatrix * vec4(position, 1.0);
+        gl_Position = projectionMatrix * mv;
+        gl_PointSize = clamp(uSize * (0.8 + smoothstep(0.8, 1.0, flow)) * uPixel / -mv.z, 0.0, 18.0);
+      }`,
+    fragmentShader: /* glsl */ `uniform vec3 uColor; varying float vA; void main(){ float d = length(gl_PointCoord - 0.5); float a = smoothstep(0.5, 0.0, d) * vA; gl_FragColor = vec4(uColor * 2.0 * a, a); }`,
+  });
+  const points = new THREE.Points(geo, mat);
+  points.frustumCulled = false;
+  return { points, u, dispose() { geo.dispose(); mat.dispose(); } };
+}
+
+/** A wall of little glowing creature shapes (an atlas of original pixel critters), each lighting up as uFill passes it. */
+export function makeCritterWall(o: { count: number; cols: number; cell: number; center: Vec3; colors: [string, string]; seed?: number }) {
+  const atlas = document.createElement("canvas");
+  atlas.width = atlas.height = 512;
+  const g = atlas.getContext("2d")!;
+  for (let i = 0; i < 64; i++) drawCritter(g, (i % 8) * 64 + 8, Math.floor(i / 8) * 64 + 8, 48, (o.seed ?? 1) * 97 + i * 13, "#ffffff");
+  const tex = new THREE.CanvasTexture(atlas);
+  tex.magFilter = THREE.NearestFilter;
+  const base = new THREE.PlaneGeometry(o.cell * 0.86, o.cell * 0.86);
+  const geo = new THREE.InstancedBufferGeometry();
+  geo.index = base.index;
+  geo.setAttribute("position", base.getAttribute("position"));
+  geo.setAttribute("uv", base.getAttribute("uv"));
+  const rows = Math.ceil(o.count / o.cols);
+  const off = new Float32Array(o.count * 4);
+  const r = rng(o.seed ?? 1);
+  for (let i = 0; i < o.count; i++) {
+    const cx = i % o.cols, cy = Math.floor(i / o.cols);
+    off.set([(cx - (o.cols - 1) / 2) * o.cell, ((rows - 1) / 2 - cy) * o.cell, i % 64, r()], i * 4);
+  }
+  geo.setAttribute("aOff", new THREE.InstancedBufferAttribute(off, 4));
+  geo.instanceCount = o.count;
+  const u = { uFill: { value: 0 }, uTime: { value: 0 }, uTex: { value: tex }, uA: { value: col(o.colors[0]) }, uB: { value: col(o.colors[1]) }, uDim: { value: 1 }, uCenter: { value: v3(o.center) } };
+  const mat = new THREE.ShaderMaterial({
+    uniforms: u,
+    transparent: true,
+    depthWrite: false,
+    blending: THREE.AdditiveBlending,
+    vertexShader: /* glsl */ `
+      attribute vec4 aOff; uniform float uFill, uTime; uniform vec3 uCenter; varying vec2 vUv; varying float vOn; varying float vSeed;
+      void main(){
+        float on = smoothstep(aOff.w, aOff.w + 0.08, uFill);
+        vec3 p = uCenter + vec3(aOff.xy, 0.0) + position * (0.4 + 0.6 * on);
+        p.z += (1.0 - on) * 3.0;
+        p.y += sin(uTime * 1.3 + aOff.w * 30.0) * 0.02;
+        float cell = aOff.z;
+        vUv = (vec2(mod(cell, 8.0), 7.0 - floor(cell / 8.0)) + uv) / 8.0;
+        vOn = on; vSeed = aOff.w;
+        gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(p, 1.0);
+      }`,
+    fragmentShader: /* glsl */ `
+      uniform sampler2D uTex; uniform vec3 uA, uB; uniform float uDim, uTime; varying vec2 vUv; varying float vOn; varying float vSeed;
+      void main(){
+        float a = texture2D(uTex, vUv).a * vOn;
+        vec3 c = mix(uA, uB, vSeed) * (1.6 + 0.4 * sin(uTime * 2.0 + vSeed * 40.0)) * uDim;
+        gl_FragColor = vec4(c * a, a);
+      }`,
+  });
+  const mesh = new THREE.Mesh(geo, mat);
+  mesh.frustumCulled = false;
+  return { mesh, u, dispose() { geo.dispose(); base.dispose(); mat.dispose(); tex.dispose(); } };
 }

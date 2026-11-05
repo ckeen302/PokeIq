@@ -50,7 +50,8 @@ export const build: ChapterBuilder = async (ctx) => {
         float ring = 0.5 + 0.5 * sin(r * 7.0 - uTime * 2.2);
         float edge = smoothstep(${pond.r.toFixed(1)}, ${(pond.r - 0.8).toFixed(1)}, r);
         vec3 v = normalize(cameraPosition - vW);
-        float fres = pow(1.0 - max(v.y, 0.0), 3.0);
+        float fy = clamp(1.0 - max(v.y, 0.0), 0.0, 1.0);
+        float fres = fy * fy * fy;
         vec3 c = mix(uDeep, uSky * 1.4, 0.35 + 0.65 * fres) + uSky * ring * 0.08;
         gl_FragColor = vec4(c, edge * 0.92 * uFade);
       }`,
