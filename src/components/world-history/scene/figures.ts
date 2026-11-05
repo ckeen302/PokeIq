@@ -77,14 +77,57 @@ function reliefWorker(): Worker | null {
   return worker;
 }
 
-async function fetchBitmap(url: string, signal: AbortSignal): Promise<ImageBitmap> {
-  const res = await fetch(url, { signal });
-  if (!res.ok) throw new Error(`${res.status} ${url}`);
-  return createImageBitmap(await res.blob(), { colorSpaceConversion: "none", premultiplyAlpha: "none" });
+/** A decoded image: an ImageBitmap where the browser can make one as asked, else an <img>. */
+interface Pic {
+  src: ImageBitmap | HTMLImageElement;
+  width: number;
+  height: number;
+  close(): void;
+}
+
+async function decode(blob: Blob): Promise<Pic> {
+  if (typeof createImageBitmap === "function") {
+    // Unconverted, unpremultiplied first; some browsers refuse the options, so then without.
+    for (const opts of [{ colorSpaceConversion: "none", premultiplyAlpha: "none" } as ImageBitmapOptions, undefined]) {
+      try {
+        const b = await (opts ? createImageBitmap(blob, opts) : createImageBitmap(blob));
+        return { src: b, width: b.width, height: b.height, close: () => b.close() };
+      } catch {
+        /* the next way */
+      }
+    }
+  }
+  const url = URL.createObjectURL(blob);
+  try {
+    const img = new Image();
+    img.src = url;
+    await img.decode();
+    return { src: img, width: img.naturalWidth, height: img.naturalHeight, close: () => undefined };
+  } finally {
+    URL.revokeObjectURL(url);
+  }
+}
+
+/** Fetches and decodes an image, trying again after a short wait (a dropped request shouldn't cost a chapter its figure). */
+async function fetchPic(url: string, signal: AbortSignal): Promise<Pic> {
+  let err: unknown = null;
+  for (let i = 0; i < 3; i++) {
+    if (i) await new Promise((r) => setTimeout(r, 400 * 3 ** (i - 1)));
+    if (signal.aborted) throw new DOMException("aborted", "AbortError");
+    try {
+      const res = await fetch(url, { signal });
+      if (!res.ok) throw new Error(`${res.status} ${url}`);
+      return await decode(await res.blob());
+    } catch (e) {
+      if (signal.aborted) throw e;
+      err = e;
+    }
+  }
+  throw err;
 }
 
 let pixelCanvas: CanvasRenderingContext2D | null = null;
-function bitmapPixels(bmp: ImageBitmap): ReliefMap & { data: Uint8ClampedArray } {
+function bitmapPixels(bmp: Pic): ReliefMap & { data: Uint8ClampedArray } {
   if (!pixelCanvas) pixelCanvas = document.createElement("canvas").getContext("2d", { willReadFrequently: true })!;
   const cv = pixelCanvas.canvas;
   if (cv.width < bmp.width || cv.height < bmp.height) {
@@ -92,7 +135,7 @@ function bitmapPixels(bmp: ImageBitmap): ReliefMap & { data: Uint8ClampedArray }
     cv.height = Math.max(cv.height, bmp.height);
   }
   pixelCanvas.clearRect(0, 0, bmp.width, bmp.height);
-  pixelCanvas.drawImage(bmp, 0, 0);
+  pixelCanvas.drawImage(bmp.src, 0, 0);
   const img = pixelCanvas.getImageData(0, 0, bmp.width, bmp.height);
   return { w: bmp.width, h: bmp.height, data: img.data, channels: 4 };
 }
@@ -207,7 +250,12 @@ export function createFigureFactory(renderer: THREE.WebGLRenderer, opts: { segme
       const asset = figureAsset(art);
       if (!asset) throw new Error(`world-history: no relief for ${art}`);
       const [bx, by, bw, bh, size] = asset.box;
-      const [artBmp, reliefBmp] = await Promise.all([fetchBitmap(artUrl(art, opts.texSize), signal), fetchBitmap(asset.relief, signal)]);
+      const got = await Promise.allSettled([fetchPic(artUrl(art, opts.texSize), signal), fetchPic(asset.relief, signal)]);
+      if (got[0].status === "rejected" || got[1].status === "rejected") {
+        for (const g of got) if (g.status === "fulfilled") g.value.close();
+        throw got[0].status === "rejected" ? got[0].reason : (got[1] as PromiseRejectedResult).reason;
+      }
+      const [artBmp, reliefBmp] = [got[0].value, got[1].value];
       let arrays: Arrays;
       try {
         arrays = await buildArrays(bitmapPixels(reliefBmp), { x: bx, y: by, w: bw, h: bh, size }, opts.segments, 2400);
@@ -224,7 +272,7 @@ export function createFigureFactory(renderer: THREE.WebGLRenderer, opts: { segme
       geo.setAttribute("uv", new THREE.BufferAttribute(arrays.uv, 2));
       geo.setIndex(new THREE.BufferAttribute(arrays.index, 1));
       geo.computeBoundingSphere();
-      const tex = new THREE.Texture(artBmp as unknown as HTMLImageElement);
+      const tex = new THREE.Texture(artBmp.src as unknown as HTMLImageElement);
       tex.colorSpace = THREE.SRGBColorSpace;
       tex.anisotropy = opts.anisotropy;
       tex.flipY = false;
