@@ -32,6 +32,19 @@ const PINCH: Record<string, string> = { blaze: "Fire", torrent: "Water", overgro
 const FULL_HP_SHIELDS = new Set(["multiscale", "shadowshield", "terashell"]);
 const WEATHER: Record<FieldSpec["weather"], string | undefined> = { none: undefined, sun: "Sun", rain: "Rain", sand: "Sand", snow: "Snow" };
 const TERRAIN: Record<FieldSpec["terrain"], string | undefined> = { none: undefined, electric: "Electric", grassy: "Grassy", psychic: "Psychic", misty: "Misty" };
+/** Weather and terrain codes, as a hit state stores them (the field can change mid-battle: Drizzle, Electric Surge…). */
+export const WEATHER_CODES: FieldSpec["weather"][] = ["none", "sun", "rain", "sand", "snow"];
+export const TERRAIN_CODES: FieldSpec["terrain"][] = ["none", "electric", "grassy", "psychic", "misty"];
+/** Screens on the defender's side, as bits: Reflect (or Aurora Veil) halves physical hits, Light Screen (or Aurora Veil) special ones. */
+export const SCREEN_PHYS = 1, SCREEN_SPEC = 2;
+/** With a screen up: the defender's side has more than one Pokémon, so the screen is worth 2732/4096, as Showdown has it in doubles and triples. */
+export const SCREEN_MULTI = 4;
+/** Abilities Neutralizing Gas can't suppress (Showdown's cantsuppress, as the calculator lists them). */
+export const GAS_PROOF = new Set(["asoneglastrier", "asonespectrier", "battlebond", "comatose", "disguise", "gulpmissile", "iceface", "multitype", "neutralizinggas", "powerconstruct", "rkssystem", "schooling", "shieldsdown", "stancechange", "terashift", "zenmode", "zerotohero"]);
+/** Struggle: what a Pokémon uses once it has no PP left (with Real PP on). */
+export const STRUGGLE: MBMove = { name: "Struggle", type: "Normal", cat: "Physical", bp: 50, acc: 0, pri: 0, contact: true, spread: false, hits: null, multiAcc: false, crit: 0, recoil: null, drain: null, protectable: true };
+/** Moves the calculator doesn't work out: status moves, fixed damage, one-hit KOs, Counter and the like (the battle does). */
+export const calcless = (mv: MBMove) => mv.cat === "Status" || (!!mv.effect && (mv.effect.kind === "fixed" || mv.effect.kind === "ohko" || mv.effect.kind === "counter"));
 
 /** One fighter: a species and its set. */
 export interface Fighter {
@@ -52,8 +65,9 @@ export interface Fighter {
  * - "protean": Protean and Libero turn the user into its move's type the
  *   first time it uses a move of another type (once, as in Gen 9); form
  *   k + 1 is the type of move slot k. Not when Terastallized.
+ * - "trace": Trace copies a foe's ability as it meets one; form k + 1 has the k-th of the foes' abilities.
  */
-export type FormRule = "" | "stance" | "school" | "shields" | "iceface" | "protean";
+export type FormRule = "" | "stance" | "school" | "shields" | "iceface" | "protean" | "trace";
 
 export interface FormDef {
   /** The calculator's species. */
@@ -62,11 +76,20 @@ export interface FormDef {
   types?: string[];
   /** Protean has done its work: the calculator no longer gives every move STAB. */
   spent?: boolean;
+  /** Another ability (Trace's copy). */
+  ability?: string;
 }
 
-export function formsOf(f: Fighter): { rule: FormRule; forms: FormDef[] } {
+/** Abilities Trace can't copy (Showdown's notrace flag, of those a Pokémon here can have). */
+export const NO_TRACE = new Set(["asoneglastrier", "asonespectrier", "battlebond", "commander", "comatose", "disguise", "flowergift", "forecast", "hungerswitch", "iceface", "illusion", "imposter", "multitype", "neutralizinggas", "poisonpuppeteer", "powerconstruct", "powerofalchemy", "receiver", "rkssystem", "schooling", "shieldsdown", "stancechange", "tera shift", "terashift", "teraformzero", "trace", "zenmode", "zerotohero", "protosynthesis", "quarkdrive", "embodyaspectcornerstone", "embodyaspecthearthflame", "embodyaspectteal", "embodyaspectwellspring"]);
+
+export function formsOf(f: Fighter, foeAbilities: string[] = []): { rule: FormRule; forms: FormDef[] } {
   const ab = toId(f.set.ability);
   const calc = f.species.calc;
+  if (ab === "trace") {
+    const copies = [...new Set(foeAbilities.filter((a) => !NO_TRACE.has(toId(a))))].sort();
+    if (copies.length) return { rule: "trace", forms: [{ calc }, ...copies.map((a) => ({ calc, ability: a }))] };
+  }
   if (ab === "stancechange" && calc.startsWith("Aegislash")) return { rule: "stance", forms: [{ calc: "Aegislash-Shield" }, { calc: "Aegislash-Blade" }] };
   if (ab === "schooling" && calc.startsWith("Wishiwashi")) return { rule: "school", forms: [{ calc: "Wishiwashi" }, { calc: "Wishiwashi-School" }] };
   if (ab === "shieldsdown" && calc.startsWith("Minior")) return { rule: "shields", forms: [{ calc: "Minior-Meteor" }, { calc: "Minior" }] };
@@ -117,12 +140,32 @@ export function calcPokemon(f: Fighter, form?: FormDef): CalcLib.Pokemon {
   if (form?.types) withTypes(p, form.types as CalcLib.Pokemon["types"]);
   // A Pokémon whose Protean has worked no longer gets STAB on every move (a damage-neutral ability stands in).
   if (form?.spent) p.ability = "Pressure" as CalcLib.Pokemon["ability"];
+  if (form?.ability) p.ability = form.ability as CalcLib.Pokemon["ability"];
   return p;
 }
 
+/** A calculator Pokémon with its ability suppressed (Neutralizing Gas), unless its ability can't be. */
+function gassed(p: CalcLib.Pokemon): CalcLib.Pokemon {
+  if (!p.ability || GAS_PROOF.has(toId(p.ability))) return p;
+  const q = p.clone();
+  q.ability = "" as CalcLib.Pokemon["ability"];
+  const clone = q.clone;
+  q.clone = function (this: CalcLib.Pokemon) {
+    const c = clone.call(this);
+    c.ability = "" as CalcLib.Pokemon["ability"];
+    return c;
+  };
+  return q;
+}
+
 /** The calculator's field for a battle's weather and terrain, in singles or (for spread moves) doubles. */
-export function calcField(field: FieldSpec, doubles: boolean): CalcLib.Field {
-  return new CalcLib.Field({ gameType: doubles ? "Doubles" : "Singles", weather: WEATHER[field.weather] as CalcLib.Field["weather"], terrain: TERRAIN[field.terrain] as CalcLib.Field["terrain"] });
+export function calcField(field: Pick<FieldSpec, "weather" | "terrain">, doubles: boolean, screens = 0): CalcLib.Field {
+  return new CalcLib.Field({
+    gameType: doubles ? "Doubles" : "Singles",
+    weather: WEATHER[field.weather] as CalcLib.Field["weather"],
+    terrain: TERRAIN[field.terrain] as CalcLib.Field["terrain"],
+    defenderSide: { isReflect: !!(screens & SCREEN_PHYS), isLightScreen: !!(screens & SCREEN_SPEC) } as CalcLib.Field["defenderSide"],
+  });
 }
 
 /** How an attacker's HP changes its move: by the move's power, or by a pinch ability. */
@@ -183,9 +226,18 @@ export interface HitState {
   dForm: number;
   /** The attacker's Slow Start is still holding it back (its first five turns). */
   aSlow: boolean;
+  /** The field now: weather and terrain (WEATHER_CODES, TERRAIN_CODES), Neutralizing Gas, the defender's screens (SCREEN_PHYS | SCREEN_SPEC). */
+  weather: number;
+  terrain: number;
+  gas: boolean;
+  dScreen: number;
 }
 
-export const neutralState = (aMax: number, dMax: number): HitState => ({ crit: false, spread: false, aHp: aMax, aMax, dHp: dMax, dMax, aStage: 0, aStage2: 0, dStage: 0, dStage2: 0, aStatus: 0, dStatus: 0, aItem: true, dItem: true, aForm: 0, dForm: 0, aSlow: false });
+export const neutralState = (aMax: number, dMax: number, field?: Pick<FieldSpec, "weather" | "terrain">): HitState => ({
+  crit: false, spread: false, aHp: aMax, aMax, dHp: dMax, dMax, aStage: 0, aStage2: 0, dStage: 0, dStage2: 0, aStatus: 0, dStatus: 0,
+  aItem: true, dItem: true, aForm: 0, dForm: 0, aSlow: false,
+  weather: field ? WEATHER_CODES.indexOf(field.weather) : 0, terrain: field ? TERRAIN_CODES.indexOf(field.terrain) : 0, gas: false, dScreen: 0,
+});
 
 /** Normalises the calculator's damage (a number, 16 rolls, or 16 rolls per hit) into per-hit roll arrays. */
 export function rollsOf(damage: unknown): Uint16Array[] {
@@ -212,28 +264,46 @@ export class DamageTable {
   readonly rules: FormRule[];
   readonly formDefs: FormDef[][];
   private mons: CalcLib.Pokemon[][];
+  private gasMons: CalcLib.Pokemon[][] | null = null;
   private calcMoves = new Map<string, CalcLib.Move>();
-  private singles: CalcLib.Field;
-  private doubles: CalcLib.Field;
-  /** (attacker, defender, slot) → (state) → entry. */
-  private cache: (Map<number, HitEntry> | undefined)[];
+  private fields = new Map<number, CalcLib.Field>();
+  /** (field state) → (attacker, defender, slot) → (state) → entry. */
+  private caches = new Map<number, (Map<number, HitEntry> | undefined)[]>();
   private canHit = new Map<number, boolean>();
   private readonly F: number;
   /** Calculations run so far (for profiling and tests). */
   calcs = 0;
 
+  /** Every fighter gets Struggle after its own moves (its slot is its move count); Trace can copy any other fighter's ability. */
   constructor(fighters: Fighter[], field: FieldSpec) {
     this.fighters = fighters;
-    this.moves = fighters.map((f) => f.set.moves);
+    this.moves = fighters.map((f) => [...f.set.moves, STRUGGLE]);
     this.field = field;
     this.F = fighters.length;
-    const forms = fighters.map(formsOf);
+    const forms = fighters.map((f, k) => formsOf(f, fighters.filter((_, j) => j !== k).map((o) => o.set.ability)));
     this.rules = forms.map((x) => x.rule);
     this.formDefs = forms.map((x) => x.forms);
     this.mons = fighters.map((f, k) => forms[k].forms.map((form) => calcPokemon(f, form)));
-    this.singles = calcField(field, false);
-    this.doubles = calcField(field, true);
-    this.cache = new Array(this.F * this.F * 4);
+  }
+
+  private calcFieldFor(st: HitState, spread: boolean, spreadMove: boolean): CalcLib.Field {
+    // Doubles for a spread move hitting more than one (its 0.75), and for a screen on a side of several (its 2732/4096).
+    const doubles = spread || (!spreadMove && (st.dScreen & 3) !== 0 && (st.dScreen & SCREEN_MULTI) !== 0);
+    const key = ((st.weather * 5 + st.terrain) * 8 + st.dScreen) * 2 + (doubles ? 1 : 0);
+    let f = this.fields.get(key);
+    if (!f) {
+      f = calcField({ weather: WEATHER_CODES[st.weather], terrain: TERRAIN_CODES[st.terrain] }, doubles, st.dScreen);
+      this.fields.set(key, f);
+    }
+    return f;
+  }
+
+  private mon(f: number, form: number, gas: boolean): CalcLib.Pokemon {
+    if (gas) {
+      this.gasMons ??= this.mons.map((row) => row.map(gassed));
+      return this.gasMons[f][form] ?? this.gasMons[f][0];
+    }
+    return this.mons[f][form] ?? this.mons[f][0];
   }
 
   /** The calculator's HP for a fighter (the battle's own formula gives the same). */
@@ -266,8 +336,15 @@ export class DamageTable {
     const mv = this.moves[a][slot];
     const ak = attackerKey(mv, this.fighters[a].set.ability, state.aHp, state.aMax);
     const dk = defenderKey(mv, this.fighters[d].set.ability, state.dHp, state.dMax);
+    if (calcless(mv)) return NO_DAMAGE;
     const spread = state.spread && mv.spread;
-    const outer = (a * this.F + d) * 4 + slot;
+    const outer = (a * this.F + d) * 5 + slot;
+    const fk = ((state.weather * 5 + state.terrain) * 2 + (state.gas ? 1 : 0)) * 8 + (state.dScreen & 3 ? state.dScreen : 0);
+    let cache = this.caches.get(fk);
+    if (!cache) {
+      cache = new Array(this.F * this.F * 5);
+      this.caches.set(fk, cache);
+    }
     let k = state.crit ? 1 : 0;
     k = k * 2 + (spread ? 1 : 0);
     k = k * 256 + ak;
@@ -283,8 +360,8 @@ export class DamageTable {
     k = k * 5 + state.aForm;
     k = k * 5 + state.dForm;
     k = k * 2 + (state.aSlow ? 1 : 0);
-    let row = this.cache[outer];
-    if (!row) row = this.cache[outer] = new Map();
+    let row = cache[outer];
+    if (!row) row = cache[outer] = new Map();
     let e = row.get(k);
     if (e) return e;
     e = this.compute(a, mv, d, state, spread);
@@ -294,8 +371,8 @@ export class DamageTable {
 
   private compute(a: number, mv: MBMove, d: number, st: HitState, spread: boolean): HitEntry {
     this.calcs++;
-    let atk = this.mons[a][st.aForm] ?? this.mons[a][0];
-    let def = this.mons[d][st.dForm] ?? this.mons[d][0];
+    let atk = this.mon(a, st.aForm, st.gas);
+    let def = this.mon(d, st.dForm, st.gas);
     const changesA = st.aHp < st.aMax || st.aStatus || !st.aItem || st.aSlow || (mv.atkStat !== "target-atk" && (st.aStage || st.aStage2));
     const changesD = st.dHp < st.dMax || st.dStatus || !st.dItem || st.dStage || st.dStage2 || (mv.atkStat === "target-atk" && st.aStage);
     if (changesA) {
@@ -321,7 +398,7 @@ export class DamageTable {
     }
     const hits = mv.hits ? mv.hits[1] : 1;
     try {
-      const r = CalcLib.calculate(GEN, atk, def, this.move(mv.name, st.crit, hits), spread ? this.doubles : this.singles);
+      const r = CalcLib.calculate(GEN, atk, def, this.move(mv.name, st.crit, hits), this.calcFieldFor(st, spread, mv.spread));
       const rolls = rollsOf(r.damage);
       const first = rolls[0];
       let sum = 0;
@@ -333,14 +410,20 @@ export class DamageTable {
     }
   }
 
-  /** Whether any of `a`'s moves can hurt `d` at all. */
+  /** Whether any of `a`'s moves (its own four, not Struggle) can hurt `d` at all: by the calculator, or a fixed-damage or one-hit KO move its types don't stop. */
   canDamage(a: number, d: number): boolean {
     const key = a * 65536 + d;
     let ok = this.canHit.get(key);
     if (ok === undefined) {
       ok = false;
-      const st = neutralState(this.maxHp(a), this.maxHp(d));
-      for (let s = 0; s < this.moves[a].length && !ok; s++) ok = !this.entry(a, s, d, st).immune;
+      const st = neutralState(this.maxHp(a), this.maxHp(d), this.field);
+      const own = this.moves[a].length - 1;
+      for (let s = 0; s < own && !ok; s++) {
+        const mv = this.moves[a][s];
+        const k = mv.effect?.kind;
+        if (k === "fixed" || k === "ohko" || k === "counter") ok = fixedHits(mv, this.types(d), this.fighters[d].set.ability);
+        else if (mv.cat !== "Status") ok = !this.entry(a, s, d, st).immune;
+      }
       this.canHit.set(key, ok);
     }
     return ok;
@@ -351,8 +434,8 @@ export class DamageTable {
     for (const [att, defs] of [[sideA, sideB], [sideB, sideA]] as const) {
       for (const a of att) {
         for (const d of defs) {
-          const st = neutralState(this.maxHp(a), this.maxHp(d));
-          for (let s = 0; s < this.moves[a].length; s++) {
+          const st = neutralState(this.maxHp(a), this.maxHp(d), this.field);
+          for (let s = 0; s < this.moves[a].length - 1; s++) {
             this.entry(a, s, d, st);
             if (this.moves[a][s].spread) this.entry(a, s, d, { ...st, spread: true });
           }
@@ -364,7 +447,24 @@ export class DamageTable {
 
   get size() {
     let n = 0;
-    for (const row of this.cache) n += row?.size ?? 0;
+    for (const cache of this.caches.values()) for (const row of cache) n += row?.size ?? 0;
     return n;
   }
+}
+
+const NO_DAMAGE: HitEntry = { hits: [new Uint16Array(16)], avg: 0, immune: true };
+
+/**
+ * Whether a move that isn't the calculator's can touch a Pokémon of these types: the type chart's immunities (Seismic
+ * Toss on a Ghost, Night Shade on a Normal type, Dragon Rage on a Fairy), Sheer Cold on an Ice type, Fissure on a
+ * Pokémon in the air (a Flying type or Levitate; an Air Balloon is the battle's to check).
+ */
+export function fixedHits(mv: MBMove, types: string[], ability: string): boolean {
+  const t = mv.type.toLowerCase();
+  const immune: Record<string, string[]> = { normal: ["ghost"], fighting: ["ghost"], ghost: ["normal"], dragon: ["fairy"], ground: ["flying"], electric: ["ground"], psychic: ["dark"], poison: ["steel"] };
+  if ((immune[t] ?? []).some((x) => types.includes(x))) return false;
+  if (t === "ground" && toId(ability) === "levitate") return false;
+  if (toId(mv.name) === "sheercold" && types.includes("ice")) return false;
+  if (mv.effect?.kind === "ohko" && toId(ability) === "sturdy") return false;
+  return true;
 }

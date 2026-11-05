@@ -75,7 +75,7 @@ describe("mass battle: the roster is the repo's real data", () => {
   it("random-battle Pokémon use their random-battle set; the rest their level-up moves at their level", () => {
     const arceus = mon("arceus");
     expect(arceus.source).toBe("randbats");
-    expect(movesOf(arceus).map((m) => m.name).sort()).toEqual(["Earthquake", "Extreme Speed", "Shadow Claw"]);
+    expect(movesOf(arceus).map((m) => m.name).sort()).toEqual(["Earthquake", "Extreme Speed", "Recover", "Swords Dance"]);
     expect(arceus.ability).toBe("Multitype");
     const karp = mon("magikarp");
     expect(karp.source).toBe("learnset");
@@ -155,7 +155,7 @@ describe("mass battle: the damage table is @smogon/calc", () => {
     const fa = fighter(a, choiceA), fb = fighter(b, choiceB);
     return { fa, fb, t: new DamageTable([fa, fb], field ?? { weather: "none", terrain: "none", time: "day" }) };
   };
-  const full = (t: DamageTable, a = 0, d = 1) => neutralState(t.maxHp(a), t.maxHp(d));
+  const full = (t: DamageTable, a = 0, d = 1) => neutralState(t.maxHp(a), t.maxHp(d), t.field);
   const direct = (fa: Fighter, fb: Fighter, moveName: string, opts: { crit?: boolean; doubles?: boolean; weather?: string } = {}) =>
     rollsOf(calculate(gen, calcPokemon(fa), calcPokemon(fb), new Move(gen, moveName, { isCrit: opts.crit }), new Field({ gameType: opts.doubles ? "Doubles" : "Singles", weather: opts.weather as never })).damage);
   const slotOf = (f: Fighter, name: string) => f.set.moves.findIndex((m) => m.name === name);
@@ -245,7 +245,7 @@ describe("mass battle: the damage table is @smogon/calc", () => {
 });
 
 /** A battle with chosen fighters and moves, every unit in reach of every other (the simulator check's layout). */
-function melee(units: { slug: string; side: 0 | 1; moves: string[]; set?: SetChoice }[], seed = 9, field: BattleSpec["field"] = undefined): Battle {
+function melee(units: { slug: string; side: 0 | 1; moves: string[]; set?: SetChoice }[], seed = 9, field: BattleSpec["field"] = undefined, rules: Prepared["rules"] = { pp: false, friendlyFire: true }): Battle {
   const prep: Prepared = {
     species: units.map((u) => mon(u.slug)),
     sets: units.map((u) => ({ ...resolveSet(mon(u.slug), roster, u.set, 100, "none"), moves: u.moves.map(move) })),
@@ -257,6 +257,7 @@ function melee(units: { slug: string; side: 0 | 1; moves: string[]; set?: SetCho
     field: field ?? { weather: "none", terrain: "none", time: "day" },
     seed,
     layout: "melee",
+    rules,
   };
   return new Battle(prep);
 }
@@ -582,7 +583,8 @@ describe("mass battle: abilities that change a Pokémon as it fights (checked ag
     const plain = melee([{ slug: "great-tusk", side: 0, moves: ["Close Combat"] }, { slug: "snorlax", side: 1, moves: ["Body Slam"] }]);
     const sunny = melee([{ slug: "great-tusk", side: 0, moves: ["Close Combat"] }, { slug: "snorlax", side: 1, moves: ["Body Slam"] }], 9, sun);
     const st = neutralState(plain.table.maxHp(0), plain.table.maxHp(1));
-    expect(sunny.table.entry(0, 0, 1, st).avg / plain.table.entry(0, 0, 1, st).avg).toBeGreaterThan(1.25);
+    const stSun = neutralState(plain.table.maxHp(0), plain.table.maxHp(1), sun);
+    expect(sunny.table.entry(0, 0, 1, stSun).avg / plain.table.entry(0, 0, 1, st).avg).toBeGreaterThan(1.25);
     const fast = melee([{ slug: "iron-bundle", side: 0, moves: ["Ice Beam"] }, { slug: "snorlax", side: 1, moves: ["Body Slam"] }], 9, electric);
     const calm = melee([{ slug: "iron-bundle", side: 0, moves: ["Ice Beam"] }, { slug: "snorlax", side: 1, moves: ["Body Slam"] }]);
     expect(fast.effectiveSpeed(0)).toBe(Math.floor(calm.effectiveSpeed(0) * 1.5));

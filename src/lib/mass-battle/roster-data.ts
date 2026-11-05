@@ -8,7 +8,7 @@ import formsData from "@/data/sizes-forms.json";
 import { knownSet } from "@/lib/battle/cpu-policy";
 import { POKEDEX, type Pokemon } from "@/lib/pokemon/pokedex";
 import { pickItem } from "./sets";
-import type { MBMove, MBSpecies, MoveEffect, Roster, StatusId } from "./types";
+import type { Boosts, MBMove, MBSpecies, MoveEffect, MoveRule, Roster, StatusId } from "./types";
 
 /**
  * The Mass Battle roster, built on the server (at build time: the route that
@@ -32,11 +32,11 @@ import type { MBMove, MBSpecies, MoveEffect, Roster, StatusId } from "./types";
  * - Move rules (targets, contact, multi-hit, critical-hit ratio, recoil,
  *   drain, priority, side effects): Showdown's own move data, @pkmn/dex.
  *
- * Moves the simulation can't play fairly are left out: status moves, moves
- * that charge or recharge, that faint the user, one-hit KO moves, and moves
- * that only work in a situation it doesn't track (Fake Out, Focus Punch,
- * Dream Eater…), plus anything the damage calculator gives no damage for
- * (Super Fang, Endeavor, Counter…).
+ * Status moves the battle plays (boosts, healing, status, Protect, Leech
+ * Seed, screens: see MoveRule in types.ts) are kept with the rest; moves
+ * that need what a battle without switching doesn't have (hazards, Taunt,
+ * Encore, Sleep Talk, Future Sight…) are left out, as is anything else the
+ * damage calculator gives no damage for.
  */
 
 interface RawMove {
@@ -81,30 +81,85 @@ const toId = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "");
 
 /**
  * Moves left out, by Showdown id (beyond the rules in `unplayable`): their damage or their point depends on something
- * the battle doesn't track, so the calculator's number would be wrong.
+ * the battle doesn't track (switching, items being used, the move another Pokémon picked), so it can't play them fairly.
  */
 export const EXCLUDED_MOVES = new Set([
-  "fakeout", "firstimpression", "focuspunch", "belch", "lastresort", "dreameater", "steelroller", "poltergeist",
-  "synchronoise", "burnup", "doubleshock", "snore", "spitup", "counter", "mirrorcoat", "metalburst", "comeuppance",
-  "bide", "superfang", "naturesmadness", "ruination", "endeavor", "finalgambit", "present", "magnitude",
+  "belch", "lastresort", "steelroller", "poltergeist",
+  "synchronoise", "burnup", "doubleshock", "snore", "spitup",
+  "bide", "present", "magnitude",
   "naturalgift", "fling", "futuresight", "doomdesire", "beatup", "shelltrap", "struggle", "hiddenpower", "trumpcard",
   "mindblown", "steelbeam", "chloroblast", "upperhand", "skydrop", "naturepower", "sleeptalk", "spectralthief",
-  "aurawheel", "ivycudgel", "ragingbull", "storedpower", "powertrip", "punishment",
+  "aurawheel", "ivycudgel", "ragingbull", "storedpower", "powertrip", "punishment", "geomancy", "freezeshock", "iceburn",
 ]);
+
+/** Status moves the battle plays, by what they do (everything else that is Status is left out: hazards need switching, Taunt and Encore a memory of moves…). */
+const BOOST_SPECIAL = new Set(["growth", "curse", "takeheart", "bellydrum", "filletaway", "clangoroussoul"]);
+const HEALS: Record<string, MoveRule> = {
+  recover: { kind: "heal", share: 1 / 2 }, roost: { kind: "heal", share: 1 / 2 }, slackoff: { kind: "heal", share: 1 / 2 },
+  softboiled: { kind: "heal", share: 1 / 2 }, milkdrink: { kind: "heal", share: 1 / 2 }, healorder: { kind: "heal", share: 1 / 2 },
+  synthesis: { kind: "heal", share: 1 / 2, weather: "sun" }, morningsun: { kind: "heal", share: 1 / 2, weather: "sun" },
+  moonlight: { kind: "heal", share: 1 / 2, weather: "sun" }, shoreup: { kind: "heal", share: 1 / 2, weather: "sand" },
+  rest: { kind: "rest" },
+};
+const INFLICT = new Set(["willowisp", "thunderwave", "toxic", "spore", "sleeppowder", "hypnosis", "sing", "lovelykiss", "grasswhistle", "darkvoid", "glare", "stunspore", "poisonpowder", "poisongas", "confuseray", "supersonic", "sweetkiss"]);
+const SCREENS: Record<string, "reflect" | "lightscreen" | "auroraveil"> = { reflect: "reflect", lightscreen: "lightscreen", auroraveil: "auroraveil" };
+const HIDES: Record<string, "air" | "under" | "water" | "gone"> = { fly: "air", bounce: "air", dig: "under", dive: "water", phantomforce: "gone", shadowforce: "gone" };
+const CHARGE_BOOSTS: Record<string, Boosts> = { skullbash: { def: 1 }, meteorbeam: { spa: 1 }, electroshot: { spa: 1 } };
+const FIXED: Record<string, "half" | "level" | "endeavor" | "gambit" | number> = {
+  superfang: "half", ruination: "half", naturesmadness: "half", seismictoss: "level", nightshade: "level",
+  dragonrage: 40, sonicboom: 20, endeavor: "endeavor", finalgambit: "gambit",
+};
+const COUNTERS: Record<string, { counters: "Physical" | "Special" | "any"; mul: number }> = {
+  counter: { counters: "Physical", mul: 2 }, mirrorcoat: { counters: "Special", mul: 2 }, metalburst: { counters: "any", mul: 1.5 }, comeuppance: { counters: "any", mul: 1.5 },
+};
+
+/** The rule a move plays by, when it's a status move or an attacking move with a special one (undefined: an ordinary attack; null: a status move the battle doesn't play). */
+export function moveRule(id: string): MoveRule | null | undefined {
+  const m = Dex.moves.get(id);
+  const raw = m as unknown as { boosts?: Boosts; heal?: number[]; status?: string; volatileStatus?: string; sideCondition?: string; selfdestruct?: string; ohko?: boolean | string; damage?: number | string };
+  if (m.category === "Status") {
+    if (m.id === "memento") return { kind: "selfdestruct", drops: { atk: -2, spa: -2 } };
+    if (HEALS[m.id]) return HEALS[m.id];
+    if (m.id === "protect" || m.id === "detect") return { kind: "protect" };
+    if (m.id === "leechseed") return { kind: "leechseed" };
+    if (SCREENS[m.id]) return { kind: "screen", screen: SCREENS[m.id] };
+    if (INFLICT.has(m.id)) return raw.volatileStatus === "confusion" ? { kind: "inflict", confuse: true } : { kind: "inflict", status: raw.status as StatusId };
+    if (m.target === "self" && BOOST_SPECIAL.has(m.id)) {
+      if (m.id === "growth") return { kind: "boost", boosts: { atk: 1, spa: 1 } };
+      if (m.id === "curse") return { kind: "boost", boosts: { atk: 1, def: 1, spe: -1 } };
+      if (m.id === "takeheart") return { kind: "boost", boosts: { spa: 1, spd: 1 } };
+      return null;
+    }
+    if (m.id === "curse") return { kind: "boost", boosts: { atk: 1, def: 1, spe: -1 } };
+    if (m.target === "self" && raw.boosts && !raw.heal && !raw.volatileStatus) return { kind: "boost", boosts: { ...raw.boosts } };
+    return null;
+  }
+  if (m.flags.charge) return { kind: "charge", sunSkips: m.id === "solarbeam" || m.id === "solarblade", rainSkips: m.id === "electroshot", boosts: CHARGE_BOOSTS[m.id], hide: HIDES[m.id] };
+  if (m.flags.recharge) return { kind: "recharge" };
+  if (raw.selfdestruct === "always") return { kind: "selfdestruct" };
+  if (FIXED[m.id] !== undefined) return { kind: "fixed", fixed: FIXED[m.id] };
+  if (raw.ohko) return { kind: "ohko" };
+  if (m.id === "fakeout" || m.id === "firstimpression") return { kind: "fakeout" };
+  if (COUNTERS[m.id]) return { kind: "counter", ...COUNTERS[m.id] };
+  if (m.id === "focuspunch") return { kind: "focuspunch" };
+  if (m.id === "dreameater") return { kind: "dreameater" };
+  return undefined;
+}
 
 /** Why a move can't be used here, or null when it can. */
 export function unplayable(id: string): string | null {
   const m = Dex.moves.get(id);
   if (!m.exists) return "unknown";
-  if (m.category === "Status") return "status";
-  if (m.flags.charge) return "charges";
-  if (m.flags.recharge) return "recharges";
-  if (m.selfdestruct) return "faints the user";
-  if (m.ohko) return "one-hit KO";
   if (m.isZ || m.isMax) return "Z or Max";
   if (EXCLUDED_MOVES.has(m.id)) return "situational";
+  const rule = moveRule(m.id);
+  if (rule === null) return "status";
+  if (m.id === "curse") return null;
   return null;
 }
+
+/** Moves whose damage isn't the calculator's (fixed damage, one-hit KOs, Counter), or that do none (status moves). */
+export const noCalc = (rule: MoveRule | null | undefined) => !!rule && (rule.kind === "fixed" || rule.kind === "ohko" || rule.kind === "counter" || (rule.kind === "selfdestruct" && !!rule.drops) || ["boost", "heal", "rest", "inflict", "protect", "leechseed", "screen"].includes(rule.kind));
 
 const SPREAD_TARGETS = new Set(["allAdjacent", "allAdjacentFoes"]);
 const BEST_STAT = new Set(["photongeyser", "shellsidearm", "terablast", "lightthatburnsthesky", "terastarstorm"]);
@@ -141,7 +196,7 @@ export function moveInfo(name: string): MBMove {
   const out: MBMove = {
     name: m.name,
     type: m.type,
-    cat: m.category === "Special" ? "Special" : "Physical",
+    cat: m.category === "Status" ? "Status" : m.category === "Special" ? "Special" : "Physical",
     bp: m.basePower,
     acc: m.accuracy === true ? 0 : m.accuracy,
     pri: m.priority,
@@ -163,6 +218,13 @@ export function moveInfo(name: string): MBMove {
   if (m.flags.defrost) out.thaws = true;
   if ((m as { self?: { volatileStatus?: string } }).self?.volatileStatus === "lockedmove") out.rampage = true;
   if ((m as { hasCrashDamage?: boolean }).hasCrashDamage) out.crash = true;
+  out.pp = (m as { noPPBoosts?: boolean }).noPPBoosts ? m.pp : Math.floor((m.pp * 8) / 5);
+  if (m.target === "allAdjacent") out.allies = true;
+  if (m.flags.protect) out.protectable = true;
+  if (m.flags.reflectable) out.reflectable = true;
+  if (m.flags.powder) out.powder = true;
+  const rule = moveRule(m.id);
+  if (rule) out.effect = rule;
   return out;
 }
 
@@ -215,7 +277,7 @@ function calcWorks(move: string): boolean {
 }
 
 /** Whether the battle can play a move (by name or id). */
-export const playable = (name: string) => !unplayable(toId(name)) && calcWorks(Dex.moves.get(name).name);
+export const playable = (name: string) => !unplayable(toId(name)) && (noCalc(moveRule(toId(name))) || calcWorks(Dex.moves.get(name).name));
 
 // ---------------------------------------------------------------------------
 // Learnsets

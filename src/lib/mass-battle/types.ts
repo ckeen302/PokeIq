@@ -83,7 +83,7 @@ export interface MBMove {
   name: string;
   /** Capitalised type ("Water"). */
   type: string;
-  cat: "Physical" | "Special";
+  cat: "Physical" | "Special" | "Status";
   /** Base power (0 for moves whose power the calculator works out: Flail, Low Kick…). */
   bp: number;
   /** Accuracy in percent; 0 never misses. */
@@ -116,6 +116,65 @@ export interface MBMove {
   crash?: boolean;
   /** A punch (Iron Fist boosts it; with a Punching Glove it doesn't make contact). */
   punch?: boolean;
+  /** Its power points (Showdown's, with three PP Ups as in every Showdown set). */
+  pp?: number;
+  /** A spread move that also hits the user's allies (Showdown's target allAdjacent: Earthquake, Surf, Explosion). */
+  allies?: boolean;
+  /** Protect blocks it (Showdown's protect flag; status moves on the user never are). */
+  protectable?: boolean;
+  /** Magic Bounce reflects it (status moves on a foe). */
+  reflectable?: boolean;
+  /** Grass types, Overcoat and Safety Goggles are immune (Spore, Sleep Powder, Stun Spore). */
+  powder?: boolean;
+  /** What a status move does (see StatusEffect), or an attacking move's special rule. */
+  effect?: MoveRule;
+}
+
+/**
+ * The status moves and the special attacking moves the battle plays, by
+ * kind (every number is Showdown's):
+ * - boost: stat stages on the user (Swords Dance, Dragon Dance, Calm Mind; Growth doubles in the sun; non-Ghost Curse).
+ * - heal: HP back, a share of its max HP (Recover, Roost; Moonlight, Synthesis and Morning Sun by the weather, Shore Up in sand).
+ * - rest: full HP and two turns asleep.
+ * - inflict: a major status (Will-O-Wisp, Thunder Wave, Toxic, Spore) or confusion (Confuse Ray).
+ * - protect: Protect and Detect (each use in a row a third as likely to work).
+ * - leechseed: an eighth of the target's max HP each round, to the user.
+ * - screen: Reflect, Light Screen, Aurora Veil (in snow) for the user's side, five rounds.
+ * - charge: turn one charges (Solar Beam skips it in the sun; Meteor Beam and Skull Bash boost; Fly, Dig, Dive,
+ *   Bounce, Phantom Force and Shadow Force are out of reach meanwhile), turn two hits.
+ * - recharge: Hyper Beam, Giga Impact: the next turn is spent recharging.
+ * - selfdestruct: the user faints (Explosion, Self-Destruct, Misty Explosion; Memento, a status move, drops the target's Attack and Sp. Atk two stages).
+ * - fixed: Super Fang, Ruination and Nature's Madness (half the target's HP), Seismic Toss and Night Shade (the user's
+ *   level), Dragon Rage (40), Sonic Boom (20), Endeavor (down to the user's HP), Final Gambit (the user's HP).
+ * - ohko: Fissure, Guillotine, Horn Drill, Sheer Cold.
+ * - fakeout: Fake Out and First Impression (only on the user's first action).
+ * - counter: Counter, Mirror Coat, Metal Burst, Comeuppance (the damage taken this turn back).
+ * - focuspunch: fails if the user is hit before it moves.
+ * - dreameater: only on a sleeping target.
+ */
+export type MoveRule =
+  | { kind: "boost"; boosts: Boosts }
+  | { kind: "heal"; share: number; weather?: "sun" | "sand" }
+  | { kind: "rest" }
+  | { kind: "inflict"; status?: StatusId; confuse?: boolean }
+  | { kind: "protect" }
+  | { kind: "leechseed" }
+  | { kind: "screen"; screen: "reflect" | "lightscreen" | "auroraveil" }
+  | { kind: "charge"; sunSkips?: boolean; rainSkips?: boolean; boosts?: Boosts; hide?: "air" | "under" | "water" | "gone" }
+  | { kind: "recharge" }
+  | { kind: "selfdestruct"; drops?: Boosts }
+  | { kind: "fixed"; fixed: "half" | "level" | "endeavor" | "gambit" | number }
+  | { kind: "ohko" }
+  | { kind: "fakeout" }
+  | { kind: "counter"; counters: "Physical" | "Special" | "any"; mul: number }
+  | { kind: "focuspunch" }
+  | { kind: "dreameater" };
+
+/** Battle rules beyond the field: Real PP (off: unlimited PP, the default), friendly fire (on, as in the games). */
+export interface RulesSpec {
+  pp?: boolean;
+  /** Left out or true: spread moves hit allies and Lightning Rod and Storm Drain pull a partner's moves in. */
+  friendlyFire?: boolean;
 }
 
 /** A species (or form) and its default set, as the battle needs it. Stats from src/data/pokedex.json and Showdown's data. */
@@ -255,6 +314,8 @@ export interface BattleSpec {
   field?: FieldSpec;
   /** Left out: no held items unless chosen. */
   items?: ItemPolicy;
+  /** Left out: unlimited PP, friendly fire on. */
+  rules?: RulesSpec;
 }
 
 /** "How many X beat Y?": the smallest army of `army` (its rows share the army evenly) that beats `boss`. */
@@ -267,6 +328,7 @@ export interface Question {
   arena: ArenaId;
   field?: FieldSpec;
   items?: ItemPolicy;
+  rules?: RulesSpec;
   /** Share of battles the army must win (0.5 or 0.9). */
   threshold?: number;
   /** Battles per army size. */
@@ -289,6 +351,8 @@ export interface BattleOutcome {
 
 export const fieldOf = (s: { field?: FieldSpec }): FieldSpec => s.field ?? DEFAULT_FIELD;
 export const itemsOf = (s: { items?: ItemPolicy }): ItemPolicy => s.items ?? "none";
+export const realPP = (s: { rules?: RulesSpec }) => !!s.rules?.pp;
+export const friendlyFire = (s: { rules?: RulesSpec }) => s.rules?.friendlyFire !== false;
 export const sideTotal = (a: ArmySpec) => a.units.reduce((n, u) => n + u.count, 0);
 /** The question's first challenger and boss species (for names and pictures). */
 export const questionLead = (q: Question) => ({ challenger: q.army.units[0]?.id ?? 0, boss: q.boss.units[0]?.id ?? 0 });
