@@ -5,9 +5,10 @@ import type { ArmySpec, BattleSpec, EvPreset, GroupRule, ItemPolicy, MBMove, MBS
  * Sets: what each species fights with. Pure and client-safe (the setup
  * panel uses the same rules as the battle).
  *
- * - Moves: the four chosen, or by default the random-battle set's attacking
- *   moves (the strongest first, then new types), or the attacking moves it
- *   knows by levelling up to its level.
+ * - Moves: the four chosen, or by default the random-battle set's moves (up
+ *   to two of its status moves the battle plays, then its attacks, the
+ *   strongest first, then new types), or the attacking moves it knows by
+ *   levelling up to its level.
  * - Ability: one of its own, its default first.
  * - Item: none unless chosen (or each set's random-battle item, with items
  *   on). Only items whose effect the battle models are offered.
@@ -39,7 +40,7 @@ const all = (v: number): StatTable => ({ hp: v, atk: v, def: v, spa: v, spd: v, 
 export function spreadOf(preset: EvPreset, moves: Pick<MBMove, "cat">[]): { evs: StatTable; ivs: StatTable } {
   if (preset === "offence") {
     const physical = moves.filter((m) => m.cat === "Physical").length;
-    const special = moves.length - physical;
+    const special = moves.filter((m) => m.cat === "Special").length;
     const evs = { hp: 4, atk: 0, def: 0, spa: 0, spd: 0, spe: 252 };
     if (physical >= special) evs.atk = 252;
     else evs.spa = 252;
@@ -74,8 +75,12 @@ const toId = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "");
 
 /** A rough strength for ranking (only for choosing the four moves; damage itself is the calculator's). */
 export function moveScore(mv: MBMove, p: Pick<MBSpecies, "types" | "base">, level: number): number {
+  if (mv.cat === "Status") return 0;
   const id = toId(mv.name);
+  const rule = mv.effect;
   let power = mv.bp;
+  if (rule?.kind === "fixed") power = rule.fixed === "half" ? 90 : rule.fixed === "level" ? Math.min(120, level) : typeof rule.fixed === "number" ? rule.fixed : 40;
+  else if (rule?.kind === "ohko") power = 30;
   if (!power) {
     if (id === "seismictoss" || id === "nightshade") power = Math.min(120, level);
     else if (id === "eruption" || id === "waterspout" || id === "dragonenergy") power = 150;
@@ -87,7 +92,36 @@ export function moveScore(mv: MBMove, p: Pick<MBSpecies, "types" | "base">, leve
   const acc = mv.acc ? mv.acc / 100 : 1;
   // A move that drops the user's own attacking stat (Draco Meteor, Overheat) is worth a little less over a long battle.
   const selfDrop = mv.fx?.some((f) => f.on === "self" && f.chance >= 100 && ((f.boosts?.atk ?? 0) < 0 || (f.boosts?.spa ?? 0) < 0)) ? 0.85 : 1;
-  return power * expectedHits(mv.hits) * stab * stat * acc * (mv.crit >= 3 ? 1.5 : 1) * selfDrop;
+  // Two-turn moves, recharging and fainting the user are worth half (Solar Beam, Hyper Beam, Explosion); moves that only
+  // work now and then (Fake Out, Focus Punch, Dream Eater, Counter) a quarter.
+  const k = rule?.kind;
+  const slow = k === "charge" || k === "recharge" || k === "selfdestruct" ? 0.5 : k === "fakeout" || k === "focuspunch" || k === "dreameater" || k === "counter" ? 0.25 : 1;
+  const fixed = rule?.kind === "fixed" || rule?.kind === "ohko" ? 1 / (stab * Math.max(1, stat / 100)) : 1;
+  return power * expectedHits(mv.hits) * stab * stat * acc * (mv.crit >= 3 ? 1.5 : 1) * selfDrop * slow * fixed;
+}
+
+/** Status moves a set keeps, best first: at most one of each kind, in this order. */
+const STATUS_ORDER = ["boost", "heal", "rest", "inflict", "leechseed", "protect", "screen", "selfdestruct"] as const;
+/** At most this many status moves in a default set (the rest are attacks). */
+export const MAX_STATUS = 2;
+
+/**
+ * A random-battle set's four: its status moves the battle plays (at most two, one of each kind: a boost, then healing,
+ * then a status condition, Leech Seed, Protect, a screen), then its attacks as pickFour ranks them, at least two of
+ * them when it has two.
+ */
+export function pickSet(candidates: MBMove[], p: Pick<MBSpecies, "types" | "base">, level: number): MBMove[] {
+  const pool = [...new Map(candidates.map((m) => [m.name, m])).values()];
+  const attacks = pool.filter((m) => m.cat !== "Status");
+  const status: MBMove[] = [];
+  for (const kind of STATUS_ORDER) {
+    if (status.length >= MAX_STATUS) break;
+    const m = pool.filter((x) => x.cat === "Status" && x.effect?.kind === kind).sort((a, b) => a.name.localeCompare(b.name))[0];
+    if (m) status.push(m);
+  }
+  const keep = Math.max(Math.min(2, attacks.length), MAX_MOVES - status.length);
+  const out = pickFour(attacks, p, level).slice(0, keep);
+  return [...out, ...status.slice(0, MAX_MOVES - out.length)];
 }
 
 /** Up to four moves: the strongest first, then the strongest of each new type, then the rest. */
@@ -109,7 +143,7 @@ export function pickFour(candidates: MBMove[], p: Pick<MBSpecies, "types" | "bas
 
 /** The moves a species uses by default at a level. */
 export function defaultMoves(s: MBSpecies, moves: MBMove[], level: number): MBMove[] {
-  if (s.randbats) return pickFour(s.randbats.map((i) => moves[i]), s, 100);
+  if (s.randbats) return pickSet(s.randbats.map((i) => moves[i]), s, 100);
   return pickFour(s.levelUp.filter(([, at]) => at <= level).map(([i]) => moves[i]), s, level);
 }
 

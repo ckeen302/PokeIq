@@ -1,3 +1,4 @@
+import { STRUGGLE } from "@/lib/mass-battle/damage";
 import { Battle, EV, EVENT_INTS, NOTE_INTS, prepare, TICK_HZ } from "@/lib/mass-battle/engine";
 import { DEFAULT_PLAYBACK, type PlaybackSpec } from "@/lib/mass-battle/types";
 import type { FromSim, Moment, SimEnd, SimFrame, ToSim } from "./protocol";
@@ -171,9 +172,11 @@ scope.onmessage = (event) => {
           maxHp: b.rows.map((r) => r.maxHp),
           radius: b.rows.map((r) => r.radius),
           start: [b.start[0], b.start[1]],
-          moves: prep.moves.map((ms) => ms.map((m) => ({ name: m.name, type: m.type, cat: m.cat, contact: m.contact, spread: m.spread }))),
+          // Each fighter's moves by slot, then Struggle (its slot is the move count).
+          moves: prep.moves.map((ms) => [...ms, STRUGGLE].map((m) => ({ name: m.name, type: m.type, cat: m.cat, contact: m.contact, spread: m.spread }))),
           fighters: prep.sets.map((s) => ({ level: s.level, ability: s.ability, item: s.item, nature: s.nature, tera: s.tera })),
-          field: prep.field,
+          // The field as the battle starts: a setter's weather or terrain (Drizzle, Electric Surge) is on show from the first frame.
+          field: { ...prep.field, weather: b.fieldNow.weather, terrain: b.fieldNow.terrain },
           frame,
           setupMs: performance.now() - t0,
         },

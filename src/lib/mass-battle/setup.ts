@@ -1,6 +1,6 @@
-import { MAX_SIDE, MAX_SPECIES, simpleQuestion } from "./share";
+import { DEFAULT_RUNS, MAX_SIDE, MAX_SPECIES, simpleQuestion } from "./share";
 import { clampLevel } from "./sets";
-import { DEFAULT_FIELD, type ArenaId, type ArmySpec, type BattleSpec, type FieldSpec, type Formation, type GroupRule, type ItemPolicy, type Question, type SetChoice, type Spacing, type SpreadUse, type Stance, type Targeting, type UnitSpec } from "./types";
+import { DEFAULT_FIELD, type ArenaId, type ArmySpec, type BattleSpec, type FieldSpec, type Formation, type GroupRule, type ItemPolicy, type Question, type RulesSpec, type SetChoice, type Spacing, type SpreadUse, type Stance, type Targeting, type UnitSpec } from "./types";
 
 /**
  * The Battle setup panel's state, and its round trip to battles and
@@ -37,6 +37,9 @@ export interface SetupState {
   arena: ArenaId;
   field: FieldSpec;
   items: ItemPolicy;
+  /** Real PP (off: unlimited, the default) and friendly fire (on, as in the games). */
+  pp: boolean;
+  friendlyFire: boolean;
   threshold: number;
   runs: number;
 }
@@ -57,8 +60,10 @@ export function defaultSetup(id: (slug: string) => number): SetupState {
     arena: "plains",
     field: { ...DEFAULT_FIELD },
     items: "none",
+    pp: false,
+    friendlyFire: true,
     threshold: 0.5,
-    runs: 40,
+    runs: DEFAULT_RUNS,
   };
 }
 
@@ -67,12 +72,12 @@ const toSide = (a: ArmySpec): SideState => ({ rows: toRows(a.units), formation: 
 
 /** The panel filled in from a battle (the Army vs army tab). */
 export function fromBattle(s: SetupState, spec: BattleSpec): SetupState {
-  return { ...s, tab: "army", sides: [toSide(spec.sides[0]), toSide(spec.sides[1])], level: spec.level, arena: spec.arena, field: spec.field ?? { ...DEFAULT_FIELD }, items: spec.items ?? "none" };
+  return { ...s, tab: "army", sides: [toSide(spec.sides[0]), toSide(spec.sides[1])], level: spec.level, arena: spec.arena, field: spec.field ?? { ...DEFAULT_FIELD }, items: spec.items ?? "none", pp: !!spec.rules?.pp, friendlyFire: spec.rules?.friendlyFire !== false };
 }
 
 /** The panel filled in from a question (the How many? tab). */
 export function fromQuestion(s: SetupState, q: Question): SetupState {
-  return { ...s, tab: "ask", army: toSide(q.army), boss: toSide(q.boss), level: q.level, arena: q.arena, field: q.field ?? { ...DEFAULT_FIELD }, items: q.items ?? "none", threshold: q.threshold ?? 0.5, runs: q.runs ?? 40 };
+  return { ...s, tab: "ask", army: toSide(q.army), boss: toSide(q.boss), level: q.level, arena: q.arena, field: q.field ?? { ...DEFAULT_FIELD }, items: q.items ?? "none", pp: !!q.rules?.pp, friendlyFire: q.rules?.friendlyFire !== false, threshold: q.threshold ?? 0.5, runs: q.runs ?? DEFAULT_RUNS };
 }
 
 const toArmy = (s: SideState, counts = true): ArmySpec => {
@@ -87,6 +92,9 @@ const toArmy = (s: SideState, counts = true): ArmySpec => {
   return a;
 };
 
+/** The rules that differ from the defaults (Real PP off, friendly fire on), or undefined. */
+const rulesOf = (s: Pick<SetupState, "pp" | "friendlyFire">): RulesSpec | undefined => (s.pp || !s.friendlyFire ? { ...(s.pp ? { pp: true } : {}), ...(!s.friendlyFire ? { friendlyFire: false } : {}) } : undefined);
+
 const fieldOrNone = (f: FieldSpec) => (f.weather === "none" && f.terrain === "none" && f.time === "day" ? undefined : { ...f });
 
 /** The Army vs army tab as a battle. */
@@ -95,6 +103,8 @@ export function toBattle(s: SetupState, seed: number): BattleSpec {
   const f = fieldOrNone(s.field);
   if (f) spec.field = f;
   if (s.items === "sets") spec.items = "sets";
+  const rules = rulesOf(s);
+  if (rules) spec.rules = rules;
   return spec;
 }
 
@@ -104,8 +114,10 @@ export function toQuestion(s: SetupState): Question {
   const f = fieldOrNone(s.field);
   if (f) q.field = f;
   if (s.items === "sets") q.items = "sets";
+  const rules = rulesOf(s);
+  if (rules) q.rules = rules;
   if (s.threshold !== 0.5) q.threshold = s.threshold;
-  if (s.runs !== 40) q.runs = s.runs;
+  if (s.runs !== DEFAULT_RUNS) q.runs = s.runs;
   return q;
 }
 

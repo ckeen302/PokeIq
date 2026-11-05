@@ -52,6 +52,8 @@ export interface ChoreoHooks {
   damage?(x: number, y: number, z: number, damage: number, flags: number, side: number): void;
   /** A note over a unit (a status, healing, a stat stage…), with the height to show it at. */
   note?(n: Note, y: number): void;
+  /** Explosion and the like went off here. */
+  blast?(x: number, z: number, h: number): void;
 }
 
 export interface ChoreoView {
@@ -133,6 +135,26 @@ export function createChoreographer(fx: Effects, view: ChoreoView, ready: SimRea
       a.damage += h.damage;
       a.share = Math.max(a.share, share);
       const drawnA = view.draw[h.actor], drawnT = view.draw[h.target];
+      if (h.flags & EV.BLAST) {
+        // Explosion, Self-Destruct, Memento: a big blast where the user stood, a shock ring over everyone it reached, and the camera feels it.
+        if (drawnA) {
+          const r = ready.radius[sp[h.actor]] + SPREAD_REACH + 0.6;
+          const big = Math.min(4, Math.max(1.4, ha * 1.6));
+          const type = mv?.type === "Fairy" ? "Fairy" : "Fire";
+          fx.impact(type, h.ax, ha * 0.5, h.az, big, 1, true, h.t);
+          fx.impact("Normal", h.ax, ha * 0.9, h.az, big * 0.8, 0.8, false, h.t + 0.05);
+          fx.spread(type, h.ax, h.az, r, Math.min(3, Math.max(1, ha)), h.t);
+          for (let k = 0; k < 6; k++) {
+            const a = (k / 6) * Math.PI * 2;
+            fx.impact(type, h.ax + Math.cos(a) * r * 0.55, ha * 0.4, h.az + Math.sin(a) * r * 0.55, big * 0.45, 0.6, false, h.t + 0.04 + k * 0.02);
+          }
+          fx.dust(h.ax, h.az, big * 1.4);
+          self.hooks.punch?.(h.ax, ha * 0.5, h.az, 0.9, type);
+          self.hooks.blast?.(h.ax, h.az, ha);
+        }
+        if (h.flags & EV.KO) self.hooks.recall?.();
+        return;
+      }
       // The recall always plays for a drawn Pokémon (nothing just vanishes).
       if (h.flags & EV.KO) {
         if (drawnT) fx.recall(h.tx, 0, h.tz, ht, ballHeight(ht), h.t + 0.22);
@@ -161,6 +183,10 @@ export function createChoreographer(fx: Effects, view: ChoreoView, ready: SimRea
       if (isBoss && (share > 0.3 || (h.flags & EV.CRIT && share > 0.15))) self.hooks.punch?.(h.tx, ht * 0.5, h.tz, Math.min(0.85, share * 1.2 + (h.flags & EV.CRIT ? 0.2 : 0)), mv.type);
     },
     note(n) {
+      if (n.unit < 0 || n.unit >= sp.length) {
+        self.hooks.note?.(n, 1);
+        return;
+      }
       const ht = heights[sp[n.unit]] ?? 1;
       if (view.draw[n.unit]) {
         const size = Math.min(1.4, Math.max(0.3, ht * 0.7));
@@ -177,6 +203,14 @@ export function createChoreographer(fx: Effects, view: ChoreoView, ready: SimRea
           fx.impact(type, n.x, ht * 0.55, n.z, big, 0.6, false, n.t);
           fx.auraDisc(type, n.x, n.z, Math.max(0.9, big * 1.2), n.t);
         } else if (n.kind === NOTE.SKIP && n.value === NOTE_SKIP.loafing) fx.dust(n.x, n.z, Math.max(0.4, size * 0.8));
+        else if (n.kind === NOTE.MOVE) {
+          // A move on itself (a boost, healing, Protect, a screen) or charging up: a glow of its type round the user.
+          const mv = ready.moves[sp[n.unit]]?.[n.value];
+          if (mv) {
+            fx.auraDisc(mv.type, n.x, n.z, Math.max(0.7, size * 1.1), n.t);
+            fx.impact(mv.type, n.x, ht * 0.6, n.z, size * 0.8, 0.15, false, n.t);
+          }
+        } else if (n.kind === NOTE.ABILITY) fx.auraDisc("Dark", n.x, n.z, Math.max(0.8, size * 1.2), n.t);
       }
       self.hooks.note?.(n, ht * 1.05 + 0.2);
     },

@@ -16,13 +16,14 @@ import { sliceRoster, specIds, questionIds } from "./protocol";
 import { getRoster } from "./roster-client";
 import { BattleView, summarize } from "./view";
 import { SimClient, SolverPool } from "./workers";
+import type { PureAnswer } from "@/lib/mass-battle/preset-results";
 import { createBattleAudio, type BattleAudio } from "./audio";
 import { MB_CSS } from "./mass-battle-css";
 import type { BattleScene, Quality } from "./scene";
 import { HowItWorksBody } from "./HowItWorks";
 import { envOf } from "./scene/look";
 import { BattleControls, LiveHud, type CamMode, type HudApi, type HudState } from "./BattleHud";
-import { DamageNumbers, noteLabel } from "./damage-numbers";
+import { DamageNumbers, fieldLine, noteLabel } from "./damage-numbers";
 import { formFigures, speciesForms, type SpeciesForms } from "./scene/forms";
 import type { Choreographer } from "./scene/choreo";
 import { factsOfRow, SetupPanel } from "./SetupPanel";
@@ -41,7 +42,7 @@ export interface PresetCard {
   blurb: string;
   spec: BattleSpec;
   question: Question | null;
-  answer: { n: number; spread: number; wins: number; runs: number; seed: number } | null;
+  answer: { n: number; spread: number; wins: number; runs: number; seed: number; pure?: PureAnswer | null } | null;
   /** Names for the two sides on presets with many species. */
   labels: [string, string] | null;
   /** How it's shown: the preset's own choices (the rest stays as the viewer has it). */
@@ -60,9 +61,9 @@ export interface BattleDesc {
   playback?: PlaybackSpec;
   names: [string, string];
   hook: string;
-  /** A "how many?" answer battle: its question and answer. */
+  /** A "how many?" answer battle: its question and answer (on the battlefield), and the pure battle maths' (null while it's worked out). */
   question: Question | null;
-  answer: { n: number; spread: number; wins: number; runs: number } | null;
+  answer: { n: number; spread: number; wins: number; runs: number; pure?: PureAnswer | null } | null;
   presetId: string | null;
   /** A fixed battle's "how many?" answer for its matchup, shown with the result. */
   bonus?: { question: Question; answer: { n: number; spread: number; wins: number; runs: number; seed: number } } | null;
@@ -280,8 +281,18 @@ export function MassBattleExperience({ list, presets, initial, playback: initial
         const forms = n.kind === NOTE.FORM ? formsRef.current[sp[n.unit]] : undefined;
         const form = forms?.forms[n.value]?.label;
         const named = !!form && forms?.rule !== "protean";
-        const label = noteLabel(n.kind, n.value, form);
-        if (label && view.draw[n.unit]) numbersRef.current?.spawnText(n.x, y, n.z, label.text, label.cls, performance.now() / 1000, view.side[n.unit] === bossSide || named, named);
+        if (n.kind === NOTE.FIELD || n.kind === NOTE.ABILITY) {
+          const line = fieldLine(n.kind, n.value, n.unit >= 0 ? name(n.unit) : "");
+          // A whole army coming in with Intimidate would flood the feed: the boss's (or a lone one's) only.
+          if (line && (n.kind === NOTE.FIELD || n.unit < 0 || view.side[n.unit] === bossSide || ready.start[view.side[n.unit]] <= 3)) pushFeed(line, n.unit >= 0 && view.side[n.unit] === 1 ? "b" : "a");
+        }
+        const moveName = n.kind === NOTE.MOVE && n.unit >= 0 ? ready.moves[sp[n.unit]]?.[n.value]?.name : undefined;
+        const label = noteLabel(n.kind, n.value, moveName ?? form);
+        if (label && n.unit >= 0 && view.draw[n.unit]) numbersRef.current?.spawnText(n.x, y, n.z, label.text, label.cls, performance.now() / 1000, view.side[n.unit] === bossSide || named || (n.kind === NOTE.MOVE && ready.start[view.side[n.unit]] <= 3), named);
+      },
+      blast: (x, z, h) => {
+        directorRef.current.offer({ kind: "big", x, z, h, power: 1 });
+        audioRef.current?.boom(1);
       },
       action: (a) => {
         const d = directorRef.current;
@@ -634,12 +645,12 @@ export function MassBattleExperience({ list, presets, initial, playback: initial
 
   // ---- Battles from presets, links and the setup panel.
   /** The answer battle of a question: `n` of its army (shared by its rows and groups) against the boss. */
-  const answerBattle = useCallback((q: Question, answer: { n: number; spread: number; wins: number; runs: number }, seed: number, hook: string, presetId: string | null): BattleDesc => ({
+  const answerBattle = useCallback((q: Question, answer: { n: number; spread: number; wins: number; runs: number; pure?: PureAnswer | null }, seed: number, hook: string, presetId: string | null): BattleDesc => ({
     spec: questionSpec(expandQuestion(q, facts), answer.n, seed),
     names: [armyLabel(q.army, nameOf), armyLabel(q.boss, nameOf)],
     hook,
     question: q,
-    answer: { n: answer.n, spread: answer.spread, wins: answer.wins, runs: answer.runs },
+    answer: { n: answer.n, spread: answer.spread, wins: answer.wins, runs: answer.runs, pure: answer.pure ?? null },
     presetId,
     playback: playbackRef.current,
   }), [facts, nameOf]);
@@ -699,6 +710,14 @@ export function MassBattleExperience({ list, presets, initial, playback: initial
       }
       const b = answerBattle(q, { n: res.answer, spread: res.spread, wins: res.wins, runs: res.runs }, res.wonSeed ?? newSeed(), hook, null);
       await deploy(b, true);
+      // The pure battle maths (everyone in reach of everyone), worked out while the battle plays.
+      const pureEval = poolRef.current.evaluator(slice, qx, () => {}, ac.signal, "melee");
+      const pr = await solve(`${questionKey(q, slugs)}#pure`, pureEval, undefined, { signal: ac.signal, runs: runsOf(q), threshold: thresholdOf(q), maxN: SOLVER.pureMaxN });
+      if (!ac.signal.aborted) {
+        // No answer up to the cap: shown as "more than" it (n 0).
+        const pure = pr.answer === null ? { n: 0, spread: 0, wins: 0, runs: 0 } : { n: pr.answer, spread: pr.spread, wins: pr.wins, runs: pr.runs };
+        setBattle((prev) => (prev && prev.question === q && prev.answer ? { ...prev, answer: { ...prev.answer, pure } } : prev));
+      }
     } catch (e) {
       if ((e as Error)?.name === "AbortError") return;
       setSolving(null);
@@ -1086,9 +1105,14 @@ export function MassBattleExperience({ list, presets, initial, playback: initial
               {b.answer && b.question ? (
                 <>
                   <p className="font-pixel text-[10px] uppercase tracking-[0.2em] text-white/60">{questionText(b.names[0], b.names[1])}</p>
-                  <p className="mb-answer text-4xl sm:text-6xl" data-testid="mb-answer"><b>{fmt(b.answer.n)}</b> {b.names[0]}</p>
+                  <p className="font-display text-[11px] font-bold uppercase tracking-[0.18em] text-white/60">On the battlefield</p>
+                  <p className="mb-answer -mt-2 text-4xl sm:text-6xl" data-testid="mb-answer"><b>{fmt(b.answer.n)}</b> {b.names[0]}</p>
                   <p className="font-display text-sm font-semibold uppercase tracking-wider text-white/80" data-testid="mb-spread">{spreadText(b.answer.spread, b.answer.runs)}</p>
                   <p className="text-xs text-white/55">{winRateText(b.answer.wins, b.answer.runs, b.answer.n)}. This battle: {final.title}</p>
+                  <p className="rounded-lg bg-white/5 px-3 py-2 text-sm text-white/80" data-testid="mb-pure">
+                    <span className="font-display text-[11px] font-bold uppercase tracking-[0.18em] text-white/60">Pure battle maths</span>{" "}
+                    {b.answer.pure ? (b.answer.pure.n > 0 ? <><b className="text-white">{fmt(b.answer.pure.n)}</b> ({spreadText(b.answer.pure.spread, b.answer.pure.runs)}), with everyone in reach of everyone</> : <>more than {fmt(SOLVER.pureMaxN)}, with everyone in reach of everyone</>) : <span className="text-white/55">working it out…</span>}
+                  </p>
                 </>
               ) : (
                 <>
