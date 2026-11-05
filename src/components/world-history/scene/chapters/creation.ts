@@ -67,8 +67,9 @@ export const build: ChapterBuilder = async (ctx) => {
         vec2 v = cells(vP * 3.2);
         float spread = smoothstep(-1.0, 1.0, (vP.y + 0.4) * 1.2 + (uCrack * 3.2 - 1.6));
         float crack = smoothstep(0.08, 0.0, v.y - v.x) * spread * step(0.01, uCrack);
-        c += vec3(1.0, 0.78, 0.35) * crack * (6.0 + 10.0 * uCrack);
-        gl_FragColor = vec4(c, uOpacity);
+        c += vec3(1.0, 0.78, 0.35) * crack * (3.0 + 4.0 * uCrack);
+        // Kept below a few times white, so the bloom glows around the cracks instead of boxing out the frame.
+        gl_FragColor = vec4(min(c, vec3(3.2)), uOpacity);
       }`,
   });
   const eggGeo = new THREE.SphereGeometry(1, 96, 64);
