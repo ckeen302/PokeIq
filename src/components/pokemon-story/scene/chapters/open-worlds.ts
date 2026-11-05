@@ -371,11 +371,16 @@ export const build: ChapterBuilder = async (ctx) => {
       // E. The glide: Koraidon and Miraidon run alongside.
       paldea.mesh.visible = paldeaProps.visible = st === 3;
       if (st === 3) {
-        const z = glideZ(t);
-        const kx = AT.paldea + Math.sin(((t - tOpen) / (tChamp - tOpen)) * 3) * 8;
+        // Never closer than 8 to the lens (the spline can run ahead of the glide near its end).
+        const z = Math.min(glideZ(t), cam.position.z - 8);
+        // The pair run on the camera's line (the spline only samples the weave), closer together on a narrow screen.
+        const kx0 = AT.paldea + Math.sin(((t - tOpen) / (tChamp - tOpen)) * 3) * 8;
+        const kx = kx0 + Math.max(-3, Math.min(3, cam.position.x - 0.4 - kx0));
+        const nar = Math.max(0.5, Math.min(1, cam.aspect / 1.5));
         const bound = Math.abs(Math.sin(ambient * 5)) * 0.5;
-        setH(koraidon, ramp(t, tOpen - 0.2, tOpen + 0.8), [kx - 1.7, groundAt(kx - 1.7, z) + bound, z], Math.PI, ambient, viewH, cam, 0, 0.05);
-        setH(miraidon, ramp(t, tOpen, tOpen + 1), [kx + 2.5, groundAt(kx + 2.5, z + 2) + 0.6 + bound * 0.4, z + 2], Math.PI, ambient, viewH, cam, 0, 0.05);
+        const xa = kx - 1.7 * nar, xb = kx + 2.5 * nar;
+        setH(koraidon, ramp(t, tOpen - 0.2, tOpen + 0.8), [xa, groundAt(xa, z) + bound, z], Math.PI, ambient, viewH, cam, 0, 0.05);
+        setH(miraidon, ramp(t, tOpen, tOpen + 1), [xb, groundAt(xb, z + 2) + 0.6 + bound * 0.4, z + 2], Math.PI, ambient, viewH, cam, 0, 0.05);
       } else { setH(koraidon, 0, null, undefined, ambient, viewH, cam); setH(miraidon, 0, null, undefined, ambient, viewH, cam); }
 
       // G. The road into the sunset.
