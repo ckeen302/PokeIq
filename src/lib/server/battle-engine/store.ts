@@ -1,7 +1,7 @@
 import "server-only";
 import { getServiceSupabase } from "@/lib/supabase";
 import { DUEL_CODE_RE } from "@/lib/duel-types";
-import type { BattleEnd, PlayFormatId, BattleKind, BattleRatings, BattleRequest, CpuLevel, GameType } from "@/lib/battle/play";
+import { BATTLE_AWAY_MS, type BattleEnd, type PlayFormatId, type BattleKind, type BattleRatings, type BattleRequest, type CpuLevel, type GameType } from "@/lib/battle/play";
 import type { DuelStatus } from "@/lib/duel-types";
 import type { ChatLine } from "@/lib/chat";
 import type { CustomRules } from "@/lib/battle/custom-rules";
@@ -23,6 +23,13 @@ import type { FrontierRun } from "./frontier";
  *
  * Every write is a compare-and-swap on `version`, and only the columns that
  * changed are sent (a presence tick rewrites `meta` alone).
+ *
+ * Every write also sets `next_deadline` (migration 0054): when a live
+ * battle next has something due with nobody polling (a clock running out,
+ * a trainer gone for BATTLE_AWAY_MS, the computer owing a choice), so the
+ * tick (/api/battle/tick) finds those battles with one indexed read. Until
+ * the migration is applied the column is left out of writes and the tick
+ * reads live battles' meta instead.
  *
  * Without Supabase (or with POKEIQ_LOCAL_ACCOUNTS=1) battles live in memory,
  * which is right for one server process: local development and the E2E test.
@@ -190,6 +197,43 @@ function channelLines(channel: BattleChannel, text: string | null | undefined): 
 const TTL_MS = 3 * 60 * 60 * 1000;
 const TABLE = "battles";
 
+/**
+ * When a battle next needs catching up without anyone polling (ms), or null
+ * when nothing can come due: the earliest clock deadline, the moment a
+ * trainer still in it counts as gone, or now if the computer owes a choice
+ * (a long run of its choices cut short). Live battles only: a battle against
+ * the computer waits for its player.
+ */
+export function nextDeadline(meta: BattleMeta): number | null {
+  if (meta.kind !== "pvp" || meta.status !== "playing") return null;
+  let next = Infinity;
+  for (const clock of meta.clocks ?? []) if (clock.deadline !== null) next = Math.min(next, clock.deadline);
+  meta.seats.forEach((seat, i) => {
+    if (seat.cpu || seat.id === "cpu") {
+      if (meta.requests[i]) next = Math.min(next, 0);
+    } else if (!meta.out?.some((o) => o.seat === i)) next = Math.min(next, seat.seenAt + BATTLE_AWAY_MS);
+  });
+  return Number.isFinite(next) ? next : null;
+}
+
+const deadlineIso = (meta: BattleMeta) => {
+  const at = nextDeadline(meta);
+  return at === null ? null : new Date(at).toISOString();
+};
+
+/** Postgres and PostgREST codes for a column that isn't there (the migration hasn't been applied). */
+const NO_COLUMN = new Set(["42703", "PGRST204"]);
+/** The next_deadline column: unknown until a write or read says, then rechecked now and then. */
+let deadlineColumn: { missing: boolean; until: number } = { missing: false, until: 0 };
+const DEADLINE_RECHECK_MS = 10 * 60_000;
+const hasDeadlineColumn = () => !deadlineColumn.missing || Date.now() > deadlineColumn.until;
+function noDeadlineColumn(error: { code?: string; message?: string } | null): boolean {
+  if (!error || !(NO_COLUMN.has(error.code ?? "") || /next_deadline/.test(error.message ?? ""))) return false;
+  if (!deadlineColumn.missing) console.warn("[battle] battles.next_deadline isn't there yet (migration 0054): writing without it.");
+  deadlineColumn = { missing: true, until: Date.now() + DEADLINE_RECHECK_MS };
+  return true;
+}
+
 function remote() {
   return process.env.POKEIQ_LOCAL_ACCOUNTS === "1" ? null : getServiceSupabase();
 }
@@ -278,7 +322,7 @@ export async function insertBattle(rec: BattleRecord): Promise<boolean> {
   if (sb) {
     // Opportunistic cleanup keeps the table small without a cron job: one insert in ten sweeps expired rows.
     if (Math.random() < 0.1) await sb.from(TABLE).delete().lt("expires_at", new Date().toISOString());
-    const { error } = await sb.from(TABLE).insert({
+    const row: Record<string, unknown> = {
       code: rec.meta.code,
       kind: rec.meta.kind,
       format: rec.meta.format,
@@ -291,7 +335,14 @@ export async function insertBattle(rec: BattleRecord): Promise<boolean> {
       log_p2: columnText(rec.logs.p2, rec.logs.p4),
       log_spectator: joinLines(rec.logs.spectator),
       expires_at: expiry(),
-    });
+    };
+    const withDeadline = hasDeadlineColumn();
+    if (withDeadline) row.next_deadline = deadlineIso(rec.meta);
+    let { error } = await sb.from(TABLE).insert(row);
+    if (withDeadline && noDeadlineColumn(error)) {
+      delete row.next_deadline;
+      ({ error } = await sb.from(TABLE).insert(row));
+    }
     if (error?.code === "23505") return false;
     if (error) throw new Error(error.message);
     return true;
@@ -341,7 +392,14 @@ export async function saveBattle(code: string, version: number, patch: BattlePat
       const first = COLUMN[channel].shared!;
       if (patch.logs?.[channel] && !patch.logs[first]) throw new Error(`A ${channel} log must be saved with ${first}'s.`);
     }
-    const { data, error } = await sb.from(TABLE).update(update).eq("code", code).eq("version", version).select("code");
+    const withDeadline = hasDeadlineColumn();
+    if (withDeadline) update.next_deadline = deadlineIso(patch.meta);
+    let { data, error } = await sb.from(TABLE).update(update).eq("code", code).eq("version", version).select("code");
+    // A refused write changed nothing, so it's safe to send again without the column.
+    if (withDeadline && noDeadlineColumn(error)) {
+      delete update.next_deadline;
+      ({ data, error } = await sb.from(TABLE).update(update).eq("code", code).eq("version", version).select("code"));
+    }
     if (error) throw new Error(error.message);
     return (data ?? []).length === 1;
   }
@@ -459,4 +517,49 @@ export async function battleVersion(code: string): Promise<number | null> {
   }
   const row = memory().get(code);
   return !row || row.expires <= Date.now() ? null : row.version;
+}
+
+/** At most this many live battles are read per sweep when the next_deadline column isn't there yet. */
+const DUE_FALLBACK_LIMIT = 200;
+
+/**
+ * Live battles with something due by `now` (a clock out, a trainer gone, the
+ * computer owing a choice), soonest first, at most `limit`: just their codes.
+ * Reads the next_deadline index; before migration 0054, live battles' meta.
+ */
+export async function dueBattles(now: number, limit = 50): Promise<string[]> {
+  const sb = remote();
+  if (sb) {
+    if (hasDeadlineColumn()) {
+      const { data, error } = await sb
+        .from(TABLE)
+        .select("code")
+        .lte("next_deadline", new Date(now).toISOString())
+        .gt("expires_at", new Date(now).toISOString())
+        .order("next_deadline", { ascending: true })
+        .limit(limit);
+      if (!error) return (data ?? []).map((r: { code: string }) => r.code);
+      if (!noDeadlineColumn(error)) throw new Error(error.message);
+    }
+    const { data, error } = await sb
+      .from(TABLE)
+      .select("code, meta")
+      .eq("kind", "pvp")
+      .eq("meta->>status", "playing")
+      .gt("expires_at", new Date(now).toISOString())
+      .limit(DUE_FALLBACK_LIMIT);
+    if (error) throw new Error(error.message);
+    return dueOf((data ?? []) as { code: string; meta: BattleMeta }[], now, limit);
+  }
+  const rows = [...memory().entries()].filter(([, row]) => row.expires > now).map(([code, row]) => ({ code, meta: (JSON.parse(row.json) as BattleRecord).meta }));
+  return dueOf(rows, now, limit);
+}
+
+function dueOf(rows: { code: string; meta: BattleMeta }[], now: number, limit: number): string[] {
+  return rows
+    .map((r) => ({ code: r.code, at: nextDeadline(r.meta) }))
+    .filter((r): r is { code: string; at: number } => r.at !== null && r.at <= now)
+    .sort((a, b) => a.at - b.at)
+    .slice(0, limit)
+    .map((r) => r.code);
 }

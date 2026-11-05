@@ -9,6 +9,7 @@ import { battleSeenDigest } from "@/lib/battle/live";
 import { useBattleLive } from "./use-battle-live";
 import { unlockAudio } from "@/lib/sound";
 import { ensureBattleId } from "@/lib/battle/replay-client";
+import { sendRetryingBusy } from "@/lib/battle/busy-retry";
 
 /**
  * A battle as this player may see it, kept fresh: polls the server with the
@@ -186,7 +187,8 @@ export function useBattle(code: string) {
       setError(null);
       const sentAt = Date.now();
       try {
-        const out = await post<BattleView>(api, { ...body, token: token.current, since: lines.current.length });
+        // A busy battle (503) is tried again on its own before it's shown as an error.
+        const out = await sendRetryingBusy(() => post<BattleView>(api, { ...body, token: token.current, since: lines.current.length }));
         if (out.ok) {
           receive(out.data, sentAt);
           touch.current();
