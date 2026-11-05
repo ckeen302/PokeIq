@@ -117,7 +117,7 @@ export const build: ChapterBuilder = async (ctx) => {
     fragmentShader: /* glsl */ `
       uniform float uTime, uGlow, uCrack; varying vec3 vN; varying vec3 vV; varying vec3 vP;
       void main(){
-        float f = 1.0 - abs(dot(normalize(vN), normalize(vV)));
+        float f = max(0.0, 1.0 - abs(dot(normalize(vN), normalize(vV))));
         float bub = step(0.985, fract(sin(dot(floor(vec2(atan(vP.z, vP.x) * 8.0, vP.y * 6.0 - uTime * 2.0)), vec2(12.9898, 78.233))) * 43758.5453));
         vec3 liquid = vec3(0.15, 0.9, 0.5) * (0.25 + 0.2 * sin(vP.y * 3.0 - uTime * 1.5));
         vec3 c = liquid * uGlow + vec3(0.7, 1.0, 0.9) * pow(f, 3.0) * 0.8 + vec3(0.6, 1.0, 0.8) * bub * uGlow;
