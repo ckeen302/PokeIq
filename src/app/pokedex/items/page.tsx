@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { SHARE_IMAGES, pageMetadata } from "@/lib/seo";
+import { SHARE_IMAGES, jsonLd, pageMetadata } from "@/lib/seo";
+import { breadcrumbList } from "@/lib/structured-data";
 import { ITEMS } from "@/lib/dex/data";
 import { DexListExplorer } from "@/components/pokedex/DexListExplorer";
 import { DexTabs } from "@/components/pokedex/DexTabs";
@@ -24,6 +25,7 @@ export default function ItemsPage() {
       />
       <DexTabs active="items" />
       <DexListExplorer kind="items" items={items} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(breadcrumbList([{ name: "Pokédex", path: "/pokedex" }, { name: "Items", path: "/pokedex/items" }])) }} />
     </div>
   );
 }

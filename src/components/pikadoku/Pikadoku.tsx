@@ -37,9 +37,10 @@ import { ShareButton } from "@/components/share/ShareButton";
 import { NewBadges, StreakFlame, useCelebration } from "@/components/connections/results";
 import { PdkBoard, PdkPicker, SettingToggle, iconButton, useDex, type BoardCell, type DexName } from "./parts";
 // The sheets (with the how-to's animated demo) load only when one opens.
-const PdkArchiveSheet = dynamic(() => import("./sheets").then((m) => m.PdkArchiveSheet), { ssr: false });
-const PdkHowToSheet = dynamic(() => import("./sheets").then((m) => m.PdkHowToSheet), { ssr: false });
-const PdkStatsSheet = dynamic(() => import("./sheets").then((m) => m.PdkStatsSheet), { ssr: false });
+const loadSheets = () => import("./sheets");
+const PdkArchiveSheet = dynamic(() => loadSheets().then((m) => m.PdkArchiveSheet), { ssr: false });
+const PdkHowToSheet = dynamic(() => loadSheets().then((m) => m.PdkHowToSheet), { ssr: false });
+const PdkStatsSheet = dynamic(() => loadSheets().then((m) => m.PdkStatsSheet), { ssr: false });
 import { GuessToast, NextPuzzleCountdown, PdkDailyStatsCard, PdkStatusBanners, PpPips, RarityPreview, RevealGrid, useOnline } from "./results";
 import { RARITY_EMOJI, rarityGrid, rarityLetter } from "@/lib/pikadoku/share";
 import { cn } from "@/lib/utils";
@@ -65,6 +66,8 @@ function loadPrefs(): Prefs {
   }
   return base;
 }
+// A first visit opens How to play at once: its code downloads while the page hydrates, not after.
+if (typeof window !== "undefined" && !loadPrefs().seenHowTo) void loadSheets();
 function savePrefs(p: Prefs) {
   try {
     window.localStorage.setItem(PREFS_KEY, JSON.stringify(p));

@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { SHARE_IMAGES, pageMetadata } from "@/lib/seo";
+import { SHARE_IMAGES, jsonLd, pageMetadata } from "@/lib/seo";
+import { breadcrumbList } from "@/lib/structured-data";
 import { ABILITIES, getAbility, species } from "@/lib/dex/data";
 import { Section } from "@/components/pokedex/entry/Reveal";
 import { DetailHero, DetailNav, SpeciesGrid } from "@/components/pokedex/detail/DetailParts";
@@ -57,6 +58,7 @@ export default async function AbilityPage({ params }: PageProps) {
           <SpeciesGrid list={hidden} />
         </Section>
       )}
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(breadcrumbList([{ name: "Pokédex", path: "/pokedex" }, { name: "Abilities", path: "/pokedex/abilities" }, { name: a.name, path: `/pokedex/abilities/${a.slug}` }])) }} />
     </article>
   );
 }

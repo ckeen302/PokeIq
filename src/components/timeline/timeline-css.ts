@@ -67,7 +67,7 @@ html.tl-locked, html.tl-locked body { overflow: hidden; overscroll-behavior: non
 .tl-stage[data-era="ds"] .tl-fx::before { content: ""; position: absolute; left: 8%; right: 8%; top: 50%; height: 1px; opacity: .35;
   background: linear-gradient(90deg, transparent, #a9c7ff 20%, #a9c7ff 80%, transparent); box-shadow: 0 0 12px #5ad1ff; }
 .tl-stage[data-era="ds2"] .tl-fx::before { content: ""; position: absolute; inset: 0; backdrop-filter: saturate(.55) contrast(1.08); }
-.tl-stage[data-era="3ds"] h1, .tl-stage[data-era="3ds"] [data-testid="timeline-year"] { text-shadow: -2px 0 rgb(255 77 109 / .65), 2px 0 rgb(63 208 255 / .65); }
+.tl-stage[data-era="3ds"] .tl-title, .tl-stage[data-era="3ds"] [data-testid="timeline-year"] { text-shadow: -2px 0 rgb(255 77 109 / .65), 2px 0 rgb(63 208 255 / .65); }
 .tl-stage[data-era="switch"] .tl-fx::before { content: ""; position: absolute; inset: 0;
   background: linear-gradient(90deg, rgb(0 195 227 / .2), transparent 9%, transparent 91%, rgb(255 69 84 / .2)); }
 @media (max-width: 640px) { .tl-era-t { font-size: 90px; } }

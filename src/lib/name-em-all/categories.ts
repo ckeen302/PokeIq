@@ -47,7 +47,7 @@ const all: NeaCategory = {
   group: "all",
   label: "All 1,025",
   h1: "Name all 1,025 Pokémon",
-  title: "Name All 1,025 Pokémon Quiz: Can You Name Every Pokémon?",
+  title: "Name All the Pokémon Quiz: Every Species from Bulbasaur to Pecharunt",
   description: "Type the name of every Pokémon from Bulbasaur to Pecharunt. Each one fills its slot the moment you spell it right. Timer, hints, shiny sprites and personal bests.",
 };
 

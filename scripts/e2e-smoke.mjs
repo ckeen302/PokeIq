@@ -74,8 +74,8 @@ const browser = await chromium.launch(
   process.env.CHROMIUM_PATH ? { executablePath: process.env.CHROMIUM_PATH } : {}
 );
 
-async function newPage(viewport) {
-  const context = await browser.newContext({ viewport });
+async function newPage(viewport, contextOptions = {}) {
+  const context = await browser.newContext({ viewport, ...contextOptions });
   // Skip the first-visit splash so screenshots show the page itself.
   await context.addInitScript(() => sessionStorage.setItem("pokeiq-splash", "1"));
   const page = await context.newPage();
@@ -3060,12 +3060,17 @@ await mmRed.screenshot({ path: `${OUT}/battle-ladder.png`, fullPage: true });
 for (const p of [mmRed, mmBlue, watcher]) await p.context().close();
 
 step("ranked Random Battle: matched by rating, a forfeit moves Elo and both Glicko-2 ratings, the ladder shows Elo and GXE");
-const rkRed = await newPage({ width: 1280, height: 900 });
-const rkBlue = await newPage({ width: 1280, height: 900 });
+// Ranked needs an account, and two trainers on one connection never pair (as on Showdown): two accounts, two addresses.
+const rkRed = await newPage({ width: 1280, height: 900 }, { extraHTTPHeaders: { "x-forwarded-for": "198.51.100.10" } });
+const rkBlue = await newPage({ width: 1280, height: 900 }, { extraHTTPHeaders: { "x-forwarded-for": "198.51.100.11" } });
+const rkStamp = Date.now().toString(36).slice(-6);
 for (const [p, name] of [
   [rkRed, "Rory"],
   [rkBlue, "Bea"],
 ]) {
+  await gotoSettled(p, BASE);
+  const reg = await p.request.post(`${BASE}/api/auth/register`, { data: { username: `rk${rkStamp}${name.toLowerCase()}`, password: "correct horse battery" }, headers: { Origin: BASE } });
+  if (!reg.ok()) throw new Error(`register ${name}: ${reg.status()}`);
   await gotoSettled(p, `${BASE}/battle/play?vs=anyone`);
   await p.locator("label").filter({ hasText: "[Gen 9] Random Battle" }).first().click();
   await p.getByLabel("Your trainer name").fill(name);
@@ -3097,11 +3102,10 @@ const rkStanding = await rkRed.getByTestId("your-standing").innerText();
 if (!/GXE \d+\.\d%/.test(rkStanding)) errors.push("ladder: your standing shows no GXE");
 if (!/1045/.test(rkStanding) || !/1[6-9]\d\d ± \d+/.test(rkStanding)) errors.push(`ladder: your standing shows no Elo or Glicko-2: ${rkStanding}`);
 await rkRed.screenshot({ path: `${OUT}/battle-p1-ladder.png`, fullPage: true });
-// Team insights follow an account: from the ladder, a guest is asked to sign in.
+// Team insights follow an account: the ladder links a signed-in trainer to theirs.
 if (await rkRed.getByTestId("ladder-insights").count()) {
   await rkRed.getByTestId("ladder-insights").click();
   await rkRed.waitForURL(/\/battle\/insights/);
-  await rkRed.getByRole("link", { name: "Sign in" }).last().waitFor({ timeout: 15_000 });
 } else errors.push("ladder: no link to your insights");
 for (const p of [rkRed, rkBlue]) await p.context().close();
 

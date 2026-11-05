@@ -1,7 +1,7 @@
 import "server-only";
 import type { PvpFailure } from "../duel-core";
 import { cancelQueue, searchQueue } from "../match-queue";
-import { cancelRankedQueue, searchRankedQueue } from "../ranked-queue";
+import { cancelRankedQueue, searchRankedQueue, type Pairable } from "../ranked-queue";
 import type { RatingState } from "@/lib/ranked";
 import { PLAY_FORMAT_INFO, battleHref, type PlayFormatId, type StandardFormatId } from "@/lib/battle/play";
 import { battleToken, checkTeam, createMatchedBattle, type MatchedPlayer } from "./service";
@@ -58,13 +58,41 @@ export function cancelBattleSearch(format: PlayFormatId, ticket: string, ranked 
 // Ranked
 // ---------------------------------------------------------------------------
 
+/**
+ * Showdown's search window (server/ladders.ts matchmakingOK), on Elo: it
+ * starts at 50 in the current generation's OU and Random Battle (the busiest
+ * ladders) and 100 elsewhere, grows by 1 every 0.3 s of the longer wait, then
+ * by a tenth of that once past 300 (1 every 3 s), and never passes 600.
+ */
+export const SEARCH_RANGE_BUSY = 50;
+export const SEARCH_RANGE_BASE = 100;
+export const SEARCH_RANGE_MS_PER_POINT = 300;
+export const SEARCH_RANGE_KNEE = 300;
+export const SEARCH_RANGE_SLOWDOWN = 10;
+export const SEARCH_RANGE_MAX = 600;
+const BUSY_LADDERS: readonly StandardFormatId[] = ["gen9ou", "gen9randombattle"];
+
+/** The Elo gap two trainers may be paired across after the longer of them has waited `elapsedMs`. */
+export function battleSearchRange(format: StandardFormatId, elapsedMs: number): number {
+  let range = (BUSY_LADDERS.includes(format) ? SEARCH_RANGE_BUSY : SEARCH_RANGE_BASE) + Math.max(0, elapsedMs) / SEARCH_RANGE_MS_PER_POINT;
+  if (range > SEARCH_RANGE_KNEE) range = SEARCH_RANGE_KNEE + (range - SEARCH_RANGE_KNEE) / SEARCH_RANGE_SLOWDOWN;
+  return Math.min(range, SEARCH_RANGE_MAX);
+}
+
+/** Showdown's rule: the Elo gap within the window of the longer wait of the two. */
+export const battlePairable =
+  (format: StandardFormatId): Pairable =>
+  (gap, waits) =>
+    gap <= battleSearchRange(format, Math.max(waits[0], waits[1]));
+
 /** One ranked queue per ladder format; trainers in it are paired by rating (ranked-queue.ts). */
 export const rankedBattleQueueKey = (format: StandardFormatId) => `battle-ranked:${format}`;
 
 /**
- * A ranked search (or its next poll): paired with the closest rating in the
- * format's queue, within a window that widens the longer either trainer has
- * waited, as on the Pokédle ladder. `player` is the trainer's ladder key;
+ * A ranked search (or its next poll): paired with the closest Elo in the
+ * format's queue, within Showdown's window (battleSearchRange), never with
+ * a trainer on the same connection (`ipHash`, a salted HMAC of the IP) or
+ * the one either of them last played. `player` is the trainer's ladder key;
  * `rating` reads their rating in this format (only when it's needed). In
  * bring-your-own formats the team is checked before anything else.
  */
@@ -74,12 +102,13 @@ export async function searchRankedBattle(
   ticket: string,
   player: string,
   rating: () => Promise<RatingState>,
-  team?: string
+  team?: string,
+  ipHash?: string
 ): Promise<BattleSearchResult | PvpFailure> {
   const checked = checkTeam(format, team);
   if (!checked.ok) return checked;
   const out = await searchRankedQueue(
-    { ticket, name, player, team: checked.packed },
+    { ticket, name, player, team: checked.packed, ...(ipHash ? { ipHash } : {}) },
     rating,
     async (players, now) => {
       if (!PLAY_FORMAT_INFO[format].random && players.some((p) => !p.team)) return null;
@@ -91,7 +120,9 @@ export async function searchRankedBattle(
       );
       return opened && { ...opened, remove: () => deleteBattle(opened.code) };
     },
-    rankedBattleQueueKey(format)
+    rankedBattleQueueKey(format),
+    battlePairable(format),
+    { gapOn: "elo", strict: true }
   );
   if (!out.ok || out.status === "waiting") return out;
   return { ok: true, status: "matched", code: out.code, token: battleToken(out.code, out.playerId, out.seat), href: battleHref("pvp", out.code) };

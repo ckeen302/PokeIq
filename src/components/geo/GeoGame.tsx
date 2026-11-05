@@ -14,7 +14,7 @@ import { guessrSquare } from "@/lib/share";
 import { GEO_DIFFICULTY_NAMES, type GeoDifficulty } from "@/lib/geo-difficulty";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { GeoMap, LINE_DRAW_MS, WORLD_MAP as WORLD_MAP_SRC, mapAspect, type MapPin } from "./GeoMap";
+import { GeoMap, LINE_DRAW_MS, WORLD_MAP as WORLD_MAP_SRC, WORLD_THUMB, mapAspect, type MapPin } from "./GeoMap";
 import { RegionStreakCard } from "./RegionStreakCard";
 import { useAccount } from "@/lib/account";
 import { avatarSrc } from "@/lib/avatar";
@@ -217,6 +217,9 @@ export interface GeoGameProps {
   /** Set on /guessr/c/<token>: a friend's game to replay. */
   challenge?: GeoChallenge & { token: string; region: string; era?: GeoEra; families?: GeoFamilyId[]; difficulty?: "easy" | "hard" };
 }
+
+/** A tile or card picture is a few hundred pixels across: the world map's small copy stands in for the 5,850 px original. */
+const tileImage = (src: string) => (src === WORLD_MAP_SRC ? WORLD_THUMB : src);
 
 export function GeoGame(props: GeoGameProps) {
   // The player's achievements and mastery (the hub's You section), read again after each game for the toasts.
@@ -662,7 +665,7 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
             <HubTile
               testId="geo-solo-card"
               tone="screen"
-              image={region.preview ?? region.map.src}
+              image={region.preview ?? tileImage(region.map.src)}
               icon={<MapPinIcon className="h-5 w-5" />}
               label={`Solo · ${region.name}`}
               title="Classic game"
@@ -677,7 +680,7 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
             <HubTile
               testId="geo-daily-card"
               tone="warning"
-              image={dailyMap?.map.src ?? WORLD_MAP_SRC}
+              image={tileImage(dailyMap?.map.src ?? WORLD_MAP_SRC)}
               icon={<Compass className="h-5 w-5" />}
               label={`Daily ${today ? `#${dailyNumber(today)}` : ""}${dailyMap ? ` · ${dailyMap.name}` : ""}`}
               title="Daily game"
@@ -702,7 +705,7 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
             <HubTile
               testId="geo-weekly-card"
               tone="success"
-              image={weeklyMap ? (weeklyMap.preview ?? weeklyMap.map.src) : null}
+              image={weeklyMap ? (weeklyMap.preview ?? tileImage(weeklyMap.map.src)) : null}
               icon={<CalendarRange className="h-5 w-5" />}
               label={week ? `Weekly #${geoWeeklyNumber(week)}${weeklyMap ? ` · ${weeklyMap.name}` : ""}` : "Weekly"}
               title="Weekly Challenge"
@@ -812,7 +815,7 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
 
               <div className="grid gap-4 sm:grid-cols-2">
                 <ModeCard
-                  preview={region.preview ?? region.map.src}
+                  preview={region.preview ?? tileImage(region.map.src)}
                   icon={<MapPinIcon className="h-5 w-5" aria-hidden />}
                   title={`${playRounds}-round game`}
                   blurb={
@@ -826,7 +829,7 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
                   warm={warmProps({ kind: "game" })}
                 />
                 <ModeCard
-                  preview={region.map.src}
+                  preview={tileImage(region.map.src)}
                   icon={<Flame className="h-5 w-5" aria-hidden />}
                   title="Streak"
                   blurb={
@@ -1161,7 +1164,7 @@ function MapTile({ map, selected, onPick }: { map: GeoRegionInfo; selected: bool
       >
         {/* eslint-disable-next-line @next/next/no-img-element -- CDN-cached preview */}
         <img
-          src={map.preview ?? map.map.src}
+          src={map.preview ?? tileImage(map.map.src)}
           alt=""
           loading="lazy"
           decoding="async"
