@@ -40,27 +40,36 @@ export interface SizeItem {
   kg: number | null;
   /** Evolution chain id (0 for references). */
   chain: number;
+  /**
+   * Base stats in game order (HP, Attack, Defense, Sp. Atk, Sp. Def, Speed): the Pokédex's for a default form, the
+   * form's own (@pkmn/dex) for a Mega, Gigantamax, regional or Eternamax form; null for references.
+   */
+  stats: Stats | null;
   /** A reference's model and source. */
   ref?: { kind: RefKind; detail?: string; source: string; url: string; fact: string; presets?: string[] };
 }
 
-/** The compact wire format of /api/sizes (one row per item). */
-export type SizeRow = [key: string, name: string, kind: SizeKind, species: number, art: number, m: number, flags: number, bw: number, bh: number, gen: number, kg: number | null, chain: number, box: [bx: number, by: number, bs: number], types: string, ref: RefKind | 0, refPresets?: string];
+/** Base stats in game order: HP, Attack, Defense, Sp. Atk, Sp. Def, Speed. */
+export type Stats = [hp: number, atk: number, def: number, spa: number, spd: number, spe: number];
+
+/** The compact wire format of /api/sizes (one row per item): stats as "45/49/49/65/65/45" ("" for none). */
+export type SizeRow = [key: string, name: string, kind: SizeKind, species: number, art: number, m: number, flags: number, bw: number, bh: number, gen: number, kg: number | null, chain: number, box: [bx: number, by: number, bs: number], types: string, ref: RefKind | 0, stats: string, refPresets?: string];
 export const F_LENGTH = 1, F_MIN = 2, F_LEGEND = 4, F_MYTH = 8;
 
 export function toRow(i: SizeItem): SizeRow {
   const flags = (i.length ? F_LENGTH : 0) | (i.min ? F_MIN : 0) | (i.legendary ? F_LEGEND : 0) | (i.mythical ? F_MYTH : 0);
-  const row: SizeRow = [i.key, i.name, i.kind, i.species, i.art, i.m, flags, i.bw, i.bh, i.gen, i.kg, i.chain, [i.bx, i.by, i.bs], i.types.join("/"), i.ref?.kind ?? 0];
+  const row: SizeRow = [i.key, i.name, i.kind, i.species, i.art, i.m, flags, i.bw, i.bh, i.gen, i.kg, i.chain, [i.bx, i.by, i.bs], i.types.join("/"), i.ref?.kind ?? 0, i.stats ? i.stats.join("/") : ""];
   // A reference that only belongs to some lineups (the phone) says which, so the browser builds the same lines as the server.
   if (i.ref?.presets?.length) row.push(i.ref.presets.join(","));
   return row;
 }
 /** A row back to an item (a reference's source details stay on the server; its kind and lineups are kept). */
 export function fromRow(r: SizeRow): SizeItem {
-  const [key, name, kind, species, art, m, flags, bw, bh, gen, kg, chain, [bx, by, bs], types, ref, refPresets] = r;
+  const [key, name, kind, species, art, m, flags, bw, bh, gen, kg, chain, [bx, by, bs], types, ref, stats, refPresets] = r;
+  const st = stats ? stats.split("/").map(Number) : [];
   return {
     key, name, kind, species, art, m, length: !!(flags & F_LENGTH), min: !!(flags & F_MIN), bw, bh, bx, by, bs, types: types ? types.split("/") : [], gen,
-    legendary: !!(flags & F_LEGEND), mythical: !!(flags & F_MYTH), kg, chain,
+    legendary: !!(flags & F_LEGEND), mythical: !!(flags & F_MYTH), kg, chain, stats: st.length === 6 && st.every((v) => Number.isFinite(v) && v > 0) ? (st as Stats) : null,
     ...(ref ? { ref: { kind: ref, source: "", url: "", fact: "", ...(refPresets ? { presets: refPresets.split(",") } : {}) } } : {}),
   };
 }

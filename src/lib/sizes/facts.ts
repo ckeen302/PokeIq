@@ -1,3 +1,4 @@
+import { isHeight, orderFact, orderSpanFact, type Order } from "./order";
 import { formatMetres, type SizeItem } from "./types";
 
 /**
@@ -42,4 +43,13 @@ export function spanFact(line: SizeItem[]): string | null {
   const k = big.m / small.m;
   if (k < 1.5) return null;
   return `${big.name} is ${times(k)} the size of ${small.name}`;
+}
+
+/**
+ * The caption at one of Play's pauses (and a video's): a size fact in the Height order, where the figure stands
+ * among the line's values in any other; the finale compares the line's two ends.
+ */
+export function stopCaption(item: SizeItem | undefined, line: SizeItem[], order: Order, finale: boolean): string | null {
+  if (isHeight(order)) return finale ? spanFact(line) ?? (item ? factFor(item, line) : null) : item ? factFor(item, line) : null;
+  return finale ? orderSpanFact(line, order) ?? (item ? orderFact(item, line, order) : null) : item ? orderFact(item, line, order) : null;
 }

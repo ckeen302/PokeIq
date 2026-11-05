@@ -1,5 +1,5 @@
 import { MAX_ORBIT, pitchFor, type View } from "./camera";
-import { buildGlide, framer, glideAt, naturalDuration, type GlidePlan, type GlideState, type Lens, type Placed } from "./glide";
+import { buildGlide, framer, glideAt, naturalDuration, type Framing, type GlidePlan, type GlideState, type Lens, type Placed } from "./glide";
 import { MILESTONES } from "./presets";
 
 /**
@@ -18,9 +18,14 @@ export interface PlayPlan {
   revealAt?: number;
 }
 
-export function planPlay(placed: Placed[], lens: Lens, opts: { duration?: number; intro?: number; hold?: number; finale?: number; revealAt?: number } = {}): PlayPlan {
-  const fr = framer(placed, lens);
-  const holds = holdsFor(placed);
+/**
+ * `framing` "mixed" is for a line in a stat or weight order (sizes jump about): the camera frames each
+ * neighbourhood, and the holds are evenly spaced (the milestones are size landmarks).
+ */
+export function planPlay(placed: Placed[], lens: Lens, opts: { duration?: number; intro?: number; hold?: number; finale?: number; revealAt?: number; framing?: Framing } = {}): PlayPlan {
+  const mixed = opts.framing === "mixed";
+  const fr = framer(placed, lens, opts.framing);
+  const holds = holdsFor(placed, !mixed);
   const duration = opts.duration ?? naturalDuration(placed.length, holds.length + 1);
   return { glide: buildGlide(placed, fr, lens, { duration, holds, intro: opts.intro, hold: opts.hold, finale: opts.finale }), placed, revealAt: opts.revealAt };
 }
@@ -29,11 +34,12 @@ export function planPlay(placed: Placed[], lens: Lens, opts: { duration?: number
  * Where Play pauses: the milestone Pokémon in the line (Pikachu, Snorlax,
  * Onix, Wailord, Eternatus); a line with fewer than three of them pauses
  * at evenly spaced figures instead (never a real-world reference, never
- * the last figure, which gets the finale).
+ * the last figure, which gets the finale). A line in a stat or weight
+ * order (`milestones` false) always pauses at evenly spaced figures.
  */
-export function holdsFor(placed: { key: string }[]): string[] {
+export function holdsFor(placed: { key: string }[], milestones = true): string[] {
   const keys = placed.map((p) => p.key);
-  const named = MILESTONES.filter((k) => keys.includes(k) && keys.indexOf(k) < keys.length - 1);
+  const named = milestones ? MILESTONES.filter((k) => keys.includes(k) && keys.indexOf(k) < keys.length - 1) : [];
   if (named.length >= 3 || placed.length < 5) return [...named];
   const picks = new Set<string>(named);
   for (const q of [0.3, 0.55, 0.8]) {

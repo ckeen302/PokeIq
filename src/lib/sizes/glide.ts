@@ -57,11 +57,63 @@ export interface Framer {
   nearest(x: number): number;
 }
 
-/** The camera distance along the line: each figure's framing distance, smoothed over its neighbours, interpolated on a log scale. */
-export function framer(placed: Placed[], lens: Lens): Framer {
+/**
+ * How the framing follows the line. "size": the line grows (or shrinks) smoothly, as in the Height order: each
+ * figure's own framing, smoothed over its neighbours of a similar size. "mixed": sizes jump about from one figure to
+ * the next (a stat or weight order): the camera frames the neighbourhood instead, on an envelope of its framing
+ * distances (`envelope`), so it eases out well before a giant and back in well after it rather than pumping in and out.
+ */
+export type Framing = "size" | "mixed";
+
+/** The mixed framing's limit on how fast it may change: ln(distance) per figure passed (Play passes about 3 a second). */
+export const MIXED_SLOPE = 0.06;
+/** The mixed framing's smoothing window (figures, a Gaussian's sigma). */
+export const MIXED_SIGMA = 4;
+
+/** Clamps a sequence to change by at most `slope` per step, only ever raising values (the least such envelope over it). */
+function cone(v: number[], slope: number): number[] {
+  const o = v.slice();
+  for (let i = 1; i < o.length; i++) o[i] = Math.max(o[i], o[i - 1] - slope);
+  for (let i = o.length - 2; i >= 0; i--) o[i] = Math.max(o[i], o[i + 1] - slope);
+  return o;
+}
+
+/**
+ * A smooth running envelope over a sequence (log sizes along a line): a little above every value, changing by at most
+ * `slope` per step, and without corners. A cone of the given slope over every value (raised by what the smoothing
+ * takes off a peak), smoothed with a Gaussian, then raised back over the values and coned again, so both bounds hold
+ * exactly.
+ */
+const FLOOR = 0.06;
+export function envelope(raw: number[], slope = MIXED_SLOPE, sigma = MIXED_SIGMA): number[] {
+  if (raw.length < 2) return raw.slice();
+  // A Gaussian takes about slope · sigma · √(2/π) off the tip of a cone.
+  const lift = slope * sigma * 0.8;
+  const c = cone(raw.map((r) => r + lift), slope);
+  const R = Math.ceil(sigma * 3);
+  const w = Array.from({ length: R + 1 }, (_, k) => Math.exp(-(k * k) / (2 * sigma * sigma)));
+  const g = c.map((_, i) => {
+    let s = 0, n = 0;
+    for (let k = -R; k <= R; k++) {
+      const j = i + k;
+      if (j < 0 || j >= c.length) continue;
+      s += c[j] * w[Math.abs(k)];
+      n += w[Math.abs(k)];
+    }
+    // A little over each figure's own framing, so a hold's gentle push-in never crops it either.
+    return Math.max(s / n, raw[i] + FLOOR);
+  });
+  return cone(g, slope);
+}
+
+/**
+ * The camera distance along the line: each figure's framing distance, smoothed over its neighbours (or, in a mixed
+ * line, an envelope over them), interpolated on a log scale.
+ */
+export function framer(placed: Placed[], lens: Lens, framing: Framing = "size"): Framer {
   const raw = placed.map((p) => Math.log(frameDistance(p.w, p.h, lens)));
   const R = 3;
-  const logD = raw.map((_, i) => {
+  const logD = framing === "mixed" ? envelope(raw) : raw.map((_, i) => {
     let s = 0, n = 0;
     for (let k = -R; k <= R; k++) {
       const j = i + k;

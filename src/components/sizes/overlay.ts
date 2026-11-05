@@ -1,4 +1,5 @@
 import { badgeSize, dexTag as dexTagText, drawBadge, layoutBadges, type BadgeInfo, type Placement } from "@/lib/sizes/badges";
+import { HEIGHT_ORDER, badgeStat, type Order } from "@/lib/sizes/order";
 import type { SizeItem } from "@/lib/sizes/types";
 import type { Anchor } from "./scene";
 
@@ -8,7 +9,8 @@ import type { Anchor } from "./scene";
  * the live page's overlay canvas and the video recorder.
  */
 
-export const badgeInfo = (i: SizeItem): BadgeInfo => ({ name: i.name, dex: i.kind === "ref" ? 0 : i.species, kind: i.kind, m: i.m, length: i.length, min: i.min, types: i.types });
+/** A figure's badge; in a stat or weight order it also carries the line's value. */
+export const badgeInfo = (i: SizeItem, order: Order = HEIGHT_ORDER): BadgeInfo => ({ name: i.name, dex: i.kind === "ref" ? 0 : i.species, kind: i.kind, m: i.m, length: i.length, min: i.min, types: i.types, stat: badgeStat(i, order) });
 
 export interface OverlayOptions {
   /** Font family for the badges (the page's display font). */
@@ -19,18 +21,20 @@ export interface OverlayOptions {
   /** Space kept clear at the top and bottom (px), for page controls. */
   top: number;
   bottom: number;
+  /** The line's order (its value joins each badge); Height by default. */
+  order?: Order;
 }
 
 type Cand = { key: string; x: number; y: number; sh: number; info: BadgeInfo; focus: boolean };
 type Bitmap = { key: string; dpr: number; canvas: HTMLCanvasElement; pad: number; w: number; h: number; s: number };
 
-function candidates(anchors: Anchor[], focusKey: string | null, byKey: Map<string, SizeItem>): Cand[] {
+function candidates(anchors: Anchor[], focusKey: string | null, byKey: Map<string, SizeItem>, order?: Order): Cand[] {
   const focusDist = anchors.find((a) => a.item.key === focusKey)?.dist ?? Infinity;
   const out: Cand[] = [];
   for (const a of anchors) {
     if (a.item.key !== focusKey && a.dist >= focusDist * 2.2) continue;
     const it = byKey.get(a.item.key);
-    if (it) out.push({ key: a.item.key, x: a.x, y: a.y, sh: a.sh, info: badgeInfo(it), focus: a.item.key === focusKey });
+    if (it) out.push({ key: a.item.key, x: a.x, y: a.y, sh: a.sh, info: badgeInfo(it, order), focus: a.item.key === focusKey });
   }
   return out;
 }
@@ -38,7 +42,7 @@ function candidates(anchors: Anchor[], focusKey: string | null, byKey: Map<strin
 /** Draws every badge afresh (the video recorder, which renders each frame once). */
 export function drawBadges(g: CanvasRenderingContext2D, anchors: Anchor[], focusKey: string | null, byKey: Map<string, SizeItem>, w: number, h: number, o: OverlayOptions) {
   const measure = (t: string, px: number) => { g.font = `800 ${px}px ${o.font}`; return g.measureText(t).width; };
-  const cands = candidates(anchors, focusKey, byKey);
+  const cands = candidates(anchors, focusKey, byKey, o.order);
   const places = layoutBadges(cands, { w, h, top: o.top, bottom: o.bottom }, measure, { max: o.max, minSh: h * 0.12, scale: o.scale });
   for (const p of places) {
     const c = cands.find((x) => x.key === p.key);
@@ -67,8 +71,17 @@ export class BadgeLayer {
   private still = 0;
   private crisp = true;
   private probe: CanvasRenderingContext2D | null = null;
+  private order: Order = HEIGHT_ORDER;
 
   constructor(private font: string) {}
+
+  /** The line's order: its value joins every badge (the cached ones are drawn again). */
+  setOrder(order: Order) {
+    if (order.by === this.order.by && order.dir === this.order.dir) return;
+    this.order = order;
+    this.bitmaps.clear();
+    this.lastSig = "";
+  }
 
   /** Fonts that load late change every width: start over. */
   reset(font = this.font) {
@@ -131,7 +144,7 @@ export class BadgeLayer {
 
   /** Lays out and draws this frame's badges; returns false when nothing changed (the overlay was left as it was). */
   draw(g: CanvasRenderingContext2D, anchors: Anchor[], focusKey: string | null, byKey: Map<string, SizeItem>, w: number, h: number, dpr: number, o: Omit<OverlayOptions, "font">): boolean {
-    const cands = candidates(anchors, focusKey, byKey);
+    const cands = candidates(anchors, focusKey, byKey, this.order);
     const places = layoutBadges(cands, { w, h, top: o.top, bottom: o.bottom }, this.measure, { max: o.max, minSh: h * 0.12, scale: o.scale });
     const sig = signature(places, w, h);
     if (sig === this.lastSig) {

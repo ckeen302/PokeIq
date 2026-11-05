@@ -3,17 +3,18 @@
 import Link from "next/link";
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { ArrowLeft, ChevronDown, Clapperboard, List, Play, Plus, RotateCcw, Scale, Search, Share2, Square, Volume2, VolumeX, X, ZoomIn, ZoomOut } from "lucide-react";
+import { ArrowDown, ArrowLeft, ArrowUp, ArrowUpDown, ChevronDown, Clapperboard, List, Play, Plus, RotateCcw, Scale, Search, Share2, Square, Volume2, VolumeX, X, ZoomIn, ZoomOut } from "lucide-react";
 import { isMuted, onMuteChange, setMuted } from "@/lib/sound";
 import { copyText } from "@/lib/share";
-import { fromRow, formatFeet, formatMetres, type SizeItem, type SizeRow } from "@/lib/sizes/types";
+import { formatFeet, formatMetres, type SizeItem } from "@/lib/sizes/types";
 import { DEFAULT_PRESET, PRESETS, PRESET_BY_ID } from "@/lib/sizes/presets";
 import { COMPARE_MAX, COMPARE_MIN, comparePath, compareOk, itemPath, parseVs, presetPath } from "@/lib/sizes/deeplink";
 import { compareHook, lineFor, pushCompare, searchItems, type LineSpec } from "@/lib/sizes/lineup";
 import { framer, viewWidth, type Framer, type Lens } from "@/lib/sizes/glide";
 import { nearestIndex, planPlay, playAt, type PlayPlan } from "@/lib/sizes/play";
 import { FRICTION, RATE, ORBIT_PER_PX, TILT_PER_PX, ZOOM_MAX, ZOOM_MIN, ZOOM_STEP_BUTTON, ZOOM_STEP_KEY, angleDelta, badgeBudget, badgeScaleFor, blendViews, clampOrbit, clampTilt, clampX, clampZoom, coast, damp, dragMetres, effectiveZoom, exploreView, flightAt, flightSeconds, overviewView, pinchZoom, releaseVelocity, stepIndex, viewAhead, wheelPixels, wheelZoom, zoomAnchorShift, zoomFloorAt, type Flight } from "@/lib/sizes/explore";
-import { factFor, spanFact } from "@/lib/sizes/facts";
+import { stopCaption } from "@/lib/sizes/facts";
+import { HEIGHT_ORDER, ORDERS, dirLabel, framingFor, inOrder, isDefaultOrder, orderInfo, orderRange, orderTag, orderTitle, ringRuleFor, sameOrder, withOrder, type Order, type OrderDir, type OrderKey } from "@/lib/sizes/order";
 import { markIntroSeen, shouldAutoPlay } from "@/lib/sizes/intro";
 import type { View } from "@/lib/sizes/camera";
 import { badgeName, dexTag } from "@/lib/sizes/badges";
@@ -23,6 +24,8 @@ import { BadgeLayer } from "./overlay";
 import { SCENE_URLS, toSceneItem } from "./scene-item";
 import { SIZES_CSS } from "./sizes-css";
 import { trainerFigure } from "./trainer-figure";
+import { loadSizeItems } from "./load-items";
+import { SizesOrderContext } from "./order-context";
 import { useAccount } from "@/lib/account";
 import { cn } from "@/lib/utils";
 
@@ -36,22 +39,6 @@ interface Placed {
   x: number;
   w: number;
   h: number;
-}
-
-let rowsPromise: Promise<SizeItem[]> | null = null;
-/** Every figure (fetched once per page load, static and cached by the CDN). */
-export function loadSizeItems(): Promise<SizeItem[]> {
-  rowsPromise ??= fetch("/api/sizes")
-    .then((r) => {
-      if (!r.ok) throw new Error(`sizes ${r.status}`);
-      return r.json() as Promise<SizeRow[]>;
-    })
-    .then((rows) => rows.map(fromRow))
-    .catch((e) => {
-      rowsPromise = null;
-      throw e;
-    });
-  return rowsPromise;
 }
 
 function webglOk() {
@@ -117,6 +104,8 @@ export interface SizesExperienceProps {
   vs?: string[];
   /** The comparison page: the tray opens even before two are chosen. */
   compare?: boolean;
+  /** The order the page opens in (from the address: ?by=speed&dir=desc). */
+  order?: Order;
   /** The server-rendered list: what search engines, reduced motion and browsers without WebGL get. */
   children: React.ReactNode;
 }
@@ -129,7 +118,7 @@ export interface SizesExperienceProps {
  * MP4 for TikTok, Reels and Shorts. The list underneath is the page for
  * search engines, reduced motion and browsers without WebGL.
  */
-export function SizesExperience({ preset, focus = null, vs = [], compare = false, children }: SizesExperienceProps) {
+export function SizesExperience({ preset, focus = null, vs = [], compare = false, order: initialOrder = HEIGHT_ORDER, children }: SizesExperienceProps) {
   const [mode, setMode] = useState<Mode>("boot");
   const [canGl, setCanGl] = useState(false);
   const [items, setItems] = useState<SizeItem[] | null>(null);
@@ -146,6 +135,11 @@ export function SizesExperience({ preset, focus = null, vs = [], compare = false
   const [searchOpen, setSearchOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [presetMenu, setPresetMenu] = useState(false);
+  const [orderMenu, setOrderMenu] = useState(false);
+  /** Order by: the line stands in order of height (the default), weight or a base stat, lowest or highest first. */
+  const [order, setOrderState] = useState<Order>(initialOrder);
+  const orderRef = useRef(order);
+  orderRef.current = order;
   const [videoOpen, setVideoOpen] = useState(false);
   const [recording, setRecording] = useState(false);
   const [muted, setMutedState] = useState(true);
@@ -217,14 +211,16 @@ export function SizesExperience({ preset, focus = null, vs = [], compare = false
   const badgesRef = useRef<BadgeLayer | null>(null);
 
   const byKey = useMemo(() => new Map((items ?? []).map((i) => [i.key, i])), [items]);
-  const line = useMemo(() => (items ? lineFor(spec, items) : []), [items, spec]);
+  const line = useMemo(() => (items ? lineFor(spec, items, order) : []), [items, spec, order]);
   const presetInfo = PRESET_BY_ID.get(spec.preset) ?? DEFAULT_PRESET;
   const comparing = compareOk(spec.vs.length);
   const comparingRef = useRef(comparing);
   comparingRef.current = comparing;
   const lineTitle = comparing ? compareHook(line).replace(/ 😳$/, "") : presetInfo.label;
-  const hookText = comparing ? compareHook(line) : presetInfo.hook;
+  const hookText = comparing ? compareHook(line, order) : orderTitle(presetInfo.hook, order);
   const focusItem = focusKey ? byKey.get(focusKey) ?? null : null;
+  /** The orders this lineup can stand in (the Gigantamax forms have no listed weight, so that lineup has no Weight order). */
+  const usable = useMemo(() => new Set(items ? ORDERS.filter((o) => lineFor(spec, items, { by: o.key, dir: "asc" }).some((i) => i.kind !== "ref")).map((o) => o.key) : ORDERS.map((o) => o.key)), [items, spec]);
 
   // ---- Which view: 3D unless reduced motion, no WebGL or ?view=list.
   useEffect(() => {
@@ -389,7 +385,7 @@ export function SizesExperience({ preset, focus = null, vs = [], compare = false
     const placed = placedRef.current;
     if (!placed.length) return;
     const c = ctl.current;
-    const plan = planPlay(placed, lensRef.current);
+    const plan = planPlay(placed, lensRef.current, { framing: framingFor(orderRef.current) });
     c.play = { plan, t: 0, stop: null, finale: false };
     c.flight = null;
     c.kind = "play";
@@ -463,9 +459,10 @@ export function SizesExperience({ preset, focus = null, vs = [], compare = false
     if (!ready || !scene || !items) return;
     lineRef.current = line;
     byKeyRef.current = new Map(line.map((i) => [i.key, i]));
-    const { placed } = scene.setLine(line.map(toSceneItem));
+    const { placed } = scene.setLine(line.map(toSceneItem), { framing: framingFor(order), ring: ringRuleFor(order) });
     placedRef.current = placed;
-    frRef.current = framer(placed, lensRef.current);
+    frRef.current = framer(placed, lensRef.current, framingFor(order));
+    badgesRef.current?.setOrder(order);
     const c = ctl.current;
     const pending = pendingRef.current;
     pendingRef.current = null;
@@ -522,7 +519,7 @@ export function SizesExperience({ preset, focus = null, vs = [], compare = false
         badgesRef.current?.invalidate();
       }
       lensRef.current = { vfov: w / h < 0.8 ? 46 : 35, aspect: w / h };
-      if (placedRef.current.length) frRef.current = framer(placedRef.current, lensRef.current);
+      if (placedRef.current.length) frRef.current = framer(placedRef.current, lensRef.current, framingFor(orderRef.current));
     };
     fit();
     const ro = new ResizeObserver(fit);
@@ -540,6 +537,7 @@ export function SizesExperience({ preset, focus = null, vs = [], compare = false
     let ftEma = 1000 / 60, refresh = 1000 / 60, slowFor = 0, calmFor = 0, warm = 0, raisedAt = -1e9, ceiling = LADDER.length - 1;
     const font = getComputedStyle(document.documentElement).getPropertyValue("--font-display").trim() || "sans-serif";
     const badges = new BadgeLayer(font);
+    badges.setOrder(orderRef.current);
     badgesRef.current = badges;
     /** The views the camera will reach over the next seconds (and, while it rests, further along both ways), soonest first: the scene builds what they need ahead. */
     const futureViews = (view: View, scene: SizesScene, fr: Framer, placed: Placed[]): FutureView[] => {
@@ -609,7 +607,7 @@ export function SizesExperience({ preset, focus = null, vs = [], compare = false
           c.play.stop = stopKey;
           if (stop) {
             const item = byKeyRef.current.get(stop.key);
-            const text = stop.finale ? spanFact(lineRef.current) ?? (item ? factFor(item, lineRef.current) : null) : item ? factFor(item, lineRef.current) : null;
+            const text = stopCaption(item, lineRef.current, orderRef.current, stop.finale);
             setCaption(text ? { key: stop.key, text } : null);
             if (stop.finale) audioRef.current?.swell();
             else audioRef.current?.whoosh(0.6);
@@ -814,6 +812,7 @@ export function SizesExperience({ preset, focus = null, vs = [], compare = false
       if (recordingRef.current) return;
       if (e.pointerType === "mouse" && e.button !== 0 && e.button !== 2) return;
       setPresetMenu(false);
+      setOrderMenu(false);
       toExplore();
       const c = ctl.current;
       c.flight = null;
@@ -1009,6 +1008,7 @@ export function SizesExperience({ preset, focus = null, vs = [], compare = false
       } else if (e.key === "Escape") {
         setSearchOpen(false);
         setPresetMenu(false);
+        setOrderMenu(false);
       }
     };
     window.addEventListener("keydown", onKey);
@@ -1024,17 +1024,44 @@ export function SizesExperience({ preset, focus = null, vs = [], compare = false
   useEffect(() => { if (stageRef.current) stageRef.current.dataset.q = quality; }, [quality]);
 
   // ---- Lineups, comparisons and search.
-  const replaceUrl = (path: string) => {
-    try { history.replaceState(history.state, "", path); } catch { /* ignore */ }
+  /** The address for a page of the line: it carries the order (?by=speed&dir=desc), so a shared link opens the same line. */
+  const replaceUrl = (path: string, o: Order = orderRef.current) => {
+    try { history.replaceState(history.state, "", withOrder(path, o)); } catch { /* ignore */ }
   };
+
+  /** Order by: the same figures (those with a value in it), at their real sizes, in another order. The camera stays on the figure it frames when that one is in the new line. */
+  const setOrder = useCallback((next: Order) => {
+    if (sameOrder(next, orderRef.current)) return;
+    const here = focusKey && items ? items.find((i) => i.key === focusKey) : undefined;
+    pendingRef.current = here && inOrder(here, next) ? { focus: here.key } : null;
+    orderRef.current = next;
+    setOrderState(next);
+    // Keep the rest of the address (?vs=, ?q=…): only the order changes.
+    try {
+      const u = new URL(window.location.href);
+      u.searchParams.delete("by");
+      u.searchParams.delete("dir");
+      history.replaceState(history.state, "", withOrder(`${u.pathname}${u.search}`, next));
+    } catch { /* ignore */ }
+  }, [focusKey, items]);
+  const orderCtx = useMemo(() => ({ order, setOrder }), [order, setOrder]);
 
   const choosePreset = (id: string) => {
     setPresetMenu(false);
     setCompareOpen(false);
     setCompareKeys([]);
     pendingRef.current = { play: true };
-    setSpec({ preset: id, vs: [], extra: [] });
-    replaceUrl(presetPath(id));
+    const next: LineSpec = { preset: id, vs: [], extra: [] };
+    // A lineup with nothing to show in this order stands by height.
+    let o = order;
+    if (items && !isDefaultOrder(order) && !lineFor(next, items, order).some((i) => i.kind !== "ref")) {
+      o = HEIGHT_ORDER;
+      orderRef.current = o;
+      setOrderState(o);
+      setToast(`No ${orderInfo(order).missing.replace(/^(a )?listed /, "listed ")} in this lineup: by height`);
+    }
+    setSpec(next);
+    replaceUrl(presetPath(id), o);
   };
 
   const applyCompare = (keys: string[]) => {
@@ -1075,15 +1102,21 @@ export function SizesExperience({ preset, focus = null, vs = [], compare = false
     }
     setSearchOpen(false);
     if (flyTo(item.key, true)) return;
-    // Not on this line: the full line (with the form, when it's a form), flown there.
+    // Not on this line: the full line (with the form, when it's a form), flown there; by height when the order has no value for it.
+    const o = inOrder(item, order) ? order : HEIGHT_ORDER;
+    if (o !== order) {
+      setOrderState(o);
+      orderRef.current = o;
+      setToast(`No ${orderInfo(order).missing.replace(/^(a )?listed /, "listed ")} for ${item.name}: by height`);
+    }
     pendingRef.current = { focus: item.key };
     setSpec({ preset: DEFAULT_PRESET.id, vs: [], extra: item.kind === "pokemon" ? [] : [item.key] });
-    replaceUrl(itemPath(item.key));
+    replaceUrl(itemPath(item.key), o);
   };
 
   const share = async () => {
     const url = window.location.href;
-    const text = comparing ? `${compareHook(line)} Real sizes, side by side in 3D` : focusItem && focusItem.kind !== "ref" ? `How big is ${focusItem.name}? ${sizeLine(focusItem)}` : `${hookText} in 3D`;
+    const text = comparing ? `${compareHook(line, order)} Real sizes, side by side in 3D` : focusItem && focusItem.kind !== "ref" && isDefaultOrder(order) ? `How big is ${focusItem.name}? ${sizeLine(focusItem)}` : `${hookText} in 3D`;
     if (typeof navigator.share === "function" && window.matchMedia("(pointer: coarse)").matches) {
       try { await navigator.share({ title: "PokéIQ Sizes", text, url }); return; } catch { /* closed, or not allowed: copy instead */ }
     }
@@ -1109,9 +1142,53 @@ export function SizesExperience({ preset, focus = null, vs = [], compare = false
   };
 
   const chip = "sz-chip pointer-events-auto inline-flex h-9 items-center gap-1.5 rounded-md border border-white/15 bg-[#0b1226]/70 px-3 font-display text-[11px] font-semibold uppercase tracking-[0.12em] text-white/85 backdrop-blur-md transition-colors hover:border-white/35 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffd84a] disabled:opacity-50";
-  const smallest = line.find((i) => i.kind !== "ref");
-  const largest = [...line].reverse().find((i) => i.kind !== "ref");
+  const range = orderRange(line, order);
   const playing = kind === "play";
+  const focusTag = focusItem ? orderTag(focusItem, order) : null;
+
+  /** The order picker: the line's order and its direction (in its own menu on wide screens, in the lineup menu on phones). */
+  const orderPicker = (where: "menu" | "lineup") => (
+    <div role="group" aria-label="Order by" className="p-1" data-testid={`sizes-order-${where}`}>
+      <p className="px-2 pb-1.5 pt-1 font-pixel text-[9px] uppercase tracking-[0.18em] text-white/55">Order by</p>
+      <div className="grid grid-cols-3 gap-1">
+        {ORDERS.map((o) => {
+          const on = o.key === order.by;
+          return (
+            <button
+              key={o.key}
+              type="button"
+              role="menuitemradio"
+              aria-checked={on}
+              title={usable.has(o.key) ? o.label : `${o.label}: none in this lineup`}
+              disabled={!usable.has(o.key)}
+              onClick={() => setOrder({ by: o.key as OrderKey, dir: order.dir })}
+              className={cn("h-9 rounded-md px-1.5 font-display text-[11px] font-semibold uppercase tracking-wide text-white/80 hover:bg-white/10 hover:text-white disabled:pointer-events-none disabled:opacity-35", on && "bg-white/10 text-[#ffd84a]")}
+              data-testid={`sizes-order-${o.param}`}
+            >
+              {o.short}
+            </button>
+          );
+        })}
+      </div>
+      <div className="mt-1.5 grid grid-cols-2 gap-1 rounded-md bg-white/5 p-1" role="radiogroup" aria-label="Direction">
+        {(["asc", "desc"] as OrderDir[]).map((d) => (
+          <button
+            key={d}
+            type="button"
+            role="radio"
+            aria-checked={order.dir === d}
+            onClick={() => setOrder({ by: order.by, dir: d })}
+            className={cn("inline-flex h-9 items-center justify-center gap-1 rounded px-1.5 font-display text-[11px] font-semibold uppercase tracking-wide text-white/75 hover:text-white", order.dir === d && "bg-[#ffd84a] text-[#1a1205] hover:text-[#1a1205]")}
+            data-testid={`sizes-dir-${d}`}
+          >
+            {d === "asc" ? <ArrowUp className="h-3.5 w-3.5" aria-hidden /> : <ArrowDown className="h-3.5 w-3.5" aria-hidden />}
+            {dirLabel(order.by, d)}
+          </button>
+        ))}
+      </div>
+      {!isDefaultOrder(order) && <p className="px-2 pb-1 pt-2 text-[11px] leading-snug text-white/55">Every figure stands at its real size; only the order changes.</p>}
+    </div>
+  );
 
   return (
     <>
@@ -1125,7 +1202,7 @@ export function SizesExperience({ preset, focus = null, vs = [], compare = false
             </button>
           </div>
         )}
-        {children}
+        <SizesOrderContext.Provider value={orderCtx}>{children}</SizesOrderContext.Provider>
       </div>
       {mode !== "list" && (
         <div
@@ -1137,6 +1214,7 @@ export function SizesExperience({ preset, focus = null, vs = [], compare = false
           data-kind={kind}
           data-focus={focusKey ?? ""}
           data-count={line.length}
+          data-order={`${order.by}-${order.dir}`}
           data-recording={recording ? "1" : "0"}
         >
           <div
@@ -1144,7 +1222,7 @@ export function SizesExperience({ preset, focus = null, vs = [], compare = false
             className={cn("sz-host absolute inset-0 cursor-grab touch-none select-none transition-opacity duration-500 active:cursor-grabbing", !shown && "opacity-0")}
             data-testid="sizes-scene"
             role="application"
-            aria-label="Pokémon to scale in 3D, smallest to largest. Drag sideways or use the arrow keys to move along the line, scroll or pinch to zoom (+ and − keys too), drag up and down to tilt, right-drag or shift-drag to turn; 0 resets the view and Space plays the glide."
+            aria-label={`Pokémon to scale in 3D, ${dirLabel(order.by, order.dir).toLowerCase()} by ${orderInfo(order).label.toLowerCase()}. Drag sideways or use the arrow keys to move along the line, scroll or pinch to zoom (+ and − keys too), drag up and down to tilt, right-drag or shift-drag to turn; 0 resets the view and Space plays the glide.`}
           />
           <canvas ref={overlayRef} className="sz-overlay h-full w-full" aria-hidden />
           <div className="sz-shade-top" aria-hidden />
@@ -1171,11 +1249,7 @@ export function SizesExperience({ preset, focus = null, vs = [], compare = false
                 data-testid="sizes-hook"
               >
                 <p className="sz-hook text-4xl sm:text-7xl">{hook.replace(/\s*\p{Extended_Pictographic}+$/u, "")}</p>
-                {smallest && largest && (
-                  <p className="sz-caption mt-3 text-base uppercase tracking-[0.18em] sm:text-xl">
-                    {formatMetres(smallest.m)} to {formatMetres(largest.m)}{largest.min ? "+" : ""}
-                  </p>
-                )}
+                {range && <p className="sz-caption mt-3 text-base uppercase tracking-[0.18em] sm:text-xl">{range}</p>}
               </motion.div>
             )}
           </AnimatePresence>
@@ -1204,12 +1278,19 @@ export function SizesExperience({ preset, focus = null, vs = [], compare = false
                 <ArrowLeft className="h-4 w-4" aria-hidden />
               </Link>
               <div className="relative min-w-0">
-                <button type="button" className={cn(chip, "max-w-[calc(100vw-13rem)] sm:max-w-none")} onClick={() => { setPresetMenu((v) => !v); setSearchOpen(false); }} aria-expanded={presetMenu} aria-haspopup="menu" data-testid="sizes-lineup">
+                <button type="button" className={cn(chip, "max-w-[calc(100vw-13rem)] sm:max-w-none")} onClick={() => { setPresetMenu((v) => !v); setOrderMenu(false); setSearchOpen(false); }} aria-expanded={presetMenu} aria-haspopup="menu" data-testid="sizes-lineup">
                   <span className="truncate">{lineTitle}</span>
+                  {/* Phones: the order rides on the lineup chip (its picker is in the lineup menu). */}
+                  {!isDefaultOrder(order) && (
+                    <span className="inline-flex shrink-0 items-center text-[#ffd84a] sm:hidden" data-testid="sizes-lineup-order">
+                      · {orderInfo(order).short}
+                      {order.dir === "desc" ? <ArrowDown className="h-3 w-3" aria-hidden /> : <ArrowUp className="h-3 w-3" aria-hidden />}
+                    </span>
+                  )}
                   <ChevronDown className="h-3.5 w-3.5 shrink-0" aria-hidden />
                 </button>
                 {presetMenu && (
-                  <div className="pointer-events-auto absolute left-0 top-11 w-64 overflow-hidden rounded-lg border border-white/15 bg-[#0b1226]/95 p-1 shadow-2xl backdrop-blur-xl" role="menu" data-testid="sizes-presets" data-sz-scroll>
+                  <div className="pointer-events-auto absolute left-0 top-11 max-h-[calc(100dvh-12rem)] w-64 overflow-y-auto rounded-lg border border-white/15 bg-[#0b1226]/95 p-1 shadow-2xl backdrop-blur-xl" role="menu" data-testid="sizes-presets" data-sz-scroll>
                     {PRESETS.map((p) => (
                       <button
                         key={p.id}
@@ -1223,12 +1304,28 @@ export function SizesExperience({ preset, focus = null, vs = [], compare = false
                         {p.label}
                       </button>
                     ))}
+                    <div className="mt-1 border-t border-white/10 pt-1 sm:hidden">{orderPicker("lineup")}</div>
+                  </div>
+                )}
+              </div>
+              {/* Order by (wide screens): its own chip and menu. */}
+              <div className="relative hidden shrink-0 sm:block">
+                <button type="button" className={cn(chip, !isDefaultOrder(order) && "border-[#ffd84a]/60")} onClick={() => { setOrderMenu((v) => !v); setPresetMenu(false); setSearchOpen(false); }} aria-expanded={orderMenu} aria-haspopup="menu" aria-label={`Order by ${orderInfo(order).label}, ${dirLabel(order.by, order.dir).toLowerCase()}`} data-testid="sizes-order">
+                  <ArrowUpDown className="h-3.5 w-3.5 text-white/60" aria-hidden />
+                  <span className="text-white/55">Order</span>
+                  <span className={cn(!isDefaultOrder(order) && "text-[#ffd84a]")}>{orderInfo(order).label}</span>
+                  {order.dir === "desc" ? <ArrowDown className="h-3.5 w-3.5" aria-hidden /> : <ArrowUp className="h-3.5 w-3.5" aria-hidden />}
+                  <ChevronDown className="h-3.5 w-3.5" aria-hidden />
+                </button>
+                {orderMenu && (
+                  <div className="pointer-events-auto absolute left-0 top-11 w-72 rounded-lg border border-white/15 bg-[#0b1226]/95 p-1 shadow-2xl backdrop-blur-xl" role="menu" data-testid="sizes-order-menu">
+                    {orderPicker("menu")}
                   </div>
                 )}
               </div>
             </div>
             <div className="flex shrink-0 items-center gap-2">
-              <button type="button" className={cn(chip, "px-2.5")} onClick={() => { setSearchOpen((v) => !v); setPresetMenu(false); }} aria-label="Search for a Pokémon" aria-expanded={searchOpen} data-testid="sizes-search-toggle">
+              <button type="button" className={cn(chip, "px-2.5")} onClick={() => { setSearchOpen((v) => !v); setPresetMenu(false); setOrderMenu(false); }} aria-label="Search for a Pokémon" aria-expanded={searchOpen} data-testid="sizes-search-toggle">
                 <Search className="h-4 w-4" aria-hidden />
               </button>
               <button type="button" className={cn(chip, "px-2.5")} onClick={toggleMute} aria-label={muted ? "Turn the music on" : "Turn the music off"} data-testid="sizes-mute">
@@ -1275,7 +1372,9 @@ export function SizesExperience({ preset, focus = null, vs = [], compare = false
                           <span className="block truncate font-display text-sm font-semibold uppercase tracking-wide text-white">{r.name}</span>
                           <span className="block font-pixel text-[9px] uppercase tracking-wider text-white/50">{dexTag(r.species)}</span>
                         </span>
-                        <span className="shrink-0 font-display text-sm font-bold tabular-nums text-[#ffd84a]">{formatMetres(r.m)}{r.min ? "+" : ""}</span>
+                        <span className="shrink-0 text-right font-display text-sm font-bold tabular-nums text-[#ffd84a]">
+                          {order.by === "height" ? `${formatMetres(r.m)}${r.min ? "+" : ""}` : orderTag(r, order) ?? <span className="text-white/45">{formatMetres(r.m)}{r.min ? "+" : ""}</span>}
+                        </span>
                       </button>
                     </li>
                   ))}
@@ -1291,7 +1390,7 @@ export function SizesExperience({ preset, focus = null, vs = [], compare = false
                 {compareKeys.map((k) => {
                   const it = byKey.get(k);
                   return (
-                    <span key={k} className="inline-flex h-8 items-center gap-1 rounded-md bg-white/10 pl-2.5 pr-1 font-display text-[11px] font-semibold uppercase tracking-wide text-white" data-testid="sizes-compare-chip">
+                    <span key={k} className={cn("inline-flex h-8 items-center gap-1 rounded-md bg-white/10 pl-2.5 pr-1 font-display text-[11px] font-semibold uppercase tracking-wide text-white", it && !inOrder(it, order) && "opacity-50")} title={it && !inOrder(it, order) ? `No ${orderInfo(order).missing.replace(/^(a )?listed /, "listed ")}: not in this order` : undefined} data-testid="sizes-compare-chip">
                       {it ? badgeName(it.name) : k}
                       <button type="button" onClick={() => applyCompare(compareKeys.filter((x) => x !== k))} className="rounded p-1 text-white/60 hover:text-white" aria-label={`Remove ${it?.name ?? k}`}><X className="h-3.5 w-3.5" /></button>
                     </span>
@@ -1323,7 +1422,7 @@ export function SizesExperience({ preset, focus = null, vs = [], compare = false
               aria-valuemin={1}
               aria-valuemax={line.length}
               aria-valuenow={Math.max(1, line.findIndex((i) => i.key === focusKey) + 1)}
-              aria-valuetext={focusItem ? `${focusItem.name}, ${sizeLine(focusItem)}` : undefined}
+              aria-valuetext={focusItem ? `${focusItem.name}, ${sizeLine(focusItem)}${focusTag ? `, ${focusTag}` : ""}` : undefined}
               tabIndex={0}
               data-testid="sizes-scrubber"
             >
@@ -1356,8 +1455,9 @@ export function SizesExperience({ preset, focus = null, vs = [], compare = false
                 {focusItem && (
                   <>
                     {focusItem.kind !== "ref" && <span className="mr-2 font-pixel text-[10px] text-white/55">{dexTag(focusItem.species)}</span>}
-                    {focusItem.name} <span className="text-[#ffd84a]">{sizeLine(focusItem)}</span>
+                    {focusItem.name} <span className={focusTag ? "text-white/70" : "text-[#ffd84a]"}>{sizeLine(focusItem)}</span>
                     {focusItem.length && <span className="ml-1 text-white/55">(Length)</span>}
+                    {focusTag && <span className="ml-2 text-[#ffd84a]" data-testid="sizes-focus-value">{focusTag}</span>}
                   </>
                 )}
               </div>
@@ -1385,8 +1485,9 @@ export function SizesExperience({ preset, focus = null, vs = [], compare = false
               <MakeVideo
                 items={items}
                 line={line}
+                order={order}
                 hook={hookText}
-                slug={comparing ? spec.vs.join("-vs-") : spec.preset}
+                slug={`${comparing ? spec.vs.join("-vs-") : spec.preset}${isDefaultOrder(order) ? "" : `-by-${orderInfo(order).param}${order.dir === "desc" ? "-desc" : ""}`}`}
                 lineLabel={lineTitle}
                 trainer={myTrainer}
                 onRecording={setRecording}

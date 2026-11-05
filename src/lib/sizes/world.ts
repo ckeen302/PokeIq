@@ -129,11 +129,32 @@ export interface WorldPlan {
   districts: District[];
 }
 
+/**
+ * Where the ring round Prism Tower begins. "first-big": at the line's first big figure (a line that grows: the
+ * Height order, smallest first). "tail": only where the rest of the line is mostly big (a line in any other order,
+ * where a few giants stand among small figures: it stays on the boulevard, and a line of giants still circles the
+ * tower).
+ */
+export type RingRule = "first-big" | "tail";
+
+/** The first big figure from which at least half the rest of the line is big, or -1. */
+function bigTail(placed: PlacedFigure[]): number {
+  const big = placed.map((p) => Math.max(p.h, p.w) >= RING_M);
+  let count = 0;
+  let at = -1;
+  // From the end back: the earliest big figure where the big ones make up at least half of what follows.
+  for (let i = placed.length - 1; i >= 0; i--) {
+    if (big[i]) count++;
+    if (big[i] && count * 2 >= placed.length - i) at = i;
+  }
+  return at;
+}
+
 /** The boulevard and plaza for a line of placed figures (x is the distance along the line). */
-export function planWorld(placed: PlacedFigure[]): WorldPlan {
+export function planWorld(placed: PlacedFigure[], rule: RingRule = "first-big"): WorldPlan {
   const lineStart = placed.length ? placed[0].x - placed[0].w / 2 : 0;
   const lineEnd = placed.length ? placed[placed.length - 1].x + placed[placed.length - 1].w / 2 : 1;
-  const first = placed.findIndex((p) => Math.max(p.h, p.w) >= RING_M);
+  const first = rule === "tail" ? bigTail(placed) : placed.findIndex((p) => Math.max(p.h, p.w) >= RING_M);
   let ring: Ring | null = null;
   let cx: number, cz: number;
   if (first >= 0) {

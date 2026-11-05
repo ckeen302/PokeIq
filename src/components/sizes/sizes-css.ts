@@ -41,6 +41,8 @@ html.sz-locked, html.sz-locked body { overflow: hidden; overscroll-behavior: non
 .szt .szt-w { white-space: nowrap; color: hsl(var(--muted-foreground)); font-variant-numeric: tabular-nums; }
 .szt .szt-d a { font-family: var(--font-pixel); font-size: 10px; color: hsl(var(--muted-foreground)); }
 .szt .szt-d a:hover { color: hsl(var(--foreground)); }
+.szt .szt-v { white-space: nowrap; font-weight: 700; font-variant-numeric: tabular-nums; }
+.szt th.szt-v button { color: hsl(var(--foreground)); }
 .szt .szt-w, .szt .szt-d { display: none; }
 @media (min-width: 640px) { .szt .szt-w { display: table-cell; } }
 @media (min-width: 768px) { .szt .szt-d { display: table-cell; } }

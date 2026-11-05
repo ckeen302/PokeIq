@@ -3,7 +3,8 @@ import { watchContext } from "@/lib/gl/context-loss";
 import { RGBELoader } from "three/examples/jsm/loaders/RGBELoader.js";
 import { CSM } from "three/examples/jsm/csm/CSM.js";
 import { layoutLine } from "@/lib/sizes/types";
-import { ROOF_Y, planWorld, type WorldPlan } from "@/lib/sizes/world";
+import { ROOF_Y, planWorld, type RingRule, type WorldPlan } from "@/lib/sizes/world";
+import { envelope, type Framing } from "@/lib/sizes/glide";
 import { FACING, poseFor, type View } from "@/lib/sizes/camera";
 import type { FarManifest } from "@/lib/sizes/far";
 import FAR_MANIFEST from "@/data/sizes-far.json";
@@ -119,7 +120,8 @@ export interface FutureView {
 
 export interface SizesScene {
   canvas: HTMLCanvasElement;
-  setLine(items: SceneItem[]): { placed: Placed[]; plan: WorldPlan };
+  /** `framing` and `ring` follow the line's order (lib/sizes/order: framingFor, ringRuleFor); by default a line that grows. */
+  setLine(items: SceneItem[], opts?: { framing?: Framing; ring?: RingRule }): { placed: Placed[]; plan: WorldPlan };
   /** Height of the figures around a point on the line (smoothed, m). */
   heightAt(x: number): number;
   setView(v: View): void;
@@ -406,19 +408,23 @@ export function createSizesScene(host: HTMLElement, opts: SceneOptions): SizesSc
     return { index, item, x, wx, wz, yaw: FACING - at.heading, z, w, h, mesh: [null, null], up: [false, false], loading: [null, null], failed: false, phase: (index * 2.399) % (Math.PI * 2), inView: false, sh: 0, need: Infinity, draw: 0, from: 0, t: 1, seen: false, readyAt: 0, neededAt: 0, lastNear: -1e9 };
   };
 
-  function setLine(items: SceneItem[]) {
+  let cutHigh = false;
+  function setLine(items: SceneItem[], opts: { framing?: Framing; ring?: RingRule } = {}) {
     for (const s of slots) dropSlot(s);
     if (companion) dropSlot(companion);
     companion = null;
     const placed = layoutLine(items.map((i) => ({ m: i.m, length: i.length, bw: i.box[2], bh: i.box[3] })));
-    plan = planWorld(placed);
+    plan = planWorld(placed, opts.ring);
+    // A line that doesn't grow (any order but Height, smallest first) may frame a giant on the boulevard from over the rooftops.
+    cutHigh = opts.ring === "tail";
     // The ten-storey building stands a step off the giants' ring on the camera's side (on the paving short of the parterres): on the ring itself it would hide Prism Tower's legs and the giant after it.
     const aside = (item: SceneItem, i: number) => (item.ref === "building" && plan.ring && placed[i].x > plan.ring.s0 ? -Math.min(22, placed[i].w * 1.6) : 0);
     slots = items.map((item, i) => newSlot({ ...item, w: placed[i].w, h: placed[i].h }, i, placed[i].x, placed[i].w, placed[i].h, aside(item, i)));
     xs = slots.map((s) => s.x);
     // Smoothed log heights (same idea as the camera's distance), for aiming.
     const raw = slots.map((s) => Math.log(Math.max(0.02, s.h)));
-    logH = raw.map((_, i) => {
+    // A line whose sizes jump about (a stat order) aims on the same kind of envelope the camera's distance follows, so the aim rises and falls with it.
+    logH = opts.framing === "mixed" ? envelope(raw) : raw.map((_, i) => {
       let sum = 0, n = 0;
       // Bilateral, like the camera's distance: a giant next door must not lift the aim off a human-sized figure.
       for (let k = -3; k <= 3; k++) { const j = i + k; if (j < 0 || j >= raw.length) continue; const dl = raw[j] - raw[i]; const wt = Math.exp(-(k * k) / 4) * Math.exp(-(dl * dl) / 0.18); sum += raw[j] * wt; n += wt; }
@@ -568,8 +574,10 @@ export function createSizesScene(host: HTMLElement, opts: SceneOptions): SizesSc
     }
     shared.uniforms.uCutA.value.copy(camera.position);
     shared.uniforms.uCutB.value.copy(target);
-    // Above the rooftops (the giants, the finale) nothing is in the way: cutting would only punch holes in the roofs.
-    shared.uniforms.uCutR.value = view.rise > 0.25 || camera.position.y > ROOF_Y + 2 ? 0 : Math.max(0.25, Math.max(view.h, 0.6 * view.d * 0.6) * 0.55);
+    // Above the rooftops (the giants round the tower, the finale) nothing is in the way: cutting would only punch holes in the roofs.
+    // A giant on the boulevard (a stat order) is the exception: the near side's buildings would hide its feet.
+    const overRoofs = camera.position.y > ROOF_Y + 2 && !(cutHigh && (!plan.ring || view.x < plan.ring.s0));
+    shared.uniforms.uCutR.value = view.rise > 0.25 || overRoofs ? 0 : Math.max(0.25, Math.max(view.h, 0.6 * view.d * 0.6) * 0.55);
     city?.update(camera.position, csm.maxFar * 1.3);
   }
 

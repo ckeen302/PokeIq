@@ -1,7 +1,8 @@
 /**
  * Pokémon Sizes (/pokedex/sizes), end to end in the browser: the Sizes tab,
  * the 3D scene and its first-visit Play glide, stopping it, search and
- * fly-to, the arrow keys, zooming (the wheel, a trackpad pinch as ctrl +
+ * fly-to, "Order by" (Speed, fastest first: the table, the address, a
+ * reload and Play follow it), the arrow keys, zooming (the wheel, a trackpad pinch as ctrl +
  * wheel, the + and − buttons, reset) and turning the view, a two-Pokémon
  * comparison and its share link and
  * preview card, a Pokémon's own size page, the list fallback, the sound
@@ -137,6 +138,52 @@ export async function runSizes({ browser, BASE, OUT, errors, step }) {
     }
     await press(page, "sizes-play");
     await stageIs("kind", "explore").catch(() => errors.push("sizes: Stop didn't stop the glide"));
+  });
+  await part(errors, "order", async () => {
+    // Order by Speed, fastest first: the line, the table, the address and Play all follow; a reload keeps it.
+    await press(page, "sizes-order");
+    await page.getByTestId("sizes-order-menu").waitFor();
+    await page.screenshot({ path: `${OUT}/sizes-order-menu-1440.png` });
+    await press(page, "sizes-order-speed");
+    await press(page, "sizes-dir-desc");
+    await stageIs("order", "spe-desc").catch(async () => errors.push(`sizes: the order control didn't order by Speed, fastest first (data-order ${await attr("order")})`));
+    await stageIs("shown", "1").catch(() => errors.push("sizes: the line by Speed never showed"));
+    const u = new URL(page.url());
+    if (u.searchParams.get("by") !== "speed" || u.searchParams.get("dir") !== "desc") errors.push(`sizes: the address doesn't carry the order (${page.url()})`);
+    // The fastest Pokémon in the data heads the table (built in the page for the new order).
+    const firstRow = () => page.locator('[data-testid="sizes-list"] tbody tr').first().getAttribute("id");
+    await page.waitForFunction(() => document.querySelector('[data-testid="sizes-list"] tbody tr')?.id === "size-regieleki", null, { timeout: 60_000 }).catch(async () => errors.push(`sizes: by Speed the table starts with ${await firstRow()}, not Regieleki`));
+    if (await page.locator('[data-testid="sizes-list"] tr.ref').count()) errors.push("sizes: real-world sizes stand in the Speed order");
+    await page.screenshot({ path: `${OUT}/sizes-order-speed-1440.png` });
+    // A reload keeps the order: the server renders the table (and its structured data) in it.
+    const html = await (await page.request.get(page.url())).text();
+    const firstServerRow = html.slice(html.indexOf("<tbody")).match(/id="size-([a-z0-9-]+)"/)?.[1];
+    if (firstServerRow !== "regieleki") errors.push(`sizes: the server's table by Speed starts with ${firstServerRow}`);
+    if (!/"name":"Every Pokémon by Speed, fastest first"/.test(html)) errors.push("sizes: the structured data isn't named for the order");
+    await page.reload({ waitUntil: "load" });
+    if (!(await ready())) throw new Error("the 3D scene never became ready after a reload");
+    await stageIs("order", "spe-desc", 60_000).catch(async () => errors.push(`sizes: a reload lost the order (data-order ${await attr("order")})`));
+    if ((await firstRow()) !== "size-regieleki") errors.push(`sizes: after a reload the table starts with ${await firstRow()}`);
+    // Play still works, with the order's title card, evenly spaced pauses and the finale on the line's last figure.
+    await stageIs("shown", "1").catch(() => undefined);
+    await press(page, "sizes-play");
+    await stageIs("kind", "play").catch(() => errors.push("sizes: Play didn't start in the Speed order"));
+    const hookText = await page.getByTestId("sizes-hook").innerText({ timeout: 20_000 }).catch(() => "");
+    if (!/by Speed/i.test(hookText)) errors.push(`sizes: the title card reads "${hookText}" in the Speed order`);
+    const st = await page.evaluate(() => window.__sizes?.state());
+    const stops = st?.stops ?? [];
+    if (stops.length < 2 || stops[stops.length - 1].key !== "pyukumuku") errors.push(`sizes: Play's stops by Speed are ${stops.map((x) => x.key).join(", ")}`);
+    await page.evaluate(() => window.__sizes?.seek(5));
+    await page.waitForFunction(() => (window.__sizes?.state()?.t ?? 0) > 5.05, null, { timeout: 120_000 }).catch(() => errors.push("sizes: Play's clock didn't run in the Speed order"));
+    await press(page, "sizes-play");
+    await stageIs("kind", "explore").catch(() => errors.push("sizes: Stop didn't stop the glide in the Speed order"));
+    // Back to Height, smallest first: the address loses its order.
+    await press(page, "sizes-order");
+    await press(page, "sizes-order-height");
+    await press(page, "sizes-dir-asc");
+    await stageIs("order", "height-asc").catch(() => errors.push("sizes: couldn't go back to the Height order"));
+    if (new URL(page.url()).searchParams.has("by")) errors.push(`sizes: the Height order's address still has ?by= (${page.url()})`);
+    await press(page, "sizes-order");
   });
   await part(errors, "search", async () => {
     await press(page, "sizes-search-toggle");
@@ -279,6 +326,16 @@ export async function runSizes({ browser, BASE, OUT, errors, step }) {
       if (!box || box.x < 0 || box.x + box.width > 391) errors.push(`sizes: ${id} is off a 390 px screen`);
     }
     await page.screenshot({ path: `${OUT}/sizes-390.png` });
+    // The order picker sits in the lineup menu on a phone, inside the screen.
+    await page.goto(`${BASE}/pokedex/sizes?q=draft&by=weight&dir=desc`, { waitUntil: "load" });
+    if (!(await ready())) throw new Error("the 3D scene never became ready on a phone by weight");
+    await stageIs("order", "weight-desc", 60_000).catch(async () => errors.push(`sizes: ?by=weight&dir=desc opened ${await attr("order")}`));
+    await press(page, "sizes-lineup");
+    const picker = await page.getByTestId("sizes-order-lineup").boundingBox();
+    if (!picker || picker.x < 0 || picker.x + picker.width > 391) errors.push("sizes: the order picker is off a 390 px screen");
+    if (await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1)) errors.push("sizes: the order picker makes the phone layout scroll sideways");
+    await page.screenshot({ path: `${OUT}/sizes-order-390.png` });
+    await press(page, "sizes-lineup");
   });
   await context.close();
 }

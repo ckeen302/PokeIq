@@ -1,6 +1,7 @@
 import { COMPARE_MAX, compareOk } from "./deeplink";
 import { DEFAULT_PRESET, PRESET_BY_ID, compareLineup, presetLineup } from "./presets";
-import { bySize, type SizeItem } from "./types";
+import { HEIGHT_ORDER, inOrder, orderCompare, orderTitle, type Order } from "./order";
+import { type SizeItem } from "./types";
 
 /**
  * Which line /pokedex/sizes shows, from what the page was opened with (a
@@ -17,19 +18,21 @@ export interface LineSpec {
   extra: string[];
 }
 
-export function lineFor(spec: LineSpec, all: SizeItem[]): SizeItem[] {
+/** The line in an order (Height, smallest first, by default): the preset picks the figures, the order sorts them. */
+export function lineFor(spec: LineSpec, all: SizeItem[], order: Order = HEIGHT_ORDER): SizeItem[] {
   const byKey = new Map(all.map((i) => [i.key, i]));
-  if (compareOk(spec.vs.length)) return compareLineup(spec.vs.flatMap((k) => byKey.get(k) ?? []), all);
-  const base = presetLineup(PRESET_BY_ID.get(spec.preset) ?? DEFAULT_PRESET, all);
+  if (compareOk(spec.vs.length)) return compareLineup(spec.vs.flatMap((k) => byKey.get(k) ?? []), all, order);
+  const base = presetLineup(PRESET_BY_ID.get(spec.preset) ?? DEFAULT_PRESET, all, order);
   const have = new Set(base.map((i) => i.key));
-  const extras = spec.extra.flatMap((k) => (!have.has(k) && byKey.has(k) ? [byKey.get(k)!] : []));
-  return extras.length ? [...base, ...extras].sort(bySize) : base;
+  // A form opened by link joins the line only where it has a value in the order.
+  const extras = spec.extra.flatMap((k) => (!have.has(k) && byKey.has(k) && inOrder(byKey.get(k)!, order) ? [byKey.get(k)!] : []));
+  return extras.length ? [...base, ...extras].sort(orderCompare(order)) : base;
 }
 
-/** The video's hook for a comparison: "Wailord vs Eternatus 😳". */
-export function compareHook(items: SizeItem[]): string {
+/** The video's hook for a comparison: "Wailord vs Eternatus 😳" (in another order, "…, by Speed 😳"). */
+export function compareHook(items: SizeItem[], order: Order = HEIGHT_ORDER): string {
   const names = items.filter((i) => i.kind !== "ref").map((i) => i.name);
-  return names.length ? `${names.join(" vs ")} 😳` : "Pokémon by size 😳";
+  return orderTitle(names.length ? `${names.join(" vs ")} 😳` : "Pokémon by size 😳", order);
 }
 
 /** Folds case and accents: "Flabébé" → "flabebe". */
