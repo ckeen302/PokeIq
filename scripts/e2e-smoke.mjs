@@ -122,6 +122,11 @@ if (process.env.E2E_ONLY === "which-pokemon") {
   await whichPokemonStep();
   await finish();
 }
+// E2E_ONLY=home runs just the home page's checks, then exits.
+if (process.env.E2E_ONLY === "home") {
+  await homeStep();
+  await finish();
+}
 
 /** One Classic run of a trivia quiz: ten answers, a source link on every reveal, no early answers. */
 async function playTriviaRun(p, slug) {
@@ -158,9 +163,7 @@ async function playTriviaRun(p, slug) {
   if (sources !== 10) errors.push(`${slug}: ${sources}/10 answers carried a Bulbapedia source`);
 }
 
-step("home");
-await gotoSettled(page, BASE);
-await page.screenshot({ path: `${OUT}/home.png`, fullPage: true });
+await homeStep();
 
 step("pokédex entry: Where to find it");
 await gotoSettled(page, `${BASE}/pokemon/starly`);
@@ -3667,6 +3670,99 @@ step("name 'em all: hub, a Gen 1 run (aliases, wrong category, pause, give up), 
   await guestRace.screenshot({ path: `${OUT}/name-em-all-race-result.png` });
   await guestRace.context().close();
   await np.context().close();
+}
+
+/** The home page: the title screen's slideshow (a slide per tab, dots, pause), a tile per tab, today's puzzles, at 1440 and 390. */
+async function homeStep() {
+  step("home: a slide per tab with dots and a pause button, a tile per tab, nothing sideways at 390");
+  const TABS = [
+    ["guessr", "/guessr", "PokéGuessr"],
+    ["pokedle", "/pokedle", "Pokédle"],
+    ["connections", "/connections", "Connections"],
+    ["pikadoku", "/pikadoku", "Pikadoku"],
+    ["battle", "/battle", "Battle"],
+    ["quizzes", "/play", "Quizzes"],
+    ["pokedex", "/pokedex", "Pokédex"],
+    ["lab", "/lab", "3D Lab"],
+  ];
+  const p = await newPage({ width: 1440, height: 900 });
+  await p.clock.install();
+  await gotoSettled(p, BASE);
+  await p.screenshot({ path: `${OUT}/home.png`, fullPage: true });
+  const hero = p.getByTestId("hero-carousel");
+  const slides = await hero.getByTestId("hero-slide").evaluateAll((els) => els.map((e) => e.dataset.slide));
+  if (slides.join() !== TABS.map(([id]) => id).join()) errors.push(`home: the hero's slides are ${slides.join()}`);
+  if ((await hero.getByTestId("hero-dot").count()) !== TABS.length) errors.push("home: the hero hasn't a dot per slide");
+  const active = () => hero.locator("[data-testid=hero-slide][data-active=true]").getAttribute("data-slide");
+  if ((await active()) !== "guessr") errors.push(`home: the first slide is ${await active()}, not PokéGuessr`);
+  // The first slide's picture is the page's hero image, in the server's HTML.
+  const html = await (await p.request.get(BASE)).text();
+  if (!/data-slide="guessr"[^]*?<img[^>]+fetchpriority="high"/i.test(html)) errors.push("home: the PokéGuessr slide's image isn't server-rendered as the priority image");
+  // Every slide's name and button lead to its tab.
+  const pause = hero.getByTestId("hero-pause");
+  if ((await pause.getAttribute("aria-label")) !== "Pause the slideshow") errors.push(`home: the pause button reads "${await pause.getAttribute("aria-label")}"`);
+  for (const [id, href, name] of TABS) {
+    await hero.getByRole("button", { name: `Show ${name}`, exact: true }).click();
+    await hero.locator(`[data-testid=hero-slide][data-slide="${id}"][data-active=true]`).waitFor({ timeout: 5000 }).catch(() => errors.push(`home: the ${name} dot didn't show its slide`));
+    if ((await hero.getByRole("button", { name: `Show ${name}`, exact: true }).getAttribute("aria-current")) !== "true") errors.push(`home: the ${name} dot isn't marked current`);
+    for (const t of ["hero-slide-label", "hero-slide-cta"]) {
+      const got = await hero.getByTestId(t).getAttribute("href");
+      if (got !== href) errors.push(`home: the ${name} slide's ${t} goes to ${got}, not ${href}`);
+    }
+    if (id !== "guessr") {
+      const img = hero.locator(`[data-testid=hero-slide][data-slide="${id}"] img`);
+      const ok = await img
+        .evaluate((el) => (el.complete ? Promise.resolve(el.naturalWidth > 0) : new Promise((r) => el.addEventListener("load", () => r(true), { once: true }))), null, { timeout: 15_000 })
+        .catch(() => false);
+      if (!ok) errors.push(`home: the ${name} slide's picture didn't load`);
+    }
+  }
+  await hero.getByRole("button", { name: "Show Battle", exact: true }).click();
+  // Pause, then play: it moves on by itself after 25 seconds, and not while paused.
+  await pause.click();
+  if ((await pause.getAttribute("aria-label")) !== "Play the slideshow") errors.push("home: pausing didn't turn the button into Play");
+  await p.locator("body").click({ position: { x: 5, y: 400 } });
+  await p.clock.runFor(30_000);
+  if ((await active()) !== "battle") errors.push(`home: the slideshow moved on while paused (to ${await active()})`);
+  await pause.click();
+  await p.locator("body").click({ position: { x: 5, y: 400 } });
+  await p.clock.runFor(20_000);
+  if ((await active()) !== "battle") errors.push("home: the slideshow moved on before 25 seconds");
+  await p.clock.runFor(6_000);
+  await hero.locator('[data-testid=hero-slide][data-slide="quizzes"][data-active=true]').waitFor({ timeout: 3000 }).catch(async () => errors.push(`home: the slideshow didn't move on after 25 seconds (on ${await active()})`));
+  // The tiles: one per tab, in the same order, each to its tab.
+  for (const [id, href, name] of TABS) {
+    const got = await p.getByTestId(`home-tile-${id}`).getAttribute("href").catch(() => null);
+    if (got !== href) errors.push(`home: the ${name} tile goes to ${got}, not ${href}`);
+  }
+  if ((await p.getByTestId("home-tile-lab").getAttribute("href")) !== "/lab") errors.push("home: the 3D Lab tile doesn't lead to /lab");
+  // Today's puzzles and the coffee button stay; the old sections are gone.
+  await p.getByRole("heading", { name: /Today's puzzles/ }).waitFor();
+  if (!(await p.getByTestId("coffee-button").isVisible())) errors.push("home: the Buy me a coffee button is missing");
+  for (const gone of ["home-timeline-card", "home-sizes-card", "home-race-card", "play-which-pokemon"]) {
+    if (await p.getByTestId(gone).count()) errors.push(`home: ${gone} is still on the page`);
+  }
+  if (await p.getByRole("heading", { name: /Research tools|^Quizzes$/ }).count()) errors.push("home: an old section heading is still on the page");
+  await p.context().close();
+
+  // Reduced motion: it doesn't move by itself, and the button offers Play.
+  const still = await newPage({ width: 1440, height: 900 }, { reducedMotion: "reduce" });
+  await gotoSettled(still, BASE);
+  await still.getByTestId("hero-pause").and(still.locator('[aria-label="Play the slideshow"]')).waitFor({ timeout: 5000 }).catch(() => errors.push("home: under reduced motion the slideshow still plays"));
+  await still.context().close();
+
+  // 390: nothing sideways, the tiles two across, the dots big enough to tap.
+  const m = await newPage({ width: 390, height: 844 });
+  await gotoSettled(m, BASE);
+  const overflow = await m.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+  if (overflow > 0) errors.push(`home: the page scrolls sideways by ${overflow}px at 390`);
+  const tiles = await m.locator("[data-testid^=home-tile-]").evaluateAll((els) => els.map((e) => Math.round(e.getBoundingClientRect().top)));
+  if (tiles.length !== TABS.length || tiles[0] !== tiles[1] || tiles[1] === tiles[2]) errors.push(`home: the tiles aren't two across at 390 (${tiles.join()})`);
+  for (const b of await m.getByTestId("hero-dot").evaluateAll((els) => els.map((e) => e.getBoundingClientRect()))) {
+    if (b.width < 24 || b.height < 24) errors.push(`home: a slide dot is ${b.width}×${b.height} at 390, under 24px`);
+  }
+  await m.screenshot({ path: `${OUT}/home-390.png`, fullPage: true });
+  await m.context().close();
 }
 
 /** Which Pokémon Are You?: the quiz end to end at 1440 and 390, the result page, the story share card and a compare link. */

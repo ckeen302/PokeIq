@@ -1,29 +1,21 @@
 import Link from "next/link";
 import { ArrowRight, Compass } from "lucide-react";
 import { POKEDEX } from "@/lib/pokemon/pokedex";
-import { GuessrShowcase } from "./GuessrShowcase";
+import { HeroCarousel } from "./HeroCarousel";
 import { HeroStats } from "./HeroStats";
 import { WORLD_THUMB, showcaseSlides } from "./showcase";
 
-
 /**
- * The title screen: what PokéIQ is, in three lines, over a real PokéGuessr
- * view, with one thing to press. On a phone the view sits on top and the
- * text runs over its lower edge, so the four headline games below still fit
- * on the first screen.
+ * The title screen: what PokéIQ is, in three lines, over a picture that
+ * turns through the site's tabs, with one thing to press. On a phone the
+ * picture sits on top and the text runs over its lower edge.
  */
 const fmt = (n: number) => n.toLocaleString("en-US");
 
 export function Hero() {
   return (
     <section className="dark-scope relative isolate overflow-hidden rounded-2xl border border-white/10 bg-card shadow-[0_30px_80px_-30px_hsl(var(--screen)/0.45)]">
-      <div className="absolute inset-x-0 top-0 aspect-video overflow-hidden lg:inset-y-0 lg:left-auto lg:aspect-auto lg:w-[66%]">
-        <GuessrShowcase slides={showcaseSlides()} map={WORLD_THUMB} className="absolute inset-0" />
-        {/* Fade the view into the card behind the text. */}
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent from-35% to-card lg:bg-gradient-to-r lg:from-card lg:from-0% lg:via-card/60 lg:via-30% lg:to-transparent lg:to-70%" />
-      </div>
-
-      <div className="relative space-y-4 px-5 pb-6 pt-[40%] sm:space-y-5 sm:px-8 sm:pb-8 lg:max-w-[52%] lg:px-12 lg:py-16">
+      <div className="relative z-[1] space-y-4 px-5 pb-14 pt-[40%] sm:space-y-5 sm:px-8 sm:pb-16 lg:max-w-[52%] lg:px-12 lg:py-16">
         <p className="hud-label flex items-center gap-2 text-success">
           <span className="led h-1.5 w-1.5 animate-blink text-success motion-reduce:animate-none" aria-hidden /> Free · no sign-up · {fmt(POKEDEX.length)} Pokémon
         </p>
@@ -51,6 +43,8 @@ export function Hero() {
         </div>
         <HeroStats />
       </div>
+
+      <HeroCarousel guessr={{ slides: showcaseSlides(), map: WORLD_THUMB }} />
     </section>
   );
 }
