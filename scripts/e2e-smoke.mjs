@@ -3875,7 +3875,7 @@ async function phoneNavStep() {
   await m.waitForTimeout(300);
   const under = await m.evaluate(() => {
     const top = document.querySelector("[data-testid=tabbar]").getBoundingClientRect().top;
-    const last = [...document.querySelectorAll("footer *")].filter((e) => e.children.length === 0 && e.getBoundingClientRect().height > 0).pop();
+    const last = [...document.querySelectorAll("footer *")].filter((e) => e.children.length === 0 && e.getBoundingClientRect().height > 0 && (!e.checkVisibility || e.checkVisibility())).pop();
     return last ? last.getBoundingClientRect().bottom - top : 0;
   });
   if (under > 0) errors.push(`phone nav: the footer's last line is ${under}px under the tab bar`);
