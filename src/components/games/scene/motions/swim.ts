@@ -145,12 +145,12 @@ export function swimPose(pl: SwimPlan, t: number, time: number): SwimScene {
   } else if (pl.stroke === "fish" || pl.stroke === "serpent") {
     // Its body wave carries it: low in the water, the back and fin showing.
     p = idleActor(a, d, front - dir * W * 0.5, z, dir, 0, time, pl.run.lane);
-    p.y = -0.62 * H - depth;
+    p.y = -0.52 * H - depth;
     p.swim = { amp: pl.stroke === "fish" ? 0.06 : 0.09, waves: pl.stroke === "fish" ? 0.8 : 1.6, phase: ph * Math.PI * 2 * 1.6, style: pl.stroke === "fish" ? 1 : 2 };
   } else {
     // A paddle: upright, head up, legs churning under the water.
     p = idleActor(a, d, front - dir * W * 0.5, z, dir, 0, time, pl.run.lane);
-    p.y = -0.7 * H - depth;
+    p.y = -0.62 * H - depth;
     p.lean = 0.25;
     p.gait = { motion: a.entrant.motion, phase: ph * 1.6, v: 2 };
     p.sway = 0.06 * Math.sin(ph * Math.PI * 2);
