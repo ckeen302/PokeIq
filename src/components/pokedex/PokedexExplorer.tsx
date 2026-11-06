@@ -163,7 +163,7 @@ export function PokedexExplorer({ items }: { items: DexListItem[] }) {
       {/* Controls */}
       <div className="sticky top-14 z-30 -mx-4 space-y-3 border-b border-foreground/5 bg-background/80 px-4 py-3 backdrop-blur-xl sm:-mx-8 sm:px-8">
         <div className="flex flex-wrap gap-2">
-          <div className="relative min-w-[180px] flex-1">
+          <div className="relative min-w-[180px] flex-1 max-md:min-w-0">
             <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <input
               ref={searchRef}

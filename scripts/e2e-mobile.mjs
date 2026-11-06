@@ -61,7 +61,8 @@ function layoutProblems() {
 
 export async function runMobile({ browser, BASE, OUT, errors, step }) {
   step("phone layout: no sideways scroll and nothing under the tab bar on the key routes; pop-ups cover the tab bar");
-  const context = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true });
+  const width = Number(process.env.MOBILE_WIDTH || 390);
+  const context = await browser.newContext({ viewport: { width, height: 844 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true });
   await context.addInitScript(() => {
     sessionStorage.setItem("pokeiq-splash", "1");
     localStorage.setItem("pokeiq-muted", "1");
