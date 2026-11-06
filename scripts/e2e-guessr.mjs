@@ -58,14 +58,17 @@ const shotLoaded = (p) =>
 /** Drops a pin at (at, at) across the map and presses Guess: through the dock, or the phone's sheet. */
 async function pinAndGuess(p, phone, at, shots) {
   if (phone) {
-    // The corner minimap opens to the whole screen.
+    // The big map button in the bottom bar opens the map card; its check stays dim until a pin is down.
     await p.getByTestId("geo-map-pill").click({ timeout: 15_000 }).catch(async (e) => {
       await p.screenshot({ path: `${OUT}/fail-minimap.png` });
       throw e;
     });
     await p.locator("[data-testid=geo-dock][data-open=true]").waitFor();
     await p.waitForTimeout(350);
-    if (shots) await p.screenshot({ path: `${OUT}/${shots}-map.png` });
+    if (shots) {
+      await p.screenshot({ path: `${OUT}/${shots}-map.png` });
+      if (!(await p.locator("[data-testid=geo-guess][disabled]").count())) errors.push("phone: the guess check is live before a pin is down");
+    }
   } else {
     const dock = p.getByTestId("geo-dock");
     if (shots) {
@@ -96,28 +99,27 @@ async function pinAndGuess(p, phone, at, shots) {
     await p.screenshot({ path: `${OUT}/fail-pin.png` });
     throw new Error(`Guess stays disabled after a pin (${await p.getByTestId("geo-round").innerText().catch(() => "?")}, at ${at}, box ${JSON.stringify(box)})`);
   }
-  if (phone && shots) await phoneMinimapGuess(p);
+  if (phone && shots) await phoneMapGuess(p);
   await guess.click();
 }
 
 /**
- * A phone round, the GeoGuessr way: the minimap sits small in the corner, opens
- * to fill the screen (the HUD stays on top), "Picture" shrinks it back with the
- * pin kept, and a pin down puts a Guess under the minimap.
+ * A phone round, the GeoGuessr way: a solid bottom bar with the round's tools
+ * and one big map button; the map opens as a large card over the picture under
+ * a "Tap the map" label, and the map button becomes a round check that guesses.
+ * Closing the card keeps the pin; the map button shows a pin is down.
  */
-async function phoneMinimapGuess(p) {
+async function phoneMapGuess(p) {
   const vp = p.viewportSize();
-  const open = await p.getByTestId("geo-dock").boundingBox();
-  if (open.width < vp.width - 1 || open.height < vp.height * 0.6) errors.push(`phone: the open map doesn't fill the screen (${JSON.stringify(open)})`);
-  if (!(await p.getByTestId("geo-notch").isVisible())) errors.push("phone: the round notch hides behind the open map");
+  const card = await p.getByTestId("geo-dock").boundingBox();
+  if (card.width < vp.width * 0.85 || card.width >= vp.width || card.height < vp.height * 0.5) errors.push(`phone: the map card isn't a large card with the picture around it (${JSON.stringify(card)})`);
+  if (!(await p.getByTestId("geo-map-hint").isVisible())) errors.push("phone: no 'Tap the map' label over the map card");
+  if (!(await p.getByTestId("geo-round").isVisible())) errors.push("phone: the round badge hides behind the map card");
+  if (!(await p.getByTestId("geo-bar").isVisible())) errors.push("phone: the bottom bar goes away when the map opens");
   await p.getByTestId("geo-map-collapse").click();
   await p.locator("[data-testid=geo-dock]:not([data-open])").waitFor();
-  await p.waitForTimeout(350);
-  const mini = await p.getByTestId("geo-dock").boundingBox();
-  if (mini.width > vp.width * 0.5 || mini.x + mini.width < vp.width - 20 || mini.y < vp.height / 2) errors.push(`phone: the minimap isn't small in the bottom-right corner (${JSON.stringify(mini)})`);
-  if ((await p.locator("[data-testid=geo-dock] svg g").count()) === 0) errors.push("phone: the minimap lost the pin");
-  const guess = p.locator("[data-testid=geo-guess]:not([disabled])");
-  if (!(await guess.isVisible())) errors.push("phone: no Guess under the minimap with a pin down");
+  await p.getByTestId("geo-map-pill").waitFor();
+  if (!(await p.getByTestId("geo-map-pinned").isVisible())) errors.push("phone: the map button doesn't show the pin is down");
   // Nothing else on the page moves: no scroll behind the game, no header or tab bar showing.
   const page = await p.evaluate(() => ({
     y: window.scrollY,
@@ -127,17 +129,11 @@ async function phoneMinimapGuess(p) {
   if (page.y !== 0) errors.push(`phone: the page scrolled behind the game (${page.y})`);
   if (page.header !== "none" || page.tabbar !== "none") errors.push(`phone: the site header or tab bar is still up in a round (${page.header}, ${page.tabbar})`);
   await p.screenshot({ path: `${OUT}/guessr-round-pinned-${vp.width}.png` });
-  // Swiping up the minimap opens it again; then Guess from the full-screen map.
-  const pill = await p.getByTestId("geo-map-pill").boundingBox();
-  await p.getByTestId("geo-map-pill").dispatchEvent("pointerdown", { clientX: pill.x + pill.width / 2, clientY: pill.y + pill.height - 6, pointerId: 7, isPrimary: true });
-  await p.getByTestId("geo-map-pill").dispatchEvent("pointermove", { clientX: pill.x + pill.width / 2, clientY: pill.y - 60, pointerId: 7, isPrimary: true });
-  const swiped = await p.locator("[data-testid=geo-dock][data-open=true]").waitFor({ timeout: 3_000 }).then(() => true, () => false);
-  if (!swiped) {
-    errors.push("phone: a swipe up the minimap doesn't open the map");
-    await p.getByTestId("geo-map-pill").click();
-    await p.locator("[data-testid=geo-dock][data-open=true]").waitFor();
-  }
+  // The map opens again with the pin kept, and the check guesses.
+  await p.getByTestId("geo-map-pill").click();
+  await p.locator("[data-testid=geo-dock][data-open=true]").waitFor();
   await p.waitForTimeout(300);
+  if (await p.locator("[data-testid=geo-guess][disabled]").count()) errors.push("phone: the pin was lost when the map closed");
 }
 
 // ---------------------------------------------------------------------------
@@ -163,8 +159,8 @@ async function solo(width, height) {
     });
     if (!covered) errors.push("the site header shows over the game");
   }
-  await page.getByTestId("geo-notch").waitFor();
-  if (!/round 1/i.test(await page.getByTestId("geo-round").innerText())) errors.push("the notch doesn't say Round 1");
+  await page.getByTestId(phone ? "geo-round" : "geo-notch").waitFor();
+  if (!/round\s*1/i.test(await page.getByTestId("geo-round").innerText())) errors.push("the round badge doesn't say Round 1");
   if (!(await page.getByRole("button", { name: /Place your pin/ }).isDisabled().catch(() => true)) && !phone) errors.push("Guess is enabled before a pin");
   await page.waitForTimeout(400);
   await page.screenshot({ path: `${OUT}/guessr-round-${tag}.png` });
@@ -230,7 +226,7 @@ async function weekly(width, height) {
   if (!/Weekly #\d+/i.test(label)) errors.push(`the weekly card has no number: ${label}`);
   await page.getByTestId("geo-weekly-play").click();
   await shotLoaded(page);
-  if (!/Weekly #\d+/i.test(await page.getByTestId("geo-notch").innerText())) errors.push("the weekly game's notch doesn't say Weekly");
+  if (!/Weekly #\d+/i.test(await page.getByTestId(phone ? "geo-round-mode" : "geo-notch").innerText())) errors.push("the weekly game's round header doesn't say Weekly");
   for (let i = 0; i < 5; i++) {
     await shotLoaded(page);
     await pinAndGuess(page, phone, 0.3 + i * 0.1);

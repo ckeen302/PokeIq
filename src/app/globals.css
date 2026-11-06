@@ -294,7 +294,11 @@
 .geo-safe-tr { margin-top: env(safe-area-inset-top); margin-right: env(safe-area-inset-right); }
 .geo-band { margin-top: env(safe-area-inset-top); }
 /* The phone's corner minimap: its width, which the picture's bottom-left strip keeps clear of. */
-.geo-frame { --geo-mm: min(42vw, 16rem, 52vh); }
+.geo-frame { --geo-bar: 0px; }
+/* Phones (as usePhone in GameShell.tsx): the round's solid bottom bar, which the picture stops above. */
+@media (max-width: 767px), (pointer: coarse) and (max-height: 520px) {
+  .geo-frame { --geo-bar: calc(5rem + env(safe-area-inset-bottom)); }
+}
 /* The countdown pill's last seconds. */
 .geo-pill-urgent {
   animation: geo-pill-flash 0.5s ease-in-out infinite alternate;

@@ -58,7 +58,7 @@ const preloadAfterRound = () =>
 /** A game got ready on hover is used for a click this soon after. */
 const PREFETCH_TTL_MS = 60_000;
 import { ShotCarousel, shotFit } from "./ShotCarousel";
-import { CountdownPill, ExitButton, FullscreenButton, GameShell, GuessButton, MapDock, Notch } from "./GameShell";
+import { BAR_BTN, CountdownPill, ExitButton, FullscreenButton, GameShell, GuessButton, HudDials, MapDock, Notch, RoundBadge, TimerDial, ValueDial, usePhone } from "./GameShell";
 import { roundViewsOf } from "@/lib/geo-look";
 import { DifficultyPicker, GeoSettingsButton, RoundsPicker } from "./GeoSettings";
 import { DEFAULT_GEO_SETTINGS, GEO_ZOOM, readGeoSettings, rememberGeoSettings, secondsLeft, visibleViews, zoomOrigin, type GeoPlaySettings } from "@/lib/geo-settings";
@@ -254,6 +254,7 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
   const [shotReady, setShotReady] = useState(false);
   const [now, setNow] = useState(0);
   const [zoomed, setZoomed] = useState(false);
+  const phone = usePhone();
   const [reward, setReward] = useState<Reward | null>(null);
   const [isChallenge, setIsChallenge] = useState(false);
   const [filter, setFilter] = useState<FilterChoice>({ era: undefined, families: [] });
@@ -1081,15 +1082,30 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
     <GameShell onExit={() => setPhase("setup")}>
       {({ fs, toggle }) => (
     <div className="relative h-full">
-      <div className="absolute inset-0">
+      <div className="absolute inset-0" style={{ bottom: "var(--geo-bar)" }}>
         <ShotCarousel views={views} index={viewIndex} onIndex={setViewIndex} onZoom={() => setZoomed(true)} zoom={zoom} fs dock blur={game.round.blur} priority={game.round.index === 0} />
       </div>
-      <div className="geo-safe-tl absolute left-3 top-3 z-20 flex items-center gap-2">
-        <ExitButton onClick={() => setPhase("setup")} />
-        <FullscreenButton fs={fs} onClick={toggle} />
-      </div>
-      {notch}
-      {chips}
+      {phone ? (
+        <>
+          {/* Phone, GeoGuessr's layout: the dials top-left, the round badge top-right, the tools in the bottom bar. */}
+          {(timeLeft !== null || !isStreak) && (
+            <HudDials>
+              {timeLeft !== null && <TimerDial ms={timeLeft * 1000} totalMs={timer * 1000} urgentMs={10_000} testId="geo-time-left" />}
+              {!isStreak && <ValueDial value={fmt(total)} unit="pts" testId="geo-score-chip" />}
+            </HudDials>
+          )}
+          <RoundBadge testId="geo-round" label={isStreak ? "Streak" : "Round"} value={isStreak ? streak : Math.min(roundNumber, game.rounds)} of={isStreak ? undefined : game.rounds} mode={modeLine} />
+        </>
+      ) : (
+        <>
+          <div className="geo-safe-tl absolute left-3 top-3 z-20 flex items-center gap-2">
+            <ExitButton onClick={() => setPhase("setup")} />
+            <FullscreenButton fs={fs} onClick={toggle} />
+          </div>
+          {notch}
+          {chips}
+        </>
+      )}
 
       {/* GeoGuessr-style mini-map (the atlas): docked bottom-right, grows on hover; a bottom sheet on phones. */}
       <MapDock aspect={mapAspect(game.region)}
@@ -1106,6 +1122,15 @@ function GeoGameInner({ regions: allRegions, challenge, mine, onGameOver }: GeoG
             }}
           />
         )}
+        tools={
+          <>
+            <button type="button" onClick={() => setPhase("setup")} className={BAR_BTN} aria-label="Back to PokéGuessr" title="Back to PokéGuessr" data-testid="geo-exit" data-keep>
+              <X className="h-5 w-5" />
+            </button>
+            <HowToHelpButton className={cn(BAR_BTN, "!p-0 !text-white")} />
+            <FullscreenButton fs={fs} onClick={toggle} className={cn(BAR_BTN, "!h-11 !w-11 !rounded-full !bg-[#4a3f9e] !backdrop-blur-none")} />
+          </>
+        }
         extra={game.guessGame && pick ? <GameGuessPicker options={gameGuessOptions(game.region, game.filter)} value={gamePick} onChange={setGamePick} /> : undefined}
         button={<GuessButton hasPin={!!pick} busy={phase === "submitting"} disabled={phase === "submitting"} onClick={() => void guess()} />}
       />

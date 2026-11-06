@@ -333,7 +333,7 @@ export function GeoDuel({ code, regions }: GeoDuelProps) {
               </AnimatePresence>
               <div className="absolute inset-0">
                 {notice && <div className="absolute inset-x-0 top-12 z-30 px-4">{notice}</div>}
-                <div className="screen relative h-full w-full overflow-hidden rounded-none">
+                <div className="screen relative h-full w-full overflow-hidden rounded-none" style={{ height: "calc(100% - var(--geo-bar))" }}>
                   {live.shot && (
                     // eslint-disable-next-line @next/next/no-img-element -- server-proxied, CDN-cached screenshot
                     <img
@@ -354,7 +354,7 @@ export function GeoDuel({ code, regions }: GeoDuelProps) {
                   <FullscreenButton fs={fs} onClick={toggle} />
                   {livePill}
                 </div>
-                <div className="absolute bottom-[calc(0.75rem+env(safe-area-inset-bottom))] left-3 z-[3] md:bottom-3">
+                <div className="absolute left-3 z-[3] bottom-[calc(var(--geo-bar)+0.75rem)] md:bottom-3">
                   <button type="button" onClick={() => setZoomed(true)} className="hud-btn" aria-label="View the whole screenshot" title="Whole screenshot">
                     <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
                       <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7" />

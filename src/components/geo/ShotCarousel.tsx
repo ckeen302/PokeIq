@@ -146,8 +146,8 @@ export function ShotCarousel({
         <div
           className={cn(
             "absolute left-3 z-[3] flex items-end gap-1.5 md:max-w-[calc(100%-21rem)]",
-            // Beside a phone's corner minimap: along the bottom edge, clear of the home indicator and the map.
-            dock ? "bottom-[calc(0.75rem+env(safe-area-inset-bottom))] ml-[env(safe-area-inset-left)] max-w-[calc(100%_-_var(--geo-mm)_-_2.25rem)] md:bottom-3" : "max-w-[calc(100%-1.5rem)]",
+            // Over the guess map's dock: on a phone the picture already stops above the bottom bar.
+            dock ? "bottom-3 ml-[env(safe-area-inset-left)] max-w-[calc(100%-1.5rem)]" : "max-w-[calc(100%-1.5rem)]",
             !dock && (fs ? "bottom-[5.5rem] md:bottom-3" : "bottom-3")
           )}
           data-testid="geo-cam-hud"

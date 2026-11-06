@@ -260,7 +260,7 @@ export function GeoParty({ code, regions }: { code: string; regions: GeoRegionIn
             <div className="relative min-h-0 flex-1">
               <div className="absolute inset-0">
                 {notice && <div className="absolute inset-x-0 top-12 z-30 px-4">{notice}</div>}
-                <div className="screen relative h-full w-full overflow-hidden rounded-none">
+                <div className="screen relative h-full w-full overflow-hidden rounded-none" style={{ height: "calc(100% - var(--geo-bar))" }}>
                   {live.shot && (
                     // eslint-disable-next-line @next/next/no-img-element -- server-proxied, CDN-cached screenshot
                     <img
