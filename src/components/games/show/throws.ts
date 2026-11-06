@@ -11,9 +11,11 @@ import { Timeline, beatAt, beatClock, beatK, type Burst, type Decal, type Overla
 /**
  * The shot put and the javelin as a broadcast: the crane onto the circle
  * or the runway, the start list, the competition round by round with the
- * throws that matter at full length, a camera following the implement's
- * flight, the landing measured with the tape and the leader's arc across
- * the sector, a slow-motion replay of the winning throw, the standings.
+ * throws that matter at full length, the athlete named for the run-up, a
+ * camera following the implement's flight into the ground under the
+ * broadcast's tracer, the mark the moment it lands, the measurement seen
+ * back along the tape (and the leader's arc across the sector), a
+ * slow-motion replay of the winning release, the standings.
  */
 
 interface Item { pick: Pick; plan: ThrowPlan; leaderBefore: number | null; standing: { key: string; best: number | null }[] }

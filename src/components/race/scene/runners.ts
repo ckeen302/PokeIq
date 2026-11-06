@@ -193,7 +193,7 @@ function figureMaterial(tex: THREE.Texture, texSize: number, uniforms: FigureUni
           vec3 rd = normalize(vRaceW - cameraPosition);
           float st = sqrt(max(0.0, 1.0 - rd.y * rd.y)) / 1.333;
           float L = dep / sqrt(max(0.05, 1.0 - st * st));
-          gl_FragColor.rgb = gl_FragColor.rgb * exp(-(L + dep) * vec3(0.5, 0.17, 0.09) * uUnder.w) + uUnder.rgb * (1.0 - exp(-L * 0.5 * uUnder.w));
+          gl_FragColor.rgb = gl_FragColor.rgb * exp(-(L + dep) * vec3(0.55, 0.2, 0.11) * uUnder.w) + uUnder.rgb * (1.0 - exp(-L * 0.5 * uUnder.w));
         }`,
       )
       .replace(

@@ -9,12 +9,14 @@ import { Timeline, beatAt, beatClock, beatK, type Burst, type Overlay, type Show
 
 /**
  * A swimming final as a broadcast: the crane over the pool, the lanes
- * introduced, the swimmers on their blocks, "take your marks" and the
- * beep, then the race on the rail camera along the pool side (the dive
- * from the side, the turn from the wall in the 100, the finish from
- * behind the touchpads), the long middle of a slow race fast-forwarded,
- * the touch and the places, a slow-motion replay of the finish, the
- * results with reaction times. Pure.
+ * introduced, the favourite in close on its block for "take your marks"
+ * and the beep, then the race cut as a director would: the dive high and
+ * wide over the start, the rail camera low on the deck with the leaders
+ * (on whichever side a giant doesn't hide them), the spidercam over them
+ * for a spell, the turn from over the wall in the 100, the touch from
+ * behind the touchpads; the long middle of a slow race fast-forwarded,
+ * the places, a slow-motion replay alongside the winner into the wall,
+ * the results with reaction times. Pure.
  */
 
 const fmt = (s: number) => (s >= 60 ? `${Math.floor(s / 60)}:${(s % 60).toFixed(2).padStart(5, "0")}` : s.toFixed(2));
@@ -112,9 +114,9 @@ export function swimShow(race: SwimRace, o: ShowOptions): Show {
   // The favourite: the fastest on paper.
   const fav = plans.reduce((b, p) => (swimMark(p.athlete, ev, race.rain) < swimMark(b.athlete, ev, race.rain) ? p : b), plans[0]);
 
-  // The race's shot list (race seconds): the dive from the side, the rail camera with the leaders, the
-  // spidercam over them for a spell in a long enough length, the turn from over the wall, the rail again
-  // to the touch, then the wall from behind the touchpads as the rest come in. Cuts, as a director would.
+  // The race's shot list (race seconds): the dive, the rail camera with the leaders, the spidercam over
+  // them for a spell in a long enough length, the turn from over the wall, the rail again to the touch,
+  // then the wall from behind the touchpads as the rest come in. Cuts, as a director would.
   type Cam = "dive" | "rail" | "spider" | "turn" | "touch";
   const shots: { from: number; cam: Cam }[] = [{ from: -Infinity, cam: "dive" }, { from: wtr.entry + 1.5, cam: "rail" }];
   const spell = (a: number, b: number) => { if (b - a > 3 && b - a < 60) { shots.push({ from: a, cam: "spider" }, { from: a + 4, cam: "rail" }); } };

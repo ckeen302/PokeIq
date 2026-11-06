@@ -42,7 +42,7 @@ const MAX_SWIMMERS = 8;
  * first (WATER_EXT per metre), and the surface itself draws mostly the reflection.
  */
 export const UNDERWATER: readonly [number, number, number] = [0.0, 0.06, 0.21];
-const WATER_EXT = "vec3(0.5, 0.17, 0.09)";
+const WATER_EXT = "vec3(0.55, 0.2, 0.11)";
 const CAUSTICS = /* glsl */ `
   vec2 poolHash2(vec2 p) { p = vec2(dot(p, vec2(127.1, 311.7)), dot(p, vec2(269.5, 183.3))); return fract(sin(p) * 43758.5453); }
   // Distance to the nearest edge of a moving cellular (Worley) pattern: small along the cell walls.
@@ -84,11 +84,11 @@ export function buildAquatics(o: { renderer: THREE.WebGLRenderer; font: string; 
   // ---- The pool: floor and walls in tiles, lane lines on the floor, lit by caustics.
   const tileTex = (() => {
     const [c, g] = canvas(256, 256);
-    g.fillStyle = "#a9c6dc";
+    g.fillStyle = "#7a9fbf";
     g.fillRect(0, 0, 256, 256);
     // 25 cm tiles in a 1 m texture: grout lines, each tile a touch different.
     for (let i = 0; i < 4; i++) for (let j = 0; j < 4; j++) {
-      g.fillStyle = `hsl(${203 + r() * 8}, ${55 + r() * 10}%, ${60 + r() * 6}%)`;
+      g.fillStyle = `hsl(${206 + r() * 8}, ${58 + r() * 10}%, ${43 + r() * 6}%)`;
       g.fillRect(i * 64 + 2, j * 64 + 2, 60, 60);
     }
     const t = new THREE.CanvasTexture(c);
@@ -350,7 +350,7 @@ export function buildAquatics(o: { renderer: THREE.WebGLRenderer; font: string; 
             env = mix(env, rc * 1.5, band * (1.0 - uRain));
           }
           // The surface: the reflection by Fresnel, and a little of the water's blue scattered back from just under it.
-          float sheen = 0.16;
+          float sheen = 0.22;
           float a = fres + (1.0 - fres) * sheen;
           vec3 col = (env * fres + uDeep * (1.0 - fres) * sheen) / a;
           float foam = 0.0;
