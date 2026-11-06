@@ -1,4 +1,27 @@
 {
-  "regions": ["pdx1"],
-  "crons": [{ "path": "/api/cron/discord-daily", "schedule": "1 8 * * *" }]
+  "regions": [
+    "pdx1"
+  ],
+  "crons": [
+    {
+      "path": "/api/cron/discord-daily",
+      "schedule": "1 8 * * *"
+    }
+  ],
+  "git": {
+    "deploymentEnabled": {
+      "feat/**": false,
+      "fix/**": false,
+      "feature/**": false,
+      "perf/**": false,
+      "seo/**": false,
+      "chore/**": false,
+      "wip/**": false,
+      "revert/**": false,
+      "claude/**": false,
+      "geo-*": false,
+      "films-*": false,
+      "agent-*": false
+    }
+  }
 }
