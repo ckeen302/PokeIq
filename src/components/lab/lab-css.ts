@@ -39,6 +39,9 @@ export const LAB_CSS = `
 .lab-runner{position:absolute;left:-12%;height:10px;width:16%;border-radius:999px;background:linear-gradient(90deg,transparent,hsl(var(--lab-accent)) 70%,#fff);box-shadow:0 0 18px hsl(var(--lab-accent));animation:lab-run var(--d,3s) cubic-bezier(.5,0,.3,1) infinite}
 @keyframes lab-run{0%{transform:translateX(0)}80%,100%{transform:translateX(620%)}}
 
+/* Phones: the pictures hold still (the drift costs main-thread time on a phone and is barely seen at this size). */
+@media (max-width:639px){.lab-kb{animation:none}}
+
 @media (prefers-reduced-motion: reduce){
   .lab-floor,.lab-panel,.lab-panel::after,.lab-kb,.lab-runner{animation:none!important}
 }

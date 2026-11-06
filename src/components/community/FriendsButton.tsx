@@ -1,10 +1,11 @@
 "use client";
 
+import { cn } from "@/lib/utils";
 import { Users } from "lucide-react";
 import { openFriends, useCommunity } from "@/lib/friends-client";
 
 /** The header's friends icon: a badge counts friend requests and challenges waiting. */
-export function FriendsButton() {
+export function FriendsButton({ className }: { className?: string } = {}) {
   const c = useCommunity();
   const waiting = c.requests + c.challenges.length;
   return (
@@ -12,7 +13,7 @@ export function FriendsButton() {
       type="button"
       onClick={() => openFriends(c.requests > 0 && c.challenges.length === 0 ? "requests" : "friends")}
       aria-label={waiting ? `Friends (${waiting} waiting)` : "Friends"}
-      className="relative flex h-9 w-9 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+      className={cn("relative flex h-9 w-9 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-accent hover:text-foreground", className)}
       data-testid="friends-button"
     >
       <Users className="h-4 w-4" aria-hidden />

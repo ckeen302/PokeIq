@@ -1,18 +1,10 @@
 "use client";
 
-import Link from "next/link";
+import Link from "@/components/ui/Link";
 import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
 import {
-  BookOpen,
-  Box,
-  CalendarDays,
-  Compass,
-  Gamepad2,
-  Home,
   MessagesSquare,
-  Search,
-  Swords,
   Trophy,
 } from "lucide-react";
 import { useProgress } from "@/lib/progress";
@@ -36,17 +28,6 @@ const DESKTOP_LINKS: { href: string; label: string; wideOnly?: boolean }[] = [
   // Only on wide screens, where the leaderboard link was: the row is full at 1024px (the footer links it too).
   // The leaderboard is the trophy among the header's icons.
   { href: LAB_PATH, label: "3D Lab", wideOnly: true },
-];
-
-const MOBILE_TABS = [
-  { href: "/", label: "Home", icon: Home },
-  { href: "/daily", label: "Daily", icon: CalendarDays },
-  { href: "/pokedle", label: "Pokédle", icon: Search },
-  { href: "/guessr", label: "Guessr", icon: Compass },
-  { href: "/pokedex", label: "Pokédex", icon: BookOpen },
-  { href: "/play", label: "Modes", icon: Gamepad2 },
-  { href: "/battle", label: "Battle", icon: Swords },
-  { href: LAB_PATH, label: "3D Lab", icon: Box },
 ];
 
 function isActive(pathname: string, href: string) {
@@ -97,19 +78,19 @@ export function DesktopNav() {
           aria-label="Chat rooms"
           title="Chat rooms"
           className={cn(
-            "rounded-md p-2 text-muted-foreground transition-colors hover:text-foreground",
+            "rounded-md p-2 text-muted-foreground transition-colors hover:text-foreground max-md:hidden",
             isActive(pathname, "/rooms") && "text-foreground",
           )}
         >
           <MessagesSquare className="h-5 w-5" aria-hidden />
         </Link>
-        <FriendsButton />
+        <FriendsButton className="max-md:hidden" />
         <Link
           href="/leaderboard"
           aria-label="Leaderboard"
           title="Leaderboard"
           className={cn(
-            "flex h-9 w-9 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-accent hover:text-foreground",
+            "flex h-9 w-9 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-accent hover:text-foreground max-md:hidden",
             isActive(pathname, "/leaderboard") && "text-foreground",
           )}
           aria-current={isActive(pathname, "/leaderboard") ? "page" : undefined}
@@ -117,8 +98,8 @@ export function DesktopNav() {
         >
           <Trophy className="h-4 w-4" aria-hidden />
         </Link>
-        <ThemeToggle />
-        <MuteToggle />
+        <ThemeToggle className="max-md:hidden" />
+        <MuteToggle className="max-md:hidden" />
         {account.status === "ready" && account.enabled && !account.user && (
           <Link
             href="/login"
@@ -131,13 +112,13 @@ export function DesktopNav() {
           href="/trainer"
           aria-label="Your trainer profile"
           className={cn(
-            "ml-1 flex items-center gap-2 rounded-md border bg-card px-2 py-1.5 sm:px-3 text-sm text-muted-foreground transition-colors hover:border-screen/60 hover:text-foreground",
+            "ml-1 flex items-center gap-2 rounded-md border bg-card px-2 py-1.5 sm:px-3 text-sm text-muted-foreground transition-colors hover:border-screen/60 hover:text-foreground max-md:-mr-1 max-md:rounded-full max-md:border-transparent max-md:bg-transparent max-md:p-1.5",
             isActive(pathname, "/trainer") &&
               "border-screen/60 text-foreground",
           )}
         >
-          <Avatar avatar={account.user?.avatar} size={22} />
-          <span className="hidden max-w-[4rem] truncate font-display font-semibold min-[420px]:inline sm:max-w-[9rem] lg:hidden 2xl:inline">
+          <Avatar avatar={account.user?.avatar} size={22} className="max-md:!h-7 max-md:!w-7" />
+          <span className="hidden max-w-[4rem] truncate font-display font-semibold min-[420px]:inline sm:max-w-[9rem] lg:hidden 2xl:inline max-md:!hidden">
             {account.user?.username ?? (progress?.name || "Trainer")}
           </span>
         </Link>
@@ -146,39 +127,4 @@ export function DesktopNav() {
   );
 }
 
-export function MobileTabBar() {
-  const pathname = usePathname();
-  return (
-    <nav
-      className="glass-top fixed inset-x-0 bottom-0 z-50 grid grid-cols-8 pb-[env(safe-area-inset-bottom)] lg:hidden"
-      aria-label="Primary"
-    >
-      {MOBILE_TABS.map(({ href, label, icon: Icon }) => {
-        const active = isActive(pathname, href);
-        return (
-          <Link
-            key={href}
-            href={href}
-            className={cn(
-              "relative flex flex-col items-center gap-1 py-2.5 font-pixel text-[9px] uppercase tracking-wider text-muted-foreground transition-colors",
-              active && "text-foreground",
-            )}
-            aria-current={active ? "page" : undefined}
-          >
-            {active && (
-              <span
-                className="absolute inset-x-5 top-0 h-[3px] bg-primary shadow-[0_0_10px_hsl(var(--primary))]"
-                aria-hidden
-              />
-            )}
-            <Icon
-              className={cn("h-5 w-5", active && "text-primary")}
-              aria-hidden
-            />
-            {label}
-          </Link>
-        );
-      })}
-    </nav>
-  );
-}
+export { MobileTabBar } from "./MobileTabBar";

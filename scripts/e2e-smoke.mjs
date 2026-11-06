@@ -122,9 +122,10 @@ if (process.env.E2E_ONLY === "which-pokemon") {
   await whichPokemonStep();
   await finish();
 }
-// E2E_ONLY=home runs just the home page's checks, then exits.
+// E2E_ONLY=home runs just the home page's checks (and the phone's navigation), then exits.
 if (process.env.E2E_ONLY === "home") {
   await homeStep();
+  await phoneNavStep();
   await finish();
 }
 
@@ -164,6 +165,7 @@ async function playTriviaRun(p, slug) {
 }
 
 await homeStep();
+await phoneNavStep();
 
 step("pokédex entry: Where to find it");
 await gotoSettled(page, `${BASE}/pokemon/starly`);
@@ -2379,12 +2381,15 @@ step("3D Lab: the nav's tab, /lab's cards, a card opens its page, the trophy ope
   await page.waitForURL(/\/leaderboard$/);
   await page.getByTestId("leaderboard-tabs").waitFor();
   if (await page.locator('header a[href="/leaderboard"]:not([data-testid="nav-leaderboard"])').count()) errors.push("3d lab: the nav still has a Leaderboard text link");
-  // Phones: 3D Lab in the tab bar, the trophy in the header, and nothing scrolls sideways.
+  // Phones: 3D Lab and the leaderboard in the tab bar's More sheet (the header keeps only the logo and the avatar), and nothing scrolls sideways.
   const phone = await newPage({ width: 390, height: 844 });
   await gotoSettled(phone, `${BASE}/lab`);
-  const phoneTab = phone.locator('nav[aria-label="Primary"]').getByRole("link", { name: "3D Lab" });
-  if ((await phoneTab.getAttribute("aria-current")) !== "page") errors.push("3d lab: the phone tab bar's 3D Lab isn't active on /lab");
-  if (!(await phone.getByTestId("nav-leaderboard").isVisible())) errors.push("3d lab: no trophy in the phone header");
+  if (await phone.getByTestId("nav-leaderboard").isVisible()) errors.push("3d lab: the trophy still crowds the phone header");
+  await phone.getByTestId("tab-more").click();
+  const phoneTab = phone.getByTestId("more-sheet").getByRole("link", { name: "3D Lab" });
+  if ((await phoneTab.getAttribute("aria-current")) !== "page") errors.push("3d lab: the More sheet's 3D Lab isn't active on /lab");
+  if (!(await phone.getByTestId("more-leaderboard").isVisible())) errors.push("3d lab: no leaderboard in the phone's More sheet");
+  await phone.keyboard.press("Escape");
   if (await phone.evaluate(() => document.documentElement.scrollWidth > window.innerWidth)) errors.push("3d lab: /lab scrolls sideways on a phone");
   await phone.screenshot({ path: `${OUT}/lab-phone.png` });
   await phone.context().close();
@@ -3786,7 +3791,7 @@ async function homeStep() {
   await still.getByTestId("hero-pause").and(still.locator('[aria-label="Play the slideshow"]')).waitFor({ timeout: 5000 }).catch(() => errors.push("home: under reduced motion the slideshow still plays"));
   await still.context().close();
 
-  // 390: every slide's picture loads, in a band above the slide's name; nothing sideways, the tiles two across, the dots big enough to tap.
+  // 390: every slide's picture loads, in a band above the slide's name; nothing sideways, the tiles one list, the dots big enough to tap.
   const m = await newPage({ width: 390, height: 844 });
   await gotoSettled(m, BASE);
   const mhero = m.getByTestId("hero-carousel");
@@ -3812,12 +3817,122 @@ async function homeStep() {
   const overflow = await m.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
   if (overflow > 0) errors.push(`home: the page scrolls sideways by ${overflow}px at 390`);
   const tiles = await m.locator("[data-testid^=home-tile-]").evaluateAll((els) => els.map((e) => Math.round(e.getBoundingClientRect().top)));
-  if (tiles.length !== TABS.length || tiles[0] !== tiles[1] || tiles[1] === tiles[2]) errors.push(`home: the tiles aren't two across at 390 (${tiles.join()})`);
+  if (tiles.length !== TABS.length || new Set(tiles).size !== TABS.length) errors.push(`home: the tiles aren't one list at 390 (${tiles.join()})`);
+  // The hero runs edge to edge, and a swipe on its picture changes the slide.
+  {
+    const box = await mhero.boundingBox();
+    const pageW = await m.evaluate(() => Math.round(document.body.getBoundingClientRect().width));
+    if (!box || box.x !== 0 || Math.round(box.width) !== pageW) errors.push(`home: the hero isn't edge to edge at 390 (${box && `${box.x}+${box.width}`})`);
+    await mhero.getByRole("button", { name: "Show PokéGuessr", exact: true }).click();
+    const pic = await mhero.getByTestId("hero-picture").boundingBox();
+    await mhero.getByTestId("hero-picture").evaluate((el, b) => {
+      const at = (type, x) => el.dispatchEvent(new PointerEvent(type, { pointerId: 7, pointerType: "touch", isPrimary: true, clientX: x, clientY: b.y + b.height / 2, bubbles: true }));
+      at("pointerdown", b.x + b.width * 0.8);
+      at("pointerup", b.x + b.width * 0.2);
+    }, pic);
+    if ((await mhero.locator("[data-testid=hero-slide][data-active=true]").getAttribute("data-slide")) !== "pokedle") errors.push("home: a swipe left on the hero didn't show the next slide");
+  }
   for (const b of await m.getByTestId("hero-dot").evaluateAll((els) => els.map((e) => e.getBoundingClientRect()))) {
     if (b.width < 24 || b.height < 24) errors.push(`home: a slide dot is ${b.width}×${b.height} at 390, under 24px`);
   }
   await m.screenshot({ path: `${OUT}/home-390.png`, fullPage: true });
   await m.context().close();
+}
+
+/**
+ * The phone's navigation: a five-tab bar (Home, Guessr, Pokédle, Battle, More) and a More sheet with every
+ * other destination, a header with only the logo and the avatar, nothing under the bar, nothing sideways at
+ * 360, 390 and 430, and the 3D stages full screen without the bars.
+ */
+async function phoneNavStep() {
+  step("phone nav: five tabs, the More sheet (every destination, theme, Escape, backdrop), nothing under the tab bar, nothing sideways at 360/390/430, 3D stages full screen");
+  const m = await newPage({ width: 390, height: 844 }, { isMobile: true, hasTouch: true });
+  await gotoSettled(m, BASE);
+  const bar = m.getByTestId("tabbar");
+  const labels = (await bar.locator("a, button").allInnerTexts()).map((t) => t.trim());
+  if (labels.join() !== "Home,Guessr,Pokédle,Battle,More") errors.push(`phone nav: the tabs read ${labels.join()}`);
+  if ((await bar.getByRole("link", { name: "Home" }).getAttribute("aria-current")) !== "page") errors.push("phone nav: Home isn't the current tab on /");
+  for (const b of await bar.locator("a, button").evaluateAll((els) => els.map((e) => e.getBoundingClientRect()))) {
+    if (b.width < 44 || b.height < 44) errors.push(`phone nav: a tab is ${Math.round(b.width)}×${Math.round(b.height)}, under 44px`);
+  }
+  // The header: the logo and the avatar, nothing else.
+  const extras = await m.locator('header a[href="/rooms"], header [data-testid=friends-button], header [data-testid=nav-leaderboard], header button[aria-label*="mode"], header button[aria-label*="sound"]').evaluateAll((els) => els.filter((e) => e.getBoundingClientRect().width > 0).length);
+  if (extras) errors.push(`phone nav: ${extras} icons still in the phone header`);
+  // --tabbar-h is the bar's height.
+  const heights = await m.evaluate(() => {
+    const probe = document.createElement("div");
+    probe.style.height = "var(--tabbar-h)";
+    document.body.append(probe);
+    const h = probe.getBoundingClientRect().height;
+    probe.remove();
+    return { varH: h, bar: document.querySelector("[data-testid=tabbar]").getBoundingClientRect().height };
+  });
+  if (Math.abs(heights.varH - heights.bar) > 1 || heights.bar < 50) errors.push(`phone nav: --tabbar-h is ${heights.varH}px, the bar ${heights.bar}px`);
+  // Nothing under the bar: at the very bottom the footer's last line sits above it.
+  await m.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+  await m.waitForTimeout(300);
+  const under = await m.evaluate(() => {
+    const top = document.querySelector("[data-testid=tabbar]").getBoundingClientRect().top;
+    const last = [...document.querySelectorAll("footer *")].filter((e) => e.children.length === 0 && e.getBoundingClientRect().height > 0).pop();
+    return last ? last.getBoundingClientRect().bottom - top : 0;
+  });
+  if (under > 0) errors.push(`phone nav: the footer's last line is ${under}px under the tab bar`);
+  await m.evaluate(() => window.scrollTo(0, 0));
+  // The More sheet.
+  const more = m.getByTestId("tab-more");
+  const sheet = m.getByTestId("more-sheet");
+  if (await sheet.isVisible()) errors.push("phone nav: the More sheet shows before More is tapped");
+  await more.click();
+  await sheet.waitFor({ state: "visible" });
+  if ((await more.getAttribute("aria-expanded")) !== "true") errors.push("phone nav: More isn't marked expanded with its sheet open");
+  const hrefs = await sheet.locator("a").evaluateAll((els) => els.map((e) => e.getAttribute("href")));
+  for (const want of ["/daily", "/connections", "/pikadoku", "/play", "/pokedex", "/lab", "/leaderboard", "/rooms"]) {
+    if (!hrefs.includes(want)) errors.push(`phone nav: the More sheet has no link to ${want}`);
+  }
+  if (!hrefs.includes("/trainer") && !hrefs.includes("/login")) errors.push("phone nav: the More sheet has no trainer card or sign-in");
+  for (const id of ["more-friends", "more-theme", "more-sound"]) {
+    if (!(await m.getByTestId(id).isVisible())) errors.push(`phone nav: no ${id} in the More sheet`);
+  }
+  await m.waitForTimeout(500); // the sheet slides up
+  const sb = await sheet.boundingBox();
+  if (!sb || sb.y + sb.height > 844 - heights.bar + 1) errors.push("phone nav: the More sheet runs under the tab bar");
+  await m.screenshot({ path: `${OUT}/phone-more-sheet.png` });
+  await m.getByTestId("more-theme").click();
+  if (!(await m.evaluate(() => document.documentElement.classList.contains("light")))) errors.push("phone nav: the More sheet's theme switch didn't turn the light theme on");
+  await m.getByTestId("more-theme").click();
+  await m.keyboard.press("Escape");
+  await sheet.waitFor({ state: "hidden" }).catch(() => errors.push("phone nav: Escape didn't close the More sheet"));
+  await more.click();
+  await sheet.waitFor({ state: "visible" });
+  await m.mouse.click(195, 60);
+  await sheet.waitFor({ state: "hidden" }).catch(() => errors.push("phone nav: a tap outside didn't close the More sheet"));
+  await more.click();
+  await sheet.getByRole("link", { name: "Pokédex" }).click();
+  await m.waitForURL(/\/pokedex$/);
+  await sheet.waitFor({ state: "hidden" }).catch(() => errors.push("phone nav: the More sheet stayed open after a link"));
+  if (!/tab-item-on/.test((await more.getAttribute("class")) ?? "")) errors.push("phone nav: More isn't lit on the Pokédex");
+  await m.context().close();
+  // Nothing sideways on the home page and the 3D Lab at 360, 390 and 430.
+  for (const width of [360, 390, 430]) {
+    const p = await newPage({ width, height: 800 }, { isMobile: true, hasTouch: true });
+    for (const path of ["/", "/lab"]) {
+      await gotoSettled(p, BASE + path);
+      const over = await p.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+      if (over > 0) errors.push(`phone nav: ${path} scrolls sideways by ${over}px at ${width}`);
+    }
+    await p.context().close();
+  }
+  // A 3D stage fills the phone's screen; the header and the tab bar step aside.
+  const st = await newPage({ width: 390, height: 844 }, { isMobile: true, hasTouch: true });
+  await st.addInitScript(() => localStorage.setItem("pokeiq-muted", "1"));
+  await st.goto(`${BASE}/pokedex/sizes`, { waitUntil: "load" });
+  const stage = st.locator(".sz-stage");
+  await stage.waitFor({ timeout: 20_000 });
+  const box = await stage.boundingBox();
+  if (!box || box.y !== 0 || Math.round(box.height) !== 844) errors.push(`phone nav: the Sizes stage isn't full screen (${box && `${box.y}+${box.height}`})`);
+  if (await st.locator("body > header").isVisible()) errors.push("phone nav: the header shows over the Sizes stage");
+  if (await st.getByTestId("tabbar").isVisible()) errors.push("phone nav: the tab bar shows over the Sizes stage");
+  await st.context().close();
 }
 
 /** Which Pokémon Are You?: the quiz end to end at 1440 and 390, the result page, the story share card and a compare link. */
