@@ -6,9 +6,11 @@ import { MAX_NATIONS, NATION_SIZE, NATION_TYPES, type NationSpec } from "./games
  * Links into the PokéIQ Games. Client-safe and unit-tested.
  *
  * - /lab/games: the hub (single events, the Games, records, head to head).
- * - /lab/games/<event>: an event with its default line-up;
- *   ?vs=pikachu,snorlax,… (1 to 8) runs your own field, two make a head
- *   to head, ?seed= replays a day exactly, ?rain=1 turns on rain (Swift Swim).
+ * - /lab/games/<event>: an event with its default line-up.
+ * - /lab/games/run?e=<event>&vs=pikachu,snorlax,…&seed=7&rain=1: a shared
+ *   run with its own title and preview card: your field (1 to 8; two make
+ *   a head to head), the day (the seed replays it exactly), rain (Swift
+ *   Swim).
  * - /lab/games/play?n=fire,water,x-pikachu.raichu.pichu&seed=7: the Games,
  *   up to eight nations: a type, or a built team of three (x-a.b.c).
  * - /lab/games/records/<event>: the records; /lab/games/pokemon/<key>: one
@@ -30,12 +32,15 @@ export interface EventLink {
   rain?: boolean;
 }
 
+export const RUN_PATH = `${GAMES_PATH}/run`;
+
+/** An event's own page, or (with a field, a seed or rain) a shared run: /lab/games/run?e=<event>&vs=…&seed=…&rain=1. */
 export function eventRunPath(id: EventId, o: EventLink = {}): string {
   const q: string[] = [];
   if (o.keys?.length) q.push(`vs=${o.keys.slice(0, MAX_FIELD).join(",")}`);
   if (o.seed != null) q.push(`seed=${o.seed}`);
   if (o.rain) q.push("rain=1");
-  return `${eventPath(id)}${q.length ? `?${q.join("&")}` : ""}`;
+  return q.length ? `${RUN_PATH}?e=${id}&${q.join("&")}` : eventPath(id);
 }
 
 /** A field from ?vs= (known keys, each once, at most eight; names read case-insensitively). */

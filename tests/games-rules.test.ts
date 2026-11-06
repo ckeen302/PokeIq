@@ -159,8 +159,9 @@ describe("all-around: World Athletics' decathlon tables", () => {
 
 describe("share links", () => {
   it("events, fields, seeds and rain", () => {
-    expect(eventRunPath("weightlifting", { keys: ["snorlax", "machamp"], seed: 9 })).toBe("/lab/games/weightlifting?vs=snorlax,machamp&seed=9");
-    expect(eventRunPath("50m-freestyle", { rain: true })).toBe("/lab/games/50m-freestyle?rain=1");
+    expect(eventRunPath("weightlifting", { keys: ["snorlax", "machamp"], seed: 9 })).toBe("/lab/games/run?e=weightlifting&vs=snorlax,machamp&seed=9");
+    expect(eventRunPath("50m-freestyle", { rain: true })).toBe("/lab/games/run?e=50m-freestyle&rain=1");
+    expect(eventRunPath("javelin")).toBe("/lab/games/javelin");
     expect(recordsPath("long-jump")).toBe("/lab/games/records/long-jump");
     expect(parseField("Snorlax,MACHAMP,nope,snorlax", (k) => GAMES_BY_KEY.has(k))).toEqual(["snorlax", "machamp"]);
   });

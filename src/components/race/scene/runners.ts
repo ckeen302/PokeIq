@@ -61,6 +61,8 @@ export interface FigureUniforms {
   uSwimLen: { value: THREE.Vector2 };
   /** World height below which the figure isn't drawn (a giant swimmer under the water). */
   uClipY: { value: number };
+  /** A bend of the whole body along its height (mesh units across, at mid-height; 0 off), its height, for arched backs in other sports (the PokéIQ Games). */
+  uBend: { value: THREE.Vector2 };
 }
 
 export interface Figure {
@@ -134,6 +136,7 @@ function figureMaterial(tex: THREE.Texture, texSize: number, uniforms: FigureUni
         uniform vec4 uSwim;
         uniform vec4 uSwimAx;
         uniform vec2 uSwimLen;
+        uniform vec2 uBend;
         attribute vec3 aPart;
         varying float vRaceY;
         vec3 raceRot(vec3 v, vec3 a, float ang) { float c = cos(ang), s = sin(ang); return v * c + cross(a, v) * s + a * dot(a, v) * (1.0 - c); }`
@@ -165,6 +168,11 @@ function figureMaterial(tex: THREE.Texture, texSize: number, uniforms: FigureUni
             float slope = uSwim.x * env * cos(arg) * 6.2831853 * uSwim.y / max(1e-3, uSwimLen.y);
             objectNormal = normalize(objectNormal - uSwimAx.xyz * slope * dot(objectNormal, vec3(0.0, 0.0, 1.0)));
           }
+          // An arch along the body's height (0 at the head and feet, most at the middle).
+          if (uBend.x != 0.0) {
+            float hb = clamp(racePos.y / max(1e-3, uBend.y), 0.0, 1.0);
+            racePos.x += uBend.x * sin(3.14159265 * hb);
+          }
         }`
       )
       .replace("#include <project_vertex>", "#include <project_vertex>\nvRaceY = (modelMatrix * vec4(transformed, 1.0)).y;")
@@ -188,7 +196,7 @@ function figureMaterial(tex: THREE.Texture, texSize: number, uniforms: FigureUni
         #endif`
       );
   };
-  m.customProgramCacheKey = () => "race-figure-4";
+  m.customProgramCacheKey = () => "race-figure-5";
   return m;
 }
 
@@ -241,6 +249,7 @@ export async function loadFigure(renderer: THREE.WebGLRenderer, lane: RaceLane, 
     uJA: { value: v4s() }, uJB: { value: v4s() }, uXA: { value: v4s() }, uXB: { value: v4s() },
     uSwim: { value: new THREE.Vector4() }, uSwimAx: { value: new THREE.Vector4() }, uSwimLen: { value: new THREE.Vector2(1, 1) },
     uClipY: { value: e.motion === "swim" && clipsUnderwater(lane.h) ? WATER_Y + 0.004 : -1e5 },
+    uBend: { value: new THREE.Vector2(0, rm.height) },
   };
   const mat = figureMaterial(tex, artBmp.width, uniforms);
   // Both sheets are drawn (the back is sculpted, not a flipped copy of the front).
