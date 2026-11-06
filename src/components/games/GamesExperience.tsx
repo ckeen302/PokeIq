@@ -7,7 +7,7 @@ import { ArrowLeft, Clapperboard, CloudRain, Dices, Info, List, Medal, Play, Rot
 import { isMuted, onMuteChange, setMuted } from "@/lib/sound";
 import { copyText } from "@/lib/share";
 import { fromAthleteRow, type Athlete, type AthleteRow } from "@/lib/games/athlete";
-import { EVENTS, eventOf, formatMark, type EventId } from "@/lib/games/events";
+import { eventOf, formatMark, type EventId } from "@/lib/games/events";
 import { buildNations, medalTable, runEvent, runGames, type EventOutcome, type GamesResult, type NationSpec } from "@/lib/games/games";
 import { GAMES_PATH, eventRunPath, h2hQuestion, parseField, parseGamesSeed, parseNations, parseRain, playPath } from "@/lib/games/deeplink";
 import { newSeed } from "@/lib/games/seed";
@@ -28,6 +28,17 @@ import { NationsPicker } from "./NationsPicker";
 import { cn } from "@/lib/utils";
 
 const MakeGamesVideo = lazy(() => import("./MakeGamesVideo"));
+
+/** Warms the HTTP cache with a show's figures (HOME renders and relief maps) ahead of its turn. */
+function prefetchAthletes(seq: Sequence, q: Quality) {
+  const size = q === "draft" || q === "low" ? 256 : 512;
+  const seen = new Set<string>();
+  for (const e of [...seq.athletes.map((a) => a.entrant), ...(seq.race?.lanes.map((l) => l.entrant) ?? [])]) {
+    if (seen.has(e.key)) continue;
+    seen.add(e.key);
+    for (const url of [RACE_URLS.art(e.art, size), RACE_URLS.relief(e)]) void fetch(url, { priority: "low" } as RequestInit).catch(() => undefined);
+  }
+}
 
 let rowsPromise: Promise<Athlete[]> | null = null;
 /** Every athlete (fetched once per page load; static and cached by the CDN). */
@@ -132,6 +143,7 @@ export function GamesExperience({ init, children }: GamesExperienceProps) {
     return [];
   }, [outcome, games, byKey, budget]);
   const current = playlist[Math.min(partIdx, playlist.length - 1)] ?? null;
+  const idleVenue = current?.venue ?? "stadium";
   const title = spec.mode === "games" ? "The PokéIQ Games" : isH2H ? h2hQuestion(event, field[0].name, field[1].name) : `${eventOf(event).name}`;
 
   const show = useRef({
@@ -260,9 +272,12 @@ export function GamesExperience({ init, children }: GamesExperienceProps) {
       setPhase("show");
       setPanel(true);
       scene.setCard(eventOf(current.event).name, current.headline);
+      // The Games: fetch the next event's athletes while this one plays, so it starts at once.
+      const next = spec.mode === "games" ? playlist[partIdx + 1] : null;
+      if (next) prefetchAthletes(next, scene.quality);
     }).catch(() => undefined);
     return () => ac.abort();
-  }, [ready, current, runId]);
+  }, [ready, current, runId, spec.mode, playlist, partIdx]);
 
   // ---- Size.
   useEffect(() => {
@@ -314,7 +329,7 @@ export function GamesExperience({ init, children }: GamesExperienceProps) {
       if (!seq || s.phase === "loading") {
         // Waiting: a slow drift over the venue.
         const a = now / 1000;
-        scene.frame({ t: a, venue: current?.venue ?? "stadium", pose: { pos: [Math.sin(a * 0.05) * 140, 70, Math.cos(a * 0.05) * 140], target: [0, 0, 0], fov: aspect < 0.8 ? 62 : 44 }, beat: { kind: "card", t0: 0, t1: 1, cam: "" }, k: 0, actors: [], props: { kind: "none" }, bursts: [], decals: [], excitement: 0.3, replay: 0, fade: 0, flash: 0, clock: "", screen: null });
+        scene.frame({ t: a, venue: idleVenue, pose: { pos: [Math.sin(a * 0.05) * 140, 70, Math.cos(a * 0.05) * 140], target: [0, 0, 0], fov: aspect < 0.8 ? 62 : 44 }, beat: { kind: "card", t0: 0, t1: 1, cam: "" }, k: 0, actors: [], props: { kind: "none" }, bursts: [], decals: [], excitement: 0.3, replay: 0, fade: 0, flash: 0, clock: "", screen: null });
         clear();
         return;
       }
@@ -403,7 +418,7 @@ export function GamesExperience({ init, children }: GamesExperienceProps) {
       part(i: number) { setPartIdx(Math.max(0, Math.min(playlist.length - 1, i))); },
     };
     return () => cancelAnimationFrame(raf);
-  }, [ready, byKey, spec.mode, partIdx, playlist]);
+  }, [ready, byKey, spec.mode, partIdx, playlist, idleVenue]);
 
   useEffect(() => { if (stageRef.current) stageRef.current.dataset.q = quality; }, [quality]);
   useEffect(() => {

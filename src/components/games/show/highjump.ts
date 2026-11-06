@@ -169,7 +169,7 @@ export function highJumpShow(result: HighJumpResult, o: ShowOptions): Show {
       case "establish":
         return { title: { text: "HIGH JUMP", sub: `${athletes.length} Pokémon · three failures and out`, k } };
       case "startlist":
-        return { bug, board: { title: "Start list · opening height", rows: [...result.cards].sort((x, y) => x.opening - y.opening).map((c, i) => ({ place: String(i + 1), name: c.athlete.name, mark: `${c.opening.toFixed(2)} m`, key: c.athlete.key, note: `best ${formatMark("high-jump", highJumpMark(c.athlete))}` })), k } };
+        return { bug, board: { title: "Start list · opening height", rows: [...result.cards].sort((x, y) => x.opening - y.opening).map((c, i) => ({ place: String(i + 1), name: c.athlete.name, mark: `${c.opening.toFixed(2)} m`, key: c.athlete.key, note: `best ${formatMark("high-jump", highJumpMark(c.athlete))}`, plain: true })), k } };
       case "card":
         return { bug, title: { text: beat.title ?? "", sub: beat.sub ?? "", k } };
       case "action":

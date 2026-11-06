@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import { LIFT } from "@/lib/games/constants";
 import { loadBar } from "@/lib/games/lift";
+import { REF_LIGHTS } from "@/lib/games/venues";
 import { signTexture } from "./venues/infield";
 import type { ShowFrame } from "../show/types";
 
@@ -206,16 +207,20 @@ export function buildProps(o: { font: string }): GameProps {
       barbell.visible = lights.visible = false;
       if (p.kind === "lift") {
         lights.visible = true;
-        lights.position.set(0, 0, 5.4);
-        lights.rotation.y = Math.PI;
+        // Beside the platform, facing the lifter.
+        lights.position.set(REF_LIGHTS.x, 0, REF_LIGHTS.z);
+        lights.rotation.y = Math.atan2(-REF_LIGHTS.x, -REF_LIGHTS.z);
         p.lights.forEach((c, i) => lamps[i].color.setRGB(c === "white" ? 6 : c === "red" ? 6 : 0.08, c === "white" ? 6 : c === "red" ? 0.25 : 0.08, c === "white" ? 6 : c === "red" ? 0.2 : 0.08));
         if (p.bar) {
           barbell.visible = true;
           setLoad(p.weight);
           barbell.position.set(...p.bar);
           barbell.rotation.set(0, 0, p.tilt);
-          // A real bar whips a few centimetres a hundred kilos; capped where a drawing would snap.
-          bend.uBend.value = Math.min(0.9, (p.bend + p.whip) * Math.min(1, p.weight / 400 + 0.15));
+          // A real bar sags and whips a few centimetres at its ends under a heavy load; a giant's load bends it a
+          // little more, but never into a drawing's arc (the tip's drop, whatever the bar's length).
+          const reach = Math.max(0.2, half * 0.58);
+          const tip = Math.min(0.14, 0.02 + p.weight / 6000) * Math.max(-0.6, Math.min(1.6, p.bend + p.whip));
+          bend.uBend.value = tip / (reach * reach);
           // Plates ride the bend.
           for (const c of plateGroup.children) {
             const x = c.userData.x as number;

@@ -6,7 +6,7 @@ import { LJ } from "@/lib/games/venues";
 import { longJumpAt, planLongJump, type LongJumpPlan } from "../scene/motions/longjump";
 import { dims, smooth } from "../scene/motions/common";
 import { pickAttempts, scoreAttempts, type Pick } from "./attempts";
-import { DEG, crane, drift, framed, mixPose, tall, type CamPose, type Vec3 } from "./cams";
+import { DEG, crane, drift, framed, mixPose, tall, type CamPose } from "./cams";
 import { Timeline, beatAt, beatClock, beatK, type Burst, type Decal, type Overlay, type Show, type ShowFrame } from "./types";
 
 /**
@@ -187,7 +187,7 @@ export function longJumpShow(result: LongJumpResult, o: ShowOptions): Show {
       case "establish":
         return { title: { text: "LONG JUMP", sub: `${athletes.length} Pokémon · 3 attempts each`, k } };
       case "startlist":
-        return { bug, board: { title: "Start list", rows: result.turns.map((c, i) => ({ place: String(i + 1), name: c.athlete.name, mark: `Best ${formatMark("long-jump", longJumpBest(c.athlete))}`, key: c.athlete.key })), k } };
+        return { bug, board: { title: "Start list", rows: result.turns.map((c, i) => ({ place: String(i + 1), name: c.athlete.name, mark: `Best ${formatMark("long-jump", longJumpBest(c.athlete))}`, key: c.athlete.key, plain: true })), k } };
       case "card":
         return { bug, title: { text: beat.title ?? "", sub: beat.sub ?? "", k } };
       case "action":
@@ -237,5 +237,11 @@ export function captionFor(a: Athlete): string | undefined {
   const d = dims(a);
   if (isFlier(a)) return "No gliding: it's a jump, so the same physics as everyone";
   if (d.h > 4) return `${a.name}'s centre of mass starts ${(0.55 * d.h).toFixed(1)} m up`;
+  return undefined;
+}
+
+/** The throws' commentary line: a giant lets go far above the ground. */
+export function throwCaption(a: Athlete, releaseHeight: number): string | undefined {
+  if (releaseHeight > 3) return `${a.name} lets go ${releaseHeight.toFixed(1)} m up: a head start on the drop`;
   return undefined;
 }

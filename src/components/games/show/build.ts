@@ -1,12 +1,16 @@
 import type { Athlete } from "@/lib/games/athlete";
 import { eventOf, formatMark } from "@/lib/games/events";
 import type { EventOutcome, Nation } from "@/lib/games/games";
+import { allAroundShow } from "./allround";
 import { highJumpShow } from "./highjump";
+import { liftShow } from "./lift";
 import { longJumpShow, type ShowOptions } from "./longjump";
 import { podiumShow, type Medallist } from "./podium";
 import { sequence, type Sequence } from "./sequence";
 import { sprintShow } from "./sprint";
+import { swimShow } from "./swim";
 import { throwShow } from "./throws";
+import { wrestleShow } from "./wrestle";
 import type { Show } from "./types";
 
 /**
@@ -32,9 +36,11 @@ export function medallists(outcome: EventOutcome, byKey: ReadonlyMap<string, Ath
   return out;
 }
 
-export function eventShowOnly(outcome: EventOutcome, o: ShowOptions): Show {
+export function eventShowOnly(outcome: EventOutcome, o: ShowOptions & { champion?: boolean }, byKey?: ReadonlyMap<string, Athlete>): Show {
   const d = outcome.detail;
   switch (d.kind) {
+    case "combined":
+      return allAroundShow(d.result, d.result.rows.map((r) => byKey?.get(r.key)).filter((a): a is Athlete => !!a), o);
     case "sprint":
       return sprintShow(d.result, o);
     case "jump-long":
@@ -43,13 +49,17 @@ export function eventShowOnly(outcome: EventOutcome, o: ShowOptions): Show {
       return highJumpShow(d.result, o);
     case "throw":
       return throwShow(d.result, o);
-    default:
-      throw new Error(`no show for ${outcome.event} yet`);
+    case "lift":
+      return liftShow(d.result, o);
+    case "wrestle":
+      return wrestleShow(d.result, o);
+    case "swim":
+      return swimShow(d.result, o);
   }
 }
 
-export function eventShow(outcome: EventOutcome, byKey: ReadonlyMap<string, Athlete>, o: ShowOptions & { nations?: Nation[]; podium?: boolean }): Sequence {
-  const main = eventShowOnly(outcome, o);
+export function eventShow(outcome: EventOutcome, byKey: ReadonlyMap<string, Athlete>, o: ShowOptions & { nations?: Nation[]; podium?: boolean; champion?: boolean }): Sequence {
+  const main = eventShowOnly(outcome, o, byKey);
   const parts: Show[] = [main];
   const meds = medallists(outcome, byKey, o.nations);
   if (o.podium !== false && meds.length) parts.push(podiumShow(outcome.event, eventOf(outcome.event).venue, meds, { video: o.video }));

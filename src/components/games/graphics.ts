@@ -231,7 +231,7 @@ export function drawBoard(g: CanvasRenderingContext2D, W: number, H: number, tit
     if (r.hi) { g.fillStyle = "rgba(255,210,31,0.16)"; g.fillRect(x + 4, ry, w - 8, rowH); }
     else if (i % 2 === 0) { g.fillStyle = "rgba(255,255,255,0.04)"; g.fillRect(x + 4, ry, w - 8, rowH); }
     const mid = ry + rowH / 2;
-    const medal = ["#ffd21f", "#d9e1ea", "#e6a15c"][Number(r.place) - 1];
+    const medal = r.plain ? undefined : ["#ffd21f", "#d9e1ea", "#e6a15c"][Number(r.place) - 1];
     if (medal) {
       g.fillStyle = medal;
       g.beginPath();
@@ -322,7 +322,7 @@ export function drawOverlay(g: CanvasRenderingContext2D, W: number, H: number, o
   if (ov.replay) drawReplayBug(g, W, H, { font: o.font, scale: o.scale, top: o.top + (ov.bug ? 0 : 0) });
   if (ov.title) drawTitle(g, W, H, ov.title.text, ov.title.sub, ov.title.k, o);
   if (ov.tags?.length) {
-    const tags = heads.filter((h) => ov.tags!.includes(h.key) && h.visible && h.by - h.y > 18).map((h) => ({ name: byKey.get(h.key)?.name ?? h.key, x: h.x, y: h.y }));
+    const tags = heads.filter((h) => ov.tags!.includes(h.key) && h.visible && h.by - h.y > 18).map((h) => ({ name: ov.tagText?.[h.key] ?? byKey.get(h.key)?.name ?? h.key, x: h.x, y: h.y }));
     if (tags.length) drawTags(g, tags, { ...o, avoid });
   }
   if (ov.board) drawBoard(g, W, H, ov.board.title, ov.board.rows, ov.board.k, o, !ov.lower && !ov.mark);

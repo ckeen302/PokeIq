@@ -30,6 +30,7 @@ const MODULES: Record<string, string> = {
   timeline: "timeline",
   globe: "globe",
   trainer3d: "trainer3d",
+  games: "games",
 };
 
 describe.each(Object.entries(MODULES))("%s never draws NaN", (_name, dir) => {

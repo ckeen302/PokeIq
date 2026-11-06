@@ -117,11 +117,12 @@ export interface Overlay {
   /** A big mark: "8.21 m", "FOUL", "NEW LEAD". */
   mark?: { text: string; sub?: string; tone: "good" | "bad" | "lead" | "plain"; k: number };
   /** A results board. */
-  board?: { title: string; rows: { place: string; name: string; mark: string; key: string; hi?: boolean; note?: string }[]; k: number };
+  board?: { title: string; rows: { place: string; name: string; mark: string; key: string; hi?: boolean; note?: string; /** No medal colours (a lane, a draw). */ plain?: boolean }[]; k: number };
   /** The replay bug. */
   replay?: boolean;
-  /** Name tags over these athletes. */
+  /** Name tags over these athletes, and what a tag says instead of the name ("1 · 21.32"). */
   tags?: string[];
+  tagText?: Record<string, string>;
   /** A caption under everything (commentary: "Wailord's centre of mass is already 4 m up"). */
   caption?: string;
 }

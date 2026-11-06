@@ -9,7 +9,7 @@ import { displayTimes, formatGap, formatTime, kmh, makeRace } from "@/lib/race/r
 import { motionAt } from "@/lib/race/model";
 import { MOTION_LABEL } from "@/lib/race/gait";
 import { HUB_PRESET, presetPath, vsPath } from "@/lib/race/deeplink";
-import { LAB_PATH } from "@/lib/lab";
+import { GAMES_LIVE, LAB_PATH } from "@/lib/lab";
 import { KIND_LABEL, type Entrant } from "@/lib/race/types";
 import type { Distance } from "@/lib/race/track";
 import { ListHeader } from "@/components/pokedex/detail/DetailParts";
@@ -147,6 +147,16 @@ export function RacePage({ preset = DEFAULT_PRESET, vs, distance, seed }: { pres
             <h2 id="race-how" className="mb-2 font-display text-lg font-bold uppercase tracking-wider">How the race works</h2>
             <RaceInfo />
           </section>
+          {GAMES_LIVE && (
+            <section aria-labelledby="race-games" className="rounded-lg border bg-card/40 p-4 text-sm" data-testid="race-games">
+              <h2 id="race-games" className="font-display text-lg font-bold uppercase tracking-wider">More than sprints: the PokéIQ Games</h2>
+              <p className="mt-1 text-muted-foreground">The same runners in the 100, 200 and 400 m, plus the long jump, high jump, shot put, javelin, weightlifting, swimming and wrestling, with medals and a medal table.</p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                <Link href="/lab/games" prefetch={false} className="rc-go inline-flex h-10 items-center rounded-lg px-4 font-display text-xs font-bold uppercase tracking-wider">Open the Games</Link>
+                <Link href="/lab/games/records/100m" prefetch={false} className="inline-flex h-10 items-center rounded-lg border px-4 font-display text-xs font-bold uppercase tracking-wider text-muted-foreground hover:text-foreground">100 m records</Link>
+              </div>
+            </section>
+          )}
         </div>
       </RaceExperience>
     </div>

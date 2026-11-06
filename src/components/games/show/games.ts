@@ -49,7 +49,7 @@ export function gamesShow(g: GamesResult, byKey: ReadonlyMap<string, Athlete>, o
   const parts: Sequence[] = [];
   g.outcomes.forEach((out, i) => {
     const ev = eventOf(out.event);
-    const main = eventShow(out, byKey, { budget: o.budget, quick: true, video: o.video, nations: g.nations });
+    const main = eventShow(out, byKey, { budget: o.budget, quick: true, video: o.video, nations: g.nations, champion: out.event === "all-around" });
     const table = medalTable(g.nations, g.outcomes.slice(0, i + 1));
     const last = i === g.outcomes.length - 1;
     const tail = boardShow(out.event, ev.venue === "pool" ? "pool" : ev.venue, last ? "Final medal table" : `Medal table · after ${ev.lower}`, tableRows(table), last ? 6 : 3.6);
@@ -57,6 +57,24 @@ export function gamesShow(g: GamesResult, byKey: ReadonlyMap<string, Athlete>, o
     parts.push(sequence([main.parts.length ? main : main, tail], { event: out.event, hook: main.hook, headline: champ ? `${champ.name} is the Champion of the Games` : main.headline }));
   });
   return { parts };
+}
+
+/**
+ * The Games' summary video: each event's decisive moments (no ceremony),
+ * the medal table after each venue's events, and the final table with the
+ * Champion of the Games.
+ */
+export function gamesSummary(g: GamesResult, byKey: ReadonlyMap<string, Athlete>): Sequence[] {
+  const parts: Sequence[] = [];
+  g.outcomes.forEach((out, i) => {
+    const ev = eventOf(out.event);
+    const main = eventShow(out, byKey, { budget: 9, quick: true, video: true, podium: false, nations: g.nations, champion: out.event === "all-around" });
+    const last = i === g.outcomes.length - 1;
+    const shows = [...main.parts.map((p) => p.show)];
+    if (last) shows.push(boardShow(out.event, ev.venue, "Final medal table", tableRows(medalTable(g.nations, g.outcomes)), 4.5));
+    parts.push(sequence(shows, { event: out.event, hook: main.hook, headline: main.headline }));
+  });
+  return parts;
 }
 
 export const POOL_DECK = POOL.deck;

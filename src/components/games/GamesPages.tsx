@@ -5,7 +5,7 @@ import { getPokemon } from "@/lib/pokemon/pokedex";
 import { LAB_PATH } from "@/lib/lab";
 import { GAMES_BY_KEY } from "@/lib/games/data";
 import { EVENTS, eventOf, formatMark, type EventId } from "@/lib/games/events";
-import { buildNations, medalTable, runEvent, runGames, type NationSpec } from "@/lib/games/games";
+import { buildNations, runEvent, runGames, type NationSpec } from "@/lib/games/games";
 import { DEFAULT_NATIONS, GAMES_PATH, PLAY_PATH, eventPath, eventRunPath, h2hQuestion, pokemonPath, recordsPath } from "@/lib/games/deeplink";
 import { DEFAULT_GAMES_SEED } from "@/lib/games/seed";
 import { DEFAULT_FIELDS, RECORDS_FILE } from "@/lib/games/records-data";

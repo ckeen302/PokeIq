@@ -1,5 +1,5 @@
 import { KERB_R, X0 } from "@/lib/race/track";
-import { JAVELIN, SHOT, SWIM } from "./constants";
+import { JAVELIN, SHOT, SWIM, WRESTLE } from "./constants";
 
 /**
  * Where everything stands, in metres (y up), shared by the 3D venues and by
@@ -77,6 +77,13 @@ export const ARENA = {
   floor: 26,
   seats: 15,
 } as const;
+
+/** The ring for a bout of radius `ring` (m): the dohyō scaled to fit it, and the height of its top (wrestlers stand on it). */
+export const dohyoScale = (ring: number) => Math.max(1, ring / (WRESTLE.ring / 2));
+export const dohyoTop = (ring: number) => ARENA.dohyoH * Math.min(2.5, Math.sqrt(dohyoScale(ring)));
+/** The weightlifting platform's top and where the referees' lights stand (facing the lifter). */
+export const PLATFORM_TOP = ARENA.platformH;
+export const REF_LIGHTS = { x: 3.6, z: 3.4 } as const;
 
 /** Aquatics centre: a 50 m pool along x, starts at −x; ten 2.5 m lanes, racing in 1–8. */
 export const POOL = {

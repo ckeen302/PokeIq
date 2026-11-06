@@ -5,7 +5,7 @@ import { planThrow, throwAt, type ThrowPlan } from "../scene/motions/throws";
 import { clamp01, smooth } from "../scene/motions/common";
 import { pickAttempts, scoreAttempts, type Pick } from "./attempts";
 import { crane, drift, framed, mixPose, tall, type CamPose } from "./cams";
-import { captionFor, fmtKg, ordinal, type ShowOptions } from "./longjump";
+import { fmtKg, ordinal, throwCaption, type ShowOptions } from "./longjump";
 import { Timeline, beatAt, beatClock, beatK, type Burst, type Decal, type Overlay, type Show, type ShowFrame } from "./types";
 
 /**
@@ -173,11 +173,11 @@ export function throwShow(result: ThrowResult, o: ShowOptions): Show {
       case "establish":
         return { title: { text: name.toUpperCase(), sub: shot ? "The real 7.26 kg shot · 3 throws each" : "The real 800 g javelin · 3 throws each", k } };
       case "startlist":
-        return { bug, board: { title: "Start list", rows: result.turns.map((c, i) => ({ place: String(i + 1), name: c.athlete.name, mark: `Best ${formatMark(ev, markOf(c.athlete) || null)}`, key: c.athlete.key })), k } };
+        return { bug, board: { title: "Start list", rows: result.turns.map((c, i) => ({ place: String(i + 1), name: c.athlete.name, mark: `Best ${formatMark(ev, markOf(c.athlete) || null)}`, key: c.athlete.key, plain: true })), k } };
       case "card":
         return { bug, title: { text: beat.title ?? "", sub: beat.sub ?? "", k } };
       case "action":
-        return { bug, lower: { key: a.key, name: a.name, line: `Attack ${a.stats.atk} · ${fmtKg(a.kg)}${it.plan.armless ? " · no arms: a flick at 60%" : ""}`, tag: `Throw ${it.pick.a.round}`, k }, tags: [a.key], caption: it.plan.noMark ? `${a.name} can't lift a ${shot ? "7.26 kg shot" : "800 g javelin"}` : captionFor(a) };
+        return { bug, lower: { key: a.key, name: a.name, line: `Attack ${a.stats.atk} · ${fmtKg(a.kg)}${it.plan.armless ? " · no arms: a flick at 60%" : ""}`, tag: `Throw ${it.pick.a.round}`, k }, tags: [a.key], caption: it.plan.noMark ? `${a.name} can't lift a ${shot ? "7.26 kg shot" : "800 g javelin"}` : throwCaption(a, ph.height) };
       case "result": {
         const mark = it.pick.a.mark;
         return {
