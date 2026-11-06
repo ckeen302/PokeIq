@@ -18,9 +18,11 @@ import { bump, clamp01, dims, idleActor, lerp, smooth, type Dims } from "./commo
  * - the flip turn at 50 m in the 100: a somersault and a push-off;
  * - the touch at the wall, then treading water (the winner's arms up).
  *
- * The figure is cut at the water's surface (the parts under it are not
- * drawn) and the water's shader draws its bow wave and wake from where it
- * is and how fast it's going (scene/venues/pool).
+ * Under the water's surface the figure fades into the water's blue (seen
+ * from above, the body under the surface shows through), and the water's
+ * shader draws its bow wave, wake and white water from where it is and how
+ * fast it's going (scene/venues/pool). A big body rides lower: a whale or
+ * a dragon shows its back and head, not its belly.
  */
 
 export type Stroke = "crawl" | "fish" | "serpent" | "paddle";
@@ -42,7 +44,13 @@ export interface SwimPlan {
   len: number;
   /** Strokes per second at swimming speed. */
   rate: number;
+  /** The share of its height under the water when swimming upright (fish, serpent, paddle), and how high it shows above (m). */
+  sink: number;
+  above: number;
 }
+
+/** Seen through the water under the surface (scene/actors: 1 is the pool's clear water). */
+const UNDER_FADE = 1;
 
 export function planSwim(run: SwimRun): SwimPlan {
   const a = run.athlete;
@@ -51,7 +59,10 @@ export function planSwim(run: SwimRun): SwimPlan {
   const len = stroke === "crawl" ? d.h : d.w;
   // Bigger bodies stroke slower (about 0.9 strokes a second for a person, fewer for a whale).
   const rate = Math.max(0.35, Math.min(1.6, 0.95 * Math.pow(Math.max(0.3, len) / 1.8, -0.4)));
-  return { run, athlete: a, dims: d, stroke, z: poolLaneZ(run.lane), len, rate };
+  const big = smooth(1.5, 8, d.h);
+  const sink = stroke === "fish" ? 0.52 + 0.16 * big : stroke === "serpent" ? 0.52 + 0.12 * big : 0.62 + 0.14 * big;
+  const above = stroke === "crawl" ? 0.32 * d.w : (1 - sink) * d.h;
+  return { run, athlete: a, dims: d, stroke, z: poolLaneZ(run.lane), len, rate, sink, above };
 }
 
 export interface SwimScene {
@@ -108,6 +119,9 @@ export function swimPose(pl: SwimPlan, t: number, time: number): SwimScene {
     }
     p.squash = 0.06;
     p.shadow = 0;
+    // Head first into the water: what's gone in is seen through it.
+    p.clipY = POOL.water + 0.004;
+    p.under = UNDER_FADE;
     return { pose: p, wake: null, x: s.x, finished: false, under: false };
   }
   const front = pos.x;
@@ -125,9 +139,10 @@ export function swimPose(pl: SwimPlan, t: number, time: number): SwimScene {
     const u = t - tr.finish;
     const wallX = poolX(tr.distance).x;
     p = idleActor(a, d, wallX - dir * W * 0.35, z, -dir, 0, time, pl.run.lane);
-    p.y = -0.62 * H + 0.04 * H * Math.sin(time * 2.2 + pl.run.lane);
+    p.y = -Math.max(0.62, pl.sink) * H + 0.04 * Math.min(H, 2) * Math.sin(time * 2.2 + pl.run.lane);
     p.lean = -0.1;
     p.clipY = POOL.water + 0.004;
+    p.under = UNDER_FADE;
     p.shadow = 0;
     if (pl.run.place === 1 && a.arms) p.raise = smooth(0.4, 1, u);
     return { pose: p, wake: { x: wallX, z, v: 0.3 * Math.exp(-u), len: pl.len, dir }, x: s.x, finished, under: false };
@@ -145,12 +160,12 @@ export function swimPose(pl: SwimPlan, t: number, time: number): SwimScene {
   } else if (pl.stroke === "fish" || pl.stroke === "serpent") {
     // Its body wave carries it: low in the water, the back and fin showing.
     p = idleActor(a, d, front - dir * W * 0.5, z, dir, 0, time, pl.run.lane);
-    p.y = -0.52 * H - depth;
+    p.y = -pl.sink * H - depth;
     p.swim = { amp: pl.stroke === "fish" ? 0.06 : 0.09, waves: pl.stroke === "fish" ? 0.8 : 1.6, phase: ph * Math.PI * 2 * 1.6, style: pl.stroke === "fish" ? 1 : 2 };
   } else {
     // A paddle: upright, head up, legs churning under the water.
     p = idleActor(a, d, front - dir * W * 0.5, z, dir, 0, time, pl.run.lane);
-    p.y = -0.62 * H - depth;
+    p.y = -pl.sink * H - depth;
     p.lean = 0.25;
     p.gait = { motion: a.entrant.motion, phase: ph * 1.6, v: 2 };
     p.sway = 0.06 * Math.sin(ph * Math.PI * 2);
@@ -162,6 +177,7 @@ export function swimPose(pl: SwimPlan, t: number, time: number): SwimScene {
   }
   p.y += bump(0, 1, (t - tr.entry) / 0.6) * -0.2;
   p.clipY = POOL.water + 0.004;
+  p.under = UNDER_FADE;
   p.shadow = 0;
   return { pose: p, wake: { x: front, z, v: Math.max(0, v) * (0.35 + 0.65 * up), len: pl.len, dir }, x: s.x, finished, under: up < 0.5 };
 }

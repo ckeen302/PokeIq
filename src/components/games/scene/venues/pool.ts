@@ -7,17 +7,20 @@ import type { Props } from "../../show/types";
 
 /**
  * The aquatics centre of the PokéIQ Games: a 50 m pool, ten 2.5 m lanes
- * (racing in 1–8), 3 m deep, in a bright hall:
+ * (racing in 1–8), 3 m deep, in a hall lit like a broadcast (the pool the
+ * brightest, bluest thing in it, the roof dark over rows of lights):
  *
  * - the water: a shader with moving swell, the swimmers' bow waves and V
- *   wakes, foam where they kick, rain rings when the roof is open (the
- *   Swift Swim toggle), a Fresnel reflection of the hall's ceiling and its
- *   light panels, and the tiled pool seen through it;
+ *   wakes, white water over each body and where it kicks, rain rings when
+ *   the roof is open (the Swift Swim toggle), a Fresnel reflection of the
+ *   hall (the stands at the horizon, the roof's lights glinting) and the
+ *   tiled pool and the swimmers' bodies seen through it from above;
  * - the pool's tiles and lane lines lit by caustics (a moving web of light
  *   from two layers of cellular noise);
  * - lane ropes of floats (red for the last 5 m, a marker at 15 m), the
  *   backstroke flags 5 m from each wall, starting blocks and touchpads;
- * - stands on both long sides with the Race's crowd, a video board.
+ * - stands on both long sides with the Race's crowd, an LED ribbon along
+ *   their fronts, a video board.
  *
  * The scene passes the swimmers' positions and speeds each frame
  * (setProps), so the wakes follow the race exactly.
@@ -33,6 +36,13 @@ export interface PoolWorld {
 }
 
 const MAX_SWIMMERS = 8;
+/**
+ * The water's own blue glow (linear rgb), scattered back along a way through it: everything under the
+ * surface (the tiles, a swimmer's body: scene/actors) is shaded as seen through the water, its red lost
+ * first (WATER_EXT per metre), and the surface itself draws mostly the reflection.
+ */
+export const UNDERWATER: readonly [number, number, number] = [0.0, 0.06, 0.21];
+const WATER_EXT = "vec3(0.5, 0.17, 0.09)";
 const CAUSTICS = /* glsl */ `
   vec2 poolHash2(vec2 p) { p = vec2(dot(p, vec2(127.1, 311.7)), dot(p, vec2(269.5, 183.3))); return fract(sin(p) * 43758.5453); }
   // Distance to the nearest edge of a moving cellular (Worley) pattern: small along the cell walls.
@@ -74,11 +84,11 @@ export function buildAquatics(o: { renderer: THREE.WebGLRenderer; font: string; 
   // ---- The pool: floor and walls in tiles, lane lines on the floor, lit by caustics.
   const tileTex = (() => {
     const [c, g] = canvas(256, 256);
-    g.fillStyle = "#cfe6f2";
+    g.fillStyle = "#a9c6dc";
     g.fillRect(0, 0, 256, 256);
     // 25 cm tiles in a 1 m texture: grout lines, each tile a touch different.
     for (let i = 0; i < 4; i++) for (let j = 0; j < 4; j++) {
-      g.fillStyle = `hsl(${196 + r() * 8}, ${40 + r() * 12}%, ${82 + r() * 6}%)`;
+      g.fillStyle = `hsl(${203 + r() * 8}, ${55 + r() * 10}%, ${60 + r() * 6}%)`;
       g.fillRect(i * 64 + 2, j * 64 + 2, 60, 60);
     }
     const t = new THREE.CanvasTexture(c);
@@ -98,6 +108,20 @@ export function buildAquatics(o: { renderer: THREE.WebGLRenderer; font: string; 
       s.fragmentShader = s.fragmentShader
         .replace("#include <common>", `#include <common>\nuniform float uTime;\nvarying vec3 vPoolW;\n${CAUSTICS}`)
         .replace(
+          "#include <opaque_fragment>",
+          `#include <opaque_fragment>
+          {
+            // Seen through the water from above: the light down to the tiles and back up the refracted ray.
+            float dep = -vPoolW.y;
+            if (dep > 0.0 && cameraPosition.y > 0.0) {
+              vec3 rd = normalize(vPoolW - cameraPosition);
+              float st = sqrt(max(0.0, 1.0 - rd.y * rd.y)) / 1.333;
+              float L = dep / sqrt(max(0.05, 1.0 - st * st));
+              gl_FragColor.rgb = gl_FragColor.rgb * exp(-(L + dep) * ${WATER_EXT}) + vec3(${UNDERWATER.join(", ")}) * (1.0 - exp(-L * 0.5));
+            }
+          }`,
+        )
+        .replace(
           "#include <map_fragment>",
           `#include <map_fragment>
           {
@@ -111,11 +135,10 @@ export function buildAquatics(o: { renderer: THREE.WebGLRenderer; font: string; 
             float tee = step(abs(abs(p.x) - ${(L / 2 - 2).toFixed(2)}), 0.25) * step(off, 0.5);
             float stripe = max(step(off, 0.125) * along, tee) * inPool;
             diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.02, 0.05, 0.16), stripe);` : ""}
-            // Deeper is bluer; the caustics dance over everything under the water.
-            float depth = clamp(-vPoolW.y / ${D.toFixed(1)}, 0.0, 1.0);
-            diffuseColor.rgb *= mix(vec3(0.92, 1.0, 1.02), vec3(0.62, 0.84, 0.95), depth);
+            // The caustics dance over everything under the water.
+            float under = step(vPoolW.y, 0.02);
             float c = poolCaustics(p * 0.9, uTime * 1.1);
-            diffuseColor.rgb *= 0.86 + 0.75 * c * step(vPoolW.y, 0.02);
+            diffuseColor.rgb *= 0.8 + 0.7 * c * under;
           }`,
         );
     };
@@ -189,9 +212,10 @@ export function buildAquatics(o: { renderer: THREE.WebGLRenderer; font: string; 
     uSwim: { value: swimmers },
     uSwimDir: { value: swimDir },
     uRain: { value: 0 },
-    uCeil: { value: new THREE.Color(0.34, 0.42, 0.54) },
-    uDeep: { value: new THREE.Color(0.0, 0.045, 0.15) },
-    uShallow: { value: new THREE.Color(0.0, 0.16, 0.38) },
+    uHorizon: { value: new THREE.Color(0.03, 0.05, 0.11) },
+    uRoof: { value: new THREE.Color(0.014, 0.018, 0.032) },
+    uDeep: { value: new THREE.Color(...UNDERWATER) },
+    uRibbon: { value: 0 },
   };
   const hi = o.quality === "high";
   const water = new THREE.Mesh(
@@ -206,7 +230,6 @@ export function buildAquatics(o: { renderer: THREE.WebGLRenderer; font: string; 
         uniform vec4 uSwim[${MAX_SWIMMERS}];
         uniform vec2 uSwimDir[${MAX_SWIMMERS}];
         varying vec3 vW;
-        varying float vFoam;
         float sq(float x) { return x * x; }
         // Bow wave and wake for one swimmer: x along its direction from its front (− behind), z across.
         float wakeH(vec2 p, int i) {
@@ -226,33 +249,29 @@ export function buildAquatics(o: { renderer: THREE.WebGLRenderer; font: string; 
         }
         void main() {
           vec3 p = (modelMatrix * vec4(position, 1.0)).xyz;
-          float h = 0.0, foam = 0.0;
-          for (int i = 0; i < ${MAX_SWIMMERS}; i++) {
-            h += wakeH(p.xz, i);
-            vec4 s = uSwim[i];
-            if (s.z > 0.0) {
-              vec2 q = p.xz - s.xy;
-              vec2 d = uSwimDir[i];
-              float along = dot(q, d), across = dot(q, vec2(-d.y, d.x));
-              float len = max(0.3, s.w);
-              // White water over the body and kick behind it.
-              foam += s.z * exp(-sq((along + len * 0.5) / (len * 0.75)) - sq(across / (0.3 + 0.25 * len)));
-            }
-          }
+          float h = 0.0;
+          for (int i = 0; i < ${MAX_SWIMMERS}; i++) h += wakeH(p.xz, i);
           p.y += h;
           vW = p;
-          vFoam = foam;
           gl_Position = projectionMatrix * viewMatrix * vec4(p, 1.0);
         }`,
       fragmentShader: /* glsl */ `
         uniform float uTime;
         uniform float uRain;
-        uniform vec3 uCeil;
+        uniform vec4 uSwim[${MAX_SWIMMERS}];
+        uniform vec2 uSwimDir[${MAX_SWIMMERS}];
+        uniform vec3 uHorizon;
+        uniform vec3 uRoof;
         uniform vec3 uDeep;
-        uniform vec3 uShallow;
+        uniform float uRibbon;
         varying vec3 vW;
-        varying float vFoam;
+        float sq(float x) { return x * x; }
         float wh(vec2 p) { return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453); }
+        float vn(vec2 p) {
+          vec2 i = floor(p), f = fract(p);
+          vec2 u = f * f * (3.0 - 2.0 * f);
+          return mix(mix(wh(i), wh(i + vec2(1.0, 0.0)), u.x), mix(wh(i + vec2(0.0, 1.0)), wh(i + vec2(1.0, 1.0)), u.x), u.y);
+        }
         // The surface's slope: a light swell in two directions and finer chop.
         vec2 swell(vec2 p, float t) {
           vec2 g = vec2(0.0);
@@ -260,6 +279,7 @@ export function buildAquatics(o: { renderer: THREE.WebGLRenderer; font: string; 
           g += vec2(-0.3, 0.95) * cos(dot(p, vec2(-0.3, 0.95)) * 2.1 + t * 1.6) * 0.025;
           g += vec2(0.95, -0.3) * cos(dot(p, vec2(0.95, -0.3)) * 4.7 + t * 2.4) * 0.018;
           g += vec2(0.2, 0.98) * cos(dot(p, vec2(0.2, 0.98)) * 9.3 - t * 3.1) * 0.012;
+          g += vec2(-0.7, 0.7) * cos(dot(p, vec2(-0.7, 0.7)) * 17.0 + t * 4.3) * 0.008;
           return g;
         }
         // Raindrops: in each 0.6 m cell a ring every second or so, at a random spot and time.
@@ -278,6 +298,24 @@ export function buildAquatics(o: { renderer: THREE.WebGLRenderer; font: string; 
           }
           return g;
         }
+        // White water for one swimmer: along the body where it breaks the surface, heaped at the head,
+        // churned where it kicks, and trailing off behind.
+        float foamOf(vec2 p, int i) {
+          vec4 s = uSwim[i];
+          if (s.z <= 0.0) return 0.0;
+          vec2 d = uSwimDir[i];
+          vec2 q = p - s.xy;
+          float along = dot(q, d), across = dot(q, vec2(-d.y, d.x));
+          float len = max(0.3, s.w);
+          // Nowhere near it (most of the pool): nothing to work out.
+          if (abs(across) > 1.5 + 0.6 * len || along > 1.0 + 0.3 * len || along < -4.0 * len - 12.0) return 0.0;
+          float body = exp(-sq(across / (0.12 + 0.05 * len))) * smoothstep(-len * 1.02, -len * 0.85, along) * (1.0 - smoothstep(-0.1, 0.12, along));
+          float bow = exp(-sq((along + 0.05) / (0.16 + 0.06 * len)) - sq(across / (0.22 + 0.1 * len)));
+          float kick = exp(-sq((along + len) / (0.3 + 0.14 * len)) - sq(across / (0.2 + 0.09 * len)));
+          float behind = max(0.0, -along - len);
+          float trail = step(along, -len) * exp(-behind / (1.2 + 0.35 * len + s.z)) * exp(-sq(across / (0.16 + 0.07 * len + 0.12 * behind)));
+          return min(1.0, s.z) * (0.15 * body + 0.85 * bow + 0.75 * kick + 0.4 * trail);
+        }
         void main() {
           vec2 g = swell(vW.xz, uTime);
           if (uRain > 0.0) g += rain(vW.xz, uTime) * uRain;
@@ -290,21 +328,36 @@ export function buildAquatics(o: { renderer: THREE.WebGLRenderer; font: string; 
           n = normalize(n + (nd - vec3(0.0, 1.0, 0.0)) * 1.2);
           vec3 v = normalize(cameraPosition - vW);
           float cosv = clamp(dot(n, v), 0.0, 1.0);
-          float fres = 0.02 + 0.55 * pow(1.0 - cosv, 5.0);
-          // The ceiling reflected: a soft bright vault with rows of light panels (dark sky when the roof is open).
+          // Schlick's Fresnel for water (2% straight down), short of a mirror at the horizon.
+          float fres = min(0.8, 0.02 + 0.98 * pow(1.0 - cosv, 5.0));
+          // The hall reflected: the stands' dark band at the horizon, the dark roof above with its rows of lamps.
           vec3 rf = reflect(-v, n);
           float up = clamp(rf.y, 0.0, 1.0);
-          vec2 cp = vW.xz + rf.xz / max(0.15, rf.y) * 14.0;
-          float panels = step(0.82, fract(cp.x / 6.0)) * step(0.4, fract(cp.y / 9.0)) * step(0.3, up);
-          vec3 ceil = mix(uCeil * 0.55, uCeil, up) + vec3(0.7, 0.68, 0.62) * panels * up * (1.0 - uRain);
-          ceil = mix(ceil, vec3(0.08, 0.09, 0.11), uRain * 0.85);
-          // The water's own colour: the tiles' light through it (shallower looking straight down).
-          vec3 body = mix(uShallow, uDeep, clamp(1.0 - cosv, 0.0, 1.0));
-          vec3 col = mix(body, ceil, fres);
-          float foam = clamp(vFoam, 0.0, 1.0) * (0.55 + 0.45 * wh(floor(vW.xz * 40.0) + floor(uTime * 12.0)));
-          col = mix(col, vec3(0.95, 0.98, 1.0), foam * 0.85);
-          // Mostly the water's own deep blue: the tiles and their caustics show through a little.
-          float a = mix(0.9, 0.99, fres);
+          // The lamps through a calmer surface (the swell would smear them into blotches): bright, wobbling shapes.
+          vec3 rl = reflect(-v, normalize(mix(vec3(0.0, 1.0, 0.0), n, 0.3)));
+          vec2 cp = vW.xz + rl.xz / max(0.06, rl.y) * 21.6;
+          vec2 cell = cp - vec2(6.0, 9.0) * floor(cp / vec2(6.0, 9.0) + 0.5);
+          float lamp = (1.0 - smoothstep(1.9, 2.1, abs(cell.x))) * (1.0 - smoothstep(0.45, 0.55, abs(cell.y))) * step(abs(cp.x), 38.0) * step(abs(cp.y), 29.0) * step(0.06, rl.y);
+          vec3 env = mix(uHorizon, uRoof, smoothstep(0.02, 0.3, up)) + vec3(1.0, 0.97, 0.9) * 1.2 * lamp * (1.0 - uRain);
+          env = mix(env, vec3(0.03, 0.035, 0.045), uRain * 0.85);
+          // The LED ribbon along the far stands, reflected near the horizon in bands of colour.
+          if (rf.y > 0.0 && abs(rf.z) > 1e-3) {
+            float tt = (sign(rf.z) * 16.98 - vW.z) / rf.z;
+            vec3 hp = vW + rf * tt;
+            float band = step(0.0, tt) * step(0.52, hp.y) * step(hp.y, 1.32) * step(abs(hp.x), 30.0);
+            float pi = mod(floor((hp.x + 30.0) / 5.0 + uRibbon * 6.0), 6.0);
+            vec3 rc = pi < 0.5 ? vec3(0.003, 0.01, 0.042) : pi < 1.5 ? vec3(0.0, 0.38, 0.67) : pi < 2.5 ? vec3(1.0, 0.64, 0.05) : pi < 3.5 ? vec3(0.005) : pi < 4.5 ? vec3(0.68, 0.02, 0.05) : vec3(0.14, 0.07, 0.29);
+            env = mix(env, rc * 1.5, band * (1.0 - uRain));
+          }
+          // The surface: the reflection by Fresnel, and a little of the water's blue scattered back from just under it.
+          float sheen = 0.16;
+          float a = fres + (1.0 - fres) * sheen;
+          vec3 col = (env * fres + uDeep * (1.0 - fres) * sheen) / a;
+          float foam = 0.0;
+          for (int i = 0; i < ${MAX_SWIMMERS}; i++) foam += foamOf(vW.xz, i);
+          float froth = vn(vW.xz * 7.0 + vec2(uTime * 1.7, 0.0)) * 0.6 + vn(vW.xz * 16.0 - vec2(0.0, uTime * 2.3)) * 0.4;
+          foam = smoothstep(0.3, 0.9, foam * (0.45 + 1.1 * froth)) * 0.9;
+          col = mix(col, vec3(1.05, 1.08, 1.12), foam);
           a = max(a, foam);
           gl_FragColor = vec4(col, a);
           #include <tonemapping_fragment>
@@ -460,13 +513,56 @@ export function buildAquatics(o: { renderer: THREE.WebGLRenderer; font: string; 
   }
   const crowd: Crowd = buildCrowd({ occupancy: o.occupancy, flashes: Math.round(o.flashes * 0.4), rows, light: { y: 24 } });
   group.add(crowd.group);
-  const hall = new THREE.Mesh(G(new THREE.BoxGeometry(84, 30, 64)), M(new THREE.MeshStandardMaterial({ color: "#b9c8d8", roughness: 0.9, side: THREE.BackSide })));
-  hall.position.y = 14.6;
+  // (Its floor well below the pool's, which is seen through the water.)
+  const hall = new THREE.Mesh(G(new THREE.BoxGeometry(84, 34, 64)), M(new THREE.MeshStandardMaterial({ color: "#1c2436", roughness: 0.9, side: THREE.BackSide })));
+  hall.position.y = 12.6;
   group.add(hall);
-  // The roof: a white vault with rows of light panels; in the rain it's open to a dark sky.
+  // The LED ribbon along the front of both stands, scrolling.
+  const ribbonTex = (() => {
+    const W = 4096, H = 96;
+    const [c, g] = canvas(W, H);
+    const panels = [
+      { bg: "#0b1a3a", fg: "#ffffff", text: "THE POKÉIQ GAMES" },
+      { bg: "#00a6d6", fg: "#ffffff", text: "SWIMMING" },
+      { bg: "#ffd23f", fg: "#14213d", text: "POKÉIQ" },
+      { bg: "#101010", fg: "#3bceac", text: "WHO SWIMS FASTEST?" },
+      { bg: "#d7263d", fg: "#ffffff", text: "AQUATICS CENTRE" },
+      { bg: "#6a4c93", fg: "#ffffff", text: "THE POKÉIQ GAMES" },
+    ];
+    const pw = W / panels.length;
+    panels.forEach((q, i) => {
+      g.fillStyle = q.bg;
+      g.fillRect(i * pw, 0, pw, H);
+      g.fillStyle = q.fg;
+      let px = 56;
+      g.font = `800 ${px}px ${o.font}`;
+      while (g.measureText(q.text).width > pw * 0.88 && px > 18) { px -= 4; g.font = `800 ${px}px ${o.font}`; }
+      g.textAlign = "center";
+      g.textBaseline = "middle";
+      g.fillText(q.text, i * pw + pw / 2, H * 0.53);
+    });
+    g.fillStyle = "rgba(0,0,0,0.3)";
+    for (let x = 0; x < W; x += 4) g.fillRect(x, 0, 1, H);
+    for (let y = 0; y < H; y += 4) g.fillRect(0, y, W, 1);
+    const t = new THREE.CanvasTexture(c);
+    t.colorSpace = THREE.SRGBColorSpace;
+    t.wrapS = THREE.RepeatWrapping;
+    t.repeat.set(2, 1);
+    return T(t);
+  })();
+  {
+    const ribbonMat = M(new THREE.MeshBasicMaterial({ map: ribbonTex, color: new THREE.Color(1.5, 1.5, 1.5) }));
+    for (const side of [1, -1]) {
+      const rb = new THREE.Mesh(G(new THREE.PlaneGeometry(60, 0.8)), ribbonMat);
+      rb.position.set(0, deck + 0.62, side * 16.98);
+      rb.rotation.y = side > 0 ? Math.PI : 0;
+      group.add(rb);
+    }
+  }
+  // The roof: a dark vault with rows of light panels; in the rain it's open to a dark sky.
   const roof = new THREE.Group();
   {
-    const vault = new THREE.Mesh(G(new THREE.PlaneGeometry(84, 64).rotateX(Math.PI / 2)), M(new THREE.MeshStandardMaterial({ color: "#dfe7ef", roughness: 0.9 })));
+    const vault = new THREE.Mesh(G(new THREE.PlaneGeometry(84, 64).rotateX(Math.PI / 2)), M(new THREE.MeshStandardMaterial({ color: "#232b3d", roughness: 0.9 })));
     vault.position.y = 22;
     roof.add(vault);
     const panelParts: THREE.BufferGeometry[] = [];
@@ -598,10 +694,12 @@ export function buildAquatics(o: { renderer: THREE.WebGLRenderer; font: string; 
   return {
     group,
     env,
-    fog: new THREE.FogExp2(new THREE.Color(0.45, 0.52, 0.6), 0.002),
+    fog: new THREE.FogExp2(new THREE.Color(0.1, 0.12, 0.17), 0.002),
     update(t, _cam, ex) {
       time.value = t;
       crowd.update(t, ex);
+      ribbonTex.offset.x = (t * 0.02) % 1;
+      waterU.uRibbon.value = ribbonTex.offset.x;
     },
     setProps(p) {
       if (p.kind === "swim") {

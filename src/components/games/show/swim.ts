@@ -3,7 +3,7 @@ import { swimAt, swimMark, type SwimRace } from "@/lib/games/swim";
 import { POOL, poolX } from "@/lib/games/venues";
 import { planSwim, swimPose } from "../scene/motions/swim";
 import { smooth } from "../scene/motions/common";
-import { crane, drift, framed, mixPose, tall, type CamPose } from "./cams";
+import { crane, drift, framed, tall, type CamPose, type Vec3 } from "./cams";
 import type { ShowOptions } from "./longjump";
 import { Timeline, beatAt, beatClock, beatK, type Burst, type Overlay, type Show, type ShowFrame } from "./types";
 
@@ -35,7 +35,7 @@ export function swimShow(race: SwimRace, o: ShowOptions): Show {
     tl.add({ kind: "establish", cam: "crane", clock0: -8, rate: 0 }, o.video ? 2.6 : 4);
     tl.add({ kind: "startlist", cam: "blocks", clock0: -6, rate: 0.2 }, o.video ? 2.4 : 3.6);
   }
-  tl.add({ kind: "intro", cam: "blocks", clock0: -3, rate: 1, title: "Take your marks" }, 3);
+  tl.add({ kind: "intro", cam: "marks", clock0: -3, rate: 1, title: "Take your marks" }, 3);
   tl.cue(tl.t, "beep", 0.8);
   // The race: at full speed, but a long middle (a slow field over 100 m) goes by fast.
   const budget = Math.max(14, o.budget - (o.quick ? 6 : 16));
@@ -70,51 +70,128 @@ export function swimShow(race: SwimRace, o: ShowOptions): Show {
   };
   const D = race.distance;
   const x0 = POOL.startX, x1 = POOL.startX + POOL.length;
+  const wallX = D === 100 ? x0 : x1, finDir = D === 100 ? -1 : 1;
+  const winPlan = plans.find((p) => p.run === win)!;
+  const wtr = winPlan.run.trace;
+
+  /**
+   * The leading group at race time t: its front (world x) and direction, and its lane, body length and
+   * height above the water, each swimmer weighted by how close it is to the lead (so it all moves smoothly
+   * as places change).
+   */
+  const groupAt = (t: number) => {
+    const xs = plans.map((p) => swimAt(p.run.trace, t).x);
+    const lead = Math.max(...xs);
+    let W = 0, gz = 0, gl = 0, ga = 0;
+    plans.forEach((p, i) => {
+      const w = Math.exp(-(lead - xs[i]) / 1.1);
+      W += w; gz += w * p.z; gl += w * p.len; ga += w * p.above;
+    });
+    const pos = poolX(lead);
+    return { lead, x: pos.x, dir: pos.dir, z: gz / W, len: gl / W, above: ga / W };
+  };
+
+  // The cameras run along the side with the clearer view of the leaders: a giant in a nearer lane would hide them.
+  const S = (() => {
+    let near = 0, far = 0;
+    for (let t = wtr.entry; t < winT; t += 0.5) {
+      const xs = plans.map((p) => swimAt(p.run.trace, t).x);
+      const lead = Math.max(...xs);
+      plans.forEach((p, i) => {
+        if (lead - xs[i] > 2.5) return;
+        plans.forEach((q, j) => {
+          if (j === i || q.above < 0.5 * p.above + 0.3) return;
+          if (xs[j] < xs[i] - p.len - 0.5 || xs[j] - q.len > xs[i] + 0.5) return;
+          if (q.z > p.z) near += q.above; else far += q.above;
+        });
+      });
+    }
+    return far < near ? -1 : 1;
+  })();
+  const RAIL = 14.2 * S;
+  // The favourite: the fastest on paper.
+  const fav = plans.reduce((b, p) => (swimMark(p.athlete, ev, race.rain) < swimMark(b.athlete, ev, race.rain) ? p : b), plans[0]);
+
+  // The race's shot list (race seconds): the dive from the side, the rail camera with the leaders, the
+  // spidercam over them for a spell in a long enough length, the turn from over the wall, the rail again
+  // to the touch, then the wall from behind the touchpads as the rest come in. Cuts, as a director would.
+  type Cam = "dive" | "rail" | "spider" | "turn" | "touch";
+  const shots: { from: number; cam: Cam }[] = [{ from: -Infinity, cam: "dive" }, { from: wtr.entry + 1.5, cam: "rail" }];
+  const spell = (a: number, b: number) => { if (b - a > 3 && b - a < 60) { shots.push({ from: a, cam: "spider" }, { from: a + 4, cam: "rail" }); } };
+  if (D === 100 && wtr.turn != null && wtr.pushOff != null) {
+    if (wtr.turn - 2.4 - (wtr.entry + 6) > 8) spell(wtr.entry + 6, wtr.entry + 10);
+    shots.push({ from: wtr.turn - 2.4, cam: "turn" }, { from: wtr.pushOff + 1.6, cam: "rail" });
+    if (winT - (wtr.pushOff + 6) > 10) spell(wtr.pushOff + 6, wtr.pushOff + 10);
+  } else if (winT - (wtr.entry + 5) > 10) spell(wtr.entry + 5, wtr.entry + 9);
+  shots.push({ from: winT + 0.5, cam: "touch" });
+  shots.sort((a, b) => a.from - b.from);
+  const shotAt = (t: number): Cam => { let c: Cam = "dive"; for (const s of shots) if (t >= s.from) c = s.cam; return c; };
+
+  /** The rail camera: low on the deck beside the leaders, on a long lens, a little ahead of them. */
+  const rail = (t: number, aspect: number): CamPose => {
+    const g = groupAt(t);
+    const span = Math.max(7, Math.min(22, 4 + 3 * g.len));
+    const tx = g.x - g.dir * Math.min(g.len, span * 0.6) * 0.3 + g.dir * span * 0.06;
+    const ty = Math.min(1.4, 0.1 + g.above * 0.3);
+    const pos: Vec3 = [tx + g.dir * span * 0.16, 2.2 + span * 0.05, RAIL];
+    return framed(pos, [tx, ty, g.z], span * (tall(aspect) ? 0.62 : 1), span * 0.4, aspect, 8, 62);
+  };
+  /** The spidercam: high over the lanes ahead of the leaders, looking back down at them. */
+  const spider = (t: number, aspect: number): CamPose => {
+    const g = groupAt(t);
+    const span = Math.max(11, Math.min(28, 8 + 2.4 * g.len));
+    const pos: Vec3 = [g.x + g.dir * span * 0.3, 5.5 + span * 0.26, g.z + S * span * 0.45];
+    return framed(pos, [g.x - g.dir * span * 0.1, 0, g.z], span * (tall(aspect) ? 0.62 : 1), span * 0.55, aspect, 10, 62);
+  };
 
   const camera = (beat: ReturnType<typeof beatAt>, k: number, t: number, show: number, aspect: number): CamPose => {
     const back = tall(aspect) ? 1.45 : 1;
     const wide = tall(aspect) ? 0.62 : 1;
     switch (beat.cam) {
       case "crane":
-        return crane([0, 0, 0], k, aspect, { from: [44, 30, 46], to: [-10, 9, 30], fov0: 50, fov1: 42 });
+        // Under the roof from a high corner, down onto the pool.
+        return crane([0, 0, 0], k, aspect, { from: [36, 17, 15 * S], to: [-12, 7, 13 * S], fov0: 54, fov1: 44 });
       case "blocks":
         // Along the line of blocks from the side, the swimmers stepping up.
-        return drift(framed([x0 - 4, 2.4, 15.2], [x0 + 0.5, 0.9, 0], 28 * wide, 7, aspect, 10, 70), show, 0.02);
+        return drift(framed([x0 - 4, 2.4, 15.2 * S], [x0 + 0.5, 0.9, 0], 28 * wide, 7, aspect, 10, 70), show, 0.02);
+      case "marks": {
+        // "Take your marks": in close on the favourite crouched on its block, from out over the water.
+        const H = fav.dims.h, Wd = fav.dims.w;
+        const w = Math.max(2.6, 2.2 * Math.max(H, Wd));
+        return drift(framed([x0 + 1.5 + w * 0.55, POOL.block + 0.5 + H * 0.4, fav.z + S * (1.2 + w * 0.5) * back], [x0 - 0.3, POOL.block + H * 0.42, fav.z], w * wide, Math.max(H * 1.4, w * 0.5), aspect, 10, 60), show, 0.01);
+      }
       case "race": {
-        const L = leaderAt(t);
-        const lx = poolX(L.x).x;
-        const turnK = D === 100 && L.plan.run.trace.turn != null ? Math.max(0, 1 - Math.abs(t - L.plan.run.trace.turn) / 3.2) : 0;
-        const finishK = smooth(D - 12, D - 4, L.x);
-        // The dive from the side; the rail camera with the leader; the turn from behind the wall; the finish from behind the pads.
-        const dive = framed([x0 + 9, 2.6, 15.2], [x0 + 6, 0.2, 0], 26 * wide, 9, aspect, 10, 70);
-        // The rail camera frames the leaders: wide enough for the biggest of them, close enough to see a small one.
-        const front = plans.map((p) => ({ p, x: swimAt(p.run.trace, t).x })).sort((a, b) => b.x - a.x).slice(0, 3);
-        const span = Math.max(11, Math.min(36, 7 + 3.2 * Math.max(...front.map((f) => f.p.len))));
-        const zc = front.reduce((s, f) => s + f.p.z, 0) / front.length;
-        // Low on the deck beside the leaders (never in the stands): the swimmers side-on, in the water; a giant widens the lens.
-        const rz = Math.min(15.2, zc + (3 + span * 0.85) * back);
-        const rail = framed([lx + span * 0.15, 1.5 + span * 0.05, rz], [lx - span * 0.1, 0.1, zc], span * wide, span * 0.38, aspect, 10, 72);
-        const turnCam = framed([x1 + 3.5, 2.4, 9], [x1 - 7, 0, -1], 26 * wide, 9, aspect, 10, 70);
-        const wallX = D === 100 ? x0 : x1, dir = D === 100 ? -1 : 1;
-        const fin = framed([wallX + dir * 5, 2.4, 11], [wallX - dir * 9, 0, 0], 26 * wide, 9, aspect, 10, 70);
-        let pose = t < 0.2 ? dive : mixPose(dive, rail, smooth(L.plan.run.trace.entry + 0.6, L.plan.run.trace.entry + 2.2, t));
-        if (turnK > 0) pose = mixPose(pose, turnCam, smooth(0, 0.35, turnK));
-        if (finishK > 0) pose = mixPose(pose, fin, finishK);
-        return drift(pose, show, 0.015);
+        switch (shotAt(t)) {
+          case "dive":
+            // High and wide over the start end: the whole line in the air at once, over a giant's back.
+            return drift(framed([x0 + 15, 10, 15.4 * S], [x0 + 5, 0.4, 0], 30 * wide, 12, aspect, 10, 70), show, 0.015);
+          case "spider":
+            return spider(t, aspect);
+          case "turn": {
+            // Over the turning wall, down the lanes: the leaders tumbling and pushing off towards the lens.
+            const g = groupAt(t);
+            return framed([x1 + 0.6, 6, g.z * 0.5], [x1 - 7, 0, g.z * 0.8], 20 * wide, 8, aspect, 10, 70);
+          }
+          case "touch":
+            // From behind the touchpads, down the lanes: the rest coming in.
+            return drift(framed([wallX + finDir * 0.6, 6.5, 0], [wallX - finDir * 10, 0, 0], 26 * wide, 10, aspect, 10, 70), show, 0.015);
+          default:
+            return drift(rail(t, aspect), show, 0.012);
+        }
       }
-      case "result": {
-        const wallX = D === 100 ? x0 : x1, dir = D === 100 ? -1 : 1;
-        return drift(framed([wallX - dir * 2, 3, 15.2], [wallX - dir * 2.5, 0.2, 0], 24 * wide, 10, aspect, 10, 70), show, 0.02);
-      }
+      case "result":
+        return drift(framed([wallX - finDir * 2, 3, 15.2 * S], [wallX - finDir * 2.5, 0.2, 0], 24 * wide, 10, aspect, 10, 70), show, 0.02);
       case "replay": {
-        // Low over the water at the finish wall, the touch in slow motion.
-        const wallX = D === 100 ? x0 : x1, dir = D === 100 ? -1 : 1;
-        const wp = plans.find((p) => p.run === win)!;
-        const w = Math.max(5, wp.len * 3.2);
-        return framed([wallX - dir * w * 0.45, 0.35 + w * 0.08, wp.z + (1.5 + w * 0.55) * back], [wallX - dir * w * 0.3, 0.05, wp.z], w * wide, w * 0.42, aspect, 12, 60);
+        // From the next lane over, a little above the water, alongside the winner into the wall: the touch in slow motion.
+        const w = Math.max(5, winPlan.len * 3.2);
+        const fx = poolX(swimAt(wtr, t).x).x;
+        const tx = finDir > 0 ? Math.min(wallX - w * 0.3, fx - winPlan.len * 0.4) : Math.max(wallX + w * 0.3, fx + winPlan.len * 0.4);
+        const cx = finDir > 0 ? Math.min(wallX - 0.8, tx + w * 0.3) : Math.max(wallX + 0.8, tx - w * 0.3);
+        // (Over the backstroke flags' line, not through it.)
+        return framed([cx, 2.2 + w * 0.1, winPlan.z + S * (2.2 + w * 0.25) * back], [tx, 0.1 + winPlan.above * 0.3, winPlan.z], w * wide, w * 0.42, aspect, 12, 60);
       }
       default:
-        return drift(framed([0, 14, 34 * back], [0, 0, 0], 54 * wide, 18, aspect, 10, 60), show, 0.02);
+        return drift(framed([0, 14, 34 * back * S], [0, 0, 0], 54 * wide, 18, aspect, 10, 60), show, 0.02);
     }
   };
 
@@ -134,13 +211,17 @@ export function swimShow(race: SwimRace, o: ShowOptions): Show {
       const sz = Math.max(0.5, Math.min(6, p.len));
       emit(`s${i}-in`, tr.entry, x0 + tr.entryAt, p.z, "splash", sz, Math.min(2, 0.6 + p.athlete.kg / 300));
       if (tr.turn != null) emit(`s${i}-turn`, tr.turn, x1 - 0.3, p.z, "splash", sz * 0.7, 0.8);
-      emit(`s${i}-touch`, tr.finish, poolX(D).x, p.z, "spray", sz * 0.6, 0.7);
+      emit(`s${i}-touch`, tr.finish, poolX(D).x, p.z, "splash", sz * 0.6, 0.6);
       const s = scenes[i];
       if (s.wake && !s.finished && !s.under && rt > tr.entry + 1) {
+        // The kick behind it, and its arms (or paws, or head) breaking the water up front with each stroke.
         const n = Math.floor(rt / 0.45);
-        const kickAt = n * 0.45;
         const kx = s.wake.x - s.wake.dir * p.len * 0.95;
-        emit(`s${i}-k${n}`, kickAt, kx, p.z, "spray", Math.min(4, 0.4 + sz * 0.7), Math.min(1.5, 0.45 + s.wake.v / 3), -s.wake.dir);
+        emit(`s${i}-k${n}`, n * 0.45, kx, p.z, "spray", Math.min(4, 0.4 + sz * 0.7), Math.min(1.5, 0.45 + s.wake.v / 3), -s.wake.dir);
+        const per = 1 / Math.max(0.5, p.rate * (p.stroke === "crawl" ? 2 : p.stroke === "paddle" ? 3.2 : 1.6));
+        const m = Math.floor((rt - tr.entry) / per);
+        const fx = s.wake.x - s.wake.dir * p.len * (p.stroke === "crawl" ? 0.22 : 0.08);
+        emit(`s${i}-a${m}`, tr.entry + m * per, fx, p.z + (m % 2 ? 0.12 : -0.12) * Math.min(3, p.len), "spray", Math.min(3, 0.3 + sz * 0.45), Math.min(1.2, 0.35 + s.wake.v / 4), s.wake.dir * 0.3);
       }
     });
     const wakes = scenes.map((s) => s.wake).filter((w): w is NonNullable<typeof w> => !!w);
@@ -148,12 +229,22 @@ export function swimShow(race: SwimRace, o: ShowOptions): Show {
     const excitement = beat.kind === "action" ? 0.45 + 0.4 * smooth(D - 15, D, L.x) : beat.kind === "result" ? 0.9 : 0.35;
     const cam = camera(beat, k, rt, t, aspect);
     // A swimmer's relief faces the camera across the pool; from above it would show its edge, so it tilts back
-    // about its line of travel by the camera's elevation and the lens sees its face.
+    // (away from the lens) about its line of travel by the camera's elevation, pivoting where it breaks the
+    // surface: seen from the spidercam it lies in the water, its back and head out and its body under the
+    // surface showing through.
     scenes.forEach((sc, i) => {
       const p = sc.pose;
       if (p.clipY == null || !p.visible) return;
-      const elev = Math.atan2(cam.pos[1] - Math.max(0, p.y + plans[i].dims.h * 0.5), Math.max(0.5, Math.abs(cam.pos[2] - p.z)));
-      p.sway = (p.sway ?? 0) - Math.max(-0.2, Math.min(1.1, elev)) * 0.9 * Math.sign(p.dx || 1);
+      const dz = cam.pos[2] - p.z;
+      const sgn = Math.sign(dz) || 1;
+      const elev = Math.atan2(cam.pos[1] - plans[i].above * 0.5, Math.max(0.5, Math.abs(dz)));
+      const th = Math.max(-0.15, Math.min(1.05, elev)) * 0.9;
+      p.sway = (p.sway ?? 0) - sgn * Math.sign(p.dx || 1) * th;
+      const hw = -p.y;
+      if (hw > 0) {
+        p.y = -hw * Math.cos(th);
+        p.z += sgn * hw * Math.sin(th);
+      }
     });
     return {
       t,
@@ -200,9 +291,11 @@ export function swimShow(race: SwimRace, o: ShowOptions): Show {
         const showSplit = D === 100 && split.length && rt > split[0].trace.split! && rt < split[0].trace.split! + 4;
         return {
           bug: { title: name, sub: `${fmt(Math.max(0, rt))}${ffw ? ` · » ${Math.round(beat.rate!)}×` : ""}` },
-          tags: rt < 1.5 || rt > winT - 0.2 || L.x > D - 6 ? athletes.map((a) => a.key) : [],
+          // Everyone's lane at the start and the finish; in between, the leader's.
+          tags: rt < 1.5 || rt > winT - 0.2 || L.x > D - 6 ? athletes.map((a) => a.key) : [L.plan.athlete.key],
           tagText: tagFor(rt),
-          mark: rt >= winT ? { text: fmt(win.time), sub: `${win.athlete.name} wins`, tone: "lead", k: smooth(winT, winT + 0.3, rt) } : showSplit ? { text: fmt(split[0].trace.split!), sub: `${split[0].athlete.name} at the turn`, tone: "plain", k: smooth(split[0].trace.split!, split[0].trace.split! + 0.3, rt) } : undefined,
+          // (k runs through the time it's up: in with a pop, held, out at the end.)
+          mark: rt >= winT ? { text: fmt(win.time), sub: `${win.athlete.name} wins`, tone: "lead", k: Math.min(1, (rt - winT) / Math.max(2.5, raceEnd - winT)) } : showSplit ? { text: fmt(split[0].trace.split!), sub: `${split[0].athlete.name} at the turn`, tone: "plain", k: Math.min(1, (rt - split[0].trace.split!) / 4) } : undefined,
           caption: rt > 0.8 && rt < 4 ? (race.rain ? "Rain: Swift Swim doubles Speed" : undefined) : undefined,
         };
       }

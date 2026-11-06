@@ -187,7 +187,8 @@ export function liftShow(result: LiftResult, o: ShowOptions): Show {
         return {
           bug,
           lower: tau < pl.downT - 0.4 ? { key: a.key, name: a.name, line: `Attempt ${s.n} · ${s.weight} kg · ${(s.weight / a.kg).toFixed(s.weight / a.kg >= 10 ? 0 : 1)}× its ${fmtKg(a.kg)}`, tag: `Attempt ${s.n}`, k } : undefined,
-          mark: decided ? { text: pl.success ? "GOOD LIFT" : "NO LIFT", sub: `${s.weight} kg`, tone: pl.success ? (it.lead ? "lead" : "good") : "bad", k: smooth(pl.downT, pl.downT + 0.3, tau) } : undefined,
+          // (k runs over the rest of the shot: in with a pop, held, out as it ends.)
+          mark: decided ? { text: pl.success ? "GOOD LIFT" : "NO LIFT", sub: `${s.weight} kg`, tone: pl.success ? (it.lead ? "lead" : "good") : "bad", k: Math.min(1, (tau - pl.downT) / Math.max(0.8, Math.max(pl.downT, pl.landT) + (it.pick.cut === "full" ? 1.6 : 0.9) - pl.downT)) } : undefined,
           tags: tau < -2 ? [a.key] : [],
           caption: tau > pl.catchT && tau < pl.downT && pl.grind > 0.7 ? `${Math.round(pl.load * 100)}% of its best today` : undefined,
         };

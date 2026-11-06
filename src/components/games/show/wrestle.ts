@@ -223,7 +223,8 @@ export function wrestleShow(result: Bracket, o: ShowOptions): Show {
           bug: { title: "Wrestling", sub: tau > 0 ? `${it.bout.round === "Bronze" ? "Bronze" : it.bout.round} · ${Math.min(tau, tr.end).toFixed(1)} s` : bug.sub },
           lower: tau < Math.min(tr.end, 1.5) ? { key: a.key, name: `${a.name} v ${bb.name}`, line: `Push ${kN(pushForce(a))} · brace ${kN(braceForce(a))}  |  push ${kN(pushForce(bb))} · brace ${kN(braceForce(bb))}`, tag: it.bout.round === "Bronze" ? "Bronze" : it.bout.round.replace("-finals", "-final"), k } : undefined,
           tags: [a.key, bb.key],
-          mark: tau >= tr.end ? { text: tr.ringOut ? "OUT!" : "TIME", sub: `${it.bout.winner.name} wins`, tone: "lead", k: smooth(tr.end, tr.end + 0.25, tau) } : undefined,
+          // (k runs over the rest of the shot: in with a pop, held, out as it ends.)
+          mark: tau >= tr.end ? { text: tr.ringOut ? "OUT!" : "TIME", sub: `${it.bout.winner.name} wins`, tone: "lead", k: Math.min(1, (tau - tr.end) / (it.cut === "full" ? 2.5 : it.cut === "medium" ? 1.5 : 1.2)) } : undefined,
           caption: beat.sub === "later" && tau < tr.end - 2 ? `${Math.floor(tau)} s in` : undefined,
         };
       case "result":

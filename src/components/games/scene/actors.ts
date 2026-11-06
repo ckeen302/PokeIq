@@ -8,6 +8,7 @@ import type { Athlete } from "@/lib/games/athlete";
 import { loadFigure, type Figure, type RunnerOptions, type RunnerUrls } from "@/components/race/scene/runners";
 import { LAYER } from "@/components/race/scene/stadium";
 import type { ActorPose } from "./pose";
+import { UNDERWATER } from "./venues/pool";
 
 export type { ActorPose, LimbSet } from "./pose";
 
@@ -102,6 +103,7 @@ export function poseActor(act: Actor, p: ActorPose, cam: THREE.Camera, time: num
   // + bend bulges the front (the side the render faces).
   U.uBend.value.set((p.bend ?? 0) * f.meshH * (f.facing < 0 ? -1 : 1), f.meshH);
   U.uClipY.value = p.clipY ?? -1e5;
+  U.uUnder.value.set(UNDERWATER[0], UNDERWATER[1], UNDERWATER[2], p.clipY != null ? (p.under ?? 0) : 0);
   // ---- Moving parts, in the mesh's own frame (as the Race does).
   f.root.updateMatrixWorld(true);
   inv.copy(f.body.matrixWorld).invert();

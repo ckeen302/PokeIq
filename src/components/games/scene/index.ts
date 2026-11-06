@@ -266,7 +266,7 @@ export function createGamesScene(host: HTMLElement, opts: SceneOptions): GamesSc
   const decalSand = makeDecals(24, texSand, "#ffffff", 0.9);
   const decalDivot = makeDecals(24, texDivot, "#ffffff", 0.95);
   const decalScuff = makeDecals(32, texScuff, "#ffffff", 0.8);
-  const trail = makeTrail(40, new THREE.Color(1.6, 1.25, 0.5));
+  const trail = makeTrail(120, new THREE.Color(1.6, 1.25, 0.5));
   const fx = new THREE.Group();
   for (const o of [sand.mesh, dust.mesh, water.mesh, chalk.mesh, clay.mesh, confetti.mesh, decalSand.mesh, decalDivot.mesh, decalScuff.mesh, trail.mesh]) fx.add(o);
   scene.add(fx);
@@ -316,6 +316,14 @@ export function createGamesScene(host: HTMLElement, opts: SceneOptions): GamesSc
         for (let i = 0; i < n; i++) {
           const a = r(i) * Math.PI * 2, s = (0.4 + r(i + 1) * 1.8) * Math.sqrt(k) * (b.kind === "splash" ? 1.6 : 0.8);
           water.spawn(b.t0, b.x + Math.cos(a) * b.size * 0.25, b.y, b.z + Math.sin(a) * b.size * 0.25, Math.cos(a) * s + (b.dx ?? 0) * 0.8, (1.5 + r(i + 2) * 3.5) * Math.sqrt(k) * (b.kind === "splash" ? 1 : 0.5), Math.sin(a) * s + (b.dz ?? 0) * 0.8, 0.03 + 0.07 * r(i + 3) * Math.min(4, 0.5 + b.size), 0.7 + r(i + 4) * 0.5, undefined, rate);
+        }
+        // A big splash hangs in the air as mist a moment longer.
+        if (b.kind === "splash") {
+          const m = Math.round(Math.min(10, 3 + b.size * 1.5) * Q0.particles) + 2;
+          for (let i = 0; i < m; i++) {
+            const a = r(i + 200) * Math.PI * 2, d = r(i + 201) * b.size * 0.3;
+            water.spawn(b.t0 + 0.05, b.x + Math.cos(a) * d, b.y + 0.1, b.z + Math.sin(a) * d, Math.cos(a) * 0.4, (0.6 + r(i + 202) * 1.4) * Math.sqrt(k), Math.sin(a) * 0.4, (0.25 + 0.35 * r(i + 203)) * Math.min(3, 0.4 + b.size * 0.5), 1.1 + r(i + 204) * 0.6, undefined, rate);
+          }
         }
         break;
       }
@@ -507,7 +515,7 @@ export function createGamesScene(host: HTMLElement, opts: SceneOptions): GamesSc
         const v = p.implement === "shot" ? infield.sp : infield.jt;
         v.setTape(p.tape);
         v.setLeader(p.leader);
-        trail.set(p.trail.map((q) => new THREE.Vector3(...q)), p.implement === "shot" ? 0.18 : 0.12, camera);
+        trail.set(p.trail.map((q) => new THREE.Vector3(...q)), p.implement === "shot" ? 0.24 : 0.17, camera);
       }
       if (p.kind !== "throw") trail.set([], 0.1, camera);
     }

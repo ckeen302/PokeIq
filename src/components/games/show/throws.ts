@@ -96,16 +96,26 @@ export function throwShow(result: ThrowResult, o: ShowOptions): Show {
     const back = tall(aspect) ? 1.4 : 1;
     const range = Math.max(4, it.plan.noMark ? 3 : it.plan.attempt.physics.distance);
     const peak = Math.max(1, it.plan.attempt.physics.peak);
-    // The flight: beside and above the implement, looking down on it, so the field is behind it (not the stands);
-    // then down onto the landing zone, the sector lines and the tape in view, as it comes down and sticks.
+    // The flight, as a director covers it: the athlete and the implement together as it leaves the hand
+    // (from beside and above, so the field is behind them, not the stands), then the implement alone on a
+    // camera that follows it down the sector, then down onto the landing zone as it comes down and lands.
     const flight = (): CamPose => {
       const p = s.pos ?? [lineX, 1, cz];
-      const u = clamp01(tau / Math.max(0.3, it.plan.flight));
-      const w = Math.max(9, H * 1.6, Math.min(16, range * 0.2));
-      const chase = framed([p[0] + w * 0.45, Math.max(2, p[1] + 2.5 + w * 0.35), cz + w * 0.95 * back], [p[0] - w * 0.12, Math.max(0.3, p[1] * 0.85), cz], w, w * 0.56, aspect, 10, 60);
+      const F = Math.max(0.3, it.plan.flight);
+      const u = clamp01(tau / F);
+      const ax = it.plan.releaseX + 0.3;
+      // Both in frame: from the athlete to the implement.
+      const bx = Math.max(H * 1.6 + 3, ax - p[0] + 4 + H);
+      const by = Math.max(p[1], H) + 1.5;
+      const bc = (ax + p[0]) / 2;
+      const both = framed([bc + bx * 0.12, Math.max(2.5, 1.2 + bx * 0.38 + by * 0.3), cz + (bx * 0.85 + 2) * back], [bc - bx * 0.05, Math.max(0.4, by * 0.42), cz], bx, by, aspect, 10, 62);
+      // The implement alone, followed down the sector with some of its path behind it.
+      const w = Math.max(10, H * 1.6, Math.min(20, range * 0.22));
+      const chase = framed([p[0] + w * 0.4, Math.max(2.5, p[1] + 2.5 + w * 0.32), cz + w * 0.95 * back], [p[0] - w * 0.08, Math.max(0.3, p[1] * 0.85), cz], w, w * 0.56, aspect, 10, 60);
       const lx = it.plan.landX;
       const land = framed([lx + w * 0.35, 2.5 + w * 0.42, cz + w * 0.8 * back], [lx - w * 0.05, 0.3, cz], w, w * 0.5, aspect, 10, 60);
-      return mixPose(chase, land, smooth(0.62, 1, u));
+      const letGo = smooth(0.18, 0.45, u) * smooth(18, 30, bx);
+      return mixPose(mixPose(both, chase, Math.max(letGo, smooth(0.35, 0.5, u))), land, smooth(0.66, 1, u));
     };
     const thrower = (): CamPose => {
       const x = s.com[0];
@@ -119,7 +129,7 @@ export function throwShow(result: ThrowResult, o: ShowOptions): Show {
       case "startlist":
         return drift(framed([lineX - 20, 8, cz + 26 * back], [lineX - 30, 0, cz], 40, 12, aspect, 10, 55), t);
       case "throw":
-        return tau < 0 || !s.pos ? thrower() : mixPose(thrower(), flight(), smooth(0.08, 0.6, tau));
+        return tau < 0 || !s.pos ? thrower() : mixPose(thrower(), flight(), smooth(0.02, 0.45, tau));
       case "mark": {
         const lx = it.plan.landX;
         const span = Math.max(8, Math.min(16, range * 0.18));
@@ -186,13 +196,25 @@ export function throwShow(result: ThrowResult, o: ShowOptions): Show {
         return { bug, board: { title: "Start list", rows: result.turns.map((c, i) => ({ place: String(i + 1), name: c.athlete.name, mark: `Best ${formatMark(ev, markOf(c.athlete) || null)}`, key: c.athlete.key, plain: true })), k } };
       case "card":
         return { bug, title: { text: beat.title ?? "", sub: beat.sub ?? "", k } };
-      case "action":
-        return { bug, lower: { key: a.key, name: a.name, line: `Attack ${a.stats.atk} · ${fmtKg(a.kg)}${it.plan.armless ? " · no arms: a flick at 60%" : ""}`, tag: `Throw ${it.pick.a.round}`, k }, tags: [a.key], caption: it.plan.noMark ? `${a.name} can't lift a ${shot ? "7.26 kg shot" : "800 g javelin"}` : throwCaption(a, ph.height) };
-      case "result": {
-        const mark = it.pick.a.mark;
+      case "action": {
+        // The name up for the run-up (gone before the release), the distance the moment it lands.
+        const tau = beatClock(beat, t);
+        const t0 = beat.clock0 ?? 0, nameEnd = -0.35;
+        const down = it.plan.noMark ? 0.3 : it.plan.flight;
+        const t1 = (it.plan.noMark ? 0.6 : it.plan.flight) + (it.pick.cut === "full" ? 1.4 : 0.8);
         return {
           bug,
-          mark: mark == null ? { text: "NO MARK", sub: it.plan.noMark ? "Couldn't lift it" : "", tone: "bad", k } : { text: formatMark(ev, mark), sub: it.pick.lead ? "New leader" : `${place(it, a.key)}`, tone: it.pick.lead ? "lead" : "good", k },
+          lower: tau < nameEnd && nameEnd - t0 > 1.2 ? { key: a.key, name: a.name, line: `Attack ${a.stats.atk} · ${fmtKg(a.kg)}${it.plan.armless ? " · no arms: a flick at 60%" : ""}`, tag: `Throw ${it.pick.a.round}`, k: (tau - t0) / (nameEnd - t0) } : undefined,
+          tags: tau < 0 ? [a.key] : [],
+          caption: tau < 1 ? (it.plan.noMark ? `${a.name} can't lift a ${shot ? "7.26 kg shot" : "800 g javelin"}` : throwCaption(a, ph.height)) : undefined,
+          mark: tau >= down ? markFor(it, a.key, 0.5 * Math.min(1, (tau - down) / Math.max(0.5, t1 - down))) : undefined,
+        };
+      }
+      case "result": {
+        return {
+          bug,
+          // (Carried on from the landing: no second pop.)
+          mark: markFor(it, a.key, 0.5 + 0.5 * k),
           board: { title: "Standings", rows: it.standing.slice(0, 8).map((r, i) => ({ place: String(i + 1), name: byKey.get(r.key)!.name, mark: r.best == null ? "—" : formatMark(ev, r.best), key: r.key, hi: r.key === a.key })), k },
         };
       }
@@ -201,6 +223,10 @@ export function throwShow(result: ThrowResult, o: ShowOptions): Show {
       default:
         return { bug, board: { title: `${name} · final`, rows: result.order.map((c) => ({ place: c.best == null ? "—" : String(c.place), name: c.athlete.name, mark: c.best == null ? "NM" : formatMark(ev, c.best), key: c.athlete.key, hi: c.place === 1 })), k } };
     }
+  };
+  const markFor = (it: Item, key: string, k: number): NonNullable<Overlay["mark"]> => {
+    const mark = it.pick.a.mark;
+    return mark == null ? { text: "NO MARK", sub: it.plan.noMark ? "Couldn't lift it" : "", tone: "bad", k } : { text: formatMark(ev, mark), sub: it.pick.lead ? "New leader" : `${place(it, key)}`, tone: it.pick.lead ? "lead" : "good", k };
   };
   const place = (it: Item, key: string) => {
     const i = it.standing.findIndex((r) => r.key === key);

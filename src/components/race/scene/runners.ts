@@ -61,6 +61,8 @@ export interface FigureUniforms {
   uSwimLen: { value: THREE.Vector2 };
   /** World height below which the figure isn't drawn (a giant swimmer under the water). */
   uClipY: { value: number };
+  /** Under the water instead of cut: the water's glow (rgb) and its clarity (1 a clear pool; 0 cuts it, as above). */
+  uUnder: { value: THREE.Vector4 };
   /** A bend of the whole body along its height (mesh units across, at mid-height; 0 off), its height, for arched backs in other sports (the PokéIQ Games). */
   uBend: { value: THREE.Vector2 };
 }
@@ -139,6 +141,7 @@ function figureMaterial(tex: THREE.Texture, texSize: number, uniforms: FigureUni
         uniform vec2 uBend;
         attribute vec3 aPart;
         varying float vRaceY;
+        varying vec3 vRaceW;
         vec3 raceRot(vec3 v, vec3 a, float ang) { float c = cos(ang), s = sin(ang); return v * c + cross(a, v) * s + a * dot(a, v) * (1.0 - c); }`
       )
       .replace(
@@ -175,11 +178,24 @@ function figureMaterial(tex: THREE.Texture, texSize: number, uniforms: FigureUni
           }
         }`
       )
-      .replace("#include <project_vertex>", "#include <project_vertex>\nvRaceY = (modelMatrix * vec4(transformed, 1.0)).y;")
+      .replace("#include <project_vertex>", "#include <project_vertex>\nvRaceW = (modelMatrix * vec4(transformed, 1.0)).xyz;\nvRaceY = vRaceW.y;")
       .replace("#include <begin_vertex>", "vec3 transformed = racePos;\ntransformed.y += uWave * sin(transformed.x * uWaveK - uWavePhase) * (0.35 + 0.65 * smoothstep(0.0, 0.5, abs(transformed.x)));");
     s.fragmentShader = s.fragmentShader
-      .replace("#include <common>", "#include <common>\nuniform float uTexel;\nuniform float uClipY;\nvarying float vRaceY;")
-      .replace("#include <clipping_planes_fragment>", "#include <clipping_planes_fragment>\nif (vRaceY < uClipY) discard;")
+      .replace("#include <common>", "#include <common>\nuniform float uTexel;\nuniform float uClipY;\nuniform vec4 uUnder;\nvarying float vRaceY;\nvarying vec3 vRaceW;")
+      .replace("#include <clipping_planes_fragment>", "#include <clipping_planes_fragment>\nif (vRaceY < uClipY && uUnder.w <= 0.0) discard;")
+      // Under the water (the Games' pool), seen through it from above: the light down to it and back up the
+      // refracted ray loses its red first, and the water's own blue glows in along the way.
+      .replace(
+        "#include <opaque_fragment>",
+        `#include <opaque_fragment>
+        if (uUnder.w > 0.0 && vRaceY < uClipY && cameraPosition.y > uClipY) {
+          float dep = uClipY - vRaceY;
+          vec3 rd = normalize(vRaceW - cameraPosition);
+          float st = sqrt(max(0.0, 1.0 - rd.y * rd.y)) / 1.333;
+          float L = dep / sqrt(max(0.05, 1.0 - st * st));
+          gl_FragColor.rgb = gl_FragColor.rgb * exp(-(L + dep) * vec3(0.5, 0.17, 0.09) * uUnder.w) + uUnder.rgb * (1.0 - exp(-L * 0.5 * uUnder.w));
+        }`,
+      )
       .replace(
         "#include <map_fragment>",
         `#ifdef USE_MAP
@@ -196,7 +212,7 @@ function figureMaterial(tex: THREE.Texture, texSize: number, uniforms: FigureUni
         #endif`
       );
   };
-  m.customProgramCacheKey = () => "race-figure-5";
+  m.customProgramCacheKey = () => "race-figure-6";
   return m;
 }
 
@@ -249,6 +265,7 @@ export async function loadFigure(renderer: THREE.WebGLRenderer, lane: RaceLane, 
     uJA: { value: v4s() }, uJB: { value: v4s() }, uXA: { value: v4s() }, uXB: { value: v4s() },
     uSwim: { value: new THREE.Vector4() }, uSwimAx: { value: new THREE.Vector4() }, uSwimLen: { value: new THREE.Vector2(1, 1) },
     uClipY: { value: e.motion === "swim" && clipsUnderwater(lane.h) ? WATER_Y + 0.004 : -1e5 },
+    uUnder: { value: new THREE.Vector4(0, 0, 0, 0) },
     uBend: { value: new THREE.Vector2(0, rm.height) },
   };
   const mat = figureMaterial(tex, artBmp.width, uniforms);

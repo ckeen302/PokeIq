@@ -173,6 +173,15 @@ export function throwAt(pl: ThrowPlan, tau: number, time: number): ThrowScene {
     }
     com = [pose.x, H * 0.6, z];
   }
+  // The broadcast's tracer: the whole path from the hand so far (and once it's down, all of it, so the
+  // arc hangs over the sector while the mark is measured).
+  const tracer = (upto: number) => {
+    const n = Math.min(110, Math.max(2, Math.ceil(upto / 0.035)));
+    for (let k = 0; k <= n; k++) {
+      const q = pathAt(pl, (upto * k) / n);
+      trail.push([pl.releaseX - q.x, q.y, z]);
+    }
+  };
   // In flight, and then on the ground.
   let landed: number | null = null, stuck = 0;
   if (tau >= 0) {
@@ -180,16 +189,11 @@ export function throwAt(pl: ThrowPlan, tau: number, time: number): ThrowScene {
       const p = pathAt(pl, tau);
       pos = [pl.releaseX - p.x, p.y, z];
       dir = pl.shot ? [-1, 0, 0] : [-p.vx, p.vy, 0];
-      for (let k = 0; k < 14; k++) {
-        const tt = tau - k * 0.025;
-        if (tt < 0) break;
-        const q = pathAt(pl, tt);
-        trail.push([pl.releaseX - q.x, q.y, z]);
-      }
-      trail.reverse();
+      tracer(tau);
       com = [pos[0], pos[1], z];
     } else {
       landed = tau - pl.flight;
+      tracer(pl.flight);
       const p = pathAt(pl, pl.flight);
       const v = pathAt(pl, pl.flight - 1 / 60);
       if (pl.shot) {

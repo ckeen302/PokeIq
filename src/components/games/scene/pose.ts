@@ -57,6 +57,8 @@ export interface ActorPose {
   swim?: { amp: number; waves: number; phase: number; style: 1 | 2 } | null;
   /** Clip the figure below this world height (under water). */
   clipY?: number;
+  /** Seen through the water below clipY instead of cut there: the water's clarity (1 the pool's; more is murkier). */
+  under?: number;
 }
 
 export const restPose = (x = 0, z = 0): ActorPose => ({ visible: true, x, y: 0, z, dx: 1, dz: 0, lean: 0, roll: 0, squash: 0, gait: null });
