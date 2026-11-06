@@ -36,12 +36,14 @@ export async function run(rec, { base, phone }) {
   for (const name of [g3, g4]) {
     for (let i = 1; i <= 5; i++) {
       await box.fill(name.slice(0, i));
-      await page.waitForTimeout(250);
+      await page.waitForTimeout(i < 3 ? 900 : 300);
     }
     await page.waitForLoadState("networkidle").catch(() => {});
   }
   await box.fill("");
+  await box.press("Escape");
   await box.blur();
+  await page.waitForTimeout(1500);
   // The answer's artwork, which the result card shows.
   await rec.preload(guesses.map((g) => `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${g.id}.png`));
   await rec.hideChrome();

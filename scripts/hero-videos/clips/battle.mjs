@@ -78,11 +78,13 @@ async function battle(rec, { base, phone }) {
     await rec.freeze();
     // The stage: its two HUDs sit in its corners.
     const huds = [page.getByTestId("stage-far"), page.getByTestId("stage-near")];
-    if (phone) await rec.frameAround([page.getByTestId("battle-arena")], { aspect: 4 / 5, pad: 0, top: true, shiftX: 0 });
+    if (phone) await rec.frameAround([page.getByTestId("battle-arena")], { aspect: 4 / 5, pad: 0, top: true, shiftY: 38 });
     else await rec.frameAround(huds, { aspect: 16 / 9, pad: 14 });
     console.log("\n  clip", JSON.stringify(rec.clip), JSON.stringify(await page.getByTestId("battle-arena").boundingBox()));
-    rec.cursor.x = rec.clip.x + rec.clip.width * 0.8;
-    rec.cursor.y = rec.clip.y + rec.clip.height * 0.95;
+    // The pointer starts below the picture, by the move buttons (never over a HUD, whose tooltip it would open).
+    rec.cursor.x = rec.clip.x + rec.clip.width * 0.5;
+    rec.cursor.y = rec.clip.y + rec.clip.height + 80;
+    if (!phone) await page.mouse.move(rec.cursor.x, rec.cursor.y);
     rec.start();
     await rec.wait(500);
     await rec.clickEl(await bestMove(page), { jitter: 0.3 });

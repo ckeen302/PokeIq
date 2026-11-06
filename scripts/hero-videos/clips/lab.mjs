@@ -5,14 +5,15 @@
  * controls are hidden (the slide's title sits on top of the clip).
  */
 const T = Number(process.env.HERO_LAB_T ?? 186);
-const SECONDS = Number(process.env.HERO_LAB_SECONDS ?? 10.4);
+const SECONDS = Number(process.env.HERO_LAB_SECONDS ?? 9.2);
 
-export const setup = (phone) => ({ fps: 30, viewport: phone ? { width: 390, height: 844 } : { width: 1440, height: 810 } });
+// Software WebGL is slow: render at the output's own size (1600×900 under the header; a phone at 2×).
+export const setup = (phone) => ({ fps: 30, dpr: phone ? 2 : 1, viewport: phone ? { width: 400, height: 860 } : { width: 1600, height: 956 } });
 export const encode = () => ({ fade: 0.8 });
 
 export async function run(rec, { base, phone }) {
   const page = rec.page;
-  await rec.goto(`${base}/lab/pokemon-story?q=high&t=${T}`);
+  await rec.goto(`${base}/lab/pokemon-story?q=${process.env.HERO_LAB_Q ?? "medium"}&t=${T}`);
   await page.locator('[data-testid="ps-stage"][data-ready="1"]').waitFor({ timeout: 300_000 });
   await rec.hideChrome(`
     [data-testid=ps-caption-area], [data-testid=ps-source], [data-testid=ps-title-card] p,
@@ -33,7 +34,7 @@ export async function run(rec, { base, phone }) {
   const stage = await page.getByTestId("ps-stage").boundingBox();
   const { width: vw, height: vh } = rec.o.viewport;
   // The stage fills the screen: desktop takes it whole; a phone, a 4:5 window from its middle.
-  if (phone) rec.setClip({ x: 0, y: Math.max(0, Math.round(stage.y + (Math.min(stage.height, vh) - 487.5) / 2)), width: 390, height: 487.5 });
+  if (phone) rec.setClip({ x: 0, y: Math.max(56, Math.round(stage.y + (Math.min(stage.height, vh) - 500) / 2)), width: 400, height: 500 });
   else {
     // Under the film's header strip.
     const top = 56;

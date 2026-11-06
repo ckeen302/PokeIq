@@ -27,6 +27,7 @@ const rec = new Recorder({
   time: setup.time,
   init: setup.init,
   seed: setup.seed,
+  ...(setup.dpr && { dpr: setup.dpr }),
 });
 const t0 = Date.now();
 try {
