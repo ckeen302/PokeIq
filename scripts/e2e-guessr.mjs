@@ -59,7 +59,10 @@ const shotLoaded = (p) =>
 async function pinAndGuess(p, phone, at, shots) {
   if (phone) {
     // The corner minimap opens to the whole screen.
-    await p.getByTestId("geo-map-pill").click();
+    await p.getByTestId("geo-map-pill").click({ timeout: 15_000 }).catch(async (e) => {
+      await p.screenshot({ path: `${OUT}/fail-minimap.png` });
+      throw e;
+    });
     await p.locator("[data-testid=geo-dock][data-open=true]").waitFor();
     await p.waitForTimeout(350);
     if (shots) await p.screenshot({ path: `${OUT}/${shots}-map.png` });

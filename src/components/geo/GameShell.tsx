@@ -375,7 +375,7 @@ function PhoneMap({ map, button, extra, hasPin, aspect, testId }: { map: (o: { f
         role={open ? "dialog" : undefined}
         aria-label={open ? "Guess map" : undefined}
       >
-        <div className={cn("h-full w-full", open ? "[&_[data-map-controls]]:!top-1/2 [&_[data-map-controls]]:!right-3 [&_[data-map-controls]]:-translate-y-1/2 [&_[data-map-controls]_button]:!h-10 [&_[data-map-controls]_button]:!w-10" : "[&_[data-map-controls]]:hidden")}>
+        <div className={cn("h-full w-full", open ? "[&_[data-map-controls]]:!bottom-[calc(7.5rem+env(safe-area-inset-bottom))] [&_[data-map-controls]]:!right-3 [&_[data-map-controls]]:!top-auto [&_[data-map-controls]_button]:!h-10 [&_[data-map-controls]_button]:!w-10" : "[&_[data-map-controls]]:hidden")}>
           {map({ fill: true })}
         </div>
         {!open && (
@@ -448,7 +448,7 @@ export function GuessButton({ hasPin, disabled, busy, label, onClick, testId = "
       )}
     >
       {busy ? <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white" aria-hidden /> : null}
-      {label ?? (hasPin ? "Guess" : <>Place your pin<span className="max-sm:hidden"> on the map</span></>)}
+      {label ?? (hasPin ? "Guess" : <span>Place your pin<span className="max-sm:hidden"> on the map</span></span>)}
       {hasPin && !busy && !label && <kbd aria-hidden className="ml-1 hidden rounded border border-white/40 px-1.5 text-[10px] font-normal normal-case sm:inline [@media(pointer:coarse)]:!hidden">Space</kbd>}
     </button>
   );
