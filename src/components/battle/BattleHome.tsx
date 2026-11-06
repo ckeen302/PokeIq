@@ -309,7 +309,7 @@ export function BattleHome({ news }: { news: NewsItem[] }) {
     <section className="space-y-5" data-testid="battle-home">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="hud-label flex items-center gap-2 text-screen">
+          <p className="hud-label flex items-center gap-2 text-screen max-md:hidden">
             <span className="led h-1.5 w-1.5 animate-blink text-screen" /> Battle unit · Pokémon Showdown rules
           </p>
           <h1 className="font-display text-5xl font-bold uppercase leading-none tracking-tight">

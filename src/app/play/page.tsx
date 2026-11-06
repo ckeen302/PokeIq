@@ -31,19 +31,19 @@ export default function PlayPage() {
       <ModeGrid />
       <Link
         href="/quiz/name-em-all"
-        className="menu-item group relative flex items-center gap-4 overflow-hidden rounded-lg border bg-card p-4 hover:border-screen/50 hover:bg-accent/40"
+        className="menu-item group relative flex items-center gap-4 overflow-hidden rounded-lg border bg-card p-4 hover:border-screen/50 hover:bg-accent/40 max-md:gap-3"
         data-testid="play-name-em-all"
       >
         <span className="absolute inset-y-0 left-0 w-1 bg-[hsl(170_80%_45%)]" aria-hidden />
-        <span className="screen flex h-14 w-14 shrink-0 items-center justify-center rounded-md text-[hsl(170_80%_55%)]">
+        <span className="screen flex h-14 w-14 shrink-0 items-center justify-center rounded-md text-[hsl(170_80%_55%)] max-md:h-11 max-md:w-11">
           <ListChecks className="relative z-[3] h-6 w-6" aria-hidden />
         </span>
         <span className="min-w-0 flex-1">
           <span className="flex items-center gap-2">
-            <span className="hud-label text-screen">New</span>
-            <span className="truncate font-display text-lg font-bold uppercase tracking-wide">Name &apos;em All</span>
+            <span className="hud-label text-screen max-md:hidden">New</span>
+            <span className="truncate font-display text-lg font-bold uppercase tracking-wide max-md:text-base">Name &apos;em All</span>
           </span>
-          <span className="mt-0.5 block text-sm text-muted-foreground">
+          <span className="mt-0.5 block text-sm text-muted-foreground max-md:line-clamp-2">
             Type every Pokémon you can remember: all 1,025, a generation, a type, Legendaries, Megas or a regional dex. Daily, races and personal bests.
           </span>
         </span>
@@ -57,7 +57,7 @@ export default function PlayPage() {
           </Link>
         ))}
       </nav>
-      <section className="grid gap-4 sm:grid-cols-3">
+      <section className="grid gap-4 max-md:hidden sm:grid-cols-3">
         {PLAYABLE_FORMATS.map((f) => (
           <div key={f} className="rounded-md border bg-card p-5">
             <h2 className="font-semibold">{FORMAT_INFO[f].title}</h2>

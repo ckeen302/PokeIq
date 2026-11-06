@@ -54,7 +54,7 @@ export default async function QuizPage({ params }: PageProps) {
         <span className="screen flex h-14 w-14 items-center justify-center rounded-md" style={{ color: `hsl(${info.accent})` }}>
           <ModeIcon module={preset.module} className="relative z-[3] h-7 w-7" />
         </span>
-        <p className="hud-label text-screen">Mode select</p>
+        <p className="hud-label max-md:hidden text-screen">Mode select</p>
         <h1 className="font-display text-4xl font-bold uppercase tracking-tight sm:text-5xl">{preset.h1}</h1>
         <p className="text-muted-foreground">{preset.description}</p>
       </div>
@@ -68,7 +68,7 @@ export default async function QuizPage({ params }: PageProps) {
         gens={preset.gens}
       />
 
-      <section className="mx-auto max-w-2xl space-y-3 text-sm text-muted-foreground">
+      <section className="mx-auto max-w-2xl space-y-3 text-sm text-muted-foreground max-md:hidden">
         <h2 className="font-display text-base font-bold uppercase tracking-wider text-foreground">How it works</h2>
         {preset.module === "games" || preset.module === "anime" ? (
           <p>

@@ -159,7 +159,7 @@ export function StreakGame({ world }: { world: GeoRegionInfo }) {
     return (
       <div className="mx-auto max-w-3xl space-y-8" data-testid="streak-setup">
         <div className="space-y-3 text-center">
-          <p className="hud-label text-screen">Field survey · the Pokémon world</p>
+          <p className="hud-label max-md:hidden text-screen">Field survey · the Pokémon world</p>
           <h1 className="font-display text-4xl font-bold uppercase tracking-tight sm:text-6xl">
             Region <span className="text-primary">Streak</span>
           </h1>

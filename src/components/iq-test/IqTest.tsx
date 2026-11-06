@@ -22,7 +22,7 @@ export function IqTest() {
   return (
     <div className="space-y-8">
       <div className="mx-auto max-w-2xl space-y-3 text-center">
-        <p className="hud-label text-screen">The PokéIQ Test</p>
+        <p className="hud-label max-md:hidden text-screen">The PokéIQ Test</p>
         <h1 className="font-display text-4xl font-bold uppercase tracking-tight sm:text-5xl">
           A cognitive test <span className="text-primary">made of Pokémon</span>
         </h1>

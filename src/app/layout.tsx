@@ -83,7 +83,7 @@ const websiteJsonLd = {
   description: SITE_DESCRIPTION,
 };
 
-/** The credits line, in full on wider screens and folded away on phones (mobile-polish). */
+/** The credits line, in full on wider screens and folded away on phones (mobile-polish). Phones also keep only Privacy and Report a problem of the footer links: the tab bar is their site map. */
 const CREDITS = (
   <>
               PokéIQ is a free, non-commercial fan project and is not affiliated with, endorsed or sponsored by
@@ -145,7 +145,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <main className="container flex-1 pb-28 pt-8 max-md:pb-12 max-md:pt-6 lg:pb-12">{children}</main>
         <footer className="mb-[calc(4rem+env(safe-area-inset-bottom))] border-t border-foreground/[0.06] py-8 text-center text-xs text-muted-foreground lg:mb-0">
           <div className="container space-y-2">
-            <nav className="flex flex-wrap justify-center gap-x-5 gap-y-2 font-pixel text-[10px] uppercase tracking-wider max-md:grid max-md:grid-cols-2 max-md:gap-x-2 max-md:gap-y-0 max-md:text-[11px] max-md:[&>:is(a,button)]:flex max-md:[&>:is(a,button)]:min-h-11 max-md:[&>:is(a,button)]:items-center max-md:[&>:is(a,button)]:justify-center max-md:[&>button]:text-[11px]">
+            <nav className="flex flex-wrap justify-center gap-x-5 gap-y-2 font-pixel text-[10px] uppercase tracking-wider max-md:grid max-md:grid-cols-2 max-md:gap-x-2 max-md:gap-y-0 max-md:text-[11px] max-md:[&>a:not([href='/privacy'])]:hidden max-md:[&>:is(a,button)]:flex max-md:[&>:is(a,button)]:min-h-11 max-md:[&>:is(a,button)]:items-center max-md:[&>:is(a,button)]:justify-center max-md:[&>button]:text-[11px]">
               <Link href="/play" prefetch={false} className="hover:text-foreground">Game modes</Link>
               <Link href="/pokedex" prefetch={false} className="hover:text-foreground">Pokédex</Link>
               <Link href="/pokedex/study" prefetch={false} className="hover:text-foreground">Study mode</Link>

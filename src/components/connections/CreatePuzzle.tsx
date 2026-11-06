@@ -211,7 +211,7 @@ export function CreatePuzzle() {
   return (
     <div className="mx-auto max-w-3xl space-y-6">
       <div className="space-y-2 text-center">
-        <p className="hud-label text-screen">PokéConnections · Create</p>
+        <p className="hud-label max-md:hidden text-screen">PokéConnections · Create</p>
         <h1 className="font-display text-4xl font-bold uppercase tracking-tight">Make a puzzle</h1>
         <p className="text-sm text-muted-foreground">Pick sixteen Pokémon, split them into four groups of four, name each group and give it a colour.</p>
       </div>

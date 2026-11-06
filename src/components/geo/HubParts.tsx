@@ -25,7 +25,7 @@ export function HubSection({
     <section id={id} aria-labelledby={`${id}-title`} className={cn("scroll-mt-24 space-y-4", className)} data-testid={`geo-hub-${id}`}>
       <div className="flex flex-wrap items-end justify-between gap-x-4 gap-y-2 border-b border-border/70 pb-2">
         <div className="space-y-1">
-          <p className="hud-label text-screen">{eyebrow}</p>
+          <p className="hud-label text-screen max-md:hidden">{eyebrow}</p>
           <h2 id={`${id}-title`} className="font-display text-2xl font-bold uppercase tracking-tight sm:text-3xl">
             {title}
           </h2>

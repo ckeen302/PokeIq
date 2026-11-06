@@ -106,7 +106,7 @@ export function WorldAtlas({ src }: { src: string }) {
     <div className="space-y-4">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div className="space-y-1">
-          <p className="hud-label text-screen">Every mainline region · one map</p>
+          <p className="hud-label max-md:hidden text-screen">Every mainline region · one map</p>
           <h1 className="font-display text-4xl font-bold uppercase tracking-tight sm:text-5xl">
             World <span className="text-primary">Atlas</span>
           </h1>

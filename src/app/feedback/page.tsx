@@ -14,7 +14,7 @@ export default function Feedback() {
     <div className="mx-auto max-w-xl space-y-6">
     <BackButton href="/" />
       <div className="space-y-2">
-        <p className="hud-label">Feedback</p>
+        <p className="hud-label max-md:hidden">Feedback</p>
         <h1 className="font-display text-4xl font-bold uppercase tracking-tight">
           Tell us <span className="text-primary">anything</span>
         </h1>

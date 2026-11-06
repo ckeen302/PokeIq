@@ -78,7 +78,7 @@ export default function BattlePage() {
       <BattleHome news={NEWS as NewsItem[]} />
 
       <section className="space-y-5">
-        <HudHeading index={1} title="Battles and tools" aside="Live" />
+        <HudHeading index={1} title="Battles and tools" aside={<span className="max-md:hidden">Live</span>} />
         <div className="grid gap-4 md:grid-cols-2">
           {LIVE.map(({ href, icon: Icon, title, blurb, points, wide }) => (
             <Link key={href} href={href} className={`menu-item hud group relative block rounded-lg border bg-card p-6 hover:border-screen/50 max-md:p-4${wide ? " md:col-span-2" : ""}`}>
@@ -89,12 +89,12 @@ export default function BattlePage() {
                 <div className="min-w-0 flex-1 space-y-2">
                   <div className="flex items-center gap-2 max-md:flex-wrap max-md:gap-y-0.5">
                     <span className="font-display text-xl font-bold uppercase tracking-wide max-md:text-lg max-md:leading-tight">{title}</span>
-                    <span className="hud-label flex items-center gap-1.5 text-success">
+                    <span className="hud-label flex items-center gap-1.5 text-success max-md:hidden">
                       <span className="led h-1.5 w-1.5 text-success" /> Live
                     </span>
                   </div>
                   <p className="text-sm text-muted-foreground">{blurb}</p>
-                  <ul className="space-y-1 pt-1 text-sm">
+                  <ul className="space-y-1 pt-1 text-sm max-md:hidden">
                     {points.map((p) => (
                       <li key={p} className="flex items-center gap-2 max-md:items-baseline">
                         <span className="font-pixel text-[9px] text-primary">▶</span> {p}
@@ -110,7 +110,7 @@ export default function BattlePage() {
       </section>
 
       <section className="space-y-5">
-        <HudHeading index={2} title="Battle Frontier" aside="Streaks against the computer" />
+        <HudHeading index={2} title="Battle Frontier" aside={<span className="max-md:hidden">Streaks against the computer</span>} />
         <div className="grid gap-4 md:grid-cols-2" data-testid="battle-frontier">
           {FRONTIER.map(({ href, icon: Icon, title, blurb, points }) =>
             href ? (
@@ -122,7 +122,7 @@ export default function BattlePage() {
                   <div className="min-w-0 flex-1 space-y-2">
                     <span className="font-display text-xl font-bold uppercase tracking-wide max-md:block max-md:text-lg max-md:leading-tight">{title}</span>
                     <p className="text-sm text-muted-foreground">{blurb}</p>
-                    <ul className="space-y-1 pt-1 text-sm">
+                    <ul className="space-y-1 pt-1 text-sm max-md:hidden">
                       {points.map((p) => (
                         <li key={p} className="flex items-center gap-2 max-md:items-baseline">
                           <span className="font-pixel text-[9px] text-primary">▶</span> {p}
@@ -145,7 +145,7 @@ export default function BattlePage() {
         </div>
       </section>
 
-      <section className="space-y-5">
+      <section className="space-y-5 max-md:hidden">
         <HudHeading index={3} title="Formats" aside="Pokémon Showdown's rules for each" />
         <div className="grid gap-px overflow-hidden rounded-lg border bg-border sm:grid-cols-2 lg:grid-cols-4">
           {BATTLE_FORMAT_IDS.map((id) => {

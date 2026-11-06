@@ -197,15 +197,22 @@
     content: "▶" / "";
     @apply pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-[10px] text-primary opacity-0 transition-opacity;
   }
-  .menu-item:not(:disabled):hover,
   .menu-item:not(:disabled):focus-visible,
   .menu-item[data-selected="true"] {
     @apply pl-7;
   }
-  .menu-item:not(:disabled):hover::before,
   .menu-item:not(:disabled):focus-visible::before,
   .menu-item[data-selected="true"]::before {
     @apply animate-nudge opacity-100;
+  }
+  /* mobile-polish: only a real pointer slides the cursor in; a tap on a phone would leave it stuck. */
+  @media (hover: hover) {
+    .menu-item:not(:disabled):hover {
+      @apply pl-7;
+    }
+    .menu-item:not(:disabled):hover::before {
+      @apply animate-nudge opacity-100;
+    }
   }
 
   /* Classic "Who's That Pokémon?" sunburst behind silhouettes. */
@@ -643,7 +650,21 @@ html[data-dle-cb] .dle-match { background: #f5793a; color: #1f0d02; border-color
 html[data-dle-cb] .dle-partial { background: #85c0f9; color: #04213d; border-color: #85c0f9; }
 html[data-dle-cb] .dle-close { background: rgb(133 192 249 / 0.4); border-color: #85c0f9; }
 
-/* mobile-polish: phone-only rules (below md). Nothing here may change wider screens. */
+/* mobile-polish: phone-only rules (below md). Nothing here may change wider screens.
+   In the components layer, so a utility class on an element still wins. */
+@layer components {
+  @media (max-width: 767.98px) {
+    /* Plain panels: no targeting-bracket corners on a small screen. */
+    .hud {
+      background-image: none;
+    }
+    /* The pixel labels read a size up. */
+    .hud-label {
+      font-size: 11px;
+      letter-spacing: 0.08em;
+    }
+  }
+}
 @media (max-width: 767.98px) {
   /* A long placeholder ends in "…" instead of being cut mid-word. */
   input:not([type="checkbox"]):not([type="radio"]):not([type="range"]) {

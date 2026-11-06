@@ -22,7 +22,7 @@ export default function NameEmAllHub() {
     <div className="mx-auto max-w-5xl space-y-8">
       <BackButton href="/play" />
       <header className="mx-auto max-w-2xl space-y-2 text-center">
-        <p className="hud-label text-screen">Recall quiz</p>
+        <p className="hud-label max-md:hidden text-screen">Recall quiz</p>
         <h1 className="font-display text-4xl font-bold uppercase tracking-tight sm:text-5xl">{NEA_TITLE}</h1>
         <p className="text-muted-foreground">
           How many Pokémon can you name from memory? Type them in, and each one pops into its slot the moment it&apos;s spelled right.

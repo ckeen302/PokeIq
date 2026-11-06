@@ -12,19 +12,19 @@ export function WhichPokemonCard() {
   return (
     <Link
       href={QUIZ_PATH}
-      className="menu-item group relative flex items-center gap-4 overflow-hidden rounded-lg border bg-card p-4 hover:border-screen/50 hover:bg-accent/40"
+      className="menu-item group relative flex items-center gap-4 overflow-hidden rounded-lg border bg-card p-4 hover:border-screen/50 hover:bg-accent/40 max-md:gap-3"
       data-testid="play-which-pokemon"
     >
       <span className="absolute inset-y-0 left-0 w-1 bg-[hsl(290_80%_62%)]" aria-hidden />
-      <span className="screen flex h-14 w-14 shrink-0 items-center justify-center rounded-md text-[hsl(290_80%_70%)]">
+      <span className="screen flex h-14 w-14 shrink-0 items-center justify-center rounded-md text-[hsl(290_80%_70%)] max-md:h-11 max-md:w-11">
         <Sparkles className="relative z-[3] h-6 w-6" aria-hidden />
       </span>
       <span className="min-w-0 flex-1">
         <span className="flex items-center gap-2">
-          <span className="hud-label text-screen">New</span>
-          <span className="truncate font-display text-lg font-bold uppercase tracking-wide">Which Pokémon Are You?</span>
+          <span className="hud-label text-screen max-md:hidden">New</span>
+          <span className="truncate font-display text-lg font-bold uppercase tracking-wide max-md:whitespace-normal max-md:text-base max-md:leading-tight">Which Pokémon Are You?</span>
         </span>
-        <span className="mt-0.5 block text-sm text-muted-foreground">
+        <span className="mt-0.5 block text-sm text-muted-foreground max-md:line-clamp-2">
           A personality quiz with a real trait model: 18 questions, 200 possible Pokémon, a share card and a compare-with-a-friend link.
         </span>
       </span>
